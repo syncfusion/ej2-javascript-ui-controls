@@ -1,3 +1,5 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable valid-jsdoc */
 import { ProgressBar } from '../progressbar';
 import { createElement } from '@syncfusion/ej2-base';
 import { ProgressAnnotationSettingsModel } from './progress-base-model';
@@ -15,7 +17,10 @@ export class ProgressAnnotation extends AnnotationBase {
     private animation: ProgressAnimation = new ProgressAnimation();
     /**
      * Constructor for ProgressBar annotation
+     *
      * @private
+     * @param {ProgressBar} control Passed the control
+     * @param {annotations} annotations ProgressAnnotationSettings
      */
     constructor(control: ProgressBar, annotations: ProgressAnnotationSettings[]) {
         super(control);
@@ -24,12 +29,13 @@ export class ProgressAnnotation extends AnnotationBase {
     }
     /**
      * Method to render the annotation for ProgressBar
-     * @param element
+     *
+     * @param {Element} element Annotation element.
      * @private
      */
     public renderAnnotations(element: Element): void {
         this.annotations = this.progress.annotations;
-        let parentElement: HTMLElement = document.getElementById(this.progress.element.id + 'Annotation_collections');
+        const parentElement: HTMLElement = document.getElementById(this.progress.element.id + 'Annotation_collections');
         this.parentElement = parentElement ? parentElement : createElement('div', {
             id: this.progress.element.id + 'Annotation_collections',
             styles: 'position:absolute'
@@ -51,12 +57,12 @@ export class ProgressAnnotation extends AnnotationBase {
         return 'ProgressAnnotation';
     }
     /**
-     * To destroy the annotation. 
-     * @return {void}
+     * To destroy the annotation.
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(control: ProgressBar): void {
+    public destroy(): void {
         // Destroy method performed here
     }
-
 }

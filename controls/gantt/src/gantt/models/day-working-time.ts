@@ -7,6 +7,7 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
 export class DayWorkingTime extends ChildProperty<DayWorkingTime> {
     /**
      * Defines start time of working time range.
+     *
      * @default null
      * @blazorType double?
      * @blazorDefaultValue null
@@ -15,6 +16,7 @@ export class DayWorkingTime extends ChildProperty<DayWorkingTime> {
     public from: number;
     /**
      * Defines end time of working time range.
+     *
      * @default null
      * @blazorType double?
      * @blazorDefaultValue null

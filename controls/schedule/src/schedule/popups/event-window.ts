@@ -1,18 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createElement, L10n, isNullOrUndefined, addClass, remove, EventHandler, extend, append, EmitType } from '@syncfusion/ej2-base';
-import { cldrData, removeClass, getValue, getDefaultDateObject, closest, getElement, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
-import { updateBlazorTemplate, resetBlazorTemplate, isBlazor, IntlBase } from '@syncfusion/ej2-base';
+import { cldrData, removeClass, getValue, getDefaultDateObject, closest, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { Query, Deferred } from '@syncfusion/ej2-data';
 import { CheckBox, ChangeEventArgs, Button } from '@syncfusion/ej2-buttons';
 import { Dialog, DialogModel, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
-import {
-    DropDownList, FilteringEventArgs, MultiSelect, ChangeEventArgs as ddlChangeEventArgs, MultiSelectChangeEventArgs
-} from '@syncfusion/ej2-dropdowns';
+import { DropDownList, FilteringEventArgs, MultiSelect, ChangeEventArgs as ddlChangeEventArgs, MultiSelectChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { Input, FormValidator, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { DatePicker, DateTimePicker, ChangedEventArgs } from '@syncfusion/ej2-calendars';
 import { Schedule } from '../base/schedule';
-import { EJ2Instance, EventFieldsMapping, PopupOpenEventArgs, TdData, CellClickEventArgs, PopupCloseEventArgs } from '../base/interface';
+import { EJ2Instance, EventFieldsMapping, PopupOpenEventArgs, TdData, CellClickEventArgs, PopupCloseEventArgs, CallbackFunction } from '../base/interface';
 import { CurrentAction } from '../base/type';
-import { timezoneData } from '../timezone/timezone';
 import { FieldValidator } from './form-validator';
 import { RecurrenceEditor } from '../../recurrence-editor/recurrence-editor';
 import { ResourcesModel } from '../models/resources-model';
@@ -36,8 +33,8 @@ export class EventWindow {
     private element: HTMLElement;
     private fields: EventFieldsMapping;
     private l10n: L10n;
-    private eventData: { [key: string]: Object };
-    private eventCrudData: { [key: string]: Object };
+    private eventData: Record<string, any>;
+    private eventCrudData: Record<string, any>;
     private fieldValidator: FieldValidator;
     private recurrenceEditor: RecurrenceEditor;
     private repeatDialogObject: Dialog;
@@ -49,15 +46,14 @@ export class EventWindow {
     private cellClickAction: boolean;
     private duration: number;
     private isCrudAction: boolean;
-    private eventWindowTime: { [key: string]: Date };
+    private eventWindowTime: Record<string, Date>;
+    private timezoneData: Record<string, any>[];
 
-    /**
-     * Constructor for event window
-     */
     constructor(parent: Schedule) {
         this.parent = parent;
         this.l10n = this.parent.localeObj;
         this.fields = this.parent.eventFields;
+        this.timezoneData = this.parent.tzModule.timezoneData;
         this.eventWindowTime = { startTime: new Date(), endTime: new Date() };
         this.fieldValidator = new FieldValidator();
         this.renderEventWindow();
@@ -66,7 +62,7 @@ export class EventWindow {
     private renderEventWindow(): void {
         this.element = createElement('div', { id: this.parent.element.id + '_dialog_wrapper' });
         this.parent.element.appendChild(this.element);
-        let dialogModel: DialogModel = {
+        const dialogModel: DialogModel = {
             animationSettings: { effect: 'Zoom' },
             content: this.getEventWindowContent(),
             cssClass: cls.EVENT_WINDOW_DIALOG_CLASS,
@@ -105,7 +101,6 @@ export class EventWindow {
             dialogModel.header = '<div class="e-title-text">' + this.l10n.getConstant('newEvent') + '</div>';
         }
         this.dialogObject = new Dialog(dialogModel, this.element);
-        this.dialogObject.isStringTemplate = true;
         if (this.dialogObject.element.querySelector('.e-dlg-closeicon-btn')) {
             this.dialogObject.element.querySelector('.e-dlg-closeicon-btn').setAttribute('title', this.l10n.getConstant('close'));
         }
@@ -117,18 +112,6 @@ export class EventWindow {
         this.applyFormValidation();
     }
 
-    private updateEditorTemplate(): void {
-        if (this.parent.editorTemplate) {
-            updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
-        }
-    }
-
-    private resetEditorTemplate(): void {
-        if (this.parent.editorTemplate) {
-            resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
-        }
-    }
-
     public refresh(): void {
         this.destroy();
         this.renderEventWindow();
@@ -136,7 +119,7 @@ export class EventWindow {
 
     public refreshRecurrenceEditor(): void {
         if (this.recurrenceEditor) {
-            let recurrenceEditor: HTMLElement = this.recurrenceEditor.element;
+            const recurrenceEditor: HTMLElement = this.recurrenceEditor.element;
             this.recurrenceEditor.destroy();
             this.createRecurrenceEditor(recurrenceEditor);
         }
@@ -148,16 +131,18 @@ export class EventWindow {
         }
     }
 
-    public openEditor(data: Object, type: CurrentAction, isEventData?: boolean, repeatType?: number): void {
+    public openEditor(data: Record<string, any>, type: CurrentAction, isEventData?: boolean, repeatType?: number): void {
         this.parent.currentAction = type;
         this.parent.removeNewEventElement();
-        this.parent.quickPopup.quickPopupHide(true);
+        if (this.parent.quickPopup) {
+            this.parent.quickPopup.quickPopupHide(true);
+        }
         this.parent.inlineModule.removeInlineAppointmentElement();
         if (type === 'Add') {
-            let eventObj: { [key: string]: Object } = {};
+            let eventObj: Record<string, any> = {};
             this.cellClickAction = !isEventData;
-            this.parent.activeCellsData = data as CellClickEventArgs;
-            let event: { [key: string]: Object } = data as { [key: string]: Object };
+            this.parent.activeCellsData = data as unknown as CellClickEventArgs;
+            const event: Record<string, any> = data;
             if (this.cellClickAction) {
                 this.convertToEventData(event, eventObj);
             } else {
@@ -170,7 +155,7 @@ export class EventWindow {
                 };
                 eventObj = event;
             }
-            data = eventObj as { [key: string]: Object };
+            data = eventObj;
         }
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             this.renderFormElements(this.element.querySelector('.e-schedule-form'), data);
@@ -182,19 +167,19 @@ export class EventWindow {
             this.recurrenceEditor.firstDayOfWeek = this.parent.activeViewOptions.firstDayOfWeek;
         }
         switch (type) {
-            case 'Add':
-                this.onCellDetailsUpdate(data as { [key: string]: Object }, repeatType);
-                break;
-            case 'Save':
-            case 'EditOccurrence':
-            case 'EditSeries':
-            case 'EditFollowingEvents':
-                if (type === 'EditOccurrence' && !this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
-                    addClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], cls.DISABLE_CLASS);
-                }
-                this.cellClickAction = false;
-                this.onEventDetailsUpdate(<{ [key: string]: Object }>data);
-                break;
+        case 'Add':
+            this.onCellDetailsUpdate(data, repeatType);
+            break;
+        case 'Save':
+        case 'EditOccurrence':
+        case 'EditSeries':
+        case 'EditFollowingEvents':
+            if (type === 'EditOccurrence' && !this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
+                addClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], cls.DISABLE_CLASS);
+            }
+            this.cellClickAction = false;
+            this.onEventDetailsUpdate(data);
+            break;
         }
     }
 
@@ -204,7 +189,7 @@ export class EventWindow {
     }
 
     private onBeforeOpen(args: BeforeOpenEventArgs): Deferred {
-        let eventProp: PopupOpenEventArgs = {
+        const eventProp: PopupOpenEventArgs = {
             type: 'Editor',
             data: this.eventData,
             cancel: false,
@@ -214,29 +199,29 @@ export class EventWindow {
         if (this.cellClickAction) {
             eventProp.duration = this.getSlotDuration();
         }
-        let saveObj: Button = this.getInstance(cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as Button;
+        const saveObj: Button = this.getInstance(cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as unknown as Button;
         if (saveObj) {
             saveObj.disabled = !(this.cellClickAction ? this.parent.eventSettings.allowAdding : this.parent.eventSettings.allowEditing);
             saveObj.dataBind();
         }
-        let deleteObj: Button = this.getInstance(cls.DELETE_EVENT_CLASS) as Button;
+        const deleteObj: Button = this.getInstance(cls.DELETE_EVENT_CLASS) as unknown as Button;
         if (deleteObj) {
             deleteObj.disabled = !this.parent.eventSettings.allowDeleting;
             deleteObj.dataBind();
         }
-        let callBackPromise: Deferred = new Deferred();
+        const callBackPromise: Deferred = new Deferred();
         this.parent.trigger(event.popupOpen, eventProp, (popupArgs: PopupOpenEventArgs) => {
             args.cancel = popupArgs.cancel;
             this.duration = this.cellClickAction ? popupArgs.duration : null;
             this.refreshDateTimePicker(this.duration);
             if (this.cellClickAction && popupArgs.duration !== this.getSlotDuration() && isNullOrUndefined(this.parent.editorTemplate)) {
-                let startObj: DateTimePicker = this.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
-                let endObj: DateTimePicker = this.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+                const startObj: DateTimePicker = this.getInstance(cls.EVENT_WINDOW_START_CLASS) as unknown as DateTimePicker;
+                const endObj: DateTimePicker = this.getInstance(cls.EVENT_WINDOW_END_CLASS) as unknown as DateTimePicker;
                 endObj.value = new Date(startObj.value.getTime() + (util.MS_PER_MINUTE * popupArgs.duration));
                 endObj.dataBind();
             }
-            if (!isBlazor() && this.parent.editorTemplate && this.element.querySelector('.e-recurrenceeditor') && !this.recurrenceEditor) {
-                this.recurrenceEditor = this.getInstance('e-recurrenceeditor') as RecurrenceEditor;
+            if (this.parent.editorTemplate && this.element.querySelector('.e-recurrenceeditor') && !this.recurrenceEditor) {
+                this.recurrenceEditor = this.getInstance('e-recurrenceeditor') as unknown as RecurrenceEditor;
             }
             callBackPromise.resolve(args);
         });
@@ -247,35 +232,19 @@ export class EventWindow {
         if (args.isInteracted) {
             this.isCrudAction = false;
         }
-        let eventProp: PopupCloseEventArgs = {
+        const eventProp: PopupCloseEventArgs = {
             type: 'Editor',
             data: this.eventCrudData,
             cancel: false,
             element: this.element,
             target: (this.cellClickAction ? this.parent.activeCellsData.element : this.parent.activeEventData.element) as HTMLElement
         };
-        let callBackPromise: Deferred = new Deferred();
+        const callBackPromise: Deferred = new Deferred();
         this.parent.trigger(event.popupClose, eventProp, (popupArgs: PopupCloseEventArgs) => {
-            if (isBlazor()) {
-                let eventFields: EventFieldsMapping = this.parent.eventFields;
-                if (popupArgs.data) {
-                    let eventObj: { [key: string]: Date } = popupArgs.data as { [key: string]: Date };
-                    eventObj[eventFields.startTime] = this.parent.getDateTime(eventObj[eventFields.startTime]);
-                    eventObj[eventFields.endTime] = this.parent.getDateTime(eventObj[eventFields.endTime]);
-                }
-                if (popupArgs.element) {
-                    popupArgs.element = getElement(popupArgs.element);
-                }
-                if (popupArgs.target) {
-                    popupArgs.target = getElement(popupArgs.target);
-                }
-            }
             args.cancel = popupArgs.cancel;
             if (!popupArgs.cancel) {
-                this.resetEditorTemplate();
-                this.updateEditorTemplate();
                 if (this.isCrudAction) {
-                    args.cancel = this.processCrudActions(popupArgs.data as { [key: string]: Object });
+                    args.cancel = this.processCrudActions(popupArgs.data);
                     this.isCrudAction = args.cancel;
                 }
                 if (!this.isCrudAction) {
@@ -290,8 +259,8 @@ export class EventWindow {
     }
 
     private getEventWindowContent(): HTMLElement {
-        let container: HTMLElement = createElement('div', { className: cls.FORM_CONTAINER_CLASS });
-        let form: HTMLFormElement = createElement('form', {
+        const container: HTMLElement = createElement('div', { className: cls.FORM_CONTAINER_CLASS });
+        const form: HTMLFormElement = createElement('form', {
             id: this.parent.element.id + 'EditForm',
             className: cls.FORM_CLASS,
             attrs: { onsubmit: 'return false;' }
@@ -301,10 +270,9 @@ export class EventWindow {
         return container;
     }
 
-    private renderFormElements(form: HTMLFormElement, args?: Object): void {
+    private renderFormElements(form: HTMLFormElement, args?: Record<string, any>): void {
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             if (args) {
-                // tslint:disable-next-line:no-any
                 if (!(this as any).parent.isReact) {
                     if (this.recurrenceEditor) {
                         this.recurrenceEditor.destroy();
@@ -312,58 +280,54 @@ export class EventWindow {
                     }
                     this.destroyComponents();
                 }
-                let formElements: HTMLElement[] = [].slice.call(form.children);
-                for (let element of formElements) {
+                const formElements: HTMLElement[] = [].slice.call(form.children);
+                for (const element of formElements) {
                     remove(element);
                 }
             }
-            if (!isBlazor() || (isBlazor() && args)) {
-                let templateId: string = this.parent.element.id + '_editorTemplate';
-                let tempEle: HTMLElement[] =
-                    [].slice.call(this.parent.getEditorTemplate()(args || {}, this.parent, 'editorTemplate', templateId, false));
-                append(tempEle, form);
-                this.parent.renderTemplates();
-                this.updateEditorTemplate();
-            }
+            const templateId: string = this.parent.element.id + '_editorTemplate';
+            const tempEle: HTMLElement[] =
+                [].slice.call(this.parent.getEditorTemplate()(args || {}, this.parent, 'editorTemplate', templateId, false));
+            append(tempEle, form);
+            this.parent.renderTemplates();
         } else {
             form.appendChild(this.getDefaultEventWindowContent());
         }
     }
 
     private getDefaultEventWindowContent(): HTMLElement {
-        let parentDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_DIALOG_PARENT_CLASS);
-        let titleLocationDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_TITLE_LOCATION_DIV_CLASS);
+        const parentDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_DIALOG_PARENT_CLASS);
+        const titleLocationDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_TITLE_LOCATION_DIV_CLASS);
         parentDiv.appendChild(titleLocationDiv);
         titleLocationDiv.appendChild(this.renderTextBox(cls.SUBJECT_CLASS));
         titleLocationDiv.querySelector('.' + cls.SUBJECT_CLASS).setAttribute('title', this.parent.editorTitles.subject);
         titleLocationDiv.appendChild(this.renderTextBox(cls.LOCATION_CLASS));
         titleLocationDiv.querySelector('.' + cls.LOCATION_CLASS).setAttribute('title', this.parent.editorTitles.location);
-        let startEndDateTimeDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_START_END_DIV_CLASS);
+        const startEndDateTimeDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_START_END_DIV_CLASS);
         parentDiv.appendChild(startEndDateTimeDiv);
         startEndDateTimeDiv.appendChild(this.renderDateTimePicker(cls.EVENT_WINDOW_START_CLASS, this.onTimeChange.bind(this)));
         startEndDateTimeDiv.querySelector('.' + cls.EVENT_WINDOW_START_CLASS).setAttribute('title', this.parent.editorTitles.startTime);
         startEndDateTimeDiv.appendChild(this.renderDateTimePicker(cls.EVENT_WINDOW_END_CLASS));
         startEndDateTimeDiv.querySelector('.' + cls.EVENT_WINDOW_END_CLASS).setAttribute('title', this.parent.editorTitles.endTime);
-        let allDayTimezoneDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_ALLDAY_TZ_DIV_CLASS);
+        const allDayTimezoneDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_ALLDAY_TZ_DIV_CLASS);
         parentDiv.appendChild(allDayTimezoneDiv);
         allDayTimezoneDiv.appendChild(this.renderCheckBox(cls.EVENT_WINDOW_ALL_DAY_CLASS));
         allDayTimezoneDiv.appendChild(this.renderCheckBox(cls.TIME_ZONE_CLASS));
-        let timezoneParentDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_TIME_ZONE_DIV_CLASS);
+        const timezoneParentDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_TIME_ZONE_DIV_CLASS);
         parentDiv.appendChild(timezoneParentDiv);
         timezoneParentDiv.appendChild(this.renderDropDown(cls.EVENT_WINDOW_START_TZ_CLASS));
         timezoneParentDiv.appendChild(this.renderDropDown(cls.EVENT_WINDOW_END_TZ_CLASS));
-        let repeatParentDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_REPEAT_DIV_CLASS);
+        const repeatParentDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_REPEAT_DIV_CLASS);
         parentDiv.appendChild(repeatParentDiv);
-        let repeatDiv: HTMLElement = this.renderCheckBox(cls.EVENT_WINDOW_REPEAT_CLASS);
-        let repeatEditConainer: HTMLElement = createElement('span', { className: REPEAT_CONTAINER_CLASS });
-        let button: HTMLElement = createElement('button', {
+        const repeatDiv: HTMLElement = this.renderCheckBox(cls.EVENT_WINDOW_REPEAT_CLASS);
+        const repeatEditConainer: HTMLElement = createElement('span', { className: REPEAT_CONTAINER_CLASS });
+        const button: HTMLElement = createElement('button', {
             className: REPEAT_BUTTON_CLASS,
             attrs: { type: 'button', 'title': this.l10n.getConstant('editRecurrence') }
         });
         this.buttonObj = new Button({ iconCss: REPEAT_BUTTON_ICON_CLASS + ' e-icons', cssClass: 'e-medium ' + this.parent.cssClass });
         repeatEditConainer.appendChild(button);
         this.buttonObj.appendTo(button);
-        this.buttonObj.isStringTemplate = true;
         repeatDiv.appendChild(repeatEditConainer);
         repeatParentDiv.appendChild(repeatDiv);
         if (this.parent.isAdaptive) {
@@ -372,23 +336,23 @@ export class EventWindow {
             this.createRecurrenceEditor(parentDiv);
         }
         if (this.parent.resourceCollection.length > 0) {
-            let resourceParentDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_RESOURCES_DIV_CLASS);
-            for (let resource of this.parent.resourceBase.resourceCollection) {
+            const resourceParentDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_RESOURCES_DIV_CLASS);
+            for (const resource of this.parent.resourceBase.resourceCollection) {
                 resourceParentDiv.appendChild(this.renderResourceDetails(resource));
             }
             parentDiv.appendChild(resourceParentDiv);
         }
-        let description: HTMLElement = this.createDivElement(cls.DESCRIPTION_CLASS + '-row');
+        const description: HTMLElement = this.createDivElement(cls.DESCRIPTION_CLASS + '-row');
         description.appendChild(this.renderTextBox(cls.DESCRIPTION_CLASS));
         description.querySelector('.' + cls.DESCRIPTION_CLASS).setAttribute('title', this.parent.editorTitles.description);
         parentDiv.appendChild(description);
-        let submit: HTMLElement = createElement('button', { attrs: { type: 'hidden', title: 'submit', style: 'display:none' } });
+        const submit: HTMLElement = createElement('button', { attrs: { type: 'hidden', title: 'submit', style: 'display:none' } });
         parentDiv.appendChild(submit);
         return parentDiv;
     }
 
     private createRecurrenceEditor(parentDiv: HTMLElement): void {
-        let recurrenceEditor: HTMLElement = this.createDivElement();
+        const recurrenceEditor: HTMLElement = this.createDivElement();
         parentDiv.appendChild(recurrenceEditor);
         this.recurrenceEditor = this.renderRecurrenceEditor();
         this.recurrenceEditor.appendTo(recurrenceEditor);
@@ -414,11 +378,11 @@ export class EventWindow {
     }
 
     private renderDateTimePicker(value: string, changeEvent?: EmitType<ChangedEventArgs>): HTMLElement {
-        let dateTimeDiv: HTMLElement = this.createDivElement(value + '-container');
-        let fieldName: string = this.getFieldName(value);
-        let dateTimeInput: HTMLElement = this.createInputElement(value + ' ' + EVENT_FIELD, fieldName);
+        const dateTimeDiv: HTMLElement = this.createDivElement(value + '-container');
+        const fieldName: string = this.getFieldName(value);
+        const dateTimeInput: HTMLElement = this.createInputElement(value + ' ' + EVENT_FIELD, fieldName);
         dateTimeDiv.appendChild(dateTimeInput);
-        let dateTimePicker: DateTimePicker = new DateTimePicker({
+        const dateTimePicker: DateTimePicker = new DateTimePicker({
             change: changeEvent,
             firstDayOfWeek: this.parent.activeViewOptions.firstDayOfWeek,
             calendarMode: this.parent.calendarMode,
@@ -428,32 +392,33 @@ export class EventWindow {
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             floatLabelType: 'Always',
+            timeFormat: this.parent.activeViewOptions.timeFormat,
             format: (isNullOrUndefined(this.parent.dateFormat) ?
-                this.getFormat('dateFormats') : this.parent.dateFormat) + ' ' + this.getFormat('timeFormats'),
+                this.getFormat('dateFormats') : this.parent.dateFormat) + ' ' + this.parent.activeViewOptions.timeFormat,
             placeholder: this.getFieldLabel(value),
             step: this.getSlotDuration(),
             width: '100%'
         });
-        dateTimePicker.isStringTemplate = true;
         dateTimePicker.appendTo(dateTimeInput);
         return dateTimeDiv;
     }
 
     public refreshDateTimePicker(duration?: number): void {
-        let elementSelector: string = '.' + cls.EVENT_WINDOW_START_CLASS + ',.' + cls.EVENT_WINDOW_END_CLASS;
-        let startEndElement: HTMLElement[] = [].slice.call(this.element.querySelectorAll(elementSelector));
-        for (let element of startEndElement) {
-            let instance: DateTimePicker = ((<HTMLElement>element) as EJ2Instance).ej2_instances[0] as DateTimePicker;
+        const elementSelector: string = '.' + cls.EVENT_WINDOW_START_CLASS + ',.' + cls.EVENT_WINDOW_END_CLASS;
+        const startEndElement: HTMLElement[] = [].slice.call(this.element.querySelectorAll(elementSelector));
+        for (const element of startEndElement) {
+            const instance: DateTimePicker = ((<HTMLElement>element) as EJ2Instance).ej2_instances[0] as DateTimePicker;
             instance.firstDayOfWeek = this.parent.activeViewOptions.firstDayOfWeek;
+            instance.timeFormat = this.parent.activeViewOptions.timeFormat;
             instance.step = duration || this.getSlotDuration();
             instance.dataBind();
         }
     }
 
     private onTimeChange(): void {
-        let startObj: DateTimePicker = this.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+        const startObj: DateTimePicker = this.getInstance(cls.EVENT_WINDOW_START_CLASS) as unknown as DateTimePicker;
         if (startObj.element.parentElement.classList.contains('e-input-focus')) {
-            let endObj: DateTimePicker = this.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            const endObj: DateTimePicker = this.getInstance(cls.EVENT_WINDOW_END_CLASS) as unknown as DateTimePicker;
             let duration: number = 0;
             if (this.cellClickAction) {
                 duration = util.MS_PER_MINUTE * this.duration;
@@ -461,7 +426,7 @@ export class EventWindow {
             } else {
                 duration = (<Date>this.eventData[this.fields.endTime]).getTime() - (<Date>this.eventData[this.fields.startTime]).getTime();
             }
-            let endDate: Date = (isNullOrUndefined(startObj.value)) ? null : new Date(startObj.value.getTime() + duration);
+            const endDate: Date = (isNullOrUndefined(startObj.value)) ? null : new Date(startObj.value.getTime() + duration);
             if (this.cellClickAction) {
                 this.eventWindowTime.endTime = endDate;
             }
@@ -474,18 +439,18 @@ export class EventWindow {
     }
 
     private renderResourceDetails(resourceData: ResourcesModel): HTMLElement {
-        let fieldName: string = resourceData.field;
-        let value: string = 'e-' + fieldName;
-        let labelValue: string = resourceData.title;
-        let resourceDiv: HTMLElement = this.createDivElement(value + '-container' + ' ' + 'e-resources');
-        let resourceInput: HTMLElement = this.createInputElement(value + ' ' + EVENT_FIELD, fieldName);
+        const fieldName: string = resourceData.field;
+        const value: string = 'e-' + fieldName;
+        const labelValue: string = resourceData.title;
+        const resourceDiv: HTMLElement = this.createDivElement(value + '-container' + ' ' + 'e-resources');
+        const resourceInput: HTMLElement = this.createInputElement(value + ' ' + EVENT_FIELD, fieldName);
         resourceDiv.appendChild(resourceInput);
-        let resourceTemplate: string = '<div class="e-resource-template"><div class="e-resource-color" style="background-color:${' +
+        const resourceTemplate: string = '<div class="e-resource-template"><div class="e-resource-color" style="background-color:${' +
             resourceData.colorField + '}"></div><div class="e-resource-text">${' + resourceData.textField + '}</div></div>';
         if (resourceData.allowMultiple) {
-            let listObj: MultiSelect = new MultiSelect({
+            const listObj: MultiSelect = new MultiSelect({
                 cssClass: this.parent.cssClass || '',
-                dataSource: resourceData.dataSource as { [key: string]: Object }[],
+                dataSource: resourceData.dataSource as Record<string, any>[],
                 change: this.onMultiselectResourceChange.bind(this),
                 itemTemplate: resourceTemplate,
                 fields: {
@@ -500,12 +465,11 @@ export class EventWindow {
                 mode: 'Box'
             });
             listObj.appendTo(resourceInput);
-            listObj.isStringTemplate = true;
         } else {
-            let drowDownList: DropDownList = new DropDownList({
+            const drowDownList: DropDownList = new DropDownList({
                 cssClass: this.parent.cssClass || '',
                 change: this.onDropdownResourceChange.bind(this),
-                dataSource: resourceData.dataSource as { [key: string]: Object }[],
+                dataSource: resourceData.dataSource as Record<string, any>[],
                 enableRtl: this.parent.enableRtl,
                 fields: {
                     text: resourceData.textField,
@@ -519,36 +483,34 @@ export class EventWindow {
                 itemTemplate: resourceTemplate
             });
             drowDownList.appendTo(resourceInput);
-            drowDownList.isStringTemplate = true;
         }
         return resourceDiv;
     }
 
     private renderDropDown(value: string): HTMLElement {
-        let fieldName: string = this.getFieldName(value);
-        let timezoneDiv: HTMLElement = this.createDivElement(value + '-container');
-        let timezoneInput: HTMLElement = this.createInputElement(value + ' ' + EVENT_FIELD, fieldName);
+        const fieldName: string = this.getFieldName(value);
+        const timezoneDiv: HTMLElement = this.createDivElement(value + '-container');
+        const timezoneInput: HTMLElement = this.createInputElement(value + ' ' + EVENT_FIELD, fieldName);
         timezoneDiv.appendChild(timezoneInput);
-        let drowDownList: DropDownList = new DropDownList({
+        const drowDownList: DropDownList = new DropDownList({
             allowFiltering: true,
             change: this.onTimezoneChange.bind(this),
             cssClass: this.parent.cssClass || '',
-            dataSource: timezoneData,
+            dataSource: this.timezoneData,
             enableRtl: this.parent.enableRtl,
             fields: { text: 'Text', value: 'Value' },
             filterBarPlaceholder: 'Search Timezone',
             filtering: (e: FilteringEventArgs) => {
                 let query: Query = new Query();
                 query = (e.text !== '') ? query.where('Text', 'contains', e.text, true) : query;
-                e.updateData(timezoneData, query);
+                e.updateData(this.timezoneData, query);
             },
             htmlAttributes: { 'title': this.getFieldLabel(value), 'name': fieldName },
             floatLabelType: 'Always',
             placeholder: this.getFieldLabel(value),
-            popupHeight: '230px',
+            popupHeight: '230px'
         });
         drowDownList.appendTo(timezoneInput);
-        drowDownList.isStringTemplate = true;
         return timezoneDiv;
     }
 
@@ -556,18 +518,19 @@ export class EventWindow {
         if (!args.value || !this.parent.activeViewOptions.group.byGroupID || this.parent.resourceCollection.length <= 1) {
             return;
         }
-        let resourceCollection: ResourcesModel[] = this.parent.resourceBase.resourceCollection;
-        let fieldName: string = args.element.getAttribute('name') || this.getColumnName(args.element as HTMLInputElement);
+        const resourceCollection: ResourcesModel[] = this.parent.resourceBase.resourceCollection;
+        const fieldName: string = args.element.getAttribute('name') || this.getColumnName(args.element as HTMLInputElement);
         for (let i: number = 0; i < resourceCollection.length; i++) {
             if (resourceCollection[i].field === fieldName && i < resourceCollection.length - 1) {
-                let resObject: MultiSelect | DropDownList = this.createInstance(i);
-                let datasource: { [key: string]: Object }[] = [];
+                const resObject: MultiSelect | DropDownList = this.createInstance(i);
+                let datasource: Record<string, any>[] = [];
                 for (let j: number = 0; j < args.value.length; j++) {
-                    let resourceModel: ResourcesModel = resourceCollection[i + 1];
-                    let filter: Object = (resourceModel.dataSource as Object[]).filter((data: { [key: string]: Object }) =>
+                    const resourceModel: ResourcesModel = resourceCollection[i + 1];
+                    // eslint-disable-next-line max-len
+                    const filter: Record<string, any> = (resourceModel.dataSource as Record<string, any>[]).filter((data: Record<string, any>) =>
                         data[resourceModel.groupIDField] === args.value[j])[0];
-                    let groupId: number = (<{ [key: string]: Object }>filter)[resourceCollection[i + 1].groupIDField] as number;
-                    let filterRes: { [key: string]: Object }[] = this.filterDatasource(i, groupId);
+                    const groupId: number = filter[resourceCollection[i + 1].groupIDField] as number;
+                    const filterRes: Record<string, any>[] = this.filterDatasource(i, groupId);
                     datasource = datasource.concat(filterRes);
                 }
                 resObject.dataSource = datasource;
@@ -577,8 +540,8 @@ export class EventWindow {
     }
 
     private createInstance(index: number): MultiSelect | DropDownList {
-        let resourceData: { [key: string]: object } = this.parent.resourceBase.resourceCollection[index + 1] as { [key: string]: object };
-        let resObject: MultiSelect | DropDownList = (this.element.querySelector('.e-' + resourceData.field) as EJ2Instance).
+        const resourceData: Record<string, any> = this.parent.resourceBase.resourceCollection[index + 1] as Record<string, any>;
+        const resObject: MultiSelect | DropDownList = (this.element.querySelector('.e-' + resourceData.field) as EJ2Instance).
             ej2_instances[0] as MultiSelect | DropDownList;
         return resObject;
     }
@@ -587,51 +550,49 @@ export class EventWindow {
         if (!args.value || this.parent.resourceCollection.length <= 1 || !this.parent.activeViewOptions.group.byGroupID) {
             return;
         }
-        let fieldName: string = args.element.getAttribute('name') || this.getColumnName(args.element as HTMLInputElement);
-        let resourceCollection: ResourcesModel[] = this.parent.resourceBase.resourceCollection;
+        const fieldName: string = args.element.getAttribute('name') || this.getColumnName(args.element as HTMLInputElement);
+        const resourceCollection: ResourcesModel[] = this.parent.resourceBase.resourceCollection;
         for (let i: number = 0; i < resourceCollection.length; i++) {
             if ((i < resourceCollection.length - 1) && resourceCollection[i].field === fieldName) {
-                let resObj: MultiSelect | DropDownList = this.createInstance(i);
-                let groupId: number = (args.itemData as { [key: string]: Object })[resourceCollection[i].idField] as number;
+                const resObj: MultiSelect | DropDownList = this.createInstance(i);
+                const groupId: number = (args.itemData as Record<string, any>)[resourceCollection[i].idField] as number;
                 resObj.dataSource = this.filterDatasource(i, groupId);
                 resObj.dataBind();
-                let resValue: string = resObj.dataSource[0][resourceCollection[i + 1].idField] as string;
+                const resValue: string = resObj.dataSource[0][resourceCollection[i + 1].idField] as string;
                 resObj.value = (resourceCollection[i + 1].allowMultiple) ? [resValue] : resValue;
                 resObj.dataBind();
             }
         }
     }
 
-    private filterDatasource(index: number, groupId: number | string): { [key: string]: Object }[] {
-        let resourceData: ResourcesModel = this.parent.resourceBase.resourceCollection[index + 1];
-        let filter: Object[] = (resourceData.dataSource as Object[]).filter((data: { [key: string]: Object }) =>
+    private filterDatasource(index: number, groupId: number | string): Record<string, any>[] {
+        const resourceData: ResourcesModel = this.parent.resourceBase.resourceCollection[index + 1];
+        return (resourceData.dataSource as Record<string, any>[]).filter((data: Record<string, any>) =>
             data[resourceData.groupIDField] === groupId);
-        return filter as { [key: string]: Object }[];
     }
 
     private onTimezoneChange(args: ddlChangeEventArgs): void {
-        let fieldName: string = args.element.getAttribute('name') || this.getColumnName(args.element as HTMLInputElement);
+        const fieldName: string = args.element.getAttribute('name') || this.getColumnName(args.element as HTMLInputElement);
         if (fieldName === this.parent.eventFields.startTimezone) {
-            let startTimezoneObj: DropDownList = this.getInstance(cls.EVENT_WINDOW_START_TZ_CLASS) as DropDownList;
-            let endTimezoneObj: DropDownList = this.getInstance(cls.EVENT_WINDOW_END_TZ_CLASS) as DropDownList;
+            const startTimezoneObj: DropDownList = this.getInstance(cls.EVENT_WINDOW_START_TZ_CLASS) as unknown as DropDownList;
+            const endTimezoneObj: DropDownList = this.getInstance(cls.EVENT_WINDOW_END_TZ_CLASS) as unknown as DropDownList;
             endTimezoneObj.value = startTimezoneObj.value;
             endTimezoneObj.dataBind();
         }
     }
 
     private renderCheckBox(value: string): HTMLElement {
-        let checkBoxDiv: HTMLElement = this.createDivElement(value + '-container');
-        let fieldName: string = this.getFieldName(value);
-        let checkBoxInput: HTMLElement = this.createInputElement(value + ' ' + EVENT_FIELD, fieldName);
+        const checkBoxDiv: HTMLElement = this.createDivElement(value + '-container');
+        const fieldName: string = this.getFieldName(value);
+        const checkBoxInput: HTMLElement = this.createInputElement(value + ' ' + EVENT_FIELD, fieldName);
         checkBoxDiv.appendChild(checkBoxInput);
-        let checkBox: CheckBox = new CheckBox({
+        const checkBox: CheckBox = new CheckBox({
             change: this.onChange.bind(this),
             cssClass: value + ' ' + this.parent.cssClass,
             enableRtl: this.parent.enableRtl,
             label: this.getFieldLabel(value)
         });
         checkBox.appendTo(checkBoxInput);
-        checkBox.isStringTemplate = true;
         checkBoxInput.setAttribute('name', fieldName);
         if (fieldName === 'Repeat') {
             this.repeatStatus = checkBox;
@@ -640,10 +601,10 @@ export class EventWindow {
     }
 
     private renderTextBox(value: string): HTMLElement {
-        let textBoxDiv: HTMLElement = this.createDivElement(value + '-container');
-        let fieldName: string = this.getFieldName(value);
-        let elementType: string = (value === cls.DESCRIPTION_CLASS) ? 'textarea' : 'input';
-        let textBoxInput: HTMLElement = this.createInputElement(value + ' ' + EVENT_FIELD, fieldName, elementType);
+        const textBoxDiv: HTMLElement = this.createDivElement(value + '-container');
+        const fieldName: string = this.getFieldName(value);
+        const elementType: string = (value === cls.DESCRIPTION_CLASS) ? 'textarea' : 'input';
+        const textBoxInput: HTMLElement = this.createInputElement(value + ' ' + EVENT_FIELD, fieldName, elementType);
         textBoxDiv.appendChild(textBoxInput);
         Input.createInput({
             element: textBoxInput as HTMLInputElement,
@@ -659,36 +620,36 @@ export class EventWindow {
     private getFieldName(name: string): string {
         let fieldName: string = '';
         switch (name) {
-            case cls.SUBJECT_CLASS:
-                fieldName = this.fields.subject;
-                break;
-            case cls.LOCATION_CLASS:
-                fieldName = this.fields.location;
-                break;
-            case cls.EVENT_WINDOW_START_CLASS:
-                fieldName = this.fields.startTime;
-                break;
-            case cls.EVENT_WINDOW_END_CLASS:
-                fieldName = this.fields.endTime;
-                break;
-            case cls.DESCRIPTION_CLASS:
-                fieldName = this.fields.description;
-                break;
-            case cls.EVENT_WINDOW_ALL_DAY_CLASS:
-                fieldName = this.fields.isAllDay;
-                break;
-            case cls.EVENT_WINDOW_START_TZ_CLASS:
-                fieldName = this.fields.startTimezone;
-                break;
-            case cls.EVENT_WINDOW_END_TZ_CLASS:
-                fieldName = this.fields.endTimezone;
-                break;
-            case cls.TIME_ZONE_CLASS:
-                fieldName = 'Timezone';
-                break;
-            case cls.EVENT_WINDOW_REPEAT_CLASS:
-                fieldName = 'Repeat';
-                break;
+        case cls.SUBJECT_CLASS:
+            fieldName = this.fields.subject;
+            break;
+        case cls.LOCATION_CLASS:
+            fieldName = this.fields.location;
+            break;
+        case cls.EVENT_WINDOW_START_CLASS:
+            fieldName = this.fields.startTime;
+            break;
+        case cls.EVENT_WINDOW_END_CLASS:
+            fieldName = this.fields.endTime;
+            break;
+        case cls.DESCRIPTION_CLASS:
+            fieldName = this.fields.description;
+            break;
+        case cls.EVENT_WINDOW_ALL_DAY_CLASS:
+            fieldName = this.fields.isAllDay;
+            break;
+        case cls.EVENT_WINDOW_START_TZ_CLASS:
+            fieldName = this.fields.startTimezone;
+            break;
+        case cls.EVENT_WINDOW_END_TZ_CLASS:
+            fieldName = this.fields.endTimezone;
+            break;
+        case cls.TIME_ZONE_CLASS:
+            fieldName = 'Timezone';
+            break;
+        case cls.EVENT_WINDOW_REPEAT_CLASS:
+            fieldName = 'Repeat';
+            break;
         }
         return fieldName;
     }
@@ -696,42 +657,42 @@ export class EventWindow {
     private getFieldLabel(fieldName: string): string {
         let labelText: string = '';
         switch (fieldName) {
-            case cls.SUBJECT_CLASS:
-                labelText = this.parent.editorTitles.subject;
-                break;
-            case cls.LOCATION_CLASS:
-                labelText = this.parent.editorTitles.location;
-                break;
-            case cls.DESCRIPTION_CLASS:
-                labelText = this.parent.editorTitles.description;
-                break;
-            case cls.EVENT_WINDOW_START_CLASS:
-                labelText = this.parent.editorTitles.startTime;
-                break;
-            case cls.EVENT_WINDOW_END_CLASS:
-                labelText = this.parent.editorTitles.endTime;
-                break;
-            case cls.EVENT_WINDOW_START_TZ_CLASS:
-                labelText = this.parent.editorTitles.startTimezone;
-                break;
-            case cls.EVENT_WINDOW_END_TZ_CLASS:
-                labelText = this.parent.editorTitles.endTimezone;
-                break;
-            case cls.EVENT_WINDOW_REPEAT_CLASS:
-                labelText = this.parent.editorTitles.recurrenceRule;
-                break;
-            case cls.EVENT_WINDOW_ALL_DAY_CLASS:
-                labelText = this.parent.editorTitles.isAllDay;
-                break;
-            case cls.TIME_ZONE_CLASS:
-                labelText = this.l10n.getConstant('timezone');
-                break;
+        case cls.SUBJECT_CLASS:
+            labelText = this.parent.editorTitles.subject;
+            break;
+        case cls.LOCATION_CLASS:
+            labelText = this.parent.editorTitles.location;
+            break;
+        case cls.DESCRIPTION_CLASS:
+            labelText = this.parent.editorTitles.description;
+            break;
+        case cls.EVENT_WINDOW_START_CLASS:
+            labelText = this.parent.editorTitles.startTime;
+            break;
+        case cls.EVENT_WINDOW_END_CLASS:
+            labelText = this.parent.editorTitles.endTime;
+            break;
+        case cls.EVENT_WINDOW_START_TZ_CLASS:
+            labelText = this.parent.editorTitles.startTimezone;
+            break;
+        case cls.EVENT_WINDOW_END_TZ_CLASS:
+            labelText = this.parent.editorTitles.endTimezone;
+            break;
+        case cls.EVENT_WINDOW_REPEAT_CLASS:
+            labelText = this.parent.editorTitles.recurrenceRule;
+            break;
+        case cls.EVENT_WINDOW_ALL_DAY_CLASS:
+            labelText = this.parent.editorTitles.isAllDay;
+            break;
+        case cls.TIME_ZONE_CLASS:
+            labelText = this.l10n.getConstant('timezone');
+            break;
         }
         return labelText;
     }
 
     private onChange(args: ChangeEventArgs): void {
-        let target: HTMLTableCellElement = (args.event.target) as HTMLTableCellElement;
+        const target: HTMLTableCellElement = (args.event.target) as HTMLTableCellElement;
         if (target.classList.contains(cls.EVENT_WINDOW_ALL_DAY_CLASS)) {
             this.onAllDayChange(args.checked);
         } else if (target.classList.contains(cls.TIME_ZONE_CLASS)) {
@@ -742,7 +703,7 @@ export class EventWindow {
     }
 
     private renderRepeatDialog(): void {
-        let element: HTMLElement = createElement('div');
+        const element: HTMLElement = createElement('div');
         this.repeatDialogObject = new Dialog({
             header: this.l10n.getConstant('recurrence'),
             visible: false,
@@ -763,7 +724,6 @@ export class EventWindow {
         });
         this.element.appendChild(element);
         this.repeatDialogObject.appendTo(element);
-        this.repeatDialogObject.isStringTemplate = true;
         this.createRecurrenceEditor(<HTMLElement>this.repeatDialogObject.element.querySelector('.e-rec-editor'));
     }
 
@@ -790,14 +750,14 @@ export class EventWindow {
                 this.recurrenceEditor.setRecurrenceRule(this.repeatRule);
                 this.updateRepeatLabel(this.repeatRule);
             }
-            let element: HTMLElement = <HTMLElement>this.element.querySelector('.' + REPEAT_CONTAINER_CLASS);
+            const element: HTMLElement = <HTMLElement>this.element.querySelector('.' + REPEAT_CONTAINER_CLASS);
             addClass([element], HIDE_STYLE_CLASS);
         }
     }
 
     private repeatSaveDialog(): void {
         this.repeatRule = this.recurrenceEditor.getRecurrenceRule();
-        let element: HTMLElement = <HTMLElement>this.element.querySelector('.' + REPEAT_CONTAINER_CLASS);
+        const element: HTMLElement = <HTMLElement>this.element.querySelector('.' + REPEAT_CONTAINER_CLASS);
         if (this.recurrenceEditor.getRecurrenceRule()) {
             removeClass([element], HIDE_STYLE_CLASS);
         } else {
@@ -826,15 +786,7 @@ export class EventWindow {
         this.repeatTempRule = this.recurrenceEditor.getRecurrenceRule();
     }
 
-    public subjectValue(eventObj: { [key: string]: Object }): void {
-        if (this.parent.eventSettings.fields.subject.default !== 'Add title') {
-            eventObj[this.fields.subject] = eventObj[this.fields.subject] || this.parent.eventSettings.fields.subject.default;
-        } else {
-            eventObj[this.fields.subject] = eventObj[this.fields.subject] || this.l10n.getConstant('addTitle');
-        }
-    }
-
-    private onCellDetailsUpdate(eventObj: { [key: string]: Object }, repeatType: number): void {
+    private onCellDetailsUpdate(eventObj: Record<string, any>, repeatType: number): void {
         if (!this.parent.eventSettings.allowAdding) {
             return;
         }
@@ -843,7 +795,9 @@ export class EventWindow {
         eventObj.Timezone = false;
         this.repeatStartDate = <Date>eventObj[this.fields.startTime];
         this.repeatRule = '';
-        this.subjectValue(eventObj);
+        if (!isNullOrUndefined(this.parent.eventSettings.fields.subject.default)) {
+            eventObj[this.fields.subject] = this.parent.eventSettings.fields.subject.default;
+        }
         if (!isNullOrUndefined(this.parent.eventSettings.fields.location.default)) {
             eventObj[this.fields.location] = this.parent.eventSettings.fields.location.default;
         }
@@ -855,7 +809,7 @@ export class EventWindow {
             this.recurrenceEditor.setRecurrenceRule(<string>eventObj[this.fields.recurrenceRule], <Date>eventObj[this.fields.startTime]);
             this.repeatRule = <string>eventObj[this.fields.recurrenceRule];
         }
-        let deleteButton: Element = this.element.querySelector('.' + cls.DELETE_EVENT_CLASS);
+        const deleteButton: Element = this.element.querySelector('.' + cls.DELETE_EVENT_CLASS);
         if (deleteButton) {
             addClass([deleteButton], cls.DISABLE_CLASS);
         }
@@ -867,17 +821,17 @@ export class EventWindow {
             });
         }
         if (this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
-            let element: HTMLElement = <HTMLElement>this.element.querySelector('.' + REPEAT_CONTAINER_CLASS);
+            const element: HTMLElement = <HTMLElement>this.element.querySelector('.' + REPEAT_CONTAINER_CLASS);
             addClass([element], HIDE_STYLE_CLASS);
             this.updateRepeatLabel(this.repeatRule);
         } else {
-            let saveButton: Element = this.element.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            const saveButton: Element = this.element.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
             this.disableButton(saveButton, false);
         }
         this.dialogObject.show();
     }
 
-    public convertToEventData(cellsData: { [key: string]: Object }, eventObj: { [key: string]: Object }): void {
+    public convertToEventData(cellsData: Record<string, any>, eventObj: Record<string, any>): void {
         if (cellsData.subject) {
             eventObj[this.fields.subject] = cellsData.subject;
         }
@@ -893,9 +847,10 @@ export class EventWindow {
     }
 
     private applyFormValidation(): void {
-        let getValidationRule: Function = (rules: Object) => (rules && Object.keys(rules).length > 0) ? rules : undefined;
-        let form: HTMLFormElement = this.element.querySelector('.' + cls.FORM_CLASS) as HTMLFormElement;
-        let rules: { [key: string]: Object } = {};
+        const getValidationRule: CallbackFunction = (rules: Record<string, any>) =>
+            (rules && Object.keys(rules).length > 0) ? rules : undefined;
+        const form: HTMLFormElement = this.element.querySelector('.' + cls.FORM_CLASS) as HTMLFormElement;
+        const rules: Record<string, any> = {};
         rules[this.parent.eventSettings.fields.subject.name] = getValidationRule(this.parent.eventSettings.fields.subject.validation);
         rules[this.parent.eventSettings.fields.location.name] = getValidationRule(this.parent.eventSettings.fields.location.validation);
         rules[this.parent.eventSettings.fields.startTime.name] = getValidationRule(this.parent.eventSettings.fields.startTime.validation);
@@ -905,16 +860,16 @@ export class EventWindow {
         this.fieldValidator.renderFormValidator(form, rules, this.element);
     }
 
-    private showDetails(eventData: { [key: string]: Object }): void {
-        let eventObj: { [key: string]: Object } = <{ [key: string]: Object }>extend({}, eventData, null, true);
+    private showDetails(eventData: Record<string, any>): void {
+        const eventObj: Record<string, any> = <Record<string, any>>extend({}, eventData, null, true);
         if ((<Date>eventObj[this.fields.endTime]).getHours() === 0 && (<Date>eventObj[this.fields.endTime]).getMinutes() === 0) {
             this.trimAllDay(eventObj);
         }
         this.eventData = eventObj;
-        let formelement: HTMLInputElement[] = this.getFormElements(cls.EVENT_WINDOW_DIALOG_CLASS);
-        let keyNames: string[] = Object.keys(eventObj);
-        for (let curElement of formelement) {
-            let columnName: string = curElement.name || this.getColumnName(curElement);
+        const formelement: HTMLInputElement[] = this.getFormElements(cls.EVENT_WINDOW_DIALOG_CLASS);
+        const keyNames: string[] = Object.keys(eventObj);
+        for (const curElement of formelement) {
+            const columnName: string = curElement.name || this.getColumnName(curElement);
             if (!isNullOrUndefined(columnName) && columnName !== '') {
                 if (keyNames.indexOf(columnName) !== -1) {
                     this.setValueToElement(curElement as HTMLElement, eventObj[columnName] as string);
@@ -925,7 +880,7 @@ export class EventWindow {
         }
         if (isNullOrUndefined(this.parent.editorTemplate)) {
             this.onAllDayChange(eventObj[this.fields.isAllDay] as boolean);
-            let timezoneObj: CheckBox = this.getInstance(cls.TIME_ZONE_CLASS + '.' + EVENT_FIELD) as CheckBox;
+            const timezoneObj: CheckBox = this.getInstance(cls.TIME_ZONE_CLASS + '.' + EVENT_FIELD) as unknown as CheckBox;
             if (!(isNullOrUndefined(eventObj[this.fields.startTimezone]) && isNullOrUndefined(eventObj[this.fields.endTimezone]))) {
                 timezoneObj.checked = true;
                 timezoneObj.dataBind();
@@ -953,10 +908,10 @@ export class EventWindow {
             } else if (element.classList.contains('e-checkbox')) {
                 fieldSelector = 'e-checkbox';
             }
-            let classSelector: string = isDropDowns ? `.${fieldSelector}:not(.e-control)` : `.${fieldSelector}`;
-            let control: Element = closest(element, classSelector) || element.querySelector(`.${fieldSelector}`);
+            const classSelector: string = isDropDowns ? `.${fieldSelector}:not(.e-control)` : `.${fieldSelector}`;
+            const control: Element = closest(element, classSelector) || element.querySelector(`.${fieldSelector}`);
             if (control) {
-                let attrEle: Element = control.querySelector('[name]');
+                const attrEle: Element = control.querySelector('[name]');
                 if (attrEle) {
                     attrName = (<HTMLInputElement>attrEle).name;
                 }
@@ -966,9 +921,9 @@ export class EventWindow {
     }
 
     private onAllDayChange(allDayStatus: boolean): void {
-        let startObj: DateTimePicker = this.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
-        let endObj: DateTimePicker = this.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
-        let timezoneDiv: HTMLElement = this.element.querySelector('.e-time-zone-container') as HTMLElement;
+        const startObj: DateTimePicker = this.getInstance(cls.EVENT_WINDOW_START_CLASS) as unknown as DateTimePicker;
+        const endObj: DateTimePicker = this.getInstance(cls.EVENT_WINDOW_END_CLASS) as unknown as DateTimePicker;
+        const timezoneDiv: HTMLElement = this.element.querySelector('.e-time-zone-container') as HTMLElement;
         let format: string;
         if (allDayStatus) {
             format = (isNullOrUndefined(this.parent.dateFormat)) ? this.getFormat('dateFormats') : this.parent.dateFormat;
@@ -979,8 +934,8 @@ export class EventWindow {
             }
             startObj.format = endObj.format = format;
         } else {
-            format = (isNullOrUndefined(this.parent.dateFormat)) ? this.getFormat('dateFormats') + ' ' + this.getFormat('timeFormats') :
-                this.parent.dateFormat + ' ' + this.getFormat('timeFormats');
+            format = (isNullOrUndefined(this.parent.dateFormat)) ? this.getFormat('dateFormats') + ' ' +
+                this.parent.activeViewOptions.timeFormat : this.parent.dateFormat + ' ' + this.parent.activeViewOptions.timeFormat;
             removeClass(this.element.querySelectorAll('.e-time-icon'), cls.EVENT_WINDOW_ICON_DISABLE_CLASS);
             removeClass([timezoneDiv], cls.DISABLE_CLASS);
             if ((this.element.querySelector('.e-checkbox-wrapper .e-time-zone') as HTMLInputElement).checked) {
@@ -1001,17 +956,17 @@ export class EventWindow {
         if (allDayStatus) {
             startDate = util.resetTime(new Date(this.eventWindowTime.startTime.getTime()));
             if (this.parent.activeCellsData.isAllDay) {
-                let temp: number = util.addDays(new Date((<Date>this.eventWindowTime.endTime).getTime()), -1).getTime();
+                const temp: number = util.addDays(new Date((<Date>this.eventWindowTime.endTime).getTime()), -1).getTime();
                 endDate = (+this.eventWindowTime.startTime > temp) ? this.eventWindowTime.endTime : new Date(temp);
             } else {
                 endDate = util.resetTime(new Date(this.eventWindowTime.endTime.getTime()));
             }
         } else {
-            let start: Date = this.parent.activeCellsData.startTime;
+            const start: Date = this.parent.activeCellsData.startTime;
             startDate = new Date(this.eventWindowTime.startTime.getTime());
             startDate.setHours(start.getHours(), start.getMinutes(), start.getSeconds());
             if (this.parent.activeCellsData.isAllDay) {
-                let startHour: Date = this.parent.getStartEndTime(this.parent.workHours.start);
+                const startHour: Date = this.parent.getStartEndTime(this.parent.workHours.start);
                 startDate.setHours(startHour.getHours(), startHour.getMinutes(), startHour.getSeconds());
                 endDate = new Date(startDate.getTime());
                 endDate.setMilliseconds(util.MS_PER_MINUTE * this.getSlotDuration());
@@ -1028,25 +983,16 @@ export class EventWindow {
     }
 
     private getFormat(formatType: string): string {
-        if (isBlazor()) {
-            if (formatType === 'dateFormats') {
-                return IntlBase.compareBlazorDateFormats({ skeleton: 'd' }, this.parent.locale).format;
-            }
-            return IntlBase.compareBlazorDateFormats({ skeleton: 't' }, this.parent.locale).format;
-        }
         let format: string;
         if (this.parent.locale === 'en' || this.parent.locale === 'en-US') {
             format = getValue(formatType + '.short', getDefaultDateObject(this.parent.getCalendarMode()));
         } else {
-            format = getValue(
-                // tslint:disable-next-line:max-line-length
-                'main.' + '' + this.parent.locale + '.dates.calendars.' + this.parent.getCalendarMode() + '.' + formatType + '.short', cldrData
-            );
+            format = getValue(`main.${this.parent.locale}.dates.calendars.${this.parent.getCalendarMode()}.${formatType}.short`, cldrData);
         }
         return format;
     }
 
-    private onEventDetailsUpdate(eventObj: { [key: string]: Object }): void {
+    private onEventDetailsUpdate(eventObj: Record<string, any>): void {
         if (!this.parent.eventSettings.allowEditing) {
             return;
         }
@@ -1056,8 +1002,8 @@ export class EventWindow {
         this.element.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML = this.l10n.getConstant('editEvent');
         this.element.querySelector('.' + cls.FORM_CLASS).setAttribute('data-id', eventObj[this.fields.id].toString());
         if (isNullOrUndefined(this.parent.editorTemplate)) {
-            eventObj = <{ [key: string]: Object }>extend({}, eventObj, null, true);
-            let timezoneObj: CheckBox = this.getInstance(cls.TIME_ZONE_CLASS + '.' + EVENT_FIELD) as CheckBox;
+            eventObj = <Record<string, any>>extend({}, eventObj, null, true);
+            const timezoneObj: CheckBox = this.getInstance(cls.TIME_ZONE_CLASS + '.' + EVENT_FIELD) as unknown as CheckBox;
             let timezoneValue: boolean;
             if (eventObj[this.fields.startTimezone] || eventObj[this.fields.endTimezone]) {
                 timezoneValue = true;
@@ -1069,7 +1015,6 @@ export class EventWindow {
             timezoneObj.checked = timezoneValue;
             timezoneObj.dataBind();
         }
-        this.subjectValue(eventObj);
         this.showDetails(eventObj);
         if (eventObj[this.fields.recurrenceRule] && this.recurrenceEditor) {
             this.recurrenceEditor.setRecurrenceRule(<string>eventObj[this.fields.recurrenceRule], <Date>eventObj[this.fields.startTime]);
@@ -1087,7 +1032,7 @@ export class EventWindow {
             this.repeatRule = <string>eventObj[this.fields.recurrenceRule];
         }
         if (this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
-            let element: HTMLElement = <HTMLElement>this.element.querySelector('.' + REPEAT_CONTAINER_CLASS);
+            const element: HTMLElement = <HTMLElement>this.element.querySelector('.' + REPEAT_CONTAINER_CLASS);
             if (eventObj[this.fields.recurrenceRule]) {
                 removeClass([element], HIDE_STYLE_CLASS);
                 this.repeatStatus.setProperties({ checked: true });
@@ -1097,14 +1042,14 @@ export class EventWindow {
             }
             this.updateRepeatLabel(this.repeatRule);
         }
-        let isDisable: boolean = (this.parent.readonly || eventObj[this.fields.isReadonly]) as boolean;
+        const isDisable: boolean = (this.parent.readonly || eventObj[this.fields.isReadonly]) as boolean;
         if (!this.parent.isAdaptive) {
-            let saveButton: Element = this.element.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
-            let deleteButton: Element = this.element.querySelector('.' + cls.DELETE_EVENT_CLASS);
+            const saveButton: Element = this.element.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            const deleteButton: Element = this.element.querySelector('.' + cls.DELETE_EVENT_CLASS);
             this.disableButton(saveButton, isDisable);
             this.disableButton(deleteButton, isDisable);
         } else {
-            let saveIcon: Element = this.element.querySelector('.' + cls.EVENT_WINDOW_SAVE_ICON_CLASS);
+            const saveIcon: Element = this.element.querySelector('.' + cls.EVENT_WINDOW_SAVE_ICON_CLASS);
             if (saveIcon) {
                 if (isDisable) {
                     addClass([saveIcon], cls.ICON_DISABLE_CLASS);
@@ -1134,11 +1079,11 @@ export class EventWindow {
     }
 
     public updateMinMaxDateToEditor(): void {
-        let startDate: Element = this.element.querySelector('.e-start');
-        let endDate: Element = this.element.querySelector('.e-end');
+        const startDate: Element = this.element.querySelector('.e-start');
+        const endDate: Element = this.element.querySelector('.e-end');
         if (startDate && endDate) {
-            let startObj: DatePicker = (startDate as EJ2Instance).ej2_instances[0] as DatePicker;
-            let endObj: DatePicker = (endDate as EJ2Instance).ej2_instances[0] as DatePicker;
+            const startObj: DatePicker = (startDate as EJ2Instance).ej2_instances[0] as DatePicker;
+            const endObj: DatePicker = (endDate as EJ2Instance).ej2_instances[0] as DatePicker;
             startObj.min = this.parent.minDate;
             startObj.max = this.parent.maxDate;
             endObj.min = this.parent.minDate;
@@ -1147,9 +1092,9 @@ export class EventWindow {
             endObj.dataBind();
         }
         if (this.recurrenceEditor) {
-            let untilDate: Element = this.recurrenceEditor.element.querySelector('.e-until-date');
+            const untilDate: Element = this.recurrenceEditor.element.querySelector('.e-until-date');
             if (untilDate) {
-                let untilObj: DatePicker = (untilDate as EJ2Instance).ej2_instances[0] as DatePicker;
+                const untilObj: DatePicker = (untilDate as EJ2Instance).ej2_instances[0] as DatePicker;
                 untilObj.min = this.parent.minDate;
                 untilObj.max = this.parent.maxDate;
                 untilObj.dataBind();
@@ -1161,7 +1106,7 @@ export class EventWindow {
         if (this.parent.isAdaptive && !this.repeatDialogObject) {
             this.renderRepeatDialog();
         }
-        let data: string = repeatRule ?
+        const data: string = repeatRule ?
             (this.l10n.getConstant('repeats') + ' ' + this.recurrenceEditor.getRuleSummary(repeatRule)) : this.l10n.getConstant('repeat');
         this.repeatStatus.setProperties({ label: data });
     }
@@ -1182,15 +1127,15 @@ export class EventWindow {
     }
 
     private timezoneChangeStyle(value: boolean): void {
-        let timezoneDiv: HTMLElement = this.element.querySelector('.' + cls.EVENT_WINDOW_TIME_ZONE_DIV_CLASS) as HTMLElement;
-        let localTimezoneName: string = this.parent.tzModule.getLocalTimezoneName();
+        const timezoneDiv: HTMLElement = this.element.querySelector('.' + cls.EVENT_WINDOW_TIME_ZONE_DIV_CLASS) as HTMLElement;
+        const localTimezoneName: string = this.parent.tzModule.getLocalTimezoneName();
         if (value) {
             addClass([timezoneDiv], cls.ENABLE_CLASS);
-            let startTimezoneObj: DropDownList = this.getInstance(cls.EVENT_WINDOW_START_TZ_CLASS) as DropDownList;
-            let endTimezoneObj: DropDownList = this.getInstance(cls.EVENT_WINDOW_END_TZ_CLASS) as DropDownList;
-            let timezone: { [key: string]: Object; }[] = startTimezoneObj.dataSource as { [key: string]: Object; }[];
+            const startTimezoneObj: DropDownList = this.getInstance(cls.EVENT_WINDOW_START_TZ_CLASS) as unknown as DropDownList;
+            const endTimezoneObj: DropDownList = this.getInstance(cls.EVENT_WINDOW_END_TZ_CLASS) as unknown as DropDownList;
+            const timezone: Record<string, any>[] = startTimezoneObj.dataSource as Record<string, any>[];
             if (!startTimezoneObj.value || !this.parent.timezone) {
-                let found: boolean = timezone.some((tz: { [key: string]: Object }) => { return tz.Value === localTimezoneName; });
+                const found: boolean = timezone.some((tz: Record<string, any>) => { return tz.Value === localTimezoneName; });
                 if (!found) {
                     timezone.push({ Value: localTimezoneName, Text: localTimezoneName });
                     startTimezoneObj.dataSource = timezone;
@@ -1209,9 +1154,9 @@ export class EventWindow {
     }
 
     private resetFormFields(): void {
-        let formElement: HTMLInputElement[] = this.getFormElements(cls.EVENT_WINDOW_DIALOG_CLASS);
-        for (let currentElement of formElement) {
-            let columnName: string = currentElement.name || this.getColumnName(currentElement);
+        const formElement: HTMLInputElement[] = this.getFormElements(cls.EVENT_WINDOW_DIALOG_CLASS);
+        for (const currentElement of formElement) {
+            const columnName: string = currentElement.name || this.getColumnName(currentElement);
             if (!isNullOrUndefined(columnName) && columnName !== '') {
                 this.setDefaultValueToElement(currentElement as HTMLElement);
             }
@@ -1219,12 +1164,12 @@ export class EventWindow {
     }
 
     public eventSave(alert?: string): void {
-        let formElement: Element = this.element.querySelector('.' + cls.FORM_CLASS);
+        const formElement: Element = this.element.querySelector('.' + cls.FORM_CLASS);
         if (formElement && formElement.classList.contains('e-formvalidator') &&
             !((formElement as EJ2Instance).ej2_instances[0] as FormValidator).validate()) {
             return;
         }
-        let dataCollection: { [key: string]: { [key: string]: Object } } = this.getEventDataFromEditor();
+        const dataCollection: Record<string, Record<string, any>> = this.getEventDataFromEditor();
         if (this.processEventValidation(dataCollection.tempData, alert)) {
             return;
         }
@@ -1233,9 +1178,9 @@ export class EventWindow {
         this.dialogObject.hide();
     }
 
-    public getEventDataFromEditor(): { [key: string]: { [key: string]: Object } } {
-        let eventObj: { [key: string]: Object } =
-            extend({}, this.getObjectFromFormData(cls.EVENT_WINDOW_DIALOG_CLASS)) as { [key: string]: Object };
+    public getEventDataFromEditor(): Record<string, Record<string, any>> {
+        const eventObj: Record<string, any> =
+            extend({}, this.getObjectFromFormData(cls.EVENT_WINDOW_DIALOG_CLASS)) as Record<string, any>;
         if (!eventObj.Timezone) {
             eventObj[this.fields.startTimezone] = null;
             eventObj[this.fields.endTimezone] = null;
@@ -1244,7 +1189,7 @@ export class EventWindow {
         delete eventObj.Repeat;
         this.setDefaultValueToObject(eventObj);
         eventObj[this.fields.recurrenceRule] = this.recurrenceEditor ? this.recurrenceEditor.getRecurrenceRule() || null : undefined;
-        let tempObj: { [key: string]: Object } = extend({}, eventObj, null, true) as { [key: string]: Object };
+        const tempObj: Record<string, any> = extend({}, eventObj, null, true) as Record<string, any>;
         if (eventObj[this.fields.isAllDay]) {
             eventObj[this.fields.startTime] = (isNullOrUndefined(eventObj[this.fields.startTime])) ? null
                 : util.resetTime(new Date((<Date>eventObj[this.fields.startTime]).getTime()));
@@ -1254,7 +1199,7 @@ export class EventWindow {
         return { eventData: eventObj, tempData: tempObj };
     }
 
-    private processEventValidation(eventObj: { [key: string]: Object }, alert?: string): boolean {
+    private processEventValidation(eventObj: Record<string, any>, alert?: string): boolean {
         let alertType: string;
         if (isNullOrUndefined(this.parent.editorTemplate)) {
             if (!eventObj[this.fields.startTime] || !eventObj[this.fields.endTime]) {
@@ -1281,33 +1226,33 @@ export class EventWindow {
         return false;
     }
 
-    private processCrudActions(eventObj: { [key: string]: Object }): boolean {
+    private processCrudActions(eventObj: Record<string, any>): boolean {
         this.parent.uiStateValues.isBlock = false;
-        let resourceData: string[] | number[] = this.getResourceData(eventObj);
-        let isResourceEventExpand: boolean = (this.parent.activeViewOptions.group.resources.length > 0 ||
+        const resourceData: string[] | number[] = this.getResourceData(eventObj);
+        const isResourceEventExpand: boolean = (this.parent.activeViewOptions.group.resources.length > 0 ||
             this.parent.resourceCollection.length > 0) && !this.parent.activeViewOptions.group.allowGroupEdit
             && !isNullOrUndefined(resourceData);
-        let eventId: string = this.getEventIdFromForm();
+        const eventId: string = this.getEventIdFromForm();
         if (!isNullOrUndefined(eventId)) {
             let eveId: number | string = this.parent.eventBase.getEventIDType() === 'string' ? eventId : parseInt(eventId, 10);
-            let editedData: { [key: string]: Object } = this.parent.eventsData.filter((data: { [key: string]: Object }) =>
-                data[this.fields.id] === eveId)[0] as { [key: string]: Object };
+            let editedData: Record<string, any> = this.parent.eventsData.filter((data: Record<string, any>) =>
+                data[this.fields.id] === eveId)[0];
             if (isNullOrUndefined(editedData)) {
-                editedData = this.parent.blockData.filter((data: { [key: string]: Object }) =>
-                    data[this.fields.id] === eveId)[0] as { [key: string]: Object };
+                editedData = this.parent.blockData.filter((data: Record<string, any>) =>
+                    data[this.fields.id] === eveId)[0];
             }
-            eventObj = extend({}, editedData, eventObj) as { [key: string]: Object };
+            eventObj = extend({}, editedData, eventObj) as Record<string, any>;
             if (eventObj[this.fields.isReadonly]) {
                 return false;
             }
             let currentAction: CurrentAction;
             if (!isNullOrUndefined(editedData[this.fields.recurrenceRule])) {
                 currentAction = this.parent.currentAction;
-                eventObj.Guid = (<{ [key: string]: Object }>this.parent.activeEventData.event).Guid;
+                eventObj.Guid = (<Record<string, any>>this.parent.activeEventData.event).Guid;
                 if (this.parent.currentAction === 'EditOccurrence') {
                     if (!eventObj[this.fields.recurrenceID]) {
                         eventObj[this.fields.id] = this.parent.eventBase.getEventMaxID();
-                        eventObj.Guid = (<{ [key: string]: Object }>this.parent.activeEventData.event).Guid;
+                        eventObj.Guid = (<Record<string, any>>this.parent.activeEventData.event).Guid;
                     } else {
                         eveId = eventObj[this.fields.recurrenceID] as number;
                         currentAction = null;
@@ -1341,21 +1286,21 @@ export class EventWindow {
         return this.parent.uiStateValues.isBlock;
     }
 
-    private getResourceData(eventObj: { [key: string]: Object }): string[] | number[] {
+    private getResourceData(eventObj: Record<string, any>): string[] | number[] {
         let resourceData: string[] | number[] = null;
         if (!isNullOrUndefined(this.parent.resourceBase) && !isNullOrUndefined(this.parent.resourceBase.resourceCollection)
             && this.parent.resourceBase.resourceCollection.length > 0) {
-            let lastResouceData: ResourcesModel = this.parent.resourceBase.resourceCollection.slice(-1)[0];
+            const lastResouceData: ResourcesModel = this.parent.resourceBase.resourceCollection.slice(-1)[0];
             resourceData = eventObj[lastResouceData.field] as string[] | number[];
         }
         return resourceData;
     }
 
-    public getObjectFromFormData(className: string): { [key: string]: Object } {
-        let formElement: HTMLInputElement[] = this.getFormElements(className);
-        let eventObj: { [key: string]: Object } = {};
-        for (let currentElement of formElement) {
-            let columnName: string = currentElement.name || this.getColumnName(currentElement);
+    public getObjectFromFormData(className: string): Record<string, any> {
+        const formElement: HTMLInputElement[] = this.getFormElements(className);
+        const eventObj: Record<string, any> = {};
+        for (const currentElement of formElement) {
+            const columnName: string = currentElement.name || this.getColumnName(currentElement);
             if (!isNullOrUndefined(columnName) && columnName !== '') {
                 eventObj[columnName] = this.getValueFromElement(currentElement as HTMLElement);
             }
@@ -1363,9 +1308,10 @@ export class EventWindow {
         return eventObj;
     }
 
-    public setDefaultValueToObject(eventObj: { [key: string]: Object }): void {
+    public setDefaultValueToObject(eventObj: Record<string, any>): void {
         if (!isNullOrUndefined(eventObj[this.fields.subject])) {
-            this.subjectValue(eventObj);
+            eventObj[this.fields.subject] = eventObj[this.fields.subject] || this.parent.eventSettings.fields.subject.default
+                || this.l10n.getConstant('addTitle');
         }
         if (!isNullOrUndefined(eventObj[this.fields.location])) {
             eventObj[this.fields.location] = eventObj[this.fields.location] || this.parent.eventSettings.fields.location.default;
@@ -1377,19 +1323,19 @@ export class EventWindow {
 
     private recurrenceValidation(startDate: Date, endDate: Date, alert: string): string {
         let alertMessage: string;
-        let recEditor: RecurrenceEditor = this.recurrenceEditor;
-        let interval: number = (this.getInstance('e-repeat-interval.e-numerictextbox') as NumericTextBox).value;
+        const recEditor: RecurrenceEditor = this.recurrenceEditor;
+        const interval: number = (this.getInstance('e-repeat-interval.e-numerictextbox') as unknown as NumericTextBox).value;
         if (alert !== this.l10n.getConstant('ok')) {
-            let activeEvent: { [key: string]: Object } = <{ [key: string]: Object }>this.parent.activeEventData.event;
-            let excludedEvents: Object[] = [];
+            const activeEvent: Record<string, any> = <Record<string, any>>this.parent.activeEventData.event;
+            let excludedEvents: Record<string, any>[] = [];
             if ((this.parent.currentAction === 'EditSeries' || this.parent.currentAction === 'EditFollowingEvents')
                 && !isNullOrUndefined(activeEvent)) {
-                let eventStartTime: string = activeEvent[this.parent.eventFields.startTime] as string;
-                let seriesEvents: { [key: string]: Object }[] = this.parent.eventBase.getSeriesEvents(this.eventData, eventStartTime);
+                const eventStartTime: string = activeEvent[this.parent.eventFields.startTime] as string;
+                const seriesEvents: Record<string, any>[] = this.parent.eventBase.getSeriesEvents(this.eventData, eventStartTime);
                 if (seriesEvents.length > 0) {
                     excludedEvents = this.parent.eventBase.getEditedOccurrences(seriesEvents, eventStartTime);
                 } else {
-                    let event: { [key: string]: Object } = this.parent.eventBase.getEventById(
+                    const event: Record<string, any> = this.parent.eventBase.getEventById(
                         activeEvent[this.parent.eventFields.id] as string);
                     excludedEvents = this.parent.eventBase.getEditedOccurrences([event], eventStartTime);
                 }
@@ -1401,44 +1347,46 @@ export class EventWindow {
             if (excludedEvents.length > 0) {
                 alertMessage = 'seriesChangeAlert';
             }
-            if ((this.getInstance('e-end-on-left .e-ddl .e-dropdownlist') as DropDownList).value === 'until' &&
-                (this.getInstance('e-end-on-date .e-datepicker') as DatePicker).value < startDate) {
+            if ((this.getInstance('e-end-on-left .e-ddl .e-dropdownlist') as unknown as DropDownList).value === 'until' &&
+                (this.getInstance('e-end-on-date .e-datepicker') as unknown as DatePicker).value < startDate) {
                 alertMessage = 'wrongPattern';
             }
             if (isNullOrUndefined(alertMessage)) {
+                let types: string[] = recEditor.value.split(';')[1].split('=')[1].split(',');
+                const obj: Record<string, any> = { 'SU': 0, 'MO': 1, 'TU': 2, 'WE': 3, 'TH': 4, 'FR': 5, 'SA': 6 };
+                const temp: number[] = [];
+                const tempDiff: number[] = [];
+                let tempvalue: number[];
                 switch (recEditor.value.split(';')[0].split('=')[1]) {
-                    case 'DAILY':
-                        if ((((endDate.getTime() - startDate.getTime()) / (1000 * 3600)) > (interval * 24))) {
-                            alertMessage = 'createError';
-                        }
-                        break;
-                    case 'WEEKLY':
-                        let types: string[] = recEditor.value.split(';')[1].split('=')[1].split(',');
-                        let obj: { [key: string]: Object } = { 'SU': 0, 'MO': 1, 'TU': 2, 'WE': 3, 'TH': 4, 'FR': 5, 'SA': 6 };
-                        let temp: number[] = [];
-                        let tempDiff: number[] = [];
-                        for (let index: number = 0; index < types.length * (interval + 1); index++) {
-                            temp[index] = (types.length > index) ? <number>obj[types[index]] : temp[index - types.length] + (7 * interval);
-                        }
-                        let tempvalue: number[] = temp.sort((a: number, b: number) => a - b);
-                        for (let index: number = 1; index < tempvalue.length; index++) {
-                            tempDiff.push(tempvalue[index] - tempvalue[index - 1]);
-                        }
-                        if ((((endDate.getTime() - startDate.getTime()) / (1000 * 3600)) >= Math.min.apply(Math, tempDiff) * 24)
-                            || isNullOrUndefined(interval)) {
-                            alertMessage = 'createError';
-                        }
-                        break;
-                    case 'MONTHLY':
-                        if (endDate.getTime() >= new Date(+startDate).setMonth(startDate.getMonth() + interval)) {
-                            alertMessage = 'createError';
-                        }
-                        break;
-                    case 'YEARLY':
-                        if (endDate.getTime() >= new Date(+startDate).setFullYear(startDate.getFullYear() + interval)) {
-                            alertMessage = 'createError';
-                        }
-                        break;
+                case 'DAILY':
+                    if ((((endDate.getTime() - startDate.getTime()) / (1000 * 3600)) > (interval * 24))) {
+                        alertMessage = 'createError';
+                    }
+                    break;
+                case 'WEEKLY':
+                    types = recEditor.value.split(';')[1].split('=')[1].split(',');
+                    for (let index: number = 0; index < types.length * (interval + 1); index++) {
+                        temp[index] = (types.length > index) ? <number>obj[types[index]] : temp[index - types.length] + (7 * interval);
+                    }
+                    tempvalue = temp.sort((a: number, b: number) => a - b);
+                    for (let index: number = 1; index < tempvalue.length; index++) {
+                        tempDiff.push(tempvalue[index] - tempvalue[index - 1]);
+                    }
+                    if ((((endDate.getTime() - startDate.getTime()) / (1000 * 3600)) >= Math.min(...tempDiff) * 24)
+                        || isNullOrUndefined(interval)) {
+                        alertMessage = 'createError';
+                    }
+                    break;
+                case 'MONTHLY':
+                    if (endDate.getTime() >= new Date(+startDate).setMonth(startDate.getMonth() + interval)) {
+                        alertMessage = 'createError';
+                    }
+                    break;
+                case 'YEARLY':
+                    if (endDate.getTime() >= new Date(+startDate).setFullYear(startDate.getFullYear() + interval)) {
+                        alertMessage = 'createError';
+                    }
+                    break;
                 }
             }
         } else {
@@ -1452,7 +1400,7 @@ export class EventWindow {
         return alertMessage;
     }
 
-    private getRecurrenceIndex(recColl: { [key: string]: Object }[], event: { [key: string]: Object }): number {
+    private getRecurrenceIndex(recColl: Record<string, any>[], event: Record<string, any>): number {
         let recIndex: number;
         for (let index: number = 0; index < recColl.length; index++) {
             if (event[this.fields.startTime].valueOf() === recColl[index][this.fields.startTime].valueOf()) {
@@ -1462,26 +1410,28 @@ export class EventWindow {
         }
         return recIndex;
     }
-    private trimAllDay(data: { [key: string]: Object }): void {
+
+    private trimAllDay(data: Record<string, any>): void {
         if (data[this.fields.isAllDay]) {
-            let temp: number = util.addDays(new Date(+data[this.fields.endTime]), -1).getTime();
+            const temp: number = util.addDays(new Date(+data[this.fields.endTime]), -1).getTime();
             data[this.fields.endTime] = (+data[this.fields.startTime] > temp) ? data[this.fields.endTime] : new Date(temp);
         }
     }
-    public editOccurrenceValidation(eventId: string | number, currentData: { [key: string]: Object }, editData?: { [key: string]: Object })
+
+    public editOccurrenceValidation(eventId: string | number, currentData: Record<string, any>, editData?: Record<string, any>)
         : boolean {
         if (editData === void 0) { editData = this.eventData; }
-        let recurColl: { [key: string]: Object }[] = <{ [key: string]: Object }[]>this.parent.getOccurrencesByID(eventId);
-        let excludedDatas: { [key: string]: Object }[] = this.parent.eventsData.filter((data: { [key: string]: Object }) =>
-            data[this.fields.recurrenceID] === eventId) as { [key: string]: Object }[];
-        excludedDatas.map((data: Object) => recurColl.push(extend({}, data) as { [key: string]: Object }));
-        currentData = extend({}, currentData) as { [key: string]: Object };
+        const recurColl: Record<string, any>[] = <Record<string, any>[]>this.parent.getOccurrencesByID(eventId);
+        const excludedDatas: Record<string, any>[] = this.parent.eventsData.filter((data: Record<string, any>) =>
+            data[this.fields.recurrenceID] === eventId) as Record<string, any>[];
+        excludedDatas.map((data: Record<string, any>) => recurColl.push(extend({}, data) as Record<string, any>));
+        currentData = extend({}, currentData) as Record<string, any>;
         this.trimAllDay(currentData);
-        for (let data of recurColl) {
+        for (const data of recurColl) {
             this.trimAllDay(data);
         }
         this.parent.eventBase.sortByTime(recurColl);
-        let index: number = this.getRecurrenceIndex(recurColl, editData);
+        const index: number = this.getRecurrenceIndex(recurColl, editData);
         if (isNullOrUndefined(index)) {
             return false;
         }
@@ -1507,17 +1457,17 @@ export class EventWindow {
         return false;
     }
 
-    private resourceSaveEvent(eventObj: { [key: string]: Object }, action?: CurrentAction, currentAction?: CurrentAction): void {
-        let lastResouceData: ResourcesModel = this.parent.resourceBase.resourceCollection.slice(-1)[0];
+    private resourceSaveEvent(eventObj: Record<string, any>, action?: CurrentAction, currentAction?: CurrentAction): void {
+        const lastResouceData: ResourcesModel = this.parent.resourceBase.resourceCollection.slice(-1)[0];
         let resourceData: string[] | number[] = eventObj[lastResouceData.field] as string[] | number[];
         resourceData = (resourceData instanceof Array) ? resourceData : [resourceData];
-        let lastlevel: TdData[] = this.parent.resourceBase.lastResourceLevel;
-        let eventList: { [key: string]: Object }[] = [];
+        const lastlevel: TdData[] = this.parent.resourceBase.lastResourceLevel;
+        const eventList: Record<string, any>[] = [];
         for (let i: number = 0; i < resourceData.length; i++) {
-            let events: { [key: string]: Object } = <{ [key: string]: Object }>extend({}, eventObj, null, true);
+            const events: Record<string, any> = <Record<string, any>>extend({}, eventObj, null, true);
             events[this.fields.id] = this.parent.eventBase.getEventMaxID();
-            let temp: { [key: string]: Object }[] = [];
-            let addValues: Function = () => {
+            const temp: Record<string, any>[] = [];
+            const addValues: CallbackFunction = () => {
                 if (action === 'Save' && i === resourceData.length - 1) {
                     if (temp.length > 0) {
                         temp[0][this.fields.id] = eventObj[this.fields.id];
@@ -1543,46 +1493,45 @@ export class EventWindow {
                 }
             };
             if (this.parent.activeViewOptions.group.byGroupID && (!isNullOrUndefined(lastlevel))) {
-                let lastResource: { [key: string]: Object }[] = lastResouceData.dataSource as { [key: string]: Object }[];
-                let resCol: Object[] = this.parent.resourceCollection;
+                const lastResource: Record<string, any>[] = lastResouceData.dataSource as Record<string, any>[];
+                const resCol: Record<string, any>[] = this.parent.resourceCollection as Record<string, any>[];
                 let index: number;
                 if (resCol.length > 1) {
-                    index =
-                        util.findIndexInData(lastResource, lastResouceData.idField, resourceData[i] as string, events, resCol);
+                    index = util.findIndexInData(lastResource, lastResouceData.idField, resourceData[i] as string, events, resCol);
                 } else {
                     index = util.findIndexInData(lastResource, lastResouceData.idField, resourceData[i] as string);
                 }
                 if (index < 0) {
                     return;
                 }
-                let groupId: object = lastResource[index][lastResouceData.groupIDField];
-                let filter: TdData = lastlevel.filter((obj: TdData) => obj.resourceData[lastResouceData.idField] === resourceData[i]).
+                const groupId: Record<string, any> = lastResource[index][lastResouceData.groupIDField] as Record<string, any>;
+                const filter: TdData = lastlevel.filter((obj: TdData) => obj.resourceData[lastResouceData.idField] === resourceData[i]).
                     filter((obj: TdData) => obj.resourceData[lastResouceData.groupIDField] === groupId)[0];
-                let groupOrder: number[] | string[] = filter.groupOrder;
+                const groupOrder: number[] | string[] = filter.groupOrder;
                 for (let index: number = 0; index < this.parent.resourceBase.resourceCollection.length; index++) {
-                    let field: string = this.parent.resourceBase.resourceCollection[index].field;
-                    events[field] = ((groupOrder[index] as String) instanceof Array) ? groupOrder[index][0] : groupOrder[index];
+                    const field: string = this.parent.resourceBase.resourceCollection[index].field;
+                    events[field] = ((groupOrder[index] as any) instanceof Array) ? groupOrder[index][0] : groupOrder[index];
                 }
                 addValues();
             } else {
                 for (let index: number = 0; index < this.parent.resourceBase.resourceCollection.length - 1; index++) {
-                    let field: string = this.parent.resourceBase.resourceCollection[index].field;
-                    if (events[field] instanceof Array && (events[field] as Object[]).length > 1) {
-                        for (let k: number = 0; k < (events[field] as Object[]).length; k++) {
-                            let event: { [key: string]: Object } = <{ [key: string]: Object }>extend({}, events, null, true);
-                            event[field] = (eventObj[field] as { [key: string]: Object })[k];
+                    const field: string = this.parent.resourceBase.resourceCollection[index].field;
+                    if (events[field] instanceof Array && (events[field] as Record<string, any>[]).length > 1) {
+                        for (let k: number = 0; k < (events[field] as Record<string, any>[]).length; k++) {
+                            const event: Record<string, any> = <Record<string, any>>extend({}, events, null, true);
+                            event[field] = (eventObj[field] as Record<string, any>)[k];
                             event[lastResouceData.field] = resourceData[i];
                             temp.push(event);
                         }
                     } else {
                         if (temp.length === 0) {
                             events[field] = (eventObj[field] instanceof Array) ?
-                                (eventObj[field] as { [key: string]: Object })[0] : eventObj[field];
+                                (eventObj[field] as Record<string, any>)[0] : eventObj[field];
                             events[lastResouceData.field] = resourceData[i];
                         } else {
                             for (let l: number = 0; l < temp.length; l++) {
                                 temp[l][field] = (eventObj[field] instanceof Array) ?
-                                    (eventObj[field] as { [key: string]: Object })[0] : eventObj[field];
+                                    (eventObj[field] as Record<string, any>)[0] : eventObj[field];
                             }
                         }
                     }
@@ -1592,7 +1541,7 @@ export class EventWindow {
             }
         }
         if (eventList.length > 0) {
-            for (let event of eventList) {
+            for (const event of eventList) {
                 event[this.fields.recurrenceException] = null;
                 event[this.fields.recurrenceID] = null;
             }
@@ -1611,20 +1560,7 @@ export class EventWindow {
         } else {
             elements = [].slice.call(this.parent.element.querySelectorAll('.' + className + ' .' + EVENT_FIELD));
         }
-        if (!isBlazor()) {
-            return elements;
-        }
-        let validElements: HTMLInputElement[] = [];
-        for (let element of elements) {
-            if (element.classList.contains('e-control')) {
-                validElements.push(element);
-            } else if (element.querySelector('.e-control')) {
-                validElements.push(element.querySelector('.e-control') as HTMLInputElement);
-            } else {
-                validElements.push(element);
-            }
-        }
-        return validElements;
+        return elements;
     }
 
     private getValueFromElement(element: HTMLElement): number | string | Date | boolean | string[] | number[] {
@@ -1651,11 +1587,11 @@ export class EventWindow {
 
     private setValueToElement(element: HTMLElement, value: number | string | Date | boolean | number[] | string[]): void {
         if (element.classList.contains('e-datepicker')) {
-            let instance: DatePicker = (element as EJ2Instance).ej2_instances[0] as DatePicker;
+            const instance: DatePicker = (element as EJ2Instance).ej2_instances[0] as DatePicker;
             instance.value = <Date>value;
             instance.dataBind();
         } else if (element.classList.contains('e-datetimepicker')) {
-            let instance: DateTimePicker = (element as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            const instance: DateTimePicker = (element as EJ2Instance).ej2_instances[0] as DateTimePicker;
             if (instance.element.classList.contains(cls.EVENT_WINDOW_START_CLASS)) {
                 this.eventWindowTime.startTime = new Date('' + value);
             } else {
@@ -1664,16 +1600,16 @@ export class EventWindow {
             instance.value = <Date>value;
             instance.dataBind();
         } else if (element.classList.contains('e-dropdownlist')) {
-            let instance: DropDownList = (element as EJ2Instance).ej2_instances[0] as DropDownList;
+            const instance: DropDownList = (element as EJ2Instance).ej2_instances[0] as DropDownList;
             instance.value = <string>value;
             instance.dataBind();
         } else if (element.classList.contains('e-multiselect')) {
-            let instance: MultiSelect = (element as EJ2Instance).ej2_instances[0] as MultiSelect;
+            const instance: MultiSelect = (element as EJ2Instance).ej2_instances[0] as MultiSelect;
             instance.value = [];
             instance.value = <string[]>((value instanceof Array) ? value : [value]);
             instance.dataBind();
         } else if (element.classList.contains('e-checkbox')) {
-            let instance: CheckBox = (element as EJ2Instance).ej2_instances[0] as CheckBox;
+            const instance: CheckBox = (element as EJ2Instance).ej2_instances[0] as CheckBox;
             instance.checked = <boolean>value;
             instance.dataBind();
         } else {
@@ -1687,25 +1623,25 @@ export class EventWindow {
 
     private setDefaultValueToElement(element: HTMLElement): void {
         if (element.classList.contains('e-datepicker')) {
-            let instance: DatePicker = (element as EJ2Instance).ej2_instances[0] as DatePicker;
+            const instance: DatePicker = (element as EJ2Instance).ej2_instances[0] as DatePicker;
             instance.value = this.parent.getCurrentTime();
             instance.dataBind();
         } else if (element.classList.contains('e-datetimepicker')) {
-            let instance: DateTimePicker = (element as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            let dateValue: Date = this.parent.getCurrentTime();
+            const instance: DateTimePicker = (element as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            const dateValue: Date = this.parent.getCurrentTime();
             this.eventWindowTime = { startTime: dateValue, endTime: dateValue };
             instance.value = dateValue;
             instance.dataBind();
         } else if (element.classList.contains('e-dropdownlist')) {
-            let instance: DropDownList = (element as EJ2Instance).ej2_instances[0] as DropDownList;
+            const instance: DropDownList = (element as EJ2Instance).ej2_instances[0] as DropDownList;
             instance.value = null;
             instance.dataBind();
         } else if (element.classList.contains('e-multiselect')) {
-            let instance: MultiSelect = (element as EJ2Instance).ej2_instances[0] as MultiSelect;
+            const instance: MultiSelect = (element as EJ2Instance).ej2_instances[0] as MultiSelect;
             instance.value = [];
             instance.dataBind();
         } else if (element.classList.contains('e-checkbox')) {
-            let instance: CheckBox = (element as EJ2Instance).ej2_instances[0] as CheckBox;
+            const instance: CheckBox = (element as EJ2Instance).ej2_instances[0] as CheckBox;
             instance.checked = false;
             instance.dataBind();
         } else {
@@ -1717,27 +1653,26 @@ export class EventWindow {
         }
     }
 
-    private getInstance(className: string): Object {
-        let element: HTMLElement = this.element.querySelector('.' + className) as HTMLElement;
+    private getInstance(className: string): Record<string, any> {
+        const element: HTMLElement = this.element.querySelector('.' + className) as HTMLElement;
         return element ? (element as EJ2Instance).ej2_instances[0] : null;
     }
 
     private eventDelete(): void {
         switch (this.parent.currentAction) {
-            case 'EditOccurrence':
-                let fields: EventFieldsMapping = this.parent.eventFields;
-                if (!isNullOrUndefined((<{ [key: string]: Object }>this.parent.activeEventData.event)[fields.recurrenceRule])) {
-                    this.parent.currentAction = 'DeleteOccurrence';
-                } else {
-                    this.parent.currentAction = 'Delete';
-                }
-                break;
-            case 'EditSeries':
-                this.parent.currentAction = 'DeleteSeries';
-                break;
-            case 'Save':
+        case 'EditOccurrence':
+            if (!isNullOrUndefined((<Record<string, any>>this.parent.activeEventData.event)[this.parent.eventFields.recurrenceRule])) {
+                this.parent.currentAction = 'DeleteOccurrence';
+            } else {
                 this.parent.currentAction = 'Delete';
-                break;
+            }
+            break;
+        case 'EditSeries':
+            this.parent.currentAction = 'DeleteSeries';
+            break;
+        case 'Save':
+            this.parent.currentAction = 'Delete';
+            break;
         }
         this.isCrudAction = false;
         this.dialogObject.hide();
@@ -1752,9 +1687,9 @@ export class EventWindow {
     }
 
     private destroyComponents(): void {
-        let formelement: HTMLInputElement[] = this.getFormElements(cls.EVENT_WINDOW_DIALOG_CLASS);
-        for (let element of formelement) {
-            let instance: Object[];
+        const formelement: HTMLInputElement[] = this.getFormElements(cls.EVENT_WINDOW_DIALOG_CLASS);
+        for (const element of formelement) {
+            let instance: Record<string, any>[];
             if (element.classList.contains('e-datetimepicker')) {
                 instance = ((<HTMLElement>element) as EJ2Instance).ej2_instances;
             } else if (element.classList.contains('e-datepicker')) {
@@ -1767,7 +1702,7 @@ export class EventWindow {
                 instance = ((<HTMLElement>element) as EJ2Instance).ej2_instances;
             }
             if (instance && instance[0]) {
-                (instance[0] as Schedule).destroy();
+                (instance[0] as unknown as Schedule).destroy();
             }
         }
         if (this.buttonObj) {
@@ -1775,15 +1710,8 @@ export class EventWindow {
         }
     }
 
-    /**
-     * To destroy the event window.
-     * @return {void}
-     * @private
-     */
     public destroy(): void {
         if (!this.parent.isDestroyed) {
-            this.resetEditorTemplate();
-            this.updateEditorTemplate();
             this.parent.resetTemplates(['editorTemplate']);
         }
         if (this.recurrenceEditor) {
@@ -1804,4 +1732,5 @@ export class EventWindow {
             this.element = null;
         }
     }
+
 }

@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Events base methods testing
  */
-import { Schedule, Day, Week, WorkWeek, Month, Agenda, Timezone, ScheduleModel } from '../../../src/schedule/index';
+import { Schedule, Day, Week, WorkWeek, Month, Agenda, Timezone, ScheduleModel, CallbackFunction } from '../../../src/schedule/index';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import * as util from '../util.spec';
 
@@ -9,10 +10,9 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
 describe('Event Base Module', () => {
     beforeAll(() => {
-        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
             (this as any).skip(); //Skips test (in Chai)
             return;
@@ -28,40 +28,40 @@ describe('Event Base Module', () => {
             util.destroy(schObj);
         });
         it('Event on same day', () => {
-            let event: { [key: string]: Object } = { 'StartTime': new Date(2017, 11, 1, 4), 'EndTime': new Date(2017, 11, 1, 8) };
-            let spannedEvents: Object[] = schObj.eventBase.splitEventByDay(event);
+            const event: Record<string, any> = { 'StartTime': new Date(2017, 11, 1, 4), 'EndTime': new Date(2017, 11, 1, 8) };
+            const spannedEvents: Record<string, any>[] = schObj.eventBase.splitEventByDay(event);
             expect(spannedEvents.length).toEqual(1);
         });
         it('Event on multiple day', () => {
-            let event: { [key: string]: Object } = { 'StartTime': new Date(2017, 11, 1, 4), 'EndTime': new Date(2017, 11, 4, 8) };
-            let spannedEvents: Object[] = schObj.eventBase.splitEventByDay(event);
+            const event: Record<string, any> = { 'StartTime': new Date(2017, 11, 1, 4), 'EndTime': new Date(2017, 11, 4, 8) };
+            const spannedEvents: Record<string, any>[] = schObj.eventBase.splitEventByDay(event);
             expect(spannedEvents.length).toEqual(4);
         });
     });
 
     describe('checking spanned recurrence appointment', () => {
         let schObj: Schedule;
-        let eventData: Object[] = [{
+        const eventData: Record<string, any>[] = [{
             Id: 1,
             StartTime: new Date(2018, 7, 7, 23),
             EndTime: new Date(2018, 7, 8, 16),
             RecurrenceRule: 'FREQ=WEEKLY;BYDAY=SU,MO,TU,WE,TH,FR,SA;INTERVAL=1;UNTIL=20180905T070000Z;'
         }];
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = { height: '550px', selectedDate: new Date(2018, 7, 7) };
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = { height: '550px', selectedDate: new Date(2018, 7, 7) };
             schObj = util.createSchedule(model, eventData, done);
         });
         afterAll(() => {
             util.destroy(schObj);
         });
-        it('spanned recurrence appointments with offsetTop', (done: Function) => {
+        it('spanned recurrence appointments with offsetTop', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let app2: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-content-wrap .e-appointment'));
+                const app2: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-content-wrap .e-appointment'));
                 expect(app2.length).toEqual(14);
                 expect(app2[0].offsetTop).toEqual(0);
                 done();
             };
-            let app1: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-content-wrap .e-appointment'));
+            const app1: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-content-wrap .e-appointment'));
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('August 05 - 11, 2018');
             expect(app1.length).toEqual(9);
             expect(app1[0].offsetTop).toEqual(1656);
@@ -72,16 +72,16 @@ describe('Event Base Module', () => {
 
     describe('Schedule Timezone testing', () => {
         let schObj: Schedule;
-        let timezone: Timezone = new Timezone();
-        let eventData: Object[] = [{
+        const timezone: Timezone = new Timezone();
+        const eventData: Record<string, any>[] = [{
             Id: 1,
             Subject: 'Testing',
             StartTime: timezone.removeLocalOffset(new Date(2018, 5, 14, 15, 0)),
             EndTime: timezone.removeLocalOffset(new Date(2018, 5, 14, 17, 0))
         }];
-        let initialStartDate: Date = new Date((eventData[0] as { [key: string]: Object }).StartTime + '');
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = { selectedDate: new Date(2018, 5, 14) };
+        const initialStartDate: Date = new Date(eventData[0].StartTime + '');
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = { selectedDate: new Date(2018, 5, 14) };
             schObj = util.createSchedule(model, eventData, done);
         });
         afterAll(() => {
@@ -90,33 +90,33 @@ describe('Event Base Module', () => {
         it('Set timezone to Schedule', () => {
             schObj.timezone = 'America/New_York';
             schObj.dataBind();
-            let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+            const event: Record<string, any> = schObj.eventsData[0];
             expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 5, 14, 11, 0).getTime());
         });
         it('Convert timezone', () => {
             schObj.timezone = 'Asia/Kolkata';
             schObj.dataBind();
-            let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+            const event: Record<string, any> = schObj.eventsData[0];
             expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 5, 14, 20, 30).getTime());
         });
         it('Remove timezone to Schedule', () => {
             schObj.timezone = null;
             schObj.dataBind();
-            let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+            const event: Record<string, any> = schObj.eventsData[0];
             expect((event.StartTime as Date).getTime()).toEqual(initialStartDate.getTime());
         });
     });
 
     describe('checking recurrence appointment', () => {
         let schObj: Schedule;
-        let eventData: Object[] = [{
+        const eventData: Record<string, any>[] = [{
             Id: 1,
             StartTime: new Date(2018, 9, 11, 0),
             EndTime: new Date(2018, 9, 12, 0),
             RecurrenceRule: 'FREQ=DAILY;BYDAY=SU,MO,TU,WE,TH,FR,SA;INTERVAL=1;'
         }];
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 height: '550px', selectedDate: new Date(2018, 9, 1),
                 views: [
                     { displayName: '3 Days', option: 'Day', interval: 3 },
@@ -129,13 +129,13 @@ describe('Event Base Module', () => {
         afterAll(() => {
             util.destroy(schObj);
         });
-        it('spanned recurrence appointments with offsetTop', (done: Function) => {
+        it('spanned recurrence appointments with offsetTop', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let app2: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-content-wrap .e-appointment'));
+                const app2: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-content-wrap .e-appointment'));
                 expect(app2.length).toEqual(126);
                 done();
             };
-            let app1: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-content-wrap .e-appointment'));
+            const app1: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-content-wrap .e-appointment'));
             expect(app1.length).toEqual(115);
             (schObj.element.querySelector('.e-schedule-toolbar .e-next') as HTMLElement).click();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('February - May 2019');
@@ -144,8 +144,8 @@ describe('Event Base Module', () => {
 
     describe('Resources with allow multiplegroup as true', () => {
         let schObj: Schedule;
-        let getResourceIndex: Function = (element: HTMLElement) => parseInt(element.getAttribute('data-group-index'), 10);
-        let eventData: Object[] = [{
+        const getResourceIndex: CallbackFunction = (element: HTMLElement) => parseInt(element.getAttribute('data-group-index'), 10);
+        const eventData: Record<string, any>[] = [{
             Id: 1,
             Subject: 'Meeting',
             StartTime: new Date(2018, 3, 1, 10, 0),
@@ -154,8 +154,8 @@ describe('Event Base Module', () => {
             RoomId: [1, 2],
             OwnerId: [1, 2, 3]
         }];
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = { height: '550px', width: '100%', selectedDate: new Date(2018, 3, 1) };
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = { height: '550px', width: '100%', selectedDate: new Date(2018, 3, 1) };
             schObj = util.createGroupSchedule(2, options, eventData, done);
         });
         afterAll(() => {
@@ -163,7 +163,7 @@ describe('Event Base Module', () => {
         });
 
         it('Allow multiple true', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(3);
             let resourceIndex: number = getResourceIndex(eventElementList[0]);
             expect(resourceIndex).toEqual(0);
@@ -173,9 +173,9 @@ describe('Event Base Module', () => {
             expect(resourceIndex).toEqual(2);
         });
 
-        it('Allow multiple false for 1st resource', (done: Function) => {
+        it('Allow multiple false for 1st resource', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(2);
                 let resourceIndex: number = getResourceIndex(eventElementList[0]);
                 expect(resourceIndex).toEqual(0);
@@ -196,11 +196,11 @@ describe('Event Base Module', () => {
             schObj.dataBind();
         });
 
-        it('Resource data source with 2 digits with allow multiple true', (done: Function) => {
+        it('Resource data source with 2 digits with allow multiple true', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(1);
-                let resourceIndex: number = getResourceIndex(eventElementList[0]);
+                const resourceIndex: number = getResourceIndex(eventElementList[0]);
                 expect(resourceIndex).toEqual(2);
                 done();
             };
@@ -227,11 +227,11 @@ describe('Event Base Module', () => {
             schObj.dataBind();
         });
 
-        it('Resource data source with 2 digits with allow multiple false', (done: Function) => {
+        it('Resource data source with 2 digits with allow multiple false', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(1);
-                let resourceIndex: number = getResourceIndex(eventElementList[0]);
+                const resourceIndex: number = getResourceIndex(eventElementList[0]);
                 expect(resourceIndex).toEqual(2);
                 done();
             };
@@ -243,15 +243,15 @@ describe('Event Base Module', () => {
                 EndTime: new Date(2018, 3, 1, 12, 30),
                 IsAllDay: false,
                 RoomId: 12,
-                OwnerId: [1, 2, 12],
+                OwnerId: [1, 2, 12]
             }];
             schObj.dataBind();
         });
-        it('Resource data source with 2 digits with single resource', (done: Function) => {
+        it('Resource data source with 2 digits with single resource', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(1);
-                let resourceIndex: number = getResourceIndex(eventElementList[0]);
+                const resourceIndex: number = getResourceIndex(eventElementList[0]);
                 expect(resourceIndex).toEqual(2);
                 done();
             };
@@ -269,15 +269,15 @@ describe('Event Base Module', () => {
                 StartTime: new Date(2018, 3, 1, 10, 0),
                 EndTime: new Date(2018, 3, 1, 12, 30),
                 IsAllDay: false,
-                RoomId: 12,
+                RoomId: 12
             }];
             schObj.dataBind();
         });
-        it('Resource data source with 2 digits with single resource and allow multiple true', (done: Function) => {
+        it('Resource data source with 2 digits with single resource and allow multiple true', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(1);
-                let resourceIndex: number = getResourceIndex(eventElementList[0]);
+                const resourceIndex: number = getResourceIndex(eventElementList[0]);
                 expect(resourceIndex).toEqual(2);
                 done();
             };
@@ -288,7 +288,7 @@ describe('Event Base Module', () => {
                 StartTime: new Date(2018, 3, 1, 10, 0),
                 EndTime: new Date(2018, 3, 1, 12, 30),
                 IsAllDay: false,
-                RoomId: [12],
+                RoomId: [12]
             }];
             schObj.dataBind();
         });
@@ -296,7 +296,7 @@ describe('Event Base Module', () => {
 
     describe('Checking events fill the full height of the cell', () => {
         let schObj: Schedule;
-        let eventData: Object[] = [{
+        const eventData: Record<string, any>[] = [{
             Id: 1,
             StartTime: new Date(2018, 8, 30, 0, 0),
             EndTime: new Date(2018, 8, 30, 0, 30),
@@ -309,7 +309,7 @@ describe('Event Base Module', () => {
         }, {
             Id: 3,
             StartTime: new Date(2018, 9, 12),
-            EndTime: new Date(2018, 9, 14),
+            EndTime: new Date(2018, 9, 14)
         }, {
             Id: 4,
             StartTime: new Date(2018, 9, 24),
@@ -319,13 +319,13 @@ describe('Event Base Module', () => {
             StartTime: new Date(2018, 9, 16),
             EndTime: new Date(2018, 9, 18)
         }];
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
                 height: '550px', selectedDate: new Date(2018, 9, 1),
                 views: ['Week', 'Month', 'TimelineMonth'],
                 currentView: 'Week',
                 eventSettings: {
-                    enableMaxHeight: true,
+                    enableMaxHeight: true
                 }
             };
             schObj = util.createSchedule(options, eventData, done);
@@ -334,46 +334,46 @@ describe('Event Base Module', () => {
             util.destroy(schObj);
         });
         it('Checking event filled full height of the cell in the week view', () => {
-            let cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
-            let eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+            const cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
+            const eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
             expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight);
         });
-        it('Checking event filled full height of the cell in the Month view', (done: Function) => {
+        it('Checking event filled full height of the cell in the Month view', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
-                let eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
-                let headerHeight: number = 25;
+                const cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
+                const eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+                const headerHeight: number = 25;
                 expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight - headerHeight);
                 done();
             };
             schObj.currentView = 'Month';
             schObj.dataBind();
         });
-        it('Checking event filled full height of the cell in the Timeline month view', (done: Function) => {
+        it('Checking event filled full height of the cell in the Timeline month view', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
-                let eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+                const cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
+                const eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
                 expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight);
                 done();
             };
             schObj.currentView = 'TimelineMonth';
             schObj.dataBind();
         });
-        it('Checking fill and enable Rtl properties is set to true on timeline month view', (done: Function) => {
+        it('Checking fill and enable Rtl properties is set to true on timeline month view', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
-                let eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+                const cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
+                const eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
                 expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight);
                 done();
             };
             schObj.enableRtl = true;
             schObj.dataBind();
         });
-        it('Checking fill and enable Rtl properties is set to true on month view', (done: Function) => {
+        it('Checking fill and enable Rtl properties is set to true on month view', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
-                let eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
-                let headerHeight: number = 25;
+                const cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
+                const eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+                const headerHeight: number = 25;
                 expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight - headerHeight);
                 done();
             };
@@ -384,7 +384,7 @@ describe('Event Base Module', () => {
 
     describe('Checking events fill the full height with more indicator of the cell', () => {
         let schObj: Schedule;
-        let eventData: Object[] = [{
+        const eventData: Record<string, any>[] = [{
             Id: 1,
             StartTime: new Date(2018, 8, 30, 0, 0),
             EndTime: new Date(2018, 8, 30, 0, 30),
@@ -397,14 +397,14 @@ describe('Event Base Module', () => {
         }, {
             Id: 3,
             StartTime: new Date(2018, 9, 12),
-            EndTime: new Date(2018, 9, 14),
+            EndTime: new Date(2018, 9, 14)
         }, {
             Id: 4,
             StartTime: new Date(2018, 9, 24),
             EndTime: new Date(2018, 9, 30)
         }];
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
                 height: '550px', width: '100%', selectedDate: new Date(2018, 9, 1),
                 views: ['Month', 'TimelineMonth'],
                 currentView: 'Month',
@@ -419,36 +419,36 @@ describe('Event Base Module', () => {
             util.destroy(schObj);
         });
         it('Checking event filled full height of the cell in the Month view', () => {
-            let cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
-            let eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
-            let headerHeight: number = 25;
+            const cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
+            const eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+            const headerHeight: number = 25;
             expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight - 19 - headerHeight);
         });
-        it('Checking evnet filled full height of the cell in the Timeline month view', (done: Function) => {
+        it('Checking evnet filled full height of the cell in the Timeline month view', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
-                let eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+                const cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
+                const eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
                 expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight - 21);
                 done();
             };
             schObj.currentView = 'TimelineMonth';
             schObj.dataBind();
         });
-        it('Checking fill, indicator and enable Rtl properties is set to true on timeline month view', (done: Function) => {
+        it('Checking fill, indicator and enable Rtl properties is set to true on timeline month view', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
-                let eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+                const cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
+                const eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
                 expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight - 21);
                 done();
             };
             schObj.enableRtl = true;
             schObj.dataBind();
         });
-        it('Checking fill, indicator and enable Rtl properties is set to true on month view', (done: Function) => {
+        it('Checking fill, indicator and enable Rtl properties is set to true on month view', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
-                let eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
-                let headerHeight: number = 25;
+                const cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
+                const eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+                const headerHeight: number = 25;
                 expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight - 19 - headerHeight);
                 done();
             };
@@ -459,13 +459,9 @@ describe('Event Base Module', () => {
 
     it('memory leak', () => {
         profile.sample();
-        // tslint:disable:no-any
-        let average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
+        const average: number = inMB(profile.averageChange);
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        const memory: number = inMB(getMemoryProfile());
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        // tslint:enable:no-any
     });
 });

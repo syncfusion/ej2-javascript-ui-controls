@@ -7,6 +7,7 @@ import { DataManager } from '@syncfusion/ej2-data';
 import { isCountRequired } from '../utils';
 /**
  * RowModelGenerator is used to generate grid data rows.
+ *
  * @hidden
  */
 
@@ -25,38 +26,38 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
     public generateRows(data: Object[], notifyArgs?: NotifyArgs): Row<Column>[] {
         if ((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
             && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent)) {
-                return super.generateRows(data, notifyArgs);
-            } else {
-                if (!isNullOrUndefined(notifyArgs.requestType) && notifyArgs.requestType.toString() === 'collapseAll') {
-                    notifyArgs.requestType = 'refresh';
-                }
-                let rows: Row<Column>[] = super.generateRows(data, notifyArgs);
-                for (let r: number = 0; r < rows.length; r++) {
-                    rows[r].index = (<ITreeData[]>(this.visualData)).indexOf(rows[r].data);
-                }
-                return rows;
+            return super.generateRows(data, notifyArgs);
+        } else {
+            if (!isNullOrUndefined(notifyArgs.requestType) && notifyArgs.requestType.toString() === 'collapseAll') {
+                notifyArgs.requestType = 'refresh';
             }
+            const rows: Row<Column>[] = super.generateRows(data, notifyArgs);
+            for (let r: number = 0; r < rows.length; r++) {
+                rows[r].index = (<ITreeData[]>(this.visualData)).indexOf(rows[r].data);
+            }
+            return rows;
+        }
     }
     public checkAndResetCache(action: string): boolean {
-        let clear: boolean = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'reorder',
-                            'save', 'delete'].some((value: string) => action === value);
+        const clear: boolean = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'reorder',
+            'save', 'delete'].some((value: string) => action === value);
         if ((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
             && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent)) {
-                let model: string = 'model';
-                let currentPage: number = this[model].currentPage;
-                if (clear) {
-                    this.cache = {};
-                    this.data = {};
-                    this.groups = {};
-                } else if (action === 'virtualscroll' && this.cache[currentPage] &&
+            const model: string = 'model';
+            const currentPage: number = this[model].currentPage;
+            if (clear) {
+                this.cache = {};
+                this.data = {};
+                this.groups = {};
+            } else if (action === 'virtualscroll' && this.cache[currentPage] &&
                     this.cache[currentPage].length > (((this.parent as Grid).contentModule) as VirtualContentRenderer).getBlockSize()) {
-                    delete this.cache[currentPage];
-                }
-            } else {
-                if (clear || action === 'virtualscroll') {
-                    this.cache = {}; this.data = {}; this.groups = {};
-                }
+                delete this.cache[currentPage];
             }
+        } else {
+            if (clear || action === 'virtualscroll') {
+                this.cache = {}; this.data = {}; this.groups = {};
+            }
+        }
         return clear;
     }
 }

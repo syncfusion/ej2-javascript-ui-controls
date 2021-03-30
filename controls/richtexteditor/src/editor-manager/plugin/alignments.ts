@@ -8,6 +8,7 @@ import * as EVENTS from './../../common/constant';
 import { isIDevice, setEditFrameFocus } from '../../common/util';
 /**
  * Formats internal component
+ * 
  * @hidden
  * @deprecated
  */
@@ -21,10 +22,13 @@ export class Alignments {
     };
     /**
      * Constructor for creating the Formats plugin
+     *
+     * @param {EditorManager} parent - specifies the parent element.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
-    constructor(parent: EditorManager) {
+    public constructor(parent: EditorManager) {
         this.parent = parent;
         this.addEventListener();
     }
@@ -34,44 +38,45 @@ export class Alignments {
     }
     private onKeyDown(e: IHtmlKeyboardEvent): void {
         switch ((e.event as KeyboardEventArgs).action) {
-            case 'justify-center':
-                this.applyAlignment({ subCommand: 'JustifyCenter', callBack: e.callBack });
-                e.event.preventDefault();
-                break;
-            case 'justify-full':
-                this.applyAlignment({ subCommand: 'JustifyFull', callBack: e.callBack });
-                e.event.preventDefault();
-                break;
-            case 'justify-left':
-                this.applyAlignment({ subCommand: 'JustifyLeft', callBack: e.callBack });
-                e.event.preventDefault();
-                break;
-            case 'justify-right':
-                this.applyAlignment({ subCommand: 'JustifyRight', callBack: e.callBack });
-                e.event.preventDefault();
-                break;
+        case 'justify-center':
+            this.applyAlignment({ subCommand: 'JustifyCenter', callBack: e.callBack });
+            e.event.preventDefault();
+            break;
+        case 'justify-full':
+            this.applyAlignment({ subCommand: 'JustifyFull', callBack: e.callBack });
+            e.event.preventDefault();
+            break;
+        case 'justify-left':
+            this.applyAlignment({ subCommand: 'JustifyLeft', callBack: e.callBack });
+            e.event.preventDefault();
+            break;
+        case 'justify-right':
+            this.applyAlignment({ subCommand: 'JustifyRight', callBack: e.callBack });
+            e.event.preventDefault();
+            break;
         }
     }
     private getTableNode(range: Range): Node[] {
-        let startNode: Node = range.startContainer.nodeType === Node.ELEMENT_NODE ? range.startContainer : range.startContainer.parentNode;
-        let cellNode: Node = closest(startNode, 'td,th');
+        const startNode: Node = range.startContainer.nodeType === Node.ELEMENT_NODE
+        ? range.startContainer : range.startContainer.parentNode;
+        const cellNode: Node = closest(startNode, 'td,th');
         return [cellNode];
     }
 
     private applyAlignment(e: IHtmlSubCommands): void {
-        let isTableAlign: boolean = e.value === 'Table' ? true : false;
-        let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        const isTableAlign: boolean = e.value === 'Table' ? true : false;
+        const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         let save: NodeSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
         if (!isTableAlign) {
             this.parent.domNode.setMarker(save);
-            let alignmentNodes: Node[] = this.parent.domNode.blockNodes();
+            const alignmentNodes: Node[] = this.parent.domNode.blockNodes();
             for (let i: number = 0; i < alignmentNodes.length; i++) {
-                let parentNode: Element = alignmentNodes[i] as Element;
+                const parentNode: Element = alignmentNodes[i] as Element;
                 setStyleAttribute(parentNode as HTMLElement, { 'text-align': this.alignments[e.subCommand] });
             }
-            let imageTags: NodeListOf<HTMLImageElement> = this.parent.domNode.getImageTagInSelection();
+            const imageTags: NodeListOf<HTMLImageElement> = this.parent.domNode.getImageTagInSelection();
             for (let i: number = 0; i < imageTags.length; i++) {
-                let elementNode: Node[] = [];
+                const elementNode: Node[] = [];
                 elementNode.push(imageTags[i]);
                 this.parent.imgObj.imageCommand({
                     item: {
@@ -85,7 +90,9 @@ export class Alignments {
             }
             (this.parent.editableElement as HTMLElement).focus();
             save = this.parent.domNode.saveMarker(save);
-            if (isIDevice()) { setEditFrameFocus(this.parent.editableElement, e.selector); }
+            if (isIDevice()) {
+                setEditFrameFocus(this.parent.editableElement, e.selector);
+            }
             save.restore();
         } else {
             setStyleAttribute(this.getTableNode(range)[0] as HTMLElement, { 'text-align': this.alignments[e.subCommand] });

@@ -1,17 +1,24 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createElement, remove, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { EventFieldsMapping } from '../base/interface';
-import { ResourcesModel } from '../models/resources-model';
 
 /**
  * Schedule common utilities
  */
+
 export const WEEK_LENGTH: number = 7;
 export const MS_PER_DAY: number = 86400000;
 export const MS_PER_MINUTE: number = 60000;
 
+/**
+ * Method to get height from element
+ *
+ * @param {Element} container Accepts the DOM element
+ * @param {string} elementClass Accepts the element class
+ * @returns {number} Returns the height of the element
+ */
 export function getElementHeightFromClass(container: Element, elementClass: string): number {
     let height: number = 0;
-    let el: HTMLElement = createElement('div', { className: elementClass }).cloneNode() as HTMLElement;
+    const el: HTMLElement = createElement('div', { className: elementClass }).cloneNode() as HTMLElement;
     el.style.visibility = 'hidden';
     el.style.position = 'absolute';
     container.appendChild(el);
@@ -20,80 +27,192 @@ export function getElementHeightFromClass(container: Element, elementClass: stri
     return height;
 }
 
+/**
+ * Method to get translateY value
+ *
+ * @param {HTMLElement | Element} element Accepts the DOM element
+ * @returns {number} Returns the translateY value of given element
+ */
 export function getTranslateY(element: HTMLElement | Element): number {
-    let style: CSSStyleDeclaration = getComputedStyle(element);
-    return (<{ [key: string]: Object } & Window>window).WebKitCSSMatrix ?
+    const style: CSSStyleDeclaration = getComputedStyle(element);
+    return (<Record<string, any> & Window><unknown>window).WebKitCSSMatrix ?
         new WebKitCSSMatrix(style.webkitTransform).m42 : 0;
 }
 
-export function getWeekFirstDate(date1: Date, firstDayOfWeek: number): Date {
-    let date: Date = new Date(date1.getTime());
-    firstDayOfWeek = (firstDayOfWeek - date.getDay() + 7 * (-1)) % 7;
-    return new Date(date.setDate(date.getDate() + firstDayOfWeek));
+/**
+ * Method to get week first date
+ *
+ * @param {Date} date Accepts the date object
+ * @param {number} firstDayOfWeek Accepts the first day of week number
+ * @returns {Date} Returns the date object
+ */
+export function getWeekFirstDate(date: Date, firstDayOfWeek: number): Date {
+    const date1: Date = new Date(date.getTime());
+    firstDayOfWeek = (firstDayOfWeek - date1.getDay() + 7 * (-1)) % 7;
+    return new Date(date1.setDate(date1.getDate() + firstDayOfWeek));
 }
+
+/**
+ * Method to get week last date
+ *
+ * @param {Date} date Accepts the date object
+ * @param {number} firstDayOfWeek Accepts the first day of week number
+ * @returns {Date} Returns the date object
+ */
 export function getWeekLastDate(date: Date, firstDayOfWeek: number): Date {
-    let weekFirst: Date = getWeekFirstDate(date, firstDayOfWeek);
-    let weekLast: Date = new Date(weekFirst.getFullYear(), weekFirst.getMonth(), weekFirst.getDate() + 6);
+    const weekFirst: Date = getWeekFirstDate(date, firstDayOfWeek);
+    const weekLast: Date = new Date(weekFirst.getFullYear(), weekFirst.getMonth(), weekFirst.getDate() + 6);
     return new Date(weekLast.getTime());
 }
+
+/**
+ * Method to get first date of month
+ *
+ * @param {Date} date Accepts the date object
+ * @returns {Date} Returns the date object
+ */
 export function firstDateOfMonth(date: Date): Date {
-    return new Date(date.getFullYear(), date.getMonth());
+    return new Date(date.getFullYear(), date.getMonth(), 1);
 }
-export function lastDateOfMonth(dt: Date): Date {
-    return new Date(dt.getFullYear(), dt.getMonth() + 1, 0);
+
+/**
+ * Method to get last date of month
+ *
+ * @param {Date} date Accepts the date object
+ * @returns {Date} Returns the date object
+ */
+export function lastDateOfMonth(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0);
 }
-export function getWeekNumber(dt: Date): number {
-    let date: number = new Date(dt.getFullYear(), 0, 1).valueOf();
-    let currentDate: number = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()).valueOf();
-    let dayOfYear: number = ((currentDate - date + MS_PER_DAY) / MS_PER_DAY);
+
+/**
+ * Method to get week number
+ *
+ * @param {Date} date Accepts the date object
+ * @returns {number} Returns the week number
+ */
+export function getWeekNumber(date: Date): number {
+    const date1: number = new Date(date.getFullYear(), 0, 1).valueOf();
+    const currentDate: number = new Date(date.getFullYear(), date.getMonth(), date.getDate()).valueOf();
+    const dayOfYear: number = ((currentDate - date1 + MS_PER_DAY) / MS_PER_DAY);
     return Math.ceil(dayOfYear / 7);
 }
+
+/**
+ * Method to get week middle date
+ *
+ * @param {Date} weekFirst Accepts the week first date object
+ * @param {Date} weekLast Accepts the week last date object
+ * @returns {Date} Returns the date object
+ */
 export function getWeekMiddleDate(weekFirst: Date, weekLast: Date): Date {
-    let date: Date = new Date(weekLast.valueOf() - ((weekLast.valueOf() - weekFirst.valueOf()) / 2));
-    return date;
+    return new Date(weekLast.valueOf() - ((weekLast.valueOf() - weekFirst.valueOf()) / 2));
 }
+
+/**
+ * Method to set time to date object
+ *
+ * @param {Date} date Accepts the date object
+ * @param {number} time Accepts the milliseconds
+ * @returns {Date} Returns the date object
+ */
 export function setTime(date: Date, time: number): Date {
-    let tzOffsetBefore: number = date.getTimezoneOffset();
-    let d: Date = new Date(date.getTime() + time);
-    let tzOffsetDiff: number = d.getTimezoneOffset() - tzOffsetBefore;
+    const tzOffsetBefore: number = date.getTimezoneOffset();
+    const d: Date = new Date(date.getTime() + time);
+    const tzOffsetDiff: number = d.getTimezoneOffset() - tzOffsetBefore;
     date.setTime(d.getTime() + tzOffsetDiff * MS_PER_MINUTE);
     return date;
 }
+
+/**
+ * Method the reset hours in date object
+ *
+ * @param {Date} date Accepts the date object
+ * @returns {Date} Returns the date object
+ */
 export function resetTime(date: Date): Date {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
+
+/**
+ * Method to get milliseconds from date object
+ *
+ * @param {Date} date Accepts the date object
+ * @returns {number} Returns the milliseconds from date object
+ */
 export function getDateInMs(date: Date): number {
-    let sysDateOffset: number = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0).getTimezoneOffset();
-    let dateOffset: number = date.getTimezoneOffset();
-    let tzOffsetDiff: number = dateOffset - sysDateOffset;
+    const localOffset: number = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0).getTimezoneOffset();
+    const dateOffset: number = date.getTimezoneOffset();
+    const timezoneOffset: number = dateOffset - localOffset;
     return ((date.getTime() - new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0).getTime())
-        - (tzOffsetDiff * 60 * 1000));
+        - (timezoneOffset * 60 * 1000));
 }
+
+/**
+ * Method to get date count between two dates
+ *
+ * @param {Date} startDate Accepts the date object
+ * @param {Date} endDate Accepts the date object
+ * @returns {number} Returns the date count
+ */
 export function getDateCount(startDate: Date, endDate: Date): number {
     return Math.ceil((endDate.getTime() - startDate.getTime()) / MS_PER_DAY);
 }
-export function addDays(date: Date, i: number): Date {
+
+/**
+ * Method to add no of days in date object
+ *
+ * @param {Date} date Accepts the date object
+ * @param {number} noOfDays Accepts the number of days count
+ * @returns {Date} Returns the date object
+ */
+export function addDays(date: Date, noOfDays: number): Date {
     date = new Date('' + date);
-    return new Date(date.setDate(date.getDate() + i));
+    return new Date(date.setDate(date.getDate() + noOfDays));
 }
-export function addMonths(date: Date, i: number): Date {
+
+/**
+ * Method to add no of months in date object
+ *
+ * @param {Date} date Accepts the date object
+ * @param {number} noOfMonths Accepts the number of month count
+ * @returns {Date} Returns the date object
+ */
+export function addMonths(date: Date, noOfMonths: number): Date {
     date = new Date('' + date);
-    let day: number = date.getDate();
+    const day: number = date.getDate();
     date.setDate(1);
-    date.setMonth(date.getMonth() + i);
+    date.setMonth(date.getMonth() + noOfMonths);
     date.setDate(Math.min(day, getMaxDays(date)));
     return date;
 }
-export function addYears(date: Date, i: number): Date {
+
+/**
+ * Method to add no of years in date object
+ *
+ * @param {Date} date Accepts the date object
+ * @param {number} noOfYears Accepts the number of month count
+ * @returns {Date} Returns the date object
+ */
+export function addYears(date: Date, noOfYears: number): Date {
     date = new Date('' + date);
-    let day: number = date.getDate();
+    const day: number = date.getDate();
     date.setDate(1);
-    date.setFullYear(date.getFullYear() + i);
+    date.setFullYear(date.getFullYear() + noOfYears);
     date.setDate(Math.min(day, getMaxDays(date)));
     return date;
 }
-export function getStartEndHours(date: Date, startHour: Date, endHour: Date): { [key: string]: Date } {
-    let date1: Date = new Date(date.getTime());
+
+/**
+ * Method to get start and end hours
+ *
+ * @param {Date} date Accepts the date object
+ * @param {Date} startHour Accepts the start hour date object
+ * @param {Date} endHour Accepts the end hour date object
+ * @returns {Object} Returns the start and end hour date objects
+ */
+export function getStartEndHours(date: Date, startHour: Date, endHour: Date): Record<string, Date> {
+    const date1: Date = new Date(date.getTime());
     date1.setHours(startHour.getHours());
     date1.setMinutes(startHour.getMinutes());
     date1.setSeconds(startHour.getSeconds());
@@ -107,47 +226,81 @@ export function getStartEndHours(date: Date, startHour: Date, endHour: Date): { 
     }
     return { startHour: date1, endHour: date2 };
 }
-export function getMaxDays(d: Date): number {
-    let date: Date = new Date(d.getFullYear(), d.getMonth() + 1, 0);
-    return date.getDate();
+
+/**
+ * Method to get month last date
+ *
+ * @param {Date} date Accepts the date object
+ * @returns {number} Returns the month last date
+ */
+export function getMaxDays(date: Date): number {
+    return lastDateOfMonth(date).getDate();
 }
+
+/**
+ * Method to get days count between two dates
+ *
+ * @param {Date} startDate Accepts the date object
+ * @param {Date} endDate Accepts the date object
+ * @returns {number} Returns the days count
+ */
 export function getDaysCount(startDate: number, endDate: number): number {
-    let strTime: Date = resetTime(new Date(startDate));
-    let endTime: Date = resetTime(new Date(endDate));
+    const strTime: Date = resetTime(new Date(startDate));
+    const endTime: Date = resetTime(new Date(endDate));
     return Math.round((endTime.getTime() - strTime.getTime()) / MS_PER_DAY);
 }
+
+/**
+ * Method to get date object from date string
+ *
+ * @param {string} date Accepts the date string
+ * @returns {Date} Returns the date object
+ */
 export function getDateFromString(date: string): Date {
     return date.indexOf('Date') !== -1 ? new Date(parseInt(date.match(/\d+/g).toString(), 10)) :
         date.indexOf('T') !== -1 ? new Date(date) : new Date(date.replace(/-/g, '/'));
 }
 
-/** @hidden */
+/** @private */
 let scrollWidth: number = null;
 
-/** @hidden */
+/**
+ * Method to get scrollbar width
+ *
+ * @returns {number} Returns the scrollbar width
+ * @private
+ */
 export function getScrollBarWidth(): number {
     if (scrollWidth !== null) { return scrollWidth; }
-    let divNode: HTMLElement = createElement('div');
+    const divNode: HTMLElement = createElement('div');
     let value: number = 0;
     divNode.style.cssText = 'width:100px;height: 100px;overflow: scroll;position: absolute;top: -9999px;';
     document.body.appendChild(divNode);
-    let ratio: number = (devicePixelRatio) ? (devicePixelRatio.toFixed(2) === '1.10' || devicePixelRatio <= 1) ?
+    const ratio: number = (devicePixelRatio) ? (devicePixelRatio.toFixed(2) === '1.10' || devicePixelRatio <= 1) ?
         Math.ceil(devicePixelRatio % 1) : Math.floor(devicePixelRatio % 1) : 0;
     value = (divNode.offsetWidth - divNode.clientWidth - ratio) | 0;
     document.body.removeChild(divNode);
     return scrollWidth = value;
 }
 
-export function findIndexInData(
-    data: { [key: string]: Object }[], property: string, value: string, event?: { [key: string]: Object }, resourceCollection?: Object[])
-    : number {
+/**
+ * Method to find the index from data collection
+ *
+ * @param {Object} data Accepts the data as object
+ * @param {string} field Accepts the field name
+ * @param {string} value Accepts the value name
+ * @param {Object} event Accepts the data as object
+ * @param {Object[]} resourceCollection Accepts the data collections
+ * @returns {number} Returns the index number
+ */
+// eslint-disable-next-line max-len
+export function findIndexInData(data: Record<string, any>[], field: string, value: string, event?: Record<string, any>, resourceCollection?: Record<string, any>[]): number {
     for (let i: number = 0, length: number = data.length; i < length; i++) {
-        if (data[i][property] === value) {
+        if (data[i][field] === value) {
             if (event) {
-                let field: string = (resourceCollection.slice(-2)[0] as ResourcesModel).field;
-                let res: string[] = (event[field] instanceof Array ? event[field] : [event[field]]) as string[];
-                let resData: string = res.join(',');
-                // tslint:disable-next-line:no-any
+                const field: string = resourceCollection.slice(-2)[0].field as string;
+                const res: string[] = (event[field] instanceof Array ? event[field] : [event[field]]) as string[];
+                const resData: string = res.join(',');
                 if (resData.includes(data[i][(resourceCollection.slice(-1)[0] as any).groupIDField] as string)) {
                     return i;
                 }
@@ -159,52 +312,71 @@ export function findIndexInData(
     return -1;
 }
 
+/**
+ * Method to get element outer height
+ *
+ * @param {HTMLElement} element Accepts the DOM element
+ * @returns {number} Returns the outer height of the given element
+ */
 export function getOuterHeight(element: HTMLElement): number {
-    let style: CSSStyleDeclaration = getComputedStyle(element);
+    const style: CSSStyleDeclaration = getComputedStyle(element);
     return element.offsetHeight + (parseInt(style.marginTop, 10) || 0) + (parseInt(style.marginBottom, 10) || 0);
 }
 
+/**
+ * Method to remove child elements
+ *
+ * @param {HTMLElement | Element} element Accepts the DOM element
+ * @returns {void}
+ */
 export function removeChildren(element: HTMLElement | Element): void {
-    let elementChildren: HTMLElement[] | Element[] = [].slice.call(element.children);
-    for (let elementChild of elementChildren) {
+    const elementChildren: HTMLElement[] | Element[] = [].slice.call(element.children);
+    for (const elementChild of elementChildren) {
         if (!elementChild.classList.contains('blazor-template')) {
             element.removeChild(elementChild);
         }
     }
 }
 
+/**
+ * Method to check DST is present or not in date object
+ *
+ * @param {Date} date Accepts the date object
+ * @returns {boolean} Returns the boolean value for either DST is present or not
+ */
 export function isDaylightSavingTime(date: Date): boolean {
-    let jan: Date = new Date(date.getFullYear(), 0, 1);
-    let jul: Date = new Date(date.getFullYear(), 6, 1);
+    const jan: Date = new Date(date.getFullYear(), 0, 1);
+    const jul: Date = new Date(date.getFullYear(), 6, 1);
     return date.getTimezoneOffset() < Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
 }
 
-export function addLocalOffset(date: Date): Date {
-    return date;
-}
-
-export function addLocalOffsetToEvent(event: { [key: string]: Object }, eventFields: EventFieldsMapping): { [key: string]: Object } {
-    return event;
-}
-
+/**
+ * Method to check the IPad device
+ *
+ * @returns {boolean} Returns the boolean value for either IPad device is present or not.
+ */
 export function isIPadDevice(): boolean {
     let deviceCheck: string = window.navigator.userAgent.toLowerCase();
     return deviceCheck.indexOf('ipad') > -1;
 }
 
+/**
+ * Method to capitalize the first word in string
+ *
+ * @param {string} inputString Accepts the string value
+ * @param {string} type Accepts the string type
+ * @returns {string} Returns the output string
+ */
 export function capitalizeFirstWord(inputString: string, type: string): string {
-    switch (type) {
-        case 'multiple':
-            inputString = inputString.split(' ').map((e: string) => e.charAt(0).toLocaleUpperCase() + e.substring(1)).join(' ');
-            break;
-        case 'single':
-            if (inputString[0] >= '0' && inputString[0] <= '9') {
-                let array: RegExpMatchArray = inputString.match(/[a-zA-Z]/);
-                inputString = isNullOrUndefined(array) ? inputString :
-                    inputString.slice(0, array.index) + inputString[array.index].toLocaleUpperCase() + inputString.slice(array.index + 1);
-            }
-            inputString = inputString[0].toLocaleUpperCase() + inputString.slice(1);
-            break;
+    if (type === 'multiple') {
+        inputString = inputString.split(' ').map((e: string) => e.charAt(0).toLocaleUpperCase() + e.substring(1)).join(' ');
+    } else if (type === 'single') {
+        if (inputString[0] >= '0' && inputString[0] <= '9') {
+            const array: RegExpMatchArray = inputString.match(/[a-zA-Z]/);
+            inputString = isNullOrUndefined(array) ? inputString :
+                inputString.slice(0, array.index) + inputString[array.index].toLocaleUpperCase() + inputString.slice(array.index + 1);
+        }
+        inputString = inputString[0].toLocaleUpperCase() + inputString.slice(1);
     }
     return inputString;
 }

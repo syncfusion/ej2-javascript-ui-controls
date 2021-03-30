@@ -19,7 +19,7 @@ export function getRandomId(): string {
  * Interface for Template Engine.
  */
 export interface ITemplateEngine {
-    compile: (templateString: string, helper?: Object) => (data: Object | JSON) => string;
+    compile: (templateString: string, helper?: Object, ignorePrefix?:boolean) => (data: Object | JSON) => string;
 }
 
 /**
@@ -29,8 +29,8 @@ export interface ITemplateEngine {
  * @private
  */
 //tslint:disable-next-line
-export function compile(templateString: string, helper?: Object): (data: Object | JSON, component?: any, propName?: any) => NodeList {
-    let compiler: Function = engineObj.compile(templateString, helper);
+export function compile(templateString: string, helper?: Object, ignorePrefix?:boolean): (data: Object | JSON, component?: any, propName?: any) => NodeList {
+    let compiler: Function = engineObj.compile(templateString, helper, ignorePrefix);
     //tslint:disable-next-line
     return (data: Object, component?: any, propName?: any, templateId?: any, isStringTemplate?: boolean, index?: number, element?: any): NodeList => {
         let result: object = compiler(data, component, propName, element);
@@ -137,7 +137,7 @@ export function getTemplateEngine(): (template: string, helper?: Object) => (dat
 
 //Default Engine Class
 class Engine implements ITemplateEngine {
-    public compile(templateString: string, helper: Object = {}): (data: Object | JSON) => string {
+    public compile(templateString: string, helper: Object = {}, ignorePrefix?:boolean): (data: Object | JSON) => string {
         return render(templateString, helper);
     }
 }

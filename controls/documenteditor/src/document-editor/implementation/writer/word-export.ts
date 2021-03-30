@@ -1,14 +1,15 @@
+
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 import { XmlWriter } from '@syncfusion/ej2-file-utils';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ImageInfo, HelperMethods } from '../index';
 import { Dictionary, TabJustification, TabLeader } from '../../index';
-import { WCharacterFormat, WParagraphFormat, WTabStop } from '../index';
+import { WTabStop } from '../index';
 import { ProtectionType } from '../../base';
 import { DocumentHelper } from '../viewer';
 import { Revision } from '../track-changes/track-changes';
 
-/** 
+/**
  * Exports the document to Word format.
  */
 export class WordExport {
@@ -267,7 +268,7 @@ export class WordExport {
     private wordMLDiagramContentType: string = 'application/vnd.ms-office.drawingml.diagramDrawing+xml';
     private dsNamespace: string = 'http://schemas.openxmlformats.org/officeDocument/2006/customXml';
     private excelFiles: Dictionary<string, ZipArchive> = undefined;
-    /* tslint:disable:no-any */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     // Owner Nodes
     private section: any;
     private lastSection: boolean = false;
@@ -374,7 +375,7 @@ export class WordExport {
         return this.mHeaderFooterColl;
     }
     /// Gets the Endnote and Footnote Collection
-    private get EndnotesFootnotes(): Dictionary<any, Dictionary<string, any>> {
+    private get endnotesFootnotes(): Dictionary<any, Dictionary<string, any>> {
         if (this.mFootEndnotesColl === undefined) {
             this.mFootEndnotesColl = new Dictionary<any, Dictionary<string, any>>();
         }
@@ -382,11 +383,14 @@ export class WordExport {
     }
     /**
      * @private
+     * @param {DocumentHelper} documentHelper - Document helper
+     * @param {string} fileName - file name
+     * @returns {void}
      */
     public save(documentHelper: DocumentHelper, fileName: string): void {
         this.fileName = fileName;
         this.serialize(documentHelper);
-        let excelFiles: Promise<Blob>[] = this.serializeExcelFiles();
+        const excelFiles: Promise<Blob>[] = this.serializeExcelFiles();
         if (excelFiles && excelFiles.length > 0) {
             Promise.all(excelFiles).then(() => {
                 this.saveInternal(fileName);
@@ -404,11 +408,14 @@ export class WordExport {
     }
     /**
      * @private
+     * @param {DocumentHelper} documentHelper - Document helper
+     * @returns {Promise<Blob>} - Return Promise
      */
     public saveAsBlob(documentHelper: DocumentHelper): Promise<Blob> {
         this.serialize(documentHelper);
-        let excelFiles: Promise<Blob>[] = this.serializeExcelFiles();
-        return new Promise((resolve: Function, reject: Function) => {
+        const excelFiles: Promise<Blob>[] = this.serializeExcelFiles();
+        /* eslint-disable */
+        return new Promise((resolve: (value: Blob | PromiseLike<Blob>) => void, reject: (value: Blob | PromiseLike<Blob>) => void) => {
             if (excelFiles.length > 0) {
                 Promise.all(excelFiles).then(() => {
                     this.mArchive.saveAsBlob().then((blob: Blob) => {
@@ -425,19 +432,19 @@ export class WordExport {
                 });
             }
         });
-
+        /* eslint-enable */
     }
     private serializeExcelFiles(): Promise<Blob>[] {
-        let excelFiles: Dictionary<string, ZipArchive> = this.excelFiles;
-        let files: Promise<Blob>[] = [];
+        const excelFiles: Dictionary<string, ZipArchive> = this.excelFiles;
+        const files: Promise<Blob>[] = [];
         if (excelFiles && excelFiles.length > 0) {
             for (let i: number = 0; i < excelFiles.length; i++) {
-                let fileName: string = excelFiles.keys[i];
-                let excelFile: ZipArchive = excelFiles.get(fileName);
-                let excelPromise: Promise<Blob> = excelFile.saveAsBlob();
+                const fileName: string = excelFiles.keys[i];
+                const excelFile: ZipArchive = excelFiles.get(fileName);
+                const excelPromise: Promise<Blob> = excelFile.saveAsBlob();
                 files.push(excelPromise);
                 excelPromise.then((blob: Blob) => {
-                    let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(blob, fileName);
+                    const zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(blob, fileName);
                     this.mArchive.addItem(zipArchiveItem);
                 });
             }
@@ -447,14 +454,16 @@ export class WordExport {
     }
     /**
      * @private
+     * @returns {void}
      */
     public saveExcel(): void {
-        let xlsxPath: string = this.defaultEmbeddingPath + 'Microsoft_Excel_Worksheet' + this.chartCount + '.xlsx';
+        const xlsxPath: string = this.defaultEmbeddingPath + 'Microsoft_Excel_Worksheet' + this.chartCount + '.xlsx';
         this.excelFiles.add(xlsxPath, this.mArchiveExcel);
         this.mArchiveExcel = undefined;
     }
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         this.clearDocument();
@@ -473,8 +482,8 @@ export class WordExport {
     }
     // Saves the word document in the stream
     private serialize(documentHelper: DocumentHelper): void {
-        /* tslint:disable:no-any */
-        let document: any = documentHelper.owner.sfdtExportModule.write();
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        const document: any = documentHelper.owner.sfdtExportModule.write();
         this.setDocument(document);
         this.mComments = documentHelper.comments;
         this.mCustomXML = documentHelper.customXmlData;
@@ -629,14 +638,14 @@ export class WordExport {
     }
     // Serializes the document elements (document.xml)
     private serializeDocument(): void {
-        let writer: XmlWriter = new XmlWriter();
+        const writer: XmlWriter = new XmlWriter();
 
         writer.writeStartElement('w', 'document', this.wNamespace);
         this.writeCommonAttributeStrings(writer);
         this.serializeDocumentBody(writer);
 
         writer.writeEndElement(); //end of document tag
-        let archiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.documentPath);
+        const archiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.documentPath);
         this.mArchive.addItem(archiveItem);
     }
     private writeCommonAttributeStrings(writer: XmlWriter): void {
@@ -667,7 +676,7 @@ export class WordExport {
     // Serializes the document body
     private serializeDocumentBody(writer: XmlWriter): void {
         writer.writeStartElement(undefined, 'body', this.wNamespace);
-        let count: number = this.document.sections.length;
+        const count: number = this.document.sections.length;
         for (let i: number = 0; i < count; i++) {
             this.section = this.document.sections[i];
             this.lastSection = i === count - 1;
@@ -690,12 +699,12 @@ export class WordExport {
         if (this.mComments.length === 0 || (this.mComments.length === 1 && this.mComments[0].text === '')) {
             return;
         }
-        let writer: XmlWriter = new XmlWriter();
+        const writer: XmlWriter = new XmlWriter();
         writer.writeStartElement('w', 'comments', this.wNamespace);
         this.serializeCommentCommonAttribute(writer);
-        this.serializeCommentInternal(writer, this.mComments, false);
+        this.serializeCommentInternal(writer, this.mComments);
         writer.writeEndElement();
-        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.commentsPath);
+        const zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.commentsPath);
         this.mArchive.addItem(zipArchiveItem);
     }
     private serializeCommentCommonAttribute(writer: XmlWriter): void {
@@ -714,9 +723,9 @@ export class WordExport {
         writer.writeAttributeString('xmlns', 'w15', undefined, this.w15Namespace);
         writer.writeAttributeString('mc', 'Ignorable', undefined, 'w14 w15');
     }
-    private serializeCommentInternal(writer: XmlWriter, comments: any[], isreplay: boolean): void {
+    private serializeCommentInternal(writer: XmlWriter, comments: any[]): void {
         for (let i: number = 0; i < comments.length; i++) {
-            let comment: any = comments[i];
+            const comment: any = comments[i];
             writer.writeStartElement('w', 'comment', this.wNamespace);
             writer.writeAttributeString('w', 'id', this.wNamespace, this.commentId[comment.commentId].toString());
             if (comment.author && comment.author !== ' ') {
@@ -728,7 +737,7 @@ export class WordExport {
             if (comment.initial && comment.initial !== '') {
                 writer.writeAttributeString('w', 'initials', this.wNamespace, comment.initial);
             }
-            let blocks: any[] = this.retrieveCommentText(comment.text);
+            const blocks: any[] = this.retrieveCommentText(comment.text);
             for (let k: number = 0; k < blocks.length; k++) {
                 this.isInsideComment = true;
                 this.commentParaID++;
@@ -745,16 +754,16 @@ export class WordExport {
             //}
             writer.writeEndElement();
             if (comment.replyComments.length > 0) {
-                this.serializeCommentInternal(writer, comment.replyComments, true);
+                this.serializeCommentInternal(writer, comment.replyComments);
             }
         }
 
     }
     private retrieveCommentText(text: string): any[] {
-        let blocks: any = [];
+        const blocks: any = [];
         let multiText: string[] = text.split('\n');
         multiText = multiText.filter((x: string) => x !== '');
-        let block: any = {};
+        const block: any = {};
         if (multiText.length === 0) {
             block.inlines = [{ text: '' }];
             blocks.push(block);
@@ -772,27 +781,27 @@ export class WordExport {
         if (this.mComments.length === 0 || (this.mComments.length === 1 && this.mComments[0].text === '')) {
             return;
         }
-        let writer: XmlWriter = new XmlWriter();
+        const writer: XmlWriter = new XmlWriter();
         writer.writeStartElement('w15', 'commentsEx', this.wNamespace);
         this.serializeCommentCommonAttribute(writer);
         this.serializeCommentsExInternal(writer, this.mComments, false);
         writer.writeEndElement();
-        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.commentsExtendedPath);
+        const zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.commentsExtendedPath);
         this.mArchive.addItem(zipArchiveItem);
     }
     private serializeCommentsExInternal(writer: XmlWriter, comments: any[], isReply: boolean): void {
         for (let i: number = 0; i < comments.length; i++) {
-            let comment: any = comments[i];
+            const comment: any = comments[i];
             writer.writeStartElement('w15', 'commentEx', this.wNamespace);
             //if (comment.blocks.length > 0) {
-            let syncParaID: number = this.commentParaIDInfo[comment.commentId];
+            const syncParaID: number = this.commentParaIDInfo[comment.commentId];
             if (isReply) {
-                let paraID: number = this.commentParaIDInfo[comment.ownerComment.commentId];
+                const paraID: number = this.commentParaIDInfo[comment.ownerComment.commentId];
                 writer.writeAttributeString('w15', 'paraIdParent', this.wNamespace, paraID.toString());
             }
             writer.writeAttributeString('w15', 'paraId', this.wNamespace, syncParaID.toString());
             //}
-            let val: number = comment.done ? 1 : 0;
+            const val: number = comment.done ? 1 : 0;
             writer.writeAttributeString('w15', 'done', this.wNamespace, val.toString());
             writer.writeEndElement();
             if (comment.replyComments.length > 0) {
@@ -809,10 +818,10 @@ export class WordExport {
         // if (IsNeedToSerializeSectionFootNoteProperties(section))
         //     SerializeFootnoteProperties(section);
         // if (IsNeedToSerializeSectionEndNoteProperties(section))
-        //     SerializeEndnoteProperties(section);      
+        //     SerializeEndnoteProperties(section);
         this.serializeSectionType(writer, 'nextPage');
         this.serializePageSetup(writer, section.sectionFormat);
-        this.serializeColumns(writer, section);
+        this.serializeColumns(writer);
         this.serializeFootNotesPr(writer, section.sectionFormat);
         this.serializeEndNotesPr(writer, section.sectionFormat);
         // this.serializeSectionProtection(section);
@@ -870,7 +879,6 @@ export class WordExport {
             }
             if (section.restartIndexForFootnotes !== undefined) {
                 writer.writeStartElement(undefined, 'numRestart', this.wNamespace);
-                // tslint:disable-next-line:max-line-length
                 writer.writeAttributeString(undefined, 'val', this.wNamespace, this.getFootNoteNumberRestart(section.restartIndexForFootnotes));
                 writer.writeEndElement();
             }
@@ -886,21 +894,21 @@ export class WordExport {
     private getFootNoteNumberFormat(numberFormat: string): string {
         let patternType: string;
         switch (numberFormat) {
-            case 'UpperCaseRoman':
-                patternType = 'upperRoman';
-                break;
-            case 'LowerCaseRoman':
-                patternType = 'lowerRoman';
-                break;
-            case 'UpperCaseLetter':
-                patternType = 'upperLetter';
-                break;
-            case 'LowerCaseLetter':
-                patternType = 'lowerLetter';
-                break;
-            default:
-                patternType = 'decimal';
-                break;
+        case 'UpperCaseRoman':
+            patternType = 'upperRoman';
+            break;
+        case 'LowerCaseRoman':
+            patternType = 'lowerRoman';
+            break;
+        case 'UpperCaseLetter':
+            patternType = 'upperLetter';
+            break;
+        case 'LowerCaseLetter':
+            patternType = 'lowerLetter';
+            break;
+        default:
+            patternType = 'decimal';
+            break;
         }
         return patternType;
     }
@@ -908,12 +916,12 @@ export class WordExport {
 
     private getFootNoteNumberRestart(numberRestart: string): string {
         switch (numberRestart) {
-            case 'RestartForEachSection ':
-                return 'eachSect';
-            case 'RestartForEachPage':
-                return 'eachPage';
-            default:
-                return 'continuous';
+        case 'RestartForEachSection ':
+            return 'eachSect';
+        case 'RestartForEachPage':
+            return 'eachPage';
+        default:
+            return 'continuous';
         }
     }
 
@@ -933,7 +941,6 @@ export class WordExport {
             }
             if (section.restartIndexForEndnotes !== undefined) {
                 writer.writeStartElement(undefined, 'numRestart', this.wNamespace);
-                // tslint:disable-next-line:max-line-length
                 writer.writeAttributeString(undefined, 'val', this.wNamespace, this.getFootNoteNumberRestart(section.restartIndexForEndnotes));
                 writer.writeEndElement();
             }
@@ -947,7 +954,7 @@ export class WordExport {
     }
 
     // Serialize the column properties of section.
-    private serializeColumns(writer: XmlWriter, section: any): void {
+    private serializeColumns(writer: XmlWriter): void {
         writer.writeStartElement(undefined, 'cols', this.wNamespace);
         writer.writeAttributeString(undefined, 'equalWidth', this.wNamespace, '1');
         writer.writeAttributeString(undefined, 'space', this.wNamespace, '0');
@@ -969,7 +976,6 @@ export class WordExport {
         //     writer.WriteAttributeString('equalWidth', this.wNamespace, '1');
         //     //When the column count is negative, MS word just reset the column's count to zero
         //     //To avoid index out of exception, checked the columns count
-        // tslint:disable-next-line:max-line-length
         //     writer.WriteAttributeString('space', this.wNamespace, ToString(columns.length > 0 ? columns[0].Space * this.TwentiethOfPoint : 0));
         // }
         // else if (columns.length > 0)
@@ -980,7 +986,6 @@ export class WordExport {
         //     {
         //         writer.WriteStartElement('col', this.wNamespace);
         //         writer.WriteAttributeString('w', this.wNamespace, ToString(column.Width * this.TwentiethOfPoint));
-        // tslint:disable-next-line:max-line-length
         //         writer.WriteAttributeString('space', this.wNamespace, ToString(column.Space * this.TwentiethOfPoint));
         //         writer.WriteEndElement();
         //     }
@@ -1005,11 +1010,6 @@ export class WordExport {
         //     }
         //     writer.WriteEndElement();
         // }
-        if (pageSetup.restartPageNumbering) {
-            writer.writeStartElement(undefined, 'pgNumType', this.wNamespace);
-            writer.writeAttributeString(undefined, 'start', this.wNamespace, pageSetup.pageStartingNumber.toString());
-            writer.writeEndElement();
-        }
         writer.writeStartElement(undefined, 'pgBorders', this.wNamespace);
         // //zOrder
         // if (pageSetup.PageBordersApplyType === PageBordersApplyType.FirstPage)
@@ -1033,9 +1033,7 @@ export class WordExport {
     // serialize the page size
     private serializePageSize(writer: XmlWriter, pageSetup: any): void {
         writer.writeStartElement(undefined, 'pgSz', this.wNamespace);
-        // tslint:disable-next-line:max-line-length
         writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal(pageSetup.pageWidth * this.twentiethOfPoint).toString());
-        // tslint:disable-next-line:max-line-length
         writer.writeAttributeString(undefined, 'h', this.wNamespace, this.roundToTwoDecimal(pageSetup.pageHeight * this.twentiethOfPoint).toString());
 
         // if (pageSetup.Orientation === PageOrientation.Landscape)
@@ -1056,9 +1054,7 @@ export class WordExport {
         writer.writeAttributeString(undefined, 'bottom', this.wNamespace, marginValue.toString());
         marginValue = Math.round(pageSetup.leftMargin * this.twentiethOfPoint);
         writer.writeAttributeString(undefined, 'left', this.wNamespace, marginValue.toString());
-        // tslint:disable-next-line:max-line-length
         writer.writeAttributeString(undefined, 'header', this.wNamespace, this.roundToTwoDecimal(pageSetup.headerDistance * this.twentiethOfPoint).toString());
-        // tslint:disable-next-line:max-line-length
         writer.writeAttributeString(undefined, 'footer', this.wNamespace, this.roundToTwoDecimal(pageSetup.footerDistance * this.twentiethOfPoint).toString());
 
         writer.writeAttributeString(undefined, 'gutter', this.wNamespace, '0');
@@ -1135,7 +1131,7 @@ export class WordExport {
     }
     // Adds the header footer details to the collection.
     private addHeaderFooter(hf: any, hfType: any, id: string): void {
-        let hfColl: Dictionary<string, any> = new Dictionary<string, any>();
+        const hfColl: Dictionary<string, any> = new Dictionary<string, any>();
         this.headersFooters.add(hfType, hfColl);
         this.headersFooters.get(hfType).add(id, hf);
     }
@@ -1146,7 +1142,7 @@ export class WordExport {
         }
     }
     // serialize the content Control
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     private serializeContentControl(writer: XmlWriter, contentControlItem: any, item: any, isLastSection?: boolean, inlines?: boolean): void {
         if (isNullOrUndefined(contentControlItem)) {
             throw new Error('contentCOntrol should not be undefined');
@@ -1158,10 +1154,9 @@ export class WordExport {
         }
     }
     // serialize Content Control Properties
-    // tslint:disable-next-line:max-line-length
-    // tslint:disable:max-func-body-length
+    // eslint-disable-next-line max-len
     private serializeContentProperties(writer: XmlWriter, contentProperties: any, items: any, isLastSection: boolean, inlines?: boolean): void {
-        let repeatSdt: any = undefined;
+        const repeatSdt: any = undefined;
         if (!isNullOrUndefined(contentProperties.title)) {
             writer.writeStartElement(undefined, 'alias', this.wNamespace);
             writer.writeAttributeString('w', 'val', this.wNamespace, contentProperties.title);
@@ -1247,14 +1242,13 @@ export class WordExport {
             writer.writeEndElement();
         }
         if (!isNullOrUndefined(contentProperties.contentControlListItems) && contentProperties.type === 'DropDownList') {
-            // tslint:disable:no-duplicate-variable
-            let dropDownLists: any = contentProperties.contentControlListItems;
+            const dropDownLists: any = contentProperties.contentControlListItems;
             writer.writeStartElement(undefined, 'dropDownList', this.wNamespace);
             this.serializeContentControlList(writer, dropDownLists);
             writer.writeEndElement();
         }
         if (!isNullOrUndefined(contentProperties.contentControlListItems) && contentProperties.type === 'ComboBox') {
-            let comboList: any = contentProperties.contentControlListItems;
+            const comboList: any = contentProperties.contentControlListItems;
             writer.writeStartElement(undefined, 'comboBox', this.wNamespace);
             this.serializeContentControlList(writer, comboList);
             writer.writeEndElement();
@@ -1271,40 +1265,41 @@ export class WordExport {
         if (inlines) {
             return;
         }
+        /* eslint-disable */
         if (items.hasOwnProperty('blocks') && (isNullOrUndefined(items.cellFormat))) {
             for (let i: number = 0; i < items.blocks.length; i++) {
-                let block: any = items.blocks[i];
+                const block: any = items.blocks[i];
                 if (block.hasOwnProperty('inlines')) {
                     this.paragraph = block;
                     this.serializeParagraph(writer, block, isLastSection);
                     this.paragraph = undefined;
                 } else if (block.hasOwnProperty('rowFormat')) {
-                    let mVerticalMerge: Dictionary<number, number> = new Dictionary<number, number>();
+                    const mVerticalMerge: Dictionary<number, number> = new Dictionary<number, number>();
                     this.serializeRow(writer, block, mVerticalMerge);
                 } else if (block.hasOwnProperty('contentControlProperties')) {
                     this.serializeContentControl(writer, block.contentControlProperties, block, isLastSection);
                 } else {
-                    let table: any = block;
+                    const table: any = block;
                     this.serializeTable(writer, table);
                 }
             }
         } else if (items.hasOwnProperty('rowFormat')) {
             if (items.cells.length > 0) {
-                let mVerticalMerge: Dictionary<number, number> = new Dictionary<number, number>();
+                const mVerticalMerge: Dictionary<number, number> = new Dictionary<number, number>();
                 this.serializeRow(writer, items, mVerticalMerge);
             }
         } else if (items.hasOwnProperty('cellFormat')) {
-            let mVerticalMerge: Dictionary<number, number> = new Dictionary<number, number>();
+            const mVerticalMerge: Dictionary<number, number> = new Dictionary<number, number>();
             this.serializeCell(writer, items, mVerticalMerge);
         }
         writer.writeEndElement();
         writer.writeEndElement();
     }
     private toUnicode(code: string): any {
-        let charCode: number = code.charCodeAt(0);
+        const charCode: number = code.charCodeAt(0);
         return charCode.toString(16);
     }
-    //serialize dropdown and list property 
+    //serialize dropdown and list property
     private serializeContentControlList(writer: XmlWriter, lists: any): void {
         for (let i: number = 0; i < lists.length; i++) {
             writer.writeStartElement(undefined, 'listItem', this.wNamespace);
@@ -1318,10 +1313,10 @@ export class WordExport {
     //Serialize character formatfor content control
     private serializeContentParagraph(writer: XmlWriter, items: any): any {
         for (let i: number = 0; i < items.blocks.length; i++) {
-            let blocks: any = items.blocks[i];
+            const blocks: any = items.blocks[i];
             if (blocks.hasOwnProperty('inlines')) {
                 for (let j: number = 0; j < blocks.inlines.length; j++) {
-                    let inlines: any = blocks.inlines[j];
+                    const inlines: any = blocks.inlines[j];
                     if (!isNullOrUndefined(inlines.characterFormat)) {
                         this.serializeCharacterFormat(writer, inlines.characterFormat);
                     }
@@ -1368,7 +1363,7 @@ export class WordExport {
             this.serializeParagraph(writer, item, isLastSection);
             this.paragraph = undefined;
         } else {
-            let table: any = item;
+            const table: any = item;
             for (let i: number = 0; i < table.rows.length; i++) {
                 if (table.rows[i].cells.length > 0) {
                     this.serializeTable(writer, table);
@@ -1376,7 +1371,7 @@ export class WordExport {
                 }
             }
         }
-        let sec: any = this.blockOwner;
+        const sec: any = this.blockOwner;
 
         //Need to write the Section Properties if the Paragraph is last item in the section
         if (!isLastSection && sec.hasOwnProperty('sectionFormat')
@@ -1432,15 +1427,14 @@ export class WordExport {
             if (item.hasOwnProperty('fieldType') && item.fieldType === 1) {
                 return;
             }
-            // tslint:disable-next-line:max-line-length
             if (!isNullOrUndefined(previousNode) && previousNode.hasOwnProperty('bookmarkType') && (previousNode.bookmarkType === 0 && !(previousNode.name.indexOf('_Toc') >= 0))) {
                 return;
             }
 
-            let ids: string[] = item.revisionIds;
+            const ids: string[] = item.revisionIds;
 
             for (let i: number = 0; i < ids.length; i++) {
-                let revision: Revision = this.retrieveRevision(ids[i]);
+                const revision: Revision = this.retrieveRevision(ids[i]);
                 if (revision.revisionType === 'Insertion') {
                     this.serializeTrackChanges(writer, 'ins', revision.author, revision.date);
                 }
@@ -1457,11 +1451,9 @@ export class WordExport {
         writer.writeAttributeString('w', 'author', this.wNamespace, author);
         writer.writeAttributeString('w', 'date', this.wNamespace, date);
     }
-    /**
-     * Method to return matched revisions
-     */
+
     private retrieveRevision(id: any): Revision {
-        let matchedRevisions: any = [];
+        const matchedRevisions: any = [];
         for (let i: number = 0; i < this.revisions.length; i++) {
             if (this.revisions[i].revisionID === id) {
                 return this.revisions[i];
@@ -1475,7 +1467,7 @@ export class WordExport {
         let previousNode: any = undefined;
         let isContinueOverride: boolean = false;
         for (let i: number = 0; i < paraItems.length; i++) {
-            let item: any = paraItems[i];
+            const item: any = paraItems[i];
             if (item.hasOwnProperty('contentControlProperties')) {
                 inlines = true;
                 this.serializeContentControl(writer, item.contentControlProperties, item, undefined, inlines);
@@ -1502,7 +1494,7 @@ export class WordExport {
             } else if (item.hasOwnProperty('imageString')) {
                 this.serializePicture(writer, item);
             } else if (item.hasOwnProperty('shapeId')) {
-                let currentParargaph: any = this.paragraph;
+                const currentParargaph: any = this.paragraph;
                 this.serializeShape(writer, item);
                 this.paragraph = currentParargaph;
             } else if (item.hasOwnProperty('bookmarkType')) {
@@ -1536,7 +1528,7 @@ export class WordExport {
     }
     private serializeEFReference(writer: XmlWriter, item: any): void {
         let efId: string = '';
-        let ef: any = item.blocks;
+        const ef: any = item.blocks;
         if (item.footnoteType === 'Footnote') {
             writer.writeStartElement(undefined, 'r', this.wNamespace);
             this.serializeCharacterFormat(writer, item.characterFormat);
@@ -1558,23 +1550,23 @@ export class WordExport {
         }
     }
     private addFootnotesEndnotes(ef: any, efType: any, id: string): void {
-        let efColl: Dictionary<string, any> = new Dictionary<string, any>();
-        this.EndnotesFootnotes.add(efType, efColl);
-        this.EndnotesFootnotes.get(efType).add(id, ef);
+        const efColl: Dictionary<string, any> = new Dictionary<string, any>();
+        this.endnotesFootnotes.add(efType, efColl);
+        this.endnotesFootnotes.get(efType).add(id, ef);
     }
     private serializeEndnotesFootnote(writer: XmlWriter, efType: any): void {
-        if (this.EndnotesFootnotes.length === 0) {
+        if (this.endnotesFootnotes.length === 0) {
             return;
         }
         let endnoteFootnotePath: string;
         let endnoteFootnoteRelsPath: string;
-        if (!this.EndnotesFootnotes.containsKey(efType)) {
+        if (!this.endnotesFootnotes.containsKey(efType)) {
             return;
         }
-        let efColl: Dictionary<string, any> = this.EndnotesFootnotes.get(efType);
+        const efColl: Dictionary<string, any> = this.endnotesFootnotes.get(efType);
         let ef: any = undefined;
         for (let i: number = 0; i < efColl.keys.length; i++) {
-            let id: string = efColl.keys[i];
+            const id: string = efColl.keys[i];
             ef = efColl.get(id);
             if (efType === 'endnote') {
                 endnoteFootnotePath = this.endnotesPath;
@@ -1589,7 +1581,7 @@ export class WordExport {
     }
     private serializeInlineEndnotes(writer: XmlWriter, endNote: any, id: string): void {
         this.endNoteFootnote = endNote;
-        let owner: any = this.blockOwner;
+        const owner: any = this.blockOwner;
         this.blockOwner = endNote;
         writer.writeStartElement('w', 'endnote', this.wNamespace);
         writer.writeAttributeString(undefined, 'id', this.wNamespace, id);
@@ -1601,7 +1593,7 @@ export class WordExport {
 
     private serializeInlineFootnotes(writer: XmlWriter, footNote: any, id: string): void {
         this.endNoteFootnote = footNote;
-        let owner: any = this.blockOwner;
+        const owner: any = this.blockOwner;
         this.blockOwner = footNote;
         writer.writeStartElement('w', 'footnote', this.wNamespace);
         writer.writeAttributeString(undefined, 'id', this.wNamespace, id);
@@ -1623,7 +1615,7 @@ export class WordExport {
     //     let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, itemPath);
     //     this.mArchive.addItem(zipArchiveItem);
     //     return itemPath;
-    // } 
+    // }
     // private footnoteXMLItemProps(itemID: string, fileIndex: number): any {
     //     let writer: XmlWriter = new XmlWriter();
     //     let customitemPropsPath: string = this.customXMLItemsPropspath + fileIndex + '.xml';
@@ -1643,7 +1635,7 @@ export class WordExport {
     //     return itemPropsPath;
     // }
 
-    //Serialize the Footnote Endnotes Common Atributes 
+    //Serialize the Footnote Endnotes Common Atributes
     private writeEFCommonAttributes(writer: XmlWriter): void {
         writer.writeAttributeString('xmlns', 'wpc', undefined, this.wpCanvasNamespace);
         writer.writeAttributeString('xmlns', 'cx', undefined, this.cxNamespace);
@@ -1662,7 +1654,7 @@ export class WordExport {
         if (isNullOrUndefined(this.document.footnotes)) {
             return;
         } else {
-            let writer: XmlWriter = new XmlWriter();
+            const writer: XmlWriter = new XmlWriter();
             writer.writeStartElement('w', 'footnotes', this.wNamespace);
             this.writeEFCommonAttributes(writer);
             writer.writeStartElement('w', 'footnote', this.wNamespace);
@@ -1684,7 +1676,7 @@ export class WordExport {
             }
             this.serializeEndnotesFootnote(writer, 'footnote');
             writer.writeEndElement();
-            let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.footnotesPath);
+            const zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.footnotesPath);
             this.mArchive.addItem(zipArchiveItem);
         }
     }
@@ -1692,7 +1684,7 @@ export class WordExport {
         if (isNullOrUndefined(this.document.footnotes)) {
             return;
         } else {
-            let writer: XmlWriter = new XmlWriter();
+            const writer: XmlWriter = new XmlWriter();
             writer.writeStartElement('w', 'endnotes', this.wNamespace);
             this.writeEFCommonAttributes(writer);
             writer.writeStartElement('w', 'endnote', this.wNamespace);
@@ -1714,7 +1706,7 @@ export class WordExport {
             }
             this.serializeEndnotesFootnote(writer, 'endnote');
             writer.writeEndElement();
-            let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.endnotesPath);
+            const zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.endnotesPath);
             this.mArchive.addItem(zipArchiveItem);
         }
     }
@@ -1726,13 +1718,11 @@ export class WordExport {
                 return;
             }
             //skip revision end for field result text as we need to only on field end.
-            // tslint:disable-next-line:max-line-length
             if (!isNullOrUndefined(previousNode) && previousNode.hasOwnProperty('fieldType') && (previousNode.fieldType === 2 || (previousNode.fieldType === 0 && item.text.indexOf('TOC') >= 0))) {
                 return;
             }
             for (let i: number = 0; i < item.revisionIds.length; i++) {
-                let revision: Revision = this.retrieveRevision(item.revisionIds[i]);
-                // tslint:disable-next-line:max-line-length
+                const revision: Revision = this.retrieveRevision(item.revisionIds[i]);
                 if (revision.revisionType === 'Insertion' || revision.revisionType === 'Deletion') {
                     writer.writeEndElement();
                 }
@@ -1795,8 +1785,8 @@ export class WordExport {
     }
     // Serialize the book mark
     private serializeBookMark(writer: XmlWriter, bookmark: any): void {
-        let bookmarkId: number = this.getBookmarkId(bookmark.name);
-        let bookmarkName: string = bookmark.name;
+        const bookmarkId: number = this.getBookmarkId(bookmark.name);
+        const bookmarkName: string = bookmark.name;
         if (bookmark.bookmarkType === 0) {
             writer.writeStartElement('w', 'bookmarkStart', this.wNamespace);
             writer.writeAttributeString('w', 'name', this.wNamespace, bookmarkName);
@@ -1847,19 +1837,16 @@ export class WordExport {
             writer.writeStartElement(undefined, 'inline', this.wpNamespace);
         } else {
             writer.writeStartElement('wp', 'anchor', this.wpNamespace);
-            writer.writeAttributeString(undefined, 'distT', undefined, '0');
-            writer.writeAttributeString(undefined, 'distB', undefined, '0');
-            writer.writeAttributeString(undefined, 'distL', undefined, '114300');
-            writer.writeAttributeString(undefined, 'distR', undefined, '114300');
+            this.serializeInlinePictureAndShapeDistance(writer, draw);
             writer.writeAttributeString(undefined, 'simplePos', undefined, '0');
             writer.writeAttributeString(undefined, 'relativeHeight', undefined, draw.zOrderPosition.toString());
             //TextWrappingStyle.InFrontOfText
             writer.writeAttributeString(undefined, 'behindDoc', undefined, '0');
-            let lockAnchor: string = (draw.LockAnchor) ? '1' : '0';
+            const lockAnchor: string = (draw.LockAnchor) ? '1' : '0';
             writer.writeAttributeString(undefined, 'locked', undefined, lockAnchor);
-            let layoutcell: string = (draw.layoutInCell) ? '1' : '0';
+            const layoutcell: string = (draw.layoutInCell) ? '1' : '0';
             writer.writeAttributeString(undefined, 'layoutInCell', undefined, layoutcell);
-            let allowOverlap: string = (draw.allowOverlap) ? '1' : '0';
+            const allowOverlap: string = (draw.allowOverlap) ? '1' : '0';
             writer.writeAttributeString(undefined, 'allowOverlap', undefined, allowOverlap);
             writer.writeStartElement('wp', 'simplePos', this.wpNamespace);
             writer.writeAttributeString(undefined, 'x', undefined, '0');
@@ -1869,12 +1856,12 @@ export class WordExport {
             writer.writeAttributeString(undefined, 'relativeFrom', undefined, draw.horizontalOrigin.toString().toLowerCase());
             if (draw.horizontalAlignment === 'None') {
                 writer.writeStartElement('wp', 'posOffset', this.wpNamespace);
-                let horPos: number = Math.round(draw.horizontalPosition * this.emusPerPoint);
+                const horPos: number = Math.round(draw.horizontalPosition * this.emusPerPoint);
                 writer.writeString(horPos.toString());
                 writer.writeEndElement(); //end of posOffset
             } else {
                 writer.writeStartElement('wp', 'align', this.wpNamespace);
-                let horAlig: string = draw.horizontalAlignment.toString().toLowerCase();
+                const horAlig: string = draw.horizontalAlignment.toString().toLowerCase();
                 writer.writeString(horAlig);
                 writer.writeEndElement(); //end of align
             }
@@ -1883,12 +1870,12 @@ export class WordExport {
             writer.writeAttributeString(undefined, 'relativeFrom', undefined, draw.verticalOrigin.toString().toLowerCase());
             if (draw.verticalAlignment === 'None') {
                 writer.writeStartElement('wp', 'posOffset', this.wpNamespace);
-                let vertPos: number = Math.round(draw.verticalPosition * this.emusPerPoint);
+                const vertPos: number = Math.round(draw.verticalPosition * this.emusPerPoint);
                 writer.writeString(vertPos.toString());
                 writer.writeEndElement(); // end of posOffset
             } else {
                 writer.writeStartElement('wp', 'align', this.wpNamespace);
-                let verAlig: string = draw.verticalAlignment.toString().toLowerCase();
+                const verAlig: string = draw.verticalAlignment.toString().toLowerCase();
                 writer.writeString(verAlig);
                 writer.writeEndElement(); //end of align
             }
@@ -1896,9 +1883,9 @@ export class WordExport {
         }
 
         writer.writeStartElement(undefined, 'extent', this.wpNamespace);
-        let cx: number = Math.round(draw.width * this.emusPerPoint);
+        const cx: number = Math.round(draw.width * this.emusPerPoint);
         writer.writeAttributeString(undefined, 'cx', undefined, cx.toString());
-        let cy: number = Math.round(draw.height * this.emusPerPoint);
+        const cy: number = Math.round(draw.height * this.emusPerPoint);
         writer.writeAttributeString(undefined, 'cy', undefined, cy.toString());
         writer.writeEndElement();
         // double borderWidth = (double)picture.PictureShape.PictureDescriptor.BorderLeft.LineWidth / DLSConstants.BorderLineFactor;
@@ -1920,6 +1907,16 @@ export class WordExport {
         }
         writer.writeEndElement();
     }
+    private serializeInlinePictureAndShapeDistance(writer: XmlWriter, draw: any): void {
+        let top: string = draw.distanceTop ? Math.round(draw.distanceTop * this.emusPerPoint).toString() : '0';
+        writer.writeAttributeString(undefined, 'distT', undefined, top);
+        let bottom: string = draw.distanceBottom ? Math.round(draw.distanceBottom * this.emusPerPoint).toString() : '0';
+        writer.writeAttributeString(undefined, 'distB', undefined, bottom);
+        let left: string = draw.distanceLeft ? Math.round(draw.distanceLeft * this.emusPerPoint).toString() : '114300';
+        writer.writeAttributeString(undefined, 'distL', undefined, left);
+        let right: string = draw.distanceRight ? Math.round(draw.distanceRight * this.emusPerPoint).toString() : '114300';
+        writer.writeAttributeString(undefined, 'distR', undefined, right);
+    }
     // serialize inline chart
     private serializeInlineCharts(writer: XmlWriter, item: any): void {
         writer.writeStartElement(undefined, 'inline', this.wpNamespace);
@@ -1928,9 +1925,9 @@ export class WordExport {
         writer.writeAttributeString(undefined, 'distL', undefined, '0');
         writer.writeAttributeString(undefined, 'distR', undefined, '0');
         writer.writeStartElement(undefined, 'extent', this.wpNamespace);
-        let cx: number = Math.round(item.width * this.emusPerPoint);
+        const cx: number = Math.round(item.width * this.emusPerPoint);
         writer.writeAttributeString(undefined, 'cx', undefined, cx.toString());
-        let cy: number = Math.round(item.height * this.emusPerPoint);
+        const cy: number = Math.round(item.height * this.emusPerPoint);
         writer.writeAttributeString(undefined, 'cy', undefined, cy.toString());
         writer.writeEndElement(); // end of wp:extend
         writer.writeStartElement(undefined, 'effectExtent', this.wpNamespace);
@@ -1989,7 +1986,7 @@ export class WordExport {
     // serialize Chart.xml
     private serializeChartXML(): void {
         let chartPath: string = '';
-        let writer: XmlWriter = new XmlWriter();
+        const writer: XmlWriter = new XmlWriter();
         writer.writeStartElement('c', 'chartSpace', this.chartNamespace);
         writer.writeAttributeString('xmlns', 'a', undefined, this.aNamespace);
         writer.writeAttributeString('xmlns', 'r', undefined, this.rNamespace);
@@ -2004,28 +2001,28 @@ export class WordExport {
         writer.writeEndElement(); // end of externalData
         writer.writeEndElement(); // end of chartSpace
         chartPath = this.chartPath + '/chart' + this.chartCount + '.xml';
-        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, chartPath);
+        const zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, chartPath);
         this.mArchive.addItem(zipArchiveItem);
     }
     // serialize chart colors.xml
     private serializeChartColors(): void {
-        let writer: XmlWriter = new XmlWriter();
+        const writer: XmlWriter = new XmlWriter();
         let colorPath: string = '';
         writer.writeStartElement('cs', 'colorStyle', this.csNamespace);
         writer.writeAttributeString('xmlns', 'a', undefined, this.aNamespace);
         writer.writeAttributeString(undefined, 'meth', undefined, 'cycle');
         writer.writeAttributeString(undefined, 'id', undefined, '10');
 
-        this.serializeChartColor(writer, this.chart);
+        this.serializeChartColor(writer);
         colorPath = this.chartPath + '/colors' + this.chartCount + '.xml';
 
         writer.writeEndElement(); // end of cs:colorStyle chart color
 
-        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, colorPath);
+        const zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, colorPath);
         this.mArchive.addItem(zipArchiveItem);
         colorPath = '';
     }
-    private serializeChartColor(writer: XmlWriter, chart: any): void {
+    private serializeChartColor(writer: XmlWriter): void {
         for (let i: number = 1; i <= 6; i++) {
             writer.writeStartElement('a', 'schemeClr', this.aNamespace);
             writer.writeAttributeString(undefined, 'val', undefined, 'accent' + i);
@@ -2093,8 +2090,8 @@ export class WordExport {
         }
         this.mArchiveExcel = new ZipArchive();
         this.mArchiveExcel.compressionLevel = 'Normal';
-        let type: string = this.chart.chartType;
-        let isScatterType: boolean = (type === 'Scatter_Markers' || type === 'Bubble');
+        const type: string = this.chart.chartType;
+        const isScatterType: boolean = (type === 'Scatter_Markers' || type === 'Bubble');
         this.serializeWorkBook();
         this.serializeSharedString(isScatterType);
         this.serializeExcelContentTypes();
@@ -2106,8 +2103,8 @@ export class WordExport {
     }
 
     private serializeWorkBook(): void {
-        let writer: XmlWriter = new XmlWriter();
-        let workbookPath: string = 'xl/workbook.xml';
+        const writer: XmlWriter = new XmlWriter();
+        const workbookPath: string = 'xl/workbook.xml';
         this.resetExcelRelationShipId();
         writer.writeStartElement(undefined, 'workbook', undefined);
         writer.writeAttributeString('xmlns', 'r', undefined, this.rNamespace);
@@ -2121,27 +2118,27 @@ export class WordExport {
         writer.writeEndElement(); // end of sheets
         writer.writeEndElement(); // end of workbook
 
-        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, workbookPath);
+        const zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, workbookPath);
         this.mArchiveExcel.addItem(zipArchiveItem);
     }
 
     private serializeExcelStyles(): void {
-        let writer: XmlWriter = new XmlWriter();
-        let stylePath: string = 'xl/styles.xml';
+        const writer: XmlWriter = new XmlWriter();
+        const stylePath: string = 'xl/styles.xml';
         writer.writeStartElement(undefined, 'styleSheet', undefined);
         writer.writeAttributeString('xmlns', 'mc', undefined, this.veNamespace);
         writer.writeAttributeString('mc', 'Ignorable', undefined, 'x14ac');
         writer.writeAttributeString('xmlns', 'x14ac', undefined, 'http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac');
         writer.writeAttributeString('xmlns', undefined, undefined, this.spreadSheetNamespace);
         writer.writeEndElement(); // end of styleSheet
-        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, stylePath);
+        const zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, stylePath);
         this.mArchiveExcel.addItem(zipArchiveItem);
     }
 
     private serializeExcelData(isScatterType: boolean): void {
         // excel data
         let sheetPath: string = '';
-        let writer: XmlWriter = new XmlWriter();
+        const writer: XmlWriter = new XmlWriter();
         writer.writeStartElement(undefined, 'worksheet', undefined);
         writer.writeAttributeString('xmlns', 'r', undefined, this.rNamespace);
         writer.writeAttributeString('xmlns', 'x14', undefined, this.spreadSheet9);
@@ -2151,20 +2148,20 @@ export class WordExport {
 
         writer.writeEndElement(); // end of worksheet
         sheetPath = 'xl/worksheets' + '/sheet1.xml';
-        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, sheetPath);
+        const zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, sheetPath);
         this.mArchiveExcel.addItem(zipArchiveItem);
     }
     private serializeSharedString(isScatterType: boolean): void {
-        let chart: any = this.chart;
-        let writer: XmlWriter = new XmlWriter();
+        const chart: any = this.chart;
+        const writer: XmlWriter = new XmlWriter();
         let sharedStringPath: string = '';
-        let chartSharedString: string[] = [];
-        let type: string = this.chart.chartType;
-        let seriesLength: number = chart.chartSeries.length;
+        const chartSharedString: string[] = [];
+        const type: string = this.chart.chartType;
+        const seriesLength: number = chart.chartSeries.length;
         for (let column: number = 0; column < seriesLength; column++) {
-            let series: any = chart.chartSeries[column];
-            let seriesName: string = series.seriesName;
-            let isString: RegExpMatchArray = seriesName.match(/[a-z]/i);
+            const series: any = chart.chartSeries[column];
+            const seriesName: string = series.seriesName;
+            const isString: RegExpMatchArray = seriesName.match(/[a-z]/i);
             if (isScatterType && column === 0) {
                 chartSharedString.push('X-Values');
             }
@@ -2177,16 +2174,16 @@ export class WordExport {
             chartSharedString.push('Size');
         }
         for (let row: number = 0; row < chart.chartCategory.length; row++) {
-            let category: any = chart.chartCategory[row];
-            let format: string = chart.chartPrimaryCategoryAxis.numberFormat;
-            let categoryName: string = category.categoryXName;
-            let isString: RegExpMatchArray = categoryName.match(/[a-z]/i);
+            const category: any = chart.chartCategory[row];
+            const format: string = chart.chartPrimaryCategoryAxis.numberFormat;
+            const categoryName: string = category.categoryXName;
+            const isString: RegExpMatchArray = categoryName.match(/[a-z]/i);
             if (isString || format === 'm/d/yyyy') {
                 chartSharedString.push(category.categoryXName);
                 this.chartStringCount++;
             }
         }
-        let uniqueCount: number = this.chartStringCount + 1;
+        const uniqueCount: number = this.chartStringCount + 1;
         writer.writeStartElement(undefined, 'sst', undefined);
         writer.writeAttributeString('xmlns', undefined, undefined, this.spreadSheetNamespace);
         writer.writeAttributeString(undefined, 'count', undefined, uniqueCount.toString());
@@ -2205,17 +2202,17 @@ export class WordExport {
         }
         writer.writeEndElement(); // end of sst
         sharedStringPath = 'xl/sharedStrings' + '.xml';
-        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, sharedStringPath);
+        const zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, sharedStringPath);
         this.mArchiveExcel.addItem(zipArchiveItem);
     }
     // excel sheet data
     private serializeExcelSheet(writer: XmlWriter, isScatterType: boolean): void {
-        let chart: any = this.chart;
+        const chart: any = this.chart;
         let type: string = 's';
-        let isBubbleType: boolean = (chart.chartType === 'Bubble');
+        const isBubbleType: boolean = (chart.chartType === 'Bubble');
         let bubbleLength: number;
-        let categoryLength: number = chart.chartCategory.length + 1;
-        let format: string = chart.chartPrimaryCategoryAxis.numberFormat;
+        const categoryLength: number = chart.chartCategory.length + 1;
+        const format: string = chart.chartPrimaryCategoryAxis.numberFormat;
         let seriesLength: number = chart.chartSeries.length + 1;
         if (isBubbleType) {
             bubbleLength = seriesLength;
@@ -2229,13 +2226,13 @@ export class WordExport {
             writer.writeStartElement(undefined, 'row', undefined);
             writer.writeAttributeString(undefined, 'r', undefined, (row + 1).toString());
             for (let column: number = 0; column < seriesLength; column++) {
-                let alphaNumeric: string = String.fromCharCode('A'.charCodeAt(0) + column) + (row + 1).toString();
+                const alphaNumeric: string = String.fromCharCode('A'.charCodeAt(0) + column) + (row + 1).toString();
                 writer.writeStartElement(undefined, 'c', undefined);
                 writer.writeAttributeString(undefined, 'r', undefined, alphaNumeric);
                 if (row !== 0 && column === 0) {
                     category = chart.chartCategory[row - 1];
-                    let categoryName: string = category.categoryXName;
-                    let isString: RegExpMatchArray = categoryName.match(/[a-z]/i);
+                    const categoryName: string = category.categoryXName;
+                    const isString: RegExpMatchArray = categoryName.match(/[a-z]/i);
                     if (isNullOrUndefined(isString) && format === 'm/d/yyyy') {
                         type = 's';
                     } else if ((!isString && !isNullOrUndefined(isString)) || isScatterType) {
@@ -2245,8 +2242,8 @@ export class WordExport {
                     }
                 } else if (row === 0 && column !== 0 && column !== (bubbleLength)) {
                     series = chart.chartSeries[column - 1];
-                    let seriesName: string = series.seriesName;
-                    let isString: RegExpMatchArray = seriesName.match(/[a-z]/i);
+                    const seriesName: string = series.seriesName;
+                    const isString: RegExpMatchArray = seriesName.match(/[a-z]/i);
                     if (!isString) {
                         type = 'n';
                     } else {
@@ -2271,12 +2268,12 @@ export class WordExport {
                 } else if (column !== 0 && type !== 's' && row === 0 && column !== (bubbleLength)) {
                     writer.writeString(series.seriesName);
                 } else if (column !== 0 && column !== (bubbleLength)) {
-                    let data: any = category.chartData[column - 1];
-                    let yValue: any = data.yValue;
+                    const data: any = category.chartData[column - 1];
+                    const yValue: any = data.yValue;
                     writer.writeString(yValue.toString());
                 } else if (isBubbleType && column === (bubbleLength)) {
-                    let data: any = category.chartData[column - 2];
-                    let size: any = data.size;
+                    const data: any = category.chartData[column - 2];
+                    const size: any = data.size;
                     writer.writeString(size.toString());
                 }
                 writer.writeEndElement(); // end of v[value]
@@ -2289,46 +2286,43 @@ export class WordExport {
     }
     // excel content types
     private serializeExcelContentTypes(): void {
-        let writer: XmlWriter = new XmlWriter();
+        const writer: XmlWriter = new XmlWriter();
         writer.writeStartElement(undefined, 'Types', 'http://schemas.openxmlformats.org/package/2006/content-types');
         this.serializeDefaultContentType(writer, 'xml', this.xmlContentType);
         this.serializeDefaultContentType(writer, 'rels', this.relationContentType);
-        // tslint:disable-next-line:max-line-length
         this.serializeOverrideContentType(writer, 'xl/styles.xml', 'application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml');
         this.serializeOverrideContentType(writer, 'xl/workbook.xml', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml');
-        // tslint:disable-next-line:max-line-length
         // this.serializeOverrideContentType(writer, '/docProps/app.xml', 'application/vnd.openxmlformats-officedocument.extended-properties+xml');
         // this.serializeOverrideContentType(writer, '/docProps/core.xml', 'application/vnd.openxmlformats-package.core-properties+xml');
-        // tslint:disable-next-line:max-line-length
         this.serializeOverrideContentType(writer, 'xl/sharedStrings.xml', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml');
         this.serializeOverrideContentType(writer, 'xl/worksheets/sheet1.xml', 'application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml');
         writer.writeEndElement(); // end of types tag
 
-        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.contentTypesPath);
+        const zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.contentTypesPath);
         this.mArchiveExcel.addItem(zipArchiveItem);
     }
 
     private serializeExcelRelation(): void {
-        let writer: XmlWriter = new XmlWriter();
+        const writer: XmlWriter = new XmlWriter();
         this.resetExcelRelationShipId();
-        let worksheetType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet';
-        let sharedStringType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings';
+        const worksheetType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet';
+        const sharedStringType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings';
         writer.writeStartElement(undefined, 'Relationships', this.rpNamespace);
         this.serializeRelationShip(writer, this.getNextExcelRelationShipID(), worksheetType, 'worksheets/sheet1.xml');
         this.serializeRelationShip(writer, this.getNextExcelRelationShipID(), this.stylesRelType, 'styles.xml');
         this.serializeRelationShip(writer, this.getNextExcelRelationShipID(), sharedStringType, 'sharedStrings.xml');
         writer.writeEndElement(); // end of relationships
-        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.excelRelationPath);
+        const zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.excelRelationPath);
         this.mArchiveExcel.addItem(zipArchiveItem);
     }
 
     private serializeExcelGeneralRelations(): void {
-        let writer: XmlWriter = new XmlWriter();
+        const writer: XmlWriter = new XmlWriter();
         this.resetExcelRelationShipId();
         writer.writeStartElement(undefined, 'Relationships', this.rpNamespace);
         this.serializeRelationShip(writer, this.getNextExcelRelationShipID(), this.documentRelType, 'xl/workbook.xml');
         writer.writeEndElement(); // end of relationships
-        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.generalRelationPath);
+        const zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.generalRelationPath);
         this.mArchiveExcel.addItem(zipArchiveItem);
     }
 
@@ -2401,7 +2395,7 @@ export class WordExport {
         writer.writeEndElement(); // end tag of txPr
     }
     //  chart plot area
-    // tslint:disable:max-func-body-length
+    /* eslint-disable */
     private serializeChartPlotArea(writer: XmlWriter, chart: any): void {
         writer.writeStartElement('c', 'autoTitleDeleted', this.chartNamespace);
         writer.writeAttributeString(undefined, 'val', undefined, '0');
@@ -3381,8 +3375,7 @@ export class WordExport {
     private serializeShapeDrawingGraphics(writer: XmlWriter, shape: any): void {
         let val: string = shape.autoShapeType;
         let id: number = shape.shapeId;
-        writer.writeStartElement('wp', 'wrapNone', this.wpNamespace);
-        writer.writeEndElement();
+        this.serializeShapeWrapStyle(writer, shape);
         writer.writeStartElement('wp', 'docPr', this.wpNamespace);
         writer.writeAttributeString(undefined, 'id', undefined, id.toString());
         writer.writeAttributeString(undefined, 'name', undefined, shape.name);
@@ -3426,7 +3419,7 @@ export class WordExport {
         writer.writeEndElement();
         writer.writeStartElement('a', 'ln', this.aNamespace);
         writer.writeAttributeString(undefined, 'w', undefined, '12700');
-        if (!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.lineFormat.lineFormatType !== 'None') {
+        if (shape.lineFormat.lineFormatType !== 'None') {
             writer.writeStartElement('a', 'solidFill', this.aNamespace);
             writer.writeStartElement('a', 'srgbClr', this.aNamespace);
             writer.writeAttributeString(undefined, 'val', undefined, this.getColor(shape.lineFormat.color));
@@ -3453,17 +3446,22 @@ export class WordExport {
         }
         writer.writeStartElement('wps', 'bodyPr', this.wpShapeNamespace);
         if (!isNullOrUndefined(shape.textFrame)) {
+            let margin: string;
             if (shape.textFrame.leftMargin >= 0) {
-                writer.writeAttributeString(undefined, 'lIns', undefined, (Math.round(shape.textFrame.leftMargin).toString()));
+                margin = Math.round(shape.textFrame.leftMargin * this.emusPerPoint).toString();
+                writer.writeAttributeString(undefined, 'lIns', undefined, margin);
             }
             if (shape.textFrame.topMargin >= 0) {
-                writer.writeAttributeString(undefined, 'tIns', undefined, (Math.round(shape.textFrame.topMargin).toString()));
+                margin = Math.round(shape.textFrame.topMargin * this.emusPerPoint).toString();
+                writer.writeAttributeString(undefined, 'tIns', undefined, margin);
             }
             if (shape.textFrame.rightMargin >= 0) {
-                writer.writeAttributeString(undefined, 'rIns', undefined, (Math.round(shape.textFrame.rightMargin).toString()));
+                margin = Math.round(shape.textFrame.rightMargin * this.emusPerPoint).toString();
+                writer.writeAttributeString(undefined, 'rIns', undefined, margin);
             }
             if (shape.textFrame.bottomMargin >= 0) {
-                writer.writeAttributeString(undefined, 'bIns', undefined, (Math.round(shape.textFrame.bottomMargin).toString()));
+                margin = Math.round(shape.textFrame.bottomMargin * this.emusPerPoint).toString();
+                writer.writeAttributeString(undefined, 'bIns', undefined, margin);
             }
             writer.writeAttributeString(undefined, 'anchor', undefined, 't');
             writer.writeAttributeString(undefined, 'anchorCtr', undefined, '0');
@@ -3476,6 +3474,22 @@ export class WordExport {
         writer.writeEndElement();
 
 
+    }
+    private serializeShapeWrapStyle(writer: XmlWriter, shape: any): void {
+        let textWrappingStyle: string = 'wrapNone';
+        if (shape.textWrappingStyle && shape.textWrappingStyle !== 'InFrontOfText') {
+            textWrappingStyle = 'wrap' + shape.textWrappingStyle;
+            if (shape.textWrappingStyle === 'Tight') {
+                textWrappingStyle = 'wrap' + 'Square';
+            }
+        }
+        writer.writeStartElement('wp', textWrappingStyle, this.wpNamespace);
+        if (shape.textWrappingStyle && shape.textWrappingStyle !== 'InFrontOfText' &&
+            shape.textWrappingType) {
+            let wrapType: string = shape.textWrappingType === 'Both' ? 'bothSides' : (shape.textWrappingType as string).toLowerCase();
+            writer.writeAttributeString(undefined, 'wrapText', undefined, wrapType);
+        }
+        writer.writeEndElement();
     }
     // Serialize the graphics element for pictures.
     private serializeDrawingGraphics(writer: XmlWriter, picture: any): void {
@@ -3886,7 +3900,6 @@ export class WordExport {
         return increment;
     }
     // Serialize the cell formatting
-    // tslint:disable-next-line:max-line-length
     private serializeCellFormat(writer: XmlWriter, cellFormat: any, ensureMerge: boolean, endProperties: boolean, mVerticalMerge: Dictionary<number, number>): Dictionary<number, number> {
 
         let cell: any = this.blockOwner;
@@ -3978,13 +3991,11 @@ export class WordExport {
         writer.writeStartElement(undefined, 'tcW', this.wNamespace);
         if (cf.preferredWidthType === 'Percent') {
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'pct');
-            // tslint:disable-next-line:max-line-length
             writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal(cf.preferredWidth * this.percentageFactor).toString());
         } else if (cf.preferredWidthType === 'Auto') {
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'auto');
             writer.writeAttributeString(undefined, 'w', this.wNamespace, '0');
         } else {
-            // tslint:disable-next-line:max-line-length
             writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal(cf.preferredWidth * this.twipsInOnePoint).toString());
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
         }
@@ -4013,9 +4024,9 @@ export class WordExport {
             for (let i: number = prevIndex; i < currentIndex; i++) {
                 collKey = prevIndex + 1;
                 prevIndex += 1;
-                if (collKey === 0 && mVerticalMerge.containsKey(collKey)) {
-                    mVerticalMerge = this.createMerge(writer, collKey, cell, mVerticalMerge);
-                }
+            }
+            if (collKey === 0 && mVerticalMerge.containsKey(collKey)) {
+                mVerticalMerge = this.createMerge(writer, collKey, cell, mVerticalMerge);
             }
         }
         if (cellFormat.rowSpan > 1) {
@@ -4032,7 +4043,6 @@ export class WordExport {
         }
         return mVerticalMerge;
     }
-    // tslint:disable-next-line:max-line-length
     private createMerge(writer: XmlWriter, collKey: number, cell: any, mVerticalMerge: Dictionary<number, number>): Dictionary<number, number> {
         this.serializeColumnSpan(collKey, writer);
         writer.writeStartElement(undefined, 'vMerge', this.wNamespace);
@@ -4507,7 +4517,6 @@ export class WordExport {
     private serializeCellSpacing(writer: XmlWriter, format: any): void {
         if (!isNullOrUndefined(format.cellSpacing) && format.cellSpacing > 0) {
             writer.writeStartElement(undefined, 'tblCellSpacing', this.wNamespace);
-            // tslint:disable-next-line:max-line-length
             writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal((format.cellSpacing / 2) * this.twentiethOfPoint).toString());
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
             writer.writeEndElement();
@@ -4518,7 +4527,6 @@ export class WordExport {
 
         writer.writeStartElement(undefined, 'tblW', this.wNamespace);
         if (table.tableFormat.preferredWidthType === 'Percent') {
-            // tslint:disable-next-line:max-line-length
             writer.writeAttributeString(undefined, 'w', this.wNamespace, (table.tableFormat.preferredWidth * this.percentageFactor).toString());
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'pct');
         } else if (table.tableFormat.preferredWidthType === 'Point') {
@@ -4587,7 +4595,6 @@ export class WordExport {
                     writer.writeEndElement();
                 } else {
                     writer.writeStartElement(undefined, 'size', this.wNamespace);
-                    // tslint:disable-next-line:max-line-length
                     writer.writeAttributeString(undefined, 'val', this.wNamespace, this.roundToTwoDecimal(formFieldData.checkBox.size * 2).toString());
                     writer.writeEndElement();
                 }
@@ -4903,7 +4910,6 @@ export class WordExport {
         //     short afterLines = (short)Math.Round(paragraphFormat.AfterLines * DLSConstants.HundredthsUnit);
         //     writer.WriteAttributeString('afterLines', this.wNamespace, ToString((float)afterLines));                 
         // }
-        // tslint:disable-next-line:max-line-length
         if (!isNullOrUndefined(paragraphFormat.beforeSpacing)) {
             writer.writeAttributeString(undefined, 'before', this.wNamespace, this.roundToTwoDecimal(paragraphFormat.beforeSpacing * this.twentiethOfPoint).toString());
         }
@@ -4923,7 +4929,6 @@ export class WordExport {
 
 
         if (!isNullOrUndefined(paragraphFormat.afterSpacing)) {
-            // tslint:disable-next-line:max-line-length
             writer.writeAttributeString(undefined, 'after', this.wNamespace, this.roundToTwoDecimal(paragraphFormat.afterSpacing * this.twentiethOfPoint).toString());
         }
         //TODO:ISSUEFIX(paragraphFormat.afterSpacing * this.twentiethOfPoint).toString());
@@ -4944,7 +4949,6 @@ export class WordExport {
 
         //TODO:ISSUEFIX((paragraphFormat.lineSpacing) * this.twentiethOfPoint).toString());
         if (!isNullOrUndefined(paragraphFormat.lineSpacing)) {
-            // tslint:disable-next-line:max-line-length
             let lineSpacingValue: number = (paragraphFormat.lineSpacingType === 'AtLeast' || paragraphFormat.lineSpacingType === 'Exactly') ? this.roundToTwoDecimal(paragraphFormat.lineSpacing * this.twentiethOfPoint) : this.roundToTwoDecimal(paragraphFormat.lineSpacing * 240);
             writer.writeAttributeString(undefined, 'line', this.wNamespace, lineSpacingValue.toString());
         }
@@ -4964,19 +4968,15 @@ export class WordExport {
 
         writer.writeStartElement(undefined, 'ind', this.wNamespace);
         if (!isNullOrUndefined(paragraphFormat.leftIndent)) {
-            // tslint:disable-next-line:max-line-length
             writer.writeAttributeString(undefined, 'left', this.wNamespace, this.roundToTwoDecimal(paragraphFormat.leftIndent * this.twipsInOnePoint).toString());
         }
         if (!isNullOrUndefined(paragraphFormat.rightIndent)) {
-            // tslint:disable-next-line:max-line-length
             writer.writeAttributeString(undefined, 'right', this.wNamespace, this.roundToTwoDecimal(paragraphFormat.rightIndent * this.twipsInOnePoint).toString());
         }
         if (!isNullOrUndefined(paragraphFormat.firstLineIndent)) {
             if (paragraphFormat.firstLineIndent < 0) {
-                // tslint:disable-next-line:max-line-length
                 writer.writeAttributeString(undefined, 'hanging', this.wNamespace, this.roundToTwoDecimal(-1 * paragraphFormat.firstLineIndent * this.twipsInOnePoint).toString());
             } else {
-                // tslint:disable-next-line:max-line-length
                 writer.writeAttributeString(undefined, 'firstLine', this.wNamespace, this.roundToTwoDecimal(paragraphFormat.firstLineIndent * this.twipsInOnePoint).toString());
             }
         }
@@ -4998,7 +4998,6 @@ export class WordExport {
                 this.serializeRelationShip(writer, id, this.customXmlRelType, '../' + itemPath);
                 this.customXMLRelation(customXmlWriter, fileIndex, itemPropsPath);
                 customXmlWriter.writeEndElement();
-                // tslint:disable-next-line:max-line-length
                 let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(customXmlWriter.buffer, this.customXMLRelPath + fileIndex + '.xml.rels');
                 this.mArchive.addItem(zipArchiveItem);
             }
@@ -5121,7 +5120,6 @@ export class WordExport {
         // }
         // if (isNullOrUndefined(m_document.Styles.FindByName('No List')) && isNullOrUndefined(m_document.Styles.FindByName('NoList')))
         //     SerializeNoListStyle();
-        // tslint:disable-next-line:max-line-length
         // if (isNullOrUndefined(m_document.Styles.FindByName('Table Grid')) && isNullOrUndefined(m_document.Styles.FindByName('TableGrid')))
         // {
         //     SerializeTableGridStyle();
@@ -5229,13 +5227,11 @@ export class WordExport {
         }
         if (!isNullOrUndefined(characterFormat.fontSize)) {
             writer.writeStartElement(undefined, 'sz', this.wNamespace);
-            // tslint:disable-next-line:max-line-length
             writer.writeAttributeString('w', 'val', this.wNamespace, this.roundToTwoDecimal(characterFormat.fontSize * 2).toString());
             writer.writeEndElement();
         }
         if (!isNullOrUndefined(characterFormat.fontSizeBidi)) {
             writer.writeStartElement(undefined, 'szCs', this.wNamespace);
-            // tslint:disable-next-line:max-line-length
             writer.writeAttributeString('w', 'val', this.wNamespace, this.roundToTwoDecimal(characterFormat.fontSizeBidi * 2).toString());
             writer.writeEndElement();
         }
@@ -5916,7 +5912,6 @@ export class WordExport {
         let chartColorPath: string = 'colors' + this.chartCount + '.xml';
         let chartRelationPath: string = this.chartPath + '/_rels/chart' + this.chartCount + '.xml.rels';
         let chartExcelPath: string = '../embeddings/Microsoft_Excel_Worksheet' + this.chartCount + '.xlsx';
-        // tslint:disable-next-line:max-line-length
         this.serializeRelationShip(writer, this.getNextChartRelationShipID(), this.packageRelType, chartExcelPath);
         this.serializeRelationShip(writer, this.getNextChartRelationShipID(), this.chartColorStyleRelType, chartColorPath);
         writer.writeEndElement(); // end of relationships
@@ -6069,7 +6064,6 @@ export class WordExport {
         writer.writeAttributeString(undefined, 'Id', undefined, relationshipID);
         writer.writeAttributeString(undefined, 'Type', undefined, relationshipType);
         writer.writeAttributeString(undefined, 'Target', undefined, targetPath.replace('\\', '/').replace('\v', ''));
-        // tslint:disable-next-line:max-line-length
         if (relationshipType === this.hyperlinkRelType || this.startsWith(targetPath, 'http://') || this.startsWith(targetPath, 'https://') || this.startsWith(targetPath, 'file:///')) {
             // Uri targetUri;
             // if ((!targetPath.StartsWith('file:///')) && Uri.TryCreate(targetPath, UriKind.Absolute, out targetUri))
@@ -6164,7 +6158,6 @@ export class WordExport {
         this.serializeOverrideContentType(writer, this.documentPath, this.documentContentType);
 
 
-        // tslint:disable-next-line:max-line-length
         //<Override PartName='/word/numbering.xml' ContentType='application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml'/>
         // if (HasNumbering) {
         this.serializeOverrideContentType(writer, this.numberingPath, this.numberingContentType);
@@ -6296,5 +6289,6 @@ export class WordExport {
     private close(): void {
         //Implement
     }
-    /* tslint:enable:no-any */
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+    /* eslint-enable */
 }

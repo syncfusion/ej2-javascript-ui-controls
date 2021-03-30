@@ -6,7 +6,6 @@ import { LineStyle } from '../../base/types';
 import { TablePropertiesDialog } from './table-properties-dialog';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { TableCellWidget } from '../viewer/page';
-import { Selection } from '../index';
 import { Editor } from '../index';
 import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
 import { DocumentHelper } from '../viewer';
@@ -71,9 +70,10 @@ export class BordersAndShadingDialog {
     private borderWidth: NumericTextBox;
     private isShadingChanged: boolean = false;
     /**
+     * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
      */
-    constructor(documentHelper: DocumentHelper) {
+    public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
     }
     private getModuleName(): string {
@@ -82,19 +82,20 @@ export class BordersAndShadingDialog {
 
     /**
      * @private
+     * @param {L10n} localeValue - Specifies the locale.
+     * @param {boolean} isRtl - Specifies is rtl.
+     * @returns {void}
      */
-    // tslint:disable-next-line:max-func-body-length
     public initBordersAndShadingsDialog(localeValue: L10n, isRtl?: boolean): void {
-        let instance: BordersAndShadingDialog = this;
         this.target = createElement('div', {
-            id: instance.documentHelper.owner.containerId + '_table_border_shadings',
+            id: this.documentHelper.owner.containerId + '_table_border_shadings',
             className: 'e-de-table-border-shading-dlg'
         });
-        let displayText: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        const displayText: HTMLDivElement = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Borders'), styles: 'position: absolute;top: 65px;',
             id: this.target.id + '_border_label', className: 'e-de-table-border-heading'
         });
-        let settingsContiner: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        const settingsContiner: HTMLDivElement = <HTMLDivElement>createElement('div', {
             styles: 'display: inline-block;position: absolute;top: 105px;width: 100px;height: 235px;border-style: none;',
             id: this.target.id + '_border_settings'
         });
@@ -104,8 +105,7 @@ export class BordersAndShadingDialog {
         } else {
             styleContainerPosition = 'left: 125px;';
         }
-        let styleContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            // tslint:disable-next-line:max-line-length
+        const styleContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
             styles: 'display: inline-block;position: absolute;' + styleContainerPosition + 'top: 125px;width: 150px;height: 235px;padding-left: 40px;border-style: none;padding-right: 40px;',
             id: this.target.id + '_border_style'
         });
@@ -115,16 +115,15 @@ export class BordersAndShadingDialog {
         } else {
             previewContinerPosition = 'left: 339px;';
         }
-        let previewContiner: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            // tslint:disable-next-line:max-line-length
+        const previewContiner: HTMLDivElement = <HTMLDivElement>createElement('div', {
             styles: 'display: inline-block;position: absolute;' + previewContinerPosition + 'top: 87px;width: 180px;height: 235px;padding: 0px;border-style: none;',
             id: this.target.id + '_border_preview'
         });
-        let styleText: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        const styleText: HTMLDivElement = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Style'), styles: 'width: 100%;padding-bottom: 10px;',
             className: 'e-de-table-element-subheading'
         });
-        let dropDownList: HTMLSelectElement = <HTMLSelectElement>createElement('select', {
+        const dropDownList: HTMLSelectElement = <HTMLSelectElement>createElement('select', {
             id: this.target.id + '_border_style_dropDown'
         });
         dropDownList.innerHTML = '<option>' + 'None' + '</option><option>'
@@ -143,28 +142,28 @@ export class BordersAndShadingDialog {
             + '</option><option>' + 'Emboss3D' + '</option><option>' + 'Engrave3D'
             + '</option><option>' + 'Outset' + '</option><option>'
             + 'Inset' + '</option><option>' + 'Thick' + '</option>';
-        let widthText: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        const widthText: HTMLDivElement = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Width'), styles: 'width:100%;padding-top: 20px;padding-bottom: 10px;',
             className: 'e-de-table-element-subheading'
         });
-        let widthNumeric: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        const widthNumeric: HTMLInputElement = <HTMLInputElement>createElement('input', {
             id: this.target.id + '_width'
         });
-        let colorText: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        const colorText: HTMLDivElement = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Color'), styles: 'padding-top: 25px;',
             className: 'e-de-table-setting-heading'
         });
-        let borderColorPickerElement: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        const borderColorPickerElement: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'color' },
             id: this.target.id + '_border_color',
             styles: 'width: 30px;position: absolute;left: 90px;',
             className: 'e-dlg-clr-pkr-top'
         });
-        let settingText: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        const settingText: HTMLDivElement = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Setting'), styles: 'width: 100%;position: absolute;',
             className: 'e-de-table-setting-heading'
         });
-        let noneDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        const noneDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_None_Div_Container', className: 'e-de-table-border-none'
         });
         let divLabelPadding: string;
@@ -177,43 +176,43 @@ export class BordersAndShadingDialog {
             id: this.target.id + '_None_Div',
             className: 'e-de-table-border-inside-setting e-de-table-border-setting-genral'
         });
-        let noneDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        const noneDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
             innerHTML: localeValue.getConstant('None'), className: 'e-de-table-setting-labels-heading',
             styles: divLabelPadding + 'top: 20px;position: absolute;',
             id: this.target.id + '_None_Div_Label'
         });
-        let boxDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        const boxDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Box_Div_Container', className: 'e-de-table-border-box'
         });
         this.boxDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Box_Div',
             className: 'e-de-table-border-inside-setting e-de-table-border-setting-genral'
         });
-        let boxDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        const boxDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
             innerHTML: localeValue.getConstant('Box'), className: 'e-de-table-setting-labels-heading',
             styles: divLabelPadding + 'top: 20px;position: absolute;',
             id: this.target.id + '_Box_Div_Label'
         });
-        let allDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        const allDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_All_Div_Container', className: 'e-de-table-border-all'
         });
         this.allDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_All_Div',
             className: 'e-de-table-border-inside-setting e-de-table-border-setting-genral'
         });
-        let allDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        const allDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
             innerHTML: localeValue.getConstant('All'), className: 'e-de-table-setting-labels-heading',
             styles: divLabelPadding + 'top: 25px;position: absolute;',
             id: this.target.id + '_All_Div_Label'
         });
-        let customDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        const customDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Custom_Div_Container', className: 'e-de-table-border-custom'
         });
         this.customDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Custom_Div',
             className: 'e-de-table-border-inside-setting e-de-table-border-setting-genral'
         });
-        let customDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        const customDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
             innerHTML: localeValue.getConstant('Custom'), className: 'e-de-table-setting-labels-heading',
             styles: divLabelPadding + 'top: 25px;position: absolute;',
             id: this.target.id + '_Custom_Div_Label'
@@ -242,7 +241,7 @@ export class BordersAndShadingDialog {
         } else {
             previewTextPosition = 'margin-left: 10px;';
         }
-        let previewText: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        const previewText: HTMLDivElement = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Preview'), className: 'e-de-table-setting-heading',
             styles: 'position: absolute;top: 20px;' + previewTextPosition
         });
@@ -386,20 +385,20 @@ export class BordersAndShadingDialog {
             shadingContainerPosition = 'left:17px;';
         }
         this.shadingContiner = createElement('div', {
-            /* tslint:disable:max-line-length */
+            /* eslint-disable max-len */
             styles: 'display:inline-block;position:absolute;' + shadingContainerPosition + ';width:400px;height:100px;padding:0px;border-style: none;margin-left:10px;',
             id: this.target.id + '_shading_preview', className: 'e-de-table-shading-preview'
         }) as HTMLDivElement;
-        let shadingText: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        const shadingText: HTMLDivElement = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Shading'), className: 'e-de-table-border-heading',
             styles: 'padding-top: 30px;left: 5px;'
         });
-        let shadings: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'display:flex;' });
-        let label: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        const shadings: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'display:flex;' });
+        const label: HTMLDivElement = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Fill'), className: 'e-de-table-setting-heading e-de-table-border-fill',
             styles: 'top: 50px;left: 10px;'
         });
-        let shadingColorPickerElement: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        const shadingColorPickerElement: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'color' },
             id: this.target.id + '_shading_color', styles: 'position: absolute;top: 75px;left: 40px;width: 30px;'
         });
@@ -409,15 +408,15 @@ export class BordersAndShadingDialog {
         } else {
             shdApplyPosition = 'left: 150px;';
         }
-        let shdApply: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        const shdApply: HTMLDivElement = <HTMLDivElement>createElement('div', {
             styles: 'position:absolute;top:44px;' + shdApplyPosition + 'width:180px;'
         });
-        let div: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        const div: HTMLDivElement = <HTMLDivElement>createElement('div', {
             styles: 'width:100px;padding-bottom: 10px;', innerHTML: localeValue.getConstant('Apply To'),
             className: 'e-de-table-element-subheading'
         });
-        let divsion: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width:100px;position:absolute;' });
-        let ulelementShading: HTMLSelectElement = <HTMLSelectElement>createElement('select', {
+        const divsion: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width:100px;position:absolute;' });
+        const ulelementShading: HTMLSelectElement = <HTMLSelectElement>createElement('select', {
             innerHTML: '<option>' + localeValue.getConstant('Cell') + '</option>'
                 + '<option>' + localeValue.getConstant('Table') + '</option>',
             id: this.target.id + '_shading'
@@ -545,9 +544,13 @@ export class BordersAndShadingDialog {
             label.classList.add('e-de-rtl');
         }
     }
+    /**
+     * @private
+     * @returns {void}
+     */
     private applyBordersShadingsProperties = (): void => {
-        let tablePropertiesDialog: TablePropertiesDialog = this.documentHelper.owner.tablePropertiesDialogModule;
-        let selectedCell: TableCellWidget = this.documentHelper.selection.start.paragraph.associatedCell;
+        const tablePropertiesDialog: TablePropertiesDialog = this.documentHelper.owner.tablePropertiesDialogModule;
+        const selectedCell: TableCellWidget = this.documentHelper.selection.start.paragraph.associatedCell;
         //Need to bind the properties with current cell and current table formats.
         let borders: WBorders = undefined;
         if (this.checkClassName(this.previewDivTopTop) || this.checkClassName(this.previewDivTopBottom)
@@ -580,8 +583,8 @@ export class BordersAndShadingDialog {
                 borders.diagonalUp = this.getBorder();
             }
         }
-        let shading: WShading = new WShading();
-        let editorModule: Editor = this.documentHelper.owner.editorModule;
+        const shading: WShading = new WShading();
+        const editorModule: Editor = this.documentHelper.owner.editorModule;
         shading.backgroundColor = this.shadingColorPicker.value;
         if (this.ulelementShading.index === 0) {
             this.applyTo = 0;
@@ -606,7 +609,7 @@ export class BordersAndShadingDialog {
                 tablePropertiesDialog.isTableBordersAndShadingUpdated = true;
             }
             this.applyTo = 1;
-            let currentTableFormat: WTableFormat = this.documentHelper.owner.selection.tableFormat.table.tableFormat;
+            const currentTableFormat: WTableFormat = this.documentHelper.owner.selection.tableFormat.table.tableFormat;
             this.tableFormat.copyFormat(currentTableFormat);
             this.tableFormat.borders = new WBorders();
             if (!isNullOrUndefined(borders)) {
@@ -625,10 +628,10 @@ export class BordersAndShadingDialog {
         }
         this.applyFormat();
         this.closeDialog();
-    }
+    };
     private applyFormat(): void {
-        let selection: Selection = this.documentHelper.selection;
-        let editorModule: Editor = this.documentHelper.owner.editorModule;
+        // const selection: Selection = this.documentHelper.selection;
+        const editorModule: Editor = this.documentHelper.owner.editorModule;
         editorModule.initComplexHistory('BordersAndShading');
         editorModule.isBordersAndShadingDialog = true;
         if (this.applyTo === 0) {
@@ -642,7 +645,7 @@ export class BordersAndShadingDialog {
         editorModule.isBordersAndShadingDialog = false;
     }
     private getBorder(): WBorder {
-        let border: WBorder = new WBorder();
+        const border: WBorder = new WBorder();
         border.color = this.borderColorPicker.value;
         border.lineStyle = <LineStyle>this.borderStyle.text;
         border.lineWidth = this.borderWidth.value;
@@ -653,20 +656,26 @@ export class BordersAndShadingDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public closeDialog = (): void => {
         this.documentHelper.dialog.hide();
         this.closeBordersShadingsDialog();
-    }
+    };
+    /**
+     * @private
+     * @returns {void}
+     */
     private closeBordersShadingsDialog = (): void => {
         this.documentHelper.dialog2.element.style.pointerEvents = '';
         this.documentHelper.updateFocus();
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public show(): void {
-        let localeValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        const localeValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         localeValue.setLocale(this.documentHelper.owner.locale);
         if (!this.target) {
             this.initBordersAndShadingsDialog(localeValue, this.documentHelper.owner.enableRtl);
@@ -676,6 +685,7 @@ export class BordersAndShadingDialog {
         this.documentHelper.dialog.header = localeValue.getConstant('Borders and Shading');
         this.documentHelper.dialog.beforeOpen = this.documentHelper.updateFocus;
         this.documentHelper.dialog.close = this.closeBordersShadingsDialog;
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         this.documentHelper.dialog.position = { X: 'center', Y: 'center' };
         this.documentHelper.dialog.width = 'auto';
         this.documentHelper.dialog.height = 'auto';
@@ -690,10 +700,15 @@ export class BordersAndShadingDialog {
         this.documentHelper.dialog.dataBind();
         this.documentHelper.dialog.show();
     }
+    /**
+     * @private
+     * @param {Event} event - Specifies the event args.
+     * @returns {void}
+     */
     private handleSettingCheckBoxAction = (event: Event): void => {
-        let targetId: string = (event.target as HTMLElement).id;
-        let tableBorderDialogId: string = this.target.id;
-        let targetDiv: HTMLDivElement;
+        const targetId: string = (event.target as HTMLElement).id;
+        const tableBorderDialogId: string = this.target.id;
+        // let targetDiv: HTMLDivElement;
         if (targetId === tableBorderDialogId + '_None_Div' || targetId === tableBorderDialogId + '_None_Div_Container'
             || targetId === tableBorderDialogId + '_None_Div_Transparent') {
             this.updateClassForSettingDivElements();
@@ -714,9 +729,9 @@ export class BordersAndShadingDialog {
             this.customDiv.classList.add('e-de-table-border-inside-setting-click');
             this.setSettingPreviewDivElement('customDiv');
         }
-    }
+    };
     private updateClassForSettingDivElements(): void {
-        let settingDivs: NodeListOf<Element> = this.target.getElementsByClassName('e-de-table-border-inside-setting');
+        const settingDivs: HTMLCollectionOf<Element> = this.target.getElementsByClassName('e-de-table-border-inside-setting');
         for (let j: number = 0; j < settingDivs.length; j++) {
             if (settingDivs[j].className.indexOf('e-de-table-border-inside-setting-click') !== -1) {
                 let tempClassName: string = settingDivs[j].className;
@@ -727,73 +742,77 @@ export class BordersAndShadingDialog {
     }
     private setSettingPreviewDivElement(position: string): void {
         switch (position) {
-            case 'none':
-                this.previewDivTopTop.classList.remove('e-de-table-border-inside-preview-click');
-                this.previewDivTopCenter.classList.remove('e-de-table-border-inside-preview-click');
-                this.previewDivTopBottom.classList.remove('e-de-table-border-inside-preview-click');
-                this.previewDivLeftDiagonal.classList.remove('e-de-table-border-inside-preview-click');
-                this.previewDivDiagonalRight.classList.remove('e-de-table-border-inside-preview-click');
-                this.previewDivBottomRight.classList.remove('e-de-table-border-inside-preview-click');
-                this.previewDivBottomLeft.classList.remove('e-de-table-border-inside-preview-click');
-                this.previewDivBottomcenter.classList.remove('e-de-table-border-inside-preview-click');
-                this.isShowHidePreviewTableElements('none');
-                break;
-            case 'box':
-                this.previewDivTopCenter.classList.remove('e-de-table-border-inside-preview-click');
-                this.previewDivLeftDiagonal.classList.remove('e-de-table-border-inside-preview-click');
-                this.previewDivDiagonalRight.classList.remove('e-de-table-border-inside-preview-click');
-                this.previewDivBottomcenter.classList.remove('e-de-table-border-inside-preview-click');
-                this.previewDivTopTop.classList.add('e-de-table-border-inside-preview-click');
-                this.previewDivTopBottom.classList.add('e-de-table-border-inside-preview-click');
-                this.previewDivBottomRight.classList.add('e-de-table-border-inside-preview-click');
-                this.previewDivBottomLeft.classList.add('e-de-table-border-inside-preview-click');
-                this.isShowHidePreviewTableElements('box');
-                break;
-            case 'all':
-                this.previewDivLeftDiagonal.classList.remove('e-de-table-border-inside-preview-click');
-                this.previewDivDiagonalRight.classList.remove('e-de-table-border-inside-preview-click');
-                this.previewDivBottomcenter.classList.add('e-de-table-border-inside-preview-click');
-                this.previewDivTopTop.classList.add('e-de-table-border-inside-preview-click');
-                this.previewDivTopBottom.classList.add('e-de-table-border-inside-preview-click');
-                this.previewDivBottomRight.classList.add('e-de-table-border-inside-preview-click');
-                this.previewDivBottomLeft.classList.add('e-de-table-border-inside-preview-click');
-                this.previewDivTopCenter.classList.add('e-de-table-border-inside-preview-click');
-                this.isShowHidePreviewTableElements('all');
-                break;
+        case 'none':
+            this.previewDivTopTop.classList.remove('e-de-table-border-inside-preview-click');
+            this.previewDivTopCenter.classList.remove('e-de-table-border-inside-preview-click');
+            this.previewDivTopBottom.classList.remove('e-de-table-border-inside-preview-click');
+            this.previewDivLeftDiagonal.classList.remove('e-de-table-border-inside-preview-click');
+            this.previewDivDiagonalRight.classList.remove('e-de-table-border-inside-preview-click');
+            this.previewDivBottomRight.classList.remove('e-de-table-border-inside-preview-click');
+            this.previewDivBottomLeft.classList.remove('e-de-table-border-inside-preview-click');
+            this.previewDivBottomcenter.classList.remove('e-de-table-border-inside-preview-click');
+            this.isShowHidePreviewTableElements('none');
+            break;
+        case 'box':
+            this.previewDivTopCenter.classList.remove('e-de-table-border-inside-preview-click');
+            this.previewDivLeftDiagonal.classList.remove('e-de-table-border-inside-preview-click');
+            this.previewDivDiagonalRight.classList.remove('e-de-table-border-inside-preview-click');
+            this.previewDivBottomcenter.classList.remove('e-de-table-border-inside-preview-click');
+            this.previewDivTopTop.classList.add('e-de-table-border-inside-preview-click');
+            this.previewDivTopBottom.classList.add('e-de-table-border-inside-preview-click');
+            this.previewDivBottomRight.classList.add('e-de-table-border-inside-preview-click');
+            this.previewDivBottomLeft.classList.add('e-de-table-border-inside-preview-click');
+            this.isShowHidePreviewTableElements('box');
+            break;
+        case 'all':
+            this.previewDivLeftDiagonal.classList.remove('e-de-table-border-inside-preview-click');
+            this.previewDivDiagonalRight.classList.remove('e-de-table-border-inside-preview-click');
+            this.previewDivBottomcenter.classList.add('e-de-table-border-inside-preview-click');
+            this.previewDivTopTop.classList.add('e-de-table-border-inside-preview-click');
+            this.previewDivTopBottom.classList.add('e-de-table-border-inside-preview-click');
+            this.previewDivBottomRight.classList.add('e-de-table-border-inside-preview-click');
+            this.previewDivBottomLeft.classList.add('e-de-table-border-inside-preview-click');
+            this.previewDivTopCenter.classList.add('e-de-table-border-inside-preview-click');
+            this.isShowHidePreviewTableElements('all');
+            break;
         }
     }
     private isShowHidePreviewTableElements(settingDiv: string): void {
         switch (settingDiv) {
-            case 'none':
-                this.previewDiv.style.border = 'none';
-                this.previewRightDiagonalDiv.style.display = 'none';
-                this.previewLeftDiagonalDiv.style.display = 'none';
-                this.previewHorizontalDiv.style.display = 'none';
-                this.previewVerticalDiv.style.display = 'none';
-                break;
-            case 'box':
-                this.previewDiv.style.border = '1px solid rgba(0, 0, 0, .54)';
-                this.previewRightDiagonalDiv.style.display = 'none';
-                this.previewLeftDiagonalDiv.style.display = 'none';
-                this.previewHorizontalDiv.style.display = 'none';
-                this.previewVerticalDiv.style.display = 'none';
-                break;
-            case 'all':
-                this.previewDiv.style.border = '1px solid rgba(0, 0, 0, .54)';
-                this.previewRightDiagonalDiv.style.display = 'none';
-                this.previewLeftDiagonalDiv.style.display = 'none';
-                this.previewHorizontalDiv.style.display = 'block';
-                this.previewVerticalDiv.style.display = 'block';
-                break;
+        case 'none':
+            this.previewDiv.style.border = 'none';
+            this.previewRightDiagonalDiv.style.display = 'none';
+            this.previewLeftDiagonalDiv.style.display = 'none';
+            this.previewHorizontalDiv.style.display = 'none';
+            this.previewVerticalDiv.style.display = 'none';
+            break;
+        case 'box':
+            this.previewDiv.style.border = '1px solid rgba(0, 0, 0, .54)';
+            this.previewRightDiagonalDiv.style.display = 'none';
+            this.previewLeftDiagonalDiv.style.display = 'none';
+            this.previewHorizontalDiv.style.display = 'none';
+            this.previewVerticalDiv.style.display = 'none';
+            break;
+        case 'all':
+            this.previewDiv.style.border = '1px solid rgba(0, 0, 0, .54)';
+            this.previewRightDiagonalDiv.style.display = 'none';
+            this.previewLeftDiagonalDiv.style.display = 'none';
+            this.previewHorizontalDiv.style.display = 'block';
+            this.previewVerticalDiv.style.display = 'block';
+            break;
         }
     }
+    /**
+     * @private
+     * @param {Event} event - Specifies the event args.
+     * @returns {void}
+     */
     private handlePreviewCheckBoxAction = (event: Event): void => {
-        let target: HTMLElement = event.target as HTMLElement;
-        let targetId: string = target.id;
-        let tableBorderDialog: HTMLElement = this.target;
-        let tableBorderDialogId: string = this.target.id;
-        let checkBox: HTMLElement;
-        let compareClass: string = 'e-de-table-border-inside-preview-click';
+        const target: HTMLElement = event.target as HTMLElement;
+        const targetId: string = target.id;
+        // const tableBorderDialog: HTMLElement = this.target;
+        const tableBorderDialogId: string = this.target.id;
+        const compareClass: string = 'e-de-table-border-inside-preview-click';
         this.customDiv.click();
         if (targetId === tableBorderDialogId + '_Preview_Div_TopTop_Container' || targetId === tableBorderDialogId + '_Preview_Div_TopTop'
             || targetId === tableBorderDialogId + '_previewDivTopTopTransParent') {
@@ -803,7 +822,6 @@ export class BordersAndShadingDialog {
             || targetId === tableBorderDialogId + '_Preview_Div_TopCenter'
             || targetId === tableBorderDialogId + '_previewDivTopCenterTransParent') {
             this.handlePreviewCheckBoxShowHide(tableBorderDialogId, compareClass, this.previewDivTopCenter);
-            // tslint:disable-next-line:max-line-length
             this.showHidePreviewDivElements(tableBorderDialogId, compareClass, '_Preview_Div_Horizontal', '_Preview_Div_TopCenter', 'TopCenter');
         } else if (targetId === tableBorderDialogId + '_Preview_Div_TopBottom_Container' || targetId === tableBorderDialogId + '_Preview_Div_TopBottom'
             || targetId === tableBorderDialogId + '_previewDivTopBottomTransParent') {
@@ -813,7 +831,6 @@ export class BordersAndShadingDialog {
             || targetId === tableBorderDialogId + '_Preview_Div_LeftDiagonal'
             || targetId === tableBorderDialogId + '_previewDivLeftDiagonalTransParent') {
             this.handlePreviewCheckBoxShowHide(tableBorderDialogId, compareClass, this.previewDivLeftDiagonal);
-            // tslint:disable-next-line:max-line-length
             this.showHidePreviewDivElements(tableBorderDialogId, compareClass, '_Preview_Div_Left_Diagonal', '_Preview_Div_LeftDiagonal', 'LeftDiagonal');
         } else if (targetId === tableBorderDialogId + '_Preview_Div_BottomLeft_Container' || targetId === tableBorderDialogId + '_Preview_Div_BottomLeft'
             || targetId === tableBorderDialogId + '_previewDivBottomLeftTransparent') {
@@ -823,7 +840,6 @@ export class BordersAndShadingDialog {
             || targetId === tableBorderDialogId + '_Preview_Div_BottomCenter'
             || targetId === tableBorderDialogId + '_previewDivBottomcenterTransparent') {
             this.handlePreviewCheckBoxShowHide(tableBorderDialogId, compareClass, this.previewDivBottomcenter);
-            // tslint:disable-next-line:max-line-length
             this.showHidePreviewDivElements(tableBorderDialogId, compareClass, '_Preview_Div_Vertical', '_Preview_Div_BottomCenter', 'BottomCenter');
         } else if (targetId === tableBorderDialogId + '_Preview_Div_BottomRight_Container' || targetId === tableBorderDialogId + '_Preview_Div_BottomRight'
             || targetId === tableBorderDialogId + '_previewDivBottomRightTransparent') {
@@ -833,10 +849,9 @@ export class BordersAndShadingDialog {
             || targetId === tableBorderDialogId + '_Preview_Div_RightDiagonal'
             || targetId === tableBorderDialogId + '_previewDivDiagonalRightTransparent') {
             this.handlePreviewCheckBoxShowHide(tableBorderDialogId, compareClass, this.previewDivDiagonalRight);
-            // tslint:disable-next-line:max-line-length
             this.showHidePreviewDivElements(tableBorderDialogId, compareClass, '_Preview_Div_Right_Diagonal', '_Preview_Div_RightDiagonal', 'RightDiagonal');
         }
-    }
+    };
     private handlePreviewCheckBoxShowHide(tableBorderDialogId: string, compareClass: string, element: HTMLDivElement): void {
         if (element.classList.contains(compareClass)) {
             element.classList.remove(compareClass);
@@ -844,10 +859,10 @@ export class BordersAndShadingDialog {
             element.classList.add(compareClass);
         }
     }
-    // tslint:disable-next-line:max-line-length
+
     private showHidePreviewDivElements(tableBorderDialogId: string, compareClass: string, elementClass: string, compareElementClass: string, position: string): void {
-        let setElement: HTMLDivElement = document.getElementById(tableBorderDialogId + elementClass) as HTMLDivElement;
-        let compareElement: HTMLDivElement = document.getElementById(tableBorderDialogId + compareElementClass) as HTMLDivElement;
+        const setElement: HTMLDivElement = document.getElementById(tableBorderDialogId + elementClass) as HTMLDivElement;
+        const compareElement: HTMLDivElement = document.getElementById(tableBorderDialogId + compareElementClass) as HTMLDivElement;
         if (position === 'TopTop') {
             this.setPropertyPreviewDivElement(setElement, compareElement, compareClass, 'border-top');
         } else if (position === 'TopCenter') {
@@ -869,15 +884,19 @@ export class BordersAndShadingDialog {
 
     private setPropertyPreviewDivElement(ele: HTMLDivElement, compareElement: HTMLElement, compareClass: string, property: string): void {
         if (compareElement.classList.contains(compareClass) && property.split('-')[0] === 'border') {
-            /* tslint:disable:no-any */
+            /* eslint-disable @typescript-eslint/no-explicit-any */
             (ele as any).style[property] = '1px solid rgba(0, 0, 0, .54)';
         } else if (compareElement.classList.contains(compareClass) && property === 'display') {
             (ele as any).style[property] = 'block';
         } else {
             (ele as any).style[property] = 'none';
-            /* tslint:enable:no-any */
+            /* eslint-enable @typescript-eslint/no-explicit-any */
         }
     }
+    /**
+     * @private
+     * @returns {void}
+     */
     private applyTableCellPreviewBoxes = (): void => {
         this.customDiv.click();
         if (!isNullOrUndefined(this.ulelementShading)) {
@@ -899,25 +918,35 @@ export class BordersAndShadingDialog {
                 this.previewDivBottomRightContainer.style.left = '110px';
             }
         }
-    }
+    };
+    /**
+     * @private
+     * @param {ColorPickerEventArgs} args - Specifies the event args.
+     * @returns {void}
+     */
     private applyPreviewTableBackgroundColor = (args: ColorPickerEventArgs): void => {
         if (!isNullOrUndefined(args.currentValue)) {
-            let color: string = args.currentValue.hex;
+            const color: string = args.currentValue.hex;
             this.previewDiv.style.backgroundColor = color;
         }
-    }
+    };
+    /**
+     * @private
+     * @param {ColorPickerEventArgs} args - Specifies the event args.
+     * @returns {void}
+     */
     private applyPreviewTableBorderColor = (args: ColorPickerEventArgs): void => {
         if (!isNullOrUndefined(args.currentValue)) {
-            let color: string = args.currentValue.hex;
+            const color: string = args.currentValue.hex;
             this.previewDiv.style.borderColor = color;
             this.previewRightDiagonalDiv.style.backgroundColor = color;
             this.previewLeftDiagonalDiv.style.backgroundColor = color;
             this.previewVerticalDiv.style.backgroundColor = color;
             this.previewHorizontalDiv.style.backgroundColor = color;
         }
-    }
+    };
     private loadBordersShadingsPropertiesDialog(): void {
-        let tableFormat: WTableFormat = this.documentHelper.selection.tableFormat.table.tableFormat;
+        const tableFormat: WTableFormat = this.documentHelper.selection.tableFormat.table.tableFormat;
         let lineStyle: number;
         let borderColor: string;
         let fillColor: string;
@@ -938,16 +967,16 @@ export class BordersAndShadingDialog {
         }
         this.borderColorPicker.value = borderColor;
         this.shadingColorPicker.value = fillColor;
-        /* tslint:disable:no-any */
-        let colorPickerEvent: any = {
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        const colorPickerEvent: any = {
             target: this.borderColorPicker, ctrlKey: false,
             shiftKey: false, which: 0
         };
-        let fillColorEvent: any = {
+        const fillColorEvent: any = {
             target: this.shadingColorPicker, ctrlKey: false,
             shiftKey: false, which: 0
         };
-        /* tslint:enable:no-any */
+        /* eslint-enable @typescript-eslint/no-explicit-any */
         this.applyPreviewTableBackgroundColor(fillColorEvent);
         this.applyPreviewTableBorderColor(colorPickerEvent);
         this.ulelementShading.index = 1;
@@ -957,7 +986,7 @@ export class BordersAndShadingDialog {
         this.borderStyle.index = lineStyle;
     }
 
-    // tslint:disable:max-func-body-length
+    /* eslint-disable  */
     private cloneBorders(borders: WBorders): void {
         let topBorder: boolean = false;
         let bottomBorder: boolean = false;
@@ -1109,6 +1138,7 @@ export class BordersAndShadingDialog {
 
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         if (!isNullOrUndefined(this.target)) {

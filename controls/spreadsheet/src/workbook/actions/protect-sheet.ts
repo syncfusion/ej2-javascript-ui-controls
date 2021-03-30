@@ -12,6 +12,8 @@ export class WorkbookProtectSheet {
 
     /**
      * Constructor for edit module in Workbook.
+     *
+     * @param {Workbook} workbook - Specifies the workbook.
      * @private
      */
     constructor(workbook: Workbook) {
@@ -19,7 +21,7 @@ export class WorkbookProtectSheet {
         this.addEventListener();
     }
     private protectsheetHandler(args: ProtectSettings): void {
-        let sheet: SheetModel = this.parent.getActiveSheet();
+        const sheet: SheetModel = this.parent.getActiveSheet();
         this.parent.setSheetPropertyOnMute(sheet, 'protectSettings', {
             selectCells: args.selectCells, formatCells: args.formatCells,
             formatColumns: args.formatColumns, formatRows: args.formatRows, insertLink: args.insertLink
@@ -36,7 +38,7 @@ export class WorkbookProtectSheet {
     private unprotectsheetHandler(args: UnprotectArgs): void {
         let sheet: SheetModel = this.parent.getActiveSheet();
         if (args.sheet) {
-          sheet = this.parent.sheets[args.sheet];
+            sheet = this.parent.sheets[args.sheet];
         }
         sheet.protectSettings.formatCells = sheet.protectSettings.formatColumns = false;
         sheet.protectSettings.formatRows = sheet.protectSettings.selectCells = false;
@@ -46,8 +48,9 @@ export class WorkbookProtectSheet {
     }
 
     /**
-     * To destroy the edit module. 
-     * @return {void}
+     * To destroy the edit module.
+     *
+     * @returns {void} - To destroy the edit module.
      * @hidden
      */
     public destroy(): void {
@@ -71,12 +74,12 @@ export class WorkbookProtectSheet {
     }
 
     private lockCells(args?: {range: string | number[], isLocked?: boolean}): void {
-        let sheet: SheetModel = this.parent.getActiveSheet();
+        const sheet: SheetModel = this.parent.getActiveSheet();
         let range: string | number[];
         if (args) {
-           range = args.range;
+            range = args.range;
         } else {range = sheet.selectedRange; }
-        let indexes: number[] = typeof (range) === 'object' ? <number[]>range :
+        const indexes: number[] = typeof (range) === 'object' ? <number[]>range :
             getSwapRange(getRangeIndexes(<string>range));
         if (indexes[0] === 0 && indexes[2] === sheet.rowCount - 1) {
             for (let i: number = indexes[1]; i <= indexes[3]; i++) {
@@ -94,7 +97,8 @@ export class WorkbookProtectSheet {
     }
     /**
      * Get the module name.
-     * @returns string
+     *
+     * @returns {string} - Return the string.
      * @private
      */
     public getModuleName(): string {

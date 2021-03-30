@@ -35,6 +35,7 @@ export class Table {
     private pageX: number = null;
     private pageY: number = null;
     private curTable: HTMLTableElement;
+    private activeCell: HTMLElement;
     private colIndex: number;
     private columnEle: HTMLTableDataCellElement;
     private rowTextBox: NumericTextBox;
@@ -44,7 +45,7 @@ export class Table {
     private moveEle: HTMLElement = null;
     private helper: HTMLElement;
     private dialogRenderObj: DialogRenderer;
-    constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
+    private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.rteID = parent.element.id;
         this.l10n = serviceLocator.getService<L10n>('rteLocale');
@@ -55,7 +56,9 @@ export class Table {
     }
 
     protected addEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.on(events.createTable, this.renderDlgContent, this);
         this.parent.on(events.initialEnd, this.afterRender, this);
         this.parent.on(events.docClick, this.docClick, this);
@@ -68,7 +71,9 @@ export class Table {
     }
 
     protected removeEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.off(events.createTable, this.renderDlgContent);
         this.parent.off(events.initialEnd, this.afterRender);
         this.parent.off(events.docClick, this.docClick);
@@ -83,7 +88,7 @@ export class Table {
     }
 
     private selectionTable(e: ITableNotifyArgs): void {
-        let target: HTMLTableCellElement = (e.args as MouseEvent).target as HTMLTableCellElement;
+        const target: HTMLTableCellElement = (e.args as MouseEvent).target as HTMLTableCellElement;
         if (Browser.info.name === 'mozilla' && !isNOU(closest(target, 'table')) && closest(target, 'table').tagName === 'TABLE') {
             this.parent.contentModule.getEditPanel().setAttribute('contenteditable', 'true');
         }
@@ -102,72 +107,84 @@ export class Table {
     }
 
     private dropdownSelect(e: ClickEventArgs): void {
-        let item: IDropDownItemModel = e.item as IDropDownItemModel;
+        const item: IDropDownItemModel = e.item as IDropDownItemModel;
         if (!document.body.contains(document.body.querySelector('.e-rte-quick-toolbar')) || item.command !== 'Table') {
             return;
         }
-        let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
-        let args: ITableNotifyArgs = {
+        const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+        const args: ITableNotifyArgs = {
             args: e,
             selection: this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument()),
             selectParent: this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range)
         };
         switch (item.subCommand) {
-            case 'InsertRowBefore':
-            case 'InsertRowAfter':
-                this.addRow(args.selection, e);
-                break;
-            case 'InsertColumnLeft':
-            case 'InsertColumnRight':
-                this.addColumn(args.selection, e);
-                break;
-            case 'DeleteColumn':
-            case 'DeleteRow':
-                this.removeRowColumn(args.selection, e);
-                break;
-            case 'AlignTop':
-            case 'AlignMiddle':
-            case 'AlignBottom':
-                this.verticalAlign(args, e);
-                break;
-            case 'Dashed':
-            case 'Alternate':
-                this.tableStyles(args, item.subCommand);
-                break;
+        case 'InsertRowBefore':
+        case 'InsertRowAfter':
+            this.addRow(args.selection, e);
+            break;
+        case 'InsertColumnLeft':
+        case 'InsertColumnRight':
+            this.addColumn(args.selection, e);
+            break;
+        case 'DeleteColumn':
+        case 'DeleteRow':
+            this.removeRowColumn(args.selection, e);
+            break;
+        case 'AlignTop':
+        case 'AlignMiddle':
+        case 'AlignBottom':
+            this.verticalAlign(args, e);
+            break;
+        case 'Dashed':
+        case 'Alternate':
+            this.tableStyles(args, item.subCommand);
+            break;
+        case 'Merge':
+        case 'VerticalSplit':
+        case 'HorizontalSplit':
+            this.UpdateCells(args.selection , e);
+            break;
+        
         }
     }
 
+    private UpdateCells(selectCell: NodeSelection, e: ClickEventArgs): void {
+        this.parent.formatter.process(this.parent, e, e, { selection: selectCell, subCommand: (e.item as IDropDownItemModel).subCommand });
+        this.hideTableQuickToolbar();
+    }
 
     private keyDown(e: NotifyArgs): void {
-        let event: KeyboardEventArgs = e.args as KeyboardEventArgs;
-        let proxy: this = this;
+        const event: KeyboardEventArgs = e.args as KeyboardEventArgs;
+        // eslint-disable-next-line
+        const proxy: this = this;
         switch (event.action) {
-            case 'escape':
-                break;
-            case 'insert-table':
-                if (this.parent.editorMode === 'HTML') {
-                    let docElement: Document = this.parent.contentModule.getDocument();
-                    let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(docElement);
-                    let selection: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(range, docElement);
-                    let args: ClickEventArgs = <ClickEventArgs>{
-                        originalEvent: e.args,
-                        item: {
-                            command: 'Table',
-                            subCommand: 'CreateTable'
-                        }
-                    };
-                    this.insertTableDialog({
-                        self: this,
-                        args: args, selection: selection
-                    } as NotifyArgs);
-                }
-                event.preventDefault();
-                break;
+        case 'escape':
+            break;
+        case 'insert-table':
+            if (this.parent.editorMode === 'HTML') {
+                const docElement: Document = this.parent.contentModule.getDocument();
+                const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(docElement);
+                const selection: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(range, docElement);
+                const  args: ClickEventArgs = <ClickEventArgs>{
+                    originalEvent: e.args,
+                    item: {
+                        command: 'Table',
+                        subCommand: 'CreateTable'
+                    }
+                };
+                this.insertTableDialog({
+                    self: this,
+                    args: args, selection: selection
+                } as NotifyArgs);
+            }
+            event.preventDefault();
+            break;
         }
         if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) && this.contentModule
         && event.code !== 'KeyK') {
-            let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
-            let selection: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
+            const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+            const selection: NodeSelection = this.parent.formatter.editorManager.
+                nodeSelection.save(range, this.contentModule.getDocument());
             let ele: HTMLElement = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range)[0] as HTMLElement;
             ele = (ele && ele.tagName !== 'TD' && ele.tagName !== 'TH') ? ele.parentElement : ele;
             if (((event as KeyboardEventArgs).keyCode === 8 || (event as KeyboardEventArgs).keyCode === 46) ||
@@ -180,49 +197,50 @@ export class Table {
                 }
             }
             if (ele && ele.tagName !== 'TD' && ele.tagName !== 'TH') {
-                let closestTd: HTMLElement = closest(ele, 'td') as HTMLElement;
+                const closestTd: HTMLElement = closest(ele, 'td') as HTMLElement;
                 ele = !isNullOrUndefined(closestTd) && this.parent.inputElement.contains(closestTd) ? closestTd : ele;
             }
             if (ele && (ele.tagName === 'TD' || ele.tagName === 'TH')) {
                 switch ((event as KeyboardEventArgs).keyCode) {
-                    case 9:
-                    case 37:
-                    case 39:
-                        proxy.tabSelection(event, selection, ele);
-                        break;
-                    case 40:
-                    case 38:
-                        proxy.tableArrowNavigation(event, selection, ele);
-                        break;
+                case 9:
+                case 37:
+                case 39:
+                    proxy.tabSelection(event, selection, ele);
+                    break;
+                case 40:
+                case 38:
+                    proxy.tableArrowNavigation(event, selection, ele);
+                    break;
                 }
             }
         }
     }
 
     private onToolbarAction(args: ITableNotifyArgs): void {
-        let item: IToolbarItemModel = (args.args as ClickEventArgs).item as IToolbarItemModel;
+        const item: IToolbarItemModel = (args.args as ClickEventArgs).item as IToolbarItemModel;
         switch (item.subCommand) {
-            case 'TableHeader':
-                this.tableHeader(args.selection, args.args as ClickEventArgs);
-                break;
-            case 'TableRemove':
-                this.removeTable(args.selection, args.args as ClickEventArgs);
-                break;
-            case 'TableEditProperties':
-                this.editTable(args);
-                break;
+        case 'TableHeader':
+            this.tableHeader(args.selection, args.args as ClickEventArgs);
+            break;
+        case 'TableRemove':
+            this.removeTable(args.selection, args.args as ClickEventArgs);
+            break;
+        case 'TableEditProperties':
+            this.editTable(args);
+            break;
         }
     }
     private verticalAlign(args: ITableNotifyArgs, e: ClickEventArgs): void {
-        let tdEle : Element = closest(args.selectParent[0], 'td') || closest(args.selectParent[0], 'th');
+        const tdEle : Element = closest(args.selectParent[0], 'td') || closest(args.selectParent[0], 'th');
         if (tdEle) {
-        this.parent.formatter.process(this.parent, e, e, { tableCell: tdEle, subCommand: (e.item as IDropDownItemModel).subCommand });
+            this.parent.formatter.process(this.parent, e, e, { tableCell: tdEle, subCommand: (e.item as IDropDownItemModel).subCommand });
         }
     }
 
     private tableStyles(args: ITableNotifyArgs, command: string): void {
-        let table: HTMLTableElement = closest(args.selectParent[0], 'table') as HTMLTableElement;
+        const table: HTMLTableElement = closest(args.selectParent[0], 'table') as HTMLTableElement;
         if (command === 'Dashed') {
+            /* eslint-disable */
             (this.parent.element.classList.contains(classes.CLS_TB_DASH_BOR)) ?
                 this.parent.element.classList.remove(classes.CLS_TB_DASH_BOR) : this.parent.element.classList.add(classes.CLS_TB_DASH_BOR);
             (table.classList.contains(classes.CLS_TB_DASH_BOR)) ? table.classList.remove(classes.CLS_TB_DASH_BOR) :
@@ -233,13 +251,14 @@ export class Table {
                 this.parent.element.classList.remove(classes.CLS_TB_ALT_BOR) : this.parent.element.classList.add(classes.CLS_TB_ALT_BOR);
             (table.classList.contains(classes.CLS_TB_ALT_BOR)) ? table.classList.remove(classes.CLS_TB_ALT_BOR) :
                 table.classList.add(classes.CLS_TB_ALT_BOR);
+                /* eslint-enable */
         }
         this.parent.formatter.saveData();
         this.parent.formatter.editorManager.nodeSelection.restore();
     }
     private insideList(range: Range): boolean {
-        let blockNodes: Element[] = <Element[]>(this.parent.formatter.editorManager as EditorManager).domNode.blockNodes();
-        let nodes: Element[] = [];
+        const blockNodes: Element[] = <Element[]>(this.parent.formatter.editorManager as EditorManager).domNode.blockNodes();
+        const nodes: Element[] = [];
         for (let i: number = 0; i < blockNodes.length; i++) {
             if ((blockNodes[i].parentNode as Element).tagName === 'LI') {
                 nodes.push(blockNodes[i].parentNode as Element);
@@ -259,7 +278,7 @@ export class Table {
     }
 
     private tabSelection(event: KeyboardEvent, selection: NodeSelection, ele: HTMLElement): void {
-        let insideList: boolean = this.insideList(selection.range);
+        const insideList: boolean = this.insideList(selection.range);
         if ((event.keyCode === 37 || event.keyCode === 39) && selection.range.startContainer.nodeType === 3 ||
             insideList) {
             return;
@@ -279,6 +298,7 @@ export class Table {
                 nextElement = closest(ele, 'table').nextSibling;
             }
             if (nextElement) {
+                // eslint-disable-next-line
                 (nextElement.textContent.trim() !== '' && closest(nextElement, 'td')) ?
                     selection.setSelectionNode(this.contentModule.getDocument(), nextElement) :
                     selection.setSelectionText(this.contentModule.getDocument(), nextElement, nextElement, 0, 0);
@@ -286,6 +306,7 @@ export class Table {
             if (ele === nextElement && event.keyCode !== 39 && nextElement) {
                 this.addRow(selection, event, true);
                 nextElement = nextElement.parentElement.nextSibling.firstChild as HTMLElement;
+                // eslint-disable-next-line
                 (nextElement.textContent.trim() !== '' && closest(nextElement, 'td')) ?
                     selection.setSelectionNode(this.contentModule.getDocument(), nextElement) :
                     selection.setSelectionText(this.contentModule.getDocument(), nextElement, nextElement, 0, 0);
@@ -299,13 +320,14 @@ export class Table {
                             ele : ele);
             if (ele === prevElement && (ele as HTMLTableDataCellElement).cellIndex === 0 &&
                 (closest(ele, 'table') as HTMLTableElement).tHead) {
-                let clsTble: HTMLTableElement = closest(ele, 'table') as HTMLTableElement;
+                const clsTble: HTMLTableElement = closest(ele, 'table') as HTMLTableElement;
                 prevElement = clsTble.rows[0].cells[clsTble.rows[0].cells.length - 1];
             }
             if (event.keyCode === 37 && ele === prevElement) {
                 prevElement = closest(ele, 'table').previousSibling;
             }
             if (prevElement) {
+                // eslint-disable-next-line
                 (prevElement.textContent.trim() !== '' && closest(prevElement, 'td')) ?
                     selection.setSelectionNode(this.contentModule.getDocument(), prevElement) :
                     selection.setSelectionText(this.contentModule.getDocument(), prevElement, prevElement, 0, 0);
@@ -313,7 +335,7 @@ export class Table {
         }
     }
     private tableArrowNavigation(event: KeyboardEvent, selection: NodeSelection, ele: HTMLElement): void {
-        let selText: Node = selection.range.startContainer;
+        const selText: Node = selection.range.startContainer;
         if ((event.keyCode === 40 && selText.nodeType === 3 && (selText.nextSibling && selText.nextSibling.nodeName === 'BR' ||
             selText.parentNode && selText.parentNode.nodeName !== 'TD')) ||
             (event.keyCode === 38 && selText.nodeType === 3 && (selText.previousSibling && selText.previousSibling.nodeName === 'BR' ||
@@ -342,17 +364,13 @@ export class Table {
         }
     }
     private setBGColor(args: IColorPickerEventArgs): void {
-        let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
-        let selection: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
-        let selectedCell: Node = selection.range.startContainer;
-        selectedCell = (selectedCell.nodeType === 3) ? closest(selectedCell.parentNode, 'td,th') : closest(selectedCell, 'td, th');
-        if (selectedCell && (selectedCell.nodeName === 'TD' || selectedCell.nodeName === 'TH')) {
-            let items: NodeListOf<Element> = closest(selectedCell, 'table').querySelectorAll('.' + classes.CLS_TABLE_SEL);
-            for (let i: number = 0; i < items.length; i++) {
-                (items[i] as HTMLElement).style.backgroundColor = args.item.value;
-            }
-            this.parent.formatter.saveData();
+        const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
+        const selection: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
+        let selectedCells = this.curTable.querySelectorAll(".e-cell-select");
+        for (let i: number = 0; i < selectedCells.length; i++) {
+            (selectedCells[i] as HTMLElement).style.backgroundColor = args.item.value;
         }
+        this.parent.formatter.saveData();
     }
 
     private hideTableQuickToolbar(): void {
@@ -371,24 +389,28 @@ export class Table {
         if (this.parent.readonly) {
             return;
         }
-        let args: MouseEvent = e.args as MouseEvent;
-        let showOnRightClick: boolean = this.parent.quickToolbarSettings.showOnRightClick;
-        if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) { return; }
+        const args: MouseEvent = e.args as MouseEvent;
+        const showOnRightClick: boolean = this.parent.quickToolbarSettings.showOnRightClick;
+        if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) {
+            return;
+        }
         if (this.parent.editorMode === 'HTML' && this.parent.quickToolbarModule && this.parent.quickToolbarModule.tableQTBar) {
             this.quickToolObj = this.parent.quickToolbarModule;
-            let target: HTMLElement = args.target as HTMLElement;
+            const target: HTMLElement = args.target as HTMLElement;
             this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
-            let isPopupOpen: boolean = this.quickToolObj.tableQTBar.element.classList.contains('e-rte-pop');
-            if (isPopupOpen) { return; }
-            let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
-            let closestTable: Element = closest(target, 'table');
+            const isPopupOpen: boolean = this.quickToolObj.tableQTBar.element.classList.contains('e-rte-pop');
+            if (isPopupOpen) {
+                return;
+            }
+            const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
+            const closestTable: Element = closest(target, 'table');
             if (target && target.nodeName !== 'A' && target.nodeName !== 'IMG' && (target.nodeName === 'TD' || target.nodeName === 'TH' ||
                 target.nodeName === 'TABLE' || (closestTable && this.parent.contentModule.getEditPanel().contains(closestTable)))
                 && !(range.startContainer.nodeType === 3 && !range.collapsed)) {
-                let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
+                const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
-                let pageY: number = (this.parent.iframeSettings.enable) ? window.pageYOffset +
+                const pageY: number = (this.parent.iframeSettings.enable) ? window.pageYOffset +
                     this.parent.element.getBoundingClientRect().top + args.clientY : args.pageY;
                 this.quickToolObj.tableQTBar.showPopup(args.pageX, pageY, target as Element);
                 this.parent.formatter.editorManager.nodeSelection.restore();
@@ -398,57 +420,69 @@ export class Table {
         }
     }
     private tableCellSelect(e?: MouseEvent): void {
-        let target: EventTarget = e.target;
-        let row: number = Array.prototype.slice.call(
+        const target: EventTarget = e.target;
+        const row: number = Array.prototype.slice.call(
             (target as HTMLElement).parentElement.parentElement.children).indexOf((target as HTMLElement).parentElement);
-        let col: number = Array.prototype.slice.call((target as HTMLElement).parentElement.children).indexOf(target);
-        let list: Element[] = <NodeListOf<Element> & Element[]>this.dlgDiv.querySelectorAll('.e-rte-tablecell');
+        const col: number = Array.prototype.slice.call((target as HTMLElement).parentElement.children).indexOf(target);
+        const list: Element[] = <NodeListOf<Element> & Element[]>this.dlgDiv.querySelectorAll('.e-rte-tablecell');
         Array.prototype.forEach.call(list, (item: HTMLElement): void => {
-            let parentIndex: number = Array.prototype.slice.call(item.parentElement.parentElement.children).indexOf(item.parentElement);
-            let cellIndex: number = Array.prototype.slice.call(item.parentElement.children).indexOf(item);
+            const parentIndex: number = Array.prototype.slice.call(item.parentElement.parentElement.children).indexOf(item.parentElement);
+            const cellIndex: number = Array.prototype.slice.call(item.parentElement.children).indexOf(item);
             removeClass([item], 'e-active');
-            if (parentIndex <= row && cellIndex <= col) { addClass([item], 'e-active'); }
+            if (parentIndex <= row && cellIndex <= col) {
+                addClass([item], 'e-active');
+            }
         });
         this.tblHeader.innerHTML = (col + 1) + 'x' + (row + 1);
     }
+
+    private tableMouseUp(e?: MouseEvent): void {
+         EventHandler.remove(this.curTable, 'mousemove', this.tableMove);
+    }
+
+    // eslint-disable-next-line
     private tableCellLeave(e?: MouseEvent): void {
         removeClass(this.dlgDiv.querySelectorAll('.e-rte-tablecell'), 'e-active');
         addClass([this.dlgDiv.querySelector('.e-rte-tablecell')], 'e-active');
         this.tblHeader.innerHTML = 1 + 'x' + 1;
     }
     private tableCellClick(e: MouseEvent): void {
-        let target: EventTarget = e.target;
-        let row: number = Array.prototype.slice.call(
+        const target: EventTarget = e.target;
+        const row: number = Array.prototype.slice.call(
             (target as HTMLElement).parentElement.parentElement.children).indexOf((target as HTMLElement).parentElement) + 1;
-        let col: number = Array.prototype.slice.call((target as HTMLElement).parentElement.children).indexOf(target) + 1;
+        const col: number = Array.prototype.slice.call((target as HTMLElement).parentElement.children).indexOf(target) + 1;
         (this as ITableNotifyArgs).self.tableInsert(row, col, e, this as ITableNotifyArgs);
     }
 
     private tableInsert(row: number, col: number, e: MouseEvent, selectionObj?: ITableNotifyArgs): void {
-        let proxy: Table = (selectionObj.self) ? selectionObj.self : this;
-        let startContainer: Node = selectionObj.selection.range.startContainer;
+        const proxy: Table = (selectionObj.self) ? selectionObj.self : this;
+        const startContainer: Node = selectionObj.selection.range.startContainer;
         if (startContainer.nodeName === 'P' && startContainer.textContent.trim() === '' && !(startContainer.childNodes.length > 0)) {
             (startContainer as Element).innerHTML = '<br />';
         }
-        let parentNode: Node = startContainer.parentNode;
+        const parentNode: Node = startContainer.parentNode;
         if (proxy.parent.editorMode === 'HTML' &&
             ((proxy.parent.iframeSettings.enable && !hasClass(parentNode.ownerDocument.querySelector('body'), 'e-lib')) ||
                 (!proxy.parent.iframeSettings.enable && isNOU(closest(parentNode, '#' + proxy.contentModule.getPanel().id))))) {
             (proxy.contentModule.getEditPanel() as HTMLElement).focus();
-            let range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.contentModule.getDocument());
+            const range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.contentModule.getDocument());
             selectionObj.selection = proxy.parent.formatter.editorManager.nodeSelection.save(
                 range, proxy.contentModule.getDocument());
         }
-        let value: ITableArgs = {
+        const value: ITableArgs = {
             row: row, columns: col, width: {
                 minWidth: proxy.parent.tableSettings.minWidth,
                 maxWidth: proxy.parent.tableSettings.maxWidth,
-                width: proxy.parent.tableSettings.width,
+                width: proxy.parent.tableSettings.width
             },
             selection: selectionObj.selection
         };
-        if (proxy.popupObj) { proxy.popupObj.hide(); }
-        if (proxy.editdlgObj) { proxy.editdlgObj.hide(); }
+        if (proxy.popupObj) {
+            proxy.popupObj.hide();
+        }
+        if (proxy.editdlgObj) {
+            proxy.editdlgObj.hide();
+        }
         proxy.parent.formatter.process(
             proxy.parent, selectionObj.args, (selectionObj.args as ClickEventArgs).originalEvent, value);
         (proxy.contentModule.getEditPanel() as HTMLElement).focus();
@@ -457,28 +491,38 @@ export class Table {
 
     private cellSelect(e: ITableNotifyArgs): void {
         let target: HTMLTableCellElement = (e.args as MouseEvent).target as HTMLTableCellElement;
-        let tdNode: Element = closest(target, 'td,th') as HTMLTableCellElement;
+        const tdNode: Element = closest(target, 'td,th') as HTMLTableCellElement;
         target = (target.nodeName !== 'TD' && tdNode && this.parent.contentModule.getEditPanel().contains(tdNode)) ?
             tdNode as HTMLTableCellElement : target;
         removeClass(this.contentModule.getEditPanel().querySelectorAll('table td, table th'), classes.CLS_TABLE_SEL);
         if (target && (target.tagName === 'TD' || target.tagName === 'TH')) {
             target.removeAttribute('class');
             addClass([target], classes.CLS_TABLE_SEL);
+            this.activeCell = target;
             this.curTable = (this.curTable) ? this.curTable : closest(target, 'table') as HTMLTableElement;
+            EventHandler.add(this.curTable, 'mousemove', this.tableMove, this);
+            EventHandler.add(this.curTable, 'mouseup', this.tableMouseUp, this);
             this.removeResizeElement();
-            if (this.helper && this.contentModule.getEditPanel().contains(this.helper)) { detach(this.helper); }
+            if (this.helper && this.contentModule.getEditPanel().contains(this.helper)) {
+                detach(this.helper);
+            }
         }
         if (Browser.info.name === 'mozilla' && !isNOU(closest(target, 'table')) &&
         closest(target, 'table').tagName === 'TABLE') {
             this.parent.contentModule.getEditPanel().setAttribute('contenteditable', 'false');
         }
     }
+
+    private tableMove(event: MouseEvent) : void {
+        this.parent.formatter.editorManager.observer.notify('TABLE_MOVE', {event: event , selectNode : [this.activeCell]});
+    }
+
     private resizeHelper(e: PointerEvent | TouchEvent): void {
         if (this.parent.readonly) {
             return;
         }
-        let target: HTMLElement = e.target as HTMLElement || (e as TouchEvent).targetTouches[0].target as HTMLElement;
-        let closestTable: Element = closest(target, 'table');
+        const target: HTMLElement = e.target as HTMLElement || (e as TouchEvent).targetTouches[0].target as HTMLElement;
+        const closestTable: Element = closest(target, 'table');
         if (!isNOU(this.curTable) && !isNOU(closestTable) && closestTable !== this.curTable) {
             this.removeResizeElement();
             this.removeHelper(e as MouseEvent);
@@ -495,16 +539,16 @@ export class Table {
 
     private tableResizeEleCreation(table: HTMLTableElement, e: MouseEvent): void {
         this.parent.preventDefaultResize(e);
-        let columns: NodeListOf<Element> = Array.prototype.slice.call(table.rows[0].cells, 1);
-        let rows: Element[] = [];
+        const columns: NodeListOf<Element> = Array.prototype.slice.call(table.rows[0].cells, 1);
+        const rows: Element[] = [];
         for (let i: number = 0; i < table.rows.length; i++) {
             rows.push(Array.prototype.slice.call(table.rows[i].cells, 0, 1)[0]);
         }
-        let height: number = parseInt(getComputedStyle(table).height, 10);
-        let width: number = parseInt(getComputedStyle(table).width, 10);
-        let pos: OffsetPosition = this.calcPos(table);
+        const height: number = parseInt(getComputedStyle(table).height, 10);
+        const width: number = parseInt(getComputedStyle(table).width, 10);
+        const pos: OffsetPosition = this.calcPos(table);
         for (let i: number = 0; columns.length > i; i++) {
-            let colReEle: HTMLElement = this.parent.createElement('span', {
+            const colReEle: HTMLElement = this.parent.createElement('span', {
                 attrs: {
                     'data-col': (i + 1).toString(), 'unselectable': 'on', 'contenteditable': 'false'
                 }
@@ -515,33 +559,35 @@ export class Table {
             this.contentModule.getEditPanel().appendChild(colReEle);
         }
         for (let i: number = 0; rows.length > i; i++) {
-            let rowReEle: HTMLElement = this.parent.createElement('span', {
-                 attrs: {
+            const rowReEle: HTMLElement = this.parent.createElement('span', {
+                attrs: {
                     'data-row': (i).toString(), 'unselectable': 'on', 'contenteditable': 'false'
                 }
             });
             rowReEle.classList.add(classes.CLS_RTE_TABLE_RESIZE, classes.CLS_TB_ROW_RES);
-            let rowPosLeft: number = !isNOU(table.getAttribute('cellspacing')) || table.getAttribute('cellspacing') !== '' ?
-            0 : this.calcPos(rows[i] as HTMLElement).left;
+            const rowPosLeft: number = !isNOU(table.getAttribute('cellspacing')) || table.getAttribute('cellspacing') !== '' ?
+                0 : this.calcPos(rows[i] as HTMLElement).left;
             rowReEle.style.cssText = 'width: ' + width + 'px; height: 4px; top: ' +
                 (this.calcPos(rows[i] as HTMLElement).top + pos.top + (rows[i] as HTMLElement).offsetHeight - 2) +
                 'px; left:' + (rowPosLeft + pos.left) + 'px;';
             this.contentModule.getEditPanel().appendChild(rowReEle);
         }
-        let tableReBox: HTMLElement = this.parent.createElement('span', {
+        const tableReBox: HTMLElement = this.parent.createElement('span', {
             className: classes.CLS_TB_BOX_RES, attrs: {
                 'data-col': columns.length.toString(), 'unselectable': 'on', 'contenteditable': 'false'
             }
         });
         tableReBox.style.cssText = 'top: ' + (pos.top + height - 4) +
             'px; left:' + (pos.left + width - 4) + 'px;';
-        if (Browser.isDevice) { tableReBox.classList.add('e-rmob'); }
+        if (Browser.isDevice) {
+            tableReBox.classList.add('e-rmob');
+        }
         this.contentModule.getEditPanel().appendChild(tableReBox);
     }
 
     public removeResizeElement(): void {
-        let item: NodeListOf<Element> = this.parent.contentModule.getEditPanel().
-        querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box');
+        const item: NodeListOf<Element> = this.parent.contentModule.getEditPanel().
+            querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box');
         if (item.length > 0) {
             for (let i: number = 0; i < item.length; i++) {
                 detach(item[i]);
@@ -553,8 +599,8 @@ export class Table {
             top: 0,
             left: 0
         };
-        let offset: OffsetPosition = elem.getBoundingClientRect();
-        let doc: Document = elem.ownerDocument;
+        const offset: OffsetPosition = elem.getBoundingClientRect();
+        const doc: Document = elem.ownerDocument;
         let offsetParent: Node = elem.offsetParent || doc.documentElement;
         while (offsetParent &&
             (offsetParent === doc.body || offsetParent === doc.documentElement) &&
@@ -596,7 +642,7 @@ export class Table {
         if (Browser.isDevice) {
             this.resizeHelper(e);
         }
-        let target: HTMLElement = e.target as HTMLElement;
+        const target: HTMLElement = e.target as HTMLElement;
         if (target.classList.contains(classes.CLS_TB_COL_RES) ||
             target.classList.contains(classes.CLS_TB_ROW_RES) ||
             target.classList.contains(classes.CLS_TB_BOX_RES)) {
@@ -620,14 +666,16 @@ export class Table {
                 this.resizeBtnStat.row = true;
                 this.appendHelper();
             }
-            if (target.classList.contains(classes.CLS_TB_BOX_RES)) { this.resizeBtnStat.tableBox = true; }
+            if (target.classList.contains(classes.CLS_TB_BOX_RES)) {
+                this.resizeBtnStat.tableBox = true;
+            }
 
             if (Browser.isDevice && this.helper && !this.helper.classList.contains('e-reicon')) {
                 this.helper.classList.add('e-reicon');
                 EventHandler.add(document, Browser.touchStartEvent, this.removeHelper, this);
                 EventHandler.add(this.helper, Browser.touchStartEvent, this.resizeStart, this);
             } else {
-                let args: ResizeArgs = isBlazor() ? { requestType: 'Table' } : { event: e, requestType: 'Table' };
+                const args: ResizeArgs = isBlazor() ? { requestType: 'Table' } : { event: e, requestType: 'Table' };
                 this.parent.trigger(events.resizeStart, args, (resizeStartArgs: ResizeArgs) => {
                     if (resizeStartArgs.cancel) {
                         this.cancelResizeAction();
@@ -639,11 +687,13 @@ export class Table {
         }
     }
     private removeHelper(e: MouseEvent): void {
-        let cls: DOMTokenList = (e.target as HTMLElement).classList;
+        const cls: DOMTokenList = (e.target as HTMLElement).classList;
         if (!(cls.contains('e-reicon')) && this.helper) {
             EventHandler.remove(document, Browser.touchStartEvent, this.removeHelper);
             EventHandler.remove(this.helper, Browser.touchStartEvent, this.resizeStart);
-            if (this.helper && this.contentModule.getEditPanel().contains(this.helper)) { detach(this.helper); }
+            if (this.helper && this.contentModule.getEditPanel().contains(this.helper)) {
+                detach(this.helper);
+            }
             this.pageX = null;
             this.helper = null;
         }
@@ -652,13 +702,15 @@ export class Table {
         this.helper = this.parent.createElement('div', {
             className: 'e-table-rhelper'
         });
-        if (Browser.isDevice) { this.helper.classList.add('e-reicon'); }
+        if (Browser.isDevice) {
+            this.helper.classList.add('e-reicon');
+        }
         this.contentModule.getEditPanel().appendChild(this.helper);
         this.setHelperHeight();
     }
 
     private setHelperHeight(): void {
-        let pos: OffsetPosition = this.calcPos(this.curTable);
+        const pos: OffsetPosition = this.calcPos(this.curTable);
         if (this.resizeBtnStat.column) {
             this.helper.classList.add('e-column-helper');
             (this.helper as HTMLElement).style.cssText = 'height: ' + getComputedStyle(this.curTable).height + '; top: ' +
@@ -672,43 +724,43 @@ export class Table {
     }
 
     private updateHelper(): void {
-        let pos: OffsetPosition = this.calcPos(this.curTable);
+        const pos: OffsetPosition = this.calcPos(this.curTable);
         if (this.resizeBtnStat.column) {
-            let left: number = pos.left + this.calcPos(this.columnEle as HTMLElement).left - 1;
+            const left: number = pos.left + this.calcPos(this.columnEle as HTMLElement).left - 1;
             this.helper.style.left = left + 'px';
         } else {
-            let top: number = this.calcPos(this.rowEle).top + pos.top + (this.rowEle as HTMLElement).offsetHeight;
+            const top: number = this.calcPos(this.rowEle).top + pos.top + (this.rowEle as HTMLElement).offsetHeight;
             this.helper.style.top = top + 'px';
         }
     }
 
     private resizing(e: PointerEvent | TouchEvent): void {
-        let pageX: number = this.getPointX(e);
-        let pageY: number = this.getPointY(e);
-        let mouseX: number = (this.parent.enableRtl) ? -(pageX - this.pageX) : (pageX - this.pageX);
-        let mouseY: number = (this.parent.enableRtl) ? -(pageY - this.pageY) : (pageY - this.pageY);
+        const pageX: number = this.getPointX(e);
+        const pageY: number = this.getPointY(e);
+        const mouseX: number = (this.parent.enableRtl) ? -(pageX - this.pageX) : (pageX - this.pageX);
+        const mouseY: number = (this.parent.enableRtl) ? -(pageY - this.pageY) : (pageY - this.pageY);
         this.pageX = pageX;
         this.pageY = pageY;
-        let args: ResizeArgs = isBlazor() ? { requestType: 'table' } : { event: e, requestType: 'table' };
+        const args: ResizeArgs = isBlazor() ? { requestType: 'table' } : { event: e, requestType: 'table' };
         this.parent.trigger(events.onResize, args, (resizingArgs: ResizeArgs) => {
             if (resizingArgs.cancel) {
                 this.cancelResizeAction();
             } else {
-                let tableReBox: HTMLElement = this.contentModule.getEditPanel().querySelector('.e-table-box') as HTMLElement;
-                let tableWidth: number = parseInt(getComputedStyle(this.curTable).width as string, 10);
-                let tableHeight: number = parseInt(getComputedStyle(this.curTable).height as string, 10);
-                let paddingSize: number = +getComputedStyle(this.contentModule.getEditPanel()).paddingRight.match(/\d/g).join('');
-                let rteWidth: number = (this.contentModule.getEditPanel() as HTMLElement).offsetWidth - paddingSize * 2;
+                const tableReBox: HTMLElement = this.contentModule.getEditPanel().querySelector('.e-table-box') as HTMLElement;
+                const tableWidth: number = parseInt(getComputedStyle(this.curTable).width as string, 10);
+                const tableHeight: number = parseInt(getComputedStyle(this.curTable).height as string, 10);
+                const paddingSize: number = +getComputedStyle(this.contentModule.getEditPanel()).paddingRight.match(/\d/g).join('');
+                const rteWidth: number = (this.contentModule.getEditPanel() as HTMLElement).offsetWidth - paddingSize * 2;
                 if (this.resizeBtnStat.column) {
-                    let cellColl: NodeListOf<Element> = this.curTable.rows[0].cells;
-                    let width: number = parseFloat(this.columnEle.offsetWidth.toString());
-                    let actualwid: number = width - mouseX;
-                    let totalwid: number = parseFloat(this.columnEle.offsetWidth.toString()) +
-                        parseFloat((cellColl[this.colIndex - 1] as HTMLElement).offsetWidth.toString());
+                    const cellColl: HTMLCollectionOf<Element> = this.curTable.rows[0].cells;
+                    const width: number = parseFloat(this.columnEle.offsetWidth.toString());
+                    const actualwid: number = width - mouseX;
+                    const totalwid: number = parseFloat(this.columnEle.offsetWidth.toString()) +
+                            parseFloat((cellColl[this.colIndex - 1] as HTMLElement).offsetWidth.toString());
                     for (let i: number = 0; i < this.curTable.rows.length; i++) {
                         if ((totalwid - actualwid) > 20 && actualwid > 20) {
-                            let leftColumnWidth: number = totalwid - actualwid;
-                            let rightColWidth: number = actualwid;
+                            const leftColumnWidth: number = totalwid - actualwid;
+                            const rightColWidth: number = actualwid;
                             (this.curTable.rows[i].cells[this.colIndex - 1] as HTMLTableDataCellElement).style.width =
                                 this.convertPixelToPercentage(leftColumnWidth, tableWidth) + '%';
                             (this.curTable.rows[i].cells[this.colIndex] as HTMLTableDataCellElement).style.width =
@@ -718,19 +770,21 @@ export class Table {
                     this.updateHelper();
                 } else if (this.resizeBtnStat.row) {
                     this.parent.preventDefaultResize(e as PointerEvent);
-                    let height: number = parseFloat(this.rowEle.clientHeight.toString()) + mouseY;
+                    const height: number = parseFloat(this.rowEle.clientHeight.toString()) + mouseY;
                     if (height > 20) {
                         this.rowEle.style.height = height + 'px';
                     }
                     this.curTable.style.height = '';
-                    tableReBox.style.cssText = 'top: ' + (this.calcPos(this.curTable).top + tableHeight - 4) +
+                    if (!isNOU(tableReBox)) {
+                        tableReBox.style.cssText = 'top: ' + (this.calcPos(this.curTable).top + tableHeight - 4) +
                         'px; left:' + (this.calcPos(this.curTable).left + tableWidth - 4) + 'px;';
+                    }
                     this.updateHelper();
-                } else if (this.resizeBtnStat.tableBox && !isNullOrUndefined(tableReBox)) {
+                } else if (this.resizeBtnStat.tableBox) {
                     if (!Browser.isDevice) {
                         EventHandler.remove(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper);
                     }
-                    let widthType: boolean = this.curTable.style.width.indexOf('%') > -1;
+                    const widthType: boolean = this.curTable.style.width.indexOf('%') > -1;
                     this.curTable.style.width = widthType ? this.convertPixelToPercentage(tableWidth + mouseX, rteWidth) + '%'
                         : tableWidth + mouseX + 'px';
                     this.curTable.style.height = tableHeight + mouseY + 'px';
@@ -761,12 +815,14 @@ export class Table {
                 EventHandler.add(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper, this);
             }
             this.removeResizeElement();
-            if (this.helper && this.contentModule.getEditPanel().contains(this.helper)) { detach(this.helper); this.helper = null; }
+            if (this.helper && this.contentModule.getEditPanel().contains(this.helper)) {
+                detach(this.helper); this.helper = null;
+            }
             this.pageX = null;
             this.pageY = null;
             this.moveEle = null;
         }
-        let args: ResizeArgs = isBlazor() ? { requestType: 'table' } : { event: e, requestType: 'table' };
+        const args: ResizeArgs = isBlazor() ? { requestType: 'table' } : { event: e, requestType: 'table' };
         this.parent.trigger(events.resizeStop, args);
         this.parent.formatter.saveData();
     }
@@ -775,13 +831,14 @@ export class Table {
         return this.resizeBtnStat = { column: false, row: false, tableBox: false };
     }
     private addRow(selectCell: NodeSelection, e: ClickEventArgs | KeyboardEvent, tabkey?: boolean): void {
+        // eslint-disable-next-line
         let cmd: { [key: string]: object };
         if (tabkey) {
             cmd = {
                 item: { command: 'Table', subCommand: 'InsertRowAfter' }
             };
         }
-        let value: ITableArgs = {
+        const value: ITableArgs = {
             selection: selectCell,
             subCommand: (tabkey) ? (cmd.item as ITableArgs).subCommand : ((e as ClickEventArgs).item as IDropDownItemModel).subCommand
         };
@@ -797,9 +854,12 @@ export class Table {
         this.hideTableQuickToolbar();
     }
     private removeTable(selection: NodeSelection, args?: ClickEventArgs | KeyboardEventArgs, delKey?: boolean): void {
+        // eslint-disable-next-line
         let cmd: { [key: string]: object };
-        if (delKey) { cmd = { item: { command: 'Table', subCommand: 'TableRemove' } }; }
-        let value: ITableArgs = {
+        if (delKey) {
+            cmd = { item: { command: 'Table', subCommand: 'TableRemove' }};
+        }
+        const value: ITableArgs = {
             selection: selection,
             subCommand: (delKey) ? (cmd.item as ITableArgs).subCommand : ((args as ClickEventArgs).item as IDropDownItemModel).subCommand
         };
@@ -820,17 +880,17 @@ export class Table {
             return;
         }
         this.hideTableQuickToolbar();
-        let header: string = '1X1';
-        let insertbtn: string = this.l10n.getConstant('inserttablebtn');
+        const header: string = '1X1';
+        const insertbtn: string = this.l10n.getConstant('inserttablebtn');
         this.dlgDiv = this.parent.createElement('div', { className: 'e-rte-table-popup', id: this.rteID + '_table' });
         this.tblHeader = this.parent.createElement('div', { className: 'e-rte-popup-header' });
         this.tblHeader.innerHTML = header;
         this.dlgDiv.appendChild(this.tblHeader);
-        let tableDiv: HTMLElement = this.parent.createElement('div', { className: 'e-rte-table-span' });
+        const tableDiv: HTMLElement = this.parent.createElement('div', { className: 'e-rte-table-span' });
         this.drawTable(tableDiv, args);
         this.dlgDiv.appendChild(tableDiv);
         this.dlgDiv.appendChild(this.parent.createElement('span', { className: 'e-span-border' }));
-        let btnEle: HTMLElement = this.parent.createElement('button', {
+        const btnEle: HTMLElement = this.parent.createElement('button', {
             className: 'e-insert-table-btn', id: this.rteID + '_insertTable',
             attrs: { type: 'button', tabindex: '0' }
         });
@@ -838,7 +898,7 @@ export class Table {
             (this.parent.getToolbarElement().querySelector('.e-expended-nav') as HTMLElement).setAttribute('tabindex', '1');
         }
         this.dlgDiv.appendChild(btnEle);
-        let button: Button = new Button({
+        const button: Button = new Button({
             iconCss: 'e-icons e-create-table', content: insertbtn, cssClass: 'e-flat',
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
@@ -857,6 +917,7 @@ export class Table {
             position: { X: 'left', Y: 'bottom' },
             enableRtl: this.parent.enableRtl,
             zIndex: 10001,
+            // eslint-disable-next-line
             close: (event: { [key: string]: object }) => {
                 this.parent.isBlur = false;
                 this.popupObj.destroy();
@@ -867,25 +928,32 @@ export class Table {
         addClass([this.popupObj.element], 'e-popup-open');
         this.popupObj.refreshPosition(target);
     }
+    // eslint-disable-next-line
     private docClick(e: { [key: string]: object }): void {
-        let target: HTMLElement = <HTMLElement>(e.args as MouseEvent).target;
+        const target: HTMLElement = <HTMLElement>(e.args as MouseEvent).target;
         if (target && target.classList && ((this.popupObj && !closest(target, '#' + this.popupObj.element.id) ||
             (this.editdlgObj && !closest(target, '#' + this.editdlgObj.element.id)))) && !target.classList.contains('e-create-table') &&
             target.offsetParent && !target.offsetParent.classList.contains('e-rte-backgroundcolor-dropdown')) {
-            if (this.popupObj) { this.popupObj.hide(); }
-            if (this.editdlgObj) { this.editdlgObj.hide(); }
+            if (this.popupObj) {
+                this.popupObj.hide();
+            }
+            if (this.editdlgObj) {
+                this.editdlgObj.hide();
+            }
             this.parent.isBlur = true;
             dispatchEvent(this.parent.element, 'focusout');
         }
-        let closestEle: Element = closest(target, 'td');
-        let isExist: boolean = closestEle && this.parent.contentModule.getEditPanel().contains(closestEle) ? true : false;
+        const closestEle: Element = closest(target, 'td');
+        const isExist: boolean = closestEle && this.parent.contentModule.getEditPanel().contains(closestEle) ? true : false;
         if (target && target.tagName !== 'TD' && target.tagName !== 'TH' && !isExist &&
             closest(target, '.e-rte-quick-popup') === null && target.offsetParent &&
             !target.offsetParent.classList.contains('e-quick-dropdown') &&
             !target.offsetParent.classList.contains('e-rte-backgroundcolor-dropdown') && !closest(target, '.e-rte-dropdown-popup')
             && !closest(target, '.e-rte-elements')) {
             removeClass(this.parent.element.querySelectorAll('table td'), classes.CLS_TABLE_SEL);
-            if (!Browser.isIE) { this.hideTableQuickToolbar(); }
+            if (!Browser.isIE) {
+                this.hideTableQuickToolbar();
+            }
         }
         if (target && target.classList && !target.classList.contains(classes.CLS_TB_COL_RES) &&
             !target.classList.contains(classes.CLS_TB_ROW_RES) && !target.classList.contains(classes.CLS_TB_BOX_RES)) {
@@ -900,11 +968,13 @@ export class Table {
         for (let row: number = 0; row < 3; row++) {
             rowDiv = this.parent.createElement('div', { className: 'e-rte-table-row', attrs: { 'data-column': '' + row } });
             for (let col: number = 0; col < 10; col++) {
-                let display: string = (row > 2) ? 'none' : 'inline-block';
+                const display: string = (row > 2) ? 'none' : 'inline-block';
                 tableCell = this.parent.createElement('div', { className: 'e-rte-tablecell e-default', attrs: { 'data-cell': '' + col } });
                 rowDiv.appendChild(tableCell);
                 tableCell.style.display = display;
-                if (col === 0 && row === 0) { addClass([tableCell], 'e-active'); }
+                if (col === 0 && row === 0) {
+                    addClass([tableCell], 'e-active');
+                }
                 EventHandler.add(tableCell, 'mousemove', this.tableCellSelect, this);
                 EventHandler.add(rowDiv, 'mouseleave', this.tableCellLeave, this);
                 EventHandler.add(tableCell, 'mouseup', this.tableCellClick, { self: this, args: args.args, selection: args.selection });
@@ -914,10 +984,10 @@ export class Table {
     }
     private editTable(args: ITableArgs): void {
         this.createDialog(args as ITableArgs);
-        let editContent: HTMLElement = this.tableDlgContent(args);
-        let update: string = this.l10n.getConstant('dialogUpdate');
-        let cancel: string = this.l10n.getConstant('dialogCancel');
-        let editHeader: string = this.l10n.getConstant('tableEditHeader');
+        const editContent: HTMLElement = this.tableDlgContent(args);
+        const update: string = this.l10n.getConstant('dialogUpdate');
+        const cancel: string = this.l10n.getConstant('dialogCancel');
+        const editHeader: string = this.l10n.getConstant('tableEditHeader');
         this.editdlgObj.setProperties({
             height: 'initial', width: '290px', content: editContent, header: editHeader,
             buttons: [{
@@ -925,7 +995,9 @@ export class Table {
                 buttonModel: { content: update, cssClass: 'e-flat e-size-update', isPrimary: true }
             },
             {
-                click: (e: MouseEvent) => { this.cancelDialog(e); },
+                click: (e: MouseEvent) => {
+                    this.cancelDialog(e);
+                },
                 buttonModel: { cssClass: 'e-flat e-cancel', content: cancel }
             }]
         });
@@ -935,12 +1007,14 @@ export class Table {
     }
 
     private insertTableDialog(args: MouseEvent | NotifyArgs): void {
-        let proxy: Table = ((this as ITableNotifyArgs).self) ? (this as ITableNotifyArgs).self : this;
-        if (proxy.popupObj) { proxy.popupObj.hide(); }
+        const proxy: Table = ((this as ITableNotifyArgs).self) ? (this as ITableNotifyArgs).self : this;
+        if (proxy.popupObj) {
+            proxy.popupObj.hide();
+        }
         proxy.createDialog(args);
-        let dlgContent: HTMLElement = proxy.tableCellDlgContent();
-        let insert: string = proxy.l10n.getConstant('dialogInsert');
-        let cancel: string = proxy.l10n.getConstant('dialogCancel');
+        const dlgContent: HTMLElement = proxy.tableCellDlgContent();
+        const insert: string = proxy.l10n.getConstant('dialogInsert');
+        const cancel: string = proxy.l10n.getConstant('dialogCancel');
         proxy.editdlgObj.setProperties({
             height: 'initial', width: '290px', content: dlgContent,
             buttons: [{
@@ -948,7 +1022,9 @@ export class Table {
                 buttonModel: { content: insert, cssClass: 'e-flat e-insert-table', isPrimary: true }
             },
             {
-                click: (e: MouseEvent) => { proxy.cancelDialog(e); },
+                click: (e: MouseEvent) => {
+                    proxy.cancelDialog(e);
+                },
                 buttonModel: { cssClass: 'e-flat e-cancel', content: cancel }
             }]
         });
@@ -957,13 +1033,13 @@ export class Table {
     }
 
     private tableCellDlgContent(): HTMLElement {
-        let tableColumn: string = this.l10n.getConstant('columns');
-        let tableRow: string = this.l10n.getConstant('rows');
-        let tableWrap: HTMLElement = this.parent.createElement('div', { className: 'e-cell-wrap' });
-        let content: string = '<div class="e-rte-field"><input type="text" '
+        const tableColumn: string = this.l10n.getConstant('columns');
+        const tableRow: string = this.l10n.getConstant('rows');
+        const tableWrap: HTMLElement = this.parent.createElement('div', { className: 'e-cell-wrap' });
+        const content: string = '<div class="e-rte-field"><input type="text" '
             + ' data-role ="none" id="tableColumn" class="e-table-column"/></div>'
             + '<div class="e-rte-field"><input type="text" data-role ="none" id="tableRow" class="e-table-row" /></div>';
-        let contentElem: DocumentFragment = parseHtml(content);
+        const contentElem: DocumentFragment = parseHtml(content);
         tableWrap.appendChild(contentElem);
         this.columnTextBox = new NumericTextBox({
             format: 'n0',
@@ -990,17 +1066,19 @@ export class Table {
         return tableWrap;
     }
 
+    // eslint-disable-next-line
     private createDialog(args: ITableArgs | ClickEventArgs | MouseEvent): void {
         if (this.editdlgObj) {
             this.editdlgObj.hide({ returnValue: true } as Event);
             return;
         }
-        let tableDialog: HTMLElement = this.parent.createElement('div', { className: 'e-rte-edit-table', id: this.rteID + '_tabledialog' });
+        const tableDialog: HTMLElement = this.parent.createElement('div', {
+            className: 'e-rte-edit-table', id: this.rteID + '_tabledialog' });
         this.parent.element.appendChild(tableDialog);
-        let insert: string = this.l10n.getConstant('dialogInsert');
-        let cancel: string = this.l10n.getConstant('dialogCancel');
-        let header: string = this.l10n.getConstant('tabledialogHeader');
-        let dialogModel: DialogModel = {
+        const insert: string = this.l10n.getConstant('dialogInsert');
+        const cancel: string = this.l10n.getConstant('dialogCancel');
+        const header: string = this.l10n.getConstant('tabledialogHeader');
+        const dialogModel: DialogModel = {
             header: header,
             cssClass: classes.CLS_RTE_ELEMENTS,
             enableRtl: this.parent.enableRtl,
@@ -1012,11 +1090,14 @@ export class Table {
                 buttonModel: { content: insert, cssClass: 'e-flat e-insert-table', isPrimary: true }
             },
             {
-                click: (e: MouseEvent) => { this.cancelDialog(e); },
+                click: (e: MouseEvent) => {
+                    this.cancelDialog(e);
+                },
                 buttonModel: { cssClass: 'e-flat e-cancel', content: cancel }
             }],
             target: (Browser.isDevice) ? document.body : this.parent.element,
             animationSettings: { effect: 'None' },
+            // eslint-disable-next-line
             close: (event: { [key: string]: object }) => {
                 this.parent.isBlur = false;
                 this.editdlgObj.destroy();
@@ -1033,9 +1114,9 @@ export class Table {
     }
 
     private customTable(args: ITableNotifyArgs, e: MouseEvent): void {
-        let proxy: Table = ((this as ITableNotifyArgs).self) ? (this as ITableNotifyArgs).self : this;
+        const proxy: Table = ((this as ITableNotifyArgs).self) ? (this as ITableNotifyArgs).self : this;
         if (proxy.rowTextBox.value && proxy.columnTextBox.value) {
-            let argument: ITableNotifyArgs = ((Browser.isDevice || (!isNullOrUndefined(args.args as ClickEventArgs)
+            const argument: ITableNotifyArgs = ((Browser.isDevice || (!isNullOrUndefined(args.args as ClickEventArgs)
                 && !isNullOrUndefined((args.args as ClickEventArgs).originalEvent) &&
                 ((args.args as ClickEventArgs).originalEvent as KeyboardEventArgs).action === 'insert-table')
                 || proxy.parent.inlineMode.enable) ? args : this as ITableNotifyArgs);
@@ -1043,17 +1124,19 @@ export class Table {
         }
     }
 
+    // eslint-disable-next-line
     private cancelDialog(e: MouseEvent): void {
         this.parent.isBlur = false;
         this.editdlgObj.hide({ returnValue: true } as Event);
     }
 
+    // eslint-disable-next-line
     private applyProperties(args: ITableNotifyArgs, e: MouseEvent): void {
-        let dialogEle: Element = this.editdlgObj.element;
-        let table: HTMLTableElement = closest((args as ITableNotifyArgs).selectNode[0] as HTMLElement, 'table') as HTMLTableElement;
+        const dialogEle: Element = this.editdlgObj.element;
+        const table: HTMLTableElement = closest((args as ITableNotifyArgs).selectNode[0] as HTMLElement, 'table') as HTMLTableElement;
         table.style.width = (dialogEle.querySelector('.e-table-width') as HTMLInputElement).value + 'px';
         if ((dialogEle.querySelector('.e-cell-padding') as HTMLInputElement).value !== '') {
-            let tdElm: NodeListOf<HTMLElement> = table.querySelectorAll('td');
+            const tdElm: NodeListOf<HTMLElement> = table.querySelectorAll('td');
             for (let i: number = 0; i < tdElm.length; i++) {
                 let padVal: string = '';
                 if (tdElm[i].style.padding === '') {
@@ -1076,20 +1159,20 @@ export class Table {
         this.editdlgObj.hide({ returnValue: true } as Event);
     }
     private tableDlgContent(e: ITableNotifyArgs): HTMLElement {
-        let selectNode: HTMLElement = (e as ITableNotifyArgs).selectParent[0] as HTMLElement;
-        let tableWidth: string = this.l10n.getConstant('tableWidth');
-        let cellPadding: string = this.l10n.getConstant('cellpadding');
-        let cellSpacing: string = this.l10n.getConstant('cellspacing');
-        let tableWrap: HTMLElement = this.parent.createElement('div', { className: 'e-table-sizewrap' });
-        let widthVal: string | number = closest(selectNode, 'table').getClientRects()[0].width;
-        let padVal: string | number = (closest(selectNode, 'td') as HTMLElement).style.padding;
-        let brdSpcVal: string | number = (closest(selectNode, 'table') as HTMLElement).getAttribute('cellspacing');
-        let content: string = '<div class="e-rte-field"><input type="text" data-role ="none" id="tableWidth" class="e-table-width" '
+        const selectNode: HTMLElement = (e as ITableNotifyArgs).selectParent[0] as HTMLElement;
+        const tableWidth: string = this.l10n.getConstant('tableWidth');
+        const cellPadding: string = this.l10n.getConstant('cellpadding');
+        const cellSpacing: string = this.l10n.getConstant('cellspacing');
+        const tableWrap: HTMLElement = this.parent.createElement('div', { className: 'e-table-sizewrap' });
+        const widthVal: string | number = closest(selectNode, 'table').getClientRects()[0].width;
+        const padVal: string | number = (closest(selectNode, 'td') as HTMLElement).style.padding;
+        const brdSpcVal: string | number = (closest(selectNode, 'table') as HTMLElement).getAttribute('cellspacing');
+        const content: string = '<div class="e-rte-field"><input type="text" data-role ="none" id="tableWidth" class="e-table-width" '
             + ' /></div>' + '<div class="e-rte-field"><input type="text" data-role ="none" id="cellPadding" class="e-cell-padding" />'
             + ' </div><div class="e-rte-field"><input type="text" data-role ="none" id="cellSpacing" class="e-cell-spacing" /></div>';
-        let contentElem: DocumentFragment = parseHtml(content);
+        const contentElem: DocumentFragment = parseHtml(content);
         tableWrap.appendChild(contentElem);
-        let widthNum: NumericTextBox = new NumericTextBox({
+        const widthNum: NumericTextBox = new NumericTextBox({
             format: 'n0',
             min: 0,
             value: widthVal,
@@ -1099,9 +1182,10 @@ export class Table {
         });
         widthNum.isStringTemplate = true;
         widthNum.appendTo(tableWrap.querySelector('#tableWidth') as HTMLElement);
-        let padding: NumericTextBox = new NumericTextBox({
+        const padding: NumericTextBox = new NumericTextBox({
             format: 'n0',
             min: 0,
+            // eslint-disable-next-line
             value: padVal !== '' ? parseInt(padVal, null) : 0,
             placeholder: cellPadding,
             floatLabelType: 'Auto',
@@ -1109,9 +1193,10 @@ export class Table {
         });
         padding.isStringTemplate = true;
         padding.appendTo(tableWrap.querySelector('#cellPadding') as HTMLElement);
-        let spacing: NumericTextBox = new NumericTextBox({
+        const spacing: NumericTextBox = new NumericTextBox({
             format: 'n0',
             min: 0,
+            // eslint-disable-next-line
             value:  brdSpcVal !== '' && !isNOU(brdSpcVal) ? parseInt(brdSpcVal, null) : 0,
             placeholder: cellSpacing,
             floatLabelType: 'Auto',
@@ -1123,8 +1208,9 @@ export class Table {
     }
     /**
      * Destroys the ToolBar.
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -1134,6 +1220,8 @@ export class Table {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {void}
      */
     private getModuleName(): string {
         return 'table';

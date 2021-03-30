@@ -5,6 +5,7 @@ import { DocumentEditorContainer } from '../document-editor-container';
 import { DocumentEditor } from '../../document-editor/document-editor';
 /**
  * Image Property pane
+ *
  * @private
  */
 export class ImageProperties {
@@ -21,11 +22,11 @@ export class ImageProperties {
     private isHeightApply: boolean = false;
     private isRtl: boolean;
 
-    get documentEditor(): DocumentEditor {
+    private get documentEditor(): DocumentEditor {
         return this.container.documentEditor;
     }
 
-    constructor(container: DocumentEditorContainer, isRtl?: boolean) {
+    public constructor(container: DocumentEditorContainer, isRtl?: boolean) {
         this.container = container;
         this.elementId = this.documentEditor.element.id;
         this.isMaintainAspectRatio = false;
@@ -34,6 +35,8 @@ export class ImageProperties {
     }
     /**
      * @private
+     * @param {boolean} enable - enable/disable image properties pane.
+     * @returns {void}
      */
     public enableDisableElements(enable: boolean): void {
         if (enable) {
@@ -42,8 +45,7 @@ export class ImageProperties {
             classList(this.element, ['e-de-overlay'], []);
         }
     }
-    private initializeImageProperties = (): void => {
-        // tslint:disable-next-line:max-line-length
+    private initializeImageProperties(): void {
         this.element = createElement('div', { id: this.elementId + '_imageProperties', className: 'e-de-prop-pane' });
         this.element.style.display = 'none';
         this.container.propertiesPaneContainer.appendChild(this.element);
@@ -51,71 +53,73 @@ export class ImageProperties {
         this.wireEvents();
     }
 
-    private initImageProp = (): void => {
-        let localObj: L10n = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
-        // tslint:disable-next-line:max-line-length
-        let imageDiv: HTMLElement = createElement('div', { id: this.elementId + '_imageDiv', className: 'e-de-cntr-pane-padding', styles: 'border:0px' });
+    private initImageProp(): void {
+        const localObj: L10n = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
+        const imageDiv: HTMLElement = createElement('div', { id: this.elementId + '_imageDiv', className: 'e-de-cntr-pane-padding', styles: 'border:0px' });
         this.element.appendChild(imageDiv);
-        let label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
+        const label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
         label.textContent = localObj.getConstant('Image');
         imageDiv.appendChild(label);
-        let outerDiv: HTMLElement = createElement('div');
+        const outerDiv: HTMLElement = createElement('div');
         imageDiv.appendChild(outerDiv);
-        // tslint:disable-next-line:max-line-length
         this.widthElement = this.createImagePropertiesDiv('_widthDiv', outerDiv, '_widthInput', localObj.getConstant('W'), localObj.getConstant('Width'));
-        // tslint:disable-next-line:max-line-length
         this.widthNumericBox = new NumericTextBox({ min: 0, max: 23500, cssClass: 'e-de-image-property', showSpinButton: false, format: 'n0', decimals: 2 });
         this.widthNumericBox.appendTo(this.widthElement);
-        // tslint:disable-next-line:max-line-length
         this.heightElement = this.createImagePropertiesDiv('_heightDiv', outerDiv, '_heightInput', localObj.getConstant('H'), localObj.getConstant('Height'));
-        // tslint:disable-next-line:max-line-length
         this.heightNumericBox = new NumericTextBox({ min: 0, max: 23500, cssClass: 'e-de-image-property', showSpinButton: false, format: 'n0', decimals: 2 });
         this.heightNumericBox.appendTo(this.heightElement);
-        // tslint:disable-next-line:max-line-length        
-        let aspectRatioDiv: HTMLElement = createElement('div', { id: this.elementId + '_aspectRatioDiv' });
+        const aspectRatioDiv: HTMLElement = createElement('div', { id: this.elementId + '_aspectRatioDiv' });
         aspectRatioDiv.setAttribute('title', localObj.getConstant('Aspect ratio'));
         outerDiv.appendChild(aspectRatioDiv);
-        // tslint:disable-next-line:max-line-length
-        let aspectRatio: HTMLInputElement = createElement('input', { id: this.elementId + '_aspectRatio', className: 'e-de-ctnr-prop-label' }) as HTMLInputElement;
+        const aspectRatio: HTMLInputElement = createElement('input', { id: this.elementId + '_aspectRatio', className: 'e-de-ctnr-prop-label' }) as HTMLInputElement;
         aspectRatioDiv.appendChild(aspectRatio);
         this.aspectRatioBtn = new CheckBox({ label: localObj.getConstant('Aspect ratio'), enableRtl: this.isRtl }, aspectRatio);
     }
-    // tslint:disable-next-line:max-line-length
-    private createImagePropertiesDiv = (id: string, outerDiv: HTMLElement, inputId: string, spanContent: string, tooltip: string): HTMLElement => {
-        // tslint:disable-next-line:max-line-length
-        let divElement: HTMLElement = createElement('div', { id: this.elementId + id, styles: 'position: relative;width: 100%;', className: 'e-de-ctnr-segment' });
+    // eslint-disable-next-line max-len
+    private createImagePropertiesDiv(id: string, outerDiv: HTMLElement, inputId: string, spanContent: string, tooltip: string): HTMLElement {
+        const divElement: HTMLElement = createElement('div', { id: this.elementId + id, styles: 'position: relative;width: 100%;', className: 'e-de-ctnr-segment' });
         divElement.setAttribute('title', tooltip);
         outerDiv.appendChild(divElement);
-        // tslint:disable-next-line:max-line-length
-        let inputElement: HTMLElement = createElement('input', { id: this.elementId + inputId, className: 'e-textbox', styles: 'width:100%;' });
+        const inputElement: HTMLElement = createElement('input', { id: this.elementId + inputId, className: 'e-textbox', styles: 'width:100%;' });
         divElement.appendChild(inputElement);
-        let spanElement: HTMLElement = createElement('span', { className: 'e-de-img-prty-span' });
+        const spanElement: HTMLElement = createElement('span', { className: 'e-de-img-prty-span' });
         spanElement.textContent = spanContent;
         divElement.appendChild(spanElement);
         return inputElement;
     }
-    public wireEvents = (): void => {
-        this.aspectRatioBtn.element.addEventListener('change', this.onAspectRatioBtnClick);
-        this.widthNumericBox.element.addEventListener('click', (): void => { this.isWidthApply = true; });
-        this.heightNumericBox.element.addEventListener('click', (): void => { this.isHeightApply = true; });
-        this.widthNumericBox.element.addEventListener('keydown', this.onImageWidth);
-        this.heightNumericBox.element.addEventListener('keydown', this.onImageHeight);
-        this.widthNumericBox.element.addEventListener('blur', (): void => { this.applyImageWidth(); this.isWidthApply = false; });
-        this.heightNumericBox.element.addEventListener('blur', (): void => { this.applyImageHeight(); this.isHeightApply = false; });
+    public wireEvents(): void {
+        this.aspectRatioBtn.element.addEventListener('change', this.onAspectRatioBtnClick.bind(this));
+        this.widthNumericBox.element.addEventListener('click', (): void => {
+            this.isWidthApply = true;
+        });
+        this.heightNumericBox.element.addEventListener('click', (): void => {
+            this.isHeightApply = true;
+        });
+        this.widthNumericBox.element.addEventListener('keydown', this.onImageWidth.bind(this));
+        this.heightNumericBox.element.addEventListener('keydown', this.onImageHeight.bind(this));
+        this.widthNumericBox.element.addEventListener('blur', (): void => {
+            this.applyImageWidth(); this.isWidthApply = false;
+        });
+        this.heightNumericBox.element.addEventListener('blur', (): void => {
+            this.applyImageHeight(); this.isHeightApply = false;
+        });
     }
-    private onImageWidth = (e: KeyboardEventArgs): void => {
+    private onImageWidth(e: KeyboardEventArgs): void {
         if (e.keyCode === 13) {
-            setTimeout((): void => { this.applyImageWidth(); this.isWidthApply = false; }, 30);
+            setTimeout((): void => {
+                this.applyImageWidth(); this.isWidthApply = false;
+            }, 30);
         }
     }
-    private onImageHeight = (e: KeyboardEventArgs): void => {
+    private onImageHeight(e: KeyboardEventArgs): void {
         if (e.keyCode === 13) {
-            setTimeout((): void => { this.applyImageHeight(); this.isHeightApply = false; }, 30);
+            setTimeout((): void => {
+                this.applyImageHeight(); this.isHeightApply = false;
+            }, 30);
         }
     }
-    private applyImageWidth = (): void => {
+    private applyImageWidth(): void {
         if (!this.isMaintainAspectRatio) {
-            // tslint:disable-next-line:max-line-length
             let width: number = this.widthNumericBox.value;
             let height: number = this.heightNumericBox.value;
             if (width > this.widthNumericBox.max) {
@@ -128,39 +132,36 @@ export class ImageProperties {
                 this.documentEditor.selection.imageFormat.resize(width, height);
             }
         } else if (this.isMaintainAspectRatio) {
-            // tslint:disable-next-line:max-line-length
             let width: number = this.widthNumericBox.value;
             if (width > this.widthNumericBox.max) {
                 width = this.widthNumericBox.max;
             }
-            let ratio: number = width / this.documentEditor.selection.imageFormat.width;
-            let height: number = this.heightNumericBox.value * ratio;
+            const ratio: number = width / this.documentEditor.selection.imageFormat.width;
+            const height: number = this.heightNumericBox.value * ratio;
             this.heightNumericBox.value = height;
             if (!(width === null || height === null)) {
                 this.documentEditor.selection.imageFormat.resize(width, height);
             }
         }
     }
-    private applyImageHeight = (): void => {
+    private applyImageHeight(): void {
         if (!this.isMaintainAspectRatio) {
-            // tslint:disable-next-line:max-line-length
-            let width: number = this.widthNumericBox.value;
-            let height: number = this.heightNumericBox.value;
+            const width: number = this.widthNumericBox.value;
+            const height: number = this.heightNumericBox.value;
             if (!(width === null || height === null)) {
                 this.documentEditor.selection.imageFormat.resize(width, height);
             }
         } else if (this.isMaintainAspectRatio) {
-            // tslint:disable-next-line:max-line-length
-            let height: number = this.heightNumericBox.value;
-            let ratio: number = height / this.documentEditor.selection.imageFormat.height;
-            let width: number = this.widthNumericBox.value * ratio;
+            const height: number = this.heightNumericBox.value;
+            const ratio: number = height / this.documentEditor.selection.imageFormat.height;
+            const width: number = this.widthNumericBox.value * ratio;
             this.widthNumericBox.value = width;
             if (!(width === null || height === null)) {
                 this.documentEditor.selection.imageFormat.resize(width, height);
             }
         }
     }
-    private onAspectRatioBtnClick = (): void => {
+    private onAspectRatioBtnClick(): void {
         if (this.isMaintainAspectRatio) {
             this.isMaintainAspectRatio = false;
         } else {

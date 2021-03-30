@@ -1,6 +1,5 @@
-/**
- * 
- */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable @typescript-eslint/ban-types */
 import { Smithchart } from '../../smithchart';
 import { Marker } from './marker';
 import { SmithchartFontModel } from '../../smithchart/utils/utils-model';
@@ -17,7 +16,6 @@ import { ISmithchartTextRenderEventArgs } from '../../smithchart/model/interface
 import { Animation, AnimationOptions } from '@syncfusion/ej2-base';
 import { textRender, seriesRender } from '../model/constant';
 
-/* tslint:disable:no-string-literal */
 export class SeriesRender {
 
     public xValues: number[] = [];
@@ -29,10 +27,10 @@ export class SeriesRender {
     private dataLabel: DataLabel = new DataLabel();
 
     private processData(series: SmithchartSeriesModel): void {
-        let dataArray: object[] = <object[]>series.dataSource;
-        let resistance: string = series.resistance;
-        let reactance: string = series.reactance;
-        let tooltip: string = series.tooltipMappingName;
+        const dataArray: object[] = <object[]>series.dataSource;
+        const resistance: string = series.resistance;
+        const reactance: string = series.reactance;
+        const tooltip: string = series.tooltipMappingName;
         series.points = [];
         for (let i: number = 0; i < dataArray.length; i++) {
             series.points.push({
@@ -42,7 +40,7 @@ export class SeriesRender {
             });
         }
     }
-    // tslint:disable:max-func-body-length
+    /* eslint-disable  */
     public draw(smithchart: Smithchart, axisRender: AxisRender, bounds: SmithchartRect): void {
         let groupElement: Element = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_seriesCollections' });
         let resistantCx: number;

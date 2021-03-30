@@ -358,6 +358,21 @@ describe('Map layer testing', () => {
             tooltip.layers[0].tooltipSettings.valuePath = 'Electors';
             tooltip.refresh();
         });
+        it('tooltip checking for textStyle color', (done: Function) => {
+            tooltip.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(bubbleId + 0);
+                trigger.mousemoveEvent(spec, 0, 0, 345, 310);
+                tooltipElement = document.getElementById('mapst_mapsTooltip_text');
+                expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#FFFFFF');
+                done();
+            };
+            tooltip.layers[0].tooltipSettings.template = null;
+            tooltip.layers[0].tooltipSettings.format = null;
+            tooltip.layers[0].tooltipSettings.visible = true;
+            tooltip.layers[0].tooltipSettings.valuePath = 'Electors';
+            tooltip.layers[0].tooltipSettings.textStyle.color = 'red';
+            tooltip.refresh();
+        });
         it('tooltip checking for Marker valuePath', (done: Function) => {
             tooltip.loaded = (args: ILoadedEventArgs) => {
                 spec = getElement(markerId + 1);

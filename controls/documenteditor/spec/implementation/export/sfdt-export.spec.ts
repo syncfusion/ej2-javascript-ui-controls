@@ -1525,7 +1525,7 @@ let shapeSfdt: any = {
             }
         }
     ]
-}
+};
 describe('Sfdt export for Shape', () => {
     let editor: DocumentEditor;
     let documentHelper: DocumentHelper;
@@ -1555,7 +1555,6 @@ describe('Sfdt export for Shape', () => {
         }, 1000);
     });
     it('Shape sfdt', () => {
-console.log('Shape sfdt');
         let exportShape: any = exportData.sections[0].blocks[0].inlines[0];
         let sfdtShape: any = shapeSfdt.sections[0].blocks[0].inlines[0];
         expect(exportShape.allowOverlap).toBe(sfdtShape.allowOverlap);
@@ -1577,6 +1576,431 @@ console.log('Shape sfdt');
         expect(exportShape.verticalOrigin).toBe(sfdtShape.verticalOrigin);
         expect(exportShape.verticalPosition.toFixed(2)).toBe(sfdtShape.verticalPosition.toFixed(2));
         expect(exportShape.zOrderPosition).toBe(sfdtShape.zOrderPosition);
+    });
+});
+
+let shapeSquareSfdt: any = {
+    "sections": [
+        {
+            "blocks": [
+                {
+                    "characterFormat": {
+                        "fontColor": "empty"
+                    },
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": [
+                        {
+                            "shapeId": 1,
+                            "name": "Text Box 1",
+                            "alternativeText": null,
+                            "title": null,
+                            "visible": true,
+                            "width": 60.92307,
+                            "height": 33.7846451,
+                            "widthScale": 100.0,
+                            "heightScale": 100.0,
+                            "lineFormat": {
+                                "lineFormatType": "Solid",
+                                "color": "#000000FF",
+                                "weight": 0.5,
+                                "lineStyle": "Solid"
+                            },
+                            "fillFormat": {
+                                "color": "#FFFFFFFF",
+                                "fill": true
+                            },
+                            "verticalPosition": 2.17,
+                            "verticalOrigin": "Paragraph",
+                            "verticalAlignment": "None",
+                            "horizontalPosition": 36.51,
+                            "horizontalOrigin": "Column",
+                            "horizontalAlignment": "None",
+                            "zOrderPosition": 251659264,
+                            "allowOverlap": true,
+                            "layoutInCell": true,
+                            "lockAnchor": false,
+                            "textWrappingStyle": "Square",
+                            "textWrappingType": "Both",
+                            "distanceBottom": 0.0,
+                            "distanceLeft": 9.0,
+                            "distanceRight": 9.0,
+                            "distanceTop": 0.0,
+                            "autoShapeType": "Rectangle",
+                            "textFrame": {
+                                "textVerticalAlignment": "Top",
+                                "leftMargin": 7.2,
+                                "rightMargin": 7.2,
+                                "topMargin": 3.6,
+                                "bottomMargin": 3.6,
+                                "blocks": [
+                                    {
+                                        "characterFormat": {
+                                            "fontColor": "empty"
+                                        },
+                                        "paragraphFormat": {
+                                            "styleName": "Normal"
+                                        },
+                                        "inlines": [
+                                            {
+                                                "text": "Square",
+                                                "characterFormat": {
+                                                    "fontColor": "empty"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "text": "Test Doc",
+                            "characterFormat": {
+                                "fontColor": "empty"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "characterFormat": {
+                        "fontColor": "empty"
+                    },
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": [
+                        {
+                            "shapeId": 2,
+                            "name": "Text Box 2",
+                            "alternativeText": null,
+                            "title": null,
+                            "visible": true,
+                            "width": 91.38457,
+                            "height": 43.7538567,
+                            "widthScale": 100.0,
+                            "heightScale": 100.0,
+                            "lineFormat": {
+                                "lineFormatType": "Solid",
+                                "color": "#000000FF",
+                                "weight": 0.5,
+                                "lineStyle": "Solid"
+                            },
+                            "fillFormat": {
+                                "color": "#FFFFFFFF",
+                                "fill": true
+                            },
+                            "verticalPosition": 6.85,
+                            "verticalOrigin": "Paragraph",
+                            "verticalAlignment": "None",
+                            "horizontalPosition": 156.18,
+                            "horizontalOrigin": "Column",
+                            "horizontalAlignment": "None",
+                            "zOrderPosition": 251660288,
+                            "allowOverlap": true,
+                            "layoutInCell": true,
+                            "lockAnchor": false,
+                            "textWrappingStyle": "TopAndBottom",
+                            "textWrappingType": "Both",
+                            "distanceBottom": 0.0,
+                            "distanceLeft": 9.0,
+                            "distanceRight": 9.0,
+                            "distanceTop": 0.0,
+                            "autoShapeType": "Rectangle",
+                            "textFrame": {
+                                "textVerticalAlignment": "Top",
+                                "leftMargin": 7.2,
+                                "rightMargin": 7.2,
+                                "topMargin": 3.6,
+                                "bottomMargin": 3.6,
+                                "blocks": [
+                                    {
+                                        "characterFormat": {
+                                            "fontColor": "empty"
+                                        },
+                                        "paragraphFormat": {
+                                            "styleName": "Normal"
+                                        },
+                                        "inlines": [
+                                            {
+                                                "text": "Top & bottom",
+                                                "characterFormat": {
+                                                    "fontColor": "empty"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "text": "Test Top and Bottom",
+                            "characterFormat": {
+                                "fontColor": "empty"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "characterFormat": {
+                        "fontColor": "empty"
+                    },
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": [
+                        {
+                            "shapeId": 3,
+                            "name": "Text Box 3",
+                            "alternativeText": null,
+                            "title": null,
+                            "visible": true,
+                            "width": 70.89228,
+                            "height": 29.9077168,
+                            "widthScale": 100.0,
+                            "heightScale": 100.0,
+                            "lineFormat": {
+                                "lineFormatType": "Solid",
+                                "color": "#000000FF",
+                                "weight": 0.5,
+                                "lineStyle": "Solid"
+                            },
+                            "fillFormat": {
+                                "color": "#FFFFFFFF",
+                                "fill": true
+                            },
+                            "verticalPosition": 7.8,
+                            "verticalOrigin": "Paragraph",
+                            "verticalAlignment": "None",
+                            "horizontalPosition": 63.63,
+                            "horizontalOrigin": "Column",
+                            "horizontalAlignment": "None",
+                            "zOrderPosition": 251661312,
+                            "allowOverlap": true,
+                            "layoutInCell": true,
+                            "lockAnchor": false,
+                            "textWrappingStyle": "Tight",
+                            "textWrappingType": "Left",
+                            "distanceBottom": 0.0,
+                            "distanceLeft": 9.0,
+                            "distanceRight": 9.0,
+                            "distanceTop": 0.0,
+                            "autoShapeType": "Rectangle",
+                            "textFrame": {
+                                "textVerticalAlignment": "Top",
+                                "leftMargin": 7.2,
+                                "rightMargin": 7.2,
+                                "topMargin": 3.6,
+                                "bottomMargin": 3.6,
+                                "blocks": [
+                                    {
+                                        "characterFormat": {
+                                            "fontColor": "empty"
+                                        },
+                                        "paragraphFormat": {
+                                            "styleName": "Normal"
+                                        },
+                                        "inlines": [
+                                            {
+                                                "text": "Tight",
+                                                "characterFormat": {
+                                                    "fontColor": "empty"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "text": "Tight",
+                            "characterFormat": {
+                                "fontColor": "empty"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "headersFooters": {},
+            "sectionFormat": {
+                "headerDistance": 36.0,
+                "footerDistance": 36.0,
+                "pageWidth": 612.0,
+                "pageHeight": 792.0,
+                "leftMargin": 72.0,
+                "rightMargin": 72.0,
+                "topMargin": 72.0,
+                "bottomMargin": 72.0,
+                "differentFirstPage": false,
+                "differentOddAndEvenPages": false,
+                "bidi": false,
+                "restartPageNumbering": false,
+                "pageStartingNumber": 0,
+                "endnoteNumberFormat": "LowerCaseRoman",
+                "footNoteNumberFormat": "Arabic",
+                "restartIndexForFootnotes": "DoNotRestart",
+                "restartIndexForEndnotes": "DoNotRestart"
+            }
+        }
+    ],
+    "characterFormat": {
+        "fontSize": 11.0,
+        "fontFamily": "Calibri",
+        "fontColor": "empty",
+        "fontSizeBidi": 11.0,
+        "fontFamilyBidi": "Arial"
+    },
+    "paragraphFormat": {
+        "afterSpacing": 8.0,
+        "lineSpacing": 1.0791666507720947,
+        "lineSpacingType": "Multiple"
+    },
+    "background": {
+        "color": "#FFFFFFFF"
+    },
+    "styles": [
+        {
+            "type": "Paragraph",
+            "name": "Normal",
+            "next": "Normal",
+            "characterFormat": {
+                "fontColor": "empty"
+            }
+        },
+        {
+            "type": "Character",
+            "name": "Default Paragraph Font",
+            "characterFormat": {
+                "fontColor": "empty"
+            }
+        }
+    ],
+    "defaultTabWidth": 36.0,
+    "formatting": false,
+    "trackChanges": false,
+    "protectionType": "NoProtection",
+    "enforcement": false,
+    "dontUseHTMLParagraphAutoSpacing": false,
+    "alignTablesRowByRow": false,
+    "formFieldShading": true,
+    "footnotes": {
+        "separator": [
+            {
+                "characterFormat": {
+                    "fontColor": "empty"
+                },
+                "paragraphFormat": {
+                    "styleName": "Normal"
+                },
+                "inlines": [
+                    {
+                        "text": "\u0003",
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        }
+                    }
+                ]
+            }
+        ],
+        "continuationSeparator": [
+            {
+                "characterFormat": {
+                    "fontColor": "empty"
+                },
+                "paragraphFormat": {
+                    "styleName": "Normal"
+                },
+                "inlines": [
+                    {
+                        "text": "\u0004",
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "endnotes": {
+        "separator": [
+            {
+                "characterFormat": {
+                    "fontColor": "empty"
+                },
+                "paragraphFormat": {
+                    "styleName": "Normal"
+                },
+                "inlines": [
+                    {
+                        "text": "\u0003",
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        }
+                    }
+                ]
+            }
+        ],
+        "continuationSeparator": [
+            {
+                "characterFormat": {
+                    "fontColor": "empty"
+                },
+                "paragraphFormat": {
+                    "styleName": "Normal"
+                },
+                "inlines": [
+                    {
+                        "text": "\u0004",
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+};
+
+describe('Sfdt export Shape', () => {
+    let editor: DocumentEditor;
+    let documentHelper: DocumentHelper;
+    let exportData: any;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(SfdtExport);
+        editor = new DocumentEditor({ enableSfdtExport: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+        editor.open(JSON.stringify(shapeSquareSfdt));
+        exportData = JSON.parse(editor.sfdtExportModule.serialize());
+    });
+    afterAll((done): void => {
+        documentHelper.destroy();
+        documentHelper = undefined;
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Square, TopAndBottom Shape', () => {
+        let exportSfdt: any = exportData.sections[0].blocks;
+        let sfdtLoad: any = shapeSquareSfdt.sections[0].blocks;
+        expect(exportSfdt[0].inlines[0].textWrappingStyle).toBe(sfdtLoad[0].inlines[0].textWrappingStyle);
+        expect(exportSfdt[0].inlines[0].textWrappingType).toBe(sfdtLoad[0].inlines[0].textWrappingType);
+        expect(exportSfdt[0].inlines[0].distanceBottom).toBe(sfdtLoad[0].inlines[0].distanceBottom);
+        expect(exportSfdt[0].inlines[0].distanceLeft).toBe(sfdtLoad[0].inlines[0].distanceLeft);
+        expect(exportSfdt[0].inlines[0].distanceRight).toBe(sfdtLoad[0].inlines[0].distanceRight);
+        expect(exportSfdt[0].inlines[0].distanceTop).toBe(sfdtLoad[0].inlines[0].distanceTop);
+
+        expect(exportSfdt[1].inlines[0].textWrappingStyle).toBe(sfdtLoad[1].inlines[0].textWrappingStyle);
+        expect(exportSfdt[2].inlines[0].textWrappingStyle).toBe(sfdtLoad[2].inlines[0].textWrappingStyle);
     });
 });
 

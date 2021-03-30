@@ -5,28 +5,31 @@ import { TreeGrid, ColumnMenu as TreeGridColumnMenu } from '@syncfusion/ej2-tree
  * Configures columnMenu collection in Gantt.
  */
 export class ColumnMenu {
-  private parent: Gantt;
+    private parent: Gantt;
 
-  constructor(parent?: Gantt) {
-    TreeGrid.Inject(TreeGridColumnMenu);
-    this.parent = parent;
-  }
-  /**
-   * To get column menu collection.
-   */
-  public getColumnMenu(): HTMLElement {
-    return this.parent.treeGrid.columnMenuModule.getColumnMenu();
-  }
+    constructor(parent?: Gantt) {
+        TreeGrid.Inject(TreeGridColumnMenu);
+        this.parent = parent;
+    }
+    /**
+     * @returns {HTMLAllCollection} .
+     * To get column menu collection.
+     */
+    public getColumnMenu(): HTMLElement {
+        return this.parent.treeGrid.columnMenuModule.getColumnMenu();
+    }
 
-  public destroy(): void {
+    public destroy(): void {
     // column menu destroy module
-  }
+    }
 
-  /**
-   * For internal use only - Get the module name.
-   * @private
-   */
-  private getModuleName(): string {
-    return 'columnMenu';
-  }
+    /**
+     * For internal use only - Get the module name.
+     *
+     * @returns {string} .
+     * @private
+     */
+    private getModuleName(): string {
+        return 'columnMenu';
+    }
 }

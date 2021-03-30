@@ -1,3 +1,5 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { effect, getPathArc } from '../utils/helper';
 import { ProgressBar } from '../progressbar';
@@ -9,17 +11,17 @@ export class ProgressAnimation {
 
     /** Linear Animation */
     public doLinearAnimation(element: Element, progress: ProgressBar, delay: number, previousWidth?: number, active?: Element): void {
-        let animation: Animation = new Animation({});
-        let linearPath: HTMLElement = <HTMLElement>element;
-        let duration: number = (progress.isActive) ? 3000 : progress.animation.duration;
-        let width: string = linearPath.getAttribute('width');
-        let x: string = linearPath.getAttribute('x');
+        const animation: Animation = new Animation({});
+        const linearPath: HTMLElement = <HTMLElement>element;
+        const duration: number = (progress.isActive) ? 3000 : progress.animation.duration;
+        const width: string = linearPath.getAttribute('width');
+        const x: string = linearPath.getAttribute('x');
         let opacityValue: number = 0;
         let value: number = 0;
-        let start: number = (!progress.enableRtl || (progress.cornerRadius === 'Round4px')) ? previousWidth : parseInt(x, 10);
-        let end: number = (!progress.enableRtl || (progress.cornerRadius === 'Round4px')) ? parseInt(width, 10) - start :
+        const start: number = (!progress.enableRtl || (progress.cornerRadius === 'Round4px')) ? previousWidth : parseInt(x, 10);
+        const end: number = (!progress.enableRtl || (progress.cornerRadius === 'Round4px')) ? parseInt(width, 10) - start :
             parseInt(width, 10) - previousWidth;
-        let rtlX: number = parseInt(x, 10) - end;
+        const rtlX: number = parseInt(x, 10) - end;
         linearPath.style.visibility = 'hidden';
         animation.animate(linearPath, {
             duration: duration,
@@ -55,7 +57,7 @@ export class ProgressAnimation {
                     }
                 }
             },
-            end: (model: AnimationOptions) => {
+            end: () => {
                 progress.cancelResize = false;
                 linearPath.style.visibility = '';
                 if (progress.enableRtl && !(progress.cornerRadius === 'Round4px')) {
@@ -83,14 +85,14 @@ export class ProgressAnimation {
     public doLinearIndeterminate(
         element: Element, progressWidth: number, thickness: number, progress: ProgressBar, clipPath: Element
     ): void {
-        let animation: Animation = new Animation({});
-        let linearPath: HTMLElement = <HTMLElement>element;
-        let x: string = linearPath.getAttribute('x');
-        let width: string = linearPath.getAttribute('width');
+        const animation: Animation = new Animation({});
+        const linearPath: HTMLElement = <HTMLElement>element;
+        const x: string = linearPath.getAttribute('x');
+        const width: string = linearPath.getAttribute('width');
         let value: number = 0;
-        let start: number = (width) ? -(parseInt(width, 10)) : -progressWidth;
-        let end: number = (progress.progressRect.x + progress.progressRect.width) + ((width) ? (parseInt(width, 10)) : progressWidth);
-        let duration: number = (!progress.enableProgressSegments) ? 2500 : 3500;
+        const start: number = (width) ? -(parseInt(width, 10)) : -progressWidth;
+        const end: number = (progress.progressRect.x + progress.progressRect.width) + ((width) ? (parseInt(width, 10)) : progressWidth);
+        const duration: number = (!progress.enableProgressSegments) ? 2500 : 3500;
         animation.animate(<HTMLElement>clipPath, {
             duration: duration,
             delay: 0,
@@ -128,9 +130,9 @@ export class ProgressAnimation {
     }
 
     /** Linear striped */
-    public doStripedAnimation(element: Element, progress: ProgressBar, value: number, delay?: boolean): void {
-        let animation: Animation = new Animation({});
-        let point: number = 1000 / progress.animation.duration;
+    public doStripedAnimation(element: Element, progress: ProgressBar, value: number): void {
+        const animation: Animation = new Animation({});
+        const point: number = 1000 / progress.animation.duration;
         animation.animate(<HTMLElement>element, {
             duration: progress.animation.duration,
             delay: progress.animation.delay,
@@ -140,7 +142,7 @@ export class ProgressAnimation {
             },
             end: () => {
                 if (!progress.destroyIndeterminate) {
-                    this.doStripedAnimation(element, progress, value, false);
+                    this.doStripedAnimation(element, progress, value);
                 }
             }
         });
@@ -152,23 +154,21 @@ export class ProgressAnimation {
         element: Element, progress: ProgressBar, thickness: number, delay: number, startValue?: number,
         previousTotal?: number, active?: Element
     ): void {
-        let animation: Animation = new Animation({});
-        let circularPath: HTMLElement = <HTMLElement>element;
+        const animation: Animation = new Animation({});
+        const circularPath: HTMLElement = <HTMLElement>element;
         let start: number = progress.startAngle;
-        let pathRadius: number = radius + (thickness / 2);
+        const pathRadius: number = radius + (thickness / 2);
         let end: number = 0;
         let opacityValue: number = 0;
-        let startPos: number;
-        let endPos: number;
-        let duration: number = (progress.isActive) ? 3000 : progress.animation.duration;
+        const duration: number = (progress.isActive) ? 3000 : progress.animation.duration;
         start += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) ?
             ((progress.enableRtl) ? (lineCapRadius / 2) * thickness : -(lineCapRadius / 2) * thickness) : 0;
         totalEnd += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) ?
             (lineCapRadius / 2) * thickness : 0;
         progressEnd += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) ?
             ((progress.enableRtl) ? -(lineCapRadius / 2) * thickness : (lineCapRadius / 2) * thickness) : 0;
-        startPos = (!isNullOrUndefined(startValue)) ? startValue : start;
-        endPos = (!isNullOrUndefined(startValue)) ? totalEnd - previousTotal : totalEnd;
+        const startPos: number = (!isNullOrUndefined(startValue)) ? startValue : start;
+        const endPos: number = (!isNullOrUndefined(startValue)) ? totalEnd - previousTotal : totalEnd;
         circularPath.setAttribute('visibility', 'Hidden');
         animation.animate(circularPath, {
             duration: duration,
@@ -188,7 +188,7 @@ export class ProgressAnimation {
                     }
                 }
             },
-            end: (model: AnimationOptions) => {
+            end: () => {
                 progress.cancelResize = false;
                 circularPath.setAttribute('visibility', '');
                 circularPath.setAttribute('d', getPathArc(x, y, pathRadius, start, progressEnd, progress.enableRtl, true));
@@ -211,9 +211,9 @@ export class ProgressAnimation {
         circularProgress: Element, progress: ProgressBar,
         start: number, end: number, x: number, y: number, radius: number, thickness: number, clipPath: Element
     ): void {
-        let animation: Animation = new Animation({});
-        let pathRadius: number = radius + ((!progress.enableProgressSegments) ? (thickness / 2) : 0);
-        let value: number = (!progress.enableProgressSegments) ? 3 : 2;
+        const animation: Animation = new Animation({});
+        const pathRadius: number = radius + ((!progress.enableProgressSegments) ? (thickness / 2) : 0);
+        const value: number = (!progress.enableProgressSegments) ? 3 : 2;
         animation.animate((<HTMLElement>clipPath), {
             progress: (): void => {
                 (<HTMLElement>circularProgress).style.visibility = 'visible';
@@ -223,7 +223,7 @@ export class ProgressAnimation {
                     'd', getPathArc(x, y, pathRadius, start % 360, end % 360, progress.enableRtl, !progress.enableProgressSegments)
                 );
             },
-            end: (model: AnimationOptions) => {
+            end: () => {
                 if (!progress.destroyIndeterminate) {
                     this.doCircularIndeterminate(circularProgress, progress, start, end, x, y, radius, thickness, clipPath);
                 }
@@ -234,18 +234,18 @@ export class ProgressAnimation {
 
     /** To do the label animation for progress bar */
     public doLabelAnimation(labelPath: Element, start: number, end: number, progress: ProgressBar, delay: number, textSize?: number): void {
-        let animation: Animation = new Animation({});
-        let label: Animation = new Animation({});
+        const animation: Animation = new Animation({});
+        const label: Animation = new Animation({});
         let startPos: number;
         let endPos: number;
-        let text: string = labelPath.innerHTML;
+        const text: string = labelPath.innerHTML;
         let value: number = 0;
         let xPos: number = 0;
         let valueChanged: number = 0;
-        let percentage: number = 100;
-        let labelText: string = progress.labelStyle.text;
-        let labelPos: string = progress.labelStyle.textAlignment;
-        let posX: number = parseInt(labelPath.getAttribute('x'), 10);
+        const percentage: number = 100;
+        const labelText: string = progress.labelStyle.text;
+        const labelPos: string = progress.labelStyle.textAlignment;
+        const posX: number = parseInt(labelPath.getAttribute('x'), 10);
         labelPath.setAttribute('visibility', 'Hidden');
         if (progress.type === 'Linear') {
             startPos = (progress.enableRtl) ? (progress.progressRect.x + progress.progressRect.width) + (textSize / 2) :
@@ -303,19 +303,17 @@ export class ProgressAnimation {
 
     /** To do the annotation animation for circular progress bar */
     public doAnnotationAnimation(circularPath: Element, progress: ProgressBar, previousEnd?: number, previousTotal?: number): void {
-        let animation: Animation = new Animation({});
+        const animation: Animation = new Animation({});
         let value: number = 0;
-        let percentage: number = 100;
-        let isAnnotation: boolean = progress.annotations.length > 0;
+        const percentage: number = 100;
+        const isAnnotation: boolean = progress.annotations.length > 0;
         let annotatElementChanged: Element;
         let firstAnnotatElement: Element;
-        let start: number = progress.startAngle;
-        let totalAngle: number = progress.totalAngle;
+        const start: number = progress.startAngle;
+        const totalAngle: number = progress.totalAngle;
         let totalEnd: number;
         let annotateValueChanged: number;
         let annotateValue: number;
-        let startValue: number;
-        let endValue: number;
         if (isAnnotation && progress.progressAnnotationModule) {
             firstAnnotatElement = document.getElementById(progress.element.id + 'Annotation0').children[0];
             if (firstAnnotatElement && firstAnnotatElement.children[0]) {
@@ -331,8 +329,8 @@ export class ProgressAnimation {
         annotateValue = ((progress.argsData.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
         annotateValue = (progress.argsData.value < progress.minimum || progress.argsData.value > progress.maximum) ? 0 :
             Math.round(annotateValue);
-        startValue = (!isNullOrUndefined(previousEnd)) ? previousEnd : start;
-        endValue = (!isNullOrUndefined(previousEnd)) ? totalEnd - previousTotal : totalEnd;
+        const startValue: number = (!isNullOrUndefined(previousEnd)) ? previousEnd : start;
+        const endValue: number = (!isNullOrUndefined(previousEnd)) ? totalEnd - previousTotal : totalEnd;
         if (progress.argsData.value <= progress.minimum || progress.argsData.value > progress.maximum) {
             annotatElementChanged.innerHTML = annotateValue + '%';
         } else {
@@ -347,7 +345,7 @@ export class ProgressAnimation {
                         annotatElementChanged.innerHTML = annotateValueChanged ? annotateValueChanged.toString() + '%' : '0%';
                     }
                 },
-                end: (model: AnimationOptions) => {
+                end: () => {
                     progress.cancelResize = false;
                     annotatElementChanged.innerHTML = annotateValue + '%';
                 }
@@ -356,8 +354,8 @@ export class ProgressAnimation {
     }
 
     private activeAnimate(t: number, start: number, end: number, enableRtl: boolean): number {
-        let time: number = 1 - Math.pow(1 - t, 3);
-        let attrValue: number = start + ((!enableRtl) ? (time * end) : -(time * end));
+        const time: number = 1 - Math.pow(1 - t, 3);
+        const attrValue: number = start + ((!enableRtl) ? (time * end) : -(time * end));
         return attrValue;
     }
 

@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { Maps, IAnnotationRenderingEventArgs, annotationRendering, Annotation } from '../index';
 import { createElement, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { getTemplateFunction, Size, getElementOffset, getElementByID } from '../utils/helper';
@@ -9,13 +10,14 @@ import { getTemplateFunction, Size, getElementOffset, getElementByID } from '../
 export class Annotations {
 
     private map: Maps;
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(map: Maps) {
         this.map = map;
     }
 
     public renderAnnotationElements(): void {
-        let secondaryID: string = this.map.element.id + '_Secondary_Element';
-        let annotationGroup: HTMLElement = createElement('div', { id: this.map.element.id + '_Annotations_Group' });
+        const secondaryID: string = this.map.element.id + '_Secondary_Element';
+        const annotationGroup: HTMLElement = createElement('div', { id: this.map.element.id + '_Annotations_Group' });
         annotationGroup.style.position = 'absolute';
         annotationGroup.style.top = '0px';
         annotationGroup.style.left = '0px';
@@ -30,22 +32,24 @@ export class Annotations {
                 updateBlazorTemplate(this.map.element.id + '_ContentTemplate_' + i, 'ContentTemplate', this.map.annotations[i]);
             }
         }
-         //tslint:disable
-         (this.map as any).renderReactTemplates();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (this.map as any).renderReactTemplates();
     }
 
+    // eslint-disable-next-line valid-jsdoc
     /**
      * To create annotation elements
      */
     public createAnnotationTemplate(parentElement: HTMLElement, annotation: Annotation, annotationIndex: number): void {
-        let left: number; let top: number; let templateFn: Function;
-        let map: Maps = this.map; let templateElement: HTMLCollection;
-        let availSize: Size = map.availableSize;
-        let id: string = map.element.id + '_Annotation_' + annotationIndex;
-        let childElement: HTMLElement = createElement('div', {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let left: number; let top: number; let templateFn: any;
+        const map: Maps = this.map; let templateElement: HTMLCollection;
+        const availSize: Size = map.availableSize;
+        const id: string = map.element.id + '_Annotation_' + annotationIndex;
+        const childElement: HTMLElement = createElement('div', {
             id: map.element.id + '_Annotation_' + annotationIndex, styles: 'position: absolute; z-index:' + annotation.zIndex + ';'
         });
-        let argsData: IAnnotationRenderingEventArgs = {
+        const argsData: IAnnotationRenderingEventArgs = {
             cancel: false, name: annotationRendering, content: annotation.content,
             annotation: annotation
         };
@@ -53,13 +57,13 @@ export class Annotations {
             if (argsData.cancel) {
                 return;
             }
-            let blazor: string = 'Blazor';
+            const blazor: string = 'Blazor';
             templateFn = getTemplateFunction(argsData.content);
             if (templateFn && (!window[blazor] ? templateFn(
-                    this.map, this.map, argsData.content, this.map.element.id + '_ContentTemplate_' + annotationIndex).length : {})) {
+                this.map, this.map, argsData.content, this.map.element.id + '_ContentTemplate_' + annotationIndex).length : {})) {
                 templateElement = Array.prototype.slice.call(templateFn(
                     !window[blazor] ? this.map : {}, this.map, argsData.content, this.map.element.id + '_ContentTemplate_' + annotationIndex));
-                let length: number = templateElement.length;
+                const length: number = templateElement.length;
                 for (let i: number = 0; i < length; i++) {
                     childElement.appendChild(templateElement[i]);
                 }
@@ -70,38 +74,38 @@ export class Annotations {
             }
         });
 
-        let offset: Size = getElementOffset(<HTMLElement>childElement.cloneNode(true), map.element);
-        let elementRect: ClientRect = map.element.getBoundingClientRect();
-        let bounds: ClientRect = map.svgObject.getBoundingClientRect();
+        const offset: Size = getElementOffset(<HTMLElement>childElement.cloneNode(true), map.element);
+        const elementRect: ClientRect = map.element.getBoundingClientRect();
+        const bounds: ClientRect = map.svgObject.getBoundingClientRect();
         left = Math.abs(bounds.left - elementRect.left);
         top = Math.abs(bounds.top - elementRect.top);
-        let annotationXValue: number = (annotation.x.indexOf('%') > -1) ? (availSize.width / 100) * parseFloat(annotation.x) :
+        const annotationXValue: number = (annotation.x.indexOf('%') > -1) ? (availSize.width / 100) * parseFloat(annotation.x) :
             parseFloat(annotation.x);
-        let annotationYValue: number = (annotation.y.indexOf('%') > -1) ? (availSize.height / 100) * parseFloat(annotation.y) :
+        const annotationYValue: number = (annotation.y.indexOf('%') > -1) ? (availSize.height / 100) * parseFloat(annotation.y) :
             parseFloat(annotation.y);
         left = (annotation.horizontalAlignment === 'None') ? (left + annotationXValue) : left;
         top = (annotation.verticalAlignment === 'None') ? (top + annotationYValue) : top;
         switch (annotation.verticalAlignment) {
-            case 'Near':
-                top = (top + annotationYValue);
-                break;
-            case 'Center':
-                top = (top + annotationYValue) + ((bounds.height / 2) - (offset.height / 2));
-                break;
-            case 'Far':
-                top = (top + bounds.height + annotationYValue) - offset.height;
-                break;
+        case 'Near':
+            top = (top + annotationYValue);
+            break;
+        case 'Center':
+            top = (top + annotationYValue) + ((bounds.height / 2) - (offset.height / 2));
+            break;
+        case 'Far':
+            top = (top + bounds.height + annotationYValue) - offset.height;
+            break;
         }
         switch (annotation.horizontalAlignment) {
-            case 'Near':
-                left = (left + annotationXValue);
-                break;
-            case 'Center':
-                left = (left + annotationXValue) + ((bounds.width / 2) - (offset.width / 2));
-                break;
-            case 'Far':
-                left = (left + bounds.width + annotationXValue) - offset.width;
-                break;
+        case 'Near':
+            left = (left + annotationXValue);
+            break;
+        case 'Center':
+            left = (left + annotationXValue) + ((bounds.width / 2) - (offset.width / 2));
+            break;
+        case 'Far':
+            left = (left + bounds.width + annotationXValue) - offset.width;
+            break;
         }
         childElement.style.left = left + 'px';
         childElement.style.top = top + 'px';
@@ -114,10 +118,11 @@ export class Annotations {
     protected getModuleName(): string {
         return 'Annotations';
     }
-
     /**
-     * To destroy the annotation. 
-     * @return {void}
+     * To destroy the annotation.
+     *
+     * @param {Maps} map - Specifies the instance of the maps
+     * @returns {void}
      * @private
      */
     public destroy(map: Maps): void {

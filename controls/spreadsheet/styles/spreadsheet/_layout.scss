@@ -193,19 +193,18 @@
 
     & .e-sheet {
       height: 100%;
+      overflow: hidden;
+      position: relative;
+
+      &:not(.e-frozen-rows) {
+        display: flex;
+        flex-direction: column;
+      }
 
       & .e-virtualable {
         will-change: transform;
         z-index: 1;
       }
-    }
-
-    & .e-ss-atc {
-      display: none;
-    }
-
-    & .e-main-panel {
-      height: calc(100% - 30px);
 
       & .e-spreadsheet-edit {
         border: 0;
@@ -229,6 +228,32 @@
         }
       }
 
+      & .e-scrollbar {
+        border-top: $spreadsheet-border;
+        position: relative;
+        z-index: 4;
+
+        & .e-scroller {
+          height: 100%;
+          overflow-x: scroll;
+          position: absolute;
+
+          & .e-virtualtrack {
+            height: 1px;
+          }
+        }
+      }
+    }
+
+    & .e-ss-atc {
+      display: none;
+    }
+
+    & .e-main-panel {
+      height: calc(100% - 31px);
+      overflow: hidden;
+      position: relative;
+
       & .e-ss-chart-overlay {
         border: 1px solid $ele-color;
       }
@@ -248,6 +273,7 @@
       border-spacing: 0;
       cursor: cell;
       table-layout: fixed;
+      width: 100%;
 
       & tr {
         line-height: normal;
@@ -312,7 +338,8 @@
 
             &[style*='vertical-align: middle;'] {
               .e-wrap-content {
-                top: 40%;
+                bottom: initial;
+                transform: translateY(-50%);
               }
             }
           }
@@ -404,7 +431,7 @@
       }
     }
 
-    & .e-sheet-content .e-ss-overlay {
+    & .e-sheet .e-ss-overlay {
       background-position: 0 0;
       background-repeat: no-repeat;
       background-size: 100% 100%;
@@ -414,7 +441,7 @@
       z-index: 3;
     }
 
-    & .e-sheet-content .e-ss-overlay-active .e-ss-overlay-t {
+    & .e-sheet .e-ss-overlay-active .e-ss-overlay-t {
       background-color: $selection-border-color;
       cursor: ns-resize;
       position: absolute;
@@ -423,7 +450,7 @@
       transform: translate(-50%, -50%);
     }
 
-    & .e-sheet-content .e-ss-overlay-active .e-ss-overlay-r {
+    & .e-sheet .e-ss-overlay-active .e-ss-overlay-r {
       background-color: $selection-border-color;
       cursor: ew-resize;
       position: absolute;
@@ -432,7 +459,7 @@
       transform: translate(-50%, -50%);
     }
 
-    & .e-sheet-content .e-ss-overlay-active .e-ss-overlay-b {
+    & .e-sheet .e-ss-overlay-active .e-ss-overlay-b {
       background-color: $selection-border-color;
       cursor: ns-resize;
       position: absolute;
@@ -441,16 +468,16 @@
       transform: translate(-50%, -50%);
     }
 
-    & .e-sheet-content .e-datavisualization-chart.e-ss-overlay {
+    & .e-sheet .e-datavisualization-chart.e-ss-overlay {
       border: 1px solid $find-popup-border-color;
     }
 
-    & .e-sheet-content .e-ss-overlay.e-ss-overlay-active {
+    & .e-sheet .e-ss-overlay.e-ss-overlay-active {
       border: 1px solid $selection-border-color;
       cursor: move;
     }
 
-    & .e-sheet-content .e-ss-overlay-active .e-ss-overlay-l {
+    & .e-sheet .e-ss-overlay-active .e-ss-overlay-l {
       background-color: $selection-border-color;
       cursor: ew-resize;
       position: absolute;
@@ -458,35 +485,66 @@
       transform: translate(-50%, -50%);
     }
 
-    & .e-column-header .e-table tr .e-header-cell.e-colresize {
+    & .e-header-panel .e-table tr .e-header-cell.e-colresize {
       cursor: col-resize;
     }
 
-    & .e-row-header .e-table tr .e-header-cell.e-rowresize {
+    & .e-row-header .e-table tr .e-header-cell.e-rowresize,
+    & .e-selectall-container .e-table .e-row .e-header-cell.e-rowresize {
       cursor: row-resize;
     }
 
     & .e-sheet {
       border: $spreadsheet-border;
 
-      &.e-hide-headers .e-main-panel {
-        height: 100%;
+      &.e-hide-headers {
+        &:not(.e-frozen-rows) .e-main-panel {
+          height: 100%;
+        }
+
+        &.e-frozen-rows:not(.e-frozen-columns) {
+          & .e-selectall-container,
+          & .e-row-header {
+            display: none;
+          }
+        }
+
+        &.e-frozen-columns:not(.e-frozen-rows) {
+          & .e-selectall-container,
+          & .e-column-header {
+            display: none;
+          }
+        }
+
+        &:not(.e-frozen-rows):not(.e-frozen-columns) {
+          & .e-selectall-container,
+          & .e-column-header,
+          & .e-row-header {
+            display: none;
+          }
+        }
+
+        & .e-select-all-cell,
+        & .e-header-cell,
+        & .e-header-row,
+        & .e-row-header colgroup col:first-child,
+        & .e-selectall-container colgroup col:first-child {
+          display: none;
+        }
       }
     }
 
-    & .e-header-panel,
-    & .e-main-panel {
-      display: flex;
-    }
-
-    .e-sheet-content {
-      overflow: scroll;
+    & .e-header-panel {
       position: relative;
     }
 
+    .e-sheet-content {
+      overflow: hidden;
+      position: absolute;
+      top: 0;
+    }
+
     & .e-row-header {
-      border-bottom: $spreadsheet-border-width solid;
-      overflow-y: hidden;
       position: relative;
 
       & .e-table tr {
@@ -519,17 +577,12 @@
       }
     }
 
-    & .e-sheet-content,
-    & .e-column-header {
-      & .e-table {
-        width: 100%;
-      }
-    }
-
     & .e-column-header {
       border-style: solid;
       border-width: 0;
       overflow: hidden;
+      position: absolute;
+      top: 0;
 
       & .e-table th {
         &.e-header-cell.e-hide-start::after,
@@ -564,13 +617,13 @@
       }
     }
 
-    & .e-sheet-content .e-datavisualization-chart .e-control.e-chart {
+    & .e-sheet .e-datavisualization-chart .e-control.e-chart {
       height: 100%;
       position: initial !important; // sass-lint:disable-line no-important
       width: 100%;
     }
 
-    & .e-sheet-content .e-datavisualization-chart .e-control.e-accumulationchart {
+    & .e-sheet .e-datavisualization-chart .e-control.e-accumulationchart {
       height: 100%;
       overflow: hidden;
       padding: 4px;
@@ -578,23 +631,40 @@
       width: 100%;
     }
 
-    .e-sheet-content .e-datavisualization-chart .e-ss-overlay-l,
-    .e-sheet-content .e-datavisualization-chart .e-ss-overlay-r,
-    .e-sheet-content .e-datavisualization-chart .e-ss-overlay-t,
-    .e-sheet-content .e-datavisualization-chart .e-ss-overlay-b {
+    .e-sheet .e-datavisualization-chart .e-ss-overlay-l,
+    .e-sheet .e-datavisualization-chart .e-ss-overlay-r,
+    .e-sheet .e-datavisualization-chart .e-ss-overlay-t,
+    .e-sheet .e-datavisualization-chart .e-ss-overlay-b {
       position: absolute;
     }
 
     & .e-header-panel {
       & .e-header-row,
-      & .e-selectall-container,
-      & .e-column-header {
+      & .e-select-all-cell {
         height: 30px;
       }
 
       & .e-virtualtrack {
         height: 1px;
       }
+    }
+
+    & .e-frozen-row,
+    & .e-frozen-column {
+      pointer-events: none;
+      position: absolute;
+      z-index: 3;
+    }
+
+    & .e-frozen-row {
+      height: 1px;
+      width: 100%;
+    }
+
+    & .e-frozen-column {
+      height: 100%;
+      top: 0;
+      width: 1px;
     }
 
     & .e-sheet-tab-panel {
@@ -719,7 +789,7 @@
       cursor: cell;
       pointer-events: none;
       position: absolute;
-      z-index: 1;
+      z-index: 2;
 
       @if $skin-name == 'highcontrast' {
         border-width: 2px;
@@ -730,14 +800,14 @@
     }
 
     .e-active-cell,
-    .e-copy-indicator {
+    .e-copy-indicator,
+    .e-range-indicator {
       cursor: cell;
       pointer-events: none;
       position: absolute;
-      z-index: 1;
+      z-index: 2;
     }
 
-    .e-active-cell,
     .e-formularef-indicator {
       cursor: cell;
       pointer-events: none;
@@ -758,6 +828,7 @@
     }
 
     .e-copy-indicator div,
+    .e-range-indicator div,
     .e-formularef-indicator div {
       position: absolute;
 
@@ -878,11 +949,22 @@
           }
         }
 
-        & .e-chart-icon {
+        & .e-chart-icon,
+        & .e-chart-type-icon {
           font-size: 30px !important; // sass-lint:disable-line no-important
           margin-right: 5px;
           padding: 0 5px;
           width: 30px;
+        }
+
+        & .e-switch-row-column-icon {
+          font-size: 18px !important; // sass-lint:disable-line no-important
+          margin-right: 5px;
+        }
+
+        & .e-addchart-icon {
+          font-size: 18px !important; // sass-lint:disable-line no-important
+          margin-right: -5px;
         }
 
         &.e-split-colorpicker {
@@ -1096,10 +1178,28 @@
       & .e-select-all-cell {
         border-width: 0 0 1px 1px;
       }
+
+      & .e-frozen-row {
+        right: 0;
+      }
     }
 
     .e-sheet-panel {
-      position: relative;
+      & .e-frozen-columns {
+        & .e-selectall-container {
+          position: relative;
+        }
+      }
+
+      & .e-frozen-rows {
+        & .e-selectall-container {
+          position: relative;
+        }
+      }
+
+      &:not(.e-rtl) .e-frozen-row {
+        left: 0;
+      }
 
       &.e-protected {
         .e-selection,
@@ -1115,7 +1215,7 @@
       pointer-events: none;
       position: absolute;
       z-index: 1;
-      }
+     }
 
     & .e-rowresize-handler {
       border-top: 1px solid;
@@ -1123,7 +1223,7 @@
       pointer-events: none;
       position: absolute;
       z-index: 1;
-      }
+    }
 
     & .e-validation-list {
       border: 1px solid $cell-background;
@@ -1197,9 +1297,24 @@
       }
 
       & .e-top-header {
-        font-weight: bold;
+        font-weight: 500;
       }
     }
+
+    & .e-title-dlg {
+      & .e-title-dlg-content {
+        & .e-top-header {
+          font-size: 16px;
+        }
+
+        & .e-input {
+          font-size: 14px;
+          line-height: 30px;
+          padding-top: 10px;
+        }
+      }
+    }
+
 
     & .e-datavalidation-dlg {
       & .e-validation-dlg {
@@ -1431,6 +1546,95 @@
         text-align: left;
       }
     }
+
+    & .e-protectworkbook-dlg {
+      left: 0 !important; // sass-lint:disable-line no-important
+
+      & .e-dlg-header-content {
+        & .e-dlg-header {
+          font-size: 18px;
+          line-height: 31px;
+        }
+    }
+
+      & .e-dlg-content {
+        & .e-pwd-alert-span {
+          color: $dlg-error-color;
+          font-size: 12px;
+          padding-top: 7px;
+        }
+
+        & .e-password-content {
+          padding-top: 10px;
+
+          & .e-header {
+            font-size: 14px;
+            line-height: 16px;
+            padding-bottom: 9px;
+            }
+        }
+    }
+}
+
+    & .e-unprotectworkbook-dlg {
+      left: 0 !important; // sass-lint:disable-line no-important
+
+      & .e-dlg-header-content {
+        & .e-dlg-header {
+          font-size: 18px;
+          line-height: 21px;
+    }
+}
+
+      & .e-dlg-content {
+        & .e-unprotectpwd-alert-span {
+          color: $dlg-error-color;
+          font-size: 12px;
+          padding-top: 7px;
+    }
+
+        & .e-unprotectpwd-content {
+          & .e-header {
+            font-size: 14px;
+            line-height: 16px;
+        }
+
+          & .e-input {
+            margin-top: 10px;
+        }
+    }
+}
+}
+
+    & .e-importprotectworkbook-dlg {
+      left: 0 !important; // sass-lint:disable-line no-important
+
+      & .e-dlg-header-content {
+        & .e-dlg-header {
+          font-size: 18px;
+          line-height: 21px;
+    }
+}
+
+      & .e-dlg-content {
+        & .e-importprotectpwd-alert-span {
+          color: $dlg-error-color;
+          font-size: 12px;
+          padding-top: 7px;
+        }
+
+        & .e-importprotectpwd-content {
+          & .e-header {
+            font-size: 14px;
+            line-height: 16px;
+      }
+
+          & .e-input {
+            margin-top: 10px;
+          }
+  }
+}
+}
 
     & .e-filter-icon {
       margin-bottom: $filter-icon-margin-bottom;
@@ -1798,7 +2002,8 @@
       }
     }
 
-    &.e-popup.e-menu-popup.e-chart-menu ul {
+    &.e-popup.e-menu-popup.e-chart-menu ul,
+    &.e-popup.e-menu-popup.e-chart-type-menu ul {
       min-width: 165px;
       overflow: visible;
       padding: 0;
@@ -1846,7 +2051,8 @@
       }
     }
 
-    &.e-popup.e-menu-popup.e-chart-menu ul {
+    &.e-popup.e-menu-popup.e-chart-menu ul,
+    &.e-popup.e-menu-popup.e-chart-type-menu ul {
       min-width: 110px;
       overflow: visible;
       padding: 0;
@@ -1886,7 +2092,8 @@
       }
     }
 
-    &.e-popup.e-menu-popup.e-chart-menu ul {
+    &.e-popup.e-menu-popup.e-chart-menu ul,
+    &.e-popup.e-menu-popup.e-chart-type-menu ul {
       min-width: 165px;
       overflow: visible;
       padding: 0;
@@ -1928,7 +2135,8 @@
       }
     }
 
-    &.e-popup.e-menu-popup.e-chart-menu ul {
+    &.e-popup.e-menu-popup.e-chart-menu ul,
+    &.e-popup.e-menu-popup.e-chart-type-menu ul {
       min-width: 60px;
       overflow: visible;
       padding: 0;

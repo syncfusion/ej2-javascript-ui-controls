@@ -1,9 +1,14 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable jsdoc/require-param */
 import { Double } from '../axis/double-axis';
 import { Axis } from '../../chart/index';
 import { Size } from '@syncfusion/ej2-svg-base';
 import { RangeIntervalType } from '../../common/utils/enum';
 /**
  * Common axis classes
+ *
  * @private
  */
 
@@ -12,96 +17,97 @@ export class NiceInterval extends Double {
      * Method to calculate numeric datetime interval
      */
     public calculateDateTimeNiceInterval(axis: Axis, size: Size, start: number, end: number, isChart: boolean = true): number {
-        let oneDay: number = 24 * 60 * 60 * 1000;
-        let startDate: Date = new Date(start);
-        let endDate: Date = new Date(end);
+        const oneDay: number = 24 * 60 * 60 * 1000;
+        const startDate: Date = new Date(start);
+        const endDate: Date = new Date(end);
         //var axisInterval ;
-        let totalDays: number = (Math.abs((startDate.getTime() - endDate.getTime()) / (oneDay)));
+        const totalDays: number = (Math.abs((startDate.getTime() - endDate.getTime()) / (oneDay)));
         let interval: number;
         axis.actualIntervalType = axis.intervalType;
-        let type: RangeIntervalType = axis.intervalType as RangeIntervalType;
+        const type: RangeIntervalType = axis.intervalType as RangeIntervalType;
         switch (type) {
-            case 'Years':
-                interval = this.calculateNumericNiceInterval(axis, totalDays / 365, size);
-                break;
-            case 'Quarter':
-                interval = this.calculateNumericNiceInterval(axis, (totalDays / 365) * 4, size);
-                break;
-            case 'Months':
-                interval = this.calculateNumericNiceInterval(axis, totalDays / 30, size);
-                break;
-            case 'Weeks':
-                interval = this.calculateNumericNiceInterval(axis, totalDays / 7, size);
-                break;
-            case 'Days':
-                interval = this.calculateNumericNiceInterval(axis, totalDays, size);
-                break;
-            case 'Hours':
-                interval = this.calculateNumericNiceInterval(axis, totalDays * 24, size);
-                break;
-            case 'Minutes':
-                interval = this.calculateNumericNiceInterval(axis, totalDays * 24 * 60, size);
-                break;
-            case 'Seconds':
-                interval = this.calculateNumericNiceInterval(axis, totalDays * 24 * 60 * 60, size);
-                break;
-            case 'Auto':
-                interval = this.calculateNumericNiceInterval(axis, totalDays / 365, size);
-                if (interval >= 1) {
-                    axis.actualIntervalType = 'Years';
-                    return interval;
-                }
-                interval = this.calculateNumericNiceInterval(axis, (totalDays / 365) * 4, size);
-                if (interval >= 1 && !isChart) {
-                    (axis.actualIntervalType as RangeIntervalType) = 'Quarter';
-                    return interval;
-                }
-
-                interval = this.calculateNumericNiceInterval(axis, totalDays / 30, size);
-                if (interval >= 1) {
-                    axis.actualIntervalType = 'Months';
-                    return interval;
-                }
-
-                interval = this.calculateNumericNiceInterval(axis, totalDays / 7, size);
-                if (interval >= 1  && !isChart) {
-                    (axis.actualIntervalType as RangeIntervalType) = 'Weeks';
-                    return interval;
-                }
-
-                interval = this.calculateNumericNiceInterval(axis, totalDays, size);
-                if (interval >= 1) {
-                    axis.actualIntervalType = 'Days';
-                    return interval;
-                }
-
-                interval = this.calculateNumericNiceInterval(axis, totalDays * 24, size);
-                if (interval >= 1) {
-                    axis.actualIntervalType = 'Hours';
-                    return interval;
-                }
-
-                interval = this.calculateNumericNiceInterval(axis, totalDays * 24 * 60, size);
-                if (interval >= 1) {
-                    axis.actualIntervalType = 'Minutes';
-                    return interval;
-                }
-
-                interval = this.calculateNumericNiceInterval(axis, totalDays * 24 * 60 * 60, size);
-                axis.actualIntervalType = 'Seconds';
+        case 'Years':
+            interval = this.calculateNumericNiceInterval(axis, totalDays / 365, size);
+            break;
+        case 'Quarter':
+            interval = this.calculateNumericNiceInterval(axis, (totalDays / 365) * 4, size);
+            break;
+        case 'Months':
+            interval = this.calculateNumericNiceInterval(axis, totalDays / 30, size);
+            break;
+        case 'Weeks':
+            interval = this.calculateNumericNiceInterval(axis, totalDays / 7, size);
+            break;
+        case 'Days':
+            interval = this.calculateNumericNiceInterval(axis, totalDays, size);
+            break;
+        case 'Hours':
+            interval = this.calculateNumericNiceInterval(axis, totalDays * 24, size);
+            break;
+        case 'Minutes':
+            interval = this.calculateNumericNiceInterval(axis, totalDays * 24 * 60, size);
+            break;
+        case 'Seconds':
+            interval = this.calculateNumericNiceInterval(axis, totalDays * 24 * 60 * 60, size);
+            break;
+        case 'Auto':
+            interval = this.calculateNumericNiceInterval(axis, totalDays / 365, size);
+            if (interval >= 1) {
+                axis.actualIntervalType = 'Years';
                 return interval;
+            }
+            interval = this.calculateNumericNiceInterval(axis, (totalDays / 365) * 4, size);
+            if (interval >= 1 && !isChart) {
+                (axis.actualIntervalType as RangeIntervalType) = 'Quarter';
+                return interval;
+            }
+
+            interval = this.calculateNumericNiceInterval(axis, totalDays / 30, size);
+            if (interval >= 1) {
+                axis.actualIntervalType = 'Months';
+                return interval;
+            }
+
+            interval = this.calculateNumericNiceInterval(axis, totalDays / 7, size);
+            if (interval >= 1  && !isChart) {
+                (axis.actualIntervalType as RangeIntervalType) = 'Weeks';
+                return interval;
+            }
+
+            interval = this.calculateNumericNiceInterval(axis, totalDays, size);
+            if (interval >= 1) {
+                axis.actualIntervalType = 'Days';
+                return interval;
+            }
+
+            interval = this.calculateNumericNiceInterval(axis, totalDays * 24, size);
+            if (interval >= 1) {
+                axis.actualIntervalType = 'Hours';
+                return interval;
+            }
+
+            interval = this.calculateNumericNiceInterval(axis, totalDays * 24 * 60, size);
+            if (interval >= 1) {
+                axis.actualIntervalType = 'Minutes';
+                return interval;
+            }
+
+            interval = this.calculateNumericNiceInterval(axis, totalDays * 24 * 60 * 60, size);
+            axis.actualIntervalType = 'Seconds';
+            return interval;
         }
         return interval;
     }
 
     /**
      * To get the skeleton for the DateTime axis.
-     * @return {string}
+     *
+     * @returns {string} skeleton format
      * @private
      */
     public getSkeleton(axis: Axis, currentValue: number, previousValue: number, isBlazor ?: boolean): string {
         let skeleton: string;
-        let intervalType: RangeIntervalType = axis.actualIntervalType as RangeIntervalType;
+        const intervalType: RangeIntervalType = axis.actualIntervalType as RangeIntervalType;
         if (axis.skeleton) {
             return axis.skeleton;
         }
@@ -149,11 +155,13 @@ export class NiceInterval extends Double {
         return skeleton;
     }
 
-   /**
-    * Get intervalType month format
-    * @param currentValue 
-    * @param previousValue 
-    */
+    /**
+     * Get intervalType month format
+     *
+     * @param {Axis} axis axis
+     * @param {number} currentValue currentValue
+     * @param {number} previousValue previousValue
+     */
     private getMonthFormat(axis: Axis, currentValue: number, previousValue: number): string {
         return ((new Date(currentValue).getFullYear() === new Date(previousValue).getFullYear()) ?
             (axis.isIntervalInDecimal ? 'MMM' : 'MMM d') : 'y MMM');
@@ -161,27 +169,29 @@ export class NiceInterval extends Double {
 
     /**
      * Get intervalType day label format for the axis
-     * @param axis 
-     * @param currentValue 
-     * @param previousValue 
+     *
+     * @param {Axis} axis axis
+     * @param {number} currentValue currentValue
+     * @param {number} previousValue previousValue
      */
     private getDayFormat(axis: Axis, currentValue: number, previousValue: number): string {
         return (axis.valueType === 'DateTime' ?
-        ((new Date(currentValue).getMonth() !== new Date(previousValue).getMonth()) ? 'MMMd' :
-            (axis.isIntervalInDecimal ? 'd' : 'Ehm')) : 'yMd');
+            ((new Date(currentValue).getMonth() !== new Date(previousValue).getMonth()) ? 'MMMd' :
+                (axis.isIntervalInDecimal ? 'd' : 'Ehm')) : 'yMd');
     }
 
-   /**
-    * Find label format for axis
-    * @param axis 
-    * @param currentValue 
-    * @param previousValue
-    * @private
-    */
+    /**
+     * Find label format for axis
+     *
+     * @param {Axis} axis axis
+     * @param {number} currentValue currentValue
+     * @param {number} previousValue previousValue
+     * @private
+     */
     public findCustomFormats(axis: Axis, currentValue: number, previousValue: number): string {
         let labelFormat: string = axis.labelFormat ? axis.labelFormat : '';
         if (axis.isChart && !axis.skeleton && axis.actualIntervalType === 'Months' && !labelFormat) {
-                labelFormat = axis.valueType === 'DateTime' ? this.getMonthFormat(axis, currentValue, previousValue) : 'yMMM';
+            labelFormat = axis.valueType === 'DateTime' ? this.getMonthFormat(axis, currentValue, previousValue) : 'yMMM';
         }
         return labelFormat;
     }

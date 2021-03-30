@@ -20,7 +20,9 @@ export class WorkbookSave extends SaveWorker {
 
     /**
      * Constructor for WorkbookSave module in Workbook library.
+     *
      * @private
+     * @param {Workbook} parent - Specifies the workbook.
      */
     constructor(parent: Workbook) {
         super(parent);
@@ -29,7 +31,7 @@ export class WorkbookSave extends SaveWorker {
 
     /**
      * Get the module name.
-     * @returns string
+     * @return {string} - To Get the module name.
      * @private
      */
     public getModuleName(): string {
@@ -37,8 +39,9 @@ export class WorkbookSave extends SaveWorker {
     }
 
     /**
-     * To destroy the WorkbookSave module. 
-     * @return {void}
+     * To destroy the WorkbookSave module.
+     *
+     * @return {void} - To destroy the WorkbookSave module. 
      * @hidden
      */
     public destroy(): void {
@@ -48,6 +51,7 @@ export class WorkbookSave extends SaveWorker {
 
     /**
      * @hidden
+     * @returns {void} - add Event Listener
      */
     private addEventListener(): void {
         this.parent.on(events.beginSave, this.initiateSave, this);
@@ -55,6 +59,7 @@ export class WorkbookSave extends SaveWorker {
 
     /**
      * @hidden
+     * @returns {void} - remove Event Listener.
      */
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
@@ -64,14 +69,19 @@ export class WorkbookSave extends SaveWorker {
 
     /**
      * Initiate save process.
+     *
      * @hidden
+     * @param {{ [key: string]: Object }} args - Specify the args.
+     * @returns {void} - Initiate save process.
      */
     private initiateSave(args: { [key: string]: Object }): void {
-        let saveSettings: SaveOptions = args.saveSettings;
+        const saveSettings: SaveOptions = args.saveSettings;
+        this.parent.notify(events.getFilteredCollection, null);
         this.saveSettings = {
             saveType: saveSettings.saveType,
             url: saveSettings.url,
-            fileName: saveSettings.fileName || 'Sample'
+            fileName: saveSettings.fileName || 'Sample',
+            //passWord: saveSettings.passWord
         };
         this.isFullPost = args.isFullPost as boolean;
         this.needBlobData = args.needBlobData as boolean;
@@ -83,30 +93,33 @@ export class WorkbookSave extends SaveWorker {
 
     /**
      * Update save JSON with basic settings.
+     *
      * @hidden
+     * @returns {void} - Update save JSON with basic settings.
      */
     private updateBasicSettings(): void {
-        let jsonStr: string = this.getStringifyObject(this.parent, ['sheets', '_isScalar', 'observers', 'closed', 'isStopped', 'hasError',
+        const jsonStr: string = this.getStringifyObject(this.parent, ['sheets', '_isScalar', 'observers', 'closed', 'isStopped', 'hasError',
             '__isAsync', 'beforeCellFormat', 'beforeCellRender', 'beforeDataBound', 'beforeOpen', 'beforeSave', 'beforeSelect',
             'beforeSort', 'cellEdit', 'cellEditing', 'cellSave', 'beforeCellSave', 'contextMenuItemSelect', 'contextMenuBeforeClose',
             'contextMenuBeforeOpen', 'created', 'dataBound', 'fileMenuItemSelect', 'fileMenuBeforeClose', 'fileMenuBeforeOpen',
             'saveComplete', 'sortComplete', 'select', 'actionBegin', 'actionComplete', 'afterHyperlinkClick', 'afterHyperlinkCreate',
             'beforeHyperlinkClick', 'beforeHyperlinkCreate', 'openComplete', 'openFailure', 'queryCellInfo', 'dialogBeforeOpen',
             'dataSourceChanged']);
-        let basicSettings: { [key: string]: Object } = JSON.parse(jsonStr);
-        let sheetCount: number = this.parent.sheets.length;
-        let i: number = 0;
+        const basicSettings: { [key: string]: Object } = JSON.parse(jsonStr);
+        const sheetCount: number = this.parent.sheets.length;
         if (sheetCount) { basicSettings.sheets = []; }
         this.saveJSON = basicSettings;
     }
 
     /**
      * Process sheets properties.
+     *
      * @hidden
+     * @returns {void} - Process sheets properties.
      */
     private processSheets(): void {
         let i: number = 0;
-        let sheetCount: number = this.parent.sheets.length;
+        const sheetCount: number = this.parent.sheets.length;
         while (i < sheetCount) {
             executeTaskAsync(this, this.processSheet, this.updateSheet, [this.getStringifyObject(this.parent.sheets[i]), i]);
             i++;
@@ -115,7 +128,10 @@ export class WorkbookSave extends SaveWorker {
 
     /**
      * Update processed sheet data.
+     *
      * @hidden
+     * @param {Object[]} data - Specifies the data.
+     * @returns {void} - Update processed sheet data.
      */
     private updateSheet(data: Object[]): void {
         (this.saveJSON.sheets as { [key: string]: Object })[data[0] as string] = data[1];
@@ -135,7 +151,10 @@ export class WorkbookSave extends SaveWorker {
 
     /**
      * Save process.
+     *
      * @hidden
+     * @param {SaveOptions} saveSettings - Specifies the save settings props.
+     * @returns {void} - Save process.
      */
     private save(saveSettings: SaveOptions): void {
         let args: { cancel: boolean, jsonObject: object } = { cancel: false, jsonObject: this.saveJSON };
@@ -154,7 +173,10 @@ export class WorkbookSave extends SaveWorker {
 
     /**
      * Update final save data.
+     *
      * @hidden
+     * @para {{ [key: string]: Object } | Blob} result - specify the sve result.
+     * @returns {void} - Update final save data.
      */
     private updateSaveResult(result: { [key: string]: Object } | Blob): void {
         let args: SaveCompleteEventArgs = {
@@ -182,9 +204,9 @@ export class WorkbookSave extends SaveWorker {
     }
 
     private ClientFileDownload(blobData: Blob, fileName: string): void {
-        let anchor: HTMLAnchorElement = this.parent.createElement(
+        const anchor: HTMLAnchorElement = this.parent.createElement(
             'a', { attrs: { download: this.getFileNameWithExtension() } }) as HTMLAnchorElement;
-        let url: string = URL.createObjectURL(blobData);
+        const url: string = URL.createObjectURL(blobData);
         anchor.href = url;
         document.body.appendChild(anchor);
         anchor.click();
@@ -195,7 +217,7 @@ export class WorkbookSave extends SaveWorker {
     private initiateFullPostSave(): void {
         let keys: string[] = Object.keys(this.saveSettings);
         let i: number;
-        let formElem: HTMLFormElement = this.parent.createElement(
+        const formElem: HTMLFormElement = this.parent.createElement(
             'form', { attrs: { method: 'POST', action: this.saveSettings.url } }
         ) as HTMLFormElement;
 
@@ -227,7 +249,11 @@ export class WorkbookSave extends SaveWorker {
 
     /**
      * Get stringified workbook object.
+     *
      * @hidden
+     * @param {object} value - Specifies the value.
+     * @param {string[]} skipProp - specifies the skipprop.
+     * @returns {string} - Get stringified workbook object.
      */
     private getStringifyObject(value: object, skipProp: string[] = []): string {
         return JSON.stringify(value, (key: string, value: { [key: string]: object }) => {
@@ -247,8 +273,8 @@ export class WorkbookSave extends SaveWorker {
 
     private getFileNameWithExtension(filename?: string): string {
         if (!filename) { filename = this.saveSettings.fileName; }
-        let fileExt: string = this.getFileExtension();
-        let idx: number = filename.lastIndexOf('.');
+        const fileExt: string = this.getFileExtension();
+        const idx: number = filename.lastIndexOf('.');
 
         if (idx > -1) {
             filename = filename.substr(0, idx);

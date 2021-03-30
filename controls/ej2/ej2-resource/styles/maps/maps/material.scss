@@ -1,0 +1,21 @@
+
+// Maps styles
+.e-maps-popup-close {
+  display: block;
+  opacity: 0;
+}
+
+// maps zooming toolbar cursor style
+.e-maps-toolbar:hover {
+  cursor: pointer;
+}
+
+// maps zooming toolbar cursor style
+.e-maps-cursor-disable:hover {
+  cursor: not-allowed;
+}
+
+// maps zooming toolbar cursor style
+.e-maps-panning:hover {
+  cursor: pointer;
+}

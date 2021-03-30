@@ -516,7 +516,7 @@ describe('Scrollbar Chart', () => {
             let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryYAxis');
             expect(thumbEle.getAttribute('x') === '76.49999999999997' || thumbEle.getAttribute('x') === '72.5').toBe(true);
             expect(thumbEle.getAttribute('width') === '120').toBe(true);
-            chartObj.axisCollections[1].zoomingScrollBar.scrollMouseUp(<PointerEvent>(trigger.onTouchEnd(currentTarget, 0, 0, 0, 0, 75, 275)));
+            chartObj.axisCollections[1].zoomingScrollBar.scrollMouseUp();
             done();
         });
 
@@ -530,7 +530,7 @@ describe('Scrollbar Chart', () => {
             chartObj.axisCollections[1].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 75, 355)));
             expect(thumbEle.getAttribute('x') === '76.49999999999997' || thumbEle.getAttribute('x') === '72.5').toBe(true);
             expect(thumbEle.getAttribute('width') === '119.25' || thumbEle.getAttribute('width') === '120').toBe(true);
-            chartObj.axisCollections[1].zoomingScrollBar.scrollMouseUp(<PointerEvent>(trigger.onTouchEnd(currentTarget, 0, 0, 0, 0, 75, 355)));
+            chartObj.axisCollections[1].zoomingScrollBar.scrollMouseUp();
             done();
         });
         it('Left Resize using Circle', (done: Function) => {
@@ -550,7 +550,7 @@ describe('Scrollbar Chart', () => {
             loaded = (args: Object): void => {
                 chartObj.loaded = null;
                 trigger.draganddropEvent(ele, 150, 150, 250, 270);
-                let wheelArgs: wheel = {
+                let wheelArgs: unknown = {
                     preventDefault: prevent,
                     wheelDelta: 120,
                     detail: 0,
@@ -572,7 +572,7 @@ describe('Scrollbar Chart', () => {
             loaded = (args: Object): void => {
                 chartObj.loaded = null;
                 trigger.draganddropEvent(ele, 150, 150, 250, 270);
-                let wheelArgs: wheel = {
+                let wheelArgs: unknown = {
                     preventDefault: prevent,
                     wheelDelta: -120,
                     detail: 3,
@@ -681,7 +681,7 @@ describe('Scrollbar Chart', () => {
                     let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryYAxis');
                     expect(thumbEle.getAttribute('x') === '8').toBe(true);
                     expect(thumbEle.getAttribute('width') === '318.75' || thumbEle.getAttribute('width') === '321.75').toBe(true);
-                    chartObj.axisCollections[1].zoomingScrollBar.scrollMouseUp(<PointerEvent>(trigger.onTouchEnd(currentTarget, 0, 0, 0, 0, 150, 380)));
+                    chartObj.axisCollections[1].zoomingScrollBar.scrollMouseUp();
                     done();
                 };
                 chartObj.loaded = loaded;

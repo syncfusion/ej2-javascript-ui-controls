@@ -13,6 +13,7 @@ export interface LineModel {
 
     /**
      * Sets and gets the height of the axis line.
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      */
@@ -20,6 +21,7 @@ export interface LineModel {
 
     /**
      * Sets and gets the width of the axis line.
+     *
      * @default 2
      */
     width?: number;
@@ -31,6 +33,7 @@ export interface LineModel {
 
     /**
      * Sets and gets the offset to position the axis line in linear gauge.
+     *
      * @blazorDefaultValue 0
      */
     offset?: number;
@@ -50,6 +53,7 @@ export interface LabelModel {
 
     /**
      * Enables or disables the color of the label to use the color of the ranges in linear gauge.
+     *
      * @default false
      */
 
@@ -64,12 +68,14 @@ export interface LabelModel {
 
     /**
      * Sets and gets the value to position the axis labels in linear gauge.
+     *
      * @default 0
      */
     offset?: number;
 
     /**
      * Sets and gets the position of the axis label in linear gauge.
+     *
      * @default Auto
      */
     position?: Position;
@@ -83,12 +89,14 @@ export interface RangeModel {
 
     /**
      * Sets and gets the start value for the range in axis.
+     *
      * @default 0
      */
     start?: number;
 
     /**
      * Sets and gets the end value for the range in axis.
+     *
      * @default 0
      */
     end?: number;
@@ -96,18 +104,21 @@ export interface RangeModel {
     /**
      * Sets and gets the properties to render a linear gradient for the range.
      * If both linear and radial gradient is set, then the linear gradient will be rendered in the range.
+     *
      * @default null
      */
     linearGradient?: LinearGradientModel;
 
     /**
      * Sets and gets the properties to render a radial gradient for the range.
+     *
      * @default null
      */
     radialGradient?: RadialGradientModel;
 
     /**
      * Sets and gets the position to place the ranges in the axis.
+     *
      * @default Outside
      */
     position?: Position;
@@ -119,18 +130,21 @@ export interface RangeModel {
 
     /**
      * Sets and gets the width of the start of the range in axis.
+     *
      * @default 10
      */
     startWidth?: number;
 
     /**
      * Sets and gets the width of the end of the range in axis.
+     *
      * @default 10
      */
     endWidth?: number;
 
     /**
      * Sets and gets the value to position the range in the axis.
+     *
      * @default '0'
      */
     offset?: number | string;
@@ -153,13 +167,15 @@ export interface TickModel {
     height?: number;
 
     /**
-     * Sets and gets the width of the tick line in the axis. 
+     * Sets and gets the width of the tick line in the axis.
+     *
      * @default 2
      */
     width?: number;
 
     /**
      * Sets and gets the gap between the ticks in the axis.
+     *
      * @aspDefaultValueIgnore
      */
     interval?: number;
@@ -173,12 +189,14 @@ export interface TickModel {
 
     /**
      * Sets and gets the value to move the ticks from the axis.
+     *
      * @aspDefaultValueIgnore
      */
     offset?: number;
 
     /**
      * Sets and gets the value to place the ticks in the axis.
+     *
      * @default Auto
      */
     position?: Position;
@@ -192,6 +210,7 @@ export interface PointerModel {
 
     /**
      * Sets and gets the type of pointer in axis.
+     *
      * @default Marker
      */
     type?: Point;
@@ -199,18 +218,21 @@ export interface PointerModel {
     /**
      * Sets and gets the properties to render a linear gradient for the pointer.
      * If both linear and radial gradient is set, then the linear gradient will be rendered in the pointer.
+     *
      * @default null
      */
     linearGradient?: LinearGradientModel;
 
     /**
      * Sets and gets the properties to render a radial gradient for the pointer.
+     *
      * @default null
      */
     radialGradient?: RadialGradientModel;
 
     /**
      * Sets and gets the value of the pointer in axis.
+     *
      * @blazorDefaultValue 0
      * @default null
      */
@@ -219,12 +241,14 @@ export interface PointerModel {
 
     /**
      * Sets and gets the type of the marker for pointers in axis.
+     *
      * @default InvertedTriangle
      */
     markerType?: MarkerType;
 
     /**
      * Sets and gets the URL path for the image in marker when the marker type is chosen as image.
+     *
      * @default null
      */
     imageUrl?: string;
@@ -236,24 +260,28 @@ export interface PointerModel {
 
     /**
      * Sets and gets the corner radius for pointer.
+     *
      * @default 10
      */
     roundedCornerRadius?: number;
 
     /**
      * Sets and gets the place of the pointer.
+     *
      * @default Far
      */
     placement?: Placement;
 
     /**
      * Sets and gets the height of the pointer.
+     *
      * @default 20
      */
     height?: number;
 
     /**
      * Sets and gets the width of the pointer.
+     *
      * @default 20
      */
     width?: number;
@@ -265,36 +293,42 @@ export interface PointerModel {
 
     /**
      * Sets and gets the opacity of pointer in linear gauge.
+     *
      * @default 1
      */
     opacity?: number;
 
     /**
      * Sets and gets the duration of animation in pointer.
+     *
      * @default 0
      */
     animationDuration?: number;
 
     /**
      * Enables or disables the drag movement of pointer.
+     *
      * @default false
      */
     enableDrag?: boolean;
 
     /**
      * Sets and gets the value to position the pointer from the axis.
+     *
      * @default '0'
      */
     offset?: number | string;
 
     /**
      * Sets and gets the position of the pointer.
+     *
      * @default Auto
      */
     position?: Position;
 
     /**
      * Sets and gets the description for the pointer.
+     *
      * @default null
      */
     description?: string;
@@ -308,6 +342,7 @@ export interface AxisModel {
 
     /**
      * Sets and gets the minimum value for the axis.
+     *
      * @default 0
      */
 
@@ -315,6 +350,7 @@ export interface AxisModel {
 
     /**
      * Sets and gets the maximum value for the axis.
+     *
      * @default 100
      */
 

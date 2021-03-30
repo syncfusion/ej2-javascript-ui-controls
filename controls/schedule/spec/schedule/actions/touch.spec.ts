@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createElement, Browser, EventHandler, extend } from '@syncfusion/ej2-base';
 import { Schedule, EJ2Instance, Day, Week, WorkWeek, Month, ScheduleModel } from '../../../src/schedule/index';
 import { triggerSwipeEvent, CommonArgs, destroy, createSchedule } from '../util.spec';
@@ -7,37 +8,34 @@ import { profile, inMB, getMemoryProfile } from '../../common.spec';
 Schedule.Inject(Day, Week, WorkWeek, Month);
 
 describe('Touch functioalities', () => {
-    /*tslint:disable */
     let touchTestObj: any;
-    /*tslint:enable */
     let node: Element;
-    let startMouseEventArs: CommonArgs = {
+    const startMouseEventArs: CommonArgs = {
         clientX: 200, clientY: 200, target: node, type: 'touchstart',
         preventDefault: (): void => { /** Do Nothing */ },
         stopPropagation: (): void => { /** Do Nothing */ }
     };
-    let moveMouseEventArs: CommonArgs = {
+    const moveMouseEventArs: CommonArgs = {
         clientX: 500, clientY: 200, target: node, type: 'touchmove',
         preventDefault: (): void => { /** Do Nothing */ },
         stopPropagation: (): void => { /** Do Nothing */ }
     };
-    let endMouseEventArs: CommonArgs = {
+    const endMouseEventArs: CommonArgs = {
         clientX: 200, clientY: 200, target: node, type: 'touchend',
         preventDefault: (): void => { /** Do Nothing */ },
         stopPropagation: (): void => { /** Do Nothing */ }
     };
 
-    let uA: string = Browser.userAgent;
-    let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+    const uA: string = Browser.userAgent;
+    const androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
         'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
 
     beforeAll(() => {
         Browser.userAgent = androidUserAgent;
 
-        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
             (this as any).skip(); //Skips test (in Chai)
             return;
@@ -60,13 +58,12 @@ describe('Touch functioalities', () => {
             schObj = new Schedule({ currentView: 'Day', selectedDate: new Date(2017, 9, 5), height: 500, width: 300 });
             schObj.appendTo('#Schedule');
             node = schObj.element.querySelector('.e-table-container');
-            // tslint:disable-next-line:no-any
             touchTestObj = ((node as EJ2Instance).ej2_instances[0] as any);
-            let target: Element = schObj.element.querySelector('.e-work-cells');
-            let moveStart: CommonArgs = <CommonArgs>extend({}, startMouseEventArs, { clientX: 50, target: target });
-            let moveArgs1: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 80, target: target });
-            let moveArgs2: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 100, target: target });
-            let movedEnd: CommonArgs = <CommonArgs>extend({}, endMouseEventArs, { clientX: 250, target: target });
+            const target: Element = schObj.element.querySelector('.e-work-cells');
+            const moveStart: CommonArgs = <CommonArgs>extend({}, startMouseEventArs, { clientX: 50, target: target });
+            const moveArgs1: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 80, target: target });
+            const moveArgs2: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 100, target: target });
+            const movedEnd: CommonArgs = <CommonArgs>extend({}, endMouseEventArs, { clientX: 250, target: target });
             touchTestObj.startEvent(moveStart);
             touchTestObj.moveEvent(moveArgs1);
             touchTestObj.moveEvent(moveArgs2);
@@ -81,13 +78,12 @@ describe('Touch functioalities', () => {
             schObj = new Schedule({ currentView: 'Day', selectedDate: new Date(2017, 9, 5), height: 500, width: 300 });
             schObj.appendTo('#Schedule');
             node = schObj.element.querySelector('.e-table-container');
-            // tslint:disable-next-line:no-any
             touchTestObj = ((node as EJ2Instance).ej2_instances[0] as any);
-            let target: Element = schObj.element.querySelector('.e-work-cells');
-            let moveStart: CommonArgs = <CommonArgs>extend({}, startMouseEventArs, { clientX: 250, target: target });
-            let moveArgs1: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 220, target: target });
-            let moveArgs2: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 200, target: target });
-            let movedEnd: CommonArgs = <CommonArgs>extend({}, endMouseEventArs, { clientX: 50, target: target });
+            const target: Element = schObj.element.querySelector('.e-work-cells');
+            const moveStart: CommonArgs = <CommonArgs>extend({}, startMouseEventArs, { clientX: 250, target: target });
+            const moveArgs1: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 220, target: target });
+            const moveArgs2: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 200, target: target });
+            const movedEnd: CommonArgs = <CommonArgs>extend({}, endMouseEventArs, { clientX: 50, target: target });
             touchTestObj.startEvent(moveStart);
             touchTestObj.moveEvent(moveArgs1);
             touchTestObj.moveEvent(moveArgs2);
@@ -102,14 +98,13 @@ describe('Touch functioalities', () => {
             schObj = new Schedule({ currentView: 'Day', selectedDate: new Date(2017, 9, 5), height: 500, width: 300 });
             schObj.appendTo('#Schedule');
             node = schObj.element.querySelector('.e-table-container');
-            // tslint:disable-next-line:no-any
             touchTestObj = ((node as EJ2Instance).ej2_instances[0] as any);
-            let target: Element = schObj.element.querySelector('.e-work-cells');
-            let moveStart: CommonArgs = <CommonArgs>extend({}, startMouseEventArs, { clientX: 200, clientY: 300, target: target });
-            let moveArgs1: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, {
+            const target: Element = schObj.element.querySelector('.e-work-cells');
+            const moveStart: CommonArgs = <CommonArgs>extend({}, startMouseEventArs, { clientX: 200, clientY: 300, target: target });
+            const moveArgs1: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, {
                 type: 'touchmove', clientX: 200, clientY: 150, target: target
             });
-            let movedEnd: CommonArgs = <CommonArgs>extend({}, endMouseEventArs, { clientX: 200, clientY: 100, target: target });
+            const movedEnd: CommonArgs = <CommonArgs>extend({}, endMouseEventArs, { clientX: 200, clientY: 100, target: target });
             touchTestObj.startEvent(moveStart);
             touchTestObj.moveEvent(moveArgs1);
             touchTestObj.endEvent(movedEnd);
@@ -123,17 +118,16 @@ describe('Touch functioalities', () => {
             schObj = new Schedule({ currentView: 'Day', selectedDate: new Date(2017, 9, 5), height: 500, width: 300 });
             schObj.appendTo('#Schedule');
             node = schObj.element.querySelector('.e-table-container');
-            // tslint:disable-next-line:no-any
             touchTestObj = ((node as EJ2Instance).ej2_instances[0] as any);
-            let target: Element = schObj.element.querySelector('.e-work-cells');
-            let moveStart: CommonArgs = <CommonArgs>extend({}, startMouseEventArs, { clientX: 200, clientY: 300, target: target });
-            let moveArgs1: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, {
+            const target: Element = schObj.element.querySelector('.e-work-cells');
+            const moveStart: CommonArgs = <CommonArgs>extend({}, startMouseEventArs, { clientX: 200, clientY: 300, target: target });
+            const moveArgs1: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, {
                 type: 'touchmove', clientX: 210, clientY: 300, target: target
             });
-            let moveArgs2: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, {
+            const moveArgs2: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, {
                 type: 'touchmove', clientX: 200, clientY: 150, target: target
             });
-            let movedEnd: CommonArgs = <CommonArgs>extend({}, endMouseEventArs, { clientX: 200, clientY: 100, target: target });
+            const movedEnd: CommonArgs = <CommonArgs>extend({}, endMouseEventArs, { clientX: 200, clientY: 100, target: target });
             touchTestObj.startEvent(moveStart);
             touchTestObj.moveEvent(moveArgs1);
             touchTestObj.moveEvent(moveArgs2);
@@ -148,13 +142,12 @@ describe('Touch functioalities', () => {
             schObj = new Schedule({ currentView: 'Day', selectedDate: new Date(2017, 9, 5), height: 500, width: 300 });
             schObj.appendTo('#Schedule');
             node = schObj.element.querySelector('.e-table-container');
-            // tslint:disable-next-line:no-any
             touchTestObj = ((node as EJ2Instance).ej2_instances[0] as any);
-            let target: Element = schObj.element.querySelector('.e-work-cells');
-            let moveStart: CommonArgs = <CommonArgs>extend({}, startMouseEventArs, { clientX: 80, target: target });
-            let moveArgs1: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 50, target: target });
-            let moveArgs2: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 250, target: target });
-            let movedEnd: CommonArgs = <CommonArgs>extend({}, endMouseEventArs, { clientX: 250, target: target });
+            const target: Element = schObj.element.querySelector('.e-work-cells');
+            const moveStart: CommonArgs = <CommonArgs>extend({}, startMouseEventArs, { clientX: 80, target: target });
+            const moveArgs1: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 50, target: target });
+            const moveArgs2: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 250, target: target });
+            const movedEnd: CommonArgs = <CommonArgs>extend({}, endMouseEventArs, { clientX: 250, target: target });
             touchTestObj.startEvent(moveStart);
             touchTestObj.moveEvent(moveArgs1);
             touchTestObj.moveEvent(moveArgs2);
@@ -169,13 +162,12 @@ describe('Touch functioalities', () => {
             schObj = new Schedule({ currentView: 'Day', selectedDate: new Date(2017, 9, 5), height: 500, width: 300 });
             schObj.appendTo('#Schedule');
             node = schObj.element.querySelector('.e-table-container');
-            // tslint:disable-next-line:no-any
             touchTestObj = ((node as EJ2Instance).ej2_instances[0] as any);
-            let target: Element = schObj.element.querySelector('.e-work-cells');
-            let moveStart: CommonArgs = <CommonArgs>extend({}, startMouseEventArs, { clientX: 180, target: target });
-            let moveArgs1: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 250, target: target });
-            let moveArgs2: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 50, target: target });
-            let movedEnd: CommonArgs = <CommonArgs>extend({}, endMouseEventArs, { clientX: 50, target: target });
+            const target: Element = schObj.element.querySelector('.e-work-cells');
+            const moveStart: CommonArgs = <CommonArgs>extend({}, startMouseEventArs, { clientX: 180, target: target });
+            const moveArgs1: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 250, target: target });
+            const moveArgs2: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 50, target: target });
+            const movedEnd: CommonArgs = <CommonArgs>extend({}, endMouseEventArs, { clientX: 50, target: target });
             touchTestObj.startEvent(moveStart);
             touchTestObj.moveEvent(moveArgs1);
             touchTestObj.moveEvent(moveArgs2);
@@ -190,18 +182,17 @@ describe('Touch functioalities', () => {
             schObj = new Schedule({ currentView: 'Day', selectedDate: new Date(2017, 9, 5), height: 500, width: 300 });
             schObj.appendTo('#Schedule');
             node = schObj.element.querySelector('.e-table-container');
-            // tslint:disable-next-line:no-any
             touchTestObj = ((node as EJ2Instance).ej2_instances[0] as any);
-            let target: Element = schObj.element.querySelector('.e-work-cells');
-            let moveStart: CommonArgs = <CommonArgs>extend({}, startMouseEventArs, { clientX: 200, target: target });
-            let moveArgs: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 100, target: target });
-            let movedEnd: CommonArgs = <CommonArgs>extend({}, endMouseEventArs, { clientX: 100, target: target });
+            const target: Element = schObj.element.querySelector('.e-work-cells');
+            const moveStart: CommonArgs = <CommonArgs>extend({}, startMouseEventArs, { clientX: 200, target: target });
+            const moveArgs: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 100, target: target });
+            const movedEnd: CommonArgs = <CommonArgs>extend({}, endMouseEventArs, { clientX: 100, target: target });
             touchTestObj.startEvent(moveStart);
             touchTestObj.moveEvent(moveArgs);
             touchTestObj.endEvent(movedEnd);
-            let moveStart2: CommonArgs = <CommonArgs>extend({}, startMouseEventArs, { clientX: 210, target: target });
-            let moveArgs2: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 110, target: target });
-            let movedEnd2: CommonArgs = <CommonArgs>extend({}, endMouseEventArs, { clientX: 110, target: target });
+            const moveStart2: CommonArgs = <CommonArgs>extend({}, startMouseEventArs, { clientX: 210, target: target });
+            const moveArgs2: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 110, target: target });
+            const movedEnd2: CommonArgs = <CommonArgs>extend({}, endMouseEventArs, { clientX: 110, target: target });
             touchTestObj.startEvent(moveStart2);
             touchTestObj.moveEvent(moveArgs2);
             touchTestObj.endEvent(movedEnd2);
@@ -217,13 +208,12 @@ describe('Touch functioalities', () => {
             node = schObj.element.querySelector('.e-table-container');
             expect(node.childNodes.length).toEqual(1);
             expect(schObj.currentView).toEqual('Agenda');
-            // tslint:disable-next-line:no-any
             touchTestObj = ((node as EJ2Instance).ej2_instances[0] as any);
-            let target: Element = schObj.element.querySelector('.e-work-cells');
-            let moveStart: CommonArgs = <CommonArgs>extend({}, startMouseEventArs, { clientX: 50, target: target });
-            let moveArgs1: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 80, target: target });
-            let moveArgs2: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 100, target: target });
-            let movedEnd: CommonArgs = <CommonArgs>extend({}, endMouseEventArs, { clientX: 250, target: target });
+            const target: Element = schObj.element.querySelector('.e-work-cells');
+            const moveStart: CommonArgs = <CommonArgs>extend({}, startMouseEventArs, { clientX: 50, target: target });
+            const moveArgs1: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 80, target: target });
+            const moveArgs2: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 100, target: target });
+            const movedEnd: CommonArgs = <CommonArgs>extend({}, endMouseEventArs, { clientX: 250, target: target });
             touchTestObj.startEvent(moveStart);
             touchTestObj.moveEvent(moveArgs1);
             touchTestObj.moveEvent(moveArgs2);
@@ -236,8 +226,8 @@ describe('Touch functioalities', () => {
 
     describe('Appointment Tap and multiple select actions', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = { selectedDate: new Date(2017, 10, 2), width: 300 };
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = { selectedDate: new Date(2017, 10, 2), width: 300 };
             schObj = createSchedule(schOptions, defaultData, done);
         });
         afterAll(() => {
@@ -245,22 +235,20 @@ describe('Touch functioalities', () => {
         });
         it('taphold appointment selection', () => {
             schObj.isAdaptive = true;
-            let target: Element = schObj.element.querySelector('.e-appointment');
-            // tslint:disable-next-line:no-any
-            let e: any = {}; e.originalEvent = {};
+            const target: Element = schObj.element.querySelector('.e-appointment');
+            const e: any = {}; e.originalEvent = {};
             e.target = target;
             e.type = 'touchstart';
             e.originalEvent.target = target;
             e.originalEvent.type = 'touchstart';
-            // tslint:disable-next-line:no-any
             (schObj.scheduleTouchModule as any).tapHoldHandler(e);
             expect(document.body.querySelector('.e-quick-popup-wrapper')).toBeTruthy();
         });
         it('Single appointment select using click or tap for multi select', () => {
-            let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             schObj.isAdaptive = true;
             (eventElements[1] as HTMLElement).click();
-            let popup: HTMLElement = document.body.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            const popup: HTMLElement = document.body.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(popup).toBeTruthy();
             expect(popup.classList.contains('e-popup-open')).toBe(true);
             (eventElements[1] as HTMLElement).click();
@@ -270,14 +258,12 @@ describe('Touch functioalities', () => {
         });
         it('Negative case for taphold appointment selection', () => {
             schObj.isAdaptive = false;
-            let target: Element = schObj.element.querySelector('.e-appointment');
-            // tslint:disable-next-line:no-any
-            let e: any = {}; e.originalEvent = {};
+            const target: Element = schObj.element.querySelector('.e-appointment');
+            const e: any = {}; e.originalEvent = {};
             e.target = target;
             e.type = 'touchstart';
             e.originalEvent.target = target;
             e.originalEvent.type = 'touchstart';
-            // tslint:disable-next-line:no-any
             (schObj.scheduleTouchModule as any).tapHoldHandler(e);
             expect(document.body.querySelector('.e-quick-popup-wrapper')).toBeTruthy();
         });
@@ -286,7 +272,7 @@ describe('Touch functioalities', () => {
     describe('RTL Touch actions', () => {
         let schObj: Schedule;
         beforeAll(() => {
-            let schOptions: ScheduleModel = {
+            const schOptions: ScheduleModel = {
                 height: 500, width: 300, currentView: 'Day',
                 selectedDate: new Date(2017, 9, 4), enableRtl: true
             };
@@ -295,7 +281,7 @@ describe('Touch functioalities', () => {
         afterAll(() => {
             destroy(schObj);
         });
-        it('navigate next date', (done: Function) => {
+        it('navigate next date', (done: DoneFn) => {
             triggerSwipeEvent(schObj.element.querySelector('.e-table-container'), 300);
             setTimeout(
                 () => {
@@ -306,7 +292,7 @@ describe('Touch functioalities', () => {
                 400);
         });
 
-        it('navigate previous date', (done: Function) => {
+        it('navigate previous date', (done: DoneFn) => {
             triggerSwipeEvent(schObj.element.querySelector('.e-table-container'), 100);
             setTimeout(
                 () => {
@@ -332,13 +318,9 @@ describe('Touch functioalities', () => {
 
     it('memory leak', () => {
         profile.sample();
-        // tslint:disable:no-any
-        let average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
+        const average: number = inMB(profile.averageChange);
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        const memory: number = inMB(getMemoryProfile());
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        // tslint:enable:no-any
     });
 });

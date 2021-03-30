@@ -1,11 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * Schedule header toolbar spec 
+ * Schedule header toolbar spec
  */
 import { Browser, remove } from '@syncfusion/ej2-base';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import {
-    Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda,
-    ToolbarActionArgs, ActionEventArgs, ScheduleModel
+    Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, ActionEventArgs, ScheduleModel
 } from '../../../src/schedule/index';
 import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
@@ -14,10 +14,9 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda);
 
 describe('Schedule header bar', () => {
     beforeAll(() => {
-        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
             (this as any).skip(); //Skips test (in Chai)
             return;
@@ -27,7 +26,7 @@ describe('Schedule header bar', () => {
     describe('Initial load', () => {
         let schObj: Schedule;
         beforeAll(() => {
-            let model: ScheduleModel = { selectedDate: new Date(2017, 9, 4) };
+            const model: ScheduleModel = { selectedDate: new Date(2017, 9, 4) };
             schObj = util.createSchedule(model, []);
         });
         afterAll(() => {
@@ -47,7 +46,7 @@ describe('Schedule header bar', () => {
 
         it('calendar navigation', () => {
             (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-            let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+            const popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
             expect(popupEle).toBeTruthy();
             expect(popupEle.classList.contains('e-popup-open')).toEqual(true);
             expect(popupEle.querySelector('.e-header-calendar')).toBeTruthy();
@@ -62,7 +61,7 @@ describe('Schedule header bar', () => {
 
         it('hide calendar on document click', () => {
             (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-            let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+            const popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
             expect(popupEle).toBeTruthy();
             expect(popupEle.classList.contains('e-popup-open')).toEqual(true);
             util.triggerMouseEvent(document.body, 'mousedown');
@@ -71,7 +70,7 @@ describe('Schedule header bar', () => {
 
         it('hide halendar on date range click', () => {
             (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-            let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+            const popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
             expect(popupEle).toBeTruthy();
             expect(popupEle.classList.contains('e-popup-open')).toEqual(true);
             (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
@@ -80,8 +79,8 @@ describe('Schedule header bar', () => {
 
         it('calendar date navigation', () => {
             (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-            let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
-            let calendarEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-calendar');
+            const popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+            const calendarEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-calendar');
             (calendarEle.querySelector('.e-day') as HTMLElement).click();
             expect(popupEle.classList.contains('e-popup-open')).toEqual(true);
             expect(calendarEle.querySelector('.e-header').classList.contains('e-year')).toEqual(true);
@@ -158,7 +157,7 @@ describe('Schedule header bar', () => {
     describe('View items based on property change', () => {
         let schObj: Schedule;
         beforeAll(() => {
-            let model: ScheduleModel = { selectedDate: new Date(2017, 9, 4), views: [{ option: 'Day', isSelected: true }] };
+            const model: ScheduleModel = { selectedDate: new Date(2017, 9, 4), views: [{ option: 'Day', isSelected: true }] };
             schObj = util.createSchedule(model, []);
         });
         afterAll(() => {
@@ -221,7 +220,7 @@ describe('Schedule header bar', () => {
     describe('Day of week in calendar', () => {
         let schObj: Schedule;
         beforeAll(() => {
-            let model: ScheduleModel = { selectedDate: new Date(2017, 9, 4), firstDayOfWeek: 3 };
+            const model: ScheduleModel = { selectedDate: new Date(2017, 9, 4), firstDayOfWeek: 3 };
             schObj = util.createSchedule(model, []);
         });
         afterAll(() => {
@@ -230,7 +229,7 @@ describe('Schedule header bar', () => {
 
         it('toolbar calendar first day of week', () => {
             (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-            let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+            const popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
             expect(popupEle.querySelector('.e-week-header th').textContent).toBe('We');
         });
 
@@ -238,7 +237,7 @@ describe('Schedule header bar', () => {
             schObj.firstDayOfWeek = 1;
             schObj.dataBind();
             (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-            let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+            const popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
             expect(popupEle.querySelector('.e-week-header th').textContent).toBe('Mo');
         });
     });
@@ -253,24 +252,24 @@ describe('Schedule header bar', () => {
         });
 
         it('toolbar bar rtl class testing', () => {
-            let model: ScheduleModel = { selectedDate: new Date(2017, 9, 4), enableRtl: true };
+            const model: ScheduleModel = { selectedDate: new Date(2017, 9, 4), enableRtl: true };
             schObj = util.createSchedule(model, []);
             expect(schObj.element.querySelectorAll('.e-schedule-toolbar-container')).toBeTruthy();
             expect(schObj.element.querySelector('.e-schedule-toolbar').classList).toContain('e-rtl');
             expect(schObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(10);
             (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-            let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+            const popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
             expect(schObj.element.querySelector('.e-schedule-toolbar').classList.contains('e-rtl')).toEqual(true);
             expect(popupEle.classList.contains('e-rtl')).toEqual(true);
             expect(popupEle.querySelector('.e-header-calendar').classList.contains('e-rtl')).toEqual(true);
         });
 
-        it('toolbar bar rtl mode property change', (done: Function) => {
-            let model: ScheduleModel = { selectedDate: new Date(2017, 9, 4), enableRtl: true };
+        it('toolbar bar rtl mode property change', (done: DoneFn) => {
+            const model: ScheduleModel = { selectedDate: new Date(2017, 9, 4), enableRtl: true };
             schObj = util.createSchedule(model, []);
             schObj.dataBound = () => {
                 (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-                let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+                const popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
                 expect(popupEle.classList.contains('e-rtl')).toEqual(false);
                 expect(popupEle.querySelector('.e-header-calendar').classList.contains('e-rtl')).toEqual(false);
                 expect(schObj.element.querySelector('.e-schedule-toolbar').classList.contains('e-rtl')).toEqual(false);
@@ -285,7 +284,7 @@ describe('Schedule header bar', () => {
     describe('HeaderBar RTL mode testing via setmodel', () => {
         let schObj: Schedule;
         beforeAll(() => {
-            let model: ScheduleModel = { selectedDate: new Date(2017, 9, 4), showHeaderBar: false, enableRtl: true };
+            const model: ScheduleModel = { selectedDate: new Date(2017, 9, 4), showHeaderBar: false, enableRtl: true };
             schObj = util.createSchedule(model, []);
         });
         afterAll(() => {
@@ -307,12 +306,12 @@ describe('Schedule header bar', () => {
 
     describe('Mobile view', () => {
         let schObj: Schedule;
-        let uA: string = Browser.userAgent;
-        let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+        const uA: string = Browser.userAgent;
+        const androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
             'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
-        beforeAll((done: Function) => {
+        beforeAll((done: DoneFn) => {
             Browser.userAgent = androidUserAgent;
-            let model: ScheduleModel = { selectedDate: new Date(2017, 9, 4), width: 300 };
+            const model: ScheduleModel = { selectedDate: new Date(2017, 9, 4), width: 300 };
             schObj = util.createSchedule(model, [], done);
         });
         afterAll(() => {
@@ -327,7 +326,7 @@ describe('Schedule header bar', () => {
 
         it('calendar navigation', () => {
             (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-            let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+            const popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
             expect(popupEle).toBeTruthy();
             expect(popupEle.classList.contains('e-popup-open')).toEqual(true);
             expect(popupEle.querySelector('.e-header-calendar')).toBeTruthy();
@@ -342,7 +341,7 @@ describe('Schedule header bar', () => {
 
         it('close toolbar popup while select items', () => {
             (schObj.element.querySelector('.e-schedule-toolbar .e-hor-nav') as HTMLElement).click();
-            let toolbarPopupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-toolbar-pop');
+            const toolbarPopupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-toolbar-pop');
             expect(toolbarPopupEle).toBeTruthy();
             (schObj.element.querySelector('.e-schedule-toolbar .e-month') as HTMLElement).click();
             expect(toolbarPopupEle.classList.contains('e-popup-open')).toEqual(false);
@@ -350,22 +349,22 @@ describe('Schedule header bar', () => {
 
         it('add icon click checking', () => {
             (schObj.element.querySelector('.e-schedule-toolbar .e-week') as HTMLElement).click();
-            let toolbarElement: HTMLElement = schObj.element.querySelector('.e-schedule-toolbar') as HTMLElement;
+            const toolbarElement: HTMLElement = schObj.element.querySelector('.e-schedule-toolbar') as HTMLElement;
             (<HTMLElement>toolbarElement.querySelector('.e-add .e-tbar-btn')).click();
-            let dialogElement: HTMLElement = document.querySelector('.e-schedule-dialog') as HTMLElement;
+            const dialogElement: HTMLElement = document.querySelector('.e-schedule-dialog') as HTMLElement;
             expect(schObj.eventWindow.dialogObject.visible).toEqual(true);
-            let backIcon: HTMLElement = dialogElement.querySelector('.e-back-icon');
+            const backIcon: HTMLElement = dialogElement.querySelector('.e-back-icon');
             backIcon.click();
         });
 
         it('add icon click checking after cell click', () => {
-            let toolbarElement: HTMLElement = schObj.element.querySelector('.e-schedule-toolbar') as HTMLElement;
-            let firstWorkCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
+            const toolbarElement: HTMLElement = schObj.element.querySelector('.e-schedule-toolbar') as HTMLElement;
+            const firstWorkCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
             firstWorkCell.click();
             (<HTMLElement>toolbarElement.querySelector('.e-add .e-tbar-btn')).click();
-            let dialogElement: HTMLElement = document.querySelector('.e-schedule-dialog') as HTMLElement;
+            const dialogElement: HTMLElement = document.querySelector('.e-schedule-dialog') as HTMLElement;
             expect(schObj.eventWindow.dialogObject.visible).toEqual(true);
-            let backIcon: HTMLElement = dialogElement.querySelector('.e-back-icon');
+            const backIcon: HTMLElement = dialogElement.querySelector('.e-back-icon');
             backIcon.click();
         });
         it('Negative case for header cell click navigation', () => {
@@ -380,7 +379,7 @@ describe('Schedule header bar', () => {
     describe('Header date range on default culture', () => {
         let schObj: Schedule;
         beforeAll((): void => {
-            let model: ScheduleModel = { selectedDate: new Date(2017, 9, 4) };
+            const model: ScheduleModel = { selectedDate: new Date(2017, 9, 4) };
             schObj = util.createSchedule(model, []);
         });
         afterAll((): void => {
@@ -406,12 +405,12 @@ describe('Schedule header bar', () => {
 
     describe('Add custom items and remove default items to toolbar', () => {
         let schObj: Schedule;
-        beforeAll((done: Function): void => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn): void => {
+            const model: ScheduleModel = {
                 width: 800, height: 600, selectedDate: new Date(2017, 9, 4),
-                actionBegin: (args: ActionEventArgs & ToolbarActionArgs) => {
+                actionBegin: (args: ActionEventArgs) => {
                     if (args.requestType === 'toolbarItemRendering') {
-                        let printItem: ItemModel = { align: 'Center', text: 'Print', cssClass: 'e-schedule-print' };
+                        const printItem: ItemModel = { align: 'Center', text: 'Print', cssClass: 'e-schedule-print' };
                         args.items.push(printItem);
                         args.items.splice(0, 2);
                     }
@@ -426,7 +425,7 @@ describe('Schedule header bar', () => {
             expect(schObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(9);
             expect(schObj.element.querySelectorAll('.e-schedule-print').length).toEqual(1);
         });
-        it('custom item after views collection change', (done: Function) => {
+        it('custom item after views collection change', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(7);
                 expect(schObj.element.querySelectorAll('.e-schedule-print').length).toEqual(1);
@@ -456,13 +455,9 @@ describe('Schedule header bar', () => {
 
     it('memory leak', () => {
         profile.sample();
-        // tslint:disable:no-any
-        let average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
+        const average: number = inMB(profile.averageChange);
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        const memory: number = inMB(getMemoryProfile());
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        // tslint:enable:no-any
     });
 });

@@ -13,7 +13,7 @@ import { ChangeArgs } from '@syncfusion/ej2-buttons';
 /**
  * Paragraph dialog spec
  */
-/* tslint:disable */
+/* eslint-disable */
 describe('Paragraph Dialog Test Case Validation', function () {
     let editor: DocumentEditor;
     let dialog: ParagraphDialog;
@@ -331,7 +331,7 @@ console.log('Load Paragraph Index 0 testing');
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         (dialog as any).special.index = 0;
         selectionParaFormat.firstLineIndent = 0;
-        dialog.changeByValue(changeEvent);
+        dialog.changeByValue();
     });
     it('Load Paragraph Format Index 0 else testing', function () {
 console.log('Load Paragraph Format Index 0 else testing');
@@ -339,7 +339,7 @@ console.log('Load Paragraph Format Index 0 else testing');
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = 25;
         (dialog as any).special.index = 0;
-        dialog.changeByValue(changeEvent);
+        dialog.changeByValue();
     });
 });
 
@@ -378,7 +378,7 @@ console.log('Load Paragraph Format Index 1 else testing');
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = undefined;
         (dialog as any).special.index = 1;
-        dialog.changeByValue(changeEvent);
+        dialog.changeByValue();
     });
     it('Load Paragraph Format Index 1 else testing', function () {
 console.log('Load Paragraph Format Index 1 else testing');
@@ -386,7 +386,7 @@ console.log('Load Paragraph Format Index 1 else testing');
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = -2;
         (dialog as any).special.index = 1;
-        dialog.changeByValue(changeEvent);
+        dialog.changeByValue();
     });
     it('Load Paragraph Index 1 testing', function () {
 console.log('Load Paragraph Index 1 testing');
@@ -394,7 +394,7 @@ console.log('Load Paragraph Index 1 testing');
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = 0;
         (dialog as any).special.index = 1;
-        dialog.changeByValue(changeEvent);
+        dialog.changeByValue();
     });
 });
 
@@ -432,7 +432,7 @@ console.log('Load Paragraph Format Index 1 else testing');
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = undefined;
         (dialog as any).special.index = 2;
-        dialog.changeByValue(changeEvent);
+        dialog.changeByValue();
     });
     it('Load Paragraph Format Index 1 else testing', function () {
 console.log('Load Paragraph Format Index 1 else testing');
@@ -443,7 +443,7 @@ console.log('Load Paragraph Format Index 1 else testing');
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = -2;
         (dialog as any).special.index = 2;
-        dialog.changeByValue(changeEvent);
+        dialog.changeByValue();
     });
     it('Load Paragraph Index 1 testing', function () {
 console.log('Load Paragraph Index 1 testing');
@@ -451,7 +451,7 @@ console.log('Load Paragraph Index 1 testing');
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = 0;
         (dialog as any).special.index = 2;
-        dialog.changeByValue(changeEvent);
+        dialog.changeByValue();
     });
 });
 
@@ -489,7 +489,7 @@ console.log('Load Paragraph Format Index 1 else testing');
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = 48;
         (dialog as any).special.index = 1;
-        dialog.changeByValue(changeEvent);
+        dialog.changeByValue();
     });
     it('Load Paragraph Format Index 2 else testing', function () {
 console.log('Load Paragraph Format Index 2 else testing');
@@ -497,7 +497,7 @@ console.log('Load Paragraph Format Index 2 else testing');
         selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = 48;
         (dialog as any).special.index = 1;
-        dialog.changeByValue(changeEvent);
+        dialog.changeByValue();
     });
 });
 
@@ -569,19 +569,19 @@ describe('Paragraph format change by space Test Case Validation', function () {
 console.log('Apply Paragraph Format Index 0 testing');
         let changeEvent: any;
         (dialog as any).lineSpacing.index = 0;
-        dialog.changeBySpacing(changeEvent);
+        dialog.changeBySpacing();
     });
     it('Apply Paragraph Format Index 1 testing', function () {
 console.log('Apply Paragraph Format Index 1 testing');
         let changeEvent: any;
         (dialog as any).lineSpacing.index = 1;
-        dialog.changeBySpacing(changeEvent);
+        dialog.changeBySpacing();
     });
     it('Apply Paragraph Format Index 1 testing', function () {
 console.log('Apply Paragraph Format Index 1 testing');
         let changeEvent: any;
         (dialog as any).lineSpacing.index = 2;
-        dialog.changeBySpacing(changeEvent);
+        dialog.changeBySpacing();
     });
 });
 

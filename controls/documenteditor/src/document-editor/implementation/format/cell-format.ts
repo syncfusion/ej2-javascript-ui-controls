@@ -5,8 +5,8 @@ import { WUniqueFormat } from '../../base/unique-format';
 import { WUniqueFormats } from '../../base/unique-formats';
 import { WBorders } from './borders';
 import { WShading } from './shading';
-
-/** 
+/* eslint-disable */
+/**
  * @private
  */
 export class WCellFormat {
@@ -16,77 +16,77 @@ export class WCellFormat {
     public borders: WBorders = new WBorders(this);
     public shading: WShading = new WShading(this);
     public ownerBase: Object;
-    get leftMargin(): number {
+    public get leftMargin(): number {
         return this.getPropertyValue('leftMargin') as number;
     }
-    set leftMargin(value: number) {
+    public set leftMargin(value: number) {
         this.setPropertyValue('leftMargin', value);
     }
-    get rightMargin(): number {
+    public get rightMargin(): number {
         return this.getPropertyValue('rightMargin') as number;
     }
-    set rightMargin(value: number) {
+    public set rightMargin(value: number) {
         this.setPropertyValue('rightMargin', value);
     }
-    get topMargin(): number {
+    public get topMargin(): number {
         return this.getPropertyValue('topMargin') as number;
     }
-    set topMargin(value: number) {
+    public set topMargin(value: number) {
         this.setPropertyValue('topMargin', value);
     }
-    get bottomMargin(): number {
+    public get bottomMargin(): number {
         return this.getPropertyValue('bottomMargin') as number;
     }
-    set bottomMargin(value: number) {
+    public set bottomMargin(value: number) {
         this.setPropertyValue('bottomMargin', value);
     }
 
-    get cellWidth(): number {
+    public get cellWidth(): number {
         return this.getPropertyValue('cellWidth') as number;
     }
-    set cellWidth(value: number) {
+    public set cellWidth(value: number) {
         this.setPropertyValue('cellWidth', value);
     }
-    get columnSpan(): number {
+    public get columnSpan(): number {
         return this.getPropertyValue('columnSpan') as number;
     }
-    set columnSpan(value: number) {
+    public set columnSpan(value: number) {
         this.setPropertyValue('columnSpan', value);
     }
-    get rowSpan(): number {
+    public get rowSpan(): number {
         return this.getPropertyValue('rowSpan') as number;
     }
-    set rowSpan(value: number) {
+    public set rowSpan(value: number) {
         this.setPropertyValue('rowSpan', value);
     }
-    get preferredWidth(): number {
+    public get preferredWidth(): number {
         return this.getPropertyValue('preferredWidth') as number;
     }
-    set preferredWidth(value: number) {
+    public set preferredWidth(value: number) {
         this.setPropertyValue('preferredWidth', value);
     }
-    get verticalAlignment(): CellVerticalAlignment {
+    public get verticalAlignment(): CellVerticalAlignment {
         return this.getPropertyValue('verticalAlignment') as CellVerticalAlignment;
     }
-    set verticalAlignment(value: CellVerticalAlignment) {
+    public set verticalAlignment(value: CellVerticalAlignment) {
         this.setPropertyValue('verticalAlignment', value);
     }
-    get preferredWidthType(): WidthType {
+    public get preferredWidthType(): WidthType {
         return this.getPropertyValue('preferredWidthType') as WidthType;
     }
-    set preferredWidthType(value: WidthType) {
+    public set preferredWidthType(value: WidthType) {
         this.setPropertyValue('preferredWidthType', value);
     }
 
-    constructor(node?: Object) {
+    public constructor(node?: Object) {
         this.ownerBase = node;
         this.borders = new WBorders(this);
         this.shading = new WShading(this);
     }
     public getPropertyValue(property: string): Object {
-        let hasValue: boolean = this.hasValue(property);
+        const hasValue: boolean = this.hasValue(property);
         if (hasValue) {
-            let propertyType: number = WUniqueFormat.getPropertyType(WCellFormat.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(WCellFormat.uniqueFormatType, property);
             if (!isNullOrUndefined(this.uniqueCellFormat) && this.uniqueCellFormat.propertiesHash.containsKey(propertyType)) {
                 return this.uniqueCellFormat.propertiesHash.get(propertyType);
             }
@@ -100,7 +100,7 @@ export class WCellFormat {
         if (isNullOrUndefined(this.uniqueCellFormat)) {
             this.initializeUniqueCellFormat(property, value);
         } else {
-            let propertyType: number = WUniqueFormat.getPropertyType(this.uniqueCellFormat.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(this.uniqueCellFormat.uniqueFormatType, property);
             if (this.uniqueCellFormat.propertiesHash.containsKey(propertyType) &&
                 this.uniqueCellFormat.propertiesHash.get(propertyType) === value) {
                 //Do nothing, since no change in property value and return
@@ -110,7 +110,7 @@ export class WCellFormat {
         }
     }
     private initializeUniqueCellFormat(property: string, propValue: Object): void {
-        let uniqueCellFormatTemp: Dictionary<number, object> = new Dictionary<number, object>();
+        const uniqueCellFormatTemp: Dictionary<number, object> = new Dictionary<number, object>();
         this.addUniqueCellFormat('leftMargin', property, propValue, uniqueCellFormatTemp);
         this.addUniqueCellFormat('topMargin', property, propValue, uniqueCellFormatTemp);
         this.addUniqueCellFormat('bottomMargin', property, propValue, uniqueCellFormatTemp);
@@ -123,10 +123,9 @@ export class WCellFormat {
         this.addUniqueCellFormat('preferredWidthType', property, propValue, uniqueCellFormatTemp);
         this.uniqueCellFormat = WCellFormat.uniqueCellFormats.addUniqueFormat(uniqueCellFormatTemp, WCellFormat.uniqueFormatType);
     }
-    // tslint:disable-next-line:max-line-length
+
     private addUniqueCellFormat(property: string, modifiedProperty: string, propValue: Object, uniqueCellFormatTemp: Dictionary<number, object>): void {
-        let propertyType: number;
-        propertyType = WUniqueFormat.getPropertyType(WCellFormat.uniqueFormatType, property);
+        const propertyType: number = WUniqueFormat.getPropertyType(WCellFormat.uniqueFormatType, property);
         if (property === modifiedProperty) {
             uniqueCellFormatTemp.add(propertyType, propValue);
         }
@@ -134,36 +133,36 @@ export class WCellFormat {
     private static getPropertyDefaultValue(property: string): Object {
         let value: Object = undefined;
         switch (property) {
-            case 'leftMargin':
-                value = undefined;
-                break;
-            case 'topMargin':
-                value = undefined;
-                break;
-            case 'bottomMargin':
-                value = undefined;
-                break;
-            case 'rightMargin':
-                value = undefined;
-                break;
-            case 'cellWidth':
-                value = 0;
-                break;
-            case 'columnSpan':
-                value = 1;
-                break;
-            case 'rowSpan':
-                value = 1;
-                break;
-            case 'preferredWidth':
-                value = 0;
-                break;
-            case 'verticalAlignment':
-                value = 'Top';
-                break;
-            case 'preferredWidthType':
-                value = 'Point';
-                break;
+        case 'leftMargin':
+            value = undefined;
+            break;
+        case 'topMargin':
+            value = undefined;
+            break;
+        case 'bottomMargin':
+            value = undefined;
+            break;
+        case 'rightMargin':
+            value = undefined;
+            break;
+        case 'cellWidth':
+            value = 0;
+            break;
+        case 'columnSpan':
+            value = 1;
+            break;
+        case 'rowSpan':
+            value = 1;
+            break;
+        case 'preferredWidth':
+            value = 0;
+            break;
+        case 'verticalAlignment':
+            value = 'Top';
+            break;
+        case 'preferredWidthType':
+            value = 'Point';
+            break;
         }
         return value;
     }
@@ -189,7 +188,7 @@ export class WCellFormat {
         this.shading = undefined;
     }
     public cloneFormat(): WCellFormat {
-        let format: WCellFormat = new WCellFormat(undefined);
+        const format: WCellFormat = new WCellFormat(undefined);
         format.verticalAlignment = this.verticalAlignment;
         format.leftMargin = this.leftMargin;
         format.rightMargin = this.rightMargin;
@@ -204,7 +203,7 @@ export class WCellFormat {
     }
     public hasValue(property: string): boolean {
         if (!isNullOrUndefined(this.uniqueCellFormat)) {
-            let propertyType: number = WUniqueFormat.getPropertyType(this.uniqueCellFormat.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(this.uniqueCellFormat.uniqueFormatType, property);
             return this.uniqueCellFormat.propertiesHash.containsKey(propertyType);
         }
         return false;

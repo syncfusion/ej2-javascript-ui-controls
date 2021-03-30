@@ -1,7 +1,7 @@
 /**
  * drill down sample
  */
-//tslint:disable
+/* eslint-disable */
 export let RTLData: Object[] = [
     { Continent:[
 		   { Name: "Africa",Size: 519.70, Country : [

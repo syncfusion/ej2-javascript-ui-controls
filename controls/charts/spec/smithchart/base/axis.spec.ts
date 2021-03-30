@@ -101,7 +101,7 @@ describe('Smithchart axis properties tesing', () => {
             smithchart.refresh();
         });
         it('Checking Resize', () => {
-           smithchart.smithchartOnResize(null);
+           smithchart.smithchartOnResize();
            smithchart.refresh();
         });
     });

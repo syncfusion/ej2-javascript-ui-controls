@@ -1,7 +1,7 @@
 /**
  * Election data for US
  */
-//tslint:disable
+/* eslint-disable */
 export let CarSales: object[] = [
     {Continent: "China", Company: "Volkswagen", Sales: 3005994 },
     {Continent: "China", Company: "General Motors", Sales: 1230044 },

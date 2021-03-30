@@ -13,12 +13,14 @@ import { SelectEventArgs } from '@syncfusion/ej2-dropdowns';
 export class RibbonHeader extends ChildProperty<RibbonHeader> {
     /**
      * Specifies the display text of the Ribbon tab header.
+     *
      * @default ''
      */
     @Property('')
     public text: string;
     /**
      * Specifies the icon class that is used to render an icon in the Ribbon tab header.
+     *
      * @default ''
      */
     @Property('')
@@ -30,6 +32,7 @@ export class RibbonHeader extends ChildProperty<RibbonHeader> {
      * - Top: Places the icon on the `top` of the item.
      * - Right: Places the icon to the `right` end of the item.
      * - Bottom: Places the icon at the `bottom` of the item.
+     *
      * @default 'left'
      */
     @Property('left')
@@ -42,24 +45,28 @@ export class RibbonHeader extends ChildProperty<RibbonHeader> {
 export class RibbonItem extends ChildProperty<RibbonItem> {
     /**
      * The object used for configuring the Tab item header properties.
+     *
      * @default {}
      */
     @Complex<RibbonHeaderModel>({}, RibbonHeader)
     public header: RibbonHeaderModel;
     /**
      * Specifies the content of Tab item, that is displayed when concern item header is selected.
+     *
      * @default ''
      */
     @Collection<ItemModel>([], Item)
     public content: ItemModel[];
     /**
      * Sets the CSS classes to the Tab item to customize its styles.
+     *
      * @default ''
      */
     @Property('')
     public cssClass: string;
     /**
      * Sets true to disable user interactions of the Tab item.
+     *
      * @default false
      */
     @Property(false)
@@ -82,10 +89,11 @@ export interface ExpandCollapseEventArgs {
 @NotifyPropertyChanges
 export class Ribbon extends Component<HTMLDivElement> implements INotifyPropertyChanged {
     private toolbarObj: Toolbar;
-    private tabObj: Tab;
+    public tabObj: Tab;
 
     /**
      * Defines class/multiple classes separated by a space in the Spreadsheet element.
+     *
      * @default ""
      */
     @Property('')
@@ -93,6 +101,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
 
     /**
      * Used the specify the ribbon menu type as `Menu` or `Sidebar`.
+     *
      * @default true
      */
     @Property(true)
@@ -100,6 +109,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
 
     /**
      * An array of object that is used to configure the Ribbon menu.
+     *
      * @default []
      */
     @Collection<MenuItemModel>([], MenuItem)
@@ -107,6 +117,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
 
     /**
      * Specifies the index for activating the current Ribbon tab.
+     *
      * @default 0
      */
     @Property(0)
@@ -114,6 +125,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
 
     /**
      * An array of object that is used to configure the Ribbon tab.
+     *
      * @default []
      */
     @Collection<RibbonItemModel>([], RibbonItem)
@@ -121,42 +133,48 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
 
     /**
      * Triggers while selecting the tab item.
-     * @event
+     *
+     * @event anEvent
      */
     @Event()
     public selecting: EmitType<SelectingEventArgs>;
 
     /**
      * Triggers while selecting the file menu item.
-     * @event
+     *
+     * @event anEvent
      */
     @Event()
     public fileMenuItemSelect: EmitType<MenuEventArgs>;
 
     /**
      * Triggers while rendering each file menu item.
-     * @event
+     *
+     * @event anEvent
      */
     @Event()
     public beforeFileMenuItemRender: EmitType<MenuEventArgs>;
 
     /**
      * Triggers before opening the file menu.
-     * @event
+     *
+     * @event anEvent
      */
     @Event()
     public beforeOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
      * Triggers before closing the file menu.
-     * @event
+     *
+     * @event anEvent
      */
     @Event()
     public beforeClose: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
      * Triggers format dropdown items gets selected.
-     * @event
+     *
+     * @event anEvent
      * @hidden
      */
     @Event()
@@ -164,29 +182,33 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
 
     /**
      * Triggers while clicking the ribbon content elements.
-     * @event
+     *
+     * @event anEvent
      */
     @Event()
     public clicked: EmitType<ClickEventArgs>;
 
     /**
      * Triggers once the component rendering is completed.
-     * @event
+     *
+     * @event anEvent
      */
     @Event()
     public created: EmitType<Event>;
 
     /**
      * Triggers once the component rendering is completed.
-     * @event
+     *
+     * @event anEvent
      */
     @Event()
     public expandCollapse: EmitType<ExpandCollapseEventArgs>;
 
     /**
      * Constructor for creating the widget.
-     * @param  {RibbonModel} options?
-     * @param  {string|HTMLDivElement} element?
+     *
+     * @param {RibbonModel} options - Specify the options
+     * @param {string|HTMLDivElement} element -specify the element.
      */
     constructor(options?: RibbonModel, element?: string | HTMLDivElement) {
         super(options);
@@ -194,7 +216,8 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
 
     /**
      * For internal use only.
-     * @returns void
+     *
+     * @returns {void} - For internal use only.
      * @private
      */
     protected preRender(): void {
@@ -203,7 +226,8 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
 
     /**
      * For internal use only.
-     * @returns void
+     *
+     * @returns {void} - For internal use only.
      * @private
      */
     protected render(): void {
@@ -213,17 +237,19 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
 
     /**
      * Destroys the component (detaches/removes all event handlers, attributes, classes, and empties the component element).
+     *
      * {% codeBlock src='spreadsheet/destroy/index.md' %}{% endcodeBlock %}
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void} - Destroys the component
      */
     public destroy(): void {
-        let expandCollapseElem: HTMLElement = this.element.querySelector('.e-drop-icon');
+        const expandCollapseElem: HTMLElement = this.element.querySelector('.e-drop-icon');
         if (expandCollapseElem) {
             expandCollapseElem.removeEventListener('click', this.ribbonExpandCollapse.bind(this));
         }
         if (this.menuItems.length) {
-            let fileMenu: HTMLElement = document.getElementById(`${this.element.id}_menu`);
+            const fileMenu: HTMLElement = document.getElementById(`${this.element.id}_menu`);
             if (fileMenu) { (getComponent(fileMenu, 'menu') as Menu).destroy(); }
         }
         this.toolbarObj.destroy();
@@ -234,7 +260,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
     }
 
     private getTabItems(): TabItemModel[] {
-        let tabItems: TabItemModel[] = [];
+        const tabItems: TabItemModel[] = [];
         if (this.menuItems.length) {
             tabItems.push({
                 header: { text: this.initMenu(this.menuItems) },
@@ -252,9 +278,9 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
     }
 
     private initMenu(menuItems: MenuItemModel[]): HTMLElement {
-        let menu: HTMLElement = this.createElement('ul', { id: `${this.element.id}_menu` });
+        const menu: HTMLElement = this.createElement('ul', { id: `${this.element.id}_menu` });
         this.element.appendChild(menu);
-        let menuObj: Menu = new Menu({
+        const menuObj: Menu = new Menu({
             cssClass: 'e-file-menu',
             items: menuItems,
             showItemOnClick: true,
@@ -284,8 +310,8 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
     }
 
     private renderRibbon(): void {
-        let tabElement: HTMLElement = this.createElement('div');
-        let tBarElement: HTMLElement = this.createElement('div');
+        const tabElement: HTMLElement = this.createElement('div');
+        const tBarElement: HTMLElement = this.createElement('div');
         this.toolbarObj = new Toolbar({
             items: this.items[this.selectedTab].content,
             clicked: (args: ClickEventArgs) => this.trigger('clicked', args)
@@ -331,13 +357,13 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
         this.element.appendChild(tabElement);
         this.tabObj.createElement = this.createElement;
         this.tabObj.appendTo(tabElement);
-        let collapseBtn: Element = this.createElement('span', { className: 'e-drop-icon e-icons' });
+        const collapseBtn: Element = this.createElement('span', { className: 'e-drop-icon e-icons' });
         collapseBtn.addEventListener('click', this.ribbonExpandCollapse.bind(this));
         this.element.appendChild(collapseBtn);
     }
 
     private ribbonExpandCollapse(e: MouseEvent): void {
-        let eventArgs: ExpandCollapseEventArgs = { element: this.toolbarObj.element, expanded: true };
+        const eventArgs: ExpandCollapseEventArgs = { element: this.toolbarObj.element, expanded: true };
         let activeTab: Element;
         if (this.element.classList.contains('e-collapsed')) {
             activeTab = this.tabObj.element.querySelector('.e-tab-header').getElementsByClassName(
@@ -365,10 +391,11 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
 
     /**
      * To enable / disable the ribbon menu items.
+     *
      * @param {string[]} items - Items that needs to be enabled / disabled.
      * @param {boolean} enable - Set `true` / `false` to enable / disable the menu items.
      * @param {boolean} isUniqueId? - Set `true` if the given menu items `text` is a unique id.
-     * @returns void.
+     * @returns {void} - To enable / disable the ribbon menu items.
      */
     public enableMenuItems(items: string[], enable: boolean = true, isUniqueId?: boolean): void {
         if (!this.menuItems.length) { return; }
@@ -377,37 +404,40 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
 
     /**
      * To show/hide the menu items in Ribbon.
+     *
      * @param {string[]} items - Specifies the menu items text which is to be show/hide.
      * @param {boolean} hide - Set `true` / `false` to hide / show the menu items.
-     * @param {boolean} isUniqueId? - Set `true` if the given menu items `text` is a unique id.
-     * @returns void.
+     * @param {boolean} isUniqueId - Set `true` if the given menu items `text` is a unique id.
+     * @returns {void} - To show/hide the menu items in Ribbon.
      */
     public hideMenuItems(items: string[], hide: boolean = true, isUniqueId?: boolean): void {
         if (!this.menuItems.length) { return; }
-        let menuInstance: Menu = getComponent(document.getElementById(`${this.element.id}_menu`), 'menu') as Menu;
+        const menuInstance: Menu = getComponent(document.getElementById(`${this.element.id}_menu`), 'menu') as Menu;
         hide ? menuInstance.hideItems(items, isUniqueId) : menuInstance.showItems(items, isUniqueId);
     }
 
     /**
      * To add custom menu items.
+     *
      * @param {MenuItemModel[]} items - Specifies the Ribbon menu items to be inserted.
      * @param {string} text - Specifies the existing file menu item text before / after which the new file menu items to be inserted.
-     * @param {boolean} insertAfter? - Set `false` if the `items` need to be inserted before the `text`.
+     * @param {boolean} insertAfter - Set `false` if the `items` need to be inserted before the `text`.
      * By default, `items` are added after the `text`.
-     * @param {boolean} isUniqueId? - Set `true` if the given menu items `text` is a unique id.
-     * @returns void.
+     * @param {boolean} isUniqueId - Set `true` if the given menu items `text` is a unique id.
+     * @returns {void} - To add custom menu items.
      */
     public addMenuItems(items: MenuItemModel[], text: string, insertAfter: boolean = true, isUniqueId?: boolean): void {
         if (!this.menuItems.length) { return; }
-        let menuInstance: Menu = getComponent(document.getElementById(`${this.element.id}_menu`), 'menu') as Menu;
+        const menuInstance: Menu = getComponent(document.getElementById(`${this.element.id}_menu`), 'menu') as Menu;
         insertAfter ? menuInstance.insertAfter(items.reverse(), text, isUniqueId) : menuInstance.insertBefore(items, text, isUniqueId);
     }
 
     /**
      * To show/hide the Ribbon tabs.
+     *
      * @param {string[]} tabs - Specifies the tab header text which needs to be shown/hidden.
-     * @param {boolean} hide? - Set `true` / `false` to hide / show the ribbon tabs.
-     * @returns void.
+     * @param {boolean} hide - Set `true` / `false` to hide / show the ribbon tabs.
+     * @returns {void} - To show/hide the Ribbon tabs.
      */
     public hideTabs(tabs: string[], hide: boolean = true): void {
         let idx: number; let activeTab: boolean; let stateChanged: boolean; let isAllHidden: boolean;
@@ -462,9 +492,10 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
 
     /**
      * To enable / disable the Ribbon tabs.
+     *
      * @param {string[]} tabs - Specifies the tab header text which needs to be enabled / disabled.
-     * @param {boolean} enable? - Set `true` / `false` to enable / disable the ribbon tabs.
-     * @returns void.
+     * @param {boolean} enable - Set `true` / `false` to enable / disable the ribbon tabs.
+     * @returns {void} - To enable / disable the Ribbon tabs.
      */
     public enableTabs(tabs: string[], enable: boolean = true): void {
         tabs.forEach((tab: string): void => {
@@ -478,10 +509,11 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
 
     /**
      * To add custom tabs.
+     *
      * @param {RibbonItemModel[]} items - Specifies the Ribbon tab items to be inserted.
-     * @param {string} insertBefore? - Specifies the existing Ribbon header text before which the new tabs will be inserted.
+     * @param {string} insertBefore - Specifies the existing Ribbon header text before which the new tabs will be inserted.
      * If not specified, the new tabs will be inserted at the end.
-     * @returns void.
+     * @returns {void} - To add custom tabs.
      */
     public addTabs(items: RibbonItemModel[], insertBefore?: string): void {
         let idx: number = this.getTabIndex(insertBefore);
@@ -505,13 +537,15 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
 
     /**
      * To add the custom items in Ribbon toolbar.
+     *
      * @param {string} tab - Specifies the ribbon tab header text under which the specified items will be inserted..
      * @param {ItemModel[]} items - Specifies the ribbon toolbar items that needs to be inserted.
-     * @param {number} index? - Specifies the index text before which the new items will be inserted.
+     * @param {number} index - Specifies the index text before which the new items will be inserted.
+     * @returns {void} - To add the custom items in Ribbon toolbar.
      * If not specified, the new items will be inserted at the end of the toolbar.
      */
     public addToolbarItems(tab: string, items: ItemModel[], index?: number): void {
-        let tabIdx: number = this.getTabIndex(tab);
+        const tabIdx: number = this.getTabIndex(tab);
         if (isNullOrUndefined(index)) { index = this.items[tabIdx].content.length; }
         items.forEach((item: ItemModel): void => {
             item = new Item(<Item>this.items[tabIdx].content[0], 'content', item, true);
@@ -523,16 +557,17 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
 
     /**
      * Enables or disables the specified Ribbon toolbar items or all ribbon items.
+     *
      * @param {string} tab - Specifies the ribbon tab header text under which the toolbar items need to be enabled / disabled.
-     * @param {string[]} items? - Specifies the toolbar item indexes / unique id's which needs to be enabled / disabled.
+     * @param {number[]} items - Specifies the toolbar item indexes / unique id's which needs to be enabled / disabled.
      * If it is not specified the entire toolbar items will be enabled / disabled.
-     * @param  {boolean} enable? - Boolean value that determines whether the toolbar items should be enabled or disabled.
-     * @returns void.
+     * @param  {boolean} enable - Boolean value that determines whether the toolbar items should be enabled or disabled.
+     * @returns {void} - Enables or disables the specified Ribbon toolbar items or all ribbon items.
      */
     public enableItems(tab: string, items?: number[] | string[], enable?: boolean): void {
         if (enable === undefined) { enable = true; }
         if (items) {
-            let tabIdx: number = this.getTabIndex(tab, -1);
+            const tabIdx: number = this.getTabIndex(tab, -1);
             if (tabIdx < 0) { return; }
             for (let i: number = 0; i < items.length; i++) {
                 if (typeof(items[i]) === 'string') {
@@ -542,6 +577,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
                 }
                 if (typeof(items[i]) === 'string') { return; }
                 this.items[tabIdx].content[items[i]].disabled = !enable;
+                if (tabIdx !== this.selectedTab) { this.setProperties({ 'items': this.items }, true); }
             }
             if (tabIdx === this.selectedTab) { this.updateToolbar(tabIdx); }
         } else {
@@ -551,10 +587,11 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
 
     /**
      * To show/hide the existing Ribbon toolbar items.
+     *
      * @param {string} tab - Specifies the ribbon tab header text under which the specified items need to be hidden / shown.
-     * @param {string[]} indexes - Specifies the toolbar indexes which needs to be shown/hidden from UI.
-     * @param {boolean} hide? - Set `true` / `false` to hide / show the toolbar items.
-     * @returns void.
+     * @param {number[]} indexes - Specifies the toolbar indexes which needs to be shown/hidden from UI.
+     * @param {boolean} hide - Set `true` / `false` to hide / show the toolbar items.
+     * @returns {void} - To show/hide the existing Ribbon toolbar items.
      */
     public hideToolbarItems(tab: string, indexes: number[], hide: boolean = true): void {
         let tabIdx: number;
@@ -583,7 +620,8 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
 
     /**
      * Get component name.
-     * @returns string
+     *
+     * @returns {string} - Get component name.
      * @private
      */
     public getModuleName(): string {
@@ -592,7 +630,8 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
 
     /**
      * Get the properties to be maintained in the persisted state.
-     * @returns string
+     *
+     * @returns {string} - Get the properties to be maintained in the persisted state.
      * @private
      */
     public getPersistData(): string {
@@ -601,17 +640,18 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
 
     /**
      * Called internally if any of the property value changed.
-     * @param  {RibbonModel} newProp
-     * @param  {RibbonModel} oldProp
-     * @returns void
+     *
+     * @param {RibbonModel} newProp - Specify the new properties
+     * @param {RibbonModel} oldProp - specify the old properties.
+     * @returns {void} - if any of the property value changed.
      * @private
      */
     public onPropertyChanged(newProp: RibbonModel, oldProp: RibbonModel): void {
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'selectedTab':
-                    this.tabObj.selectedItem = this.getIndex(newProp.selectedTab); this.tabObj.dataBind();
-                    break;
+            case 'selectedTab':
+                this.tabObj.selectedItem = this.getIndex(newProp.selectedTab); this.tabObj.dataBind();
+                break;
             }
         }
     }

@@ -4,17 +4,19 @@ import { getWorkbookRequiredModules } from '../../workbook/common/module';
 
 /**
  * To get Spreadsheet required modules.
+ *
  * @hidden
- * @param {Spreadsheet} context
+ * @param {Spreadsheet} context - To get Spreadsheet required modules.
+ * @returns {modules} - To get Spreadsheet required modules.
  */
 export function getRequiredModules(context: Spreadsheet): ModuleDeclaration[] {
-    let modules: ModuleDeclaration[] = [];
+    const modules: ModuleDeclaration[] = [];
     pushBasicModules(context, modules);
     getWorkbookRequiredModules(context, modules);
     return modules;
 }
 
- // tslint:disable-next-line:max-func-body-length
+// eslint-disable-next-line
 function pushBasicModules(context: Spreadsheet, modules: ModuleDeclaration[]): void {
     modules.push({ member: 'basic', args: [] });
     modules.push({ member: 'all', args: [] });

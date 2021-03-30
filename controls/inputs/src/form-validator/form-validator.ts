@@ -7,8 +7,9 @@ import { FormValidatorModel } from './form-validator-model';
 /**
  * global declarations
  */
-// tslint:disable-next-line:no-any
-export let regex: any = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const regex: any = {
+    /* eslint-disable @typescript-eslint/naming-convention, no-useless-escape */
     EMAIL: new RegExp('^[A-Za-z0-9._%+-]{1,}@[A-Za-z0-9._%+-]{1,}([.]{1}[a-zA-Z0-9]{2,}' +
         '|[.]{1}[a-zA-Z0-9]{2,4}[.]{1}[a-zA-Z0-9]{2,4})$'),
     URL: /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/m,
@@ -16,19 +17,24 @@ export let regex: any = {
     DIGITS: new RegExp('^[0-9]*$'),
     PHONE: new RegExp('^[+]?[0-9]{9,13}$'),
     CREDITCARD: new RegExp('^\\d{13,16}$')
+    /* eslint-enable @typescript-eslint/naming-convention, no-useless-escape */
 };
+
 /**
  * ErrorOption values
+ *
  * @private
  */
 export enum ErrorOption {
     /**
      * Defines the error message.
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Message,
     /**
      * Defines the error element type.
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Label
 }
 
@@ -42,7 +48,7 @@ export enum ErrorOption {
  * <script>
  *   let formObject = new FormValidator('#formId', {
  *      rules: { Name: { required: true }, Age: { range: [18, 30] } };
- *   }); 
+ *   });
  *   formObject.validate();
  * </script>
  * ```
@@ -59,7 +65,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
     private inputElements: HTMLInputElement[];
     private l10n: L10n;
     private internationalization: Internationalization;
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private localyMessage: any = {};
     /**
      * default locale variable
@@ -70,6 +76,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
 
     /**
      * Ignores input fields based on the class name
+     *
      * @default 'e-hidden'
      */
     @Property('e-hidden')
@@ -77,20 +84,23 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
 
     /**
      * Maps the input fields with validation rules
+     *
      * @default {}
      */
     @Property()
     public rules: { [name: string]: { [rule: string]: Object } };
 
     /**
-     * Sets the defined css class to error fields 
+     * Sets the defined css class to error fields
+     *
      * @default 'e-error'
      */
     @Property('e-error')
     public errorClass: string;
 
     /**
-     * Sets the defined css class to valid fields 
+     * Sets the defined css class to valid fields
+     *
      * @default 'e-valid'
      */
     @Property('e-valid')
@@ -98,13 +108,15 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
 
     /**
      * Specify HTML element for error
+     *
      * @default 'label'
      */
     @Property('label')
     public errorElement: string;
 
     /**
-     * Specify HTML element for error container 
+     * Specify HTML element for error container
+     *
      * @default 'div'
      */
     @Property('div')
@@ -112,6 +124,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
 
     /**
      * Option to display the error
+     *
      * @default ErrorOption.Label
      * @deprecated
      */
@@ -120,71 +133,81 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
 
     /**
      * Triggers when a field's focused  out
-     * @event
+     *
+     * @event focusout
      */
     @Event()
     public focusout: EmitType<Event>;
 
     /**
      * Trigger when keyup is triggered in any fields
-     * @event
+     *
+     * @event keyup
      */
     @Event()
     public keyup: EmitType<KeyboardEvent>;
 
     /**
      * Triggers when a check box field is clicked
-     * @event
+     *
+     * @event click
      */
     @Event()
     public click: EmitType<Event>;
 
     /**
      * Trigger when a select/drop-down field is changed
-     * @event
+     *
+     * @event change
      */
     @Event()
     public change: EmitType<Event>;
 
     /**
      * Triggers before form is being submitted
-     * @event
+     *
+     * @event submit
      */
     @Event()
     public submit: EmitType<Event>;
 
     /**
      * Triggers before validation starts
-     * @event
+     *
+     * @event validationBegin
      */
     @Event()
     public validationBegin: EmitType<Object | ValidArgs>;
 
     /**
      * Triggers after validation is completed
-     * @event
+     *
+     * @event validationComplete
      */
     @Event()
     public validationComplete: EmitType<Object | FormEventArgs>;
 
     /**
      * Assigns the custom function to place the error message in the page.
-     * @event
+     *
+     * @event customPlacement
      */
-    // tslint:disable
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     @Event()
     public customPlacement: EmitType<HTMLElement | any>;
 
-    // tslint:enable
+    /* eslint-enable @typescript-eslint/no-explicit-any */
 
     /**
-     * Add validation rules to the corresponding input element based on `name` attribute.   
-     * @param {string} name `name` of form field. 
-     * @param {Object} rules Validation rules for the corresponding element. 
-     * @return {void}
+     * Add validation rules to the corresponding input element based on `name` attribute.
+     *
+     * @param {string} name `name` of form field.
+     * @param {Object} rules Validation rules for the corresponding element.
+     * @returns {void}
      */
     public addRules(name: string, rules: Object): void {
         if (name) {
+            // eslint-disable-next-line no-prototype-builtins
             if (this.rules.hasOwnProperty(name)) {
                 extend(this.rules[name], rules, {});
             } else {
@@ -194,11 +217,12 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
     }
 
     /**
-     * Remove validation to the corresponding field based on name attribute.   
+     * Remove validation to the corresponding field based on name attribute.
      * When no parameter is passed, remove all the validations in the form.
+     *
      * @param {string} name Input name attribute value.
-     * @param {string[]} rules List of validation rules need to be remove from the corresponding element. 
-     * @return {void}
+     * @param {string[]} rules List of validation rules need to be remove from the corresponding element.
+     * @returns {void}
      */
     public removeRules(name?: string, rules?: string[]): void {
         if (!name && !rules) {
@@ -213,15 +237,16 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
             return;
         }
     }
-
+    /* eslint-disable valid-jsdoc, jsdoc/require-returns-description */
     /**
      * Validate the current form values using defined rules.
      * Returns `true` when the form is valid otherwise `false`
-     * @param {string} selected - Optional parameter to validate specified element.    
-     * @return {boolean} 
+     *
+     * @param {string} selected - Optional parameter to validate specified element.
+     * @returns {boolean}
      */
     public validate(selected?: string): boolean {
-        let rules: string[] = Object.keys(this.rules);
+        const rules: string[] = Object.keys(this.rules);
         if (selected && rules.length) {
             this.validateRules(selected);
             //filter the selected element it don't have any valid input element
@@ -230,42 +255,45 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
             }).length === 0;
         } else {
             this.errorRules = [];
-            for (let name of rules) {
+            for (const name of rules) {
                 this.validateRules(name);
             }
             return this.errorRules.length === 0;
         }
     }
-
+    /* eslint-enable valid-jsdoc, jsdoc/require-returns-description */
     /**
      * Reset the value of all the fields in form.
-     * @return {void}
+     *
+     * @returns {void}
      */
     public reset(): void {
         this.element.reset();
         this.clearForm();
     }
-
+    /* eslint-disable valid-jsdoc, jsdoc/require-returns-description */
     /**
-     * Get input element by name. 
-     * @param {string} name - Input element name attribute value.            
-     * @return {HTMLInputElement}
+     * Get input element by name.
+     *
+     * @param {string} name - Input element name attribute value.
+     * @returns {HTMLInputElement}
      */
     public getInputElement(name: string): HTMLInputElement {
         this.inputElement = <HTMLInputElement>(select('[name="' + name + '"]', this.element));
         return this.inputElement;
     }
-
+    /* eslint-enable valid-jsdoc, jsdoc/require-returns-description */
     /**
-     * Destroy the form validator object and error elements.      
-     * @return {void}
+     * Destroy the form validator object and error elements.
+     *
+     * @returns {void}
      */
     public destroy(): void {
         this.reset();
         this.unwireEvents();
         this.rules = {};
-        let elements: HTMLElement[] = selectAll('.' + this.errorClass + ', .' + this.validClass, this.element);
-        for (let element of elements) {
+        const elements: HTMLElement[] = selectAll('.' + this.errorClass + ', .' + this.validClass, this.element);
+        for (const element of elements) {
             detach(element);
         }
         super.destroy();
@@ -274,6 +302,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
 
     /**
      * Specifies the default messages for validation rules.
+     *
      * @default { List of validation message }
      */
     public defaultMessages: { [rule: string]: string } = {
@@ -294,29 +323,34 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         regex: 'Please enter a correct value.',
         tel: 'Please enter a valid phone number.',
         pattern: 'Please enter a correct pattern value.',
-        equalTo: 'Please enter the valid match text',
+        equalTo: 'Please enter the valid match text'
     };
 
     /**
+     * @param {FormValidatorModel} newProp - Returns the dynamic property value of the component.
+     * @param {FormValidatorModel} oldProp - Returns the previous property value of the component.
+     * @returns {void}
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public onPropertyChanged(newProp: FormValidatorModel, oldProp?: FormValidatorModel): void {
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'locale':
-                    this.localeFunc();
-                    break;
+            case 'locale':
+                this.localeFunc();
+                break;
             }
         }
-    };
+    }
 
     /**
      * @private
+     * @returns {void}
      */
     public localeFunc(): void {
-        for (let key of Object.keys(this.defaultMessages)) {
+        for (const key of Object.keys(this.defaultMessages)) {
             this.l10n.setLocale(this.locale);
-            let value: string = this.l10n.getConstant(key);
+            const value: string = this.l10n.getConstant(key);
             this.localyMessage[key] = value;
         }
     }
@@ -324,14 +358,16 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
 
     /**
      * @private
+     * @returns {string} - Returns the component name.
      */
     public getModuleName(): string {
         return 'formValidator';
     }
     /**
+     * @param {any} args - Specifies the culture name.
      * @private
      */
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
     public afterLocalization(args: any): void {
         this.locale = args.locale;
         this.localeFunc();
@@ -339,7 +375,8 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
 
     /**
      * Allows you to refresh the form validator base events to the elements inside the form.
-     * @return {void}
+     *
+     * @returns {void}
      */
     public refresh(): void {
         this.unwireEvents();
@@ -347,9 +384,14 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         this.wireEvents();
     }
 
-
-    // Initializes the FormValidator 
-    constructor(element: string | HTMLFormElement, options?: FormValidatorModel) {
+    /**
+     * Initializes the FormValidator.
+     *
+     * @param {string | HTMLFormElement} element - Specifies the element to render as component.
+     * @param {FormValidatorModel} options - Specifies the FormValidator model.
+     * @private
+     */
+    public constructor(element: string | HTMLFormElement, options?: FormValidatorModel) {
         super(options, element);
         if (typeof this.rules === 'undefined') {
             this.rules = {};
@@ -375,9 +417,9 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
     private clearForm(): void {
         this.errorRules = [];
         this.validated = [];
-        let elements: HTMLElement[] = selectAll(this.selectQuery, this.element);
-        for (let element of elements) {
-            let input: HTMLInputElement = <HTMLInputElement>element;
+        const elements: HTMLElement[] = selectAll(this.selectQuery, this.element);
+        for (const element of elements) {
+            const input: HTMLInputElement = <HTMLInputElement>element;
             input.removeAttribute('aria-invalid');
             input.classList.remove(this.errorClass);
             if (input.name.length > 0) {
@@ -390,43 +432,44 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
     }
 
     private createHTML5Rules(): void {
-        let defRules: string[] = ['required', 'validateHidden', 'regex', 'rangeLength', 'maxLength', 'minLength', 'dateIso', 'digits',
+        const defRules: string[] = ['required', 'validateHidden', 'regex', 'rangeLength', 'maxLength', 'minLength', 'dateIso', 'digits',
             'pattern', 'data-val-required', 'type', 'data-validation', 'min', 'max', 'range', 'equalTo', 'data-val-minlength-min',
             'data-val-equalto-other', 'data-val-maxlength-max', 'data-val-range-min', 'data-val-regex-pattern', 'data-val-length-max',
             'data-val-creditcard', 'data-val-phone'];
-        let acceptedTypes: string[] = ['hidden', 'email', 'url', 'date', 'number', 'tel'];
-        for (let input of (this.inputElements)) {
-            // Default attribute rules 
-            let allRule: { [key: string]: Object } = {};
+        const acceptedTypes: string[] = ['hidden', 'email', 'url', 'date', 'number', 'tel'];
+        for (const input of (this.inputElements)) {
+            // Default attribute rules
+            const allRule: { [key: string]: Object } = {};
             for (let rule of defRules) {
                 if (input.getAttribute(rule) !== null) {
                     switch (rule) {
-                        case 'required':
-                            this.defRule(input, allRule, rule, input.required);
-                            break;
-                        case 'data-validation':
-                            rule = input.getAttribute(rule);
-                            this.defRule(input, allRule, rule, true);
-                            break;
-                        case 'type':
-                            if (acceptedTypes.indexOf(input.type) !== -1) {
-                                this.defRule(input, allRule, input.type, true);
-                            }
-                            break;
-                        case 'rangeLength':
-                        case 'range':
-                            this.defRule(input, allRule, rule, JSON.parse(input.getAttribute(rule)));
-                            break;
-                        case 'equalTo':
-                            let id: string = input.getAttribute(rule);
-                            this.defRule(input, allRule, rule, id);
-                            break;
-                        default:
-                            if (input.getAttribute('data-val') === 'true') {
-                                this.annotationRule(input, allRule, rule, input.getAttribute(rule));
-                            } else {
-                                this.defRule(input, allRule, rule, input.getAttribute(rule));
-                            }
+                    case 'required':
+                        this.defRule(input, allRule, rule, input.required);
+                        break;
+                    case 'data-validation':
+                        rule = input.getAttribute(rule);
+                        this.defRule(input, allRule, rule, true);
+                        break;
+                    case 'type':
+                        if (acceptedTypes.indexOf(input.type) !== -1) {
+                            this.defRule(input, allRule, input.type, true);
+                        }
+                        break;
+                    case 'rangeLength':
+                    case 'range':
+                        this.defRule(input, allRule, rule, JSON.parse(input.getAttribute(rule)));
+                        break;
+                    case 'equalTo': {
+                        const id: string = input.getAttribute(rule);
+                        this.defRule(input, allRule, rule, id);
+                    }
+                        break;
+                    default:
+                        if (input.getAttribute('data-val') === 'true') {
+                            this.annotationRule(input, allRule, rule, input.getAttribute(rule));
+                        } else {
+                            this.defRule(input, allRule, rule, input.getAttribute(rule));
+                        }
                     }
                 }
             }
@@ -438,49 +481,51 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
     }
 
     private annotationRule(input: HTMLInputElement, ruleCon: { [key: string]: Object }, ruleName: string, value: Object): void {
-        let annotationRule: string[] = ruleName.split('-');
-        let rulesList: string[] = ['required', 'creditcard', 'phone', 'maxlength', 'minlength', 'range', 'regex', 'equalto'];
-        let ruleFirstName: string = annotationRule[annotationRule.length - 1];
-        let ruleSecondName: string = annotationRule[annotationRule.length - 2];
+        const annotationRule: string[] = ruleName.split('-');
+        const rulesList: string[] = ['required', 'creditcard', 'phone', 'maxlength', 'minlength', 'range', 'regex', 'equalto'];
+        const ruleFirstName: string = annotationRule[annotationRule.length - 1];
+        const ruleSecondName: string = annotationRule[annotationRule.length - 2];
         if (rulesList.indexOf(ruleFirstName) !== -1) {
             switch (ruleFirstName) {
-                case 'required':
-                    this.defRule(input, ruleCon, 'required', value);
-                    break;
-                case 'creditcard':
-                    this.defRule(input, ruleCon, 'creditcard', value);
-                    break;
-                case 'phone':
-                    this.defRule(input, ruleCon, 'tel', value);
-                    break;
+            case 'required':
+                this.defRule(input, ruleCon, 'required', value);
+                break;
+            case 'creditcard':
+                this.defRule(input, ruleCon, 'creditcard', value);
+                break;
+            case 'phone':
+                this.defRule(input, ruleCon, 'tel', value);
+                break;
             }
         } else if (rulesList.indexOf(ruleSecondName) !== -1) {
             switch (ruleSecondName) {
-                case 'maxlength':
-                    this.defRule(input, ruleCon, 'maxLength', value);
-                    break;
-                case 'minlength':
-                    this.defRule(input, ruleCon, 'minLength', value);
-                    break;
-                case 'range':
-                    let minvalue: string = input.getAttribute('data-val-range-min');
-                    let maxvalue: string = input.getAttribute('data-val-range-max');
-                    this.defRule(input, ruleCon, 'range', [minvalue, maxvalue]);
-                    break;
-                case 'equalto':
-                    let id: string[] = input.getAttribute(ruleName).split('.');
-                    this.defRule(input, ruleCon, 'equalTo', id[id.length - 1]);
-                    break;
-                case 'regex':
-                    this.defRule(input, ruleCon, 'regex', value);
-                    break;
+            case 'maxlength':
+                this.defRule(input, ruleCon, 'maxLength', value);
+                break;
+            case 'minlength':
+                this.defRule(input, ruleCon, 'minLength', value);
+                break;
+            case 'range': {
+                const minvalue: string = input.getAttribute('data-val-range-min');
+                const maxvalue: string = input.getAttribute('data-val-range-max');
+                this.defRule(input, ruleCon, 'range', [minvalue, maxvalue]);
+            }
+                break;
+            case 'equalto': {
+                const id: string[] = input.getAttribute(ruleName).split('.');
+                this.defRule(input, ruleCon, 'equalTo', id[id.length - 1]);
+            }
+                break;
+            case 'regex':
+                this.defRule(input, ruleCon, 'regex', value);
+                break;
             }
         }
     }
 
     private defRule(input: HTMLInputElement, ruleCon: { [key: string]: Object }, ruleName: string, value: Object): void {
-        let message: string = input.getAttribute('data-' + ruleName + '-message');
-        let annotationMessage: string = input.getAttribute('data-val-' + ruleName);
+        const message: string = input.getAttribute('data-' + ruleName + '-message');
+        const annotationMessage: string = input.getAttribute('data-val-' + ruleName);
         let customMessage: string;
         if (this.rules[input.name] && ruleName !== 'validateHidden' && ruleName !== 'hidden') {
             this.getInputElement(input.name);
@@ -498,7 +543,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
 
     // Wire events to the form elements
     private wireEvents(): void {
-        for (let input of (this.inputElements)) {
+        for (const input of (this.inputElements)) {
             if (FormValidator.isCheckable(input)) {
                 EventHandler.add(input, 'click', this.clickHandler, this);
             } else if (input.tagName === 'SELECT') {
@@ -514,7 +559,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
 
     // UnWire events to the form elements
     private unwireEvents(): void {
-        for (let input of (this.inputElements)) {
+        for (const input of (this.inputElements)) {
             EventHandler.clearEvents(input);
         }
         EventHandler.remove(this.element, 'submit', this.submitHandler);
@@ -525,7 +570,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
     private focusOutHandler(e: Event): void {
         this.trigger('focusout', e);
         //FormValidator.triggerCallback(this.focusout, e);
-        let element: HTMLInputElement = <HTMLInputElement>e.target;
+        const element: HTMLInputElement = <HTMLInputElement>e.target;
         if (this.rules[element.name]) {
             if (this.rules[element.name][this.required] || element.value.length > 0) {
                 this.validate(element.name);
@@ -538,9 +583,9 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
     // Handle input element keyup event
     private keyUpHandler(e: KeyboardEvent): void {
         this.trigger('keyup', e);
-        let element: HTMLInputElement = <HTMLInputElement>e.target;
+        const element: HTMLInputElement = <HTMLInputElement>e.target;
         // List of keys need to prevent while validation
-        let excludeKeys: number[] = [16, 17, 18, 20, 35, 36, 37, 38, 39, 40, 45, 144, 225];
+        const excludeKeys: number[] = [16, 17, 18, 20, 35, 36, 37, 38, 39, 40, 45, 144, 225];
         if (e.which === 9 && (!this.rules[element.name] || (this.rules[element.name] && !this.rules[element.name][this.required]))) {
             return;
         }
@@ -552,7 +597,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
     // Handle input click event
     private clickHandler(e: Event): void {
         this.trigger('click', e);
-        let element: HTMLInputElement = <HTMLInputElement>e.target;
+        const element: HTMLInputElement = <HTMLInputElement>e.target;
         // If element type is not submit allow validation
         if (element.type !== 'submit') {
             this.validate(element.name);
@@ -565,7 +610,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
     // Handle input change event
     private changeHandler(e: Event): void {
         this.trigger('change', e);
-        let element: HTMLInputElement = <HTMLInputElement>e.target;
+        const element: HTMLInputElement = <HTMLInputElement>e.target;
         this.validate(element.name);
     }
 
@@ -591,11 +636,11 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         if (!this.rules[name]) {
             return;
         }
-        let rules: string[] = Object.keys(this.rules[name]);
+        const rules: string[] = Object.keys(this.rules[name]);
         let hiddenType: boolean = false;
         let validateHiddenType: boolean = false;
-        let vhPos: number = rules.indexOf('validateHidden');
-        let hPos: number = rules.indexOf('hidden');
+        const vhPos: number = rules.indexOf('validateHidden');
+        const hPos: number = rules.indexOf('hidden');
         this.getInputElement(name);
         if (hPos !== -1) {
             hiddenType = true;
@@ -611,10 +656,10 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
                 rules.splice((hPos - 1), 1);
             }
             this.getErrorElement(name);
-            for (let rule of rules) {
-                let errorMessage: string = this.getErrorMessage(this.rules[name][rule], rule);
-                let errorRule: ErrorRule = { name: name, message: errorMessage };
-                let eventArgs: FormEventArgs = {
+            for (const rule of rules) {
+                const errorMessage: string = this.getErrorMessage(this.rules[name][rule], rule);
+                const errorRule: ErrorRule = { name: name, message: errorMessage };
+                const eventArgs: FormEventArgs = {
                     inputName: name,
                     element: this.inputElement,
                     message: errorMessage
@@ -666,33 +711,37 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
 
     // Check the input element whether it's value satisfy the validation rule or not
     private isValid(name: string, rule: string): boolean {
-        let params: Object = this.rules[name][rule];
-        let param: Object = (params instanceof Array && typeof params[1] === 'string') ? params[0] : params;
-        let currentRule: { [key: string]: Object } = <IKeyValue>this.rules[name][rule];
-        let args: ValidArgs = { value: this.inputElement.value, param: param, element: this.inputElement, formElement: this.element };
+        const params: Object = this.rules[name][rule];
+        const param: Object = (params instanceof Array && typeof params[1] === 'string') ? params[0] : params;
+        const currentRule: { [key: string]: Object } = <IKeyValue>this.rules[name][rule];
+        const args: ValidArgs = { value: this.inputElement.value, param: param, element: this.inputElement, formElement: this.element };
         this.trigger('validationBegin', args);
-        if (!args.param && rule === 'required') { return true; }
+        if (!args.param && rule === 'required') {
+            return true;
+        }
         if (currentRule && typeof currentRule[0] === 'function') {
-            let fn: () => boolean = <() => boolean>currentRule[0];
+            const fn: () => boolean = <() => boolean>currentRule[0];
             return fn.call(this, { element: this.inputElement, value: this.inputElement.value });
         } else if (FormValidator.isCheckable(this.inputElement)) {
-            if (rule !== 'required') { return true; }
+            if (rule !== 'required') {
+                return true;
+            }
             return selectAll('input[name="' + name + '"]:checked', this.element).length > 0;
         } else {
             return FormValidator.checkValidator[rule](args);
         }
     }
 
-    // Return default error message or custom error message 
+    // Return default error message or custom error message
     private getErrorMessage(ruleValue: Object, rule: string): string {
         let message: string = this.inputElement.getAttribute('data-' + rule + '-message') ?
             this.inputElement.getAttribute('data-' + rule + '-message') :
             (ruleValue instanceof Array && typeof ruleValue[1] === 'string') ? ruleValue[1] :
                 (Object.keys(this.localyMessage).length !== 0) ? this.localyMessage[rule] : this.defaultMessages[rule];
-        let formats: string[] = message.match(/{(\d)}/g);
+        const formats: string[] = message.match(/{(\d)}/g);
         if (!isNullOrUndefined(formats)) {
             for (let i: number = 0; i < formats.length; i++) {
-                let value: string = ruleValue instanceof Array ? ruleValue[i] : ruleValue;
+                const value: string = ruleValue instanceof Array ? ruleValue[i] : ruleValue;
                 message = message.replace(formats[i], value);
             }
         }
@@ -719,8 +768,8 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
             this.element.querySelector('[data-valmsg-for="' + input.id + '"]').appendChild(errorElement);
         } else if (input.hasAttribute('data-msg-containerid') === true) {
             // Append error message into custom div element
-            let containerId: string = input.getAttribute('data-msg-containerid');
-            let divElement: Element = select('#' + containerId, this.element);
+            const containerId: string = input.getAttribute('data-msg-containerid');
+            const divElement: Element = select('#' + containerId, this.element);
             divElement.appendChild(errorElement);
         } else if (this.customPlacement != null) {
             // Call custom placement function if customPlacement is not null
@@ -746,7 +795,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
     // Remove existing rule from errorRules object
     private removeErrorRules(name: string): void {
         for (let i: number = 0; i < this.errorRules.length; i++) {
-            let rule: ErrorRule = this.errorRules[i];
+            const rule: ErrorRule = this.errorRules[i];
             if (rule.name === name) {
                 this.errorRules.splice(i, 1);
             }
@@ -813,11 +862,11 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
             return option.value.length >= option.param;
         },
         rangeLength: (option: ValidArgs): boolean => {
-            let param: number[] = <number[]>option.param;
+            const param: number[] = <number[]>option.param;
             return option.value.length >= param[0] && option.value.length <= param[1];
         },
         range: (option: ValidArgs): boolean => {
-            let param: number[] = <number[]>option.param;
+            const param: number[] = <number[]>option.param;
             return !isNaN(Number(option.value)) && Number(option.value) >= param[0] && Number(option.value) <= param[1];
         },
         date: (option: ValidArgs): boolean => {
@@ -836,7 +885,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
                 // Minimum rule validation for number
                 return +option.value >= option.param;
             } else if ((option.value).indexOf(',') !== -1) {
-                let uNum: string = (option.value).replace(/,/g, '');
+                const uNum: string = (option.value).replace(/,/g, '');
                 return parseFloat(uNum) >= option.param;
             } else {
                 // Minimum rule validation for date
@@ -847,66 +896,66 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
             return new RegExp(<string>option.param).test(option.value);
         },
         equalTo: (option: ValidArgs): boolean => {
-            let compareTo: HTMLInputElement = <HTMLInputElement>option.formElement.querySelector('#' + option.param);
+            const compareTo: HTMLInputElement = <HTMLInputElement>option.formElement.querySelector('#' + option.param);
             option.param = compareTo.value;
             return option.param === option.value;
-        },
+        }
     };
 
     // Return boolean result if the input have chekcable or submit types
     private static isCheckable(input: Element): boolean {
-        let inputType: string = input.getAttribute('type');
+        const inputType: string = input.getAttribute('type');
         return inputType && (inputType === 'checkbox' || inputType === 'radio' || inputType === 'submit');
     }
 }
 
 interface Validator {
-    [rule: string]: (value: ValidArgs) => boolean;
+    [rule: string]: (value: ValidArgs) => boolean
 }
 
 export interface ValidArgs {
     /**
      * Returns the value in input element.
      */
-    value: string;
+    value: string
     /**
      * Returns the rule mapped for the input.
      */
-    param?: Object;
+    param?: Object
     /**
      * Returns the input element.
      */
-    element?: HTMLElement;
+    element?: HTMLElement
     /**
      * Returns the current form element.
      */
-    formElement?: HTMLFormElement;
+    formElement?: HTMLFormElement
 }
 
 interface ErrorRule {
-    name: string;
-    message: string;
+    name: string
+    message: string
 }
 
 export interface FormEventArgs {
     /**
      * Returns the name of the input element.
      */
-    inputName: string;
+    inputName: string
     /**
      * Returns the error message.
      */
-    message: string;
+    message: string
     /**
      * Returns the input element.
      */
-    element: HTMLInputElement;
+    element: HTMLInputElement
     /**
      * Returns the status input element.
      */
-    status?: string;
+    status?: string
     /**
      * Returns the error element for corresponding input.
      */
-    errorElement?: HTMLElement;
+    errorElement?: HTMLElement
 }

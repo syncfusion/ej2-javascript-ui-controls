@@ -94,7 +94,7 @@ export type TextOverflow =
     /** Used to show the chart title with Trim */
     'Trim';
 
-/** 
+/**
  * Defines the interval type of datetime axis. They are
  * * auto - Define the interval of the axis based on data.
  * * quarter - Define the interval of the axis based on data.

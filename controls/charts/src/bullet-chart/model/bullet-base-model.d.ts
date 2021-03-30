@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { BorderModel, MarginModel } from '../../common/model/base-model';import { Border, Font, Margin } from '../../common/model/base';import { Alignment, TextOverflow } from '../../common/utils/enum';import { BulletChartTheme } from '../utils/theme';import { LegendShape, LegendPosition } from '../../chart/utils/enum';import { Location } from '../../common/legend/legend';import { LocationModel } from '../../common/legend/legend-model';
+import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { BorderModel, MarginModel } from '../../common/model/base-model';import { Border, Margin } from '../../common/model/base';import { Alignment, TextOverflow } from '../../common/utils/enum';import { BulletChartTheme } from '../utils/theme';import { LegendShape, LegendPosition } from '../../chart/utils/enum';import { Location } from '../../common/legend/legend';import { LocationModel } from '../../common/legend/legend-model';
 
 /**
  * Interface for a class Range
@@ -7,49 +7,54 @@ export interface RangeModel {
 
     /**
      * Default value for qualitative range end value
+     *
      * @default null
      */
     end?: number;
 
     /**
      * Range opacity
+     *
      * @default 1
      */
     opacity?: number;
 
     /**
      * Default value for qualitative range Color
+     *
      * @default null
      */
     color?: string;
 
     /**
-    * Default value for qualitative range Color
-    * @default null
-    */
+     * Default value for qualitative range Color
+     *
+     * @default null
+     */
     index?: number;
 
     /**
-    * Default value for qualitative range name
-    * @default null
-    */
+     * Default value for qualitative range name
+     *
+     * @default null
+     */
     name?: string;
 
     /**
-    * The shape of the legend. Each ranges has its own legend shape. They are,
-    * * Circle
-    * * Rectangle
-    * * Triangle
-    * * Diamond
-    * * Cross
-    * * HorizontalLine
-    * * VerticalLine
-    * * Pentagon
-    * * InvertedTriangle
-    * * SeriesType
-    * * Image
-    * @default 'Rectangle'
-    */
+     * The shape of the legend. Each ranges has its own legend shape. They are,
+     * * Circle
+     * * Rectangle
+     * * Triangle
+     * * Diamond
+     * * Cross
+     * * HorizontalLine
+     * * VerticalLine
+     * * Pentagon
+     * * InvertedTriangle
+     * * SeriesType
+     * * Image
+     * @default 'Rectangle'
+     */
     shape?: LegendShape;
 
     /**
@@ -68,13 +73,14 @@ export interface MajorTickLinesSettingsModel {
 
     /**
      * The height of the tick lines in pixels.
+     *
      * @default 12
      */
-
     height?: number;
 
     /**
      * The width of the ticks in pixels.
+     *
      * @default 2
      */
 
@@ -82,6 +88,7 @@ export interface MajorTickLinesSettingsModel {
 
     /**
      * The stroke of the major tick line that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default null
      */
 
@@ -89,6 +96,7 @@ export interface MajorTickLinesSettingsModel {
 
     /**
      * It uses to apply range color to ticks and labels.
+     *
      * @default false
      */
 
@@ -103,6 +111,7 @@ export interface MinorTickLinesSettingsModel {
 
     /**
      * The height of the tick lines in pixels.
+     *
      * @default 8
      */
 
@@ -110,6 +119,7 @@ export interface MinorTickLinesSettingsModel {
 
     /**
      * The width of the ticks in pixels.
+     *
      * @default 2
      */
 
@@ -117,6 +127,7 @@ export interface MinorTickLinesSettingsModel {
 
     /**
      * The stroke of the major tick line that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default null
      */
 
@@ -124,6 +135,7 @@ export interface MinorTickLinesSettingsModel {
 
     /**
      * It uses to apply range color to ticks and labels.
+     *
      * @default false
      */
 
@@ -138,24 +150,28 @@ export interface BulletLabelStyleModel {
 
     /**
      * FontStyle for the text.
+     *
      * @default 'Normal'
      */
     fontStyle?: string;
 
     /**
      * Font size for the text.
+     *
      * @default '16px'
      */
     size?: string;
 
     /**
      * Color for the text.
+     *
      * @default ''
      */
     color?: string;
 
     /**
      * FontWeight for the text.
+     *
      * @default 'Normal'
      */
     fontWeight?: string;
@@ -167,24 +183,28 @@ export interface BulletLabelStyleModel {
 
     /**
      * Text alignment
+     *
      * @default 'Center'
      */
     textAlignment?: Alignment;
 
     /**
      * Specifies the chart title text overflow
+     *
      * @default 'Trim'
      */
     textOverflow?: TextOverflow;
 
     /**
      * Opacity for the text.
+     *
      * @default 1
      */
     opacity?: number;
 
     /**
      * Default value of enable trim.
+     *
      * @default true
      */
 
@@ -192,12 +212,14 @@ export interface BulletLabelStyleModel {
 
     /**
      * Maximum label width of the bullet chart
+     *
      * @default null
      */
     maximumTitleWidth?: number;
 
     /**
-     * Range color 
+     * Range color
+     *
      * @default false
      */
     useRangeColor?: boolean;
@@ -211,6 +233,7 @@ export interface BulletTooltipSettingsModel {
 
     /**
      * Enables / Disables the visibility of the tooltip.
+     *
      * @default false.
      */
 
@@ -218,7 +241,8 @@ export interface BulletTooltipSettingsModel {
 
     /**
      * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
-     * @default null 
+     *
+     * @default null
      */
 
     fill?: string;
@@ -235,7 +259,8 @@ export interface BulletTooltipSettingsModel {
     border?: BorderModel;
 
     /**
-     * The default value of tooltip template .
+     * The default value of tooltip template.
+     *
      * @default null
      */
 
@@ -250,6 +275,7 @@ export interface BulletDataLabelModel {
 
     /**
      * Enables / Disables the visibility of the data label.
+     *
      * @default false.
      */
 
@@ -270,6 +296,7 @@ export interface BulletChartLegendSettingsModel {
 
     /**
      * If set to true, legend will be visible.
+     *
      * @default false
      */
     visible?: boolean;
@@ -295,6 +322,7 @@ export interface BulletChartLegendSettingsModel {
 
     /**
      * Option to customize the padding between legend items.
+     *
      * @default 8
      */
     padding?: number;
@@ -304,18 +332,21 @@ export interface BulletChartLegendSettingsModel {
      * * Near: Aligns the legend to the left of the bullet chart.
      * * Center: Aligns the legend to the center of the bullet chart.
      * * Far: Aligns the legend to the right of the bullet chart.
+     *
      * @default 'Center'
      */
     alignment?: Alignment;
 
     /**
      * Shape height of the bullet chart legend in pixels.
+     *
      * @default 10
      */
     shapeHeight?: number;
 
     /**
      * Shape width of the bullet chart legend in pixels.
+     *
      * @default 10
      */
     shapeWidth?: number;
@@ -333,6 +364,7 @@ export interface BulletChartLegendSettingsModel {
      * * Bottom: Displays the legend at the bottom of the bullet chart.
      * * Right: Displays the legend at the right of the bullet chart.
      * * Custom: Displays the legend  based on the given x and y values.
+     *
      * @default 'Auto'
      */
     position?: LegendPosition;
@@ -350,24 +382,28 @@ export interface BulletChartLegendSettingsModel {
 
     /**
      * Padding between the bullet chart legend shape and text.
+     *
      * @default 5
      */
     shapePadding?: number;
 
     /**
      * The background color of the bullet chart legend that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default 'transparent'
      */
     background?: string;
 
     /**
      * Opacity of the bullet chart legend.
+     *
      * @default 1
      */
     opacity?: number;
 
     /**
      * TabIndex value for the bullet chart legend.
+     *
      * @default 3
      */
     tabIndex?: number;

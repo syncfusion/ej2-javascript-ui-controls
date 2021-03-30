@@ -1,6 +1,7 @@
 
 /**
  * ServiceLocator
+ *
  * @hidden
  */
 export class ServiceLocator {

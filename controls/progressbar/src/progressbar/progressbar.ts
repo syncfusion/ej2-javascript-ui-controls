@@ -1,3 +1,5 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Component, Property, NotifyPropertyChanges, Browser, Complex, Event, Collection, EventHandler } from '@syncfusion/ej2-base';
 import { EmitType, INotifyPropertyChanged, createElement, remove, ModuleDeclaration, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ProgressBarModel } from './progressbar-model';
@@ -28,180 +30,210 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
     /**
      * type of the progress bar
+     *
      * @default Linear
      */
     @Property('Linear')
     public type: ProgressType;
     /**
      * progress value
+     *
      * @default null
      */
     @Property(null)
     public value: number;
     /**
      * secondary progress value
+     *
      * @default null
      */
     @Property(null)
     public secondaryProgress: number;
     /**
      * minimum progress value
+     *
      * @default 0
      */
     @Property(0)
     public minimum: number;
     /**
      * maximum progress value
+     *
      * @default 0
      */
     @Property(100)
     public maximum: number;
     /**
      * startAngle for circular progress bar
+     *
      * @default 0
      */
     @Property(0)
     public startAngle: number;
     /**
      * endAngle for circular progress bar
+     *
      * @default 0
      */
     @Property(0)
     public endAngle: number;
     /**
      * track radius for circular
+     *
      * @default '100%'
      */
     @Property('100%')
     public radius: string;
     /**
      * progress radius for circular
+     *
      * @default '100%'
      */
     @Property('100%')
     public innerRadius: string;
     /**
      * segmentCount of the progress bar
+     *
      * @default 1
      */
     @Property(1)
     public segmentCount: number;
     /**
      * gapwidth of the segment
+     *
      * @default null
      */
     @Property(null)
     public gapWidth: number;
     /**
      * Segment color
+     *
      * @default null
      */
     @Property('')
     public segmentColor: string[];
     /**
      * corner type
+     *
      * @default Auto
      */
     @Property('Auto')
     public cornerRadius: CornerType;
     /**
      * height of the progress bar
+     *
      * @default null
      */
     @Property(null)
     public height: string;
     /**
      * width of the progress bar
+     *
      * @default null
      */
     @Property(null)
     public width: string;
     /**
      * Indeterminate progress
+     *
      * @default false
      */
     @Property(false)
     public isIndeterminate: boolean;
     /**
      * Active state
+     *
      * @default false
      */
     @Property(false)
     public isActive: boolean;
     /**
      * gradient
+     *
      * @default false
      */
     @Property(false)
     public isGradient: boolean;
     /**
      * striped
+     *
      * @default false
      */
     @Property(false)
     public isStriped: boolean;
     /**
      * modes of linear progress
+     *
      * @default null
      */
     @Property('Auto')
     public role: ModeType;
     /**
      * right to left
+     *
      * @default false
      */
     @Property(false)
     public enableRtl: boolean;
     /**
      * labelOnTrack
+     *
      * @default true
      */
     @Property(true)
     public labelOnTrack: boolean;
     /**
      * trackColor
+     *
      * @default null
      */
     @Property(null)
     public trackColor: string;
     /**
      * progressColor
+     *
      * @default null
      */
     @Property(null)
     public progressColor: string;
     /**
      * track thickness
+     *
      * @default 0
      */
     @Property(0)
     public trackThickness: number;
     /**
      * progress thickness
+     *
      * @default 0
      */
     @Property(0)
     public progressThickness: number;
     /**
      * pie view
+     *
      * @default false
      */
     @Property(false)
     public enablePieProgress: boolean;
     /**
      * theme style
+     *
      * @default Fabric
      */
     @Property('Fabric')
     public theme: ProgressTheme;
     /**
      * label of the progress bar
+     *
      * @default false
      */
     @Property(false)
     public showProgressValue: boolean;
     /**
      * disable the trackSegment
+     *
      * @default false
      */
     @Property(false)
@@ -223,67 +255,78 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     public animation: AnimationModel;
     /**
      * Triggers before the progress bar get rendered.
-     * @event
+     *
+     * @event load
      */
     @Event()
     public load: EmitType<ILoadedEventArgs>;
     /**
      * Triggers before the progress bar label renders.
-     * @event
+     *
+     * @event textRender
      */
     @Event()
     public textRender: EmitType<ITextRenderEventArgs>;
     /**
      * Triggers after the progress bar has loaded.
-     * @event
+     *
+     * @event loaded
      */
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
     /**
      * Triggers after the value has changed.
-     * @event
+     *
+     * @event valueChanged
      */
     @Event()
     public valueChanged: EmitType<IProgressValueEventArgs>;
     /**
      * Triggers after the progress value completed.
-     * @event
+     *
+     * @event progressCompleted
      */
     @Event()
     public progressCompleted: EmitType<IProgressValueEventArgs>;
     /**
      * Triggers after the animation completed.
-     * @event
+     *
+     * @event animationComplete
      */
     @Event()
     public animationComplete: EmitType<IProgressValueEventArgs>;
     /**
      * Trigger after mouse click
-     * @event
+     *
+     * @event mouseClick
      */
     @Event()
     public mouseClick: EmitType<IMouseEventArgs>;
     /**
      * Trigger after mouse move
-     * @event
+     *
+     * @event mouseMove
      */
     @Event()
     public mouseMove: EmitType<IMouseEventArgs>;
     /**
      * Trigger after mouse up
-     * @event
+     *
+     * @event mouseUp
      */
     @Event()
     public mouseUp: EmitType<IMouseEventArgs>;
     /**
      * Trigger after mouse down
-     * @event
+     *
+     * @event mouseDown
      */
     @Event()
     public mouseDown: EmitType<IMouseEventArgs>;
     /**
      * Trigger after mouse down
-     * @event
+     *
+     * @event mouseLeave
      */
     @Event()
     public mouseLeave: EmitType<IMouseEventArgs>;
@@ -305,7 +348,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     public renderer: SvgRenderer;
     /** @private */
     public svgObject: Element;
-    /** @Private */
+    /** @private */
     public totalAngle: number;
     /** @private */
     public trackWidth: number;
@@ -322,7 +365,6 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     /** @private */
     public animatedElement: Element;
     /** @private */
-    // tslint:disable-next-line
     public resizeBounds: any;
     /** @private */
     private resizeTo: number;
@@ -371,7 +413,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
     protected preRender(): void {
-        let blazor: string = 'Blazor';
+        const blazor: string = 'Blazor';
         // tslint:disable-next-line
         this.isBlazor = (window as any)[blazor];
         this.unWireEvents();
@@ -409,12 +451,12 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
      * calculate size of the progress bar
      */
     private calculateProgressBarSize(): void {
-        let containerWidth: number = this.element.clientWidth || this.element.offsetWidth;
-        let containerHeight: number = this.element.clientHeight;
-        let width: number = (this.type === 'Linear') ? 200 : 120;
+        const containerWidth: number = this.element.clientWidth || this.element.offsetWidth;
+        const containerHeight: number = this.element.clientHeight;
+        const width: number = (this.type === 'Linear') ? 200 : 120;
         let height: number = (this.type === 'Linear') ? 30 : 120;
-        let padding: number = 10;
-        let thickness: number = Math.max(this.progressThickness, this.trackThickness);
+        const padding: number = 10;
+        const thickness: number = Math.max(this.progressThickness, this.trackThickness);
         height = (this.type === 'Linear' && thickness > (height - padding)) ? thickness + padding : height;
         this.progressSize.width = stringToNumber(this.width, containerWidth) || containerWidth || width;
         this.progressSize.height = stringToNumber(this.height, containerHeight) || containerHeight || height;
@@ -444,7 +486,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
     private createSecElement(): void {
-        let secElement: Element = document.getElementById(this.element.id + 'Secondary_Element');
+        const secElement: Element = document.getElementById(this.element.id + 'Secondary_Element');
         if (secElement) {
             secElement.innerHTML = '';
             this.secElement = secElement as HTMLElement;
@@ -452,7 +494,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         }
         this.secElement = createElement('div', {
             id: this.element.id + 'Secondary_Element',
-            styles: 'position: absolute',
+            styles: 'position: absolute'
         });
         this.element.appendChild(this.secElement);
     }
@@ -461,9 +503,9 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
      * To set the left and top position for annotation for center aligned
      */
     private setSecondaryElementPosition(): void {
-        let element: HTMLElement = this.secElement;
-        let rect: ClientRect = this.element.getBoundingClientRect();
-        let svgRect: ClientRect = getElement(this.svgObject.id).getBoundingClientRect();
+        const element: HTMLElement = this.secElement;
+        const rect: ClientRect = this.element.getBoundingClientRect();
+        const svgRect: ClientRect = getElement(this.svgObject.id).getBoundingClientRect();
         element.style.left = Math.max(svgRect.left - rect.left, 0) + 'px';
         element.style.top = Math.max(svgRect.top - rect.top, 0) + 'px';
     }
@@ -513,10 +555,10 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
 
 
     public getPathLine(x: number, width: number, thickness: number): string {
-        let moveTo: number = (this.enableRtl) ? ((this.cornerRadius === 'Round') ?
+        const moveTo: number = (this.enableRtl) ? ((this.cornerRadius === 'Round') ?
             (x + this.progressRect.width) - ((lineCapRadius / 2) * thickness) : (x + this.progressRect.width)) :
             ((this.cornerRadius === 'Round') ? (x + (lineCapRadius / 2) * thickness) : x);
-        let lineTo: number = (this.enableRtl) ? ((this.cornerRadius === 'Round' && width) ?
+        const lineTo: number = (this.enableRtl) ? ((this.cornerRadius === 'Round' && width) ?
             (moveTo - width + (lineCapRadius * thickness)) : (moveTo - width)) :
             ((this.cornerRadius === 'Round' && width) ? (moveTo + width - (lineCapRadius * thickness)) : (moveTo + width));
         return 'M' + moveTo + ' ' + (this.progressRect.y + (this.progressRect.height / 2)) +
@@ -524,18 +566,16 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
     public calculateProgressRange(value: number, minimum?: number, maximum?: number): number {
-        let result: number;
-        let endValue: number;
-        let min: number = minimum || this.minimum;
-        let max: number = maximum || this.maximum;
-        endValue = (value - min) / (max - min) * ((this.type === 'Linear') ? 1 : this.totalAngle);
-        result = (value < min || value > max) ? 0 : endValue;
+        const min: number = minimum || this.minimum;
+        const max: number = maximum || this.maximum;
+        const endValue: number = (value - min) / (max - min) * ((this.type === 'Linear') ? 1 : this.totalAngle);
+        const result: number = (value < min || value > max) ? 0 : endValue;
         return result;
     }
 
     public calculateSegmentSize(width: number, thickness: number): string {
-        let count: number = (this.type === 'Circular' && this.totalAngle === completeAngle) ? this.segmentCount : this.segmentCount - 1;
-        let cornerCount: number = (this.totalAngle === completeAngle || this.type === 'Linear') ? this.segmentCount : this.segmentCount - 1;
+        const count: number = (this.type === 'Circular' && this.totalAngle === completeAngle) ? this.segmentCount : this.segmentCount - 1;
+        const cornerCount: number = (this.totalAngle === completeAngle || this.type === 'Linear') ? this.segmentCount : this.segmentCount - 1;
         let gap: number = this.gapWidth || ((this.type === 'Linear') ? this.themeStyle.linearGapWidth : this.themeStyle.circularGapWidth);
         let size: number = (width - count * gap);
         size = (size - ((this.cornerRadius === 'Round') ? (cornerCount * (lineCapRadius * thickness)) : 0)) / this.segmentCount;
@@ -552,8 +592,8 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         let posx: number;
         let posy: number;
         let pathWidth: number;
-        let x: number = this.progressRect.x;
-        let totalWidth: number = this.progressRect.width;
+        const x: number = this.progressRect.x;
+        const totalWidth: number = this.progressRect.width;
         if (this.type === 'Linear') {
             if (this.cornerRadius === 'Round4px') {
                 posx = x;
@@ -605,13 +645,13 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     private setTheme(): void {
         this.themeStyle = getProgressThemeColor(this.theme);
         switch (this.theme) {
-            case 'Bootstrap':
-            case 'Bootstrap4':
-                this.cornerRadius = this.cornerRadius === 'Auto' ?
-                    ((this.type === 'Linear') ? 'Round4px' : 'Round') : this.cornerRadius;
-                break;
-            default:
-                this.cornerRadius = this.cornerRadius === 'Auto' ? 'Square' : this.cornerRadius;
+        case 'Bootstrap':
+        case 'Bootstrap4':
+            this.cornerRadius = this.cornerRadius === 'Auto' ?
+                ((this.type === 'Linear') ? 'Round4px' : 'Round') : this.cornerRadius;
+            break;
+        default:
+            this.cornerRadius = this.cornerRadius === 'Auto' ? 'Square' : this.cornerRadius;
         }
     }
 
@@ -626,15 +666,16 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Handles the progressbar resize.
-     * @return {boolean}
+     *
+     * @returns {boolean} false
      * @private
      */
-    private progressResize(e: Event): boolean {
+    private progressResize(): boolean {
         // 800 used as buffer time for resize event preventing from control rendered time
         if (!(new Date().getTime() > this.controlRenderedTimeStamp + 800)) {
             return false;
         }
-        let arg: IProgressResizeEventArgs = {
+        const arg: IProgressResizeEventArgs = {
             bar: this,
             name: 'resized',
             currentSize: new Size(0, 0),
@@ -642,7 +683,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                 this.progressSize.width,
                 this.progressSize.height
             ),
-            cancel: (this.cancelResize) ? true : false,
+            cancel: (this.cancelResize) ? true : false
         };
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
@@ -687,18 +728,18 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
     private mouseEvent(eventName: string, e: PointerEvent): void {
-        let element: Element = <Element>e.target;
+        const element: Element = <Element>e.target;
         this.trigger(eventName, { target: element.id });
     }
     /**
      * Method to un-bind events for progress bar
      */
     private unWireEvents(): void {
-        let startEvent: string = Browser.touchStartEvent;
-        let moveEvent: string = Browser.touchMoveEvent;
-        let stopEvent: string = Browser.touchEndEvent;
+        const startEvent: string = Browser.touchStartEvent;
+        const moveEvent: string = Browser.touchMoveEvent;
+        const stopEvent: string = Browser.touchEndEvent;
         /*! Find the Events type */
-        let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         /*! UnBind the Event handler */
         EventHandler.remove(this.element, 'click', this.progressMouseClick);
         EventHandler.remove(this.element, startEvent, this.progressMouseDown);
@@ -716,11 +757,11 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
      * Method to bind events for bullet chart
      */
     private wireEvents(): void {
-        let startEvent: string = Browser.touchStartEvent;
-        let moveEvent: string = Browser.touchMoveEvent;
-        let stopEvent: string = Browser.touchEndEvent;
+        const startEvent: string = Browser.touchStartEvent;
+        const moveEvent: string = Browser.touchMoveEvent;
+        const stopEvent: string = Browser.touchEndEvent;
         /*! Find the Events type */
-        let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         /*! Bind the Event handler */
         EventHandler.add(this.element, 'click', this.progressMouseClick, this);
         EventHandler.add(this.element, startEvent, this.progressMouseDown, this);
@@ -735,57 +776,57 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
     public removeSvg(): void {
-        let svgElement: HTMLElement = document.getElementById(this.element.id + 'SVG');
+        const svgElement: HTMLElement = document.getElementById(this.element.id + 'SVG');
         if (svgElement) {
             remove(svgElement);
         }
     }
 
     public onPropertyChanged(newProp: ProgressBarModel, oldProp: ProgressBarModel): void {
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'annotations':
-                    this.secElement.innerHTML = '';
-                    this.renderAnnotation();
-                    break;
-                case 'value':
-                    this.cancelResize = (this.animation.enable) ? true : false;
-                    this.argsData = {
-                        value: this.value,
-                        progressColor: this.argsData.progressColor,
-                        trackColor: this.argsData.trackColor
-                    };
-                    if (this.argsData.value < oldProp.value && this.animation.enable) {
-                        this.argsData.value = oldProp.value;
+            case 'annotations':
+                this.secElement.innerHTML = '';
+                this.renderAnnotation();
+                break;
+            case 'value':
+                this.cancelResize = (this.animation.enable) ? true : false;
+                this.argsData = {
+                    value: this.value,
+                    progressColor: this.argsData.progressColor,
+                    trackColor: this.argsData.trackColor
+                };
+                if (this.argsData.value < oldProp.value && this.animation.enable) {
+                    this.argsData.value = oldProp.value;
+                }
+                if (this.argsData.value === this.maximum) {
+                    this.trigger(progressCompleted, this.argsData);
+                } else {
+                    this.trigger(valueChanged, this.argsData);
+                }
+                if (this.type === 'Circular') {
+                    this.circular.renderCircularProgress(
+                        this.previousEndAngle, this.previousTotalEnd, !isNullOrUndefined(oldProp.value));
+                    if (this.showProgressValue) {
+                        this.circular.renderCircularLabel();
                     }
-                    if (this.argsData.value === this.maximum) {
-                        this.trigger(progressCompleted, this.argsData);
-                    } else {
-                        this.trigger(valueChanged, this.argsData);
+                    if (this.progressAnnotationModule && this.animation.enable && !this.isIndeterminate) {
+                        this.annotateAnimation.doAnnotationAnimation(this.clipPath, this, this.annotateEnd, this.annotateTotal);
                     }
-                    if (this.type === 'Circular') {
-                        this.circular.renderCircularProgress(
-                            this.previousEndAngle, this.previousTotalEnd, !isNullOrUndefined(oldProp.value));
-                        if (this.showProgressValue) {
-                            this.circular.renderCircularLabel();
-                        }
-                        if (this.progressAnnotationModule && this.animation.enable && !this.isIndeterminate) {
-                            this.annotateAnimation.doAnnotationAnimation(this.clipPath, this, this.annotateEnd, this.annotateTotal);
-                        }
-                    } else {
-                        this.linear.renderLinearProgress(!isNullOrUndefined(oldProp.value), this.previousWidth);
-                    }
-                    break;
-                case 'animation':
-                    this.createSVG();
-                    this.renderElements();
-                    break;
+                } else {
+                    this.linear.renderLinearProgress(!isNullOrUndefined(oldProp.value), this.previousWidth);
+                }
+                break;
+            case 'animation':
+                this.createSVG();
+                this.renderElements();
+                break;
             }
         }
     }
 
     public requiredModules(): ModuleDeclaration[] {
-        let modules: ModuleDeclaration[] = [];
+        const modules: ModuleDeclaration[] = [];
         let enableAnnotation: boolean = false;
         enableAnnotation = this.annotations.some((value: ProgressAnnotationSettings) => {
             return (value.content !== null);
@@ -828,8 +869,9 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
 
     /**
      * To destroy the widget
-     * @method destroy
-     * @return {void}.
+     *
+     * @function destroy
+     * @returns {void}
      * @member of ProgressBar
      */
     public destroy(): void {

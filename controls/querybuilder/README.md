@@ -1,4 +1,4 @@
-[![npm](http://ej2.syncfusion.com/github-badges?package=@syncfusion/ej2-querybuilder)](https://www.npmjs.com/package/@syncfusion/ej2-querybuilder)&nbsp;&nbsp;[![coverage](http://ej2.syncfusion.com/badges/ej2-querybuilder/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-querybuilder)
+[![coverage](http://ej2.syncfusion.com/badges/ej2-querybuilder/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-querybuilder)
 
 # ej2-querybuilder
 
@@ -69,4 +69,4 @@ Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-
 
 Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/querybuilder/CHANGELOG.md?utm_source=npm&utm_campaign=querybuilder)
 
-© Copyright 2020 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
+© Copyright 2021 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

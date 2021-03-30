@@ -6,6 +6,7 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
 export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
      * Enables or disables tooltip of Gantt element.
+     *
      * @default true
      */
     @Property(true)
@@ -13,6 +14,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * Defines tooltip template for taskbar elements.
+     *
      * @default null
      */
     @Property()
@@ -20,6 +22,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * Defines template for baseline tooltip element.
+     *
      * @default null
      */
     @Property()
@@ -27,6 +30,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * Defines template for dependency line tooltip.
+     *
      * @default null
      */
     @Property()
@@ -34,6 +38,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * Defines tooltip template for taskbar editing action.
+     *
      * @default null
      */
     @Property()

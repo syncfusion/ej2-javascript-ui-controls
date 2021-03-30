@@ -7,12 +7,14 @@ export interface RowModel {
 
     /**
      * Specifies cell and its properties for the row.
+     *
      * @default []
      */
     cells?: CellModel[];
 
     /**
      * Specifies the index to the row. Based on the index, row properties are applied.
+     *
      * @default 0
      * @asptype int
      */
@@ -20,6 +22,7 @@ export interface RowModel {
 
     /**
      * Specifies height of the row.
+     *
      * @default 20
      * @asptype int
      */
@@ -27,18 +30,21 @@ export interface RowModel {
 
     /**
      * specifies custom height of the row.
+     *
      * @default false
      */
     customHeight?: boolean;
 
     /**
      * To hide/show the row in spreadsheet.
+     *
      * @default false
      */
     hidden?: boolean;
 
     /**
      * Specifies format of the row.
+     *
      * @default {}
      */
     format?: FormatModel;

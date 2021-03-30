@@ -9,27 +9,33 @@ export class PdfBorders {
     // Fields
     /**
      * The `left` border.
+     *
      * @private
      */
     private leftPen: PdfPen;
     /**
      * The `right` border.
+     *
      * @private
      */
     private rightPen: PdfPen;
     /**
      * The `top` border.
+     *
      * @private
      */
     private topPen: PdfPen;
     /**
      * The `bottom` border.
+     *
      * @private
      */
     private bottomPen: PdfPen;
     // Properties
     /**
      * Gets or sets the `Left`.
+     *
+     * @returns {PdfPen} .
      * @private
      */
     public get left(): PdfPen {
@@ -40,6 +46,8 @@ export class PdfBorders {
     }
     /**
      * Gets or sets the `Right`.
+     *
+     * @returns {PdfPen} .
      * @private
      */
     public get right(): PdfPen {
@@ -50,6 +58,8 @@ export class PdfBorders {
     }
     /**
      * Gets or sets the `Top`.
+     *
+     * @returns {PdfPen} .
      * @private
      */
     public get top(): PdfPen {
@@ -60,6 +70,8 @@ export class PdfBorders {
     }
     /**
      * Gets or sets the `Bottom`.
+     *
+     * @returns {PdfPen} .
      * @private
      */
     public get bottom(): PdfPen {
@@ -70,6 +82,8 @@ export class PdfBorders {
     }
     /**
      * sets the `All`.
+     *
+     * @param {PdfPen} value .
      * @private
      */
     public set all(value: PdfPen) {
@@ -77,6 +91,8 @@ export class PdfBorders {
     }
     /**
      * Gets a value indicating whether this instance `is all`.
+     *
+     * @returns {boolean} .
      * @private
      */
     public get isAll(): boolean {
@@ -84,6 +100,8 @@ export class PdfBorders {
     }
     /**
      * Gets the `default`.
+     *
+     * @returns {PdfBorders} .
      * @private
      */
     public static get default(): PdfBorders {
@@ -93,16 +111,17 @@ export class PdfBorders {
     // Constructor
     /**
      * Create a new instance for `PdfBorders` class.
+     *
      * @private
      */
     public constructor() {
-        let defaultBorderPenLeft: PdfPen = new PdfPen(new PdfColor(0, 0, 0));
+        const defaultBorderPenLeft: PdfPen = new PdfPen(new PdfColor(0, 0, 0));
         defaultBorderPenLeft.dashStyle = PdfDashStyle.Solid;
-        let defaultBorderPenRight: PdfPen = new PdfPen(new PdfColor(0, 0, 0));
+        const defaultBorderPenRight: PdfPen = new PdfPen(new PdfColor(0, 0, 0));
         defaultBorderPenRight.dashStyle = PdfDashStyle.Solid;
-        let defaultBorderPenTop: PdfPen = new PdfPen(new PdfColor(0, 0, 0));
+        const defaultBorderPenTop: PdfPen = new PdfPen(new PdfColor(0, 0, 0));
         defaultBorderPenTop.dashStyle = PdfDashStyle.Solid;
-        let defaultBorderPenBottom: PdfPen = new PdfPen(new PdfColor(0, 0, 0));
+        const defaultBorderPenBottom: PdfPen = new PdfPen(new PdfColor(0, 0, 0));
         defaultBorderPenBottom.dashStyle = PdfDashStyle.Solid;
         this.leftPen = defaultBorderPenLeft;
         this.rightPen = defaultBorderPenRight;
@@ -114,47 +133,57 @@ export class PdfPaddings {
     //Fields
     /**
      * The `left` padding.
+     *
      * @private
      */
     private leftPad: number;
     /**
      * The `right` padding.
+     *
      * @private
      */
     private rightPad: number;
     /**
      * The `top` padding.
+     *
      * @private
      */
     private topPad: number;
     /**
      * The `bottom` padding.
+     *
      * @private
      */
     private bottomPad: number;
     /**
      * The 'left' border padding set.
+     *
      * @private
      */
     public hasLeftPad: boolean = false;
     /**
      * The 'right' border padding set.
+     *
      * @private
      */
     public hasRightPad: boolean = false;
     /**
      * The 'top' border padding set.
+     *
      * @private
      */
     public hasTopPad: boolean = false;
     /**
      * The 'bottom' border padding set.
+     *
      * @private
      */
     public hasBottomPad: boolean = false;
     // Properties
     /**
      * Gets or sets the `left` value of the edge
+     *
+     * @returns {number} .
      * @private
      */
     public get left(): number {
@@ -166,6 +195,8 @@ export class PdfPaddings {
     }
     /**
      * Gets or sets the `right` value of the edge.
+     *
+     * @returns {number} .
      * @private
      */
     public get right(): number {
@@ -177,6 +208,8 @@ export class PdfPaddings {
     }
     /**
      * Gets or sets the `top` value of the edge
+     *
+     * @returns {number} .
      * @private
      */
     public get top(): number {
@@ -188,6 +221,8 @@ export class PdfPaddings {
     }
     /**
      * Gets or sets the `bottom` value of the edge.
+     *
+     * @returns {number} .
      * @private
      */
     public get bottom(): number {
@@ -199,6 +234,8 @@ export class PdfPaddings {
     }
     /**
      * Sets value to all sides `left,right,top and bottom`.s
+     *
+     * @param {number} value .
      * @private
      */
     public set all(value: number) {
@@ -210,11 +247,13 @@ export class PdfPaddings {
     }
     /**
      * Initializes a new instance of the `PdfPaddings` class.
+     *
      * @private
      */
     public constructor()
     /**
      * Initializes a new instance of the `PdfPaddings` class.
+     *
      * @private
      */
     public constructor(left: number, right: number, top: number, bottom: number)

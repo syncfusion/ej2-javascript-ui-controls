@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * Schedule agenda view spec 
+ * Schedule agenda view spec
  */
 import { closest } from '@syncfusion/ej2-base';
 import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda } from '../../../src/schedule/index';
@@ -13,10 +14,9 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
 describe('Agenda View', () => {
     beforeAll(() => {
-        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
             (this as any).skip(); //Skips test (in Chai)
             return;
@@ -25,15 +25,13 @@ describe('Agenda View', () => {
 
     describe('Checking without datasource', () => {
         let schObj: Schedule;
-        beforeAll(
-            (done: Function) => {
-                let model: ScheduleModel = {
-                    height: '500px', currentView: 'Agenda', selectedDate: new Date(2017, 10, 1),
-                    views: [{ option: 'Agenda', allowVirtualScrolling: true }]
-                };
-                schObj = createSchedule(model, [], done);
-            },
-            4000);
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px', currentView: 'Agenda', selectedDate: new Date(2017, 10, 1),
+                views: [{ option: 'Agenda', allowVirtualScrolling: true }]
+            };
+            schObj = createSchedule(model, [], done);
+        }, 4000);
         afterAll(() => {
             destroy(schObj);
         });
@@ -42,10 +40,9 @@ describe('Agenda View', () => {
             expect(schObj.activeView.getDateSlots([], []).length).toEqual(0);
             expect(schObj.activeView.generateColumnLevels().length).toEqual(0);
             expect(schObj.activeView.getColumnLevels()).toBeUndefined();
-            expect(schObj.activeView.serverRenderLayout()).toBeUndefined();
             schObj.activeViewOptions.startHour = '';
             schObj.activeViewOptions.endHour = '';
-            let startEndHour: Date = new Date(2000, 0, 0, 0);
+            const startEndHour: Date = new Date(2000, 0, 0, 0);
             expect(schObj.activeView.getStartHour().getTime()).toEqual(startEndHour.getTime());
             expect(schObj.activeView.getEndHour().getTime()).toEqual(startEndHour.getTime());
         });
@@ -84,7 +81,7 @@ describe('Agenda View', () => {
         });
 
         it('Checking Header text', () => {
-            let element: HTMLElement = schObj.element.querySelector('.e-empty-event') as HTMLElement;
+            const element: HTMLElement = schObj.element.querySelector('.e-empty-event') as HTMLElement;
             expect(element.innerHTML).toEqual('No events');
             expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 2017');
             schObj.views = [
@@ -96,18 +93,18 @@ describe('Agenda View', () => {
         });
 
         it('Checking previous navigation', () => {
-            let prevEle: HTMLElement = schObj.element.querySelector('.e-prev') as HTMLElement;
+            const prevEle: HTMLElement = schObj.element.querySelector('.e-prev') as HTMLElement;
             prevEle.click();
             expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('Oct 31 - Nov 06, 2017');
         });
 
         it('Checking next navigation', () => {
-            let nextEle: HTMLElement = schObj.element.querySelector('.e-next') as HTMLElement;
+            const nextEle: HTMLElement = schObj.element.querySelector('.e-next') as HTMLElement;
             nextEle.click();
             expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 01 - 07, 2017');
         });
 
-        it('Checking hideEmptyAgendaDays', (done: Function) => {
+        it('Checking hideEmptyAgendaDays', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-agenda-parent').length).toEqual(7);
                 done();
@@ -116,17 +113,17 @@ describe('Agenda View', () => {
             schObj.dataBind();
         });
 
-        it('Checking virtual scrolling with hideEmptyAgendaDays', (done: Function) => {
+        it('Checking virtual scrolling with hideEmptyAgendaDays', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let scrollUp: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+                const scrollUp: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
                 triggerScrollEvent(scrollUp, 0);
                 expect(schObj.element.querySelectorAll('.e-agenda-parent').length).toEqual(14);
-                let patentTd: Element = closest((schObj.element.querySelectorAll('.e-agenda-parent')[0] as Element), 'td');
+                const patentTd: Element = closest((schObj.element.querySelectorAll('.e-agenda-parent')[0] as Element), 'td');
                 expect(patentTd.getAttribute('data-date')).toEqual(new Date(2017, 9, 25).getTime().toString());
                 done();
             };
             expect(schObj.element.querySelectorAll('.e-agenda-parent').length).toEqual(7);
-            let td: Element = closest((schObj.element.querySelectorAll('.e-agenda-parent')[0] as Element), 'td');
+            const td: Element = closest((schObj.element.querySelectorAll('.e-agenda-parent')[0] as Element), 'td');
             expect(td.getAttribute('data-date')).toEqual(new Date(2017, 10, 1).getTime().toString());
             schObj.views = [
                 { option: 'Day' }, { option: 'Week' }, { option: 'WorkWeek' }, { option: 'Month' },
@@ -146,9 +143,9 @@ describe('Agenda View', () => {
             expect(schObj.element.querySelectorAll('.e-schedule-toolbar').length).toEqual(0);
         });
 
-        it('Checking Dateheader color', (done: Function) => {
+        it('Checking Dateheader color', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let dateString: string = new Date().setHours(0, 0, 0, 0).toString();
+                const dateString: string = new Date().setHours(0, 0, 0, 0).toString();
                 expect(schObj.element.querySelector('.e-current-day').parentElement.getAttribute('data-date')).toEqual(dateString);
                 done();
             };
@@ -159,10 +156,9 @@ describe('Agenda View', () => {
 
     describe('Checking with datasource', () => {
         let schObj: Schedule;
-        // tslint:disable-next-line:no-any
         let keyModule: any;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
                 height: '500px', currentView: 'Agenda', selectedDate: new Date(2017, 9, 30),
                 views: [{ option: 'Day' }, { option: 'Agenda', allowVirtualScrolling: true }]
             };
@@ -174,10 +170,10 @@ describe('Agenda View', () => {
         });
 
         it('Checking list elements', () => {
-            let agendaEle: Element = schObj.element.querySelector('.e-content-wrap tr');
+            const agendaEle: Element = schObj.element.querySelector('.e-content-wrap tr');
             expect(agendaEle.getAttribute('role')).toEqual('row');
             expect(agendaEle.childElementCount).toEqual(2);
-            let agendaDate: HTMLElement = agendaEle.children[0] as HTMLElement;
+            const agendaDate: HTMLElement = agendaEle.children[0] as HTMLElement;
             expect(agendaDate.className).toEqual('e-agenda-cells');
             expect(agendaDate.getAttribute('role')).toEqual('gridcell');
             expect(agendaDate.childElementCount).toEqual(1);
@@ -185,7 +181,7 @@ describe('Agenda View', () => {
             expect(agendaDate.children[0].childElementCount).toEqual(2);
             expect(agendaDate.children[0].children[0].className).toEqual('e-m-date');
             expect(agendaDate.children[0].children[1].className).toEqual('e-m-day');
-            let agendaListApp: HTMLElement = agendaEle.children[1] as HTMLElement;
+            const agendaListApp: HTMLElement = agendaEle.children[1] as HTMLElement;
             expect(agendaListApp.className).toEqual('e-agenda-cells e-day-border');
             expect(agendaListApp.getAttribute('role')).toEqual('gridcell');
             expect(agendaListApp.childElementCount).toEqual(1);
@@ -198,20 +194,20 @@ describe('Agenda View', () => {
             expect(agendaListApp.children[0].children[0].children[0].children[0].className).toEqual('e-subject-wrap');
             expect(agendaListApp.children[0].children[0].children[0].children[1].className).toEqual('e-date-time');
 
-            let scrollElement: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
-            let scrollUp: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            const scrollElement: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            const scrollUp: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
             expect(scrollElement.querySelectorAll('tr').length).toEqual(7);
             triggerScrollEvent(scrollUp, 0);
-            let scrollElement1: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            const scrollElement1: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
             expect(scrollElement1.querySelectorAll('tr').length).toBeLessThanOrEqual(15);
         });
 
-        it('Checking virtual scrolling with hideEmptyAgendaDays', (done: Function) => {
+        it('Checking virtual scrolling with hideEmptyAgendaDays', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let scrollUp: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+                const scrollUp: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
                 triggerScrollEvent(scrollUp, 0);
                 expect(schObj.element.querySelectorAll('.e-agenda-parent').length).toEqual(14);
-                let patentTd: Element = closest((schObj.element.querySelectorAll('.e-agenda-parent')[0] as Element), 'td');
+                const patentTd: Element = closest((schObj.element.querySelectorAll('.e-agenda-parent')[0] as Element), 'td');
                 expect(patentTd.getAttribute('data-date')).toEqual(new Date(2017, 9, 23).getTime().toString());
                 done();
             };
@@ -219,10 +215,10 @@ describe('Agenda View', () => {
             schObj.dataBind();
         });
 
-        it('First date checking', (done: Function) => {
+        it('First date checking', (done: DoneFn) => {
             schObj.dataBound = () => {
                 (<HTMLElement>schObj.element.querySelector('.e-appointment')).click();
-                let scrollElement: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+                const scrollElement: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
                 triggerScrollEvent(scrollElement, 0);
                 done();
             };
@@ -231,10 +227,10 @@ describe('Agenda View', () => {
             schObj.dataBind();
         });
 
-        it('Last date checking', (done: Function) => {
+        it('Last date checking', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let scrollElement: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
-                let scrollHeight: number = scrollElement.scrollHeight;
+                const scrollElement: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+                const scrollHeight: number = scrollElement.scrollHeight;
                 triggerScrollEvent(scrollElement, scrollHeight);
                 done();
             };
@@ -243,15 +239,15 @@ describe('Agenda View', () => {
         });
 
         it('home key', () => {
-            let scrollElement: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            const scrollElement: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
             triggerScrollEvent(scrollElement, 150);
             keyModule.keyActionHandler({ action: 'home' });
-            let target: Element = schObj.element.querySelector('.e-content-wrap table tr td[tabindex="0"]');
+            const target: Element = schObj.element.querySelector('.e-content-wrap table tr td[tabindex="0"]');
             expect(target.getAttribute('data-date')).toEqual(new Date('Fri Dec 28 2018').getTime().toString());
         });
 
         it('Tab key functionality checking', () => {
-            let target: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const target: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             keyModule.keyActionHandler({ action: 'tab', target: target[0], shiftKey: false, preventDefault: (): void => { /** Null */ } });
             expect(target[0].classList.contains('e-appointment-border')).toEqual(false);
             keyModule.keyActionHandler({ action: 'tab', target: target[2], shiftKey: true, preventDefault: (): void => { /** Null */ } });
@@ -259,7 +255,7 @@ describe('Agenda View', () => {
         });
 
         it('Day view navigation checking', () => {
-            let firstDateHeader: HTMLElement = schObj.element.querySelector('.e-m-date') as HTMLElement;
+            const firstDateHeader: HTMLElement = schObj.element.querySelector('.e-m-date') as HTMLElement;
             firstDateHeader.click();
             expect(schObj.currentView).toEqual('Day');
         });
@@ -267,15 +263,15 @@ describe('Agenda View', () => {
 
     describe('Checking Virtual scrolling with events after long days from initial date navigation', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
                 width: '100%',
                 height: '650px',
                 views: [{ option: 'Month' }, { option: 'Agenda', allowVirtualScrolling: true }],
                 selectedDate: new Date(2017, 11, 1),
-                currentView: 'Agenda',
+                currentView: 'Agenda'
             };
-            let scheduleDatas: Object[] = [{
+            const scheduleDatas: Record<string, any>[] = [{
                 Id: 44,
                 Subject: 'Paris',
                 StartTime: new Date(2018, 0, 8, 10, 0),
@@ -342,7 +338,7 @@ describe('Agenda View', () => {
                 EndTime: new Date(2029, 9, 13, 10, 45),
                 IsAllDay: false
             }];
-            let data: Object[] = cloneDataSource(defaultData).concat(scheduleDatas);
+            const data: Record<string, any>[] = cloneDataSource(defaultData).concat(scheduleDatas);
             schObj = createSchedule(schOptions, data, done);
         });
         afterAll(() => {
@@ -350,12 +346,12 @@ describe('Agenda View', () => {
         });
 
         it('Checking virtual scrolling with hideEmptyAgendaDays', () => {
-            let eventWraps: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-agenda-parent'));
+            const eventWraps: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-agenda-parent'));
             expect(eventWraps.length).toEqual(16);
-            let firstEventTd: Element = closest((eventWraps[0] as Element), 'td');
+            const firstEventTd: Element = closest((eventWraps[0] as Element), 'td');
             expect(parseInt(firstEventTd.getAttribute('data-date'), 10)).toEqual(new Date(2017, 10, 10).getTime());
             expect(firstEventTd.getAttribute('aria-colindex')).toEqual('-21');
-            let lastEventTd: Element = closest((eventWraps[eventWraps.length - 1] as Element), 'td');
+            const lastEventTd: Element = closest((eventWraps[eventWraps.length - 1] as Element), 'td');
             expect(parseInt(lastEventTd.getAttribute('data-date'), 10)).toEqual(new Date(2019, 0, 16).getTime());
             expect(lastEventTd.getAttribute('aria-colindex')).toEqual('411');
         });
@@ -363,10 +359,10 @@ describe('Agenda View', () => {
 
     describe('Agenda view rendering with templates', () => {
         let schObj: Schedule;
-        let appTmpl: string = '<div>Subject: ${Subject}</div><div>StartTime: ${StartTime.toLocaleString()}</div>' +
+        const appTmpl: string = '<div>Subject: ${Subject}</div><div>StartTime: ${StartTime.toLocaleString()}</div>' +
             '<div>EndTime: ${EndTime.toLocaleString()</div>';
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 height: '500px', currentView: 'Agenda', dateFormat: 'dd MMM yyyy',
                 dateHeaderTemplate: '<span>${date.toLocaleDateString()}</span>',
                 selectedDate: new Date(2017, 9, 30)
@@ -378,10 +374,10 @@ describe('Agenda View', () => {
         });
 
         it('Checking date template', () => {
-            let agendaEle: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
+            const agendaEle: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
             expect(agendaEle.getAttribute('role')).toEqual('row');
             expect(agendaEle.childElementCount).toEqual(2);
-            let agendaDate: HTMLElement = agendaEle.children[0] as HTMLElement;
+            const agendaDate: HTMLElement = agendaEle.children[0] as HTMLElement;
             expect(agendaDate.className).toEqual('e-agenda-cells');
             expect(agendaDate.getAttribute('role')).toEqual('gridcell');
             expect(agendaDate.childElementCount).toEqual(1);
@@ -391,10 +387,10 @@ describe('Agenda View', () => {
 
         it('Checking appointment template', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let agendaEle: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
+                const agendaEle: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
                 expect(agendaEle.getAttribute('role')).toEqual('row');
                 expect(agendaEle.childElementCount).toEqual(2);
-                let agendaListApp: HTMLElement = agendaEle.children[1] as HTMLElement;
+                const agendaListApp: HTMLElement = agendaEle.children[1] as HTMLElement;
                 expect(agendaListApp.className).toEqual('e-agenda-cells e-day-border');
                 expect(agendaListApp.getAttribute('role')).toEqual('gridcell');
                 expect(agendaListApp.childElementCount).toEqual(1);
@@ -414,40 +410,40 @@ describe('Agenda View', () => {
 
     describe('Agenda view spanned events checking', () => {
         let schObj: Schedule;
-        let eventData: Object[] = [{
+        const eventData: Record<string, any>[] = [{
             Id: 1,
             Subject: 'Event',
             StartTime: new Date(2018, 3, 1),
             EndTime: new Date(2018, 3, 5),
             IsAllDay: true
         }];
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = { height: '500px', currentView: 'Agenda', selectedDate: new Date(2018, 3, 1) };
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = { height: '500px', currentView: 'Agenda', selectedDate: new Date(2018, 3, 1) };
             schObj = createSchedule(model, eventData, done);
         });
         afterAll(() => {
             destroy(schObj);
         });
         it('Checking spanned events', () => {
-            let agendaAppointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const agendaAppointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(agendaAppointment.length).toEqual(4);
             agendaAppointment[0].click();
-            let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup).toBeTruthy();
         });
     });
 
     describe('Checking Event loading on current view', () => {
         let schObj: Schedule;
-        let eventData: Object[] = [{
+        const eventData: Record<string, any>[] = [{
             Id: 1,
             Subject: 'Event',
             StartTime: new Date(2018, 3, 7),
             EndTime: new Date(2018, 3, 7),
             IsAllDay: true
         }];
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = { height: '500px', currentView: 'Agenda', selectedDate: new Date(2018, 3, 8) };
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = { height: '500px', currentView: 'Agenda', selectedDate: new Date(2018, 3, 8) };
             schObj = createSchedule(model, eventData, done);
         });
         afterAll(() => {
@@ -455,51 +451,51 @@ describe('Agenda View', () => {
         });
 
         it('test current page event loading', () => {
-            let agendaAppointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const agendaAppointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(agendaAppointment.length).toEqual(0);
-            let element: HTMLElement = schObj.element.querySelector('.e-empty-event') as HTMLElement;
+            const element: HTMLElement = schObj.element.querySelector('.e-empty-event') as HTMLElement;
             expect(element.innerHTML).toEqual('No events');
             expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('April 08 - 14, 2018');
         });
 
-        it('test check event loading on previous click', (done: Function) => {
+        it('test check event loading on previous click', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let agendaAppointments: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const agendaAppointments: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(agendaAppointments.length).toEqual(1);
                 expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('April 07 - 13, 2018');
                 done();
             };
-            let prevEle: HTMLElement = schObj.element.querySelector('.e-prev') as HTMLElement;
+            const prevEle: HTMLElement = schObj.element.querySelector('.e-prev') as HTMLElement;
             prevEle.click();
         });
 
-        it('test check event loading on next click', (done: Function) => {
+        it('test check event loading on next click', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let agendaAppointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const agendaAppointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(agendaAppointment.length).toEqual(0);
-                let element: HTMLElement = schObj.element.querySelector('.e-empty-event') as HTMLElement;
+                const element: HTMLElement = schObj.element.querySelector('.e-empty-event') as HTMLElement;
                 expect(element.innerHTML).toEqual('No events');
                 expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('April 08 - 14, 2018');
                 done();
             };
-            let nextEle: HTMLElement = schObj.element.querySelector('.e-next') as HTMLElement;
+            const nextEle: HTMLElement = schObj.element.querySelector('.e-next') as HTMLElement;
             nextEle.click();
         });
     });
 
     describe('Checking Event loading on view specific agenda view', () => {
         let schObj: Schedule;
-        let eventData: Object[] = [{
+        const eventData: Record<string, any>[] = [{
             Id: 1,
             Subject: 'Event',
             StartTime: new Date(2018, 3, 7),
             EndTime: new Date(2018, 3, 7),
             IsAllDay: true
         }];
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 height: '500px', currentView: 'Agenda', selectedDate: new Date(2018, 3, 8),
-                views: [{ option: 'Agenda', allowVirtualScrolling: false }],
+                views: [{ option: 'Agenda', allowVirtualScrolling: false }]
             };
             schObj = createSchedule(model, eventData, done);
         });
@@ -508,41 +504,41 @@ describe('Agenda View', () => {
         });
 
         it('test current page event loading', () => {
-            let agendaAppointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const agendaAppointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(agendaAppointment.length).toEqual(0);
-            let element: HTMLElement = schObj.element.querySelector('.e-empty-event') as HTMLElement;
+            const element: HTMLElement = schObj.element.querySelector('.e-empty-event') as HTMLElement;
             expect(element.innerHTML).toEqual('No events');
             expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('April 08 - 14, 2018');
         });
 
-        it('test check event loading on previous click', (done: Function) => {
+        it('test check event loading on previous click', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let agendaAppointments: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const agendaAppointments: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(agendaAppointments.length).toEqual(1);
                 expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('April 07 - 13, 2018');
                 done();
             };
-            let prevEle: HTMLElement = schObj.element.querySelector('.e-prev') as HTMLElement;
+            const prevEle: HTMLElement = schObj.element.querySelector('.e-prev') as HTMLElement;
             prevEle.click();
         });
 
-        it('test check event loading on next click', (done: Function) => {
+        it('test check event loading on next click', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let agendaAppointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const agendaAppointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(agendaAppointment.length).toEqual(0);
-                let element: HTMLElement = schObj.element.querySelector('.e-empty-event') as HTMLElement;
+                const element: HTMLElement = schObj.element.querySelector('.e-empty-event') as HTMLElement;
                 expect(element.innerHTML).toEqual('No events');
                 expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('April 08 - 14, 2018');
                 done();
             };
-            let nextEle: HTMLElement = schObj.element.querySelector('.e-next') as HTMLElement;
+            const nextEle: HTMLElement = schObj.element.querySelector('.e-next') as HTMLElement;
             nextEle.click();
         });
     });
 
     describe('Agenda view recurrence spanned events checking', () => {
         let schObj: Schedule;
-        let eventData: Object[] = [{
+        const eventData: Record<string, any>[] = [{
             Id: 1,
             Subject: 'Spanned Event',
             StartTime: new Date(2018, 3, 1, 10, 0),
@@ -550,27 +546,27 @@ describe('Agenda View', () => {
             RecurrenceRule: 'FREQ=DAILY;INTERVAL=2;COUNT=2',
             RecurrenceID: 2
         }];
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = { height: '500px', currentView: 'Agenda', selectedDate: new Date(2018, 3, 1) };
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = { height: '500px', currentView: 'Agenda', selectedDate: new Date(2018, 3, 1) };
             schObj = createSchedule(model, eventData, done);
         });
         afterAll(() => {
             destroy(schObj);
         });
         it('Checking spanned events', () => {
-            let agendaAppointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const agendaAppointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(agendaAppointment.length).toEqual(2);
             agendaAppointment[0].click();
-            let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup).toBeTruthy();
         });
     });
 
     describe('Agenda view rendering with multiple resource', () => {
         let schObj: Schedule;
-        let restemplate: string = '<div class="template-wrap"></div><div style="background:pink">${getResourceName(data)}</div>';
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        const restemplate: string = '<div class="template-wrap"></div><div style="background:pink">${getResourceName(data)}</div>';
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%', height: '550px', currentView: 'Agenda',
                 selectedDate: new Date(2018, 3, 1),
                 resourceHeaderTemplate: restemplate,
@@ -599,37 +595,37 @@ describe('Agenda View', () => {
         });
 
         it('Checking resource rendering with EmptyAgendaDays as true', () => {
-            let row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
+            const row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
             expect(row1.getAttribute('role')).toEqual('row');
             expect(row1.childElementCount).toEqual(4);
-            let parElem1: HTMLElement = row1.children[0] as HTMLElement;
+            const parElem1: HTMLElement = row1.children[0] as HTMLElement;
             expect(parElem1.getAttribute('rowspan')).toEqual('7');
-            let parElem2: HTMLElement = row1.children[1] as HTMLElement;
+            const parElem2: HTMLElement = row1.children[1] as HTMLElement;
             expect(parElem2.getAttribute('rowspan')).toEqual('4');
-            let row2: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[1];
+            const row2: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[1];
             expect(row2.getAttribute('role')).toEqual('row');
             expect(row2.childElementCount).toEqual(2);
         });
 
         it('Checking resource template', () => {
-            let row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
-            let parTd: HTMLElement = row1.children[0] as HTMLElement;
-            let childDiv: HTMLElement = parTd.children[0] as HTMLElement;
+            const row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
+            const parTd: HTMLElement = row1.children[0] as HTMLElement;
+            const childDiv: HTMLElement = parTd.children[0] as HTMLElement;
             expect(childDiv.className).toEqual('template-wrap');
         });
 
-        it('Checking resource rendering with EmptyAgendaDays as false', (done: Function) => {
+        it('Checking resource rendering with EmptyAgendaDays as false', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
+                const row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
                 expect(row1.getAttribute('role')).toEqual('row');
                 expect(row1.childElementCount).toEqual(4);
-                let parElem1: HTMLElement = row1.children[0] as HTMLElement;
+                const parElem1: HTMLElement = row1.children[0] as HTMLElement;
                 expect(parElem1.getAttribute('rowspan')).toEqual('14');
-                let parElem2: HTMLElement = row1.children[1] as HTMLElement;
+                const parElem2: HTMLElement = row1.children[1] as HTMLElement;
                 expect(parElem2.getAttribute('rowspan')).toEqual('7');
-                let row2: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[1];
-                let emptyTd: HTMLElement = row2.children[1] as HTMLElement;
-                let emptyDiv: HTMLElement = emptyTd.children[0].children[0].children[0] as HTMLElement;
+                const row2: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[1];
+                const emptyTd: HTMLElement = row2.children[1] as HTMLElement;
+                const emptyDiv: HTMLElement = emptyTd.children[0].children[0].children[0] as HTMLElement;
                 expect(emptyDiv.className).toEqual('e-no-event');
                 done();
             };
@@ -649,11 +645,11 @@ describe('Agenda View', () => {
             expect(schObj.element.querySelectorAll('.e-schedule-toolbar').length).toEqual(0);
         });
 
-        it('Checking resource rendering with empty agenda collection', (done: Function) => {
+        it('Checking resource rendering with empty agenda collection', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
+                const row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
                 expect(row1.getAttribute('role')).toEqual('row');
-                let emptyDiv: HTMLElement = row1.children[0].children[0] as HTMLElement;
+                const emptyDiv: HTMLElement = row1.children[0].children[0] as HTMLElement;
                 expect(emptyDiv.className).toEqual('e-empty-event');
                 done();
             };
@@ -665,9 +661,9 @@ describe('Agenda View', () => {
 
     describe('Agenda view rendering with single level resource Date-wise grouping', () => {
         let schObj: Schedule;
-        let restemplate: string = '<div class="template-wrap"></div><div style="background:pink">${getResourceName(data)}</div>';
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        const restemplate: string = '<div class="template-wrap"></div><div style="background:pink">${getResourceName(data)}</div>';
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%', height: '550px', currentView: 'Agenda',
                 selectedDate: new Date(2018, 3, 1),
                 resourceHeaderTemplate: restemplate,
@@ -692,38 +688,38 @@ describe('Agenda View', () => {
         });
 
         it('Checking resource rendering with EmptyAgendaDays as true', () => {
-            let row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
+            const row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
             expect(row1.getAttribute('role')).toEqual('row');
             expect(row1.childElementCount).toEqual(3);
-            let parElem1: HTMLElement = row1.children[0] as HTMLElement;
+            const parElem1: HTMLElement = row1.children[0] as HTMLElement;
             expect(parElem1.getAttribute('rowspan')).toEqual('3');
-            let parElem2: HTMLElement = row1.children[1] as HTMLElement;
+            const parElem2: HTMLElement = row1.children[1] as HTMLElement;
             expect(parElem2.getAttribute('rowspan')).toEqual('1');
-            let row2: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[1];
+            const row2: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[1];
             expect(row2.getAttribute('role')).toEqual('row');
             expect(row2.childElementCount).toEqual(2);
         });
 
         it('Checking resource template', () => {
-            let row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
-            let parTd: HTMLElement = row1.children[1] as HTMLElement;
-            let childDiv: HTMLElement = parTd.children[0] as HTMLElement;
+            const row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
+            const parTd: HTMLElement = row1.children[1] as HTMLElement;
+            const childDiv: HTMLElement = parTd.children[0] as HTMLElement;
             expect(childDiv.className).toEqual('template-wrap');
         });
 
-        it('Checking resource rendering with EmptyAgendaDays as false', (done: Function) => {
+        it('Checking resource rendering with EmptyAgendaDays as false', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[3];
+                const row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[3];
                 expect(row1.getAttribute('role')).toEqual('row');
                 expect(row1.childElementCount).toEqual(3);
-                let parElem1: HTMLElement = row1.children[0] as HTMLElement;
+                const parElem1: HTMLElement = row1.children[0] as HTMLElement;
                 expect(parElem1.getAttribute('rowspan')).toEqual('3');
-                let parElem2: HTMLElement = row1.children[1] as HTMLElement;
+                const parElem2: HTMLElement = row1.children[1] as HTMLElement;
                 expect(parElem2.getAttribute('rowspan')).toEqual('1');
-                let parElem3: HTMLElement = row1.children[0] as HTMLElement;
+                const parElem3: HTMLElement = row1.children[0] as HTMLElement;
                 expect(parElem3.className).toContain('e-date-column');
-                let emptyTd: HTMLElement = row1.children[2] as HTMLElement;
-                let emptyDiv: HTMLElement = emptyTd.children[0].children[0].children[0] as HTMLElement;
+                const emptyTd: HTMLElement = row1.children[2] as HTMLElement;
+                const emptyDiv: HTMLElement = emptyTd.children[0].children[0].children[0] as HTMLElement;
                 expect(emptyDiv.className).toEqual('e-no-event');
                 done();
             };
@@ -734,9 +730,9 @@ describe('Agenda View', () => {
 
     describe('Agenda view rendering with multiple resource Date-wise grouping', () => {
         let schObj: Schedule;
-        let restemplate: string = '<div class="template-wrap"></div><div style="background:pink">${getResourceName(data)}</div>';
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        const restemplate: string = '<div class="template-wrap"></div><div style="background:pink">${getResourceName(data)}</div>';
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%', height: '550px', currentView: 'Agenda',
                 selectedDate: new Date(2018, 3, 1),
                 resourceHeaderTemplate: restemplate,
@@ -768,38 +764,38 @@ describe('Agenda View', () => {
         });
 
         it('Checking resource rendering with EmptyAgendaDays as true', () => {
-            let row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
+            const row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
             expect(row1.getAttribute('role')).toEqual('row');
             expect(row1.childElementCount).toEqual(4);
-            let parElem1: HTMLElement = row1.children[0] as HTMLElement;
+            const parElem1: HTMLElement = row1.children[0] as HTMLElement;
             expect(parElem1.getAttribute('rowspan')).toEqual('3');
-            let parElem2: HTMLElement = row1.children[1] as HTMLElement;
+            const parElem2: HTMLElement = row1.children[1] as HTMLElement;
             expect(parElem2.getAttribute('rowspan')).toEqual('2');
-            let row2: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[1];
+            const row2: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[1];
             expect(row2.getAttribute('role')).toEqual('row');
             expect(row2.childElementCount).toEqual(2);
         });
 
         it('Checking resource template', () => {
-            let row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
-            let parTd: HTMLElement = row1.children[1] as HTMLElement;
-            let childDiv: HTMLElement = parTd.children[0] as HTMLElement;
+            const row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
+            const parTd: HTMLElement = row1.children[1] as HTMLElement;
+            const childDiv: HTMLElement = parTd.children[0] as HTMLElement;
             expect(childDiv.className).toEqual('template-wrap');
         });
 
-        it('Checking resource rendering with EmptyAgendaDays as false', (done: Function) => {
+        it('Checking resource rendering with EmptyAgendaDays as false', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[3];
+                const row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[3];
                 expect(row1.getAttribute('role')).toEqual('row');
                 expect(row1.childElementCount).toEqual(4);
-                let parElem1: HTMLElement = row1.children[0] as HTMLElement;
+                const parElem1: HTMLElement = row1.children[0] as HTMLElement;
                 expect(parElem1.getAttribute('rowspan')).toEqual('3');
-                let parElem2: HTMLElement = row1.children[1] as HTMLElement;
+                const parElem2: HTMLElement = row1.children[1] as HTMLElement;
                 expect(parElem2.getAttribute('rowspan')).toEqual('2');
-                let parElem3: HTMLElement = row1.children[0] as HTMLElement;
+                const parElem3: HTMLElement = row1.children[0] as HTMLElement;
                 expect(parElem3.className).toContain('e-date-column');
-                let emptyTd: HTMLElement = row1.children[3] as HTMLElement;
-                let emptyDiv: HTMLElement = emptyTd.children[0].children[0].children[0] as HTMLElement;
+                const emptyTd: HTMLElement = row1.children[3] as HTMLElement;
+                const emptyDiv: HTMLElement = emptyTd.children[0].children[0].children[0] as HTMLElement;
                 expect(emptyDiv.className).toEqual('e-no-event');
                 done();
             };
@@ -810,8 +806,8 @@ describe('Agenda View', () => {
 
     describe('Agenda view rendering with multiple resource individual view config test', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%', height: '550px', currentView: 'WorkWeek',
                 selectedDate: new Date(2018, 3, 1),
                 resources: [{
@@ -844,18 +840,18 @@ describe('Agenda View', () => {
         afterAll(() => {
             destroy(schObj);
         });
-        it('Checking workweek view to agenda view', (done: Function) => {
+        it('Checking workweek view to agenda view', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-agenda-view')).toBeTruthy();
                 expect(schObj.getCurrentViewEvents().length).toEqual(11);
-                let row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
+                const row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
                 expect(row1.getAttribute('role')).toEqual('row');
                 expect(row1.childElementCount).toEqual(4);
-                let parElem1: HTMLElement = row1.children[0] as HTMLElement;
+                const parElem1: HTMLElement = row1.children[0] as HTMLElement;
                 expect(parElem1.getAttribute('rowspan')).toEqual('7');
-                let parElem2: HTMLElement = row1.children[1] as HTMLElement;
+                const parElem2: HTMLElement = row1.children[1] as HTMLElement;
                 expect(parElem2.getAttribute('rowspan')).toEqual('4');
-                let parElem3: HTMLElement = row1.children[0] as HTMLElement;
+                const parElem3: HTMLElement = row1.children[0] as HTMLElement;
                 expect(parElem3.className).toContain('e-resource-column');
                 done();
             };
@@ -867,7 +863,7 @@ describe('Agenda View', () => {
 
     describe('EJ2-26070-Event not rendered properly in agenda view when we give datasource and date format as string', () => {
         let schObj: Schedule;
-        let eventData: Object[] = [{
+        const eventData: Record<string, any>[] = [{
             'From': '2020-01-01T00:00:00',
             'Reason': 'Birthday',
             'To': '2020-01-02T23:59:59',
@@ -876,8 +872,8 @@ describe('Agenda View', () => {
             'Cancelled': false,
             'AllDay': true
         }];
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
                 height: '500px', selectedDate: new Date(2020, 0, 1), currentView: 'Agenda',
                 eventSettings: {
                     fields: {
@@ -895,7 +891,7 @@ describe('Agenda View', () => {
             destroy(schObj);
         });
         it('Checking event rendered or not using string datasource', () => {
-            let eventElements: NodeListOf<Element> = schObj.element.querySelectorAll('.e-appointment');
+            const eventElements: NodeListOf<Element> = schObj.element.querySelectorAll('.e-appointment');
             expect(eventElements.length).toEqual(2);
             expect(eventElements[0].querySelector('.e-date-time').textContent).toEqual('All day (Day 1/2)');
             expect(eventElements[1].querySelector('.e-date-time').textContent).toEqual('12:00 AM - 11:59 PM (Day 2/2)');
@@ -904,8 +900,8 @@ describe('Agenda View', () => {
 
     describe('Checking minDate and maxDate', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
                 width: '100%',
                 height: '650px',
                 views: [{ option: 'Day' }, { option: 'Agenda' }],
@@ -914,7 +910,7 @@ describe('Agenda View', () => {
                 maxDate: new Date(2017, 9, 31),
                 currentView: 'Agenda'
             };
-            let eventData: Object[] = [{
+            const eventData: Record<string, any>[] = [{
                 Id: 1,
                 Subject: 'Event-1',
                 StartTime: new Date(2017, 9, 29, 10),
@@ -1034,13 +1030,9 @@ describe('Agenda View', () => {
 
     it('memory leak', () => {
         profile.sample();
-        // tslint:disable:no-any
-        let average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
+        const average: number = inMB(profile.averageChange);
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        const memory: number = inMB(getMemoryProfile());
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        // tslint:enable:no-any
     });
 });

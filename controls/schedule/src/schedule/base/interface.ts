@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BaseEventArgs } from '@syncfusion/ej2-base';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { PopupType, ExcelFormat, View } from './type';
@@ -11,31 +12,20 @@ import { ResourcesModel, ViewsModel } from '../models/models';
 export interface ActionEventArgs extends ToolbarActionArgs {
     /** Returns the request type of the current action. */
     requestType: string;
-    /**
-     * Defines the type of the event.
-     */
+    /** Defines the type of the event. */
     event?: Event;
     /** Defines the cancel option for the action taking place. */
-    cancel: boolean;
+    cancel?: boolean;
     /** Returns the appropriate data based on the action. */
-    data?: Object;
+    data?: Record<string, any> | Record<string, any>[];
     /** Returns the clicked resource row index. */
     groupIndex?: number;
-    /** 
-     * Returns the appropriate added data based on the action.
-     * @isGenericType true
-     */
-    addedRecords?: Object[];
-    /** 
-     * Returns the appropriate changed data based on the action.
-     * @isGenericType true
-     */
-    changedRecords?: Object[];
-    /** 
-     * Returns the appropriate deleted data based on the action.
-     * @isGenericType true
-     */
-    deletedRecords?: Object[];
+    /** Returns the appropriate added data based on the action. */
+    addedRecords?: Record<string, any>[];
+    /** Returns the appropriate changed data based on the action. */
+    changedRecords?: Record<string, any>[];
+    /** Returns the appropriate deleted data based on the action. */
+    deletedRecords?: Record<string, any>[];
 }
 
 /** @deprecated */
@@ -54,14 +44,11 @@ export interface CellClickEventArgs extends BaseEventArgs {
     endTime: Date;
     /** Returns true or false, based on whether the clicked cell is all-day or not. */
     isAllDay: boolean;
-    /** Returns the single or collection of HTML element(s).
-     */
+    /** Returns the single or collection of HTML element(s). */
     element?: HTMLElement | HTMLElement[];
     /** Defines the cancel option. */
     cancel?: boolean;
-    /**
-     * Defines the type of the event.
-     */
+    /** Defines the type of the event. */
     event?: Event;
     /** Returns the group index of the cell. */
     groupIndex?: number;
@@ -73,14 +60,11 @@ export interface MoreEventsClickArgs extends BaseEventArgs {
     startTime: Date;
     /** Returns the end time of the cell. */
     endTime: Date;
-    /** Returns the single or collection of HTML element(s).
-     */
+    /** Returns the single or collection of HTML element(s). */
     element: Element;
     /** Defines the cancel option. */
     cancel: boolean;
-    /**
-     * Defines the type of the event.
-     */
+    /** Defines the type of the event. */
     event: Event;
     /** Returns the group index of the cell. */
     groupIndex?: number;
@@ -90,13 +74,11 @@ export interface MoreEventsClickArgs extends BaseEventArgs {
     viewName: View;
 }
 
-/** @deprecated */
+/** An interface that holds options to control the select action. */
 export interface SelectEventArgs extends BaseEventArgs {
     /** Returns the request type of the current action. */
     requestType: string;
-    /** 
-     * Defines the type of the event.
-     */
+    /** Defines the type of the event. */
     event?: Event;
     /** Returns the single or collection of HTML element(s). */
     element: HTMLElement | HTMLElement[];
@@ -104,34 +86,25 @@ export interface SelectEventArgs extends BaseEventArgs {
     showQuickPopup?: boolean;
     /** Determines whether to select multiple row. */
     allowMultipleRow?: boolean;
-    /**
-     * Return the appropriate cell or event data based on the action.
-     * @isGenericType true
-     */
-    data?: { [key: string]: Object } | { [key: string]: Object }[];
+    /** Return the appropriate cell or event data based on the action. */
+    data?: Record<string, any> | Record<string, any>[];
     /** Returns the clicked resource row index. */
     groupIndex?: number;
 }
 
 /** An interface that holds options to control the event click action. */
 export interface EventClickArgs extends BaseEventArgs {
-    /**
-     * Returns the date of the event.
-     * @deprecated
-     */
+    /** Returns the date of the event. */
     date?: Date;
-    /**
-     * Returns a single or collection of selected or clicked events.
-     * @isGenericType true
-     */
-    event: { [key: string]: Object } | { [key: string]: Object }[];
+    /** Returns a single or collection of selected or clicked events. */
+    event: Record<string, any> | Record<string, any>[];
     /** Returns the single or collection of HTML element(s). */
     element: HTMLElement | HTMLElement[];
     /** Defines the cancel option. */
     cancel?: boolean;
 }
 
-/** @deprecated */
+/** An interface that holds options to control the hover action. */
 export interface HoverEventArgs extends BaseEventArgs {
     /** Returns the mouse event. */
     event: MouseEvent;
@@ -141,11 +114,8 @@ export interface HoverEventArgs extends BaseEventArgs {
 
 /** An interface that holds options to control the events (appointments) rendering in Scheduler. */
 export interface EventRenderedArgs extends BaseEventArgs {
-    /**
-     * Returns the event data.
-     * @isGenericType true
-     */
-    data: { [key: string]: Object };
+    /** Returns the event data. */
+    data: Record<string, any>;
     /** Returns the event element which is currently being rendered on the UI. */
     element: HTMLElement;
     /** Defines the cancel option. */
@@ -157,40 +127,6 @@ export interface EventRenderedArgs extends BaseEventArgs {
 /** An interface that holds options to control the popup open action. */
 export interface PopupOpenEventArgs extends BaseEventArgs {
     /**
-     * Returns the type of the popup which is currently being opted to open. 
-     * The available type values are as follows,
-     * * DeleteAlert
-     * * EditEventInfo
-     * * Editor
-     * * EventContainer
-     * * QuickInfo
-     * * RecurrenceAlert
-     * * RecurrenceValidationAlert
-     * * ValidationAlert
-     * * ViewEventInfo
-     */
-    type: PopupType;
-    /**
-     * Returns the cell or event data.
-     * @isGenericType true
-     */
-    data?: Object;
-    /** Returns the target element on which the popup is getting opened. */
-    target?: Element;
-    /** Returns the popup wrapper element. */
-    element: Element;
-    /** Defines the cancel option. */
-    cancel: boolean;
-    /** Allows to specify the time duration to be used on editor window,
-     *  based on which the start and end time fields will display the time values. By default, it
-     *  will be processed based on the `interval` value within the `timeScale` property. 
-     */
-    duration?: number;
-}
-
-/** An interface that holds options to control the popup close action. */
-export interface PopupCloseEventArgs extends BaseEventArgs {
-    /** 
      * Returns the type of the popup which is currently being opted to open.
      * The available type values are as follows,
      * * DeleteAlert
@@ -204,11 +140,39 @@ export interface PopupCloseEventArgs extends BaseEventArgs {
      * * ViewEventInfo
      */
     type: PopupType;
-    /**
-     * Returns the cell or event data.
-     * @isGenericType true
+    /** Returns the cell or event data. */
+    data?: Record<string, any>;
+    /** Returns the target element on which the popup is getting opened. */
+    target?: Element;
+    /** Returns the popup wrapper element. */
+    element: Element;
+    /** Defines the cancel option. */
+    cancel: boolean;
+    /** Allows to specify the time duration to be used on editor window,
+     *  based on which the start and end time fields will display the time values. By default, it
+     *  will be processed based on the `interval` value within the `timeScale` property.
      */
-    data?: Object;
+    duration?: number;
+}
+
+/** An interface that holds options to control the popup close action. */
+export interface PopupCloseEventArgs extends BaseEventArgs {
+    /**
+     * Returns the type of the popup which is currently being opted to open.
+     * The available type values are as follows,
+     * * DeleteAlert
+     * * EditEventInfo
+     * * Editor
+     * * EventContainer
+     * * QuickInfo
+     * * RecurrenceAlert
+     * * RecurrenceValidationAlert
+     * * ValidationAlert
+     * * ViewEventInfo
+     */
+    type: PopupType;
+    /** Returns the cell or event data. */
+    data?: Record<string, any>;
     /** Returns the target element on which the popup is getting opened. */
     target?: Element;
     /** Returns the popup wrapper element. */
@@ -237,16 +201,13 @@ export interface NavigatingEventArgs extends BaseEventArgs {
 
 /** An interface that holds options to control the rendering of all cells (work, time, resource, header, and more). */
 export interface RenderCellEventArgs extends BaseEventArgs {
-    /** Returns the type of the elements which is currently being rendered on the UI. 
-     */
+    /** Returns the type of the elements which is currently being rendered on the UI. */
     elementType: string;
-    /** Returns the actual HTML element on which the required custom styling can be applied. 
-     */
+    /** Returns the actual HTML element on which the required custom styling can be applied. */
     element: Element;
     /** Returns the date value of the cell that is currently rendering on UI. */
     date?: Date;
-    /** Returns the group index of the cell.
-     */
+    /** Returns the group index of the cell. */
     groupIndex?: number;
 }
 
@@ -254,14 +215,9 @@ export interface RenderCellEventArgs extends BaseEventArgs {
 export interface ResizeEventArgs extends BaseEventArgs {
     /** Returns the resize element. */
     element: HTMLElement;
-    /**
-     * Returns the resize event data.
-     * @isGenericType true
-     */
-    data: { [key: string]: Object };
-    /**
-     * Returns the mouse event.
-     */
+    /** Returns the resize event data. */
+    data: Record<string, any>;
+    /** Returns the mouse event. */
     event: MouseEvent;
     /** Defines the cancel option. */
     cancel?: boolean;
@@ -281,14 +237,11 @@ export interface ResizeEventArgs extends BaseEventArgs {
 export interface DragEventArgs extends BaseEventArgs {
     /** Returns the drag element. */
     element: HTMLElement;
-    /**
-     * Returns the dragged event data.
-     * @isGenericType true
-     */
-    data: { [key: string]: Object };
-    /**
-     * Returns the mouse event.
-     */
+    /** Returns the dragged event data. */
+    data: Record<string, any>;
+    /** Returns the multiple dragged events data */
+    selectedData: Record<string, any>[];
+    /** Returns the mouse event. */
     event: MouseEvent;
     /** Defines the cancel option. */
     cancel?: boolean;
@@ -328,15 +281,48 @@ export interface ScrollOptions {
     timeDelay: number;
 }
 
-/** @hidden */
+/** An interface that holds export options. */
+export interface ExportOptions {
+    /** The fileName denotes the name to be given for the exported file. */
+    fileName?: string;
+    /** The exportType allows you to set the format of an Excel file to be exported either as .xlsx or .csv. */
+    exportType?: ExcelFormat;
+    /** The custom or specific field collection of event dataSource to be exported can be provided through fields option. */
+    fields?: string[];
+    /** The custom data collection can be exported by passing them through the customData option. */
+    customData?: Record<string, any>[];
+    /** There also exists option to export each individual instances of the recurring events to an Excel file,
+     * by setting true or false to the `includeOccurrences` option, denoting either to include or exclude
+     * the occurrences as separate instances on an exported Excel file.
+     */
+    includeOccurrences?: boolean;
+}
+
+/** An interface that holds the details of a resource. */
+export interface ResourceDetails {
+    /** Returns the resource model data such as the field mapping options used within it. */
+    resource: ResourcesModel;
+    /** Returns the child resource data. */
+    resourceData: Record<string, any>;
+    /** Returns the respective resource fields data. */
+    groupData?: Record<string, any>;
+    /** It returns the child level resources in compact mode. */
+    resourceChild?: ResourceDetails[];
+    /** It returns the Id of current resource in compact mode. */
+    resourceId?: string;
+    /** It returns the Name of current resource in compact mode. */
+    resourceName?: string;
+}
+
+/** @private */
 export interface InlineClickArgs extends BaseEventArgs {
-    data?: { [key: string]: Object };
+    data?: Record<string, any>;
     element: HTMLElement;
     groupIndex?: number;
     type: string;
 }
 
-/** @hidden */
+/** @private */
 export interface TdData {
     date?: Date;
     renderDates?: Date[];
@@ -348,7 +334,7 @@ export interface TdData {
     type: string;
     resourceLevelIndex?: number;
     resource?: ResourcesModel;
-    resourceData?: { [key: string]: Object };
+    resourceData?: Record<string, any>;
     startHour?: Date;
     endHour?: Date;
     workDays?: number[];
@@ -356,14 +342,14 @@ export interface TdData {
     template?: NodeList | Element[];
 }
 
-/** @hidden */
+/** @private */
 export interface TimeSlotData extends TdData {
     first: boolean;
     middle: boolean;
     last: boolean;
 }
 
-/** @hidden */
+/** @private */
 export interface KeyEventArgs {
     element: HTMLTableElement;
     rowIndex: number;
@@ -371,39 +357,20 @@ export interface KeyEventArgs {
     maxIndex: number;
 }
 
-/** @hidden */
+/** @private */
 export interface CellTemplateArgs {
     date: Date;
     type: string;
     groupIndex?: number;
 }
 
-/** An interface that holds the details of a resource. */
-export interface ResourceDetails {
-    /** Returns the resource model data such as the field mapping options used within it. */
-    resource: ResourcesModel;
-    /**
-     * Returns the child resource data.
-     * @isGenericType true
-     */
-    resourceData: { [key: string]: Object };
-    /** Returns the respective resource fields data. */
-    groupData?: { [key: string]: Object };
-    /** It returns the child level resources in compact mode. */
-    resourceChild?: ResourceDetails[];
-    /** It returns the Id of current resource in compact mode. */
-    resourceId?: string;
-    /** It returns the Name of current resource in compact mode. */
-    resourceName?: string;
-}
-
-/** @hidden */
+/** @private */
 export interface CrudArgs extends ActionEventArgs {
-    promise?: Promise<Object>;
-    editParms?: SaveChanges;
+    promise?: Promise<any>;
+    editParams?: SaveChanges;
 }
 
-/** @hidden */
+/** @private */
 export interface IRenderer {
     element: HTMLElement;
     renderDates: Date[];
@@ -439,16 +406,16 @@ export interface IRenderer {
     isTimelineView(): boolean;
     setColWidth(content: HTMLElement): void;
     resetColWidth(): void;
-    serverRenderLayout(): void;
     viewIndex: number;
 }
 
-/** @hidden */
+/** @private */
 export interface EJ2Instance extends HTMLElement {
-    ej2_instances: Object[];
+    // eslint-disable-next-line camelcase
+    ej2_instances: Record<string, any>[];
 }
 
-/** @hidden */
+/** @private */
 export interface ScrollCss {
     padding?: string;
     border?: string;
@@ -456,31 +423,22 @@ export interface ScrollCss {
     rtlBorder?: string;
 }
 
-/** @hidden */
+/** @private */
 export interface NotifyEventArgs {
     module?: string;
     cssProperties?: ScrollCss;
-    processedData?: Object[];
+    processedData?: Record<string, any>[];
     isPreventScrollUpdate?: boolean;
-    scrollPosition?: { [key: string]: Object };
+    scrollPosition?: Record<string, any>;
 }
 
-/** @hidden */
+/** @private */
 export interface LayoutData {
     element: HTMLElement;
     selectedDate: Date;
 }
 
-/** @hidden */
-export interface PopupEventArgs {
-    classList?: string[];
-    data?: string[] | { [key: string]: Object }[];
-    fields?: EventFieldsMapping;
-    id?: string;
-    l10n?: { [key: string]: Object };
-}
-
-/** @hidden */
+/** @private */
 export interface EventFieldsMapping {
     id?: string;
     isBlock?: string;
@@ -499,25 +457,25 @@ export interface EventFieldsMapping {
     followingID?: string;
 }
 
-/** @hidden */
+/** @private */
 export interface ElementData {
     index: number;
     left: string;
     width: string;
     day: number;
     dayIndex: number;
-    record: { [key: string]: Object };
+    record: Record<string, any>;
     resource: number;
 }
 
-/** @hidden */
+/** @private */
 export interface SaveChanges {
-    addedRecords: Object[];
-    changedRecords: Object[];
-    deletedRecords: Object[];
+    addedRecords: Record<string, any>[];
+    changedRecords: Record<string, any>[];
+    deletedRecords: Record<string, any>[];
 }
 
-/** @hidden */
+/** @private */
 export interface UIStateArgs {
     expand?: boolean;
     isInitial?: boolean;
@@ -531,8 +489,7 @@ export interface UIStateArgs {
 }
 
 /**
- *  @hidden
- *  Use ResourceDetails instead of TreeViewArgs
+ *  @private
  *  @deprecated
  */
 export interface TreeViewArgs {
@@ -541,7 +498,7 @@ export interface TreeViewArgs {
     resourceName?: string;
 }
 
-/** @hidden */
+/** @private */
 export interface ResizeEdges {
     left: boolean;
     right: boolean;
@@ -549,7 +506,7 @@ export interface ResizeEdges {
     bottom: boolean;
 }
 
-/** @hidden */
+/** @private */
 export interface ActionBaseArgs {
     X?: number;
     Y?: number;
@@ -575,13 +532,13 @@ export interface ActionBaseArgs {
     element?: HTMLElement;
     cloneElement?: HTMLElement[];
     originalElement?: HTMLElement[];
-    event?: { [key: string]: Object };
+    event?: Record<string, any>;
     excludeSelectors?: string;
     scroll?: ScrollOptions;
     navigation?: NavigateOptions;
 }
 
-/** @hidden */
+/** @private */
 export interface StateArgs {
     isRefresh: boolean;
     isResource: boolean;
@@ -591,31 +548,7 @@ export interface StateArgs {
     isDataManager: boolean;
 }
 
-/** An interface that holds export options. */
-export interface ExportOptions {
-    /** The fileName denotes the name to be given for the exported file. */
-    fileName?: string;
-    /** The exportType allows you to set the format of an Excel file to be exported either as .xlsx or .csv. */
-    exportType?: ExcelFormat;
-    /** The custom or specific field collection of event dataSource to be exported can be provided through fields option. */
-    fields?: string[];
-    /** The custom data collection can be exported by passing them through the customData option. */
-    customData?: { [key: string]: Object }[];
-    /** There also exists option to export each individual instances of the recurring events to an Excel file, 
-     * by setting true or false to the `includeOccurrences` option, denoting either to include or exclude 
-     * the occurrences as separate instances on an exported Excel file. 
-     */
-    includeOccurrences?: boolean;
-}
-
-/** @hidden */
-export interface PredicateData {
-    field: string;
-    operator: Function;
-    value: string;
-}
-
-/** @hidden */
+/** @private */
 export interface ViewsData extends ViewsModel {
     cellHeaderTemplateName?: string;
     dateHeaderTemplateName?: string;
@@ -624,31 +557,15 @@ export interface ViewsData extends ViewsModel {
     eventTemplateName?: string;
 }
 
-/** An interface that holds options of events once it bound to scheduler. */
-export interface DataBoundEventArgs extends BaseEventArgs {
-    /**
-     * Returns the result data.
-     * @isGenericType true
-     */
-    result: Object[];
-    count?: number;
-    aggregates?: Object;
-}
-
-/** An interface that holds options of events before it binds to scheduler. */
-export interface DataBindingEventArgs extends BaseEventArgs {
-    /**
-     * Returns the result data.
-     * @isGenericType true
-     */
-    result: Object[];
-    count?: number;
-    aggregates?: Object;
-}
-
-/** @hidden */
+/** @private */
 export interface CrudAction {
     isCrudAction: boolean;
     sourceEvent: TdData[];
     targetEvent: TdData[];
+}
+
+/** @private */
+export interface CallbackFunction extends Function {
+    // eslint-disable-next-line max-len
+    bind<T, A0, A1, A2, A3, A extends any[], R>(this: (this: T, args0: A0, args1: A1, args2: A2, args3: A3, ...args: A[]) => R, thisArgs: T, args0: A0, args1: A1, args2: A2, args3: A3): (...args: A[]) => R;
 }

@@ -92,7 +92,7 @@ describe("Zoom Module- Mouse wheel event testing-1", () => {
 
     it('Mouse Wheel Event with control pressed false', (done) => {
 console.log('Mouse Wheel Event with control pressed false');
-        let event: any = { pageX: 250, pageY: 120, preventDefault: function () { }, ctrlKey: true, wheelDelta: 5 };
+        let event: any = { pageX: 250, pageY: 120, preventDefault: function () { }, ctrlKey: true, deltaY: -1 };
         editor.documentHelper.zoomModule.onMouseWheelInternal(event);
         setTimeout(() => {
             expect(editor.documentHelper.zoomFactor).toBe(1.1);
@@ -102,13 +102,13 @@ console.log('Mouse Wheel Event with control pressed false');
     it('Mouse Wheel Event with control pressed true with zoomactor negative', () => {
 console.log('Mouse Wheel Event with control pressed true with zoomactor negative');
         editor.documentHelper.zoomFactor = -0.1;
-        let event: any = { pageX: 250, pageY: 120, preventDefault: function () { }, ctrlKey: true, wheelDelta: 0 };
+        let event: any = { pageX: 250, pageY: 120, preventDefault: function () { }, ctrlKey: true, deltaY: 0 };
         editor.documentHelper.zoomModule.onMouseWheelInternal(event);
         expect(editor.documentHelper.zoomFactor).toBe(0.1);
     });
     it('Mouse Wheel Event with control pressed true with zoom factor 1', () => {
 console.log('Mouse Wheel Event with control pressed true with zoom factor 1');
-        let event: any = { pageX: 250, pageY: 120, preventDefault: function () { }, ctrlKey: true, wheelDelta: 0 };
+        let event: any = { pageX: 250, pageY: 120, preventDefault: function () { }, ctrlKey: true, deltaY: 0 };
         editor.documentHelper.zoomModule.onMouseWheelInternal(event);
         expect(editor.documentHelper.zoomFactor).toBe(0.9);
 
@@ -144,7 +144,7 @@ describe("Zoom Module- Mouse wheel event testing-2", () => {
 
     it('Mouse Wheel Event with control pressed false', () => {
 console.log('Mouse Wheel Event with control pressed false');
-        let event: any = { pageX: 250, pageY: 120, preventDefault: function () { }, ctrlKey: false, wheelDelta: 5 };
+        let event: any = { pageX: 250, pageY: 120, preventDefault: function () { }, ctrlKey: false, deltaY: 5 };
         editor.documentHelper.zoomModule.onMouseWheelInternal(event);
         expect(editor.documentHelper.zoomFactor).toBe(1);
 
@@ -153,13 +153,13 @@ console.log('Mouse Wheel Event with control pressed false');
 console.log('Mouse Wheel Event with control pressed true with zoomfactor 6');
         zoomModule = new Zoom(editor.documentHelper);
         editor.documentHelper.zoomFactor = 6;
-        let event: any = { pageX: 250, pageY: 120, preventDefault: function () { }, ctrlKey: true, wheelDelta: 5 };
+        let event: any = { pageX: 250, pageY: 120, preventDefault: function () { }, ctrlKey: true, deltaY: -1 };
         zoomModule.onMouseWheelInternal(event);
         expect(editor.documentHelper.zoomFactor).toBe(5);
     });
     it('Mouse Wheel Event with control pressed true with pageX large', () => {
 console.log('Mouse Wheel Event with control pressed true with pageX large');
-        let event: any = { pageX: 5000, pageY: 120, preventDefault: function () { }, ctrlKey: true, wheelDelta: 5 };
+        let event: any = { pageX: 5000, pageY: 120, preventDefault: function () { }, ctrlKey: true, deltaY: 5 };
         editor.documentHelper.zoomModule.onMouseWheelInternal(event);
         expect(editor.documentHelper.zoomFactor).toBe(1);
     });

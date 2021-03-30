@@ -1173,7 +1173,7 @@ export namespace IntlBase {
         if (day < 4) {
             weeknum = Math.floor((daynum + day - 1) / 7) + 1;
             if (weeknum > 52) {
-                let nYear: Date = new Date(this.getFullYear() + 1, 0, 1);
+                let nYear: Date = new Date(date.getFullYear() + 1, 0, 1);
                 let nday: number = nYear.getDay();
                 nday = nday >= 0 ? nday : nday + 7;
                 weeknum = nday < 4 ? 1 : 53;

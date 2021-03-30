@@ -4,7 +4,7 @@
  */
 
 /**
- * Defines the rendering mode of the barcode. They are 
+ * Defines the rendering mode of the barcode. They are
  * * SVG
  * * Canvas
  */
@@ -24,10 +24,10 @@ export enum BarcodeEvent {
 
 
 /**
- * Defines the text alignment for the text to be rendered in the barcode. The text alignment types are 
- * * Left 
- * * Right 
- * * Center 
+ * Defines the text alignment for the text to be rendered in the barcode. The text alignment types are
+ * * Left
+ * * Right
+ * * Center
  */
 export type Alignment =
     /** Left - Align the text to the left side of the barcode element. */
@@ -39,9 +39,9 @@ export type Alignment =
 
 
 /**
- * Defines the text position for the text to be rendered in the barcode. The text positions are 
- * * Bottom 
- * * Top 
+ * Defines the text position for the text to be rendered in the barcode. The text positions are
+ * * Bottom
+ * * Top
  */
 export type TextPosition =
     /** Bottom - Text will be rendered in the bottom of the barcode element. */
@@ -59,11 +59,11 @@ export enum QuietZone {
 }
 
 /**
- * Defines the encoding type for the datamatrix code. They are 
- * * Auto 
- * * ASCII 
- * * ASCIINumeric 
- * * Base256 
+ * Defines the encoding type for the datamatrix code. They are
+ * * Auto
+ * * ASCII
+ * * ASCIINumeric
+ * * Base256
  */
 export type DataMatrixEncoding =
     /** Auto - Encoding type will be automatically assigned for the given input. */
@@ -78,38 +78,39 @@ export type DataMatrixEncoding =
 
 
 /**
- * Defines the size for the datamatrix code. The defined size are 
- * * Auto 
- * * Size10x10 
- * * Size12x12 
- * * Size14x14 
- * * Size16x16 
- * * Size18x18 
- * * Size20x20 
- * * Size22x22 
- * * Size24x24 
- * * Size26x26 
- * * Size32x32 
- * * Size36x36 
- * * Size40x40 
- * * Size44x44 
- * * Size48x48 
- * * Size52x52 
- * * Size64x64 
- * * Size72x72 
- * * Size80x80 
- * * Size88x88 
- * * Size96x96 
- * * Size104x104 
- * * Size120x120 
- * * Size132x132 
- * * Size144x144 
- * * Size8x18 
- * * Size8x32 
- * * Size12x26 
- * * Size12x36 
- * * Size16x36 
- * * Size16x48 
+ * Defines the size for the datamatrix code. The defined size are
+ * * Auto
+ * * Size10x10
+ * * Size12x12
+ * * Size14x14
+ * * Size16x16
+ * * Size18x18
+ * * Size20x20
+ * * Size22x22
+ * * Size24x24
+ * * Size26x26
+ * * Size32x32
+ * * Size36x36
+ * * Size40x40
+ * * Size44x44
+ * * Size48x48
+ * * Size52x52
+ * * Size64x64
+ * * Size72x72
+ * * Size80x80
+ * * Size88x88
+ * * Size96x96
+ * * Size104x104
+ * * Size120x120
+ * * Size132x132
+ * * Size144x144
+ * * Size8x18
+ * * Size8x32
+ * * Size12x26
+ * * Size12x36
+ * * Size16x36
+ * * Size16x48
+ *
  * @aspNumberEnum
  * @blazorNumberEnum
  * @IgnoreSingular
@@ -249,21 +250,21 @@ export enum DataMatrixSize {
 
 /**
  * Defines the type of the barcode to be generated. The barcode types are
- * * Code39 
- * * Code128 
- * * Code128A 
- * * Code128B 
- * * Code128C 
+ * * Code39
+ * * Code128
+ * * Code128A
+ * * Code128B
+ * * Code128C
  * * Codabar
- * * Ean8 
- * * Ean13 
- * * UpcA 
- * * UpcE 
- * * Code11 
- * * Code93 
- * * Code93Extension 
- * * Code39Extension 
- * * Code32 
+ * * Ean8
+ * * Ean13
+ * * UpcA
+ * * UpcE
+ * * Code11
+ * * Code93
+ * * Code93Extension
+ * * Code39Extension
+ * * Code32
  */
 export type BarcodeType =
     /** code39 - render the code39 barcode */
@@ -300,10 +301,10 @@ export type BarcodeType =
 
 
 /**
- * Defines the Qrcode input mode. The QR input modes are 
- * * NumericMode 
- * * BinaryMode 
- * * AlphaNumericMode 
+ * Defines the Qrcode input mode. The QR input modes are
+ * * NumericMode
+ * * BinaryMode
+ * * AlphaNumericMode
  */
 export type QRInputMode =
     /** NumericMode - Changes its mode to numericMode when the given input is numeric. */
@@ -316,48 +317,49 @@ export type QRInputMode =
 
 
 /**
- * Defines the Qrcode QRCodeVersion. They are 
- * * Auto 
- * * Version01 
- * * Version02 
- * * Version03 
- * * Version04 
- * * Version05 
- * * Version06 
- * * Version07 
- * * Version08 
- * * Version09 
- * * Version10 
- * * Version11 
- * * Version12 
- * * Version13 
- * * Version14 
- * * Version15 
- * * Version16 
- * * Version17 
- * * Version18 
- * * Version19 
- * * Version20 
- * * Version21 
- * * Version22 
- * * Version23 
- * * Version24 
- * * Version25 
- * * Version26 
- * * Version27 
- * * Version28 
- * * Version29 
- * * Version30 
- * * Version31 
- * * Version32 
- * * Version33 
- * * Version34 
- * * Version35 
- * * Version36 
- * * Version37 
- * * Version38 
- * * Version39 
- * * Version40 
+ * Defines the Qrcode QRCodeVersion. They are
+ * * Auto
+ * * Version01
+ * * Version02
+ * * Version03
+ * * Version04
+ * * Version05
+ * * Version06
+ * * Version07
+ * * Version08
+ * * Version09
+ * * Version10
+ * * Version11
+ * * Version12
+ * * Version13
+ * * Version14
+ * * Version15
+ * * Version16
+ * * Version17
+ * * Version18
+ * * Version19
+ * * Version20
+ * * Version21
+ * * Version22
+ * * Version23
+ * * Version24
+ * * Version25
+ * * Version26
+ * * Version27
+ * * Version28
+ * * Version29
+ * * Version30
+ * * Version31
+ * * Version32
+ * * Version33
+ * * Version34
+ * * Version35
+ * * Version36
+ * * Version37
+ * * Version38
+ * * Version39
+ * * Version40
+ *
  * @aspNumberEnum
  * @blazorNumberEnum
  * @IgnoreSingular
@@ -532,11 +534,12 @@ export enum QRCodeVersion {
 
 
 /**
- * Indicated the recovery capacity of the qrcode. The default capacity levels are 
+ * Indicated the recovery capacity of the qrcode. The default capacity levels are
  * * Low
  * * Medium
  * * Quartile
  * * High
+ *
  * @aspNumberEnum
  * @blazorNumberEnum
  * @IgnoreSingular
@@ -544,22 +547,22 @@ export enum QRCodeVersion {
 export enum ErrorCorrectionLevel {
 
     /**
-     * The Recovery capacity is 7%(approx.) 
+     * The Recovery capacity is 7%(approx.)
      */
     Low = 7,
 
     /**
-     * The Recovery capacity is 15%(approx.) 
+     * The Recovery capacity is 15%(approx.)
      */
     Medium = 15,
 
     /**
-     * The Recovery capacity is 25%(approx.) 
+     * The Recovery capacity is 25%(approx.)
      */
     Quartile = 25,
 
     /**
-     * The Recovery capacity is 30%(approx.) 
+     * The Recovery capacity is 30%(approx.)
      */
     High = 30
 }
@@ -568,13 +571,14 @@ export enum ErrorCorrectionLevel {
  * Defines the format of the barcode to be exported
  * JPG - Barcode will be exported as JPG file.
  * PNG - Barcode will be exported as PNG file.
+ *
  * @IgnoreSingular
  */
- export type BarcodeExportType  =
+export type BarcodeExportType  =
     /** Barcode will be exported as JPG file. */
     'JPG' |
 
     /** Barcode will be exported as PNG file */
     'PNG';
 
- 
+

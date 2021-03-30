@@ -60,16 +60,15 @@ export class PdfGantt extends PdfTreeGrid {
     }
 
     //Calcualte the header range for each pdf page based on schedule start and end date.
-    /* tslint:disable-next-line:max-func-body-length */
     private calculateRange(): void {
-        let lastColumnRange: number[] = this.layouter.columnRanges[this.layouter.columnRanges.length - 1];
+        const lastColumnRange: number[] = this.layouter.columnRanges[this.layouter.columnRanges.length - 1];
         let totalColumnWidth: number = 0;
         let isPageFinished: boolean = true;
         let pageWidth: number = 0;
         let remainWidth: number = 0;
         let point: number = 0;
-        let headerWidth: number = pixelToPoint(this.chartHeader.width);
-        let timelineSettings: Timeline = this.parent.timelineModule;
+        const headerWidth: number = pixelToPoint(this.chartHeader.width);
+        const timelineSettings: Timeline = this.parent.timelineModule;
 
         for (let index: number = lastColumnRange[0]; index <= lastColumnRange[1]; index++) {
             totalColumnWidth += this.layouter.treegrid.columns.getColumn(index).width;
@@ -93,9 +92,9 @@ export class PdfGantt extends PdfTreeGrid {
                 pageWidth = remainWidth;
                 isPageFinished = true;
             }
-            let detail: TimelineDetails = {};
-            let range: number[] = [];
-            let convertedWidth: number = pixelToPoint(this.chartHeader.bottomTierCellWidth);
+            const detail: TimelineDetails = {};
+            const range: number[] = [];
+            const convertedWidth: number = pixelToPoint(this.chartHeader.bottomTierCellWidth);
             let width: number = 0;
             if (this.chartHeader.bottomTierCellWidth !== 0) {
                 width = (Math.floor(pageWidth / convertedWidth) * convertedWidth);
@@ -114,68 +113,80 @@ export class PdfGantt extends PdfTreeGrid {
             && this.parent.cloneProjectStartDate.getSeconds() === 0 ) {
                 this.parent.cloneProjectStartDate.setHours(8);
             }
-            let timelineStartDate: Date = this.parent.dataOperation.getDateFromFormat(this.parent.cloneProjectStartDate);
-            let count: number = isNullOrUndefined(timelineSettings.customTimelineSettings.bottomTier.count) ?
+            const timelineStartDate: Date = this.parent.dataOperation.getDateFromFormat(this.parent.cloneProjectStartDate);
+            const count: number = isNullOrUndefined(timelineSettings.customTimelineSettings.bottomTier.count) ?
                 timelineSettings.customTimelineSettings.topTier.count : timelineSettings.customTimelineSettings.bottomTier.count;
-            let scheduleType: TimelineViewMode = timelineSettings.customTimelineSettings.bottomTier.unit === 'None' ?
+            const scheduleType: TimelineViewMode = timelineSettings.customTimelineSettings.bottomTier.unit === 'None' ?
                 timelineSettings.customTimelineSettings.topTier.unit : timelineSettings.customTimelineSettings.bottomTier.unit;
             switch (scheduleType) {
-                case 'Minutes':
-                    detail.startDate = new Date(timelineStartDate.getTime());
-                    let sDays: number = Math.floor(pointToPixel(detail.startPoint) / (this.chartHeader.bottomTierCellWidth));
-                    detail.startDate.setMinutes(detail.startDate.getMinutes() + sDays * count);
-                    detail.startDate.setSeconds(detail.startDate.getSeconds() + 1);
-                    detail.endDate = new Date(detail.startDate.getTime());
-                    let eDays: number = Math.floor(pointToPixel(detail.endPoint - detail.startPoint)
+            case 'Minutes':
+            {
+                detail.startDate = new Date(timelineStartDate.getTime());
+                const sDays: number = Math.floor(pointToPixel(detail.startPoint) / (this.chartHeader.bottomTierCellWidth));
+                detail.startDate.setMinutes(detail.startDate.getMinutes() + sDays * count);
+                detail.startDate.setSeconds(detail.startDate.getSeconds() + 1);
+                detail.endDate = new Date(detail.startDate.getTime());
+                const eDays: number = Math.floor(pointToPixel(detail.endPoint - detail.startPoint)
                       / (this.chartHeader.bottomTierCellWidth));
-                    detail.endDate.setMinutes(detail.endDate.getMinutes() + eDays * count);
-                    break;
-                case 'Hour':
-                    detail.startDate = new Date(timelineStartDate.getTime());
-                    let sDays1: number = Math.floor(pointToPixel(detail.startPoint) / (this.chartHeader.bottomTierCellWidth));
-                    detail.startDate.setHours(detail.startDate.getHours() + sDays1 * count);
-                    detail.startDate.setMinutes(detail.startDate.getMinutes() + 1);
-                    detail.endDate = new Date(detail.startDate.getTime());
-                    let eDays1: number = Math.floor(pointToPixel(detail.endPoint - detail.startPoint)
+                detail.endDate.setMinutes(detail.endDate.getMinutes() + eDays * count);
+                break;
+            }
+            case 'Hour':
+            {
+                detail.startDate = new Date(timelineStartDate.getTime());
+                const sDays1: number = Math.floor(pointToPixel(detail.startPoint) / (this.chartHeader.bottomTierCellWidth));
+                detail.startDate.setHours(detail.startDate.getHours() + sDays1 * count);
+                detail.startDate.setMinutes(detail.startDate.getMinutes() + 1);
+                detail.endDate = new Date(detail.startDate.getTime());
+                const eDays1: number = Math.floor(pointToPixel(detail.endPoint - detail.startPoint)
                       / (this.chartHeader.bottomTierCellWidth));
-                    detail.endDate.setHours(detail.endDate.getHours() + eDays1 * count);
-                    break;
-                case 'Day':
-                    detail.startDate = new Date(timelineStartDate.getTime());
-                    let startDays: number = (Math.round(detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth)));
-                    detail.startDate.setDate(detail.startDate.getDate() + startDays * count);
-                    let endDays: number = Math.round(((detail.endPoint - detail.startPoint)
+                detail.endDate.setHours(detail.endDate.getHours() + eDays1 * count);
+                break;
+            }
+            case 'Day':
+            {
+                detail.startDate = new Date(timelineStartDate.getTime());
+                const startDays: number = (Math.round(detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth)));
+                detail.startDate.setDate(detail.startDate.getDate() + startDays * count);
+                const endDays: number = Math.round(((detail.endPoint - detail.startPoint)
                       / pixelToPoint(this.chartHeader.bottomTierCellWidth))) - 1;
-                    detail.endDate = new Date(detail.startDate.getTime());
-                    detail.endDate.setDate(detail.startDate.getDate() + endDays * count);
-                    break;
-                case 'Week':
-                    detail.startDate = new Date(timelineStartDate.getTime());
-                    let startDays1: number = (detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth) * 7);
-                    detail.startDate.setDate(detail.startDate.getDate() + startDays1 * count);
-                    let endDays1: number = Math.round((detail.endPoint - detail.startPoint)
+                detail.endDate = new Date(detail.startDate.getTime());
+                detail.endDate.setDate(detail.startDate.getDate() + endDays * count);
+                break;
+            }
+            case 'Week':
+            {
+                detail.startDate = new Date(timelineStartDate.getTime());
+                const startDays1: number = (detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth) * 7);
+                detail.startDate.setDate(detail.startDate.getDate() + startDays1 * count);
+                const endDays1: number = Math.round((detail.endPoint - detail.startPoint)
                       / pixelToPoint(this.chartHeader.bottomTierCellWidth)) * 7 - 1;
-                    detail.endDate = new Date(detail.startDate.getTime());
-                    detail.endDate.setDate(detail.startDate.getDate() + endDays1 * count);
-                    break;
-                case 'Month':
-                    detail.startDate = new Date(timelineStartDate.getTime());
-                    let startDays2: number = (detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth) * 31);
-                    detail.startDate.setDate(detail.startDate.getDate() + startDays2 * count);
-                    let endDays2: number = Math.round((detail.endPoint - detail.startPoint)
+                detail.endDate = new Date(detail.startDate.getTime());
+                detail.endDate.setDate(detail.startDate.getDate() + endDays1 * count);
+                break;
+            }
+            case 'Month':
+            {
+                detail.startDate = new Date(timelineStartDate.getTime());
+                const startDays2: number = (detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth) * 31);
+                detail.startDate.setDate(detail.startDate.getDate() + startDays2 * count);
+                const endDays2: number = Math.round((detail.endPoint - detail.startPoint)
                       / pixelToPoint(this.chartHeader.bottomTierCellWidth)) * 31 - 1;
-                    detail.endDate = new Date(detail.startDate.getTime());
-                    detail.endDate.setDate(detail.startDate.getDate() + endDays2 * count);
-                    break;
-                case 'Year':
-                    detail.startDate = new Date(timelineStartDate.getTime());
-                    let startDays3: number = (detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth) * 365);
-                    detail.startDate.setDate(detail.startDate.getDate() + startDays3 * count);
-                    let endDays3: number = Math.round((detail.endPoint - detail.startPoint)
+                detail.endDate = new Date(detail.startDate.getTime());
+                detail.endDate.setDate(detail.startDate.getDate() + endDays2 * count);
+                break;
+            }
+            case 'Year':
+            {
+                detail.startDate = new Date(timelineStartDate.getTime());
+                const startDays3: number = (detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth) * 365);
+                detail.startDate.setDate(detail.startDate.getDate() + startDays3 * count);
+                const endDays3: number = Math.round((detail.endPoint - detail.startPoint)
                       / pixelToPoint(this.chartHeader.bottomTierCellWidth)) * 365 - 1;
-                    detail.endDate = new Date(detail.startDate.getTime());
-                    detail.endDate.setDate(detail.startDate.getDate() + endDays3 * count);
-                    break;
+                detail.endDate = new Date(detail.startDate.getTime());
+                detail.endDate.setDate(detail.startDate.getDate() + endDays3 * count);
+                break;
+            }
             }
             this.headerDetails.push(detail);
             point += width;
@@ -183,26 +194,26 @@ export class PdfGantt extends PdfTreeGrid {
     }
 
     private drawPageBorder(): void {
-        let pages: PdfPage[] = this.result.page.section.getPages() as PdfPage[];
+        const pages: PdfPage[] = this.result.page.section.getPages() as PdfPage[];
         for (let index: number = 0; index < pages.length; index++) {
-            let page: PdfPage = pages[index];
-            let graphics: PdfGraphics = page.graphics;
-            let pageSize: SizeF = page.getClientSize();
-            let pen: PdfPen = new PdfPen(new PdfColor(206, 206, 206));
+            const page: PdfPage = pages[index];
+            const graphics: PdfGraphics = page.graphics;
+            const pageSize: SizeF = page.getClientSize();
+            const pen: PdfPen = new PdfPen(new PdfColor(206, 206, 206));
             graphics.drawRectangle(pen, 0, 0, pageSize.width, pageSize.height);
         }
     }
     //Draw the gantt chart side
     private drawGantttChart(): void {
         let taskbarPoint: PointF = this.startPoint;
-        let pagePoint: PointF = new PointF();
+        const pagePoint: PointF = new PointF();
         let pageStartX: number = 0;
         let cumulativeWidth: number = 0;
         let cumulativeHeight: number = 0;
         let totalHeight: number = 0;
         let pageData: PageDetail;
         this.headerDetails.forEach((detail: TimelineDetails, index: number): void => {
-            let page: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
+            const page: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
             this.chartHeader.drawTimeline(page, this.startPoint, detail);
             taskbarPoint.y = taskbarPoint.y + pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60); // headerHeight
             pageStartX = taskbarPoint.x;
@@ -210,11 +221,11 @@ export class PdfGantt extends PdfTreeGrid {
             this.headerDetails[this.headerDetails.indexOf(detail)].startIndex = this.startPageIndex;
             this.headerDetails[this.headerDetails.indexOf(detail)].pageStartPoint = taskbarPoint;
             for (let i: number = 0; i < this.taskbarCollection.length; i++) {
-                let task: PdfGanttTaskbarCollection = this.taskbarCollection[i];
-                let rowHeight: number = this.rows.getRow(i + 1).height;
-                let pdfPage: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
-                /* tslint:disable-next-line */
-                let isNextPage: boolean = task.drawTaskbar(pdfPage, taskbarPoint, detail, cumulativeWidth, rowHeight, this.taskbarCollection[i]);
+                const task: PdfGanttTaskbarCollection = this.taskbarCollection[i];
+                const rowHeight: number = this.rows.getRow(i + 1).height;
+                const pdfPage: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
+                /* eslint-disable-next-line */
+                const isNextPage: boolean = task.drawTaskbar(pdfPage, taskbarPoint, detail, cumulativeWidth, rowHeight, this.taskbarCollection[i]);
                 if (isNextPage) {
                     if (this.enableHeader) {
                         taskbarPoint.y = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60);
@@ -238,6 +249,7 @@ export class PdfGantt extends PdfTreeGrid {
                 }
                 taskbarPoint.y += rowHeight;
                 cumulativeHeight += rowHeight;
+                // eslint-disable-next-line
                 totalHeight += rowHeight;
             }
             this.headerDetails[index].endIndex = this.startPageIndex;
@@ -263,7 +275,7 @@ export class PdfGantt extends PdfTreeGrid {
         });
         // Draw predecessor line.
         for (let i: number = 0; i < this.predecessorCollection.length; i++) {
-            let predecessor: PdfGanttPredecessor = this.predecessorCollection[i];
+            const predecessor: PdfGanttPredecessor = this.predecessorCollection[i];
             predecessor.drawPredecessor(this);
         }
     }

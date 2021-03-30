@@ -1,3 +1,8 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable @typescript-eslint/ban-types */
 import { Axis } from '../axis/axis';
 import { getMinPointsDelta, getActualDesiredIntervalsCount, setRange, triggerLabelRender } from '../../common/utils/helper';
 import { Size } from '@syncfusion/ej2-svg-base';
@@ -27,6 +32,7 @@ export class Double {
     private isColumn: number = 0;
     /**
      * Constructor for the dateTime module.
+     *
      * @private
      */
     constructor(chart?: Chart) {
@@ -35,18 +41,19 @@ export class Double {
 
     /**
      * Numeric Nice Interval for the axis.
+     *
      * @private
      */
     protected calculateNumericNiceInterval(axis: Axis, delta: number, size: Size): number {
-        let actualDesiredIntervalsCount: number = getActualDesiredIntervalsCount(size, axis);
+        const actualDesiredIntervalsCount: number = getActualDesiredIntervalsCount(size, axis);
         let niceInterval: number = delta / actualDesiredIntervalsCount;
         if (!isNullOrUndefined(axis.desiredIntervals)) {
             return niceInterval;
         }
 
-        let minInterval: number = Math.pow(10, Math.floor(logBase(niceInterval, 10)));
-        for (let interval of axis.intervalDivs) {
-            let currentInterval: number = minInterval * interval;
+        const minInterval: number = Math.pow(10, Math.floor(logBase(niceInterval, 10)));
+        for (const interval of axis.intervalDivs) {
+            const currentInterval: number = minInterval * interval;
             if (actualDesiredIntervalsCount < (delta / currentInterval)) {
                 break;
             }
@@ -57,6 +64,7 @@ export class Double {
 
     /**
      * Actual Range for the axis.
+     *
      * @private
      */
 
@@ -71,13 +79,14 @@ export class Double {
                 axis.actualRange.min = axis.doubleRange.start - axis.actualRange.interval;
             }
         } else {
-        axis.actualRange.interval = axis.interval || this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size);
-        axis.actualRange.min = axis.doubleRange.start;
-        axis.actualRange.max = axis.doubleRange.end;
+            axis.actualRange.interval = axis.interval || this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size);
+            axis.actualRange.min = axis.doubleRange.start;
+            axis.actualRange.max = axis.doubleRange.end;
         }
     }
     /**
      * Range for the axis.
+     *
      * @private
      */
     public initializeDoubleRange(axis: Axis): void {
@@ -102,13 +111,14 @@ export class Double {
 
     /**
      * The function to calculate the range and labels for the axis.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
     public calculateRangeAndInterval(size: Size, axis: Axis): void {
 
-        this.calculateRange(axis, size);
+        this.calculateRange(axis);
 
         this.getActualRange(axis, size);
 
@@ -121,16 +131,15 @@ export class Double {
 
     /**
      * Calculate Range for the axis.
+     *
      * @private
      */
 
-    protected calculateRange(axis: Axis, size: Size): void {
-
+    protected calculateRange(axis: Axis): void {
         /*! Generate axis range */
-        let series: Series;
         this.min = null; this.max = null;
         if (!setRange(axis)) {
-            for (let series of axis.series) {
+            for (const series of axis.series) {
                 if (!series.visible) {
                     continue;
                 }
@@ -187,16 +196,15 @@ export class Double {
     }
     /**
      * Apply padding for the range.
+     *
      * @private
      */
     public applyRangePadding(axis: Axis, size: Size): void {
-
-        let range: Range;
-        let start: number = axis.actualRange.min;
-        let end: number = axis.actualRange.max;
+        const start: number = axis.actualRange.min;
+        const end: number = axis.actualRange.max;
         if (!setRange(axis)) {
-            let interval: number = axis.actualRange.interval;
-            let padding: string = axis.getRangePadding(this.chart);
+            const interval: number = axis.actualRange.interval;
+            const padding: string = axis.getRangePadding(this.chart);
             if (padding === 'Additional' || padding === 'Round') {
                 this.findAdditional(axis, start, end, interval);
             } else if (padding === 'Normal') {
@@ -269,6 +277,7 @@ export class Double {
 
     /**
      * Calculate visible range for axis.
+     *
      * @private
      */
     protected calculateVisibleRange(size: Size, axis: Axis): void {
@@ -277,7 +286,7 @@ export class Double {
             delta: axis.actualRange.delta, interval: axis.actualRange.interval
         };
         if (this.chart.chartAreaType === 'Cartesian') {
-            let isLazyLoad : boolean = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
+            const isLazyLoad : boolean = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
             if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
                 axis.calculateVisibleRangeOnZooming(this.chart);
                 axis.calculateAxisRange(size, this.chart);
@@ -292,6 +301,7 @@ export class Double {
 
     /**
      * Calculate label for the axis.
+     *
      * @private
      */
 
@@ -300,13 +310,13 @@ export class Double {
         axis.visibleLabels = [];
         let tempInterval: number = axis.visibleRange.min;
         let labelStyle: Font;
-        let controlName: string = chart.getModuleName();
-        let isPolarRadar: boolean = controlName === 'chart' && (chart as Chart).chartAreaType === 'PolarRadar';
+        const controlName: string = chart.getModuleName();
+        const isPolarRadar: boolean = controlName === 'chart' && (chart as Chart).chartAreaType === 'PolarRadar';
         if (!isPolarRadar && (axis.zoomFactor < 1 || axis.zoomPosition > 0 || this.paddingInterval)) {
             tempInterval = axis.visibleRange.min - (axis.visibleRange.min % axis.visibleRange.interval);
         }
-        let format: string = this.getFormat(axis);
-        let isCustom: boolean = format.match('{value}') !== null;
+        const format: string = this.getFormat(axis);
+        const isCustom: boolean = format.match('{value}') !== null;
         let intervalDigits: number = 0;
         let formatDigits: number = 0;
         if (axis.labelFormat && axis.labelFormat.indexOf('n') > -1 ) {
@@ -332,7 +342,7 @@ export class Double {
         }
         if (tempInterval && (tempInterval + '').indexOf('.') >= 0 && (tempInterval + '').split('.')[1].length > 10) {
             tempInterval = (tempInterval + '').split('.')[1].length > (formatDigits || intervalDigits) ?
-                           +tempInterval.toFixed(formatDigits || intervalDigits) : tempInterval;
+                +tempInterval.toFixed(formatDigits || intervalDigits) : tempInterval;
             if (tempInterval <= axis.visibleRange.max) {
                 triggerLabelRender(chart, tempInterval, this.formatValue(axis, isCustom, format, tempInterval), labelStyle, axis);
             }
@@ -344,6 +354,7 @@ export class Double {
 
     /**
      * Format of the axis label.
+     *
      * @private
      */
 
@@ -359,6 +370,7 @@ export class Double {
 
     /**
      * Formatted the axis label.
+     *
      * @private
      */
 
@@ -367,7 +379,3 @@ export class Double {
             :  axis.format(tempInterval);
     }
 }
-
-
-
-

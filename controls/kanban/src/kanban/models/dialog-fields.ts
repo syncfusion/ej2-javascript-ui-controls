@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Property, ChildProperty } from '@syncfusion/ej2-base';
 import { DialogFieldType } from '../base/type';
 
@@ -8,6 +9,7 @@ export class DialogFields extends ChildProperty<DialogFields>  {
 
     /**
      * Defines the field text
+     *
      * @default null
      */
     @Property()
@@ -15,6 +17,7 @@ export class DialogFields extends ChildProperty<DialogFields>  {
 
     /**
      * Defines the field key
+     *
      * @default null
      */
     @Property()
@@ -26,6 +29,7 @@ export class DialogFields extends ChildProperty<DialogFields>  {
      * * DropDown
      * * Numeric
      * * TextArea
+     *
      * @default null
      */
     @Property()
@@ -33,9 +37,10 @@ export class DialogFields extends ChildProperty<DialogFields>  {
 
     /**
      * Defines the validationRules for fields
+     *
      * @default {}
      */
     @Property()
-    public validationRules: Object;
+    public validationRules: Record<string, any>;
 
 }

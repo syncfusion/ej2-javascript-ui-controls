@@ -1,5 +1,9 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/ban-types */
 import { RectOption, ChartLocation, appendChildElement, getElement, appendClipElement } from '../../common/utils/helper';
-import { findlElement, drawSymbol, markerAnimate, CircleOption, } from '../../common/utils/helper';
+import { findlElement, drawSymbol, markerAnimate, CircleOption } from '../../common/utils/helper';
 import { PathOption, Rect, Size, SvgRenderer, BaseAttibutes, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -19,6 +23,7 @@ export class Marker extends MarkerExplode {
 
     /**
      * Constructor for the marker module.
+     *
      * @private
      */
 
@@ -30,14 +35,15 @@ export class Marker extends MarkerExplode {
 
     /**
      * Render the marker for series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
     public render(series: Series): void {
-        let redraw: boolean = series.chart.redraw;
+        const redraw: boolean = series.chart.redraw;
         this.createElement(series, redraw);
-        for (let point of series.points) {
+        for (const point of series.points) {
             if (point.visible && point.symbolLocations && point.symbolLocations.length) {
                 point.symbolLocations.map((location: ChartLocation, index: number) => {
                     if (series.marker.shape !== 'None') {
@@ -52,31 +58,29 @@ export class Marker extends MarkerExplode {
         series: Series, point: Points,
         location: ChartLocation, index: number, redraw: boolean
     ): void {
-        let seriesIndex: number | String = series.index === undefined ? series.category : series.index;
-        let marker: MarkerSettingsModel = series.marker;
-        let border: BorderModel = {
+        const seriesIndex: number | string = series.index === undefined ? series.category : series.index;
+        const marker: MarkerSettingsModel = series.marker;
+        const border: BorderModel = {
             color: marker.border.color,
             width: marker.border.width
         };
-        let borderColor: string = marker.border.color;
-        let symbolId: string;
+        const borderColor: string = marker.border.color;
         let previousLocation: ChartLocation;
         let previousPath: string;
         let circlePath: string;
         let shapeOption: PathOption;
         location.x = location.x + marker.offset.x;
         location.y = location.y - marker.offset.y;
-        let isBoxPlot: boolean = series.type === 'BoxAndWhisker';
-        let fill: string = marker.fill || (isBoxPlot ? point.interior || series.interior : '#ffffff');
-        let argsData: IPointRenderEventArgs;
+        const isBoxPlot: boolean = series.type === 'BoxAndWhisker';
+        const fill: string = marker.fill || (isBoxPlot ? point.interior || series.interior : '#ffffff');
         let markerElement: Element;
-        let parentElement: Element = isBoxPlot ?
+        const parentElement: Element = isBoxPlot ?
             findlElement(series.seriesElement.childNodes, 'Series_' + series.index + '_Point_' + point.index)
             : series.symbolElement;
         border.color = borderColor || series.setPointColor(point, series.interior);
-        symbolId = this.elementId + '_Series_' + seriesIndex + '_Point_' + point.index + '_Symbol' +
+        const symbolId: string = this.elementId + '_Series_' + seriesIndex + '_Point_' + point.index + '_Symbol' +
             (index ? index : '');
-        argsData = {
+        const argsData: IPointRenderEventArgs = {
             cancel: false, name: pointRender, series: series, point: point,
             fill: point.isEmpty ? (series.emptyPointSettings.fill || fill) : fill,
             border: {
@@ -103,7 +107,7 @@ export class Marker extends MarkerExplode {
             } else {
                 y = point.y;
             }
-            let markerFill: string = argsData.point.marker.fill || argsData.fill;
+            const markerFill: string = argsData.point.marker.fill || argsData.fill;
             let markerBorder: BorderModel;
             if (!isNullOrUndefined(argsData.point.marker.border)) {
                 markerBorder = {
@@ -113,10 +117,10 @@ export class Marker extends MarkerExplode {
             } else {
                 markerBorder = { color: argsData.border.color, width: argsData.border.width };
             }
-            let markerWidth: number = argsData.point.marker.width || argsData.width;
-            let markerHeight: number = argsData.point.marker.height || argsData.height;
-            let markerOpacity: number = argsData.point.marker.opacity || marker.opacity;
-            let markerShape: ChartShape = argsData.point.marker.shape || argsData.shape;
+            const markerWidth: number = argsData.point.marker.width || argsData.width;
+            const markerHeight: number = argsData.point.marker.height || argsData.height;
+            const markerOpacity: number = argsData.point.marker.opacity || marker.opacity;
+            const markerShape: ChartShape = argsData.point.marker.shape || argsData.shape;
             shapeOption = new PathOption(
                 symbolId, markerFill, markerBorder.width, markerBorder.color, markerOpacity, null
             );
@@ -154,17 +158,16 @@ export class Marker extends MarkerExplode {
 
     public createElement(series: Series, redraw: boolean): void {
         let markerClipRect: Element;
-        let marker: MarkerSettingsModel = series.marker;
+        const marker: MarkerSettingsModel = series.marker;
         // 8 for extend border value 5 for extend size value
-        let explodeValue: number = marker.border.width + 8 + 5;
-        let render: SvgRenderer | CanvasRenderer = series.chart.svgRenderer;
-        let transform: string;
-        let index: number | string = series.index === undefined ? series.category : series.index;
+        const explodeValue: number = marker.border.width + 8 + 5;
+        const render: SvgRenderer | CanvasRenderer = series.chart.svgRenderer;
+        const index: number | string = series.index === undefined ? series.category : series.index;
         let options: RectOption | CircleOption | BaseAttibutes;
-        transform = series.chart.chartAreaType === 'Cartesian' ? 'translate(' + series.clipRect.x + ',' + (series.clipRect.y) + ')' : '';
+        const transform: string = series.chart.chartAreaType === 'Cartesian' ? 'translate(' + series.clipRect.x + ',' + (series.clipRect.y) + ')' : '';
         if (marker.visible) {
-            let markerHeight: number = (marker.height + explodeValue) / 2;
-            let markerWidth: number = (marker.width + explodeValue) / 2;
+            const markerHeight: number = (marker.height + explodeValue) / 2;
+            const markerWidth: number = (marker.width + explodeValue) / 2;
             if (series.chart.chartAreaType === 'Cartesian') {
                 options = new RectOption(this.elementId + '_ChartMarkerClipRect_' + index, 'transparent', { width: 1, color: 'Gray' }, 1, {
                     x: -markerWidth, y: -markerHeight,
@@ -188,7 +191,7 @@ export class Marker extends MarkerExplode {
             series.symbolElement = render.createGroup(options);
             series.symbolElement.appendChild(markerClipRect);
             if (this.chart.enableCanvas) {
-                let element: HTMLElement = document.getElementById(this.chart.element.id + '_tooltip_svg');
+                const element: HTMLElement = document.getElementById(this.chart.element.id + '_tooltip_svg');
                 element.appendChild(series.symbolElement);
             }
         }
@@ -209,17 +212,18 @@ export class Marker extends MarkerExplode {
 
     /**
      * Animates the marker.
-     * @return {void}.
+     *
+     * @returns {void}
      * @private
      */
     public doMarkerAnimation(series: Series): void {
         if (!(series.type === 'Scatter' || series.type === 'Bubble' || series.type === 'Candle' || series.type === 'Hilo' ||
             series.type === 'HiloOpenClose' || (series.chart.chartAreaType === 'PolarRadar' && (series.drawType === 'Scatter')))) {
-            let markerElements: NodeList = series.symbolElement.childNodes;
-            let delay: number = series.animation.delay + series.animation.duration;
-            let duration: number = series.chart.animated ? series.chart.duration : 200;
+            const markerElements: NodeList = series.symbolElement.childNodes;
+            const delay: number = series.animation.delay + series.animation.duration;
+            const duration: number = series.chart.animated ? series.chart.duration : 200;
             let j: number = 1;
-            let incFactor: number = (series.type === 'RangeArea' || series.type === 'RangeColumn') ? 2 : 1;
+            const incFactor: number = (series.type === 'RangeArea' || series.type === 'RangeColumn') ? 2 : 1;
             for (let i: number = 0; i < series.points.length; i++) {
                 if (series.points[i].symbolLocations) {
                     if (!series.points[i].symbolLocations.length || !markerElements[j]) {
@@ -227,7 +231,7 @@ export class Marker extends MarkerExplode {
                     }
                     markerAnimate(markerElements[j] as HTMLElement, delay, duration, series, i, series.points[i].symbolLocations[0], false);
                     if (incFactor === 2) {
-                        let lowPoint: ChartLocation = this.getRangeLowPoint(series.points[i].regions[0], series);
+                        const lowPoint: ChartLocation = this.getRangeLowPoint(series.points[i].regions[0], series);
                         markerAnimate(markerElements[j + 1] as HTMLElement, delay, duration, series, i, lowPoint, false);
                     }
                     j += incFactor;

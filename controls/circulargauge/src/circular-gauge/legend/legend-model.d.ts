@@ -7,12 +7,14 @@ export interface LocationModel {
 
     /**
      * Sets and gets the X coordinate of the legend in the circular gauge.
+     *
      * @default 0
      */
     x?: number;
 
     /**
      * Sets and gets the Y coordinate of the legend in the circular gauge.
+     *
      * @default 0
      */
     y?: number;
@@ -26,24 +28,28 @@ export interface LegendSettingsModel {
 
     /**
      * Enable and disables the visibility of the legend in circular gauge.
+     *
      * @default false
      */
     visible?: boolean;
 
     /**
      * Enables and disables the ranges visibility collapses based on the legend visibility.
+     *
      * @default true
      */
     toggleVisibility?: boolean;
 
     /**
      * Sets and gets the alignment of the legend in the circular gauge.
+     *
      * @default 'Center'
      */
     alignment?: Alignment;
 
     /**
      * Sets and gets the options to customize the border settings of the legend.
+     *
      */
     border?: BorderModel;
 
@@ -54,36 +60,42 @@ export interface LegendSettingsModel {
 
     /**
      * Sets and gets the options to customize the padding between legend items.
+     *
      * @default 8
      */
     padding?: number;
 
     /**
      * Sets and gets the opacity of the legend.
+     *
      * @default 1
      */
     opacity?: number;
 
     /**
      * Sets and gets the position of the legend in the circular gauge.
+     *
      * @default 'Auto'
      */
     position?: LegendPosition;
 
     /**
      * Sets and gets the shape of the legend in circular gauge.
+     *
      * @default Circle
      */
     shape?: GaugeShape;
 
     /**
      * Sets and gets the height of the legend in the circular gauge.
+     *
      * @default null
      */
     height?: string;
 
     /**
      * Sets and gets the width of the legend in the circular gauge.
+     *
      * @default null
      */
     width?: string;
@@ -95,18 +107,21 @@ export interface LegendSettingsModel {
 
     /**
      * Sets and gets the height of the legend shape in circular gauge.
+     *
      * @default 10
      */
     shapeHeight?: number;
 
     /**
      * Sets and gets the width of the legend shape in circular gauge.
+     *
      * @default 10
      */
     shapeWidth?: number;
 
     /**
      * Sets and gets the padding for the legend shape in circular gauge.
+     *
      * @default 5
      */
     shapePadding?: number;
@@ -134,6 +149,7 @@ export interface LegendSettingsModel {
 
     /**
      * Sets and gets the background color of the legend in circular gauge.
+     *
      * @default 'transparent'
      */
     background?: string;

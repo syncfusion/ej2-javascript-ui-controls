@@ -14,6 +14,10 @@ export const workbookOpen: string = 'workbookOpen';
 /** @hidden */
 export const beginSave: string = 'beginSave';
 /** @hidden */
+export const sortImport: string = 'sortImport';
+/** @hidden */
+export const ribbonFind: string = 'ribbonFind';
+/** @hidden */
 export const getFilteredCollection: string = 'getFilteredCollection';
 /** @hidden */
 export const saveCompleted: string = 'saveCompleted';
@@ -202,3 +206,7 @@ export const initiateChartModel: string = 'initiateChartModel';
 export const focusChartBorder: string = 'focusChartBorder';
 /** @hidden */
 export const saveError: string = 'saveError';
+/** @hidden */
+export const validationHighlight: string = 'validationHighlight';
+/** @hidden */
+export const dataRefresh: string = 'dataRefresh';

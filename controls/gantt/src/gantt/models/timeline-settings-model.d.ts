@@ -7,6 +7,7 @@ export interface TimelineTierSettingsModel {
 
     /**
      * Defines timeline cell format.
+     *
      * @default ''
      */
     format?: string;
@@ -20,18 +21,21 @@ export interface TimelineTierSettingsModel {
      * * `Month` - Define the month mode header.
      * * `Year` - Define the year mode header.
      * * `Minutes` - Define the minutes mode header.
+     *
      * @default 'None'
      */
     unit?: TimelineViewMode;
 
     /**
      * Defines number of timeline units combined for single cell.
+     *
      * @default 1
      */
     count?: number;
 
     /**
      * Defines method to get custom formatted values of timeline cells.
+     *
      * @default null
      */
     formatter?: string | ITimelineFormatter;
@@ -52,6 +56,7 @@ export interface TimelineSettingsModel {
      * * `Month` - Define the month mode header.
      * * `Year` - Define the year mode header.
      * * `Minutes` - Define the minutes mode header.
+     *
      * @default 'None'
      */
     timelineViewMode?: TimelineViewMode;
@@ -68,30 +73,35 @@ export interface TimelineSettingsModel {
 
     /**
      * Defines width of timeline cell.
+     *
      * @default 33
      */
     timelineUnitSize?: number;
 
     /**
      * Defines week start day in timeline.
-     * @default 0     
+     *
+     * @default 0
      */
     weekStartDay?: number;
 
     /**
      * Defines background color of weekend cell in week - day timeline mode.
-     * @default null      
+     *
+     * @default null
      */
     weekendBackground?: string;
 
     /**
      * Enables or disables tooltip for timeline cells.
+     *
      * @default true
      */
     showTooltip?: boolean;
 
     /**
      * Enables or disables timeline auto update on editing action.
+     *
      * @default true
      */
     updateTimescaleView?: boolean;

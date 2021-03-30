@@ -11,11 +11,15 @@ import { Selector } from './../objects/node';
 import { SelectorModel } from './../objects/node-model';
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
 
-/**
- * constraints-util module contains the common constraints
- */
 
-/** @private */
+/**
+ * constraints-util module contains the common constraints \
+ *
+ * @returns { number }   constraints-util module contains the common constraints  .\
+ *
+ * @param {ConnectorModel | NodeModel | PathAnnotationModel | ShapeAnnotationModel} node - Provide the DiagramElement value.
+ * @private
+ */
 export function canSelect(node: ConnectorModel | NodeModel | PathAnnotationModel | ShapeAnnotationModel): number {
     if (node) {
         let state: number = 0;
@@ -31,7 +35,14 @@ export function canSelect(node: ConnectorModel | NodeModel | PathAnnotationModel
     return 1;
 }
 
-/** @private */
+/**
+ * Used to check whether we can move the objects ot not\
+ *
+ * @returns { number }   Used to check whether we can move the objects ot not  .\
+ *
+ * @param {ConnectorModel | NodeModel | PathAnnotationModel | ShapeAnnotationModel} node - Used to check whether we can move the objects ot not.
+ * @private
+ */
 export function canMove(node: ConnectorModel | NodeModel | SelectorModel | ShapeAnnotationModel | PathAnnotationModel): number {
     if (node) {
         let state: number = 0;
@@ -49,7 +60,16 @@ export function canMove(node: ConnectorModel | NodeModel | SelectorModel | Shape
     return 1;
 }
 
-/** @private */
+/**
+ * Used to check the canEnablePointerEvents\
+ *
+ * @returns { number }   Used to check whether we can move the objects ot not  .\
+ *
+ * @param {ConnectorModel | NodeModel} node - Used to check whether we can move the objects ot not.
+ * @param {Diagram} diagram - Used to check whether we can move the objects ot not.
+ * @private
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function canEnablePointerEvents(node: ConnectorModel | NodeModel, diagram: Diagram): number {
     let state: number = 0;
     if (node instanceof Connector) {
@@ -60,7 +80,14 @@ export function canEnablePointerEvents(node: ConnectorModel | NodeModel, diagram
     return state;
 }
 
-/** @private */
+/**
+ * Used to check the canDelete of the element \
+ *
+ * @returns { number }   Used to check the canDelete of the element   .\
+ *
+ * @param {ConnectorModel | NodeModel} node - Used to check whether we can move the objects ot not.
+ * @private
+ */
 export function canDelete(node: ConnectorModel | NodeModel): number {
     let state: number = 0;
     if (node instanceof Connector) {
@@ -71,7 +98,15 @@ export function canDelete(node: ConnectorModel | NodeModel): number {
     return state;
 }
 
-/** @private */
+/**
+ * Used to check the bridging of the element \
+ *
+ * @returns { number }   Used to check the bridging of the element   .\
+ *
+ * @param {ConnectorModel | NodeModel} connector - provide the connector value.
+ * @param {ConnectorModel | NodeModel} diagram - provide the diagram value.
+ * @private
+ */
 export function canBridge(connector: Connector, diagram: Diagram): number {
     let state: number = 0;
     if (connector.constraints & ConnectorConstraints.Bridging) {
@@ -84,7 +119,15 @@ export function canBridge(connector: Connector, diagram: Diagram): number {
     return state;
 }
 
-/** @private */
+/**
+ * Used to check the routing  of the element \
+ *
+ * @returns { number }   Used to check the routing  of the element .\
+ *
+ * @param {ConnectorModel | NodeModel} connector - provide the connector value.
+ * @param {ConnectorModel | NodeModel} diagram - provide the diagram value.
+ * @private
+ */
 export function canEnableRouting(connector: Connector, diagram: Diagram): number {
     let state: number = 0;
     if (connector.constraints & ConnectorConstraints.LineRouting) {
@@ -95,22 +138,50 @@ export function canEnableRouting(connector: Connector, diagram: Diagram): number
     return state;
 }
 
-/** @private */
+/**
+ * Used to check the  source end dragof the element \
+ *
+ * @returns { number }   Used to check the  source end dragof the element. \
+ *
+ * @param {ConnectorModel | NodeModel} connector - provide the connector value.
+ * @private
+ */
 export function canDragSourceEnd(connector: Connector): number {
     return connector.constraints & ConnectorConstraints.DragSourceEnd;
 }
 
-/** @private */
+/**
+ * Used to check the target end drag   of the element \
+ *
+ * @returns { number }   Used to check the target end drag   of the element .\
+ *
+ * @param {ConnectorModel | NodeModel} connector - provide the connector value.
+ * @private
+ */
 export function canDragTargetEnd(connector: Connector): number {
     return connector.constraints & ConnectorConstraints.DragTargetEnd;
 }
 
-/** @private */
+/**
+ * Used to check the segment  drag   of the element \
+ *
+ * @returns { number }   Used to check the segment  drag   of the element .\
+ *
+ * @param {ConnectorModel | NodeModel} connector - provide the connector value.
+ * @private
+ */
 export function canDragSegmentThumb(connector: Connector): number {
     return connector.constraints & ConnectorConstraints.DragSegmentThumb;
 }
 
-/** @private */
+/**
+ * Used to check the routing  drag   of the element \
+ *
+ * @returns { number }   Used to check the segment  drag   of the element .\
+ *
+ * @param {NodeModel | ShapeAnnotationModel | PathAnnotationModel} node - provide the connector value.
+ * @private
+ */
 export function canRotate(node: NodeModel | ShapeAnnotationModel | PathAnnotationModel): number {
     if ((node instanceof ShapeAnnotation) || (node instanceof PathAnnotation)) {
         return node.constraints & AnnotationConstraints.Rotate;
@@ -119,12 +190,26 @@ export function canRotate(node: NodeModel | ShapeAnnotationModel | PathAnnotatio
     }
 }
 
-/** @private */
+/**
+ * Used to check shadown constraints   of the element \
+ *
+ * @returns { number }   Used to check shadown constraints   of the element .\
+ *
+ * @param {NodeModel} node - provide the connector value.
+ * @private
+ */
 export function canShadow(node: NodeModel): number {
     return node.constraints & NodeConstraints.Shadow;
 }
 
-/** @private */
+/**
+ * Used to check canInConnect constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {NodeModel} node - provide the node value.
+ * @private
+ */
 export function canInConnect(node: NodeModel): number {
     if ((node instanceof Node) && (node.constraints & NodeConstraints.InConnect)) {
         return node.constraints & NodeConstraints.InConnect;
@@ -133,7 +218,14 @@ export function canInConnect(node: NodeModel): number {
     return 0;
 }
 
-/** @private */
+/**
+ * Used to check canPortInConnect constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {PointPortModel} port - provide the PointPortModel value.
+ * @private
+ */
 export function canPortInConnect(port: PointPortModel): number {
     if (port && port.constraints) {
         if (!(port.constraints & PortConstraints.None) && (port.constraints & PortConstraints.InConnect)) {
@@ -144,7 +236,14 @@ export function canPortInConnect(port: PointPortModel): number {
     return 0;
 }
 
-/** @private */
+/**
+ * Used to check canOutConnect constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {NodeModel} node - provide the node value.
+ * @private
+ */
 export function canOutConnect(node: NodeModel): number {
     if ((node instanceof Node) && (node.constraints & NodeConstraints.OutConnect)) {
         return node.constraints & NodeConstraints.OutConnect;
@@ -153,7 +252,14 @@ export function canOutConnect(node: NodeModel): number {
     return 0;
 }
 
-/** @private */
+/**
+ * Used to check canPortOutConnect constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {PointPortModel} port - provide the node value.
+ * @private
+ */
 export function canPortOutConnect(port: PointPortModel): number {
     if (port && port.constraints) {
         if (!(port.constraints & PortConstraints.None) && (port.constraints & PortConstraints.OutConnect)) {
@@ -164,7 +270,15 @@ export function canPortOutConnect(port: PointPortModel): number {
     return 0;
 }
 
-/** @private */
+/**
+ * Used to check canResize constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {NodeModel | ShapeAnnotationModel | PathAnnotationModel} node - provide the node value.
+ * @param {NodeModel | ShapeAnnotationModel | PathAnnotationModel} direction - provide the node value.
+ * @private
+ */
 export function canResize(node: NodeModel | ShapeAnnotationModel | PathAnnotationModel, direction?: string): number {
     let returnValue: number = 0;
     if (node instanceof ShapeAnnotation || node instanceof PathAnnotation) {
@@ -191,7 +305,14 @@ export function canResize(node: NodeModel | ShapeAnnotationModel | PathAnnotatio
     return returnValue;
 }
 
-/** @private */
+/**
+ * Used to check canAllowDrop constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {ConnectorModel | NodeModel} node - provide the node value.
+ * @private
+ */
 export function canAllowDrop(node: ConnectorModel | NodeModel): number {
     let state: number = 0;
     if (node instanceof Connector) {
@@ -202,12 +323,27 @@ export function canAllowDrop(node: ConnectorModel | NodeModel): number {
     return state;
 }
 
-/** @private */
+/**
+ * Used to check canVitualize constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {Diagram} diagram - provide the Diagram value.
+ * @private
+ */
 export function canVitualize(diagram: Diagram): number {
     return diagram.constraints & DiagramConstraints.Virtualization;
 }
 
-/** @private */
+/**
+ * Used to check canEnableToolTip constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {ConnectorModel | NodeModel} node - provide the node value.
+ * @param {Diagram} diagram - provide the Diagram value.
+ * @private
+ */
 export function canEnableToolTip(node: ConnectorModel | NodeModel, diagram: Diagram): number {
     let state: number = 0;
     if (node instanceof Connector) {
@@ -226,77 +362,183 @@ export function canEnableToolTip(node: ConnectorModel | NodeModel, diagram: Diag
     return state;
 }
 
-/** @private */
+/**
+ * Used to check canSingleSelect constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {Diagram} model - provide the Diagram value.
+ * @private
+ */
 export function canSingleSelect(model: Diagram): number {
     return model.tool & DiagramTools.SingleSelect;
 }
 
-/** @private */
+/**
+ * Used to check canMultiSelect constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {Diagram} model - provide the Diagram value.
+ * @private
+ */
 export function canMultiSelect(model: Diagram): number {
     return model.tool & DiagramTools.MultipleSelect;
 }
 
-/** @private */
+/**
+ * Used to check canZoomPan constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {Diagram} model - provide the Diagram value.
+ * @private
+ */
 export function canZoomPan(model: Diagram): number {
     return model.tool & DiagramTools.ZoomPan;
 }
 
-/** @private */
+/**
+ * Used to check canContinuousDraw constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {Diagram} model - provide the Diagram value.
+ * @private
+ */
 export function canContinuousDraw(model: Diagram): number {
     return model.tool & DiagramTools.ContinuousDraw;
 }
 
-/** @private */
+/**
+ * Used to check canDrawOnce constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {Diagram} model - provide the Diagram value.
+ * @private
+ */
 export function canDrawOnce(model: Diagram): number {
     return model.tool & DiagramTools.DrawOnce;
 }
 
-/** @private */
+/**
+ * Used to check defaultTool constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {Diagram} model - provide the Diagram value.
+ * @private
+ */
 export function defaultTool(model: Diagram): number {
     return (model.tool & DiagramTools.SingleSelect) || (model.tool & DiagramTools.MultipleSelect);
 }
 
-/** @private */
+/**
+ * Used to check canZoom constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {Diagram} model - provide the Diagram value.
+ * @private
+ */
 export function canZoom(model: Diagram): number {
     return model.constraints & DiagramConstraints.Zoom;
 }
 
-/** @private */
+/**
+ * Used to check canPan constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {Diagram} model - provide the Diagram value.
+ * @private
+ */
 export function canPan(model: Diagram): number {
     return model.constraints & DiagramConstraints.Pan;
 }
 
-/** @private */
+/**
+ * Used to check canUserInteract constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {Diagram} model - provide the Diagram value.
+ * @private
+ */
 export function canUserInteract(model: Diagram): number {
     return model.constraints & DiagramConstraints.UserInteraction;
 }
 
-/** @private */
+/**
+ * Used to check canApiInteract constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {Diagram} model - provide the Diagram value.
+ * @private
+ */
 export function canApiInteract(model: Diagram): number {
     return model.constraints & DiagramConstraints.ApiUpdate;
 }
 
-/** @private */
+/**
+ * Used to check canPanX constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {Diagram} model - provide the Diagram value.
+ * @private
+ */
 export function canPanX(model: Diagram): number {
     return ((model.constraints & DiagramConstraints.PanX));
 }
 
-/** @private */
+/**
+ * Used to check canPanY constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {Diagram} model - provide the Diagram value.
+ * @private
+ */
 export function canPanY(model: Diagram): number {
     return ((model.constraints & DiagramConstraints.PanY));
 }
 
-/** @private */
+/**
+ * Used to check canZoomTextEdit constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {Diagram} diagram - provide the Diagram value.
+ * @private
+ */
 export function canZoomTextEdit(diagram: Diagram): number {
     return ((diagram.constraints & DiagramConstraints.ZoomTextEdit));
 }
 
-/** @private */
+/**
+ * Used to check canPageEditable constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {Diagram} model - provide the Diagram value.
+ * @private
+ */
 export function canPageEditable(model: Diagram): number {
     return canApiInteract(model) || (model.diagramActions & DiagramAction.ToolAction);
 }
 
-/** @private */
+/**
+ * Used to check enableReadOnly constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {Diagram} annotation - provide the annotation value.
+ * @param {Diagram} node - provide the node value.
+ * @private
+ */
 export function enableReadOnly(annotation: AnnotationModel, node: NodeModel | ConnectorModel): number {
     let enumValue: number = 0;
     enumValue = (node instanceof Connector) ? ConnectorConstraints.ReadOnly : NodeConstraints.ReadOnly;
@@ -314,19 +556,44 @@ export function enableReadOnly(annotation: AnnotationModel, node: NodeModel | Co
     return 0;
 }
 
-/** @private */
+/**
+ * Used to check canDraw constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {PointPortModel | NodeModel} port - provide the Diagram value.
+ * @param {Diagram} diagram - provide the Diagram value.
+ * @private
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function canDraw(port: PointPortModel | NodeModel, diagram: Diagram): number {
     return port.constraints & PortConstraints.Draw;
 
 }
 
-/** @private */
+/**
+ * Used to check canDrag constraints   of the element \
+ *
+ * @returns { number }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {PointPortModel | NodeModel} port - provide the Diagram value.
+ * @param {Diagram} diagram - provide the Diagram value.
+ * @private
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function canDrag(port: PointPortModel | NodeModel, diagram: Diagram): number {
     return port.constraints & PortConstraints.Drag;
 
 }
 
-/** @private */
+/**
+ * Used to check canPreventClearSelection constraints   of the element \
+ *
+ * @returns { boolean }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {PointPortModel | NodeModel} diagramActions - provide the diagramActions value.
+ * @private
+ */
 export function canPreventClearSelection(diagramActions: DiagramAction): boolean {
     if (diagramActions & DiagramAction.PreventClearSelection) {
         return true;
@@ -335,7 +602,14 @@ export function canPreventClearSelection(diagramActions: DiagramAction): boolean
     }
 }
 
-/** @private */
+/**
+ * Used to check canDrawThumbs \
+ *
+ * @returns { boolean }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {RendererAction} rendererActions - provide the RendererAction value.
+ * @private
+ */
 export function canDrawThumbs(rendererActions: RendererAction): boolean {
     if (!(rendererActions & RendererAction.DrawSelectorBorder)) {
         return true;
@@ -344,7 +618,14 @@ export function canDrawThumbs(rendererActions: RendererAction): boolean {
     }
 }
 
-/** @private */
+/**
+ * Used to check avoidDrawSelector \
+ *
+ * @returns { boolean }   Used to check canInConnect constraints   of the element .\
+ *
+ * @param {RendererAction} rendererActions - provide the RendererAction value.
+ * @private
+ */
 export function avoidDrawSelector(rendererActions: RendererAction): boolean {
     if ((rendererActions & RendererAction.PreventRenderSelector)) {
         return true;

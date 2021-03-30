@@ -1,6 +1,7 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-returns */
 import { withInRange } from '../../common/utils/helper';
 import { Rect } from '@syncfusion/ej2-svg-base';
-import { Chart } from '../chart';
 import { DoubleRange } from '../utils/double-range';
 import { Series } from './chart-series';
 import { ColumnBase } from './column-base';
@@ -13,16 +14,17 @@ export class ColumnSeries extends ColumnBase {
 
     /**
      * Render Column series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
     public render(series: Series): void {
         let rect: Rect;
-        let sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
-        let origin: number = Math.max(<number>series.yAxis.visibleRange.min, 0);
+        const sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
+        const origin: number = Math.max(<number>series.yAxis.visibleRange.min, 0);
         let argsData: IPointRenderEventArgs;
-        for (let pointColumn of series.points) {
+        for (const pointColumn of series.points) {
             pointColumn.symbolLocations = [];
             pointColumn.regions = [];
             if (
@@ -35,7 +37,7 @@ export class ColumnSeries extends ColumnBase {
                     pointColumn.xValue + sideBySideInfo.start, pointColumn.yValue,
                     pointColumn.xValue + sideBySideInfo.end, origin, series
                 );
-                let color: string = series.category === 'Indicator' ? pointColumn.color : series.interior;
+                const color: string = series.category === 'Indicator' ? pointColumn.color : series.interior;
                 argsData = this.triggerEvent(
                     series, pointColumn, color,
                     { width: series.border.width, color: series.border.color }
@@ -51,8 +53,9 @@ export class ColumnSeries extends ColumnBase {
 
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
 
     public doAnimation(series: Series): void {
@@ -69,14 +72,15 @@ export class ColumnSeries extends ColumnBase {
     }
 
     /**
-     * To destroy the column series. 
-     * @return {void}
+     * To destroy the column series.
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method performed here
          */
     }
-} 
+}

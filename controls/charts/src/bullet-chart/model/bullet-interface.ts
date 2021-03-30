@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { Size } from '@syncfusion/ej2-svg-base';
 import { BulletChart } from '../bullet-chart';
 import { ScaleGroup } from '../renderer/scale-render';
@@ -166,9 +167,9 @@ export interface IBarProperties {
     /** Defines the end values of the ranges */
     index: number;
     /** Defines the end values of the ranges */
-     shape: LegendShape;
- }
- export interface IBulletMouseEventArgs extends IBulletChartEventArgs {
+    shape: LegendShape;
+}
+export interface IBulletMouseEventArgs extends IBulletChartEventArgs {
     /** Defines current mouse event target id */
     target: string;
     /** Defines current mouse x location */

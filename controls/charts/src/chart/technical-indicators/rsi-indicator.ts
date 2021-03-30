@@ -1,3 +1,7 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
 import { TechnicalIndicator } from './technical-indicator';
 import { TechnicalAnalysis } from './indicator-base';
@@ -10,15 +14,16 @@ export class RsiIndicator extends TechnicalAnalysis {
 
     /**
      * Initializes the series collection to represent the RSI Indicator
+     *
      * @private
      */
     public initSeriesCollection(indicator: TechnicalIndicator, chart: Chart): void {
         super.initSeriesCollection(indicator, chart);
         if (indicator.showZones) {
-            let lowerLine: Series = new Series(indicator, 'targetSeries', {}, true);
+            const lowerLine: Series = new Series(indicator, 'targetSeries', {}, true);
             super.setSeriesProperties(
                 lowerLine, indicator, 'LowerLine', indicator.lowerLine.color, indicator.lowerLine.width, chart);
-            let upperLine: Series = new Series(indicator, 'targetSeries', {}, true);
+            const upperLine: Series = new Series(indicator, 'targetSeries', {}, true);
             super.setSeriesProperties(
                 upperLine, indicator, 'UpperLine', indicator.upperLine.color, indicator.upperLine.width, chart);
         }
@@ -26,16 +31,17 @@ export class RsiIndicator extends TechnicalAnalysis {
 
     /**
      * Defines the predictions using RSI approach
+     *
      * @private
      */
     public initDataSource(indicator: TechnicalIndicator, chart: Chart): void {
-        let signalCollection: Points[] = [];
-        let lowerCollection: Points[] = [];
-        let upperCollection: Points[] = [];
-        let signalSeries: Series = indicator.targetSeries[0];
+        const signalCollection: Points[] = [];
+        const lowerCollection: Points[] = [];
+        const upperCollection: Points[] = [];
+        const signalSeries: Series = indicator.targetSeries[0];
 
         //prepare data
-        let validData: Points[] = indicator.points;
+        const validData: Points[] = indicator.points;
 
         if (validData.length && validData.length >= indicator.period) {
 
@@ -55,7 +61,7 @@ export class RsiIndicator extends TechnicalAnalysis {
             let gain: number = 0;
             let loss: number = 0;
             for (let i: number = 1; i <= indicator.period; i++) {
-                let close: number = Number(validData[i].close);
+                const close: number = Number(validData[i].close);
                 if (close > prevClose) {
                     gain += close - prevClose;
                 } else {
@@ -71,7 +77,7 @@ export class RsiIndicator extends TechnicalAnalysis {
                 signalSeries, signalCollection.length));
 
             for (let j: number = indicator.period + 1; j < validData.length; j++) {
-                let close: number = Number(validData[j].close);
+                const close: number = Number(validData[j].close);
                 if (close > prevClose) {
                     gain = (gain * (indicator.period - 1) + (close - prevClose)) / indicator.period;
                     loss = (loss * (indicator.period - 1)) / indicator.period;
@@ -94,11 +100,12 @@ export class RsiIndicator extends TechnicalAnalysis {
 
     /**
      * To destroy the RSI Indicator.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroys the RSI Indicator
          */

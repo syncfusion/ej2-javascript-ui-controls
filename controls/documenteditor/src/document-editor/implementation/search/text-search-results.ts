@@ -1,30 +1,30 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TextSearchResult } from './text-search-result';
 import { DocumentEditor } from '../../document-editor';
-/** 
+/**
  * @private
  */
 export class TextSearchResults {
     public innerList: TextSearchResult[];
     public currentIndex: number = -1;
     private owner: DocumentEditor;
-    get length(): number {
+    public get length(): number {
         if (this.innerList === undefined) {
             return 0;
         }
         return this.innerList.length;
     }
-    get currentSearchResult(): TextSearchResult {
+    public get currentSearchResult(): TextSearchResult {
         if (this.innerList === undefined || this.currentIndex < 0 || this.currentIndex >= this.length) {
             return undefined;
         }
         return this.innerList[this.currentIndex];
     }
-    constructor(owner: DocumentEditor) {
+    public constructor(owner: DocumentEditor) {
         this.owner = owner;
     }
     public addResult(): TextSearchResult {
-        let textSearchResult: TextSearchResult = new TextSearchResult(this.owner);
+        const textSearchResult: TextSearchResult = new TextSearchResult(this.owner);
         if (isNullOrUndefined(this.innerList)) {
             this.innerList = [];
         }

@@ -7,7 +7,7 @@ export type ProgressType =
     /** circular */
     'Circular';
 
-/** 
+/**
  * Corner type
  */
 export type CornerType =
@@ -18,10 +18,10 @@ export type CornerType =
     /** Round */
     'Round' |
     /** Round4px */
-    'Round4px' ;
+    'Round4px';
 
 
-/** 
+/**
  * theme
  */
 export type ProgressTheme =
@@ -47,7 +47,7 @@ export type TextAlignmentType =
     /** Far */
     'Far';
 
-/** 
+/**
  * Linear modes
  */
 export type ModeType =

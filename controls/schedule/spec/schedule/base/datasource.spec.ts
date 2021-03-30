@@ -1,11 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { extend } from '@syncfusion/ej2-base';
+import { CallbackFunction } from '../../../src/schedule/base/interface';
 
 /**
- * Schedule datasource spec 
+ * Schedule datasource spec
  */
 
-export let defaultData: Object[] = [
+export const defaultData: Record<string, any>[] = [
     {
         Id: 1,
         Subject: 'Paris',
@@ -266,7 +268,7 @@ export let defaultData: Object[] = [
     }
 ];
 
-export let blockData: Object[] = [
+export const blockData: Record<string, any>[] = [
     {
         Id: 1,
         Subject: 'Meeting with CEO',
@@ -471,10 +473,10 @@ export let blockData: Object[] = [
     }
 ];
 
-let msPerDay: number = 86400000;
-let msPerHour: number = 3600000;
-let currentTime: number = new Date().setMinutes(0, 0, 0);
-export let readonlyEventsData: Object[] = [
+const msPerDay: number = 86400000;
+const msPerHour: number = 3600000;
+const currentTime: number = new Date().setMinutes(0, 0, 0);
+export const readonlyEventsData: Record<string, any>[] = [
     {
         Id: 1,
         Subject: 'Project Workflow Analysis',
@@ -538,7 +540,7 @@ export let readonlyEventsData: Object[] = [
     }
 ];
 
-export let dragResizeData: Object[] = [
+export const dragResizeData: Record<string, any>[] = [
     {
         Id: 1,
         Subject: 'Paris Conference',
@@ -623,7 +625,7 @@ export let dragResizeData: Object[] = [
     }
 ];
 
-export let stringData: Object[] = [
+export const stringData: Record<string, any>[] = [
     {
         Id: '1',
         Subject: 'Event1',
@@ -651,7 +653,7 @@ export let stringData: Object[] = [
     }
 ];
 
-export let sampleData: Object[] = [
+export const sampleData: Record<string, any>[] = [
     {
         Id: 1,
         Subject: 'Explosion of Betelgeuse Star',
@@ -690,7 +692,7 @@ export let sampleData: Object[] = [
         CategoryColor: '#f57f17'
     }];
 
-export let tooltipData: Object[] = [
+export const tooltipData: Record<string, any>[] = [
     {
         Id: 1,
         StartTime: new Date(2017, 11, 31, 10, 0),
@@ -732,7 +734,7 @@ export let tooltipData: Object[] = [
     }
 ];
 
-export let timezoneData: Object[] = [
+export const timezoneData: Record<string, any>[] = [
     {
         Id: 1,
         Subject: 'Paris',
@@ -766,23 +768,23 @@ export let timezoneData: Object[] = [
     }
 ];
 
-export let testBlockData: Object[] = [
+export const testBlockData: Record<string, any>[] = [
     {
         Id: 1,
         Subject: 'Block Event',
         StartTime: new Date(2017, 10, 2, 10),
         IsBlock: true,
-        EndTime: new Date(2017, 10, 2, 12),
+        EndTime: new Date(2017, 10, 2, 12)
     }, {
         Id: 2,
         Subject: 'Spanned - Less than 24 hour',
         StartTime: new Date(2017, 10, 1, 12, 30),
-        EndTime: new Date(2017, 10, 2, 1, 30),
+        EndTime: new Date(2017, 10, 2, 1, 30)
     }, {
         Id: 3,
         Subject: 'Spanned - Greater than 24 hour',
         StartTime: new Date(2017, 10, 1, 2),
-        EndTime: new Date(2017, 10, 8, 4),
+        EndTime: new Date(2017, 10, 8, 4)
     }, {
         Id: 4,
         Subject: 'Allday event',
@@ -810,22 +812,22 @@ export let testBlockData: Object[] = [
     }
 ];
 
-export let testData: Object[] = [
+export const testData: Record<string, any>[] = [
     {
         Id: 1,
         Subject: 'Normal Event',
         StartTime: new Date(2017, 10, 2, 10),
-        EndTime: new Date(2017, 10, 2, 12),
+        EndTime: new Date(2017, 10, 2, 12)
     }, {
         Id: 2,
         Subject: 'Spanned - Less than 24 hour',
         StartTime: new Date(2017, 10, 1, 12, 30),
-        EndTime: new Date(2017, 10, 2, 1, 30),
+        EndTime: new Date(2017, 10, 2, 1, 30)
     }, {
         Id: 3,
         Subject: 'Spanned - Greater than 24 hour',
         StartTime: new Date(2017, 10, 1, 2),
-        EndTime: new Date(2017, 10, 8, 4),
+        EndTime: new Date(2017, 10, 8, 4)
     }, {
         Id: 4,
         Subject: 'Allday event',
@@ -853,26 +855,32 @@ export let testData: Object[] = [
     }
 ];
 
-export function generateResourceData(
-    startId: number = 1, endId: number = 100, text: string = '', isAddGroupId: boolean = false, groupStartId?: number, groupEndId?: number):
-    Object[] {
-    let data: { [key: string]: Object }[] = [];
-    let resData: { [key: string]: Object }[] = [
+/**
+ * Method to generate resources dynamically
+ *
+ * @param {number} startId Accepts start Id
+ * @param {number} endId Accepts end Id
+ * @param {string} text Accepts resource anme
+ * @param {boolean} isAddGroupId Accepts the level grouping
+ * @param {number} groupStartId Accepts the group start Id
+ * @param {number} groupEndId Accepts the group end Id
+ * @returns {Object[]} Returns the collection of resource datas
+ * @private
+ */
+export function generateResourceData(startId: number = 1, endId: number = 100, text: string = '', isAddGroupId: boolean = false, groupStartId?: number, groupEndId?: number): Record<string, any>[] {
+    const data: Record<string, any>[] = [];
+    const resData: Record<string, any>[] = [
         { text: 'Nancy', color: '#ffaa00' },
         { text: 'Steven', color: '#f8a398' },
         { text: 'Michael', color: '#7499e1' }
     ];
     for (let a: number = startId; a <= endId; a++) {
-        let n: number = Math.floor(Math.random() * resData.length);
-        data.push({
-            Id: a,
-            Text: text + a + '',
-            Color: resData[n].color
-        });
+        const n: number = Math.floor(Math.random() * resData.length);
+        data.push({ Id: a, Text: text + a + '', Color: resData[n].color });
     }
     if (isAddGroupId) {
         let i: number = groupStartId;
-        for (let d of data) {
+        for (const d of data) {
             d.GroupID = i; // Math.floor(Math.random() * (groupEndId - groupStartId+1) + groupStartId);
             d.Text += '_' + d.GroupID;
             i++;
@@ -884,12 +892,25 @@ export function generateResourceData(
     return data;
 }
 
-export function addResourceField(eventData: Object[], field: string, start: number, end: number,
-    // tslint:disable-next-line:align
-    groupField?: string, groupStart?: number, groupEnd?: number, resData?: Object[]): void {
+/**
+ * Methods to add resource fields
+ *
+ * @param {Object[]} eventData Accepts the collection of datas
+ * @param {string} field Accepts the field name
+ * @param {number} start Accepts the start number ID
+ * @param {number} end Accepts the end number ID
+ * @param {string} groupField Accepts the group field
+ * @param {number} groupStart Accepts the group start ID
+ * @param {number} groupEnd Accepts the group end ID
+ * @param {Object[]} resData Accepts the collection of datas
+ * @returns {void}
+ * @private
+ */
+// eslint-disable-next-line max-len
+export function addResourceField(eventData: Record<string, any>[], field: string, start: number, end: number, groupField?: string, groupStart?: number, groupEnd?: number, resData?: Record<string, any>[]): void {
     if (!groupField) {
         let i: number = start;
-        for (let data of eventData as { [key: string]: Object }[]) {
+        for (const data of eventData) {
             data[field] = i;
             i++;
             if (i > end) {
@@ -897,13 +918,13 @@ export function addResourceField(eventData: Object[], field: string, start: numb
             }
         }
     } else {
-        let dm: DataManager = new DataManager({ json: eventData });
-        let dm1: DataManager = new DataManager({ json: resData });
+        const dm: DataManager = new DataManager({ json: eventData });
+        const dm1: DataManager = new DataManager({ json: resData });
         for (let a: number = groupStart; a <= groupEnd; a++) {
-            let eve: Object[] = dm.executeLocal(new Query().where(groupField, 'equal', a));
-            let filteredRes: Object[] = dm1.executeLocal(new Query().where('GroupID', 'equal', a).select(['Id']));
-            let possibleIds: number[] = (filteredRes as { [key: string]: Object }[]).map((a: { [key: string]: Object }) => a.Id as number);
-            let addField: Function = (events: { [key: string]: Object }[], list: number[]) => {
+            const eve: Record<string, any>[] = dm.executeLocal(new Query().where(groupField, 'equal', a)) as Record<string, any>[];
+            const filteredRes: Record<string, any>[] = dm1.executeLocal(new Query().where('GroupID', 'equal', a).select(['Id'])) as Record<string, any>[];
+            const possibleIds: number[] = (filteredRes as Record<string, any>[]).map((a: Record<string, any>) => a.Id as number);
+            const addField: CallbackFunction = (events: Record<string, any>[], list: number[]) => {
                 let index: number = 0;
                 for (let i: number = 0; i < events.length; i++) {
                     events[i][field] = list[index];
@@ -918,28 +939,37 @@ export function addResourceField(eventData: Object[], field: string, start: numb
     }
 }
 
-export function generateEventData(startDate: Date, endDate: Date, eventCount: number): Object[] {
-    let data: Object[] = [];
-    let names: string[] = [
+/**
+ * Method to generate events data dynamically
+ *
+ * @param {Date} startDate Accepts the start date
+ * @param {Date} endDate Accepts the end date
+ * @param {number} eventCount Accepts the event count
+ * @returns {Object[]} Returns the collection of event datas
+ * @private
+ */
+export function generateEventData(startDate: Date, endDate: Date, eventCount: number): Record<string, any>[] {
+    const data: Record<string, any>[] = [];
+    const names: string[] = [
         'Bering Sea Gold', 'Technology', 'Maintenance', 'Meeting', 'Travelling', 'Annual Conference', 'Birthday Celebration',
         'Farewell Celebration', 'Wedding Aniversary', 'Alaska: The Last Frontier', 'Deadest Catch', 'Sports Day',
         'MoonShiners', 'Close Encounters', 'HighWay Thru Hell', 'Daily Planet', 'Cash Cab', 'Basketball Practice',
         'Rugby Match', 'Guitar Class', 'Music Lessons', 'Doctor checkup', 'Brazil - Mexico', 'Opening ceremony', 'Final presentation'
     ];
-    let msPerHour: number = 1000 * 60 * 60;
+    const msPerHour: number = 1000 * 60 * 60;
     let id: number = 1;
-    let incMs: number = (msPerHour * 24) * 1;
-    let generate: Function = () => {
-        let start: number = startDate.getTime();
-        let end: number = endDate.getTime();
+    const incMs: number = (msPerHour * 24) * 1;
+    const generate: CallbackFunction = () => {
+        const start: number = startDate.getTime();
+        const end: number = endDate.getTime();
         for (let a: number = start; a < end; a += incMs) {
-            let count: number = Math.floor((Math.random() * 9) + 1);
+            const count: number = Math.floor((Math.random() * 9) + 1);
             for (let b: number = 0; b < count; b++) {
-                let hour: number = Math.floor(Math.random() * 100) % 24;
-                let minutes: number = Math.round((Math.floor(Math.random() * 100) % 60) / 5) * 5;
-                let nCount: number = Math.floor(Math.random() * names.length);
-                let startDate: Date = new Date(new Date(a).setHours(hour, minutes));
-                let endDate: Date = new Date(startDate.getTime() + (msPerHour * 2.5));
+                const hour: number = Math.floor(Math.random() * 100) % 24;
+                const minutes: number = Math.round((Math.floor(Math.random() * 100) % 60) / 5) * 5;
+                const nCount: number = Math.floor(Math.random() * names.length);
+                const startDate: Date = new Date(new Date(a).setHours(hour, minutes));
+                const endDate: Date = new Date(startDate.getTime() + (msPerHour * 2.5));
                 data.push({
                     Id: id,
                     Subject: names[nCount],
@@ -960,33 +990,46 @@ export function generateEventData(startDate: Date, endDate: Date, eventCount: nu
     return data;
 }
 
-export function cloneDataSource(datas: Object[]): Object[] {
-    let dataSrc: Object[] = [];
-    for (let i: number = 0; i < datas.length; i++) {
-        dataSrc.push(extend({}, datas[i]));
+/**
+ * Method to clone the datasource objects
+ *
+ * @param {Object[]} datas Accepts the original datasource
+ * @returns {Object[]} Returns the cloned datasource
+ * @private
+ */
+export function cloneDataSource(datas: Record<string, any>[]): Record<string, any>[] {
+    const dataSrc: Record<string, any>[] = [];
+    for (const data of datas) {
+        dataSrc.push(extend({}, data) as Record<string, any>);
     }
     return dataSrc;
 }
 
-export function generateObject(): Object[] {
-    let data: Object[] = [];
-    let names: string[] = [
+/**
+ * Method to generate events data dynamically
+ *
+ * @returns {Object[]} Returns the collection of event datas
+ * @private
+ */
+export function generateObject(): Record<string, any>[] {
+    const data: Record<string, any>[] = [];
+    const names: string[] = [
         'Bering Sea Gold', 'Technology', 'Maintenance', 'Meeting', 'Travelling', 'Annual Conference', 'Birthday Celebration',
         'Farewell Celebration', 'Wedding Aniversary', 'Alaska: The Last Frontier', 'Deadest Catch', 'Sports Day',
         'MoonShiners', 'Close Encounters', 'HighWay Thru Hell', 'Daily Planet', 'Cash Cab', 'Basketball Practice',
         'Rugby Match', 'Guitar Class', 'Music Lessons', 'Doctor checkup', 'Brazil - Mexico', 'Opening ceremony', 'Final presentation'
     ];
-    let start: number = new Date(2017, 0, 1).getTime();
-    let end: number = new Date(2018, 11, 31).getTime();
-    let dayCount: number = 1000 * 60 * 60;
+    const start: number = new Date(2017, 0, 1).getTime();
+    const end: number = new Date(2018, 11, 31).getTime();
+    const dayCount: number = 1000 * 60 * 60;
     for (let a: number = start, id: number = 3; a < end; a += (dayCount * 24) * 2) {
-        let count: number = Math.floor((Math.random() * 9) + 1);
+        const count: number = Math.floor((Math.random() * 9) + 1);
         for (let b: number = 0; b < count; b++) {
-            let hour: number = Math.floor(Math.random() * 100) % 24;
-            let minutes: number = Math.round((Math.floor(Math.random() * 100) % 60) / 5) * 5;
-            let nCount: number = Math.floor(Math.random() * names.length);
-            let startDate: Date = new Date(new Date(a).setHours(hour, minutes));
-            let endDate: Date = new Date(startDate.getTime() + (dayCount * 2.5));
+            const hour: number = Math.floor(Math.random() * 100) % 24;
+            const minutes: number = Math.round((Math.floor(Math.random() * 100) % 60) / 5) * 5;
+            const nCount: number = Math.floor(Math.random() * names.length);
+            const startDate: Date = new Date(new Date(a).setHours(hour, minutes));
+            const endDate: Date = new Date(startDate.getTime() + (dayCount * 2.5));
             data.push({
                 Id: id,
                 Subject: names[nCount],
@@ -997,14 +1040,14 @@ export function generateObject(): Object[] {
             id++;
         }
     }
-    let longerEvent: Object = {
+    const longerEvent: Record<string, any> = {
         Id: 0,
         StartTime: new Date(2017, 0, 1),
         EndTime: new Date(2017, 0, 10),
         IsAllDay: true,
         Location: 'Chennai'
     };
-    let occurrenceEvent: Object = {
+    const occurrenceEvent: Record<string, any> = {
         Id: 1,
         StartTime: new Date(2017, 0, 1),
         EndTime: new Date(2017, 0, 10),
@@ -1012,7 +1055,7 @@ export function generateObject(): Object[] {
         RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5',
         RecurrenceId: 0
     };
-    let recurrenceEvent: Object = {
+    const recurrenceEvent: Record<string, any> = {
         Id: 2,
         StartTime: new Date(2017, 0, 1),
         EndTime: new Date(2017, 0, 10),
@@ -1025,7 +1068,7 @@ export function generateObject(): Object[] {
     return data;
 }
 
-export let resourceData: Object[] = [
+export const resourceData: Record<string, any>[] = [
     {
         Id: 1,
         Subject: 'Nancy',
@@ -1110,7 +1153,7 @@ export let resourceData: Object[] = [
     }
 ];
 
-export let resourceGroupData: Object[] = [
+export const resourceGroupData: Record<string, any>[] = [
     {
         Id: 1,
         Subject: 'Meeting',
@@ -1263,7 +1306,7 @@ export let resourceGroupData: Object[] = [
     }
 ];
 
-export let timelineData: Object[] = [
+export const timelineData: Record<string, any>[] = [
     {
         Id: 1,
         Subject: 'Events - Within a day',
@@ -1398,7 +1441,7 @@ export let timelineData: Object[] = [
     }
 ];
 
-export let timelineResourceData: Object[] = [
+export const timelineResourceData: Record<string, any>[] = [
     {
         Id: 1,
         Subject: 'Events - Within a day',
@@ -1557,7 +1600,7 @@ export let timelineResourceData: Object[] = [
     }
 ];
 
-export let levelBasedData: Object[] = [
+export const levelBasedData: Record<string, any>[] = [
     {
         Id: 1,
         Subject: 'Events - Within a day',
@@ -1566,7 +1609,7 @@ export let levelBasedData: Object[] = [
         IsAllDay: false,
         FId: 1,
         HallId: 1,
-        RoomId: 1,
+        RoomId: 1
     }, {
         Id: 2,
         Subject: 'Spanned Event - Less than 24',
@@ -1575,7 +1618,7 @@ export let levelBasedData: Object[] = [
         IsAllDay: false,
         FId: 2,
         HallId: 2,
-        RoomId: 2,
+        RoomId: 2
     }, {
         Id: 3,
         Subject: 'Spanned Event - Greater than 24',
@@ -1615,13 +1658,22 @@ export let levelBasedData: Object[] = [
     }
 ];
 
-export function yearDataGenerator(count: number = 100, date: Date = new Date(), yearCount: number = 0): Object[] {
-    let startDate: Date = new Date(date.getFullYear(), 0, 1);
-    let endDate: Date = new Date(date.getFullYear() + yearCount, 11, 31);
-    let dateCollections: Object[] = [];
+/**
+ * Method to generate data for year view
+ *
+ * @param {number} count Accepts the number of events data count
+ * @param {Date} date Accepts the event start date
+ * @param {number} yearCount Accepts the number of years
+ * @returns {Object[]} Returns the collection of event datas
+ * @private
+ */
+export function yearDataGenerator(count: number = 100, date: Date = new Date(), yearCount: number = 0): Record<string, any>[] {
+    const startDate: Date = new Date(date.getFullYear(), 0, 1);
+    const endDate: Date = new Date(date.getFullYear() + yearCount, 11, 31);
+    const dateCollections: Record<string, any>[] = [];
     for (let a: number = 0, id: number = 1; a < count; a++) {
-        let start: Date = new Date(Math.random() * (endDate.getTime() - startDate.getTime()) + startDate.getTime());
-        let end: Date = new Date(new Date(start.getTime()).setHours(start.getHours() + 1));
+        const start: Date = new Date(Math.random() * (endDate.getTime() - startDate.getTime()) + startDate.getTime());
+        const end: Date = new Date(new Date(start.getTime()).setHours(start.getHours() + 1));
         dateCollections.push({
             Id: id,
             Subject: id.toString(),

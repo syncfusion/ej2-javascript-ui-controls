@@ -394,10 +394,11 @@ describe('Spreadsheet base module ->', () => {
         });
 
         it('enableRtl testing', (done: Function) => {
+            expect(helper.hasClass('e-rtl', helper.getSheetPanelElement())).toBeFalsy();
             helper.setModel('enableRtl', true);
             expect(helper.hasClass('e-rtl', helper.getSheetPanelElement())).toBeTruthy();
-            helper.setModel('enableRtl', false);
-            expect(helper.hasClass('e-rtl', helper.getSheetPanelElement())).toBeFalsy();
+            // helper.setModel('enableRtl', false);
+            // expect(helper.hasClass('e-rtl', helper.getSheetPanelElement())).toBeFalsy();
             done();
         });
 
@@ -449,7 +450,7 @@ describe('Spreadsheet base module ->', () => {
                 sheets: [
                     {
                         ranges: [{ dataSource: defaultData }]
-                    }
+                    }, {}
                 ]
             };
             helper.initializeSpreadsheet(model, done);
@@ -690,6 +691,45 @@ describe('Spreadsheet base module ->', () => {
             expect(helper.getInstance().definedNames.length).toBe(0);
         });
 
+        it('refresh', (done: Function) => {
+            helper.invoke('refresh', []);
+            setTimeout(() => {
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":"Item Name"}');
+                expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Casual Shoes');
+                done();
+            });
+        });
+
+        it('setColumnWidth testing', (done: Function) => {
+            helper.invoke('setColWidth', [130, 1]);
+            expect(helper.getInstance().sheets[0].columns[1].width).toBe(130);
+            // expect(getComputedStyle(helper.invoke('getCell', [0, 1])).width).toBe('130px'); // Check this now
+            expect(getComputedStyle(helper.getColHeaderElement().querySelector('.e-header-row').children[1]).width).toBe('130px');
+            helper.invoke('setColWidth', [120, 2, 1]);
+            expect(helper.getInstance().sheets[1].columns[2].width).toBe(120);
+            done();
+        });
+
+        it('updateUndoRedoCollection', (done: Function) => {
+            helper.invoke('getCell', [0, 0]).classList.add('customClass');
+            helper.invoke('updateUndoRedoCollection', [{ eventArgs: { class: 'customClass', rowIdx: 0, colIdx: 0, action: 'customCSS' } }]);
+            expect(helper.getElementFromSpreadsheet('#' + helper.id + '_undo').parentElement.classList).not.toBe('e-overlay');
+            helper.getInstance().actionComplete = (args: any) => {
+                expect(args.eventArgs.action).toBe('customCSS');
+            };
+            helper.click('#' + helper.id + '_undo');
+            helper.getInstance().actionComplete = undefined;
+            done();
+        });
+
+        it('addCustomFunction', (done: Function) => {
+            (window as any).CustomFuntion = (num: number) => Math.sqrt(num);
+            helper.invoke('addCustomFunction', ["CustomFuntion", "SQRT"]);
+            helper.edit('J5', '=SQRT(D2)');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('3.162278');
+            expect(helper.getInstance().sheets[0].rows[4].cells[9].value).toBe("3.162278");
+            done();
+        });
     });
 
     describe('OnProperty change checking ->', () => {
@@ -706,6 +746,80 @@ describe('Spreadsheet base module ->', () => {
 
         afterAll(() => {
             helper.invoke('destroy');
+        });
+
+        it('showRibbon', (done: Function) => {
+            helper.getInstance().showRibbon = false;
+            helper.getInstance().dataBind();
+            expect(helper.getRibbonElement()).toBeNull();
+            helper.getInstance().showRibbon = true;
+            helper.getInstance().dataBind();
+            expect(helper.getRibbonElement()).not.toBeNull();
+            done();
+        });
+
+        it('showFormulaBar', (done: Function) => {
+            helper.getInstance().showFormulaBar = false;
+            helper.getInstance().dataBind();
+            expect(helper.getFormulaBarElement()).toBeNull();
+            helper.getInstance().showFormulaBar = true;
+            helper.getInstance().dataBind();
+            expect(helper.getFormulaBarElement()).not.toBeNull();
+            done();
+        });
+
+        it('showSheetTabs', (done: Function) => {
+            helper.getInstance().showSheetTabs = false;
+            helper.getInstance().dataBind();
+            expect(helper.getElementFromSpreadsheet('.e-sheet-tab-panel')).toBeNull();
+            helper.getInstance().showSheetTabs = true;
+            helper.getInstance().dataBind();
+            expect(helper.getElementFromSpreadsheet('.e-sheet-tab-panel')).not.toBeNull();
+            done();
+        });
+
+        it('cellStyle', (done: Function) => {
+            helper.getInstance().cellStyle = { fontWeight: 'bold', fontSize: '20pt' };
+            helper.getInstance().dataBind();
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [0, 0]).style.fontSize).toBe('20pt');
+                expect(helper.invoke('getCell', [1, 0]).style.fontSize).toBe('20pt');
+                expect(helper.invoke('getCell', [1, 0]).style.fontWeight).toBe('bold');
+                helper.getInstance().cellStyle = { fontWeight: 'normal', fontSize: '11pt' };
+                helper.getInstance().dataBind();
+                // setTimeout(() => { // This case need to be fixed
+                //     expect(helper.invoke('getCell', [0, 0]).style.fontSize).toBe('11pt');
+                //     expect(helper.invoke('getCell', [1, 0]).style.fontSize).toBe('11pt');
+                //     expect(helper.invoke('getCell', [1, 0]).style.fontWeight).toBe('normal');
+                     done();
+                // });
+            });
+        });
+
+        it('allowEditing', (done: Function) => {
+            helper.getInstance().allowEditing = false;
+            helper.getInstance().dataBind();
+            expect(helper.getInstance().editModule).toBeUndefined();
+            helper.getInstance().allowEditing = true;
+            helper.getInstance().dataBind();
+            expect(helper.getInstance().editModule).not.toBeUndefined();
+            done();
+        });
+
+        it('allowInsert', (done: Function) => {
+            helper.getInstance().allowInsert = false;
+            helper.getInstance().dataBind();
+            expect(helper.getElementFromSpreadsheet('.e-add-sheet-tab').classList).toContain('e-disabled');
+            helper.getInstance().allowInsert = true;
+            helper.getInstance().dataBind();
+            expect(helper.getElementFromSpreadsheet('.e-add-sheet-tab').classList).not.toContain('e-disabled');
+            done();
+        });
+
+        it('locale', (done: Function) => {
+            helper.getInstance().locale = 'en-GB';
+            helper.getInstance().dataBind();
+            done();
         });
 
     });

@@ -16,6 +16,7 @@ import { SymbolPaletteInfo } from './preview';
 export abstract class NodeBase extends ChildProperty<NodeBase> {
     /**
      * Represents the unique id of nodes/connectors
+     *
      * @default ''
      */
     @Property('')
@@ -23,6 +24,7 @@ export abstract class NodeBase extends ChildProperty<NodeBase> {
 
     /**
      * Defines the visual order of the node/connector in DOM
+     *
      * @default -1
      */
     @Property(-1)
@@ -30,6 +32,7 @@ export abstract class NodeBase extends ChildProperty<NodeBase> {
 
     /**
      * Defines the space to be left between the node and its immediate parent
+     *
      * @default {}
      */
     @Complex<MarginModel>({}, Margin)
@@ -37,13 +40,15 @@ export abstract class NodeBase extends ChildProperty<NodeBase> {
 
     /**
      * Sets the visibility of the node/connector
+     *
      * @default true
      */
     @Property(true)
     public visible: boolean;
 
-    /** 
+    /**
      * defines the tooltip for the node
+     *
      * @default {}
      */
     @Complex<DiagramTooltipModel>({}, DiagramTooltip)
@@ -51,6 +56,7 @@ export abstract class NodeBase extends ChildProperty<NodeBase> {
 
     /**
      * Defines whether the node should be automatically positioned or not. Applicable, if layout option is enabled.
+     *
      * @default false
      */
     @Property(false)
@@ -58,6 +64,7 @@ export abstract class NodeBase extends ChildProperty<NodeBase> {
 
     /**
      * Allows the user to save custom information/data about a node/connector
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -67,6 +74,7 @@ export abstract class NodeBase extends ChildProperty<NodeBase> {
 
     /**
      * Flip the element in Horizontal/Vertical directions
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValue None
      * @default None
@@ -76,6 +84,7 @@ export abstract class NodeBase extends ChildProperty<NodeBase> {
 
     /**
      * Defines the symbol info of a connector
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined

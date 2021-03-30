@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { Property, ChildProperty } from '@syncfusion/ej2-base';
 import { SmithchartFontModel } from './utils-model';
 
@@ -10,6 +11,7 @@ export class SmithchartFont extends ChildProperty<SmithchartFont> {
     public fontFamily: string;
     /**
      * font style for text.
+     *
      * @default 'Normal'
      */
     @Property('Normal')
@@ -17,6 +19,7 @@ export class SmithchartFont extends ChildProperty<SmithchartFont> {
 
     /**
      * font weight for text.
+     *
      * @default 'Regular'
      */
     @Property('Regular')
@@ -24,6 +27,7 @@ export class SmithchartFont extends ChildProperty<SmithchartFont> {
 
     /**
      * Color for the text.
+     *
      * @default ''
      */
     @Property('')
@@ -31,6 +35,7 @@ export class SmithchartFont extends ChildProperty<SmithchartFont> {
 
     /**
      * font size for text.
+     *
      * @default '12px'
      */
     @Property('12px')
@@ -38,6 +43,7 @@ export class SmithchartFont extends ChildProperty<SmithchartFont> {
 
     /**
      * font opacity for text.
+     *
      * @default 1
      */
     @Property(1)
@@ -47,6 +53,7 @@ export class SmithchartFont extends ChildProperty<SmithchartFont> {
 export class SmithchartMargin extends ChildProperty<SmithchartMargin> {
     /**
      * top margin of chartArea.
+     *
      * @default 10
      */
     @Property(10)
@@ -54,6 +61,7 @@ export class SmithchartMargin extends ChildProperty<SmithchartMargin> {
 
     /**
      * bottom margin of chartArea.
+     *
      * @default 10
      */
     @Property(10)
@@ -61,6 +69,7 @@ export class SmithchartMargin extends ChildProperty<SmithchartMargin> {
 
     /**
      * right margin of chartArea.
+     *
      * @default 10
      */
 
@@ -69,6 +78,7 @@ export class SmithchartMargin extends ChildProperty<SmithchartMargin> {
 
     /**
      * left margin of chartArea.
+     *
      * @default 10
      */
 
@@ -81,6 +91,7 @@ export class SmithchartBorder extends ChildProperty<SmithchartBorder> {
 
     /**
      * width for smithchart border.
+     *
      * @default 0
      */
 
@@ -89,6 +100,7 @@ export class SmithchartBorder extends ChildProperty<SmithchartBorder> {
 
     /**
      * opacity for smithchart border.
+     *
      * @default 1
      */
     @Property(1)
@@ -96,6 +108,7 @@ export class SmithchartBorder extends ChildProperty<SmithchartBorder> {
 
     /**
      * color for smithchart border .
+     *
      * @default 'transparent'
      */
 

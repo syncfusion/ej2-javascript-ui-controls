@@ -16,4 +16,4 @@ export * from './user-interaction/highlight-selection';
 export * from './user-interaction/tooltip';
 export * from './model/image-export';
 export * from './model/pdf-export';
-export * from './model/print'
+export * from './model/print';

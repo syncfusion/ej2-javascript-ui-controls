@@ -17,6 +17,7 @@ import { PredicateModel } from './grid-model';
 import { Print } from '../actions/print';
 import { IXLFilter, FilterStateObj } from '../common/filter-interface';
 import { Cell } from '../models/cell';
+import { ResponsiveDialogRenderer } from '../renderer/responsive-dialog-renderer';
 
 //https://typescript.codeplex.com/discussions/401501
 /**

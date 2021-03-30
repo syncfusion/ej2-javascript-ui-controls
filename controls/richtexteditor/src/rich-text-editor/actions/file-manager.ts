@@ -28,7 +28,7 @@ export class FileManager {
     private dialogRenderObj: DialogRenderer;
     private rendererFactory: RendererFactory;
 
-    constructor(parent?: IRichTextEditor, locator?: ServiceLocator) {
+    private constructor(parent?: IRichTextEditor, locator?: ServiceLocator) {
         EJ2FileManager.Inject(ContextMenu, DetailsView, NavigationPane, Toolbar);
         this.parent = parent;
         this.i10n = locator.getService<L10n>('rteLocale');
@@ -49,19 +49,22 @@ export class FileManager {
         } else {
             dlgInsert = this.i10n.getConstant('dialogInsert');
         }
-        let dlgHeader: string = this.parent.localeObj.getConstant('fileDialogHeader');
-        let dlgCancel: string = this.i10n.getConstant('dialogCancel');
+        const dlgHeader: string = this.parent.localeObj.getConstant('fileDialogHeader');
+        const dlgCancel: string = this.i10n.getConstant('dialogCancel');
         this.dlgButtons = [{
             click: this.insertImageUrl.bind(this),
             buttonModel: { content: dlgInsert, cssClass: 'e-flat e-insertImage', isPrimary: true }
         },
         {
-            click: (e: MouseEvent) => { this.cancelDialog(); },
+            // eslint-disable-next-line
+            click: (e: MouseEvent) => {
+                this.cancelDialog();
+            },
             buttonModel: { cssClass: 'e-flat e-cancel', content: dlgCancel }
         }];
         this.dlgButtons[0].buttonModel.disabled = true;
         this.selectObj = { selection: e.selection, args: e.args, selectParent: e.selectParent };
-        let dlgTarget: HTMLElement = this.parent.createElement('div', {
+        const dlgTarget: HTMLElement = this.parent.createElement('div', {
             className: 'e-rte-file-manager-dialog', id: this.parent.getID() + '_file-manager-dialog',
             attrs: { 'aria-owns': this.parent.getID() }
         });
@@ -71,7 +74,7 @@ export class FileManager {
         });
         dlgTarget.appendChild(this.fileWrap);
         dlgTarget.appendChild(this.getInputUrlElement());
-        let dialogModel: DialogModel = {
+        const dialogModel: DialogModel = {
             visible: false,
             isModal: true, header: dlgHeader,
             target: document.body, locale: this.parent.locale,
@@ -81,6 +84,7 @@ export class FileManager {
             position: { X: 'center', Y: 'center' },
             buttons: this.dlgButtons,
             created: this.renderFileManager.bind(this),
+            // eslint-disable-next-line
             close: (e: { [key: string]: object }) => {
                 this.parent.isBlur = false;
                 if (e && (e.event as { [key: string]: string }).returnValue) {
@@ -88,7 +92,7 @@ export class FileManager {
                 }
                 this.destroyComponents();
                 this.dialogRenderObj.close(e);
-            },
+            }
         };
         this.dialogObj = this.dialogRenderObj.render(dialogModel);
         this.dialogObj.createElement = this.parent.createElement;
@@ -97,7 +101,8 @@ export class FileManager {
     }
 
     private renderFileManager(): void {
-        let proxy: FileManager = this;
+         // eslint-disable-next-line
+         const proxy: FileManager = this;
         this.fileObj = new EJ2FileManager({
             allowMultiSelection: false,
             locale: this.parent.locale,
@@ -120,7 +125,7 @@ export class FileManager {
             contextMenuSettings: this.parent.fileManagerSettings.contextMenuSettings,
             navigationPaneSettings: this.parent.fileManagerSettings.navigationPaneSettings,
             fileSelect: (e: FileSelectEventArgs) => {
-                let selectedFile: { [key: string]: string; } = e.fileDetails as { [key: string]: string; };
+                const selectedFile: { [key: string]: string } = e.fileDetails as { [key: string]: string };
                 if (selectedFile.isFile && proxy.parent.insertImageSettings.allowedTypes.indexOf(selectedFile.type) > -1) {
                     proxy.inputUrl.value = proxy.parent.fileManagerSettings.ajaxSettings.getImageUrl + '?path=' +
                     (selectedFile.filterPath && selectedFile.filterPath.replace(/\\/g, '/')) + selectedFile.name;
@@ -138,17 +143,19 @@ export class FileManager {
                 this.fileObj.refreshLayout();
             }
         });
-        if (Browser.isDevice) { this.fileObj.height = '85%'; }
+        if (Browser.isDevice) {
+            this.fileObj.height = '85%';
+        }
         this.fileObj.appendTo(this.fileWrap);
         EventHandler.add(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick, this);
     }
 
     private getInputUrlElement(): HTMLElement {
-        let imgUrl: HTMLElement = this.parent.createElement('div', { className: 'imgUrl' });
-        let urlLabel: HTMLElement = this.parent.createElement('div', { className: 'e-rte-label' });
+        const imgUrl: HTMLElement = this.parent.createElement('div', { className: 'imgUrl' });
+        const urlLabel: HTMLElement = this.parent.createElement('div', { className: 'e-rte-label' });
         urlLabel.innerHTML = '<label for="rteSample_img_url">' + this.i10n.getConstant('linkWebUrl') + '</label>';
         imgUrl.appendChild(urlLabel);
-        let placeUrl: string = this.i10n.getConstant('imageUrl');
+        const placeUrl: string = this.i10n.getConstant('imageUrl');
         this.inputUrl = this.parent.createElement('input', {
             className: 'e-input e-img-url',
             attrs: { placeholder: placeUrl, spellcheck: 'false', disabled: 'true' }
@@ -157,8 +164,9 @@ export class FileManager {
         return imgUrl;
     }
 
+    // eslint-disable-next-line
     private insertImageUrl(e: MouseEvent): void {
-        let url: string = (this.inputUrl as HTMLInputElement).value;
+        const url: string = (this.inputUrl as HTMLInputElement).value;
         if (this.parent.formatter.getUndoRedoStack().length === 0) {
             this.parent.formatter.saveData();
         }
@@ -166,13 +174,13 @@ export class FileManager {
             if (this.parent.editorMode === 'HTML' &&
                 isNOU(closest(this.selectObj.selection.range.startContainer.parentNode, '#' + this.contentModule.getPanel().id))) {
                 (this.contentModule.getEditPanel() as HTMLElement).focus();
-                let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
+                const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
                 this.selectObj.selection = this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
                 this.selectObj.selectParent = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
             }
-            let regex: RegExp = /[\w-]+.(jpg|png|jpeg|gif)/g;
-            let matchUrl: string = (!isNOU(url.match(regex)) && this.parent.editorMode === 'HTML') ? url.match(regex)[0] : '';
-            let value: IImageCommandsArgs = {
+            const regex: RegExp = /[\w-]+.(jpg|png|jpeg|gif)/g;
+            const matchUrl: string = (!isNOU(url.match(regex)) && this.parent.editorMode === 'HTML') ? url.match(regex)[0] : '';
+            const value: IImageCommandsArgs = {
                 cssClass: (this.parent.insertImageSettings.display === 'inline' ? classes.CLS_IMGINLINE : classes.CLS_IMGBREAK),
                 url: url, selection: this.selectObj.selection, altText: matchUrl, selectParent: this.selectObj.selectParent,
                 width: {
@@ -195,8 +203,8 @@ export class FileManager {
     }
 
     private onDocumentClick(e: MouseEvent): void {
-        let target: HTMLElement = <HTMLElement>e.target;
-        let prevEle: Element = target.nodeName !== '#document' && !isNOU(target.previousElementSibling) && target.previousElementSibling;
+        const target: HTMLElement = <HTMLElement>e.target;
+        const prevEle: Element = target.nodeName !== '#document' && !isNOU(target.previousElementSibling) && target.previousElementSibling;
         if (!isNOU(this.dialogObj) &&
             (!closest(target, '#' + this.parent.getID() + '_file-manager-dialog') &&
             !closest(target, '#' + this.parent.getID() + '_rte-file-manager_tb_sortby-popup') &&
@@ -241,13 +249,18 @@ export class FileManager {
     }
 
     private destroy(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.destroyComponents();
         this.removeEventListener();
     }
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} - returns the string value
+     * @hidden
      */
     private getModuleName(): string {
         return 'fileManager';

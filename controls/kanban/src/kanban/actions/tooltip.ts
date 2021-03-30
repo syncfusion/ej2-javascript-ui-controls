@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createElement, append, closest, addClass } from '@syncfusion/ej2-base';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { Kanban } from '../base';
@@ -5,7 +6,6 @@ import * as cls from '../base/css-constant';
 
 /**
  * Tooltip for Kanban board
- * @hidden
  */
 export class KanbanTooltip {
     private parent: Kanban;
@@ -13,7 +13,8 @@ export class KanbanTooltip {
 
     /**
      * Constructor for tooltip module
-     * @private
+     *
+     * @param {Kanban} parent Accepts the kanban instance
      */
     constructor(parent: Kanban) {
         this.parent = parent;
@@ -44,10 +45,10 @@ export class KanbanTooltip {
         let tooltipContent: HTMLElement | string;
         if (this.parent.tooltipTemplate) {
             tooltipContent = createElement('div');
-            let target: Element = closest(args.target, '.' + cls.CARD_CLASS);
-            let data: { [key: string]: Object } = this.parent.getCardDetails(target) as { [key: string]: Object };
-            let templateId: string = this.parent.element.id + '_tooltipTemplate';
-            let tooltipTemplate: Element[] = this.parent.templateParser(
+            const target: Element = closest(args.target, '.' + cls.CARD_CLASS);
+            const data: Record<string, any> = this.parent.getCardDetails(target) as Record<string, any>;
+            const templateId: string = this.parent.element.id + '_tooltipTemplate';
+            const tooltipTemplate: Element[] = this.parent.templateParser(
                 this.parent.tooltipTemplate)(data, this.parent, 'tooltipTemplate', templateId, false);
             append(tooltipTemplate, tooltipContent);
             this.parent.renderTemplates();

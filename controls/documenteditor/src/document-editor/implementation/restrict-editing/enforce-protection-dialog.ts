@@ -3,7 +3,7 @@ import { L10n, createElement } from '@syncfusion/ej2-base';
 import { RestrictEditing } from './restrict-editing-pane';
 import { DialogUtility } from '@syncfusion/ej2-popups';
 /**
- * @private 
+ * @private
  */
 export class EnforceProtectionDialog {
     private documentHelper: DocumentHelper;
@@ -16,32 +16,27 @@ export class EnforceProtectionDialog {
      * @private
      */
     public password: string;
-    constructor(documentHelper: DocumentHelper, owner: RestrictEditing) {
+
+    public constructor(documentHelper: DocumentHelper, owner: RestrictEditing) {
         this.documentHelper = documentHelper;
         this.owner = owner;
     }
-    get viewer(): LayoutViewer {
+    public get viewer(): LayoutViewer {
         return this.owner.viewer;
     }
-    /**
-     * @private
-     */
-    public initDialog(localValue: L10n, isRtl?: boolean): void {
-        let instance: EnforceProtectionDialog = this;
-        let id: string = this.viewer.owner.containerId + '_enforce_protection';
+
+    public initDialog(localValue: L10n): void {
+        //const instance: EnforceProtectionDialog = this;
+        const id: string = this.viewer.owner.containerId + '_enforce_protection';
         this.target = createElement('div', { id: id, className: 'e-de-enforce' });
 
-        let container: HTMLElement = createElement('div');
-        // tslint:disable-next-line:max-line-length
-        let newPassWord: HTMLElement = createElement('div', { className: 'e-de-enforce-dlg-title', innerHTML: localValue.getConstant('Enter new password') });
-        // tslint:disable-next-line:max-line-length
+        const container: HTMLElement = createElement('div');
+        const newPassWord: HTMLElement = createElement('div', { className: 'e-de-enforce-dlg-title', innerHTML: localValue.getConstant('Enter new password') });
         this.passwordTextBox = createElement('input', { attrs: { type: 'password', autofocus: 'true' }, id: this.viewer.owner.containerId + '_display_text', className: 'e-input e-de-enforce-dlg-input' }) as HTMLInputElement;
         // this.passwordTextBox.addEventListener('keyup', instance.onKeyUpOnDisplayBox);
         container.appendChild(newPassWord);
         container.appendChild(this.passwordTextBox);
-        // tslint:disable-next-line:max-line-length
-        let confirmPassword: HTMLElement = createElement('div', { className: 'e-de-enforce-dlg-title', innerHTML: localValue.getConstant('Reenter new password to confirm') }) as HTMLDivElement;
-        // tslint:disable-next-line:max-line-length
+        const confirmPassword: HTMLElement = createElement('div', { className: 'e-de-enforce-dlg-title', innerHTML: localValue.getConstant('Reenter new password to confirm') }) as HTMLDivElement;
         this.confirmPasswordTextBox = createElement('input', { attrs: { type: 'password' }, id: this.viewer.owner.containerId + '_url_text', className: 'e-input e-de-enforce-dlg-input' }) as HTMLInputElement;
         container.appendChild(confirmPassword);
         container.appendChild(this.confirmPasswordTextBox);
@@ -49,12 +44,13 @@ export class EnforceProtectionDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public show = (): void => {
         this.localeValue = new L10n('documenteditor', this.viewer.owner.defaultLocale);
         this.localeValue.setLocale(this.viewer.owner.locale);
         if (!this.target) {
-            this.initDialog(this.localeValue, this.viewer.owner.enableRtl);
+            this.initDialog(this.localeValue);
         }
         this.documentHelper.dialog.header = this.localeValue.getConstant('Start Enforcing Protection');
         this.documentHelper.dialog.height = 'auto';
@@ -71,30 +67,32 @@ export class EnforceProtectionDialog {
         this.passwordTextBox.value = '';
         this.confirmPasswordTextBox.value = '';
         this.documentHelper.dialog.show();
-    }
+    };
+    /**
+     * @returns {void}
+     */
     public hideDialog = (): void => {
         this.passwordTextBox.value = '';
         this.confirmPasswordTextBox.value = '';
         this.documentHelper.dialog.hide();
-    }
+    };
 
     /**
      * @private
+     * @returns {void}
      */
     public okButtonClick = (): void => {
         if (this.passwordTextBox.value !== this.confirmPasswordTextBox.value) {
-            /* tslint:disable */
             DialogUtility.alert(this.localeValue.getConstant('Password Mismatch'));
-            /* tslint:enable */
         } else {
             this.password = this.passwordTextBox.value;
             this.viewer.owner.editor.addProtection(this.password, this.owner.protectionType);
         }
-    }
+    };
 
 }
 /**
- * @private 
+ * @private
  */
 export class UnProtectDocumentDialog {
     private documentHelper: DocumentHelper;
@@ -105,24 +103,21 @@ export class UnProtectDocumentDialog {
     private localObj: L10n;
     private currentHashValue: string;
     private currentSaltValue: string;
-    get viewer(): LayoutViewer {
+    public get viewer(): LayoutViewer {
         return this.owner.viewer;
     }
-    constructor(documentHelper: DocumentHelper, owner: RestrictEditing) {
+    public constructor(documentHelper: DocumentHelper, owner: RestrictEditing) {
         this.documentHelper = documentHelper;
         this.owner = owner;
     }
 
-    /**
-     * @private
-     */
-    public initDialog(localValue: L10n, isRtl?: boolean): void {
-        let instance: UnProtectDocumentDialog = this;
-        let id: string = this.viewer.owner.containerId + '_enforce_protection';
+    public initDialog(localValue: L10n): void {
+        //const instance: UnProtectDocumentDialog = this;
+        const id: string = this.viewer.owner.containerId + '_enforce_protection';
         this.target = createElement('div', { id: id, className: 'e-de-enforce' });
 
-        let container: HTMLElement = createElement('div');
-        let newPassWord: HTMLElement = createElement('div', {
+        const container: HTMLElement = createElement('div');
+        const newPassWord: HTMLElement = createElement('div', {
             className: 'e-de-unprotect-dlg-title',
             innerHTML: localValue.getConstant('Password')
         });
@@ -137,12 +132,13 @@ export class UnProtectDocumentDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public show = (): void => {
         this.localObj = new L10n('documenteditor', this.viewer.owner.defaultLocale);
         this.localObj.setLocale(this.viewer.owner.locale);
         if (!this.target) {
-            this.initDialog(this.localObj, this.viewer.owner.enableRtl);
+            this.initDialog(this.localObj);
         }
         this.documentHelper.dialog.header = 'Unprotect Document';
         this.documentHelper.dialog.height = 'auto';
@@ -159,24 +155,25 @@ export class UnProtectDocumentDialog {
         this.documentHelper.dialog.dataBind();
         this.passwordTextBox.value = '';
         this.documentHelper.dialog.show();
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
-    /* tslint:disable:no-any */
     public okButtonClick = (): void => {
-        let password: string = this.passwordTextBox.value;
+        const password: string = this.passwordTextBox.value;
         if (password === '') {
             return;
         }
         this.viewer.owner.editor.stopProtection(password);
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public hideDialog = (): void => {
         this.passwordTextBox.value = '';
         this.documentHelper.dialog.hide();
-    }
-    /* tslint:enable:no-any */
-}    
+    };
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+}

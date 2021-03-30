@@ -2863,6 +2863,72 @@
     }
   }
 
+  .e-schedule.e-multi-drag {
+    .e-vertical-view {
+      .e-all-day-appointment-wrapper .e-appointment {
+        &.e-appointment-border,
+        &:focus {
+          border: $schedule-appointment-selected-border;
+        }
+      }
+
+      &.e-timescale-disable {
+        .e-appointment {
+          &.e-appointment-border,
+          &:focus {
+            border: $schedule-appointment-selected-border;
+          }
+        }
+      }
+
+      .e-day-wrapper .e-appointment {
+        &.e-appointment-border,
+        &:focus {
+          border: $schedule-appointment-selected-border;
+        }
+      }
+    }
+
+    .e-month-view {
+      .e-appointment {
+        &.e-appointment-border,
+        &:focus {
+          border: $schedule-appointment-selected-border;
+        }
+      }
+    }
+
+    .e-timeline-year-view {
+      .e-event-table {
+        .e-appointment {
+          &.e-appointment-border,
+          &:focus {
+            border: $schedule-appointment-selected-border;
+          }
+        }
+      }
+    }
+
+    .e-timeline-view,
+    .e-timeline-month-view {
+      .e-appointment {
+        &.e-appointment-border,
+        &:focus {
+          border: $schedule-appointment-selected-border;
+        }
+      }
+    }
+  }
+
+  .e-more-popup-wrapper.e-multi-drag {
+    .e-appointment {
+      &.e-appointment-border,
+      &:focus {
+        border: $schedule-appointment-selected-border;
+      }
+    }
+  }
+
   /*! schedule event tooltip */
   .e-schedule-event-tooltip .e-subject {
     font-size: 12px;

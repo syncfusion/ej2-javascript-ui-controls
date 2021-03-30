@@ -6,6 +6,7 @@ import { beforePrint } from '../model/constants';
 
 /**
  * This module enables the print functionality in maps.
+ *
  * @hidden
  */
 export class Print {
@@ -14,22 +15,26 @@ export class Print {
 
     /**
      * Constructor for Maps
-     * @param control 
+     *
+     * @param {Maps} control - Specifies the instance of the map
      */
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(control: Maps) {
         this.control = control;
     }
 
     /**
      * To print the Maps
-     * @param elements 
+     *
+     * @param {string[] | string | Element} elements - Specifies the element
+     * @returns {void}
      * @private
      */
     public print(elements?: string[] | string | Element): void {
         this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
         this.printWindow.moveTo(0, 0);
         this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
-        let argsData: IPrintEventArgs = {
+        const argsData: IPrintEventArgs = {
             cancel: false, htmlContent: this.getHTMLContent(elements), name: beforePrint
         };
         this.control.trigger('beforePrint', argsData, (beforePrintArgs: IPrintEventArgs) => {
@@ -40,12 +45,14 @@ export class Print {
     }
 
     /**
-     * To get the html string of the Maps 
-     * @param elements 
+     * To get the html string of the Maps
+     *
+     * @param {string[] | string | Element} elements - Specifies the html element
+     * @returns {Element} - Returns the div element
      * @private
      */
     private getHTMLContent(elements?: string[] | string | Element): Element {
-        let div: Element = createElement('div');
+        const div: Element = createElement('div');
         if (elements) {
             if (elements instanceof Array) {
                 Array.prototype.forEach.call(elements, (value: string) => {
@@ -61,16 +68,20 @@ export class Print {
         }
         return div;
     }
-     /**
-      * Get module name.
-      */
+    /**
+     * Get module name.
+     *
+     * @returns {string} Returns the module name
+     */
     protected getModuleName(): string {
         return 'Print';
     }
 
     /**
      * To destroy the print.
-     * @return {void}
+     *
+     * @param {Maps} maps - Specifies the instance of the maps
+     * @returns {void}
      * @private
      */
     public destroy(maps: Maps): void {
@@ -78,4 +89,4 @@ export class Print {
          * Destroy method performed here
          */
     }
-} 
+}

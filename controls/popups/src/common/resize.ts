@@ -2,65 +2,72 @@
  * Resize library
  */
 import { isNullOrUndefined as isNOU, createElement, EventHandler, detach, Browser } from '@syncfusion/ej2-base';
-let elementClass: string [] = ['north-west', 'north', 'north-east', 'west', 'east', 'south-west', 'south', 'south-east'];
+/* eslint-disable */
+const elementClass: string [] = ['north-west', 'north', 'north-east', 'west', 'east', 'south-west', 'south', 'south-east'];
+const RESIZE_HANDLER =  'e-resize-handle';
+const FOCUSED_HANDLER = 'e-focused-handle';
+const RESTRICT_LEFT: string [] = ['e-restrict-left'];
+const RESIZE_WITHIN_VIEWPORT = 'e-resize-viewport';
+const dialogBorderResize: string [] = ['north', 'west', 'east', 'south'];
 let targetElement: HTMLElement;
 let selectedHandler: HTMLElement;
-let originalWidth: number = 0;
-let originalHeight: number = 0;
-let originalX: number = 0;
-let originalY: number = 0;
-let originalMouseX: number = 0;
-let originalMouseY: number = 0;
-const RESIZE_HANDLER: string =  'e-resize-handle';
-const FOCUSED_HANDLER: string = 'e-focused-handle';
-let RESTRICT_LEFT: string [] = ['e-restrict-left'];
-const RESIZE_WITHIN_VIEWPORT: string = 'e-resize-viewport';
+let originalWidth = 0;
+let originalHeight = 0;
+let originalX = 0;
+let originalY = 0;
+let originalMouseX = 0;
+let originalMouseY = 0;
 let minHeight: number;
-let maxHeight: number ;
+let maxHeight: number;
 let minWidth: number;
 let maxWidth: number;
 let containerElement: HTMLElement;
+/* eslint-disable */
 let resizeStart: Function = null;
 let resize: Function = null;
 let resizeEnd: Function = null;
+/* eslint-enable */
 let resizeWestWidth: number;
 let setLeft: boolean = true;
 let previousWidth: number = 0;
 let setWidth: boolean = true;
-// tslint:disable-next-line
+// eslint-disable-next-line
 let proxy: any;
-let dialogBorderResize: string [] = ['north', 'west', 'east', 'south'];
-
+/* eslint-enable */
 /**
  * Provides information about a Resize event.
  */
 export interface ResizeArgs {
-    element: HTMLElement | string;
-    direction: string;
-    minHeight: number;
-    minWidth: number;
-    maxHeight?: number;
-    maxWidth?: number;
-    boundary?: HTMLElement | string;
-    resizeBegin(e: MouseEvent): void;
-    resizing(e: MouseEvent): void;
-    resizeComplete(e: MouseEvent): void;
-    // tslint:disable-next-line
+    element: HTMLElement | string
+    direction: string
+    minHeight: number
+    minWidth: number
+    maxHeight?: number
+    maxWidth?: number
+    boundary?: HTMLElement | string
+    resizeBegin(e: MouseEvent): void
+    resizing(e: MouseEvent): void
+    resizeComplete(e: MouseEvent): void
+    // eslint-disable-next-line
     proxy: any;
 }
-
+/**
+ *
+ * @param {ResizeArgs} args - specifies the resize args
+ * @returns {void}
+ */
 export function createResize(args: ResizeArgs): void {
     resizeStart = args.resizeBegin;
     resize = args.resizing;
     resizeEnd = args.resizeComplete;
     targetElement = getDOMElement(args.element);
     containerElement = getDOMElement(args.boundary);
-    let directions: string[] = args.direction.split(' ');
+    const directions: string[] = args.direction.split(' ');
     for (let i: number = 0; i < directions.length; i++) {
         if (dialogBorderResize.indexOf(directions[i]) >= 0 && directions[i]) {
             setBorderResizeElm(directions[i]);
         } else if (directions[i].trim() !== '') {
-            let resizeHandler: HTMLElement = createElement(
+            const resizeHandler: HTMLElement = createElement(
                 'div', { className: 'e-icons ' + RESIZE_HANDLER + ' ' + 'e-' + directions[i] }
             );
             targetElement.appendChild(resizeHandler);
@@ -76,10 +83,14 @@ export function createResize(args: ResizeArgs): void {
         wireEvents();
     }
 }
-
+/**
+ *
+ * @param {string} direction - specifies the string
+ * @returns {void}
+ */
 function setBorderResizeElm(direction: string): void {
     calculateValues();
-    let borderBottom: HTMLElement = createElement('span', {
+    const borderBottom: HTMLElement = createElement('span', {
         attrs: {
             'unselectable': 'on', 'contenteditable': 'false'
         }
@@ -112,6 +123,11 @@ function setBorderResizeElm(direction: string): void {
     targetElement.appendChild(borderBottom);
 }
 
+/**
+ *
+ * @param {string} element - specifies the element
+ * @returns {HTMLElement} - returns the element
+ */
 function getDOMElement(element: string | HTMLElement): HTMLElement {
     let domElement: HTMLElement;
     if (!isNOU(element)) {
@@ -124,35 +140,45 @@ function getDOMElement(element: string | HTMLElement): HTMLElement {
     return domElement;
 }
 
-// tslint:disable-next-line
+// eslint-disable-next-line
 function wireEvents(args?: any): void  {
     if (isNOU(args)) {
         args = this;
     }
-    let resizers: NodeListOf<Element> = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
+    const resizers: NodeListOf<Element> = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
     for (let i: number = 0; i < resizers.length; i++) {
         selectedHandler = resizers[i] as HTMLElement;
         EventHandler.add(selectedHandler, 'mousedown', onMouseDown, args);
-        let eventName: string = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
+        const eventName: string = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
         EventHandler.add(selectedHandler, eventName, onTouchStart, args);
     }
-    let borderResizers: NodeListOf<Element> = targetElement.querySelectorAll('.e-dialog-border-resize');
+    const borderResizers: NodeListOf<Element> = targetElement.querySelectorAll('.e-dialog-border-resize');
     if (!isNOU(borderResizers)) {
         for (let i: number = 0; i < borderResizers.length; i++) {
             selectedHandler = borderResizers[i] as HTMLElement;
             EventHandler.add(selectedHandler, 'mousedown', onMouseDown, args);
-            let eventName: string = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
+            const eventName: string = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
             EventHandler.add(selectedHandler, eventName, onTouchStart, args);
         }
     }
 }
 
 /* istanbul ignore next */
+/**
+ *
+ * @param {string} e - specifies the string
+ * @returns {string} - returns the string
+ */
 function getEventType(e: string): string {
     return (e.indexOf('mouse') > -1) ? 'mouse' : 'touch';
 }
 
 /* istanbul ignore next */
+/**
+ *
+ * @param {MouseEvent} e - specifies the mouse event
+ * @returns {void}
+ */
 function onMouseDown(e: MouseEvent): void {
     e.preventDefault();
     targetElement = (e.target as HTMLElement).parentElement;
@@ -166,7 +192,7 @@ function onMouseDown(e: MouseEvent): void {
             return;
         }
     }
-    let target: Document | HTMLElement = (isNOU(containerElement)) ? document : containerElement;
+    const target: Document | HTMLElement = (isNOU(containerElement)) ? document : containerElement;
     EventHandler.add(target, 'mousemove', onMouseMove, this);
     EventHandler.add(document, 'mouseup', onMouseUp, this);
     for (let i: number = 0; i < RESTRICT_LEFT.length; i++) {
@@ -178,13 +204,18 @@ function onMouseDown(e: MouseEvent): void {
     }
 }
 /* istanbul ignore next */
+/**
+ *
+ * @param {MouseEvent} e - specifies the event
+ * @returns {void}
+ */
 function onMouseUp(e: MouseEvent): void {
-    let touchMoveEvent: string = (Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
-    let touchEndEvent: string = (Browser.info.name === 'msie') ? 'pointerup' : 'touchend';
-    let target: Document | HTMLElement = (isNOU(containerElement)) ? document : containerElement;
+    const touchMoveEvent: string = (Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
+    const touchEndEvent: string = (Browser.info.name === 'msie') ? 'pointerup' : 'touchend';
+    const target: Document | HTMLElement = (isNOU(containerElement)) ? document : containerElement;
+    const eventName: string = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
     EventHandler.remove(target, 'mousemove', onMouseMove);
     EventHandler.remove(target, touchMoveEvent , onMouseMove);
-    let eventName: string = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
     EventHandler.remove(target, eventName, onMouseMove);
     if (!isNOU(document.body.querySelector('.' + FOCUSED_HANDLER))) {
         document.body.querySelector('.' + FOCUSED_HANDLER).classList.remove(FOCUSED_HANDLER);
@@ -198,6 +229,9 @@ function onMouseUp(e: MouseEvent): void {
 }
 
 /* istanbul ignore next */
+/**
+ * @returns {void}
+ */
 function calculateValues(): void {
     originalWidth = parseFloat(getComputedStyle(targetElement, null).getPropertyValue('width').replace('px', ''));
     originalHeight = parseFloat(getComputedStyle(targetElement, null).getPropertyValue('height').replace('px', ''));
@@ -205,10 +239,15 @@ function calculateValues(): void {
     originalY = targetElement.getBoundingClientRect().top;
 }
 /* istanbul ignore next */
+/**
+ *
+ * @param {MouseEvent} e - specifies the event
+ * @returns {void}
+ */
 function onTouchStart(e: TouchEvent | MouseEvent): void {
     targetElement = (e.target as HTMLElement).parentElement;
     calculateValues();
-    let coordinates: Touch | MouseEvent = (e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e as MouseEvent;
+    const coordinates: Touch | MouseEvent = (e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e as MouseEvent;
     originalMouseX = coordinates.pageX;
     originalMouseY = coordinates.pageY;
     if (!isNOU(resizeStart)) {
@@ -217,14 +256,19 @@ function onTouchStart(e: TouchEvent | MouseEvent): void {
             return;
         }
     }
-    let touchMoveEvent: string = (Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
-    let touchEndEvent: string = (Browser.info.name === 'msie') ? 'pointerup' : 'touchend';
-    let target: Document | HTMLElement = (isNOU(containerElement)) ? document : containerElement;
+    const touchMoveEvent: string = (Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
+    const touchEndEvent: string = (Browser.info.name === 'msie') ? 'pointerup' : 'touchend';
+    const target: Document | HTMLElement = (isNOU(containerElement)) ? document : containerElement;
     EventHandler.add(target, touchMoveEvent, onMouseMove, this);
     EventHandler.add(document, touchEndEvent, onMouseUp);
 }
 
 /* istanbul ignore next */
+/**
+ *
+ * @param {MouseEvent} e - specifies the event
+ * @returns {void}
+ */
 function onMouseMove(e: MouseEvent): void {
     if ((e.target as HTMLElement).classList.contains(RESIZE_HANDLER) && (e.target as HTMLElement).classList.contains(FOCUSED_HANDLER)) {
         selectedHandler =   e.target as HTMLElement;
@@ -235,7 +279,7 @@ function onMouseMove(e: MouseEvent): void {
         let resizeTowards: string = '';
         for (let i: number = 0; i < elementClass.length; i++) {
             if (selectedHandler.classList.contains('e-' + elementClass[i])) {
-              resizeTowards = elementClass[i];
+                resizeTowards = elementClass[i];
             }
         }
         if (!isNOU(resize)) {
@@ -243,53 +287,58 @@ function onMouseMove(e: MouseEvent): void {
             resize(e, proxy);
         }
         switch (resizeTowards) {
-            case 'south':
-              resizeSouth(e);
-              break;
-            case 'north':
-              resizeNorth(e);
-              break;
-            case 'west':
-              resizeWest(e);
-              break;
-            case 'east':
-              resizeEast(e);
-              break;
-            case 'south-east':
-              resizeSouth(e);
-              resizeEast(e);
-              break;
-            case 'south-west':
-              resizeSouth(e);
-              resizeWest(e);
-              break;
-            case 'north-east':
-              resizeNorth(e);
-              resizeEast(e);
-              break;
-            case 'north-west':
-              resizeNorth(e);
-              resizeWest(e);
-              break;
-            default: break;
-          }
+        case 'south':
+            resizeSouth(e);
+            break;
+        case 'north':
+            resizeNorth(e);
+            break;
+        case 'west':
+            resizeWest(e);
+            break;
+        case 'east':
+            resizeEast(e);
+            break;
+        case 'south-east':
+            resizeSouth(e);
+            resizeEast(e);
+            break;
+        case 'south-west':
+            resizeSouth(e);
+            resizeWest(e);
+            break;
+        case 'north-east':
+            resizeNorth(e);
+            resizeEast(e);
+            break;
+        case 'north-west':
+            resizeNorth(e);
+            resizeWest(e);
+            break;
+        default: break;
+        }
     }
 }
 
 /* istanbul ignore next */
+/**
+ *
+ * @param {HTMLElement} element - specifies the eleemnt
+ * @returns {ClientRect} - returns the client
+ */
 function getClientRectValues (element: HTMLElement): ClientRect | DOMRect {
     return element.getBoundingClientRect();
 }
 
 /* istanbul ignore next */
-// tslint:disable-next-line
+// eslint-disable-next-line
 function resizeSouth(e: any): void {
-    let documentHeight: number = document.documentElement.clientHeight;
+    const documentHeight: number = document.documentElement.clientHeight;
     let calculateValue: boolean = false;
+    const coordinates: Touch | MouseEvent = (e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e as MouseEvent;
+    const currentpageY: number = coordinates.pageY;
+    const targetRectValues: ClientRect = getClientRectValues(targetElement);
     let containerRectValues: ClientRect;
-    let coordinates: Touch | MouseEvent = (e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e as MouseEvent;
-    let currentpageY: number = coordinates.pageY;
-    let targetRectValues: ClientRect = getClientRectValues(targetElement);
     if (!isNOU(containerElement)) {
         containerRectValues = getClientRectValues(containerElement);
     }
@@ -304,12 +353,14 @@ function resizeSouth(e: any): void {
     if (!isNOU(containerElement)) {
         containerTop =  containerRectValues.top;
     }
-    let borderValue: number = isNOU(containerElement) ? 0 : containerElement.offsetHeight - containerElement.clientHeight;
+    const borderValue: number = isNOU(containerElement) ? 0 : containerElement.offsetHeight - containerElement.clientHeight;
     let topWithoutborder: number = (targetRectValues.top - containerTop) - (borderValue / 2);
     topWithoutborder = (topWithoutborder < 0) ? 0 : topWithoutborder;
     if ( targetRectValues.top > 0 && (topWithoutborder + calculatedHeight) > maxHeight) {
         calculateValue = false;
-        if (targetElement.classList.contains(RESIZE_WITHIN_VIEWPORT)) { return; }
+        if (targetElement.classList.contains(RESIZE_WITHIN_VIEWPORT)) {
+            return;
+        }
         targetElement.style.height = (maxHeight - parseInt(topWithoutborder.toString(), 10)) + 'px';
         return;
     }
@@ -325,7 +376,7 @@ function resizeSouth(e: any): void {
             targetElement.style.height = targetRectValues.height +
             (documentHeight - (targetRectValues.height + targetRectValues.top)) + 'px';
         }
-        let calculatedTop: number = (isNOU(containerElement)) ? targetTop : topWithoutborder;
+        const calculatedTop: number = (isNOU(containerElement)) ? targetTop : topWithoutborder;
         if (calculatedHeight >= minHeight && ((calculatedHeight + calculatedTop) <= maxHeight)) {
             targetElement.style.height = calculatedHeight + 'px';
         }
@@ -333,12 +384,12 @@ function resizeSouth(e: any): void {
 }
 
 /* istanbul ignore next */
-// tslint:disable-next-line
+// eslint-disable-next-line
 function resizeNorth(e: any): void {
     let calculateValue: boolean = false;
     let boundaryRectValues: ClientRect;
-    let pageY: number = (getEventType(e.type) === 'mouse') ? e.pageY : e.touches[0].pageY;
-    let targetRectValues: ClientRect = getClientRectValues(targetElement);
+    const pageY: number = (getEventType(e.type) === 'mouse') ? e.pageY : e.touches[0].pageY;
+    const targetRectValues: ClientRect = getClientRectValues(targetElement);
     if (!isNOU(containerElement)) {
         boundaryRectValues = getClientRectValues(containerElement);
     }
@@ -347,7 +398,7 @@ function resizeNorth(e: any): void {
     } else if (isNOU(containerElement) && pageY > 0) {
         calculateValue = true;
     }
-    let currentHeight: number = originalHeight - (pageY - originalMouseY);
+    const currentHeight: number = originalHeight - (pageY - originalMouseY);
     if (calculateValue) {
         if (currentHeight >= minHeight && currentHeight <= maxHeight) {
             let containerTop: number = 0;
@@ -363,19 +414,21 @@ function resizeNorth(e: any): void {
 }
 
 /* istanbul ignore next */
-// tslint:disable-next-line
+// eslint-disable-next-line
 function resizeWest(e: any): void {
-    let documentWidth: number = document.documentElement.clientWidth;
+    const documentWidth: number = document.documentElement.clientWidth;
     let calculateValue: boolean = false;
     let rectValues: ClientRect;
     if (!isNOU(containerElement)) {
         rectValues = getClientRectValues(containerElement);
     }
-    let pageX: number = (getEventType(e.type) === 'mouse') ? e.pageX : e.touches[0].pageX;
-    let targetRectValues: ClientRect = getClientRectValues(targetElement);
-    let borderValue: number = isNOU(containerElement) ? 0 : containerElement.offsetWidth - containerElement.clientWidth;
+    const pageX: number = (getEventType(e.type) === 'mouse') ? e.pageX : e.touches[0].pageX;
+    const targetRectValues: ClientRect = getClientRectValues(targetElement);
+    const borderValue: number = isNOU(containerElement) ? 0 : containerElement.offsetWidth - containerElement.clientWidth;
+    /* eslint-disable */
     let left: number = isNOU(containerElement) ? 0 : rectValues.left;
     let containerWidth: number = isNOU(containerElement) ? 0 : rectValues.width;
+    /* eslint-enable */
     if (isNOU(resizeWestWidth)) {
         if (!isNOU(containerElement)) {
             resizeWestWidth = (((targetRectValues.left - left) - borderValue / 2)) + targetRectValues.width ;
@@ -420,31 +473,33 @@ function resizeWest(e: any): void {
 }
 
 /* istanbul ignore next */
-// tslint:disable-next-line
+// eslint-disable-next-line
 function resizeEast(e: any): void {
-    let documentWidth: number = document.documentElement.clientWidth;
+    const documentWidth: number = document.documentElement.clientWidth;
     let calculateValue: boolean = false;
     let containerRectValues: ClientRect;
     if (!isNOU(containerElement)) {
         containerRectValues = getClientRectValues(containerElement);
     }
-    let coordinates: Touch | MouseEvent = (e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e as MouseEvent;
-    let pageX: number = coordinates.pageX;
-    let targetRectValues: ClientRect | DOMRect =  getClientRectValues(targetElement);
+    const coordinates: Touch | MouseEvent = (e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e as MouseEvent;
+    const pageX: number = coordinates.pageX;
+    const targetRectValues: ClientRect | DOMRect =  getClientRectValues(targetElement);
     if (!isNOU(containerElement) && (((targetRectValues.left - containerRectValues.left) + targetRectValues.width) < maxWidth
     || (targetRectValues.right - containerRectValues.left) > targetRectValues.width)) {
         calculateValue = true;
     } else if (isNOU(containerElement) && (documentWidth - pageX) > 0) {
         calculateValue = true;
     }
-    let calculatedWidth: number = originalWidth + (pageX - originalMouseX);
+    const calculatedWidth: number = originalWidth + (pageX - originalMouseX);
     let containerLeft: number = 0;
     if (!isNOU(containerElement)) {
         containerLeft = containerRectValues.left;
     }
     if (((targetRectValues.left - containerLeft) + calculatedWidth) > maxWidth) {
         calculateValue = false;
-        if (targetElement.classList.contains(RESIZE_WITHIN_VIEWPORT)) { return; }
+        if (targetElement.classList.contains(RESIZE_WITHIN_VIEWPORT)) {
+            return;
+        }
         targetElement.style.width = maxWidth - (targetRectValues.left - containerLeft) + 'px';
     }
     if (calculateValue) {
@@ -455,24 +510,40 @@ function resizeEast(e: any): void {
 }
 
 /* istanbul ignore next */
+/**
+ *
+ * @param {number} minimumHeight - specifies the number
+ * @returns {void}
+ */
 export function setMinHeight(minimumHeight: number): void {
     minHeight = minimumHeight;
 }
 
+/**
+ *
+ * @param {number} value - specifies the number value
+ * @returns {void}
+ */
 export function setMaxWidth(value: number): void {
     maxWidth = value;
 }
-
+/**
+ *
+ * @param {number} value - specifies the number value
+ * @returns {void}
+ */
 export function setMaxHeight(value: number): void {
     maxHeight = value;
 }
-
+/**
+ * @returns {void}
+ */
 export function removeResize(): void {
-    let handlers: NodeListOf<HTMLElement> = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
+    const handlers: NodeListOf<HTMLElement> = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
     for (let i: number = 0; i < handlers.length; i++ ) {
         detach(handlers[i]);
     }
-    let borderResizers: NodeListOf<HTMLElement> = targetElement.querySelectorAll('.e-dialog-border-resize');
+    const borderResizers: NodeListOf<HTMLElement> = targetElement.querySelectorAll('.e-dialog-border-resize');
     if (!isNOU(borderResizers)) {
         for (let i: number = 0; i < borderResizers.length; i++ ) {
             detach(borderResizers[i]);

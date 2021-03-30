@@ -21,7 +21,9 @@ export class PdfTreeGrid extends PdfLayoutElement {
     public layouter: PdfTreeGridLayouter;
     public headers: PdfTreeGridHeaderCollection;
     private layoutFormat: PdfLayoutFormat;
+    // eslint-disable-next-line
     public beginCellDraw: Function;
+    // eslint-disable-next-line
     public endCellDraw: Function;
     private treegridLocation: RectangleF;
     public treeColumnIndex: number = 0;
@@ -43,16 +45,22 @@ export class PdfTreeGrid extends PdfLayoutElement {
     //Properties
     /**
      * Gets a value indicating whether the `start cell layout event` should be raised.
+     *
+     * @returns {boolean} .
      * @private
      */
     public get raiseBeginCellDraw(): boolean {
+        // eslint-disable-next-line
         return (typeof this.beginCellDraw !== 'undefined' && typeof this.beginCellDraw !== null);
     }
     /**
      * Gets a value indicating whether the `end cell layout event` should be raised.
+     *
+     * @returns {boolean} .
      * @private
      */
     public get raiseEndCellDraw(): boolean {
+        // eslint-disable-next-line
         return (typeof this.endCellDraw !== 'undefined' && typeof this.endCellDraw !== null);
     }
     public get size(): SizeF {
@@ -68,39 +76,65 @@ export class PdfTreeGrid extends PdfLayoutElement {
     //Implementation
     /**
      * `Draws` the element on the page with the specified page and 'PointF' class
+     *
+     * @param {PdfPage} page .
+     * @param {PointF} location .
+     * @returns {PdfLayoutResult} .
      * @private
      */
     public draw(page: PdfPage, location: PointF): PdfLayoutResult
     /**
      * `Draws` the element on the page with the specified page and pair of coordinates
+     *
+     * @param {PdfPage} page .
+     * @param {number} x .
+     * @param {number} y .
+     * @returns {PdfLayoutResult} .
      * @private
      */
     public draw(page: PdfPage, x: number, y: number): PdfLayoutResult
     /**
      * `Draws` the element on the page with the specified page and 'RectangleF' class
+     *
+     * @param {PdfPage} page .
+     * @param {RectangleF} layoutRectangle .
+     * @returns {PdfLayoutResult} .
      * @private
      */
     public draw(page: PdfPage, layoutRectangle: RectangleF): PdfLayoutResult
     /**
      * `Draws` the element on the page with the specified page, 'PointF' class and layout format
+     *
+     * @param {PdfPage} page .
+     * @param {PointF} location .
+     * @param {PdfTreeGridLayoutFormat} format .
+     * @returns {PdfLayoutResult} .
      * @private
      */
     public draw(page: PdfPage, location: PointF, format: PdfLayoutFormat): PdfLayoutResult
     /**
      * `Draws` the element on the page with the specified page, pair of coordinates and layout format
+     *
+     * @param {PdfPage} page .
+     * @param {number} x .
+     * @param {number} y .
+     * @param {PdfLayoutFormat} format .
+     * @returns {PdfLayoutResult}
      * @private
      */
     public draw(page: PdfPage, x: number, y: number, format: PdfLayoutFormat): PdfLayoutResult
     /**
      * `Draws` the element on the page.
+     *
      * @private
      */
     public draw(page: PdfPage, layoutRectangle: RectangleF, embedFonts: boolean): PdfLayoutResult
     /**
      * `Draws` the element on the page with the specified page, 'RectangleF' class and layout format
+     *
      * @private
      */
-    /* tslint:disable-next-line */
+    /* eslint-disable-next-line */
     public draw(arg1: PdfPage, arg2: RectangleF | PointF | number, arg3?: PdfLayoutFormat | number | boolean, arg4?: PdfLayoutFormat): PdfLayoutResult {
         if (arg2 instanceof PointF && typeof (arg2 as RectangleF).width === 'undefined' && typeof arg3 === 'undefined') {
             return this.drawHelper(arg1, arg2.x, arg2.y);
@@ -111,8 +145,8 @@ export class PdfTreeGrid extends PdfLayoutElement {
         } else if (arg2 instanceof PointF && typeof (arg2 as RectangleF).width === 'undefined' && arg3 instanceof PdfLayoutFormat) {
             return this.drawHelper(arg1, arg2.x, arg2.y, arg3);
         } else if (typeof arg2 === 'number' && typeof arg3 === 'number' && (arg4 instanceof PdfLayoutFormat || arg4 == null)) {
-            let width: number = (arg1.graphics.clientSize.width - arg2);
-            let layoutRectangle: RectangleF = new RectangleF(arg2, arg3, width, 0);
+            const width: number = (arg1.graphics.clientSize.width - arg2);
+            const layoutRectangle: RectangleF = new RectangleF(arg2, arg3, width, 0);
             return this.drawHelper(arg1, layoutRectangle, arg4);
         } else if (arg2 instanceof RectangleF && typeof arg2.width !== 'undefined' && typeof arg3 === 'boolean') {
             return this.drawHelper(arg1, arg2, null);
@@ -123,14 +157,14 @@ export class PdfTreeGrid extends PdfLayoutElement {
 
     public measureColumnsWidth(bounds?: RectangleF): void {
         if (typeof bounds !== 'undefined') {
-            let widths: number[] = this.columns.getDefaultWidths(bounds.width - bounds.x);
+            const widths: number[] = this.columns.getDefaultWidths(bounds.width - bounds.x);
             for (let i: number = 0; i < this.columns.count; i++) {
                 if (this.columns.getColumn(i).width < 0) {
                     this.columns.getColumn(i).width = widths[i];
                 }
             }
         } else {
-            let widths: number[] = [];
+            const widths: number[] = [];
             let cellWidth: number = 0;
             let totalWidth: number = 0;
             let rowLevel: number = 0;
@@ -147,12 +181,12 @@ export class PdfTreeGrid extends PdfLayoutElement {
             //         widths.push(cellWidth);
             //     }
             // }
-            let colCount: number = this.columns.count;
+            const colCount: number = this.columns.count;
             for (let i: number = 0; i < colCount; i++) {
-                let rowCount: number = this.rows.count;
+                const rowCount: number = this.rows.count;
                 for (let j: number = 0; j < rowCount; j++) {
-                    let tempWidth: number = this.rows.getRow(j).cells.getCell(i).width;
-                    let rowWidth: number = this.initialWidth > 0 ? Math.min(this.initialWidth, tempWidth) : tempWidth;
+                    const tempWidth: number = this.rows.getRow(j).cells.getCell(i).width;
+                    const rowWidth: number = this.initialWidth > 0 ? Math.min(this.initialWidth, tempWidth) : tempWidth;
                     cellWidth = Math.max(cellWidth, rowWidth);
                     cellWidth = Math.max(this.columns.getColumn(i).width, cellWidth);
                     if (this.columns.getColumn(i).isTreeColumn) {
@@ -164,6 +198,7 @@ export class PdfTreeGrid extends PdfLayoutElement {
                 } else {
                     widths.push(cellWidth);
                 }
+                // eslint-disable-next-line
                 totalWidth += cellWidth;
                 cellWidth = 0;
             }
@@ -177,39 +212,39 @@ export class PdfTreeGrid extends PdfLayoutElement {
 
     private calculateTreeGridSize(): SizeF {
         let height: number = 0;
-        let width: number = this.columns.width;
+        const width: number = this.columns.width;
         for (let i: number = 0; i < this.headers.count; i++) {
-            let row: PdfTreeGridRow = this.headers.getHeader(i);
+            const row: PdfTreeGridRow = this.headers.getHeader(i);
             height += row.height;
         }
         for (let i: number = 0; i < this.rows.count; i++) {
-            let row: PdfTreeGridRow = this.rows.getRow(i);
+            const row: PdfTreeGridRow = this.rows.getRow(i);
             height += row.height;
         }
         return new SizeF(width, height);
     }
     public drawGrid(page: PdfPage, x: number, y: number, format: PdfTreeGridLayoutFormat): PdfTreeGridLayoutResult {
         this.initialWidth = page.graphics.clientSize.width;
-        let layout: RectangleF = new RectangleF(0, 0, page.getClientSize().height, 0);
+        const layout: RectangleF = new RectangleF(0, 0, page.getClientSize().height, 0);
         return this.draw(page, layout, format);
     }
 
     protected layout(param: PdfLayoutParams): PdfLayoutResult {
         if (this.rows.count !== 0) {
-            let style: PdfGanttCellStyle = this.rows.getRow(0).cells.getCell(0).style;
+            const style: PdfGanttCellStyle = this.rows.getRow(0).cells.getCell(0).style;
             if (style.borders.left.width !== 1) {
-                let x: number = style.borders.left.width / 2;
-                let y: number = style.borders.top.width / 2;
+                const x: number = style.borders.left.width / 2;
+                const y: number = style.borders.top.width / 2;
                 if (param.bounds.x === PdfBorders.default.right.width / 2 &&
                     param.bounds.y === PdfBorders.default.right.width / 2) {
-                    let newBound: RectangleF = new RectangleF(new PointF(x, y), new SizeF(this.size.width, this.size.height));
+                    const newBound: RectangleF = new RectangleF(new PointF(x, y), new SizeF(this.size.width, this.size.height));
                     param.bounds = newBound;
                 }
             }
         }
         this.setSpan();
         this.layouter = new PdfTreeGridLayouter(this);
-        let result: PdfTreeGridLayoutResult = this.layouter.layoutInternal(param);
+        const result: PdfTreeGridLayoutResult = this.layouter.layoutInternal(param);
         return result;
     }
 
@@ -223,7 +258,6 @@ export class PdfTreeGrid extends PdfLayoutElement {
             this.endCellDraw(this, args);
         }
     }
-    /* tslint:disable-next-line:max-func-body-length */
     public setSpan(): void {
         let colSpan: number = 1;
         let rowSpan: number = 1;
@@ -232,11 +266,11 @@ export class PdfTreeGrid extends PdfLayoutElement {
         let maxSpan: number = 0;
         let rowCount: number = this.headers.count;
         for (let i: number = 0; i < rowCount; i++) {
-            let row: PdfTreeGridRow = this.headers.getHeader(i);
+            const row: PdfTreeGridRow = this.headers.getHeader(i);
             maxSpan = 0;
-            let colCount: number = row.cells.count;
+            const colCount: number = row.cells.count;
             for (let j: number = 0; j < colCount; j++) {
-                let cell: PdfTreeGridCell = row.cells.getCell(j);
+                const cell: PdfTreeGridCell = row.cells.getCell(j);
                 maxSpan = Math.max(maxSpan, cell.rowSpan);
                 //Skip setting span map for already coverted rows/columns.
                 if (!cell.isCellMergeContinue && !cell.isRowMergeContinue && (cell.columnSpan > 1 || cell.rowSpan > 1)) {
@@ -307,10 +341,10 @@ export class PdfTreeGrid extends PdfLayoutElement {
         currentCellIndex = currentRowIndex = 0;
         rowCount = this.rows.count;
         for (let i: number = 0; i < rowCount; i++) {
-            let row: PdfTreeGridRow = this.rows.getRow(i);
-            let colcount: number = row.cells.count;
+            const row: PdfTreeGridRow = this.rows.getRow(i);
+            const colcount: number = row.cells.count;
             for (let j: number = 0; j < colcount; j++) {
-                let cell: PdfTreeGridCell = row.cells.getCell(j);
+                const cell: PdfTreeGridCell = row.cells.getCell(j);
                 //Skip setting span map for already coverted rows/columns.
                 if (!cell.isCellMergeContinue && !cell.isRowMergeContinue && (cell.columnSpan > 1 || cell.rowSpan > 1)) {
                     if (cell.columnSpan + j > row.cells.count) {

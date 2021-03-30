@@ -1,4 +1,4 @@
-/** 
+/**
  * Specified the hyperlink type.
  */
 export type HyperlinkType =
@@ -220,7 +220,7 @@ export type HighlightColor =
 export type LineSpacingType =
     /**
      * The line spacing can be greater than or equal to, but never less than,
-     * the value specified in the LineSpacing property. 
+     * the value specified in the LineSpacing property.
      */
     'AtLeast' |
     /**
@@ -274,11 +274,11 @@ export type HeaderFooterType =
      */
     'OddFooter' |
     /**
-     * Header for the first page of the section. 
+     * Header for the first page of the section.
      */
     'FirstPageHeader' |
     /**
-     * Footer for the first page of the section. 
+     * Footer for the first page of the section.
      */
     'FirstPageFooter';
 /**
@@ -301,7 +301,7 @@ export type ListType =
      * Specifies the outline numbering list type.
      */
     'OutlineNumbering';
-/** 
+/**
  * Enum for List Level Pattern
  */
 export type ListLevelPattern =
@@ -479,7 +479,7 @@ export type LineStyle =
      */
     'Triple' |
     /**
-     * An internal single thin solid line surrounded by a single thick solid line with 
+     * An internal single thin solid line surrounded by a single thick solid line with
      * a small gap between them.
      */
     'ThinThickSmallGap' |
@@ -821,12 +821,13 @@ export type FindOption =
 
 /**
  * WColor interface
+ *
  * @private
  */
 export interface WColor {
-    r: number;
-    g: number;
-    b: number;
+    r: number
+    g: number
+    b: number
 }
 
 /**
@@ -889,6 +890,7 @@ export type StyleType =
 
 /**
  * Specifies table row placement.
+ *
  * @private
  */
 export type RowPlacement =
@@ -905,6 +907,7 @@ export type RowPlacement =
 
 /**
  * Specifies table column placement.
+ *
  * @private
  */
 export type ColumnPlacement =
@@ -923,11 +926,11 @@ export type ColumnPlacement =
  */
 export type TabJustification =
     /**
-     * Bar  
+     * Bar
      */
     'Bar' |
     /**
-     * Center 
+     * Center
      */
     'Center' |
     /**
@@ -963,7 +966,7 @@ export type TabLeader =
      */
     'Hyphen' |
     /**
-     * Underscore  
+     * Underscore
      */
     'Underscore';
 
@@ -1153,55 +1156,56 @@ export type DialogType =
 
 /**
  * Action type
+ *
  * @private
  */
 export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSelection' | 'Enter' | 'ImageResizing'
-    | 'ReplaceAll' | 'Cut' | 'CharacterFormat' |
-    'Bold' | 'Italic' | 'FontSize' | 'FontFamily' | 'HighlightColor' |
-    'BaselineAlignment' | 'Strikethrough' | 'Underline'
-    | 'InsertHyperlink'
-    | 'InsertBookmark' | 'InsertElements' | 'DeleteBookmark'
-    | 'FontColor' | 'InsertInline' | 'RemoveHyperlink'
-    | 'AutoFormatHyperlink'
-    | 'TextAlignment'
-    | 'LeftIndent'
-    | 'AfterSpacing'
-    | 'BeforeSpacing'
-    | 'RightIndent'
-    | 'FirstLineIndent'
-    | 'LineSpacing'
-    | 'LineSpacingType'
-    | 'ListFormat'
-    | 'ParagraphFormat'
-    | 'SectionFormat'
-    | 'List'
-    | 'InsertRowAbove'
-    | 'InsertRowBelow'
-    | 'InsertTableBelow'
-    | 'DeleteTable'
-    | 'DeleteRow'
-    | 'DeleteColumn'
-    | 'InsertColumnLeft'
-    | 'InsertColumnRight'
-    | 'TableFormat'
-    | 'RowFormat'
-    | 'CellFormat'
-    | 'TableProperties'
-    | 'Paste' |
-    'DeleteCells' | 'ClearCells' | 'InsertTable' | 'RowResizing' | 'CellResizing' | 'MergeCells' | 'ClearFormat' | 'ClearCharacterFormat' |
-    'ClearParagraphFormat' | 'AutoList' | 'BordersAndShading'
-    | 'TableMarginsSelection' | 'CellMarginsSelection' | 'CellOptions' | 'TableOptions' |
-    'TableAlignment' | 'TableLeftIndent' | 'CellSpacing' | 'DefaultCellLeftMargin' | 'DefaultCellRightMargin'
-    | 'TablePreferredWidthType' | 'TablePreferredWidth' | 'CellPreferredWidthType' | 'CellPreferredWidth'
-    | 'DefaultCellTopMargin' | 'DefaultCellBottomMargin' | 'CellContentVerticalAlignment' | 'CellLeftMargin' | 'CellRightMargin'
-    | 'CellTopMargin' | 'CellBottomMargin' | 'RowHeight' | 'RowHeightType' | 'RowHeader' | 'AllowBreakAcrossPages' | 'PageHeight' |
-    'PageWidth' | 'LeftMargin' | 'RightMargin' | 'TopMargin' | 'BottomMargin' | 'DefaultCellSpacing'
-    | 'ListCharacterFormat' | 'ContinueNumbering' | 'RestartNumbering' | 'ListSelect' | 'Shading' | 'Borders' | 'TOC' | 'StyleName'
-    | 'ApplyStyle' | 'SectionBreak' | 'PageBreak' | 'IMEInput' | 'TableAutoFitToContents' | 'TableAutoFitToWindow' | 'TableFixedColumnWidth'
-    | 'ParagraphBidi' | 'TableBidi' | 'ContextualSpacing' | 'RestrictEditing' | 'RemoveEditRange' | 'InsertComment' | 'DeleteComment'
-    | 'RemoveInline' | 'DeleteAllComments' | 'InsertCommentWidget' | 'DeleteCommentWidget' | 'FormField' | 'UpdateFormField' |
-    'FormTextFormat' | 'Accept Change' | 'Reject Change' | 'Accept All' | 'Reject All' | 'ParaMarkTrack' | 'ParaMarkReject' |
-    'RemoveRowTrack' | 'AcceptTOC' | 'ClearRevisions' | 'TrackingPageBreak' | 'InsertTextParaReplace';
+| 'ReplaceAll' | 'Cut' | 'CharacterFormat' |
+'Bold' | 'Italic' | 'FontSize' | 'FontFamily' | 'HighlightColor' |
+'BaselineAlignment' | 'Strikethrough' | 'Underline'
+| 'InsertHyperlink'
+| 'InsertBookmark' | 'InsertElements' | 'DeleteBookmark'
+| 'FontColor' | 'InsertInline' | 'RemoveHyperlink'
+| 'AutoFormatHyperlink'
+| 'TextAlignment'
+| 'LeftIndent'
+| 'AfterSpacing'
+| 'BeforeSpacing'
+| 'RightIndent'
+| 'FirstLineIndent'
+| 'LineSpacing'
+| 'LineSpacingType'
+| 'ListFormat'
+| 'ParagraphFormat'
+| 'SectionFormat'
+| 'List'
+| 'InsertRowAbove'
+| 'InsertRowBelow'
+| 'InsertTableBelow'
+| 'DeleteTable'
+| 'DeleteRow'
+| 'DeleteColumn'
+| 'InsertColumnLeft'
+| 'InsertColumnRight'
+| 'TableFormat'
+| 'RowFormat'
+| 'CellFormat'
+| 'TableProperties'
+| 'Paste' |
+'DeleteCells' | 'ClearCells' | 'InsertTable' | 'RowResizing' | 'CellResizing' | 'MergeCells' | 'ClearFormat' | 'ClearCharacterFormat' |
+'ClearParagraphFormat' | 'AutoList' | 'BordersAndShading'
+| 'TableMarginsSelection' | 'CellMarginsSelection' | 'CellOptions' | 'TableOptions' |
+'TableAlignment' | 'TableLeftIndent' | 'CellSpacing' | 'DefaultCellLeftMargin' | 'DefaultCellRightMargin'
+| 'TablePreferredWidthType' | 'TablePreferredWidth' | 'CellPreferredWidthType' | 'CellPreferredWidth'
+| 'DefaultCellTopMargin' | 'DefaultCellBottomMargin' | 'CellContentVerticalAlignment' | 'CellLeftMargin' | 'CellRightMargin'
+| 'CellTopMargin' | 'CellBottomMargin' | 'RowHeight' | 'RowHeightType' | 'RowHeader' | 'AllowBreakAcrossPages' | 'PageHeight' |
+'PageWidth' | 'LeftMargin' | 'RightMargin' | 'TopMargin' | 'BottomMargin' | 'DefaultCellSpacing'
+| 'ListCharacterFormat' | 'ContinueNumbering' | 'RestartNumbering' | 'ListSelect' | 'Shading' | 'Borders' | 'TOC' | 'StyleName'
+| 'ApplyStyle' | 'SectionBreak' | 'PageBreak' | 'IMEInput' | 'TableAutoFitToContents' | 'TableAutoFitToWindow' | 'TableFixedColumnWidth'
+| 'ParagraphBidi' | 'TableBidi' | 'ContextualSpacing' | 'RestrictEditing' | 'RemoveEditRange' | 'InsertComment' | 'DeleteComment'
+| 'RemoveInline' | 'DeleteAllComments' | 'InsertCommentWidget' | 'DeleteCommentWidget' | 'FormField' | 'UpdateFormField' |
+'FormTextFormat' | 'Accept Change' | 'Reject Change' | 'Accept All' | 'Reject All' | 'ParaMarkTrack' | 'ParaMarkReject' |
+'RemoveRowTrack' | 'AcceptTOC' | 'ClearRevisions' | 'TrackingPageBreak' | 'InsertTextParaReplace' | 'Uppercase';
 /**
  * Enum for direction
  */
@@ -1238,6 +1242,7 @@ export type AutoFitType =
 
 /**
  * Specifies the type of protection
+ *
  * @private
  */
 export type ProtectionType =
@@ -1387,60 +1392,71 @@ export type ToolbarItem =
     'InsertEndnote';
 /**
  * Specifies the type of Text formField
+ *
  * @private
  */
 export type TextFormFieldType = 'Text' | 'Number' | 'Date';
 /**
  * Specifies the type of Checkbox formField size
+ *
  * @private
  */
 export type CheckBoxSizeType = 'Auto' | 'Exactly';
 /**
  * Specifies the type of FormField
+ *
  * @private
  */
 export type FormFieldType = 'Text' | 'CheckBox' | 'DropDown';
 /**
  * Specifies the type of VerticalOrigin
+ *
  * @private
  */
 export type VerticalOrigin = 'Margin' | 'Page' | 'Paragraph' | 'Line' | 'TopMargin' | 'BottomMargin' | 'InsideMargin' | 'OutsideMargin';
 /**
  * Specifies the type of VerticalAlignment
+ *
  * @private
  */
 export type VerticalAlignment = 'None' | 'Top' | 'Center' | 'Bottom' | 'Inside' | 'Outside';
 /**
  * Specifies the type of HorizontalOrigin
+ *
  * @private
  */
 export type HorizontalOrigin = 'Margin' | 'Page' | 'Column' | 'Character' | 'LeftMargin' | 'RightMargin' | 'InsideMargin' | 'OutsideMargin';
 /**
  * Specifies the type of HorizontalAlignment
+ *
  * @private
  */
 export type HorizontalAlignment = 'None' | 'Left' | 'Center' | 'Right' | 'Inside' | 'Outside';
 /**
  * Specifies the type of Line Format Type
+ *
  * @private
  */
 export type LineFormatType = 'None' | 'Solid';
 /**
  * Specifies the type of Line Dashing
+ *
  * @private
  */
 export type LineDashing = 'Solid' | 'Dash' | 'Dot' | 'DashDot' | 'DashDotDot' | 'DotGEL' |
-    'DashGEL' | 'LongDashGEL' | 'DashDotGEL' | 'LongDashDotGEL' | 'LongDashDotDotGEL';
+'DashGEL' | 'LongDashGEL' | 'DashDotGEL' | 'LongDashDotGEL' | 'LongDashDotDotGEL';
 /**
  * Specifies the type of Auto Shape Type
+ *
  * @private
  */
 export type AutoShapeType = 'Rectangle' | 'Oval';
 /**
  * Wrapping style
+ *
  * @private
  */
-export type TextWrappingStyle = 'Inline' | 'InFrontOfText' | 'BehindText';
+export type TextWrappingStyle = 'Inline' | 'InFrontOfText' | 'BehindText' | 'Square' | 'TopAndBottom' | 'Tight';
 
 /**
  * Form Filling Mode
@@ -1451,9 +1467,9 @@ export type FormFillingMode = 'Inline' | 'Popup';
  * Specifies the list of Formatting Exceptions
  */
 export type FormattingExceptions = 'Bold' | 'Italic' | 'FontSize' | 'FontFamily' | 'HighlightColor' |
-    'BaselineAlignment' | 'Strikethrough' | 'Underline' | 'FontColor' | 'TextAlignment' | 'LeftIndent' | 'RightIndent' | 'LineSpacing'
-    | 'LineSpacingType' | 'FirstLineIndent' | 'AfterSpacing'
-    | 'BeforeSpacing' | 'ContextualSpacing' | 'ListFormat';
+'BaselineAlignment' | 'Strikethrough' | 'Underline' | 'FontColor' | 'TextAlignment' | 'LeftIndent' | 'RightIndent' | 'LineSpacing'
+| 'LineSpacingType' | 'FirstLineIndent' | 'AfterSpacing'
+| 'BeforeSpacing' | 'ContextualSpacing' | 'ListFormat';
 
 /**
  * Specifies the Content Control Widget type
@@ -1463,7 +1479,7 @@ export type ContentControlWidgetType = 'Block' | 'Inline' | 'Row' | 'Cell';
  * Specifies the Content Control type
  */
 export type ContentControlType = 'BuildingBlockGallery' | 'CheckBox' | 'ComboBox' | 'Date' | 'DropDownList' | 'Group' | 'Picture'
-    | 'RepeatingSection' | 'RichText' | 'Text';
+| 'RepeatingSection' | 'RichText' | 'Text';
 /**
  * Specifies collaborative editing action
  */

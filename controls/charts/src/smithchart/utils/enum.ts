@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 /**
  * Defines Theme of the smithchart. They are
  * * Material - Render a smithchart with Material theme.
@@ -75,6 +76,7 @@ export type SmithchartExportType =
 'PDF';
 /**
  * Specifies TreeMap beforePrint event name.
+ *
  * @private
  */
 export const smithchartBeforePrint : string = 'beforePrint';

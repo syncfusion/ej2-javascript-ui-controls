@@ -9,7 +9,8 @@ export class Scroll {
     private parent: Schedule;
     /**
      * Constructor for the scrolling.
-     * @hidden
+     *
+     * @param {Schedule} parent Accepts the Schedule instance
      */
     constructor(parent?: Schedule) {
         this.parent = parent;
@@ -18,56 +19,87 @@ export class Scroll {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} Returns the module name.
      * @private
      */
     protected getModuleName(): string {
         return 'scroll';
     }
+
     /**
-     * @hidden
+     * Internal method to set the element width
+     *
+     * @returns {void}
+     * @private
      */
     public setWidth(): void {
         this.parent.element.style.width = formatUnit(this.parent.width);
     }
+
     /**
-     * @hidden
+     * Internal method to set the element height
+     *
+     * @returns {void}
+     * @private
      */
     public setHeight(): void {
         this.parent.element.style.height = formatUnit(this.parent.height);
     }
+
     /**
-     * @hidden
+     * Internal method to bind events
+     *
+     * @returns {void}
+     * @private
      */
     public addEventListener(): void {
         this.parent.on(contentReady, this.setDimensions, this);
         this.parent.on(uiUpdate, this.onPropertyChanged, this);
     }
+
     /**
-     * @hidden
+     * Internal method to unbind events
+     *
+     * @returns {void}
+     * @private
      */
     public removeEventListener(): void {
         this.parent.off(contentReady, this.setDimensions);
         this.parent.off(uiUpdate, this.onPropertyChanged);
     }
+
     /**
-     * @hidden
+     * Internal method to set the dimensions
+     *
+     * @returns {void}
+     * @private
      */
     private setDimensions(): void {
         this.setWidth();
         this.setHeight();
-        let data: NotifyEventArgs = { cssProperties: this.parent.getCssProperties(), module: this.getModuleName() };
+        const data: NotifyEventArgs = { cssProperties: this.parent.getCssProperties(), module: this.getModuleName() };
         this.parent.notify(scrollUiUpdate, data);
     }
-    /** 
-     * @hidden
+
+    /**
+     * Internal method to set the dimensions dynamically
+     *
+     * @returns {void}
+     * @private
      */
-    private onPropertyChanged(e: NotifyEventArgs): void {
+    private onPropertyChanged(): void {
         this.setDimensions();
     }
+
     /**
-     * @hidden
+     * Destroy the scroll module
+     *
+     * @returns {void}
+     * @private
      */
     public destroy(): void {
         this.removeEventListener();
     }
+
 }

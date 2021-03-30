@@ -3,7 +3,7 @@ import { Gantt } from '../base/gantt';
 import { SortDirection, getActualProperties } from '@syncfusion/ej2-grids';
 
 /**
- * The Sort module is used to handle sorting action. 
+ * The Sort module is used to handle sorting action.
  */
 export class Sort {
     public parent: Gantt;
@@ -17,6 +17,8 @@ export class Sort {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} .
      * @private
      */
     private getModuleName(): string {
@@ -24,6 +26,7 @@ export class Sort {
     }
 
     /**
+     * @returns {void} .
      * @private
      */
     private addEventListener(): void {
@@ -31,6 +34,8 @@ export class Sort {
     }
 
     /**
+     *
+     * @returns {void} .
      * @hidden
      */
     private removeEventListener(): void {
@@ -42,6 +47,8 @@ export class Sort {
 
     /**
      * Destroys the Sorting of TreeGrid.
+     *
+     * @returns {void} .
      * @private
      */
     public destroy(): void {
@@ -50,9 +57,11 @@ export class Sort {
 
     /**
      * Sort a column with given options.
+     *
      * @param {string} columnName - Defines the column name to sort.
      * @param {SortDirection} direction - Defines the direction of sort.
      * @param {boolean} isMultiSort - Defines whether the previously sorted columns are to be maintained.
+     * @returns {void} .
      */
     public sortColumn(columnName: string, direction: SortDirection, isMultiSort?: boolean): void {
         this.parent.treeGrid.sortByColumn(columnName, direction, isMultiSort);
@@ -60,6 +69,8 @@ export class Sort {
 
     /**
      * Method to clear all sorted columns.
+     *
+     * @returns {void} .
      */
     public clearSorting(): void {
         this.parent.treeGrid.clearSorting();
@@ -67,7 +78,8 @@ export class Sort {
 
     /**
      * The function used to update sortSettings of TreeGrid.
-     * @return {void}
+     *
+     * @returns {void} .
      * @hidden
      */
     private updateModel(): void {
@@ -75,7 +87,9 @@ export class Sort {
     }
     /**
      * To clear sorting for specific column.
+     *
      * @param {string} columnName - Defines the sorted column name to remove.
+     * @returns {void} .
      */
     public removeSortColumn(columnName: string): void {
         this.parent.treeGrid.grid.removeSortColumn(columnName);

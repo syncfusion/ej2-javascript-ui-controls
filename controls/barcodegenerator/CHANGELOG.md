@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.30 (2020-12-17)
+
+### Barcode
+
+#### Bug Fixes
+
+- `#278404` - "Ean-13 barcode not rendering" issue has been fixed.
+
 ## 18.3.35 (2020-10-01)
 
 ### Barcode

@@ -57,6 +57,8 @@ export class GanttChart {
     }
     /**
      * Method to render top level containers in Gantt chart
+     *
+     * @returns {void} .
      * @private
      */
     public renderChartContainer(): void {
@@ -76,21 +78,24 @@ export class GanttChart {
     }
     /**
      * method to render timeline, holidays, weekends at load time
+     *
+     * @returns {void} .
      */
     private renderInitialContents(): void {
         this.parent.timelineModule.createTimelineSeries();
     }
     /**
+     * @returns {void} .
      * @private
      */
     public renderOverAllocationContainer(): void {
         for (let i: number = 0; i < this.parent.flatData.length; i++) {
-            let data: IGanttData = this.parent.flatData[i];
+            const data: IGanttData = this.parent.flatData[i];
             if (data.childRecords.length > 0) {
                 this.parent.dataOperation.updateOverlappingValues(data);
             }
         }
-        let rangeContainer: HTMLElement = this.parent.element.querySelector('.' + cls.rangeContainer);
+        const rangeContainer: HTMLElement = this.parent.element.querySelector('.' + cls.rangeContainer);
         if (rangeContainer) {
             rangeContainer.innerHTML = '';
         }
@@ -115,14 +120,16 @@ export class GanttChart {
     }
 
     private setOverflowStyle(): void {
-        let content: HTMLElement = this.chartBodyContent;
+        const content: HTMLElement = this.chartBodyContent;
         content.style.overflow = this.scrollElement.offsetHeight > content.offsetHeight ? 'hidden' : 'visible';
     }
     /**
+     * @param {IGanttData[]} records .
+     * @returns {void} .
      * @private
      */
     public renderRangeContainer(records: IGanttData[]): void {
-        let recordLength: number = records.length;
+        const recordLength: number = records.length;
         let count: number; let ganttRecord: IGanttData;
         let rangeCollection: IWorkTimelineRanges[];
         if (this.parent.treeGrid.grid.filterSettings.columns.length === 0) {
@@ -136,8 +143,8 @@ export class GanttChart {
         }
     }
     private getTopValue(currentRecord: IGanttData): number {
-        let updatedRecords: IGanttData[] = this.parent.getExpandedRecords(this.parent.currentViewData);
-        let recordIndex: number = updatedRecords.indexOf(currentRecord);
+        const updatedRecords: IGanttData[] = this.parent.getExpandedRecords(this.parent.currentViewData);
+        const recordIndex: number = updatedRecords.indexOf(currentRecord);
         if (!currentRecord.expanded) {
             return (recordIndex * this.parent.rowHeight);
         }
@@ -152,27 +159,26 @@ export class GanttChart {
             Math.floor((this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight));
     }
     private renderRange(rangeCollection: IWorkTimelineRanges[], currentRecord: IGanttData): void {
-        let topValue: number = this.getTopValue(currentRecord);
-        /* tslint:disable-next-line */
-        let sameIDElement: Element = this.rangeViewContainer.querySelector('.' + 'rangeContainer' + currentRecord.ganttProperties.rowUniqueID);
+        const topValue: number = this.getTopValue(currentRecord);
+        const sameIDElement: Element = this.rangeViewContainer.querySelector('.' + 'rangeContainer' + currentRecord.ganttProperties.rowUniqueID);
         if (sameIDElement) {
             sameIDElement.remove();
         }
-        let parentDiv: HTMLElement = createElement('div', {
-            className: 'rangeContainer' + currentRecord.ganttProperties.rowUniqueID, styles: `top:${topValue}px; position: absolute;`,
+        const parentDiv: HTMLElement = createElement('div', {
+            className: 'rangeContainer' + currentRecord.ganttProperties.rowUniqueID, styles: `top:${topValue}px; position: absolute;`
         });
         if (currentRecord.level === 0 && !currentRecord.expanded && isNullOrUndefined(currentRecord.parentItem)
             && !this.parent.enableMultiTaskbar) {
             return;
         }
         for (let i: number = 0; i < rangeCollection.length; i++) {
-            let height: number = this.getRangeHeight(currentRecord);
-            let leftDiv: HTMLElement = createElement('div', {
+            const height: number = this.getRangeHeight(currentRecord);
+            const leftDiv: HTMLElement = createElement('div', {
                 className: cls.rangeChildContainer + ' ' + 'e-leftarc', styles: `left:${rangeCollection[i].left}px;
                 top: ${Math.floor((this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight) / 2)}px;
                 height: ${height + 1}px; border-right: 0px`
             });
-            let rightDiv: HTMLElement = createElement('div', {
+            const rightDiv: HTMLElement = createElement('div', {
                 className: cls.rangeChildContainer + ' ' + 'e-rightarc',
                 styles: `left:${rangeCollection[i].left + rangeCollection[i].width - 5}px;
                 top: ${Math.floor((this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight) / 2)}px; height: ${height + 1}px;
@@ -185,6 +191,7 @@ export class GanttChart {
         this.parent.ganttChartModule.chartBodyContent.appendChild(this.rangeViewContainer);
     }
     /**
+     * @returns {void} .
      * @private
      */
     public renderTimelineContainer(): void {
@@ -195,6 +202,8 @@ export class GanttChart {
 
     /**
      * initiate chart container
+     *
+     * @returns {void} .
      */
     private renderBodyContainers(): void {
         this.chartBodyContainer = createElement('div', { className: cls.chartBodyContainer });
@@ -216,12 +225,13 @@ export class GanttChart {
             setHeight(this.parent.ganttHeight - this.chartTimelineContainer.offsetHeight - toolbarHeight);
     }
     /**
+     * @returns {void} .
      * @private
      */
     public updateWidthAndHeight(): void {
         //empty row height
-        let emptydivHeight: number = isBlazor() ? 39 : 36;
-        let emptyHeight: number = this.parent.contentHeight === 0 ? emptydivHeight : this.parent.contentHeight;
+        const emptydivHeight: number = isBlazor() ? 39 : 36;
+        const emptyHeight: number = this.parent.contentHeight === 0 ? emptydivHeight : this.parent.contentHeight;
         this.chartBodyContent.style.height = formatUnit(emptyHeight);
         //let element: HTMLElement = this.chartTimelineContainer.querySelector('.' + cls.timelineHeaderTableContainer);
         this.chartBodyContent.style.width = formatUnit(this.parent.timelineModule.totalTimelineWidth);
@@ -232,14 +242,16 @@ export class GanttChart {
 
     /**
      * Method to update bottom border for chart rows
+     *
+     * @returns {void} .
      */
     public updateLastRowBottomWidth(): void {
         if (this.parent.currentViewData.length > 0 && this.parent.height !== 'auto') {
-            let expandedRecords: IGanttData[] = this.parent.getExpandedRecords(this.parent.currentViewData);
-            let lastExpandedRow: IGanttData = expandedRecords[expandedRecords.length - 1];
-            let lastExpandedRowIndex: number = this.parent.currentViewData.indexOf(lastExpandedRow);
-            let lastRow: HTMLElement = this.parent.getRowByIndex(lastExpandedRowIndex);
-            let table: Element = this.parent.chartRowsModule.ganttChartTableBody;
+            const expandedRecords: IGanttData[] = this.parent.getExpandedRecords(this.parent.currentViewData);
+            const lastExpandedRow: IGanttData = expandedRecords[expandedRecords.length - 1];
+            const lastExpandedRowIndex: number = this.parent.currentViewData.indexOf(lastExpandedRow);
+            const lastRow: HTMLElement = this.parent.getRowByIndex(lastExpandedRowIndex);
+            const table: Element = this.parent.chartRowsModule.ganttChartTableBody;
             if (table.querySelectorAll('.e-chart-row-cell.e-chart-row-border.e-lastrow')) {
                 removeClass(table.querySelectorAll('.e-chart-row-cell.e-chart-row-border.e-lastrow'), 'e-lastrow');
             }
@@ -264,6 +276,9 @@ export class GanttChart {
     }
     /**
      * Click event handler in chart side
+     *
+     * @param {PointerEvent} e .
+     * @returns {void} .
      */
     private ganttChartMouseDown(e: PointerEvent): void {
         if (e.which !== 3) {
@@ -285,18 +300,19 @@ export class GanttChart {
 
     /**
      *
-     * @param e
+     * @param {PointerEvent} e .
+     * @returns {void} .
      */
     private scrollToTarget(e: PointerEvent): void {
-        let row: Element = closest(e.target as Element, 'tr');
+        const row: Element = closest(e.target as Element, 'tr');
         if (row && this.parent.element.contains(row) &&
             (this.parent.element.querySelectorAll('.e-chart-rows-container')[0].contains(e.target as Element) ||
                 this.parent.element.querySelectorAll('.e-gridcontent')[0].contains(e.target as Element)) &&
             this.parent.currentViewData.length > 0) {
-            let rowIndex: number = getValue('rowIndex', closest(e.target as Element, 'tr'));
-            let dateObject: Date = this.parent.currentViewData[rowIndex].ganttProperties.startDate;
+            const rowIndex: number = getValue('rowIndex', closest(e.target as Element, 'tr'));
+            const dateObject: Date = this.parent.currentViewData[rowIndex].ganttProperties.startDate;
             if (!isNullOrUndefined(dateObject)) {
-                let left: number = this.parent.dataOperation.getTaskLeft(dateObject, false);
+                const left: number = this.parent.dataOperation.getTaskLeft(dateObject, false);
                 if (this.parent.autoFocusTasks) {
                     this.updateScrollLeft(left);
                 }
@@ -305,6 +321,9 @@ export class GanttChart {
     }
     /**
      * To focus selected task in chart side
+     *
+     * @param {number} scrollLeft .
+     * @returns {void} .
      * @private
      */
     public updateScrollLeft(scrollLeft: number): void {
@@ -318,7 +337,9 @@ export class GanttChart {
 
     /**
      *  Method trigger while perform mouse up action.
-     * @return {void}
+     *
+     * @param {PointerEvent} e .
+     * @returns {void}
      * @private
      */
     private mouseUp(e: PointerEvent): void {
@@ -329,13 +350,15 @@ export class GanttChart {
     }
     /**
      *  Method trigger while perform mouse up action.
-     * @return {void}
+     *
+     * @param {PointerEvent} e .
+     * @returns {void} .
      * @private
      */
     private documentMouseUp(e: PointerEvent): void {
         this.isGanttElement = true;
         if (this.parent.allowRowDragAndDrop) {
-            let ganttDragElemet: HTMLElement = this.parent.element.querySelector('.e-ganttdrag');
+            const ganttDragElemet: HTMLElement = this.parent.element.querySelector('.e-ganttdrag');
             if (ganttDragElemet) {
                 ganttDragElemet.remove();
             }
@@ -358,8 +381,8 @@ export class GanttChart {
         }
         if (!isTaskbarEdited) {
             /** Expand/collapse action */
-            let target: EventTarget = e.target;
-            let isOnTaskbarElement: boolean | Element = (e.target as HTMLElement).classList.contains(cls.taskBarMainContainer)
+            const target: EventTarget = e.target;
+            const isOnTaskbarElement: boolean | Element = (e.target as HTMLElement).classList.contains(cls.taskBarMainContainer)
                 || closest(e.target as Element, '.' + cls.taskBarMainContainer);
             if (closest((<HTMLElement>target), '.e-gantt-parent-taskbar')) {
                 this.chartExpandCollapseRequest(e);
@@ -371,8 +394,8 @@ export class GanttChart {
             this.parent.editModule.taskbarEditModule.removeFalseLine(true);
         }
         if (!isNullOrUndefined(this.parent.onTaskbarClick) && !isTaskbarEdited) {
-            let target: EventTarget = e.target;
-            let taskbarElement: Element =
+            const target: EventTarget = e.target;
+            const taskbarElement: Element =
                 closest((<HTMLElement>target), '.e-gantt-parent-taskbar,.e-gantt-child-taskbar,.e-gantt-milestone');
             if (taskbarElement) {
                 this.onTaskbarClick(e, target, taskbarElement);
@@ -382,13 +405,17 @@ export class GanttChart {
 
     /**
      * This event triggered when click on taskbar element
-     * @return {void}
+     *
+     * @param {PointerEvent | KeyboardEventArgs} e .
+     * @param {EventTarget} target .
+     * @param {Element} taskbarElement .
+     * @returns {void}
      */
     public onTaskbarClick(e: PointerEvent | KeyboardEventArgs, target: EventTarget, taskbarElement: Element): void {
-        let chartRow: Node = closest(target as Element, 'tr');
-        let rowIndex: number = getValue('rowIndex', chartRow);
-        let data: IGanttData = this.getRecordByTarget(e);
-        let args: ITaskbarClickEventArgs = {
+        const chartRow: Node = closest(target as Element, 'tr');
+        const rowIndex: number = getValue('rowIndex', chartRow);
+        const data: IGanttData = this.getRecordByTarget(e);
+        const args: ITaskbarClickEventArgs = {
             data: data,
             taskbarElement: taskbarElement,
             rowIndex: rowIndex,
@@ -399,7 +426,9 @@ export class GanttChart {
 
     /**
      *  Method trigger while perform mouse leave action.
-     * @return {void}
+     *
+     * @param {PointerEvent} e .
+     * @returns {void} .
      * @private
      */
     private ganttChartLeave(e: PointerEvent): void {
@@ -408,7 +437,9 @@ export class GanttChart {
 
     /**
      *  Method trigger while perform mouse move action.
-     * @return {void}
+     *
+     * @param {PointerEvent} e .
+     * @returns {void} .
      * @private
      */
     private ganttChartMove(e: PointerEvent): void {
@@ -420,7 +451,9 @@ export class GanttChart {
 
     /**
      *  Method trigger while perform right click action.
-     * @return {void}
+     *
+     * @param {PointerEvent} e .
+     * @returns {void} .
      * @private
      */
     private contextClick(e: PointerEvent): void {
@@ -431,7 +464,9 @@ export class GanttChart {
 
     /**
      * Method to trigger while perform mouse move on Gantt.
-     * @return {void}
+     *
+     * @param {PointerEvent} e .
+     * @returns {void} .
      * @private
      */
     public mouseMoveHandler(e: PointerEvent): void {
@@ -439,25 +474,25 @@ export class GanttChart {
             (this.parent.flatData.length ||
                 (<HTMLElement>e.target).classList.contains('e-header-cell-label') ||
                 (<HTMLElement>e.target).classList.contains('e-headercell'))) {
-            let target: EventTarget = e.target;
-            let args: IMouseMoveEventArgs = { originalEvent: e };
-            let element: Element = closest((<HTMLElement>target), '.e-chart-row-cell,.e-connector-line-container,' +
+            const target: EventTarget = e.target;
+            const args: IMouseMoveEventArgs = { originalEvent: e };
+            const element: Element = closest((<HTMLElement>target), '.e-chart-row-cell,.e-connector-line-container,' +
                 '.e-event-markers,.e-header-cell-label,.e-rowcell,.e-headercell,.e-indicator-span');
             if (element) {
                 let rowData: IGanttData;
-                let rowElement: Element = closest((<HTMLElement>target), '.e-rowcell,.e-chart-row-cell');
-                let columnElement: Element = closest((<HTMLElement>target), '.e-rowcell,.e-headercell');
+                const rowElement: Element = closest((<HTMLElement>target), '.e-rowcell,.e-chart-row-cell');
+                const columnElement: Element = closest((<HTMLElement>target), '.e-rowcell,.e-headercell');
                 if (rowElement) {
                     rowData = this.parent.ganttChartModule.getRecordByTarget(e);
                     args.data = rowData;
                 }
                 if (columnElement) {
-                    let cellIndex: number = getValue('cellIndex', columnElement);
+                    const cellIndex: number = getValue('cellIndex', columnElement);
                     args.column = this.parent.treeGrid.columns[cellIndex];
                 }
                 if (closest((<HTMLElement>target), '.e-indicator-span')) {
                     let index: number = 0;
-                    let indicators: IIndicator[] = rowData.ganttProperties.indicators;
+                    const indicators: IIndicator[] = rowData.ganttProperties.indicators;
                     if (indicators.length > 1) {
                         for (index = 0; index < indicators.length; index++) {
                             if (indicators[index].name === ((<HTMLElement>element).innerText).trim()) {
@@ -468,12 +503,12 @@ export class GanttChart {
                     args.indicator = indicators[index];
                 }
                 if (closest((<HTMLElement>target), '.e-connector-line-container')) {
-                    let obj: TooltipEventArgs = {} as TooltipEventArgs;
+                    const obj: TooltipEventArgs = {} as TooltipEventArgs;
                     obj.target = element as HTMLElement;
                     args.predecessor = this.parent.tooltipModule.getPredecessorTooltipData(obj);
                 }
                 if (closest((<HTMLElement>target), '.e-event-markers')) {
-                    let obj: TooltipEventArgs = {} as TooltipEventArgs;
+                    const obj: TooltipEventArgs = {} as TooltipEventArgs;
                     obj.target = element as HTMLElement;
                     args.eventMarkers = this.parent.tooltipModule.getMarkerTooltipData(obj);
                 }
@@ -487,15 +522,17 @@ export class GanttChart {
 
     /**
      * Double click handler for chart
-     * @param e 
+     *
+     * @param {PointerEvent} e .
+     * @returns {void} .
      */
     private doubleClickHandler(e: PointerEvent): void {
         this.parent.notify('chartDblClick', e);
-        let target: EventTarget = e.target;
-        let row: Element = closest(target as Element, 'tr');
-        let rowIndex: number = getValue('rowIndex', row);
-        let rowData: IGanttData = this.parent.ganttChartModule.getRecordByTarget(e);
-        let args: RecordDoubleClickEventArgs = {
+        const target: EventTarget = e.target;
+        const row: Element = closest(target as Element, 'tr');
+        const rowIndex: number = getValue('rowIndex', row);
+        const rowData: IGanttData = this.parent.ganttChartModule.getRecordByTarget(e);
+        const args: RecordDoubleClickEventArgs = {
             row: row,
             rowData: rowData,
             rowIndex: rowIndex,
@@ -506,7 +543,9 @@ export class GanttChart {
 
     /**
      * To trigger record double click event.
-     * @return {void}
+     *
+     * @param {RecordDoubleClickEventArgs} args .
+     * @returns {void} .
      * @private
      */
     public recordDoubleClick(args: RecordDoubleClickEventArgs): void {
@@ -514,18 +553,20 @@ export class GanttChart {
     }
 
     /**
+     * @param {PointerEvent | KeyboardEventArgs} e .
+     * @returns {IGanttData} .
      * @private
      */
     public getRecordByTarget(e: PointerEvent | KeyboardEventArgs): IGanttData {
         let ganttData: IGanttData;
         let row: Element = closest(e.target as Element, 'div.' + cls.taskBarMainContainer);
         if (!isNullOrUndefined(row)) {
-            let id: string = row.getAttribute('rowUniqueId');
+            const id: string = row.getAttribute('rowUniqueId');
             ganttData = this.parent.getRecordByID(id);
         } else {
             row = closest(e.target as Element, 'tr');
             if (row) {
-                let rowIndex: number = getValue('rowIndex', closest(e.target as Element, 'tr'));
+                const rowIndex: number = getValue('rowIndex', closest(e.target as Element, 'tr'));
                 ganttData = this.parent.currentViewData[rowIndex];
             }
         }
@@ -534,7 +575,8 @@ export class GanttChart {
 
     /**
      * To get gantt chart row elements
-     * @return {NodeListOf<Element>}
+     *
+     * @returns {NodeListOf<Element>} .
      * @private
      */
     public getChartRows(): NodeListOf<Element> {
@@ -543,21 +585,23 @@ export class GanttChart {
 
     /**
      * Expand Collapse operations from gantt chart side
-     * @return {void}
-     * @param target
+     *
+     * @param {PointerEvent} e .
+     * @returns {void} .
      * @private
      */
     private chartExpandCollapseRequest(e: PointerEvent): void {
         if (this.parent.enableMultiTaskbar) {
             return;
         }
-        let target: EventTarget = e.target;
-        let parentElement: Element = closest((<HTMLElement>target), '.e-gantt-parent-taskbar');
-        let record: IGanttData = this.getRecordByTarget(e);
-        let chartRow: Node = closest(target as Element, 'tr');
-        let rowIndex: number = getValue('rowIndex', chartRow);
-        let gridRow: Node = this.parent.treeGrid.getRows()[rowIndex];
-        let args: object = { data: record, gridRow: gridRow, chartRow: chartRow, cancel: false };
+        const target: EventTarget = e.target;
+        const parentElement: Element = closest((<HTMLElement>target), '.e-gantt-parent-taskbar');
+        const record: IGanttData = this.getRecordByTarget(e);
+        const chartRow: Node = closest(target as Element, 'tr');
+        const rowIndex: number = getValue('rowIndex', chartRow);
+        const gridRow: Node = this.parent.treeGrid.getRows()[rowIndex];
+        // eslint-disable-next-line
+        const args: object = { data: record, gridRow: gridRow, chartRow: chartRow, cancel: false };
         this.isExpandCollapseFromChart = true;
         if (parentElement.classList.contains('e-row-expand')) {
             this.collapseGanttRow(args);
@@ -566,6 +610,7 @@ export class GanttChart {
         }
     }
     /**
+     * @returns {void} .
      * @private
      */
     public reRenderConnectorLines(): void {
@@ -578,14 +623,18 @@ export class GanttChart {
 
     /**
      * To collapse gantt rows
-     * @return {void}
-     * @param args
+     *
+     * @param {object} args .
+     * @param {boolean} isCancel .
+     * @returns {void} .
      * @private
      */
+    // eslint-disable-next-line
     public collapseGanttRow(args: object, isCancel?: boolean): void {
         if (isCancel) {
             this.collapsedGanttRow(args);
         } else {
+            // eslint-disable-next-line
             this.parent.trigger('collapsing', args, (arg: object) => {
                 if (this.isExpandCollapseFromChart && !getValue('cancel', arg)) {
                     if (isBlazor()) {
@@ -600,12 +649,13 @@ export class GanttChart {
     }
 
     /**
-     * @return {void}
-     * @param args
+     * @returns {void} .
+     * @param {object} args .
      * @private
      */
+    // eslint-disable-next-line
     public collapsedGanttRow(args: object): void {
-        let record: IGanttData = getValue('data', args);
+        const record: IGanttData = getValue('data', args);
         if (this.isExpandCollapseFromChart) {
             this.expandCollapseChartRows('collapse', getValue('chartRow', args), record, null);
             this.parent.treeGrid.collapseRow(getValue('gridRow', args), record);
@@ -628,14 +678,18 @@ export class GanttChart {
 
     /**
      * To expand gantt rows
-     * @return {void}
-     * @param args
+     *
+     * @returns {void} .
+     * @param {object} args .
+     * @param {boolean} isCancel .
      * @private
      */
+    // eslint-disable-next-line
     public expandGanttRow(args: object, isCancel?: boolean): void {
         if (isCancel) {
             this.expandedGanttRow(args);
         } else {
+            // eslint-disable-next-line
             this.parent.trigger('expanding', args, (arg: object) => {
                 if (isBlazor()) {
                     setValue('chartRow', getElement(getValue('chartRow', arg)), arg);
@@ -650,12 +704,13 @@ export class GanttChart {
     }
 
     /**
-     * @return {void}
-     * @param args
+     * @returns {void} .
+     * @param {object} args .
      * @private
      */
+    // eslint-disable-next-line
     public expandedGanttRow(args: object): void {
-        let record: IGanttData = getValue('data', args);
+        const record: IGanttData = getValue('data', args);
         if (this.isExpandCollapseFromChart) {
             this.expandCollapseChartRows('expand', getValue('chartRow', args), record, null);
             this.parent.treeGrid.expandRow(getValue('gridRow', args), record);
@@ -685,11 +740,12 @@ export class GanttChart {
 
     /**
      * On expand collapse operation row properties will be updated here.
-     * @return {void}
-     * @param action
-     * @param rowElement
-     * @param record
-     * @param isChild
+     *
+     * @param {string} action .
+     * @param {Node} rowElement .
+     * @param {IGanttData} record .
+     * @param {boolean} isChild .
+     * @returns {void} .
      * @private
      */
     private expandCollapseChartRows(action: string, rowElement: Node, record: IGanttData, isChild: boolean): void {
@@ -699,7 +755,7 @@ export class GanttChart {
             if (!isChild) {
                 record.expanded = true;
             }
-            let targetElement: NodeListOf<Element> = (rowElement as HTMLElement).querySelectorAll('.e-row-collapse');
+            const targetElement: NodeListOf<Element> = (rowElement as HTMLElement).querySelectorAll('.e-row-collapse');
             for (let t: number = 0; t < targetElement.length; t++) {
                 addClass([targetElement[t]], 'e-row-expand');
                 removeClass([targetElement[t]], 'e-row-collapse');
@@ -709,15 +765,15 @@ export class GanttChart {
             if (!isChild) {
                 record.expanded = false;
             }
-            let targetElement: NodeListOf<Element> = (rowElement as HTMLElement).querySelectorAll('.e-row-expand');
+            const targetElement: NodeListOf<Element> = (rowElement as HTMLElement).querySelectorAll('.e-row-expand');
             for (let t: number = 0; t < targetElement.length; t++) {
                 addClass([targetElement[t]], 'e-row-collapse');
                 removeClass([targetElement[t]], 'e-row-expand');
             }
         }
-        let childRecords: IGanttData[] = record.childRecords;
-        let chartRows: NodeListOf<Element> = this.getChartRows();
-        let rows: HTMLElement[] = [];
+        const childRecords: IGanttData[] = record.childRecords;
+        const chartRows: NodeListOf<Element> = this.getChartRows();
+        const rows: HTMLElement[] = [];
         for (let i: number = 0; i < chartRows.length; i++) {
             if ((<HTMLElement>chartRows[i]).classList.contains('gridrowtaskId'
                 + record.ganttProperties.rowUniqueID + 'level' + (record.level + 1))) {
@@ -735,8 +791,9 @@ export class GanttChart {
 
     /**
      * Public method to expand or collapse all the rows of Gantt
-     * @return {void}
-     * @param action
+     *
+     * @returns {void}
+     * @param {string} action .
      * @private
      */
     public expandCollapseAll(action: string): void {
@@ -747,14 +804,15 @@ export class GanttChart {
             this.parent.treeGrid.collapseAll();
         }
         this.isExpandAll = false;
-        let focussedElement: HTMLElement = this.parent.element.querySelector('.e-treegrid');
+        const focussedElement: HTMLElement = this.parent.element.querySelector('.e-treegrid');
         focussedElement.focus();
     }
 
     /**
      * Public method to expand particular level of rows.
-     * @return {void}
-     * @param level
+     *
+     * @returns {void} .
+     * @param {number} level .
      * @private
      */
     public expandAtLevel(level: number): void {
@@ -763,8 +821,9 @@ export class GanttChart {
 
     /**
      * Public method to collapse particular level of rows.
-     * @return {void}
-     * @param level
+     *
+     * @returns {void} .
+     * @param {number} level .
      * @private
      */
     public collapseAtLevel(level: number): void {
@@ -772,14 +831,16 @@ export class GanttChart {
     }
 
     /**
-     * Event Binding for gantt chart click 
+     * Event Binding for gantt chart click
+     *
+     * @returns {void} .
      */
     private wireEvents(): void {
-        let isIE11Pointer: Boolean = Browser.isPointer;
-        let mouseDown: string = Browser.touchStartEvent;
-        let mouseUp: string = Browser.touchEndEvent;
-        let mouseMove: string = Browser.touchMoveEvent;
-        let cancel: string = isIE11Pointer ? 'pointerleave' : 'mouseleave';
+        const isIE11Pointer: Boolean = Browser.isPointer; // eslint-disable-line
+        const mouseDown: string = Browser.touchStartEvent;
+        const mouseUp: string = Browser.touchEndEvent;
+        const mouseMove: string = Browser.touchMoveEvent;
+        const cancel: string = isIE11Pointer ? 'pointerleave' : 'mouseleave';
         if (this.parent.editSettings.allowTaskbarEditing) {
             EventHandler.add(this.parent.chartPane, mouseDown, this.ganttChartMouseDown, this);
             EventHandler.add(this.parent.chartPane, cancel, this.ganttChartLeave, this);
@@ -800,11 +861,11 @@ export class GanttChart {
     }
 
     private unWireEvents(): void {
-        let isIE11Pointer: Boolean = Browser.isPointer;
-        let mouseDown: string = Browser.touchStartEvent;
-        let mouseUp: string = Browser.touchEndEvent;
-        let mouseMove: string = Browser.touchMoveEvent;
-        let cancel: string = isIE11Pointer ? 'pointerleave' : 'mouseleave';
+        const isIE11Pointer: Boolean = Browser.isPointer; // eslint-disable-line
+        const mouseDown: string = Browser.touchStartEvent;
+        const mouseUp: string = Browser.touchEndEvent;
+        const mouseMove: string = Browser.touchMoveEvent;
+        const cancel: string = isIE11Pointer ? 'pointerleave' : 'mouseleave';
         if (this.parent.editSettings.allowTaskbarEditing) {
             EventHandler.remove(this.parent.chartRowsModule.ganttChartTableBody, mouseDown, this.ganttChartMouseDown);
             EventHandler.remove(this.parent.chartPane, cancel, this.ganttChartLeave);
@@ -826,35 +887,39 @@ export class GanttChart {
 
     /**
      * To get record by taskbar element.
-     * @return {IGanttData}
+     *
+     * @param {Element} target .
+     * @returns {IGanttData} .
      * @private
      */
     public getRecordByTaskBar(target: Element): IGanttData {
-        let item: IGanttData = this.parent.currentViewData[this.getIndexByTaskBar(target)];
+        const item: IGanttData = this.parent.currentViewData[this.getIndexByTaskBar(target)];
         return item;
     }
     /**
      * Trigger Tab & Shift + Tab keypress to highlight active element.
-     * @param e
+     *
+     * @param {KeyboardEventArgs} e .
+     * @returns {void} .
      * @private
      */
     public onTabAction(e: KeyboardEventArgs): void {
         this.parent.treeGrid.grid.enableHeaderFocus = this.parent.enableHeaderFocus;
-        let isInEditedState: boolean = this.parent.editModule && this.parent.editModule.cellEditModule &&
+        const isInEditedState: boolean = this.parent.editModule && this.parent.editModule.cellEditModule &&
             this.parent.editModule.cellEditModule.isCellEdit;
         if (!this.parent.showActiveElement && !isInEditedState) {
             return;
         }
-        let $target: Element = isInEditedState ? (e.target as Element).closest('.e-rowcell') : e.target as Element;
+        const $target: Element = isInEditedState ? (e.target as Element).closest('.e-rowcell') : e.target as Element;
         if ($target.closest('.e-rowcell') || $target.closest('.e-chart-row')) {
             this.parent.focusModule.setActiveElement($target as HTMLElement);
         }
-        /* tslint:disable-next-line:no-any */
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         this.focusedRowIndex = $target.closest('.e-rowcell') ? ($target.parentElement as any).rowIndex :
-            /* tslint:disable-next-line:no-any */
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
             $target.closest('.e-chart-row') ? ($target.closest('.e-chart-row') as any).rowIndex : -1;
-        let isTab: boolean = (e.action === 'tab') ? true : false;
-        let nextElement: Element | string = this.getNextElement($target, isTab);
+        const isTab: boolean = (e.action === 'tab') ? true : false;
+        const nextElement: Element | string = this.getNextElement($target, isTab, isInEditedState);
         if (nextElement === 'noNextRow') {
             this.manageFocus($target as HTMLElement, 'remove', true);
             return;
@@ -866,9 +931,34 @@ export class GanttChart {
             }
             if ($target.classList.contains('e-rowcell') && (nextElement && nextElement.classList.contains('e-rowcell')) ||
                 $target.classList.contains('e-headercell')) {
-                this.parent.treeGrid.grid.notify('key-pressed', e);
+                    if (isTab) {
+                        if (this.parent.editSettings.allowNextRowEdit) {
+                            const rowData: IGanttData = this.parent.currentViewData[this.focusedRowIndex];
+                            const columnName: string = this.parent.ganttColumns[nextElement.getAttribute('aria-colindex')].field;
+                            if (rowData.hasChildRecords) {
+                                if (columnName === this.parent.taskFields.endDate || columnName ===
+                                     this.parent.taskFields.duration || columnName === this.parent.taskFields.dependency ||
+                                     columnName === this.parent.taskFields.progress || columnName === this.parent.taskFields.work ||
+                                     columnName === 'taskType') {
+                                     this.parent.treeGrid.grid.endEdit();
+                                     this.parent.treeGrid.grid.notify('key-pressed', e);
+                                 } else if (columnName === this.parent.taskFields.name || columnName === this.parent.taskFields.startDate) {
+                                     this.parent.treeGrid.grid.notify('key-pressed', e);
+                                 } else {
+                                     this.parent.treeGrid.grid.notify('key-pressed', e);
+                                     this.parent.treeGrid.editCell(this.focusedRowIndex,columnName);
+                                 }
+                             } else {
+                                this.parent.treeGrid.grid.notify('key-pressed', e);
+                            }
+                        } else {
+                            this.parent.treeGrid.grid.notify('key-pressed', e);
+                        }
+                    } else {
+                        this.parent.treeGrid.grid.notify('key-pressed', e);
+                    }
             }
-            if (!isInEditedState) {
+            if (!this.parent.editModule.cellEditModule.isCellEdit) {
                 if (nextElement) {
                     if ($target.classList.contains('e-rowcell')) {
                         this.manageFocus($target as HTMLElement, 'remove', false);
@@ -878,10 +968,10 @@ export class GanttChart {
                     if (nextElement.classList.contains('e-rowcell')) {
                         if (!$target.classList.contains('e-rowcell')) {
                             this.parent.treeGrid.grid.notify('key-pressed', e);
-                            let fmodule: FocusStrategy = getValue('focusModule', this.parent.treeGrid.grid);
+                            const fmodule: FocusStrategy = getValue('focusModule', this.parent.treeGrid.grid);
                             fmodule.currentInfo.element = nextElement as HTMLElement;
                             fmodule.currentInfo.elementToFocus = nextElement as HTMLElement;
-                            /* tslint:disable-next-line:no-any */
+                            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                             fmodule.content.matrix.current = [(nextElement.parentElement as any).rowIndex, (nextElement as any).cellIndex];
                         }
                         this.manageFocus(nextElement as HTMLElement, 'add', false);
@@ -895,10 +985,13 @@ export class GanttChart {
     }
     /**
      * Get next/previous sibling element.
-     * @param $target 
-     * @param isTab 
+     *
+     * @param {Element} $target .
+     * @param {boolean} isTab .
+     * @param {boolean} isInEditedState .
+     * @returns {Element | string} .
      */
-    private getNextElement($target: Element, isTab: boolean): Element | string {
+    private getNextElement($target: Element, isTab: boolean, isInEditedState: boolean): Element | string {
         let nextElement: Element = isTab ? $target.nextElementSibling : $target.previousElementSibling;
         while (nextElement && nextElement.parentElement.classList.contains('e-row')) {
             if (!nextElement.matches('.e-hide') && !nextElement.matches('.e-rowdragdrop')) {
@@ -908,7 +1001,7 @@ export class GanttChart {
         }
         if (!isNullOrUndefined(nextElement) && (nextElement.classList.contains('e-taskbar-main-container')
             || nextElement.classList.contains('e-right-connectorpoint-outer-div'))) {
-            let record: IGanttData = this.parent.currentViewData[this.focusedRowIndex];
+            const record: IGanttData = this.parent.currentViewData[this.focusedRowIndex];
             if (!isNullOrUndefined(record.ganttProperties.segments) && record.ganttProperties.segments.length > 0) {
                 nextElement = nextElement.classList.contains('e-right-connectorpoint-outer-div')
                     ? nextElement.parentElement.nextElementSibling
@@ -920,7 +1013,14 @@ export class GanttChart {
         } else {
             let rowIndex: number = -1;
             let rowElement: Element = null;
-            if ($target.classList.contains('e-rowcell')) {
+            let childElement: Element | string;
+            if ($target.classList.contains('e-rowcell') && isInEditedState && this.parent.editSettings.allowNextRowEdit) {
+                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                rowIndex = ($target.parentElement as any).rowIndex;
+                rowElement = this.getNextRowElement(rowIndex, isTab, true);
+                childElement = this.getChildElement(rowElement, isTab);
+                return childElement;
+            } else if ($target.classList.contains('e-rowcell')) {
                 /* tslint:disable-next-line:no-any */
                 rowIndex = ($target.parentElement as any).rowIndex;
                 if (isTab) {
@@ -944,42 +1044,34 @@ export class GanttChart {
                 }
             } else if ($target.parentElement.classList.contains('e-chart-row-cell') ||
                 $target.parentElement.parentElement.classList.contains('e-chart-row-cell')) {
-                let childElement: Element;
-                /* tslint:disable-next-line:no-any */
+                let childElement: Element | string;
+                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                 rowIndex = (closest($target, '.e-chart-row') as any).rowIndex;
-
                 if (isTab) {
                     rowElement = this.getNextRowElement(rowIndex, isTab, true);
                 } else {
                     rowElement = this.parent.treeGrid.grid.getRowByIndex(rowIndex);
                 }
-                if (rowElement) {
-                    childElement = isTab ? rowElement.children[0] : rowElement.children[rowElement.children.length - 1];
-                    while (childElement) {
-                        if (!childElement.matches('.e-hide') && !childElement.matches('.e-rowdragdrop')) {
-                            return childElement;
-                        }
-                        childElement = isTab ? childElement.nextElementSibling : childElement.previousElementSibling;
-                    }
-                } else {
-                    return 'noNextRow';
-                }
+                childElement = this.getChildElement(rowElement, isTab);
+                return childElement;
             }
         }
         return null;
     }
     /**
      * Get next/previous row element.
-     * @param rowIndex 
-     * @param isTab 
-     * @param isChartRow 
+     *
+     * @param {number} rowIndex .
+     * @param {boolean} isTab .
+     * @param {boolean} isChartRow .
+     * @returns {Element} .
      */
     private getNextRowElement(rowIndex: number, isTab: boolean, isChartRow: boolean): Element {
-        let expandedRecords: IGanttData[] = this.parent.getExpandedRecords(this.parent.currentViewData);
-        let currentItem: IGanttData = this.parent.currentViewData[rowIndex];
-        let expandedRecordIndex: number = expandedRecords.indexOf(currentItem);
-        let nextRecord: IGanttData = isTab ? expandedRecords[expandedRecordIndex + 1] : expandedRecords[expandedRecordIndex - 1];
-        let nextRowIndex: number = this.parent.currentViewData.indexOf(nextRecord);
+        const expandedRecords: IGanttData[] = this.parent.getExpandedRecords(this.parent.currentViewData);
+        const currentItem: IGanttData = this.parent.currentViewData[rowIndex];
+        const expandedRecordIndex: number = expandedRecords.indexOf(currentItem);
+        const nextRecord: IGanttData = isTab ? expandedRecords[expandedRecordIndex + 1] : expandedRecords[expandedRecordIndex - 1];
+        const nextRowIndex: number = this.parent.currentViewData.indexOf(nextRecord);
         if (nextRecord) {
             return isChartRow ? this.parent.treeGrid.grid.getRowByIndex(nextRowIndex) : this.parent.getRowByIndex(nextRowIndex);
         } else {
@@ -988,15 +1080,17 @@ export class GanttChart {
     }
     /**
      * Validate next/previous sibling element haschilds.
-     * @param $target 
-     * @param className 
+     *
+     * @param {Element} $target .
+     * @param {string} className .
+     * @returns {boolean} .
      */
     private validateNextElement($target: Element, className?: string): boolean {
         if ($target && $target.classList.contains('e-rowcell')) {
             return true;
         }
         if ($target && className) {
-            let elementByClass: Element = $target.getElementsByClassName(className)[0];
+            const elementByClass: Element = $target.getElementsByClassName(className)[0];
             return (elementByClass && elementByClass.hasChildNodes()) ? true : false;
         } else if ($target) {
             return (!isNullOrUndefined($target) && $target.hasChildNodes()) ? true : false;
@@ -1004,11 +1098,34 @@ export class GanttChart {
         return false;
     }
     /**
+     * Getting child element based on row element.
+     * @param {Element} rowElement .
+     * @param {boolean} isTab .
+     * @returns {Element | string} .
+     */
+    private getChildElement(rowElement: Element, isTab?: boolean): Element | string {
+        let childElement: Element;
+        if (rowElement) {
+            childElement = isTab ? rowElement.children[0] : rowElement.children[rowElement.children.length - 1];
+            while (childElement) {
+                if (!childElement.matches('.e-hide') && !childElement.matches('.e-rowdragdrop')) {
+                    return childElement;
+                }
+                childElement = isTab ? childElement.nextElementSibling : childElement.previousElementSibling;
+            }
+        } else {
+            return 'noNextRow';
+        }
+        return childElement;
+    }
+    /**
      * Add/Remove active element.
+     *
      * @private
-     * @param element 
-     * @param focus 
-     * @param isChartElement 
+     * @param {HTMLElement} element .
+     * @param {string} focus .
+     * @param {boolean} isChartElement .
+     * @returns {void} .
      */
     public manageFocus(element: HTMLElement, focus: string, isChartElement?: boolean): void {
         if (isChartElement) {
@@ -1018,10 +1135,10 @@ export class GanttChart {
                 childElement = element.getElementsByTagName('span')[0];
             } else if (element.classList.contains('e-taskbar-main-container')
                 || element.classList.contains('e-gantt-child-taskbar-inner-div')) {
-                /* tslint:disable-next-line:no-any */
-                let rowIndex: number = (closest(element, '.e-chart-row') as any).rowIndex;
-                let data: IGanttData = this.parent.currentViewData[rowIndex];
-                let className: string = data.hasChildRecords ? data.ganttProperties.isAutoSchedule ? 'e-gantt-parent-taskbar' :
+                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                const rowIndex: number = (closest(element, '.e-chart-row') as any).rowIndex;
+                const data: IGanttData = this.parent.currentViewData[rowIndex];
+                const className: string = data.hasChildRecords ? data.ganttProperties.isAutoSchedule ? 'e-gantt-parent-taskbar' :
                     'e-manualparent-main-container' :
                     data.ganttProperties.isMilestone ? 'e-gantt-milestone' : !isNullOrUndefined(data.ganttProperties.segments)
                         && data.ganttProperties.segments.length > 0 ? 'e-segmented-taskbar' : 'e-gantt-child-taskbar';
@@ -1054,7 +1171,9 @@ export class GanttChart {
     }
     /**
      * To get index by taskbar element.
-     * @return {number}
+     *
+     * @param {Element} target .
+     * @returns {number} .
      * @private
      */
     public getIndexByTaskBar(target: Element): number {
@@ -1069,8 +1188,8 @@ export class GanttChart {
             row = closest(target, 'tr.' + cls.chartRow);
             recordIndex = [].slice.call(this.parent.chartRowsModule.ganttChartTableBody.childNodes).indexOf(row);
         } else {
-            let id: string = row.getAttribute('rowUniqueId');
-            let record: IGanttData = this.parent.getRecordByID(id);
+            const id: string = row.getAttribute('rowUniqueId');
+            const record: IGanttData = this.parent.getRecordByID(id);
             recordIndex = this.parent.currentViewData.indexOf(record);
         }
         return recordIndex;

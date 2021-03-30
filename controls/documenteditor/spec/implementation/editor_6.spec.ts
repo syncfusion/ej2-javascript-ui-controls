@@ -239,7 +239,7 @@ describe('Adding bookmark link in empty paragraph validation', () => {
 console.log('Adding bookmark link in empty paragraph');
         editor.showBookmarkDialog();
         (document.getElementById('bookmark_text_box') as any).value = 'firstpage';
-        editor.bookmarkDialogModule.onKeyUpOnTextBox({} as any);
+        editor.bookmarkDialogModule.onKeyUpOnTextBox();
         (document.getElementById('add') as HTMLButtonElement).disabled = false;
         document.getElementById('add').click();
         expect(editor.documentHelper.bookmarks.length).toBe(1);

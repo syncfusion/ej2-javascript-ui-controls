@@ -19,6 +19,7 @@ export class IconShape extends ChildProperty<IconShape> {
      * ArrowDown - sets the icon shape as ArrowDown
      * Template - sets the icon shape based on  the given  custom template
      * Path - sets the icon shape based on the given  custom Path
+     *
      * @default 'None'
      */
     @Property('None')
@@ -43,6 +44,7 @@ export class IconShape extends ChildProperty<IconShape> {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default 'white'
      */
     @Property('white')
@@ -55,6 +57,7 @@ export class IconShape extends ChildProperty<IconShape> {
      * * Right - Aligns the diagram element at the right of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
+     *
      * @default 'Auto'
      */
     @Property('Auto')
@@ -67,6 +70,7 @@ export class IconShape extends ChildProperty<IconShape> {
      * * Bottom - Aligns the diagram element at the bottom of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
+     *
      * @default 'Auto'
      */
     @Property('Auto')
@@ -74,6 +78,7 @@ export class IconShape extends ChildProperty<IconShape> {
 
     /**
      * Defines the width of the icon.
+     *
      * @default 10
      */
     @Property(10)
@@ -81,6 +86,7 @@ export class IconShape extends ChildProperty<IconShape> {
 
     /**
      * Defines the height of the icon.
+     *
      * @default 10
      */
     @Property(10)
@@ -88,6 +94,7 @@ export class IconShape extends ChildProperty<IconShape> {
 
     /**
      * Defines the offset of the icon.
+     *
      * @default new Point(0.5,1)
      * @blazorType IconOffset
      */
@@ -96,6 +103,7 @@ export class IconShape extends ChildProperty<IconShape> {
 
     /**
      * Sets the border color of an icon.
+     *
      * @default ''
      */
     @Property('#1a1a1a')
@@ -103,6 +111,7 @@ export class IconShape extends ChildProperty<IconShape> {
 
     /**
      * Defines the border width of the icon.
+     *
      * @default 1
      */
     @Property(1)
@@ -110,6 +119,7 @@ export class IconShape extends ChildProperty<IconShape> {
 
     /**
      * Defines the space that the icon has to be moved from its actual position
+     *
      * @default new Margin(0,0,0,0)
      */
     @Complex<MarginModel>({}, Margin)
@@ -117,6 +127,7 @@ export class IconShape extends ChildProperty<IconShape> {
 
     /**
      * Defines the geometry of a path
+     *
      * @default ''
      */
     @Property('')
@@ -124,6 +135,7 @@ export class IconShape extends ChildProperty<IconShape> {
 
     /**
      * Defines the custom content of the icon
+     *
      * @default ''
      */
     @Property('')
@@ -131,6 +143,7 @@ export class IconShape extends ChildProperty<IconShape> {
 
     /**
      * Defines the corner radius of the icon border
+     *
      * @default 0
      */
     @Property(0)
@@ -138,6 +151,7 @@ export class IconShape extends ChildProperty<IconShape> {
 
     /**
      * Defines the space that the icon has to be moved from the icon border
+     *
      * @default new Margin(2,2,2,2)
      * @blazorType IconPadding
      */

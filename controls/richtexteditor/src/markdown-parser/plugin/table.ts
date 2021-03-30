@@ -7,6 +7,7 @@ import { extend, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import * as EVENTS from './../../common/constant';
 /**
  * Link internal component
+ * 
  * @hidden
  * @deprecated
  */
@@ -18,10 +19,12 @@ export class MDTable {
     private locale: IMarkdownItem;
     /**
      * Constructor for creating the Formats plugin
+     *
+     * @param {IMDTable} options - specifies the options
      * @hidden
      * @deprecated
      */
-    constructor(options: IMDTable) {
+    public constructor(options: IMDTable) {
         extend(this, this, options, true);
         this.selection = this.parent.markdownSelection;
         this.addEventListener();
@@ -37,6 +40,8 @@ export class MDTable {
 
     /**
      * markdown destroy method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -53,10 +58,9 @@ export class MDTable {
 
     private createTable(e: IMarkdownItem): void {
         this.element = this.parent.element as HTMLTextAreaElement;
-        let start: number = this.element.selectionStart;
-        let end: number = this.element.selectionEnd;
-        let textAreaInitial: string;
-        textAreaInitial = this.element.value;
+        const start: number = this.element.selectionStart;
+        const end: number = this.element.selectionEnd;
+        const textAreaInitial: string = this.element.value;
         this.locale = e;
         this.selection.save(start, end);
         this.restore(this.element.selectionStart, this.element.selectionEnd, null);
@@ -101,16 +105,17 @@ export class MDTable {
     }
 
     private insertLine(): string {
-        let dummyElement: HTMLElement = document.createElement('div');
+        const dummyElement: HTMLElement = document.createElement('div');
         dummyElement.innerHTML = '\n';
         return dummyElement.textContent;
     }
 
     private insertTable(start: number, end: number, textAreaInitial: string, e: IMarkdownItem): void {
-        let parentText: { [key: string]: string | number; }[] = this.selection.getSelectedParentPoints(this.element);
-        let lastLineSplit: string[] = (parentText[parentText.length - 1].text as string).split(' ', 2);
-        let syntaxArr: string[] = this.getFormatTag();
-        let syntaxCount: number = 0;
+        const parentText: { [key: string]: string | number }[] = this.selection.getSelectedParentPoints(this.element);
+        const lastLineSplit: string[] = (parentText[parentText.length - 1].text as string).split(' ', 2);
+        const syntaxArr: string[] = this.getFormatTag();
+        // eslint-disable-next-line
+        const syntaxCount: number = 0;
         if (lastLineSplit.length < 2) {
             this.element.value = this.updateValue(this.getTable());
             this.makeSelection(textAreaInitial, start, end);
@@ -133,9 +138,9 @@ export class MDTable {
         this.selection.setSelection(this.element, start, end);
     }
     private getFormatTag(): string[] {
-        let syntaxFormatKey: string[] = Object.keys(this.syntaxTag.Formats);
-        let syntaxListKey: string[] = Object.keys(this.syntaxTag.List);
-        let syntaxArr: string[] = [];
+        const syntaxFormatKey: string[] = Object.keys(this.syntaxTag.Formats);
+        const syntaxListKey: string[] = Object.keys(this.syntaxTag.List);
+        const syntaxArr: string[] = [];
         for (let i: number = 0; i < syntaxFormatKey.length; i++) {
             syntaxArr.push(this.syntaxTag.Formats[syntaxFormatKey[i]]);
         }
@@ -146,8 +151,8 @@ export class MDTable {
     }
 
     private ensureFormatApply(line: string): boolean {
-        let formatTags: string[] = this.getFormatTag();
-        let formatSplitZero: string = line.trim().split(' ', 2)[0] + ' ';
+        const formatTags: string[] = this.getFormatTag();
+        const formatSplitZero: string = line.trim().split(' ', 2)[0] + ' ';
         for (let i: number = 0; i < formatTags.length; i++) {
             if (formatSplitZero === formatTags[i] || /^[\d.]+[ ]+$/.test(formatSplitZero)) {
                 return true;
@@ -157,7 +162,7 @@ export class MDTable {
     }
 
     private ensureStartValid(firstLine: number, parentText: { [key: string]: string | number; }[]): boolean {
-        let firstLineSplit: string[] = (parentText[0].text as string).split(' ', 2);
+        const firstLineSplit: string[] = (parentText[0].text as string).split(' ', 2);
         for (let i: number = firstLine + 1; i <= firstLine + firstLineSplit[0].length + 1; i++) {
             if (this.element.selectionStart === i || this.element.selectionEnd === i) {
                 return false;
@@ -176,7 +181,7 @@ export class MDTable {
     }
 
     private updateValueWithFormat(formatSplit: string[], text: string): string {
-        let textApplyFormat: string = this.element.value.substring(this.element.selectionEnd, this.element.value.length);
+        const textApplyFormat: string = this.element.value.substring(this.element.selectionEnd, this.element.value.length);
         text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
         return this.element.value.substr(0, this.element.selectionStart) + text;
     }
@@ -189,7 +194,8 @@ export class MDTable {
     private checkValid(
         start: number, end: number, text: string,
         textAreaInitial: string,
-        e: IMarkdownItem, formatSplit: string[], parentText: { [key: string]: string | number; }[], syntaxArr: string[]): void {
+        // eslint-disable-next-line
+        e: IMarkdownItem, formatSplit: string[], parentText: { [key: string]: string | number }[], syntaxArr: string[]): void {
         if (this.ensureStartValid(parentText[0].start as number, parentText) &&
             this.ensureEndValid(parentText[parentText.length - 1].start as number, formatSplit[0].length)) {
             if (start === parentText[0].start as number) {
@@ -208,7 +214,7 @@ export class MDTable {
     }
 
     private convertToLetters(rowNumber: number): string {
-        let baseChar: number = ('A').charCodeAt(0);
+        const baseChar: number = ('A').charCodeAt(0);
         let letters: string = '';
         do {
             rowNumber -= 1;
@@ -223,7 +229,7 @@ export class MDTable {
         if (this.isCursorBased() || this.isSelectionBased()) {
             if (this.element.value.length > 0) {
                 emptyText += this.insertLine();
-                emptyText += this.insertLine(); // to append two new line when textarea having content.               
+                emptyText += this.insertLine(); // to append two new line when textarea having content.
             }
         }
         return emptyText;

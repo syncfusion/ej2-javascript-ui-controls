@@ -1,453 +1,455 @@
 /**
  * CSS Constants
  */
-/** @hidden */
+/** @private */
 export const ROOT: string = 'e-schedule';
-/** @hidden */
+/** @private */
 export const RTL: string = 'e-rtl';
-/** @hidden */
+/** @private */
 export const DEVICE_CLASS: string = 'e-device';
-/** @hidden */
+/** @private */
+export const MULTI_DRAG: string = 'e-multi-drag';
+/** @private */
 export const ICON: string = 'e-icons';
-/** @hidden */
+/** @private */
 export const ENABLE_CLASS: string = 'e-enable';
-/** @hidden */
+/** @private */
 export const DISABLE_CLASS: string = 'e-disable';
-/** @hidden */
+/** @private */
 export const TABLE_CONTAINER_CLASS: string = 'e-table-container';
-/** @hidden */
+/** @private */
 export const SCHEDULE_TABLE_CLASS: string = 'e-schedule-table';
-/** @hidden */
+/** @private */
 export const ALLDAY_CELLS_CLASS: string = 'e-all-day-cells';
-/** @hidden */
+/** @private */
 export const HEADER_POPUP_CLASS: string = 'e-header-popup';
-/** @hidden */
+/** @private */
 export const HEADER_CALENDAR_CLASS: string = 'e-header-calendar';
-/** @hidden */
+/** @private */
 export const ALLDAY_ROW_CLASS: string = 'e-all-day-row';
-/** @hidden */
+/** @private */
 export const CONTENT_TABLE_CLASS: string = 'e-content-table';
-/** @hidden */
+/** @private */
 export const WORK_CELLS_CLASS: string = 'e-work-cells';
-/** @hidden */
+/** @private */
 export const WORK_HOURS_CLASS: string = 'e-work-hours';
-/** @hidden */
+/** @private */
 export const POPUP_OPEN: string = 'e-popup-open';
-/** @hidden */
+/** @private */
 export const POPUP_CLOSE: string = 'e-popup-close';
-/** @hidden */
+/** @private */
 export const DATE_HEADER_WRAP_CLASS: string = 'e-date-header-wrap';
-/** @hidden */
+/** @private */
 export const DATE_HEADER_CONTAINER_CLASS: string = 'e-date-header-container';
-/** @hidden */
+/** @private */
 export const HEADER_CELLS_CLASS: string = 'e-header-cells';
-/** @hidden */
+/** @private */
 export const WORKDAY_CLASS: string = 'e-work-days';
-/** @hidden */
+/** @private */
 export const OTHERMONTH_CLASS: string = 'e-other-month';
-/** @hidden */
+/** @private */
 export const CURRENT_DAY_CLASS: string = 'e-current-day';
-/** @hidden */
+/** @private */
 export const CURRENTDATE_CLASS: string = 'e-current-date';
-/** @hidden */
+/** @private */
 export const CURRENT_PANEL_CLASS: string = 'e-current-panel';
-/** @hidden */
+/** @private */
 export const PREVIOUS_PANEL_CLASS: string = 'e-previous-panel';
-/** @hidden */
+/** @private */
 export const NEXT_PANEL_CLASS: string = 'e-next-panel';
-/** @hidden */
+/** @private */
 export const PREVIOUS_DATE_CLASS: string = 'e-prev';
-/** @hidden */
+/** @private */
 export const NEXT_DATE_CLASS: string = 'e-next';
-/** @hidden */
+/** @private */
 export const TRANSLATE_CLASS: string = 'e-translate';
-/** @hidden */
+/** @private */
 export const LEFT_INDENT_CLASS: string = 'e-left-indent';
-/** @hidden */
+/** @private */
 export const LEFT_INDENT_WRAP_CLASS: string = 'e-left-indent-wrap';
-/** @hidden */
+/** @private */
 export const EVENT_TABLE_CLASS: string = 'e-event-table';
-/** @hidden */
+/** @private */
 export const RESOURCE_LEFT_TD_CLASS: string = 'e-resource-left-td';
-/** @hidden */
+/** @private */
 export const RESOURCE_GROUP_CELLS_CLASS: string = 'e-resource-group-cells';
-/** @hidden */
+/** @private */
 export const RESOURCE_TEXT_CLASS: string = 'e-resource-text';
-/** @hidden */
+/** @private */
 export const RESOURCE_COLUMN_WRAP_CLASS: string = 'e-resource-column-wrap';
-/** @hidden */
+/** @private */
 export const RESOURCE_COLUMN_TABLE_CLASS: string = 'e-resource-column-table';
-/** @hidden */
+/** @private */
 export const RESOURCE_CHILD_CLASS: string = 'e-child-node';
-/** @hidden */
+/** @private */
 export const RESOURCE_PARENT_CLASS: string = 'e-parent-node';
-/** @hidden */
+/** @private */
 export const RESOURCE_EXPAND_CLASS: string = 'e-resource-expand';
-/** @hidden */
+/** @private */
 export const RESOURCE_COLLAPSE_CLASS: string = 'e-resource-collapse';
-/** @hidden */
+/** @private */
 export const RESOURCE_TREE_ICON_CLASS: string = 'e-resource-tree-icon';
-/** @hidden */
+/** @private */
 export const RESOURCE_CELLS_CLASS: string = 'e-resource-cells';
-/** @hidden */
+/** @private */
 export const TIME_CELLS_WRAP_CLASS: string = 'e-time-cells-wrap';
-/** @hidden */
+/** @private */
 export const TIME_CELLS_CLASS: string = 'e-time-cells';
-/** @hidden */
+/** @private */
 export const TIME_SLOT_CLASS: string = 'e-time-slots';
-/** @hidden */
+/** @private */
 export const ALTERNATE_CELLS_CLASS: string = 'e-alternate-cells';
-/** @hidden */
+/** @private */
 export const CURRENT_TIME_CLASS: string = 'e-current-time';
-/** @hidden */
+/** @private */
 export const CURRENT_TIMELINE_CLASS: string = 'e-current-timeline';
-/** @hidden */
+/** @private */
 export const PREVIOUS_TIMELINE_CLASS: string = 'e-previous-timeline';
-/** @hidden */
+/** @private */
 export const HIDE_CHILDS_CLASS: string = 'e-hide-childs';
-/** @hidden */
+/** @private */
 export const SCROLL_CONTAINER_CLASS: string = 'e-scroll-container';
-/** @hidden */
+/** @private */
 export const WRAPPER_CLASS: string = 'e-wrapper';
-/** @hidden */
+/** @private */
 export const TIMELINE_WRAPPER_CLASS: string = 'e-timeline-wrapper';
-/** @hidden */
+/** @private */
 export const APPOINTMENT_WRAPPER_CLASS: string = 'e-appointment-wrapper';
-/** @hidden */
+/** @private */
 export const DAY_WRAPPER_CLASS: string = 'e-day-wrapper';
-/** @hidden */
+/** @private */
 export const TOOLBAR_CONTAINER: string = 'e-schedule-toolbar-container';
-/** @hidden */
+/** @private */
 export const RESOURCE_TOOLBAR_CONTAINER: string = 'e-schedule-resource-toolbar-container';
-/** @hidden */
+/** @private */
 export const HEADER_TOOLBAR: string = 'e-schedule-toolbar';
-/** @hidden */
+/** @private */
 export const RESOURCE_HEADER_TOOLBAR: string = 'e-schedule-resource-toolbar';
-/** @hidden */
+/** @private */
 export const SELECTED_CELL_CLASS: string = 'e-selected-cell';
-/** @hidden */
+/** @private */
 export const WEEK_NUMBER_WRAPPER_CLASS: string = 'e-week-number-wrapper';
-/** @hidden */
+/** @private */
 export const WEEK_NUMBER_CLASS: string = 'e-week-number';
-/** @hidden */
+/** @private */
 export const APPOINTMENT_WRAP_CLASS: string = 'e-appointment-wrap';
-/** @hidden */
+/** @private */
 export const WRAPPER_CONTAINER_CLASS: string = 'e-wrapper-container';
-/** @hidden */
+/** @private */
 export const APPOINTMENT_CONTAINER_CLASS: string = 'e-appointment-container';
-/** @hidden */
+/** @private */
 export const APPOINTMENT_CLASS: string = 'e-appointment';
-/** @hidden */
+/** @private */
 export const BLOCK_APPOINTMENT_CLASS: string = 'e-block-appointment';
-/** @hidden */
+/** @private */
 export const BLOCK_INDICATOR_CLASS: string = 'e-block-indicator';
-/** @hidden */
+/** @private */
 export const APPOINTMENT_BORDER: string = 'e-appointment-border';
-/** @hidden */
+/** @private */
 export const APPOINTMENT_DETAILS: string = 'e-appointment-details';
-/** @hidden */
+/** @private */
 export const SUBJECT_WRAP: string = 'e-subject-wrap';
-/** @hidden */
+/** @private */
 export const RESOURCE_NAME: string = 'e-resource-name';
-/** @hidden */
+/** @private */
 export const APPOINTMENT_TIME: string = 'e-time';
-/** @hidden */
+/** @private */
 export const TABLE_WRAP_CLASS: string = 'e-table-wrap';
-/** @hidden */
+/** @private */
 export const OUTER_TABLE_CLASS: string = 'e-outer-table';
-/** @hidden */
+/** @private */
 export const CONTENT_WRAP_CLASS: string = 'e-content-wrap';
-/** @hidden */
+/** @private */
 export const VIRTUAL_TRACK_CLASS: string = 'e-virtual-track';
-/** @hidden */
+/** @private */
 export const AGENDA_CELLS_CLASS: string = 'e-agenda-cells';
-/** @hidden */
+/** @private */
 export const AGENDA_CURRENT_DAY_CLASS: string = 'e-current-day';
-/** @hidden */
+/** @private */
 export const AGENDA_SELECTED_CELL: string = 'e-active-appointment-agenda';
-/** @hidden */
+/** @private */
 export const MONTH_HEADER_CLASS: string = 'e-month-header';
-/** @hidden */
+/** @private */
 export const AGENDA_HEADER_CLASS: string = 'e-day-date-header';
-/** @hidden */
+/** @private */
 export const AGENDA_RESOURCE_CLASS: string = 'e-resource-column';
-/** @hidden */
+/** @private */
 export const AGENDA_DATE_CLASS: string = 'e-date-column';
-/** @hidden */
+/** @private */
 export const NAVIGATE_CLASS: string = 'e-navigate';
-/** @hidden */
+/** @private */
 export const DATE_HEADER_CLASS: string = 'e-date-header';
-/** @hidden */
+/** @private */
 export const AGENDA_DAY_BORDER_CLASS: string = 'e-day-border';
-/** @hidden */
+/** @private */
 export const DATE_BORDER_CLASS: string = 'e-date-border';
-/** @hidden */
+/** @private */
 export const AGENDA_DAY_PADDING_CLASS: string = 'e-day-padding';
-/** @hidden */
+/** @private */
 export const DATE_TIME_CLASS: string = 'e-date-time';
-/** @hidden */
+/** @private */
 export const DATE_TIME_WRAPPER_CLASS: string = 'e-date-time-wrapper';
-/** @hidden */
+/** @private */
 export const AGENDA_EMPTY_EVENT_CLASS: string = 'e-empty-event';
-/** @hidden */
+/** @private */
 export const AGENDA_NO_EVENT_CLASS: string = 'e-no-event';
-/** @hidden */
+/** @private */
 export const APPOINTMENT_INDICATOR_CLASS: string = 'e-appointment-indicator';
-/** @hidden */
+/** @private */
 export const EVENT_INDICATOR_CLASS: string = 'e-indicator';
-/** @hidden */
+/** @private */
 export const EVENT_ICON_UP_CLASS: string = 'e-up-icon';
-/** @hidden */
+/** @private */
 export const EVENT_ICON_DOWN_CLASS: string = 'e-down-icon';
-/** @hidden */
+/** @private */
 export const EVENT_ICON_LEFT_CLASS: string = 'e-left-icon';
-/** @hidden */
+/** @private */
 export const EVENT_ICON_RIGHT_CLASS: string = 'e-right-icon';
-/** @hidden */
+/** @private */
 export const EVENT_ACTION_CLASS: string = 'e-event-action';
-/** @hidden */
+/** @private */
 export const NEW_EVENT_CLASS: string = 'e-new-event';
-/** @hidden */
+/** @private */
 export const CLONE_ELEMENT_CLASS: string = 'e-schedule-event-clone';
-/** @hidden */
+/** @private */
 export const MONTH_CLONE_ELEMENT_CLASS: string = 'e-month-event';
-/** @hidden */
+/** @private */
 export const CLONE_TIME_INDICATOR_CLASS: string = 'e-clone-time-indicator';
-/** @hidden */
+/** @private */
 export const DRAG_CLONE_CLASS: string = 'e-drag-clone';
-/** @hidden */
+/** @private */
 export const EVENT_RESIZE_CLASS: string = 'e-event-resize';
-/** @hidden */
+/** @private */
 export const RESIZE_CLONE_CLASS: string = 'e-resize-clone';
-/** @hidden */
+/** @private */
 export const LEFT_RESIZE_HANDLER: string = 'e-left-handler';
-/** @hidden */
+/** @private */
 export const RIGHT_RESIZE_HANDLER: string = 'e-right-handler';
-/** @hidden */
+/** @private */
 export const TOP_RESIZE_HANDLER: string = 'e-top-handler';
-/** @hidden */
+/** @private */
 export const BOTTOM_RESIZE_HANDLER: string = 'e-bottom-handler';
-/** @hidden */
+/** @private */
 export const EVENT_RECURRENCE_ICON_CLASS: string = 'e-recurrence-icon';
-/** @hidden */
+/** @private */
 export const EVENT_RECURRENCE_EDIT_ICON_CLASS: string = 'e-recurrence-edit-icon';
-/** @hidden */
+/** @private */
 export const HEADER_ROW_CLASS: string = 'e-header-row';
-/** @hidden */
+/** @private */
 export const ALLDAY_APPOINTMENT_WRAPPER_CLASS: string = 'e-all-day-appointment-wrapper';
-/** @hidden */
+/** @private */
 export const ALLDAY_APPOINTMENT_CLASS: string = 'e-all-day-appointment';
-/** @hidden */
+/** @private */
 export const EVENT_COUNT_CLASS: string = 'e-appointment-hide';
-/** @hidden */
+/** @private */
 export const ROW_COUNT_WRAPPER_CLASS: string = 'e-row-count-wrapper';
-/** @hidden */
+/** @private */
 export const ALLDAY_APPOINTMENT_SECTION_CLASS: string = 'e-all-day-appointment-section';
-/** @hidden */
+/** @private */
 export const APPOINTMENT_ROW_EXPAND_CLASS: string = 'e-appointment-expand';
-/** @hidden */
+/** @private */
 export const APPOINTMENT_ROW_COLLAPSE_CLASS: string = 'e-appointment-collapse';
-/** @hidden */
+/** @private */
 export const MORE_INDICATOR_CLASS: string = 'e-more-indicator';
-/** @hidden */
+/** @private */
 export const CELL_POPUP_CLASS: string = 'e-cell-popup';
-/** @hidden */
+/** @private */
 export const EVENT_POPUP_CLASS: string = 'e-event-popup';
-/** @hidden */
+/** @private */
 export const MULTIPLE_EVENT_POPUP_CLASS: string = 'e-multiple-event-popup';
-/** @hidden */
+/** @private */
 export const POPUP_HEADER_CLASS: string = 'e-popup-header';
-/** @hidden */
+/** @private */
 export const POPUP_HEADER_ICON_WRAPPER: string = 'e-header-icon-wrapper';
-/** @hidden */
+/** @private */
 export const POPUP_CONTENT_CLASS: string = 'e-popup-content';
-/** @hidden */
+/** @private */
 export const POPUP_FOOTER_CLASS: string = 'e-popup-footer';
-/** @hidden */
+/** @private */
 export const DATE_TIME_DETAILS_CLASS: string = 'e-date-time-details';
-/** @hidden */
+/** @private */
 export const RECURRENCE_SUMMARY_CLASS: string = 'e-recurrence-summary';
-/** @hidden */
+/** @private */
 export const QUICK_POPUP_EVENT_DETAILS_CLASS: string = 'e-event-details';
-/** @hidden */
+/** @private */
 export const EVENT_CREATE_CLASS: string = 'e-event-create';
-/** @hidden */
+/** @private */
 export const EDIT_EVENT_CLASS: string = 'e-event-edit';
-/** @hidden */
+/** @private */
 export const DELETE_EVENT_CLASS: string = 'e-event-delete';
-/** @hidden */
+/** @private */
 export const TEXT_ELLIPSIS: string = 'e-text-ellipsis';
-/** @hidden */
+/** @private */
 export const MORE_POPUP_WRAPPER_CLASS: string = 'e-more-popup-wrapper';
-/** @hidden */
+/** @private */
 export const MORE_EVENT_POPUP_CLASS: string = 'e-more-event-popup';
-/** @hidden */
+/** @private */
 export const MORE_EVENT_HEADER_CLASS: string = 'e-more-event-header';
-/** @hidden */
+/** @private */
 export const MORE_EVENT_DATE_HEADER_CLASS: string = 'e-more-event-date-header';
-/** @hidden */
+/** @private */
 export const MORE_EVENT_HEADER_DAY_CLASS: string = 'e-header-day';
-/** @hidden */
+/** @private */
 export const MORE_EVENT_HEADER_DATE_CLASS: string = 'e-header-date';
-/** @hidden */
+/** @private */
 export const MORE_EVENT_CLOSE_CLASS: string = 'e-more-event-close';
-/** @hidden */
+/** @private */
 export const MORE_EVENT_CONTENT_CLASS: string = 'e-more-event-content';
-/** @hidden */
+/** @private */
 export const MORE_EVENT_WRAPPER_CLASS: string = 'e-more-appointment-wrapper';
-/** @hidden */
+/** @private */
 export const QUICK_DIALOG_CLASS: string = 'e-quick-dialog';
-/** @hidden */
+/** @private */
 export const QUICK_DIALOG_OCCURRENCE_CLASS: string = 'e-quick-dialog-occurrence-event';
-/** @hidden */
+/** @private */
 export const QUICK_DIALOG_SERIES_CLASS: string = 'e-quick-dialog-series-event';
-/** @hidden */
+/** @private */
 export const QUICK_DIALOG_FOLLOWING_EVENTS_CLASS: string = 'e-quick-dialog-following-events';
-/** @hidden */
+/** @private */
 export const FOLLOWING_EVENTS_DIALOG: string = 'e-following-events-dialog';
-/** @hidden */
+/** @private */
 export const QUICK_DIALOG_DELETE_CLASS: string = 'e-quick-dialog-delete';
-/** @hidden */
+/** @private */
 export const QUICK_DIALOG_CANCEL_CLASS: string = 'e-quick-dialog-cancel';
-/** @hidden */
+/** @private */
 export const QUICK_DIALOG_ALERT_OK: string = 'e-quick-alertok';
-/** @hidden */
+/** @private */
 export const QUICK_DIALOG_ALERT_CANCEL: string = 'e-quick-alertcancel';
-/** @hidden */
+/** @private */
 export const QUICK_DIALOG_ALERT_FOLLOWING: string = 'e-quick-alertfollowing';
-/** @hidden */
+/** @private */
 export const QUICK_DIALOG_ALERT_BTN_CLASS: string = 'e-quick-dialog-alert-btn';
-/** @hidden */
+/** @private */
 export const EVENT_WINDOW_DIALOG_CLASS: string = 'e-schedule-dialog';
-/** @hidden */
+/** @private */
 export const FORM_CONTAINER_CLASS: string = 'e-form-container';
-/** @hidden */
+/** @private */
 export const FORM_CLASS: string = 'e-schedule-form';
-/** @hidden */
+/** @private */
 export const EVENT_WINDOW_ALLDAY_TZ_DIV_CLASS: string = 'e-all-day-time-zone-row';
-/** @hidden */
+/** @private */
 export const EVENT_WINDOW_ALL_DAY_CLASS: string = 'e-all-day';
-/** @hidden */
+/** @private */
 export const TIME_ZONE_CLASS: string = 'e-time-zone';
-/** @hidden */
+/** @private */
 export const TIME_ZONE_ICON_CLASS: string = 'e-time-zone-icon';
-/** @hidden */
+/** @private */
 export const TIME_ZONE_DETAILS_CLASS: string = 'e-time-zone-details';
-/** @hidden */
+/** @private */
 export const EVENT_WINDOW_REPEAT_DIV_CLASS: string = 'e-repeat-parent-row';
-/** @hidden */
+/** @private */
 export const EVENT_WINDOW_REPEAT_CLASS: string = 'e-repeat';
-/** @hidden */
+/** @private */
 export const EVENT_WINDOW_TITLE_LOCATION_DIV_CLASS: string = 'e-title-location-row';
-/** @hidden */
+/** @private */
 export const SUBJECT_CLASS: string = 'e-subject';
-/** @hidden */
+/** @private */
 export const LOCATION_CLASS: string = 'e-location';
-/** @hidden */
+/** @private */
 export const LOCATION_ICON_CLASS: string = 'e-location-icon';
-/** @hidden */
+/** @private */
 export const LOCATION_DETAILS_CLASS: string = 'e-location-details';
-/** @hidden */
+/** @private */
 export const EVENT_WINDOW_START_END_DIV_CLASS: string = 'e-start-end-row';
-/** @hidden */
+/** @private */
 export const EVENT_WINDOW_START_CLASS: string = 'e-start';
-/** @hidden */
+/** @private */
 export const EVENT_WINDOW_END_CLASS: string = 'e-end';
-/** @hidden */
+/** @private */
 export const EVENT_WINDOW_RESOURCES_DIV_CLASS: string = 'e-resources-row';
-/** @hidden */
+/** @private */
 export const DESCRIPTION_CLASS: string = 'e-description';
-/** @hidden */
+/** @private */
 export const DESCRIPTION_ICON_CLASS: string = 'e-description-icon';
-/** @hidden */
+/** @private */
 export const DESCRIPTION_DETAILS_CLASS: string = 'e-description-details';
-/** @hidden */
+/** @private */
 export const EVENT_WINDOW_TIME_ZONE_DIV_CLASS: string = 'e-time-zone-row';
-/** @hidden */
+/** @private */
 export const EVENT_WINDOW_START_TZ_CLASS: string = 'e-start-time-zone';
-/** @hidden */
+/** @private */
 export const EVENT_WINDOW_END_TZ_CLASS: string = 'e-end-time-zone';
-/** @hidden */
+/** @private */
 export const EVENT_WINDOW_BACK_ICON_CLASS: string = 'e-back-icon';
-/** @hidden */
+/** @private */
 export const EVENT_WINDOW_SAVE_ICON_CLASS: string = 'e-save-icon';
-/** @hidden */
+/** @private */
 export const EVENT_WINDOW_CANCEL_BUTTON_CLASS: string = 'e-event-cancel';
-/** @hidden */
+/** @private */
 export const EVENT_WINDOW_SAVE_BUTTON_CLASS: string = 'e-event-save';
-/** @hidden */
+/** @private */
 export const EVENT_WINDOW_DIALOG_PARENT_CLASS: string = 'e-dialog-parent';
-/** @hidden */
+/** @private */
 export const EVENT_WINDOW_TITLE_TEXT_CLASS: string = 'e-title-text';
-/** @hidden */
+/** @private */
 export const EVENT_WINDOW_ICON_DISABLE_CLASS: string = 'e-icon-disable';
-/** @hidden */
+/** @private */
 export const EDIT_CLASS: string = 'e-edit';
-/** @hidden */
+/** @private */
 export const EDIT_ICON_CLASS: string = 'e-edit-icon';
-/** @hidden */
+/** @private */
 export const DELETE_CLASS: string = 'e-delete';
-/** @hidden */
+/** @private */
 export const DELETE_ICON_CLASS: string = 'e-delete-icon';
-/** @hidden */
+/** @private */
 export const CLOSE_CLASS: string = 'e-close';
-/** @hidden */
+/** @private */
 export const CLOSE_ICON_CLASS: string = 'e-close-icon';
-/** @hidden */
+/** @private */
 export const ERROR_VALIDATION_CLASS: string = 'e-schedule-error';
-/** @hidden */
+/** @private */
 export const EVENT_TOOLTIP_ROOT_CLASS: string = 'e-schedule-event-tooltip';
-/** @hidden */
+/** @private */
 export const ALLDAY_ROW_ANIMATE_CLASS: string = 'e-animate';
-/** @hidden */
+/** @private */
 export const TIMESCALE_DISABLE: string = 'e-timescale-disable';
-/** @hidden */
+/** @private */
 export const DISABLE_DATE: string = 'e-disable-date';
-/** @hidden */
+/** @private */
 export const HIDDEN_CLASS: string = 'e-hidden';
-/** @hidden */
+/** @private */
 export const DISABLE_DATES: string = 'e-disable-dates';
-/** @hidden */
+/** @private */
 export const POPUP_WRAPPER_CLASS: string = 'e-quick-popup-wrapper';
-/** @hidden */
+/** @private */
 export const POPUP_TABLE_CLASS: string = 'e-popup-table';
-/** @hidden */
+/** @private */
 export const RESOURCE_MENU: string = 'e-resource-menu';
-/** @hidden */
+/** @private */
 export const RESOURCE_MENU_ICON: string = 'e-icon-menu';
-/** @hidden */
+/** @private */
 export const RESOURCE_LEVEL_TITLE: string = 'e-resource-level-title';
-/** @hidden */
+/** @private */
 export const RESOURCE_TREE: string = 'e-resource-tree';
-/** @hidden */
+/** @private */
 export const RESOURCE_TREE_POPUP_OVERLAY: string = 'e-resource-tree-popup-overlay';
-/** @hidden */
+/** @private */
 export const RESOURCE_TREE_POPUP: string = 'e-resource-tree-popup';
-/** @hidden */
+/** @private */
 export const RESOURCE_CLASS: string = 'e-resource';
-/** @hidden */
+/** @private */
 export const RESOURCE_ICON_CLASS: string = 'e-resource-icon';
-/** @hidden */
+/** @private */
 export const RESOURCE_DETAILS_CLASS: string = 'e-resource-details';
-/** @hidden */
+/** @private */
 export const DATE_TIME_ICON_CLASS: string = 'e-date-time-icon';
-/** @hidden */
+/** @private */
 export const VIRTUAL_SCROLL_CLASS: string = 'e-virtual-scroll';
-/** @hidden */
+/** @private */
 export const ICON_DISABLE_CLASS: string = 'e-icon-disable';
-/** @hidden */
+/** @private */
 export const AUTO_HEIGHT: string = 'e-auto-height';
-/** @hidden */
+/** @private */
 export const IGNORE_WHITESPACE: string = 'e-ignore-whitespace';
-/** @hidden */
+/** @private */
 export const EVENT_TEMPLATE: string = 'e-template';
-/** @hidden */
+/** @private */
 export const READ_ONLY: string = 'e-read-only';
-/** @hidden */
+/** @private */
 export const MONTH_HEADER_WRAPPER: string = 'e-month-header-wrapper';
-/** @hidden */
+/** @private */
 export const INLINE_SUBJECT_CLASS: string = 'e-inline-subject';
-/** @hidden */
+/** @private */
 export const INLINE_APPOINTMENT_CLASS: string = 'e-inline-appointment';
 /** @hidden */
 export const SCROLL_HIDDEN: string = 'e-scroll-hidden';

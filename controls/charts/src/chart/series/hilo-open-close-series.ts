@@ -1,6 +1,8 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { withInRange, ChartLocation, pathAnimation, getElement } from '../../common/utils/helper';
 import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
-import { Chart } from '../chart';
 import { DoubleRange } from '../utils/double-range';
 import { Series, Points } from './chart-series';
 import { ColumnBase } from './column-base';
@@ -14,20 +16,19 @@ export class HiloOpenCloseSeries extends ColumnBase {
 
     /**
      * Render HiloOpenCloseSeries series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
     public render(series: Series): void {
         let highLowRect: Rect;
-        let open: ChartLocation;
-        let close: ChartLocation;
         let index1: number;
         let index2: number;
-        let sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
+        const sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
         let argsData: IPointRenderEventArgs;
-        let borderWidth: number = Math.max(series.border.width, 2);
-        for (let point of series.points) {
+        const borderWidth: number = Math.max(series.border.width, 2);
+        for (const point of series.points) {
             point.symbolLocations = [];
             point.regions = [];
             if (point.visible &&
@@ -60,8 +61,8 @@ export class HiloOpenCloseSeries extends ColumnBase {
                     this.updateSymbolLocation(point, point.regions[0], series);
                     index1 = point.open > point.close ? 1 : 2;
                     index2 = point.open > point.close ? 2 : 1;
-                    let open: ChartLocation = { x: point.regions[index1].x, y: point.regions[index1].y };
-                    let close: ChartLocation = { x: point.regions[index2].x, y: point.regions[index2].y };
+                    const open: ChartLocation = { x: point.regions[index1].x, y: point.regions[index1].y };
+                    const close: ChartLocation = { x: point.regions[index2].x, y: point.regions[index2].y };
                     this.drawHiloOpenClosePath(series, point, open, close, highLowRect, argsData);
                 }
 
@@ -89,21 +90,22 @@ export class HiloOpenCloseSeries extends ColumnBase {
      * Trigger point rendering event
      */
     private triggerPointRenderEvent(series: Series, point: Points): IPointRenderEventArgs {
-        let fill: string = (point.open <= point.close) ? series.bearFillColor : series.bullFillColor;
-        let border: BorderModel = { color: series.border.color, width: Math.max(series.border.width, 1) };
+        const fill: string = (point.open <= point.close) ? series.bearFillColor : series.bullFillColor;
+        const border: BorderModel = { color: series.border.color, width: Math.max(series.border.width, 1) };
         return this.triggerEvent(series, point, fill, border);
     }
 
     /**
      * To draw the rectangle for points.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     protected drawHiloOpenClosePath(
         series: Series, point: Points, open: ChartLocation, close: ChartLocation, rect: Rect, argsData: IPointRenderEventArgs
     ): void {
         // region highlow
-        let direction: string; let options: PathOption;
+        let direction: string;
         if (series.chart.requireInvertedAxis) {
             direction = ('M' + ' ' + (rect.x) + ' ' + (rect.y + rect.height / 2) + ' ' +
                 'L' + ' ' + (rect.x + rect.width) + ' ' + (rect.y + rect.height / 2) + ' ');
@@ -124,11 +126,11 @@ export class HiloOpenCloseSeries extends ColumnBase {
                 'L' + ' ' + (rect.x + rect.width) + ' ' + (close.y) + ' ');
         }
 
-        options = new PathOption(
+        const options: PathOption = new PathOption(
             series.chart.element.id + '_Series_' + series.index + '_Point_' + point.index,
             argsData.fill, argsData.border.width, argsData.fill, series.opacity, series.dashArray, direction);
         pathAnimation(getElement(options.id), direction, series.chart.redraw);
-        let element: HTMLElement =
+        const element: HTMLElement =
             series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y])) as HTMLElement;
         element.setAttribute('aria-label', point.x.toString() + ':' + point.high.toString()
             + ':' + point.low.toString() + ':' + point.close.toString() + ':' + point.open.toString());
@@ -149,8 +151,9 @@ export class HiloOpenCloseSeries extends ColumnBase {
 
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
 
     public doAnimation(series: Series): void {
@@ -159,11 +162,12 @@ export class HiloOpenCloseSeries extends ColumnBase {
 
     /**
      * To destroy the column series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method performed here
          */

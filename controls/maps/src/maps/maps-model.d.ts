@@ -8,30 +8,35 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Sets and gets the background color of the maps container.
+     *
      * @default null
      */
     background?: string;
 
     /**
      * Enables or disables the visibility state of the separator for grouping.
+     *
      * @default false
      */
     useGroupingSeparator?: boolean;
 
     /**
      * Sets and gets the format in which the text in the maps are to be rendered.
+     *
      * @default null
      */
     format?: string;
 
     /**
      * Sets and gets the width in which the maps is to be rendered.
+     *
      * @default null
      */
     width?: string;
 
     /**
      * Sets and gets the height in which the maps is to be rendered.
+     *
      * @default null
      */
     height?: string;
@@ -40,24 +45,28 @@ export interface MapsModel extends ComponentModel{
      * Sets and gets the mode in which the tooltip is to be displayed.
      * The tooltip can be rendered on mouse move, click or double clicking on the
      * element on the map.
+     *
      * @default 'MouseMove'
      */
     tooltipDisplayMode?: TooltipGesture;
 
     /**
      * Enables or disables the print functionality in map.
+     *
      * @default false
      */
     allowPrint?: boolean;
 
     /**
      * Enables or disables the export to image functionality in map.
+     *
      * @default false
      */
     allowImageExport?: boolean;
 
     /**
      * Enables or disables the export to PDF functionality in map.
+     *
      * @default false
      */
     allowPdfExport?: boolean;
@@ -83,12 +92,12 @@ export interface MapsModel extends ComponentModel{
     layers?: LayerSettingsModel[];
 
     /**
-     *  Sets and gets the options for customizing the annotation of maps.
+     * Sets and gets the options for customizing the annotation of maps.
      */
     annotations?: AnnotationModel[];
 
     /**
-     *  Sets and gets the options to customize the margins of the maps.
+     * Sets and gets the options to customize the margins of the maps.
      */
     margin?: MarginModel;
 
@@ -99,30 +108,35 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Set and gets the theme supported for the maps.
+     *
      * @default Material
      */
     theme?: MapsTheme;
 
     /**
      * Sets and gets the projection type for the maps.
+     *
      * @default Mercator
      */
     projectionType?: ProjectionType;
 
     /**
      * Sets and gets the base map index of maps. It provides the option to select which layer to be visible in the maps.
+     *
      * @default 0
      */
     baseLayerIndex?: number;
 
     /**
      * Sets and gets the description for maps.
+     *
      * @default null
      */
     description?: string;
 
     /**
      * Sets and gets the tab index value for the maps.
+     *
      * @default 1
      */
     tabIndex?: number;
@@ -139,6 +153,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers when the map is on load.
+     *
      * @event
      * @blazorProperty 'OnLoad'
      */
@@ -146,6 +161,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers before the print gets started.
+     *
      * @event
      * @blazorProperty 'OnPrint'
      */
@@ -153,6 +169,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers after the maps gets rendered.
+     *
      * @event
      * @blazorProperty 'Loaded'
      */
@@ -160,6 +177,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers when clicking an element in maps.
+     *
      * @event
      * @blazorProperty 'OnClick'
      */
@@ -167,6 +185,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers when performing the double click operation on an element in maps.
+     *
      * @event
      * @blazorProperty 'OnDoubleClick'
      */
@@ -174,6 +193,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers when performing the right click operation on an element in maps.
+     *
      * @event
      * @blazorProperty 'OnRightClick'
      */
@@ -181,6 +201,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers when resizing the maps.
+     *
      * @event
      * @blazorProperty 'Resizing'
      */
@@ -188,6 +209,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers before the maps tooltip gets rendered.
+     *
      * @event
      * @blazorProperty 'TooltipRendering'
      */
@@ -195,6 +217,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers before the legend gets rendered.
+     *
      * @event
      * @deprecated
      * @blazorProperty 'LegendRendering'
@@ -203,6 +226,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers after the maps tooltip gets rendered.
+     *
      * @deprecated
      * @event
      * @blazorProperty 'TooltipRenderComplete'
@@ -211,6 +235,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers when clicking a shape in maps.
+     *
      * @event
      * @blazorProperty 'ShapeSelected'
      */
@@ -218,6 +243,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers when clicking the shape on maps and before the selection is applied.
+     *
      * @event
      * @blazorProperty 'OnItemSelect'
      */
@@ -225,6 +251,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Trigger when mouse move on the shape in maps and before the shape gets highlighted.
+     *
      * @event
      * @blazorProperty 'OnItemHighlight'
      */
@@ -232,6 +259,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers when mouse move on the shape in maps and before the shape gets highlighted.
+     *
      * @event
      * @blazorProperty 'ShapeHighlighted'
      */
@@ -239,6 +267,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers before the maps layer gets rendered.
+     *
      * @event
      * @blazorProperty 'LayerRendering'
      */
@@ -246,6 +275,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers before the maps shape gets rendered.
+     *
      * @event
      * @blazorProperty 'ShapeRendering'
      */
@@ -253,6 +283,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers before the maps marker gets rendered.
+     *
      * @event
      * @blazorProperty 'MarkerRendering'
      */
@@ -260,12 +291,14 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers before the maps marker cluster gets rendered.
+     *
      * @event
      */
     markerClusterRendering?: EmitType<IMarkerClusterRenderingEventArgs>;
 
     /**
      * Triggers when clicking on the maps marker element.
+     *
      * @event
      * @blazorProperty 'OnMarkerClick'
      */
@@ -273,18 +306,21 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers when clicking the marker cluster in maps.
+     *
      * @event
      */
     markerClusterClick?: EmitType<IMarkerClusterClickEventArgs>;
 
     /**
      * Triggers when moving the mouse over the marker cluster element in maps.
+     *
      * @event
      */
     markerClusterMouseMove?: EmitType<IMarkerClusterMoveEventArgs>;
 
     /**
      * Triggers when moving the mouse over the marker element in maps.
+     *
      * @event
      * @blazorProperty 'OnMarkerMouseMove'
      */
@@ -292,6 +328,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers before the data-label gets rendered.
+     *
      * @event
      * @blazorProperty 'DataLabelRendering'
      */
@@ -299,6 +336,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers before the bubble element gets rendered on the map.
+     *
      * @event
      * @blazorProperty 'BubbleRendering'
      */
@@ -306,6 +344,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers when performing the click operation on the bubble element in maps.
+     *
      * @event
      * @blazorProperty 'OnBubbleClick'
      */
@@ -313,6 +352,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers when hovering the mouse on the bubble element in maps.
+     *
      * @event
      * @blazorProperty 'OnBubbleMouseMove'
      */
@@ -320,6 +360,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers after the animation completed in the maps component.
+     *
      * @event
      * @blazorProperty 'AnimationCompleted'
      */
@@ -327,6 +368,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers before rendering the annotation in maps.
+     *
      * @event
      * @blazorProperty 'AnnotationRendering'
      */
@@ -334,6 +376,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers before the zoom operations in the maps such as zoom in and zoom out.
+     *
      * @event
      * @blazorProperty 'OnZoom'
      */
@@ -341,6 +384,7 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers before performing the panning operation.
+     *
      * @event
      * @blazorProperty 'OnPan'
      */

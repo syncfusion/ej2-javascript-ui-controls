@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * CRUD actions spec
  */
@@ -6,15 +7,15 @@ import { Kanban, KanbanModel, ActionEventArgs } from '../../src/kanban/index';
 import { kanbanData } from './common/kanban-data.spec';
 import { profile, inMB, getMemoryProfile } from './common/common.spec';
 import * as util from './common/util.spec';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 Kanban.Inject();
 
 describe('CRUD actions module', () => {
     beforeAll(() => {
-        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
             (this as any).skip(); //Skips test (in Chai)
             return;
@@ -23,7 +24,7 @@ describe('CRUD actions module', () => {
 
     describe('Add action testing', () => {
         let kanbanObj: Kanban;
-        let dataSource: Object[] = kanbanData.slice(0, 10);
+        const dataSource: Record<string, any>[] = kanbanData.slice(0, 10);
         beforeAll((done: DoneFn) => {
             kanbanObj = util.createKanban({}, dataSource, done);
         });
@@ -32,125 +33,125 @@ describe('CRUD actions module', () => {
             util.destroy(kanbanObj);
         });
 
-    //     it('action begin event testing in add card public method', () => {
-    //         kanbanObj.actionBegin = (args: ActionEventArgs) => args.cancel = true;
-    //         expect(kanbanObj.kanbanData.length).toEqual(10);
-    //         expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
-    //         let cardData: { [key: string]: Object } = {
-    //             Id: 76,
-    //             Status: 'Close',
-    //             Summary: 'Check test cases.',
-    //             Type: 'Story',
-    //             Priority: 'Release Breaker',
-    //             Tags: 'Testing',
-    //             Estimate: 0.5,
-    //             Assignee: 'Nancy Davloio',
-    //             RankId: 22
-    //         };
-    //         kanbanObj.addCard(cardData);
-    //         expect(kanbanObj.kanbanData.length).toEqual(10);
-    //     });
+        //     it('action begin event testing in add card public method', () => {
+        //         kanbanObj.actionBegin = (args: ActionEventArgs) => args.cancel = true;
+        //         expect(kanbanObj.kanbanData.length).toEqual(10);
+        //         expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
+        //         let cardData: { [key: string]: Object } = {
+        //             Id: 76,
+        //             Status: 'Close',
+        //             Summary: 'Check test cases.',
+        //             Type: 'Story',
+        //             Priority: 'Release Breaker',
+        //             Tags: 'Testing',
+        //             Estimate: 0.5,
+        //             Assignee: 'Nancy Davloio',
+        //             RankId: 22
+        //         };
+        //         kanbanObj.addCard(cardData);
+        //         expect(kanbanObj.kanbanData.length).toEqual(10);
+        //     });
 
-    //     it('action complete event testing in add card public method', () => {
-    //         kanbanObj.actionBegin = (args: ActionEventArgs) => args.cancel = false;
-    //         kanbanObj.actionComplete = (args: ActionEventArgs) => args.cancel = true;
-    //         expect(kanbanObj.kanbanData.length).toEqual(10);
-    //         expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
-    //         let cardData: { [key: string]: Object } = {
-    //             Id: 76,
-    //             Status: 'Close',
-    //             Summary: 'Check test cases.',
-    //             Type: 'Story',
-    //             Priority: 'Release Breaker',
-    //             Tags: 'Testing',
-    //             Estimate: 0.5,
-    //             Assignee: 'Nancy Davloio',
-    //             RankId: 22
-    //         };
-    //         kanbanObj.addCard(cardData);
-    //         expect(kanbanObj.kanbanData.length).toEqual(10);
-    //     });
+        //     it('action complete event testing in add card public method', () => {
+        //         kanbanObj.actionBegin = (args: ActionEventArgs) => args.cancel = false;
+        //         kanbanObj.actionComplete = (args: ActionEventArgs) => args.cancel = true;
+        //         expect(kanbanObj.kanbanData.length).toEqual(10);
+        //         expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
+        //         let cardData: { [key: string]: Object } = {
+        //             Id: 76,
+        //             Status: 'Close',
+        //             Summary: 'Check test cases.',
+        //             Type: 'Story',
+        //             Priority: 'Release Breaker',
+        //             Tags: 'Testing',
+        //             Estimate: 0.5,
+        //             Assignee: 'Nancy Davloio',
+        //             RankId: 22
+        //         };
+        //         kanbanObj.addCard(cardData);
+        //         expect(kanbanObj.kanbanData.length).toEqual(10);
+        //     });
 
-    //     it('add card public method testing', (done: DoneFn) => {
-    //         kanbanObj.actionComplete = (args: ActionEventArgs) => args.cancel = false;
-    //         kanbanObj.dataBound = () => {
-    //             expect(kanbanObj.kanbanData.length).toEqual(11);
-    //             expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(10);
-    //             done();
-    //         };
-    //         expect(kanbanObj.kanbanData.length).toEqual(10);
-    //         expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
-    //         let cardData: { [key: string]: Object } = {
-    //             Id: 77,
-    //             Status: 'Close',
-    //             Summary: 'Check test cases.',
-    //             Type: 'Story',
-    //             Priority: 'Release Breaker',
-    //             Tags: 'Testing',
-    //             Estimate: 0.5,
-    //             Assignee: 'Nancy Davloio',
-    //             RankId: 22
-    //         };
-    //         kanbanObj.addCard(cardData);
-    //     });
-    // });
+        //     it('add card public method testing', (done: DoneFn) => {
+        //         kanbanObj.actionComplete = (args: ActionEventArgs) => args.cancel = false;
+        //         kanbanObj.dataBound = () => {
+        //             expect(kanbanObj.kanbanData.length).toEqual(11);
+        //             expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(10);
+        //             done();
+        //         };
+        //         expect(kanbanObj.kanbanData.length).toEqual(10);
+        //         expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
+        //         let cardData: { [key: string]: Object } = {
+        //             Id: 77,
+        //             Status: 'Close',
+        //             Summary: 'Check test cases.',
+        //             Type: 'Story',
+        //             Priority: 'Release Breaker',
+        //             Tags: 'Testing',
+        //             Estimate: 0.5,
+        //             Assignee: 'Nancy Davloio',
+        //             RankId: 22
+        //         };
+        //         kanbanObj.addCard(cardData);
+        //     });
+        // });
 
-    // describe('Update action testing', () => {
-    //     let kanbanObj: Kanban;
-    //     let dataSource: Object[] = kanbanData.slice(0, 10);
-    //     beforeAll((done: DoneFn) => {
-    //         kanbanObj = util.createKanban({}, dataSource, done);
-    //     });
+        // describe('Update action testing', () => {
+        //     let kanbanObj: Kanban;
+        //     let dataSource: Object[] = kanbanData.slice(0, 10);
+        //     beforeAll((done: DoneFn) => {
+        //         kanbanObj = util.createKanban({}, dataSource, done);
+        //     });
 
-    //     afterAll(() => {
-    //         util.destroy(kanbanObj);
-    //     });
+        //     afterAll(() => {
+        //         util.destroy(kanbanObj);
+        //     });
 
-    //     it('action begin event testing in update card public method', () => {
-    //         kanbanObj.actionBegin = (args: ActionEventArgs) => args.cancel = true;
-    //         expect(kanbanObj.kanbanData.length).toEqual(10);
-    //         expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
-    //         let cardData: { [key: string]: Object }[] = util.cloneDataSource(kanbanData.slice(1, 3)) as { [key: string]: Object }[];
-    //         cardData[0].Status = 'Testing';
-    //         cardData[1].Status = 'Close';
-    //         kanbanObj.updateCard(cardData);
-    //         expect(kanbanObj.kanbanData.length).toEqual(10);
-    //     });
+        //     it('action begin event testing in update card public method', () => {
+        //         kanbanObj.actionBegin = (args: ActionEventArgs) => args.cancel = true;
+        //         expect(kanbanObj.kanbanData.length).toEqual(10);
+        //         expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
+        //         let cardData: { [key: string]: Object }[] = util.cloneDataSource(kanbanData.slice(1, 3)) as { [key: string]: Object }[];
+        //         cardData[0].Status = 'Testing';
+        //         cardData[1].Status = 'Close';
+        //         kanbanObj.updateCard(cardData);
+        //         expect(kanbanObj.kanbanData.length).toEqual(10);
+        //     });
 
-    //     it('action complete event testing in update card public method', () => {
-    //         kanbanObj.actionBegin = (args: ActionEventArgs) => args.cancel = false;
-    //         kanbanObj.actionComplete = (args: ActionEventArgs) => args.cancel = true;
-    //         expect(kanbanObj.kanbanData.length).toEqual(10);
-    //         expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
-    //         let cardData: { [key: string]: Object }[] = util.cloneDataSource(kanbanData.slice(1, 3)) as { [key: string]: Object }[];
-    //         cardData[0].Status = 'Testing';
-    //         cardData[1].Status = 'Close';
-    //         kanbanObj.updateCard(cardData);
-    //         expect(kanbanObj.kanbanData.length).toEqual(10);
-    //     });
+        //     it('action complete event testing in update card public method', () => {
+        //         kanbanObj.actionBegin = (args: ActionEventArgs) => args.cancel = false;
+        //         kanbanObj.actionComplete = (args: ActionEventArgs) => args.cancel = true;
+        //         expect(kanbanObj.kanbanData.length).toEqual(10);
+        //         expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
+        //         let cardData: { [key: string]: Object }[] = util.cloneDataSource(kanbanData.slice(1, 3)) as { [key: string]: Object }[];
+        //         cardData[0].Status = 'Testing';
+        //         cardData[1].Status = 'Close';
+        //         kanbanObj.updateCard(cardData);
+        //         expect(kanbanObj.kanbanData.length).toEqual(10);
+        //     });
 
-    //     it('update card public method testing', (done: DoneFn) => {
-    //         kanbanObj.actionComplete = (args: ActionEventArgs) => args.cancel = false;
-    //         kanbanObj.dataBound = () => {
-    //             expect(kanbanObj.kanbanData.length).toEqual(10);
-    //             expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
-    //             expect(cardData.Id).toEqual(1);
-    //             expect(cardData.Status).toEqual('InProgress');
-    //             done();
-    //         };
-    //         expect(kanbanObj.kanbanData.length).toEqual(10);
-    //         expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
-    //         let cardData: { [key: string]: Object } = util.cloneDataSource(kanbanData.slice(0, 1))[0] as { [key: string]: Object };
-    //         expect(cardData.Id).toEqual(1);
-    //         expect(cardData.Status).toEqual('Open');
-    //         cardData.Status = 'InProgress';
-    //         kanbanObj.updateCard(cardData);
-    //     });
+        //     it('update card public method testing', (done: DoneFn) => {
+        //         kanbanObj.actionComplete = (args: ActionEventArgs) => args.cancel = false;
+        //         kanbanObj.dataBound = () => {
+        //             expect(kanbanObj.kanbanData.length).toEqual(10);
+        //             expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
+        //             expect(cardData.Id).toEqual(1);
+        //             expect(cardData.Status).toEqual('InProgress');
+        //             done();
+        //         };
+        //         expect(kanbanObj.kanbanData.length).toEqual(10);
+        //         expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
+        //         let cardData: { [key: string]: Object } = util.cloneDataSource(kanbanData.slice(0, 1))[0] as { [key: string]: Object };
+        //         expect(cardData.Id).toEqual(1);
+        //         expect(cardData.Status).toEqual('Open');
+        //         cardData.Status = 'InProgress';
+        //         kanbanObj.updateCard(cardData);
+        //     });
     });
 
     describe('Delete action testing', () => {
         let kanbanObj: Kanban;
-        let dataSource: Object[] = kanbanData.slice(0, 10);
+        const dataSource: Record<string, any>[] = kanbanData.slice(0, 10);
         beforeAll((done: DoneFn) => {
             kanbanObj = util.createKanban({}, dataSource, done);
         });
@@ -163,7 +164,7 @@ describe('CRUD actions module', () => {
             kanbanObj.actionBegin = (args: ActionEventArgs) => args.cancel = true;
             expect(kanbanObj.kanbanData.length).toEqual(10);
             expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
-            let cardData: { [key: string]: Object }[] = util.cloneDataSource(kanbanData.slice(1, 2)) as { [key: string]: Object }[];
+            const cardData: Record<string, any>[] = util.cloneDataSource(kanbanData.slice(1, 2));
             kanbanObj.deleteCard(cardData[0]);
             expect(kanbanObj.kanbanData.length).toEqual(10);
         });
@@ -173,7 +174,7 @@ describe('CRUD actions module', () => {
             kanbanObj.actionComplete = (args: ActionEventArgs) => args.cancel = true;
             expect(kanbanObj.kanbanData.length).toEqual(10);
             expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
-            let cardData: { [key: string]: Object }[] = util.cloneDataSource(kanbanData.slice(1, 3)) as { [key: string]: Object }[];
+            const cardData: Record<string, any>[] = util.cloneDataSource(kanbanData.slice(1, 3));
             kanbanObj.deleteCard(cardData);
             expect(kanbanObj.kanbanData.length).toEqual(10);
         });
@@ -193,8 +194,8 @@ describe('CRUD actions module', () => {
 
     xdescribe('Remote data success testing', () => {
         let kanbanObj: Kanban;
-        let dataSource: Object[] = kanbanData.slice(0, 10);
-        let cardData: { [key: string]: Object }[] = [{
+        const dataSource: Record<string, any>[] = kanbanData.slice(0, 10);
+        const cardData: Record<string, any>[] = [{
             Id: 1,
             Subject: 'Remote Data Testing',
             StartTime: new Date(2019, 11, 2, 10),
@@ -203,16 +204,16 @@ describe('CRUD actions module', () => {
         }];
         beforeAll(() => {
             jasmine.Ajax.install();
-            let dataManager: DataManager = new DataManager({
+            const dataManager: DataManager = new DataManager({
                 url: 'api/Kanban/GetData/',
                 crudUrl: 'api/Kanban/UpdateData/',
                 adaptor: new UrlAdaptor()
             });
-            let model: KanbanModel = { query: new Query() };
+            const model: KanbanModel = { query: new Query() };
             kanbanObj = util.createKanban(model, dataManager);
         });
-        beforeEach((done: Function) => {
-            let request: JasmineAjaxRequest = jasmine.Ajax.requests.at(1) || jasmine.Ajax.requests.mostRecent();
+        beforeEach((done: DoneFn) => {
+            const request: JasmineAjaxRequest = jasmine.Ajax.requests.at(1) || jasmine.Ajax.requests.mostRecent();
             request.respondWith({ 'status': 200, 'responseText': JSON.stringify({ d: dataSource, __count: dataSource.length }) });
             done();
         });
@@ -232,8 +233,8 @@ describe('CRUD actions module', () => {
 
     xdescribe('Remote data success with kanban destroy testing', () => {
         let kanbanObj: Kanban;
-        let dataSource: Object[] = kanbanData.slice(0, 10);
-        let cardData: { [key: string]: Object }[] = [{
+        const dataSource: Record<string, any>[] = kanbanData.slice(0, 10);
+        const cardData: Record<string, any>[] = [{
             Id: 1,
             Subject: 'Remote Data Testing',
             StartTime: new Date(2019, 11, 2, 10),
@@ -242,16 +243,16 @@ describe('CRUD actions module', () => {
         }];
         beforeAll(() => {
             jasmine.Ajax.install();
-            let dataManager: DataManager = new DataManager({
+            const dataManager: DataManager = new DataManager({
                 url: 'api/Kanban/GetData/',
                 crudUrl: 'api/Kanban/UpdateData/',
                 adaptor: new UrlAdaptor()
             });
-            let model: KanbanModel = { query: new Query() };
+            const model: KanbanModel = { query: new Query() };
             kanbanObj = util.createKanban(model, dataManager);
         });
-        beforeEach((done: Function) => {
-            let request: JasmineAjaxRequest = jasmine.Ajax.requests.at(1) || jasmine.Ajax.requests.mostRecent();
+        beforeEach((done: DoneFn) => {
+            const request: JasmineAjaxRequest = jasmine.Ajax.requests.at(1) || jasmine.Ajax.requests.mostRecent();
             request.respondWith({ 'status': 200, 'responseText': JSON.stringify({ d: dataSource, __count: dataSource.length }) });
             done();
         });
@@ -271,8 +272,8 @@ describe('CRUD actions module', () => {
 
     xdescribe('Remote data failure testing', () => {
         let kanbanObj: Kanban;
-        let dataSource: Object[] = kanbanData.slice(0, 10);
-        let cardData: { [key: string]: Object }[] = [{
+        let dataSource: Record<string, any>[] = kanbanData.slice(0, 10);
+        const cardData: Record<string, any>[] = [{
             Id: 1,
             Subject: 'Remote Data Testing',
             StartTime: new Date(2019, 11, 2, 10),
@@ -281,15 +282,15 @@ describe('CRUD actions module', () => {
         }];
         let isDataLoad: boolean = true;
         let isChecking: boolean = false;
-        let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
+        const actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
         beforeAll(() => {
             jasmine.Ajax.install();
-            let dataManager: DataManager = new DataManager({
+            const dataManager: DataManager = new DataManager({
                 url: 'api/Kanban/GetData/',
                 crudUrl: 'api/Kanban/UpdateData/',
                 adaptor: new UrlAdaptor()
             });
-            let model: KanbanModel = {
+            const model: KanbanModel = {
                 query: new Query(),
                 actionComplete: (args: ActionEventArgs) => {
                     if (args.requestType === 'cardCreated') {
@@ -301,8 +302,8 @@ describe('CRUD actions module', () => {
             };
             kanbanObj = util.createKanban(model, dataManager);
         });
-        beforeEach((done: Function) => {
-            let request: JasmineAjaxRequest = jasmine.Ajax.requests.at(1) || jasmine.Ajax.requests.mostRecent();
+        beforeEach((done: DoneFn) => {
+            const request: JasmineAjaxRequest = jasmine.Ajax.requests.at(1) || jasmine.Ajax.requests.mostRecent();
             if (isDataLoad) {
                 request.respondWith({ 'status': 200, 'responseText': JSON.stringify({ d: dataSource, __count: dataSource.length }) });
             } else {
@@ -335,8 +336,8 @@ describe('CRUD actions module', () => {
 
     xdescribe('Remote data failure with kanban destroy testing', () => {
         let kanbanObj: Kanban;
-        let dataSource: Object[] = kanbanData.slice(0, 10);
-        let cardData: { [key: string]: Object }[] = [{
+        const dataSource: Record<string, any>[] = kanbanData.slice(0, 10);
+        const cardData: Record<string, any>[] = [{
             Id: 1,
             Subject: 'Remote Data Testing',
             StartTime: new Date(2019, 11, 2, 10),
@@ -344,22 +345,22 @@ describe('CRUD actions module', () => {
             IsAllDay: false
         }];
         let isDataLoad: boolean = true;
-        let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
+        const actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
         beforeAll(() => {
             jasmine.Ajax.install();
-            let dataManager: DataManager = new DataManager({
+            const dataManager: DataManager = new DataManager({
                 url: 'api/Kanban/GetData/',
                 crudUrl: 'api/Kanban/UpdateData/',
                 adaptor: new UrlAdaptor()
             });
-            let model: KanbanModel = {
+            const model: KanbanModel = {
                 query: new Query(),
                 actionFailure: actionFailedFunction
             };
             kanbanObj = util.createKanban(model, dataManager);
         });
-        beforeEach((done: Function) => {
-            let request: JasmineAjaxRequest = jasmine.Ajax.requests.at(1) || jasmine.Ajax.requests.mostRecent();
+        beforeEach((done: DoneFn) => {
+            const request: JasmineAjaxRequest = jasmine.Ajax.requests.at(1) || jasmine.Ajax.requests.mostRecent();
             if (isDataLoad) {
                 request.respondWith({ 'status': 200, 'responseText': JSON.stringify({ d: dataSource, __count: dataSource.length }) });
             } else {
@@ -385,7 +386,7 @@ describe('CRUD actions module', () => {
     describe('Add Card with Priority', () => {
         let kanbanObj: Kanban;
         beforeAll((done: DoneFn) => {
-            let model: KanbanModel = {
+            const model: KanbanModel = {
                 sortSettings: {
                     sortBy: 'Index',
                     field: 'RankId',
@@ -461,7 +462,7 @@ describe('CRUD actions module', () => {
     describe('Add Card with Priority using swimlane', () => {
         let kanbanObj: Kanban;
         beforeAll((done: DoneFn) => {
-            let model: KanbanModel = {
+            const model: KanbanModel = {
                 sortSettings: {
                     sortBy: 'Index',
                     field: 'RankId',
@@ -495,7 +496,7 @@ describe('CRUD actions module', () => {
     describe('Update Card with Priority', () => {
         let kanbanObj: Kanban;
         beforeAll((done: DoneFn) => {
-            let model: KanbanModel = {
+            const model: KanbanModel = {
                 sortSettings: {
                     sortBy: 'Index',
                     field: 'RankId',
@@ -575,7 +576,7 @@ describe('CRUD actions module', () => {
         let kanbanObj: Kanban;
         let dragElement: HTMLElement;
         beforeAll((done: DoneFn) => {
-            let model: KanbanModel = {
+            const model: KanbanModel = {
                 sortSettings: {
                     sortBy: 'Index',
                     field: 'RankId',
@@ -597,32 +598,32 @@ describe('CRUD actions module', () => {
         });
 
         it('Created Dropped clone on above the column testing and target is card', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="4"]').item(0);
+            const element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="4"]').item(0);
             util.triggerMouseEvent(element, 'mousemove', 250, 400);
         });
 
         it('Dropped clone testing', () => {
             kanbanObj.dataBound = () => {
                 cards = kanbanObj.layoutModule.getColumnCards();
-                expect((cards.InProgress[0] as { [key: string]: Object }).Id).toEqual(2);
-                expect((cards.InProgress[0] as { [key: string]: Object }).RankId).toEqual(1);
-                expect((cards.InProgress[1] as { [key: string]: Object }).Id).toEqual(4);
-                expect((cards.InProgress[1] as { [key: string]: Object }).RankId).toEqual(2);
-                expect((cards.InProgress[2] as { [key: string]: Object }).Id).toEqual(1);
-                expect((cards.InProgress[2] as { [key: string]: Object }).RankId).toEqual(3);
-                expect((cards.InProgress[3] as { [key: string]: Object }).Id).toEqual(14);
-                expect((cards.InProgress[3] as { [key: string]: Object }).RankId).toEqual(4);
+                expect((cards.InProgress[0] as Record<string, any>).Id).toEqual(2);
+                expect((cards.InProgress[0] as Record<string, any>).RankId).toEqual(1);
+                expect((cards.InProgress[1] as Record<string, any>).Id).toEqual(4);
+                expect((cards.InProgress[1] as Record<string, any>).RankId).toEqual(2);
+                expect((cards.InProgress[2] as Record<string, any>).Id).toEqual(1);
+                expect((cards.InProgress[2] as Record<string, any>).RankId).toEqual(3);
+                expect((cards.InProgress[3] as Record<string, any>).Id).toEqual(14);
+                expect((cards.InProgress[3] as Record<string, any>).RankId).toEqual(4);
             };
-            let droppedElement: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="4"]').item(0);
-            let cards: { [key: string]: Object[] } = kanbanObj.layoutModule.getColumnCards();
-            expect((cards.Open[0] as { [key: string]: Object }).Id).toEqual(1);
-            expect((cards.Open[0] as { [key: string]: Object }).RankId).toEqual(1);
-            expect((cards.InProgress[0] as { [key: string]: Object }).Id).toEqual(2);
-            expect((cards.InProgress[0] as { [key: string]: Object }).RankId).toEqual(1);
-            expect((cards.InProgress[1] as { [key: string]: Object }).Id).toEqual(4);
-            expect((cards.InProgress[1] as { [key: string]: Object }).RankId).toEqual(2);
-            expect((cards.InProgress[2] as { [key: string]: Object }).Id).toEqual(14);
-            expect((cards.InProgress[2] as { [key: string]: Object }).RankId).toEqual(3);
+            const droppedElement: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="4"]').item(0);
+            let cards: Record<string, any[]> = kanbanObj.layoutModule.getColumnCards();
+            expect((cards.Open[0] as Record<string, any>).Id).toEqual(1);
+            expect((cards.Open[0] as Record<string, any>).RankId).toEqual(1);
+            expect((cards.InProgress[0] as Record<string, any>).Id).toEqual(2);
+            expect((cards.InProgress[0] as Record<string, any>).RankId).toEqual(1);
+            expect((cards.InProgress[1] as Record<string, any>).Id).toEqual(4);
+            expect((cards.InProgress[1] as Record<string, any>).RankId).toEqual(2);
+            expect((cards.InProgress[2] as Record<string, any>).Id).toEqual(14);
+            expect((cards.InProgress[2] as Record<string, any>).RankId).toEqual(3);
             util.triggerMouseEvent(droppedElement, 'mouseup', 250, 400);
         });
     });
@@ -631,7 +632,7 @@ describe('CRUD actions module', () => {
         let kanbanObj: Kanban;
         let dragElement: HTMLElement;
         beforeAll((done: DoneFn) => {
-            let model: KanbanModel = {
+            const model: KanbanModel = {
                 sortSettings: {
                     sortBy: 'Index',
                     field: 'RankId',
@@ -655,18 +656,19 @@ describe('CRUD actions module', () => {
         });
 
         it('Created Dropped clone on above the column testing and target is card', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="45"]').item(0);
+            const element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="45"]').item(0);
             util.triggerMouseEvent(element, 'mousemove', 250, 550);
         });
 
         it('Dropped clone testing', () => {
-            let droppedElement: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="45"]').item(0);
+            const droppedElement: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="45"]').item(0);
             kanbanObj.dataBound = () => {
-                let testingCards: Object[] = kanbanObj.layoutModule.getColumnCards().Testing;
-                expect((testingCards[10] as { [key: string]: Object }).Id).toEqual(2);
-                expect((testingCards[10] as { [key: string]: Object }).RankId).toEqual(11);
-                expect((testingCards[9] as { [key: string]: Object }).Id).toEqual(45);
-                expect((testingCards[9] as { [key: string]: Object }).RankId).toEqual(10);
+                const testingCards: Record<string, any>[] =
+                    kanbanObj.layoutModule.getColumnCards().Testing as Record<string, any>[];
+                expect((testingCards[10] as Record<string, any>).Id).toEqual(2);
+                expect((testingCards[10] as Record<string, any>).RankId).toEqual(11);
+                expect((testingCards[9] as Record<string, any>).Id).toEqual(45);
+                expect((testingCards[9] as Record<string, any>).RankId).toEqual(10);
             };
             util.triggerMouseEvent(droppedElement, 'mouseup', 250, 550);
         });
@@ -677,26 +679,114 @@ describe('CRUD actions module', () => {
         });
 
         it('Created Dropped clone on above the column testing and target is card', () => {
-            let element: Element = (kanbanObj.element.querySelectorAll('.e-card-wrapper') as NodeListOf<Element>).item(1);
+            const element: Element = (kanbanObj.element.querySelectorAll('.e-card-wrapper') as NodeListOf<Element>).item(1);
             util.triggerMouseEvent(element, 'mousemove', 250, 150);
         });
 
         it('Dropped clone testing', () => {
-            let droppedElement: Element = (kanbanObj.element.querySelectorAll('.e-card-wrapper') as NodeListOf<Element>).item(1);
+            const droppedElement: Element = (kanbanObj.element.querySelectorAll('.e-card-wrapper') as NodeListOf<Element>).item(1);
             kanbanObj.dataBound = () => {
-                let inProgressCards: Object[] = kanbanObj.layoutModule.getColumnCards().InProgress;
-                expect((inProgressCards[8] as { [key: string]: Object }).Id).toEqual(45);
-                expect((inProgressCards[8] as { [key: string]: Object }).RankId).toEqual(10);
+                const inProgressCards: Record<string, any>[] =
+                    kanbanObj.layoutModule.getColumnCards().InProgress as Record<string, any>[];
+                expect((inProgressCards[8] as Record<string, any>).Id).toEqual(45);
+                expect((inProgressCards[8] as Record<string, any>).RankId).toEqual(10);
             };
             util.triggerMouseEvent(droppedElement, 'mouseup', 250, 100);
         });
     });
 
+    describe('Adding and Updating the card data as Ascending order', () => {
+        let kanbanObj: Kanban;
+        let card: Record<string, any>;
+        let length: number;
+        beforeAll((done: DoneFn) => {
+            let model: KanbanModel = {
+                sortSettings: {
+                    sortBy: 'Index',
+                    field: 'RankId',
+                    direction: 'Ascending'
+                },
+                swimlaneSettings: {
+                    keyField: 'Assignee'
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('Add card as array type', () => {
+            card = kanbanObj.kanbanData[0];
+            length = kanbanObj.kanbanData.length;
+            (card as any).Summary = "Card_Update";
+            expect([card] instanceof Array).toBeTruthy;
+            kanbanObj.addCard([card], 0);
+            expect(length + 1 == kanbanObj.kanbanData.length).toBe(true);
+        });
+
+        it('Add card as object type', () => {
+            card = kanbanObj.kanbanData[0];
+            length = kanbanObj.kanbanData.length;
+            (card as any).Summary = "UpdatingCard";
+            expect(card instanceof Array).toBe(false);
+            kanbanObj.addCard(card, 0);
+            expect(length + 1 == kanbanObj.kanbanData.length).toBe(true);
+        });
+
+        it('Update card in [] type', () => {
+            card = kanbanObj.kanbanData[0];
+            length = kanbanObj.kanbanData.length;
+            (card as any).Summary = "NewCard";
+            expect([card] instanceof Array).toBe(true);
+            kanbanObj.updateCard([card], 0);
+            expect((kanbanObj.kanbanData[0] as any).Summary).toEqual("NewCard");
+            expect(length == kanbanObj.kanbanData.length).toBe(true);
+        });
+    });
+
+    describe('sortSettings as descending order to update priority order', () => {
+        let kanbanObj: Kanban;
+        let card: Record<string, any>;
+        let length: number;
+        beforeAll((done: DoneFn) => {
+            let model: KanbanModel = {
+                sortSettings: {
+                    sortBy: 'Index',
+                    field: 'RankId',
+                    direction: 'Descending'
+                },
+                swimlaneSettings: {
+                    keyField: 'Assignee'
+                },
+                cardSettings: {
+                    headerField: 'Summary'
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('Add new card along the order in desecnding order', () => {
+            card = kanbanObj.kanbanData[0];
+            length = kanbanObj.kanbanData.length;
+            (card as any).Summary = "Descending card";
+            kanbanObj.addCard([card], 1);
+            expect(isNullOrUndefined(kanbanObj.cardSettings.headerField)).toBe(false);
+            expect((card as any).Summary).toEqual('Descending card');
+            expect(kanbanObj.kanbanData.length == length + 1).toBe(true);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
-        let average: any = inMB(profile.averageChange);
+        const average: number = inMB(profile.averageChange);
         expect(average).toBeLessThan(10); //Check average change in memory samples to not be over 10MB
-        let memory: any = inMB(getMemoryProfile());
+        const memory: number = inMB(getMemoryProfile());
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });

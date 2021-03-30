@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## 18.4.49 (2021-03-23)
+## 19.1.54 (2021-03-30)
 
 ### Pdf Export
 
@@ -21,6 +21,8 @@
 - Rendering issue with Pdf number style is fixed.
 
 - Rendering issue with Line break is fixed.
+
+- Undefined error occurs while getting line width of text content on particular True Type Font.
 
 #### New Features
 

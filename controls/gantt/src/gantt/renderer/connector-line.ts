@@ -14,7 +14,7 @@ export class ConnectorLine {
     private lineStroke: number;
     public tooltipTable: HTMLElement;
     /**
-     * @hidden 
+     * @hidden
      */
     public expandedRecords: IGanttData[];
     constructor(ganttObj?: Gantt) {
@@ -27,7 +27,9 @@ export class ConnectorLine {
 
     /**
      * To get connector line gap.
-     * @return {number}
+     *
+     * @param {IConnectorLineObject} data .
+     * @returns {number} .
      * @private
      */
     private getconnectorLineGap(data: IConnectorLineObject): number {
@@ -40,7 +42,8 @@ export class ConnectorLine {
 
     /**
      * To initialize the public property.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public initPublicProp(): void {
@@ -57,24 +60,26 @@ export class ConnectorLine {
 
     /**
      * To connector line object collection.
-     * @return {void}
+     *
+     * @param {IGanttData} parentGanttData .
+     * @param {IGanttData} childGanttData .
+     * @param {IPredecessor}  predecessor .
+     * @returns {void}
      * @private
      */
     public createConnectorLineObject(parentGanttData: IGanttData, childGanttData: IGanttData, predecessor: IPredecessor):
-        IConnectorLineObject {
-        let connectorObj: IConnectorLineObject = {} as IConnectorLineObject;
-        let updatedRecords: IGanttData[] = this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport ?
+    IConnectorLineObject {
+        const connectorObj: IConnectorLineObject = {} as IConnectorLineObject;
+        const updatedRecords: IGanttData[] = this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport ?
             this.parent.flatData : this.expandedRecords;
-        let parentIndex: number = updatedRecords.indexOf(parentGanttData);
-        let childIndex: number = updatedRecords.indexOf(childGanttData);
-        let parentGanttRecord: ITaskData = parentGanttData.ganttProperties;
-        let childGanttRecord: ITaskData = childGanttData.ganttProperties;
-        let currentData: IGanttData[] = this.parent.getExpandedRecords(this.parent.currentViewData);
+        const parentIndex: number = updatedRecords.indexOf(parentGanttData);
+        const childIndex: number = updatedRecords.indexOf(childGanttData);
+        const parentGanttRecord: ITaskData = parentGanttData.ganttProperties;
+        const childGanttRecord: ITaskData = childGanttData.ganttProperties;
+        const currentData: IGanttData[] = this.parent.getExpandedRecords(this.parent.currentViewData);
         connectorObj.parentIndexInCurrentView = currentData.indexOf(parentGanttData);
         connectorObj.childIndexInCurrentView = currentData.indexOf(childGanttData);
-        let count: number = 0;
-        let index: number = 0;
-        let isVirtualScroll: boolean = this.parent.virtualScrollModule && this.parent.enableVirtualization;
+        const isVirtualScroll: boolean = this.parent.virtualScrollModule && this.parent.enableVirtualization;
         if ((!isVirtualScroll && (connectorObj.parentIndexInCurrentView === -1 || connectorObj.childIndexInCurrentView === -1)) ||
         connectorObj.parentIndexInCurrentView === -1 && connectorObj.childIndexInCurrentView === -1) {
             return null;
@@ -89,12 +94,12 @@ export class ConnectorLine {
                 (Math.floor(this.parent.chartRowsModule.milestoneHeight)) : childGanttRecord.width;
             connectorObj.parentIndex = parentIndex;
             connectorObj.childIndex = childIndex;
-            let rowHeight: number = this.parent.ganttChartModule.getChartRows()[0] &&
+            const rowHeight: number = this.parent.ganttChartModule.getChartRows()[0] &&
                 this.parent.ganttChartModule.getChartRows()[0].getBoundingClientRect().height;
             connectorObj.rowHeight = rowHeight && !isNaN(rowHeight) ? rowHeight : this.parent.rowHeight;
             connectorObj.type = predecessor.type;
-            let parentId: string = this.parent.viewType === 'ResourceView' ? parentGanttRecord.taskId : parentGanttRecord.rowUniqueID;
-            let childId: string = this.parent.viewType === 'ResourceView' ? childGanttRecord.taskId : childGanttRecord.rowUniqueID;
+            const parentId: string = this.parent.viewType === 'ResourceView' ? parentGanttRecord.taskId : parentGanttRecord.rowUniqueID;
+            const childId: string = this.parent.viewType === 'ResourceView' ? childGanttRecord.taskId : childGanttRecord.rowUniqueID;
             connectorObj.connectorLineId = 'parent' + parentId + 'child' + childId;
             connectorObj.milestoneParent = parentGanttRecord.isMilestone ? true : false;
             connectorObj.milestoneChild = childGanttRecord.isMilestone ? true : false;
@@ -108,23 +113,24 @@ export class ConnectorLine {
 
     /**
      * To render connector line.
-     * @return {void}
+     *
+     * @param {IConnectorLineObject} connectorLinesCollection .
+     * @returns {void}
      * @private
      */
     public renderConnectorLines(connectorLinesCollection: IConnectorLineObject[]): void {
-        let connectorLineContainer: NodeList;
         let connectorLine: string = '';
-        let ariaConnector : IConnectorLineObject[] = [];
+        const ariaConnector : IConnectorLineObject[] = [];
         for (let index: number = 0; index < connectorLinesCollection.length; index++) {
             connectorLine = connectorLine + this.getConnectorLineTemplate(connectorLinesCollection[index]);
             ariaConnector.push(connectorLinesCollection[index]);
         }
         this.dependencyViewContainer.innerHTML = connectorLine;
-        let childNodes: NodeList = this.parent.connectorLineModule.dependencyViewContainer.childNodes;
+        const childNodes: NodeList = this.parent.connectorLineModule.dependencyViewContainer.childNodes;
         for (let i: number = 0; i < childNodes.length; i++) {
-            let innerChild: NodeList = childNodes[i].childNodes;
+            const innerChild: NodeList = childNodes[i].childNodes;
             for (let j: number = 0; j < innerChild.length; j++) {
-                let ariaString: string = this.parent.connectorLineModule.generateAriaLabel(ariaConnector[i]);
+                const ariaString: string = this.parent.connectorLineModule.generateAriaLabel(ariaConnector[i]);
                 (<HTMLElement>innerChild[j]).setAttribute('aria-label', ariaString);
             }
         }
@@ -137,10 +143,11 @@ export class ConnectorLine {
 
     /**
      * To get parent position.
-     * @return {void}
+     *
+     * @param {IConnectorLineObject} data .
+     * @returns {void}
      * @private
      */
-    /* tslint:disable-next-line:max-func-body-length */
     private getParentPosition(data: IConnectorLineObject): string {
         if (data.parentIndex < data.childIndex) {
             if (data.type === 'FF') {
@@ -223,6 +230,7 @@ export class ConnectorLine {
                     if (data.type === 'SF') {
                         return 'SFType4';
                     }
+                // eslint-disable-next-line
                 } else if ((data.childLeft + data.childWidth) > (data.parentLeft + data.parentWidth)) {
                     if (data.type === 'FF') {
                         return 'FFType4';
@@ -286,7 +294,9 @@ export class ConnectorLine {
 
     /**
      * To get line height.
-     * @return {void}
+     *
+     * @param {IConnectorLineObject} data .
+     * @returns {void}
      * @private
      */
     private getHeightValue(data: IConnectorLineObject): number {
@@ -297,7 +307,9 @@ export class ConnectorLine {
 
     /**
      * To get sstype2 inner element width.
-     * @return {void}
+     *
+     * @param {IConnectorLineObject} data .
+     * @returns {void}
      * @private
      */
     private getInnerElementWidthSSType2(data: IConnectorLineObject): number {
@@ -309,7 +321,9 @@ export class ConnectorLine {
 
     /**
      * To get sstype2 inner element left.
-     * @return {void}
+     *
+     * @param {IConnectorLineObject} data .
+     * @returns {void}
      * @private
      */
     private getInnerElementLeftSSType2(data: IConnectorLineObject): number {
@@ -321,7 +335,9 @@ export class ConnectorLine {
 
     /**
      * To get sstype2 inner child element width.
-     * @return {void}
+     *
+     * @param {IConnectorLineObject} data .
+     * @returns {void}
      * @private
      */
     private getInnerChildWidthSSType2(data: IConnectorLineObject): number {
@@ -338,54 +354,55 @@ export class ConnectorLine {
     }
 
     private getBorderStyles(cssType: string, unit: number): string {
-        let borderWidth: string = 'border-' + cssType + '-width:' + unit + 'px;';
-        let borderStyle: string = 'border-' + cssType + '-style:solid;';
-        let borderColor: string = !isNullOrUndefined(this.lineColor) ? 'border-' + cssType + '-color:' + this.lineColor + ';' : '';
+        const borderWidth: string = 'border-' + cssType + '-width:' + unit + 'px;';
+        const borderStyle: string = 'border-' + cssType + '-style:solid;';
+        const borderColor: string = !isNullOrUndefined(this.lineColor) ? 'border-' + cssType + '-color:' + this.lineColor + ';' : '';
         return (borderWidth + borderStyle + borderColor);
     }
 
     /**
      * To get connector line template.
-     * @return {void}
+     *
+     * @param {IConnectorLineObject} data .
+     * @returns {void}
      * @private
      */
-    /* tslint:disable-next-line:max-func-body-length */
     public getConnectorLineTemplate(data: IConnectorLineObject): string {
 
-        let setInnerChildWidthSSType2: number = this.getInnerChildWidthSSType2(data);
-        let setInnerElementWidthSSType2: number = this.getInnerElementWidthSSType2(data);
-        let setInnerElementLeftSSType2: number = this.getInnerElementLeftSSType2(data);
-        let height: number = this.getHeightValue(data);
-        let isMilestoneParent: boolean = data.milestoneParent ? true : false;
-        let isMilestone: boolean = data.milestoneChild ? true : false;
+        const setInnerChildWidthSSType2: number = this.getInnerChildWidthSSType2(data);
+        const setInnerElementWidthSSType2: number = this.getInnerElementWidthSSType2(data);
+        const setInnerElementLeftSSType2: number = this.getInnerElementLeftSSType2(data);
+        const height: number = this.getHeightValue(data);
+        const isMilestoneParent: boolean = data.milestoneParent ? true : false;
+        const isMilestone: boolean = data.milestoneChild ? true : false;
         let connectorContainer: string = '';
-        let isVirtual: boolean = this.parent.virtualScrollModule && this.parent.enableVirtualization;
-        let connectorLine: { top: number, height: number } = this.getPosition(data, this.getParentPosition(data), height);
-        let heightValue: number = isVirtual ? connectorLine.height : height;
+        const isVirtual: boolean = this.parent.virtualScrollModule && this.parent.enableVirtualization;
+        const connectorLine: { top: number, height: number } = this.getPosition(data, this.getParentPosition(data), height);
+        const heightValue: number = isVirtual ? connectorLine.height : height;
         if (this.getParentPosition(data)) {
             connectorContainer = '<div id="ConnectorLine' + data.connectorLineId + '" style="background-color:black">';
             let div: string = '<div class="' + cls.connectorLineContainer +
                 '" tabindex="-1" style="';
-            let eLine: string = '<div class="' + cls.connectorLine + '" style="' +
+            const eLine: string = '<div class="' + cls.connectorLine + '" style="' +
                 (!isNullOrUndefined(this.lineColor) ? 'outline-color:' + this.lineColor + ';' : '');
-            let rightArrow: string = '<div class="' + cls.connectorLineRightArrow + '" style="' +
+            const rightArrow: string = '<div class="' + cls.connectorLineRightArrow + '" style="' +
                 (!isNullOrUndefined(this.lineColor) ? 'outline-color:' + this.lineColor + ';' : '');
-            let leftArrow: string = '<div class="' + cls.connectorLineLeftArrow + '" style="' +
+            const leftArrow: string = '<div class="' + cls.connectorLineLeftArrow + '" style="' +
                 (!isNullOrUndefined(this.lineColor) ? 'outline-color:' + this.lineColor + ';' : '');
-            let duplicateStingOne: string = leftArrow + (isMilestone ? 'left:0px;' : '') +
+            const duplicateStingOne: string = leftArrow + (isMilestone ? 'left:0px;' : '') +
                 this.getBorderStyles('right', 10) +
                 'top:' + (-5 - this.lineStroke + (this.lineStroke - 1)) + 'px;border-bottom-width:' + (5 + this.lineStroke) + 'px;' +
                 'border-top-width:' + (5 + this.lineStroke) + 'px;width:0;height:0;position:relative;"></div>';
-            let duplicateStingTwo: string = this.getBorderStyles('left', 10) +
+            const duplicateStingTwo: string = this.getBorderStyles('left', 10) +
                 'top:' + (-6) + 'px;border-bottom-width:' + (5 + this.lineStroke) + 'px;' +
                 'border-top-width:' + (5 + this.lineStroke) + 'px;width:0;height:0;position:relative;"></div>';
-            let duplicateStingThree: string = this.getBorderStyles('top', this.lineStroke) + 'position:relative;"></div>' + eLine +
+            const duplicateStingThree: string = this.getBorderStyles('top', this.lineStroke) + 'position:relative;"></div>' + eLine +
                 'top:' + (- (13 + ((this.lineStroke - 1) * 2))) + 'px;width:0px;' + this.getBorderStyles('left', this.lineStroke) +
                 this.getBorderStyles('top', (heightValue - (this.lineStroke - 1))) + 'position:relative;"></div>';
-            let duplicateStingFour: string = leftArrow + 'left:' +
+            const duplicateStingFour: string = leftArrow + 'left:' +
                 (((data.childLeft + data.childWidth) - (data.parentLeft)) + 10) + 'px;' +
                 this.getBorderStyles('right', 10);
-            let duplicateStingFive: string = 'top:' + (-(6 + (5 + this.lineStroke) + (this.lineStroke / 2))) + 'px;' +
+            const duplicateStingFive: string = 'top:' + (-(6 + (5 + this.lineStroke) + (this.lineStroke / 2))) + 'px;' +
                 this.getBorderStyles('top', this.lineStroke) + 'position:relative;"></div>';
 
             if (this.getParentPosition(data) === 'FSType1') {
@@ -851,57 +868,63 @@ export class ConnectorLine {
         return connectorContainer;
     }
     /**
+     * @param {IConnectorLineObject} data .
+     * @param {string} type .
+     * @param {number} heightValue .
+     * @returns {number} .
      * @private
      */
     private getPosition(data: IConnectorLineObject, type: string, heightValue: number): { top: number, height: number } {
         let topPosition: number = 0; let lineHeight: number = 0;
         if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
-            let isMilestoneParent: boolean = data.milestoneParent ? true : false;
-            let isMilestone: boolean = data.milestoneChild ? true : false;
-            let midPointParent: number = this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1);
-            let midPoint: number = this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1);
-            let isParentIndex: boolean = data.parentIndexInCurrentView !== -1;
-            let isChildIndex: boolean = data.childIndexInCurrentView !== -1;
-            let lastRowIndex: number = this.parent.currentViewData.length - 1;
+            const isMilestoneParent: boolean = data.milestoneParent ? true : false;
+            const isMilestone: boolean = data.milestoneChild ? true : false;
+            const midPointParent: number = this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1);
+            const midPoint: number = this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1);
+            const isParentIndex: boolean = data.parentIndexInCurrentView !== -1;
+            const isChildIndex: boolean = data.childIndexInCurrentView !== -1;
+            const lastRowIndex: number = this.parent.currentViewData.length - 1;
             if (type === 'SSType1' || type === 'SSType2' || type === 'FFType1' || type === 'FFType2' || type === 'SFType2') {
                 topPosition = isParentIndex ? (data.parentIndexInCurrentView * data.rowHeight) + midPointParent : 0;
                 lineHeight = (isParentIndex && isChildIndex) ? heightValue : isChildIndex ?
-                 (data.childIndexInCurrentView * data.rowHeight) + midPointParent : (lastRowIndex * data.rowHeight) + midPointParent;
+                    (data.childIndexInCurrentView * data.rowHeight) + midPointParent : (lastRowIndex * data.rowHeight) + midPointParent;
             } else if (type === 'SSType3' || type === 'SSType4' || type === 'FSType4' || type === 'FFType3' ||
              type === 'FFType4' || type === 'SFType4' || type === 'SFType3') {
                 topPosition = isChildIndex ? (data.childIndexInCurrentView * data.rowHeight) + midPoint : 0;
                 lineHeight = (isParentIndex && isChildIndex) ? heightValue : isParentIndex ?
-                 (data.parentIndexInCurrentView * data.rowHeight) + midPoint :
+                    (data.parentIndexInCurrentView * data.rowHeight) + midPoint :
                     (lastRowIndex * data.rowHeight) + midPoint;
             } else if (type === 'FSType3') {
                 topPosition = isChildIndex ? (data.childIndexInCurrentView * data.rowHeight) + midPointParent : 0;
                 lineHeight = (isParentIndex && isChildIndex) ? heightValue : isParentIndex ?
-                 (data.parentIndexInCurrentView * data.rowHeight) + midPoint :
+                    (data.parentIndexInCurrentView * data.rowHeight) + midPoint :
                     (lastRowIndex * data.rowHeight) + midPointParent;
             } else if (type === 'SFType1' || type === 'FSType1' || type === 'FSType2') {
                 topPosition = isParentIndex ? (data.parentIndexInCurrentView * data.rowHeight) + midPoint : 0;
                 lineHeight = (isParentIndex && isChildIndex) ? heightValue : isChildIndex ?
-                 (data.childIndexInCurrentView * data.rowHeight) + midPoint :
+                    (data.childIndexInCurrentView * data.rowHeight) + midPoint :
                     (lastRowIndex * data.rowHeight) + midPoint;
             }
         }
         return { top: topPosition, height: lineHeight };
     }
     /**
+     * @returns {void} .
      * @private
      */
     public createConnectorLineTooltipTable(): void {
         this.tooltipTable = createElement(
             'table', { className: '.e-tooltiptable', styles: 'margin-top:0px', attrs: { 'cellspacing': '2px', 'cellpadding': '2px' } });
-        let tooltipBody: HTMLElement = createElement('tbody');
+        const tooltipBody: HTMLElement = createElement('tbody');
         tooltipBody.innerHTML = '';
         this.tooltipTable.appendChild(tooltipBody);
     }
     /**
-     * @param fromTaskName 
-     * @param fromPredecessorText 
-     * @param toTaskName 
-     * @param toPredecessorText 
+     * @param {string} fromTaskName .
+     * @param {string} fromPredecessorText .
+     * @param {string} toTaskName .
+     * @param {string} toPredecessorText .
+     * @returns {string} .
      * @private
      */
     public getConnectorLineTooltipInnerTd(
@@ -914,15 +937,18 @@ export class ConnectorLine {
     }
     /**
      * Generate aria-label for connectorline
+     *
+     * @param {IConnectorLineObject} data .
+     * @returns {string} .
      * @private
      */
     public generateAriaLabel(data: IConnectorLineObject): string {
-        let type: string = data.type;
-        let updatedRecords: IGanttData[] = this.expandedRecords;
-        let fromName: string = updatedRecords[data.parentIndex].ganttProperties.taskName;
-        let toName: string = updatedRecords[data.childIndex].ganttProperties.taskName;
-        let start: string = this.parent.localeObj.getConstant('start');
-        let finish: string = this.parent.localeObj.getConstant('finish');
+        const type: string = data.type;
+        const updatedRecords: IGanttData[] = this.expandedRecords;
+        const fromName: string = updatedRecords[data.parentIndex].ganttProperties.taskName;
+        const toName: string = updatedRecords[data.childIndex].ganttProperties.taskName;
+        const start: string = this.parent.localeObj.getConstant('start');
+        const finish: string = this.parent.localeObj.getConstant('finish');
         let value: string = '';
         if (type === 'FS') {
             value = fromName + ' ' + finish + ' to ' + toName + ' ' + start;
@@ -936,7 +962,10 @@ export class ConnectorLine {
         return value;
     }
     /**
-     * To get the record based on the predecessor value 
+     * To get the record based on the predecessor value
+     *
+     * @param {string} id .
+     * @returns {IGanttData} .
      * @private
      */
     public getRecordByID(id: string): IGanttData {
@@ -948,9 +977,12 @@ export class ConnectorLine {
     }
     /**
      * Method to remove connector line from DOM
-     * @param records 
+     *
+     * @param {IGanttData[] | object} records .
+     * @returns {void} .
      * @private
      */
+    // eslint-disable-next-line
     public removePreviousConnectorLines(records: IGanttData[] | object): void {
         let isObjectType: boolean;
         if (isObject(records) === true) {
@@ -958,32 +990,33 @@ export class ConnectorLine {
         } else {
             isObjectType = false;
         }
-        let length: number = isObjectType ? Object.keys(records).length : (records as IGanttData[]).length;
-        let keys: string[] = Object.keys(records);
+        const length: number = isObjectType ? Object.keys(records).length : (records as IGanttData[]).length;
+        const keys: string[] = Object.keys(records);
         for (let i: number = 0; i < length; i++) {
             let data: IGanttData;
-            let predecessors: IPredecessor[];
             if (isObjectType) {
-                let uniqueId: string = keys[i];
+                const uniqueId: string = keys[i];
                 data = records[uniqueId] as IGanttData;
             } else {
                 data = records[i];
             }
 
-            predecessors = data.ganttProperties && data.ganttProperties.predecessor;
+            const predecessors: IPredecessor[] = data.ganttProperties && data.ganttProperties.predecessor;
             if (predecessors && predecessors.length > 0) {
                 for (let pre: number = 0; pre < predecessors.length; pre++) {
-                    let lineId: string = 'parent' + predecessors[pre].from + 'child' + predecessors[pre].to;
+                    const lineId: string = 'parent' + predecessors[pre].from + 'child' + predecessors[pre].to;
                     this.removeConnectorLineById(lineId);
                 }
             }
         }
     }
     /**
+     * @param {string} id .
+     * @returns {void} .
      * @private
      */
     public removeConnectorLineById(id: string): void {
-        let element: Element = this.parent.connectorLineModule.dependencyViewContainer.querySelector('#ConnectorLine' + id);
+        const element: Element = this.parent.connectorLineModule.dependencyViewContainer.querySelector('#ConnectorLine' + id);
         if (!isNullOrUndefined(element)) {
             remove(element);
         }

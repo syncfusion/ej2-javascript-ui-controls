@@ -9,7 +9,7 @@ import { IDropDownItemModel } from '../base/interface';
 export class HtmlToolbarStatus {
     public parent: IRichTextEditor;
     public toolbarStatus: IToolbarStatus;
-    constructor(parent: IRichTextEditor) {
+    public constructor(parent: IRichTextEditor) {
         this.parent = parent;
         this.addEventListener();
     }
@@ -21,15 +21,20 @@ export class HtmlToolbarStatus {
         this.parent.off(events.toolbarRefresh, this.onRefreshHandler);
         this.parent.off(events.destroy, this.removeEventListener);
     }
+    // eslint-disable-next-line
     private onRefreshHandler(args: { [key: string]: Node | Object }): void {
         if (this.parent.readonly) {
             return;
         }
-        let fontsize: string[] = [];
-        let fontName: string[] = [];
-        let formats: string[] = [];
-        this.parent.fontSize.items.forEach((item: IDropDownItemModel): void => { fontsize.push(item.value); });
-        this.parent.fontFamily.items.forEach((item: IDropDownItemModel): void => { fontName.push(item.value); });
+        const fontsize: string[] = [];
+        const fontName: string[] = [];
+        const formats: string[] = [];
+        this.parent.fontSize.items.forEach((item: IDropDownItemModel): void => {
+            fontsize.push(item.value);
+        });
+        this.parent.fontFamily.items.forEach((item: IDropDownItemModel): void => {
+            fontName.push(item.value);
+        });
         this.parent.format.types.forEach((item: IDropDownItemModel): void => {
             formats.push(item.value.toLocaleLowerCase());
         });

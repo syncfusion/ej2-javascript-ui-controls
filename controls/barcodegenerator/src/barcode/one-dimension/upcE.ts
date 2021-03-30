@@ -7,10 +7,13 @@ export class UpcE extends OneDimension {
 
 
     /**
-     * Validate the given input to check whether the input is valid one or not
+     * Validate the given input.
+     *
+     * @returns {string} Validate the given input.
+     * @param {string} value - provide the input values .
+     * @private
      */
-    /** @private */
-     public validateInput(value: string): string {
+    public validateInput(value: string): string {
         if (value.search(/^[0-9]{6}$/) !== -1) {
             return undefined;
         } else {
@@ -22,13 +25,16 @@ export class UpcE extends OneDimension {
         let result: number = 0;
         let i: number;
         for (i = 1; i < 11; i += 2) {
+            // eslint-disable-next-line
             result += parseInt(value[i], undefined);
         }
         for (i = 0; i < 11; i += 2) {
+            // eslint-disable-next-line
             result += parseInt(value[i], undefined) * 3;
         }
         return (10 - (result % 10)) % 10;
     }
+    // eslint-disable-next-line
     private getStructure(): object {
         return {
             '0': 'EEEOOO',
@@ -58,17 +64,17 @@ export class UpcE extends OneDimension {
     }
 
     private getExpansion(lastDigit: string): string {
-        let value: string[] = this.getValue();
+        const value: string[] = this.getValue();
         return value[lastDigit];
     }
 
     private getUpcValue(): string {
-        let lastDigit: string = this.value[this.value.length - 1];
-        let expansionValue: string = this.getExpansion(lastDigit);
+        const lastDigit: string = this.value[this.value.length - 1];
+        const expansionValue: string = this.getExpansion(lastDigit);
         let result: string = '';
         let index: number = 0;
         for (let i: number = 0; i < expansionValue.length; i++) {
-            let value: string = expansionValue[i];
+            const value: string = expansionValue[i];
             if (value === 'X') {
                 result += this.value[index++];
             } else {
@@ -83,6 +89,7 @@ export class UpcE extends OneDimension {
         return encodingValue;
     }
 
+    // eslint-disable-next-line
     private getBinaries(): object {
         return {
             'O': [ // The O (odd) encoding for UPC-E
@@ -97,11 +104,11 @@ export class UpcE extends OneDimension {
     }
 
 
-    private encoding(upcAValue: string, string: string, structure: string, ): string {
+    private encoding(upcAValue: string, string: string, structure: string): string {
         let code: string;
         let tempValue: string;
-        let codes: object;
-        codes = this.getBinaries();
+        // eslint-disable-next-line
+        const codes: object = this.getBinaries();
         for (let i: number = 0; i < string.length; i++) {
             tempValue = codes[structure[i]];
             if (i === 0) {
@@ -112,21 +119,28 @@ export class UpcE extends OneDimension {
         }
         return code;
     }
-    /** @private */
+    /**
+     * Draw the barcode SVG.\
+     *
+     * @returns {void} Draw the barcode SVG .
+     * @param {HTMLElement} canvas - Provide the canvas element .
+     * @private
+     */
     public draw(canvas: HTMLElement): void {
-        let endBars: string = '101';
-        let middleBar: string = '010101';
-        let endDigits: string = '00000000';
-        let code: string[] = [];
-        let upcAValue: string = this.getUpcValue();
-        let structureValue: object = this.getStructure();
-        let structure: string = structureValue[upcAValue[upcAValue.length - 1]];
+        const endBars: string = '101';
+        const middleBar: string = '010101';
+        const endDigits: string = '00000000';
+        const code: string[] = [];
+        const upcAValue: string = this.getUpcValue();
+        // eslint-disable-next-line
+        const structureValue: object = this.getStructure();
+        const structure: string = structureValue[upcAValue[upcAValue.length - 1]];
         code.push(endDigits);
         code.push(endBars);
         code.push(this.encoding(upcAValue, this.value, structure));
         code.push(middleBar);
         code.push(endDigits);
-        let renderText: string = upcAValue[0] + this.value + upcAValue[upcAValue.length - 1];
+        const renderText: string = upcAValue[0] + this.value + upcAValue[upcAValue.length - 1];
         this.calculateBarCodeAttributes(code, canvas, this.displayText.text === '' ? renderText : undefined);
     }
 }

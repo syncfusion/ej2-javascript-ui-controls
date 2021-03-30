@@ -5,18 +5,19 @@ import { profile, inMB, getMemoryProfile } from '../common.spec';
  */
 describe('Recurrence Date Generator Specs', () => {
     beforeAll(() => {
-        // tslint:disable:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this as any).skip(); //Skips test (in Chai)
             return;
         }
     });
 
     describe('Schedule - recurrence Freq- Daily', () => {
-        let startDate: Date = new Date('Tue, 06 May 2014');
+        const startDate: Date = new Date('Tue, 06 May 2014');
         it('Default - Interval', () => {
             expect(JSON.stringify(generate(startDate, 'FREQ=DAILY;INTERVAL=2;UNTIL=20140606T000000Z', null, 0)))
                 .toBe(JSON.stringify([
@@ -97,19 +98,19 @@ describe('Recurrence Date Generator Specs', () => {
                 ]));
         });
         it('Default - ByDay - BYMONTHDAY', () => {
-            let rule: string = 'FREQ=DAILY;BYDAY=FR;BYMONTHDAY=13;INTERVAL=1;UNTIL=20140729T000000Z';
+            const rule: string = 'FREQ=DAILY;BYDAY=FR;BYMONTHDAY=13;INTERVAL=1;UNTIL=20140729T000000Z';
             expect(JSON.stringify(generate(new Date('Sun Jun 01 2014'), rule, null, 0)))
                 .toBe(JSON.stringify([new Date('Fri Jun 13 2014 ').getTime()]));
         });
         it('Default - ByDay - BYYEARDAY', () => {
-            let rule: string = 'FREQ=DAILY;BYYEARDAY=168;INTERVAL=1;UNTIL=20140729T000000Z';
+            const rule: string = 'FREQ=DAILY;BYYEARDAY=168;INTERVAL=1;UNTIL=20140729T000000Z';
             expect(JSON.stringify(generate(new Date('Sun Jun 01 2014 '), rule, null, 0)))
                 .toBe(JSON.stringify([new Date('Tue Jun 17 2014 ').getTime()]));
         });
     });
 
     describe('Schedule - recurrence Freq- Daily (without EndDate)', () => {
-        let startDate: Date = new Date('Tue May 06 2014 ');
+        const startDate: Date = new Date('Tue May 06 2014 ');
         it('Default - Interval', () => {
             expect(JSON.stringify(generate(startDate, 'FREQ=DAILY;INTERVAL=2', null, 0)))
                 .toBe(JSON.stringify([
@@ -138,7 +139,7 @@ describe('Recurrence Date Generator Specs', () => {
                 ]));
         });
         it('Default - Interval with modified startDate', () => {
-            let rule: string = 'FREQ=DAILY;INTERVAL=2;UNTIL=20140729T000000Z';
+            const rule: string = 'FREQ=DAILY;INTERVAL=2;UNTIL=20140729T000000Z';
             expect(JSON.stringify(generate(startDate, rule, null, 0, undefined, new Date('Thu Jul 03 2014 '))))
                 .toBe(JSON.stringify([
                     new Date('Thu Jul 03 2014').getTime(), new Date('Sat Jul 05 2014').getTime(),
@@ -271,7 +272,7 @@ describe('Recurrence Date Generator Specs', () => {
     });
 
     describe('Schedule - recurrence Freq- Weekly', () => {
-        let startDate: Date = new Date('Tue May 06 2014');
+        const startDate: Date = new Date('Tue May 06 2014');
         it('Default - Having WEEKLY property alone and all other properties are not provided', () => {
             expect(JSON.stringify(generate(startDate, 'FREQ=WEEKLY;COUNT=5', null, 0)))
                 .toBe(JSON.stringify([
@@ -382,7 +383,7 @@ describe('Recurrence Date Generator Specs', () => {
                 ]));
         });
         it('Default - BYMONTH', () => {
-            let rule: string = 'FREQ=WEEKLY;BYDAY=SU,MO,TU,WE,TH,FR,SA;BYMONTH=7;INTERVAL=1;UNTIL=20140801T000000Z';
+            const rule: string = 'FREQ=WEEKLY;BYDAY=SU,MO,TU,WE,TH,FR,SA;BYMONTH=7;INTERVAL=1;UNTIL=20140801T000000Z';
             expect(JSON.stringify(generate(startDate, rule, null, 0)))
                 .toBe(JSON.stringify([
                     new Date('Tue Jul 01 2014').getTime(), new Date('Wed Jul 02 2014').getTime(),
@@ -412,7 +413,7 @@ describe('Recurrence Date Generator Specs', () => {
     });
 
     describe('Schedule - recurrence Freq- Weekly (without EndDate)', () => {
-        let startDate: Date = new Date('Tue May 06 2014');
+        const startDate: Date = new Date('Tue May 06 2014');
         it('Default - ByDay', () => {
             expect(JSON.stringify(generate(startDate, 'FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;INTERVAL=1', null, 0)))
                 .toBe(JSON.stringify([
@@ -549,7 +550,7 @@ describe('Recurrence Date Generator Specs', () => {
     });
 
     describe('Schedule - recurrence Freq- MONTHLY', () => {
-        let startDate: Date = new Date('Tue May 06 2014 ');
+        const startDate: Date = new Date('Tue May 06 2014 ');
         it('Default - ByDay Single Day', () => {
             expect(JSON.stringify(generate(startDate, 'FREQ=MONTHLY;BYDAY=FR;BYSETPOS=2;INTERVAL=1;UNTIL=20140729T000000Z', null, 0)))
                 .toBe(JSON.stringify([
@@ -565,12 +566,12 @@ describe('Recurrence Date Generator Specs', () => {
                 .toBe(JSON.stringify([new Date('Sat Jun 07 2014 ').getTime(), new Date('Sat Jul 05 2014 ').getTime()]));
         });
         it('Default - ByDay Multiple Days Week startDay changed with count 3', () => {
-            let rule: string = 'FREQ=MONTHLY;BYDAY=FR,SA;BYSETPOS=2;INTERVAL=1;UNTIL=20140711T000000Z;COUNT=3';
+            const rule: string = 'FREQ=MONTHLY;BYDAY=FR,SA;BYSETPOS=2;INTERVAL=1;UNTIL=20140711T000000Z;COUNT=3';
             expect(JSON.stringify(generate(startDate, rule, null, 5)))
                 .toBe(JSON.stringify([new Date('Sat Jun 07 2014 ').getTime(), new Date('Sat Jul 05 2014 ').getTime()]));
         });
         it('Default - BYMONTH', () => {
-            let rule: string = 'FREQ=MONTHLY;BYDAY=SU,MO,TU,WE,TH,FR,SA;BYMONTH=7;INTERVAL=1;UNTIL=20140729T000000Z';
+            const rule: string = 'FREQ=MONTHLY;BYDAY=SU,MO,TU,WE,TH,FR,SA;BYMONTH=7;INTERVAL=1;UNTIL=20140729T000000Z';
             expect(JSON.stringify(generate(startDate, rule, null, 0)))
                 .toBe(JSON.stringify([
                     new Date('Tue Jul 01 2014').getTime(), new Date('Wed Jul 02 2014').getTime(),
@@ -591,7 +592,7 @@ describe('Recurrence Date Generator Specs', () => {
                 ]));
         });
         it('Default - BYMONTHDAY', () => {
-            let rule: string = 'FREQ=MONTHLY;BYMONTHDAY=13;INTERVAL=1;UNTIL=20140729T000000Z';
+            const rule: string = 'FREQ=MONTHLY;BYMONTHDAY=13;INTERVAL=1;UNTIL=20140729T000000Z';
             expect(JSON.stringify(generate(new Date('Sun Jun 01 2014'), rule, null, 0)))
                 .toBe(JSON.stringify([new Date('Fri Jun 13 2014').getTime(), new Date('Sun Jul 13 2014').getTime()]));
         });
@@ -623,7 +624,7 @@ describe('Recurrence Date Generator Specs', () => {
                 ]));
         });
         it('Default - BYMONTHDAY', () => {
-            let rule: string = 'FREQ=MONTHLY;BYMONTHDAY=31;INTERVAL=1;UNTIL=20150729T000000Z';
+            const rule: string = 'FREQ=MONTHLY;BYMONTHDAY=31;INTERVAL=1;UNTIL=20150729T000000Z';
             expect(JSON.stringify(generate(new Date('Sun Jun 01 2014'), rule, null, 0)))
                 .toBe(JSON.stringify([
                     new Date('Thu Jul 31 2014').getTime(), new Date('Sun Aug 31 2014').getTime(),
@@ -633,7 +634,7 @@ describe('Recurrence Date Generator Specs', () => {
                 ]));
         });
         it('Default - BYMONTHDAY negative Value', () => {
-            let rule: string = 'FREQ=MONTHLY;BYMONTHDAY=-5;INTERVAL=1;UNTIL=20150729T000000Z';
+            const rule: string = 'FREQ=MONTHLY;BYMONTHDAY=-5;INTERVAL=1;UNTIL=20150729T000000Z';
             expect(JSON.stringify(generate(new Date('Sun Jun 01 2014'), rule, null, 0)))
                 .toBe(JSON.stringify([
                     new Date('Thu Jun 26 2014').getTime(), new Date('Sun Jul 27 2014').getTime(),
@@ -646,7 +647,7 @@ describe('Recurrence Date Generator Specs', () => {
                 ]));
         });
         it('Default - BYMONTHDAY negative Value', () => {
-            let rule: string = 'FREQ=MONTHLY;BYMONTHDAY=-31;INTERVAL=1;UNTIL=20150729T000000Z';
+            const rule: string = 'FREQ=MONTHLY;BYMONTHDAY=-31;INTERVAL=1;UNTIL=20150729T000000Z';
             expect(JSON.stringify(generate(new Date('Sun Jun 01 2014'), rule, null, 0)))
                 .toBe(JSON.stringify([
                     new Date('Tue Jul 01 2014').getTime(), new Date('Fri Aug 01 2014').getTime(),
@@ -656,26 +657,26 @@ describe('Recurrence Date Generator Specs', () => {
                 ]));
         });
         it('Default - BYMONTHDAY - feb 29', () => {
-            let rule: string = 'FREQ=MONTHLY;BYMONTHDAY=29;BYMONTH=2;INTERVAL=1;UNTIL=20200729T000000Z';
+            const rule: string = 'FREQ=MONTHLY;BYMONTHDAY=29;BYMONTH=2;INTERVAL=1;UNTIL=20200729T000000Z';
             expect(JSON.stringify(generate(new Date('Sun Jun 01 2014'), rule, null, 0)))
                 .toBe(JSON.stringify([new Date('Mon Feb 29 2016').getTime(), new Date('Sat Feb 29 2020').getTime()]));
         });
         it('Default - BYMONTHDAY - feb 29', () => {
-            let rule: string = 'FREQ=MONTHLY;BYMONTHDAY=29;BYMONTH=2;INTERVAL=1;UNTIL=20200729T000000Z;COUNT=1';
+            const rule: string = 'FREQ=MONTHLY;BYMONTHDAY=29;BYMONTH=2;INTERVAL=1;UNTIL=20200729T000000Z;COUNT=1';
             expect(JSON.stringify(generate(new Date('Sun Jun 01 2014'), rule, null, 0)))
                 .toBe(JSON.stringify([new Date('Mon Feb 29 2016').getTime()]));
         });
         it('Default - BYYEARDAY', () => {
-            let rule: string = 'FREQ=MONTHLY;BYYEARDAY=168;BYMONTH=6;INTERVAL=1;BYMONTHDAY=17;UNTIL=20140729T000000Z';
+            const rule: string = 'FREQ=MONTHLY;BYYEARDAY=168;BYMONTH=6;INTERVAL=1;BYMONTHDAY=17;UNTIL=20140729T000000Z';
             expect(JSON.stringify(generate(new Date('Sun Jun 01 2014'), rule, null, 0)))
                 .toBe(JSON.stringify([new Date('Tue Jun 17 2014').getTime()]));
         });
     });
 
     describe('Schedule - recurrence Freq- MONTHLY (without EndDate)', () => {
-        let startDate: Date = new Date('Tue May 06 2014 ');
+        const startDate: Date = new Date('Tue May 06 2014 ');
         it('Default - ByDay', () => {
-            let rule: string = 'FREQ=MONTHLY;BYMONTHDAY=10,11,12,13,14,15;BYDAY=MO,TU,WE,TH,FR;INTERVAL=1;UNTIL=20140729T000000Z';
+            const rule: string = 'FREQ=MONTHLY;BYMONTHDAY=10,11,12,13,14,15;BYDAY=MO,TU,WE,TH,FR;INTERVAL=1;UNTIL=20140729T000000Z';
             expect(JSON.stringify(generate(startDate, rule, null, 0)))
                 .toBe(JSON.stringify([
                     new Date('Mon May 12 2014 ').getTime(), new Date('Tue May 13 2014 ').getTime(),
@@ -687,7 +688,7 @@ describe('Recurrence Date Generator Specs', () => {
                 ]));
         });
         it('Monthly FREQ with BYMONTHDAY and BYDAY properties', () => {
-            let rule: string = 'FREQ=MONTHLY;BYMONTHDAY=5,6,7;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=1;COUNT=10';
+            const rule: string = 'FREQ=MONTHLY;BYMONTHDAY=5,6,7;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=1;COUNT=10';
             expect(JSON.stringify(generate(new Date('Fri Jul 06 2019'), rule, null, 0)))
                 .toBe(JSON.stringify([
                     new Date('Mon Aug 05 2019').getTime(), new Date('Thu Sep 05 2019').getTime(),
@@ -710,7 +711,7 @@ describe('Recurrence Date Generator Specs', () => {
                 ]));
         });
         it('Default - ByDay Multiple Days', () => {
-            let rule: string = 'FREQ=MONTHLY;BYDAY=FR,SA;BYSETPOS=2;INTERVAL=1;UNTIL=20140711T000000Z';
+            const rule: string = 'FREQ=MONTHLY;BYDAY=FR,SA;BYSETPOS=2;INTERVAL=1;UNTIL=20140711T000000Z';
             expect(JSON.stringify(generate(startDate, rule, null, 0)))
                 .toBe(JSON.stringify([new Date('Sat Jun 07 2014').getTime(), new Date('Sat Jul 05 2014').getTime()]));
         });
@@ -820,7 +821,7 @@ describe('Recurrence Date Generator Specs', () => {
                 ]));
         });
         it('Default - BYYEARDAY', () => {
-            let rule: string = 'FREQ=MONTHLY;BYYEARDAY=168;BYMONTH=6;INTERVAL=1;BYMONTHDAY=17';
+            const rule: string = 'FREQ=MONTHLY;BYYEARDAY=168;BYMONTH=6;INTERVAL=1;BYMONTHDAY=17';
             expect(JSON.stringify(generate(new Date('Sun Jun 01 2014 '), rule, null, 0)))
                 .toBe(JSON.stringify([
                     new Date('Tue Jun 17 2014').getTime(), new Date('Wed Jun 17 2015').getTime(),
@@ -886,7 +887,7 @@ describe('Recurrence Date Generator Specs', () => {
                     new Date('Thu Oct 31 2019').getTime(), new Date('Thu Nov 28 2019').getTime(),
                     new Date('Thu Dec 26 2019').getTime(), new Date('Thu Jan 30 2020').getTime(),
                     new Date('Thu Feb 27 2020').getTime(), new Date('Thu Mar 26 2020').getTime(),
-                    new Date('Thu Apr 30 2020').getTime(), new Date('Thu May 28 2020').getTime(),
+                    new Date('Thu Apr 30 2020').getTime(), new Date('Thu May 28 2020').getTime()
                 ]));
         });
         it('Default - ByDay Single Day with numeric value', () => {
@@ -949,7 +950,7 @@ describe('Recurrence Date Generator Specs', () => {
     });
 
     describe('Schedule - recurrence Freq- YEARLY', () => {
-        let startDate: Date = new Date('Tue May 06 2014 ');
+        const startDate: Date = new Date('Tue May 06 2014 ');
         it('Default - ByDay', () => {
             expect(JSON.stringify(generate(startDate, 'FREQ=YEARLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-1;COUNT=5;INTERVAL=1;', null, 0)))
                 .toBe(JSON.stringify([
@@ -959,7 +960,7 @@ describe('Recurrence Date Generator Specs', () => {
                 ]));
         });
         it('Default - ByDay', () => {
-            let rule: string = 'FREQ=YEARLY;BYDAY=MO,TU,WE,TH,FR;BYMONTH=7;INTERVAL=1;UNTIL=20140729T000000Z';
+            const rule: string = 'FREQ=YEARLY;BYDAY=MO,TU,WE,TH,FR;BYMONTH=7;INTERVAL=1;UNTIL=20140729T000000Z';
             expect(JSON.stringify(generate(startDate, rule, null, 0)))
                 .toBe(JSON.stringify([
                     new Date('Tue Jul 01 2014').getTime(), new Date('Wed Jul 02 2014').getTime(),
@@ -1000,12 +1001,12 @@ describe('Recurrence Date Generator Specs', () => {
                 ]));
         });
         it('Default - BYMONTHDAY', () => {
-            let rule: string = 'FREQ=YEARLY;BYMONTHDAY=12,13;BYMONTH=7;INTERVAL=1;UNTIL=20140729T000000Z';
+            const rule: string = 'FREQ=YEARLY;BYMONTHDAY=12,13;BYMONTH=7;INTERVAL=1;UNTIL=20140729T000000Z';
             expect(JSON.stringify(generate(startDate, rule, null, 0)))
                 .toBe(JSON.stringify([new Date('Sat Jul 12 2014').getTime(), new Date('Sun Jul 13 2014').getTime()]));
         });
         it('Default - BYMONTHDAY for Multiple months', () => {
-            let rule: string = 'FREQ=YEARLY;BYMONTHDAY=12,13;BYMONTH=6,7;INTERVAL=1;UNTIL=20140729T000000Z';
+            const rule: string = 'FREQ=YEARLY;BYMONTHDAY=12,13;BYMONTH=6,7;INTERVAL=1;UNTIL=20140729T000000Z';
             expect(JSON.stringify(generate(startDate, rule, null, 0)))
                 .toBe(JSON.stringify([
                     new Date('Thu Jun 12 2014').getTime(), new Date('Fri Jun 13 2014').getTime(),
@@ -1170,7 +1171,7 @@ describe('Recurrence Date Generator Specs', () => {
     });
 
     describe('Schedule - recurrence Freq- YEARLY (without EndDate)', () => {
-        let startDate: Date = new Date('Tue May 06 2014 ');
+        const startDate: Date = new Date('Tue May 06 2014 ');
         it('Default - ByDay', () => {
             expect(JSON.stringify(generate(startDate, 'FREQ=YEARLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=1;BYMONTH=5,7;INTERVAL=1;', null, 0)))
                 .toBe(JSON.stringify([
@@ -1316,7 +1317,7 @@ describe('Recurrence Date Generator Specs', () => {
     });
 
     describe('Schedule - recurrence Freq- YEARLY (Having functionalities)', () => {
-        let startDate: Date = new Date('Tue May 06 2014 ');
+        const startDate: Date = new Date('Tue May 06 2014 ');
         it('Default - ByDay', () => {
             expect(JSON.stringify(generate(startDate, 'FREQ=YEARLY;BYWEEKNO=53;UNTIL=20140229T000000Z', null, 1)))
                 .toBe(JSON.stringify([]));
@@ -1370,7 +1371,7 @@ describe('Recurrence Date Generator Specs', () => {
                 ]));
         });
         it('Default - Having BYMONTH and BYSETPOS with start time', () => {
-            let rule: string = 'FREQ=YEARLY;BYDAY=SU;BYSETPOS=1;BYMONTH=12;INTERVAL=1;COUNT=5';
+            const rule: string = 'FREQ=YEARLY;BYDAY=SU;BYSETPOS=1;BYMONTH=12;INTERVAL=1;COUNT=5';
             expect(JSON.stringify(generate(new Date(2022, 1, 1, 10), rule, null, 0)))
                 .toBe(JSON.stringify([
                     new Date(2022, 11, 4, 10).getTime(), new Date(2023, 11, 3, 10).getTime(),
@@ -1422,94 +1423,90 @@ describe('Recurrence Date Generator Specs', () => {
     });
 
     describe('Schedule - recurrence rule with end date as never', () => {
-        let startDate: Date = new Date('Tue, 06 May 2014');
+        const startDate: Date = new Date('Tue, 06 May 2014');
         it('Yearly with max count', () => {
-            let dates: number[] = generate(startDate, 'FREQ=DAILY;', null, 0, 90);
+            const dates: number[] = generate(startDate, 'FREQ=DAILY;', null, 0, 90);
             expect(dates.length).toBe(90);
         });
         it('WEEKLY with max count', () => {
-            let dates: number[] = generate(startDate, 'FREQ=WEEKLY;', null, 0, 120);
+            const dates: number[] = generate(startDate, 'FREQ=WEEKLY;', null, 0, 120);
             expect(dates.length).toBe(120);
         });
         it('MONTHLY with max count', () => {
-            let dates: number[] = generate(startDate, 'FREQ=MONTHLY;', null, 0, 10);
+            const dates: number[] = generate(startDate, 'FREQ=MONTHLY;', null, 0, 10);
             expect(dates.length).toBe(10);
         });
         it('YEARLY with max count', () => {
-            let dates: number[] = generate(startDate, 'FREQ=YEARLY;', null, 0, 30);
+            const dates: number[] = generate(startDate, 'FREQ=YEARLY;', null, 0, 30);
             expect(dates.length).toBe(30);
         });
         it('DAILY without max count', () => {
-            let dates: number[] = generate(startDate, 'FREQ=DAILY;', null, 0);
+            const dates: number[] = generate(startDate, 'FREQ=DAILY;', null, 0);
             expect(dates.length).toBe(43);
         });
     });
 
     describe('Schedule - recurrence rule with end date as never and recurrence excecption', () => {
-        let startDate: Date = new Date('Tue, 04 May 2014');
+        const startDate: Date = new Date('Tue, 04 May 2014');
         it('DAILY with max count', () => {
-            let dates: number[] = generate(startDate, 'FREQ=DAILY;', '20140505T043000Z,20140517T043000Z', 0, 90);
+            const dates: number[] = generate(startDate, 'FREQ=DAILY;', '20140505T043000Z,20140517T043000Z', 0, 90);
             expect(dates.length).toBe(90);
         });
         it('DAILY with max count and Until Date', () => {
-            let rule: string = 'FREQ=DAILY;INTERVAL=1;UNTIL=20140531T043000Z;';
-            let dates: number[] = generate(startDate, rule, '20140505T043000Z,20140516T043000Z', 0, 28);
+            const rule: string = 'FREQ=DAILY;INTERVAL=1;UNTIL=20140531T043000Z;';
+            const dates: number[] = generate(startDate, rule, '20140505T043000Z,20140516T043000Z', 0, 28);
             expect(dates.length).toBe(26);
         });
         it('DAILY with max count and Count property', () => {
-            let dates: number[] = generate(startDate, 'FREQ=DAILY;INTERVAL=1;COUNT=20', '20140505T043000Z,20140516T043000Z', 0, 20);
+            const dates: number[] = generate(startDate, 'FREQ=DAILY;INTERVAL=1;COUNT=20', '20140505T043000Z,20140516T043000Z', 0, 20);
             expect(dates.length).toBe(18);
         });
         it('WEEKLY with max count', () => {
-            let rule: string = 'FREQ=WEEKLY;BYDAY=SU;INTERVAL=1;';
-            let dates: number[] = generate(startDate, rule, '20140511T053000Z,20140608T053000Z,20141019T053000Z', 0, 20);
+            const rule: string = 'FREQ=WEEKLY;BYDAY=SU;INTERVAL=1;';
+            const dates: number[] = generate(startDate, rule, '20140511T053000Z,20140608T053000Z,20141019T053000Z', 0, 20);
             expect(dates.length).toBe(20);
         });
         it('WEEKLY with max count and Until Date', () => {
-            let dates: number[] = generate(startDate, 'FREQ=WEEKLY;BYDAY=SU;INTERVAL=1;UNTIL=20140531T043000Z;', '20140511T053000Z', 0, 4);
+            const dates: number[] = generate(startDate, 'FREQ=WEEKLY;BYDAY=SU;INTERVAL=1;UNTIL=20140531T043000Z;', '20140511T053000Z', 0, 4);
             expect(dates.length).toBe(3);
         });
         it('WEEKLY with max count and Count property', () => {
-            let dates: number[] = generate(startDate, 'FREQ=WEEKLY;BYDAY=SU;INTERVAL=1;COUNT=15', '20140511T053000Z', 0, 15);
+            const dates: number[] = generate(startDate, 'FREQ=WEEKLY;BYDAY=SU;INTERVAL=1;COUNT=15', '20140511T053000Z', 0, 15);
             expect(dates.length).toBe(14);
         });
         it('MONTHLY with max count', () => {
-            let dates: number[] = generate(startDate, 'FREQ=MONTHLY;BYMONTHDAY=4;INTERVAL=1;', '20140701T043000Z', 0, 20);
+            const dates: number[] = generate(startDate, 'FREQ=MONTHLY;BYMONTHDAY=4;INTERVAL=1;', '20140701T043000Z', 0, 20);
             expect(dates.length).toBe(20);
         });
         it('MONTHLY with max count and Until Date', () => {
-            let rule: string = 'FREQ=MONTHLY;BYMONTHDAY=4;INTERVAL=1;UNTIL=20140731T043000Z;';
-            let dates: number[] = generate(startDate, rule, '20140604T043000Z', 0, 3);
+            const rule: string = 'FREQ=MONTHLY;BYMONTHDAY=4;INTERVAL=1;UNTIL=20140731T043000Z;';
+            const dates: number[] = generate(startDate, rule, '20140604T043000Z', 0, 3);
             expect(dates.length).toBe(2);
         });
         it('MONTHLY with max count and Count property', () => {
-            let dates: number[] = generate(startDate, 'FREQ=MONTHLY;BYMONTHDAY=4;INTERVAL=1;COUNT=10;', '20140604T043000Z', 0, 10);
+            const dates: number[] = generate(startDate, 'FREQ=MONTHLY;BYMONTHDAY=4;INTERVAL=1;COUNT=10;', '20140604T043000Z', 0, 10);
             expect(dates.length).toBe(9);
         });
         it('YEARLY with max count', () => {
-            let dates: number[] = generate(startDate, 'FREQ=YEARLY;BYMONTHDAY=4;BYMONTH=5;INTERVAL=1;', '20150504T043000Z', 0, 30);
+            const dates: number[] = generate(startDate, 'FREQ=YEARLY;BYMONTHDAY=4;BYMONTH=5;INTERVAL=1;', '20150504T043000Z', 0, 30);
             expect(dates.length).toBe(30);
         });
         it('YEARLY with max count and Until Date', () => {
-            let rule: string = 'FREQ=YEARLY;BYMONTHDAY=4;BYMONTH=5;INTERVAL=1;UNTIL=20180531T050000Z;';
-            let dates: number[] = generate(startDate, rule, '20150504T050000Z', 0, 5);
+            const rule: string = 'FREQ=YEARLY;BYMONTHDAY=4;BYMONTH=5;INTERVAL=1;UNTIL=20180531T050000Z;';
+            const dates: number[] = generate(startDate, rule, '20150504T050000Z', 0, 5);
             expect(dates.length).toBe(4);
         });
         it('YEARLY with max count and Count property', () => {
-            let dates: number[] = generate(startDate, 'FREQ=YEARLY;BYMONTHDAY=4;BYMONTH=5;INTERVAL=1;COUNT=10;', '20150504T050000Z', 0, 10);
+            const dates: number[] = generate(startDate, 'FREQ=YEARLY;BYMONTHDAY=4;BYMONTH=5;INTERVAL=1;COUNT=10;', '20150504T050000Z', 0, 10);
             expect(dates.length).toBe(9);
         });
     });
 
     it('memory leak', () => {
         profile.sample();
-        // tslint:disable:no-any
-        let average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
+        const average: number = inMB(profile.averageChange);
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        const memory: number = inMB(getMemoryProfile());
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        // tslint:enable:no-any
     });
 });

@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-returns */
 import { withInRange, getPoint, drawSymbol } from '../../common/utils/helper';
 import { Size, PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { markerAnimate, appendChildElement, ChartLocation, animateRedrawElement } from '../../common/utils/helper';
-import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
-import { MarkerSettingsModel, } from '../series/chart-series-model';
+import { MarkerSettingsModel } from '../series/chart-series-model';
 import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 import { pointRender } from '../../common/model/constants';
 import { Axis } from '../../chart/axis/axis';
@@ -16,28 +18,29 @@ export class BubbleSeries {
 
     /**
      * Render the Bubble series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
     public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
-        let marker: MarkerSettingsModel = series.marker;
-        let visiblePoints: Points[] = series.points;
+        const marker: MarkerSettingsModel = series.marker;
+        const visiblePoints: Points[] = series.points;
         let shapeOption: PathOption;
         let argsData: IPointRenderEventArgs;
         //let bubbleMode: RadiusMode = bubbleOptions.radiusMode;
         let segmentRadius: number; let radius: number;
-        let value: number = Math.max(series.chart.initialClipRect.height, series.chart.initialClipRect.width);
-        let percentChange: number = value / 100;
+        const value: number = Math.max(series.chart.initialClipRect.height, series.chart.initialClipRect.width);
+        const percentChange: number = value / 100;
         let maxRadius: number = series.maxRadius * percentChange;
         let minRadius: number = series.minRadius * percentChange;
         let maximumSize: number = null;
         let maxValue: number = null;
         let element: Element;
         let startLocation: ChartLocation;
-        let redraw: boolean = series.chart.redraw;
+        const redraw: boolean = series.chart.redraw;
         if ((series.maxRadius === null || series.minRadius === null)) {
-            for (let value of series.chart.visibleSeries) {
+            for (const value of series.chart.visibleSeries) {
                 if (value.type === 'Bubble' && value.visible === true && (value.maxRadius === null || value.minRadius === null)) {
                     maximumSize = value.sizeMax > maximumSize ? value.sizeMax : maximumSize;
                 }
@@ -50,8 +53,7 @@ export class BubbleSeries {
             radius = maxRadius - minRadius;
         }
 
-        for (let bubblePoint of visiblePoints) {
-            startLocation = redraw ? bubblePoint.symbolLocations[0] : null;
+        for (const bubblePoint of visiblePoints) {
             bubblePoint.symbolLocations = [];
             bubblePoint.regions = [];
             if (bubblePoint.visible &&
@@ -96,6 +98,7 @@ export class BubbleSeries {
                         height: argsData.height, visible: true,
                         shape: 'Circle', width: argsData.width
                     };
+                    startLocation = redraw ? bubblePoint.symbolLocations[0] : null;
                     if (redraw) {
                         animateRedrawElement(element, 300, startLocation, bubblePoint.symbolLocations[0], 'cx', 'cy');
                     }
@@ -109,11 +112,12 @@ export class BubbleSeries {
 
     /**
      * To destroy the Bubble.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method calling here
          */
@@ -131,15 +135,16 @@ export class BubbleSeries {
 
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
     public doAnimation(series: Series): void {
-        let duration: number = series.animation.duration;
-        let delay: number = series.animation.delay;
-        let rectElements: NodeList = series.seriesElement.childNodes;
+        const duration: number = series.animation.duration;
+        const delay: number = series.animation.delay;
+        const rectElements: NodeList = series.seriesElement.childNodes;
         let count: number = 1;
-        for (let bubblePoint of series.points) {
+        for (const bubblePoint of series.points) {
             if (!bubblePoint.symbolLocations.length) {
                 continue;
             }

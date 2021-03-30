@@ -1,7 +1,7 @@
 import { BulletLabelStyleModel } from './bullet-base-model';
 import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';
 import { BorderModel, MarginModel } from '../../common/model/base-model';
-import { Border, Font, Margin } from '../../common/model/base';
+import { Border, Margin } from '../../common/model/base';
 import { Alignment, TextOverflow } from '../../common/utils/enum';
 import { BulletChartTheme } from '../utils/theme';
 import { LegendShape, LegendPosition } from '../../chart/utils/enum';
@@ -15,6 +15,7 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Default value for qualitative range end value
+     *
      * @default null
      */
     @Property(null)
@@ -22,6 +23,7 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Range opacity
+     *
      * @default 1
      */
     @Property(1)
@@ -29,42 +31,45 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Default value for qualitative range Color
+     *
      * @default null
      */
     @Property(null)
     public color: string;
 
-   /**
-    * Default value for qualitative range Color
-    * @default null
-    */
-   @Property(null)
-   public index: number;
+    /**
+     * Default value for qualitative range Color
+     *
+     * @default null
+     */
+    @Property(null)
+    public index: number;
 
-   /**
-    * Default value for qualitative range name
-    * @default null
-    */
-   @Property(null)
-   public name: string;
+    /**
+     * Default value for qualitative range name
+     *
+     * @default null
+     */
+    @Property(null)
+    public name: string;
 
-   /**
-    * The shape of the legend. Each ranges has its own legend shape. They are,
-    * * Circle
-    * * Rectangle
-    * * Triangle
-    * * Diamond
-    * * Cross
-    * * HorizontalLine
-    * * VerticalLine
-    * * Pentagon
-    * * InvertedTriangle
-    * * SeriesType
-    * * Image
-    * @default 'Rectangle'
-    */
-   @Property('Rectangle')
-   public shape: LegendShape;
+    /**
+     * The shape of the legend. Each ranges has its own legend shape. They are,
+     * * Circle
+     * * Rectangle
+     * * Triangle
+     * * Diamond
+     * * Cross
+     * * HorizontalLine
+     * * VerticalLine
+     * * Pentagon
+     * * InvertedTriangle
+     * * SeriesType
+     * * Image
+     * @default 'Rectangle'
+     */
+    @Property('Rectangle')
+    public shape: LegendShape;
 
     /**
      * The URL for the Image that is to be displayed as a Legend icon.  It requires  `legendShape` value to be an `Image`.
@@ -73,7 +78,6 @@ export class Range extends ChildProperty<Range> {
 
     @Property('')
     public legendImageUrl: string;
-
 }
 
 /**
@@ -83,14 +87,15 @@ export class MajorTickLinesSettings extends ChildProperty<MajorTickLinesSettings
 
     /**
      * The height of the tick lines in pixels.
+     *
      * @default 12
      */
-
     @Property(12)
     public height: number;
 
     /**
      * The width of the ticks in pixels.
+     *
      * @default 2
      */
 
@@ -99,6 +104,7 @@ export class MajorTickLinesSettings extends ChildProperty<MajorTickLinesSettings
 
     /**
      * The stroke of the major tick line that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default null
      */
 
@@ -107,6 +113,7 @@ export class MajorTickLinesSettings extends ChildProperty<MajorTickLinesSettings
 
     /**
      * It uses to apply range color to ticks and labels.
+     *
      * @default false
      */
 
@@ -121,6 +128,7 @@ export class MinorTickLinesSettings extends ChildProperty<MinorTickLinesSettings
 
     /**
      * The height of the tick lines in pixels.
+     *
      * @default 8
      */
 
@@ -129,6 +137,7 @@ export class MinorTickLinesSettings extends ChildProperty<MinorTickLinesSettings
 
     /**
      * The width of the ticks in pixels.
+     *
      * @default 2
      */
 
@@ -137,6 +146,7 @@ export class MinorTickLinesSettings extends ChildProperty<MinorTickLinesSettings
 
     /**
      * The stroke of the major tick line that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default null
      */
 
@@ -145,6 +155,7 @@ export class MinorTickLinesSettings extends ChildProperty<MinorTickLinesSettings
 
     /**
      * It uses to apply range color to ticks and labels.
+     *
      * @default false
      */
 
@@ -160,6 +171,7 @@ export class BulletLabelStyle extends ChildProperty<BulletLabelStyle> {
 
     /**
      * FontStyle for the text.
+     *
      * @default 'Normal'
      */
     @Property('Normal')
@@ -167,6 +179,7 @@ export class BulletLabelStyle extends ChildProperty<BulletLabelStyle> {
 
     /**
      * Font size for the text.
+     *
      * @default '16px'
      */
     @Property('16px')
@@ -174,6 +187,7 @@ export class BulletLabelStyle extends ChildProperty<BulletLabelStyle> {
 
     /**
      * Color for the text.
+     *
      * @default ''
      */
     @Property('')
@@ -181,6 +195,7 @@ export class BulletLabelStyle extends ChildProperty<BulletLabelStyle> {
 
     /**
      * FontWeight for the text.
+     *
      * @default 'Normal'
      */
     @Property('Normal')
@@ -194,6 +209,7 @@ export class BulletLabelStyle extends ChildProperty<BulletLabelStyle> {
 
     /**
      * Text alignment
+     *
      * @default 'Center'
      */
     @Property('Center')
@@ -201,6 +217,7 @@ export class BulletLabelStyle extends ChildProperty<BulletLabelStyle> {
 
     /**
      * Specifies the chart title text overflow
+     *
      * @default 'Trim'
      */
     @Property('None')
@@ -208,6 +225,7 @@ export class BulletLabelStyle extends ChildProperty<BulletLabelStyle> {
 
     /**
      * Opacity for the text.
+     *
      * @default 1
      */
     @Property(1)
@@ -215,6 +233,7 @@ export class BulletLabelStyle extends ChildProperty<BulletLabelStyle> {
 
     /**
      * Default value of enable trim.
+     *
      * @default true
      */
 
@@ -223,12 +242,14 @@ export class BulletLabelStyle extends ChildProperty<BulletLabelStyle> {
 
     /**
      * Maximum label width of the bullet chart
+     *
      * @default null
      */
     @Property(null)
     public maximumTitleWidth: number;
     /**
-     * Range color 
+     * Range color
+     *
      * @default false
      */
     @Property(false)
@@ -243,6 +264,7 @@ export class BulletLabelStyle extends ChildProperty<BulletLabelStyle> {
 export class BulletTooltipSettings extends ChildProperty<BulletTooltipSettings> {
     /**
      * Enables / Disables the visibility of the tooltip.
+     *
      * @default false.
      */
 
@@ -251,7 +273,8 @@ export class BulletTooltipSettings extends ChildProperty<BulletTooltipSettings> 
 
     /**
      * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
-     * @default null 
+     *
+     * @default null
      */
 
     @Property(null)
@@ -272,7 +295,8 @@ export class BulletTooltipSettings extends ChildProperty<BulletTooltipSettings> 
 
 
     /**
-     * The default value of tooltip template .
+     * The default value of tooltip template.
+     *
      * @default null
      */
 
@@ -288,6 +312,7 @@ export class BulletTooltipSettings extends ChildProperty<BulletTooltipSettings> 
 export class BulletDataLabel extends ChildProperty<BulletDataLabel> {
     /**
      * Enables / Disables the visibility of the data label.
+     *
      * @default false.
      */
 
@@ -310,6 +335,7 @@ export class BulletChartLegendSettings extends ChildProperty<BulletChartLegendSe
 
     /**
      * If set to true, legend will be visible.
+     *
      * @default false
      */
     @Property(false)
@@ -337,6 +363,7 @@ export class BulletChartLegendSettings extends ChildProperty<BulletChartLegendSe
 
     /**
      * Option to customize the padding between legend items.
+     *
      * @default 8
      */
     @Property(8)
@@ -347,6 +374,7 @@ export class BulletChartLegendSettings extends ChildProperty<BulletChartLegendSe
      * * Near: Aligns the legend to the left of the bullet chart.
      * * Center: Aligns the legend to the center of the bullet chart.
      * * Far: Aligns the legend to the right of the bullet chart.
+     *
      * @default 'Center'
      */
     @Property('Center')
@@ -354,6 +382,7 @@ export class BulletChartLegendSettings extends ChildProperty<BulletChartLegendSe
 
     /**
      * Shape height of the bullet chart legend in pixels.
+     *
      * @default 10
      */
     @Property(10)
@@ -361,6 +390,7 @@ export class BulletChartLegendSettings extends ChildProperty<BulletChartLegendSe
 
     /**
      * Shape width of the bullet chart legend in pixels.
+     *
      * @default 10
      */
     @Property(10)
@@ -380,6 +410,7 @@ export class BulletChartLegendSettings extends ChildProperty<BulletChartLegendSe
      * * Bottom: Displays the legend at the bottom of the bullet chart.
      * * Right: Displays the legend at the right of the bullet chart.
      * * Custom: Displays the legend  based on the given x and y values.
+     *
      * @default 'Auto'
      */
     @Property('Auto')
@@ -389,7 +420,7 @@ export class BulletChartLegendSettings extends ChildProperty<BulletChartLegendSe
      *  Options to customize left, right, top and bottom margins of the bullet chart.
      */
 
-    @Complex<MarginModel>({left: 0, right: 0, top: 0, bottom: 0}, Margin)
+    @Complex<MarginModel>({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
     public margin: MarginModel;
 
     /**
@@ -400,6 +431,7 @@ export class BulletChartLegendSettings extends ChildProperty<BulletChartLegendSe
 
     /**
      * Padding between the bullet chart legend shape and text.
+     *
      * @default 5
      */
     @Property(5)
@@ -407,6 +439,7 @@ export class BulletChartLegendSettings extends ChildProperty<BulletChartLegendSe
 
     /**
      * The background color of the bullet chart legend that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default 'transparent'
      */
     @Property('transparent')
@@ -414,6 +447,7 @@ export class BulletChartLegendSettings extends ChildProperty<BulletChartLegendSe
 
     /**
      * Opacity of the bullet chart legend.
+     *
      * @default 1
      */
     @Property(1)
@@ -421,6 +455,7 @@ export class BulletChartLegendSettings extends ChildProperty<BulletChartLegendSe
 
     /**
      * TabIndex value for the bullet chart legend.
+     *
      * @default 3
      */
     @Property(3)

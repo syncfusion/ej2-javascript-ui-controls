@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { PdfViewer } from '../index';
 import { PdfViewerBase } from '../index';
 import { createElement, Browser } from '@syncfusion/ej2-base';
@@ -11,13 +12,15 @@ export class Print {
     private printViewerContainer: HTMLElement;
     private printCanvas: HTMLCanvasElement;
     private printRequestHandler: AjaxHandler;
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private frameDoc: any;
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private iframe: any;
     private printWindow: Window;
 
     /**
+     * @param viewer
+     * @param base
      * @private
      */
     constructor(viewer: PdfViewer, base: PdfViewerBase) {
@@ -26,12 +29,13 @@ export class Print {
     }
     /**
      * Print the PDF document being loaded in the ejPdfViewer control.
+     *
      * @returns void
      */
     public print(): void {
         let pageIndex: number;
         if (this.pdfViewerBase.pageCount > 0) {
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             this.printViewerContainer = createElement('div', {
                 id: this.pdfViewer.element.id + '_print_viewer_container',
                 className: 'e-pv-print-viewer-container'
@@ -41,7 +45,7 @@ export class Print {
                 this.iframe = document.createElement('iframe');
                 this.iframe.className = 'iframeprint';
                 this.iframe.id = 'iframePrint';
-                this.iframe.style.position = 'absolute';
+                this.iframe.style.position = 'fixed';
                 this.iframe.style.top = '-100000000px';
                 document.body.appendChild(this.iframe);
                 this.frameDoc = this.iframe.contentWindow ? this.iframe.contentWindow : this.iframe.contentDocument;
@@ -55,30 +59,29 @@ export class Print {
             setTimeout(
                 () => {
                     for (pageIndex = 0; pageIndex < this.pdfViewerBase.pageCount; pageIndex++) {
-                        let pageWidth: number = this.pdfViewerBase.pageSize[pageIndex].width;
-                        let pageHeight: number = this.pdfViewerBase.pageSize[pageIndex].height;
+                        const pageWidth: number = this.pdfViewerBase.pageSize[pageIndex].width;
+                        const pageHeight: number = this.pdfViewerBase.pageSize[pageIndex].height;
                         this.pdfViewer.printModule.createRequestForPrint(pageIndex, pageWidth, pageHeight, this.pdfViewerBase.pageCount);
                     }
-                    // tslint:disable-next-line:max-line-length
-                    this.pdfViewer.firePrintEnd(this.pdfViewer.downloadFileName ? this.pdfViewer.downloadFileName : this.pdfViewer.fileName);
+                    this.pdfViewer.firePrintEnd(this.pdfViewer.downloadFileName);
                 },
                 100);
         }
     }
 
     private createRequestForPrint(pageIndex: number, pageWidth: number, pageHeight: number, pageCount: number): void {
-        let proxy: Print = this;
+        const proxy: Print = this;
         // tslint: disable-next-line:max-line-length
-        // set default zoomFactor value.  
-        let jsonObject: object = {
+        // set default zoomFactor value.
+        const jsonObject: object = {
             pageNumber: pageIndex, documentId: this.pdfViewerBase.documentId,
-            hashId: this.pdfViewerBase.hashId, zoomFactor: 1,
+            hashId: this.pdfViewerBase.hashId, zoomFactor: 2,
             action: 'PrintImages',
             elementId: this.pdfViewer.element.id,
             uniqueId: this.pdfViewerBase.documentId
         };
         if (this.pdfViewerBase.jsonDocumentId) {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
         }
         proxy.pdfViewerBase.createFormfieldsJsonData();
@@ -93,9 +96,9 @@ export class Print {
         } else {
             proxy.printRequestHandler.send(jsonObject);
         }
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         proxy.printRequestHandler.onSuccess = function (result: any) {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let printImage: any = result.data;
             if (printImage) {
                 if (typeof printImage !== 'object') {
@@ -114,41 +117,41 @@ export class Print {
             if (printImage && printImage.uniqueId === proxy.pdfViewerBase.documentId) {
                 let annotationSource: string = '';
                 if (!proxy.pdfViewer.annotationSettings.skipPrint) {
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line
                     let annotationCollections: any = proxy.pdfViewerBase.documentAnnotationCollections;
                     if (annotationCollections && annotationCollections[printImage.pageNumber] && proxy.pdfViewerBase.isTextMarkupAnnotationModule()) {
-                        // tslint:disable-next-line
+                        // eslint-disable-next-line
                         let printCollection: any = annotationCollections[printImage.pageNumber];
                         if (proxy.pdfViewerBase.isImportAction) {
-                            let textMarkupAnnotation: number[] = printCollection.textMarkupAnnotation;
-                            let shapeAnnotation: number[] = printCollection.shapeAnnotation;
-                            let measureShapeAnnotation: number[] = printCollection.measureShapeAnnotation;
-                            let stampAnnotation: number[] = printCollection.stampAnnotations;
-                            // tslint:disable-next-line
+                            const textMarkupAnnotation: number[] = printCollection.textMarkupAnnotation;
+                            const shapeAnnotation: number[] = printCollection.shapeAnnotation;
+                            const measureShapeAnnotation: number[] = printCollection.measureShapeAnnotation;
+                            const stampAnnotation: number[] = printCollection.stampAnnotations;
+                            // eslint-disable-next-line
                             let stickyNoteAnnotation: any = printCollection.stickyNotesAnnotation;
-                            // tslint:disable-next-line:max-line-length
+                            // eslint-disable-next-line max-len
                             annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(textMarkupAnnotation, printImage.pageNumber, stampAnnotation, shapeAnnotation, measureShapeAnnotation, stickyNoteAnnotation);
                         } else {
-                            // tslint:disable-next-line:max-line-length
+                            // eslint-disable-next-line max-len
                             annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(printCollection.textMarkupAnnotation, printImage.pageNumber, printCollection.stampAnnotations, printCollection.shapeAnnotation, printCollection.measureShapeAnnotation, printCollection.stickyNoteAnnotation);
                         }
                     }
                     if (proxy.pdfViewerBase.isAnnotationCollectionRemoved) {
-                        // tslint:disable-next-line:max-line-length
+                        // eslint-disable-next-line max-len
                         annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(null, printImage.pageNumber, null, null, null, null);
                     }
                 }
-                let currentPageNumber: number = printImage.pageNumber;
-                // tslint:disable-next-line:max-line-length
+                const currentPageNumber: number = printImage.pageNumber;
+                // eslint-disable-next-line max-len
                 proxy.printCanvas = createElement('canvas', { id: proxy.pdfViewer.element.id + '_printCanvas_' + pageIndex, className: 'e-pv-print-canvas' }) as HTMLCanvasElement;
                 proxy.printCanvas.style.width = pageWidth + 'px';
                 proxy.printCanvas.style.height = pageHeight + 'px';
-                let printScaleValue: number = 1.5;
+                const printScaleValue: number = 1.5;
                 proxy.printCanvas.height = 1056 * printScaleValue * window.devicePixelRatio;
                 proxy.printCanvas.width = 816 * printScaleValue * window.devicePixelRatio;
-                let context: CanvasRenderingContext2D = proxy.printCanvas.getContext('2d');
-                let pageImage: HTMLImageElement = new Image();
-                let annotationImage: HTMLImageElement = new Image();
+                const context: CanvasRenderingContext2D = proxy.printCanvas.getContext('2d');
+                const pageImage: HTMLImageElement = new Image();
+                const annotationImage: HTMLImageElement = new Image();
                 pageImage.onload = (): void => {
                     if (pageHeight > pageWidth) {
                         context.drawImage(pageImage, 0, 0, proxy.printCanvas.width, proxy.printCanvas.height);
@@ -158,7 +161,7 @@ export class Print {
                     } else {
                         // translate to center canvas
                         context.translate(proxy.printCanvas.width * 0.5, proxy.printCanvas.height * 0.5);
-                        // rotate the canvas to - 90 degree 
+                        // rotate the canvas to - 90 degree
                         context.rotate(-0.5 * Math.PI);
                         // un translate the canvas back to origin
                         context.translate(-proxy.printCanvas.height * 0.5, -proxy.printCanvas.width * 0.5);
@@ -178,41 +181,41 @@ export class Print {
                 proxy.printViewerContainer.appendChild(proxy.printCanvas);
             }
         };
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         this.printRequestHandler.onFailure = function (result: any) {
             proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.print);
         };
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         this.printRequestHandler.onError = function (result: any) {
             proxy.pdfViewerBase.openNotificationPopup();
             proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.print);
         };
     }
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private renderFieldsForPrint(pageIndex: number, heightRatio: number, widthRatio: number): any {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let formFieldsData: any = JSON.parse(data);
         if (formFieldsData) {
             for (let i: number = 0; i < formFieldsData.length; i++) {
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let currentData: any = formFieldsData[i];
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 if (parseFloat(currentData['PageIndex']) === pageIndex) {
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line
                     let targetField: any;
                     if (this.pdfViewer.printMode === 'Default') {
                         targetField = this.frameDoc.document.getElementById('fields_' + pageIndex);
                     } else {
                         targetField = this.printWindow.document.getElementById('fields_' + pageIndex);
                     }
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line
                     let inputField: any = this.pdfViewer.formFieldsModule.createFormFields(currentData, pageIndex, i, targetField);
                     if (inputField) {
-                        // tslint:disable-next-line
+                        // eslint-disable-next-line
                         let bounds: any = currentData['LineBounds'];
-                        // tslint:disable-next-line
+                        // eslint-disable-next-line
                         let font: any = currentData['Font'];
                         this.applyPosition(inputField, bounds, font, heightRatio, widthRatio);
                         inputField.style.backgroundColor = 'transparent';
@@ -226,15 +229,25 @@ export class Print {
         }
     }
     /**
+     * @param inputField
+     * @param bounds
+     * @param font
+     * @param heightRatio
+     * @param widthRatio
+     * @param inputField
+     * @param bounds
+     * @param font
+     * @param heightRatio
+     * @param widthRatio
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public applyPosition(inputField: any, bounds: any, font: any, heightRatio: number, widthRatio: number): any {
         if (bounds) {
-            let left: number = (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.X)) / widthRatio;
+            const left: number = (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.X)) / widthRatio;
             let top: number = (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Y)) / heightRatio;
-            let width: number = (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Width)) / widthRatio;
-            let height: number = (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Height)) / heightRatio;
+            const width: number = (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Width)) / widthRatio;
+            const height: number = (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Height)) / heightRatio;
             let fontHeight: number = 0;
             if (font !== null && font.Height) {
                 inputField.style.fontfamily = font.Name;
@@ -253,8 +266,8 @@ export class Print {
         }
     }
     private printWindowOpen(): void {
-        let browserUserAgent: string = navigator.userAgent;
-        // tslint:disable-next-line
+        const browserUserAgent: string = navigator.userAgent;
+        // eslint-disable-next-line
         let printDocument: any;
         if (this.pdfViewer.printMode === 'Default') {
             printDocument = this.frameDoc.document;
@@ -283,14 +296,14 @@ export class Print {
                 + 'div{ page-break-inside: avoid; }} @page{margin:0mm; size: 816px 1056px;}</style></head><body><center>');
         }
         for (let i: number = 0; i < this.printViewerContainer.children.length; i++) {
-            // tslint:disable-next-line:max-line-length
-            let canvasUrl: string = (this.printViewerContainer.children[i] as HTMLCanvasElement).toDataURL();
+            // eslint-disable-next-line max-len
+            const canvasUrl: string = (this.printViewerContainer.children[i] as HTMLCanvasElement).toDataURL();
             printDocument.write('<div style="margin:0mm;width:816px;height:1056px;position:relative"><img src="' + canvasUrl + '" id="' + 'image_' + i + '" /><div id="' + 'fields_' + i + '" style="margin:0px;top:0px;left:0px;position:absolute;width:816px;height:1056px;z-index:2"></div></div>');
             if (this.pdfViewer.formFieldsModule) {
-                let pageWidth: number = this.pdfViewerBase.pageSize[i].width;
-                let pageHeight: number = this.pdfViewerBase.pageSize[i].height;
-                let heightRatio: number = pageHeight / 1056;
-                let widthRatio: number = pageWidth / 816;
+                const pageWidth: number = this.pdfViewerBase.pageSize[i].width;
+                const pageHeight: number = this.pdfViewerBase.pageSize[i].height;
+                const heightRatio: number = pageHeight / 1056;
+                const widthRatio: number = pageWidth / 816;
                 this.renderFieldsForPrint(i, heightRatio, widthRatio);
             }
         }
@@ -311,28 +324,26 @@ export class Print {
                 }
             }
         } else {
-            setTimeout(
-                () => {
-                    if (this.pdfViewer.printMode === 'Default') {
-                        this.pdfViewerBase.showPrintLoadingIndicator(false);
-                        this.iframe.contentWindow.print();
-                        this.iframe.contentWindow.focus();
-                        document.body.removeChild(this.iframe);
-                    } else {
-                        if (this.printWindow) {
-                            this.printWindow.print();
-                            this.printWindow.focus();
-                            this.printWindow.close();
-                        }
+            setTimeout(() => {
+                if (this.pdfViewer.printMode === 'Default') {
+                    this.pdfViewerBase.showPrintLoadingIndicator(false);
+                    this.iframe.contentWindow.print();
+                    this.iframe.contentWindow.focus();
+                    document.body.removeChild(this.iframe);
+                } else {
+                    if (this.printWindow) {
+                        this.printWindow.print();
+                        this.printWindow.focus();
+                        this.printWindow.close();
                     }
-                },
-                200);
+                }
+            }, 200);
         }
     }
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private createPrintLoadingIndicator(element: any): void {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let printWindowContainer: any = createElement('div', {
             id: this.pdfViewer.element.id + '_printWindowcontainer'
         });
@@ -345,31 +356,31 @@ export class Print {
         printWindowContainer.style.overflow = 'auto';
         printWindowContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
         element.appendChild(printWindowContainer);
-        let printWaitingPopup: HTMLElement = createElement('div', {
+        const printWaitingPopup: HTMLElement = createElement('div', {
             id: this.pdfViewer.element.id + '_printLoadingContainer'
         });
         printWaitingPopup.style.position = 'absolute';
         printWaitingPopup.style.width = '50px';
         printWaitingPopup.style.height = '50px';
         printWaitingPopup.style.left = '46%';
-        printWaitingPopup.style.top =  '45%';
+        printWaitingPopup.style.top = '45%';
         printWindowContainer.style.zIndex = 3000;
         printWindowContainer.appendChild(printWaitingPopup);
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let printImageContainer: any = new Image();
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         printImageContainer.src = 'data:image/gif;base64,R0lGODlhNgA3APMAAP///wAAAHh4eBwcHA4ODtjY2FRUVNzc3MTExEhISIqKigAAAAAAAAAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAANgA3AAAEzBDISau9OOvNu/9gKI5kaZ4lkhBEgqCnws6EApMITb93uOqsRC8EpA1Bxdnx8wMKl51ckXcsGFiGAkamsy0LA9pAe1EFqRbBYCAYXXUGk4DWJhZN4dlAlMSLRW80cSVzM3UgB3ksAwcnamwkB28GjVCWl5iZmpucnZ4cj4eWoRqFLKJHpgSoFIoEe5ausBeyl7UYqqw9uaVrukOkn8LDxMXGx8ibwY6+JLxydCO3JdMg1dJ/Is+E0SPLcs3Jnt/F28XXw+jC5uXh4u89EQAh+QQJCgAAACwAAAAANgA3AAAEzhDISau9OOvNu/9gKI5kaZ5oqhYGQRiFWhaD6w6xLLa2a+iiXg8YEtqIIF7vh/QcarbB4YJIuBKIpuTAM0wtCqNiJBgMBCaE0ZUFCXpoknWdCEFvpfURdCcM8noEIW82cSNzRnWDZoYjamttWhphQmOSHFVXkZecnZ6foKFujJdlZxqELo1AqQSrFH1/TbEZtLM9shetrzK7qKSSpryixMXGx8jJyifCKc1kcMzRIrYl1Xy4J9cfvibdIs/MwMue4cffxtvE6qLoxubk8ScRACH5BAkKAAAALAAAAAA2ADcAAATOEMhJq7046827/2AojmRpnmiqrqwwDAJbCkRNxLI42MSQ6zzfD0Sz4YYfFwyZKxhqhgJJeSQVdraBNFSsVUVPHsEAzJrEtnJNSELXRN2bKcwjw19f0QG7PjA7B2EGfn+FhoeIiYoSCAk1CQiLFQpoChlUQwhuBJEWcXkpjm4JF3w9P5tvFqZsLKkEF58/omiksXiZm52SlGKWkhONj7vAxcbHyMkTmCjMcDygRNAjrCfVaqcm11zTJrIjzt64yojhxd/G28XqwOjG5uTxJhEAIfkECQoAAAAsAAAAADYANwAABM0QyEmrvTjrzbv/YCiOZGmeaKqurDAMAlsKRE3EsjjYxJDrPN8PRLPhhh8XDMk0KY/OF5TIm4qKNWtnZxOWuDUvCNw7kcXJ6gl7Iz1T76Z8Tq/b7/i8qmCoGQoacT8FZ4AXbFopfTwEBhhnQ4w2j0GRkgQYiEOLPI6ZUkgHZwd6EweLBqSlq6ytricICTUJCKwKkgojgiMIlwS1VEYlspcJIZAkvjXHlcnKIZokxJLG0KAlvZfAebeMuUi7FbGz2z/Rq8jozavn7Nev8CsRACH5BAkKAAAALAAAAAA2ADcAAATLEMhJq7046827/2AojmRpnmiqrqwwDAJbCkRNxLI42MSQ6zzfD0Sz4YYfFwzJNCmPzheUyJuKijVrZ2cTlrg1LwjcO5HFyeoJeyM9U++mfE6v2+/4PD6O5F/YWiqAGWdIhRiHP4kWg0ONGH4/kXqUlZaXmJlMBQY1BgVuUicFZ6AhjyOdPAQGQF0mqzauYbCxBFdqJao8rVeiGQgJNQkIFwdnB0MKsQrGqgbJPwi2BMV5wrYJetQ129x62LHaedO21nnLq82VwcPnIhEAIfkECQoAAAAsAAAAADYANwAABMwQyEmrvTjrzbv/YCiOZGmeaKqurDAMAlsKRE3EsjjYxJDrPN8PRLPhhh8XDMk0KY/OF5TIm4qKNWtnZxOWuDUvCNw7kcXJ6gl7Iz1T76Z8Tq/b7/g8Po7kX9haKoAZZ0iFGIc/iRaDQ40Yfj+RepSVlpeYAAgJNQkIlgo8NQqUCKI2nzNSIpynBAkzaiCuNl9BIbQ1tl0hraewbrIfpq6pbqsioaKkFwUGNQYFSJudxhUFZ9KUz6IGlbTfrpXcPN6UB2cHlgfcBuqZKBEAIfkECQoAAAAsAAAAADYANwAABMwQyEmrvTjrzbv/YCiOZGmeaKqurDAMAlsKRE3EsjjYxJDrPN8PRLPhhh8XDMk0KY/OF5TIm4qKNWtnZxOWuDUvCNw7kcXJ6gl7Iz1T76Z8Tq/b7yJEopZA4CsKPDUKfxIIgjZ+P3EWe4gECYtqFo82P2cXlTWXQReOiJE5bFqHj4qiUhmBgoSFho59rrKztLVMBQY1BgWzBWe8UUsiuYIGTpMglSaYIcpfnSHEPMYzyB8HZwdrqSMHxAbath2MsqO0zLLorua05OLvJxEAIfkECQoAAAAsAAAAADYANwAABMwQyEmrvTjrzbv/YCiOZGmeaKqurDAMAlsKRE3EsjjYxJDrPN8PRLPhfohELYHQuGBDgIJXU0Q5CKqtOXsdP0otITHjfTtiW2lnE37StXUwFNaSScXaGZvm4r0jU1RWV1hhTIWJiouMjVcFBjUGBY4WBWw1A5RDT3sTkVQGnGYYaUOYPaVip3MXoDyiP3k3GAeoAwdRnRoHoAa5lcHCw8TFxscduyjKIrOeRKRAbSe3I9Um1yHOJ9sjzCbfyInhwt3E2cPo5dHF5OLvJREAOwAAAAAAAAAAAA==';
         printImageContainer.style.width = '50px';
         printImageContainer.style.height = '50px';
         printWaitingPopup.appendChild(printImageContainer);
-        let printLabelContainer: HTMLElement = createElement('div', {
+        const printLabelContainer: HTMLElement = createElement('div', {
             id: this.pdfViewer.element.id + '_printLabelContainer'
         });
         printLabelContainer.style.position = 'absolute';
         printLabelContainer.textContent = 'Loading ...';
         printLabelContainer.style.fontWeight = 'Bold';
         printLabelContainer.style.left = '46%';
-        printLabelContainer.style.top =  '54.5%';
+        printLabelContainer.style.top = '54.5%';
         printLabelContainer.style.zIndex = '3000';
         printWindowContainer.appendChild(printLabelContainer);
     }

@@ -6,56 +6,63 @@ import { IGanttCellFormatter } from '../base/interface';
  */
 export class Column {
     /**
-     * If `allowEditing` set to false, then it disables editing of a particular column. 
-     * By default all columns are editable. 
+     * If `allowEditing` set to false, then it disables editing of a particular column.
+     * By default all columns are editable.
+     *
      * @default true
      */
     public allowEditing: boolean = true;
 
     /**
-     * If `allowReordering` set to false, then it disables reorder of a particular column. 
-     * By default all columns can be reorder.   
+     * If `allowReordering` set to false, then it disables reorder of a particular column.
+     * By default all columns can be reorder.
+     *
      * @default true
      */
     public allowReordering: boolean = true;
 
     /**
-     * If `allowResizing` is set to false, it disables resize option of a particular column.  
-     * By default all the columns can be resized. 
+     * If `allowResizing` is set to false, it disables resize option of a particular column.
+     * By default all the columns can be resized.
+     *
      * @default true
      */
     public allowResizing: boolean = true;
 
     /**
-     * If `allowSorting` set to false, then it disables sorting option of a particular column.    
-     * By default all columns are sortable. 
+     * If `allowSorting` set to false, then it disables sorting option of a particular column.
+     * By default all columns are sortable.
+     *
      * @default true
      */
     public allowSorting: boolean = true;
 
     /**
-     * If `allowFiltering` set to false, then it disables filtering option and filter bar element of a particular column. 
-     * By default all columns are filterable.      
+     * If `allowFiltering` set to false, then it disables filtering option and filter bar element of a particular column.
+     * By default all columns are filterable.
+     *
      * @default true
      */
     public allowFiltering: boolean = true;
 
     /**
-     * It is used to customize the default filter options for a specific columns. 
+     * It is used to customize the default filter options for a specific columns.
      * * ui - to render custom component for specific column it has following functions.
-     * * ui.create – It is used for creating custom components. 
+     * * ui.create – It is used for creating custom components.
      * * ui.read -  It is used for read the value from the component.
      * * ui.write - It is used to apply component model as dynamically.
+     *
      * @default null
      */
     public filter: IFilter;
 
     /**
      * Defines the cell content's overflow mode. The available modes are
-     * * `Clip` -  Truncates the cell content when it overflows its area. 
+     * * `Clip` -  Truncates the cell content when it overflows its area.
      * * `Ellipsis` -  Displays ellipsis when the cell content overflows its area.
-     * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area 
+     * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area
      * also it will display tooltip while hover on ellipsis applied cell.
+     *
      * @default Syncfusion.EJ2.Grids.ClipMode.EllipsisWithTooltip
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.ClipMode
@@ -64,25 +71,30 @@ export class Column {
     public clipMode: ClipMode;
 
     /**
-     * The CSS styles and attributes of the content cells of a particular column can be customized. 
+     * The CSS styles and attributes of the content cells of a particular column can be customized.
+     *
      * @default null
      */
+    // eslint-disable-next-line
     public customAttributes: { [x: string]: Object };
 
     /**
-     * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.  
+     * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.
+     *
      * @default false
      */
     public disableHtmlEncode: boolean;
 
     /**
-     * If `displayAsCheckBox` is set to true, it displays the column value as a check box instead of Boolean value.    
+     * If `displayAsCheckBox` is set to true, it displays the column value as a check box instead of Boolean value.
+     *
      * @default false
      */
     public displayAsCheckBox: boolean;
 
     /**
      * Defines the type of component for editing.
+     *
      * @default 'stringedit'
      */
     public editType: string;
@@ -93,11 +105,12 @@ export class Column {
      */
     public field: string;
 
-    /**    
-     * It is used to change display value with the given format and does not affect the original data.  
-     * Gets the format from the user which can be standard or custom 
-     * [`number`](../../../common/internationalization/#number-formatting) 
-     * and [`date`](../../../common/internationalization/#formatting) formats.  
+    /**
+     * It is used to change display value with the given format and does not affect the original data.
+     * Gets the format from the user which can be standard or custom
+     * [`number`](../../../common/internationalization/#number-formatting)
+     * and [`date`](../../../common/internationalization/#formatting) formats.
+     *
      * @default null
      * @aspType string
      * @blazorType object
@@ -107,12 +120,15 @@ export class Column {
     /**
      * Defines the method which is used to achieve custom formatting from an external function.
      * This function triggers before rendering of each cell.
+     *
      * @default null
      */
+    // eslint-disable-next-line
     public formatter: { new(): IGanttCellFormatter } | Function | IGanttCellFormatter;
 
     /**
-     * Defines the header template as string or HTML element ID which is used to add customized element in the column header.     
+     * Defines the header template as string or HTML element ID which is used to add customized element in the column header.
+     *
      * @default null
      */
     public headerTemplate: string;
@@ -120,12 +136,14 @@ export class Column {
     /**
      * Defines the header text of column which is used to display in column header.
      * If `headerText` is not defined, then field name value will be assigned to header text.
+     *
      * @default null
      */
     public headerText: string;
 
     /**
-     * Define the alignment of column header which is used to align the text of column header.       
+     * Define the alignment of column header which is used to align the text of column header.
+     *
      * @default Syncfusion.EJ2.Grids.TextAlign.Left
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.TextAlign
@@ -135,31 +153,36 @@ export class Column {
     /**
      * Column visibility can change based on [`Media Queries`](http://cssmediaqueries.com/what-are-css-media-queries.html).
      * `hideAtMedia` accepts only valid Media Queries.
+     *
      * @default null
      */
     public hideAtMedia: string;
 
-    /**    
-     * Defines the maximum width of the column in pixel or percentage, which will restrict resizing beyond this pixel or percentage.   
-     * @default null    
+    /**
+     * Defines the maximum width of the column in pixel or percentage, which will restrict resizing beyond this pixel or percentage.
+     *
+     * @default null
      */
     public maxWidth: string | number;
 
     /**
-     * Defines the minimum width of the column in pixels or percentage.    
+     * Defines the minimum width of the column in pixels or percentage.
+     *
      * @default null
      */
     public minWidth: string | number;
 
     /**
      * Defines the column template that renders customized element in each cell of the column.
-     * It accepts either template string or HTML element ID.   
+     * It accepts either template string or HTML element ID.
+     *
      * @default null
      */
     public template: string;
 
     /**
      * Defines the alignment of the column in both header and content cells.
+     *
      * @default Syncfusion.EJ2.Grids.TextAlign.Left
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.TextAlign
@@ -168,29 +191,34 @@ export class Column {
 
     /**
      * Defines the method used to apply custom cell values from external function and display this on each cell rendered.
+     *
      * @default null
      */
     public valueAccessor: ValueAccessor | string;
 
     /**
      * If `visible` is set to false, hides the particular column. By default, columns are displayed.
+     *
      * @default true
      */
     public visible: boolean;
 
     /**
      * Defines the width of the column in pixels or percentage.
+     *
      * @default null
      */
     public width: string | number;
     /**
-     * If `isPrimaryKey` is set to true, considers this column as the primary key constraint.   
+     * If `isPrimaryKey` is set to true, considers this column as the primary key constraint.
+     *
      * @default false
      */
     public isPrimaryKey: boolean;
-    /**    
+    /**
      * Defines the `IEditCell` object to customize default edit cell.
-     * @default {}         
+     *
+     * @default {}
      */
     public edit: IEditCell = {};
 
@@ -204,56 +232,63 @@ export class Column {
  */
 export interface ColumnModel {
     /**
-     * If `allowEditing` set to false, then it disables editing of a particular column. 
-     * By default all columns are editable. 
+     * If `allowEditing` set to false, then it disables editing of a particular column.
+     * By default all columns are editable.
+     *
      * @default true
      */
     allowEditing?: boolean;
 
     /**
-     * If `allowReordering` set to false, then it disables reorder of a particular column. 
-     * By default all columns can be reorder.   
+     * If `allowReordering` set to false, then it disables reorder of a particular column.
+     * By default all columns can be reorder.
+     *
      * @default true
      */
     allowReordering?: boolean;
 
     /**
-     * If `allowResizing` is set to false, it disables resize option of a particular column.  
-     * By default all the columns can be resized. 
+     * If `allowResizing` is set to false, it disables resize option of a particular column.
+     * By default all the columns can be resized.
+     *
      * @default true
      */
     allowResizing?: boolean;
 
     /**
-     * If `allowSorting` set to false, then it disables sorting option of a particular column.    
-     * By default all columns are sortable. 
+     * If `allowSorting` set to false, then it disables sorting option of a particular column.
+     * By default all columns are sortable.
+     *
      * @default true
      */
     allowSorting?: boolean;
 
     /**
-     * If `allowFiltering` set to false, then it disables filtering option and filter bar element of a particular column. 
-     * By default all columns are filterable.      
+     * If `allowFiltering` set to false, then it disables filtering option and filter bar element of a particular column.
+     * By default all columns are filterable.
+     *
      * @default true
      */
     allowFiltering?: boolean;
 
     /**
-     * It is used to customize the default filter options for a specific columns. 
+     * It is used to customize the default filter options for a specific columns.
      * * ui - to render custom component for specific column it has following functions.
-     * * ui.create – It is used for creating custom components. 
+     * * ui.create – It is used for creating custom components.
      * * ui.read -  It is used for read the value from the component.
      * * ui.write - It is used to apply component model as dynamically.
+     *
      * @default null
      */
     filter?: IFilter;
 
     /**
      * Defines the cell content's overflow mode. The available modes are
-     * * `Clip` -  Truncates the cell content when it overflows its area. 
+     * * `Clip` -  Truncates the cell content when it overflows its area.
      * * `Ellipsis` -  Displays ellipsis when the cell content overflows its area.
-     * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area 
+     * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area
      * also it will display tooltip while hover on ellipsis applied cell.
+     *
      * @default Syncfusion.EJ2.Grids.ClipMode.EllipsisWithTooltip
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.ClipMode
@@ -262,19 +297,23 @@ export interface ColumnModel {
     clipMode?: ClipMode;
 
     /**
-     * The CSS styles and attributes of the content cells of a particular column can be customized. 
+     * The CSS styles and attributes of the content cells of a particular column can be customized.
+     *
      * @default null
      */
+    // eslint-disable-next-line
     customAttributes?: { [x: string]: Object };
 
     /**
-     * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.  
+     * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.
+     *
      * @default false
      */
     disableHtmlEncode?: boolean;
 
     /**
-     * If `displayAsCheckBox` is set to true, it displays the column value as a check box instead of Boolean value.    
+     * If `displayAsCheckBox` is set to true, it displays the column value as a check box instead of Boolean value.
+     *
      * @default false
      */
     displayAsCheckBox?: boolean;
@@ -283,21 +322,24 @@ export interface ColumnModel {
      * Defines the field name of column which is mapped with mapping name of DataSource.
      * The `field` name must be a valid JavaScript identifier,
      * the first character must be an alphabet and should not contain spaces and special characters.
+     *
      * @default null
      */
     field?: string;
 
     /**
      * Defines the type of component for editing.
+     *
      * @default 'stringedit'
      */
     editType?: string;
 
     /**
-     * It is used to change display value with the given format and does not affect the original data.  
-     * Gets the format from the user which can be standard or custom 
+     * It is used to change display value with the given format and does not affect the original data.
+     * Gets the format from the user which can be standard or custom
      * [`number`](../../../common/internationalization/#number-formatting)
      * and [`date`](../../../common/internationalization/#formatting) formats.
+     *
      * @default null
      * @aspType string
      * @blazorType object
@@ -307,12 +349,15 @@ export interface ColumnModel {
     /**
      * Defines the method which is used to achieve custom formatting from an external function.
      * This function triggers before rendering of each cell.
+     *
      * @default null
      */
+    // eslint-disable-next-line
     formatter?: { new(): IGanttCellFormatter } | Function | IGanttCellFormatter;
 
     /**
-     * Defines the header template as string or HTML element ID which is used to add customized element in the column header.     
+     * Defines the header template as string or HTML element ID which is used to add customized element in the column header.
+     *
      * @default null
      */
     headerTemplate?: string;
@@ -320,12 +365,14 @@ export interface ColumnModel {
     /**
      * Defines the header text of column which is used to display in column header.
      * If `headerText` is not defined, then field name value will be assigned to header text.
+     *
      * @default null
      */
     headerText?: string;
 
     /**
-     * Define the alignment of column header which is used to align the text of column header.       
+     * Define the alignment of column header which is used to align the text of column header.
+     *
      * @default Syncfusion.EJ2.Grids.TextAlign.Left
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.TextAlign
@@ -336,31 +383,36 @@ export interface ColumnModel {
     /**
      * Column visibility can change based on [`Media Queries`](http://cssmediaqueries.com/what-are-css-media-queries.html).
      * `hideAtMedia` accepts only valid Media Queries.
+     *
      * @default null
      */
     hideAtMedia?: string;
 
     /**
-     * Defines the maximum width of the column in pixel or percentage, which will restrict resizing beyond this pixel or percentage.   
+     * Defines the maximum width of the column in pixel or percentage, which will restrict resizing beyond this pixel or percentage.
+     *
      * @default null
      */
     maxWidth?: string | number;
 
     /**
-     * Defines the minimum width of the column in pixels or percentage.    
+     * Defines the minimum width of the column in pixels or percentage.
+     *
      * @default null
      */
     minWidth?: string | number;
 
     /**
      * Defines the column template that renders customized element in each cell of the column.
-     * It accepts either template string or HTML element ID.   
+     * It accepts either template string or HTML element ID.
+     *
      * @default null
      */
     template?: string;
 
     /**
      * Defines the alignment of the column in both header and content cells.
+     *
      * @default Syncfusion.EJ2.Grids.TextAlign.Left
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.TextAlign
@@ -370,33 +422,39 @@ export interface ColumnModel {
 
     /**
      * Defines the method used to apply custom cell values from external function and display this on each cell rendered.
+     *
      * @default null
      */
     valueAccessor?: ValueAccessor | string;
 
     /**
      * If `visible` is set to false, hides the particular column. By default, columns are displayed.
+     *
      * @default true
      */
     visible?: boolean;
 
     /**
      * Defines the width of the column in pixels or percentage.
+     *
      * @default null
      */
     width?: string | number;
     /**
-     * If `isPrimaryKey` is set to true, considers this column as the primary key constraint.   
+     * If `isPrimaryKey` is set to true, considers this column as the primary key constraint.
+     *
      * @default false
      */
     isPrimaryKey?: boolean;
-    /**     
+    /**
      * Defines the `IEditCell` object to customize default edit cell.
-     * @default {}       
+     *
+     * @default {}
      */
     edit?: IEditCell;
     /**
      * To define column type.
+     *
      * @private
      */
     type?: string;

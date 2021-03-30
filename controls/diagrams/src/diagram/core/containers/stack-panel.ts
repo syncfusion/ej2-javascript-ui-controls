@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { DiagramElement as Element } from '../elements/diagram-element';
 import { Container } from './container';
 import { Orientation } from '../../enum/enum';
@@ -18,43 +19,61 @@ export class StackPanel extends Container {
     /**
      * Not applicable for canvas
      * to avoid the child size updation with respect to parent ser true
-     * @private 
+     *
+     * @private
      */
     public measureChildren: boolean = undefined;
     /**
      * Sets or gets whether the padding of the element needs to be measured
+     *
      * @private
      */
     public considerPadding: boolean = true;
+
     /**
-     * Measures the minimum space that the panel needs
-     * @param {Size} availableSize 
+     * Measures the minimum space that the panel needs \
+     *
+     * @returns { Size } Measures the minimum space that the panel needs.\
+     * @param {Size} availableSize - provide the id value.
+     *
+     * @private
      */
     public measure(availableSize: Size): Size {
-        let updateSize: Function = this.orientation === 'Horizontal' ? this.updateHorizontalStack : this.updateVerticalStack;
+        const updateSize: Function = this.orientation === 'Horizontal' ? this.updateHorizontalStack : this.updateVerticalStack;
         this.desiredSize = this.measureStackPanel(availableSize, updateSize);
         return this.desiredSize;
     }
 
+
     /**
-     * Arranges the child elements of the stack panel
-     * @param {Size} desiredSize 
+     * Arranges the child elements of the stack panel \
+     *
+     * @returns { Size } Arranges the child elements of the stack panel.\
+     * @param {Size} desiredSize - provide the id value.
+     *
+     * @private
      */
     public arrange(desiredSize: Size): Size {
-        let updateSize: Function = this.orientation === 'Horizontal' ? this.arrangeHorizontalStack : this.arrangeVerticalStack;
+        const updateSize: Function = this.orientation === 'Horizontal' ? this.arrangeHorizontalStack : this.arrangeVerticalStack;
         this.actualSize = this.arrangeStackPanel(desiredSize, updateSize);
         this.updateBounds();
         return this.actualSize;
     }
 
+
     /**
-     * Measures the minimum space that the panel needs
-     * @param {Size} availableSize 
+     * Measures the minimum space that the panel needs \
+     *
+     * @returns { Size } Measures the minimum space that the panel needs.\
+     * @param {Size} availableSize - provide the id value.
+     * @param {Function} updateSize - provide the id value.
+     *
+     * @private
      */
     private measureStackPanel(availableSize: Size, updateSize: Function): Size {
         let desired: Size = undefined;
         if (this.children !== undefined && this.children.length > 0) {
-            for (let child of this.children) {
+            for (const child of this.children) {
                 child.parentTransform = this.rotateAngle + this.parentTransform;
                 //Measure children
                 if (this.measureChildren) {
@@ -84,7 +103,7 @@ export class StackPanel extends Container {
         //Considering padding values
         if ( this.considerPadding) {
             this.applyPadding(desired);
-            }
+        }
         return desired;
     }
 
@@ -94,8 +113,8 @@ export class StackPanel extends Container {
             let y: number;
             x = this.offsetX - desiredSize.width * this.pivot.x + this.padding.left;
             y = this.offsetY - desiredSize.height * this.pivot.y + this.padding.top;
-            for (let child of this.children) {
-                let childSize: Size = child.desiredSize.clone();
+            for (const child of this.children) {
+                const childSize: Size = child.desiredSize.clone();
                 let rotatedSize: Size = childSize;
 
                 if (this.orientation === 'Vertical') {
@@ -108,7 +127,7 @@ export class StackPanel extends Container {
                     rotatedSize = rotateSize(childSize, child.rotateAngle);
                 }
 
-                let center: Point = updatePosition(x, y, child, this, desiredSize, rotatedSize);
+                const center: Point = updatePosition(x, y, child, this, desiredSize, rotatedSize);
                 super.findChildOffsetFromCenter(child, center);
                 (child as Canvas).arrange(childSize, true);
 
@@ -137,7 +156,7 @@ export class StackPanel extends Container {
         if (child.verticalAlignment === 'Top') {
             centerY = y + child.margin.top + childBounds.height / 2;
         } else if (child.verticalAlignment === 'Bottom') {
-            let parentBottom: number = parent.offsetY + parenBounds.height * (1 - parent.pivot.y);
+            const parentBottom: number = parent.offsetY + parenBounds.height * (1 - parent.pivot.y);
             centerY = parentBottom - parent.padding.bottom - child.margin.bottom - childBounds.height / 2;
         } else {
             centerY = parent.offsetY - parenBounds.height * parent.pivot.y + parenBounds.height / 2;
@@ -154,7 +173,7 @@ export class StackPanel extends Container {
         if (child.horizontalAlignment === 'Left') {
             centerX = x + child.margin.left + childSize.width / 2;
         } else if (child.horizontalAlignment === 'Right') {
-            let parentRight: number = parent.offsetX + parentSize.width * (1 - parent.pivot.x);
+            const parentRight: number = parent.offsetX + parentSize.width * (1 - parent.pivot.x);
             centerX = parentRight - parent.padding.right - child.margin.right - childSize.width / 2;
         } else {
             centerX = parent.offsetX - parentSize.width * parent.pivot.x + parentSize.width / 2;
@@ -167,7 +186,7 @@ export class StackPanel extends Container {
 
     protected stretchChildren(size: Size): void {
         if (this.children !== undefined && this.children.length > 0) {
-            for (let child of this.children) {
+            for (const child of this.children) {
                 if (this.orientation === 'Vertical') {
                     if (child.horizontalAlignment === 'Stretch') {
                         child.desiredSize.width = size.width - (child.margin.left + child.margin.right);

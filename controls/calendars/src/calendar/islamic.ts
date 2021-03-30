@@ -1,6 +1,7 @@
 /**
- * 
+ *
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { EventHandler, Internationalization } from '@syncfusion/ej2-base';
 import { rippleEffect } from '@syncfusion/ej2-base';
 import { removeClass, addClass, attributes, HijriParser } from '@syncfusion/ej2-base';
@@ -29,50 +30,43 @@ const dayMilliSeconds: number = 86400000;
 const minDecade: number = 2060;
 const maxDecade: number = 2069;
 export class Islamic {
-    constructor(instance: Calendar) {
+    public constructor(instance: Calendar) {
         this.calendarInstance = instance;
     }
 
-    /* tslint:disable-next-line:no-any */
     private calendarInstance: any;
     public getModuleName(): string {
         return 'islamic';
     }
 
     public islamicTitleUpdate(date: Date, view: string): void {
-        let globalize: Internationalization = new Internationalization(this.calendarInstance.locale);
+        const globalize: Internationalization = new Internationalization(this.calendarInstance.locale);
         switch (view) {
-            case 'days':
-                /* tslint:disable-next-line:max-line-length */
-                this.calendarInstance.headerTitleElement.textContent = globalize.formatDate(date, { type: 'dateTime', format: 'MMMMyyyy', calendar: 'islamic' });
-                break;
-            case 'months':
-                /* tslint:disable-next-line:max-line-length */
-                this.calendarInstance.headerTitleElement.textContent = globalize.formatDate(date, { type: 'dateTime', format: 'yyyy', calendar: 'islamic' });
+        case 'days':
+            this.calendarInstance.headerTitleElement.textContent = globalize.formatDate(
+                date, { type: 'dateTime', format: 'MMMMyyyy', calendar: 'islamic' });
+            break;
+        case 'months':
+            this.calendarInstance.headerTitleElement.textContent = globalize.formatDate(
+                date, { type: 'dateTime', format: 'yyyy', calendar: 'islamic' });
         }
     }
-    /* tslint:disable-next-line:max-line-length */
-    // tslint:disable-next-line:max-func-body-length
     public islamicRenderDays(currentDate: Date, value?: Date, multiSelection?: boolean, values?: Date[]): HTMLElement[] {
-        let tdEles: HTMLElement[] = [];
-        let cellsCount: number = 42;
+        const tdEles: HTMLElement[] = [];
+        const cellsCount: number = 42;
         let localDate: Date = new Date(this.islamicInValue(currentDate));
         let minMaxDate: Date;
-        let numCells: number = this.calendarInstance.weekNumber ? 8 : 7;
-        // 8 and 7 denotes the number of columns to be specified.
-
         this.islamicTitleUpdate(currentDate, 'days');
-        /* tslint:disable-next-line:no-any */
-        let islamicDate: any = this.getIslamicDate(localDate);
-        let gregorianObject: Date = this.toGregorian(islamicDate.year, islamicDate.month, 1);
-        let currentMonth: number = islamicDate.month;
+        const islamicDate: any = this.getIslamicDate(localDate);
+        const gregorianObject: Date = this.toGregorian(islamicDate.year, islamicDate.month, 1);
+        const currentMonth: number = islamicDate.month;
         localDate = gregorianObject;
         while (localDate.getDay() !== this.calendarInstance.firstDayOfWeek) {
             this.calendarInstance.setStartDate(localDate, -1 * dayMilliSeconds);
         }
         for (let day: number = 0; day < cellsCount; ++day) {
-            let weekEle: HTMLElement = this.calendarInstance.createElement('td', { className: CELL });
-            let weekAnchor: HTMLElement = this.calendarInstance.createElement('span');
+            const weekEle: HTMLElement = this.calendarInstance.createElement('td', { className: CELL });
+            const weekAnchor: HTMLElement = this.calendarInstance.createElement('span');
             if (day % 7 === 0 && this.calendarInstance.weekNumber) {
                 weekAnchor.textContent = '' + this.calendarInstance.getWeek(localDate);
                 weekEle.appendChild(weekAnchor);
@@ -81,24 +75,23 @@ export class Islamic {
             }
             minMaxDate = new Date(+localDate);
             localDate = this.calendarInstance.minMaxDate(localDate);
-            /* tslint:disable-next-line:max-line-length */
-            let dateFormatOptions: object = { type: 'dateTime', skeleton: 'full', calendar: 'islamic' };
-            let date: Date = this.calendarInstance.globalize.parseDate(this.calendarInstance.globalize.formatDate(localDate, dateFormatOptions), dateFormatOptions);
-            let tdEle: HTMLElement = this.islamicDayCell(localDate);
-            /* tslint:disable-next-line:max-line-length */
-            let title: string = this.calendarInstance.globalize.formatDate(localDate, { type: 'date', skeleton: 'full', calendar: 'islamic' });
-            let dayLink: HTMLElement = this.calendarInstance.createElement('span');
-            /* tslint:disable-next-line:max-line-length */
-            dayLink.textContent = this.calendarInstance.globalize.formatDate(localDate, { type: 'date', skeleton: 'd', calendar: 'islamic' });
-            let disabled: boolean = (this.calendarInstance.min > localDate) || (this.calendarInstance.max < localDate);
+            const dateFormatOptions: object = { type: 'dateTime', skeleton: 'full', calendar: 'islamic' };
+            const date: Date = this.calendarInstance.globalize.parseDate(
+                this.calendarInstance.globalize.formatDate(localDate, dateFormatOptions), dateFormatOptions);
+            const tdEle: HTMLElement = this.islamicDayCell(localDate);
+            const title: string = this.calendarInstance.globalize.formatDate(
+                localDate, { type: 'date', skeleton: 'full', calendar: 'islamic' });
+            const dayLink: HTMLElement = this.calendarInstance.createElement('span');
+            dayLink.textContent = this.calendarInstance.globalize.formatDate(
+                localDate, { type: 'date', skeleton: 'd', calendar: 'islamic' });
+            const disabled: boolean = (this.calendarInstance.min > localDate) || (this.calendarInstance.max < localDate);
             if (disabled) {
                 addClass([tdEle], DISABLED);
                 addClass([tdEle], OVERLAY);
             } else {
                 dayLink.setAttribute('title', '' + title);
             }
-            /* tslint:disable-next-line:no-any */
-            let hijriMonthObject: any = this.getIslamicDate(localDate);
+            const hijriMonthObject: any = this.getIslamicDate(localDate);
             if (currentMonth !== hijriMonthObject.month) {
                 addClass([tdEle], OTHERMONTH);
             }
@@ -112,16 +105,16 @@ export class Islamic {
                 element: tdEle,
                 isOutOfRange: disabled
             };
-            let argument: RenderDayCellEventArgs = this.calendarInstance.renderDayCellArgs;
+            const argument: RenderDayCellEventArgs = this.calendarInstance.renderDayCellArgs;
             this.calendarInstance.renderDayCellEvent(argument);
             if (argument.isDisabled) {
                 if (this.calendarInstance.isMultiSelection) {
                     if (!isNullOrUndefined(this.calendarInstance.values) && this.calendarInstance.values.length > 0) {
                         for (let index: number = 0; index < values.length; index++) {
-                            /* tslint:disable-next-line:max-line-length */
-                            let localDateString: number = +new Date(this.calendarInstance.globalize.formatDate(argument.date, { type: 'date', skeleton: 'yMd', calendar: 'islamic' }));
-                            /* tslint:disable-next-line:max-line-length */
-                            let tempDateString: number = +new Date(this.calendarInstance.globalize.formatDate(this.calendarInstance.values[index], { type: 'date', skeleton: 'yMd', calendar: 'islamic' }));
+                            const localDateString: number = +new Date(this.calendarInstance.globalize.formatDate(
+                                argument.date, { type: 'date', skeleton: 'yMd', calendar: 'islamic' }));
+                            const tempDateString: number = +new Date(this.calendarInstance.globalize.formatDate(
+                                this.calendarInstance.values[index], { type: 'date', skeleton: 'yMd', calendar: 'islamic' }));
                             if (localDateString === tempDateString) {
                                 this.calendarInstance.values.splice(index, 1);
                                 index = -1;
@@ -140,17 +133,18 @@ export class Islamic {
                     this.calendarInstance.todayDisabled = true;
                 }
             }
-            let otherMnthBool: boolean = tdEle.classList.contains(OTHERMONTH);
-            let disabledCls: boolean = tdEle.classList.contains(DISABLED);
+            const otherMnthBool: boolean = tdEle.classList.contains(OTHERMONTH);
+            const disabledCls: boolean = tdEle.classList.contains(DISABLED);
             if (!disabledCls) {
                 EventHandler.add(tdEle, 'click', this.calendarInstance.clickHandler, this.calendarInstance);
             }
             if (this.calendarInstance.isMultiSelection && !isNullOrUndefined(this.calendarInstance.values) &&
                 !otherMnthBool && !disabledCls) {
                 for (let tempValue: number = 0; tempValue < this.calendarInstance.values.length; tempValue++) {
-                    /* tslint:disable-next-line:max-line-length */
-                    let localDateString: string = this.calendarInstance.globalize.formatDate(localDate, { type: 'date', skeleton: 'short', calendar: 'islamic' });
-                    let tempDateString: string = this.calendarInstance.globalize.formatDate(this.calendarInstance.values[tempValue], { type: 'date', skeleton: 'short', calendar: 'islamic' });
+                    const localDateString: string = this.calendarInstance.globalize.formatDate(
+                        localDate, { type: 'date', skeleton: 'short', calendar: 'islamic' });
+                    const tempDateString: string = this.calendarInstance.globalize.formatDate(
+                        this.calendarInstance.values[tempValue], { type: 'date', skeleton: 'short', calendar: 'islamic' });
                     if (localDateString === tempDateString &&
                         this.calendarInstance.getDateVal(localDate, this.calendarInstance.values[tempValue])) {
                         addClass([tdEle], SELECTED);
@@ -180,122 +174,111 @@ export class Islamic {
 
     public islamicIconHandler(): void {
         new Date(this.islamicInValue(this.calendarInstance.currentDate)).setDate(1);
-        let date: Date = new Date(this.islamicInValue(this.calendarInstance.currentDate));
+        const date: Date = new Date(this.islamicInValue(this.calendarInstance.currentDate));
         switch (this.calendarInstance.currentView()) {
-            case 'Month':
-                let prevMonthCompare: boolean =
+        case 'Month': {
+            const prevMonthCompare: boolean =
                     this.islamicCompareMonth(date, this.calendarInstance.min) < 1;
-                let nextMonthCompare: boolean =
+            const nextMonthCompare: boolean =
                     this.islamicCompareMonth(date, this.calendarInstance.max) > -1;
-                this.calendarInstance.previousIconHandler(prevMonthCompare);
-                this.calendarInstance.nextIconHandler(nextMonthCompare);
-                break;
-            case 'Year':
-                let prevYearCompare: boolean =
+            this.calendarInstance.previousIconHandler(prevMonthCompare);
+            this.calendarInstance.nextIconHandler(nextMonthCompare);
+        }
+            break;
+        case 'Year': {
+            const prevYearCompare: boolean =
                     this.hijriCompareYear(date, this.calendarInstance.min) < 1;
-                let nextYearCompare: boolean =
+            const nextYearCompare: boolean =
                     this.hijriCompareYear(date, this.calendarInstance.max) > -1;
-                this.calendarInstance.previousIconHandler(prevYearCompare);
-                this.calendarInstance.nextIconHandler(nextYearCompare);
-                break;
-            case 'Decade':
-                let prevDecadeCompare: boolean =
+            this.calendarInstance.previousIconHandler(prevYearCompare);
+            this.calendarInstance.nextIconHandler(nextYearCompare);
+        }
+            break;
+        case 'Decade': {
+            const prevDecadeCompare: boolean =
                     this.hijriCompareDecade(date, this.calendarInstance.min) < 1;
-                let nextDecadeCompare: boolean =
+            const nextDecadeCompare: boolean =
                     this.hijriCompareDecade(date, this.calendarInstance.max) > -1;
-                this.calendarInstance.previousIconHandler(prevDecadeCompare);
-                this.calendarInstance.nextIconHandler(nextDecadeCompare);
+            this.calendarInstance.previousIconHandler(prevDecadeCompare);
+            this.calendarInstance.nextIconHandler(nextDecadeCompare);
+        }
         }
     }
     public islamicNext(): void {
         this.calendarInstance.effect = '';
-        let view: number = this.calendarInstance.getViewNumber(this.calendarInstance.currentView());
-        /* tslint:disable-next-line:no-any */
-        let islamicDate: any = this.getIslamicDate(this.calendarInstance.currentDate);
+        const view: number = this.calendarInstance.getViewNumber(this.calendarInstance.currentView());
+        const islamicDate: any = this.getIslamicDate(this.calendarInstance.currentDate);
         switch (this.calendarInstance.currentView()) {
-            case 'Year':
-                this.calendarInstance.currentDate = this.toGregorian(islamicDate.year + 1, islamicDate.month, 1);
-                this.calendarInstance.switchView(view);
-                break;
-            case 'Month':
-                this.calendarInstance.currentDate = this.toGregorian(islamicDate.year, islamicDate.month + 1, 1);
-                this.calendarInstance.switchView(view);
-                break;
-            case 'Decade':
-                this.calendarInstance.currentDate = this.toGregorian(islamicDate.year + 10, islamicDate.month, 1);
-                this.calendarInstance.switchView(view);
-                break;
+        case 'Year':
+            this.calendarInstance.currentDate = this.toGregorian(islamicDate.year + 1, islamicDate.month, 1);
+            this.calendarInstance.switchView(view);
+            break;
+        case 'Month':
+            this.calendarInstance.currentDate = this.toGregorian(islamicDate.year, islamicDate.month + 1, 1);
+            this.calendarInstance.switchView(view);
+            break;
+        case 'Decade':
+            this.calendarInstance.currentDate = this.toGregorian(islamicDate.year + 10, islamicDate.month, 1);
+            this.calendarInstance.switchView(view);
+            break;
         }
     }
     public islamicPrevious(): void {
-        let currentView: number = this.calendarInstance.getViewNumber(this.calendarInstance.currentView());
+        const currentView: number = this.calendarInstance.getViewNumber(this.calendarInstance.currentView());
         this.calendarInstance.effect = '';
-        /* tslint:disable-next-line:no-any */
-        let islamicDate: any = this.getIslamicDate(this.calendarInstance.currentDate);
+        const islamicDate: any = this.getIslamicDate(this.calendarInstance.currentDate);
         switch (this.calendarInstance.currentView()) {
-            case 'Month':
-                this.calendarInstance.currentDate = this.toGregorian(islamicDate.year, islamicDate.month - 1, 1);
-                this.calendarInstance.switchView(currentView);
-                break;
-            case 'Year':
-                this.calendarInstance.currentDate = this.toGregorian(islamicDate.year - 1, islamicDate.month, 1);
-                this.calendarInstance.switchView(currentView);
-                break;
-            case 'Decade':
-                this.calendarInstance.currentDate = this.toGregorian(islamicDate.year - 10, islamicDate.month - 1, 1);
-                this.calendarInstance.switchView(currentView);
-                break;
+        case 'Month':
+            this.calendarInstance.currentDate = this.toGregorian(islamicDate.year, islamicDate.month - 1, 1);
+            this.calendarInstance.switchView(currentView);
+            break;
+        case 'Year':
+            this.calendarInstance.currentDate = this.toGregorian(islamicDate.year - 1, islamicDate.month, 1);
+            this.calendarInstance.switchView(currentView);
+            break;
+        case 'Decade':
+            this.calendarInstance.currentDate = this.toGregorian(islamicDate.year - 10, islamicDate.month - 1, 1);
+            this.calendarInstance.switchView(currentView);
+            break;
         }
     }
 
     public islamicRenderYears(e?: Event, value?: Date): void {
         this.calendarInstance.removeTableHeadElement();
-        let numCells: number = 4;
-        let days: number[];
-        let tdEles: HTMLElement[] = [];
-        let valueUtil: boolean = isNullOrUndefined(value);
-        let curDate: Date = new Date(this.islamicInValue(this.calendarInstance.currentDate));
+        const numCells: number = 4;
+        const tdEles: HTMLElement[] = [];
+        const valueUtil: boolean = isNullOrUndefined(value);
+        const curDate: Date = new Date(this.islamicInValue(this.calendarInstance.currentDate));
         let localDate: Date = curDate;
-        /* tslint:disable-next-line:no-any */
-        let islamicDate: any = this.getIslamicDate(localDate);
-        let gregorianObject: Date = HijriParser.toGregorian(islamicDate.year, 1, 1);
+        const islamicDate: any = this.getIslamicDate(localDate);
+        const gregorianObject: Date = HijriParser.toGregorian(islamicDate.year, 1, 1);
         localDate = gregorianObject;
-        let mon: number = islamicDate.month;
-        let yr: number = islamicDate.year;
-        let curYrs: number = islamicDate.year;
-        /* tslint:disable-next-line:no-any */
-        let minYr: number = (<any>(this.getIslamicDate(this.calendarInstance.min))).year;
-        /* tslint:disable-next-line:no-any */
-        let minMonth: number = (<any>(this.getIslamicDate(this.calendarInstance.min))).month;
-        /* tslint:disable-next-line:no-any */
-        let maxYr: number = (<any>(this.getIslamicDate(this.calendarInstance.max))).year;
-        /* tslint:disable-next-line:no-any */
-        let maxMonth: number = (<any>(this.getIslamicDate(this.calendarInstance.max))).month;
+        const mon: number = islamicDate.month;
+        const yr: number = islamicDate.year;
+        const curYrs: number = islamicDate.year;
+        const minYr: number = (<any>(this.getIslamicDate(this.calendarInstance.min))).year;
+        const minMonth: number = (<any>(this.getIslamicDate(this.calendarInstance.min))).month;
+        const maxYr: number = (<any>(this.getIslamicDate(this.calendarInstance.max))).year;
+        const maxMonth: number = (<any>(this.getIslamicDate(this.calendarInstance.max))).month;
         this.islamicTitleUpdate(this.calendarInstance.currentDate, 'months');
-        let disabled: boolean = (this.calendarInstance.min > localDate) || (this.calendarInstance.max < localDate);
         for (let month: number = 1; month <= 12; ++month) {
-            /* tslint:disable-next-line:no-any */
-            let islamicDate: any = this.getIslamicDate(localDate);
-            let gregorianObject: Date = HijriParser.toGregorian(islamicDate.year, month, 1);
+            const islamicDate: any = this.getIslamicDate(localDate);
+            const gregorianObject: Date = HijriParser.toGregorian(islamicDate.year, month, 1);
             localDate = gregorianObject;
-            let tdEle: HTMLElement = this.islamicDayCell(localDate);
-            let dayLink: HTMLElement = this.calendarInstance.createElement('span');
-            /* tslint:disable-next-line:max-line-length */
-            /* tslint:disable-next-line:no-any */
-            let localMonth: boolean = (value && (<any>(this.getIslamicDate(value))).month === (<any>(this.getIslamicDate(localDate))).month);
-            /* tslint:disable-next-line:no-any  tslint:disable-next-line:max-line-length */
-            let select: boolean = (value && (<any>(this.getIslamicDate(value))).year === yr && localMonth);
-            /* tslint:disable-next-line:max-line-length */
-            dayLink.textContent = this.calendarInstance.globalize.formatDate(localDate, { type: 'dateTime', format: 'MMM', calendar: 'islamic' });
+            const tdEle: HTMLElement = this.islamicDayCell(localDate);
+            const dayLink: HTMLElement = this.calendarInstance.createElement('span');
+            const localMonth: boolean = (value &&
+                (<any>(this.getIslamicDate(value))).month === (<any>(this.getIslamicDate(localDate))).month);
+            const select: boolean = (value && (<any>(this.getIslamicDate(value))).year === yr && localMonth);
+            dayLink.textContent = this.calendarInstance.globalize.formatDate(
+                localDate, { type: 'dateTime', format: 'MMM', calendar: 'islamic' });
             if ((this.calendarInstance.min && (curYrs < minYr || (month < minMonth && curYrs === minYr))) || (
                 this.calendarInstance.max && (curYrs > maxYr || (month > maxMonth && curYrs >= maxYr)))) {
                 addClass([tdEle], DISABLED);
             } else if (!valueUtil && select) {
                 addClass([tdEle], SELECTED);
             } else {
-                /* tslint:disable-next-line:no-any */
                 if ((<any>(this.getIslamicDate(localDate))).month === mon &&
-                    /* tslint:disable-next-line:no-any */
                     (<any>(this.getIslamicDate(this.calendarInstance.currentDate))).month === mon) {
                     addClass([tdEle], FOCUSEDDATE);
                 }
@@ -310,49 +293,44 @@ export class Islamic {
     }
     public islamicRenderDecade(e?: Event, value?: Date): void {
         this.calendarInstance.removeTableHeadElement();
-        let numCells: number = 4;
-        let yearCell: number = 12;
-        let tdEles: HTMLElement[] = [];
+        const numCells: number = 4;
+        const yearCell: number = 12;
+        const tdEles: HTMLElement[] = [];
         let localDate: Date = new Date(this.islamicInValue(this.calendarInstance.currentDate));
-        /* tslint:disable-next-line:no-any */
-        let islamicDate: any = this.getIslamicDate(localDate);
-        let gregorianObject: Date = HijriParser.toGregorian(islamicDate.year, 1, 1);
+        const islamicDate: any = this.getIslamicDate(localDate);
+        const gregorianObject: Date = HijriParser.toGregorian(islamicDate.year, 1, 1);
         localDate = gregorianObject;
-        let localYr: number = localDate.getFullYear();
-        let startYr: Date = new Date(this.islamicInValue((localYr - localYr % 10)));
-        let endYr: Date = new Date(this.islamicInValue((localYr - localYr % 10 + (10 - 1))));
-        let startFullYr: number = startYr.getFullYear();
-        let endFullYr: number = endYr.getFullYear();
-        /* tslint:disable-next-line:max-line-length */
-        let startHdrYr: string = this.calendarInstance.globalize.formatDate(startYr, { type: 'dateTime', format: 'y', calendar: 'islamic' });
-        let endHdrYr: string = this.calendarInstance.globalize.formatDate(endYr, { type: 'dateTime', format: 'y', calendar: 'islamic' });
+        const localYr: number = localDate.getFullYear();
+        const startYr: Date = new Date(this.islamicInValue((localYr - localYr % 10)));
+        const endYr: Date = new Date(this.islamicInValue((localYr - localYr % 10 + (10 - 1))));
+        const startFullYr: number = startYr.getFullYear();
+        const endFullYr: number = endYr.getFullYear();
+        const startHdrYr: string = this.calendarInstance.globalize.formatDate(
+            startYr, { type: 'dateTime', format: 'y', calendar: 'islamic' });
+        const endHdrYr: string = this.calendarInstance.globalize.formatDate(endYr, { type: 'dateTime', format: 'y', calendar: 'islamic' });
         this.calendarInstance.headerTitleElement.textContent = startHdrYr + ' - ' + (endHdrYr);
-        let start: Date = new Date(localYr - (localYr % 10) - 2, 0, 1);
-        let startYear: number = start.getFullYear();
+        const start: Date = new Date(localYr - (localYr % 10) - 2, 0, 1);
+        const startYear: number = start.getFullYear();
         for (let rowCount: number = 1; rowCount <= yearCell; ++rowCount) {
-            let year: number = startYear + rowCount;
+            const year: number = startYear + rowCount;
             localDate.setFullYear(year);
             localDate.setDate(1);
             localDate.setMonth(0);
-            /* tslint:disable-next-line:no-any */
-            let islamicDate: any = this.getIslamicDate(localDate);
-            let gregorianObject: Date = HijriParser.toGregorian(islamicDate.year, 1, 1);
+            const islamicDate: any = this.getIslamicDate(localDate);
+            const gregorianObject: Date = HijriParser.toGregorian(islamicDate.year, 1, 1);
             localDate = gregorianObject;
-            let tdEle: HTMLElement = this.islamicDayCell(localDate);
+            const tdEle: HTMLElement = this.islamicDayCell(localDate);
             attributes(tdEle, { 'role': 'gridcell' });
-            let dayLink: HTMLElement = this.calendarInstance.createElement('span');
-            /* tslint:disable-next-line:max-line-length */
-            dayLink.textContent = this.calendarInstance.globalize.formatDate(localDate, { type: 'dateTime', format: 'y', calendar: 'islamic' });
-            /* tslint:disable-next-line:no-any */
+            const dayLink: HTMLElement = this.calendarInstance.createElement('span');
+            dayLink.textContent = this.calendarInstance.globalize.formatDate(
+                localDate, { type: 'dateTime', format: 'y', calendar: 'islamic' });
             if ((year < startFullYr) || (year > endFullYr)) {
                 addClass([tdEle], OTHERMONTH);
             } else if (year < new Date(this.islamicInValue(this.calendarInstance.min)).getFullYear()
                 || year > new Date(this.islamicInValue(this.calendarInstance.max)).getFullYear()) {
                 addClass([tdEle], DISABLED);
             } else if (!isNullOrUndefined(value) &&
-                /* tslint:disable-next-line:no-any */
                 (<any>(this.getIslamicDate(localDate))).year ===
-                /* tslint:disable-next-line:no-any */
                 (<any>(this.getIslamicDate(value))).year) {
                 addClass([tdEle], SELECTED);
             } else {
@@ -369,25 +347,26 @@ export class Islamic {
         this.islamicRenderTemplate(tdEles, numCells, 'e-decade', e, value);
     }
     public islamicDayCell(localDate: Date): HTMLElement {
-        let dateFormatOptions: object = { skeleton: 'full', type: 'dateTime', calendar: 'islamic' };
-        let formatDate: string = this.calendarInstance.globalize.formatDate(localDate, dateFormatOptions);
-        let date: Date = this.calendarInstance.globalize.parseDate(formatDate, dateFormatOptions);
-        let value: number = date.valueOf();
-        let attrs: Object = {
+        const dateFormatOptions: object = { skeleton: 'full', type: 'dateTime', calendar: 'islamic' };
+        const formatDate: string = this.calendarInstance.globalize.formatDate(localDate, dateFormatOptions);
+        const date: Date = this.calendarInstance.globalize.parseDate(formatDate, dateFormatOptions);
+        const value: number = date.valueOf();
+        const attrs: Object = {
             className: CELL, attrs: { 'id': '' + getUniqueID('' + value), 'aria-selected': 'false', 'role': 'gridcell' }
         };
         return this.calendarInstance.createElement('td', attrs);
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public islamicRenderTemplate(elements: HTMLElement[], count: number, classNm: string, e?: Event, value?: Date): void {
-        let view: number = this.calendarInstance.getViewNumber(this.calendarInstance.currentView());
+        const view: number = this.calendarInstance.getViewNumber(this.calendarInstance.currentView());
         let trEle: HTMLElement;
         this.calendarInstance.tableBodyElement = this.calendarInstance.createElement('tbody');
         this.calendarInstance.table.appendChild(this.calendarInstance.tableBodyElement);
         removeClass([this.calendarInstance.contentElement, this.calendarInstance.headerElement], [MONTH, DECADE, YEAR]);
         addClass([this.calendarInstance.contentElement, this.calendarInstance.headerElement], [classNm]);
-        let weekNumCell: number = 41;
-        let numberCell: number = 35;
-        let otherMonthCell: number = 6;
+        const weekNumCell: number = 41;
+        const numberCell: number = 35;
+        const otherMonthCell: number = 6;
         let row: number = count;
         let rowCount: number = 0;
         for (let dayCell: number = 0; dayCell < elements.length / count; ++dayCell) {
@@ -436,10 +415,8 @@ export class Islamic {
     }
 
     public islamicCompareMonth(start: Date, end: Date): number {
-        /* tslint:disable-next-line:no-any */
-        let hijriStart: any = <any>(this.getIslamicDate(start));
-        /* tslint:disable-next-line:no-any */
-        let hijriEnd: any = <any>(this.getIslamicDate(end));
+        const hijriStart: any = <any>(this.getIslamicDate(start));
+        const hijriEnd: any = <any>(this.getIslamicDate(end));
         let result: number;
         if (hijriStart.year > hijriEnd.year) {
             result = 1;
@@ -449,13 +426,11 @@ export class Islamic {
             result = hijriStart.month === hijriEnd.month ? 0 : hijriStart.month > hijriEnd.month ? 1 : -1;
         }
         return result;
-    };
+    }
 
     public islamicCompare(startDate: Date, endDate: Date, modifier: number): number {
-        /* tslint:disable-next-line:no-any */
-        let hijriStart: any = <any>this.getIslamicDate(startDate);
-        /* tslint:disable-next-line:no-any */
-        let hijriEnd: any = <any>this.getIslamicDate(endDate);
+        const hijriStart: any = <any>this.getIslamicDate(startDate);
+        const hijriEnd: any = <any>this.getIslamicDate(endDate);
         let start: number = hijriEnd.year;
         let end: number;
         let result: number;
@@ -474,10 +449,8 @@ export class Islamic {
             result = -1;
         }
         return result;
-    };
-    /* tslint:disable-next-line:no-any */
+    }
     public getIslamicDate(date: Date): any {
-        /* tslint:disable-next-line:no-any */
         return <any>(HijriParser.getHijriDate(date));
     }
     public toGregorian(year: number, month: number, date: number): Date {
@@ -491,7 +464,7 @@ export class Islamic {
     public hijriCompareDecade(start: Date, end: Date): number {
         return this.islamicCompare(start, end, 10);
 
-    };
+    }
     public destroy(): void {
         this.calendarInstance = null;
     }
@@ -504,7 +477,8 @@ export class Islamic {
     }
 }
 export interface IslamicDateArgs {
-    year: number;
-    date: number;
-    month: number;
+    year: number
+    date: number
+    month: number
 }
+/* eslint-enable @typescript-eslint/no-explicit-any */

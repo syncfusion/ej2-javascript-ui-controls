@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Property, ChildProperty, Collection, Complex } from '@syncfusion/ej2-base';
 import { IElement, ThumbsConstraints } from '@syncfusion/ej2-drawings';
 import { Container } from '@syncfusion/ej2-drawings';
@@ -10,11 +11,13 @@ import { PdfAnnotationBase } from './pdf-annotation';
 
 /**
  * Defines the size and position of selected items and defines the appearance of selector
+ *
  * @hidden
  */
 export class Selector extends ChildProperty<Selector> implements IElement {
     /**
      * Defines the size and position of the container
+     *
      * @default null
      */
     @Property(null)
@@ -29,6 +32,7 @@ export class Selector extends ChildProperty<Selector> implements IElement {
 
     /**
      * Sets/Gets the width of the container
+     *
      * @aspDefaultValueIgnore
      * @default undefined
      */
@@ -37,6 +41,7 @@ export class Selector extends ChildProperty<Selector> implements IElement {
 
     /**
      * Sets/Gets the height of the container
+     *
      * @aspDefaultValueIgnore
      * @default undefined
      */
@@ -45,6 +50,7 @@ export class Selector extends ChildProperty<Selector> implements IElement {
 
     /**
      * Sets the rotate angle of the container
+     *
      * @default 0
      */
     @Property(0)
@@ -52,6 +58,7 @@ export class Selector extends ChildProperty<Selector> implements IElement {
 
     /**
      * Sets the positionX of the container
+     *
      * @default 0
      */
     @Property(0)
@@ -59,6 +66,7 @@ export class Selector extends ChildProperty<Selector> implements IElement {
 
     /**
      * Sets the positionY of the container
+     *
      * @default 0
      */
     @Property(0)
@@ -66,6 +74,7 @@ export class Selector extends ChildProperty<Selector> implements IElement {
 
     /**
      * Sets the pivot of the selector
+     *
      * @default { x: 0.5, y: 0.5 }
      */
     @Complex<PointModel>({ x: 0.5, y: 0.5 }, Point)
@@ -84,23 +93,26 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      * * ResizeWest - Enable ResizeWest Resize
      * * ResizeNorthWest - Enable ResizeNorthWest Resize
      * * ResizeNorth - Enable ResizeNorth Resize
+     *
      * @private
      * @aspNumberEnum
      */
     public thumbsConstraints: ThumbsConstraints;
     /**
      * Initializes the UI of the container
+     *
+     * @param diagram
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public init(diagram: any): Container {
-        let container: Container = new Container();
+        const container: Container = new Container();
         container.measureChildren = false;
-        let consize: Size = new Size();
+        const consize: Size = new Size();
         container.children = [];
         if (this.annotations) {
             for (let i: number = 0; i < this.annotations.length; i++) {
-                let node: PdfAnnotationBaseModel = diagram.pdfViewer.nameTable[this.annotations[i].id];
-                let wrapper: Container = node.wrapper;
+                const node: PdfAnnotationBaseModel = diagram.pdfViewer.nameTable[this.annotations[i].id];
+                const wrapper: Container = node.wrapper;
                 container.children.push(wrapper);
             }
         }

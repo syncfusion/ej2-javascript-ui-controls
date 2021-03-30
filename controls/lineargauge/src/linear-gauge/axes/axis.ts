@@ -18,6 +18,7 @@ export class Line extends ChildProperty<Line> {
 
     /**
      * Sets and gets the height of the axis line.
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      */
@@ -26,6 +27,7 @@ export class Line extends ChildProperty<Line> {
 
     /**
      * Sets and gets the width of the axis line.
+     *
      * @default 2
      */
     @Property(2)
@@ -39,6 +41,7 @@ export class Line extends ChildProperty<Line> {
 
     /**
      * Sets and gets the offset to position the axis line in linear gauge.
+     *
      * @blazorDefaultValue 0
      */
     @Property(0)
@@ -58,6 +61,7 @@ export class Label extends ChildProperty<Label> {
 
     /**
      * Enables or disables the color of the label to use the color of the ranges in linear gauge.
+     *
      * @default false
      */
 
@@ -74,6 +78,7 @@ export class Label extends ChildProperty<Label> {
 
     /**
      * Sets and gets the value to position the axis labels in linear gauge.
+     *
      * @default 0
      */
     @Property(0)
@@ -81,6 +86,7 @@ export class Label extends ChildProperty<Label> {
 
     /**
      * Sets and gets the position of the axis label in linear gauge.
+     *
      * @default Auto
      */
     @Property('Auto')
@@ -96,6 +102,7 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Sets and gets the start value for the range in axis.
+     *
      * @default 0
      */
     @Property(0)
@@ -103,6 +110,7 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Sets and gets the end value for the range in axis.
+     *
      * @default 0
      */
     @Property(0)
@@ -111,6 +119,7 @@ export class Range extends ChildProperty<Range> {
     /**
      * Sets and gets the properties to render a linear gradient for the range.
      * If both linear and radial gradient is set, then the linear gradient will be rendered in the range.
+     *
      * @default null
      */
     @Property(null)
@@ -118,6 +127,7 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Sets and gets the properties to render a radial gradient for the range.
+     *
      * @default null
      */
     @Property(null)
@@ -125,6 +135,7 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Sets and gets the position to place the ranges in the axis.
+     *
      * @default Outside
      */
     @Property('Outside')
@@ -138,6 +149,7 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Sets and gets the width of the start of the range in axis.
+     *
      * @default 10
      */
     @Property(10)
@@ -145,6 +157,7 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Sets and gets the width of the end of the range in axis.
+     *
      * @default 10
      */
     @Property(10)
@@ -152,6 +165,7 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Sets and gets the value to position the range in the axis.
+     *
      * @default '0'
      */
     @Property(0)
@@ -189,7 +203,8 @@ export class Tick extends ChildProperty<Tick> {
     public height: number;
 
     /**
-     * Sets and gets the width of the tick line in the axis. 
+     * Sets and gets the width of the tick line in the axis.
+     *
      * @default 2
      */
     @Property(2)
@@ -197,6 +212,7 @@ export class Tick extends ChildProperty<Tick> {
 
     /**
      * Sets and gets the gap between the ticks in the axis.
+     *
      * @aspDefaultValueIgnore
      */
     @Property(null)
@@ -212,6 +228,7 @@ export class Tick extends ChildProperty<Tick> {
 
     /**
      * Sets and gets the value to move the ticks from the axis.
+     *
      * @aspDefaultValueIgnore
      */
     @Property(null)
@@ -219,6 +236,7 @@ export class Tick extends ChildProperty<Tick> {
 
     /**
      * Sets and gets the value to place the ticks in the axis.
+     *
      * @default Auto
      */
     @Property('Auto')
@@ -234,6 +252,7 @@ export class Tick extends ChildProperty<Tick> {
 export class Pointer extends ChildProperty<Pointer> {
     /**
      * Sets and gets the type of pointer in axis.
+     *
      * @default Marker
      */
     @Property('Marker')
@@ -242,6 +261,7 @@ export class Pointer extends ChildProperty<Pointer> {
     /**
      * Sets and gets the properties to render a linear gradient for the pointer.
      * If both linear and radial gradient is set, then the linear gradient will be rendered in the pointer.
+     *
      * @default null
      */
     @Property(null)
@@ -249,6 +269,7 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Sets and gets the properties to render a radial gradient for the pointer.
+     *
      * @default null
      */
     @Property(null)
@@ -256,6 +277,7 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Sets and gets the value of the pointer in axis.
+     *
      * @blazorDefaultValue 0
      * @default null
      */
@@ -265,6 +287,7 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Sets and gets the type of the marker for pointers in axis.
+     *
      * @default InvertedTriangle
      */
     @Property('InvertedTriangle')
@@ -272,6 +295,7 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Sets and gets the URL path for the image in marker when the marker type is chosen as image.
+     *
      * @default null
      */
     @Property(null)
@@ -285,6 +309,7 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Sets and gets the corner radius for pointer.
+     *
      * @default 10
      */
     @Property(10)
@@ -292,6 +317,7 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Sets and gets the place of the pointer.
+     *
      * @default Far
      */
     @Property('Far')
@@ -299,6 +325,7 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Sets and gets the height of the pointer.
+     *
      * @default 20
      */
     @Property(20)
@@ -306,6 +333,7 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Sets and gets the width of the pointer.
+     *
      * @default 20
      */
     @Property(20)
@@ -319,6 +347,7 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Sets and gets the opacity of pointer in linear gauge.
+     *
      * @default 1
      */
     @Property(1)
@@ -326,6 +355,7 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Sets and gets the duration of animation in pointer.
+     *
      * @default 0
      */
     @Property(0)
@@ -333,6 +363,7 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Enables or disables the drag movement of pointer.
+     *
      * @default false
      */
     @Property(false)
@@ -340,6 +371,7 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Sets and gets the value to position the pointer from the axis.
+     *
      * @default '0'
      */
     @Property(0)
@@ -347,6 +379,7 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Sets and gets the position of the pointer.
+     *
      * @default Auto
      */
     @Property('Auto')
@@ -354,6 +387,7 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Sets and gets the description for the pointer.
+     *
      * @default null
      */
     @Property(null)
@@ -386,6 +420,7 @@ export class Pointer extends ChildProperty<Pointer> {
 export class Axis extends ChildProperty<Axis> {
     /**
      * Sets and gets the minimum value for the axis.
+     *
      * @default 0
      */
 
@@ -394,6 +429,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Sets and gets the maximum value for the axis.
+     *
      * @default 100
      */
 

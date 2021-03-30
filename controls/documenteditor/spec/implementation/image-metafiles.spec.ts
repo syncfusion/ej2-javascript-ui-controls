@@ -912,13 +912,11 @@ describe('Open module along with meta file images', () => {
     });
 
     it('opening document with meta files generated using MVC server', () => {
-        debugger;
         console.log('opening document with meta files generated using MVC server');
         expect(() => { editor.open(JSON.stringify(sfdtFileCreatedinMvc)); }).not.toThrowError();
     });
 
     it('opening document with meta files generated using Core server', () => {
-        debugger;
         console.log('opening document with meta files generated using Core server');
         expect(() => { editor.open(JSON.stringify(sfdtFileCreatedinCore)); }).not.toThrowError();
     });

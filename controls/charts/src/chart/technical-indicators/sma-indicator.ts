@@ -1,3 +1,7 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
 import { firstToLowerCase } from '../../common/utils/helper';
 import { TechnicalIndicator } from './technical-indicator';
@@ -11,18 +15,19 @@ export class SmaIndicator extends TechnicalAnalysis {
 
     /**
      * Defines the predictions based on SMA approach
+     *
      * @private
      */
     public initDataSource(indicator: TechnicalIndicator, chart: Chart): void {
-        let smaPoints: Points[] = [];
-        let points: Points[] = indicator.points;
+        const smaPoints: Points[] = [];
+        const points: Points[] = indicator.points;
         if (points && points.length) {
             //prepare data
-            let validData: Points[] = points;
-            let field: string = firstToLowerCase(indicator.field);
-            let xField: string = 'x';
+            const validData: Points[] = points;
+            const field: string = firstToLowerCase(indicator.field);
+            const xField: string = 'x';
 
-            let signalSeries: Series = indicator.targetSeries[0];
+            const signalSeries: Series = indicator.targetSeries[0];
 
             if (validData && validData.length && validData.length >= indicator.period) {
                 //find initial average
@@ -56,11 +61,12 @@ export class SmaIndicator extends TechnicalAnalysis {
 
     /**
      * To destroy the SMA indicator
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroys the SMA indicator
          */

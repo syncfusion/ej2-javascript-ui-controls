@@ -8,6 +8,7 @@ export interface FileManagerModel extends ComponentModel{
 
     /**
      * Specifies the AJAX settings of the file manager.
+     *
      * @default {
      *  getImageUrl: null;
      *  url: null;
@@ -19,18 +20,21 @@ export interface FileManagerModel extends ComponentModel{
 
     /**
      * Enables or disables drag-and-drop of files.
+     *
      * @default false
      */
     allowDragAndDrop?: boolean;
 
     /**
      * Enables or disables the multiple files selection of the file manager.
+     *
      * @default true
      */
     allowMultiSelection?: boolean;
 
     /**
      * Specifies the context menu settings of the file manager.
+     *
      * @default {
      *  file: ['Open','|', 'Cut', 'Copy', '|', 'Delete', 'Rename', '|', 'Details'],
      *  folder: ['Open','|', 'Cut', 'Copy', 'Paste', '|', 'Delete', 'Rename', '|', 'Details'],
@@ -42,12 +46,14 @@ export interface FileManagerModel extends ComponentModel{
 
     /**
      * Specifies the root CSS class of the file manager that allows you to customize the appearance by overriding the styles.
+     *
      * @default ''
      */
     cssClass?: string;
 
     /**
      * Specifies the details view settings of the file manager.
+     *
      * @default {
      * columns: [{
      * field: 'name', headerText: 'Name', minWidth: 120, template: '<span class="e-fe-text">${name}</span>',
@@ -61,6 +67,7 @@ export interface FileManagerModel extends ComponentModel{
 
     /**
      * Defines whether to allow the cross-scripting site or not.
+     *
      * @default true
      */
     enableHtmlSanitizer?: boolean;
@@ -70,27 +77,31 @@ export interface FileManagerModel extends ComponentModel{
      * 1. `view`: Represents the previous view of the file manager.
      * 2. `path`: Represents the previous path of the file manager.
      * 3. `selectedItems`: Represents the previous selected items in the file manager.
+     *
      * @default false
      */
     enablePersistence?: boolean;
 
     /**
      * Specifies the height of the file manager.
+     *
      * @default '400px'
      */
     height?: string | number;
 
     /**
-     * Specifies the initial view of the file manager. 
+     * Specifies the initial view of the file manager.
      * With the help of this property, initial view can be changed to details or largeicons view. The available views are:
      * * `LargeIcons`
      * * `Details`
+     *
      * @default 'LargeIcons'
      */
     view?: ViewType;
 
     /**
      * Specifies the navigationpane settings of the file manager.
+     *
      * @default {
      *  maxWidth: '650px',
      *  minWidth: '240px',
@@ -101,6 +112,7 @@ export interface FileManagerModel extends ComponentModel{
 
     /**
      * Specifies the current path of the file manager.
+     *
      * @default '/'
      */
     path?: string;
@@ -108,6 +120,7 @@ export interface FileManagerModel extends ComponentModel{
     /**
      * Specifies the target element in which the File Manager’s dialog will be displayed.
      * The default value is null, which refers to the File Manager element.
+     *
      * @default null
      * @blazorType string
      */
@@ -115,6 +128,7 @@ export interface FileManagerModel extends ComponentModel{
 
     /**
      * Specifies the search settings of the file manager.
+     *
      * @default {
      *  allowSearchOnTyping: true,
      *  filterType: 'contains',
@@ -125,30 +139,35 @@ export interface FileManagerModel extends ComponentModel{
 
     /**
      * Specifies the selected folders and files name of the  file manager.
+     *
      * @default []
      */
     selectedItems?: string[];
 
     /**
      * Shows or hides the file extension in file manager.
+     *
      * @default true
      */
     showFileExtension?: boolean;
 
     /**
      * Specifies the root folder alias name in file manager
+     *
      * @default null
      */
     rootAliasName?: string;
 
     /**
      * Shows or hides the files and folders that are marked as hidden.
+     *
      * @default false
      */
     showHiddenItems?: boolean;
 
     /**
      * Shows or hides the thumbnail images in largeicons view.
+     *
      * @default true
      */
     showThumbnail?: boolean;
@@ -159,12 +178,14 @@ export interface FileManagerModel extends ComponentModel{
      * `None` - Indicates that the folders and files are not sorted.
      * `Ascending` - Indicates that the folders and files are sorted in the ascending order.
      * `Descending` - Indicates that the folders and files are sorted in the descending order.
+     *
      * @default 'Ascending'
      */
     sortOrder?: SortOrder;
 
     /**
      * Specifies the group of items aligned horizontally in the toolbar.
+     *
      * @default {
      *  items: ['NewFolder', 'Upload', 'Cut', 'Copy', 'Paste', 'Delete',
      *  'Download', 'Rename', 'SortBy', 'Refresh', 'Selection', 'View', 'Details'],
@@ -175,6 +196,7 @@ export interface FileManagerModel extends ComponentModel{
 
     /**
      * Specifies the upload settings for the file manager.
+     *
      * @default {
      *  autoUpload: true,
      *  minFileSize: 0,
@@ -187,175 +209,201 @@ export interface FileManagerModel extends ComponentModel{
 
     /**
      * Specifies the width of the file manager.
+     *
      * @default '100%'
      */
     width?: string | number;
 
     /**
      * Triggers before the file/folder is rendered.
+     *
      * @event
-     * @blazorproperty 'OnFileLoad'
+     * @blazorProperty 'OnFileLoad'
      */
     fileLoad?: EmitType<FileLoadEventArgs>;
 
     /**
      * Triggers before the file/folder is opened.
+     *
      * @event
-     * @blazorproperty 'OnFileOpen'
+     * @blazorProperty 'OnFileOpen'
      */
     fileOpen?: EmitType<FileOpenEventArgs>;
 
     /**
      * Triggers before sending the download request to the server.
+     *
      * @event
-     * @blazorproperty 'BeforeDownload'
+     * @blazorProperty 'BeforeDownload'
      */
     beforeDownload?: EmitType<BeforeDownloadEventArgs>;
 
     /**
      * Triggers before sending the getImage request to the server.
+     *
      * @event
-     * @blazorproperty 'BeforeImageLoad'
+     * @blazorProperty 'BeforeImageLoad'
      */
     beforeImageLoad?: EmitType<BeforeImageLoadEventArgs>;
 
     /**
      * Triggers before the dialog is closed.
+     *
      * @event
-     * @blazorproperty 'BeforePopupClose'
+     * @blazorProperty 'BeforePopupClose'
      */
     beforePopupClose?: EmitType<BeforePopupOpenCloseEventArgs>;
 
     /**
      * Triggers before the dialog is opened.
+     *
      * @event
-     * @blazorproperty 'BeforePopupOpen'
+     * @blazorProperty 'BeforePopupOpen'
      */
     beforePopupOpen?: EmitType<BeforePopupOpenCloseEventArgs>;
 
     /**
      * Triggers before sending the AJAX request to the server.
+     *
      * @event
-     * @blazorproperty 'OnSend'
+     * @blazorProperty 'OnSend'
      */
     beforeSend?: EmitType<BeforeSendEventArgs>;
 
     /**
      * Triggers when the file manager component is created.
+     *
      * @event
-     * @blazorproperty 'Created'
+     * @blazorProperty 'Created'
      */
+    /* eslint-disable */
     created?: EmitType<Object>;
 
     /**
      * Triggers when the file manager component is destroyed.
+     *
      * @event
-     * @blazorproperty 'Destroyed'
+     * @blazorProperty 'Destroyed'
      */
+    /* eslint-disable */
     destroyed?: EmitType<Object>;
 
     /**
      * Triggers when the file/folder dragging is started.
+     *
      * @event
-     * @blazorproperty 'OnFileDragStart'
+     * @blazorProperty 'OnFileDragStart'
      */
     fileDragStart?: EmitType<FileDragEventArgs>;
 
     /**
      * Triggers while dragging the file/folder.
+     *
      * @event
-     * @blazorproperty 'FileDragging'
+     * @blazorProperty 'FileDragging'
      */
     fileDragging?: EmitType<FileDragEventArgs>;
 
     /**
      * Triggers when the file/folder is about to be dropped at the target.
+     *
      * @event
-     * @blazorproperty 'OnFileDragStop'
+     * @blazorProperty 'OnFileDragStop'
      */
     fileDragStop?: EmitType<FileDragEventArgs>;
 
     /**
      * Triggers when the file/folder is dropped.
+     *
      * @event
-     * @blazorproperty 'FileDropped'
+     * @blazorProperty 'FileDropped'
      */
     fileDropped?: EmitType<FileDragEventArgs>;
 
     /**
      * Triggers before the file/folder is selected.
+     *
      * @event
-     * @blazorproperty 'FileSelection'
+     * @blazorProperty 'FileSelection'
      */
     fileSelection?: EmitType<FileSelectionEventArgs>;
 
     /**
      * Triggers when the file/folder is selected/unselected.
+     *
      * @event
-     * @blazorproperty 'FileSelected'
+     * @blazorProperty 'FileSelected'
      */
     fileSelect?: EmitType<FileSelectEventArgs>;
 
     /**
      * Triggers when the context menu item is clicked.
+     *
      * @event
-     * @blazorproperty 'OnMenuClick'
+     * @blazorProperty 'OnMenuClick'
      */
     menuClick?: EmitType<MenuClickEventArgs>;
 
     /**
      * Triggers before the context menu is opened.
+     *
      * @event
-     * @blazorproperty 'MenuOpened'
+     * @blazorProperty 'MenuOpened'
      */
     menuOpen?: EmitType<MenuOpenEventArgs>;
 
     /**
      * Triggers when the AJAX request is failed.
+     *
      * @event
-     * @blazorproperty 'OnError'
+     * @blazorProperty 'OnError'
      */
     failure?: EmitType<FailureEventArgs>;
 
     /**
      * Triggers when the dialog is closed.
+     *
      * @event
-     * @blazorproperty 'PopupClosed'
+     * @blazorProperty 'PopupClosed'
      */
     popupClose?: EmitType<PopupOpenCloseEventArgs>;
 
     /**
      * Triggers when the dialog is opened.
+     *
      * @event
-     * @blazorproperty 'PopupOpened'
+     * @blazorProperty 'PopupOpened'
      */
     popupOpen?: EmitType<PopupOpenCloseEventArgs>;
 
     /**
      * Triggers when the AJAX request is success.
      * @event
-     * @blazorproperty 'OnSuccess'
+     * @blazorProperty 'OnSuccess'
      */
     success?: EmitType<SuccessEventArgs>;
 
     /**
      * Triggers when the toolbar item is clicked.
+     *
      * @event
-     * @blazorproperty 'ToolbarItemClicked'
+     * @blazorProperty 'ToolbarItemClicked'
      */
     toolbarClick?: EmitType<ToolbarClickEventArgs>;
 
     /**
      * Triggers before creating the toolbar.
+     *
      * @event
-     * @blazorproperty 'ToolbarCreated'
+     * @blazorProperty 'ToolbarCreated'
      */
     toolbarCreate?: EmitType<ToolbarCreateEventArgs>;
 
     /**
      * Triggers before rendering each file item in upload dialog box.
+     *
      * @event
-     * @blazorproperty 'UploadListCreated'
+     * @blazorProperty 'UploadListCreated'
      */
     uploadListCreate?: EmitType<UploadListCreateArgs>;
 

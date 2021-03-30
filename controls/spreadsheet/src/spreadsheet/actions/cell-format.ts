@@ -1,6 +1,6 @@
 import { Spreadsheet, ICellRenderer, clearViewer, beginAction } from '../../spreadsheet/index';
+import { getBorderHeight, getExcludedColumnWidth, selectRange } from '../common/index';
 import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines, initialLoad } from '../common/index';
-import { getBorderHeight, getExcludedColumnWidth } from '../common/index';
 import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, CellStyleExtendedModel, CellModel} from '../../workbook/index';
 import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, clearCFRule } from '../../workbook/index';
 import {  wrapEvent, getRangeAddress, ClearOptions,  clear } from '../../workbook/index';
@@ -18,13 +18,13 @@ export class CellFormat {
         this.parent.on(initialLoad, this.addEventListener, this);
     }
     private applyCellFormat(args: CellFormatArgs): void {
-        let keys: string[] = Object.keys(args.style);
-        let sheet: SheetModel = this.parent.getActiveSheet();
+        const keys: string[] = Object.keys(args.style);
+        const sheet: SheetModel = this.parent.getActiveSheet();
         if (args.lastCell && getMaxHgt(sheet, args.rowIdx) <= 20 && !keys.length) { return; }
-        let cell: HTMLElement = args.cell || this.parent.getCell(args.rowIdx, args.colIdx);
+        const cell: HTMLElement = args.cell || this.parent.getCell(args.rowIdx, args.colIdx);
         if (cell) {
             if (args.style.border !== undefined || args.style.borderTop !== undefined || args.style.borderLeft !== undefined) {
-                let curStyle: CellStyleModel = {};
+                const curStyle: CellStyleModel = {};
                 Object.keys(args.style).forEach((key: string): void => { curStyle[key] = args.style[key]; });
                 if (curStyle.border !== undefined) {
                     Object.assign(cell.style, <CellStyleModel>{ borderRight: args.style.border, borderBottom: args.style.border });
@@ -59,16 +59,21 @@ export class CellFormat {
                         args.manualUpdate);
                 }
                 Object.assign(cell.style, args.style);
+                const CellElem: CellModel = getCell(args.rowIdx, args.colIdx, sheet); // Need to remove after adding span support to merge
+                if (CellElem && (CellElem.rowSpan || CellElem.colSpan) && cell.offsetHeight > 0) {
+                    let height: number = getTextHeight(this.parent, CellElem.style || this.parent.cellStyle);
+                    if (height > cell.offsetHeight) { setRowEleHeight(this.parent, sheet, cell.offsetHeight, args.rowIdx); }
+                }
             }
             if (args.isHeightCheckNeeded) {
                 if (!sheet.rows[args.rowIdx] || !sheet.rows[args.rowIdx].customHeight) {
                     if (!args.manualUpdate) {
-                        let cellModel: CellModel = getCell(args.rowIdx, args.colIdx, sheet);
+                        const cellModel: CellModel = getCell(args.rowIdx, args.colIdx, sheet);
                         if (!(cellModel && cellModel.wrap) && this.isHeightCheckNeeded(args.style)) {
                             setMaxHgt(sheet, args.rowIdx, args.colIdx, getTextHeight(this.parent, args.style));
                         }
                         if (args.lastCell) {
-                            let height: number = getMaxHgt(sheet, args.rowIdx);
+                            const height: number = getMaxHgt(sheet, args.rowIdx);
                             if (height > 20 && height > getRowHeight(sheet, args.rowIdx)) {
                                 setRowEleHeight(this.parent, sheet, height, args.rowIdx, args.row, args.hRow, false);
                             }
@@ -91,56 +96,60 @@ export class CellFormat {
         if (this.checkHeight) {
             let hgt: number = 0;
             let maxHgt: number;
-            let sheet: SheetModel = this.parent.getActiveSheet();
-            let cell: CellModel = getCell(rowIdx, colIdx, sheet, null, true);
-            let td: HTMLElement = this.parent.getCell(rowIdx, colIdx);
-            hgt = getTextHeight(this.parent, (cell.style) || this.parent.cellStyle, (cell.wrap) ?
-                getLines(this.parent.getDisplayText(cell), getExcludedColumnWidth(sheet, rowIdx, colIdx), cell.style, this.parent.cellStyle)
-                : 1) + 1; // 1 -> For buffer
-            if (!borderSize) {
-                borderSize = getBorderHeight(rowIdx, colIdx, sheet);
-            }
-            if (!isNullOrUndefined(cell.value)) {
-                let val: string = cell.value.toString();
-                if (val.indexOf('\n') > -1) {
-                    let i: number;
-                    let splitVal: string[] = cell.value.split('\n');
-                    let n: number = 0; let valLength: number = splitVal.length;
-                    for (i = 0; i < valLength; i++) {
-                        let lines: number =
-                            getLines(splitVal[i], getExcludedColumnWidth(sheet, rowIdx, colIdx), cell.style, this.parent.cellStyle);
-                        if (lines === 0) {
-                            lines = 1; // for empty new line
-                        }
-                        n = n + lines;
-                    }
-                    hgt = getTextHeight(this.parent, cell.style || this.parent.cellStyle, n) + 1;
+            const sheet: SheetModel = this.parent.getActiveSheet();
+            const cell: CellModel = getCell(rowIdx, colIdx, sheet, null, true);
+            const td: HTMLElement = this.parent.getCell(rowIdx, colIdx);
+            if (cell && (!cell.rowSpan && !cell.colSpan)) {
+                hgt = getTextHeight(this.parent, (cell.style) || this.parent.cellStyle, (cell.wrap) ?
+                    getLines(this.parent.getDisplayText(cell),
+                    getExcludedColumnWidth(sheet, rowIdx, colIdx), cell.style, this.parent.cellStyle)
+                    : 1);
+                if (!borderSize) {
+                    borderSize = getBorderHeight(rowIdx, colIdx, sheet);
                 }
-            }
-            if (hgt + borderSize < 20) {
-                hgt = 20; // default height
-            }
-            if (td && td.children[0] && td.children[0].className === 'e-cf-databar') {
-                (td.children[0] as HTMLElement).style.height = '100%';
-                (td.children[0].firstElementChild.nextElementSibling as HTMLElement).style.height = '100%';
-            }
-            setMaxHgt(sheet, rowIdx, colIdx, hgt + borderSize);
-            if (isLastCell) {
-                this.checkHeight = false;
-                let row: HTMLElement = this.parent.getRow(rowIdx);
-                if (!row) { return; }
-                let prevHeight: number = getRowHeight(sheet, rowIdx);
-                maxHgt = getMaxHgt(sheet, rowIdx);
-                let heightChanged: boolean = onActionUpdate ? maxHgt !== prevHeight : maxHgt > prevHeight;
-                if (heightChanged) {
-                    setRowEleHeight(this.parent, sheet, maxHgt, rowIdx, row);
+                if (!isNullOrUndefined(cell.value)) {
+                    const val: string = cell.value.toString();
+                    if (val.indexOf('\n') > -1) {
+                        let i: number;
+                        const splitVal: string[] = cell.value.split('\n');
+                        let n: number = 0; const valLength: number = splitVal.length;
+                        for (i = 0; i < valLength; i++) {
+                            let lines: number =
+                                getLines(splitVal[i], getExcludedColumnWidth(sheet, rowIdx, colIdx), cell.style, this.parent.cellStyle);
+                            if (lines === 0) {
+                                lines = 1; // for empty new line
+                            }
+                            n = n + lines;
+                        }
+                        hgt = getTextHeight(this.parent, cell.style || this.parent.cellStyle, n) + 1;
+                    }
+                }
+                if (hgt + borderSize < 20) {
+                    hgt = 20; // default height
+                }
+                if (td && td.children[0] && td.children[0].className === 'e-cf-databar') {
+                    (td.children[0] as HTMLElement).style.height = '100%';
+                    (td.children[0].firstElementChild.nextElementSibling as HTMLElement).style.height = '100%';
+                }
+                setMaxHgt(sheet, rowIdx, colIdx, hgt + borderSize);
+                if (isLastCell) {
+                    this.checkHeight = false;
+                    const row: HTMLElement = sheet.frozenRows ? this.parent.getRow(rowIdx, null, sheet.frozenColumns) :
+                        this.parent.getRow(rowIdx);
+                    if (!row) { return; }
+                    const prevHeight: number = getRowHeight(sheet, rowIdx);
+                    maxHgt = getMaxHgt(sheet, rowIdx);
+                    const heightChanged: boolean = onActionUpdate ? maxHgt !== prevHeight : maxHgt > prevHeight;
+                    if (heightChanged) {
+                        setRowEleHeight(this.parent, sheet, maxHgt, rowIdx, row);
+                    }
                 }
             }
         }
     }
 
     private isHeightCheckNeeded(style: CellStyleModel, onActionUpdate?: boolean): boolean {
-        let keys: string[] = Object.keys(style);
+        const keys: string[] = Object.keys(style);
         return (onActionUpdate ? keys.indexOf('fontSize') > -1 : keys.indexOf('fontSize') > -1
             && Number(style.fontSize.split('pt')[0]) > 12) || keys.indexOf('fontFamily') > -1;
     }
@@ -169,14 +178,14 @@ export class CellFormat {
         first: string, lastCell: boolean, manualUpdate: boolean): void {
         if (first && first.includes('Row')) { return; }
         for (let j: number = 0; j < (cell as CellModel).colSpan; j++) {
-            let prevCell: HTMLElement = this.parent.getCell(rowIdx - 1, colIdx + j, <HTMLTableRowElement>pRow);
+            const prevCell: HTMLElement = this.parent.getCell(rowIdx - 1, colIdx + j, <HTMLTableRowElement>pRow);
             if (prevCell) {
                 if (isHiddenRow(this.parent.getActiveSheet(), rowIdx - 1)) {
-                    let index: number[] = [Number(prevCell.parentElement.getAttribute('aria-rowindex')) - 1, colIdx];
+                    const index: number[] = [Number(prevCell.parentElement.getAttribute('aria-rowindex')) - 1, colIdx];
                     if ((this.parent.getCellStyleValue(['bottomPriority'], index) as CellStyleExtendedModel).bottomPriority) { return; }
                 }
                 if (actionUpdate && border !== '' && this.parent.getActiveSheet().topLeftCell.includes(`${rowIdx + 1}`)) {
-                    this.parent.getMainContent().scrollTop -= this.getBorderSize(border);
+                    this.parent.getMainContent().parentElement.scrollTop -= this.getBorderSize(border);
                 }
                 this.setThickBorderHeight(border, rowIdx - 1, colIdx + j, prevCell, pRow, pHRow, actionUpdate, lastCell, manualUpdate);
                 prevCell.style.borderBottom = (border === 'none') ? prevCell.style.borderBottom : border;
@@ -188,14 +197,14 @@ export class CellFormat {
     private setThickBorderHeight(
         border: string, rowIdx: number, colIdx: number, cell: HTMLElement, row: HTMLElement, hRow: HTMLElement, actionUpdate: boolean,
         lastCell: boolean, manualUpdate: boolean): void {
-        let size: number = border ? this.getBorderSize(border) : 1; let sheet: SheetModel = this.parent.getActiveSheet();
+        const size: number = border ? this.getBorderSize(border) : 1; const sheet: SheetModel = this.parent.getActiveSheet();
         if (size > 2 && (!sheet.rows[rowIdx] || !sheet.rows[rowIdx].customHeight)) {
             if (manualUpdate) {
                 if (!this.checkHeight) { this.checkHeight = true; }
                 this.updateRowHeight(rowIdx, colIdx, lastCell, actionUpdate, size);
             } else {
-                let prevHeight: number = getRowHeight(sheet, rowIdx);
-                let height: number = Math.ceil(this.parent.calculateHeight(
+                const prevHeight: number = getRowHeight(sheet, rowIdx);
+                const height: number = Math.ceil(this.parent.calculateHeight(
                     this.parent.getCellStyleValue(['fontFamily', 'fontSize'], [rowIdx, colIdx]), 1, 3));
                 if (height > prevHeight) {
                     setRowEleHeight(this.parent, sheet, height, rowIdx, row, hRow, false);
@@ -209,20 +218,20 @@ export class CellFormat {
         }
     }
     private getBorderSize(border: string): number {
-        let size: string = border.split(' ')[0];
+        const size: string = border.split(' ')[0];
         return size === 'thin' ? 1 : (size === 'medium' ? 2 : (size === 'thick' ? 3 :
             (parseInt(size, 10) ? parseInt(size, 10) : 1)));
     }
     private clearObj(args: { options: ClearOptions, isPublic: boolean }): void {
-        let options: ClearOptions = args.options;
-        let range: string = options.range ? (options.range.indexOf('!') > 0) ? options.range.split('!')[1] : options.range.split('!')[0]
+        const options: ClearOptions = args.options;
+        const range: string = options.range ? (options.range.indexOf('!') > 0) ? options.range.split('!')[1] : options.range.split('!')[0]
             : this.parent.getActiveSheet().selectedRange;
-        let sheetIndex: number = (options.range && options.range.indexOf('!') > 0) ?
+        const sheetIndex: number = (options.range && options.range.indexOf('!') > 0) ?
             getSheetIndex(this.parent, options.range.split('!')[0]) : this.parent.activeSheetIndex;
-        let rangeIdx: number[] = getRangeIndexes(range);
-        let sheet: SheetModel = this.parent.sheets[sheetIndex];
+        const rangeIdx: number[] = getRangeIndexes(range);
+        const sheet: SheetModel = this.parent.sheets[sheetIndex];
         let sRIdx: number = rangeIdx[0];
-        let eRIdx: number = rangeIdx[2];
+        const eRIdx: number = rangeIdx[2];
         let sCIdx: number;
         let eCIdx: number;
         let eventArgs: object = { range: range, type: options.type, requestType: 'clear', sheetIndex: sheetIndex };
@@ -235,8 +244,8 @@ export class CellFormat {
                 sCIdx = rangeIdx[1];
                 eCIdx = rangeIdx[3];
                 for (sCIdx; sCIdx <= eCIdx; sCIdx++) {
-                    let cell: CellModel = getCell(sRIdx, sCIdx, sheet);
-                    let cellElem: HTMLElement = this.parent.getCell(sRIdx, sCIdx);
+                    const cell: CellModel = getCell(sRIdx, sCIdx, sheet);
+                    const cellElem: HTMLElement = this.parent.getCell(sRIdx, sCIdx);
                     if (cell) {
                         if (cell.wrap) {
                             this.parent.notify(wrapEvent, { range: [sRIdx, sCIdx, sRIdx, sCIdx], wrap: false, sheet: sheet });
@@ -253,6 +262,7 @@ export class CellFormat {
         }
         if (options.type === 'Clear Hyperlinks') {
             this.parent.removeHyperlink(range);
+            return;
         }
         this.parent.notify(clear, { range: sheet.name + '!' + range, type: options.type });
         this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getRangeIndexes(range));
@@ -260,6 +270,7 @@ export class CellFormat {
             eventArgs = { range: sheet.name + '!' + range, type: options.type, sheetIndex: sheetIndex };
             this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'clear' });
         }
+        this.parent.notify(selectRange, {address: range})
     }
 
     private addEventListener(): void {
@@ -275,6 +286,8 @@ export class CellFormat {
     }
     /**
      * Destroy cell format module.
+     *
+     * @returns {void} - Destroy cell format module.
      */
     public destroy(): void {
         this.removeEventListener();
@@ -282,6 +295,8 @@ export class CellFormat {
     }
     /**
      * Get the cell format module name.
+     *
+     * @returns {string} - Get the cell format module name.
      */
     public getModuleName(): string {
         return 'cellformat';

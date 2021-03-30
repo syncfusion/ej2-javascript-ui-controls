@@ -34,7 +34,7 @@ export class HtmlEditor {
     private saveSelection: NodeSelection;
     public xhtmlValidation: XhtmlValidation;
 
-    constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
+    public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.locator = serviceLocator;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
@@ -43,8 +43,9 @@ export class HtmlEditor {
     }
     /**
      * Destroys the Markdown.
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -52,7 +53,9 @@ export class HtmlEditor {
         this.removeEventListener();
     }
 
-    /** 
+    /**
+     * @param {string} value - specifies the string value
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -62,7 +65,9 @@ export class HtmlEditor {
     }
 
     private addEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.nodeSelectionObj = new NodeSelection();
         this.colorPickerModule = new ColorPickerInput(this.parent, this.locator);
         this.parent.on(events.initialLoad, this.instantiateRenderer, this);
@@ -90,8 +95,8 @@ export class HtmlEditor {
         }
     }
     private onSelectionSave(): void {
-        let currentDocument: Document = this.contentRenderer.getDocument();
-        let range: Range = this.nodeSelectionObj.getRange(currentDocument);
+        const currentDocument: Document = this.contentRenderer.getDocument();
+        const range: Range = this.nodeSelectionObj.getRange(currentDocument);
         this.saveSelection = this.nodeSelectionObj.save(range, currentDocument);
     }
 
@@ -105,8 +110,8 @@ export class HtmlEditor {
 
     private onKeyDown(e: NotifyArgs): void {
         if ((e.args as KeyboardEvent).keyCode === 9 && this.parent.enableTabKey) {
-            let range: Range = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument());
-            let parentNode: Node[] = this.nodeSelectionObj.getParentNodeCollection(range);
+            const range: Range = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument());
+            const parentNode: Node[] = this.nodeSelectionObj.getParentNodeCollection(range);
             if (!((parentNode[0].nodeName === 'LI' || closest(parentNode[0] as HTMLElement, 'li') ||
                 closest(parentNode[0] as HTMLElement, 'table')) && range.startOffset === 0)) {
                 (e.args as KeyboardEvent).preventDefault();
@@ -115,7 +120,7 @@ export class HtmlEditor {
                     this.rangeCollection.push(this.nodeSelectionObj.getRange(this.contentRenderer.getDocument()));
                 } else if (this.rangeCollection.length > 0 &&
                     this.rangeCollection[this.rangeCollection.length - 1].startContainer.textContent.length === 4) {
-                    let textCont: Node = this.rangeCollection[this.rangeCollection.length - 1].startContainer;
+                    const textCont: Node = this.rangeCollection[this.rangeCollection.length - 1].startContainer;
                     this.nodeSelectionObj.setSelectionText(
                         this.contentRenderer.getDocument(), textCont, textCont, 0, textCont.textContent.length);
                     InsertHtml.Insert(this.contentRenderer.getDocument(), document.createTextNode(''));
@@ -129,45 +134,48 @@ export class HtmlEditor {
         }
     }
     private onPaste(e: NotifyArgs): void {
-        let regex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
+        // eslint-disable-next-line
+        const regex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
         if (e.text.match(regex)) {
             (e.args as KeyboardEvent).preventDefault();
-            let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
-            let saveSelection: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(
+            const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+            // eslint-disable-next-line
+            const saveSelection: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(
                 range, this.parent.contentModule.getDocument());
-            let httpRegex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)))/gi);
-            let wwwRegex: RegExp = new RegExp(/([^\S]|^)(((www\.))(\S+))/gi);
-            let enterSplitText: string[] = e.text.split('\n');
+            // eslint-disable-next-line
+            const httpRegex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)))/gi);
+            const wwwRegex: RegExp = new RegExp(/([^\S]|^)(((www\.))(\S+))/gi);
+            const enterSplitText: string[] = e.text.split('\n');
             let contentInnerElem: string = '';
             for (let i: number = 0; i < enterSplitText.length; i++) {
                 if (enterSplitText[i].trim() === '') {
-                  contentInnerElem += '<p><br></p>';
+                    contentInnerElem += '<p><br></p>';
                 } else {
-                  let contentWithSpace: string = '';
-                  let spaceBetweenContent: boolean = true;
-                  let spaceSplit: string[] = enterSplitText[i].split(' ');
-                  for (let j: number = 0; j < spaceSplit.length; j++) {
-                    if (spaceSplit[j].trim() === '') {
-                      contentWithSpace += spaceBetweenContent ? '&nbsp;' : ' ';
-                    } else {
-                      spaceBetweenContent = false;
-                      contentWithSpace += spaceSplit[j] + ' ';
+                    let contentWithSpace: string = '';
+                    let spaceBetweenContent: boolean = true;
+                    const spaceSplit: string[] = enterSplitText[i].split(' ');
+                    for (let j: number = 0; j < spaceSplit.length; j++) {
+                        if (spaceSplit[j].trim() === '') {
+                            contentWithSpace += spaceBetweenContent ? '&nbsp;' : ' ';
+                        } else {
+                            spaceBetweenContent = false;
+                            contentWithSpace += spaceSplit[j] + ' ';
+                        }
                     }
-                  }
-                  if (i === 0) {
-                    contentInnerElem += '<span>' + contentWithSpace.trim() + '</span>';
-                  } else {
-                    contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
-                  }
+                    if (i === 0) {
+                        contentInnerElem += '<span>' + contentWithSpace.trim() + '</span>';
+                    } else {
+                        contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
+                    }
                 }
             }
-            let divElement: HTMLElement = this.parent.createElement('div');
+            const divElement: HTMLElement = this.parent.createElement('div');
             divElement.setAttribute('class', 'pasteContent');
             divElement.style.display = 'inline';
             divElement.innerHTML = contentInnerElem;
-            let paraElem: NodeListOf<HTMLParagraphElement> = divElement.querySelectorAll('span, p');
+            const paraElem: NodeListOf<HTMLParagraphElement> = divElement.querySelectorAll('span, p');
             for (let i: number = 0; i < paraElem.length ; i++) {
-                let splitTextContent: string[] = paraElem[i].innerHTML.split(' ');
+                const splitTextContent: string[] = paraElem[i].innerHTML.split(' ');
                 let resultSplitContent: string = '';
                 for (let j: number = 0 ; j < splitTextContent.length; j++) {
                     if (splitTextContent[j].match(httpRegex) || splitTextContent[j].match(wwwRegex)) {
@@ -187,20 +195,21 @@ export class HtmlEditor {
         }
     }
     private spaceLink(e?: KeyboardEvent): void {
-        let range: Range = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument());
-        let selectNodeEle: Node[] = this.nodeSelectionObj.getParentNodeCollection(range);
-        let text: string = range.startContainer.textContent.substr(0, range.endOffset);
-        let splitText: string[] = text.split(' ');
+        const range: Range = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument());
+        const selectNodeEle: Node[] = this.nodeSelectionObj.getParentNodeCollection(range);
+        const text: string = range.startContainer.textContent.substr(0, range.endOffset);
+        const splitText: string[] = text.split(' ');
         let urlText: string = splitText[splitText.length - 1];
-        let urlTextRange: number = range.startOffset - (text.length - splitText[splitText.length - 1].length);
+        const urlTextRange: number = range.startOffset - (text.length - splitText[splitText.length - 1].length);
         urlText = urlText.slice(0, urlTextRange);
-        let regex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
+        // eslint-disable-next-line
+        const regex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
         if (selectNodeEle[0].nodeName !== 'A' && urlText.match(regex)) {
-            let selection: NodeSelection = this.nodeSelectionObj.save(
+            const selection: NodeSelection = this.nodeSelectionObj.save(
                 range, this.parent.contentModule.getDocument());
-            let url: string = urlText.indexOf('http') > -1 ? urlText : 'http://' + urlText;
-            let selectParent: Node[] = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
-            let value: NotifyArgs = {
+            const url: string = urlText.indexOf('http') > -1 ? urlText : 'http://' + urlText;
+            const selectParent: Node[] = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
+            const value: NotifyArgs = {
                 url: url,
                 selection: selection, selectParent: selectParent,
                 text: urlText,
@@ -221,13 +230,15 @@ export class HtmlEditor {
         let save: NodeSelection;
         let selectNodeEle: Node[];
         let selectParentEle: Node[];
-        let item: IToolbarItemModel = args.item as IToolbarItemModel;
-        let closestElement: Element = closest(args.originalEvent.target as Element, '.e-rte-quick-popup');
+        const item: IToolbarItemModel = args.item as IToolbarItemModel;
+        const closestElement: Element = closest(args.originalEvent.target as Element, '.e-rte-quick-popup');
         if (closestElement && !closestElement.classList.contains('e-rte-inline-popup')) {
             if (!(item.subCommand === 'SourceCode' || item.subCommand === 'Preview' ||
                 item.subCommand === 'FontColor' || item.subCommand === 'BackgroundColor')) {
-                if (isIDevice() && item.command === 'Images') { this.nodeSelectionObj.restore(); }
-                let range: Range = this.nodeSelectionObj.getRange(this.parent.contentModule.getDocument());
+                if (isIDevice() && item.command === 'Images') {
+                    this.nodeSelectionObj.restore();
+                }
+                const range: Range = this.nodeSelectionObj.getRange(this.parent.contentModule.getDocument());
                 save = this.nodeSelectionObj.save(range, this.parent.contentModule.getDocument());
                 selectNodeEle = this.nodeSelectionObj.getNodeCollection(range);
                 selectParentEle = this.nodeSelectionObj.getParentNodeCollection(range);
@@ -248,11 +259,11 @@ export class HtmlEditor {
                 });
             }
         } else {
-            let linkDialog: Element = this.parent.element.querySelector('#' + this.parent.getID() + '_rtelink');
-            let imageDialog: Element = this.parent.element.querySelector('#' + this.parent.getID() + '_image');
+            const linkDialog: Element = this.parent.element.querySelector('#' + this.parent.getID() + '_rtelink');
+            const imageDialog: Element = this.parent.element.querySelector('#' + this.parent.getID() + '_image');
             if (!(item.subCommand === 'SourceCode' || item.subCommand === 'Preview' ||
                 item.subCommand === 'FontColor' || item.subCommand === 'BackgroundColor')) {
-                let range: Range = this.nodeSelectionObj.getRange(this.parent.contentModule.getDocument());
+                const range: Range = this.nodeSelectionObj.getRange(this.parent.contentModule.getDocument());
                 if (isNullOrUndefined(linkDialog) && isNullOrUndefined(imageDialog)) {
                     save = this.nodeSelectionObj.save(range, this.parent.contentModule.getDocument());
                 }
@@ -260,52 +271,52 @@ export class HtmlEditor {
                 selectParentEle = this.nodeSelectionObj.getParentNodeCollection(range);
             }
             switch (item.subCommand) {
-                case 'Maximize':
-                    this.parent.notify(events.enableFullScreen, { args: args });
-                    break;
-                case 'Minimize':
-                    this.parent.notify(events.disableFullScreen, { args: args });
-                    break;
-                case 'CreateLink':
-                    this.parent.notify(events.insertLink, {
-                        member: 'link', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
-                    });
-                    break;
-                case 'RemoveLink':
-                    this.parent.notify(events.unLink, {
-                        member: 'link', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
-                    });
-                    break;
-                case 'Print':
-                    this.parent.print();
-                    break;
-                case 'Image':
-                    this.parent.notify(events.insertImage, {
-                        member: 'image', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
-                    });
-                    break;
-                case 'CreateTable':
-                    this.parent.notify(events.createTable, {
-                        member: 'table', args: args, selection: save
-                    });
-                    break;
-                case 'SourceCode':
-                    this.parent.notify(events.sourceCode, { member: 'viewSource', args: args });
-                    break;
-                case 'Preview':
-                    this.parent.notify(events.updateSource, { member: 'updateSource', args: args });
-                    break;
-                case 'FontColor':
-                case 'BackgroundColor':
-                    break;
-                case 'File':
-                    this.parent.notify(events.renderFileManager, {
-                        member: 'fileManager', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
-                    });
-                    break;
-                default:
-                    this.parent.formatter.process(this.parent, args, args.originalEvent, null);
-                    break;
+            case 'Maximize':
+                this.parent.notify(events.enableFullScreen, { args: args });
+                break;
+            case 'Minimize':
+                this.parent.notify(events.disableFullScreen, { args: args });
+                break;
+            case 'CreateLink':
+                this.parent.notify(events.insertLink, {
+                    member: 'link', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                });
+                break;
+            case 'RemoveLink':
+                this.parent.notify(events.unLink, {
+                    member: 'link', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                });
+                break;
+            case 'Print':
+                this.parent.print();
+                break;
+            case 'Image':
+                this.parent.notify(events.insertImage, {
+                    member: 'image', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                });
+                break;
+            case 'CreateTable':
+                this.parent.notify(events.createTable, {
+                    member: 'table', args: args, selection: save
+                });
+                break;
+            case 'SourceCode':
+                this.parent.notify(events.sourceCode, { member: 'viewSource', args: args });
+                break;
+            case 'Preview':
+                this.parent.notify(events.updateSource, { member: 'updateSource', args: args });
+                break;
+            case 'FontColor':
+            case 'BackgroundColor':
+                break;
+            case 'File':
+                this.parent.notify(events.renderFileManager, {
+                    member: 'fileManager', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                });
+                break;
+            default:
+                this.parent.formatter.process(this.parent, args, args.originalEvent, null);
+                break;
             }
         }
     }
@@ -322,7 +333,9 @@ export class HtmlEditor {
     }
 
     private removeEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.off(events.initialEnd, this.render);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
         this.parent.off(events.htmlToolbarClick, this.onToolbarClick);
@@ -341,10 +354,10 @@ export class HtmlEditor {
 
     private render(): void {
         this.contentRenderer = this.renderFactory.getRenderer(RenderType.Content);
-        let editElement: HTMLTextAreaElement = this.contentRenderer.getEditPanel() as HTMLTextAreaElement;
-        let option: { [key: string]: number } = { undoRedoSteps: this.parent.undoRedoSteps, undoRedoTimer: this.parent.undoRedoTimer };
+        const editElement: HTMLTextAreaElement = this.contentRenderer.getEditPanel() as HTMLTextAreaElement;
+        const option: { [key: string]: number } = { undoRedoSteps: this.parent.undoRedoSteps, undoRedoTimer: this.parent.undoRedoTimer };
         if (isNullOrUndefined(this.parent.formatter)) {
-            let formatterClass: HTMLFormatter = new HTMLFormatter({
+            const formatterClass: HTMLFormatter = new HTMLFormatter({
                 currentDocument: this.contentRenderer.getDocument(),
                 element: editElement,
                 options: option
@@ -364,20 +377,27 @@ export class HtmlEditor {
 
     /**
      * Called internally if any of the property value changed.
+     *
+     * @param {RichTextEditorModel} e - specifies the editor model
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     protected onPropertyChanged(e: { [key: string]: RichTextEditorModel }): void {
         // On property code change here
         if (!isNullOrUndefined(e.newProp.formatter)) {
-            let editElement: HTMLTextAreaElement = this.contentRenderer.getEditPanel() as HTMLTextAreaElement;
-            let option: { [key: string]: number } = { undoRedoSteps: this.parent.undoRedoSteps, undoRedoTimer: this.parent.undoRedoTimer };
+            const editElement: HTMLTextAreaElement = this.contentRenderer.getEditPanel() as HTMLTextAreaElement;
+            const option: { [key: string]: number } = { undoRedoSteps: this.parent.undoRedoSteps,
+                undoRedoTimer: this.parent.undoRedoTimer };
             this.parent.formatter.updateFormatter(editElement, this.contentRenderer.getDocument(), option);
         }
     }
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} - returns the string value
+     * @hidden
      */
     private getModuleName(): string {
         return 'htmlEditor';
@@ -385,10 +405,13 @@ export class HtmlEditor {
 
     /**
      * For selecting all content in RTE
+     *
+     * @returns {void}
      * @private
+     * @hidden
      */
     private selectAll(): void {
-        let nodes: Node[] = getTextNodesUnder(
+        const nodes: Node[] = getTextNodesUnder(
             this.parent.contentModule.getDocument(),
             (this.parent.contentModule.getEditPanel() as HTMLElement));
         if (nodes.length > 0) {
@@ -398,12 +421,16 @@ export class HtmlEditor {
                 nodes[nodes.length - 1],
                 0,
                 nodes[nodes.length - 1].textContent.length);
-            }
+        }
     }
 
     /**
      * For selecting all content in RTE
+     *
+     * @param {NotifyArgs} e - specifies the notified arguments
+     * @returns {void}
      * @private
+     * @hidden
      */
     private selectRange(e: NotifyArgs): void {
         this.parent.formatter.editorManager.nodeSelection.setRange(
@@ -413,11 +440,14 @@ export class HtmlEditor {
 
     /**
      * For get a selected text in RTE
-     * @private
+     *
+     * @param {NotifyArgs} e - specifies the notified arguments
+     * @returns {void}
+     * @hidden
      */
     private getSelectedHtml(e: NotifyArgs): void {
         e.callBack(this.parent.formatter.editorManager.nodeSelection.getRange(
-            this.parent.contentModule.getDocument(),
+            this.parent.contentModule.getDocument()
         ).toString());
     }
 }

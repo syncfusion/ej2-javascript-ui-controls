@@ -18,64 +18,65 @@ export class BookmarkDialog {
     private deleteButton: Button;
     private gotoButton: Button;
     /**
+     * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
      */
-    constructor(documentHelper: DocumentHelper) {
+    public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
     }
-    /**
-     * @private
-     */
-    public getModuleName(): string {
+
+    private getModuleName(): string {
         return 'BookmarkDialog';
     }
     /**
      * @private
+     * @param {L10n} localValue - Specifies the locale.
+     * @param {string[]} bookmarks - Specifies bookmark collection.
+     * @param {boolean} isRtl - Specifies is rtl.
+     * @returns {void}
      */
     public initBookmarkDialog(localValue: L10n, bookmarks: string[], isRtl?: boolean): void {
-        let instance: BookmarkDialog = this;
-        let id: string = this.documentHelper.owner.containerId + '_insert_bookmark';
+        const id: string = this.documentHelper.owner.containerId + '_insert_bookmark';
         this.target = createElement('div', { id: id, className: 'e-de-bookmark' });
-        let headerValue: string = localValue.getConstant('Bookmark name') + ':';
-        let dlgFields: HTMLElement = createElement('div', { innerHTML: headerValue, className: 'e-bookmark-dlgfields' });
+        const headerValue: string = localValue.getConstant('Bookmark name') + ':';
+        const dlgFields: HTMLElement = createElement('div', { innerHTML: headerValue, className: 'e-bookmark-dlgfields' });
         this.target.appendChild(dlgFields);
 
-        let commonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-common' });
+        const commonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-common' });
         this.target.appendChild(commonDiv);
 
-        let searchDiv: HTMLElement = createElement('div', { className: 'e-bookmark-list' });
+        const searchDiv: HTMLElement = createElement('div', { className: 'e-bookmark-list' });
         commonDiv.appendChild(searchDiv);
         if (isRtl) {
             searchDiv.classList.add('e-de-rtl');
         }
 
-        let textBoxDiv: HTMLElement = createElement('div', { className: 'e-bookmark-textboxdiv' });
+        const textBoxDiv: HTMLElement = createElement('div', { className: 'e-bookmark-textboxdiv' });
         searchDiv.appendChild(textBoxDiv);
 
-        // tslint:disable-next-line:max-line-length
         this.textBoxInput = createElement('input', { className: 'e-input e-bookmark-textbox-input', id: 'bookmark_text_box', attrs: { autofocus: 'true' } }) as HTMLInputElement;
         this.textBoxInput.setAttribute('type', 'text');
         textBoxDiv.appendChild(this.textBoxInput);
 
-        let listviewDiv: HTMLElement = createElement('div', { className: 'e-bookmark-listViewDiv', id: 'bookmark_listview' });
+        const listviewDiv: HTMLElement = createElement('div', { className: 'e-bookmark-listViewDiv', id: 'bookmark_listview' });
         searchDiv.appendChild(listviewDiv);
-        let arts: string[] = this.documentHelper.bookmarks.keys;
+        // const arts: string[] = this.documentHelper.bookmarks.keys;
 
         this.listviewInstance = new ListView({
             dataSource: bookmarks,
-            cssClass: 'e-bookmark-listview',
+            cssClass: 'e-bookmark-listview'
         });
-        let hasNoBookmark: boolean = (bookmarks === undefined || bookmarks.length === 0);
+        const hasNoBookmark: boolean = (bookmarks === undefined || bookmarks.length === 0);
 
         this.listviewInstance.appendTo(listviewDiv);
         this.listviewInstance.addEventListener('select', this.selectHandler);
 
-        let buttonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-button' });
+        const buttonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-button' });
         commonDiv.appendChild(buttonDiv);
 
-        let addbuttonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-addbutton' });
+        const addbuttonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-addbutton' });
         buttonDiv.appendChild(addbuttonDiv);
-        let addButtonElement: HTMLElement = createElement('button', {
+        const addButtonElement: HTMLElement = createElement('button', {
             innerHTML: localValue.getConstant('Add'), id: 'add',
             attrs: { type: 'button' }
         });
@@ -87,9 +88,9 @@ export class BookmarkDialog {
         this.textBoxInput.addEventListener('keyup', this.onKeyUpOnTextBox);
         addButtonElement.addEventListener('click', this.addBookmark);
 
-        let deleteButtonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-deletebutton' });
+        const deleteButtonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-deletebutton' });
         buttonDiv.appendChild(deleteButtonDiv);
-        let deleteButtonElement: HTMLElement = createElement('button', {
+        const deleteButtonElement: HTMLElement = createElement('button', {
             innerHTML: localValue.getConstant('Delete'), id: 'delete',
             attrs: { type: 'button' }
         });
@@ -100,9 +101,9 @@ export class BookmarkDialog {
         deleteButtonElement.addEventListener('click', this.deleteBookmark);
 
 
-        let gotoButtonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-gotobutton' });
+        const gotoButtonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-gotobutton' });
         buttonDiv.appendChild(gotoButtonDiv);
-        let gotoButtonElement: HTMLElement = createElement('button', {
+        const gotoButtonElement: HTMLElement = createElement('button', {
             innerHTML: localValue.getConstant('Go To'), id: 'goto',
             attrs: { type: 'button' }
         });
@@ -114,10 +115,11 @@ export class BookmarkDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public show(): void {
-        let bookmarks: string[] = this.documentHelper.getBookmarks();
-        let localObj: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        const bookmarks: string[] = this.documentHelper.getBookmarks();
+        const localObj: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         localObj.setLocale(this.documentHelper.owner.locale);
         // if (!this.target) {
         this.initBookmarkDialog(localObj, bookmarks, this.documentHelper.owner.enableRtl);
@@ -133,39 +135,42 @@ export class BookmarkDialog {
             buttonModel: { content: localObj.getConstant('Cancel'), cssClass: 'e-flat e-hyper-insert', isPrimary: true }
         }];
         this.documentHelper.dialog.dataBind();
-        let hasNoBookmark: boolean = (bookmarks === undefined || bookmarks.length === 0);
+        const hasNoBookmark: boolean = (bookmarks === undefined || bookmarks.length === 0);
         if (!hasNoBookmark) {
-            /* tslint:disable:no-any */
-            let firstItem: any = bookmarks[0];
+            /* eslint-disable @typescript-eslint/no-explicit-any */
+            const firstItem: any = bookmarks[0];
             this.listviewInstance.selectItem(firstItem);
         }
         this.documentHelper.dialog.show();
     }
     /**
      * @private
+     * @returns {void}
      */
-    public onKeyUpOnTextBox = (event: KeyboardEvent): void => {
+    public onKeyUpOnTextBox = (): void => {
         this.enableOrDisableButton();
-    }
+    };
     private enableOrDisableButton(): void {
         if (!isNullOrUndefined(this.addButton)) {
-            // tslint:disable-next-line:max-line-length
             this.addButton.disabled = ((this.textBoxInput as HTMLInputElement).value === '');
         }
     }
+    /**
+     * @private
+     * @returns {void}
+     */
     private addBookmark = (): void => {
         this.documentHelper.owner.editorModule.insertBookmark((this.textBoxInput as HTMLInputElement).value);
         this.documentHelper.hideDialog();
-    }
-    /* tslint:disable:no-any */
+    };
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     private selectHandler = (args: any): void => {
         this.focusTextBox(args.text);
-    }
-    /* tslint:disable:no-any */
+    };
     private focusTextBox(text: string): void {
         (this.textBoxInput as HTMLInputElement).value = text;
-        /* tslint:disable:no-any */
-        let value: any = document.getElementById('bookmark_text_box');
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        const value: any = document.getElementById('bookmark_text_box');
         value.setSelectionRange(0, (text as string).length);
         value.focus();
         this.enableOrDisableButton();
@@ -173,17 +178,24 @@ export class BookmarkDialog {
     private removeObjects(): void {
         this.documentHelper.hideDialog();
     }
-
+    /**
+     * @private
+     * @returns {void}
+     */
     private gotoBookmark = (): void => {
         this.documentHelper.selection.selectBookmark((this.textBoxInput as HTMLInputElement).value);
-    }
-
+    };
+    /**
+     * @private
+     * @returns {void}
+     */
     private deleteBookmark = (): void => {
         this.documentHelper.owner.editorModule.deleteBookmark((this.textBoxInput as HTMLInputElement).value);
         this.show();
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         if (this.textBoxInput) {

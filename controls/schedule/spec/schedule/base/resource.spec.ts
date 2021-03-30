@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * Schedule resource base spec 
+ * Schedule resource base spec
  */
 import { isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
@@ -16,10 +17,9 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews);
 
 describe('Schedule Resources', () => {
     beforeAll(() => {
-        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
             (this as any).skip(); //Skips test (in Chai)
             return;
@@ -28,8 +28,8 @@ describe('Schedule Resources', () => {
 
     describe('Multiple resource', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%',
                 height: '550px',
                 selectedDate: new Date(2017, 10, 1),
@@ -61,8 +61,8 @@ describe('Schedule Resources', () => {
 
     describe('Event Color by resources', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%',
                 height: '550px',
                 selectedDate: new Date(2018, 3, 1),
@@ -90,13 +90,13 @@ describe('Schedule Resources', () => {
         });
 
         it('control class testing', () => {
-            let eventBg: string = (schObj.element.querySelector('.e-appointment') as HTMLElement).style.backgroundColor;
+            const eventBg: string = (schObj.element.querySelector('.e-appointment') as HTMLElement).style.backgroundColor;
             expect(eventBg).toEqual('rgb(255, 170, 0)');
         });
 
-        it('event color by rooms', (done: Function) => {
+        it('event color by rooms', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let eventBg: string = (schObj.element.querySelector('.e-appointment') as HTMLElement).style.backgroundColor;
+                const eventBg: string = (schObj.element.querySelector('.e-appointment') as HTMLElement).style.backgroundColor;
                 expect(eventBg).toEqual('rgb(203, 107, 178)');
                 done();
             };
@@ -107,8 +107,8 @@ describe('Schedule Resources', () => {
 
     describe('Multiple resource with group', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%',
                 height: '550px',
                 selectedDate: new Date(2018, 3, 1),
@@ -140,7 +140,7 @@ describe('Schedule Resources', () => {
 
         it('resource details in quick event popup', () => {
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[3] as HTMLElement, 'click');
-            let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup.classList).toContain('e-popup-open');
             (<HTMLElement>eventPopup.querySelector('.e-close')).click();
         });
@@ -172,8 +172,8 @@ describe('Schedule Resources', () => {
 
     describe('Multiple resource with group setmodel testing', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%',
                 height: '550px',
                 currentView: 'WorkWeek',
@@ -223,8 +223,8 @@ describe('Schedule Resources', () => {
 
     describe('Multiple resource group with custom workdays and hours', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%',
                 height: '550px',
                 selectedDate: new Date(2017, 10, 1),
@@ -262,8 +262,8 @@ describe('Schedule Resources', () => {
 
     describe('Multiple resource group with custom workdays and hours', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%',
                 height: '650px',
                 selectedDate: new Date(2018, 3, 1),
@@ -307,8 +307,8 @@ describe('Schedule Resources', () => {
 
     describe('Multiple resource without group rendering in setmodel', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = { width: '100%', height: '550px', selectedDate: new Date(2017, 10, 1) };
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = { width: '100%', height: '550px', selectedDate: new Date(2017, 10, 1) };
             schObj = util.createSchedule(model, [], done);
         });
         afterAll(() => {
@@ -320,7 +320,7 @@ describe('Schedule Resources', () => {
             expect(schObj.group.resources.length).toEqual(0);
         });
 
-        it('setmodel group value checking', (done: Function) => {
+        it('setmodel group value checking', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.resources.length).toEqual(2);
                 expect(schObj.group.resources.length).toEqual(0);
@@ -343,7 +343,7 @@ describe('Schedule Resources', () => {
             schObj.dataBind();
         });
 
-        it('setmodel group value checking', (done: Function) => {
+        it('setmodel group value checking', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.resources.length).toEqual(2);
                 expect(schObj.group.resources.length).toEqual(2);
@@ -356,8 +356,8 @@ describe('Schedule Resources', () => {
 
     describe('Resource expand/collapse icon checking', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%',
                 height: '550px',
                 selectedDate: new Date(2018, 3, 1),
@@ -403,7 +403,7 @@ describe('Schedule Resources', () => {
             util.destroy(schObj);
         });
         it('checking resource expand/collapse icon when it has no child', () => {
-            let resourceRow: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-resource-cells.e-parent-node'));
+            const resourceRow: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-resource-cells.e-parent-node'));
             expect(resourceRow[1].parentElement.classList.contains('e-hidden')).toEqual(false);
             expect(resourceRow[1].children[0].classList.contains('e-resource-tree-icon')).toEqual(true);
             expect(resourceRow[1].children[0].classList.contains('e-resource-collapse')).toEqual(true);
@@ -418,17 +418,17 @@ describe('Schedule Resources', () => {
         it('resource icon click testing with tooltip enabled', () => {
             schObj.eventSettings.enableTooltip = true;
             schObj.dataBind();
-            let resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
+            const resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
             expect(schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)').length).toEqual(5);
-            let firstRow: HTMLElement = resourceRow.children[1].querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
+            const firstRow: HTMLElement = resourceRow.children[1].querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
             firstRow.click();
             expect(schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)').length).toEqual(6);
         });
         it('resource icon click testing with actionBegin event', () => {
             schObj.actionBegin = (args: ActionEventArgs) => args.cancel = true;
-            let resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
+            const resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
             expect(schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)').length).toEqual(6);
-            let firstRow: HTMLElement = resourceRow.children[1].querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
+            const firstRow: HTMLElement = resourceRow.children[1].querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
             firstRow.click();
             expect(schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)').length).toEqual(6);
         });
@@ -453,8 +453,8 @@ describe('Schedule Resources', () => {
 
     describe('Public methods for resoure expand/collpase ', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '500px', height: '460px',
                 views: ['TimelineWeek'],
                 selectedDate: new Date(2017, 10, 1),
@@ -483,7 +483,7 @@ describe('Schedule Resources', () => {
                         ],
                         textField: 'Text', idField: 'Id', groupIDField: 'GroupId', colorField: 'Color'
                     }
-                ],
+                ]
             };
             schObj = util.createSchedule(model, [], done);
         });
@@ -510,8 +510,8 @@ describe('Schedule Resources', () => {
 
     describe('Public methods checking for resources', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%', height: '550px',
                 selectedDate: new Date(2017, 10, 1),
                 resources: [{
@@ -536,15 +536,15 @@ describe('Schedule Resources', () => {
         });
 
         it('Initial resource testing', () => {
-            expect((<Object[]>schObj.resources.slice(-1)[0].dataSource).length).toEqual(3);
+            expect((<Record<string, any>[]>schObj.resources.slice(-1)[0].dataSource).length).toEqual(3);
         });
 
         it('quick cell popup testing', () => {
-            let morePopup: Popup = schObj.quickPopup.morePopup;
+            const morePopup: Popup = schObj.quickPopup.morePopup;
             schObj.quickPopup.morePopup = null;
-            let workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             util.triggerMouseEvent(workCell, 'click');
-            let quickPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            const quickPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(quickPopup.classList.contains('e-popup-open')).toEqual(true);
             expect(quickPopup.classList.contains('e-popup-close')).toEqual(false);
             expect(quickPopup.querySelector('.e-resource-details')).toBeNull();
@@ -567,12 +567,12 @@ describe('Schedule Resources', () => {
 
         it('Public method for add resource', () => {
             schObj.addResource({ Text: 'New Resource', Id: 11, GroupID: 1, Color: '#7499e1' }, 'Owners', 1);
-            expect((<Object[]>schObj.resourceCollection.slice(-1)[0].dataSource).length).toEqual(4);
+            expect((<Record<string, any>[]>schObj.resourceCollection.slice(-1)[0].dataSource).length).toEqual(4);
         });
 
         it('Public method for remove resource', () => {
             schObj.removeResource(11, 'Owners');
-            expect((<Object[]>schObj.resourceCollection.slice(-1)[0].dataSource).length).toEqual(3);
+            expect((<Record<string, any>[]>schObj.resourceCollection.slice(-1)[0].dataSource).length).toEqual(3);
         });
 
         it('Public method setWorkHours checking with resource', () => {
@@ -587,8 +587,8 @@ describe('Schedule Resources', () => {
 
     describe('Add resources dynamically', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%', height: '550px',
                 selectedDate: new Date(),
                 group: { resources: ['Rooms'] },
@@ -597,7 +597,7 @@ describe('Schedule Resources', () => {
                     name: 'Rooms', allowMultiple: true,
                     dataSource: [],
                     textField: 'Text', idField: 'Id', colorField: 'Color'
-                }],
+                }]
             };
             schObj = util.createSchedule(model, [], done);
         });
@@ -605,13 +605,13 @@ describe('Schedule Resources', () => {
             util.destroy(schObj);
         });
 
-        it('Test eventwindow and datasource length', (done: Function) => {
+        it('Test eventwindow and datasource length', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(!isNullOrUndefined(schObj.eventWindow)).toEqual(true);
-                expect((schObj.resourceCollection[0].dataSource as Object[]).length).toEqual(1);
+                expect((schObj.resourceCollection[0].dataSource as Record<string, any>[]).length).toEqual(1);
                 done();
             };
-            let roomDetails: Object = { Id: 1, Text: 'Meeting Room', Color: '#000' };
+            const roomDetails: Record<string, any> = { Id: 1, Text: 'Meeting Room', Color: '#000' };
             schObj.addResource(roomDetails, 'Rooms', 0);
         });
     });
@@ -619,8 +619,8 @@ describe('Schedule Resources', () => {
     describe('Keyboard interactions with multiple resource grouping', () => {
         let schObj: Schedule;
         let keyModule: any;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%', height: '550px',
                 selectedDate: new Date(2018, 3, 1),
                 group: { resources: ['Rooms', 'Owners'] },
@@ -647,12 +647,12 @@ describe('Schedule Resources', () => {
 
         it('multiple work cells selection for particular resource', () => {
             keyModule = schObj.keyboardInteractionModule;
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             keyModule.initialTarget = workCells[428];
             util.triggerMouseEvent(workCells[428], 'mousedown');
             util.triggerMouseEvent(workCells[495], 'mousemove');
             util.triggerMouseEvent(workCells[495], 'mouseup');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(201);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -663,12 +663,12 @@ describe('Schedule Resources', () => {
 
         it('multiple work cells selection for other resource', () => {
             keyModule = schObj.keyboardInteractionModule;
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             keyModule.initialTarget = workCells[428];
             util.triggerMouseEvent(workCells[428], 'mousedown');
             util.triggerMouseEvent(workCells[500], 'mousemove');
             util.triggerMouseEvent(workCells[500], 'mouseup');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(274);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -680,10 +680,10 @@ describe('Schedule Resources', () => {
 
     describe('actionFailure testing for resource datasource', () => {
         let schObj: Schedule;
-        let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
+        const actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
         beforeAll(() => {
             jasmine.Ajax.install();
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 selectedDate: new Date(2019, 11, 5),
                 group: { resources: ['Owners'] },
                 resources: [{
@@ -694,8 +694,8 @@ describe('Schedule Resources', () => {
             };
             schObj = util.createSchedule(model, resourceData);
         });
-        beforeEach((done: Function) => {
-            let request: JasmineAjaxRequest = jasmine.Ajax.requests.mostRecent();
+        beforeEach((done: DoneFn) => {
+            const request: JasmineAjaxRequest = jasmine.Ajax.requests.mostRecent();
             request.respondWith({ 'status': 404, 'contentType': 'application/json', 'responseText': 'Page not found' });
             setTimeout(() => { done(); }, 100);
         });
@@ -710,12 +710,12 @@ describe('Schedule Resources', () => {
 
     describe('Multiple resource grouping rendering in mobile device', () => {
         let schObj: Schedule;
-        let uA: string = Browser.userAgent;
-        let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 9; Pixel XL Build/PPP3.180510.008) ' +
+        const uA: string = Browser.userAgent;
+        const androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 9; Pixel XL Build/PPP3.180510.008) ' +
             'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.81 Mobile Safari/537.36';
-        beforeAll((done: Function) => {
+        beforeAll((done: DoneFn) => {
             Browser.userAgent = androidUserAgent;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 width: 300, height: '500px',
                 selectedDate: new Date(2018, 3, 1),
                 views: ['Day', 'Week', 'WorkWeek', 'Month', 'Agenda', 'MonthAgenda'],
@@ -759,12 +759,12 @@ describe('Schedule Resources', () => {
         });
 
         it('resource menu click testing', () => {
-            let treePopup: Popup = (schObj.element.querySelector('.e-resource-tree-popup') as EJ2Instance).ej2_instances[0] as Popup;
+            const treePopup: Popup = (schObj.element.querySelector('.e-resource-tree-popup') as EJ2Instance).ej2_instances[0] as Popup;
             treePopup.showAnimation = null;
             treePopup.hideAnimation = null;
             treePopup.dataBind();
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-close')).toEqual(true);
-            let menuElement: HTMLElement = schObj.element.querySelector('.e-resource-menu .e-icon-menu');
+            const menuElement: HTMLElement = schObj.element.querySelector('.e-resource-menu .e-icon-menu');
             util.triggerMouseEvent(menuElement, 'click');
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-close')).toEqual(false);
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-open')).toEqual(true);
@@ -776,17 +776,17 @@ describe('Schedule Resources', () => {
         });
 
         xit('document click testing', () => {
-            let menuElement: HTMLElement = schObj.element.querySelector('.e-resource-menu .e-icon-menu');
+            const menuElement: HTMLElement = schObj.element.querySelector('.e-resource-menu .e-icon-menu');
             util.triggerMouseEvent(menuElement, 'click');
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-close')).toEqual(false);
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-open')).toEqual(true);
             expect(schObj.element.querySelector('.e-resource-tree-popup-overlay').classList.contains('e-enable')).toEqual(true);
-            let popupWrapper: HTMLElement = schObj.element.querySelector('.e-resource-tree-popup');
+            const popupWrapper: HTMLElement = schObj.element.querySelector('.e-resource-tree-popup');
             util.triggerMouseEvent(popupWrapper, 'mousedown');
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-close')).toEqual(false);
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-open')).toEqual(true);
             expect(schObj.element.querySelector('.e-resource-tree-popup-overlay').classList.contains('e-enable')).toEqual(true);
-            let resourceToolbar: HTMLElement = schObj.element.querySelector('.e-schedule-resource-toolbar') as HTMLElement;
+            const resourceToolbar: HTMLElement = schObj.element.querySelector('.e-schedule-resource-toolbar') as HTMLElement;
             util.triggerMouseEvent(resourceToolbar, 'mousedown');
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-close')).toEqual(true);
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-open')).toEqual(false);
@@ -794,22 +794,22 @@ describe('Schedule Resources', () => {
         });
 
         it('resource node click testing - child node', () => {
-            let menuElement: HTMLElement = schObj.element.querySelector('.e-resource-menu .e-icon-menu');
+            const menuElement: HTMLElement = schObj.element.querySelector('.e-resource-menu .e-icon-menu');
             util.triggerMouseEvent(menuElement, 'click');
             expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:first-child').innerHTML).toEqual('Room 1');
             expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:last-child').innerHTML).toEqual('Nancy');
-            let nodeElement: Element = schObj.element.querySelector('.e-resource-tree .e-list-item:not(.e-has-child):not(.e-active)');
+            const nodeElement: Element = schObj.element.querySelector('.e-resource-tree .e-list-item:not(.e-has-child):not(.e-active)');
             (schObj.resourceBase as any).resourceClick({ event: new MouseEvent('mouseup'), name: 'nodeClicked', node: nodeElement });
             expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:first-child').innerHTML).toEqual('Room 1');
             expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:last-child').innerHTML).toEqual('Michael');
         });
 
         it('resource node click testing - parent node', () => {
-            let menuElement: HTMLElement = schObj.element.querySelector('.e-resource-menu .e-icon-menu');
+            const menuElement: HTMLElement = schObj.element.querySelector('.e-resource-menu .e-icon-menu');
             util.triggerMouseEvent(menuElement, 'click');
             expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:first-child').innerHTML).toEqual('Room 1');
             expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:last-child').innerHTML).toEqual('Michael');
-            let nodeElement: Element = schObj.element.querySelector('.e-resource-tree .e-list-item.e-has-child');
+            const nodeElement: Element = schObj.element.querySelector('.e-resource-tree .e-list-item.e-has-child');
             (schObj.resourceBase as any).resourceClick({ event: new MouseEvent('mouseup'), name: 'nodeClicked', node: nodeElement });
             expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:first-child').innerHTML).toEqual('Room 1');
             expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:last-child').innerHTML).toEqual('Michael');
@@ -820,7 +820,7 @@ describe('Schedule Resources', () => {
             expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(3);
         });
 
-        it('resource events checked for day view testing', (done: Function) => {
+        it('resource events checked for day view testing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
                 done();
@@ -829,7 +829,7 @@ describe('Schedule Resources', () => {
             schObj.dataBind();
         });
 
-        it('resource events checked for workweek view testing', (done: Function) => {
+        it('resource events checked for workweek view testing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(2);
                 done();
@@ -838,7 +838,7 @@ describe('Schedule Resources', () => {
             schObj.dataBind();
         });
 
-        it('resource events checked for month view testing', (done: Function) => {
+        it('resource events checked for month view testing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(3);
                 done();
@@ -847,7 +847,7 @@ describe('Schedule Resources', () => {
             schObj.dataBind();
         });
 
-        it('resource events checked for agenda view testing', (done: Function) => {
+        it('resource events checked for agenda view testing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(3);
                 done();
@@ -856,7 +856,7 @@ describe('Schedule Resources', () => {
             schObj.dataBind();
         });
 
-        it('resource events checked for monthAgenda view testing', (done: Function) => {
+        it('resource events checked for monthAgenda view testing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
                 done();
@@ -865,11 +865,11 @@ describe('Schedule Resources', () => {
             schObj.dataBind();
         });
 
-        it('Negative case for resource without timescale', (done: Function) => {
+        it('Negative case for resource without timescale', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(3);
                 expect(schObj.getWorkCellElements().length).toEqual(336);
-                let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+                const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
                 expect(workCells[126].getAttribute('data-date')).toEqual(new Date(2018, 3, 1, 9, 0).getTime().toString());
                 done();
             };
@@ -877,10 +877,10 @@ describe('Schedule Resources', () => {
             schObj.dataBind();
         });
 
-        it('Negative case for resource with timescale', (done: Function) => {
+        it('Negative case for resource with timescale', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.getWorkCellElements().length).toEqual(7);
-                let emptyCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+                const emptyCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
                 expect(isNullOrUndefined(emptyCell[126])).toEqual(true);
                 done();
             };
@@ -891,12 +891,12 @@ describe('Schedule Resources', () => {
 
     describe('Negative testcases for resource grouping rendering in mobile device', () => {
         let schObj: Schedule;
-        let uA: string = Browser.userAgent;
-        let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 9; Pixel XL Build/PPP3.180510.008) ' +
+        const uA: string = Browser.userAgent;
+        const androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 9; Pixel XL Build/PPP3.180510.008) ' +
             'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.81 Mobile Safari/537.36';
-        beforeAll((done: Function) => {
+        beforeAll((done: DoneFn) => {
             Browser.userAgent = androidUserAgent;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 width: 300, height: '500px',
                 selectedDate: new Date(2018, 3, 1),
                 views: ['Day', 'Week', 'WorkWeek', 'Month', 'Agenda', 'MonthAgenda'],
@@ -939,8 +939,8 @@ describe('Schedule Resources', () => {
 
     describe('Event Color by resources for timeline view', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%',
                 height: '550px',
                 views: ['TimelineWeek'],
@@ -969,13 +969,13 @@ describe('Schedule Resources', () => {
         });
 
         it('event color by owner', () => {
-            let eventBg: string = (schObj.element.querySelector('.e-appointment') as HTMLElement).style.backgroundColor;
+            const eventBg: string = (schObj.element.querySelector('.e-appointment') as HTMLElement).style.backgroundColor;
             expect(eventBg).toEqual('rgb(255, 170, 0)');
         });
 
-        it('event color by rooms', (done: Function) => {
+        it('event color by rooms', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let eventBg: string = (schObj.element.querySelector('.e-appointment') as HTMLElement).style.backgroundColor;
+                const eventBg: string = (schObj.element.querySelector('.e-appointment') as HTMLElement).style.backgroundColor;
                 expect(eventBg).toEqual('rgb(203, 107, 178)');
                 done();
             };
@@ -986,8 +986,8 @@ describe('Schedule Resources', () => {
 
     describe('Checking scroll to resource public method', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '480px', height: '360px',
                 views: ['Week', 'Month', 'TimelineMonth'],
                 selectedDate: new Date(2017, 10, 1),
@@ -1016,7 +1016,7 @@ describe('Schedule Resources', () => {
                         ],
                         textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color'
                     }
-                ],
+                ]
             };
             schObj = util.createSchedule(model, [], done);
         });
@@ -1049,13 +1049,9 @@ describe('Schedule Resources', () => {
 
     it('memory leak', () => {
         profile.sample();
-        // tslint:disable:no-any
-        let average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
+        const average: number = inMB(profile.averageChange);
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        const memory: number = inMB(getMemoryProfile());
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        // tslint:enable:no-any
     });
 });

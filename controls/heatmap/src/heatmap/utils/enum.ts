@@ -1,9 +1,9 @@
-/** 
+/**
  * Defines the Alignment. They are
  * * near - Align the element to the left.
  * * center - Align the element to the center.
  * * far - Align the element to the right.
- * * 
+ * *
  */
 
 export type Alignment =
@@ -28,7 +28,7 @@ export type ExportType =
     'PDF';
 
 
-/** 
+/**
  * Defines Theme of the heatmap.
  */
 export type HeatMapTheme =
@@ -46,7 +46,7 @@ export type HeatMapTheme =
     'MaterialDark' |
     /**  Render a HeatMap with Fabric Dark theme. */
     'FabricDark' |
-     /**  Render a HeatMap with HighContrast theme. */
+    /**  Render a HeatMap with HighContrast theme. */
     'HighContrast'|
     /**  Render a HeatMap with Bootstrap Dark theme. */
     'BootstrapDark';
@@ -57,7 +57,7 @@ export type Orientation =
     /**  Vertical Axis. */
     'Vertical';
 
-/** 
+/**
  * Defines the type of axis. They are
  * * double -  Renders a numeric axis.
  * * dateTime - Renders a dateTime axis.
@@ -71,7 +71,7 @@ export type ValueType =
     /** Define the Category axis . */
     'Category';
 
-/** 
+/**
  * Defines Color type for heat map cell.
  * * Gradient - Render a HeatMap cells with linear gradient color.
  * * Fixed - Render a HeatMap cells with fixed color.
@@ -82,7 +82,7 @@ export type PaletteType =
     /** Define the Fixed type color */
     'Fixed';
 
-/** 
+/**
  * Defines cell Type. They are
  * * Rect - Render a HeatMap cells in rectangle shape.
  * * Bubble - Render a HeatMap cells in bubble shape.
@@ -130,16 +130,16 @@ export type IntervalType =
     'Minutes';
 
 /**
- * Defines the Legend position 
- * Left - Legend in the left position 
- * Right - Legend in the left right  position 
+ * Defines the Legend position
+ * Left - Legend in the left position
+ * Right - Legend in the left right  position
  * Up - Legend in the left up  position
  * Down -Legend in the left down position
  */
 export type LegendPosition = 'Left' | 'Right' | 'Top' | 'Bottom';
 
 /**
- * Defines the text over flow 
+ * Defines the text over flow
  * None - Used to show the heat map text with overlap to other element
  * Wrap - Used to show the heat map text with Wrap support
  * Trim - Used to show the heat map text with Trim
@@ -200,7 +200,7 @@ export type LabelIntersectAction =
  * Specifies the type of label display for smart legend.
  * * All:  All labels are displayed.
  * * Edge: Labels will be displayed only at the edges of the legend.
- * * None: No labels are displayed. 
+ * * None: No labels are displayed.
  */
 export type LabelDisplayType =
 /**  All labels are displayed */
@@ -210,7 +210,7 @@ export type LabelDisplayType =
 /** No labels are displayed */
 'None';
 
-/** 
+/**
  * Defines the axis label display type for date time axis.  They are
  * * None: Axis labels displayed based on the value type
  * * years - Define the axis labels display in every year.
@@ -258,7 +258,7 @@ export type BorderType =
  * Specifies the type of label display for smart legend.
  * * Table:  Calculated Minimum and Maximum for Overall dataSource.
  * * Row: Calculated Minimum and Maximum for Every Row.
- * * Column : Calculated Minimum and Maximum for Every Column. 
+ * * Column : Calculated Minimum and Maximum for Every Column.
  */
 export type ColorGradientMode =
     /**  Calculate minimum and maximum for overall datasource */

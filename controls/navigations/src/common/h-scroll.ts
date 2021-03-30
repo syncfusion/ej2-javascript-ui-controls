@@ -4,28 +4,27 @@ import { classList, SwipeEventArgs, isNullOrUndefined} from '@syncfusion/ej2-bas
 import { HScrollModel } from './h-scroll-model';
 
 type HTEle = HTMLElement;
-type Str = string;
 
-const CLS_ROOT: Str = 'e-hscroll';
-const CLS_RTL: Str = 'e-rtl';
-const CLS_DISABLE: Str = 'e-overlay';
-const CLS_HSCROLLBAR: Str = 'e-hscroll-bar';
-const CLS_HSCROLLCON: Str = 'e-hscroll-content';
-const CLS_NAVARROW: Str = 'e-nav-arrow';
-const CLS_NAVRIGHTARROW: Str = 'e-nav-right-arrow';
-const CLS_NAVLEFTARROW: Str = 'e-nav-left-arrow';
-const CLS_HSCROLLNAV: Str = 'e-scroll-nav';
-const CLS_HSCROLLNAVRIGHT: Str = 'e-scroll-right-nav';
-const CLS_HSCROLLNAVLEFT: Str = 'e-scroll-left-nav';
-const CLS_DEVICE: Str = 'e-scroll-device';
-const CLS_OVERLAY: Str = 'e-scroll-overlay';
-const CLS_RIGHTOVERLAY: Str = 'e-scroll-right-overlay';
-const CLS_LEFTOVERLAY: Str = 'e-scroll-left-overlay';
+const CLS_ROOT: string = 'e-hscroll';
+const CLS_RTL: string = 'e-rtl';
+const CLS_DISABLE: string = 'e-overlay';
+const CLS_HSCROLLBAR: string = 'e-hscroll-bar';
+const CLS_HSCROLLCON: string = 'e-hscroll-content';
+const CLS_NAVARROW: string = 'e-nav-arrow';
+const CLS_NAVRIGHTARROW: string = 'e-nav-right-arrow';
+const CLS_NAVLEFTARROW: string = 'e-nav-left-arrow';
+const CLS_HSCROLLNAV: string = 'e-scroll-nav';
+const CLS_HSCROLLNAVRIGHT: string = 'e-scroll-right-nav';
+const CLS_HSCROLLNAVLEFT: string = 'e-scroll-left-nav';
+const CLS_DEVICE: string = 'e-scroll-device';
+const CLS_OVERLAY: string = 'e-scroll-overlay';
+const CLS_RIGHTOVERLAY: string = 'e-scroll-right-overlay';
+const CLS_LEFTOVERLAY: string = 'e-scroll-left-overlay';
 const OVERLAY_MAXWID: number = 40;
 
 interface TapEventArgs {
-    name: string;
-    originalEvent: TouchEventArgs | TouchEvent | KeyboardEvent;
+    name: string
+    originalEvent: TouchEventArgs | TouchEvent | KeyboardEvent
 }
 /**
  * HScroll module is introduces horizontal scroller when content exceeds the current viewing area.
@@ -41,35 +40,39 @@ interface TapEventArgs {
  */
 @NotifyPropertyChanges
 export class HScroll extends Component<HTMLElement> implements INotifyPropertyChanged {
+    /* eslint-disable */
+    private isDevice: Boolean;
     private touchModule: Touch;
     private scrollEle: HTEle;
     private scrollItems: HTEle;
-    private uniqueId: Boolean;
+    private uniqueId: boolean;
     private timeout: number;
-    private keyTimeout: Boolean;
+    private keyTimeout: boolean;
     private keyTimer: number;
-    private browser: String;
-    private browserCheck: Boolean;
-    private ieCheck: Boolean;
-    private isDevice: Boolean;
-    private customStep: Boolean;
+    private browser: string;
+    private browserCheck: boolean;
+    private ieCheck: boolean;
+    private customStep: boolean;
 
     /**
      * Specifies the left or right scrolling distance of the horizontal scrollbar moving.
+     *
      * @default null
      */
     @Property(null)
     public scrollStep: number;
     /**
      * Initialize the event handler
+     *
      * @private
+     * @returns {void}
      */
     protected preRender(): void {
         this.browser = Browser.info.name;
         this.browserCheck = this.browser === 'mozilla';
         this.isDevice = Browser.isDevice;
         this.customStep = true;
-        let element: HTEle = this.element;
+        const element: HTEle = this.element;
         this.ieCheck = this.browser === 'edge' || this.browser === 'msie';
         this.initialize();
         if (element.id === '') {
@@ -83,16 +86,18 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * To Initialize the horizontal scroll  rendering
+     *
      * @private
+     * @returns {void}
      */
     protected render(): void {
         this.touchModule = new Touch(this.element, { scroll: this.touchHandler.bind(this), swipe: this.swipeHandler.bind(this) });
         EventHandler.add(this.scrollEle, 'scroll', this.scrollHandler, this);
         if ( !this.isDevice)  {
-             this.createNavIcon(this.element);
-         } else {
-             this.element.classList.add(CLS_DEVICE);
-             this.createOverlay(this.element);
+            this.createNavIcon(this.element);
+        } else {
+            this.element.classList.add(CLS_DEVICE);
+            this.createOverlay(this.element);
         }
         this.setScrollState();
     }
@@ -106,19 +111,20 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * Initializes a new instance of the HScroll class.
-     * @param options  - Specifies HScroll model properties as options.
-     * @param element  - Specifies the element for which horizontal scrolling applies.
+     *
+     * @param {HScrollModel} options  - Specifies HScroll model properties as options.
+     * @param {string | HTMLElement} element  - Specifies the element for which horizontal scrolling applies.
      */
-    constructor(options?: HScrollModel, element?: string | HTMLElement) {
+    public constructor(options?: HScrollModel, element?: string | HTMLElement) {
         super(options, <HTEle | string>element);
     }
     private initialize(): void {
-        let scrollEle: HTEle = this.createElement('div', { className: CLS_HSCROLLCON });
-        let scrollDiv: HTEle = this.createElement('div', { className: CLS_HSCROLLBAR });
+        const scrollEle: HTEle = this.createElement('div', { className: CLS_HSCROLLCON });
+        const scrollDiv: HTEle = this.createElement('div', { className: CLS_HSCROLLBAR });
         scrollDiv.setAttribute('tabindex', '-1');
-        let ele: HTEle = this.element;
-        let innerEle: HTEle[] = [].slice.call(ele.children);
-        for (let ele of innerEle) {
+        const ele: HTEle = this.element;
+        const innerEle: HTEle[] = [].slice.call(ele.children);
+        for (const ele of innerEle) {
             scrollEle.appendChild(ele);
         }
         scrollDiv.appendChild(scrollEle);
@@ -128,12 +134,13 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
         this.scrollItems = scrollEle;
     }
     protected getPersistData(): string {
-        let keyEntity: string[] = ['scrollStep'];
+        const keyEntity: string[] = ['scrollStep'];
         return this.addOnPersist(keyEntity);
     }
     /**
      * Returns the current module name.
-     * @returns string
+     *
+     * @returns {string} - It returns the current module name.
      * @private
      */
     protected getModuleName(): string {
@@ -141,27 +148,32 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * Removes the control from the DOM and also removes all its related events.
-     * @returns void
+     *
+     * @returns {void}
      */
     public destroy(): void {
-        let ele: HTEle = this.element;
+        const ele: HTEle = this.element;
         ele.style.display = '';
         ele.classList.remove(CLS_ROOT);
         ele.classList.remove(CLS_DEVICE);
-        let nav: HTEle[] =  selectAll('.e-' + ele.id + '_nav.' + CLS_HSCROLLNAV, ele);
-        let overlay: HTEle[] = selectAll('.' + CLS_OVERLAY, ele);
+        const nav: HTEle[] =  selectAll('.e-' + ele.id + '_nav.' + CLS_HSCROLLNAV, ele);
+        const overlay: HTEle[] = selectAll('.' + CLS_OVERLAY, ele);
         [].slice.call(overlay).forEach((ele: HTEle) => {
             detach(ele);
         });
-        for (let elem of [].slice.call(this.scrollItems.children)) {
+        for (const elem of [].slice.call(this.scrollItems.children)) {
             ele.appendChild(elem);
         }
         if (this.uniqueId) {
-           this.element.removeAttribute('id'); }
+            this.element.removeAttribute('id');
+        }
         detach(this.scrollEle);
         if (nav.length > 0) {
-          detach(nav[0]);
-          if (!isNullOrUndefined(nav[1])) { detach(nav[1]); } }
+            detach(nav[0]);
+            if (!isNullOrUndefined(nav[1])) {
+                detach(nav[1]);
+            }
+        }
         EventHandler.remove(this.scrollEle, 'scroll', this.scrollHandler);
         this.touchModule.destroy();
         this.touchModule = null;
@@ -170,63 +182,73 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Specifies the value to disable/enable the HScroll component.
      * When set to `true` , the component will be disabled.
+     *
      * @param  {boolean} value - Based on this Boolean value, HScroll will be enabled (false) or disabled (true).
-     * @returns void.
+     * @returns {void}.
      */
     public disable(value: boolean): void {
-      let navEles: HTMLElement[] = selectAll('.e-scroll-nav:not(.' + CLS_DISABLE + ')', this.element );
-      value ? this.element.classList.add(CLS_DISABLE) : this.element.classList.remove(CLS_DISABLE);
-      [].slice.call(navEles).forEach((el: HTMLElement) => {
-        el.setAttribute('tabindex', !value ? '0' : '-1');
-      });
+        const navEles: HTMLElement[] = selectAll('.e-scroll-nav:not(.' + CLS_DISABLE + ')', this.element );
+        if (value) {
+            this.element.classList.add(CLS_DISABLE);
+        } else {
+            this.element.classList.remove(CLS_DISABLE);
+        }
+        [].slice.call(navEles).forEach((el: HTMLElement) => {
+            el.setAttribute('tabindex', !value ? '0' : '-1');
+        });
     }
     private createOverlay(element: HTEle): void {
-      let id: string = element.id.concat('_nav');
-      let rightOverlayEle: HTEle = this.createElement('div', {className: CLS_OVERLAY + ' ' + CLS_RIGHTOVERLAY});
-      let clsRight: string = 'e-' + element.id.concat('_nav ' + CLS_HSCROLLNAV + ' ' + CLS_HSCROLLNAVRIGHT);
-      let rightEle: HTEle = this.createElement('div', { id: id.concat('_right'), className: clsRight });
-      let navItem: HTEle = this.createElement('div', { className: CLS_NAVRIGHTARROW + ' ' + CLS_NAVARROW + ' e-icons' });
-      rightEle.appendChild(navItem);
-      let leftEle: HTEle = this.createElement('div', {className: CLS_OVERLAY + ' ' + CLS_LEFTOVERLAY});
-      if (this.ieCheck ) {
-        rightEle.classList.add('e-ie-align'); }
-      element.appendChild(rightOverlayEle);
-      element.appendChild(rightEle);
-      element.insertBefore(leftEle, element.firstChild);
-      this.eventBinding([rightEle]);
+        const id: string = element.id.concat('_nav');
+        const rightOverlayEle: HTEle = this.createElement('div', {className: CLS_OVERLAY + ' ' + CLS_RIGHTOVERLAY});
+        const clsRight: string = 'e-' + element.id.concat('_nav ' + CLS_HSCROLLNAV + ' ' + CLS_HSCROLLNAVRIGHT);
+        const rightEle: HTEle = this.createElement('div', { id: id.concat('_right'), className: clsRight });
+        const navItem: HTEle = this.createElement('div', { className: CLS_NAVRIGHTARROW + ' ' + CLS_NAVARROW + ' e-icons' });
+        rightEle.appendChild(navItem);
+        const leftEle: HTEle = this.createElement('div', {className: CLS_OVERLAY + ' ' + CLS_LEFTOVERLAY});
+        if (this.ieCheck ) {
+            rightEle.classList.add('e-ie-align');
+        }
+        element.appendChild(rightOverlayEle);
+        element.appendChild(rightEle);
+        element.insertBefore(leftEle, element.firstChild);
+        this.eventBinding([rightEle]);
     }
     private createNavIcon(element: HTEle): void {
-        let id: string = element.id.concat('_nav');
-        let clsRight: string = 'e-' + element.id.concat('_nav ' + CLS_HSCROLLNAV + ' ' + CLS_HSCROLLNAVRIGHT);
-        let nav: HTEle = this.createElement('div', { id: id.concat('_right'), className: clsRight });
+        const id: string = element.id.concat('_nav');
+        const clsRight: string = 'e-' + element.id.concat('_nav ' + CLS_HSCROLLNAV + ' ' + CLS_HSCROLLNAVRIGHT);
+        const nav: HTEle = this.createElement('div', { id: id.concat('_right'), className: clsRight });
         nav.setAttribute('aria-disabled', 'false');
-        let navItem: HTEle = this.createElement('div', { className: CLS_NAVRIGHTARROW + ' ' + CLS_NAVARROW + ' e-icons' });
-        let clsLeft: string = 'e-' + element.id.concat('_nav ' + CLS_HSCROLLNAV + ' ' + CLS_HSCROLLNAVLEFT);
-        let navEle: HTEle = this.createElement('div', { id: id.concat('_left'), className: clsLeft + ' ' + CLS_DISABLE });
+        const navItem: HTEle = this.createElement('div', { className: CLS_NAVRIGHTARROW + ' ' + CLS_NAVARROW + ' e-icons' });
+        const clsLeft: string = 'e-' + element.id.concat('_nav ' + CLS_HSCROLLNAV + ' ' + CLS_HSCROLLNAVLEFT);
+        const navEle: HTEle = this.createElement('div', { id: id.concat('_left'), className: clsLeft + ' ' + CLS_DISABLE });
         navEle.setAttribute('aria-disabled', 'true');
-        let navLeftItem: HTEle = this.createElement('div', { className: CLS_NAVLEFTARROW + ' ' + CLS_NAVARROW + ' e-icons' });
+        const navLeftItem: HTEle = this.createElement('div', { className: CLS_NAVLEFTARROW + ' ' + CLS_NAVARROW + ' e-icons' });
         navEle.appendChild(navLeftItem);
         nav.appendChild(navItem);
         element.appendChild(nav);
         element.insertBefore(navEle, element.firstChild);
         if (this.ieCheck ) {
-          nav.classList.add('e-ie-align');
-          navEle.classList.add('e-ie-align'); }
+            nav.classList.add('e-ie-align');
+            navEle.classList.add('e-ie-align');
+        }
         this.eventBinding([nav, navEle]);
     }
     private onKeyPress(e: KeyboardEvent): void {
         if (e.key === 'Enter') {
-         let timeoutFun: Function = () => {
-           this.keyTimeout = true;
-           this.eleScrolling(10, <HTEle>e.target, true);
-          };
-         this.keyTimer = window.setTimeout(
-             () => {
-              timeoutFun();
-          }, 100);
-    }}
+            const timeoutFun: () => void = () => {
+                this.keyTimeout = true;
+                this.eleScrolling(10, <HTEle>e.target, true);
+            };
+            this.keyTimer = window.setTimeout(
+                () => {
+                    timeoutFun();
+                }, 100);
+        }
+    }
     private onKeyUp(e: KeyboardEvent): void {
-        if (e.key !== 'Enter') { return; }
+        if (e.key !== 'Enter') {
+            return;
+        }
         if (this.keyTimeout) {
             this.keyTimeout = false;
         } else {
@@ -235,39 +257,38 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
         clearTimeout(this.keyTimer);
     }
     private eventBinding(ele: HTEle[]): void {
-     [].slice.call(ele).forEach((el: HTEle) => {
-        new Touch(el, {tapHold: this.tabHoldHandler.bind(this), tapHoldThreshold: 500 });
-        el.addEventListener('keydown' , this.onKeyPress.bind(this));
-        el.addEventListener('keyup', this.onKeyUp.bind(this));
-        el.addEventListener('mouseup', this.repeatScroll.bind(this));
-        el.addEventListener('touchend', this.repeatScroll.bind(this));
-        el.addEventListener('contextmenu', (e: Event) => {
-            e.preventDefault();
+        [].slice.call(ele).forEach((el: HTEle) => {
+            new Touch(el, {tapHold: this.tabHoldHandler.bind(this), tapHoldThreshold: 500 });
+            el.addEventListener('keydown' , this.onKeyPress.bind(this));
+            el.addEventListener('keyup', this.onKeyUp.bind(this));
+            el.addEventListener('mouseup', this.repeatScroll.bind(this));
+            el.addEventListener('touchend', this.repeatScroll.bind(this));
+            el.addEventListener('contextmenu', (e: Event) => {
+                e.preventDefault();
+            });
+            EventHandler.add(el, 'click', this.clickEventHandler, this);
         });
-        EventHandler.add(el, 'click', this.clickEventHandler, this);
-      });
     }
     private repeatScroll(): void {
-      clearInterval (this.timeout);
+        clearInterval (this.timeout);
     }
     private tabHoldHandler(e: TapEventArgs): void {
-       let trgt: HTEle = e.originalEvent.target as HTEle;
-       trgt = this.contains(trgt, CLS_HSCROLLNAV) ? <HTEle>trgt.firstElementChild : trgt;
-       let scrollDis: number = 10;
-       let timeoutFun: Function = () => {
-       this.eleScrolling(scrollDis, trgt, true);
-       };
-       this.timeout = window.setInterval(
-           () => {
-              timeoutFun();
-        }, 50);
+        let trgt: HTEle = e.originalEvent.target as HTEle;
+        trgt = this.contains(trgt, CLS_HSCROLLNAV) ? <HTEle>trgt.firstElementChild : trgt;
+        const scrollDis: number = 10;
+        const timeoutFun: () => void = () => {
+            this.eleScrolling(scrollDis, trgt, true);
+        };
+        this.timeout = window.setInterval(
+            () => {
+                timeoutFun();
+            }, 50);
     }
     private contains(ele: HTEle, className: string): boolean {
-     return ele.classList.contains(className);
+        return ele.classList.contains(className);
     }
     private eleScrolling(scrollDis: number, trgt: HTEle, isContinuous: boolean ): void {
-        let element: HTEle = this.scrollEle;
-        let rootEle: HTEle = this.element;
+        const rootEle: HTEle = this.element;
         let classList: DOMTokenList = trgt.classList;
         if (classList.contains(CLS_HSCROLLNAV)) {
             classList = trgt.querySelector('.' + CLS_NAVARROW).classList;
@@ -275,7 +296,6 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.contains(rootEle, CLS_RTL) && this.browserCheck) {
             scrollDis = - scrollDis;
         }
-        let scrlLeft: number = element.scrollLeft;
         if ((!this.contains(rootEle, CLS_RTL) || this.browserCheck)  || this.ieCheck) {
             if (classList.contains(CLS_NAVRIGHTARROW)) {
                 this.frameScrollRequest(scrollDis, 'add', isContinuous);
@@ -295,21 +315,21 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private swipeHandler(e: SwipeEventArgs): void {
-        let swipeEle: HTEle = this.scrollEle;
+        const swipeEle: HTEle = this.scrollEle;
         let distance: number;
         if (e.velocity <= 1) {
             distance = e.distanceX  / (e.velocity * 10);
-          } else {
+        } else {
             distance = e.distanceX / e.velocity;
-          }
+        }
         let start: number = 0.5;
-        let animate: Function = () => {
-            let step: number = Math.sin(start);
+        const animate: () => void = () => {
+            const step: number = Math.sin(start);
             if (step <= 0) {
-              window.cancelAnimationFrame(step);
+                window.cancelAnimationFrame(step);
             } else {
                 if (e.swipeDirection === 'Left') {
-                  swipeEle.scrollLeft += distance * step;
+                    swipeEle.scrollLeft += distance * step;
                 } else if (e.swipeDirection === 'Right') {
                     swipeEle.scrollLeft -= distance * step;
                 }
@@ -324,77 +344,79 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
         if (action === 'add') {
             this.scrollEle.scrollLeft += scrollVal;
         } else {
-          this.scrollEle.scrollLeft -= scrollVal; }
+            this.scrollEle.scrollLeft -= scrollVal;
+        }
     }
 
     private frameScrollRequest(scrollVal: number, action: string, isContinuous: boolean): void {
-      let step: number = 10;
-      if (isContinuous) {
-        this.scrollUpdating(scrollVal, action);
-        return;
-      }
-      if (!this.customStep) {
-      [].slice.call(selectAll('.' + CLS_OVERLAY, this.element)).forEach((el: HTMLElement) => {
-          scrollVal -= el.offsetWidth; }); }
-      let animate: Function = () => {
-       let scrollValue: number;
-       let scrollStep: number;
-       if (this.contains(this.element, CLS_RTL) && this.browserCheck) {
-            scrollValue = - scrollVal;
-            scrollStep = - step;
-       } else {
-            scrollValue = scrollVal;
-            scrollStep = step;
-       }
-       if (scrollValue < step) {
-           window.cancelAnimationFrame(scrollStep);
-       } else {
-            this.scrollUpdating(scrollStep, action);
-            scrollVal -= scrollStep;
-            window.requestAnimationFrame(animate as FrameRequestCallback);
-       }
-      };
-      animate();
+        const step: number = 10;
+        if (isContinuous) {
+            this.scrollUpdating(scrollVal, action);
+            return;
+        }
+        if (!this.customStep) {
+            [].slice.call(selectAll('.' + CLS_OVERLAY, this.element)).forEach((el: HTMLElement) => {
+                scrollVal -= el.offsetWidth;
+            });
+        }
+        const animate: () => void = () => {
+            let scrollValue: number;
+            let scrollStep: number;
+            if (this.contains(this.element, CLS_RTL) && this.browserCheck) {
+                scrollValue = - scrollVal;
+                scrollStep = - step;
+            } else {
+                scrollValue = scrollVal;
+                scrollStep = step;
+            }
+            if (scrollValue < step) {
+                window.cancelAnimationFrame(scrollStep);
+            } else {
+                this.scrollUpdating(scrollStep, action);
+                scrollVal -= scrollStep;
+                window.requestAnimationFrame(animate as FrameRequestCallback);
+            }
+        };
+        animate();
     }
 
     private touchHandler(e: ScrollEventArgs): void {
-            let ele: HTEle = this.scrollEle;
-            let distance: number;
-            distance = e.distanceX;
-            if ((this.ieCheck)  && this.contains(this.element, CLS_RTL)) {
-                distance = - distance;
-            }
-            if (e.scrollDirection === 'Left') {
-                ele.scrollLeft = ele.scrollLeft + distance;
-            } else if (e.scrollDirection === 'Right') {
-                ele.scrollLeft = ele.scrollLeft - distance;
-            }
+        const ele: HTEle = this.scrollEle;
+        let distance: number = e.distanceX;
+        if ((this.ieCheck)  && this.contains(this.element, CLS_RTL)) {
+            distance = - distance;
+        }
+        if (e.scrollDirection === 'Left') {
+            ele.scrollLeft = ele.scrollLeft + distance;
+        } else if (e.scrollDirection === 'Right') {
+            ele.scrollLeft = ele.scrollLeft - distance;
+        }
     }
     private arrowDisabling(addDisable: HTEle, removeDisable: HTEle): void {
-      if (this.isDevice) {
-        let arrowEle: HTMLElement = isNullOrUndefined(addDisable) ? removeDisable : addDisable;
-        let arrowIcon: HTMLElement = arrowEle.querySelector('.' + CLS_NAVARROW) as HTMLElement;
-        if (isNullOrUndefined(addDisable)) {
-          classList(arrowIcon, [CLS_NAVRIGHTARROW], [CLS_NAVLEFTARROW]);
+        if (this.isDevice) {
+            const arrowEle: HTMLElement = isNullOrUndefined(addDisable) ? removeDisable : addDisable;
+            const arrowIcon: HTMLElement = arrowEle.querySelector('.' + CLS_NAVARROW) as HTMLElement;
+            if (isNullOrUndefined(addDisable)) {
+                classList(arrowIcon, [CLS_NAVRIGHTARROW], [CLS_NAVLEFTARROW]);
+            } else {
+                classList(arrowIcon, [CLS_NAVLEFTARROW], [CLS_NAVRIGHTARROW]);
+            }
         } else {
-          classList(arrowIcon, [CLS_NAVLEFTARROW], [CLS_NAVRIGHTARROW]);
+            addDisable.classList.add(CLS_DISABLE);
+            addDisable.setAttribute('aria-disabled' , 'true');
+            addDisable.removeAttribute('tabindex');
+            removeDisable.classList.remove(CLS_DISABLE);
+            removeDisable.setAttribute('aria-disabled' , 'false');
+            removeDisable.setAttribute('tabindex', '0');
         }
-      } else {
-      addDisable.classList.add(CLS_DISABLE);
-      addDisable.setAttribute('aria-disabled' , 'true');
-      addDisable.removeAttribute('tabindex');
-      removeDisable.classList.remove(CLS_DISABLE);
-      removeDisable.setAttribute('aria-disabled' , 'false');
-      removeDisable.setAttribute('tabindex', '0');
-    }
-      this.repeatScroll();
+        this.repeatScroll();
     }
     private scrollHandler(e: Event): void {
-        let target: HTEle = <HTEle>e.target;
-        let width: number = target.offsetWidth;
-        let rootEle: HTEle = this.element;
-        let navLeftEle: HTEle = (<HTEle>this.element.querySelector('.' + CLS_HSCROLLNAVLEFT));
-        let navRightEle: HTEle = (<HTEle>this.element.querySelector('.' + CLS_HSCROLLNAVRIGHT));
+        const target: HTEle = <HTEle>e.target;
+        const width: number = target.offsetWidth;
+        const rootEle: HTEle = this.element;
+        const navLeftEle: HTEle = (<HTEle>this.element.querySelector('.' + CLS_HSCROLLNAVLEFT));
+        const navRightEle: HTEle = (<HTEle>this.element.querySelector('.' + CLS_HSCROLLNAVRIGHT));
         let leftOverlay: HTEle = (<HTEle>this.element.querySelector('.' + CLS_LEFTOVERLAY));
         let rightOverlay: HTEle = (<HTEle>this.element.querySelector('.' + CLS_RIGHTOVERLAY));
         let scrollLeft: number = target.scrollLeft;
@@ -404,7 +426,8 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.isDevice) {
             if (this.enableRtl && !(this.browserCheck || this.ieCheck)) {
                 leftOverlay = (<HTEle>this.element.querySelector('.' + CLS_RIGHTOVERLAY));
-                rightOverlay = (<HTEle>this.element.querySelector('.' + CLS_LEFTOVERLAY)); }
+                rightOverlay = (<HTEle>this.element.querySelector('.' + CLS_LEFTOVERLAY));
+            }
             if (scrollLeft < OVERLAY_MAXWID) {
                 leftOverlay.style.width = scrollLeft + 'px';
             } else {
@@ -424,12 +447,12 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
             }
         } else if (Math.ceil(width + scrollLeft + .1) >= target.scrollWidth) {
             if ((!this.contains(rootEle, CLS_RTL) || this.browserCheck) || this.ieCheck) {
-              this.arrowDisabling(navRightEle, navLeftEle);
+                this.arrowDisabling(navRightEle, navLeftEle);
             } else {
                 this.arrowDisabling(navLeftEle, navRightEle);
             }
         } else {
-            let disEle: HTEle = <HTEle>this.element.querySelector('.' + CLS_HSCROLLNAV + '.' + CLS_DISABLE);
+            const disEle: HTEle = <HTEle>this.element.querySelector('.' + CLS_HSCROLLNAV + '.' + CLS_DISABLE);
             if (disEle) {
                 disEle.classList.remove(CLS_DISABLE);
                 disEle.setAttribute('aria-disabled', 'false');
@@ -439,20 +462,21 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * Gets called when the model property changes.The data that describes the old and new values of property that changed.
-     * @param  {HScrollModel} newProp
-     * @param  {HScrollModel} oldProp
-     * @returns void
+     *
+     * @param  {HScrollModel} newProp - It contains the new value of data.
+     * @param  {HScrollModel} oldProp - It contains the old value of data.
+     * @returns {void}
      * @private
      */
     public onPropertyChanged(newProp: HScrollModel, oldProp: HScrollModel): void {
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'scrollStep':
-                    this.setScrollState();
-                    break;
-                case 'enableRtl':
-                    newProp.enableRtl ? this.element.classList.add(CLS_RTL) : this.element.classList.remove(CLS_RTL);
-                    break;
+            case 'scrollStep':
+                this.setScrollState();
+                break;
+            case 'enableRtl':
+                newProp.enableRtl ? this.element.classList.add(CLS_RTL) : this.element.classList.remove(CLS_RTL);
+                break;
             }
         }
     }

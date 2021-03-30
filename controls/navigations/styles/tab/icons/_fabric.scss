@@ -129,4 +129,12 @@
       }
     }
   }
+
+  .e-tab-clone-element {
+
+    .e-close-icon::before {
+      content: '\e7fc';
+      position: relative;
+    }
+  }
 }

@@ -1,3 +1,7 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
 import { TechnicalIndicator } from './technical-indicator';
 import { TechnicalAnalysis } from './indicator-base';
@@ -9,30 +13,32 @@ import { Chart } from '../chart';
 export class MomentumIndicator extends TechnicalAnalysis {
     /**
      * Defines the collection of series to represent a momentum indicator
+     *
      * @private
      */
     public initSeriesCollection(indicator: TechnicalIndicator, chart: Chart): void {
         super.initSeriesCollection(indicator, chart);
-        let upperLine: Series = new Series(indicator, 'targetSeries', {}, true);
+        const upperLine: Series = new Series(indicator, 'targetSeries', {}, true);
         super.setSeriesProperties(
             upperLine, indicator, 'UpperLine', indicator.upperLine.color, indicator.upperLine.width, chart);
     }
 
     /**
      * Defines the predictions using momentum approach
+     *
      * @private
      */
     public initDataSource(indicator: TechnicalIndicator, chart: Chart): void {
-        let upperCollection: Points[] = [];
-        let signalCollection: Points[] = [];
+        const upperCollection: Points[] = [];
+        const signalCollection: Points[] = [];
 
-        let validData: Points[] = indicator.points;
+        const validData: Points[] = indicator.points;
 
         if (validData && validData.length) {
-            let upperSeries: Series = indicator.targetSeries[1];
-            let signalSeries: Series = indicator.targetSeries[0];
+            const upperSeries: Series = indicator.targetSeries[1];
+            const signalSeries: Series = indicator.targetSeries[0];
 
-            let length: number = indicator.period;
+            const length: number = indicator.period;
             if (validData.length >= indicator.period) {
                 for (let i: number = 0; i < validData.length; i++) {
                     upperCollection.push(this.getDataPoint(
@@ -52,11 +58,12 @@ export class MomentumIndicator extends TechnicalAnalysis {
 
     /**
      * To destroy the momentum indicator
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroys the momentum indicator
          */

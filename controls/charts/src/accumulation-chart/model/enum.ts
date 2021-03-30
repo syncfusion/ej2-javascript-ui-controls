@@ -79,7 +79,7 @@ export type AccEmptyPointMode =
     'Zero' |
     /** Used to ignore the empty point while rendering  */
     'Drop' |
-     /** Used to display empty points as previous and next point average  */
+    /** Used to display empty points as previous and next point average  */
     'Average' |
     /** Used to ignore the empty point while rendering   */
     'Gap';

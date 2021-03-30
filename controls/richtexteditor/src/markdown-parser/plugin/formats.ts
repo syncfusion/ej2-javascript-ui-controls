@@ -6,6 +6,7 @@ import * as EVENTS from './../../common/constant';
 import * as CONSTANT from './../../markdown-parser/base/constant';
 /**
  * MDFormats internal plugin
+ * 
  * @hidden
  * @deprecated
  */
@@ -15,10 +16,12 @@ export class MDFormats {
     public syntax: { [key: string]: string };
     /**
      * Constructor for creating the Formats plugin
+     *
+     * @param {IMDFormats} options - specifies the formats
      * @hidden
      * @deprecated
      */
-    constructor(options: IMDFormats) {
+    public constructor(options: IMDFormats) {
         extend(this, this, options, true);
         this.selection = this.parent.markdownSelection;
         this.addEventListener();
@@ -30,7 +33,7 @@ export class MDFormats {
 
     private applyFormats(e: IMarkdownSubCommands): void {
         e.subCommand = e.subCommand.toLowerCase();
-        let textArea: HTMLTextAreaElement = this.parent.element as HTMLTextAreaElement;
+        const textArea: HTMLTextAreaElement = this.parent.element as HTMLTextAreaElement;
         this.selection.save(textArea.selectionStart, textArea.selectionEnd);
         let parents: { [key: string]: string | number }[] = this.selection.getSelectedParentPoints(textArea);
         if (this.isAppliedFormat(parents) === e.subCommand) {
@@ -55,7 +58,7 @@ export class MDFormats {
             }
         }
         let start: number = textArea.selectionStart;
-        let end: number = textArea.selectionEnd;
+        const end: number = textArea.selectionEnd;
         let addedLength: number = 0;
         parents = this.selection.getSelectedParentPoints(textArea);
         if (e.subCommand === 'pre') {
@@ -96,7 +99,7 @@ export class MDFormats {
     }
     private clearRegex(): string {
         let regex: string = '';
-        let configKey: string[] = Object.keys(this.syntax);
+        const configKey: string[] = Object.keys(this.syntax);
         for (let j: number = 0; j < configKey.length && configKey[j] !== 'pre' && configKey[j] !== 'p'; j++) {
             regex += regex === '' ? '^(' + this.selection.replaceSpecialChar(this.syntax[configKey[j]].trim()) + ')' :
                 '|^(' + this.selection.replaceSpecialChar(this.syntax[configKey[j]].trim()) + ')';
@@ -105,17 +108,19 @@ export class MDFormats {
     }
 
     private cleanFormat(textArea: HTMLTextAreaElement, command?: string): void {
-        let parents: { [key: string]: string | number }[] = this.selection.getSelectedParentPoints(textArea);
+        const parents: { [key: string]: string | number }[] = this.selection.getSelectedParentPoints(textArea);
         let start: number = textArea.selectionStart;
-        let end: number = textArea.selectionEnd;
+        const end: number = textArea.selectionEnd;
         let removeLength: number = 0;
         if (this.selection.isClear(parents, this.clearRegex())) {
             for (let i: number = 0; i < parents.length; i++) {
-                let configKey: string[] = Object.keys(this.syntax);
+                const configKey: string[] = Object.keys(this.syntax);
                 for (let j: number = 0; parents[i].text !== '' && j < configKey.length; j++) {
-                    let removeText: string = this.syntax[configKey[j]];
-                    if (configKey[j] === command) { continue; }
-                    let regex: RegExp = new RegExp('^(' + this.selection.replaceSpecialChar(removeText) + ')', 'gim');
+                    const removeText: string = this.syntax[configKey[j]];
+                    if (configKey[j] === command) {
+                        continue;
+                    }
+                    const regex: RegExp = new RegExp('^(' + this.selection.replaceSpecialChar(removeText) + ')', 'gim');
                     if (regex.test(parents[i].text as string)) {
                         parents[i].text = (parents[i].text as string).replace(regex, '');
                         textArea.value = textArea.value.substr(
@@ -149,17 +154,18 @@ export class MDFormats {
 
     private applyCodeBlock(
         textArea: HTMLTextAreaElement, event: IMarkdownSubCommands, parents: { [key: string]: string | number }[]): void {
-        let command: string = event.subCommand;
+        const command: string = event.subCommand;
         let start: number = parents[0].start as number;
         let end: number = parents[parents.length - 1].end as number;
-        let parentLines: string[] = this.selection.getAllParents(textArea.value);
-        let firstPrevText: string = parentLines[(parents[0].line as number) - 1];
-        let lastNextText: string = parentLines[(parents.length + 1) + 1];
-        let addedLength: number = 0;
+        const parentLines: string[] = this.selection.getAllParents(textArea.value);
+        const firstPrevText: string = parentLines[(parents[0].line as number) - 1];
+        const lastNextText: string = parentLines[(parents.length + 1) + 1];
+        // eslint-disable-next-line
+        const addedLength: number = 0;
         if (!this.selection.isStartWith(firstPrevText, this.syntax.pre.split('\n')[0]) &&
             !this.selection.isStartWith(lastNextText, this.syntax.pre.split('\n')[0])) {
-            let lines: string[] = textArea.value.substring(start, end).split('\n');
-            let lastLine: string = lines[lines.length - 1] === '' ? '' : '\n';
+            const lines: string[] = textArea.value.substring(start, end).split('\n');
+            const lastLine: string = lines[lines.length - 1] === '' ? '' : '\n';
             textArea.value = textArea.value.substr(
                 0, start as number) + this.syntax[command] + textArea.value.substring(start, end) +
                 lastLine + this.syntax[command] +
@@ -167,14 +173,14 @@ export class MDFormats {
             start = this.selection.selectionStart + this.syntax[command].length;
             end = this.selection.selectionEnd + this.syntax[command].length - 1;
         } else {
-            let cmd: string = this.syntax[command];
-            let selection: { [key: string]: string | number } = this.parent.markdownSelection.getSelectedInlinePoints(textArea);
-            let startNo: number = textArea.value.substr(0, textArea.selectionStart as number).lastIndexOf(cmd);
+            const cmd: string = this.syntax[command];
+            const selection: { [key: string]: string | number } = this.parent.markdownSelection.getSelectedInlinePoints(textArea);
+            const startNo: number = textArea.value.substr(0, textArea.selectionStart as number).lastIndexOf(cmd);
             let endNo: number = textArea.value.substr(textArea.selectionEnd as number, textArea.selectionEnd as number).indexOf(cmd);
             endNo = endNo + (selection.end as number);
-            let repStartText: string = this.replaceAt(
+            const repStartText: string = this.replaceAt(
                 textArea.value.substr(0, selection.start as number), cmd, '', startNo, selection.start as number);
-            let repEndText: string = this.replaceAt(
+            const repEndText: string = this.replaceAt(
                 textArea.value.substr(selection.end as number, textArea.value.length), cmd, '', 0, endNo);
             textArea.value = repStartText + selection.text + repEndText;
             start = this.selection.selectionStart - cmd.length;
@@ -202,18 +208,19 @@ export class MDFormats {
 
     private isAppliedFormat(lines: { [key: string]: string | number }[], documentNode?: Node): string {
         let format: string = 'p';
-        let configKey: string[] = Object.keys(this.syntax);
-        let keys: string[] = Object.keys(this.syntax);
-        let direction: string = (this.parent.element as HTMLTextAreaElement).selectionDirection;
-        let checkLine: string = direction === 'backward' ? lines[0].text as string : lines[lines.length - 1].text as string;
+         // eslint-disable-next-line
+         const configKey: string[] = Object.keys(this.syntax);
+         const keys: string[] = Object.keys(this.syntax);
+         const direction: string = (this.parent.element as HTMLTextAreaElement).selectionDirection;
+         const checkLine: string = direction === 'backward' ? lines[0].text as string : lines[lines.length - 1].text as string; 
         for (let i: number = 0; !documentNode && i < keys.length; i++) {
             if (keys[i] !== 'pre' && this.selection.isStartWith(checkLine, this.syntax[keys[i]])) {
                 format = keys[i];
                 break;
             } else if (keys[i] === 'pre') {
-                let parentLines: string[] = this.selection.getAllParents((this.parent.element as HTMLTextAreaElement).value);
-                let firstPrevText: string = parentLines[(lines[0].line as number) - 1];
-                let lastNextText: string = parentLines[lines.length + 1];
+                const parentLines: string[] = this.selection.getAllParents((this.parent.element as HTMLTextAreaElement).value);
+                const firstPrevText: string = parentLines[(lines[0].line as number) - 1];
+                const lastNextText: string = parentLines[lines.length + 1];
                 if (this.selection.isStartWith(firstPrevText, this.syntax[keys[i]].split('\n')[0]) &&
                     this.selection.isStartWith(lastNextText, this.syntax[keys[i]].split('\n')[0])) {
                     format = keys[i];

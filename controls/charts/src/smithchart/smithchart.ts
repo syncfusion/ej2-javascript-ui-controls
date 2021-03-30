@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable valid-jsdoc */
 import { Component, Complex, NotifyPropertyChanges, INotifyPropertyChanged, Property, isBlazor } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, Browser, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { createElement, remove, Event, EmitType, EventHandler } from '@syncfusion/ej2-base';
@@ -34,7 +39,7 @@ import { SmithchartExportType } from '../smithchart/utils/enum';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { titleRender, subtitleRender, load, loaded } from '../smithchart/model/constant';
 import { SmithchartModel } from '../smithchart/smithchart-model';
-/* tslint:disable:no-string-literal */
+
 /**
  * Represents the Smithchart control.
  * ```html
@@ -68,6 +73,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * render type of smithchart.
+     *
      * @default Impedance
      */
 
@@ -76,6 +82,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * width for smithchart.
+     *
      * @default ''
      */
     @Property('')
@@ -83,6 +90,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * height for smithchart.
+     *
      * @default ''
      */
     @Property('')
@@ -90,6 +98,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * theme for smithchart.
+     *
      * @default Material
      */
 
@@ -162,6 +171,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * svg renderer object.
+     *
      * @private
      */
     public renderer: SvgRenderer;
@@ -191,6 +201,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      *  Spacing between elements
+     *
      * @default 10
      */
 
@@ -199,6 +210,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      *  Spacing between elements
+     *
      * @default 1
      */
 
@@ -207,14 +219,16 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers before the prints gets started.
-     * @event
+     *
+     * @event beforePrint
      * @blazorProperty 'OnPrint'
      */
     @Event()
     public beforePrint: EmitType<ISmithchartPrintEventArgs>;
     /**
      * Triggers after the animation completed.
-     * @event
+     *
+     * @event animationComplete
      * @blazorProperty 'AnimationCompleted'
      */
     @Event()
@@ -222,14 +236,16 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers before smithchart rendered.
-     * @event
+     *
+     * @event load
      * @blazorProperty 'OnLoad'
      */
     @Event()
     public load: EmitType<ISmithchartLoadEventArgs>;
     /**
      * Triggers after smithchart rendered.
-     * @event
+     *
+     * @event loaded
      * @blazorProperty 'Loaded'
      */
     @Event()
@@ -237,7 +253,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers before the legend is rendered.
-     * @event
+     *
+     * @event legendRender
      * @blazorProperty 'LegendRendering'
      */
     @Event()
@@ -245,7 +262,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers before the title is rendered.
-     * @event
+     *
+     * @event titleRender
      * @blazorProperty 'TitleRendering'
      */
     @Event()
@@ -253,7 +271,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers before the sub-title is rendered.
-     * @event
+     *
+     * @event subtitleRender
      * @blazorProperty 'SubtitleRendering'
      */
     @Event()
@@ -261,14 +280,16 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers before the datalabel text is rendered.
-     * @event
+     *
+     * @event textRender
      * @blazorProperty 'TextRendering'
      */
     @Event()
     public textRender: EmitType<ISmithchartTextRenderEventArgs>;
     /**
      * Triggers before the axis label is rendered
-     * @event
+     *
+     * @event axisLabelRender
      * @blazorProperty 'AxisLabelRendering'
      */
     @Event()
@@ -276,7 +297,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers before the series is rendered.
-     * @event
+     *
+     * @event seriesRender
      */
 
     @Event()
@@ -284,7 +306,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers before the tooltip rendering
-     * @event
+     *
+     * @event tooltipRender
      */
 
     @Event()
@@ -303,6 +326,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Get the properties to be maintained in the persisted state.
+     *
      * @private
      */
     public getPersistData(): string {
@@ -319,16 +343,15 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     }
 
     private renderTitle(title: TitleModel, type: string, groupEle: Element): void {
-        let font: SmithchartFontModel = title.font ? title.font : title.textStyle;
+        const font: SmithchartFontModel = title.font ? title.font : title.textStyle;
         let textSize: SmithchartSize = measureText(title.text, font);
         let x: number;
-        let y: number;
-        let textAlignment: string = title.textAlignment;
+        const textAlignment: string = title.textAlignment;
         let titleText: string = title.text;
-        let maxTitleWidth: number = (isNullOrUndefined(title.maximumWidth)) ?
+        const maxTitleWidth: number = (isNullOrUndefined(title.maximumWidth)) ?
             Math.abs(this.margin.left + this.margin.right - (this.availableSize.width)) :
             title.maximumWidth;
-        let titleWidthEnable: boolean = textSize.width > maxTitleWidth ? true : false;
+        const titleWidthEnable: boolean = textSize.width > maxTitleWidth ? true : false;
         if (textSize.width > this.availableSize.width) {
             x = this.margin.left + this.border.width;
         } else {
@@ -336,13 +359,13 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
                 (textAlignment === 'Near' ? (this.margin.left + this.elementSpacing + this.border.width) : (this.availableSize.width
                     - textSize['width'] - (this.margin.right + this.elementSpacing + this.border.width)));
         }
-        y = this.margin.top + textSize['height'] / 2 + this.elementSpacing;
+        const y: number = this.margin.top + textSize['height'] / 2 + this.elementSpacing;
         if (title.enableTrim && titleWidthEnable) {
             titleText = textTrim(maxTitleWidth, title.text, font);
             textSize = measureText(titleText, font);
         }
         groupEle = this.renderer.createGroup({ id: this.element.id + '_Title_Group' });
-        let titleEventArgs: ITitleRenderEventArgs = {
+        const titleEventArgs: ITitleRenderEventArgs = {
             text: titleText,
             x: x,
             y: y,
@@ -350,16 +373,16 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
             cancel: false
         };
         let options: TextOption;
-        let titleRenderSuccess: Function = (args: ITitleRenderEventArgs) => {
+        const titleRenderSuccess: Function = (args: ITitleRenderEventArgs) => {
             if (!args.cancel) {
                 options = new TextOption(
                     this.element.id + '_Smithchart_' + type, args.x, args.y, 'start', args.text
                 );
                 font.fontFamily = this.themeStyle.fontFamily || title.textStyle.fontFamily;
                 font.size = this.themeStyle.fontSize || title.textStyle.size;
-                let element: Element = renderTextElement(options, font, this.themeStyle.chartTitle, groupEle);
+                const element: Element = renderTextElement(options, font, this.themeStyle.chartTitle, groupEle);
                 element.setAttribute('aria-label', title.description || args.text);
-                let titleLocation: { x: number, y: number, textSize: SmithchartSize } = { x: args.x, y: args.y, textSize: textSize };
+                const titleLocation: { x: number, y: number, textSize: SmithchartSize } = { x: args.x, y: args.y, textSize: textSize };
                 this.svgObject.appendChild(groupEle);
                 if (title.subtitle.text !== '' && title.subtitle.visible) {
                     this.renderSubtitle(title, type, textSize, this.availableSize, titleLocation, groupEle);
@@ -373,37 +396,34 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     private renderSubtitle(
         title: TitleModel, type: string, textSize: SmithchartSize, size: SmithchartSize,
         titleLocation: { x: number, y: number, textSize: SmithchartSize }, groupEle: Element): void {
-        let x: number;
-        let y: number;
-        let font: SmithchartFontModel = title.subtitle.textStyle;
-        let subTitle: SubtitleModel = title.subtitle;
-        let subTitleSize: SmithchartSize = measureText(subTitle.text, font);
-        let textAnchor: string;
+        const font: SmithchartFontModel = title.subtitle.textStyle;
+        const subTitle: SubtitleModel = title.subtitle;
+        const subTitleSize: SmithchartSize = measureText(subTitle.text, font);
         let subTitleText: string = subTitle.text;
-        let maxSubTitleWidth: number = isNullOrUndefined(subTitle.maximumWidth) ?
+        const maxSubTitleWidth: number = isNullOrUndefined(subTitle.maximumWidth) ?
             (this.bounds.width * 0.75) : subTitle.maximumWidth;
         if (subTitle.enableTrim && subTitleSize.width > maxSubTitleWidth) {
             subTitleText = textTrim(maxSubTitleWidth, subTitle.text, font);
         }
-        x = title['subtitle'].textAlignment === 'Far' ? (titleLocation.x + (titleLocation.textSize.width)) :
+        const x: number = title['subtitle'].textAlignment === 'Far' ? (titleLocation.x + (titleLocation.textSize.width)) :
             (title['subtitle'].textAlignment === 'Near') ? titleLocation.x :
                 (titleLocation.x + (titleLocation.textSize.width / 2));
-        y = titleLocation.y + (2 * this.elementSpacing);
-        textAnchor = title['subtitle'].textAlignment === 'Far' ? 'end' :
+        const y: number = titleLocation.y + (2 * this.elementSpacing);
+        const textAnchor: string = title['subtitle'].textAlignment === 'Far' ? 'end' :
             (title['subtitle'].textAlignment === 'Near') ? 'start' : 'middle';
-        let subtitleEventArgs: ISubTitleRenderEventArgs = {
+        const subtitleEventArgs: ISubTitleRenderEventArgs = {
             text: subTitleText,
             x: x,
             y: y,
             name: subtitleRender,
             cancel: false
         };
-        let subtitleRenderSuccess: Function = (args: ISubTitleRenderEventArgs) => {
+        const subtitleRenderSuccess: Function = (args: ISubTitleRenderEventArgs) => {
             if (!args.cancel) {
-                let options: TextOption = new TextOption(
+                const options: TextOption = new TextOption(
                     this.element.id + '_Smithchart_' + type, args.x, args.y, textAnchor, args.text
                 );
-                let element: Element = renderTextElement(options, font, this.themeStyle.chartTitle, groupEle);
+                const element: Element = renderTextElement(options, font, this.themeStyle.chartTitle, groupEle);
                 element.setAttribute('aria-label', subTitle.description || args.text);
                 groupEle.appendChild(element);
             }
@@ -412,14 +432,14 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         this.trigger(subtitleRender, subtitleEventArgs, subtitleRenderSuccess);
     }
     /**
-     * @private
      * Render the smithchart border
+     *
+     * @private
      */
     private renderBorder(): void {
-        let border: SmithchartBorderModel = this.border;
-        let color: string = this.theme.toLowerCase() === 'highcontrast' ? '#000000' : '#FFFFFF';
+        const border: SmithchartBorderModel = this.border;
         this.background = this.background ? this.background : this.themeStyle.background;
-        let borderRect: RectOption = new RectOption(
+        const borderRect: RectOption = new RectOption(
             this.element.id + '_SmithchartBorder', this.background, border, 1, new SmithchartRect(
                 border.width / 2, border.width / 2,
                 this.availableSize.width - border.width,
@@ -428,28 +448,30 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     }
     /**
      * Called internally if any of the property value changed.
+     *
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public onPropertyChanged(newProp: SmithchartModel, oldProp: SmithchartModel): void {
         let renderer: boolean = false;
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'background':
-                case 'border':
-                case 'series':
-                case 'legendSettings':
-                case 'radius':
-                    renderer = true;
-                    break;
-                case 'size':
-                    this.createChartSvg();
-                    renderer = true;
-                    break;
-                case 'theme':
-                case 'renderType':
-                    this.animateSeries = true;
-                    renderer = true;
-                    break;
+            case 'background':
+            case 'border':
+            case 'series':
+            case 'legendSettings':
+            case 'radius':
+                renderer = true;
+                break;
+            case 'size':
+                this.createChartSvg();
+                renderer = true;
+                break;
+            case 'theme':
+            case 'renderType':
+                this.animateSeries = true;
+                renderer = true;
+                break;
             }
         }
         if (renderer) {
@@ -503,12 +525,12 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
             this.legendBounds = this.smithchartLegendModule.renderLegend(this);
         }
         this.legendBounds = this.legendBounds ? this.legendBounds : { x: 0, y: 0, width: 0, height: 0 };
-        let areaBounds: AreaBounds = new AreaBounds();
+        const areaBounds: AreaBounds = new AreaBounds();
         this.bounds = areaBounds.calculateAreaBounds(this, this.title, this.legendBounds);
         if (this.title.text !== '' && this.title.visible) {
             this.renderTitle(this.title, 'title', null);
         }
-        let axisRender: AxisRender = new AxisRender();
+        const axisRender: AxisRender = new AxisRender();
         axisRender.renderArea(this, this.bounds);
         this.seriesrender = new SeriesRender();
         this.seriesrender.draw(this, axisRender, this.bounds);
@@ -518,15 +540,15 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     }
     private createSecondaryElement(): void {
         if (isNullOrUndefined(document.getElementById(this.element.id + '_Secondary_Element'))) {
-            let secondaryElement: HTMLElement = createElement('div', {
+            const secondaryElement: HTMLElement = createElement('div', {
                 id: this.element.id + '_Secondary_Element',
                 styles: 'position: absolute;z-index:1;'
             });
             this.element.appendChild(secondaryElement);
-            let rect: ClientRect = this.element.getBoundingClientRect();
-            let svgRect: HTMLElement = document.getElementById(this.element.id + '_svg');
+            const rect: ClientRect = this.element.getBoundingClientRect();
+            const svgRect: HTMLElement = document.getElementById(this.element.id + '_svg');
             if (svgRect) {
-                let svgClientRect: ClientRect = svgRect.getBoundingClientRect();
+                const svgClientRect: ClientRect = svgRect.getBoundingClientRect();
                 secondaryElement.style.left = Math.max(svgClientRect.left - rect.left, 0) + 'px';
                 secondaryElement.style.top = Math.max(svgClientRect.top - rect.top, 0) + 'px';
             }
@@ -537,9 +559,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     }
     /**
      * To destroy the widget
-     * @method destroy
-     * @return {void}.
-     * @member of smithChart
+     *
+     * @returns {void}.
      */
 
     public destroy(): void {
@@ -580,9 +601,9 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
             this.isTouch = e.pointerType === 'touch' || e.pointerType === '2';
         }
         if (this.tooltipRenderModule && this.isTouch) {
-            let tooltipElement: Tooltip = this.tooltipRenderModule.smithchartMouseMove(this, e);
+            const tooltipElement: Tooltip = this.tooltipRenderModule.smithchartMouseMove(this, e);
             if (tooltipElement) {
-                this.fadeoutTo = setTimeout(
+                this.fadeoutTo = +setTimeout(
                     (): void => {
                         tooltipElement.fadeOut();
                     },
@@ -594,16 +615,15 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     /**
      * To handle the click event for the smithchart.
      */
-    /* tslint:disable:no-string-literal */
     public smithchartOnClick(e: PointerEvent): void {
-        let targetEle: Element = <Element>e.target;
-        let targetId: string = targetEle.id;
-        let parentElement: Element = document.getElementById(targetId).parentElement;
-        let grpElement: Element = document.getElementById(parentElement.id).parentElement;
+        const targetEle: Element = <Element>e.target;
+        const targetId: string = targetEle.id;
+        const parentElement: Element = document.getElementById(targetId).parentElement;
+        const grpElement: Element = document.getElementById(parentElement.id).parentElement;
         if (grpElement.id === 'containerlegendItem_Group' && this.legendSettings.toggleVisibility) {
-            let childElement: HTMLElement = <HTMLElement>parentElement.childNodes[1];
-            let circleElement: HTMLElement = <HTMLElement>parentElement.childNodes[0];
-            let legendText: string = childElement.textContent;
+            const childElement: HTMLElement = <HTMLElement>parentElement.childNodes[1];
+            const circleElement: HTMLElement = <HTMLElement>parentElement.childNodes[0];
+            const legendText: string = childElement.textContent;
             let seriesIndex: number;
             let fill: string;
             for (let i: number = 0; i < this.smithchartLegendModule.legendSeries.length; i++) {
@@ -612,7 +632,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
                     fill = this.smithchartLegendModule.legendSeries[i].fill;
                 }
             }
-            let seriesElement: HTMLElement = <HTMLElement>document.getElementById(
+            const seriesElement: HTMLElement = <HTMLElement>document.getElementById(
                 this.element.id + '_svg' + '_seriesCollection' + seriesIndex);
             if (seriesElement.getAttribute('visibility') === 'visible') {
                 circleElement.setAttribute('fill', 'gray');
@@ -639,28 +659,26 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         );
     }
     public print(id?: string[] | string | Element): void {
-        let exportChart: ExportUtils = new ExportUtils(this);
+        const exportChart: ExportUtils = new ExportUtils(this);
         exportChart.print(id);
     }
     /**
      * Handles the export method for chart control.
-     * @param type 
-     * @param fileName 
      */
     public export(type: SmithchartExportType, fileName: string, orientation?: PdfPageOrientation): void {
-        let exportMap: ExportUtils = new ExportUtils(this);
+        const exportMap: ExportUtils = new ExportUtils(this);
         exportMap.export(type, fileName, orientation);
     }
     /**
      * To handle the window resize event on smithchart.
      */
-    public smithchartOnResize(e: Event): boolean {
+    public smithchartOnResize(): boolean {
 
         this.animateSeries = false;
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
         }
-        this.resizeTo = setTimeout(
+        this.resizeTo = +setTimeout(
             (): void => {
                 this.render();
             },
@@ -669,11 +687,11 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     }
     /**
      * To provide the array of modules needed for smithchart rendering
-     * @return {ModuleDeclaration[]}
-     * @private 
+     *
+     * @private
      */
     public requiredModules(): ModuleDeclaration[] {
-        let modules: ModuleDeclaration[] = [];
+        const modules: ModuleDeclaration[] = [];
         if (this.legendSettings.visible) {
             modules.push({
                 member: 'SmithchartLegend',
@@ -694,13 +712,13 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
 
     /**
-     * To Remove the SVG. 
-     * @return {boolean}
+     * To Remove the SVG.
+     *
      * @private
      */
     public removeSvg(): void {
         removeElement(this.element.id + '_Secondary_Element');
-        let removeLength: number = 0;
+        const removeLength: number = 0;
         if (this.svgObject) {
             while (this.svgObject.childNodes.length > removeLength) {
                 this.svgObject.removeChild(this.svgObject.firstChild);

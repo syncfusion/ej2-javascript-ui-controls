@@ -2,8 +2,9 @@
  * Constant values for EditorManager
  */
 
-/** 
+/**
  * Image plugin events
+ * 
  * @hidden
  */
 export const IMAGE: string = 'INSERT-IMAGE';
@@ -26,19 +27,31 @@ export const TABLEHEADER: string = 'TABLE-HEADER';
 
 export const TABLE_VERTICAL_ALIGN: string = 'TABLE_VERTICAL_ALIGN';
 
+export const TABLE_MERGE: string = 'TABLE_MERGE';
+
+export const TABLE_VERTICAL_SPLIT: string = 'TABLE_VERTICAL_SPLIT';
+
+export const TABLE_HORIZONTAL_SPLIT: string = 'TABLE_HORIZONTAL_SPLIT';
+
+export const TABLE_MOVE: string = 'TABLE_MOVE';
+
 /**
  * Alignments plugin events
+ * 
  * @hidden
  */
 export const ALIGNMENT_TYPE: string = 'alignment-type';
 
 /**
  * Indents plugin events
+ * 
  * @hidden
  */
 export const INDENT_TYPE: string = 'indent-type';
 
-/** Constant tag names
+/** 
+ * Constant tag names
+ * 
  * @hidden
  */
 export const DEFAULT_TAG: string = 'p';
@@ -52,19 +65,20 @@ export const BLOCK_TAGS: string[] = ['address', 'article', 'aside', 'audio', 'bl
     'noscript', 'ol', 'output', 'p', 'pre', 'section', 'table', 'tbody', 'td', 'tfoot', 'th',
     'thead', 'tr', 'ul', 'video'];
 
-/** 
+/**
  * @hidden
  */
 export const IGNORE_BLOCK_TAGS: string[] = ['td', 'th'];
 
 /**
- * @hidden 
+ * @hidden
  */
 export const TABLE_BLOCK_TAGS: string[] = ['table', 'tbody', 'td', 'tfoot', 'th',
 'thead', 'tr'];
 
 /**
  * Selection plugin events
+ * 
  * @hidden
  */
 export const SELECTION_TYPE: string = 'selection-type';
@@ -77,12 +91,14 @@ export const INSERTHTML_TYPE: string = 'inserthtml-type';
 
 /**
  * Insert Text plugin events
+ * 
  * @hidden
  */
 export const INSERT_TEXT_TYPE: string = 'insert-text-type';
 
 /**
  * Clear Format HTML plugin events
+ * 
  * @hidden
  */
 export const CLEAR_TYPE: string = 'clear-type';

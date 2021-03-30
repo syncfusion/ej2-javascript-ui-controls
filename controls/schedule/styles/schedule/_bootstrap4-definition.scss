@@ -51,6 +51,7 @@ $schedule-appointment-bg-color:  $primary  !default;
 $schedule-appointment-font-color: $primary-font !default;
 $schedule-appointment-border-color: lighten($schedule-appointment-bg-color, 40%) !default;
 $schedule-appointment-border-radius: 4px !default;
+$schedule-appointment-selected-border: 1px solid rgba($black, .5) !default;
 $schedule-appointment-active-border-color: #333 !default;
 $schedule-month-agenda-app-indicator-color: #c3c3c3 !default;
 $schedule-month-appointment-height: 22px !default;

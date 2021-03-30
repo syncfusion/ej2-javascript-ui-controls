@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable @typescript-eslint/ban-types */
 /**
  * Cartesian chart renderer for financial chart
  */
@@ -27,8 +29,8 @@ export class CartesianChart {
         this.stockChart = chart;
     }
     public initializeChart(chartArgsData ?: object[]): void {
-        let stockChart: StockChart = this.stockChart;
-        let isProtect: string = 'isProtectedOnChange';
+        const stockChart: StockChart = this.stockChart;
+        const isProtect: string = 'isProtectedOnChange';
         stockChart[isProtect]  = true;
         if (!stockChart.chartObject) {
             stockChart.chartObject = stockChart.renderer.createGroup({
@@ -36,7 +38,7 @@ export class CartesianChart {
             });
             stockChart.mainObject.appendChild(stockChart.chartObject);
         } else {
-            let chartElement: Element = document.getElementById(stockChart.chartObject.id);
+            const chartElement: Element = document.getElementById(stockChart.chartObject.id);
             while (chartElement.firstChild) {
                 chartElement.removeChild(chartElement.firstChild);
             }
@@ -55,7 +57,7 @@ export class CartesianChart {
             indicators: stockChart.indicators,
             axes: stockChart.axes,
             tooltipRender : (args : ITooltipRenderEventArgs) => {
-               this.stockChart.trigger('tooltipRender', args);
+                this.stockChart.trigger('tooltipRender', args);
             },
             axisLabelRender : (args : IAxisLabelRenderEventArgs) => {
                 this.stockChart.trigger('axisLabelRender', args);
@@ -63,12 +65,12 @@ export class CartesianChart {
             seriesRender : (args : ISeriesRenderEventArgs) => {
                 if (args.data && this.stockChart.startValue && this.stockChart.endValue) {
                     args.data = (args.data as Object[])
-                    .filter((data: Object) => {
-                        return (
-                            new Date(Date.parse(data[args.series.xName])).getTime() >= this.stockChart.startValue &&
+                        .filter((data: Object) => {
+                            return (
+                                new Date(Date.parse(data[args.series.xName])).getTime() >= this.stockChart.startValue &&
                             new Date(Date.parse(data[args.series.xName])).getTime() <= this.stockChart.endValue
                             );
-                    });
+                        });
                 }
                 args.data = chartArgsData ? chartArgsData : args.data;
                 //args.data = this.stockChart.findCurrentData(args.data ,args.series.xName);
@@ -96,10 +98,10 @@ export class CartesianChart {
             zoomComplete: (args: IZoomCompleteEventArgs) => {
                 if (args.axis.valueType === 'DateTime' && stockChart.rangeNavigator) {
                     this.stockChart.zoomChange = true;
-                    let newRange: Range = this.calculateUpdatedRange(args.currentZoomFactor, args.currentZoomPosition, <Axis>args.axis);
+                    const newRange: Range = this.calculateUpdatedRange(args.currentZoomFactor, args.currentZoomPosition, <Axis>args.axis);
                     stockChart.rangeSelector.sliderChange(newRange.start, newRange.end);
                 }
-            },
+            }
         });
         if (stockChart.indicators.length !== 0) {
             if (stockChart.isSelect) {
@@ -116,7 +118,7 @@ export class CartesianChart {
     }
 
     private findMargin(stockChart: StockChart) : MarginModel {
-        let margin : MarginModel = {};
+        const margin : MarginModel = {};
         margin.top = stockChart.margin.top * 2;
         margin.left = stockChart.margin.left;
         margin.right = stockChart.margin.right;
@@ -125,7 +127,7 @@ export class CartesianChart {
     }
 
     private findSeriesCollection(series: StockSeriesModel[]) : Series[] {
-        let chartSeries : Series[] = [];
+        const chartSeries : Series[] = [];
         for (let i: number = 0, len: number = series.length; i < len; i++) {
             chartSeries.push(<Series>series[i]);
             chartSeries[i].high = series[i].high;
@@ -146,14 +148,14 @@ export class CartesianChart {
     }
 
     public calculateChartSize(): Size {
-        let stockChart: StockChart = this.stockChart;
+        const stockChart: StockChart = this.stockChart;
         return (
             new Size(
                 stockChart.availableSize.width, (stockChart.enablePeriodSelector && stockChart.enableSelector) ?
-                ((stockChart.availableSize.height - stockChart.toolbarHeight - 80)) :
-                (stockChart.enableSelector && !stockChart.enablePeriodSelector) ? (stockChart.availableSize.height - 80) :
-                (stockChart.enablePeriodSelector && !stockChart.enableSelector) ?
-                    stockChart.availableSize.height - stockChart.toolbarHeight : stockChart.availableSize.height)
+                    ((stockChart.availableSize.height - stockChart.toolbarHeight - 80)) :
+                    (stockChart.enableSelector && !stockChart.enablePeriodSelector) ? (stockChart.availableSize.height - 80) :
+                        (stockChart.enablePeriodSelector && !stockChart.enableSelector) ?
+                            stockChart.availableSize.height - stockChart.toolbarHeight : stockChart.availableSize.height)
         );
     }
 
@@ -161,8 +163,8 @@ export class CartesianChart {
         let start: number;
         let end: number;
         //if (zoomFactor < 1 || zoomPosition > 0) {
-        let chartRange: VisibleRangeModel = axis.actualRange;
-        let inversed: boolean = false;
+        const chartRange: VisibleRangeModel = axis.actualRange;
+        const inversed: boolean = false;
         if (!inversed) {
             start = chartRange.min + zoomPosition * chartRange.delta;
             end = start + zoomFactor * chartRange.delta;
@@ -171,17 +173,18 @@ export class CartesianChart {
             end = start - (zoomFactor * chartRange.delta);
         }
         //}
-        let result: Range = { start: start, end: end };
+        const result: Range = { start: start, end: end };
         return result;
     }
 
     /**
      * Cartesian chart refreshes based on start and end value
-     * @param stockChart
-     * @param start
-     * @param end
+     *
+     * @param {StockChart} stockChart stock chart instance
+     * @param {Object[]} data stock chart data
+     * @returns {void}
      */
-    public cartesianChartRefresh(stockChart: StockChart, start: number, end: number, data?: Object[]): void {
+    public cartesianChartRefresh(stockChart: StockChart, data?: Object[]): void {
         stockChart.cartesianChart.initializeChart(data);
     }
 

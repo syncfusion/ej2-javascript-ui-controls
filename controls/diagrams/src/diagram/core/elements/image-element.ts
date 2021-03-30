@@ -20,12 +20,25 @@ export class ImageElement extends DiagramElement {
     /**
      * Gets the source for the image element
      */
+    /**
+     * Gets the source for the image element \
+     *
+     * @returns { void }Gets the source for the image element.\
+     *
+     * @private
+     */
     public get source(): string {
         return this.imageSource;
     }
 
+
     /**
-     * Sets the source for the image element
+     * Sets the source for the image element \
+     *
+     * @returns { void }Sets the source for the image element.\
+     * @param {string} value - provide the id value.
+     *
+     * @private
      */
     public set source(value: string) {
         this.imageSource = value;
@@ -48,9 +61,16 @@ export class ImageElement extends DiagramElement {
      */
     public contentSize: Size;
 
+
     /**
-     * Measures minimum space that is required to render the image
-     * @param {Size} availableSize 
+     * Measures minimum space that is required to render the image \
+     *
+     * @returns { Size }Measures minimum space that is required to render the image.\
+     * @param {Size} availableSize - provide the id value.
+     * @param {Object} id - provide the id value.
+     * @param {Function} callback - provide the id value.
+     *
+     * @private
      */
     public measure(availableSize: Size, id?: string, callback?: Function): Size {
         if (this.isDirt && (this.stretch !== 'Stretch' || this.width === undefined && this.height === undefined)) {
@@ -69,7 +89,15 @@ export class ImageElement extends DiagramElement {
 
     /**
      * Arranges the image
-     * @param {Size} desiredSize 
+     * @param {Size} desiredSize
+     */
+    /**
+     * Arranges the image \
+     *
+     * @returns { Size }Arranges the image.\
+     * @param {Size} desiredSize - provide the id value.
+     *
+     * @private
      */
     public arrange(desiredSize: Size): Size {
         this.actualSize = new Size(this.desiredSize.width, this.desiredSize.height);

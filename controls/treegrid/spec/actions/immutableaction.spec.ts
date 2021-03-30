@@ -382,6 +382,106 @@ describe('Immutable action', () => {
     });
   });
 
+  describe('Immutable with SubLevel', () => {
+    let TreeGridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      TreeGridObj = createGrid(
+        {
+          dataSource: [
+            {
+              TaskID: 1,
+              TaskName: "Product Concept",
+              StartDate: new Date("04/02/2019"),
+              EndDate: new Date("04/21/2019"),
+              subtasks: [
+                {
+                  TaskID: 2,
+                  TaskName: "Defining the product and its usage",
+                  StartDate: new Date("04/02/2019"),
+                  Duration: 3,
+                  Progress: 30
+                },
+                {
+                  TaskID: 3,
+                  TaskName: "Defining target audience",
+                  StartDate: new Date("04/02/2019"),
+                  Duration: 3,
+                  subtasks: [
+                    {
+                      TaskID: 5,
+                      TaskName: "Defining the product and its usage",
+                      StartDate: new Date("04/02/2019"),
+                      Duration: 3,
+                      Progress: 30
+                    }
+                  ]
+                },
+                {
+                  TaskID: 4,
+                  TaskName: "Prepare product sketch and notes",
+                  StartDate: new Date("04/02/2019"),
+                  Duration: 3,
+                  Predecessor: "2",
+                  Progress: 30
+                }
+              ]
+            }
+          ],
+          childMapping: "subtasks",
+          treeColumnIndex: 1,
+          enableImmutableMode: true,
+          allowSorting: true,
+          allowRowDragAndDrop: true,
+          editSettings: {
+            allowEditing: true,
+            allowAdding: true,
+            allowDeleting: true,
+            mode: "Cell",
+            newRowPosition: "Child"
+          },
+          height: 400,
+          toolbar: ["Add", "Delete", "Update", "Cancel", "Search", "Indent", "Outdent"],
+          columns: [
+            {
+              field: "TaskID",
+              headerText: "Task ID",
+              isPrimaryKey: true,
+              textAlign: "Right",
+              width: 90
+            },
+            {
+              field: "TaskName",
+              headerText: "Task Name",
+              editType: "stringedit"
+            },
+            {
+              field: "StartDate",
+              headerText: "Start Date",
+              textAlign: "Right",
+              width: 130
+            },
+            {
+              field: "Duration",
+              headerText: "Duration",
+              textAlign: "Right",
+              width: 100
+            }
+          ]
+        },done);
+    });
+
+    it('Sub Level collpase check', () => {
+      TreeGridObj.collapseRow(TreeGridObj.getRowByIndex(2) as HTMLTableRowElement);
+      let count: number = TreeGridObj.getCurrentViewRecords().length;
+      TreeGridObj.collapseRow(TreeGridObj.getRowByIndex(0) as HTMLTableRowElement);
+      TreeGridObj.expandRow(TreeGridObj.getRowByIndex(0) as HTMLTableRowElement);
+      expect(TreeGridObj.getCurrentViewRecords().length === count).toBe(true);
+    });
+    afterAll(() => {
+      destroy(TreeGridObj);
+    });
+  });
+
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

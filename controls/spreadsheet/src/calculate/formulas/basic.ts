@@ -1,6 +1,7 @@
 import { FormulasErrorsStrings, CommonErrors, IBasicFormula, getSkeletonVal } from '../common/index';
-import { Calculate } from '../base/index';
+import { Calculate, getAlphalabel } from '../base/index';
 import { isNullOrUndefined, getValue, Internationalization } from '@syncfusion/ej2-base';
+import { DataUtil } from '@syncfusion/ej2-data';
 
 /**
  * Represents the basic formulas module.
@@ -147,7 +148,8 @@ export class BasicFormulas {
             formulaName: 'GEOMEAN', category: 'Statistical',
             description: 'Returns the geometric mean of an array or range of positive data.'
         },
-        { formulaName: 'TEXT', category: 'Lookup & Reference', description: 'Returns the value in required format.' }
+        { formulaName: 'TEXT', category: 'Lookup & Reference', description: 'Converts a value to text in specified number format.' },
+        { formulaName: 'SORT', category: 'Lookup & Reference', description: 'Sorts a range of an array.' }
     ];
     private isConcat: boolean = false;
     constructor(parent?: Calculate) {
@@ -159,8 +161,8 @@ export class BasicFormulas {
         let fn: Function;
         for (let i: number = 0; i < this.formulas.length; i++) {
             fn = getValue('Compute' + this.formulas[i].formulaName, this).bind(this);
-            this.addFormulaCollection
-                (this.formulas[i].formulaName.toUpperCase(), fn, this.formulas[i].category, this.formulas[i].description);
+            this.addFormulaCollection(
+                this.formulas[i].formulaName.toUpperCase(), fn, this.formulas[i].category, this.formulas[i].description);
         }
     }
 
@@ -172,7 +174,11 @@ export class BasicFormulas {
         };
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the args
+     * @returns {string | number} - Comput sum value
+     */
     public ComputeSUM(...args: string[]): string | number {
         if (isNullOrUndefined(args) || (args.length === 1 && args[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
@@ -181,11 +187,11 @@ export class BasicFormulas {
         let val: string;
         let orgValue: number | string;
         if (!isNullOrUndefined(args)) {
-            let argArr: string[] = args;
+            const argArr: string[] = args;
             for (let i: number = 0; i < argArr.length; i++) {
-                let argValue: string = argArr[i].toString();
+                const argValue: string = argArr[i].toString();
                 if (argValue.indexOf(':') > -1 && this.parent.isCellReference(argValue)) {
-                    let cellCollection: string[] | string = this.parent.getCellCollection(argValue.split(this.parent.tic).join(''));
+                    const cellCollection: string[] | string = this.parent.getCellCollection(argValue.split(this.parent.tic).join(''));
                     for (let j: number = 0; j < cellCollection.length; j++) {
                         val = this.parent.getValueFromArg(cellCollection[j]);
                         if (this.parent.getErrorStrings().indexOf(val) > -1) {
@@ -218,7 +224,11 @@ export class BasicFormulas {
         }
         return sum;
     }
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the args.
+     * @returns {string | number} - Compute the Integer.
+     */
     public ComputeINT(...args: string[]): string | number {
         let str: string; let num: number; let index: number;
         if (!isNullOrUndefined(args) && args.length !== 1 || args[0] === '') {
@@ -238,37 +248,45 @@ export class BasicFormulas {
             str = index > -1 ? this.parent.getErrorStrings()[CommonErrors.value] : this.parent.getErrorStrings()[CommonErrors.name];
         }
         return num ? num : str;
-    };
+    }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the args.
+     * @returns {Date | string} - Compute the Today.
+     */
     public ComputeTODAY(...args: string[]): Date | string {
         let str: string;
         if (args && args[0] !== '') {
             str = this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
         } else {
-            let dt: Date = new Date(Date.now());
+            const dt: Date = new Date(Date.now());
             str = dt.getFullYear() + '/' + this.parent.calculateDate((dt.getMonth() + 1).toString()) + '/'
                 + this.parent.calculateDate(dt.getDate().toString());
         }
         return str;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the args.
+     * @returns {string | number} - Compute the Sum product.
+     */
     public ComputeSUMPRODUCT(...args: string[]): string | number {
         let sum: number = 0; let count: number = 0; let index: number;
         let mulValues: number[] = null;
-        let ranges: string[] = args;
+        const ranges: string[] = args;
         for (let k: number = 0; k < ranges.length; ++k) {
-            let range: string = ranges[k];
+            const range: string = ranges[k];
             if (!range.startsWith(this.parent.tic) && this.parent.isCellReference(range)) {
                 let i: number = range.indexOf(':');
-                let startRow: number = this.parent.rowIndex(range.substr(0, i));
-                let endRow: number = this.parent.rowIndex(range.substr(i + 1));
+                const startRow: number = this.parent.rowIndex(range.substr(0, i));
+                const endRow: number = this.parent.rowIndex(range.substr(i + 1));
                 if (!(startRow !== -1 || endRow === -1) === (startRow === -1 || endRow !== -1)) {
                     return this.parent.getErrorStrings()[CommonErrors.name];
                 }
-                let col1: number = this.parent.colIndex(range.substr(0, i));
-                let col2: number = this.parent.colIndex(range.substr(i + 1));
+                const col1: number = this.parent.colIndex(range.substr(0, i));
+                const col2: number = this.parent.colIndex(range.substr(i + 1));
                 if (mulValues === null) {
                     count = (endRow - startRow + 1) * (col2 - col1 + 1);
                     mulValues = [];
@@ -279,8 +297,8 @@ export class BasicFormulas {
                 i = 0;
                 for (let row: number = startRow; row <= endRow; ++row) {
                     for (let col: number = col1; col <= col2; ++col) {
-                        let cellRef: string = '' + this.parent.convertAlpha(col) + (row);
-                        let result: string = this.parent.getValueFromArg(cellRef);
+                        const cellRef: string = '' + this.parent.convertAlpha(col) + (row);
+                        const result: string = this.parent.getValueFromArg(cellRef);
                         if (!isNaN(parseFloat(result))) {
                             //To return #VALUE! error when array dimensions are mismatched.
                             if (isNaN(mulValues[i])) {
@@ -294,7 +312,7 @@ export class BasicFormulas {
                     }
                 }
             } else {
-                let s1: string = this.parent.getValueFromArg(range);
+                const s1: string = this.parent.getValueFromArg(range);
                 index = s1.indexOf('"');
                 if (this.parent.getErrorStrings().indexOf(s1) > -1) {
                     return s1;
@@ -309,12 +327,16 @@ export class BasicFormulas {
             sum += mulValues[i];
         }
         return sum;
-    };
+    }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the args.
+     * @returns {string | number} - Compute the Roundup.
+     */
     public ComputeROUNDUP(...args: string[]): string | number {
         let str: string; let num: number; let arg1: string; let arg2: string; let index: number;
-        let len: number = args.length;
+        const len: number = args.length;
         if (!isNullOrUndefined(args) && len > 2) {
             str = this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
         }
@@ -342,7 +364,7 @@ export class BasicFormulas {
             arg2 = arg2.toUpperCase() === 'TRUE' ? '1' : (arg2 === 'FALSE' ? '0' : arg2);
             arg1 = this.parent.getValueFromArg(arg1);
             arg2 = this.parent.getValueFromArg(arg2);
-            let digits: number = Math.ceil(this.parent.parseFloat(arg2));
+            const digits: number = Math.ceil(this.parent.parseFloat(arg2));
             num = this.parent.parseFloat(arg1);
             if (digits > 0) {
                 if (num > 0) {
@@ -377,13 +399,17 @@ export class BasicFormulas {
                 this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
         }
         return str;
-    };
-    /** @hidden */
+    }
+    /**
+     * @hidden
+     * @param {string[]} args - specify the args.
+     * @returns {number | string} - Compute the count.
+     */
     public ComputeCOUNT(...args: string[]): number | string {
         if (isNullOrUndefined(args) || (args.length === 1 && args[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
-        let argArr: string[] = args;
+        const argArr: string[] = args;
         let argVal: string | number;
         let cellColl: string[] | string;
         let result: number = 0;
@@ -412,26 +438,29 @@ export class BasicFormulas {
         return result;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the args.
+     * @returns {Date | string} - Compute the Date.
+     */
     public ComputeDATE(...args: string[]): Date | string {
         if (isNullOrUndefined(args) || (args.length === 1 && args[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
-        let argArr: string[] = args;
+        const argArr: string[] = args;
         if (argArr.length !== 3) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
         for (let i: number = 0; i < argArr.length; ++i) {
             argArr[i] = this.parent.getValueFromArg(argArr[i]);
         }
-        /* tslint:disable */
         argArr[0] = (argArr[0].split(this.parent.tic).join('') === 'TRUE') ? '1' : (argArr[0].split(this.parent.tic).join('') === 'FALSE') ? '0' : argArr[0];
         argArr[1] = (argArr[1].split(this.parent.tic).join('') === 'TRUE') ? '1' : (argArr[1].split(this.parent.tic).join('') === 'FALSE') ? '0' : argArr[1];
         argArr[2] = (argArr[2].split(this.parent.tic).join('') === 'TRUE') ? '1' : (argArr[2].split(this.parent.tic).join('') === 'FALSE') ? '0' : argArr[2];
-        /* tslint:enable */
+        /* eslint-enable */
         let year: number = this.parent.parseFloat(argArr[0].split(this.parent.tic).join(''));
         let month: number = this.parent.parseFloat(argArr[1].split(this.parent.tic).join(''));
-        let day: number = this.parent.parseFloat(argArr[2].split(this.parent.tic).join(''));
+        const day: number = this.parent.parseFloat(argArr[2].split(this.parent.tic).join(''));
         let days: number = 0;
         if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
             if (year < 0) {
@@ -448,23 +477,26 @@ export class BasicFormulas {
         if (days === 0) {
             return this.parent.getErrorStrings()[CommonErrors.num].toString();
         }
-        let date: Date = this.parent.fromOADate(days);
+        const date: Date = this.parent.fromOADate(days);
         if (date.toString() !== 'Invalid Date') {
-            /* tslint:disable-next-line */
             return date.getFullYear() + '/' + this.parent.calculateDate((date.getMonth() + 1).toString()) + '/' + this.parent.calculateDate(date.getDate().toString());
         }
         return days.toString();
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the args.
+     * @returns {number | string} - Compute the ceiling.
+     */
     public ComputeFLOOR(...args: string[]): number | string {
         if (isNullOrUndefined(args) || (args.length === 1 && args[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
         }
-        let argArr: string[] = args;
-        let argCount: number = argArr.length;
-        let splitArg: string = argArr[1].split(this.parent.tic).join('');
-        let argValue: number[] = [];
+        const argArr: string[] = args;
+        const argCount: number = argArr.length;
+        const splitArg: string = argArr[1].split(this.parent.tic).join('');
+        const argValue: number[] = [];
         let fnum: number;
         let significance: number;
         if (argCount !== 2) {
@@ -490,15 +522,19 @@ export class BasicFormulas {
         return Math.floor(fnum / significance) * significance;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the args.
+     * @returns {number | string} - Compute the ceiling.
+     */
     public ComputeCEILING(...args: string[]): number | string {
         if (isNullOrUndefined(args) || (args.length === 1 && args[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
         }
-        let argArr: string[] = args;
-        let orgValue: number[] = [];
-        let argCount: number = argArr.length;
-        let splitArg: string = argArr[1].split(this.parent.tic).join('');
+        const argArr: string[] = args;
+        const orgValue: number[] = [];
+        const argCount: number = argArr.length;
+        const splitArg: string = argArr[1].split(this.parent.tic).join('');
         let cnum: number;
         let significance: number;
         if (argCount !== 2) {
@@ -524,9 +560,13 @@ export class BasicFormulas {
         return Math.ceil(cnum / significance) * significance;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} serialNumber - specify the serialNumber.
+     * @returns {number | string} - Compute the DAY.
+     */
     public ComputeDAY(...serialNumber: string[]): number | string {
-        let date: string[] = serialNumber;
+        const date: string[] = serialNumber;
         let result: number | string;
         if (isNullOrUndefined(date) || (date.length === 1 && date[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
@@ -542,13 +582,17 @@ export class BasicFormulas {
         }
         result = this.parent.parseDate(dateVal);
         if (Object.prototype.toString.call(result) === '[object Date]') {
-            /* tslint:disable-next-line */
+            /* eslint-disable-next-line */
             result = (result as any).getDate();
         }
         return result;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the args.
+     * @returns {string | number} - Compute the IF value.
+     */
     public ComputeIF(...args: string[]): string | number {
         if (isNullOrUndefined(args) || (args.length === 1 && args[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
@@ -556,7 +600,7 @@ export class BasicFormulas {
         if (this.parent.getErrorStrings().indexOf(args[0]) > 0) {
             return args[0];
         }
-        let argArr: string[] = args;
+        const argArr: string[] = args;
         let condition: string;
         let result: string;
         if (argArr.length > 3 || argArr.length === 1) {
@@ -584,12 +628,16 @@ export class BasicFormulas {
         }
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the args.
+     * @returns {number | string} - Compute the IFERROR value.
+     */
     public ComputeIFERROR(...args: string[]): number | string {
         if (isNullOrUndefined(args) || (args.length === 1 && args[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
         }
-        let argArr: string[] = args;
+        const argArr: string[] = args;
         let condition: string;
         if (argArr.length !== 2) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
@@ -609,7 +657,11 @@ export class BasicFormulas {
         }
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} range - specify the range.
+     * @returns {string | number} - Compute the PRODUCT value.
+     */
     public ComputePRODUCT(...range: string[]): string | number {
         if (isNullOrUndefined(range) || (range.length === 1 && range[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
@@ -620,11 +672,11 @@ export class BasicFormulas {
         let argsHit: boolean = true;
         let parseVal: number;
         if (!isNullOrUndefined(range)) {
-            let argArr: string[] = range;
+            const argArr: string[] = range;
             for (let i: number = 0; i < argArr.length; i++) {
-                let rangevalue: string = argArr[i];
+                const rangevalue: string = argArr[i];
                 if (rangevalue.indexOf(':') > -1 && this.parent.isCellReference(rangevalue)) {
-                    let cellCollection: string[] | string = this.parent.getCellCollection(rangevalue);
+                    const cellCollection: string[] | string = this.parent.getCellCollection(rangevalue);
                     for (let j: number = 0; j < cellCollection.length; j++) {
                         val = this.parent.getValueFromArg(cellCollection[j].split(this.parent.tic).join(''));
                         if (this.parent.getErrorStrings().indexOf(val) > -1) {
@@ -663,7 +715,11 @@ export class BasicFormulas {
         return argsHit ? '0' : product.toString();
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} range - specify the range.
+     * @returns {string | number} - Compute the Choose value.
+     */
     public ComputeDAYS(...range: string[]): number | string {
         let result: number | string;
         if (isNullOrUndefined(range) && (range.length === 1 && range[0] === '')) {
@@ -672,7 +728,7 @@ export class BasicFormulas {
         if (range.length !== 2) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
-        let argsArr: string[] = range;
+        const argsArr: string[] = range;
         if (argsArr[0].split(this.parent.tic).join('') === this.parent.trueValue) {
             argsArr[0] = '1';
         }
@@ -689,8 +745,8 @@ export class BasicFormulas {
         if (startDate[0] === '#') {
             return startDate;
         }
-        let d1: string | Date = this.parent.intToDate(endDate);
-        let d2: string | Date = this.parent.intToDate(startDate);
+        const d1: string | Date = this.parent.intToDate(endDate);
+        const d2: string | Date = this.parent.intToDate(startDate);
         if (d1.toString()[0] === '#') {
             return d1.toString();
         }
@@ -698,7 +754,7 @@ export class BasicFormulas {
             return d2.toString();
         }
         if (Object.prototype.toString.call(d1) === '[object Date]' && Object.prototype.toString.call(d2) === '[object Date]') {
-            /* tslint:disable-next-line */
+            /* eslint-disable-next-line */
             result = Math.ceil((d1 as any).getTime() - (d2 as any).getTime()) / (1000 * 3600 * 24);
         } else {
             return this.parent.getErrorStrings()[CommonErrors.value];
@@ -706,7 +762,11 @@ export class BasicFormulas {
         return Math.round(result);
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the args.
+     * @returns {string | number} - Compute the Choose value.
+     */
     public ComputeCHOOSE(...args: string[]): string | number {
         if (isNullOrUndefined(args) || (args.length === 1 && args[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
@@ -714,16 +774,16 @@ export class BasicFormulas {
         if (args.length < 2) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
-        let argsArr: string[] = args;
+        const argsArr: string[] = args;
         if (argsArr[0].indexOf(':') > -1 && this.parent.isCellReference(argsArr[0])) {
-            let cellCollection: string[] | string = this.parent.getCellCollection(argsArr[0]);
+            const cellCollection: string[] | string = this.parent.getCellCollection(argsArr[0]);
             if (cellCollection.length === 1) {
                 argsArr[0] = cellCollection[0];
             } else {
                 return this.parent.getErrorStrings()[CommonErrors.value];
             }
         }
-        let cond: string = this.parent.getValueFromArg(argsArr[0]);
+        const cond: string = this.parent.getValueFromArg(argsArr[0]);
         if (this.parent.getErrorStrings().indexOf(cond) > -1) {
             return cond;
         }
@@ -741,7 +801,7 @@ export class BasicFormulas {
             result = '0';
         }
         if (result.indexOf(':') > -1 && this.parent.isCellReference(result)) {
-            let cellCollection: string[] | string = this.parent.getCellCollection(argsArr[0].split(this.parent.tic).join(''));
+            const cellCollection: string[] | string = this.parent.getCellCollection(argsArr[0].split(this.parent.tic).join(''));
             if (cellCollection.length === 1) {
                 argsArr[0] = cellCollection[0];
             } else {
@@ -751,9 +811,13 @@ export class BasicFormulas {
         return this.parent.getValueFromArg(result).split(this.parent.tic).join('');
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} range - specify the range.
+     * @returns {string | number} - Compute the SUMIF value.
+     */
     public ComputeSUMIF(...range: string[]): string | number {
-        let argArr: string[] = range;
+        const argArr: string[] = range;
         if (argArr[0].indexOf(':') < 0 && !this.parent.isCellReference(argArr[0]) ||
             (argArr[2] && argArr[2].indexOf(':') < 0 && !this.parent.isCellReference(argArr[2]))) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.improper_formula];
@@ -761,7 +825,7 @@ export class BasicFormulas {
         if (argArr.length > 3 || argArr.length < 2) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
-        let result: number[] | string = this.parent.computeSumIfAndAvgIf(range);
+        const result: number[] | string = this.parent.computeSumIfAndAvgIf(range);
         if (typeof result === 'string' && (this.parent.formulaErrorStrings.indexOf(result)
             || this.parent.getErrorStrings().indexOf(result))) {
             return result;
@@ -769,9 +833,13 @@ export class BasicFormulas {
         return result[0];
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} absValue - specify the absValue.
+     * @returns {string | number} - Compute the AVERAGE value.
+     */
     public ComputeABS(...absValue: string[]): string | number {
-        let argArr: string[] = absValue;
+        const argArr: string[] = absValue;
         let cellvalue: string = '';
         let absVal: number;
         if (absValue.length === 0 || absValue.length > 1) {
@@ -798,12 +866,16 @@ export class BasicFormulas {
         return Math.abs(absVal);
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the range.
+     * @returns {string} - Compute the AVERAGE value.
+     */
     public ComputeAVERAGE(...args: string[]): string {
         if (isNullOrUndefined(args) || (args.length === 1 && args[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
         }
-        let argArr: string[] = args;
+        const argArr: string[] = args;
         for (let i: number = 0; i < argArr.length; i++) {
             if (argArr[i].indexOf(':') > -1) {
                 if (argArr[i].indexOf(this.parent.tic) > -1) {
@@ -814,13 +886,17 @@ export class BasicFormulas {
         return this.parent.calculateAvg(argArr);
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} range - specify the range.
+     * @returns {string | number} - Compute the AVERAGEIF value.
+     */
     public ComputeAVERAGEIF(...range: string[]): string | number {
-        let argList: string[] = range;
+        const argList: string[] = range;
         if (argList[0].indexOf(':') < 0 && !this.parent.isCellReference(argList[0])) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.improper_formula];
         }
-        let resultVal: number[] | string = this.parent.computeSumIfAndAvgIf(range);
+        const resultVal: number[] | string = this.parent.computeSumIfAndAvgIf(range);
         if (typeof resultVal === 'string' && (this.parent.formulaErrorStrings.indexOf(resultVal)
             || this.parent.getErrorStrings().indexOf(resultVal))) {
             return resultVal;
@@ -828,18 +904,22 @@ export class BasicFormulas {
         return this.parent.parseFloat(resultVal[0]) / this.parent.parseFloat(resultVal[1]);
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} range - specify the range.
+     * @returns {string} - Compute the CONCATENATE value.
+     */
     public ComputeCONCATENATE(...range: string[]): string {
         if (isNullOrUndefined(range) || (range.length === 1 && range[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
         }
-        let argsList: string[] = range;
+        const argsList: string[] = range;
         let result: string = '';
         let tempStr: string = '';
         for (let i: number = 0; i < argsList.length; i++) {
             if (argsList[i].indexOf(':') > -1 && this.parent.isCellReference(argsList[i])) {
                 if (this.isConcat) {
-                    let cells: string[] | string = this.parent.getCellCollection(argsList[i]);
+                    const cells: string[] | string = this.parent.getCellCollection(argsList[i]);
                     for (let i: number = 0; i < cells.length; i++) {
                         tempStr = this.parent.getValueFromArg(cells[i]);
                         result = result + tempStr;
@@ -863,23 +943,39 @@ export class BasicFormulas {
         return result.split(this.parent.tic).join('');
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} range - specify the range.
+     * @returns {string} - Compute the CONCAT value.
+     */
     public ComputeCONCAT(...range: string[]): string {
         this.isConcat = true;
         return this.ComputeCONCATENATE(...range);
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the args.
+     * @returns {string | number} - Compute the MAX value.
+     */
     public ComputeMAX(...args: string[]): string {
         return this.parent.computeMinMax(args, 'max');
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the args.
+     * @returns {string} - Compute the MIN value.
+     */
     public ComputeMIN(...args: string[]): string {
         return this.parent.computeMinMax(args, 'min');
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the args.
+     * @returns {string} - Compute the RAND value.
+     */
     public ComputeRAND(...args: string[]): string {
         if (args.length === 1 && args[0] === '') {
             args.length = 0;
@@ -890,32 +986,43 @@ export class BasicFormulas {
         return Math.random().toString();
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the args.
+     * @returns {string} - Compute the AND value.
+     */
     public ComputeAND(...args: string[]): string {
         return this.parent.computeAndOr(args, 'and');
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the args.
+     * @returns {string} - Compute the OR value.
+     */
     public ComputeOR(...args: string[]): string {
         return this.parent.computeAndOr(args, 'or');
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the range.
+     * @returns {string | number} - Compute the find value.
+     */
     public ComputeFIND(...args: string[]): string | number {
         if (isNullOrUndefined(args) || (args.length === 1 && args[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
-        let argsList: string[] = args;
+        const argsList: string[] = args;
         if (argsList.length > 3) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
-        let findText: string = this.parent.removeTics(this.parent.getValueFromArg(argsList[0]));
-        let withinText: string = this.parent.removeTics(this.parent.getValueFromArg(argsList[1]));
+        const findText: string = this.parent.removeTics(this.parent.getValueFromArg(argsList[0]));
+        const withinText: string = this.parent.removeTics(this.parent.getValueFromArg(argsList[1]));
         if (this.parent.getErrorStrings().indexOf(findText) > -1 || this.parent.getErrorStrings().indexOf(withinText) > -1) {
             return this.parent.getErrorStrings()[CommonErrors.name];
         }
         let startNum: number | string = 1;
-        let loc: number;
         if (argsList.length === 3) {
             startNum = this.parent.removeTics(this.parent.getValueFromArg(argsList[2]));
             if (this.parent.getErrorStrings().indexOf(startNum) > -1) {
@@ -929,17 +1036,21 @@ export class BasicFormulas {
         if (startNum <= 0 || startNum > withinText.length) {
             return this.parent.getErrorStrings()[CommonErrors.value];
         }
-        loc = withinText.indexOf(findText, startNum - 1);
+        const loc: number = withinText.indexOf(findText, startNum - 1);
         if (loc < 0) {
             return this.parent.getErrorStrings()[CommonErrors.value];
         }
         return (Number(loc) + Number(1)).toString();
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} range - specify the range.
+     * @returns {string | number} - Compute the index.
+     */
     public ComputeINDEX(...range: string[]): string | number {
-        let argArr: string[] = range;
-        let argCount: number = argArr.length;
+        const argArr: string[] = range;
+        const argCount: number = argArr.length;
         if (isNullOrUndefined(range) || (argArr.length === 1 && argArr[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
@@ -947,7 +1058,7 @@ export class BasicFormulas {
             return this.parent.getErrorStrings()[CommonErrors.ref];
         }
         let rangeValue: string = '';
-        let rangeArr: string[] | string = [];
+        const rangeArr: string[] | string = [];
         if (argCount > 2) {
             for (let i: number = 0; i < argCount; i++) {
                 if (this.parent.isCellReference(argArr[i]) && argArr[i].indexOf(':') < 0) {
@@ -981,27 +1092,31 @@ export class BasicFormulas {
         if (row === -1 || col === -1) {
             return this.parent.getErrorStrings()[CommonErrors.value];
         }
-        let i: number = argArr[0].indexOf(':');
-        let startRow: number = this.parent.rowIndex(rangeValue.substring(0, i));
-        let endRow: number = this.parent.rowIndex(rangeValue.substring(i + 1));
-        let startCol: number = this.parent.colIndex(rangeValue.substring(0, i));
-        let endCol: number = this.parent.colIndex(rangeValue.substring(i + 1));
+        const i: number = argArr[0].indexOf(':');
+        const startRow: number = this.parent.rowIndex(rangeValue.substring(0, i));
+        const endRow: number = this.parent.rowIndex(rangeValue.substring(i + 1));
+        const startCol: number = this.parent.colIndex(rangeValue.substring(0, i));
+        const endCol: number = this.parent.colIndex(rangeValue.substring(i + 1));
         if (row > endRow - startRow + 1 || col > endCol - startCol + 1) {
             return this.parent.getErrorStrings()[CommonErrors.ref];
         }
         row = startRow + row - 1;
         col = startCol + col - 1;
-        let cellRef: string = '' + this.parent.convertAlpha(col) + row;
-        let result: string = this.parent.getValueFromArg(cellRef);
+        const cellRef: string = '' + this.parent.convertAlpha(col) + row;
+        const result: string = this.parent.getValueFromArg(cellRef);
         if (result === '') {
             return 0;
         }
         return result;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} range - specify the range.
+     * @returns {string | number} - Compute the if.
+     */
     public ComputeIFS(...range: string[]): string | number {
-        let argArr: string[] = range;
+        const argArr: string[] = range;
         if (isNullOrUndefined(range) || (argArr.length === 1 && argArr[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
@@ -1031,12 +1146,16 @@ export class BasicFormulas {
         return this.parent.getErrorStrings()[CommonErrors.na];
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the range.
+     * @returns {number | string} - Compute the count.
+     */
     public ComputeCOUNTA(...args: string[]): number | string {
         if (isNullOrUndefined(args) || (args.length === 1 && args[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
-        let argArr: string[] = args;
+        const argArr: string[] = args;
         let cellColl: string[] | string;
         let result: number = 0;
         let cellValue: string;
@@ -1050,7 +1169,7 @@ export class BasicFormulas {
                     }
                 }
             } else {
-                let cellValue: string = this.parent.getValueFromArg(argArr[i].split(this.parent.tic).join(''));
+                const cellValue: string = this.parent.getValueFromArg(argArr[i].split(this.parent.tic).join(''));
                 if (cellValue.length > 0) {
                     result++;
                 }
@@ -1059,12 +1178,16 @@ export class BasicFormulas {
         return result;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the range.
+     * @returns {number | string} - Compute the average.
+     */
     public ComputeAVERAGEA(...args: string[]): number | string {
         if (isNullOrUndefined(args) || (args.length === 1 && args[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
-        let argArrs: string[] = args;
+        const argArrs: string[] = args;
         let cellCol: string[] | string;
         let result: number = 0;
         let cellValue: string | number;
@@ -1114,16 +1237,126 @@ export class BasicFormulas {
         return result / length;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the range.
+     * @returns {number | string} - Compute the count if.
+     */
+    public ComputeSORT(...args: string[]): number | string {
+        const argArr: string[] = args; let result: string | number;
+        if (isNullOrUndefined(args) || args[0] === '' || argArr.length > 4) {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+        }
+        argArr[1] = argArr[1] ? argArr[1] : '1';
+        argArr[2] = argArr[2] ? argArr[2] : '1'; // 1 = Ascending, -1 = Descending. Default is ascending order.
+        const order: string = argArr[2] === '1' ? 'Ascending' : 'Descending';
+        argArr[3] = argArr[3] ? argArr[3].toUpperCase() : 'FALSE'; // Default is FALSE = sort by column or row
+        argArr[0] = argArr[0].split('$').join('');
+        let cellCollection: string | string[]; const valueCollection: string[] = [];
+        if (argArr[0].indexOf(':') > -1) {
+            const rangeSplit: string[] = argArr[0].split(':');
+            if (this.parent.isCellReference(rangeSplit[0]) && this.parent.isCellReference(rangeSplit[1])) {
+                const j: number = argArr[0].indexOf(':'); let swap: number;
+                let rowIdx: number = this.parent.rowIndex(this.parent.substring(argArr[0], 0, j));
+                let colIdx: number = this.parent.colIndex(this.parent.substring(argArr[0], 0, j));
+                let eRowIdx: number = this.parent.rowIndex(this.parent.substring(argArr[0], j + 1, j + argArr[0].length - j - 1));
+                let eColIdx: number = this.parent.colIndex(this.parent.substring(argArr[0], j + 1, j + argArr[0].length - j - 1));
+                if (rowIdx > eRowIdx) {
+                    swap = eRowIdx; eRowIdx = rowIdx; rowIdx = swap;
+                }
+                if (colIdx > eColIdx) {
+                    swap = eColIdx; eColIdx = colIdx; colIdx = swap;
+                }
+                argArr[2] = this.parent.getValueFromArg(argArr[2]);
+                if (argArr[2] !== '1') {
+                    if (argArr[2] !== '-1') {
+                        return this.parent.getErrorStrings()[CommonErrors.value];
+                    }
+                }
+                if (!isNaN(this.parseDouble(argArr[1])) && this.parseDouble(argArr[1]) < 1) {
+                    return this.parent.getErrorStrings()[CommonErrors.value];
+                }
+                if (argArr[3].toUpperCase() !== this.parent.trueValue) {
+                    if (argArr[3].toUpperCase() !== this.parent.falseValue) {
+                        return this.parent.getErrorStrings()[CommonErrors.value];
+                    }
+                }
+                let sheetIdx: string | number = '';
+                if (argArr[0].indexOf('!') === 0) {
+                    sheetIdx = argArr[0]; sheetIdx = sheetIdx.replace('!', ''); sheetIdx = sheetIdx.indexOf('!');
+                    sheetIdx = argArr[0].substring(0, sheetIdx + 2);
+                }
+                argArr[0] = sheetIdx + getAlphalabel(colIdx) + rowIdx + ':' + getAlphalabel(eColIdx) + eRowIdx;
+                cellCollection = this.parent.getCellCollection(argArr[0]);
+                for (let i: number = 0; i < cellCollection.length; i++) {
+                    valueCollection.push(this.parent.getValueFromArg(cellCollection[i]));
+                }
+                const colSort: (string | number)[] = [];
+                if (argArr[3] === 'TRUE') {
+                    for (let i: number = 0; i < eColIdx; i++) {
+                        colSort.push(isNaN(this.parseDouble(valueCollection[i + ((this.parseDouble(argArr[1]) - 1) * eColIdx)])) ?
+                        valueCollection[i + ((this.parseDouble(argArr[1]) - 1) * eColIdx)] :
+                        this.parseDouble(valueCollection[i + ((this.parseDouble(argArr[1]) - 1) * eColIdx)]));
+                    }
+                }
+                if (argArr[3] === 'FALSE') {
+                    for (let i: number = 0; i < eRowIdx; i++) {
+                        colSort.push(isNaN(this.parseDouble(valueCollection[i * eColIdx + this.parseDouble(argArr[1]) - 1])) ?
+                            valueCollection[i * eColIdx + this.parseDouble(argArr[1]) - 1] :
+                            this.parseDouble(valueCollection[i * eColIdx + this.parseDouble(argArr[1]) - 1]));
+                    }
+                }
+                let sortedVal: object[] = DataUtil.sort(colSort, null, DataUtil.fnSort(order)); const id: number[] = [];
+                for (let a: number = 0; a < sortedVal.length; a++) {
+                    for (let b: number = 0; b < colSort.length; b++) {
+                        if (JSON.stringify(sortedVal[a]) === JSON.stringify(colSort[b])) {
+                            if (id.indexOf(b) === - 1) { id.push(b); }
+                        }
+                    }
+                }
+                if (argArr[3] === 'TRUE') {
+                    for (let startRow: number = rowIdx, rowInc: number = 0; startRow <= eRowIdx; startRow++, rowInc++) {
+                        for (let a: number = 0, colInc: number = 0; a < id.length; a++, colInc++) {
+                            const cellValue: string = this.parent.getValueFromArg(sheetIdx + getAlphalabel(id[a] + 1) + startRow);
+                            const activeCell: string = this.parent.actCell; let actRowIdx: number = this.parent.rowIndex(activeCell);
+                            const actColIdx: number = this.parent.colIndex(activeCell);
+                            (this.parent.parentObject as any).setValueRowCol(this.parent.getSheetID(this.parent.grid) + 1,
+                                                                             cellValue, actRowIdx + rowInc, actColIdx + colInc);
+                        }
+                    }
+                    result = this.parent.getValueFromArg(sheetIdx + getAlphalabel(id[0] + 1) + rowIdx);
+                }
+                if (argArr[3] === 'FALSE') {
+                    for (let a: number = 0, rowInc: number = 0; a < id.length; a++, rowInc++) {
+                        for (let startCol: number = colIdx, colInc: number = 0; startCol <= eColIdx; startCol++, colInc++) {
+                            const value: string = this.parent.getValueFromArg(sheetIdx + getAlphalabel(startCol) + (id[a] + 1));
+                            const activeCell: string = this.parent.actCell; let actRowIdx: number = this.parent.rowIndex(activeCell);
+                            const actColIdx: number = this.parent.colIndex(activeCell);
+                            (this.parent.parentObject as any).setValueRowCol(this.parent.getSheetID(this.parent.grid) + 1,
+                                                                             value, actRowIdx + rowInc, actColIdx + colInc);
+                        }
+                    }
+                    result = this.parent.getValueFromArg(sheetIdx + getAlphalabel(colIdx) + (id[0] + 1));
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * @hidden
+     * @param {string[]} args - specify the range.
+     * @returns {number | string} - Compute the count if.
+     */
     public ComputeCOUNTIF(...args: string[]): number | string {
-        let argArr: string[] = args;
+        const argArr: string[] = args;
         if (isNullOrUndefined(args) || args[0] === '' || argArr.length !== 2) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
         let cellColl: string[] | string;
         let result: number = 0;
         let cellValue: string;
-        let stack: string[] = [];
+        const stack: string[] = [];
         let op: string = 'equal';
         let condition: string = argArr[1].split(this.parent.tic).join('');
         if (condition.startsWith('<=')) {
@@ -1162,16 +1395,23 @@ export class BasicFormulas {
         return result;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} range - specify the range.
+     * @returns {string | number} - Compute the sum if.
+     */
     public ComputeSUMIFS(...range: string[]): string | number {
-        let sum: string | number;
-        sum = this.parent.computeIfsFormulas(range, this.parent.falseValue);
+        const sum: string | number = this.parent.computeIfsFormulas(range, this.parent.falseValue);
         return sum;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the range.
+     * @returns {string | number} - Compute the Text.
+     */
     public ComputeTEXT(...args: string[]): string | number {
-        let checkArgs: string; let argsLength: number = args.length;
+        let checkArgs: string; const argsLength: number = args.length;
         for (let i: number = 0; i < argsLength; i++) {
             if (isNullOrUndefined(checkArgs)) {
                 checkArgs = args[i];
@@ -1179,18 +1419,18 @@ export class BasicFormulas {
                 checkArgs = checkArgs + ',' + args[i];
             }
         }
-        let splitIndex: number = checkArgs.indexOf(',');
-        let frtArg: string = checkArgs.slice(0, splitIndex);
-        let scndArg: string = checkArgs.slice(checkArgs.indexOf('"') + 1, checkArgs.length);
-        let checkScndArg: number = scndArg.indexOf('"');
+        const splitIndex: number = checkArgs.indexOf(',');
+        const frtArg: string = checkArgs.slice(0, splitIndex);
+        const scndArg: string = checkArgs.slice(checkArgs.indexOf('"') + 1, checkArgs.length);
+        const checkScndArg: number = scndArg.indexOf('"');
         if ( splitIndex > -1 && checkScndArg !== scndArg.length - 1) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
         let s1: string = frtArg;
         let s2: string = scndArg.slice(0, scndArg.length - 1);
         let dTime: Date | number = new Date(1900, 0, 1, 0, 0, 0);
-        let checkString: string = s1 + ',' + s2;
-        let intl: Internationalization = new Internationalization();
+        const checkString: string = s1 + ',' + s2;
+        const intl: Internationalization = new Internationalization();
         if (this.parent.getErrorStrings().indexOf(checkString) > -1) {
             return checkString;
         }
@@ -1218,12 +1458,12 @@ export class BasicFormulas {
                 || s2.toUpperCase().indexOf('H') > -1) {
                 s2 = s2.split('Y').join('y').split('D').join('d').split('H').join('h');
                 s2 = s2.split('S').join('s').split('m').join('M').split('AM/PM').join('tt');
-                let formatChar: string[] = s2.split('');
-                let isH: boolean = false; let isMFound: boolean = false; let isFirstM: boolean = false;
+                const formatChar: string[] = s2.split('');
+                let isH: boolean = false; let isMFound: boolean = false;
                 let i: number = 0; let mcount: number = 0;
                 let lastCharIndex: number = 0; let totalCharforM: number = 0;
                 for (i = 0; i < formatChar.length; ) {
-                    let c: string = formatChar[i];
+                    const c: string = formatChar[i];
                     if (c === 's' && formatChar[lastCharIndex] === 'M') {
                         formatChar[lastCharIndex] = 'm';
                         if (formatChar[lastCharIndex - 1] === 'M') {
@@ -1242,7 +1482,6 @@ export class BasicFormulas {
                     if (c === 'M' && isH) {
                         formatChar[i] = 'm';
                         isMFound = true;
-                        isFirstM = (mcount === 1);
                     }
                     if (c === 'h') {
                         isH = true;
@@ -1258,12 +1497,12 @@ export class BasicFormulas {
                 if (d === 0) {
                     dt = dTime;
                 }
-                let getSkeleton: string = getSkeletonVal(s2);
+                const getSkeleton: string = getSkeletonVal(s2);
                 if (getSkeleton === '') {
                     return this.parent.getErrorStrings()[CommonErrors.name];
                 }
-                let dFormatter: Function = intl.getDateFormat({ skeleton: getSkeleton, type: 'date' });
-                let formattedString: string = dFormatter(new Date(dt.toString()));
+                const dFormatter: Function = intl.getDateFormat({ skeleton: getSkeleton, type: 'date' });
+                const formattedString: string = dFormatter(new Date(dt.toString()));
                 s1 = formattedString;
             } else {
                 s1 = intl.formatNumber(d, { format: s2 });
@@ -1272,28 +1511,38 @@ export class BasicFormulas {
         return s1;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the range.
+     * @returns {number | string} - Compute the count if.
+     */
     public ComputeCOUNTIFS(...args: string[]): number | string {
-        let sum: string | number;
-        sum = this.parent.computeIfsFormulas(args, this.parent.trueValue);
+        const sum: string | number = this.parent.computeIfsFormulas(args, this.parent.trueValue);
         return sum;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the range.
+     * @returns {number | string} - Compute the Average if.
+     */
     public ComputeAVERAGEIFS(...args: string[]): number | string {
-        let sum: string | number;
-        sum = this.parent.computeIfsFormulas(args, this.parent.falseValue, this.parent.trueValue);
+        const sum: string | number = this.parent.computeIfsFormulas(args, this.parent.falseValue, this.parent.trueValue);
         return sum;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specify the range.
+     * @returns {string | number} - Compute the Match.
+     */
     public ComputeMATCH(...args: string[]): string | number {
-        let argArr: string[] = args;
+        const argArr: string[] = args;
         if (isNullOrUndefined(argArr) || (argArr.length === 1 && argArr[0] === '') || argArr.length < 2 || argArr.length > 3) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
         let cellColl: string[] | string;
-        let cellValue: string[] = [];
+        const cellValue: string[] = [];
         let lookupVal: string = argArr[0].split(this.parent.tic).join('');
         argArr[2] = isNullOrUndefined(argArr[2]) ? '1' : argArr[2].split(this.parent.tic).join('');
         if (argArr[2].split(this.parent.tic).join('') === this.parent.trueValue) {
@@ -1302,7 +1551,7 @@ export class BasicFormulas {
         if (argArr[2].split(this.parent.tic).join('') === this.parent.falseValue) {
             argArr[2] = '0';
         }
-        let matchType: number = parseFloat(argArr[2]);
+        const matchType: number = parseFloat(argArr[2]);
         if (matchType !== -1 && matchType !== 0 && matchType !== 1) {
             return this.parent.getErrorStrings()[CommonErrors.na];
         }
@@ -1354,98 +1603,114 @@ export class BasicFormulas {
         return index ? index : this.parent.getErrorStrings()[CommonErrors.na];
     }
 
-    /** @hidden */
-    public ComputeLOOKUP(...range: string[]): string | number {
-        let argArr: string[] = range;
-        let result: string = '';
-        if (isNullOrUndefined(argArr) || (argArr.length === 1 && argArr[0] === '') || argArr.length < 2 || argArr.length > 3) {
-            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
-        }
-        result = this.parent.computeLookup(argArr);
-        return result;
-    }
+    // /**
+    //  * @hidden
+    //  * @param {string[]} range - specify the range.
+    //  * @returns {string | number} - Compute the lookup value.
+    //  */
+    // public ComputeLOOKUP(...range: string[]): string | number {
+    //     const argArr: string[] = range;
+    //     let result: string = '';
+    //     if (isNullOrUndefined(argArr) || (argArr.length === 1 && argArr[0] === '') || argArr.length < 2 || argArr.length > 3) {
+    //         return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+    //     }
+    //     result = this.parent.computeLookup(argArr);
+    //     return result;
+    // }
 
-    /** @hidden */
-    public ComputeVLOOKUP(...range: string[]): string | number {
-        let argArr: string[] = range;
-        let result: string = '';
-        if (isNullOrUndefined(argArr) || (argArr.length === 1 && argArr[0] === '') || argArr.length < 3 || argArr.length > 4) {
-            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
-        }
-        result = this.parent.computeVLookup(argArr);
-        return result;
-    }
+    // /**
+    //  * @hidden
+    //  * @param {string[]} range - specify the range.
+    //  * @returns {string | number} - Compute the vlookup value.
+    //  */
+    // public ComputeVLOOKUP(...range: string[]): string | number {
+    //     const argArr: string[] = range;
+    //     let result: string = '';
+    //     if (isNullOrUndefined(argArr) || (argArr.length === 1 && argArr[0] === '') || argArr.length < 3 || argArr.length > 4) {
+    //         return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+    //     }
+    //     result = this.parent.computeVLookup(argArr);
+    //     return result;
+    // }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} range - specify the range.
+     * @returns {string | number} - Compute the sub total value.
+     */
     public ComputeSUBTOTAL(...range: string[]): string | number {
-        let argArr: string[] = range;
+        const argArr: string[] = range;
         let result: string | number = '';
         if (argArr.length < 2) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
-        let formula: number = this.parent.parseFloat(this.parent.getValueFromArg(argArr[0].split(this.parent.tic).join('')));
+        const formula: number = this.parent.parseFloat(this.parent.getValueFromArg(argArr[0].split(this.parent.tic).join('')));
         if (isNaN(formula)) {
             this.parent.getErrorStrings()[CommonErrors.value];
         }
         if ((formula < 1 || formula > 11) && (formula < 101 || formula > 111)) {
             this.parent.getErrorStrings()[CommonErrors.value];
         }
-        let cellRef: string[] = argArr.slice(1, argArr.length);
+        const cellRef: string[] = argArr.slice(1, argArr.length);
         switch (formula) {
-            case 1:
-            case 101:
-                result = this.ComputeAVERAGE(...cellRef);
-                break;
-            case 2:
-            case 102:
-                result = this.ComputeCOUNT(...cellRef);
-                break;
-            case 3:
-            case 103:
-                result = this.ComputeCOUNTA(...cellRef);
-                break;
-            case 4:
-            case 104:
-                result = this.ComputeMAX(...cellRef);
-                break;
-            case 5:
-            case 105:
-                result = this.ComputeMIN(...cellRef);
-                break;
-            case 6:
-            case 106:
-                result = this.ComputePRODUCT(...cellRef);
-                break;
-            case 7:
-            case 107:
-                result = this.ComputeDAY(...cellRef);
-                break;
-            case 8:
-            case 108:
-                result = this.ComputeCONCAT(...cellRef);
-                break;
-            case 9:
-            case 109:
-                result = this.ComputeSUM(...cellRef);
-                break;
-            case 10:
-            case 110:
-                result = this.ComputeAVERAGEA(...cellRef);
-                break;
-            case 11:
-            case 111:
-                result = this.ComputeABS(...cellRef);
-                break;
-            default:
-                result = this.parent.getErrorStrings()[CommonErrors.value];
-                break;
+        case 1:
+        case 101:
+            result = this.ComputeAVERAGE(...cellRef);
+            break;
+        case 2:
+        case 102:
+            result = this.ComputeCOUNT(...cellRef);
+            break;
+        case 3:
+        case 103:
+            result = this.ComputeCOUNTA(...cellRef);
+            break;
+        case 4:
+        case 104:
+            result = this.ComputeMAX(...cellRef);
+            break;
+        case 5:
+        case 105:
+            result = this.ComputeMIN(...cellRef);
+            break;
+        case 6:
+        case 106:
+            result = this.ComputePRODUCT(...cellRef);
+            break;
+        case 7:
+        case 107:
+            result = this.ComputeDAY(...cellRef);
+            break;
+        case 8:
+        case 108:
+            result = this.ComputeCONCAT(...cellRef);
+            break;
+        case 9:
+        case 109:
+            result = this.ComputeSUM(...cellRef);
+            break;
+        case 10:
+        case 110:
+            result = this.ComputeAVERAGEA(...cellRef);
+            break;
+        case 11:
+        case 111:
+            result = this.ComputeABS(...cellRef);
+            break;
+        default:
+            result = this.parent.getErrorStrings()[CommonErrors.value];
+            break;
         }
         return result;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} range - specify the range.
+     * @returns {string | number} - Compute the Radians value.
+     */
     public ComputeRADIANS(...range: string[]): string | number {
-        let argArr: string[] = range;
+        const argArr: string[] = range;
         let result: number;
         if (argArr[0] === '' || argArr.length > 1) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
@@ -1453,10 +1718,10 @@ export class BasicFormulas {
         if (argArr[0].indexOf(':') > -1 || argArr[0].split(this.parent.tic).join('') === '') {
             return this.parent.getErrorStrings()[CommonErrors.value];
         }
-        let val: string = argArr[0].split(this.parent.tic).join('');
+        const val: string = argArr[0].split(this.parent.tic).join('');
         argArr[0] = isNaN(this.parent.parseFloat(val)) ? argArr[0] : val;
-        let cellvalue: string = this.parent.getValueFromArg(argArr[0]);
-        let radVal: number = this.parent.parseFloat(cellvalue);
+        const cellvalue: string = this.parent.getValueFromArg(argArr[0]);
+        const radVal: number = this.parent.parseFloat(cellvalue);
         if (!isNaN(radVal)) {
             result = Math.PI * (radVal) / 180;
         } else {
@@ -1469,9 +1734,13 @@ export class BasicFormulas {
         return result;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} range - specify the range.
+     * @returns {string | number} - Compute the random between value.
+     */
     public ComputeRANDBETWEEN(...range: string[]): string | number {
-        let argsLength: number = range.length;
+        const argsLength: number = range.length;
         let min: number;
         let max: number;
         let argVal: number;
@@ -1516,21 +1785,23 @@ export class BasicFormulas {
         }
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} range - specify the range.
+     * @returns {string | number} - Compute the slope value.
+     */
     public ComputeSLOPE(...range: string[]): string | number {
-        let argArr: string[] = range;
+        const argArr: string[] = range;
         if (argArr.length !== 2 || argArr[0] === '') {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
-        let yPoints: string[];
-        let xPoints: string[];
-        let xPointsRange: string | string[] = this.parent.getCellCollection(argArr[1].split(this.parent.tic).join(''));
-        let yPointsRange: string | string[] = this.parent.getCellCollection(argArr[0].split(this.parent.tic).join(''));
+        const xPointsRange: string | string[] = this.parent.getCellCollection(argArr[1].split(this.parent.tic).join(''));
+        const yPointsRange: string | string[] = this.parent.getCellCollection(argArr[0].split(this.parent.tic).join(''));
         if (yPointsRange.length !== xPointsRange.length) {
             return this.parent.getErrorStrings()[CommonErrors.na];
         }
-        yPoints = this.getDataCollection(yPointsRange);
-        xPoints = this.getDataCollection(xPointsRange);
+        const yPoints: string[] = this.getDataCollection(yPointsRange);
+        const xPoints: string[] = this.getDataCollection(xPointsRange);
         if (xPoints.indexOf('#NAME?') > -1 || yPoints.indexOf('#NAME?') > -1) {
             return this.parent.getErrorStrings()[CommonErrors.name];
         }
@@ -1549,28 +1820,30 @@ export class BasicFormulas {
         if ((sumXY - sumX * sumY) === 0 || (sumX2 - sumX * sumX) === 0) {
             this.parent.getErrorStrings()[CommonErrors.divzero];
         }
-        let result: string = ((sumXY - sumX * sumY / xPoints.length) / (sumX2 - sumX * sumX / xPoints.length)).toString();
+        const result: string = ((sumXY - sumX * sumY / xPoints.length) / (sumX2 - sumX * sumX / xPoints.length)).toString();
         if (result === 'NaN') {
             return this.parent.getErrorStrings()[CommonErrors.divzero];
         }
         return result;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} range - specify the range.
+     * @returns {string | number} - Compute the intercept.
+     */
     public ComputeINTERCEPT(...range: string[]): string | number {
-        let argArr: string[] = range;
+        const argArr: string[] = range;
         if (argArr[0] === '' || argArr.length !== 2) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
-        let xValues: string[];
-        let yValues: string[];
-        let yValuesRange: string | string[] = this.parent.getCellCollection(argArr[0].split(this.parent.tic).join(''));
-        let xValuesRange: string | string[] = this.parent.getCellCollection(argArr[1].split(this.parent.tic).join(''));
+        const yValuesRange: string | string[] = this.parent.getCellCollection(argArr[0].split(this.parent.tic).join(''));
+        const xValuesRange: string | string[] = this.parent.getCellCollection(argArr[1].split(this.parent.tic).join(''));
         if (yValuesRange.length !== xValuesRange.length) {
             return this.parent.getErrorStrings()[CommonErrors.na];
         }
-        xValues = this.getDataCollection(xValuesRange);
-        yValues = this.getDataCollection(yValuesRange);
+        const xValues: string[] = this.getDataCollection(xValuesRange);
+        const yValues: string[] = this.getDataCollection(yValuesRange);
         if (xValues.indexOf('#NAME?') > -1 || yValues.indexOf('#NAME?') > -1) {
             return this.parent.getErrorStrings()[CommonErrors.name];
         }
@@ -1590,7 +1863,7 @@ export class BasicFormulas {
             sumXY += diff * (Number(yValues[i]) - sumY);
             sumX2 += diff * diff;
         }
-        let result: string = (sumY - sumXY / sumX2 * sumX).toString();
+        const result: string = (sumY - sumXY / sumX2 * sumX).toString();
         if ((sumY - sumXY) === 0 || (sumX2 * sumX) === 0) {
             this.parent.getErrorStrings()[CommonErrors.divzero];
         }
@@ -1600,9 +1873,13 @@ export class BasicFormulas {
         return result;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} logValue - specify the log value.
+     * @returns {string | number} - Compute the value.
+     */
     public ComputeLN(...logValue: string[]): string | number {
-        let argArr: string[] = logValue;
+        const argArr: string[] = logValue;
         let cellvalue: string = '';
         let logVal: number;
         let orgValue: number | string;
@@ -1631,24 +1908,30 @@ export class BasicFormulas {
         return Math.log(logVal);
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} logValue - specify the log value.
+     * @returns {boolean | string} - Compute the Isnumber value.
+     */
     public ComputeISNUMBER(...logValue: string[]): boolean | string {
-        let argArr: string[] = logValue;
-        let logVal: number;
-        let orgValue: number | string;
+        const argArr: string[] = logValue;
         if (logValue.length === 0 || logValue.length > 1) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
-        orgValue = (this.parent.isCellReference(argArr[0])) ? this.parent.getValueFromArg(argArr[0]) :
+        const orgValue: number | string = (this.parent.isCellReference(argArr[0])) ? this.parent.getValueFromArg(argArr[0]) :
             this.parent.getValueFromArg(argArr[0].split(this.parent.tic).join(''));
         if (orgValue.toString() === '') { return false; }
-        logVal = this.parent.parseFloat(orgValue);
+        const logVal: number = this.parent.parseFloat(orgValue);
         return !isNaN(logVal) ? true : false;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} logValue - specify the log value.
+     * @returns {number | string} - Compute the round value.
+     */
     public ComputeROUND(...logValue: string[]): number | string {
-        let argArr: string[] = logValue;
+        const argArr: string[] = logValue;
         let orgValue: number | string;
         let x: number = 0;
         let digits: number = 0;
@@ -1690,14 +1973,16 @@ export class BasicFormulas {
         return round.toString();
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} logValue - specify the log value.
+     * @returns {boolean | string} - Compute the power value.
+     */
     public ComputePOWER(...logValue: string[]): boolean | string {
-        let argArr: string[] = logValue;
+        const argArr: string[] = logValue;
         let power: string | number;
         let orgNumValue: number | string;
         let orgPowValue: number | string;
-        let logNumValue: number | string;
-        let logPowValue: number | string;
         if (logValue.length === 0 || logValue.length > 2) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
@@ -1707,8 +1992,8 @@ export class BasicFormulas {
             (orgNumValue.split(this.parent.tic).join('') === 'FALSE') ? '0' : orgNumValue;
         orgPowValue = (orgPowValue.split(this.parent.tic).join('') === 'TRUE') ? '1' :
             (orgPowValue.split(this.parent.tic).join('') === 'FALSE') ? '0' : orgPowValue;
-        logNumValue = this.parent.parseFloat(orgNumValue);
-        logPowValue = this.parent.parseFloat(orgPowValue);
+        const logNumValue: number | string = this.parent.parseFloat(orgNumValue);
+        const logPowValue: number | string = this.parent.parseFloat(orgPowValue);
         if (!isNaN(logNumValue) && !isNaN(logPowValue)) {
             if (logNumValue === 0 && logPowValue < 0) {
                 return this.parent.getErrorStrings()[CommonErrors.divzero];
@@ -1723,13 +2008,15 @@ export class BasicFormulas {
         return power.toString();
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} logValue - specify the log value.
+     * @returns {number | string} - Compute the log value.
+     */
     public ComputeLOG(...logValue: string[]): number | string {
-        let argArr: string[] = logValue;
+        const argArr: string[] = logValue;
         let orgNumValue: number | string;
         let orgBaseValue: number | string;
-        let logNumValue: number | string;
-        let logBaseValue: number | string;
         if (logValue.length === 0 || logValue.length > 2) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
@@ -1742,8 +2029,8 @@ export class BasicFormulas {
             (orgNumValue.split(this.parent.tic).join('') === 'FALSE') ? '0' : orgNumValue;
         orgBaseValue = (orgBaseValue.split(this.parent.tic).join('') === 'TRUE') ? '1' :
             (orgBaseValue.split(this.parent.tic).join('') === 'FALSE') ? '0' : orgBaseValue;
-        logNumValue = this.parent.parseFloat(orgNumValue);
-        logBaseValue = this.parent.parseFloat(orgBaseValue);
+        const logNumValue: number | string = this.parent.parseFloat(orgNumValue);
+        const logBaseValue: number | string = this.parent.parseFloat(orgBaseValue);
         if (logNumValue <= 0 || logBaseValue <= 0) {
             return this.parent.getErrorStrings()[CommonErrors.num];
         }
@@ -1756,14 +2043,15 @@ export class BasicFormulas {
             return this.parent.getErrorStrings()[CommonErrors.value];
         }
     }
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} logValue - specify the log value.
+     * @returns {boolean | string} - Compute the trunc value.
+     */
     public ComputeTRUNC(...logValue: string[]): boolean | string {
-        let argArr: string[] = logValue;
+        const argArr: string[] = logValue;
         let orgNumValue: number | string;
         let orgDigitValue: number | string = 0;
-        let logNumValue: number | string;
-        let logDigitValue: number | string;
-        let normalizer: number | string;
         if (logValue.length === 0 || logValue.length > 2) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
@@ -1776,21 +2064,24 @@ export class BasicFormulas {
         orgNumValue = this.parent.getValueFromArg(argArr[0]);
         orgNumValue = (orgNumValue.split(this.parent.tic).join('') === 'TRUE') ? '1' :
             (orgNumValue.split(this.parent.tic).join('') === 'FALSE') ? '0' : orgNumValue;
-        logNumValue = this.parent.parseFloat(orgNumValue.split(this.parent.tic).join(''));
+        const logNumValue: number | string = this.parent.parseFloat(orgNumValue.split(this.parent.tic).join(''));
         if (isNaN(logNumValue) || isNaN(orgDigitValue)) {
             return (argArr[0] === this.parent.tic || this.parent.isCellReference(argArr[0]) || (argArr[1] === this.parent.tic
                 || this.parent.isCellReference(argArr[1]))) ? this.parent.getErrorStrings()[CommonErrors.value]
                 : this.parent.getErrorStrings()[CommonErrors.name];
         }
-        normalizer = Math.pow(10, orgDigitValue);
-        logDigitValue = (logNumValue < 0) ? -1 : 1;
+        const normalizer: number | string = Math.pow(10, orgDigitValue);
+        const logDigitValue: number | string = (logNumValue < 0) ? -1 : 1;
         return (logDigitValue * Math.floor(normalizer * Math.abs(logNumValue)) / normalizer).toString();
     }
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} logValue - specify the log value.
+     * @returns {boolean | string} - Compute the expression.
+     */
     public ComputeEXP(...logValue: string[]): boolean | string {
-        let argArr: string[] = logValue;
+        const argArr: string[] = logValue;
         let orgNumValue: number | string;
-        let logNumValue: number | string;
         if (logValue.length === 0 || logValue.length > 1) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
@@ -1800,7 +2091,7 @@ export class BasicFormulas {
         if (orgNumValue === '') {
             orgNumValue = '0';
         }
-        logNumValue = this.parent.parseFloat(orgNumValue);
+        const logNumValue: number | string = this.parent.parseFloat(orgNumValue);
         if (logNumValue > 709) {
             return this.parent.getErrorStrings()[CommonErrors.num];
         }
@@ -1811,9 +2102,13 @@ export class BasicFormulas {
         }
         return Math.exp(logNumValue).toString();
     }
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} logValue - specify the log value
+     * @returns {boolean | string} - compute the value.
+     */
     public ComputeGEOMEAN(...logValue: string[]): boolean | string {
-        let argArr: string[] = logValue;
+        const argArr: string[] = logValue;
         let sum: number | string = 1;
         let count: number | string = 0;
         let cellVal: number | string = 0;
@@ -1869,17 +2164,21 @@ export class BasicFormulas {
         return sum.toString();
     }
     private getDataCollection(cells: string[] | string): string[] {
-        let cellsData: string[] = [];
+        const cellsData: string[] = [];
         for (let i: number = 0, len: number = cells.length; i < len; i++) {
             cellsData.push(this.parent.getValueFromArg(cells[i]));
         }
         return cellsData;
     }
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} value - specify the value
+     * @returns {number} - Returns parse double value.
+     */
     private parseDouble(value: string): number {
-        let val: number = this.parent.parseFloat(value.toString());
+        const val: number = this.parent.parseFloat(value.toString());
         return !isNaN(val) ? val : NaN;
-    };
+    }
     protected getModuleName(): string {
         return 'basic-formulas';
     }

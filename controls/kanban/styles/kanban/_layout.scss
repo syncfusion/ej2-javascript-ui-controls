@@ -172,8 +172,13 @@
               color: $kanban-default-font;
               font-size: 16px;
               font-weight: 400;
-              transform: rotate(90deg) translate(30px);
+              overflow: hidden;
+              padding-left: 13px;
+              padding-top: 8px;
+              position: absolute;
+              text-overflow: ellipsis;
               white-space: nowrap;
+              writing-mode: vertical-lr;
 
               .e-item-count {
                 display: inline-block;

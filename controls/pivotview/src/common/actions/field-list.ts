@@ -3,7 +3,7 @@ import { IAction } from '../../common/base/interface';
 import * as events from '../../common/base/constant';
 import * as cls from '../base/css-constant';
 import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
-import { createElement, setStyleAttribute, formatUnit, prepend, addClass, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, setStyleAttribute, formatUnit, prepend, addClass, removeClass, isNullOrUndefined, select, remove } from '@syncfusion/ej2-base';
 import { CalculatedField } from '../../common/calculatedfield/calculated-field';
 
 PivotFieldList.Inject(CalculatedField);
@@ -45,13 +45,17 @@ export class FieldList implements IAction {
             styles: 'position:' + (this.parent.enableRtl ? 'static' : 'absolute') + ';height:0;width:' + this.parent.element.style.width +
                 ';display:none'
         });
-        let containerWrapper: HTMLElement = createElement('div', {
-            id: this.parent.element.id + 'containerwrapper',
-            styles: 'height:' + this.parent.element.parentElement.getBoundingClientRect().height + 'px'
-        });
-        this.parent.element.parentElement.appendChild(containerWrapper);
-        containerWrapper.appendChild(this.element);
-        containerWrapper.appendChild(this.parent.element);
+        if (select('#' + this.parent.element.id + 'containerwrapper', document) === null) {
+            let containerWrapper: HTMLElement = createElement('div', {
+                id: this.parent.element.id + 'containerwrapper',
+                styles: 'height:' + this.parent.height
+            });
+            this.parent.element.parentElement.appendChild(containerWrapper);
+            containerWrapper.appendChild(this.element);
+            containerWrapper.appendChild(this.parent.element);
+        } else {
+            (select('#' + this.parent.element.id + 'containerwrapper', document) as HTMLElement).appendChild(this.element);
+        }
         this.parent.pivotFieldListModule = new PivotFieldList({
             dataSourceSettings: {
                 providerType: this.parent.dataSourceSettings.providerType,
@@ -162,6 +166,9 @@ export class FieldList implements IAction {
         this.removeEventListener();
         if (this.parent.pivotFieldListModule) {
             this.parent.pivotFieldListModule.destroy();
+            if (!isNullOrUndefined(select('#' + this.parent.element.id + '_PivotFieldList', document))) {
+                remove(select('#' + this.parent.element.id + '_PivotFieldList', document));
+            }
         } else {
             return;
         }

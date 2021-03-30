@@ -12,6 +12,7 @@ import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 
 /**
  * Content module is used to render Rich Text Editor content
+ * 
  * @hidden
  * @deprecated
  */
@@ -24,10 +25,14 @@ export class ViewSource {
 
     /**
      * Constructor for view source module
+     *
+     * @param {IRichTextEditor} parent - specifies the parent element.
+     * @param {ServiceLocator} locator - specifies the locator.
+     * @returns {void}
      */
-    constructor(parent?: IRichTextEditor, locator?: ServiceLocator) {
+    public constructor(parent?: IRichTextEditor, locator?: ServiceLocator) {
         this.parent = parent;
-        let serviceLocator: ServiceLocator = locator;
+        const serviceLocator: ServiceLocator = locator;
         this.rendererFactory = serviceLocator.getService<RendererFactory>('rendererFactory');
         this.addEventListener();
     }
@@ -84,43 +89,45 @@ export class ViewSource {
 
     private previewKeyDown(event: KeyboardEventArgs): void {
         switch (event.action) {
-            case 'html-source':
-                this.updateSourceCode(event);
-                event.preventDefault();
-                break;
-            case 'toolbar-focus':
-                if (this.parent.toolbarSettings.enable) {
-                    let selector: string = '.e-toolbar-item[aria-disabled="false"][title] [tabindex]';
-                    (this.parent.toolbarModule.baseToolbar.toolbarObj.element.querySelector(selector) as HTMLElement).focus();
-                }
-                break;
+        case 'html-source':
+            this.updateSourceCode(event);
+            event.preventDefault();
+            break;
+        case 'toolbar-focus':
+            if (this.parent.toolbarSettings.enable) {
+                const selector: string = '.e-toolbar-item[aria-disabled="false"][title] [tabindex]';
+                (this.parent.toolbarModule.baseToolbar.toolbarObj.element.querySelector(selector) as HTMLElement).focus();
+            }
+            break;
         }
     }
 
     private onKeyDown(e: IHtmlKeyboardEvent): void {
         switch (e.event.action) {
-            case 'html-source':
-                e.event.preventDefault();
-                this.sourceCode(e);
-                e.callBack({
-                    requestType: 'SourceCode',
-                    editorMode: 'HTML',
-                    event: e.event
-                });
-                break;
+        case 'html-source':
+            e.event.preventDefault();
+            this.sourceCode(e);
+            e.callBack({
+                requestType: 'SourceCode',
+                editorMode: 'HTML',
+                event: e.event
+            });
+            break;
         }
     }
 
     /**
      * sourceCode method
-     * @param  {Element} panel
+     *
+     * @param {ClickEventArgs} args - specifies the click event.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public sourceCode(args?: ClickEventArgs | IHtmlKeyboardEvent): void {
         this.parent.isBlur = false;
         this.parent.trigger(events.actionBegin, { requestType: 'SourceCode', targetItem: 'SourceCode', args: args });
-        let tbItems: HTMLElement[] = selectAll('.' + CLS_TB_ITEM, this.parent.element);
+        const tbItems: HTMLElement[] = selectAll('.' + CLS_TB_ITEM, this.parent.element);
         this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
         this.parent.notify(events.updateToolbarItem, {
             targetItem: 'SourceCode', updateItem: 'Preview',
@@ -155,7 +162,9 @@ export class ViewSource {
         this.parent.isBlur = false;
         this.parent.disableToolbarItem(this.parent.toolbarSettings.items as string[]);
         this.parent.enableToolbarItem('SourceCode');
-        if (this.parent.getToolbar()) { removeClass([this.parent.getToolbar()], [CLS_EXPAND_OPEN]); }
+        if (this.parent.getToolbar()) {
+            removeClass([this.parent.getToolbar()], [CLS_EXPAND_OPEN]);
+        }
         removeClass(tbItems, [CLS_ACTIVE]);
         this.parent.setContentHeight('sourceCode', true);
         this.wireEvent(this.previewElement);
@@ -163,7 +172,7 @@ export class ViewSource {
         this.previewElement.focus();
         this.parent.updateValue();
         if (!isNullOrUndefined(this.parent.placeholder) && !this.parent.iframeSettings.enable) {
-            let placeHolderWrapper: HTMLElement = this.parent.element.querySelector('.rte-placeholder.e-rte-placeholder') as HTMLElement;
+            const placeHolderWrapper: HTMLElement = this.parent.element.querySelector('.rte-placeholder.e-rte-placeholder') as HTMLElement;
             placeHolderWrapper.style.display = 'none';
         }
         this.parent.trigger(events.actionComplete, { requestType: 'SourceCode', targetItem: 'SourceCode', args: args });
@@ -172,20 +181,22 @@ export class ViewSource {
 
     /**
      * updateSourceCode method
-     * @param  {Element} panel
+     *
+     * @param {ClickEventArgs} args - specifies the click event.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public updateSourceCode(args?: ClickEventArgs | KeyboardEventArgs): void {
         this.parent.isBlur = false;
         this.parent.trigger(events.actionBegin, { requestType: 'Preview', targetItem: 'Preview', args: args });
-        let editHTML: HTMLTextAreaElement = this.getPanel() as HTMLTextAreaElement;
+        const editHTML: HTMLTextAreaElement = this.getPanel() as HTMLTextAreaElement;
         this.parent.notify(events.updateToolbarItem, {
             targetItem: 'Preview', updateItem: 'SourceCode',
             baseToolbar: this.parent.getBaseToolbarObject()
         });
-        let serializeValue: string = this.parent.serializeValue(editHTML.value);
-        let value: string = (serializeValue === null || serializeValue === '') ? '<p><br/></p>' : serializeValue;
+        const serializeValue: string = this.parent.serializeValue(editHTML.value);
+        const value: string = (serializeValue === null || serializeValue === '') ? '<p><br/></p>' : serializeValue;
         if (this.parent.iframeSettings.enable) {
             editHTML.parentElement.style.display = 'none';
             (this.contentModule.getPanel() as HTMLElement).style.display = 'block';
@@ -197,14 +208,16 @@ export class ViewSource {
         }
         this.parent.isBlur = false;
         this.parent.enableToolbarItem(this.parent.toolbarSettings.items as string[]);
-        if (this.parent.getToolbar()) { removeClass([this.parent.getToolbar()], [CLS_EXPAND_OPEN]); }
+        if (this.parent.getToolbar()) {
+            removeClass([this.parent.getToolbar()], [CLS_EXPAND_OPEN]);
+        }
         this.parent.setContentHeight('preview', true);
         this.unWireEvent();
         this.wireBaseKeyDown();
         (this.contentModule.getEditPanel() as HTMLElement).focus();
         this.parent.updateValue();
         if (!isNullOrUndefined(this.parent.placeholder) && (this.contentModule.getEditPanel() as HTMLElement).innerText.length === 0) {
-            let placeHolderWrapper: HTMLElement = this.parent.element.querySelector('.rte-placeholder.e-rte-placeholder') as HTMLElement;
+            const placeHolderWrapper: HTMLElement = this.parent.element.querySelector('.rte-placeholder.e-rte-placeholder') as HTMLElement;
             placeHolderWrapper.style.display = 'block';
         }
         this.parent.trigger(events.actionComplete, { requestType: 'Preview', targetItem: 'Preview', args: args });
@@ -221,17 +234,19 @@ export class ViewSource {
 
     /**
      * getPanel method
-     * @param  {Element} panel
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public getPanel(): HTMLTextAreaElement | Element {
-        return this.parent.element.querySelector('.e-rte-srctextarea');
+        return this.parent.element && this.parent.element.querySelector('.e-rte-srctextarea');
     }
 
     /**
      * getViewPanel method
-     * @param  {Element} panel
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -241,7 +256,8 @@ export class ViewSource {
 
     /**
      * Destroy the entire RichTextEditor.
-     * @return {void}
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */

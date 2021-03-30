@@ -811,9 +811,9 @@ export class PivotEngine {
         return isRangeAvail;
     }
 
-    private getPercentFormat(formatField: { [key: string]: IFormatSettings }, currentField: string): string {
+    private getPercentFormat(formatField: { [key: string]: IFormatSettings }, currentField: string): number {
         let isHavingFormat: any = (!isNullOrUndefined(formatField[currentField]) && !isNullOrUndefined(this.formatFields[currentField].format)) ? (this.formatFields[currentField].format).toLowerCase().match(/p[0-9]/) : undefined;   /* eslint-disable-line */
-        return !isNullOrUndefined(isHavingFormat) ? this.formatFields[currentField].format : 'P0';
+        return !isNullOrUndefined(isHavingFormat) ? (Number((this.formatFields[currentField].format).replace(/[^0-9]/g,''))) : 2;
     }
 
     private getFormattedFields(fields: IFieldOptions[]): void { /* eslint-disable-line */
@@ -1063,13 +1063,14 @@ export class PivotEngine {
             for (let len: number = 0, lmt: number = formulaType.length; len < lmt; len++) {
                 let type: string = formulaType[len];
                 let aggregateValue: string[] = type.split(/[ .:;?!~,`"&|()<>{}\[\]\r\n/\\]+/);
+                let matchStrings: string[] = type.match(/^([^()]+)\((.*)\)$/);
                 let selectedString: string = (aggregateValue[0] === 'DistinctCount' ?
                     'DistinctCount' : aggregateValue[0] === 'PopulationStDev' ?
                         'PopulationStDev' : aggregateValue[0] === 'SampleStDev' ? 'SampleStDev' : aggregateValue[0] === 'PopulationVar' ?
                             'PopulationVar' : aggregateValue[0] === 'SampleVar' ? 'SampleVar' : aggregateValue[0]);
                 if (['Sum', 'Count', 'Min', 'Max', 'Avg', 'Product', 'DistinctCount',
                     'PopulationStDev', 'SampleStDev', 'PopulationVar', 'SampleVar', 'Median'].indexOf(selectedString) !== -1) {
-                    let index: number = keys.indexOf(aggregateValue[1]);
+                    let index: number = (keys.indexOf(aggregateValue[1]) === -1 && matchStrings[2]) ? keys.indexOf(matchStrings[2]) : keys.indexOf(aggregateValue[1]);
                     if (!this.calculatedFormulas[field.name]) {
                         this.calculatedFormulas[field.name] = [{
                             index: index,
@@ -1210,8 +1211,10 @@ export class PivotEngine {
             while (tkln--) {
                 let key: string = keys[tkln];
                 vMat[len][tkln] = (flList[key].type === 'number' || isNullOrUndefined((data as any)[len][this.fieldKeys[key] as any])) ?
-                    !isNaN(Number((data as any)[len][this.fieldKeys[key] as any])) ?
-                        Number((data as any)[len][this.fieldKeys[key] as any]) : undefined : 1;
+                    isNullOrUndefined((data as any)[len][this.fieldKeys[key] as any]) ?
+                        (data as any)[len][this.fieldKeys[key] as any] :
+                        !isNaN(Number((data as any)[len][this.fieldKeys[key] as any])) ?
+                            Number((data as any)[len][this.fieldKeys[key] as any]) : undefined : 1;
             }
         }
         return vMat;
@@ -3607,7 +3610,7 @@ export class PivotEngine {
                                     cVal = ((selectedRowValues[index[1]] as IAxisSet).actualValue === 0 ?
                                         0 : (cVal / (selectedRowValues[index[1]] as IAxisSet).actualValue));
                                     this.aggregatedValueMatrix[index[0]][index[1]] = cVal;
-                                    currentSet.formattedText = currentSet.showSubTotals ? (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: this.getPercentFormat(this.formatFields, currentSet.actualText as string), maximumFractionDigits: 2 }) : this.emptyCellTextContent) : currentSet.formattedText;
+                                    currentSet.formattedText = currentSet.showSubTotals ? (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: this.getPercentFormat(this.formatFields, currentSet.actualText as string) }) : this.emptyCellTextContent) : currentSet.formattedText;
                                 }
                             }
                         } else {
@@ -3679,7 +3682,7 @@ export class PivotEngine {
                                 } else {
                                     cVal = ((selectedColumnValues[index[0]] as IAxisSet).value === 0 ?
                                         0 : (cVal / (selectedColumnValues[index[0]] as IAxisSet).value));
-                                    currentSet.formattedText = (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: this.getPercentFormat(this.formatFields, currentSet.actualText as string), maximumFractionDigits: 2 }) : this.emptyCellTextContent);
+                                    currentSet.formattedText = (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: this.getPercentFormat(this.formatFields, currentSet.actualText as string) }) : this.emptyCellTextContent);
                                     this.aggregatedValueMatrix[index[0]][index[1]] = cVal;
                                 }
                             }
@@ -3723,7 +3726,7 @@ export class PivotEngine {
                                 }
                                 let cVal: number = currentSet.value / selectedRowValue;
                                 cVal = isNaN(cVal) ? 0 : cVal;
-                                currentSet.formattedText = currentSet.showSubTotals ? (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: this.getPercentFormat(this.formatFields, currentSet.actualText as string), maximumFractionDigits: 2 }) : this.emptyCellTextContent) : currentSet.formattedText;
+                                currentSet.formattedText = currentSet.showSubTotals ? (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: this.getPercentFormat(this.formatFields, currentSet.actualText as string) }) : this.emptyCellTextContent) : currentSet.formattedText;
                                 if (!this.aggregatedValueMatrix[i[0]]) {
                                     this.aggregatedValueMatrix[i[0]] = [];
                                 }
@@ -3764,7 +3767,7 @@ export class PivotEngine {
                                 }
                                 let val: number = currentSet.value / selectedColValue;
                                 val = isNaN(val) ? 0 : val;
-                                currentSet.formattedText = (val !== 0 ? this.globalize.formatNumber(val, { format: this.getPercentFormat(this.formatFields, currentSet.actualText as string), maximumFractionDigits: 2 }) : this.emptyCellTextContent);
+                                currentSet.formattedText = (val !== 0 ? this.globalize.formatNumber(val, { format: 'P', maximumFractionDigits: this.getPercentFormat(this.formatFields, currentSet.actualText as string) }) : this.emptyCellTextContent);
                                 if (!this.aggregatedValueMatrix[i[0]]) {
                                     this.aggregatedValueMatrix[i[0]] = [];
                                 }
@@ -3952,7 +3955,7 @@ export class PivotEngine {
         if (!isNaN(value) && !isNullOrUndefined(value) &&
             (['PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal']).indexOf(aggregate) >= 0) {
             formattedText = this.globalize.formatNumber(value,
-                { format: this.getPercentFormat(this.formatFields, cellDetails.fieldName), maximumFractionDigits: 2 });
+                { format: 'P', maximumFractionDigits: this.getPercentFormat(this.formatFields, cellDetails.fieldName) });
         } else if (!subTotal &&
             isNaN(value) && !isNullOrUndefined(value) &&
             (['PopulationStDev', 'SampleStDev', 'PopulationVar', 'SampleVar']).indexOf(aggregate) !== -1) {

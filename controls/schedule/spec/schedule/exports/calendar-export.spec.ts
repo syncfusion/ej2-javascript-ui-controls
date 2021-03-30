@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Schedule calendar export spec
  */
@@ -14,10 +15,9 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, 
 
 describe('ICS calendar export', () => {
     beforeAll(() => {
-        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
             (this as any).skip(); //Skips test (in Chai)
             return;
@@ -26,8 +26,8 @@ describe('ICS calendar export', () => {
 
     describe('Export checking', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let events: Object[] = [{
+        beforeAll((done: DoneFn) => {
+            const events: Record<string, any>[] = [{
                 Id: 10,
                 Subject: 'recurrence event',
                 StartTime: new Date(2017, 9, 19, 10, 0),
@@ -43,18 +43,18 @@ describe('ICS calendar export', () => {
                 StartTime: new Date(2017, 9, 20, 11, 0),
                 EndTime: new Date(2017, 9, 20, 12, 30)
             }];
-            let options: ScheduleModel = { selectedDate: new Date(2017, 9, 19) };
+            const options: ScheduleModel = { selectedDate: new Date(2017, 9, 19) };
             schObj = createSchedule(options, events, done);
         });
         afterAll(() => {
             destroy(schObj);
         });
 
-        it('test edit occurrence', (done: Function) => {
+        it('test edit occurrence', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.currentAction).toEqual('EditOccurrence');
                 expect(schObj.eventsData.length).toEqual(4);
-                let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
+                const dataObj: Record<string, any>[] = schObj.eventsData as Record<string, any>[];
                 expect((<string>dataObj[0].RecurrenceException).split(',').length).toEqual(1);
                 expect(dataObj[0].Subject).toEqual('recurrence event');
                 expect(dataObj[3].Id).toEqual(20);
@@ -64,38 +64,38 @@ describe('ICS calendar export', () => {
             };
             expect(schObj.eventsData.length).toEqual(3);
             schObj.currentAction = 'EditOccurrence';
-            let data: { [key: string]: Object } = extend({}, schObj.eventsProcessed[2], null, true) as { [key: string]: Object };
+            const data: Record<string, any> = extend({}, schObj.eventsProcessed[2], null, true) as Record<string, any>;
             data.Subject = '2nd occurrence edited';
             data.Id = 20;
             schObj.saveEvent(data, schObj.currentAction);
         });
 
-        it('Export checking for edited occurrence', (done: Function) => {
+        it('Export checking for edited occurrence', (done: DoneFn) => {
             schObj.exportToICalendar('icsFile');
             setTimeout(() => done(), 50);
         });
 
-        it('test recurrence appointment delete occurrence', (done: Function) => {
+        it('test recurrence appointment delete occurrence', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.eventsData.length).toEqual(4);
                 done();
             };
-            let occurence: { [key: string]: Object } = extend({}, schObj.eventsProcessed[0], null, true) as { [key: string]: Object };
+            const occurence: Record<string, any> = extend({}, schObj.eventsProcessed[0], null, true) as Record<string, any>;
             schObj.currentAction = 'DeleteOccurrence';
             schObj.deleteEvent(occurence, schObj.currentAction);
         });
 
-        it('test recurrence appointment delete occurrence', (done: Function) => {
+        it('test recurrence appointment delete occurrence', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.eventsData.length).toEqual(4);
                 done();
             };
-            let occurence: { [key: string]: Object } = extend({}, schObj.eventsProcessed[3], null, true) as { [key: string]: Object };
+            const occurence: Record<string, any> = extend({}, schObj.eventsProcessed[3], null, true) as Record<string, any>;
             schObj.currentAction = 'DeleteOccurrence';
             schObj.deleteEvent(occurence, schObj.currentAction);
         });
 
-        it('Event export checking', (done: Function) => {
+        it('Event export checking', (done: DoneFn) => {
             schObj.exportToICalendar('icsFile');
             setTimeout(() => done(), 50);
         });
@@ -103,7 +103,7 @@ describe('ICS calendar export', () => {
 
     describe('Custom field', () => {
         let schObj: Schedule;
-        let data: Object[] = [{
+        const data: Record<string, any>[] = [{
             Id: 1,
             Subject: 'Events - Within a day',
             StartTime: new Date(2018, 4, 1, 10, 0),
@@ -124,16 +124,16 @@ describe('ICS calendar export', () => {
             RoomId: 2,
             OwnerId: 2
         }];
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = { height: '550px', width: '50%', selectedDate: new Date(2018, 4, 1) };
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = { height: '550px', width: '50%', selectedDate: new Date(2018, 4, 1) };
             schObj = createGroupSchedule(1, options, data, done);
         });
         afterAll(() => {
             destroy(schObj);
         });
 
-        it('Export checking', (done: Function) => {
-            (schObj.eventsData[0] as { [key: string]: Object }).RoomId = undefined;
+        it('Export checking', (done: DoneFn) => {
+            (schObj.eventsData[0] as Record<string, any>).RoomId = undefined;
             schObj.exportToICalendar();
             setTimeout(() => done(), 50);
         });
@@ -141,7 +141,7 @@ describe('ICS calendar export', () => {
 
     describe('Custom field', () => {
         let schObj: Schedule;
-        let data: Object[] = [{
+        const data: Record<string, any>[] = [{
             Id: 1,
             Subject: 'Events - Within a day',
             StartTime: new Date(2018, 4, 1, 10, 0),
@@ -162,16 +162,16 @@ describe('ICS calendar export', () => {
             RoomId: 2,
             OwnerId: 2
         }];
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = { height: '550px', width: '50%', selectedDate: new Date(2018, 4, 1) };
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = { height: '550px', width: '50%', selectedDate: new Date(2018, 4, 1) };
             schObj = createGroupSchedule(1, options, data, done);
         });
         afterAll(() => {
             destroy(schObj);
         });
 
-        it('Export checking', (done: Function) => {
-            (schObj.eventsData[0] as { [key: string]: Object }).RoomId = undefined;
+        it('Export checking', (done: DoneFn) => {
+            (schObj.eventsData[0] as Record<string, any>).RoomId = undefined;
             schObj.exportToICalendar();
             setTimeout(() => done(), 50);
         });
@@ -179,15 +179,15 @@ describe('ICS calendar export', () => {
 
     describe('ICS Export Checing for Readonly events', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = { height: '550px', width: '50%', selectedDate: new Date(2018, 4, 1) };
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = { height: '550px', width: '50%', selectedDate: new Date(2018, 4, 1) };
             schObj = createGroupSchedule(1, options, readonlyEventsData, done);
         });
         afterAll(() => {
             destroy(schObj);
         });
 
-        it('Export checking for Readonly events', (done: Function) => {
+        it('Export checking for Readonly events', (done: DoneFn) => {
             schObj.exportToICalendar('ReadOnlyEvents');
             setTimeout(() => done(), 50);
         });
@@ -195,15 +195,15 @@ describe('ICS calendar export', () => {
 
     describe('ICS Export Checing for Blocked events', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = { height: '550px', width: '50%', selectedDate: new Date(2018, 4, 1) };
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = { height: '550px', width: '50%', selectedDate: new Date(2018, 4, 1) };
             schObj = createGroupSchedule(1, options, blockData, done);
         });
         afterAll(() => {
             destroy(schObj);
         });
 
-        it('Export checking for Blocked events', (done: Function) => {
+        it('Export checking for Blocked events', (done: DoneFn) => {
             schObj.exportToICalendar('Blocked');
             setTimeout(() => done(), 50);
         });
@@ -211,13 +211,9 @@ describe('ICS calendar export', () => {
 
     it('memory leak', () => {
         profile.sample();
-        // tslint:disable:no-any
-        let average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
+        const average: number = inMB(profile.averageChange);
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        const memory: number = inMB(getMemoryProfile());
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        // tslint:enable:no-any
     });
 });

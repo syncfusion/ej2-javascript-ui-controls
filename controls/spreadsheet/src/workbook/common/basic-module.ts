@@ -7,11 +7,13 @@ import { WorkbookConditionalFormat } from '../actions/conditional-formatting';
 import { WorkbookChart } from '../integrations/index';
 /**
  * Workbook basic module.
+ *
  * @private
  */
 export class WorkbookBasicModule {
     /**
      * Constructor for Workbook basic module.
+     *
      * @private
      */
     constructor() {
@@ -23,7 +25,9 @@ export class WorkbookBasicModule {
 
     /**
      * For internal use only - Get the module name.
+     *
      * @private
+     * @returns {string} - Get the module name.
      */
     protected getModuleName(): string {
         return 'workbookBasic';
@@ -31,7 +35,8 @@ export class WorkbookBasicModule {
 
     /**
      * Destroys the Workbook basic module.
-     * @return {void}
+     *
+     * @returns {void} - Destroys the Workbook basic module.
      */
     public destroy(): void {
         /* code snippet */

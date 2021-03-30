@@ -28,7 +28,7 @@ console.log('Set value in Dictionary');
         expect(() => { dictionary.remove(undefined) }).toThrowError();
         expect(() => { dictionary.remove(10) }).toThrowError();
         dictionary.remove(2);
-        expect(() => { dictionary.get(10) }).toThrowError();
+        expect(dictionary.get(10)).toBeUndefined();
     });
     it('Set value in Dictionary', () => {
 console.log('Set value in Dictionary');

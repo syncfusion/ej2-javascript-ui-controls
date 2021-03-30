@@ -101,7 +101,7 @@ describe('Range navigator', () => {
         it('checking with right un selected area', (done: Function) => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_rightUnSelectedArea');
-                // tslint:disable-next-line:chai-vague-errors
+                // eslint-disable-next-line 
                 expect(element.getAttribute('fill') === 'yellow').toBe(true);
                 done();
             };
@@ -114,9 +114,9 @@ describe('Range navigator', () => {
         it('checking with thump size', (done: Function) => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_RightSlider');
-                // tslint:disable-next-line:chai-vague-errors
+                // eslint-disable-next-line 
                 expect(element.childNodes.length === 4).toBe(true);
-                // tslint:disable-next-line:chai-vague-errors
+                // eslint-disable-next-line 
                 expect(element.getAttribute('d') !== '').toBe(true);
                 done();
             };
@@ -141,7 +141,7 @@ describe('Range navigator', () => {
         it('checking with  un selected region color', (done: Function) => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_rightUnSelectedArea');
-                // tslint:disable-next-line:chai-vague-errors
+                // eslint-disable-next-line 
                 expect(element.getAttribute('fill') === 'blue').toBe(true);
                 done();
             };
@@ -153,9 +153,9 @@ describe('Range navigator', () => {
         it('checking with thump border customization', (done: Function) => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_LeftSlider');
-                // tslint:disable-next-line:chai-vague-errors
+                // eslint-disable-next-line 
                 expect(element.childNodes.length === 4).toBe(true);
-                // tslint:disable-next-line:chai-vague-errors
+                // eslint-disable-next-line 
                 expect(element.getAttribute('d') !== '').toBe(true);
                 done();
             };
@@ -168,9 +168,9 @@ describe('Range navigator', () => {
         it('checking with thump fill', (done: Function) => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_RightSlider_ThumpSymbol');
-                // tslint:disable-next-line:chai-vague-errors
+                // eslint-disable-next-line 
                 expect(element.getAttribute('d') !== '').toBe(true);
-                // tslint:disable-next-line:chai-vague-errors
+                // eslint-disable-next-line 
                 expect(element.getAttribute('fill') === 'red').toBe(true);
                 done();
             };
@@ -183,7 +183,7 @@ describe('Range navigator', () => {
         it('checking with thump type', (done: Function) => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_RightSlider_ThumpSymbol');
-                // tslint:disable-next-line:chai-vague-errors
+                // eslint-disable-next-line 
                 expect(element.getAttribute('fill') === '#00ff00').toBe(true);
                 done();
             };
@@ -198,25 +198,25 @@ describe('Range navigator', () => {
         it('checking with right slider mouse event', (done: Function) => {
             range.loaded = (args: Object): void => {
                 let targetElement: Element = document.getElementById('container_RightSlider_ThumpSymbol');
-                // tslint:disable-next-line:align
+                // eslint-disable-next-line @typescript-eslint/indent
                 range.rangeOnMouseDown(<PointerEvent>trigger.onTouchStart(targetElement, 608, 189, null, null, 504, 289));
                 range.mouseMove(<PointerEvent>trigger.onTouchMove(targetElement, 728, 389, null, null, 404, 189));
                 range.mouseEnd(<PointerEvent>trigger.onTouchEnd(targetElement, 728, 389, null, null, 404, 189));
                 let thumbTransform: string = document.getElementById('container_RightSlider').getAttribute('transform');
-                // tslint:disable-next-line:chai-vague-errors
+                // eslint-disable-next-line 
                 expect(thumbTransform === 'translate(380.99999999999994, 0)' || thumbTransform === 'translate(381, 0)' 
                        || thumbTransform === 'translate(381.00000000000006, 0)').toBe(true);
                 expect(targetElement != null).toBe(true);
                 done();
             };
             range.navigatorStyleSettings.thumb.type = 'Circle';
-            // tslint:disable-next-line:align
+            // eslint-disable-next-line @typescript-eslint/indent
             range.refresh();
         });
         it('checking with left slider mouse event', (done: Function) => {
             range.loaded = (args: Object): void => {
                 let targetElement: Element = document.getElementById('container_LeftSlider_ThumpSymbol');
-                // tslint:disable-next-line:align
+                // eslint-disable-next-line @typescript-eslint/indent
                 range.rangeOnMouseDown(<PointerEvent>trigger.onTouchStart(targetElement, 608, 189, null, null, 504, 289));
                 range.mouseMove(<PointerEvent>trigger.onTouchMove(targetElement, 728, 389, null, null, 404, 189));
                 range.mouseEnd(<PointerEvent>trigger.onTouchEnd(targetElement, 728, 389, null, null, 404, 189));
@@ -228,7 +228,7 @@ describe('Range navigator', () => {
                 expect(element.getAttribute('width') === '0').toBe(true);
                 done();
             };
-            // tslint:disable-next-line:align
+            // eslint-disable-next-line @typescript-eslint/indent
             range.refresh();
         });
         it('checking with right unselected area mouse move event', (done: Function) => {
@@ -241,53 +241,53 @@ describe('Range navigator', () => {
                 expect(targetElement != null).toBe(true);
                 done();
             };
-            // tslint:disable-next-line:align
+            // eslint-disable-next-line @typescript-eslint/indent
             range.refresh();
         });
         it('checking with right unselected area mouse down event', (done: Function) => {
             range.loaded = (args: Object): void => {
                 let targetElement: Element = document.getElementById('container_rightUnSelectedArea');
-                // tslint:disable-next-line:align
+                // eslint-disable-next-line @typescript-eslint/indent
                 range.rangeOnMouseDown(<PointerEvent>trigger.onTouchStart(targetElement, 720, 180, null, null, 504, 280));
                 range.mouseEnd(<PointerEvent>trigger.onTouchStart(targetElement, 720, 180, null, null, 504, 280));
                 expect(targetElement != null).toBe(true);
                 done();
             };
-            // tslint:disable-next-line:align
+            // eslint-disable-next-line @typescript-eslint/indent
             range.navigatorBorder.color = 'red';
             range.navigatorStyleSettings.selectedRegionColor = 'pink';
             range.navigatorStyleSettings.unselectedRegionColor = 'skyblue';
-            // tslint:disable-next-line:align
+            // eslint-disable-next-line @typescript-eslint/indent
             range.refresh();
         });
         it('checking with left unselected area mouse down event', (done: Function) => {
             range.loaded = (args: Object): void => {
                 let targetElement: Element = document.getElementById('container_leftUnSelectedArea');
-                // tslint:disable-next-line:align
+                // eslint-disable-next-line @typescript-eslint/indent
                 range.rangeOnMouseDown(<PointerEvent>trigger.onTouchStart(targetElement, 420, 80, null, null, 204, 180));
                 range.mouseEnd(<PointerEvent>trigger.onTouchStart(targetElement, 420, 80, null, null, 204, 180));
                 expect(targetElement != null).toBe(true);
                 done();
             };
-            // tslint:disable-next-line:align
+            // eslint-disable-next-line @typescript-eslint/indent
             range.navigatorBorder.color = 'red';
             range.navigatorStyleSettings.selectedRegionColor = 'pink';
             range.navigatorStyleSettings.unselectedRegionColor = 'skyblue';
-            // tslint:disable-next-line:align
+            // eslint-disable-next-line @typescript-eslint/indent
             range.refresh();
         });
         it('checking with selected area mouse down event', (done: Function) => {
             range.loaded = (args: Object): void => {
                 let targetElement: Element = document.getElementById('container_SelectedArea');
-                // tslint:disable-next-line:align
+                // eslint-disable-next-line @typescript-eslint/indent
                 range.rangeOnMouseDown(<PointerEvent>trigger.onTouchStart(targetElement, 720, 180, null, null, 504, 280));
                 range.mouseMove(<PointerEvent>trigger.onTouchStart(targetElement, 590, 89, null, null, 404, 189));
                 expect(targetElement != null).toBe(true);
                 done();
             };
-            // tslint:disable-next-line:align
+            // eslint-disable-next-line @typescript-eslint/indent
             range.navigatorBorder.color = 'red';
-            // tslint:disable-next-line:align
+            // eslint-disable-next-line @typescript-eslint/indent
             range.refresh();
         });
         it('checking with allow snapping', (done: Function) => {
@@ -302,9 +302,9 @@ describe('Range navigator', () => {
                 expect(element != null).toBe(true);
                 done();
             };
-            // tslint:disable-next-line:align
+            // eslint-disable-next-line @typescript-eslint/indent
             range.allowSnapping = true;
-            // tslint:disable-next-line:align
+            // eslint-disable-next-line @typescript-eslint/indent
             range.refresh();
         });
         it('checking with rtl left slider position', (done: Function) => {
@@ -320,44 +320,44 @@ describe('Range navigator', () => {
                 expect(axislabel.getAttribute('x') > axisLabel1.getAttribute('x')).toBe(true);
                 done();
             };
-            // tslint:disable-next-line:align
+            // eslint-disable-next-line @typescript-eslint/indent
             range.navigatorBorder.color = 'red';
             range.enableRtl = true;
             range.navigatorStyleSettings.selectedRegionColor = 'pink';
             range.navigatorStyleSettings.unselectedRegionColor = 'skyblue';
-            // tslint:disable-next-line:align
+            // eslint-disable-next-line @typescript-eslint/indent
             range.refresh();
         });
         it('checking with rtl right unselected area mouse down event', (done: Function) => {
             range.loaded = (args: Object): void => {
                 let targetElement: Element = document.getElementById('container_rightUnSelectedArea');
-                // tslint:disable-next-line:align
+                // eslint-disable-next-line @typescript-eslint/indent
                 range.rangeOnMouseDown(<PointerEvent>trigger.onTouchStart(targetElement, 720, 180, null, null, 504, 280));
                 range.mouseEnd(<PointerEvent>trigger.onTouchStart(targetElement, 720, 180, null, null, 504, 280));
                 expect(targetElement != null).toBe(true);
                 done();
             };
-            // tslint:disable-next-line:align
+            // eslint-disable-next-line @typescript-eslint/indent
             range.navigatorBorder.color = 'red';
             range.navigatorStyleSettings.selectedRegionColor = 'pink';
             range.navigatorStyleSettings.unselectedRegionColor = 'skyblue';
-            // tslint:disable-next-line:align
+            // eslint-disable-next-line @typescript-eslint/indent
             range.refresh();
         });
         it('checking with rtl left unselected area mouse down event', (done: Function) => {
             range.loaded = (args: Object): void => {
                 let targetElement: Element = document.getElementById('container_leftUnSelectedArea');
-                // tslint:disable-next-line:align
+                // eslint-disable-next-line @typescript-eslint/indent
                 range.rangeOnMouseDown(<PointerEvent>trigger.onTouchStart(targetElement, 420, 80, null, null, 204, 180));
                 range.mouseEnd(<PointerEvent>trigger.onTouchStart(targetElement, 420, 80, null, null, 204, 180));
                 expect(targetElement != null).toBe(true);
                 done();
             };
-            // tslint:disable-next-line:align
+            // eslint-disable-next-line @typescript-eslint/indent
             range.navigatorBorder.color = 'red';
             range.navigatorStyleSettings.selectedRegionColor = 'pink';
             range.navigatorStyleSettings.unselectedRegionColor = 'skyblue';
-            // tslint:disable-next-line:align
+            // eslint-disable-next-line @typescript-eslint/indent
             range.refresh();
         });
     });
@@ -386,7 +386,7 @@ describe('Range navigator', () => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_AxisLabel_3');
                 expect(element.firstChild.textContent === 'Quarter1' || element.firstChild.textContent === 'Q1 2001').toBe(true);
-                // tslint:disable-next-line:chai-vague-errors
+                // eslint-disable-next-line 
                 expect(element.getAttribute('opacity') === '1').toBe(true);
                 done();
             };

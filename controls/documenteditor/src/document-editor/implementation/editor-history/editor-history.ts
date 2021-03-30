@@ -8,7 +8,7 @@ import { DocumentEditor } from '../../document-editor';
 import { Action } from '../../index';
 import { LayoutViewer } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { BaseHistoryInfo, } from './base-history-info';
+import { BaseHistoryInfo } from './base-history-info';
 import { ModifiedParagraphFormat, ModifiedLevel, RowHistoryFormat, TableHistoryInfo, CellHistoryFormat } from './history-helper';
 import { HistoryInfo } from './history-info';
 import { WParagraphFormat } from '../format/paragraph-format';
@@ -42,12 +42,17 @@ export class EditorHistory {
     public currentBaseHistoryInfo: BaseHistoryInfo;
     /**
      * @private
+     * @returns {HistoryInfo} - Returns the history info.
      */
-    get currentHistoryInfo(): HistoryInfo {
+    public get currentHistoryInfo(): HistoryInfo {
         return this.historyInfoStack && this.historyInfoStack.length > 0 ?
             this.historyInfoStack[this.historyInfoStack.length - 1] : undefined;
     }
-    set currentHistoryInfo(value: HistoryInfo) {
+    /**
+     * @private
+     * @param {HistoryInfo} value - Specified the value.
+     */
+    public set currentHistoryInfo(value: HistoryInfo) {
         if (value instanceof HistoryInfo) {
             this.historyInfoStack.push(value);
         } else {
@@ -62,29 +67,41 @@ export class EditorHistory {
     //Properties
     /**
      * gets undo stack
+     *
      * @private
+     * @returns {BaseHistoryInfo[]} - Returns the undo stack.
      */
 
-    get undoStack(): BaseHistoryInfo[] { return this.undoStackIn; }
+    public get undoStack(): BaseHistoryInfo[] {
+        return this.undoStackIn;
+    }
     /**
      * gets redo stack
+     *
      * @private
+     * @returns {BaseHistoryInfo[]} - Returns the redo stack.
      */
-    get redoStack(): BaseHistoryInfo[] { return this.redoStackIn; }
+    public get redoStack(): BaseHistoryInfo[] {
+        return this.redoStackIn;
+    }
     /**
      * Gets or Sets the limit of undo operations can be done.
+     *
      * @aspType int
      * @blazorType int
+     * @returns {number} - Returns the redo limit
      */
-    get undoLimit(): number {
+    public get undoLimit(): number {
         return isNullOrUndefined(this.undoLimitIn) ? 0 : this.undoLimitIn;
     }
     /**
      * Sets the limit of undo operations can be done.
+     *
      * @aspType int
      * @blazorType int
+     * @param {number} value - Specified the value.
      */
-    set undoLimit(value: number) {
+    public set undoLimit(value: number) {
         if (value < 0) {
             throw new Error('The limit should be greater than or equal to zero.');
         }
@@ -92,16 +109,20 @@ export class EditorHistory {
     }
     /**
      * Gets or Sets the limit of redo operations can be done.
+     *
      * @aspType int
      * @blazorType int
+     * @returns {number} - Returns the redo limit
      */
     public get redoLimit(): number {
         return isNullOrUndefined(this.redoLimitIn) ? 0 : this.redoLimitIn;
     }
     /**
      * Gets or Sets the limit of redo operations can be done.
+     *
      * @aspType int
      * @blazorType int
+     * @param {number} value - Specified the value.
      */
     public set redoLimit(value: number) {
         if (value < 0) {
@@ -110,46 +131,47 @@ export class EditorHistory {
         this.redoLimitIn = value;
     }
     /**
+     * @param {DocumentEditor} node - Specified the document editor.
      * @private
      */
-    constructor(node: DocumentEditor) {
+    public constructor(node: DocumentEditor) {
         this.owner = node;
         this.documentHelper = node.documentHelper;
         this.modifiedParaFormats = new Dictionary<BaseHistoryInfo, ModifiedParagraphFormat[]>();
         this.undoLimitIn = 500;
         this.redoLimitIn = 500;
     }
-    get viewer(): LayoutViewer {
+    private get viewer(): LayoutViewer {
         return this.owner.viewer;
     }
 
-    /**
-     * @private
-     */
-    public getModuleName(): string {
+
+    private getModuleName(): string {
         return 'EditorHistory';
     }
     /**
      * Determines whether undo operation can be done.
-     * @returns boolean         
+     *
+     * @returns {boolean} - Returns the canUndo.
      */
     public canUndo(): boolean {
         return !isNullOrUndefined(this.undoStack) && this.undoStack.length > 0;
     }
     /**
      * Determines whether redo operation can be done.
-     * @returns boolean 
+     *
+     * @returns {boolean} - Returns the canRedo.
      */
     public canRedo(): boolean {
         return !isNullOrUndefined(this.redoStack) && this.redoStack.length > 0;
     }
-    //EditorHistory Initialization    
+    //EditorHistory Initialization
     /**
      * initialize EditorHistory
-     * @param  {Selection} selection
-     * @param  {Action} action
-     * @param  {SelectionRange} selectionRange
+     *
      * @private
+     * @param {Action} action - Specifies the action.
+     * @returns {void}
      */
     public initializeHistory(action: Action): void {
         this.currentBaseHistoryInfo = new BaseHistoryInfo(this.owner);
@@ -158,9 +180,11 @@ export class EditorHistory {
     }
     /**
      * Initialize complex history
-     * @param  {Selection} selection
-     * @param  {Action} action
+     *
      * @private
+     * @param {Selection} selection - Specifies the selection.
+     * @param {Action} action - Specifies the action.
+     * @returns {void}
      */
     public initComplexHistory(selection: Selection, action: Action): void {
         this.currentHistoryInfo = new HistoryInfo(selection.owner, !isNullOrUndefined(this.currentHistoryInfo));
@@ -169,19 +193,22 @@ export class EditorHistory {
     }
     /**
      * @private
+     * @param {Point} startingPoint - Specifies the start point.
+     * @param {TableResizer} tableResize - Spcifies the table resizer.
+     * @returns {void}
      */
     public initResizingHistory(startingPoint: Point, tableResize: TableResizer): void {
         if (tableResize.resizeNode === 1) {
             this.initializeHistory('RowResizing');
             if (!isNullOrUndefined(this.currentBaseHistoryInfo)) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 this.currentBaseHistoryInfo.modifiedProperties.push(new RowHistoryFormat(startingPoint, (tableResize.currentResizingTable.childWidgets[tableResize.resizerPosition] as TableRowWidget).rowFormat));
             }
         } else {
             this.initializeHistory('CellResizing');
             if (this.currentBaseHistoryInfo) {
                 tableResize.currentResizingTable = tableResize.currentResizingTable.combineWidget(this.viewer) as TableWidget;
-                let tableHistoryInfo: TableHistoryInfo = new TableHistoryInfo(tableResize.currentResizingTable, this.owner);
+                const tableHistoryInfo: TableHistoryInfo = new TableHistoryInfo(tableResize.currentResizingTable, this.owner);
                 tableHistoryInfo.startingPoint = startingPoint;
                 this.currentBaseHistoryInfo.modifiedProperties.push(tableHistoryInfo);
             }
@@ -190,14 +217,16 @@ export class EditorHistory {
 
     /**
      * Update resizing history
-     * @param  {Point} point
-     * @param  {Selection} selection
+     *
      * @private
+     * @param {Point} point - Specifies the point.
+     * @param {TableResizer} tableResize - Specifies the table resizer.
+     * @returns {void}
      */
     public updateResizingHistory(point: Point, tableResize: TableResizer): void {
         if (tableResize.resizeNode === 1) {
             if (!isNullOrUndefined(this.currentBaseHistoryInfo)) {
-                let rowHistoryFormat: RowHistoryFormat = this.currentBaseHistoryInfo.modifiedProperties[0] as RowHistoryFormat;
+                const rowHistoryFormat: RowHistoryFormat = this.currentBaseHistoryInfo.modifiedProperties[0] as RowHistoryFormat;
                 if (rowHistoryFormat.startingPoint.y === point.y) {
                     this.currentBaseHistoryInfo.modifiedProperties.length = 0;
                 } else {
@@ -208,7 +237,7 @@ export class EditorHistory {
             }
         } else {
             if (!isNullOrUndefined(this.currentBaseHistoryInfo)) {
-                let cellHistoryFormat: CellHistoryFormat = this.currentBaseHistoryInfo.modifiedProperties[0] as CellHistoryFormat;
+                const cellHistoryFormat: CellHistoryFormat = this.currentBaseHistoryInfo.modifiedProperties[0] as CellHistoryFormat;
                 if (cellHistoryFormat.startingPoint.x === point.x) {
                     this.currentBaseHistoryInfo.modifiedProperties.length = 0;
                 } else {
@@ -222,8 +251,10 @@ export class EditorHistory {
     }
     /**
      * Record the changes
-     * @param  {BaseHistoryInfo} baseHistoryInfo
+     *
      * @private
+     * @param {BaseHistoryInfo} baseHistoryInfo - Specified the base history info.
+     * @returns {void}
      */
     public recordChanges(baseHistoryInfo: BaseHistoryInfo): void {
         if (!this.owner.enableHistoryMode) {
@@ -234,7 +265,7 @@ export class EditorHistory {
                 this.redoStackIn = [];
             }
             if (this.redoStack.length === this.redoLimit && this.redoLimit > 0) {
-                let count: number = this.undoLimit > 20 ? 10 : 1;
+                const count: number = this.undoLimit > 20 ? 10 : 1;
                 this.redoStackIn.splice(0, count);
             }
             if (this.redoStack.length < this.redoLimit) {
@@ -248,7 +279,7 @@ export class EditorHistory {
                 this.undoStackIn = [];
             }
             if (this.undoStack.length === this.undoLimit && this.undoLimit > 0) {
-                let count: number = this.undoLimit > 20 ? 10 : 1;
+                const count: number = this.undoLimit > 20 ? 10 : 1;
                 this.undoStackIn.splice(0, count);
             }
             if (this.undoStack.length < this.undoLimit) {
@@ -258,7 +289,9 @@ export class EditorHistory {
     }
     /**
      * update EditorHistory
+     *
      * @private
+     * @returns {void}
      */
     public updateHistory(): void {
         if (this.documentHelper.owner.enableHistoryMode && !isNullOrUndefined(this.currentBaseHistoryInfo)) {
@@ -277,6 +310,7 @@ export class EditorHistory {
     }
     /**
      * @private
+     * @returns {boolean} -Returns isHandleComplexHistory
      */
     public isHandledComplexHistory(): boolean {
         let isHandledComplexHistory: boolean = false;
@@ -293,14 +327,16 @@ export class EditorHistory {
     }
 
     /**
-     * Update complex history 
+     * Update complex history
+     *
      * @private
+     * @returns {void}
      */
     public updateComplexHistory(): void {
-        let selection: Selection = this.documentHelper.selection;
+        const selection: Selection = this.documentHelper.selection;
         if (this.currentHistoryInfo.hasAction) {
             if (this.currentHistoryInfo.action === 'AutoFormatHyperlink') {
-                let startPosition: TextPosition = new TextPosition(selection.owner);
+                const startPosition: TextPosition = new TextPosition(selection.owner);
                 this.owner.editorModule.setPositionForCurrentIndex(startPosition, this.currentHistoryInfo.insertPosition);
                 // this.reLayoutParagraph(startPosition.paragraph, 0);
                 if (selection.owner.editorHistory.isUndoing) {
@@ -312,9 +348,9 @@ export class EditorHistory {
                 }
             }
             if (this.currentHistoryInfo.action === 'InsertHyperlink') {
-                let startPosition: TextPosition = new TextPosition(selection.owner);
+                const startPosition: TextPosition = new TextPosition(selection.owner);
                 this.owner.editorModule.setPositionForCurrentIndex(startPosition, this.currentHistoryInfo.insertPosition);
-                let endPosition: TextPosition = new TextPosition(selection.owner);
+                const endPosition: TextPosition = new TextPosition(selection.owner);
                 this.owner.editorModule.setPositionForCurrentIndex(endPosition, this.currentHistoryInfo.endPosition);
                 this.documentHelper.layout.reLayoutParagraph(startPosition.paragraph, 0, 0);
                 if (endPosition.paragraph !== startPosition.paragraph) {
@@ -359,6 +395,8 @@ export class EditorHistory {
     }
     /**
      * @private
+     *
+     * @returns {void}
      */
     public updateComplexHistoryInternal(): void {
         if (!isNullOrUndefined(this.currentHistoryInfo)) {
@@ -367,7 +405,7 @@ export class EditorHistory {
                 this.currentHistoryInfo.endPosition = this.currentHistoryInfo.insertPosition;
             }
             if (this.historyInfoStack.length > 1) {
-                let historyInfo: HistoryInfo = this.historyInfoStack[this.historyInfoStack.length - 2];
+                const historyInfo: HistoryInfo = this.historyInfoStack[this.historyInfoStack.length - 2];
                 historyInfo.addModifiedAction(this.currentHistoryInfo);
             } else {
                 this.recordChanges(this.currentHistoryInfo);
@@ -378,20 +416,21 @@ export class EditorHistory {
     //List history preservation undo API
     /**
      * update list changes for history preservation
-     * @param  {Selection} selection
-     * @param  {WAbstractList} currentAbstractList
-     * @param  {WList} list
+     *
      * @private
+     * @param  {WAbstractList} currentAbstractList - Specfies the abstractlist.
+     * @param  {WList} list - Specifies the list.
+     * @returns {Dictionary<number, ModifiedLevel>} - Returns the modified action.
      */
     public updateListChangesInHistory(currentAbstractList: WAbstractList, list: WList): Dictionary<number, ModifiedLevel> {
         this.currentBaseHistoryInfo = new BaseHistoryInfo(this.documentHelper.owner);
         this.currentBaseHistoryInfo.action = 'List';
         this.currentBaseHistoryInfo.updateSelection();
-        let collection: Dictionary<number, ModifiedLevel> = new Dictionary<number, ModifiedLevel>();
+        const collection: Dictionary<number, ModifiedLevel> = new Dictionary<number, ModifiedLevel>();
         for (let i: number = 0; i < currentAbstractList.levels.length; i++) {
-            let levels: WListLevel = this.documentHelper.getAbstractListById(list.abstractListId).levels[i];
-            let value: Object = this.currentBaseHistoryInfo.addModifiedPropertiesForList(levels);
-            let modifiedLevel: ModifiedLevel = new ModifiedLevel(levels, currentAbstractList.levels[i]);
+            const levels: WListLevel = this.documentHelper.getAbstractListById(list.abstractListId).levels[i];
+            this.currentBaseHistoryInfo.addModifiedPropertiesForList(levels);
+            const modifiedLevel: ModifiedLevel = new ModifiedLevel(levels, currentAbstractList.levels[i]);
             if (!isNullOrUndefined(levels)) {
                 this.documentHelper.owner.editorModule.copyListLevel(levels, (currentAbstractList.levels[i] as WListLevel));
             }
@@ -400,28 +439,29 @@ export class EditorHistory {
         return collection;
     }
     /**
-     * Apply list changes 
-     * @param  {Selection} selection
-     * @param  {Dictionary<number, ModifiedLevel>} modifiedLevelsInternal
+     * Apply list changes
+     *
      * @private
+     * @param  {Selection} selection - Specifies the selection.
+     * @param  {Dictionary<number, ModifiedLevel>} modifiedLevelsInternal - Specifies the modified levels.
+     * @returns {void}
      */
     public applyListChanges(selection: Selection, modifiedLevelsInternal: Dictionary<number, ModifiedLevel>): void {
         if (isNullOrUndefined(this.modifiedParaFormats)) {
             this.modifiedParaFormats = new Dictionary<BaseHistoryInfo, ModifiedParagraphFormat[]>();
         }
-        let collection: ModifiedParagraphFormat[] = [];
+        const collection: ModifiedParagraphFormat[] = [];
         for (let i: number = 0; i < this.documentHelper.listParagraphs.length; i++) {
-            let paragraph: ParagraphWidget = this.documentHelper.listParagraphs[i];
-            let paraFormat: WParagraphFormat = paragraph.paragraphFormat;
-            let currentList: WList = this.documentHelper.getListById(paraFormat.listFormat.listId);
-            let listLevel: WListLevel = this.documentHelper.layout.getListLevel(currentList, paraFormat.listFormat.listLevelNumber);
-            // tslint:disable-next-line:max-line-length
+            const paragraph: ParagraphWidget = this.documentHelper.listParagraphs[i];
+            const paraFormat: WParagraphFormat = paragraph.paragraphFormat;
+            const currentList: WList = this.documentHelper.getListById(paraFormat.listFormat.listId);
+            const listLevel: WListLevel = this.documentHelper.layout.getListLevel(currentList, paraFormat.listFormat.listLevelNumber);
             if (modifiedLevelsInternal.containsKey(paraFormat.listFormat.listLevelNumber)
                 && modifiedLevelsInternal.get(paraFormat.listFormat.listLevelNumber).ownerListLevel === listLevel) {
-                let modifiedFormat: WParagraphFormat = new WParagraphFormat(null);
+                const modifiedFormat: WParagraphFormat = new WParagraphFormat(null);
                 modifiedFormat.leftIndent = paraFormat.leftIndent;
                 modifiedFormat.firstLineIndent = paraFormat.firstLineIndent;
-                let modified: ModifiedParagraphFormat = new ModifiedParagraphFormat(paraFormat, modifiedFormat);
+                const modified: ModifiedParagraphFormat = new ModifiedParagraphFormat(paraFormat, modifiedFormat);
                 collection.push(modified);
                 this.owner.editorModule.copyFromListLevelParagraphFormat(paraFormat, listLevel.paragraphFormat);
             }
@@ -430,18 +470,18 @@ export class EditorHistory {
     }
     /**
      * Update list changes
-     * @param  {Dictionary<number, ModifiedLevel>} modifiedCollection
-     * @param  {Selection} selection
+     *
      * @private
+     * @param  {Dictionary<number, ModifiedLevel>} modifiedCollection - Specifies the modified colection.
+     * @returns {void }
      */
     public updateListChanges(modifiedCollection: Dictionary<number, ModifiedLevel>): void {
         this.documentHelper.owner.isLayoutEnabled = false;
         this.owner.editorModule.updateListParagraphs();
         for (let i: number = 0; i < modifiedCollection.keys.length; i++) {
-            let levelNumber: number = modifiedCollection.keys[0];
+            const levelNumber: number = modifiedCollection.keys[0];
             let modifiedLevel: ModifiedLevel = modifiedCollection.get(levelNumber);
             if (!isNullOrUndefined(this.currentBaseHistoryInfo)) {
-                // tslint:disable-next-line:max-line-length
                 modifiedLevel = this.currentBaseHistoryInfo.addModifiedPropertiesForList(modifiedLevel.ownerListLevel) as ModifiedLevel;
             }
             this.owner.editorModule.copyListLevel(modifiedLevel.ownerListLevel, modifiedLevel.modifiedListLevel);
@@ -452,7 +492,7 @@ export class EditorHistory {
         this.documentHelper.renderedLevelOverrides = [];
         this.documentHelper.pages = [];
         this.documentHelper.layout.layout();
-        let selection: Selection = this.documentHelper.selection;
+        const selection: Selection = this.documentHelper.selection;
         selection.start.updatePhysicalPosition(true);
         if (selection.isEmpty) {
             selection.end.setPositionInternal(selection.start);
@@ -465,16 +505,15 @@ export class EditorHistory {
     }
     /**
      * Revert list changes
-     * @param  {Selection} selection
+     *
+     * @returns {void}
      */
     private revertListChanges(): void {
-        // tslint:disable-next-line:max-line-length
         if (!isNullOrUndefined(this.currentBaseHistoryInfo)
             && this.documentHelper.owner.editorHistory.modifiedParaFormats.containsKey(this.currentBaseHistoryInfo)) {
-            // tslint:disable-next-line:max-line-length
-            let collection: ModifiedParagraphFormat[] = this.modifiedParaFormats.get(this.currentBaseHistoryInfo);
+            const collection: ModifiedParagraphFormat[] = this.modifiedParaFormats.get(this.currentBaseHistoryInfo);
             for (let i: number = 0; i < collection.length; i++) {
-                let modified: WParagraphFormat = new WParagraphFormat(null);
+                const modified: WParagraphFormat = new WParagraphFormat(null);
                 modified.leftIndent = collection[i].ownerFormat.leftIndent;
                 modified.firstLineIndent = collection[i].ownerFormat.firstLineIndent;
                 collection[i].ownerFormat.copyFormat(collection[i].modifiedFormat);
@@ -485,6 +524,8 @@ export class EditorHistory {
     }
     /**
      * Reverts the last editing action.
+     *
+     * @returns {void}
      */
     public undo(): void {
         if ((this.owner.isReadOnlyMode &&
@@ -494,7 +535,7 @@ export class EditorHistory {
         }
         //this.owner.ClearTextSearchResults();
 
-        let historyInfo: BaseHistoryInfo = this.undoStack.pop();
+        const historyInfo: BaseHistoryInfo = this.undoStack.pop();
         this.isUndoing = true;
         historyInfo.revert();
         this.isUndoing = false;
@@ -503,6 +544,8 @@ export class EditorHistory {
     }
     /**
      * Performs the last reverted action.
+     *
+     * @returns {void}
      */
     public redo(): void {
         if ((this.owner.isReadOnlyMode &&
@@ -511,7 +554,7 @@ export class EditorHistory {
             return;
         }
         //this.owner.ClearTextSearchResults();
-        let historyInfo: BaseHistoryInfo = this.redoStack.pop();
+        const historyInfo: BaseHistoryInfo = this.redoStack.pop();
         if (historyInfo.action === 'BordersAndShading') {
             this.owner.editorModule.isBordersAndShadingDialog = true;
         }
@@ -523,6 +566,7 @@ export class EditorHistory {
     }
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         this.clearHistory();
@@ -531,6 +575,7 @@ export class EditorHistory {
     }
     /**
      * @private
+     * @returns {void}
      */
     public clearHistory(): void {
         this.clearUndoStack();

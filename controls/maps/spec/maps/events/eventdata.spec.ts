@@ -8576,7 +8576,7 @@ export let Africa_Continent: any = {'type':'GeometryCollection',
 /**
  * Election data for US
  */
-//tslint:disable
+/* eslint-disable */
 export let electionData: Object[] = 
 [
     { value: 5, State: "Alabama", Candidate: "Trump", Trump:62.9,Clinton:34.6 },

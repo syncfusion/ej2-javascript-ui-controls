@@ -18,6 +18,7 @@ export class AxisRenderer extends Animations {
     private htmlObject: Element;
     private axisObject: Element;
     private axisElements: Element[];
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(gauge: LinearGauge) {
         super(gauge);
     }
@@ -25,7 +26,7 @@ export class AxisRenderer extends Animations {
         let axis: Axis;
         let major: Tick; let minor: Tick;
         this.axisElements = [];
-        let gaugeAxesG: HTMLElement = this.gauge.svgObject.querySelector('#' + this.gauge.element.id + '_Axis_Collections');
+        const gaugeAxesG: HTMLElement = this.gauge.svgObject.querySelector('#' + this.gauge.element.id + '_Axis_Collections');
         if (gaugeAxesG) {
             remove(gaugeAxesG);
         }
@@ -94,9 +95,9 @@ export class AxisRenderer extends Animations {
 
     public drawAxisLine(axis: Axis, axisObject: Element, axisIndex: number): void {
         let options: PathOption;
-        let rect: Rect = axis.lineBounds;
+        const rect: Rect = axis.lineBounds;
         let path: string = '';
-        let color: string = axis.line.color || this.gauge.themeStyle.lineColor;
+        const color: string = axis.line.color || this.gauge.themeStyle.lineColor;
         if (axis.line.width > 0) {
             path = 'M' + rect.x + ' ' + rect.y + ' L ' + (this.gauge.orientation === 'Vertical' ? rect.x : rect.x + rect.width) +
                 ' ' + (this.gauge.orientation === 'Vertical' ? rect.y + rect.height : rect.y) + 'z';
@@ -110,13 +111,12 @@ export class AxisRenderer extends Animations {
     public drawTicks(axis: Axis, ticks: Tick, axisObject: Element, tickID: string, tickBounds: Rect): void {
         let tickPath: string = '';
         let pointY: number; let pointX: number;
-        let options: PathOption;
-        let range: VisibleRange = axis.visibleRange;
-        let line: Rect = axis.lineBounds;
-        let majorTickColor: string = axis.majorTicks.color || this.gauge.themeStyle.majorTickColor;
-        let minorTickColor: string = axis.minorTicks.color || this.gauge.themeStyle.minorTickColor;
-        let tickColor: string = (tickID === 'MajorTicks') ? majorTickColor : minorTickColor;
-        let interval: number = ((tickID === 'MajorTicks') ? axis.majorInterval : axis.minorInterval);
+        const range: VisibleRange = axis.visibleRange;
+        const line: Rect = axis.lineBounds;
+        const majorTickColor: string = axis.majorTicks.color || this.gauge.themeStyle.majorTickColor;
+        const minorTickColor: string = axis.minorTicks.color || this.gauge.themeStyle.minorTickColor;
+        const tickColor: string = (tickID === 'MajorTicks') ? majorTickColor : minorTickColor;
+        const interval: number = ((tickID === 'MajorTicks') ? axis.majorInterval : axis.minorInterval);
         // let position: string = (tickID === 'MajorTicks') ? axis.majorTicks.position : axis.minorTicks.position;
         for (let i: number = range.min; (i <= range.max && interval > 0); i += interval) {
             if ((tickID === 'MajorTicks') || (tickID === 'MinorTicks')) {
@@ -133,24 +133,24 @@ export class AxisRenderer extends Animations {
                 }
             }
         }
-        options = new PathOption(
+        const options: PathOption = new PathOption(
             this.gauge.element.id + '_' + tickID + 'Line_' + 0, tickColor, ticks.width,
             tickColor, 1, null, tickPath);
         axisObject.appendChild(this.gauge.renderer.drawPath(options) as SVGElement);
     }
 
     public drawAxisLabels(axis: Axis, axisObject: Element): void {
-        // tslint:disable:max-line-length
+        /* eslint-disable max-len */
         let options: TextOption; let pointX: number; let pointY: number;
-        let rect: Rect = axis.lineBounds;
-        let bounds: Rect = axis.labelBounds;
-        let tick: Rect = axis.majorTickBounds;
-        let labelSize: Size; let range: VisibleRange = axis.visibleRange;
-        let anchor: string; let baseline: string; let padding: number = 5;
-        let fontColor: string = this.gauge.themeStyle.labelColor;
-        let labelColor: string; let offset: number = axis.labelStyle.offset;
-        let labelLength: number = axis.visibleLabels.length - 1;
-        let labelElement: Element = this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_AxisLabelsGroup' });
+        const rect: Rect = axis.lineBounds;
+        const bounds: Rect = axis.labelBounds;
+        const tick: Rect = axis.majorTickBounds;
+        let labelSize: Size; const range: VisibleRange = axis.visibleRange;
+        let anchor: string; let baseline: string; const padding: number = 5;
+        const fontColor: string = this.gauge.themeStyle.labelColor;
+        let labelColor: string; const offset: number = axis.labelStyle.offset;
+        const labelLength: number = axis.visibleLabels.length - 1;
+        const labelElement: Element = this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_AxisLabelsGroup' });
         for (let i: number = 0; i < axis.visibleLabels.length; i++) {
             labelSize = axis.visibleLabels[i].size;
             labelColor = axis.labelStyle.useRangeColor ? getRangeColor(axis.visibleLabels[i].value, <Range[]>axis.ranges) : null;
@@ -180,18 +180,18 @@ export class AxisRenderer extends Animations {
                         if (i === labelLength) {
                             if (!this.gauge.allowMargin) {
                                 if (!axis.isInversed && this.gauge.margin.right <= 10) {
-                                    let maxWidth: number = axis.visibleLabels[i].size.width * 0.75;
+                                    const maxWidth: number = axis.visibleLabels[i].size.width * 0.75;
                                     axis.visibleLabels[i].text = textTrim(maxWidth, axis.visibleLabels[i].text, axis.labelStyle.font);
                                 } else if (axis.isInversed && (pointX + (axis.visibleLabels[i].size.width / 2)) > (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2))) {
-                                    let maxWidth: number = axis.visibleLabels[i].size.width - ((pointX + (axis.visibleLabels[i].size.width / 2)) - (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2)) + 2);
+                                    const maxWidth: number = axis.visibleLabels[i].size.width - ((pointX + (axis.visibleLabels[i].size.width / 2)) - (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2)) + 2);
                                     axis.visibleLabels[i].text = textTrim(maxWidth, axis.visibleLabels[i].text, axis.labelStyle.font);
                                 }
                             } else {
                                 if (axis.isInversed && (pointX + (axis.visibleLabels[i].size.width / 2)) > (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2))) {
-                                    let width: number = axis.visibleLabels[i].size.width - ((pointX + (axis.visibleLabels[i].size.width / 2)) - (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2)) + 2);
+                                    const width: number = axis.visibleLabels[i].size.width - ((pointX + (axis.visibleLabels[i].size.width / 2)) - (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2)) + 2);
                                     axis.visibleLabels[i].text = textTrim(width, axis.visibleLabels[i].text, axis.labelStyle.font);
                                 } else if (!axis.isInversed && (pointX - (axis.visibleLabels[i].size.width / 2)) < (axis.visibleLabels[i - 1].x + (axis.visibleLabels[i - 1].size.width / 2))) {
-                                    let width: number = axis.visibleLabels[i].size.width - ((axis.visibleLabels[i - 1].x + (axis.visibleLabels[i - 1].size.width / 2)) - (pointX - (axis.visibleLabels[i].size.width / 2)) + 2);
+                                    const width: number = axis.visibleLabels[i].size.width - ((axis.visibleLabels[i - 1].x + (axis.visibleLabels[i - 1].size.width / 2)) - (pointX - (axis.visibleLabels[i].size.width / 2)) + 2);
                                     axis.visibleLabels[i].text = textTrim(width, axis.visibleLabels[i].text, axis.labelStyle.font);
                                 }
                             }
@@ -203,18 +203,18 @@ export class AxisRenderer extends Animations {
                             if (i === labelLength) {
                                 if (!axis.isInversed && (pointX - (axis.visibleLabels[i].size.width / 2)) < (axis.visibleLabels[i - 1].x + (axis.visibleLabels[i - 1].size.width / 2))) {
                                     pointX += (axis.visibleLabels[i].size.width / 2);
-                                    let maxWidth: number = axis.visibleLabels[i].size.width * 0.75;
+                                    const maxWidth: number = axis.visibleLabels[i].size.width * 0.75;
                                     axis.visibleLabels[i].text = textTrim(maxWidth, axis.visibleLabels[i].text, axis.labelStyle.font);
                                 } else if (axis.isInversed && (pointX + (axis.visibleLabels[i].size.width / 2)) > (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2))) {
                                     pointX -= (axis.visibleLabels[i].size.width / 2);
-                                    let widthValue: number = axis.visibleLabels[i].size.width - ((pointX + (axis.visibleLabels[i].size.width / 2)) - (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2)) + 2);
+                                    const widthValue: number = axis.visibleLabels[i].size.width - ((pointX + (axis.visibleLabels[i].size.width / 2)) - (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2)) + 2);
                                     axis.visibleLabels[i].text = textTrim(widthValue, axis.visibleLabels[i].text, axis.labelStyle.font);
                                 }
                             }
                         } else {
                             pointX = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) * rect.width) + rect.x;
                             if (i === labelLength && axis.isInversed && (pointX + (axis.visibleLabels[i].size.width / 2)) > (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2))) {
-                                let labelWidth: number = axis.visibleLabels[i].size.width - ((pointX + (axis.visibleLabels[i].size.width / 2)) - (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2)) + 2);
+                                const labelWidth: number = axis.visibleLabels[i].size.width - ((pointX + (axis.visibleLabels[i].size.width / 2)) - (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2)) + 2);
                                 axis.visibleLabels[i].text = textTrim(labelWidth, axis.visibleLabels[i].text, axis.labelStyle.font);
                             }
                         }
@@ -243,9 +243,8 @@ export class AxisRenderer extends Animations {
     public drawPointers(axis: Axis, axisObject: Element, axisIndex: number): void {
         let pointer: Pointer;
         let clipId: string;
-        let pointesGroup: Element;
         let pointerClipRectGroup: Element;
-        pointesGroup = this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_PointersGroup' });
+        const pointesGroup: Element = this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_PointersGroup' });
         for (let i: number = 0; i < axis.pointers.length; i++) {
             pointer = <Pointer>axis.pointers[i];
             clipId = 'url(#' + this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + '_' + pointer.type + 'ClipRect_' + i + ')';
@@ -273,8 +272,8 @@ export class AxisRenderer extends Animations {
         axis: Axis, axisIndex: number, pointer: Pointer,
         pointerIndex: number, parentElement: Element): void {
         let options: PathOption;
-        let pointerID: string = this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer' + '_' + pointerIndex;
-        let transform: string = 'translate( 0, 0 )';
+        const pointerID: string = this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer' + '_' + pointerIndex;
+        const transform: string = 'translate( 0, 0 )';
         let pointerElement: Element;
         let gradientMarkerColor: string;
         if (this.gauge.gradientModule) {
@@ -283,7 +282,7 @@ export class AxisRenderer extends Animations {
         if (getElement(pointerID) && getElement(pointerID).childElementCount > 0) {
             remove(getElement(pointerID));
         }
-        let pointerColor: string = pointer.color || this.gauge.themeStyle.pointerColor;
+        const pointerColor: string = pointer.color || this.gauge.themeStyle.pointerColor;
         let shapeBasedOnPosition: MarkerType = pointer.markerType;
         if (!isNullOrUndefined(pointer.position) && (pointer.markerType === 'InvertedTriangle' ||
             pointer.markerType === 'Triangle')) {
@@ -299,6 +298,7 @@ export class AxisRenderer extends Animations {
         options = calculateShapes(
             pointer.bounds, shapeBasedOnPosition, new Size(pointer.width, pointer.height),
             pointer.imageUrl, options, this.gauge.orientation, axis, pointer);
+        // eslint-disable-next-line prefer-const
         pointerElement = ((pointer.markerType === 'Circle' ? this.gauge.renderer.drawCircle(options) as SVGAElement
             : (pointer.markerType === 'Image') ? this.gauge.renderer.drawImage(options) :
                 this.gauge.renderer.drawPath(options) as SVGAElement));
@@ -318,8 +318,8 @@ export class AxisRenderer extends Animations {
         let options: PathOption;
         let box: Rect; let radius: number;
         let bottomRadius: number; let topRadius: number;
-        let size: Size = new Size(this.gauge.availableSize.width, this.gauge.availableSize.height);
-        let pointerID: string = this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer' + '_' + pointerIndex;
+        const size: Size = new Size(this.gauge.availableSize.width, this.gauge.availableSize.height);
+        const pointerID: string = this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer' + '_' + pointerIndex;
         let gradientBarColor: string;
         if (this.gauge.gradientModule) {
             gradientBarColor = this.gauge.gradientModule.getGradientColorString(pointer);
@@ -330,7 +330,7 @@ export class AxisRenderer extends Animations {
         if (this.gauge.container.type === 'Normal') {
             rectOptions = new RectOption(
                 pointerID, (gradientBarColor) ?
-                gradientBarColor : pointer.color || this.gauge.themeStyle.pointerColor,
+                    gradientBarColor : pointer.color || this.gauge.themeStyle.pointerColor,
                 pointer.border, pointer.opacity, pointer.bounds, null, null);
             box = pointer.bounds;
             pointerElement = this.gauge.renderer.drawRectangle(rectOptions) as SVGAElement;
@@ -346,7 +346,7 @@ export class AxisRenderer extends Animations {
             box = getPathToRect(<SVGPathElement>pointerElement.cloneNode(true), size, this.gauge.element);
         }
         if (getElement(pointerID) && getElement(pointerID).childElementCount > 0) {
-            let element: Element = getElement(pointerID).firstElementChild;
+            const element: Element = getElement(pointerID).firstElementChild;
             if (this.gauge.container.type === 'Normal') {
                 element.setAttribute('x', rectOptions.x + '');
                 element.setAttribute('y', rectOptions.y + '');
@@ -375,7 +375,7 @@ export class AxisRenderer extends Animations {
     public drawRanges(axis: Axis, axisObject: Element, axisIndex: number): void {
         let range: Range;
         let options: PathOption;
-        let rangeElement: Element = this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_RangesGroup' });
+        const rangeElement: Element = this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_RangesGroup' });
         for (let j: number = 0; j < axis.ranges.length; j++) {
             range = <Range>axis.ranges[j];
             if (!(isNullOrUndefined(range.path))) {

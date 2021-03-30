@@ -12,15 +12,15 @@ export class WorkbookImage {
     }
 
     private setImage(args: { options: ImageModel[], range: string }): void {
-        let imgRange: string = args.range ? (args.range.indexOf('!') > 0) ? args.range.split('!')[1] : args.range.split('!')[0]
+        const imgRange: string = args.range ? (args.range.indexOf('!') > 0) ? args.range.split('!')[1] : args.range.split('!')[0]
             : this.parent.getActiveSheet().selectedRange;
-        let sheetIdx: number = (args.range && args.range.indexOf('!') > 0) ?
+        const sheetIdx: number = (args.range && args.range.indexOf('!') > 0) ?
             getSheetIndex(this.parent, args.range.split('!')[0]) : this.parent.activeSheetIndex;
-        let indexes: number[] = getRangeIndexes(imgRange);
-        let sheet: SheetModel = sheetIdx ? this.parent.sheets[sheetIdx] : this.parent.getActiveSheet();
-        let cell: CellModel = getCell(indexes[0], indexes[1], sheet);
+        const indexes: number[] = getRangeIndexes(imgRange);
+        const sheet: SheetModel = sheetIdx ? this.parent.sheets[sheetIdx] : this.parent.getActiveSheet();
+        const cell: CellModel = getCell(indexes[0], indexes[1], sheet);
         let oldImgData: ImageModel[];
-        let imgData: ImageModel[] = args.options;
+        const imgData: ImageModel[] = args.options;
         if (cell && cell.image) {
             oldImgData = cell.image;
             for (let i: number = 0; i < imgData.length; i++) {
@@ -32,6 +32,8 @@ export class WorkbookImage {
 
     /**
      * Adding event listener for number format.
+     *
+     * @returns {void} - Adding event listener for number format.
      */
     private addEventListener(): void {
         this.parent.on(setImage, this.setImage, this);
@@ -48,6 +50,8 @@ export class WorkbookImage {
 
     /**
      * To Remove the event listeners.
+     *
+     * @returns {void} - To Remove the event listeners.
      */
     public destroy(): void {
         this.removeEventListener();
@@ -56,6 +60,8 @@ export class WorkbookImage {
 
     /**
      * Get the workbook number format module name.
+     *
+     * @returns {string} - Get the module name.
      */
     public getModuleName(): string {
         return 'workbookImage';

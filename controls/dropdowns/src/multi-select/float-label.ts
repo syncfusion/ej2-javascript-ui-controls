@@ -1,5 +1,5 @@
 /**
- * FloatLable Moduel 
+ * FloatLable Moduel
  * Specifies whether to display the floating label above the input element.
  */
 import { removeClass, addClass, detach } from '@syncfusion/ej2-base';
@@ -11,25 +11,26 @@ const FLOATTEXT: string = 'e-float-text';
 const LABELTOP: string = 'e-label-top';
 const LABELBOTTOM: string = 'e-label-bottom';
 
+/* eslint-disable valid-jsdoc */
 
 /**
  * Function to create Float Label element.
- * @param overAllWrapper - overall wrapper of multiselect.
- * @param element - the given html element. 
- * @param inputElement - specify the input wrapper.
- * @param value - Value of the MultiSelect.
- * @param floatLabelType - Specify the FloatLabel Type.
- * @param placeholder - Specify the PlaceHolder text.
+ *
+ * @param {HTMLDivElement} overAllWrapper - Overall wrapper of multiselect.
+ * @param {HTMLElement} searchWrapper - Search wrapper of multiselect.
+ * @param {HTMLElement} element - The given html element.
+ * @param {HTMLInputElement} inputElement - Specify the input wrapper.
+ * @param {number[] | string[] | boolean[]} value - Value of the MultiSelect.
+ * @param {FloatLabelType} floatLabelType - Specify the FloatLabel Type.
+ * @param {string} placeholder - Specify the PlaceHolder text.
  */
 export function createFloatLabel(
     overAllWrapper: HTMLDivElement,
     searchWrapper: HTMLElement, element: HTMLElement,
     inputElement: HTMLInputElement, value: number[] | string[] | boolean[], floatLabelType: FloatLabelType,
     placeholder: string): void {
-    let floatLinelement: HTMLElement;
-    let floatLabelElement: HTMLElement;
-    floatLinelement = createElement('span', { className: FLOATLINE });
-    floatLabelElement = createElement('label', { className: FLOATTEXT });
+    const floatLinelement: HTMLElement = createElement('span', { className: FLOATLINE });
+    const floatLabelElement: HTMLElement = createElement('label', { className: FLOATTEXT });
     if (!isNullOrUndefined(element.id) && element.id !== '') {
         floatLabelElement.id = 'label_' + element.id.replace(/ /g, '_');
         attributes(element, { 'aria-labelledby': floatLabelElement.id });
@@ -53,8 +54,9 @@ export function createFloatLabel(
 
 /**
  * Function to update status of the Float Label element.
- * @param value - Value of the MultiSelect.
- * @param label - float label element.
+ *
+ * @param {string[] | number[] | boolean[]} value - Value of the MultiSelect.
+ * @param {HTMLElement} label - Float label element.
  */
 export function updateFloatLabelState(value: string[] | number[] | boolean[], label: HTMLElement): void {
     if (value && value.length > 0) {
@@ -68,13 +70,14 @@ export function updateFloatLabelState(value: string[] | number[] | boolean[], la
 
 /**
  * Function to remove Float Label element.
- * @param overAllWrapper - overall wrapper of multiselect.
- * @param componentWrapper - wrapper element of multiselect.
- * @param searchWrapper - search wrapper of multiselect.
- * @param inputElement - specify the input wrapper.
- * @param value - Value of the MultiSelect.
- * @param floatLabelType - Specify the FloatLabel Type.
- * @param placeholder - Specify the PlaceHolder text.
+ *
+ * @param {HTMLDivElement} overAllWrapper - Overall wrapper of multiselect.
+ * @param {HTMLDivElement} componentWrapper - Wrapper element of multiselect.
+ * @param {HTMLElement} searchWrapper - Search wrapper of multiselect.
+ * @param {HTMLInputElement} inputElement - Specify the input wrapper.
+ * @param {number[] | string[] | boolean[]} value - Value of the MultiSelect.
+ * @param {FloatLabelType} floatLabelType - Specify the FloatLabel Type.
+ * @param {string} placeholder - Specify the PlaceHolder text.
  */
 export function removeFloating(
     overAllWrapper: HTMLDivElement,
@@ -84,8 +87,8 @@ export function removeFloating(
     value: number[] | string[] | boolean[],
     floatLabelType: FloatLabelType,
     placeholder: string): void {
-    let placeholderElement: HTMLElement = componentWrapper.querySelector('.' + FLOATTEXT) as HTMLElement;
-    let floatLine: HTMLElement = componentWrapper.querySelector('.' + FLOATLINE) as HTMLElement;
+    const placeholderElement: HTMLElement = componentWrapper.querySelector('.' + FLOATTEXT) as HTMLElement;
+    const floatLine: HTMLElement = componentWrapper.querySelector('.' + FLOATLINE) as HTMLElement;
     let placeholderText: string;
     if (!isNullOrUndefined(placeholderElement)) {
         placeholderText = placeholderElement.innerText;
@@ -103,9 +106,10 @@ export function removeFloating(
 
 /**
  * Function to set the placeholder to the element.
- * @param value - Value of the MultiSelect.
- * @param inputElement - specify the input wrapper.
- * @param placeholder - Specify the PlaceHolder text.
+ *
+ * @param {number[] | string[] | boolean[]} value - Value of the MultiSelect.
+ * @param {HTMLInputElement} inputElement - Specify the input wrapper.
+ * @param {string} placeholder - Specify the PlaceHolder text.
  */
 export function setPlaceHolder(value: number[] | string[] | boolean[], inputElement: HTMLInputElement, placeholder: string): void {
     if (value && value.length) {
@@ -117,12 +121,13 @@ export function setPlaceHolder(value: number[] | string[] | boolean[], inputElem
 
 /**
  * Function for focusing the Float Element.
- * @param overAllWrapper - overall wrapper of multiselect.
- * @param componentWrapper - wrapper element of multiselect.
+ *
+ * @param {HTMLDivElement} overAllWrapper - Overall wrapper of multiselect.
+ * @param {HTMLDivElement} componentWrapper - Wrapper element of multiselect.
  */
 export function floatLabelFocus(overAllWrapper: HTMLDivElement, componentWrapper: HTMLDivElement): void {
     overAllWrapper.classList.add('e-input-focus');
-    let label: Element = componentWrapper.querySelector('.' + FLOATTEXT);
+    const label: Element = componentWrapper.querySelector('.' + FLOATTEXT);
     if (!isNullOrUndefined(label)) {
         addClass([label], LABELTOP);
         if (label.classList.contains(LABELBOTTOM)) {
@@ -130,13 +135,15 @@ export function floatLabelFocus(overAllWrapper: HTMLDivElement, componentWrapper
         }
     }
 }
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Function to focus the Float Label element.
- * @param overAllWrapper - overall wrapper of multiselect.
- * @param componentWrapper - wrapper element of multiselect. 
- * @param value - Value of the MultiSelect.
- * @param floatLabelType - Specify the FloatLabel Type.
- * @param placeholder - Specify the PlaceHolder text.
+ *
+ * @param {HTMLDivElement} overAllWrapper - Overall wrapper of multiselect.
+ * @param {HTMLDivElement} componentWrapper - Wrapper element of multiselect.
+ * @param {number[] | string[] | boolean[]} value - Value of the MultiSelect.
+ * @param {FloatLabelType} floatLabelType - Specify the FloatLabel Type.
+ * @param {string} placeholder - Specify the PlaceHolder text.
  */
 export function floatLabelBlur(
     overAllWrapper: HTMLDivElement,
@@ -144,8 +151,9 @@ export function floatLabelBlur(
     value: number[] | string[] | boolean[],
     floatLabelType: FloatLabelType,
     placeholder: string): void {
+/* eslint-enable @typescript-eslint/no-unused-vars */
     overAllWrapper.classList.remove('e-input-focus');
-    let label: Element = componentWrapper.querySelector('.' + FLOATTEXT);
+    const label: Element = componentWrapper.querySelector('.' + FLOATTEXT);
     if (value && value.length <= 0 && floatLabelType === 'Auto' && !isNullOrUndefined(label)) {
         if (label.classList.contains(LABELTOP)) {
             removeClass([label], LABELTOP);
@@ -153,3 +161,4 @@ export function floatLabelBlur(
         addClass([label], LABELBOTTOM);
     }
 }
+/* eslint-enable valid-jsdoc */

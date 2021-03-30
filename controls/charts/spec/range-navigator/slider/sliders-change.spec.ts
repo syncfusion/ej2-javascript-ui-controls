@@ -265,7 +265,7 @@ describe('Range navigator', () => {
                     expect(range.svgObject).not.toEqual(null);
                     done();
                 } else {
-                    range.rangeResize(new Event(''));
+                    range.rangeResize();
                 }
             };
             range.resized = (args: IResizeRangeNavigatorEventArgs) => {

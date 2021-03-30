@@ -7,13 +7,15 @@ export interface CalculateModel {
 
     /**
      * Specifies a value that indicates whether the basic formulas need to be included.
+     *
      * @default true
      */
     includeBasicFormulas?: boolean;
 
     /**
      * Triggers when the calculation caught any errors.
-     * @event 
+     *
+     * @event anEvent
      */
     onFailure?: EmitType<FailureEventArgs>;
 

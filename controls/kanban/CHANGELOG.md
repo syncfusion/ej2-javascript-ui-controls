@@ -2,7 +2,19 @@
 
 ## [Unreleased]
 
-## 18.4.49 (2021-03-23)
+## 19.1.54 (2021-03-30)
+
+### Kanban
+
+#### New Features
+
+- `F160742` - Support to drag and drop the card from kanban to an external source and vice versa has been provided.
+
+#### Bug Fixes
+
+- `#317594` - An issue with "script error thrown when dynamically add new card with new swimlane key" issue has been fixed.
+
+## 18.4.46 (2021-03-02)
 
 ### Kanban
 
@@ -19,6 +31,8 @@
 #### Bug Fixes
 
 - `#315107` - The issue with "cards are hidden when multiple cards are dragged and dropped to their original position" has been fixed.
+- `#F161605` - An issue with drag and drop the cards when kanban placed inside card has been fixed.
+- An issue with "Unable to refresh the header count when drag the card and drop to another column" has been resolved.
 
 ## 18.4.41 (2021-02-02)
 
@@ -31,7 +45,6 @@
 - `#309763` - The issue with "Unable to drag and drop the cards within the column when setting the `sortBy` property as `Index`" has been resolved.
 - `#F161669` - The issue with "Duplicate card rendering while searching the text after drag and drop operation is performed" has been fixed.
 - `#287431` - An issue with the card has rendered at column last position when using `updateCard` method has been fixed.
-- `#F161605` - An issue with drag and drop the cards when kanban placed inside card has been fixed.
 
 ## 18.4.33 (2021-01-05)
 

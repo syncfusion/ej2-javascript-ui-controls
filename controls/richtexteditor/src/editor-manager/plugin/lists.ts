@@ -12,6 +12,7 @@ import { isNullOrUndefined, isNullOrUndefined as isNOU, closest } from '@syncfus
 
 /**
  * Lists internal component
+ * 
  * @hidden
  * @deprecated
  */
@@ -24,10 +25,12 @@ export class Lists {
     private currentAction: string;
     /**
      * Constructor for creating the Lists plugin
+     *
+     * @param {EditorManager} parent - specifies the parent element
      * @hidden
      * @deprecated
      */
-    constructor(parent: EditorManager) {
+    public constructor(parent: EditorManager) {
         this.parent = parent;
         this.domNode = this.parent.domNode;
         this.addEventListener();
@@ -37,10 +40,10 @@ export class Lists {
         this.parent.observer.on(EVENTS.KEY_DOWN_HANDLER, this.keyDownHandler, this);
     }
     private testList(elem: Element): boolean {
-        let olListRegex: RegExp[] = [/^[\d]+[.]+$/,
-        /^(?=[MDCLXVI])M*(C[MD]|D?C{0,3})(X[CL]|L?X{0,3})(I[XV]|V?I{0,3})[.]$/gi,
-        /^[a-zA-Z][.]+$/];
-        let elementStart: string = !isNullOrUndefined(elem) ? (elem as HTMLElement).innerText.trim().split('.')[0] + '.' : null;
+        const olListRegex: RegExp[] = [/^[\d]+[.]+$/,
+            /^(?=[MDCLXVI])M*(C[MD]|D?C{0,3})(X[CL]|L?X{0,3})(I[XV]|V?I{0,3})[.]$/gi,
+            /^[a-zA-Z][.]+$/];
+        const elementStart: string = !isNullOrUndefined(elem) ? (elem as HTMLElement).innerText.trim().split('.')[0] + '.' : null;
         if (!isNullOrUndefined(elementStart)) {
             for (let i: number = 0; i < olListRegex.length; i++) {
                 if (olListRegex[i].test(elementStart)) {
@@ -51,7 +54,7 @@ export class Lists {
         return false;
     }
     private testCurrentList(range: Range): boolean {
-        let olListStartRegex: RegExp[] = [/^[1]+[.]+$/, /^[i]+[.]+$/, /^[a]+[.]+$/];
+        const olListStartRegex: RegExp[] = [/^[1]+[.]+$/, /^[i]+[.]+$/, /^[a]+[.]+$/];
         if (!isNullOrUndefined(range.startContainer.textContent.slice(0, range.startOffset))) {
             for (let i: number = 0; i < olListStartRegex.length; i++) {
                 if (olListStartRegex[i].test(range.startContainer.textContent.slice(0, range.startOffset))) {
@@ -62,19 +65,20 @@ export class Lists {
         return false;
     }
     private spaceList(e: IHtmlKeyboardEvent): void {
-        let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         this.saveSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
-        let startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
-        let endNode: Element = this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
-        let preElement: Element = startNode.previousElementSibling;
-        let nextElement: Element = startNode.nextElementSibling;
-        let preElemULStart: string =  !isNullOrUndefined(preElement) ?
-        (preElement as HTMLElement).innerText.trim().substring(0, 1) : null;
-        let nextElemULStart: string =  !isNullOrUndefined(nextElement) ?
-        (nextElement as HTMLElement).innerText.trim().substring(0, 1) : null;
-        let startElementOLTest: boolean = this.testCurrentList(range);
-        let preElementOLTest : boolean = this.testList(preElement);
-        let nextElementOLTest : boolean = this.testList(nextElement);
+        const startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
+        // eslint-disable-next-line
+        const endNode: Element = this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
+        const preElement: Element = startNode.previousElementSibling;
+        const nextElement: Element = startNode.nextElementSibling;
+        const preElemULStart: string =  !isNullOrUndefined(preElement) ?
+            (preElement as HTMLElement).innerText.trim().substring(0, 1) : null;
+        const nextElemULStart: string =  !isNullOrUndefined(nextElement) ?
+            (nextElement as HTMLElement).innerText.trim().substring(0, 1) : null;
+        const startElementOLTest: boolean = this.testCurrentList(range);
+        const preElementOLTest : boolean = this.testList(preElement);
+        const nextElementOLTest : boolean = this.testList(nextElement);
         if (!preElementOLTest && !nextElementOLTest && preElemULStart !== '*' && nextElemULStart !== '*') {
             if (startElementOLTest) {
                 range.startContainer.textContent = range.startContainer.textContent.slice(
@@ -89,17 +93,19 @@ export class Lists {
             }
         }
     }
+    // eslint-disable-next-line
     private enterList(e: IHtmlKeyboardEvent): void {
-        let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
-        let startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
-        let endNode: Element = this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
+        const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        const startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
+        const endNode: Element = this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
         if (startNode === endNode && startNode.tagName === 'LI' && startNode.textContent.trim() === '' &&
         startNode.textContent.charCodeAt(0) === 65279) {
             startNode.textContent = '';
         }
     }
+    // eslint-disable-next-line
     private backspaceList(e: IHtmlKeyboardEvent): void {
-        let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         let startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
         let endNode: Element = this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
         startNode = startNode.nodeName === 'BR' ? startNode.parentElement : startNode;
@@ -113,7 +119,7 @@ export class Lists {
             if (startNode.parentElement.tagName === 'LI' && endNode.parentElement.tagName === 'LI') {
                 detach(startNode);
             } else if (startNode.closest('ul') || startNode.closest('ol')) {
-                let parentList: HTMLElement = !isNOU(startNode.closest('ul')) ? startNode.closest('ul') : startNode.closest('ol');
+                const parentList: HTMLElement = !isNOU(startNode.closest('ul')) ? startNode.closest('ul') : startNode.closest('ol');
                 if (parentList.firstElementChild === startNode && !isNOU(parentList.children[1]) &&
                     (parentList.children[1].tagName === 'OL' || parentList.children[1].tagName === 'UL')) {
                     if (parentList.tagName === parentList.children[1].tagName) {
@@ -128,7 +134,7 @@ export class Lists {
             }
         } else if (!isNOU(startNode.firstChild) && startNode.firstChild.nodeName === 'BR' &&
         (startNode.childNodes[1].nodeName === 'UL' || startNode.childNodes[1].nodeName === 'OL')) {
-            let parentList: HTMLElement = !isNOU(startNode.closest('ul')) ? startNode.closest('ul') : startNode.closest('ol');
+            const parentList: HTMLElement = !isNOU(startNode.closest('ul')) ? startNode.closest('ul') : startNode.closest('ol');
             if (parentList.tagName === startNode.childNodes[1].nodeName) {
                 while (startNode.childNodes[1].lastChild) {
                     this.parent.domNode.insertAfter(startNode.children[1].lastChild as Element, startNode);
@@ -140,16 +146,22 @@ export class Lists {
         }
     }
     private keyDownHandler(e: IHtmlKeyboardEvent): void {
-        if (e.event.which === 13) { this.enterList(e); }
-        if (e.event.which === 32) { this.spaceList(e); }
-        if (e.event.which === 8) { this.backspaceList(e); }
+        if (e.event.which === 13) {
+            this.enterList(e);
+        }
+        if (e.event.which === 32) {
+            this.spaceList(e);
+        }
+        if (e.event.which === 8) {
+            this.backspaceList(e);
+        }
         if (e.event.which === 46 && e.event.action === 'delete') {
-            let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
-            let commonAncestor: Node = range.commonAncestorContainer;
-            let startEle: Node = range.startContainer;
-            let endEle: Node = range.endContainer;
-            let startNode: Node = startEle.nodeType === 3 ? startEle.parentElement : startEle;
-            let endNode: Node = endEle.nodeType === 3 ? endEle.parentElement : endEle;
+            const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+            const commonAncestor: Node = range.commonAncestorContainer;
+            const startEle: Node = range.startContainer;
+            const endEle: Node = range.endContainer;
+            const startNode: Node = startEle.nodeType === 3 ? startEle.parentElement : startEle;
+            const endNode: Node = endEle.nodeType === 3 ? endEle.parentElement : endEle;
             if ((commonAncestor.nodeName === 'UL' || commonAncestor.nodeName === 'OL') && startNode !== endNode
                 && (!isNullOrUndefined(closest(startNode, 'ul')) || !isNullOrUndefined(closest(startNode, 'ol')))
                 && (!isNullOrUndefined(closest(endNode, 'ul')) || !isNullOrUndefined(closest(endNode, 'ol')))
@@ -158,15 +170,15 @@ export class Lists {
             }
         }
         if (e.event.which === 9) {
-            let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+            const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
             if (!(e.event.action && e.event.action === 'indent')) {
                 this.saveSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
             }
             let blockNodes: Element[];
-            let startOffset: number = range.startOffset;
-            let endOffset: number = range.endOffset;
-            let startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
-            let endNode: Element = this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
+            const startOffset: number = range.startOffset;
+            const endOffset: number = range.endOffset;
+            const startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
+            const endNode: Element = this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
             if ((startNode === endNode && (startNode.nodeName === 'BR' || startNode.nodeName === '#text') &&
                 CONSTANT.IGNORE_BLOCK_TAGS.indexOf((startNode.parentNode as Element).tagName.toLocaleLowerCase()) >= 0)) {
                 return;
@@ -176,7 +188,7 @@ export class Lists {
                 }
                 blockNodes = <Element[]>this.domNode.blockNodes();
             }
-            let nodes: Element[] = [];
+            const nodes: Element[] = [];
             let isNested: boolean = true;
             for (let i: number = 0; i < blockNodes.length; i++) {
                 if ((blockNodes[i].parentNode as Element).tagName === 'LI') {
@@ -225,30 +237,30 @@ export class Lists {
             }
         } else {
             switch ((e.event as KeyboardEventArgs).action) {
-                case 'ordered-list':
-                    this.applyListsHandler({ subCommand: 'OL', callBack: e.callBack });
-                    e.event.preventDefault();
-                    break;
-                case 'unordered-list':
-                    this.applyListsHandler({ subCommand: 'UL', callBack: e.callBack });
-                    e.event.preventDefault();
-                    break;
+            case 'ordered-list':
+                this.applyListsHandler({ subCommand: 'OL', callBack: e.callBack });
+                e.event.preventDefault();
+                break;
+            case 'unordered-list':
+                this.applyListsHandler({ subCommand: 'UL', callBack: e.callBack });
+                e.event.preventDefault();
+                break;
             }
         }
     }
 
     private getAction(element: Element): string {
-        let parentNode: Element = element.parentNode as Element;
+        const parentNode: Element = element.parentNode as Element;
         return (parentNode.nodeName === 'OL' ? 'OL' : 'UL');
     }
 
     private revertClean(): void {
-        let collectionNodes: Element[] = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('ul, ol');
+        const collectionNodes: Element[] = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('ul, ol');
         for (let i: number = 0; i < collectionNodes.length; i++) {
-            let listNodes: Element[] = <NodeListOf<Element> & Element[]>collectionNodes[i].querySelectorAll('ul, ol');
+            const listNodes: Element[] = <NodeListOf<Element> & Element[]>collectionNodes[i].querySelectorAll('ul, ol');
             if (listNodes.length > 0) {
                 for (let j: number = 0; j < listNodes.length; j++) {
-                    let prevSibling: Element = listNodes[j].previousSibling as Element;
+                    const prevSibling: Element = listNodes[j].previousSibling as Element;
                     if (prevSibling && prevSibling.tagName === 'LI') {
                         prevSibling.appendChild(listNodes[j]);
                     }
@@ -260,10 +272,10 @@ export class Lists {
     private noPreviousElement(elements: Node): void {
         let firstNode: Element;
         let firstNodeOL: Element;
-        let siblingListOL: Element[] = <NodeListOf<Element> & Element[]>(elements as Element).querySelectorAll('ol, ul');
-        let siblingListLI: NodeListOf<HTMLLIElement> = (elements as Element)
+        const siblingListOL: Element[] = <NodeListOf<Element> & Element[]>(elements as Element).querySelectorAll('ol, ul');
+        const siblingListLI: NodeListOf<HTMLLIElement> = (elements as Element)
             .querySelectorAll('li') as NodeListOf<HTMLLIElement>;
-        let siblingListLIFirst: Node = this.domNode.contents(siblingListLI[0] as Element)[0];
+        const siblingListLIFirst: Node = this.domNode.contents(siblingListLI[0] as Element)[0];
         if (siblingListLI.length > 0 && (siblingListLIFirst.nodeName === 'OL' || siblingListLIFirst.nodeName === 'UL')) {
             firstNode = siblingListLI[0];
         } else {
@@ -271,29 +283,29 @@ export class Lists {
         }
         if (firstNode) {
             for (let h: Node = this.domNode.contents(elements as Element)[0]; h && !this.domNode.isList(h as Element); null) {
-                let nextSibling: Element = h.nextSibling as Element;
+                const nextSibling: Element = h.nextSibling as Element;
                 prepend([h as Element], firstNode);
                 setStyleAttribute(elements as HTMLElement, { 'list-style-type': 'none' });
                 setStyleAttribute(firstNode as HTMLElement, { 'list-style-type': '' });
                 h = nextSibling;
             }
         } else if (firstNodeOL) {
-            let nestedElement: Element = createElement('li');
+            const nestedElement: Element = createElement('li');
             prepend([nestedElement], firstNodeOL);
             for (let h: Node = this.domNode.contents(elements as Element)[0]; h && !this.domNode.isList(h as Element); null) {
-                let nextSibling: Element = h.nextSibling as Element;
+                const nextSibling: Element = h.nextSibling as Element;
                 nestedElement.appendChild(h as Element);
                 h = nextSibling;
             }
             prepend([firstNodeOL], (elements.parentNode as Element));
             detach(elements);
-            let nestedElementLI: Element = createElement('li', { styles: 'list-style-type: none;' });
+            const nestedElementLI: Element = createElement('li', { styles: 'list-style-type: none;' });
             prepend([nestedElementLI], (firstNodeOL.parentNode as Element));
             append([firstNodeOL], nestedElementLI);
         } else {
-            let nestedElementLI: Element = createElement('li', { styles: 'list-style-type: none;' });
+            const nestedElementLI: Element = createElement('li', { styles: 'list-style-type: none;' });
             prepend([nestedElementLI], (elements.parentNode as Element));
-            let nestedElement: Element = createElement((elements.parentNode as Element).tagName);
+            const nestedElement: Element = createElement((elements.parentNode as Element).tagName);
             prepend([nestedElement], nestedElementLI);
             append([elements as Element], nestedElement);
         }
@@ -301,26 +313,26 @@ export class Lists {
     private nestedList(elements: Node[]): boolean {
         let isNested: boolean = false;
         for (let i: number = 0; i < elements.length; i++) {
-            let prevSibling: Element = this.domNode.getPreviousNode(elements[i] as Element);
+            const prevSibling: Element = this.domNode.getPreviousNode(elements[i] as Element);
             if (prevSibling) {
                 isNested = true;
                 let firstNode: Element;
                 let firstNodeLI: Element;
-                let siblingListOL: Element[] = <NodeListOf<Element> & Element[]>(elements[i] as Element).querySelectorAll('ol, ul');
-                let siblingListLI: NodeListOf<HTMLLIElement> = (elements[i] as Element)
+                const siblingListOL: Element[] = <NodeListOf<Element> & Element[]>(elements[i] as Element).querySelectorAll('ol, ul');
+                const siblingListLI: NodeListOf<HTMLLIElement> = (elements[i] as Element)
                     .querySelectorAll('li') as NodeListOf<HTMLLIElement>;
-                let siblingListLIFirst: Node = this.domNode.contents(siblingListLI[0] as Element)[0];
+                const siblingListLIFirst: Node = this.domNode.contents(siblingListLI[0] as Element)[0];
                 if (siblingListLI.length > 0 && (siblingListLIFirst.nodeName === 'OL' || siblingListLIFirst.nodeName === 'UL')) {
                     firstNodeLI = siblingListLI[0];
                 } else {
                     firstNode = siblingListOL[0];
                 }
                 if (firstNode) {
-                    let nestedElement: Element = createElement('li');
+                    const nestedElement: Element = createElement('li');
                     prepend([nestedElement], firstNode);
                     for (let h: Node = this.domNode.contents(elements[i] as Element)[0];
                         h && !this.domNode.isList(h as Element); null) {
-                        let nextSibling: Element = h.nextSibling as Element;
+                        const nextSibling: Element = h.nextSibling as Element;
                         nestedElement.appendChild(h as Element);
                         h = nextSibling;
                     }
@@ -330,7 +342,7 @@ export class Lists {
                     if (prevSibling.tagName === 'LI') {
                         for (let h: Node = this.domNode.contents(elements[i] as Element)[0];
                             h && !this.domNode.isList(h as Element); null) {
-                            let nextSibling: Element = h.nextSibling as Element;
+                            const nextSibling: Element = h.nextSibling as Element;
                             prepend([h as Element], firstNodeLI);
                             setStyleAttribute(elements[i] as HTMLElement, { 'list-style-type': 'none' });
                             setStyleAttribute(firstNodeLI as HTMLElement, { 'list-style-type': '' });
@@ -341,13 +353,13 @@ export class Lists {
                     }
                 } else {
                     if (prevSibling.tagName === 'LI') {
-                        let nestedElement: Element = createElement((elements[i].parentNode as Element).tagName);
+                        const nestedElement: Element = createElement((elements[i].parentNode as Element).tagName);
                         append([nestedElement], prevSibling as Element);
                         append([elements[i] as Element], nestedElement);
                     }
                 }
             } else {
-                let element: Node = elements[i];
+                const element: Node = elements[i];
                 isNested = true;
                 this.noPreviousElement(element);
             }
@@ -356,11 +368,11 @@ export class Lists {
     }
 
     private applyListsHandler(e: IHtmlSubCommands): void {
-        let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         this.saveSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
         this.currentAction = e.subCommand;
         this.domNode.setMarker(this.saveSelection);
-        let listsNodes: Node[] = this.domNode.blockNodes();
+        const listsNodes: Node[] = this.domNode.blockNodes();
         for (let i: number = 0; i < listsNodes.length; i++) {
             if ((listsNodes[i] as Element).tagName === 'TABLE' && !range.collapsed) {
                 listsNodes.splice(i, 1);
@@ -392,36 +404,39 @@ export class Lists {
             for (let i: number = 0; i < elements.length; i++) {
                 if (elements[i].getAttribute('contenteditable') === 'true'
                     && elements[i].childNodes.length === 1 && elements[i].childNodes[0].nodeName === 'TABLE') {
-                    let listEle: Element = document.createElement(type);
+                    const listEle: Element = document.createElement(type);
                     listEle.innerHTML = '<li><br/></li>';
                     elements[i].appendChild(listEle);
                 } else if ('LI' !== elements[i].tagName) {
+                    // eslint-disable-next-line
                     isReverse = false;
-                    let elemAtt: string = elements[i].tagName === 'IMG' ? '' : this.domNode.attributes(elements[i]);
-                    let openTag: string = '<' + type + '>';
-                    let closeTag: string = '</' + type + '>';
-                    let newTag: string = 'li' + elemAtt;
-                    let replaceHTML: string = (elements[i].tagName.toLowerCase() === CONSTANT.DEFAULT_TAG ? elements[i].innerHTML :
+                    const elemAtt: string = elements[i].tagName === 'IMG' ? '' : this.domNode.attributes(elements[i]);
+                    const openTag: string = '<' + type + '>';
+                    const closeTag: string = '</' + type + '>';
+                    const newTag: string = 'li' + elemAtt;
+                    const replaceHTML: string = (elements[i].tagName.toLowerCase() === CONSTANT.DEFAULT_TAG ? elements[i].innerHTML :
                         elements[i].outerHTML);
-                    let innerHTML: string = this.domNode.createTagString(newTag, null, replaceHTML);
-                    let collectionString: string = openTag + innerHTML + closeTag;
+                    const innerHTML: string = this.domNode.createTagString(newTag, null, replaceHTML);
+                    const collectionString: string = openTag + innerHTML + closeTag;
                     this.domNode.replaceWith(elements[i], collectionString);
                 }
             }
         }
         this.cleanNode();
         (this.parent.editableElement as HTMLElement).focus();
-        if (isIDevice()) { setEditFrameFocus(this.parent.editableElement, selector); }
+        if (isIDevice()) {
+            setEditFrameFocus(this.parent.editableElement, selector);
+        }
         this.saveSelection = this.domNode.saveMarker(this.saveSelection);
         this.saveSelection.restore();
     }
     private removeEmptyListElements(): void {
-        let listElem: NodeListOf<Element> = this.parent.editableElement.querySelectorAll('ol, ul');
+        const listElem: NodeListOf<Element> = this.parent.editableElement.querySelectorAll('ol, ul');
         for (let i: number = 0; i < listElem.length; i++) {
             if (listElem[i].textContent.trim() === '') {
                 detach(listElem[i]);
             }
-         }
+        }
     }
     private isRevert(nodes: Element[], tagName: string): boolean {
         let isRevert: boolean = true;
@@ -429,34 +444,36 @@ export class Lists {
             if (nodes[i].tagName !== 'LI') {
                 return false;
             }
-            if ((nodes[i].parentNode as Element).tagName !== tagName) { isRevert = false; }
+            if ((nodes[i].parentNode as Element).tagName !== tagName) {
+                isRevert = false;
+            }
         }
         return isRevert;
     }
 
     private checkLists(nodes: Element[], tagName: string): void {
-        let nodesTemp: Element[] = [];
+        const nodesTemp: Element[] = [];
         for (let i: number = 0; i < nodes.length; i++) {
-            let node: Element = nodes[i].parentNode as Element;
+            const node: Element = nodes[i].parentNode as Element;
             if (nodes[i].tagName === 'LI' && node.tagName !== tagName && nodesTemp.indexOf(node) < 0) {
                 nodesTemp.push(node);
             }
         }
         for (let j: number = nodesTemp.length - 1; j >= 0; j--) {
-            let h: Element = nodesTemp[j];
-            let replace: string = '<' + tagName.toLowerCase() + ' '
+            const h: Element = nodesTemp[j];
+            const replace: string = '<' + tagName.toLowerCase() + ' '
                 + this.domNode.attributes(h) + '>' + h.innerHTML + '</' + tagName.toLowerCase() + '>';
             this.domNode.replaceWith(nodesTemp[j], replace);
         }
     }
 
     private cleanNode(): void {
-        let liParents: Element[] = <Element[] & NodeListOf<Element>>this.parent.editableElement.querySelectorAll('ol + ol, ul + ul');
+        const liParents: Element[] = <Element[] & NodeListOf<Element>>this.parent.editableElement.querySelectorAll('ol + ol, ul + ul');
         for (let c: number = 0; c < liParents.length; c++) {
-            let node: Element = liParents[c];
+            const node: Element = liParents[c];
             if (this.domNode.isList(node.previousElementSibling  as Element) &&
                 this.domNode.openTagString(node) === this.domNode.openTagString(node.previousElementSibling  as Element)) {
-                let contentNodes: Node[] = this.domNode.contents(node);
+                const contentNodes: Node[] = this.domNode.contents(node);
                 for (let f: number = 0; f < contentNodes.length; f++) {
                     node.previousElementSibling .appendChild(contentNodes[f]);
                 }
@@ -467,15 +484,15 @@ export class Lists {
     private findUnSelected(temp: HTMLElement[], elements: HTMLElement[]): void {
         temp = temp.slice().reverse();
         if (temp.length > 0) {
-            let rightIndent: Element[] = [];
-            let indentElements: Element[] = [];
-            let lastElement: Element = elements[elements.length - 1];
+            const rightIndent: Element[] = [];
+            const indentElements: Element[] = [];
+            const lastElement: Element = elements[elements.length - 1];
             let lastElementChild: Element[] = [];
-            let childElements: Element[] = [];
+            const childElements: Element[] = [];
             lastElementChild = <NodeListOf<Element> & Element[]>(lastElement.childNodes);
             for (let z: number = 0; z < lastElementChild.length; z++) {
                 if (lastElementChild[z].tagName === 'OL' || lastElementChild[z].tagName === 'UL') {
-                    let childLI: NodeListOf<HTMLLIElement> = (lastElementChild[z] as Element)
+                    const childLI: NodeListOf<HTMLLIElement> = (lastElementChild[z] as Element)
                         .querySelectorAll('li') as NodeListOf<HTMLLIElement>;
                     if (childLI.length > 0) {
                         for (let y: number = 0; y < childLI.length; y++) {
@@ -510,7 +527,7 @@ export class Lists {
     }
 
     private revertList(elements: HTMLElement[]): void {
-        let temp: Element[] = [];
+        const temp: Element[] = [];
         for (let i: number = elements.length - 1; i >= 0; i--) {
             for (let j: number = i - 1; j >= 0; j--) {
                 if (elements[j].contains((elements[i])) || elements[j] === elements[i]) {
@@ -521,9 +538,9 @@ export class Lists {
             }
         }
         this.findUnSelected(temp as HTMLElement[], elements as HTMLElement[]);
-        let viewNode: Element[] = [];
+        const viewNode: Element[] = [];
         for (let i: number = 0; i < elements.length; i++) {
-            let element: Element = elements[i];
+            const element: Element = elements[i];
             if (this.domNode.contents(element)[0].nodeType === 3 && this.domNode.contents(element)[0].textContent.trim().length === 0) {
                 detach(this.domNode.contents(element)[0]);
             }
@@ -531,45 +548,46 @@ export class Lists {
             let parentNode: Element = elements[i].parentNode as Element;
             let className: string = element.getAttribute('class');
             if (temp.length === 0) {
-                let siblingList: Element[] = <NodeListOf<Element> & Element[]>(elements[i] as Element).querySelectorAll('ul, ol');
-                let firstNode: Element = siblingList[0];
+                const siblingList: Element[] = <NodeListOf<Element> & Element[]>(elements[i] as Element).querySelectorAll('ul, ol');
+                const firstNode: Element = siblingList[0];
                 if (firstNode) {
-                    let child: NodeListOf<HTMLLIElement> = firstNode
+                    const child: NodeListOf<HTMLLIElement> = firstNode
                         .querySelectorAll('li') as NodeListOf<HTMLLIElement>;
                     if (child) {
-                        let nestedElement: Element = createElement(firstNode.tagName);
+                        const nestedElement: Element = createElement(firstNode.tagName);
                         append([nestedElement], firstNode.parentNode as Element);
-                        let nestedElementLI: Element = createElement('li', { styles: 'list-style-type: none;' });
+                        const nestedElementLI: Element = createElement('li', { styles: 'list-style-type: none;' });
                         append([nestedElementLI], nestedElement);
                         append([firstNode], nestedElementLI);
                     }
                 }
             }
             if (element.parentNode.insertBefore(this.closeTag(parentNode.tagName) as Element, element),
-                'LI' === (parentNode.parentNode as Element).tagName) {
+            'LI' === (parentNode.parentNode as Element).tagName) {
                 element.parentNode.insertBefore(this.closeTag('LI') as Element, element);
             } else {
                 let classAttr: string = '';
                 if (className) {
+                    // eslint-disable-next-line
                     classAttr += ' class="' + className + '"';
                 }
                 if (CONSTANT.DEFAULT_TAG && 0 === element.querySelectorAll(CONSTANT.BLOCK_TAGS.join(', ')).length) {
-                    let wrapperclass: string = isNullOrUndefined(className) ? ' class="e-rte-wrap-inner"' :
-                    ' class="' + className + ' e-rte-wrap-inner"';
-                    let wrapper: string = '<' + CONSTANT.DEFAULT_TAG + wrapperclass +
+                    const wrapperclass: string = isNullOrUndefined(className) ? ' class="e-rte-wrap-inner"' :
+                        ' class="' + className + ' e-rte-wrap-inner"';
+                    const wrapper: string = '<' + CONSTANT.DEFAULT_TAG + wrapperclass +
                         this.domNode.attributes(parentNode) + '></' + CONSTANT.DEFAULT_TAG + '>';
                     this.domNode.wrapInner(element, this.domNode.parseHTMLFragment(wrapper));
                 } else if (this.domNode.contents(element)[0].nodeType === 3) {
-                    let replace: string = this.domNode.createTagString(
+                    const replace: string = this.domNode.createTagString(
                         CONSTANT.DEFAULT_TAG, parentNode, this.parent.domNode.encode(this.domNode.contents(element)[0].textContent));
                     this.domNode.replaceWith(this.domNode.contents(element)[0] as Element, replace);
                 } else if ((this.domNode.contents(element)[0] as HTMLElement).classList.contains(markerClassName.startSelection) ||
                     (this.domNode.contents(element)[0] as HTMLElement).classList.contains(markerClassName.endSelection)) {
-                    let replace: string = this.domNode.createTagString(
+                    const replace: string = this.domNode.createTagString(
                         CONSTANT.DEFAULT_TAG, parentNode, (this.domNode.contents(element)[0] as HTMLElement).outerHTML);
                     this.domNode.replaceWith(this.domNode.contents(element)[0] as Element, replace);
                 } else {
-                    let childNode: Element = element.firstChild as Element;
+                    const childNode: Element = element.firstChild as Element;
                     className = childNode.getAttribute('class');
                     attributes(childNode, this.domNode.rawAttributes(parentNode));
                     if (className && childNode.getAttribute('class')) {
@@ -588,19 +606,19 @@ export class Lists {
             }
         }
         for (let i: number = 0; i < viewNode.length; i++) {
-            let node: Element = viewNode[i] as Element;
+            const node: Element = viewNode[i] as Element;
             let nodeInnerHtml: string = node.innerHTML;
-            let closeTag: RegExp = /<span class="e-rte-list-close-([a-z]*)"><\/span>/g;
-            let openTag: RegExp = /<span class="e-rte-list-open-([a-z]*)"><\/span>/g;
+            const closeTag: RegExp = /<span class="e-rte-list-close-([a-z]*)"><\/span>/g;
+            const openTag: RegExp = /<span class="e-rte-list-open-([a-z]*)"><\/span>/g;
             nodeInnerHtml = nodeInnerHtml.replace(closeTag, '</$1>');
             nodeInnerHtml = nodeInnerHtml.replace(openTag, '<$1 ' + this.domNode.attributes(node) + '>');
             this.domNode.replaceWith(node, this.domNode.openTagString(node) + nodeInnerHtml.trim() + this.domNode.closeTagString(node));
         }
-        let emptyUl: Element[] = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('ul:empty, ol:empty');
+        const emptyUl: Element[] = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('ul:empty, ol:empty');
         for (let i: number = 0; i < emptyUl.length; i++) {
             detach(emptyUl[i]);
         }
-        let emptyLi: Element[] = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('li:empty');
+        const emptyLi: Element[] = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('li:empty');
         for (let i: number = 0; i < emptyLi.length; i++) {
             detach(emptyLi[i]);
         }

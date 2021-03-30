@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * Event resize action spec 
+ * Event resize action spec
  */
 import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda } from '../../../src/schedule/index';
 import { TimelineViews, TimelineMonth, ResizeEventArgs, Resize } from '../../../src/schedule/index';
@@ -12,8 +13,8 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, TimelineViews, TimelineMonth
 xdescribe('Vertical view events resizing', () => {
     describe('Default schedule events', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = { width: '500px', height: '500px', selectedDate: new Date(2018, 6, 5) };
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = { width: '500px', height: '500px', selectedDate: new Date(2018, 6, 5) };
             schObj = util.createSchedule(schOptions, dragResizeData, done);
         });
         afterAll(() => {
@@ -22,14 +23,14 @@ xdescribe('Vertical view events resizing', () => {
 
         it('resizeStart event', () => {
             schObj.resizeStart = (args: ResizeEventArgs) => args.cancel = true;
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"] .e-bottom-handler') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"] .e-bottom-handler') as HTMLElement;
             triggerMouseEvent(resizeElement, 'mousedown');
         });
 
         it('resizeStop event', () => {
             schObj.resizeStart = (args: ResizeEventArgs) => args.cancel = false;
             schObj.resizeStop = (args: ResizeEventArgs) => args.cancel = true;
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"] .e-bottom-handler') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"] .e-bottom-handler') as HTMLElement;
             triggerMouseEvent(resizeElement, 'mousedown');
             triggerMouseEvent(resizeElement, 'mousemove', 0, 25);
             expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(1);
@@ -39,25 +40,25 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeElement, 'mouseup');
         });
 
-        it('bottom resizing', (done: Function) => {
+        it('bottom resizing', (done: DoneFn) => {
             schObj.resizeStop = (args: ResizeEventArgs) => args.cancel = false;
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 10, 0).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 12, 30).getTime());
-                let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
                 expect(resizeElement.offsetTop).toEqual(720);
                 expect(resizeElement.offsetHeight).toEqual(180);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-bottom-handler') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-bottom-handler') as HTMLElement;
             expect(resizeElement.offsetTop).toEqual(720);
             expect(resizeElement.offsetHeight).toEqual(108);
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 0, 25);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(schObj.element.querySelectorAll('.e-clone-time-indicator').length).toEqual(0);
             triggerMouseEvent(resizeHandler, 'mousemove', 0, 25);
@@ -66,24 +67,24 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('top resizing', (done: Function) => {
+        it('top resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 9, 0).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 12, 30).getTime());
-                let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
                 expect(resizeElement.offsetTop).toEqual(648);
                 expect(resizeElement.offsetHeight).toEqual(252);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-top-handler') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-top-handler') as HTMLElement;
             expect(resizeElement.offsetTop).toEqual(720);
             expect(resizeElement.offsetHeight).toEqual(180);
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 0, -25);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(schObj.element.querySelectorAll('.e-clone-time-indicator').length).toEqual(0);
             triggerMouseEvent(resizeHandler, 'mousemove', 0, -25);
@@ -92,21 +93,21 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('right resizing', (done: Function) => {
+        it('right resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[7] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[7] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 2).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 4).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_8"]')).offsetWidth).toEqual(110);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(53);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(22);
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
@@ -115,21 +116,21 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('left resizing', (done: Function) => {
+        it('left resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[7] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[7] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 2).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 4).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_8"]')).offsetWidth).toEqual(110);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(110);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', -25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(22);
             triggerMouseEvent(resizeHandler, 'mousemove', -25, 0);
@@ -138,24 +139,24 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('recurrence event bottom resizing', (done: Function) => {
+        it('recurrence event bottom resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData.slice(-1)[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData.slice(-1)[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 2, 11, 15).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 2, 13).getTime());
-                let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_11"]') as HTMLElement;
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_11"]') as HTMLElement;
                 expect(resizeElement.offsetTop).toEqual(810);
                 expect(resizeElement.offsetHeight).toEqual(126);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_2"]') as HTMLElement;
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-bottom-handler') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_2"]') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-bottom-handler') as HTMLElement;
             expect(resizeElement.offsetTop).toEqual(810);
             expect(resizeElement.offsetHeight).toEqual(90);
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 0, 25);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             triggerMouseEvent(resizeHandler, 'mousemove', 0, 25);
             triggerMouseEvent(resizeHandler, 'mousemove', 0, 50);
@@ -163,25 +164,25 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('different resizing interval checking', (done: Function) => {
+        it('different resizing interval checking', (done: DoneFn) => {
             schObj.resizeStart = (args: ResizeEventArgs) => args.interval = 45;
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 9, 0).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 13).getTime());
-                let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
                 expect(resizeElement.offsetTop).toEqual(648);
                 expect(resizeElement.offsetHeight).toEqual(288);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-bottom-handler') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-bottom-handler') as HTMLElement;
             expect(resizeElement.offsetTop).toEqual(648);
             expect(resizeElement.offsetHeight).toEqual(252);
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 0, -50);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             triggerMouseEvent(resizeHandler, 'mousemove', 0, -50);
             triggerMouseEvent(resizeHandler, 'mousemove', 0, -100);
@@ -194,29 +195,29 @@ xdescribe('Vertical view events resizing', () => {
 
     describe('month view events resizing', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = { width: '500px', height: '500px', currentView: 'Month', selectedDate: new Date(2018, 6, 5) };
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = { width: '500px', height: '500px', currentView: 'Month', selectedDate: new Date(2018, 6, 5) };
             schObj = util.createSchedule(schOptions, dragResizeData, done);
         });
         afterAll(() => {
             util.destroy(schObj);
         });
 
-        it('right resizing', (done: Function) => {
+        it('right resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 10).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 2, 11, 30).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_1"]')).offsetWidth).toEqual(139);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(68);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(22);
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
@@ -225,21 +226,21 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('left resizing', (done: Function) => {
+        it('left resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 2, 10).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 2, 11, 30).getTime());
                 expect((schObj.element.querySelectorAll('[data-id="Appointment_1"]').length)).toEqual(0);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(139);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 50, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(22);
             triggerMouseEvent(resizeHandler, 'mousemove', 50, 0);
@@ -248,27 +249,27 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('event resizing checking with firstDayOfWeek property', (done: Function) => {
+        it('event resizing checking with firstDayOfWeek property', (done: DoneFn) => {
             schObj.dataBound = () => done();
             schObj.firstDayOfWeek = 1;
             schObj.dataBind();
         });
 
-        it('left resizing with firstDayOfWeek property', (done: Function) => {
+        it('left resizing with firstDayOfWeek property', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[9] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[9] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 7, 10).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 8, 11).getTime());
                 expect(schObj.element.querySelectorAll('[data-id="Appointment_10"]').length).toEqual(1);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_10"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_10"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(210);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 50, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(22);
             triggerMouseEvent(resizeHandler, 'mousemove', 50, 0);
@@ -277,21 +278,21 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('right resizing with firstDayOfWeek property', (done: Function) => {
+        it('right resizing with firstDayOfWeek property', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[2] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[2] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 3, 11).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 4, 12, 30).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_3"]')).offsetWidth).toEqual(139);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_3"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_3"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(68);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(22);
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
@@ -300,27 +301,27 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('showWeekend property', (done: Function) => {
+        it('showWeekend property', (done: DoneFn) => {
             schObj.dataBound = () => done();
             schObj.showWeekend = false;
             schObj.dataBind();
         });
 
-        it('left resizing with showWeekend property', (done: Function) => {
+        it('left resizing with showWeekend property', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[2] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[2] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 4, 11).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 4, 12, 30).getTime());
                 expect(schObj.element.querySelectorAll('[data-id="Appointment_3"]').length).toEqual(0);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_3"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_3"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(195);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(22);
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
@@ -329,21 +330,21 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('right resizing with showWeekend property', (done: Function) => {
+        it('right resizing with showWeekend property', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[7] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[7] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 2).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 4).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_8"]')).offsetWidth).toEqual(195);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(96);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(22);
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
@@ -355,8 +356,8 @@ xdescribe('Vertical view events resizing', () => {
 
     describe('Resource grouping schedule events', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
                 width: '500px',
                 height: '500px',
                 selectedDate: new Date(2018, 6, 5),
@@ -386,14 +387,14 @@ xdescribe('Vertical view events resizing', () => {
 
         it('resizeStart event', () => {
             schObj.resizeStart = (args: ResizeEventArgs) => args.cancel = true;
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"] .e-bottom-handler') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"] .e-bottom-handler') as HTMLElement;
             triggerMouseEvent(resizeElement, 'mousedown');
         });
 
         it('resizeStop event', () => {
             schObj.resizeStart = (args: ResizeEventArgs) => args.cancel = false;
             schObj.resizeStop = (args: ResizeEventArgs) => args.cancel = true;
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"] .e-bottom-handler') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"] .e-bottom-handler') as HTMLElement;
             triggerMouseEvent(resizeElement, 'mousedown');
             triggerMouseEvent(resizeElement, 'mousemove', 0, 50);
             expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(1);
@@ -403,20 +404,20 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeElement, 'mouseup');
         });
 
-        it('bottom resizing', (done: Function) => {
+        it('bottom resizing', (done: DoneFn) => {
             schObj.resizeStop = (args: ResizeEventArgs) => args.cancel = false;
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[4] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[4] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 5, 10, 30).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 5, 12, 30).getTime());
-                let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_5"]') as HTMLElement;
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_5"]') as HTMLElement;
                 expect(resizeElement.offsetTop).toEqual(756);
                 expect(resizeElement.offsetHeight).toEqual(144);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_5"]') as HTMLElement;
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-bottom-handler') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_5"]') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-bottom-handler') as HTMLElement;
             expect(resizeElement.offsetTop).toEqual(756);
             expect(resizeElement.offsetHeight).toEqual(72);
             triggerMouseEvent(resizeHandler, 'mousedown');
@@ -428,19 +429,19 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('top resizing', (done: Function) => {
+        it('top resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 9, 0).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 11, 30).getTime());
-                let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
                 expect(resizeElement.offsetTop).toEqual(648);
                 expect(resizeElement.offsetHeight).toEqual(180);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-top-handler') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-top-handler') as HTMLElement;
             expect(resizeElement.offsetTop).toEqual(720);
             expect(resizeElement.offsetHeight).toEqual(108);
             triggerMouseEvent(resizeHandler, 'mousedown');
@@ -452,21 +453,21 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('right resizing', (done: Function) => {
+        it('right resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[7] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[7] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 2).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 5).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_8"]')).offsetWidth).toEqual(105);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(33);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(22);
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
@@ -475,21 +476,21 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('left resizing', (done: Function) => {
+        it('left resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[8] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[8] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 4).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 6).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_9"]')).offsetWidth).toEqual(69);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_9"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_9"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(69);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', -25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(22);
             triggerMouseEvent(resizeHandler, 'mousemove', -25, 0);
@@ -498,27 +499,27 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('month view changing', (done: Function) => {
+        it('month view changing', (done: DoneFn) => {
             schObj.dataBound = () => done();
             schObj.currentView = 'Month';
             schObj.dataBind();
         });
 
-        it('right resizing in month view', (done: Function) => {
+        it('right resizing in month view', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[7] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[7] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 2).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 8).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_8"]')).offsetWidth).toEqual(213);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(105);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(22);
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
@@ -527,21 +528,21 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('left resizing in month view', (done: Function) => {
+        it('left resizing in month view', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[7] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[7] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 4).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 8).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_8"]')).offsetWidth).toEqual(141);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(213);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(22);
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
@@ -550,27 +551,27 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('showWeekend property', (done: Function) => {
+        it('showWeekend property', (done: DoneFn) => {
             schObj.dataBound = () => done();
             schObj.showWeekend = false;
             schObj.dataBind();
         });
 
-        it('left resizing with firstDayOfWeek property', (done: Function) => {
+        it('left resizing with firstDayOfWeek property', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[7] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[7] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 5).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 8).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_8"]')).offsetWidth).toEqual(69);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(105);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(22);
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
@@ -579,21 +580,21 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('right resizing with firstDayOfWeek property', (done: Function) => {
+        it('right resizing with firstDayOfWeek property', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[8] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[8] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 4).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 5).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_9"]')).offsetWidth).toEqual(33);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_9"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_9"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(69);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', -25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(22);
             triggerMouseEvent(resizeHandler, 'mousemove', -25, 0);
@@ -605,8 +606,8 @@ xdescribe('Vertical view events resizing', () => {
 
     describe('Resource grouping - allowGroupEdit schedule events', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
                 width: '500px',
                 height: '500px',
                 selectedDate: new Date(2018, 3, 1),
@@ -641,25 +642,25 @@ xdescribe('Vertical view events resizing', () => {
             util.destroy(schObj);
         });
 
-        it('bottom resizing', (done: Function) => {
+        it('bottom resizing', (done: DoneFn) => {
             schObj.resizeStop = (args: ResizeEventArgs) => args.cancel = false;
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 3, 1, 10, 0).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 3, 1, 13, 30).getTime());
-                let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
                 expect(resizeElement.offsetTop).toEqual(720);
                 expect(resizeElement.offsetHeight).toEqual(252);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-bottom-handler') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-bottom-handler') as HTMLElement;
             expect(resizeElement.offsetTop).toEqual(720);
             expect(resizeElement.offsetHeight).toEqual(180);
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 0, 25);
-            let cloneElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-resize-clone'));
+            const cloneElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-resize-clone'));
             expect(cloneElement.length).toEqual(3);
             cloneElement.forEach((element: HTMLElement) => expect(element).toBeTruthy());
             triggerMouseEvent(resizeHandler, 'mousemove', 0, 25);
@@ -668,24 +669,24 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('top resizing', (done: Function) => {
+        it('top resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 3, 1, 11, 0).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 3, 1, 13, 30).getTime());
-                let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
                 expect(resizeElement.offsetTop).toEqual(792);
                 expect(resizeElement.offsetHeight).toEqual(180);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-top-handler') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-top-handler') as HTMLElement;
             expect(resizeElement.offsetTop).toEqual(720);
             expect(resizeElement.offsetHeight).toEqual(252);
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 0, 25);
-            let cloneElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-resize-clone'));
+            const cloneElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-resize-clone'));
             expect(cloneElement.length).toEqual(3);
             cloneElement.forEach((element: HTMLElement) => expect(element).toBeTruthy());
             triggerMouseEvent(resizeHandler, 'mousemove', 0, 25);
@@ -694,27 +695,27 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('month view changing', (done: Function) => {
+        it('month view changing', (done: DoneFn) => {
             schObj.dataBound = () => done();
             schObj.currentView = 'Month';
             schObj.dataBind();
         });
 
-        it('right resizing', (done: Function) => {
+        it('right resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 3, 1, 11).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 3, 4, 13, 30).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_1"]')).offsetWidth).toEqual(141);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(33);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-resize-clone'));
+            const cloneElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-resize-clone'));
             expect(cloneElement.length).toEqual(3);
             cloneElement.forEach((element: HTMLElement) => {
                 expect(element).toBeTruthy();
@@ -726,21 +727,21 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('left resizing', (done: Function) => {
+        it('left resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 3, 2, 11).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 3, 4, 13, 30).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_1"]')).offsetWidth).toEqual(105);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(141);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-resize-clone'));
+            const cloneElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-resize-clone'));
             expect(cloneElement.length).toEqual(3);
             cloneElement.forEach((element: HTMLElement) => {
                 expect(element).toBeTruthy();
@@ -755,33 +756,33 @@ xdescribe('Vertical view events resizing', () => {
 
     describe('RTL mode event resizing', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = { width: '500px', height: '500px', enableRtl: true, selectedDate: new Date(2018, 6, 5) };
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = { width: '500px', height: '500px', enableRtl: true, selectedDate: new Date(2018, 6, 5) };
             schObj = util.createSchedule(schOptions, dragResizeData, done);
         });
         afterAll(() => {
             util.destroy(schObj);
         });
 
-        it('bottom resizing', (done: Function) => {
+        it('bottom resizing', (done: DoneFn) => {
             schObj.resizeStop = (args: ResizeEventArgs) => args.cancel = false;
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 10, 0).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 12, 30).getTime());
-                let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
                 expect(resizeElement.offsetTop).toEqual(720);
                 expect(resizeElement.offsetHeight).toEqual(180);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-bottom-handler') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-bottom-handler') as HTMLElement;
             expect(resizeElement.offsetTop).toEqual(720);
             expect(resizeElement.offsetHeight).toEqual(108);
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 0, 25);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             triggerMouseEvent(resizeHandler, 'mousemove', 0, 25);
             triggerMouseEvent(resizeHandler, 'mousemove', 0, 50);
@@ -789,24 +790,24 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('top resizing', (done: Function) => {
+        it('top resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 9, 0).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 12, 30).getTime());
-                let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
                 expect(resizeElement.offsetTop).toEqual(648);
                 expect(resizeElement.offsetHeight).toEqual(252);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-top-handler') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-top-handler') as HTMLElement;
             expect(resizeElement.offsetTop).toEqual(720);
             expect(resizeElement.offsetHeight).toEqual(180);
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 0, -25);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             triggerMouseEvent(resizeHandler, 'mousemove', 0, -25);
             triggerMouseEvent(resizeHandler, 'mousemove', 0, -50);
@@ -814,21 +815,21 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('right resizing', (done: Function) => {
+        it('right resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[7] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[7] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 2).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 3).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_8"]')).offsetWidth).toEqual(53);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(53);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(22);
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
@@ -837,21 +838,21 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('left resizing', (done: Function) => {
+        it('left resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[7] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[7] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 1).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 3).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_8"]')).offsetWidth).toEqual(110);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(53);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(22);
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
@@ -863,8 +864,8 @@ xdescribe('Vertical view events resizing', () => {
 
     describe('Timescale disable mode event resizing', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
                 width: '500px', height: '500px',
                 selectedDate: new Date(2018, 6, 5), timeScale: { enable: false }
             };
@@ -874,21 +875,21 @@ xdescribe('Vertical view events resizing', () => {
             util.destroy(schObj);
         });
 
-        it('left resizing', (done: Function) => {
+        it('left resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[8] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[8] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 5).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 6).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_9"]')).offsetWidth).toEqual(68);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_9"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_9"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(139);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 50, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(54);
             triggerMouseEvent(resizeHandler, 'mousemove', 50, 0);
@@ -897,21 +898,21 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('right resizing', (done: Function) => {
+        it('right resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[7] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[7] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 2).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 4).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_8"]')).offsetWidth).toEqual(139);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(68);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(54);
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
@@ -920,27 +921,27 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('change firstDayOfWeek property value', (done: Function) => {
+        it('change firstDayOfWeek property value', (done: DoneFn) => {
             schObj.dataBound = () => done();
             schObj.firstDayOfWeek = 2;
             schObj.dataBind();
         });
 
-        it('right resizing with firstDayOfWeek property', (done: Function) => {
+        it('right resizing with firstDayOfWeek property', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[7] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[7] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 2).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 5).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_8"]')).offsetWidth).toEqual(139);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(68);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(54);
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
@@ -949,21 +950,21 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('left resizing with firstDayOfWeek property', (done: Function) => {
+        it('left resizing with firstDayOfWeek property', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[9] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[9] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 8, 10).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 8, 11).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_10"]')).offsetWidth).toEqual(68);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_10"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_10"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(210);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 50, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(54);
             triggerMouseEvent(resizeHandler, 'mousemove', 50, 0);
@@ -975,35 +976,35 @@ xdescribe('Vertical view events resizing', () => {
 
     describe('Adaptive mode event resizing', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = { width: 300, height: 500, selectedDate: new Date(2018, 6, 5) };
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = { width: 300, height: 500, selectedDate: new Date(2018, 6, 5) };
             schObj = util.createSchedule(schOptions, dragResizeData, done);
         });
         afterAll(() => {
             util.destroy(schObj);
         });
 
-        it('bottom resizing', (done: Function) => {
+        it('bottom resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 10, 0).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 12, 30).getTime());
-                let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
                 expect(resizeElement.offsetTop).toEqual(720);
                 expect(resizeElement.offsetHeight).toEqual(180);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-bottom-handler') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-bottom-handler') as HTMLElement;
             expect(resizeElement.offsetTop).toEqual(720);
             expect(resizeElement.offsetHeight).toEqual(108);
             schObj.isAdaptive = true;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 0, 25);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
-            let timeIndicator: HTMLElement = schObj.element.querySelector('.e-clone-time-indicator') as HTMLElement;
+            const timeIndicator: HTMLElement = schObj.element.querySelector('.e-clone-time-indicator') as HTMLElement;
             expect(timeIndicator).toBeTruthy();
             triggerMouseEvent(resizeHandler, 'mousemove', 0, 25);
             triggerMouseEvent(resizeHandler, 'mousemove', 0, 50);
@@ -1013,27 +1014,27 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('top resizing', (done: Function) => {
+        it('top resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 9, 0).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 12, 30).getTime());
-                let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
                 expect(resizeElement.offsetTop).toEqual(648);
                 expect(resizeElement.offsetHeight).toEqual(252);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-top-handler') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-top-handler') as HTMLElement;
             expect(resizeElement.offsetTop).toEqual(720);
             expect(resizeElement.offsetHeight).toEqual(180);
             schObj.isAdaptive = true;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 0, -25);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
-            let timeIndicator: HTMLElement = schObj.element.querySelector('.e-clone-time-indicator') as HTMLElement;
+            const timeIndicator: HTMLElement = schObj.element.querySelector('.e-clone-time-indicator') as HTMLElement;
             expect(timeIndicator).toBeTruthy();
             triggerMouseEvent(resizeHandler, 'mousemove', 0, -25);
             triggerMouseEvent(resizeHandler, 'mousemove', 0, -50);
@@ -1043,22 +1044,22 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('left resizing', (done: Function) => {
+        it('left resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[7] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[7] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 2).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 3).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_8"]')).offsetWidth).toEqual(33);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(33);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
             schObj.isAdaptive = true;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', -25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(22);
             triggerMouseEvent(resizeHandler, 'mousemove', -25, 0);
@@ -1068,22 +1069,22 @@ xdescribe('Vertical view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('right resizing', (done: Function) => {
+        it('right resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[7] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[7] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 2).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 5).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_8"]')).offsetWidth).toEqual(105);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(33);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
             schObj.isAdaptive = true;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(22);
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
@@ -1098,8 +1099,8 @@ xdescribe('Vertical view events resizing', () => {
 describe('Timeline view events resizing with interval 10 mins', () => {
     describe('Default schedule events', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
                 width: '500px', height: '500px', selectedDate: new Date(2018, 4, 1),
                 views: ['TimelineDay']
             };
@@ -1108,22 +1109,22 @@ describe('Timeline view events resizing with interval 10 mins', () => {
         afterAll(() => {
             util.destroy(schObj);
         });
-        it('left resizing', (done: Function) => {
+        it('left resizing', (done: DoneFn) => {
             schObj.resizeStart = (args: ResizeEventArgs) => args.interval = 10;
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 4, 1, 10, 40).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 4, 1, 12, 30).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_1"]')).offsetWidth).toEqual(183);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(250);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 20, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(38);
             expect(cloneElement.offsetTop).toEqual(202);
@@ -1137,8 +1138,8 @@ describe('Timeline view events resizing with interval 10 mins', () => {
 xdescribe('Timeline view events resizing', () => {
     describe('Default schedule events', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
                 width: '500px', height: '500px', selectedDate: new Date(2018, 4, 1),
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth']
             };
@@ -1150,14 +1151,14 @@ xdescribe('Timeline view events resizing', () => {
 
         it('resizeStart event', () => {
             schObj.resizeStart = (args: ResizeEventArgs) => args.cancel = true;
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_11"] .e-left-handler') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_11"] .e-left-handler') as HTMLElement;
             triggerMouseEvent(resizeElement, 'mousedown');
         });
 
         it('resizeStop event', () => {
             schObj.resizeStart = (args: ResizeEventArgs) => args.cancel = false;
             schObj.resizeStop = (args: ResizeEventArgs) => args.cancel = true;
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_11"] .e-left-handler') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_11"] .e-left-handler') as HTMLElement;
             triggerMouseEvent(resizeElement, 'mousedown');
             triggerMouseEvent(resizeElement, 'mousemove', -25, 0);
             expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(1);
@@ -1167,22 +1168,22 @@ xdescribe('Timeline view events resizing', () => {
             triggerMouseEvent(resizeElement, 'mouseup');
         });
 
-        it('right resizing', (done: Function) => {
+        it('right resizing', (done: DoneFn) => {
             schObj.resizeStop = (args: ResizeEventArgs) => args.cancel = false;
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 4, 1, 10).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 4, 1, 13).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_1"]')).offsetWidth).toEqual(300);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(250);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(38);
             expect(cloneElement.offsetTop).toEqual(202);
@@ -1192,21 +1193,21 @@ xdescribe('Timeline view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('left resizing', (done: Function) => {
+        it('left resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 4, 1, 11, 30).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 4, 1, 13).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_1"]')).offsetWidth).toEqual(150);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(300);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 50, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(38);
             expect(cloneElement.offsetTop).toEqual(202);
@@ -1219,8 +1220,8 @@ xdescribe('Timeline view events resizing', () => {
 
     describe('month view events resizing', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
                 width: '500px', height: '500px', currentView: 'TimelineMonth', selectedDate: new Date(2018, 4, 1),
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth']
             };
@@ -1230,24 +1231,24 @@ xdescribe('Timeline view events resizing', () => {
             util.destroy(schObj);
         });
 
-        it('right resizing', (done: Function) => {
+        it('right resizing', (done: DoneFn) => {
             schObj.resizeStop = (args: ResizeEventArgs) => args.cancel = false;
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 4, 1, 10).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 4, 3, 12, 30).getTime());
-                let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
                 expect(resizeElement.offsetWidth).toEqual(210);
                 expect(resizeElement.offsetTop).toEqual(202);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(70);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(38);
             expect(cloneElement.offsetTop).toEqual(202);
@@ -1257,23 +1258,23 @@ xdescribe('Timeline view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('left resizing at left end side', (done: Function) => {
+        it('left resizing at left end side', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 4, 1, 10).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 4, 3, 12, 30).getTime());
-                let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
                 expect(resizeElement.offsetWidth).toEqual(210);
                 expect(resizeElement.offsetTop).toEqual(202);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(210);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', -25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(38);
             expect(cloneElement.offsetTop).toEqual(202);
@@ -1283,23 +1284,23 @@ xdescribe('Timeline view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('left resizing', (done: Function) => {
+        it('left resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 4, 2, 10).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 4, 3, 12, 30).getTime());
-                let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
                 expect(resizeElement.offsetWidth).toEqual(140);
                 expect(resizeElement.offsetTop).toEqual(2);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(210);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(38);
             expect(cloneElement.offsetTop).toEqual(202);
@@ -1312,8 +1313,8 @@ xdescribe('Timeline view events resizing', () => {
 
     describe('RTL mode events resizing', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
                 width: '500px', height: '500px', enableRtl: true, selectedDate: new Date(2018, 4, 1),
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth']
             };
@@ -1323,25 +1324,25 @@ xdescribe('Timeline view events resizing', () => {
             util.destroy(schObj);
         });
 
-        it('right resizing', (done: Function) => {
+        it('right resizing', (done: DoneFn) => {
             schObj.element.querySelector('.e-content-wrap').scrollLeft = 750;
             schObj.resizeStop = (args: ResizeEventArgs) => args.cancel = false;
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[10] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[10] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 4, 1, 13).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 4, 1, 15).getTime());
-                let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_11"]') as HTMLElement;
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_11"]') as HTMLElement;
                 expect(resizeElement.offsetWidth).toEqual(200);
                 expect(resizeElement.offsetTop).toEqual(2);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_11"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_11"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(100);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', -25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(38);
             expect(cloneElement.offsetTop).toEqual(2);
@@ -1351,24 +1352,24 @@ xdescribe('Timeline view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('left resizing', (done: Function) => {
+        it('left resizing', (done: DoneFn) => {
             schObj.element.querySelector('.e-content-wrap').scrollLeft = 750;
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[12] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[12] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 4, 1, 12).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 4, 1, 14).getTime());
-                let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_13"]') as HTMLElement;
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_13"]') as HTMLElement;
                 expect(resizeElement.offsetWidth).toEqual(200);
                 expect(resizeElement.offsetTop).toEqual(2);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_13"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_13"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(100);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(38);
             expect(cloneElement.offsetTop).toEqual(122);
@@ -1381,8 +1382,8 @@ xdescribe('Timeline view events resizing', () => {
 
     describe('Resource Grouping Header bar customization', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
                 width: '500px',
                 height: '500px',
                 selectedDate: new Date(2017, 10, 1),
@@ -1400,24 +1401,24 @@ xdescribe('Timeline view events resizing', () => {
             util.destroy(schObj);
         });
 
-        it('right resizing', (done: Function) => {
+        it('right resizing', (done: DoneFn) => {
             schObj.resizeStop = (args: ResizeEventArgs) => args.cancel = false;
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2017, 9, 29, 10).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2017, 9, 31, 11, 30).getTime());
-                let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
                 expect(resizeElement.offsetWidth).toEqual(213);
                 expect(resizeElement.offsetTop).toEqual(2);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(71);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(38);
             expect(cloneElement.offsetTop).toEqual(2);
@@ -1427,23 +1428,23 @@ xdescribe('Timeline view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('left resizing', (done: Function) => {
+        it('left resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2017, 9, 29, 10).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2017, 9, 31, 11, 30).getTime());
-                let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
                 expect(resizeElement.offsetWidth).toEqual(213);
                 expect(resizeElement.offsetTop).toEqual(2);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(213);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(38);
             expect(cloneElement.offsetWidth).toEqual(213);
@@ -1454,13 +1455,13 @@ xdescribe('Timeline view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('month view testing', (done: Function) => {
+        it('month view testing', (done: DoneFn) => {
             schObj.dataBound = () => done();
             schObj.currentView = 'TimelineMonth';
             schObj.dataBind();
         });
 
-        it('header rows setmodel', (done: Function) => {
+        it('header rows setmodel', (done: DoneFn) => {
             schObj.dataBound = () => done();
             schObj.headerRows = [
                 { option: 'Date' },
@@ -1469,23 +1470,23 @@ xdescribe('Timeline view events resizing', () => {
             schObj.dataBind();
         });
 
-        it('right resizing in month view', (done: Function) => {
+        it('right resizing in month view', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[8] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[8] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2017, 10, 2, 10).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2017, 10, 4, 12, 30).getTime());
-                let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_9"]') as HTMLElement;
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_9"]') as HTMLElement;
                 expect(resizeElement.offsetWidth).toEqual(210);
                 expect(resizeElement.offsetTop).toEqual(2);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_9"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_9"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(70);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(38);
             expect(cloneElement.offsetWidth).toEqual(140);
@@ -1496,24 +1497,24 @@ xdescribe('Timeline view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('left resizing in month view', (done: Function) => {
+        it('left resizing in month view', (done: DoneFn) => {
             schObj.resizeStart = (args: ResizeEventArgs) => args.scroll.enable = false;
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[11] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[11] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2017, 10, 4, 9, 30).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2017, 10, 5, 5, 45).getTime());
-                let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_12"]') as HTMLElement;
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_12"]') as HTMLElement;
                 expect(resizeElement.offsetWidth).toEqual(140);
                 expect(resizeElement.offsetTop).toEqual(42);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_12"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_12"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(140);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', -25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             expect(cloneElement.offsetHeight).toEqual(38);
             expect(cloneElement.offsetWidth).toEqual(140);
@@ -1527,8 +1528,8 @@ xdescribe('Timeline view events resizing', () => {
 
     describe('Adaptive mode event resizing', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
                 width: '500px', height: '500px', selectedDate: new Date(2018, 6, 1),
                 currentView: 'TimelineWeek',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth']
@@ -1539,26 +1540,26 @@ xdescribe('Timeline view events resizing', () => {
             util.destroy(schObj);
         });
 
-        it('left resizing', (done: Function) => {
+        it('left resizing', (done: DoneFn) => {
             schObj.element.querySelector('.e-content-wrap').scrollLeft = 800;
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
                 expect(schObj.element.querySelectorAll('.e-clone-time-indicator').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 8, 30).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 11, 30).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_1"]')).offsetWidth).toEqual(300);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(150);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
             schObj.isAdaptive = true;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', -25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
-            let timeIndicator: HTMLElement = schObj.element.querySelector('.e-clone-time-indicator') as HTMLElement;
+            const timeIndicator: HTMLElement = schObj.element.querySelector('.e-clone-time-indicator') as HTMLElement;
             expect(timeIndicator).toBeTruthy();
             expect(cloneElement.offsetWidth).toEqual(200);
             expect(cloneElement.offsetHeight).toEqual(38);
@@ -1570,25 +1571,25 @@ xdescribe('Timeline view events resizing', () => {
             triggerMouseEvent(resizeHandler, 'mouseup');
         });
 
-        it('right resizing', (done: Function) => {
+        it('right resizing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
                 expect(schObj.element.querySelectorAll('.e-clone-time-indicator').length).toEqual(0);
-                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
                 expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 8, 30).getTime());
                 expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 13).getTime());
                 expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_1"]')).offsetWidth).toEqual(450);
                 done();
             };
-            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
             expect(resizeElement.offsetWidth).toEqual(300);
-            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
             schObj.isAdaptive = true;
             triggerMouseEvent(resizeHandler, 'mousedown');
             triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
-            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
-            let timeIndicator: HTMLElement = schObj.element.querySelector('.e-clone-time-indicator') as HTMLElement;
+            const timeIndicator: HTMLElement = schObj.element.querySelector('.e-clone-time-indicator') as HTMLElement;
             expect(timeIndicator).toBeTruthy();
             expect(cloneElement.offsetWidth).toEqual(350);
             expect(cloneElement.offsetHeight).toEqual(38);

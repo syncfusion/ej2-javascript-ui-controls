@@ -9,12 +9,14 @@ export interface BlazorAnimationModel {
 
     /**
      * Animation settings to be applied on the Tooltip, while it is being shown over the target.
+     *
      * @ignoreapilink
      */
     open?: TooltipAnimationSettings;
 
     /**
      * Animation settings to be applied on the Tooltip, when it is closed.
+     *
      * @ignoreapilink
      */
     close?: TooltipAnimationSettings;

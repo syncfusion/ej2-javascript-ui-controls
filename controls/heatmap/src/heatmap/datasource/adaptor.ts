@@ -18,7 +18,8 @@ import { Axis } from '../axis/axis';
 export class Data extends ChildProperty<Data> {
 
     /**
-     * Specifies the provided datasource is an JSON data. 
+     * Specifies the provided datasource is an JSON data.
+     *
      * @default false
      */
 
@@ -27,13 +28,15 @@ export class Data extends ChildProperty<Data> {
 
     /**
      * specifies Adaptor type
+     *
      * @default None
      */
     @Property('None')
     public adaptorType: AdaptorType;
 
     /**
-     * Specifies xAxis mapping. 
+     * Specifies xAxis mapping.
+     *
      * @default ''
      */
 
@@ -41,7 +44,8 @@ export class Data extends ChildProperty<Data> {
     public xDataMapping: string;
 
     /**
-     * Specifies yAxis mapping. 
+     * Specifies yAxis mapping.
+     *
      * @default ''
      */
 
@@ -49,7 +53,8 @@ export class Data extends ChildProperty<Data> {
     public yDataMapping: string;
 
     /**
-     * Specifies value mapping. 
+     * Specifies value mapping.
+     *
      * @default ''
      */
 
@@ -57,7 +62,7 @@ export class Data extends ChildProperty<Data> {
     public valueMapping: string;
 
     /**
-     * Specifies data mapping for size and color bubble type. 
+     * Specifies data mapping for size and color bubble type.
      */
     @Complex<BubbleDataModel>({}, BubbleData)
     public bubbleDataMapping: BubbleDataModel;
@@ -70,7 +75,7 @@ export class AdaptiveMinMax {
 }
 
 /**
- * 
+ *
  * The `Adaptor` module is used to handle JSON and Table data.
  */
 export class Adaptor {
@@ -78,7 +83,7 @@ export class Adaptor {
     public reconstructData: Object[][];
     public reconstructedXAxis: string[] = [];
     public reconstructedYAxis: string[] = [];
-    // tslint:disable-next-line:no-any 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private tempSplitDataCollection: any;
     public adaptiveXMinMax: AdaptiveMinMax = new AdaptiveMinMax();
     public adaptiveYMinMax: AdaptiveMinMax = new AdaptiveMinMax();
@@ -88,13 +93,15 @@ export class Adaptor {
 
     /**
      * Method to construct Two Dimentional Datasource.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
+
     public constructDatasource(dataSource: object, dataSourceSettings: DataModel): void {
         if (dataSourceSettings.adaptorType === 'Cell') {
-            let xAxis: AxisModel = this.heatMap.xAxis;
-            let yAxis: AxisModel = this.heatMap.yAxis;
+            const xAxis: AxisModel = this.heatMap.xAxis;
+            const yAxis: AxisModel = this.heatMap.yAxis;
             this.adaptiveXMinMax.min = xAxis.minimum;
             this.adaptiveXMinMax.max = xAxis.maximum;
             this.adaptiveYMinMax.min = yAxis.minimum;
@@ -124,13 +131,13 @@ export class Adaptor {
 
     /**
      * Method to construct Axis Collection.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     private constructAdaptiveAxis(): void {
-        let xAxis: AxisModel = this.heatMap.xAxis;
-        let yAxis: AxisModel = this.heatMap.yAxis;
-        let intervalType: string;
+        const xAxis: AxisModel = this.heatMap.xAxis;
+        const yAxis: AxisModel = this.heatMap.yAxis;
         if (xAxis.valueType === 'Numeric') {
             this.reconstructedXAxis = this.getNumericAxisCollection(this.adaptiveXMinMax.min, this.adaptiveXMinMax.max, xAxis.increment);
         }
@@ -151,12 +158,14 @@ export class Adaptor {
 
     /**
      * Method to calculate Numeric Axis Collection.
-     * @return {string[]}
+     *
+     * @returns {string[]}
      * @private
      */
+
     private getNumericAxisCollection(min: Object, max: Object, increment: number): string[] {
         let loopIndex: number = <number>min;
-        let tempAxisColl: string[] = [];
+        const tempAxisColl: string[] = [];
         while (loopIndex <= max) {
             tempAxisColl.push(loopIndex.toString());
             loopIndex = loopIndex + increment;
@@ -166,21 +175,25 @@ export class Adaptor {
 
     /**
      * Method to calculate DateTime Axis Collection.
-     * @return {string[]}
+     *
+     * @returns {string[]}
      * @private
      */
+
     private getDateAxisCollection(min: Object, max: Object, intervalType: string, increment: number): string[] {
-        let option: DateFormatOptions = {
+        const option: DateFormatOptions = {
             skeleton: 'full',
             type: 'dateTime'
         };
-        let dateParser: Function = this.heatMap.intl.getDateParser(option);
-        let dateFormatter: Function = this.heatMap.intl.getDateFormat(option);
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        const dateParser: Function = this.heatMap.intl.getDateParser(option);
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        const dateFormatter: Function = this.heatMap.intl.getDateFormat(option);
         min = Date.parse(dateParser(dateFormatter(new Date(
             DataUtil.parse.parseJson({ val: min }).val
         ))));
         let tempInterval: number = <number>min;
-        let tempAxisColl: string[] = [];
+        const tempAxisColl: string[] = [];
         while (tempInterval <= max) {
             tempAxisColl.push(new Date(tempInterval).toString());
             tempInterval = increaseDateTimeInterval(tempInterval, 1, intervalType, increment).getTime();
@@ -190,31 +203,33 @@ export class Adaptor {
 
     /**
      * Method to calculate Maximum and Minimum Value from datasource.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
+
     private getMinMaxValue(dataSource: object, adapData: DataModel, xAxis: AxisModel, yAxis: AxisModel): void {
-        let data: Object[][] = <Object[][]>dataSource;
-        let label: string[] = Object.keys(data[0]);
+        const data: Object[][] = <Object[][]>dataSource;
+        const label: string[] = Object.keys(data[0]);
         if (data.length > 0) {
             this.adaptiveXMinMax.min = !isNullOrUndefined(xAxis.minimum) ? xAxis.minimum : adapData.isJsonData ?
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 data[0][<any>label[0]] : data[0][0];
             this.adaptiveYMinMax.min = !isNullOrUndefined(yAxis.minimum) ? yAxis.minimum : adapData.isJsonData ?
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 data[0][<any>label[1]] : data[0][1];
             this.adaptiveXMinMax.max = !isNullOrUndefined(xAxis.maximum) ? xAxis.maximum : adapData.isJsonData ?
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 data[0][<any>label[0]] : data[0][0];
             this.adaptiveYMinMax.max = !isNullOrUndefined(yAxis.maximum) ? yAxis.maximum : adapData.isJsonData ?
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 data[0][<any>label[1]] : data[0][1];
         }
         for (let dataIndex: number = 0; dataIndex < data.length; dataIndex++) {
-            // tslint:disable-next-line:no-any
-            let xDataIndex: Object = adapData.isJsonData ? data[dataIndex][<any>label[0]] : data[dataIndex][0];
-            // tslint:disable-next-line:no-any
-            let yDataIndex: Object = adapData.isJsonData ? data[dataIndex][<any>label[1]] : data[dataIndex][1];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const xDataIndex: Object = adapData.isJsonData ? data[dataIndex][<any>label[0]] : data[dataIndex][0];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const yDataIndex: Object = adapData.isJsonData ? data[dataIndex][<any>label[1]] : data[dataIndex][1];
             if (xDataIndex < this.adaptiveXMinMax.min && isNullOrUndefined(xAxis.minimum)) {
                 this.adaptiveXMinMax.min = xDataIndex;
             }
@@ -232,14 +247,16 @@ export class Adaptor {
 
     /**
      * Method to process Cell datasource.
-     * @return {Object}
+     *
+     * @returns {Object}
      * @private
      */
+
     private processCellData(dataSource: object): Object {
-        // tslint:disable-next-line:no-any 
-        let tempDataCollection: any = dataSource;
-        let xLabels: string[] = this.reconstructedXAxis;
-        let yLabels: string[] = this.reconstructedYAxis;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const tempDataCollection: any = dataSource;
+        const xLabels: string[] = this.reconstructedXAxis;
+        const yLabels: string[] = this.reconstructedYAxis;
         let currentDataXIndex: number = 0;
         let currentDataYIndex: number = 0;
         this.reconstructData = [];
@@ -274,21 +291,23 @@ export class Adaptor {
 
     /**
      * Method to process JSON Cell datasource.
-     * @return {Object}
+     *
+     * @returns {Object}
      * @private
      */
+
     private processJsonCellData(dataSource: object, adaptordata: DataModel): Object {
-        // tslint:disable-next-line:no-any 
-        let tempDataCollection: any = dataSource;
-        let xAxisLabels : string[] = this.heatMap.xAxis.labels ?  this.heatMap.xAxis.labels : [];
-        let yAxisLabels : string[] = this.heatMap.yAxis.labels ? this.heatMap.yAxis.labels : [];
-        let axisCollections : Axis[] = this.heatMap.axisCollections;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const tempDataCollection: any = dataSource;
+        const xAxisLabels : string[] = this.heatMap.xAxis.labels ?  this.heatMap.xAxis.labels : [];
+        const yAxisLabels : string[] = this.heatMap.yAxis.labels ? this.heatMap.yAxis.labels : [];
+        const axisCollections : Axis[] = this.heatMap.axisCollections;
         if ( xAxisLabels.length === 0 || yAxisLabels.length === 0) {
             this.generateAxisLabels(dataSource, adaptordata);
         }
-        let xLabels: (string | Number | Date)[] = (this.heatMap.xAxis.valueType === 'Category') ? (xAxisLabels.length > 0 ?
+        const xLabels: (string | number | Date)[] = (this.heatMap.xAxis.valueType === 'Category') ? (xAxisLabels.length > 0 ?
             this.heatMap.xAxis.labels : axisCollections[0].jsonCellLabel) : axisCollections[0].labelValue;
-        let yLabels: (string | Number | Date)[] = (this.heatMap.yAxis.valueType === 'Category') ? (yAxisLabels.length > 0 ?
+        const yLabels: (string | number | Date)[] = (this.heatMap.yAxis.valueType === 'Category') ? (yAxisLabels.length > 0 ?
             this.heatMap.yAxis.labels : axisCollections[1].jsonCellLabel) : axisCollections[1].labelValue;
         let currentDataXIndex: number | string = 0;
         let currentDataYIndex: number | string = 0;
@@ -326,20 +345,22 @@ export class Adaptor {
 
     /**
      * Method to generate axis labels when labels are not given.
-     * @return {string}
+     *
+     * @returns {string}
      * @private
      */
+
     private generateAxisLabels(dataSource: object, adaptordata: DataModel) : void {
-        // tslint:disable-next-line:no-any 
-        let tempDataCollection: any = dataSource;
-        let xLabels: string[] = this.heatMap.xAxis.labels ? this.heatMap.xAxis.labels : [];
-        let yLabels: string[] = this.heatMap.yAxis.labels ? this.heatMap.yAxis.labels : [];
-        let hasXLabels: boolean = xLabels.length > 0 ? true : false;
-        let hasYLabels: boolean = yLabels.length > 0 ? true : false;
-        let axisCollection: Axis[] = this.heatMap.axisCollections;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const tempDataCollection: any = dataSource;
+        const xLabels: string[] = this.heatMap.xAxis.labels ? this.heatMap.xAxis.labels : [];
+        const yLabels: string[] = this.heatMap.yAxis.labels ? this.heatMap.yAxis.labels : [];
+        const hasXLabels: boolean = xLabels.length > 0 ? true : false;
+        const hasYLabels: boolean = yLabels.length > 0 ? true : false;
+        const axisCollection: Axis[] = this.heatMap.axisCollections;
         for (let index: number = 0; index < axisCollection.length; index++) {
-            let valueType: string = axisCollection[index].valueType;
-            let axis: Axis = axisCollection[index];
+            const valueType: string = axisCollection[index].valueType;
+            const axis: Axis = axisCollection[index];
             if (valueType === 'Category') {
                 let hasLabels: boolean;
                 let dataMapping: string;
@@ -356,7 +377,7 @@ export class Adaptor {
                 if (!hasLabels) {
                     for (let i: number = 0; i < tempDataCollection.length; i++) {
                         if (dataMapping in tempDataCollection[i]) {
-                            let xValue: string = tempDataCollection[i][dataMapping].toString();
+                            const xValue: string = tempDataCollection[i][dataMapping].toString();
                             if (labels.indexOf(xValue.toString()) === -1) {
                                 labels.push(xValue);
                             }
@@ -375,12 +396,14 @@ export class Adaptor {
 
     /**
      * Method to get data from complex mapping.
-     * @return {number|string}
+     *
+     * @returns {number|string}
      * @private
      */
+
     private getSplitDataValue(
-        // tslint:disable-next-line:no-any 
-        tempSplitDataCollection: any, adaptordata: DataModel, labels: (string | Number | Date)[],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        tempSplitDataCollection: any, adaptordata: DataModel, labels: (string | number | Date)[],
         tempSplitData: string[], valueType: string): number | string {
         let value: number | string = -1;
         this.tempSplitDataCollection = tempSplitDataCollection;
@@ -403,16 +426,18 @@ export class Adaptor {
 
     /**
      * Method to process JSON Table datasource.
-     * @return {Object}
+     *
+     * @returns {Object}
      * @private
      */
+
     private processJsonTableData(dataSource: object, adaptordata: DataModel): Object {
-        // tslint:disable-next-line:no-any 
-        let tempDataCollection: any = dataSource;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const tempDataCollection: any = dataSource;
         let currentDataXIndex: number | string = 0;
         let currentDataYIndex: number | string = 0;
-        let xLabels: string[] = this.heatMap.xAxis.labels ? this.heatMap.xAxis.labels : [];
-        let yLabels: string[] = this.heatMap.yAxis.labels ? this.heatMap.yAxis.labels : [];
+        const xLabels: string[] = this.heatMap.xAxis.labels ? this.heatMap.xAxis.labels : [];
+        const yLabels: string[] = this.heatMap.yAxis.labels ? this.heatMap.yAxis.labels : [];
         let key: string;
         if (tempDataCollection.length) {
             this.reconstructData = [];
@@ -443,18 +468,21 @@ export class Adaptor {
 
     /**
      * To destroy the Adaptor.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(heatMap: HeatMap): void {
+
+    public destroy(): void {
         /**
          * No Lines
          */
-    };
+    }
 
     /**
      * To get Module name
      */
+
     protected getModuleName(): string {
         return 'Adaptor';
     }

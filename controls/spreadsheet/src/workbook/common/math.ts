@@ -2,21 +2,26 @@ import { isNullOrUndefined, getDefaultDateObject, Internationalization } from '@
 
 /**
  * @hidden
+ * @param {number} val - Specifies the val.
+ * @returns {string} - To get Fraction.
  */
 export function toFraction(val: number): string {
-    let strVal: string = val.toString();
+    const strVal: string = val.toString();
     if (val === parseInt(strVal, 10)) {
         return parseInt(strVal, 10) + '  ';
     } else {
-        let top: string | number = strVal.indexOf('.') > -1 ? strVal.split('.')[1] : 0;
-        let bottom: number = Math.pow(10, top.toString().replace('-', '').length);
-        let abs: number = Math.abs(getGcd(top, bottom));
+        const top: string | number = strVal.indexOf('.') > -1 ? strVal.split('.')[1] : 0;
+        const bottom: number = Math.pow(10, top.toString().replace('-', '').length);
+        const abs: number = Math.abs(getGcd(top, bottom));
         return (top as number / abs) + '/' + (bottom / abs);
     }
 }
 
 /**
  * @hidden
+ * @param {string | number} a - Specifies the a.
+ * @param {string | number} b - Specifies the b.
+ * @returns {number} - To get Gcd.
  */
 export function getGcd(a: string | number, b: string | number): number {
     a = Number(a);
@@ -26,6 +31,8 @@ export function getGcd(a: string | number, b: string | number): number {
 
 /**
  * @hidden
+ * @param {number} val - Specifies the value.
+ * @returns {Date} - Returns Date.
  */
 export function intToDate(val: number): Date {
     val = Number(val);
@@ -39,22 +46,24 @@ export function intToDate(val: number): Date {
 /**
  * @hidden
  */
-/* tslint:disable no-any */
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 export function dateToInt(val: any, isTime?: boolean): number {
-    let startDate: Date = new Date('01/01/1900');
-    let date: Date = isDateTime(val) ? val : new Date(val);
-    let startDateUTC: number = Date.UTC(
+    const startDate: Date = new Date('01/01/1900');
+    const date: Date = isDateTime(val) ? val : new Date(val);
+    const startDateUTC: number = Date.UTC(
         startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), startDate.getHours(),
         startDate.getMinutes(), startDate.getSeconds(), startDate.getMilliseconds());
-    let dateUTC: number = Date.UTC(
+    const dateUTC: number = Date.UTC(
         date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(),
         date.getSeconds(), date.getMilliseconds());
-    let diffDays: number = ((dateUTC - startDateUTC) / (1000 * 3600 * 24));
+    const diffDays: number = ((dateUTC - startDateUTC) / (1000 * 3600 * 24));
     return isTime ? diffDays : parseInt(diffDays.toString(), 10) + 2;
 }
 
 /**
  * @hidden
+ * @param {any} date - Specifies the date.
+ * @returns {boolean} - Returns boolean value.
  */
 export function isDateTime(date: any): boolean {
     return Object.prototype.toString.call(date) === '[object Date]' && !isNaN(date.valueOf());
@@ -62,6 +71,9 @@ export function isDateTime(date: any): boolean {
 
 /**
  * @hidden
+ * @param {string} val - Specifies the value.
+ * @returns {boolean} - Returns boolean value.
+
  */
 export function isNumber(val: string | number): boolean {
     return val as number - parseFloat(val as string) >= 0;
@@ -69,11 +81,15 @@ export function isNumber(val: string | number): boolean {
 
 /**
  * @hidden
+ * @param {Date | string | number} text - Specifies the text.
+ * @param {Internationalization} intl - Specifies the Internationalization.
+ * @param {string} format - Specifies the string.
+ * @returns {ToDateArgs} - Returns Date format.
  */
 export function toDate(text: Date | string | number, intl: Internationalization, format?: string): ToDateArgs {
-    let defaultDateFormats: Object = getDefaultDateObject();
+    const defaultDateFormats: Object = getDefaultDateObject();
     let availabelDateTimeFormat: Object = (defaultDateFormats as any).dateTimeFormats.availableFormats;
-    let dObj: ToDateArgs = { dateObj: null, isCustom: false, type: '' };
+    const dObj: ToDateArgs = { dateObj: null, isCustom: false, type: '' };
     if (typeof text === 'string') {
         text = text.toUpperCase();
     }
@@ -85,7 +101,7 @@ export function toDate(text: Date | string | number, intl: Internationalization,
         }
     }
     if (isNullOrUndefined(dObj.dateObj)) {
-        for (let key of Object.keys((defaultDateFormats as any).dateFormats)) {
+        for (const key of Object.keys((defaultDateFormats as any).dateFormats)) {
             dObj.dateObj = intl.parseDate(text as string, { format: (defaultDateFormats as any).dateFormats[key], skeleton: key });
             if (dObj.dateObj) {
                 dObj.type = 'date';
@@ -94,12 +110,12 @@ export function toDate(text: Date | string | number, intl: Internationalization,
             }
         }
         if (isNullOrUndefined(dObj.dateObj)) {
-            for (let key of Object.keys(availabelDateTimeFormat)) {
+            for (const key of Object.keys(availabelDateTimeFormat)) {
                 dObj.dateObj = intl.parseDate(text as string, { format: availabelDateTimeFormat[key], skeleton: key });
                 if (dObj.dateObj) {
                     dObj.type = text.toString().indexOf(':') > -1 ? 'time' : 'datetime';
                     if (dObj.type === 'time') {
-                        let time: string = dObj.dateObj.toLocaleTimeString();
+                        const time: string = dObj.dateObj.toLocaleTimeString();
                         dObj.dateObj = new Date('01/01/1900 ' + time);
                     }
                     dObj.isCustom = true;
@@ -108,10 +124,10 @@ export function toDate(text: Date | string | number, intl: Internationalization,
             }
         }
         if (isNullOrUndefined(dObj.dateObj)) {
-            for (let key of Object.keys((defaultDateFormats as any).timeFormats)) {
+            for (const key of Object.keys((defaultDateFormats as any).timeFormats)) {
                 dObj.dateObj = intl.parseDate(text as string, { format: (defaultDateFormats as any).timeFormats[key], skeleton: key });
                 if (dObj.dateObj) {
-                    let time: string = dObj.dateObj.toLocaleTimeString();
+                    const time: string = dObj.dateObj.toLocaleTimeString();
                     dObj.dateObj = new Date('01/01/1900 ' + time);
                     dObj.type = 'time';
                     dObj.isCustom = false;

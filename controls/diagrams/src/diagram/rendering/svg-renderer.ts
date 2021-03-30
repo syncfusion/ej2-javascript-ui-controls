@@ -17,19 +17,31 @@ import { createSvgElement, createHtmlElement, getBackgroundLayerSvg } from '../u
 import { removeGradient, checkBrowserInfo } from '../utility/diagram-util';
 import { Container } from '../core/containers/container';
 import { isBlazor } from '@syncfusion/ej2-base';
-/** 
+/**
  * SVG Renderer
  */
 
 /** @private */
 export class SvgRenderer implements IRenderer {
-    /**   @private  */
+
+    /**
+     * Draw the shawdow  for the rectangle shape in diagram \
+     *
+     *  @returns {void}  Draw the shawdow  for the rectangle shape in diagram .\
+     *
+     *  @param { SVGElement} options - Provide the base attributes .
+     *  @param { RectAttributes} canvas - Provide the canvas values .
+     *  @param { string} collection - Provide the collection value.
+     *  @param { boolean} parentSvg - Provide the parent SVG values .
+     *  @private
+     */
     public renderShadow(options: BaseAttributes, canvas: SVGElement, collection: Object[] = null, parentSvg?: SVGSVGElement): void {
-        let pointModel: PointModel = { x: 0, y: 0 };
-        let point: PointModel = Point.transform(pointModel, options.shadow.angle, options.shadow.distance);
-        let tX: number = options.x + point.x; let tY: number = options.y + point.y;
-        let pivotX: number = tX + options.width * options.pivotX;
-        let pivotY: number = tY + options.height * options.pivotY; let type: string;
+        const pointModel: PointModel = { x: 0, y: 0 };
+        const point: PointModel = Point.transform(pointModel, options.shadow.angle, options.shadow.distance);
+        //const tX: number = options.x + point.x; const tY: number = options.y + point.y;
+        //let pivotX: number = tX + options.width * options.pivotX;
+        //let pivotY: number = tY + options.height * options.pivotY;
+        let type: string;
         let shadowElement: SVGPathElement | SVGRectElement;
         if (parentSvg) {
             shadowElement = parentSvg.getElementById(canvas.id + '_shadow') as SVGPathElement;
@@ -39,7 +51,7 @@ export class SvgRenderer implements IRenderer {
             shadowElement = document.createElementNS('http://www.w3.org/2000/svg', type) as SVGRectElement | SVGPathElement;
             canvas.appendChild(shadowElement);
         }
-        let attr: Object = {
+        const attr: Object = {
             'id': canvas.id + '_shadow', 'fill': options.shadow.color, 'stroke': options.shadow.color,
             'opacity': options.shadow.opacity.toString(),
             'transform': 'rotate(' + options.angle + ',' + (options.x + options.width * options.pivotX) + ','
@@ -48,7 +60,7 @@ export class SvgRenderer implements IRenderer {
 
         };
         if (parentSvg) {
-            let svgContainer: HTMLElement = parentSvg.getElementById(canvas.id) as HTMLElement;
+            const svgContainer: HTMLElement = parentSvg.getElementById(canvas.id) as HTMLElement;
             if (svgContainer) {
                 svgContainer.insertBefore(shadowElement, svgContainer.firstChild);
             }
@@ -62,17 +74,39 @@ export class SvgRenderer implements IRenderer {
     }
 
 
-    /**   @private  */
+
+    /**
+     * Return the dashed array values \
+     *
+     *  @returns {number[]}  Return the dashed array values .\
+     *  @param { SVGElement} dashArray - Return the dashed array values .
+     *  @private
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public parseDashArray(dashArray: string): number[] {
-        let dashes: number[] = [];
+        const dashes: number[] = [];
 
         return dashes;
     }
 
-    /**   @private  */
+
+    /**
+     * Draw the Rectangle for the diagram \
+     *
+     *  @returns {void}  Draw the Rectangle for the diagram .\
+     *
+     *  @param { SVGElement} svg - Provide the SVG .
+     *  @param { RectAttributes} options - Provide the Rect attributes .
+     *  @param { string} diagramId - Provide the diagram id .
+     *  @param { boolean} onlyRect - Provide the boolean attribute for the shawdow rendering  .
+     *  @param { boolean} isSelector - Provide the selector possobilities .
+     *  @param { SVGSVGElement} parentSvg - Provide the parent svg element .
+     *  @param { Object} ariaLabel - Provide the Arial label attributes .
+     *  @private
+     */
     public drawRectangle(
         svg: SVGElement, options: RectAttributes, diagramId: string, onlyRect?: boolean,
-        isSelector?: Boolean, parentSvg?: SVGSVGElement, ariaLabel?: Object):
+        isSelector?: boolean, parentSvg?: SVGSVGElement, ariaLabel?: Object):
         void {
         if (options.shadow && !onlyRect) {
             this.renderShadow(options, svg, undefined, parentSvg);
@@ -98,7 +132,7 @@ export class SvgRenderer implements IRenderer {
         }
 
 
-        let attr: Object = {
+        const attr: Object = {
             'id': id, 'x': options.x.toString(), 'y': options.y.toString(), 'width': options.width.toString(),
             'height': options.height.toString(), 'visibility': options.visible ? 'visible' : 'hidden',
             'transform': 'rotate(' + options.angle + ','
@@ -109,7 +143,7 @@ export class SvgRenderer implements IRenderer {
         if (options.class) {
             attr['class'] = options.class;
         }
-        let poiterEvents: string = 'pointer-events';
+        const poiterEvents: string = 'pointer-events';
         if (!ariaLabel) {
             attr[poiterEvents] = 'none';
         }
@@ -117,12 +151,19 @@ export class SvgRenderer implements IRenderer {
         this.setSvgStyle(rect, options as StyleAttributes, diagramId);
     }
 
-    /**   @private  */
+    /**
+     * Update the diagram selection region \
+     *
+     *  @returns {void}  Update the diagram selection region .\
+     *
+     *  @param { SVGElement} gElement - Provide the element type.
+     *  @param { RectAttributes} options - Provide the Rect attributes .
+     *  @private
+     */
     public updateSelectionRegion(gElement: SVGElement, options: RectAttributes): void {
         let rect: SVGElement;
         rect = (gElement.parentNode as SVGSVGElement).getElementById(options.id) as SVGElement;
-        let attr: Object;
-        attr = {
+        const attr: Object = {
             'id': options.id, 'x': options.x.toString(), 'y': options.y.toString(), 'width': options.width.toString(),
             'height': options.height.toString(), 'transform': 'rotate(' + options.angle + ','
                 + (options.x + options.width * options.pivotX) + ',' + (options.y + options.height * options.pivotY) + ')',
@@ -136,20 +177,38 @@ export class SvgRenderer implements IRenderer {
         setAttributeSvg(rect, attr);
     }
 
-    /**   @private  */
+
+    /**
+     * Create the g element for the diagram \
+     *
+     *  @returns {SVGGElement}   Create the g element for the diagram .\
+     *
+     *  @param { SVGElement} elementType - Provide the element type.
+     *  @param { Object} attribute - Provide the attributes for the g element.
+     *  @private
+     */
     public createGElement(elementType: string, attribute: Object): SVGGElement {
-        let gElement: SVGGElement = createSvgElement(elementType, attribute) as SVGGElement;
+        const gElement: SVGGElement = createSvgElement(elementType, attribute) as SVGGElement;
         return gElement;
     }
 
-    /** @private */
+
+    /**
+     * Draw the line for the diagram\
+     *
+     *  @returns {void}  Draw the line for the diagram .\
+     *
+     *  @param { SVGElement} gElement - Provide the g element .
+     *  @param { LineAttributes} options - Provide the line element attributes .
+     *  @private
+     */
     public drawLine(gElement: SVGElement, options: LineAttributes): void {
-        let line: SVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        const line: SVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'line');
         this.setSvgStyle(line, options as StyleAttributes);
-        let pivotX: number = options.x + options.width * options.pivotX;
-        let pivotY: number = options.y + options.height * options.pivotY;
-        let kk: string = '';
-        let attr: Object = {
+        const pivotX: number = options.x + options.width * options.pivotX;
+        const pivotY: number = options.y + options.height * options.pivotY;
+        //const kk: string = '';
+        const attr: Object = {
             'id': options.id,
             'x1': options.startPoint.x + options.x,
             'y1': options.startPoint.y + options.y,
@@ -158,7 +217,7 @@ export class SvgRenderer implements IRenderer {
             'stroke': options.stroke,
             'stroke-width': options.strokeWidth.toString(), 'opacity': options.opacity.toString(),
             'transform': 'rotate(' + options.angle + ' ' + pivotX + ' ' + pivotY + ')',
-            'visibility': options.visible ? 'visible' : 'hidden',
+            'visibility': options.visible ? 'visible' : 'hidden'
         };
         if (options.class) {
             attr['class'] = options.class;
@@ -166,15 +225,26 @@ export class SvgRenderer implements IRenderer {
         setAttributeSvg(line, attr);
         gElement.appendChild(line);
     }
-    /** @private */
+
+    /**
+     * Draw the circle for the diagram\
+     *
+     *  @returns {void}  Draw the circle for the diagram .\
+     *
+     *  @param { SVGElement} gElement - Provide the g element .
+     *  @param { CircleAttributes} options - Provide the circle element attributes .
+     *  @param {string} enableSelector - Provide the selector constraints string .
+     *  @param {Object} ariaLabel - Provide arial label value .
+     *  @private
+     */
     public drawCircle(gElement: SVGElement, options: CircleAttributes, enableSelector?: number, ariaLabel?: Object): void {
-        let circle: SVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        const circle: SVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         this.setSvgStyle(circle, options as StyleAttributes);
         let classval: string = options.class || '';
         if (!enableSelector) {
             classval += ' e-disabled';
         }
-        let attr: Object = {
+        const attr: Object = {
             'id': options.id,
             'cx': options.centerX,
             'cy': options.centerY,
@@ -187,13 +257,26 @@ export class SvgRenderer implements IRenderer {
         setAttributeSvg(circle, attr);
         gElement.appendChild(circle);
     }
-    /**   @private  */
+
+    /**
+     * Draw the path element for the diagram\
+     *
+     *  @returns {void}  Draw the path element for the diagram .\
+     *
+     *  @param { SVGElement} svg - Provide the SVG element .
+     *  @param { PathAttributes} options - Provide the path element attributes .
+     *  @param {string} diagramId - Provide the diagram id .
+     *  @param {boolean} isSelector - Provide selector boolean value .
+     *  @param {SVGSVGElement} parentSvg - Provide the parent SVG element .
+     *  @param {Object} ariaLabel - Provide arial label value .
+     *  @private
+     */
     public drawPath(
-        svg: SVGElement, options: PathAttributes, diagramId: string, isSelector?: Boolean,
+        svg: SVGElement, options: PathAttributes, diagramId: string, isSelector?: boolean,
         parentSvg?: SVGSVGElement, ariaLabel?: Object): void {
-        let id: string;
-        let x: number = Math.floor((Math.random() * 10) + 1);
-        id = svg.id + '_shape' + x.toString();
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const x: number = Math.floor((Math.random() * 10) + 1);
+        //const id: string = svg.id + '_shape' + x.toString();
         let collection: Object[] = [];
         collection = processPathData(options.data);
         collection = pathSegmentCollection(collection);
@@ -216,7 +299,7 @@ export class SvgRenderer implements IRenderer {
             svg.appendChild(path);
         }
         this.renderPath(path, options, collection);
-        let attr: Object = {
+        const attr: Object = {
             'id': options.id, 'transform': 'rotate(' + options.angle + ',' + (options.x + options.width * options.pivotX) + ','
                 + (options.y + options.height * options.pivotY) + ')' + 'translate(' + (options.x) + ',' + (options.y) + ')',
             'visibility': options.visible ? 'visible' : 'hidden', 'opacity': options.opacity,
@@ -229,16 +312,26 @@ export class SvgRenderer implements IRenderer {
         this.setSvgStyle(path, options as StyleAttributes, diagramId);
     }
 
-    /**   @private  */
+
+    /**
+     * Draw the path element for the diagram\
+     *
+     *  @returns {void}  Draw the path element for the diagram .\
+     *
+     *  @param { SVGElement} svg - Provide the SVG element .
+     *  @param {PathAttributes} options - Provide the path element attributes .
+     *  @param {Object[]} collection - Provide the parent SVG element .
+     *  @private
+     */
     public renderPath(svg: SVGElement, options: PathAttributes, collection: Object[]): void {
         let x1: number; let y1: number;
         let x2: number; let y2: number;
         let x: number; let y: number;
         let length: number; let i: number;
-        let segments: Object[] = collection;
+        const segments: Object[] = collection;
         let d: string = '';
         for (x = 0, y = 0, i = 0, length = segments.length; i < length; ++i) {
-            let obj: Object = segments[i]; let segment: PathSegment = obj; let char: string = segment.command;
+            const obj: Object = segments[i]; const segment: PathSegment = obj; const char: string = segment.command;
             if ('x1' in segment) { x1 = segment.x1; }
             if ('x2' in segment) { x2 = segment.x2; }
             if ('y1' in segment) { y1 = segment.y1; }
@@ -246,27 +339,27 @@ export class SvgRenderer implements IRenderer {
             if ('x' in segment) { x = segment.x; }
             if ('y' in segment) { y = segment.y; }
             switch (char) {
-                case 'M':
-                    d = d + 'M' + x.toString() + ',' + y.toString() + ' ';
-                    break;
-                case 'L':
-                    d = d + 'L' + x.toString() + ',' + y.toString() + ' ';
-                    break;
-                case 'C':
-                    d = d + 'C' + x1.toString() + ',' + y1.toString() + ',' + x2.toString() + ',' + y2.toString() + ',';
-                    d += x.toString() + ',' + y.toString() + ' ';
-                    break;
-                case 'Q':
-                    d = d + 'Q' + x1.toString() + ',' + y1.toString() + ',' + x.toString() + ',' + y.toString() + ' ';
-                    break;
-                case 'A':
-                    d = d + 'A' + segment.r1.toString() + ',' + segment.r2.toString() + ',' + segment.angle.toString() + ',';
-                    d += segment.largeArc.toString() + ',' + segment.sweep + ',' + x.toString() + ',' + y.toString() + ' ';
-                    break;
-                case 'Z':
-                case 'z':
-                    d = d + 'Z' + ' ';
-                    break;
+            case 'M':
+                d = d + 'M' + x.toString() + ',' + y.toString() + ' ';
+                break;
+            case 'L':
+                d = d + 'L' + x.toString() + ',' + y.toString() + ' ';
+                break;
+            case 'C':
+                d = d + 'C' + x1.toString() + ',' + y1.toString() + ',' + x2.toString() + ',' + y2.toString() + ',';
+                d += x.toString() + ',' + y.toString() + ' ';
+                break;
+            case 'Q':
+                d = d + 'Q' + x1.toString() + ',' + y1.toString() + ',' + x.toString() + ',' + y.toString() + ' ';
+                break;
+            case 'A':
+                d = d + 'A' + segment.r1.toString() + ',' + segment.r2.toString() + ',' + segment.angle.toString() + ',';
+                d += segment.largeArc.toString() + ',' + segment.sweep + ',' + x.toString() + ',' + y.toString() + ' ';
+                break;
+            case 'Z':
+            case 'z':
+                d = d + 'Z' + ' ';
+                break;
             }
         }
         svg.setAttribute('d', d);
@@ -279,7 +372,21 @@ export class SvgRenderer implements IRenderer {
         text.style.fontFamily = options.fontFamily;
     }
 
-    /**   @private  */
+
+    /**
+     * Draw the text element for the diagram\
+     *
+     *  @returns {void}  Draw the text element for the diagram .\
+     *
+     *  @param { SVGElement} canvas - Provide the SVG element .
+     *  @param {TextAttributes} options - Provide the text element attributes .
+     *  @param {SVGSVGElement} parentSvg - Provide the parent SVG element .
+     *  @param {Object} ariaLabel - Provide the label properties .
+     *  @param {string} diagramId - Provide the diagram id .
+     *  @param {number} scaleValue - Provide the scale value .
+     *  @param {Container} parentNode - Provide the parent node .
+     *  @private
+     */
     public drawText(
         canvas: SVGElement, options: TextAttributes, parentSvg?: SVGSVGElement,
         ariaLabel?: Object, diagramId?: string, scaleValue?: number, parentNode?: Container): void {
@@ -312,7 +419,7 @@ export class SvgRenderer implements IRenderer {
             let pivotY: number = options.y + options.height * options.pivotY;
             let childNodesHeight: number = 0;
             if (options.doWrap || options.textOverflow !== 'Wrap') {
-                let innerHtmlTextElement: HTMLElement = document.getElementById(options.id + '_text');
+                const innerHtmlTextElement: HTMLElement = document.getElementById(options.id + '_text');
                 if (innerHtmlTextElement) {
                     innerHtmlTextElement.innerHTML = '';
                 }
@@ -334,11 +441,11 @@ export class SvgRenderer implements IRenderer {
                     offsetY = position.y + child.dy * (i) + ((options.fontSize) * 0.8);
                     if ((options.textOverflow === 'Clip' || options.textOverflow === 'Ellipsis') &&
                         (options.textWrapping === 'WrapWithOverflow' || options.textWrapping === 'Wrap') && parentNode) {
-                        let size: number = (options.isHorizontalLane) ? parentNode.actualSize.width : parentNode.actualSize.height;
+                        const size: number = (options.isHorizontalLane) ? parentNode.actualSize.width : parentNode.actualSize.height;
                         if (offsetY < size) {
                             if (options.textOverflow === 'Ellipsis' && childNodes[i + 1]) {
-                                let temp: SubTextElement = childNodes[i + 1];
-                                let y: number = position.y + temp.dy * (i + 1) + ((options.fontSize) * 0.8);
+                                const temp: SubTextElement = childNodes[i + 1];
+                                const y: number = position.y + temp.dy * (i + 1) + ((options.fontSize) * 0.8);
                                 if (y > size) {
                                     child.text = child.text.slice(0, child.text.length - 3);
                                     child.text = child.text.concat('...');
@@ -364,7 +471,7 @@ export class SvgRenderer implements IRenderer {
             if (options.textDecoration && options.textDecoration === 'LineThrough') {
                 options.textDecoration = wordBreakToString(options.textDecoration);
             }
-            let attr: Object = {
+            const attr: Object = {
                 'id': options.id + '_text', 'fill': options.color, 'visibility': options.visible ? 'visible' : 'hidden',
                 'text-decoration': options.textDecoration, 'transform': 'rotate(' + options.angle + ','
                     + (pivotX) + ',' + (pivotY) + ')'
@@ -384,9 +491,20 @@ export class SvgRenderer implements IRenderer {
         text.appendChild(tspanElement);
     }
 
-    /**   @private  */
+
+    /**
+     * Draw the image element for the diagram\
+     *
+     *  @returns {void} Draw the image element for the diagram .
+     *  @param { SVGElement | HTMLCanvasElement} canvas - Provide the SVG element .
+     *  @param {ImageAttributes} obj - Provide the image attributes .
+     *  @param {SVGSVGElement} parentSvg - Provide the parent SVG element .
+     *  @param {boolean} fromPalette - Provide the pointer event value .
+     *  @private
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public drawImage(canvas: SVGElement | HTMLCanvasElement, obj: ImageAttributes, parentSvg?: SVGSVGElement, fromPalette?: boolean): void {
-        let id: string = obj.id + '_image';
+        ///const id: string = obj.id + '_image';
 
         let image: SVGImageElement;
         if (parentSvg) {
@@ -396,18 +514,18 @@ export class SvgRenderer implements IRenderer {
             image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
             canvas.appendChild(image);
         }
-        let imageObj: HTMLImageElement = new Image();
+        const imageObj: HTMLImageElement = new Image();
         imageObj.src = obj.source;
         let scale: string = obj.scale !== 'None' ? obj.scale : '';
         if (isBlazor() && obj.alignment === 'None' && scale === 'Stretch') {
             scale = '';
         }
-        let imgAlign: string = obj.alignment;
+        const imgAlign: string = obj.alignment;
         let aspectRatio: string = imgAlign.charAt(0).toLowerCase() + imgAlign.slice(1);
         if (scale) {
             aspectRatio += ' ' + scale.charAt(0).toLowerCase() + scale.slice(1);
         }
-        let attr: Object = {
+        const attr: Object = {
             'id': obj.id + 'image', 'x': obj.x.toString(), 'y': obj.y.toString(), 'transform': 'rotate(' + obj.angle + ','
                 + (obj.x + obj.width * obj.pivotX) + ',' + (obj.y + obj.height * obj.pivotY) + ')',
             'width': obj.width.toString(), 'visibility': obj.visible ? 'visible' : 'hidden',
@@ -417,7 +535,17 @@ export class SvgRenderer implements IRenderer {
         image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imageObj.src.toString());
     }
 
-    /** @private */
+    /**
+     * Draw the HTML element for the diagram\
+     *
+     *  @returns {void} Draw the native element for the diagram.
+     *  @param {DiagramHtmlElement} element - Provide the element .
+     *  @param {HTMLElement} canvas - Provide the canvas element  .
+     *  @param {Transforms} transform - Provide the transform value .
+     *  @param {boolean} value - Provide the pointer event value .
+     *  @param {number} indexValue - Provide the index value .
+     *  @private
+     */
     public drawHTMLContent(
         element: DiagramHtmlElement, canvas: HTMLElement, transform?: Transforms, value?: boolean, indexValue?: number): void {
         let htmlElement: HTMLElement; let parentHtmlElement: HTMLElement;
@@ -437,17 +565,18 @@ export class SvgRenderer implements IRenderer {
             parentHtmlElement = canvas.querySelector(('#' + element.id + '_html_element')) ||
                 canvas.querySelector(('#' + element.nodeId + '_html_element'));
             if (!parentHtmlElement) {
-                let attr: Object = {
+                const attr: Object = {
                     'id': element.nodeId + '_html_element',
                     'class': 'foreign-object'
                 };
                 parentHtmlElement = createHtmlElement('div', attr);
             }
-            let attr: Object = {
+            const attr: Object = {
                 'id': element.id + '_html_element',
                 'class': 'foreign-object'
             };
             htmlElement = createHtmlElement('div', attr);
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             element.isTemplate ? htmlElement.appendChild(element.template) : htmlElement.appendChild(element.template.cloneNode(true));
             if (indexValue !== undefined && canvas.childNodes.length > indexValue) {
                 canvas.insertBefore(htmlElement, canvas.childNodes[indexValue]);
@@ -457,7 +586,7 @@ export class SvgRenderer implements IRenderer {
             canvas.appendChild(parentHtmlElement);
 
         }
-        let point: PointModel = cornersPointsBeforeRotation(element).topLeft;
+        const point: PointModel = cornersPointsBeforeRotation(element).topLeft;
         htmlElement.setAttribute(
             'style', 'height:' + (element.actualSize.height) + 'px; width:' + (element.actualSize.width) +
             'px;left:' + point.x + 'px; top:' + point.y + 'px;' +
@@ -467,7 +596,18 @@ export class SvgRenderer implements IRenderer {
         );
     }
 
-    /** @private */
+
+    /**
+     * Draw the native element for the diagram\
+     *
+     *  @returns {void} Draw the native element for the diagram.
+     *  @param {DiagramNativeElement} element - Provide the node element .
+     *  @param {HTMLCanvasElement} canvas - Provide the SVG element  .
+     *  @param {number} height - Provide the height for the shape .
+     *  @param {number} width - Provide the width for the shape .
+     *  @param {SVGSVGElement} parentSvg - Provide the parent svg for  the shape .
+     *  @private
+     */
     public drawNativeContent(
         element: DiagramNativeElement, canvas: HTMLCanvasElement | SVGElement,
         height: number, width: number, parentSvg: SVGSVGElement): void {
@@ -496,37 +636,40 @@ export class SvgRenderer implements IRenderer {
     }
 
     private setNativTransform(element: DiagramNativeElement, nativeElement: SVGElement, height: number, width: number): void {
-        let angle: number;
-        let contentWidth: number = element.contentSize.width !== 0 ? element.contentSize.width : 1;
-        let contentHeight: number = element.contentSize.height !== 0 ? element.contentSize.height : 1;
-        let x: number = element.templatePosition.x * width / contentWidth;
-        let y: number = element.templatePosition.y * height / contentHeight;
+        //let angle: number;
+        const contentWidth: number = element.contentSize.width !== 0 ? element.contentSize.width : 1;
+        const contentHeight: number = element.contentSize.height !== 0 ? element.contentSize.height : 1;
+        const x: number = element.templatePosition.x * width / contentWidth;
+        const y: number = element.templatePosition.y * height / contentHeight;
         nativeElement.setAttribute('transform', 'rotate(' + element.parentTransform + ',' + element.offsetX + ',' + element.offsetY +
             ') translate(' + (element.offsetX - x - width * element.pivot.x) + ',' + (element.offsetY - y - height * element.pivot.y) +
             ') scale(' + (width / contentWidth) + ',' + (height / contentHeight) + ')'
         );
     }
 
+
     /**
-     * used to crop the given native element into a rectangle of the given size
-     * @private
-     * @param {DiagramNativeElement} node
-     * @param {SVGElement} group
-     * @param {number} height
-     * @param {number} width
-     * @param {SVGSVGElement} parentSvg
+     *used to crop the given native element into a rectangle of the given size .\
+     *
+     *  @returns {SVGElement} used to crop the given native element into a rectangle of the given size.
+     *  @param {DiagramNativeElement} node - Provide the node element .
+     *  @param {SVGElement} group - Provide the SVG element  .
+     *  @param {number} height - Provide the height for the shape .
+     *  @param {number} width - Provide the width for the shape .
+     *  @param {SVGSVGElement} parentSvg - Provide the parent svg for  the shape .
+     *  @private
      */
     public drawClipPath(
         node: DiagramNativeElement, group: SVGElement, height: number, width: number, parentSvg: SVGSVGElement
     ): SVGElement {
-        let contentWidth: number = node.contentSize.width;
-        let contentHeight: number = node.contentSize.height;
-        let actualWidth: number = node.actualSize.width;
-        let actualHeight: number = node.actualSize.height;
-        let clipWidth: number = node.width / (width / contentWidth);
-        let clipHeight: number = node.height / (height / contentHeight);
-        let x: number = node.templatePosition.x + (node.width >= node.height ? 0 : (contentWidth - clipWidth) / 2);
-        let y: number = node.templatePosition.y + (node.height >= node.width ? 0 : (contentHeight - clipHeight) / 2);
+        const contentWidth: number = node.contentSize.width;
+        const contentHeight: number = node.contentSize.height;
+        //let actualWidth: number = node.actualSize.width;
+        //let actualHeight: number = node.actualSize.height;
+        const clipWidth: number = node.width / (width / contentWidth);
+        const clipHeight: number = node.height / (height / contentHeight);
+        const x: number = node.templatePosition.x + (node.width >= node.height ? 0 : (contentWidth - clipWidth) / 2);
+        const y: number = node.templatePosition.y + (node.height >= node.width ? 0 : (contentHeight - clipHeight) / 2);
         let clipPath: SVGClipPathElement = parentSvg.getElementById(node.id + '_clip') as SVGClipPathElement;
         clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
         clipPath.setAttribute('id', node.id + '_clip');
@@ -534,7 +677,7 @@ export class SvgRenderer implements IRenderer {
         let rect: SVGRectElement = parentSvg.getElementById(node.id + '_clip_rect') as SVGRectElement;
         rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         clipPath.appendChild(rect);
-        let attr: Object = {
+        const attr: Object = {
             'id': node.id + '_clip_rect', 'width': clipWidth.toString(), 'height': clipHeight.toString(),
             'x': x.toString(), 'y': y.toString()
         };
@@ -548,11 +691,20 @@ export class SvgRenderer implements IRenderer {
         return group;
     }
 
-    /**   @private  */
+
+    /**
+     * Draw the gradient for the diagram shapes .\
+     *
+     *  @returns {SVGElement} Draw the gradient for the diagram shapes.
+     *  @param {StyleAttributes} options - Provide the options  for the gradient  element .
+     *  @param {SVGElement} svg - Provide the SVG element  .
+     *  @param {string} diagramId - Provide the diagram id .
+     *  @private
+     */
     public renderGradient(options: StyleAttributes, svg: SVGElement, diagramId?: string): SVGElement {
         let max: number; let min: number; let grd: SVGElement;
 
-        let svgContainer: SVGSVGElement = getBackgroundLayerSvg(diagramId);
+        const svgContainer: SVGSVGElement = getBackgroundLayerSvg(diagramId);
 
 
         let defs: SVGElement = svgContainer.getElementById(diagramId + 'gradient_pattern') as SVGElement;
@@ -560,7 +712,7 @@ export class SvgRenderer implements IRenderer {
             defs = createSvgElement('defs', { id: diagramId + 'gradient_pattern' }) as SVGGElement;
             svgContainer.insertBefore(defs, svgContainer.firstChild);
         }
-        let radial: RadialGradientModel; let linear: LinearGradientModel; let stop: StopModel; let offset: number;
+        let radial: RadialGradientModel; let linear: LinearGradientModel; //let stop: StopModel; let offset: number;
         removeGradient(svg.id);
         if (options.gradient.type !== 'None') {
             for (let i: number = 0; i < options.gradient.stops.length; i++) {
@@ -579,9 +731,9 @@ export class SvgRenderer implements IRenderer {
                 defs.appendChild(grd);
             }
             for (let i: number = 0; i < options.gradient.stops.length; i++) {
-                let stop: StopModel = options.gradient.stops[i];
-                let offset: number = min < 0 ? (max + stop.offset) / (2 * max) : stop.offset / max;
-                let stopElement: SVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+                const stop: StopModel = options.gradient.stops[i];
+                const offset: number = min < 0 ? (max + stop.offset) / (2 * max) : stop.offset / max;
+                const stopElement: SVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
                 setAttributeSvg(stopElement, { 'offset': offset.toString(), 'style': 'stop-color:' + stop.color });
                 grd.appendChild(stopElement);
             }
@@ -589,26 +741,48 @@ export class SvgRenderer implements IRenderer {
         return grd;
     }
 
-    /**   @private  */
+    /**
+     * Draw the Linear gradient for the diagram .\
+     *
+     *  @returns {SVGElement} Draw the Linear gradient for the diagram.
+     *  @param {LinearGradientModel} linear - Provide the objects for the gradient  element .
+     *  @private
+     */
     public createLinearGradient(linear: LinearGradientModel): SVGElement {
-        let lineargradient: SVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
-        let attr: Object = {
+        const lineargradient: SVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+        const attr: Object = {
             'id': linear.id, 'x1': linear.x1 + '%', 'y1': linear.y1 + '%', 'x2': linear.x2 + '%', 'y2': linear.y2 + '%'
         };
         setAttributeSvg(lineargradient, attr);
         return lineargradient;
     }
 
-    /**   @private  */
+
+    /**
+     * Draw the radial gradient for the diagram .\
+     *
+     *  @returns {SVGElement} Draw the radial gradient for the diagram.
+     *  @param {RadialGradientModel} radial - Provide the objects for the gradient  element .
+     *  @private
+     */
     public createRadialGradient(radial: RadialGradientModel): SVGElement {
-        let radialgradient: SVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
-        let attr: Object = {
+        const radialgradient: SVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
+        const attr: Object = {
             'id': radial.id, 'cx': radial.cx + '%', 'cy': radial.cy + '%', 'r': radial.r + '%', 'fx': radial.fx + '%', 'fy': radial.fy + '%'
         };
         setAttributeSvg(radialgradient, attr);
         return radialgradient;
     }
-    /**   @private  */
+
+    /**
+     * Set the SVG style for the SVG elements in the diagram.\
+     *
+     *  @returns {void}
+     *  @param {SVGElement} svg - Provide the canvas element .
+     *  @param {StyleAttributes} style - Provide the canvas element .
+     *  @param {string} diagramId - Provide the canvas element .
+     *  @private
+     */
     public setSvgStyle(svg: SVGElement, style: StyleAttributes, diagramId?: string): void {
         if ((style as BaseAttributes).canApplyStyle || (style as BaseAttributes).canApplyStyle === undefined) {
             if (style.fill === 'none') { style.fill = 'transparent'; }
@@ -616,11 +790,11 @@ export class SvgRenderer implements IRenderer {
             let dashArray: number[] = [];
             let fill: string;
             if (style.dashArray) {
-                let canvasRenderer: CanvasRenderer = new CanvasRenderer();
+                const canvasRenderer: CanvasRenderer = new CanvasRenderer();
                 dashArray = canvasRenderer.parseDashArray(style.dashArray);
             }
             if (style.gradient && style.gradient.type !== 'None' && diagramId) {
-                let grd: SVGElement = this.renderGradient(style, svg, diagramId);
+                const grd: SVGElement = this.renderGradient(style, svg, diagramId);
                 if (checkBrowserInfo()) {
                     fill = 'url(' + location.protocol + '//' + location.host + location.pathname + '#' + grd.id + ')';
                 } else {
@@ -649,12 +823,20 @@ export class SvgRenderer implements IRenderer {
 
     // text utility
 
-    /**   @private  */
+    /**
+     * Draw the SVG label.\
+     *
+     * @returns {PointModel} Draw the SVG label .
+     *  @param {TextAttributes} text - Provide the canvas element .
+     *  @param {Object} wrapBound - Provide the canvas element .
+     *  @param {SubTextElement []} childNodes - Provide the canvas element .
+     * @private
+     */
     public svgLabelAlign(text: TextAttributes, wrapBound: TextBounds, childNodes: SubTextElement[]): PointModel {
-        let bounds: Size = new Size(wrapBound.width, childNodes.length * (text.fontSize * 1.2));
-        let pos: PointModel = { x: 0, y: 0 }; let x: number = 0; let y: number = 1.2;
-        let offsetX: number = text.width * 0.5; let offsety: number = text.height * 0.5;
-        let pointX: number = offsetX; let pointY: number = offsety;
+        const bounds: Size = new Size(wrapBound.width, childNodes.length * (text.fontSize * 1.2));
+        const pos: PointModel = { x: 0, y: 0 }; const x: number = 0; const y: number = 1.2;
+        const offsetX: number = text.width * 0.5; const offsety: number = text.height * 0.5;
+        let pointX: number = offsetX; const pointY: number = offsety;
         if (text.textAlign === 'left') {
             pointX = 0;
         } else if (text.textAlign === 'center') {

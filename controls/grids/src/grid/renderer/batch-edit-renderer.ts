@@ -28,14 +28,6 @@ export class BatchEditRender {
             args[cloneCell].classList.add('e-editedbatchcell');
             classList(args.row, ['e-editedrow', 'e-batchrow'], []);
         } else {
-            if (this.parent.isReact && args.columnObject && args.columnObject.template) {
-                let parentRow: HTMLTableRowElement = args.cell.parentElement as HTMLTableRowElement;
-                let newTd: HTMLTableCellElement = args.cell.cloneNode(true) as HTMLTableCellElement;
-                parentRow.insertBefore(newTd, parentRow.children[parseInt(args.cell.getAttribute('aria-colindex'), 10)]);
-                newTd.focus();
-                args.cell.remove();
-                args.cell = newTd;
-            }
             args.cell.innerHTML = '';
             args.cell.appendChild(this.getEditElement(elements, args));
             args.cell.classList.remove('e-ellipsistooltip');

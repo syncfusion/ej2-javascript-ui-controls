@@ -1,4 +1,4 @@
-[![npm](http://ej2.syncfusion.com/github-badges?package=@syncfusion/ej2-buttons)](https://www.npmjs.com/package/@syncfusion/ej2-buttons)&nbsp;&nbsp;[![coverage](http://ej2.syncfusion.com/badges/ej2-buttons/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-buttons)
+[![coverage](http://ej2.syncfusion.com/badges/ej2-buttons/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-buttons)
 
 # ej2-buttons
 
@@ -107,4 +107,4 @@ Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-
 
 Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/buttons/CHANGELOG.md?utm_source=npm&utm_campaign=button)
 
-© Copyright 2020 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
+© Copyright 2021 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

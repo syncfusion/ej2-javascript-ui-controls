@@ -286,4 +286,19 @@
     }
   }
 
+  .e-cell-merge::before {
+    content: '\e89a';
+  }
+
+  .e-cell-horizontal-split::before {
+    content: '\e89b';
+  }
+
+  .e-cell-vertical-split::before {
+    content: '\e89d';
+  }
+
+  .e-table-cell::before {
+    content: '\e89c';
+  }
 }

@@ -49,7 +49,7 @@ describe('Gantt filter support', () => {
         afterAll(() => {
             if (ganttObj) {
                 destroyGantt(ganttObj);
-            }   
+            }
         });
 
         it('Initial Filtering', (done: Function) => {

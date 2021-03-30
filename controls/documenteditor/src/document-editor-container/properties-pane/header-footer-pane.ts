@@ -8,7 +8,7 @@ import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { Toolbar } from '../tool-bar/tool-bar';
 import { DocumentEditorContainer } from '../document-editor-container';
 import { DocumentEditor } from '../../document-editor/document-editor';
-/** 
+/**
  * @private
  */
 export class HeaderFooterProperties {
@@ -24,17 +24,16 @@ export class HeaderFooterProperties {
     private isFooterTopApply: boolean = false;
     private isRtl: boolean;
 
-    /**
-     * @private
-     */
-    get documentEditor(): DocumentEditor {
+    private get documentEditor(): DocumentEditor {
         return this.container.documentEditor;
     }
-    get toolbar(): Toolbar {
+    private get toolbar(): Toolbar {
         return this.container.toolbarModule;
     }
     /**
      * @private
+     * @param {boolean} enable - enable/disable header footer pane.
+     * @returns {void}
      */
     public enableDisableElements(enable: boolean): void {
         if (enable) {
@@ -43,7 +42,7 @@ export class HeaderFooterProperties {
             classList(this.element, ['e-de-overlay'], []);
         }
     }
-    constructor(container: DocumentEditorContainer, isRtl?: boolean) {
+    public constructor(container: DocumentEditorContainer, isRtl?: boolean) {
         this.container = container;
         this.isRtl = isRtl;
         this.initHeaderFooterPane();
@@ -67,59 +66,55 @@ export class HeaderFooterProperties {
         this.element.style.display = isShow ? 'block' : 'none';
         this.documentEditor.resize();
     }
-    // tslint:disable-next-line:max-func-body-length
+
     private initializeHeaderFooter(): void {
-        let localObj: L10n = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
-        let elementId: string = 'header_footer_properties';
-        // tslint:disable-next-line:max-line-length
+        const localObj: L10n = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
+        const elementId: string = 'header_footer_properties';
         this.element = createElement('div', { id: this.documentEditor.element.id + elementId, className: 'e-de-prop-pane' });
-        let headerDiv: HTMLElement = this.createDivTemplate('_header_footer', this.element, 'padding-bottom:0');
+        const headerDiv: HTMLElement = this.createDivTemplate('_header_footer', this.element, 'padding-bottom:0');
         classList(headerDiv, ['e-de-cntr-pane-padding'], []);
-        let headerLabel: HTMLElement = createElement('label', { className: 'e-de-prop-header-label' });
+        const headerLabel: HTMLElement = createElement('label', { className: 'e-de-prop-header-label' });
         headerLabel.innerHTML = localObj.getConstant('Header And Footer');
         let closeButtonFloat: string;
-        let optionsLabelDivPadding: string;
-        let positionLabelDivPadding: string;
+        //let optionsLabelDivPadding: string;
+        //let positionLabelDivPadding: string;
         if (!this.isRtl) {
             closeButtonFloat = 'float:right;';
-            optionsLabelDivPadding = 'padding-left: 14px';
-            positionLabelDivPadding = 'padding-left: 14px;';
+            //optionsLabelDivPadding = 'padding-left: 14px';
+            //positionLabelDivPadding = 'padding-left: 14px;';
         } else {
             closeButtonFloat = 'float:left;';
-            optionsLabelDivPadding = 'padding-right: 14px';
-            positionLabelDivPadding = 'padding-right: 14px;';
+            //optionsLabelDivPadding = 'padding-right: 14px';
+            //positionLabelDivPadding = 'padding-right: 14px;';
         }
-        let closeIcon: HTMLElement = createElement('span', {
+        const closeIcon: HTMLElement = createElement('span', {
             id: '_header_footer_close',
             className: 'e-de-ctnr-close e-de-close-icon e-icons',
             styles: 'display:inline-block;cursor:pointer;' + closeButtonFloat
         });
-        closeIcon.addEventListener('click', (): void => { this.onClose(); });
+        closeIcon.addEventListener('click', (): void => {
+            this.onClose();
+        });
         headerDiv.appendChild(headerLabel);
         headerDiv.appendChild(closeIcon);
-        let optionsLabelDiv: HTMLElement = this.createDivTemplate(elementId + '_options', this.element);
+        const optionsLabelDiv: HTMLElement = this.createDivTemplate(elementId + '_options', this.element);
         classList(optionsLabelDiv, ['e-de-cntr-pane-padding', 'e-de-prop-separator-line'], []);
-        let optionsLabel: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label', styles: 'height:20px;' });
+        const optionsLabel: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label', styles: 'height:20px;' });
         optionsLabel.innerHTML = localObj.getConstant('Options');
         optionsLabelDiv.appendChild(optionsLabel);
-        let optionsDiv: HTMLElement = this.createDivTemplate(elementId + '_optionsDiv', optionsLabelDiv);
-        let firstPageDiv: HTMLElement = this.createDivTemplate(elementId + '_firstPageDiv', optionsDiv, 'margin-bottom:10px;');
-        let firstPage: HTMLInputElement = createElement('input', { id: 'firstPage', className: 'e-de-prop-sub-label' }) as HTMLInputElement;
+        const optionsDiv: HTMLElement = this.createDivTemplate(elementId + '_optionsDiv', optionsLabelDiv);
+        const firstPageDiv: HTMLElement = this.createDivTemplate(elementId + '_firstPageDiv', optionsDiv, 'margin-bottom:10px;');
+        const firstPage: HTMLInputElement = createElement('input', { id: 'firstPage', className: 'e-de-prop-sub-label' }) as HTMLInputElement;
         firstPageDiv.appendChild(firstPage);
-        // tslint:disable-next-line:max-line-length
-        this.firstPage = new CheckBox({ label: localObj.getConstant('Different First Page'), change: this.changeFirstPageOptions, cssClass: 'e-de-prop-sub-label', enableRtl: this.isRtl });
+        this.firstPage = new CheckBox({ label: localObj.getConstant('Different First Page'), change: this.changeFirstPageOptions.bind(this), cssClass: 'e-de-prop-sub-label', enableRtl: this.isRtl });
         this.firstPage.appendTo(firstPage);
-        // tslint:disable-next-line:max-line-length
         firstPageDiv.children[0].setAttribute('title', localObj.getConstant('Different header and footer for first page'));
-        let oddOrEvenDiv: HTMLElement = this.createDivTemplate(elementId + '_oddOrEvenDiv', optionsDiv);
-        let oddOrEven: HTMLInputElement = createElement('input', { id: 'oddOrEven', className: 'e-de-sub-prop-label' }) as HTMLInputElement;
+        const oddOrEvenDiv: HTMLElement = this.createDivTemplate(elementId + '_oddOrEvenDiv', optionsDiv);
+        const oddOrEven: HTMLInputElement = createElement('input', { id: 'oddOrEven', className: 'e-de-sub-prop-label' }) as HTMLInputElement;
         oddOrEvenDiv.appendChild(oddOrEven);
-        // tslint:disable-next-line:max-line-length
-        this.oddOrEven = new CheckBox({ label: localObj.getConstant('Different Odd And Even Pages'), change: this.changeoddOrEvenOptions, cssClass: 'e-de-prop-sub-label', enableRtl: this.isRtl });
+        this.oddOrEven = new CheckBox({ label: localObj.getConstant('Different Odd And Even Pages'), change: this.changeoddOrEvenOptions.bind(this), cssClass: 'e-de-prop-sub-label', enableRtl: this.isRtl });
         this.oddOrEven.appendTo(oddOrEven);
-        // tslint:disable-next-line:max-line-length
         oddOrEvenDiv.children[0].setAttribute('title', localObj.getConstant('Different header and footer for odd and even pages'));
-        // tslint:disable-next-line:max-line-length
         // let autoFieldLabelDiv: HTMLElement = this.createDivTemplate(element + '_autoFieldLabelDiv', div, 'padding-top:10px;padding-left: 10px;');
         // let autoFieldLabel: HTMLElement = createElement('label', { className: 'e-de-header-prop-label', styles: 'height:20px;' });
         // autoFieldLabel.innerHTML = 'Insert Autofield';
@@ -139,55 +134,44 @@ export class HeaderFooterProperties {
         // let autoFieldLine: HTMLElement = createElement('div', { className: 'e-de-prop-separator-line', styles: 'margin-top:7px;' });
         // autoFieldLabelDiv.appendChild(autoFieldLine);
 
-        // tslint:disable-next-line:max-line-length
-        let positionLabelDiv: HTMLElement = this.createDivTemplate(elementId + '_positionLabelDiv', this.element);
+        const positionLabelDiv: HTMLElement = this.createDivTemplate(elementId + '_positionLabelDiv', this.element);
         classList(positionLabelDiv, ['e-de-cntr-pane-padding', 'e-de-prop-separator-line'], []);
-        let positionLabel: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label', styles: 'height:20px;' });
+        const positionLabel: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label', styles: 'height:20px;' });
         positionLabel.innerHTML = localObj.getConstant('Position');
         positionLabelDiv.appendChild(positionLabel);
-        let positionDiv: HTMLElement = this.createDivTemplate(elementId + '_positionDiv', positionLabelDiv);
-        let width: string;
-        let headerFooterDivMargin: string;
-        if (!this.isRtl) {
-            width = 'width: 128px;';
-            headerFooterDivMargin = 'margin-right:8px;';
-        } else {
-            width = 'width: 150px;';
-            headerFooterDivMargin = 'margin-left:8px;';
-        }
-        // tslint:disable-next-line:max-line-length
-        let headerTopDiv: HTMLElement = this.createDivTemplate(elementId + '_headerTopDiv', positionDiv, 'margin-bottom:14px;');
-        // tslint:disable-next-line:max-line-length
-        let headerTopLabel: HTMLElement = createElement('label', { className: 'e-de-prop-sub-label', styles: 'display:block' });
+        const positionDiv: HTMLElement = this.createDivTemplate(elementId + '_positionDiv', positionLabelDiv);
+        //let width: string;
+        //let headerFooterDivMargin: string;
+        //if (!this.isRtl) {
+        //width = 'width: 128px;';
+        //headerFooterDivMargin = 'margin-right:8px;';
+        //} else {
+        //width = 'width: 150px;';
+        //headerFooterDivMargin = 'margin-left:8px;';
+        //}
+        const headerTopDiv: HTMLElement = this.createDivTemplate(elementId + '_headerTopDiv', positionDiv, 'margin-bottom:14px;');
+        const headerTopLabel: HTMLElement = createElement('label', { className: 'e-de-prop-sub-label', styles: 'display:block' });
         headerTopLabel.innerHTML = localObj.getConstant('Header from Top');
         headerTopDiv.appendChild(headerTopLabel);
-        // tslint:disable-next-line:max-line-length
-        let headerFromTop: HTMLInputElement = createElement('input', { id: this.documentEditor.element.id + '_headerFromTop', className: 'e-de-prop-sub-label' }) as HTMLInputElement;
+        const headerFromTop: HTMLInputElement = createElement('input', { id: this.documentEditor.element.id + '_headerFromTop', className: 'e-de-prop-sub-label' }) as HTMLInputElement;
         headerTopDiv.appendChild(headerFromTop);
-        // tslint:disable-next-line:max-line-length
         this.headerFromTop = new NumericTextBox({
             value: 36, cssClass: 'e-de-prop-header-numeric',
             showSpinButton: false, format: 'n0', decimals: 2, max: 1584, min: 0, enableRtl: this.isRtl
         });
         this.headerFromTop.appendTo(headerFromTop);
-        // tslint:disable-next-line:max-line-length
         this.headerFromTop.element.parentElement.setAttribute('title', localObj.getConstant('Distance from top of the page to top of the header'));
-        // tslint:disable-next-line:max-line-length
-        let footerBottomDiv: HTMLElement = this.createDivTemplate(elementId + '_footerBottomDiv', positionDiv);
-        // tslint:disable-next-line:max-line-length
-        let footerBottomLabel: HTMLElement = createElement('label', { className: 'e-de-prop-sub-label', styles: 'display:block' });
+        const footerBottomDiv: HTMLElement = this.createDivTemplate(elementId + '_footerBottomDiv', positionDiv);
+        const footerBottomLabel: HTMLElement = createElement('label', { className: 'e-de-prop-sub-label', styles: 'display:block' });
         footerBottomLabel.innerHTML = localObj.getConstant('Footer from Bottom');
         footerBottomDiv.appendChild(footerBottomLabel);
-        // tslint:disable-next-line:max-line-length
-        let footerFromTop: HTMLInputElement = createElement('input', { id: this.documentEditor.element.id + '_footerFromTop', className: 'e-de-prop-sub-label' }) as HTMLInputElement;
+        const footerFromTop: HTMLInputElement = createElement('input', { id: this.documentEditor.element.id + '_footerFromTop', className: 'e-de-prop-sub-label' }) as HTMLInputElement;
         footerBottomDiv.appendChild(footerFromTop);
-        // tslint:disable-next-line:max-line-length
         this.footerFromTop = new NumericTextBox({
             value: 36, cssClass: 'e-de-prop-header-numeric',
             showSpinButton: false, format: 'n0', decimals: 2, max: 1584, min: 0, enableRtl: this.isRtl
         });
         this.footerFromTop.appendTo(footerFromTop);
-        // tslint:disable-next-line:max-line-length
         this.footerFromTop.element.parentElement.setAttribute('title', localObj.getConstant('Distance from bottom of the page to bottom of the footer'));
     }
     private createDivTemplate(id: string, parentDiv: HTMLElement, style?: string): HTMLElement {
@@ -200,31 +184,43 @@ export class HeaderFooterProperties {
         parentDiv.appendChild(divElement);
         return divElement;
     }
-    private wireEvents = (): void => {
-        this.headerFromTop.element.addEventListener('click', (): void => { this.isHeaderTopApply = true; });
-        this.footerFromTop.element.addEventListener('click', (): void => { this.isFooterTopApply = true; });
-        this.headerFromTop.element.addEventListener('keydown', this.onHeaderValue);
-        this.footerFromTop.element.addEventListener('keydown', this.onFooterValue);
-        this.headerFromTop.element.addEventListener('blur', (): void => { this.changeHeaderValue(); this.isHeaderTopApply = false; });
-        this.footerFromTop.element.addEventListener('blur', (): void => { this.changeFooterValue(); this.isFooterTopApply = false; });
+    private wireEvents(): void {
+        this.headerFromTop.element.addEventListener('click', (): void => {
+            this.isHeaderTopApply = true;
+        });
+        this.footerFromTop.element.addEventListener('click', (): void => {
+            this.isFooterTopApply = true;
+        });
+        this.headerFromTop.element.addEventListener('keydown', this.onHeaderValue.bind(this));
+        this.footerFromTop.element.addEventListener('keydown', this.onFooterValue.bind(this));
+        this.headerFromTop.element.addEventListener('blur', (): void => {
+            this.changeHeaderValue(); this.isHeaderTopApply = false;
+        });
+        this.footerFromTop.element.addEventListener('blur', (): void => {
+            this.changeFooterValue(); this.isFooterTopApply = false;
+        });
     }
-    private onClose = (): void => {
+    private onClose(): void {
         this.container.showHeaderProperties = true;
         this.container.documentEditor.selection.closeHeaderFooter();
     }
-    private changeFirstPageOptions = (): void => {
+    private changeFirstPageOptions(): void {
         if (!this.documentEditor.isReadOnly) {
             this.documentEditor.selection.sectionFormat.differentFirstPage = this.firstPage.checked;
-            setTimeout((): void => { this.documentEditor.focusIn(); }, 10);
+            setTimeout((): void => {
+                this.documentEditor.focusIn();
+            }, 10);
         }
     }
-    private changeoddOrEvenOptions = (): void => {
+    private changeoddOrEvenOptions(): void {
         if (!this.documentEditor.isReadOnly) {
             this.documentEditor.selection.sectionFormat.differentOddAndEvenPages = this.oddOrEven.checked;
-            setTimeout((): void => { this.documentEditor.focusIn(); }, 10);
+            setTimeout((): void => {
+                this.documentEditor.focusIn();
+            }, 10);
         }
     }
-    private changeHeaderValue = (): void => {
+    private changeHeaderValue(): void {
         if (!this.isHeaderTopApply) {
             return;
         }
@@ -236,17 +232,21 @@ export class HeaderFooterProperties {
             this.documentEditor.selection.sectionFormat.headerDistance = headerTop;
         }
     }
-    private onHeaderValue = (e: KeyboardEventArgs): void => {
+    private onHeaderValue(e: KeyboardEventArgs): void {
         if (e.keyCode === 13) {
-            setTimeout((): void => { this.changeHeaderValue(); this.isHeaderTopApply = false; }, 30);
+            setTimeout((): void => {
+                this.changeHeaderValue(); this.isHeaderTopApply = false;
+            }, 30);
         }
     }
-    private onFooterValue = (e: KeyboardEventArgs): void => {
+    private onFooterValue(e: KeyboardEventArgs): void {
         if (e.keyCode === 13) {
-            setTimeout((): void => { this.changeFooterValue(); this.isFooterTopApply = false; }, 30);
+            setTimeout((): void => {
+                this.changeFooterValue(); this.isFooterTopApply = false;
+            }, 30);
         }
     }
-    private changeFooterValue = (): void => {
+    private changeFooterValue(): void {
         if (!this.isFooterTopApply) {
             return;
         }

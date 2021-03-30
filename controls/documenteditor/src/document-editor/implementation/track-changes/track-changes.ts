@@ -1,5 +1,6 @@
+/* eslint-disable  */
 import { RevisionType } from '../../base';
-import { isNullOrUndefined, remove } from '@syncfusion/ej2-base';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../document-editor';
 import { ElementBox, ParagraphWidget, TableRowWidget, TableWidget, TableCellWidget } from '../viewer/page';
 import { WCharacterFormat } from '../format/character-format';
@@ -8,26 +9,30 @@ import { Selection, TextPosition } from '../selection';
 import { ParagraphInfo } from '../editor/editor-helper';
 import { BaseHistoryInfo, EditorHistory } from '../editor-history';
 /**
- * The revision class which holds the information related to changes made in the document 
+ * The revision class which holds the information related to changes made in the document
  */
 export class Revision {
     /**
      * Gets or sets the author name who made the change
+     *
      * @private
      */
     public author: string = null;
     /**
      * Indicates when the track changes made
+     *
      * @private
      */
     public date: string = null;
     /**
      * Indicates the type of track changes revision
+     *
      * @private
      */
     public revisionType: RevisionType;
     /**
      * Holds the reference of the items which are under this revision.
+     *
      * @private
      */
     public range: object[] = [];
@@ -46,22 +51,16 @@ export class Revision {
      */
     private canSkipTableItems: boolean = false;
     private skipUnLinkElement: boolean = false;
-    /**
-     *
-     */
-    constructor(documentHelper: DocumentEditor, author: string, date: string) {
+
+    public constructor(documentHelper: DocumentEditor, author: string, date: string) {
         this.author = author;
         this.date = date;
         this.owner = documentHelper;
     }
 
-    /**
-     * Handles Accept reject for the revision
-     * @param isFromAccept 
-     */
     private handleAcceptReject(isFromAccept: boolean): void {
         this.owner.selection.selectRevision(this);
-        let selection: Selection = this.owner.selection;
+        const selection: Selection = this.owner.selection;
         let startPos: TextPosition = selection.start;
         let endPos: TextPosition = selection.end;
         if (!selection.start.isExistBefore(selection.end)) {
@@ -81,13 +80,11 @@ export class Revision {
         this.canSkipTableItems = false;
         this.skipUnLinkElement = false;
         // Implement to accept/reject the revision
-         // tslint:disable-next-line:max-line-length
         if (this.revisionType === 'Insertion' || this.revisionType === 'Deletion' || this.revisionType === 'MoveFrom' || this.revisionType === 'MoveTo') {
             let rangeIndex: number = 0;
             while (this.range.length > 0) {
-                // tslint:disable-next-line:max-line-length
                 if (this.range[rangeIndex] instanceof ElementBox || this.range[rangeIndex] instanceof WCharacterFormat || this.range[rangeIndex] instanceof WRowFormat) {
-                    let moveToNextItem: boolean = this.unlinkRangeItem(this.range[rangeIndex] as ElementBox, this, isFromAccept);
+                    const moveToNextItem: boolean = this.unlinkRangeItem(this.range[rangeIndex] as ElementBox, this, isFromAccept);
                     if (moveToNextItem) {
                         rangeIndex++;
                     } else {
@@ -100,7 +97,7 @@ export class Revision {
         }
         this.isTableRevision = false;
         if (this.isContentRemoved) {
-            let textPosition: TextPosition = selection.getTextPosBasedOnLogicalIndex(selection.editPosition);
+            const textPosition: TextPosition = selection.getTextPosBasedOnLogicalIndex(selection.editPosition);
             this.owner.selection.selectContent(textPosition, true);
             this.owner.editor.updateEndPosition();
         } else {
@@ -110,13 +107,11 @@ export class Revision {
         if (this.owner.editorHistory && this.owner.editorHistory.currentBaseHistoryInfo.action !== 'BackSpace') {
             this.owner.editorHistory.currentBaseHistoryInfo.removedNodes.reverse();
         }
-        /* tslint:disable:max-func-body-length */
         if (this.owner.editorHistory) {
             if (this.owner.trackChangesPane.isTrackingPageBreak) {
                 this.owner.editorHistory.currentBaseHistoryInfo.action = 'TrackingPageBreak';
             }
             let editorHistory: EditorHistory = this.owner.editorHistory;
-            // tslint:disable-next-line:max-line-length
             if (editorHistory.currentHistoryInfo && (editorHistory.currentHistoryInfo.action === 'Accept All' || editorHistory.currentHistoryInfo.action === 'Reject All')) {
                 if (this.owner.documentHelper.blockToShift) {
                     this.owner.documentHelper.layout.shiftLayoutedItems(false);
@@ -129,6 +124,8 @@ export class Revision {
 
     /**
      * Method which accepts the selected revision, revision marks will be removed and changes will be included in the viewer.
+     *
+     * @returns {void}
      */
     public accept(): void {
         this.handleAcceptReject(true);
@@ -146,8 +143,7 @@ export class Revision {
      * @param revision 
      * @param isFromAccept 
      */
-    /* tslint:disable:no-any */
-    /* tslint:disable:max-func-body-length */
+    /* eslint-disable  */
     public unlinkRangeItem(item: any, revision: Revision, isFromAccept: boolean): boolean {
         if (this.isTableRevision) {
             this.removeRangeRevisionForItem(item);
@@ -156,8 +152,7 @@ export class Revision {
             }
             return false;
         }
-        // tslint:disable-next-line:max-line-length
-        let removeChanges: boolean = (!isNullOrUndefined(isFromAccept)) && ((revision.revisionType === 'MoveFrom'  || revision.revisionType === 'Deletion') && isFromAccept ) || ((revision.revisionType === 'Insertion' || revision.revisionType === 'MoveTo') && !isFromAccept);
+        let removeChanges: boolean = (!isNullOrUndefined(isFromAccept)) && ((revision.revisionType === 'MoveFrom' || revision.revisionType === 'Deletion') && isFromAccept ) || ((revision.revisionType === 'Insertion' || revision.revisionType === 'MoveTo') && !isFromAccept);
         if (this.owner.selection.isTOC()) {
             if (removeChanges) {
                 this.owner.editor.deleteSelectedContents(this.owner.selection, true);
@@ -243,7 +238,6 @@ export class Revision {
                 this.owner.editor.updateTable(tableWidget);
             }
         }
-        // tslint:disable-next-line:max-line-length
         // if the range is of row format, we will remove the row and for history preservation we use whole table to be cloned, hence skipping this part
         if (!(item instanceof WRowFormat) || !removeChanges) {
             if (!this.skipUnLinkElement) {
@@ -261,11 +255,8 @@ export class Revision {
             this.removeRangeRevisionForItem(this.range[0]);
         }
     }
-    /**
-     * If we accept the reject revision or reject the insert revision, corresponding item should be removed its revision collection
-     * @param item 
-     */
-    /* tslint:disable:no-any */
+
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     private removeRevisionItemsFromRange(item: any): void {
         if (item.revisions.length > 0) {
             for (let revisionIndex: number = 0; revisionIndex < item.revisions.length; revisionIndex++) {
@@ -281,10 +272,13 @@ export class Revision {
         }
     }
     /**
-     * @private
      * Method to clear linked ranges in revision
+     *
+     * @private
+     * @param {any} item - Specifies the item
+     * @returns {void}
      */
-    /* tslint:disable:no-any */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     public removeRangeRevisionForItem(item: any): void {
         let revisionIndex: number = item.revisions.indexOf(this);
         if (revisionIndex >= 0) {
@@ -295,8 +289,8 @@ export class Revision {
     }
     /**
      * @private
-     * @param element 
-     * @param revision 
+     * @param {Element} element - Specifies the element.
+     * @returns {boolean} Resturs skip element removal
      */
     public skipeElementRemoval(element: ElementBox): boolean {
         let elementPara: ParagraphWidget = element.paragraph;
@@ -319,9 +313,7 @@ export class Revision {
             this.owner.editor.removeRevisionForCell(cellWidget, false);
         }
     }
-    /**
-     * Method removes item from the widget
-     */
+
     private removeItem(element: ElementBox): void {
         let paraWidget: ParagraphWidget = element.line.paragraph;
         this.owner.editor.unLinkFieldCharacter(element);
@@ -342,6 +334,7 @@ export class Revision {
 
     /**
      * @private
+     * @returns {Revision} - Returns revision
      */
     public clone(): Revision {
         if (this.canSkipCloning()) {
@@ -355,7 +348,9 @@ export class Revision {
     }
     /**
      * Method to clone the revisions for the element
-     * @param revisions | revision array
+     * 
+     * @param {Revision[]} revisions - revision array.
+     * @returns {string[]} - returns clones revisions.
      */
     public static cloneRevisions(revisions: Revision[]): string[] {
         let clonedRevisions: string[] = [];
@@ -387,11 +382,11 @@ export class RevisionCollection {
         return this.changes[index];
     }
 
-    get length(): number {
+    public get length(): number {
         return this.changes.length;
     }
 
-    constructor(owner: DocumentEditor) {
+    public constructor(owner: DocumentEditor) {
         this.owner = owner;
     }
 
@@ -404,12 +399,16 @@ export class RevisionCollection {
 
     /**
      * Method which accepts all the revision in the revision collection
+     *
+     * @returns {void}
      */
     public acceptAll(): void {
         this.handleRevisionCollection(true);
     }
     /**
      * Method which rejects all the revision in the revision collection
+     *
+     * @returns {void}
      */
     public rejectAll(): void {
         this.handleRevisionCollection(false);
@@ -417,8 +416,9 @@ export class RevisionCollection {
 
     /**
      * @private
-     * @param isfromAcceptAll 
-     * @param changes 
+     * @param {boolean} isfromAcceptAll - Specifies the is accept all.
+     * @param {Revision[]} changes - Specifies the revisions.
+     * @returns {void}
      */
     public handleRevisionCollection(isfromAcceptAll: boolean, changes?: Revision[]): void {
         let selection: Selection = this.owner.selection;

@@ -11,7 +11,6 @@ const ICON: string = 'e-icons';
 const CHECKBOXFRAME: string = 'e-frame';
 const CHECK: string = 'e-check';
 const CHECKBOXWRAP: string = 'e-checkbox-wrapper';
-const CHECKBOXRIPPLE: string = 'e-ripple-container';
 const INDETERMINATE: string = 'e-stop';
 const checkAllParent: string = 'e-selectall-parent';
 const searchBackIcon: string = 'e-input-group-icon e-back-icon e-icons';
@@ -25,7 +24,7 @@ const device: string = 'e-ddl-device';
 const FOCUS: string = 'e-input-focus';
 
 /**
- * The Multiselect enable CheckBoxSelection call this inject module.  
+ * The Multiselect enable CheckBoxSelection call this inject module.
  */
 
 export class CheckBoxSelection {
@@ -40,7 +39,7 @@ export class CheckBoxSelection {
     public list: HTMLElement;
     private activeLi: HTMLElement[] = [];
     private activeEle: HTMLElement[] = [];
-    constructor(parent?: IMulitSelect) {
+    public constructor(parent?: IMulitSelect) {
         this.parent = parent;
         this.removeEventListener();
         this.addEventListener();
@@ -50,7 +49,9 @@ export class CheckBoxSelection {
     }
 
     public addEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.on('updatelist', this.listSelection, this);
         this.parent.on('listoption', this.listOption, this);
         this.parent.on('selectAll', this.setSelectAll, this);
@@ -69,7 +70,9 @@ export class CheckBoxSelection {
         this.parent.on('popupFullScreen', this.setPopupFullScreen, this);
     }
     public removeEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.off('updatelist', this.listSelection);
         this.parent.off('listoption', this.listOption);
         this.parent.off('selectAll', this.setSelectAll);
@@ -87,19 +90,20 @@ export class CheckBoxSelection {
         this.parent.off('popupFullScreen', this.setPopupFullScreen);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public listOption(args: { [key: string]: Object }): void {
         if (isNullOrUndefined(this.parent.listCurrentOptions.itemCreated)) {
             this.parent.listCurrentOptions.itemCreated = (e: { [key: string]: HTMLElement }) => {
                 this.checboxCreate(e);
             };
         } else {
-            let itemCreated: Function = <Function>this.parent.listCurrentOptions.itemCreated;
+            const itemCreated: Function = <Function>this.parent.listCurrentOptions.itemCreated;
             this.parent.listCurrentOptions.itemCreated = (e: { [key: string]: HTMLElement }) => {
                 this.checboxCreate(e);
                 itemCreated.apply(this, [e]);
             };
         }
-    };
+    }
     private setPlaceholder(props: MultiSelectModel): void {
         Input.setPlaceholder(props.filterBarPlaceholder, this.filterInput as HTMLInputElement);
     }
@@ -112,12 +116,10 @@ export class CheckBoxSelection {
         }
         if (this.parent.enableGroupCheckBox || ((item as HTMLElement).className !== 'e-list-group-item '
         && (item as HTMLElement).className !== 'e-list-group-item')) {
-            let checkboxEle: HTMLElement | Element | string = createCheckBox(this.parent.createElement, true);
-            let icon: Element = select('div.' + ICON, (item as HTMLElement));
-            let id: string = (item as HTMLElement).getAttribute('data-uid');
+            const checkboxEle: HTMLElement | Element | string = createCheckBox(this.parent.createElement, true);
+            const icon: Element = select('div.' + ICON, (item as HTMLElement));
             (item as HTMLElement).insertBefore(checkboxEle, (item as HTMLElement).childNodes[isNullOrUndefined(icon) ? 0 : 1]);
             select('.' + CHECKBOXFRAME, checkboxEle);
-            let frame: Element = select('.' + CHECKBOXFRAME, checkboxEle);
             if (this.parent.enableGroupCheckBox ) {
                 this.parent.popupWrapper.classList.add('e-multiselect-group');
             }
@@ -176,9 +178,9 @@ export class CheckBoxSelection {
     }
     public listSelection(args: IUpdateListArgs): void {
         let target: EventTarget;
-        let isBlazorListbox: boolean = isBlazor() && (args.module && args.module === 'listbox');
+        const isBlazorListbox: boolean = isBlazor() && (args.module && args.module === 'listbox');
         if (!isNullOrUndefined(args.e)) {
-            let frameElm: Element = args.li.querySelector('.e-checkbox-wrapper .e-frame');
+            const frameElm: Element = args.li.querySelector('.e-checkbox-wrapper .e-frame');
             target = !isNullOrUndefined(args.e.target) ?
                 ((args.e.target as HTMLElement).classList.contains('e-frame')
                 && (!this.parent.showSelectAll
@@ -186,7 +188,7 @@ export class CheckBoxSelection {
                     args.e.target : (isBlazorListbox ? frameElm : args.li.querySelector('.e-checkbox-wrapper').childNodes[1])
                 : (isBlazorListbox ? frameElm : args.li.querySelector('.e-checkbox-wrapper').childNodes[1]);
         } else {
-            let checkboxWrapper: Element = args.li.querySelector('.e-checkbox-wrapper');
+            const checkboxWrapper: Element = args.li.querySelector('.e-checkbox-wrapper');
             target = checkboxWrapper ? (isBlazorListbox ?
                 checkboxWrapper.querySelector('.e-frame') : checkboxWrapper.childNodes[1]) : args.li.lastElementChild.childNodes[1];
         }
@@ -197,8 +199,8 @@ export class CheckBoxSelection {
             this.checkWrapper = closest((target as HTMLElement), '.' + CHECKBOXWRAP) as HTMLElement;
         }
         if (!isNullOrUndefined(this.checkWrapper)) {
-            let checkElement: Element = select('.' + CHECKBOXFRAME, this.checkWrapper);
-            let selectAll: boolean = false;
+            const checkElement: Element = select('.' + CHECKBOXFRAME, this.checkWrapper);
+            const selectAll: boolean = false;
             this.validateCheckNode(this.checkWrapper, checkElement.classList.contains(CHECK), args.li, args.e, selectAll);
         }
     }
@@ -216,9 +218,9 @@ export class CheckBoxSelection {
             target = <Element>e.currentTarget;
         }
         this.checkWrapper = closest((target as HTMLElement), '.' + CHECKBOXWRAP) as HTMLElement;
-        let selectAll: boolean = true;
+        const selectAll: boolean = true;
         if (!isNullOrUndefined(this.checkWrapper)) {
-            let checkElement: Element = select('.' + CHECKBOXFRAME, this.checkWrapper);
+            const checkElement: Element = select('.' + CHECKBOXFRAME, this.checkWrapper);
             this.validateCheckNode(this.checkWrapper, checkElement.classList.contains(CHECK), null, e, selectAll);
         }
         e.preventDefault();
@@ -226,7 +228,7 @@ export class CheckBoxSelection {
     private changeState(
         wrapper: HTMLElement | Element, state: string, e?: MouseEvent | KeyboardEventArgs, isPrevent?: boolean, selectAll?: boolean): void {
         let ariaState: string;
-        let frameSpan: Element = wrapper.getElementsByClassName(CHECKBOXFRAME)[0];
+        const frameSpan: Element = wrapper.getElementsByClassName(CHECKBOXFRAME)[0];
         if (state === 'check' && !frameSpan.classList.contains(CHECK)) {
             frameSpan.classList.remove(INDETERMINATE);
             frameSpan.classList.add(CHECK);
@@ -304,15 +306,16 @@ export class CheckBoxSelection {
                 (this.clearIconElement as HTMLElement).style.visibility = 'hidden';
             }
             EventHandler.add(this.filterInput, 'input', this.parent.onInput, this.parent);
-            EventHandler.add(this.filterInput, 'keyup', this.parent.KeyUp, this.parent);
+            EventHandler.add(this.filterInput, 'keyup', this.parent.keyUp, this.parent);
             EventHandler.add(this.filterInput, 'keydown', this.parent.onKeyDown, this.parent);
             EventHandler.add(this.filterInput, 'blur', this.onBlur, this);
             EventHandler.add(this.filterInput, 'paste', this.parent.pasteHandler, this.parent);
             this.parent.searchBoxHeight = (this.filterInputObj.container.parentElement).getBoundingClientRect().height;
             return this.filterInputObj;
         }
-    };
+    }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private clickOnBackIcon(e: EventHandler): void {
         this.parent.hidePopup();
         removeClass([document.body, this.parent.popupObj.element], popupFullScreen);
@@ -334,6 +337,7 @@ export class CheckBoxSelection {
     private setDeviceSearchBox(): void {
         this.parent.popupObj.element.classList.add(device);
         this.parent.popupObj.element.classList.add(mobileFilter);
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         this.parent.popupObj.position = { X: 0, Y: 0 };
         this.parent.popupObj.dataBind();
         this.setSearchBoxPosition();
@@ -345,7 +349,7 @@ export class CheckBoxSelection {
     }
 
     private setSearchBoxPosition(): void {
-        let searchBoxHeight: number = this.filterInput.parentElement.getBoundingClientRect().height;
+        const searchBoxHeight: number = this.filterInput.parentElement.getBoundingClientRect().height;
         let selectAllHeight: number = 0;
         if (this.checkAllParent) {
             selectAllHeight = this.checkAllParent.getBoundingClientRect().height;
@@ -354,7 +358,7 @@ export class CheckBoxSelection {
         this.parent.popupObj.element.style.width = '100%';
         this.parent.list.style.maxHeight = (window.innerHeight - searchBoxHeight - selectAllHeight) + 'px';
         this.parent.list.style.height = (window.innerHeight - searchBoxHeight - selectAllHeight) + 'px';
-        let clearElement: Element = this.filterInput.parentElement.querySelector('.' + clearIcon);
+        const clearElement: Element = this.filterInput.parentElement.querySelector('.' + clearIcon);
         detach(this.filterInput);
         clearElement.parentElement.insertBefore(this.filterInput, clearElement);
     }
@@ -376,73 +380,79 @@ export class CheckBoxSelection {
 
     private onBlur(e: MouseEvent): void {
         if (!this.parent.element.classList.contains('e-listbox')) {
-        let target: HTMLElement;
-        if (this.parent.keyAction) { return; }
-        if (Browser.isIE) {
-            target = !isNullOrUndefined(e) && <HTMLElement>e.target;
-        }
-        if (!Browser.isIE) {
-            target = !isNullOrUndefined(e) && <HTMLElement>e.relatedTarget;
-        }
-        if (this.parent.popupObj && document.body.contains(this.parent.popupObj.element) && this.parent.popupObj.element.contains(target)
-            && !Browser.isIE && this.filterInput) {
-            this.filterInput.focus();
-            return;
-        }
-        if (this.parent.scrollFocusStatus && this.filterInput) {
-            e.preventDefault();
-            this.filterInput.focus();
-            this.parent.scrollFocusStatus = false;
-            return;
-        }
-        if (this.parent.popupObj && document.body.contains(this.parent.popupObj.element)
+            let target: HTMLElement;
+            if (this.parent.keyAction) {
+                return;
+            }
+            if (Browser.isIE) {
+                target = !isNullOrUndefined(e) && <HTMLElement>e.target;
+            }
+            if (!Browser.isIE) {
+                target = !isNullOrUndefined(e) && <HTMLElement>e.relatedTarget;
+            }
+            // eslint-disable-next-line max-len
+            if (this.parent.popupObj && document.body.contains(this.parent.popupObj.element) && this.parent.popupObj.element.contains(target)
+                && !Browser.isIE && this.filterInput) {
+                this.filterInput.focus();
+                return;
+            }
+            if (this.parent.scrollFocusStatus && this.filterInput) {
+                e.preventDefault();
+                this.filterInput.focus();
+                this.parent.scrollFocusStatus = false;
+                return;
+            }
+            if (this.parent.popupObj && document.body.contains(this.parent.popupObj.element)
             && !this.parent.popupObj.element.classList.contains('e-popup-close')) {
-            this.parent.inputFocus = false;
-            this.parent.updateValueState(e, this.parent.value, this.parent.tempValues);
-            this.parent.dispatchEvent(this.parent.hiddenElement as HTMLElement, 'change');
-        }
-        if (this.parent.popupObj && document.body.contains(this.parent.popupObj.element) &&
+                this.parent.inputFocus = false;
+                this.parent.updateValueState(e, this.parent.value, this.parent.tempValues);
+                this.parent.dispatchEvent(this.parent.hiddenElement as HTMLElement, 'change');
+            }
+            if (this.parent.popupObj && document.body.contains(this.parent.popupObj.element) &&
             !this.parent.popupObj.element.classList.contains('e-popup-close')) {
-            this.parent.inputFocus = false;
-            this.parent.overAllWrapper.classList.remove(FOCUS);
-            this.parent.trigger('blur');
-            this.parent.focused = true;
+                this.parent.inputFocus = false;
+                this.parent.overAllWrapper.classList.remove(FOCUS);
+                this.parent.trigger('blur');
+                this.parent.focused = true;
+            }
+            if (this.parent.popupObj && document.body.contains(this.parent.popupObj.element) &&
+                !this.parent.popupObj.element.classList.contains('e-popup-close') && !Browser.isDevice) {
+                this.parent.hidePopup();
+            }
         }
-        if (this.parent.popupObj && document.body.contains(this.parent.popupObj.element) &&
-            !this.parent.popupObj.element.classList.contains('e-popup-close') && !Browser.isDevice) {
-            this.parent.hidePopup();
-        }
-    }
     }
     protected onDocumentClick(e: MouseEvent): void {
         if (this.parent.getLocaleName() !== 'listbox') {
-        let target: HTMLElement = <HTMLElement>e.target;
-        if (!isNullOrUndefined(this.parent.popupObj) && closest(target, '[id="' + this.parent.popupObj.element.id + '"]')) {
-            if (!(this.filterInput && this.filterInput.value !== '')) {
-                e.preventDefault();
+            const target: HTMLElement = <HTMLElement>e.target;
+            if (!isNullOrUndefined(this.parent.popupObj) && closest(target, '[id="' + this.parent.popupObj.element.id + '"]')) {
+                if (!(this.filterInput && this.filterInput.value !== '')) {
+                    e.preventDefault();
+                }
             }
-        }
-        if (!(!isNullOrUndefined(this.parent.popupObj) && closest(target, '[id="' + this.parent.popupObj.element.id + '"]')) &&
+            if (!(!isNullOrUndefined(this.parent.popupObj) && closest(target, '[id="' + this.parent.popupObj.element.id + '"]')) &&
             !this.parent.overAllWrapper.contains(e.target as Node)) {
-            if (this.parent.overAllWrapper.classList.contains(dropDownBaseClasses.focus) || this.parent.isPopupOpen()) {
-                this.parent.inputFocus = false;
-                this.parent.scrollFocusStatus = false;
-                this.parent.hidePopup();
-                this.parent.onBlur(e, true);
-                this.parent.focused = true;
-            }
-        } else {
-            this.parent.scrollFocusStatus = (Browser.isIE || Browser.info.name === 'edge') && (document.activeElement === this.filterInput);
-        }
-        if (!this.parent.overAllWrapper.contains(e.target as Node) && this.parent.overAllWrapper.classList.contains('e-input-focus') &&
-            !this.parent.isPopupOpen()) {
-            if (Browser.isIE) {
-                this.parent.onBlur();
+                if (this.parent.overAllWrapper.classList.contains(dropDownBaseClasses.focus) || this.parent.isPopupOpen()) {
+                    this.parent.inputFocus = false;
+                    this.parent.scrollFocusStatus = false;
+                    this.parent.hidePopup();
+                    this.parent.onBlur(e, true);
+                    this.parent.focused = true;
+                }
             } else {
-                this.parent.onBlur(e);
+                this.parent.scrollFocusStatus = (Browser.isIE || Browser.info.name === 'edge') &&
+                (document.activeElement === this.filterInput);
             }
-        }
-        if (this.filterInput === target) { this.filterInput.focus(); }
+            if (!this.parent.overAllWrapper.contains(e.target as Node) && this.parent.overAllWrapper.classList.contains('e-input-focus') &&
+            !this.parent.isPopupOpen()) {
+                if (Browser.isIE) {
+                    this.parent.onBlur();
+                } else {
+                    this.parent.onBlur(e);
+                }
+            }
+            if (this.filterInput === target) {
+                this.filterInput.focus();
+            }
         }
     }
     private getFocus(e: IUpdateListArgs): void {
@@ -477,16 +487,15 @@ export class CheckBoxSelection {
     }
     private setLocale(unSelect?: boolean): void {
         if (this.parent.selectAllText !== 'Select All' || this.parent.unSelectAllText !== 'Unselect All') {
-            let template: string = unSelect ? this.parent.unSelectAllText : this.parent.selectAllText;
-            let compiledString: Function;
+            const template: string = unSelect ? this.parent.unSelectAllText : this.parent.selectAllText;
             this.selectAllSpan.textContent = '';
-            compiledString = compile(template);
-            let templateName: string = unSelect ? 'unSelectAllText' : 'selectAllText';
-            for (let item of compiledString({}, this.parent, templateName, null, !this.parent.isStringTemplate)) {
+            const compiledString: Function = compile(template);
+            const templateName: string = unSelect ? 'unSelectAllText' : 'selectAllText';
+            for (const item of compiledString({}, this.parent, templateName, null, !this.parent.isStringTemplate)) {
                 this.selectAllSpan.textContent = item.textContent;
             }
         } else {
-            let l10nLocale: Object = { selectAllText: 'Select All', unSelectAllText: 'Unselect All' };
+            const l10nLocale: Object = { selectAllText: 'Select All', unSelectAllText: 'Unselect All' };
             let l10n: L10n = new L10n(this.parent.getLocaleName(), {}, this.parent.locale);
             if (l10n.getConstant('selectAllText') === '') {
                 l10n = new L10n('dropdowns', l10nLocale, this.parent.locale);
@@ -501,14 +510,14 @@ export class CheckBoxSelection {
             this.activeLi.splice(args.index, 1);
         }
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private setReorder(args: IUpdateListArgs | MouseEvent): void {
         if (this.parent.enableSelectionOrder && !isNullOrUndefined(this.parent.value)) {
-            let activeLiCount: number = this.parent.ulElement.querySelectorAll('li.e-active').length;
+            const activeLiCount: number = this.parent.ulElement.querySelectorAll('li.e-active').length;
             let remLi: NodeListOf<Element>;
-            let ulEle: HTMLElement = this.parent.createElement('ul', {
+            const ulEle: HTMLElement = this.parent.createElement('ul', {
                 className: 'e-list-parent e-ul e-reorder'
             });
-            let removeEle: HTMLElement = this.parent.createElement('div');
             if (activeLiCount > 0) {
                 append(this.parent.ulElement.querySelectorAll('li.e-active'), ulEle);
                 remLi = this.parent.ulElement.querySelectorAll('li.e-active');
@@ -521,17 +530,17 @@ export class CheckBoxSelection {
 }
 
 export interface ItemCreatedArgs {
-    curData: { [key: string]: Object };
-    item: HTMLElement;
-    text: string;
+    curData: { [key: string]: Object }
+    item: HTMLElement
+    text: string
 }
 
 export interface IUpdateListArgs {
-    module: string;
-    enable: boolean;
-    li: HTMLElement;
-    e: MouseEvent | KeyboardEventArgs;
-    popupElement: HTMLElement;
-    value: string;
-    index: number;
+    module: string
+    enable: boolean
+    li: HTMLElement
+    e: MouseEvent | KeyboardEventArgs
+    popupElement: HTMLElement
+    value: string
+    index: number
 }

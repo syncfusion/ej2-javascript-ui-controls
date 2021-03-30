@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/member-delimiter-style */
 import { LinearGauge } from '../linear-gauge';
 import { Axis, Pointer } from '../axes/axis';
 import { Annotation, TooltipSettings } from '../model/base';
@@ -161,7 +162,7 @@ export interface IPointerDragEventArgs {
      */
     axis?: Axis;
     /**
-     * Specifies the pointers instance in linear gauge 
+     * Specifies the pointers instance in linear gauge
      */
     pointer?: Pointer;
     /**

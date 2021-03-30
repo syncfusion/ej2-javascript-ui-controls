@@ -2,24 +2,20 @@
 
 ## [Unreleased]
 
-## 18.4.48 (2021-03-16)
+## 19.1.54 (2021-03-30)
 
 ### Chart
 
-#### Bug Fixes
+#### New Features
 
-- `#304737` - Remove child of null console error thrown while using canvas mode issue has been fixed.
-- `#F157327` - Fixed the data labels are overlapped issue in chart.
-- `#314894` - Stripline is not working in datetime for core platform issue fixed.
-- `#F162046` - Dynamic indicator change using useState issue resolved.
-
-## 18.4.47 (2021-03-09)
-
-### Chart
+- Range color mapping feature added.
 
 #### Bug Fixes
 
 - `#313827` - Fixed stripline fails issue on canvas mode.
+- `#304737` - Remove child of null console error thrown while using canvas mode issue has been fixed.
+- `#314894` - Stripline is not working in datetime for core platform issue fixed.
+- `#F162046` - Dynamic indicator change using useState issue resolved.
 
 ## 18.4.46 (2021-03-02)
 

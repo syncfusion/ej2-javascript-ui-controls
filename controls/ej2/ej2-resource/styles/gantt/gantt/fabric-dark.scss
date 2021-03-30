@@ -1,0 +1,1924 @@
+
+$gantt-header-bg-color: $neutral-white !default;
+$gantt-header-border-color: $neutral-light !default;
+$gantt-header-color: $neutral-light-font !default;
+$gantt-grid-line-color: $neutral-light !default;
+$gantt-label-color: $neutral-light-font !default;
+$gantt-content-color: rgb(0, 0, 0) !default;
+$holiday-background: $neutral-lighter !default;
+$holiday-label-color: $neutral-light-font !default;
+$holiday-label-font-size: 13px !default;
+$weekend-background: $neutral-lighter-alt !default;
+$event-marker-line-color: $theme-primary !default;
+$event-marker-label-color: #cae8ff !default;
+$event-marker-label-font-color: #004abc !default;
+$event-marker-label-font-size: 12px !default;
+$event-marker-label-padding: 7px 12px !default;
+$event-marker-label-height: 30px !default;
+$event-marker-label-arrow-top: 60px !default;
+$connector-line-color: $theme-darker !default;
+$connector-line-hover-color: $theme-dark !default;
+$connector-false-line-color: $theme-primary !default;
+$connector-point-hover-color: $neutral-secondary !default;
+$connector-point-border-color: $neutral-white !default;
+$connector-point-hover-bg-color: $neutral-tertiary !default;
+$connector-point-hover-border-color: $theme-primary !default;
+$gantt-connector-point-margin-top: 7.5px !default;
+$gantt-connector-point-margin-radius: 4px !default;
+$gantt-connector-point-left: 8px !default;
+$gantt-unscheduled-taskbar-left: 3px !default;
+$gantt-unscheduled-taskbar-right-radius: 2px !default;
+$gantt-label-size: 13px !default;
+$gantt-header-border-spacing: 0 !default;
+$gantt-line-container-cell-border-color: $neutral-light !default;
+// sass-lint:disable-all
+$gantt-unscheduled-taskbar-background: linear-gradient(to right, rgba(darken($theme-primary, 10%), 0.2), darken($theme-primary, 10%) 30%, darken($theme-primary, 10%) 70%, darken($theme-primary, 10%) 70%, rgba(darken($theme-primary, 10%), 0.2) 100%) !default;
+$gantt-unscheduled-taskbar-background-color: rgba(darken($theme-primary, 10%), .2) !default;
+$gantt-unscheduled-milestone-top-border: #dadada !default;
+$gantt-unscheduled-milestone-bottom-border: #dadada !default;
+$gantt-resize-gripper: rgba(249, 146, 11, .2) !default;
+$gantt-child-task-bar: $theme-primary !default;
+$gantt-child-progress-bar: $theme-dark !default;
+$gantt-child-task-bar-border: 1px solid $theme-dark !default;
+$gantt-manualchild-task-bar: #8dd1c4;
+$gantt-manualchild-progress-bar: #67c1b2;
+$gantt-manualchild-progress-bar-border: #4fb29f;
+$gantt-manualchild-task-bar-border: #4fb29f;
+$gantt-manualparent-background-color: #989A9C;
+$gantt-unscheduledmanualparent-background-color: linear-gradient(to right, rgba(63, 81, 181, 0.2), #989A9C 30%, #989A9C 70%, #989A9C 70%, rgba(63, 81, 181, 0.2) 100%) !default;
+$gantt-unscheduled-manualtaskbar-background: linear-gradient(to right, rgba(63,81,181, 0.2), #8dd1c4 30%, #8dd1c4 70%, #8dd1c4 70%, rgba(63,81,181, 0.2) 100%) !default;
+$gantt-child-progress-bar-border: 0px !default;
+$gantt-parent-task-bar: #029f90 !default;
+$gantt-parent-progress-bar: #4cc7ba !default;
+$gantt-milestone-border-color: #dadada !default;
+$gantt-parent-milestone-border-color: #4cc7ba !default;
+$gantt-parent-task-bar-border: 1px solid #4cc7ba !default;
+$gantt-parent-progress-bar-border: 0px !default;
+$gantt-progress-bar-left-radius: 2px !default;
+$gantt-unscheduled-taskbar-left-radius: 0px !default;
+$gantt-connector-point-right-margin-left: 2px !default;
+$gantt-right-label-container-margin-left: 25px !default;
+$gantt-task-label-font-size: 12px !default;
+$gantt-task-label-font-color: $theme-primary-font !default;
+$gantt-label-font-size: 13px !default;
+$gantt-label-font-color: $neutral-light-font !default;
+$gantt-tab-header-active-font-color: $theme-primary-font !default;
+$gantt-tab-header-font-color: $theme-primary-font !default;
+$gantt-edit-icon-color: #fff !default;
+$gantt-icons-color: #dadada;
+$gantt-unscheduled-taskbar-border: 0px !default;
+$gantt-unscheduled-taskbar-border-radius: 0px !default;
+$gantt-dialog-general-height: 241px !default;
+$gantt-dialog-edit-form-odd-padding: 15px 20px 0 18px !default;
+$gantt-dialog-edit-form-even-padding: 16px 16px 0 0 !default;
+$gantt-dialog-edit-form-scroll-padding: 16px 16px 0 0 !default;
+$gantt-dialog-dependent-height: 161px !default;
+$gantt-dialog-resource-height: 202px !default;
+$gantt-dialog-rte-height: 241px !default;
+$gantt-dialog-rte-content-height: 200px !default;
+$gantt-dialog-padding-bottom: 4px !default;
+$gantt-dialog-active-tab-background: transparent !default;
+$gantt-dialog-tab-padding-left: 13px !default;
+$gantt-dialog-tab-background: $theme-primary !default;
+$gantt-dialog-header-font-color: $theme-primary-font !default;
+$gantt-dialog-icon-color: $theme-primary-font !default;
+$gantt-dialog-icon-hover-color: #eaeaea !default;
+$gantt-dialog-close-icon-hover-color: #0074cc !default;
+$gantt-dialog-tab-hover-border-color: transparent !default;
+$gantt-dialog-tab-header-border-no-color: transparent !default;
+$gantt-tab-header-border-width: 0px;
+$gantt-depedent-div-border-bottom: 1px !default;
+$gantt-resource-div-border-bottom: 1px !default;
+$gantt-richtext-border-bottom: 1px !default;
+$gantt-richtext-content-border-bottom: 0px !default;
+$gantt-tab-selection-indicator-color: $theme-primary-font !default;
+$gantt-tab-header-hover-color: transparent !default;
+$gantt-tab-header-hover-font-color: #f0f0f0 !default;
+$gantt-connector-point-width: 12px !default;
+$gantt-connector-point-height: 8px !default;
+$gantt-connector-left-point-left: -12px !default;
+$gantt-parent-progress-bar-border-radius: 0px !default;
+$gantt-timeline-top-headercell-font-size: 14px !default;
+$gantt-timeline-top-headercell-font-weight: 400 !default;
+$gantt-active-background: #514f4f !default;
+$gantt-active-color: $neutral-primary !default;
+$gantt-active-color-opacity: 1 !default;
+$gantt-table-background: $neutral-white !default;
+$gantt-baseline-color: #ff9800 !default;
+$gantt-child-progress-margin-left: 0.5px !default;
+$gantt-timeline-single-header-outer-div: 45px !default;
+$progress-handler-background: #222 !default;
+$progress-handler-outline: #fff !default;
+$gantt-chart-timeline-single-header-outer-div: 46px !default;
+$gantt-timeline-top-header-cell-height: 32px !default;
+$gantt-header-border-height: 64px !default;
+$gantt-header-border-bottom-width: 1px !default;
+$gantt-header-border-radius: 0px !default;
+$gantt-splitter-border-top-right-radius: 0px !default;
+$gantt-splitter-border-top-left-radius: 0px !default;
+$gantt-dialog-general-padding-bottom: 16px !default;
+$gantt-filter-menu-value-div-padding: 24px !default;
+$gantt-dialog-tab-hover-border-bottom: 0px !default;
+$gantt-dialog-tab-hover-border-bottom-radius: 0px !default;
+$gantt-dialog-border-radius: 0px !default;
+$event-marker-line-height: 1.2 !default;
+$gantt-inactive-parent: #8A8A8A !default;
+$gantt-inactive-child: #D5D5D5 !default;
+$gantt-connected-task: lighten($theme-primary, 20%) !default;
+$gantt-active-parent-task: lighten(#000000, 10%) !default;
+$gantt-uptail-border:  #e0e0e0 !default;
+$gantt-gridpopup-span: #000 !default;
+$gantt-active-parent-shadow: rgba($gantt-gridpopup-span, 0.5) !default;
+$gantt-left-resize-gripper-border: #9e9e9e !default;
+$gantt-left-resize-gripper-color: #eee !default;
+$gantt-clone-padding: 4px 5px !default;
+$gantt-bigger-clone-padding: $gantt-clone-padding !default;
+$gantt-cell-border-color: $neutral-light !default;
+$gantt-group-clone-box-shadow: 0 0 !default;
+$gantt-header-font-size: 12px !default;
+$gantt-header-font-weight: 500 !default;
+$gantt-drag-clone-font-weight: $gantt-header-font-weight !default;
+$gantt-drag-clone-opacity: 1 !default;
+$gantt-group-clone-text-align: center !default;
+$gantt-clone-prop-box-shadow: 0 3px 8px rgba($shadow, .26) !default;
+$gantt-drag-clone-bg-color: $neutral-quintenary !default;
+$gantt-drag-clone-border-color: $neutral-light !default;
+$gantt-drag-clone-color: $neutral-light-fontalt !default;
+$gantt-content-font-color: $neutral-light-font !default;
+$gantt-clone-dragdrop-bg-color: $neutral-light !default;
+$error-elem-color: #e3165b;
+$gantt-border-size: $border-size !default;
+$gantt-active-container-border: $neutral-secondary !default;
+$grid-active-container-border: 0 0 0 1px $neutral-secondary inset !default;
+$gantt-collapse-progress-width: 0px !important;
+$rangecontainer-border-color: #FC7A05;
+$gantt-range-container-arc-radius: 0px !default;
+@include export-module('gantt-material-dark-icons') {
+  #{&}.e-gantt {
+    .e-add::before {
+      content: '\e823';
+    }
+
+    .e-edit::before {
+      content: '\e944';
+    }
+
+    .e-delete::before {
+      content: '\e965';
+    }
+
+    .e-cancel::before {
+      content: '\e953';
+    }
+
+    .e-save::before {
+      content: '\e735';
+    }
+
+    .e-update::before {
+      content: '\e735';
+    }
+
+    .e-search-icon::before {
+      content: '\ebe6';
+    }
+
+    .e-cancel-icon::before {
+      content: '\e953';
+    }
+
+    .e-notes-info::before {
+      content: '\1F6C8';
+    }
+
+    .e-expandall::before {
+      content: '\e555';
+    }
+
+    .e-collapseall::before {
+      content: '\e559';
+    }
+
+    .e-prevtimespan::before {
+      content: '\e85b';
+    }
+
+    .e-nexttimespan::before {
+      content: '\e85f';
+    }
+
+    .e-left-resize-gripper::before,
+    .e-right-resize-gripper::before {
+      content: '\ebef';
+    }
+
+    .e-zoomin::before {
+      content: '\e349';
+    }
+
+    .e-zoomout::before {
+      content: '\e351';
+    }
+
+    .e-zoomtofit::before {
+      content: '\e657';
+    }
+
+    .e-csvexport::before {
+      content: '\e241';
+    }
+
+    .e-excelexport::before {
+      content: '\e242';
+    }
+
+    .e-pdfexport::before {
+      content: '\e240';
+    }
+
+    .e-indent::before {
+      content: '\e33f';
+    }
+
+    .e-outdent::before {
+      content: '\e35d';
+    }
+
+    .e-add-above::before {
+      content: '\e658';
+    }
+
+    .e-add-below::before {
+      content: '\e659';
+    }
+  }
+
+  #{&}.e-gantt.e-device {
+    .e-backarrowspan::before,
+    .e-icon-dlg-close::before {
+      content: '\e85b';
+      }
+
+    .e-left-resize-gripper::before,
+    .e-right-resize-gripper::before {
+      content: '\e903';
+      }
+   }
+}
+
+@include export-module('gantt-layout') {
+  #{&}.e-gantt {
+    display: block;
+    width: 100%;
+
+    .e-cloneproperties {
+      padding: $gantt-bigger-clone-padding;
+    }
+
+    & .e-cloneproperties.e-draganddrop .e-row .e-icon-rowdragicon::before {
+      left: -5px;
+      position: relative;
+    }
+
+    .e-cloneproperties {
+      border-style: solid;
+      border-width: $gantt-border-size;
+      box-shadow: $gantt-group-clone-box-shadow;
+      font-size: $gantt-header-font-size;
+      font-weight: $gantt-drag-clone-font-weight;
+      opacity: $gantt-drag-clone-opacity;
+      overflow: hidden;
+      padding: $gantt-clone-padding;
+      text-align: $gantt-group-clone-text-align;
+      user-select: none;
+      vertical-align: middle;
+      white-space: nowrap;
+      z-index: 100;
+    }
+
+    .e-cloneproperties.e-draganddrop {
+      border-spacing: 0;
+      font-size: $gantt-header-font-size;
+      font-weight: normal;
+      overflow: visible;
+    }
+
+    .e-cloneproperties .e-bothganttlines {
+      border-width: 1px 0 0 1px;
+    }
+
+    .e-draganddrop {
+      border-width: 0 1px 1px;
+      font-weight: normal;
+      padding: 0;
+    }
+
+    .e-draganddrop .e-rowcell {
+      opacity: .95;
+    }
+
+    .e-cloneproperties.e-draganddrop table {
+      border-spacing: 0;
+    }
+
+    .e-icons.e-errorelem {
+      display: inline-block;
+      padding-left: 10px;
+      vertical-align: middle;
+    }
+
+    .e-errorelem::before {
+      color: $error-elem-color;
+      content: '\e22a';
+      transform: rotate(180deg);
+    }
+
+    & .e-verticallines .e-cloneproperties.e-draganddrop .e-rowdragdrop,
+    & .e-bothlines .e-cloneproperties.e-draganddrop .e-rowdragdrop {
+      border-bottom: 0;
+      border-right: 1px solid $gantt-cell-border-color;
+      border-top: 1px solid $gantt-cell-border-color;
+    }
+
+    .e-gantt-toolbar {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      border-style: solid;
+      border-width: 1px 1px 0;
+    }
+
+    .e-flmenu-valuediv {
+      padding-top: $gantt-filter-menu-value-div-padding;
+    }
+
+    .e-gantt-splitter {
+      .e-split-bar.e-split-bar-horizontal.e-resizable-split-bar {
+        margin: 0;
+      }
+
+      .e-pane {
+        overflow: hidden !important; // sass-lint:disable-line no-important
+      }
+    }
+
+    .e-temp-content {
+      border-left: 1px solid;
+    }
+
+    .e-tab {
+      border: 0;
+
+      .e-tab-header .e-toolbar-item.e-active {
+        border-color: transparent;
+      }
+    }
+
+    .e-gantt-dialog .e-tab .e-tab-header {
+      padding-left: $gantt-dialog-tab-padding-left;
+
+      .e-indicator {
+        display: block;
+      }
+
+      .e-toolbar-item .e-tab-wrap {
+        border-style: solid;
+        border-width: $gantt-tab-header-border-width;
+      }
+
+    }
+
+    .e-gantt-dialog .e-tab .e-tab-header:not(.e-vertical)::before {
+      border: 0;
+    }
+
+    .e-gantt-tree-grid-pane {
+      .e-grid {
+        border-width: 0;
+      }
+
+      .e-grid.e-gridhover tr[role='row']:not(.e-editedrow):hover .e-rowcell:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell),
+      .e-grid.e-gridhover tr[role='row']:hover .e-detailrowcollapse:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell),
+      .e-grid.e-gridhover tr[role='row']:hover .e-rowdragdrop:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell),
+      .e-grid.e-rtl .e-gridhover tr[role='row']:hover .e-rowdragdrop:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell),
+      .e-grid.e-gridhover tr[role='row']:hover .e-detailrowexpand:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
+        background-color: transparent;
+      }
+
+      .e-gantt-temp-header {
+        border-bottom-style: solid;
+        border-bottom-width: 1px;
+        height: 45px;
+      }
+
+      .e-headercontent {
+        border-right-width: 0 !important; // sass-lint:disable-line no-important
+      }
+
+      .e-gridheader {
+        border-top-style: none;
+        border-top-width: 0;
+        padding-right: 0 !important; // sass-lint:disable-line no-important
+      }
+
+      .e-columnheader,
+      .e-headercell {
+        height: 63px !important; // sass-lint:disable-line no-important
+      }
+
+      .e-gridcontent .e-content {
+        overflow-x: scroll !important; // sass-lint:disable-line no-important
+      }
+
+      .e-gridcontent .e-content.e-gantt-scroll-padding {
+        width: calc(100% + 17px);
+      }
+
+      .e-ganttnotes-info {
+        text-align: center;
+      }
+
+      .e-icons.e-notes-info {
+        display: inline-block;
+        font-size: 18px;
+        height: 15px;
+        line-height: 10px;
+        vertical-align: middle;
+      }
+
+    }
+
+    .e-gantt-chart {
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+      width: 100%;
+
+      .e-chart-root-container {
+        border-right: 0 solid;
+
+        .e-content {
+          -webkit-overflow-scrolling: touch; // sass-lint:disable-line no-vendor-prefixes
+          overflow-x: scroll;
+          overflow-y: auto;
+          position: relative;
+        }
+
+        .e-nonworking-day-container {
+          position: absolute;
+        }
+
+        .e-event-markers-container {
+          position: absolute;
+        }
+
+        .e-holiday-container {
+          position: absolute;
+        }
+
+        .e-weekend-container {
+          position: absolute;
+        }
+
+      }
+
+
+      .e-timeline-header-container {
+        border-bottom-style: solid;
+        border-right-width: 0;
+        overflow: hidden;
+        position: relative;
+        z-index: 6;
+      }
+
+      .e-timeline-header-table-container > thead > tr > th {
+        border-left: 0;
+        padding: 0 3px;
+      }
+
+      .e-timeline-header-table-container {
+        border-collapse: collapse;
+        border-spacing: 0;
+        border-width: 0;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      .e-timeline-header-table-body {
+        border-collapse: collapse;
+        box-sizing: border-box;
+        display: inline-block;
+        white-space: nowrap;
+        zoom: 1;
+      }
+
+      .e-timeline-top-header-cell,
+      .e-timeline-single-header-cell {
+        border-spacing: 0;
+        border-style: solid;
+        border-top: 0;
+        border-width: 1px;
+        box-sizing: border-box;
+        display: inline-flex;
+        font-size: $gantt-timeline-top-headercell-font-size;
+        font-weight: $gantt-timeline-top-headercell-font-weight;
+        margin: 0;
+        padding: 0;
+        position: static;
+        text-align: center;
+        user-select: none;
+        white-space: nowrap;
+
+        .e-header-cell-label {
+          box-sizing: border-box;
+          margin: auto;
+          overflow: hidden;
+          position: static;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .e-gantt-top-cell-text {
+          padding-left: 8px;
+          text-align: left;
+        }
+
+      }
+
+      .e-gantt-grid-lines {
+        border-bottom-style: solid;
+        border-bottom-width: 1px;
+        border-collapse: collapse;
+        border-spacing: 0;
+        box-sizing: border-box;
+      }
+
+      .e-zero-spacing {
+        border-spacing: 0;
+      }
+
+      .e-chart-row:first-child .e-chart-row-border {
+        //border-width: 0;
+        border-top-color: transparent;
+      }
+
+      .e-chart-row {
+        .e-chart-row-border {
+          border-collapse: separate;
+          border-style: solid;
+          border-width: 1px 0 0;
+        }
+
+        .e-chart-row-cell {
+          font-size: 0;
+          padding: 0;
+        }
+
+        .e-chart-row-border.e-lastrow {
+          border-bottom-width: 1px;
+        }
+      }
+
+      .e-line-container-cell {
+        border-right-style: solid;
+        border-right-width: 1px;
+        height: 100%;
+        position: absolute;
+      }
+
+      .e-taskbar-main-container {
+        cursor: move;
+        display: inline-block;
+        position: absolute;
+        vertical-align: middle;
+        z-index: 3;
+      }
+
+      .e-left-label-container.e-left-label-temp-container {
+        align-items: center;
+        display: inline-flex;
+        justify-content: flex-end;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .e-right-label-container.e-right-label-temp-container {
+        align-items: center;
+        display: inline-flex;
+        float: left;
+        outline: none;
+        overflow: hidden;
+        position: absolute;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .e-left-label-container {
+        display: inline-block;
+      }
+
+      .e-left-label-inner-div,
+      .e-right-label-container {
+        overflow: hidden;
+      }
+
+      .e-left-label-inner-div {
+        align-items: center;
+        display: inline-flex;
+        justify-content: flex-end;
+        width: 100%;
+      }
+
+      .e-label {
+        margin: 3px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .e-right-label-container {
+        background-color: transparent;
+        display: inline-block;
+        margin: 0;
+        position: absolute;
+      }
+
+      .e-right-label-inner-div {
+        align-items: center;
+        display: inline-flex;
+        float: left;
+        outline: none;
+        overflow: hidden;
+      }
+
+      .e-indicator-span {
+        display: inline-block;
+        font-size: 13px;
+        font-weight: 400;
+        overflow: hidden;
+        position: absolute;
+        text-overflow: ellipsis;
+      }
+
+      .e-gantt-child-taskbar,
+      .e-gantt-parent-taskbar,
+      .e-gantt-child-progressbar,
+      .e-gantt-parent-progressbar,
+      .e-gantt-milestone,
+      .e-gantt-parent-milestone,
+      .e-gantt-manualparent-milestone {
+        display: inline-block;
+        width: 100%;
+      }
+
+      .e-manualparent-main-container {
+        background-color: transparent;
+        cursor: move;
+        margin-top: -5px;
+        position: absolute;
+      }
+
+      .e-gantt-manualparent-taskbar {
+        margin-top: 3px;
+      }
+
+      .e-gantt-split-container-line {
+        border-color: inherit;
+        border-top-style: dotted;
+        border-top-width: 2px;
+        height: 0;
+        left: 2px;
+        pointer-events: none;
+        position: absolute;
+        top: 50%;
+        width: 98%;
+      }
+
+      .e-gantt-child-taskbar-inner-div,
+      .e-gantt-parent-taskbar-inner-div {
+        border-spacing: 0;
+        box-sizing: border-box;
+        margin: auto;
+        overflow: hidden;
+        padding: 0;
+        z-index: 3;
+      }
+
+      .e-gantt-parent-progressbar-inner-div {
+        z-index: 3;
+      }
+
+      .e-gantt-child-progressbar-inner-div,
+      .e-gantt-parent-progressbar-inner-div {
+        box-sizing: border-box;
+        text-align: right;
+      }
+
+      .e-chart-scroll-container,
+      .e-chart-rows-container {
+        user-select: none;
+      }
+
+      .e-taskbar-left-resizer,
+      .e-taskbar-right-resizer {
+        display: inline-block;
+        position: absolute;
+        top: 0;
+        width: 10px;
+        z-index: 4;
+      }
+
+      .e-child-progress-resizer {
+        display: inline-block;
+        height: 15px;
+        position: absolute;
+        top: 0;
+        width: 20px;
+        z-index: 5;
+      }
+
+      .e-progress-resize-gripper {
+        cursor: col-resize;
+
+        .e-progressbar-handler {
+          border-style: solid;
+          border-width: 1px;
+          box-sizing: content-box;
+          cursor: col-resize;
+          height: 2px;
+          position: absolute;
+          top: 7px;
+          width: 12px;
+        }
+
+        .e-progressbar-handler-element {
+          border-bottom-style: solid;
+          border-bottom-width: 6px;
+          border-left: 7px solid transparent;
+          border-right: 7px solid transparent;
+          cursor: col-resize;
+          height: 0;
+          left: -1px;
+          position: absolute;
+          top: -7px;
+          width: 0;
+        }
+
+        .e-progressbar-handler-after {
+          border-bottom-style: solid;
+          border-bottom-width: 6px;
+          border-left: 6px solid transparent;
+          border-right: 6px solid transparent;
+          cursor: col-resize;
+          height: 0;
+          left: -1px;
+          position: absolute;
+          top: -6px;
+          width: 0;
+        }
+      }
+
+      .e-baseline-bar {
+        box-sizing: border-box;
+        position: absolute;
+        z-index: 3;
+      }
+
+      .e-milestone-top,
+      .e-parent-milestone-top,
+      .e-manualparent-milestone-top {
+        border-style: none solid solid;
+        border-top: 0;
+      }
+
+      .e-milestone-top,
+      .e-milestone-bottom,
+      .e-parent-milestone-top,
+      .e-parent-milestone-bottom,
+      .e-manualparent-milestone-top,
+      .e-manualparent-milestone-bottom {
+        border-left-color: transparent;
+        border-right-color: transparent;
+      }
+
+      .e-milestone-bottom,
+      .e-parent-milestone-bottom,
+      .e-manualparent-milestone-bottom {
+        border-bottom: 0;
+        border-style: solid solid none;
+      }
+
+      .e-baseline-gantt-milestone-container {
+        position: absolute;
+        z-index: 2;
+      }
+
+      .e-task-label {
+        display: inline;
+        font-weight: normal;
+        margin-left: 8px;
+        margin-right: 15px;
+        vertical-align: middle;
+      }
+
+      .e-task-table {
+        overflow: hidden;
+      }
+
+      .e-left-resize-gripper,
+      .e-right-resize-gripper {
+        align-items: center;
+        cursor: e-resize;
+        display: inline-flex;
+      }
+
+      .e-holiday {
+        display: inline-block;
+        position: absolute;
+
+        .e-span {
+          font-size: 13px;
+          position: absolute;
+          transform: rotate(-90deg);
+          white-space: nowrap;
+          width: 0;
+        }
+      }
+
+      .e-weekend {
+        display: inline-block;
+        position: absolute;
+        z-index: 0;
+      }
+
+      .e-rangecontainer {
+
+        .e-leftarc {
+          border-bottom-left-radius: $gantt-range-container-arc-radius;
+          border-top-left-radius: $gantt-range-container-arc-radius;
+          position: absolute;
+        }
+
+        .e-rightarc {
+          border-bottom-right-radius: $gantt-range-container-arc-radius;
+          border-top-right-radius: $gantt-range-container-arc-radius;
+          position: absolute;
+        }
+      }
+
+      .e-event-markers {
+        border-left: 1px dashed;
+        position: absolute;
+        width: 1px;
+        z-index: 2;
+
+        .e-span-label {
+          border-radius: 3px;
+          font-weight: 500;
+          height: $event-marker-label-height;
+          left: 5px;
+          line-height: $event-marker-line-height;
+          padding: $event-marker-label-padding;
+          position: absolute;
+          top: 50px;
+          white-space: nowrap;
+          width: auto;
+          z-index: 2;
+        }
+
+        .e-gantt-right-arrow {
+          border-bottom: 5px solid transparent;
+          border-right: 5px solid;
+          border-top: 5px solid transparent;
+          height: 0;
+          position: absolute;
+          top: $event-marker-label-arrow-top;
+          width: 0;
+        }
+      }
+
+      .e-gantt-unscheduled-taskbar {
+        border-radius: 0;
+        border-style: none;
+        display: inline-block;
+      }
+
+      .e-connector-line-right-arrow {
+        border-left-style: solid;
+        border-left-width: 10px;
+      }
+
+      .e-connector-line-left-arrow {
+        border-right-style: solid;
+        border-right-width: 10px;
+      }
+
+      .e-connector-line-right-arrow,
+      .e-connector-line-left-arrow {
+        border-bottom: 5px solid transparent;
+        border-top: 5px solid transparent;
+      }
+
+      .e-connector-line-container {
+        z-index: 5;
+      }
+
+      .e-connector-line-z-index {
+        z-index: 1;
+      }
+
+      .e-connector-line-hover {
+        outline: 1px solid;
+      }
+
+      .e-connector-line-hover-z-index {
+        z-index: 100;
+      }
+
+      .e-connectortouchpoint {
+        background-color: transparent;
+        display: block;
+        position: absolute;
+        z-index: 5;
+      }
+
+      .e-connectorpoint-right,
+      .e-connectorpoint-left,
+      .e-right-connectorpoint-outer-div,
+      .e-left-connectorpoint-outer-div {
+        border-radius: 50%;
+        display: inline-block;
+        position: absolute;
+      }
+
+      .e-connectorpoint-left-hover,
+      .e-connectorpoint-right-hover {
+        border-style: solid;
+        border-width: 1px;
+        box-sizing: content-box;
+        cursor: pointer;
+        display: inline-block;
+      }
+
+      .e-connectorpoint-allow-block {
+        cursor: no-drop;
+      }
+
+      .e-gantt-manualparenttaskbar-left,
+      .e-gantt-manualparenttaskbar-right {
+        background-color: $gantt-manualparent-background-color;
+        border-color: $gantt-manualparent-background-color;
+        border-radius: 50%;
+        display: inline-block;
+        height: 10px;
+        margin: -1px;
+        position: absolute;
+        width: 10px;
+      }
+
+      .e-manualparent-milestone-top,
+      .e-manualparent-milestone-bottom {
+        border-bottom-color: $gantt-manualparent-background-color;
+      }
+
+      .e-gantt-manualparenttaskbar-right {
+        cursor: e-resize;
+        margin-left: -8px;
+      }
+
+      .e-gantt-manualparenttaskbar-left {
+        margin-left: 0;
+      }
+
+      .e-gantt-manualparenttaskbar {
+        background: $gantt-manualparent-background-color;
+        margin-top: 3px;
+        position: absolute;
+      }
+
+      .e-icon {
+        font-family: 'e-icons';
+        font-size: 13px;
+        font-style: normal;
+        font-variant: normal;
+        font-weight: normal;
+        line-height: 1;
+        text-transform: none;
+        vertical-align: middle;
+      }
+
+      .e-active-container {
+        outline: 1px solid;
+        outline-offset: 2px;
+      }
+
+    }
+
+    .e-gantt-dialog {
+
+      border: 0;
+
+      .e-gridform .e-table {
+        border-spacing: 0;
+      }
+
+      .e-item {
+        height: $gantt-dialog-general-height;
+      }
+
+      .e-dependent-div {
+        border-bottom-width: $gantt-depedent-div-border-bottom;
+      }
+
+      .e-icon-dlg-close {
+        opacity: initial;
+      }
+
+      .e-toolbar {
+        border-top-width: 0;
+      }
+
+      .e-resource-div {
+        border-bottom-width: $gantt-resource-div-border-bottom;
+
+        .e-gridheader {
+          border-top-width: 0;
+        }
+
+      }
+
+      .e-edit-form-row {
+        height: $gantt-dialog-general-height;
+        overflow-y: auto;
+        padding-bottom: $gantt-dialog-general-padding-bottom;
+      }
+
+      .e-edit-form-column:nth-child(odd) {
+        float: left;
+        padding: $gantt-dialog-edit-form-odd-padding;
+        width: 50%;
+      }
+
+      .e-edit-form-column:nth-child(even) {
+        float: left;
+        padding: $gantt-dialog-edit-form-even-padding;
+        width: 50%;
+      }
+
+      .e-edit-form-row.e-scroll .e-edit-form-column:nth-child(even) {
+        padding: $gantt-dialog-edit-form-scroll-padding;
+      }
+
+      .e-edit-form-column {
+        height: 75px;
+      }
+
+      .e-dependent-div .e-content {
+        height: $gantt-dialog-dependent-height;
+      }
+
+      .e-resource-div .e-content {
+        height: $gantt-dialog-resource-height;
+      }
+
+      .e-richtexteditor {
+        border-bottom-width: $gantt-richtext-border-bottom;
+        height: $gantt-dialog-rte-height !important; // sass-lint:disable-line no-important
+        overflow: hidden;
+      }
+
+      .e-richtexteditor.e-rte-tb-expand {
+        border-top: 0;
+      }
+
+      .e-richtexteditor .e-rte-content {
+        border-bottom-width: $gantt-richtext-content-border-bottom;
+        height: $gantt-dialog-rte-content-height;
+      }
+
+      > .e-dlg-content {
+        padding: 0 !important; // sass-lint:disable-line no-important
+      }
+
+      .e-dlg-header-content {
+        border-bottom: 0 !important; // sass-lint:disable-line no-important
+      }
+
+      .e-dlg-header-content {
+        border-radius: $gantt-dialog-border-radius;
+        padding-bottom: $gantt-dialog-padding-bottom;
+
+        .e-btn.e-dlg-closeicon-btn {
+          border-radius: 50%;
+        }
+      }
+    }
+  }
+
+  .e-icon-rowselect::before {
+    content: '\e930';
+  }
+
+  .e-ganttpopup {
+    -moz-user-select: none; // sass-lint:disable-line no-vendor-prefixes
+    -ms-user-select: none; // sass-lint:disable-line no-vendor-prefixes
+    -webkit-user-select: none; // sass-lint:disable-line no-vendor-prefixes
+    font-weight: normal;
+    position: absolute;
+    user-select: none;
+    z-index: 99999;
+
+    .e-rowselect {
+      line-height: 18px;
+      text-indent: 7%;
+    }
+
+    span {
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-block;
+      height: 26px;
+      padding: 4px;
+      width: 26px;
+     }
+
+    .e-content {
+      border-radius: 4px;
+      border-style: solid;
+      border-width: 1px;
+      font-size: 14px;
+      padding: 4px;
+    }
+
+    .e-tail::after,
+    .e-tail::before,
+    .e-ganttpopup {
+      border: 10px solid transparent;
+      content: '';
+      height: 0;
+      left: 8px;
+      position: absolute;
+      width: 0;
+    }
+
+    .e-downtail::after {
+      top: 34px;
+    }
+  }
+
+  .e-gantt-tooltip.e-tooltip-wrap {
+    opacity: 1;
+  }
+
+  .e-gantt-tooltip-label {
+    padding-bottom: 2px;
+    padding-right: 2px;
+    text-align: right;
+  }
+
+  .e-gantt.e-device {
+    .e-edit-form-column {
+      &:nth-child(odd),
+      &:nth-child(even) {
+        float: none;
+        padding: $gantt-dialog-edit-form-odd-padding;
+        width: 100%;
+      }
+    }
+
+    .e-edit-form-row {
+      height: auto;
+    }
+
+    .e-adaptive-searchbar {
+      padding: 5px 10px;
+      width: 90%;
+    }
+
+    .e-backarrowspan {
+      font-size: 16px;
+      padding: 5px 10px;
+    }
+
+    .e-gantt-dialog {
+      max-height: none;
+
+      .e-dlg-closeicon-btn {
+        float: left;
+        left: -4px;
+      }
+
+      .e-icon-dlg-close {
+        font-size: 16px;
+      }
+
+      .e-dlg-header {
+        display: inline-block;
+      }
+    }
+
+    .e-toolbar-item {
+      padding: 7px;
+    }
+
+    .e-toolbar .e-icons {
+      font-size: 18px;
+    }
+
+    .e-gridheader .e-icons {
+      font-size: 12px;
+    }
+
+    .e-right-resize-gripper,
+    .e-left-resize-gripper {
+      border: 7px solid;
+      z-index: -1;
+
+      &::before {
+        font-size: 14px;
+        margin-left: -7px;
+      }
+    }
+
+    .e-dependent-div .e-content {
+      height: 100%;
+    }
+
+    .e-resource-div .e-content {
+      height: 100%;
+    }
+
+    .e-richtexteditor {
+      height: 100%;
+
+      .e-rte-content {
+        height: 100%;
+      }
+    }
+  }
+}
+@include export-module('gantt-theme') {
+  /*! Gantt theme */
+  .e-gantt {
+    .e-gantt-splitter {
+      border-color: $gantt-header-border-color;
+      border-radius: $gantt-header-border-radius;
+    }
+
+    .e-cloneproperties.e-draganddrop {
+      box-shadow: $gantt-clone-prop-box-shadow;
+      opacity: .95;
+      overflow: visible;
+    }
+
+    .e-cloneproperties {
+      background-color: $gantt-drag-clone-bg-color;
+      border-color: $gantt-drag-clone-border-color;
+      color: $gantt-drag-clone-color;
+    }
+
+    .e-cloneproperties.e-draganddrop .e-rowcell {
+      color: $gantt-content-font-color;
+    }
+
+    .e-cloneproperties.e-draganddrop table,
+    .e-cloneproperties.e-draganddrop table .e-selectionbackground {
+      background-color: $gantt-clone-dragdrop-bg-color;
+      height: 30px;
+    }
+
+    .e-gantt-toolbar + .e-gantt-splitter {
+      border-top-left-radius: $gantt-splitter-border-top-left-radius;
+      border-top-right-radius: $gantt-splitter-border-top-right-radius;
+    }
+
+    .e-grid .e-focused:not(.e-menu-item) {
+      box-shadow: $grid-active-container-border !important; // sass-lint:disable-line no-important
+    }
+
+    .e-gantt-dialog {
+
+      .e-dlg-header {
+        color: $gantt-dialog-header-font-color;
+      }
+
+      .e-dlg-header-content {
+        background: $gantt-dialog-tab-background;
+      }
+
+      .e-icon-dlg-close {
+        color: $gantt-dialog-icon-color;
+      }
+
+      .e-btn.e-dlg-closeicon-btn:hover {
+        background-color: $gantt-dialog-icon-hover-color;
+
+        .e-icon-dlg-close {
+          color: $gantt-dialog-close-icon-hover-color;
+        }
+
+      }
+
+      .e-tab {
+
+        .e-tab-header {
+          background: $gantt-dialog-tab-background;
+
+          .e-indicator {
+            background: $gantt-tab-selection-indicator-color;
+          }
+
+          .e-toolbar-item.e-active {
+            background-color: $gantt-dialog-active-tab-background;
+
+            .e-tab-wrap {
+              .e-tab-text {
+                color: $gantt-tab-header-active-font-color;
+              }
+            }
+
+          }
+
+          .e-toolbar-item {
+
+            .e-tab-wrap {
+              border-color: $gantt-dialog-tab-header-border-no-color;
+
+              .e-tab-text {
+                color: $gantt-tab-header-font-color;
+              }
+
+            }
+
+          }
+
+          .e-toolbar-item:not(.e-active) .e-tab-wrap:hover {
+            background: $gantt-tab-header-hover-color;
+            border-bottom: $gantt-dialog-tab-hover-border-bottom;
+            border-bottom-left-radius: $gantt-dialog-tab-hover-border-bottom-radius;
+            border-bottom-right-radius: $gantt-dialog-tab-hover-border-bottom-radius;
+            border-color: $gantt-dialog-tab-hover-border-color;
+
+            .e-tab-text {
+              color: $gantt-tab-header-hover-font-color;
+            }
+
+          }
+
+        }
+
+      }
+
+    }
+
+    .e-temp-content {
+      border-color: $gantt-header-border-color;
+    }
+
+    .e-splitter-box {
+      border-color: $gantt-header-border-color;
+    }
+
+    .e-gantt-temp-header {
+      border-color: $gantt-header-border-color;
+    }
+
+    .e-gantt-chart-pane {
+      border-color: $gantt-header-border-color;
+    }
+
+    .e-gantt-tree-grid-pane {
+      .e-timeline-single-header-outer-div {
+        height: $gantt-timeline-single-header-outer-div !important; // sass-lint:disable-line no-important
+      }
+
+      .e-grid td.e-active {
+        background: $gantt-active-background;
+      }
+    }
+
+    .e-gantt-chart {
+      .e-timeline-header-container {
+        background: $gantt-header-bg-color;
+        border-bottom-color: $gantt-header-border-color;
+        border-bottom-width: $gantt-header-border-bottom-width;
+        border-right-color: $gantt-header-border-color;
+        color: $gantt-header-color;
+        height: $gantt-header-border-height;
+      }
+
+      .e-timeline-top-header-cell,
+      .e-timeline-single-header-cell {
+        border-color: $gantt-header-border-color;
+        color: $gantt-header-color;
+      }
+
+      .e-timeline-single-header-cell {
+        height: $gantt-chart-timeline-single-header-outer-div;
+        line-height: $gantt-chart-timeline-single-header-outer-div;
+      }
+
+      .e-timeline-single-header-outer-div {
+        height: $gantt-chart-timeline-single-header-outer-div !important; // sass-lint:disable-line no-important
+      }
+
+      .e-timeline-top-header-cell {
+        height: $gantt-timeline-top-header-cell-height;
+      }
+
+      .e-chart-root-container {
+        background-color: $gantt-table-background;
+        border-color: $gantt-header-border-color;
+      }
+
+      .e-timeline-header-table-body {
+        border-spacing: $gantt-header-border-spacing;
+      }
+
+      .e-chart-row-border {
+        border-top-color: $gantt-grid-line-color;
+      }
+
+      .e-chart-row-cell {
+        color: $gantt-content-color;
+      }
+
+      .e-chart-row-border.e-lastrow {
+        border-bottom-color: $gantt-grid-line-color;
+      }
+
+      .e-line-container-cell {
+        border-color: $gantt-line-container-cell-border-color;
+      }
+
+      .e-active-container {
+        outline-color: $gantt-active-container-border;
+      }
+
+      .e-gantt-child-taskbar-inner-div {
+        background-color: $gantt-child-task-bar;
+        border: $gantt-child-task-bar-border;
+        border-radius: $gantt-parent-progress-bar-border-radius;
+      }
+
+      .e-collapse-parent {
+        .e-gantt-child-taskbar-inner-div {
+          border: 1px solid $gantt-task-label-font-color;
+          border-bottom: 0;
+          border-top: 0;
+        }
+
+        .e-gantt-child-progressbar {
+          width: $gantt-collapse-progress-width;
+        }
+
+
+        .e-collapsed-taskbar-drag {
+          background-color: $gantt-child-progress-bar;
+        }
+
+
+        .e-left-connectorpoint-outer-div {
+          display: none;
+        }
+
+        .e-right-connectorpoint-outer-div {
+          display: none;
+        }
+      }
+
+      .e-gantt-parent-taskbar-inner-div {
+        background-color: $gantt-parent-task-bar;
+        border: $gantt-parent-task-bar-border;
+        border-radius: $gantt-parent-progress-bar-border-radius;
+      }
+
+      .e-gantt-parent-progressbar-inner-div {
+        background-color: $gantt-parent-progress-bar;
+        border: $gantt-parent-progress-bar-border;
+        //margin-left: $gantt-child-progress-margin-left;
+      }
+
+      .e-gantt-child-progressbar-inner-div {
+        background-color: $gantt-child-progress-bar;
+        border: $gantt-child-progress-bar-border;
+        //margin-left: $gantt-child-progress-margin-left;
+      }
+
+      .e-gantt-child-manualtaskbar {
+        background-color: $gantt-manualchild-task-bar;
+        border: $gantt-manualchild-task-bar-border;
+      }
+
+      .e-gantt-unscheduled-taskbar.e-gantt-child-manualtaskbar {
+        background: $gantt-unscheduled-manualtaskbar-background;
+      }
+
+      .e-gantt-child-manualprogressbar {
+        background-color: $gantt-manualchild-progress-bar;
+        border: $gantt-manualchild-progress-bar-border;
+      }
+
+      .e-holiday {
+        background: $holiday-background;
+
+        .e-span {
+          color: $holiday-label-color;
+          font-size: $holiday-label-font-size;
+        }
+      }
+
+      .e-weekend {
+        background: $weekend-background;
+      }
+
+      .e-weekend-header-cell {
+        background: $weekend-background;
+      }
+
+      .e-rangecontainer {
+
+        .e-rg-rangdiv {
+          border: 2px solid $rangecontainer-border-color;
+          width: 5px;
+          z-index: 6;
+        }
+      }
+
+      .e-event-markers {
+        border-left-color: $event-marker-line-color;
+
+        .e-span-label {
+          background-color: $event-marker-label-color;
+          color: $event-marker-label-font-color;
+          font-size: $event-marker-label-font-size;
+        }
+
+        .e-gantt-right-arrow {
+          border-right-color: $event-marker-label-color;
+        }
+      }
+
+      .e-gantt-unscheduled-taskbar {
+        background: $gantt-unscheduled-taskbar-background;
+        background-color: $gantt-unscheduled-taskbar-background-color;
+        border: $gantt-unscheduled-taskbar-border;
+        border-radius: $gantt-unscheduled-taskbar-border-radius;
+      }
+
+      .e-unscheduled-milestone-top {
+        border-bottom-color: $gantt-unscheduled-milestone-top-border;
+      }
+
+      .e-unscheduled-milestone-bottom {
+        border-top-color: $gantt-unscheduled-milestone-bottom-border;
+      }
+
+      .e-progress-resize-gripper {
+
+        .e-progressbar-handler {
+          background: $progress-handler-background;
+          border-color: $progress-handler-outline;
+        }
+
+        .e-progressbar-handler-element {
+          border-bottom-color: $progress-handler-outline;
+        }
+
+        .e-progressbar-handler-after {
+          border-bottom-color: $progress-handler-background;
+        }
+
+      }
+
+      .e-gantt-dependency-view-container {
+        display: block;
+        z-index: 5;
+      }
+
+      .e-line {
+        border-color: $connector-line-color;
+      }
+
+      .e-connector-line-right-arrow {
+        border-left-color: $connector-line-color;
+      }
+
+      .e-connector-line-left-arrow {
+        border-right-color: $connector-line-color;
+      }
+
+      .e-connector-line-right-arrow-hover {
+        border-left-color: $connector-line-hover-color;
+      }
+
+      .e-connector-line-left-arrow-hover {
+        border-right-color: $connector-line-hover-color;
+      }
+
+      .e-connector-line-hover {
+        border-color: $connector-line-hover-color;
+        outline-color: $connector-line-hover-color;
+      }
+
+      .e-gantt-false-line {
+        border-top-color: $connector-false-line-color;
+      }
+
+      .e-connectorpoint-left-hover,
+      .e-connectorpoint-right-hover {
+        background-color: $connector-point-hover-color;
+        border-color: $connector-point-border-color;
+      }
+
+      .e-connectorpoint-left-hover:hover,
+      .e-connectorpoint-right-hover:hover {
+        background-color: $connector-point-hover-bg-color;
+        border-color: $connector-point-hover-border-color;
+      }
+
+      .e-left-label-inner-div,
+      .e-right-label-inner-div {
+        color: $gantt-label-color;
+        font-size: $gantt-label-size;
+      }
+
+      .e-left-label-temp-container {
+        color: $gantt-label-font-color;
+        font-size: $gantt-label-font-size;
+        padding-right: $gantt-right-label-container-margin-left;
+      }
+
+      .e-right-label-temp-container {
+        color: $gantt-label-font-color;
+        font-size: $gantt-label-font-size;
+        margin-left: $gantt-right-label-container-margin-left;
+      }
+
+      .e-right-label-container {
+        margin-left: $gantt-right-label-container-margin-left;
+      }
+
+      .e-left-label-container {
+        padding-right: $gantt-right-label-container-margin-left;
+      }
+
+      .e-connectorpoint-right {
+        margin-left: $gantt-connector-point-right-margin-left;
+      }
+
+      .e-right-connectorpoint-outer-div,
+      .e-left-connectorpoint-outer-div {
+        height: $gantt-connector-point-height;
+        width: $gantt-connector-point-width;
+      }
+
+      .e-left-connectorpoint-outer-div {
+        left: $gantt-connector-left-point-left;
+      }
+
+      .e-gantt-unscheduled-taskbar-left,
+      .e-gantt-unscheduled-taskbar-right {
+        border-right: transparent;
+        border-width: $gantt-unscheduled-taskbar-left;
+      }
+
+      .e-gantt-unscheduled-taskbar-right {
+        border-bottom-left-radius: $gantt-unscheduled-taskbar-left-radius;
+        border-bottom-right-radius: $gantt-unscheduled-taskbar-right-radius;
+        border-top-left-radius: $gantt-unscheduled-taskbar-left-radius;
+        border-top-right-radius: $gantt-unscheduled-taskbar-right-radius;
+      }
+
+      .e-gantt-unscheduled-taskbar-left {
+        border-bottom-left-radius: $gantt-progress-bar-left-radius;
+        border-top-left-radius: $gantt-progress-bar-left-radius;
+      }
+
+      .e-task-label {
+        color: $gantt-task-label-font-color;
+        font-size: $gantt-task-label-font-size;
+      }
+
+      .e-icon {
+        color: $gantt-edit-icon-color;
+      }
+
+      .e-milestone-top {
+        border-bottom-color: $gantt-milestone-border-color;
+      }
+
+      .e-milestone-bottom {
+        border-top-color: $gantt-milestone-border-color;
+      }
+
+      .e-parent-milestone-top {
+        border-bottom-color: $gantt-parent-milestone-border-color;
+      }
+
+      .e-parent-milestone-bottom {
+        border-top-color: $gantt-parent-milestone-border-color;
+      }
+
+      .e-manualparent-milestone-top {
+        border-bottom-color: $gantt-manualparent-background-color;
+      }
+
+      .e-manualparent-milestone-bottom {
+        border-top-color: $gantt-manualparent-background-color;
+      }
+
+      .e-gantt-unscheduled-manualtask {
+        background: $gantt-unscheduledmanualparent-background-color;
+      }
+
+      .e-label {
+        color: $gantt-label-font-color;
+        font-size: $gantt-label-font-size;
+      }
+
+      .e-active {
+        background: $gantt-active-background;
+        color: $gantt-active-color;
+        opacity: $gantt-active-color-opacity;
+      }
+
+      .e-active .e-label {
+        color: $gantt-active-color;
+      }
+
+      .e-baseline-bar {
+        background-color: $gantt-baseline-color;
+      }
+
+      .e-baseline-milestone-top {
+        border-bottom-color: $gantt-baseline-color;
+      }
+
+      .e-baseline-milestone-bottom {
+        border-top-color: $gantt-baseline-color;
+      }
+
+      .e-uptail::before {
+        border-bottom-color: $gantt-uptail-border;
+      }
+
+      .e-downtail::after {
+        border-top-color: $progress-handler-outline;
+      }
+
+      .e-downtail::before {
+        border-top-color: $gantt-uptail-border;
+      }
+
+      .e-ganttpopup .e-content {
+        background-color: $progress-handler-outline;
+        border-color: $gantt-uptail-border;
+      }
+
+      .e-spanclicked,
+      .e-grid .e-gridpopup .e-spanclicked {
+        border-color: $gantt-gridpopup-span;
+      }
+
+      .e-active-parent-task {
+        border-radius: 4px;
+        box-shadow: 4px 4px 3px 0 $gantt-active-parent-shadow;
+
+        .e-gantt-parent-taskbar-inner-div {
+          background: $gantt-active-parent-task;
+          border: $gantt-active-parent-task;
+        }
+
+        .e-gantt-parent-progressbar-inner-div {
+          background-color: transparent;
+          border: transparent;
+        }
+
+        .e-task-label {
+          color: transparent;
+        }
+
+      }
+
+      .e-predecessor-touch-mode {
+
+        .e-task-label {
+          color: transparent !important; // sass-lint:disable-line no-important
+        }
+
+        .e-line {
+          border-color: $gantt-inactive-parent !important; // sass-lint:disable-line no-important
+        }
+
+        .e-connector-line-right-arrow {
+          border-left-color: $gantt-inactive-parent !important; // sass-lint:disable-line no-important
+        }
+
+        .e-connector-line-left-arrow {
+          border-right-color: $gantt-inactive-parent !important; // sass-lint:disable-line no-important
+        }
+
+        .e-gantt-child-taskbar-inner-div {
+          background: $gantt-inactive-child !important; // sass-lint:disable-line no-important
+          border: $gantt-inactive-child !important; // sass-lint:disable-line no-important
+        }
+
+        .e-gantt-child-progressbar-inner-div {
+          background-color: transparent !important; // sass-lint:disable-line no-important
+          border: transparent !important; // sass-lint:disable-line no-important
+        }
+
+        .e-milestone-top {
+          border-bottom-color: $gantt-inactive-child !important; // sass-lint:disable-line no-important
+        }
+
+        .e-milestone-bottom {
+          border-top-color: $gantt-inactive-child !important; // sass-lint:disable-line no-important
+        }
+
+        .e-gantt-parent-taskbar-inner-div {
+          background-color: $gantt-inactive-parent !important; // sass-lint:disable-line no-important
+          border: $gantt-inactive-parent !important; // sass-lint:disable-line no-important
+        }
+
+        .e-gantt-parent-progressbar-inner-div {
+          background-color: transparent !important; // sass-lint:disable-line no-important
+          border: transparent !important; // sass-lint:disable-line no-important
+        }
+
+        .e-active-child-task {
+
+          .e-gantt-child-taskbar-inner-div {
+            background: $gantt-child-progress-bar !important; // sass-lint:disable-line no-important
+            border: $gantt-child-progress-bar !important; // sass-lint:disable-line no-important
+          }
+
+          .e-milestone-top {
+            border-bottom-color: $gantt-child-progress-bar !important; // sass-lint:disable-line no-important
+          }
+
+          .e-milestone-bottom {
+            border-top-color: $gantt-child-progress-bar !important; // sass-lint:disable-line no-important
+          }
+
+        }
+
+        .e-active-connected-task {
+
+          .e-gantt-child-taskbar-inner-div {
+            background: $gantt-connected-task !important; // sass-lint:disable-line no-important
+            border: $gantt-connected-task !important; // sass-lint:disable-line no-important
+          }
+
+          .e-milestone-top {
+            border-bottom-color: $gantt-connected-task !important; // sass-lint:disable-line no-important
+          }
+
+          .e-milestone-bottom {
+            border-top-color: $gantt-connected-task !important; // sass-lint:disable-line no-important
+          }
+
+          .e-line {
+            border-color: $gantt-child-progress-bar !important; // sass-lint:disable-line no-important
+          }
+
+          .e-connector-line-right-arrow {
+            border-left-color: $gantt-child-progress-bar !important; // sass-lint:disable-line no-important
+          }
+
+          .e-connector-line-left-arrow {
+            border-right-color: $gantt-child-progress-bar !important; // sass-lint:disable-line no-important
+          }
+
+        }
+
+      }
+
+    }
+
+    .e-icons {
+      color: $gantt-icons-color;
+    }
+
+    .e-grid .e-icons:not(.e-stop):not(.e-check):not(.e-icon-left):not(.e-date-icon) {
+      color: $gantt-header-color !important; // sass-lint:disable-line no-important
+    }
+
+  }
+
+  .e-gantt.e-device {
+    .e-left-resize-gripper,
+    .e-right-resize-gripper {
+      border-color: $gantt-left-resize-gripper-border;
+      color: $gantt-left-resize-gripper-color;
+    }
+
+    .e-backarrowspan {
+      color: $gantt-gridpopup-span;
+    }
+
+  }
+
+}

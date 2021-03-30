@@ -1,7 +1,7 @@
 /**
  * Metals Data 
  */
-//tslint:disable
+/* eslint-disable */
 export let Metals: Object[] = [
     { Sport: "Swimming", Gold: 16, GameImage: 'Swimming.svg', ItemHeight: "180px", ItemWidth: '180px' },
     { Sport: "Athletics", Gold: 13, GameImage: 'Athletics.svg', ItemHeight: "70px", ItemWidth: '70px' },

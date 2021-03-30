@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable prefer-const */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { withInRange, logBase, markerAnimate, PolarArc, firstToLowerCase, ChartLocation } from '../../common/utils/helper';
 import { valueToCoefficient, CoefficientToVector, valueToPolarCoefficient } from '../../common/utils/helper';
 import { PathOption } from '@syncfusion/ej2-svg-base';
@@ -6,7 +10,6 @@ import { Series, Points } from './chart-series';
 import { PolarRadarPanel } from '../axis/polar-radar-panel';
 import { RectPosition } from './column-base';
 import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
-import { AnimationModel } from '../../common/model/base-model';
 import { pointRender } from '../../common/model/constants';
 import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Axis } from '../axis/axis';
@@ -18,7 +21,8 @@ import { Axis } from '../axis/axis';
 export class PolarSeries extends PolarRadarPanel {
     /**
      * Render Polar Series.
-     * @return {void}.
+     *
+     * @returns {void}
      * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, inverted: boolean): void {
@@ -40,7 +44,8 @@ export class PolarSeries extends PolarRadarPanel {
 
     /**
      * Render Column DrawType.
-     * @return {void}.
+     *
+     * @returns {void}
      * @private
      */
     public columnDrawTypeRender(series: Series, xAxis: Axis, yAxis: Axis): void {
@@ -132,7 +137,8 @@ export class PolarSeries extends PolarRadarPanel {
 
     /**
      * To trigger the point rendering event.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public triggerEvent(chart: Chart, series: Series, point: Points): IPointRenderEventArgs {
@@ -147,7 +153,8 @@ export class PolarSeries extends PolarRadarPanel {
     }
 
     /** get position for column drawtypes
-     * @return {void}.
+     *
+     * @returns {void}
      * @private
      */
     public getSeriesPosition(series: Series): void {
@@ -190,12 +197,12 @@ export class PolarSeries extends PolarRadarPanel {
 
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
 
     public doAnimation(series: Series): void {
-        let option: AnimationModel = series.animation;
         let duration: number = series.animation.duration;
         let delay: number = series.animation.delay;
         let rectElements: NodeList = series.seriesElement.childNodes;
@@ -216,7 +223,8 @@ export class PolarSeries extends PolarRadarPanel {
     }
     /**
      * To do the Polar Radar draw type column animation.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public doPolarRadarAnimation(animateElement: Element, delay: number, duration: number, series: Series): void {
@@ -235,7 +243,7 @@ export class PolarSeries extends PolarRadarPanel {
                         + ' ' + chartcenterY + ') scale(' + elementHeight + ') translate(' + (-chartcenterX) + ' ' + (-chartcenterY) + ')');
                 }
             },
-            end: (model: AnimationOptions) => {
+            end: () => {
                 (<HTMLElement>animateElement).style.visibility = 'visible';
                 animateElement.removeAttribute('transform');
                 series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
@@ -273,11 +281,12 @@ export class PolarSeries extends PolarRadarPanel {
 
     /**
      * To destroy the polar series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method performed here
          */

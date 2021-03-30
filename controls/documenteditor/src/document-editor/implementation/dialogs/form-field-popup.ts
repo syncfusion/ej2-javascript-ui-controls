@@ -29,13 +29,16 @@ export class FormFieldPopUp {
     private datePickerInstance: DateTimePicker;
     private ddlInstance: DropDownList;
     private dataPickerOkButton: Button;
-
-    constructor(owner: DocumentEditor) {
+    /**
+     * @param {DocumentEditor} owner - Specifies the document editor.
+     * @private
+     */
+    public constructor(owner: DocumentEditor) {
         this.owner = owner;
     }
 
     private initPopup(): void {
-        let popupElement: HTMLElement = createElement('div', { className: 'e-de-form-popup' });
+        const popupElement: HTMLElement = createElement('div', { className: 'e-de-form-popup' });
         this.textBoxContainer = this.initTextBoxInput();
         popupElement.appendChild(this.textBoxContainer);
         popupElement.appendChild(this.initNumericTextBox());
@@ -46,13 +49,13 @@ export class FormFieldPopUp {
     }
 
     private initTextBoxInput(): HTMLElement {
-        let textBoxDiv: HTMLElement = createElement('div', { className: 'e-de-txt-field' });
-        let textBoxInput: HTMLInputElement = createElement('input', { className: 'e-de-txt-form' }) as HTMLInputElement;
-        let textBox: TextBox = new TextBox();
+        const textBoxDiv: HTMLElement = createElement('div', { className: 'e-de-txt-field' });
+        const textBoxInput: HTMLInputElement = createElement('input', { className: 'e-de-txt-form' }) as HTMLInputElement;
+        const textBox: TextBox = new TextBox();
         this.textBoxInput = textBoxInput;
-        let textBoxButtonDiv: HTMLElement = createElement('div', { className: 'e-de-cmt-action-button' });
-        let textBoxOkButton: HTMLButtonElement = createElement('button') as HTMLButtonElement;
-        let textBoxCancelButton: HTMLButtonElement = createElement('button') as HTMLButtonElement;
+        const textBoxButtonDiv: HTMLElement = createElement('div', { className: 'e-de-cmt-action-button' });
+        const textBoxOkButton: HTMLButtonElement = createElement('button') as HTMLButtonElement;
+        const textBoxCancelButton: HTMLButtonElement = createElement('button') as HTMLButtonElement;
         textBoxOkButton.addEventListener('click', this.applyTextFormFieldValue);
         textBoxCancelButton.addEventListener('click', this.closeButton);
         textBoxDiv.appendChild(textBoxInput);
@@ -60,20 +63,20 @@ export class FormFieldPopUp {
         textBoxButtonDiv.appendChild(textBoxCancelButton);
         textBoxDiv.appendChild(textBoxButtonDiv);
         textBox.appendTo(textBoxInput);
-        let okButton: Button = new Button({ cssClass: 'e-de-save', iconCss: 'e-de-save-icon' }, textBoxOkButton);
-        let cancelButton: Button = new Button({ cssClass: 'e-de-cancel', iconCss: 'e-de-cancel-icon' }, textBoxCancelButton);
+        new Button({ cssClass: 'e-de-save', iconCss: 'e-de-save-icon' }, textBoxOkButton);
+        new Button({ cssClass: 'e-de-cancel', iconCss: 'e-de-cancel-icon' }, textBoxCancelButton);
         this.textBoxInstance = textBox;
         return textBoxDiv;
     }
 
     private initNumericTextBox(): HTMLElement {
-        let numericDiv: HTMLElement = createElement('div', { className: 'e-de-num-field' });
-        let numberInput: HTMLInputElement = createElement('input', { className: 'e-de-txt-form' }) as HTMLInputElement;
-        let numericTextBox: NumericTextBox = new NumericTextBox();
+        const numericDiv: HTMLElement = createElement('div', { className: 'e-de-num-field' });
+        const numberInput: HTMLInputElement = createElement('input', { className: 'e-de-txt-form' }) as HTMLInputElement;
+        const numericTextBox: NumericTextBox = new NumericTextBox();
         this.numberInput = numberInput;
-        let textBoxButtonDiv: HTMLElement = createElement('div', { className: 'e-de-cmt-action-button' });
-        let textBoxOkButton: HTMLButtonElement = createElement('button') as HTMLButtonElement;
-        let textBoxCancelButton: HTMLButtonElement = createElement('button') as HTMLButtonElement;
+        const textBoxButtonDiv: HTMLElement = createElement('div', { className: 'e-de-cmt-action-button' });
+        const textBoxOkButton: HTMLButtonElement = createElement('button') as HTMLButtonElement;
+        const textBoxCancelButton: HTMLButtonElement = createElement('button') as HTMLButtonElement;
         textBoxOkButton.addEventListener('click', this.applyNumberFormFieldValue);
         textBoxCancelButton.addEventListener('click', this.closeButton);
         numericDiv.appendChild(numberInput);
@@ -81,21 +84,21 @@ export class FormFieldPopUp {
         textBoxButtonDiv.appendChild(textBoxCancelButton);
         numericDiv.appendChild(textBoxButtonDiv);
         numericTextBox.appendTo(numberInput);
-        let okButton: Button = new Button({ cssClass: 'e-de-save', iconCss: 'e-de-save-icon' }, textBoxOkButton);
-        let cancelButton: Button = new Button({ cssClass: 'e-de-cancel', iconCss: 'e-de-cancel-icon' }, textBoxCancelButton);
+        new Button({ cssClass: 'e-de-save', iconCss: 'e-de-save-icon' }, textBoxOkButton);
+        new Button({ cssClass: 'e-de-cancel', iconCss: 'e-de-cancel-icon' }, textBoxCancelButton);
         this.numericTextBoxInstance = numericTextBox;
         return numericDiv;
     }
 
     private initDatePicker(): HTMLElement {
-        let dateDiv: HTMLElement = createElement('div', { className: 'e-de-date-field' });
-        let dateInput: HTMLInputElement = createElement('input', { className: 'e-de-txt-form' }) as HTMLInputElement;
-        // tslint:disable-next-line:max-line-length
-        let datePicker: DateTimePicker = new DateTimePicker({ allowEdit: false, strictMode: true, change: this.enableDisableDatePickerOkButton });
+        const dateDiv: HTMLElement = createElement('div', { className: 'e-de-date-field' });
+        const dateInput: HTMLInputElement = createElement('input', { className: 'e-de-txt-form' }) as HTMLInputElement;
+        // eslint-disable-next-line max-len
+        const datePicker: DateTimePicker = new DateTimePicker({ allowEdit: false, strictMode: true, change: this.enableDisableDatePickerOkButton });
         this.dateInput = dateInput;
-        let textBoxButtonDiv: HTMLElement = createElement('div', { className: 'e-de-cmt-action-button' });
-        let textBoxOkButton: HTMLButtonElement = createElement('button') as HTMLButtonElement;
-        let textBoxCancelButton: HTMLButtonElement = createElement('button') as HTMLButtonElement;
+        const textBoxButtonDiv: HTMLElement = createElement('div', { className: 'e-de-cmt-action-button' });
+        const textBoxOkButton: HTMLButtonElement = createElement('button') as HTMLButtonElement;
+        const textBoxCancelButton: HTMLButtonElement = createElement('button') as HTMLButtonElement;
         textBoxOkButton.addEventListener('click', this.applyDateFormFieldValue);
         textBoxCancelButton.addEventListener('click', this.closeButton);
         dateDiv.appendChild(dateInput);
@@ -104,19 +107,19 @@ export class FormFieldPopUp {
         dateDiv.appendChild(textBoxButtonDiv);
         datePicker.appendTo(dateInput);
         this.dataPickerOkButton = new Button({ cssClass: 'e-de-save', iconCss: 'e-de-save-icon' }, textBoxOkButton);
-        let cancelButton: Button = new Button({ cssClass: 'e-de-cancel', iconCss: 'e-de-cancel-icon' }, textBoxCancelButton);
+        new Button({ cssClass: 'e-de-cancel', iconCss: 'e-de-cancel-icon' }, textBoxCancelButton);
         this.datePickerInstance = datePicker;
         return dateDiv;
     }
 
     private initDropDownList(): HTMLElement {
-        let dropDownDiv: HTMLElement = createElement('div', { className: 'e-de-ddl-field' });
-        let dropDownInput: HTMLInputElement = createElement('input', { className: 'e-de-txt-form' }) as HTMLInputElement;
-        let ddl: DropDownList = new DropDownList();
+        const dropDownDiv: HTMLElement = createElement('div', { className: 'e-de-ddl-field' });
+        const dropDownInput: HTMLInputElement = createElement('input', { className: 'e-de-txt-form' }) as HTMLInputElement;
+        const ddl: DropDownList = new DropDownList();
         this.dropDownInput = dropDownInput;
-        let textBoxButtonDiv: HTMLElement = createElement('div', { className: 'e-de-cmt-action-button' });
-        let textBoxOkButton: HTMLButtonElement = createElement('button') as HTMLButtonElement;
-        let textBoxCancelButton: HTMLButtonElement = createElement('button') as HTMLButtonElement;
+        const textBoxButtonDiv: HTMLElement = createElement('div', { className: 'e-de-cmt-action-button' });
+        const textBoxOkButton: HTMLButtonElement = createElement('button') as HTMLButtonElement;
+        const textBoxCancelButton: HTMLButtonElement = createElement('button') as HTMLButtonElement;
         textBoxOkButton.addEventListener('click', this.applyDropDownFormFieldValue);
         textBoxCancelButton.addEventListener('click', this.closeButton);
         dropDownDiv.appendChild(dropDownInput);
@@ -124,50 +127,61 @@ export class FormFieldPopUp {
         textBoxButtonDiv.appendChild(textBoxCancelButton);
         dropDownDiv.appendChild(textBoxButtonDiv);
         ddl.appendTo(dropDownInput);
-        let okButton: Button = new Button({ cssClass: 'e-de-save', iconCss: 'e-de-save-icon' }, textBoxOkButton);
-        let cancelButton: Button = new Button({ cssClass: 'e-de-cancel', iconCss: 'e-de-cancel-icon' }, textBoxCancelButton);
+        new Button({ cssClass: 'e-de-save', iconCss: 'e-de-save-icon' }, textBoxOkButton);
+        new Button({ cssClass: 'e-de-cancel', iconCss: 'e-de-cancel-icon' }, textBoxCancelButton);
         this.ddlInstance = ddl;
         return dropDownDiv;
     }
 
+    /**
+     * @returns {void}
+     */
     private applyTextFormFieldValue = (): void => {
         this.owner.editor.updateFormField(this.formField, this.textBoxInstance.value);
-        // tslint:disable-next-line:max-line-length
         this.owner.trigger('afterFormFieldFill', { 'fieldName': this.formField.formFieldData.name, value: this.formField.resultText, isCanceled: false });
         this.hidePopup();
-    }
+    };
+    /**
+     * @returns {void}
+     */
     private applyNumberFormFieldValue = (): void => {
         this.owner.editor.updateFormField(this.formField, this.numberInput.value.toString());
-        // tslint:disable-next-line:max-line-length
         this.owner.trigger('afterFormFieldFill', { 'fieldName': this.formField.formFieldData.name, value: this.formField.resultText, isCanceled: false });
         this.hidePopup();
-    }
-
+    };
+    /**
+     * @returns {void}
+     */
     private applyDateFormFieldValue = (): void => {
         if (!isNullOrUndefined(this.datePickerInstance.value)) {
             this.owner.editor.updateFormField(this.formField, this.dateInput.value);
-            // tslint:disable-next-line:max-line-length
             this.owner.trigger('afterFormFieldFill', { 'fieldName': this.formField.formFieldData.name, value: this.formField.resultText, isCanceled: false });
             this.hidePopup();
         }
-    }
-
+    };
+    /**
+     * @returns {void}
+     */
     private applyDropDownFormFieldValue = (): void => {
         this.owner.editor.updateFormField(this.formField, this.ddlInstance.index);
-        // tslint:disable-next-line:max-line-length
         this.owner.trigger('afterFormFieldFill', { 'fieldName': this.formField.formFieldData.name, value: (this.formField.formFieldData as DropDownFormField).selectedIndex, isCanceled: false });
         this.hidePopup();
-    }
-
+    };
+    /**
+     * @param {ChangedEventArgs} args - Specifies the event args.
+     * @returns {void}
+     */
     private enableDisableDatePickerOkButton = (args: ChangedEventArgs): void => {
         if (args.isInteracted) {
             this.dataPickerOkButton.disabled = false;
         }
-    }
+    };
     /**
      * @private
+     * @param {FieldElementBox} formField - Specifies the field element.
+     * @returns {void}
      */
-    public showPopUp(formField: FieldElementBox, point: Point): void {
+    public showPopUp(formField: FieldElementBox): void {
         if (formField) {
             this.formField = formField;
             this.owner.selection.selectField();
@@ -175,16 +189,16 @@ export class FormFieldPopUp {
                 this.initPopup();
             }
             classList(this.target, [], ['e-de-txt-form', 'e-de-num-form', 'e-de-date-form', 'e-de-ddl-form']);
-            let formFieldData: FormField = formField.formFieldData;
+            const formFieldData: FormField = formField.formFieldData;
             if (formFieldData) {
                 if (formFieldData instanceof TextFormField) {
                     let resultText: string = formField.resultText;
-                    let rex: RegExp = new RegExp(this.owner.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
+                    const rex: RegExp = new RegExp(this.owner.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
                     if (resultText.replace(rex, '') === '') {
                         resultText = '';
                     }
-                    let maxLength: number = formFieldData.maxLength;
-                    let formFieldType: TextFormFieldType = formFieldData.type;
+                    const maxLength: number = formFieldData.maxLength;
+                    const formFieldType: TextFormFieldType = formFieldData.type;
                     let inputElement: HTMLInputElement;
                     resultText = resultText ? resultText : '';
                     if (formFieldType === 'Text') {
@@ -226,14 +240,15 @@ export class FormFieldPopUp {
                         this.ddlInstance.showPopup();
                     });
                 }
-                let left: number = this.owner.selection.getLeftInternal(formField.line, formField, 0);
-                let lineHeight: number = formField.line.height * this.owner.documentHelper.zoomFactor;
-                let position: Point = this.owner.selection.getTooltipPosition(formField.line, left, this.target, true);
+                const left: number = this.owner.selection.getLeftInternal(formField.line, formField, 0);
+                const lineHeight: number = formField.line.height * this.owner.documentHelper.zoomFactor;
+                const position: Point = this.owner.selection.getTooltipPosition(formField.line, left, this.target, true);
                 if (!this.popupObject) {
                     this.popupObject = new Popup(this.target, {
                         height: 'auto',
                         width: 'auto',
                         relateTo: this.owner.documentHelper.viewerContainer.parentElement,
+                        // eslint-disable-next-line @typescript-eslint/naming-convention
                         position: { X: position.x, Y: position.y + lineHeight }
                     });
                 }
@@ -245,11 +260,12 @@ export class FormFieldPopUp {
     }
     /**
      * @private
+     * @returns {void}
      */
     private closeButton = (): void => {
-        let field: FieldElementBox = this.formField;
+        const field: FieldElementBox = this.formField;
         this.hidePopup();
-        let eventArgs: FormFieldFillEventArgs = { 'fieldName': field.formFieldData.name };
+        const eventArgs: FormFieldFillEventArgs = { 'fieldName': field.formFieldData.name };
         if (field.formFieldData instanceof TextFormField) {
             eventArgs.value = field.resultText;
         } else if (field.formFieldData instanceof CheckBoxFormField) {
@@ -259,9 +275,10 @@ export class FormFieldPopUp {
         }
         eventArgs.isCanceled = true;
         this.owner.trigger('afterFormFieldFill', eventArgs);
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public hidePopup = (): void => {
         this.owner.documentHelper.isFormFilling = false;
@@ -274,5 +291,5 @@ export class FormFieldPopUp {
             this.popupObject.destroy();
             this.popupObject = undefined;
         }
-    }
+    };
 }

@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * Schedule base spec 
+ * Schedule base spec
  */
 import { createElement, remove, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
@@ -19,10 +20,9 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, 
 
 describe('Schedule base module', () => {
     beforeAll(() => {
-        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
             (this as any).skip(); //Skips test (in Chai)
             return;
@@ -59,8 +59,7 @@ describe('Schedule base module', () => {
         });
 
         it('vertical view module name testing', () => {
-            let verticalObj: VerticalView = new VerticalView(schObj);
-            // tslint:disable-next-line:no-any
+            const verticalObj: VerticalView = new VerticalView(schObj);
             expect((verticalObj as any).getModuleName()).toEqual('verticalView');
         });
     });
@@ -215,13 +214,12 @@ describe('Schedule base module', () => {
             expect(schObj.element.querySelectorAll('.e-week-view').length).toEqual(1);
             expect(schObj.element.querySelectorAll('.e-week-agenda-view').length).toEqual(0);
             schObj.element.style.width = '300px';
-            // tslint:disable-next-line:no-any
             (schObj as any).onScheduleResize();
             expect(schObj.element.querySelectorAll('.e-week-view').length).toEqual(1);
             expect(schObj.element.querySelectorAll('.e-week-agenda-view').length).toEqual(0);
         });
 
-        it('desktop to mobile - month view testing', (done: Function) => {
+        it('desktop to mobile - month view testing', (done: DoneFn) => {
             document.getElementById('Schedule').style.width = '600px';
             schObj = new Schedule({
                 selectedDate: new Date(2017, 9, 4),
@@ -235,7 +233,6 @@ describe('Schedule base module', () => {
             expect(schObj.element.querySelector('.e-active-view').classList.contains('e-month')).toEqual(true);
             expect((<HTMLElement>schObj.element.querySelector('.e-work-cells')).offsetWidth).toEqual(86);
             schObj.element.style.width = '300px';
-            // tslint:disable-next-line:no-any
             (schObj as any).onScheduleResize();
         });
 
@@ -246,7 +243,6 @@ describe('Schedule base module', () => {
             expect(schObj.element.querySelectorAll('.e-week-view').length).toEqual(1);
             expect(schObj.element.querySelectorAll('.e-week-agenda-view').length).toEqual(0);
             schObj.element.style.width = '600px';
-            // tslint:disable-next-line:no-any
             (schObj as any).onScheduleResize();
             expect(schObj.element.querySelectorAll('.e-week-view').length).toEqual(1);
             expect(schObj.element.querySelectorAll('.e-week-agenda-view').length).toEqual(0);
@@ -366,7 +362,7 @@ describe('Schedule base module', () => {
                 minDate: new Date(2017, 9, 3),
                 selectedDate: new Date(2017, 9, 4),
                 maxDate: new Date(2017, 9, 5),
-                currentView: 'Week',
+                currentView: 'Week'
             });
             schObj.appendTo('#Schedule');
             expect(schObj.selectedDate).toEqual(new Date(2017, 9, 4));
@@ -386,8 +382,8 @@ describe('Schedule base module', () => {
             schObj.appendTo('#Schedule');
             schObj.dataBind();
             (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-            let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
-            let calendarEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-calendar');
+            const popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+            const calendarEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-calendar');
             (calendarEle.querySelector('.e-day') as HTMLElement).click();
             expect(popupEle.classList.contains('e-popup-open')).toEqual(true);
             (calendarEle.querySelector('.e-selected') as HTMLElement).click();
@@ -621,15 +617,15 @@ describe('Schedule base module', () => {
     describe('Scroll', () => {
         let schObj: Schedule;
         beforeAll(() => {
-            let model: ScheduleModel = { height: '600px', eventSettings: { fields: { subject: { name: 'Title' } } } };
+            const model: ScheduleModel = { height: '600px', eventSettings: { fields: { subject: { name: 'Title' } } } };
             schObj = util.createSchedule(model, []);
         });
         afterAll(() => {
             util.destroy(schObj);
         });
         it('check scroll content', () => {
-            let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
-            let timeCellsArea: HTMLElement = schObj.element.querySelector('.e-time-cells-wrap') as HTMLElement;
+            const contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            const timeCellsArea: HTMLElement = schObj.element.querySelector('.e-time-cells-wrap') as HTMLElement;
             util.triggerScrollEvent(contentArea, 400);
             expect(contentArea.scrollTop).toEqual(400);
             expect(timeCellsArea.scrollTop).toEqual(400);
@@ -639,7 +635,7 @@ describe('Schedule base module', () => {
     describe('changeCurrentView', () => {
         let schObj: Schedule;
         beforeAll(() => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 height: '600px',
                 views: [
                     { option: 'Day', isSelected: true },
@@ -677,25 +673,25 @@ describe('Schedule base module', () => {
 
     describe('Event Settings', () => {
         let schObj: Schedule;
-        let eventObj: Object[] = [{
+        const eventObj: Record<string, any>[] = [{
             'Subject': 'test event',
             'StartTime': new Date(2017, 10, 6, 10),
             'EndTime': new Date(2017, 10, 6, 12)
         }];
-        beforeAll((done: Function): void => {
-            let model: ScheduleModel = { height: '500px', width: '500px', selectedDate: new Date(2017, 10, 6) };
+        beforeAll((done: DoneFn): void => {
+            const model: ScheduleModel = { height: '500px', width: '500px', selectedDate: new Date(2017, 10, 6) };
             schObj = util.createSchedule(model, eventObj, done);
         });
         afterAll((): void => {
             util.destroy(schObj);
         });
         it('check events', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(1);
         });
-        it('change dataSource, query, fields through setmodel', (done: Function) => {
+        it('change dataSource, query, fields through setmodel', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(2);
                 done();
             };
@@ -736,28 +732,28 @@ describe('Schedule base module', () => {
             util.destroy(schObj);
         });
 
-        it('week view testing', (done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
+        it('week view testing', (done: DoneFn) => {
+            const dataBound: EmitType<Record<string, any>> = () => { done(); };
             schObj = new Schedule({
                 height: '500px', width: '500px', selectedDate: new Date(2018, 3, 1),
                 showWeekNumber: true, dataBound: dataBound
             });
             schObj.appendTo('#Schedule');
-            let weekNumber: Element = schObj.element.querySelector('.e-left-indent-wrap .e-header-cells');
+            const weekNumber: Element = schObj.element.querySelector('.e-left-indent-wrap .e-header-cells');
             expect(weekNumber.innerHTML).toEqual('<span title="Week 14">14</span>');
             expect(weekNumber.classList.contains('e-week-number')).toEqual(true);
             expect(weekNumber.children[0].getAttribute('title')).toEqual('Week 14');
         });
 
-        it('month view testing', (done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
+        it('month view testing', (done: DoneFn) => {
+            const dataBound: EmitType<Record<string, any>> = () => { done(); };
             schObj = new Schedule({
                 height: '500px', width: '500px', currentView: 'Month', selectedDate: new Date(2018, 3, 1),
                 showWeekend: false, showWeekNumber: true, dataBound: dataBound
             });
             schObj.appendTo('#Schedule');
             expect(schObj.element.querySelectorAll('.e-week-number-wrapper').length).toEqual(1);
-            let weekNumber: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-week-number-wrapper .e-week-number'));
+            const weekNumber: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-week-number-wrapper .e-week-number'));
             expect(weekNumber[0].innerHTML).toEqual('14');
             expect(weekNumber[0].getAttribute('title')).toEqual('Week 14');
             expect(weekNumber[1].innerHTML).toEqual('15');
@@ -770,14 +766,14 @@ describe('Schedule base module', () => {
             expect(weekNumber[4].getAttribute('title')).toEqual('Week 18');
         });
 
-        it('month agenda view testing', (done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
+        it('month agenda view testing', (done: DoneFn) => {
+            const dataBound: EmitType<Record<string, any>> = () => { done(); };
             schObj = new Schedule({
                 height: '500px', width: '500px', currentView: 'MonthAgenda', views: ['MonthAgenda'],
                 selectedDate: new Date(2018, 3, 1), showWeekNumber: true, dataBound: dataBound
             });
             schObj.appendTo('#Schedule');
-            let weekNumber: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-week-number-wrapper .e-week-number'));
+            const weekNumber: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-week-number-wrapper .e-week-number'));
             expect(weekNumber[0].innerHTML).toEqual('14');
             expect(weekNumber[0].getAttribute('title')).toEqual('Week 14');
             expect(weekNumber[1].innerHTML).toEqual('15');
@@ -790,8 +786,8 @@ describe('Schedule base module', () => {
             expect(weekNumber[4].getAttribute('title')).toEqual('Week 18');
         });
 
-        it('setmodel testing', (done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
+        it('setmodel testing', (done: DoneFn) => {
+            const dataBound: EmitType<Record<string, any>> = () => { done(); };
             schObj = new Schedule({
                 height: '500px', width: '500px', selectedDate: new Date(2018, 3, 1),
                 showWeekNumber: true, dataBound: dataBound
@@ -812,7 +808,7 @@ describe('Schedule base module', () => {
 
     describe('Public methods', () => {
         let schObj: Schedule;
-        let eventDatas: Object[] = [{
+        const eventDatas: Record<string, any>[] = [{
             'Subject': 'test event',
             'StartTime': new Date(2017, 10, 6, 10),
             'EndTime': new Date(2017, 10, 6, 12)
@@ -821,8 +817,8 @@ describe('Schedule base module', () => {
             'StartTime': new Date(2017, 8, 6, 10),
             'EndTime': new Date(2017, 8, 6, 12)
         }];
-        beforeAll((done: Function): void => {
-            let model: ScheduleModel = { height: '500px', width: '500px', selectedDate: new Date(2017, 10, 6) };
+        beforeAll((done: DoneFn): void => {
+            const model: ScheduleModel = { height: '500px', width: '500px', selectedDate: new Date(2017, 10, 6) };
             schObj = util.createSchedule(model, eventDatas, done);
         });
         afterAll((): void => {
@@ -842,18 +838,18 @@ describe('Schedule base module', () => {
         });
 
         it('getEventDetails', () => {
-            let element: Element = schObj.element.querySelector('.e-appointment');
-            let eventObj: { [key: string]: Object } = <{ [key: string]: Object }>schObj.getEventDetails(element);
+            const element: Element = schObj.element.querySelector('.e-appointment');
+            const eventObj: Record<string, any> = schObj.getEventDetails(element);
             expect(eventObj.Subject).toEqual('test event');
         });
 
         it('getEventDetails other than appointment element', () => {
-            let element: Element = schObj.element.querySelector('.e-work-cells');
-            let eventObj: Object = schObj.getEventDetails(element);
+            const element: Element = schObj.element.querySelector('.e-work-cells');
+            const eventObj: Record<string, any> = schObj.getEventDetails(element);
             expect(Object.keys(eventObj).length).toEqual(0);
         });
 
-        it('refreshEvents', (done: Function) => {
+        it('refreshEvents', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
                 done();
@@ -862,11 +858,11 @@ describe('Schedule base module', () => {
         });
 
         it('openEditor', () => {
-            let element: Element = schObj.element.querySelector('.e-appointment');
-            let eventObj: { [key: string]: Object } = <{ [key: string]: Object }>schObj.getEventDetails(element);
+            const element: Element = schObj.element.querySelector('.e-appointment');
+            const eventObj: Record<string, any> = schObj.getEventDetails(element);
             schObj.openEditor(eventObj, 'Save');
             expect(schObj.eventWindow.dialogObject.visible).toEqual(true);
-            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             (dialogElement.querySelector('.e-event-cancel') as HTMLElement).click();
             expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
         });
@@ -890,16 +886,16 @@ describe('Schedule base module', () => {
         it('getStartEndTime with invalid time format', () => {
             expect(schObj.getStartEndTime('08')).toEqual(new Date(new Date().setHours(0, 0, 0, 0)));
         });
-        it('block events public method testing', (done: Function) => {
+        it('block events public method testing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.getBlockEvents().length).toEqual(2);
-                let start: Date = schObj.activeView.startDate();
-                let end: Date = schObj.activeView.endDate();
+                const start: Date = schObj.activeView.startDate();
+                const end: Date = schObj.activeView.endDate();
                 expect(schObj.getBlockEvents(start, end, false).length).toEqual(2);
                 expect(schObj.getBlockEvents(start, end, true).length).toEqual(6);
                 done();
             };
-            let eventDatas: Object[] = [{
+            const eventDatas: Record<string, any>[] = [{
                 'Subject': 'test event',
                 'StartTime': new Date(2017, 10, 6, 9),
                 'EndTime': new Date(2017, 10, 6, 10, 30),
@@ -918,11 +914,11 @@ describe('Schedule base module', () => {
 
     describe('Testing resetWorkHours without parameters in Vertical view', () => {
         let schObj: Schedule;
-        beforeAll((done: Function): void => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn): void => {
+            const model: ScheduleModel = {
                 height: '560px', width: '100%',
                 views: ['Day', 'Week', 'WorkWeek', 'Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                selectedDate: new Date(2019, 5, 12),
+                selectedDate: new Date(2019, 5, 12)
             };
             schObj = util.createSchedule(model, [], done);
         });
@@ -930,20 +926,20 @@ describe('Schedule base module', () => {
             util.destroy(schObj);
         });
         it('Checking cells that contain Work hours cells length before calling reset work hours method', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_HOURS_CLASS));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_HOURS_CLASS));
             expect(workCells.length).toEqual(90);
         });
         it('Checking cells that contain Work hours cells length after calling reset work hours method', () => {
             schObj.resetWorkHours();
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_HOURS_CLASS));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_HOURS_CLASS));
             expect(workCells.length).toEqual(0);
         });
     });
 
     describe('Testing resetWorkHours without parameters in Timeline view', () => {
         let schObj: Schedule;
-        beforeAll((done: Function): void => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn): void => {
+            const model: ScheduleModel = {
                 height: '560px', width: '100%',
                 views: ['Day', 'Week', 'WorkWeek', 'Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 selectedDate: new Date(2019, 5, 12),
@@ -955,23 +951,23 @@ describe('Schedule base module', () => {
             util.destroy(schObj);
         });
         it('Checking cells that contain Work hours cells length before calling reset work hours method', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_HOURS_CLASS));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_HOURS_CLASS));
             expect(workCells.length).toEqual(90);
         });
         it('Checking cells that contain Work hours cells length after calling reset work hours method', () => {
             schObj.resetWorkHours();
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_HOURS_CLASS));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_HOURS_CLASS));
             expect(workCells.length).toEqual(0);
         });
     });
 
     describe('Testing resetWorkHours with parameteres in Vertical view', () => {
         let schObj: Schedule;
-        beforeAll((done: Function): void => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn): void => {
+            const model: ScheduleModel = {
                 height: '560px', width: '100%',
                 views: ['Day', 'Week', 'WorkWeek', 'Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                selectedDate: new Date(2019, 5, 12),
+                selectedDate: new Date(2019, 5, 12)
             };
             schObj = util.createSchedule(model, [], done);
         });
@@ -979,14 +975,14 @@ describe('Schedule base module', () => {
             util.destroy(schObj);
         });
         it('Checking Work hour class is avilable or not on particular cell', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
             expect(workCells[136].classList.contains('e-work-hours')).toEqual(true);
             expect(workCells[164].classList.contains('e-work-hours')).toEqual(true);
         });
         it('Removing the work cell class from the particular cell', () => {
-            let dates: Date[] = [new Date(2019, 5, 12)];
+            const dates: Date[] = [new Date(2019, 5, 12)];
             schObj.resetWorkHours(dates, '09:30', '12:00');
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
             expect(workCells[136].classList.contains('e-work-hours')).toEqual(false);
             expect(workCells[164].classList.contains('e-work-hours')).toEqual(false);
         });
@@ -994,8 +990,8 @@ describe('Schedule base module', () => {
 
     describe('Testing resetWorkHours with parameteres in Timeline view', () => {
         let schObj: Schedule;
-        beforeAll((done: Function): void => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn): void => {
+            const model: ScheduleModel = {
                 height: '560px', width: '100%',
                 views: ['Day', 'Week', 'WorkWeek', 'Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 selectedDate: new Date(2019, 5, 12),
@@ -1007,14 +1003,14 @@ describe('Schedule base module', () => {
             util.destroy(schObj);
         });
         it('Checking Work hour class is avilable or not on particular cell', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
             expect(workCells[163].classList.contains('e-work-hours')).toEqual(true);
             expect(workCells[166].classList.contains('e-work-hours')).toEqual(true);
         });
         it('Removing the work cell class from the particular cell', () => {
-            let dates: Date[] = [new Date(2019, 5, 12)];
+            const dates: Date[] = [new Date(2019, 5, 12)];
             schObj.resetWorkHours(dates, '09:30', '12:00');
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
             expect(workCells[163].classList.contains('e-work-hours')).toEqual(false);
             expect(workCells[166].classList.contains('e-work-hours')).toEqual(false);
         });
@@ -1022,11 +1018,11 @@ describe('Schedule base module', () => {
 
     describe('Testing resetWorkHours on passing group index in Vertical view', () => {
         let schObj: Schedule;
-        beforeAll((done: Function): void => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn): void => {
+            const model: ScheduleModel = {
                 height: '560px', width: '100%',
                 views: ['Day', 'Week', 'WorkWeek', 'Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                selectedDate: new Date(2019, 5, 12),
+                selectedDate: new Date(2019, 5, 12)
             };
             schObj = util.createGroupSchedule(2, model, [], done);
         });
@@ -1034,14 +1030,14 @@ describe('Schedule base module', () => {
             util.destroy(schObj);
         });
         it('Checking the particular cell contains a work hour class or not', () => {
-            let tableRows: NodeListOf<HTMLTableRowElement> = schObj.element.querySelectorAll('tr');
+            const tableRows: NodeListOf<HTMLTableRowElement> = schObj.element.querySelectorAll('tr');
             expect(tableRows[80].children[10].classList.contains('e-work-hours')).toEqual(true);
             expect(tableRows[82].children[10].classList.contains('e-work-hours')).toEqual(true);
         });
         it('Removing work hour class from particular cell by calling resetWorkHours', () => {
-            let dates: Date[] = [new Date(2019, 5, 12)];
+            const dates: Date[] = [new Date(2019, 5, 12)];
             schObj.resetWorkHours(dates, '09:30', '12:00', 1);
-            let tableRows: NodeListOf<HTMLTableRowElement> = schObj.element.querySelectorAll('tr');
+            const tableRows: NodeListOf<HTMLTableRowElement> = schObj.element.querySelectorAll('tr');
             expect(tableRows[80].children[10].classList.contains('e-work-hours')).toEqual(false);
             expect(tableRows[82].children[10].classList.contains('e-work-hours')).toEqual(false);
         });
@@ -1049,12 +1045,12 @@ describe('Schedule base module', () => {
 
     describe('Testing resetWorkHours on passing group index in Timeline view', () => {
         let schObj: Schedule;
-        beforeAll((done: Function): void => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn): void => {
+            const model: ScheduleModel = {
                 height: '560px', width: '100%',
                 views: ['Day', 'Week', 'WorkWeek', 'Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 selectedDate: new Date(2019, 5, 12),
-                currentView: 'TimelineWeek',
+                currentView: 'TimelineWeek'
             };
             schObj = util.createGroupSchedule(2, model, [], done);
         });
@@ -1062,14 +1058,14 @@ describe('Schedule base module', () => {
             util.destroy(schObj);
         });
         it('Checking the particular cell contains a work hour class or not', () => {
-            let tableRows: NodeListOf<HTMLTableRowElement> = schObj.element.querySelectorAll('tr');
+            const tableRows: NodeListOf<HTMLTableRowElement> = schObj.element.querySelectorAll('tr');
             expect(tableRows[11].children[163].classList.contains('e-work-hours')).toEqual(true);
             expect(tableRows[11].children[166].classList.contains('e-work-hours')).toEqual(true);
         });
         it('Removing work hour class from particular cell by calling resetWorkHours', () => {
-            let dates: Date[] = [new Date(2019, 5, 12)];
+            const dates: Date[] = [new Date(2019, 5, 12)];
             schObj.resetWorkHours(dates, '09:30', '12:00', 2);
-            let tableRows: NodeListOf<HTMLTableRowElement> = schObj.element.querySelectorAll('tr');
+            const tableRows: NodeListOf<HTMLTableRowElement> = schObj.element.querySelectorAll('tr');
             expect(tableRows[11].children[163].classList.contains('e-work-hours')).toEqual(false);
             expect(tableRows[11].children[166].classList.contains('e-work-hours')).toEqual(false);
         });
@@ -1077,10 +1073,10 @@ describe('Schedule base module', () => {
 
     describe('CR Issue EJ2-16536 Schedule within hidden element', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-        let hiddenEle: HTMLElement = createElement('div', { styles: 'display:none' });
+        const elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        const hiddenEle: HTMLElement = createElement('div', { styles: 'display:none' });
         hiddenEle.appendChild(elem);
-        beforeAll((done: Function) => {
+        beforeAll((done: DoneFn) => {
             document.body.appendChild(hiddenEle);
             schObj = new Schedule({ dataBound: () => done() });
             schObj.appendTo('#Schedule');
@@ -1098,13 +1094,13 @@ describe('Schedule base module', () => {
 
     describe('EJ2-23004-24 hours format is not displaying in time cells in adaptive mode only', () => {
         let schObj: Schedule;
-        let uA: string = Browser.userAgent;
-        let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+        const uA: string = Browser.userAgent;
+        const androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
             'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
         util.loadCultureFiles('fr-CH');
-        beforeAll((done: Function) => {
+        beforeAll((done: DoneFn) => {
             Browser.userAgent = androidUserAgent;
-            let model: ScheduleModel = { height: '550px', width: '500px', locale: 'fr-CH', selectedDate: new Date(2017, 10, 6) };
+            const model: ScheduleModel = { height: '550px', width: '500px', locale: 'fr-CH', selectedDate: new Date(2017, 10, 6) };
             schObj = util.createSchedule(model, [], done);
         });
         afterAll(() => {
@@ -1129,10 +1125,9 @@ describe('Schedule base module', () => {
 
     describe('CR Issue EJ2-26338 readonly events', () => {
         let schObj: Schedule;
-        // tslint:disable-next-line:no-any
         let keyModule: any;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = { height: '500px', width: '500px' };
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = { height: '500px', width: '500px' };
             schObj = util.createSchedule(model, readonlyEventsData, done);
         });
         afterAll(() => {
@@ -1141,7 +1136,7 @@ describe('Schedule base module', () => {
         it('Delete key', () => {
             keyModule = schObj.keyboardInteractionModule;
             (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
-            let selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
+            const selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             keyModule.keyActionHandler({ action: 'delete', target: selectedElement[0] });
             expect(schObj.quickPopup.quickPopup.element.querySelector('.e-edit').getAttribute('disabled')).toBe('');
             expect(schObj.quickPopup.quickPopup.element.querySelector('.e-delete').getAttribute('disabled')).toBe('');
@@ -1152,8 +1147,8 @@ describe('Schedule base module', () => {
 
     describe('Issue EJ2-30234 exposing getEventMaxID as public', () => {
         let schObj: Schedule;
-        beforeAll((done: Function): void => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn): void => {
+            const model: ScheduleModel = {
                 height: '560px', width: '100%',
                 views: ['Day'],
                 selectedDate: new Date(2018, 1, 15),
@@ -1178,8 +1173,8 @@ describe('Schedule base module', () => {
 
     describe('CR Issue EJ2-28683 recurrence appoinments', () => {
         let schObj: Schedule;
-        let timeZone: Timezone = new Timezone();
-        let data: Object[] = [{
+        const timeZone: Timezone = new Timezone();
+        const data: Record<string, any>[] = [{
             Id: 1,
             Subject: 'Paris',
             StartTime: timeZone.removeLocalOffset(new Date('2019-02-06T04:30:00.000Z')),
@@ -1187,8 +1182,8 @@ describe('Schedule base module', () => {
             IsAllDay: false,
             RecurrenceRule: 'FREQ=MONTHLY;BYMONTHDAY=5,6,7;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=1'
         }];
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 height: '500px', width: '500px', selectedDate: new Date(2019, 6, 5),
                 currentView: 'Month', views: ['Week', 'WorkWeek', 'Month']
             };
@@ -1199,7 +1194,7 @@ describe('Schedule base module', () => {
         });
         it('Check Aug 2019 Appointment', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let selector: string = `.e-work-cells[data-date="${new Date(2019, 7, 5).getTime()}"] .e-appointment`;
+                const selector: string = `.e-work-cells[data-date="${new Date(2019, 7, 5).getTime()}"] .e-appointment`;
                 expect(schObj.element.querySelector(selector)).not.toBeNull();
                 done();
             };
@@ -1208,7 +1203,7 @@ describe('Schedule base module', () => {
         });
         it('Check September 2019 Appointment', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let selector: string = `.e-work-cells[data-date="${new Date(2019, 8, 5).getTime()}"] .e-appointment`;
+                const selector: string = `.e-work-cells[data-date="${new Date(2019, 8, 5).getTime()}"] .e-appointment`;
                 expect(schObj.element.querySelector(selector)).not.toBeNull();
                 done();
             };
@@ -1217,7 +1212,7 @@ describe('Schedule base module', () => {
         });
         it('Check October 2019 Appointment', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let selector: string = `.e-work-cells[data-date="${new Date(2019, 9, 7).getTime()}"] .e-appointment`;
+                const selector: string = `.e-work-cells[data-date="${new Date(2019, 9, 7).getTime()}"] .e-appointment`;
                 expect(schObj.element.querySelector(selector)).not.toBeNull();
                 done();
             };
@@ -1226,7 +1221,7 @@ describe('Schedule base module', () => {
         });
         it('Check November 2019 Appointment', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let selector: string = `.e-work-cells[data-date="${new Date(2019, 10, 5).getTime()}"] .e-appointment`;
+                const selector: string = `.e-work-cells[data-date="${new Date(2019, 10, 5).getTime()}"] .e-appointment`;
                 expect(schObj.element.querySelector(selector)).not.toBeNull();
                 done();
             };
@@ -1235,7 +1230,7 @@ describe('Schedule base module', () => {
         });
         it('Check December 2019 Appointment', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let selector: string = `.e-work-cells[data-date="${new Date(2019, 11, 5).getTime()}"] .e-appointment`;
+                const selector: string = `.e-work-cells[data-date="${new Date(2019, 11, 5).getTime()}"] .e-appointment`;
                 expect(schObj.element.querySelector(selector)).not.toBeNull();
                 done();
             };
@@ -1245,15 +1240,15 @@ describe('Schedule base module', () => {
     });
     describe('Testing first day of week on view basis', () => {
         let schObj: Schedule;
-        let eventData: Object[] = [{
+        const eventData: Record<string, any>[] = [{
             Id: 1,
             Subject: 'Event',
             StartTime: new Date(2017, 10, 6),
             EndTime: new Date(2017, 10, 7),
             IsAllDay: true
         }];
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 height: '500px',
                 selectedDate: new Date(2017, 10, 6),
                 currentView: 'Day',
@@ -1277,28 +1272,28 @@ describe('Schedule base module', () => {
         });
         it('Checking first day of week in day view.', () => {
             (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-            let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+            const popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
             expect(popupEle.querySelector('.e-week-header th').textContent).toBe('Mo');
             (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
-            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            let startTimePicker: DateTimePicker =
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const startTimePicker: DateTimePicker =
                 (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
             expect(startTimePicker.firstDayOfWeek.toString()).toEqual('1');
-            let endTimePicker: DateTimePicker =
+            const endTimePicker: DateTimePicker =
                 (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
             expect(endTimePicker.firstDayOfWeek.toString()).toEqual('1');
-            let untilDatePicker: DateTimePicker =
+            const untilDatePicker: DateTimePicker =
                 (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
             expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('1');
-            let repeatElement: DropDownList =
+            const repeatElement: DropDownList =
                 (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
             repeatElement.index = 2; repeatElement.dataBind();
-            let btnElement: HTMLElement = ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
+            const btnElement: HTMLElement = ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
             expect(btnElement.title).toEqual('Monday');
             repeatElement.index = 3; repeatElement.dataBind();
-            let dayElement: DropDownList =
+            const dayElement: DropDownList =
                 (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
             dayElement.index = 0; dayElement.dataBind();
             expect(dayElement.value).toEqual('MO');
@@ -1307,31 +1302,31 @@ describe('Schedule base module', () => {
         it('Checking first day of week in week view.', (done: DoneFn) => {
             schObj.dataBound = () => {
                 (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-                let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+                const popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
                 expect(popupEle.querySelector('.e-week-header th').textContent).toBe('Sa');
                 (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-                let headerElement: HTMLElement = (schObj.element.querySelector('.e-header-row').children[0].children[0]) as HTMLElement;
+                const headerElement: HTMLElement = (schObj.element.querySelector('.e-header-row').children[0].children[0]) as HTMLElement;
                 expect(headerElement.innerText).toEqual('Sat');
                 util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
                 util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
-                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-                let startTimePicker: DateTimePicker =
+                const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                const startTimePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(startTimePicker.firstDayOfWeek.toString()).toEqual('6');
-                let endTimePicker: DateTimePicker =
+                const endTimePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(endTimePicker.firstDayOfWeek.toString()).toEqual('6');
-                let untilDatePicker: DateTimePicker =
+                const untilDatePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('6');
-                let repeatElement: DropDownList =
+                const repeatElement: DropDownList =
                     (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
                 repeatElement.index = 2; repeatElement.dataBind();
-                let btnElement: HTMLElement =
+                const btnElement: HTMLElement =
                     ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
                 expect(btnElement.title).toEqual('Saturday');
                 repeatElement.index = 3; repeatElement.dataBind();
-                let dayElement: DropDownList =
+                const dayElement: DropDownList =
                     (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
                 dayElement.index = 0; dayElement.dataBind();
                 expect(dayElement.value).toEqual('SA');
@@ -1344,31 +1339,31 @@ describe('Schedule base module', () => {
         it('Checking first day of week in work week view.', (done: DoneFn) => {
             schObj.dataBound = () => {
                 (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-                let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+                const popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
                 expect(popupEle.querySelector('.e-week-header th').textContent).toBe('We');
                 (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-                let headerElement: HTMLElement = (schObj.element.querySelector('.e-header-row').children[0].children[0]) as HTMLElement;
+                const headerElement: HTMLElement = (schObj.element.querySelector('.e-header-row').children[0].children[0]) as HTMLElement;
                 expect(headerElement.innerText).toEqual('Wed');
                 util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
                 util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
-                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-                let startTimePicker: DateTimePicker =
+                const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                const startTimePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(startTimePicker.firstDayOfWeek.toString()).toEqual('3');
-                let endTimePicker: DateTimePicker =
+                const endTimePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(endTimePicker.firstDayOfWeek.toString()).toEqual('3');
-                let untilDatePicker: DateTimePicker =
+                const untilDatePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('3');
-                let repeatElement: DropDownList =
+                const repeatElement: DropDownList =
                     (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
                 repeatElement.index = 2; repeatElement.dataBind();
-                let btnElement: HTMLElement =
+                const btnElement: HTMLElement =
                     ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
                 expect(btnElement.title).toEqual('Wednesday');
                 repeatElement.index = 3; repeatElement.dataBind();
-                let dayElement: DropDownList =
+                const dayElement: DropDownList =
                     (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
                 dayElement.index = 0; dayElement.dataBind();
                 expect(dayElement.value).toEqual('WE');
@@ -1383,24 +1378,24 @@ describe('Schedule base module', () => {
                 expect((schObj.element.querySelector('.e-header-cells') as HTMLElement).innerText).toEqual('Thursday');
                 util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
                 util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
-                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-                let startTimePicker: DateTimePicker =
+                const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                const startTimePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(startTimePicker.firstDayOfWeek.toString()).toEqual('4');
-                let endTimePicker: DateTimePicker =
+                const endTimePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(endTimePicker.firstDayOfWeek.toString()).toEqual('4');
-                let untilDatePicker: DateTimePicker =
+                const untilDatePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('4');
-                let repeatElement: DropDownList =
+                const repeatElement: DropDownList =
                     (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
                 repeatElement.index = 2; repeatElement.dataBind();
-                let btnElement: HTMLElement =
+                const btnElement: HTMLElement =
                     ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
                 expect(btnElement.title).toEqual('Thursday');
                 repeatElement.index = 3; repeatElement.dataBind();
-                let dayElement: DropDownList =
+                const dayElement: DropDownList =
                     (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
                 dayElement.index = 0; dayElement.dataBind();
                 expect(dayElement.value).toEqual('TH');
@@ -1413,7 +1408,7 @@ describe('Schedule base module', () => {
         it('Checking first day of week in agenda view.', (done: DoneFn) => {
             schObj.dataBound = () => {
                 (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-                let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+                const popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
                 expect(popupEle.querySelector('.e-week-header th').textContent).toBe('Fr');
                 (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
                 done();
@@ -1426,24 +1421,24 @@ describe('Schedule base module', () => {
                 expect((schObj.element.querySelector('.e-header-cells') as HTMLElement).innerText).toEqual('Sat');
                 util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
                 util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
-                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-                let startTimePicker: DateTimePicker =
+                const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                const startTimePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(startTimePicker.firstDayOfWeek.toString()).toEqual('6');
-                let endTimePicker: DateTimePicker =
+                const endTimePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(endTimePicker.firstDayOfWeek.toString()).toEqual('6');
-                let untilDatePicker: DateTimePicker =
+                const untilDatePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('6');
-                let repeatElement: DropDownList =
+                const repeatElement: DropDownList =
                     (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
                 repeatElement.index = 2; repeatElement.dataBind();
-                let btnElement: HTMLElement =
+                const btnElement: HTMLElement =
                     ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
                 expect(btnElement.title).toEqual('Saturday');
                 repeatElement.index = 3; repeatElement.dataBind();
-                let dayElement: DropDownList =
+                const dayElement: DropDownList =
                     (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
                 dayElement.index = 0; dayElement.dataBind();
                 expect(dayElement.value).toEqual('SA');
@@ -1456,29 +1451,29 @@ describe('Schedule base module', () => {
         it('Checking first day of week in timeline day view.', (done: DoneFn) => {
             schObj.dataBound = () => {
                 (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-                let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+                const popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
                 expect(popupEle.querySelector('.e-week-header th').textContent).toBe('Th');
                 (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
                 util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
                 util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
-                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-                let startTimePicker: DateTimePicker =
+                const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                const startTimePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(startTimePicker.firstDayOfWeek.toString()).toEqual('4');
-                let endTimePicker: DateTimePicker =
+                const endTimePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(endTimePicker.firstDayOfWeek.toString()).toEqual('4');
-                let untilDatePicker: DateTimePicker =
+                const untilDatePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('4');
-                let repeatElement: DropDownList =
+                const repeatElement: DropDownList =
                     (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
                 repeatElement.index = 2; repeatElement.dataBind();
-                let btnElement: HTMLElement =
+                const btnElement: HTMLElement =
                     ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
                 expect(btnElement.title).toEqual('Thursday');
                 repeatElement.index = 3; repeatElement.dataBind();
-                let dayElement: DropDownList =
+                const dayElement: DropDownList =
                     (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
                 dayElement.index = 0; dayElement.dataBind();
                 expect(dayElement.value).toEqual('TH');
@@ -1491,30 +1486,30 @@ describe('Schedule base module', () => {
         it('Checking first day of week in timeline week view.', (done: DoneFn) => {
             schObj.dataBound = () => {
                 (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-                let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+                const popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
                 expect(popupEle.querySelector('.e-week-header th').textContent).toBe('Mo');
                 (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
                 expect((schObj.element.querySelector('.e-header-cells') as HTMLElement).innerText).toEqual('Nov 6, Monday');
                 util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
                 util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
-                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-                let startTimePicker: DateTimePicker =
+                const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                const startTimePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(startTimePicker.firstDayOfWeek.toString()).toEqual('1');
-                let endTimePicker: DateTimePicker =
+                const endTimePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(endTimePicker.firstDayOfWeek.toString()).toEqual('1');
-                let untilDatePicker: DateTimePicker =
+                const untilDatePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('1');
-                let repeatElement: DropDownList =
+                const repeatElement: DropDownList =
                     (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
                 repeatElement.index = 2; repeatElement.dataBind();
-                let btnElement: HTMLElement =
+                const btnElement: HTMLElement =
                     ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
                 expect(btnElement.title).toEqual('Monday');
                 repeatElement.index = 3; repeatElement.dataBind();
-                let dayElement: DropDownList =
+                const dayElement: DropDownList =
                     (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
                 dayElement.index = 0; dayElement.dataBind();
                 expect(dayElement.value).toEqual('MO');
@@ -1527,30 +1522,30 @@ describe('Schedule base module', () => {
         it('Checking first day of week in timeline work week view.', (done: DoneFn) => {
             schObj.dataBound = () => {
                 (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-                let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+                const popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
                 expect(popupEle.querySelector('.e-week-header th').textContent).toBe('Tu');
                 (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
                 expect((schObj.element.querySelector('.e-header-cells') as HTMLElement).innerText).toEqual('Oct 31, Tuesday');
                 util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
                 util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
-                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-                let startTimePicker: DateTimePicker =
+                const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                const startTimePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(startTimePicker.firstDayOfWeek.toString()).toEqual('2');
-                let endTimePicker: DateTimePicker =
+                const endTimePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(endTimePicker.firstDayOfWeek.toString()).toEqual('2');
-                let untilDatePicker: DateTimePicker =
+                const untilDatePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('2');
-                let repeatElement: DropDownList =
+                const repeatElement: DropDownList =
                     (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
                 repeatElement.index = 2; repeatElement.dataBind();
-                let btnElement: HTMLElement =
+                const btnElement: HTMLElement =
                     ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
                 expect(btnElement.title).toEqual('Tuesday');
                 repeatElement.index = 3; repeatElement.dataBind();
-                let dayElement: DropDownList =
+                const dayElement: DropDownList =
                     (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
                 dayElement.index = 0; dayElement.dataBind();
                 expect(dayElement.value).toEqual('TU');
@@ -1564,24 +1559,24 @@ describe('Schedule base module', () => {
             schObj.dataBound = () => {
                 util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
                 util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
-                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-                let startTimePicker: DateTimePicker =
+                const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                const startTimePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(startTimePicker.firstDayOfWeek.toString()).toEqual('3');
-                let endTimePicker: DateTimePicker =
+                const endTimePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(endTimePicker.firstDayOfWeek.toString()).toEqual('3');
-                let untilDatePicker: DateTimePicker =
+                const untilDatePicker: DateTimePicker =
                     (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
                 expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('3');
-                let repeatElement: DropDownList =
+                const repeatElement: DropDownList =
                     (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
                 repeatElement.index = 2; repeatElement.dataBind();
-                let btnElement: HTMLElement =
+                const btnElement: HTMLElement =
                     ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
                 expect(btnElement.title).toEqual('Wednesday');
                 repeatElement.index = 3; repeatElement.dataBind();
-                let dayElement: DropDownList =
+                const dayElement: DropDownList =
                     (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
                 dayElement.index = 0; dayElement.dataBind();
                 expect(dayElement.value).toEqual('WE');
@@ -1595,7 +1590,7 @@ describe('Schedule base module', () => {
 
     describe('view-based template checking', () => {
         let schObj: Schedule;
-        let eventData: Object[] = [{
+        const eventData: Record<string, any>[] = [{
             Id: 1,
             Subject: 'Event',
             StartTime: new Date(2019, 11, 1, 10),
@@ -1604,11 +1599,11 @@ describe('Schedule base module', () => {
             RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=10',
             RecurrenceException: '20191205T043000Z,20191209T043000Z'
         }];
-        let dateHeaderTemplate: string = '<div class="e-custom-date-header">${date.toLocaleString()}</div>';
-        let cellHeaderTemplate: string = '<div class="e-custom-cell-header">${date.toLocaleString()}</div>';
-        let cellTemplate: string = '<div class="e-custom-cell">${date.toLocaleString()}</div>';
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        const dateHeaderTemplate: string = '<div class="e-custom-date-header">${date.toLocaleString()}</div>';
+        const cellHeaderTemplate: string = '<div class="e-custom-cell-header">${date.toLocaleString()}</div>';
+        const cellTemplate: string = '<div class="e-custom-cell">${date.toLocaleString()}</div>';
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 selectedDate: new Date(2019, 11, 5),
                 views: [
                     { option: 'Week', dateHeaderTemplate: dateHeaderTemplate },
@@ -1631,7 +1626,7 @@ describe('Schedule base module', () => {
                 expect(schObj.element.querySelectorAll('.e-custom-date-header').length).toEqual(0);
                 expect(schObj.element.querySelectorAll('.e-custom-cell').length).toEqual(35);
                 expect(schObj.element.querySelectorAll('.e-custom-cell-header').length).toEqual(35);
-                expect(schObj.getDeletedOccurrences(schObj.eventsData[0] as { [key: string]: Object }).length).toEqual(2);
+                expect(schObj.getDeletedOccurrences(schObj.eventsData[0]).length).toEqual(2);
                 done();
             };
             schObj.currentView = 'Month';
@@ -1641,7 +1636,7 @@ describe('Schedule base module', () => {
 
     describe('Capitalization checking on french culture', () => {
         let schObj: Schedule;
-        let eventData: Object[] = [{
+        const eventData: Record<string, any>[] = [{
             Id: 1,
             Subject: 'Event',
             StartTime: new Date(2019, 10, 7),
@@ -1661,7 +1656,7 @@ describe('Schedule base module', () => {
             util.loadCultureFiles('fr-CH');
             schObj = new Schedule({ selectedDate: new Date(2019, 10, 19), locale: 'fr-CH' }, '#Schedule');
 
-            let headerRows: NodeListOf<Element> = schObj.element.querySelectorAll('.e-header-day');
+            const headerRows: NodeListOf<Element> = schObj.element.querySelectorAll('.e-header-day');
             expect(headerRows[0].innerHTML).toEqual('Dim.');
             expect(headerRows[1].innerHTML).toEqual('Lun.');
             expect(headerRows[2].innerHTML).toEqual('Mar.');
@@ -1688,7 +1683,7 @@ describe('Schedule base module', () => {
             util.loadCultureFiles('fr-CH');
             schObj = new Schedule({ selectedDate: new Date(2019, 10, 1), currentView: 'Month', locale: 'fr-CH' }, '#Schedule');
 
-            let headerRows: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-header-cells')) as HTMLElement[];
+            const headerRows: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-header-cells')) as HTMLElement[];
             expect(headerRows[0].innerText).toEqual('Dimanche');
             expect(headerRows[1].innerText).toEqual('Lundi');
             expect(headerRows[2].innerText).toEqual('Mardi');
@@ -1711,14 +1706,14 @@ describe('Schedule base module', () => {
                 toEqual('Janvier 2019');
         });
 
-        it('Checking french culture event popup on month view', (done: Function) => {
+        it('Checking french culture event popup on month view', (done: DoneFn) => {
             util.loadCultureFiles('fr-CH');
             schObj = new Schedule(
                 { selectedDate: new Date(2019, 10, 1), currentView: 'Month', locale: 'fr-CH', eventSettings: { dataSource: eventData } },
                 '#Schedule');
             schObj.dataBound = () => {
                 (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
-                let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+                const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
                 expect(eventPopup).toBeTruthy();
                 expect((eventPopup.querySelector('.e-date-time-details') as HTMLElement).innerText).
                     toEqual('7 Novembre 2019 (All day)');
@@ -1735,7 +1730,7 @@ describe('Schedule base module', () => {
                 { selectedDate: new Date(2019, 10, 1), views: ['TimelineWeek'], currentView: 'TimelineWeek', locale: 'fr-CH' },
                 '#Schedule');
 
-            let headerRows: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-header-cells')) as HTMLElement[];
+            const headerRows: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-header-cells')) as HTMLElement[];
             expect(headerRows[0].innerText).toEqual('27 Oct., Dimanche');
             expect(headerRows[1].innerText).toEqual('28 Oct., Lundi');
             expect(headerRows[2].innerText).toEqual('29 Oct., Mardi');
@@ -1785,13 +1780,9 @@ describe('Schedule base module', () => {
 
     it('memory leak', () => {
         profile.sample();
-        // tslint:disable:no-any
-        let average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
+        const average: number = inMB(profile.averageChange);
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        const memory: number = inMB(getMemoryProfile());
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        // tslint:enable:no-any
     });
 });

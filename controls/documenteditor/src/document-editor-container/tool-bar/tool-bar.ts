@@ -82,16 +82,15 @@ export class Toolbar {
     private toolbarItems: (CustomToolbarItemModel | ToolbarItem)[];
     private toolbarTimer: number;
     private buttonElement: HTMLButtonElement;
-    /**
-     * @private
-     */
-    get documentEditor(): DocumentEditor {
+
+    private get documentEditor(): DocumentEditor {
         return this.container.documentEditor;
     }
     /**
      * @private
+     * @param {DocumentEditorContainer} container - DocumentEditorContainer object.
      */
-    constructor(container: DocumentEditorContainer) {
+    public constructor(container: DocumentEditorContainer) {
         this.container = container;
         this.importHandler = new XmlHttpRequestHandler();
     }
@@ -101,37 +100,40 @@ export class Toolbar {
 
     /**
      * Enables or disables the specified Toolbar item.
+     *
      * @param  {number} itemIndex - Index of the toolbar items that need to be enabled or disabled.
      * @param  {boolean} isEnable  - Boolean value that determines whether the toolbar item should be enabled or disabled.
      * By default, `isEnable` is set to true.
      * @blazorArgsType itemIndex|int,isEnable|Boolean
-     * @returns void.
+     * @returns {void}
      */
     public enableItems(itemIndex: number, isEnable: boolean): void {
         this.toolbar.enableItems(itemIndex, isEnable);
     }
     /**
      * @private
+     * @param {CustomToolbarItemModel|ToolbarItem} items - Toolbar items
+     * @returns {void}
      */
     public initToolBar(items: (CustomToolbarItemModel | ToolbarItem)[]): void {
         this.toolbarItems = items;
         this.renderToolBar();
         this.wireEvent();
     }
-    // tslint:disable-next-line:max-func-body-length
+
     private renderToolBar(): void {
         if (isNullOrUndefined(this.container)) {
             return;
         }
-        let toolbarContainer: HTMLElement = this.container.toolbarContainer;
-        let toolbarWrapper: HTMLElement = createElement('div', { className: 'e-de-tlbr-wrapper' });
-        let toolbarTarget: HTMLElement = createElement('div', { className: 'e-de-toolbar' });
+        const toolbarContainer: HTMLElement = this.container.toolbarContainer;
+        const toolbarWrapper: HTMLElement = createElement('div', { className: 'e-de-tlbr-wrapper' });
+        const toolbarTarget: HTMLElement = createElement('div', { className: 'e-de-toolbar' });
         this.initToolbarItems();
         toolbarWrapper.appendChild(toolbarTarget);
         toolbarContainer.appendChild(toolbarWrapper);
 
-        // Show hide pane button initialization 
-        let propertiesPaneDiv: HTMLElement = createElement('div', { className: 'e-de-ctnr-properties-pane-btn' });
+        // Show hide pane button initialization
+        const propertiesPaneDiv: HTMLElement = createElement('div', { className: 'e-de-ctnr-properties-pane-btn' });
         this.buttonElement = createElement('button', { attrs: { type: 'button' } }) as HTMLButtonElement;
         propertiesPaneDiv.appendChild(this.buttonElement);
         let cssClassName: string = 'e-tbar-btn e-tbtn-txt e-control e-btn e-de-showhide-btn';
@@ -144,7 +146,7 @@ export class Toolbar {
             cssClass: cssClassName,
             iconCss: iconCss
         });
-        let locale: L10n = this.container.localObj;
+        const locale: L10n = this.container.localObj;
         this.buttonElement.title = locale.getConstant('Hide properties pane');
         this.propertiesPaneButton.appendTo(this.buttonElement);
         EventHandler.add(this.buttonElement, 'click', this.showHidePropertiesPane, this);
@@ -153,98 +155,127 @@ export class Toolbar {
         this.initToolbarDropdown(toolbarTarget);
     }
     private initToolbarDropdown(toolbarTarget: HTMLElement): void {
-        let locale: L10n = this.container.localObj;
-        let id: string = this.container.element.id + TOOLBAR_ID;
-        if (this.toolbarItems.indexOf('Image') >= 0) {
-            let imageButton: HTMLElement = toolbarTarget.getElementsByClassName('e-de-image-splitbutton')[0].firstChild as HTMLElement;
-            let items: DropDownButtonModel = {
-                items: [
-                    {
-                        text: locale.getConstant('Upload from computer'), iconCss: 'e-icons e-de-ctnr-upload',
-                        id: id + INSERT_IMAGE_LOCAL_ID
-                    }],
-                //,{ text: locale.getConstant('By URL'), iconCss: 'e-icons e-de-ctnr-link', id: id + INSERT_IMAGE_ONLINE_ID }],
-                cssClass: 'e-de-toolbar-btn-first e-caret-hide',
-                iconCss: 'e-icons e-de-ctnr-image',
-                select: this.onDropDownButtonSelect.bind(this),
-            };
-            if (!isNullOrUndefined(this.imgDropDwn)) {
-                this.imgDropDwn = undefined;
+        if (this.container) {
+            const locale: L10n = this.container.localObj;
+            const id: string = this.container.element.id + TOOLBAR_ID;
+            if (this.toolbarItems.indexOf('Image') >= 0) {
+                const imageButton: HTMLElement = toolbarTarget.getElementsByClassName('e-de-image-splitbutton')[0].firstChild as HTMLElement;
+                const items: DropDownButtonModel = {
+                    items: [
+                        {
+                            text: locale.getConstant('Upload from computer'), iconCss: 'e-icons e-de-ctnr-upload',
+                            id: id + INSERT_IMAGE_LOCAL_ID
+                        }],
+                    //,{ text: locale.getConstant('By URL'), iconCss: 'e-icons e-de-ctnr-link', id: id + INSERT_IMAGE_ONLINE_ID }],
+                    cssClass: 'e-de-toolbar-btn-first e-caret-hide',
+                    iconCss: 'e-icons e-de-ctnr-image',
+                    select: this.onDropDownButtonSelect.bind(this)
+                };
+                if (!isNullOrUndefined(this.imgDropDwn)) {
+                    this.imgDropDwn = undefined;
+                }
+                this.imgDropDwn = new DropDownButton(items, imageButton as HTMLButtonElement);
             }
-            this.imgDropDwn = new DropDownButton(items, imageButton as HTMLButtonElement);
-        }
 
-        if (this.toolbarItems.indexOf('Break') >= 0) {
-            let breakButton: HTMLElement = toolbarTarget.getElementsByClassName('e-de-break-splitbutton')[0].firstChild as HTMLElement;
-            let items: DropDownButtonModel = {
-                items: [
-                    { text: locale.getConstant('Page Break'), iconCss: 'e-icons e-de-ctnr-page-break', id: id + PAGE_BREAK },
-                    { text: locale.getConstant('Section Break'), iconCss: 'e-icons e-de-ctnr-section-break', id: id + SECTION_BREAK }],
-                cssClass: 'e-caret-hide',
-                iconCss: 'e-icons e-de-ctnr-break',
-                select: this.onDropDownButtonSelect.bind(this),
-            };
-            if (!isNullOrUndefined(this.breakDropDwn)) {
-                this.breakDropDwn = undefined;
+            if (this.toolbarItems.indexOf('Break') >= 0) {
+                const breakButton: HTMLElement = toolbarTarget.getElementsByClassName('e-de-break-splitbutton')[0].firstChild as HTMLElement;
+                const items: DropDownButtonModel = {
+                    items: [
+                        { text: locale.getConstant('Page Break'), iconCss: 'e-icons e-de-ctnr-page-break', id: id + PAGE_BREAK },
+                        { text: locale.getConstant('Section Break'), iconCss: 'e-icons e-de-ctnr-section-break', id: id + SECTION_BREAK }],
+                    cssClass: 'e-caret-hide',
+                    iconCss: 'e-icons e-de-ctnr-break',
+                    select: this.onDropDownButtonSelect.bind(this)
+                };
+                if (!isNullOrUndefined(this.breakDropDwn)) {
+                    this.breakDropDwn = undefined;
+                }
+                this.breakDropDwn = new DropDownButton(items, breakButton as HTMLButtonElement);
             }
-            this.breakDropDwn = new DropDownButton(items, breakButton as HTMLButtonElement);
-        }
 
 
-        this.filePicker = createElement('input', {
-            attrs: { type: 'file', accept: '.doc,.docx,.rtf,.txt,.htm,.html,.sfdt' }, className: 'e-de-ctnr-file-picker'
-        }) as HTMLInputElement;
-        if (Browser.isIE) {
-            document.body.appendChild(this.filePicker);
-        }
-        this.imagePicker = createElement('input', {
-            attrs: { type: 'file', accept: '.jpg,.jpeg,.png,.bmp' }, className: 'e-de-ctnr-file-picker'
-        }) as HTMLInputElement;
-        if (Browser.isIE) {
-            document.body.appendChild(this.imagePicker);
-        }
-        if (this.toolbarItems.indexOf('LocalClipboard') >= 0) {
-            this.toggleButton(id + CLIPBOARD_ID, this.container.enableLocalPaste);
-        }
-        if (this.toolbarItems.indexOf('TrackChanges') >= 0) {
-            this.toggleButton(id + TRACK_ID, this.container.enableTrackChanges);
-        }
-        if (this.toolbarItems.indexOf('RestrictEditing') >= 0) {
-            this.toggleButton(id + RESTRICT_EDITING_ID, this.container.restrictEditing);
-            // tslint:disable-next-line:max-line-length
-            let restrictEditing: HTMLElement = toolbarTarget.getElementsByClassName('e-de-lock-dropdownbutton')[0].firstChild as HTMLElement;
-            let items: DropDownButtonModel = {
-                items: [
-                    { text: locale.getConstant('Read only'), id: id + READ_ONLY },
-                    { text: locale.getConstant('Protections'), id: id + PROTECTIONS }],
-                cssClass: 'e-de-toolbar-btn-first e-caret-hide',
-                select: this.onDropDownButtonSelect.bind(this)
-            };
-            if (!isNullOrUndefined(this.restrictDropDwn)) {
-                this.restrictDropDwn = undefined;
+            this.filePicker = createElement('input', {
+                attrs: { type: 'file', accept: '.doc,.docx,.rtf,.txt,.htm,.html,.sfdt' }, className: 'e-de-ctnr-file-picker'
+            }) as HTMLInputElement;
+            if (Browser.isIE) {
+                document.body.appendChild(this.filePicker);
             }
-            this.restrictDropDwn = new DropDownButton(items, restrictEditing as HTMLButtonElement);
-        }
-        if (this.toolbarItems.indexOf('FormFields') >= 0) {
-            let breakButton: HTMLElement = toolbarTarget.getElementsByClassName('e-de-formfields')[0].firstChild as HTMLElement;
-            let items: DropDownButtonModel = {
-                items: [
-                    { text: locale.getConstant('Text Form'), iconCss: 'e-icons e-de-textform', id: id + TEXT_FORM },
-                    { text: locale.getConstant('Check Box'), iconCss: 'e-icons e-de-checkbox-form', id: id + CHECKBOX },
-                    { text: locale.getConstant('DropDown'), iconCss: 'e-icons e-de-dropdownform', id: id + DROPDOWN }],
-                cssClass: 'e-de-toolbar-btn-first e-caret-hide',
-                select: this.onDropDownButtonSelect.bind(this),
-            };
-            if (!isNullOrUndefined(this.formFieldDropDown)) {
-                this.formFieldDropDown = undefined;
+            this.imagePicker = createElement('input', {
+                attrs: { type: 'file', accept: '.jpg,.jpeg,.png,.bmp' }, className: 'e-de-ctnr-file-picker'
+            }) as HTMLInputElement;
+            if (Browser.isIE) {
+                document.body.appendChild(this.imagePicker);
             }
-            this.formFieldDropDown = new DropDownButton(items, breakButton as HTMLButtonElement);
+            if (this.toolbarItems.indexOf('LocalClipboard') >= 0) {
+                this.toggleButton(id + CLIPBOARD_ID, this.container.enableLocalPaste);
+            }
+            if (this.toolbarItems.indexOf('TrackChanges') >= 0) {
+                this.toggleButton(id + TRACK_ID, this.container.enableTrackChanges);
+            }
+            if (this.toolbarItems.indexOf('RestrictEditing') >= 0) {
+                this.toggleButton(id + RESTRICT_EDITING_ID, this.container.restrictEditing);
+                const restrictEditing: HTMLElement = toolbarTarget.getElementsByClassName('e-de-lock-dropdownbutton')[0].firstChild as HTMLElement;
+                let restrictIconCss: string = '';
+                if (this.container.restrictEditing) {
+                    restrictIconCss = ' e-de-selected-item';
+                }
+                const items: DropDownButtonModel = {
+                    items: [
+                        { text: locale.getConstant('Read only'), id: id + READ_ONLY, iconCss: 'e-icons' + restrictIconCss },
+                        { text: locale.getConstant('Protections'), id: id + PROTECTIONS, iconCss: 'e-icons' }],
+                    cssClass: 'e-de-toolbar-btn-first e-caret-hide',
+                    select: this.onDropDownButtonSelect.bind(this),
+                    beforeItemRender: (args: MenuEventArgs) => {
+                        this.onBeforeRenderRestrictDropdown(args, id);
+                    }
+                };
+                if (!isNullOrUndefined(this.restrictDropDwn)) {
+                    this.restrictDropDwn = undefined;
+                }
+                this.restrictDropDwn = new DropDownButton(items, restrictEditing as HTMLButtonElement);
+            }
+            if (this.toolbarItems.indexOf('FormFields') >= 0) {
+                const breakButton: HTMLElement = toolbarTarget.getElementsByClassName('e-de-formfields')[0].firstChild as HTMLElement;
+                const items: DropDownButtonModel = {
+                    items: [
+                        { text: locale.getConstant('Text Form'), iconCss: 'e-icons e-de-textform', id: id + TEXT_FORM },
+                        { text: locale.getConstant('Check Box'), iconCss: 'e-icons e-de-checkbox-form', id: id + CHECKBOX },
+                        { text: locale.getConstant('DropDown'), iconCss: 'e-icons e-de-dropdownform', id: id + DROPDOWN }],
+                    cssClass: 'e-de-toolbar-btn-first e-caret-hide',
+                    select: this.onDropDownButtonSelect.bind(this)
+                };
+                if (!isNullOrUndefined(this.formFieldDropDown)) {
+                    this.formFieldDropDown = undefined;
+                }
+                this.formFieldDropDown = new DropDownButton(items, breakButton as HTMLButtonElement);
+            }
         }
     }
-
+    private onBeforeRenderRestrictDropdown(args: MenuEventArgs, id: string): void {
+        const selectedIcon: HTMLElement = args.element.getElementsByClassName('e-menu-icon')[0] as HTMLElement;
+        if (!isNullOrUndefined(selectedIcon)) {
+            if (args.item.id === id + READ_ONLY) {
+                this.toggleRestrictIcon(selectedIcon, this.container.restrictEditing);
+            }
+            if (args.item.id === id + PROTECTIONS) {
+                const restrictPane: HTMLElement = document.getElementsByClassName('e-de-restrict-pane')[0] as HTMLElement;
+                if (!isNullOrUndefined(restrictPane)) {
+                    const toggleProtection: boolean = !(restrictPane.style.display === 'none');
+                    this.toggleRestrictIcon(selectedIcon, toggleProtection);
+                }
+            }
+        }
+    }
+    private toggleRestrictIcon(icon: HTMLElement, toggle: boolean): void {
+        if (toggle) {
+            icon.classList.add('e-de-selected-item');
+        } else {
+            icon.classList.remove('e-de-selected-item');
+        }
+    }
     private showHidePropertiesPane(): void {
-        let paneDiv: HTMLElement = document.getElementsByClassName('e-de-ctnr-properties-pane-btn')[0] as HTMLButtonElement;
-        let locale: L10n = this.container.localObj;
+        const paneDiv: HTMLElement = document.getElementsByClassName('e-de-ctnr-properties-pane-btn')[0] as HTMLButtonElement;
+        const locale: L10n = this.container.localObj;
         if (this.container.propertiesPaneContainer.style.display === 'none') {
             this.container.showPropertiesPane = true;
             paneDiv.classList.remove('e-de-pane-disable-clr');
@@ -266,7 +297,7 @@ export class Toolbar {
     }
     private onWrapText(text: string): string {
         let content: string = '';
-        let index: number = text.lastIndexOf(' ');
+        const index: number = text.lastIndexOf(' ');
         content = text.slice(0, index);
         text.slice(index);
         content += '<div class="e-de-text-wrap">' + text.slice(index) + '</div>';
@@ -286,12 +317,14 @@ export class Toolbar {
     }
     /**
      * @private
+     * @param {CustomToolbarItemModel|ToolbarItem} items - Toolbar items
+     * @returns {void}
      */
     public reInitToolbarItems(items: (CustomToolbarItemModel | ToolbarItem)[]): void {
         this.toolbarItems = items;
-        let toolbarTarget: HTMLElement = this.container.toolbarContainer;
+        const toolbarTarget: HTMLElement = this.container.toolbarContainer;
         this.toolbar.items = this.getToolbarItems();
-        /* tslint:disable:align */
+        /* eslint-disable @typescript-eslint/indent */
         this.toolbarTimer = setTimeout(() => {
             if (this.toolbarTimer) {
                 clearTimeout(this.toolbarTimer);
@@ -305,14 +338,13 @@ export class Toolbar {
             }
         }, 200);
     }
-    /* tslint:disable:no-any */
-    // tslint:disable-next-line:max-func-body-length
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     private getToolbarItems(): ItemModel[] {
-        let locale: L10n = this.container.localObj;
-        let id: string = this.container.element.id + TOOLBAR_ID;
-        let toolbarItems: any = [];
+        const locale: L10n = this.container.localObj;
+        const id: string = this.container.element.id + TOOLBAR_ID;
+        const toolbarItems: any = [];
         let className: string;
-        let tItem: (CustomToolbarItemModel | ToolbarItem)[] = this.toolbarItems;
+        const tItem: (CustomToolbarItemModel | ToolbarItem)[] = this.toolbarItems;
         for (let i: number = 0; i < this.toolbarItems.length; i++) {
             if (i === 0) {
                 className = 'e-de-toolbar-btn-start';
@@ -494,7 +526,7 @@ export class Toolbar {
         return toolbarItems;
     }
     private clickHandler(args: ClickEventArgs): void {
-        let id: string = this.container.element.id + TOOLBAR_ID;
+        const id: string = this.container.element.id + TOOLBAR_ID;
         switch (args.item.id) {
             case id + NEW_ID:
                 this.container.documentEditor.openBlank();
@@ -573,7 +605,7 @@ export class Toolbar {
         this.container.showPropertiesPane = !this.container.restrictEditing;
     }
     private toggleButton(id: string, toggle: boolean): void {
-        let element: HTMLElement = document.getElementById(id);
+        const element: HTMLElement = document.getElementById(id);
         if (toggle) {
             classList(element, ['e-btn-toggle'], []);
         } else {
@@ -592,8 +624,8 @@ export class Toolbar {
         this.container.showPropertiesPane = !this.container.showPropertiesPane;
     }
     private onDropDownButtonSelect(args: MenuEventArgs): void {
-        let parentId: string = this.container.element.id + TOOLBAR_ID;
-        let id: string = args.item.id;
+        const parentId: string = this.container.element.id + TOOLBAR_ID;
+        const id: string = args.item.id;
         if (id === parentId + PAGE_BREAK) {
             this.container.documentEditor.editorModule.insertPageBreak();
         } else if (id === parentId + SECTION_BREAK) {
@@ -614,20 +646,22 @@ export class Toolbar {
         } else if (id === parentId + TEXT_FORM) {
             this.documentEditor.editor.insertFormField('Text');
         }
-        setTimeout((): void => { this.documentEditor.focusIn(); }, 30);
+        setTimeout((): void => {
+            this.documentEditor.focusIn();
+        }, 30);
     }
     private onFileChange(): void {
-        let file: File = this.filePicker.files[0];
-        let filesize: number = file.size;
+        const file: File = this.filePicker.files[0];
+        const filesize: number = file.size;
         let check: boolean;
-        let eventArgs: BeforeFileOpenArgs = { fileSize: filesize, isCanceled: check };
+        const eventArgs: BeforeFileOpenArgs = { fileSize: filesize, isCanceled: check };
         this.documentEditor.trigger('beforeFileOpen', eventArgs);
         if (eventArgs.isCanceled) {
             return;
         }
         if (file) {
             if (file.name.substr(file.name.lastIndexOf('.')) === '.sfdt') {
-                let fileReader: FileReader = new FileReader();
+                const fileReader: FileReader = new FileReader();
                 fileReader.onload = (): void => {
                     this.container.documentEditor.open(fileReader.result as string);
                 };
@@ -645,15 +679,19 @@ export class Toolbar {
         this.importHandler.onFailure = this.failureHandler.bind(this);
         this.importHandler.onError = this.failureHandler.bind(this);
         this.importHandler.customHeaders = this.container.headers;
-        let formData: FormData = new FormData();
+        const formData: FormData = new FormData();
         formData.append('files', file);
         this.importHandler.send(formData);
     }
-    /* tslint:disable:no-any */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     private failureHandler(args: any): void {
         if (args.name === 'onError') {
-            // tslint:disable-next-line:max-line-length
-            DialogUtility.alert({ content: this.container.localObj.getConstant('Error in establishing connection with web server'), closeOnEscape: true, showCloseIcon: true, position: { X: 'Center', Y: 'Center' } });
+            DialogUtility.alert({
+                content: this.container.localObj.getConstant('Error in establishing connection with web server'),
+                closeOnEscape: true, showCloseIcon: true,
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                position: { X: 'Center', Y: 'Center' }
+            });
         } else {
             alert('Failed to load the file');
             this.documentEditor.fireServiceFailure(args);
@@ -664,40 +702,40 @@ export class Toolbar {
         this.container.documentEditor.open(result.data as string);
         hideSpinner(this.container.containerTarget);
     }
-    /* tslint:enable:no-any */
+    /* eslint-enable @typescript-eslint/no-explicit-any */
     private onImageChange(): void {
-        let file: File = this.imagePicker.files[0];
-        let fileReader: FileReader = new FileReader();
+        const file: File = this.imagePicker.files[0];
+        const fileReader: FileReader = new FileReader();
         fileReader.onload = (): void => {
             this.insertImage(fileReader.result as string);
         };
         fileReader.readAsDataURL(file);
     }
     private insertImage(data: string): void {
-        let image: HTMLImageElement = document.createElement('img');
-        let container: DocumentEditorContainer = this.container;
+        const image: HTMLImageElement = document.createElement('img');
+        const container: DocumentEditorContainer = this.container;
         image.addEventListener('load', function (): void {
             container.documentEditor.editor.insertImage(data, this.width, this.height);
         });
         image.src = data;
     }
-    /**
-     * @private
-     */
-    public enableDisableFormField(enable: boolean): void {
-        let ele: HTMLElement = document.getElementById('container_toolbar_form_fields');
+
+    private enableDisableFormField(enable: boolean): void {
+        const ele: HTMLElement = document.getElementById('container_toolbar_form_fields');
         if (!isNullOrUndefined(ele)) {
             this.toolbar.enableItems(ele.parentElement, enable);
         }
     }
     /**
      * @private
+     * @param {boolean} enable - Emable/Disable insert comment toolbar item.
+     * @returns {void}
      */
     public enableDisableInsertComment(enable: boolean): void {
         this.isCommentEditing = !enable;
-        let id: string = this.container.element.id + TOOLBAR_ID;
-        let commentId: string = id + COMMENT_ID;
-        let element: HTMLElement = document.getElementById(commentId);
+        const id: string = this.container.element.id + TOOLBAR_ID;
+        const commentId: string = id + COMMENT_ID;
+        const element: HTMLElement = document.getElementById(commentId);
         if (!this.container.enableComment && element) {
             this.toolbar.removeItems(element.parentElement);
         } else if (element) {
@@ -710,11 +748,12 @@ export class Toolbar {
     }
     /**
      * @private
-     *
+     * @param {boolean} enable - Emable/Disable track changes toolbar item.
+     * @returns {void}
      */
     public toggleTrackChanges(enable: boolean): void {
-        let trackId: string = this.container.element.id + TOOLBAR_ID + TRACK_ID;
-        let element: HTMLElement = document.getElementById(trackId);
+        const trackId: string = this.container.element.id + TOOLBAR_ID + TRACK_ID;
+        const element: HTMLElement = document.getElementById(trackId);
         if (element) {
             this.toggleTrackChangesInternal(trackId, enable);
         }
@@ -733,11 +772,14 @@ export class Toolbar {
     // }
     /**
      * @private
+     * @param {boolean} enable - Enable/Diable toolbar items.
+     * @param {boolean} isProtectedContent - Define whether document is protected.
+     * @returns {void}
      */
     public enableDisableToolBarItem(enable: boolean, isProtectedContent: boolean): void {
-        let id: string = this.container.element.id + TOOLBAR_ID;
-        for (let item of this.toolbar.items) {
-            let itemId: string = item.id;
+        const id: string = this.container.element.id + TOOLBAR_ID;
+        for (const item of this.toolbar.items) {
+            const itemId: string = item.id;
             if (itemId !== id + NEW_ID && itemId !== id + OPEN_ID && itemId !== id + FIND_ID &&
                 itemId !== id + CLIPBOARD_ID && itemId !== id + RESTRICT_EDITING_ID && itemId !== id + UPDATE_FIELDS_ID
                 && item.type !== 'Separator') {
@@ -752,7 +794,7 @@ export class Toolbar {
                     && itemId !== id + FOOTNOTE_ID && itemId !== id + ENDNOTE_ID) {
                     continue;
                 }
-                let element: HTMLElement = document.getElementById(item.id);
+                const element: HTMLElement = document.getElementById(item.id);
                 this.toolbar.enableItems(element.parentElement, enable);
             }
         }
@@ -780,17 +822,18 @@ export class Toolbar {
     }
     /**
      * @private
+     * @returns {void}
      */
     public enableDisableUndoRedo(): void {
-        let id: string = this.container.element.id + TOOLBAR_ID;
+        const id: string = this.container.element.id + TOOLBAR_ID;
         if (this.toolbarItems.indexOf('Undo') >= 0) {
             // We can optimize this condition check to single bool validation instead of array collection.
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             this.toolbar.enableItems(document.getElementById(id + UNDO_ID).parentElement, this.container.documentEditor.editorHistory.canUndo());
         }
         if (this.toolbarItems.indexOf('Redo') >= 0) {
             // We can optimize this condition check to single bool validation instead of array collection.
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             this.toolbar.enableItems(document.getElementById(id + REDO_ID).parentElement, this.container.documentEditor.editorHistory.canRedo());
         }
     }
@@ -808,6 +851,8 @@ export class Toolbar {
     }
     /**
      * @private
+     * @param {boolean} isShow - show/hide property pane.
+     * @returns {void}
      */
     public enableDisablePropertyPaneButton(isShow: boolean): void {
         if (isShow) {
@@ -819,6 +864,7 @@ export class Toolbar {
 
     /**
      * @private
+     * @returns { void }
      */
     public destroy(): void {
         if (this.restrictDropDwn) {
@@ -838,7 +884,7 @@ export class Toolbar {
             this.formFieldDropDown = undefined;
         }
         if (this.toolbar) {
-            let toolbarElement: HTMLElement = this.toolbar.element;
+            const toolbarElement: HTMLElement = this.toolbar.element;
             this.toolbar.destroy();
             this.toolbar = undefined;
             toolbarElement.parentElement.removeChild(toolbarElement);

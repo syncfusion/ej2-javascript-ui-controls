@@ -1,4 +1,4 @@
-// tslint:disable
+/* eslint-disable */
 /**
  * Export default locale
  */

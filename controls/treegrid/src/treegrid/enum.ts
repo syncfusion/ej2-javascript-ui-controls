@@ -17,6 +17,7 @@ export type FilterHierarchyMode =
 
 /**
  * Defines Predefined toolbar items.
+ *
  * @hidden
  */
 export type ToolbarItems =
@@ -46,6 +47,7 @@ export type ToolbarItems =
     'Print';
 /**
  * Defines Predefined toolbar items.
+ *
  * @hidden
  */
 export enum ToolbarItem {
@@ -78,6 +80,7 @@ export type PageSizeMode =
 
 /**
  * Defines predefined contextmenu items.
+ *
  * @hidden
  */
 export type ContextMenuItem =
@@ -116,27 +119,28 @@ export type ContextMenuItem =
 
 /**
  * Defines predefined contextmenu items.
+ *
  * @hidden
  */
 export enum ContextMenuItems {
-AutoFit,
-AutoFitAll,
-SortAscending,
-SortDescending,
-Edit,
-Delete,
-Save,
-Cancel,
-PdfExport,
-ExcelExport,
-CsvExport,
-FirstPage,
-PrevPage,
-LastPage,
-NextPage,
-AddRow
+    AutoFit,
+    AutoFitAll,
+    SortAscending,
+    SortDescending,
+    Edit,
+    Delete,
+    Save,
+    Cancel,
+    PdfExport,
+    ExcelExport,
+    CsvExport,
+    FirstPage,
+    PrevPage,
+    LastPage,
+    NextPage,
+    AddRow
 }
-/** 
+/**
  * Defines modes of editing.
  */
 export type EditMode =
@@ -148,7 +152,7 @@ export type EditMode =
 'Dialog' |
 /**  Defines EditMode as Batch */
 'Batch' ;
-/** 
+/**
  * Defines the position where the new row has to be added.
  */
 export type RowPosition =
@@ -162,11 +166,11 @@ export type RowPosition =
 'Below' |
 /**  Defines new row position as child to the selected row */
 'Child' ;
-/** 
- * Defines types of Filter 
- * * Menu - Specifies the filter type as menu. 
- * * Excel - Specifies the filter type as excel. 
- * * FilterBar - Specifies the filter type as filter bar. 
+/**
+ * Defines types of Filter
+ * * Menu - Specifies the filter type as menu.
+ * * Excel - Specifies the filter type as excel.
+ * * FilterBar - Specifies the filter type as filter bar.
  */
 export type FilterType =
     /**  Defines FilterType as filterbar */

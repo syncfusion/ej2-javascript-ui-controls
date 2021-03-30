@@ -1,0 +1,70 @@
+
+$skin-name: 'bootstrap';
+$scrollbar-back-rect-fill: $grey-f5;
+$scrollbar-circle-fill-hover: $grey-lighter;
+$scrollbar-thumb-fill: $grey-e6;
+$scrollbar-arrow-fill: $grey-8c;
+$scrollbar-grip-fill: $grey-8c;
+$scrollbar-circle-fill: $grey-white;
+
+@include export-module('scrollbar-layout') {
+  /*! scrollbar layout */
+  #{&}.e-chart {
+    .e-scrollbar-svg {
+      position: absolute;
+    }
+  }
+}
+@include export-module('scrollbar-theme') {
+  #{&}.e-chart {
+    .e-scrollbar-rect {
+      border: $scrollbar-back-rect-fill;
+      fill: $scrollbar-back-rect-fill;
+      @if $skin-name == 'highcontrast' {
+        border: $scrollbar-back-rect-border;
+      }
+    }
+
+    .e-scrollbar-thumb {
+      fill: $scrollbar-thumb-fill;
+    }
+
+    .e-scrollbar-circle {
+      fill: $scrollbar-circle-fill;
+    }
+
+    .e-scrollbar-circle:hover {
+      fill: $scrollbar-circle-fill-hover;
+      stroke: $scrollbar-circle-fill-hover;
+    }
+
+    .e-scrollbar-circle-hovered {
+      fill: $scrollbar-circle-fill-hover;
+      stroke: $scrollbar-circle-fill-hover;
+    }
+
+    .e-scrollbar-arrow {
+      fill: $scrollbar-arrow-fill;
+      stroke: $scrollbar-arrow-fill;
+    }
+
+    .e-scrollbar-arrow:hover {
+      @if $skin-name == 'highcontrast' {
+        fill: $scrollbar-arrow-fill-hover;
+        stroke: $scrollbar-arrow-fill-hover;
+      }
+    }
+
+    .e-scrollbar-arrow-hovered {
+      @if $skin-name == 'highcontrast' {
+        fill: $scrollbar-arrow-fill-hover;
+        stroke: $scrollbar-arrow-fill-hover;
+      }
+    }
+
+    .e-scrollbar-grip {
+      fill: $scrollbar-grip-fill;
+      stroke: $scrollbar-grip-fill;
+    }
+  }
+}

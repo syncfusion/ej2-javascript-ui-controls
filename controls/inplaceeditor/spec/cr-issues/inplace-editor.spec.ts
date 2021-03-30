@@ -185,7 +185,7 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 keyboardEventArgs.keyCode = 70;
                 compObj.keyDownStatus = true;
                 compObj.onInput();
-                compObj.KeyUp(keyboardEventArgs);
+                compObj.keyUp(keyboardEventArgs);
                 expect(compObj.liCollections.length).toBe(1);
                 done();
             }, 1000);

@@ -22,7 +22,7 @@ export class BaseToolbar {
     protected renderFactory: RendererFactory;
     private tools: { [key: string]: IToolsItems } = {};
 
-    constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
+    public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.locator = serviceLocator;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
@@ -44,6 +44,7 @@ export class BaseToolbar {
         this.parent.off(events.destroy, this.removeEventListener);
     }
 
+    // eslint-disable-next-line
     private setRtl(args: { [key: string]: Object }): void {
         if (!isNullOrUndefined(this.toolbarObj)) {
             this.toolbarObj.setProperties({ enableRtl: args.enableRtl });
@@ -53,13 +54,13 @@ export class BaseToolbar {
     private getTemplateObject(itemStr: string, container: string): IToolbarItemModel {
         let tagName: string;
         switch (itemStr) {
-            case 'fontcolor':
-            case 'backgroundcolor':
-                tagName = 'span';
-                break;
-            default:
-                tagName = 'button';
-                break;
+        case 'fontcolor':
+        case 'backgroundcolor':
+            tagName = 'span';
+            break;
+        default:
+            tagName = 'button';
+            break;
         }
         return {
             command: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].command,
@@ -74,61 +75,70 @@ export class BaseToolbar {
 
     /**
      * getObject method
+      *
+     * @param {string} item - specifies the string value
+     * @param {string} container - specifies the value of string
+     * @returns {IToolbarItemModel} - returns the model element
      * @hidden
      * @deprecated
      */
     public getObject(item: string, container: string): IToolbarItemModel {
-        let itemStr: string = item.toLowerCase();
+        const itemStr: string = item.toLowerCase();
         if (templateItems.indexOf(itemStr) !== -1) {
             return this.getTemplateObject(itemStr, container);
         } else {
             switch (itemStr) {
-                case '|':
-                    return { type: 'Separator' };
-                case '-':
-                    return { type: 'Separator', cssClass: CLS_HR_SEPARATOR };
-                default:
-                    return {
-                        id: this.parent.getID() + '_' + container + '_' + this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].id,
-                        prefixIcon: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].icon,
-                        tooltipText: getTooltipText(itemStr, this.locator),
-                        command: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].command,
-                        subCommand: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].subCommand
-                    };
+            case '|':
+                return { type: 'Separator' };
+            case '-':
+                return { type: 'Separator', cssClass: CLS_HR_SEPARATOR };
+            default:
+                return {
+                    id: this.parent.getID() + '_' + container + '_' + this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].id,
+                    prefixIcon: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].icon,
+                    tooltipText: getTooltipText(itemStr, this.locator),
+                    command: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].command,
+                    subCommand: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].subCommand
+                };
             }
         }
     }
-    /** 
+    /**
+     * @param {string} tbItems - specifies the string value
+     * @param {string} container - specifies the container value
+     * @returns {ItemModel} - retunrs the model element
      * @hidden
      * @deprecated
      */
     public getItems(tbItems: (string | IToolbarItems)[], container: string): ItemModel[] {
-        if (this.parent.toolbarSettings.items.length < 1) { return []; }
-        let items: ItemModel[] = [];
-        for (let item of tbItems) {
+        if (this.parent.toolbarSettings.items.length < 1) {
+            return [];
+        }
+        const items: ItemModel[] = [];
+        for (const item of tbItems) {
             switch (typeof item) {
-                case 'string':
-                    items.push(this.getObject(item as string, container));
-                    break;
-                default:
-                    if (!isNullOrUndefined((item as IToolbarItems).click)) {
-                        let proxy: IToolbarItems = item as IToolbarItems;
-                        let callback: EmitType<ClickEventArgs> = proxy.click;
-                        proxy.click = () => {
-                            if (proxy.undo && this.parent.formatter.getUndoRedoStack().length === 0) {
-                                this.parent.formatter.saveData();
-                            }
-                            callback.call(this);
-                            if ((this.parent.formatter.getUndoRedoStack()[this.parent.formatter.getUndoRedoStack().length - 1].text.trim()
-                            === this.parent.inputElement.innerHTML.trim())) {
-                               return;
-                            }
-                            if (proxy.undo) {
-                                this.parent.formatter.saveData();
-                            }
-                        };
-                    }
-                    items.push(item as ItemModel);
+            case 'string':
+                items.push(this.getObject(item as string, container));
+                break;
+            default:
+                if (!isNullOrUndefined((item as IToolbarItems).click)) {
+                    const proxy: IToolbarItems = item as IToolbarItems;
+                    const callback: EmitType<ClickEventArgs> = proxy.click;
+                    proxy.click = () => {
+                        if (proxy.undo && this.parent.formatter.getUndoRedoStack().length === 0) {
+                            this.parent.formatter.saveData();
+                        }
+                        callback.call(this);
+                        if ((this.parent.formatter.getUndoRedoStack()[this.parent.formatter.getUndoRedoStack().length - 1].text.trim()
+                        === this.parent.inputElement.innerHTML.trim())) {
+                            return;
+                        }
+                        if (proxy.undo) {
+                            this.parent.formatter.saveData();
+                        }
+                    };
+                }
+                items.push(item as ItemModel);
             }
         }
         return items;
@@ -147,6 +157,9 @@ export class BaseToolbar {
 
     /**
      * render method
+     *
+     * @param {IToolbarRenderOptions} args - specifies the toolbar options
+     * @returns {void}
      * @hidden
      * @deprecated
      */

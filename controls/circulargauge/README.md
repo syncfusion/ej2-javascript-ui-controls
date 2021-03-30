@@ -1,4 +1,4 @@
-[![npm](http://ej2.syncfusion.com/github-badges?package=@syncfusion/ej2-circulargauge)](https://www.npmjs.com/package/@syncfusion/ej2-circulargauge)&nbsp;&nbsp;[![coverage](http://ej2.syncfusion.com/badges/ej2-circulargauge/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-circulargauge)
+[![coverage](http://ej2.syncfusion.com/badges/ej2-circulargauge/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-circulargauge)
 
 # ej2-circulargauge
 

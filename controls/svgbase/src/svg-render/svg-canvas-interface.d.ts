@@ -4,11 +4,11 @@
  */
 export interface BaseAttibutes {
     /**
-     * Specifies the ID of an element 
+     * Specifies the ID of an element
      */
     id?: string;
     /**
-     * Specifies the fill color value 
+     * Specifies the fill color value
      */
     fill?: string;
     /**
@@ -32,11 +32,11 @@ export interface BaseAttibutes {
      */
     width?: number;
     /**
-     * X value of the element 
+     * X value of the element
      */
     x?: number;
     /**
-     * Y value of the element 
+     * Y value of the element
      */
     y?: number;
     /**
@@ -48,7 +48,7 @@ export interface BaseAttibutes {
      */
     style?: string;
     /**
-     * Color of the element 
+     * Color of the element
      */
     color?: string;
     /**
@@ -56,7 +56,7 @@ export interface BaseAttibutes {
      */
     class?: string;
     /**
-     * Specifies the transformation value 
+     * Specifies the transformation value
      */
     transform?: string;
     /**
@@ -64,15 +64,15 @@ export interface BaseAttibutes {
      */
     'fill-opacity'?: number;
     /**
-     * Type of pointer for an element 
+     * Type of pointer for an element
      */
     pointer?: string;
     /**
-     * Specifies the plot value 
+     * Specifies the plot value
      */
     plot?: string;
     /**
-     * Visibility of an element 
+     * Visibility of an element
      */
     visibility?: string;
     /**
@@ -90,7 +90,7 @@ export interface SVGAttributes extends BaseAttibutes {
      */
     viewBox?: string;
     /**
-     * Specifies the xmlns link property of a SVG element 
+     * Specifies the xmlns link property of a SVG element
      */
     xmlns?: string;
 }

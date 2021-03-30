@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Schedule calendar import spec
  */
@@ -10,8 +11,7 @@ import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, ICalendarImport);
 
-// tslint:disable-next-line:no-multiline-string
-let iCalString: string = `BEGIN:VCALENDAR
+const iCalString: string = `BEGIN:VCALENDAR
 PRODID:-//Google Inc//Google Calendar 70.9054//EN
 VERSION:2.0
 CALSCALE:GREGORIAN
@@ -250,10 +250,9 @@ END:VCALENDAR`;
 
 describe('ICS calendar import', () => {
     beforeAll(() => {
-        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
             (this as any).skip(); //Skips test (in Chai)
             return;
@@ -262,8 +261,8 @@ describe('ICS calendar import', () => {
 
     describe('Import checking', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let events: Object[] = [{
+        beforeAll((done: DoneFn) => {
+            const events: Record<string, any>[] = [{
                 Id: 10,
                 Subject: 'recurrence event',
                 StartTime: new Date(2017, 9, 19, 10, 0),
@@ -279,33 +278,29 @@ describe('ICS calendar import', () => {
                 StartTime: new Date(2017, 9, 20, 11, 0),
                 EndTime: new Date(2017, 9, 20, 12, 30)
             }];
-            let options: ScheduleModel = { selectedDate: new Date(2017, 9, 19) };
+            const options: ScheduleModel = { selectedDate: new Date(2017, 9, 19) };
             schObj = createSchedule(options, events, done);
         });
         afterAll(() => {
             destroy(schObj);
         });
 
-        it('Import checking with EJ2 scheduler exported file', (done: Function) => {
+        it('Import checking with EJ2 scheduler exported file', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.eventsData.length).toEqual(16);
                 done();
             };
             expect(schObj.eventsData.length).toEqual(3);
-            let fileObj: File = new File([iCalString], 'EJSchedule.ics', { lastModified: 0, type: 'text/calendar' });
+            const fileObj: File = new File([iCalString], 'EJSchedule.ics', { lastModified: 0, type: 'text/calendar' });
             schObj.importICalendar(fileObj);
         });
     });
 
     it('memory leak', () => {
         profile.sample();
-        // tslint:disable:no-any
-        let average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
+        const average: number = inMB(profile.averageChange);
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        const memory: number = inMB(getMemoryProfile());
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        // tslint:enable:no-any
     });
 });

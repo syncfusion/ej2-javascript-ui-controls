@@ -1,3 +1,6 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable jsdoc/require-param */
 import { Chart } from '../chart';
 import { AccumulationChart } from '../../accumulation-chart';
 import { RangeNavigator } from '../../range-navigator';
@@ -18,6 +21,7 @@ export class Export {
 
     /**
      * Constructor for export module.
+     *
      * @private
      */
 
@@ -27,17 +31,15 @@ export class Export {
 
     /**
      * Handles the export method for chart control.
-     * @param type
-     * @param fileName
      */
     public export(
         type: ExportType, fileName: string,
         orientation?: PdfPageOrientation, controls?: (Chart | AccumulationChart | RangeNavigator | StockChart)[],
         width?: number, height?: number, isVertical?: boolean, header ?: IPDFArgs, footer ?: IPDFArgs
     ): void {
-        let exportChart: ExportUtils = new ExportUtils(this.chart);
+        const exportChart: ExportUtils = new ExportUtils(this.chart);
         controls = controls ? controls : [this.chart];
-        let argsData: IExportEventArgs = {
+        const argsData: IExportEventArgs = {
             cancel: false, name: beforeExport, width: width, height: height
         };
         this.chart.trigger(beforeExport, argsData);
@@ -52,7 +54,7 @@ export class Export {
      * To get data url for charts.
      */
     public getDataUrl(chart: Chart | AccumulationChart): { element: HTMLCanvasElement, dataUrl?: string, blobUrl?: string} {
-        let exportUtil: ExportUtils = new ExportUtils(chart);
+        const exportUtil: ExportUtils = new ExportUtils(chart);
         return exportUtil.getDataUrl(chart as Chart | AccumulationChart);
     }
     /**
@@ -64,11 +66,12 @@ export class Export {
     }
     /**
      * To destroy the chart.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart | AccumulationChart | RangeNavigator): void {
+    public destroy(): void {
         // Destroy method performed here
     }
 }

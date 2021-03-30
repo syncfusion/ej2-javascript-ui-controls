@@ -1,0 +1,362 @@
+
+//default
+$treegrid-right-arrow-icon: '\e22f' !default;
+$treegrid-toolbar-expand-icon: '\e558' !default;
+$treegrid-toolbar-collapse-icon: '\e557' !default;
+$treegrid-right-arrow-icon-color: $grey-light-font !default;
+$treegrid-right-arrow-icon-font-size: 10px !default;
+$treegrid-right-arrow-icon-padding: 10px !default;
+$treegrid-content-right-padding: 8px !default;
+$treegrid-treecell-padding: 5px !default;
+$treegrid-bigger-treecell-padding: 5px !default;
+$treegrid-bigger-icon-size: 18px !default;
+$treegrid-smaller-icon-size: 16px !default;
+$treegrid-right-arrow-hover-color: $grey-light-font !default;
+$treegrid-toolbar-indent-icon: '\e33f' !default;
+$treegrid-toolbar-outdent-icon: '\e35d' !default;
+$treegrid-rowdrag-childborder-border: 1px solid $brand-primary  !default;
+$childborder-color: $brand-primary;
+$error-elem-color: #e3165b;
+$error-elem-content: '\e22a' !default;
+$treegrid-frame-icon-height: 17px !default;
+$treegrid-rowdd-topbottom-border: 1px solid #317ab9 !default;
+$treegrid-rowdd-boxshadow:  #317ab9 !default;
+
+@include export-module('treegrid-icons') {
+  .e-treegrid {
+    .e-treegridexpand::before,
+    .e-treegridcollapse::before {
+      content: $treegrid-right-arrow-icon;
+    }
+
+    .e-toolbar-item {
+      .e-expand::before {
+        content: $treegrid-toolbar-expand-icon;
+      }
+
+      .e-collapse::before {
+        content:  $treegrid-toolbar-collapse-icon;
+      }
+
+      .e-indent::before {
+        content: $treegrid-toolbar-indent-icon;
+      }
+
+      .e-outdent::before {
+        content: $treegrid-toolbar-outdent-icon;
+      }
+    }
+  }
+}
+@include export-module('tree-layout') {
+  .e-bigger {
+    .e-treegrid {
+      .e-treegridexpand,
+      .e-treegridcollapse {
+        height: $treegrid-bigger-icon-size;
+        width: $treegrid-bigger-icon-size;
+      }
+
+      .e-rowcell.e-treerowcell {
+        padding-left: $treegrid-bigger-treecell-padding;
+      }
+
+      .e-hierarchycheckbox {
+        padding-left: 2px;
+      }
+
+      .e-treecell {
+        line-height: $treegrid-bigger-icon-size;
+      }
+    }
+  }
+
+  .e-treegrid {
+
+    .e-treegridexpand::before,
+    .e-treegridcollapse::before {
+      vertical-align: middle;
+    }
+
+    .e-rowcell:not(.e-gridclip) {
+      .e-treecolumn-container {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        span.e-treecell {
+          display: inline;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+    }
+
+    .e-treegridexpand:hover::before,
+    .e-treegridcollapse:hover::before {
+      color: $treegrid-right-arrow-hover-color;
+    }
+
+    .e-rowcell.e-treerowcell {
+      padding-left: $treegrid-treecell-padding;
+    }
+
+    .e-rtl {
+      .e-treegridcollapse {
+        transform: scale(-1);
+      }
+    }
+
+    .e-treegridexpand {
+      transform: rotate(90deg);
+    }
+
+    .e-treerowexpanded:not(.e-hiddenrow) {
+      display: table-row;
+    }
+
+    .e-treerowcollapsed {
+      display: none;
+    }
+
+    .e-treecheckbox-container {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      :not(.e-treecheckbox) {
+        white-space: nowrap;
+      }
+    }
+
+    .e-treecheckbox {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: middle;
+    }
+
+    .e-treecolumn-container {
+      span {
+        display: inline-block;
+        vertical-align: middle;
+      }
+
+      .e-hierarchycheckbox .e-frame {
+        height: $treegrid-frame-icon-height;
+      }
+    }
+
+    .e-checkselection {
+      .e-frozenheader .e-rowcell,
+      .e-movableheader .e-rowcell,
+      .e-frozencontent .e-rowcell,
+      .e-movablecontent .e-rowcell {
+        line-height: 21px;
+      }
+    }
+
+    .e-treegridexpand,
+    .e-treegridcollapse {
+      color: $treegrid-right-arrow-icon-color;
+      cursor: pointer;
+      font-size: $treegrid-right-arrow-icon-font-size;
+      height: 16px;
+      text-align: center;
+      vertical-align: bottom;
+      width: 16px;
+    }
+
+    .e-treecell {
+      display: table-cell;
+      line-height: $treegrid-smaller-icon-size;
+    }
+
+    .e-grid {
+      &.e-wrap .e-rowcell .e-treecolumn-container {
+        white-space: nowrap;
+      }
+
+      &.e-wrap .e-rowcell .e-treecolumn-container .e-treecell {
+        display: inline-block;
+        white-space: normal;
+        word-wrap: break-word;
+      }
+
+      &.e-wrap .e-rowcell .e-treecheckbox-container {
+        white-space: nowrap;
+      }
+
+      &.e-wrap .e-rowcell .e-treecheckbox-container .e-treecheckbox {
+        display: inline-block;
+        white-space: normal;
+        word-wrap: break-word;
+      }
+   }
+
+    #{if(&, '&', '*')}.e-grid.e-print-grid-layout .e-icons {
+      display: inline-block;
+    }
+
+    .e-treecheckselect,
+    .e-treeselectall {
+      margin: 0;
+      opacity: 0;
+      position: absolute;
+      width: 0;
+    }
+
+    .e-detailheadercell,
+    .e-headercontent .e-table .e-detail-intent,
+    .e-gridcontent .e-table .e-detail-intent,
+    .e-table .e-detailrow .e-detailindentcell,
+    .e-table .e-detailrowexpand,
+    .e-table .e-detailrowcollapse,
+    .e-filterbarcell.e-mastercell {
+      display: none;
+    }
+
+    .e-icons.e-errorelem {
+      display: inline-block;
+      padding-left: 10px;
+      vertical-align: middle;
+    }
+
+    .e-errorelem::before {
+      color: $error-elem-color;
+      content: $error-elem-content;
+      transform: rotate(180deg);
+    }
+
+    .e-gridcontent {
+      td.e-childborder {
+        border-color: $childborder-color;
+        border-width: 1px 0 0;
+        box-shadow: 0 1px 0 0 $childborder-color;
+        position: relative;
+        z-index: 1;
+      }
+
+      td.e-rowcell.e-childborder.e-dragborder,
+      td.e-rowcell.e-dropbottom.e-dragborder td.e-rowdragdrop.e-dropbottom.e-dragborder {
+        box-shadow: 0 1px 0 0 $childborder-color;
+      }
+
+      td.e-rowcell.e-dragborder,
+      tr.e-row:first-child .e-rowcell.e-dragborder,
+      .e-rowdragdrop.e-dragborder {
+        box-shadow: 0 0 0 0;
+      }
+
+      td.e-childborder:first-child {
+        border-left: $treegrid-rowdrag-childborder-border;
+        box-shadow: 0 1px 0 0 $childborder-color;
+        position: relative;
+        z-index: 1;
+      }
+
+      td.e-rowcell.e-childborder:last-child {
+        border-right: $treegrid-rowdrag-childborder-border;
+      }
+
+      td.e-lastrowcell.e-childborder {
+        border-width: 1px 0;
+      }
+
+      td.e-lastrowcell.e-childborder:last-child {
+        border-right: $treegrid-rowdrag-childborder-border;
+      }
+
+      td.e-lastrowcell.e-childborder:first-child {
+        border-left: $treegrid-rowdrag-childborder-border;
+      }
+
+      td.e-dropbottom:first-child,
+      td.e-rowcell.e-dropbottom,
+      td.e-dropbottom {
+        box-shadow: 0 1px 0 0 $childborder-color;
+        position: relative;
+        z-index: 1;
+      }
+
+      td.e-droptop:first-child,
+      td.e-rowcell.e-droptop {
+        border-top-color: $childborder-color;
+      }
+
+      td.e-lastrowcell.e-dropbottom {
+        border-bottom-color: $childborder-color;
+      }
+
+      td.e-rowdragdrop.e-droptop.e-dragborder {
+        box-shadow: 0 0 0 0;
+      }
+
+      .e-gridheader .e-firstrow-dragborder {
+        height: 1px;
+      }
+
+      .e-lastrow-dragborder {
+        height: 0;
+      }
+    }
+
+    .e-gridheader .e-firstrow-dragborder {
+      height: 0;
+    }
+
+    .e-droptop .e-lastrow-dragborder {
+      height: 0;
+    }
+
+    .e-treegrid-relative {
+      position: relative;
+    }
+
+    .e-gridheader .e-firstrow-dragborder tr:first-child.e-dropbottom {
+      height: 0;
+    }
+
+    .e-gridheader .e-firstrow-border,
+    .e-gridcontent .e-lastrow-border {
+      background-color: $childborder-color;
+      bottom: 0;
+      display: none;
+      height: 1px;
+      position: absolute;
+      z-index: 1;
+    }
+
+    .e-grid .e-gridcontent {
+      tr.e-row:first-child {
+        td.e-rowcell.e-childborder ,
+        td.e-rowdragdrop.e-childborder {
+          border-bottom: $treegrid-rowdd-topbottom-border;
+          border-top: $treegrid-rowdd-topbottom-border;
+          box-shadow: 0 0 0 0 $treegrid-rowdd-boxshadow;
+        }
+
+        td.e-rowcell.e-droptop,
+        td.e-rowdragdrop.e-droptop {
+          border-top: $treegrid-rowdd-topbottom-border;
+        }
+       }
+
+      td.e-rowcell {
+        &.e-childborder,
+        &.e-dropbottom {
+          border-bottom: $treegrid-rowdd-topbottom-border;
+          box-shadow: 0 0 0 0 $treegrid-rowdd-boxshadow;
+        }
+      }
+
+      td.e-rowdragdrop {
+        &.e-childborder,
+        &.e-dropbottom {
+          border-bottom: $treegrid-rowdd-topbottom-border;
+          box-shadow: 0 0 0 0 $treegrid-rowdd-boxshadow;
+        }
+      }
+    }
+  }
+}
+

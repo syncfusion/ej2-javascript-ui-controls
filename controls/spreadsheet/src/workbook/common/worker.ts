@@ -1,5 +1,12 @@
 /**
  * Worker task.
+ * 
+ * @param {Object} context - Specify the context.
+ * @param {Function | { [key: string]: Function | string[] }} taskFn - Specify the task.
+ * @param {Function} callbackFn - Specify the callbackFn.
+ * @param {Object[]} data - Specify the data.
+ * @param {boolean} preventCallback - Specify the preventCallback.
+ * @returns {WorkerHelper} - Worker task.
  */
 export function executeTaskAsync(
     context: Object, taskFn: Function | { [key: string]: Function | string[] }, callbackFn: Function,
@@ -9,6 +16,7 @@ export function executeTaskAsync(
 
 /**
  * @hidden
+ * 
  * The `WorkerHelper` module is used to perform multiple actions using Web Worker asynchronously.
  */
 class WorkerHelper {
@@ -22,7 +30,13 @@ class WorkerHelper {
 
     /**
      * Constructor for WorkerHelper module in Workbook library.
+     *
      * @private
+     * @param {Object} context - Specify the context.
+     * @param {Function | { [key: string]: Function | string[] }} task - Specify the task.
+     * @param {Function} defaultListener - Specify the defaultListener.
+     * @param {Object[]} taskData - Specify the taskData.
+     * @param {boolean} preventCallback - Specify the preventCallback.
      */
     constructor(
         context: Object, task: Function | { [key: string]: Function | string[] }, defaultListener: Function,
@@ -37,7 +51,9 @@ class WorkerHelper {
 
     /**
      * To terminate the worker task.
+     *
      * @private
+     * @returns {void} - To terminate the worker task.
      */
     public terminate(): void {
         this.worker.terminate();
@@ -46,7 +62,9 @@ class WorkerHelper {
 
     /**
      * To initiate the worker.
+     *
      * @private
+     * @returns {void} - To initiate the worker.
      */
     private initWorker(): void {
         let taskBlob: Blob = new Blob([this.getFnCode()], { type: 'text/javascript' });
@@ -59,6 +77,9 @@ class WorkerHelper {
 
     /**
      * Method for getting response from worker.
+     *
+     * @param {MessageEvent} args - Specify the args.
+     * @returns {void} - Method for getting response from worker.
      * @private
      */
     private messageFromWorker(args: MessageEvent): void {
@@ -68,7 +89,9 @@ class WorkerHelper {
 
     /**
      * Method for getting error message from worker if failed.
+     *
      * @private
+     * @returns {void} - Method for getting error message from worker if failed.
      */
     private onError(args: ErrorEvent): void {
         this.terminate();
@@ -77,7 +100,9 @@ class WorkerHelper {
 
     /**
      * Construct function code for worker.
+     *
      * @private
+     * @returns {string} -  Construct function code for worker.
      */
     private getFnCode(): string {
         let workerCode: string = '';
@@ -114,7 +139,10 @@ class WorkerHelper {
 
     /**
      * Get default worker task with callback.
+     *
      * @private
+     * @param {MessageEvent} args - Specify the args.
+     * @returns {void} - Get default worker task without callback.
      */
     private getCallbackMessageFn(args: MessageEvent): void {
         (postMessage as Function)((this.workerTask as Function)(...args.data));
@@ -122,7 +150,10 @@ class WorkerHelper {
 
     /**
      * Get default worker task without callback.
+     *
      * @private
+     * @param {MessageEvent} args - Specify the args.
+     * @returns {void} - Get default worker task without callback.
      */
     private getMessageFn(args: MessageEvent): void {
         (this.workerTask as Function)(...args.data);

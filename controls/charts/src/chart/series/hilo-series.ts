@@ -1,5 +1,7 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { withInRange } from '../../common/utils/helper';
-import { Chart } from '../chart';
 import { DoubleRange } from '../utils/double-range';
 import { Series, Points } from './chart-series';
 import { ColumnBase } from './column-base';
@@ -14,15 +16,16 @@ export class HiloSeries extends ColumnBase {
 
     /**
      * Render Hiloseries.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
     public render(series: Series): void {
         let region: Rect;
-        let sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
+        const sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
         let argsData: IPointRenderEventArgs;
-        for (let point of series.points) {
+        for (const point of series.points) {
             point.symbolLocations = []; point.regions = [];
             if (
                 point.visible &&
@@ -51,11 +54,12 @@ export class HiloSeries extends ColumnBase {
 
     /**
      * To trigger the point rendering event.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     private triggerPointRenderEvent(series: Series, point: Points): IPointRenderEventArgs {
-        let border: BorderModel = { color: series.fill, width: Math.max(series.border.width, 2) };
+        const border: BorderModel = { color: series.fill, width: Math.max(series.border.width, 2) };
         return super.triggerEvent(series, point, series.interior, border);
     }
 
@@ -73,8 +77,9 @@ export class HiloSeries extends ColumnBase {
 
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
 
     public doAnimation(series: Series): void {
@@ -83,11 +88,12 @@ export class HiloSeries extends ColumnBase {
 
     /**
      * To destroy the Hilo series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroys the Hilo Series
          */

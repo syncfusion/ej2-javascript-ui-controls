@@ -15,9 +15,10 @@ export class TableDialog {
     private columnValueTexBox: NumericTextBox;
     private rowValueTextBox: NumericTextBox;
     /**
+     * @param {DocumentHelper} documentHelper - Specifies the document helper
      * @private
      */
-    constructor(documentHelper: DocumentHelper) {
+    public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
     }
 
@@ -26,26 +27,27 @@ export class TableDialog {
     }
     /**
      * @private
+     * @param {L10n} localValue - Specified the locale value.
+     * @returns {void}
      */
     public initTableDialog(localValue: L10n): void {
-        let instance: TableDialog = this;
-        let id: string = this.documentHelper.owner.containerId + '_insert_Table';
+        const id: string = this.documentHelper.owner.containerId + '_insert_Table';
         this.target = createElement('div', { id: id, className: 'e-de-insert-table' });
-        let parentDiv: HTMLElement = createElement('div');
+        const parentDiv: HTMLElement = createElement('div');
 
-        let columnContainer: HTMLElement = createElement('div', {
+        const columnContainer: HTMLElement = createElement('div', {
             className: 'e-de-insert-table-dlg-sub-header', innerHTML: localValue.getConstant('Number of columns')
         });
-        let columnValue: HTMLElement = createElement('div', { className: 'e-de-insert-table-dlg-input' });
+        const columnValue: HTMLElement = createElement('div', { className: 'e-de-insert-table-dlg-input' });
         this.columnsCountBox = createElement('input', {
             attrs: { type: 'text' }, id: this.documentHelper.owner.containerId + '_column'
         }) as HTMLInputElement;
         columnValue.appendChild(this.columnsCountBox);
 
-        let rowContainer: HTMLElement = createElement('div', {
+        const rowContainer: HTMLElement = createElement('div', {
             className: 'e-de-insert-table-dlg-sub-header', innerHTML: localValue.getConstant('Number of rows')
         });
-        let rowValue: HTMLElement = createElement('div');
+        const rowValue: HTMLElement = createElement('div');
         this.rowsCountBox = createElement('input', {
             attrs: { type: 'text' }, id: this.documentHelper.owner.containerId + 'row'
         }) as HTMLInputElement;
@@ -58,8 +60,8 @@ export class TableDialog {
 
         this.target.appendChild(parentDiv);
 
-        this.columnsCountBox.addEventListener('keyup', instance.keyUpInsertTable);
-        this.rowsCountBox.addEventListener('keyup', instance.keyUpInsertTable);
+        this.columnsCountBox.addEventListener('keyup', this.keyUpInsertTable);
+        this.rowsCountBox.addEventListener('keyup', this.keyUpInsertTable);
 
         this.rowValueTextBox = new NumericTextBox({
             format: '#',
@@ -80,9 +82,10 @@ export class TableDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public show(): void {
-        let localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        const localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         localValue.setLocale(this.documentHelper.owner.locale);
         if (!this.target) {
             this.initTableDialog(localValue);
@@ -112,6 +115,8 @@ export class TableDialog {
     }
     /**
      * @private
+     * @param {KeyboardEvent} event - Specifies the event args.
+     * @returns {void}
      */
     public keyUpInsertTable = (event: KeyboardEvent): void => {
         if (event.keyCode === 13) {
@@ -119,27 +124,30 @@ export class TableDialog {
                 this.onInsertTableClick();
             }
         }
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public onCancelButtonClick = (): void => {
         this.documentHelper.dialog.hide();
         this.documentHelper.updateFocus();
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public onInsertTableClick = (): void => {
-        let rowCount: number = this.rowValueTextBox.value;
-        let columnCount: number = this.columnValueTexBox.value;
+        const rowCount: number = this.rowValueTextBox.value;
+        const columnCount: number = this.columnValueTexBox.value;
         if (!(isNullOrUndefined(rowCount) && isNullOrUndefined(columnCount))) {
             this.documentHelper.owner.editor.insertTable(rowCount, columnCount);
         }
         this.documentHelper.hideDialog();
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         if (this.columnsCountBox) {

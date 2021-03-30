@@ -14,12 +14,14 @@ export class FixedUserHandle extends ChildProperty<FixedUserHandle> {
 
     /**
      * Specifies the unique id of the fixed user handle
+     *
      * @default ''
      */
     @Property('')
     public id: string;
     /**
      * Specifies the fill color of the fixed user handle
+     *
      * @default 'transparent'
      */
     @Property('transparent')
@@ -27,6 +29,7 @@ export class FixedUserHandle extends ChildProperty<FixedUserHandle> {
 
     /**
      * Specifies the stroke color of the fixed user handle
+     *
      * @default 'transparent'
      */
     @Property('black')
@@ -35,6 +38,7 @@ export class FixedUserHandle extends ChildProperty<FixedUserHandle> {
 
     /**
      * Specifies the stroke width of the fixed user handle
+     *
      * @default 0
      */
     @Property(0)
@@ -42,6 +46,7 @@ export class FixedUserHandle extends ChildProperty<FixedUserHandle> {
 
     /**
      * Specifies the visibility of the fixed user handle
+     *
      * @default true
      */
     @Property(true)
@@ -49,6 +54,7 @@ export class FixedUserHandle extends ChildProperty<FixedUserHandle> {
 
     /**
      * Specifies the width of the fixed user handle
+     *
      * @default 10
      */
     @Property(10)
@@ -56,6 +62,7 @@ export class FixedUserHandle extends ChildProperty<FixedUserHandle> {
 
     /**
      * Specifies the height of the fixed user handle
+     *
      * @default 10
      */
     @Property(10)
@@ -63,6 +70,7 @@ export class FixedUserHandle extends ChildProperty<FixedUserHandle> {
 
     /**
      * Specifies the stroke color of the fixed user handle container
+     *
      * @default ''
      */
     @Property('transparent')
@@ -70,6 +78,7 @@ export class FixedUserHandle extends ChildProperty<FixedUserHandle> {
 
     /**
      * Specifies the stroke width of the fixed user handle container
+     *
      * @default 1
      */
     @Property(1)
@@ -78,6 +87,7 @@ export class FixedUserHandle extends ChildProperty<FixedUserHandle> {
 
     /**
      * Specifies the shape information for fixed user handle
+     *
      * @default ''
      */
     @Property('')
@@ -85,6 +95,7 @@ export class FixedUserHandle extends ChildProperty<FixedUserHandle> {
 
     /**
      * Specifies the cornerRadius for fixed user handle container
+     *
      * @default 0
      */
     @Property(0)
@@ -93,18 +104,20 @@ export class FixedUserHandle extends ChildProperty<FixedUserHandle> {
 
     /**
      * Specifies the space between the fixed user handle and container
+     *
      * @default new Margin(0,0,0,0)
      * @blazorType fixedUserHandlePadding
      */
     @Complex<MarginModel>({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
     public padding: MarginModel;
 }
-/**   
+/**
  * Defines the node Fixed User Handle
  */
 export class NodeFixedUserHandle extends FixedUserHandle {
     /**
      * Specifies the position of the node fixed user handle
+     *
      * @default { x: 0, y: 0 }
      * @blazorType NodeFixedUserHandles
      */
@@ -113,17 +126,19 @@ export class NodeFixedUserHandle extends FixedUserHandle {
 
     /**
      * Specifies the space that the fixed user handle has to be moved from its actual position
+     *
      * @default new Margin(0,0,0,0)
      */
     @Complex<MarginModel>({}, Margin)
     public margin: MarginModel;
 }
-/**   
+/**
  * Defines the connector Fixed User Handle
  */
 export class ConnectorFixedUserHandle extends FixedUserHandle {
     /**
      * Specifies the position of the connector fixed user handle
+     *
      * @default 0.5
      */
     @Property(0.5)
@@ -133,6 +148,7 @@ export class ConnectorFixedUserHandle extends FixedUserHandle {
      *  * Center - Aligns the annotation at the center of a connector segment
      *  * Before - Aligns the annotation before a connector segment
      *  * After - Aligns the annotation after a connector segment
+     *
      * @default Center
      */
     @Property('Center')
@@ -140,6 +156,7 @@ export class ConnectorFixedUserHandle extends FixedUserHandle {
 
     /**
      * Specifies the displacement of an fixed user handle from its actual position
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined

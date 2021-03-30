@@ -17,7 +17,7 @@ export class AxisLayoutPanel {
     private farSizes: number[];
     private axisRenderer: AxisRenderer;
     public pointerRenderer: PointerRenderer;
-
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(gauge: CircularGauge) {
         this.gauge = gauge;
         this.axisRenderer = new AxisRenderer(gauge);
@@ -26,6 +26,7 @@ export class AxisLayoutPanel {
 
     /**
      * Measure the calculate the axis size and radius.
+     *
      * @return {void}
      * @private
      */
@@ -40,18 +41,19 @@ export class AxisLayoutPanel {
 
     /**
      * Measure to calculate the axis radius of the circular gauge.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
-    /* tslint:disable:max-func-body-length */
     private calculateAxesRadius(): void {
         let totalRadius: number; let currentRadius: number;
         let rangeMaximumRadius: number = 0;
-        let xMarginDiff: number = this.gauge.margin.left + this.gauge.margin.right;
-        let yMarginDiff: number = this.gauge.margin.top + this.gauge.margin.bottom;
-        for (let axis of <Axis[]>this.gauge.axes) {
+        const xMarginDiff: number = this.gauge.margin.left + this.gauge.margin.right;
+        const yMarginDiff: number = this.gauge.margin.top + this.gauge.margin.bottom;
+        for (const axis of <Axis[]>this.gauge.axes) {
             totalRadius = (Math.min(axis.rect.width, axis.rect.height) / 2);
             currentRadius = axis.radius != null ? stringToNumber(axis.radius, totalRadius) : totalRadius;
+            // eslint-disable-next-line prefer-spread
             rangeMaximumRadius = Math.max.apply(Math, axis.ranges.map((value: Range) => {
                 return value.radius ?
                     (value.radius.indexOf('%') < 0 ? 100 : parseInt(value.radius, 10)) : 0;
@@ -148,6 +150,7 @@ export class AxisLayoutPanel {
 
     /**
      * Measure to calculate the axis size.
+     *
      * @return {void}
      * @private
      */
@@ -166,12 +169,13 @@ export class AxisLayoutPanel {
 
     /**
      * Calculate the axis values of the circular gauge.
+     *
      * @return {void}
      * @private
      */
 
     private calculateAxisValues(rect?: Rect): void {
-        for (let axis of <Axis[]>this.gauge.axes) {
+        for (const axis of <Axis[]>this.gauge.axes) {
             this.calculateVisibleRange(axis, rect);
             this.calculateVisibleLabels(axis);
         }
@@ -179,11 +183,14 @@ export class AxisLayoutPanel {
 
     /**
      * Calculate the visible range of an axis.
-     * @return {void}
+     *
+     * @param {Axis} axis - Specifies the axis.
+     * @param {Rect} rect - Specifies the rect.
+     * @returns {void}
      * @private
      */
     private calculateVisibleRange(axis: Axis, rect: Rect): void {
-        let interval: number = axis.majorTicks.interval;
+        const interval: number = axis.majorTicks.interval;
         let minimumValue: number = Math.min(axis.minimum === null ? 0 : axis.minimum, axis.maximum);
         let maximumValue: number = Math.max(axis.minimum, axis.maximum === null ? 100 : axis.maximum);
 
@@ -202,6 +209,7 @@ export class AxisLayoutPanel {
 
     /**
      * Calculate the numeric intervals of an axis range.
+     *
      * @return {void}
      * @private
      */
@@ -221,18 +229,19 @@ export class AxisLayoutPanel {
 
     /**
      * Calculate the nice interval of an axis range.
+     *
      * @return {void}
      * @private
      */
 
     private calculateNiceInterval(maxValue: number, minValue: number, radius: number, degree: number): number {
-        let delta: number = maxValue - minValue;
-        let circumference: number = 2 * Math.PI * radius * (degree / 360);
-        let desiredIntervalsCount: number = Math.max((circumference * ((0.533 * 3) / 100)), 1);
+        const delta: number = maxValue - minValue;
+        const circumference: number = 2 * Math.PI * radius * (degree / 360);
+        const desiredIntervalsCount: number = Math.max((circumference * ((0.533 * 3) / 100)), 1);
         let niceInterval: number = delta / desiredIntervalsCount;
-        let minInterval: number = Math.pow(10, Math.floor(Math.log(niceInterval) / Math.log(10)));
-        for (let interval of [10, 5, 2, 1]) {
-            let currentInterval: number = minInterval * interval;
+        const minInterval: number = Math.pow(10, Math.floor(Math.log(niceInterval) / Math.log(10)));
+        for (const interval of [10, 5, 2, 1]) {
+            const currentInterval: number = minInterval * interval;
             if (desiredIntervalsCount < (delta / currentInterval)) {
                 break;
             }
@@ -243,21 +252,23 @@ export class AxisLayoutPanel {
 
     /**
      * Calculate the visible labels of an axis.
+     *
      * @return {void}
      * @private
      */
 
     private calculateVisibleLabels(axis: Axis): void {
-        let style: Label = <Label>axis.labelStyle;
-        let customLabelFormat: boolean = style.format && style.format.match('{value}') !== null;
-        let format: Function = this.gauge.intl.getNumberFormat({
+        const style: Label = <Label>axis.labelStyle;
+        const customLabelFormat: boolean = style.format && style.format.match('{value}') !== null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const format: any = this.gauge.intl.getNumberFormat({
             format: getLabelFormat(style.format), useGrouping: this.gauge.useGroupingSeparator
         });
         let argsData: IAxisLabelRenderEventArgs;
         axis.visibleLabels = [];
         let roundValue: number;
-        let interval: number = axis.visibleRange.interval;
-        let max: number = axis.visibleRange.max;
+        const interval: number = axis.visibleRange.interval;
+        const max: number = axis.visibleRange.max;
         for (let i: number = axis.visibleRange.min; (i <= max && interval); i += interval) {
             roundValue = axis.roundingPlaces ? parseFloat(i.toFixed(axis.roundingPlaces)) : i;
             argsData = {
@@ -270,13 +281,14 @@ export class AxisLayoutPanel {
                 const { axis, ...blazorArgsData } : IAxisLabelRenderEventArgs = argsData;
                 argsData = blazorArgsData;
             }
-            let axisLabelRenderSuccess: Function = (argsData: IAxisLabelRenderEventArgs) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const axisLabelRenderSuccess: any = (argsData: IAxisLabelRenderEventArgs) => {
                 if (!argsData.cancel) {
                     axis.visibleLabels.push(new VisibleLabels(
                         argsData.text, i
                     ));
                     if (i === max && this.gauge.isBlazor && document.getElementById(this.gauge.element.id + '_AxesCollection')) {
-                        let currentLast: number = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value
+                        const currentLast: number = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value
                             : null;
                         if ( currentLast === axis.visibleRange.max || axis.showLastLabel !== true) {
                             this.getMaxLabelWidth(this.gauge, axis);
@@ -293,8 +305,8 @@ export class AxisLayoutPanel {
             axisLabelRenderSuccess.bind(this);
             this.gauge.trigger(axisLabelRender, argsData, axisLabelRenderSuccess);
         }
-        let lastLabel: number = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value : null;
-        let maxVal: number = axis.visibleRange.max;
+        const lastLabel: number = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value : null;
+        const maxVal: number = axis.visibleRange.max;
         if (!isNullOrUndefined(lastLabel) && lastLabel !== maxVal && axis.showLastLabel === true) {
             argsData = {
                 cancel: false, name: axisLabelRender, axis: axis,
@@ -306,7 +318,8 @@ export class AxisLayoutPanel {
                 const { axis, ...blazorArgsData } : IAxisLabelRenderEventArgs = argsData;
                 argsData = blazorArgsData;
             }
-            let axisLabelRenderSuccess: Function = (argsData: IAxisLabelRenderEventArgs) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const axisLabelRenderSuccess: any = (argsData: IAxisLabelRenderEventArgs) => {
                 if (!argsData.cancel) {
                     axis.visibleLabels.push(new VisibleLabels(
                         argsData.text, maxVal
@@ -329,6 +342,7 @@ export class AxisLayoutPanel {
 
     /**
      * Measure the axes available size.
+     *
      * @return {void}
      * @private
      */
@@ -338,14 +352,14 @@ export class AxisLayoutPanel {
         let outerHeight: number;
         let innerHeight: number;
         let heightForCross: number;
-        let axisPadding: number = 5;
+        const axisPadding: number = 5;
         let majorTickOffset: number = 0;
         let minorTickOffset: number = 0;
         let labelOffset: number = 0;
         let labelPadding: number = 10;
         this.farSizes = [];
         this.calculateAxisValues(rect);
-        for (let axis of axes) {
+        for (const axis of axes) {
             lineSize = (axis.lineStyle.width / 2);
             outerHeight = 0; innerHeight = 0;
             heightForCross = axis.majorTicks.position === 'Cross' ? axis.majorTicks.height / 2 : heightForCross;
@@ -387,16 +401,17 @@ export class AxisLayoutPanel {
     }
 
     /**
-     * To render the Axis element of the circular gauge. 
+     * To render the Axis element of the circular gauge.
+     *
      * @return {void}
      * @private
      */
 
     public renderAxes(animate: boolean = true): void {
-        let gauge: CircularGauge = this.gauge;
-        let renderer: AxisRenderer = this.axisRenderer;
+        const gauge: CircularGauge = this.gauge;
+        const renderer: AxisRenderer = this.axisRenderer;
         let element: Element;
-        let axesElements: Element = gauge.renderer.createGroup({
+        const axesElements: Element = gauge.renderer.createGroup({
             'id': gauge.element.id + '_AxesCollection',
             'clip-path': 'url(#' + gauge.element.id + '_GaugeAreaClipRect_' + ')'
         });
@@ -411,7 +426,7 @@ export class AxisLayoutPanel {
             });
             renderer.checkAngles(axis);
             renderer.drawAxisOuterLine(axis, index, element, gauge);
-            renderer.drawAxisRange(axis, index, element, gauge);
+            renderer.drawAxisRange(axis, index, element);
             renderer.drawAxisLine(axis, index, element, gauge);
             renderer.drawMajorTickLines(axis, index, element, gauge);
             renderer.drawMinorTickLines(axis, index, element, gauge);
@@ -435,11 +450,14 @@ export class AxisLayoutPanel {
 
     /**
      * Calculate maximum label width for the axis.
-     * @return {void}
+     *
+     * @param {CircularGauge} gauge - Specifies the instance of the gauge.
+     * @param {Axis} axis - Specifies the axis.
+     * @returns {void}
      */
     private getMaxLabelWidth(gauge: CircularGauge, axis: Axis): void {
         axis.maxLabelSize = new Size(0, 0);
-        for (let label of axis.visibleLabels) {
+        for (const label of axis.visibleLabels) {
             label.size = measureText(label.text, axis.labelStyle.font);
             axis.maxLabelSize.width = label.size.width > axis.maxLabelSize.width ?
                 label.size.width : axis.maxLabelSize.width;

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 export * from './base-module';
 export * from './auto-complete';

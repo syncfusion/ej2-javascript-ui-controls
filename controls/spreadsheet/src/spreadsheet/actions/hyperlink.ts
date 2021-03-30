@@ -12,13 +12,15 @@ import { Tab, TreeView } from '@syncfusion/ej2-navigations';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 
 /**
- * `Hyperlink` module 
+ * `Hyperlink` module
  */
 export class SpreadsheetHyperlink {
     private parent: Spreadsheet;
 
     /**
      * Constructor for Hyperlink module.
+     *
+     * @param {Spreadsheet} parent - Constructor for Hyperlink module.
      */
     constructor(parent: Spreadsheet) {
         this.parent = parent;
@@ -27,7 +29,8 @@ export class SpreadsheetHyperlink {
 
     /**
      * To destroy the Hyperlink module.
-     * @return {void}
+     *
+     * @returns {void} - To destroy the Hyperlink module.
      */
     protected destroy(): void {
         this.removeEventListener();
@@ -37,7 +40,6 @@ export class SpreadsheetHyperlink {
     private addEventListener(): void {
         this.parent.on(initiateHyperlink, this.initiateHyperlinkHandler, this);
         this.parent.on(editHyperlink, this.editHyperlinkHandler, this);
-        this.parent.on(removeHyperlink, this.removeHyperlinkHandler, this);
         this.parent.on(openHyperlink, this.openHyperlinkHandler, this);
         this.parent.on(click, this.hyperlinkClickHandler, this);
         this.parent.on(createHyperlinkElement, this.createHyperlinkElementHandler, this);
@@ -48,7 +50,6 @@ export class SpreadsheetHyperlink {
         if (!this.parent.isDestroyed) {
             this.parent.off(initiateHyperlink, this.initiateHyperlinkHandler);
             this.parent.off(editHyperlink, this.editHyperlinkHandler);
-            this.parent.off(removeHyperlink, this.removeHyperlinkHandler);
             this.parent.off(openHyperlink, this.openHyperlinkHandler);
             this.parent.off(click, this.hyperlinkClickHandler);
             this.parent.off(createHyperlinkElement, this.createHyperlinkElementHandler);
@@ -58,20 +59,21 @@ export class SpreadsheetHyperlink {
 
     /**
      * Gets the module name.
-     * @returns string
+     *
+     * @returns {string} - Gets the module name.
      */
     protected getModuleName(): string {
         return 'spreadsheetHyperlink';
     }
 
     private keyUpHandler(e: MouseEvent): void {
-        let trgt: Element = e.target as Element;
+        const trgt: Element = e.target as Element;
         if (closest(trgt, '.e-document')) {
-            let hyperlinkText: HTMLInputElement = document.querySelector('.e-hyp-text') as HTMLInputElement;
-            let hyperlinkSpan: HTMLElement = this.parent.element.querySelector('.e-hyperlink-alert-span');
-            let dlgElement: Element = closest(trgt, '.e-hyperlink-dlg') || closest(trgt, '.e-edithyperlink-dlg');
-            let footerEle: HTMLElement = dlgElement.getElementsByClassName('e-footer-content')[0] as HTMLElement;
-            let insertBut: HTMLElement = footerEle.firstChild as HTMLElement;
+            const hyperlinkText: HTMLInputElement = document.querySelector('.e-hyp-text') as HTMLInputElement;
+            const hyperlinkSpan: HTMLElement = this.parent.element.querySelector('.e-hyperlink-alert-span');
+            const dlgElement: Element = closest(trgt, '.e-hyperlink-dlg') || closest(trgt, '.e-edithyperlink-dlg');
+            const footerEle: HTMLElement = dlgElement.getElementsByClassName('e-footer-content')[0] as HTMLElement;
+            const insertBut: HTMLElement = footerEle.firstChild as HTMLElement;
             if (hyperlinkText && hyperlinkText.value) {
                 if (!isCellReference(hyperlinkText.value.toUpperCase())) {
                     this.showDialog();
@@ -84,15 +86,15 @@ export class SpreadsheetHyperlink {
         }
         if (trgt.classList.contains('e-text') && closest(trgt, '.e-cont')) {
             if (closest(trgt, '.e-webpage') && closest(trgt, '.e-webpage').getElementsByClassName('e-cont')[1] === trgt.parentElement) {
-                let dlgEle: Element = closest(trgt, '.e-hyperlink-dlg') || closest(trgt, '.e-edithyperlink-dlg');
-                let ftrEle: HTMLElement = dlgEle.getElementsByClassName('e-footer-content')[0] as HTMLElement;
-                let insertBut: HTMLElement = ftrEle.firstChild as HTMLElement;
+                const dlgEle: Element = closest(trgt, '.e-hyperlink-dlg') || closest(trgt, '.e-edithyperlink-dlg');
+                const ftrEle: HTMLElement = dlgEle.getElementsByClassName('e-footer-content')[0] as HTMLElement;
+                const insertBut: HTMLElement = ftrEle.firstChild as HTMLElement;
                 if ((trgt as CellModel).value !== '') {
                     insertBut.removeAttribute('disabled');
                 } else {
-                    let linkDialog: Element = closest(trgt, '.e-link-dialog');
-                    let webPage: Element = linkDialog.querySelector('.e-webpage');
-                    let isUrl: boolean =
+                    const linkDialog: Element = closest(trgt, '.e-link-dialog');
+                    const webPage: Element = linkDialog.querySelector('.e-webpage');
+                    const isUrl: boolean =
                         (webPage.querySelectorAll('.e-cont')[1].querySelector('.e-text') as CellModel).value ? true : false;
                     if (!isUrl) {
                         insertBut.setAttribute('disabled', 'true');
@@ -103,19 +105,19 @@ export class SpreadsheetHyperlink {
     }
 
     private initiateHyperlinkHandler(): void {
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let sheet: SheetModel = this.parent.getActiveSheet();
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const sheet: SheetModel = this.parent.getActiveSheet();
         if (sheet.isProtected && !sheet.protectSettings.insertLink) {
             this.parent.notify(editAlert, null);
             return;
         }
         if (!this.parent.element.querySelector('.e-hyperlink-dlg')) {
-            let dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+            const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
             dialogInst.show({
                 width: 323, isModal: true, showCloseIcon: true, cssClass: 'e-hyperlink-dlg',
                 header: l10n.getConstant('InsertLink'),
                 beforeOpen: (args: BeforeOpenEventArgs): void => {
-                    let dlgArgs: DialogBeforeOpenEventArgs = {
+                    const dlgArgs: DialogBeforeOpenEventArgs = {
                         dialogName: 'InsertLinkDialog',
                         element: args.element, target: args.target, cancel: args.cancel
                     };
@@ -125,6 +127,11 @@ export class SpreadsheetHyperlink {
                     }
                     dialogInst.dialogInstance.content = this.hyperlinkContent(); dialogInst.dialogInstance.dataBind();
                     focus(this.parent.element);
+                },
+                open: (): void => {
+                    setTimeout(() => {
+                        focus(dialogInst.dialogInstance.element.querySelectorAll('.e-webpage input')[1] as HTMLElement);
+                    });
                 },
                 buttons: [{
                     buttonModel: {
@@ -142,37 +149,36 @@ export class SpreadsheetHyperlink {
     private dlgClickHandler(dialogInst: Dialog): void {
         let value: string;
         let address: string;
-        let spreadsheetInst: Spreadsheet = this.parent;
-        let item: HTMLElement = this.parent.element.querySelector('.e-link-dialog').
+        const spreadsheetInst: Spreadsheet = this.parent;
+        const item: HTMLElement = this.parent.element.querySelector('.e-link-dialog').
             getElementsByClassName('e-content')[0].querySelector('.e-item.e-active') as HTMLElement;
         if (item) {
             if (item.querySelector('.e-webpage')) {
                 value = (item.getElementsByClassName('e-cont')[0].querySelector('.e-text') as CellModel).value;
                 address = (item.getElementsByClassName('e-cont')[1].querySelector('.e-text') as CellModel).value;
-                let args: HyperlinkModel = { address: address };
+                const args: HyperlinkModel = { address: address };
                 this.parent.insertHyperlink(args, this.parent.getActiveSheet().activeCell, value, false);
             } else {
                 value = (item.getElementsByClassName('e-cont')[0].querySelector('.e-text') as CellModel).value;
                 address = (item.getElementsByClassName('e-cont')[1].querySelector('.e-text') as CellModel).value;
-                let sheetIdx: number;
-                let dlgContent: HTMLElement = item.getElementsByClassName('e-cont')[2] as HTMLElement;
+                const dlgContent: HTMLElement = item.getElementsByClassName('e-cont')[2] as HTMLElement;
                 if (dlgContent.getElementsByClassName('e-list-item')[0].querySelector('.e-active')) {
-                    let sheetName: string = item.getElementsByClassName('e-cont')[2].querySelector('.e-active').textContent;
-                    let sheets: SheetModel[] = spreadsheetInst.sheets;
+                    const sheetName: string = item.getElementsByClassName('e-cont')[2].querySelector('.e-active').textContent;
+                    const sheets: SheetModel[] = spreadsheetInst.sheets;
                     for (let idx: number = 0; idx < sheets.length; idx++) {
                         if (sheets[idx].name === sheetName) {
-                            sheetIdx = idx + 1;
+                            const sheetIdx: number = idx + 1;
                         }
                     }
                     address = sheetName + '!' + address.toUpperCase();
-                    let args: HyperlinkModel = { address: address };
+                    const args: HyperlinkModel = { address: address };
                     this.parent.insertHyperlink(args, this.parent.getActiveSheet().activeCell, value, false);
                 } else if (dlgContent.querySelector('.e-active')) {
-                    let definedName: string = item.getElementsByClassName('e-cont')[2].querySelector('.e-active').textContent;
+                    const definedName: string = item.getElementsByClassName('e-cont')[2].querySelector('.e-active').textContent;
                     for (let idx: number = 0; idx < this.parent.definedNames.length; idx++) {
                         if (this.parent.definedNames[idx].name === definedName) {
-                            let args: HyperlinkModel = {
-                                address: this.parent.definedNames[idx].name,
+                            const args: HyperlinkModel = {
+                                address: this.parent.definedNames[idx].name
                             };
                             this.parent.insertHyperlink(
                                 args, this.parent.getActiveSheet().activeCell, value, false);
@@ -186,22 +192,23 @@ export class SpreadsheetHyperlink {
         if (this.parent.element.querySelector('.e-hyperlink-alert-span')) {
             this.parent.element.querySelector('.e-hyperlink-alert-span').remove();
         }
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let hyperlinkSpan: Element = this.parent.createElement('span', {
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const hyperlinkSpan: Element = this.parent.createElement('span', {
             className: 'e-hyperlink-alert-span',
             innerHTML: l10n.getConstant('HyperlinkAlert')
         });
-        (this.parent.element.querySelector('.e-hyperlink-dlg').querySelector('.e-dlg-content')).appendChild(hyperlinkSpan);
+        let dlgEle: HTMLElement =
+            this.parent.element.querySelector('.e-hyperlink-dlg') || this.parent.element.querySelector('.e-edithyperlink-dlg');
+        (dlgEle.querySelector('.e-dlg-content')).appendChild(hyperlinkSpan);
     }
     private editHyperlinkHandler(): void {
-        let isWeb: boolean = true;
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
         dialogInst.show({
             width: 323, isModal: true, showCloseIcon: true, cssClass: 'e-edithyperlink-dlg',
             header: l10n.getConstant('EditLink'),
             beforeOpen: (args: BeforeOpenEventArgs): void => {
-                let dlgArgs: DialogBeforeOpenEventArgs = {
+                const dlgArgs: DialogBeforeOpenEventArgs = {
                     dialogName: 'EditLinkDialog',
                     element: args.element, target: args.target, cancel: args.cancel
                 };
@@ -211,6 +218,15 @@ export class SpreadsheetHyperlink {
                 }
                 dialogInst.dialogInstance.content = this.hyperEditContent(); dialogInst.dialogInstance.dataBind();
                 focus(this.parent.element);
+            },
+            open: (): void => {
+                setTimeout(() => {
+                    if (dialogInst.dialogInstance.element.querySelector('.e-webpage')) {
+                        focus(dialogInst.dialogInstance.element.querySelectorAll('.e-webpage input')[1] as HTMLElement);
+                    } else {
+                        focus(dialogInst.dialogInstance.element.querySelectorAll('.e-document input')[1] as HTMLElement);
+                    }
+                });
             },
             buttons: [{
                 buttonModel: {
@@ -225,7 +241,7 @@ export class SpreadsheetHyperlink {
     }
 
     private openHyperlinkHandler(): void {
-        let cellIndexes: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
+        const cellIndexes: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
         let trgt: HTMLElement = this.parent.getCell(cellIndexes[0], cellIndexes[1]);
         if (trgt.getElementsByClassName('e-hyperlink')[0]) {
             trgt = trgt.querySelector('.e-hyperlink') as HTMLElement;
@@ -233,11 +249,6 @@ export class SpreadsheetHyperlink {
         this.hlOpenHandler(trgt);
     }
 
-    private removeHyperlinkHandler(cell: string): void {
-        this.parent.removeHyperlink(cell);
-    }
-
-    // tslint:disable-next-line:max-func-body-length
     private hlOpenHandler(trgt: HTMLElement): void {
         if (trgt.classList.contains('e-hyperlink')) {
             let range: string[] = ['', ''];
@@ -245,21 +256,22 @@ export class SpreadsheetHyperlink {
             let rangeIndexes: number[];
             let isEmpty: boolean = true;
             trgt.style.color = '#551A8B';
+            if (closest(trgt, '.e-cell')) {
+                (closest(trgt, '.e-cell') as HTMLElement).style.color = '#551A8B';
+            }
             let sheet: SheetModel = this.parent.getActiveSheet();
-            let colIdx: number = parseInt(trgt.parentElement.getAttribute('aria-colindex'), 10) - 1;
-            let rowIdx: number = parseInt(trgt.parentElement.parentElement.getAttribute('aria-rowindex'), 10) - 1;
+            const colIdx: number = parseInt(trgt.parentElement.getAttribute('aria-colindex'), 10) - 1;
+            const rowIdx: number = parseInt(trgt.parentElement.parentElement.getAttribute('aria-rowindex'), 10) - 1;
             let rangeAddr: string | HyperlinkModel = sheet.rows[rowIdx].cells[colIdx].hyperlink;
             let address: string;
-            let befArgs: BeforeHyperlinkArgs;
-            let aftArgs: AfterHyperlinkArgs;
-            befArgs = { hyperlink: rangeAddr, cell: this.parent.getActiveSheet().activeCell, target: '_blank', cancel: false };
+            const befArgs: BeforeHyperlinkArgs = { hyperlink: rangeAddr, cell: this.parent.getActiveSheet().activeCell, target: '_blank', cancel: false };
             this.parent.trigger(beforeHyperlinkClick, befArgs);
             if (befArgs.cancel) { return; }
             rangeAddr = befArgs.hyperlink;
-            aftArgs = { hyperlink: rangeAddr, cell: this.parent.getActiveSheet().activeCell };
+            const aftArgs: AfterHyperlinkArgs = { hyperlink: rangeAddr, cell: this.parent.getActiveSheet().activeCell };
             if (typeof (rangeAddr) === 'string') { address = rangeAddr; }
             if (typeof (rangeAddr) === 'object') { address = rangeAddr.address; }
-            let definedNameCheck: string = address;
+            const definedNameCheck: string = address;
             if (address.indexOf('http://') === -1 && address.indexOf('https://') === -1 && address.indexOf('ftp://') === -1) {
                 if (!isNullOrUndefined(address)) {
                     if (this.parent.definedNames) {
@@ -289,7 +301,7 @@ export class SpreadsheetHyperlink {
                     }
                     sheet = this.parent.sheets[sheetIdx];
                     if (range[1].indexOf(':') !== -1) {
-                        let colIndex: number = range[1].indexOf(':');
+                        const colIndex: number = range[1].indexOf(':');
                         let left: string = range[1].substr(0, colIndex);
                         let right: string = range[1].substr(colIndex + 1, range[1].length);
                         left = left.replace('$', '');
@@ -307,7 +319,7 @@ export class SpreadsheetHyperlink {
                         }
                     }
                     let isDefinedNamed: boolean;
-                    let definedname: DefineNameModel[] = this.parent.definedNames;
+                    const definedname: DefineNameModel[] = this.parent.definedNames;
                     if (!isNullOrUndefined(definedname)) {
                         for (let idx: number = 0; idx < definedname.length; idx++) {
                             if (definedname[idx].name === definedNameCheck) {
@@ -330,36 +342,64 @@ export class SpreadsheetHyperlink {
                                 getUpdateUsingRaf((): void => { this.parent.goTo(rangeAddr); });
                             } else {
                                 if (rangeAddr.indexOf(':') >= 0) {
-                                    let addArr: string[] = rangeAddr.split(':');
+                                    const addArr: string[] = rangeAddr.split(':');
                                     rangeAddr = addArr[0] === addArr[1] ? addArr[0] : rangeAddr;
                                 }
                                 getUpdateUsingRaf((): void => { this.parent.goTo(this.parent.sheets[sheetIdx].name + '!' + rangeAddr); });
                             }
                         }
+                    } else {
+                        this.showInvalidHyperlinkDialog();
                     }
                 }
             } else {
-                trgt.setAttribute('target', befArgs.target);
+                if (this.isValidUrl(address)) {
+                    window.open(address, befArgs.target);
+                } else {
+                    this.showInvalidHyperlinkDialog();
+                }
             }
             this.parent.trigger(afterHyperlinkClick, aftArgs);
         }
     }
 
+    private isValidUrl(url: string): boolean {
+        return /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/.test(url);
+    }
+
+    private showInvalidHyperlinkDialog(): void {
+        const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        dialogInst.show({
+            width: 323, isModal: true, showCloseIcon: true,
+            header: l10n.getConstant('Hyperlink'),
+            content: l10n.getConstant('InvalidHyperlinkAlert'),
+            buttons: [{
+                buttonModel: {
+                    content: l10n.getConstant('Ok'), isPrimary: true
+                },
+                click: (): void => {
+                    dialogInst.hide();
+                }
+            }]
+        }, false);
+    }
+
     private hyperlinkClickHandler(e: MouseEvent): void {
-        let trgt: HTMLElement = e.target as HTMLElement;
+        const trgt: HTMLElement = e.target as HTMLElement;
         if (closest(trgt, '.e-link-dialog') && closest(trgt, '.e-toolbar-item')) {
-            let dlgEle: Element = closest(trgt, '.e-hyperlink-dlg') || closest(trgt, '.e-edithyperlink-dlg');
-            let ftrEle: HTMLElement = dlgEle.getElementsByClassName('e-footer-content')[0] as HTMLElement;
-            let insertBut: HTMLElement = ftrEle.firstChild as HTMLElement;
-            let docEle: Element = dlgEle.querySelector('.e-document');
-            let webEle: Element = dlgEle.querySelector('.e-webpage');
-            let webEleText: string = webEle ? (webEle.querySelectorAll('.e-cont')[0].querySelector('.e-text') as CellModel).value :
+            const dlgEle: Element = closest(trgt, '.e-hyperlink-dlg') || closest(trgt, '.e-edithyperlink-dlg');
+            const ftrEle: HTMLElement = dlgEle.getElementsByClassName('e-footer-content')[0] as HTMLElement;
+            const insertBut: HTMLElement = ftrEle.firstChild as HTMLElement;
+            const docEle: Element = dlgEle.querySelector('.e-document');
+            const webEle: Element = dlgEle.querySelector('.e-webpage');
+            const webEleText: string = webEle ? (webEle.querySelectorAll('.e-cont')[0].querySelector('.e-text') as CellModel).value :
                 (docEle.querySelectorAll('.e-cont')[0].querySelector('.e-text') as CellModel).value;
-            let docEleText: string = docEle ? (docEle.querySelectorAll('.e-cont')[0].querySelector('.e-text') as CellModel).value :
+            const docEleText: string = docEle ? (docEle.querySelectorAll('.e-cont')[0].querySelector('.e-text') as CellModel).value :
                 webEleText;
-            let toolbarItems: Element = closest(trgt, '.e-toolbar-items');
+            const toolbarItems: Element = closest(trgt, '.e-toolbar-items');
             if (toolbarItems.getElementsByClassName('e-toolbar-item')[1].classList.contains('e-active')) {
-                let actEle: Element = docEle.querySelectorAll('.e-cont')[2].querySelector('.e-active');
+                const actEle: Element = docEle.querySelectorAll('.e-cont')[2].querySelector('.e-active');
                 (docEle.querySelectorAll('.e-cont')[0].querySelector('.e-text') as CellModel).value = webEleText;
                 if (closest(actEle, '.e-list-item').classList.contains('e-level-2') && insertBut.hasAttribute('disabled')) {
                     insertBut.removeAttribute('disabled');
@@ -367,7 +407,7 @@ export class SpreadsheetHyperlink {
                     insertBut.setAttribute('disabled', 'true');
                 }
             } else {
-                let isEmpty: boolean = (webEle.querySelectorAll('.e-cont')[1].querySelector('.e-text') as CellModel).value ? false : true;
+                const isEmpty: boolean = (webEle.querySelectorAll('.e-cont')[1].querySelector('.e-text') as CellModel).value ? false : true;
                 (webEle.querySelectorAll('.e-cont')[0].querySelector('.e-text') as CellModel).value = docEleText;
                 if (isEmpty && !insertBut.hasAttribute('disabled')) {
                     insertBut.setAttribute('disabled', 'true');
@@ -377,12 +417,12 @@ export class SpreadsheetHyperlink {
             }
         }
         if (closest(trgt, '.e-list-item') && trgt.classList.contains('e-fullrow')) {
-            let item: HTMLElement = this.parent.element.getElementsByClassName('e-link-dialog')[0].
+            const item: HTMLElement = this.parent.element.getElementsByClassName('e-link-dialog')[0].
                 getElementsByClassName('e-content')[0].getElementsByClassName('e-active')[0] as HTMLElement;
-            let cellRef: HTMLElement = item.getElementsByClassName('e-cont')[1].getElementsByClassName('e-text')[0] as HTMLElement;
-            let dlgEle: Element = closest(trgt, '.e-hyperlink-dlg') || closest(trgt, '.e-edithyperlink-dlg');
-            let ftrEle: HTMLElement = dlgEle.getElementsByClassName('e-footer-content')[0] as HTMLElement;
-            let insertBut: HTMLElement = ftrEle.firstChild as HTMLElement;
+            const cellRef: HTMLElement = item.getElementsByClassName('e-cont')[1].getElementsByClassName('e-text')[0] as HTMLElement;
+            const dlgEle: Element = closest(trgt, '.e-hyperlink-dlg') || closest(trgt, '.e-edithyperlink-dlg');
+            const ftrEle: HTMLElement = dlgEle.getElementsByClassName('e-footer-content')[0] as HTMLElement;
+            const insertBut: HTMLElement = ftrEle.firstChild as HTMLElement;
             if (closest(trgt, '.e-list-item').classList.contains('e-level-2')) {
                 if (closest(trgt, '.e-list-item').getAttribute('data-uid') === 'defName') {
                     if (!cellRef.classList.contains('e-disabled') && !cellRef.hasAttribute('readonly')) {
@@ -409,11 +449,10 @@ export class SpreadsheetHyperlink {
     }
 
     private createHyperlinkElementHandler(args: { cell: CellModel, td: HTMLElement, rowIdx: number, colIdx: number }): void {
-        let cell: CellModel = args.cell;
-        let td: HTMLElement = args.td;
-        let rowIdx: number = args.rowIdx;
-        let colIdx: number = args.colIdx;
-        let hyperEle: HTMLElement = this.parent.createElement('a', { className: 'e-hyperlink e-hyperlink-style' });
+        const cell: CellModel = args.cell;
+        const td: HTMLElement = args.td;
+        const hyperEle: HTMLElement = this.parent.createElement('a', { className: 'e-hyperlink e-hyperlink-style' });
+        hyperEle.style.color = '#00e';
         if (!isNullOrUndefined(cell.hyperlink)) {
             let hyperlink: string | HyperlinkModel = cell.hyperlink;
             if (typeof (hyperlink) === 'string') {
@@ -457,16 +496,16 @@ export class SpreadsheetHyperlink {
 
     private hyperEditContent(): HTMLElement {
         let isWeb: boolean = true;
-        let dialog: HTMLElement = this.hyperlinkContent();
-        let indexes: number[] = getRangeIndexes(this.parent.getActiveSheet().activeCell);
-        let cell: CellModel = this.parent.sheets[this.parent.getActiveSheet().id - 1].rows[indexes[0]].cells[indexes[1]];
+        const dialog: HTMLElement = this.hyperlinkContent();
+        const indexes: number[] = getRangeIndexes(this.parent.getActiveSheet().activeCell);
+        const cell: CellModel = this.parent.sheets[this.parent.getActiveSheet().id - 1].rows[indexes[0]].cells[indexes[1]];
         if (this.parent.scrollSettings.enableVirtualization) {
             indexes[0] = indexes[0] - this.parent.viewport.topIndex;
             indexes[1] = indexes[1] - this.parent.viewport.leftIndex;
         }
         let value: string = this.parent.getDisplayText(cell);
         let address: string;
-        let hyperlink: string | HyperlinkModel = cell.hyperlink;
+        const hyperlink: string | HyperlinkModel = cell.hyperlink;
         if (typeof (hyperlink) === 'string') {
             address = hyperlink;
             value = value || address;
@@ -480,20 +519,36 @@ export class SpreadsheetHyperlink {
                 isWeb = false;
             }
         }
-        let item: HTMLElement = dialog.querySelector('.e-content') as HTMLElement;
+        let definedNamesCount: number = 0;
+        let rangeCount: number = 0;
+        let definedNames: DefineNameModel[] = this.parent.definedNames;
+        let sheets: SheetModel[] = this.parent.sheets;
+        for (let idx: number = 0, len = definedNames.length; idx < len; idx++) {
+            if (definedNames[idx].name === address) {
+                definedNamesCount++;
+            }
+        }
+        for (let idx: number = 0, len = sheets.length; idx < len; idx++) {
+            if (address.includes(sheets[idx].name)) {
+                rangeCount++;
+            }
+        }
+        if (definedNamesCount === 0 && rangeCount === 0) {
+            isWeb = true;
+        }
+        const item: HTMLElement = dialog.querySelector('.e-content') as HTMLElement;
         if (isWeb) {
-            let webContElem: HTMLElement = item.querySelector('.e-webpage') as HTMLElement;
+            const webContElem: HTMLElement = item.querySelector('.e-webpage') as HTMLElement;
             webContElem.getElementsByClassName('e-cont')[0].getElementsByClassName('e-text')[0].setAttribute('value', value);
             if (typeof (hyperlink) === 'string') {
                 webContElem.getElementsByClassName('e-cont')[1].querySelector('.e-text').setAttribute('value', hyperlink);
             } else {
-                let address: HTMLElement;
-                address = webContElem.getElementsByClassName('e-cont')[1].querySelector('.e-text') as HTMLElement;
+                const address: HTMLElement = webContElem.getElementsByClassName('e-cont')[1].querySelector('.e-text') as HTMLElement;
                 address.setAttribute('value', hyperlink.address);
             }
         } else {
             let isDefinedNamed: boolean;
-            let docContElem: HTMLElement = item.querySelector('.e-document') as HTMLElement;
+            const docContElem: HTMLElement = item.querySelector('.e-document') as HTMLElement;
             docContElem.getElementsByClassName('e-cont')[0].getElementsByClassName('e-text')[0].setAttribute('value', value);
             let rangeArr: string[];
             let sheet: SheetModel = this.parent.getActiveSheet();
@@ -507,13 +562,12 @@ export class SpreadsheetHyperlink {
                 }
             }
             if (isDefinedNamed) {
-                let cellRef: HTMLElement;
-                cellRef = docContElem.getElementsByClassName('e-cont')[1].getElementsByClassName('e-text')[0] as HTMLElement;
+                const cellRef: HTMLElement = docContElem.getElementsByClassName('e-cont')[1].getElementsByClassName('e-text')[0] as HTMLElement;
                 cellRef.setAttribute('readonly', 'true');
                 cellRef.classList.add('e-disabled');
                 cellRef.setAttribute('disabled', 'true');
-                let treeCont: HTMLElement = docContElem.getElementsByClassName('e-cont')[2] as HTMLElement;
-                let listEle: HTMLElement = treeCont.querySelectorAll('.e-list-item.e-level-1')[1] as HTMLElement;
+                const treeCont: HTMLElement = docContElem.getElementsByClassName('e-cont')[2] as HTMLElement;
+                const listEle: HTMLElement = treeCont.querySelectorAll('.e-list-item.e-level-1')[1] as HTMLElement;
                 for (let idx: number = 0; idx < listEle.getElementsByTagName('li').length; idx++) {
                     if ((listEle.getElementsByTagName('li')[idx] as HTMLElement).innerText === address) {
                         listEle.getElementsByTagName('li')[idx].classList.add('e-active');
@@ -525,10 +579,10 @@ export class SpreadsheetHyperlink {
                     sheetIdx = parseInt(rangeArr[0].replace(/\D/g, ''), 10) - 1;
                     sheet = this.parent.sheets[sheetIdx];
                 }
-                let sheetName: string = rangeArr[0];
+                const sheetName: string = rangeArr[0];
                 docContElem.getElementsByClassName('e-cont')[1].querySelector('.e-text').setAttribute('value', rangeArr[1]);
-                let treeCont: HTMLElement = docContElem.getElementsByClassName('e-cont')[2] as HTMLElement;
-                let listEle: HTMLElement = treeCont.querySelectorAll('.e-list-item.e-level-1')[0] as HTMLElement;
+                const treeCont: HTMLElement = docContElem.getElementsByClassName('e-cont')[2] as HTMLElement;
+                const listEle: HTMLElement = treeCont.querySelectorAll('.e-list-item.e-level-1')[0] as HTMLElement;
                 for (let idx: number = 0; idx < listEle.getElementsByTagName('li').length; idx++) {
                     if ((listEle.getElementsByTagName('li')[idx] as HTMLElement).innerText === sheetName) {
                         if (listEle.getElementsByTagName('li')[idx].classList.contains('e-active')) {
@@ -549,17 +603,16 @@ export class SpreadsheetHyperlink {
         return dialog;
     }
 
-    // tslint:disable-next-line:max-func-body-length
     private hyperlinkContent(): HTMLElement {
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
         let idx: number = 0; let selIdx: number = 0;
         let isWeb: boolean = true;
         let isDefinedName: boolean;
         let isCellRef: boolean = true;
         let address: string;
-        let indexes: number[] = getRangeIndexes(this.parent.getActiveSheet().activeCell);
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let cell: CellModel = getCell(indexes[0], indexes[1], sheet);
+        const indexes: number[] = getRangeIndexes(this.parent.getActiveSheet().activeCell);
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const cell: CellModel = getCell(indexes[0], indexes[1], sheet);
         let isEnable: boolean = true;
         if (cell) {
             if ((cell.value && typeof (cell.value) === 'string' && cell.value.match('[A-Za-z]+') !== null) ||
@@ -568,18 +621,37 @@ export class SpreadsheetHyperlink {
             } else {
                 isEnable = false;
             }
-            let hyperlink: string | HyperlinkModel = cell.hyperlink;
+            const hyperlink: string | HyperlinkModel = cell.hyperlink;
             if (typeof (hyperlink) === 'string') {
-                let hl: string = hyperlink;
+                const hl: string = hyperlink;
                 if (hl.indexOf('http://') === -1 && hl.indexOf('https://') === -1 && hl.indexOf('ftp://') === -1) {
                     address = hyperlink;
                     isWeb = false;
                 }
             } else if (typeof (hyperlink) === 'object') {
-                let hl: string = hyperlink.address;
+                const hl: string = hyperlink.address;
                 if (hl.indexOf('http://') === -1 && hl.indexOf('https://') === -1 && hl.indexOf('ftp://') === -1) {
                     address = hyperlink.address;
                     isWeb = false;
+                }
+            }
+            if (address) {
+                let defNamesCnt: number = 0;
+                let rangeCnt: number = 0;
+                let definedNames: DefineNameModel[] = this.parent.definedNames;
+                let sheets: SheetModel[] = this.parent.sheets;
+                for (let idx: number = 0, len = sheets.length; idx < len; idx++) {
+                    if (address.includes(sheets[idx].name)) {
+                        rangeCnt++;
+                    }
+                }
+                for (let idx: number = 0, len = definedNames.length; idx < len; idx++) {
+                    if (definedNames[idx].name === address) {
+                        defNamesCnt++;
+                    }
+                }
+                if (defNamesCnt === 0 && rangeCnt === 0) {
+                    isWeb = true;
                 }
             }
             if (isWeb) {
@@ -598,10 +670,10 @@ export class SpreadsheetHyperlink {
                 }
             }
         }
-        let dialogElem: HTMLElement = this.parent.createElement('div', { className: 'e-link-dialog' });
-        let webContElem: HTMLElement = this.parent.createElement('div', { className: 'e-webpage' });
-        let docContElem: HTMLElement = this.parent.createElement('div', { className: 'e-document' });
-        let headerTabs: Tab = new Tab({
+        const dialogElem: HTMLElement = this.parent.createElement('div', { className: 'e-link-dialog' });
+        const webContElem: HTMLElement = this.parent.createElement('div', { className: 'e-webpage' });
+        const docContElem: HTMLElement = this.parent.createElement('div', { className: 'e-document' });
+        const headerTabs: Tab = new Tab({
             selectedItem: selIdx,
             items: [
                 {
@@ -611,7 +683,7 @@ export class SpreadsheetHyperlink {
                 {
                     header: { 'text': l10n.getConstant('ThisDocument') },
                     content: docContElem
-                },
+                }
             ]
         });
         headerTabs.appendTo(dialogElem);
@@ -620,11 +692,11 @@ export class SpreadsheetHyperlink {
         } else {
             dialogElem.querySelector('.e-toolbar-items').querySelector('.e-indicator').setAttribute('style', 'left: 136px; right: 0');
         }
-        let textCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
-        let urlCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
-        let textH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('DisplayText') });
-        let urlH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('Url') });
-        let textInput: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' }, });
+        const textCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
+        const urlCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
+        const textH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('DisplayText') });
+        const urlH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('Url') });
+        const textInput: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' } });
         if (!isEnable) {
             textInput.classList.add('e-disabled');
             textInput.setAttribute('readonly', 'true');
@@ -633,7 +705,7 @@ export class SpreadsheetHyperlink {
         if (cell && isNullOrUndefined(cell.hyperlink)) {
             textInput.setAttribute('value', this.parent.getDisplayText(cell));
         }
-        let urlInput: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' } });
+        const urlInput: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' } });
         textInput.setAttribute('placeholder', l10n.getConstant('EnterTheTextToDisplay'));
         urlInput.setAttribute('placeholder', l10n.getConstant('EnterTheUrl'));
         textCont.appendChild(textInput);
@@ -642,11 +714,11 @@ export class SpreadsheetHyperlink {
         urlCont.insertBefore(urlH, urlInput);
         webContElem.appendChild(urlCont);
         webContElem.insertBefore(textCont, urlCont);
-        let cellRef: Object[] = [];
-        let definedName: object[] = [];
-        let sheets: SheetModel[] = this.parent.sheets;
+        const cellRef: Object[] = [];
+        const definedName: object[] = [];
+        const sheets: SheetModel[] = this.parent.sheets;
         for (idx; idx < this.parent.sheets.length; idx++) {
-            let sheetName: string = this.parent.sheets[idx].name;
+            const sheetName: string = this.parent.sheets[idx].name;
             if (sheets[idx] === this.parent.getActiveSheet()) {
                 cellRef.push({
                     nodeId: 'sheet',
@@ -666,7 +738,7 @@ export class SpreadsheetHyperlink {
                 nodeText: this.parent.definedNames[idx].name
             });
         }
-        let data: { [key: string]: Object }[] = [
+        const data: { [key: string]: Object }[] = [
             {
                 nodeId: '01', nodeText: l10n.getConstant('CellReference'), expanded: isCellRef,
                 nodeChild: cellRef
@@ -674,24 +746,24 @@ export class SpreadsheetHyperlink {
             {
                 nodeId: '02', nodeText: l10n.getConstant('DefinedNames'), expanded: isDefinedName,
                 nodeChild: definedName
-            },
+            }
         ];
-        let treeObj: TreeView = new TreeView({
+        const treeObj: TreeView = new TreeView({
             fields: { dataSource: data, id: 'nodeId', text: 'nodeText', child: 'nodeChild' }
         });
-        let cellrefCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
-        let cellrefH: HTMLElement = this.parent.createElement(
+        const cellrefCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
+        const cellrefH: HTMLElement = this.parent.createElement(
             'div', { className: 'e-header', innerHTML: l10n.getConstant('CellReference') });
-        let cellrefInput: HTMLElement = this.parent.createElement('input', {
+        const cellrefInput: HTMLElement = this.parent.createElement('input', {
             className: 'e-input e-text e-hyp-text',
             attrs: { 'type': 'Text' }
         });
         cellrefInput.setAttribute('value', 'A1');
         cellrefCont.appendChild(cellrefInput);
         cellrefCont.insertBefore(cellrefH, cellrefInput);
-        let textCont1: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
-        let textH1: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('DisplayText') });
-        let textInput1: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' } });
+        const textCont1: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
+        const textH1: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('DisplayText') });
+        const textInput1: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' } });
         if (!isEnable) {
             textInput1.classList.add('e-disabled');
             textInput1.setAttribute('readonly', 'true');
@@ -703,9 +775,9 @@ export class SpreadsheetHyperlink {
         textInput1.setAttribute('placeholder', l10n.getConstant('EnterTheTextToDisplay'));
         textCont1.appendChild(textInput1);
         textCont1.insertBefore(textH1, textInput1);
-        let sheetCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
-        let sheetH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('Sheet') });
-        let refCont: HTMLElement = this.parent.createElement('div', { className: 'e-refcont' });
+        const sheetCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
+        const sheetH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('Sheet') });
+        const refCont: HTMLElement = this.parent.createElement('div', { className: 'e-refcont' });
         sheetCont.appendChild(refCont);
         sheetCont.insertBefore(sheetH, refCont);
         docContElem.appendChild(cellrefCont);

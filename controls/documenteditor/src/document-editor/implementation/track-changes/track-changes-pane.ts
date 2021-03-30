@@ -1,11 +1,10 @@
-import { createElement, L10n, classList, isNullOrUndefined, select } from '@syncfusion/ej2-base';
+import { createElement, L10n, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../document-editor';
 import { Toolbar } from '@syncfusion/ej2-navigations';
 import { Revision } from './track-changes';
 import { CommentReviewPane } from '../comments';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DropDownButtonModel, DropDownButton, MenuEventArgs, ItemModel, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
-//tslint:disable-next-line:max-line-length
 import { TextElementBox, ElementBox, ImageElementBox, FieldElementBox, TextFormField, DropDownFormField, CheckBoxFormField, ParagraphWidget } from '../viewer/page';
 import { WRowFormat, WCharacterFormat } from '../index';
 import { HelperMethods } from '../editor/editor-helper';
@@ -43,22 +42,22 @@ export class TrackChangesPane {
     private noChangesVisibleInternal: boolean = true;
     public isTrackingPageBreak: boolean = false;
 
-    get setNoChangesVisibility(): boolean {
+    public get setNoChangesVisibility(): boolean {
         return this.noChangesVisibleInternal;
     }
 
-    set setNoChangesVisibility(visible: boolean) {
+    public set setNoChangesVisibility(visible: boolean) {
         this.noChangeDivElement.style.display = visible ? 'block' : 'none';
         this.noChangesVisibleInternal = visible;
         this.enableDisableToolbarItem(!visible);
     }
 
 
-    get currentSelectedRevision(): Revision {
+    public get currentSelectedRevision(): Revision {
         return this.currentSelectedRevisionInternal;
     }
 
-    set currentSelectedRevision(value: Revision) {
+    public set currentSelectedRevision(value: Revision) {
         let selectedElement: HTMLElement = select('.e-de-trckchanges-inner-select', this.changesInfoDiv);
         if (isNullOrUndefined(value)) {
             if (!isNullOrUndefined(selectedElement)) {
@@ -69,7 +68,7 @@ export class TrackChangesPane {
                 selectedElement.classList.remove('e-de-trckchanges-inner-select');
             }
             if (this.changes.length > 0 && this.changes.containsKey(value)) {
-                let currentChangeView: ChangesSingleView = this.changes.get(value);
+                const currentChangeView: ChangesSingleView = this.changes.get(value);
                 currentChangeView.singleInnerDiv.classList.add('e-de-trckchanges-inner-select');
             }
         }
@@ -81,7 +80,7 @@ export class TrackChangesPane {
     }
 
 
-    constructor(owner: DocumentEditor, commentReviewPane: CommentReviewPane) {
+    public constructor(owner: DocumentEditor, commentReviewPane: CommentReviewPane) {
         this.owner = owner;
         this.commentReviewPane = commentReviewPane;
         this.locale = new L10n('documenteditor', this.owner.defaultLocale);
@@ -139,13 +138,13 @@ export class TrackChangesPane {
                 }]
         });
         this.toolbar.appendTo(this.toolbarElement);
-        let navigateLeftButton: HTMLElement = select('.e-de-nvgte-left', this.toolbarElement);
+        const navigateLeftButton: HTMLElement = select('.e-de-nvgte-left', this.toolbarElement);
         (navigateLeftButton.firstChild as HTMLElement).classList.add('e-tc-nvgte');
-        let navigateRightButton: HTMLElement = select('.e-de-nvgte-right', this.toolbarElement);
+        const navigateRightButton: HTMLElement = select('.e-de-nvgte-right', this.toolbarElement);
         (navigateRightButton.firstChild as HTMLElement).classList.add('e-tc-nvgte');
 
         //User list drop down button
-        let userButtonEle: HTMLElement = select('#e-de-user-list', this.toolbarElement);
+        const userButtonEle: HTMLElement = select('#e-de-user-list', this.toolbarElement);
         this.userDropDownitems = [{ text: this.locale.getConstant('All') }];
         this.userDropDown = {
             items: this.userDropDownitems,
@@ -158,12 +157,10 @@ export class TrackChangesPane {
         };
         this.userDropDownButton = new DropDownButton(this.userDropDown);
         this.userDropDownButton.appendTo(userButtonEle);
-        //tslint:disable-next-line:max-line-length
         this.userDropDownButton.content = this.getSpanView(this.userDropDown.items[0].text, 0);
 
         //Revision view type drop down button
-        let viewTypeEle: HTMLElement = select('#e-de-revision-list', this.toolbarElement);
-        //tslint:disable-next-line:max-line-length
+        const viewTypeEle: HTMLElement = select('#e-de-revision-list', this.toolbarElement);
         this.viewTypeitems = [{ text: this.locale.getConstant('All') }, { text: this.locale.getConstant('Inserted') }, { text: this.locale.getConstant('Deleted') }];
 
         this.viewTypeDropDownButton = new DropDownButton({
@@ -174,14 +171,13 @@ export class TrackChangesPane {
                 this.beforeDropDownItemRender(args, this.selectedType);
             }
         });
-        //tslint:disable-next-line:max-line-length
         this.viewTypeDropDownButton.content = this.getSpanView(this.viewTypeitems[0].text, 1);
         this.viewTypeDropDownButton.appendTo(viewTypeEle);
 
         //More menu option drop down button
         this.menuoptionEle = select('#e-de-menu-option', this.toolbarElement);
-        let menuOptions: ItemModel[] = [{ text: this.locale.getConstant('Accept all') }, { text: this.locale.getConstant('Reject all') }];
-        let menuDropDown: DropDownButtonModel = {
+        const menuOptions: ItemModel[] = [{ text: this.locale.getConstant('Accept all') }, { text: this.locale.getConstant('Reject all') }];
+        const menuDropDown: DropDownButtonModel = {
             items: menuOptions,
             select: this.onMenuSelect.bind(this),
             iconCss: 'e-de-menu-icon',
@@ -195,7 +191,7 @@ export class TrackChangesPane {
 
     private beforeDropDownItemRender(args: MenuEventArgs, content: string): void {
         args.element.innerHTML = '<span></span>' + args.item.text;
-        let span: HTMLElement = args.element.children[0] as HTMLElement;
+        const span: HTMLElement = args.element.children[0] as HTMLElement;
         if (args.item.text === content) {
             span.style.marginRight = '10px';
             span.style.alignSelf = 'center';
@@ -207,13 +203,13 @@ export class TrackChangesPane {
     }
 
     private onUserOpen(arg: OpenCloseMenuEventArgs): void {
-        let ele: HTMLElement = arg.element;
+        const ele: HTMLElement = arg.element;
         ele.style.maxHeight = '200px';
         ele.style.overflowY = 'auto';
     }
 
     private enableDisableToolbarItem(enable: boolean): void {
-        let elements: NodeListOf<Element> = this.toolbar.element.querySelectorAll('.e-de-tc-tbr');
+        const elements: NodeListOf<Element> = this.toolbar.element.querySelectorAll('.e-de-tc-tbr');
         if (this.owner && this.owner.viewer) {
             this.toolbar.enableItems(elements[0].parentElement.parentElement, enable);
             this.toolbar.enableItems(elements[1].parentElement.parentElement, enable);
@@ -226,16 +222,15 @@ export class TrackChangesPane {
     }
 
     private onMenuSelect(arg: MenuEventArgs): void {
-        let selectedText: string = arg.item.text;
+        const selectedText: string = arg.item.text;
         if (selectedText.match(this.locale.getConstant('Accept all'))) {
             setTimeout(() => {
                 this.owner.revisionsInternal.handleRevisionCollection(true, this.sortedRevisions);
-                /* tslint:disable */
             }, 0);
         } else if (selectedText.match(this.locale.getConstant('Reject all'))) {
             setTimeout(() => {
                 this.owner.revisionsInternal.handleRevisionCollection(false, this.sortedRevisions);
-                /* tslint:disable */
+                /* eslint-disable */
             }, 0);
         }
         this.updateUsers();
@@ -369,7 +364,6 @@ export class TrackChangesPane {
     }
 
     public updateHeight(): void {
-        //tslint:disable-next-line:max-line-length
         let tabHeaderHeight: number = this.commentReviewPane.reviewTab.getRootElement().getElementsByClassName('e-tab-header')[0].getBoundingClientRect().height;
         this.changesInfoDiv.style.height = this.commentReviewPane.parentPaneElement.clientHeight - this.toolbarElement.clientHeight
             - tabHeaderHeight - 2 + 'px';
@@ -395,6 +389,7 @@ export class TrackChangesPane {
     }
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         this.removeAllChanges();
@@ -467,7 +462,7 @@ export class ChangesSingleView {
     public rejectButtonElement: HTMLButtonElement;
 
 
-    constructor(owner: DocumentEditor, trackChangesPane: TrackChangesPane) {
+    public constructor(owner: DocumentEditor, trackChangesPane: TrackChangesPane) {
         this.owner = owner;
         this.locale = new L10n('documenteditor', this.owner.defaultLocale);
         this.locale.setLocale(this.owner.locale);
@@ -588,7 +583,6 @@ export class ChangesSingleView {
                     text += '<Table of Content>';
                     changesText.appendChild(this.addSpan(text));
                     return;
-                    //tslint:disable-next-line:max-line-length
                 } else if (fieldCode.match('HYPERLINK ') || fieldCode.match('MERGEFIELD') || fieldCode.match('FORMTEXT') || fieldCode.match('PAGE ')) {
                     text += this.owner.editor.retrieveFieldResultantText(element.fieldEnd);
                 } else if (element.formFieldData) {
@@ -599,13 +593,10 @@ export class ChangesSingleView {
                         text = '';
                     }
                     if (element.formFieldData instanceof TextFormField) {
-                        //tslint:disable-next-line:max-line-length
                         changesText.appendChild(this.addSpan(element.formFieldData.defaultValue === '' ? emptyChar : element.formFieldData.defaultValue, 'e-de-tc-field'));
                     } else if (element.formFieldData instanceof DropDownFormField) {
-                        //tslint:disable-next-line:max-line-length
                         changesText.appendChild(this.addSpan(element.formFieldData.dropdownItems.length > 0 ? element.formFieldData.dropdownItems[0] : emptyChar, 'e-de-tc-field'));
                     } else {
-                        //tslint:disable-next-line:max-line-length
                         changesText.appendChild(this.addSpan((element.formFieldData as CheckBoxFormField).checked ? String.fromCharCode(9745) : String.fromCharCode(9744), 'e-de-tc-field'));
                     }
                 }

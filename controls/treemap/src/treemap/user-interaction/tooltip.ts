@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/dot-notation */
 import { TreeMap } from '../treemap';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
 import { Browser, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -16,6 +17,7 @@ export class TreeMapTooltip {
     private isTouch: boolean;
     private tooltipId: string;
     private clearTimeout: number;
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(treeMap: TreeMap) {
         this.treemap = treeMap;
         this.tooltipSettings = this.treemap.tooltipSettings;
@@ -23,8 +25,6 @@ export class TreeMapTooltip {
         this.addEventListener();
     }
 
-    /* tslint:disable:no-string-literal */
-    /* tslint:disable */
     public renderTooltip(e: PointerEvent): void {
         let pageX: number; let pageY: number;
         let target: Element; let touchArg: TouchEvent;
@@ -41,8 +41,10 @@ export class TreeMapTooltip {
             pageY = e.pageY;
             target = <Element>e.target;
         }
-        let value: number; let targetId: string = target.id; let item: Object = {}; let tooltipEle: HTMLElement;
-        let location: Location; let toolTipHeader: string; let toolTipData: Object = {};
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let value: number; const targetId: string = target.id; let item: any = {}; let tooltipEle: HTMLElement;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let location: Location; let toolTipHeader: string; let toolTipData: any = {};
         let tooltipContent: string[] = []; let markerFill: string;
         if (targetId.indexOf('_Item_Index') > -1) {
             item = this.treemap.layout.renderItems[parseFloat(targetId.split('_')[6])];
@@ -105,44 +107,49 @@ export class TreeMapTooltip {
             }
         } else {
             this.removeTooltip();
-           (this.treemap as any).clearTemplate();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (this.treemap as any).clearTemplate();
         }
     }
 
     private addTooltip(
         tootipArgs: ITreeMapTooltipRenderEventArgs, markerFill: string, tooltipEle: HTMLElement, eventArgs?: ITreeMapTooltipArgs
-        ) : void {
-            let cancel : boolean;
-            let args : object;
-            if (!isNullOrUndefined(tootipArgs)) {
-                let {cancel : c, ...otherArgs} : ITreeMapTooltipRenderEventArgs = tootipArgs;
-                cancel = c;
-                args = otherArgs.options;
-            } else {
-                cancel = eventArgs.cancel;
-                args = eventArgs as object;
-            }
-            if (!cancel) {
-                this.svgTooltip = new Tooltip({
-                    enable: true,
-                    header: '',
-                    data: args['data'],
-                    template: args['template'],
-                    content: args['text'],
-                    shapes: [],
-                    location: args['location'],
-                    palette: [markerFill],
-                    areaBounds: this.treemap.areaRect,
-                    textStyle: args['textStyle'],
-                    blazorTemplate: { name: 'TooltipTemplate', parent: this.treemap.tooltipSettings }
-                });
-                this.svgTooltip.opacity = this.treemap.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
-                this.svgTooltip.appendTo(tooltipEle);
-                (this.treemap as any).renderReactTemplates();
-            } else {
-                this.removeTooltip();
-                (this.treemap as any).clearTemplate();
-            }
+    ) : void {
+        let cancel : boolean;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let args : any;
+        if (!isNullOrUndefined(tootipArgs)) {
+            const {cancel : c, ...otherArgs} : ITreeMapTooltipRenderEventArgs = tootipArgs;
+            cancel = c;
+            args = otherArgs.options;
+        } else {
+            cancel = eventArgs.cancel;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            args = eventArgs as any;
+        }
+        if (!cancel) {
+            this.svgTooltip = new Tooltip({
+                enable: true,
+                header: '',
+                data: args['data'],
+                template: args['template'],
+                content: args['text'],
+                shapes: [],
+                location: args['location'],
+                palette: [markerFill],
+                areaBounds: this.treemap.areaRect,
+                textStyle: args['textStyle'],
+                blazorTemplate: { name: 'TooltipTemplate', parent: this.treemap.tooltipSettings }
+            });
+            this.svgTooltip.opacity = this.treemap.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
+            this.svgTooltip.appendTo(tooltipEle);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (this.treemap as any).renderReactTemplates();
+        } else {
+            this.removeTooltip();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (this.treemap as any).clearTemplate();
+        }
     }
 
     public mouseUpHandler(e: PointerEvent): void {
@@ -153,11 +160,12 @@ export class TreeMapTooltip {
 
     public removeTooltip(): void {
         if (document.getElementsByClassName('EJ2-TreeMap-Tooltip').length > 0) {
-            let tooltipElementId: Element = document.getElementsByClassName('EJ2-TreeMap-Tooltip')[0];
+            const tooltipElementId: Element = document.getElementsByClassName('EJ2-TreeMap-Tooltip')[0];
             tooltipElementId.parentNode.removeChild(tooltipElementId);
         }
     }
 
+    // eslint-disable-next-line valid-jsdoc
     /**
      * To bind events for tooltip module
      */
@@ -168,6 +176,7 @@ export class TreeMapTooltip {
         this.treemap.on(Browser.touchMoveEvent, this.renderTooltip, this);
         this.treemap.on(Browser.touchEndEvent, this.mouseUpHandler, this);
     }
+    // eslint-disable-next-line valid-jsdoc
     /**
      * To unbind events for tooltip module
      */
@@ -181,13 +190,17 @@ export class TreeMapTooltip {
 
     /**
      * Get module name.
+     *
+     * @returns {string} returns string
      */
     protected getModuleName(): string {
         return 'treeMapTooltip';
     }
     /**
      * To destroy the tooltip.
-     * @return {void}
+     *
+     * @param {TreeMap} treeMap - Specifies the instance of the treemap
+     * @returns {void}
      * @private
      */
     public destroy(treeMap: TreeMap): void {

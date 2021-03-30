@@ -10,6 +10,7 @@ export type FilterType = 'contains' | 'startsWith' | 'endsWith';
 export class SearchSettings extends ChildProperty<SearchSettings> {
     /**
      * Enables or disables the allowSearchOnTyping.
+     *
      * @default true
      */
     @Property(true)
@@ -20,6 +21,7 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
      * * `contains`
      * * `startsWith`
      * * `endsWith`
+     *
      * @default 'contains'
      */
     @Property('contains')
@@ -28,6 +30,7 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
     /**
      * If ignoreCase is set to false, searches files that match exactly,
      * else searches files that are case insensitive(uppercase and lowercase letters treated the same).
+     *
      * @default true
      */
     @Property(true)

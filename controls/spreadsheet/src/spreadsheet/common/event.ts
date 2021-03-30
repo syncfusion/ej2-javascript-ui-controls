@@ -12,8 +12,6 @@ export const refreshSheetTabs: string = 'refreshSheetTabs';
 /** @hidden */
 export const isFormulaBarEdit: string = 'isFormulaBarEdit';
 /** @hidden */
-export const dataRefresh: string = 'dataRefresh';
-/** @hidden */
 export const initialLoad: string = 'initialLoad';
 /** @hidden */
 export const contentLoaded: string = 'contentLoaded';
@@ -113,8 +111,6 @@ export const beforeRibbonCreate: string = 'beforeRibbonCreate';
 export const rowHeightChanged: string = 'rowHeightChanged';
 /** @hidden */
 export const colWidthChanged: string = 'colWidthChanged';
-/** @hidden */
-export const beforeHeaderLoaded: string = 'beforeHeaderLoaded';
 /** @hidden */
 export const onContentScroll: string = 'onContentScroll';
 /** @hidden */
@@ -285,8 +281,30 @@ export const insertChart: string = 'insertChart';
 /** @hidden */
 export const chartRangeSelection: string = 'chartRangeSelection';
 /** @hidden */
+export const insertDesignChart: string = 'insertDesignChart';
+/** @hidden */
+export const removeDesignChart: string = 'removeDesignChart';
+/** @hidden */
+export const chartDesignTab: string = 'chartDesignTab';
+/** @hidden */
+export const addChartEle: string = 'addChartEle';
+/** @hidden */
 export const isReact: string = 'isReact';
 /** @hidden */
 export const renderReactTemplates: string = 'renderReactTemplates';
 /** @hidden */
 export const clearTemplate: string = 'clearTemplate';
+/** @hidden */
+export const protectWorkbook: string = 'protectWorkbook';
+/** @hidden */
+export const unProtectWorkbook: string = 'unProtectWorkbook';
+/** @hidden */
+export const getPassWord: string = 'getPassWord';
+/** @hidden */
+export const importProtectWorkbook: string = 'importProtectWorkbook';
+/** @hidden */
+export const selectionStatus: string = 'selectionStatus';
+/** @hidden */
+export const freeze: string = 'freeze';
+/** @hidden */
+export const overlayEleSize: string = 'overlayEleSize';

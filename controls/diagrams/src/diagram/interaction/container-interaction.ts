@@ -32,32 +32,41 @@ import { getDiagramElement } from '../utility/dom-util';
 
 //#region canvas Container interaction
 
-/** @private */
+/**
+ * updateCanvasBounds method\
+ *
+ * @returns {  void }    updateCanvasBounds method .\
+ * @param {Diagram} diagram - provide the diagram value.
+ * @param {NodeModel | ConnectorModel} obj - provide the isVertical value.
+ * @param {PointModel} position - provide the position value.
+ * @param {boolean} isBoundsUpdate - provide the isBoundsUpdate value.
+ * @private
+ */
 export function updateCanvasBounds(
     diagram: Diagram, obj: NodeModel | ConnectorModel, position: PointModel, isBoundsUpdate: boolean): boolean {
-    let container: NodeModel; let connectorList: string[] = []; let groupAction: boolean = false;
+    let container: NodeModel; const connectorList: string[] = []; let groupAction: boolean = false;
     if (checkParentAsContainer(diagram, obj, true)) {
         diagram.protectPropertyChange(true);
         container = diagram.nameTable[(obj as Node).parentId];
-        let wrapper: Canvas = container.wrapper as Canvas;
+        const wrapper: Canvas = container.wrapper as Canvas;
         if (container && container.container.type === 'Canvas') {
             if ((isBoundsUpdate || (wrapper.bounds.x <= position.x && wrapper.bounds.right >= position.x &&
                 (wrapper.bounds.y <= position.y && wrapper.bounds.bottom >= position.y)))) {
-                let columnIndex: number; let parentWrapper: GridPanel;
-                let y: number = wrapper.bounds.y; let x: number = wrapper.bounds.x;
+                let parentWrapper: GridPanel;
+                const y: number = wrapper.bounds.y; const x: number = wrapper.bounds.x;
 
-                let parent: NodeModel = diagram.nameTable[(container as Node).parentId] || container;
-                let shape: SwimLaneModel = parent.shape as SwimLaneModel;
+                const parent: NodeModel = diagram.nameTable[(container as Node).parentId] || container;
+                const shape: SwimLaneModel = parent.shape as SwimLaneModel;
                 if (shape.type === 'SwimLane') {
                     groupAction = updateLaneBoundsAfterAddChild(container, parent, obj as NodeModel, diagram, true);
                 } else {
-                    let parent: NodeModel = diagram.nameTable[(container as Node).parentId] || container;
-                    let shape: SwimLaneModel = parent.shape as SwimLaneModel;
+                    const parent: NodeModel = diagram.nameTable[(container as Node).parentId] || container;
+                    const shape: SwimLaneModel = parent.shape as SwimLaneModel;
                     parentWrapper = parent.wrapper as GridPanel;
                     if (wrapper.actualSize.width < wrapper.outerBounds.width &&
                         (!(wrapper.bounds.x > wrapper.outerBounds.x))) {
                         if (container.rowIndex !== undefined) {
-                            columnIndex = parent.columns.length - 1;
+                            //const columnIndex:number = parent.columns.length - 1;
                             parentWrapper.updateColumnWidth(container.columnIndex, wrapper.outerBounds.width, true);
                             if (shape.orientation === 'Horizontal' && shape.phaseSize) {
                                 updatePhaseMaxWidth(parent, diagram, wrapper, container.columnIndex);
@@ -91,24 +100,34 @@ export function updateCanvasBounds(
     return groupAction;
 }
 
+/**
+ * removeChildInContainer method\
+ *
+ * @returns {  void }    removeChildInContainer method .\
+ * @param {Diagram} diagram - provide the diagram value.
+ * @param {NodeModel | ConnectorModel} obj - provide the isVertical value.
+ * @param {PointModel} position - provide the position value.
+ * @param {boolean} isBoundsUpdate - provide the isBoundsUpdate value.
+ * @private
+ */
 export function removeChildInContainer(
     diagram: Diagram, obj: NodeModel | ConnectorModel, position: PointModel, isBoundsUpdate: boolean): void {
-    let container: NodeModel; let connectorList: string[] = [];
+    let container: NodeModel; //let connectorList: string[] = [];
     if (checkParentAsContainer(diagram, obj, true)) {
-        let isProtectedOnChange: string = 'isProtectedOnChange';
-        let propertyChangeValue: boolean = diagram[isProtectedOnChange];
+        const isProtectedOnChange: string = 'isProtectedOnChange';
+        const propertyChangeValue: boolean = diagram[isProtectedOnChange];
         diagram.protectPropertyChange(true);
         container = diagram.nameTable[(obj as Node).parentId];
-        let wrapper: Canvas = container.wrapper as Canvas;
+        const wrapper: Canvas = container.wrapper as Canvas;
         if (container && container.container.type === 'Canvas') {
             if ((!isBoundsUpdate && (!(wrapper.bounds.x <= position.x && wrapper.bounds.right >= position.x &&
                 (wrapper.bounds.y <= position.y && wrapper.bounds.bottom >= position.y))))) {
                 if (!(obj.constraints & NodeConstraints.AllowMovingOutsideLane)) {
-                    let undoObj: NodeModel = cloneObject(obj);
+                    const undoObj: NodeModel = cloneObject(obj);
                     diagram.clearSelection();
                     removeChildrenInLane(diagram, obj as Node);
                     (obj as Node).parentId = '';
-                    let entry: HistoryEntry = {
+                    const entry: HistoryEntry = {
                         type: 'ChildCollectionChanged', category: 'Internal',
                         undoObject: undoObj, redoObject: cloneObject(obj)
                     };
@@ -126,10 +145,18 @@ export function removeChildInContainer(
 }
 
 
-/** @private */
+/**
+ * findBounds method\
+ *
+ * @returns {  NodeModel | ConnectorModel  }    findBounds method .\
+ * @param {NodeModel} obj - provide the diagram value.
+ * @param {number} columnIndex - provide the isVertical value.
+ * @param {boolean} isHeader - provide the isVertical value.
+ * @private
+ */
 export function findBounds(obj: NodeModel, columnIndex: number, isHeader: boolean): Rect {
-    let rect: Rect = new Rect();
-    let rows: GridRow[] = ((obj as Node).shape.type === 'SwimLane') ?
+    const rect: Rect = new Rect();
+    const rows: GridRow[] = ((obj as Node).shape.type === 'SwimLane') ?
         (obj.wrapper.children[0] as GridPanel).rows : (obj.wrapper as GridPanel).rows;
     for (let i: number = ((isHeader) ? 1 : 0); i < rows.length; i++) {
         rect.uniteRect(rows[i].cells[columnIndex].bounds);
@@ -137,11 +164,18 @@ export function findBounds(obj: NodeModel, columnIndex: number, isHeader: boolea
     return rect;
 }
 
-/** @private */
+/**
+ * createHelper method\
+ *
+ * @returns {  NodeModel | ConnectorModel  }    createHelper method .\
+ * @param {Diagram} diagram - provide the diagram value.
+ * @param {NodeModel | ConnectorModel} obj - provide the isVertical value.
+ * @private
+ */
 export function createHelper(diagram: Diagram, obj: Node): Node {
     let newObj: Node;
-    let cloneObject: Node | Connector = {} as Node | Connector;
-    for (let prop of Object.keys(obj)) {
+    const cloneObject: Node | Connector = {} as Node | Connector;
+    for (const prop of Object.keys(obj)) {
         cloneObject[prop] = obj[prop];
     }
     if (getObjectType(obj) === Node) {
@@ -153,7 +187,14 @@ export function createHelper(diagram: Diagram, obj: Node): Node {
     return newObj;
 }
 
-/** @private */
+/**
+ * renderContainerHelper method\
+ *
+ * @returns {  NodeModel | ConnectorModel  }    renderContainerHelper method .\
+ * @param {Diagram} diagram - provide the diagram value.
+ * @param {NodeModel | ConnectorModel} obj - provide the isVertical value.
+ * @private
+ */
 export function renderContainerHelper(diagram: Diagram, obj: SelectorModel | NodeModel | ConnectorModel): NodeModel | ConnectorModel {
     diagram.enableServerDataBinding(false);
     let object: NodeModel | ConnectorModel; let container: Canvas;
@@ -182,7 +223,7 @@ export function renderContainerHelper(diagram: Diagram, obj: SelectorModel | Nod
                 checkParentAsContainer(diagram, object))
                 || ((!(object as Node).isLane) && checkParentAsContainer(diagram, object))) ||
                 ((diagram.constraints & DiagramConstraints.LineRouting) && diagram.selectedItems.nodes.length > 0))) {
-                let node: NodeModel = {
+                const node: NodeModel = {
                     id: 'helper',
                     rotateAngle: container.rotateAngle,
                     offsetX: container.offsetX, offsetY: container.offsetY,
@@ -201,9 +242,17 @@ export function renderContainerHelper(diagram: Diagram, obj: SelectorModel | Nod
     return nodes;
 }
 
-/** @private */
+/**
+ * checkParentAsContainer method\
+ *
+ * @returns {  void  }    checkParentAsContainer method .\
+ * @param {Diagram} diagram - provide the diagram value.
+ * @param {NodeModel | ConnectorModel} obj - provide the isVertical value.
+ * @param {boolean} isChild - provide the isChild value.
+ * @private
+ */
 export function checkParentAsContainer(diagram: Diagram, obj: NodeModel | ConnectorModel, isChild?: boolean): boolean {
-    let parentNode: NodeModel = (isChild) ? diagram.nameTable[(obj as Node).parentId] :
+    const parentNode: NodeModel = (isChild) ? diagram.nameTable[(obj as Node).parentId] :
         (diagram.nameTable[(obj as Node).parentId] || obj as Node);
     if (parentNode && parentNode.container) {
         return true;
@@ -211,9 +260,16 @@ export function checkParentAsContainer(diagram: Diagram, obj: NodeModel | Connec
     return false;
 }
 
-/** @private */
+/**
+ * checkChildNodeInContainer method\
+ *
+ * @returns {  void  }    checkChildNodeInContainer method .\
+ * @param {Diagram} diagram - provide the diagram value.
+ * @param {NodeModel} obj - provide the isVertical value.
+ * @private
+ */
 export function checkChildNodeInContainer(diagram: Diagram, obj: NodeModel): void {
-    let parentNode: NodeModel = diagram.nameTable[(obj as Node).parentId];
+    const parentNode: NodeModel = diagram.nameTable[(obj as Node).parentId];
     if (parentNode.container.type === 'Canvas') {
         obj.margin.left = (obj.offsetX - parentNode.wrapper.bounds.x - (obj.width / 2));
         obj.margin.top = (obj.offsetY - parentNode.wrapper.bounds.y - (obj.height / 2));
@@ -235,12 +291,12 @@ export function checkChildNodeInContainer(diagram: Diagram, obj: NodeModel): voi
 
 function removeChildrenInLane(diagram: Diagram, node: NodeModel): void {
     if ((node as Node).parentId && (node as Node).parentId !== '') {
-        let prevParentNode: Node = (diagram.nameTable[(node as Node).parentId] as Node);
+        const prevParentNode: Node = (diagram.nameTable[(node as Node).parentId] as Node);
         if (prevParentNode.isLane && prevParentNode.parentId) {
-            let swimlane: NodeModel = diagram.nameTable[prevParentNode.parentId];
-            let canvasId: string = (prevParentNode.id.slice(swimlane.id.length));
-            let prevParentId: string = canvasId.substring(0, canvasId.length - 1);
-            let lanes: LaneModel[] = (swimlane.shape as SwimLaneModel).lanes; let lane: LaneModel;
+            const swimlane: NodeModel = diagram.nameTable[prevParentNode.parentId];
+            const canvasId: string = (prevParentNode.id.slice(swimlane.id.length));
+            const prevParentId: string = canvasId.substring(0, canvasId.length - 1);
+            const lanes: LaneModel[] = (swimlane.shape as SwimLaneModel).lanes; let lane: LaneModel;
             for (let i: number = 0; i < lanes.length; i++) {
                 lane = lanes[i];
                 if (prevParentId === lane.id) {
@@ -258,6 +314,14 @@ function removeChildrenInLane(diagram: Diagram, node: NodeModel): void {
 }
 
 /**
+ * addChildToContainer method\
+ *
+ * @returns {  void  }    addChildToContainer method .\
+ * @param {DiagramElement} diagram - provide the element value.
+ * @param {boolean} parent - provide the isVertical value.
+ * @param {PointModel} node - provide the node value.
+ * @param {Diagram} isUndo - provide the isUndo value.
+ * @param {boolean} historyAction - provide the historyAction value.
  * @private
  */
 export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: NodeModel, isUndo?: boolean, historyAction?: boolean): void {
@@ -265,24 +329,24 @@ export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: N
         diagram.protectPropertyChange(true);
         let swimlane: NodeModel = diagram.nameTable[(parent as Node).parentId];
         node = diagram.getObject(node.id) || node;
-        let child: string | NodeModel = (diagram.nodes.indexOf(node) !== -1) ? node.id : node;
+        const child: string | NodeModel = (diagram.nodes.indexOf(node) !== -1) ? node.id : node;
         if (parent.container.type === 'Canvas' && !historyAction) {
-            let left: number = (node.wrapper.offsetX - node.wrapper.actualSize.width / 2) -
+            const left: number = (node.wrapper.offsetX - node.wrapper.actualSize.width / 2) -
                 (parent.wrapper.offsetX - parent.wrapper.actualSize.width / 2);
-            let top: number = (node.wrapper.offsetY - node.wrapper.actualSize.height / 2) -
+            const top: number = (node.wrapper.offsetY - node.wrapper.actualSize.height / 2) -
                 (parent.wrapper.offsetY - parent.wrapper.actualSize.height / 2);
             node.margin.left = left; node.margin.top = top;
         } else if (swimlane) {
-            let swimLaneBounds: Rect = swimlane.wrapper.bounds;
-            let parentBounds: Rect = parent.wrapper.bounds;
+            const swimLaneBounds: Rect = swimlane.wrapper.bounds;
+            const parentBounds: Rect = parent.wrapper.bounds;
             if ((swimlane.shape as SwimLane).orientation === 'Horizontal') {
                 node.margin.left -= parentBounds.x - swimLaneBounds.x;
             } else {
-                let laneHeaderId: string = (parent as Node).parentId + (swimlane.shape as SwimLane).lanes[0].id + '_0_header';
+                const laneHeaderId: string = (parent as Node).parentId + (swimlane.shape as SwimLane).lanes[0].id + '_0_header';
                 node.margin.top -= parentBounds.y - swimLaneBounds.y - diagram.nameTable[laneHeaderId].wrapper.bounds.height;
             }
         }
-        let container: NodeModel = diagram.nameTable[parent.id];
+        const container: NodeModel = diagram.nameTable[parent.id];
         if (!container.children) { container.children = []; }
         if (container.children.indexOf(node.id) === -1) {
             removeChildrenInLane(diagram, node);
@@ -290,19 +354,19 @@ export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: N
             if (diagram.getObject(node.id)) {
                 diagram.removeElements(node);
             }
-            let undoObj: NodeModel = cloneObject(node);
+            const undoObj: NodeModel = cloneObject(node);
             diagram.addChild(container, child);
             node = diagram.getObject(node.id);
             if ((container as Node).isLane && (container as Node).parentId) {
                 swimlane = diagram.nameTable[(container as Node).parentId];
-                let lanes: LaneModel[] = (swimlane.shape as SwimLaneModel).lanes;
-                let canvasId: string = (container.id.slice(swimlane.id.length));
-                let currentParentId: string = canvasId.substring(0, canvasId.length - 1);
+                const lanes: LaneModel[] = (swimlane.shape as SwimLaneModel).lanes;
+                const canvasId: string = (container.id.slice(swimlane.id.length));
+                const currentParentId: string = canvasId.substring(0, canvasId.length - 1);
                 for (let i: number = 0; i < lanes.length; i++) {
                     if ((container as Node).isLane && currentParentId === lanes[i].id) {
-                        // tslint:disable-next-line:no-any
+                        // eslint-disable-next-line
                         if (!((node as any).parentObj instanceof Diagram)) {
-                            // tslint:disable-next-line:no-any
+                            // eslint-disable-next-line
                             (node as any).parentObj = lanes[i];
                         }
                         lanes[i].children.push(node);
@@ -317,7 +381,7 @@ export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: N
                 updateLaneBoundsAfterAddChild(container, swimlane, node, diagram);
             }
             if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
-                let entry: HistoryEntry = {
+                const entry: HistoryEntry = {
                     type: 'ChildCollectionChanged', category: 'Internal',
                     undoObject: undoObj, redoObject: cloneObject(node), historyAction: historyAction ? 'AddNodeToLane' : undefined
                 };
@@ -329,26 +393,26 @@ export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: N
 }
 
 function moveSwinLaneChild(node: NodeModel | ConnectorModel, diagram: Diagram): void {
-    let sourceNode: HTMLElement = getDiagramElement(node.id + '_groupElement', diagram.element.id);
-    let targetId: string = ((node as Node).parentId ) ? (node as Node).parentId + '_groupElement' : diagram.element.id + '_diagramLayer';
-    let targetNode: HTMLElement = getDiagramElement(targetId , diagram.element.id);
+    const sourceNode: HTMLElement = getDiagramElement(node.id + '_groupElement', diagram.element.id);
+    const targetId: string = ((node as Node).parentId ) ? (node as Node).parentId + '_groupElement' : diagram.element.id + '_diagramLayer';
+    const targetNode: HTMLElement = getDiagramElement(targetId , diagram.element.id);
     if (sourceNode && targetNode) {
         targetNode.appendChild(sourceNode);
     }
 }
 export function updateLaneBoundsAfterAddChild(
     container: NodeModel, swimLane: NodeModel, node: NodeModel, diagram: Diagram, isBoundsUpdate?: boolean): boolean {
-    let undoObject: NodeModel = cloneObject(container);
+    const undoObject: NodeModel = cloneObject(container);
     let isUpdateRow: boolean; let isGroupAction: boolean = false;
-    let padding: number = (swimLane.shape as SwimLane).padding;
-    let containerBounds: Rect = container.wrapper.bounds;
-    let containerOuterBounds: Rect = container.wrapper.outerBounds;
-    let nodeBounds: Rect = node.wrapper.bounds;
+    const padding: number = (swimLane.shape as SwimLane).padding;
+    const containerBounds: Rect = container.wrapper.bounds;
+    const containerOuterBounds: Rect = container.wrapper.outerBounds;
+    const nodeBounds: Rect = node.wrapper.bounds;
     if (swimLane && swimLane.shape.type === 'SwimLane' &&
         (containerBounds.right < nodeBounds.right + padding ||
             containerBounds.bottom < nodeBounds.bottom + padding)) {
-        let grid: GridPanel = swimLane.wrapper.children[0] as GridPanel;
-        let x: number = grid.bounds.x; let y: number = grid.bounds.y;
+        const grid: GridPanel = swimLane.wrapper.children[0] as GridPanel;
+        const x: number = grid.bounds.x; const y: number = grid.bounds.y;
         let size: number;
         if (containerBounds.right < nodeBounds.right + padding &&
             containerOuterBounds.x <= containerBounds.x) {
@@ -368,7 +432,7 @@ export function updateLaneBoundsAfterAddChild(
                 isGroupAction = true;
             }
             if (isUpdateRow !== undefined) {
-                let entry: HistoryEntry = {
+                const entry: HistoryEntry = {
                     category: 'Internal',
                     type: (isUpdateRow) ? 'RowHeightChanged' : 'ColumnWidthChanged',
                     undoObject: undoObject, redoObject: cloneObject(container)
@@ -397,22 +461,42 @@ export function updateLaneBoundsAfterAddChild(
 
 //# reginon stack panel interaction
 
-/** @private */
+/**
+ * renderStackHighlighter method\
+ *
+ * @returns {  void  }    renderStackHighlighter method .\
+ * @param {DiagramElement} element - provide the element value.
+ * @param {boolean} isVertical - provide the isVertical value.
+ * @param {PointModel} position - provide the position value.
+ * @param {Diagram} diagram - provide the diagram value.
+ * @param {boolean} isUml - provide the isUml value.
+ * @param {boolean} isSwimlane - provide the isSwimlane value.
+ * @private
+ */
 export function renderStackHighlighter(
-    element: DiagramElement, isVertical: Boolean, position: PointModel, diagram: Diagram, isUml?: boolean, isSwimlane?: boolean): void {
-    let adornerSvg: SVGElement = getAdornerLayerSvg(diagram.element.id);
+    element: DiagramElement, isVertical: boolean, position: PointModel, diagram: Diagram, isUml?: boolean, isSwimlane?: boolean): void {
+    const adornerSvg: SVGElement = getAdornerLayerSvg(diagram.element.id);
     diagram.diagramRenderer.renderStackHighlighter(
         element, adornerSvg, diagram.scroller.transform, isVertical, position, isUml, isSwimlane);
 }
 
-/** @private */
+/**
+ * moveChildInStack method\
+ *
+ * @returns {  void }    moveChildInStack method .\
+ * @param {Node} sourceNode - provide the sourceNode value.
+ * @param {Node} target - provide the target value.
+ * @param {Diagram} diagram - provide the diagram value.
+ * @param {Actions} action - provide the action value.
+ * @private
+ */
 export function moveChildInStack(sourceNode: Node, target: Node, diagram: Diagram, action: Actions): void {
-    let obj: Node = sourceNode;
-    let parent: Node = diagram.nameTable[(obj as Node).parentId];
-    let sourceParent: Node = diagram.nameTable[(obj as Node).parentId];
+    const obj: Node = sourceNode;
+    const parent: Node = diagram.nameTable[(obj as Node).parentId];
+    const sourceParent: Node = diagram.nameTable[(obj as Node).parentId];
     if (target && sourceParent && sourceParent.container && sourceParent.container.type === 'Stack' &&
         target.container && target.container.type === 'Stack' && (sourceParent.id !== target.parentId)) {
-        let value: number = sourceParent.wrapper.children.indexOf(obj.wrapper);
+        const value: number = sourceParent.wrapper.children.indexOf(obj.wrapper);
         if (value > -1) {
             diagram.nameTable[obj.id].parentId = target.id;
             sourceParent.wrapper.children.splice(value, 1);
@@ -420,19 +504,19 @@ export function moveChildInStack(sourceNode: Node, target: Node, diagram: Diagra
     }
     if (target && target.parentId && (obj as Node).parentId && action === 'Drag' &&
         sourceParent.container && sourceParent.container.type === 'Stack') {
-        let targetIndex: number = parent.wrapper.children.indexOf(target.wrapper);
-        let sourceIndex: number = parent.wrapper.children.indexOf(obj.wrapper);
-        let undoElement: StackEntryObject = {
+        const targetIndex: number = parent.wrapper.children.indexOf(target.wrapper);
+        const sourceIndex: number = parent.wrapper.children.indexOf(obj.wrapper);
+        const undoElement: StackEntryObject = {
             targetIndex: targetIndex, target: target,
             sourceIndex: sourceIndex, source: sourceNode
         };
         parent.wrapper.children.splice(sourceIndex, 1);
         parent.wrapper.children.splice(targetIndex, 0, obj.wrapper);
-        let redoElement: StackEntryObject = {
+        const redoElement: StackEntryObject = {
             targetIndex: sourceIndex, target: target,
             sourceIndex: targetIndex, source: sourceNode
         };
-        let entry: HistoryEntry = {
+        const entry: HistoryEntry = {
             type: 'StackChildPositionChanged', redoObject: redoElement as NodeModel,
             undoObject: undoElement as NodeModel, category: 'Internal'
         };

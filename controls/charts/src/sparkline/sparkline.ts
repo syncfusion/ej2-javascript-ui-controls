@@ -18,7 +18,7 @@ import { SparklineModel } from './sparkline-model';
 import { getThemeColor } from './utils/helper';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 
-//tslint:disable: no-duplicate-lines
+/* eslint-disable */
 /**
  * Represents the Sparkline control.
  * ```html
@@ -598,7 +598,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
         }
-        this.resizeTo = setTimeout(
+        this.resizeTo = +setTimeout(
             (): void => {
                 if (this.isDestroyed) {
                     clearTimeout(this.resizeTo);

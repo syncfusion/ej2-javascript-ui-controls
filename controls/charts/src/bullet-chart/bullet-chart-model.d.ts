@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, Browser, Complex, Event, EmitType } from '@syncfusion/ej2-base';import { EventHandler, remove, INotifyPropertyChanged, ModuleDeclaration, Collection, isNullOrUndefined } from '@syncfusion/ej2-base';import { Internationalization } from '@syncfusion/ej2-base';import { SvgRenderer, Rect, Size, measureText, TextOption } from '@syncfusion/ej2-svg-base';import { Query } from '@syncfusion/ej2-data';import { OrientationType, TickPosition, LabelsPlacement, TextPosition, FeatureType, TargetType } from './utils/enum';import { AnimationModel, BorderModel } from '../common/model/base-model';import { Margin, Animation, Border } from '../common/model/base';import { MarginModel } from '../common/model/base-model';import { Data } from '../common/model/data';import { BulletChartAxis } from './renderer/bullet-axis';import { BulletChartTheme } from './utils/theme';import { ScaleGroup } from './renderer/scale-render';import { redrawElement, textElement, getElement, appendChildElement, RectOption, stringToNumber } from '../common/utils/helper';import { BulletTooltip } from './user-interaction/tooltip';import { IPrintEventArgs } from '../chart/model/chart-interface';import { ExportType } from '../common/utils/enum';import { AccumulationChart } from '../accumulation-chart/accumulation';import { Chart } from '../chart/chart';import { ChartTheme} from '../chart/utils/enum';import { RangeNavigator } from '../range-navigator/range-navigator';import { getTitle, logBase } from '../common/utils/helper';import { BulletTooltipSettings, Range, BulletLabelStyle, BulletDataLabel } from './model/bullet-base';import { MajorTickLinesSettings, MinorTickLinesSettings } from './model/bullet-base';import { BulletChartLegendSettings } from '../bullet-chart/model/bullet-base';import { BulletChartLegendSettingsModel } from '../bullet-chart/model/bullet-base-model';import {  IBulletMouseEventArgs, IBulletLegendRenderEventArgs } from '../bullet-chart/model/bullet-interface';import { BulletChartLegend } from '../bullet-chart/legend/legend';import { BulletTooltipSettingsModel, RangeModel } from './model/bullet-base-model';import { MajorTickLinesSettingsModel, MinorTickLinesSettingsModel } from './model/bullet-base-model';import { BulletLabelStyleModel, BulletDataLabelModel } from './model/bullet-base-model';import { resized, bulletChartMouseClick } from '../common/model/constants';import { IBulletResizeEventArgs, IBulletStyle, IBulletchartTooltipEventArgs, IBulletLoadedEventArgs } from './model/bullet-interface';import { IFeatureBarBounds } from './model/bullet-interface';import { getBulletThemeColor } from './utils/theme';import { ExportUtils } from '../common/utils/export';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
+import { Component, Property, NotifyPropertyChanges, Browser, Complex, Event, EmitType } from '@syncfusion/ej2-base';import { EventHandler, remove, INotifyPropertyChanged, ModuleDeclaration, Collection, isNullOrUndefined } from '@syncfusion/ej2-base';import { Internationalization } from '@syncfusion/ej2-base';import { SvgRenderer, Rect, Size, measureText, TextOption } from '@syncfusion/ej2-svg-base';import { Query } from '@syncfusion/ej2-data';import { OrientationType, TickPosition, LabelsPlacement, TextPosition, FeatureType, TargetType } from './utils/enum';import { AnimationModel, BorderModel } from '../common/model/base-model';import { Margin, Animation, Border } from '../common/model/base';import { MarginModel } from '../common/model/base-model';import { Data } from '../common/model/data';import { BulletChartAxis } from './renderer/bullet-axis';import { BulletChartTheme } from './utils/theme';import { ScaleGroup } from './renderer/scale-render';import { redrawElement, textElement, getElement, appendChildElement, RectOption, stringToNumber } from '../common/utils/helper';import { BulletTooltip } from './user-interaction/tooltip';import { IPrintEventArgs } from '../chart/model/chart-interface';import { ExportType } from '../common/utils/enum';import { AccumulationChart } from '../accumulation-chart/accumulation';import { Chart } from '../chart/chart';import { ChartTheme } from '../chart/utils/enum';import { RangeNavigator } from '../range-navigator/range-navigator';import { getTitle, logBase } from '../common/utils/helper';import { BulletTooltipSettings, Range, BulletLabelStyle, BulletDataLabel } from './model/bullet-base';import { MajorTickLinesSettings, MinorTickLinesSettings } from './model/bullet-base';import { BulletChartLegendSettings } from '../bullet-chart/model/bullet-base';import { BulletChartLegendSettingsModel } from '../bullet-chart/model/bullet-base-model';import { IBulletMouseEventArgs, IBulletLegendRenderEventArgs } from '../bullet-chart/model/bullet-interface';import { BulletChartLegend } from '../bullet-chart/legend/legend';import { BulletTooltipSettingsModel, RangeModel } from './model/bullet-base-model';import { MajorTickLinesSettingsModel, MinorTickLinesSettingsModel } from './model/bullet-base-model';import { BulletLabelStyleModel, BulletDataLabelModel } from './model/bullet-base-model';import { resized, bulletChartMouseClick } from '../common/model/constants';import { IBulletResizeEventArgs, IBulletStyle, IBulletchartTooltipEventArgs, IBulletLoadedEventArgs } from './model/bullet-interface';import { IFeatureBarBounds } from './model/bullet-interface';import { getBulletThemeColor } from './utils/theme';import { ExportUtils } from '../common/utils/export';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -9,6 +9,7 @@ export interface BulletChartModel extends ComponentModel{
     /**
      * The width of the bullet chart as a string accepts input as both like '100px' or '100%'.
      * If specified as '100%, bullet chart renders to the full width of its parent element.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -18,6 +19,7 @@ export interface BulletChartModel extends ComponentModel{
     /**
      * The height of the bullet chart as a string accepts input both as '100px' or '100%'.
      * If specified as '100%, bullet chart renders to the full height of its parent element.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -26,6 +28,7 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * The locale of the bullet chart as a string.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -46,6 +49,7 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * Specifies the minimum range of an scale.
+     *
      * @default null
      */
 
@@ -53,6 +57,7 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * Specifies the maximum range of an scale.
+     *
      * @default null
      */
 
@@ -60,6 +65,7 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * Specifies the interval for an scale.
+     *
      * @default null
      */
 
@@ -67,6 +73,7 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * specifies the interval of minor ticks
+     *
      * @default 4
      */
 
@@ -86,6 +93,7 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * Specifies the format of the bullet chart axis labels.
+     *
      * @default ''
      */
 
@@ -93,6 +101,7 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * Specifies the title of the bullet chart.
+     *
      * @default ''
      */
 
@@ -105,6 +114,7 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * Specifies the sub title of the bullet chart.
+     *
      * @default ''
      */
 
@@ -117,6 +127,7 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * Orientation of the scale
+     *
      * @default 'Horizontal'
      */
     orientation?: OrientationType;
@@ -136,11 +147,11 @@ export interface BulletChartModel extends ComponentModel{
     /**
      * provides Qualitative ranges of the bullet chart.
      */
-    // tslint:disable-next-line:max-line-length
     ranges?: RangeModel[];
 
     /**
      * specifies the axis label position of the bullet chart
+     *
      * @default 'Outside'
      */
 
@@ -148,6 +159,7 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * specifies the tick position of the bullet chart
+     *
      * @default 'Outside'
      */
 
@@ -155,6 +167,7 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * Sets the title position of bullet chart.
+     *
      * @default 'Top'.
      */
 
@@ -162,6 +175,7 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * If set to true, the axis will render at the opposite side of its default position.
+     *
      * @default false
      */
 
@@ -169,6 +183,7 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * Specifies the theme for the bullet chart.
+     *
      * @default 'Material'
      */
     theme?: ChartTheme;
@@ -192,6 +207,7 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * default value for enableGroupSeparator
+     *
      * @default false
      */
     enableGroupSeparator?: boolean;
@@ -204,6 +220,7 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * Options for customizing comparative bar color bullet chart
+     *
      * @default 5
      */
 
@@ -211,6 +228,7 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * Default stroke of comparative measure.
+     *
      * @default '#191919'
      */
 
@@ -218,6 +236,7 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * Options for customizing feature bar height of the bullet chart
+     *
      * @default 6
      */
 
@@ -225,6 +244,7 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * Default stroke color of feature measure.
+     *
      * @default null
      */
 
@@ -238,6 +258,7 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * default value of multiple data bullet chart.
+     *
      * @isdatamanager false
      * @default null
      */
@@ -246,18 +267,21 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * It defines the query for the data source.
+     *
      * @default null
      */
     query?: Query;
 
     /**
      * It defines the category for the data source.
+     *
      * @default null
      */
     categoryField?: string;
 
     /**
      * Default type on feature measure.
+     *
      * @default 'Rect'
      */
 
@@ -265,6 +289,7 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * The DataSource field that contains the value value.
+     *
      * @default ''
      */
 
@@ -272,6 +297,7 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * The DataSource field that contains the target value.
+     *
      * @default ''
      */
 
@@ -279,38 +305,44 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * The DataSource field that contains the target value.
+     *
      * @default ['Rect', 'Cross', 'Circle']
      */
     targetTypes?: TargetType[];
 
     /**
      * TabIndex value for the bullet chart.
+     *
      * @default 1
      */
     tabIndex?: number;
 
     /**
      * Triggers before the bulletchart tooltip is rendered.
-     * @event
+     *
+     * @event tooltipRender
      */
     tooltipRender?: EmitType<IBulletchartTooltipEventArgs>;
 
     /**
      * Triggers before bullet chart load.
-     * @event
+     *
+     * @event load
      */
     load?: EmitType<IBulletLoadedEventArgs>;
 
     /**
      * Triggers after the bullet chart rendering
-     * @event
+     *
+     * @event loaded
      * @blazorProperty 'Loaded'
      */
     loaded?: EmitType<IBulletLoadedEventArgs>;
 
     /**
      * Triggers on clicking the chart.
-     * @event
+     *
+     * @event bulletChartMouseClick
      * @blazorProperty 'OnBulletChartMouseClick'
      */
 
@@ -318,14 +350,16 @@ export interface BulletChartModel extends ComponentModel{
 
     /**
      * Triggers before the legend is rendered.
-     * @event
+     *
+     * @event legendRender
      * @deprecated
      */
     legendRender?: EmitType<IBulletLegendRenderEventArgs>;
 
     /**
      * Triggers before the prints gets started.
-     * @event
+     *
+     * @event beforePrint
      * @blazorProperty 'OnPrint'
      */
 

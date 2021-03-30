@@ -24,23 +24,23 @@ export class DayMarkers {
         this.parent.on('ui-update', this.propertyChanged, this);
     }
 
-    private propertyChanged(property: object): void {
-        let keys: string[] = Object.keys(getValue('properties', property));
+    private propertyChanged(property: Record<string, unknown>): void {
+        const keys: string[] = Object.keys(getValue('properties', property));
         for (let i: number = 0; i < keys.length; i++) {
-            let key: string = keys[i];
+            const key: string = keys[i];
             switch (key) {
-                case 'eventMarkers':
-                    this.eventMarkerRender.renderEventMarkers();
-                    this.updateHeight();
-                    break;
-                case 'highlightWeekends':
-                    this.nonworkingDayRender.renderWeekends();
-                    this.updateHeight();
-                    break;
-                case 'holidays':
-                    this.nonworkingDayRender.renderHolidays();
-                    this.updateHeight();
-                    break;
+            case 'eventMarkers':
+                this.eventMarkerRender.renderEventMarkers();
+                this.updateHeight();
+                break;
+            case 'highlightWeekends':
+                this.nonworkingDayRender.renderWeekends();
+                this.updateHeight();
+                break;
+            case 'holidays':
+                this.nonworkingDayRender.renderHolidays();
+                this.updateHeight();
+                break;
             }
         }
     }
@@ -57,11 +57,14 @@ export class DayMarkers {
     }
     /**
      * To get module name
+     *
+     * @returns {string} .
      */
     public getModuleName(): string {
         return 'dayMarkers';
     }
     /**
+     * @returns {void} .
      * @private
      */
     public destroy(): void {

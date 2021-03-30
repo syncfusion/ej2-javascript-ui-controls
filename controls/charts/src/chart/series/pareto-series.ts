@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/ban-types */
 import { Chart } from '../chart';
 import { Series } from '../series/chart-series';
 import { ColumnBase } from './column-base';
@@ -14,7 +19,7 @@ export class ParetoSeries extends ColumnBase {
      */
 
     public initSeries(targetSeries: Series, chart: Chart): void {
-        let series: Series = new Series(chart, 'series', (targetSeries as Series & { properties: Object }).properties, true);
+        const series: Series = new Series(chart, 'series', (targetSeries as Series & { properties: Object }).properties, true);
         series.name = 'Pareto';
         series.yAxisName = targetSeries.yAxisName + '_CumulativeAxis';
         series.category = 'Pareto';
@@ -29,14 +34,14 @@ export class ParetoSeries extends ColumnBase {
      */
 
     public initAxis(paretoSeries: Series, targetSeries: Series, chart: Chart): void {
-        let isExist: boolean = this.paretoAxes.some((currentAxis: Axis) => {
+        const isExist: boolean = this.paretoAxes.some((currentAxis: Axis) => {
             return currentAxis.name === targetSeries.yAxisName;
         });
         if (!isExist) {
-            let secondaryAxis: Axis = <Axis>(paretoSeries.yAxisName ? chart.axes.filter((axis: Axis) => {
+            const secondaryAxis: Axis = <Axis>(paretoSeries.yAxisName ? chart.axes.filter((axis: Axis) => {
                 return axis.name === paretoSeries.yAxisName;
             })[0] : chart.primaryYAxis);
-            let newAxis: Axis = new Axis(chart, 'axis', {
+            const newAxis: Axis = new Axis(chart, 'axis', {
                 name: targetSeries.yAxisName,
                 majorGridLines: {
                     width: 0
@@ -54,7 +59,8 @@ export class ParetoSeries extends ColumnBase {
     }
     /**
      * Render Pareto series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
@@ -65,10 +71,10 @@ export class ParetoSeries extends ColumnBase {
      * To perform the cumulative calculation for pareto series.
      */
     public performCumulativeCalculation(json: Object, series: Series): Object[] {
-        let data: Object[] = <Object[]>json;
+        const data: Object[] = <Object[]>json;
         let sum: number = 0;
         let count: number = 0;
-        let length: number = data.length;
+        const length: number = data.length;
         for (let i: number = 0; i < length; i++) {
             sum += data[i][series.yName];
         }
@@ -80,8 +86,9 @@ export class ParetoSeries extends ColumnBase {
     }
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
     public doAnimation(series: Series): void {
         this.animate(series);
@@ -97,11 +104,12 @@ export class ParetoSeries extends ColumnBase {
     }
     /**
      * To destroy the pareto series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method performed here
          */

@@ -16,6 +16,7 @@ export type FontWeight = 'bold' | 'normal';
 export type FontStyle = 'italic' | 'normal';
 /**
  * Text decoration type
+ *
  * @hidden
  */
 export type TextDecoration = 'underline' | 'line-through' | 'underline line-through' | 'none';
@@ -23,20 +24,20 @@ export type TextDecoration = 'underline' | 'line-through' | 'underline line-thro
  * Font family type
  */
 export type FontFamily = 'Arial' | 'Arial Black' | 'Axettac Demo' | 'Batang' | 'Book Antiqua' | 'Calibri' | 'Courier' | 'Courier New' |
-    'Din Condensed' | 'Georgia' | 'Helvetica' | 'Helvetica New' | 'Roboto' | 'Tahoma' | 'Times New Roman' | 'Verdana';
+'Din Condensed' | 'Georgia' | 'Helvetica' | 'Helvetica New' | 'Roboto' | 'Tahoma' | 'Times New Roman' | 'Verdana';
 /**
  * Specifies the number format types in Spreadsheet.
  */
 export type NumberFormatType = 'General' | 'Number' | 'Currency' | 'Accounting' | 'ShortDate' | 'LongDate' | 'Time' | 'Percentage' |
-    'Fraction' | 'Scientific' | 'Text';
+'Fraction' | 'Scientific' | 'Text';
 /**
  * Specifies the option for save file type from Spreadsheet. By default, Excel save will be occur.
  */
-export type SaveType = 'Xlsx' | 'Xls' | 'Csv';
-/** 
+export type SaveType = 'Xlsx' | 'Xls' | 'Csv' | 'Pdf';
+/**
  * Defines the order of Sorting. They are
  * * Ascending
- * * Descending 
+ * * Descending
  */
 export type SortOrder =
     /**  Defines SortDirection as Ascending */
@@ -92,41 +93,46 @@ export type MergeType =
 
 /**
  * Conditional formatting HighlightCell Type
+ *
  * @hidden
  */
 export type HighlightCell = 'GreaterThan' | 'LessThan' | 'Between' | 'EqualTo' | 'ContainsText' | 'DateOccur' | 'Duplicate' | 'Unique';
 
 /**
  * Conditional formatting TopBottom Type
+ *
  * @hidden
  */
 export type TopBottom = 'Top10Items' | 'Bottom10Items' | 'Top10Percentage' | 'Bottom10Percentage' | 'BelowAverage' | 'AboveAverage';
 
 /**
  * Conditional formatting DataBar Type
+ *
  * @hidden
  */
 export type DataBar = 'BlueDataBar' | 'GreenDataBar' | 'RedDataBar' | 'OrangeDataBar' | 'LightBlueDataBar' | 'PurpleDataBar';
 
 /**
  * Conditional formatting ColorScale Type
+ *
  * @hidden
  */
 export type ColorScale = 'GYRColorScale' | 'RYGColorScale' | 'GWRColorScale' | 'RWGColorScale' | 'BWRColorScale' | 'RWBColorScale' |
-    'WRColorScale' | 'RWColorScale' | 'GWColorScale' | 'WGColorScale' | 'GYColorScale' | 'YGColorScale';
+'WRColorScale' | 'RWColorScale' | 'GWColorScale' | 'WGColorScale' | 'GYColorScale' | 'YGColorScale';
 
 /**
  * Conditional formatting IconSet Type
+ *
  * @hidden
  */
 export type IconSet = 'ThreeArrows' | 'ThreeArrowsGray' | 'FourArrowsGray' | 'FourArrows' | 'FiveArrowsGray' |
-    'FiveArrows' | 'ThreeTrafficLights1' | 'ThreeTrafficLights2' | 'ThreeSigns' | 'FourTrafficLights' |
-    'FourRedToBlack' | 'ThreeSymbols' | 'ThreeSymbols2' | 'ThreeFlags' | 'FourRating' | 'FiveQuarters' |
-    'FiveRating' | 'ThreeTriangles' | 'ThreeStars' | 'FiveBoxes';
+'FiveArrows' | 'ThreeTrafficLights1' | 'ThreeTrafficLights2' | 'ThreeSigns' | 'FourTrafficLights' |
+'FourRedToBlack' | 'ThreeSymbols' | 'ThreeSymbols2' | 'ThreeFlags' | 'FourRating' | 'FiveQuarters' |
+'FiveRating' | 'ThreeTriangles' | 'ThreeStars' | 'FiveBoxes';
 
 export type CFColor = 'RedFT' | 'YellowFT' | 'GreenFT' | 'RedF' | 'RedT';
 
-/** 
+/**
  * Clear type
  */
 export type ClearType =
@@ -142,7 +148,7 @@ export type ClearType =
 /**
  * Chart type
  */
-export type chartType =
+export type ChartType =
 /**  Define the Column series. */
 'Column' |
 /**  Define the StackingColumn series. */
@@ -177,7 +183,7 @@ export type chartType =
 /**
  * Chart theme
  */
-export type chartTheme =
+export type ChartTheme =
 /**  Render a chart with Material theme. */
 'Material' |
 /**  Render a chart with Fabric theme. */
@@ -196,3 +202,43 @@ export type chartTheme =
 'BootstrapDark' |
 /**  Render a chart with Bootstrap4 theme. */
 'Bootstrap4';
+
+/**
+ * Defines the position of the legend. They are
+ * * auto - Places the legend based on area type.
+ * * top - Displays the legend on the top of chart.
+ * * left - Displays the legend on the left of chart.
+ * * bottom - Displays the legend on the bottom of chart.
+ * * right - Displays the legend on the right of chart.
+ */
+export type LegendPosition =
+/** Places the legend based on area type. */
+'Auto' |
+/** Places the legend on the top of chart. */
+'Top' |
+/** Places the legend on the left of chart. */
+'Left' |
+/** Places the legend on the bottom of chart. */
+'Bottom' |
+/** Places the legend on the right of chart. */
+'Right';
+
+/**
+ * Defines the LabelPosition, They are.
+ * * outer - Position the label outside the point.
+ * * top - Position the label on top of the point.
+ * * bottom - Position the label on bottom of the point.
+ * * middle - Position the label to middle of the point.
+ * * auto - Position the label based on series.
+ */
+export type LabelPosition =
+/** Position the label outside the point. */
+'Outer' |
+/** Position the label on top of the point. */
+'Top' |
+/** Position the label on bottom of the point. */
+'Bottom' |
+/** Position the label to middle of the point. */
+'Middle' |
+/** Position the label based on series. */
+'Auto';

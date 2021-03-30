@@ -1,3 +1,6 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { Chart } from '../chart';
 import { ChartData, } from '../utils/get-data';
 import { SeriesModel } from '../series/chart-series-model';
@@ -17,14 +20,16 @@ export class DataEditing {
     private seriesIndex: number;
     private pointIndex: number;
     /**
-     * @private
      * It is used to identify point is dragging for data editing in other modules.
+     *
+     * @private
      */
     public isPointDragging: boolean = false;
 
     /**
      * Constructor for DataEditing module.
-     * @private.
+     *
+     * @private
      */
     constructor(chart: Chart) {
         this.chart = chart;
@@ -33,10 +38,10 @@ export class DataEditing {
      * Point drag start here
      */
     public pointMouseDown(): void {
-        let chart: Chart = this.chart;
+        const chart: Chart = this.chart;
         let series: SeriesModel;
-        let data: ChartData = new ChartData(chart);
-        let pointData: PointData = data.getData();
+        const data: ChartData = new ChartData(chart);
+        const pointData: PointData = data.getData();
         if (pointData.point && (data.insideRegion || !pointData.series.isRectSeries)) {
             this.seriesIndex = pointData.series.index;
             this.pointIndex = pointData.point.index;
@@ -57,13 +62,13 @@ export class DataEditing {
      * Point dragging
      */
     public pointMouseMove(event: PointerEvent | TouchEvent): void {
-        let chart: Chart = this.chart;
+        const chart: Chart = this.chart;
         let series: SeriesModel;
         if (event.type === 'touchmove' && event.preventDefault) {
             event.preventDefault();
         }
-        let data: ChartData = new ChartData(chart);
-        let pointData: PointData = data.getData();
+        const data: ChartData = new ChartData(chart);
+        const pointData: PointData = data.getData();
         if (pointData.series.dragSettings.enable && pointData.point && (data.insideRegion || !pointData.series.isRectSeries)) {
             this.getCursorStyle(pointData);
         } else {
@@ -81,7 +86,7 @@ export class DataEditing {
      * Get cursor style
      */
     private getCursorStyle(pointData: PointData): void {
-        let chart: Chart = this.chart;
+        const chart: Chart = this.chart;
         if (pointData.series.type === 'Bar' && chart.isTransposed) {
             chart.svgObject.setAttribute('style', 'cursor:ns-resize');
         } else if (chart.isTransposed || pointData.series.type === 'Bar') {
@@ -94,16 +99,15 @@ export class DataEditing {
      * Dragging calculation
      */
     private pointDragging(si: number, pi: number): void {
-        let chart: Chart = this.chart;
-        let yValueArray: number[] = []; let y: number; let ySize: number; let yValue: number;
-        let series: Series = chart.visibleSeries[si];
-        let pointDrag: DragSettingsModel = series.dragSettings;
-        let xAxis: Axis = series.xAxis;
-        let yAxis: Axis = series.yAxis;
-        let minRange: number; let maxRange: number;
+        const chart: Chart = this.chart;
+        const yValueArray: number[] = []; let y: number; let ySize: number; let yValue: number;
+        const series: Series = chart.visibleSeries[si];
+        const pointDrag: DragSettingsModel = series.dragSettings;
+        const xAxis: Axis = series.xAxis;
+        const yAxis: Axis = series.yAxis;
         // To get drag region for column and bar series
-        let extra: number = series.isRectSeries ? 1 : 0;
-        let axis: Rect = getTransform(xAxis, yAxis, chart.requireInvertedAxis);
+        const extra: number = series.isRectSeries ? 1 : 0;
+        const axis: Rect = getTransform(xAxis, yAxis, chart.requireInvertedAxis);
         if (series.type === 'Bar') {
             y = chart.isTransposed ? (axis.y + axis.height) - chart.mouseY : chart.mouseX - axis.x;
             ySize = chart.isTransposed ? axis.height : axis.width;
@@ -113,9 +117,9 @@ export class DataEditing {
         }
         yValue = yAxis.isInversed ? (1 - (y / ySize)) : (y / ySize);
         yValue = (yValue * yAxis.visibleRange.delta) + yAxis.visibleRange.min;
-        minRange = yAxis.minimum !== null ? yAxis.visibleRange.min + extra : (isNullOrUndefined(pointDrag.minY) ?
+        const minRange: number = yAxis.minimum !== null ? yAxis.visibleRange.min + extra : (isNullOrUndefined(pointDrag.minY) ?
             (yValue) : pointDrag.minY);
-        maxRange = yAxis.maximum !== null ? yAxis.visibleRange.max + extra : (isNullOrUndefined(pointDrag.maxY) ?
+        const maxRange: number = yAxis.maximum !== null ? yAxis.visibleRange.max + extra : (isNullOrUndefined(pointDrag.maxY) ?
             (yValue) : pointDrag.maxY);
         if (maxRange >= yValue && minRange <= yValue) {
             series.points[pi].yValue = series.points[pi].y = chart.dragY = (yAxis.valueType === 'Logarithmic') ?
@@ -139,7 +143,7 @@ export class DataEditing {
      * Point drag ends here
      */
     public pointMouseUp(): void {
-        let chart: Chart = this.chart;
+        const chart: Chart = this.chart;
         if (chart.isPointMouseDown) {
             if (chart.series[this.seriesIndex].dragSettings.enable) {
                 chart.trigger(dragEnd, {
@@ -165,10 +169,11 @@ export class DataEditing {
     }
     /**
      * To destroy the DataEditing.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         // Destroy method performed here
     }
 }

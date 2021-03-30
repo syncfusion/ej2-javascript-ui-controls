@@ -12,32 +12,37 @@ export type FilterType = 'StartsWith' | 'EndsWith' | 'Contains';
 export class FieldSettings extends ChildProperty<FieldSettings> {
     /**
      * Maps the text column from data table for each list item
+     *
      * @default null
      */
     @Property()
     public text: string;
     /**
      * Maps the value column from data table for each list item
+     *
      * @default null
      */
     @Property()
     public value: string;
     /**
      * Maps the icon class column from data table for each list item.
+     *
      * @default null
      */
     @Property()
     public iconCss: string;
-    /** 
+    /**
      * Group the list items with it's related items by mapping groupBy field.
+     *
      * @default null
      */
     @Property()
     public groupBy: string;
 
     /**
-     * Allows additional attributes such as title, disabled, etc., to configure the elements 
+     * Allows additional attributes such as title, disabled, etc., to configure the elements
      * in various ways to meet the criteria.
+     *
      * @default null
      */
     @Property()
@@ -68,42 +73,43 @@ const NORECORDSTEMPLATE_PROPERTY: string = 'NoRecordsTemplate';
 const ACTIONFAILURETEMPLATE_PROPERTY: string = 'ActionFailureTemplate';
 
 export interface DropDownBaseClassList {
-    root: string;
-    rtl: string;
-    content: string;
-    selected: string;
-    hover: string;
-    noData: string;
-    fixedHead: string;
-    focus: string;
-    li: string;
-    disabled: string;
-    group: string;
-    grouping: string;
+    root: string
+    rtl: string
+    content: string
+    selected: string
+    hover: string
+    noData: string
+    fixedHead: string
+    focus: string
+    li: string
+    disabled: string
+    group: string
+    grouping: string
 }
 
 export interface SelectEventArgs {
     /**
      * If the event is triggered by interaction, it returns true. Otherwise, it returns false.
      */
-    isInteracted: boolean;
+    isInteracted: boolean
     /**
      * Returns the selected list item
      */
-    item: HTMLLIElement;
+    item: HTMLLIElement
     /**
      * Returns the selected item as JSON Object from the data source.
+     *
      * @blazorType object
      */
-    itemData: FieldSettingsModel;
+    itemData: FieldSettingsModel
     /**
      * Specifies the original event arguments.
      */
-    e: MouseEvent | KeyboardEvent | TouchEvent;
+    e: MouseEvent | KeyboardEvent | TouchEvent
     /**
      * Illustrates whether the current action needs to be prevented or not.
      */
-    cancel?: boolean;
+    cancel?: boolean
 
 }
 
@@ -111,93 +117,98 @@ export interface BeforeOpenEventArgs {
     /**
      * Illustrates whether the current action needs to be prevented or not.
      */
-    cancel?: boolean;
+    cancel?: boolean
 }
 
 export interface ActionBeginEventArgs {
     /**
      * Specify the query to begin the data
+     *
      * @blazorType Syncfusion.Blazor.Data.Query
      */
-    query: Query;
+    query: Query
     /**
-     *  Set the data source to action begin
+     * Set the data source to action begin
+     *
      * @blazorType object
      */
-    data: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
+    data: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[]
     /**
      * Illustrates whether the current action needs to be prevented or not.
      */
-    cancel?: boolean;
+    cancel?: boolean
     /**
-     *  Specify the Event Name
+     * Specify the Event Name
      */
-    eventName?: string;
+    eventName?: string
     /**
      * Return Items
      */
-    items?: Object[];
+    items?: Object[]
 }
 
 export interface ActionCompleteEventArgs {
     /**
      * Illustrates whether the current action needs to be prevented or not.
      */
-    cancel?: boolean;
+    cancel?: boolean
     /**
      * Returns the selected items as JSON Object from the data source.
+     *
      * @blazorType object
      */
-    result?: ResultData;
+    result?: ResultData
     /**
      * Return the actual records.
      */
-    actual?: object;
+    actual?: object
     /**
      * Return the aggregates
      */
-    aggregates?: object;
+    aggregates?: object
     /**
      * Return the total number for records.
      */
-    count?: number;
+    count?: number
     /**
      * Specify the query to complete the data
+     *
      * @blazorType Syncfusion.Blazor.Data.Query
      */
-    query?: Query;
+    query?: Query
     /**
      * Return the request type
      */
-    request?: string;
+    request?: string
     /**
      * Return the virtualSelectRecords
      */
-    virtualSelectRecords?: object;
+    virtualSelectRecords?: object
     /**
      * Return XMLHttpRequest
      */
-    xhr: XMLHttpRequest;
+    xhr: XMLHttpRequest
     /**
      * Specify the Event Name
      */
-    eventName?: string;
+    eventName?: string
     /**
      * Return Items
      */
-    items?: Object[];
+    items?: Object[]
 }
 
 export interface DataBoundEventArgs {
     /**
      * Returns the selected items as JSON Object from the data source.
+     *
      * @blazorType object
      */
-    items: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
+    items: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[]
     /**
      * Return the bounded objects
      */
-    e?: object;
+    e?: object
 }
 
 /**
@@ -244,7 +255,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * ```html
      * <input type="text" tabindex="1" id="list"> </input>
      * ```
-     * ```typescript  
+     * ```typescript
      *   let customers: DropDownList = new DropDownList({
      *      dataSource:new DataManager({ url:'http://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc/' }),
      *      query: new Query().from('Customers').select(['ContactName', 'CustomerID']).take(5),
@@ -253,15 +264,17 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      *   });
      *   customers.appendTo("#list");
      * ```
+     *
      * @default {text: null, value: null, iconCss: null, groupBy: null}
      * @deprecated
      */
     @Complex<FieldSettingsModel>({ text: null, value: null, iconCss: null, groupBy: null }, FieldSettings)
     public fields: FieldSettingsModel;
     /**
-     * Enable or disable persisting component's state between page reloads. 
+     * Enable or disable persisting component's state between page reloads.
      * If enabled, following list of states will be persisted.
      * 1. value
+     *
      * @default false
      * @deprecated
      */
@@ -270,9 +283,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     /**
      * Accepts the template design and assigns it to each list item present in the popup.
      * We have built-in `template engine`
-     * 
-     * which provides options to compile template string into a executable function. 
-     * For EX: We have expression evolution as like ES6 expression string literals. 
+     *
+     * which provides options to compile template string into a executable function.
+     * For EX: We have expression evolution as like ES6 expression string literals.
+     *
      * @default null
      * @deprecated
      */
@@ -280,6 +294,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     public itemTemplate: string;
     /**
      * Accepts the template design and assigns it to the group headers present in the popup list.
+     *
      * @default null
      * @deprecated
      */
@@ -288,6 +303,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     /**
      * Accepts the template design and assigns it to popup list of component
      * when no data is available on the component.
+     *
      * @default 'No records found'
      * @deprecated
      */
@@ -296,6 +312,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     /**
      * Accepts the template and assigns it to the popup list content of the component
      * when the data fetch request from the remote server fails.
+     *
      * @default 'Request failed'
      * @deprecated
      */
@@ -306,6 +323,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * * `None` - The data source is not sorting.
      * * `Ascending` - The data source is sorting with ascending order.
      * * `Descending` - The data source is sorting with descending order.
+     *
      * @default null
      * @asptype object
      * @aspjsonconverterignore
@@ -315,6 +333,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     public sortOrder: SortOrder;
     /**
      * Specifies a value that indicates whether the component is enabled or not.
+     *
      * @default true
      * @deprecated
      */
@@ -324,6 +343,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Accepts the list items either through local or remote service and binds it to the component.
      * It can be an array of JSON Objects or an instance of
      * `DataManager`.
+     *
      * @default []
      * @deprecated
      */
@@ -332,39 +352,41 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     /**
      * Accepts the external `Query`
      * which will execute along with the data processing.
+     *
      * @default null
      * @deprecated
      */
     @Property(null)
     public query: Query;
-    /**   
-     * Determines on which filter type, the component needs to be considered on search action. 
-     * The `FilterType` and its supported data types are 
-     * 
-     * <table> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * FilterType<br/></td><td colSpan=1 rowSpan=1> 
-     * Description<br/></td><td colSpan=1 rowSpan=1> 
-     * Supported Types<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * StartsWith<br/></td><td colSpan=1 rowSpan=1> 
-     * Checks whether a value begins with the specified value.<br/></td><td colSpan=1 rowSpan=1> 
-     * String<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * EndsWith<br/></td><td colSpan=1 rowSpan=1> 
-     * Checks whether a value ends with specified value.<br/><br/></td><td colSpan=1 rowSpan=1> 
-     * <br/>String<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * Contains<br/></td><td colSpan=1 rowSpan=1> 
-     * Checks whether a value contains with specified value.<br/><br/></td><td colSpan=1 rowSpan=1> 
-     * <br/>String<br/></td></tr> 
+    /**
+     * Determines on which filter type, the component needs to be considered on search action.
+     * The `FilterType` and its supported data types are
+     *
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * FilterType<br/></td><td colSpan=1 rowSpan=1>
+     * Description<br/></td><td colSpan=1 rowSpan=1>
+     * Supported Types<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * StartsWith<br/></td><td colSpan=1 rowSpan=1>
+     * Checks whether a value begins with the specified value.<br/></td><td colSpan=1 rowSpan=1>
+     * String<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * EndsWith<br/></td><td colSpan=1 rowSpan=1>
+     * Checks whether a value ends with specified value.<br/><br/></td><td colSpan=1 rowSpan=1>
+     * <br/>String<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Contains<br/></td><td colSpan=1 rowSpan=1>
+     * Checks whether a value contains with specified value.<br/><br/></td><td colSpan=1 rowSpan=1>
+     * <br/>String<br/></td></tr>
      * </table>
-     * 
+     *
      * The default value set to `StartsWith`, all the suggestion items which contain typed characters to listed in the suggestion popup.
+     *
      * @default 'StartsWith'
      * @deprecated
      */
@@ -373,6 +395,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     /**
      * When set to ‘false’, consider the `case-sensitive` on performing the search to find suggestions.
      * By default consider the casing.
+     *
      * @default true
      * @deprecated
      */
@@ -380,6 +403,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     public ignoreCase: boolean;
     /**
      * specifies the z-index value of the component popup element.
+     *
      * @default 1000
      * @deprecated
      */
@@ -387,12 +411,14 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     public zIndex: number;
     /**
      * ignoreAccent set to true, then ignores the diacritic characters or accents when filtering.
+     *
      * @deprecated
      */
     @Property(false)
     public ignoreAccent: boolean;
     /**
      * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
+     *
      * @default 'en-US'
      * @deprecated
      */
@@ -400,7 +426,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     public locale: string;
     /**
      * Triggers before fetching data from the remote server.
-     * @event
+     *
+     * @event actionBegin
      * @blazorProperty 'OnActionBegin'
      * @blazorType ActionBeginEventArgs
      */
@@ -408,7 +435,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     public actionBegin: EmitType<Object>;
     /**
      * Triggers after data is fetched successfully from the remote server.
-     * @event
+     *
+     * @event actionComplete
      * @blazorProperty 'OnActionComplete'
      * @blazorType ActionCompleteEventArgs
      */
@@ -416,57 +444,65 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     public actionComplete: EmitType<Object>;
     /**
      * Triggers when the data fetch request from the remote server fails.
-     * @event
+     *
+     * @event actionFailure
      * @blazorProperty 'OnActionFailure'
      */
     @Event()
     public actionFailure: EmitType<Object>;
     /**
      * Triggers when an item in the popup is selected by the user either with mouse/tap or with keyboard navigation.
-     * @event
+     *
+     * @event select
      * @blazorProperty 'OnValueSelect'
      */
     @Event()
     public select: EmitType<SelectEventArgs>;
     /**
      * Triggers when data source is populated in the popup list..
-     * @event
+     *
+     * @event dataBound
      * @blazorProperty 'DataBound'
      * @blazorType DataBoundEventArgs
      */
     @Event()
     public dataBound: EmitType<Object>;
-    /** 
+    /**
      * Triggers when the component is created.
-     * @event 
+     *
+     * @event created
      * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
-    /** 
+    /**
      * Triggers when the component is destroyed.
-     * @event
+     *
+     * @event destroyed
      * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
     /**
      * * Constructor for DropDownBase class
+     *
+     * @param {DropDownBaseModel} options - Specifies the DropDownBase model.
+     * @param {string | HTMLElement} element - Specifies the element to render as component.
+     * @private
      */
-    constructor(options?: DropDownBaseModel, element?: string | HTMLElement) {
+    public constructor(options?: DropDownBaseModel, element?: string | HTMLElement) {
         super(options, element);
-    };
+    }
     protected getPropObject(
-        prop: string, newProp: { [key: string]: string; }, oldProp: { [key: string]: string; }): { [key: string]: Object; } {
-        let newProperty: { [key: string]: string; } = <{ [key: string]: string; }>new Object();
-        let oldProperty: { [key: string]: string; } = <{ [key: string]: string; }>new Object();
-        // tslint:disable-next-line:no-function-constructor-with-string-args
-        let propName: Function = (prop: string) => {
+        prop: string, newProp: { [key: string]: string }, oldProp: { [key: string]: string }): { [key: string]: Object } {
+        const newProperty: { [key: string]: string } = <{ [key: string]: string }>new Object();
+        const oldProperty: { [key: string]: string } = <{ [key: string]: string }>new Object();
+        const propName: Function = (prop: string) => {
             return prop;
         };
-        newProperty[propName(prop)] = (newProp as { [key: string]: string; })[propName(prop)];
-        oldProperty[propName(prop)] = (oldProp as { [key: string]: string; })[propName(prop)];
-        let data: { [key: string]: Object; } = <{ [key: string]: Object; }>new Object();
+        newProperty[propName(prop)] = (newProp as { [key: string]: string })[propName(prop)];
+        oldProperty[propName(prop)] = (oldProp as { [key: string]: string })[propName(prop)];
+        const data: { [key: string]: Object } = <{ [key: string]: Object }>new Object();
         data.newProperty = newProperty;
         data.oldProperty = oldProperty;
         return data;
@@ -482,17 +518,17 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
         }
         return value;
-    };
+    }
     private checkValueCase(text: string, ignoreCase: boolean, ignoreAccent: boolean, isTextByValue?: boolean): string | number {
         let value: string | number = null;
         if (isTextByValue) {
             value = text;
         }
-        let dataSource: { [key: string]: Object }[] = this.listData as { [key: string]: Object }[];
-        let fields: FieldSettingsModel = this.fields;
-        let type: string = this.typeOfData(dataSource).typeof as string;
+        const dataSource: { [key: string]: Object }[] = this.listData as { [key: string]: Object }[];
+        const fields: FieldSettingsModel = this.fields;
+        const type: string = this.typeOfData(dataSource).typeof as string;
         if (type === 'string' || type === 'number' || type === 'boolean') {
-            for (let item of dataSource) {
+            for (const item of dataSource) {
                 if (!isNullOrUndefined(item)) {
                     if (ignoreAccent) {
                         value = this.checkingAccent(String(item), text, ignoreCase);
@@ -512,7 +548,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         } else {
             if (ignoreCase) {
                 (dataSource as { [key: string]: Object }[]).filter((item: { [key: string]: Object }) => {
-                    let itemValue: string | number = getValue(fields.value, item);
+                    const itemValue: string | number = getValue(fields.value, item);
                     if (!isNullOrUndefined(itemValue) && this.checkIgnoreCase(getValue(fields.text, item).toString(), text)) {
                         value = <string>getValue(fields.value, item);
                     }
@@ -520,7 +556,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             } else {
                 if (isTextByValue) {
                     dataSource.filter((item: { [key: string]: Object }) => {
-                        let itemValue: string | number = getValue(fields.value, item);
+                        const itemValue: string | number = getValue(fields.value, item);
                         if (!isNullOrUndefined(itemValue) && !isNullOrUndefined(value) && itemValue.toString() === value.toString()) {
                             value = getValue(fields.text, item) as string;
                         }
@@ -537,8 +573,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         return value;
     }
     private checkingAccent(item: string, text: string, ignoreCase: boolean): string {
-        let dataItem: string | object = DataUtil.ignoreDiacritics(String(item));
-        let textItem: string | object = DataUtil.ignoreDiacritics(text.toString());
+        const dataItem: string | object = DataUtil.ignoreDiacritics(String(item));
+        const textItem: string | object = DataUtil.ignoreDiacritics(text.toString());
         let value: string | number = null;
         if (ignoreCase) {
             if (this.checkIgnoreCase(dataItem as string, textItem as string)) {
@@ -559,8 +595,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
     private getItemValue(dataItem: string, typedText: string, ignoreCase: boolean, isTextByValue?: boolean): string {
         let value: string | number | boolean = null;
-        let dataSource: { [key: string]: Object }[] = this.listData as { [key: string]: Object }[];
-        let type: string = this.typeOfData(dataSource).typeof as string;
+        const dataSource: { [key: string]: Object }[] = this.listData as { [key: string]: Object }[];
+        const type: string = this.typeOfData(dataSource).typeof as string;
         if (isTextByValue) {
             value = dataItem.toString();
         } else {
@@ -575,7 +611,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     private templateCompiler(baseTemplate: string): boolean {
         let checkTemplate: boolean = false;
         if (baseTemplate) {
-            let exception: Object;
             try {
                 checkTemplate = (selectAll(baseTemplate, document).length) ? true : false;
             } catch (exception) {
@@ -585,22 +620,22 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         return checkTemplate;
     }
     protected l10nUpdate(actionFailure?: boolean): void {
-        let ele: Element = this.getModuleName() === 'listbox' ? this.ulElement : this.list;
+        const ele: Element = this.getModuleName() === 'listbox' ? this.ulElement : this.list;
         if (this.noRecordsTemplate !== 'No records found' || this.actionFailureTemplate !== 'Request failed') {
             this.DropDownBaseresetBlazorTemplates(false, false, true, true);
-            let template: string = actionFailure ? this.actionFailureTemplate : this.noRecordsTemplate;
+            const template: string = actionFailure ? this.actionFailureTemplate : this.noRecordsTemplate;
             let compiledString: Function;
-            let templateId: string = actionFailure ? this.actionFailureTemplateId : this.noRecordsTemplateId;
+            const templateId: string = actionFailure ? this.actionFailureTemplateId : this.noRecordsTemplateId;
             ele.innerHTML = '';
-            let tempaltecheck: boolean = this.templateCompiler(template);
+            const tempaltecheck: boolean = this.templateCompiler(template);
             if (tempaltecheck) {
                 compiledString = compile(select(template, document).innerHTML.trim());
             } else {
                 compiledString = compile(template);
             }
-            let templateName: string = actionFailure ? 'actionFailureTemplate' : 'noRecordsTemplate';
-            // tslint:disable-next-line
-            let noDataCompTemp: any = compiledString({}, this, templateName, templateId, this.isStringTemplate, null, ele);
+            const templateName: string = actionFailure ? 'actionFailureTemplate' : 'noRecordsTemplate';
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const noDataCompTemp: any = compiledString({}, this, templateName, templateId, this.isStringTemplate, null, ele);
             if (noDataCompTemp && noDataCompTemp.length > 0) {
                 for (let i: number = 0; i < noDataCompTemp.length; i++) {
                     ele.appendChild(noDataCompTemp[i]);
@@ -608,17 +643,17 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
             this.DropDownBaseupdateBlazorTemplates(false, false, !actionFailure, actionFailure, false, false, false, false);
         } else {
-            let l10nLocale: Object = { noRecordsTemplate: 'No records found', actionFailureTemplate: 'Request failed'};
-            let componentLocale: L10n = new L10n(this.getLocaleName(), {}, this.locale);
+            const l10nLocale: Object = { noRecordsTemplate: 'No records found', actionFailureTemplate: 'Request failed'};
+            const componentLocale: L10n = new L10n(this.getLocaleName(), {}, this.locale);
             if (componentLocale.getConstant('actionFailureTemplate') !== '') {
                 this.l10n = componentLocale;
             } else {
                 this.l10n = new L10n(this.getModuleName() === 'listbox' ? 'listbox' : 'dropdowns', l10nLocale, this.locale);
             }
-            let content: string = actionFailure ?
-            this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
+            const content: string = actionFailure ?
+                this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
             if (this.getModuleName() === 'listbox') {
-                let liElem: Element = this.createElement('li');
+                const liElem: Element = this.createElement('li');
                 liElem.textContent = content;
                 ele.appendChild(liElem);
                 liElem.classList.add('e-list-nrt');
@@ -630,16 +665,15 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
 
     protected getLocaleName(): string {
         return 'drop-down-base';
-    };
+    }
 
     protected getTextByValue(value: string | number | boolean): string {
-        let text: string;
-        text = this.checkValueCase(value as string, false, false, true) as string;
+        const text: string = this.checkValueCase(value as string, false, false, true) as string;
         return text;
     }
     protected getFormattedValue(value: string): string | number | boolean {
         if (this.listData && this.listData.length) {
-            let item: { [key: string]: Object } = this.typeOfData(this.listData);
+            const item: { [key: string]: Object } = this.typeOfData(this.listData);
             if (isBlazor() && isNullOrUndefined(value) || value === 'null') {
                 return null;
             }
@@ -656,33 +690,43 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
     /**
      * Sets RTL to dropdownbase wrapper
+     *
+     * @returns {void}
      */
     protected setEnableRtl(): void {
         if (this.list) {
             this.enableRtlElements.push(this.list);
         }
-        this.enableRtl ? addClass(this.enableRtlElements, dropDownBaseClasses.rtl) :
+        if (this.enableRtl) {
+            addClass(this.enableRtlElements, dropDownBaseClasses.rtl);
+        } else {
             removeClass(this.enableRtlElements, dropDownBaseClasses.rtl);
-    };
+        }
+    }
     /**
      * Initialize the Component.
+     *
+     * @returns {void}
      */
     private initialize(): void {
         this.bindEvent = true;
         this.actionFailureTemplateId = `${this.element.id}${ACTIONFAILURETEMPLATE_PROPERTY}`;
         if (this.element.tagName === 'UL') {
-            let jsonElement: { [key: string]: Object }[] = ListBase.createJsonFromElement(this.element);
+            const jsonElement: { [key: string]: Object }[] = ListBase.createJsonFromElement(this.element);
             this.setProperties({ fields: { text: 'text', value: 'text' } }, true);
             this.resetList(jsonElement, this.fields);
         } else if (this.element.tagName === 'SELECT') {
-            let dataSource: boolean = this.dataSource instanceof Array ? (this.dataSource.length > 0 ? true : false)
+            const dataSource: boolean = this.dataSource instanceof Array ? (this.dataSource.length > 0 ? true : false)
                 : !isNullOrUndefined(this.dataSource) ? true : false;
-            if (!dataSource) { this.renderItemsBySelect(); }
+            if (!dataSource) {
+                this.renderItemsBySelect();
+            }
         } else {
             this.setListData(this.dataSource, this.fields, this.query);
         }
-    };
+    }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected DropDownBaseupdateBlazorTemplates(
         item: boolean, group: boolean, noRecord: boolean, action: boolean,
         value?: boolean, header?: boolean, footer?: boolean, isEmpty?: boolean): void {
@@ -710,6 +754,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
         }
     }
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected DropDownBaseresetBlazorTemplates(
         item: boolean, group: boolean, noRecord: boolean, action: boolean,
         value?: boolean, header?: boolean, footer?: boolean): void {
@@ -739,22 +784,29 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
     /**
      * Get the properties to be maintained in persisted state.
+     *
+     * @returns {string} Returns the persisted data of the component.
      */
     protected getPersistData(): string {
         return this.addOnPersist([]);
-    };
+    }
     /**
      * Sets the enabled state to DropDownBase.
+     *
+     * @returns {void}
      */
     protected setEnabled(): void {
         this.element.setAttribute('aria-disabled', (this.enabled) ? 'false' : 'true');
-    };
+    }
     /**
      * Sets the enabled state to DropDownBase.
+     *
+     * @param {string} value - Specifies the attribute values to add on the input element.
+     * @returns {void}
      */
-    protected updateDataAttribute(value: { [key: string]: string; }) : void {
-        let invalidAttr: string[] = ['class', 'style', 'id', 'type'];
-        let attr: { [key: string]: string; } = {};
+    protected updateDataAttribute(value: { [key: string]: string }) : void {
+        const invalidAttr: string[] = ['class', 'style', 'id', 'type'];
+        const attr: { [key: string]: string } = {};
         for (let a: number = 0; a < this.element.attributes.length; a++) {
             if (invalidAttr.indexOf(this.element.attributes[a].name) === -1 &&
             !( this.getModuleName() === 'dropdownlist' &&  this.element.attributes[a].name === 'readonly')) {
@@ -766,30 +818,30 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     private renderItemsBySelect(): void {
-        let element: Element = this.element;
-        let fields: FieldSettingsModel = { value: 'value', text: 'text' };
-        let jsonElement: { [key: string]: Object }[] = [];
-        let group: HTMLElement[] = <HTMLElement[] & NodeListOf<HTMLElement>>element.querySelectorAll('select>optgroup');
-        let option: HTMLOptionElement[] = <HTMLOptionElement[] & NodeListOf<HTMLOptionElement>>element.querySelectorAll('select>option');
+        const element: Element = this.element;
+        const fields: FieldSettingsModel = { value: 'value', text: 'text' };
+        const jsonElement: { [key: string]: Object }[] = [];
+        const group: HTMLElement[] = <HTMLElement[] & NodeListOf<HTMLElement>>element.querySelectorAll('select>optgroup');
+        const option: HTMLOptionElement[] = <HTMLOptionElement[] & NodeListOf<HTMLOptionElement>>element.querySelectorAll('select>option');
         this.getJSONfromOption(jsonElement, option, fields);
         if (group.length) {
             for (let i: number = 0; i < group.length; i++) {
-                let item: HTMLOptGroupElement = group[i] as HTMLOptGroupElement;
-                let optionGroup: { [key: string]: {} } = {};
+                const item: HTMLOptGroupElement = group[i] as HTMLOptGroupElement;
+                const optionGroup: { [key: string]: {} } = {};
                 optionGroup[fields.text] = item.label;
                 optionGroup.isHeader = true;
-                let child: HTMLOptionElement[] = <HTMLOptionElement[] & NodeListOf<HTMLOptionElement>>item.querySelectorAll('option');
+                const child: HTMLOptionElement[] = <HTMLOptionElement[] & NodeListOf<HTMLOptionElement>>item.querySelectorAll('option');
                 jsonElement.push(optionGroup);
                 this.getJSONfromOption(jsonElement, child, fields);
             }
-            let items: HTMLOptionElement[] = <HTMLOptionElement[] & NodeListOf<HTMLOptionElement>>element.querySelectorAll('select>option');
+            element.querySelectorAll('select>option');
         }
         this.updateFields(fields.text, fields.value, this.fields.groupBy, this.fields.htmlAttributes, this.fields.iconCss);
         this.resetList(jsonElement, fields);
     }
 
     private updateFields(text?: string, value?: string, groupBy?: string, htmlAttributes?: string, iconCss?: string): void {
-        let field: Object = {
+        const field: Object = {
             'fields': {
                 text: text,
                 value: value,
@@ -805,8 +857,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         items: { [key: string]: Object }[],
         options: HTMLOptionElement[],
         fields: FieldSettingsModel): void {
-        for (let option of options) {
-            let json: { [key: string]: {} } = {};
+        for (const option of options) {
+            const json: { [key: string]: {} } = {};
             json[fields.text] = option.innerText;
             json[fields.value] = !isNullOrUndefined(option.getAttribute(fields.value)) ?
                 option.getAttribute(fields.value) : option.innerText;
@@ -815,7 +867,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
     /**
      * Execute before render the list items
+     *
      * @private
+     * @returns {void}
      */
     protected preRender(): void {
         // there is no event handler
@@ -832,6 +886,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
     /**
      * Creates the list items of DropDownBase component.
+     *
+     * @param {Object[] | string[] | number[] | DataManager | boolean[]} dataSource - Specifies the data to generate the list.
+     * @param {FieldSettingsModel} fields - Maps the columns of the data table and binds the data to the component.
+     * @param {Query} query - Accepts the external Query that execute along with data processing.
+     * @returns {void}
      */
     private setListData(
         dataSource: { [key: string]: Object }[] | string[] | number[] | DataManager | boolean[],
@@ -839,7 +898,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         fields = fields ? fields : this.fields;
         let ulElement: HTMLElement;
         this.isActive = true;
-        let eventArgs: ActionBeginEventArgs = { cancel: false, data: dataSource, query: query };
+        const eventArgs: ActionBeginEventArgs = { cancel: false, data: dataSource, query: query };
         this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
         this.trigger('actionBegin', eventArgs, (eventArgs: ActionBeginEventArgs) => {
             if (!eventArgs.cancel) {
@@ -854,13 +913,15 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                         this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
                         this.trigger('actionComplete', e, (e: Object) => {
                             if (!(e as { [key: string]: object }).cancel) {
-                                let listItems: { [key: string]: Object }[] = (e as ResultData).result;
+                                const listItems: { [key: string]: Object }[] = (e as ResultData).result;
                                 if (listItems.length === 0) {
                                     this.isDataFetched = true;
                                 }
                                 ulElement = this.renderItems(listItems, fields);
                                 this.onActionComplete(ulElement, listItems, e);
-                                if (this.groupTemplate) { this.renderGroupTemplate(ulElement); }
+                                if (this.groupTemplate) {
+                                    this.renderGroupTemplate(ulElement);
+                                }
                                 this.isRequested = false;
                                 this.bindChildItems(listItems, ulElement, fields, e);
                             }
@@ -871,17 +932,19 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                         this.hideSpinner();
                     });
                 } else {
-                    let dataManager: DataManager = new DataManager(eventArgs.data as DataOptions | JSON[]);
-                    let listItems: { [key: string]: Object }[] = <{ [key: string]: Object }[]>(
+                    const dataManager: DataManager = new DataManager(eventArgs.data as DataOptions | JSON[]);
+                    const listItems: { [key: string]: Object }[] = <{ [key: string]: Object }[]>(
                         this.getQuery(eventArgs.query as Query)).executeLocal(dataManager);
-                    let localDataArgs: { [key: string]: Object } = { cancel: false, result: listItems };
+                    const localDataArgs: { [key: string]: Object } = { cancel: false, result: listItems };
                     this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
                     this.trigger('actionComplete', localDataArgs, (localDataArgs: { [key: string]: object }) => {
                         if (!localDataArgs.cancel) {
-                            ulElement = this.renderItems(localDataArgs.result as { [key: string]: Object; }[], fields);
-                            this.onActionComplete(ulElement, localDataArgs.result as { [key: string]: Object; }[]);
-                            if (this.groupTemplate) { this.renderGroupTemplate(ulElement); }
-                            this.bindChildItems(localDataArgs.result as { [key: string]: Object; }[], ulElement, fields);
+                            ulElement = this.renderItems(localDataArgs.result as { [key: string]: Object }[], fields);
+                            this.onActionComplete(ulElement, localDataArgs.result as { [key: string]: Object }[]);
+                            if (this.groupTemplate) {
+                                this.renderGroupTemplate(ulElement);
+                            }
+                            this.bindChildItems(localDataArgs.result as { [key: string]: Object }[], ulElement, fields);
                         }
                     });
                 }
@@ -889,14 +952,14 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         });
     }
     private bindChildItems(
-        listItems: { [key: string]: Object; }[],
+        listItems: { [key: string]: Object }[],
         ulElement: HTMLElement,
         fields: FieldSettingsModel,
         e?: object): void {
         if (listItems.length >= 100 && this.getModuleName() === 'autocomplete') {
             setTimeout(
                 () => {
-                    let childNode: HTMLElement[] = this.remainingItems(this.sortedData, fields);
+                    const childNode: HTMLElement[] = this.remainingItems(this.sortedData, fields);
                     append(childNode, ulElement);
                     this.DropDownBaseupdateBlazorTemplates(true, false, false, false);
                     this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
@@ -914,7 +977,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected findListElement(list: HTMLElement, findNode: string, attribute: string, value: string | boolean | number ): HTMLElement {
         let liElement: HTMLElement = null;
         if (list) {
-            let listArr: HTMLElement[] = [].slice.call(list.querySelectorAll(findNode));
+            const listArr: HTMLElement[] = [].slice.call(list.querySelectorAll(findNode));
             for (let index: number = 0; index < listArr.length; index++) {
                 if (listArr[index].getAttribute(attribute) === (value + '')) {
                     liElement = listArr[index];
@@ -925,10 +988,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         return liElement;
     }
     private raiseDataBound(
-        listItems: { [key: string]: Object; }[] | string[] | boolean[] | number[],
+        listItems: { [key: string]: Object }[] | string[] | boolean[] | number[],
         e?: object): void {
         this.hideSpinner();
-        let dataBoundEventArgs: DataBoundEventArgs = {
+        const dataBoundEventArgs: DataBoundEventArgs = {
             items: listItems,
             e: e
         };
@@ -937,14 +1000,14 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     private remainingItems(
         dataSource: { [key: string]: Object }[] | string[] | number[] | boolean[],
         fields: FieldSettingsModel): HTMLElement[] {
-        let spliceData: { [key: string]: Object; }[] | string[] | number[] | boolean[] =
+        const spliceData: { [key: string]: Object }[] | string[] | number[] | boolean[] =
             <{ [key: string]: Object }[] | string[] | number[] | boolean[]>new DataManager(
                 dataSource as DataOptions | JSON[]).executeLocal(new Query().skip(100));
         if (this.itemTemplate) {
-            let listElements: HTMLElement = this.templateListItem(spliceData as { [key: string]: Object }[], fields);
+            const listElements: HTMLElement = this.templateListItem(spliceData as { [key: string]: Object }[], fields);
             return [].slice.call(listElements.childNodes);
         }
-        let type: string = this.typeOfData(spliceData).typeof as string;
+        const type: string = this.typeOfData(spliceData).typeof as string;
         if (type === 'string' || type === 'number' || type === 'boolean') {
             return ListBase.createListItemFromArray(
                 this.createElement, <string[] | number[]>spliceData,
@@ -953,13 +1016,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         }
         return ListBase.createListItemFromJson(
             this.createElement,
-            <{ [key: string]: Object; }[]>spliceData,
+            <{ [key: string]: Object }[]>spliceData,
             <{ [key: string]: Object }>this.listOption(spliceData, fields),
             1,
             true, this);
     }
     private emptyDataRequest(fields: FieldSettingsModel): void {
-        let listItems: { [key: string]: Object }[] = [];
+        const listItems: { [key: string]: Object }[] = [];
         this.onActionComplete(this.renderItems(listItems, fields), listItems);
         this.isRequested = false;
         this.hideSpinner();
@@ -976,16 +1039,18 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         this.l10nUpdate(true);
         addClass([this.list], dropDownBaseClasses.noData);
     }
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     protected onActionComplete(
         ulElement: HTMLElement,
         list: { [key: string]: Object }[] | boolean[] | string[] | number[],
         e?: Object): void {
+    /* eslint-enable @typescript-eslint/no-unused-vars */
         this.listData = list;
         if (isBlazor() && this.isServerRendered && this.getModuleName() === 'listbox') {
             remove(this.list.querySelector('.e-list-parent'));
             remove(this.list.querySelector('.e-hidden-select'));
         } else  {
-            // tslint:disable-next-line         
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((this as any).isReact) {
                 this.clearTemplate(['itemTemplate', 'groupTemplate', 'actionFailureTemplate', 'noRecordsTemplate']);
             }
@@ -997,13 +1062,14 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         this.ulElement = this.list.querySelector('ul');
         this.postRender(this.list, list, this.bindEvent);
     }
-
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     protected postRender(
         listElement: HTMLElement,
         list: { [key: string]: Object }[] | number[] | string[] | boolean[],
         bindEvent: boolean): void {
-        let focusItem: Element = listElement.querySelector('.' + dropDownBaseClasses.li);
-        let selectedItem: Element = listElement.querySelector('.' + dropDownBaseClasses.selected);
+        /* eslint-enable @typescript-eslint/no-unused-vars */
+        const focusItem: Element = listElement.querySelector('.' + dropDownBaseClasses.li);
+        const selectedItem: Element = listElement.querySelector('.' + dropDownBaseClasses.selected);
         if (focusItem && !selectedItem) {
             focusItem.classList.add(dropDownBaseClasses.focus);
         }
@@ -1016,28 +1082,36 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     /**
-     * Get the query to do the data operation before list item generation. 
+     * Get the query to do the data operation before list item generation.
+     *
+     * @param {Query} query - Accepts the external Query that execute along with data processing.
+     * @returns {Query} Returns the query to do the data query operation.
      */
     protected getQuery(query: Query): Query {
         return query ? query : this.query ? this.query : new Query();
     }
     /**
      * To render the template content for group header element.
+     *
+     * @param {HTMLElement} listEle - Specifies the group list elements.
+     * @returns {void}
      */
     private renderGroupTemplate(listEle: HTMLElement): void {
         if (this.fields.groupBy !== null && this.dataSource || this.element.querySelector('.' + dropDownBaseClasses.group)) {
-            let dataSource: { [key: string]: Object }[] = <{ [key: string]: Object }[]>this.dataSource;
-            let option: { [key: string]: Object } = { groupTemplateID: this.groupTemplateId, isStringTemplate: this.isStringTemplate };
-            let headerItems: Element[] = <NodeListOf<Element> & Element[]>listEle.querySelectorAll('.' + dropDownBaseClasses.group);
-            let groupcheck: boolean = this.templateCompiler(this.groupTemplate);
+            const dataSource: { [key: string]: Object }[] = <{ [key: string]: Object }[]>this.dataSource;
+            const option: { [key: string]: Object } = { groupTemplateID: this.groupTemplateId, isStringTemplate: this.isStringTemplate };
+            const headerItems: Element[] = <NodeListOf<Element> & Element[]>listEle.querySelectorAll('.' + dropDownBaseClasses.group);
+            const groupcheck: boolean = this.templateCompiler(this.groupTemplate);
             if (groupcheck) {
-                let groupValue: string = select(this.groupTemplate, document).innerHTML.trim();
-                let tempHeaders: Element[] = ListBase.renderGroupTemplate(
+                const groupValue: string = select(this.groupTemplate, document).innerHTML.trim();
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const tempHeaders: Element[] = ListBase.renderGroupTemplate(
                     groupValue as string, <{ [key: string]: Object }[]>dataSource,
                     (this.fields as FieldSettingsModel & { properties: Object }).properties,
                     headerItems, option, this);
             } else {
-                let tempHeaders: Element[] = ListBase.renderGroupTemplate(
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const tempHeaders: Element[] = ListBase.renderGroupTemplate(
                     this.groupTemplate as string, <{ [key: string]: Object }[]>dataSource,
                     (this.fields as FieldSettingsModel & { properties: Object }).properties,
                     headerItems, option, this);
@@ -1047,6 +1121,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
     /**
      * To create the ul li list items
+     *
+     * @param {object []} dataSource - Specifies the data to generate the list.
+     * @param {FieldSettingsModel} fields - Maps the columns of the data table and binds the data to the component.
+     * @returns {HTMLElement} Return the ul li list items.
      */
     private createListItems(dataSource: { [key: string]: Object }[], fields: FieldSettingsModel): HTMLElement {
         if (dataSource && fields.groupBy || this.element.querySelector('optgroup')) {
@@ -1061,27 +1139,27 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         } else {
             dataSource = this.getSortedDataSource(dataSource);
         }
-        let options: { [key: string]: Object } = <{ [key: string]: Object }>this.listOption(dataSource, fields);
-        let spliceData: { [key: string]: Object; }[] = (dataSource.length > 100) ?
+        const options: { [key: string]: Object } = <{ [key: string]: Object }>this.listOption(dataSource, fields);
+        const spliceData: { [key: string]: Object }[] = (dataSource.length > 100) ?
             <{ [key: string]: Object }[]>new DataManager(dataSource as DataOptions | JSON[]).executeLocal(new Query().take(100))
             : dataSource;
         this.sortedData = dataSource;
         return ListBase.createList(
             this.createElement, (this.getModuleName() === 'autocomplete') ? spliceData : dataSource, options, true, this);
-    };
+    }
 
     protected listOption(
         dataSource: { [key: string]: Object }[] | string[] | number[] | boolean[],
         fields: FieldSettingsModel): FieldSettingsModel {
-        let iconCss: boolean = isNullOrUndefined(fields.iconCss) ? false : true;
-        let fieldValues: FieldSettingsModel = !isNullOrUndefined((fields as FieldSettingsModel & { properties: Object }).properties) ?
+        const iconCss: boolean = isNullOrUndefined(fields.iconCss) ? false : true;
+        const fieldValues: FieldSettingsModel = !isNullOrUndefined((fields as FieldSettingsModel & { properties: Object }).properties) ?
             (fields as FieldSettingsModel & { properties: Object }).properties : fields;
-        let options: { [key: string]: Object } = (fields.text !== null || fields.value !== null) ? {
+        const options: { [key: string]: Object } = (fields.text !== null || fields.value !== null) ? {
             fields: fieldValues,
             showIcon: iconCss, ariaAttributes: { groupItemRole: 'presentation' }
         } : { fields: { value: 'text' } as Object };
         return extend({}, options, fields, true);
-    };
+    }
 
     protected setFloatingHeader(e: Event): void {
         if (isNullOrUndefined(this.fixedHeaderElement)) {
@@ -1099,13 +1177,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     private scrollStop(e: Event): void {
-        let target: Element = <Element>e.target;
-        let liHeight: number = parseInt(getComputedStyle(this.liCollections[0], null).getPropertyValue('height'), 10);
-        let topIndex: number = Math.round(target.scrollTop / liHeight);
-        let liCollections: NodeListOf<Element> = <NodeListOf<Element>>this.list.querySelectorAll('li');
+        const target: Element = <Element>e.target;
+        const liHeight: number = parseInt(getComputedStyle(this.liCollections[0], null).getPropertyValue('height'), 10);
+        const topIndex: number = Math.round(target.scrollTop / liHeight);
+        const liCollections: NodeListOf<Element> = <NodeListOf<Element>>this.list.querySelectorAll('li');
         for (let i: number = topIndex; i > -1; i--) {
             if (!isNullOrUndefined(liCollections[i]) && liCollections[i].classList.contains(dropDownBaseClasses.group)) {
-                let currentLi: HTMLElement = liCollections[i] as HTMLElement;
+                const currentLi: HTMLElement = liCollections[i] as HTMLElement;
                 this.fixedHeaderElement.innerHTML = currentLi.innerHTML;
                 this.fixedHeaderElement.style.top = (e.target as Element).scrollTop + 'px';
                 this.fixedHeaderElement.style.display = 'block';
@@ -1118,6 +1196,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
     /**
      * To render the list items
+     *
+     * @param {object[]} listData - Specifies the list of array of data.
+     * @param {FieldSettingsModel} fields - Maps the columns of the data table and binds the data to the component.
+     * @returns {HTMLElement} Return the list items.
      */
     protected renderItems(listData: { [key: string]: Object }[], fields: FieldSettingsModel): HTMLElement {
         let ulElement: HTMLElement;
@@ -1133,26 +1215,26 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 dataSource = this.getSortedDataSource(dataSource);
             }
             this.sortedData = dataSource;
-            let spliceData: { [key: string]: Object; }[] = (dataSource.length > 100) ?
+            const spliceData: { [key: string]: Object }[] = (dataSource.length > 100) ?
                 <{ [key: string]: Object }[]>new DataManager(dataSource as DataOptions | JSON[]).executeLocal(new Query().take(100))
                 : dataSource;
             ulElement = this.templateListItem((this.getModuleName() === 'autocomplete') ? spliceData : dataSource, fields);
-            let isTempEmpty: boolean = (this.getModuleName() === 'listbox') ? true : false;
+            const isTempEmpty: boolean = (this.getModuleName() === 'listbox') ? true : false;
             this.DropDownBaseupdateBlazorTemplates(true, false, false, false, false, false, false, isTempEmpty);
         } else {
             ulElement = this.createListItems(listData, fields);
         }
         return ulElement;
-    };
+    }
 
     protected templateListItem(dataSource: { [key: string]: Object }[], fields: FieldSettingsModel): HTMLElement {
         this.DropDownBaseresetBlazorTemplates(true, false, false, false);
-        let option: { [key: string]: Object } = <{ [key: string]: Object }>this.listOption(dataSource, fields);
+        const option: { [key: string]: Object } = <{ [key: string]: Object }>this.listOption(dataSource, fields);
         option.templateID = this.itemTemplateId;
         option.isStringTemplate = this.isStringTemplate;
-        let itemcheck: boolean = this.templateCompiler(this.itemTemplate);
+        const itemcheck: boolean = this.templateCompiler(this.itemTemplate);
         if (itemcheck) {
-            let itemValue: string = select(this.itemTemplate, document).innerHTML.trim();
+            const itemValue: string = select(this.itemTemplate, document).innerHTML.trim();
             return ListBase.renderContentTemplate(
                 this.createElement, itemValue, dataSource,
                 (fields as FieldSettingsModel & { properties: Object }).properties, option, this);
@@ -1161,16 +1243,16 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 this.createElement, this.itemTemplate, dataSource,
                 (fields as FieldSettingsModel & { properties: Object }).properties, option, this);
         }
-    };
+    }
 
     protected typeOfData(items:
-        { [key: string]: Object }[] | string[] | number[] | boolean[]): { [key: string]: Object } {
+    { [key: string]: Object }[] | string[] | number[] | boolean[]): { [key: string]: Object } {
         let item: { [key: string]: Object } = { typeof: null, item: null };
         for (let i: number = 0; (!isNullOrUndefined(items) && i < items.length); i++) {
             if (!isNullOrUndefined(items[i])) {
-                let listDataType: boolean = typeof (items[i]) === 'string' ||
+                const listDataType: boolean = typeof (items[i]) === 'string' ||
                     typeof (items[i]) === 'number' || typeof (items[i]) === 'boolean';
-                let isNullData: boolean = listDataType ? isNullOrUndefined(items[i]) :
+                const isNullData: boolean = listDataType ? isNullOrUndefined(items[i]) :
                     isNullOrUndefined(getValue((this.fields.value ? this.fields.value : 'value'), items[i]));
                 if (!isNullData) {
                     return item = { typeof: typeof items[i], item: items[i] };
@@ -1188,10 +1270,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-width'), 10
             );
         }
-        let liWidth: number = this.liCollections[0].offsetWidth - borderWidth;
+        const liWidth: number = this.liCollections[0].offsetWidth - borderWidth;
         this.fixedHeaderElement.style.width = liWidth.toString() + 'px';
         setStyleAttribute(this.fixedHeaderElement, { zIndex: 10 });
-        let firstLi: HTMLElement = this.ulElement.querySelector('.' + dropDownBaseClasses.group) as HTMLElement;
+        const firstLi: HTMLElement = this.ulElement.querySelector('.' + dropDownBaseClasses.group) as HTMLElement;
         this.fixedHeaderElement.innerHTML = firstLi.innerHTML;
     }
     private getSortedDataSource(dataSource: { [key: string]: Object }[]): { [key: string]: Object }[] {
@@ -1207,10 +1289,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
     /**
      * Return the index of item which matched with given value in data source
+     *
+     * @param {string | number | boolean} value - Specifies given value.
+     * @returns {number} Returns the index of the item.
      */
     protected getIndexByValue(value: string | number | boolean): number {
         let index: number;
-        let listItems: Element[] = this.getItems();
+        const listItems: Element[] = this.getItems();
         for (let i: number = 0; i < listItems.length; i++) {
             if (!isNullOrUndefined(value) && listItems[i].getAttribute('data-value') === value.toString()) {
                 index = i;
@@ -1218,17 +1303,23 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
         }
         return index;
-    };
+    }
     /**
-     * To dispatch the event manually 
+     * To dispatch the event manually
+     *
+     * @param {HTMLElement} element - Specifies the element to dispatch the event.
+     * @param {string} type - Specifies the name of the event.
+     * @returns {void}
      */
     protected dispatchEvent(element: HTMLElement, type: string): void {
-        let evt: Event = document.createEvent('HTMLEvents');
+        const evt: Event = document.createEvent('HTMLEvents');
         evt.initEvent(type, false, true);
         element.dispatchEvent(evt);
     }
     /**
      * To set the current fields
+     *
+     * @returns {void}
      */
     protected setFields(): void {
         if (this.fields.value && !this.fields.text) {
@@ -1241,6 +1332,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
     /**
      * reset the items list.
+     *
+     * @param {Object[] | string[] | number[] | DataManager | boolean[]} dataSource - Specifies the data to generate the list.
+     * @param {FieldSettingsModel} fields - Maps the columns of the data table and binds the data to the component.
+     * @param {Query} query - Accepts the external Query that execute along with data processing.
+     * @returns {void}
      */
     protected resetList(
         dataSource?: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[],
@@ -1248,7 +1344,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         if (this.list) {
             if ((this.element.tagName === 'SELECT' && (<HTMLSelectElement>this.element).options.length > 0)
                 || (this.element.tagName === 'UL' && (<HTMLUListElement>this.element).childNodes.length > 0)) {
-                let data: boolean = dataSource instanceof Array ? (dataSource.length > 0)
+                const data: boolean = dataSource instanceof Array ? (dataSource.length > 0)
                     : !isNullOrUndefined(dataSource);
                 if (!data && this.selectData && this.selectData.length > 0) {
                     dataSource = this.selectData;
@@ -1271,24 +1367,25 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         // This is for render the list items.
         this.render();
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected updateDataSource(props?: DropDownBaseModel): void {
         this.resetList(this.dataSource);
     }
-    protected setUpdateInitial(props: string[], newProp: { [key: string]: string; }): void {
+    protected setUpdateInitial(props: string[], newProp: { [key: string]: string }): void {
         this.isDataFetched = false;
-        let updateData: { [key: string]: string | { [key: string]: Object }[]; } = {};
+        const updateData: { [key: string]: string | { [key: string]: Object }[] } = {};
         for (let j: number = 0; props.length > j; j++) {
-            if ((newProp as { [key: string]: string; })[props[j]] && props[j] === 'fields') {
+            if ((newProp as { [key: string]: string })[props[j]] && props[j] === 'fields') {
                 this.setFields();
-                (updateData as { [key: string]: string; })[props[j]] = (newProp as { [key: string]: string; })[props[j]];
-            } else if ((newProp as { [key: string]: string; })[props[j]]) {
-                (updateData as { [key: string]: string; })[props[j]] = (newProp as { [key: string]: string; })[props[j]];
+                (updateData as { [key: string]: string })[props[j]] = (newProp as { [key: string]: string })[props[j]];
+            } else if ((newProp as { [key: string]: string })[props[j]]) {
+                (updateData as { [key: string]: string })[props[j]] = (newProp as { [key: string]: string })[props[j]];
             }
         }
         if (Object.keys(updateData).length > 0) {
             if (Object.keys(updateData).indexOf('dataSource') === -1) {
                 (updateData as { [key: string]: { [key: string]: Object }[] }).dataSource = this.dataSource as
-                    { [key: string]: Object; }[];
+                    { [key: string]: Object }[];
             }
             this.updateDataSource(updateData);
         }
@@ -1296,55 +1393,64 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
 
     /**
      * When property value changes happened, then onPropertyChanged method will execute the respective changes in this component.
+     *
+     * @param {DropDownBaseModel} newProp - Returns the dynamic property value of the component.
+     * @param {DropDownBaseModel} oldProp - Returns the previous property value of the component.
      * @private
+     * @returns {void}
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public onPropertyChanged(newProp: DropDownBaseModel, oldProp: DropDownBaseModel): void {
         if (this.getModuleName() === 'dropdownbase') {
-            this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp as { [key: string]: string; });
+            this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp as { [key: string]: string });
         }
-        this.setUpdateInitial(['sortOrder', 'itemTemplate'], newProp as { [key: string]: string; });
-        for (let prop of Object.keys(newProp)) {
+        this.setUpdateInitial(['sortOrder', 'itemTemplate'], newProp as { [key: string]: string });
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'query':
-                case 'sortOrder':
-                case 'dataSource':
-                case 'itemTemplate':
-                    break;
-                case 'enableRtl':
-                    this.setEnableRtl();
-                    break;
-                case 'enabled':
-                    this.setEnabled();
-                    break;
-                case 'groupTemplate':
-                    this.renderGroupTemplate(this.list);
-                    if (this.ulElement && this.fixedHeaderElement) {
-                        let firstLi: HTMLElement = this.ulElement.querySelector('.' + dropDownBaseClasses.group) as HTMLElement;
-                        this.fixedHeaderElement.innerHTML = firstLi.innerHTML;
-                    }
-                    break;
-                case 'locale':
-                    if (this.list && (!isNullOrUndefined(this.liCollections) && this.liCollections.length === 0)) { this.l10nUpdate(); }
-                    break;
-                case 'zIndex':
-                    this.setProperties({ zIndex: newProp.zIndex }, true);
-                    this.setZIndex();
-                    break;
-
+            case 'query':
+            case 'sortOrder':
+            case 'dataSource':
+            case 'itemTemplate':
+                break;
+            case 'enableRtl':
+                this.setEnableRtl();
+                break;
+            case 'enabled':
+                this.setEnabled();
+                break;
+            case 'groupTemplate':
+                this.renderGroupTemplate(this.list);
+                if (this.ulElement && this.fixedHeaderElement) {
+                    const firstLi: HTMLElement = this.ulElement.querySelector('.' + dropDownBaseClasses.group) as HTMLElement;
+                    this.fixedHeaderElement.innerHTML = firstLi.innerHTML;
+                }
+                break;
+            case 'locale':
+                if (this.list && (!isNullOrUndefined(this.liCollections) && this.liCollections.length === 0)) {
+                    this.l10nUpdate();
+                }
+                break;
+            case 'zIndex':
+                this.setProperties({ zIndex: newProp.zIndex }, true);
+                this.setZIndex();
+                break;
             }
         }
-    };
+    }
     /**
      * Build and render the component
+     *
+     * @param {boolean} isEmptyData - Specifies the component to initialize with list data or not.
      * @private
+     * @returns {void}
      */
     public render(isEmptyData?: boolean): void {
         this.list = this.createElement('div', { className: dropDownBaseClasses.content, attrs: { 'tabindex': '0' } });
         this.list.classList.add(dropDownBaseClasses.root);
         this.setFields();
-        let rippleModel: RippleOptions = { duration: 300, selector: '.' + dropDownBaseClasses.li };
+        const rippleModel: RippleOptions = { duration: 300, selector: '.' + dropDownBaseClasses.li };
         this.rippleFun = rippleEffect(this.list, rippleModel);
-        let group: HTMLElement = <HTMLElement>this.element.querySelector('select>optgroup');
+        const group: HTMLElement = <HTMLElement>this.element.querySelector('select>optgroup');
         if ((this.fields.groupBy || !isNullOrUndefined(group)) && !this.isGroupChecking) {
             EventHandler.add(this.list, 'scroll', this.setFloatingHeader, this);
         }
@@ -1354,7 +1460,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
             removeClass([this.element], dropDownBaseClasses.root);
             this.element.style.display = 'none';
-            let wrapperElement: HTMLElement = this.createElement('div');
+            const wrapperElement: HTMLElement = this.createElement('div');
             this.element.parentElement.insertBefore(wrapperElement, this.element);
             wrapperElement.appendChild(this.element);
             wrapperElement.appendChild(this.list);
@@ -1364,27 +1470,33 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         if (!isEmptyData) {
             this.initialize();
         }
-    };
+    }
     /**
      * Return the module name of this component.
+     *
      * @private
+     * @returns {string} Return the module name of this component.
      */
     public getModuleName(): string {
         return 'dropdownbase';
-    };
+    }
+    /* eslint-disable valid-jsdoc, jsdoc/require-returns-description */
     /**
      * Gets all the list items bound on this component.
-     * @returns Element[].
+     *
+     * @returns {Element[]}
      */
     public getItems(): Element[] {
         return <HTMLElement[] & NodeListOf<Element>>this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li);
-    };
+    }
+    /* eslint-enable valid-jsdoc, jsdoc/require-returns-description */
     /**
      * Adds a new item to the popup list. By default, new item appends to the list as the last item,
      * but you can insert based on the index parameter.
+     *
      * @param  { Object[] } items - Specifies an array of JSON data or a JSON data.
      * @param { number } itemIndex - Specifies the index to place the newly added item in the popup list.
-     * @return {void}.
+     * @returns {void}
      * @deprecated
      */
     public addItem(
@@ -1406,29 +1518,32 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
         }
         this.DropDownBaseresetBlazorTemplates(true, false, false, false);
-        let itemsCount: number = this.getItems().length;
-        let selectedItemValue: Element = this.list.querySelector('.' + dropDownBaseClasses.selected);
+        const itemsCount: number = this.getItems().length;
+        const selectedItemValue: Element = this.list.querySelector('.' + dropDownBaseClasses.selected);
         items = (items instanceof Array ? items : [items]) as { [key: string]: Object }[] | string[] | boolean[] | number[];
         let index: number;
         index = (isNullOrUndefined(itemIndex) || itemIndex < 0 || itemIndex > itemsCount - 1) ? itemsCount : itemIndex;
-        let fields: FieldSettingsModel = this.fields;
+        const fields: FieldSettingsModel = this.fields;
         if (items && fields.groupBy) {
             items = ListBase.groupDataSource(
                 (items as { [key: string]: Object }[]), (fields as FieldSettingsModel & { properties: Object }).properties);
         }
-        let liCollections: HTMLElement[] = [];
+        const liCollections: HTMLElement[] = [];
         for (let i: number = 0; i < items.length; i++) {
-            let item: { [key: string]: Object } | string | boolean | number = items[i];
-            let isHeader: boolean = (item as { [key: string]: Object }).isHeader as boolean;
-            let li: HTMLElement = this.createElement(
+            const item: { [key: string]: Object } | string | boolean | number = items[i];
+            const isHeader: boolean = (item as { [key: string]: Object }).isHeader as boolean;
+            const li: HTMLElement = this.createElement(
                 'li', { className: isHeader ? dropDownBaseClasses.group : dropDownBaseClasses.li, id: 'option-add-' + i });
 
-            let itemText: string = item instanceof Object ? getValue(fields.text, item) : item;
-            if (isHeader) { li.innerText = itemText; }
+            const itemText: string = item instanceof Object ? getValue(fields.text, item) : item;
+            if (isHeader) {
+                li.innerText = itemText;
+            }
             if (this.itemTemplate && !isHeader) {
-                let compiledString: Function = compile(this.itemTemplate);
-                // tslint:disable-next-line
-                let addItemTemplate: any = compiledString(item, this, 'itemTemplate', this.itemTemplateId, this.isStringTemplate, null, li);
+                const compiledString: Function = compile(this.itemTemplate);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const addItemTemplate: any = compiledString(
+                    item, this, 'itemTemplate', this.itemTemplateId, this.isStringTemplate, null, li);
                 if (addItemTemplate) {
                     append(addItemTemplate, li);
                 }
@@ -1441,7 +1556,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             this.notify('addItem', { module: 'CheckBoxSelection', item: li });
             liCollections.push(li);
             (this.listData as { [key: string]: Object }[]).push(item as { [key: string]: Object });
-            if (this.sortOrder === 'None' && isNullOrUndefined(itemIndex) && index === 0 ) { index = null; }
+            if (this.sortOrder === 'None' && isNullOrUndefined(itemIndex) && index === 0 ) {
+                index = null;
+            }
             this.updateActionCompleteData(li, item as { [key: string]: Object }, index);
             //Listbox event
             this.trigger('beforeItemRender', {element: li, item: item});
@@ -1457,9 +1574,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             if (this.getModuleName() === 'listbox' && itemsCount === 0) {
                 this.ulElement.innerHTML = '';
             }
-            let attr: string[] = [];
+            const attr: string[] = [];
             for (let i: number = 0; i < items.length; i++) {
-                let listGroupItem: NodeList = this.ulElement.querySelectorAll('.e-list-group-item');
+                const listGroupItem: NodeList = this.ulElement.querySelectorAll('.e-list-group-item');
                 for (let j: number = 0; j < listGroupItem.length; j++) {
                     attr[j] = (listGroupItem[j] as HTMLElement).innerText;
                 }
@@ -1468,9 +1585,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                         if (attr[j] === liCollections[i].innerText ) {
                             if (this.sortOrder === 'None') {
                                 this.ulElement.insertBefore(liCollections[i + 1], listGroupItem[j + 1]);
-                                } else {
-                                    this.ulElement.insertBefore(liCollections[i + 1], this.ulElement.childNodes[itemIndex]);
-                                }
+                            } else {
+                                this.ulElement.insertBefore(liCollections[i + 1], this.ulElement.childNodes[itemIndex]);
+                            }
                             i = i + 1;
                             break;
                         }
@@ -1482,11 +1599,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                         this.ulElement.appendChild(liCollections[i]);
                     }
                 }
-                let tempLi: HTMLElement[] = [].slice.call(this.liCollections);
+                const tempLi: HTMLElement[] = [].slice.call(this.liCollections);
                 tempLi.splice(index, 0, liCollections[i]);
                 this.liCollections = tempLi;
                 index += 1;
-                if (this.getModuleName() === 'multiselect') { this.updateDataList(); }
+                if (this.getModuleName() === 'multiselect') {
+                    this.updateDataList();
+                }
             }
         }
         if (selectedItemValue || itemIndex === 0) {
@@ -1494,13 +1613,15 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         }
     }
     protected validationAttribute(target: HTMLElement, hidden: Element): void {
-        let name: string = target.getAttribute('name') ? target.getAttribute('name') : target.getAttribute('id');
+        const name: string = target.getAttribute('name') ? target.getAttribute('name') : target.getAttribute('id');
         hidden.setAttribute('name', name);
         target.removeAttribute('name');
-        let attributes: string[] = ['required', 'aria-required', 'form'];
+        const attributes: string[] = ['required', 'aria-required', 'form'];
         for (let i: number = 0; i < attributes.length; i++) {
-            if (!target.getAttribute(attributes[i])) { continue; }
-            let attr: string = target.getAttribute(attributes[i]);
+            if (!target.getAttribute(attributes[i])) {
+                continue;
+            }
+            const attr: string = target.getAttribute(attributes[i]);
             hidden.setAttribute(attributes[i], attr);
             target.removeAttribute(attributes[i]);
         }
@@ -1510,33 +1631,38 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         // this is for component wise
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected updateActionCompleteData(li: HTMLElement, item: { [key: string]: Object }, index?: number): void {
         // this is for ComboBox custom value
     }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected updateAddItemList(list: HTMLElement, itemCount: number): void {
         // this is for multiselect add item
     }
     protected updateDataList(): void {
         // this is for multiselect update list items
     }
+    /* eslint-disable valid-jsdoc, jsdoc/require-returns-description */
     /**
-     * Gets the data Object that matches the given value. 
+     * Gets the data Object that matches the given value.
+     *
      * @param { string | number } value - Specifies the value of the list item.
-     * @returns Object.
+     * @returns {Object}
      * @blazorType object
      */
     public getDataByValue(value: string | number | boolean)
         : { [key: string]: Object } | string | number | boolean {
         if (!isNullOrUndefined(this.listData)) {
-            let type: string = this.typeOfData(this.listData).typeof as string;
+            const type: string = this.typeOfData(this.listData).typeof as string;
             if (type === 'string' || type === 'number' || type === 'boolean') {
-                for (let item of this.listData) {
+                for (const item of this.listData) {
                     if (!isNullOrUndefined(item) && item === value as Object) {
                         return item;
                     }
                 }
             } else {
-                for (let item of this.listData) {
+                for (const item of this.listData) {
                     if (!isNullOrUndefined(item) && getValue((this.fields.value ? this.fields.value : 'value'), item) === value) {
                         return item;
                     }
@@ -1545,10 +1671,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         }
         return null;
     }
+    /* eslint-enable valid-jsdoc, jsdoc/require-returns-description */
     /**
      * Removes the component from the DOM and detaches all its related event handlers. It also removes the attributes and classes.
+     *
      * @method destroy
-     * @return {void}.
+     * @returns {void}
      */
     public destroy(): void {
         if (document.body.contains(this.list)) {
@@ -1559,64 +1687,66 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             detach(this.list);
         }
         super.destroy();
-    };
+    }
 }
 export interface ResultData {
     /**
      * To return the JSON result.
      */
-    result: { [key: string]: Object }[];
+    result: { [key: string]: Object }[]
 }
 
 export interface FilteringEventArgs {
     /**
      * To prevent the internal filtering action.
      */
-    preventDefaultAction: boolean;
+    preventDefaultAction: boolean
     /**
      * Gets the `keyup` event arguments.
      */
-    baseEventArgs: Object;
+    baseEventArgs: Object
     /**
      * Illustrates whether the current action needs to be prevented or not.
      */
-    cancel: boolean;
+    cancel: boolean
     /**
      * Search text value.
      */
-    text: string;
+    text: string
     /**
      * To filter the data from given data source by using query
+     *
      * @param  {Object[] | DataManager } dataSource - Set the data source to filter.
      * @param  {Query} query - Specify the query to filter the data.
      * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
-     * @return {void}.
+     * @returns {void}
      */
     updateData(dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[], query?: Query,
-        fields?: FieldSettingsModel): void;
+        fields?: FieldSettingsModel): void
 }
 export interface PopupEventArgs {
     /**
      * Specifies the popup Object.
+     *
      * @deprecated
      */
-    popup: Popup;
+    popup: Popup
     /**
      * Illustrates whether the current action needs to be prevented or not.
      */
-    cancel?: boolean;
+    cancel?: boolean
     /**
      * Specifies the animation Object.
      */
-    animation?: AnimationModel;
+    animation?: AnimationModel
 }
 export interface FocusEventArgs {
     /**
      * Specifies the focus interacted.
      */
-    isInteracted?: boolean;
+    isInteracted?: boolean
     /**
      * Specifies the event.
      */
-    event?: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent;
+    event?: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent
 }

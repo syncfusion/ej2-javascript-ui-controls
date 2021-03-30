@@ -25,6 +25,7 @@ import { FormatModel, Format } from '../common/index';
 export class Row extends ChildProperty<SheetModel> {
     /**
      * Specifies cell and its properties for the row.
+     *
      * @default []
      */
     @Collection([], Cell)
@@ -32,6 +33,7 @@ export class Row extends ChildProperty<SheetModel> {
 
     /**
      * Specifies the index to the row. Based on the index, row properties are applied.
+     *
      * @default 0
      * @asptype int
      */
@@ -40,6 +42,7 @@ export class Row extends ChildProperty<SheetModel> {
 
     /**
      * Specifies height of the row.
+     *
      * @default 20
      * @asptype int
      */
@@ -48,6 +51,7 @@ export class Row extends ChildProperty<SheetModel> {
 
     /**
      * specifies custom height of the row.
+     *
      * @default false
      */
     @Property(false)
@@ -55,6 +59,7 @@ export class Row extends ChildProperty<SheetModel> {
 
     /**
      * To hide/show the row in spreadsheet.
+     *
      * @default false
      */
     @Property(false)
@@ -62,6 +67,7 @@ export class Row extends ChildProperty<SheetModel> {
 
     /**
      * Specifies format of the row.
+     *
      * @default {}
      */
     @Complex<FormatModel>({}, Format)
@@ -70,12 +76,21 @@ export class Row extends ChildProperty<SheetModel> {
 
 /**
  * @hidden
+ * @param {SheetModel} sheet - Specifies the sheet.
+ * @param {number} rowIndex - Specifies the rowIndex.
+ * @returns {RowModel} - To get the row.
  */
 export function getRow(sheet: SheetModel, rowIndex: number): RowModel {
     return sheet.rows[rowIndex];
 }
 
-/** @hidden */
+/**
+ * @hidden
+ * @param {SheetModel} sheet - Specifies the sheet.
+ * @param {number} rowIndex - Specifies the rowIndex.
+ * @param {RowModel} row - Specifies the row.
+ * @returns {void} - To set the row.
+ */
 export function setRow(sheet: SheetModel, rowIndex: number, row: RowModel): void {
     if (!sheet.rows[rowIndex]) {
         sheet.rows[rowIndex] = {};
@@ -84,12 +99,20 @@ export function setRow(sheet: SheetModel, rowIndex: number, row: RowModel): void
         sheet.rows[rowIndex][key] = row[key];
     });
 }
-/** @hidden */
+/**
+ * @hidden
+ * @param {SheetModel} sheet - Specifies the sheet.
+ * @param {number} index - Specifies the index.
+ * @returns {boolean} - To return the bool value.
+ */
 export function isHiddenRow(sheet: SheetModel, index: number): boolean {
     return sheet.rows[index] && sheet.rows[index].hidden;
 }
 /**
  * @hidden
+ * @param {SheetModel} sheet - Specifies the sheet.
+ * @param {number} rowIndex - Specifies the rowIndex.
+ * @returns {number} - To get the row height.
  */
 export function getRowHeight(sheet: SheetModel, rowIndex: number): number {
     if (sheet && sheet.rows && sheet.rows[rowIndex]) {
@@ -101,6 +124,10 @@ export function getRowHeight(sheet: SheetModel, rowIndex: number): number {
 }
 /**
  * @hidden
+ * @param {SheetModel} sheet - Specifies the sheet.
+ * @param {number} rowIndex - Specifies the rowIndex.
+ * @param {number} height - Specifies the height.
+ * @returns {void} - To set the row height.
  */
 export function setRowHeight(sheet: SheetModel, rowIndex: number, height: number): void {
     if (sheet && sheet.rows) {
@@ -112,6 +139,10 @@ export function setRowHeight(sheet: SheetModel, rowIndex: number, height: number
 }
 /**
  * @hidden
+ * @param {SheetModel} sheet - Specifies the sheet.
+ * @param {number} startRow - Specifies the startRow.
+ * @param {number} endRow - Specifies the endRow.
+ * @returns {number} - To get the rows height.
  */
 export function getRowsHeight(sheet: SheetModel, startRow: number, endRow: number = startRow): number {
     let height: number = 0;

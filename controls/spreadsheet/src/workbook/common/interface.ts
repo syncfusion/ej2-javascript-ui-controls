@@ -7,6 +7,7 @@ export interface SaveOptions {
     url?: string;
     fileName?: string;
     saveType?: SaveType;
+    //passWord?: string;
 }
 
 export interface BeforeSaveEventArgs extends SaveOptions {
@@ -158,6 +159,7 @@ export interface BeforeCellFormatArgs {
     format?: string;
     style?: CellStyleModel;
     sheetIndex?: number;
+    borderType?: BorderType;
     cancel?: boolean;
 }
 
@@ -227,6 +229,7 @@ export interface AfterHyperlinkArgs {
 
 /**
  * Specifies after cell formatting arguments.
+ *
  * @hidden
  */
 export interface CellFormatCompleteEvents {
@@ -269,7 +272,7 @@ export interface BorderOptions {
 
 /** @hidden */
 export interface InsertDeleteModelArgs {
-    model: SheetModel | WorkbookModel;
+    model: SheetModel;
     start?: number | RowModel[] | ColumnModel[] | SheetModel[];
     end?: number;
     isAction?: boolean;
@@ -315,14 +318,15 @@ export interface MergeArgs {
 export interface ClearOptions {
     type?: ClearType;
     range?: string;
- }
- /** @hidden */
+}
+/** @hidden */
 export interface UnprotectArgs {
     sheet?: number;
- }
+}
 
 /**
  * Insert event options.
+ *
  * @hidden
  */
 export interface InsertDeleteEventArgs {
@@ -338,6 +342,7 @@ export interface InsertDeleteEventArgs {
     activeSheetIndex?: number;
     sheetCount?: number;
     name?: string;
+    freezePane?: boolean;
 }
 
 export interface DataSourceChangedEventArgs {

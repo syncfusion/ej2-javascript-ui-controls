@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 19.1.54 (2021-03-30)
+
+### Schedule
+
+#### New Features
+
+- **Multiple events drag and drop** - This feature allows to select multiple events and reschedule them quickly by drag-and-drop. Multiple selections can be done by pressing the CTRL key with a click.
+- **Time Format** - This feature allows users to set `24-hour` or `12-hour` time formats in the scheduler. By default, the time format applies from the schedule's current culture configuration.
+
+### Recurrence Editor
+
+#### Breaking Changes
+
+- The following properties type was changed.
+
+| Property | Previous Type | Current Type                   |
+|----------|---------------|--------------------------------|
+| `selectedType` | `anonymous`      | `int` |
+| value | `anonymous`      | `string` |
+
 ## 18.4.49 (2021-03-23)
 
 ### Schedule
@@ -14,6 +34,7 @@
 - `#I317560` - An issue with Schedule events getting overlapped issue has been fixed.
 - `#I313557` - An issue with scheduler resource header when enabled `rowAutoHeight` and `height` properties has been fixed.
 - `#317799` - An issue with memory leak in Scheduler has been fixed.
+- `#313715,320461` - An issue with script error throws while fast dragging of scheduler events has been fixed.
 
 ## 18.4.48 (2021-03-16)
 

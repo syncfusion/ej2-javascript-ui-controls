@@ -69,6 +69,7 @@ describe('MultiSelect module', () => {
             expect(editorObj.multiSelectModule.compObj.value[0] === undefined).toEqual(true);
         });
         it('save method with value property testing', () => {
+            editorObj.multiSelectModule.compObj.dataSource = ['test', 'testing'];
             editorObj.multiSelectModule.compObj.value = ['testing'];
             editorObj.multiSelectModule.compObj.text = 'testing';
             editorObj.multiSelectModule.compObj.dataBind();
@@ -160,6 +161,7 @@ describe('MultiSelect module', () => {
             }, 1000);
         });
         it('save method with value property testing', () => {
+            editorObj.multiSelectModule.compObj.dataSource = ['test', 'testing'];
             editorObj.multiSelectModule.compObj.value = ['testing'];
             editorObj.multiSelectModule.compObj.text = 'testing';
             editorObj.multiSelectModule.compObj.dataBind();

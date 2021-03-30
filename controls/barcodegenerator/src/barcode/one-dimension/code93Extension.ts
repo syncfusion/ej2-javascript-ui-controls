@@ -6,11 +6,14 @@ import { Code93ExtendedValues, Code93ExtendedArrayAttribute } from '../rendering
  */
 export class Code93Extension extends Code93 {
     /**
-     * Validate the given input to check whether the input is valid one or not
+     * Validate the given input.
+     *
+     * @returns {string} Validate the given input.
+     * @param {string} text - Provide the canvas element .
+     * @private
      */
-    /** @private */
     public validateInput(text: string): string {
-        let valueCheck: boolean = this.getValue(text);
+        const valueCheck: boolean = this.getValue(text);
         if (valueCheck) {
             return undefined;
         } else {
@@ -82,7 +85,7 @@ export class Code93Extension extends Code93 {
         this.barcodeSymbols[48] = { value: 'þ', checkDigit: 46, bars: '122211' };
     }
     private GetExtendedText(string: Code93ExtendedArrayAttribute[]): void {
-        let code: string = this.value;
+        const code: string = this.value;
         let extcodes: Code93ExtendedArrayAttribute;
         this.extendedText = '';
         for (let i: number = 0; i < code.length; i++) {
@@ -99,13 +102,19 @@ export class Code93Extension extends Code93 {
             }
         }
     }
-    /** @private */
+    /**
+     * Draw the barcode SVG.\
+     *
+     * @returns {void} Draw the barcode SVG .
+     *  @param {HTMLElement} canvas - Provide the canvas element .
+     * @private
+     */
     public drawCode93(canvas: HTMLElement): void {
         this.getBars();
-        let temp: string[] = [];
-        let string: Code93ExtendedArrayAttribute[] = this.getArrayValue();
+        const temp: string[] = [];
+        const string: Code93ExtendedArrayAttribute[] = this.getArrayValue();
         this.GetExtendedText(string);
-        let checkDigit: string[] = this.CalculateCheckDigit();
+        const checkDigit: string[] = this.CalculateCheckDigit();
         for (let i: number = 0; i < checkDigit.length; i++) {
             this.extendedText += checkDigit[i];
         }
@@ -119,7 +128,7 @@ export class Code93Extension extends Code93 {
     private GetCheckSumSymbols(): string[] {
         let text: string = this.extendedText;
         let dataToEncode: string = text;
-        let charArray: string[] = [];
+        const charArray: string[] = [];
         let checkValue: number = 0;
         let length: number = dataToEncode.length;
         let numi: number;
@@ -158,7 +167,7 @@ export class Code93Extension extends Code93 {
             }
             for (let m: number = 0; m < this.barcodeSymbols.length; m++) {
                 if (dataToEncode[i] === this.barcodeSymbols[m].value) {
-                    let tempi: number = this.barcodeSymbols[m].checkDigit;
+                    const tempi: number = this.barcodeSymbols[m].checkDigit;
                     checkValue += tempi * num4;
                 }
             }
@@ -180,22 +189,23 @@ export class Code93Extension extends Code93 {
 
     }
     private CalculateCheckDigit(): string[] {
-        let code: string = this.extendedText;
+        const code: string = this.extendedText;
         let checkValue: number = 0;
         for (let i: number = 0; i < code.length; i++) {
             for (let j: number = 0; j < this.barcodeSymbols.length; j++) {
                 if (code[i] === this.barcodeSymbols[j].value) {
+                    // eslint-disable-next-line
                     checkValue += this.barcodeSymbols[j].checkDigit;
                 }
             }
         }
-        let ch: string[] = this.GetCheckSumSymbols();
+        const ch: string[] = this.GetCheckSumSymbols();
         return ch;
     }
 
     /* tslint:disable */
     private getArrayValue(): Code93ExtendedArrayAttribute[] {
-        let arrayValue: Code93ExtendedArrayAttribute[] = [];
+        const arrayValue: Code93ExtendedArrayAttribute[] = [];
         arrayValue[0] = { character: '\0', keyword: 'ü', value: 'U' };
         arrayValue[1] = { character: '\x0001', keyword: 'û', value: 'A' };
         arrayValue[2] = { character: '\x0002', keyword: 'x00fb', value: 'B' };
@@ -203,6 +213,7 @@ export class Code93Extension extends Code93 {
         arrayValue[4] = { character: '\x0004', keyword: 'û', value: 'D' };
         arrayValue[5] = { character: '\x0005', keyword: 'û', value: 'E' };
         arrayValue[6] = { character: '\x0006', keyword: 'û', value: 'F' };
+        // eslint-disable-next-line
         arrayValue[7] = { character: '\a', keyword: 'û', value: 'G' };
         arrayValue[8] = { character: '\b', keyword: 'û', value: 'H' };
         arrayValue[9] = { character: '\t', keyword: 'û', value: 'I' };
@@ -328,7 +339,7 @@ export class Code93Extension extends Code93 {
     /* tslint:enable */
 
     private encoding(string: string[]): string[] {
-        let temp: string[] = [];
+        const temp: string[] = [];
         for (let j: number = 0; j < string.length; j++) {
             for (let k: number = 0; k < string[j].length; k++) {
                 for (let i: number = 0; i < this.barcodeSymbols.length; i++) {

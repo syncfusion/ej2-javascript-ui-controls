@@ -6,10 +6,14 @@ import { OneDimension } from '../one-dimension';
 export class Code11 extends OneDimension {
 
     /**
-     * Validate the given input to check whether the input is valid one or not
+     * Validate the given input.
+     *
+     * @returns {string} Validate the given input.
+     * @param {string} value - Provide the canvas element .
+     * @private
      */
-    /** @private */
     public validateInput(value: string): string {
+        // eslint-disable-next-line
         if (value.search(/^[0-9\-\*]+$/) === -1) {
             return 'This bar code support 0-9 , * , -';
         } else {
@@ -17,10 +21,15 @@ export class Code11 extends OneDimension {
         }
     }
     /**
-     * get the code value to check
+     * Validate the given input.
+     *
+     * @returns {object} Validate the given input.
+     * @private
      */
+    // eslint-disable-next-line
     private getCodeValue(): object {
-        let codes: object = {
+        // eslint-disable-next-line
+        const codes: object = {
             '0': '111121',
             '1': '211121',
             '2': '121121',
@@ -36,10 +45,10 @@ export class Code11 extends OneDimension {
         };
         return codes;
     }
-    private getPatternCollection(givenChar: string, ): string[] {
-        let codeNumber: number;
-        let code: string[] = [];
-        let codes: string[] = this.getCodeValue() as string[];
+    private getPatternCollection(givenChar: string): string[] {
+        // const codeNumber: number;
+        const code: string[] = [];
+        const codes: string[] = this.getCodeValue() as string[];
         for (let i: number = 0; i < givenChar.length; i++) {
             code.push(codes[givenChar[i]]);
         }
@@ -47,10 +56,16 @@ export class Code11 extends OneDimension {
     }
 
 
-    /** @private */
+    /**
+     * Draw the barcode SVG.\
+     *
+     * @returns {void} Draw the barcode SVG .
+     *  @param {HTMLElement} canvas - Provide the canvas element .
+     * @private
+     */
     public draw(canvas: HTMLElement): void {
         let codes: string[] = [];
-        let givenChar: string = '*' + this.value + '*';
+        const givenChar: string = '*' + this.value + '*';
         codes = this.getPatternCollection(givenChar);
         this.calculateBarCodeAttributes(codes, canvas);
     }

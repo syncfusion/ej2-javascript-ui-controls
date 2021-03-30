@@ -526,6 +526,9 @@ $grid-responsive-search-width: 18px !default;
 $grid-responsive-search-left-padding: 0 !default;
 $grid-responsive-filter-clear-margin: 3px !default;
 $grid-responsive-toolbar-filter-font-size: 22px !default;
+$grid-responsive-tbar-zero-value: 0 !default;
+$grid-responsive-tbar-btn-bgr-padding: $grid-responsive-tbar-zero-value 6px  !default;
+
 $grid-rtl-headercelldiv-left-align-margin: 10px !default;
 $grid-rtl-filtermenudiv-left-align-margin: -5px !default;
 $grid-rtl-sort-num-left-align-margin: 8px -4px 0 0 !default;

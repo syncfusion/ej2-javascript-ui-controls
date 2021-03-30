@@ -27,43 +27,95 @@ export class DiagramScroller {
     private hOffset: number = 0;
     private vOffset: number = 0;
     private scrolled: boolean = false;
-    /** @private */
+    /**
+     * verticalOffset method \
+     *
+     * @returns { number }     verticalOffset method .\
+     *
+     * @private
+     */
     public get viewPortHeight(): number {
         return this.vPortHeight;
     }
 
-    /** @private */
+    /**
+     * verticalOffset method \
+     *
+     * @returns { void }     verticalOffset method .\
+     * @param {number} offset - provide the hOffset value.
+     *
+     * @private
+     */
     public set viewPortHeight(offset: number) {
         this.vPortHeight = offset;
         this.diagram.scrollSettings.viewPortHeight = offset;
     }
-    /** @private */
+    /**
+     * verticalOffset method \
+     *
+     * @returns { number }     verticalOffset method .\
+     *
+     * @private
+     */
     public get currentZoom(): number {
         return this.currentZoomFActor;
     }
 
-    /** @private */
+    /**
+     * verticalOffset method \
+     *
+     * @returns { void }     verticalOffset method .\
+     * @param {number} offset - provide the hOffset value.
+     *
+     * @private
+     */
     public set currentZoom(offset: number) {
         this.currentZoomFActor = offset;
         this.diagram.scrollSettings.currentZoom = offset;
     }
-    /** @private */
+    /**
+     * verticalOffset method \
+     *
+     * @returns { number }     verticalOffset method .\
+     *
+     * @private
+     */
     public get viewPortWidth(): number {
         return this.vPortWidth;
     }
 
-    /** @private */
+    /**
+     * verticalOffset method \
+     *
+     * @returns { void }     verticalOffset method .\
+     * @param {number} offset - provide the hOffset value.
+     *
+     * @private
+     */
     public set viewPortWidth(offset: number) {
         this.vPortWidth = offset;
         this.diagram.scrollSettings.viewPortWidth = offset;
     }
 
-    /** @private */
+    /**
+     * verticalOffset method \
+     *
+     * @returns { number }     verticalOffset method .\
+     *
+     * @private
+     */
     public get horizontalOffset(): number {
         return this.hOffset;
     }
 
-    /** @private */
+    /**
+     * verticalOffset method \
+     *
+     * @returns { void }     verticalOffset method .\
+     * @param {number} offset - provide the hOffset value.
+     *
+     * @private
+     */
     public set horizontalOffset(offset: number) {
         this.hOffset = offset;
         if (Math.abs(this.hOffset - this.diagram.scrollSettings.horizontalOffset) > 1) {
@@ -73,12 +125,25 @@ export class DiagramScroller {
         this.diagram.scrollSettings.horizontalOffset = offset;
     }
 
-    /** @private */
+    /**
+     * verticalOffset method \
+     *
+     * @returns { number }     verticalOffset method .\
+     *
+     * @private
+     */
     public get verticalOffset(): number {
         return this.vOffset;
     }
 
-    /** @private */
+    /**
+     * verticalOffset method \
+     *
+     * @returns { void }     verticalOffset method .\
+     * @param {number} offset - provide the hOffset value.
+     *
+     * @private
+     */
     public set verticalOffset(offset: number) {
         this.vOffset = offset;
         if (Math.abs(this.vOffset - this.diagram.scrollSettings.verticalOffset) > 1) {
@@ -106,11 +171,19 @@ export class DiagramScroller {
         this.hOffset = diagram.scrollSettings.horizontalOffset;
         this.vOffset = diagram.scrollSettings.verticalOffset;
     }
-    /** @private */
+    /**
+     * updateScrollOffsets method \
+     *
+     * @returns { void }     updateScrollOffsets method .\
+     * @param {number} hOffset - provide the hOffset value.
+     * @param {number} vOffset - provide the vOffset value.
+     *
+     * @private
+     */
     public updateScrollOffsets(hOffset?: number, vOffset?: number): void {
         let offsetX: number = 0;
         let offsetY: number = 0;
-        let pageBounds: Rect = this.getPageBounds(undefined, undefined, true);
+        const pageBounds: Rect = this.getPageBounds(undefined, undefined, true);
         pageBounds.x *= this.currentZoom;
         pageBounds.y *= this.currentZoom;
         pageBounds.width *= this.currentZoom;
@@ -131,21 +204,29 @@ export class DiagramScroller {
             scale: this.currentZoom
         };
     }
-    /** @private */
+    /**
+     * setScrollOffset method \
+     *
+     * @returns { void }     setScrollOffset method .\
+     * @param {number} hOffset - provide the hOffset value.
+     * @param {number} vOffset - provide the vOffset value.
+     *
+     * @private
+     */
     public setScrollOffset(hOffset: number, vOffset: number): void {
         this.scrolled = false;
-        let pageBounds: Rect = this.getPageBounds(undefined, undefined, true);
+        const pageBounds: Rect = this.getPageBounds(undefined, undefined, true);
         pageBounds.x *= this.currentZoom;
         pageBounds.y *= this.currentZoom;
         pageBounds.width *= this.currentZoom;
         pageBounds.height *= this.currentZoom;
 
-        let x: number = - pageBounds.left;
-        let y: number = - pageBounds.top;
+        const x: number = - pageBounds.left;
+        const y: number = - pageBounds.top;
         let set: boolean = false;
-        let viewWidth: number = this.viewPortWidth * this.currentZoom;
-        let viewHeight: number = this.viewPortHeight * this.currentZoom;
-        let newX: number = x - hOffset;
+        const viewWidth: number = this.viewPortWidth * this.currentZoom;
+        const viewHeight: number = this.viewPortHeight * this.currentZoom;
+        const newX: number = x - hOffset;
         if (newX !== this.horizontalOffset) {
             if (x < this.horizontalOffset) {
                 if (this.horizontalOffset > newX) {
@@ -155,10 +236,10 @@ export class DiagramScroller {
                 }
                 set = true;
             }
-            let right: number = Math.max(pageBounds.right + this.vScrollSize, viewWidth);
+            const right: number = Math.max(pageBounds.right + this.vScrollSize, viewWidth);
             if (!set && right < -newX + this.viewPortWidth) {
-                let actualRight: number = -newX + viewWidth - this.vScrollSize;
-                let currentRight: number = -this.horizontalOffset + viewWidth - this.vScrollSize;
+                const actualRight: number = -newX + viewWidth - this.vScrollSize;
+                const currentRight: number = -this.horizontalOffset + viewWidth - this.vScrollSize;
                 if (actualRight < currentRight) {
                     //define
                     this.horizontalOffset = newX;
@@ -177,7 +258,7 @@ export class DiagramScroller {
         }
         set = false;
         //vertical offset
-        let newY: number = y - vOffset;
+        const newY: number = y - vOffset;
         if (newY !== this.verticalOffset) {
             if (y < this.verticalOffset) {
                 if (this.verticalOffset > newY) {
@@ -187,10 +268,10 @@ export class DiagramScroller {
                 }
                 set = true;
             }
-            let bottom: number = Math.max(pageBounds.bottom + this.hScrollSize, viewHeight);
+            const bottom: number = Math.max(pageBounds.bottom + this.hScrollSize, viewHeight);
             if (!set && bottom < -newY + viewHeight) {
-                let actualBottom: number = -newY + viewHeight - this.hScrollSize;
-                let currentBottom: number = -this.verticalOffset + viewHeight - this.hScrollSize;
+                const actualBottom: number = -newY + viewHeight - this.hScrollSize;
+                const currentBottom: number = -this.verticalOffset + viewHeight - this.hScrollSize;
                 if (actualBottom < currentBottom) {
                     //define
                     this.verticalOffset = newY;
@@ -216,9 +297,16 @@ export class DiagramScroller {
         this.setSize();
     }
 
-    /** @private */
+    /**
+     * getObjects \
+     *
+     * @returns { string[] }     To get page pageBounds.\
+     * @param {string[]} coll1 - provide the source value.
+     * @param {string[]} coll2 - provide the source value.
+     * @private
+     */
     public getObjects(coll1: string[], coll2: string[]): string[] {
-        let objects: string[] = [];
+        const objects: string[] = [];
         for (let i: number = 0; i < coll1.length; i++) {
             let isExist: boolean = false;
             for (let j: number = 0; j < coll2.length; j++) {
@@ -234,38 +322,51 @@ export class DiagramScroller {
         return objects;
     }
 
-    /**   @private  */
+    /**
+     * virtualizeElements \
+     *
+     * @returns { void }     To get page pageBounds.\
+     *
+     * @private
+     */
     public virtualizeElements(): void {
-        let viewWidth: number = this.viewPortWidth / this.currentZoom;
-        let viewHeight: number = this.viewPortHeight / this.currentZoom;
-        let oObjects: (NodeModel | ConnectorModel)[] = this.diagram.spatialSearch.findObjects(
+        const viewWidth: number = this.viewPortWidth / this.currentZoom;
+        const viewHeight: number = this.viewPortHeight / this.currentZoom;
+        const oObjects: (NodeModel | ConnectorModel)[] = this.diagram.spatialSearch.findObjects(
             new Rect(-this.horizontalOffset / this.currentZoom, -this.verticalOffset / this.currentZoom, viewWidth, viewHeight)
         );
-        let oObjectsID: string[] = [];
+        const oObjectsID: string[] = [];
         for (let i: number = 0; i < oObjects.length; i++) {
             oObjectsID.push(oObjects[i].id);
         }
-        let newObjects: string[] = this.getObjects(oObjectsID, this.oldCollectionObjects);
+        const newObjects: string[] = this.getObjects(oObjectsID, this.oldCollectionObjects);
         if (this.oldCollectionObjects.length === 0) {
             this.oldCollectionObjects = oObjectsID;
         }
-        let removeObjects: string[] = this.getObjects(this.oldCollectionObjects, oObjectsID);
+        const removeObjects: string[] = this.getObjects(this.oldCollectionObjects, oObjectsID);
         this.diagram.updateVirtualObjects(newObjects, false, removeObjects);
         this.oldCollectionObjects = oObjectsID;
     }
-    /** @private */
+    /**
+     * setSize \
+     *
+     * @returns { void }     To get page pageBounds.\
+     * @param {PointModel} newOffset - provide the newOffset value.
+     *
+     * @private
+     */
     public setSize(newOffset?: PointModel): void {
-        let pageBounds: Rect = this.getPageBounds(undefined, undefined, true);
+        const pageBounds: Rect = this.getPageBounds(undefined, undefined, true);
         pageBounds.x *= this.currentZoom;
         pageBounds.y *= this.currentZoom;
         pageBounds.width *= this.currentZoom;
         pageBounds.height *= this.currentZoom;
 
-        let x: number = Math.min(pageBounds.x, -this.horizontalOffset);
-        let y: number = Math.min(pageBounds.y, -this.verticalOffset);
+        const x: number = Math.min(pageBounds.x, -this.horizontalOffset);
+        const y: number = Math.min(pageBounds.y, -this.verticalOffset);
 
-        let difX: number = - this.horizontalOffset + this.viewPortWidth - pageBounds.right;
-        let difY: number = -this.verticalOffset + this.viewPortHeight - pageBounds.bottom;
+        const difX: number = - this.horizontalOffset + this.viewPortWidth - pageBounds.right;
+        const difY: number = -this.verticalOffset + this.viewPortHeight - pageBounds.bottom;
         let hScrollSize: number = this.scrollerWidth;
         let vScrollSize: number = this.scrollerWidth;
         if (-this.verticalOffset <= pageBounds.y && -this.verticalOffset + this.viewPortHeight >= pageBounds.bottom) {
@@ -276,8 +377,8 @@ export class DiagramScroller {
         }
         this.hScrollSize = hScrollSize;
         this.vScrollSize = vScrollSize;
-        let oldWidth: number = this.diagramWidth;
-        let oldHeight: number = this.diagramHeight;
+        const oldWidth: number = this.diagramWidth;
+        const oldHeight: number = this.diagramHeight;
         this.diagramWidth = Math.max(pageBounds.right, -this.horizontalOffset + this.viewPortWidth - vScrollSize) - x;
         this.diagramHeight = Math.max(pageBounds.bottom, -this.verticalOffset + this.viewPortHeight - hScrollSize) - y;
         if ((oldWidth !== this.diagramWidth || oldHeight !== this.diagramHeight) && this.diagram.scrollSettings.scrollLimit !== 'Diagram') {
@@ -324,19 +425,34 @@ export class DiagramScroller {
         this.diagram.transformLayers();
         this.diagram.element.style.overflow = 'hidden';
     }
-    /** @private */
+    /**
+     * setViewPortSize \
+     *
+     * @returns { void }     To get page pageBounds.\
+     * @param {number} width - provide the factor value.
+     * @param {number} height - provide the factor value.
+     *
+     * @private
+     */
     public setViewPortSize(width: number, height: number): void {
         this.viewPortWidth = width;
         this.viewPortHeight = height;
     }
+
     /**
-     * To get page pageBounds
+     * To get page pageBounds \
+     *
+     * @returns { Rect }     To get page pageBounds.\
+     * @param {boolean} boundingRect - provide the factor value.
+     * @param {DiagramRegions} region - provide the factor value.
+     * @param {boolean} hasPadding - provide the factor value.
+     *
      * @private
      */
     public getPageBounds(boundingRect?: boolean, region?: DiagramRegions, hasPadding?: boolean): Rect {
         let rect: Rect = new Rect();
         let pageBounds: Rect;
-        let temp: number = 0;
+        const temp: number = 0;
         if (region !== 'Content' && this.diagram.pageSettings.width !== null && this.diagram.pageSettings.height !== null) {
             let width: number = this.diagram.pageSettings.width;
             let height: number = this.diagram.pageSettings.height;
@@ -345,29 +461,29 @@ export class DiagramScroller {
             if (this.diagram.pageSettings.multiplePage) {
                 rect = this.diagram.spatialSearch.getPageBounds(0, 0);
                 if (rect.right > width) {
-                    let x: number = Math.ceil(rect.right / width);
+                    const x: number = Math.ceil(rect.right / width);
                     width = width * x;
                 }
                 if (rect.bottom > height) {
-                    let x: number = Math.ceil(rect.bottom / height);
+                    const x: number = Math.ceil(rect.bottom / height);
                     height = height * x;
                 }
                 if (rect.left < 0 && Math.abs(rect.left) > negwidth) {
-                    let x: number = Math.ceil(Math.abs(rect.left) / this.diagram.pageSettings.width);
+                    const x: number = Math.ceil(Math.abs(rect.left) / this.diagram.pageSettings.width);
                     negwidth = this.diagram.pageSettings.width * x;
                 }
                 if (rect.top < 0 && Math.abs(rect.top) > negheight) {
-                    let x: number = Math.ceil(Math.abs(rect.top) / this.diagram.pageSettings.height);
+                    const x: number = Math.ceil(Math.abs(rect.top) / this.diagram.pageSettings.height);
                     negheight = this.diagram.pageSettings.height * x;
                 }
             }
             pageBounds = new Rect((-negwidth), (-negheight), width + negwidth, height + negheight);
         } else {
-            let origin: number = boundingRect ? undefined : 0;
+            const origin: number = boundingRect ? undefined : 0;
             pageBounds = this.diagram.spatialSearch.getPageBounds(origin, origin);
         }
         if (hasPadding) {
-            let scrollpadding: MarginModel = this.diagram.scrollSettings.padding;
+            const scrollpadding: MarginModel = this.diagram.scrollSettings.padding;
             pageBounds.x -= scrollpadding.left;
             pageBounds.y -= scrollpadding.top;
             pageBounds.width += (scrollpadding.left + scrollpadding.right);
@@ -375,23 +491,28 @@ export class DiagramScroller {
         }
         return pageBounds;
     }
+
     /**
-     * To get page break when PageBreak is set as true
+     * To get page break when PageBreak is set as true \
+     *
+     * @returns { Segment[] }     To get page break when PageBreak is set as true.\
+     * @param {Rect} pageBounds - provide the factor value.
+     *
      * @private
      */
     public getPageBreak(pageBounds: Rect): Segment[] {
         let i: number = 0;
         let j: number = 0;
         let v: number = -1;
-        let collection: Segment[] = [];
+        const collection: Segment[] = [];
         let x1: number = 0;
         let x2: number = 0;
         let y1: number = 0;
         let y2: number = 0;
-        let left: number = this.diagram.pageSettings.margin.left;
-        let right: number = this.diagram.pageSettings.margin.right;
-        let top: number = this.diagram.pageSettings.margin.top;
-        let bottom: number = this.diagram.pageSettings.margin.bottom;
+        const left: number = this.diagram.pageSettings.margin.left;
+        const right: number = this.diagram.pageSettings.margin.right;
+        const top: number = this.diagram.pageSettings.margin.top;
+        const bottom: number = this.diagram.pageSettings.margin.bottom;
         let widthCount: number = 1;
         let heightCount: number = 1;
         let segment: Segment = { x1: x1, y1: y1, x2: x2, y2: y2 };
@@ -449,10 +570,20 @@ export class DiagramScroller {
         }
         return collection;
     }
-    /** @private */
+    /**
+     * zoom method \
+     *
+     * @returns { void }     zoom method .\
+     * @param {number} factor - provide the factor value.
+     * @param {number} deltaX - provide the bounds value.
+     * @param {number} deltaY - provide the bounds value.
+     * @param {PointModel} focusPoint - provide the bounds value.
+     *
+     * @private
+     */
     public zoom(factor: number, deltaX?: number, deltaY?: number, focusPoint?: PointModel): void {
         if (canZoom(this.diagram) && factor !== 1 || (canPan(this.diagram) && factor === 1)) {
-            let matrix: Matrix = identityMatrix();
+            const matrix: Matrix = identityMatrix();
             scaleMatrix(matrix, this.currentZoom, this.currentZoom);
             translateMatrix(matrix, this.horizontalOffset, this.verticalOffset);
             focusPoint = focusPoint || {
@@ -463,12 +594,12 @@ export class DiagramScroller {
             if ((this.currentZoom * factor) >= this.diagram.scrollSettings.minZoom &&
                 (this.currentZoom * factor) <= this.diagram.scrollSettings.maxZoom) {
                 this.currentZoom *= factor;
-                let pageBounds: Rect = this.getPageBounds(undefined, undefined, true);
+                const pageBounds: Rect = this.getPageBounds(undefined, undefined, true);
                 pageBounds.x *= this.currentZoom;
                 pageBounds.y *= this.currentZoom;
 
                 //target Matrix
-                let targetMatrix: Matrix = identityMatrix();
+                const targetMatrix: Matrix = identityMatrix();
                 scaleMatrix(targetMatrix, factor, factor, focusPoint.x, focusPoint.y);
                 translateMatrix(targetMatrix, deltaX || 0, deltaY || 0);
                 multiplyMatrix(matrix, targetMatrix);
@@ -501,14 +632,21 @@ export class DiagramScroller {
         }
     }
 
-    /** @private */
+    /**
+     * fitToPage method \
+     *
+     * @returns { void }     fitToPage method .\
+     * @param {IFitOptions} options - provide the bounds value.
+     *
+     * @private
+     */
     public fitToPage(options?: IFitOptions): void {
         options = options || {};
         let mode: FitModes = options.mode;
         let region: DiagramRegions = options.region;
-        let margin: MarginModel = options.margin || {};
-        let canZoomIn: boolean = options.canZoomIn;
-        let customBounds: Rect = options.customBounds;
+        const margin: MarginModel = options.margin || {};
+        const canZoomIn: boolean = options.canZoomIn;
+        const customBounds: Rect = options.customBounds;
         margin.bottom = margin.bottom || 25;
         margin.top = margin.top || 25;
         margin.left = margin.left || 25;
@@ -525,7 +663,7 @@ export class DiagramScroller {
             if (region !== 'CustomBounds') {
                 bounds = this.getPageBounds(true, region, true);
             }
-            let scale: PointModel = { x: 0, y: 0 };
+            const scale: PointModel = { x: 0, y: 0 };
             scale.x = (this.viewPortWidth - (margin.left + margin.right)) / (bounds.width);
             scale.y = (this.viewPortHeight - (margin.top + margin.bottom)) / (bounds.height);
             if (!canZoomIn && (((bounds.width - this.horizontalOffset) < this.viewPortWidth) &&
@@ -538,30 +676,30 @@ export class DiagramScroller {
             let centerY: number;
 
             switch (mode) {
-                case 'Width':
-                    zoomFactor = scale.x;
-                    factor = zoomFactor / this.currentZoom;
-                    centerX = (this.viewPortWidth - (bounds.width) * zoomFactor) / 2 - bounds.x * zoomFactor;
-                    deltaX += centerX + (margin.left - margin.right) / 2 * zoomFactor;
-                    deltaY -= -this.verticalOffset * factor;
-                    deltaY = region !== 'CustomBounds' ? deltaY : deltaY - this.verticalOffset * factor;
-                    break;
-                case 'Height':
-                    zoomFactor = scale.y;
-                    factor = (zoomFactor / this.currentZoom);
-                    centerX = ((this.viewPortWidth - (bounds.width) * zoomFactor) / 2) - bounds.x * zoomFactor;
-                    centerY = ((this.viewPortHeight - (bounds.height) * zoomFactor) / 2) - bounds.y * zoomFactor;
-                    deltaX += centerX + (margin.left - margin.right) / 2 * zoomFactor;
-                    deltaY += centerY + (margin.top - margin.bottom) / 2 * zoomFactor;
-                    break;
-                case 'Page':
-                    zoomFactor = Math.min(scale.x, scale.y);
-                    factor = (zoomFactor / this.currentZoom);
-                    centerX = (this.viewPortWidth - (bounds.width) * zoomFactor) / 2 - bounds.x * zoomFactor;
-                    centerY = (this.viewPortHeight - (bounds.height) * zoomFactor) / 2 - bounds.y * zoomFactor;
-                    deltaX += centerX + (margin.left - margin.right) / 2 * zoomFactor;
-                    deltaY += centerY + (margin.top - margin.bottom) / 2 * zoomFactor;
-                    break;
+            case 'Width':
+                zoomFactor = scale.x;
+                factor = zoomFactor / this.currentZoom;
+                centerX = (this.viewPortWidth - (bounds.width) * zoomFactor) / 2 - bounds.x * zoomFactor;
+                deltaX += centerX + (margin.left - margin.right) / 2 * zoomFactor;
+                deltaY -= -this.verticalOffset * factor;
+                deltaY = region !== 'CustomBounds' ? deltaY : deltaY - this.verticalOffset * factor;
+                break;
+            case 'Height':
+                zoomFactor = scale.y;
+                factor = (zoomFactor / this.currentZoom);
+                centerX = ((this.viewPortWidth - (bounds.width) * zoomFactor) / 2) - bounds.x * zoomFactor;
+                centerY = ((this.viewPortHeight - (bounds.height) * zoomFactor) / 2) - bounds.y * zoomFactor;
+                deltaX += centerX + (margin.left - margin.right) / 2 * zoomFactor;
+                deltaY += centerY + (margin.top - margin.bottom) / 2 * zoomFactor;
+                break;
+            case 'Page':
+                zoomFactor = Math.min(scale.x, scale.y);
+                factor = (zoomFactor / this.currentZoom);
+                centerX = (this.viewPortWidth - (bounds.width) * zoomFactor) / 2 - bounds.x * zoomFactor;
+                centerY = (this.viewPortHeight - (bounds.height) * zoomFactor) / 2 - bounds.y * zoomFactor;
+                deltaX += centerX + (margin.left - margin.right) / 2 * zoomFactor;
+                deltaY += centerY + (margin.top - margin.bottom) / 2 * zoomFactor;
+                break;
             }
             this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 });
         } else {
@@ -569,16 +707,23 @@ export class DiagramScroller {
             this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 });
         }
     }
-    /** @private */
+    /**
+     * bringIntoView method \
+     *
+     * @returns { void }     bringIntoView method .\
+     * @param {Rect} rect - provide the bounds value.
+     *
+     * @private
+     */
     public bringIntoView(rect: Rect): void {
         let x: number = 0;
         let y: number = 0;
-        let scale: number = this.currentZoom;
+        const scale: number = this.currentZoom;
         let bounds: Rect = rect;
-        let hoffset: number = - this.horizontalOffset;
-        let voffset: number = -this.verticalOffset;
+        const hoffset: number = - this.horizontalOffset;
+        const voffset: number = -this.verticalOffset;
         bounds = new Rect(bounds.x * scale, bounds.y * scale, bounds.width * scale, bounds.height * scale);
-        let view: Rect = new Rect(hoffset, voffset, this.viewPortWidth, this.viewPortHeight);
+        const view: Rect = new Rect(hoffset, voffset, this.viewPortWidth, this.viewPortHeight);
         if (!(view.containsRect(bounds))) {
             if (bounds.right > (-hoffset + this.viewPortWidth)) {
                 x = bounds.right - this.viewPortWidth;
@@ -595,12 +740,20 @@ export class DiagramScroller {
             this.zoom(1, -this.horizontalOffset - x, -this.verticalOffset - y, null);
         }
     }
-    /** @private */
+
+    /**
+     * bringToCenter method \
+     *
+     * @returns { void }     bringToCenter method .\
+     * @param {Rect} bounds - provide the bounds value.
+     *
+     * @private
+     */
     public bringToCenter(bounds: Rect): void {
-        let scale: number = this.currentZoom;
-        let actualbounds: Rect = new Rect(bounds.x * scale, bounds.y * scale, bounds.width * scale, bounds.height * scale);
-        let hoffset: number = actualbounds.x + actualbounds.width / 2 - this.viewPortWidth / 2;
-        let voffset: number = actualbounds.y + actualbounds.height / 2 - this.viewPortHeight / 2;
+        const scale: number = this.currentZoom;
+        const actualbounds: Rect = new Rect(bounds.x * scale, bounds.y * scale, bounds.width * scale, bounds.height * scale);
+        const hoffset: number = actualbounds.x + actualbounds.width / 2 - this.viewPortWidth / 2;
+        const voffset: number = actualbounds.y + actualbounds.height / 2 - this.viewPortHeight / 2;
         this.zoom(1, -this.horizontalOffset - hoffset, -this.verticalOffset - voffset, null);
     }
 
@@ -608,7 +761,7 @@ export class DiagramScroller {
         if (this.diagram.scrollSettings.scrollLimit !== 'Infinity') {
             let bounds: Rect;
             if (this.diagram.scrollSettings.scrollLimit === 'Limited') {
-                let scrollableBounds: Rect = this.diagram.scrollSettings.scrollableArea;
+                const scrollableBounds: Rect = this.diagram.scrollSettings.scrollableArea;
                 bounds = new Rect(scrollableBounds.x, scrollableBounds.y, scrollableBounds.width, scrollableBounds.height);
             }
             bounds = bounds || this.getPageBounds(true);
@@ -618,7 +771,7 @@ export class DiagramScroller {
             bounds.height *= this.currentZoom;
             hOffset *= -1;
             vOffset *= -1;
-            let allowedRight: number = Math.max(bounds.right, this.viewPortWidth);
+            const allowedRight: number = Math.max(bounds.right, this.viewPortWidth);
             if (!(hOffset <= bounds.x && (hOffset + this.viewPortWidth >= bounds.right ||
                 hOffset >= bounds.right - this.viewPortWidth)
                 || hOffset >= bounds.x && (hOffset + this.viewPortWidth <= allowedRight))) {
@@ -628,11 +781,11 @@ export class DiagramScroller {
                         bounds.x,
                         Math.min(hOffset, hOffset - (hOffset + this.viewPortWidth - this.vScrollSize - allowedRight)));
                 } else {
-                    let allowed: number = bounds.right - this.viewPortWidth;
+                    const allowed: number = bounds.right - this.viewPortWidth;
                     hOffset = Math.min(allowed, bounds.x);
                 }
             }
-            let allowedBottom: number = Math.max(bounds.bottom, this.viewPortHeight);
+            const allowedBottom: number = Math.max(bounds.bottom, this.viewPortHeight);
             if (!(vOffset <= bounds.y && vOffset + this.viewPortHeight >= bounds.bottom
                 || vOffset >= bounds.y && vOffset + this.viewPortHeight <= allowedBottom)) {
                 //not allowed case
@@ -641,7 +794,7 @@ export class DiagramScroller {
                         bounds.y,
                         Math.min(vOffset, vOffset - (vOffset + this.viewPortHeight - this.hScrollSize - allowedBottom)));
                 } else {
-                    let allowed: number = bounds.bottom - this.viewPortHeight;
+                    const allowed: number = bounds.bottom - this.viewPortHeight;
                     vOffset = Math.min(bounds.y, allowed);
                 }
             }

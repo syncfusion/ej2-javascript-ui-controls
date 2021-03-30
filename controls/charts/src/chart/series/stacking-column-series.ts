@@ -1,6 +1,8 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { StackValues, withInRange, getVisiblePoints } from '../../common/utils/helper';
 import { Rect } from '@syncfusion/ej2-svg-base';
-import { Chart } from '../chart';
 import { DoubleRange } from '../utils/double-range';
 import { Series, Points } from './chart-series';
 import { ColumnBase } from './column-base';
@@ -13,17 +15,18 @@ export class StackingColumnSeries extends ColumnBase {
 
     /**
      * Render the Stacking column series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public render(series: Series): void {
         series.isRectSeries = true;
-        let sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
+        const sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
         let rect: Rect;
         let argsData: IPointRenderEventArgs;
-        let stackedValue: StackValues = series.stackedValues;
-        let visiblePoints: Points[] = getVisiblePoints(series);
-        for (let point of visiblePoints) {
+        const stackedValue: StackValues = series.stackedValues;
+        const visiblePoints: Points[] = getVisiblePoints(series);
+        for (const point of visiblePoints) {
             point.symbolLocations = [];
             point.regions = [];
             if (point.visible && withInRange(visiblePoints[point.index - 1], point, visiblePoints[point.index + 1], series)) {
@@ -41,18 +44,20 @@ export class StackingColumnSeries extends ColumnBase {
     }
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
     public doAnimation(series: Series): void {
         this.animate(series);
     }
     /**
-     * To destroy the stacking column. 
-     * @return {void}
+     * To destroy the stacking column.
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method performed here
          */
@@ -64,5 +69,3 @@ export class StackingColumnSeries extends ColumnBase {
         return 'StackingColumnSeries';
     }
 }
-
-

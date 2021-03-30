@@ -6,6 +6,7 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
 export class Margin extends ChildProperty<Margin> {
     /**
      * Sets the space to be left from the left side of the immediate parent of an element
+     *
      * @default 10
      */
     @Property(10)
@@ -13,6 +14,7 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * Sets the space to be left from the right side of the immediate parent of an element
+     *
      * @default 10
      */
     @Property(10)
@@ -20,6 +22,7 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * Sets the space to be left from the top side of the immediate parent of an element
+     *
      * @default 10
      */
     @Property(10)
@@ -27,6 +30,7 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * Sets the space to be left from the bottom side of the immediate parent of an element
+     *
      * @default 10
      */
     @Property(10)

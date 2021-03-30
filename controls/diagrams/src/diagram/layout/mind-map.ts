@@ -1,3 +1,4 @@
+/* eslint-disable valid-jsdoc */
 import { Layout, ILayout, INode } from './layout-base';
 import { BranchTypes } from '../enum/enum';
 import { Rect } from '../primitives/rect';
@@ -15,6 +16,7 @@ export class MindMap {
 
     /**
      * Constructor for the organizational chart module.
+     *
      * @private
      */
 
@@ -24,7 +26,8 @@ export class MindMap {
 
     /**
      * To destroy the organizational chart
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
@@ -36,7 +39,7 @@ export class MindMap {
 
     /**
      * Defines the layout animation
-     * 
+     *
      */
     public isAnimation: boolean = false;
 
@@ -51,15 +54,22 @@ export class MindMap {
         return 'MindMapChart';
     }
 
-    /**   @private  */
+    /**
+     * @param nodes
+     * @param nameTable
+     * @param layoutProp
+     * @param viewPort
+     * @param uniqueId
+     * @param root
+     * @private
+     */
     public updateLayout(
         nodes: INode[], nameTable: Object, layoutProp: Layout, viewPort: PointModel, uniqueId: string, root?: string): void {
-        let isRoot: string;
-        isRoot = this.checkRoot(nodes, layoutProp, uniqueId, root, nameTable);
+        const isRoot: string = this.checkRoot(nodes, layoutProp, uniqueId, root, nameTable);
         if (isRoot) {
             layoutProp.fixedNode = isRoot;
         } else {
-            for (let node of nodes) {
+            for (const node of nodes) {
                 if (!node.excludeFromLayout) {
                     if (!node.inEdges || !node.inEdges.length) {
                         layoutProp.fixedNode = node.id;
@@ -68,17 +78,18 @@ export class MindMap {
                 }
             }
         }
-        let rootNode: INode = nameTable[layoutProp.fixedNode];
-        let fistLevelNodes: INode[] = this.findFirstLevelNodes(rootNode, layoutProp, nameTable);
-        let leftNodes: INode[] = []; let rightNodes: INode[] = [];
+        const rootNode: INode = nameTable[layoutProp.fixedNode];
+        const fistLevelNodes: INode[] = this.findFirstLevelNodes(rootNode, layoutProp, nameTable);
+        const leftNodes: INode[] = []; const rightNodes: INode[] = [];
         let getMindmapBranch: Function = getFunction(layoutProp.getBranch);
         getMindmapBranch = getMindmapBranch || getFunction(this.getBranch);
-        for (let node of fistLevelNodes) {
+        for (const node of fistLevelNodes) {
             let align: BranchTypes = getMindmapBranch(node, fistLevelNodes);
             align = node && (node as NodeModel).branch ? (node as NodeModel).branch : align;
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             (align === 'Left') ? leftNodes.push(node) : rightNodes.push(node);
         }
-        let viewPortBounds: Rect = new Rect(0, 0, viewPort.x, viewPort.y);
+        const viewPortBounds: Rect = new Rect(0, 0, viewPort.x, viewPort.y);
         nameTable[layoutProp.fixedNode].offsetX = viewPortBounds.x + viewPortBounds.width / 2;
         nameTable[layoutProp.fixedNode].offsetY = viewPortBounds.y + viewPortBounds.height / 2;
         if (leftNodes.length) {
@@ -91,7 +102,7 @@ export class MindMap {
     }
 
     private checkRoot(nodes: INode[], layoutProp: Layout, uniqueId?: string, root?: string, nameTable?: Object): string {
-        for (let node of nodes) {
+        for (const node of nodes) {
             if (!node.excludeFromLayout) {
                 if (node.data && (node.data[uniqueId].toString() === root || node.data[uniqueId].toString()
                     === layoutProp.root)) {
@@ -107,8 +118,7 @@ export class MindMap {
     private updateMindMapBranch(
         nodes: INode[], excludeNodes: INode[], nameTable: Object, layoutProp: Layout,
         viewPort: PointModel, uniqueId: string, side: BranchTypes): void {
-        let layout: ILayout;
-        layout = {
+        const layout: ILayout = {
             type: 'HierarchicalTree',
             horizontalSpacing: layoutProp.verticalSpacing, verticalSpacing: layoutProp.horizontalSpacing,
             verticalAlignment: layoutProp.verticalAlignment, horizontalAlignment: layoutProp.horizontalAlignment,
@@ -119,14 +129,14 @@ export class MindMap {
         (layout as Layout).orientation = (side === 'Left') ? 'LeftToRight' : 'RightToLeft';
         this.excludeFromLayout(excludeNodes, nameTable, true);
 
-        let mapLayout: HierarchicalTree = new HierarchicalTree();
+        const mapLayout: HierarchicalTree = new HierarchicalTree();
         mapLayout.updateLayout(nodes, nameTable, layout as Layout, viewPort, uniqueId);
         this.excludeFromLayout(excludeNodes, nameTable, false);
     }
 
     private getBranch(obj: INode, firstLevelNodes: INode[]): BranchTypes {
         let side: BranchTypes;
-        let i: number = firstLevelNodes.indexOf(obj);
+        const i: number = firstLevelNodes.indexOf(obj);
         if (i % 2 === 0) {
             side = 'Left';
         } else {
@@ -136,17 +146,17 @@ export class MindMap {
     }
 
     private excludeFromLayout(newCollection: INode[], nameTable: Object, exclude: boolean): void {
-        for (let newcol of newCollection) {
-            let node: INode = nameTable[newcol.id];
+        for (const newcol of newCollection) {
+            const node: INode = nameTable[newcol.id];
             node.excludeFromLayout = exclude;
         }
     }
 
     private findFirstLevelNodes(node: INode, layout: Layout, nameTable: Object): INode[] {
         let parentNode: INode;
-        let fistLevelNodes: INode[] = [];
+        const fistLevelNodes: INode[] = [];
         if (node && node.outEdges.length) {
-            for (let outEdge of node.outEdges) {
+            for (const outEdge of node.outEdges) {
                 fistLevelNodes.push(nameTable[nameTable[outEdge].targetID]);
             }
         }

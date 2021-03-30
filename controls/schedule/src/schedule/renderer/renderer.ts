@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { isNullOrUndefined, extend, addClass, removeClass } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { View, ReturnType } from '../base/type';
@@ -11,16 +12,14 @@ import * as cls from '../base/css-constant';
  */
 export class Render {
     public parent: Schedule;
-    /**
-     * Constructor for render
-     */
+
     constructor(parent: Schedule) {
         this.parent = parent;
     }
 
     public render(viewName: View, isDataRefresh: boolean = true): void {
         this.initializeLayout(viewName);
-        if (this.parent.activeView && isDataRefresh && !this.parent.isServerRenderer()) {
+        if (this.parent.activeView && isDataRefresh) {
             this.refreshDataManager();
         }
     }
@@ -32,48 +31,48 @@ export class Render {
             this.parent.activeView.destroy();
         }
         switch (viewName) {
-            case 'Day':
-                this.parent.activeView = this.parent.dayModule;
-                break;
-            case 'Week':
-                this.parent.activeView = this.parent.weekModule;
-                break;
-            case 'WorkWeek':
-                this.parent.activeView = this.parent.workWeekModule;
-                break;
-            case 'Month':
-                this.parent.activeView = this.parent.monthModule;
-                break;
-            case 'Year':
-                this.parent.activeView = this.parent.yearModule;
-                break;
-            case 'Agenda':
-                this.parent.activeView = this.parent.agendaModule;
-                break;
-            case 'MonthAgenda':
-                this.parent.activeView = this.parent.monthAgendaModule;
-                break;
-            case 'TimelineDay':
-                this.parent.activeView = this.parent.timelineViewsModule;
-                this.parent.activeView.viewClass = 'e-timeline-day-view';
-                break;
-            case 'TimelineWorkWeek':
-                this.parent.activeView = this.parent.timelineViewsModule;
-                this.parent.activeView.viewClass = 'e-timeline-work-week-view';
-                break;
-            case 'TimelineWeek':
-                this.parent.activeView = this.parent.timelineViewsModule;
-                this.parent.activeView.viewClass = 'e-timeline-week-view';
-                break;
-            case 'TimelineMonth':
-                this.parent.activeView = this.parent.timelineMonthModule;
-                break;
-            case 'TimelineYear':
-                this.parent.activeView = this.parent.timelineYearModule;
-                break;
+        case 'Day':
+            this.parent.activeView = this.parent.dayModule;
+            break;
+        case 'Week':
+            this.parent.activeView = this.parent.weekModule;
+            break;
+        case 'WorkWeek':
+            this.parent.activeView = this.parent.workWeekModule;
+            break;
+        case 'Month':
+            this.parent.activeView = this.parent.monthModule;
+            break;
+        case 'Year':
+            this.parent.activeView = this.parent.yearModule;
+            break;
+        case 'Agenda':
+            this.parent.activeView = this.parent.agendaModule;
+            break;
+        case 'MonthAgenda':
+            this.parent.activeView = this.parent.monthAgendaModule;
+            break;
+        case 'TimelineDay':
+            this.parent.activeView = this.parent.timelineViewsModule;
+            this.parent.activeView.viewClass = 'e-timeline-day-view';
+            break;
+        case 'TimelineWorkWeek':
+            this.parent.activeView = this.parent.timelineViewsModule;
+            this.parent.activeView.viewClass = 'e-timeline-work-week-view';
+            break;
+        case 'TimelineWeek':
+            this.parent.activeView = this.parent.timelineViewsModule;
+            this.parent.activeView.viewClass = 'e-timeline-week-view';
+            break;
+        case 'TimelineMonth':
+            this.parent.activeView = this.parent.timelineMonthModule;
+            break;
+        case 'TimelineYear':
+            this.parent.activeView = this.parent.timelineYearModule;
+            break;
         }
         if (isNullOrUndefined(this.parent.activeView)) {
-            let firstView: View = this.parent.viewCollections[0].option;
+            const firstView: View = this.parent.viewCollections[0].option;
             if (firstView) {
                 this.parent.setScheduleProperties({ currentView: firstView });
                 if (this.parent.headerModule) {
@@ -127,41 +126,37 @@ export class Render {
     }
 
     public updateLabelText(view: string): void {
-        let content: string = this.parent.activeView.getLabelText(view);
+        const content: string = this.parent.activeView.getLabelText(view);
         this.parent.element.setAttribute('role', 'main');
         this.parent.element.setAttribute('aria-label', content);
     }
 
     public refreshDataManager(): void {
         if (!this.parent.activeView) { return; }
-        let start: Date = this.parent.activeView.startDate();
-        let end: Date = this.parent.activeView.endDate();
-        let dataManager: Promise<Object> = this.parent.dataModule.getData(this.parent.dataModule.generateQuery(start, end));
+        const start: Date = this.parent.activeView.startDate();
+        const end: Date = this.parent.activeView.endDate();
+        const dataManager: Promise<any> = this.parent.dataModule.getData(this.parent.dataModule.generateQuery(start, end));
         dataManager.then((e: ReturnType) => this.dataManagerSuccess(e)).catch((e: ReturnType) => this.dataManagerFailure(e));
     }
 
     private dataManagerSuccess(e: ReturnType): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.trigger(events.dataBinding, e, (args: ReturnType) => {
-            let resultData: Object[] = <Object[]>extend([], args.result, null, true);
-            this.parent.eventsData = resultData.filter((data: { [key: string]: Object }) => !data[this.parent.eventFields.isBlock]);
-            this.parent.blockData = resultData.filter((data: { [key: string]: Object }) => data[this.parent.eventFields.isBlock]);
-            let processed: Object[] = this.parent.eventBase.processData(resultData as { [key: string]: Object }[]);
+            const resultData: Record<string, any>[] = extend([], args.result, null, true) as Record<string, any>[];
+            this.parent.eventsData = resultData.filter((data: Record<string, any>) => !data[this.parent.eventFields.isBlock]);
+            this.parent.blockData = resultData.filter((data: Record<string, any>) => data[this.parent.eventFields.isBlock]);
+            const processed: Record<string, any>[] = this.parent.eventBase.processData(resultData);
             this.parent.notify(events.dataReady, { processedData: processed });
             if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
                 this.parent.dragAndDropModule.navigationWrapper();
             }
-            this.parent.renderCompleted();
             this.parent.trigger(events.dataBound, null, () => this.parent.hideSpinner());
         });
     }
 
-    public dataManagerFailure(e: { result: Object[] }): void {
+    public dataManagerFailure(e: ReturnType): void {
         if (this.parent.isDestroyed) { return; }
-        // tslint:disable:no-any
-        this.parent.trigger(
-            events.actionFailure, { error: e }, () => this.parent.hideSpinner()
-        );
-        // tslint:disable:no-any
+        this.parent.trigger(events.actionFailure, { error: e }, () => this.parent.hideSpinner());
     }
+
 }

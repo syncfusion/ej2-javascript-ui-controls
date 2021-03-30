@@ -4,8 +4,9 @@ import { Code39 } from './code39';
  * code39 used to calculate the barcode of type 39
  */
 export class Code39Extension extends Code39 {
-
+    // eslint-disable-next-line
     private code39ExtensionValues(): object {
+        // eslint-disable-next-line
         let codes: object = {
             '0': '%U', '1': '$A', '2': '$B', '3': '$C', '4': '$D',
             '5': '$E', '6': '$F', '7': '$G', '8': '$H', '9': '$I',
@@ -89,17 +90,19 @@ export class Code39Extension extends Code39 {
             '124': '%Q',
             '125': '	%R',
             '126': '%S',
-            '127': '%T',
+            '127': '%T'
         };
         return codes;
     }
     /**
-     * Validate the given input to check whether the input is valid one or not
-     * 
+     * Validate the given input.
+     *
+     * @returns {string} Validate the given input.
+     * @param {string} char - Provide the canvas element .
+     * @private
      */
-    /** @private */
     public validateInput(char: string): string {
-        let asciiCheck: boolean = this.checkText(char);
+        const asciiCheck: boolean = this.checkText(char);
         if (asciiCheck) {
             return undefined;
         } else {
@@ -118,7 +121,8 @@ export class Code39Extension extends Code39 {
 
     private code39Extension(givenCharacter: string): string {
         let encodedString: string = '';
-        let code: object = this.code39ExtensionValues();
+        // eslint-disable-next-line
+        const code: object = this.code39ExtensionValues();
         let asciivalue: number;
         for (let i: number = 0; i < givenCharacter.length; i++) {
             asciivalue = givenCharacter[i].charCodeAt(0);
@@ -128,10 +132,16 @@ export class Code39Extension extends Code39 {
     }
 
 
-    /** @private */
+    /**
+     * Draw the barcode SVG.\
+     *
+     * @returns {void} Draw the barcode SVG .
+     *  @param {HTMLElement} canvas - Provide the canvas element .
+     * @private
+     */
     public drawCode39(canvas: HTMLElement): void {
-        let givenCharacter: string = this.value;
-        let encodedCharacter: string = this.code39Extension(givenCharacter);
+        const givenCharacter: string = this.value;
+        const encodedCharacter: string = this.code39Extension(givenCharacter);
         this.drawCode39Extension(canvas, encodedCharacter);
     }
 }

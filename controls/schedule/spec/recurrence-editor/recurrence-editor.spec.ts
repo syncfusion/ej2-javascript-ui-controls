@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { RecurrenceEditor } from '../../src/recurrence-editor/recurrence-editor';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
@@ -16,10 +17,9 @@ describe('Recurrence Editor Base Module', () => {
     const RTLCLASS: string = 'e-rtl';
 
     beforeAll(() => {
-        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
             (this as any).skip(); //Skips test (in Chai)
             return;
@@ -28,7 +28,7 @@ describe('Recurrence Editor Base Module', () => {
 
     describe('Schedule - recurrence rendering scenario', () => {
         let schObj: RecurrenceEditor;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        const elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll(() => {
             document.body.appendChild(elem);
             schObj = new RecurrenceEditor({ startDate: new Date('Tue, 06 May 2014') });
@@ -74,7 +74,7 @@ describe('Recurrence Editor Base Module', () => {
 
     describe('Schedule - recurrence rendering scenario', () => {
         let schObj: RecurrenceEditor;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        const elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll(() => {
             document.body.appendChild(elem);
             schObj = new RecurrenceEditor({ startDate: new Date('Tue, 06 May 2014'), firstDayOfWeek: 1 });
@@ -210,10 +210,10 @@ describe('Recurrence Editor Base Module', () => {
 
     describe('Schedule - recurrence property change.', () => {
         let schObj: RecurrenceEditor;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        const elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll(() => {
             document.body.appendChild(elem);
-            schObj = new RecurrenceEditor({ cssClass: "recDemo" });
+            schObj = new RecurrenceEditor({ cssClass: 'recDemo' });
             schObj.appendTo('#Schedule');
         });
         afterAll(() => {
@@ -223,7 +223,7 @@ describe('Recurrence Editor Base Module', () => {
             remove(elem);
         });
         it('ensuring startDate property change.', () => {
-            let date1: Date = new Date('Sun May 18 2014');
+            const date1: Date = new Date('Sun May 18 2014');
             schObj.setProperties({ startDate: date1 });
             expect((<any>schObj).monthDate.value).toBe(18);
             expect((<any>schObj).monthWeekDays.value).toBe('SU');
@@ -236,8 +236,8 @@ describe('Recurrence Editor Base Module', () => {
             expect(schObj.element.classList.contains(RTLCLASS)).toBe(false);
         });
         it('ensuring cssClass property change.', () => {
-            expect(schObj.element.classList.contains("recDemo")).toBe(true);
-            let cssClass: string = 'e-check';
+            expect(schObj.element.classList.contains('recDemo')).toBe(true);
+            const cssClass: string = 'e-check';
             schObj.setProperties({ cssClass: cssClass });
             expect(schObj.element.classList.contains(cssClass)).toBe(true);
             schObj.setProperties({ cssClass: 'customSchedule productSchedule' });
@@ -252,15 +252,15 @@ describe('Recurrence Editor Base Module', () => {
             expect(schObj.element.querySelectorAll('.e-editor>.e-hide-recurrence-element').length).toBe(4);
         });
         it('ensuring the property changes for min-max date', () => {
-            let start: Date = new Date(2018, 1, 1);
-            let end: Date = new Date(2018, 1, 31);
+            const start: Date = new Date(2018, 1, 1);
+            const end: Date = new Date(2018, 1, 31);
             schObj.setProperties({ minDate: start, maxDate: end });
             expect((<any>schObj).untilDateObj.minDate.getTime()).toBe(start.getTime());
             expect((<any>schObj).untilDateObj.maxDate.getTime()).toBe(end.getTime());
         });
         it('ensuring the property changes for date format', () => {
-            schObj.setProperties({ dateFormat: "yyyy/MM/dd" });
-            expect((<any>schObj).untilDateObj.format).toBe("yyyy/MM/dd");
+            schObj.setProperties({ dateFormat: 'yyyy/MM/dd' });
+            expect((<any>schObj).untilDateObj.format).toBe('yyyy/MM/dd');
         });
         it('ensuring the property channge option-value', () => {
             schObj.setProperties({ value: 'FREQ=DAILY;INTERVAL=2;' });
@@ -270,33 +270,35 @@ describe('Recurrence Editor Base Module', () => {
         });
 
         it('Default - Interval', () => {
-            let startDate: Date = new Date('Tue, 06 May 2014');
+            const startDate: Date = new Date('Tue, 06 May 2014');
             expect(JSON.stringify(schObj.getRecurrenceDates(
                 startDate,
                 'FREQ=DAILY;INTERVAL=2;UNTIL=20140606T000000Z',
                 null,
                 0,
                 new Date('Tue May 04 2014 ')
-            )))
-                .toBe(JSON.stringify([new Date('Tue May 06 2014 ').getTime(),
-                new Date('Thu May 08 2014').getTime(),
+            ))).toBe(JSON.stringify([
+                new Date('Tue May 06 2014 ').getTime(), new Date('Thu May 08 2014').getTime(),
                 new Date('Sat May 10 2014').getTime(), new Date('Mon May 12 2014').getTime(),
                 new Date('Wed May 14 2014').getTime(), new Date('Fri May 16 2014').getTime(),
                 new Date('Sun May 18 2014').getTime(), new Date('Tue May 20 2014 ').getTime(),
                 new Date('Thu May 22 2014').getTime(), new Date('Sat May 24 2014').getTime(),
                 new Date('Mon May 26 2014').getTime(), new Date('Wed May 28 2014').getTime(),
                 new Date('Fri May 30 2014').getTime(), new Date('Sun Jun 01 2014').getTime(),
-                new Date('Tue Jun 03 2014').getTime(), new Date('Thu Jun 05 2014 ').getTime()]));
+                new Date('Tue Jun 03 2014').getTime(), new Date('Thu Jun 05 2014 ').getTime()
+            ]));
         });
 
         it('Custom - Interval', () => {
-            let startDate: Date = new Date('Tue, 06 May 2014');
+            const startDate: Date = new Date('Tue, 06 May 2014');
             expect(JSON.stringify(schObj.getRecurrenceDates(startDate, 'FREQ=DAILY;INTERVAL=2;UNTIL=20140606T000000Z', null, 0)))
-                .toBe(JSON.stringify([new Date('Sun May 18 2014').getTime(), new Date('Tue May 20 2014 ').getTime(),
-                new Date('Thu May 22 2014').getTime(), new Date('Sat May 24 2014').getTime(),
-                new Date('Mon May 26 2014').getTime(), new Date('Wed May 28 2014').getTime(),
-                new Date('Fri May 30 2014').getTime(), new Date('Sun Jun 01 2014').getTime(),
-                new Date('Tue Jun 03 2014').getTime(), new Date('Thu Jun 05 2014 ').getTime()]));
+                .toBe(JSON.stringify([
+                    new Date('Sun May 18 2014').getTime(), new Date('Tue May 20 2014 ').getTime(),
+                    new Date('Thu May 22 2014').getTime(), new Date('Sat May 24 2014').getTime(),
+                    new Date('Mon May 26 2014').getTime(), new Date('Wed May 28 2014').getTime(),
+                    new Date('Fri May 30 2014').getTime(), new Date('Sun Jun 01 2014').getTime(),
+                    new Date('Tue Jun 03 2014').getTime(), new Date('Thu Jun 05 2014 ').getTime()
+                ]));
         });
     });
 
@@ -304,7 +306,7 @@ describe('Recurrence Editor Base Module', () => {
         let recObj: RecurrenceEditor;
         beforeAll(() => {
             recObj = undefined;
-            let elem: HTMLElement = createElement('div', { id: 'editor' });
+            const elem: HTMLElement = createElement('div', { id: 'editor' });
             document.body.appendChild(elem);
             recObj = new RecurrenceEditor();
             recObj.appendTo('#editor');
@@ -326,7 +328,7 @@ describe('Recurrence Editor Base Module', () => {
 
     describe('Schedule - recurrence change. event checkups', () => {
         let schObj: RecurrenceEditor;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        const elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll(() => {
             document.body.appendChild(elem);
             schObj = new RecurrenceEditor();
@@ -351,7 +353,7 @@ describe('Recurrence Editor Base Module', () => {
 
     describe('selectedType API checkup', () => {
         let schObj: RecurrenceEditor;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        const elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll(() => {
             document.body.appendChild(elem);
             schObj = new RecurrenceEditor({ selectedType: 1 });
@@ -364,30 +366,30 @@ describe('Recurrence Editor Base Module', () => {
             remove(elem);
         });
         it('ensuring value property is updated with selectedType API value', () => {
-            let hiddenEle: number = schObj.element.querySelectorAll('.e-editor>.e-hide-recurrence-element').length;
+            const hiddenEle: number = schObj.element.querySelectorAll('.e-editor>.e-hide-recurrence-element').length;
             expect(hiddenEle).toBe(2);
             expect(schObj.element.querySelector('.e-editor').childElementCount - hiddenEle).toBe(3);
-            let repeatField: HTMLElement = schObj.element.querySelector('.e-editor option') as HTMLElement;
+            const repeatField: HTMLElement = schObj.element.querySelector('.e-editor option') as HTMLElement;
             expect(repeatField.innerText).toBe('Daily');
-            let intervalField: HTMLInputElement = schObj.element.querySelector('.e-interval .e-numeric-hidden') as HTMLInputElement;
+            const intervalField: HTMLInputElement = schObj.element.querySelector('.e-interval .e-numeric-hidden') as HTMLInputElement;
             expect(intervalField.value).toBe('1');
-            let endCountField: HTMLElement = schObj.element.querySelector('.e-end-on-left option') as HTMLElement;
+            const endCountField: HTMLElement = schObj.element.querySelector('.e-end-on-left option') as HTMLElement;
             expect(endCountField.innerText).toBe('Never');
             expect(schObj.value).toBe('FREQ=DAILY;INTERVAL=1;');
         });
         it('ensuring whether fields are populated correctly when value API is given', () => {
             schObj.setProperties({ value: 'FREQ=DAILY;INTERVAL=2;COUNT=8' });
             expect(schObj.value).toBe('FREQ=DAILY;INTERVAL=2;COUNT=8;');
-            let hiddenEle: number = schObj.element.querySelectorAll('.e-editor>.e-hide-recurrence-element').length;
+            const hiddenEle: number = schObj.element.querySelectorAll('.e-editor>.e-hide-recurrence-element').length;
             expect(hiddenEle).toBe(2);
             expect(schObj.element.querySelector('.e-editor').childElementCount - hiddenEle).toBe(3);
-            let repeatField: HTMLElement = schObj.element.querySelector('.e-editor option') as HTMLElement;
+            const repeatField: HTMLElement = schObj.element.querySelector('.e-editor option') as HTMLElement;
             expect(repeatField.innerText).toBe('Daily');
-            let intervalField: HTMLInputElement = schObj.element.querySelector('.e-interval .e-numeric-hidden') as HTMLInputElement;
+            const intervalField: HTMLInputElement = schObj.element.querySelector('.e-interval .e-numeric-hidden') as HTMLInputElement;
             expect(intervalField.value).toBe('2');
-            let endField: HTMLElement = schObj.element.querySelector('.e-end-on-left option') as HTMLElement;
+            const endField: HTMLElement = schObj.element.querySelector('.e-end-on-left option') as HTMLElement;
             expect(endField.innerText).toBe('Count');
-            let endCountField: HTMLInputElement = schObj.element.querySelector('.e-end-on-count .e-numeric-hidden') as HTMLInputElement;
+            const endCountField: HTMLInputElement = schObj.element.querySelector('.e-end-on-count .e-numeric-hidden') as HTMLInputElement;
             expect(endCountField.value).toBe('8');
         });
     });
@@ -414,9 +416,16 @@ describe('Recurrence Editor Base Module', () => {
         });
     });
 
+    /**
+     * Method to get selected days
+     *
+     * @param {RecurrenceEditor} editor Accepts the recurrence editor instance
+     * @returns {number[]} Return the date collections
+     * @private
+     */
     function getSelectedDays(editor: RecurrenceEditor): number[] {
-        let colIndex: number[] = [];
-        let elements: NodeListOf<Element> = editor.element.querySelectorAll('.e-days button.e-primary');
+        const colIndex: number[] = [];
+        const elements: NodeListOf<Element> = editor.element.querySelectorAll('.e-days button.e-primary');
         for (let index: number = 0; index < elements.length; index++) {
             colIndex.push(parseInt(elements[index].getAttribute('data-index'), 10));
         }
@@ -425,13 +434,9 @@ describe('Recurrence Editor Base Module', () => {
 
     it('memory leak', () => {
         profile.sample();
-        // tslint:disable:no-any
-        let average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
+        const average: number = inMB(profile.averageChange);
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        const memory: number = inMB(getMemoryProfile());
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        // tslint:enable:no-any
     });
 });

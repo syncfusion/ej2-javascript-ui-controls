@@ -1,4 +1,4 @@
-
+/* eslint-disable */
 import { BaseEventArgs } from '@syncfusion/ej2-base';
 import { AnnotationType, CommentStatus } from './index';
 import { ShapeLabelSettingsModel, DocumentTextCollectionSettingsModel, RectangleBoundsModel, FormFieldModel } from '../pdfviewer-model';
@@ -13,11 +13,11 @@ export interface LoadEventArgs extends BaseEventArgs {
     /**
      * Document name to be loaded into PdfViewer.
      */
-    documentName: string;
+    documentName: string
     /**
      * Defines the page details and page count of the PDF document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     pageData: any;
 }
 
@@ -28,11 +28,11 @@ export interface FormFieldFocusOutEventArgs extends BaseEventArgs {
     /**
      * specifies the name of field.
      */
-    fieldName: string;
+    fieldName: string
     /**
      * specifies the value from formField.
      */
-    value: string;
+    value: string
 }
 
 /**
@@ -42,7 +42,7 @@ export interface UnloadEventArgs extends BaseEventArgs {
     /**
      * Document name to be loaded into PdfViewer.
      */
-    documentName: string;
+    documentName: string
 }
 
 /**
@@ -52,7 +52,7 @@ export interface BeforeAddFreeTextEventArgs extends BaseEventArgs {
     /**
      * value of free text annotation.
      */
-    value: string;
+    value: string
 }
 
 /**
@@ -62,15 +62,15 @@ export interface ButtonFieldClickEventArgs extends BaseEventArgs {
     /**
      * specifies the form field value.
      */
-    buttonFieldValue: string;
+    buttonFieldValue: string
     /**
      * specifies the form field name.
      */
-    buttonFieldName: string;
+    buttonFieldName: string
     /**
      * specifies the form field id.
      */
-    id: string;
+    id: string
 }
 /**
  * This event provide necessary information about form fields.
@@ -79,15 +79,15 @@ export interface FormFieldClickArgs extends BaseEventArgs {
     /**
      * Gets the name of the event.
      */
-    name: string;
+    name: string
     /**
      * Gets the form field object.
      */
-    field: FormFieldModel;
+    field: FormFieldModel
     /**
      * If TRUE, signature panel does not open for the signature field. FALSE by default.
      */
-    cancel: boolean;
+    cancel: boolean
 }
 /**
  * This event arguments provides the necessary information about document load failed event.
@@ -96,15 +96,15 @@ export interface LoadFailedEventArgs extends BaseEventArgs {
     /**
      * Document name to be loaded into PdfViewer.
      */
-    documentName: string;
+    documentName: string
     /**
      * Defines the document password protected state.
      */
-    isPasswordRequired: boolean;
+    isPasswordRequired: boolean
     /**
      * In case of document load failed with incorrect password, this contain the incorrect password.
      */
-    password: string;
+    password: string
 }
 
 /**
@@ -114,25 +114,25 @@ export interface AjaxRequestFailureEventArgs extends BaseEventArgs {
     /**
      * Document name to be loaded into PdfViewer
      */
-    documentName: string;
+    documentName: string
     /* Status code of error message */
     /**
      * Document name to be loaded into PdfViewer
      */
-    errorStatusCode: number;
+    errorStatusCode: number
     /* Error message for ajax failure */
     /**
      * Document name to be loaded into PdfViewer
      */
-    errorMessage: string;
+    errorMessage: string
     /**
      * Action name in which the failure is thrown.
      */
-    action: string;
+    action: string
     /**
      * Specifies the retry request for the failed requests.
      */
-    retryCount?: boolean;
+    retryCount?: boolean
 }
 
 /**
@@ -142,16 +142,16 @@ export interface ValidateFormFieldsArgs extends BaseEventArgs {
     /**
      * The form fields object from PDF document being loaded.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     formField: any;
     /**
      * Document name to be loaded into PdfViewer
      */
-    documentName: string;
+    documentName: string
     /**
      * Defines the non-fillable form fields.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     nonFillableFields: any;
 }
 
@@ -162,19 +162,19 @@ export interface PageClickEventArgs extends BaseEventArgs {
     /**
      * Document name to be loaded into PdfViewer
      */
-    documentName: string;
+    documentName: string
     /**
      * Page number of the document in which click action is performed
      */
-    pageNumber: number;
+    pageNumber: number
     /**
      * x co-ordinate of the click action location
      */
-    x: number;
+    x: number
     /**
      * y co-ordinate of the click action location
      */
-    y: number;
+    y: number
 }
 
 /**
@@ -184,15 +184,15 @@ export interface PageChangeEventArgs extends BaseEventArgs {
     /**
      * Document name to be loaded into PdfViewer.
      */
-    documentName: string;
+    documentName: string
     /**
      * Current Page number of the document.
      */
-    currentPageNumber: number;
+    currentPageNumber: number
     /**
      * Previous Page number of the document.
      */
-    previousPageNumber: number;
+    previousPageNumber: number
 }
 
 /**
@@ -202,11 +202,11 @@ export interface ZoomChangeEventArgs extends BaseEventArgs {
     /**
      * Defines the current zoom percentage value
      */
-    zoomValue: number;
+    zoomValue: number
     /**
      * Defines the zoom value before change
      */
-    previousZoomValue: number;
+    previousZoomValue: number
 }
 
 /**
@@ -216,11 +216,11 @@ export interface HyperlinkClickEventArgs extends BaseEventArgs {
     /**
      * Defines the current clicked hyperlink
      */
-    hyperlink: string;
+    hyperlink: string
     /**
      * Defines the current hyperlink element.
      */
-    hyperlinkElement: HTMLAnchorElement;
+    hyperlinkElement: HTMLAnchorElement
 }
 
 /**
@@ -230,7 +230,7 @@ export interface HyperlinkMouseOverArgs extends BaseEventArgs {
     /**
      * Defines the current hyperlink element.
      */
-    hyperlinkElement: HTMLAnchorElement;
+    hyperlinkElement: HTMLAnchorElement
 }
 
 /**
@@ -240,45 +240,45 @@ export interface AnnotationAddEventArgs extends BaseEventArgs {
     /**
      * Defines the settings of the annotation added to the PDF document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     annotationSettings: any;
     /**
      * Defines the bounds of the annotation added in the page of the PDF document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     annotationBound: any;
     /**
      * Defines the id of the annotation added in the page of the PDF document.
      */
-    annotationId: string;
+    annotationId: string
     /**
      * Defines the page number in which the annotation is added.
      */
-    pageIndex: number;
+    pageIndex: number
     /**
      * Define the type of the annotation added in the page of the PDF document.
      */
-    annotationType: AnnotationType;
+    annotationType: AnnotationType
     /**
      * Defines the selected text content in the text markup annotation.
      */
-    textMarkupContent?: string;
+    textMarkupContent?: string
     /**
      * Starting index of text markup annotation in the page text content.
      */
-    textMarkupStartIndex?: number;
+    textMarkupStartIndex?: number
     /**
      * End index of text markup annotation in the page text content.
      */
-    textMarkupEndIndex?: number;
+    textMarkupEndIndex?: number
     /**
      * End index of text markup annotation in the page text content.
      */
-    labelSettings?: ShapeLabelSettingsModel;
+    labelSettings?: ShapeLabelSettingsModel
     /**
      * Defines the multi page annotation collections.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     multiplePageCollection?: any;
 }
 
@@ -289,36 +289,36 @@ export interface AnnotationRemoveEventArgs extends BaseEventArgs {
     /**
      * Defines the id of the annotation removed from the page of the PDF document.
      */
-    annotationId: string;
+    annotationId: string
     /**
      * Defines the page number in which the annotation is removed.
      */
-    pageIndex: number;
+    pageIndex: number
     /**
      * Defines the type of the annotation removed from the page of the PDF document.
      */
-    annotationType: AnnotationType;
+    annotationType: AnnotationType
     /**
      * Defines the bounds of the annotation removed from the page of the PDF document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     annotationBounds: any;
     /**
      * Defines the selected text content in the text markup annotation.
      */
-    textMarkupContent?: string;
+    textMarkupContent?: string
     /**
      * Starting index of text markup annotation in the page text content.
      */
-    textMarkupStartIndex?: number;
+    textMarkupStartIndex?: number
     /**
      * End index of text markup annotation in the page text content.
      */
-    textMarkupEndIndex?: number;
+    textMarkupEndIndex?: number
     /**
      * Defines the multi page annotation collections.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     multiplePageCollection?: any;
 }
 
@@ -329,19 +329,19 @@ export interface CommentEventArgs extends BaseEventArgs {
     /**
      * Specifies the id for the annotation comments
      */
-    id: string;
+    id: string
     /**
      * Gets the text
      */
-    text: string;
+    text: string
     /**
      * specifies the annotation for the comment.
      */
-    annotation: string;
+    annotation: string
     /**
      * specifies the status of the annotation
      */
-    status?: CommentStatus;
+    status?: CommentStatus
 }
 
 /**
@@ -351,80 +351,80 @@ export interface AnnotationPropertiesChangeEventArgs extends BaseEventArgs {
     /**
      * Defines the id of the annotation property is changed in the page of the PDF document.
      */
-    annotationId: string;
+    annotationId: string
     /**
      * Defines the page number in which the annotation property is changed.
      */
-    pageIndex: number;
+    pageIndex: number
     /**
      * Defines the type of the annotation property is changed in the page of the PDF document.
      */
-    annotationType: AnnotationType;
+    annotationType: AnnotationType
     /**
      * Specifies that the color of the annotation is changed.
      */
-    isColorChanged?: boolean;
+    isColorChanged?: boolean
     /**
      * Specifies that the opacity of the annotation is changed.
      */
-    isOpacityChanged: boolean;
+    isOpacityChanged: boolean
     /**
      * Specifies that the stroke color of the annotation is changed.
      */
-    isStrokeColorChanged?: boolean;
+    isStrokeColorChanged?: boolean
     /**
      * Specifies that the thickness of the annotation is changed.
      */
-    isThicknessChanged?: boolean;
+    isThicknessChanged?: boolean
     /**
      * Specifies that the line head start style of the annotation is changed.
      */
-    isLineHeadStartStyleChanged?: boolean;
+    isLineHeadStartStyleChanged?: boolean
     /**
      * Specifies that the line head end style of the annotation is changed.
      */
-    isLineHeadEndStyleChanged?: boolean;
+    isLineHeadEndStyleChanged?: boolean
     /**
      * Specifies that the border dash array of the annotation is changed.
      */
-    isBorderDashArrayChanged?: boolean;
+    isBorderDashArrayChanged?: boolean
     /**
      * Specifies that the Text of the annotation is changed.
      */
-    isTextChanged?: boolean;
+    isTextChanged?: boolean
     /**
      * Specifies that the comments of the annotation is changed.
      */
-    isCommentsChanged?: boolean;
+    isCommentsChanged?: boolean
     /**
      * Defines the selected text content in the text markup annotation.
      */
-    textMarkupContent?: string;
+    textMarkupContent?: string
     /**
      * Starting index of text markup annotation in the page text content.
      */
-    textMarkupStartIndex?: number;
+    textMarkupStartIndex?: number
     /**
      * End index of text markup annotation in the page text content.
      */
-    textMarkupEndIndex?: number;
+    textMarkupEndIndex?: number
     /**
      * Defines the multi page annotation collections.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     multiplePageCollection?: any;
     /**
      * Specifies whether the text of the FreeText annotation is changed or not.
      */
-    isFreeTextChanged?: boolean;
+    isFreeTextChanged?: boolean
     /**
      * Specifies the previous text of the freeText annotation.
      */
-    previousText?: string;
+    previousText?: string
     /**
      * Specifies the current text of the freeText annotation.
      */
-    currentText?: string;
+    currentText?: string
 }
 
 /**
@@ -434,45 +434,45 @@ export interface AnnotationResizeEventArgs extends BaseEventArgs {
     /**
      * Defines the id of the annotation resized in the page of the PDF document.
      */
-    annotationId: string;
+    annotationId: string
     /**
      * Defines the page number in which the annotation is resized.
      */
-    pageIndex: number;
+    pageIndex: number
     /**
      * Defines the settings of the annotation resized in the PDF document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     annotationSettings: any;
     /**
      * Defines the bounds of the annotation resized in the page of the PDF document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     annotationBound: any;
     /**
      * Defines the type of the annotation resized in the page of the PDF document.
      */
-    annotationType: AnnotationType;
+    annotationType: AnnotationType
     /**
      * Defines the selected text content in the text markup annotation.
      */
-    textMarkupContent?: string;
+    textMarkupContent?: string
     /**
      * Starting index of text markup annotation in the page text content.
      */
-    textMarkupStartIndex?: number;
+    textMarkupStartIndex?: number
     /**
      * End index of text markup annotation in the page text content.
      */
-    textMarkupEndIndex?: number;
+    textMarkupEndIndex?: number
     /**
      * End index of text markup annotation in the page text content.
      */
-    labelSettings?: ShapeLabelSettingsModel;
+    labelSettings?: ShapeLabelSettingsModel
     /**
      * Defines the multiple page annotation collections.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     multiplePageCollection?: any;
 }
 
@@ -483,28 +483,28 @@ export interface AnnotationMoveEventArgs extends BaseEventArgs {
     /**
      * Defines the id of the annotation moved in the page of the PDF document.
      */
-    annotationId: string;
+    annotationId: string
     /**
      * Defines the page number in which the annotation is moved.
      */
-    pageIndex: number;
+    pageIndex: number
     /**
      * Defines the type of the annotation moved in the page of the PDF document.
      */
-    annotationType: AnnotationType;
+    annotationType: AnnotationType
     /**
      * Defines the settings of the annotation moved in the PDF document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     annotationSettings: any;
     /**
      * Previous position of annotations in the page text content.
      */
-    previousPosition: object;
+    previousPosition: object
     /**
      * Current position of annotations in the page text content.
      */
-    currentPosition: object;
+    currentPosition: object
 }
 
 /**
@@ -514,37 +514,37 @@ export interface AddSignatureEventArgs extends BaseEventArgs {
     /**
      * Defines the bounds of the signature added in the page of the PDF document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     bounds: any;
     /**
      * Defines the id of the signature added in the page of the PDF document.
      */
-    id: string;
+    id: string
     /**
      * Defines the page number in which the signature is added.
      */
-    pageIndex: number;
+    pageIndex: number
     /**
      * Define the type of the signature added in the page of the PDF document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     type: any;
     /**
      * Define the opacity of the signature added in the page of the PDF document.
      */
-    opacity: number;
+    opacity: number
     /**
      * Define the stroke color of the signature added in the page of the PDF document.
      */
-    strokeColor?: string;
+    strokeColor?: string
     /**
      * Define the thickness of the signature added in the page of the PDF document.
      */
-    thickness?: number;
+    thickness?: number
     /**
      * Gets the base64 string of the signature path
      */
-    data?: string;
+    data?: string
 }
 
 /**
@@ -554,20 +554,20 @@ export interface RemoveSignatureEventArgs extends BaseEventArgs {
     /**
      * Defines the bounds of the signature removed in the page of the PDF document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     bounds: any;
     /**
      * Defines the id of the signature removed in the page of the PDF document.
      */
-    id: string;
+    id: string
     /**
      * Defines the page number in which the signature is removed.
      */
-    pageIndex: number;
+    pageIndex: number
     /**
      * Define the type of the signature removed in the page of the PDF document.
      */
-    type: AnnotationType;
+    type: AnnotationType
 }
 
 /**
@@ -577,35 +577,35 @@ export interface MoveSignatureEventArgs extends BaseEventArgs {
     /**
      * Defines the id of the annotation moved in the page of the PDF document.
      */
-    id: string;
+    id: string
     /**
      * Defines the page number in which the annotation is moved.
      */
-    pageIndex: number;
+    pageIndex: number
     /**
      * Defines the type of the signature moved in the page of the PDF document.
      */
-    type: AnnotationType;
+    type: AnnotationType
     /**
      * Define the opacity of the signature added in the page of the PDF document.
      */
-    opacity: number;
+    opacity: number
     /**
      * Define the stroke color of the signature added in the page of the PDF document.
      */
-    strokeColor: string;
+    strokeColor: string
     /**
      * Define the thickness of the signature added in the page of the PDF document.
      */
-    thickness: number;
+    thickness: number
     /**
      * Previous position of signature in the page text content.
      */
-    previousPosition: object;
+    previousPosition: object
     /**
      * Current position of signature in the page text content.
      */
-    currentPosition: object;
+    currentPosition: object
 }
 
 /**
@@ -615,36 +615,36 @@ export interface SignaturePropertiesChangeEventArgs extends BaseEventArgs {
     /**
      * Defines the id of the signature property is changed in the page of the PDF document.
      */
-    id: string;
+    id: string
     /**
      * Defines the page number in which the signature property is changed.
      */
-    pageIndex: number;
+    pageIndex: number
     /**
      * Defines the type of the signature property is changed in the page of the PDF document.
      */
-    type: AnnotationType;
+    type: AnnotationType
     /**
      * Specifies that the stroke color of the signature is changed.
      */
-    isStrokeColorChanged?: boolean;
+    isStrokeColorChanged?: boolean
     /**
      * Specifies that the opacity of the signature is changed.
      */
-    isOpacityChanged: boolean;
+    isOpacityChanged: boolean
     /**
      * Specifies that the thickness of the signature is changed.
      */
-    isThicknessChanged?: boolean;
+    isThicknessChanged?: boolean
     /**
      * Defines the old property value of the signature.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     oldValue: any;
     /**
      * Defines the new property value of the signature.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     newValue: any;
 }
 
@@ -655,36 +655,36 @@ export interface ResizeSignatureEventArgs extends BaseEventArgs {
     /**
      * Defines the id of the signature added in the page of the PDF document.
      */
-    id: string;
+    id: string
     /**
      * Defines the page number in which the signature is added.
      */
-    pageIndex: number;
+    pageIndex: number
     /**
      * Define the type of the signature added in the page of the PDF document.
      */
-    type: AnnotationType;
+    type: AnnotationType
     /**
      * Define the opacity of the signature added in the page of the PDF document.
      */
-    opacity: number;
+    opacity: number
     /**
      * Define the stroke color of the signature added in the page of the PDF document.
      */
-    strokeColor: string;
+    strokeColor: string
     /**
      * Define the thickness of the signature added in the page of the PDF document.
      */
-    thickness: number;
+    thickness: number
     /**
      * Defines the current Position of the signature added in the page of the PDF document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     currentPosition: any;
     /**
      * Defines the previous position of the signature added in the page of the PDF document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     previousPosition: any;
 }
 
@@ -695,15 +695,15 @@ export interface SignatureSelectEventArgs extends BaseEventArgs {
     /**
      * Defines the id of the signature selected in the page of the PDF document.
      */
-    id: string;
+    id: string
     /**
      * Defines the page number in which the signature is selected.
      */
-    pageIndex: number;
+    pageIndex: number
     /**
      * Defines the properties of the selected signature.
      */
-    signature: object;
+    signature: object
 }
 /**
  * This event arguments provides the necessary information about mouse leave event.
@@ -712,7 +712,7 @@ export interface AnnotationMouseLeaveEventArgs extends BaseEventArgs {
     /**
      * Defines the page number in which the mouse over annotation object is rendered.
      */
-    pageIndex: number;
+    pageIndex: number
 }
 
 /**
@@ -722,41 +722,41 @@ export interface AnnotationMouseoverEventArgs extends BaseEventArgs {
     /**
      * Defines the id of the mouse over annotation object in the page of the PDF document
      */
-    annotationId: string;
+    annotationId: string
     /**
      * Defines the page number in which the mouse over annotation object is rendered.
      */
-    pageIndex: number;
+    pageIndex: number
     /**
      * Defines the type of the annotation during the mouse hover in the PDF document.
      */
-    annotationType: AnnotationType;
+    annotationType: AnnotationType
     /**
      * Defines the annotation object mouse hover in the PDF document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     annotation: any;
     /**
      * Defines the bounds of the annotation resized in the page of the PDF document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     annotationBounds: any;
     /**
      * Defines the mouseover x position with respect to page container.
      */
-    pageX: number;
+    pageX: number
     /**
      * Defines the mouseover y position with respect to page container.
      */
-    pageY: number;
+    pageY: number
     /**
      * Defines the mouseover x position with respect to viewer container.
      */
-    X: number;
+    X: number
     /**
      * Defines the mouseover y position with respect to viewer container.
      */
-    Y: number;
+    Y: number
 }
 
 /**
@@ -766,12 +766,12 @@ export interface PageMouseoverEventArgs extends BaseEventArgs {
     /**
      * Mouseover x position with respect to page container.
      */
-    pageX: number;
+    pageX: number
     /**
      * Mouseover y position with respect to page container.
      */
-    pageY: number;
-    }
+    pageY: number
+}
 
 /**
  * This event arguments provides the necessary information about annotation select event.
@@ -780,36 +780,36 @@ export interface AnnotationSelectEventArgs extends BaseEventArgs {
     /**
      * Defines the id of the annotation selected in the page of the PDF document.
      */
-    annotationId: string;
+    annotationId: string
     /**
      * Defines the page number in which the annotation is selected.
      */
-    pageIndex: number;
+    pageIndex: number
     /**
      * Defines the annotation selected in the PDF document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     annotation: any;
     /**
      * Defines the overlapped annotations of the selected annotation.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     annotationCollection?: any;
     /**
      * Defines the multi page annotation collections.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     multiplePageCollection?: any;
 
     /**
      * Defines the annotation selection by mouse.
      */
-    isProgrammaticSelection?: boolean;
+    isProgrammaticSelection?: boolean
 
     /**
      * Defines the annotation add mode.
      */
-    annotationAddMode?: string;
+    annotationAddMode?: string
 
 
 }
@@ -820,15 +820,15 @@ export interface AnnotationUnSelectEventArgs extends BaseEventArgs {
     /**
      * Defines the id of the annotation unselected in the page of the PDF document.
      */
-    annotationId: string;
+    annotationId: string
     /**
      * Defines the page number in which the annotation is unselected.
      */
-    pageIndex: number;
+    pageIndex: number
     /**
      * Defines the annotation unselected in the PDF document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     annotation: any;
 }
 
@@ -839,15 +839,15 @@ export interface AnnotationDoubleClickEventArgs extends BaseEventArgs {
     /**
      * Defines the id of the annotation double clicked in the page of the PDF document.
      */
-    annotationId: string;
+    annotationId: string
     /**
      * Defines the page number in which the annotation is double clicked.
      */
-    pageIndex: number;
+    pageIndex: number
     /**
      * Defines the annotation double clicked in the PDF document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     annotation: any;
 }
 
@@ -858,7 +858,7 @@ export interface ThumbnailClickEventArgs extends BaseEventArgs {
     /**
      * Page number of the thumbnail in which click action is performed
      */
-    pageNumber: number;
+    pageNumber: number
 }
 
 /**
@@ -868,19 +868,19 @@ export interface BookmarkClickEventArgs extends BaseEventArgs {
     /**
      * Page number of the bookmark in which click action is performed
      */
-    pageNumber: number;
+    pageNumber: number
     /**
      * Position of the bookmark content
      */
-    position: number;
+    position: number
     /**
      * Title of the bookmark
      */
-    text: string;
+    text: string
     /**
      * Get the fileName from Launch action
      */
-    fileName: string;
+    fileName: string
 }
 /**
  * This event arguments provide the necessary information about text selection start event.
@@ -889,7 +889,7 @@ export interface TextSelectionStartEventArgs extends BaseEventArgs {
     /**
      * Defines the page number in which the text selection is started.
      */
-    pageIndex: number;
+    pageIndex: number
 }
 
 /**
@@ -899,15 +899,15 @@ export interface TextSelectionEndEventArgs extends BaseEventArgs {
     /**
      * Defines the page number in which the text selection is finished.
      */
-    pageIndex: number;
+    pageIndex: number
     /**
      * Defines the text content selected in the page.
      */
-    textContent: string;
+    textContent: string
     /**
      * Defines the bounds of the selected text in the page.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     textBounds: any;
 }
 
@@ -918,12 +918,12 @@ export interface ImportStartEventArgs extends BaseEventArgs {
     /**
      * json annotation Data to be imported into PdfViewer.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     importData: any;
     /**
      * json form field data to be imported into PdfViewer.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     formFieldData: any;
 
 }
@@ -932,15 +932,15 @@ export interface ImportStartEventArgs extends BaseEventArgs {
  * This event arguments provides the necessary information about export annotations start event.
  */
 export interface ExportStartEventArgs extends BaseEventArgs {
-    /** 
+    /**
      * specifies the annotation data exported from the loaded document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     exportData: any;
     /**
      * Specifies the form field data exported from the loaded document..
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     formFieldData: any;
 
 }
@@ -952,12 +952,12 @@ export interface ImportSuccessEventArgs extends BaseEventArgs {
     /**
      * Specifies the annotation data to be imported in loaded document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     importData: any;
     /**
      * Specifies the form field data to be imported in loaded document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     formFieldData: any;
 
 }
@@ -969,16 +969,16 @@ export interface ExportSuccessEventArgs extends BaseEventArgs {
     /**
      * Specifies the annotation data exported from the loaded documents.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     exportData: any;
     /**
      * Specifies the exported annotations json file name.
      */
-    fileName: string;
+    fileName: string
     /**
      * Specifies the form field data exported from the loaded documents.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     formFieldData: any;
 
 }
@@ -990,16 +990,16 @@ export interface ImportFailureEventArgs extends BaseEventArgs {
     /**
      * specifies the annotation data to be imported in loaded document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     importData: any;
     /**
      * Error details for import annotations.
      */
-    errorDetails: string;
+    errorDetails: string
     /**
      * specifies the form field data to be imported in loaded document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     formFieldData: any;
 
 }
@@ -1011,16 +1011,16 @@ export interface ExportFailureEventArgs extends BaseEventArgs {
     /**
      * specifies the annotation data to be exported from the loaded document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     exportData: any;
     /**
      * Error details for export annotations.
      */
-    errorDetails: string;
+    errorDetails: string
     /**
      * specifies the form field data to be exported from the loaded document.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     formFieldData: any;
 
 }
@@ -1032,7 +1032,7 @@ export interface ExtractTextCompletedEventArgs extends BaseEventArgs {
     /**
      * Returns the extracted text collection
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     documentTextCollection: DocumentTextCollectionSettingsModel[][];
 }
 /**
@@ -1042,7 +1042,7 @@ export interface AjaxRequestInitiateEventArgs extends BaseEventArgs {
     /**
      * Specified the data to be sent in to server.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     JsonData: any;
 }
 
@@ -1053,7 +1053,7 @@ export interface DownloadStartEventArgs extends BaseEventArgs {
     /**
      * File name of the currently loaded PDF document in the PDF Viewer.
      */
-    fileName: string;
+    fileName: string
 }
 
 /**
@@ -1063,11 +1063,11 @@ export interface DownloadEndEventArgs extends BaseEventArgs {
     /**
      * File name of the currently loaded PDF document in the PDF Viewer.
      */
-    fileName: string;
+    fileName: string
     /**
      * Defines the base 64 string of the loaded PDF document data.
      */
-    downloadDocument: string;
+    downloadDocument: string
 }
 
 /**
@@ -1077,11 +1077,11 @@ export interface PrintStartEventArgs extends BaseEventArgs {
     /**
      * File name of the currently loaded PDF document in the PDF Viewer.
      */
-    fileName: string;
+    fileName: string
     /**
      * If it is true then the print operation will not work.
      */
-    cancel: boolean;
+    cancel: boolean
 }
 
 /**
@@ -1091,7 +1091,7 @@ export interface PrintEndEventArgs extends BaseEventArgs {
     /**
      * File name of the currently loaded PDF document in the PDF Viewer.
      */
-    fileName: string;
+    fileName: string
 }
 
 /**
@@ -1101,11 +1101,11 @@ export interface TextSearchStartEventArgs extends BaseEventArgs {
     /**
      * Specifies the searchText content in the PDF Viewer.
      */
-    searchText: string;
+    searchText: string
     /**
      * Specifies the match case of the searched text.
      */
-    matchCase: boolean;
+    matchCase: boolean
 }
 
 /**
@@ -1115,19 +1115,19 @@ export interface TextSearchHighlightEventArgs extends BaseEventArgs {
     /**
      * Specifies the searchText content in the PDF Viewer.
      */
-    searchText: string;
+    searchText: string
     /**
      * Specifies the match case of the searched text.
      */
-    matchCase: boolean;
+    matchCase: boolean
     /**
      * Specifies the bounds of the highlighted searched text.
      */
-    bounds: RectangleBoundsModel;
+    bounds: RectangleBoundsModel
     /**
      * Specifies the page number of the highlighted search text.
      */
-    pageNumber: number;
+    pageNumber: number
 }
 
 /**
@@ -1137,9 +1137,9 @@ export interface TextSearchCompleteEventArgs extends BaseEventArgs {
     /**
      * Specifies the searchText content in the PDF Viewer.
      */
-    searchText: string;
+    searchText: string
     /**
      * Specifies the match case of the searched text.
      */
-    matchCase: boolean;
+    matchCase: boolean
 }

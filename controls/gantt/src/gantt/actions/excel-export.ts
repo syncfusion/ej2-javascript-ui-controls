@@ -4,12 +4,15 @@ import { ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs, ExcelQueryC
 
 /**
  * Gantt Excel Export module
+ *
  * @hidden
  */
 export class ExcelExport {
     private parent: Gantt;
     /**
      * Constructor for Excel Export module
+     *
+     * @param {Gantt} gantt .
      */
     constructor(gantt: Gantt) {
         this.parent = gantt;
@@ -19,6 +22,8 @@ export class ExcelExport {
     }
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} .
      * @private
      */
     protected getModuleName(): string {
@@ -26,17 +31,21 @@ export class ExcelExport {
     }
     /**
      * To destroy excel export module.
+     *
+     * @returns {void} .
      * @private
      */
     public destroy(): void {
-         // Destroy Method
+        // Destroy Method
     }
     /**
      * To bind excel exporting events.
-     * @return {void}
+     *
+     * @returns {void} .
      * @private
      */
     private bindEvents(): void {
+        // eslint-disable-next-line
         this.parent.treeGrid.beforeExcelExport = (args: Object) => {
             this.parent.trigger('beforeExcelExport', args);
         };

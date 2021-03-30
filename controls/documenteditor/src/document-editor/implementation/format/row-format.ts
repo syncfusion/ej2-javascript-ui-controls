@@ -6,7 +6,8 @@ import { WUniqueFormats } from '../../base/unique-formats';
 import { WBorders } from './borders';
 import { TableRowWidget } from '../viewer/page';
 import { Revision } from '../track-changes/track-changes';
-/** 
+/* eslint-disable */
+/**
  * @private
  */
 export class WRowFormat {
@@ -39,64 +40,64 @@ export class WRowFormat {
      */
     public removedIds: string[] = [];
 
-    get gridBefore(): number {
+    public get gridBefore(): number {
         return this.getPropertyValue('gridBefore') as number;
     }
-    set gridBefore(value: number) {
+    public set gridBefore(value: number) {
         this.setPropertyValue('gridBefore', value);
     }
-    get gridBeforeWidth(): number {
+    public get gridBeforeWidth(): number {
         return this.getPropertyValue('gridBeforeWidth') as number;
     }
-    set gridBeforeWidth(value: number) {
+    public set gridBeforeWidth(value: number) {
         this.setPropertyValue('gridBeforeWidth', value);
     }
-    get gridBeforeWidthType(): WidthType {
+    public get gridBeforeWidthType(): WidthType {
         return this.getPropertyValue('gridBeforeWidthType') as WidthType;
     }
-    set gridBeforeWidthType(value: WidthType) {
+    public set gridBeforeWidthType(value: WidthType) {
         this.setPropertyValue('gridBeforeWidthType', value);
     }
-    get gridAfter(): number {
+    public get gridAfter(): number {
         return this.getPropertyValue('gridAfter') as number;
     }
-    set gridAfter(value: number) {
+    public set gridAfter(value: number) {
         this.setPropertyValue('gridAfter', value);
     }
-    get gridAfterWidth(): number {
+    public get gridAfterWidth(): number {
         return this.getPropertyValue('gridAfterWidth') as number;
     }
-    set gridAfterWidth(value: number) {
+    public set gridAfterWidth(value: number) {
         this.setPropertyValue('gridAfterWidth', value);
     }
-    get gridAfterWidthType(): WidthType {
+    public get gridAfterWidthType(): WidthType {
         return this.getPropertyValue('gridAfterWidthType') as WidthType;
     }
-    set gridAfterWidthType(value: WidthType) {
+    public set gridAfterWidthType(value: WidthType) {
         this.setPropertyValue('gridAfterWidthType', value);
     }
-    get allowBreakAcrossPages(): boolean {
+    public get allowBreakAcrossPages(): boolean {
         return this.getPropertyValue('allowBreakAcrossPages') as boolean;
     }
-    set allowBreakAcrossPages(value: boolean) {
+    public set allowBreakAcrossPages(value: boolean) {
         this.setPropertyValue('allowBreakAcrossPages', value);
     }
-    get isHeader(): boolean {
+    public get isHeader(): boolean {
         return this.getPropertyValue('isHeader') as boolean;
     }
-    set isHeader(value: boolean) {
+    public set isHeader(value: boolean) {
         this.setPropertyValue('isHeader', value);
     }
-    get rightMargin(): number {
+    public get rightMargin(): number {
         return this.getPropertyValue('rightMargin') as number;
     }
-    set rightMargin(value: number) {
+    public set rightMargin(value: number) {
         this.setPropertyValue('rightMargin', value);
     }
-    get height(): number {
+    public get height(): number {
         return this.getPropertyValue('height') as number;
     }
-    set height(value: number) {
+    public set height(value: number) {
         if (value === 0 && (this.heightType === 'AtLeast' || this.heightType === 'Exactly')) {
             value = 1;
         } else if (this.heightType === 'Auto') {
@@ -104,10 +105,10 @@ export class WRowFormat {
         }
         this.setPropertyValue('height', value);
     }
-    get heightType(): HeightType {
+    public get heightType(): HeightType {
         return this.getPropertyValue('heightType') as HeightType;
     }
-    set heightType(value: HeightType) {
+    public set heightType(value: HeightType) {
         if (value === 'AtLeast' || value === 'Exactly') {
             this.height = 1;
         } else {
@@ -115,37 +116,37 @@ export class WRowFormat {
         }
         this.setPropertyValue('heightType', value);
     }
-    get bottomMargin(): number {
+    public get bottomMargin(): number {
         return this.getPropertyValue('bottomMargin') as number;
     }
-    set bottomMargin(value: number) {
+    public set bottomMargin(value: number) {
         this.setPropertyValue('bottomMargin', value);
     }
-    get leftIndent(): number {
+    public get leftIndent(): number {
         return this.getPropertyValue('leftIndent') as number;
     }
-    set leftIndent(value: number) {
+    public set leftIndent(value: number) {
         this.setPropertyValue('leftIndent', value);
     }
-    get topMargin(): number {
+    public get topMargin(): number {
         return this.getPropertyValue('topMargin') as number;
     }
-    set topMargin(value: number) {
+    public set topMargin(value: number) {
         this.setPropertyValue('topMargin', value);
     }
-    get leftMargin(): number {
+    public get leftMargin(): number {
         return this.getPropertyValue('leftMargin') as number;
     }
-    set leftMargin(value: number) {
+    public set leftMargin(value: number) {
         this.setPropertyValue('leftMargin', value);
     }
-    constructor(node?: TableRowWidget) {
+    public constructor(node?: TableRowWidget) {
         this.ownerBase = node;
     }
     public getPropertyValue(property: string): Object {
-        let hasValue: boolean = this.hasValue(property);
+        const hasValue: boolean = this.hasValue(property);
         if (hasValue) {
-            let propertyType: number = WUniqueFormat.getPropertyType(WRowFormat.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(WRowFormat.uniqueFormatType, property);
             if (!isNullOrUndefined(this.uniqueRowFormat) && this.uniqueRowFormat.propertiesHash.containsKey(propertyType)) {
                 return this.uniqueRowFormat.propertiesHash.get(propertyType);
             }
@@ -159,7 +160,7 @@ export class WRowFormat {
         if (isNullOrUndefined(this.uniqueRowFormat)) {
             this.initializeUniqueRowFormat(property, value);
         } else {
-            let propertyType: number = WUniqueFormat.getPropertyType(this.uniqueRowFormat.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(this.uniqueRowFormat.uniqueFormatType, property);
             if (this.uniqueRowFormat.propertiesHash.containsKey(propertyType) &&
                 this.uniqueRowFormat.propertiesHash.get(propertyType) === value) {
                 //Do nothing, since no change in property value and return
@@ -169,7 +170,7 @@ export class WRowFormat {
         }
     }
     private initializeUniqueRowFormat(property: string, propValue: Object): void {
-        let uniqueRowFormatTemp: Dictionary<number, object> = new Dictionary<number, object>();
+        const uniqueRowFormatTemp: Dictionary<number, object> = new Dictionary<number, object>();
         this.addUniqueRowFormat('allowBreakAcrossPages', property, propValue, uniqueRowFormatTemp);
         this.addUniqueRowFormat('isHeader', property, propValue, uniqueRowFormatTemp);
         this.addUniqueRowFormat('height', property, propValue, uniqueRowFormatTemp);
@@ -188,10 +189,9 @@ export class WRowFormat {
         this.addUniqueRowFormat('leftIndent', property, propValue, uniqueRowFormatTemp);
         this.uniqueRowFormat = WRowFormat.uniqueRowFormats.addUniqueFormat(uniqueRowFormatTemp, WRowFormat.uniqueFormatType);
     }
-    // tslint:disable-next-line:max-line-length
+
     private addUniqueRowFormat(property: string, modifiedProperty: string, propValue: Object, uniqueRowFormatTemp: Dictionary<number, object>): void {
-        let propertyType: number;
-        propertyType = WUniqueFormat.getPropertyType(WRowFormat.uniqueFormatType, property);
+        const propertyType = WUniqueFormat.getPropertyType(WRowFormat.uniqueFormatType, property);
         if (property === modifiedProperty) {
             uniqueRowFormatTemp.add(propertyType, propValue);
         }
@@ -199,51 +199,51 @@ export class WRowFormat {
     private static getPropertyDefaultValue(property: string): Object {
         let value: Object = undefined;
         switch (property) {
-            case 'allowBreakAcrossPages':
-                value = true;
-                break;
-            case 'isHeader':
-                value = false;
-                break;
-            case 'height':
-                value = 0;
-                break;
-            case 'heightType':
-                value = 'Auto';
-                break;
-            case 'gridBefore':
-                value = 0;
-                break;
-            case 'gridBeforeWidth':
-                value = 0;
-                break;
-            case 'gridBeforeWidthType':
-                value = 'Point';
-                break;
-            case 'gridAfter':
-                value = 0;
-                break;
-            case 'gridAfterWidth':
-                value = 0;
-                break;
-            case 'gridAfterWidthType':
-                value = 'Point';
-                break;
-            case 'leftMargin':
-                value = undefined;
-                break;
-            case 'topMargin':
-                value = undefined;
-                break;
-            case 'bottomMargin':
-                value = undefined;
-                break;
-            case 'rightMargin':
-                value = undefined;
-                break;
-            case 'leftIndent':
-                value = 0;
-                break;
+        case 'allowBreakAcrossPages':
+            value = true;
+            break;
+        case 'isHeader':
+            value = false;
+            break;
+        case 'height':
+            value = 0;
+            break;
+        case 'heightType':
+            value = 'Auto';
+            break;
+        case 'gridBefore':
+            value = 0;
+            break;
+        case 'gridBeforeWidth':
+            value = 0;
+            break;
+        case 'gridBeforeWidthType':
+            value = 'Point';
+            break;
+        case 'gridAfter':
+            value = 0;
+            break;
+        case 'gridAfterWidth':
+            value = 0;
+            break;
+        case 'gridAfterWidthType':
+            value = 'Point';
+            break;
+        case 'leftMargin':
+            value = undefined;
+            break;
+        case 'topMargin':
+            value = undefined;
+            break;
+        case 'bottomMargin':
+            value = undefined;
+            break;
+        case 'rightMargin':
+            value = undefined;
+            break;
+        case 'leftIndent':
+            value = 0;
+            break;
         }
         return value;
     }
@@ -255,7 +255,7 @@ export class WRowFormat {
             || !isNullOrUndefined(this.topMargin));
     }
     public cloneFormat(): WRowFormat {
-        let format: WRowFormat = new WRowFormat();
+        const format: WRowFormat = new WRowFormat();
         format.allowBreakAcrossPages = this.allowBreakAcrossPages;
         format.heightType = this.heightType;
         format.height = this.height;
@@ -272,7 +272,7 @@ export class WRowFormat {
         format.bottomMargin = this.bottomMargin;
         format.leftIndent = this.leftIndent;
         if (this.revisions.length > 0) {
-        format.removedIds = Revision.cloneRevisions(this.revisions);
+            format.removedIds = Revision.cloneRevisions(this.revisions);
         } else {
             format.removedIds = this.removedIds.slice();
         }
@@ -280,7 +280,7 @@ export class WRowFormat {
     }
     public hasValue(property: string): boolean {
         if (!isNullOrUndefined(this.uniqueRowFormat)) {
-            let propertyType: number = WUniqueFormat.getPropertyType(this.uniqueRowFormat.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(this.uniqueRowFormat.uniqueFormatType, property);
             return this.uniqueRowFormat.propertiesHash.containsKey(propertyType);
         }
         return false;
@@ -310,7 +310,7 @@ export class WRowFormat {
                 (this.borders as WBorders).copyFormat(format.borders);
             }
             if (format.revisions.length > 0) {
-               this.removedIds = Revision.cloneRevisions(format.revisions);
+                this.removedIds = Revision.cloneRevisions(format.revisions);
             } else {
                 this.removedIds = format.removedIds.slice();
             }

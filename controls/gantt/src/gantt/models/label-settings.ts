@@ -6,6 +6,7 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
 export class LabelSettings extends ChildProperty<LabelSettings> {
     /**
      * Defines right side label of task.
+     *
      * @default null
      */
     @Property(null)
@@ -13,6 +14,7 @@ export class LabelSettings extends ChildProperty<LabelSettings> {
 
     /**
      * Defines left side label of task.
+     *
      * @default null
      */
     @Property(null)
@@ -20,6 +22,7 @@ export class LabelSettings extends ChildProperty<LabelSettings> {
 
     /**
      * Defines label which is placed inside the taskbar.
+     *
      * @default null
      */
     @Property(null)

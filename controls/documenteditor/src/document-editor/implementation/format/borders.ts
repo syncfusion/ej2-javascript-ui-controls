@@ -3,7 +3,7 @@ import { WBorder } from './border';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IWidget } from '../viewer/page';
 
-/** 
+/**
  * @private
  */
 export class WBorders implements IWidget {
@@ -17,60 +17,62 @@ export class WBorders implements IWidget {
     private diagonalDownIn: WBorder = new WBorder(this);
     private lineWidthIn: number = 0;
     private valueIn: LineStyle;
+    /* eslint-disable */
     public ownerBase: Object;
 
-    get left(): WBorder {
+    public get left(): WBorder {
         return this.leftIn;
     }
-    set left(value: WBorder) {
+    public set left(value: WBorder) {
         this.leftIn = value;
     }
-    get right(): WBorder {
+    public get right(): WBorder {
         return this.rightIn;
     }
-    set right(value: WBorder) {
+    public set right(value: WBorder) {
         this.rightIn = value;
     }
-    get top(): WBorder {
+    public get top(): WBorder {
         return this.topIn;
     }
-    set top(value: WBorder) {
+    public set top(value: WBorder) {
         this.topIn = value;
     }
-    get bottom(): WBorder {
+    public get bottom(): WBorder {
         return this.bottomIn;
     }
-    set bottom(value: WBorder) {
+    public set bottom(value: WBorder) {
         this.bottomIn = value;
     }
-    get horizontal(): WBorder {
+    public get horizontal(): WBorder {
         return this.horizontalIn;
     }
-    set horizontal(value: WBorder) {
+    public set horizontal(value: WBorder) {
         this.horizontalIn = value;
     }
-    get vertical(): WBorder {
+    public get vertical(): WBorder {
         return this.verticalIn;
     }
-    set vertical(value: WBorder) {
+    public set vertical(value: WBorder) {
         this.verticalIn = value;
     }
-    get diagonalUp(): WBorder {
+    public get diagonalUp(): WBorder {
         return this.diagonalUpIn;
     }
-    set diagonalUp(value: WBorder) {
+    public set diagonalUp(value: WBorder) {
         this.diagonalUpIn = value;
     }
-    get diagonalDown(): WBorder {
+    public get diagonalDown(): WBorder {
         return this.diagonalDownIn;
     }
-    set diagonalDown(value: WBorder) {
+    public set diagonalDown(value: WBorder) {
         this.diagonalDownIn = value;
     }
 
-    constructor(node?: Object) {
+    public constructor(node?: Object) {
         this.ownerBase = node;
     }
+    /* eslint-enable */
     public destroy(): void {
         if (!isNullOrUndefined(this.left)) {
             this.left.destroy();
@@ -108,7 +110,7 @@ export class WBorders implements IWidget {
         this.valueIn = undefined;
     }
     public cloneFormat(): WBorders {
-        let borders: WBorders = new WBorders(undefined);
+        const borders: WBorders = new WBorders(undefined);
         borders.top = isNullOrUndefined(this.top) ? undefined : this.top.cloneFormat();
         borders.bottom = isNullOrUndefined(this.bottom) ? undefined : this.bottom.cloneFormat();
         borders.left = isNullOrUndefined(this.left) ? undefined : this.left.cloneFormat();

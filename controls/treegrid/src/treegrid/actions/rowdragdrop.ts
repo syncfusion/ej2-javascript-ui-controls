@@ -9,6 +9,7 @@ import { editAction } from './crud-actions';
 import { getParentData, findChildrenRecords, isRemoteData, isOffline, isCountRequired } from '../utils';
 /**
  * TreeGrid RowDragAndDrop module
+ *
  * @hidden
  */
 export class RowDD {
@@ -32,8 +33,9 @@ export class RowDD {
     /** @hidden */
     public isaddtoBottom: boolean = false;
     /**
-     * 
      * Constructor for render module
+     *
+     * @param {TreeGrid} parent - Tree Grid instance
      */
     constructor(parent?: TreeGrid) {
         Grid.Inject(GridDragDrop);
@@ -42,14 +44,13 @@ export class RowDD {
     }
 
     private getChildrecordsByParentID(id: string): ITreeData[] {
-        let index: number;
         let treeGridDataSource: Object;
         if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
             treeGridDataSource = (<DataManager>this.parent.grid.dataSource).dataSource.json;
         } else {
             treeGridDataSource = this.parent.grid.dataSource;
         }
-        let record: Object[] = (treeGridDataSource as ITreeData[]).filter((e: ITreeData) => {
+        const record: Object[] = (treeGridDataSource as ITreeData[]).filter((e: ITreeData) => {
             return e.uniqueID === id;
         });
         return record;
@@ -57,6 +58,7 @@ export class RowDD {
 
     /**
      * @hidden
+     * @returns {void}
      */
     private addEventListener(): void {
         this.parent.on(events.rowdraging, this.Rowdraging, this);
@@ -67,10 +69,15 @@ export class RowDD {
 
     /**
      * Reorder the rows based on given indexes and position
+     *
+     * @returns {void}
+     * @param {number[]} fromIndexes - source indexes of rows to be re-ordered
+     * @param {number} toIndex - Destination row index
+     * @param {string} position - Drop position as above or below or child
      */
     public reorderRows(fromIndexes: number[], toIndex: number, position: string): void {
-        let tObj: TreeGrid = this.parent;
-        if (fromIndexes[0] !== toIndex && position === 'above' || 'below' || 'child') {
+        const tObj: TreeGrid = this.parent;
+        if (fromIndexes[0] !== toIndex && ['above', 'below', 'child'].indexOf(position) !== -1) {
             if (position === 'above') {
                 this.dropPosition = 'topSegment';
             }
@@ -80,12 +87,12 @@ export class RowDD {
             if (position === 'child') {
                 this.dropPosition = 'middleSegment';
             }
-            let data: ITreeData[] = [];
+            const data: ITreeData[] = [];
             for (let i: number = 0; i < fromIndexes.length; i++) {
                 data[i] = this.parent.getCurrentViewRecords()[fromIndexes[i]];
             }
-            let isByMethod: boolean = true;
-            let args: RowDropEventArgs = {
+            const isByMethod: boolean = true;
+            const args: RowDropEventArgs = {
                 data: data,
                 dropIndex: toIndex
             };
@@ -97,6 +104,24 @@ export class RowDD {
                 tObj.flatData = this.orderToIndex(tObj.flatData);
             }
             this.parent.grid.refresh();
+            if (this.parent.enableImmutableMode && this.dropPosition === 'middleSegment') {
+                const index: number = this.parent.treeColumnIndex + 1;
+                const row: HTMLTableRowElement = this.parent.getRows()[fromIndexes[0]];
+                const dropData: Object = args.data[0];
+                const totalRecord: Object[] = []; const rows: HTMLTableRowElement[] = [];
+                totalRecord.push(dropData); rows.push(row);
+                const parentUniqueID: string = 'parentUniqueID';
+                const parentData: Object = getParentData(this.parent, args.data[0][parentUniqueID]);
+                const parentrow: HTMLTableRowElement = this.parent.getRows()[toIndex];
+                totalRecord.push(parentData); rows.push(parentrow);
+                for (let i: number = 0; i < totalRecord.length; i++) {
+                    this.parent.renderModule.cellRender({
+                        data: totalRecord[i], cell: rows[i].cells[index] ,
+                        column: this.parent.grid.getColumns()[this.parent.treeColumnIndex],
+                        requestType: 'rowDragAndDrop'
+                    });
+                }
+            }
         } else {
             return;
         }
@@ -106,7 +131,7 @@ export class RowDD {
         for (let i: number = 0; i < currentData.length; i++) {
             currentData[i].index = i;
             if (!isNullOrUndefined(currentData[i].parentItem)) {
-                let updatedParent: ITreeData = currentData.filter((data: ITreeData) => {
+                const updatedParent: ITreeData = currentData.filter((data: ITreeData) => {
                     return data.uniqueID === currentData[i].parentUniqueID;
                 })[0];
                 currentData[i].parentItem.index = updatedParent.index;
@@ -117,16 +142,16 @@ export class RowDD {
 
     private rowsAdded(e: { toIndex: number, records: Object[] }): void {
         let draggedRecord: ITreeData;
-        let dragRecords: ITreeData[] = e.records;
+        const dragRecords: ITreeData[] = e.records;
         for (let i: number = e.records.length - 1; i > -1; i--) {
             draggedRecord = dragRecords[i];
             if (draggedRecord.parentUniqueID) {
-                let record: ITreeData[] = dragRecords.filter((data: ITreeData) => {
+                const record: ITreeData[] = dragRecords.filter((data: ITreeData) => {
                     return data.uniqueID === draggedRecord.parentUniqueID;
                 });
                 if (record.length) {
-                    let index: number = record[0].childRecords.indexOf(draggedRecord);
-                    let parentRecord: ITreeData = record[0];
+                    const index: number = record[0].childRecords.indexOf(draggedRecord);
+                    const parentRecord: ITreeData = record[0];
                     if (index !== -1) {
                         if (isNullOrUndefined(this.parent.idMapping)) {
                             parentRecord.childRecords.splice(index, 1);
@@ -141,33 +166,33 @@ export class RowDD {
             }
         }
         if ( isNullOrUndefined(this.parent.dataSource as ITreeData[]) || !(this.parent.dataSource as ITreeData[]).length ) {
-            let tObj: TreeGrid = this.parent;
+            const tObj: TreeGrid = this.parent;
             let draggedRecord: ITreeData;
-            let dragRecords: ITreeData[] = e.records;
-            let dragLength: number = e.records.length;
+            const dragRecords: ITreeData[] = e.records;
+            const dragLength: number = e.records.length;
             for (let i: number = dragLength - 1; i > -1; i--) {
                 draggedRecord = dragRecords[i];
-                let recordIndex1: number = 0;
+                const recordIndex1: number = 0;
                 if (!isNullOrUndefined(tObj.parentIdMapping)) {
                     tObj.childMapping = null;
                 }
                 if (!isNullOrUndefined(draggedRecord.taskData) &&
-                    !(draggedRecord.taskData as Object).hasOwnProperty(tObj.childMapping)) {
-                        draggedRecord.taskData[tObj.childMapping] = [];
+                !Object.prototype.hasOwnProperty.call(draggedRecord.taskData, tObj.childMapping)) {
+                    draggedRecord.taskData[tObj.childMapping] = [];
                 }
-                if (draggedRecord.hasOwnProperty(tObj.childMapping) &&
+                if (Object.prototype.hasOwnProperty.call(draggedRecord, tObj.childMapping) &&
                     ((draggedRecord[tObj.childMapping]) as ITreeData[]).length && !this.isDraggedWithChild &&
                     !isNullOrUndefined(tObj.parentIdMapping)) {
-                        let childData: ITreeData[] = (draggedRecord[tObj.childMapping]) as ITreeData[];
-                        for (let j: number = 0; j < childData.length; j++) {
-                            if (dragRecords.indexOf(childData[j]) === -1) {
-                                dragRecords.splice(j, 0, childData[j]);
-                                childData[j].taskData = extend({}, childData[j]);
-                                i += 1;
-                            }
+                    const childData: ITreeData[] = (draggedRecord[tObj.childMapping]) as ITreeData[];
+                    for (let j: number = 0; j < childData.length; j++) {
+                        if (dragRecords.indexOf(childData[j]) === -1) {
+                            dragRecords.splice(j, 0, childData[j]);
+                            childData[j].taskData = extend({}, childData[j]);
+                            i += 1;
                         }
+                    }
                 }
-                if (draggedRecord.hasOwnProperty(tObj.parentIdMapping) && draggedRecord[tObj.parentIdMapping] != null
+                if (Object.prototype.hasOwnProperty.call(draggedRecord, tObj.parentIdMapping) && draggedRecord[tObj.parentIdMapping] != null
                    && !this.isDraggedWithChild) {
                     draggedRecord.taskData[tObj.parentIdMapping] = null;
                     delete draggedRecord.parentItem;
@@ -183,7 +208,7 @@ export class RowDD {
             for (let i: number = 0; i < dragRecords.length; i++) {
                 setValue ('uniqueIDCollection.' + dragRecords[i].uniqueID, dragRecords[i], this.parent);
             }
-            let args: RowDropEventArgs = { data: e.records, dropIndex: e.toIndex };
+            const args: RowDropEventArgs = { data: e.records, dropIndex: e.toIndex };
             if (this.parent.dataSource instanceof DataManager) {
                 this.treeGridData = this.parent.dataSource.dataSource.json;
                 this.treeData = this.parent.dataSource.dataSource.json;
@@ -208,9 +233,9 @@ export class RowDD {
     }
 
     private refreshGridDataSource(): void {
-        let draggedRecord: ITreeData = this.draggedRecord;
-        let droppedRecord: ITreeData = this.droppedRecord;
-        let proxy: TreeGrid = this.parent;
+        const draggedRecord: ITreeData = this.draggedRecord;
+        const droppedRecord: ITreeData = this.droppedRecord;
+        const proxy: TreeGrid = this.parent;
         let tempDataSource: Object; let idx: number;
         if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
             tempDataSource = (<DataManager>proxy.dataSource).dataSource.json;
@@ -227,16 +252,16 @@ export class RowDD {
                 if (!this.parent.idMapping) {
                     (tempDataSource as ITreeData[]).splice(idx, 0, draggedRecord.taskData);
                 }
-           } else if (this.dropPosition === 'bottomSegment') {
+            } else if (this.dropPosition === 'bottomSegment') {
                 if (!this.parent.idMapping) {
                     (tempDataSource as ITreeData[]).splice(idx + 1, 0, draggedRecord.taskData);
                 }
-           }
+            }
 
         } else if (!this.parent.parentIdMapping && (!isNullOrUndefined(droppedRecord) && droppedRecord.parentItem)) {
             if (this.dropPosition === 'topSegment' || this.dropPosition === 'bottomSegment') {
-                let record: ITreeData = (this.getChildrecordsByParentID(droppedRecord.parentUniqueID) as ITreeData)[0];
-                let childRecords: ITreeData[] = record.childRecords;
+                const record: ITreeData = (this.getChildrecordsByParentID(droppedRecord.parentUniqueID) as ITreeData)[0];
+                const childRecords: ITreeData[] = record.childRecords;
                 for (let i: number = 0; i < childRecords.length; i++) {
                     droppedRecord.parentItem.taskData[this.parent.childMapping][i] = childRecords[i].taskData;
                 }
@@ -244,43 +269,43 @@ export class RowDD {
         }
 
         if (this.parent.parentIdMapping) {
-           if (draggedRecord.parentItem) {
-              if (this.dropPosition === 'topSegment' || this.dropPosition === 'bottomSegment') {
-                draggedRecord[this.parent.parentIdMapping] = droppedRecord[this.parent.parentIdMapping];
-                draggedRecord.taskData[this.parent.parentIdMapping] = droppedRecord[this.parent.parentIdMapping];
-              } else {
-                draggedRecord[this.parent.parentIdMapping] = droppedRecord[this.parent.idMapping];
-                draggedRecord.taskData[this.parent.parentIdMapping] = droppedRecord[this.parent.idMapping];
-              }
-           } else {
-               draggedRecord.taskData[this.parent.parentIdMapping] = null;
-               draggedRecord[this.parent.parentIdMapping] = null;
-           }
+            if (draggedRecord.parentItem) {
+                if (this.dropPosition === 'topSegment' || this.dropPosition === 'bottomSegment') {
+                    draggedRecord[this.parent.parentIdMapping] = droppedRecord[this.parent.parentIdMapping];
+                    draggedRecord.taskData[this.parent.parentIdMapping] = droppedRecord[this.parent.parentIdMapping];
+                } else {
+                    draggedRecord[this.parent.parentIdMapping] = droppedRecord[this.parent.idMapping];
+                    draggedRecord.taskData[this.parent.parentIdMapping] = droppedRecord[this.parent.idMapping];
+                }
+            } else {
+                draggedRecord.taskData[this.parent.parentIdMapping] = null;
+                draggedRecord[this.parent.parentIdMapping] = null;
+            }
         }
     }
 
 
-    private removeFirstrowBorder(element: HTMLTableRowElement, isRemove?: boolean): void {
-        let canremove: boolean = this.dropPosition === 'bottomSegment';
+    private removeFirstrowBorder(element: HTMLTableRowElement): void {
+        const canremove: boolean = this.dropPosition === 'bottomSegment';
         if (this.parent.element.getElementsByClassName('e-firstrow-border').length > 0 && element &&
             ((element as HTMLTableRowElement).rowIndex !== 0 || canremove)) {
             this.parent.element.getElementsByClassName('e-firstrow-border')[0].remove();
         }
     }
 
-    private removeLastrowBorder(element: HTMLTableRowElement, isRemove?: boolean): void {
-        let isEmptyRow: boolean = element && (element.classList.contains('e-emptyrow') || element.classList.contains('e-columnheader'));
-        let islastRowIndex: boolean = element && !isEmptyRow &&
+    private removeLastrowBorder(element: HTMLTableRowElement): void {
+        const isEmptyRow: boolean = element && (element.classList.contains('e-emptyrow') || element.classList.contains('e-columnheader'));
+        const islastRowIndex: boolean = element && !isEmptyRow &&
         this.parent.getRowByIndex(this.parent.getRows().length - 1).getAttribute('data-uid') !==
             element.getAttribute('data-uid');
-        let canremove: boolean = islastRowIndex || this.dropPosition === 'topSegment';
+        const canremove: boolean = islastRowIndex || this.dropPosition === 'topSegment';
         if (this.parent.element.getElementsByClassName('e-lastrow-border').length > 0 && element && (islastRowIndex || canremove)) {
             this.parent.element.getElementsByClassName('e-lastrow-border')[0].remove();
         }
     }
 
     private updateIcon(row: Element[], index: number, args: RowDragEventArgs): string {
-        let rowEle: Element = args.target ? closest(args.target, 'tr') : null;
+        const rowEle: Element = args.target ? closest(args.target, 'tr') : null;
         this.dropPosition = undefined;
         let rowPositionHeight: number = 0;
         this.removeFirstrowBorder(rowEle as HTMLTableRowElement);
@@ -292,34 +317,33 @@ export class RowDD {
                 this.addErrorElem();
             }
         }
-        // To get the corresponding drop position related to mouse position 
-        let tObj: TreeGrid = this.parent;
+        // To get the corresponding drop position related to mouse position
+        const tObj: TreeGrid = this.parent;
         let rowTop: number = 0;
-        let roundOff: number = 0;
-        let toolHeight: number = tObj.toolbar && tObj.toolbar.length ?
+        const roundOff: number = 0;
+        const toolHeight: number = tObj.toolbar && tObj.toolbar.length ?
             document.getElementById(tObj.element.id + '_gridcontrol_toolbarItems').offsetHeight : 0;
         // tObj.lastRow = tObj.getRowByIndex(tObj.getCurrentViewRecords().length - 1);
-        let positionOffSet: PositionOffSet = this.getOffset(tObj.element);
+        const positionOffSet: PositionOffSet = this.getOffset(tObj.element);
         // let contentHeight1: number = (tObj.element.offsetHeight  - (tObj.getContent() as HTMLElement).offsetHeight) + positionOffSet.top;
-        let contentHeight: number = (tObj.getHeaderContent() as HTMLElement).offsetHeight + positionOffSet.top + toolHeight;
-        let scrollTop: number = (tObj.getContent() as HTMLElement).firstElementChild.scrollTop;
+        const contentHeight: number = (tObj.getHeaderContent() as HTMLElement).offsetHeight + positionOffSet.top + toolHeight;
+        const scrollTop: number = (tObj.getContent() as HTMLElement).firstElementChild.scrollTop;
         if (!isNullOrUndefined(rowEle)) {
             rowPositionHeight = (rowEle as HTMLElement).offsetTop - scrollTop;
         }
         // let scrollTop = (tObj.grid.scrollModule as any).content.scrollTop;
         rowTop = rowPositionHeight + contentHeight + roundOff;
-        let rowBottom: number = rowTop + (row[0] as HTMLElement).offsetHeight;
-        let difference: number = rowBottom - rowTop;
-        let divide: number = difference / 3;
-        let topRowSegment: number = rowTop + divide;
-        let middleRowSegment: number = topRowSegment + divide;
-        let bottomRowSegment: number = middleRowSegment + divide;
-        let posx: number = positionOffSet.left;
-        let mouseEvent: MouseEvent = getObject('originalEvent.event', args);
-        let posy: number = mouseEvent.pageY;
-        let isTopSegment: boolean = posy <= topRowSegment;
-        let isMiddleRowSegment: boolean = (posy > topRowSegment && posy <= middleRowSegment);
-        let isBottomRowSegment: boolean = (posy > middleRowSegment && posy <= bottomRowSegment);
+        const rowBottom: number = rowTop + (row[0] as HTMLElement).offsetHeight;
+        const difference: number = rowBottom - rowTop;
+        const divide: number = difference / 3;
+        const topRowSegment: number = rowTop + divide;
+        const middleRowSegment: number = topRowSegment + divide;
+        const bottomRowSegment: number = middleRowSegment + divide;
+        const mouseEvent: MouseEvent = getObject('originalEvent.event', args);
+        const posy: number = mouseEvent.pageY;
+        const isTopSegment: boolean = posy <= topRowSegment;
+        const isMiddleRowSegment: boolean = (posy > topRowSegment && posy <= middleRowSegment);
+        const isBottomRowSegment: boolean = (posy > middleRowSegment && posy <= bottomRowSegment);
         if (isTopSegment || isMiddleRowSegment || isBottomRowSegment) {
             if (isTopSegment && this.dropPosition !== 'Invalid') {
                 this.removeChildBorder();
@@ -332,9 +356,8 @@ export class RowDD {
             }
             if (isMiddleRowSegment && this.dropPosition !== 'Invalid') {
                 this.removetopOrBottomBorder();
-                let element: Element;
                 let rowElement: HTMLElement[] = [];
-                element = closest(args.target, 'tr');
+                const element: Element = closest(args.target, 'tr');
                 rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'));
                 if (rowElement.length > 0) {
                     this.addRemoveClasses(rowElement, true, 'e-childborder');
@@ -365,16 +388,16 @@ export class RowDD {
     }
 
     private addFirstrowBorder(targetRow: HTMLTableRowElement): void {
-        let node: Element = this.parent.element;
-        let tObj: TreeGrid = this.parent;
+        const node: Element = this.parent.element;
+        const tObj: TreeGrid = this.parent;
         if (targetRow && targetRow.rowIndex === 0 && !targetRow.classList.contains('e-emptyrow')) {
-            let div: HTMLElement = this.parent.createElement('div', { className: 'e-firstrow-border' });
-            let gridheaderEle: Element = this.parent.getHeaderContent();
+            const div: HTMLElement = this.parent.createElement('div', { className: 'e-firstrow-border' });
+            const gridheaderEle: Element = this.parent.getHeaderContent();
             let toolbarHeight: number = 0;
             if (tObj.toolbar) {
                 toolbarHeight = (tObj.toolbarModule.getToolbar() as HTMLElement).offsetHeight;
             }
-            let multiplegrid: boolean = !isNullOrUndefined(this.parent.rowDropSettings.targetID);
+            const multiplegrid: boolean = !isNullOrUndefined(this.parent.rowDropSettings.targetID);
             if (multiplegrid) {
                 div.style.top = (this.parent.grid.element.getElementsByClassName('e-gridheader')[0] as HTMLElement).offsetHeight
                 + toolbarHeight + 'px';
@@ -388,12 +411,12 @@ export class RowDD {
     }
 
     private addLastRowborder(trElement: HTMLTableRowElement): void {
-        let isEmptyRow: boolean = trElement && (trElement.classList.contains('e-emptyrow') ||
+        const isEmptyRow: boolean = trElement && (trElement.classList.contains('e-emptyrow') ||
         trElement.classList.contains('e-columnheader'));
         if (trElement && !isEmptyRow && this.parent.getRowByIndex(this.parent.getRows().length - 1).getAttribute('data-uid') ===
             trElement.getAttribute('data-uid')) {
-            let bottomborder: HTMLElement = this.parent.createElement('div', { className: 'e-lastrow-border' });
-            let gridcontentEle: Element = this.parent.getContent();
+            const bottomborder: HTMLElement = this.parent.createElement('div', { className: 'e-lastrow-border' });
+            const gridcontentEle: Element = this.parent.getContent();
             bottomborder.style.width = (this.parent.element as HTMLElement).offsetWidth - this.getScrollWidth() + 'px';
             if (!gridcontentEle.querySelectorAll('.e-lastrow-border').length) {
                 gridcontentEle.classList.add('e-treegrid-relative');
@@ -404,26 +427,26 @@ export class RowDD {
     }
 
     private getScrollWidth(): number {
-        let scrollElem: HTMLElement = this.parent.getContent().firstElementChild as HTMLElement;
+        const scrollElem: HTMLElement = this.parent.getContent().firstElementChild as HTMLElement;
         return scrollElem.scrollWidth > scrollElem.offsetWidth ? Scroll.getScrollBarWidth() : 0;
     }
 
 
     private addErrorElem(): void {
-        let dragelem: Element = document.getElementsByClassName('e-cloneproperties')[0];
-        let errorelem: number = dragelem.querySelectorAll('.e-errorelem').length;
+        const dragelem: Element = document.getElementsByClassName('e-cloneproperties')[0];
+        const errorelem: number = dragelem.querySelectorAll('.e-errorelem').length;
         if (!errorelem && !this.parent.rowDropSettings.targetID) {
-            let ele: Element = document.createElement('div');
+            const ele: Element = document.createElement('div');
             classList(ele, ['e-errorcontainer'], []);
             classList(ele, ['e-icons', 'e-errorelem'], []);
-            let errorVal: Element = dragelem.querySelector('.errorValue');
+            const errorVal: Element = dragelem.querySelector('.errorValue');
             let content: string = dragelem.querySelector('.e-rowcell').innerHTML;
             if (errorVal) {
                 content = errorVal.innerHTML;
                 errorVal.parentNode.removeChild(errorVal);
             }
             dragelem.querySelector('.e-rowcell').innerHTML = '';
-            let spanContent: HTMLElement = document.createElement('span');
+            const spanContent: HTMLElement = document.createElement('span');
             spanContent.className = 'errorValue';
             spanContent.style.paddingLeft = '16px';
             spanContent.innerHTML = content;
@@ -433,17 +456,15 @@ export class RowDD {
     }
 
     private removeErrorElem(): void {
-        let errorelem: Element = document.querySelector('.e-errorelem');
+        const errorelem: Element = document.querySelector('.e-errorelem');
         if (errorelem) {
             errorelem.remove();
         }
     }
 
     private topOrBottomBorder(target: Element): void {
-        let element: Element;
-        let multiplegrid: boolean = !isNullOrUndefined(this.parent.rowDropSettings.targetID);
         let rowElement: HTMLElement[] = [];
-        element = closest(target, 'tr');
+        const element: Element = closest(target, 'tr');
         rowElement = element ? [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse')) : [];
         if (rowElement.length) {
             if (this.dropPosition === 'topSegment') {
@@ -470,34 +491,34 @@ export class RowDD {
     private addRemoveClasses(cells: Element[], add: boolean, className: string): void {
         for (let i: number = 0, len: number = cells.length; i < len; i++) {
             if (add) {
-               cells[i].classList.add(className);
+                cells[i].classList.add(className);
             } else {
-               cells[i].classList.remove(className);
+                cells[i].classList.remove(className);
             }
         }
     }
 
     private getOffset(element: Element): PositionOffSet {
-        let box: DOMRect | ClientRect = element.getBoundingClientRect();
-        let body: HTMLElement = document.body;
-        let docElem: HTMLElement = document.documentElement;
-        let scrollTop: number = window.pageYOffset || docElem.scrollTop || body.scrollTop;
-        let scrollLeft: number = window.pageXOffset || docElem.scrollLeft || body.scrollLeft;
-        let clientTop: number = docElem.clientTop || body.clientTop || 0;
-        let clientLeft: number = docElem.clientLeft || body.clientLeft || 0;
-        let top: number = box.top + scrollTop - clientTop;
-        let left: number = box.left + scrollLeft - clientLeft;
+        const box: DOMRect | ClientRect = element.getBoundingClientRect();
+        const body: HTMLElement = document.body;
+        const docElem: HTMLElement = document.documentElement;
+        const scrollTop: number = window.pageYOffset || docElem.scrollTop || body.scrollTop;
+        const scrollLeft: number = window.pageXOffset || docElem.scrollLeft || body.scrollLeft;
+        const clientTop: number = docElem.clientTop || body.clientTop || 0;
+        const clientLeft: number = docElem.clientLeft || body.clientLeft || 0;
+        const top: number = box.top + scrollTop - clientTop;
+        const left: number = box.left + scrollLeft - clientLeft;
         return { top: Math.round(top), left: Math.round(left) };
     }
 
     private Rowdraging(args: RowDragEventArgs): void {
-        let tObj: TreeGrid = this.parent;
-        let cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;
+        const tObj: TreeGrid = this.parent;
+        const cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;
         cloneElement.style.cursor = '';
-        let rowEle: Element = args.target ? closest(args.target, 'tr') : null;
-        let rowIdx: number = rowEle ? (rowEle as HTMLTableRowElement).rowIndex : -1;
+        const rowEle: Element = args.target ? closest(args.target, 'tr') : null;
+        const rowIdx: number = rowEle ? (rowEle as HTMLTableRowElement).rowIndex : -1;
         let dragRecords: ITreeData[] = [];
-        let droppedRecord: ITreeData = tObj.getCurrentViewRecords()[rowIdx];
+        const droppedRecord: ITreeData = tObj.getCurrentViewRecords()[rowIdx];
         this.removeErrorElem();
         this.canDrop = true;
         if (!args.data[0]) {
@@ -515,14 +536,14 @@ export class RowDD {
             tObj.rowDragAndDropModule.updateIcon(args.rows, rowIdx, args);
         }
         if (tObj.rowDropSettings.targetID) {
-            let dropElement: Element = parentsUntil(args.target, 'e-treegrid');
+            const dropElement: Element = parentsUntil(args.target, 'e-treegrid');
             if (dropElement && dropElement.id === this.parent.rowDropSettings.targetID) {
-                let srcControl: TreeGrid = (<EJ2Intance>dropElement).ej2_instances[0];
+                const srcControl: TreeGrid = (<EJ2Intance>dropElement).ej2_instances[0];
                 srcControl.rowDragAndDropModule.updateIcon(args.rows, rowIdx, args);
             }
         }
         if (args.target && closest(args.target, '#' + tObj.rowDropSettings.targetID)) {
-            let dropElement: Element = parentsUntil(args.target, 'e-treegrid');
+            const dropElement: Element = parentsUntil(args.target, 'e-treegrid');
             if (!dropElement) {
                 cloneElement.style.cursor = 'default';
             }
@@ -530,40 +551,40 @@ export class RowDD {
     }
 
     private rowDropped(args: RowDropEventArgs): void {
-        let tObj: TreeGrid = this.parent;
-        let parentItem: string = 'parentItem';
+        const tObj: TreeGrid = this.parent;
+        const parentItem: string = 'parentItem';
         if (!tObj.rowDropSettings.targetID) {
             if (parentsUntil(args.target, 'e-content')) {
-            if (this.parent.element.querySelector('.e-errorelem')) {
-                this.dropPosition = 'Invalid';
+                if (this.parent.element.querySelector('.e-errorelem')) {
+                    this.dropPosition = 'Invalid';
+                }
+                setValue('dropPosition', this.dropPosition, args);
+                args.dropIndex = args.dropIndex === args.fromIndex ? this.getTargetIdx(args.target.parentElement) : args.dropIndex;
+                tObj.trigger(events.rowDrop, args);
+                if (!args.cancel) {
+                    if (!isCountRequired(this.parent)) {
+                        this.dropRows(args);
+                    }
+                    if (tObj.isLocalData) {
+                        tObj.flatData = this.orderToIndex(tObj.flatData);
+                    }
+                    tObj.grid.refresh();
+                    if (!isNullOrUndefined(tObj.getHeaderContent().querySelector('.e-firstrow-border'))) {
+                        tObj.getHeaderContent().querySelector('.e-firstrow-border').remove();
+                    }
+                }
             }
-            setValue('dropPosition', this.dropPosition, args);
-            args.dropIndex = args.dropIndex === args.fromIndex ? this.getTargetIdx(args.target.parentElement) : args.dropIndex;
-            tObj.trigger(events.rowDrop, args);
-            if (!args.cancel) {
-                if (!isCountRequired(this.parent)) {
-                    this.dropRows(args);
-                }
-                if (tObj.isLocalData) {
-                    tObj.flatData = this.orderToIndex(tObj.flatData);
-                }
-                tObj.grid.refresh();
-                if (!isNullOrUndefined(tObj.getHeaderContent().querySelector('.e-firstrow-border'))) {
-                    tObj.getHeaderContent().querySelector('.e-firstrow-border').remove();
-                }
-            }
-          }
         } else {
             if (args.target && closest(args.target, '#' + tObj.rowDropSettings.targetID) || parentsUntil(args.target, 'e-treegrid') &&
             parentsUntil(args.target, 'e-treegrid').id === tObj.rowDropSettings.targetID ) {
-              setValue('dropPosition', this.dropPosition, args);
-              tObj.trigger(events.rowDrop, args);
-              if (!args.cancel && tObj.rowDropSettings.targetID) {
-                  this.dragDropGrid(args);
-                  if (tObj.isLocalData) {
-                    tObj.flatData = this.orderToIndex(tObj.flatData);
-                  }
-              }
+                setValue('dropPosition', this.dropPosition, args);
+                tObj.trigger(events.rowDrop, args);
+                if (!args.cancel && tObj.rowDropSettings.targetID) {
+                    this.dragDropGrid(args);
+                    if (tObj.isLocalData) {
+                        tObj.flatData = this.orderToIndex(tObj.flatData);
+                    }
+                }
             }
         }
         this.removetopOrBottomBorder();
@@ -576,29 +597,30 @@ export class RowDD {
         if (this.parent.enableImmutableMode && !this.parent.allowPaging && !isNullOrUndefined(args.data[0][parentItem])) {
             let index: number = this.parent.treeColumnIndex;
             index = index + 1;
-            let primaryKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
+            const primaryKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
             let rowIndex: number = this.parent.grid.getRowIndexByPrimaryKey(args.data[0][primaryKeyField]);
-            let row: HTMLTableRowElement = this.parent.getRows()[rowIndex];
-            let data: object = args.data[0];
+            const row: HTMLTableRowElement = this.parent.getRows()[rowIndex];
+            let data: Object = args.data[0];
             if (this.dropPosition === 'middleSegment') {
-                 let record: object[] = []; let rows: HTMLTableRowElement[] = [];
-                 record.push(data); rows.push(row);
-                 data = args.data[0][parentItem];
-                 rowIndex = this.parent.grid.getRowIndexByPrimaryKey(data[primaryKeyField]);
-                 let parentrow: HTMLTableRowElement = this.parent.getRows()[rowIndex];
-                 record.push(data); rows.push(parentrow);
-                 for (let i: number = 0; i < record.length; i++) {
+                const record: Object[] = []; const rows: HTMLTableRowElement[] = [];
+                record.push(data); rows.push(row);
+                const parentUniqueID: string = 'parentUniqueID';
+                data = getParentData(this.parent, args.data[0][parentUniqueID]);
+                rowIndex = this.parent.grid.getRowIndexByPrimaryKey(data[primaryKeyField]);
+                const parentrow: HTMLTableRowElement = this.parent.getRows()[rowIndex];
+                record.push(data); rows.push(parentrow);
+                for (let i: number = 0; i < record.length; i++) {
                     this.parent.renderModule.cellRender({
                         data: record[i], cell: rows[i].cells[index] ,
                         column: this.parent.grid.getColumns()[this.parent.treeColumnIndex],
                         requestType: 'rowDragAndDrop'
                     });
-                 }
-                 let targetEle: Element = parentrow.getElementsByClassName('e-treegridcollapse')[0];
-                 if (!isNullOrUndefined(targetEle)) {
-                     removeClass([targetEle], 'e-treegridcollapse');
-                     addClass([targetEle], 'e-treegridexpand');
-                 }
+                }
+                const targetEle: Element = parentrow.getElementsByClassName('e-treegridcollapse')[0];
+                if (!isNullOrUndefined(targetEle)) {
+                    removeClass([targetEle], 'e-treegridcollapse');
+                    addClass([targetEle], 'e-treegridexpand');
+                }
             } else {
                 this.parent.renderModule.cellRender({
                     data: data, cell: row.cells[index] ,
@@ -610,26 +632,25 @@ export class RowDD {
     }
 
     private dragDropGrid(args: RowDropEventArgs): void {
-        let tObj: TreeGrid = this.parent;
-        let currentIndex: number;
-        let targetRow: HTMLTableRowElement = closest(args.target, 'tr') as HTMLTableRowElement;
-        let targetIndex: number = isNaN(this.getTargetIdx(targetRow)) ? 0 : this.getTargetIdx(targetRow);
-        let dropElement: Element = parentsUntil(args.target, 'e-treegrid');
+        const tObj: TreeGrid = this.parent;
+        const targetRow: HTMLTableRowElement = closest(args.target, 'tr') as HTMLTableRowElement;
+        const targetIndex: number = isNaN(this.getTargetIdx(targetRow)) ? 0 : this.getTargetIdx(targetRow);
+        const dropElement: Element = parentsUntil(args.target, 'e-treegrid');
         let srcControl: TreeGrid;
         if (dropElement && dropElement.id === this.parent.rowDropSettings.targetID && !isRemoteData(this.parent)
             && !isCountRequired(this.parent)) {
             srcControl = (<EJ2Intance>dropElement).ej2_instances[0];
             let records: ITreeData[] = tObj.getSelectedRecords();
-            let indexes: number[] = [];
+            const indexes: number[] = [];
             for (let i: number = 0; i < records.length; i++) {
                 indexes[i] = records[i].index;
             }
             if (this.parent.idMapping != null && ( isNullOrUndefined(this.dropPosition) || this.dropPosition === 'bottomSegment')) {
-                let actualData: ITreeData[] = [];
+                const actualData: ITreeData[] = [];
                 for (let i: number = 0; i < records.length; i++) {
                     if (records[i].hasChildRecords) {
                         actualData.push(records[i]);
-                        let child: ITreeData[] = records[i].childRecords;
+                        const child: ITreeData[] = records[i].childRecords;
                         for (let i: number = 0; i < child.length; i++) {
                             actualData.push(child[i]); // push child records to drop the parent record along with its child records
                         }
@@ -639,12 +660,12 @@ export class RowDD {
             }
             tObj.notify(events.rowsRemove, { indexes: indexes, records: records });
             srcControl.notify(events.rowsAdd, { toIndex: targetIndex, records: records });
-            let srcControlFlatData: ITreeData[] = srcControl.rowDragAndDropModule.treeGridData;
+            const srcControlFlatData: ITreeData[] = srcControl.rowDragAndDropModule.treeGridData;
             if (!isNullOrUndefined(srcControlFlatData)) {
                 for (let i: number = 0; i < srcControlFlatData.length; i++) {
                     srcControlFlatData[i].index = i;
                     if (!isNullOrUndefined(srcControlFlatData[i].parentItem)) {
-                        let actualIndex: number =
+                        const actualIndex: number =
                         <number>getValue('uniqueIDCollection.' + srcControlFlatData[i].parentUniqueID + '.index', srcControl);
                         srcControlFlatData[i].parentItem.index = actualIndex;
                     }
@@ -653,12 +674,12 @@ export class RowDD {
             tObj.grid.refresh();
             srcControl.grid.refresh();
             if ((<ITreeData[]>srcControl.grid.dataSource).length > 1) {
-               srcControl.grid.refresh();
-               if (!isNullOrUndefined(srcControl.getHeaderContent().querySelector('.e-firstrow-border'))) {
-                   srcControl.getHeaderContent().querySelector('.e-firstrow-border').remove();
-               }
-               if (!isNullOrUndefined(srcControl.getContent().querySelector('.e-lastrow-border'))) {
-                   srcControl.getContent().querySelector('.e-lastrow-border').remove();
+                srcControl.grid.refresh();
+                if (!isNullOrUndefined(srcControl.getHeaderContent().querySelector('.e-firstrow-border'))) {
+                    srcControl.getHeaderContent().querySelector('.e-firstrow-border').remove();
+                }
+                if (!isNullOrUndefined(srcControl.getContent().querySelector('.e-lastrow-border'))) {
+                    srcControl.getContent().querySelector('.e-lastrow-border').remove();
                 }
             }
         }
@@ -674,13 +695,13 @@ export class RowDD {
     }
 
     private getParentData(record: ITreeData): void {
-        let parentItem: ITreeData = record.parentItem;
+        const parentItem: ITreeData = record.parentItem;
         if (this.dropPosition === 'bottomSegment') {
-            let selectedRecord: ITreeData = this.parent.getSelectedRecords()[0];
+            const selectedRecord: ITreeData = this.parent.getSelectedRecords()[0];
             this.droppedRecord = getParentData(this.parent, selectedRecord.parentItem.uniqueID);
         }
         if (this.dropPosition === 'middleSegment') {
-            let level: number = (this.parent.getSelectedRecords()[0] as ITreeData).level;
+            const level: number = (this.parent.getSelectedRecords()[0] as ITreeData).level;
             if (level === parentItem.level) {
                 this.droppedRecord = getParentData(this.parent, parentItem.uniqueID);
             } else {
@@ -691,11 +712,11 @@ export class RowDD {
 
     private dropRows(args: RowDropEventArgs, isByMethod?: boolean): void {
         if (this.dropPosition !== 'Invalid' && !isRemoteData(this.parent)) {
-            let tObj: TreeGrid = this.parent;
+            const tObj: TreeGrid = this.parent;
             let draggedRecord: ITreeData; let droppedRecord: ITreeData;
             if (isNullOrUndefined(args.dropIndex)) {
-                let rowIndex: number = tObj.getSelectedRowIndexes()[0] - 1;
-                let record: ITreeData = (tObj.getCurrentViewRecords()[rowIndex] as ITreeData);
+                const rowIndex: number = tObj.getSelectedRowIndexes()[0] - 1;
+                const record: ITreeData = (tObj.getCurrentViewRecords()[rowIndex] as ITreeData);
                 this.getParentData(record);
             } else {
                 args.dropIndex = args.dropIndex === args.fromIndex ? this.getTargetIdx(args.target.parentElement) : args.dropIndex;
@@ -709,23 +730,20 @@ export class RowDD {
                 dragRecords = args.data;
             }
             let count: number = 0;
-            let multiplegrid: string = this.parent.rowDropSettings.targetID;
+            const multiplegrid: string = this.parent.rowDropSettings.targetID;
             this.isMultipleGrid = multiplegrid;
-            let addToBottom: boolean = false;
             if (!multiplegrid) {
                 this.ensuredropPosition(dragRecords, droppedRecord);
             } else {
-                this.isaddtoBottom = addToBottom = multiplegrid && this.isDraggedWithChild;
+                this.isaddtoBottom = multiplegrid && this.isDraggedWithChild;
             }
-            let dragLength: number = dragRecords.length;
+            const dragLength: number = dragRecords.length;
             if (!isNullOrUndefined(this.parent.idMapping)) {
                 dragRecords.reverse();
             }
             for (let i: number = 0; i < dragLength; i++) {
                 draggedRecord = dragRecords[i];
                 this.draggedRecord = draggedRecord;
-                let recordIndex: number = args.dropIndex;
-                let isSelfReference: boolean = !isNullOrUndefined(tObj.parentIdMapping);
                 if (this.dropPosition !== 'Invalid') {
                     if (!tObj.rowDropSettings.targetID || isByMethod) {
                         this.deleteDragRow();
@@ -735,11 +753,11 @@ export class RowDD {
                         if (isNaN(correctIndex)) {
                             correctIndex = this.getTargetIdx(args.target.parentElement);
                         }
-                        recordIndex = args.dropIndex = correctIndex;
+                        args.dropIndex = correctIndex;
                         droppedRecord = this.droppedRecord = this.parent.getCurrentViewRecords()[args.dropIndex];
                     }
-                    let recordIndex1: number = this.treeGridData.indexOf(droppedRecord);
-                    this.dropAtTop(recordIndex1, isSelfReference, i);
+                    const recordIndex1: number = this.treeGridData.indexOf(droppedRecord);
+                    this.dropAtTop(recordIndex1);
                     if (this.dropPosition === 'bottomSegment') {
                         if (!droppedRecord.hasChildRecords) {
                             if (this.parent.parentIdMapping) {
@@ -754,22 +772,22 @@ export class RowDD {
                             this.treeGridData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
                         }
                         if (draggedRecord.hasChildRecords && isNullOrUndefined(this.parent.idMapping)) {
-                            let level: number = 1;
+                            const level: number = 1;
                             this.updateChildRecordLevel(draggedRecord, level);
                             this.updateChildRecord(draggedRecord, recordIndex1 + count + 1);
                         }
                         if (droppedRecord.parentItem) {
-                            let rec: ITreeData[] = this.getChildrecordsByParentID(droppedRecord.parentUniqueID);
-                            let childRecords: ITreeData[] = rec[0].childRecords;
-                            let droppedRecordIndex: number = childRecords.indexOf(droppedRecord) + 1;
+                            const rec: ITreeData[] = this.getChildrecordsByParentID(droppedRecord.parentUniqueID);
+                            const childRecords: ITreeData[] = rec[0].childRecords;
+                            const droppedRecordIndex: number = childRecords.indexOf(droppedRecord) + 1;
                             childRecords.splice(droppedRecordIndex, 0, draggedRecord);
                         }
                     }
-                    this.dropMiddle(recordIndex, recordIndex1, args, isByMethod, isSelfReference, i);
+                    this.dropMiddle(recordIndex1);
                 }
                 if (isNullOrUndefined(draggedRecord.parentItem)) {
-                    let parentRecords: ITreeData[] = tObj.parentData;
-                    let newParentIndex: number = parentRecords.indexOf(this.droppedRecord);
+                    const parentRecords: ITreeData[] = tObj.parentData;
+                    const newParentIndex: number = parentRecords.indexOf(this.droppedRecord);
                     if (this.dropPosition === 'bottomSegment') {
                         parentRecords.splice(newParentIndex + 1, 0, draggedRecord);
                     } else if (this.dropPosition === 'topSegment') {
@@ -781,13 +799,12 @@ export class RowDD {
         }
     }
 
-    private dropMiddle(recordIndex: number, recordIndex1: number, args: RowDropEventArgs, isSelfReference: boolean,
-                       isByMethod?: boolean, i?: number): void {
-        let tObj: TreeGrid = this.parent;
-        let childRecords: ITreeData[] = findChildrenRecords(this.droppedRecord);
-        let childRecordsLength: number = (isNullOrUndefined(childRecords) ||
-                childRecords.length === 0) ? recordIndex1 + 1 :
-            childRecords.length + recordIndex1 + 1;
+    private dropMiddle(recordIndex: number): void {
+        const tObj: TreeGrid = this.parent;
+        const childRecords: ITreeData[] = findChildrenRecords(this.droppedRecord);
+        const childRecordsLength: number = (isNullOrUndefined(childRecords) ||
+                childRecords.length === 0) ? recordIndex + 1 :
+            childRecords.length + recordIndex + 1;
         if (this.dropPosition === 'middleSegment') {
             if (tObj.parentIdMapping) {
                 this.treeData.splice(childRecordsLength, 0, this.draggedRecord.taskData);
@@ -797,12 +814,12 @@ export class RowDD {
             }
             this.recordLevel();
             if (this.draggedRecord.hasChildRecords) {
-                this.updateChildRecord(this.draggedRecord, childRecordsLength, this.droppedRecord.expanded);
+                this.updateChildRecord(this.draggedRecord, childRecordsLength);
             }
         }
     }
-    private dropAtTop(recordIndex1: number, isSelfReference: boolean, i: number): void {
-        let tObj: TreeGrid = this.parent;
+    private dropAtTop(recordIndex1: number): void {
+        const tObj: TreeGrid = this.parent;
         if (this.dropPosition === 'topSegment') {
             if (tObj.parentIdMapping) {
                 this.treeData.splice(recordIndex1, 0, this.draggedRecord.taskData);
@@ -812,23 +829,23 @@ export class RowDD {
             this.draggedRecord.level = this.treeGridData[recordIndex1].level;
             this.treeGridData.splice(recordIndex1, 0, this.draggedRecord);
             if (this.draggedRecord.hasChildRecords) {
-                let level: number = 1;
+                const level: number = 1;
                 this.updateChildRecord(this.draggedRecord, recordIndex1);
                 this.updateChildRecordLevel(this.draggedRecord, level);
             }
             if (this.droppedRecord.parentItem) {
-                let rec: ITreeData[] = this.getChildrecordsByParentID(this.droppedRecord.parentUniqueID);
-                let childRecords: ITreeData[] = rec[0].childRecords;
-                let droppedRecordIndex: number = childRecords.indexOf(this.droppedRecord);
+                const rec: ITreeData[] = this.getChildrecordsByParentID(this.droppedRecord.parentUniqueID);
+                const childRecords: ITreeData[] = rec[0].childRecords;
+                const droppedRecordIndex: number = childRecords.indexOf(this.droppedRecord);
                 childRecords.splice(droppedRecordIndex, 0, this.draggedRecord);
             }
         }
     }
     private recordLevel(): void {
-        let tObj: TreeGrid = this.parent;
-        let draggedRecord: ITreeData = this.draggedRecord;
-        let droppedRecord: ITreeData = this.droppedRecord;
-        let childItem: string = tObj.childMapping;
+        const tObj: TreeGrid = this.parent;
+        const draggedRecord: ITreeData = this.draggedRecord;
+        const droppedRecord: ITreeData = this.droppedRecord;
+        const childItem: string = tObj.childMapping;
         if (!droppedRecord.hasChildRecords) {
             droppedRecord.hasChildRecords = true;
             droppedRecord.hasFilteredChildRecords = true;
@@ -840,7 +857,7 @@ export class RowDD {
             }
         }
         if (this.dropPosition === 'middleSegment') {
-            let parentItem: ITreeData = extend({}, droppedRecord);
+            const parentItem: ITreeData = extend({}, droppedRecord);
             delete parentItem.childRecords;
             draggedRecord.parentItem = parentItem;
             draggedRecord.parentUniqueID = droppedRecord.uniqueID;
@@ -851,7 +868,7 @@ export class RowDD {
             if (!draggedRecord.hasChildRecords) {
                 draggedRecord.level = droppedRecord.level + 1;
             } else {
-                let level: number = 1;
+                const level: number = 1;
                 draggedRecord.level = droppedRecord.level + 1;
                 this.updateChildRecordLevel(draggedRecord, level);
             }
@@ -867,14 +884,13 @@ export class RowDD {
             this.treeGridData = this.parent.grid.dataSource as ITreeData[];
             this.treeData = this.parent.dataSource as ITreeData[];
         }
-        let deletedRow: ITreeData;
-        deletedRow = getParentData(this.parent, this.draggedRecord.uniqueID);
+        const deletedRow: ITreeData = getParentData(this.parent, this.draggedRecord.uniqueID);
         this.removeRecords(deletedRow);
     }
 
-    private updateChildRecord(record: ITreeData, count: number, expanded?: boolean): number {
+    private updateChildRecord(record: ITreeData, count: number): number {
         let currentRecord: ITreeData;
-        let tObj: TreeGrid = this.parent;
+        const tObj: TreeGrid = this.parent;
         let length: number = 0;
         if (!record.hasChildRecords) {
             return 0;
@@ -918,21 +934,19 @@ export class RowDD {
     }
 
     private removeRecords(record: ITreeData): void {
-        let tObj: TreeGrid = this.parent;
+        const tObj: TreeGrid = this.parent;
         let dataSource: Object;
         if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
             dataSource = (<DataManager>this.parent.dataSource).dataSource.json;
         } else {
             dataSource = this.parent.dataSource;
         }
-        let deletedRow: ITreeData = record;
-        let recordIndex: number;
-        let rowIndex: number;
-        let isSelfReference: boolean = !isNullOrUndefined(tObj.parentIdMapping);
-        let flatParentData: ITreeData = (this.getChildrecordsByParentID(deletedRow.parentUniqueID) as ITreeData)[0];
+        const deletedRow: ITreeData = record;
+        const isSelfReference: boolean = !isNullOrUndefined(tObj.parentIdMapping);
+        const flatParentData: ITreeData = (this.getChildrecordsByParentID(deletedRow.parentUniqueID) as ITreeData)[0];
         if (deletedRow) {
             if (deletedRow.parentItem) {
-                let childRecords: ITreeData[] = flatParentData ? flatParentData.childRecords : [];
+                const childRecords: ITreeData[] = flatParentData ? flatParentData.childRecords : [];
                 let childIndex: number = 0;
                 if (childRecords && childRecords.length > 0) {
                     childIndex = childRecords.indexOf(deletedRow);
@@ -948,7 +962,7 @@ export class RowDD {
                     this.removeChildItem(deletedRow);
                 }
                 let idx: number; let idz: number;
-                let treeGridData: ITreeData[] = dataSource as ITreeData[];
+                const treeGridData: ITreeData[] = dataSource as ITreeData[];
                 for (let i: number = 0; i < treeGridData.length; i++) {
                     if (treeGridData[i][this.parent.idMapping] === deletedRow.taskData[this.parent.idMapping]) {
                         idx = i;
@@ -966,14 +980,14 @@ export class RowDD {
             }
             let recordIndex: number = this.treeGridData.indexOf(deletedRow);
             if (!tObj.parentIdMapping) {
-                let parentIndex: number = this.parent.parentData.indexOf(deletedRow);
+                const parentIndex: number = this.parent.parentData.indexOf(deletedRow);
                 if (parentIndex !== -1) {
                     tObj.parentData.splice(parentIndex, 1);
                     (dataSource as ITreeData[]).splice(parentIndex, 1);
                 }
             }
             if (recordIndex === -1 && !tObj.parentIdMapping) {
-                let primaryKeyField: string = tObj.getPrimaryKeyFieldNames()[0];
+                const primaryKeyField: string = tObj.getPrimaryKeyFieldNames()[0];
                 for (let j: number = 0; j < this.treeGridData.length; j++) {
                     if (this.treeGridData[j][primaryKeyField] === deletedRow[primaryKeyField]) {
                         recordIndex = j;
@@ -981,7 +995,7 @@ export class RowDD {
                 }
             }
             if (!tObj.parentIdMapping) {
-                let deletedRecordCount: number = this.getChildCount(deletedRow, 0);
+                const deletedRecordCount: number = this.getChildCount(deletedRow, 0);
                 this.treeGridData.splice(recordIndex, deletedRecordCount + 1);
             }
             if (deletedRow.parentItem && flatParentData && flatParentData.childRecords && !flatParentData.childRecords.length) {
@@ -992,7 +1006,6 @@ export class RowDD {
         }
     }
     private removeChildItem(record: ITreeData): void {
-        let tObj: TreeGrid = this.parent;
         let currentRecord: ITreeData;
         let idx: number;
         let idz: number;
@@ -1046,17 +1059,15 @@ export class RowDD {
     }
 
     private ensuredropPosition(draggedRecords: ITreeData[], currentRecord: ITreeData): void {
-        let tObj: TreeGrid = this.parent;
-        let rowDragMoudule: RowDD = this;
         draggedRecords.filter((e: ITreeData) => {
             if (e.hasChildRecords && !isNullOrUndefined(e.childRecords)) {
-                let valid: number = e.childRecords.indexOf(currentRecord);
+                const valid: number = e.childRecords.indexOf(currentRecord);
                 if (valid === -1) {
-                    rowDragMoudule.ensuredropPosition(e.childRecords, currentRecord);
+                    this.ensuredropPosition(e.childRecords, currentRecord);
                 } else {
-                    rowDragMoudule.dropPosition = 'Invalid';
-                    rowDragMoudule.addErrorElem();
-                    rowDragMoudule.canDrop = false;
+                    this.dropPosition = 'Invalid';
+                    this.addErrorElem();
+                    this.canDrop = false;
                     return;
                 }
             }
@@ -1069,20 +1080,23 @@ export class RowDD {
 
     /**
      * @hidden
+     * @returns {void}
      */
     public removeEventListener(): void {
-      if (this.parent.isDestroyed) { return; }
-      this.parent.off(events.rowdraging, this.Rowdraging);
-      this.parent.off(events.rowDropped, this.rowDropped);
-      this.parent.off(events.rowsAdd, this.rowsAdded);
-      this.parent.off(events.rowsRemove, this.rowsRemoved);
+        if (this.parent.isDestroyed) { return; }
+        this.parent.off(events.rowdraging, this.Rowdraging);
+        this.parent.off(events.rowDropped, this.rowDropped);
+        this.parent.off(events.rowsAdd, this.rowsAdded);
+        this.parent.off(events.rowsRemove, this.rowsRemoved);
     }
     /**
      * hidden
      */
     /**
      * For internal use only - Get the module name.
+     *
      * @private
+     * @returns {string} Returns RowDragAndDrop module name
      */
     private getModuleName(): string {
         return 'rowDragAndDrop';

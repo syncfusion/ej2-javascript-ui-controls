@@ -4,7 +4,7 @@ import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfus
 import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions, remove  } from '@syncfusion/ej2-base';
 import { Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/ej2-base';
 import { updateBlazorTemplate, resetBlazorTemplate , isBlazor, getElement  } from '@syncfusion/ej2-base';
-import { addClass, removeClass, closest, matches, detach, select, selectAll, isVisible, createElement, append } from '@syncfusion/ej2-base';
+import { addClass, removeClass, closest, matches, detach, select, selectAll, isVisible, append } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { isNullOrUndefined as isNOU, Touch, TapEventArgs, getValue, setValue, extend, merge, attributes } from '@syncfusion/ej2-base';
 import { ListBase, ListBaseOptions, AriaAttributesMapping, FieldsMapping } from '@syncfusion/ej2-lists';
@@ -19,9 +19,6 @@ const COLLAPSIBLE: string = 'e-icon-collapsible';
 const EXPANDABLE: string = 'e-icon-expandable';
 const LISTITEM: string = 'e-list-item';
 const LISTTEXT: string = 'e-list-text';
-const LISTICON: string = 'e-list-icon';
-const LISTIMG: string = 'e-list-img';
-const LISTURL: string = 'e-list-url';
 const PARENTITEM: string = 'e-list-parent';
 const HOVER: string = 'e-hover';
 const ACTIVE: string = 'e-active';
@@ -49,8 +46,6 @@ const SELECTED: string = 'e-selected';
 const EXPANDED: string = 'e-expanded';
 const NODECOLLAPSED: string = 'e-node-collapsed';
 const DISABLE: string = 'e-disable';
-const CONTENT: string = 'e-content';
-const DOWNTAIL: string = 'e-downtail';
 const DROPCOUNT: string = 'e-drop-count';
 const CHECK: string = 'e-check';
 const INDETERMINATE: string = 'e-stop';
@@ -72,7 +67,7 @@ const treeAriaAttr: TreeAriaAttr = {
     itemRole: 'treeitem',
     listRole: 'group',
     itemText: '',
-    wrapperRole: '',
+    wrapperRole: ''
 };
 
 interface TreeAriaAttr extends AriaAttributesMapping {
@@ -81,17 +76,19 @@ interface TreeAriaAttr extends AriaAttributesMapping {
 }
 
 interface ResultData {
+    // eslint-disable-next-line
     result: { [key: string]: Object }[];
 }
 
 interface EJ2Instance extends HTMLElement {
-    ej2_instances: Object[];
+    // eslint-disable-next-line
+    ej2_instances: Object[];
 }
 
 
- /** 
-  * Interface for NodeExpand event arguments. 
-  */
+/**
+ * Interface for NodeExpand event arguments.
+ */
 export interface NodeExpandEventArgs {
     /**
      * If you want to cancel this event then, set cancel as true. Otherwise, false.
@@ -106,15 +103,19 @@ export interface NodeExpandEventArgs {
      */
     node: HTMLLIElement;
     /**
+     *
      * Return the expanded/collapsed node as JSON object from data source.
-     * @BlazorType NodeData
+     *
+     * @blazorType NodeData
+     *
      */
+    // eslint-disable-next-line
     nodeData: { [key: string]: Object };
 
     event: MouseEvent | KeyboardEventArgs | TapEventArgs;
 }
 
-/** 
+/**
  * Interface for NodeSelect event arguments.
  */
 export interface NodeSelectEventArgs {
@@ -136,12 +137,14 @@ export interface NodeSelectEventArgs {
     node: HTMLLIElement;
     /**
      * Return the currently selected node as JSON object from data source.
-     * @BlazorType NodeData
+     *
+     * @blazorType NodeData
      */
+    // eslint-disable-next-line
     nodeData: { [key: string]: Object };
 }
 
-/** 
+/**
  * Interface for NodeCheck event arguments.
  */
 export interface NodeCheckEventArgs {
@@ -163,12 +166,14 @@ export interface NodeCheckEventArgs {
     node: HTMLLIElement;
     /**
      * Return the currently checked node as JSON object from data source.
-     * @BlazorType List<NodeData>
+     *
+     * @blazorType List<NodeData>
      */
+    // eslint-disable-next-line
     data: { [key: string]: Object }[];
 }
 
-/** 
+/**
  * Interface for NodeEdit event arguments.
  */
 export interface NodeEditEventArgs {
@@ -186,8 +191,10 @@ export interface NodeEditEventArgs {
     node: HTMLLIElement;
     /**
      * Return the current node as JSON object from data source.
-     * @BlazorType NodeData
+     *
+     * @blazorType NodeData
      */
+    // eslint-disable-next-line
     nodeData: { [key: string]: Object };
     /**
      * Return the current TreeView node old text.
@@ -199,7 +206,7 @@ export interface NodeEditEventArgs {
     innerHtml: string;
 }
 
-/** 
+/**
  * Interface for DragAndDrop event arguments.
  */
 export interface DragAndDropEventArgs {
@@ -221,16 +228,20 @@ export interface DragAndDropEventArgs {
     draggedNode: HTMLLIElement;
     /**
      * Return the currently dragged node as array of JSON object from data source.
-     * @BlazorType NodeData
+     *
+     * @blazorType NodeData
      */
+    // eslint-disable-next-line
     draggedNodeData: { [key: string]: Object };
     /**
      * Returns the dragged/dropped element's target index position
+     *
      * @isBlazorNullableType true
      */
     dropIndex: number;
     /**
      * Returns the dragged/dropped element's target level
+     *
      * @isBlazorNullableType true
      */
     dropLevel: number;
@@ -252,8 +263,10 @@ export interface DragAndDropEventArgs {
     droppedNode: HTMLLIElement;
     /**
      * Return the dropped node as array of JSON object from data source.
-     * @BlazorType NodeData
+     *
+     * @blazorType NodeData
      */
+    // eslint-disable-next-line
     droppedNodeData: { [key: string]: Object };
     /**
      * Return the target element from which drag starts/end.
@@ -272,7 +285,7 @@ export interface DragAndDropEventArgs {
     position: string;
 }
 
-/** 
+/**
  * Interface for DrawNode event arguments.
  */
 export interface DrawNodeEventArgs {
@@ -282,8 +295,10 @@ export interface DrawNodeEventArgs {
     node: HTMLLIElement;
     /**
      * Return the current rendering node as JSON object.
+     *
      * @isGenericType true
      */
+    // eslint-disable-next-line
     nodeData: { [key: string]: Object };
     /**
      * Return the current rendering node text.
@@ -291,7 +306,7 @@ export interface DrawNodeEventArgs {
     text: string;
 }
 
-/** 
+/**
  * Interface for NodeClick event arguments.
  */
 export interface NodeClickEventArgs {
@@ -305,7 +320,7 @@ export interface NodeClickEventArgs {
     node: HTMLLIElement;
 }
 
-/** 
+/**
  * Interface for NodeKeyPress event arguments.
  */
 export interface NodeKeyPressEventArgs {
@@ -315,6 +330,7 @@ export interface NodeKeyPressEventArgs {
     cancel: boolean;
     /**
      * Return the actual event.
+     *
      * @blazorType KeyboardEventArgs
      */
     event: KeyboardEventArgs;
@@ -324,18 +340,20 @@ export interface NodeKeyPressEventArgs {
     node: HTMLLIElement;
 }
 
-/** 
+/**
  * Interface for DataBound event arguments.
  */
 export interface DataBoundEventArgs {
     /**
      * Return the TreeView data.
+     *
      * @isGenericType true
      */
+    // eslint-disable-next-line
     data: { [key: string]: Object }[];
 }
 
-/** 
+/**
  * Interface for DataSourceChanged event arguments.
  */
 export interface DataSourceChangedEventArgs {
@@ -343,12 +361,15 @@ export interface DataSourceChangedEventArgs {
      * Return the updated TreeView data. The data source will be updated after performing some operation like
      * drag and drop, node editing, adding and removing node. If you want to get updated data source after performing operation like
      * selecting/unSelecting, checking/unChecking, expanding/collapsing the node, then you can use getTreeData method.
+     *
      * @isGenericType true
      */
+    // eslint-disable-next-line
     data: { [key: string]: Object }[];
 }
 
- interface ItemCreatedArgs {
+interface ItemCreatedArgs {
+    // eslint-disable-next-line
     curData: { [key: string]: Object };
     item: HTMLElement;
     options: ListBaseOptions;
@@ -356,7 +377,7 @@ export interface DataSourceChangedEventArgs {
     fields: FieldsMapping;
 }
 
-/** 
+/**
  * Interface that holds the node details.
  */
 export interface NodeData {
@@ -390,7 +411,7 @@ export interface NodeData {
     hasChildren: boolean;
 }
 
-/** 
+/**
  * Interface for Failure event arguments
  */
 export interface FailureEventArgs {
@@ -411,14 +432,16 @@ export class FieldsSettings extends ChildProperty<FieldsSettings> {
 
     /**
      * Specifies the array of JavaScript objects or instance of DataManager to populate the nodes.
+     *
      * @default []
      * @aspDatasourceNullIgnore
      * @blazorDatasourceNullIgnore
      * @isGenericType true
      */
+    /* eslint-disable */
     @Property([])
     public dataSource: DataManager | { [key: string]: Object }[];
-
+    /* eslint-enable */
     /**
      * Specifies the mapping field for expand state of the TreeView node.
      */
@@ -470,6 +493,7 @@ export class FieldsSettings extends ChildProperty<FieldsSettings> {
     /**
      * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/api/data/query/)
      * that will execute along with data processing.
+     *
      * @default null
      */
     @Property(null)
@@ -523,18 +547,21 @@ export type SortOrder = 'None' | 'Ascending' | 'Descending';
 export class ActionSettings extends ChildProperty<ActionSettings> {
     /**
      * Specifies the type of animation.
+     *
      * @default 'SlideDown'
      */
     @Property('SlideDown')
     public effect: Effect;
     /**
      * Specifies the duration to animate.
+     *
      * @default 400
      */
     @Property(400)
     public duration: number;
     /**
      * Specifies the animation timing function.
+     *
      * @default 'linear'
      */
     @Property('linear')
@@ -547,12 +574,14 @@ export class ActionSettings extends ChildProperty<ActionSettings> {
 export class NodeAnimationSettings extends ChildProperty<NodeAnimationSettings> {
     /**
      * Specifies the animation that applies on collapsing the nodes.
+     *
      * @default { effect: 'SlideUp', duration: 400, easing: 'linear' }
      */
     @Complex<ActionSettingsModel>({ effect: 'SlideUp', duration: 400, easing: 'linear' }, ActionSettings)
     public collapse: ActionSettingsModel;
     /**
      * Specifies the animation that applies on expanding the nodes.
+     *
      * @default { effect: 'SlideDown', duration: 400, easing: 'linear' }
      */
     @Complex<ActionSettingsModel>({ effect: 'SlideDown', duration: 400, easing: 'linear' }, ActionSettings)
@@ -578,13 +607,18 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private cloneElement: HTMLElement;
     private initialRender: boolean;
     private blazorInitialRender: boolean;
+    // eslint-disable-next-line
     private treeData: { [key: string]: Object }[];
+    // eslint-disable-next-line
     private rootData: { [key: string]: Object }[];
+    // eslint-disable-next-line
     private groupedData: { [key: string]: Object }[][];
     private ulElement: HTMLElement;
     private listBaseOption: ListBaseOptions;
     private dataType: number;
+    // eslint-disable-next-line
     private rippleFn: Function;
+    // eslint-disable-next-line
     private rippleIconFn: Function;
     private isNumberTypeId: boolean;
     private expandOnType: string;
@@ -599,10 +633,14 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private dropObj: Droppable;
     private dragTarget: Element;
     private dragLi: Element;
+    // eslint-disable-next-line
     private dragData: { [key: string]: Object };
     private startNode: Element;
+    // eslint-disable-next-line
     private nodeTemplateFn: Function;
+    // eslint-disable-next-line
     private currentLoadData: { [key: string]: Object }[];
+    // eslint-disable-next-line
     private checkActionNodes: { [key: string]: Object }[];
     private touchEditObj: Touch;
     private touchClickObj: Touch;
@@ -612,8 +650,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private isAnimate: boolean;
     private spinnerElement: HTMLElement;
     private touchClass: string;
+    // eslint-disable-next-line
     private editData: { [key: string]: Object };
+    // eslint-disable-next-line
     private editFields: FieldsSettingsModel;
+    // eslint-disable-next-line
     private refreshData: { [key: string]: Object };
     private refreshFields: FieldsSettingsModel;
     private isRefreshed: boolean = false;
@@ -628,7 +669,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private disableNode: string[] = [];
     private onLoaded: boolean;
     private parentNodeCheck: string[];
+    // eslint-disable-next-line
     private parentCheckData :  { [key: string]: Object }[];
+    // eslint-disable-next-line
     private validArr :  { [key: string]: Object }[] = [];
     private expandChildren: string[] = [];
     private isBlazorPlatform: boolean;
@@ -643,6 +686,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * the mouse. For touch devices, drag and drop operation is performed by touch, touch move
      * and touch end. For more information on drag and drop nodes concept, refer to
      * [Drag and Drop](../../treeview/drag-and-drop/).
+     *
      * @default false
      */
     @Property(false)
@@ -653,6 +697,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * to true, the TreeView allows you to edit the node by double clicking the node or by navigating to
      * the node and pressing **F2** key. For more information on node editing, refer
      * to [Node Editing](../../treeview/node-editing/).
+     *
      * @default false
      */
     @Property(false)
@@ -666,6 +711,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      *
      * For more information on multi-selection, refer to
      * [Multi-Selection](../../treeview/multiple-selection/).
+     *
      * @default false
      */
     @Property(false)
@@ -673,6 +719,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Specifies the type of animation applied on expanding and collapsing the nodes along with duration.
+     *
      * @default {expand: { effect: 'SlideDown', duration: 400, easing: 'linear' },
      * collapse: { effect: 'SlideUp', duration: 400, easing: 'linear' }}
      */
@@ -685,6 +732,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * The `checkedNodes` property depends upon the value of `showCheckBox` property.
      * For more information on checkedNodes, refer to
      * [checkedNodes](../../treeview/check-box#checked-nodes).
+     *
      * @default []
      */
     @Property()
@@ -692,14 +740,16 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Specifies the CSS classes to be added with root element of the TreeView to help customize the appearance of the component.
+     *
      * @default ''
      */
     @Property('')
     public cssClass: string;
 
     /**
-     * Specifies a value that indicates whether the TreeView component is disabled or not. 
-     * When set to true, user interaction will not be occurred in TreeView. 
+     * Specifies a value that indicates whether the TreeView component is disabled or not.
+     * When set to true, user interaction will not be occurred in TreeView.
+     *
      * @default false
      */
     @Property(false)
@@ -707,7 +757,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Defines the area in which the draggable element movement will be occurring. Outside that area will be restricted
-     * for the draggable element movement. By default, the draggable element movement occurs in the entire page. 
+     * for the draggable element movement. By default, the draggable element movement occurs in the entire page.
+     *
      * @default null
      */
     @Property(null)
@@ -715,6 +766,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Defines whether to allow the cross-scripting site or not.
+     *
      * @default false
      */
     @Property(false)
@@ -725,6 +777,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * 1. `selectedNodes` - Represents the nodes that are selected in the TreeView component.
      * 2. `checkedNodes`  - Represents the nodes that are checked in the TreeView component.
      * 3. `expandedNodes` - Represents the nodes that are expanded in the TreeView component.
+     *
      * @default false
      */
     @Property(false)
@@ -733,6 +786,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Represents the expanded nodes in the TreeView component. We can set the nodes that need to be
      * expanded or get the ID of the nodes that are currently expanded by using this property.
+     *
      * @default []
      */
     @Property()
@@ -746,6 +800,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * * `DblClick` - The expand/collapse operation happens when you double-click the node in both desktop and mobile devices.
      * * `None` - The expand/collapse operation will not happen when you single-click or double-click the node in both desktop
      *  and mobile devices.
+     *
      * @default 'Auto'
      */
     @Property('Auto')
@@ -753,6 +808,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Specifies the data source and mapping fields to render TreeView nodes.
+     *
      * @default {id: 'id', text: 'text', dataSource: [], child: 'child', parentID: 'parentID', hasChildren: 'hasChildren',
      *  expanded: 'expanded', htmlAttributes: 'htmlAttributes', iconCss: 'iconCss', imageUrl: 'imageUrl', isChecked: 'isChecked',
      *  query: null, selected: 'selected', tableName: null, tooltip: 'tooltip', navigateUrl: 'navigateUrl'}
@@ -765,6 +821,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * When disabled only the corresponding node's text gets selected.
      * For more information on Fields concept, refer to
      * [Fields](../../treeview/data-binding#local-data).
+     *
      * @default true
      */
     @Property(true)
@@ -773,6 +830,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * By default, the load on demand (Lazy load) is set to true. By disabling this property, all the tree nodes are rendered at the
      * beginning itself.
+     *
      * @default true
      */
     @Property(true)
@@ -780,6 +838,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
+     *
      * @private
      */
     @Property()
@@ -791,6 +850,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * [template string](https://ej2.syncfusion.com/documentation/common/template-engine/)
      * or HTML element ID holding the content. For more information on template concept, refer to
      * [Template](../../treeview/template/).
+     *
      * @default null
      */
     @Property()
@@ -803,6 +863,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * it we can select only a single node.
      * For more information on selectedNodes, refer to
      * [selectedNodes](../../treeview/multiple-selection#selected-nodes).
+     *
      * @default []
      */
     @Property()
@@ -814,6 +875,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * * `None` - The nodes are not sorted.
      * * `Ascending` - The nodes are sorted in the ascending order.
      * * `Descending` - The nodes are sorted in the ascending order.
+     *
      * @default 'None'
      */
     @Property('None')
@@ -823,6 +885,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * Indicates that the nodes will display CheckBoxes in the TreeView.
      * The CheckBox will be displayed next to the expand/collapse icon of the node. For more information on CheckBoxes, refer to
      * [CheckBox](../../treeview/check-box/).
+     *
      * @default false
      */
     @Property(false)
@@ -830,6 +893,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Allow us to specify the parent and child nodes to get auto check while we check or uncheck a node.
+     *
      * @default true
      */
     @Property(true)
@@ -837,14 +901,15 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * If this property is set to true, then the entire TreeView node will be navigate-able instead of text element.
+     *
      * @default false
      */
     @Property(false)
     public fullRowNavigable: boolean;
-
-    /** 
-     * Triggers when any TreeView action failed to fetch the desired results. 
-     * @event 
+    /**
+     * Triggers when any TreeView action failed to fetch the desired results.
+     *
+     * @event
      * @blazorProperty 'OnActionFailure'
      */
     @Event()
@@ -852,14 +917,18 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when the TreeView control is created successfully.
+     *
      * @event
      * @blazorProperty 'Created'
      */
+    /* eslint-disable */
     @Event()
     public created: EmitType<Object>;
+    /* eslint-enable */
 
     /**
      * Triggers when data source is populated in the TreeView.
+     *
      * @event
      * @blazorProperty 'DataBound'
      */
@@ -869,6 +938,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when data source is changed in the TreeView. The data source will be changed after performing some operation like
      * drag and drop, node editing, adding and removing node.
+     *
      * @event
      * @blazorProperty 'DataSourceChanged'
      */
@@ -877,6 +947,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers before the TreeView node is appended to the TreeView element. It helps to customize specific nodes.
+     *
      * @event
      * @blazorProperty 'OnDrawNode'
      */
@@ -885,14 +956,17 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when the TreeView control is destroyed successfully.
+     *
      * @event
      * @blazorProperty 'Destroyed'
      */
+    /* eslint-disable */
     @Event()
     public destroyed: EmitType<Object>;
-
+    /* eslint-enable */
     /**
      * Triggers when key press is successful. It helps to customize the operations at key press.
+     *
      * @event
      * @blazorProperty 'OnKeyPress'
      */
@@ -901,6 +975,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when the TreeView node is checked/unchecked successfully.
+     *
      * @event
      * @blazorProperty 'NodeChecked'
      */
@@ -909,6 +984,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers before the TreeView node is to be checked/unchecked.
+     *
      * @event
      * @blazorProperty 'NodeChecking'
      */
@@ -917,6 +993,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when the TreeView node is clicked successfully.
+     *
      * @event
      * @blazorProperty 'NodeClicked'
      */
@@ -925,6 +1002,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when the TreeView node collapses successfully.
+     *
      * @event
      * @blazorProperty 'NodeCollapsed'
      */
@@ -933,6 +1011,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers before the TreeView node collapses.
+     *
      * @event
      * @blazorProperty 'NodeCollapsing'
      */
@@ -941,6 +1020,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when the TreeView node is dragged (moved) continuously.
+     *
      * @deprecated
      * @event
      * @blazorProperty 'NodeDragging'
@@ -949,6 +1029,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public nodeDragging: EmitType<DragAndDropEventArgs>;
     /**
      * Triggers when the TreeView node drag (move) starts.
+     *
      * @event
      * @blazorProperty 'OnNodeDragStart'
      */
@@ -956,6 +1037,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public nodeDragStart: EmitType<DragAndDropEventArgs>;
     /**
      * Triggers when the TreeView node drag (move) is stopped.
+     *
      * @event
      * @blazorProperty 'OnNodeDragged'
      */
@@ -963,6 +1045,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public nodeDragStop: EmitType<DragAndDropEventArgs>;
     /**
      * Triggers when the TreeView node is dropped on target element successfully.
+     *
      * @event
      * @blazorProperty 'NodeDropped'
      */
@@ -971,6 +1054,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when the TreeView node is renamed successfully.
+     *
      * @event
      * @blazorProperty 'NodeEdited'
      */
@@ -979,6 +1063,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers before the TreeView node is renamed.
+     *
      * @event
      * @blazorProperty 'NodeEditing'
      */
@@ -987,6 +1072,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when the TreeView node expands successfully.
+     *
      * @event
      * @blazorProperty 'NodeExpanded'
      */
@@ -995,6 +1081,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers before the TreeView node is to be expanded.
+     *
      * @event
      * @blazorProperty 'NodeExpanding'
      */
@@ -1003,6 +1090,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when the TreeView node is selected/unselected successfully.
+     *
      * @event
      * @blazorProperty 'NodeSelected'
      */
@@ -1011,6 +1099,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers before the TreeView node is selected/unselected.
+     *
      * @event
      * @blazorProperty 'NodeSelecting'
      */
@@ -1023,7 +1112,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Get component name.
-     * @returns string
+     *
+     * @returns {string} - returns module name.
      * @private
      */
     public getModuleName(): string {
@@ -1032,6 +1122,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Initialize the event handler
+     *
+     * @returns {void}
      */
     protected preRender(): void {
         this.isBlazorPlatform = (isBlazor() && this.isServerRendered);
@@ -1065,7 +1157,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             csEnter: 'ctrl+shift+enter',
             csHome: 'ctrl+shift+home',
             csEnd: 'ctrl+shift+end',
-            space: 'space',
+            space: 'space'
         };
         this.listBaseOption = {
             expandCollapse: true,
@@ -1077,7 +1169,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.beforeNodeCreate(e);
             },
             enableHtmlSanitizer: this.enableHtmlSanitizer,
-            itemNavigable: this.fullRowNavigable,
+            itemNavigable: this.fullRowNavigable
         };
         this.updateListProp(this.fields);
         this.aniObj = new Animation({});
@@ -1102,17 +1194,20 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Get the properties to be maintained in the persisted state.
-     * @returns string
+     *
+     * @returns {string} - returns the persisted data
      * @hidden
      */
     public getPersistData(): string {
-        let keyEntity: string[] = ['selectedNodes', 'checkedNodes', 'expandedNodes'];
+        const keyEntity: string[] = ['selectedNodes', 'checkedNodes', 'expandedNodes'];
         return this.addOnPersist(keyEntity);
     }
 
     /**
      * To Initialize the control rendering
+     *
      * @private
+     * @returns {void}
      */
     protected render(): void {
         this.initialRender = true;
@@ -1154,29 +1249,29 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
     private setEnableRtl(): void {
-        this.enableRtl ? addClass([this.element], RTL) : removeClass([this.element], RTL);
+        (this.enableRtl ? addClass : removeClass)([this.element], RTL);
     }
 
     private setRipple(): void {
-        let tempStr: string = '.' + FULLROW + ',.' + TEXTWRAP;
-        let rippleModel: RippleOptions = {
+        const tempStr: string = '.' + FULLROW + ',.' + TEXTWRAP;
+        const rippleModel: RippleOptions = {
             selector: tempStr,
             ignore: '.' + TEXTWRAP + ' > .' + ICON + ',.' + INPUTGROUP + ',.' + INPUT + ', .' + CHECKBOXWRAP
         };
         this.rippleFn = rippleEffect(this.element, rippleModel);
-        let iconModel: RippleOptions = {
+        const iconModel: RippleOptions = {
             selector:  '.' + TEXTWRAP + ' > .' + ICON,
-            isCenterRipple: true,
+            isCenterRipple: true
         };
         this.rippleIconFn = rippleEffect(this.element, iconModel);
     }
 
     private setFullRow(isEnabled: boolean): void {
-        isEnabled ? addClass([this.element], FULLROWWRAP) : removeClass([this.element], FULLROWWRAP);
+        (isEnabled ? addClass : removeClass)([this.element], FULLROWWRAP);
     }
 
     private setMultiSelect(isEnabled: boolean): void {
-        let firstUl: Element = select('.' + PARENTITEM, this.element);
+        const firstUl: Element = select('.' + PARENTITEM, this.element);
         if (isEnabled) {
             firstUl.setAttribute('aria-multiselectable', 'true');
         } else {
@@ -1184,8 +1279,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
+    // eslint-disable-next-line
     private templateComplier(template: string): Function {
         if (template) {
+            // eslint-disable-next-line
             let e: Object;
             this.element.classList.add(INTERACTION);
             try {
@@ -1203,12 +1300,12 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private setDataBinding(changeDataSource: boolean): void {
         this.treeList.push('false');
         if (this.fields.dataSource instanceof DataManager) {
-            // tslint:disable
+            /* eslint-disable */
             this.isOffline =  (this.isBlazorPlatform ? (this.fields.dataSource as any).offline :
                                     (this.fields.dataSource as DataManager).dataSource.offline);
             if ((this.fields.dataSource as DataManager).ready) {
                 (this.fields.dataSource as DataManager).ready.then((e: Object) => {
-                    // tslint:disable
+                    /* eslint-disable */
                     this.isOffline =  (this.isBlazorPlatform ? (this.fields.dataSource as any).offline :
                                                 (this.fields.dataSource as DataManager).dataSource.offline);
                     if (this.fields.dataSource instanceof DataManager && this.isOffline) {
@@ -1304,7 +1401,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private renderItems(isSorted: boolean): void {
-        // tslint:disable
+        /* eslint-disable */
         if (!this.isBlazorPlatform || (this.isBlazorPlatform && this.fields.dataSource instanceof DataManager && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor')) || this.changeDataSource) {
             this.listBaseOption.ariaAttributes.level = 1;
             let sortedData : { [key: string]: Object }[] = this.getSortedData(this.rootData);
@@ -2108,7 +2205,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             if (this.isBlazorPlatform && !this.initialRender) {
                 return;
             }
-              // tslint:disable
+              /* eslint-disable */
             if (this.fields.dataSource instanceof DataManager && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor')) {
                 this.expandGivenNodes(eUids);
             } else {
@@ -2470,7 +2567,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         this.showSpinner(eicon as HTMLElement);
         let childItems: { [key: string]: Object }[];
-        // tslint:disable
+        /* eslint-disable */
         if (this.fields.dataSource instanceof DataManager && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor'))  {
             let level: number = this.parents(parentLi, '.' + PARENTITEM).length;
             let mapper: FieldsSettingsModel = this.getChildFields(this.fields, level, 1);
@@ -3291,7 +3388,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.focusNextNode(nextNode, true);
             } else if (nextNode.nextSibling == null && nextNode.classList.contains('e-node-collapsed')) {
                 this.focusNextNode(nextNode, false);
-            } else if (nextNode.nextSibling == null && lastChild.classList.contains('e-text-content')) {
+            } else if (nextNode.nextSibling == null && lastChild.classList.contains(TEXTWRAP)) {
                 this.focusNextNode(nextNode, false);
             } else {
                 this.focusNextNode(nextNode, isTowards);
@@ -3670,7 +3767,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             this.destroyDrag();
         }
     }
-    // tslint:disable-next-line:max-func-body-length
+
     private initializeDrag(): void {
         let virtualEle: HTMLElement; let proxy : TreeView = this;
         this.dragObj = new Draggable(this.element, {
@@ -3850,7 +3947,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             addClass([icon], eventArgs.dropIndicator);
         }
     }
-    // tslint:disable
+    /* eslint-disable */
     private dropAction(e: any,  isBlazorDrop ?: boolean): void {
         let offsetY: number = e.event.offsetY;
         let dropTarget: Element = <Element>e.target;
@@ -5222,7 +5319,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * @returns void
      * @private
      */
-     // tslint:disable-next-line:max-func-body-length
     public onPropertyChanged(newProp: TreeViewModel, oldProp: TreeViewModel): void {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -5614,7 +5710,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         id = liEle ? liEle.getAttribute('data-uid') : ((target) ? target.toString() : null);
         this.refreshData = this.getNodeObject(id);
         newData = JSON.parse(JSON.stringify(newData));
-        // tslint:disable
+        /* eslint-disable */
         let newNodeData: any;
         let parentData: { [key: string]: Object };
         if (this.dataType == 1 && isRefreshChild) {

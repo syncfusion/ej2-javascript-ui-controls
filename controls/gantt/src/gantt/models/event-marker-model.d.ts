@@ -7,18 +7,21 @@ export interface EventMarkerModel {
 
     /**
      * Defines day of event marker.
-     * @default null     
+     *
+     * @default null
      */
     day?: Date | string;
 
     /**
      * Defines label of event marker.
+     *
      * @default null
      */
     label?: string;
 
     /**
      * Define custom css class for event marker to customize line and label.
+     *
      * @default null
      */
     cssClass?: string;

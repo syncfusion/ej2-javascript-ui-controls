@@ -1,8 +1,10 @@
+/* eslint-disable */
 import { PdfViewer, IContextMenu } from '../index';
 import { PdfViewerBase } from './pdfviewer-base';
 
 /**
  * ContextMenu module is used to handle the context menus used in the control.
+ *
  * @hidden
  */
 export class BlazorContextMenu implements IContextMenu {
@@ -13,7 +15,7 @@ export class BlazorContextMenu implements IContextMenu {
     public contextMenuElement: HTMLElement;
     private pdfViewer: PdfViewer;
     private pdfViewerBase: PdfViewerBase;
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public currentTarget: any;
 
     /**
@@ -27,11 +29,11 @@ export class BlazorContextMenu implements IContextMenu {
     }
 
     public createContextMenu(): void {
-        let htmlCollection: HTMLCollection = document.getElementsByClassName( this.pdfViewer.element.id + '_context_menu');
+        const htmlCollection: HTMLCollection = document.getElementsByClassName( this.pdfViewer.element.id + '_context_menu');
         if (htmlCollection) {
             this.contextMenuElement = htmlCollection[0] as HTMLElement;
             if (this.contextMenuElement.children && this.contextMenuElement.children.length > 0) {
-                let htmlElement: HTMLElement = this.contextMenuElement.children[0] as HTMLElement;
+                const htmlElement: HTMLElement = this.contextMenuElement.children[0] as HTMLElement;
                 htmlElement.className = htmlElement.className + ' ' + 'e-pv-context-menu';
             }
         }
@@ -47,7 +49,7 @@ export class BlazorContextMenu implements IContextMenu {
         this.contextMenuElement =  null;
     }
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public OnItemSelected(selectedMenu: any): void {
         if (typeof selectedMenu === 'string') {
             this.pdfViewerBase.OnItemSelected(selectedMenu);
@@ -55,4 +57,4 @@ export class BlazorContextMenu implements IContextMenu {
             this.pdfViewerBase.OnItemSelected(selectedMenu[0]);
         }
     }
-} 
+}

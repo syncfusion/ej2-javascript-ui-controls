@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Dialog actions spec
  */
@@ -10,10 +11,9 @@ Kanban.Inject();
 
 describe('Dialog actions module', () => {
     beforeAll(() => {
-        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
             (this as any).skip(); //Skips test (in Chai)
             return;
@@ -24,12 +24,12 @@ describe('Dialog actions module', () => {
         let kanbanObj: Kanban;
         let element1: HTMLElement;
         let element2: HTMLElement;
-        let isDoubleClick: boolean = true;
-        let data: { [key: string]: Object };
-        let e: any = { preventDefault: () => { /** */ } };
-        let columnKey: Object;
+        const isDoubleClick: boolean = true;
+        let data: Record<string, any>;
+        const e: any = { preventDefault: () => { /** */ } };
+        let columnKey: string;
         beforeAll((done: DoneFn) => {
-            let model: KanbanModel = {
+            const model: KanbanModel = {
                 dialogSettings: {
                     fields: [
                         { text: 'ID', key: 'Id', type: 'Numeric' },
@@ -57,22 +57,22 @@ describe('Dialog actions module', () => {
         it('Card double click event testing', () => {
             element1 = kanbanObj.element.querySelector('.e-card[data-id="5"]') as HTMLElement;
             util.triggerMouseEvent(element1, 'dblclick');
-            data = kanbanObj.getCardDetails(element1) as { [key: string]: Object };
+            data = kanbanObj.getCardDetails(element1);
             expect(kanbanObj.activeCardData.data).toBe(data);
             expect(kanbanObj.activeCardData.element).toBe(element1);
         });
         it('Basic layout dialog testing - dialog container testing', () => {
-            let ele: HTMLElement = document.querySelector('.e-dlg-container') as HTMLElement;
+            const ele: HTMLElement = document.querySelector('.e-dlg-container') as HTMLElement;
             expect(ele.classList.contains('e-dlg-center-center')).toBeTruthy();
         });
         it('Basic layout dialog testing - dialog container child elements testing', () => {
-            let ele: HTMLElement = document.querySelector('.e-dlg-container') as HTMLElement;
+            const ele: HTMLElement = document.querySelector('.e-dlg-container') as HTMLElement;
             expect(ele.childElementCount).toBe(2);
             expect(ele.firstElementChild.classList.contains('e-kanban-dialog')).toBe(true);
             expect(ele.lastElementChild.classList.contains('e-dlg-overlay')).toBe(true);
         });
         it('Basic layout dialog testing - dialog wrapper testing', () => {
-            let ele: HTMLElement = document.querySelector('#Kanban_dialog_wrapper') as HTMLElement;
+            const ele: HTMLElement = document.querySelector('#Kanban_dialog_wrapper') as HTMLElement;
             expect(ele.childElementCount).toBe(3);
             expect(ele.firstElementChild.classList.contains('e-dlg-header-content')).toBe(true);
             expect(ele.children[1].classList.contains('e-dlg-content')).toBe(true);
@@ -80,7 +80,7 @@ describe('Dialog actions module', () => {
             expect(ele.lastElementChild.classList.contains('e-footer-content')).toBe(true);
         });
         it('Basic layout dialog testing - dialog header testing', () => {
-            let ele: HTMLElement = document.querySelector('.e-dlg-header-content') as HTMLElement;
+            const ele: HTMLElement = document.querySelector('.e-dlg-header-content') as HTMLElement;
             expect(ele.childElementCount).toBe(2);
             expect(ele.firstElementChild.classList.contains('e-dlg-closeicon-btn')).toBe(true);
             expect(ele.firstElementChild.getAttribute('title')).toBe('Close');
@@ -90,7 +90,7 @@ describe('Dialog actions module', () => {
             expect(ele.lastElementChild.innerHTML).toBe('Edit Card Details');
         });
         it('Basic layout dialog testing - dialog outer content testing', () => {
-            let ele: HTMLElement = document.querySelector('#Kanban_dialog_wrapper_dialog-content') as HTMLElement;
+            const ele: HTMLElement = document.querySelector('#Kanban_dialog_wrapper_dialog-content') as HTMLElement;
             expect(ele.firstElementChild.classList.contains('e-kanban-form-wrapper')).toBe(true);
             expect(ele.firstElementChild.firstElementChild.classList.contains('e-kanban-form')).toBe(true);
             expect(ele.firstElementChild.firstElementChild.tagName).toBe('FORM');
@@ -98,7 +98,7 @@ describe('Dialog actions module', () => {
             expect(ele.firstElementChild.firstElementChild.firstElementChild.classList.contains('e-kanban-dialog-content')).toBe(true);
         });
         it('Basic layout dialog testing - dialog inner td and tr content testing', () => {
-            let ele: HTMLElement = document.querySelector('#KanbanEditForm table') as HTMLElement;
+            const ele: HTMLElement = document.querySelector('#KanbanEditForm table') as HTMLElement;
             expect(ele.childElementCount).toBe(5);
             for (let i: number = 0; i < ele.childElementCount; i++) {
                 expect(ele.children[i].tagName).toBe('TR');
@@ -109,11 +109,11 @@ describe('Dialog actions module', () => {
             }
         });
         it('Basic layout dialog testing - dialog inner first tr content testing', () => {
-            let ele: HTMLElement = document.querySelector('#KanbanEditForm table tr') as HTMLElement;
+            const ele: HTMLElement = document.querySelector('#KanbanEditForm table tr') as HTMLElement;
             expect(ele.children[1].firstElementChild.classList.contains('Id_wrapper')).toBe(true);
         });
         it('Basic layout dialog testing - dialog footer content testing', () => {
-            let ele: HTMLElement = document.querySelector('#Kanban_dialog_wrapper .e-footer-content') as HTMLElement;
+            const ele: HTMLElement = document.querySelector('#Kanban_dialog_wrapper .e-footer-content') as HTMLElement;
             expect(ele.childElementCount).toBe(3);
             expect(ele.firstElementChild.classList.contains('e-dialog-delete')).toBe(true);
             expect(ele.lastElementChild.classList.contains('e-dialog-cancel')).toBe(true);
@@ -123,8 +123,8 @@ describe('Dialog actions module', () => {
         });
         it('Update card testing - before editing', () => {
             element1 = kanbanObj.element.querySelector('.e-card[data-id="2"]') as HTMLElement;
-            data = kanbanObj.getCardDetails(element1) as { [key: string]: Object };
-            columnKey = data[kanbanObj.keyField];
+            data = kanbanObj.getCardDetails(element1);
+            columnKey = data[kanbanObj.keyField] as string;
             expect(columnKey).toEqual('InProgress');
             if (!isDoubleClick) {
                 kanbanObj.cardDoubleClick = () => { /** */ };
@@ -132,51 +132,51 @@ describe('Dialog actions module', () => {
             util.triggerMouseEvent(element1, 'dblclick');
         });
         it('Update card testing - after editing', () => {
-            let dropDownEle: HTMLElement = document.querySelector('.Status_wrapper .e-dropdownlist') as HTMLElement;
-            let dropDownObj: any = (dropDownEle as EJ2Instance).ej2_instances[0];
+            const dropDownEle: HTMLElement = document.querySelector('.Status_wrapper .e-dropdownlist') as HTMLElement;
+            const dropDownObj: any = (dropDownEle as EJ2Instance).ej2_instances[0];
             dropDownObj.showPopup();
             expect(dropDownObj.inputWrapper.container.getAttribute('aria-activedescendant')).not.toBeNull();
-            let items: Element[] = dropDownObj.popupObj.element.querySelectorAll('li');
+            const items: Element[] = dropDownObj.popupObj.element.querySelectorAll('li');
             dropDownObj.setSelection(items[0], e);
             dropDownObj.hidePopup();
         });
         it('Update card testing - after editing', (done: DoneFn) => {
             kanbanObj.dataBound = () => {
-                data = kanbanObj.getCardDetails(element1) as { [key: string]: Object };
-                columnKey = data[kanbanObj.keyField];
+                data = kanbanObj.getCardDetails(element1);
+                columnKey = data[kanbanObj.keyField] as string;
                 expect(columnKey).toEqual('Open');
                 done();
             };
-            let ele: HTMLElement = document.querySelector('.e-dialog-edit') as HTMLElement;
+            const ele: HTMLElement = document.querySelector('.e-dialog-edit') as HTMLElement;
             ele.click();
         });
         it('Delete the card testing - before open dialog', () => {
             element2 = kanbanObj.element.querySelector('.e-card[data-id="6"]') as HTMLElement;
-            data = kanbanObj.getCardDetails(element2) as { [key: string]: Object };
-            columnKey = data[kanbanObj.keyField];
+            data = kanbanObj.getCardDetails(element2);
+            columnKey = data[kanbanObj.keyField] as string;
             expect(columnKey).toEqual('Close');
             expect(data).not.toBeNull();
             util.triggerMouseEvent(element2, 'dblclick');
         });
         it('Delete the card testing - press the delete button', () => {
-            let ele: HTMLElement = document.querySelector('.e-dialog-delete') as HTMLElement;
+            const ele: HTMLElement = document.querySelector('.e-dialog-delete') as HTMLElement;
             ele.click();
         });
 
         it('Delete the card testing - press the delete button', (done: DoneFn) => {
             kanbanObj.dataBound = () => {
-                data = kanbanObj.getCardDetails(element2) as { [key: string]: Object };
+                data = kanbanObj.getCardDetails(element2);
                 expect(data).toBeUndefined();
                 done();
             };
-            let ele: HTMLElement = document.querySelector('.e-dialog-yes') as HTMLElement;
+            const ele: HTMLElement = document.querySelector('.e-dialog-yes') as HTMLElement;
             ele.click();
         });
 
         it('Cancel the editing', () => {
-            let element3: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="14"]') as HTMLElement;
+            const element3: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="14"]') as HTMLElement;
             util.triggerMouseEvent(element3, 'dblclick');
-            let ele: HTMLElement = document.querySelector('.e-dialog-cancel') as HTMLElement;
+            const ele: HTMLElement = document.querySelector('.e-dialog-cancel') as HTMLElement;
             ele.click();
         });
     });
@@ -281,7 +281,7 @@ describe('Dialog actions module', () => {
     describe('Public method Editor with cancel events', () => {
         let kanbanObj: Kanban;
         beforeAll((done: DoneFn) => {
-            let model: KanbanModel = {
+            const model: KanbanModel = {
                 dialogSettings: {
                     fields: [
                         { text: 'ID', key: 'Id', type: 'TextBox' },
@@ -290,7 +290,7 @@ describe('Dialog actions module', () => {
                         { key: 'Estimate', type: 'Numeric', validationRules: { range: [0, 1000] } },
                         { key: 'Summary', type: 'TextBox', validationRules: { required: true } }
                     ]
-                },
+                }
             };
             kanbanObj = util.createKanban(model, kanbanData, done);
         });
@@ -327,15 +327,15 @@ describe('Dialog actions module', () => {
             kanbanObj.crudModule.deleteCard(2);
         });
         it('card double click', () => {
-            let element: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="5"]') as HTMLElement;
+            const element: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="5"]') as HTMLElement;
             util.triggerMouseEvent(element, 'dblclick');
         });
         it('Click delete button', () => {
-            let ele: HTMLElement = document.querySelector('.e-dialog-delete') as HTMLElement;
+            const ele: HTMLElement = document.querySelector('.e-dialog-delete') as HTMLElement;
             ele.click();
         });
         it('Click dialog no button', () => {
-            let ele: HTMLElement = document.querySelector('.e-dialog-no') as HTMLElement;
+            const ele: HTMLElement = document.querySelector('.e-dialog-no') as HTMLElement;
             ele.click();
         });
         it('Dialog close button clicked', () => {
@@ -344,11 +344,69 @@ describe('Dialog actions module', () => {
         });
     });
 
+    describe('Dialog form validation', () => {
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            const model: KanbanModel = {
+                dialogSettings: {
+                    fields: [
+                        { text: 'ID', key: 'Id', type: 'TextBox' },
+                        { key: 'Status', type: 'DropDown' },
+                        { key: 'Assignee', type: 'TextBox', },
+                        { key: 'Estimate', type: 'Numeric', validationRules: { range: [0, 100] } },
+                        { key: 'Summary', type: 'TextBox', validationRules: { required: true } }
+                    ]
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('clicking the Card to open popup', () => {
+            let ele: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="4"]') as HTMLElement;
+            util.triggerMouseEvent(ele, 'dblclick');
+        });
+
+        it('updating the value in dialog popup', () => {
+            expect(document.querySelector('.e-dialog.e-kanban-dialog.e-popup-open')).not.toBeNull;
+            expect((document.querySelector('.e-numerictextbox.e-input') as any).value).not.toBeNull;
+            let element = (document.getElementsByClassName('e-numerictextbox')[0] as EJ2Instance);
+            expect(document.querySelector('.e-error')).toBeNull;
+            (element.ej2_instances[0] as any).value = 111;
+            kanbanObj.dataBound();
+        });
+
+        it('Check tooltip is created or not', () => {
+            expect((document.querySelector('.e-numerictextbox.e-input') as any).value).toEqual('111.00');
+            let saveButton: HTMLElement = document.querySelector('.e-control.e-btn.e-lib.e-flat.e-dialog-edit.e-primary');
+            util.triggerMouseEvent(saveButton, 'click');
+        });
+
+        it('Updating new value', () => {
+            expect(document.getElementById("Estimate-info")).not.toBeNull;
+            let element = (document.getElementsByClassName('e-numerictextbox')[0] as EJ2Instance);
+            (element.ej2_instances[0] as any).value = 99;
+            kanbanObj.dataBound();
+        });
+
+        it('clicking the save button to save data', (done: Function) => {
+            let saveButton: HTMLElement = document.querySelector('.e-control.e-btn.e-lib.e-flat.e-dialog-edit.e-primary');
+            util.triggerMouseEvent(saveButton, 'click');
+            setTimeout(() => {
+                expect(document.querySelector('.e-dialog.e-kanban-dialog')).toBeNull;
+                done();
+            }, 500);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
-        let average: any = inMB(profile.averageChange);
+        const average: number = inMB(profile.averageChange);
         expect(average).toBeLessThan(10); //Check average change in memory samples to not be over 10MB
-        let memory: any = inMB(getMemoryProfile());
+        const memory: number = inMB(getMemoryProfile());
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });

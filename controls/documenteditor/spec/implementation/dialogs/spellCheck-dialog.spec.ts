@@ -40,7 +40,7 @@ console.log('Call Spell checker dialog');
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
         let lineInfo: LineInfo = editor.documentHelper.selection.getLineInfo(paragraph, 0);
         let element: TextElementBox = lineInfo.line.children[0] as TextElementBox;
-        editor.spellCheckDialogModule.show(element.text, element, false);
+        editor.spellCheckDialogModule.show(element.text, element);
     });
     it('Spell checker dialog module name validation', () => {
 console.log('Spell checker dialog module name validation');

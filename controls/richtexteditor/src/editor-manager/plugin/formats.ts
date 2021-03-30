@@ -8,6 +8,7 @@ import { markerClassName } from './dom-node';
 import { NodeCutter } from './nodecutter';
 /**
  * Formats internal component
+ * 
  * @hidden
  * @deprecated
  */
@@ -15,10 +16,12 @@ export class Formats {
     private parent: EditorManager;
     /**
      * Constructor for creating the Formats plugin
+     *
+     * @param {EditorManager} parent - specifies the parent element.
      * @hidden
      * @deprecated
      */
-    constructor(parent: EditorManager) {
+    public constructor(parent: EditorManager) {
         this.parent = parent;
         this.addEventListener();
     }
@@ -36,17 +39,17 @@ export class Formats {
     }
 
     private onKeyUp(e: IHtmlSubCommands): void {
-        let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
-        let endCon: Node = range.endContainer;
-        let lastChild: Node = endCon.lastChild;
+        const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        const endCon: Node = range.endContainer;
+        const lastChild: Node = endCon.lastChild;
         if (e.event.which === 13 && range.startContainer === endCon && endCon.nodeType !== 3) {
-            let pTag: HTMLElement = createElement('p');
+            const pTag: HTMLElement = createElement('p');
             pTag.innerHTML = '<br>';
             if (lastChild.nodeName === 'BR' && (lastChild.previousSibling && lastChild.previousSibling.nodeName === 'TABLE')) {
                 endCon.replaceChild(pTag, lastChild);
                 this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, pTag, 0);
             } else {
-                let brNode: Node = this.parent.nodeSelection.getSelectionNodeCollectionBr(range)[0];
+                const brNode: Node = this.parent.nodeSelection.getSelectionNodeCollectionBr(range)[0];
                 if (!isNOU(brNode) && brNode.nodeName === 'BR' && (brNode.previousSibling && brNode.previousSibling.nodeName === 'TABLE')) {
                     endCon.replaceChild(pTag, brNode);
                     this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, pTag, 0);
@@ -58,13 +61,13 @@ export class Formats {
     private onKeyDown(e: IHtmlSubCommands): void {
         if (e.event.which === 13) {
             let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
-            let startCon: Node = (range.startContainer.textContent.length === 0 || range.startContainer.nodeName === 'PRE')
-            ? range.startContainer : range.startContainer.parentElement;
-            let endCon: Node = (range.endContainer.textContent.length === 0 || range.endContainer.nodeName === 'PRE')
-            ? range.endContainer : range.endContainer.parentElement;
-            let preElem: Element = closest(startCon, 'pre');
-            let endPreElem: Element = closest(endCon, 'pre');
-            let liParent: boolean = !isNOU(preElem) && !isNOU(preElem.parentElement) && preElem.parentElement.tagName === 'LI';
+            const startCon: Node = (range.startContainer.textContent.length === 0 || range.startContainer.nodeName === 'PRE')
+                ? range.startContainer : range.startContainer.parentElement;
+            const endCon: Node = (range.endContainer.textContent.length === 0 || range.endContainer.nodeName === 'PRE')
+                ? range.endContainer : range.endContainer.parentElement;
+            const preElem: Element = closest(startCon, 'pre');
+            const endPreElem: Element = closest(endCon, 'pre');
+            const liParent: boolean = !isNOU(preElem) && !isNOU(preElem.parentElement) && preElem.parentElement.tagName === 'LI';
             if (liParent) {
                 return;
             }
@@ -80,8 +83,8 @@ export class Formats {
                 this.deleteContent(range);
                 this.removeCodeContent(range);
                 range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
-                let lastEmpty: Node = range.startContainer.childNodes[range.endOffset];
-                let lastBeforeBr: Node = range.startContainer.childNodes[range.endOffset - 1];
+                const lastEmpty: Node = range.startContainer.childNodes[range.endOffset];
+                const lastBeforeBr: Node = range.startContainer.childNodes[range.endOffset - 1];
                 let startParent: Node = range.startContainer;
                 if (!isNOU(lastEmpty) && !isNOU(lastBeforeBr) && isNOU(lastEmpty.nextSibling) &&
                 lastEmpty.nodeName === 'BR' && lastBeforeBr.nodeName === 'BR') {
@@ -100,18 +103,18 @@ export class Formats {
                         this.isNotEndCursor(preElem, range);
                     }
                 } else {
-                //Cursor at start and middle
-                this.isNotEndCursor(preElem, range);
+                    //Cursor at start and middle
+                    this.isNotEndCursor(preElem, range);
                 }
             }
         }
     }
 
     private removeCodeContent(range: Range): void {
-        let regEx: RegExp = new RegExp(String.fromCharCode(65279), 'g');
+        const regEx: RegExp = new RegExp(String.fromCharCode(65279), 'g');
         if (!isNOU(range.endContainer.textContent.match(regEx))) {
-            let pointer: number = range.endContainer.textContent.charCodeAt(range.endOffset - 1) === 65279 ?
-            range.endOffset - 2 : range.endOffset;
+            const pointer: number = range.endContainer.textContent.charCodeAt(range.endOffset - 1) === 65279 ?
+                range.endOffset - 2 : range.endOffset;
             range.endContainer.textContent = range.endContainer.textContent.replace(regEx, '');
             if (range.endContainer.textContent === '') {
                 this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, range.endContainer.parentElement, 0);
@@ -128,7 +131,7 @@ export class Formats {
     }
 
     private paraFocus(referNode: Element): void {
-        let pTag: HTMLElement = createElement('p');
+        const pTag: HTMLElement = createElement('p');
         pTag.innerHTML = '<br>';
         this.parent.domNode.insertAfter(pTag, referNode);
         this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, pTag, 0);
@@ -136,34 +139,35 @@ export class Formats {
     }
 
     private isNotEndCursor(preElem: Element, range: Range): void {
-        let nodeCutter: NodeCutter = new NodeCutter();
-        let isEnd: boolean = range.startOffset === preElem.lastChild.textContent.length &&
+        const nodeCutter: NodeCutter = new NodeCutter();
+        const isEnd: boolean = range.startOffset === preElem.lastChild.textContent.length &&
         preElem.lastChild.textContent === range.startContainer.textContent;
         //Cursor at start point
         if (preElem.textContent.indexOf(range.startContainer.textContent) === 0 &&
         ((range.startOffset === 0 && range.endOffset === 0) || range.startContainer.nodeName === 'PRE')) {
             this.insertMarker(preElem, range);
-            let brTag: HTMLElement = createElement('br');
+            const brTag: HTMLElement = createElement('br');
             preElem.childNodes[range.endOffset].parentElement.insertBefore(brTag, preElem.childNodes[range.endOffset]);
         } else {
             //Cursor at middle
-            let cloneNode: HTMLElement = nodeCutter.SplitNode(range, preElem as HTMLElement, true) as HTMLElement;
+            const cloneNode: HTMLElement = nodeCutter.SplitNode(range, preElem as HTMLElement, true) as HTMLElement;
             this.insertMarker(preElem, range);
-            let previousSib: Element = preElem.previousElementSibling;
+            const previousSib: Element = preElem.previousElementSibling;
             if (previousSib.tagName === 'PRE') {
                 previousSib.insertAdjacentHTML('beforeend', '<br>' + (cloneNode as HTMLElement).innerHTML);
                 detach(preElem);
             }
         }
-        //To place the cursor position          
+        //To place the cursor position
         this.setCursorPosition(isEnd, preElem);
     }
     private setCursorPosition(isEnd: boolean, preElem: Element): void {
         let isEmpty: boolean = false;
-        let markerElem: Element = this.parent.editableElement.querySelector('.tempSpan');
-        let mrkParentElem: HTMLElement = markerElem.parentElement;
+        const markerElem: Element = this.parent.editableElement.querySelector('.tempSpan');
+        const mrkParentElem: HTMLElement = markerElem.parentElement;
+        // eslint-disable-next-line
         markerElem.parentNode.textContent === '' ? isEmpty = true :
-        this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, markerElem, 0);
+            this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, markerElem, 0);
         if (isEnd) {
             if (isEmpty) {
                 //Enter press when pre element is empty
@@ -174,12 +178,13 @@ export class Formats {
                     this.focusSelectionParent(markerElem, mrkParentElem);
                 }
             } else {
-                let brElm : HTMLElement = createElement('br');
+                const brElm : HTMLElement = createElement('br');
                 this.parent.domNode.insertAfter(brElm, markerElem);
                 this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, markerElem, 0);
                 detach(markerElem);
             }
         } else {
+            // eslint-disable-next-line
             isEmpty ? this.focusSelectionParent(markerElem, mrkParentElem) : detach(markerElem);
         }
     }
@@ -191,7 +196,7 @@ export class Formats {
     }
 
     private insertMarker(preElem: Element, range: Range): void {
-        let tempSpan: HTMLElement = createElement('span', { className: 'tempSpan' });
+        const tempSpan: HTMLElement = createElement('span', { className: 'tempSpan' });
         if (range.startContainer.nodeName === 'PRE') {
             preElem.childNodes[range.endOffset].parentElement.insertBefore(tempSpan, preElem.childNodes[range.endOffset]);
         } else {
@@ -200,7 +205,7 @@ export class Formats {
     }
 
     private applyFormats(e: IHtmlSubCommands): void {
-        let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         let isSelectAll: boolean = false;
         if (this.parent.editableElement === range.endContainer &&
             !isNOU(this.parent.editableElement.children[range.endOffset - 1]) &&
@@ -209,7 +214,7 @@ export class Formats {
         }
         let save: NodeSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
         this.parent.domNode.setMarker(save);
-        let formatsNodes: Node[] = this.parent.domNode.blockNodes();
+        const formatsNodes: Node[] = this.parent.domNode.blockNodes();
         for (let i: number = 0; i < formatsNodes.length; i++) {
             let parentNode: Element;
             let replaceHTML: string;
@@ -230,9 +235,9 @@ export class Formats {
                 continue;
             }
             this.cleanFormats(parentNode, e.subCommand);
-            let replaceNode: string = (e.subCommand.toLowerCase() === 'pre' &&  parentNode.tagName.toLowerCase() === 'pre') ?
-            'p' : e.subCommand;
-            let replaceTag: string = this.parent.domNode.createTagString(
+            const replaceNode: string = (e.subCommand.toLowerCase() === 'pre' &&  parentNode.tagName.toLowerCase() === 'pre') ?
+                'p' : e.subCommand;
+            const replaceTag: string = this.parent.domNode.createTagString(
                 replaceNode, parentNode as Element, replaceHTML.replace(/>\s+</g, '><'));
             if (parentNode.tagName === 'LI') {
                 parentNode.innerHTML = '';
@@ -249,7 +254,9 @@ export class Formats {
             endNode = endNode.lastChild;
         }
         save = this.parent.domNode.saveMarker(save, null);
-        if (isIDevice()) { setEditFrameFocus(this.parent.editableElement, e.selector); }
+        if (isIDevice()) {
+            setEditFrameFocus(this.parent.editableElement, e.selector);
+        }
         if (isSelectAll) {
             this.parent.nodeSelection.setSelectionText(this.parent.currentDocument, startNode, endNode, 0, endNode.textContent.length);
         } else {
@@ -267,10 +274,10 @@ export class Formats {
     }
 
     private preFormatMerge(): void {
-        let preNodes: NodeListOf<Element> = this.parent.editableElement.querySelectorAll('PRE');
+        const preNodes: NodeListOf<Element> = this.parent.editableElement.querySelectorAll('PRE');
         if (!isNOU(preNodes)) {
             for (let i: number = 0; i < preNodes.length; i++) {
-                let previousSib: Element = (preNodes[i] as HTMLElement).previousElementSibling;
+                const previousSib: Element = (preNodes[i] as HTMLElement).previousElementSibling;
                 if (!isNOU(previousSib) && previousSib.tagName === 'PRE') {
                     previousSib.insertAdjacentHTML('beforeend', '<br>' + (preNodes[i] as HTMLElement).innerHTML);
                     detach(preNodes[i]);
@@ -280,7 +287,7 @@ export class Formats {
     }
 
     private cleanFormats(element: Element, tagName: string): void {
-        let ignoreAttr: string[] = ['display', 'font-size', 'margin-top', 'margin-bottom', 'margin-left', 'margin-right', 'font-weight'];
+        const ignoreAttr: string[] = ['display', 'font-size', 'margin-top', 'margin-bottom', 'margin-left', 'margin-right', 'font-weight'];
         tagName = tagName.toLowerCase();
         for (let i: number = 0; i < ignoreAttr.length && (tagName !== 'p' && tagName !== 'blockquote' && tagName !== 'pre'); i++) {
             (element as HTMLElement).style.removeProperty(ignoreAttr[i]);

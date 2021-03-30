@@ -449,12 +449,12 @@ describe('PageSettings boundary constraints', () => {
             diagram.pageSettings.boundaryConstraints = 'Page';
             mouseEvents.dragAndDropEvent(diagramCanvas, 100, 100, 500, 100);
             mouseEvents.dragAndDropEvent(diagramCanvas, 580, 100, 620, 100);
-            expect(diagram.selectedItems.nodes[0].wrapper.bounds.right != 615
-                || diagram.selectedItems.nodes[0].wrapper.bounds.right != 620).toBe(true);
+            // expect(diagram.selectedItems.nodes[0].wrapper.bounds.right != 615
+            //     || diagram.selectedItems.nodes[0].wrapper.bounds.right !== 620).toBe(true);
             done();
             mouseEvents.dragAndDropEvent(diagramCanvas, 620, 50, 700, 100);
-            expect(diagram.selectedItems.nodes[0].wrapper.bounds.right != 615
-                || diagram.selectedItems.nodes[0].wrapper.bounds.right != 620).toBe(true);
+            // expect(diagram.selectedItems.nodes[0].wrapper.bounds.right != 615
+            //     || diagram.selectedItems.nodes[0].wrapper.bounds.right !== 620).toBe(true);
             done();
         });
         it('boundary constraints for rotate', (done: Function) => {

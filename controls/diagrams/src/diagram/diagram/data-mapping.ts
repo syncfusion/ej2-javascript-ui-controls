@@ -6,13 +6,15 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
  */
 export class DataMappingItems extends ChildProperty<DataMappingItems> {
     /**
-     * Defines the property of a Data Map Items 
+     * Defines the property of a Data Map Items
+     *
      * @default ''
      */
     @Property('')
     public property: string;
     /**
-     * Defines the Fields for the Data Map Items 
+     * Defines the Fields for the Data Map Items
+     *
      * @default ''
      */
     @Property('')

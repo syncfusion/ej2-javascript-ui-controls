@@ -1,9 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable valid-jsdoc */
 import { Property, ChildProperty, Complex, Collection, DateFormatOptions, getValue } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { DataLabelSettingsModel, MarkerSettingsModel, TrendlineModel, ChartSegmentModel } from '../series/chart-series-model';
 import { StackValues, RectOption, ControlPoints, PolarArc, appendChildElement, appendClipElement } from '../../common/utils/helper';
 import { ErrorBarSettingsModel, ErrorBarCapSettingsModel } from '../series/chart-series-model';
-import { firstToLowerCase, ChartLocation, CircleOption, IHistogramValues } from '../../common/utils/helper';
+import { firstToLowerCase, ChartLocation, CircleOption, IHistogramValues, getColorByValue } from '../../common/utils/helper';
 import { Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { ChartSeriesType, ChartShape, LegendShape, LabelPosition, SeriesValueType, EmptyPointMode, SplineType } from '../utils/enum';
 import { ChartDrawType, DataLabelIntersectAction } from '../utils/enum';
@@ -33,6 +38,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * If set true, data label for series renders.
+     *
      * @default false
      */
 
@@ -41,6 +47,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * If set true, data label for zero values in series renders.
+     *
      * @default true
      */
 
@@ -49,6 +56,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * The DataSource field that contains the data label value.
+     *
      * @default null
      */
 
@@ -57,6 +65,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * The background color of the data label accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default 'transparent'
      */
 
@@ -65,6 +74,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * The opacity for the background.
+     *
      * @default 1
      */
 
@@ -73,6 +83,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * Specifies angle for data label.
+     *
      * @default 0
      */
 
@@ -81,6 +92,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * Enables rotation for data label.
+     *
      * @default false
      */
 
@@ -94,6 +106,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
      * * Bottom: Positions the label at the bottom of the point.
      * * Middle: Positions the label to the middle of the point.
      * * Auto: Positions the label based on series.
+     *
      * @default 'Auto'
      */
 
@@ -102,6 +115,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * The roundedCornerX for the data label. It requires `border` values not to be null.
+     *
      * @default 5
      */
     @Property(5)
@@ -109,6 +123,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * The roundedCornerY for the data label. It requires `border` values not to be null.
+     *
      * @default 5
      */
     @Property(5)
@@ -119,6 +134,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
      * * Near: Aligns the label to the left of the point.
      * * Center: Aligns the label to the center of the point.
      * * Far: Aligns the label to the right of the point.
+     *
      * @default 'Center'
      */
     @Property('Center')
@@ -148,6 +164,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     /**
      * Custom template to show the data label. Use ${point.x} and ${point.y} as a placeholder
      * text to display the corresponding data point.
+     *
      * @default null
      */
 
@@ -156,6 +173,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * Show Datalabel Even two Data Labels Are Overflow
+     *
      * @default 'Hide'
      */
 
@@ -173,6 +191,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
     /**
      * If set to true the marker for series is rendered. This is applicable only for line and area type series.
+     *
      * @default false
      */
 
@@ -190,6 +209,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
      * * Pentagon
      * * InvertedTriangle
      * * Image
+     *
      * @default 'Circle'
      */
 
@@ -199,6 +219,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
     /**
      * The URL for the Image that is to be displayed as a marker.  It requires marker `shape` value to be an `Image`.
+     *
      * @default ''
      */
 
@@ -207,6 +228,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
     /**
      * The height of the marker in pixels.
+     *
      * @default 5
      */
 
@@ -215,6 +237,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
     /**
      * The width of the marker in pixels.
+     *
      * @default 5
      */
 
@@ -237,6 +260,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
     /**
      *  The fill color of the marker that accepts value in hex and rgba as a valid CSS color string. By default, it will take series' color.
+     *
      * @default null
      */
 
@@ -245,6 +269,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
     /**
      * The opacity of the marker.
+     *
      * @default 1
      */
 
@@ -262,6 +287,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
 /**
  * Points model for the series.
+ *
  * @public
  */
 export class Points {
@@ -287,6 +313,8 @@ export class Points {
     public xValue: number;
     /** point y value */
     public yValue: number;
+    /** point color mapping column */
+    public colorValue: number;
     /** point index value */
     public index: number;
     /** point region */
@@ -331,7 +359,8 @@ export class Points {
     };
     /**
      * To identify point y value with in the range.
-     * @private 
+     *
+     * @private
      */
     public isPointInRange: boolean = true;
 }
@@ -342,6 +371,7 @@ export class Points {
 export class Trendline extends ChildProperty<Trendline> {
     /**
      * Defines the name of trendline
+     *
      * @default ''
      */
     @Property('')
@@ -349,6 +379,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Defines the pattern of dashes and gaps to stroke.
+     *
      * @default '0'
      */
 
@@ -357,6 +388,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Specifies the visibility of trendline.
+     *
      * @default true
      */
 
@@ -365,6 +397,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Defines the type of the trendline
+     *
      * @default 'Linear'
      */
     @Property('Linear')
@@ -372,6 +405,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Defines the period, the price changes over which will be considered to predict moving average trend line
+     *
      * @default 2
      */
     @Property(2)
@@ -379,6 +413,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Defines the polynomial order of the polynomial trendline
+     *
      * @default 2
      */
     @Property(2)
@@ -386,6 +421,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Defines the period, by which the trend has to backward forecast
+     *
      * @default 0
      */
     @Property(0)
@@ -393,6 +429,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Defines the period, by which the trend has to forward forecast
+     *
      * @default 0
      */
     @Property(0)
@@ -407,6 +444,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Options to customize the marker for trendlines
+     *
      * @deprecated
      */
     @Complex<MarkerSettingsModel>({}, MarkerSettings)
@@ -414,6 +452,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Enables/disables tooltip for trendlines
+     *
      * @default true
      */
     @Property(true)
@@ -422,6 +461,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Defines the intercept of the trendline
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -430,6 +470,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Defines the fill color of trendline
+     *
      * @default ''
      */
     @Property('')
@@ -437,6 +478,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Defines the width of the trendline
+     *
      * @default 1
      */
     @Property(1)
@@ -444,6 +486,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Sets the legend shape of the trendline
+     *
      * @default 'SeriesType'
      */
     @Property('SeriesType')
@@ -479,9 +522,7 @@ export class Trendline extends ChildProperty<Trendline> {
         if (series) {
             this.points = (series as Series).points;
         }
-        let type: string = firstToLowerCase(this.type);
-        chart.trendLineModule.initDataSource(this, chart);
-
+        chart.trendLineModule.initDataSource(this);
         chart.visibleSeriesCount++;
     }
 }
@@ -494,6 +535,7 @@ export class ErrorBarCapSettings extends ChildProperty<ErrorBarCapSettings> {
 
     /**
      * The width of the error bar in pixels.
+     *
      * @default 1
      */
 
@@ -502,6 +544,7 @@ export class ErrorBarCapSettings extends ChildProperty<ErrorBarCapSettings> {
 
     /**
      * The length of the error bar in pixels.
+     *
      * @default 10
      */
 
@@ -510,6 +553,7 @@ export class ErrorBarCapSettings extends ChildProperty<ErrorBarCapSettings> {
 
     /**
      *  The stroke color of the cap, which accepts value in hex, rgba as a valid CSS color string.
+     *
      * @default null
      */
 
@@ -518,6 +562,7 @@ export class ErrorBarCapSettings extends ChildProperty<ErrorBarCapSettings> {
 
     /**
      * The opacity of the cap.
+     *
      * @default 1
      */
 
@@ -530,6 +575,7 @@ export class ChartSegment extends ChildProperty<ChartSegment> {
 
     /**
      * Defines the starting point of region.
+     *
      * @default null
      */
 
@@ -538,6 +584,7 @@ export class ChartSegment extends ChildProperty<ChartSegment> {
 
     /**
      * Defines the color of a region.
+     *
      * @default null
      */
 
@@ -546,6 +593,7 @@ export class ChartSegment extends ChildProperty<ChartSegment> {
 
     /**
      * Defines the pattern of dashes and gaps to stroke.
+     *
      * @default '0'
      */
 
@@ -561,12 +609,14 @@ export class ChartSegment extends ChildProperty<ChartSegment> {
 }
 /**
  * Error bar settings
+ *
  * @public
  */
 export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * If set true, error bar for data gets rendered.
+     *
      * @default false
      */
 
@@ -580,6 +630,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
      * * StandardDeviation - Renders a standard deviation type error bar.
      * * StandardError -Renders a standard error type error bar.
      * * Custom -Renders a custom type error bar.
+     *
      * @default 'Fixed'
      */
 
@@ -591,6 +642,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
      * * both -  Renders both direction of error bar.
      * * minus - Renders minus direction of error bar.
      * * plus - Renders plus direction error bar.
+     *
      * @default 'Both'
      */
 
@@ -602,6 +654,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
      * * Vertical -  Renders a vertical error bar.
      * * Horizontal - Renders a horizontal error bar.
      * * Both - Renders both side error bar.
+     *
      * @default 'Vertical'
      */
 
@@ -610,6 +663,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      *  The color for stroke of the error bar, which accepts value in hex, rgba as a valid CSS color string.
+     *
      * @default null
      */
 
@@ -618,6 +672,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * The vertical error of the error bar.
+     *
      * @default 1
      */
 
@@ -626,6 +681,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * The stroke width of the error bar..
+     *
      * @default 1
      */
 
@@ -634,6 +690,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * The horizontal error of the error bar.
+     *
      * @default 1
      */
 
@@ -642,6 +699,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * The vertical positive error of the error bar.
+     *
      * @default 3
      */
 
@@ -650,6 +708,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * The vertical negative error of the error bar.
+     *
      * @default 3
      */
 
@@ -658,6 +717,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * The horizontal positive error of the error bar.
+     *
      * @default 1
      */
 
@@ -666,6 +726,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * The horizontal negative error of the error bar.
+     *
      * @default 1
      */
 
@@ -687,6 +748,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     /**
      * The DataSource field that contains the x value.
      * It is applicable for series and technical indicators
+     *
      * @default ''
      */
 
@@ -694,8 +756,16 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public xName: string;
 
     /**
+     * The Data Source field that contains the color mapping value.
+     * It is applicable for range color mapping properly.
+     */
+    @Property('')
+    public colorName: string;
+
+    /**
      * The DataSource field that contains the high value of y
      * It is applicable for series and technical indicators
+     *
      * @default ''
      */
 
@@ -705,6 +775,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     /**
      * The DataSource field that contains the low value of y
      * It is applicable for series and technical indicators
+     *
      * @default ''
      */
 
@@ -714,6 +785,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     /**
      * The DataSource field that contains the open value of y
      * It is applicable for series and technical indicators
+     *
      * @default ''
      */
 
@@ -723,6 +795,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     /**
      * The DataSource field that contains the close value of y
      * It is applicable for series and technical indicators
+     *
      * @default ''
      */
 
@@ -732,6 +805,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     /**
      * Defines the data source field that contains the volume value in candle charts
      * It is applicable for financial series and technical indicators
+     *
      * @default ''
      */
 
@@ -741,6 +815,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     /**
      * The DataSource field that contains the color value of point
      * It is applicable for series
+     *
      * @default ''
      */
 
@@ -749,6 +824,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
 
     /**
      * Specifies the visibility of series.
+     *
      * @default true
      */
 
@@ -778,6 +854,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
      * });
      * chart.appendTo('#Chart');
      * ```
+     *
      * @default null
      */
 
@@ -807,6 +884,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
      * });
      * chart.appendTo('#Chart');
      * ```
+     *
      * @default null
      */
 
@@ -824,6 +902,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
      * The fill color for the series that accepts value in hex and rgba as a valid CSS color string.
      * It also represents the color of the signal lines in technical indicators.
      * For technical indicators, the default value is 'blue' and for series, it has null.
+     *
      * @default null
      */
 
@@ -833,6 +912,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     /**
      * The stroke width for the series that is applicable only for `Line` type series.
      * It also represents the stroke width of the signal lines in technical indicators.
+     *
      * @default 1
      */
 
@@ -841,6 +921,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
 
     /**
      * Defines the pattern of dashes and gaps to stroke the lines in `Line` type series.
+     *
      * @default '0'
      */
 
@@ -869,6 +950,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
      * });
      * chart.appendTo('#Chart');
      * ```
+     *
      * @default ''
      */
 
@@ -877,6 +959,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
 
     /**
      * Specifies query to select data from DataSource. This property is applicable only when the DataSource is `ej.DataManager`.
+     *
      * @default ''
      */
     @Property()
@@ -896,6 +979,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
 
     /**
      * This property used to improve chart performance via data mapping for series dataSource.
+     *
      * @default false
      */
     @Property(false)
@@ -903,13 +987,14 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
 
     /**
      * Process data for the series.
+     *
      * @hidden
      */
     public processJsonData(): void {
         let i: number = 0;
         let point: Points = new Points();
-        let xName: string = (this instanceof Series && this.type === 'Histogram') ? 'x' : this.xName;
-        let textMappingName: string = this instanceof Series && this.marker.dataLabel.name ?
+        const xName: string = (this instanceof Series && this.type === 'Histogram') ? 'x' : this.xName;
+        const textMappingName: string = this instanceof Series && this.marker.dataLabel.name ?
             this.marker.dataLabel.name : '';
         if (this instanceof Series) {
             if ((this.type === 'Waterfall' || this.type === 'Histogram')) {
@@ -926,7 +1011,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             this.isRectTypeSeries = this.type.indexOf('Column') > -1 || this.type.indexOf('Bar') > -1
                                     || this.type.indexOf('Histogram') > -1;
         }
-        let len: number = Object.keys(this.currentViewData).length;
+        const len: number = Object.keys(this.currentViewData).length;
         this.points = [];
         this.xMin = Infinity; this.xMax = -Infinity;
         this.yMin = Infinity; this.yMax = -Infinity;
@@ -941,12 +1026,12 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
                 i++;
             }
         } else if (this.xAxis.valueType.indexOf('DateTime') > -1) {
-            let option: DateFormatOptions = {
+            const option: DateFormatOptions = {
                 skeleton: 'full',
                 type: 'dateTime'
             };
-            let dateParser: Function = this.chart.intl.getDateParser(option);
-            let dateFormatter: Function = this.chart.intl.getDateFormat(option);
+            const dateParser: Function = this.chart.intl.getDateParser(option);
+            const dateFormatter: Function = this.chart.intl.getDateFormat(option);
             while (i < len) {
                 point = this.dataPoint(i, textMappingName, xName);
                 if (!isNullOrUndefined(point.x) && point.x !== '') {
@@ -956,8 +1041,9 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
                     if (this.xAxis.valueType === 'DateTime') {
                         point.xValue = Date.parse(point.x.toString());
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                         this.chart.isBlazor ? this.pushCategoryData(point, i, Date.parse(point.x.toString()).toString()) :
-                        this.pushCategoryData(point, i, Date.parse(dateParser(dateFormatter(point.x))).toString());
+                            this.pushCategoryData(point, i, Date.parse(dateParser(dateFormatter(point.x))).toString());
                     }
                     this.pushData(point, i);
                     this.setEmptyPoint(point, i);
@@ -977,7 +1063,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         }
         if (this instanceof Series) {
             if (this.type.indexOf('Spline') > -1 || (this.drawType.indexOf('Spline') > -1 && this.chart.chartAreaType === 'PolarRadar')) {
-                let isArea: boolean = (this.type.indexOf('Area') > -1 || this.drawType.indexOf('Area') > -1);
+                const isArea: boolean = (this.type.indexOf('Area') > -1 || this.drawType.indexOf('Area') > -1);
                 this.chart[
                     'spline' + (isArea ? 'Area' : '') + 'SeriesModule'
                 ].findSplinePoint(this);
@@ -995,11 +1081,10 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     }
     /** @private */
     protected dataPoint(i: number, textMappingName: string, xName: string): Points {
-        let point: Points;
         this.points[i] = new Points();
-        point = <Points>this.points[i];
-        let currentViewData: Object = this.currentViewData;
-        let getObjectValueByMappingString: Function = this.enableComplexProperty ? getValue : this.getObjectValue;
+        const point: Points = <Points>this.points[i];
+        const currentViewData: Object = this.currentViewData;
+        const getObjectValueByMappingString: Function = this.enableComplexProperty ? getValue : this.getObjectValue;
         point.x = getObjectValueByMappingString(xName, currentViewData[i]);
         point.high = getObjectValueByMappingString(this.high, currentViewData[i]);
         point.low = getObjectValueByMappingString(this.low, currentViewData[i]);
@@ -1012,14 +1097,49 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             point.size = getObjectValueByMappingString(this.size, currentViewData[i]);
             point.text = getObjectValueByMappingString(textMappingName, currentViewData[i]) as string;
             point.tooltip = getObjectValueByMappingString(this.tooltipMappingName, currentViewData[i]) as string;
+            if (this.chart.rangeColorSettings && this.chart.rangeColorSettings.length > 0 && this.isAdvancedColorSupported()) {
+                if (this.colorName && this.colorName.length > 0) {
+                    point.colorValue = getObjectValueByMappingString(this.colorName, currentViewData[i]);
+                } else {
+                    point.colorValue = getObjectValueByMappingString(this.yName, currentViewData[i]);
+                }
+                point.interior = this.getPointFillColor(point.interior, point.colorValue);
+            }
         }
         return point;
     }
+
+    private isAdvancedColorSupported(): boolean {
+        if (this.chart.visibleSeries.length === 1 &&
+            (this.chart.series[0].type === 'Column' || this.chart.series[0].type === 'Bar' ||
+                this.chart.series[0].type === 'Scatter' || this.chart.series[0].type === 'Bubble')) {
+            return true;
+        }
+        return false;
+    }
+
+    private getPointFillColor(pointFill: string, value: number): string {
+        let color: string = pointFill;
+        if (value && this.chart.rangeColorSettings && this.chart.rangeColorSettings.length > 0) {
+            for (const rangeMap of this.chart.rangeColorSettings) {
+                if (value >= rangeMap.start && value <= rangeMap.end) {
+                    if (rangeMap.colors.length > 1) {
+                        color = getColorByValue(rangeMap, value);
+                    } else {
+                        color = rangeMap.colors[0];
+                    }
+                }
+            }
+        }
+        return color;
+    }
+
     private getObjectValue(mappingName: string, data: Object): Object {
         return data[mappingName];
     }
     /**
      * To set empty point value based on empty point mode
+     *
      * @private
      */
     public setEmptyPoint(point: Points, i: number): void {
@@ -1028,89 +1148,89 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             return null;
         }
         point.isEmpty = true;
-        let mode: EmptyPointMode = this instanceof Series && point.isPointInRange ? this.emptyPointSettings.mode : 'Drop';
+        const mode: EmptyPointMode = this instanceof Series && point.isPointInRange ? this.emptyPointSettings.mode : 'Drop';
         switch (mode) {
-            case 'Zero':
-                point.visible = true;
-                if (this instanceof Series && this.seriesType.indexOf('HighLow') > -1) {
-                    point.high = point.low = 0;
+        case 'Zero':
+            point.visible = true;
+            if (this instanceof Series && this.seriesType.indexOf('HighLow') > -1) {
+                point.high = point.low = 0;
+                if (this.seriesType.indexOf('HighLowOpenClose') > -1) {
+                    point.open = point.close = 0;
+                }
+            } else {
+                point.y = point.yValue = this.yData[i] = 0;
+            }
+            break;
+        case 'Average':
+            if (this instanceof Series) {
+                if (this.seriesType.indexOf('HighLow') > -1) {
+                    point.high = (isNullOrUndefined(point.high) || isNaN(+point.high)) ? this.getAverage(this.high, i) : point.high;
+                    point.low = (isNullOrUndefined(point.low) || isNaN(+point.low)) ? this.getAverage(this.low, i) : point.low;
                     if (this.seriesType.indexOf('HighLowOpenClose') > -1) {
-                        point.open = point.close = 0;
+                        point.open = (isNullOrUndefined(point.open) || isNaN(+point.open)) ? this.getAverage(this.open, i) : point.open;
+                        point.close = (isNullOrUndefined(point.close) || isNaN(+point.close)) ? this.getAverage(this.close, i) :
+                            point.close;
                     }
                 } else {
-                    point.y = point.yValue = this.yData[i] = 0;
+                    point.y = point.yValue = this.yData[i] = this.getAverage(this.yName, i);
                 }
-                break;
-            case 'Average':
-                if (this instanceof Series) {
-                    if (this.seriesType.indexOf('HighLow') > -1) {
-                        point.high = (isNullOrUndefined(point.high) || isNaN(+point.high)) ? this.getAverage(this.high, i) : point.high;
-                        point.low = (isNullOrUndefined(point.low) || isNaN(+point.low)) ? this.getAverage(this.low, i) : point.low;
-                        if (this.seriesType.indexOf('HighLowOpenClose') > -1) {
-                            point.open = (isNullOrUndefined(point.open) || isNaN(+point.open)) ? this.getAverage(this.open, i) : point.open;
-                            point.close = (isNullOrUndefined(point.close) || isNaN(+point.close)) ? this.getAverage(this.close, i) :
-                                point.close;
-                        }
-                    } else {
-                        point.y = point.yValue = this.yData[i] = this.getAverage(this.yName, i);
-                    }
-                }
-                point.visible = true;
-                break;
-            case 'Drop':
-            case 'Gap':
-                this.yData[i] = null;
-                point.visible = false;
-                break;
+            }
+            point.visible = true;
+            break;
+        case 'Drop':
+        case 'Gap':
+            this.yData[i] = null;
+            point.visible = false;
+            break;
         }
     }
 
     private findVisibility(point: Points): boolean {
-        let type: SeriesValueType = this instanceof Series ? this.seriesType : 'HighLowOpenClose';
+        const type: SeriesValueType = this instanceof Series ? this.seriesType : 'HighLowOpenClose';
         let yValues: number[];
-        let yAxisMin: number = <number>this.yAxis.minimum;
-        let yAxisMax: number = <number>this.yAxis.maximum;
+        const yAxisMin: number = <number>this.yAxis.minimum;
+        const yAxisMax: number = <number>this.yAxis.maximum;
         switch (type) {
-            case 'XY':
-                if (this.chart.chartAreaType === 'PolarRadar' && ((!isNullOrUndefined(yAxisMin) && point.yValue < yAxisMin) ||
+        case 'XY':
+            if (this.chart.chartAreaType === 'PolarRadar' && ((!isNullOrUndefined(yAxisMin) && point.yValue < yAxisMin) ||
                     (!isNullOrUndefined(yAxisMax) && point.yValue > yAxisMax))) {
-                    point.isPointInRange = false;
-                    return true;
-                }
-                this.setXYMinMax(point.yValue);
-                this.yData.push(point.yValue);
-                if (this instanceof Series && this.type === 'Bubble') {
-                    this.sizeMax = Math.max(this.sizeMax, (isNullOrUndefined(<number>point.size) || isNaN(+point.size)) ? this.sizeMax
-                        : <number>point.size);
-                }
-                return isNullOrUndefined(point.x) || (isNullOrUndefined(point.y) || isNaN(+point.y));
-            case 'HighLow':
-                this.setHiloMinMax(<number>point.high, <number>point.low);
-                return isNullOrUndefined(point.x) || (isNullOrUndefined(point.low) || isNaN(+point.low)) ||
+                point.isPointInRange = false;
+                return true;
+            }
+            this.setXYMinMax(point.yValue);
+            this.yData.push(point.yValue);
+            if (this instanceof Series && this.type === 'Bubble') {
+                this.sizeMax = Math.max(this.sizeMax, (isNullOrUndefined(<number>point.size) || isNaN(+point.size)) ? this.sizeMax
+                    : <number>point.size);
+            }
+            return isNullOrUndefined(point.x) || (isNullOrUndefined(point.y) || isNaN(+point.y));
+        case 'HighLow':
+            this.setHiloMinMax(<number>point.high, <number>point.low);
+            return isNullOrUndefined(point.x) || (isNullOrUndefined(point.low) || isNaN(+point.low)) ||
                     (isNullOrUndefined(point.high) || isNaN(+point.high));
-            case 'HighLowOpenClose':
-                this.setHiloMinMax(<number>point.high, <number>point.low);
-                return isNullOrUndefined(point.x) || (isNullOrUndefined(point.low) || isNaN(+point.low)) ||
+        case 'HighLowOpenClose':
+            this.setHiloMinMax(<number>point.high, <number>point.low);
+            return isNullOrUndefined(point.x) || (isNullOrUndefined(point.low) || isNaN(+point.low)) ||
                     (isNullOrUndefined(point.open) || isNaN(+point.open)) || (isNullOrUndefined(point.close) || isNaN(+point.close))
                     || (isNullOrUndefined(point.high) || isNaN(+point.high));
-            case 'BoxPlot':
-                yValues = (point.y as number[] || [null]).filter((value: number) => {
-                    return !isNullOrUndefined(value) && !isNaN(value);
-                }).sort((a: number, b: number) => {
-                    return a - b;
-                });
-                point.y = yValues;
-                this.yMin = Math.min(this.yMin, Math.min(...yValues));
-                this.yMax = Math.max(this.yMax, Math.max(...yValues));
-                return !yValues.length;
+        case 'BoxPlot':
+            yValues = (point.y as number[] || [null]).filter((value: number) => {
+                return !isNullOrUndefined(value) && !isNaN(value);
+            }).sort((a: number, b: number) => {
+                return a - b;
+            });
+            point.y = yValues;
+            this.yMin = Math.min(this.yMin, Math.min(...yValues));
+            this.yMax = Math.max(this.yMax, Math.max(...yValues));
+            return !yValues.length;
         }
     }
     /**
      * To get Y min max for the provided point seriesType XY
      */
     private setXYMinMax(yValue: number): void {
-        let isLogAxis: boolean = (this.yAxis.valueType === 'Logarithmic' || this.xAxis.valueType === 'Logarithmic');
-        let isNegativeValue: boolean = yValue < 0;
+        const isLogAxis: boolean = (this.yAxis.valueType === 'Logarithmic' || this.xAxis.valueType === 'Logarithmic');
+        const isNegativeValue: boolean = yValue < 0;
         let seriesMinY: number;
         if (this.isRectTypeSeries && !setRange(this.yAxis)) {
             seriesMinY = ((isLogAxis ? 1 : isNegativeValue ? yValue : 0));
@@ -1133,28 +1253,29 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     }
     /**
      * Finds the type of the series
+     *
      * @private
      */
     private getSeriesType(): void {
         let type: SeriesValueType;
         if (this instanceof Series) {
-            let seriesType: string = this.chart.chartAreaType === 'PolarRadar' ? this.drawType : this.type;
+            const seriesType: string = this.chart.chartAreaType === 'PolarRadar' ? this.drawType : this.type;
             if (seriesType) {
                 switch (seriesType) {
-                    case 'RangeColumn':
-                    case 'RangeArea':
-                    case 'Hilo':
-                        type = 'HighLow';
-                        break;
-                    case 'HiloOpenClose':
-                    case 'Candle':
-                        type = 'HighLowOpenClose';
-                        break;
-                    case 'BoxAndWhisker':
-                        type = 'BoxPlot';
-                        break;
-                    default:
-                        type = 'XY';
+                case 'RangeColumn':
+                case 'RangeArea':
+                case 'Hilo':
+                    type = 'HighLow';
+                    break;
+                case 'HiloOpenClose':
+                case 'Candle':
+                    type = 'HighLowOpenClose';
+                    break;
+                case 'BoxAndWhisker':
+                    type = 'BoxPlot';
+                    break;
+                default:
+                    type = 'XY';
                 }
             }
         }
@@ -1173,6 +1294,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             }
             point.xValue = this.xAxis.labels.indexOf(pointX);
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             this.xAxis.labels[index] ? this.xAxis.labels[index] += ', ' + pointX :
                 this.xAxis.labels.push(pointX);
             point.xValue = index;
@@ -1182,20 +1304,21 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
      * To find average of given property
      */
     private getAverage(member: string, i: number, data: Object = this.currentViewData): number {
-        let previous: number = data[i - 1] ? (data[i - 1][member] || 0) : 0;
-        let next: number = data[i + 1] ? (data[i + 1][member] || 0) : 0;
+        const previous: number = data[i - 1] ? (data[i - 1][member] || 0) : 0;
+        const next: number = data[i + 1] ? (data[i + 1][member] || 0) : 0;
         return (previous + next) / 2;
     }
 
     /**
      * To find the control points for spline.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public refreshDataManager(chart: Chart): void {
         this.chart = chart;
         let dataSource: Object | DataManager;
-        let isAngular: string = 'isAngular';
+        const isAngular: string = 'isAngular';
         if (chart[isAngular]) {
             dataSource = Object.keys(this.dataSource).length ? this.dataSource : chart.dataSource;
         } else {
@@ -1205,7 +1328,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             this.dataManagerSuccess({ result: dataSource, count: (dataSource as Object[]).length }, false);
             return;
         }
-        let dataManager: Promise<Object> = this.dataModule.getData(this.dataModule.generateQuery().requiresCount());
+        const dataManager: Promise<Object> = this.dataModule.getData(this.dataModule.generateQuery().requiresCount());
         dataManager.then((e: { result: Object, count: number }) => this.dataManagerSuccess(e));
     }
 
@@ -1216,7 +1339,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             if (this.chart.stockChart) {
                 (this.chart.stockChart.series[this.index] as StockSeries).localData = this.currentViewData;
             }
-            let argsData: ISeriesRenderEventArgs = {
+            const argsData: ISeriesRenderEventArgs = {
                 name: seriesRender, series: this, data: this.currentViewData, fill: this.interior
             };
             this.chart.trigger(seriesRender, argsData);
@@ -1236,13 +1359,13 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     }
 
     private refreshChart(isRemoteData: boolean): void {
-        let chart: Chart = this.chart;
+        const chart: Chart = this.chart;
         if (this instanceof Series) {
             chart.visibleSeriesCount += isRemoteData ? 1 : 0;
         }
         chart.refreshTechnicalIndicator(this);
         if (this instanceof Series && this.category !== 'TrendLine') {
-            for (let trendline of this.trendlines) {
+            for (const trendline of this.trendlines) {
                 (trendline as Trendline).setDataSource(this, chart);
             }
         }
@@ -1301,6 +1424,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
 
 /**
  * Configures the series in charts.
+ *
  * @public
  */
 
@@ -1308,6 +1432,7 @@ export class Series extends SeriesBase {
 
     /**
      * The name of the series visible in legend.
+     *
      * @default ''
      */
 
@@ -1316,6 +1441,7 @@ export class Series extends SeriesBase {
 
     /**
      * The DataSource field that contains the y value.
+     *
      * @default ''
      */
 
@@ -1333,6 +1459,7 @@ export class Series extends SeriesBase {
      *  'StackingArea'
      *  'RangeColumn'
      *  'SplineArea'
+     *
      * @default 'Line'
      */
     @Property('Line')
@@ -1340,6 +1467,7 @@ export class Series extends SeriesBase {
 
     /**
      * Specifies whether to join start and end point of a line/area series used in polar/radar chart to form a closed path.
+     *
      * @default true
      */
     @Property(true)
@@ -1348,6 +1476,7 @@ export class Series extends SeriesBase {
     /**
      * This property is used in financial charts to visualize the price movements in stock.
      * It defines the color of the candle/point, when the opening price is less than the closing price.
+     *
      * @default '#2ecd71'
      */
 
@@ -1357,6 +1486,7 @@ export class Series extends SeriesBase {
     /**
      * This property is used in financial charts to visualize the price movements in stock.
      * It defines the color of the candle/point, when the opening price is higher than the closing price.
+     *
      * @default '#e74c3d'
      */
 
@@ -1366,6 +1496,7 @@ export class Series extends SeriesBase {
     /**
      * This property is applicable for candle series.
      * It enables/disables to visually compare the current values with the previous values in stock.
+     *
      * @default false
      */
     @Property(false)
@@ -1373,6 +1504,7 @@ export class Series extends SeriesBase {
 
     /**
      * The DataSource field that contains the size value of y
+     *
      * @default ''
      */
 
@@ -1381,6 +1513,7 @@ export class Series extends SeriesBase {
 
     /**
      * The bin interval of each histogram points.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -1390,6 +1523,7 @@ export class Series extends SeriesBase {
 
     /**
      * The normal distribution of histogram series.
+     *
      * @default false
      */
 
@@ -1400,6 +1534,7 @@ export class Series extends SeriesBase {
      * This property allows grouping series in `stacked column / bar` charts.
      * Any string value can be provided to the stackingGroup property.
      * If any two or above series have the same value, those series will be grouped together.
+     *
      * @default ''
      */
 
@@ -1415,6 +1550,7 @@ export class Series extends SeriesBase {
 
     /**
      * The opacity of the series.
+     *
      * @default 1
      */
     @Property(1)
@@ -1422,6 +1558,7 @@ export class Series extends SeriesBase {
 
     /**
      * The z order of the series.
+     *
      * @default 0
      */
     @Property(0)
@@ -1456,6 +1593,7 @@ export class Series extends SeriesBase {
      * * Radar
      * * BoxAndWhisker
      * * Pareto
+     *
      * @default 'Line'
      */
 
@@ -1488,6 +1626,7 @@ export class Series extends SeriesBase {
 
     /**
      * If set true, the Tooltip for series will be visible.
+     *
      * @default true
      */
     @Property(true)
@@ -1495,13 +1634,15 @@ export class Series extends SeriesBase {
 
     /**
      * user can format now each series tooltip format separately.
+     *
      * @default ''
      */
     @Property('')
     public tooltipFormat: string;
 
     /**
-     * The provided value will be considered as a Tooltip name 
+     * The provided value will be considered as a Tooltip name
+     *
      * @default ''
      */
     @Property('')
@@ -1536,6 +1677,7 @@ export class Series extends SeriesBase {
 
     /**
      * Custom style for the selected series or points.
+     *
      * @default null
      */
     @Property(null)
@@ -1543,6 +1685,7 @@ export class Series extends SeriesBase {
 
     /**
      * Custom style for the deselected series or points.
+     *
      * @default null
      */
     @Property(null)
@@ -1550,6 +1693,7 @@ export class Series extends SeriesBase {
 
     /**
      * Custom style for the non-highlighted series or points.
+     *
      * @default null
      */
     @Property(null)
@@ -1557,6 +1701,7 @@ export class Series extends SeriesBase {
 
     /**
      * Minimum radius
+     *
      * @default 1
      */
     @Property(1)
@@ -1564,6 +1709,7 @@ export class Series extends SeriesBase {
 
     /**
      * Maximum radius
+     *
      * @default 3
      */
     @Property(3)
@@ -1571,12 +1717,14 @@ export class Series extends SeriesBase {
 
     /**
      * Defines type of spline to be rendered.
+     *
      * @default 'Natural'
      */
     @Property('Natural')
     public splineType: SplineType;
     /**
      * It defines tension of cardinal spline types
+     *
      * @default 0.5
      */
     @Property(0.5)
@@ -1590,6 +1738,7 @@ export class Series extends SeriesBase {
 
     /**
      * If set true, the mean value for box and whisker will be visible.
+     *
      * @default true
      */
     @Property(true)
@@ -1600,6 +1749,7 @@ export class Series extends SeriesBase {
      * Exclusive
      * Inclusive
      * Normal
+     *
      * @default 'Normal'
      */
     @Property('Normal')
@@ -1608,6 +1758,7 @@ export class Series extends SeriesBase {
     /**
      * To render the column series points with particular column width. If the series type is histogram the
      * default value is 1 otherwise 0.7.
+     *
      * @default null
      * @aspDefaultValueIgnore
      * @blazorDefaultValue Double.NaN
@@ -1617,6 +1768,7 @@ export class Series extends SeriesBase {
 
     /**
      * To render the column series points with particular column spacing. It takes value from 0 - 1.
+     *
      * @default 0
      */
     @Property(0)
@@ -1625,6 +1777,7 @@ export class Series extends SeriesBase {
 
     /**
      * Defines the visual representation of the negative changes in waterfall charts.
+     *
      * @default '#C64E4A'
      */
     @Property('#C64E4A')
@@ -1632,6 +1785,7 @@ export class Series extends SeriesBase {
 
     /**
      * Defines the visual representation of the summaries in waterfall charts.
+     *
      * @default '#4E81BC'
      */
     @Property('#4E81BC')
@@ -1639,6 +1793,7 @@ export class Series extends SeriesBase {
 
     /**
      * Defines the collection of indexes of the intermediate summary columns in waterfall charts.
+     *
      * @default []
      * @aspType int[]
      */
@@ -1647,6 +1802,7 @@ export class Series extends SeriesBase {
 
     /**
      * Defines the collection of indexes of the overall summary columns in waterfall charts.
+     *
      * @default []
      * @aspType int[]
      */
@@ -1702,14 +1858,15 @@ export class Series extends SeriesBase {
     public drawPoints: ControlPoints[] = [];
     /** @private */
     public delayedAnimation: boolean = false;
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
     }
 
     /**
      * Refresh the axis label.
-     * @return {boolean}
+     *
+     * @returns {void}
      * @private
      */
     public refreshAxisLabel(): void {
@@ -1717,10 +1874,10 @@ export class Series extends SeriesBase {
             return null;
         }
         this.xAxis.labels = [];
-        for (let item of this.xAxis.series) {
+        for (const item of this.xAxis.series) {
             if (item.visible && item.category !== 'TrendLine') {
                 item.xMin = Infinity; item.xMax = -Infinity;
-                for (let point of item.points) {
+                for (const point of item.points) {
                     item.pushCategoryData(point, point.index, <string>point.x);
                     item.xMin = Math.min(item.xMin, point.xValue);
                     item.xMax = Math.max(item.xMax, point.xValue);
@@ -1730,16 +1887,17 @@ export class Series extends SeriesBase {
     }
     /**
      * To get the series collection.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
     public findSeriesCollection(column: Column, row: Row, isStack: boolean): Series[] {
-        let seriesCollection: Series[] = [];
-        for (let rowAxis of row.axes) {
-            for (let rowSeries of rowAxis.series) {
-                for (let axis of column.axes) {
-                    for (let series of axis.series) {
+        const seriesCollection: Series[] = [];
+        for (const rowAxis of row.axes) {
+            for (const rowSeries of rowAxis.series) {
+                for (const axis of column.axes) {
+                    for (const series of axis.series) {
                         if (series === rowSeries && series.visible && this.rectSeriesInChart(series, isStack)) {
                             seriesCollection.push(series);
                         }
@@ -1751,11 +1909,12 @@ export class Series extends SeriesBase {
     }
     /**
      * To get the column type series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     private rectSeriesInChart(series: Series, isStack: boolean): Boolean {
-        let type: String = (series.type).toLowerCase();
+        const type: String = (series.type).toLowerCase();
         return (
             type.indexOf('column') !== -1 || type.indexOf('bar') !== -1 || type.indexOf('histogram') !== -1 ||
             type.indexOf('hiloopenclose') !== -1 || type.indexOf('candle') !== -1 || type.indexOf('pareto') !== -1 ||
@@ -1765,13 +1924,13 @@ export class Series extends SeriesBase {
     }
     /**
      * To calculate the stacked values.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public calculateStackedValue(isStacking100: boolean, chart: Chart): void {
-        let axisSeries: Series[];
-        for (let columnItem of chart.columns) {
-            for (let item of chart.rows) {
+        for (const columnItem of chart.columns) {
+            for (const item of chart.rows) {
                 this.calculateStackingValues(this.findSeriesCollection(<Column>columnItem, <Row>item, true), isStacking100);
             }
         }
@@ -1783,8 +1942,8 @@ export class Series extends SeriesBase {
         let startValues: number[];
         let endValues: number[];
         let yValues: number[] = [];
-        let lastPositive: number[] = [];
-        let lastNegative: number[] = [];
+        const lastPositive: number[] = [];
+        const lastNegative: number[] = [];
         let stackingGroup: string;
         let lastValue: number;
         let value: number;
@@ -1792,10 +1951,10 @@ export class Series extends SeriesBase {
         if (isStacking100) {
             frequencies = <number[]>this.findFrequencies(seriesCollection);
         }
-        let stackingSeies: Series[] = [];
-        let stackedValues: number[] = [];
+        const stackingSeies: Series[] = [];
+        const stackedValues: number[] = [];
         let visiblePoints: Points[] = [];
-        for (let series of seriesCollection) {
+        for (const series of seriesCollection) {
             if (series.type.indexOf('Stacking') !== -1 || (series.drawType.indexOf('Stacking') !== -1 &&
                 (series.chart.chartAreaType === 'PolarRadar'))) {
                 stackingGroup = (series.type.indexOf('StackingArea') !== -1) ? 'StackingArea100' :
@@ -1852,20 +2011,20 @@ export class Series extends SeriesBase {
         this.findPercentageOfStacking(stackingSeies, stackedValues, isStacking100);
     }
     private findPercentageOfStacking(stackingSeies: Series[], values: number[], isStacking100: boolean): void {
-        for (let item of stackingSeies) {
+        for (const item of stackingSeies) {
             if (isStacking100) {
                 return null;
             }
-            for (let point of getVisiblePoints(item)) {
+            for (const point of getVisiblePoints(item)) {
                 point.percentage = Math.abs(+(<number>point.y / values[point.index] * 100).toFixed(2));
             }
         }
     }
     private findFrequencies(seriesCollection: Series[]): number[] {
-        let frequencies: number[] = [];
+        const frequencies: number[] = [];
         let stackingGroup: string;
         let visiblePoints: Points[] = [];
-        for (let series of seriesCollection) {
+        for (const series of seriesCollection) {
             series.yAxis.isStack100 = series.type.indexOf('100') !== -1 ? true : false;
             visiblePoints = getVisiblePoints(series);
             if (series.type.indexOf('Stacking') !== -1) {
@@ -1920,17 +2079,18 @@ export class Series extends SeriesBase {
 
     /**
      * To create seris element.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public createSeriesElements(chart: Chart): void {
         if (this.category !== 'Indicator') {
-            let elementId: string = chart.element.id;
+            const elementId: string = chart.element.id;
             // 8 for extend border value 5 for extend size value
-            let explodeValue: number = this.marker.border.width + 8 + 5;
-            let render: SvgRenderer | CanvasRenderer = (this.type === 'Scatter' || this.type === 'Bubble') ?
+            const explodeValue: number = this.marker.border.width + 8 + 5;
+            const render: SvgRenderer | CanvasRenderer = (this.type === 'Scatter' || this.type === 'Bubble') ?
                 chart.svgRenderer : chart.renderer;
-            let index: string | number = this.index === undefined ? this.category : this.index;
+            const index: string | number = this.index === undefined ? this.category : this.index;
             let markerHeight: number;
             let markerWidth: number;
             let options: CircleOption | RectOption;
@@ -1942,7 +2102,7 @@ export class Series extends SeriesBase {
                 markerWidth = 0;
             }
             if (chart.chartAreaType === 'PolarRadar') {
-                let markerMaxValue: number = (this.drawType === 'Scatter') ? Math.max(this.marker.width, this.marker.height) : 0;
+                const markerMaxValue: number = (this.drawType === 'Scatter') ? Math.max(this.marker.width, this.marker.height) : 0;
                 options = new CircleOption(
                     elementId + '_ChartSeriesClipRect_' + index, 'transparent', { width: 1, color: 'Gray' }, 1,
                     this.clipRect.width / 2 + this.clipRect.x, this.clipRect.height / 2 + this.clipRect.y, chart.radius + markerMaxValue
@@ -1958,8 +2118,7 @@ export class Series extends SeriesBase {
                     });
                 this.clipRectElement = appendClipElement(chart.redraw, options, render as SvgRenderer);
             }
-            let transform: string;
-            transform = chart.chartAreaType === 'Cartesian' ? 'translate(' + this.clipRect.x + ',' + (this.clipRect.y) + ')' : '';
+            const transform: string = chart.chartAreaType === 'Cartesian' ? 'translate(' + this.clipRect.x + ',' + (this.clipRect.y) + ')' : '';
             this.symbolElement = null;
             this.seriesElement = render.createGroup({
                 'id': elementId + 'SeriesGroup' + index,
@@ -1973,16 +2132,17 @@ export class Series extends SeriesBase {
     }
     /**
      * To append the series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public appendSeriesElement(element: Element, chart: Chart): void {
-        let marker: MarkerSettingsModel = this.marker;
-        let dataLabel: DataLabelSettingsModel = marker.dataLabel;
-        let redraw: boolean = chart.redraw;
+        const marker: MarkerSettingsModel = this.marker;
+        const dataLabel: DataLabelSettingsModel = marker.dataLabel;
+        const redraw: boolean = chart.redraw;
         if (this.category !== 'TrendLine') {
             appendChildElement(chart.enableCanvas, chart.seriesElements, this.seriesElement, redraw);
-            let errorBar: ErrorBarSettingsModel = this.errorBar;
+            const errorBar: ErrorBarSettingsModel = this.errorBar;
             if (errorBar.visible) {
                 if (chart.chartAreaType === 'PolarRadar') {
                     appendChildElement(chart.enableCanvas, chart.seriesElements, this.seriesElement, redraw);
@@ -2011,7 +2171,8 @@ export class Series extends SeriesBase {
     }
     /**
      * To perform animation for chart series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public performAnimation(
@@ -2035,6 +2196,7 @@ export class Series extends SeriesBase {
 
     /**
      * To set border color for empty point
+     *
      * @private
      */
     public setPointColor(point: Points, color: string): string {
@@ -2043,6 +2205,7 @@ export class Series extends SeriesBase {
     }
     /**
      * To set border color for empty point
+     *
      * @private
      */
     public setBorderColor(point: Points, border: BorderModel): BorderModel {
@@ -2051,6 +2214,3 @@ export class Series extends SeriesBase {
         return border;
     }
 }
-
-
-

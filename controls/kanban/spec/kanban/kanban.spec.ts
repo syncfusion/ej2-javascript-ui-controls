@@ -1,5 +1,7 @@
+/* eslint-disable no-useless-escape */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * Kanban base spec 
+ * Kanban base spec
  */
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Query, DataManager } from '@syncfusion/ej2-data';
@@ -12,10 +14,9 @@ Kanban.Inject();
 
 describe('Kanban base module', () => {
     beforeAll(() => {
-        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
             (this as any).skip(); //Skips test (in Chai)
             return;
@@ -79,7 +80,7 @@ describe('Kanban base module', () => {
         });
 
         it('Header table colgroup data-key testing', () => {
-            let colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-table colgroup col');
+            const colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-table colgroup col');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
                 expect(colElements.item(index).getAttribute('data-key')).toEqual(column.keyField);
             });
@@ -95,7 +96,7 @@ describe('Kanban base module', () => {
         });
 
         it('Header table content cell data-key testing and data-role testing', () => {
-            let headerCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
+            const headerCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
                 expect(headerCells.item(index).getAttribute('data-key')).toBe(column.keyField);
                 expect(headerCells.item(index).getAttribute('data-role')).toBe('kanban-column');
@@ -103,7 +104,7 @@ describe('Kanban base module', () => {
         });
 
         it('Header text testing', () => {
-            let headerText: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells .e-header-text');
+            const headerText: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells .e-header-text');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
                 expect((headerText.item(index) as HTMLElement).innerText).toBe(column.headerText);
             });
@@ -118,7 +119,7 @@ describe('Kanban base module', () => {
         });
 
         it('Content table colgroup data-key testing', () => {
-            let colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-table colgroup col');
+            const colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-table colgroup col');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
                 expect(colElements.item(index).getAttribute('data-key')).toBe(column.keyField);
             });
@@ -164,7 +165,7 @@ describe('Kanban base module', () => {
         });
 
         it('Header table colgroup data-key testing', () => {
-            let colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-table colgroup col');
+            const colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-table colgroup col');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
                 expect(colElements.item(index).getAttribute('data-key')).toBe(column.keyField);
             });
@@ -180,7 +181,7 @@ describe('Kanban base module', () => {
         });
 
         it('Header table content cell data-key testing and data-role testing', () => {
-            let headerCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
+            const headerCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
                 expect(headerCells.item(index).getAttribute('data-key')).toBe(column.keyField);
                 expect(headerCells.item(index).getAttribute('data-role')).toBe('kanban-column');
@@ -188,7 +189,7 @@ describe('Kanban base module', () => {
         });
 
         it('Header text testing', () => {
-            let headerText: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells .e-header-text');
+            const headerText: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells .e-header-text');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
                 expect((headerText.item(index) as HTMLElement).innerText).toBe(column.headerText);
             });
@@ -203,7 +204,7 @@ describe('Kanban base module', () => {
         });
 
         it('Content table colgroup data-key testing', () => {
-            let colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-table colgroup col');
+            const colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-table colgroup col');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
                 expect(colElements.item(index).getAttribute('data-key')).toBe(column.keyField);
             });
@@ -215,7 +216,7 @@ describe('Kanban base module', () => {
         });
 
         it('Datasource property and card rendering testing', () => {
-            expect((kanbanObj.dataSource as Object[]).length).toBe(75);
+            expect((kanbanObj.dataSource as Record<string, any>[]).length).toBe(75);
             expect(kanbanObj.element.querySelectorAll('.e-card').length).toBe(64);
         });
 
@@ -228,7 +229,7 @@ describe('Kanban base module', () => {
         });
 
         it('Content table colgroup data-key testing', () => {
-            let colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-table colgroup col');
+            const colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-table colgroup col');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
                 expect(colElements.item(index).getAttribute('data-key')).toBe(column.keyField);
             });
@@ -244,7 +245,7 @@ describe('Kanban base module', () => {
         });
 
         it('Content cell data-key testing and data-role testing', () => {
-            let contentCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-cells');
+            const contentCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-cells');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
                 expect(contentCells.item(index).getAttribute('data-key')).toBe(column.keyField);
                 expect(contentCells.item(index).getAttribute('data-role')).toBe('kanban-column');
@@ -253,7 +254,7 @@ describe('Kanban base module', () => {
         });
 
         it('Card count testing', () => {
-            let contentCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-cells');
+            const contentCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-cells');
             expect(contentCells.item(0).firstElementChild.childElementCount).toBe(14);
             expect(contentCells.item(1).firstElementChild.childElementCount).toBe(13);
             expect(contentCells.item(2).firstElementChild.childElementCount).toBe(15);
@@ -261,7 +262,7 @@ describe('Kanban base module', () => {
         });
 
         it('First column card class and inner layout testing', () => {
-            let cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-cells:nth-child(1) .e-card');
+            const cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-cells:nth-child(1) .e-card');
             cards.forEach((card: HTMLElement) => {
                 expect(card.classList.contains('e-draggable')).toBe(true);
                 expect(card.classList.contains('e-card')).toBe(true);
@@ -275,7 +276,7 @@ describe('Kanban base module', () => {
         });
 
         it('Second column card class and inner layout testing', () => {
-            let cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-cells:nth-child(2) .e-card');
+            const cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-cells:nth-child(2) .e-card');
             cards.forEach((card: HTMLElement) => {
                 expect(card.classList.contains('e-draggable')).toBe(true);
                 expect(card.classList.contains('e-card')).toBe(true);
@@ -289,7 +290,7 @@ describe('Kanban base module', () => {
         });
 
         it('Third column card class and inner layout testing', () => {
-            let cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-cells:nth-child(3) .e-card');
+            const cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-cells:nth-child(3) .e-card');
             cards.forEach((card: HTMLElement) => {
                 expect(card.classList.contains('e-draggable')).toBe(true);
                 expect(card.classList.contains('e-card')).toBe(true);
@@ -303,7 +304,7 @@ describe('Kanban base module', () => {
         });
 
         it('Forth column card class and inner layout testing', () => {
-            let cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-cells:nth-child(4) .e-card');
+            const cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-cells:nth-child(4) .e-card');
             cards.forEach((card: HTMLElement) => {
                 expect(card.classList.contains('e-draggable')).toBe(true);
                 expect(card.classList.contains('e-card')).toBe(true);
@@ -318,16 +319,16 @@ describe('Kanban base module', () => {
     });
 
     xdescribe('actionFailure testing', () => {
-        let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
+        const actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
         let kanbanObj: Kanban;
         beforeAll(() => {
             jasmine.Ajax.install();
-            let dataManager: DataManager = new DataManager({ url: 'api/Kanban/Cards/' });
-            let model: KanbanModel = { actionFailure: actionFailedFunction };
+            const dataManager: DataManager = new DataManager({ url: 'api/Kanban/Cards/' });
+            const model: KanbanModel = { actionFailure: actionFailedFunction };
             kanbanObj = util.createKanban(model, dataManager);
         });
-        beforeEach((done: Function) => {
-            let request: JasmineAjaxRequest = jasmine.Ajax.requests.at(1);
+        beforeEach((done: DoneFn) => {
+            const request: JasmineAjaxRequest = jasmine.Ajax.requests.at(1);
             request.respondWith({ 'status': 404, 'contentType': 'application/json', 'responseText': 'Page not found' });
             done();
         });
@@ -341,17 +342,17 @@ describe('Kanban base module', () => {
     });
 
     describe('actionFailure event after kanban destroy testing', () => {
-        let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
+        const actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
         let kanbanObj: Kanban;
         beforeAll(() => {
             jasmine.Ajax.install();
-            let dataManager: DataManager = new DataManager({ url: 'api/Kanban/Cards/' });
-            let model: KanbanModel = { actionFailure: actionFailedFunction };
+            const dataManager: DataManager = new DataManager({ url: 'api/Kanban/Cards/' });
+            const model: KanbanModel = { actionFailure: actionFailedFunction };
             kanbanObj = util.createKanban(model, dataManager);
             util.destroy(kanbanObj);
         });
-        beforeEach((done: Function) => {
-            let request: JasmineAjaxRequest = jasmine.Ajax.requests.at(1);
+        beforeEach((done: DoneFn) => {
+            const request: JasmineAjaxRequest = jasmine.Ajax.requests.at(1);
             request.respondWith({ 'status': 404, 'contentType': 'application/json', 'responseText': 'Page not found' });
             done();
         });
@@ -368,7 +369,7 @@ describe('Kanban base module', () => {
         let allKeys: string[];
         let rows: string[];
         beforeAll((done: DoneFn) => {
-            let model: KanbanModel = {
+            const model: KanbanModel = {
                 swimlaneSettings: {
                     keyField: 'Assignee'
                 }
@@ -406,7 +407,7 @@ describe('Kanban base module', () => {
         });
 
         it('Header table colgroup data-key testing', () => {
-            let colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-table colgroup col');
+            const colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-table colgroup col');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
                 expect(colElements.item(index).getAttribute('data-key')).toBe(column.keyField);
             });
@@ -422,7 +423,7 @@ describe('Kanban base module', () => {
         });
 
         it('Header table content cell data-key testing and data-role testing', () => {
-            let headerCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
+            const headerCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
                 expect(headerCells.item(index).getAttribute('data-key')).toBe(column.keyField);
                 expect(headerCells.item(index).getAttribute('data-role')).toBe('kanban-column');
@@ -430,7 +431,7 @@ describe('Kanban base module', () => {
         });
 
         it('Header text testing', () => {
-            let headerText: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells .e-header-text');
+            const headerText: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells .e-header-text');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
                 expect((headerText.item(index) as HTMLElement).innerText).toBe(column.headerText);
             });
@@ -449,7 +450,7 @@ describe('Kanban base module', () => {
         });
 
         it('Content table colgroup data-key testing', () => {
-            let colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-table colgroup col');
+            const colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-table colgroup col');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
                 expect(colElements.item(index).getAttribute('data-key')).toBe(column.keyField);
             });
@@ -466,7 +467,7 @@ describe('Kanban base module', () => {
         });
 
         it('Swimlane row has class of content row testing', () => {
-            let swimlaneRows: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-swimlane-row');
+            const swimlaneRows: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-swimlane-row');
             swimlaneRows.forEach((row: HTMLElement) => {
                 expect(row.classList.contains('e-content-row')).toBe(true);
             });
@@ -486,18 +487,18 @@ describe('Kanban base module', () => {
         });
 
         it('Content table colgroup data-key testing', () => {
-            let colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-table colgroup col');
+            const colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-table colgroup col');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
                 expect(colElements.item(index).getAttribute('data-key')).toBe(column.keyField);
             });
         });
 
         it('Swimlane rows data-key and rendering layout testing', () => {
-            let swimlaneRows: NodeList = kanbanObj.element.querySelectorAll('.e-swimlane-row');
+            const swimlaneRows: NodeList = kanbanObj.element.querySelectorAll('.e-swimlane-row');
             for (let i: number = 0; i < swimlaneRows.length; i++) {
                 expect((<HTMLElement>swimlaneRows[i]).getAttribute('data-key')).toBe(rows[i]);
                 expect((<HTMLElement>swimlaneRows[i]).childElementCount).toBe(1);
-                let child: HTMLElement = (<HTMLElement>swimlaneRows[i]).firstElementChild as HTMLElement;
+                const child: HTMLElement = (<HTMLElement>swimlaneRows[i]).firstElementChild as HTMLElement;
                 expect(child.classList.contains('e-content-cells')).toBe(true);
                 expect(child.getAttribute('data-role')).toBe('kanban-column');
                 expect(child.getAttribute('colspan')).toEqual(kanbanObj.columns.length.toString());
@@ -512,7 +513,7 @@ describe('Kanban base module', () => {
         });
 
         it('Content cell data-key testing and data-role testing', () => {
-            let cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
+            const cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
                 expect(cells.item(index).getAttribute('data-key')).toBe(column.keyField);
                 expect(cells.item(index).getAttribute('data-role')).toBe('kanban-column');
@@ -521,7 +522,7 @@ describe('Kanban base module', () => {
         });
 
         it('Card count testing', () => {
-            let cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
+            const cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
             expect(cells.item(0).firstElementChild.childElementCount).toBe(4);
             expect(cells.item(1).firstElementChild.childElementCount).toBe(1);
             expect(cells.item(2).firstElementChild.childElementCount).toBe(1);
@@ -529,8 +530,8 @@ describe('Kanban base module', () => {
         });
 
         it('First column card class and inner layout testing', () => {
-            let columnSelector: string = '.e-content-row:not(.e-swimlane-row) .e-content-cells:nth-child(1) .e-card';
-            let cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll(columnSelector);
+            const columnSelector: string = '.e-content-row:not(.e-swimlane-row) .e-content-cells:nth-child(1) .e-card';
+            const cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll(columnSelector);
             cards.forEach((card: HTMLElement) => {
                 expect(card.classList.contains('e-draggable')).toBe(true);
                 expect(card.classList.contains('e-card')).toBe(true);
@@ -544,8 +545,8 @@ describe('Kanban base module', () => {
         });
 
         it('Second column card class and inner layout testing', () => {
-            let columnSelector: string = '.e-content-row:not(.e-swimlane-row) .e-content-cells:nth-child(2) .e-card';
-            let cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll(columnSelector);
+            const columnSelector: string = '.e-content-row:not(.e-swimlane-row) .e-content-cells:nth-child(2) .e-card';
+            const cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll(columnSelector);
             cards.forEach((card: HTMLElement) => {
                 expect(card.classList.contains('e-draggable')).toBe(true);
                 expect(card.classList.contains('e-card')).toBe(true);
@@ -559,8 +560,8 @@ describe('Kanban base module', () => {
         });
 
         it('Third column card class and inner layout testing', () => {
-            let columnSelector: string = '.e-content-row:not(.e-swimlane-row) .e-content-cells:nth-child(3) .e-card';
-            let cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll(columnSelector);
+            const columnSelector: string = '.e-content-row:not(.e-swimlane-row) .e-content-cells:nth-child(3) .e-card';
+            const cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll(columnSelector);
             cards.forEach((card: HTMLElement) => {
                 expect(card.classList.contains('e-draggable')).toBe(true);
                 expect(card.classList.contains('e-card')).toBe(true);
@@ -574,8 +575,8 @@ describe('Kanban base module', () => {
         });
 
         it('Forth column card class and inner layout testing', () => {
-            let columnSelector: string = '.e-content-row:not(.e-swimlane-row) .e-content-cells:nth-child(4) .e-card';
-            let cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll(columnSelector);
+            const columnSelector: string = '.e-content-row:not(.e-swimlane-row) .e-content-cells:nth-child(4) .e-card';
+            const cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll(columnSelector);
             cards.forEach((card: HTMLElement) => {
                 expect(card.classList.contains('e-draggable')).toBe(true);
                 expect(card.classList.contains('e-card')).toBe(true);
@@ -589,14 +590,14 @@ describe('Kanban base module', () => {
         });
 
         it('Swimlane collapse testing', () => {
-            let element: HTMLElement = kanbanObj.element.querySelector('.e-swimlane-row .e-icons');
+            const element: HTMLElement = kanbanObj.element.querySelector('.e-swimlane-row .e-icons');
             element.click();
             expect(element.classList.contains('e-swimlane-row-collapse')).toBe(true);
             expect(kanbanObj.element.querySelector('.e-content-row').nextElementSibling.classList.contains('e-collapsed')).toBe(true);
         });
 
         it('Swimlane expand testing', () => {
-            let element: HTMLElement = kanbanObj.element.querySelector('.e-swimlane-row .e-icons');
+            const element: HTMLElement = kanbanObj.element.querySelector('.e-swimlane-row .e-icons');
             element.click();
             expect(element.classList.contains('e-swimlane-row-expand')).toBe(true);
             expect(kanbanObj.element.querySelector('.e-content-row').nextElementSibling.classList.contains('e-collapsed')).toBe(false);
@@ -647,7 +648,7 @@ describe('Kanban base module', () => {
     describe('Query data testing', () => {
         let kanbanObj: Kanban;
         beforeAll((done: DoneFn) => {
-            let model: KanbanModel = { query: new Query().take(5) };
+            const model: KanbanModel = { query: new Query().take(5) };
             kanbanObj = util.createKanban(model, kanbanData, done);
         });
 
@@ -686,9 +687,8 @@ describe('Kanban base module', () => {
 
     describe('Template rendering testing', () => {
         let kanbanObj: Kanban;
-        let headTemplate: Element = createElement('div', { id: 'headtemplate' });
-        let cardTemplate: Element = createElement('div', { id: 'cardtemplate' });
-        // tslint:disable-next-line:max-func-body-length
+        const headTemplate: Element = createElement('div', { id: 'headtemplate' });
+        const cardTemplate: Element = createElement('div', { id: 'cardtemplate' });
         beforeAll((done: DoneFn) => {
             headTemplate.innerHTML = '<div class="header-template-wrap">' +
                 '<div class="header-icon e-icons ${keyField}"></div>' +
@@ -731,7 +731,7 @@ describe('Kanban base module', () => {
                 '</tbody>' +
                 '</table>';
             document.body.appendChild(cardTemplate);
-            let commonCss: string = '.e-kanban th.e-template {' +
+            const commonCss: string = '.e-kanban th.e-template {' +
                 'text-align: center;' +
                 '}' +
 
@@ -808,7 +808,7 @@ describe('Kanban base module', () => {
                 'color: #008000;' +
                 'font-size: 16px;' +
                 '}';
-            let defaultOptions: KanbanModel = {
+            const defaultOptions: KanbanModel = {
                 keyField: 'Status',
                 columns: [
                     { headerText: 'Backlog', keyField: 'Open', template: '#headtemplate' },
@@ -823,8 +823,8 @@ describe('Kanban base module', () => {
                 width: '900px'
             };
             kanbanObj = util.createKanban(defaultOptions, kanbanData, done);
-            let css: string = commonCss;
-            let style: HTMLStyleElement = document.createElement('style');
+            const css: string = commonCss;
+            const style: HTMLStyleElement = document.createElement('style');
             style.type = 'text/css';
             style.id = 'scroll';
             style.appendChild(document.createTextNode(css));
@@ -837,10 +837,10 @@ describe('Kanban base module', () => {
             remove(cardTemplate);
         });
         it('Layout rendering with template class in header cells', () => {
-            let headerCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
+            const headerCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
             for (let i: number = 0; i < headerCells.length; i++) {
-                let header: Element = headerCells[i];
-                let key: string = kanbanObj.columns[i].keyField;
+                const header: Element = headerCells[i];
+                const key: string = kanbanObj.columns[i].keyField;
                 expect(header.classList.contains('e-template')).toBe(true);
                 expect(header.getAttribute('data-role')).toBe('kanban-column');
                 expect(header.getAttribute('data-key')).toBe(key);
@@ -854,7 +854,7 @@ describe('Kanban base module', () => {
             }
         });
         it('Layout rendering with template class in card', () => {
-            let cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-card');
+            const cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-card');
             for (let i: number = 0; i < cards.length; i++) {
                 expect(cards[i].classList.contains('e-draggable')).toBe(true);
                 expect(cards[i].classList.contains('e-template')).toBe(true);
@@ -869,7 +869,7 @@ describe('Kanban base module', () => {
                 expect(cards[i].firstElementChild.children[0].children[0].getAttribute('style')).toBe('width:15%');
                 expect(cards[i].firstElementChild.children[0].children[1].getAttribute('style')).toBe('width:85%');
                 expect(cards[i].firstElementChild.lastElementChild.tagName).toBe('TBODY');
-                let element: Element = cards[i].firstElementChild.lastElementChild.firstElementChild;
+                const element: Element = cards[i].firstElementChild.lastElementChild.firstElementChild;
                 expect(element.tagName).toBe('TR');
                 expect(element.children[0].tagName).toBe('TD');
                 expect(element.children[0].classList.contains('card-icon-wrap')).toBe(true);
@@ -878,15 +878,15 @@ describe('Kanban base module', () => {
             }
         });
         it('Layout rendering with template class in card details', () => {
-            let cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-card');
+            const cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-card');
             for (let i: number = 0; i < cards.length; i++) {
-                let element: Element = cards[i].firstElementChild.lastElementChild.firstElementChild.children[1];
+                const element: Element = cards[i].firstElementChild.lastElementChild.firstElementChild.children[1];
                 expect(element.tagName).toBe('TD');
                 expect(element.classList.contains('card-details-wrap')).toBe(true);
                 expect(element.children[0].tagName).toBe('TABLE');
                 expect(element.children[0].children[0].tagName).toBe('TBODY');
                 expect(element.children[0].children[0].childElementCount).toBe(4);
-                let childElement: HTMLCollection = element.children[0].children[0].children;
+                const childElement: HTMLCollection = element.children[0].children[0].children;
                 expect(childElement[0].tagName).toBe('TR');
                 expect(childElement[0].childElementCount).toBe(2);
                 expect(childElement[0].children[0].tagName).toBe('TD');
@@ -899,7 +899,7 @@ describe('Kanban base module', () => {
     describe('Stacked header rows', () => {
         let kanbanObj: Kanban;
         beforeAll((done: DoneFn) => {
-            let defaultOptions: KanbanModel = {
+            const defaultOptions: KanbanModel = {
                 keyField: 'Status',
                 columns: [
                     { headerText: 'Backlog', keyField: 'Open' },
@@ -929,7 +929,7 @@ describe('Kanban base module', () => {
         });
 
         it('Stacked header class layout testing', () => {
-            let element: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-row');
+            const element: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-row');
             for (let i: number = 0; i < element.length - 1; i++) {
                 expect(element[i].classList.contains('e-stacked-header-row')).toBe(true);
                 expect(element[i].tagName).toBe('TR');
@@ -942,7 +942,7 @@ describe('Kanban base module', () => {
             }
         });
         it('Stacked header colspan layout testing', () => {
-            let element: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-row');
+            const element: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-row');
             expect(element[0].firstElementChild.getAttribute('colspan')).toBe('3');
             expect(element[0].lastElementChild.getAttribute('colspan')).toBe('1');
             expect(element[0].firstElementChild.firstElementChild.innerHTML).toBe('Unresolved');
@@ -953,7 +953,7 @@ describe('Kanban base module', () => {
     describe('WIP validation without swimlane', () => {
         let kanbanObj: Kanban;
         beforeAll((done: DoneFn) => {
-            let model: KanbanModel = {
+            const model: KanbanModel = {
                 columns: [
                     { headerText: 'Backlog', keyField: 'Open, Review', allowToggle: true, minCount: 5, maxCount: 10 },
                     { headerText: 'In Progress', keyField: 'InProgress', allowToggle: true, minCount: 1, maxCount: 3 },
@@ -982,7 +982,7 @@ describe('Kanban base module', () => {
     describe('WIP validation with swimlane', () => {
         let kanbanObj: Kanban;
         beforeAll((done: DoneFn) => {
-            let model: KanbanModel = {
+            const model: KanbanModel = {
                 columns: [
                     { headerText: 'Backlog', keyField: 'Open, Review', allowToggle: true, minCount: 5, maxCount: 10 },
                     { headerText: 'In Progress', keyField: 'InProgress', allowToggle: true, minCount: 1, maxCount: 3 },
@@ -1102,16 +1102,227 @@ describe('Kanban base module', () => {
         });
     });
 
+    describe('RenderHeader using method', () => {
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            const model: KanbanModel = {
+                columns: [
+                    { headerText: 'Backlog', keyField: 'Open, Review', allowToggle: true, minCount: 5, maxCount: 10 },
+                    { headerText: 'In Progress', keyField: 'InProgress', allowToggle: true, minCount: 1, maxCount: 3 },
+                    { headerText: 'Testing', keyField: 'Testing', allowToggle: true, minCount: 1, maxCount: 5 },
+                    { headerText: 'Done', keyField: 'Close', allowToggle: true, minCount: 0, maxCount: 0 }
+                ],
+                swimlaneSettings: {
+                    keyField: 'Assignee'
+                },
+                sortSettings: {
+                    direction: 'Descending',
+                    sortBy: 'DataSourceOrder'
+                },
+                dialogSettings: {
+                    model: { width: 500 },
+                    fields: [
+                        { text: 'ID', key: 'Id', type: 'TextBox' },
+                        { key: 'Status', type: 'DropDown' },
+                        { key: 'Assignee', type: 'DropDown' },
+                        { key: 'Estimate', type: 'Numeric', validationRules: { range: [0, 1000] } },
+                        { key: 'Summary', type: 'TextArea', validationRules: { required: true } }
+                    ]
+                },
+                constraintType: 'Swimlane'
+            };
+            kanbanObj = util.createKanban(model, kanbanData.slice(0, 20), done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('reRender the header using public method', () => {
+            kanbanObj.refreshHeader();
+        });
+
+        it('onProperty change of dialogSettings', () => {
+            expect(kanbanObj.dialogSettings.model.width === 500).toBe(true);
+            kanbanObj.dialogSettings.model = { width: 1000 };
+            kanbanObj.dataBind();
+            expect(kanbanObj.dialogSettings.model.width === 1000).toBe(true);
+        });
+
+        it('onProperty change of sortSettings', () => {
+            expect(kanbanObj.sortSettings.direction === 'Descending').toBe(true);
+            kanbanObj.sortSettings.direction = 'Ascending';
+            kanbanObj.dataBind();
+            expect(kanbanObj.sortSettings.direction === 'Ascending').toBe(true);
+        });
+
+        it('update a card', () => {
+            const card: Record<string, any> = kanbanObj.kanbanData[0];
+            (card as any).Summary = 'updateCard';
+            kanbanObj.updateCard(card, 0);
+            expect((card as any).Summary === 'updateCard').toBe(true);
+
+        });
+
+        it('Add a new card', () => {
+            const card: Record<string, any> = kanbanObj.kanbanData[0];
+            const length: number = kanbanObj.kanbanData.length;
+            (card as any).Id = kanbanObj.kanbanData.length + 1;
+            kanbanObj.addCard(card, 0);
+            expect(length + 1 === kanbanObj.kanbanData.length).toBe(true);
+
+        });
+    });
+
+    describe('Local data with id as string type', () => {
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            const kanbanData: Record<string, any>[] = [
+                {
+                    'Id': '1',
+                    'Status': 'Backlog',
+                    'Summary': 'Analyze the new requirements gathered from the customer.',
+                    'Type': 'Story'
+                },
+                {
+                    'Id': '2',
+                    'Status': 'InProgress',
+                    'Summary': 'Improve application performance',
+                    'Type': 'Improvement'
+                },
+                {
+                    'Id': '3',
+                    'Status': 'Backlog',
+                    'Summary': 'Arrange a web meeting with the customer to get new requirements.',
+                    'Type': 'Others'
+                },
+                {
+                    'Id': '4',
+                    'Status': 'InProgress',
+                    'Summary': 'Fix the issues reported in the IE browser.',
+                    'Type': 'Bug'
+                },
+                {
+                    'Id': '5',
+                    'Status': 'Done',
+                    'Summary': 'Fix the issues reported by the customer.',
+                    'Type': 'Bug'
+                }];
+            const model: KanbanModel = {
+                columns: [
+                    { headerText: 'Backlog', keyField: 'Open, Review', allowToggle: true, minCount: 5, maxCount: 10 },
+                    { headerText: 'In Progress', keyField: 'InProgress', allowToggle: true, minCount: 1, maxCount: 3 },
+                    { headerText: 'Testing', keyField: 'Testing', allowToggle: true, minCount: 1, maxCount: 5 },
+                    { headerText: 'Done', keyField: 'Close', allowToggle: true, minCount: 0, maxCount: 0 }
+                ],
+                swimlaneSettings: {
+                    keyField: 'Assignee'
+                },
+                sortSettings: {
+                    direction: 'Descending',
+                    sortBy: 'Index'
+                },
+                dialogSettings: {
+                    model: { width: 500 },
+                    fields: [
+                        { text: 'ID', key: 'Id', type: 'TextBox' },
+                        { key: 'Status', type: 'DropDown' },
+                        { key: 'Assignee', type: 'DropDown' },
+                        { key: 'Estimate', type: 'Numeric', validationRules: { range: [0, 1000] } },
+                        { key: 'Summary', type: 'TextArea', validationRules: { required: true } }
+                    ]
+                },
+                constraintType: 'Swimlane'
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('check Id type as string', () => {
+            const target: HTMLElement = document.querySelector('.e-card');
+            const cardDetail: Object = kanbanObj.getCardDetails(target);
+            expect(typeof (cardDetail as any).Id === 'string').toBe(true);
+        });
+        it('get Column data as []', () => {
+            const data: Object = kanbanObj.getColumnData('conpleted', kanbanObj.kanbanData);
+            expect((data as any).length === 0).toBe(true);
+            const data1: Object = kanbanObj.getSwimlaneData('John');
+            expect((data1 as any).length === 0).toBe(true);
+        });
+
+        it('onProperty change of dialogSettings', () => {
+            expect(kanbanObj.dialogSettings.model.width === 500).toBe(true);
+            kanbanObj.dialogSettings.model = { width: 1000 };
+            kanbanObj.dataBind();
+            expect(kanbanObj.dialogSettings.model.width === 1000).toBe(true);
+        });
+    });
+
+    describe('Check kanban with scroller', () => {
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            const model: KanbanModel = {
+                keyField: 'Status',
+                height: '550px',
+                columns: [
+                    { headerText: 'Backlog', keyField: 'Open', showAddButton: true, isExpanded: false },
+                    { headerText: 'In Progress', keyField: 'InProgress' },
+                    { headerText: 'Testing', keyField: 'Testing' },
+                    { headerText: 'Done', keyField: 'Close' }
+                ],
+                sortSettings: {
+                    sortBy: 'Custom',
+                    field: 'Summary',
+                    direction: 'Descending'
+                },
+                cardSettings: {
+                    contentField: 'Summary',
+                    headerField: 'Id'
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('Content Scroller functionality checking', () => {
+            const contentArea: HTMLElement = document.querySelector('.e-kanban-content');
+            expect(kanbanObj.scrollPosition.content.left).toEqual(0);
+            expect(kanbanObj.scrollPosition.content.top).toEqual(0);
+            util.triggerScrollEvent(contentArea, 300);
+        });
+        it('Content Scroller functionality checking top and height value', () => {
+            expect(kanbanObj.scrollPosition.content.left).toEqual(0);
+            (kanbanObj.element.querySelector('.e-content-cells') as any).height = '500px';
+        });
+        it('Column Scroller functionality checking', () => {
+            const contentArea: HTMLElement = kanbanObj.element.querySelector('.e-card-wrapper');
+            const key: any = contentArea.offsetParent.getAttribute('data-key');
+            expect(kanbanObj.scrollPosition.column[key].left).toEqual(0);
+            expect(kanbanObj.scrollPosition.column[key].top).toEqual(0);
+            util.triggerScrollEvent(contentArea, 300);
+        });
+        it('Column Scroller functionality checking', () => {
+            const contentArea: HTMLElement = kanbanObj.element.querySelector('.e-card-wrapper');
+            const key: any = contentArea.offsetParent.getAttribute('data-key');
+            expect(kanbanObj.scrollPosition.column[key].top).toEqual(300);
+            expect(kanbanObj.scrollPosition.column[key].left).toEqual(0);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
-        // tslint:disable:no-any
-        let average: any = inMB(profile.averageChange);
+        const average: number = inMB(profile.averageChange);
         //Check average change in memory samples to not be over 10MB
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
+        const memory: number = inMB(getMemoryProfile());
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        // tslint:enable:no-any
     });
 
 });

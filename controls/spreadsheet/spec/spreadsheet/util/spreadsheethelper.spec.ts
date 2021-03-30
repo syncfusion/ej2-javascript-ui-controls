@@ -89,7 +89,7 @@ export class SpreadsheetHelper extends TestHelper {
     }
 
     public triggerKeyEvent(type: string, keyCode: number, element?: HTMLElement,
-        isCtrl: boolean = false, isShift: boolean = false, target?: HTMLElement, args: Object = {}): void {
+        isCtrl: boolean = false, isShift: boolean = false, target?: HTMLElement, args: Object = {}, isAlt?: boolean): void {
             if (!element) {
                 element = this.getElement();
             }
@@ -102,19 +102,20 @@ export class SpreadsheetHelper extends TestHelper {
             eventArg['altKey'] = false;
             eventArg['shiftKey'] = isShift;
             eventArg['ctrlKey'] = isCtrl;
+            eventArg['altKey'] = isAlt;
             eventArg['target'] = target;
             EventHandler.trigger(element, type, eventArg);
     }
 
     public triggerMouseAction(type: string, coords?: { x: number, y: number },
-        element?: HTMLElement | Document, target?: HTMLElement): void {
+        element?: HTMLElement | Document, target?: HTMLElement, isCtrl?: boolean, isDispatch?: boolean): void {
         if (!element) {
             element = this.getElement();
         }
-        let eventArg: Object = this.copyObject(this.getEventObject('MouseEvents', type), {});
         if (!coords) {
             coords = { x: 0, y: 0 };
         }
+        let eventArg: Object = this.copyObject(this.getEventObject('MouseEvents', type, isCtrl, isDispatch, coords.x, coords.y, target), {});
         this.setMouseCoordinates(eventArg, coords.x, coords.y, target);
         eventArg['view'] = window;
         eventArg['bubbles'] = true;
@@ -142,9 +143,16 @@ export class SpreadsheetHelper extends TestHelper {
         return eventarg;
     }
 
-    private getEventObject(eventType: string, eventName: string): Object {
+    private getEventObject(eventType: string, eventName: string, isCtrl?: boolean, isDispatch?: boolean, x?: number, y?: number, target?: Element): Object {
         let tempEvent: any = document.createEvent(eventType);
-        tempEvent.initEvent(eventName, true, true);
+        if (eventType === 'MouseEvents') {
+            tempEvent.initMouseEvent(eventName, null, null, null, null, x, y, x, y, isCtrl);
+            if (isDispatch) {
+                document.dispatchEvent(tempEvent);
+            }
+        } else {
+            tempEvent.initEvent(eventName, true, true);
+        }
         let returnObject: any = this.copyObject(tempEvent, {});
         returnObject.preventDefault = () => { return true; };
         return returnObject;
@@ -165,5 +173,19 @@ export class SpreadsheetHelper extends TestHelper {
         (spreadsheet as any).editModule.startEdit();
         (spreadsheet as any).editModule.editCellData.value = value;
         (spreadsheet as any).editModule.endEdit();
+    }
+
+    public editInUI(value: string, address?: string): void {
+        let spreadsheet: Spreadsheet = this.getInstance();
+        if (address) {
+            spreadsheet.selectRange(address);
+        }
+        spreadsheet.startEdit();
+        this.getElementFromSpreadsheet('.e-spreadsheet-edit').textContent = value;
+        spreadsheet.endEdit();
+    }
+
+    public setAnimationToNone(selector: string): void {
+        (document.querySelector(selector) as any).ej2_instances[0].animationSettings.effect = 'None';
     }
 }

@@ -1,21 +1,26 @@
 import { CellModel, BeforeSortEventArgs, SheetModel, InsertDeleteEventArgs, ImageModel } from './../../workbook/index';
-import { ValidationType, ValidationOperator, MergeArgs, HyperlinkModel, TopBottom, chartType } from './../../workbook/index';
+import { ValidationType, ValidationOperator, MergeArgs, HyperlinkModel, TopBottom, ChartType } from './../../workbook/index';
 import { RefreshType } from './index';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { BaseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { DataBar, ColorScale, IconSet, CellInfoEventArgs, CFColor, HighlightCell, chartTheme } from './../../workbook/index';
+import { DataBar, ColorScale, IconSet, CellInfoEventArgs, CFColor, HighlightCell, ChartTheme } from './../../workbook/index';
 
 
 /**
  * Interface for renderer module
+ *
  * @hidden
  */
 export interface IRenderer {
     colGroupWidth: number;
+    contentPanel: HTMLElement;
     renderPanel(): void;
     getRowHeaderPanel(): Element;
     getColHeaderPanel(): Element;
-    getContentPanel(): Element;
+    getContentPanel(): HTMLElement;
+    getSelectAllContent(): HTMLElement;
+    getScrollElement(): HTMLElement;
+    getSelectAllTable(): HTMLTableElement;
     getContentTable(): HTMLTableElement;
     getColHeaderTable(): HTMLTableElement;
     getRowHeaderTable(): HTMLTableElement;
@@ -26,6 +31,9 @@ export interface IRenderer {
     updateColContent(args: SheetRenderArgs): void;
     updateCol(sheet: SheetModel, idx: number, appendTo?: Node): Element;
     showHideHeaders(): void;
+    getRowHeaderWidth(sheet: SheetModel, skipFreezeCheck?: boolean): number;
+    getColHeaderHeight(sheet: SheetModel, skipHeader?: boolean): number
+    setPanelWidth(sheet: SheetModel, rowHdr: HTMLElement): void;
 }
 
 /** @hidden */
@@ -37,6 +45,7 @@ export interface SheetRenderArgs {
     top?: number;
     left?: number;
     initLoad?: boolean;
+    prevRowColCnt?: SheetModel;
 }
 
 /** @hidden */
@@ -80,6 +89,8 @@ export interface IViewport {
     rightIndex: number;
     height: number;
     width: number;
+    beforeFreezeWidth: number;
+    beforeFreezeHeight: number;
 }
 export interface ReplaceAllEventArgs {
     replaceValue: string;
@@ -139,6 +150,7 @@ export interface RefreshArgs {
     left?: number;
     refresh: RefreshType;
     skipUpdateOnFirst?: boolean;
+    frozenIndexes?: number[];
 }
 
 /**
@@ -147,6 +159,8 @@ export interface RefreshArgs {
 export interface OpenOptions {
     /** Defines the file. */
     file?: FileList | string | File;
+    /** Defines the password. */
+    password?: string;
 }
 
 /**
@@ -159,6 +173,8 @@ export interface BeforeOpenEventArgs {
     cancel: boolean;
     /** Defines the request data. */
     requestData: object;
+    /** Defines the password. */
+    password?: string;
 }
 
 export interface DialogBeforeOpenEventArgs {
@@ -240,6 +256,8 @@ export interface CellRenderArgs {
     td?: HTMLTableCellElement;
     manualUpdate?: boolean;
     isRow?: boolean;
+    isFreezePane?: boolean;
+    insideFreezePane?: boolean;
 }
 /** @hidden */
 export interface IAriaOptions<T> {
@@ -428,6 +446,7 @@ export interface ReplaceEventArgs {
 
 /**
  * CellValidationEventArgs
+ *
  * @hidden
  */
 export interface CellValidationEventArgs {
@@ -443,6 +462,7 @@ export interface CellValidationEventArgs {
 
 /**
  * CFormattingEventArgs
+ *
  * @hidden
  */
 export interface CFormattingEventArgs {
@@ -455,11 +475,12 @@ export interface CFormattingEventArgs {
 
 /**
  * BeforeChartEventArgs
+ *
  * @hidden
  */
 export interface BeforeChartEventArgs {
-    type?: chartType;
-    theme?: chartTheme;
+    type?: ChartType;
+    theme?: ChartTheme;
     isSeriesInRows?: boolean;
     range?: string;
     id?: string;

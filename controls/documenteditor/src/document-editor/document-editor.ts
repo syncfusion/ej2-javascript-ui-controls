@@ -1,8 +1,6 @@
-// tslint:disable-next-line:max-line-length
 import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, isBlazor, classList, Complex, formatUnit } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { Save } from '@syncfusion/ej2-file-utils';
-// tslint:disable-next-line:max-line-length
 import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData } from './index';
 import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, BeforeFileOpenArgs, CommentActionEventArgs } from './index';
 import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, BulletsAndNumberingDialog } from './index';
@@ -28,11 +26,9 @@ import { PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, FontDialog }
 import { TablePropertiesDialog, BordersAndShadingDialog, CellOptionsDialog, TableOptionsDialog } from './index';
 import { SpellChecker } from './implementation/spell-check/spell-checker';
 import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';
-// tslint:disable-next-line:max-line-length
 import { DocumentEditorModel, ServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel, CollaborativeEditingSettingsModel } from './document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper } from './index';
 import { PasteOptions } from './index';
-// tslint:disable-next-line:max-line-length
 import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs } from './implementation/index';
 import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';
 import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';
@@ -47,19 +43,20 @@ import { NotesDialog } from './implementation/dialogs/notes-dialog';
 export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings> {
     /**
      * Specifies the user preferred Search Highlight Color of Document Editor.
+     *
      * @default '#FFE97F'
      */
     @Property('#FFE97F')
     public searchHighlightColor: string;
 
-    /* tslint:disable */
+    /* eslint-disable */
     /**
      * Specifies the user preferred font family of Document Editor.
      * @default ['Algerian','Arial','Calibri','Cambria','CambriaMath','Candara','CourierNew','Georgia','Impact','SegoePrint','SegoeScript','SegoeUI','Symbol','TimesNewRoman','Verdana','Wingdings']
      */
     @Property(['Algerian', 'Arial', 'Calibri', 'Cambria', 'Cambria Math', 'Candara', 'Courier New', 'Georgia', 'Impact', 'Segoe Print', 'Segoe Script', 'Segoe UI', 'Symbol', 'Times New Roman', 'Verdana', 'Wingdings'])
     public fontFamilies: string[];
-    /* tslint:enable */
+    /* eslint-enable */
 
 
     /**
@@ -83,11 +80,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     private enableHeaderFooterIn: boolean = false;
     /**
      * @private
+     * @returns {boolean} - Returns true if header and footer is enabled.
      */
-    get enableHeaderAndFooter(): boolean {
+    public get enableHeaderAndFooter(): boolean {
         return this.enableHeaderFooterIn;
     }
-    set enableHeaderAndFooter(value: boolean) {
+    public set enableHeaderAndFooter(value: boolean) {
         this.enableHeaderFooterIn = value;
         if (!value && this.selection && this.selection.isWebLayout) {
             this.selection.isWebLayout = false;
@@ -248,6 +246,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public collaborativeEditingModule: CollaborativeEditing;
     /**
      * Default Paste Formatting Options
+     *
      * @default KeepSourceFormatting
      */
     @Property('KeepSourceFormatting')
@@ -255,6 +254,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Layout Type
+     *
      * @default Pages
      */
     @Property('Pages')
@@ -262,6 +262,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Current User
+     *
      * @default ''
      */
     @Property('')
@@ -269,6 +270,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * User Selection Highlight Color
+     *
      * @default '#FFFF00'
      */
     @Property('#FFFF00')
@@ -276,12 +278,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Gets or sets the page gap value in document editor
+     *
      * @default 20
      */
     @Property(20)
     public pageGap: number;
     /**
      * Gets or sets the name of the document.
+     *
      * @default ''
      */
     @Property('')
@@ -291,19 +295,22 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public spellCheckerModule: SpellChecker;
     /**
-     * Defines the width of the DocumentEditor component 
+     * Defines the width of the DocumentEditor component
+     *
      * @default '100%'
      */
     @Property('100%')
     public width: string;
     /**
-     * Defines the height of the DocumentEditor component 
+     * Defines the height of the DocumentEditor component
+     *
      * @default '200px'
      */
     @Property('200px')
     public height: string;
     /**
      * Sfdt Service URL
+     *
      * @default ''
      */
     @Property('')
@@ -311,12 +318,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     // Public Implementation Starts
     /**
      * Gets or sets the zoom factor in document editor.
+     *
      * @default 1
      */
     @Property(1)
     public zoomFactor: number;
     /**
      * Specifies the z-order for rendering that determines whether the dialog is displayed in front or behind of another component.
+     *
      * @default 2000
      * @aspType int
      */
@@ -324,132 +333,154 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public zIndex: number;
     /**
      * Gets or sets a value indicating whether the document editor is in read only state or not.
+     *
      * @default true
      */
     @Property(true)
     public isReadOnly: boolean;
     /**
      * Gets or sets a value indicating whether print needs to be enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enablePrint: boolean;
     /**
      * Gets or sets a value indicating whether selection needs to be enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enableSelection: boolean;
     /**
      * Gets or sets a value indicating whether editor needs to be enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enableEditor: boolean;
     /**
      * Gets or sets a value indicating whether editor history needs to be enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enableEditorHistory: boolean;
     /**
      * Gets or sets a value indicating whether Sfdt export needs to be enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enableSfdtExport: boolean;
     /**
      * Gets or sets a value indicating whether word export needs to be enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enableWordExport: boolean;
     /**
      * Gets or sets a value indicating whether text export needs to be enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enableTextExport: boolean;
     /**
      * Gets or sets a value indicating whether options pane is enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enableOptionsPane: boolean;
     /**
      * Gets or sets a value indicating whether context menu is enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enableContextMenu: boolean;
     /**
      * Gets or sets a value indicating whether hyperlink dialog is enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enableHyperlinkDialog: boolean;
     /**
      * Gets or sets a value indicating whether bookmark dialog is enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enableBookmarkDialog: boolean;
     /**
      * Gets or sets a value indicating whether table of contents dialog is enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enableTableOfContentsDialog: boolean;
     /**
      * Gets or sets a value indicating whether search module is enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enableSearch: boolean;
     /**
      * Gets or sets a value indicating whether paragraph dialog is enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enableParagraphDialog: boolean;
     /**
      * Gets or sets a value indicating whether list dialog is enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enableListDialog: boolean;
     /**
      * Gets or sets a value indicating whether table properties dialog is enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enableTablePropertiesDialog: boolean;
     /**
      * Gets or sets a value indicating whether borders and shading dialog is enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enableBordersAndShadingDialog: boolean;
     /**
      * Gets or sets a value indicating whether notes dialog is enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enableFootnoteAndEndnoteDialog: boolean;
     /**
      * Gets or sets a value indicating whether margin dialog is enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enablePageSetupDialog: boolean;
     /**
      * Gets or sets a value indicating whether font dialog is enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enableStyleDialog: boolean;
     /**
      * Gets or sets a value indicating whether font dialog is enabled or not.
+     *
      * @default false
      */
     @Property(false)
@@ -460,84 +491,98 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public fontDialogModule: FontDialog;
     /**
      * Gets or sets a value indicating whether table options dialog is enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enableTableOptionsDialog: boolean;
     /**
      * Gets or sets a value indicating whether table dialog is enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enableTableDialog: boolean;
     /**
      * Gets or sets a value indicating whether image resizer is enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enableImageResizer: boolean;
     /**
      * Gets or sets a value indicating whether editor need to be spell checked.
+     *
      * @default false
      */
     @Property(false)
     public enableSpellCheck: boolean;
     /**
      * Gets or set a value indicating whether comment is enabled or not
+     *
      * @default false
      */
     @Property(false)
     public enableComment: boolean;
     /**
      * Gets or set a value indicating whether track changes is enabled or not
+     *
      * @default false
      */
     @Property(false)
     public enableTrackChanges: boolean;
     /**
      * Gets or set a value indicating whether form fields is enabled or not.
+     *
      * @default false
      */
     @Property(true)
     public enableFormField: boolean;
     /**
      * Gets or Sets a value indicating whether tab key can be accepted as input or not.
+     *
      * @default false
      */
     @Property(false)
     public acceptTab: boolean;
     /**
      * Gets or Sets a value indicating whether holding Ctrl key is required to follow hyperlink on click. The default value is true.
+     *
      * @default true
      */
     @Property(true)
     public useCtrlClickToFollowHyperlink: boolean;
     /**
      * Gets or sets the page outline color.
+     *
      * @default '#000000'
      */
     @Property('#000000')
     public pageOutline: string;
     /**
      * Gets or sets a value indicating whether to enable cursor in document editor on read only state or not. The default value is false.
+     *
      * @default false
      */
     @Property(false)
     public enableCursorOnReadOnly: boolean;
     /**
      * Gets or sets a value indicating whether local paste needs to be enabled or not.
+     *
      * @default false
      */
     @Property(false)
     public enableLocalPaste: boolean;
     /**
      * Enable partial lock and edit module.
+     *
      * @default false
      */
     @Property(false)
     public enableLockAndEdit: boolean;
     /**
      * Defines the settings for DocumentEditor customization.
+     *
      * @default {}
      */
     @Complex<DocumentEditorSettingsModel>({}, DocumentEditorSettings)
@@ -545,24 +590,27 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Defines the settings of the DocumentEditor services
      */
-    // tslint:disable-next-line:max-line-length
     @Property({ systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing', canLock: 'CanLock', getPendingActions: 'GetPendingActions' })
     public serverActionSettings: ServerActionSettingsModel;
-
+    /* eslint-disable */
     /**
      * Add custom headers to XMLHttpRequest.
+     *
      * @default []
      */
     @Property([])
     public headers: object[];
+    /* eslint-enable */
     /**
      * Show comment in the document.
+     *
      * @default false
      */
     @Property(false)
     public showComments: boolean;
     /**
      * Shows revision changes in the document.
+     *
      * @default false
      */
     @Property(false)
@@ -570,6 +618,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Triggers whenever document changes in the document editor.
+     *
      * @event
      * @blazorproperty 'DocumentChanged'
      */
@@ -577,6 +626,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public documentChange: EmitType<DocumentChangeEventArgs>;
     /**
      * Triggers whenever container view changes in the document editor.
+     *
      * @event
      * @blazorproperty 'ViewChanged'
      */
@@ -584,6 +634,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public viewChange: EmitType<ViewChangeEventArgs>;
     /**
      * Triggers whenever zoom factor changes in the document editor.
+     *
      * @event
      * @blazorproperty 'ZoomFactorChanged'
      */
@@ -591,6 +642,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public zoomFactorChange: EmitType<ZoomFactorChangeEventArgs>;
     /**
      * Triggers whenever selection changes in the document editor.
+     *
      * @event
      * @blazorproperty 'SelectionChanged'
      */
@@ -598,6 +650,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public selectionChange: EmitType<SelectionChangeEventArgs>;
     /**
      * Triggers whenever hyperlink is clicked or tapped in the document editor.
+     *
      * @event
      * @blazorproperty 'OnRequestNavigate'
      */
@@ -605,6 +658,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public requestNavigate: EmitType<RequestNavigateEventArgs>;
     /**
      * Triggers whenever content changes in the document editor.
+     *
      * @event
      * @blazorproperty 'ContentChanged'
      */
@@ -612,6 +666,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public contentChange: EmitType<ContentChangeEventArgs>;
     /**
      * Triggers whenever key is pressed in the document editor.
+     *
      * @event
      * @blazorproperty 'OnKeyDown'
      */
@@ -619,13 +674,16 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public keyDown: EmitType<DocumentEditorKeyDownEventArgs>;
     /**
      * Triggers whenever search results changes in the document editor.
+     *
      * @event
      * @blazorproperty 'SearchResultsChanged'
      */
     @Event()
     public searchResultsChange: EmitType<SearchResultsChangeEventArgs>;
+    /* eslint-disable */
     /**
      * Triggers when the component is created
+     *
      * @event
      * @blazorproperty 'Created'
      */
@@ -633,13 +691,16 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public created: EmitType<Object>;
     /**
      * Triggers when the component is destroyed.
+     *
      * @event
      * @blazorproperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
+    /* eslint-enable */
     /**
      * Triggers while selecting the custom context-menu option.
+     *
      * @event
      * @blazorproperty 'ContextMenuItemSelected'
      */
@@ -647,6 +708,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public customContextMenuSelect: EmitType<CustomContentMenuEventArgs>;
     /**
      * Triggers before opening the custom context-menu option.
+     *
      * @event
      * @blazorproperty 'OnContextMenuOpen'
      */
@@ -654,13 +716,16 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public customContextMenuBeforeOpen: EmitType<BeforeOpenCloseCustomContentMenuEventArgs>;
     /**
      * Triggers before opening comment pane.
+     *
      * @event
      * @blazorproperty 'BeforePaneSwitch'
      */
     @Event()
     public beforePaneSwitch: EmitType<BeforePaneSwitchEventArgs>;
+    /* eslint-disable */
     /**
      * Triggers after inserting comment.
+     *
      * @blazorproperty 'OnCommentBegin'
      * @event
      */
@@ -668,13 +733,16 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public commentBegin: EmitType<Object>;
     /**
      * Triggers after posting comment.
+     *
      * @event
      * @blazorproperty 'AfterCommentEnd'
      */
     @Event()
     public commentEnd: EmitType<Object>;
+    /* eslint-enable */
     /**
      * Triggers before a file is opened.
+     *
      * @event
      * @blazorproperty 'onBeforeFileOpen'
      */
@@ -682,6 +750,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public beforeFileOpen: EmitType<BeforeFileOpenArgs>;
     /**
      * Triggers after inserting comment.
+     *
      * @blazorproperty 'OnCommentDelete'
      * @event
      */
@@ -689,12 +758,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public commentDelete: EmitType<CommentDeleteEventArgs>;
     /**
      * Triggers on comment actions(Post, edit, reply, resolve, reopen).
+     *
      * @event
      */
     @Event()
     public beforeCommentAction: EmitType<CommentActionEventArgs>;
     /**
      * Triggers when TrackChanges enabled / disabled.
+     *
      * @blazorproperty 'OnTrackChange'
      * @event
      */
@@ -702,12 +773,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public trackChange: EmitType<TrackChangeEventArgs>;
     /**
      * Triggers before form field fill.
+     *
      * @event
      */
     @Event()
     public beforeFormFieldFill: EmitType<FormFieldFillEventArgs>;
     /**
      * Triggers when the server side action fails.
+     *
      * @event
      */
     @Event()
@@ -715,22 +788,27 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Triggers after form field fill.
+     *
      * @event
      */
     @Event()
     public afterFormFieldFill: EmitType<FormFieldFillEventArgs>;
     /**
-     * Triggers when the document editor collaborative actions (such as LockContent, SaveContent, UnlockContent) gets completed. 
+     * Triggers when the document editor collaborative actions (such as LockContent, SaveContent, UnlockContent) gets completed.
+     *
      * @event
      */
     @Event()
     public actionComplete: EmitType<CollaborativeEditingEventArgs>;
+    /* eslint-disable */
     /**
      * Triggers when user interaction prevented in content control.
+     *
      * @event
      */
     @Event()
     public contentControl: EmitType<Object>;
+    /* eslint-enable */
     /**
      * @private
      */
@@ -757,8 +835,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public revisionsInternal: RevisionCollection;
     /**
      * Gets the total number of pages.
+     *
      * @blazorType int
-     * @returns {number}
+     * @returns {number} - Returns the page count.
      */
     public get pageCount(): number {
         if (!this.isDocumentLoaded || isNullOrUndefined(this.viewer) || this.viewer instanceof WebLayoutViewer) {
@@ -767,85 +846,95 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         return this.documentHelper.pages.length;
     }
     /**
-     *  Gets the selection object of the document editor.
+     * Gets the selection object of the document editor.
+     *
+     * @default undefined
      * @aspType Selection
      * @blazorType Selection
-     * @returns {Selection}
-     * @default undefined
+     * @returns {Selection} - Returns the selection object.
      */
     public get selection(): Selection {
         return this.selectionModule;
     }
     /**
-     *  Gets the editor object of the document editor.
+     * Gets the editor object of the document editor.
+     *
      * @aspType Editor
      * @blazorType Editor
-     * @returns {Editor}
-     * @default undefined
+     * @returns {Editor} - Returns the editor object.
      */
     public get editor(): Editor {
         return this.editorModule;
     }
-    /** 
+    /**
      * Gets the editor history object of the document editor.
+     *
      * @aspType EditorHistory
      * @blazorType EditorHistory
-     * @returns {EditorHistory}
+     * @returns {EditorHistory} - Returns the editor history object.
      */
     public get editorHistory(): EditorHistory {
         return this.editorHistoryModule;
     }
-    /** 
+    /**
      * Gets the search object of the document editor.
+     *
      * @aspType Search
      * @blazorType Search
-     * @returns { Search }
+     * @returns { Search } - Returns the search object.
      */
     public get search(): Search {
         return this.searchModule;
     }
     /**
      * Gets the context menu object of the document editor.
+     *
      * @aspType ContextMenu
      * @blazorType ContextMenu
-     * @returns {ContextMenu}
+     * @returns {ContextMenu} - Returns the context menu object.
      */
     public get contextMenu(): ContextMenu {
         return this.contextMenuModule;
     }
     /**
      * Gets the spell check dialog object of the document editor.
-     * @returns SpellCheckDialog
+     *
+     * @returns {SpellCheckDialog} - Returns the spell check dialog object.
      */
-    get spellCheckDialog(): SpellCheckDialog {
+    public get spellCheckDialog(): SpellCheckDialog {
         return this.spellCheckDialogModule;
     }
     /**
      * Gets the spell check object of the document editor.
+     *
      * @aspType SpellChecker
      * @blazorType SpellChecker
-     * @returns SpellChecker
+     * @returns {SpellChecker} - Returns the spell checker object.
      */
     public get spellChecker(): SpellChecker {
         return this.spellCheckerModule;
     }
     /**
      * @private
+     * @returns {string }- Returns the container id.
      */
-    get containerId(): string {
+    public get containerId(): string {
         return this.element.id;
     }
     /**
      * @private
+     * @returns {boolean} - Returns true if document is loaded.
      */
-    get isDocumentLoaded(): boolean {
+    public get isDocumentLoaded(): boolean {
         return this.isDocumentLoadedIn;
     }
-    set isDocumentLoaded(value: boolean) {
+    public set isDocumentLoaded(value: boolean) {
         this.isDocumentLoadedIn = value;
     }
     /**
      * Gets the revision collection which contains information about changes made from original document
+     *
+     * @returns {RevisionCollection} - Returns the revision collection object.
      */
     public get revisions(): RevisionCollection {
         if (isNullOrUndefined(this.revisionsInternal)) {
@@ -855,18 +944,22 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Determines whether history needs to be enabled or not.
+     *
      * @default - false
      * @private
+     * @returns {boolean} - Returns true if history module is enabled.
      */
-    get enableHistoryMode(): boolean {
+    public get enableHistoryMode(): boolean {
         return this.enableEditorHistory && !isNullOrUndefined(this.editorHistoryModule);
     }
     /**
      * Gets the start text position in the document.
+     *
      * @default undefined
      * @private
+     * @returns {TextPosition} - Returns the document start.
      */
-    get documentStart(): TextPosition {
+    public get documentStart(): TextPosition {
         if (!isNullOrUndefined(this.selectionModule)) {
             return this.selection.getDocumentStart();
         }
@@ -874,10 +967,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Gets the end text position in the document.
+     *
      * @default undefined
      * @private
+     * @returns {TextPosition} - Returns the document end.
      */
-    get documentEnd(): TextPosition {
+    public get documentEnd(): TextPosition {
         if (!isNullOrUndefined(this.selectionModule)) {
             return this.selection.getDocumentEnd();
         }
@@ -885,29 +980,35 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * @private
+     * @returns {TextPosition} - Returns isReadOnlyMode.
      */
-    get isReadOnlyMode(): boolean {
+    public get isReadOnlyMode(): boolean {
         return this.isReadOnly || isNullOrUndefined(this.editorModule)
             || isNullOrUndefined(this.selectionModule) || !isNullOrUndefined(this.editor) && this.editor.restrictEditing;
     }
     /**
      * @private
+     * @returns {TextPosition} - Returns isSpellCheck.
      */
-    get isSpellCheck(): boolean {
+    public get isSpellCheck(): boolean {
         return this.enableSpellCheck && this.spellChecker.enableSpellCheck;
     }
     /**
      * Specifies to enable image resizer option
-     * default - false
+     *
      * @private
+     * @returns {boolean} - Returns enableImageResizerMode.
      */
-    get enableImageResizerMode(): boolean {
+    public get enableImageResizerMode(): boolean {
         return this.enableImageResizer && !isNullOrUndefined(this.imageResizerModule);
     }
-    /** 
+    /**
      * Initialize the constructor of DocumentEditor
+     *
+     * @param {DocumentEditorModel} options - Specifies the document editor model.
+     * @param {string | HTMLElement} element - Specifies the element.
      */
-    constructor(options?: DocumentEditorModel, element?: string | HTMLElement) {
+    public constructor(options?: DocumentEditorModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
         this.documentHelper = new DocumentHelper(this);
         if (this.layoutType === 'Pages') {
@@ -923,7 +1024,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     protected render(): void {
         if (!isNullOrUndefined(this.element)) {
-            let container: HTMLElement = this.element;
+            const container: HTMLElement = this.element;
             container.style.minHeight = '200px';
             container.style.minWidth = '200px';
             if (this.height !== '') {
@@ -940,111 +1041,119 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Get component name
+     *
      * @private
+     * @returns {string} - Returns module name.
      */
     public getModuleName(): string {
         return 'DocumentEditor';
     }
     /**
      * Called internally if any of the property value changed.
+     *
      * @private
+     * @param {DocumentEditorModel} model - Specifies the new model.
+     * @param {DocumentEditorModel} oldProp - Specifies the old model.
+     * @returns {void}
      */
     public onPropertyChanged(model: DocumentEditorModel, oldProp: DocumentEditorModel): void {
-        for (let prop of Object.keys(model)) {
+        for (const prop of Object.keys(model)) {
             switch (prop) {
-                case 'zoomFactor':
-                    if (this.viewer) {
-                        this.documentHelper.zoomFactor = model.zoomFactor;
+            case 'zoomFactor':
+                if (this.viewer && oldProp.zoomFactor !== model.zoomFactor) {
+                    this.documentHelper.zoomFactor = model.zoomFactor;
+                }
+                break;
+            case 'layoutType':
+                if (this.selection && this.selection.isWebLayout) {
+                    break;
+                }
+                this.viewer.destroy();
+                if (this.layoutType === 'Pages') {
+                    this.viewer = new PageLayoutViewer(this);
+                } else {
+                    if (this.enableHeaderAndFooter === true) {
+                        this.selection.closeHeaderFooter();
                     }
-                    break;
-                case 'layoutType':
-                    if (this.selection && this.selection.isWebLayout) {
-                        break;
-                    }
-                    this.viewer.destroy();
-                    if (this.layoutType === 'Pages') {
-                        this.viewer = new PageLayoutViewer(this);
-                    } else {
-                        if (this.enableHeaderAndFooter === true) {
-                            this.selection.closeHeaderFooter();
-                        }
-                        this.viewer = new WebLayoutViewer(this);
-                    }
-                    this.editor.layoutWholeDocument(true);
-                    setTimeout((): void => { this.fireViewChange(); }, 200);
-                    break;
-                case 'locale':
-                    this.localizeDialogs();
-                    break;
-                case 'isReadOnly':
-                    if (!isNullOrUndefined(this.optionsPaneModule) && this.optionsPaneModule.isOptionsPaneShow) {
-                        this.optionsPaneModule.showHideOptionsPane(false);
-                    }
-                    if (this.showComments) {
-                        this.commentReviewPane.showHidePane(true, 'Comments');
-                    }
-                    break;
-                case 'currentUser':
-                case 'userColor':
-                    if (this.selection && this.documentHelper.isDocumentProtected) {
-                        this.selection.highlightEditRegion();
-                    }
-                    this.viewer.updateScrollBars();
-                    break;
-                case 'pageGap':
-                case 'pageOutline':
-                    this.viewer.updateScrollBars();
-                    break;
-                case 'zIndex':
-                    if (this.documentHelper.dialog) {
-                        this.documentHelper.dialog.zIndex = model.zIndex + 10;
-                    }
-                    if (this.documentHelper.dialog2) {
-                        this.documentHelper.dialog2.zIndex = model.zIndex;
-                    }
-                    break;
-                case 'showComments':
-                    if (this.viewer) {
-                        this.documentHelper.showComments(model.showComments);
-                    }
-                    this.viewer.updateScrollBars();
-                    break;
-                case 'enableRtl':
-                    this.localizeDialogs(model.enableRtl);
-                    break;
-                case 'enableComment':
-                    if (this.viewer && this.showComments) {
-                        this.showComments = this.showComments ? this.enableComment : false;
-                        this.documentHelper.showComments(model.enableComment);
-                    }
-                    this.viewer.updateScrollBars();
-                    break;
-                case 'showRevisions':
-                    if (this.isReadOnly || this.documentHelper.isDocumentProtected) {
-                        this.showRevisions = false;
-                        this.documentHelper.showRevisions(false);
-                    } else if (this.viewer) {
-                        this.documentHelper.showRevisions(model.showRevisions);
-                    }
-                    this.viewer.updateScrollBars();
-                    break;
-                case 'documentEditorSettings':
-                    this.viewer.updateScrollBars();
-                    break;
-                case 'height':
-                    this.element.style.height = formatUnit(this.height);
-                    this.resize();
-                    break;
-                case 'width':
-                    this.element.style.width = formatUnit(this.width);
-                    this.resize();
-                    break;
+                    this.viewer = new WebLayoutViewer(this);
+                }
+                this.editor.layoutWholeDocument();
+                setTimeout((): void => {
+                    this.fireViewChange();
+                }, 200);
+                break;
+            case 'locale':
+                this.localizeDialogs();
+                break;
+            case 'isReadOnly':
+                if (!isNullOrUndefined(this.optionsPaneModule) && this.optionsPaneModule.isOptionsPaneShow) {
+                    this.optionsPaneModule.showHideOptionsPane(false);
+                }
+                if (this.showComments) {
+                    this.commentReviewPane.showHidePane(true, 'Comments');
+                }
+                break;
+            case 'currentUser':
+            case 'userColor':
+                if (this.selection && this.documentHelper.isDocumentProtected) {
+                    this.selection.highlightEditRegion();
+                }
+                this.viewer.updateScrollBars();
+                break;
+            case 'pageGap':
+            case 'pageOutline':
+                this.viewer.updateScrollBars();
+                break;
+            case 'zIndex':
+                if (this.documentHelper.dialog) {
+                    this.documentHelper.dialog.zIndex = model.zIndex + 10;
+                }
+                if (this.documentHelper.dialog2) {
+                    this.documentHelper.dialog2.zIndex = model.zIndex;
+                }
+                break;
+            case 'showComments':
+                if (this.viewer) {
+                    this.documentHelper.showComments(model.showComments);
+                }
+                this.viewer.updateScrollBars();
+                break;
+            case 'enableRtl':
+                this.localizeDialogs(model.enableRtl);
+                break;
+            case 'enableComment':
+                if (this.viewer && this.showComments) {
+                    this.showComments = this.showComments ? this.enableComment : false;
+                    this.documentHelper.showComments(model.enableComment);
+                }
+                this.viewer.updateScrollBars();
+                break;
+            case 'showRevisions':
+                if (this.isReadOnly || this.documentHelper.isDocumentProtected) {
+                    this.showRevisions = false;
+                    this.documentHelper.showRevisions(false);
+                } else if (this.viewer) {
+                    this.documentHelper.showRevisions(model.showRevisions);
+                }
+                this.viewer.updateScrollBars();
+                break;
+            case 'documentEditorSettings':
+                this.viewer.updateScrollBars();
+                break;
+            case 'height':
+                this.element.style.height = formatUnit(this.height);
+                this.resize();
+                break;
+            case 'width':
+                this.element.style.width = formatUnit(this.width);
+                this.resize();
+                break;
             }
         }
     }
     private localizeDialogs(enableRtl?: boolean): void {
         if (this.locale !== '') {
-            let l10n: L10n = new L10n('documenteditor', this.defaultLocale);
+            const l10n: L10n = new L10n('documenteditor', this.defaultLocale);
             l10n.setLocale(this.locale);
             if (!isNullOrUndefined(enableRtl)) {
                 this.documentHelper.dialog.enableRtl = enableRtl;
@@ -1106,8 +1215,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     /**
-     * Set the default character format for document editor 
-     * @param characterFormat
+     * Set the default character format for document editor
+     *
+     * @param {CharacterFormatProperties} characterFormat - Specifies the character format.
+     * @returns {void}
      */
     public setDefaultCharacterFormat(characterFormat: CharacterFormatProperties): void {
         this.characterFormat = characterFormat;
@@ -1115,7 +1226,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Set the default paragraph format for document editor
-     * @param paragraphFormat 
+     *
+     * @param {ParagraphFormatProperties} paragraphFormat - Specifies the paragraph format.
+     * @returns {void}
      */
     public setDefaultParagraphFormat(paragraphFormat: ParagraphFormatProperties): void {
         this.paragraphFormat = paragraphFormat;
@@ -1123,7 +1236,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Set the default section format for document editor
-     * @param sectionFormat 
+     *
+     * @param {SectionFormatProperties} sectionFormat - Specifies the section format.
+     * @returns {void}
      */
     public setDefaultSectionFormat(sectionFormat: SectionFormatProperties): void {
         this.sectionFormat = sectionFormat;
@@ -1131,7 +1246,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Get the properties to be maintained in the persisted state.
+     *
      * @private
+     * @returns {string} - Returns the persisted data.
      */
     public getPersistData(): string {
         return 'documenteditor';
@@ -1143,79 +1260,88 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * @private
+     * @returns {HTMLElement} - Returns the document editor element.
      */
     public getDocumentEditorElement(): HTMLElement {
         return this.element as HTMLElement;
     }
     /**
      * @private
+     * @returns {void}
      */
     public fireContentChange(): void {
         if (this.enableLockAndEdit && this.collaborativeEditingModule) {
             this.collaborativeEditingModule.saveContent();
         }
-        let eventArgs: ContentChangeEventArgs = { source: isBlazor() ? null : this };
+        const eventArgs: ContentChangeEventArgs = { source: isBlazor() ? null : this };
         this.trigger('contentChange', eventArgs);
     }
     /**
      * @private
+     * @returns {void}
      */
     public fireDocumentChange(): void {
         if (this.enableLockAndEdit && this.enableEditor) {
             this.editor.enforceProtection('', false, true);
         }
-        let eventArgs: DocumentChangeEventArgs = { source: isBlazor() ? null : this };
+        const eventArgs: DocumentChangeEventArgs = { source: isBlazor() ? null : this };
         this.trigger('documentChange', eventArgs);
     }
     /**
      * @private
+     * @returns {void}
      */
     public fireSelectionChange(): void {
         if (!this.documentHelper.isCompositionStart && Browser.isDevice && this.editorModule) {
             this.editorModule.predictText();
         }
-        let eventArgs: SelectionChangeEventArgs = { source: isBlazor() ? null : this };
+        const eventArgs: SelectionChangeEventArgs = { source: isBlazor() ? null : this };
         // if (this.createdTriggered) {
         this.trigger('selectionChange', eventArgs);
         // }
     }
     /**
      * @private
+     * @returns {void}
      */
     public fireZoomFactorChange(): void {
-        let eventArgs: ZoomFactorChangeEventArgs = { source: isBlazor() ? null : this };
+        const eventArgs: ZoomFactorChangeEventArgs = { source: isBlazor() ? null : this };
         this.trigger('zoomFactorChange', eventArgs);
     }
     /**
      * @private
+     * @returns {void}
      */
     public fireBeformFieldFill(): void {
-        let eventArgs: FormFieldFillEventArgs = {};
+        const eventArgs: FormFieldFillEventArgs = {};
         this.trigger('beforeFieldFill', eventArgs);
     }
     /**
      * @private
+     * @returns {void}
      */
     public fireAfterFormFieldFill(): void {
-        let eventArgs: FormFieldFillEventArgs = {};
+        const eventArgs: FormFieldFillEventArgs = {};
         this.trigger('afterFieldFill', eventArgs);
     }
 
     /**
      * @private
+     * @param {ServiceFailureArgs} eventArgs - Specifies the event args.
+     * @returns {void}
      */
     public fireServiceFailure(eventArgs: ServiceFailureArgs): void {
         this.trigger('serviceFailure', eventArgs);
     }
     /**
      * @private
+     * @returns {void}
      */
-
     public fireViewChange(): void {
         if (this.viewer && this.documentHelper.pages.length > 0) {
             if ((this.viewer as PageLayoutViewer).visiblePages.length > 0) {
-                let pages: Page[] = (this.viewer as PageLayoutViewer).visiblePages;
-                let eventArgs: ViewChangeEventArgs = {
+                const pages: Page[] = (this.viewer as PageLayoutViewer).visiblePages;
+                const eventArgs: ViewChangeEventArgs = {
                     startPage: pages[0].index + 1,
                     endPage: pages[pages.length - 1].index + 1,
                     source: isBlazor() ? null : this
@@ -1226,21 +1352,28 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * @private
+     * @param {string} item - Specifies the menu items.
+     * @returns {void}
      */
     public fireCustomContextMenuSelect(item: string): void {
-        let eventArgs: CustomContentMenuEventArgs = { id: item };
+        const eventArgs: CustomContentMenuEventArgs = { id: item };
         this.trigger('customContextMenuSelect', eventArgs);
     }
     /**
      * @private
+     * @param {string[]} item - Specifies the menu items.
+     * @returns {void}
      */
     public fireCustomContextMenuBeforeOpen(item: string[]): void {
-        let eventArgs: BeforeOpenCloseCustomContentMenuEventArgs = { ids: item };
+        const eventArgs: BeforeOpenCloseCustomContentMenuEventArgs = { ids: item };
         this.trigger('customContextMenuBeforeOpen', eventArgs);
     }
     /**
      * Shows the Paragraph dialog
+     *
      * @private
+     * @param {WParagraphFormat} paragraphFormat - Specifies the paragraph format.
+     * @returns {void}
      */
     public showParagraphDialog(paragraphFormat?: WParagraphFormat): void {
         if (this.paragraphDialogModule && !this.isReadOnlyMode && this.viewer) {
@@ -1249,7 +1382,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Shows the margin dialog
+     *
      * @private
+     * @returns {void}
      */
     public showPageSetupDialog(): void {
         if (this.pageSetupDialogModule && !this.isReadOnlyMode && this.viewer) {
@@ -1258,7 +1393,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Shows the Footnote dialog
+     *
      * @private
+     * @returns {void}
      */
     public showFootNotesDialog(): void {
         if (this.footNotesDialogModule && !this.isReadOnlyMode && this.viewer) {
@@ -1267,7 +1404,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Shows the font dialog
+     *
      * @private
+     * @param {WCharacterFormat} characterFormat - Specifies character format.
+     * @returns {void}
      */
     public showFontDialog(characterFormat?: WCharacterFormat): void {
         if (this.fontDialogModule && !this.isReadOnlyMode && this.viewer) {
@@ -1276,7 +1416,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Shows the cell option dialog
+     *
      * @private
+     * @returns {void}
      */
     public showCellOptionsDialog(): void {
         if (this.cellOptionsDialogModule && !this.isReadOnlyMode && this.viewer) {
@@ -1285,7 +1427,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Shows the table options dialog.
+     *
      * @private
+     * @returns {void}
      */
     public showTableOptionsDialog(): void {
         if (this.tableOptionsDialogModule && !this.isReadOnlyMode && this.viewer) {
@@ -1294,7 +1438,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Shows insert table dialog
+     *
      * @private
+     * @returns {void}
      */
     public showTableDialog(): void {
         if (this.tableDialogModule && !this.isReadOnlyMode && this.viewer) {
@@ -1303,7 +1449,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Shows the table of content dialog
+     *
      * @private
+     * @returns {void}
      */
     public showTableOfContentsDialog(): void {
         if (this.tableOfContentsDialogModule && !this.isReadOnlyMode && this.viewer) {
@@ -1312,7 +1460,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Shows the style dialog
+     *
      * @private
+     * @returns {void}
      */
     public showStyleDialog(): void {
         if (this.styleDialogModule && !this.isReadOnlyMode && this.viewer) {
@@ -1321,7 +1471,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Shows the hyperlink dialog
+     *
      * @private
+     * @returns {void}
      */
     public showHyperlinkDialog(): void {
         if (this.hyperlinkDialogModule && !this.isReadOnlyMode && this.viewer) {
@@ -1330,7 +1482,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Shows the bookmark dialog.
+     *
      * @private
+     * @returns {void}
      */
     public showBookmarkDialog(): void {
         if (this.bookmarkDialogModule && !this.isReadOnlyMode && this.viewer) {
@@ -1339,7 +1493,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Shows the styles dialog.
+     *
      * @private
+     * @returns {void}
      */
     public showStylesDialog(): void {
         if (this.stylesDialogModule && !this.isReadOnlyMode && this.viewer) {
@@ -1348,7 +1504,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Shows the List dialog
+     *
      * @private
+     * @returns {void}
      */
     public showListDialog(): void {
         if (this.listDialogModule && !this.isReadOnlyMode && this.viewer) {
@@ -1357,7 +1515,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Shows the table properties dialog
+     *
      * @private
+     * @returns {void}
      */
     public showTablePropertiesDialog(): void {
         if (this.tablePropertiesDialogModule && !this.isReadOnlyMode && this.viewer) {
@@ -1366,14 +1526,16 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Shows the borders and shading dialog
+     *
      * @private
+     * @returns {void}
      */
     public showBordersAndShadingDialog(): void {
         if (this.bordersAndShadingDialogModule && !this.isReadOnlyMode && this.viewer) {
             this.bordersAndShadingDialogModule.show();
         }
     }
-    //tslint:disable: max-func-body-length
+    /* eslint-disable  */
     protected requiredModules(): ModuleDeclaration[] {
         let modules: ModuleDeclaration[] = [];
 
@@ -1790,17 +1952,15 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Direction': 'Direction',
         'Table direction': 'Table direction',
         'Indent from right': 'Indent from right',
-        /* tslint:disable */
+        /* eslint-disable */
         "Contextual Spacing": "Don't add space between the paragraphs of the same styles",
         "Password Mismatch": "The password don't match",
-        /* tslint:enable */
         'Restrict Editing': 'Restrict Editing',
         'Formatting restrictions': 'Formatting restrictions',
         'Allow formatting': 'Allow formatting',
         'Editing restrictions': 'Editing restrictions',
         'Read only': 'Read only',
         'Exceptions Optional': 'Exceptions (optional)',
-        // tslint:disable-next-line:max-line-length
         'Select Part Of Document And User': 'Select parts of the document and choose users who are allowed to freely edit them.',
         'Everyone': 'Everyone',
         'More users': 'More users',
@@ -1812,7 +1972,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Enter new password': 'Enter new password',
         'Reenter new password to confirm': 'Reenter new password to confirm',
         'Your permissions': 'Your permissions',
-        // tslint:disable-next-line:max-line-length
         'Protected Document': 'This document is protected from unintentional editing.You may edit in this region.',
         'FormFieldsOnly': 'This document is protected from unintentional editing. You may only fill in forms in this region.',
         'You may format text only with certain styles': 'You may format text only with certain styles.',
@@ -1850,7 +2009,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Next Comment': 'Next Comment',
         'Previous Comment': 'Previous Comment',
         'Un-posted comments': 'Un-posted comments',
-        // tslint:disable-next-line:max-line-length
         'Discard Comment': 'Added comments not posted. If you continue, that comment will be discarded.',
         'No Headings': 'No Heading Found!',
         'Add Headings': 'This document has no headings. Please add headings and try again.',
@@ -1912,10 +2070,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Click to View/Edit Endnote': 'Click to View/Edit Endnote',
         'Multiple Comment': 'Please post your comment'
     };
+    /* eslint-enable */
     // Public Implementation Starts
     /**
      * Opens the given Sfdt text.
-     * @param {string} sfdtText.
+     *
+     * @param {string} sfdtText - Specifies the sfdt text.
+     * @returns {void}
      */
     public open(sfdtText: string): void {
         if (!isNullOrUndefined(this.viewer)) {
@@ -1946,8 +2107,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Scrolls view to start of the given page number if exists.
-     * @param  {number} pageNumber.
-     * @returns void
+     *
+     * @param {number} pageNumber - Specifies the page number.
+     * @returns {void}
      */
     public scrollToPage(pageNumber: number): boolean {
         if (isNullOrUndefined(this.viewer) || pageNumber < 1 || pageNumber > this.documentHelper.pages.length) {
@@ -1958,7 +2120,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Enables all the modules.
-     * @returns void
+     *
+     * @returns {void}
      */
     public enableAllModules(): void {
         this.enablePrint = this.enableSfdtExport = this.enableWordExport = this.enableTextExport
@@ -1971,13 +2134,15 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             = this.enableTablePropertiesDialog = this.enableBordersAndShadingDialog
             = this.enableTableOptionsDialog = this.enableSpellCheck = this.enableComment
             = this.enableFormField = true;
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         DocumentEditor.Inject(Print, SfdtExport, WordExport, TextExport, Selection, Search, Editor, ImageResizer, EditorHistory, ContextMenu, OptionsPane, HyperlinkDialog, TableDialog, NotesDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, StyleDialog, ListDialog, ParagraphDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellChecker, SpellCheckDialog, CheckBoxFormFieldDialog, TextFormFieldDialog, DropDownFormFieldDialog);
     }
     /**
      * Resizes the component and its sub elements based on given size or container size.
-     * @param width 
-     * @param height 
+     *
+     * @param {number} width - Specifies the width
+     * @param {number} height - Specifies the hight
+     * @returns {void}
      */
     public resize(width?: number, height?: number): void {
         if (this.element) {
@@ -1996,11 +2161,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     /**
-     * Get all form field names. 
+     * Get all form field names.
+     *
+     * @returns {string[]} - Returns form field names.
      */
     public getFormFieldNames(): string[] {
-        let formFieldNames: string[] = [];
-        let formFields: FieldElementBox[] = this.documentHelper.formFields;
+        const formFieldNames: string[] = [];
+        const formFields: FieldElementBox[] = this.documentHelper.formFields;
         for (let i: number = 0; i < formFields.length; i++) {
             if (formFields[i].formFieldData.name !== '') {
                 formFieldNames.push(formFields[i].formFieldData.name);
@@ -2009,11 +2176,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         return formFieldNames;
     }
     /**
-     * Get form field by name   
-     * @param name - Form field name.
+     * Get form field by name
+     *
+     * @param {string} name - Form field name.
+     * @returns {TextFormFieldInfo | CheckBoxFormFieldInfo | DropDownFormFieldInfo} - Returns form field info.
      */
     public getFormFieldInfo(name: string): TextFormFieldInfo | CheckBoxFormFieldInfo | DropDownFormFieldInfo {
-        let formFields: FieldElementBox[] = this.documentHelper.formFields;
+        const formFields: FieldElementBox[] = this.documentHelper.formFields;
         for (let i: number = 0; i < formFields.length; i++) {
             if ((formFields[i].formFieldData.name === name) && (formFields[i].formFieldData.name !== '')) {
                 return formFields[i].formFieldData.getFormFieldInfo();
@@ -2023,14 +2192,16 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Set form field.
-     * @param name - Form field name.
-     * @param formFieldInfo - Form Field info   
+     *
+     * @param {string} name - Specifies the form field name
+     * @param {TextFormFieldInfo | CheckBoxFormFieldInfo | DropDownFormFieldInfo} formFieldInfo - Form Field info.
+     * @returns {void}
      */
     public setFormFieldInfo(name: string, formFieldInfo: TextFormFieldInfo | CheckBoxFormFieldInfo | DropDownFormFieldInfo): void {
-        let formFields: FieldElementBox[] = this.documentHelper.formFields;
+        const formFields: FieldElementBox[] = this.documentHelper.formFields;
         for (let i: number = 0; i < formFields.length; i++) {
             if ((formFields[i].formFieldData.name === name) && (formFields[i].formFieldData.name !== '')) {
-                let currentField: FieldElementBox = formFields[i];
+                const currentField: FieldElementBox = formFields[i];
                 if (this.selection) {
                     this.selection.selectFieldInternal(currentField);
                     if (this.editor) {
@@ -2042,17 +2213,19 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     /**
-     * Reset form field value to default.  
-     * @param name - specify form field name
+     * Reset form field value to default.
+     *
+     * @param {string} name - Specifies the form field name
+     * @returns {void}
      */
     public resetFormFields(name?: string): void {
-        let formFields: FieldElementBox[] = this.documentHelper.formFields;
+        const formFields: FieldElementBox[] = this.documentHelper.formFields;
         for (let i: number = 0; i < formFields.length; i++) {
             if (isNullOrUndefined(name) || name === formFields[i].formFieldData.name) {
                 if (formFields[i].formFieldData instanceof TextFormField) {
                     this.editor.updateFormField(formFields[i], (formFields[i].formFieldData as TextFormField).defaultValue, true);
                 } else if (formFields[i].formFieldData instanceof CheckBoxFormField) {
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     this.editor.toggleCheckBoxFormField(formFields[i], true, (formFields[i].formFieldData as CheckBoxFormField).defaultValue);
                 } else if (formFields[i].formFieldData instanceof DropDownFormField) {
                     this.editor.updateFormField(formFields[i], 0, true);
@@ -2062,13 +2235,15 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Import form field values.
-     * @param - formDate  - { FormFieldData[] }
+     *
+     * @param {FormFieldData[]} formData - Specifies the form field values.
+     * @returns {void}
      */
     public importFormData(formData: FormFieldData[]): void {
-        let formField: FieldElementBox[] = this.documentHelper.formFields;
+        const formField: FieldElementBox[] = this.documentHelper.formFields;
         for (let i: number = 0; i < formData.length; i++) {
-            let formFieldData: FormFieldData = formData[i];
-            let fieldName: string = formFieldData.fieldName;
+            const formFieldData: FormFieldData = formData[i];
+            const fieldName: string = formFieldData.fieldName;
             for (let j: number = 0; j < formField.length; j++) {
                 if (formField[j].formFieldData.name === fieldName) {
                     if (formField[j].formFieldData instanceof CheckBoxFormField) {
@@ -2084,17 +2259,17 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Export form field values.
-     * @returns - { FormFieldData[] }
+     *
+     * @returns {FormFieldData[]} - Returns the form field data.
      */
     public exportFormData(): FormFieldData[] {
-        let data: FormFieldData[] = [];
-        let formField: FieldElementBox[] = this.documentHelper.formFields;
+        const data: FormFieldData[] = [];
+        const formField: FieldElementBox[] = this.documentHelper.formFields;
         for (let i: number = 0; i < formField.length; i++) {
             if (formField[i].formFieldData.name !== '') {
-                let formData: FormFieldData = { fieldName: '', value: '' };
+                const formData: FormFieldData = { fieldName: '', value: '' };
                 formData.fieldName = (formField[i].formFieldData as TextFormField).name;
                 if (formField[i].formFieldData instanceof CheckBoxFormField) {
-                    // tslint:disable-next-line:max-line-length
                     formData.value = (formField[i].formFieldData as CheckBoxFormField).checked;
                 } else if (formField[i].formFieldData instanceof TextFormField) {
                     let resultText: string = '';
@@ -2103,13 +2278,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     } else {
                         resultText = formField[i].resultText;
                     }
-                    let rex: RegExp = new RegExp(this.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
+                    const rex: RegExp = new RegExp(this.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
                     if (resultText.replace(rex, '') === '') {
                         resultText = '';
                     }
                     formData.value = resultText;
                 } else if (formField[i].formFieldData instanceof DropDownFormField) {
-                    // tslint:disable-next-line:max-line-length
                     formData.value = (formField[i].formFieldData as DropDownFormField).selectedIndex;
                 }
                 data.push(formData);
@@ -2120,11 +2294,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Updated fields in document.
      * Currently cross reference field only supported.
+     *
+     * @returns {void}
      */
     public updateFields(): void {
         for (let i: number = 0; i < this.documentHelper.fields.length; i++) {
-            let field: FieldElementBox = this.documentHelper.fields[i];
-            let code: string = this.selection.getFieldCode(field);
+            const field: FieldElementBox = this.documentHelper.fields[i];
+            const code: string = this.selection.getFieldCode(field);
             if (code.toLowerCase().trim().indexOf('ref ') === 0) {
                 this.selection.updateRefField(field);
             }
@@ -2132,6 +2308,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Shifts the focus to the document.
+     *
+     * @returns {void}
      */
     public focusIn(): void {
         if (this.viewer) {
@@ -2140,8 +2318,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Fits the page based on given fit type.
-     * @param  {PageFitType} pageFitType? - Default value of ‘pageFitType’ parameter is 'None'
-     * @returns void
+     *
+     * @param {PageFitType} pageFitType - Default value of ‘pageFitType’ parameter is 'None'
+     * @returns {void}
      */
     public fitPage(pageFitType?: PageFitType): void {
         if (isNullOrUndefined(pageFitType)) {
@@ -2153,7 +2332,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Prints the document.
-     * @param  {Window} printWindow? - Default value of 'printWindow' parameter is undefined.
+     *
+     * @param {Window} printWindow - Default value of 'printWindow' parameter is undefined.
+     * @returns {void}
      */
     public print(printWindow?: Window): void {
         if (isNullOrUndefined(this.viewer)) {
@@ -2177,6 +2358,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Serialize the data to JSON string.
+     *
+     * @returns {string} - Returns the data as JSON string.
      */
     public serialize(): string {
         let json: string = '';
@@ -2189,8 +2372,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Saves the document.
-     * @param {string} fileName
-     * @param {FormatType} formatType
+     *
+     * @param {string} fileName - Specifies the file name.
+     * @param {FormatType} formatType - Specifies the format type.
+     * @returns {void}
      */
     public save(fileName: string, formatType?: FormatType): void {
         fileName = fileName || 'Untitled';
@@ -2204,8 +2389,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         } else if (formatType === 'Txt' && this.textExportModule) {
             this.textExportModule.save(this.documentHelper, fileName);
         } else if (formatType === 'Sfdt' && this.enableSfdtExport && this.sfdtExportModule) {
-            let jsonString: string = this.serialize();
-            let blob: Blob = new Blob([jsonString], {
+            const jsonString: string = this.serialize();
+            const blob: Blob = new Blob([jsonString], {
                 type: 'application/json'
             });
             Save.save(fileName + '.sfdt', blob);
@@ -2215,13 +2400,15 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Saves the document as blob.
-     * @param {FormatType} formatType
+     *
+     * @param {FormatType} formatType - Specifies the format type.
+     * @returns {Promise<Blob>} - Returns the document as blob.
      */
     public saveAsBlob(formatType?: FormatType): Promise<Blob> {
         if (isNullOrUndefined(this.viewer)) {
             throw new Error('Invalid operation');
         }
-        return new Promise((resolve: Function, reject: Function) => {
+        return new Promise((resolve: (value: Blob | PromiseLike<Blob>) => void) => {
             if (formatType === 'Docx' && this.wordExportModule) {
                 resolve(this.wordExportModule.saveAsBlob(this.documentHelper));
             } else if (formatType === 'Txt' && this.textExportModule) {
@@ -2233,24 +2420,26 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Opens a blank document.
+     *
+     * @returns {void}
      */
     public openBlank(): void {
-        let section: BodyWidget = new BodyWidget();
+        const section: BodyWidget = new BodyWidget();
         section.index = 0;
         section.sectionFormat = new WSectionFormat(section);
         if (this.sectionFormat) {
             this.parser.parseSectionFormat(this.sectionFormat, section.sectionFormat);
         }
-        let paragraph: ParagraphWidget = new ParagraphWidget();
+        const paragraph: ParagraphWidget = new ParagraphWidget();
         paragraph.index = 0;
         paragraph.paragraphFormat = new WParagraphFormat(paragraph);
         paragraph.characterFormat = new WCharacterFormat(paragraph);
         section.childWidgets.push(paragraph);
         paragraph.containerWidget = section;
-        let sections: BodyWidget[] = [];
+        const sections: BodyWidget[] = [];
         sections.push(section);
-        // tslint:disable-next-line:max-line-length
-        let hfs: HeaderFooters = this.parser.parseHeaderFooter({ header: {}, footer: {}, evenHeader: {}, evenFooter: {}, firstPageHeader: {}, firstPageFooter: {} }, undefined);
+        // eslint-disable-next-line max-len
+        const hfs: HeaderFooters = this.parser.parseHeaderFooter({ header: {}, footer: {}, evenHeader: {}, evenFooter: {}, firstPageHeader: {}, firstPageFooter: {} }, undefined);
         if (this.viewer) {
             this.clearPreservedCollectionsInViewer();
             this.documentHelper.userCollection.push('Everyone');
@@ -2260,7 +2449,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.documentHelper.onDocumentChanged(sections);
             if (this.editorModule) {
                 this.editorModule.intializeDefaultStyles();
-                let style: WStyle = this.documentHelper.styles.findByName('Normal') as WStyle;
+                const style: WStyle = this.documentHelper.styles.findByName('Normal') as WStyle;
                 paragraph.paragraphFormat.baseStyle = style;
                 paragraph.paragraphFormat.listFormat.baseStyle = style;
             }
@@ -2268,7 +2457,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Gets the style names based on given style type.
-     * @param styleType 
+     *
+     * @param {StyleType} styleType - Specifies the style type.
+     * @returns {string[]} - Returns the style names.
      */
     public getStyleNames(styleType?: StyleType): string[] {
         if (this.viewer) {
@@ -2276,9 +2467,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
         return [];
     }
+    /* eslint-disable */
     /**
      * Gets the style objects on given style type.
-     * @param styleType 
+     *
+     * @param {StyleType} styleType - Specifies the style type.
+     * @returns {Object[]} - Returns the Specifies styles.
      */
     public getStyles(styleType?: StyleType): Object[] {
         if (this.viewer) {
@@ -2286,8 +2480,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
         return [];
     }
+    /* eslint-enable */
     /**
      * Gets the bookmarks.
+     *
+     * @returns {string[]} - Returns the bookmark collection.
      */
     public getBookmarks(): string[] {
         let bookmarks: string[] = [];
@@ -2298,57 +2495,60 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Shows the dialog.
-     * @param {DialogType} dialogType
-     * @returns void
+     *
+     * @param {DialogType} dialogType - Specifies the dialog type.
+     * @returns {void}
      */
     public showDialog(dialogType: DialogType): void {
         switch (dialogType) {
-            case 'Hyperlink':
-                this.showHyperlinkDialog();
-                break;
-            case 'Table':
-                this.showTableDialog();
-                break;
-            case 'Bookmark':
-                this.showBookmarkDialog();
-                break;
-            case 'TableOfContents':
-                this.showTableOfContentsDialog();
-                break;
-            case 'PageSetup':
-                this.showPageSetupDialog();
-                break;
-            case 'List':
-                this.showListDialog();
-                break;
-            case 'Styles':
-                this.showStylesDialog();
-                break;
-            case 'Style':
-                this.showStyleDialog();
-                break;
-            case 'Paragraph':
-                this.showParagraphDialog();
-                break;
-            case 'Font':
-                this.showFontDialog();
-                break;
-            case 'TableProperties':
-                this.showTablePropertiesDialog();
-                break;
-            case 'BordersAndShading':
-                this.showBordersAndShadingDialog();
-                break;
-            case 'TableOptions':
-                this.showTableOptionsDialog();
-                break;
-            case 'SpellCheck':
-                this.showSpellCheckDialog();
-                break;
+        case 'Hyperlink':
+            this.showHyperlinkDialog();
+            break;
+        case 'Table':
+            this.showTableDialog();
+            break;
+        case 'Bookmark':
+            this.showBookmarkDialog();
+            break;
+        case 'TableOfContents':
+            this.showTableOfContentsDialog();
+            break;
+        case 'PageSetup':
+            this.showPageSetupDialog();
+            break;
+        case 'List':
+            this.showListDialog();
+            break;
+        case 'Styles':
+            this.showStylesDialog();
+            break;
+        case 'Style':
+            this.showStyleDialog();
+            break;
+        case 'Paragraph':
+            this.showParagraphDialog();
+            break;
+        case 'Font':
+            this.showFontDialog();
+            break;
+        case 'TableProperties':
+            this.showTablePropertiesDialog();
+            break;
+        case 'BordersAndShading':
+            this.showBordersAndShadingDialog();
+            break;
+        case 'TableOptions':
+            this.showTableOptionsDialog();
+            break;
+        case 'SpellCheck':
+            this.showSpellCheckDialog();
+            break;
         }
     }
     /**
      * Shows the options pane.
+     *
+     * @returns {void}
      */
     public showOptionsPane(): void {
         if (!isNullOrUndefined(this.optionsPaneModule) && !isNullOrUndefined(this.viewer)) {
@@ -2357,6 +2557,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Shows the restrict editing pane.
+     *
+     * @returns {void}
      */
     public showRestrictEditingPane(show?: boolean): void {
         show = isNullOrUndefined(show) ? true : show;
@@ -2366,18 +2568,22 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Shows the spell check dialog.
+     *
      * @private
+     * @returns {void}
      */
     public showSpellCheckDialog(): void {
         if (this.spellCheckDialogModule && this.spellChecker) {
-            let element: ContextElementInfo = this.spellChecker.retriveText();
+            const element: ContextElementInfo = this.spellChecker.retriveText();
             if (!isNullOrUndefined(element)) {
                 this.spellCheckDialogModule.show(element.text, element.element);
             }
         }
     }
     /**
-     * Destroys all managed resources used by this object. 
+     * Destroys all managed resources used by this object.
+     *
+     * @returns {void}
      */
     public destroy(): void {
         super.destroy();
@@ -2394,7 +2600,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         this.findResultsList = [];
         this.findResultsList = undefined;
     }
-    /* tslint:disable */
+
     private destroyDependentModules(): void {
         if (this.printModule) {
             this.printModule.destroy();
@@ -2512,7 +2718,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.spellCheckerModule = undefined;
         }
     }
-    /* tslint:enable */
+    /* eslint-enable */
     // Public Implementation Ends.
 }
 
@@ -2523,6 +2729,7 @@ export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
 
     /**
      * Specifies the system clipboard action of Document Editor.
+     *
      * @default 'SystemClipboard'
      */
     @Property('SystemClipboard')
@@ -2530,6 +2737,7 @@ export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
 
     /**
      * Specifies the spell check action of Document Editor.
+     *
      * @default 'SpellCheck'
      */
     @Property('SpellCheck')
@@ -2537,20 +2745,23 @@ export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
 
     /**
      * Specifies the restrict editing encryption/decryption action of Document Editor.
+     *
      * @default 'RestrictEditing'
      */
     @Property('RestrictEditing')
     public restrictEditing: string;
 
     /**
-     * Specifies the server action name to lock selected region. 
+     * Specifies the server action name to lock selected region.
+     *
      * @default 'CanLock'
      */
     @Property('CanLock')
     public canLock: string;
 
     /**
-     * Specified the server action name to pull pending actions. 
+     * Specifies the server action name to pull pending actions.
+     *
      * @default 'GetPendingActions'
      */
     @Property('GetPendingActions')
@@ -2565,32 +2776,37 @@ export class FormFieldSettings extends ChildProperty<FormFieldSettings> {
     /**
      * Get or Set form fields shading color.
      * You can customize shading color in application level, but cannot be exported in file level
+     *
      * @default '#cfcfcf'
      */
     @Property('#cfcfcf')
     public shadingColor: string;
 
     /**
-     * Get or Set whether apply shadings for field or not. 
+     * Get or Set whether apply shadings for field or not.
+     *
      * @default true
      */
     @Property(true)
     public applyShading: boolean;
 
     /**
-     * Get or Set field selection color. 
+     * Get or Set field selection color.
+     *
      * @default '#cccccc'
      */
     @Property('#cccccc')
     public selectionColor: string;
     /**
-     * Get or Set form filling mode type. 
+     * Get or Set form filling mode type.
+     *
      * @default 'Popup'
      */
     @Property('Popup')
     public formFillingMode: FormFillingMode;
     /**
-     * Get or Set formatting exception. 
+     * Get or Set formatting exception.
+     *
      * @default []
      */
     @Property([])
@@ -2603,6 +2819,7 @@ export class FormFieldSettings extends ChildProperty<FormFieldSettings> {
 export class CollaborativeEditingSettings extends ChildProperty<CollaborativeEditingSettings> {
     /**
      * Get or set collaborative editing room name.
+     *
      * @default ''
      */
     @Property('')
@@ -2634,6 +2851,7 @@ export class CollaborativeEditingSettings extends ChildProperty<CollaborativeEdi
 export class ContainerServerActionSettings extends ServerActionSettings {
     /**
      * Specifies the load action of Document Editor.
+     *
      * @default 'Import'
      */
     @Property('Import')

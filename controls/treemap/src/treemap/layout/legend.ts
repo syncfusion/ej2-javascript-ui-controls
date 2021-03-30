@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/dot-notation */
+/* eslint-disable max-len */
 import { TreeMap, LevelsData } from '../treemap';
 import { LegendSettingsModel, ColorMappingModel, LevelSettingsModel } from '../model/base-model';
 import { LeafItemSettingsModel, FontModel, BorderModel } from '../model/base-model';
@@ -18,13 +21,17 @@ import { legendItemRendering, legendRendering } from '../model/constants';
 export class TreeMapLegend {
     private treemap: TreeMap;
     /** collection of rendering legends */
-    public legendRenderingCollections: Object[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public legendRenderingCollections: any[];
     /** collection of legends */
-    public legendCollections: Object[];
-    public outOfRangeLegend: Object;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public legendCollections: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public outOfRangeLegend: any;
     private legendHeight: number;
     private legendWidth: number;
-    private totalPages: Object[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private totalPages: any[];
     private page: number = 0;
     private translate: Location;
     public legendBorderRect: Rect = new Rect(0, 0, 0, 0);
@@ -41,11 +48,13 @@ export class TreeMapLegend {
     private legendInteractiveGradient: Element[] = [];
     private clearTimeout: number;
     private legendItemRect: Rect = new Rect(0, 0, 0, 0);
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(treemap: TreeMap) {
         this.treemap = treemap;
         this.addEventListener();
     }
 
+    // eslint-disable-next-line valid-jsdoc
     /**
      * method for legend
      */
@@ -65,11 +74,13 @@ export class TreeMapLegend {
             position: this.treemap.legendSettings.position
         };
         if (this.treemap.isBlazor) {
-            const {treemap, ...blazorEventArgs} : ILegendRenderingEventArgs = eventArgs;
+            const { treemap, ...blazorEventArgs }: ILegendRenderingEventArgs = eventArgs;
             eventArgs = blazorEventArgs;
         }
-        this.treemap.trigger(legendRendering, eventArgs, (observedArgs : ILegendRenderingEventArgs) => {
+        this.treemap.trigger(legendRendering, eventArgs, (observedArgs: ILegendRenderingEventArgs) => {
+            // eslint-disable-next-line no-underscore-dangle
             if (!observedArgs.cancel && observedArgs._changePosition !== this.treemap.legendSettings.position) {
+                // eslint-disable-next-line no-underscore-dangle
                 this.treemap.legendSettings.position = observedArgs._changePosition;
             }
             this.calculateLegendBounds();
@@ -79,36 +90,34 @@ export class TreeMapLegend {
         });
 
     }
-    /* tslint:disable:no-string-literal */
-    /* tslint:disable-next-line:max-func-body-length */
     public calculateLegendBounds(): void {
-        let treemap: TreeMap = this.treemap;
-        let legend: LegendSettingsModel = treemap.legendSettings;
+        const treemap: TreeMap = this.treemap;
+        const legend: LegendSettingsModel = treemap.legendSettings;
         this.findColorMappingLegendItems(LevelsData.levelsData[0]);
         if ((this.treemap.palette.length > 0 || !isNullOrUndefined(this.treemap.colorValuePath))
             && this.legendCollections.length === 0) {
             this.findPaletteLegendItems(LevelsData.levelsData[0], 'Parent');
         }
         if (this.legendCollections.length > 0) {
-            let defaultSize: number = 25; let textPadding: number = 10; let position: LegendPosition = legend.position;
-            let legendTitle: string = legend.title.text; let titleTextStyle: FontModel = legend.titleStyle;
-            let legendMode: LegendMode = legend.mode; let shapeX: number = 0; let shapeY: number = 0;
-            let textX: number = 0; let textY: number = 0; let shapeHeight: number = legend.shapeHeight;
-            let shapeWidth: number = legend.shapeWidth; let shapeLocation: Location[] = []; let textLocation: Rect[] = [];
-            let orientation: LegendOrientation = (legend.orientation === 'None') ? ((position === 'Top' || position === 'Bottom'
+            const defaultSize: number = 25; const textPadding: number = 10; const position: LegendPosition = legend.position;
+            const legendTitle: string = legend.title.text; const titleTextStyle: FontModel = legend.titleStyle;
+            const legendMode: LegendMode = legend.mode; let shapeX: number = 0; let shapeY: number = 0;
+            let textX: number = 0; let textY: number = 0; const shapeHeight: number = legend.shapeHeight;
+            const shapeWidth: number = legend.shapeWidth; let shapeLocation: Location[] = []; let textLocation: Rect[] = [];
+            const orientation: LegendOrientation = (legend.orientation === 'None') ? ((position === 'Top' || position === 'Bottom'
                 || (position === 'Auto' && treemap.availableSize.width <= treemap.availableSize.height))
                 ? 'Horizontal' : 'Vertical') : legend.orientation;
-            let leftPadding: number = 10; let topPadding: number = 10; let spacing: number = 10;
+            const leftPadding: number = 10; const topPadding: number = 10; const spacing: number = 10;
             let legendWidth: number = (legend.width.length > 1) ? (legend.width.indexOf('%') > -1) ? (treemap.availableSize.width / 100)
                 * parseFloat(legend.width) : parseFloat(legend.width) : null;
             let legendHeight: number = (legend.height.length > 1) ? (legend.height.indexOf('%') > -1) ?
                 (treemap.availableSize.height / 100) * parseFloat(legend.height) : parseFloat(legend.height) : null;
             titleTextStyle.fontFamily = treemap.themeStyle.fontFamily || titleTextStyle.fontFamily;
             titleTextStyle.size = treemap.themeStyle.legendFontSize || titleTextStyle.size;
-            let legendTitleSize: Size = measureText(legendTitle, titleTextStyle);
-            let startX: number = 0; let startY: number = 0; let shapePadding: number = legend.shapePadding;
-            let rectWidth: number; let rectHeight: number; let itemTextStyle: FontModel = legend.textStyle;
-            let legendLength: number = this.legendCollections.length;
+            const legendTitleSize: Size = measureText(legendTitle, titleTextStyle);
+            let startX: number = 0; let startY: number = 0; const shapePadding: number = legend.shapePadding;
+            let rectWidth: number; let rectHeight: number; const itemTextStyle: FontModel = legend.textStyle;
+            const legendLength: number = this.legendCollections.length;
             legend.textStyle.size = treemap.themeStyle.legendFontSize || legend.textStyle.size;
             legend.textStyle.fontFamily = treemap.themeStyle.fontFamily || legend.textStyle.fontFamily;
             if (legendMode === 'Default') {
@@ -116,22 +125,23 @@ export class TreeMapLegend {
                 legendHeight = (isNullOrUndefined(legendHeight)) ? treemap.areaRect.height : legendHeight;
                 let j: number = 0;
                 for (let i: number = 0; i < this.legendCollections.length; i++) {
-                    let legendItem: Object = this.legendCollections[i];
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const legendItem: any = this.legendCollections[i];
                     if (isNullOrUndefined(this.totalPages[this.page])) {
                         this.totalPages[this.page] = { Page: (this.page + 1), Collection: [] };
                     }
-                    let legendTextSize: Size = measureText(legendItem['legendName'], legend.textStyle);
+                    const legendTextSize: Size = measureText(legendItem['legendName'], legend.textStyle);
                     this.textMaxWidth = Math.max(this.textMaxWidth, legendTextSize.width);
                     if (i === 0) {
                         startX = shapeX = (leftPadding + (shapeWidth / 2));
                         startY = shapeY = topPadding + legendTitleSize.height + (shapeHeight > legendTextSize.height ? shapeHeight / 2
                             : (legendTextSize.height / 4));
                     } else {
-                        let maxSize: number = (legendTextSize.height > shapeHeight) ? legendTextSize.height : shapeHeight;
+                        const maxSize: number = (legendTextSize.height > shapeHeight) ? legendTextSize.height : shapeHeight;
                         if (orientation === 'Horizontal') {
-                            let prvePositionX: number = (textLocation[j - 1].x + textLocation[j - 1].width) + textPadding + shapeWidth;
+                            const prvePositionX: number = (textLocation[j - 1].x + textLocation[j - 1].width) + textPadding + shapeWidth;
                             if ((prvePositionX + shapePadding + legendTextSize.width) > legendWidth) {
-                                let nextPositionY: number = (textLocation[j - 1].y > (shapeLocation[j - 1].y + (shapeHeight / 2)) ?
+                                const nextPositionY: number = (textLocation[j - 1].y > (shapeLocation[j - 1].y + (shapeHeight / 2)) ?
                                     textLocation[j - 1].y : (shapeLocation[j - 1].y + (shapeHeight / 2))) + topPadding;
                                 if ((nextPositionY + maxSize) > legendHeight) {
                                     this.getPageChanged();
@@ -149,10 +159,10 @@ export class TreeMapLegend {
                                 shapeY = (shapeLocation[j - 1]).y;
                             }
                         } else {
-                            let prevPositionY: number = textLocation[j - 1].y > shapeLocation[j - 1].y + (shapeHeight / 2) ?
+                            const prevPositionY: number = textLocation[j - 1].y > shapeLocation[j - 1].y + (shapeHeight / 2) ?
                                 textLocation[j - 1].y : shapeLocation[j - 1].y + (shapeHeight / 2);
                             if ((prevPositionY + topPadding + maxSize) > legendHeight) {
-                                let nextPositionX: number = (textLocation[j - 1].x + this.textMaxWidth + textPadding);
+                                const nextPositionX: number = (textLocation[j - 1].x + this.textMaxWidth + textPadding);
                                 if ((nextPositionX + shapePadding + legendTextSize.width) > legendWidth) {
                                     shapeX = startX;
                                     shapeY = startY;
@@ -174,7 +184,8 @@ export class TreeMapLegend {
                     textY = shapeY + (legendTextSize.height / 4);
                     shapeLocation.push({ x: shapeX, y: shapeY });
                     textLocation.push({ x: textX, y: textY, width: legendTextSize.width, height: (legendTextSize.height / 2) });
-                    (<Object[]>this.totalPages[this.page]['Collection']).push({
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (<any[]>this.totalPages[this.page]['Collection']).push({
                         DisplayText: legendItem['legendName'], element: legendItem['gradientElement'],
                         Shape: { x: shapeX, y: shapeY },
                         Text: { x: textX, y: textY },
@@ -190,9 +201,11 @@ export class TreeMapLegend {
                     });
                     j++;
                 }
-                let collection: Object[] = (<Object[]>this.totalPages[0]['Collection']);
-                collection.forEach((legendObj: Object, index: number) => {
-                    let legendRect: Rect = new Rect(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const collection: any[] = (<any[]>this.totalPages[0]['Collection']);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                collection.forEach((legendObj: any, index: number) => {
+                    const legendRect: Rect = new Rect(
                         legendObj['Rect']['x'], legendObj['Rect']['y'],
                         legendObj['Rect']['width'], legendObj['Rect']['height']
                     );
@@ -210,17 +223,16 @@ export class TreeMapLegend {
                     width: legendWidth, height: legendHeight
                 };
             } else {
-                let itemTextStyle: FontModel = legend.textStyle;
-                let rectWidth: number; let rectHeight: number;
-                let legendLength: number = this.legendCollections.length;
-                rectWidth = (orientation === 'Horizontal') ? (isNullOrUndefined(legendWidth)) ? (treemap.areaRect.width / legendLength) :
+                const itemTextStyle: FontModel = legend.textStyle;
+                const legendLength: number = this.legendCollections.length;
+                const rectWidth: number = (orientation === 'Horizontal') ? (isNullOrUndefined(legendWidth)) ? (treemap.areaRect.width / legendLength) :
                     (legendWidth / legendLength) : (isNullOrUndefined(legendWidth)) ? defaultSize : legendWidth;
-                rectHeight = (orientation === 'Horizontal') ? (isNullOrUndefined(legendHeight)) ? defaultSize : legendHeight :
+                const rectHeight: number = (orientation === 'Horizontal') ? (isNullOrUndefined(legendHeight)) ? defaultSize : legendHeight :
                     (isNullOrUndefined(legendHeight)) ? (treemap.areaRect.height / legendLength) : (legendHeight / legendLength);
                 startX = 0; startY = legendTitleSize.height + spacing;
-                let textPadding: number = 10; let placement: LabelPlacement = legend.labelPosition;
+                const textPadding: number = 10; const placement: LabelPlacement = legend.labelPosition;
                 let itemStartX: number = 0; let itemStartY: number = 0;
-                let labelAction: LabelIntersectAction = legend.labelDisplayMode;
+                const labelAction: LabelIntersectAction = legend.labelDisplayMode;
                 let maxTextHeight: number = 0; let maxTextWidth: number = 0;
                 for (let i: number = 0; i < this.legendCollections.length; i++) {
                     startX = (orientation === 'Horizontal') ? (startX + rectWidth) : startX;
@@ -280,8 +292,10 @@ export class TreeMapLegend {
         }
     }
 
-    private findColorMappingLegendItems(data: Object): void {
-        let child: Object[] = findChildren(data)['values'];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private findColorMappingLegendItems(data: any): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const child: any[] = findChildren(data)['values'];
         if (child && child.length > 0) {
             this.calculateLegendItems(child);
             if (this.treemap.levels.length > 0) {
@@ -292,12 +306,15 @@ export class TreeMapLegend {
         }
     }
 
-    private findPaletteLegendItems(data: Object, type: string): void {
-        let child: Object[]; let legendFillColor: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private findPaletteLegendItems(data: any, type: string): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let child: any[]; let legendFillColor: string;
         if (!isNullOrUndefined(this.treemap.drilledItems)) {
             if (this.treemap.drilledItems.length === 0 && !isNullOrUndefined(this.treemap.initialDrillDown.groupName)
                 && isNullOrUndefined(this.treemap.drilledLegendItems)) {
-                let items: Object[] = findChildren(data)['values'];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const items: any[] = findChildren(data)['values'];
                 for (let k: number = 0; k < items.length; k++) {
                     if (items[k]['Name'] === this.treemap.initialDrillDown.groupName) {
                         items[k]['isDrilled'] = !items[k]['isDrilled'];
@@ -311,12 +328,14 @@ export class TreeMapLegend {
             }
         }
         if (this.treemap.enableDrillDown && !isNullOrUndefined(this.treemap.drilledLegendItems)) {
-            let childElement: Object = this.treemap.drilledLegendItems;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const childElement: any = this.treemap.drilledLegendItems;
             legendFillColor = childElement['data']['options']['fill'];
             if (childElement['data']['isDrilled']) {
                 child = findChildren(childElement['data'])['values'];
             } else {
-                let parentElement: Object = childElement['data']['parent'];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const parentElement: any = childElement['data']['parent'];
                 child = findChildren(parentElement)['values'];
             }
         } else {
@@ -354,15 +373,17 @@ export class TreeMapLegend {
         }
     }
 
-    /* tslint:disable-next-line:max-func-body-length */
-    private calculateLegendItems(data: Object[]): void {
-        let isAddData: Object; let fill: string; let rangeValue: number;
-        let currentData: Object; let legendText: string; let itemValue: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private calculateLegendItems(data: any[]): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let isAddData: any; let fill: string; let rangeValue: number;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let currentData: any; let legendText: string; let itemValue: number;
         let isLeafItem: boolean; let colorMapProcess: boolean = false;
         let colorMapping: ColorMappingModel[]; let groupIndex: number;
-        let leaf: LeafItemSettingsModel = this.treemap.leafItemSettings;
-        let levels: LevelSettingsModel[] = this.treemap.levels; let equalValue: string;
-        let position: LegendPosition = this.treemap.legendSettings.position;
+        const leaf: LeafItemSettingsModel = this.treemap.leafItemSettings;
+        const levels: LevelSettingsModel[] = this.treemap.levels; let equalValue: string;
+        const position: LegendPosition = this.treemap.legendSettings.position;
         let gradientElement: Element; let x2: string; let y2: string; let actualValue: string;
         let isDuplicate: boolean; let isEqualColor: boolean; let isRange: boolean; let isDesaturation: boolean = false;
         let legendIndex: number = 0; let outfill: string; let labelLegend: string; let otherIndex: number;
@@ -373,7 +394,7 @@ export class TreeMapLegend {
             groupIndex = data[i]['groupIndex'];
             isLeafItem = (this.treemap.levels.length === 0 || groupIndex === this.treemap.levels.length);
             colorMapping = isLeafItem ? leaf.colorMapping : levels[groupIndex].colorMapping;
-            for (let colorMap of colorMapping) {
+            for (const colorMap of colorMapping) {
                 gradientElement = null;
                 rangeValue = Number(currentData[this.treemap.rangeColorValuePath]);
                 equalValue = currentData[this.treemap.equalColorValuePath];
@@ -395,23 +416,23 @@ export class TreeMapLegend {
                 }
                 if (colorMapProcess && isNullOrUndefined(colorMap.value) && colorMap.maxOpacity && colorMap.minOpacity
                     && this.treemap.legendSettings.mode === 'Interactive') {
-                    let colors: GradientColor[] = []; let gradient: LinearGradient; isDesaturation = true;
+                    const colors: GradientColor[] = []; isDesaturation = true;
                     if (Object.prototype.toString.call(colorMap.color) === '[object Array]') {
                         for (let q: number = 0; q < colorMap.color.length; q++) {
-                            let offsetColor: number = 100 / (colorMap.color.length - 1);
-                            let offsetValue: string = q * offsetColor + '%';
-                            let stop1Color: GradientColor = { colorStop: offsetValue.toString(), color: colorMap.color[q] };
+                            const offsetColor: number = 100 / (colorMap.color.length - 1);
+                            const offsetValue: string = q * offsetColor + '%';
+                            const stop1Color: GradientColor = { colorStop: offsetValue.toString(), color: colorMap.color[q] };
                             colors.push(stop1Color);
                         }
                     } else {
-                        let stop1Color: GradientColor = { colorStop: '0%', color: fill };
-                        let stop2Color: GradientColor = { colorStop: '100%', color: fill };
+                        const stop1Color: GradientColor = { colorStop: '0%', color: fill };
+                        const stop2Color: GradientColor = { colorStop: '100%', color: fill };
                         colors.push(stop1Color);
                         colors.push(stop2Color);
                     }
                     x2 = position === 'Top' || position === 'Bottom' ? '100%' : '0%';
                     y2 = position === 'Top' || position === 'Bottom' ? '0%' : '100%';
-                    gradient = {
+                    const gradient: LinearGradient = {
                         id: 'groupIndex_' + groupIndex + '_colorIndex_' + this.gradientCount, x1: '0%', y1: '0%', x2: x2, y2: y2
                     };
                     gradientElement = this.treemap.renderer.drawGradient('linearGradient', gradient, colors).childNodes[0] as Element;
@@ -436,11 +457,13 @@ export class TreeMapLegend {
                         opacity: this.treemap.legendSettings.opacity, borderColor: this.treemap.legendSettings.border.color,
                         borderWidth: this.treemap.legendSettings.border.width
                     });
-                    (<Object[]>this.legendCollections[this.legendCollections.length - 1]['legendData']).push(data[i]);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (<any[]>this.legendCollections[this.legendCollections.length - 1]['legendData']).push(data[i]);
                     legendIndex++;
                 } else if (colorMapProcess && !isDuplicate) {
                     colorMapProcess = false;
-                    (<Object[]>this.legendCollections[isAddData['value']]['legendData']).push(data[i]);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (<any[]>this.legendCollections[isAddData['value']]['legendData']).push(data[i]);
                 }
                 if (!isRange && !isDesaturation && !isEqualColor) {
                     if (isNullOrUndefined(colorMap.from) && isNullOrUndefined(colorMap.to)
@@ -460,14 +483,16 @@ export class TreeMapLegend {
                             legendIndex++;
 
                         }
-                        (<Object[]>this.legendCollections[otherIndex - 1]['legendData']).push(data[i]);
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (<any[]>this.legendCollections[otherIndex - 1]['legendData']).push(data[i]);
                     }
                 }
             }
         }
     }
 
-    private removeDuplicates(legendCollection: Object[], text: string): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private removeDuplicates(legendCollection: any[], text: string): boolean {
         let isDuplicate: boolean = false;
         for (let i: number = 0; i < legendCollection.length; i++) {
             if (legendCollection[i]['legendName'] === text) {
@@ -481,7 +506,8 @@ export class TreeMapLegend {
     }
 
 
-    private isAddNewLegendData(legendText: string): Object {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private isAddNewLegendData(legendText: string): any {
         let newDataProcess: boolean; let itemValue: number;
         if (this.legendCollections.length === 0) {
             newDataProcess = true;
@@ -498,16 +524,16 @@ export class TreeMapLegend {
         }
         return { process: newDataProcess, value: itemValue };
     }
-    /* tslint:disable-next-line:max-func-body-length */
+    // eslint-disable-next-line valid-jsdoc
     /**
      * To draw the legend
      */
     public drawLegend(): void {
-        let treemap: TreeMap = this.treemap;
-        let legend: LegendSettingsModel = <LegendSettingsModel>treemap.legendSettings;
-        let render: SvgRenderer = treemap.renderer; let fill: string;
+        const treemap: TreeMap = this.treemap;
+        const legend: LegendSettingsModel = <LegendSettingsModel>treemap.legendSettings;
+        const render: SvgRenderer = treemap.renderer; let fill: string;
         let textOptions: TextOption; let gradientElement: Element;
-        let textFont: FontModel = legend.textStyle;
+        const textFont: FontModel = legend.textStyle;
         this.legendGroup = render.createGroup({ id: treemap.element.id + '_Legend_Group' });
         this.renderLegendBorder();
         this.renderLegendTitle();
@@ -515,15 +541,16 @@ export class TreeMapLegend {
             this.drawLegendItem(this.currentPage);
         } else {
             for (let i: number = 0; i < this.legendRenderingCollections.length; i++) {
-                let itemId: string = treemap.element.id + '_Legend_Index_' + i;
-                let textId: string = treemap.element.id + '_Legend_Index_' + i + '_Text';
-                let item: Object = this.legendRenderingCollections[i];
+                const itemId: string = treemap.element.id + '_Legend_Index_' + i;
+                const textId: string = treemap.element.id + '_Legend_Index_' + i + '_Text';
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const item: any = this.legendRenderingCollections[i];
                 gradientElement = item['element'];
                 fill = gradientElement ? 'url(#' + gradientElement.id + ')' : item['fill'];
-                let bounds: Rect = new Rect(item['x'], item['y'], item['width'], item['height']);
-                let textLocation: Location = new Location(item['textX'], item['textY']);
+                const bounds: Rect = new Rect(item['x'], item['y'], item['width'], item['height']);
+                const textLocation: Location = new Location(item['textX'], item['textY']);
 
-                let rectOptions: RectOption = new RectOption(itemId, fill, legend.shapeBorder, legend.opacity, bounds);
+                const rectOptions: RectOption = new RectOption(itemId, fill, legend.shapeBorder, legend.opacity, bounds);
                 if (this.treemap.enableRtl) {
                     if (treemap.legendSettings.position === 'Left' || treemap.legendSettings.position === 'Right'
                         || (treemap.legendSettings.position === 'Auto'
@@ -549,11 +576,12 @@ export class TreeMapLegend {
         legendMaintain(this.treemap, this.legendGroup);
     }
 
-    private defaultLegendRtlLocation(collection: Object, spacing: number, treemap: TreeMap, legend: LegendSettingsModel): Object {
-        let shapeLocation: Location = collection['Shape'];
-        let textLocation: Location = collection['Text'];
-        let legendText: string = collection['DisplayText'];
-        let textSize: Size = measureText(legendText, legend.textStyle);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private defaultLegendRtlLocation(collection: any, spacing: number, treemap: TreeMap, legend: LegendSettingsModel): any {
+        const shapeLocation: Location = collection['Shape'];
+        const textLocation: Location = collection['Text'];
+        const legendText: string = collection['DisplayText'];
+        const textSize: Size = measureText(legendText, legend.textStyle);
         shapeLocation.x = (this.translate.x + this.legendBorderRect.x + this.legendBorderRect.width)
             - (this.translate.x + spacing) - Math.abs(this.legendBorderRect.x - shapeLocation.x);
         textLocation.x = (this.translate.x + this.legendBorderRect.x + this.legendBorderRect.width)
@@ -569,27 +597,30 @@ export class TreeMapLegend {
         return { shapeLocation: shapeLocation, textLocation: textLocation };
     }
 
-    /* tslint:disable-next-line:max-func-body-length */
+
     private drawLegendItem(page: number): void {
-        let treemap: TreeMap = this.treemap; let spacing: number = 10;
-        let legend: LegendSettingsModel = <LegendSettingsModel>treemap.legendSettings;
-        let shapeSize: Size = new Size(legend.shapeWidth, legend.shapeHeight);
-        let textOptions: TextOption; let legendRtlLocation: Object;
-        let renderOptions: PathOption | RectOption; let render: SvgRenderer = treemap.renderer;
-        let shapeBorder: BorderModel = legend.shapeBorder; let eventArgs: ILegendItemRenderingEventArgs;
+        const treemap: TreeMap = this.treemap; const spacing: number = 10;
+        const legend: LegendSettingsModel = <LegendSettingsModel>treemap.legendSettings;
+        const shapeSize: Size = new Size(legend.shapeWidth, legend.shapeHeight);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let textOptions: TextOption; let legendRtlLocation: any;
+        let renderOptions: PathOption | RectOption; const render: SvgRenderer = treemap.renderer;
+        const shapeBorder: BorderModel = legend.shapeBorder; let eventArgs: ILegendItemRenderingEventArgs;
         if (page >= 0 && page < this.totalPages.length) {
             if (document.getElementById(this.legendGroup.id)) {
                 document.getElementById(this.legendGroup.id).remove();
             }
-            let isLineShape: boolean = (legend.shape === 'HorizontalLine' || legend.shape === 'VerticalLine' || legend.shape === 'Cross');
-            let strokeColor: string = isLineShape ? isNullOrUndefined(legend.fill) ? '#000000' : legend.fill : shapeBorder.color;
-            let strokeWidth: number = isLineShape ? (shapeBorder.width === 0) ? 1 : shapeBorder.width : shapeBorder.width;
-            for (let i: number = 0; i < (<Object[]>this.totalPages[page]['Collection']).length; i++) {
-                let collection: Object = <Object[]>this.totalPages[page]['Collection'][i];
-                let legendElement: Element = render.createGroup({ id: treemap.element.id + '_Legend_Index_' + i });
-                let legendText: string = collection['DisplayText'];
-                let shapeId: string = treemap.element.id + '_Legend_Shape_Index_' + i;
-                let textId: string = treemap.element.id + '_Legend_Text_Index_' + i;
+            const isLineShape: boolean = (legend.shape === 'HorizontalLine' || legend.shape === 'VerticalLine' || legend.shape === 'Cross');
+            const strokeColor: string = isLineShape ? isNullOrUndefined(legend.fill) ? '#000000' : legend.fill : shapeBorder.color;
+            const strokeWidth: number = isLineShape ? (shapeBorder.width === 0) ? 1 : shapeBorder.width : shapeBorder.width;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            for (let i: number = 0; i < (<any[]>this.totalPages[page]['Collection']).length; i++) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const collection: any = <any[]>this.totalPages[page]['Collection'][i];
+                const legendElement: Element = render.createGroup({ id: treemap.element.id + '_Legend_Index_' + i });
+                const legendText: string = collection['DisplayText'];
+                const shapeId: string = treemap.element.id + '_Legend_Shape_Index_' + i;
+                const textId: string = treemap.element.id + '_Legend_Text_Index_' + i;
                 let shapeLocation: Location = collection['Shape'];
                 let textLocation: Location = collection['Text'];
                 if (treemap.enableRtl) {
@@ -602,11 +633,11 @@ export class TreeMapLegend {
                     shape: legend.shape, imageUrl: legend.imageUrl
                 };
                 if (this.treemap.isBlazor) {
-                    const {treemap, ...blazorEventArgs} : ILegendItemRenderingEventArgs = eventArgs;
+                    const { treemap, ...blazorEventArgs }: ILegendItemRenderingEventArgs = eventArgs;
                     eventArgs = blazorEventArgs;
                 }
-                this.treemap.trigger(legendItemRendering, eventArgs, (observedArgs : ILegendItemRenderingEventArgs) => {
-                    let renderOptions: PathOption = new PathOption(
+                this.treemap.trigger(legendItemRendering, eventArgs, (observedArgs: ILegendItemRenderingEventArgs) => {
+                    const renderOptions: PathOption = new PathOption(
                         shapeId, observedArgs.fill, strokeWidth, isLineShape ? collection['Fill'] : strokeColor, legend.opacity, ''
                     );
                     legendElement.appendChild(
@@ -619,37 +650,37 @@ export class TreeMapLegend {
                     this.legendGroup.appendChild(legendElement);
                 });
             }
-            let pagingGroup: Element; let width: number = spacing; let height: number = (spacing / 2);
+            let pagingGroup: Element; const width: number = spacing; const height: number = (spacing / 2);
             if (this.page !== 0) {
-                let pagingText: string = (page + 1) + '/' + this.totalPages.length;
-                let pagingFont: FontModel = legend.textStyle; let pagingTextSize: Size = measureText(pagingText, pagingFont);
-                let leftPageX: number = (this.legendItemRect.x + this.legendItemRect.width) - pagingTextSize.width -
+                const pagingText: string = (page + 1) + '/' + this.totalPages.length;
+                const pagingFont: FontModel = legend.textStyle; const pagingTextSize: Size = measureText(pagingText, pagingFont);
+                const leftPageX: number = (this.legendItemRect.x + this.legendItemRect.width) - pagingTextSize.width -
                     (width * 2) - spacing;
-                let rightPageX: number = (this.legendItemRect.x + this.legendItemRect.width);
-                let locY: number = (this.legendItemRect.y + this.legendItemRect.height) + (height / 2) + spacing;
-                let pageTextX: number = rightPageX - width - (pagingTextSize.width / 2) - (spacing / 2);
+                const rightPageX: number = (this.legendItemRect.x + this.legendItemRect.width);
+                const locY: number = (this.legendItemRect.y + this.legendItemRect.height) + (height / 2) + spacing;
+                const pageTextX: number = rightPageX - width - (pagingTextSize.width / 2) - (spacing / 2);
                 pagingGroup = render.createGroup({ id: treemap.element.id + '_Legend_Paging_Group' });
-                let leftPageElement: Element = render.createGroup({ id: treemap.element.id + '_Legend_Left_Paging_Group' });
-                let rightPageElement: Element = render.createGroup({ id: treemap.element.id + '_Legend_Right_Paging_Group' });
-                let rightPath: string = ' M ' + rightPageX + ' ' + locY + ' L ' + (rightPageX - width) + ' ' + (locY - height) +
+                const leftPageElement: Element = render.createGroup({ id: treemap.element.id + '_Legend_Left_Paging_Group' });
+                const rightPageElement: Element = render.createGroup({ id: treemap.element.id + '_Legend_Right_Paging_Group' });
+                const rightPath: string = ' M ' + rightPageX + ' ' + locY + ' L ' + (rightPageX - width) + ' ' + (locY - height) +
                     ' L ' + (rightPageX - width) + ' ' + (locY + height) + ' z ';
-                let leftPath: string = ' M ' + leftPageX + ' ' + locY + ' L ' + (leftPageX + width) + ' ' + (locY - height) +
+                const leftPath: string = ' M ' + leftPageX + ' ' + locY + ' L ' + (leftPageX + width) + ' ' + (locY - height) +
                     ' L ' + (leftPageX + width) + ' ' + (locY + height) + ' z ';
-                let leftPageOptions: PathOption = new PathOption(
+                const leftPageOptions: PathOption = new PathOption(
                     treemap.element.id + '_Left_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', leftPath
                 );
                 leftPageElement.appendChild(render.drawPath(leftPageOptions));
-                let leftRectPageOptions: RectOption = new RectOption(
+                const leftRectPageOptions: RectOption = new RectOption(
                     treemap.element.id + '_Left_Page_Rect', 'transparent', {}, 1,
                     new Rect(leftPageX - (width / 2), (locY - (height * 2)), width * 2, spacing * 2), ''
                 );
                 leftPageElement.appendChild(render.drawRectangle(leftRectPageOptions));
                 this.wireEvents(leftPageElement);
-                let rightPageOptions: PathOption = new PathOption(
+                const rightPageOptions: PathOption = new PathOption(
                     treemap.element.id + '_Right_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', rightPath
                 );
                 rightPageElement.appendChild(render.drawPath(rightPageOptions));
-                let rightRectPageOptions: RectOption = new RectOption(
+                const rightRectPageOptions: RectOption = new RectOption(
                     treemap.element.id + '_Right_Page_Rect', 'transparent', {}, 1,
                     new Rect((rightPageX - width), (locY - height), width, spacing), ''
                 );
@@ -657,7 +688,8 @@ export class TreeMapLegend {
                 this.wireEvents(rightPageElement);
                 pagingGroup.appendChild(leftPageElement);
                 pagingGroup.appendChild(rightPageElement);
-                let pageTextOptions: Object = {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const pageTextOptions: any = {
                     'id': treemap.element.id + '_Paging_Text',
                     'x': pageTextX,
                     'y': locY + (pagingTextSize.height / 4),
@@ -677,14 +709,14 @@ export class TreeMapLegend {
         }
     }
     private renderLegendBorder(): void {
-        let treemap: TreeMap = this.treemap;
-        let legend: LegendSettingsModel = <LegendSettingsModel>treemap.legendSettings;
-        let legendTitle: string = legend.title.text;
-        let spacing: number = 10;
-        let textStyle: FontModel = legend.titleStyle;
+        const treemap: TreeMap = this.treemap;
+        const legend: LegendSettingsModel = <LegendSettingsModel>treemap.legendSettings;
+        const legendTitle: string = legend.title.text;
+        const spacing: number = 10;
+        const textStyle: FontModel = legend.titleStyle;
         let textOptions: TextOption;
-        let title: string = textTrim((this.legendItemRect.width + (spacing * 2)), legendTitle, textStyle);
-        let textSize: Size = measureText(title, textStyle);
+        const title: string = textTrim((this.legendItemRect.width + (spacing * 2)), legendTitle, textStyle);
+        const textSize: Size = measureText(title, textStyle);
         this.legendBorderRect = new Rect(
             (this.legendItemRect.x - spacing),
             (this.legendItemRect.y - spacing - textSize.height),
@@ -692,10 +724,10 @@ export class TreeMapLegend {
             (this.legendItemRect.height) + (spacing * 2) + textSize.height +
             (legend.mode === 'Interactive' ? 0 : (this.page !== 0) ? spacing : 0)
         );
-        let renderOptions: RectOption = new RectOption(
+        const renderOptions: RectOption = new RectOption(
             treemap.element.id + '_Legend_Border', legend.background, legend.border, 1, this.legendBorderRect, ''
         );
-        let legendBorder: Element = treemap.renderer.drawRectangle(renderOptions);
+        const legendBorder: Element = treemap.renderer.drawRectangle(renderOptions);
         (legendBorder as HTMLElement).style.pointerEvents = 'none';
         this.legendGroup.appendChild(legendBorder);
         this.getLegendAlignment(treemap, this.legendBorderRect.width, this.legendBorderRect.height, legend);
@@ -705,12 +737,12 @@ export class TreeMapLegend {
     }
 
     private renderLegendTitle(): void {
-        let treemap: TreeMap = this.treemap;
-        let legend: LegendSettingsModel = <LegendSettingsModel>treemap.legendSettings;
-        let textStyle: FontModel = legend.titleStyle; let legendTitle: string = legend.title.text;
-        let textOptions: TextOption; let spacing: number = 10;
-        let trimTitle: string = textTrim((this.legendItemRect.width + (spacing * 2)), legendTitle, textStyle);
-        let textSize: Size = measureText(trimTitle, textStyle);
+        const treemap: TreeMap = this.treemap;
+        const legend: LegendSettingsModel = <LegendSettingsModel>treemap.legendSettings;
+        const textStyle: FontModel = legend.titleStyle; const legendTitle: string = legend.title.text;
+        let textOptions: TextOption; const spacing: number = 10;
+        const trimTitle: string = textTrim((this.legendItemRect.width + (spacing * 2)), legendTitle, textStyle);
+        const textSize: Size = measureText(trimTitle, textStyle);
         if (legendTitle) {
             textOptions = new TextOption(
                 treemap.element.id + '_LegendTitle',
@@ -720,25 +752,29 @@ export class TreeMapLegend {
             renderTextElement(textOptions, textStyle, textStyle.color || this.treemap.themeStyle.legendTitleColor, this.legendGroup);
         }
     }
+    // eslint-disable-next-line valid-jsdoc
     /**
      * To rendered the interactive pointer
      */
     public renderInteractivePointer(e: PointerEvent | TouchEvent): void {
-        let treemap: TreeMap = this.treemap; let target: Element = <Element>e.target;
-        let interactiveId: string = treemap.element.id + '_Interactive_Legend';
+        const treemap: TreeMap = this.treemap; let target: Element = <Element>e.target;
+        const interactiveId: string = treemap.element.id + '_Interactive_Legend';
         target = !(e.type.indexOf('touch') > -1) ? target :
             document.elementFromPoint((<TouchEvent>e).changedTouches[0].clientX, (<TouchEvent>e).changedTouches[0].clientY);
-        let targetItem: Object; let legend: LegendSettingsModel = <LegendSettingsModel>treemap.legendSettings;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let targetItem: any; const legend: LegendSettingsModel = <LegendSettingsModel>treemap.legendSettings;
         if (target.id.indexOf('_Item_Index') > -1 && legend.visible && this.legendRenderingCollections.length > 0) {
-            let currentData: Object; let legendRect: ClientRect;
-            let rect: Rect; let data: Object[]; let fill: string; let stroke: string; let strokeWidth: number; let legendElement: Element;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let currentData: any; let legendRect: ClientRect;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let rect: Rect; let data: any[]; let fill: string; let stroke: string; let strokeWidth: number; let legendElement: Element;
             targetItem = treemap.layout.renderItems[parseFloat(target.id.split('_')[6])];
-            let svgRect: ClientRect = treemap.svgObject.getBoundingClientRect();
+            const svgRect: ClientRect = treemap.svgObject.getBoundingClientRect();
             for (let i: number = 0; i < this.legendCollections.length; i++) {
                 currentData = this.legendCollections[i];
                 legendElement = document.getElementById(treemap.element.id + '_Legend_Index_' + i);
                 legendRect = <ClientRect>legendElement.getBoundingClientRect();
-                let rect: Rect = new Rect(
+                const rect: Rect = new Rect(
                     Math.abs(legendRect.left - svgRect.left), Math.abs(legendRect.top - svgRect.top),
                     legendRect.width, legendRect.height
                 );
@@ -746,7 +782,8 @@ export class TreeMapLegend {
                 stroke = legend.shapeBorder.color;
                 strokeWidth = legend.shapeBorder.width;
                 if (!isNullOrUndefined(currentData['legendData'])) {
-                    data = <Object[]>currentData['legendData'];
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    data = <any[]>currentData['legendData'];
                     for (let j: number = 0; j < data.length; j++) {
                         if (data[j]['levelOrderName'] === targetItem['levelOrderName']) {
                             this.drawInteractivePointer(legend, fill, stroke, interactiveId, strokeWidth, rect);
@@ -763,10 +800,10 @@ export class TreeMapLegend {
     private drawInteractivePointer(
         legend: LegendSettingsModel, fill: string, stroke: string, id: string, strokeWidth: number, rect: Rect
     ): void {
-        let path: string; let pathOptions: PathOption;
+        let path: string;
         let locX: number; let locY: number;
-        let height: number = 10; let width: number = 10;
-        let direction: LegendOrientation = (legend.orientation === 'None') ? (legend.position === 'Top' || legend.position === 'Bottom')
+        const height: number = 10; const width: number = 10;
+        const direction: LegendOrientation = (legend.orientation === 'None') ? (legend.position === 'Top' || legend.position === 'Bottom')
             ? 'Horizontal' : 'Vertical' : legend.orientation;
         if (direction === 'Horizontal') {
             if (!legend.invertedPointer) {
@@ -793,56 +830,57 @@ export class TreeMapLegend {
                     ' L ' + (locX - width) + ' ' + (locY + height) + ' z ';
             }
         }
-        pathOptions = new PathOption(id, fill, strokeWidth, stroke, 1, '', path);
+        const pathOptions: PathOption = new PathOption(id, fill, strokeWidth, stroke, 1, '', path);
         this.treemap.svgObject.appendChild(this.treemap.renderer.drawPath(pathOptions) as SVGPathElement);
     }
 
 
     private getLegendAlignment(treemap: TreeMap, width: number, height: number, legend: LegendSettingsModel): void {
         let x: number; let y: number;
-        let spacing: number = 10; let totalRect: Rect;
+        const spacing: number = 10;  let totalRect: Rect;
+        // eslint-disable-next-line prefer-const
         totalRect = extend({}, treemap.areaRect, totalRect, true) as Rect;
-        let areaX: number = totalRect.x;
-        let areaY: number = totalRect.y;
-        let areaHeight: number = totalRect.height;
-        let areaWidth: number = totalRect.width;
-        let totalWidth: number = treemap.availableSize.width;
-        let totalHeight: number = treemap.availableSize.height;
-        let position: string = legend.position === 'Auto' ? (totalWidth > totalHeight) ? 'Right' : 'Bottom' : legend.position;
+        const areaX: number = totalRect.x;
+        const areaY: number = totalRect.y;
+        const areaHeight: number = totalRect.height;
+        const areaWidth: number = totalRect.width;
+        const totalWidth: number = treemap.availableSize.width;
+        const totalHeight: number = treemap.availableSize.height;
+        const position: string = legend.position === 'Auto' ? (totalWidth > totalHeight) ? 'Right' : 'Bottom' : legend.position;
         if (legend.position === 'Float') {
             this.translate = legend.location;
         } else {
             switch (position) {
-                case 'Top':
-                case 'Bottom':
-                    totalRect.height = (areaHeight - height);
-                    x = (totalWidth / 2) - (width / 2);
-                    y = (position === 'Top') ? areaY : (areaY + totalRect.height) + spacing;
-                    totalRect.y = (position === 'Top') ? areaY + height + spacing : areaY;
-                    break;
-                case 'Left':
-                case 'Right':
-                    totalRect.width = (areaWidth - width);
-                    x = (position === 'Left') ? areaX : areaX + totalRect.width;
-                    y = (totalHeight / 2) - (height / 2);
-                    totalRect.x = (position === 'Left') ? areaX + width : areaX;
-                    break;
+            case 'Top':
+            case 'Bottom':
+                totalRect.height = (areaHeight - height);
+                x = (totalWidth / 2) - (width / 2);
+                y = (position === 'Top') ? areaY : (areaY + totalRect.height) + spacing;
+                totalRect.y = (position === 'Top') ? areaY + height + spacing : areaY;
+                break;
+            case 'Left':
+            case 'Right':
+                totalRect.width = (areaWidth - width);
+                x = (position === 'Left') ? areaX : areaX + totalRect.width;
+                y = (totalHeight / 2) - (height / 2);
+                totalRect.x = (position === 'Left') ? areaX + width : areaX;
+                break;
             }
             switch (legend.alignment) {
-                case 'Near':
-                    if (position === 'Top' || position === 'Bottom') {
-                        x = totalRect.x;
-                    } else {
-                        y = totalRect.y;
-                    }
-                    break;
-                case 'Far':
-                    if (position === 'Top' || position === 'Bottom') {
-                        x = totalWidth - width;
-                    } else {
-                        y = totalHeight - height;
-                    }
-                    break;
+            case 'Near':
+                if (position === 'Top' || position === 'Bottom') {
+                    x = totalRect.x;
+                } else {
+                    y = totalRect.y;
+                }
+                break;
+            case 'Far':
+                if (position === 'Top' || position === 'Bottom') {
+                    x = totalWidth - width;
+                } else {
+                    y = totalHeight - height;
+                }
+                break;
             }
             this.treemap.totalRect = totalRect;
             this.translate = new Location(x, y);
@@ -853,15 +891,17 @@ export class TreeMapLegend {
         clearTimeout(this.clearTimeout);
         this.clearTimeout = setTimeout(this.removeInteractivePointer.bind(this), 3000);
     }
+    // eslint-disable-next-line valid-jsdoc
     /**
      * To remove the interactive pointer
      */
     public removeInteractivePointer(): void {
         if (document.getElementById(this.treemap.element.id + '_Interactive_Legend')) {
-            let legendElementId: HTMLElement = document.getElementById(this.treemap.element.id + '_Interactive_Legend');
+            const legendElementId: HTMLElement = document.getElementById(this.treemap.element.id + '_Interactive_Legend');
             legendElementId.parentNode.removeChild(legendElementId);
         }
     }
+    // eslint-disable-next-line valid-jsdoc
     /**
      * To change the next page
      */
@@ -870,12 +910,14 @@ export class TreeMapLegend {
             (this.currentPage + 1);
         this.drawLegend();
     }
+    // eslint-disable-next-line valid-jsdoc
     /**
      * Wire events for event handler
      */
     public wireEvents(element: Element): void {
         EventHandler.add(element, Browser.touchStartEvent, this.changeNextPage, this);
     }
+    // eslint-disable-next-line valid-jsdoc
     /**
      * To add the event listener
      */
@@ -886,6 +928,7 @@ export class TreeMapLegend {
         this.treemap.on(Browser.touchMoveEvent, this.renderInteractivePointer, this);
         this.treemap.on(Browser.touchEndEvent, this.mouseUpHandler, this);
     }
+    // eslint-disable-next-line valid-jsdoc
     /**
      * To remove the event listener
      */
@@ -897,6 +940,7 @@ export class TreeMapLegend {
         this.treemap.off(Browser.touchEndEvent, this.mouseUpHandler);
     }
 
+    // eslint-disable-next-line valid-jsdoc
     /**
      * Get module name.
      */
@@ -905,8 +949,10 @@ export class TreeMapLegend {
     }
 
     /**
-     * To destroy the legend. 
-     * @return {void}
+     * To destroy the legend.
+     *
+     * @param {TreeMap} treemap - Specifies treemap instance
+     * @returns {void}
      * @private
      */
     public destroy(treemap: TreeMap): void {
@@ -915,27 +961,27 @@ export class TreeMapLegend {
          */
         this.removeEventListener();
     }
+    // eslint-disable-next-line valid-jsdoc
     /**
      * Get the gradient color for interactive legend.
      */
     public legendGradientColor(colorMap: ColorMappingModel, legendIndex: number): string {
         let legendFillColor: string;
-        let xmlns: string = 'http://www.w3.org/2000/svg';
+        const xmlns: string = 'http://www.w3.org/2000/svg';
         if (!isNullOrUndefined(colorMap.color) && Object.prototype.toString.call(colorMap.color) === '[object Array]') {
-            let defElement: Element = this.treemap.renderer.createDefs();
-            let linerGradientEle: Element = document.createElementNS(xmlns, 'linearGradient');
-            let opacity: number = 1; let position: LegendPosition = this.treemap.legendSettings.position;
-            let x2: string; let y2: string;
-            x2 = position === 'Top' || position === 'Bottom' ? '100' : '0';
-            y2 = position === 'Top' || position === 'Bottom' ? '0' : '100';
+            const defElement: Element = this.treemap.renderer.createDefs();
+            const linerGradientEle: Element = document.createElementNS(xmlns, 'linearGradient');
+            const opacity: number = 1; const position: LegendPosition = this.treemap.legendSettings.position;
+            const x2: string = position === 'Top' || position === 'Bottom' ? '100' : '0';
+            const y2: string = position === 'Top' || position === 'Bottom' ? '0' : '100';
             linerGradientEle.setAttribute('id', 'linear_' + legendIndex);
             linerGradientEle.setAttribute('x1', 0 + '%');
             linerGradientEle.setAttribute('y1', 0 + '%');
             linerGradientEle.setAttribute('x2', x2 + '%');
             linerGradientEle.setAttribute('y2', y2 + '%');
             for (let b: number = 0; b < colorMap.color.length; b++) {
-                let offsetColor: number = 100 / (colorMap.color.length - 1);
-                let stopEle: Element = document.createElementNS(xmlns, 'stop');
+                const offsetColor: number = 100 / (colorMap.color.length - 1);
+                const stopEle: Element = document.createElementNS(xmlns, 'stop');
                 stopEle.setAttribute('offset', b * offsetColor + '%');
                 stopEle.setAttribute('stop-color', colorMap.color[b]);
                 stopEle.setAttribute('stop-opacity', opacity.toString());
@@ -943,7 +989,7 @@ export class TreeMapLegend {
             }
             defElement.appendChild(linerGradientEle);
             this.legendLinearGradient = linerGradientEle;
-            let color: string = 'url(' + '#linear_' + legendIndex + ')';
+            const color: string = 'url(' + '#linear_' + legendIndex + ')';
             this.defsElement.appendChild(linerGradientEle);
             legendFillColor = color;
         }

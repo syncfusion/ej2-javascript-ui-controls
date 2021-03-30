@@ -7,6 +7,7 @@ export interface PaletteSettingsModel {
 
     /**
      * Specifies the color collection for heat map cell.
+     *
      * @default ''
      */
     palette?: PaletteCollectionModel[];
@@ -15,18 +16,21 @@ export interface PaletteSettingsModel {
      * Specifies the color style
      * * Gradient - Render a HeatMap cells with linear gradient color.
      * * Fixed - Render a HeatMap cells with fixed color.
+     *
      * @default 'Gradient'
      */
     type?: PaletteType;
 
     /**
      * Specifies the color for empty points in Heatmap.
+     *
      * @default ''
      */
     emptyPointColor?: string;
 
     /**
      * Specifies the colorGradientMode in Heatmap.
+     *
      * @default 'Table'
      */
     colorGradientMode?: ColorGradientMode;

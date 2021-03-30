@@ -8,7 +8,7 @@ import { LayoutViewer } from '../index';
 import { TableAlignment } from '../../index';
 import { TableHistoryInfo, RowFormatHistoryInfo, CellFormatHistoryInfo } from '../index';
 import { DocumentHelper } from '../viewer';
-/** 
+/**
  * @private
  */
 export class TableResizer {
@@ -18,31 +18,19 @@ export class TableResizer {
     public resizerPosition: number = -1;
     public currentResizingTable: TableWidget = undefined;
     public startingPoint: Point;
-    /** 
-     * @private
-     */
-
-    /** 
-     * @private
-     */
-    constructor(node: DocumentEditor) {
+    public constructor(node: DocumentEditor) {
         this.owner = node;
         this.documentHelper = this.owner.documentHelper;
         this.startingPoint = new Point(0, 0);
     }
-    get viewer(): LayoutViewer {
+    private get viewer(): LayoutViewer {
         return this.owner.viewer;
     }
 
-    /**
-     * Gets module name.
-     */
     private getModuleName(): string {
         return 'TableResizer';
     }
-    /** 
-     * @private
-     */
+
     public updateResizingHistory(touchPoint: Point): void {
         if (this.owner.editorHistory) {
             this.owner.editorHistory.updateResizingHistory(touchPoint, this);
@@ -59,11 +47,8 @@ export class TableResizer {
     }
 
     //Table Resizing implementation starts
-    /**
-     * @private
-     */
     public isInRowResizerArea(touchPoint: Point): boolean {
-        let position: number = this.getRowReSizerPosition(undefined, touchPoint);
+        const position: number = this.getRowReSizerPosition(undefined, touchPoint);
         if (position === -1) {
             return false;
         } else {
@@ -73,7 +58,7 @@ export class TableResizer {
         }
     }
     public isInCellResizerArea(touchPoint: Point): boolean {
-        let position: number = this.getCellReSizerPosition(touchPoint);
+        const position: number = this.getCellReSizerPosition(touchPoint);
         if (position === -1) {
             return false;
         } else {
@@ -84,30 +69,25 @@ export class TableResizer {
 
     }
 
-    /**
-     * Gets cell resizer position.
-     * @param {Point} point    
-     * @private
-     */
     public getCellReSizerPosition(touchPoint: Point): number {
         let position: number = -1;
-        let resizerBoundaryWidth: number = 2;
-        let tableWidget: TableWidget = this.getTableWidget(touchPoint);
-        let cellWidget: TableCellWidget = this.getTableCellWidget(touchPoint);
-        let cellSpacing: number = isNullOrUndefined(tableWidget) ? 0 : tableWidget.tableFormat.cellSpacing;
+        const resizerBoundaryWidth: number = 2;
+        const tableWidget: TableWidget = this.getTableWidget(touchPoint);
+        const cellWidget: TableCellWidget = this.getTableCellWidget(touchPoint);
+        const cellSpacing: number = isNullOrUndefined(tableWidget) ? 0 : tableWidget.tableFormat.cellSpacing;
         if (tableWidget && cellSpacing > 0) {
             this.currentResizingTable = tableWidget;
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             if (this.documentHelper.isInsideRect(tableWidget.x - HelperMethods.convertPointToPixel(tableWidget.leftBorderWidth) - 0.25, tableWidget.y, HelperMethods.convertPointToPixel(tableWidget.leftBorderWidth) + 0.5, tableWidget.height, touchPoint)) {
                 return position = 0;
             }
             let startingPointX: number = tableWidget.x;
             for (let i: number = 0; i < tableWidget.tableHolder.columns.length; i++) {
-                let preferredWidth: number = HelperMethods.convertPointToPixel(tableWidget.tableHolder.columns[i].preferredWidth);
-                // tslint:disable-next-line:max-line-length
+                const preferredWidth: number = HelperMethods.convertPointToPixel(tableWidget.tableHolder.columns[i].preferredWidth);
+                // eslint-disable-next-line max-len
                 if ((this.documentHelper.isInsideRect(startingPointX - 1, tableWidget.y, tableWidget.leftBorderWidth + resizerBoundaryWidth, tableWidget.height, touchPoint))) {
                     return position = i > 0 ? i : 0;
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                 } else if (i > 0 && (this.documentHelper.isInsideRect(startingPointX + preferredWidth - resizerBoundaryWidth / 2, tableWidget.y, resizerBoundaryWidth, tableWidget.height, touchPoint))) {
                     return position = (i + 1);
                 }
@@ -116,11 +96,11 @@ export class TableResizer {
         } else {
             if (!isNullOrUndefined(cellWidget)) {
                 this.currentResizingTable = cellWidget.ownerTable;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 if (this.documentHelper.isInsideRect(cellWidget.x - cellWidget.margin.left - resizerBoundaryWidth / 2, cellWidget.y - cellWidget.margin.top, resizerBoundaryWidth, cellWidget.height + cellWidget.margin.top + cellWidget.margin.bottom, touchPoint)) {
                     return position = cellWidget.columnIndex;
-                    // tslint:disable-next-line:max-line-length
                 } else if (isNullOrUndefined(cellWidget.nextRenderedWidget)
+                    // eslint-disable-next-line max-len
                     && this.documentHelper.isInsideRect(cellWidget.x + cellWidget.margin.right + cellWidget.width - resizerBoundaryWidth / 2, cellWidget.y - cellWidget.margin.top, resizerBoundaryWidth, cellWidget.height + cellWidget.margin.top + cellWidget.margin.bottom, touchPoint)) {
                     return position = (cellWidget.columnIndex + cellWidget.cellFormat.columnSpan);
                 } else if (cellWidget.childWidgets.length > 0) {
@@ -130,29 +110,24 @@ export class TableResizer {
         }
         return position;
     }
-    /**
-     * Gets cell resizer position.
-     * @param {TableCellWidget} cellWidget
-     * @param {Point} touchPoint  
-     */
+
     private getCellReSizerPositionInternal(cellWidget: TableCellWidget, touchPoint: Point): number {
         let position: number = -1;
-        let childTableWidget: TableWidget = this.getTableWidgetFromWidget(touchPoint, cellWidget);
+        const childTableWidget: TableWidget = this.getTableWidgetFromWidget(touchPoint, cellWidget);
         let childCellWidget: TableCellWidget = undefined;
         if (!isNullOrUndefined(childTableWidget) && childTableWidget.tableFormat.cellSpacing > 0) {
             this.currentResizingTable = childTableWidget;
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             if (this.documentHelper.isInsideRect(childTableWidget.x - childTableWidget.leftBorderWidth - 0.25, childTableWidget.y, childTableWidget.leftBorderWidth + 0.5, childTableWidget.height, touchPoint)) {
                 return position = 0;
             }
             let startingPointX: number = childTableWidget.x;
             for (let i: number = 0; i < childTableWidget.tableHolder.columns.length; i++) {
-                // tslint:disable-next-line:max-line-length
-                let preferredWidth: number = HelperMethods.convertPointToPixel(childTableWidget.tableHolder.columns[i].preferredWidth);
-                // tslint:disable-next-line:max-line-length
+                const preferredWidth: number = HelperMethods.convertPointToPixel(childTableWidget.tableHolder.columns[i].preferredWidth);
+                // eslint-disable-next-line max-len
                 if ((this.documentHelper.isInsideRect(startingPointX - 1, childTableWidget.y, childTableWidget.leftBorderWidth + 2, childTableWidget.height, touchPoint))) {
                     return position = i > 0 ? i : 0;
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                 } else if (i > 0 && (this.documentHelper.isInsideRect(startingPointX + preferredWidth - 1, childTableWidget.y, 2, childTableWidget.height, touchPoint))) {
                     return position = (i + 1);
                 }
@@ -164,11 +139,11 @@ export class TableResizer {
             }
             if (!isNullOrUndefined(childCellWidget)) {
                 this.currentResizingTable = childCellWidget.ownerTable;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 if (this.documentHelper.isInsideRect(childCellWidget.x - childCellWidget.margin.left - 1, childCellWidget.y - childCellWidget.margin.top, 2, childCellWidget.height, touchPoint)) {
                     return position = childCellWidget.columnIndex;
                 } else if (isNullOrUndefined(childCellWidget.nextRenderedWidget)
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     && this.documentHelper.isInsideRect(childCellWidget.x + childCellWidget.margin.right + childCellWidget.width - 1, childCellWidget.y - childCellWidget.margin.top, 2, childCellWidget.height, touchPoint)) {
                     return position = (childCellWidget.columnIndex + childCellWidget.cellFormat.columnSpan);
                 } else if (childCellWidget.childWidgets.length > 0) {
@@ -187,18 +162,18 @@ export class TableResizer {
         } else {
             tableWidget = this.getTableWidgetFromWidget(touchPoint, widget);
         }
-        let cellSpacing: number = isNullOrUndefined(tableWidget) ? 0 : tableWidget.tableFormat.cellSpacing;
+        const cellSpacing: number = isNullOrUndefined(tableWidget) ? 0 : tableWidget.tableFormat.cellSpacing;
         if (tableWidget && cellSpacing > 0) {
             this.currentResizingTable = tableWidget;
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             if (this.owner.documentHelper.isInsideRect(tableWidget.x, tableWidget.y + tableWidget.height - cellSpacing, this.getActualWidth(tableWidget.lastChild as TableRowWidget), (isNullOrUndefined(tableWidget.nextSplitWidget) ? tableWidget.bottomBorderWidth + cellSpacing : 0), touchPoint)) {
                 return (tableWidget.lastChild as TableRowWidget).rowIndex;
             }
             for (let i: number = 0; i < tableWidget.childWidgets.length; i++) {
                 //Need to consider for splitted widgets
-                let rowWidget: TableRowWidget = tableWidget.childWidgets[i] as TableRowWidget;
+                const rowWidget: TableRowWidget = tableWidget.childWidgets[i] as TableRowWidget;
                 if (tableWidget.childWidgets.indexOf(rowWidget) > -1
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     && (this.owner.documentHelper.isInsideRect(rowWidget.x, rowWidget.y + rowWidget.height + cellSpacing / 2, this.getActualWidth(rowWidget), cellSpacing / 2, touchPoint))) {
                     return rowWidget.rowIndex;
                 }
@@ -208,14 +183,14 @@ export class TableResizer {
                 cellWidget = this.getTableCellWidget(touchPoint);
             }
             if (cellWidget) {
-                let rowWidget: TableRowWidget = cellWidget.containerWidget as TableRowWidget;
+                const rowWidget: TableRowWidget = cellWidget.containerWidget as TableRowWidget;
                 let height: number = 0;
                 if (rowWidget.rowIndex === rowWidget.ownerTable.childWidgets.length - 1) {
                     height = rowWidget.bottomBorderWidth + 2;
                 } else {
                     height = (rowWidget.nextRenderedWidget as TableRowWidget).topBorderWidth + 2;
                 }
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 if (this.owner.documentHelper.isInsideRect(rowWidget.x, rowWidget.y + rowWidget.height - height, rowWidget.width, height * 2, touchPoint)) {
                     this.currentResizingTable = rowWidget.ownerTable;
                     return rowWidget.rowIndex;
@@ -228,11 +203,6 @@ export class TableResizer {
         }
         return -1;
     }
-    /**
-     * To handle Table Row and cell resize
-     * @param touchPoint 
-     * @private
-     */
     public handleResizing(touchPoint: Point): void {
         let dragValue: number = 0;
         if (this.resizeNode === 0) {
@@ -248,9 +218,9 @@ export class TableResizer {
         if (isNullOrUndefined(table) || dragValue === 0 || this.resizerPosition === -1) {
             return;
         }
-        let selection: Selection = this.owner.selection;
+        const selection: Selection = this.owner.selection;
         if (table.isInsideTable) {
-            this.owner.isLayoutEnabled = false; //Layouting is disabled to skip the child table layouting. 
+            this.owner.isLayoutEnabled = false; //Layouting is disabled to skip the child table layouting.
         }
         let row: TableRowWidget = undefined;
         if (this.resizerPosition > -1) {
@@ -261,7 +231,7 @@ export class TableResizer {
             selection.selectPosition(selection.start, selection.end);
         }
         if (table.isInsideTable) {
-            let parentTable: TableWidget = this.owner.documentHelper.layout.getParentTable(table);
+            const parentTable: TableWidget = this.owner.documentHelper.layout.getParentTable(table);
             this.owner.isLayoutEnabled = true; //layouting is enabled to layout the parent table of the nested table.
             table = parentTable;
         }
@@ -277,16 +247,12 @@ export class TableResizer {
         }
     }
 
-    /**
-     * Gets the table widget from given cursor point
-     * @param cursorPoint      
-     */
     private getTableWidget(cursorPoint: Point): TableWidget {
         let widget: TableWidget = undefined;
-        let currentPage: Page = this.owner.documentHelper.currentPage;
+        const currentPage: Page = this.owner.documentHelper.currentPage;
         if (!isNullOrUndefined(currentPage)) {
             for (let i: number = 0; i < currentPage.bodyWidgets.length; i++) {
-                let bodyWidget: BodyWidget = currentPage.bodyWidgets[i];
+                const bodyWidget: BodyWidget = currentPage.bodyWidgets[i];
                 widget = this.getTableWidgetFromWidget(cursorPoint, bodyWidget);
                 if (!isNullOrUndefined(widget)) {
                     break;
@@ -298,7 +264,7 @@ export class TableResizer {
     private getTableWidgetFromWidget(point: Point, widget: Widget): TableWidget {
         for (let j: number = 0; j < widget.childWidgets.length; j++) {
             if (widget.childWidgets[j] instanceof TableWidget) {
-                let childWidget: TableWidget = widget.childWidgets[j] as TableWidget;
+                const childWidget: TableWidget = widget.childWidgets[j] as TableWidget;
                 if (childWidget.y <= point.y && (childWidget.y + childWidget.height) >= point.y) {
                     return childWidget;
                 }
@@ -306,17 +272,12 @@ export class TableResizer {
         }
         return undefined;
     }
-    /**
-     * Return the table cell widget from the given cursor point
-     * @param cursorPoint 
-     * @private
-     */
     public getTableCellWidget(cursorPoint: Point): TableCellWidget {
         let widget: TableCellWidget = undefined;
-        let currentPage: Page = this.owner.documentHelper.currentPage;
+        const currentPage: Page = this.owner.documentHelper.currentPage;
         if (!isNullOrUndefined(currentPage)) {
             for (let i: number = 0; i < currentPage.bodyWidgets.length; i++) {
-                let bodyWidget: BodyWidget = currentPage.bodyWidgets[i];
+                const bodyWidget: BodyWidget = currentPage.bodyWidgets[i];
                 widget = bodyWidget.getTableCellWidget(cursorPoint);
                 if (!isNullOrUndefined(widget)) {
                     break;
@@ -326,11 +287,11 @@ export class TableResizer {
         return widget;
     }
     public updateRowHeight(row: TableRowWidget, dragValue: number): void {
-        let rowFormat: WRowFormat = row.rowFormat;
+        const rowFormat: WRowFormat = row.rowFormat;
         if (rowFormat.heightType === 'Auto') {
             rowFormat.heightType = 'AtLeast';
-            let row: TableRowWidget = rowFormat.ownerBase as TableRowWidget;
-            let currentHeight: number = this.owner.documentHelper.layout.getRowHeight(row, [row]);
+            const row: TableRowWidget = rowFormat.ownerBase as TableRowWidget;
+            const currentHeight: number = this.owner.documentHelper.layout.getRowHeight(row, [row]);
             //the minimum height of the Row in MS word is 2.7 points which is equal to 3.6 pixel.
             if (currentHeight + dragValue >= 2.7 && rowFormat.height !== currentHeight + dragValue) {
                 rowFormat.height = currentHeight + dragValue;
@@ -350,15 +311,15 @@ export class TableResizer {
         }
 
         let selectionFlag: boolean = true;
-        let selection: Selection = this.owner.selection;
+        const selection: Selection = this.owner.selection;
         this.owner.editor.setOffsetValue(selection);
         table = table.combineWidget(this.viewer) as TableWidget;
         this.owner.isLayoutEnabled = false;
         // table.PreserveGrid = true;
         this.setPreferredWidth(table);
-        let containerWidth: number = table.getOwnerWidth(true);
+        const containerWidth: number = table.getOwnerWidth(true);
         let newIndent: number = table.leftIndent;
-        let tableAlignment: TableAlignment = table.tableFormat.tableAlignment;
+        const tableAlignment: TableAlignment = table.tableFormat.tableAlignment;
         if (!selection.isEmpty) {
             selectionFlag = this.resizeColumnWithSelection(selection, table, dragValue);
         }
@@ -368,14 +329,14 @@ export class TableResizer {
         }
         if (this.resizerPosition === 0) {
             // Todo: need to handle the resizing of first column and table indent.
-            let columnIndex: number = this.resizerPosition;
-            let rightColumn: WColumn = table.tableHolder.columns[columnIndex];
-            let width: number = rightColumn.preferredWidth;
+            const columnIndex: number = this.resizerPosition;
+            const rightColumn: WColumn = table.tableHolder.columns[columnIndex];
+            const width: number = rightColumn.preferredWidth;
 
             if (dragValue > 0) {
                 let prevDragValue: number = dragValue;
                 do {
-                    let newWidth: number = HelperMethods.round(rightColumn.preferredWidth - dragValue, 1);
+                    const newWidth: number = HelperMethods.round(rightColumn.preferredWidth - dragValue, 1);
                     if (newWidth >= rightColumn.minWidth) {
                         rightColumn.preferredWidth = newWidth;
                         newIndent = table.leftIndent + dragValue;
@@ -389,7 +350,7 @@ export class TableResizer {
             } else {
                 let prevDragValue: number = dragValue;
                 do {
-                    let newWidth: number = HelperMethods.round(rightColumn.preferredWidth - dragValue, 1);
+                    const newWidth: number = HelperMethods.round(rightColumn.preferredWidth - dragValue, 1);
                     if (newWidth <= 2112) {
                         rightColumn.preferredWidth = newWidth;
                         newIndent = table.leftIndent + dragValue;
@@ -402,10 +363,8 @@ export class TableResizer {
                 } while (dragValue !== prevDragValue);
             }
             let dragOffset: number = dragValue;
-            // tslint:disable-next-line:max-line-length
             if (tableAlignment !== 'Left' && (table.tableHolder.getTotalWidth(0) > containerWidth) && table.tableFormat.preferredWidthType === 'Auto') {
                 if (table.tableHolder.isFitColumns(containerWidth, table.tableHolder.tableWidth, table.tableFormat.preferredWidthType === 'Auto')) {
-                    // tslint:disable-next-line:max-line-length
                     table.tableHolder.fitColumns(containerWidth, table.tableHolder.tableWidth, table.tableFormat.preferredWidthType === 'Auto');
                 } else {
                     rightColumn.preferredWidth = width;
@@ -434,21 +393,18 @@ export class TableResizer {
         this.owner.isLayoutEnabled = true;
         selection.selectPosition(selection.start, selection.end);
     }
-    /**
-     * Resize Selected Cells
-     */
     private resizeColumnWithSelection(selection: Selection, table: TableWidget, dragValue: number): boolean {
-        let newIndent: number = table.leftIndent;
-        let cellwidget: Widget = this.getTableCellWidget(this.startingPoint) as Widget;
+        //const newIndent: number = table.leftIndent;
+        const cellwidget: Widget = this.getTableCellWidget(this.startingPoint) as Widget;
         if (cellwidget && (selection.selectedWidgets.containsKey(cellwidget) || ((cellwidget as TableCellWidget).previousWidget
             && selection.selectedWidgets.containsKey(((cellwidget as TableCellWidget).previousWidget))))) {
-            let selectedCells: TableCellWidget[] = selection.getSelectedCells();
+            const selectedCells: TableCellWidget[] = selection.getSelectedCells();
             if (this.resizerPosition === 0) {
                 this.resizeColumnAtStart(table, dragValue, selectedCells);
             } else if (table !== null && this.resizerPosition === table.tableHolder.columns.length) {
-                let leftColumnCollection: TableCellWidget[] = this.getColumnCells(table, this.resizerPosition, true);
+                const leftColumnCollection: TableCellWidget[] = this.getColumnCells(table, this.resizerPosition, true);
                 for (let i: number = 0; i < leftColumnCollection.length; i++) {
-                    let cell: TableCellWidget = leftColumnCollection[i];
+                    const cell: TableCellWidget = leftColumnCollection[i];
                     if (selectedCells.indexOf(cell) !== -1) {
                         this.increaseOrDecreaseWidth(cell, dragValue, true);
                     }
@@ -462,10 +418,10 @@ export class TableResizer {
                 if (this.resizerPosition === -1) {
                     return false;
                 }
-                let columnIndex: number = this.resizerPosition;
-                let leftColumnCollection: TableCellWidget[] = this.getColumnCells(table, columnIndex, true);
-                let rightColumnCollection: TableCellWidget[] = this.getColumnCells(table, columnIndex, false);
-                let isColumnResizing: boolean = this.isColumnSelected(table, columnIndex);
+                const columnIndex: number = this.resizerPosition;
+                const leftColumnCollection: TableCellWidget[] = this.getColumnCells(table, columnIndex, true);
+                const rightColumnCollection: TableCellWidget[] = this.getColumnCells(table, columnIndex, false);
+                const isColumnResizing: boolean = this.isColumnSelected(table, columnIndex);
                 if (leftColumnCollection.length > 0 && !isColumnResizing) {
                     for (let i: number = 0; i < leftColumnCollection.length; i++) {
                         if (selectedCells.indexOf(leftColumnCollection[i]) === -1) {
@@ -485,20 +441,20 @@ export class TableResizer {
                 //Getting the adjacent cell collections for left side selected cells in the right column collection.
                 if (leftColumnCollection.length === 0 && rightColumnCollection.length > 0) {
                     for (let i: number = 0; i < rightColumnCollection.length; i++) {
-                        let cell: TableCellWidget = rightColumnCollection[i] as TableCellWidget;
+                        const cell: TableCellWidget = rightColumnCollection[i] as TableCellWidget;
                         if (cell.previousWidget) {
                             leftColumnCollection.push(cell.previousWidget as TableCellWidget);
                         }
                     }
                 } else if (rightColumnCollection.length === 0 && leftColumnCollection.length > 0) {
                     for (let i: number = 0; i < leftColumnCollection.length; i++) {
-                        let cell: TableCellWidget = leftColumnCollection[i] as TableCellWidget;
+                        const cell: TableCellWidget = leftColumnCollection[i] as TableCellWidget;
                         if (cell.nextWidget) {
                             rightColumnCollection.push(cell.nextWidget as TableCellWidget);
                         }
                     }
                 }
-                this.changeWidthOfCells(table, leftColumnCollection, rightColumnCollection, dragValue, true);
+                this.changeWidthOfCells(table, leftColumnCollection, rightColumnCollection, dragValue);
                 if (table.tableFormat.allowAutoFit) {
                     table.updateWidth(dragValue);
                 }
@@ -510,26 +466,23 @@ export class TableResizer {
         return false;
     }
 
-    /**
-     * Resize selected cells at resizer position 0
-     */
     private resizeColumnAtStart(table: TableWidget, dragValue: number, selectedCells: TableCellWidget[]): void {
         let newIndent: number = table.leftIndent;
-        let rightColumnCollection: TableCellWidget[] = this.getColumnCells(table, this.resizerPosition, false);
-        let offset: number = 0;
-        let selectedRow: TableRowWidget = selectedCells[0].ownerRow;
-        let rowFormat: WRowFormat = selectedRow.rowFormat;
+        //const rightColumnCollection: TableCellWidget[] = this.getColumnCells(table, this.resizerPosition, false);
+        const offset: number = 0;
+        const selectedRow: TableRowWidget = selectedCells[0].ownerRow;
+        const rowFormat: WRowFormat = selectedRow.rowFormat;
         if (rowFormat.beforeWidth > 0) {
-            let newGridBefore: number = rowFormat.beforeWidth + dragValue;
+            const newGridBefore: number = rowFormat.beforeWidth + dragValue;
             if (newGridBefore > 0) {
                 this.updateGridBefore(selectedRow, dragValue);
             } else {
-                let leastGridBefore: number = this.getLeastGridBefore(table, selectedRow);
+                const leastGridBefore: number = this.getLeastGridBefore(table, selectedRow);
                 if (newGridBefore < leastGridBefore && offset !== newGridBefore) {
                     newIndent = table.leftIndent + newGridBefore;
                     table.tableFormat.leftIndent = newIndent >= -1440 ? (newIndent <= 1440 ? newIndent : 1440) : -1440;
                     for (let i: number = 0; i < table.childWidgets.length; i++) {
-                        let tableRow: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+                        const tableRow: TableRowWidget = table.childWidgets[i] as TableRowWidget;
                         if (selectedRow !== tableRow) {
                             this.updateGridBefore(tableRow, -newGridBefore);
                         }
@@ -542,18 +495,18 @@ export class TableResizer {
                 table.tableFormat.leftIndent = newIndent >= -1440 ? (newIndent <= 1440 ? newIndent : 1440) : -1440;
                 this.updateWidthForCells(table, selectedCells, dragValue);
             } else {
-                let leastGridBefore: number = this.getLeastGridBefore(table, selectedRow);
-                let currentTableIndent: number = table.tableFormat.leftIndent;
+                const leastGridBefore: number = this.getLeastGridBefore(table, selectedRow);
+                const currentTableIndent: number = table.tableFormat.leftIndent;
                 if (currentTableIndent === 0) {
                     for (let i: number = 0; i < table.childWidgets.length; i++) {
-                        let tableRow: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+                        const tableRow: TableRowWidget = table.childWidgets[i] as TableRowWidget;
                         if (selectedCells.indexOf(tableRow.childWidgets[0] as TableCellWidget) !== -1) {
                             this.updateGridBefore(tableRow, dragValue);
                             this.increaseOrDecreaseWidth(tableRow.childWidgets[0] as TableCellWidget, dragValue, false);
                         }
                     }
                 } else {
-                    let difference: number = leastGridBefore - dragValue;
+                    const difference: number = leastGridBefore - dragValue;
                     if (difference > 0) {
                         newIndent = table.leftIndent + dragValue;
                         table.tableFormat.leftIndent = newIndent >= -1440 ? (newIndent <= 1440 ? newIndent : 1440) : -1440;
@@ -562,7 +515,7 @@ export class TableResizer {
                         newIndent = table.leftIndent + leastGridBefore;
                         table.tableFormat.leftIndent = newIndent >= -1440 ? (newIndent <= 1440 ? newIndent : 1440) : -1440;
                         for (let i: number = 0; i < table.childWidgets.length; i++) {
-                            let tableRow: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+                            const tableRow: TableRowWidget = table.childWidgets[i] as TableRowWidget;
                             if (selectedCells.indexOf(tableRow.childWidgets[0] as TableCellWidget) !== -1) {
                                 this.increaseOrDecreaseWidth(tableRow.childWidgets[0] as TableCellWidget, dragValue, false);
                                 this.updateGridBefore(tableRow, dragValue - leastGridBefore);
@@ -579,7 +532,7 @@ export class TableResizer {
     }
     private updateWidthForCells(table: TableWidget, selectedCells: TableCellWidget[], dragValue: number): void {
         for (let i: number = 0; i < table.childWidgets.length; i++) {
-            let tableRow: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            const tableRow: TableRowWidget = table.childWidgets[i] as TableRowWidget;
             if (selectedCells.indexOf(tableRow.childWidgets[0] as TableCellWidget) !== -1) {
                 this.increaseOrDecreaseWidth(tableRow.childWidgets[0] as TableCellWidget, dragValue, false);
             } else {
@@ -587,18 +540,15 @@ export class TableResizer {
             }
         }
     }
-    /**
-     * Resize selected cells at last column 
-     */
     private resizeColumnAtLastColumnIndex(table: TableWidget, dragValue: number, containerWidth: number): void {
-        let tableAlignment: TableAlignment = table.tableFormat.tableAlignment;
-        let preferredWidth: number = table.tableFormat.preferredWidth;
-        let hasTableWidth: number = preferredWidth;
-        let columnIndex: number = this.resizerPosition;
-        let leftColumn: WColumn = table.tableHolder.columns[columnIndex - 1];
+        const tableAlignment: TableAlignment = table.tableFormat.tableAlignment;
+        const preferredWidth: number = table.tableFormat.preferredWidth;
+        const hasTableWidth: number = preferredWidth;
+        const columnIndex: number = this.resizerPosition;
+        const leftColumn: WColumn = table.tableHolder.columns[columnIndex - 1];
         let prevDragValue: number = 0;
         while (dragValue !== prevDragValue) {
-            let newWidth: number = HelperMethods.round(leftColumn.preferredWidth + dragValue, 1);
+            const newWidth: number = HelperMethods.round(leftColumn.preferredWidth + dragValue, 1);
             if (newWidth >= leftColumn.minWidth) {
                 leftColumn.preferredWidth = newWidth;
                 prevDragValue = dragValue;
@@ -621,17 +571,15 @@ export class TableResizer {
         }
         this.updateGridValue(table, true, dragOffset);
     }
-    /**
-     *  Resize selected cells at middle column
-     */
+
     private resizeCellAtMiddle(table: TableWidget, dragValue: number): void {
-        let columnIndex: number = this.resizerPosition;
-        let leftColumn: WColumn = table.tableHolder.columns[columnIndex - 1];
-        let rightColumn: WColumn = table.tableHolder.columns[columnIndex];
+        const columnIndex: number = this.resizerPosition;
+        const leftColumn: WColumn = table.tableHolder.columns[columnIndex - 1];
+        const rightColumn: WColumn = table.tableHolder.columns[columnIndex];
         if (dragValue > 0) {
             let isContinue: boolean = true;
             while (isContinue) {
-                let newWidth: number = HelperMethods.round(rightColumn.preferredWidth - dragValue, 1);
+                const newWidth: number = HelperMethods.round(rightColumn.preferredWidth - dragValue, 1);
                 if (newWidth >= rightColumn.minWidth) {
                     rightColumn.preferredWidth = newWidth;
                     leftColumn.preferredWidth = leftColumn.preferredWidth + dragValue;
@@ -643,7 +591,7 @@ export class TableResizer {
         } else {
             let isContinue: boolean = true;
             while (isContinue) {
-                let newWidth: number = HelperMethods.round(leftColumn.preferredWidth + dragValue, 1);
+                const newWidth: number = HelperMethods.round(leftColumn.preferredWidth + dragValue, 1);
                 if (newWidth >= leftColumn.minWidth) {
                     leftColumn.preferredWidth = newWidth;
                     rightColumn.preferredWidth = rightColumn.preferredWidth - dragValue;
@@ -671,7 +619,7 @@ export class TableResizer {
         table.isGridUpdated = true;
         this.viewer.owner.isLayoutEnabled = true;
         if (table.isInsideTable) {
-            let parentTable: TableWidget = this.documentHelper.layout.getParentTable(table);
+            const parentTable: TableWidget = this.documentHelper.layout.getParentTable(table);
             this.documentHelper.layout.reLayoutTable(parentTable); // Need to optmize this.
         } else {
             this.documentHelper.layout.reLayoutTable(table);
@@ -684,11 +632,11 @@ export class TableResizer {
         }
     }
     private getColumnCells(table: TableWidget, columnIndex: number, isLeftSideCollection: boolean): TableCellWidget[] {
-        let cells: TableCellWidget[] = [];
+        const cells: TableCellWidget[] = [];
         for (let i: number = 0; i < table.childWidgets.length; i++) {
-            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            const row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
             for (let j: number = 0; j < row.childWidgets.length; j++) {
-                let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                const cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
                 if (isLeftSideCollection) {
                     if (cell.columnIndex + cell.cellFormat.columnSpan === columnIndex) {
                         cells.push(cell);
@@ -713,7 +661,7 @@ export class TableResizer {
         let gridBefore: number = 0;
         let flag: number = 0;
         for (let i: number = 0; i < table.childWidgets.length; i++) {
-            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            const row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
             if (row !== ignoreRow) {
                 if (flag === 0) {
                     gridBefore = row.rowFormat.beforeWidth;
@@ -744,12 +692,12 @@ export class TableResizer {
         }
 
     }
-    // tslint:disable-next-line:max-line-length
-    private changeWidthOfCells(table: TableWidget, leftColumnCollection: TableCellWidget[], rightColumnCollection: TableCellWidget[], dragValue: number, isSelection: boolean): void {
+    // eslint-disable-next-line max-len
+    private changeWidthOfCells(table: TableWidget, leftColumnCollection: TableCellWidget[], rightColumnCollection: TableCellWidget[], dragValue: number): void {
         if (leftColumnCollection.length > 0) {
             let flag: boolean = false;
             for (let i: number = 0; i < leftColumnCollection.length; i++) {
-                let cell: TableCellWidget = leftColumnCollection[i];
+                const cell: TableCellWidget = leftColumnCollection[i];
                 this.increaseOrDecreaseWidth(cell, dragValue, true);
                 if (cell.cellIndex === cell.ownerRow.childWidgets.length - 1) {
                     flag = true;
@@ -762,9 +710,9 @@ export class TableResizer {
         if (rightColumnCollection.length > 0) {
             let diff: number = 0;
             for (let i: number = 0; i < rightColumnCollection.length; i++) {
-                let cell: TableCellWidget = rightColumnCollection[i];
+                const cell: TableCellWidget = rightColumnCollection[i];
                 if (cell.cellIndex === 0) {
-                    let newGridBefore: number = cell.ownerRow.rowFormat.beforeWidth + dragValue;
+                    const newGridBefore: number = cell.ownerRow.rowFormat.beforeWidth + dragValue;
                     if (newGridBefore >= 0) {
                         this.updateGridBefore(cell.ownerRow, dragValue);
                     } else {
@@ -778,10 +726,10 @@ export class TableResizer {
                 this.increaseOrDecreaseWidth(cell, dragValue, false);
             }
             if (diff !== 0) {
-                let newIndent: number = table.leftIndent + diff;
+                const newIndent: number = table.leftIndent + diff;
                 table.tableFormat.leftIndent = newIndent >= -1440 ? (newIndent <= 1440 ? newIndent : 1440) : -1440;
                 for (let j: number = 0; j < table.childWidgets.length; j++) {
-                    let row: TableRowWidget = table.childWidgets[j] as TableRowWidget;
+                    const row: TableRowWidget = table.childWidgets[j] as TableRowWidget;
                     if (rightColumnCollection.indexOf(row.childWidgets[0] as TableCellWidget) === -1) {
                         this.updateGridBefore(row, diff > 0 ? diff : -diff);
                     }
@@ -790,12 +738,12 @@ export class TableResizer {
         }
     }
     private updateRowsGridAfterWidth(table: TableWidget): void {
-        let maxRowWidth: number = this.getMaxRowWidth(table, true);
+        const maxRowWidth: number = this.getMaxRowWidth(table, true);
         for (let i: number = 0; i < table.childWidgets.length; i++) {
-            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
-            let currentRowWidth: number = this.getRowWidth(row, true);
+            const row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            const currentRowWidth: number = this.getRowWidth(row, true);
             if (maxRowWidth >= currentRowWidth && row.rowFormat.afterWidth !== maxRowWidth - currentRowWidth) {
-                let value: number = maxRowWidth - currentRowWidth;
+                const value: number = maxRowWidth - currentRowWidth;
                 row.rowFormat.gridAfterWidth = value;
                 row.rowFormat.afterWidth = value;
             }
@@ -808,7 +756,7 @@ export class TableResizer {
             rowWidth = rowWidth + row.rowFormat.beforeWidth;
         }
         for (let i: number = 0; i < row.childWidgets.length; i++) {
-            let cell: TableCellWidget = row.childWidgets[i] as TableCellWidget;
+            const cell: TableCellWidget = row.childWidgets[i] as TableCellWidget;
             rowWidth += cell.cellFormat.cellWidth;
         }
         return rowWidth;
@@ -816,13 +764,13 @@ export class TableResizer {
     private getMaxRowWidth(table: TableWidget, toUpdateGridAfter: boolean): number {
         let width: number = 0;
         for (let i: number = 0; i < table.childWidgets.length; i++) {
-            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            const row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
             let rowWidth: number = 0;
             if (toUpdateGridAfter) {
                 rowWidth = rowWidth + row.rowFormat.beforeWidth;
             }
             for (let i: number = 0; i < row.childWidgets.length; i++) {
-                let cell: TableCellWidget = row.childWidgets[i] as TableCellWidget;
+                const cell: TableCellWidget = row.childWidgets[i] as TableCellWidget;
                 rowWidth += cell.cellFormat.cellWidth;
             }
             if (width < rowWidth) {
@@ -832,18 +780,18 @@ export class TableResizer {
         return width;
     }
     private isColumnSelected(table: TableWidget, columnIndex: number): boolean {
-        let selection: Selection = this.owner.selection;
-        let selectedCells: TableCellWidget[] = selection.getSelectedCells();
-        let leftColumnCells: TableCellWidget[] = this.getColumnCells(table, columnIndex, true);
-        let rightColumnCells: TableCellWidget[] = this.getColumnCells(table, columnIndex, false);
+        const selection: Selection = this.owner.selection;
+        const selectedCells: TableCellWidget[] = selection.getSelectedCells();
+        const leftColumnCells: TableCellWidget[] = this.getColumnCells(table, columnIndex, true);
+        const rightColumnCells: TableCellWidget[] = this.getColumnCells(table, columnIndex, false);
         let isColumnSelected: boolean = false;
         for (let i: number = 0; i < leftColumnCells.length; i++) {
-            let columnCell: TableCellWidget = leftColumnCells[i];
+            const columnCell: TableCellWidget = leftColumnCells[i];
             isColumnSelected = selectedCells.indexOf(columnCell) !== -1 ? true : false;
         }
         if (!isColumnSelected) {
             for (let i: number = 0; i < rightColumnCells.length; i++) {
-                let columnCell: TableCellWidget = rightColumnCells[i];
+                const columnCell: TableCellWidget = rightColumnCells[i];
                 isColumnSelected = selectedCells.indexOf(columnCell) !== -1 ? true : false;
             }
         }
@@ -854,7 +802,6 @@ export class TableResizer {
         if (isNullOrUndefined(tableHistoryInfo)) {
             return;
         }
-        table = table;
         // PreserveGrid = true;
         if (tableHistoryInfo.tableHolder) {
             table.tableHolder = tableHistoryInfo.tableHolder.clone();
@@ -866,8 +813,8 @@ export class TableResizer {
             table.tableFormat.allowAutoFit = tableHistoryInfo.tableFormat.allowAutoFit;
         }
         for (let i: number = 0; i < table.childWidgets.length; i++) {
-            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
-            let rowFormat: RowFormatHistoryInfo = tableHistoryInfo.rows[i];
+            const row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            const rowFormat: RowFormatHistoryInfo = tableHistoryInfo.rows[i];
             row.rowFormat.gridBefore = rowFormat.gridBefore;
             row.rowFormat.gridBeforeWidth = rowFormat.gridBeforeWidth;
             row.rowFormat.gridBeforeWidthType = rowFormat.gridBeforeWidthType;
@@ -875,8 +822,8 @@ export class TableResizer {
             row.rowFormat.gridAfterWidth = rowFormat.gridAfterWidth;
             row.rowFormat.gridAfterWidthType = rowFormat.gridAfterWidthType;
             for (let j: number = 0; j < row.childWidgets.length; j++) {
-                let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
-                let cellFormat: CellFormatHistoryInfo = rowFormat.cells[j];
+                const cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                const cellFormat: CellFormatHistoryInfo = rowFormat.cells[j];
                 cell.columnIndex = cellFormat.columnIndex;
                 cell.cellFormat.columnSpan = cellFormat.columnSpan;
                 cell.cellFormat.preferredWidth = cellFormat.preferredWidth;
@@ -884,15 +831,12 @@ export class TableResizer {
             }
         }
 
-        let containerWidth: number = table.getOwnerWidth(true);
-        let tableWidth: number = table.getTableClientWidth(containerWidth);
+        const containerWidth: number = table.getOwnerWidth(true);
+        const tableWidth: number = table.getTableClientWidth(containerWidth);
         //Sets the width to cells
         table.setWidthToCells(tableWidth, table.tableFormat.preferredWidthType === 'Auto');
         // PreserveGrid = false;
     }
-    /**
-     * Return table row width
-     */
     private getActualWidth(row: TableRowWidget): number {
         let width: number = 0;
         if (row.childWidgets.length > 0) {
@@ -905,14 +849,14 @@ export class TableResizer {
 
     public setPreferredWidth(table: TableWidget): void {
         for (let i: number = 0; i < table.childWidgets.length; i++) {
-            let rw: TableRowWidget = table.childWidgets[i] as TableRowWidget;
-            let rowFormat: WRowFormat = rw.rowFormat;
+            const rw: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            const rowFormat: WRowFormat = rw.rowFormat;
             if (rowFormat.gridBefore > 0) {
                 rowFormat.gridBeforeWidth = rowFormat.beforeWidth;
                 rowFormat.gridBeforeWidthType = 'Point';
             }
             for (let j: number = 0; j < rw.childWidgets.length; j++) {
-                let cell: TableCellWidget = rw.childWidgets[j] as TableCellWidget;
+                const cell: TableCellWidget = rw.childWidgets[j] as TableCellWidget;
                 cell.cellFormat.preferredWidth = cell.cellFormat.cellWidth;
                 cell.cellFormat.preferredWidthType = 'Point';
             }
@@ -923,28 +867,25 @@ export class TableResizer {
         }
     }
     private updateCellPreferredWidths(table: TableWidget): void {
-        let tableWidth: number = table.tableHolder.tableWidth;
+        const tableWidth: number = table.tableHolder.tableWidth;
         for (let i: number = 0; i < table.childWidgets.length; i++) {
-            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            const row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
             if (row.rowFormat.gridBefore > 0) {
-                let width: number = table.tableHolder.getCellWidth(0, row.rowFormat.gridBefore, tableWidth);
+                const width: number = table.tableHolder.getCellWidth(0, row.rowFormat.gridBefore, tableWidth);
                 this.updateGridBeforeWidth(width, row);
             }
             for (let j: number = 0; j < row.childWidgets.length; j++) {
-                let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                const cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
                 cell.updateWidth(table.tableHolder.getCellWidth(cell.columnIndex, cell.cellFormat.columnSpan, tableWidth));
             }
             if (row.rowFormat.gridAfter > 0) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 this.updateGridAfterWidth(table.tableHolder.getCellWidth(row.childWidgets.length, row.rowFormat.gridAfter, tableWidth), row);
             }
         }
     }
-    /**
-     * Update grid before width value
-     */
     private updateGridBeforeWidth(width: number, row: TableRowWidget): void {
-        let rowFormat: WRowFormat = row.rowFormat;
+        const rowFormat: WRowFormat = row.rowFormat;
         if (width !== rowFormat.beforeWidth) {
             rowFormat.beforeWidth = width;
             if (rowFormat.gridBeforeWidthType === 'Auto') {
@@ -953,18 +894,15 @@ export class TableResizer {
             if (rowFormat.gridBeforeWidthType === 'Point') {
                 rowFormat.gridBeforeWidth = rowFormat.beforeWidth;
             } else {
-                // The value is calculated from the pixel values hence, its converted to percent using method. 
-                let ownerWidth: number = row.ownerTable.getTableClientWidth(row.ownerTable.getOwnerWidth(true));
-                let value: number = row.ownerTable.convertPointToPercent(rowFormat.beforeWidth, ownerWidth);
+                // The value is calculated from the pixel values hence, its converted to percent using method.
+                const ownerWidth: number = row.ownerTable.getTableClientWidth(row.ownerTable.getOwnerWidth(true));
+                const value: number = row.ownerTable.convertPointToPercent(rowFormat.beforeWidth, ownerWidth);
                 rowFormat.gridBeforeWidth = value;
             }
         }
     }
-    /**
-     * Update grid after width value
-     */
     public updateGridAfterWidth(width: number, row: TableRowWidget): void {
-        let rowFormat: WRowFormat = row.rowFormat;
+        const rowFormat: WRowFormat = row.rowFormat;
         if (width !== rowFormat.afterWidth) {
             rowFormat.afterWidth = width;
         }
@@ -974,9 +912,9 @@ export class TableResizer {
         if (rowFormat.gridAfterWidthType === 'Point') {
             rowFormat.gridAfterWidth = rowFormat.afterWidth;
         } else {
-            // The value is calculated from the pixel values hence, its converted to percent using method. 
-            let ownerWidth: number = row.ownerTable.getTableClientWidth(row.ownerTable.getOwnerWidth(true));
-            let value: number = row.ownerTable.convertPointToPercent(rowFormat.afterWidth, ownerWidth);
+            // The value is calculated from the pixel values hence, its converted to percent using method.
+            const ownerWidth: number = row.ownerTable.getTableClientWidth(row.ownerTable.getOwnerWidth(true));
+            const value: number = row.ownerTable.convertPointToPercent(rowFormat.afterWidth, ownerWidth);
             rowFormat.gridAfterWidth = value;
         }
     }

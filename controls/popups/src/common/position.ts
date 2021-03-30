@@ -6,14 +6,19 @@ let elementRect: ClientRect;
 let popupRect: ClientRect;
 let element: Element;
 let parentDocument: Document;
-let fixedParent: Boolean = false;
-
+let fixedParent: boolean = false;
+/**
+ *
+ * @param {HTMLElement} anchor - specifies the element
+ * @param {HTMLElement} element - specifies the element
+ * @returns {OffsetPosition} - returns the value
+ */
 export function calculateRelativeBasedPosition(
     anchor: HTMLElement,
     element: HTMLElement): OffsetPosition {
-    let fixedElement: Boolean = false;
-    let anchorPos: OffsetPosition = { left: 0, top: 0 };
-    let tempAnchor: HTMLElement = anchor;
+    let fixedElement: boolean = false;
+    const anchorPos: OffsetPosition = { left: 0, top: 0 };
+    const tempAnchor: HTMLElement = anchor;
     if ( !anchor || !element) {
         return anchorPos;
     }
@@ -34,9 +39,19 @@ export function calculateRelativeBasedPosition(
     return anchorPos;
 }
 
+/**
+ *
+ * @param {Element} currentElement - specifies the element
+ * @param {string} positionX - specifies the position
+ * @param {string} positionY - specifies the position
+ * @param {boolean} parentElement - specifies the boolean
+ * @param {ClientRect} targetValues - specifies the client
+ * @returns {OffsetPosition} - returns the position
+ */
 export function calculatePosition(
-    currentElement: Element, positionX?: string, positionY?: string, parentElement?: Boolean,
+    currentElement: Element, positionX?: string, positionY?: string, parentElement?: boolean,
     targetValues?: ClientRect): OffsetPosition {
+    //eslint-disable-next-line
     (positionY + positionX === 'topright') ? popupRect = undefined : popupRect = targetValues;
     popupRect = targetValues;
     fixedParent = parentElement ? true : false;
@@ -51,82 +66,124 @@ export function calculatePosition(
     }
     parentDocument = currentElement.ownerDocument;
     element = currentElement;
-    let pos: OffsetPosition = { left: 0, top: 0 };
+    const pos: OffsetPosition = { left: 0, top: 0 };
     return updatePosition(positionX.toLowerCase(), positionY.toLowerCase(), pos);
 }
+/**
+ *
+ * @param {number} value - specifies the number
+ * @param {OffsetPosition} pos - specifies the position
+ * @returns {void}
+ */
 function setPosx(value: number, pos: OffsetPosition): void {
     pos.left = value;
 }
+/**
+ *
+ * @param {number} value - specifies the number
+ * @param {OffsetPosition} pos - specifies the position
+ * @returns {void}
+ */
 function setPosy(value: number, pos: OffsetPosition): void {
     pos.top = value;
 }
-
+/**
+ *
+ * @param {string} posX - specifies the position
+ * @param {string} posY - specifies the position
+ * @param {OffsetPosition} pos - specifies the position
+ * @returns {OffsetPosition} - returns the postion
+ */
 function updatePosition(posX: string, posY: string, pos: OffsetPosition): OffsetPosition {
     elementRect = element.getBoundingClientRect();
 
     switch (posY + posX) {
-        case 'topcenter':
-            setPosx(getElementHCenter(), pos);
-            setPosy(getElementTop(), pos);
-            break;
-        case 'topright':
-            setPosx(getElementRight(), pos);
-            setPosy(getElementTop(), pos);
-            break;
-        case 'centercenter':
-            setPosx(getElementHCenter(), pos);
-            setPosy(getElementVCenter(), pos);
-            break;
-        case 'centerright':
-            setPosx(getElementRight(), pos);
-            setPosy(getElementVCenter(), pos);
-            break;
-        case 'centerleft':
-            setPosx(getElementLeft(), pos);
-            setPosy(getElementVCenter(), pos);
-            break;
-        case 'bottomcenter':
-            setPosx(getElementHCenter(), pos);
-            setPosy(getElementBottom(), pos);
-            break;
-        case 'bottomright':
-            setPosx(getElementRight(), pos);
-            setPosy(getElementBottom(), pos);
-            break;
-        case 'bottomleft':
-            setPosx(getElementLeft(), pos);
-            setPosy(getElementBottom(), pos);
-            break;
-        default:
-        case 'topleft':
-            setPosx(getElementLeft(), pos);
-            setPosy(getElementTop(), pos);
-            break;
+    case 'topcenter':
+        setPosx(getElementHCenter(), pos);
+        setPosy(getElementTop(), pos);
+        break;
+    case 'topright':
+        setPosx(getElementRight(), pos);
+        setPosy(getElementTop(), pos);
+        break;
+    case 'centercenter':
+        setPosx(getElementHCenter(), pos);
+        setPosy(getElementVCenter(), pos);
+        break;
+    case 'centerright':
+        setPosx(getElementRight(), pos);
+        setPosy(getElementVCenter(), pos);
+        break;
+    case 'centerleft':
+        setPosx(getElementLeft(), pos);
+        setPosy(getElementVCenter(), pos);
+        break;
+    case 'bottomcenter':
+        setPosx(getElementHCenter(), pos);
+        setPosy(getElementBottom(), pos);
+        break;
+    case 'bottomright':
+        setPosx(getElementRight(), pos);
+        setPosy(getElementBottom(), pos);
+        break;
+    case 'bottomleft':
+        setPosx(getElementLeft(), pos);
+        setPosy(getElementBottom(), pos);
+        break;
+    default:
+    case 'topleft':
+        setPosx(getElementLeft(), pos);
+        setPosy(getElementTop(), pos);
+        break;
     }
     return pos;
 
 }
+/**
+ * @returns {number} - specifies the number value
+ */
 function getBodyScrollTop(): number {
     return parentDocument.documentElement.scrollTop || parentDocument.body.scrollTop;
 }
+/**
+ * @returns {number} - specifies the number value
+ */
 function getBodyScrollLeft(): number {
     return parentDocument.documentElement.scrollLeft || parentDocument.body.scrollLeft;
 }
+/**
+ * @returns {number} - specifies the number value
+ */
 function getElementBottom(): number {
     return fixedParent ? elementRect.bottom : elementRect.bottom + getBodyScrollTop();
 }
+/**
+ * @returns {number} - specifies the number value
+ */
 function getElementVCenter(): number {
     return getElementTop() + (elementRect.height / 2);
 }
+/**
+ * @returns {number} - specifies the number value
+ */
 function getElementTop(): number {
     return fixedParent ? elementRect.top : elementRect.top + getBodyScrollTop();
 }
+/**
+ * @returns {number} - specifies the number value
+ */
 function getElementLeft(): number {
     return elementRect.left + getBodyScrollLeft();
 }
+/**
+ * @returns {number} - specifies the number value
+ */
 function getElementRight(): number {
     return elementRect.right + getBodyScrollLeft() - (popupRect ? popupRect.width : 0);
 }
+/**
+ * @returns {number} - specifies the number value
+ */
 function getElementHCenter(): number {
     return getElementLeft() + (elementRect.width / 2);
 }
@@ -135,6 +192,6 @@ function getElementHCenter(): number {
  * Provides information about a OffsetPosition.
  */
 export interface OffsetPosition {
-    left: number;
-    top: number;
+    left: number
+    top: number
 }

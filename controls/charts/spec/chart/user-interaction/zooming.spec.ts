@@ -1088,7 +1088,7 @@ describe('Chart Control', () => {
 
     describe('Checking Mouse Wheel', () => {
         let elem: HTMLElement = createElement('div', { id: 'container' });
-        let wheelArgs: wheel;
+        let wheelArgs: unknown;
         beforeAll(() => {
             document.body.appendChild(elem);
             chartObj = new Chart(
@@ -1586,7 +1586,7 @@ describe('Chart Control', () => {
                 done();
             };
             chartObj.loaded = loaded;
-            chartObj.chartResize(<Event>{});
+            chartObj.chartResize();
         });
         it('Checking touch resize event', (done: Function) => {
             loaded = (args: Object): void => {
@@ -1595,7 +1595,7 @@ describe('Chart Control', () => {
                 done();
             };
             chartObj.loaded = loaded;
-            chartObj.chartResize(<Event>{});
+            chartObj.chartResize();
         });
     });
 
@@ -1652,7 +1652,7 @@ describe('Chart Control', () => {
         });
 
         it('Checking mouse wheel with enablePan ', (done: Function) => {
-            let wheelArgs: wheel;
+            let wheelArgs: unknown;
             loaded = (args: Object): void => {
                 chartObj.loaded = null;
                 wheelArgs = {

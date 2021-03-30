@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { DiagramElement } from '../core/elements/diagram-element';
 import { PathElement } from '../core/elements/path-element';
 import { ImageElement } from '../core/elements/image-element';
@@ -17,7 +18,7 @@ import { Gridlines } from '../../diagram/diagram/grid-lines';
 import { BackgroundModel } from '../../diagram/diagram/page-settings-model';
 import { PathAttributes, TextAttributes, LineAttributes, CircleAttributes } from './canvas-interface';
 import { RectAttributes, ImageAttributes, BaseAttributes } from './canvas-interface';
-import { Stretch, WhiteSpace, TextAlign, TextWrap, SnapConstraints, RendererAction, FlipDirection } from '../enum/enum';
+import { WhiteSpace, TextAlign, TextWrap, SnapConstraints, RendererAction, FlipDirection } from '../enum/enum';
 import { ThumbsConstraints, SelectorConstraints, ElementAction } from '../enum/enum';
 import { TransformFactor as Transforms } from '../interaction/scroller';
 import { SelectorModel } from '../objects/node-model';
@@ -43,6 +44,7 @@ export class DiagramRenderer {
     public renderer: IRenderer = null;
     private diagramId: string;
     /** @private */
+
     public isSvgMode: Boolean = true;
     private svgRenderer: SvgRenderer;
     private nativeSvgLayer: SVGSVGElement;
@@ -55,7 +57,7 @@ export class DiagramRenderer {
     private groupElement: Container;
     private element: HTMLElement;
     private transform: PointModel = { x: 0, y: 0 };
-    constructor(name: string, svgRender: IRenderer, isSvgMode: Boolean) {
+    constructor(name: string, svgRender: IRenderer, isSvgMode: boolean) {
         this.diagramId = name;
         this.element = getDiagramElement(this.diagramId);
         this.svgRenderer = svgRender as SvgRenderer;
@@ -63,12 +65,26 @@ export class DiagramRenderer {
         this.renderer = isSvgMode ? new SvgRenderer() : new CanvasRenderer();
     }
 
-    /**   @private  */
+    /**
+     * Method used to set the cur \
+     *
+     *  @param {HTMLElement} canvas - Provide the canvas .
+     *  @param {string} cursor - Provide the element .
+     * @returns {void }   Method used to set the layer  .\
+     * @private
+     */
     public setCursor(canvas: HTMLElement, cursor: string): void {
         canvas.style.cursor = cursor;
     }
 
-    /** @private */
+
+    /**
+     * Method used to set the layer \
+     *
+     * @returns {void }   Method used to set the layer  .\
+     *
+     * @private
+     */
     public setLayers(): void {
         this.iconSvgLayer = this.element.getElementsByClassName('e-ports-expand-layer')[0] as SVGSVGElement;
         this.adornerSvgLayer = this.element.getElementsByClassName('e-adorner-layer')[0] as SVGSVGElement;
@@ -77,7 +93,7 @@ export class DiagramRenderer {
     }
 
     private getAdornerLayer(): SVGElement {
-        let adornerLayer: SVGElement = getAdornerLayer(this.diagramId);
+        const adornerLayer: SVGElement = getAdornerLayer(this.diagramId);
         return adornerLayer;
     }
 
@@ -117,7 +133,7 @@ export class DiagramRenderer {
             } else {
                 layerGElement = svgElement.getElementById(this.diagramId + '_diagramLayer') as SVGElement;
             }
-            let groupElement: SvgParent = this.getGroupElement(element, defaultParent || layerGElement, indexValue);
+            const groupElement: SvgParent = this.getGroupElement(element, defaultParent || layerGElement, indexValue);
             layerGElement = groupElement.g;
             if (groupElement.svg) {
                 svgElement = groupElement.svg;
@@ -128,13 +144,13 @@ export class DiagramRenderer {
 
     private getGroupElement(element: DiagramElement, canvas: HTMLCanvasElement | SVGElement, indexValue?: number): SvgParent {
         let gElement: SVGGElement;
-        let parentSvg: SVGSVGElement = this.getParentSvg(element);
+        const parentSvg: SVGSVGElement = this.getParentSvg(element);
         let svgElement: SVGSVGElement;
         if (canvas && parentSvg) {
             if (parentSvg) {
                 gElement = parentSvg.getElementById(element.id + '_groupElement') as SVGGElement;
                 if (!gElement && parentSvg !== this.nativeSvgLayer) {//code added
-                    let nativeSvg: SVGSVGElement = this.nativeSvgLayer;
+                    const nativeSvg: SVGSVGElement = this.nativeSvgLayer;
                     gElement = nativeSvg.getElementById(element.id + '_groupElement') as SVGGElement;
                     svgElement = nativeSvg;
 
@@ -153,7 +169,22 @@ export class DiagramRenderer {
         return { g: gElement, svg: svgElement };
     }
 
-    /**   @private  */
+    /**
+     * Method used to render the diagram element \
+     *
+     * @returns {void }   Method used to render the diagram element  .\
+     *
+     * @param {DiagramElement} element - Provide the DiagramElement value.
+     * @param {HTMLCanvasElement | SVGElement } canvas - Provide the canvas value.
+     * @param {HTMLElement } htmlLayer - Provide the HTMLElement value.
+     * @param {Transforms } transform - Provide the Transforms value.
+     * @param {SVGSVGElement} parentSvg - Provide the SVGSVGElement value.
+     * @param {boolean } createParent - Provide the boolean value.
+     * @param {boolean } fromPalette - Provide the boolean value.
+     * @param {number } indexValue - Provide the indexValue value.
+     * @param {boolean } isPreviewNode - Provide the isPreviewNode value.
+     * @private
+     */
     public renderElement(
         element: DiagramElement, canvas: HTMLCanvasElement | SVGElement, htmlLayer: HTMLElement, transform?: Transforms,
         parentSvg?: SVGSVGElement, createParent?: boolean, fromPalette?: boolean, indexValue?: number, isPreviewNode?: boolean):
@@ -179,33 +210,52 @@ export class DiagramRenderer {
         }
     }
 
-    /**   @private  */
+    /**
+     * Method used to draw the selection rectangle for the node \
+     *
+     * @returns {void }  Method used to draw the selection rectangle for the node  .\
+     *
+     * @param {number} x - Provide the DiagramElement value.
+     * @param {number } y - Provide the SVGElement value.
+     * @param {number } w - Provide the Transforms value.
+     * @param {number } h - Provide the Transforms value.
+     * @param {HTMLCanvasElement | SVGElement } canvas - Provide the Transforms value.
+     * @param {number } t - Provide the Transforms value.
+     * @private
+     */
     public drawSelectionRectangle(x: number, y: number, w: number, h: number, canvas: HTMLCanvasElement | SVGElement, t: Transforms):
-        void {
+    void {
         x = (x + t.tx) * t.scale;
         y = (y + t.ty) * t.scale;
-        let options: BaseAttributes = {
+        const options: BaseAttributes = {
             width: w * t.scale, height: h * t.scale,
             x: x + 0.5, y: y + 0.5, fill: 'transparent', stroke: 'gray', angle: 0,
             pivotX: 0.5, pivotY: 0.5, strokeWidth: 1,
             dashArray: '6 3', opacity: 1,
             visible: true, id: canvas.id + '_selected_region'
         };
-        let adornerLayer: SVGElement = this.getAdornerLayer();
+        const adornerLayer: SVGElement = this.getAdornerLayer();
         this.svgRenderer.updateSelectionRegion(adornerLayer as SVGElement, options);
     }
 
     /**
+     * Method used to render the highlighter \
+     *
+     * @returns {void }  Method used to render the highlighter  .\
+     *
+     * @param {DiagramElement} element - Provide the DiagramElement value.
+     * @param {SVGElement } canvas - Provide the SVGElement value.
+     * @param {Transforms } transform - Provide the Transforms value.
      * @private
      */
     public renderHighlighter(element: DiagramElement, canvas: SVGElement, transform: Transforms): void {
-        let width: number = element.actualSize.width || 2;
-        let height: number = element.actualSize.height || 2;
+        const width: number = element.actualSize.width || 2;
+        const height: number = element.actualSize.height || 2;
         let x: number = element.offsetX - width * element.pivot.x;
         let y: number = element.offsetY - height * element.pivot.y;
         x = (x + transform.tx) * transform.scale;
         y = (y + transform.ty) * transform.scale;
-        let options: RectAttributes = {
+        const options: RectAttributes = {
             width: width * transform.scale, height: height * transform.scale,
             x: x, y: y, fill: 'transparent', stroke: '#8CC63F', angle: element.rotateAngle,
             pivotX: element.pivot.x, pivotY: element.pivot.y, strokeWidth: 4,
@@ -216,23 +266,34 @@ export class DiagramRenderer {
     }
 
     /**
+     * Method used to render the stack highlighter \
+     *
+     * @returns {void }  Method used to render the stack highlighter  .\
+     *
+     * @param {DiagramElement} element - Provide the DiagramElement value.
+     * @param {SVGElement } canvas - Provide the SVGElement value.
+     * @param {Transforms } transform - Provide the Transforms value.
+     * @param {boolean} isVertical - Provide the Boolean value.
+     * @param {PointModel } position - Provide the PointModel value.
+     * @param {boolean } isUml - Provide the boolean value.
+     * @param {boolean } isSwimlane - Provide the boolean value.
      * @private
      */
     public renderStackHighlighter(
-        element: DiagramElement, canvas: SVGElement, transform: Transforms, isVertical: Boolean, position: PointModel, isUml?: boolean,
+        element: DiagramElement, canvas: SVGElement, transform: Transforms, isVertical: boolean, position: PointModel, isUml?: boolean,
         isSwimlane?: boolean): void {
-        let width: number = element.actualSize.width || 2;
+        const width: number = element.actualSize.width || 2;
         let x: number = element.offsetX - width * element.pivot.x;
-        let height: number = element.actualSize.height || 2;
+        const height: number = element.actualSize.height || 2;
         let y: number = element.offsetY - height * element.pivot.y;
         x = (x + transform.tx) * transform.scale;
         let data: string;
-        let bounds: Rect = element.bounds;
+        const bounds: Rect = element.bounds;
         let newPathString: string = '';
 
         y = (y + transform.ty) * transform.scale;
         if (!isVertical) {
-            let d: number = height * transform.scale;
+            const d: number = height * transform.scale;
             data = 'M 10 -10 L 0 0 Z M -10 -10 L 0 0 Z M 0 0 L 0 ' + (d) + ' Z M 0  ' + (d) +
                 ' L -10  ' + (d + 10) + ' Z L 10  ' + (d + 10) + ' Z';
             if (position.x >= element.offsetX) {
@@ -240,14 +301,14 @@ export class DiagramRenderer {
             }
         } else {
             if (isUml) {
-                let d: number = width * transform.scale;
+                const d: number = width * transform.scale;
                 data = 'M 0 0 L ' + (d + 2) + ' 0 Z';
                 let scaleX: number = - bounds.x;
                 let scaleY: number = - bounds.y;
                 let arrayCollection: Object[] = [];
                 scaleX = element.actualSize.width / Number(bounds.width ? bounds.width : 1) * transform.scale;
                 scaleY = element.actualSize.height / Number(bounds.height ? bounds.height : 1) * transform.scale;
-                let umlData: string = 'M7,4 L8,4 8,7 11,7 11,8 8,8 8,11 7,11 7,8 4,8 4,7 7,7 z M7.5,0.99999994' +
+                const umlData: string = 'M7,4 L8,4 8,7 11,7 11,8 8,8 8,11 7,11 7,8 4,8 4,7 7,7 z M7.5,0.99999994' +
                     'C3.9160004,1 1,3.9160004 0.99999994,7.5 1,11.084 3.9160004,14 7.5,14 11.084,14 14,11.084 14,7.5 14,' +
                     '3.9160004 11.084,1 7.5,0.99999994 z M7.5,0 C11.636002,0 15,3.3639984 15,7.5 15,11.636002 11.636002,15 7.5,' +
                     '15 3.3640003,15 0,11.636002 0,7.5 0,3.3639984 3.3640003,0 7.5,0 z';
@@ -263,7 +324,7 @@ export class DiagramRenderer {
                         y += height;
                     }
                 }
-                let d: number = width * transform.scale;
+                const d: number = width * transform.scale;
                 data = 'M -10 -10 L 0 0 Z M -10 10 L 0 0 Z M 0 0 L ' + (d) + ' 0 Z M ' + (d) + ' 0 L ' +
                     (d + 10) + ' 10 Z L ' + (d + 10) + ' -10 Z';
 
@@ -271,37 +332,69 @@ export class DiagramRenderer {
         }
 
 
-        let options: PathAttributes = {
+        const options: PathAttributes = {
             data: data + newPathString,
             width: width * transform.scale, height: height * transform.scale,
             x: x, y: y, fill: 'transparent', stroke: '#8CC63F', angle: element.rotateAngle,
             pivotX: element.pivot.x, pivotY: element.pivot.y, strokeWidth: 1,
             dashArray: '', opacity: 1,
-            visible: true, id: canvas.id + '_stack_highlighter', class: 'e-diagram-highlighter',
+            visible: true, id: canvas.id + '_stack_highlighter', class: 'e-diagram-highlighter'
         };
         (this.svgRenderer as SvgRenderer).drawPath(canvas, options, this.diagramId);
     }
-    /**   @private  */
+    /**
+     * Method used to draw the line \
+     *
+     * @returns {void }  Method used to draw the line  .\
+     *
+     * @param {SVGElement} canvas - Provide the SVGElement value.
+     * @param {LineAttributes } options - Provide the LineAttributes value.
+     * @private
+     */
     public drawLine(canvas: SVGElement, options: LineAttributes): void {
         (this.svgRenderer as SvgRenderer).drawLine(canvas, options);
     }
 
-    /**   @private  */
+    /**
+     * Method used to draw the path \
+     *
+     * @returns {void }  Method used to draw the path  .\
+     *
+     * @param {SVGElement} canvas - Provide the canvas value.
+     * @param {PathAttributes } options - Provide the PathAttributes value.
+     * @private
+     */
     public drawPath(canvas: SVGElement, options: PathAttributes): void {
         (this.svgRenderer as SvgRenderer).drawPath(canvas, options, this.diagramId);
     }
 
-    /**   @private  */
+    /**
+     * Method used to render the resize handle \
+     *
+     * @returns {void }  Method used to render the resize handle  .\
+     *
+     * @param {DiagramElement} element - Provide the DiagramElement value.
+     * @param {HTMLCanvasElement | SVGElement } canvas - Provide the canvas element.
+     * @param {  ThumbsConstraints } constraints - Provide the constraints value  .
+     * @param { number} currentZoom - Provide the currentZoom value.
+     * @param { SelectorConstraints } selectorConstraints - Provide the selectorConstraints value .
+     * @param { Transforms } transform - Provide the transform  value.
+     * @param { boolean } canMask - Provide the canMask boolean value.
+     * @param { number } enableNode - Provide the enableNode value.
+     * @param { boolean } nodeConstraints - Provide the nodeConstraints  value.
+     * @param { boolean } isSwimlane - Provide the isSwimlane boolean value.
+     * @private
+     */
     public renderResizeHandle(
         element: DiagramElement, canvas: HTMLCanvasElement | SVGElement, constraints: ThumbsConstraints, currentZoom: number,
         selectorConstraints?: SelectorConstraints, transform?: Transforms, canMask?: boolean, enableNode?: number,
         nodeConstraints?: boolean, isSwimlane?: boolean)
         :
         void {
-        let left: number = element.offsetX - element.actualSize.width * element.pivot.x;
-        let top: number = element.offsetY - element.actualSize.height * element.pivot.y;
-        let height: number = element.actualSize.height;
-        let width: number = element.actualSize.width;
+        const left: number = element.offsetX - element.actualSize.width * element.pivot.x;
+        const top: number = element.offsetY - element.actualSize.height * element.pivot.y;
+        const height: number = element.actualSize.height;
+        const width: number = element.actualSize.width;
         if (!isSwimlane &&
             (constraints & ThumbsConstraints.Rotate && canDrawThumbs(this.rendererActions) && (!avoidDrawSelector(this.rendererActions)))) {
             this.renderPivotLine(element, canvas, transform, selectorConstraints, canMask);
@@ -309,8 +402,8 @@ export class DiagramRenderer {
         }
         this.renderBorder(
             element, canvas, transform, enableNode, nodeConstraints, isSwimlane);
-        let nodeWidth: number = element.actualSize.width * currentZoom;
-        let nodeHeight: number = element.actualSize.height * currentZoom;
+        const nodeWidth: number = element.actualSize.width * currentZoom;
+        const nodeHeight: number = element.actualSize.height * currentZoom;
         if (!nodeConstraints && canDrawThumbs(this.rendererActions) && (!avoidDrawSelector(this.rendererActions))) {
             if (nodeWidth >= 40 && nodeHeight >= 40) {
                 //Hide corners when the size is less than 40
@@ -376,14 +469,28 @@ export class DiagramRenderer {
     }
 
 
-    /**   @private  */
+    /**
+     * Method used to render the end point of the handle \
+     *
+     * @returns {void }  Method used to render the end point of the handle  .\
+     *
+     * @param {ConnectorModel} selector - Provide the ConnectorModel.
+     * @param {HTMLCanvasElement | SVGElement } canvas - Provide the element.
+     * @param {  ThumbsConstraints } constraints - Provide the constraints value  .
+     * @param { SelectorConstraints} selectorConstraints - Provide the selectorConstraints value.
+     * @param { Transforms } transform - Provide the transform value .
+     * @param { boolean } connectedSource - Provide the connectedSource boolean value.
+     * @param { boolean } connectedTarget - Provide the connectedTarget boolean value.
+     * @param { boolean } isSegmentEditing - Provide the isSegmentEditing boolean value.
+     * @private
+     */
     public renderEndPointHandle(
         selector: ConnectorModel, canvas: HTMLCanvasElement | SVGElement, constraints: ThumbsConstraints,
         selectorConstraints: SelectorConstraints, transform: Transforms, connectedSource: boolean,
         connectedTarget?: boolean, isSegmentEditing?: boolean): void {
-        let sourcePoint: PointModel = selector.sourcePoint;
-        let targetPoint: PointModel = selector.targetPoint;
-        let wrapper: DiagramElement = selector.wrapper; let i: number; let segment: StraightSegment;
+        const sourcePoint: PointModel = selector.sourcePoint;
+        const targetPoint: PointModel = selector.targetPoint;
+        const wrapper: DiagramElement = selector.wrapper; let i: number; let segment: StraightSegment;
         this.renderCircularHandle(
             'connectorSourceThumb', wrapper, sourcePoint.x, sourcePoint.y, canvas,
             canShowCorner(selectorConstraints, 'ConnectorSourceThumb'),
@@ -406,7 +513,7 @@ export class DiagramRenderer {
                 }
             } else {
                 for (i = 0; i < selector.segments.length; i++) {
-                    let seg: OrthogonalSegment = (selector.segments[i] as OrthogonalSegment);
+                    const seg: OrthogonalSegment = (selector.segments[i] as OrthogonalSegment);
                     this.renderOrthogonalThumbs(
                         'orthoThumb_' + (i + 1), wrapper, seg, canvas,
                         canShowCorner(selectorConstraints, 'ConnectorSourceThumb'), transform);
@@ -415,7 +522,7 @@ export class DiagramRenderer {
         }
         if (selector.type === 'Bezier') {
             for (i = 0; i < selector.segments.length; i++) {
-                let segment: BezierSegment = (selector.segments[i] as BezierSegment);
+                const segment: BezierSegment = (selector.segments[i] as BezierSegment);
                 let bezierPoint: PointModel = !Point.isEmptyPoint(segment.point1) ? segment.point1
                     : segment.bezierPoint1;
                 this.renderCircularHandle(
@@ -447,7 +554,19 @@ export class DiagramRenderer {
         }
     }
 
-    /**   @private  */
+    /**
+     * Method used to render the orthogonal thumb \
+     *
+     * @returns {void }  Method used to render the orthogonal thumb  .\
+     *
+     * @param {string} id - Provide the id for the element.
+     * @param {DiagramElement } selector - Provide the selector element.
+     * @param {  OrthogonalSegment } segment - Provide the segment value  .
+     * @param { HTMLCanvasElement | SVGElement } canvas - Provide the canvas element value.
+     * @param { boolean } visibility - Provide the visibility value .
+     * @param { Transforms } t - Provide the Transforms value.
+     * @private
+     */
     public renderOrthogonalThumbs(
         id: string, selector: DiagramElement, segment: OrthogonalSegment, canvas: HTMLCanvasElement | SVGElement,
         visibility: boolean, t: Transforms): void {
@@ -462,7 +581,21 @@ export class DiagramRenderer {
         }
     }
 
-    /**   @private  */
+    /**
+     * Method used to render the orthogonal thumb \
+     *
+     * @returns {void }  Method used to render the orthogonal thumb  .\
+     *
+     * @param {string} id - Provide the id for the element.
+     * @param {DiagramElement } selector - Provide the selector element.
+     * @param {  Transforms } x - Provide the x value  .
+     * @param { Transforms } y - Provide the y value.
+     * @param { HTMLCanvasElement | SVGElement } canvas - Provide the canvas element.
+     * @param { boolean } visible - Provide the visible boolean value.
+     * @param { string } orientation - Provide the orientation value.
+     * @param { Transforms } t - Provide the Transforms value.
+     * @private
+     */
     public renderOrthogonalThumb(
         id: string, selector: DiagramElement, x: number, y: number, canvas: HTMLCanvasElement | SVGElement,
         visible: boolean, orientation: string, t: Transforms): void {
@@ -470,7 +603,7 @@ export class DiagramRenderer {
         if (orientation === 'horizontal') {
             path = 'M0,7 L15,0 L30,7 L15,14 z'; h = -15; v = -7;
         } else { path = 'M7,0 L0,15 L7,30 L14,15 z'; h = -7; v = -15; }
-        let options: PathAttributes = {
+        const options: PathAttributes = {
             x: ((x + t.tx) * t.scale) + h, y: ((y + t.ty) * t.scale) + v, angle: 0,
             fill: '#e2e2e2', stroke: 'black', strokeWidth: 1, dashArray: '', data: path,
             width: 20, height: 20, pivotX: 0, pivotY: 0, opacity: 1, visible: visible, id: id
@@ -478,39 +611,63 @@ export class DiagramRenderer {
         this.svgRenderer.drawPath(canvas as SVGElement, options, this.diagramId);
     }
 
-    /**   @private  */
+    /**
+     * Method used to render the pivot line line\
+     *
+     * @returns {void } Method used to render the pivot line line .\
+     *
+     * @param {DiagramElement} element - Provide the diagram element value.
+     * @param { HTMLCanvasElement | SVGElement } canvas - Provide the canvas element.
+     * @param {  Transforms } transform - Provide the transform value  .
+     * @param { SelectorConstraints } selectorConstraints - Provide the selector constraints value.
+     * @param { boolean } canMask - Provide the canMask boolean value.
+     * @private
+     */
+
     public renderPivotLine(
         element: DiagramElement, canvas: HTMLCanvasElement | SVGElement, transform?: Transforms,
         selectorConstraints?: SelectorConstraints, canMask?: boolean): void {
-        let wrapper: DiagramElement = element;
-        let dashArray: string = '2,3';
+        const wrapper: DiagramElement = element;
+        const dashArray: string = '2,3';
         let visible: boolean = (selectorConstraints & SelectorConstraints.Rotate) ? true : false;
         if (canMask) {
             visible = false;
         }
-        let options: BaseAttributes = this.getBaseAttributes(wrapper, transform);
+        const options: BaseAttributes = this.getBaseAttributes(wrapper, transform);
         options.fill = 'None'; options.stroke = 'black'; options.strokeWidth = 1;
         options.dashArray = dashArray; options.visible = visible;
-        let scale: number = transform.scale;
+        const scale: number = transform.scale;
         options.x *= scale;
         options.y *= scale;
         options.width *= scale;
         options.height *= scale;
         options.id = 'pivotLine';
         options.class = 'e-diagram-pivot-line';
-        let startPoint: PointModel = { x: wrapper.actualSize.width * wrapper.pivot.x * scale, y: -20 };
-        let endPoint: PointModel = { x: wrapper.actualSize.width * wrapper.pivot.x * scale, y: 0 };
+        const startPoint: PointModel = { x: wrapper.actualSize.width * wrapper.pivot.x * scale, y: -20 };
+        const endPoint: PointModel = { x: wrapper.actualSize.width * wrapper.pivot.x * scale, y: 0 };
         (options as LineAttributes).startPoint = startPoint;
         (options as LineAttributes).endPoint = endPoint;
         this.svgRenderer.drawLine(canvas as SVGElement, options as LineAttributes);
     }
 
-    /**   @private  */
+    /**
+     * Method used to render the bezier line for the connector  \
+     *
+     * @returns {void } Method used to render the bezier line for the connector .\
+     *
+     * @param {string} id - Provide the id value for the bezier line.
+     * @param { DiagramElement } wrapper - Provide the wrapper for the element.
+     * @param {  HTMLCanvasElement | SVGElement } canvas - Provide the canvas element  .
+     * @param { PointModel } start - Provide the pointmodel value.
+     * @param { PointModel } end - Provide the pointmodel value.
+     * @param { Transforms } transform - Provide the itransform value .
+     * @private
+     */
     public renderBezierLine(
         id: string, wrapper: DiagramElement, canvas: HTMLCanvasElement | SVGElement,
         start: PointModel, end: PointModel, transform?: Transforms): void {
-        let dashArray: string = '3,3';
-        let options: BaseAttributes = this.getBaseAttributes(wrapper, transform);
+        const dashArray: string = '3,3';
+        const options: BaseAttributes = this.getBaseAttributes(wrapper, transform);
         options.id = id;
         options.stroke = 'black';
         options.strokeWidth = 1;
@@ -519,36 +676,55 @@ export class DiagramRenderer {
         options.class = 'e-diagram-bezier-line';
         options.x = 0;
         options.y = 0;
-        let scale: number = transform.scale;
-        let x1: number = (start.x + transform.tx) * scale;
-        let y1: number = (start.y + transform.ty) * scale;
-        let x2: number = (end.x + transform.tx) * scale;
-        let y2: number = (end.y + transform.ty) * scale;
-        let startPoint: PointModel = { x: x1, y: y1 };
-        let endPoint: PointModel = { x: x2, y: y2 };
+        const scale: number = transform.scale;
+        const x1: number = (start.x + transform.tx) * scale;
+        const y1: number = (start.y + transform.ty) * scale;
+        const x2: number = (end.x + transform.tx) * scale;
+        const y2: number = (end.y + transform.ty) * scale;
+        const startPoint: PointModel = { x: x1, y: y1 };
+        const endPoint: PointModel = { x: x2, y: y2 };
         (options as LineAttributes).startPoint = startPoint;
         (options as LineAttributes).endPoint = endPoint;
         this.svgRenderer.drawLine(canvas as SVGElement, options as LineAttributes);
     }
 
-    /**   @private  */
+    /**
+     * Method used to render the circular handle for the node element  \
+     *
+     * @returns {void } Method used to render the circular handle for the node element .\
+     *
+     * @param {string} id - Provide the id value.
+     * @param { DiagramElement } selector - Provide the selector element value.
+     * @param { number } cx - Provide cx value  .
+     * @param { number } cy - Provide cx value.
+     * @param { HTMLCanvasElement | SVGElement } canvas - Provide the canvas element.
+     * @param { boolean } visible - Provide the visible property for the handle .
+     * @param { number } enableSelector - Provide the value for the enableSelector .
+     * @param { Transforms } t - Provide the transform value .
+     * @param { boolean } connected - Provide the connected boolean value .
+     * @param { boolean } canMask - Provide the canMask boolean value .
+     * @param { Object } ariaLabel - Provide the label properties .
+     * @param { number } count - Provide the count value  .
+     * @param { string } className - Provide the class name for this element .
+     * @private
+     */
     public renderCircularHandle(
         id: string, selector: DiagramElement, cx: number, cy: number, canvas: HTMLCanvasElement | SVGElement,
         visible: boolean, enableSelector?: number, t?: Transforms, connected?: boolean, canMask?: boolean,
         ariaLabel?: Object, count?: number, className?: string)
         :
         void {
-        let wrapper: DiagramElement = selector;
+        const wrapper: DiagramElement = selector;
         let radius: number = 7;
         let newPoint: PointModel = { x: cx, y: cy };
 
         if (wrapper.rotateAngle !== 0 || wrapper.parentTransform !== 0) {
-            let matrix: Matrix = identityMatrix();
+            const matrix: Matrix = identityMatrix();
             rotateMatrix(matrix, wrapper.rotateAngle + wrapper.parentTransform, wrapper.offsetX, wrapper.offsetY);
             newPoint = transformPointByMatrix(matrix, newPoint);
         }
 
-        let options: CircleAttributes = this.getBaseAttributes(wrapper) as CircleAttributes;
+        const options: CircleAttributes = this.getBaseAttributes(wrapper) as CircleAttributes;
         options.stroke = 'black';
         options.strokeWidth = 1;
         if (count !== undefined) {
@@ -575,14 +751,26 @@ export class DiagramRenderer {
         this.svgRenderer.drawCircle(canvas as SVGElement, options, enableSelector, ariaLabel);
     }
 
-    /**   @private  */
+    /**
+     * Method used to render border for the node element  \
+     *
+     * @returns {void } Method used to render border for the node element .\
+     *
+     * @param {SelectorModel} selector - Provide the selector model instance.
+     * @param { HTMLCanvasElement | SVGElement } canvas - Provide the canvas element value.
+     * @param { Transforms } transform - Provide the transform value  .
+     * @param { number } enableNode - Provide enableNode boolean value.
+     * @param { boolean } isBorderTickness - Provide the thickness value for the node.
+     * @param { boolean } isSwimlane - Provide the isSwimlane boolean value .
+     * @private
+     */
     public renderBorder(
         selector: DiagramElement, canvas: HTMLCanvasElement | SVGElement, transform?: Transforms, enableNode?: number,
         isBorderTickness?: boolean, isSwimlane?: boolean)
         :
         void {
-        let wrapper: DiagramElement = selector;
-        let options: BaseAttributes = this.getBaseAttributes(wrapper, transform);
+        const wrapper: DiagramElement = selector;
+        const options: BaseAttributes = this.getBaseAttributes(wrapper, transform);
         options.x *= transform.scale;
         options.y *= transform.scale;
         options.width *= transform.scale;
@@ -601,27 +789,37 @@ export class DiagramRenderer {
             options.class += ' e-thick-border';
         }
         (options as RectAttributes).cornerRadius = 0;
-        let parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector');
+        const parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector');
         this.svgRenderer.drawRectangle(canvas as SVGElement, options as RectAttributes, this.diagramId, undefined, true, parentSvg);
     }
 
-    /**   @private  */
+    /**
+     * Method used to render user handle for the node element  \
+     *
+     * @returns {void } Method used to render user handle for the node element .\
+     *
+     * @param {SelectorModel} selectorItem - Provide the selector model instance.
+     * @param { HTMLCanvasElement | SVGElement } canvas - Provide the canvas element value.
+     * @param { Transforms } transform - Provide the transform value  .
+     * @param { HTMLElement } diagramUserHandlelayer - Provide the HTMLElement value.
+     * @private
+     */
     public renderUserHandler(
         selectorItem: SelectorModel, canvas: HTMLCanvasElement | SVGElement, transform?: Transforms,
         diagramUserHandlelayer?: HTMLElement): void {
-        let wrapper: DiagramElement = selectorItem.wrapper; let canDraw: boolean;
-        for (let obj of selectorItem.userHandles) {
+        const wrapper: DiagramElement = selectorItem.wrapper; let canDraw: boolean;
+        for (const obj of selectorItem.userHandles) {
             canDraw = true;
             if ((obj.disableConnectors && selectorItem.connectors.length > 0) ||
                 (obj.disableNodes && selectorItem.nodes.length > 0)) {
                 canDraw = false;
             }
-            let div: HTMLElement = document.getElementById(obj.name + '_template_hiddenUserHandle');
+            const div: HTMLElement = document.getElementById(obj.name + '_template_hiddenUserHandle');
             if (div) {
                 obj.template = (div.childNodes[0]).cloneNode(true) as HTMLElement;
             }
-            let newPoint: PointModel;
-            newPoint = getUserHandlePosition(selectorItem, obj, transform);
+            //const newPoint: PointModel;
+            const newPoint: PointModel = getUserHandlePosition(selectorItem, obj, transform);
             newPoint.x = (newPoint.x + transform.tx) * transform.scale;
             newPoint.y = (newPoint.y + transform.ty) * transform.scale;
             if (obj.visible) {
@@ -629,8 +827,8 @@ export class DiagramRenderer {
             }
             if (canDraw) {
                 if (obj.pathData) {
-                    let data: string = obj.pathData ? obj.pathData : obj.content;
-                    let option: CircleAttributes = this.getBaseAttributes(wrapper) as CircleAttributes;
+                    const data: string = obj.pathData ? obj.pathData : obj.content;
+                    const option: CircleAttributes = this.getBaseAttributes(wrapper) as CircleAttributes;
                     option.id = obj.name + '_userhandle';
                     option.fill = obj.backgroundColor; option.stroke = obj.borderColor; option.strokeWidth = obj.borderWidth;
                     option.centerX = newPoint.x;
@@ -641,17 +839,17 @@ export class DiagramRenderer {
                     option.visible = obj.visible;
                     option.opacity = 1;
                     this.svgRenderer.drawCircle(canvas as SVGElement, option, 1, { 'aria-label': obj.name + 'user handle' });
-                    let pathPading: number = 5;
+                    const pathPading: number = 5;
                     let arrayCollection: Object[] = [];
                     arrayCollection = processPathData(data);
                     arrayCollection = splitArrayCollection(arrayCollection);
                     let pathSize: Rect = measurePath(data);
                     //requiredSize/contentSize
-                    let scaleX: number = (obj.size - 0.45 * obj.size) / pathSize.width;
-                    let scaleY: number = (obj.size - 0.45 * obj.size) / pathSize.height;
-                    let newData: string = transformPath(arrayCollection, scaleX, scaleY, true, pathSize.x, pathSize.y, 0, 0);
+                    const scaleX: number = (obj.size - 0.45 * obj.size) / pathSize.width;
+                    const scaleY: number = (obj.size - 0.45 * obj.size) / pathSize.height;
+                    const newData: string = transformPath(arrayCollection, scaleX, scaleY, true, pathSize.x, pathSize.y, 0, 0);
                     pathSize = measurePath(newData);
-                    let options: PathAttributes = {
+                    const options: PathAttributes = {
                         x: newPoint.x - pathSize.width / 2,
                         y: newPoint.y - pathSize.height / 2, angle: 0, id: '',
                         class: 'e-diagram-userhandle-path', fill: obj.pathColor,
@@ -662,8 +860,8 @@ export class DiagramRenderer {
                         canvas as SVGElement, options as PathAttributes, this.diagramId, undefined,
                         undefined, { 'aria-label': obj.name + 'user handle' });
                 } else if (obj.content) {
-                    let handleContent: DiagramNativeElement;
-                    handleContent = new DiagramNativeElement(obj.name, this.diagramId);
+                    //const handleContent: DiagramNativeElement;
+                    const handleContent: DiagramNativeElement = new DiagramNativeElement(obj.name, this.diagramId);
                     handleContent.content = obj.content;
                     handleContent.offsetX = newPoint.x;
                     handleContent.offsetY = newPoint.y;
@@ -678,8 +876,8 @@ export class DiagramRenderer {
                     handleContent.arrange(handleContent.desiredSize);
                     this.svgRenderer.drawNativeContent(handleContent, canvas, obj.size, obj.size, this.adornerSvgLayer);
                 } else if (obj.source) {
-                    let element: ImageElement = new ImageElement();
-                    let options: BaseAttributes = this.getBaseAttributes(element, transform);
+                    const element: ImageElement = new ImageElement();
+                    const options: BaseAttributes = this.getBaseAttributes(element, transform);
                     options.width = obj.size;
                     options.height = obj.size;
                     (options as ImageAttributes).x = newPoint.x - (obj.size / 2);
@@ -694,8 +892,8 @@ export class DiagramRenderer {
                     (options as ImageAttributes).id = obj.name + '_';
                     this.renderer.drawImage(canvas, options as ImageAttributes, this.adornerSvgLayer, false);
                 } else {
-                    let templateContent: DiagramHtmlElement;
-                    templateContent = new DiagramHtmlElement(obj.name, this.diagramId);
+                    //const templateContent: DiagramHtmlElement;
+                    const templateContent: DiagramHtmlElement = new DiagramHtmlElement(obj.name, this.diagramId);
                     templateContent.offsetX = newPoint.x;
                     templateContent.offsetY = newPoint.y;
                     templateContent.id = obj.name + '_shape';
@@ -710,22 +908,34 @@ export class DiagramRenderer {
         }
     }
 
-    /**   @private  */
+    /**
+     * Method used to render rotate thumb of the diagramnode element  \
+     *
+     * @returns {void } Method used to render rotate thumb of the diagramnode element .\
+     *
+     * @param {DiagramElement} wrapper - Provide the wrapper  element value.
+     * @param { HTMLCanvasElement | SVGElement } canvas - Provide the canvas element value.
+     * @param { Transforms } transform - Provide the transform value  .
+     * @param { SelectorConstraints } selectorConstraints - Provide the selectorConstraints value.
+     * @param { boolean } canMask - Provide the boolean value .
+     * @private
+     */
     public renderRotateThumb(
         wrapper: DiagramElement, canvas: HTMLCanvasElement | SVGElement, transform?: Transforms,
         selectorConstraints?: SelectorConstraints, canMask?: boolean): void {
-        let element: PathElement = new PathElement();
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const element: PathElement = new PathElement();
         let newPoint: PointModel;
-        let size: Size = new Size();
+        const size: Size = new Size();
         size.width = 18;
         size.height = 16;
-        let top: number = wrapper.offsetY - wrapper.actualSize.height * wrapper.pivot.y;
-        let left: number = wrapper.offsetX - wrapper.actualSize.width * wrapper.pivot.x;
+        const top: number = wrapper.offsetY - wrapper.actualSize.height * wrapper.pivot.y;
+        const left: number = wrapper.offsetX - wrapper.actualSize.width * wrapper.pivot.x;
         let visible: boolean = (selectorConstraints & SelectorConstraints.Rotate) ? true : false;
         if (canMask) {
             visible = false;
         }
-        let data: string = 'M 16.856144362449648 10.238890446662904 L 18.000144362449646 3.437890446662903' +
+        const data: string = 'M 16.856144362449648 10.238890446662904 L 18.000144362449646 3.437890446662903' +
             'L 15.811144362449646 4.254890446662903 C 14.837144362449646 2.5608904466629028 13.329144362449647 ' +
             ' 1.2598904466629026 11.485144362449645 0.5588904466629026 C 9.375144362449646 - 0.24510955333709716 7.071144362449646 ' +
             ' - 0.18010955333709716 5.010144362449646 0.7438904466629028 C 2.942144362449646 1.6678904466629028 1.365144362449646' +
@@ -748,13 +958,13 @@ export class DiagramRenderer {
         newPoint = { x: pivotX - size.width * 0.5, y: pivotY - 30 - size.height * 0.5 };
 
         if (wrapper.rotateAngle !== 0 || wrapper.parentTransform !== 0) {
-            let matrix: Matrix = identityMatrix();
+            const matrix: Matrix = identityMatrix();
             rotateMatrix(
                 matrix, wrapper.rotateAngle + wrapper.parentTransform,
                 (transform.tx + wrapper.offsetX) * transform.scale, (transform.ty + wrapper.offsetY) * transform.scale);
             newPoint = transformPointByMatrix(matrix, newPoint);
         }
-        let options: PathAttributes = {
+        const options: PathAttributes = {
             x: newPoint.x,
             y: newPoint.y,
             angle: wrapper.rotateAngle + wrapper.parentTransform,
@@ -767,33 +977,57 @@ export class DiagramRenderer {
             undefined, { 'aria-label': 'Thumb to rotate the selected object' });
     }
 
-    /**   @private  */
+    /**
+     * Method used to render the path element for the diagram  \
+     *
+     * @returns {void } Method used to render the path element for the diagram .\
+     *
+     * @param {PathElement} element - Provide the path element of the diagram .
+     * @param { HTMLCanvasElement | SVGElement } canvas - Provide the canvas element value.
+     * @param { Transforms } transform - Provide the transform value  .
+     * @param { SVGSVGElement } parentSvg - Provide the parent SVG element .
+     * @param { boolean } fromPalette - Provide the boolean value .
+     * @param { boolean } isPreviewNode - Provide the boolean value .
+     * @private
+     */
     public renderPathElement(
         element: PathElement, canvas: HTMLCanvasElement | SVGElement,
         transform?: Transforms, parentSvg?: SVGSVGElement, fromPalette?: boolean, isPreviewNode?: boolean):
         void {
-        let options: BaseAttributes = this.getBaseAttributes(element, transform, isPreviewNode);
+        const options: BaseAttributes = this.getBaseAttributes(element, transform, isPreviewNode);
         (options as PathAttributes).data = element.absolutePath;
         (options as PathAttributes).data = element.absolutePath;
-        let ariaLabel: Object = element.description ? element.description : element.id;
+        const ariaLabel: Object = element.description ? element.description : element.id;
         if (!this.isSvgMode) {
             options.x = element.flipOffset.x ? element.flipOffset.x : options.x;
             options.y = element.flipOffset.y ? element.flipOffset.y : options.y;
         }
         if (element.isExport) {
-            let pathBounds: Rect = element.absoluteBounds;
+            const pathBounds: Rect = element.absoluteBounds;
             (options as PathAttributes).data = updatePath(element, pathBounds, undefined, options);
         }
         this.renderer.drawPath(canvas, options as PathAttributes, this.diagramId, undefined, parentSvg, ariaLabel);
     }
 
-    /**   @private  */
+    /**
+     * Method used to update the grid line for the diagram  \
+     *
+     * @returns {void } Method used to update the grid line for the diagram .\
+     *
+     * @param {SnapSettingsModel} snapSettings - Provide the snapsetting value of the diagram .
+     * @param { SVGSVGElement } gridSvg - Provide the SVG grid  element value.
+     * @param { Transforms } t - Provide the transform value  .
+     * @param { RulerSettingsModel } rulerSettings - Provide the ruler setting property .
+     * @param { RulerModel } hRuler - Provide the horizontal ruler property value .
+     * @param { RulerModel } vRuler - Provide the vertical ruler property value .
+     * @private
+     */
     public renderSvgGridlines(
         snapSettings: SnapSettingsModel, gridSvg: SVGElement, t: Transforms,
         rulerSettings: RulerSettingsModel, hRuler: RulerModel, vRuler: RulerModel
     ): void {
-        let pattern: SVGPatternElement = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
-        let defs: SVGDefsElement = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        const pattern: SVGPatternElement = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+        const defs: SVGDefsElement = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
         defs.setAttribute('id', this.diagramId + '_grid_pattern_defn');
         if (snapSettings.constraints & SnapConstraints.ShowHorizontalLines ||
             snapSettings.constraints & SnapConstraints.ShowVerticalLines) {
@@ -802,11 +1036,11 @@ export class DiagramRenderer {
         let hWidth: number = 0; let hHeight: number = 0;
         let hSegmentwidth: number = 0; let vSegmentwidth: number = 0;
         let scale: number = 1;
-        let isRulerGrid: Boolean = false;
-        let isLine: boolean = snapSettings.gridType === 'Lines';
-        let verticalLineIntervals: number[] = isLine ?
+        let isRulerGrid: boolean = false;
+        const isLine: boolean = snapSettings.gridType === 'Lines';
+        const verticalLineIntervals: number[] = isLine ?
             snapSettings.verticalGridlines.lineIntervals : snapSettings.verticalGridlines.dotIntervals;
-        let horizontalLineIntervals: number[] = isLine ?
+        const horizontalLineIntervals: number[] = isLine ?
             snapSettings.horizontalGridlines.lineIntervals : snapSettings.horizontalGridlines.dotIntervals;
         if (rulerSettings.showRulers && rulerSettings.dynamicGrid && hRuler && vRuler) {
             hSegmentwidth = (vRuler as Ruler).updateSegmentWidth(t.scale);
@@ -825,7 +1059,7 @@ export class DiagramRenderer {
         }
         hWidth = isRulerGrid ? vSegmentwidth : hWidth * scale;
         hHeight = isRulerGrid ? hSegmentwidth : hHeight * scale;
-        let attr: Object = {
+        const attr: Object = {
             id: this.diagramId + '_pattern', x: 0, y: 0, width: hWidth,
             height: hHeight, patternUnits: 'userSpaceOnUse'
         };
@@ -840,7 +1074,7 @@ export class DiagramRenderer {
 
     private horizontalSvgGridlines(
         pattern: SVGPatternElement, hWidth: number, hHeight: number, scale: number, snapSettings: SnapSettingsModel,
-        rulerSettings: RulerSettingsModel, vRuler: RulerModel, isRulerGrid: Boolean, isLine: boolean, intervals: number[]
+        rulerSettings: RulerSettingsModel, vRuler: RulerModel, isRulerGrid: boolean, isLine: boolean, intervals: number[]
     ): void {
         let space: number = 0;
         let dashArray: number[] = [];
@@ -855,7 +1089,7 @@ export class DiagramRenderer {
             intervals = getInterval(intervals, isLine);
             for (let i: number = 0; i < intervals.length; i = i + 2) {
                 space = getSpaceValue(intervals, isLine, i, space);
-                let spaceY: number = 0;
+                const spaceY: number = 0;
                 hLine = document.createElementNS('http://www.w3.org/2000/svg', isLine ? 'path' : 'circle');
                 let d: number = isLine ? space + intervals[i] / 2 : space;
                 d = isRulerGrid ? d : d * scale;
@@ -887,7 +1121,7 @@ export class DiagramRenderer {
         intervals = getInterval(intervals, false);
         let r: number;
         let hLine: SVGElement;
-        let doubleRadius: boolean;
+        //const doubleRadius: boolean;
         let dy: number;
         let attr: Object;
         for (let j: number = 1; j < intervals.length; j = j + 2) {
@@ -906,7 +1140,7 @@ export class DiagramRenderer {
 
     private verticalSvgGridlines(
         pattern: SVGPatternElement, hWidth: number, hHeight: number, scale: number, snapSettings: SnapSettingsModel,
-        rulerSettings: RulerSettingsModel, hRuler: RulerModel, isRulerGrid: Boolean, isLine: boolean, intervals: number[]
+        rulerSettings: RulerSettingsModel, hRuler: RulerModel, isRulerGrid: boolean, isLine: boolean, intervals: number[]
     ): void {
         let space: number = 0;
         let dashArray: number[] = [];
@@ -918,7 +1152,7 @@ export class DiagramRenderer {
             if (rulerSettings.showRulers && rulerSettings.dynamicGrid && hRuler) {
                 intervals = this.updateLineIntervals(intervals, rulerSettings, hRuler, hWidth, isLine);
             }
-            let spaceY: number = 0;
+            const spaceY: number = 0;
             intervals = getInterval(intervals, isLine);
             for (let i: number = 0; i < intervals.length; i = i + 2) {
                 space = getSpaceValue(intervals, isLine, i, space);
@@ -944,14 +1178,26 @@ export class DiagramRenderer {
         }
     }
 
-    /**   @private  */
+    /**
+     * Method used to update the grid line for the diagram  \
+     *
+     * @returns {void } Method used to update the grid line for the diagram .\
+     *
+     * @param {SnapSettingsModel} snapSettings - Provide the snapsetting value of the diagram .
+     * @param { SVGSVGElement } svgGrid - Provide the SVG grid  element value.
+     * @param { Transforms } transform - Provide the transform value  .
+     * @param { RulerSettingsModel } rulerSettings - Provide the ruler setting property .
+     * @param { RulerModel } hRuler - Provide the horizontal ruler property value .
+     * @param { RulerModel } vRuler - Provide the vertical ruler property value .
+     * @private
+     */
     public updateGrid(
         snapSettings: SnapSettingsModel, svgGrid: SVGSVGElement, transform: Transforms,
         rulerSettings: RulerSettingsModel, hRuler: RulerModel, vRuler: RulerModel
     ): void {
-        let grid: SVGRectElement = svgGrid.getElementById(this.diagramId + '_grid_rect') as SVGRectElement;
-        let i: number;
-        let isRulerGrid: Boolean = false;
+        const grid: SVGRectElement = svgGrid.getElementById(this.diagramId + '_grid_rect') as SVGRectElement;
+        //let i: number;
+        let isRulerGrid: boolean = false;
         if (grid) {
             let pattern: SVGPatternElement = svgGrid.getElementById(this.diagramId + '_pattern') as SVGPatternElement;
             if (pattern) {
@@ -960,10 +1206,10 @@ export class DiagramRenderer {
             let hSegmentwidth: number = 0;
             let vSegmentwidth: number = 0;
             let scale: number = 1;
-            let isLine: boolean = snapSettings.gridType === 'Lines';
-            let verticalLineIntervals: number[] = isLine ?
+            const isLine: boolean = snapSettings.gridType === 'Lines';
+            const verticalLineIntervals: number[] = isLine ?
                 snapSettings.verticalGridlines.lineIntervals : snapSettings.verticalGridlines.dotIntervals;
-            let horizontalLineIntervals: number[] = isLine ?
+            const horizontalLineIntervals: number[] = isLine ?
                 snapSettings.horizontalGridlines.lineIntervals : snapSettings.horizontalGridlines.dotIntervals;
             if (rulerSettings.showRulers && rulerSettings.dynamicGrid && vRuler && hRuler) {
                 hSegmentwidth = (vRuler as Ruler).updateSegmentWidth(transform.scale);
@@ -1001,7 +1247,7 @@ export class DiagramRenderer {
                 pattern, width, height, scale, snapSettings, rulerSettings, vRuler, isRulerGrid, isLine, horizontalLineIntervals);
             this.verticalSvgGridlines(
                 pattern, width, height, scale, snapSettings, rulerSettings, hRuler, isRulerGrid, isLine, verticalLineIntervals);
-            let defs: SVGDefsElement = svgGrid.getElementById(this.diagramId + '_grid_pattern_defn') as SVGDefsElement;
+            const defs: SVGDefsElement = svgGrid.getElementById(this.diagramId + '_grid_pattern_defn') as SVGDefsElement;
             if (defs) {
                 defs.appendChild(pattern);
             }
@@ -1012,9 +1258,9 @@ export class DiagramRenderer {
         intervals: number[],
         rulerSettings: RulerSettingsModel, ruler: RulerModel, segmentWidth: number, isLine: boolean)
         : number[] {
-        let newInterval: number[] = [];
-        let tickInterval: number = segmentWidth / ruler.interval;
-        let interval: number = isLine ? ruler.interval : ruler.interval + 1;
+        const newInterval: number[] = [];
+        const tickInterval: number = segmentWidth / ruler.interval;
+        const interval: number = isLine ? ruler.interval : ruler.interval + 1;
         for (let i: number = 0; i < interval * 2; i++) {
             if (i % 2 === 0) {
                 newInterval[i] = isLine ? ((i === 0) ? 1.25 : 0.25) : 0;
@@ -1053,13 +1299,25 @@ export class DiagramRenderer {
         return scale;
     }
 
-    /**   @private  */
+    /**
+     * Method used to render the text element  \
+     *
+     * @returns {void }Method used to render the text element  .\
+     *
+     * @param {TextElement} element - Provide the text element .
+     * @param { HTMLCanvasElement | SVGElement} canvas - Provide the canvas element .
+     * @param { Transforms } transform - Provide the transform value  .
+     * @param { SVGSVGElement } parentSvg - Provide the SVG layer element .
+     * @param { boolean } fromPalette - Provide the boolean value .
+     * @private
+     */
     public renderTextElement(
         element: TextElement, canvas: HTMLCanvasElement | SVGElement,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         transform?: Transforms, parentSvg?: SVGSVGElement, fromPalette?: boolean):
         void {
 
-        let options: BaseAttributes = this.getBaseAttributes(element, transform);
+        const options: BaseAttributes = this.getBaseAttributes(element, transform);
         (options as RectAttributes).cornerRadius = 0;
         (options as TextAttributes).whiteSpace = whiteSpaceToString(element.style.whiteSpace, element.style.textWrapping);
         (options as TextAttributes).content = element.content;
@@ -1085,7 +1343,7 @@ export class DiagramRenderer {
             (options as TextAttributes).parentHeight = this.groupElement.actualSize.height;
         }
         options.dashArray = ''; options.strokeWidth = 0; options.fill = element.style.fill;
-        let ariaLabel: Object = element.description ? element.description : element.content ? element.content : element.id;
+        const ariaLabel: Object = element.description ? element.description : element.content ? element.content : element.id;
         if ((element.style.textWrapping === 'Wrap' || element.style.textWrapping === 'WrapWithOverflow') &&
             this.groupElement && options.height > this.groupElement.actualSize.height &&
             (element.style.textOverflow === 'Clip' || element.style.textOverflow === 'Ellipsis')) {
@@ -1102,38 +1360,39 @@ export class DiagramRenderer {
 
     private renderNativeElement(
         element: DiagramNativeElement, canvas: HTMLCanvasElement | SVGElement,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         transform?: Transforms, parentSvg?: SVGSVGElement, fromPalette?: boolean): void {
         let templateWidth: number; let templateHeight: number;
-        let nativeSvg: SVGSVGElement = this.getParentSvg(element, undefined, canvas) || parentSvg;
-        let nativeLayer: HTMLCanvasElement | SVGElement = this.getParentElement(element, canvas, nativeSvg).g || canvas;
-        let options: BaseAttributes = this.getBaseAttributes(element, transform);
+        const nativeSvg: SVGSVGElement = this.getParentSvg(element, undefined, canvas) || parentSvg;
+        const nativeLayer: HTMLCanvasElement | SVGElement = this.getParentElement(element, canvas, nativeSvg).g || canvas;
+        const options: BaseAttributes = this.getBaseAttributes(element, transform);
         (options as RectAttributes).fill = 'transparent';
         (options as RectAttributes).cornerRadius = element.cornerRadius;
         (options as RectAttributes).stroke = 'transparent';
         this.renderer.drawRectangle(canvas, options as RectAttributes, this.diagramId, undefined, undefined, parentSvg);
         switch (element.scale) {
-            case 'None':
-                templateWidth = element.contentSize.width;
-                templateHeight = element.contentSize.height;
-                break;
-            case 'Stretch':
-                templateWidth = element.actualSize.width;
-                templateHeight = element.actualSize.height;
-                break;
-            case 'Meet':
-                if (element.actualSize.width <= element.actualSize.height) {
-                    templateWidth = templateHeight = element.actualSize.width;
-                } else {
-                    templateWidth = templateHeight = element.actualSize.height;
-                }
-                break;
-            case 'Slice':
-                if (element.actualSize.width >= element.actualSize.height) {
-                    templateWidth = templateHeight = element.actualSize.width;
-                } else {
-                    templateWidth = templateHeight = element.actualSize.height;
-                }
-                break;
+        case 'None':
+            templateWidth = element.contentSize.width;
+            templateHeight = element.contentSize.height;
+            break;
+        case 'Stretch':
+            templateWidth = element.actualSize.width;
+            templateHeight = element.actualSize.height;
+            break;
+        case 'Meet':
+            if (element.actualSize.width <= element.actualSize.height) {
+                templateWidth = templateHeight = element.actualSize.width;
+            } else {
+                templateWidth = templateHeight = element.actualSize.height;
+            }
+            break;
+        case 'Slice':
+            if (element.actualSize.width >= element.actualSize.height) {
+                templateWidth = templateHeight = element.actualSize.width;
+            } else {
+                templateWidth = templateHeight = element.actualSize.height;
+            }
+            break;
         }
         if (this.svgRenderer) {
             this.svgRenderer.drawNativeContent(element, nativeLayer, templateHeight, templateWidth, nativeSvg);
@@ -1143,7 +1402,7 @@ export class DiagramRenderer {
     private renderHTMLElement(
         element: DiagramHtmlElement, canvas: HTMLCanvasElement | SVGElement, htmlLayer: HTMLElement,
         transform?: Transforms, parentSvg?: SVGSVGElement, fromPalette?: boolean, indexValue?: number): void {
-        let options: BaseAttributes = this.getBaseAttributes(element, transform);
+        const options: BaseAttributes = this.getBaseAttributes(element, transform);
         (options as RectAttributes).fill = 'transparent';
         (options as RectAttributes).cornerRadius = element.cornerRadius;
         (options as RectAttributes).stroke = 'transparent';
@@ -1154,12 +1413,24 @@ export class DiagramRenderer {
         }
     }
 
-    /**   @private  */
+
+    /**
+     * Method used to render the image element  \
+     *
+     * @returns {void }Method used to render the image element  .\
+     *
+     * @param {ImageElement} element - Provide the image element .
+     * @param { HTMLCanvasElement | SVGElement} canvas - Provide the canvas element .
+     * @param { Transforms } transform - Provide the transform value  .
+     * @param { SVGSVGElement } parentSvg - Provide the SVG layer element .
+     * @param { boolean } fromPalette - Provide the boolean value .
+     * @private
+     */
     public renderImageElement(
         element: ImageElement, canvas: HTMLCanvasElement | SVGElement,
         transform?: Transforms, parentSvg?: SVGSVGElement, fromPalette?: boolean):
         void {
-        let options: BaseAttributes = this.getBaseAttributes(element, transform);
+        const options: BaseAttributes = this.getBaseAttributes(element, transform);
         (options as RectAttributes).cornerRadius = 0;
         this.renderer.drawRectangle(canvas, options as RectAttributes, this.diagramId, undefined, undefined, parentSvg);
         // let sx: number; let sy: number;
@@ -1170,34 +1441,34 @@ export class DiagramRenderer {
             imageWidth = element.actualSize.width;
             imageHeight = element.actualSize.height;
         } else {
-            let contentWidth: number = element.contentSize.width;
-            let contentHeight: number = element.contentSize.height;
+            const contentWidth: number = element.contentSize.width;
+            const contentHeight: number = element.contentSize.height;
 
             let widthRatio: number = options.width / contentWidth;
             let heightRatio: number = options.height / contentHeight;
 
             let ratio: number;
             switch (element.stretch) {
-                case 'Meet':
-                    ratio = Math.min(widthRatio, heightRatio);
-                    imageWidth = contentWidth * ratio;
-                    imageHeight = contentHeight * ratio;
-                    options.x += Math.abs(options.width - imageWidth) / 2;
-                    options.y += Math.abs(options.height - imageHeight) / 2;
-                    break;
-                case 'Slice':
-                    widthRatio = options.width / contentWidth;
-                    heightRatio = options.height / contentHeight;
-                    ratio = Math.max(widthRatio, heightRatio);
-                    imageWidth = contentWidth * ratio;
-                    imageHeight = contentHeight * ratio;
-                    sourceWidth = options.width / imageWidth * contentWidth;
-                    sourceHeight = options.height / imageHeight * contentHeight;
-                    break;
-                case 'None':
-                    imageWidth = contentWidth;
-                    imageHeight = contentHeight;
-                    break;
+            case 'Meet':
+                ratio = Math.min(widthRatio, heightRatio);
+                imageWidth = contentWidth * ratio;
+                imageHeight = contentHeight * ratio;
+                options.x += Math.abs(options.width - imageWidth) / 2;
+                options.y += Math.abs(options.height - imageHeight) / 2;
+                break;
+            case 'Slice':
+                widthRatio = options.width / contentWidth;
+                heightRatio = options.height / contentHeight;
+                ratio = Math.max(widthRatio, heightRatio);
+                imageWidth = contentWidth * ratio;
+                imageHeight = contentHeight * ratio;
+                sourceWidth = options.width / imageWidth * contentWidth;
+                sourceHeight = options.height / imageHeight * contentHeight;
+                break;
+            case 'None':
+                imageWidth = contentWidth;
+                imageHeight = contentHeight;
+                break;
             }
         }
         options.width = imageWidth;
@@ -1215,20 +1486,36 @@ export class DiagramRenderer {
         this.renderer.drawImage(canvas, options as ImageAttributes, parentSvg, fromPalette);
     }
 
-    /**   @private  */
+    /**
+     * Method used to render the container  \
+     *
+     * @returns {void} Method used to render the container .\
+     *
+     * @param {Container} group - Provide the container .
+     * @param { HTMLCanvasElement | SVGElement} canvas - Provide the canvas element .
+     * @param { HTMLElement } htmlLayer - Provide the html layer element  .
+     * @param { Transforms } transform - Provide the transform value .
+     * @param { SVGSVGElement } parentSvg - Provide the SVG layer element .
+     * @param { boolean } createParent - Provide the boolean value .
+     * @param { boolean } fromPalette - Provide the boolean value  .
+     * @param { number } indexValue - Provide the indexValue value .
+     * @param { boolean } isPreviewNode - Provide the boolean value .
+     * @private
+     */
     public renderContainer(
         group: Container, canvas: HTMLCanvasElement | SVGElement, htmlLayer: HTMLElement,
         transform?: Transforms, parentSvg?: SVGSVGElement, createParent?: boolean, fromPalette?: boolean,
         indexValue?: number, isPreviewNode?: boolean):
         void {
-        let svgParent: SvgParent = { svg: parentSvg, g: canvas };
+        const svgParent: SvgParent = { svg: parentSvg, g: canvas };
         if (this.diagramId) {
             parentSvg = this.getParentSvg(group) || parentSvg;
             if (this.isSvgMode) {
-                let groupElement: HTMLCanvasElement | SVGElement;
-                groupElement = this.getParentElement(group, canvas, parentSvg, indexValue).g || canvas;
+                //const groupElement: HTMLCanvasElement | SVGElement;
+                // eslint-disable-next-line max-len
+                const groupElement: HTMLCanvasElement | SVGElement = this.getParentElement(group, canvas, parentSvg, indexValue).g || canvas;
                 parentSvg = this.getParentSvg(this.hasNativeParent(group.children)) || parentSvg;
-                let svgNativeParent: SvgParent =
+                const svgNativeParent: SvgParent =
                     this.getParentElement(this.hasNativeParent(group.children), groupElement, parentSvg, indexValue);
                 svgParent.svg = svgNativeParent.svg || parentSvg;
                 svgParent.g = svgNativeParent.g || groupElement;
@@ -1250,7 +1537,7 @@ export class DiagramRenderer {
             let parentG: HTMLCanvasElement | SVGElement;
             let svgParent: SvgParent;
             let flip: FlipDirection;
-            for (let child of group.children) {
+            for (const child of group.children) {
                 parentSvg = this.getParentSvg(this.hasNativeParent(group.children) || child) || parentSvg;
                 if (this.isSvgMode) {
                     svgParent = this.getParentElement(this.hasNativeParent(group.children) || child, canvas, parentSvg);
@@ -1313,8 +1600,8 @@ export class DiagramRenderer {
         if (attr) {
             if (element && (element as Container).children &&
                 (element as Container).children.length && ((element as Container).children[0] instanceof DiagramHtmlElement)) {
-                let id: string[] = canvas.id.split('_preview');
-                let layer: HTMLElement = document.getElementById(id[0] + '_html_div') ||
+                const id: string[] = canvas.id.split('_preview');
+                const layer: HTMLElement = document.getElementById(id[0] + '_html_div') ||
                     (getHTMLLayer(this.diagramId).children[0]) as HTMLElement;
                 canvas = layer.querySelector(('#' + element.id + '_content_html_element'));
                 if (canvas) {
@@ -1327,10 +1614,18 @@ export class DiagramRenderer {
         }
     }
 
-    /**   @private  */
+    /**
+     * Method used to check the native parent  \
+     *
+     * @returns {void} Method used to check the native parent .\
+     *
+     * @param { DiagramElement[]} children - Provide the diagram element .
+     * @param { number} count - Provide the count value .
+     * @private
+     */
     public hasNativeParent(children: DiagramElement[], count?: number): DiagramElement {
         if (children && children.length > 0 && (count || 0 < 3)) {
-            let child: DiagramElement = children[0];
+            const child: DiagramElement = children[0];
             if (child instanceof DiagramNativeElement) {
                 return child;
             } else if ((child as Container).children && (child as Container).children.length) {
@@ -1340,26 +1635,54 @@ export class DiagramRenderer {
         return undefined;
     }
 
-    /**   @private  */
+    /**
+     * Method used the draw the reactangle for the diagram  \
+     *
+     * @returns {void} Method used the draw the reactangle for the diagram .\
+     *
+     * @param { SVGElement} element - Provide the SVG elements .
+     * @param { RectAttributes} canvas - Provide the Canvas element  .
+     * @param { RectAttributes} transform - Provide transform value for the node  .
+     * @param { RectAttributes} parentSvg -provide the parent SVG  .
+     * @param { RectAttributes} isPreviewNode - Provide the preview boolean value  .
+     * @private
+     */
     public renderRect(
         element: DiagramElement, canvas: HTMLCanvasElement | SVGElement, transform?: Transforms,
         parentSvg?: SVGSVGElement, isPreviewNode?: boolean):
         void {
-        let options: RectAttributes = this.getBaseAttributes(element, transform, isPreviewNode);
+        const options: RectAttributes = this.getBaseAttributes(element, transform, isPreviewNode);
         options.cornerRadius = element.cornerRadius || 0;
-        let ariaLabel: Object = element.description ? element.description : element.id;
+        const ariaLabel: Object = element.description ? element.description : element.id;
         this.renderer.drawRectangle(canvas, options, this.diagramId, undefined, undefined, parentSvg, ariaLabel);
     }
 
-    /**   @private  */
+    /**
+     * Method used the draw the reactangle for the diagram  \
+     *
+     * @returns {void} Method used the draw the reactangle for the diagram .\
+     *
+     * @param { SVGElement} canvas - Provide the SVG elements .
+     * @param { RectAttributes} options - Provide the attributes to draw the rectangle  .
+     * @private
+     */
     public drawRect(canvas: SVGElement, options: RectAttributes): void {
         options.cornerRadius = 0;
         this.svgRenderer.drawRectangle(canvas, options, this.diagramId);
     }
 
-    /**   @private  */
+    /**
+     * Will get the base attributes for all the elements  \
+     *
+     * @returns {BaseAttributes} Will get the base attributes for all the elements .\
+     *
+     * @param { DiagramElement} element - Provide the diagram elements .
+     * @param { Transforms} transform - Provide the transform value for the  elements .
+     * @param { boolean} isPreviewNode - Provide the preview boolean value.
+     * @private
+     */
     public getBaseAttributes(element: DiagramElement, transform?: Transforms, isPreviewNode?: boolean): BaseAttributes {
-        let options: BaseAttributes = {
+        const options: BaseAttributes = {
             width: element.actualSize.width, height: element.actualSize.height,
             x: element.offsetX - element.actualSize.width * element.pivot.x + 0.5,
             y: element.offsetY - element.actualSize.height * element.pivot.y + 0.5,
@@ -1390,29 +1713,41 @@ export class DiagramRenderer {
         return options;
     }
 
-    /**   @private  */
+    /**
+     * Will render the SVG background image  \
+     *
+     * @returns {void} Will render the SVG background image  .\
+     *
+     * @param { Transforms} background - Provide the transforms values .
+     * @param { boolean} diagramElement - Provide element for the daigram.
+     * @param { boolean} x - Provide the rendering mode of the daigram.
+     * @param { boolean} y - Provide the rendering mode of the daigram.
+     * @param { boolean} width - Provide the rendering mode of the daigram.
+     * @param { boolean} height - Provide the rendering mode of the daigram.
+     * @private
+     */
     public static renderSvgBackGroundImage(
         background: BackgroundModel, diagramElement: HTMLElement, x: number, y: number, width: number, height: number
     ): void {
         if (background.source) {
-            let backgroundLayer: SVGSVGElement = getBackgroundLayerSvg(diagramElement.id);
+            const backgroundLayer: SVGSVGElement = getBackgroundLayerSvg(diagramElement.id);
             let target: SVGElement = backgroundLayer.getElementById(diagramElement.id + '_image') as SVGElement;
             if (!target) {
-                let bgimageLayer: SVGElement = getBackgroundImageLayer(diagramElement.id);
+                const bgimageLayer: SVGElement = getBackgroundImageLayer(diagramElement.id);
                 target = document.createElementNS('http://www.w3.org/2000/svg', 'image');
                 target.setAttribute('id', diagramElement.id + '_image');
                 bgimageLayer.appendChild(target);
             }
-            let imageObj: HTMLImageElement = new Image();
+            const imageObj: HTMLImageElement = new Image();
             imageObj.src = background.source;
             target.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imageObj.src.toString());
-            let scale: string = background.scale !== 'None' ? background.scale : '';
-            let imgAlign: string = background.align;
+            const scale: string = background.scale !== 'None' ? background.scale : '';
+            const imgAlign: string = background.align;
             let aspectRatio: string = imgAlign.charAt(0).toLowerCase() + imgAlign.slice(1);
             if (scale) {
                 aspectRatio += ' ' + scale.charAt(0).toLowerCase() + scale.slice(1);
             }
-            let attr: Object = {
+            const attr: Object = {
                 'id': diagramElement.id + '_image', 'x': x, 'y': y,
                 'width': width, 'height': height,
                 'preserveAspectRatio': aspectRatio
@@ -1421,12 +1756,19 @@ export class DiagramRenderer {
         }
     }
 
-    /**   @private  */
+    /**
+     * Method used to transform the layer  \
+     *
+     *  @returns {boolean} Method used to transform the layer  .\
+     *  @param { Transforms} transform - Provide the transforms values .
+     *  @param { boolean} svgMode - Provide the rendering mode of the daigram.
+     *  @private
+     */
     public transformLayers(transform: Transforms, svgMode: boolean): boolean {
 
-        let tx: number = transform.tx * transform.scale;
-        let ty: number = transform.ty * transform.scale;
-        let domTable: string = 'domTable';
+        const tx: number = transform.tx * transform.scale;
+        const ty: number = transform.ty * transform.scale;
+        const domTable: string = 'domTable';
         if (tx !== this.transform.x || ty !== this.transform.y || (tx === 0 || ty === 0)) {
             //diagram layer
             if (svgMode) {
@@ -1434,22 +1776,22 @@ export class DiagramRenderer {
                     window[domTable][this.diagramId + '_diagramLayer'] =
                         this.diagramSvgLayer.getElementById(this.diagramId + '_diagramLayer');
                 }
-                let diagramLayer: SVGElement = window[domTable][this.diagramId + '_diagramLayer'] as SVGElement;
+                const diagramLayer: SVGElement = window[domTable][this.diagramId + '_diagramLayer'] as SVGElement;
                 diagramLayer.setAttribute('transform', 'translate('
                     + (transform.tx * transform.scale) + ',' + (transform.ty * transform.scale) + '),scale('
                     + transform.scale + ')');
             }
             //background
             //gridline
-            let gridLayer: SVGElement = getGridLayer(this.diagramId);
+            const gridLayer: SVGElement = getGridLayer(this.diagramId);
             gridLayer.setAttribute('transform', 'translate(' + (transform.tx * transform.scale) + ','
                 + (transform.ty * transform.scale) + ')');
 
-            //portslayer    
+            //portslayer
             if (!window[domTable][this.diagramId + '_diagramPorts']) {
                 window[domTable][this.diagramId + '_diagramPorts'] = this.iconSvgLayer.getElementById(this.diagramId + '_diagramPorts');
             }
-            let portsLayer: SVGElement = window[domTable][this.diagramId + '_diagramPorts'] as SVGElement;
+            const portsLayer: SVGElement = window[domTable][this.diagramId + '_diagramPorts'] as SVGElement;
             portsLayer.setAttribute('transform', 'translate('
                 + (transform.tx * transform.scale) + ',' + (transform.ty * transform.scale) + '),scale('
                 + transform.scale + ')');
@@ -1458,7 +1800,7 @@ export class DiagramRenderer {
                 window[domTable][this.diagramId + '_diagramExpander'] =
                     this.iconSvgLayer.getElementById(this.diagramId + '_diagramExpander');
             }
-            let expandLayer: SVGElement = window[domTable][this.diagramId + '_diagramExpander'] as SVGElement;
+            const expandLayer: SVGElement = window[domTable][this.diagramId + '_diagramExpander'] as SVGElement;
             expandLayer.setAttribute('transform', 'translate('
                 + (transform.tx * transform.scale) + ',' + (transform.ty * transform.scale) + '),scale('
                 + transform.scale + ')');
@@ -1466,13 +1808,13 @@ export class DiagramRenderer {
             if (!window[domTable][this.diagramId + '_nativeLayer']) {
                 window[domTable][this.diagramId + '_nativeLayer'] = this.nativeSvgLayer.getElementById(this.diagramId + '_nativeLayer');
             }
-            let nativeLayer: SVGElement = window[domTable][this.diagramId + '_nativeLayer'] as SVGElement;
+            const nativeLayer: SVGElement = window[domTable][this.diagramId + '_nativeLayer'] as SVGElement;
             nativeLayer.setAttribute('transform', 'translate('
                 + (transform.tx * transform.scale) + ',' + (transform.ty * transform.scale) + '),scale('
                 + transform.scale + ')');
 
             //htmlLayer
-            let htmlLayer: HTMLElement = getHTMLLayer(this.diagramId).children[0] as HTMLElement;
+            const htmlLayer: HTMLElement = getHTMLLayer(this.diagramId).children[0] as HTMLElement;
             htmlLayer.style.transform = 'translate('
                 + (transform.tx * transform.scale) + 'px,' + (transform.ty * transform.scale) + 'px)scale('
                 + transform.scale + ')';
@@ -1483,7 +1825,18 @@ export class DiagramRenderer {
     }
 
 
-    /** @private */
+
+    /**
+     * Method used to update the nodes in the diagram  \
+     *
+     *  @returns {void} Method used to update the nodes in the diagram  .\
+     *  @param { HTMLCanvasElement} element - Provide the diagram element .
+     *  @param { HTMLCanvasElement} diagramElementsLayer - Provide the diagram layer element .
+     *  @param { HTMLCanvasElement} htmlLayer -Provide the html element .
+     *  @param { HTMLCanvasElement} transform - Provide the transform value .
+     *  @param { HTMLCanvasElement} insertIndex - Provide the index value.
+     *  @private
+     */
     public updateNode(
         element: DiagramElement, diagramElementsLayer: HTMLCanvasElement, htmlLayer: HTMLElement,
         transform?: Transforms, insertIndex?: number): void {
@@ -1520,6 +1873,7 @@ interface SvgParent {
     svg: SVGSVGElement;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface TextStyle {
     width: number;
     height: number;

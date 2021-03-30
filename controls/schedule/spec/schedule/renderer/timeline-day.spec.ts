@@ -11,17 +11,18 @@ import {
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 /**
- * Schedule timeline day view spec 
+ * Schedule timeline day view spec
  */
 Schedule.Inject(TimelineViews, TimelineMonth);
 
 describe('Schedule timeline day view', () => {
     beforeAll(() => {
-        // tslint:disable:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this as any).skip(); //Skips test (in Chai)
             return;
         }
@@ -29,8 +30,8 @@ describe('Schedule timeline day view', () => {
 
     describe('Initial load', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
                 currentView: 'TimelineDay', selectedDate: new Date(2017, 9, 4),
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek']
             };
@@ -53,7 +54,7 @@ describe('Schedule timeline day view', () => {
         });
 
         it('time cells', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr'));
             expect(headTrs.length).toEqual(2);
             expect(headTrs[1].children.length).toEqual(48);
             expect(headTrs[1].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
@@ -61,7 +62,7 @@ describe('Schedule timeline day view', () => {
 
         it('work cells', () => {
             expect(schObj.getWorkCellElements().length).toEqual(48);
-            let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
             expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
@@ -73,11 +74,11 @@ describe('Schedule timeline day view', () => {
             expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(18);
         });
 
-        it('Checking events rendering', (done: Function) => {
+        it('Checking events rendering', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(14);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(1);
                 done();
             };
@@ -86,29 +87,29 @@ describe('Schedule timeline day view', () => {
         });
 
         it('Checking left indicator icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[0].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
             expect(eventElementList[0].querySelectorAll('.e-appointment-details .e-indicator')[0].classList).toContain('e-left-icon');
         });
 
         it('Checking right indicator icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[13].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned Event - Greater than 24');
             expect(eventElementList[13].querySelectorAll('.e-appointment-details .e-indicator')[0].classList).toContain('e-right-icon');
         });
 
         it('Checking recurrence icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[0].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
             expect(eventElementList[0].querySelectorAll('.e-appointment-details .e-icons')[1].classList).toContain('e-recurrence-icon');
         });
 
         it('Checking more indicator', () => {
-            let moreIndicatorList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicatorList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(1);
             moreIndicatorList[0].click();
-            let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
-            let eventElementList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
+            const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            const eventElementList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(eventElementList.length).toEqual(11);
             expect(morePopup.classList).toContain('e-popup-open');
             util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
@@ -116,48 +117,48 @@ describe('Schedule timeline day view', () => {
             util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
 
-        it('navigate next date', (done: Function) => {
+        it('navigate next date', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
                 expect(schObj.element.querySelectorAll('.e-date-header-container .e-header-cells').length).toEqual(1);
                 expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('May 2, Wednesday');
-                let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr'));
+                const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr'));
                 expect(headTrs.length).toEqual(2);
                 expect(headTrs[1].children.length).toEqual(48);
                 expect(headTrs[1].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
                 expect(schObj.getWorkCellElements().length).toEqual(48);
-                let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+                const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
                 expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
                 expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 4, 2).getTime().toString());
                 expect(firstWorkCell.innerHTML).toEqual('');
                 expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(18);
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(5);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(1);
                 done();
             };
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
         });
 
-        it('navigate previous date', (done: Function) => {
+        it('navigate previous date', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
                 expect(schObj.element.querySelectorAll('.e-date-header-container .e-header-cells').length).toEqual(1);
                 expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('May 1, Tuesday');
-                let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr'));
+                const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr'));
                 expect(headTrs.length).toEqual(2);
                 expect(headTrs[1].children.length).toEqual(48);
                 expect(headTrs[1].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
                 expect(schObj.getWorkCellElements().length).toEqual(48);
-                let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+                const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
                 expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
                 expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
                 expect(firstWorkCell.innerHTML).toEqual('');
                 expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(18);
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(14);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(1);
                 done();
             };
@@ -165,21 +166,21 @@ describe('Schedule timeline day view', () => {
         });
         it('cell single click', () => {
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
-            let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            const cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
             (<HTMLInputElement>cellPopup.querySelector('.e-subject')).innerText = '';
-            let moreDetail: HTMLElement = <HTMLElement>cellPopup.querySelector('.e-event-details');
+            const moreDetail: HTMLElement = <HTMLElement>cellPopup.querySelector('.e-event-details');
             expect(moreDetail.classList).toContain('e-btn');
             expect(moreDetail.classList).toContain('e-flat');
             expect(moreDetail.innerHTML).toEqual('More Details');
-            let save: HTMLElement = cellPopup.querySelector('.e-event-create');
+            const save: HTMLElement = cellPopup.querySelector('.e-event-create');
             expect(save.classList).toContain('e-btn');
             expect(save.classList).toContain('e-primary');
             expect(save.innerHTML).toEqual('Save');
-            let close: HTMLElement = cellPopup.querySelector('.e-close-icon');
+            const close: HTMLElement = cellPopup.querySelector('.e-close-icon');
             expect(close.classList).toContain('e-btn-icon');
             close.click();
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -189,7 +190,7 @@ describe('Schedule timeline day view', () => {
         });
         it('cell double click', () => {
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
-            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             expect(dialogElement.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML).toEqual('New Event');
             expect(dialogElement.querySelector('.e-subject-container label').innerHTML).toEqual('Title');
             expect(dialogElement.querySelector('.e-location-container label').innerHTML).toEqual('Location');
@@ -200,9 +201,9 @@ describe('Schedule timeline day view', () => {
             expect(dialogElement.querySelector('.e-description-container label').innerHTML).toEqual('Description');
             expect(dialogElement.querySelector('.e-all-day-container .e-label').innerHTML).toEqual('All day');
             expect(dialogElement.querySelector('.e-time-zone-container .e-label').innerHTML).toEqual('Timezone');
-            let cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
+            const cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
             cancelButton.click();
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -211,16 +212,16 @@ describe('Schedule timeline day view', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('event single click', () => {
-            let event: HTMLElement = schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement;
+            const event: HTMLElement = schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement;
             util.triggerMouseEvent(event, 'click');
-            let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup.classList).toContain('e-popup-open');
             (<HTMLInputElement>eventPopup.querySelector('.' + cls.SUBJECT_CLASS)).innerText = 'Spanned Event - Same week';
             (<HTMLInputElement>eventPopup.querySelector('.e-date-time-details')).innerText =
                 'April 30, 2018 (10:00 AM) - May 3, 2018 (1:00 PM)';
-            let edit: HTMLElement = eventPopup.querySelector('.e-edit');
+            const edit: HTMLElement = eventPopup.querySelector('.e-edit');
             expect(edit.children[0].classList).toContain('e-edit-icon');
-            let deleteIcon: HTMLElement = eventPopup.querySelector('.e-delete');
+            const deleteIcon: HTMLElement = eventPopup.querySelector('.e-delete');
             expect(deleteIcon.children[0].classList).toContain('e-delete-icon');
             (eventPopup.querySelector('.e-close-icon') as HTMLElement).click();
             expect(event.classList).toContain('e-appointment-border');
@@ -228,20 +229,20 @@ describe('Schedule timeline day view', () => {
         });
         it('event double click', () => {
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement, 'dblclick');
-            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             expect(dialogElement.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML).toEqual('Edit Event');
             (<HTMLInputElement>dialogElement.querySelector('.' + cls.SUBJECT_CLASS)).value = 'Spanned Event - Same week';
-            let cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
+            const cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
             cancelButton.click();
         });
     });
 
     describe('Start and End hour', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
                 startHour: '04:00', endHour: '11:00', currentView: 'TimelineDay', selectedDate: new Date(2017, 9, 4),
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek']
             };
             schObj = util.createSchedule(options, timelineData, done);
         });
@@ -280,11 +281,11 @@ describe('Schedule timeline day view', () => {
             schObj.dataBind();
         });
 
-        it('Checking events elements', (done: Function) => {
+        it('Checking events elements', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(14);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(1);
                 done();
             };
@@ -293,36 +294,36 @@ describe('Schedule timeline day view', () => {
         });
 
         it('Checking left indicator icons', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[1].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned  Event - Same week');
             expect(eventElementList[1].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
                 .toBeTruthy();
         });
 
         it('Checking right indicator icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[1].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned  Event - Same week');
             expect(eventElementList[1].querySelectorAll('.e-appointment-details .e-indicator')[1].classList.contains('e-right-icon'))
                 .toBeTruthy();
         });
 
         it('Checking recurrence icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[0].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
             expect(eventElementList[0].querySelectorAll('.e-appointment-details .e-icons')[1].classList.contains('e-recurrence-icon'))
                 .toBeTruthy();
         });
 
         it('Checking more indicator', () => {
-            let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(1);
         });
     });
 
     describe('Show weekend', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
                 showWeekend: false, currentView: 'TimelineDay', selectedDate: new Date(2017, 9, 5),
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek']
             };
@@ -391,11 +392,11 @@ describe('Schedule timeline day view', () => {
             (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
         });
 
-        it('Checking events elements', (done: Function) => {
+        it('Checking events elements', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(14);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(1);
                 done();
             };
@@ -404,21 +405,21 @@ describe('Schedule timeline day view', () => {
         });
 
         it('Checking left indicator icons', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[1].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned  Event - Same week');
             expect(eventElementList[1].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
                 .toBeTruthy();
         });
 
         it('Checking right indicator icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[1].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned  Event - Same week');
             expect(eventElementList[1].querySelectorAll('.e-appointment-details .e-indicator')[1].classList.contains('e-right-icon'))
                 .toBeTruthy();
         });
 
         it('Checking recurrence icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[0].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
             expect(eventElementList[0].querySelectorAll('.e-appointment-details .e-icons')[1].classList.contains('e-recurrence-icon'))
                 .toBeTruthy();
@@ -431,8 +432,8 @@ describe('Schedule timeline day view', () => {
 
     describe('Work Days', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
                 workDays: [0, 1, 2, 3, 4], currentView: 'TimelineDay', selectedDate: new Date(2017, 9, 5),
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek']
             };
@@ -455,11 +456,11 @@ describe('Schedule timeline day view', () => {
             schObj.dataBind();
         });
 
-        it('Checking events elements', (done: Function) => {
+        it('Checking events elements', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(14);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(1);
                 done();
             };
@@ -469,38 +470,38 @@ describe('Schedule timeline day view', () => {
         });
 
         it('Checking left indicator icons', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[1].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned  Event - Same week');
             expect(eventElementList[1].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
                 .toBeTruthy();
         });
 
         it('Checking right indicator icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[1].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned  Event - Same week');
             expect(eventElementList[1].querySelectorAll('.e-appointment-details .e-indicator')[1].classList.contains('e-right-icon'))
                 .toBeTruthy();
         });
 
         it('Checking recurrence icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[0].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
             expect(eventElementList[0].querySelectorAll('.e-appointment-details .e-icons')[1].classList.contains('e-recurrence-icon'))
                 .toBeTruthy();
         });
 
         it('Checking more indicator', () => {
-            let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(1);
         });
     });
 
     describe('First day of week', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
                 currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                selectedDate: new Date(2017, 9, 5), firstDayOfWeek: 2,
+                selectedDate: new Date(2017, 9, 5), firstDayOfWeek: 2
             };
             schObj = util.createSchedule(options, timelineData, done);
         });
@@ -519,11 +520,11 @@ describe('Schedule timeline day view', () => {
             schObj.dataBind();
         });
 
-        it('Checking events elements', (done: Function) => {
+        it('Checking events elements', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(14);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(1);
                 done();
             };
@@ -533,21 +534,21 @@ describe('Schedule timeline day view', () => {
         });
 
         it('Checking left indicator icons', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[1].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned  Event - Same week');
             expect(eventElementList[1].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
                 .toBeTruthy();
         });
 
         it('Checking right indicator icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[1].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned  Event - Same week');
             expect(eventElementList[1].querySelectorAll('.e-appointment-details .e-indicator')[1].classList.contains('e-right-icon'))
                 .toBeTruthy();
         });
 
         it('Checking recurrence icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[0].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
             expect(eventElementList[0].querySelectorAll('.e-appointment-details .e-icons')[1].classList.contains('e-recurrence-icon'))
                 .toBeTruthy();
@@ -560,8 +561,8 @@ describe('Schedule timeline day view', () => {
 
     describe('Checking rowAutoHeight property', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
                 currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 rowAutoHeight: true, selectedDate: new Date(2018, 4, 1)
             };
@@ -571,20 +572,20 @@ describe('Schedule timeline day view', () => {
             util.destroy(schObj);
         });
         it('initial load', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(15);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(1);
-            let moreIndicatorList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicatorList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(0);
         });
-        it('Change property through set model', (done: Function) => {
+        it('Change property through set model', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(14);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(1);
-                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                 expect(moreIndicatorList.length).toEqual(1);
                 done();
             };
@@ -595,8 +596,8 @@ describe('Schedule timeline day view', () => {
 
     describe('Event rendering- RTL', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
                 currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 selectedDate: new Date(2018, 4, 1), enableRtl: true
             };
@@ -607,28 +608,28 @@ describe('Schedule timeline day view', () => {
         });
 
         it('Initial Load', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(14);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(1);
         });
 
         it('Checking left indicator icons', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[1].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned  Event - Same week');
             expect(eventElementList[1].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
                 .toBeTruthy();
         });
 
         it('Checking right indicator icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[1].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned  Event - Same week');
             expect(eventElementList[1].querySelectorAll('.e-appointment-details .e-indicator')[1].classList.contains('e-right-icon'))
                 .toBeTruthy();
         });
 
         it('Checking recurrence icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[0].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
             expect(eventElementList[0].querySelectorAll('.e-appointment-details .e-icons')[1].classList.contains('e-recurrence-icon'))
                 .toBeTruthy();
@@ -649,7 +650,7 @@ describe('Schedule timeline day view', () => {
         });
 
         it('width and height', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 height: '600px', width: '500px', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2017, 9, 4)
             };
@@ -661,7 +662,7 @@ describe('Schedule timeline day view', () => {
         });
 
         it('work hours start and end', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'TimelineDay', workHours: { highlight: true, start: '10:00', end: '16:00' },
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2017, 9, 4)
             };
@@ -686,7 +687,7 @@ describe('Schedule timeline day view', () => {
         });
 
         it('date format', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 selectedDate: new Date(2017, 9, 5), dateFormat: 'y MMM'
             };
@@ -698,7 +699,7 @@ describe('Schedule timeline day view', () => {
         });
 
         it('date header template', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 selectedDate: new Date(2017, 9, 5), dateHeaderTemplate: '<span>${getDateHeaderText(data.date)}</span>'
             };
@@ -711,8 +712,8 @@ describe('Schedule timeline day view', () => {
         });
 
         it('cell template', () => {
-            let templateEle: HTMLElement = createElement('div', { innerHTML: '<span class="custom-element"></span>' });
-            let model: ScheduleModel = {
+            const templateEle: HTMLElement = createElement('div', { innerHTML: '<span class="custom-element"></span>' });
+            const model: ScheduleModel = {
                 currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 selectedDate: new Date(2017, 9, 5), cellTemplate: templateEle.innerHTML
             };
@@ -724,11 +725,11 @@ describe('Schedule timeline day view', () => {
         });
 
         it('work cell click', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2017, 9, 5)
             };
             schObj = util.createSchedule(model, []);
-            let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.classList).not.toContain('e-selected-cell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             firstWorkCell.click();
@@ -738,8 +739,8 @@ describe('Schedule timeline day view', () => {
         });
 
         it('header cell click day view navigation', () => {
-            let navFn: jasmine.Spy = jasmine.createSpy('navEvent');
-            let model: ScheduleModel = {
+            const navFn: jasmine.Spy = jasmine.createSpy('navEvent');
+            const model: ScheduleModel = {
                 navigating: navFn, currentView: 'TimelineDay', selectedDate: new Date(2017, 9, 5),
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek']
             };
@@ -752,12 +753,12 @@ describe('Schedule timeline day view', () => {
         });
 
         it('read only on cell click', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 selectedDate: new Date(2017, 9, 5), readonly: true
             };
             schObj = util.createSchedule(model, []);
-            let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.classList).not.toContain('e-selected-cell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             firstWorkCell.click();
@@ -766,7 +767,7 @@ describe('Schedule timeline day view', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
             schObj.readonly = false;
             schObj.dataBind();
-            let firstWorkCell1: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const firstWorkCell1: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell1.classList).not.toContain('e-selected-cell');
             expect(firstWorkCell1.getAttribute('aria-selected')).toEqual('false');
             firstWorkCell1.click();
@@ -775,13 +776,13 @@ describe('Schedule timeline day view', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
         });
 
-        it('events template', (done: Function) => {
-            let model: ScheduleModel = {
+        it('events template', (done: DoneFn) => {
+            const model: ScheduleModel = {
                 height: '580px', currentView: 'TimelineDay', selectedDate: new Date(2018, 4, 1),
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 eventSettings: { template: '<span>${Subject}</span>' },
                 dataBound: () => {
-                    let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                     expect(eventElementList.length).toEqual(14);
                     expect(eventElementList[0].querySelector('.e-appointment-details').innerHTML).toEqual(
                         '<div class="e-indicator e-icons e-left-icon"></div>' +
@@ -790,7 +791,7 @@ describe('Schedule timeline day view', () => {
                         .toEqual('Recurrence Event - Greater than 24');
                     expect(eventElementList[2].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
                         .toBeTruthy();
-                    let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                    const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                     expect(moreIndicatorList.length).toEqual(1);
                     expect(moreIndicatorList[0].innerHTML).toEqual('+1&nbsp;more');
                     done();
@@ -800,7 +801,7 @@ describe('Schedule timeline day view', () => {
         });
 
         it('minDate and maxDate', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 minDate: new Date(2017, 9, 4),
@@ -808,8 +809,8 @@ describe('Schedule timeline day view', () => {
                 maxDate: new Date(2017, 9, 6)
             };
             schObj = util.createSchedule(model, []);
-            let prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS);
-            let nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS);
+            const prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS);
+            const nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS);
             expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
             expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 5, 2017');
@@ -852,19 +853,19 @@ describe('Schedule timeline day view', () => {
             let eventName1: string;
             let eventName2: string;
             let eventName3: string;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 select: (args: SelectEventArgs) => eventName1 = args.name,
                 cellClick: (args: CellClickEventArgs) => eventName2 = args.name,
                 popupOpen: (args: PopupOpenEventArgs) => eventName3 = args.name,
                 currentView: 'TimelineDay', views: ['TimelineDay'], selectedDate: new Date(2018, 5, 5)
             };
             schObj = util.createSchedule(model, []);
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
             util.triggerMouseEvent(workCells[3], 'mousedown');
             util.triggerMouseEvent(workCells[3], 'mouseup');
             (schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement).click();
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
@@ -875,18 +876,18 @@ describe('Schedule timeline day view', () => {
 
         it('multi cell select', () => {
             let eventName: string;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 select: (args: SelectEventArgs) => eventName = args.name,
                 currentView: 'TimelineDay', views: ['TimelineDay'],
                 selectedDate: new Date(2018, 5, 5)
             };
             schObj = util.createSchedule(model, []);
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
             util.triggerMouseEvent(workCells[3], 'mousedown');
             util.triggerMouseEvent(workCells[5], 'mousemove');
             util.triggerMouseEvent(workCells[5], 'mouseup');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
@@ -895,18 +896,18 @@ describe('Schedule timeline day view', () => {
 
         it('validate start and end time on multi cell select', () => {
             let eventName: string;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 select: (args: SelectEventArgs) => eventName = args.name,
                 currentView: 'TimelineDay', views: ['TimelineDay'],
                 selectedDate: new Date(2018, 5, 5)
             };
             schObj = util.createSchedule(model, []);
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
             util.triggerMouseEvent(workCells[3], 'mousedown');
             util.triggerMouseEvent(workCells[5], 'mousemove');
             util.triggerMouseEvent(workCells[5], 'mouseup');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
@@ -919,14 +920,14 @@ describe('Schedule timeline day view', () => {
             let cellStartTime: number;
             let cellEndTime: number;
             let eventName: string;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 cellClick: (args: CellClickEventArgs) => {
                     cellStartTime = args.startTime.getTime();
                     cellEndTime = args.endTime.getTime();
                     eventName = args.name;
                 },
                 currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                selectedDate: new Date(2018, 5, 5),
+                selectedDate: new Date(2018, 5, 5)
             };
             schObj = util.createSchedule(model, []);
             (schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement).click();
@@ -936,13 +937,13 @@ describe('Schedule timeline day view', () => {
         });
 
         it('cancel cell click', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 cellClick: (args: CellClickEventArgs) => args.cancel = true,
                 currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                selectedDate: new Date(2018, 5, 5),
+                selectedDate: new Date(2018, 5, 5)
             };
             schObj = util.createSchedule(model, []);
-            let workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
+            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
             expect(workCell.classList).not.toContain('e-selected-cell');
             expect(workCell.getAttribute('aria-selected')).toEqual('false');
             workCell.click();
@@ -954,14 +955,14 @@ describe('Schedule timeline day view', () => {
             let cellStartTime: number;
             let cellEndTime: number;
             let eventName: string;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 cellDoubleClick: (args: CellClickEventArgs) => {
                     cellStartTime = args.startTime.getTime();
                     cellEndTime = args.endTime.getTime();
                     eventName = args.name;
                 },
                 currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                selectedDate: new Date(2018, 5, 5),
+                selectedDate: new Date(2018, 5, 5)
             };
             schObj = util.createSchedule(model, []);
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement, 'click');
@@ -972,13 +973,13 @@ describe('Schedule timeline day view', () => {
         });
 
         it('cancel cell double click', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 cellDoubleClick: (args: CellClickEventArgs) => args.cancel = true,
                 currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                selectedDate: new Date(2018, 5, 5),
+                selectedDate: new Date(2018, 5, 5)
             };
             schObj = util.createSchedule(model, []);
-            let workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
+            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
             util.triggerMouseEvent(workCell, 'click');
             util.triggerMouseEvent(workCell, 'dblclick');
         });
@@ -986,8 +987,8 @@ describe('Schedule timeline day view', () => {
 
     describe('Single level resource rendering', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
                 height: '550px', width: '100%', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 selectedDate: new Date(2018, 4, 1)
@@ -998,70 +999,70 @@ describe('Schedule timeline day view', () => {
             util.destroy(schObj);
         });
         it('checking resource title rendering', () => {
-            let headerRow: HTMLElement = schObj.element.querySelector('.e-timeline-view tr') as HTMLElement;
+            const headerRow: HTMLElement = schObj.element.querySelector('.e-timeline-view tr') as HTMLElement;
             expect(headerRow.children.length).toEqual(2);
-            let firstTD: HTMLElement = schObj.element.querySelector('.e-timeline-view tr td.e-resource-left-td') as HTMLElement;
+            const firstTD: HTMLElement = schObj.element.querySelector('.e-timeline-view tr td.e-resource-left-td') as HTMLElement;
             expect([firstTD].length).toEqual(1);
             expect(firstTD.querySelector('.e-resource-text').innerHTML).toEqual('');
         });
         it('checking resource tree rendering', () => {
-            let contentRow: HTMLElement = schObj.element.querySelector('.e-timeline-view table tbody') as HTMLElement;
+            const contentRow: HTMLElement = schObj.element.querySelector('.e-timeline-view table tbody') as HTMLElement;
             expect(contentRow.children[1].children.length).toEqual(2);
             expect([contentRow.children[1].querySelector('td div.e-resource-column-wrap')].length).toEqual(1);
-            let resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
+            const resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
             expect(resourceRow.children.length).toEqual(10);
             expect([resourceRow.querySelector('tr td.e-resource-cells')].length).toEqual(1);
             expect([resourceRow.querySelector('tr td.e-resource-cells div.e-resource-text')].length).toEqual(1);
             expect(resourceRow.querySelector('tr td.e-resource-cells div.e-resource-text').innerHTML).toEqual('Nancy');
-            let contentRows: HTMLElement = contentRow.children[1].children[1].querySelector('tbody');
+            const contentRows: HTMLElement = contentRow.children[1].children[1].querySelector('tbody');
             expect(contentRows.children.length).toEqual(10);
         });
 
         it('Checking events elements', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(8);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(8);
         });
 
         it('Checking Left icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[1].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned Event - Less than 24');
             expect(eventElementList[1].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
                 .toBeTruthy();
         });
 
         it('Checking right icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[2].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned Event - Greater than 24');
             expect(eventElementList[2].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-right-icon'))
                 .toBeTruthy();
         });
         it('Checking right icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[3].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Greater than 24');
             expect(eventElementList[3].querySelectorAll('.e-appointment-details .e-icons')[1].classList.contains('e-recurrence-icon'))
                 .toBeTruthy();
         });
 
         it('More event element checking', () => {
-            let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(1);
-            let element: HTMLElement = moreIndicatorList[0] as HTMLElement;
+            const element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
-            let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
-            let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
+            const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            const moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(moreEventList.length).toEqual(2);
             util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
 
-        it('Checking rowAutoHeight property', (done: Function) => {
+        it('Checking rowAutoHeight property', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(9);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(8);
-                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                 expect(moreIndicatorList.length).toEqual(0);
                 done();
             };
@@ -1072,8 +1073,8 @@ describe('Schedule timeline day view', () => {
 
     describe('Multi level resource rendering', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 height: '550px', width: '100%', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 currentView: 'TimelineDay', selectedDate: new Date(2018, 4, 1),
                 group: { resources: ['Halls', 'Rooms', 'Owners'] },
@@ -1104,7 +1105,7 @@ describe('Schedule timeline day view', () => {
                         { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
                         { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
                         { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' }
                     ],
                     textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
                 }]
@@ -1115,17 +1116,17 @@ describe('Schedule timeline day view', () => {
             util.destroy(schObj);
         });
         it('checking resource title rendering', () => {
-            let headerRow: HTMLElement = schObj.element.querySelector('.e-timeline-view tr') as HTMLElement;
+            const headerRow: HTMLElement = schObj.element.querySelector('.e-timeline-view tr') as HTMLElement;
             expect(headerRow.children.length).toEqual(2);
-            let firstTD: HTMLElement = schObj.element.querySelector('.e-timeline-view tr td.e-resource-left-td') as HTMLElement;
+            const firstTD: HTMLElement = schObj.element.querySelector('.e-timeline-view tr td.e-resource-left-td') as HTMLElement;
             expect([firstTD].length).toEqual(1);
             expect(firstTD.querySelector('.e-resource-text').innerHTML).toEqual('');
         });
         it('checking resource tree rendering', () => {
-            let contentRow: HTMLElement = schObj.element.querySelector('.e-timeline-view table tbody') as HTMLElement;
+            const contentRow: HTMLElement = schObj.element.querySelector('.e-timeline-view table tbody') as HTMLElement;
             expect(contentRow.children[1].children.length).toEqual(2);
             expect([contentRow.children[1].querySelector('td div.e-resource-column-wrap')].length).toEqual(1);
-            let resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
+            const resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
             expect(resourceRow.children.length).toEqual(15);
             expect([resourceRow.querySelector('tr td.e-resource-cells')].length).toEqual(1);
             expect([resourceRow.querySelector('tr td.e-resource-cells div.e-resource-tree-icon')].length).toEqual(1);
@@ -1140,38 +1141,38 @@ describe('Schedule timeline day view', () => {
             expect(resourceRow.children[1].querySelector('.e-resource-cells div.e-resource-text').innerHTML).toEqual('ROOM 1');
             expect([resourceRow.children[2].querySelector('.e-child-node')].length).toEqual(1);
             expect(resourceRow.children[2].querySelector('.e-child-node').children.length).toEqual(1);
-            let contentRows: HTMLElement = contentRow.children[1].children[1].querySelector('tbody');
+            const contentRows: HTMLElement = contentRow.children[1].children[1].querySelector('tbody');
             expect(contentRows.children.length).toEqual(15);
         });
 
         it('Checking events elements', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(7);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(7);
         });
 
         it('Checking Left icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[2].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
             expect(eventElementList[2].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
                 .toBeTruthy();
         });
 
         it('Checking recurrence icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[2].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
             expect(eventElementList[2].querySelectorAll('.e-appointment-details .e-icons')[1].classList.contains('e-recurrence-icon'))
                 .toBeTruthy();
         });
 
         it('More event element checking', () => {
-            let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(1);
-            let element: HTMLElement = moreIndicatorList[0] as HTMLElement;
+            const element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
-            let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
-            let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
+            const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            const moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(moreEventList.length).toEqual(2);
             util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
@@ -1179,8 +1180,8 @@ describe('Schedule timeline day view', () => {
 
     describe('Multi level resource rendering with expanded property', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 height: '550px', width: '100%', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 currentView: 'TimelineDay', selectedDate: new Date(2018, 4, 1),
                 group: { resources: ['Halls', 'Rooms', 'Owners'] },
@@ -1211,7 +1212,7 @@ describe('Schedule timeline day view', () => {
                         { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
                         { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
                         { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' }
                     ],
                     textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId',
                     colorField: 'OwnerColor', expandedField: 'Expand'
@@ -1223,17 +1224,17 @@ describe('Schedule timeline day view', () => {
             util.destroy(schObj);
         });
         it('checking resource title rendering', () => {
-            let headerRow: HTMLElement = schObj.element.querySelector('.e-timeline-view tr') as HTMLElement;
+            const headerRow: HTMLElement = schObj.element.querySelector('.e-timeline-view tr') as HTMLElement;
             expect(headerRow.children.length).toEqual(2);
-            let firstTD: HTMLElement = schObj.element.querySelector('.e-timeline-view tr td.e-resource-left-td') as HTMLElement;
+            const firstTD: HTMLElement = schObj.element.querySelector('.e-timeline-view tr td.e-resource-left-td') as HTMLElement;
             expect([firstTD].length).toEqual(1);
             expect(firstTD.querySelector('.e-resource-text').innerHTML).toEqual('');
         });
         it('checking resource tree rendering', () => {
-            let contentRow: HTMLElement = schObj.element.querySelector('.e-timeline-view table tbody') as HTMLElement;
+            const contentRow: HTMLElement = schObj.element.querySelector('.e-timeline-view table tbody') as HTMLElement;
             expect(contentRow.children[1].children.length).toEqual(2);
             expect([contentRow.children[1].querySelector('td div.e-resource-column-wrap')].length).toEqual(1);
-            let resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
+            const resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
             expect(resourceRow.children.length).toEqual(15);
             expect([resourceRow.querySelector('tr td.e-resource-cells')].length).toEqual(1);
             expect([resourceRow.querySelector('tr td.e-resource-cells div.e-resource-tree-icon')].length).toEqual(1);
@@ -1248,16 +1249,16 @@ describe('Schedule timeline day view', () => {
             expect(resourceRow.children[1].querySelector('.e-resource-cells div.e-resource-text').innerHTML).toEqual('ROOM 1');
             expect([resourceRow.children[2].querySelector('.e-child-node')].length).toEqual(1);
             expect(resourceRow.children[2].querySelector('.e-child-node').children.length).toEqual(1);
-            let contentRows: HTMLElement = contentRow.children[1].children[1].querySelector('tbody');
+            const contentRows: HTMLElement = contentRow.children[1].children[1].querySelector('tbody');
             expect(contentRows.children.length).toEqual(15);
         });
         it('resource icon click testing', () => {
-            let resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
-            let beforeExpand: NodeListOf<Element> = schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)');
+            const resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
+            const beforeExpand: NodeListOf<Element> = schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)');
             expect(beforeExpand.length).toEqual(7);
-            let firstRow: HTMLElement = resourceRow.children[1].querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
+            const firstRow: HTMLElement = resourceRow.children[1].querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
             firstRow.click();
-            let afterExpand: NodeListOf<Element> = schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)');
+            const afterExpand: NodeListOf<Element> = schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)');
             expect(afterExpand.length).toEqual(11);
             expect(resourceRow.children[1].classList.contains('e-hidden')).toEqual(false);
             expect([resourceRow.children[1].querySelector('.e-resource-cells div.e-resource-collapse')].length).toEqual(1);
@@ -1266,50 +1267,50 @@ describe('Schedule timeline day view', () => {
         });
 
         it('Checking events elements', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(4);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(7);
         });
 
         it('Checking Left icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[2].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
             expect(eventElementList[2].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
                 .toBeTruthy();
         });
 
         it('Checking recurrence icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[2].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
             expect(eventElementList[2].querySelectorAll('.e-appointment-details .e-icons')[1].classList.contains('e-recurrence-icon'))
                 .toBeTruthy();
         });
 
         it('More event element checking', () => {
-            let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(4);
             (moreIndicatorList[0] as HTMLElement).click();
-            let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
-            let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
+            const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            const moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(moreEventList.length).toEqual(2);
             util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
         it('cell single click', () => {
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[100] as HTMLElement, 'click');
-            let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            const cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
-            let moreDetail: HTMLElement = <HTMLElement>cellPopup.querySelector('.e-event-details');
+            const moreDetail: HTMLElement = <HTMLElement>cellPopup.querySelector('.e-event-details');
             expect(moreDetail.classList).toContain('e-btn');
             expect(moreDetail.classList).toContain('e-flat');
             expect(moreDetail.innerHTML).toEqual('More Details');
-            let save: HTMLElement = cellPopup.querySelector('.e-event-create');
+            const save: HTMLElement = cellPopup.querySelector('.e-event-create');
             expect(save.classList).toContain('e-primary');
             expect(save.innerHTML).toEqual('Save');
-            let close: HTMLElement = cellPopup.querySelector('.e-close-icon');
+            const close: HTMLElement = cellPopup.querySelector('.e-close-icon');
             expect(close.classList).toContain('e-btn-icon');
             close.click();
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -1319,7 +1320,7 @@ describe('Schedule timeline day view', () => {
         });
         it('cell double click', () => {
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[100] as HTMLElement, 'dblclick');
-            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             expect(dialogElement.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML).toEqual('New Event');
             expect(dialogElement.querySelector('.e-subject-container label').innerHTML).toEqual('Title');
             expect(dialogElement.querySelector('.e-location-container label').innerHTML).toEqual('Location');
@@ -1330,16 +1331,16 @@ describe('Schedule timeline day view', () => {
             expect(dialogElement.querySelector('.e-description-container label').innerHTML).toEqual('Description');
             expect(dialogElement.querySelector('.e-all-day-container .e-label').innerHTML).toEqual('All day');
             expect(dialogElement.querySelector('.e-time-zone-container .e-label').innerHTML).toEqual('Timezone');
-            let hall: DropDownList = (dialogElement.querySelector('.e-HallId') as EJ2Instance).ej2_instances[0] as DropDownList;
+            const hall: DropDownList = (dialogElement.querySelector('.e-HallId') as EJ2Instance).ej2_instances[0] as DropDownList;
             expect(hall.text).toEqual('Hall 1');
             expect(hall.value).toEqual(1);
-            let room: DropDownList = (dialogElement.querySelector('.e-RoomId') as EJ2Instance).ej2_instances[0] as DropDownList;
+            const room: DropDownList = (dialogElement.querySelector('.e-RoomId') as EJ2Instance).ej2_instances[0] as DropDownList;
             expect(room.text).toEqual('ROOM 1');
-            let owner: DropDownList = (dialogElement.querySelector('.e-OwnerId') as EJ2Instance).ej2_instances[0] as DropDownList;
+            const owner: DropDownList = (dialogElement.querySelector('.e-OwnerId') as EJ2Instance).ej2_instances[0] as DropDownList;
             expect(owner.text).toEqual('Nancy');
-            let cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
+            const cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
             cancelButton.click();
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -1348,13 +1349,13 @@ describe('Schedule timeline day view', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(2);
         });
         it('event single click', () => {
-            let event: HTMLElement = schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement;
+            const event: HTMLElement = schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement;
             util.triggerMouseEvent(event, 'click');
-            let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup.classList).toContain('e-popup-open');
-            let edit: HTMLElement = eventPopup.querySelector('.e-edit');
+            const edit: HTMLElement = eventPopup.querySelector('.e-edit');
             expect(edit.children[0].classList).toContain('e-edit-icon');
-            let deleteIcon: HTMLElement = eventPopup.querySelector('.e-delete');
+            const deleteIcon: HTMLElement = eventPopup.querySelector('.e-delete');
             expect(deleteIcon.children[0].classList).toContain('e-delete-icon');
             (eventPopup.querySelector('.e-close-icon') as HTMLElement).click();
             expect(event.classList).toContain('e-appointment-border');
@@ -1362,22 +1363,22 @@ describe('Schedule timeline day view', () => {
         });
         it('event double click', () => {
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement, 'dblclick');
-            let eventDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
-            let editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-occurrence-event') as HTMLElement;
+            const eventDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            const editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-occurrence-event') as HTMLElement;
             editButton.click();
-            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             expect(dialogElement.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML).toEqual('Edit Event');
-            let hall: DropDownList = (dialogElement.querySelector('.e-HallId') as EJ2Instance).ej2_instances[0] as DropDownList;
+            const hall: DropDownList = (dialogElement.querySelector('.e-HallId') as EJ2Instance).ej2_instances[0] as DropDownList;
             expect(hall.text).toEqual('Hall 1');
             expect(hall.value).toEqual(1);
-            let room: DropDownList = (dialogElement.querySelector('.e-RoomId') as EJ2Instance).ej2_instances[0] as DropDownList;
+            const room: DropDownList = (dialogElement.querySelector('.e-RoomId') as EJ2Instance).ej2_instances[0] as DropDownList;
             expect(room.text).toEqual('ROOM 1');
-            let owner: DropDownList = (dialogElement.querySelector('.e-OwnerId') as EJ2Instance).ej2_instances[0] as DropDownList;
+            const owner: DropDownList = (dialogElement.querySelector('.e-OwnerId') as EJ2Instance).ej2_instances[0] as DropDownList;
             expect(owner.text).toEqual('Oliver');
-            let cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
+            const cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
             cancelButton.click();
         });
-        it('Checking rowAutoHeight property', (done: Function) => {
+        it('Checking rowAutoHeight property', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(8);
                 expect(schObj.element.querySelectorAll('.e-appointment-wrapper').length).toEqual(7);
@@ -1411,8 +1412,8 @@ describe('Schedule timeline day view', () => {
 
     describe('Custom work days of Resources in group', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%', height: '550px', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineMonth'],
                 selectedDate: new Date(2018, 7, 6),
@@ -1441,7 +1442,7 @@ describe('Schedule timeline day view', () => {
             util.destroy(schObj);
         });
 
-        it('work days count', (done: Function) => {
+        it('work days count', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toBe(0);
                 done();
@@ -1453,8 +1454,8 @@ describe('Schedule timeline day view', () => {
 
     describe('Single level resource rendering in RTL', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
                 height: '550px', width: '100%', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 selectedDate: new Date(2018, 4, 1)
@@ -1465,62 +1466,62 @@ describe('Schedule timeline day view', () => {
             util.destroy(schObj);
         });
         it('checking resource title rendering', () => {
-            let headerRow: HTMLElement = schObj.element.querySelector('.e-timeline-view tr') as HTMLElement;
+            const headerRow: HTMLElement = schObj.element.querySelector('.e-timeline-view tr') as HTMLElement;
             expect(headerRow.children.length).toEqual(2);
-            let firstTD: HTMLElement = schObj.element.querySelector('.e-timeline-view tr td.e-resource-left-td') as HTMLElement;
+            const firstTD: HTMLElement = schObj.element.querySelector('.e-timeline-view tr td.e-resource-left-td') as HTMLElement;
             expect([firstTD].length).toEqual(1);
             expect(firstTD.querySelector('.e-resource-text').innerHTML).toEqual('');
         });
         it('checking resource tree rendering', () => {
-            let contentRow: HTMLElement = schObj.element.querySelector('.e-timeline-view table tbody') as HTMLElement;
+            const contentRow: HTMLElement = schObj.element.querySelector('.e-timeline-view table tbody') as HTMLElement;
             expect(contentRow.children[1].children.length).toEqual(2);
             expect([contentRow.children[1].querySelector('td div.e-resource-column-wrap')].length).toEqual(1);
-            let resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
+            const resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
             expect(resourceRow.children.length).toEqual(10);
             expect([resourceRow.querySelector('tr td.e-resource-cells')].length).toEqual(1);
             expect([resourceRow.querySelector('tr td.e-resource-cells div.e-resource-text')].length).toEqual(1);
             expect(resourceRow.querySelector('tr td.e-resource-cells div.e-resource-text').innerHTML).toEqual('Nancy');
-            let contentRows: HTMLElement = contentRow.children[1].children[1].querySelector('tbody');
+            const contentRows: HTMLElement = contentRow.children[1].children[1].querySelector('tbody');
             expect(contentRows.children.length).toEqual(10);
         });
         it('Checking events elements', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(8);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(8);
         });
 
         it('Checking Left icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[1].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned Event - Less than 24');
             expect(eventElementList[1].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
                 .toBeTruthy();
         });
 
         it('Checking right icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[2].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned Event - Greater than 24');
             expect(eventElementList[2].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-right-icon'))
                 .toBeTruthy();
         });
 
         it('Checking right icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[3].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Greater than 24');
             expect(eventElementList[3].querySelectorAll('.e-appointment-details .e-icons')[1].classList.contains('e-recurrence-icon'))
                 .toBeTruthy();
         });
 
         it('More event element checking', () => {
-            let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(1);
             (moreIndicatorList[0] as HTMLElement).click();
-            let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
-            let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
+            const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            const moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(moreEventList.length).toEqual(2);
             util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
-        it('Checking rowAutoHeight property', (done: Function) => {
+        it('Checking rowAutoHeight property', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(9);
                 expect(schObj.element.querySelectorAll('.e-appointment-wrapper').length).toEqual(8);
@@ -1534,8 +1535,8 @@ describe('Schedule timeline day view', () => {
 
     describe('Multi level resource rendering in RTL', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 height: '550px', width: '100%', enableRtl: true, selectedDate: new Date(2018, 4, 1),
                 currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 group: { resources: ['Halls', 'Rooms', 'Owners'] },
@@ -1566,7 +1567,7 @@ describe('Schedule timeline day view', () => {
                         { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
                         { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
                         { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' }
                     ],
                     textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
                 }]
@@ -1577,17 +1578,17 @@ describe('Schedule timeline day view', () => {
             util.destroy(schObj);
         });
         it('checking resource title rendering', () => {
-            let headerRow: HTMLElement = schObj.element.querySelector('.e-timeline-view tr') as HTMLElement;
+            const headerRow: HTMLElement = schObj.element.querySelector('.e-timeline-view tr') as HTMLElement;
             expect(headerRow.children.length).toEqual(2);
-            let firstTD: HTMLElement = schObj.element.querySelector('.e-timeline-view tr td.e-resource-left-td') as HTMLElement;
+            const firstTD: HTMLElement = schObj.element.querySelector('.e-timeline-view tr td.e-resource-left-td') as HTMLElement;
             expect([firstTD].length).toEqual(1);
             expect(firstTD.querySelector('.e-resource-text').innerHTML).toEqual('');
         });
         it('checking resource tree rendering', () => {
-            let contentRow: HTMLElement = schObj.element.querySelector('.e-timeline-view table tbody') as HTMLElement;
+            const contentRow: HTMLElement = schObj.element.querySelector('.e-timeline-view table tbody') as HTMLElement;
             expect(contentRow.children[1].children.length).toEqual(2);
             expect([contentRow.children[1].querySelector('td div.e-resource-column-wrap')].length).toEqual(1);
-            let resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
+            const resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
             expect(resourceRow.children.length).toEqual(15);
             expect([resourceRow.querySelector('tr td.e-resource-cells')].length).toEqual(1);
             expect([resourceRow.querySelector('tr td.e-resource-cells div.e-resource-tree-icon')].length).toEqual(1);
@@ -1602,37 +1603,37 @@ describe('Schedule timeline day view', () => {
             expect(resourceRow.children[1].querySelector('.e-resource-cells div.e-resource-text').innerHTML).toEqual('ROOM 1');
             expect([resourceRow.children[2].querySelector('.e-child-node')].length).toEqual(1);
             expect(resourceRow.children[2].querySelector('.e-child-node').children.length).toEqual(1);
-            let contentRows: HTMLElement = contentRow.children[1].children[1].querySelector('tbody');
+            const contentRows: HTMLElement = contentRow.children[1].children[1].querySelector('tbody');
             expect(contentRows.children.length).toEqual(15);
         });
 
         it('Checking events elements', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(7);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(7);
         });
 
         it('Checking Left icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[2].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
             expect(eventElementList[2].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
                 .toBeTruthy();
         });
 
         it('Checking recurrence icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[2].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
             expect(eventElementList[2].querySelectorAll('.e-appointment-details .e-icons')[1].classList.contains('e-recurrence-icon'))
                 .toBeTruthy();
         });
 
         it('More event element checking', () => {
-            let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(1);
             (moreIndicatorList[0] as HTMLElement).click();
-            let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
-            let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
+            const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            const moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(moreEventList.length).toEqual(2);
             util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
@@ -1640,8 +1641,8 @@ describe('Schedule timeline day view', () => {
 
     describe('Multi level resource rendering with expanded property in RTL', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 height: '550px', width: '100%', enableRtl: true, currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2018, 4, 1),
                 group: { resources: ['Halls', 'Rooms', 'Owners'] },
@@ -1672,7 +1673,7 @@ describe('Schedule timeline day view', () => {
                         { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
                         { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
                         { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' }
                     ],
                     textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId',
                     colorField: 'OwnerColor', expandedField: 'Expand'
@@ -1684,17 +1685,17 @@ describe('Schedule timeline day view', () => {
             util.destroy(schObj);
         });
         it('checking resource title rendering', () => {
-            let headerRow: HTMLElement = schObj.element.querySelector('.e-timeline-view tr') as HTMLElement;
+            const headerRow: HTMLElement = schObj.element.querySelector('.e-timeline-view tr') as HTMLElement;
             expect(headerRow.children.length).toEqual(2);
-            let firstTD: HTMLElement = schObj.element.querySelector('.e-timeline-view tr td.e-resource-left-td') as HTMLElement;
+            const firstTD: HTMLElement = schObj.element.querySelector('.e-timeline-view tr td.e-resource-left-td') as HTMLElement;
             expect([firstTD].length).toEqual(1);
             expect(firstTD.querySelector('.e-resource-text').innerHTML).toEqual('');
         });
         it('checking resource tree rendering', () => {
-            let contentRow: HTMLElement = schObj.element.querySelector('.e-timeline-view table tbody') as HTMLElement;
+            const contentRow: HTMLElement = schObj.element.querySelector('.e-timeline-view table tbody') as HTMLElement;
             expect(contentRow.children[1].children.length).toEqual(2);
             expect([contentRow.children[1].querySelector('td div.e-resource-column-wrap')].length).toEqual(1);
-            let resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
+            const resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
             expect(resourceRow.children.length).toEqual(15);
             expect([resourceRow.querySelector('tr td.e-resource-cells')].length).toEqual(1);
             expect([resourceRow.querySelector('tr td.e-resource-cells div.e-resource-tree-icon')].length).toEqual(1);
@@ -1709,16 +1710,16 @@ describe('Schedule timeline day view', () => {
             expect(resourceRow.children[1].querySelector('.e-resource-cells div.e-resource-text').innerHTML).toEqual('ROOM 1');
             expect([resourceRow.children[2].querySelector('.e-child-node')].length).toEqual(1);
             expect(resourceRow.children[2].querySelector('.e-child-node').children.length).toEqual(1);
-            let contentRows: HTMLElement = contentRow.children[1].children[1].querySelector('tbody');
+            const contentRows: HTMLElement = contentRow.children[1].children[1].querySelector('tbody');
             expect(contentRows.children.length).toEqual(15);
         });
         it('resource icon click testing', () => {
-            let resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
-            let beforeExpand: NodeListOf<Element> = schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)');
+            const resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
+            const beforeExpand: NodeListOf<Element> = schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)');
             expect(beforeExpand.length).toEqual(7);
-            let firstRow: HTMLElement = resourceRow.children[1].querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
+            const firstRow: HTMLElement = resourceRow.children[1].querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
             firstRow.click();
-            let afterExpand: NodeListOf<Element> = schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)');
+            const afterExpand: NodeListOf<Element> = schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)');
             expect(afterExpand.length).toEqual(11);
             expect(resourceRow.children[1].classList.contains('e-hidden')).toEqual(false);
             expect([resourceRow.children[1].querySelector('.e-resource-cells div.e-resource-collapse')].length).toEqual(1);
@@ -1727,32 +1728,32 @@ describe('Schedule timeline day view', () => {
         });
 
         it('Checking events elements', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(4);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(7);
         });
 
         it('Checking Left icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[2].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
             expect(eventElementList[2].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
                 .toBeTruthy();
         });
 
         it('Checking recurrence icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[2].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
             expect(eventElementList[2].querySelectorAll('.e-appointment-details .e-icons')[1].classList.contains('e-recurrence-icon'))
                 .toBeTruthy();
         });
 
         it('More event element checking', () => {
-            let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(4);
             (moreIndicatorList[0] as HTMLElement).click();
-            let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
-            let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
+            const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            const moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(moreEventList.length).toEqual(2);
             util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
@@ -1760,9 +1761,9 @@ describe('Schedule timeline day view', () => {
 
     describe('Single level resource rendering with Template', () => {
         let schObj: Schedule;
-        let restemplate: string = '<div class="tWrap"><div class="rText" style="background:pink">${getResourceName(data)}</div></div>';
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = {
+        const restemplate: string = '<div class="tWrap"><div class="rText" style="background:pink">${getResourceName(data)}</div></div>';
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
                 height: '550px', width: '100%', resourceHeaderTemplate: restemplate,
                 currentView: 'TimelineDay', selectedDate: new Date(2018, 4, 1),
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek']
@@ -1773,27 +1774,27 @@ describe('Schedule timeline day view', () => {
             util.destroy(schObj);
         });
         it('checking resource template rendering', () => {
-            let contentRow: HTMLElement = schObj.element.querySelector('.e-timeline-view table tbody') as HTMLElement;
+            const contentRow: HTMLElement = schObj.element.querySelector('.e-timeline-view table tbody') as HTMLElement;
             expect([contentRow.children[1].querySelector('td div.e-resource-column-wrap')].length).toEqual(1);
-            let resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
+            const resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
             expect(resourceRow.children.length).toEqual(10);
             expect([resourceRow.querySelector('tr td.e-resource-cells')].length).toEqual(1);
             expect([resourceRow.querySelector('tr td.e-resource-cells div.tWrap')].length).toEqual(1);
             expect(resourceRow.querySelector('tr td.e-resource-cells div.tWrap').children.length).toEqual(1);
-            let templateDiv: HTMLElement = resourceRow.querySelector('tr td.e-resource-cells div.tWrap div.rText') as HTMLElement;
+            const templateDiv: HTMLElement = resourceRow.querySelector('tr td.e-resource-cells div.tWrap div.rText') as HTMLElement;
             expect([templateDiv].length).toEqual(1);
             expect(templateDiv.style.backgroundColor).toEqual('pink');
             expect(templateDiv.innerHTML).toEqual('Nancy');
-            let contentRows: HTMLElement = contentRow.children[1].children[1].querySelector('tbody');
+            const contentRows: HTMLElement = contentRow.children[1].children[1].querySelector('tbody');
             expect(contentRows.children.length).toEqual(10);
         });
     });
 
     describe('Multi level resource rendering with template', () => {
         let schObj: Schedule;
-        let restemplate: string = '<div class="tWrap"><div class="rText" style="background:pink">${getResourceName(data)}</div></div>';
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        const restemplate: string = '<div class="tWrap"><div class="rText" style="background:pink">${getResourceName(data)}</div></div>';
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 height: '550px', width: '100%', selectedDate: new Date(2017, 10, 1),
                 currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 resourceHeaderTemplate: restemplate,
@@ -1825,7 +1826,7 @@ describe('Schedule timeline day view', () => {
                         { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
                         { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
                         { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' }
                     ],
                     textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId',
                     colorField: 'OwnerColor', expandedField: 'Expand'
@@ -1837,28 +1838,28 @@ describe('Schedule timeline day view', () => {
             util.destroy(schObj);
         });
         it('checking resource template rendering', () => {
-            let contentRow: HTMLElement = schObj.element.querySelector('.e-timeline-view table tbody') as HTMLElement;
+            const contentRow: HTMLElement = schObj.element.querySelector('.e-timeline-view table tbody') as HTMLElement;
             expect([contentRow.children[1].querySelector('td div.e-resource-column-wrap')].length).toEqual(1);
-            let resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
+            const resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
             expect(resourceRow.children.length).toEqual(15);
             expect([resourceRow.querySelector('tr td.e-resource-cells')].length).toEqual(1);
             expect(resourceRow.querySelector('tr td.e-resource-cells').children.length).toEqual(2);
             expect([resourceRow.querySelector('tr td.e-resource-cells div.e-resource-tree-icon')].length).toEqual(1);
             expect([resourceRow.querySelector('tr td.e-resource-cells div.tWrap')].length).toEqual(1);
             expect(resourceRow.querySelector('tr td.e-resource-cells div.tWrap').children.length).toEqual(1);
-            let templateDiv: HTMLElement = resourceRow.querySelector('tr td.e-resource-cells div.tWrap div.rText') as HTMLElement;
+            const templateDiv: HTMLElement = resourceRow.querySelector('tr td.e-resource-cells div.tWrap div.rText') as HTMLElement;
             expect([templateDiv].length).toEqual(1);
             expect(templateDiv.style.backgroundColor).toEqual('pink');
             expect(templateDiv.innerHTML).toEqual('Hall 1');
-            let contentRows: HTMLElement = contentRow.children[1].children[1].querySelector('tbody');
+            const contentRows: HTMLElement = contentRow.children[1].children[1].querySelector('tbody');
             expect(contentRows.children.length).toEqual(15);
         });
     });
 
     describe('Group by-child multi level resource rendering with expand property', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 height: '550px', width: '100%', currentView: 'TimelineDay', selectedDate: new Date(2017, 10, 1),
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 group: {
@@ -1895,10 +1896,10 @@ describe('Schedule timeline day view', () => {
             util.destroy(schObj);
         });
         it('checking resource tree rendering', () => {
-            let contentRow: HTMLElement = schObj.element.querySelector('.e-timeline-view table tbody') as HTMLElement;
+            const contentRow: HTMLElement = schObj.element.querySelector('.e-timeline-view table tbody') as HTMLElement;
             expect(contentRow.children[1].children.length).toEqual(2);
             expect([contentRow.children[1].querySelector('td div.e-resource-column-wrap')].length).toEqual(1);
-            let resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
+            const resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
             expect(resourceRow.children.length).toEqual(18);
             expect([resourceRow.querySelector('tr td.e-resource-cells')].length).toEqual(1);
             expect([resourceRow.querySelector('tr td.e-resource-cells div.e-resource-tree-icon')].length).toEqual(1);
@@ -1914,19 +1915,19 @@ describe('Schedule timeline day view', () => {
             expect(resourceRow.children[9].querySelector('tr td.e-resource-cells div.e-resource-text').innerHTML).toEqual('Hall 2');
             expect(resourceRow.children[10].querySelector('.e-resource-cells div.e-resource-text').innerHTML).toEqual('ROOM 1');
             expect(resourceRow.children[11].querySelector('.e-child-node div.e-resource-text').innerHTML).toEqual('Nancy');
-            let contentRows: HTMLElement = contentRow.children[1].children[1].querySelector('tbody');
+            const contentRows: HTMLElement = contentRow.children[1].children[1].querySelector('tbody');
             expect(contentRows.children.length).toEqual(18);
         });
     });
 
     describe('Multiple resource grouping rendering compact view in mobile device ', () => {
         let schObj: Schedule;
-        let uA: string = Browser.userAgent;
-        let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+        const uA: string = Browser.userAgent;
+        const androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
             'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
-        beforeAll((done: Function) => {
+        beforeAll((done: DoneFn) => {
             Browser.userAgent = androidUserAgent;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 width: 300, height: '500px', selectedDate: new Date(2018, 3, 1), currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'],
                 group: { resources: ['Rooms', 'Owners'] },
@@ -1953,7 +1954,7 @@ describe('Schedule timeline day view', () => {
         });
 
         it('initial layout testing', () => {
-            let workCells: Element[] = schObj.getWorkCellElements();
+            const workCells: Element[] = schObj.getWorkCellElements();
             expect(workCells.length).toEqual(48);
             expect(workCells[18].getAttribute('data-date')).toEqual(new Date(2018, 3, 1, 9, 0).getTime().toString());
         });
@@ -1976,7 +1977,7 @@ describe('Schedule timeline day view', () => {
 
         it('resource menu click testing', () => {
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-close')).toEqual(true);
-            let menuElement: HTMLElement = schObj.element.querySelector('.e-resource-menu .e-icon-menu');
+            const menuElement: HTMLElement = schObj.element.querySelector('.e-resource-menu .e-icon-menu');
             menuElement.click();
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-close')).toEqual(false);
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-open')).toEqual(true);
@@ -1988,11 +1989,11 @@ describe('Schedule timeline day view', () => {
         });
 
         it('resource node click testing', () => {
-            let menuElement: HTMLElement = schObj.element.querySelector('.e-resource-menu .e-icon-menu');
+            const menuElement: HTMLElement = schObj.element.querySelector('.e-resource-menu .e-icon-menu');
             menuElement.click();
             expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:first-child').innerHTML).toEqual('Room 1');
             expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:last-child').innerHTML).toEqual('Nancy');
-            let nodeElement: NodeListOf<Element> = schObj.element.querySelectorAll('.e-resource-tree .e-list-item:not(.e-has-child)');
+            const nodeElement: NodeListOf<Element> = schObj.element.querySelectorAll('.e-resource-tree .e-list-item:not(.e-has-child)');
             expect(nodeElement.length).toEqual(3);
             menuElement.click();
         });
@@ -2001,7 +2002,7 @@ describe('Schedule timeline day view', () => {
             expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
         });
 
-        it('resource events checked for timeline week view testing', (done: Function) => {
+        it('resource events checked for timeline week view testing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(3);
                 done();
@@ -2010,7 +2011,7 @@ describe('Schedule timeline day view', () => {
             schObj.dataBind();
         });
 
-        it('resource events checked for timeline workweek view testing', (done: Function) => {
+        it('resource events checked for timeline workweek view testing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(2);
                 done();
@@ -2019,7 +2020,7 @@ describe('Schedule timeline day view', () => {
             schObj.dataBind();
         });
 
-        it('resource events checked for timeline month view testing', (done: Function) => {
+        it('resource events checked for timeline month view testing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(3);
                 done();
@@ -2028,7 +2029,7 @@ describe('Schedule timeline day view', () => {
             schObj.dataBind();
         });
 
-        it('resource without timescale', (done: Function) => {
+        it('resource without timescale', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.getWorkCellElements().length).toEqual(1);
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
@@ -2042,12 +2043,12 @@ describe('Schedule timeline day view', () => {
 
     describe('Multiple resource grouping rendering normal view in mobile device ', () => {
         let schObj: Schedule;
-        let uA: string = Browser.userAgent;
-        let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+        const uA: string = Browser.userAgent;
+        const androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
             'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
-        beforeAll((done: Function) => {
+        beforeAll((done: DoneFn) => {
             Browser.userAgent = androidUserAgent;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 height: '600px', selectedDate: new Date(2018, 3, 1), currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'],
                 group: {
@@ -2076,7 +2077,7 @@ describe('Schedule timeline day view', () => {
             Browser.userAgent = uA;
         });
         it('initial layout testing', () => {
-            let workCells: Element[] = schObj.getWorkCellElements();
+            const workCells: Element[] = schObj.getWorkCellElements();
             expect(workCells.length).toEqual(48 * 5);
             expect(workCells[18].getAttribute('data-date')).toEqual(new Date(2018, 3, 1, 9, 0).getTime().toString());
         });
@@ -2091,7 +2092,7 @@ describe('Schedule timeline day view', () => {
             expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(3);
         });
 
-        it('resource events checked for timeline week view testing', (done: Function) => {
+        it('resource events checked for timeline week view testing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(9);
                 done();
@@ -2100,7 +2101,7 @@ describe('Schedule timeline day view', () => {
             schObj.dataBind();
         });
 
-        it('resource events checked for timeline workweek view testing', (done: Function) => {
+        it('resource events checked for timeline workweek view testing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(5);
                 done();
@@ -2109,7 +2110,7 @@ describe('Schedule timeline day view', () => {
             schObj.dataBind();
         });
 
-        it('resource events checked for timeline month view testing', (done: Function) => {
+        it('resource events checked for timeline month view testing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(9);
                 done();
@@ -2118,7 +2119,7 @@ describe('Schedule timeline day view', () => {
             schObj.dataBind();
         });
 
-        it('resource without timescale', (done: Function) => {
+        it('resource without timescale', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.getWorkCellElements().length).toEqual(1 * 5);
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(3);
@@ -2132,8 +2133,8 @@ describe('Schedule timeline day view', () => {
 
     describe('Grouped events', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 height: '550px', width: '100%', currentView: 'TimelineDay', selectedDate: new Date(2018, 4, 1),
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 group: {
@@ -2172,40 +2173,40 @@ describe('Schedule timeline day view', () => {
         });
 
         it('Checking events elements', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(11);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(10);
         });
 
         it('Checking right icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[9].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned Event - Greater than 24');
             expect(eventElementList[9].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-right-icon'))
                 .toBeTruthy();
         });
 
         it('Checking Left icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[2].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
             expect(eventElementList[2].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
                 .toBeTruthy();
         });
 
         it('Checking recurrence icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[2].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
             expect(eventElementList[2].querySelectorAll('.e-appointment-details .e-icons')[1].classList.contains('e-recurrence-icon'))
                 .toBeTruthy();
         });
 
         it('More event element checking', () => {
-            let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(12);
             expect(moreIndicatorList[0].innerHTML).toEqual('+2&nbsp;more');
             (moreIndicatorList[0] as HTMLElement).click();
-            let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
-            let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
+            const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            const moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(moreEventList.length).toEqual(3);
             util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
@@ -2213,8 +2214,8 @@ describe('Schedule timeline day view', () => {
 
     describe('Grouped events - RTL', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 height: '550px', width: '100%', currentView: 'TimelineDay', enableRtl: true,
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2018, 4, 1),
                 group: {
@@ -2253,40 +2254,40 @@ describe('Schedule timeline day view', () => {
         });
 
         it('Checking events elements', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(11);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(10);
         });
 
         it('Checking right icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[9].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned Event - Greater than 24');
             expect(eventElementList[9].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-right-icon'))
                 .toBeTruthy();
         });
 
         it('Checking Left icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[2].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
             expect(eventElementList[2].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
                 .toBeTruthy();
         });
 
         it('Checking recurrence icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[2].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
             expect(eventElementList[2].querySelectorAll('.e-appointment-details .e-icons')[1].classList.contains('e-recurrence-icon'))
                 .toBeTruthy();
         });
 
         it('More event element checking', () => {
-            let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(12);
             expect(moreIndicatorList[0].innerHTML).toEqual('+2&nbsp;more');
             (moreIndicatorList[0] as HTMLElement).click();
-            let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
-            let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
+            const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            const moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(moreEventList.length).toEqual(3);
             util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
@@ -2294,8 +2295,8 @@ describe('Schedule timeline day view', () => {
 
     describe('Events rendering based on levels', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 height: '550px', width: '100%', currentView: 'TimelineDay', selectedDate: new Date(2018, 4, 1),
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 group: { resources: ['Floors', 'Halls', 'Rooms', 'Owners'] },
@@ -2304,7 +2305,7 @@ describe('Schedule timeline day view', () => {
                     dataSource: [
                         { FloorText: 'Floor 1', Id: 1, FloorColor: '#cb6bb2' },
                         { FloorText: 'Floor 2', Id: 2, FloorColor: '#cb6bb2' },
-                        { FloorText: 'Floor 3', Id: 3, FloorColor: '#cb6bb2' },
+                        { FloorText: 'Floor 3', Id: 3, FloorColor: '#cb6bb2' }
                     ],
                     textField: 'FloorText', idField: 'Id', colorField: 'FloorColor'
                 }, {
@@ -2327,7 +2328,7 @@ describe('Schedule timeline day view', () => {
                         { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
                         { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
                         { OwnerText: 'Oliver', Id: 3, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                        { OwnerText: 'John', Id: 4, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'John', Id: 4, OwnerGroupId: 2, OwnerColor: '#f8a398' }
                     ],
                     textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
                 }]
@@ -2339,45 +2340,45 @@ describe('Schedule timeline day view', () => {
         });
 
         it('Checking events elements', () => {
-            let eventContainer: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-container'));
+            const eventContainer: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-container'));
             expect(eventContainer.length).toEqual(10);
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(6);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(6);
         });
 
         it('Checking events in top level parent node if there is no child fields mapped', () => {
-            let eventContainer: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-container'));
+            const eventContainer: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-container'));
             expect(eventContainer[0].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned Event - Greater than 24');
         });
 
         it('Checking events in last level parent node if there is no child fields mapped', () => {
-            let eventContainer: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-container'));
+            const eventContainer: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-container'));
             expect(eventContainer[2].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Events - Within a day');
         });
 
         it('Checking events in child node if all fields are mapperd properly', () => {
-            let eventContainer: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-container'));
+            const eventContainer: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-container'));
             expect(eventContainer[3].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned Event - Next week');
         });
 
         it('Checking left icon', () => {
-            let eventContainer: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-container'));
+            const eventContainer: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-container'));
             expect(eventContainer[1].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned Event - Previous week');
             expect(eventContainer[1].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
                 .toBeTruthy();
         });
 
         it('Checking right icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[3].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned Event - Next week');
             expect(eventElementList[3].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-right-icon'))
                 .toBeTruthy();
         });
 
         it('Checking recurrence icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[5].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence  Event');
             expect(eventElementList[5].querySelectorAll('.e-appointment-details .e-icons')[0].classList.contains('e-recurrence-icon'))
                 .toBeTruthy();
@@ -2386,8 +2387,8 @@ describe('Schedule timeline day view', () => {
 
     describe('Events rendering based on levels - RTL', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 height: '550px', width: '100%', enableRtl: true, currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 group: { resources: ['Floors', 'Halls', 'Rooms', 'Owners'] },
@@ -2396,7 +2397,7 @@ describe('Schedule timeline day view', () => {
                     dataSource: [
                         { FloorText: 'Floor 1', Id: 1, FloorColor: '#cb6bb2' },
                         { FloorText: 'Floor 2', Id: 2, FloorColor: '#cb6bb2' },
-                        { FloorText: 'Floor 3', Id: 3, FloorColor: '#cb6bb2' },
+                        { FloorText: 'Floor 3', Id: 3, FloorColor: '#cb6bb2' }
                     ],
                     textField: 'FloorText', idField: 'Id', colorField: 'FloorColor'
                 }, {
@@ -2419,7 +2420,7 @@ describe('Schedule timeline day view', () => {
                         { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
                         { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
                         { OwnerText: 'Oliver', Id: 3, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                        { OwnerText: 'John', Id: 4, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'John', Id: 4, OwnerGroupId: 2, OwnerColor: '#f8a398' }
                     ],
                     textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
                 }],
@@ -2432,45 +2433,45 @@ describe('Schedule timeline day view', () => {
         });
 
         it('Checking events elements', () => {
-            let eventContainer: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-container'));
+            const eventContainer: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-container'));
             expect(eventContainer.length).toEqual(10);
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(6);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(6);
         });
 
         it('Checking events in top level parent node if there is no child fields mapped', () => {
-            let eventContainer: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-container'));
+            const eventContainer: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-container'));
             expect(eventContainer[0].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned Event - Greater than 24');
         });
 
         it('Checking events in last level parent node if there is no child fields mapped', () => {
-            let eventContainer: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-container'));
+            const eventContainer: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-container'));
             expect(eventContainer[2].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Events - Within a day');
         });
 
         it('Checking events in child node if all fields are mapperd properly', () => {
-            let eventContainer: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-container'));
+            const eventContainer: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-container'));
             expect(eventContainer[3].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned Event - Next week');
         });
 
         it('Checking left icon', () => {
-            let eventContainer: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-container'));
+            const eventContainer: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-container'));
             expect(eventContainer[1].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned Event - Previous week');
             expect(eventContainer[1].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
                 .toBeTruthy();
         });
 
         it('Checking right icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[3].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned Event - Next week');
             expect(eventElementList[3].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-right-icon'))
                 .toBeTruthy();
         });
 
         it('Checking recurrence icon', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList[5].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence  Event');
             expect(eventElementList[5].querySelectorAll('.e-appointment-details .e-icons')[0].classList.contains('e-recurrence-icon'))
                 .toBeTruthy();
@@ -2479,8 +2480,8 @@ describe('Schedule timeline day view', () => {
 
     describe('Year, Month, Week, Day, Hour header rows', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
                 height: '600px', width: '1000px', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 headerRows: [
@@ -2509,28 +2510,28 @@ describe('Schedule timeline day view', () => {
         });
 
         it('check year rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[0].children.length).toEqual(1);
             expect(headTrs[0].children[0].getAttribute('colSpan')).toEqual('48');
             expect(headTrs[0].children[0].innerHTML).toEqual('<span class="e-header-year" style="left: 900px;">2018</span>');
         });
 
         it('check month rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[1].children.length).toEqual(1);
             expect(headTrs[1].children[0].getAttribute('colSpan')).toEqual('48');
             expect(headTrs[1].children[0].innerHTML).toEqual('<span class="e-header-month" style="left: 900px;">May</span>');
         });
 
         it('check week rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[2].children.length).toEqual(1);
             expect(headTrs[2].children[0].getAttribute('colSpan')).toEqual('48');
             expect(headTrs[2].children[0].innerHTML).toEqual('<span class="e-header-week" style="left: 900px;">18</span>');
         });
 
         it('check day rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[3].children.length).toEqual(1);
             expect(headTrs[3].children[0].getAttribute('colSpan')).toEqual('48');
             expect(headTrs[3].children[0].innerHTML).
@@ -2539,7 +2540,7 @@ describe('Schedule timeline day view', () => {
         });
 
         it('check hour rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr'));
             expect(headTrs[4].children.length).toEqual(48);
             expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
             expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
@@ -2548,14 +2549,14 @@ describe('Schedule timeline day view', () => {
 
         it('check work cells', () => {
             expect(schObj.getWorkCellElements().length).toEqual(48);
-            let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
             expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
             expect(firstWorkCell.innerHTML).toEqual('');
 
-            let data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
+            const data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
             expect(data.startTime.getTime()).toEqual(new Date(2018, 4, 1).getTime());
             expect(data.endTime.getTime()).toEqual(new Date(2018, 4, 1, 0, 30).getTime());
             expect(data.isAllDay).toEqual(false);
@@ -2567,9 +2568,9 @@ describe('Schedule timeline day view', () => {
         });
 
         it('check events rendering', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(12);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(1);
 
             expect(eventElementList[0].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
@@ -2583,26 +2584,26 @@ describe('Schedule timeline day view', () => {
         });
 
         it('check more indicator', () => {
-            let moreIndicators: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicators: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicators.length).toEqual(1);
             expect(moreIndicators[0].innerHTML).toEqual('+3&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1, 13).getTime().toString());
             expect(moreIndicators[0].getAttribute('data-end-date')).toEqual(new Date(2018, 4, 1, 13, 30).getTime().toString());
             moreIndicators[0].click();
-            let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
-            let eventElementList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
+            const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            const eventElementList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(eventElementList.length).toEqual(11);
             expect(morePopup.classList).toContain('e-popup-open');
             util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
             expect(morePopup.classList).toContain('e-popup-close');
         });
 
-        it('navigate next date', (done: Function) => {
+        it('navigate next date', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
                 expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 2, 2018');
                 expect(schObj.element.querySelectorAll('.e-date-header-wrap table col').length).toEqual(48);
-                let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+                const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
                 expect(headTrs[0].children.length).toEqual(1);
                 expect(headTrs[0].children[0].getAttribute('colSpan')).toEqual('48');
                 expect(headTrs[0].children[0].innerHTML).toEqual('<span class="e-header-year" style="left: 900px;">2018</span>');
@@ -2622,24 +2623,24 @@ describe('Schedule timeline day view', () => {
                 expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
                 expect(headTrs[4].children[1].innerHTML).toEqual('&nbsp;');
                 expect(schObj.getWorkCellElements().length).toEqual(48);
-                let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+                const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
                 expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 4, 2).getTime().toString());
                 expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(18);
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(5);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(1);
                 done();
             };
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
         });
 
-        it('navigate previous date', (done: Function) => {
+        it('navigate previous date', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 1, 2018');
                 expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
                 expect(schObj.element.querySelectorAll('.e-date-header-wrap table col').length).toEqual(48);
-                let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+                const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
                 expect(headTrs[0].children.length).toEqual(1);
                 expect(headTrs[0].children[0].getAttribute('colSpan')).toEqual('48');
                 expect(headTrs[0].children[0].innerHTML).toEqual('<span class="e-header-year" style="left: 900px;">2018</span>');
@@ -2659,27 +2660,27 @@ describe('Schedule timeline day view', () => {
                 expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
                 expect(headTrs[4].children[1].innerHTML).toEqual('&nbsp;');
                 expect(schObj.getWorkCellElements().length).toEqual(48);
-                let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+                const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
                 expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
                 expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
                 expect(firstWorkCell.innerHTML).toEqual('');
                 expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(18);
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(12);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(1);
                 done();
             };
             (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
         });
 
-        it('Checking rowAutoHeight property', (done: Function) => {
+        it('Checking rowAutoHeight property', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(15);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(1);
-                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                 expect(moreIndicatorList.length).toEqual(0);
                 done();
             };
@@ -2690,9 +2691,9 @@ describe('Schedule timeline day view', () => {
 
     describe('Year, Month, Week, Day, Hour header rows with template', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let headTemplate: string = '<span>${type}</span>';
-            let options: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const headTemplate: string = '<span>${type}</span>';
+            const options: ScheduleModel = {
                 height: '600px', width: '1000px', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 dateHeaderTemplate: headTemplate,
@@ -2726,28 +2727,28 @@ describe('Schedule timeline day view', () => {
         });
 
         it('check year rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[0].children.length).toEqual(1);
             expect(headTrs[0].children[0].getAttribute('colSpan')).toEqual('48');
             expect(headTrs[0].children[0].innerHTML).toEqual('<span style="left: 900px;">yearHeader</span>');
         });
 
         it('check month rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[1].children.length).toEqual(1);
             expect(headTrs[1].children[0].getAttribute('colSpan')).toEqual('48');
             expect(headTrs[1].children[0].innerHTML).toEqual('<span style="left: 900px;">monthHeader</span>');
         });
 
         it('check week rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[2].children.length).toEqual(1);
             expect(headTrs[2].children[0].getAttribute('colSpan')).toEqual('48');
             expect(headTrs[2].children[0].innerHTML).toEqual('<span style="left: 900px;">weekHeader</span>');
         });
 
         it('check day rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[3].children.length).toEqual(1);
             expect(headTrs[3].children[0].getAttribute('colSpan')).toEqual('48');
             expect(headTrs[3].children[0].innerHTML).toEqual('<span style="left: 900px;">dateHeader</span>');
@@ -2755,7 +2756,7 @@ describe('Schedule timeline day view', () => {
         });
 
         it('check hour rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr'));
             expect(headTrs[4].children.length).toEqual(48);
             expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
             expect(headTrs[4].children[0].innerHTML).toEqual('<span>majorSlot</span>');
@@ -2764,11 +2765,11 @@ describe('Schedule timeline day view', () => {
 
         it('check work cells', () => {
             expect(schObj.getWorkCellElements().length).toEqual(48);
-            let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
 
-            let data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
+            const data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
             expect(data.startTime.getTime()).toEqual(new Date(2018, 4, 1).getTime());
             expect(data.endTime.getTime()).toEqual(new Date(2018, 4, 1, 0, 30).getTime());
             expect(data.isAllDay).toEqual(false);
@@ -2778,24 +2779,24 @@ describe('Schedule timeline day view', () => {
         });
 
         it('check events rendering with more indicator', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(12);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(1);
-            let moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicators.length).toEqual(1);
             expect(moreIndicators[0].innerHTML).toEqual('+3&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1, 13).getTime().toString());
             expect(moreIndicators[0].getAttribute('data-end-date')).toEqual(new Date(2018, 4, 1, 13, 30).getTime().toString());
         });
 
-        it('Checking rowAutoHeight property', (done: Function) => {
+        it('Checking rowAutoHeight property', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(15);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(1);
-                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                 expect(moreIndicatorList.length).toEqual(0);
                 done();
             };
@@ -2806,8 +2807,8 @@ describe('Schedule timeline day view', () => {
 
     describe('Year, Month, Week, Day header rows', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
                 height: '600px', width: '1000px', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 headerRows: [{ option: 'Year' }, { option: 'Month' }, { option: 'Week' }, { option: 'Date' }],
@@ -2830,28 +2831,28 @@ describe('Schedule timeline day view', () => {
         });
 
         it('check year rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[0].children.length).toEqual(1);
             expect(headTrs[0].children[0].getAttribute('colSpan')).toEqual('1');
             expect(headTrs[0].children[0].innerHTML).toEqual('<span class="e-header-year">2018</span>');
         });
 
         it('check month rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[1].children.length).toEqual(1);
             expect(headTrs[1].children[0].getAttribute('colSpan')).toEqual('1');
             expect(headTrs[1].children[0].innerHTML).toEqual('<span class="e-header-month">May</span>');
         });
 
         it('check week rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[2].children.length).toEqual(1);
             expect(headTrs[2].children[0].getAttribute('colSpan')).toEqual('1');
             expect(headTrs[2].children[0].innerHTML).toEqual('<span class="e-header-week">18</span>');
         });
 
         it('check day rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[3].children.length).toEqual(1);
             expect(headTrs[3].children[0].getAttribute('colSpan')).toEqual('1');
             expect(headTrs[3].children[0].innerHTML).
@@ -2861,10 +2862,10 @@ describe('Schedule timeline day view', () => {
 
         it('check work cells', () => {
             expect(schObj.getWorkCellElements().length).toEqual(1);
-            let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
-            let data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
+            const data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
             expect(data.startTime.getTime()).toEqual(new Date(2018, 4, 1).getTime());
             expect(data.endTime.getTime()).toEqual(new Date(2018, 4, 2).getTime());
             expect(data.isAllDay).toEqual(true);
@@ -2874,24 +2875,24 @@ describe('Schedule timeline day view', () => {
         });
 
         it('check events rendering with more indicator', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(9);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(1);
-            let moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicators.length).toEqual(1);
             expect(moreIndicators[0].innerHTML).toEqual('+6&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
             expect(moreIndicators[0].getAttribute('data-end-date')).toEqual(new Date(2018, 4, 2).getTime().toString());
         });
 
-        it('Checking rowAutoHeight property', (done: Function) => {
+        it('Checking rowAutoHeight property', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(15);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(1);
-                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                 expect(moreIndicatorList.length).toEqual(0);
                 done();
             };
@@ -2902,8 +2903,8 @@ describe('Schedule timeline day view', () => {
 
     describe('Year, Month, Week header rows', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
                 height: '600px', width: '1000px', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 headerRows: [{ option: 'Year' }, { option: 'Month' }, { option: 'Week' }],
@@ -2926,21 +2927,21 @@ describe('Schedule timeline day view', () => {
         });
 
         it('check year rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[0].children.length).toEqual(1);
             expect(headTrs[0].children[0].getAttribute('colSpan')).toEqual('1');
             expect(headTrs[0].children[0].innerHTML).toEqual('<span class="e-header-year">2018</span>');
         });
 
         it('check month rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[1].children.length).toEqual(1);
             expect(headTrs[1].children[0].getAttribute('colSpan')).toEqual('1');
             expect(headTrs[1].children[0].innerHTML).toEqual('<span class="e-header-month">May</span>');
         });
 
         it('check week rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[2].children.length).toEqual(1);
             expect(headTrs[2].children[0].getAttribute('colSpan')).toEqual('1');
             expect(headTrs[2].children[0].innerHTML).toEqual('<span class="e-header-week">18</span>');
@@ -2948,10 +2949,10 @@ describe('Schedule timeline day view', () => {
 
         it('check work cells', () => {
             expect(schObj.getWorkCellElements().length).toEqual(1);
-            let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
-            let data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
+            const data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
             expect(data.startTime.getTime()).toEqual(new Date(2018, 4, 1).getTime());
             expect(data.endTime.getTime()).toEqual(new Date(2018, 4, 2).getTime());
             expect(data.isAllDay).toEqual(true);
@@ -2961,11 +2962,11 @@ describe('Schedule timeline day view', () => {
         });
 
         it('check events rendering with more indicator', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(10);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(1);
-            let moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicators.length).toEqual(1);
             expect(moreIndicators[0].innerHTML).toEqual('+5&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
@@ -2975,8 +2976,8 @@ describe('Schedule timeline day view', () => {
 
     describe('Year, Month header rows', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
                 height: '600px', width: '1000px', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 headerRows: [{ option: 'Year' }, { option: 'Month' }],
@@ -2999,14 +3000,14 @@ describe('Schedule timeline day view', () => {
         });
 
         it('check year rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[0].children.length).toEqual(1);
             expect(headTrs[0].children[0].getAttribute('colSpan')).toEqual('1');
             expect(headTrs[0].children[0].innerHTML).toEqual('<span class="e-header-year">2018</span>');
         });
 
         it('check month rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[1].children.length).toEqual(1);
             expect(headTrs[1].children[0].getAttribute('colSpan')).toEqual('1');
             expect(headTrs[1].children[0].innerHTML).toEqual('<span class="e-header-month">May</span>');
@@ -3014,10 +3015,10 @@ describe('Schedule timeline day view', () => {
 
         it('check work cells', () => {
             expect(schObj.getWorkCellElements().length).toEqual(1);
-            let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
-            let data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
+            const data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
             expect(data.startTime.getTime()).toEqual(new Date(2018, 4, 1).getTime());
             expect(data.endTime.getTime()).toEqual(new Date(2018, 4, 2).getTime());
             expect(data.isAllDay).toEqual(true);
@@ -3027,11 +3028,11 @@ describe('Schedule timeline day view', () => {
         });
 
         it('check events rendering with more indicator', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(11);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(1);
-            let moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicators.length).toEqual(1);
             expect(moreIndicators[0].innerHTML).toEqual('+4&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
@@ -3041,8 +3042,8 @@ describe('Schedule timeline day view', () => {
 
     describe('Year header row', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
                 height: '600px', width: '1000px', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 headerRows: [{ option: 'Year' }],
@@ -3065,7 +3066,7 @@ describe('Schedule timeline day view', () => {
         });
 
         it('check year rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[0].children.length).toEqual(1);
             expect(headTrs[0].children[0].getAttribute('colSpan')).toEqual('1');
             expect(headTrs[0].children[0].innerHTML).toEqual('<span class="e-header-year">2018</span>');
@@ -3073,10 +3074,10 @@ describe('Schedule timeline day view', () => {
 
         it('check work cells', () => {
             expect(schObj.getWorkCellElements().length).toEqual(1);
-            let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
-            let data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
+            const data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
             expect(data.startTime.getTime()).toEqual(new Date(2018, 4, 1).getTime());
             expect(data.endTime.getTime()).toEqual(new Date(2018, 4, 2).getTime());
             expect(data.isAllDay).toEqual(true);
@@ -3086,11 +3087,11 @@ describe('Schedule timeline day view', () => {
         });
 
         it('check events rendering with more indicator', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(12);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(1);
-            let moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicators.length).toEqual(1);
             expect(moreIndicators[0].innerHTML).toEqual('+3&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
@@ -3100,12 +3101,12 @@ describe('Schedule timeline day view', () => {
 
     describe('Year, Week, Day header rows', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
                 height: '600px', width: '1000px', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 headerRows: [{ option: 'Year' }, { option: 'Week' }, { option: 'Date' }],
-                selectedDate: new Date(2018, 4, 1),
+                selectedDate: new Date(2018, 4, 1)
             };
             schObj = util.createSchedule(options, timelineData, done);
         });
@@ -3124,21 +3125,21 @@ describe('Schedule timeline day view', () => {
         });
 
         it('check year rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[0].children.length).toEqual(1);
             expect(headTrs[0].children[0].getAttribute('colSpan')).toEqual('1');
             expect(headTrs[0].children[0].innerHTML).toEqual('<span class="e-header-year">2018</span>');
         });
 
         it('check week rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[1].children.length).toEqual(1);
             expect(headTrs[1].children[0].getAttribute('colSpan')).toEqual('1');
             expect(headTrs[1].children[0].innerHTML).toEqual('<span class="e-header-week">18</span>');
         });
 
         it('check day rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[2].children.length).toEqual(1);
             expect(headTrs[2].children[0].getAttribute('colSpan')).toEqual('1');
             expect(headTrs[2].children[0].innerHTML).toEqual('<span class="e-header-date e-navigate">May 1, Tuesday</span>');
@@ -3147,10 +3148,10 @@ describe('Schedule timeline day view', () => {
 
         it('check work cells', () => {
             expect(schObj.getWorkCellElements().length).toEqual(1);
-            let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
-            let data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
+            const data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
             expect(data.startTime.getTime()).toEqual(new Date(2018, 4, 1).getTime());
             expect(data.endTime.getTime()).toEqual(new Date(2018, 4, 2).getTime());
             expect(data.isAllDay).toEqual(true);
@@ -3160,11 +3161,11 @@ describe('Schedule timeline day view', () => {
         });
 
         it('check events rendering with more indicator', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(10);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(1);
-            let moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicators.length).toEqual(1);
             expect(moreIndicators[0].innerHTML).toEqual('+5&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
@@ -3174,9 +3175,9 @@ describe('Schedule timeline day view', () => {
 
     describe('Year, Month, Week, Day, Hour header rows with single resource', () => {
         let schObj: Schedule;
-        let resLength: number = 10;
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = {
+        const resLength: number = 10;
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
                 height: '600px', width: '1000px', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 headerRows: [{ option: 'Year' }, { option: 'Month' }, { option: 'Week' }, { option: 'Date' }, { option: 'Hour' }],
@@ -3199,28 +3200,28 @@ describe('Schedule timeline day view', () => {
         });
 
         it('check year rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[0].children.length).toEqual(1);
             expect(headTrs[0].children[0].getAttribute('colSpan')).toEqual('48');
             expect(headTrs[0].children[0].innerHTML).toEqual('<span class="e-header-year" style="left: 900px;">2018</span>');
         });
 
         it('check month rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[1].children.length).toEqual(1);
             expect(headTrs[1].children[0].getAttribute('colSpan')).toEqual('48');
             expect(headTrs[1].children[0].innerHTML).toEqual('<span class="e-header-month" style="left: 900px;">May</span>');
         });
 
         it('check week rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[2].children.length).toEqual(1);
             expect(headTrs[2].children[0].getAttribute('colSpan')).toEqual('48');
             expect(headTrs[2].children[0].innerHTML).toEqual('<span class="e-header-week" style="left: 900px;">18</span>');
         });
 
         it('check day rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[3].children.length).toEqual(1);
             expect(headTrs[3].children[0].getAttribute('colSpan')).toEqual('48');
             expect(headTrs[3].children[0].innerHTML).
@@ -3229,7 +3230,7 @@ describe('Schedule timeline day view', () => {
         });
 
         it('check hour rows', () => {
-            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr'));
+            const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr'));
             expect(headTrs[4].children.length).toEqual(48);
             expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
             expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
@@ -3245,7 +3246,7 @@ describe('Schedule timeline day view', () => {
             expect(schObj.element.querySelectorAll('.e-content-wrap table tbody tr').length).toEqual(resLength);
             expect(schObj.element.querySelectorAll('.e-content-wrap table col').length).toEqual(48);
             expect(schObj.element.querySelectorAll('.e-content-wrap table td').length).toEqual(48 * resLength);
-            let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
             expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
@@ -3253,7 +3254,7 @@ describe('Schedule timeline day view', () => {
             expect(firstWorkCell.getAttribute('data-group-index')).toEqual('0');
             expect(firstWorkCell.innerHTML).toEqual('');
 
-            let data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
+            const data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
             expect(data.startTime.getTime()).toEqual(new Date(2018, 4, 1).getTime());
             expect(data.endTime.getTime()).toEqual(new Date(2018, 4, 1, 0, 30).getTime());
             expect(data.isAllDay).toEqual(false);
@@ -3265,9 +3266,9 @@ describe('Schedule timeline day view', () => {
         });
 
         it('check events rendering', () => {
-            let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElements.length).toEqual(8);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(8);
             expect(schObj.element.querySelectorAll('.e-event-table > div').length).toEqual(resLength);
             expect(eventElements[0].querySelector('.e-subject').innerHTML).toEqual('Events - Within a day');
@@ -3279,27 +3280,27 @@ describe('Schedule timeline day view', () => {
         });
 
         it('check more indicator', () => {
-            let moreIndicators: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicators: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicators.length).toEqual(1);
             expect(moreIndicators[0].innerHTML).toEqual('+1&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-group-index')).toEqual('9');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1, 10).getTime().toString());
             expect(moreIndicators[0].getAttribute('data-end-date')).toEqual(new Date(2018, 4, 1, 10, 30).getTime().toString());
             moreIndicators[0].click();
-            let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
-            let eventElementList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
+            const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            const eventElementList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(eventElementList.length).toEqual(2);
             expect(morePopup.classList).toContain('e-popup-open');
             util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
             expect(morePopup.classList).toContain('e-popup-close');
         });
 
-        it('navigate next date', (done: Function) => {
+        it('navigate next date', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
                 expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 2, 2018');
                 expect(schObj.element.querySelectorAll('.e-date-header-wrap table col').length).toEqual(48);
-                let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+                const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
                 expect(headTrs[0].children.length).toEqual(1);
                 expect(headTrs[0].children[0].getAttribute('colSpan')).toEqual('48');
                 expect(headTrs[0].children[0].innerHTML).toEqual('<span class="e-header-year" style="left: 900px;">2018</span>');
@@ -3323,22 +3324,22 @@ describe('Schedule timeline day view', () => {
                 expect(schObj.element.querySelectorAll('.e-content-wrap table tbody tr').length).toEqual(resLength);
                 expect(schObj.element.querySelectorAll('.e-content-wrap table col').length).toEqual(48);
                 expect(schObj.element.querySelectorAll('.e-content-wrap table td').length).toEqual(48 * resLength);
-                let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+                const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
                 expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
                 expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
                 expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
                 expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 4, 2).getTime().toString());
                 expect(firstWorkCell.getAttribute('data-group-index')).toEqual('0');
                 expect(firstWorkCell.innerHTML).toEqual('');
-                let data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
+                const data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
                 expect(data.startTime.getTime()).toEqual(new Date(2018, 4, 2).getTime());
                 expect(data.endTime.getTime()).toEqual(new Date(2018, 4, 2, 0, 30).getTime());
                 expect(data.isAllDay).toEqual(false);
                 expect(data.groupIndex).toBe(0);
                 expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(18 * resLength);
-                let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElements.length).toEqual(5);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(5);
                 expect(schObj.element.querySelectorAll('.e-event-table > div').length).toEqual(resLength);
                 expect(eventElements[0].getAttribute('data-group-index')).toEqual('2');
@@ -3350,12 +3351,12 @@ describe('Schedule timeline day view', () => {
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
         });
 
-        it('navigate previous date', (done: Function) => {
+        it('navigate previous date', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
                 expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 1, 2018');
                 expect(schObj.element.querySelectorAll('.e-date-header-wrap table col').length).toEqual(48);
-                let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+                const headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
                 expect(headTrs[0].children.length).toEqual(1);
                 expect(headTrs[0].children[0].getAttribute('colSpan')).toEqual('48');
                 expect(headTrs[0].children[0].innerHTML).toEqual('<span class="e-header-year" style="left: 900px;">2018</span>');
@@ -3379,22 +3380,22 @@ describe('Schedule timeline day view', () => {
                 expect(schObj.element.querySelectorAll('.e-content-wrap table tbody tr').length).toEqual(resLength);
                 expect(schObj.element.querySelectorAll('.e-content-wrap table col').length).toEqual(48);
                 expect(schObj.element.querySelectorAll('.e-content-wrap table td').length).toEqual(48 * resLength);
-                let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+                const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
                 expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
                 expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
                 expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
                 expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
                 expect(firstWorkCell.getAttribute('data-group-index')).toEqual('0');
                 expect(firstWorkCell.innerHTML).toEqual('');
-                let data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
+                const data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
                 expect(data.startTime.getTime()).toEqual(new Date(2018, 4, 1).getTime());
                 expect(data.endTime.getTime()).toEqual(new Date(2018, 4, 1, 0, 30).getTime());
                 expect(data.isAllDay).toEqual(false);
                 expect(data.groupIndex).toBe(0);
                 expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(18 * resLength);
-                let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElements.length).toEqual(8);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(8);
                 expect(schObj.element.querySelectorAll('.e-event-table > div').length).toEqual(resLength);
                 expect(eventElements[0].getAttribute('data-group-index')).toEqual('0');
@@ -3409,8 +3410,8 @@ describe('Schedule timeline day view', () => {
 
     describe('Multi level resource rendering with Timescale -  Schedule width 500', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 height: '550px', width: '500px', currentView: 'TimelineWeek',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 group: {
@@ -3444,7 +3445,7 @@ describe('Schedule timeline day view', () => {
                         { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
                         { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
                         { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' }
                     ],
                     textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
                 }],
@@ -3457,14 +3458,14 @@ describe('Schedule timeline day view', () => {
             util.destroy(schObj);
         });
         it('Check events offsetleft - slot count 2', () => {
-            let colElement: HTMLElement =
+            const colElement: HTMLElement =
                 schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
             expect(colElement.style.width).toEqual('50px');
             expect(colElement.style.width).toEqual('50px');
         });
         it('Check events offsetleft - slot count 6', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let colElement: HTMLElement =
+                const colElement: HTMLElement =
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
                 expect(colElement.style.width).toEqual('50px');
                 done();
@@ -3474,7 +3475,7 @@ describe('Schedule timeline day view', () => {
         });
         it('Check events offsetleft - with start hour and end hour', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let colElement: HTMLElement =
+                const colElement: HTMLElement =
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
                 expect(colElement.style.width).toEqual('50px');
                 done();
@@ -3489,8 +3490,8 @@ describe('Schedule timeline day view', () => {
 
     describe('Multi level resource rendering with Timescale -  Schedule width 1900', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 height: '550px', width: '1900px', currentView: 'TimelineWeek',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 group: {
@@ -3524,7 +3525,7 @@ describe('Schedule timeline day view', () => {
                         { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
                         { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
                         { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' }
                     ],
                     textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
                 }],
@@ -3538,15 +3539,15 @@ describe('Schedule timeline day view', () => {
         });
 
         it('Check events offsetleft - slot count 2', () => {
-            let colElement: HTMLElement =
+            const colElement: HTMLElement =
                 schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
-            let tdElement: HTMLElement =
+            const tdElement: HTMLElement =
                 schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr:first-child td:first-child') as HTMLElement;
             expect(colElement.getAttribute('style')).toEqual('width: ' + tdElement.offsetWidth + 'px;');
         });
         it('Check events offsetleft - slot count 6', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let colElement: HTMLElement =
+                const colElement: HTMLElement =
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
                 expect(colElement.style.width).toEqual('50px');
                 done();
@@ -3556,9 +3557,9 @@ describe('Schedule timeline day view', () => {
         });
         it('Check events offsetleft - with start hour and end hour', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let colElement: HTMLElement =
+                const colElement: HTMLElement =
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
-                let tdElement: HTMLElement =
+                const tdElement: HTMLElement =
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr:first-child td:first-child') as HTMLElement;
                 expect(colElement.getAttribute('style')).toEqual('width: ' + tdElement.offsetWidth + 'px;');
                 done();
@@ -3573,11 +3574,11 @@ describe('Schedule timeline day view', () => {
 
     describe('Show weekend as False', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let options: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
                 showWeekend: false, currentView: 'TimelineDay', selectedDate: new Date(2018, 3, 1),
                 views: [{ displayName: '3 Days', option: 'TimelineDay', interval: 3, showWeekend: false },
-                { option: 'TimelineMonth' }]
+                    { option: 'TimelineMonth' }]
             };
             schObj = util.createSchedule(options, timelineData, done);
         });
@@ -3605,13 +3606,9 @@ describe('Schedule timeline day view', () => {
 
     it('memory leak', () => {
         profile.sample();
-        // tslint:disable:no-any
-        let average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
+        const average: number = inMB(profile.averageChange);
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        const memory: number = inMB(getMemoryProfile());
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        // tslint:enable:no-any
     });
 });

@@ -22,7 +22,7 @@ export class Count {
     private args: KeyboardEventArgs;
     private element: HTMLElement;
 
-    constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
+    public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.locator = serviceLocator;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
@@ -37,6 +37,8 @@ export class Count {
 
     /**
      * renderCount method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -45,19 +47,21 @@ export class Count {
         this.element = this.parent.createElement('span', { className: CLS_COUNT });
         this.contentRenderer.getPanel().parentElement.appendChild(this.element);
         this.appendCount();
-        if (this.parent.maxLength !== -1) { this.charCountBackground(this.htmlLength); }
+        if (this.parent.maxLength !== -1) {
+            this.charCountBackground(this.htmlLength);
+        }
     }
 
     private appendCount(): void {
-        let htmlText: string = this.parent.editorMode === 'Markdown' ? (this.editPanel as HTMLTextAreaElement).value.trim() :
+        const htmlText: string = this.parent.editorMode === 'Markdown' ? (this.editPanel as HTMLTextAreaElement).value.trim() :
             (this.editPanel as HTMLElement).textContent.trim();
         this.htmlLength = htmlText.length;
-        let string: string | number = this.parent.maxLength === -1 ? this.htmlLength : this.htmlLength + ' / ' + this.parent.maxLength;
+        const string: string | number = this.parent.maxLength === -1 ? this.htmlLength : this.htmlLength + ' / ' + this.parent.maxLength;
         this.element.innerHTML = string as string;
     }
 
     private charCountBackground(htmlLength: number): void {
-        let percentage: number = (htmlLength / this.parent.maxLength) * 100;
+        const percentage: number = (htmlLength / this.parent.maxLength) * 100;
         if (percentage < 85) {
             this.element.classList.remove(CLS_WARNING);
             this.element.classList.remove(CLS_ERROR);
@@ -70,20 +74,24 @@ export class Count {
         }
     }
     /**
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public refresh(): void {
         if (!isNullOrUndefined(this.editPanel)) {
             this.appendCount();
-            if (this.parent.maxLength !== -1) { this.charCountBackground(this.htmlLength); }
+            if (this.parent.maxLength !== -1) {
+                this.charCountBackground(this.htmlLength);
+            }
         }
     }
 
     /**
      * Destroys the Count.
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -100,7 +108,9 @@ export class Count {
     }
 
     protected addEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.on(events.initialEnd, this.renderCount, this);
         this.parent.on(events.keyUp, this.refresh, this);
         this.parent.on(events.count, this.refresh, this);
@@ -112,7 +122,9 @@ export class Count {
     }
 
     protected removeEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.off(events.initialEnd, this.renderCount);
         this.parent.off(events.keyUp, this.refresh);
         this.parent.off(events.refreshBegin, this.refresh);
@@ -125,6 +137,8 @@ export class Count {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} - returns the string value
      */
     private getModuleName(): string {
         return 'count';

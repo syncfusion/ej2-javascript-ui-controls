@@ -1,7 +1,8 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 ///<reference path='../datepicker/datepicker-model.d.ts'/>
 import { EventHandler, Internationalization, Property, NotifyPropertyChanges, Browser, RippleOptions } from '@syncfusion/ej2-base';
 import { Animation, EmitType, Event, AnimationModel, cldrData, getDefaultDateObject, detach } from '@syncfusion/ej2-base';
-import { createElement, remove, addClass, L10n, removeClass, closest, classList, append, attributes } from '@syncfusion/ej2-base';
+import { createElement, remove, addClass, L10n, removeClass, closest, append, attributes } from '@syncfusion/ej2-base';
 import { KeyboardEvents, KeyboardEventArgs, isNullOrUndefined, formatUnit, getValue, rippleEffect } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, extend, isBlazor, blazorCultureFormats } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
@@ -33,7 +34,6 @@ const ICONANIMATION: string = 'e-icon-anim';
 const DISABLED: string = 'e-disabled';
 const ERROR: string = 'e-error';
 const CONTENT: string = 'e-content';
-const RTL: string = 'e-rtl';
 const NAVIGATION: string = 'e-navigation';
 const ACTIVE: string = 'e-active';
 const HOVER: string = 'e-hover';
@@ -71,7 +71,7 @@ export class DateTimePicker extends DatePicker {
     private popupObject: Popup;
     protected timeModal: HTMLElement;
     private isNavigate: boolean;
-    protected isPreventBlur: Boolean;
+    protected isPreventBlur: boolean;
     private timeValue: string;
     protected l10n: L10n;
     private keyboardHandler: KeyboardEvents;
@@ -88,12 +88,14 @@ export class DateTimePicker extends DatePicker {
 
     /**
      * Specifies the format of the time value that to be displayed in time popup list.
+     *
      * @default null
      */
     @Property(null)
     public timeFormat: string;
     /**
-     * Specifies the time interval between the two adjacent time values in the time popup list . 
+     * Specifies the time interval between the two adjacent time values in the time popup list .
+     *
      * @default 30
      * @blazorType int
      */
@@ -103,6 +105,7 @@ export class DateTimePicker extends DatePicker {
      * Specifies the scroll bar position if there is no value is selected in the timepicker popup list or
      * the given value is not present in the timepicker popup list.
      * {% codeBlock src='datetimepicker/scrollTo/index.md' %}{% endcodeBlock %}
+     *
      * @default null
      * @isBlazorNullableType true
      */
@@ -110,6 +113,7 @@ export class DateTimePicker extends DatePicker {
     public scrollTo: Date;
     /**
      * specifies the z-index value of the popup element.
+     *
      * @default 1000
      * @aspType int
      * @blazorType int
@@ -118,147 +122,149 @@ export class DateTimePicker extends DatePicker {
     public zIndex: number;
     /**
      * Gets or sets the selected date of the Calendar.
+     *
      * @default null
      * @isGenericType true
      */
     @Property(null)
     public value: Date;
-    /**     
+    /**    
      * Customizes the key actions in DateTimePicker.
      * For example, when using German keyboard, the key actions can be customized using these shortcuts.
-     * 
-     * 
+     *
+     *
      * Input Navigation
-     * <table> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * Key action<br/></td><td colSpan=1 rowSpan=1> 
-     * Key<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * altUpArrow<br/></td><td colSpan=1 rowSpan=1> 
-     * alt+uparrow<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * altDownArrow<br/></td><td colSpan=1 rowSpan=1> 
-     * alt+downarrow<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * escape<br/></td><td colSpan=1 rowSpan=1> 
-     * escape<br/></td></tr> 
-     * </table> 
-     * 
-     * Calendar Navigation (Use the following list of keys to navigate the currently focused Calendar after the popup has opened). 
-     * <table> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * Key action<br/></td><td colSpan=1 rowSpan=1> 
-     * Key<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * controlUp<br/></td><td colSpan=1 rowSpan=1> 
-     * ctrl+38<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * controlDown<br/></td><td colSpan=1 rowSpan=1> 
-     * ctrl+40<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * moveDown<br/></td><td colSpan=1 rowSpan=1> 
-     * downarrow<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * moveUp<br/></td><td colSpan=1 rowSpan=1> 
-     * uparrow<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * moveLeft<br/></td><td colSpan=1 rowSpan=1> 
-     * leftarrow<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * moveRight<br/></td><td colSpan=1 rowSpan=1> 
-     * rightarrow<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * select<br/></td><td colSpan=1 rowSpan=1> 
-     * enter<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * home<br/></td><td colSpan=1 rowSpan=1> 
-     * home<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * end<br/></td><td colSpan=1 rowSpan=1> 
-     * end<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * pageUp<br/></td><td colSpan=1 rowSpan=1> 
-     * pageup<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * pageDown<br/></td><td colSpan=1 rowSpan=1> 
-     * pagedown<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * shiftPageUp<br/></td><td colSpan=1 rowSpan=1> 
-     * shift+pageup<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * shiftPageDown<br/></td><td colSpan=1 rowSpan=1> 
-     * shift+pagedown<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * controlHome<br/></td><td colSpan=1 rowSpan=1> 
-     * ctrl+home<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * controlEnd<br/></td><td colSpan=1 rowSpan=1> 
-     * ctrl+end<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * altUpArrow<br/></td><td colSpan=1 rowSpan=1> 
-     * alt+uparrow<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * spacebar<br/></td><td colSpan=1 rowSpan=1> 
-     * space<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * altRightArrow<br/></td><td colSpan=1 rowSpan=1> 
-     * alt+rightarrow<br/></td></tr>  
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * altLeftArrow<br/></td><td colSpan=1 rowSpan=1> 
-     * alt+leftarrow<br/></td></tr> 
-     * </table> 
-     * 
-     * TimePicker Navigation (Use the below list of shortcut keys to interact with the TimePicker after the TimePicker Popup has opened).
-     * <table> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * Key action<br/></td><td colSpan=1 rowSpan=1> 
-     * Key<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * down<br/></td><td colSpan=1 rowSpan=1> 
-     * downarrow<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * up<br/></td><td colSpan=1 rowSpan=1> 
-     * uparrow<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * left<br/></td><td colSpan=1 rowSpan=1> 
-     * leftarrow<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * right<br/></td><td colSpan=1 rowSpan=1> 
-     * rightarrow<br/></td></tr> 
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Key action<br/></td><td colSpan=1 rowSpan=1>
+     * Key<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * altUpArrow<br/></td><td colSpan=1 rowSpan=1>
+     * alt+uparrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * altDownArrow<br/></td><td colSpan=1 rowSpan=1>
+     * alt+downarrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * escape<br/></td><td colSpan=1 rowSpan=1>
+     * escape<br/></td></tr>
      * </table>
-     * 
+     *
+     * Calendar Navigation (Use the following list of keys to navigate the currently focused Calendar after the popup has opened).
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Key action<br/></td><td colSpan=1 rowSpan=1>
+     * Key<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * controlUp<br/></td><td colSpan=1 rowSpan=1>
+     * ctrl+38<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * controlDown<br/></td><td colSpan=1 rowSpan=1>
+     * ctrl+40<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * moveDown<br/></td><td colSpan=1 rowSpan=1>
+     * downarrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * moveUp<br/></td><td colSpan=1 rowSpan=1>
+     * uparrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * moveLeft<br/></td><td colSpan=1 rowSpan=1>
+     * leftarrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * moveRight<br/></td><td colSpan=1 rowSpan=1>
+     * rightarrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * select<br/></td><td colSpan=1 rowSpan=1>
+     * enter<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * home<br/></td><td colSpan=1 rowSpan=1>
+     * home<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * end<br/></td><td colSpan=1 rowSpan=1>
+     * end<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * pageUp<br/></td><td colSpan=1 rowSpan=1>
+     * pageup<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * pageDown<br/></td><td colSpan=1 rowSpan=1>
+     * pagedown<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * shiftPageUp<br/></td><td colSpan=1 rowSpan=1>
+     * shift+pageup<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * shiftPageDown<br/></td><td colSpan=1 rowSpan=1>
+     * shift+pagedown<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * controlHome<br/></td><td colSpan=1 rowSpan=1>
+     * ctrl+home<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * controlEnd<br/></td><td colSpan=1 rowSpan=1>
+     * ctrl+end<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * altUpArrow<br/></td><td colSpan=1 rowSpan=1>
+     * alt+uparrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * spacebar<br/></td><td colSpan=1 rowSpan=1>
+     * space<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * altRightArrow<br/></td><td colSpan=1 rowSpan=1>
+     * alt+rightarrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * altLeftArrow<br/></td><td colSpan=1 rowSpan=1>
+     * alt+leftarrow<br/></td></tr>
+     * </table>
+     *
+     * TimePicker Navigation (Use the below list of shortcut keys to interact with the TimePicker after the TimePicker Popup has opened).
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Key action<br/></td><td colSpan=1 rowSpan=1>
+     * Key<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * down<br/></td><td colSpan=1 rowSpan=1>
+     * downarrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * up<br/></td><td colSpan=1 rowSpan=1>
+     * uparrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * left<br/></td><td colSpan=1 rowSpan=1>
+     * leftarrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * right<br/></td><td colSpan=1 rowSpan=1>
+     * rightarrow<br/></td></tr>
+     * </table>
+     *
      * {% codeBlock src='datetimepicker/keyConfigs/index.md' %}{% endcodeBlock %}
+     *
      * @default null
-     * @blazorType object 
+     * @blazorType object
      */
     @Property(null)
     public keyConfigs: { [key: string]: string };
@@ -266,29 +272,33 @@ export class DateTimePicker extends DatePicker {
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
      * {% codeBlock src='datetimepicker/htmlAttributes/index.md' %}{% endcodeBlock %}
+     *
      * @default {}
      */
     @Property({})
-    public htmlAttributes: { [key: string]: string; };
-    /** 
+    public htmlAttributes: { [key: string]: string };
+    /**
      * Enable or disable persisting component's state between page reloads. If enabled, following list of states will be persisted.
      * 1. value
+     *
      * @default false
      */
     @Property(false)
     public enablePersistence: boolean;
     /**
-     * > Support for `allowEdit` has been provided from 
+     * > Support for `allowEdit` has been provided from
      * [`v16.2.46`](https://ej2.syncfusion.com/angular/documentation/release-notes/16.2.46/#datetimepicker).
-     * 
-     * Specifies whether the input textbox is editable or not. Here the user can select the value from the 
+     *
+     * Specifies whether the input textbox is editable or not. Here the user can select the value from the
      * popup and cannot edit in the input textbox.
+     *
      * @default true
      */
     @Property(true)
     public allowEdit: boolean;
     /**
      * Specifies the option to enable the multiple dates selection of the calendar.
+     *
      * @default false
      * @private
      */
@@ -296,6 +306,7 @@ export class DateTimePicker extends DatePicker {
     public isMultiSelection: boolean;
     /**
      * Gets or sets multiple selected dates of the calendar.
+     *
      * @default null
      * @private
      */
@@ -303,37 +314,42 @@ export class DateTimePicker extends DatePicker {
     public values: Date[];
     /**
      * Specifies whether to show or hide the clear icon in textbox.
+     *
      * @default true
      */
     @Property(true)
     public showClearButton: boolean;
     /**
      * Specifies the placeholder text that to be is displayed in textbox.
+     *
      * @default null
      */
     @Property(null)
     public placeholder: string;
     /**
      * Specifies the component to act as strict. So that, it allows to enter only a valid
-     * date and time value within a specified range or else it 
+     * date and time value within a specified range or else it
      * will resets to previous value. By default, strictMode is in false.
      * it allows invalid or out-of-range value with highlighted error class.
+     *
      * @default false
-     * > For more details refer to 
+     * > For more details refer to
      * [`Strict Mode`](../../datetimepicker/strict-mode/) documentation.
      */
     @Property(false)
     public strictMode: boolean;
     /**
      * By default, the date value will be processed based on system time zone.
-     * If you want to process the initial date value using server time zone 
+     * If you want to process the initial date value using server time zone
      * then specify the time zone value to `serverTimezoneOffset` property.
+     *
      * @default null
      */
     @Property(null)
     public serverTimezoneOffset: number;
     /**
      * Gets or sets the minimum date that can be selected in the DateTimePicker.
+     *
      * @default new Date(1900, 00, 01)
      * @blazorDefaultValue new DateTime(1900, 01, 01)
      */
@@ -341,6 +357,7 @@ export class DateTimePicker extends DatePicker {
     public min: Date;
     /**
      * Gets or sets the maximum date that can be selected in the DateTimePicker.
+     *
      * @default new Date(2099, 11, 31)
      * @blazorDefaultValue new DateTime(2099, 12, 31)
      */
@@ -348,16 +365,18 @@ export class DateTimePicker extends DatePicker {
     public max: Date;
     /**
      * Gets or sets the Calendar's first day of the week. By default, the first day of the week will be based on the current culture.
+     *
      * @default 0
      * @aspType int
      * @blazorType int
-     * > For more details about firstDayOfWeek refer to 
+     * > For more details about firstDayOfWeek refer to
      * [`First day of week`](../../calendar/how-to/first-day-of-week#change-the-first-day-of-the-week) documentation.
      */
     @Property(null)
     public firstDayOfWeek: number;
     /**
      * Gets or sets the Calendar's Type like gregorian or islamic.
+     *
      * @default Gregorian
      */
     @Property('Gregorian')
@@ -365,13 +384,14 @@ export class DateTimePicker extends DatePicker {
     /**
      * Specifies the initial view of the Calendar when it is opened.
      * With the help of this property, initial view can be changed to year or decade view.
+     *
      * @default Month
-     *  
+     *
      * <table>
      * <tr>
      * <td colSpan=1 rowSpan=1>
      * View<br/></td><td colSpan=1 rowSpan=1>
-     * Description<br/></td></tr> 
+     * Description<br/></td></tr>
      * <tr>
      * <td colSpan=1 rowSpan=1>
      * Month<br/></td><td colSpan=1 rowSpan=1>
@@ -386,7 +406,7 @@ export class DateTimePicker extends DatePicker {
      * Calendar view shows the years of the decade.<br/></td></tr>
      * </table>
      *
-     * > For more details about start refer to 
+     * > For more details about start refer to
      * [`calendarView`](../../calendar/calendar-views#view-restriction)documentation.
      */
     @Property('Month')
@@ -394,42 +414,45 @@ export class DateTimePicker extends DatePicker {
     /**
      * Sets the maximum level of view such as month, year, and decade in the Calendar.
      * Depth view should be smaller than the start view to restrict its view navigation.
+     *
      * @default Month
-     * 
-     * <table> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * view<br/></td><td colSpan=1 rowSpan=1> 
-     * Description<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * Month<br/></td><td colSpan=1 rowSpan=1> 
-     * Calendar view shows up to the days of the month.<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * Year<br/></td><td colSpan=1 rowSpan=1> 
-     * Calendar view shows up to the months of the year.<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * Decade<br/></td><td colSpan=1 rowSpan=1> 
-     * Calendar view shows up to the years of the decade.<br/></td></tr> 
-     * </table> 
-     * 
-     * > For more details about depth refer to 
+     *
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * view<br/></td><td colSpan=1 rowSpan=1>
+     * Description<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Month<br/></td><td colSpan=1 rowSpan=1>
+     * Calendar view shows up to the days of the month.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Year<br/></td><td colSpan=1 rowSpan=1>
+     * Calendar view shows up to the months of the year.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Decade<br/></td><td colSpan=1 rowSpan=1>
+     * Calendar view shows up to the years of the decade.<br/></td></tr>
+     * </table>
+     *
+     * > For more details about depth refer to
      *  [`calendarView`](../../calendar/calendar-views#view-restriction)documentation.
      */
     @Property('Month')
     public depth: CalendarView;
     /**
      * Determines whether the week number of the year is to be displayed in the calendar or not.
+     *
      * @default false
-     * > For more details about weekNumber refer to 
+     * > For more details about weekNumber refer to
      * [`Calendar with week number`](../../calendar/how-to/render-the-calendar-with-week-numbers)documentation.
      */
     @Property(false)
     public weekNumber: boolean;
-    /** 
+    /**
      * Specifies whether the today button is to be displayed or not.
+     *
      * @default true
      */
     @Property(true)
@@ -441,6 +464,7 @@ export class DateTimePicker extends DatePicker {
      * * `Narrow` - Sets the single character of day name (like S ) in day header.
      * * `Abbreviated` - Sets the min format of day name (like Sun ) in day header.
      * * `Wide` - Sets the long format of day name (like Sunday ) in day header.
+     *
      * @default Short
      */
     @Property('Short')
@@ -448,21 +472,24 @@ export class DateTimePicker extends DatePicker {
     /**
      * By default, the popup opens while clicking on the datetimepicker icon.
      * If you want to open the popup while focusing the datetime input then specify its value as true.
+     *
      * @default false
      */
     @Property(false)
     public openOnFocus : boolean;
-    /** 
+    /**
      * Triggers when popup is opened.
-     * @event 
+     *
+     * @event open
      * @blazorProperty 'OnOpen'
      * @blazorType PopupObjectArgs
      */
     @Event()
     public open: EmitType<Object>;
-    /** 
+    /**
      * Triggers when popup is closed.
-     * @event 
+     *
+     * @event close
      * @blazorProperty 'OnClose'
      * @blazorType PopupObjectArgs
      */
@@ -470,59 +497,72 @@ export class DateTimePicker extends DatePicker {
     public close: EmitType<Object>;
     /**
      * Triggers when datetimepicker value is cleared using clear button.
-     * @event
+     *
+     * @event cleared
      */
     @Event()
     public cleared: EmitType<ClearedEventArgs>;
-    /** 
+    /**
      * Triggers when input loses the focus.
-     * @event
+     *
+     * @event blur
      */
     @Event()
     public blur: EmitType<Object>;
-    /** 
+    /**
      * Triggers when input gets focus.
-     * @event
+     *
+     * @event focus
      */
     @Event()
     public focus: EmitType<Object>;
-    /** 
+    /**
      * Triggers when DateTimePicker is created.
-     * @event 
+     *
+     * @event created
      * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
-    /** 
+    /**
      * Triggers when DateTimePicker is destroyed.
-     * @event 
+     *
+     * @event destroyed
      * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
     /**
      * Constructor for creating the widget
+     *
+     * @param {DateTimePickerModel} options - Specifies the DateTimePicker model.
+     * @param {string | HTMLInputElement} element - Specifies the element to render as component.
+     * @private
      */
-    constructor(options?: DateTimePickerModel, element?: string | HTMLInputElement) {
+    public constructor(options?: DateTimePickerModel, element?: string | HTMLInputElement) {
         super(options, element);
         this.dateTimeOptions = options;
     }
 
     private focusHandler(): void {
-        if (!this.enabled) { return; }
+        if (!this.enabled) {
+            return;
+        }
         addClass([this.inputWrapper.container], INPUTFOCUS);
     }
 
     /**
      * Sets the focus to widget for interaction.
-     * @returns void
+     *
+     * @returns {void}
      */
     public focusIn(): void {
         super.focusIn();
     }
     /**
-     * Remove the focus from widget, if the widget is in focus state. 
-     * @returns void
+     * Remove the focus from widget, if the widget is in focus state.
+     *
+     * @returns {void}
      */
     public focusOut(): void {
         if (document.activeElement === this.inputElement) {
@@ -533,14 +573,16 @@ export class DateTimePicker extends DatePicker {
     }
 
     protected blurHandler(e: MouseEvent): void {
-        if (!this.enabled) { return; }
+        if (!this.enabled) {
+            return;
+        }
         // IE popup closing issue when click over the scrollbar
         if (this.isTimePopupOpen() && this.isPreventBlur) {
             this.inputElement.focus();
             return;
         }
         removeClass([this.inputWrapper.container], INPUTFOCUS);
-        let blurArguments: BlurEventArgs = {
+        const blurArguments: BlurEventArgs = {
             model: (isBlazor() && this.isServerRendered) ? null : this
         };
         if (this.isTimePopupOpen()) {
@@ -550,8 +592,9 @@ export class DateTimePicker extends DatePicker {
     }
 
     /**
-     * To destroy the widget.    
-     * @returns void
+     * To destroy the widget.
+     *
+     * @returns {void}
      */
     public destroy(): void {
         if (this.popupObject && this.popupObject.element.classList.contains(POPUP)) {
@@ -563,7 +606,7 @@ export class DateTimePicker extends DatePicker {
                 this.rippleFn();
             }
         }
-        let ariaAttribute: object = {
+        const ariaAttribute: object = {
             'aria-live': 'assertive', 'aria-atomic': 'true', 'aria-invalid': 'false',
             'aria-haspopup': 'true', 'aria-activedescendant': 'null',
             'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false',
@@ -574,7 +617,9 @@ export class DateTimePicker extends DatePicker {
             this.inputElement.removeAttribute('aria-placeholder');
         }
         if (this.isCalendar()) {
-            if (this.popupWrapper) { detach(this.popupWrapper); }
+            if (this.popupWrapper) {
+                detach(this.popupWrapper);
+            }
             this.popupObject = this.popupWrapper = null;
             this.keyboardHandler.destroy();
         }
@@ -583,7 +628,8 @@ export class DateTimePicker extends DatePicker {
     }
     /**
      * To Initialize the control rendering.
-     * @return void
+     *
+     * @returns {void}
      * @private
      */
     public render(): void {
@@ -608,7 +654,7 @@ export class DateTimePicker extends DatePicker {
         this.initValue = this.value;
         super.updateHtmlAttributeToElement();
         this.checkAttributes(false);
-        let localeText: { placeholder: string } = { placeholder: this.placeholder };
+        const localeText: { placeholder: string } = { placeholder: this.placeholder };
         this.l10n = new L10n('datetimepicker', localeText, this.locale);
         this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
         super.render();
@@ -630,7 +676,7 @@ export class DateTimePicker extends DatePicker {
     private setValue(): void {
         this.initValue = this.validateMinMaxRange(this.value);
         if (!this.strictMode && this.isDateObject(this.initValue)) {
-            let value: Date = this.validateMinMaxRange(this.initValue);
+            const value: Date = this.validateMinMaxRange(this.initValue);
             Input.setValue(this.getFormattedValue(value), this.inputElement, this.floatLabelType, this.showClearButton);
             this.setProperties({ value: value }, true);
         } else {
@@ -747,7 +793,9 @@ export class DateTimePicker extends DatePicker {
             EventHandler.remove(this.inputElement, 'blur', this.blurHandler);
             EventHandler.remove(this.inputElement, 'focus', this.focusHandler);
         }
-        if (this.keyboardHandler) { this.keyboardHandler.destroy(); }
+        if (this.keyboardHandler) {
+            this.keyboardHandler.destroy();
+        }
     }
     private cldrTimeFormat(): string {
         let cldrTime: string;
@@ -765,8 +813,8 @@ export class DateTimePicker extends DatePicker {
     }
     private cldrDateTimeFormat(): string {
         let cldrTime: string;
-        let culture: Internationalization = new Internationalization(this.locale);
-        let dateFormat: string = culture.getDatePattern({ skeleton: isBlazor() ? 'd' : 'yMd' });
+        const culture: Internationalization = new Internationalization(this.locale);
+        const dateFormat: string = culture.getDatePattern({ skeleton: isBlazor() ? 'd' : 'yMd' });
         if (this.isNullOrEmpty(this.formatString)) {
             cldrTime = dateFormat + ' ' + this.getCldrFormat('time');
         } else {
@@ -774,6 +822,7 @@ export class DateTimePicker extends DatePicker {
         }
         return cldrTime;
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private getCldrFormat(type: string): string {
         let cldrDateTime: string;
         if (this.locale === 'en' || this.locale === 'en-US') {
@@ -787,19 +836,24 @@ export class DateTimePicker extends DatePicker {
     private isNullOrEmpty(value: Date | string): boolean {
         if (isNullOrUndefined(value) || (typeof value === 'string' && value.trim() === '')) {
             return true;
-        } else { return false; }
+        } else {
+            return false;
+        }
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected getCultureTimeObject(ld: Object, c: string): Object {
         if (this.calendarMode === 'Gregorian') {
             return isBlazor() ? (<string>(getValue('t', getValue(this.locale, blazorCultureFormats)))).replace(/tt/, 'a') :
-            (getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.short', ld));
+                (getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.short', ld));
         } else {
             return getValue('main.' + '' + this.locale + '.dates.calendars.islamic.timeFormats.short', ld);
         }
 
     }
     private timeHandler(e?: MouseEvent): void {
-        if (!this.enabled) { return; }
+        if (!this.enabled) {
+            return;
+        }
         this.isIconClicked = true;
         if (Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
@@ -823,7 +877,9 @@ export class DateTimePicker extends DatePicker {
     }
 
     private dateHandler(e?: MouseEvent): void {
-        if (!this.enabled) { return; }
+        if (!this.enabled) {
+            return;
+        }
         if (e.currentTarget === this.inputWrapper.buttons[0]) {
             e.preventDefault();
         }
@@ -880,21 +936,21 @@ export class DateTimePicker extends DatePicker {
                 format: this.cldrDateTimeFormat(), type: 'datetime', calendar: 'islamic'
             });
         }
-        let value: Date = isNullOrUndefined(this.value) ? this.inputElement.value !== '' ?
+        const value: Date = isNullOrUndefined(this.value) ? this.inputElement.value !== '' ?
             dateObject :
             new Date() : this.value;
         this.valueWithMinutes = value;
         this.listWrapper = createElement('div', { className: CONTENT, attrs: { 'tabindex': '0' } });
-        let min: Date = this.startTime(value);
-        let max: Date = this.endTime(value);
-        let listDetails: { collection: number[], list: HTMLElement } =
+        const min: Date = this.startTime(value);
+        const max: Date = this.endTime(value);
+        const listDetails: { collection: number[]; list: HTMLElement } =
             TimePickerBase.createListItems(this.createElement, min, max, this.globalize, this.cldrTimeFormat(), this.step);
         this.timeCollections = listDetails.collection;
         this.listTag = listDetails.list;
         attributes(this.listTag, { 'role': 'listbox', 'aria-hidden': 'false', 'id': this.element.id + '_options' });
         append([listDetails.list], this.listWrapper);
         this.wireTimeListEvents();
-        let rippleModel: RippleOptions = { duration: 300, selector: '.' + LISTCLASS };
+        const rippleModel: RippleOptions = { duration: 300, selector: '.' + LISTCLASS };
         this.rippleFn = rippleEffect(this.listWrapper, rippleModel);
         this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.listWrapper.querySelectorAll('.' + LISTCLASS);
     }
@@ -914,7 +970,9 @@ export class DateTimePicker extends DatePicker {
                     className: ROOT + ' ' + POPUP,
                     attrs: { 'id': this.element.id + '_timepopup', 'style': 'visibility:hidden ; display:block' }
                 });
-                if (!isNullOrUndefined(this.cssClass)) { this.dateTimeWrapper.className += ' ' + this.cssClass; }
+                if (!isNullOrUndefined(this.cssClass)) {
+                    this.dateTimeWrapper.className += ' ' + this.cssClass;
+                }
                 if (!isNullOrUndefined(this.step) && this.step > 0) {
                     this.listCreation();
                     append([this.listWrapper], this.dateTimeWrapper);
@@ -934,13 +992,13 @@ export class DateTimePicker extends DatePicker {
             popup: (isBlazor() && this.isServerRendered) ? null : this.popupObject,
             event: e || null
         };
-        let eventArgs: PopupObjectArgs = this.preventArgs;
+        const eventArgs: PopupObjectArgs = this.preventArgs;
         this.trigger('open', eventArgs, (eventArgs: PopupObjectArgs) => {
             this.preventArgs = eventArgs;
             if (!this.preventArgs.cancel && !this.readonly) {
-                let openAnimation: AnimationModel = {
+                const openAnimation: AnimationModel = {
                     name: 'FadeIn',
-                    duration: ANIMATIONDURATION,
+                    duration: ANIMATIONDURATION
                 };
                 if (this.zIndex === 1000) {
                     this.popupObject.show(new Animation(openAnimation), this.element);
@@ -954,11 +1012,11 @@ export class DateTimePicker extends DatePicker {
         });
     }
     private documentClickHandler(event: MouseEvent): void {
-        let target: HTMLElement = <HTMLElement>event.target;
+        const target: HTMLElement = <HTMLElement>event.target;
         if ((!isNullOrUndefined(this.popupObject) && (this.inputWrapper.container.contains(target) ||
             (this.popupObject.element && this.popupObject.element.contains(target)))) && event.type !== 'touchstart') {
-                event.preventDefault();
-            }
+            event.preventDefault();
+        }
         if (!(closest(target, '[id="' + (this.popupObject && this.popupObject.element.id + '"]'))) && target !== this.inputElement
             && target !== this.timeIcon && target !== this.inputWrapper.container) {
             if (this.isTimePopupOpen()) {
@@ -987,13 +1045,15 @@ export class DateTimePicker extends DatePicker {
             this.timeModal.style.display = 'block';
             document.body.appendChild(this.timeModal);
         }
-        let offset: number = 4;
+        const offset: number = 4;
         this.popupObject = new Popup(this.dateTimeWrapper as HTMLElement, {
             width: this.setPopupWidth(),
             zIndex: this.zIndex,
             targetType: 'container',
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             collision: Browser.isDevice ? { X: 'fit', Y: 'fit' } : { X: 'flip', Y: 'flip' },
             relateTo: Browser.isDevice ? document.body : this.inputWrapper.container,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             position: Browser.isDevice ? { X: 'center', Y: 'center' } : { X: 'left', Y: 'bottom' },
             enableRtl: this.enableRtl,
             offsetY: offset,
@@ -1004,7 +1064,7 @@ export class DateTimePicker extends DatePicker {
                     this.timekeyConfigure = (extend(this.timekeyConfigure, this.keyConfigs) as { [key: string]: string });
                     this.inputEvent = new KeyboardEvents(
                         this.inputWrapper.container, {
-                            keyAction: this.TimeKeyActionHandle.bind(this),
+                            keyAction: this.timeKeyActionHandle.bind(this),
                             keyConfigs: this.timekeyConfigure,
                             eventName: 'keydown'
                         });
@@ -1017,9 +1077,13 @@ export class DateTimePicker extends DatePicker {
                 this.popupObject.destroy();
                 this.dateTimeWrapper.innerHTML = '';
                 this.listWrapper = this.dateTimeWrapper = undefined;
-                if (this.inputEvent) { this.inputEvent.destroy(); }
+                if (this.inputEvent) {
+                    this.inputEvent.destroy();
+                }
             }, targetExitViewport: () => {
-                if (!Browser.isDevice) { this.hide(); }
+                if (!Browser.isDevice) {
+                    this.hide();
+                }
             }
         });
         this.popupObject.element.style.maxHeight = POPUPDIMENSION;
@@ -1028,6 +1092,7 @@ export class DateTimePicker extends DatePicker {
         if (typeof width === 'number') {
             width = formatUnit(width);
         } else if (typeof width === 'string') {
+            // eslint-disable-next-line no-self-assign
             width = width;
         } else {
             width = '100%';
@@ -1037,7 +1102,7 @@ export class DateTimePicker extends DatePicker {
     private setPopupWidth(): string {
         let width: string = this.setDimension(this.width);
         if (width.indexOf('%') > -1) {
-            let inputWidth: number = this.containerStyle.width * parseFloat(width) / 100;
+            const inputWidth: number = this.containerStyle.width * parseFloat(width) / 100;
             width = inputWidth.toString() + 'px';
         }
         return width;
@@ -1060,7 +1125,7 @@ export class DateTimePicker extends DatePicker {
         }
     }
     private onMouseOver(event: MouseEvent): void {
-        let currentLi: HTMLElement = <HTMLElement>closest(<Element>event.target, '.' + LISTCLASS);
+        const currentLi: HTMLElement = <HTMLElement>closest(<Element>event.target, '.' + LISTCLASS);
         this.setTimeHover(currentLi, HOVER);
     }
     private onMouseLeave(): void {
@@ -1073,8 +1138,8 @@ export class DateTimePicker extends DatePicker {
         }
     }
     protected getPopupHeight(): number {
-        let height: number = parseInt(<string>POPUPDIMENSION, 10);
-        let popupHeight: number = this.dateTimeWrapper.getBoundingClientRect().height;
+        const height: number = parseInt(<string>POPUPDIMENSION, 10);
+        const popupHeight: number = this.dateTimeWrapper.getBoundingClientRect().height;
         return popupHeight > height ? height : popupHeight;
     }
     protected changeEvent(e: Event): void {
@@ -1099,8 +1164,7 @@ export class DateTimePicker extends DatePicker {
         }
     }
     private setTimeScrollPosition(): void {
-        let popupElement: HTMLElement;
-        popupElement = this.selectedElement;
+        const popupElement: HTMLElement = this.selectedElement;
         if (!isNullOrUndefined(popupElement)) {
             this.findScrollTop(popupElement);
         } else if (this.dateTimeWrapper && this.checkDateValue(this.scrollTo)) {
@@ -1108,10 +1172,10 @@ export class DateTimePicker extends DatePicker {
         }
     }
     private findScrollTop(element: HTMLElement): void {
-        let listHeight: number = this.getPopupHeight();
-        let nextElement: Element = element.nextElementSibling;
-        let height: number = nextElement ? (<HTMLElement>nextElement).offsetTop : element.offsetTop;
-        let lineHeight: number = element.getBoundingClientRect().height;
+        const listHeight: number = this.getPopupHeight();
+        const nextElement: Element = element.nextElementSibling;
+        const height: number = nextElement ? (<HTMLElement>nextElement).offsetTop : element.offsetTop;
+        const lineHeight: number = element.getBoundingClientRect().height;
         if ((height + element.offsetTop) > listHeight) {
             this.dateTimeWrapper.scrollTop = nextElement ? (height - (listHeight / HALFPOSITION + lineHeight / HALFPOSITION)) : height;
         } else {
@@ -1120,11 +1184,11 @@ export class DateTimePicker extends DatePicker {
     }
     private setScrollTo(): void {
         let element: HTMLElement;
-        let items: HTMLElement[] = <NodeListOf<HTMLLIElement> & HTMLElement[]>this.dateTimeWrapper.querySelectorAll('.' + LISTCLASS);
+        const items: HTMLElement[] = <NodeListOf<HTMLLIElement> & HTMLElement[]>this.dateTimeWrapper.querySelectorAll('.' + LISTCLASS);
         if (items.length >= 0) {
             this.scrollInvoked = true;
-            let initialTime: number = this.timeCollections[0];
-            let scrollTime: number = this.getDateObject(this.checkDateValue(this.scrollTo)).getTime();
+            const initialTime: number = this.timeCollections[0];
+            const scrollTime: number = this.getDateObject(this.checkDateValue(this.scrollTo)).getTime();
             element = items[Math.round((scrollTime - initialTime) / (this.step * 60000))];
         } else {
             this.dateTimeWrapper.scrollTop = 0;
@@ -1140,7 +1204,7 @@ export class DateTimePicker extends DatePicker {
             this.inputElement.value = this.previousElementValue = this.getFormattedValue(this.getFullDateTime());
             this.setProperties({ value: this.getFullDateTime() }, true);
         } else {
-            let tempVal: string = this.getFormattedValue(new Date(this.timeCollections[this.activeIndex]));
+            const tempVal: string = this.getFormattedValue(new Date(this.timeCollections[this.activeIndex]));
             Input.setValue(tempVal, this.inputElement, this.floatLabelType, this.showClearButton);
             this.previousElementValue = this.inputElement.value;
             this.setProperties({ value: new Date(this.timeCollections[this.activeIndex]) }, true);
@@ -1158,20 +1222,20 @@ export class DateTimePicker extends DatePicker {
     }
     private combineDateTime(value: Date): Date {
         if (this.isDateObject(value)) {
-            let day: number = this.previousDate.getDate();
-            let month: number = this.previousDate.getMonth();
-            let year: number = this.previousDate.getFullYear();
-            let hour: number = value.getHours();
-            let minutes: number = value.getMinutes();
-            let seconds: number = value.getSeconds();
+            const day: number = this.previousDate.getDate();
+            const month: number = this.previousDate.getMonth();
+            const year: number = this.previousDate.getFullYear();
+            const hour: number = value.getHours();
+            const minutes: number = value.getMinutes();
+            const seconds: number = value.getSeconds();
             return new Date(year, month, day, hour, minutes, seconds);
         } else {
             return this.previousDate;
         }
     }
     private onMouseClick(event: MouseEvent): void {
-        let target: Element = <Element>event.target;
-        let li: HTMLElement = this.selectedElement = <HTMLElement>closest(target, '.' + LISTCLASS);
+        const target: Element = <Element>event.target;
+        const li: HTMLElement = this.selectedElement = <HTMLElement>closest(target, '.' + LISTCLASS);
         if (li && li.classList.contains(LISTCLASS)) {
             this.timeValue = li.getAttribute('data-value');
             this.hide(event);
@@ -1180,9 +1244,8 @@ export class DateTimePicker extends DatePicker {
     }
     private setSelection(li: HTMLElement, event: MouseEvent): void {
         if (this.isValidLI(li) && !li.classList.contains(ACTIVE)) {
-            let value: string = li.getAttribute('data-value');
             this.selectedElement = li;
-            let index: number = Array.prototype.slice.call(this.liCollections).indexOf(li);
+            const index: number = Array.prototype.slice.call(this.liCollections).indexOf(li);
             this.activeIndex = index;
             this.valueWithMinutes = new Date(this.timeCollections[this.activeIndex]);
             addClass([this.selectedElement], ACTIVE);
@@ -1191,9 +1254,9 @@ export class DateTimePicker extends DatePicker {
         }
     }
     private setTimeActiveClass(): void {
-        let collections: HTMLElement = isNullOrUndefined(this.dateTimeWrapper) ? this.listWrapper : this.dateTimeWrapper;
+        const collections: HTMLElement = isNullOrUndefined(this.dateTimeWrapper) ? this.listWrapper : this.dateTimeWrapper;
         if (!isNullOrUndefined(collections)) {
-            let items: HTMLElement[] = <NodeListOf<HTMLLIElement> & HTMLElement[]>collections.querySelectorAll('.' + LISTCLASS);
+            const items: HTMLElement[] = <NodeListOf<HTMLLIElement> & HTMLElement[]>collections.querySelectorAll('.' + LISTCLASS);
             if (items.length) {
                 for (let i: number = 0; i < items.length; i++) {
                     if (this.timeCollections[i] === +(this.valueWithMinutes)) {
@@ -1226,7 +1289,7 @@ export class DateTimePicker extends DatePicker {
     protected removeTimeSelection(): void {
         this.removeTimeHover(HOVER);
         if (!isNullOrUndefined(this.dateTimeWrapper)) {
-            let items: Element[] = <NodeListOf<Element> & Element[]>this.dateTimeWrapper.querySelectorAll('.' + ACTIVE);
+            const items: Element[] = <NodeListOf<Element> & Element[]>this.dateTimeWrapper.querySelectorAll('.' + ACTIVE);
             if (items.length) {
                 removeClass(items, ACTIVE);
                 items[0].removeAttribute('aria-selected');
@@ -1234,13 +1297,13 @@ export class DateTimePicker extends DatePicker {
         }
     }
     protected removeTimeHover(className: string): void {
-        let hoveredItem: Element[] = this.getTimeHoverItem(className);
+        const hoveredItem: Element[] = this.getTimeHoverItem(className);
         if (hoveredItem && hoveredItem.length) {
             removeClass(hoveredItem, className);
         }
     }
     protected getTimeHoverItem(className: string): Element[] {
-        let collections: HTMLElement = isNullOrUndefined(this.dateTimeWrapper) ? this.listWrapper : this.dateTimeWrapper;
+        const collections: HTMLElement = isNullOrUndefined(this.dateTimeWrapper) ? this.listWrapper : this.dateTimeWrapper;
         let hoveredItem: Element[];
         if (!isNullOrUndefined(collections)) {
             hoveredItem = <NodeListOf<HTMLLIElement> & Element[]>collections.querySelectorAll('.' + className);
@@ -1251,13 +1314,13 @@ export class DateTimePicker extends DatePicker {
         return (li && li.classList.contains(LISTCLASS) && !li.classList.contains(DISABLED));
     }
     private calculateStartEnd(value: Date, range: boolean, method: string): Date {
-        let day: number = value.getDate();
-        let month: number = value.getMonth();
-        let year: number = value.getFullYear();
-        let hours: number = value.getHours();
-        let minutes: number = value.getMinutes();
-        let seconds: number = value.getSeconds();
-        let milliseconds: number = value.getMilliseconds();
+        const day: number = value.getDate();
+        const month: number = value.getMonth();
+        const year: number = value.getFullYear();
+        const hours: number = value.getHours();
+        const minutes: number = value.getMinutes();
+        const seconds: number = value.getSeconds();
+        const milliseconds: number = value.getMilliseconds();
         if (range) {
             if (method === 'starttime') {
                 return new Date(year, month, day, 0, 0, 0);
@@ -1271,9 +1334,8 @@ export class DateTimePicker extends DatePicker {
     private startTime(date: Date): Date {
         let tempStartValue: Date;
         let start: boolean;
-        let tempMin: Date = this.min;
-        let value: Date;
-        value = date === null ? new Date() : date;
+        const tempMin: Date = this.min;
+        const value: Date = date === null ? new Date() : date;
         if ((+value.getDate() === +tempMin.getDate() && +value.getMonth() === +tempMin.getMonth() &&
             +value.getFullYear() === +tempMin.getFullYear()) || ((+new Date(value.getFullYear(), value.getMonth(), value.getDate())) <=
                 +new Date(tempMin.getFullYear(), tempMin.getMonth(), tempMin.getDate()))) {
@@ -1292,9 +1354,8 @@ export class DateTimePicker extends DatePicker {
     private endTime(date: Date): Date {
         let tempEndValue: Date;
         let end: boolean;
-        let tempMax: Date = this.max;
-        let value: Date;
-        value = date === null ? new Date() : date;
+        const tempMax: Date = this.max;
+        const value: Date = date === null ? new Date() : date;
         if ((+value.getDate() === +tempMax.getDate() && +value.getMonth() === +tempMax.getMonth() &&
             +value.getFullYear() === +tempMax.getFullYear()) || (+new Date(value.getUTCFullYear(), value.getMonth(), value.getDate()) >=
                 +new Date(tempMax.getFullYear(), tempMax.getMonth(), tempMax.getDate()))) {
@@ -1316,7 +1377,7 @@ export class DateTimePicker extends DatePicker {
                 popup: (isBlazor() && this.isServerRendered) ? null : this.popupObj || this.popupObject,
                 event: e || null
             };
-            let eventArgs: PopupObjectArgs = this.preventArgs;
+            const eventArgs: PopupObjectArgs = this.preventArgs;
             if (isNullOrUndefined(this.popupObj)) {
                 this.trigger('close', eventArgs, (eventArgs: PopupObjectArgs) => {
                     this.dateTimeCloseEventCallback(e, eventArgs);
@@ -1352,9 +1413,10 @@ export class DateTimePicker extends DatePicker {
         }
         this.setAllowEdit();
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private closePopup(e?: KeyboardEvent | MouseEvent | Event): void {
         if (this.isTimePopupOpen() && this.popupObject) {
-            let animModel: AnimationModel = {
+            const animModel: AnimationModel = {
                 name: 'FadeOut',
                 duration: ANIMATIONDURATION,
                 delay: 0
@@ -1370,7 +1432,7 @@ export class DateTimePicker extends DatePicker {
         this.dateTimeFormat = this.cldrDateTimeFormat();
         super.preRender();
         removeClass([this.inputElementCopy], [ROOT]);
-    };
+    }
     protected getProperty(date: DateTimePickerModel, val: string): void {
         if (val === 'min') {
             this.setProperties({ min: this.validateValue(date.min) }, true);
@@ -1380,76 +1442,76 @@ export class DateTimePicker extends DatePicker {
     }
 
     protected checkAttributes(isDynamic: boolean): void {
-        let attributes: string[] = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+        const attributes: string[] = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
             ['style', 'name', 'step', 'disabled', 'readonly', 'value', 'min', 'max', 'placeholder', 'type'];
         let value: Date;
-        for (let prop of attributes) {
+        for (const prop of attributes) {
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
                 switch (prop) {
-                    case 'name':
-                        this.inputElement.setAttribute('name', this.inputElement.getAttribute(prop));
-                        break;
-                    case 'step':
-                        this.step = parseInt(this.inputElement.getAttribute(prop), 10);
-                        break;
-                    case 'readonly':
-                        // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['readonly'] === undefined)) || isDynamic) {
-                            let readonly: boolean = this.inputElement.getAttribute(prop) === 'disabled' ||
+                case 'name':
+                    this.inputElement.setAttribute('name', this.inputElement.getAttribute(prop));
+                    break;
+                case 'step':
+                    this.step = parseInt(this.inputElement.getAttribute(prop), 10);
+                    break;
+                case 'readonly':
+                    // eslint-disable-next-line @typescript-eslint/dot-notation
+                    if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['readonly'] === undefined)) || isDynamic) {
+                        const readonly: boolean = this.inputElement.getAttribute(prop) === 'disabled' ||
                                 this.inputElement.getAttribute(prop) === '' ||
                                 this.inputElement.getAttribute(prop) === 'true' ? true : false;
-                            this.setProperties({ readonly: readonly }, !isDynamic);
+                        this.setProperties({ readonly: readonly }, !isDynamic);
+                    }
+                    break;
+                case 'placeholder':
+                    // eslint-disable-next-line @typescript-eslint/dot-notation
+                    if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['placeholder'] === undefined)) || isDynamic) {
+                        this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, !isDynamic);
+                    }
+                    break;
+                case 'min':
+                    // eslint-disable-next-line @typescript-eslint/dot-notation
+                    if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['min'] === undefined)) || isDynamic) {
+                        value = new Date(this.inputElement.getAttribute(prop));
+                        if (!this.isNullOrEmpty(value) && !isNaN(+value)) {
+                            this.setProperties({ min: value }, !isDynamic);
                         }
-                        break;
-                    case 'placeholder':
-                        // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['placeholder'] === undefined)) || isDynamic) {
-                            this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, !isDynamic);
-                        }
-                        break;
-                    case 'min':
-                        // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['min'] === undefined)) || isDynamic) {
-                            value = new Date(this.inputElement.getAttribute(prop));
-                            if (!this.isNullOrEmpty(value) && !isNaN(+value)) {
-                                this.setProperties({ min: value }, !isDynamic);
-                            }
-                        }
-                        break;
-                    case 'disabled':
-                        // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['enabled'] === undefined)) || isDynamic) {
-                            let enabled: boolean = this.inputElement.getAttribute(prop) === 'disabled' ||
+                    }
+                    break;
+                case 'disabled':
+                    // eslint-disable-next-line @typescript-eslint/dot-notation
+                    if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['enabled'] === undefined)) || isDynamic) {
+                        const enabled: boolean = this.inputElement.getAttribute(prop) === 'disabled' ||
                                 this.inputElement.getAttribute(prop) === 'true' ||
                                 this.inputElement.getAttribute(prop) === '' ? false : true;
-                            this.setProperties({ enabled: enabled }, !isDynamic);
+                        this.setProperties({ enabled: enabled }, !isDynamic);
+                    }
+                    break;
+                case 'value':
+                    // eslint-disable-next-line @typescript-eslint/dot-notation
+                    if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['value'] === undefined)) || isDynamic) {
+                        value = new Date(this.inputElement.getAttribute(prop));
+                        if (!this.isNullOrEmpty(value) && !isNaN(+value)) {
+                            this.setProperties({ value: value }, !isDynamic);
                         }
-                        break;
-                    case 'value':
-                        // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['value'] === undefined)) || isDynamic) {
-                            value = new Date(this.inputElement.getAttribute(prop));
-                            if (!this.isNullOrEmpty(value) && !isNaN(+value)) {
-                                this.setProperties({ value: value }, !isDynamic);
-                            }
-                       }
-                       break;
-                    case 'max':
-                        // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['max'] === undefined)) || isDynamic) {
-                            value = new Date(this.inputElement.getAttribute(prop));
-                            if (!this.isNullOrEmpty(value) && !isNaN(+value)) {
-                                this.setProperties({ max: value }, !isDynamic);
-                            }
+                    }
+                    break;
+                case 'max':
+                    // eslint-disable-next-line @typescript-eslint/dot-notation
+                    if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['max'] === undefined)) || isDynamic) {
+                        value = new Date(this.inputElement.getAttribute(prop));
+                        if (!this.isNullOrEmpty(value) && !isNaN(+value)) {
+                            this.setProperties({ max: value }, !isDynamic);
                         }
-                        break;
+                    }
+                    break;
                 }
             }
         }
     }
 
     public requiredModules(): ModuleDeclaration[] {
-        let modules: ModuleDeclaration[] = [];
+        const modules: ModuleDeclaration[] = [];
         if (this) {
             modules.push({ args: [this], member: 'islamic' });
         }
@@ -1460,24 +1522,26 @@ export class DateTimePicker extends DatePicker {
     private getTimeActiveElement(): HTMLElement[] {
         if (!isNullOrUndefined(this.dateTimeWrapper)) {
             return <NodeListOf<HTMLElement> & HTMLElement[]>this.dateTimeWrapper.querySelectorAll('.' + ACTIVE);
-        } else { return null; }
+        } else {
+            return null;
+        }
     }
     protected createDateObj(val: Date | string): Date {
         return val instanceof Date ? val : null;
     }
     private getDateObject(text: string | Date): Date {
         if (!this.isNullOrEmpty(text)) {
-            let dateValue: Date = this.createDateObj(text);
-            let value: Date = this.valueWithMinutes;
-            let status: boolean = !isNullOrUndefined(value);
+            const dateValue: Date = this.createDateObj(text);
+            const value: Date = this.valueWithMinutes;
+            const status: boolean = !isNullOrUndefined(value);
             if (this.checkDateValue(dateValue)) {
-                let date: number = status ? value.getDate() : DAY;
-                let month: number = status ? value.getMonth() : MONTH;
-                let year: number = status ? value.getFullYear() : YEAR;
-                let hour: number = status ? value.getHours() : HOUR;
-                let minute: number = status ? value.getMinutes() : MINUTE;
-                let second: number = status ? value.getSeconds() : SECOND;
-                let millisecond: number = status ? value.getMilliseconds() : MILLISECOND;
+                const date: number = status ? value.getDate() : DAY;
+                const month: number = status ? value.getMonth() : MONTH;
+                const year: number = status ? value.getFullYear() : YEAR;
+                const hour: number = status ? value.getHours() : HOUR;
+                const minute: number = status ? value.getMinutes() : MINUTE;
+                const second: number = status ? value.getSeconds() : SECOND;
+                const millisecond: number = status ? value.getMilliseconds() : MILLISECOND;
                 if (!this.scrollInvoked) {
                     return new Date(year, month, date, hour, minute, second, millisecond);
                 } else {
@@ -1491,11 +1555,11 @@ export class DateTimePicker extends DatePicker {
         return null;
     }
     protected findNextTimeElement(event: KeyboardEventArgs): void {
-        let textVal: string = (this.inputElement).value;
-        let value: Date = isNullOrUndefined(this.valueWithMinutes) ? this.createDateObj(textVal) :
+        const textVal: string = (this.inputElement).value;
+        const value: Date = isNullOrUndefined(this.valueWithMinutes) ? this.createDateObj(textVal) :
             this.getDateObject(this.valueWithMinutes);
         let dateTimeVal: number = null;
-        let listCount: number = this.liCollections.length;
+        const listCount: number = this.liCollections.length;
         if (!isNullOrUndefined(this.activeIndex) || !isNullOrUndefined(this.checkDateValue(value))) {
             if (event.action === 'home') {
                 dateTimeVal = +(this.createDateObj(new Date(this.timeCollections[0])));
@@ -1530,8 +1594,8 @@ export class DateTimePicker extends DatePicker {
     protected setTimeValue(date: Date, value: Date): Date {
         let dateString: string;
         let time: Date;
-        let val: string | Date = this.validateMinMaxRange(value);
-        let newval: Date = this.createDateObj(val);
+        const val: string | Date = this.validateMinMaxRange(value);
+        const newval: Date = this.createDateObj(val);
         if (this.getFormattedValue(newval) !== (!isNullOrUndefined(this.value) ? this.getFormattedValue(this.value) : null)) {
             this.valueWithMinutes = isNullOrUndefined(newval) ? null : newval;
             time = new Date(+this.valueWithMinutes);
@@ -1564,21 +1628,25 @@ export class DateTimePicker extends DatePicker {
     }
     protected timeElementValue(value: Date): Date {
         if (!isNullOrUndefined(this.checkDateValue(value)) && !this.isNullOrEmpty(value)) {
-            let date: Date = value instanceof Date ? value : this.getDateObject(value);
+            const date: Date = value instanceof Date ? value : this.getDateObject(value);
             return this.setTimeValue(date, value);
         }
         return null;
     }
     protected timeKeyHandler(event: KeyboardEventArgs): void {
-        if (isNullOrUndefined(this.step) || this.step <= 0) { return; }
-        let listCount: number = this.timeCollections.length;
+        if (isNullOrUndefined(this.step) || this.step <= 0) {
+            return;
+        }
+        const listCount: number = this.timeCollections.length;
         if (isNullOrUndefined(this.getTimeActiveElement()) || this.getTimeActiveElement().length === 0) {
             if (this.liCollections.length > 0) {
                 if (isNullOrUndefined(this.value) && isNullOrUndefined(this.activeIndex)) {
                     this.activeIndex = 0;
                     this.selectedElement = this.liCollections[0];
                     this.timeElementValue(new Date(this.timeCollections[0]));
-                } else { this.findNextTimeElement(event); }
+                } else {
+                    this.findNextTimeElement(event);
+                }
             }
         } else {
             let nextItemValue: number;
@@ -1600,162 +1668,174 @@ export class DateTimePicker extends DatePicker {
         this.isNavigate = true;
         this.setTimeHover(this.selectedElement, NAVIGATION);
         this.setTimeActiveDescendant();
-        if (this.isTimePopupOpen() && this.selectedElement !== null && (!event || event.type !== 'click')) { this.setTimeScrollPosition(); }
+        if (this.isTimePopupOpen() && this.selectedElement !== null && (!event || event.type !== 'click')) {
+            this.setTimeScrollPosition();
+        }
     }
-    protected TimeKeyActionHandle(event: KeyboardEventArgs): void {
+    protected timeKeyActionHandle(event: KeyboardEventArgs): void {
         if (this.enabled) {
-            if (event.action !== 'right' && event.action !== 'left' && event.action !== 'tab') { event.preventDefault(); }
+            if (event.action !== 'right' && event.action !== 'left' && event.action !== 'tab') {
+                event.preventDefault();
+            }
             switch (event.action) {
-                case 'up':
-                case 'down':
-                case 'home':
-                case 'end':
-                    this.timeKeyHandler(event);
-                    break;
-                case 'enter':
-                    if (this.isNavigate) {
-                        this.selectedElement = this.liCollections[this.activeIndex];
-                        this.valueWithMinutes = new Date(this.timeCollections[this.activeIndex]);
-                        this.setInputValue('time');
-                        if (+ this.previousDateTime !== +this.value) {
-                            this.changedArgs.value = this.value;
-                            this.addTimeSelection();
-                            this.previousDateTime = this.value;
-                        }
-                    } else {
-                        this.updateValue(event);
+            case 'up':
+            case 'down':
+            case 'home':
+            case 'end':
+                this.timeKeyHandler(event);
+                break;
+            case 'enter':
+                if (this.isNavigate) {
+                    this.selectedElement = this.liCollections[this.activeIndex];
+                    this.valueWithMinutes = new Date(this.timeCollections[this.activeIndex]);
+                    this.setInputValue('time');
+                    if (+ this.previousDateTime !== +this.value) {
+                        this.changedArgs.value = this.value;
+                        this.addTimeSelection();
+                        this.previousDateTime = this.value;
                     }
-                    this.hide(event);
-                    addClass([this.inputWrapper.container], INPUTFOCUS);
-                    this.isNavigate = false;
-                    event.stopPropagation();
-                    break;
-                case 'escape':
-                    this.hide(event);
-                    break;
-                default:
-                    this.isNavigate = false;
-                    break;
+                } else {
+                    this.updateValue(event);
+                }
+                this.hide(event);
+                addClass([this.inputWrapper.container], INPUTFOCUS);
+                this.isNavigate = false;
+                event.stopPropagation();
+                break;
+            case 'escape':
+                this.hide(event);
+                break;
+            default:
+                this.isNavigate = false;
+                break;
             }
         }
     }
     protected inputKeyAction(event: KeyboardEventArgs): void {
         switch (event.action) {
-            case 'altDownArrow':
-                this.strictModeUpdate();
-                this.updateInput();
-                this.toggle(event);
-                break;
+        case 'altDownArrow':
+            this.strictModeUpdate();
+            this.updateInput();
+            this.toggle(event);
+            break;
         }
     }
     /**
      * Called internally if any of the property value changed.
-     * returns void
+     *
+     * @param {DateTimePickerModel} newProp - Returns the dynamic property value of the component.
+     * @param {DateTimePickerModel} oldProp - Returns the previous property value of the component.
+     * @returns {void}
      * @deprecated
      */
     public onPropertyChanged(newProp: DateTimePickerModel, oldProp: DateTimePickerModel): void {
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'value':
-                    this.isDynamicValueChanged = true;
-                    let options: object = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
-                    this.invalidValueString = null;
-                    this.checkInvalidValue(newProp.value);
-                    newProp.value = this.value;
-                    newProp.value = this.validateValue(newProp.value);
-                    Input.setValue(this.getFormattedValue(newProp.value), this.inputElement, this.floatLabelType, this.showClearButton);
-                    this.valueWithMinutes = newProp.value;
-                    this.setProperties({ value: newProp.value }, true);
-                    if (this.popupObj) {
-                        this.popupUpdate();
-                    }
-                    this.previousDateTime = new Date(this.inputElement.value);
-                    this.updateInput();
-                    this.changeTrigger(null);
-                    break;
-                case 'min':
-                case 'max':
-                    this.getProperty(newProp, prop);
-                    this.updateInput();
-                    break;
-                case 'enableRtl':
-                    Input.setEnableRtl(this.enableRtl, [this.inputWrapper.container]);
-                    break;
-                case 'cssClass':
-                    if (!isNullOrUndefined(oldProp.cssClass)) {
-                        oldProp.cssClass = (oldProp.cssClass.replace(/\s+/g, ' ')).trim();
-                    }
-                    if (!isNullOrUndefined(newProp.cssClass)) {
-                        newProp.cssClass = (newProp.cssClass.replace(/\s+/g, ' ')).trim();
-                    }
-                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
+            case 'value':
+                this.isDynamicValueChanged = true;
+                this.invalidValueString = null;
+                this.checkInvalidValue(newProp.value);
+                newProp.value = this.value;
+                newProp.value = this.validateValue(newProp.value);
+                Input.setValue(this.getFormattedValue(newProp.value), this.inputElement, this.floatLabelType, this.showClearButton);
+                this.valueWithMinutes = newProp.value;
+                this.setProperties({ value: newProp.value }, true);
+                if (this.popupObj) {
+                    this.popupUpdate();
+                }
+                this.previousDateTime = new Date(this.inputElement.value);
+                this.updateInput();
+                this.changeTrigger(null);
+                break;
+            case 'min':
+            case 'max':
+                this.getProperty(newProp, prop);
+                this.updateInput();
+                break;
+            case 'enableRtl':
+                Input.setEnableRtl(this.enableRtl, [this.inputWrapper.container]);
+                break;
+            case 'cssClass':
+                if (!isNullOrUndefined(oldProp.cssClass)) {
+                    oldProp.cssClass = (oldProp.cssClass.replace(/\s+/g, ' ')).trim();
+                }
+                if (!isNullOrUndefined(newProp.cssClass)) {
+                    newProp.cssClass = (newProp.cssClass.replace(/\s+/g, ' ')).trim();
+                }
+                Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
+                if (this.dateTimeWrapper) {
+                    Input.setCssClass(newProp.cssClass, [this.dateTimeWrapper], oldProp.cssClass);
+                }
+                break;
+            case 'locale':
+                this.globalize = new Internationalization(this.locale);
+                this.l10n.setLocale(this.locale);
+                this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
+                Input.setPlaceholder(this.l10n.getConstant('placeholder'), this.inputElement);
+                this.dateTimeFormat = this.cldrDateTimeFormat();
+                super.updateInput();
+                break;
+            case 'htmlAttributes':
+                this.updateHtmlAttributeToElement();
+                this.updateHtmlAttributeToWrapper();
+                this.checkAttributes(true);
+                break;
+            case 'format':
+                this.setProperties({ format: newProp.format }, true);
+                this.checkFormat();
+                this.dateTimeFormat = this.formatString;
+                this.setValue();
+                break;
+            case 'placeholder':
+                Input.setPlaceholder(newProp.placeholder, this.inputElement);
+                this.inputElement.setAttribute('aria-placeholder', newProp.placeholder);
+                break;
+            case 'enabled':
+                Input.setEnabled(this.enabled, this.inputElement);
+                if (!this.enabled) {
+                    this.inputElement.tabIndex = -1;
+                }
+                break;
+            case 'strictMode':
+                this.invalidValueString = null;
+                this.updateInput();
+                break;
+            case 'width':
+                this.setWidth(newProp.width);
+                break;
+            case 'readonly':
+                Input.setReadonly(this.readonly, this.inputElement);
+                break;
+            case 'floatLabelType':
+                this.floatLabelType = newProp.floatLabelType;
+                Input.removeFloating(this.inputWrapper);
+                Input.addFloating(this.inputElement, this.floatLabelType, this.placeholder);
+                break;
+            case 'scrollTo':
+                if (this.checkDateValue(new Date(this.checkValue(newProp.scrollTo)))) {
                     if (this.dateTimeWrapper) {
-                        Input.setCssClass(newProp.cssClass, [this.dateTimeWrapper], oldProp.cssClass);
+                        this.setScrollTo();
                     }
-                    break;
-                case 'locale':
-                    this.globalize = new Internationalization(this.locale);
-                    this.l10n.setLocale(this.locale);
-                    this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
-                    Input.setPlaceholder(this.l10n.getConstant('placeholder'), this.inputElement);
-                    this.dateTimeFormat = this.cldrDateTimeFormat();
-                    super.updateInput();
-                    break;
-                case 'htmlAttributes':
-                    this.updateHtmlAttributeToElement();
-                    this.updateHtmlAttributeToWrapper();
-                    this.checkAttributes(true);
-                    break;
-                case 'format':
-                    this.setProperties({ format: newProp.format }, true);
-                    this.checkFormat();
-                    this.dateTimeFormat = this.formatString;
-                    this.setValue();
-                    break;
-                case 'placeholder':
-                    Input.setPlaceholder(newProp.placeholder, this.inputElement);
-                    this.inputElement.setAttribute('aria-placeholder', newProp.placeholder);
-                    break;
-                case 'enabled':
-                    Input.setEnabled(this.enabled, this.inputElement);
-                    if (!this.enabled) {
-                        this.inputElement.tabIndex = -1;
-                    }
-                    break;
-                case 'strictMode':
-                    this.invalidValueString = null;
-                    this.updateInput();
-                    break;
-                case 'width':
-                    this.setWidth(newProp.width);
-                    break;
-                case 'readonly':
-                    Input.setReadonly(this.readonly, this.inputElement);
-                    break;
-                case 'floatLabelType':
-                    this.floatLabelType = newProp.floatLabelType;
-                    Input.removeFloating(this.inputWrapper);
-                    Input.addFloating(this.inputElement, this.floatLabelType, this.placeholder);
-                    break;
-                case 'scrollTo':
-                    if (this.checkDateValue(new Date(this.checkValue(newProp.scrollTo)))) {
-                        if (this.dateTimeWrapper) { this.setScrollTo(); }
-                        this.setProperties({ scrollTo: this.checkDateValue(new Date(this.checkValue(newProp.scrollTo))) }, true);
-                    } else {
-                        this.setProperties({ scrollTo: null }, true);
-                    }
-                    break;
-                default:
-                    super.onPropertyChanged(newProp, oldProp);
-                    break;
+                    this.setProperties({ scrollTo: this.checkDateValue(new Date(this.checkValue(newProp.scrollTo))) }, true);
+                } else {
+                    this.setProperties({ scrollTo: null }, true);
+                }
+                break;
+            default:
+                super.onPropertyChanged(newProp, oldProp);
+                break;
             }
-            if (!this.isDynamicValueChanged) { this.hide(null); }
+            if (!this.isDynamicValueChanged) {
+                this.hide(null);
+            }
             this.isDynamicValueChanged = false;
             this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
         }
     }
     /**
      * To get component name.
+     *
+     * @returns {string} Returns the component name.
      * @private
      */
     protected getModuleName(): string {

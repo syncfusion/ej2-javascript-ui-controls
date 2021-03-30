@@ -9,15 +9,22 @@ import { Rect } from '../../primitives/rect';
  * NativeElement defines the basic native elements
  */
 export class DiagramNativeElement extends DiagramElement {
+
     /**
-     * set the id for each element
+     *  set the id for each element \
+     *
+     * @returns { void } set the id for each element.\
+     * @param {string} nodeId - provide the id value.
+     * @param {string} diagramId - provide the id value.
+     *
+     * @private
      */
     public constructor(nodeId: string, diagramId: string) {
         super();
         this.diagramId = diagramId;
         this.nodeId = nodeId;
     }
-     private data: string | SVGElement = '';
+    private data: string | SVGElement = '';
 
     /**
      * set the node id
@@ -28,12 +35,24 @@ export class DiagramNativeElement extends DiagramElement {
      */
     public diagramId: string = '';
 
-    /**   @private  */
+    /**
+     *  get the id for each element \
+     *
+     * @returns { string | SVGElement } get the id for each element.\
+     *
+     * @private
+     */
     public get content(): string | SVGElement {
         return this.data;
     }
+
     /**
-     * sets the geometry of the native element
+     *  sets the geometry of the native element \
+     *
+     * @returns { void } sets the geometry of the native element.\
+     * @param {string | SVGElement} value - provide the id value.
+     *
+     * @private
      */
     public set content(value: string | SVGElement) {
         this.data = value;
@@ -48,6 +67,7 @@ export class DiagramNativeElement extends DiagramElement {
 
     /**
      * defines geometry of the native element
+     *
      * @private
      */
     public template: SVGElement;
@@ -59,6 +79,7 @@ export class DiagramNativeElement extends DiagramElement {
 
     /**
      * Saves the actual size of the Native Element
+     *
      * @private
      */
     public contentSize: Size;
@@ -69,27 +90,33 @@ export class DiagramNativeElement extends DiagramElement {
     private canReset: boolean;
     /**
      * Saves the top left point of the Native Element
+     *
      * @private
      */
     public templatePosition: PointModel;
 
+
     /**
-     * Measures minimum space that is required to render the Native Element
-     * @param {Size} availableSize
+     *Measures minimum space that is required to render the Native Element \
+     *
+     * @returns { Size }Measures minimum space that is required to render the Native Element.\
+     * @param {Size} availableSize - provide the id value.
+     *
+     * @private
      */
     public measure(availableSize: Size): Size {
         if (this.isDirt) {
-            let rect: Rect = measureNativeContent(this.template);
+            const rect: Rect = measureNativeContent(this.template);
             this.contentSize = new Size();
             this.contentSize.width = rect.width;
             this.contentSize.height = rect.height;
-            let x: number = rect.x;
-            let y: number = rect.y;
+            const x: number = rect.x;
+            const y: number = rect.y;
             this.templatePosition = {x, y};
             this.isDirt = false;
         }
         if (this.width === undefined || this.height === undefined) {
-            let getAvailableSize: Rect = measureNativeSvg(this.template);
+            const getAvailableSize: Rect = measureNativeSvg(this.template);
             this.desiredSize = new Size(getAvailableSize.width, getAvailableSize.height);
         } else {
             this.desiredSize = new Size(this.width, this.height);
@@ -98,10 +125,16 @@ export class DiagramNativeElement extends DiagramElement {
         return this.desiredSize;
     }
 
+
     /**
-     * Arranges the Native Element
-     * @param {Size} desiredSize 
+     *Arranges the Native Element \
+     *
+     * @returns { Size }Arranges the Native Element.\
+     * @param {Size} desiredSize - provide the id value.
+     *
+     * @private
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public arrange(desiredSize: Size): Size {
         this.actualSize = new Size(this.desiredSize.width, this.desiredSize.height);
         this.updateBounds();

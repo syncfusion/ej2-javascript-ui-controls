@@ -7,13 +7,15 @@ import { Actions } from '../interaction/actions';
  */
 export class CustomCursorAction extends ChildProperty<CustomCursorAction> {
     /**
-     * Defines the property of a Data Map Items 
+     * Defines the property of a Data Map Items
+     *
      * @blazorDefaultValueIgnore
      */
     @Property('')
     public action: Actions;
     /**
-     * Defines the Fields for the Data Map Items 
+     * Defines the Fields for the Data Map Items
+     *
      * @default ''
      */
     @Property('')

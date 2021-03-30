@@ -11,18 +11,18 @@ import { IWidget, BookmarkElementBox } from '../viewer/page';
  * @private
  */
 export interface BookmarkInfo extends IWidget {
-    bookmark: BookmarkElementBox;
-    startIndex: number;
-    endIndex: number;
+    bookmark: BookmarkElementBox
+    startIndex: number
+    endIndex: number
 }
 
 /**
  * @private
  */
 export interface EditRangeInfo extends IWidget {
-    editStart: EditRangeStartElementBox;
-    startIndex: number;
-    endIndex: number;
+    editStart: EditRangeStartElementBox
+    startIndex: number
+    endIndex: number
 }
 /**
  * @private
@@ -31,39 +31,24 @@ export class ModifiedLevel {
     private ownerListLevelIn: WListLevel = undefined;
     private modifiedListLevelIn: WListLevel = undefined;
 
-    /**
-     * @private
-     */
-    get ownerListLevel(): WListLevel {
+    public get ownerListLevel(): WListLevel {
         return this.ownerListLevelIn;
     }
-    /**
-     * @private
-     */
-    set ownerListLevel(value: WListLevel) {
+    public set ownerListLevel(value: WListLevel) {
         this.ownerListLevelIn = value;
 
     }
-    /**
-     * @private
-     */
-    get modifiedListLevel(): WListLevel {
+    public get modifiedListLevel(): WListLevel {
         return this.modifiedListLevelIn;
     }
-    /**
-     * @private
-     */
-    set modifiedListLevel(value: WListLevel) {
+    public set modifiedListLevel(value: WListLevel) {
         this.modifiedListLevelIn = value;
     }
 
-    constructor(owner: WListLevel, modified: WListLevel) {
+    public constructor(owner: WListLevel, modified: WListLevel) {
         this.ownerListLevel = owner;
         this.modifiedListLevel = modified;
     }
-    /**
-     * @private
-     */
     public destroy(): void {
         this.ownerListLevel = undefined;
         this.modifiedListLevel = undefined;
@@ -75,38 +60,27 @@ export class ModifiedLevel {
 export class ModifiedParagraphFormat {
     private ownerFormatIn: WParagraphFormat = undefined;
     private modifiedFormatIn: WParagraphFormat = undefined;
-    /**
-     * @private
-     */
-    get ownerFormat(): WParagraphFormat {
+
+    public get ownerFormat(): WParagraphFormat {
         return this.ownerFormatIn;
     }
-    /**
-     * @private
-     */
-    set ownerFormat(value: WParagraphFormat) {
+
+    public set ownerFormat(value: WParagraphFormat) {
         this.ownerFormatIn = value;
     }
-    /**
-     * hidden
-     */
-    get modifiedFormat(): WParagraphFormat {
+
+    public get modifiedFormat(): WParagraphFormat {
         return this.modifiedFormatIn;
     }
-    /**
-     * @private
-     */
-    set modifiedFormat(value: WParagraphFormat) {
+
+    public set modifiedFormat(value: WParagraphFormat) {
         this.modifiedFormatIn = value;
     }
 
-    constructor(ownerFormat: WParagraphFormat, modifiedFormat: WParagraphFormat) {
+    public constructor(ownerFormat: WParagraphFormat, modifiedFormat: WParagraphFormat) {
         this.ownerFormat = ownerFormat;
         this.modifiedFormat = modifiedFormat;
     }
-    /**
-     * @private
-     */
     public destroy(): void {
         this.ownerFormat = undefined;
         this.modifiedFormat.destroy();
@@ -122,14 +96,14 @@ export class RowHistoryFormat {
 
     public rowHeightType: HeightType;
     public displacement: number;
-    constructor(startingPoint: Point, rowFormat: WRowFormat) {
+    public constructor(startingPoint: Point, rowFormat: WRowFormat) {
         this.startingPoint = startingPoint;
         this.rowFormat = rowFormat;
         this.rowHeightType = rowFormat.heightType;
     }
     public revertChanges(isRedo: boolean, owner: DocumentEditor): void {
         //backup current format values.
-        let currentRowHeightType: HeightType = this.rowFormat.heightType;
+        const currentRowHeightType: HeightType = this.rowFormat.heightType;
         //Restore old values.
         owner.editorModule.tableResize.updateRowHeight(this.rowFormat.ownerBase, isRedo ? this.displacement : (-this.displacement));
         owner.documentHelper.layout.reLayoutTable(this.rowFormat.ownerBase.ownerTable);
@@ -151,7 +125,7 @@ export class TableHistoryInfo {
     public startingPoint: Point;
     public owner: DocumentEditor;
 
-    constructor(table: TableWidget, owner: DocumentEditor) {
+    public constructor(table: TableWidget, owner: DocumentEditor) {
         this.tableHolder = new WTableHolder();
         this.tableFormat = new TableFormatHistoryInfo();
         this.rows = [];
@@ -169,8 +143,8 @@ export class TableHistoryInfo {
             this.tableFormat.allowAutoFit = table.tableFormat.allowAutoFit;
         }
         for (let i: number = 0; i < table.childWidgets.length; i++) {
-            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
-            let rowFormat: RowFormatHistoryInfo = new RowFormatHistoryInfo();
+            const row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            const rowFormat: RowFormatHistoryInfo = new RowFormatHistoryInfo();
             rowFormat.gridBefore = row.rowFormat.gridBefore;
             rowFormat.gridBeforeWidth = row.rowFormat.gridBeforeWidth;
             rowFormat.gridBeforeWidthType = row.rowFormat.gridBeforeWidthType;
@@ -178,8 +152,8 @@ export class TableHistoryInfo {
             rowFormat.gridAfterWidth = row.rowFormat.gridAfterWidth;
             rowFormat.gridAfterWidthType = row.rowFormat.gridAfterWidthType;
             for (let j: number = 0; j < row.childWidgets.length; j++) {
-                let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
-                let cellFormat: CellFormatHistoryInfo = new CellFormatHistoryInfo();
+                const cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                const cellFormat: CellFormatHistoryInfo = new CellFormatHistoryInfo();
                 cellFormat.columnIndex = cell.columnIndex;
                 cellFormat.columnSpan = cell.cellFormat.columnSpan;
                 cellFormat.preferredWidth = cell.cellFormat.preferredWidth;
@@ -213,9 +187,6 @@ export class TableFormatHistoryInfo {
     public preferredWidth: number;
     public preferredWidthType: WidthType;
     public allowAutoFit: boolean;
-    constructor() {
-        /* tslint:disable:no-empty */
-    }
 }
 /**
  * @private
@@ -229,7 +200,7 @@ export class RowFormatHistoryInfo {
     public gridAfterWidthType: WidthType;
 
     public cells: CellFormatHistoryInfo[];
-    constructor() {
+    public constructor() {
         this.cells = [];
     }
 
@@ -242,10 +213,6 @@ export class CellFormatHistoryInfo {
     public columnIndex: number;
     public preferredWidth: number;
     public preferredWidthType: WidthType;
-
-    constructor() {
-        /* tslint:disable:no-empty */
-    }
 }
 
 /**
@@ -280,7 +247,7 @@ export class CellHistoryFormat {
      * @private
      */
     public displacement: number;
-    constructor(point: Point) {
+    public constructor(point: Point) {
         this.startingPoint = point; // starting point preserved to calculate the displacement on after cell resizing finished.
     }
 }

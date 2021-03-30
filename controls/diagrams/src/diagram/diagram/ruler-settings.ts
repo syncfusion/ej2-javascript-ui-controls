@@ -7,6 +7,7 @@ import { DiagramRulerModel } from './ruler-settings-model';
 export abstract class DiagramRuler extends ChildProperty<DiagramRuler> {
     /**
      * Defines the number of intervals to be present on each segment of the ruler.
+     *
      * @default 5
      */
     @Property(5)
@@ -14,6 +15,7 @@ export abstract class DiagramRuler extends ChildProperty<DiagramRuler> {
 
     /**
      * Defines the textual description of the ruler segment, and the appearance of the ruler ticks of the ruler.
+     *
      * @default 100
      */
     @Property(100)
@@ -21,6 +23,7 @@ export abstract class DiagramRuler extends ChildProperty<DiagramRuler> {
 
     /**
      * Defines the orientation of the ruler
+     *
      * @default 'Horizontal'
      */
     @Property('Horizontal')
@@ -28,6 +31,7 @@ export abstract class DiagramRuler extends ChildProperty<DiagramRuler> {
 
     /**
      * Defines and sets the tick alignment of the ruler scale.
+     *
      * @default 'RightOrBottom'
      */
     @Property('RightOrBottom')
@@ -35,6 +39,7 @@ export abstract class DiagramRuler extends ChildProperty<DiagramRuler> {
 
     /**
      * Defines the color of the ruler marker brush.
+     *
      * @default 'red'
      */
     @Property('red')
@@ -42,6 +47,7 @@ export abstract class DiagramRuler extends ChildProperty<DiagramRuler> {
 
     /**
      * Defines the height of the ruler.
+     *
      * @default 25
      */
     @Property(25)
@@ -76,7 +82,7 @@ export abstract class DiagramRuler extends ChildProperty<DiagramRuler> {
     public arrangeTick: Function | string;
 }
 
-/** 
+/**
  * Defines the ruler settings of diagram
  * ```html
  * <div id='diagram'></div>
@@ -86,7 +92,7 @@ export abstract class DiagramRuler extends ChildProperty<DiagramRuler> {
  * ...
  * rulerSettings: { showRulers: true,
  * horizontalRuler: { segmentWidth: 50,interval: 10 },
- * verticalRuler: {segmentWidth: 200,interval: 20} 
+ * verticalRuler: {segmentWidth: 200,interval: 20}
  * },
  * ...
  * });
@@ -109,14 +115,14 @@ export class RulerSettings extends ChildProperty<RulerSettings> {
     @Property(true)
     public dynamicGrid: boolean;
 
-    /** 
+    /**
      * Defines the appearance of horizontal ruler
      * @default {}
      */
     @Complex<DiagramRulerModel>({ orientation: 'Horizontal' }, DiagramRuler)
     public horizontalRuler: DiagramRulerModel;
 
-    /** 
+    /**
      * Defines the appearance of vertical ruler
      * @default {}
      */

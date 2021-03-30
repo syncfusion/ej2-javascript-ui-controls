@@ -3,7 +3,8 @@ import { WParagraphFormat } from './paragraph-format';
 import { WCharacterFormat } from './character-format';
 import { HelperMethods } from '../editor/editor-helper';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-/** 
+/* eslint-disable */
+/**
  * @private
  */
 export abstract class WStyle {
@@ -14,21 +15,23 @@ export abstract class WStyle {
     public link: WStyle;
     public name: string;
 }
-/** 
+/**
  * @private
  */
 export class WParagraphStyle extends WStyle {
     /**
      * Specifies the paragraph format
+     *
      * @default undefined
      */
     public paragraphFormat: WParagraphFormat;
     /**
      * Specifies the character format
+     *
      * @default undefined
      */
     public characterFormat: WCharacterFormat;
-    constructor(node?: Object) {
+    public constructor(node?: Object) {
         super();
         this.ownerBase = node;
         this.paragraphFormat = new WParagraphFormat(this);
@@ -49,16 +52,17 @@ export class WParagraphStyle extends WStyle {
         this.paragraphFormat.copyFormat(paraStyle.paragraphFormat);
     }
 }
-/** 
+/**
  * @private
  */
 export class WCharacterStyle extends WStyle {
     /**
      * Specifies the character format
+     *
      * @default undefined
      */
     public characterFormat: WCharacterFormat;
-    constructor(node?: Object) {
+    public constructor(node?: Object) {
         super();
         this.ownerBase = node;
         this.characterFormat = new WCharacterFormat(this);
@@ -75,12 +79,12 @@ export class WCharacterStyle extends WStyle {
         this.characterFormat.copyFormat(charStyle.characterFormat);
     }
 }
-/** 
+/**
  * @private
  */
 export class WStyles {
     private collection: Object[] = [];
-    get length(): number {
+    public get length(): number {
         return this.collection.length;
     }
     public remove(item: WParagraphStyle | WCharacterStyle): void {
@@ -102,7 +106,7 @@ export class WStyles {
         return this.collection.indexOf(item);
     }
     public contains(item: WParagraphStyle | WCharacterStyle): boolean {
-        let index: number = this.collection.indexOf(item);
+        const index: number = this.collection.indexOf(item);
         return index > -1 && index < this.collection.length;
     }
     public clear(): void {
@@ -112,7 +116,7 @@ export class WStyles {
     }
     public findByName(name: string, type?: StyleType): Object {
         let returnStyle: Object;
-        for (let value of this.collection) {
+        for (const value of this.collection) {
             if ((value as WStyle).name === name) {
                 returnStyle = value;
                 if (!isNullOrUndefined(type) && (value as WStyle).type === type) {
@@ -123,15 +127,19 @@ export class WStyles {
         return returnStyle;
     }
     public getStyleNames(type?: StyleType): string[] {
-        return this.collection.filter((a: WStyle) => (a.type === type)).map((a: WStyle) => { return a.name; });
+        return this.collection.filter((a: WStyle) => (a.type === type)).map((a: WStyle) => {
+            return a.name;
+        });
     }
-    /* tslint:disable:no-any */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     public getStyles(type?: StyleType): Object[] {
-        let styles: WStyle[] = this.collection.filter((a: WStyle) => (a.type === type)).map((a: WStyle) => { return a; });
-        let styleObjects: any = [];
-        for (let style of styles) {
-            let returnStyle: any = {};
-            let returnStyleObject: any = {};
+        const styles: WStyle[] = this.collection.filter((a: WStyle) => (a.type === type)).map((a: WStyle) => {
+            return a;
+        });
+        const styleObjects: any = [];
+        for (const style of styles) {
+            const returnStyle: any = {};
+            const returnStyleObject: any = {};
             returnStyleObject.characterFormat = {};
             HelperMethods.writeCharacterFormat(returnStyleObject.characterFormat, true, (style as any).characterFormat);
             returnStyle.name = style.name;
@@ -140,5 +148,5 @@ export class WStyles {
         }
         return styleObjects;
     }
-    /* tslint:enable:no-any */
+    /* eslint-enable @typescript-eslint/no-explicit-any */
 }

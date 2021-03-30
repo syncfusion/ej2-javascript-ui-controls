@@ -1,3 +1,10 @@
+/* eslint-disable max-len */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable @typescript-eslint/explicit-member-accessibility */
+/* eslint-disable @typescript-eslint/dot-notation */
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable brace-style */
+/* eslint-disable @typescript-eslint/member-delimiter-style */
 /**
  * Helper functions for maps control
  */
@@ -34,6 +41,10 @@ export class Size {
 }
 /**
  * To find number from string
+ *
+ * @param {string} value Specifies the value
+ * @param {number} containerSize Specifies the container size
+ * @returns {number} Returns the number
  * @private
  */
 export function stringToNumber(value: string, containerSize: number): number {
@@ -44,14 +55,17 @@ export function stringToNumber(value: string, containerSize: number): number {
 }
 /**
  * Method to calculate the width and height of the maps
+ *
+ * @param {Maps} maps Specifies the maps instance
+ * @returns {void}
  */
 export function calculateSize(maps: Maps): void {
-    let containerWidth: number = maps.element.clientWidth;
-    let containerHeight: number = maps.element.clientHeight;
-    let parentHeight: number = maps.element.parentElement.clientHeight;
-    let parentWidth: number = maps.element.parentElement.clientWidth;
-    let containerElementWidth : number = stringToNumber(maps.element.style.width, containerWidth);
-    let containerElementHeight : number = stringToNumber(maps.element.style.height, containerWidth);
+    const containerWidth: number = maps.element.clientWidth;
+    const containerHeight: number = maps.element.clientHeight;
+    const parentHeight: number = maps.element.parentElement.clientHeight;
+    const parentWidth: number = maps.element.parentElement.clientWidth;
+    const containerElementWidth : number = stringToNumber(maps.element.style.width, containerWidth);
+    const containerElementHeight : number = stringToNumber(maps.element.style.height, containerWidth);
     if (maps.width === '0px' || maps.width === '0%' || maps.height === '0%' || maps.height === '0px') {
         maps.availableSize = new Size(0, 0);
     } else {
@@ -60,10 +74,13 @@ export function calculateSize(maps: Maps): void {
             stringToNumber(maps.height, containerHeight) || containerHeight || containerElementHeight || (maps.isDevice ?
                 Math.min(window.innerWidth, window.innerHeight) : 450)
         );
-}
+    }
 }
 /**
  * Method to create svg for maps.
+ *
+ * @param {Maps} maps Specifies the map instance
+ * @returns {void}
  */
 export function createSvg(maps: Maps): void {
     maps.renderer = new SvgRenderer(maps.element.id);
@@ -79,17 +96,20 @@ export function createSvg(maps: Maps): void {
     }
 }
 export function getMousePosition(pageX: number, pageY: number, element: Element): MapLocation {
-    let elementRect: ClientRect = element.getBoundingClientRect();
-    let pageXOffset: number = element.ownerDocument.defaultView.pageXOffset;
-    let pageYOffset: number = element.ownerDocument.defaultView.pageYOffset;
-    let clientTop: number = element.ownerDocument.documentElement.clientTop;
-    let clientLeft: number = element.ownerDocument.documentElement.clientLeft;
-    let positionX: number = elementRect.left + pageXOffset - clientLeft;
-    let positionY: number = elementRect.top + pageYOffset - clientTop;
+    const elementRect: ClientRect = element.getBoundingClientRect();
+    const pageXOffset: number = element.ownerDocument.defaultView.pageXOffset;
+    const pageYOffset: number = element.ownerDocument.defaultView.pageYOffset;
+    const clientTop: number = element.ownerDocument.documentElement.clientTop;
+    const clientLeft: number = element.ownerDocument.documentElement.clientLeft;
+    const positionX: number = elementRect.left + pageXOffset - clientLeft;
+    const positionY: number = elementRect.top + pageYOffset - clientTop;
     return new MapLocation((pageX - positionX), (pageY - positionY));
 }
 /**
  * Method to convert degrees to radians
+ *
+ * @param {number} deg Specifies the degree value
+ * @returns {number} Returns the number
  */
 
 export function degreesToRadians(deg: number): number {
@@ -98,6 +118,9 @@ export function degreesToRadians(deg: number): number {
 
 /**
  * Convert radians to degrees method
+ *
+ * @param {number} radian Specifies the radian value
+ * @returns {number} Returns the number
  */
 export function radiansToDegrees(radian: number): number {
     return radian * (180 / Math.PI);
@@ -108,69 +131,69 @@ export function radiansToDegrees(radian: number): number {
  * Method for converting from latitude and longitude values to points
  */
 
-export function convertGeoToPoint(
-    latitude: number, longitude: number, factor: number, layer: LayerSettings,
-    mapModel: Maps): Point {
-    let mapSize: Size = new Size(mapModel.mapAreaRect.width, mapModel.mapAreaRect.height);
+export function convertGeoToPoint(latitude: number, longitude: number, factor: number, layer: LayerSettings, mapModel: Maps): Point {
+    const mapSize: Size = new Size(mapModel.mapAreaRect.width, mapModel.mapAreaRect.height);
     let x: number; let y: number; let value: Point;
     let lat: number; let lng: number; let temp: number;
-    let longitudeMinMax: MinMax = mapModel.baseMapBounds.longitude;
-    let latitudeMinMax: MinMax = mapModel.baseMapBounds.latitude;
+    const longitudeMinMax: MinMax = mapModel.baseMapBounds.longitude;
+    const latitudeMinMax: MinMax = mapModel.baseMapBounds.latitude;
     let latRadian: number = degreesToRadians(latitude);
-    let lngRadian: number = degreesToRadians(longitude);
-    let type: ProjectionType = mapModel.projectionType;
-    let size: number = (mapModel.isTileMap) ? Math.pow(2, 1) * 256 : (isNullOrUndefined(factor)) ? Math.min(mapSize.width, mapSize.height) :
-        (Math.min(mapSize.width, mapSize.height) * factor);
+    const lngRadian: number = degreesToRadians(longitude);
+    const type: ProjectionType = mapModel.projectionType;
+    const size: number = (mapModel.isTileMap) ? Math.pow(2, 1) * 256 : (isNullOrUndefined(factor)) ?
+        Math.min(mapSize.width, mapSize.height) : (Math.min(mapSize.width, mapSize.height) * factor);
     if (layer.geometryType === 'Normal') {
         x = isNullOrUndefined(factor) ? longitude : Math.abs((longitude - longitudeMinMax.min) * factor);
         y = isNullOrUndefined(factor) ? latitude : Math.abs((latitudeMinMax.max - latitude) * factor);
     } else if (layer.geometryType === 'Geographic') {
         switch (type) {
-            case 'Mercator':
-                let pixelOrigin: Point = new Point(size / 2, size / 2);
-                x = pixelOrigin.x + longitude * (size / 360);
-                let sinY: number = calculateBound(Math.sin(degreesToRadians(latitude)), -0.9999, 0.9999);
-                y = pixelOrigin.y + 0.5 * (Math.log((1 + sinY) / (1 - sinY))) * (-(size / (2 * Math.PI)));
-                break;
-            case 'Winkel3':
-                value = aitoff(lngRadian, latRadian);
-                lng = (value.x + lngRadian / (Math.PI / 2)) / 2;
-                lat = (value.y + latRadian) / 2;
-                break;
-            case 'Miller':
-                lng = lngRadian;
-                lat = (1.25 * Math.log(Math.tan((Math.PI / 4) + (.4 * latRadian))));
-                break;
-            case 'Eckert3':
-                temp = Math.sqrt(Math.PI * (4 + Math.PI));
-                lng = 2 / temp * lngRadian * (1 + Math.sqrt(1 - 4 * latRadian * latRadian / (Math.PI * Math.PI)));
-                lat = 4 / temp * latRadian;
-                break;
-            case 'AitOff':
-                value = aitoff(lngRadian, latRadian);
-                lng = value.x;
-                lat = value.y;
-                break;
-            case 'Eckert5':
-                lng = lngRadian * (1 + Math.cos(latRadian)) / Math.sqrt(2 + Math.PI);
-                lat = 2 * latRadian / Math.sqrt(2 + Math.PI);
-                break;
-            case 'Equirectangular':
-                lng = lngRadian;
-                lat = latRadian;
-                break;
-            case 'Eckert6':
-                let epsilon: number = 1e-6;
-                temp = (1 + (Math.PI / 2)) * Math.sin(latRadian);
-                let delta: number = Infinity;
-                for (let i: number = 0; i < 10 && Math.abs(delta) > epsilon; i++) {
-                    delta = (latRadian + (Math.sin(latRadian)) - temp) / (1 + Math.cos(latRadian));
-                    latRadian = latRadian - delta;
-                }
-                temp = Math.sqrt(2 + Math.PI);
-                lng = lngRadian * (1 + Math.cos(latRadian)) / temp;
-                lat = 2 * latRadian / temp;
-                break;
+        case 'Mercator': {
+            const pixelOrigin: Point = new Point(size / 2, size / 2);
+            x = pixelOrigin.x + longitude * (size / 360);
+            const sinY: number = calculateBound(Math.sin(degreesToRadians(latitude)), -0.9999, 0.9999);
+            y = pixelOrigin.y + 0.5 * (Math.log((1 + sinY) / (1 - sinY))) * (-(size / (2 * Math.PI)));
+            break;
+        }
+        case 'Winkel3':
+            value = aitoff(lngRadian, latRadian);
+            lng = (value.x + lngRadian / (Math.PI / 2)) / 2;
+            lat = (value.y + latRadian) / 2;
+            break;
+        case 'Miller':
+            lng = lngRadian;
+            lat = (1.25 * Math.log(Math.tan((Math.PI / 4) + (.4 * latRadian))));
+            break;
+        case 'Eckert3':
+            temp = Math.sqrt(Math.PI * (4 + Math.PI));
+            lng = 2 / temp * lngRadian * (1 + Math.sqrt(1 - 4 * latRadian * latRadian / (Math.PI * Math.PI)));
+            lat = 4 / temp * latRadian;
+            break;
+        case 'AitOff':
+            value = aitoff(lngRadian, latRadian);
+            lng = value.x;
+            lat = value.y;
+            break;
+        case 'Eckert5':
+            lng = lngRadian * (1 + Math.cos(latRadian)) / Math.sqrt(2 + Math.PI);
+            lat = 2 * latRadian / Math.sqrt(2 + Math.PI);
+            break;
+        case 'Equirectangular':
+            lng = lngRadian;
+            lat = latRadian;
+            break;
+        case 'Eckert6': {
+            const epsilon: number = 1e-6;
+            temp = (1 + (Math.PI / 2)) * Math.sin(latRadian);
+            let delta: number = Infinity;
+            for (let i: number = 0; i < 10 && Math.abs(delta) > epsilon; i++) {
+                delta = (latRadian + (Math.sin(latRadian)) - temp) / (1 + Math.cos(latRadian));
+                latRadian = latRadian - delta;
+            }
+            temp = Math.sqrt(2 + Math.PI);
+            lng = lngRadian * (1 + Math.cos(latRadian)) / temp;
+            lat = 2 * latRadian / temp;
+            break;
+        }
         }
         x = (type === 'Mercator') ? x : roundTo(xToCoordinate(mapModel, radiansToDegrees(lng)), 3);
         y = (type === 'Mercator') ? y : (-(roundTo(yToCoordinate(mapModel, radiansToDegrees(lat)), 3)));
@@ -179,13 +202,19 @@ export function convertGeoToPoint(
 }
 /**
  * Converting tile latitude and longitude to point
+ *
+ * @param {MapLocation} center Specifies the map center location
+ * @param {number} zoomLevel Specifies the zoom level
+ * @param {MapLocation} tileTranslatePoint Specifies the tile translate point
+ * @param {boolean} isMapCoordinates Specifies the boolean value
+ * @returns {MapLocation} Returns the location value
  */
 export function convertTileLatLongToPoint(
     center: MapLocation, zoomLevel: number, tileTranslatePoint: MapLocation, isMapCoordinates: boolean): MapLocation {
-    let size: number = Math.pow(2, zoomLevel) * 256;
-    let x: number = (center.x + 180) / 360;
-    let sinLatitude: number = Math.sin(center.y * Math.PI / 180);
-    let y: number = 0.5 - Math.log((1 + sinLatitude) / (1 - sinLatitude)) / (4 * Math.PI);
+    const size: number = Math.pow(2, zoomLevel) * 256;
+    const x: number = (center.x + 180) / 360;
+    const sinLatitude: number = Math.sin(center.y * Math.PI / 180);
+    const y: number = 0.5 - Math.log((1 + sinLatitude) / (1 - sinLatitude)) / (4 * Math.PI);
     let pixelX: number = center.x;
     let pixelY: number = center.y;
     if (isMapCoordinates) {
@@ -199,8 +228,8 @@ export function convertTileLatLongToPoint(
  */
 
 export function xToCoordinate(mapObject: Maps, val: number): number {
-    let longitudeMinMax: MinMax = mapObject.baseMapBounds.longitude;
-    let totalSize: number = isNullOrUndefined(mapObject.baseSize) ? mapObject.mapAreaRect.width : mapObject.mapAreaRect.width +
+    const longitudeMinMax: MinMax = mapObject.baseMapBounds.longitude;
+    const totalSize: number = isNullOrUndefined(mapObject.baseSize) ? mapObject.mapAreaRect.width : mapObject.mapAreaRect.width +
         (Math.abs(mapObject.baseSize.width - mapObject.mapAreaRect.width) / 2);
     return Math.round(totalSize * (val - longitudeMinMax.min) / (longitudeMinMax.max - longitudeMinMax.min) * 100) / 100;
 }
@@ -210,7 +239,7 @@ export function xToCoordinate(mapObject: Maps, val: number): number {
  */
 
 export function yToCoordinate(mapObject: Maps, val: number): number {
-    let latitudeMinMax: MinMax = mapObject.baseMapBounds.latitude;
+    const latitudeMinMax: MinMax = mapObject.baseMapBounds.latitude;
     return Math.round(mapObject.mapAreaRect.height * (val - latitudeMinMax.min) / (latitudeMinMax.max - latitudeMinMax.min) * 100) / 100;
 }
 
@@ -219,8 +248,8 @@ export function yToCoordinate(mapObject: Maps, val: number): number {
  */
 
 export function aitoff(x: number, y: number): Point {
-    let cosy: number = Math.cos(y);
-    let sincia: number = sinci(acos(cosy * Math.cos(x /= 2)));
+    const cosy: number = Math.cos(y);
+    const sincia: number = sinci(acos(cosy * Math.cos(x /= 2)));
     return new Point(2 * cosy * Math.sin(x) * sincia, Math.sin(y) * sincia);
 }
 
@@ -230,7 +259,7 @@ export function aitoff(x: number, y: number): Point {
  */
 
 export function roundTo(a: number, b: number): number {
-    let c: number = Math.pow(10, b);
+    const c: number = Math.pow(10, b);
     return (Math.round(a * c) / c);
 }
 
@@ -244,6 +273,11 @@ export function acos(a: number): number {
 
 /**
  * Method to calculate bound
+ *
+ * @param {number} value Specifies the value
+ * @param {number} min Specifies the minimum value
+ * @param {number} max Specifies the maximum value
+ * @returns {number} Returns the value
  */
 export function calculateBound(value: number, min: number, max: number): number {
     if (!isNullOrUndefined(min)) {
@@ -255,24 +289,27 @@ export function calculateBound(value: number, min: number, max: number): number 
     return value;
 }
 
- /**
-  * To trigger the download element
-  * @param fileName 
-  * @param type 
-  * @param url 
-  */
-  export function triggerDownload(fileName: string, type: ExportType, url: string, isDownload: boolean): void {
-        createElement('a', {
-            attrs: {
-                'download': fileName + '.' + (type as string).toLocaleLowerCase(),
-                'href': url
-            }
-        }).dispatchEvent(new MouseEvent(isDownload ? 'click' : 'move', {
-            view: window,
-            bubbles: false,
-            cancelable: true
-        }));
-    }
+/**
+ * To trigger the download element
+ *
+ * @param {string} fileName Specifies the file name
+ * @param {ExportType} type Specifies the type
+ * @param {string} url Specifies the url
+ * @param {boolean} isDownload Specifies whether download a file.
+ * @returns {void}
+ */
+export function triggerDownload(fileName: string, type: ExportType, url: string, isDownload: boolean): void {
+    createElement('a', {
+        attrs: {
+            'download': fileName + '.' + (type as string).toLocaleLowerCase(),
+            'href': url
+        }
+    }).dispatchEvent(new MouseEvent(isDownload ? 'click' : 'move', {
+        view: window,
+        bubbles: false,
+        cancelable: true
+    }));
+}
 /**
  * Map internal class for point
  */
@@ -321,10 +358,11 @@ export class GeoLocation {
 
 /**
  * Function to measure the height and width of the text.
- * @param  {string} text
- * @param  {FontModel} font
- * @param  {string} id
- * @returns no
+ *
+ * @param  {string} text Specifies the text
+ * @param  {FontModel} font Specifies the font
+ * @param  {string} id Specifies the id
+ * @returns {Size} Returns the size
  * @private
  */
 export function measureText(text: string, font: FontModel): Size {
@@ -355,6 +393,7 @@ export function measureText(text: string, font: FontModel): Size {
 
 /**
  * Internal use of text options
+ *
  * @private
  */
 export class TextOption {
@@ -378,6 +417,7 @@ export class TextOption {
 }
 /**
  * Internal use of path options
+ *
  * @private
  */
 export class PathOption {
@@ -414,6 +454,7 @@ export class ColorValue {
 }
 /**
  * Internal use of rectangle options
+ *
  * @private
  */
 export class RectOption extends PathOption {
@@ -443,6 +484,7 @@ export class RectOption extends PathOption {
 }
 /**
  * Internal use of circle options
+ *
  * @private
  */
 export class CircleOption extends PathOption {
@@ -461,6 +503,7 @@ export class CircleOption extends PathOption {
 
 /**
  * Internal use of polygon options
+ *
  * @private
  */
 export class PolygonOption extends PathOption {
@@ -472,6 +515,7 @@ export class PolygonOption extends PathOption {
 }
 /**
  * Internal use of polyline options
+ *
  * @private
  */
 export class PolylineOption extends PolygonOption {
@@ -481,6 +525,7 @@ export class PolylineOption extends PolygonOption {
 }
 /**
  * Internal use of line options
+ *
  * @private
  */
 export class LineOption extends PathOption {
@@ -498,7 +543,8 @@ export class LineOption extends PathOption {
 }
 /**
  * Internal use of line
- * @property
+ *
+ * @property {number} Line
  */
 export class Line {
     public x1: number;
@@ -514,6 +560,7 @@ export class Line {
 }
 /**
  * Internal use of map location type
+ *
  */
 export class MapLocation {
     /**
@@ -531,6 +578,7 @@ export class MapLocation {
 }
 /**
  * Internal use of type rect
+ *
  * @private
  */
 export class Rect {
@@ -557,7 +605,8 @@ export type patternUnits =
     'objectBoundingBox';
 /**
  * Internal use for pattern creation.
- * @property
+ *
+ * @property {PatternOptions} PatternOptions
  */
 export class PatternOptions {
     public id: string;
@@ -585,12 +634,20 @@ export class PatternOptions {
 }
 /**
  * Internal rendering of text
+ *
+ * @param {TextOption} option Specifies the text option
+ * @param {FontModel} style Specifies the style
+ * @param {string} color Specifies the color
+ * @param {HTMLElement | Element} parent Specifies the parent element
+ * @param {boolean} isMinus Specifies the boolean value
+ * @returns {Element} Returns the html object
  * @private
  */
 export function renderTextElement(
     option: TextOption, style: FontModel, color: string, parent: HTMLElement | Element, isMinus: boolean = false
 ): Element {
-    let renderOptions: Object = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const renderOptions: any = {
         'id': option.id,
         'x': option.x,
         'y': option.y,
@@ -604,11 +661,11 @@ export function renderTextElement(
         'opacity': style.opacity,
         'dominant-baseline': option.baseLine
     };
-    let text: string = typeof option.text === 'string' ? option.text : isMinus ? option.text[option.text.length - 1] : option.text[0];
+    const text: string = typeof option.text === 'string' ? option.text : isMinus ? option.text[option.text.length - 1] : option.text[0];
     let tspanElement: Element;
-    let renderer: SvgRenderer = new SvgRenderer('');
+    const renderer: SvgRenderer = new SvgRenderer('');
     let height: number;
-    let htmlObject: HTMLElement = <HTMLElement>renderer.createText(renderOptions, text);
+    const htmlObject: HTMLElement = <HTMLElement>renderer.createText(renderOptions, text);
     htmlObject.style['user-select'] = 'none';
     htmlObject.style['font-family'] = style.fontFamily;
     htmlObject.style['font-size'] = style.size;
@@ -638,10 +695,17 @@ export function renderTextElement(
 }
 
 /**
+ * @param {HTMLCollection} element Specifies the html collection
+ * @param {string} markerId Specifies the marker id
+ * @param {any} data Specifies the data
+ * @param {number} index Specifies the index
+ * @param {Maps} mapObj Specifies the map object
+ * @returns {HTMLCollection} Returns the html collection
  * @private
  */
-export function convertElement(element: HTMLCollection, markerId: string, data: Object, index: number, mapObj: Maps): HTMLElement {
-    let childElement: HTMLElement = createElement('div', {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function convertElement(element: HTMLCollection, markerId: string, data: any, index: number, mapObj: Maps): HTMLElement {
+    const childElement: HTMLElement = createElement('div', {
         id: markerId,
         styles: 'position: absolute;pointer-events: auto;'
     });
@@ -652,19 +716,21 @@ export function convertElement(element: HTMLCollection, markerId: string, data: 
     }
     let templateHtml: string = childElement.innerHTML;
     let templateSplitValue: string;
-    let properties: string[] = Object.keys(data);
+    const properties: string[] = Object.keys(data);
     for (let i: number = 0; i < properties.length; i++) {
         if (typeof data[properties[i]] === 'object') {
             templateHtml = convertStringToValue(templateHtml, '', data, mapObj);
-        } else if ((<String>properties[i]).toLowerCase() !== 'latitude' && (<String>properties[i]).toLowerCase() !== 'longitude') {
-            templateHtml = templateHtml.replace(new RegExp('{{:' + <String>properties[i] + '}}', 'g'), data[properties[i].toString()]);
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        } else if ((<String>properties[i]).toLowerCase() !== 'latitude' && (<string>properties[i]).toLowerCase() !== 'longitude') {
+            templateHtml = templateHtml.replace(new RegExp('{{:' + <string>properties[i] + '}}', 'g'), data[properties[i].toString()]);
         }
     }
     childElement.innerHTML = templateHtml;
     return childElement;
 }
 export function formatValue(value: string, maps: Maps): string {
-    let formatValue: string; let formatFunction: Function;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let formatValue: string; let formatFunction: any;
     if (maps.format && !isNaN(Number(value))) {
         formatFunction = maps.intl.getNumberFormat(
             { format: maps.format, useGrouping: maps.useGroupingSeparator });
@@ -674,16 +740,17 @@ export function formatValue(value: string, maps: Maps): string {
     }
     return formatValue;
 }
-export function convertStringToValue(stringTemplate: string, format: string, data: Object, maps: Maps): string {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function convertStringToValue(stringTemplate: string, format: string, data: any, maps: Maps): string {
     let templateHtml: string = (stringTemplate === '') ? format : stringTemplate;
-    let templateValue: string[] = (stringTemplate === '') ? templateHtml.split('${') : templateHtml.split('{{:');
+    const templateValue: string[] = (stringTemplate === '') ? templateHtml.split('${') : templateHtml.split('{{:');
     for (let i: number = 0; i < templateValue.length; i++) {
         if ((templateValue[i].indexOf('}}') > -1 && templateValue[i].indexOf('.') > -1) ||
             (templateValue[i].indexOf('}') > -1 && templateValue[i].search('.') > -1)) {
-            let split: string[] = (stringTemplate === '') ? templateValue[i].split('}') : templateValue[i].split('}}');
+            const split: string[] = (stringTemplate === '') ? templateValue[i].split('}') : templateValue[i].split('}}');
             for (let j: number = 0; j < split.length; j++) {
                 if (split[j].indexOf('.') > -1) {
-                    let templateSplitValue: string = (getValueFromObject(data, split[j])).toString();
+                    const templateSplitValue: string = (getValueFromObject(data, split[j])).toString();
                     templateHtml = (stringTemplate === '') ?
                         templateHtml.split('${' + split[j] + '}').join(formatValue(templateSplitValue, maps)) :
                         templateHtml.replace(new RegExp('{{:' + split[j] + '}}', 'g'), templateSplitValue);
@@ -693,11 +760,14 @@ export function convertStringToValue(stringTemplate: string, format: string, dat
     }
     return templateHtml;
 }
-export function convertElementFromLabel(element: Element, labelId: string, data: object, index: number, mapObj: Maps): HTMLElement {
-    let labelEle: Element = isNullOrUndefined(element.childElementCount) ? element[0] : element;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function convertElementFromLabel(element: Element, labelId: string, data: any, index: number, mapObj: Maps): HTMLElement {
+    const labelEle: Element = isNullOrUndefined(element.childElementCount) ? element[0] : element;
     let templateHtml: string = labelEle.outerHTML;
-    let properties: Object[] = Object.keys(data);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const properties: any[] = Object.keys(data);
     for (let i: number = 0; i < properties.length; i++) {
+        // eslint-disable-next-line @typescript-eslint/ban-types
         templateHtml = templateHtml.replace(new RegExp('{{:' + <String>properties[i] + '}}', 'g'), data[properties[i].toString()]);
     }
     return createElement('div', {
@@ -706,22 +776,23 @@ export function convertElementFromLabel(element: Element, labelId: string, data:
         styles: 'position: absolute'
     });
 }
-/* tslint:disable:no-string-literal */
-//tslint:disable
-export function drawSymbols(shape: MarkerType, imageUrl: string, location: Point, markerID: string, shapeCustom: Object, markerCollection: Element, maps: Maps): Element {
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function drawSymbols(shape: MarkerType, imageUrl: string, location: Point, markerID: string, shapeCustom: any, markerCollection: Element, maps: Maps): Element {
     let markerEle: Element; let x: number; let y: number;
-    let size: Size = <Size>shapeCustom['size'];
-    let borderColor: string = shapeCustom['borderColor'];
-    let borderWidth: number = parseFloat(shapeCustom['borderWidth']);
-    let fill: string = shapeCustom['fill'];
-    let dashArray: string = shapeCustom['dashArray'];
-    let border: Object = { color: borderColor, width: borderWidth };
-    let opacity: number = shapeCustom['opacity']; let padding: number = 5;
-    let circleOptions: CircleOption; let pathOptions: PathOption; let rectOptions: RectOption;
-    pathOptions = new PathOption(markerID, fill, borderWidth, borderColor, opacity, dashArray, '');
+    const size: Size = <Size>shapeCustom['size'];
+    const borderColor: string = shapeCustom['borderColor'];
+    const borderWidth: number = parseFloat(shapeCustom['borderWidth']);
+    const fill: string = shapeCustom['fill'];
+    const dashArray: string = shapeCustom['dashArray'];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const border: any = { color: borderColor, width: borderWidth };
+    const opacity: number = shapeCustom['opacity']; const padding: number = 5;
+    let rectOptions: RectOption;
+    const pathOptions: PathOption = new PathOption(markerID, fill, borderWidth, borderColor, opacity, dashArray, '');
     if (shape === 'Circle') {
-        let radius: number = (size.width + size.height) / 4;
-        circleOptions = new CircleOption(markerID, fill, border, opacity, location.x, location.y, radius, dashArray);
+        const radius: number = (size.width + size.height) / 4;
+        const circleOptions: CircleOption = new CircleOption(markerID, fill, border, opacity, location.x, location.y, radius, dashArray);
         markerEle = maps.renderer.drawCircle(circleOptions) as SVGCircleElement;
     } else if (shape === 'Rectangle') {
         x = location.x - (size.width / 2);
@@ -740,22 +811,24 @@ export function drawSymbols(shape: MarkerType, imageUrl: string, location: Point
     }
     return markerEle;
 }
-export function getValueFromObject(data: object, value: string): object {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getValueFromObject(data: any, value: string): any {
     if (!isNullOrUndefined(data) && !isNullOrUndefined(value)) {
-        var splits = value.replace(/\[/g, '.').replace(/\]/g, '').split('.');
+        const splits: string[] = value.replace(/\[/g, '.').replace(/\]/g, '').split('.');
         if (splits.length === 1) {
             data = data[splits[0]];
         }
         else {
-            for (var i = 0; i < splits.length && !isNullOrUndefined(data); i++) {
+            for (let i: number = 0; i < splits.length && !isNullOrUndefined(data); i++) {
                 data = data[splits[i]];
             }
         }
     }
     return data;
 }
-export function markerColorChoose(eventArgs: IMarkerRenderingEventArgs, data: object): IMarkerRenderingEventArgs {
-    let color: string = (!isNullOrUndefined(eventArgs.colorValuePath)) ? ((eventArgs.colorValuePath.indexOf('.') > -1) ? (getValueFromObject(data, eventArgs.colorValuePath)).toString() :
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function markerColorChoose(eventArgs: IMarkerRenderingEventArgs, data: any): IMarkerRenderingEventArgs {
+    const color: string = (!isNullOrUndefined(eventArgs.colorValuePath)) ? ((eventArgs.colorValuePath.indexOf('.') > -1) ? (getValueFromObject(data, eventArgs.colorValuePath)).toString() :
         data[eventArgs.colorValuePath]) : data[eventArgs.colorValuePath];
     eventArgs.fill = (!isNullOrUndefined(eventArgs.colorValuePath) &&
         !isNullOrUndefined(color)) ?
@@ -763,52 +836,55 @@ export function markerColorChoose(eventArgs: IMarkerRenderingEventArgs, data: ob
             data[eventArgs.colorValuePath]) : eventArgs.fill;
     return eventArgs;
 }
-export function markerShapeChoose(eventArgs: IMarkerRenderingEventArgs, data: object): IMarkerRenderingEventArgs {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function markerShapeChoose(eventArgs: IMarkerRenderingEventArgs, data: any): IMarkerRenderingEventArgs {
     if (!isNullOrUndefined(eventArgs.shapeValuePath) && !isNullOrUndefined(data[eventArgs.shapeValuePath])) {
-        let shape: MarkerType = ((eventArgs.shapeValuePath.indexOf('.') > -1) ?
+        const shape: MarkerType = ((eventArgs.shapeValuePath.indexOf('.') > -1) ?
             (getValueFromObject(data, eventArgs.shapeValuePath).toString()) as MarkerType :
             data[eventArgs.shapeValuePath]);
         eventArgs.shape = shape;
-        if (data[eventArgs.shapeValuePath] == 'Image') {
+        if (data[eventArgs.shapeValuePath] === 'Image') {
             eventArgs.imageUrl = (!isNullOrUndefined(eventArgs.imageUrlValuePath) &&
                 !isNullOrUndefined(data[eventArgs.imageUrlValuePath])) ?
                 ((eventArgs.imageUrlValuePath.indexOf('.') > -1) ? getValueFromObject(data, eventArgs.imageUrlValuePath).toString() : data[eventArgs.imageUrlValuePath]) : eventArgs.imageUrl;
         }
     }
     else {
-        let shapes: MarkerType = (!isNullOrUndefined(eventArgs.shapeValuePath)) ? ((eventArgs.shapeValuePath.indexOf('.') > -1) ? (getValueFromObject(data, eventArgs.shapeValuePath).toString() as MarkerType) : eventArgs.shape) : eventArgs.shape;
+        const shapes: MarkerType = (!isNullOrUndefined(eventArgs.shapeValuePath)) ? ((eventArgs.shapeValuePath.indexOf('.') > -1) ? (getValueFromObject(data, eventArgs.shapeValuePath).toString() as MarkerType) : eventArgs.shape) : eventArgs.shape;
         eventArgs.shape = shapes;
-        let shapeImage: string = (!isNullOrUndefined(eventArgs.imageUrlValuePath)) ? ((eventArgs.imageUrlValuePath.indexOf('.') > -1) ? (getValueFromObject(data, eventArgs.imageUrlValuePath)).toString() as MarkerType : eventArgs.imageUrl) : eventArgs.imageUrl;
+        const shapeImage: string = (!isNullOrUndefined(eventArgs.imageUrlValuePath)) ? ((eventArgs.imageUrlValuePath.indexOf('.') > -1) ? (getValueFromObject(data, eventArgs.imageUrlValuePath)).toString() as MarkerType : eventArgs.imageUrl) : eventArgs.imageUrl;
         eventArgs.imageUrl = shapeImage;
     }
     return eventArgs;
 }
-//tslint:disable
+
 export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTMLElement | Element, maps: Maps, layerIndex: number, markerCollection: Element,
-    layerElement: Element, check: boolean, zoomCheck: boolean) {
+                                layerElement: Element, check: boolean, zoomCheck: boolean): void {
     let bounds1: DOMRect;
     let bounds2: DOMRect;
     let colloideBounds: DOMRect[] = [];
     let clusterColloideBounds: Element[] = [];
     let tempX: number = 0;
     let tempY: number = 0;
-    let data: object;
-    let style: FontModel = currentLayer.markerClusterSettings.labelStyle;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let data: any;
+    const style: FontModel = currentLayer.markerClusterSettings.labelStyle;
     let options: TextOption;
     let textElement: Element;
     let tempElement1: Element;
-    let shapeCustom: Object;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let shapeCustom: any;
     let tempElement: Element;
-    let postionY: number = (15 / 4);
+    const postionY: number = (15 / 4);
     let m: number = 0;
     let indexCollection: number[] = [];
-    let clusters: MarkerClusterSettingsModel = currentLayer.markerClusterSettings;
-    let clusterGroup: Element = maps.renderer.createGroup({ id: maps.element.id + '_LayerIndex_' + layerIndex + '_markerCluster' });
+    const clusters: MarkerClusterSettingsModel = currentLayer.markerClusterSettings;
+    const clusterGroup: Element = maps.renderer.createGroup({ id: maps.element.id + '_LayerIndex_' + layerIndex + '_markerCluster' });
     let eventArg: IMarkerClusterRenderingEventArgs = {
         cancel: false, name: markerClusterRendering, fill: clusters.fill, height: clusters.height,
         width: clusters.width, imageUrl: clusters.imageUrl, shape: clusters.shape,
         data: data, maps: maps, cluster: clusters, border: clusters.border
-    }
+    };
     if (isBlazor()) {
         const { data, maps, cluster, ...blazorEventArgs }: IMarkerClusterRenderingEventArgs = eventArg;
         eventArg = blazorEventArgs;
@@ -826,32 +902,32 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                             tempElement = markerTemplate.childNodes[p] as Element;
                             bounds2 = tempElement.getBoundingClientRect() as DOMRect;
                             if (!isNullOrUndefined(bounds2)) {
-                                if (bounds1.left > bounds2.right || bounds1.right < bounds2.left
-                                    || bounds1.top > bounds2.bottom || bounds1.bottom < bounds2.top) {
-                                }
-                                else {
+                                if (!(bounds1.left > bounds2.right || bounds1.right < bounds2.left
+                                    || bounds1.top > bounds2.bottom || bounds1.bottom < bounds2.top)) {
                                     colloideBounds.push(bounds2);
-                                    markerTemplate.childNodes[p]['style']['visibility'] = "hidden";
+                                    markerTemplate.childNodes[p]['style']['visibility'] = 'hidden';
                                     indexCollection.push(p as number);
                                 }
                             }
                         }
                     }
                     tempX = bounds1.left + bounds1.width / 2;
-                    tempY = bounds1.top + bounds1.height;                    
+                    tempY = bounds1.top + bounds1.height;
                     if (colloideBounds.length > 0) {
-                        indexCollection = indexCollection.filter((item, index, value) => value.indexOf(item) === index);
-                        let container: ClientRect = maps.element.getBoundingClientRect();
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        indexCollection = indexCollection.filter((item: any, index: any, value: any) => value.indexOf(item) === index);
+                        const container: ClientRect = maps.element.getBoundingClientRect();
                         tempX = tempX - container['left'];
                         tempY = maps.isBlazor ? tempY - container['top'] : (tempY - ((maps.availableSize.height <= container['height']) ?
-                        container['top'] : (container['bottom'] - container['top'])));
-                        let translate: Object = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
-                        let transPoint: Point = (maps.isTileMap) ? { x: 0, y: 0 } : (maps.translatePoint.x !== 0) ?
+                            container['top'] : (container['bottom'] - container['top'])));
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const translate: any = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
+                        const transPoint: Point = (maps.isTileMap) ? { x: 0, y: 0 } : (maps.translatePoint.x !== 0) ?
                             maps.translatePoint : translate['location'];
-                        let dataIndex: number = parseInt(markerTemplate.childNodes[o]['id'].split('_dataIndex_')[1].split('_')[0], 10);
-                        let markerIndex: number = parseInt(markerTemplate.childNodes[o]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
-                        markerTemplate.childNodes[o]['style']['visibility'] = "hidden";
-                        let clusters: MarkerClusterSettingsModel = currentLayer.markerClusterSettings;
+                        const dataIndex: number = parseInt(markerTemplate.childNodes[o]['id'].split('_dataIndex_')[1].split('_')[0], 10);
+                        const markerIndex: number = parseInt(markerTemplate.childNodes[o]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
+                        markerTemplate.childNodes[o]['style']['visibility'] = 'hidden';
+                        const clusters: MarkerClusterSettingsModel = currentLayer.markerClusterSettings;
                         if (eventArg.cancel) {
                             shapeCustom = {
                                 size: new Size(clusters.width, clusters.height),
@@ -874,20 +950,20 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                                 dashArray: clusters.dashArray
                             };
                             shapeCustom['fill'] = eventArg.fill;
-                            shapeCustom['size']['width'] = eventArg.width
-                            shapeCustom['size']['height'] = eventArg.height
-                            shapeCustom['imageUrl'] = eventArg.imageUrl
+                            shapeCustom['size']['width'] = eventArg.width;
+                            shapeCustom['size']['height'] = eventArg.height;
+                            shapeCustom['imageUrl'] = eventArg.imageUrl;
                             shapeCustom['shape'] = eventArg.shape;
                             shapeCustom['borderColor'] = eventArg.border.color;
                             shapeCustom['borderWidth'] = eventArg.border.width;
-                        }                        
-                        tempX = (maps.isTileMap) ? tempX : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempX : ((tempX + transPoint.x) * maps.mapScaleValue)
-                        tempY = (maps.isTileMap) ? tempY : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempY : ((tempY + transPoint.y) * maps.mapScaleValue)
-                        let clusterID: string = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m);
-                        let labelID: string = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m) + '_datalabel_' + m;
+                        }
+                        tempX = (maps.isTileMap) ? tempX : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempX : ((tempX + transPoint.x) * maps.mapScaleValue);
+                        tempY = (maps.isTileMap) ? tempY : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempY : ((tempY + transPoint.y) * maps.mapScaleValue);
+                        const clusterID: string = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m);
+                        const labelID: string = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m) + '_datalabel_' + m;
                         m++;
-                        let imageShapeY: number = shapeCustom['shape'] === 'Image' ? shapeCustom['size']['height'] / 2 : 0;
-                        let ele: Element = drawSymbols(
+                        const imageShapeY: number = shapeCustom['shape'] === 'Image' ? shapeCustom['size']['height'] / 2 : 0;
+                        const ele: Element = drawSymbols(
                             shapeCustom['shape'], shapeCustom['imageUrl'], { x: 0, y: imageShapeY },
                             clusterID, shapeCustom, markerCollection, maps
                         );
@@ -898,7 +974,7 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                             ele.innerHTML = indexCollection.toString();
                         }
                         options = new TextOption(labelID, (0), postionY, 'middle', (colloideBounds.length + 1).toString(), '', '');
-                        textElement = renderTextElement(options, style, style.color, markerCollection)
+                        textElement = renderTextElement(options, style, style.color, markerCollection);
                         textElement.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
                         clusterGroup.appendChild(textElement);
                         clusterGroup.appendChild(ele);
@@ -910,24 +986,22 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
         layerElement.appendChild(clusterGroup);
         maps.svgObject.appendChild(layerElement) as Element;
         maps.element.appendChild(maps.svgObject) as Element;
-        for (var o = 0; o < clusterGroup.childElementCount; o++) {
+        for (let o: number = 0; o < clusterGroup.childElementCount; o++) {
             if (clusterGroup.childNodes[o]['style']['visibility'] !== 'hidden') {
                 tempElement = clusterGroup.childNodes[o] as Element;
                 bounds1 = tempElement.getBoundingClientRect() as DOMRect;
                 if (!isNullOrUndefined(bounds1) && !(tempElement.id.indexOf('_datalabel_') > -1)) {
-                    for (var p = o + 1; p < clusterGroup.childElementCount; p++) {
+                    for (let p: number = o + 1; p < clusterGroup.childElementCount; p++) {
                         if (clusterGroup.childNodes[p]['style']['visibility'] !== 'hidden') {
                             tempElement1 = clusterGroup.childNodes[p] as Element;
                             bounds2 = tempElement1.getBoundingClientRect() as DOMRect;
                             if (!isNullOrUndefined(bounds2) && !(tempElement1.id.indexOf('_datalabel_') > -1)) {
-                                if (bounds1.left > bounds2.right || bounds1.right < bounds2.left
-                                    || bounds1.top > bounds2.bottom || bounds1.bottom < bounds2.top) {
-                                }
-                                else {
+                                if (!(bounds1.left > bounds2.right || bounds1.right < bounds2.left
+                                    || bounds1.top > bounds2.bottom || bounds1.bottom < bounds2.top)) {
                                     clusterColloideBounds.push(tempElement1);
                                     clusterColloideBounds.push(clusterGroup.childNodes[p - 1] as Element);
-                                    clusterGroup.childNodes[p]['style']['visibility'] = "hidden";
-                                    clusterGroup.childNodes[p - 1]['style']['visibility'] = "hidden";
+                                    clusterGroup.childNodes[p]['style']['visibility'] = 'hidden';
+                                    clusterGroup.childNodes[p - 1]['style']['visibility'] = 'hidden';
                                     indexCollection.push(p as number);
                                 }
                             }
@@ -935,7 +1009,7 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                     }
                     if (clusterColloideBounds.length > 0) {
                         tempElement = clusterGroup.childNodes[o] as Element;
-                        for (var i = 0; i < clusterColloideBounds.length; i++) {
+                        for (let i: number = 0; i < clusterColloideBounds.length; i++) {
                             if (tempElement.tagName === 'g') {
                                 tempElement.childNodes[0].textContent = tempElement.childNodes[0].textContent + ',' +
                                     clusterColloideBounds[i].textContent;
@@ -956,67 +1030,72 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
         if (check) {
             layerElement.appendChild(markerCollection);
         } else {
-            getElementByID(maps.element.id + '_Secondary_Element').appendChild(markerCollection)
+            getElementByID(maps.element.id + '_Secondary_Element').appendChild(markerCollection);
             layerElement.appendChild(markerCollection);
         }
-        document.getElementById(maps.element.id + '_LayerIndex_0_markerCluster').remove();
+        let markerCluster: HTMLElement = document.getElementById(maps.element.id + '_LayerIndex_0_markerCluster');
+        if (!isNullOrUndefined(markerCluster)) {
+            markerCluster.remove();
+        }
         if (zoomCheck) {
             document.getElementById(maps.element.id + '_Layer_Collections').appendChild(layerElement);
         }
-    })
+    });
 }
-export function mergeSeparateCluster(sameMarkerData: MarkerClusterData[], maps: Maps, markerElement: Element | HTMLElement) {
-    let layerIndex: number = sameMarkerData[0].layerIndex;
-    let clusterIndex: number = sameMarkerData[0].targetClusterIndex;
-    let markerIndex: number = sameMarkerData[0].markerIndex;
-    let dataIndex: number = sameMarkerData[0].dataIndex;
-    let markerId = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex;
-    let clusterId: string = markerId + '_dataIndex_' + dataIndex + '_cluster_' + clusterIndex;
-    let clusterEle: Element = getElement(clusterId);
-    let clusterEleLabel: Element = getElement(clusterId + '_datalabel_' + clusterIndex);
+export function mergeSeparateCluster(sameMarkerData: MarkerClusterData[], maps: Maps, markerElement: Element | HTMLElement): void {
+    const layerIndex: number = sameMarkerData[0].layerIndex;
+    const clusterIndex: number = sameMarkerData[0].targetClusterIndex;
+    const markerIndex: number = sameMarkerData[0].markerIndex;
+    const dataIndex: number = sameMarkerData[0].dataIndex;
+    const markerId: string = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex;
+    const clusterId: string = markerId + '_dataIndex_' + dataIndex + '_cluster_' + clusterIndex;
+    const clusterEle: Element = getElement(clusterId);
+    const clusterEleLabel: Element = getElement(clusterId + '_datalabel_' + clusterIndex);
     clusterEle.setAttribute('visibility', 'visible');
     clusterEleLabel.setAttribute('visibility', 'visible');
     let markerEle: Element;
-    let markerDataLength: number = sameMarkerData[0].data.length;
+    const markerDataLength: number = sameMarkerData[0].data.length;
     for (let i: number = 0; i < markerDataLength; i++) {
         markerEle = getElement(markerId + '_dataIndex_' + sameMarkerData[0].data[i]['index']);
-        markerEle['style']['visibility'] = "hidden";
+        markerEle['style']['visibility'] = 'hidden';
     }
     removeElement(maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_markerClusterConnectorLine');
 }
-export function clusterSeparate(sameMarkerData: MarkerClusterData[], maps: Maps, markerElement: Element | HTMLElement, isDom?: boolean) {
-    let layerIndex: number = sameMarkerData[0].layerIndex;
-    let markerIndex: number = sameMarkerData[0].markerIndex;
-    let clusterIndex: number = sameMarkerData[0].targetClusterIndex;
-    let dataIndex: number = sameMarkerData[0].dataIndex;
-    let getElementFunction: Function = isDom ? getElement : markerElement.querySelector.bind(markerElement);
-    let getQueryConnect: string = isDom ? '' : '#';
-    let markerId = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex;
-    let clusterId: string = markerId + '_dataIndex_' + dataIndex + '_cluster_' + clusterIndex;
-    let clusterEle: Element = getElementFunction(getQueryConnect + '' + clusterId);
-    let clusterEleLabel: Element = getElementFunction(getQueryConnect + '' + clusterId + '_datalabel_' + clusterIndex);
+export function clusterSeparate(sameMarkerData: MarkerClusterData[], maps: Maps, markerElement: Element | HTMLElement, isDom?: boolean): void {
+    const layerIndex: number = sameMarkerData[0].layerIndex;
+    const markerIndex: number = sameMarkerData[0].markerIndex;
+    const clusterIndex: number = sameMarkerData[0].targetClusterIndex;
+    const dataIndex: number = sameMarkerData[0].dataIndex;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const getElementFunction: any = isDom ? getElement : markerElement.querySelector.bind(markerElement);
+    const getQueryConnect: string = isDom ? '' : '#';
+    const markerId: string = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex;
+    const clusterId: string = markerId + '_dataIndex_' + dataIndex + '_cluster_' + clusterIndex;
+    const clusterEle: Element = getElementFunction(getQueryConnect + '' + clusterId);
+    const clusterEleLabel: Element = getElementFunction(getQueryConnect + '' + clusterId + '_datalabel_' + clusterIndex);
     clusterEle.setAttribute('visibility', 'hidden');
     clusterEleLabel.setAttribute('visibility', 'hidden');
-    let marker: MarkerSettingsModel = maps.layers[layerIndex].markerSettings[markerIndex];
+    const marker: MarkerSettingsModel = maps.layers[layerIndex].markerSettings[markerIndex];
     let markerEle: Element = getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + dataIndex);
-    let height: number = marker.height;
-    let width: number = marker.width;
-    let centerX: number = +clusterEle.getAttribute('transform').split('translate(')[1].trim().split(' ')[0];
-    let centerY: number = +clusterEle.getAttribute('transform').split('translate(')[1].trim().split(' ')[1].split(')')[0].trim();
+    const height: number = marker.height;
+    const width: number = marker.width;
+    const centerX: number = +clusterEle.getAttribute('transform').split('translate(')[1].trim().split(' ')[0];
+    const centerY: number = +clusterEle.getAttribute('transform').split('translate(')[1].trim().split(' ')[1].split(')')[0].trim();
 
-    let radius = width + 5;
-    let area = 2 * 3.14 * radius;
-    let totalMarker = 0;
-    let numberOfMarker = Math.round(area / width);
+    let radius: number = width + 5;
+    let area: number = 2 * 3.14 * radius;
+    let totalMarker: number = 0;
+    let numberOfMarker: number = Math.round(area / width);
     totalMarker += numberOfMarker;
-    let markerDataLength: number = sameMarkerData[0].data.length;
-    let percent = Math.round((height / area) * 100);
+    const markerDataLength: number = sameMarkerData[0].data.length;
+    let percent: number = Math.round((height / area) * 100);
     percent = markerDataLength < numberOfMarker ? 100 / markerDataLength : percent;
-    let angle = (percent / 100) * 360;
-    let newAngle = markerDataLength < numberOfMarker ? 45 : 0;
-    let count = 1;
-    let start = 'M ' + centerX + ' ' + centerY + ' ';
-    let path = '';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let angle: any = (percent / 100) * 360;
+    let newAngle: number = markerDataLength < numberOfMarker ? 45 : 0;
+    let count: number = 1;
+    const start: string = 'M ' + centerX + ' ' + centerY + ' ';
+    let path: string = '';
     for (let i: number = 0; i < markerDataLength; i++) {
         if (totalMarker === i || Math.round(newAngle) >= 360) {
             count++;
@@ -1031,55 +1110,57 @@ export function clusterSeparate(sameMarkerData: MarkerClusterData[], maps: Maps,
             angle = ((percent / 100) * 360);
             totalMarker += numberOfMarker;
         }
-        let x1 = centerX + radius * Math.sin((Math.PI * 2 * newAngle) / 360);
-        let y1 = centerY + radius * Math.cos((Math.PI * 2 * newAngle) / 360);
+        const x1: number = centerX + radius * Math.sin((Math.PI * 2 * newAngle) / 360);
+        const y1: number = centerY + radius * Math.cos((Math.PI * 2 * newAngle) / 360);
         path += start + 'L ' + (x1) + ' ' + y1 + ' ';
         markerEle = getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + sameMarkerData[0].data[i]['index']);
         markerEle.setAttribute('transform', 'translate( ' + x1 + ' ' + y1 + ')');
-        markerEle['style']['visibility'] = "visible";
+        markerEle['style']['visibility'] = 'visible';
         newAngle += angle;
     }
-    let options: PathOption;
-    let connectorLine: ConnectorLineSettingsModel = maps.layers[layerIndex].markerClusterSettings.connectorLineSettings;
-    options = {
+    const connectorLine: ConnectorLineSettingsModel = maps.layers[layerIndex].markerClusterSettings.connectorLineSettings;
+    const options: PathOption = {
         d: path, id: maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_markerClusterConnectorLine', stroke: connectorLine.color,
         opacity: connectorLine.opacity, 'stroke-width': connectorLine.width
     } as PathOption;
     markerElement = isDom ? getElementFunction(maps.element.id + '_Markers_Group') : markerElement;
-    let groupEle: Element = maps.renderer.createGroup({ id: maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_markerClusterConnectorLine' })
+    const groupEle: Element = maps.renderer.createGroup({ id: maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_markerClusterConnectorLine' });
     groupEle.appendChild(maps.renderer.drawPath(options));
     markerElement.insertBefore(groupEle, markerElement.querySelector('#' + markerId + '_dataIndex_0'));
 }
-export function marker(eventArgs: IMarkerRenderingEventArgs, markerSettings: MarkerSettings, markerData: object[], dataIndex: number,
-    location: Point, transPoint: Point, markerID: string, offset: Point, scale: number, maps: Maps,
-    markerCollection: Element): Element {
-    let shapeCustom: Object = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function marker(eventArgs: IMarkerRenderingEventArgs, markerSettings: MarkerSettings, markerData: any[], dataIndex: number,
+                       location: Point, transPoint: Point, markerID: string, offset: Point, scale: number, maps: Maps,
+                       markerCollection: Element): Element {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const shapeCustom: any = {
         size: new Size(eventArgs.width, eventArgs.height),
         fill: eventArgs.fill, borderColor: eventArgs.border.color,
         borderWidth: eventArgs.border.width, opacity: markerSettings.opacity,
         dashArray: markerSettings.dashArray
     };
-    let ele: Element = drawSymbols(eventArgs.shape, eventArgs.imageUrl, { x: 0, y: 0 }, markerID, shapeCustom, markerCollection, maps);
-    let x: number = (maps.isTileMap ? location.x : (location.x + transPoint.x) * scale) + offset.x;
-    let y: number = (maps.isTileMap ? location.y : (location.y + transPoint.y) * scale) + offset.y;
+    const ele: Element = drawSymbols(eventArgs.shape, eventArgs.imageUrl, { x: 0, y: 0 }, markerID, shapeCustom, markerCollection, maps);
+    const x: number = (maps.isTileMap ? location.x : (location.x + transPoint.x) * scale) + offset.x;
+    const y: number = (maps.isTileMap ? location.y : (location.y + transPoint.y) * scale) + offset.y;
     ele.setAttribute('transform', 'translate( ' + x + ' ' + y + ' )');
     maintainSelection(maps.selectedMarkerElementId, maps.markerSelectionClass, ele, 'MarkerselectionMapStyle');
     markerCollection.appendChild(ele);
-    let element: string = (markerData.length - 1) === dataIndex ? 'marker' : null;
-    let markerPoint: Point = new Point(x, y);
+    const element: string = (markerData.length - 1) === dataIndex ? 'marker' : null;
+    const markerPoint: Point = new Point(x, y);
     if (markerSettings.animationDuration > 0) {
         elementAnimate(
             ele, markerSettings.animationDelay, markerSettings.animationDuration, markerPoint, maps, element
         );
     }
-    return markerCollection
+    return markerCollection;
 }
-export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn: Function, markerID: string, data: object,
-    markerIndex: number, markerTemplate: HTMLElement, location: Point, scale: number, offset: Point, maps: Maps): HTMLElement {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn: any, markerID: string, data: any,
+                               markerIndex: number, markerTemplate: HTMLElement, location: Point, scale: number, offset: Point, maps: Maps): HTMLElement {
     templateFn = getTemplateFunction(eventArgs.template);
     if (templateFn && (!maps.isBlazor ? templateFn(data, maps, eventArgs.template, maps.element.id + '_MarkerTemplate' + markerIndex, false).length : {})) {
-        let templateElement: HTMLCollection = templateFn(data, maps, eventArgs.template, maps.element.id + '_MarkerTemplate' + markerIndex, false);
-        let markerElement: HTMLElement = <HTMLElement>convertElement(
+        const templateElement: HTMLCollection = templateFn(data, maps, eventArgs.template, maps.element.id + '_MarkerTemplate' + markerIndex, false);
+        const markerElement: HTMLElement = <HTMLElement>convertElement(
             templateElement, markerID, data, markerIndex, maps
         );
         for (let i: number = 0; i < markerElement.children.length; i++) {
@@ -1091,9 +1172,9 @@ export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn:
             ((Math.abs(maps.baseMapRectBounds['min']['y'] - location.y)) * scale)) + offset.y) + 'px';
         markerTemplate.appendChild(markerElement);
         if (maps.layers[maps.baseLayerIndex].layerType === 'GoogleStaticMap') {
-            let staticMapOffset: ClientRect = getElementByID(maps.element.id + '_StaticGoogleMap').getBoundingClientRect();
-            let markerElementOffset: ClientRect = markerElement.getBoundingClientRect();
-            let staticMapOffsetWidth: number = 640;
+            const staticMapOffset: ClientRect = getElementByID(maps.element.id + '_StaticGoogleMap').getBoundingClientRect();
+            const markerElementOffset: ClientRect = markerElement.getBoundingClientRect();
+            const staticMapOffsetWidth: number = 640;
             if ((staticMapOffset['x'] > markerElementOffset['x'] || staticMapOffset['x'] + staticMapOffsetWidth < markerElementOffset['x'] + markerElementOffset['width'])
                 && (staticMapOffset['y'] > markerElementOffset['y'] || staticMapOffset['y'] + staticMapOffset['height'] < markerElementOffset['y'] + markerElementOffset['height'])
             ) {
@@ -1102,16 +1183,22 @@ export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn:
         }
 
     }
-    return markerTemplate
+    return markerTemplate;
 }
 
 /**
  * To maintain selection during page resize
+ *
+ * @param {string[]} elementId - Specifies the element id
+ * @param {Element} elementClass - Specifies the element class
+ * @param {Element} element - Specifies the element
+ * @param {string} className - Specifies the class name
+ * @returns {void}
  * @private
  */
-export function maintainSelection(elementId: string[], elementClass: Element, element: Element, className: string) {
+export function maintainSelection(elementId: string[], elementClass: Element, element: Element, className: string): void {
     if (elementId) {
-        for (let index = 0; index < elementId.length; index++) {
+        for (let index: number = 0; index < elementId.length; index++) {
             if (element.getAttribute('id') === elementId[index]) {
                 if (isNullOrUndefined(getElement(elementClass.id)) || index === 0) {
                     document.body.appendChild(elementClass);
@@ -1127,13 +1214,21 @@ export function maintainSelection(elementId: string[], elementClass: Element, el
 
 /**
  * To maintain selection style class
+ *
+ * @param {string} id - Specifies the id
+ * @param {string} idClass - Specifies the class id
+ * @param {string} fill - Specifies the fill
+ * @param {string} opacity - Specifies the opactiy
+ * @param {string} borderColor - Specifies the border color
+ * @param {string} borderWidth - Specifies the border width
+ * @param {Maps} maps - Specifies the maps
+ * @returns {void}
  * @private
  */
 export function maintainStyleClass(id: string, idClass: string, fill: string, opacity: string, borderColor: string,
-    borderWidth: string, maps: Maps): void {
+                                   borderWidth: string, maps: Maps): void {
     if (!getElement(id)) {
-        let styleClass: Element;
-        styleClass = createElement('style', {
+        const styleClass: Element = createElement('style', {
             id: id, innerHTML: '.' + idClass + '{fill:'
                 + fill + ';' + 'opacity:' + opacity + ';' +
                 'stroke-width:' + borderWidth + ';' +
@@ -1146,6 +1241,10 @@ export function maintainStyleClass(id: string, idClass: string, fill: string, op
 
 /**
  * Internal use of append shape element
+ *
+ * @param {Element} shape - Specifies the shape
+ * @param {Element} element - Specifies the element
+ * @returns {Element} - Returns the element
  * @private
  */
 export function appendShape(shape: Element, element: Element): Element {
@@ -1154,6 +1253,11 @@ export function appendShape(shape: Element, element: Element): Element {
 }
 /**
  * Internal rendering of Circle
+ *
+ * @param {Maps} maps - Specifies the instance of the maps
+ * @param {CircleOption} options - Specifies the circle options
+ * @param {Element} element - Specifies the element
+ * @returns {Element} - Returns the element
  * @private
  */
 export function drawCircle(maps: Maps, options: CircleOption, element?: Element): Element {
@@ -1161,6 +1265,11 @@ export function drawCircle(maps: Maps, options: CircleOption, element?: Element)
 }
 /**
  * Internal rendering of Rectangle
+ *
+ * @param {Maps} maps - Specifies the instance of the maps
+ * @param {RectOption} options - Specifies the rect options
+ * @param {Element} element - Specifies the element
+ * @returns {Element} - Returns the element
  * @private
  */
 export function drawRectangle(maps: Maps, options: RectOption, element?: Element): Element {
@@ -1168,6 +1277,11 @@ export function drawRectangle(maps: Maps, options: RectOption, element?: Element
 }
 /**
  * Internal rendering of Path
+ *
+ * @param {Maps} maps - Specifies the instance of the maps
+ * @param {PathOption} options - Specifies the polygon options
+ * @param {Element} element - Specifies the element
+ * @returns {Element} - Returns the element
  * @private
  */
 export function drawPath(maps: Maps, options: PathOption, element?: Element): Element {
@@ -1175,6 +1289,11 @@ export function drawPath(maps: Maps, options: PathOption, element?: Element): El
 }
 /**
  * Internal rendering of Polygon
+ *
+ * @param {Maps} maps - Specifies the instance of the maps
+ * @param {PolygonOption} options - Specifies the polygon options
+ * @param {Element} element - Specifies the element
+ * @returns {Element} - Returns the element
  * @private
  */
 export function drawPolygon(maps: Maps, options: PolygonOption, element?: Element): Element {
@@ -1182,6 +1301,11 @@ export function drawPolygon(maps: Maps, options: PolygonOption, element?: Elemen
 }
 /**
  * Internal rendering of Polyline
+ *
+ * @param {Maps} maps - Specifies the instance of the maps
+ * @param {PolylineOption} options - Specifies the poly line options
+ * @param {Element} element - Specifies the element
+ * @returns {Element} - Returns the element
  * @private
  */
 export function drawPolyline(maps: Maps, options: PolylineOption, element?: Element): Element {
@@ -1189,6 +1313,11 @@ export function drawPolyline(maps: Maps, options: PolylineOption, element?: Elem
 }
 /**
  * Internal rendering of Line
+ *
+ * @param {Maps} maps - Specifies the instance of the maps
+ * @param {LineOption} options - Specifies the line options
+ * @param {Element} element - Specifies the element
+ * @returns {Element} - Returns the element
  * @private
  */
 export function drawLine(maps: Maps, options: LineOption, element?: Element): Element {
@@ -1196,8 +1325,16 @@ export function drawLine(maps: Maps, options: LineOption, element?: Element): El
 }
 
 /**
- * @private
  * Calculate marker shapes
+ *
+ * @param {Maps} maps - Specifies the instance of the maps
+ * @param {MarkerType} shape - Specifies the marker type
+ * @param {PathOption} options - Specifies the path options
+ * @param {Size} size - Specifies the size
+ * @param {MapLocation} location - Specifies the map location
+ * @param {Element} markerEle - Specifies the element
+ * @returns {Element} - Returns the element
+ * @private
  */
 
 export function calculateShapes(
@@ -1205,52 +1342,53 @@ export function calculateShapes(
 ): Element {
     let tempGroup: Element;
     switch (shape) {
-        case 'Balloon':
-            tempGroup = drawBalloon(maps, options, size, location, markerEle);
-            break;
-        case 'Cross':
-            options.d = 'M ' + location.x + ' ' + (location.y - size.height / 2) + ' L ' + location.x + ' ' + (location.y + size.height
-                / 2) + ' M ' + (location.x - size.width / 2) + ' ' + location.y + ' L ' + (location.x + size.width / 2) + ' ' + location.y;
-            break;
-        case 'Diamond':
-            options.d = 'M ' + location.x + ' ' + (location.y - size.height / 2) + ' L ' + (location.x + size.width / 2) + ' '
-                + location.y + ' L ' + location.x + ' ' + (location.y + size.height / 2) + ' L ' + (location.x - size.width / 2)
-                + ' ' + location.y + ' Z';
-            break;
-        case 'Star':
-            options.d = 'M ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + (location.x - size.width / 2)
-                + ' ' + (location.y + size.height / 6) + ' L ' + (location.x + size.width / 2) + ' ' + (location.y + size.height / 6)
-                + ' L ' + (location.x - size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + location.x + ' ' +
-                (location.y + size.height / 2) + ' L ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' Z';
-            break;
-        case 'Triangle':
-            options.d = 'M ' + location.x + ' ' + (location.y - size.height / 2) + ' L ' + (location.x + size.width / 2) + ' ' +
-                (location.y + size.height / 2) + ' L ' + (location.x - size.width / 2) + ' ' + (location.y + size.height / 2) + ' Z';
-            break;
-        case 'HorizontalLine':
-            options.d = ' M ' + (location.x - size.width / 2) + ' ' + location.y + ' L ' + (location.x + size.width / 2) + ' '
-                + location.y;
-            break;
-        case 'VerticalLine':
-            options.d = 'M ' + location.x + ' ' + (location.y - size.height / 2) + ' L ' + location.x + ' ' +
-                (location.y + size.height / 2);
-            break;
-        case 'InvertedTriangle':
-            options.d = 'M ' + (location.x - size.width / 2) + ' ' + (location.y - size.height / 2) + ' L ' + (location.x + size.width / 2) + ' ' +
-                (location.y - size.height / 2) + ' L ' + (location.x) + ' ' + (location.y + size.height / 2) + ' Z';
-            break;
-        case 'Pentagon':
-            let eq: number = 72; let xValue: number; let yValue: number;
-            for (let i: number = 0; i < 5; i++) {
-                xValue = (size.width / 2) * Math.cos((Math.PI / 180) * (i * eq));
-                yValue = (size.height / 2) * Math.sin((Math.PI / 180) * (i * eq));
-                options.d += (i == 0 ? 'M ' : 'L ') + (location.x + xValue) + ' ' + (location.y + yValue);
-            }
-            options.d += ' Z';
-            break;
+    case 'Balloon':
+        tempGroup = drawBalloon(maps, options, size, location, markerEle);
+        break;
+    case 'Cross':
+        options.d = 'M ' + location.x + ' ' + (location.y - size.height / 2) + ' L ' + location.x + ' ' + (location.y + size.height
+            / 2) + ' M ' + (location.x - size.width / 2) + ' ' + location.y + ' L ' + (location.x + size.width / 2) + ' ' + location.y;
+        break;
+    case 'Diamond':
+        options.d = 'M ' + location.x + ' ' + (location.y - size.height / 2) + ' L ' + (location.x + size.width / 2) + ' '
+            + location.y + ' L ' + location.x + ' ' + (location.y + size.height / 2) + ' L ' + (location.x - size.width / 2)
+            + ' ' + location.y + ' Z';
+        break;
+    case 'Star':
+        options.d = 'M ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + (location.x - size.width / 2)
+            + ' ' + (location.y + size.height / 6) + ' L ' + (location.x + size.width / 2) + ' ' + (location.y + size.height / 6)
+            + ' L ' + (location.x - size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + location.x + ' ' +
+            (location.y + size.height / 2) + ' L ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' Z';
+        break;
+    case 'Triangle':
+        options.d = 'M ' + location.x + ' ' + (location.y - size.height / 2) + ' L ' + (location.x + size.width / 2) + ' ' +
+            (location.y + size.height / 2) + ' L ' + (location.x - size.width / 2) + ' ' + (location.y + size.height / 2) + ' Z';
+        break;
+    case 'HorizontalLine':
+        options.d = ' M ' + (location.x - size.width / 2) + ' ' + location.y + ' L ' + (location.x + size.width / 2) + ' '
+            + location.y;
+        break;
+    case 'VerticalLine':
+        options.d = 'M ' + location.x + ' ' + (location.y - size.height / 2) + ' L ' + location.x + ' ' +
+            (location.y + size.height / 2);
+        break;
+    case 'InvertedTriangle':
+        options.d = 'M ' + (location.x - size.width / 2) + ' ' + (location.y - size.height / 2) + ' L ' + (location.x + size.width / 2) + ' ' +
+            (location.y - size.height / 2) + ' L ' + (location.x) + ' ' + (location.y + size.height / 2) + ' Z';
+        break;
+    case 'Pentagon':
+        // eslint-disable-next-line no-case-declarations
+        const eq: number = 72; let xValue: number; let yValue: number;
+        for (let i: number = 0; i < 5; i++) {
+            xValue = (size.width / 2) * Math.cos((Math.PI / 180) * (i * eq));
+            yValue = (size.height / 2) * Math.sin((Math.PI / 180) * (i * eq));
+            options.d += (i === 0 ? 'M ' : 'L ') + (location.x + xValue) + ' ' + (location.y + yValue);
+        }
+        options.d += ' Z';
+        break;
     }
     if (shape === 'Cross' || shape === 'HorizontalLine' || shape === 'VerticalLine') {
-        options['stroke'] = (options['stroke'] === 'transparent') ? options['fill'] : options['stroke']
+        options['stroke'] = (options['stroke'] === 'transparent') ? options['fill'] : options['stroke'];
     }
     return shape === 'Balloon' ? tempGroup : maps.renderer.drawPath(options);
 }
@@ -1258,6 +1396,13 @@ export function calculateShapes(
 
 /**
  * Internal rendering of Diamond
+ *
+ * @param {Maps} maps - Specifies the instance of the maps
+ * @param {PathOption} options - Specifies the path options
+ * @param {Size} size - Specifies the size
+ * @param {MapLocation} location - Specifies the map location
+ * @param {Element} element - Specifies the element
+ * @returns {Element} - Returns the element
  * @private
  */
 export function drawDiamond(maps: Maps, options: PathOption, size: Size, location: MapLocation, element?: Element): Element {
@@ -1267,6 +1412,13 @@ export function drawDiamond(maps: Maps, options: PathOption, size: Size, locatio
 }
 /**
  * Internal rendering of Triangle
+ *
+ * @param {Maps} maps - Specifies the instance of the maps
+ * @param {PathOption} options - Specifies the path options
+ * @param {Size} size - Specifies the size
+ * @param {MapLocation} location - Specifies the map location
+ * @param {Element} element - Specifies the element
+ * @returns {Element} - Returns the element
  * @private
  */
 export function drawTriangle(maps: Maps, options: PathOption, size: Size, location: MapLocation, element?: Element): Element {
@@ -1276,6 +1428,13 @@ export function drawTriangle(maps: Maps, options: PathOption, size: Size, locati
 }
 /**
  * Internal rendering of Cross
+ *
+ * @param {Maps} maps - Specifies the instance of the maps
+ * @param {PathOption} options - Specifies the path options
+ * @param {Size} size - Specifies the size
+ * @param {MapLocation} location - Specifies the map location
+ * @param {Element} element - Specifies the element
+ * @returns {Element} - Returns the element
  * @private
  */
 export function drawCross(maps: Maps, options: PathOption, size: Size, location: MapLocation, element?: Element): Element {
@@ -1285,6 +1444,13 @@ export function drawCross(maps: Maps, options: PathOption, size: Size, location:
 }
 /**
  * Internal rendering of HorizontalLine
+ *
+ * @param {Maps} maps - Specifies the instance of the maps
+ * @param {PathOption} options - Specifies the path options
+ * @param {Size} size - Specifies the size
+ * @param {MapLocation} location - Specifies the map location
+ * @param {Element} element - Specifies the element
+ * @returns {Element} - Returns the element
  * @private
  */
 export function drawHorizontalLine(maps: Maps, options: PathOption, size: Size, location: MapLocation, element?: Element): Element {
@@ -1293,6 +1459,13 @@ export function drawHorizontalLine(maps: Maps, options: PathOption, size: Size, 
 }
 /**
  * Internal rendering of VerticalLine
+ *
+ * @param {Maps} maps - Specifies the instance of the maps
+ * @param {PathOption} options - Specifies the path options
+ * @param {Size} size - Specifies the size
+ * @param {MapLocation} location - Specifies the map location
+ * @param {Element} element - Specifies the element
+ * @returns {Element} - Returns the element
  * @private
  */
 export function drawVerticalLine(maps: Maps, options: PathOption, size: Size, location: MapLocation, element?: Element): Element {
@@ -1301,6 +1474,13 @@ export function drawVerticalLine(maps: Maps, options: PathOption, size: Size, lo
 }
 /**
  * Internal rendering of Star
+ *
+ * @param {Maps} maps - Specifies the instance of the maps
+ * @param {PathOption} options - Specifies the path options
+ * @param {Size} size - Specifies the size
+ * @param {MapLocation} location - Specifies the map location
+ * @param {Element} element - Specifies the element
+ * @returns {Element} - Returns the element
  * @private
  */
 export function drawStar(maps: Maps, options: PathOption, size: Size, location: MapLocation, element?: Element): Element {
@@ -1312,46 +1492,67 @@ export function drawStar(maps: Maps, options: PathOption, size: Size, location: 
 }
 /**
  * Internal rendering of Balloon
+ *
+ * @param {Maps} maps - Specifies the instance of the maps
+ * @param {PathOption} options - Specifies the path options
+ * @param {Size} size - Specifies the size
+ * @param {MapLocation} location - Specifies the map location
+ * @param {Element} element - Specifies the element
+ * @returns {Element} - Returns the element
  * @private
  */
 export function drawBalloon(maps: Maps, options: PathOption, size: Size, location: MapLocation, element?: Element): Element {
-    let width: number = size.width;
-    let height: number = size.height;
+    const width: number = size.width;
+    const height: number = size.height;
     location.x -= width / 2;
     location.y -= height;
     options.d = 'M15,0C8.8,0,3.8,5,3.8,11.2C3.8,17.5,9.4,24.4,15,30c5.6-5.6,11.2-12.5,11.2-18.8C26.2,5,21.2,0,15,0z M15,16' +
         'c-2.8,0-5-2.2-5-5s2.2-5,5-5s5,2.2,5,5S17.8,16,15,16z';
-    let balloon: Element = maps.renderer.drawPath(options);
-    let x: number = size.width / 30;
-    let y: number = size.height / 30;
+    const balloon: Element = maps.renderer.drawPath(options);
+    const x: number = size.width / 30;
+    const y: number = size.height / 30;
     balloon.setAttribute('transform', 'translate(' + location.x + ', ' + location.y + ') scale(' + x + ', ' + y + ')');
-    let g: Element = maps.renderer.createGroup({ id: options.id });
+    const g: Element = maps.renderer.createGroup({ id: options.id });
     appendShape(balloon, g);
     return appendShape(g, element);
 }
 /**
  * Internal rendering of Pattern
+ *
+ * @param {Maps} maps - Specifies the instance of the maps
+ * @param {PatternOptions} options - Specifies the pattern options
+ * @param {Element[]} elements - Specifies the elements
+ * @param {Element} element - Specifies the element
+ * @returns {Element} - Returns the element
  * @private
  */
 export function drawPattern(maps: Maps, options: PatternOptions, elements: Element[], element?: Element): Element {
-    let pattern: Element = maps.renderer.createPattern(options, 'pattern');
-    for (let ele of elements) {
+    const pattern: Element = maps.renderer.createPattern(options, 'pattern');
+    for (const ele of elements) {
         appendShape(ele, pattern);
     }
     return appendShape(pattern, element);
 }
 /**
  * Method to get specific field and vaues from data.
+ *
+ * @param {any[]} dataSource - Specifies the data source
+ * @param {string[]} fields - Specifies the fields
+ * @returns {any[]} - Returns the object
  * @private
  */
-// tslint:disable:no-any
-export function getFieldData(dataSource: object[], fields: string[]): object[] {
-    let newData: object[] = [];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getFieldData(dataSource: any[], fields: string[]): any[] {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const newData: any[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let data: { [key: string]: any };
-    for (let temp of dataSource) {
+    for (const temp of dataSource) {
         data = {};
-        for (let field of fields) {
+        for (const field of fields) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((<any>temp)[field]) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 data[field] = (<any>temp)[field];
             }
         }
@@ -1361,18 +1562,25 @@ export function getFieldData(dataSource: object[], fields: string[]): object[] {
 }
 /**
  * To find the index of dataSource from shape properties
+ *
+ * @param {any[]} dataSource - Specifies the data source
+ * @param {any} properties - Specifies the properties
+ * @param {string} dataPath - Specifies the data path
+ * @param {string | string[]} propertyPath - Specifies the property path
+ * @param {LayerSettingsModel} layer - Specifies the layer settings
+ * @returns {number} - Returns the number
  */
-// tslint:disable:no-string-literal
-export function checkShapeDataFields(dataSource: object[], properties: object, dataPath: string, propertyPath: string | string[],
-    layer: LayerSettingsModel): number {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function checkShapeDataFields(dataSource: any[], properties: any, dataPath: string, propertyPath: string | string[],
+                                     layer: LayerSettingsModel): number {
     if (!(isNullOrUndefined(properties))) {
         for (let i: number = 0; i < dataSource.length; i++) {
-            let shapeDataPath: string = ((dataPath.indexOf('.') > -1) ? getValueFromObject(dataSource[i], dataPath) :
+            const shapeDataPath: string = ((dataPath.indexOf('.') > -1) ? getValueFromObject(dataSource[i], dataPath) :
                 dataSource[i][dataPath]);
-            let shapePath: string = checkPropertyPath(shapeDataPath, propertyPath, properties);
-            let shapeDataPathValue: string = !isNullOrUndefined(shapeDataPath) && isNaN(properties[shapePath])
+            const shapePath: string = checkPropertyPath(shapeDataPath, propertyPath, properties);
+            const shapeDataPathValue: string = !isNullOrUndefined(shapeDataPath) && isNaN(properties[shapePath])
                 ? shapeDataPath.toLowerCase() : shapeDataPath;
-            let propertiesShapePathValue: string = !isNullOrUndefined(properties[shapePath]) && isNaN(properties[shapePath])
+            const propertiesShapePathValue: string = !isNullOrUndefined(properties[shapePath]) && isNaN(properties[shapePath])
                 ? properties[shapePath].toLowerCase() : properties[shapePath];
             if (shapeDataPathValue === propertiesShapePathValue) {
                 return i;
@@ -1381,15 +1589,16 @@ export function checkShapeDataFields(dataSource: object[], properties: object, d
     }
     return null;
 }
-export function checkPropertyPath(shapeData: string, shapePropertyPath: string | string[], shape: object): string {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function checkPropertyPath(shapeData: string, shapePropertyPath: string | string[], shape: any): string {
     if (!isNullOrUndefined(shapeData) && !isNullOrUndefined(shape)) {
         if (!isNullOrUndefined(shapePropertyPath)) {
             let length: number;
-            let properties: string[] = (Object.prototype.toString.call(shapePropertyPath) === '[object Array]' ?
+            const properties: string[] = (Object.prototype.toString.call(shapePropertyPath) === '[object Array]' ?
                 shapePropertyPath : [shapePropertyPath]) as string[];
             for (let i: number = 0; i < properties.length; i++) {
-                let shapeDataValue: string = !isNullOrUndefined(shapeData) ? shapeData.toLowerCase() : shapeData;
-                let shapePropertiesValue: string = !isNullOrUndefined(shape[properties[i]])
+                const shapeDataValue: string = !isNullOrUndefined(shapeData) ? shapeData.toLowerCase() : shapeData;
+                const shapePropertiesValue: string = !isNullOrUndefined(shape[properties[i]])
                     && isNaN(shape[properties[i]])
                     ? shape[properties[i]].toLowerCase() : shape[properties[i]];
                 if (shapeDataValue === shapePropertiesValue) {
@@ -1401,9 +1610,9 @@ export function checkPropertyPath(shapeData: string, shapePropertyPath: string |
     return null;
 }
 export function filter(points: MapLocation[], start: number, end: number): MapLocation[] {
-    let pointObject: MapLocation[] = [];
+    const pointObject: MapLocation[] = [];
     for (let i: number = 0; i < points.length; i++) {
-        let point: MapLocation = points[i];
+        const point: MapLocation = points[i];
         if (start <= point.y && end >= point.y) {
             pointObject.push(point);
         }
@@ -1411,7 +1620,7 @@ export function filter(points: MapLocation[], start: number, end: number): MapLo
     return pointObject;
 }
 export function getRatioOfBubble(min: number, max: number, value: number, minValue: number, maxValue: number): number {
-    let percent: number = (100 / (maxValue - minValue)) * (value - minValue);
+    const percent: number = (100 / (maxValue - minValue)) * (value - minValue);
     let bubbleRadius: number = (((max - min) / 100) * percent) + min;
     if (maxValue === minValue) {
         bubbleRadius = (((max - min) / 100)) + min;
@@ -1420,13 +1629,18 @@ export function getRatioOfBubble(min: number, max: number, value: number, minVal
 }
 /**
  * To find the midpoint of the polygon from points
+ *
+ * @param {MapLocation[]} points - Specifies the points
+ * @param {string} type - Specifies the type
+ * @returns {any} - Specifies the object
  */
-export function findMidPointOfPolygon(points: MapLocation[], type: string): object {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function findMidPointOfPolygon(points: MapLocation[], type: string): any {
     if (!points.length) {
         return null;
     }
-    let min: number = 0;
-    let max: number = points.length;
+    const min: number = 0;
+    const max: number = points.length;
     let startX: number;
     let startY: number;
     let startX1: number;
@@ -1464,7 +1678,7 @@ export function findMidPointOfPolygon(points: MapLocation[], type: string): obje
     let topMaxPoint: MapLocation = { x: 0, y: 0 };
     let height: number = 0;
     for (let i: number = min; i <= max - 1; i++) {
-        let point: MapLocation = points[i];
+        const point: MapLocation = points[i];
         point.y = type === 'Mercator' ? point.y : -(point.y);
         if (point.y > ySum) {
             if (point.x < xSum && xSum - point.x < xSum - bottomMinPoint.x) {
@@ -1502,11 +1716,14 @@ export function findMidPointOfPolygon(points: MapLocation[], type: string): obje
     };
 }
 /**
- * @private
  * Check custom path
+ *
+ * @param {any[]} layerData - Specifies the layer data
+ * @returns {boolean} - Returns the boolean vlue
+ * @private
  */
-/* tslint:disable:no-string-literal */
-export function isCustomPath(layerData: Object[]): boolean {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isCustomPath(layerData: any[]): boolean {
     let customPath: boolean = false;
     if (Object.prototype.toString.call(layerData) === '[object Array]') {
         Array.prototype.forEach.call(layerData, (layer: LayerSettings, index: number) => {
@@ -1519,14 +1736,19 @@ export function isCustomPath(layerData: Object[]): boolean {
 }
 
 /**
- * @private
  * Trim the title text
+ *
+ * @param {number} maxWidth - Specifies the maximum width
+ * @param {string} text - Specifies the text
+ * @param {FontModel} font - Specifies the font
+ * @returns {string} - Returns the string
+ * @private
  */
 export function textTrim(maxWidth: number, text: string, font: FontModel): string {
     let label: string = text;
     let size: number = measureText(text, font).width;
     if (size > maxWidth) {
-        let textLength: number = text.length;
+        const textLength: number = text.length;
         for (let i: number = textLength - 1; i >= 0; --i) {
             label = text.substring(0, i) + '...';
             size = measureText(label, font).width;
@@ -1546,59 +1768,71 @@ export function textTrim(maxWidth: number, text: string, font: FontModel): strin
  */
 
 export function findPosition(location: Rect, alignment: Alignment, textSize: Size, type: string): Point {
-    let x: number; let y: number;
+    let x: number;
     switch (alignment) {
-        case 'Near':
-            x = location.x;
-            break;
-        case 'Center':
-            x = (type === 'title') ? (location.width / 2 - textSize.width / 2) :
-                ((location.x + (location.width / 2)) - textSize.width / 2);
-            break;
-        case 'Far':
-            x = (type === 'title') ? (location.width - location.y - textSize.width) :
-                ((location.x + location.width) - textSize.width);
-            break;
+    case 'Near':
+        x = location.x;
+        break;
+    case 'Center':
+        x = (type === 'title') ? (location.width / 2 - textSize.width / 2) :
+            ((location.x + (location.width / 2)) - textSize.width / 2);
+        break;
+    case 'Far':
+        x = (type === 'title') ? (location.width - location.y - textSize.width) :
+            ((location.x + location.width) - textSize.width);
+        break;
     }
-    y = (type === 'title') ? location.y + (textSize.height / 2) : ((location.y + location.height / 2) + textSize.height / 2);
+    const y: number = (type === 'title') ? location.y + (textSize.height / 2) : ((location.y + location.height / 2) + textSize.height / 2);
     return new Point(x, y);
 }
 /**
  * To remove element by id
+ *
+ * @param {string} id - Specifies the id
+ * @returns {void}
  */
 export function removeElement(id: string): void {
-    let element: Element = document.getElementById(id);
+    const element: Element = document.getElementById(id);
     return element ? remove(element) : null;
 }
 
 /**
- *  To calculate map center position from pixel values
+ * To calculate map center position from pixel values
+ *
+ * @param {Maps} mapObject - Specifies the map object
+ * @param {LayerSettings} layer - Specifies the layer settings
+ * @returns {Point} - Returns the x and y points
  */
 export function calculateCenterFromPixel(mapObject: Maps, layer: LayerSettings): Point {
-    let point1: Point = convertGeoToPoint(
+    const point1: Point = convertGeoToPoint(
         mapObject.minLatOfGivenLocation, mapObject.minLongOfGivenLocation, mapObject.mapLayerPanel.calculateFactor(layer), layer, mapObject);
-    let point2: Point = convertGeoToPoint(
+    const point2: Point = convertGeoToPoint(
         mapObject.maxLatOfGivenLocation, mapObject.maxLongOfGivenLocation, mapObject.mapLayerPanel.calculateFactor(layer), layer, mapObject);
-    let x: number = (point1.x + point2.x) / 2;
-    let y: number = (point1.y + point2.y) / 2;
+    const x: number = (point1.x + point2.x) / 2;
+    const y: number = (point1.y + point2.y) / 2;
     return new Point(x, y);
 }
 
 /**
+ * @param {Maps} mapObject - Specifies the map object
+ * @param {LayerSettings} layer - Specifies the layer settings
+ * @param {boolean} animate - Specifies the boolean value
+ * @returns {any} - Returns the object
  * @private
  */
-export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: boolean): Object {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: boolean): any {
     let zoomFactorValue: number = mapObject.zoomSettings.zoomFactor; let scaleFactor: number;
     let center: CenterPositionModel = mapObject.centerPosition;
     let centerLatitude: number = center.latitude;
     let centerLongitude: number = center.longitude;
-    let checkMethodeZoom: boolean = !isNullOrUndefined(mapObject.centerLatOfGivenLocation) &&
+    const checkMethodeZoom: boolean = !isNullOrUndefined(mapObject.centerLatOfGivenLocation) &&
         !isNullOrUndefined(mapObject.centerLongOfGivenLocation) && mapObject.zoomNotApplied;
     if (isNullOrUndefined(mapObject.mapScaleValue)) {
         mapObject.mapScaleValue = zoomFactorValue;
     }
     if (mapObject.zoomSettings.shouldZoomInitially && mapObject.zoomSettings.enable) {
-        mapObject.mapScaleValue = scaleFactor = zoomFactorValue = ((mapObject.zoomSettings.shouldZoomInitially || mapObject.enablePersistence) && mapObject.scale == 1)
+        mapObject.mapScaleValue = scaleFactor = zoomFactorValue = ((mapObject.zoomSettings.shouldZoomInitially || mapObject.enablePersistence) && mapObject.scale === 1)
             ? mapObject.scale : (isNullOrUndefined(mapObject.markerZoomFactor)) ? 1 : mapObject.markerZoomFactor;
         if (mapObject.mapScaleValue !== mapObject.markerZoomFactor && !mapObject.enablePersistence) {
             mapObject.mapScaleValue = zoomFactorValue = mapObject.markerZoomFactor;
@@ -1611,26 +1845,28 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
     if (checkMethodeZoom) {
         mapObject.mapScaleValue = scaleFactor = zoomFactorValue = mapObject.scaleOfGivenLocation;
     }
-    let min: Object = mapObject.baseMapRectBounds['min'] as Object;
-    let max: Object = mapObject.baseMapRectBounds['max'] as Object;
-    let zoomFactor: number = animate ? 1 : mapObject.mapScaleValue;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const min: any = mapObject.baseMapRectBounds['min'] as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const max: any = mapObject.baseMapRectBounds['max'] as any;
+    const zoomFactor: number = animate ? 1 : mapObject.mapScaleValue;
     if (isNullOrUndefined(mapObject.currentShapeDataLength)) {
-        mapObject.currentShapeDataLength = !isNullOrUndefined(layer.shapeData["features"])
-            ? layer.shapeData["features"].length : layer.shapeData["geometries"].length;
+        mapObject.currentShapeDataLength = !isNullOrUndefined(layer.shapeData['features'])
+            ? layer.shapeData['features'].length : layer.shapeData['geometries'].length;
     }
-    let size: Rect = (mapObject.totalRect && mapObject.legendSettings.visible) ? mapObject.totalRect : mapObject.mapAreaRect;
-    let availSize: Size = mapObject.availableSize;
+    const size: Rect = (mapObject.totalRect && mapObject.legendSettings.visible) ? mapObject.totalRect : mapObject.mapAreaRect;
+    const availSize: Size = mapObject.availableSize;
     let x: number; let y: number;
     let mapWidth: number = Math.abs(max['x'] - min['x']);
     let mapHeight: number = Math.abs(min['y'] - max['y']);
-    let factor: number = animate ? 1 : mapObject.markerZoomFactor === 1 ? mapObject.mapScaleValue : zoomFactorValue;
+    const factor: number = animate ? 1 : mapObject.markerZoomFactor === 1 ? mapObject.mapScaleValue : zoomFactorValue;
     center = mapObject.zoomSettings.shouldZoomInitially
         && mapObject.markerZoomedState && !mapObject.zoomPersistence ? mapObject.markerZoomCenterPoint :
         mapObject.centerPosition;
     if ((!isNullOrUndefined(centerLongitude) && !isNullOrUndefined(centerLatitude)) || checkMethodeZoom) {
-        let leftPosition: number = (((mapWidth + Math.abs(mapObject.mapAreaRect.width - mapWidth)) / 2) + mapObject.mapAreaRect.x) / factor;
-        let topPosition: number = (((mapHeight + Math.abs(mapObject.mapAreaRect.height - mapHeight)) / 2) + mapObject.mapAreaRect.y) / factor;
-        let point: Point = checkMethodeZoom ? calculateCenterFromPixel(mapObject, layer) :
+        const leftPosition: number = (((mapWidth + Math.abs(mapObject.mapAreaRect.width - mapWidth)) / 2) + mapObject.mapAreaRect.x) / factor;
+        const topPosition: number = (((mapHeight + Math.abs(mapObject.mapAreaRect.height - mapHeight)) / 2) + mapObject.mapAreaRect.y) / factor;
+        const point: Point = checkMethodeZoom ? calculateCenterFromPixel(mapObject, layer) :
             convertGeoToPoint(
                 centerLatitude, centerLongitude, mapObject.mapLayerPanel.calculateFactor(layer), layer, mapObject);
         if (isNullOrUndefined(mapObject.previousProjection) || mapObject.previousProjection !== mapObject.projectionType) {
@@ -1658,7 +1894,7 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
             scaleFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
             mapWidth *= scaleFactor;
             mapHeight *= scaleFactor;
-            let widthDiff : number = min['x'] !== 0 && mapObject.translateType === 'layers' ? availSize.width - size.width : 0;
+            const widthDiff : number = min['x'] !== 0 && mapObject.translateType === 'layers' ? availSize.width - size.width : 0;
             x = size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2))) - widthDiff;
             y = size.y + ((-(min['y'])) + ((size.height / 2) - (mapHeight / 2)));
             mapObject.previousTranslate = new Point(x, y);
@@ -1671,9 +1907,9 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
             } else {
                 scaleFactor = mapObject.mapScaleValue < 1 ? mapObject.mapScaleValue + 1 : mapObject.mapScaleValue;
                 mapObject.mapScaleValue = mapObject.zoomSettings.enable && mapObject.mapScaleValue !== 1 ? mapObject.mapScaleValue : 1;
-                if ((mapObject.currentShapeDataLength !== (!isNullOrUndefined(layer.shapeData["features"])
-                    ? layer.shapeData["features"].length : layer.shapeData["geometries"].length)) && layer.type !== 'SubLayer') {
-                    let scale: number = parseFloat(Math.min(size.height / mapHeight, size.width / mapWidth).toFixed(2));
+                if ((mapObject.currentShapeDataLength !== (!isNullOrUndefined(layer.shapeData['features'])
+                    ? layer.shapeData['features'].length : layer.shapeData['geometries'].length)) && layer.type !== 'SubLayer') {
+                    const scale: number = parseFloat(Math.min(size.height / mapHeight, size.width / mapWidth).toFixed(2));
                     mapHeight *= scale; mapWidth *= scale;
                     y = size.y + ((-(min['y'])) + ((size.height / 2)
                         - (mapHeight / 2)));
@@ -1681,15 +1917,15 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
                     x = size.x + ((-(min['x']))
                         + ((size.width / 2) - (mapWidth / 2)));
                 } else if (mapObject.availableSize.height !== mapObject.heightBeforeRefresh || mapObject.widthBeforeRefresh !== mapObject.availableSize.width) {
-                    let cscaleFactor: number = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
+                    const cscaleFactor: number = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
                     let cmapWidth: number = mapWidth; cmapWidth *= cscaleFactor;
                     let cmapHeight: number = mapHeight; cmapHeight *= cscaleFactor;
-                    let x1: number = size.x + ((-(min['x'])) + ((size.width / 2) - (cmapWidth / 2)));
-                    let y1: number = size.y + ((-(min['y'])) + ((size.height / 2) - (cmapHeight / 2)));
-                    let xdiff: number = (mapObject.translatePoint.x - mapObject.previousTranslate.x) / (mapObject.widthBeforeRefresh);
-                    let ydiff: number = (mapObject.translatePoint.y - mapObject.previousTranslate.y) / (mapObject.heightBeforeRefresh);
-                    let actxdiff: number = xdiff * (mapObject.availableSize.width);
-                    let actydiff: number = ydiff * (mapObject.availableSize.height);
+                    const x1: number = size.x + ((-(min['x'])) + ((size.width / 2) - (cmapWidth / 2)));
+                    const y1: number = size.y + ((-(min['y'])) + ((size.height / 2) - (cmapHeight / 2)));
+                    const xdiff: number = (mapObject.translatePoint.x - mapObject.previousTranslate.x) / (mapObject.widthBeforeRefresh);
+                    const ydiff: number = (mapObject.translatePoint.y - mapObject.previousTranslate.y) / (mapObject.heightBeforeRefresh);
+                    const actxdiff: number = xdiff * (mapObject.availableSize.width);
+                    const actydiff: number = ydiff * (mapObject.availableSize.height);
                     x = x1 + actxdiff;
                     y = y1 + actydiff;
                     mapObject.previousTranslate = new Point(x1, y1);
@@ -1712,8 +1948,8 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
         }
     }
     if (!isNullOrUndefined(mapObject.translatePoint)) {
-        x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.x : x;
-        y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.y : y;
+        x = (mapObject.enablePersistence && mapObject.translatePoint.x !== 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.x : x;
+        y = (mapObject.enablePersistence && mapObject.translatePoint.y !== 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.y : y;
     }
     scaleFactor = (mapObject.enablePersistence) ? ((mapObject.mapScaleValue >= 1) ? mapObject.mapScaleValue : 1) : scaleFactor;
     mapObject.widthBeforeRefresh = mapObject.availableSize.width;
@@ -1722,15 +1958,20 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
 }
 
 /**
+ * @param {Maps} mapObject - Specifies the map object
+ * @param {LayerSettings} layer - Specifies the layer
+ * @param {boolean} animate - Specifies the boolean value
+ * @returns {any} - Returns the object.
  * @private
  */
-export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?: boolean): Object {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?: boolean): any {
     let zoomFactorValue: number = mapObject.zoomSettings.zoomFactor;
     let scaleFactor: number;
-    let center: CenterPositionModel = mapObject.centerPosition;
+    const center: CenterPositionModel = mapObject.centerPosition;
     let latitude: number = center.latitude;
     let longitude: number = center.longitude;
-    let checkZoomMethod: boolean = !isNullOrUndefined(mapObject.centerLongOfGivenLocation) &&
+    const checkZoomMethod: boolean = !isNullOrUndefined(mapObject.centerLongOfGivenLocation) &&
         !isNullOrUndefined(mapObject.centerLatOfGivenLocation) && mapObject.zoomNotApplied;
     if (isNullOrUndefined(mapObject.previousCenterLatitude) &&
         isNullOrUndefined(mapObject.previousCenterLongitude)) {
@@ -1749,6 +1990,7 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
     }
     if (isNullOrUndefined(mapObject.mapScaleValue) || (zoomFactorValue > mapObject.mapScaleValue)) {
         if (mapObject.isReset && mapObject.mapScaleValue === 1) {
+            // eslint-disable-next-line no-self-assign
             mapObject.mapScaleValue = mapObject.mapScaleValue;
         } else {
             mapObject.mapScaleValue = zoomFactorValue;
@@ -1759,7 +2001,7 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
         mapObject.mapScaleValue ? mapObject.zoomSettings.zoomFactor :
         mapObject.zoomSettings.zoomFactor !== mapObject.mapScaleValue && !mapObject.centerPositionChanged ? mapObject.mapScaleValue : mapObject.zoomSettings.zoomFactor;
     if (mapObject.zoomSettings.shouldZoomInitially) {
-        mapObject.mapScaleValue = zoomFactorValue = scaleFactor = ((mapObject.enablePersistence || mapObject.zoomSettings.shouldZoomInitially) && mapObject.scale == 1)
+        mapObject.mapScaleValue = zoomFactorValue = scaleFactor = ((mapObject.enablePersistence || mapObject.zoomSettings.shouldZoomInitially) && mapObject.scale === 1)
             ? mapObject.scale : (isNullOrUndefined(mapObject.markerZoomFactor)) ? mapObject.mapScaleValue : mapObject.markerZoomFactor;
         zoomFactorValue = mapObject.mapScaleValue;
         if (!isNullOrUndefined(mapObject.markerCenterLatitude) && !isNullOrUndefined(mapObject.markerCenterLongitude)) {
@@ -1770,16 +2012,18 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
     if (checkZoomMethod) {
         mapObject.mapScaleValue = scaleFactor = zoomFactorValue = mapObject.scaleOfGivenLocation;
     }
-    let zoomFactor: number = animate ? 1 : mapObject.mapScaleValue;
-    let size: Rect = mapObject.mapAreaRect; let x: number; let y: number;
-    let min: Object = mapObject.baseMapRectBounds['min'] as Object;
-    let max: Object = mapObject.baseMapRectBounds['max'] as Object;
-    let factor: number = animate ? 1 : mapObject.mapScaleValue;
-    let mapWidth: number = Math.abs(max['x'] - min['x']); let mapHeight: number = Math.abs(min['y'] - max['y']);
+    const zoomFactor: number = animate ? 1 : mapObject.mapScaleValue;
+    const size: Rect = mapObject.mapAreaRect; let x: number; let y: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const min: any = mapObject.baseMapRectBounds['min'] as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const max: any = mapObject.baseMapRectBounds['max'] as any;
+    const factor: number = animate ? 1 : mapObject.mapScaleValue;
+    const mapWidth: number = Math.abs(max['x'] - min['x']); const mapHeight: number = Math.abs(min['y'] - max['y']);
     if ((!isNullOrUndefined(longitude) && !isNullOrUndefined(latitude)) || checkZoomMethod) {
-        let topPosition: number = ((mapHeight + Math.abs(mapObject.mapAreaRect.height - mapHeight)) / 2) / factor;
-        let leftPosition: number = ((mapWidth + Math.abs(mapObject.mapAreaRect.width - mapWidth)) / 2) / factor;
-        let point: Point = checkZoomMethod ? calculateCenterFromPixel(mapObject, layer) :
+        const topPosition: number = ((mapHeight + Math.abs(mapObject.mapAreaRect.height - mapHeight)) / 2) / factor;
+        const leftPosition: number = ((mapWidth + Math.abs(mapObject.mapAreaRect.width - mapWidth)) / 2) / factor;
+        const point: Point = checkZoomMethod ? calculateCenterFromPixel(mapObject, layer) :
             convertGeoToPoint(
                 latitude, longitude, mapObject.mapLayerPanel.calculateFactor(layer), layer, mapObject);
         if ((!isNullOrUndefined(mapObject.zoomTranslatePoint) || !isNullOrUndefined(mapObject.previousProjection)) && !mapObject.zoomNotApplied) {
@@ -1796,26 +2040,28 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
             y = -point.y + topPosition + mapObject.mapAreaRect.y / zoomFactor;
         }
         if (!isNullOrUndefined(mapObject.translatePoint)) {
-            y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.y : y;
-            x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.x : x;
+            y = (mapObject.enablePersistence && mapObject.translatePoint.y !== 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.y : y;
+            x = (mapObject.enablePersistence && mapObject.translatePoint.x !== 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.x : x;
         }
         scaleFactor = zoomFactorValue !== 0 ? zoomFactorValue : 1;
     } else {
         let zoomFact: number = mapObject.zoomSettings.zoomFactor === 0 ? 1 : mapObject.zoomSettings.zoomFactor;
-        let maxZoomFact: number = 10; zoomFact = zoomFact > maxZoomFact ? maxZoomFact : zoomFact;
+        const maxZoomFact: number = 10; zoomFact = zoomFact > maxZoomFact ? maxZoomFact : zoomFact;
         scaleFactor = zoomFact;
-        let mapScale: number = mapObject.mapScaleValue === 0 ? 1 : mapObject.mapScaleValue > maxZoomFact
+        const mapScale: number = mapObject.mapScaleValue === 0 ? 1 : mapObject.mapScaleValue > maxZoomFact
             ? maxZoomFact : mapObject.mapScaleValue;
         let leftPosition: number = (size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2))));
         let topPosition: number = (size.y + ((-(min['y'])) + ((size.height / 2) - (mapHeight / 2))));
         if (!isNullOrUndefined(mapObject.zoomTranslatePoint) || !isNullOrUndefined(mapObject.previousProjection)) {
             if (mapObject.previousProjection !== mapObject.projectionType) {
-                let previousPositions: Object[] = [];
-                let previousPoints: object = { x: leftPosition, y: topPosition };
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const previousPositions: any[] = [];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                let previousPoints: any = { x: leftPosition, y: topPosition };
                 previousPositions.push(previousPoints);
                 for (let i: number = 1; i < maxZoomFact; i++) {
-                    let translatePointX: number = previousPositions[i - 1]['x'] - (((size.width / (i)) - (size.width / (i + 1))) / 2);
-                    let translatePointY: number = previousPositions[i - 1]['y'] - (((size.height / (i)) - (size.height / (i + 1))) / 2);
+                    const translatePointX: number = previousPositions[i - 1]['x'] - (((size.width / (i)) - (size.width / (i + 1))) / 2);
+                    const translatePointY: number = previousPositions[i - 1]['y'] - (((size.height / (i)) - (size.height / (i + 1))) / 2);
                     previousPoints = { x: translatePointX, y: translatePointY };
                     previousPositions.push(previousPoints);
                 }
@@ -1830,22 +2076,25 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
             }
         }
         if (!isNullOrUndefined(mapObject.translatePoint)) {
-            x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.x : leftPosition;
-            y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.y : topPosition;
+            x = (mapObject.enablePersistence && mapObject.translatePoint.x !== 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.x : leftPosition;
+            y = (mapObject.enablePersistence && mapObject.translatePoint.y !== 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.y : topPosition;
         }
     }
-    scaleFactor = (mapObject.enablePersistence) ? (mapObject.mapScaleValue == 0 ? 1 : mapObject.mapScaleValue) : scaleFactor;
+    scaleFactor = (mapObject.enablePersistence) ? (mapObject.mapScaleValue === 0 ? 1 : mapObject.mapScaleValue) : scaleFactor;
     return { scale: animate ? 1 : scaleFactor, location: new Point(x, y) };
 }
 
 /**
  * To get the html element by specified id
+ *
+ * @param {Maps} map - Specifies the instance of the maps
+ * @returns {void}
  */
 export function fixInitialScaleForTile(map: Maps): void {
     map.tileZoomScale = map.tileZoomLevel = Math.floor(map.availableSize.height / 512) + 1;
-    let padding: number = map.layers[map.baseLayerIndex].layerType !== 'GoogleStaticMap' ?
+    const padding: number = map.layers[map.baseLayerIndex].layerType !== 'GoogleStaticMap' ?
         20 : 0;
-    let totalSize: number = Math.pow(2, map.tileZoomLevel) * 256;
+    const totalSize: number = Math.pow(2, map.tileZoomLevel) * 256;
     map.tileTranslatePoint.x = (map.availableSize.width / 2) - (totalSize / 2);
     map.tileTranslatePoint.y = (map.availableSize.height / 2) - (totalSize / 2) + padding;
     map.previousTileWidth = map.availableSize.width;
@@ -1854,12 +2103,19 @@ export function fixInitialScaleForTile(map: Maps): void {
 
 /**
  * To get the html element by specified id
+ *
+ * @param {string} id - Specifies the id
+ * @returns {Element} - Returns the element
  */
 export function getElementByID(id: string): Element {
     return document.getElementById(id);
 }
 /**
  * To apply internalization
+ *
+ * @param {Maps} maps - Specifies the instance of the maps
+ * @param {number} value - Specifies the value
+ * @returns {string} - Returns the string
  */
 export function Internalize(maps: Maps, value: number): string {
     maps.formatFunction =
@@ -1868,13 +2124,18 @@ export function Internalize(maps: Maps, value: number): string {
 }
 
 /**
- * Function     to compile the template function for maps.
- * @returns Function
+ * Function to compile the template function for maps.
+ *
+ * @param {string} template - Specifies the template
+ * @returns {Function} - Returns the function
  * @private
  */
-export function getTemplateFunction(template: string): Function {
-    let templateFn: Function = null;
-    let e: Object;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getTemplateFunction(template: string): any {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let templateFn: any = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let e: any;
     try {
         if (document.querySelectorAll(template).length) {
             templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
@@ -1886,7 +2147,9 @@ export function getTemplateFunction(template: string): Function {
 }
 /**
  * Function to get element from id.
- * @returns Element
+ *
+ * @param {string} id - Specifies the id
+ * @returns {Element} - Returns the element
  * @private
  */
 export function getElement(id: string): Element {
@@ -1895,39 +2158,54 @@ export function getElement(id: string): Element {
 
 /**
  * Function to get shape data using target id
+ *
+ * @param {string} targetId - Specifies the target id
+ * @param {Maps} map - Specifies the instance of the maps
+ * @returns {any} - Returns the object
  */
-export function getShapeData(targetId: string, map: Maps): { shapeData: object, data: object } {
-    let layerIndex: number = parseInt(targetId.split('_LayerIndex_')[1].split('_')[0], 10);
-    let shapeIndex: number = parseInt(targetId.split('_shapeIndex_')[1].split('_')[0], 10);
-    let layer: LayerSettings = map.layersCollection[layerIndex] as LayerSettings;
-    let shapeData: Object = layer.layerData[shapeIndex]['property'];
-    let data: object;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getShapeData(targetId: string, map: Maps): { shapeData: any, data: any } {
+    const layerIndex: number = parseInt(targetId.split('_LayerIndex_')[1].split('_')[0], 10);
+    const shapeIndex: number = parseInt(targetId.split('_shapeIndex_')[1].split('_')[0], 10);
+    const layer: LayerSettings = map.layersCollection[layerIndex] as LayerSettings;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const shapeData: any = layer.layerData[shapeIndex]['property'];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let data: any;
     if (layer.dataSource) {
-        data = layer.dataSource[checkShapeDataFields(<Object[]>layer.dataSource, shapeData, layer.shapeDataPath, layer.shapePropertyPath,
-            layer)];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data = layer.dataSource[checkShapeDataFields(<any[]>layer.dataSource, shapeData, layer.shapeDataPath, layer.shapePropertyPath,
+                                                     layer)];
     }
     return { shapeData: shapeData, data: data };
 }
 /**
  * Function to trigger shapeSelected event
+ *
+ * @param {string} targetId - Specifies the target id
+ * @param {SelectionSettingsModel} selection - Specifies the selection
+ * @param {Maps} maps - Specifies the instance of the maps
+ * @param {string} eventName - Specifies the event name
+ * @returns {IShapeSelectedEventArgs} - Returns the event args
  * @private
  */
 export function triggerShapeEvent(
-  targetId: string, selection: SelectionSettingsModel, maps: Maps, eventName: string
+    targetId: string, selection: SelectionSettingsModel, maps: Maps, eventName: string
 ): IShapeSelectedEventArgs {
-  let shape: { shapeData: object, data: object } = getShapeData(targetId, maps);
-  let eventArgs: IShapeSelectedEventArgs = (selection.enableMultiSelect) ? {
-      cancel: false,
-      name: eventName,
-      fill: selection.fill,
-      opacity: selection.opacity,
-      border: selection.border,
-      shapeData: shape.shapeData,
-      data: shape.data,
-      target: targetId,
-      maps: maps,
-      shapeDataCollection: maps.shapeSelectionItem
-  } : {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const shape: { shapeData: any, data: any } = getShapeData(targetId, maps);
+    let eventArgs: IShapeSelectedEventArgs = (selection.enableMultiSelect) ? {
+        cancel: false,
+        name: eventName,
+        fill: selection.fill,
+        opacity: selection.opacity,
+        border: selection.border,
+        shapeData: shape.shapeData,
+        data: shape.data,
+        target: targetId,
+        maps: maps,
+        shapeDataCollection: maps.shapeSelectionItem
+    } : {
         cancel: false,
         name: eventName,
         fill: selection.fill,
@@ -1938,16 +2216,19 @@ export function triggerShapeEvent(
         target: targetId,
         maps: maps
     };
-  if (maps.isBlazor) {
-      const { maps, shapeData, ...blazorEventArgs }: IShapeSelectedEventArgs = eventArgs;
-      eventArgs = blazorEventArgs;
-  }
-  maps.trigger(eventName, eventArgs);
-  return eventArgs;
+    if (maps.isBlazor) {
+        const { maps, shapeData, ...blazorEventArgs }: IShapeSelectedEventArgs = eventArgs;
+        eventArgs = blazorEventArgs;
+    }
+    maps.trigger(eventName, eventArgs);
+    return eventArgs;
 }
 
 /**
  * Function to get elements using class name
+ *
+ * @param {string} className - Specifies the class name
+ * @returns {HTMLCollectionOf<Element>} - Returns the collection
  */
 export function getElementsByClassName(className: string): HTMLCollectionOf<Element> {
     return document.getElementsByClassName(className);
@@ -1960,6 +2241,10 @@ export function getElementsByClassName(className: string): HTMLCollectionOf<Elem
 // }
 /**
  * Function to get elements using querySelector
+ *
+ * @param {string} args - Specifies the args
+ * @param {string} elementSelector - Specifies the element selector
+ * @returns {Element} - Returns the element
  */
 export function querySelector(args: string, elementSelector: string): Element {
     let targetEle: Element = null;
@@ -1970,25 +2255,37 @@ export function querySelector(args: string, elementSelector: string): Element {
 }
 /**
  * Function to get the element for selection and highlight using public method
+ *
+ * @param {number} layerIndex - Specifies the layer index
+ * @param {string} name - Specifies the layer name
+ * @param {boolean} enable - Specifies the boolean value
+ * @param {Maps} map - Specifies the instance of the maps
+ * @returns {Element} - Returns the element
  */
 export function getTargetElement(layerIndex: number, name: string, enable: boolean, map: Maps): Element {
     let shapeIndex: number;
     let targetId: string;
-    let targetEle: Element;
-    let shapeData: Object[] = <Object[]>map.layers[layerIndex].shapeData['features'];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const shapeData: any[] = <any[]>map.layers[layerIndex].shapeData['features'];
     for (let i: number = 0; i < shapeData.length; i++) {
         if (shapeData[i]['properties'].name === name) {
             targetId = map.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_undefined';
             break;
         }
     }
-    targetEle = getElement(targetId);
+    const targetEle: Element = getElement(targetId);
     return targetEle;
 }
 /**
  * Function to create style element for highlight and selection
+ *
+ * @param {string} id - Specifies the id
+ * @param {string} className - Specifies the class name
+ * @param {IShapeSelectedEventArgs | any} eventArgs - Specifies the event args
+ * @returns {Element} - Returns the element
  */
-export function createStyle(id: string, className: string, eventArgs: IShapeSelectedEventArgs | Object): Element {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function createStyle(id: string, className: string, eventArgs: IShapeSelectedEventArgs | any): Element {
     return createElement('style', {
         id: id, innerHTML: '.' + className + '{fill:'
             + eventArgs['fill'] + ';' + 'opacity:' + (eventArgs['opacity']).toString() + ';' +
@@ -1998,25 +2295,41 @@ export function createStyle(id: string, className: string, eventArgs: IShapeSele
 }
 /**
  * Function to customize the style for highlight and selection
+ *
+ * @param {string} id - Specifies the id
+ * @param {string} className - Specifies the class name
+ * @param {IShapeSelectedEventArgs | any} eventArgs - Specifies the event args
+ * @returns {void}
  */
-export function customizeStyle(id: string, className: string, eventArgs: IShapeSelectedEventArgs | Object): void {
-    let styleEle: Element = getElement(id);
-    styleEle.innerHTML = '.' + className + '{fill:'
-        + eventArgs['fill'] + ';' + 'opacity:' + (eventArgs['opacity']).toString() + ';' +
-        'stroke-width:' + (eventArgs['border']['width']).toString() + ';' +
-        'stroke:' + eventArgs['border']['color'] + '}';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function customizeStyle(id: string, className: string, eventArgs: IShapeSelectedEventArgs | any): void {
+    const styleEle: Element = getElement(id);
+    if (!isNullOrUndefined(styleEle)) {
+        styleEle.innerHTML = '.' + className + '{fill:'
+            + eventArgs['fill'] + ';' + 'opacity:' + (eventArgs['opacity']).toString() + ';' +
+            'stroke-width:' + (eventArgs['border']['width']).toString() + ';' +
+            'stroke:' + eventArgs['border']['color'] + '}';
+    }
 }
 
 /**
  * Function to trigger itemSelection event for legend selection and public method
+ *
+ * @param {SelectionSettingsModel} selectionSettings - Specifies the selection settings
+ * @param {Maps} map - Specifies the instance of the maps
+ * @param {Element} targetElement - Specifies the target element
+ * @param {any} shapeData - Specifies the shape data
+ * @param {any} data - Specifies the data
+ * @returns {void}
  */
 export function triggerItemSelectionEvent(selectionSettings: SelectionSettingsModel, map: Maps, targetElement: Element,
-    shapeData: object, data: object): void {
-    let border: BorderModel = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                          shapeData: any, data: any): void {
+    const border: BorderModel = {
         color: selectionSettings.border.color,
         width: selectionSettings.border.width / map.scale
     };
-    let eventArgs: ISelectionEventArgs = {
+    const eventArgs: ISelectionEventArgs = {
         opacity: selectionSettings.opacity,
         fill: selectionSettings.fill,
         border: border,
@@ -2026,12 +2339,12 @@ export function triggerItemSelectionEvent(selectionSettings: SelectionSettingsMo
         shapeData: shapeData,
         data: data,
         maps: map
-    };    
+    };
     map.trigger('itemSelection', eventArgs, (observedArgs: ISelectionEventArgs) => {
         map.shapeSelectionItem.push(eventArgs.shapeData);
         if (!getElement('ShapeselectionMap')) {
             document.body.appendChild(createStyle('ShapeselectionMap',
-                'ShapeselectionMapStyle', eventArgs));
+                                                  'ShapeselectionMapStyle', eventArgs));
         } else {
             customizeStyle('ShapeselectionMap', 'ShapeselectionMapStyle', eventArgs);
         }
@@ -2040,12 +2353,16 @@ export function triggerItemSelectionEvent(selectionSettings: SelectionSettingsMo
 
 /**
  * Function to remove class from element
+ *
+ * @param {Element} element - Specifies the element
+ * @returns {void}
  */
 export function removeClass(element: Element): void {
     element.removeAttribute('class');
 }
 /**
  * Animation Effect Calculation End
+ *
  * @private
  */
 
@@ -2053,10 +2370,10 @@ export function elementAnimate(
     element: Element, delay: number, duration: number, point: MapLocation, maps: Maps,
     ele?: string, radius: number = 0
 ): void {
-    let centerX: number = point.x;
-    let centerY: number = point.y;
+    const centerX: number = point.x;
+    const centerY: number = point.y;
     let height: number = 0;
-    let transform: string = element.getAttribute('transform') || '';
+    const transform: string = element.getAttribute('transform') || '';
     new Animation({}).animate(<HTMLElement>element, {
         duration: duration,
         delay: delay,
@@ -2073,7 +2390,7 @@ export function elementAnimate(
             if (!ele) {
                 return;
             }
-            let event: IAnimationCompleteEventArgs = {
+            const event: IAnimationCompleteEventArgs = {
                 cancel: false, name: animationComplete, element: ele, maps: !maps.isBlazor ? maps : null
             };
             maps.trigger(animationComplete, event);
@@ -2087,7 +2404,7 @@ export function showTooltip(
     text: string, size: string, x: number, y: number, areaWidth: number, areaHeight: number, id: string, element: Element,
     isTouch?: boolean
 ): void {
-    let location : MapLocation = getMousePosition(x, y, element);
+    const location : MapLocation = getMousePosition(x, y, element);
     if (!isNullOrUndefined(location)) {
         x = location.x;
         y = location.y;
@@ -2097,7 +2414,7 @@ export function showTooltip(
         fontFamily: 'Segoe UI', size: '8px',
         fontStyle: 'Normal', fontWeight: 'Regular'
     }).width;
-    let str: string[] = text.split(' ');
+    const str: string[] = text.split(' ');
     let demo: number = str[0].length;
     for (let i: number = 1; i < str.length; i++) {
         if (demo < str[i].length) {
@@ -2113,6 +2430,7 @@ export function showTooltip(
         });
     }
     if (x < (areaWidth - width)) {
+        // eslint-disable-next-line no-self-assign
         x = x;
     } else if (x > (areaWidth - width) && x < areaWidth - (demo * 8)) {
         width = (areaWidth - x);
@@ -2124,9 +2442,9 @@ export function showTooltip(
             x = 0;
         }
     }
-    let size1: string[] = size.split('px');
+    const size1: string[] = size.split('px');
     wordWrap(tooltip, text, x, y, size1, width, areaWidth, element);
-    let height: number = tooltip.clientHeight;
+    const height: number = tooltip.clientHeight;
     if ((height + parseInt(size1[0], 10) * 2) > areaHeight) {
         width = x;
         x = 0;
@@ -2143,7 +2461,7 @@ export function wordWrap(
 ): void {
     tooltip.innerHTML = text;
     tooltip.style.top = tooltip.id.indexOf('_Legend') !== -1 ?
-    (parseInt(size1[0], 10) + y).toString() + 'px' : (parseInt(size1[0], 10) * 2).toString() + 'px';
+        (parseInt(size1[0], 10) + y).toString() + 'px' : (parseInt(size1[0], 10) * 2).toString() + 'px';
     tooltip.style.left = (x).toString() + 'px';
     tooltip.style.width = width.toString() + 'px';
     tooltip.style.maxWidth = (areaWidth).toString() + 'px';
@@ -2179,10 +2497,18 @@ export function wordWrap(
 //     return touchList;
 // }
 
-/** @private */
+/**
+ * @param {string} id - Specifies the id
+ * @param {string} text - Specifies the text
+ * @param {string} top - Specifies the top
+ * @param {string} left - Specifies the left
+ * @param {string} fontSize - Specifies the fontSize
+ * @returns {void}
+ * @private
+ */
 export function createTooltip(id: string, text: string, top: number, left: number, fontSize: string): void {
     let tooltip: HTMLElement = getElement(id) as HTMLElement;
-    let style: string = 'top:' + top.toString() + 'px;' +
+    const style: string = 'top:' + top.toString() + 'px;' +
         'left:' + left.toString() + 'px;' +
         'color: #000000; ' +
         'background:' + '#FFFFFF' + ';' +
@@ -2198,105 +2524,122 @@ export function createTooltip(id: string, text: string, top: number, left: numbe
     }
 }
 
-/** @private */
+/**
+ * @param {Point} location - Specifies the location
+ * @param {string} shape - Specifies the shape
+ * @param {Size} size - Specifies the size
+ * @param {string} url - Specifies the url
+ * @param {PathOption} options - Specifies the options
+ * @returns {Element} - Returns the element
+ * @private
+ */
 export function drawSymbol(location: Point, shape: string, size: Size, url: string, options: PathOption): Element {
-    let functionName: string = 'Path';
-    let renderer: SvgRenderer = new SvgRenderer('');
-    let temp: IShapes = renderLegendShape(location, size, shape, options, url);
-    let htmlObject: Element = renderer['draw' + temp.functionName](temp.renderOption);
+    const functionName: string = 'Path';
+    const renderer: SvgRenderer = new SvgRenderer('');
+    const temp: IShapes = renderLegendShape(location, size, shape, options, url);
+    const htmlObject: Element = renderer['draw' + temp.functionName](temp.renderOption);
     return htmlObject;
 }
 
 
-/** @private */
+/**
+ * @param {MapLocation} location - Specifies the location
+ * @param {Size} size - Specifies the size
+ * @param {string} shape - Specifies the shape
+ * @param {PathOption} options - Specifies the path options
+ * @param {string} url - Specifies the url
+ * @returns {IShapes} - Returns the shapes
+ * @private
+ */
 export function renderLegendShape(location: MapLocation, size: Size, shape: string, options: PathOption, url: string): IShapes {
     let renderPath: string;
     let functionName: string = 'Path';
-    let shapeWidth: number = size.width;
-    let shapeHeight: number = size.height;
-    let shapeX: number = location.x;
-    let shapeY: number = location.y;
-    let x: number = location.x + (-shapeWidth / 2);
-    let y: number = location.y + (-shapeHeight / 2);
+    const shapeWidth: number = size.width;
+    const shapeHeight: number = size.height;
+    const shapeX: number = location.x;
+    const shapeY: number = location.y;
+    const x: number = location.x + (-shapeWidth / 2);
+    const y: number = location.y + (-shapeHeight / 2);
     switch (shape) {
-        case 'Circle':
-        case 'Bubble':
-            functionName = 'Ellipse';
-            merge(options, { 'rx': shapeWidth / 2, 'ry': shapeHeight / 2, 'cx': shapeX, 'cy': shapeY });
-            break;
-        case 'VerticalLine':
-            renderPath = 'M' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' + 'L' + ' ' + shapeX + ' '
-                + (shapeY + (-shapeHeight / 2));
-            merge(options, { 'd': renderPath });
-            break;
-        case 'Diamond':
-            renderPath = 'M' + ' ' + x + ' ' + shapeY + ' ' +
-                'L' + ' ' + shapeX + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
-                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + shapeY + ' ' +
-                'L' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + shapeY + ' z';
-            merge(options, { 'd': renderPath });
-            break;
-        case 'Rectangle':
-            renderPath = 'M' + ' ' + x + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
-                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
-                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (shapeY + (-shapeHeight / 2)) + ' z';
-            merge(options, { 'd': renderPath });
-            break;
-        case 'Triangle':
-            renderPath = 'M' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + shapeX + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
-                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' z';
-            merge(options, { 'd': renderPath });
-            break;
-        case 'InvertedTriangle':
-            renderPath = 'M' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + (shapeX - (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' z';
-            merge(options, { 'd': renderPath });
-            break;
-        case 'Pentagon':
-            let eq: number = 72;
-            let xValue: number;
-            let yValue: number;
-            for (let i: number = 0; i <= 5; i++) {
-                xValue = (shapeWidth / 2) * Math.cos((Math.PI / 180) * (i * eq));
-                yValue = (shapeWidth / 2) * Math.sin((Math.PI / 180) * (i * eq));
-                if (i === 0) {
-                    renderPath = 'M' + ' ' + (shapeX + xValue) + ' ' + (shapeY + yValue) + ' ';
-                } else {
-                    renderPath = renderPath.concat('L' + ' ' + (shapeX + xValue) + ' ' + (shapeY + yValue) + ' ');
-                }
+    case 'Circle':
+    case 'Bubble':
+        functionName = 'Ellipse';
+        merge(options, { 'rx': shapeWidth / 2, 'ry': shapeHeight / 2, 'cx': shapeX, 'cy': shapeY });
+        break;
+    case 'VerticalLine':
+        renderPath = 'M' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' + 'L' + ' ' + shapeX + ' '
+            + (shapeY + (-shapeHeight / 2));
+        merge(options, { 'd': renderPath });
+        break;
+    case 'Diamond':
+        renderPath = 'M' + ' ' + x + ' ' + shapeY + ' ' +
+            'L' + ' ' + shapeX + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
+            'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + shapeY + ' ' +
+            'L' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + x + ' ' + shapeY + ' z';
+        merge(options, { 'd': renderPath });
+        break;
+    case 'Rectangle':
+        renderPath = 'M' + ' ' + x + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
+            'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
+            'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + x + ' ' + (shapeY + (-shapeHeight / 2)) + ' z';
+        merge(options, { 'd': renderPath });
+        break;
+    case 'Triangle':
+        renderPath = 'M' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + shapeX + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
+            'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' z';
+        merge(options, { 'd': renderPath });
+        break;
+    case 'InvertedTriangle':
+        renderPath = 'M' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + (shapeX - (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' z';
+        merge(options, { 'd': renderPath });
+        break;
+    case 'Pentagon':
+        // eslint-disable-next-line no-case-declarations
+        const eq: number = 72; let xValue: number; let yValue: number;
+        // eslint-disable-next-line no-case-declarations
+        for (let i: number = 0; i <= 5; i++) {
+            xValue = (shapeWidth / 2) * Math.cos((Math.PI / 180) * (i * eq));
+            yValue = (shapeWidth / 2) * Math.sin((Math.PI / 180) * (i * eq));
+            if (i === 0) {
+                renderPath = 'M' + ' ' + (shapeX + xValue) + ' ' + (shapeY + yValue) + ' ';
+            } else {
+                renderPath = renderPath.concat('L' + ' ' + (shapeX + xValue) + ' ' + (shapeY + yValue) + ' ');
             }
-            renderPath = renderPath.concat('Z');
-            merge(options, { 'd': renderPath });
-            break;
-        case 'Star':
-            renderPath = 'M ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + (location.x - size.width / 2)
-                + ' ' + (location.y + size.height / 6) + ' L ' + (location.x + size.width / 2) + ' ' + (location.y + size.height / 6)
-                + ' L ' + (location.x - size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + location.x + ' ' +
-                (location.y + size.height / 2) + ' L ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' Z';
-            merge(options, { 'd': renderPath });
-            break;
-        case 'Cross':
-            renderPath = 'M' + ' ' + x + ' ' + shapeY + ' ' + 'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + shapeY + ' ' +
-                'M' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' + 'L' + ' ' + shapeX + ' ' +
-                (shapeY + (-shapeHeight / 2));
-            merge(options, { 'd': renderPath });
-            break;
-        case 'Image':
-            functionName = 'Image';
-            merge(options, { 'href': url, 'height': shapeHeight, 'width': shapeWidth, x: x, y: y });
-            break;
+        }
+        renderPath = renderPath.concat('Z');
+        merge(options, { 'd': renderPath });
+        break;
+    case 'Star':
+        renderPath = 'M ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + (location.x - size.width / 2)
+            + ' ' + (location.y + size.height / 6) + ' L ' + (location.x + size.width / 2) + ' ' + (location.y + size.height / 6)
+            + ' L ' + (location.x - size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + location.x + ' ' +
+            (location.y + size.height / 2) + ' L ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' Z';
+        merge(options, { 'd': renderPath });
+        break;
+    case 'Cross':
+        renderPath = 'M' + ' ' + x + ' ' + shapeY + ' ' + 'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + shapeY + ' ' +
+            'M' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' + 'L' + ' ' + shapeX + ' ' +
+            (shapeY + (-shapeHeight / 2));
+        merge(options, { 'd': renderPath });
+        break;
+    case 'Image':
+        functionName = 'Image';
+        merge(options, { 'href': url, 'height': shapeHeight, 'width': shapeWidth, x: x, y: y });
+        break;
     }
     return { renderOption: options, functionName: functionName };
 }
 /**
  * Animation Effect Calculation End
+ *
  * @private
  */
 
@@ -2319,17 +2662,28 @@ export function renderLegendShape(location: MapLocation, size: Size, shape: stri
 //     });
 // }
 
-/** @private */
+/**
+ * @param {HTMLElement} childElement - Specifies the child element
+ * @param {HTMLElement} parentElement - Specifies the parent element
+ * @returns {Size} - Returns the size
+ * @private
+ */
 export function getElementOffset(childElement: HTMLElement, parentElement: HTMLElement): Size {
-    let width: number; let height: number;
     parentElement.appendChild(childElement);
-    width = childElement.offsetWidth;
-    height = childElement.offsetHeight;
+    const width: number = childElement.offsetWidth;
+    const height: number = childElement.offsetHeight;
     parentElement.removeChild(childElement);
     return new Size(width, height);
 }
 
-/** @private */
+/**
+ * @param {Element} element - Specifies the element
+ * @param {number} index - Specifies the element
+ * @param {number} scale - Specifies the scale
+ * @param {Maps} maps - Specifies the instance of the maps
+ * @returns {void}
+ * @private
+ */
 export function changeBorderWidth(element: Element, index: number, scale: number, maps: Maps): void {
     let childNode: HTMLElement;
     for (let l: number = 0; l < element.childElementCount; l++) {
@@ -2339,10 +2693,12 @@ export function changeBorderWidth(element: Element, index: number, scale: number
         } else {
             let currentStroke: number;
             let value: number = 0;
-            let borderWidthValue = maps.layersCollection[index].shapeSettings.borderWidthValuePath;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const borderWidthValue: any = maps.layersCollection[index].shapeSettings.borderWidthValuePath;
             if (maps.layersCollection[index].shapeSettings.borderWidthValuePath) {
                 value = checkShapeDataFields(
-                    <Object[]>maps.layersCollection[index].dataSource, maps.layersCollection[index].layerData[l]['property'],
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    <any[]>maps.layersCollection[index].dataSource, maps.layersCollection[index].layerData[l]['property'],
                     maps.layersCollection[index].shapeDataPath, maps.layersCollection[index].shapePropertyPath, maps.layersCollection[index]
                 );
                 if (value !== null) {
@@ -2360,13 +2716,20 @@ export function changeBorderWidth(element: Element, index: number, scale: number
     }
 }
 
-/** @private */
+/**
+ * @param {Element} element - Specifies the element
+ * @param {number} index - Specifies the element
+ * @param {number} scale - Specifies the scale
+ * @param {Maps} maps - Specifies the instance of the maps
+ * @returns {void}
+ * @private
+ */
 export function changeNavaigationLineWidth(element: Element, index: number, scale: number, maps: Maps): void {
     let node: HTMLElement;
     for (let m: number = 0; m < element.childElementCount; m++) {
         node = element.childNodes[m] as HTMLElement;
         if (node.tagName === 'path') {
-            let currentStroke: number = ((<LayerSettingsModel>maps.layersCollection[index])
+            const currentStroke: number = ((<LayerSettingsModel>maps.layersCollection[index])
                 .navigationLineSettings[parseFloat(node.id.split('_NavigationIndex_')[1].split('_')[0])].width);
             node.setAttribute('stroke-width', (currentStroke / scale).toString());
         }
@@ -2375,58 +2738,89 @@ export function changeNavaigationLineWidth(element: Element, index: number, scal
 
 // /** Pinch zoom helper methods */
 
-/** @private */
+/**
+ * @param {PointerEvent | TouchEvent} event - Specifies the pointer or touch event
+ * @returns {ITouches[]} - Returns the target
+ * @private */
 export function targetTouches(event: PointerEvent | TouchEvent): ITouches[] {
-    let targetTouches: ITouches[] = [];
-    let touches: TouchList = (<TouchEvent & PointerEvent>event).touches;
+    const targetTouches: ITouches[] = [];
+    const touches: TouchList = (<TouchEvent & PointerEvent>event).touches;
     for (let i: number = 0; i < touches.length; i++) {
         targetTouches.push({ pageX: touches[i].pageX, pageY: touches[i].pageY });
     }
     return targetTouches;
 }
 
-/** @private */
+/**
+ * @param {ITouches[]} startTouches - Specifies the start touches
+ * @param {ITouches[]} endTouches - Specifies the end touches
+ * @returns {number} - Returns the number
+ * @private
+ */
 export function calculateScale(startTouches: ITouches[], endTouches: ITouches[]): number {
-    let startDistance: number = getDistance(startTouches[0], startTouches[1]);
-    let endDistance: number = getDistance(endTouches[0], endTouches[1]);
+    const startDistance: number = getDistance(startTouches[0], startTouches[1]);
+    const endDistance: number = getDistance(endTouches[0], endTouches[1]);
     return (endDistance / startDistance);
 }
 
-/** @private */
+/**
+ * @param {ITouches} a - Specifies the a value
+ * @param {ITouches} b - Specifies the b value
+ * @returns {number} - Returns the number
+ * @private */
 export function getDistance(a: ITouches, b: ITouches): number {
-    let x: number = a.pageX - b.pageX;
-    let y: number = a.pageY - b.pageY;
+    const x: number = a.pageX - b.pageX;
+    const y: number = a.pageY - b.pageY;
     return Math.sqrt(x * x + y * y);
 }
 
-/** @private */
-export function getTouches(touches: ITouches[], maps: Maps): Object[] {
-    let rect: ClientRect = maps.element.getBoundingClientRect();
-    let posTop: number = rect.top + document.defaultView.pageXOffset;
-    let posLeft: number = rect.left + document.defaultView.pageYOffset;
+/**
+ * @param {ITouches[]} touches - Specifies the touches
+ * @param {Maps} maps - Specifies the instance of the maps
+ * @returns {any[]} - Returns the object
+ * @private
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getTouches(touches: ITouches[], maps: Maps): any[] {
+    const rect: ClientRect = maps.element.getBoundingClientRect();
+    const posTop: number = rect.top + document.defaultView.pageXOffset;
+    const posLeft: number = rect.left + document.defaultView.pageYOffset;
     return Array.prototype.slice.call(touches).map((touch: ITouches) => {
         return {
             x: touch.pageX - posLeft,
-            y: touch.pageY - posTop,
+            y: touch.pageY - posTop
         };
     });
 }
 
-/** @private */
-export function getTouchCenter(touches: Object[]): Point {
+/**
+ * @param {any[]} touches - Specifies the touches
+ * @returns {Point} - Returns the point
+ * @private
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getTouchCenter(touches: any[]): Point {
     return {
-        x: touches.map((e: Object) => { return e['x']; }).reduce(sum) / touches.length,
-        y: touches.map((e: Object) => { return e['y']; }).reduce(sum) / touches.length
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        x: touches.map((e: any) => { return e['x']; }).reduce(sum) / touches.length,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        y: touches.map((e: any) => { return e['y']; }).reduce(sum) / touches.length
     };
 }
 
-/** @private */
+/**
+ * @param {number} a - Specifies a value
+ * @param {number} b - Specifies b value
+ * @returns {number} - Returns the sum of a and b
+ * @private
+ */
 export function sum(a: number, b: number): number {
     return a + b;
 }
 
 /**
  * Animation Effect Calculation End
+ *
  * @private
  */
 
@@ -2435,31 +2829,33 @@ export function zoomAnimate(
     maps: Maps
 ): void {
     let delta: number = 0;
-    let previousLocation: MapLocation = maps.previousPoint;
-    let preScale: number = maps.previousScale;
-    let diffScale: number = scale - preScale;
-    let currentLocation: MapLocation = new MapLocation(0, 0);
+    const previousLocation: MapLocation = maps.previousPoint;
+    const preScale: number = maps.previousScale;
+    const diffScale: number = scale - preScale;
+    const currentLocation: MapLocation = new MapLocation(0, 0);
     let currentScale: number = 1;
     if (scale === preScale) {
         element.setAttribute('transform', 'scale( ' + (scale) + ' ) translate( ' + point.x + ' ' + point.y + ' )');
         return;
     }
-    let slope: Function = (previousLocation: MapLocation, point: MapLocation): number => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const slope: any = (previousLocation: MapLocation, point: MapLocation): number => {
         if (previousLocation.x === point.x) {
             return null;
         }
         return (point.y - previousLocation.y) / (point.x - previousLocation.x);
     };
-    let intercept: Function = (point: MapLocation, slopeValue: number): number => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const intercept: any = (point: MapLocation, slopeValue: number): number => {
         if (slopeValue === null) {
             return point.x;
         }
         return point.y - slopeValue * point.x;
     };
-    let slopeFactor: number = slope(previousLocation, point);
-    let slopeIntersection: number = intercept(previousLocation, slopeFactor);
-    let horizontalDifference: number = point.x - previousLocation.x;
-    let verticalDifference: number = point.y - previousLocation.y;
+    const slopeFactor: number = slope(previousLocation, point);
+    const slopeIntersection: number = intercept(previousLocation, slopeFactor);
+    const horizontalDifference: number = point.x - previousLocation.x;
+    const verticalDifference: number = point.y - previousLocation.y;
     animate(
         <HTMLElement>element, delay, duration,
         (args: AnimationOptions): void => {
@@ -2489,14 +2885,23 @@ export function zoomAnimate(
 }
 /**
  * To process custom animation
+ *
+ * @param {Element} element - Specifies the element
+ * @param {number} delay - Specifies the delay
+ * @param {number} duration - Specifies the duration
+ * @param {Function} process - Specifies the process
+ * @param {Function} end - Specifies the end
+ * @returns {void}
  */
-export function animate(element: Element, delay: number, duration: number, process: Function, end: Function): void {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function animate(element: Element, delay: number, duration: number, process: any, end: any): void {
     let start: number = null;
+    // eslint-disable-next-line prefer-const
     let clearAnimation: number;
-    let markerStyle: string = 'visibility:visible';
-    let startAnimation: FrameRequestCallback = (timestamp: number) => {
+    const markerStyle: string = 'visibility:visible';
+    const startAnimation: FrameRequestCallback = (timestamp: number) => {
         if (!start) { start = timestamp; }
-        let progress: number = timestamp - start;
+        const progress: number = timestamp - start;
         if (progress < duration) {
             process.call(this, { element: element, delay: 0, timeStamp: progress, duration: duration });
             window.requestAnimationFrame(startAnimation);
@@ -2515,7 +2920,8 @@ export class MapAjax {
     /**
      * MapAjax data options
      */
-    public dataOptions: string | Object;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public dataOptions: string | any;
     /**
      * MapAjax type value
      */
@@ -2531,8 +2937,10 @@ export class MapAjax {
     /**
      * MapAjax sendData value
      */
-    public sendData: string | Object;
-    constructor(options: string | Object, type?: string, async?: boolean, contentType?: string, sendData?: string | Object) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public sendData: string | any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    constructor(options: string | any, type?: string, async?: boolean, contentType?: string, sendData?: string | any) {
         this.dataOptions = options;
         this.type = type || 'GET';
         this.async = async || true;
@@ -2543,16 +2951,22 @@ export class MapAjax {
 
 /**
  * Animation Translate
+ *
+ * @param {Element} element - Specifies the element
+ * @param {number} delay - Specifies the delay
+ * @param {number} duration - Specifies the duration
+ * @param {MapLocation} point - Specifies the location
+ * @returns {void}
  * @private
  */
 export function smoothTranslate(element: Element, delay: number, duration: number, point: MapLocation): void {
     let delta: number = 0;
-    let transform: string[] = element.getAttribute('transform').split(' ');
+    const transform: string[] = element.getAttribute('transform').split(' ');
     if (transform.length === 2) { transform[2] = transform[1].split(')')[0]; transform[1] = transform[0].split('(')[1]; }
-    let previousLocation: MapLocation = new MapLocation(parseInt(transform[1], 10), parseInt(transform[2], 10));
-    let diffx: number = point.x - previousLocation.x;
-    let diffy: number = point.y - previousLocation.y;
-    let currentLocation: MapLocation = new MapLocation(0, 0);
+    const previousLocation: MapLocation = new MapLocation(parseInt(transform[1], 10), parseInt(transform[2], 10));
+    const diffx: number = point.x - previousLocation.x;
+    const diffy: number = point.y - previousLocation.y;
+    const currentLocation: MapLocation = new MapLocation(0, 0);
     animate(
         <HTMLElement>element, delay, duration, (args: AnimationOptions): void => {
             if (args.timeStamp > args.delay) {
@@ -2569,11 +2983,15 @@ export function smoothTranslate(element: Element, delay: number, duration: numbe
 }
 /**
  * To find compare should zoom factor with previous factor and current factor
+ *
+ * @param {number} scaleFactor - Specifies the scale factor
+ * @param {Maps} maps - Specifies the instance of the maps
+ * @returns {void}
  */
-export function compareZoomFactor(scaleFactor: number, maps: Maps) {
-    let previous: number = isNullOrUndefined(maps.shouldZoomPreviousFactor) ?
+export function compareZoomFactor(scaleFactor: number, maps: Maps): void {
+    const previous: number = isNullOrUndefined(maps.shouldZoomPreviousFactor) ?
         null : maps.shouldZoomPreviousFactor;
-    let current: number = isNullOrUndefined(maps.shouldZoomCurrentFactor) ?
+    const current: number = isNullOrUndefined(maps.shouldZoomCurrentFactor) ?
         null : maps.shouldZoomCurrentFactor;
     if (!isNullOrUndefined(current)) {
         maps.shouldZoomCurrentFactor = null;
@@ -2588,38 +3006,46 @@ export function compareZoomFactor(scaleFactor: number, maps: Maps) {
 }
 /**
  * To find zoom level for the min and max latitude values
+ *
+ * @param {number} minLat - Specifies the minimum latitude
+ * @param {number} maxLat - Specifies the maximum latitude
+ * @param {number} minLong - Specifies the minimum longitude
+ * @param {number} maxLong - Specifies the maximum longitude
+ * @param {number} mapWidth - Specifies the width of the maps
+ * @param {number} mapHeight - Specifies the height of the maps
+ * @param {Maps} maps - Specifies the instance of the maps
+ * @returns {number} - Returns the scale factor
  */
 export function calculateZoomLevel(minLat: number, maxLat: number, minLong: number, maxLong: number,
-    mapWidth: number, mapHeight: number, maps: Maps): number {
-    let latRatio: number; let lngRatio: number; let scaleFactor: number;
-    let maxZoomFact = 10;
+                                   mapWidth: number, mapHeight: number, maps: Maps): number {
+    let scaleFactor: number;
+    const maxZoomFact: number = 10;
     let applyMethodeZoom: number;
-    let latZoom: number; let lngZoom: number; let result: number;
-    let maxLatSin: number = Math.sin(maxLat * Math.PI / 180);
-    let maxLatRad: number = Math.log((1 + maxLatSin) / (1 - maxLatSin)) / 2;
-    let maxLatValue: number = Math.max(Math.min(maxLatRad, Math.PI), -Math.PI) / 2;
-    let minLatSin: number = Math.sin(minLat * Math.PI / 180);
-    let minLatRad: number = Math.log((1 + minLatSin) / (1 - minLatSin)) / 2;
-    let minLatValue: number = Math.max(Math.min(minLatRad, Math.PI), -Math.PI) / 2;
+    const maxLatSin: number = Math.sin(maxLat * Math.PI / 180);
+    const maxLatRad: number = Math.log((1 + maxLatSin) / (1 - maxLatSin)) / 2;
+    const maxLatValue: number = Math.max(Math.min(maxLatRad, Math.PI), -Math.PI) / 2;
+    const minLatSin: number = Math.sin(minLat * Math.PI / 180);
+    const minLatRad: number = Math.log((1 + minLatSin) / (1 - minLatSin)) / 2;
+    const minLatValue: number = Math.max(Math.min(minLatRad, Math.PI), -Math.PI) / 2;
 
     if (maps.zoomNotApplied && !maps.isTileMap) {
-        let latiRatio: number = Math.abs((maps.baseMapBounds.latitude.max - maps.baseMapBounds.latitude.min) / (maxLat - minLat));
-        let longiRatio: number = Math.abs((maps.baseMapBounds.longitude.max - maps.baseMapBounds.longitude.min) / (maxLong - minLong));
+        const latiRatio: number = Math.abs((maps.baseMapBounds.latitude.max - maps.baseMapBounds.latitude.min) / (maxLat - minLat));
+        const longiRatio: number = Math.abs((maps.baseMapBounds.longitude.max - maps.baseMapBounds.longitude.min) / (maxLong - minLong));
         applyMethodeZoom = Math.min(latiRatio, longiRatio);
 
 
-        let minLocation: Point = convertGeoToPoint(minLat, minLong, 1, maps.layersCollection[0], maps)
-        let maxLocation: Point = convertGeoToPoint(maxLat, maxLong, 1, maps.layersCollection[0], maps)
+        const minLocation: Point = convertGeoToPoint(minLat, minLong, 1, maps.layersCollection[0], maps);
+        const maxLocation: Point = convertGeoToPoint(maxLat, maxLong, 1, maps.layersCollection[0], maps);
     }
 
-    latRatio = (maxLatValue - minLatValue) / Math.PI;
-    let lngDiff: number = maxLong - minLong;
-    lngRatio = ((lngDiff < 0) ? (lngDiff + 360) : lngDiff) / 360;
-    let WORLD_PX_HEIGHT: number = 256;
-    let WORLD_PX_WIDTH: number = 256;
-    latZoom = (Math.log(mapHeight / WORLD_PX_HEIGHT / latRatio) / Math.LN2);
-    lngZoom = (Math.log(mapWidth / WORLD_PX_WIDTH / lngRatio) / Math.LN2);
-    result = (maps.zoomNotApplied && !maps.isTileMap) ? applyMethodeZoom : Math.min(latZoom, lngZoom);
+    const latRatio: number = (maxLatValue - minLatValue) / Math.PI;
+    const lngDiff: number = maxLong - minLong;
+    const lngRatio: number = ((lngDiff < 0) ? (lngDiff + 360) : lngDiff) / 360;
+    const WORLD_PX_HEIGHT: number = 256;
+    const WORLD_PX_WIDTH: number = 256;
+    const latZoom: number = (Math.log(mapHeight / WORLD_PX_HEIGHT / latRatio) / Math.LN2);
+    const lngZoom: number = (Math.log(mapWidth / WORLD_PX_WIDTH / lngRatio) / Math.LN2);
+    const result: number = (maps.zoomNotApplied && !maps.isTileMap) ? applyMethodeZoom : Math.min(latZoom, lngZoom);
     scaleFactor = Math.min(result, maxZoomFact);
     scaleFactor = maps.isTileMap || !maps.zoomNotApplied ? Math.floor(scaleFactor) : scaleFactor;
     if (!maps.isTileMap) {
@@ -2627,10 +3053,12 @@ export function calculateZoomLevel(minLat: number, maxLat: number, minLong: numb
     }
     return scaleFactor;
 }
-// tslint:disable:no-any
-export function processResult(e: object): object{
-    let dataValue: object;
-    let resultValue: any = !isNullOrUndefined(e['result']) ? e['result'] : e['actual']; 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function processResult(e: any): any{
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let dataValue: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const resultValue: any = !isNullOrUndefined(e['result']) ? e['result'] : e['actual'];
     if (isNullOrUndefined(resultValue.length)) {
         if (!isNullOrUndefined(resultValue['Items'])) {
             dataValue = resultValue['Items'];
@@ -2639,5 +3067,5 @@ export function processResult(e: object): object{
     else {
         dataValue = resultValue;
     }
-      return dataValue;
+    return dataValue;
 }

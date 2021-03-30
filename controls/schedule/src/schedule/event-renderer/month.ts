@@ -1,4 +1,5 @@
-import { append, prepend, createElement, extend, EventHandler, closest, addClass} from '@syncfusion/ej2-base';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { append, prepend, createElement, extend, EventHandler, closest, addClass } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, setStyleAttribute, remove } from '@syncfusion/ej2-base';
 import { EventFieldsMapping, EventClickArgs, EventRenderedArgs, TdData, NotifyEventArgs, MoreEventsClickArgs } from '../base/interface';
 import { Schedule } from '../base/schedule';
@@ -15,7 +16,7 @@ export class MonthEvent extends EventBase {
     public element: HTMLElement;
     public fields: EventFieldsMapping;
     public dateRender: Date[];
-    public renderedEvents: Object[] = [];
+    public renderedEvents: Record<string, any>[] = [];
     public eventHeight: number;
     private monthHeaderHeight: number = 0;
     public workCells: HTMLElement[];
@@ -28,9 +29,6 @@ export class MonthEvent extends EventBase {
     public maxOrIndicator: boolean;
     public inlineValue: boolean;
 
-    /**
-     * Constructor for month events
-     */
     constructor(parent: Schedule) {
         super(parent);
         this.element = this.parent.activeView.getPanel();
@@ -48,7 +46,7 @@ export class MonthEvent extends EventBase {
     private removeEventWarapper(appElement: Element[]): void {
         if (appElement.length > 0) {
             appElement = (this.parent.currentView === 'Month') ? appElement : [appElement[0]];
-            for (let wrap of appElement) {
+            for (const wrap of appElement) {
                 if (!wrap.classList.contains('e-more-indicator') && wrap.parentElement && wrap.parentElement.parentNode) {
                     remove(wrap.parentElement);
                 }
@@ -57,26 +55,26 @@ export class MonthEvent extends EventBase {
     }
 
     public renderAppointments(): void {
-        let conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+        const conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
         if (this.parent.rowAutoHeight) {
             this.parent.uiStateValues.top = conWrap.scrollTop;
             this.parent.uiStateValues.left = conWrap.scrollLeft;
         }
-        let appointmentWrapper: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_CLASS));
+        const appointmentWrapper: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_CLASS));
         if (this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction) {
             for (let i: number = 0, len: number = this.parent.crudModule.crudObj.sourceEvent.length; i < len; i++) {
-                let appElement: Element[] = [].slice.call(this.element.querySelectorAll('.e-appointment-wrapper ' + '[data-group-index="' +
+                const appElement: Element[] = [].slice.call(this.element.querySelectorAll('.e-appointment-wrapper ' + '[data-group-index="' +
                     this.parent.crudModule.crudObj.sourceEvent[i].groupIndex + '"]'));
                 this.removeEventWarapper(appElement);
                 if (this.parent.crudModule.crudObj.sourceEvent[i].groupIndex !==
                     this.parent.crudModule.crudObj.targetEvent[i].groupIndex) {
-                    let ele: Element[] = [].slice.call(this.element.querySelectorAll('.e-appointment-wrapper ' + '[data-group-index="' +
+                    const ele: Element[] = [].slice.call(this.element.querySelectorAll('.e-appointment-wrapper ' + '[data-group-index="' +
                         this.parent.crudModule.crudObj.targetEvent[i].groupIndex + '"]'));
                     this.removeEventWarapper(ele);
                 }
             }
         } else {
-            for (let wrap of appointmentWrapper) {
+            for (const wrap of appointmentWrapper) {
                 remove(wrap);
             }
         }
@@ -85,7 +83,7 @@ export class MonthEvent extends EventBase {
             return;
         }
         this.eventHeight = util.getElementHeightFromClass(this.element, cls.APPOINTMENT_CLASS);
-        let scrollTop: number = conWrap.scrollTop;
+        const scrollTop: number = conWrap.scrollTop;
         if (this.parent.rowAutoHeight && this.parent.virtualScrollModule && !isNullOrUndefined(this.parent.currentAction)) {
             conWrap.scrollTop = conWrap.scrollTop - 1;
         }
@@ -96,7 +94,7 @@ export class MonthEvent extends EventBase {
         }
         if (this.parent.rowAutoHeight) {
             this.updateBlockElements();
-            let data: NotifyEventArgs = {
+            const data: NotifyEventArgs = {
                 cssProperties: this.parent.getCssProperties(),
                 module: this.parent.getModuleName(),
                 isPreventScrollUpdate: true,
@@ -120,71 +118,70 @@ export class MonthEvent extends EventBase {
 
     public renderEventsHandler(dateRender: Date[], workDays: number[], resData?: TdData): void {
         this.renderedEvents = [];
-        let eventsList: { [key: string]: Object }[];
-        let blockList: { [key: string]: Object }[];
+        let eventsList: Record<string, any>[];
+        let blockList: Record<string, any>[];
         let resIndex: number = 0;
         if (resData) {
             resIndex = resData.groupIndex;
             this.cssClass = resData.cssClass;
             this.groupOrder = resData.groupOrder;
-            eventsList = this.parent.eventBase.filterEventsByResource(resData, this.parent.eventsProcessed) as { [key: string]: Object }[];
-            blockList = this.parent.eventBase.filterEventsByResource(resData, this.parent.blockProcessed) as { [key: string]: Object }[];
-            this.workCells = [].slice.call(this.element.querySelectorAll
-                ('.' + cls.WORK_CELLS_CLASS + '[data-group-index="' + resIndex + '"]'));
+            eventsList = this.parent.eventBase.filterEventsByResource(resData, this.parent.eventsProcessed) as Record<string, any>[];
+            blockList = this.parent.eventBase.filterEventsByResource(resData, this.parent.blockProcessed) as Record<string, any>[];
+            this.workCells = [].slice.call(this.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS + '[data-group-index="' + resIndex + '"]'));
         } else {
-            eventsList = <{ [key: string]: Object }[]>this.parent.eventsProcessed;
-            blockList = <{ [key: string]: Object }[]>this.parent.blockProcessed;
+            eventsList = this.parent.eventsProcessed;
+            blockList = this.parent.blockProcessed;
             this.workCells = [].slice.call(this.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
         }
         this.sortByDateTime(eventsList);
         this.sortByDateTime(blockList);
-        if (this.parent.currentView === 'Month' && this.parent.rowAutoHeight) {
-            let totalCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-content-wrap table tr td:first-child'));
-            let height: number = this.parent.element.querySelector('.e-schedule-table').clientHeight / totalCells.length;
+        if (this.parent.currentView === 'Month' && this.parent.rowAutoHeight && this.parent.activeViewOptions.group.resources.length === 0) {
+            const totalCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-content-wrap table tr td:first-child'));
+            const height: number = this.parent.element.querySelector('.e-schedule-table').clientHeight / totalCells.length;
             totalCells.forEach((cell: HTMLElement) => {
                 setStyleAttribute(cell, { 'height': height + 'px' });
             });
         }
-        let cellDetail: object = this.workCells.slice(-1)[0].getBoundingClientRect();
-        this.cellWidth = (<{ [key: string]: Object }>cellDetail).width as number;
-        this.cellHeight = (<{ [key: string]: Object }>cellDetail).height as number;
+        const cellDetail: ClientRect = this.workCells.slice(-1)[0].getBoundingClientRect();
+        this.cellWidth = cellDetail.width;
+        this.cellHeight = cellDetail.height;
         this.dateRender = dateRender;
-        let filteredDates: Date[] = this.getRenderedDates(dateRender);
+        const filteredDates: Date[] = this.getRenderedDates(dateRender);
         this.getSlotDates(workDays);
         this.processBlockEvents(blockList, resIndex, resData);
-        for (let event of eventsList) {
+        for (const event of eventsList) {
             if (this.parent.resourceBase && !resData) {
                 this.cssClass = this.parent.resourceBase.getCssClass(event);
             }
-            let splittedEvents: { [key: string]: Object }[] = this.splitEvent(event, filteredDates || this.dateRender);
-            for (let event of splittedEvents) {
+            const splittedEvents: Record<string, any>[] = this.splitEvent(event, filteredDates || this.dateRender);
+            for (const event of splittedEvents) {
                 if (this.maxHeight) {
-                    let sDate: Date = this.parent.currentView === 'Month' ? event[this.fields.startTime] as Date :
-                        this.getStartTime(event, event.data as { [key: string]: Object });
+                    const sDate: Date = this.parent.currentView === 'Month' ? event[this.fields.startTime] as Date :
+                        this.getStartTime(event, event.data as Record<string, any>);
                     if (this.getIndex(sDate) > 0) {
                         continue;
                     }
                 }
-                this.updateIndicatorIcon(<{ [key: string]: Object }>event);
-                this.renderEvents(<{ [key: string]: Object }>event, resIndex, eventsList);
+                this.updateIndicatorIcon(event);
+                this.renderEvents(event, resIndex, eventsList);
             }
         }
         this.cssClass = null;
         this.groupOrder = null;
     }
 
-    private processBlockEvents(blockEvents: { [key: string]: Object }[], resIndex: number, resData?: TdData): void {
-        for (let event of blockEvents) {
+    private processBlockEvents(blockEvents: Record<string, any>[], resIndex: number, resData?: TdData): void {
+        for (const event of blockEvents) {
             if (this.parent.resourceBase && !resData) {
                 this.cssClass = this.parent.resourceBase.getCssClass(event);
             }
-            let blockSpannedList: { [key: string]: Object }[] = [];
+            const blockSpannedList: Record<string, any>[] = [];
             if (this.renderType === 'day' && !event[this.fields.isAllDay]) {
-                let temp: { [key: string]: Object } = extend({}, event, null, true) as { [key: string]: Object };
+                const temp: Record<string, any> = extend({}, event, null, true) as Record<string, any>;
                 let isSameDate: boolean = this.isSameDate(temp[this.fields.startTime] as Date, temp[this.fields.endTime] as Date);
                 temp.isBlockIcon = isSameDate;
                 if (!isSameDate && util.getDateInMs(temp[this.fields.startTime] as Date) > 0) {
-                    let e: { [key: string]: Object } = extend({}, event, null, true) as { [key: string]: Object };
+                    const e: Record<string, any> = extend({}, event, null, true) as Record<string, any>;
                     e[this.fields.endTime] = util.addDays(util.resetTime(new Date(event[this.fields.startTime] + '')), 1);
                     e.isBlockIcon = true;
                     temp[this.fields.startTime] = e[this.fields.endTime];
@@ -192,7 +189,7 @@ export class MonthEvent extends EventBase {
                 }
                 isSameDate = this.isSameDate(temp[this.fields.startTime] as Date, temp[this.fields.endTime] as Date);
                 if (!isSameDate && util.getDateInMs(temp[this.fields.endTime] as Date) > 0) {
-                    let e: { [key: string]: Object } = extend({}, event, null, true) as { [key: string]: Object };
+                    const e: Record<string, any> = extend({}, event, null, true) as Record<string, any>;
                     e[this.fields.startTime] = util.resetTime(new Date(event[this.fields.endTime] + ''));
                     e.isBlockIcon = true;
                     blockSpannedList.push(e);
@@ -202,9 +199,9 @@ export class MonthEvent extends EventBase {
             } else {
                 blockSpannedList.push(event);
             }
-            for (let blockEvent of blockSpannedList) {
-                let splittedEvents: { [key: string]: Object }[] = this.splitEvent(blockEvent, this.dateRender);
-                for (let event of splittedEvents) {
+            for (const blockEvent of blockSpannedList) {
+                const splittedEvents: Record<string, any>[] = this.splitEvent(blockEvent, this.dateRender);
+                for (const event of splittedEvents) {
                     this.renderBlockEvents(event, resIndex, !!blockEvent.isBlockIcon);
                 }
             }
@@ -215,26 +212,26 @@ export class MonthEvent extends EventBase {
         return new Date(+start).setHours(0, 0, 0, 0) === new Date(+end).setHours(0, 0, 0, 0);
     }
 
-    public renderBlockEvents(event: { [key: string]: Object }, resIndex: number, isIcon: boolean): void {
-        let eventData: { [key: string]: Object } = event.data as { [key: string]: Object };
-        let startTime: Date = this.getStartTime(event, eventData);
-        let endTime: Date = this.getEndTime(event, eventData);
-        let day: number = this.parent.getIndexOfDate(this.dateRender, util.resetTime(new Date(startTime.getTime())));
+    public renderBlockEvents(event: Record<string, any>, resIndex: number, isIcon: boolean): void {
+        const eventData: Record<string, any> = event.data as Record<string, any>;
+        const startTime: Date = this.getStartTime(event, eventData);
+        const endTime: Date = this.getEndTime(event, eventData);
+        const day: number = this.parent.getIndexOfDate(this.dateRender, util.resetTime(new Date(startTime.getTime())));
         if (day < 0 || startTime > endTime) {
             return;
         }
-        let cellTd: HTMLElement = this.getCellTd(day);
-        let position: number = this.getPosition(startTime, endTime, event[this.fields.isAllDay] as boolean, day);
+        const cellTd: HTMLElement = this.getCellTd(day);
+        const position: number = this.getPosition(startTime, endTime, event[this.fields.isAllDay] as boolean, day);
         if (!isIcon) {
-            let diffInDays: number = eventData.count as number;
+            const diffInDays: number = eventData.count as number;
             let appWidth: number = this.getEventWidth(startTime, endTime, event[this.fields.isAllDay] as boolean, diffInDays);
             appWidth = (appWidth <= 0) ? this.cellWidth : appWidth;
-            let appLeft: number = (this.parent.enableRtl) ? 0 : position;
-            let appRight: number = (this.parent.enableRtl) ? position : 0;
+            const appLeft: number = (this.parent.enableRtl) ? 0 : position;
+            const appRight: number = (this.parent.enableRtl) ? position : 0;
             this.renderWrapperElement(cellTd as HTMLElement);
-            let appHeight: number = this.cellHeight - this.monthHeaderHeight;
-            let appTop: number = this.getRowTop(resIndex);
-            let blockElement: HTMLElement = this.createBlockAppointmentElement(event, resIndex);
+            const appHeight: number = this.cellHeight - this.monthHeaderHeight;
+            const appTop: number = this.getRowTop(resIndex);
+            const blockElement: HTMLElement = this.createBlockAppointmentElement(event, resIndex);
             setStyleAttribute(blockElement, {
                 'width': appWidth + 'px', 'height': appHeight + 'px', 'left': appLeft + 'px',
                 'right': appRight + 'px', 'top': appTop + 'px'
@@ -245,18 +242,21 @@ export class MonthEvent extends EventBase {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public renderBlockIndicator(cellTd: HTMLElement, position: number, resIndex: number): void {
-        let blockIndicator: HTMLElement = createElement('div', { className: 'e-icons ' + cls.BLOCK_INDICATOR_CLASS });
+        const blockIndicator: HTMLElement = createElement('div', { className: 'e-icons ' + cls.BLOCK_INDICATOR_CLASS });
         if (isNullOrUndefined(cellTd.querySelector('.' + cls.BLOCK_INDICATOR_CLASS))) {
             cellTd.appendChild(blockIndicator);
         }
     }
 
-    public getStartTime(event: { [key: string]: Object }, eventData: { [key: string]: Object }): Date {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public getStartTime(event: Record<string, any>, eventData: Record<string, any>): Date {
         return event[this.fields.startTime] as Date;
     }
 
-    public getEndTime(event: { [key: string]: Object }, eventData: { [key: string]: Object }): Date {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public getEndTime(event: Record<string, any>, eventData: Record<string, any>): Date {
         return event[this.fields.endTime] as Date;
     }
 
@@ -268,45 +268,47 @@ export class MonthEvent extends EventBase {
         return count * this.cellWidth - 1;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getPosition(startTime: Date, endTime: Date, isAllDay: boolean, day: number): number {
         return 0;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getRowTop(resIndex: number): number {
         return 0;
     }
 
-    public updateIndicatorIcon(event: { [key: string]: Object }): void {
+    public updateIndicatorIcon(event: Record<string, any>): void {
         if (this.parent.currentView.indexOf('Timeline') === -1 || this.parent.currentView === 'TimelineMonth'
             || event[this.fields.isAllDay]) {
             return;
         }
-        let cloneData: { [key: string]: Object } = event.data as { [key: string]: Object };
-        let startHour: { [key: string]: Date } = util.getStartEndHours
-            (event[this.fields.startTime] as Date, this.parent.activeView.getStartHour(), this.parent.activeView.getEndHour());
-        let endHour: { [key: string]: Date } = util.getStartEndHours
-            (event[this.fields.endTime] as Date, this.parent.activeView.getStartHour(), this.parent.activeView.getEndHour());
+        const cloneData: Record<string, any> = event.data as Record<string, any>;
+        const start: Date = this.parent.activeView.getStartHour();
+        const end: Date = this.parent.activeView.getEndHour();
+        const startHour: Record<string, Date> = util.getStartEndHours(event[this.fields.startTime] as Date, start, end);
+        const endHour: Record<string, Date> = util.getStartEndHours(event[this.fields.endTime] as Date, start, end);
         cloneData.isLeft = cloneData.isLeft || (<Date>cloneData[this.fields.startTime]).getTime() < startHour.startHour.getTime();
         cloneData.isRight = cloneData.isRight || (<Date>cloneData[this.fields.endTime]).getTime() > endHour.endHour.getTime();
     }
 
     public renderResourceEvents(): void {
-        let resources: TdData[] = this.parent.uiStateValues.isGroupAdaptive ?
+        const resources: TdData[] = this.parent.uiStateValues.isGroupAdaptive ?
             [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] :
             this.parent.resourceBase.lastResourceLevel;
         if (this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction) {
             for (let i: number = 0, len: number = this.parent.crudModule.crudObj.sourceEvent.length; i < len; i++) {
-                let sourceRes: TdData = this.parent.crudModule.crudObj.sourceEvent[i];
+                const sourceRes: TdData = this.parent.crudModule.crudObj.sourceEvent[i];
                 this.renderEventsHandler(sourceRes.renderDates, sourceRes.workDays, sourceRes);
                 if (this.parent.crudModule.crudObj.sourceEvent[i].groupIndex !==
                     this.parent.crudModule.crudObj.targetEvent[i].groupIndex) {
-                    let target: TdData = this.parent.crudModule.crudObj.targetEvent[i];
+                    const target: TdData = this.parent.crudModule.crudObj.targetEvent[i];
                     this.renderEventsHandler(target.renderDates, target.workDays, target);
                 }
             }
             this.parent.crudModule.crudObj.isCrudAction = false;
         } else {
-            for (let slotData of resources) {
+            for (const slotData of resources) {
                 this.renderEventsHandler(slotData.renderDates, slotData.workDays, slotData);
             }
         }
@@ -314,23 +316,24 @@ export class MonthEvent extends EventBase {
 
     public getSlotDates(workDays?: number[]): void {
         this.slots = [];
-        let dates: number[] = this.dateRender.map((date: Date) => { return +date; });
-        let noOfDays: number = this.parent.activeViewOptions.showWeekend ? util.WEEK_LENGTH : workDays.length;
+        const dates: number[] = this.dateRender.map((date: Date) => { return +date; });
+        const noOfDays: number = this.parent.activeViewOptions.showWeekend ? util.WEEK_LENGTH : workDays.length;
         while (dates.length > 0) {
-            this.slots.push(dates.splice(0, noOfDays));
+            this.slots.push(dates.splice(0, noOfDays) as any);
         }
     }
 
-    public createAppointmentElement(record: { [key: string]: Object }, resIndex: number, isCloneElement: boolean = false): HTMLElement {
-        let eventSubject: string = (record[this.fields.subject] || this.parent.eventSettings.fields.subject.default) as string;
-        let newRecord: { [key: string]: Object } = extend({}, record, record.data, true) as { [key: string]: Object };
-        let appointmentWrapper: HTMLElement = createElement('div', {
+    public createAppointmentElement(record: Record<string, any>, resIndex: number, isCloneElement: boolean = false): HTMLElement {
+        const eventSubject: string = (record[this.fields.subject] || this.parent.eventSettings.fields.subject.default ||
+            this.parent.localeObj.getConstant('addTitle')) as string;
+        const newRecord: Record<string, any> = extend({}, record, record.data, true) as Record<string, any>;
+        const appointmentWrapper: HTMLElement = createElement('div', {
             className: cls.APPOINTMENT_CLASS,
             attrs: {
                 'data-id': 'Appointment_' + record[this.fields.id],
                 'role': 'button', 'tabindex': '0',
                 'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true',
-                'aria-label': this.parent.getAnnocementString(newRecord as { [key: string]: Object }, eventSubject)
+                'aria-label': this.parent.getAnnocementString(newRecord, eventSubject)
             }
         });
         if (!isCloneElement) {
@@ -342,31 +345,30 @@ export class MonthEvent extends EventBase {
         if (record[this.fields.isReadonly]) {
             addClass([appointmentWrapper], 'e-read-only');
         }
-        let appointmentDetails: HTMLElement = createElement('div', { className: cls.APPOINTMENT_DETAILS });
+        const appointmentDetails: HTMLElement = createElement('div', { className: cls.APPOINTMENT_DETAILS });
         appointmentWrapper.appendChild(appointmentDetails);
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             appointmentWrapper.setAttribute('data-group-index', resIndex.toString());
         }
         let templateElement: HTMLElement[];
-        let eventData: { [key: string]: Object } = record.data as { [key: string]: Object };
-        let eventObj: { [key: string]: Object } = this.getEventData(record);
+        const eventData: Record<string, any> = record.data as Record<string, any>;
+        const eventObj: Record<string, any> = this.getEventData(record);
         if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-            let scheduleId: string = this.parent.element.id + '_';
-            let viewName: string = this.parent.activeViewOptions.eventTemplateName;
-            let templateId: string = scheduleId + viewName + 'eventTemplate';
-            let templateArgs: Object = util.addLocalOffsetToEvent(eventObj, this.parent.eventFields);
-            templateElement = this.parent.getAppointmentTemplate()(templateArgs, this.parent, 'eventTemplate', templateId, false);
+            const scheduleId: string = this.parent.element.id + '_';
+            const viewName: string = this.parent.activeViewOptions.eventTemplateName;
+            const templateId: string = scheduleId + viewName + 'eventTemplate';
+            templateElement = this.parent.getAppointmentTemplate()(eventObj, this.parent, 'eventTemplate', templateId, false);
         } else {
-            let eventLocation: string = (record[this.fields.location] || this.parent.eventSettings.fields.location.default || '') as string;
-            let appointmentSubject: HTMLElement = createElement('div', {
+            const eventLocation: string = (record[this.fields.location] || this.parent.eventSettings.fields.location.default || '') as string;
+            const appointmentSubject: HTMLElement = createElement('div', {
                 className: cls.SUBJECT_CLASS,
                 innerHTML: (eventSubject + (eventLocation ? ';&nbsp' + eventLocation : ''))
             });
-            let appointmentStartTime: HTMLElement = createElement('div', {
+            const appointmentStartTime: HTMLElement = createElement('div', {
                 className: cls.APPOINTMENT_TIME + (this.parent.isAdaptive ? ' ' + cls.DISABLE_CLASS : ''),
                 innerHTML: this.parent.getTimeString(eventData[this.fields.startTime] as Date)
             });
-            let appointmentEndTime: HTMLElement = createElement('div', {
+            const appointmentEndTime: HTMLElement = createElement('div', {
                 className: cls.APPOINTMENT_TIME + (this.parent.isAdaptive ? ' ' + cls.DISABLE_CLASS : ''),
                 innerHTML: this.parent.getTimeString(eventData[this.fields.endTime] as Date)
             });
@@ -390,76 +392,77 @@ export class MonthEvent extends EventBase {
             } else {
                 let innerElement: HTMLElement[];
                 if (record[this.fields.isAllDay]) {
-                    let allDayString: HTMLElement = createElement('div', {
+                    const allDayString: HTMLElement = createElement('div', {
                         className: cls.APPOINTMENT_TIME, innerHTML: this.parent.localeObj.getConstant('allDay')
                     });
                     innerElement = [appointmentSubject, allDayString];
                 } else {
-                    let timeString: string = this.parent.getTimeString(eventData[this.fields.startTime] as Date)
+                    const timeString: string = this.parent.getTimeString(eventData[this.fields.startTime] as Date)
                         + ' - ' + this.parent.getTimeString(eventData[this.fields.endTime] as Date);
-                    let appTime: HTMLElement = createElement('div', {
-                        className: cls.APPOINTMENT_TIME + (this.parent.isAdaptive ? ' ' + cls.DISABLE_CLASS : ''), innerHTML: timeString,
+                    const appTime: HTMLElement = createElement('div', {
+                        className: cls.APPOINTMENT_TIME + (this.parent.isAdaptive ? ' ' + cls.DISABLE_CLASS : ''), innerHTML: timeString
                     });
-                    let appLocation: HTMLElement = createElement('div', { className: cls.LOCATION_CLASS, innerHTML: eventLocation });
+                    const appLocation: HTMLElement = createElement('div', { className: cls.LOCATION_CLASS, innerHTML: eventLocation });
                     innerElement = [appointmentSubject, appTime, appLocation];
                 }
-                let wrap: HTMLElement = createElement('div', { className: 'e-inner-wrap' });
+                const wrap: HTMLElement = createElement('div', { className: 'e-inner-wrap' });
                 append(innerElement, wrap);
                 templateElement = [wrap];
             }
         }
         append(templateElement, appointmentDetails);
         this.appendEventIcons(record, appointmentDetails);
-        this.renderResizeHandler(appointmentWrapper, record.data as { [key: string]: Object }, record[this.fields.isReadonly] as boolean);
+        this.renderResizeHandler(appointmentWrapper, record.data as Record<string, any>, record[this.fields.isReadonly] as boolean);
         return appointmentWrapper;
     }
 
-    private appendEventIcons(record: { [key: string]: Object }, appointmentDetails: HTMLElement): void {
-        let eventData: { [key: string]: Object } = record.data as { [key: string]: Object };
+    private appendEventIcons(record: Record<string, any>, appointmentDetails: HTMLElement): void {
+        const eventData: Record<string, any> = record.data as Record<string, any>;
         if (!isNullOrUndefined(record[this.fields.recurrenceRule]) || !isNullOrUndefined(record[this.fields.recurrenceID])) {
-            let iconClass: string = (record[this.fields.id] === record[this.fields.recurrenceID]) ?
+            const iconClass: string = (record[this.fields.id] === record[this.fields.recurrenceID]) ?
                 cls.EVENT_RECURRENCE_ICON_CLASS : cls.EVENT_RECURRENCE_EDIT_ICON_CLASS;
             appointmentDetails.appendChild(createElement('div', {
                 className: cls.ICON + ' ' + iconClass + (this.parent.isAdaptive ? ' ' + cls.DISABLE_CLASS : '')
             }));
         }
         if (eventData.isLeft) {
-            let iconLeft: HTMLElement = createElement('div', {
+            const iconLeft: HTMLElement = createElement('div', {
                 className: cls.EVENT_INDICATOR_CLASS + ' ' + cls.ICON + ' ' + cls.EVENT_ICON_LEFT_CLASS
             });
             prepend([iconLeft], appointmentDetails);
         }
         if (eventData.isRight) {
-            let iconRight: HTMLElement = createElement('div', {
+            const iconRight: HTMLElement = createElement('div', {
                 className: cls.EVENT_INDICATOR_CLASS + ' ' + cls.ICON + ' ' + cls.EVENT_ICON_RIGHT_CLASS
             });
             append([iconRight], appointmentDetails);
         }
     }
 
-    public renderEvents(event: { [key: string]: Object }, resIndex: number, eventsList?: { [key: string]: Object }[]): void {
-        let startTime: Date = event[this.fields.startTime] as Date;
-        let endTime: Date = event[this.fields.endTime] as Date;
-        let day: number = this.parent.getIndexOfDate(this.dateRender, util.resetTime(startTime));
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public renderEvents(event: Record<string, any>, resIndex: number, eventsList?: Record<string, any>[]): void {
+        const startTime: Date = event[this.fields.startTime] as Date;
+        const endTime: Date = event[this.fields.endTime] as Date;
+        const day: number = this.parent.getIndexOfDate(this.dateRender, util.resetTime(startTime));
         if (day < 0) {
             return;
         }
         if ((startTime.getTime() < this.parent.minDate.getTime()) || (endTime.getTime() > this.parent.maxDate.getTime())) {
             return;
         }
-        let overlapCount: number = this.getIndex(startTime);
+        const overlapCount: number = this.getIndex(startTime);
         event.Index = overlapCount;
         let appHeight: number = this.eventHeight;
-        this.renderedEvents.push(extend({}, event, null, true));
-        let diffInDays: number = (event.data as { [key: string]: Object }).count as number;
+        this.renderedEvents.push(extend({}, event, null, true) as Record<string, any>);
+        const diffInDays: number = (event.data as Record<string, any>).count as number;
         if (startTime.getTime() <= endTime.getTime()) {
-            let appWidth: number = (diffInDays * this.cellWidth) - 5;
-            let cellTd: Element = this.workCells[day];
-            let appTop: number = (overlapCount * (appHeight + EVENT_GAP));
+            const appWidth: number = (diffInDays * this.cellWidth) - 5;
+            const cellTd: Element = this.workCells[day];
+            const appTop: number = (overlapCount * (appHeight + EVENT_GAP));
             this.renderWrapperElement(cellTd as HTMLElement);
-            let height: number =
+            const height: number =
                 this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
-            let enableAppRender: boolean = this.maxOrIndicator ? overlapCount < 1 ? true : false : this.cellHeight > height;
+            const enableAppRender: boolean = this.maxOrIndicator ? overlapCount < 1 ? true : false : this.cellHeight > height;
             if (this.parent.rowAutoHeight || enableAppRender) {
                 let appointmentElement: HTMLElement;
                 if (this.inlineValue) {
@@ -472,22 +475,22 @@ export class MonthEvent extends EventBase {
                 setStyleAttribute(appointmentElement, { 'width': appWidth + 'px', 'top': appTop + 'px' });
                 this.renderEventElement(event, appointmentElement, cellTd);
                 if (this.parent.rowAutoHeight) {
-                    let firstChild: HTMLElement = cellTd.parentElement.firstElementChild as HTMLElement;
+                    const firstChild: HTMLElement = cellTd.parentElement.firstElementChild as HTMLElement;
                     this.updateCellHeight(firstChild, height);
                 }
             } else {
                 for (let i: number = 0; i < diffInDays; i++) {
-                    let cellTd: HTMLElement = this.workCells[day + i];
+                    const cellTd: HTMLElement = this.workCells[day + i];
                     if (cellTd && isNullOrUndefined(cellTd.querySelector('.' + cls.MORE_INDICATOR_CLASS))) {
-                        let startDate: Date = new Date(this.dateRender[day + i].getTime());
-                        let endDate: Date = util.addDays(this.dateRender[day + i], 1);
-                        let groupIndex: string = cellTd.getAttribute('data-group-index');
-                        let filterEvents: Object[] = this.getFilteredEvents(startDate, endDate, groupIndex);
-                        let appArea: number = this.cellHeight - this.monthHeaderHeight - this.moreIndicatorHeight;
+                        const startDate: Date = new Date(this.dateRender[day + i].getTime());
+                        const endDate: Date = util.addDays(this.dateRender[day + i], 1);
+                        const groupIndex: string = cellTd.getAttribute('data-group-index');
+                        const filterEvents: Record<string, any>[] = this.getFilteredEvents(startDate, endDate, groupIndex);
+                        const appArea: number = this.cellHeight - this.monthHeaderHeight - this.moreIndicatorHeight;
                         appHeight = this.withIndicator ? appArea : appHeight;
-                        let renderedAppCount: number = Math.floor(appArea / (appHeight + EVENT_GAP));
-                        let count: number = (filterEvents.length - renderedAppCount) <= 0 ? 1 : (filterEvents.length - renderedAppCount);
-                        let moreIndicatorElement: HTMLElement = this.getMoreIndicatorElement(count, startDate, endDate);
+                        const renderedAppCount: number = Math.floor(appArea / (appHeight + EVENT_GAP));
+                        const count: number = (filterEvents.length - renderedAppCount) <= 0 ? 1 : (filterEvents.length - renderedAppCount);
+                        const moreIndicatorElement: HTMLElement = this.getMoreIndicatorElement(count, startDate, endDate);
                         if (!isNullOrUndefined(groupIndex)) {
                             moreIndicatorElement.setAttribute('data-group-index', groupIndex);
                         }
@@ -508,31 +511,32 @@ export class MonthEvent extends EventBase {
     }
 
     public updateBlockElements(): void {
-        let blockElement: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.BLOCK_APPOINTMENT_CLASS));
-        for (let element of blockElement) {
-            let target: HTMLElement = closest(element, 'tr') as HTMLElement;
+        const blockElement: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.BLOCK_APPOINTMENT_CLASS));
+        for (const element of blockElement) {
+            const target: HTMLElement = closest(element, 'tr') as HTMLElement;
             this.monthHeaderHeight = (<HTMLElement>element.offsetParent).offsetTop - target.offsetTop;
             element.style.height = ((target.offsetHeight - 1) - this.monthHeaderHeight) + 'px';
-            let firstChild: HTMLElement = target.firstElementChild as HTMLElement;
-            let width: number = Math.round(element.offsetWidth / firstChild.offsetWidth);
+            const firstChild: HTMLElement = target.firstElementChild as HTMLElement;
+            const width: number = Math.round(element.offsetWidth / firstChild.offsetWidth);
             element.style.width = (firstChild.offsetWidth * width) + 'px';
         }
     }
 
-    public getFilteredEvents(startDate: Date, endDate: Date, groupIndex: string, eventsList?: { [key: string]: Object }[]): Object[] {
-        let filteredEvents: Object[];
+    // eslint-disable-next-line max-len
+    public getFilteredEvents(startDate: Date, endDate: Date, groupIndex: string, eventsList?: Record<string, any>[]): Record<string, any>[] {
+        let filteredEvents: Record<string, any>[];
         if (isNullOrUndefined(groupIndex)) {
             filteredEvents = this.filterEvents(startDate, endDate);
         } else {
-            let data: TdData = this.parent.resourceBase.lastResourceLevel[parseInt(groupIndex, 10)];
+            const data: TdData = this.parent.resourceBase.lastResourceLevel[parseInt(groupIndex, 10)];
             filteredEvents = this.filterEvents(startDate, endDate, isNullOrUndefined(eventsList) ? undefined : eventsList, data);
         }
         return filteredEvents;
     }
 
-    public getOverlapEvents(date: Date, appointments: { [key: string]: Object }[]): Object[] {
-        let appointmentsList: Object[] = [];
-        for (let app of appointments) {
+    public getOverlapEvents(date: Date, appointments: Record<string, any>[]): Record<string, any>[] {
+        const appointmentsList: Record<string, any>[] = [];
+        for (const app of appointments) {
             if ((util.resetTime(<Date>app[this.fields.startTime]).getTime() <= util.resetTime(date).getTime()) &&
                 (util.resetTime(<Date>app[this.fields.endTime]).getTime() >= util.resetTime(date).getTime())) {
                 appointmentsList.push(app);
@@ -543,21 +547,21 @@ export class MonthEvent extends EventBase {
 
     public getIndex(date: Date): number {
         let appIndex: number = -1;
-        let appointments: { [key: string]: Object }[] = <{ [key: string]: Object }[]>this.renderedEvents;
+        const appointments: Record<string, any>[] = <Record<string, any>[]>this.renderedEvents;
         if (appointments.length > 0) {
-            let appointmentsList: Object[] = this.getOverlapEvents(date, appointments);
-            let appLevel: Object[] = appointmentsList.map((obj: { [key: string]: Object }) => { return obj.Index; });
+            const appointmentsList: Record<string, any>[] = this.getOverlapEvents(date, appointments);
+            const appLevel: number[] = appointmentsList.map((obj: Record<string, any>) => obj.Index) as number[];
             appIndex = (appLevel.length > 0) ? this.getSmallestMissingNumber(appLevel) : 0;
         }
         return (appIndex === -1) ? 0 : appIndex;
     }
 
     public moreIndicatorClick(event: Event): void {
-        let target: Element = closest((event.target as Element), '.' + cls.MORE_INDICATOR_CLASS);
-        let startDate: Date = new Date(parseInt(target.getAttribute('data-start-date'), 10));
-        let endDate: Date = new Date(parseInt(target.getAttribute('data-end-date'), 10));
-        let groupIndex: string = target.getAttribute('data-group-index');
-        let moreArgs: MoreEventsClickArgs = {
+        const target: Element = closest((event.target as Element), '.' + cls.MORE_INDICATOR_CLASS);
+        const startDate: Date = new Date(parseInt(target.getAttribute('data-start-date'), 10));
+        const endDate: Date = new Date(parseInt(target.getAttribute('data-end-date'), 10));
+        const groupIndex: string = target.getAttribute('data-group-index');
+        const moreArgs: MoreEventsClickArgs = {
             cancel: false, event: event, element: target, isPopupOpen: true,
             startTime: startDate, endTime: endDate, viewName: this.parent.getNavigateView()
         };
@@ -567,9 +571,9 @@ export class MonthEvent extends EventBase {
         this.parent.trigger(events.moreEventsClick, moreArgs, (clickArgs: MoreEventsClickArgs) => {
             if (!clickArgs.cancel) {
                 if (clickArgs.isPopupOpen) {
-                    let filteredEvents: Object[] = this.getFilteredEvents(startDate, endDate, groupIndex);
-                    let moreEventArgs: EventClickArgs = { date: startDate, event: filteredEvents, element: event.target } as EventClickArgs;
-                    this.parent.quickPopup.moreEventClick(moreEventArgs, endDate, groupIndex);
+                    const filteredEvents: Record<string, any>[] = this.getFilteredEvents(startDate, endDate, groupIndex);
+                    const moreArgs: EventClickArgs = { date: startDate, event: filteredEvents, element: event.target } as EventClickArgs;
+                    this.parent.quickPopup.moreEventClick(moreArgs, endDate, groupIndex);
                 } else {
                     this.parent.setScheduleProperties({ selectedDate: startDate });
                     this.parent.changeView(clickArgs.viewName, event);
@@ -578,11 +582,11 @@ export class MonthEvent extends EventBase {
         });
     }
 
-    public renderEventElement(event: { [key: string]: Object }, appointmentElement: HTMLElement, cellTd: Element): void {
-        let eventType: string = appointmentElement.classList.contains(cls.BLOCK_APPOINTMENT_CLASS) ? 'blockEvent' : 'event';
-        let isAppointment: boolean = appointmentElement.classList.contains(cls.APPOINTMENT_CLASS);
-        let eventObj: { [key: string]: Object } = this.getEventData(event);
-        let args: EventRenderedArgs = { data: eventObj, element: appointmentElement, cancel: false, type: eventType };
+    public renderEventElement(event: Record<string, any>, appointmentElement: HTMLElement, cellTd: Element): void {
+        const eventType: string = appointmentElement.classList.contains(cls.BLOCK_APPOINTMENT_CLASS) ? 'blockEvent' : 'event';
+        const isAppointment: boolean = appointmentElement.classList.contains(cls.APPOINTMENT_CLASS);
+        const eventObj: Record<string, any> = this.getEventData(event);
+        const args: EventRenderedArgs = { data: eventObj, element: appointmentElement, cancel: false, type: eventType };
         this.parent.trigger(events.eventRendered, args, (eventArgs: EventRenderedArgs) => {
             if (eventArgs.cancel) {
                 this.renderedEvents.pop();
@@ -592,10 +596,10 @@ export class MonthEvent extends EventBase {
         });
     }
 
-    public getEventData(event: { [key: string]: Object }): { [key: string]: Object } {
-        let eventObj: { [key: string]: Object } = extend({}, event, null, true) as { [key: string]: Object };
-        eventObj[this.fields.startTime] = (event.data as { [key: string]: Object })[this.fields.startTime];
-        eventObj[this.fields.endTime] = (event.data as { [key: string]: Object })[this.fields.endTime];
+    public getEventData(event: Record<string, any>): Record<string, any> {
+        const eventObj: Record<string, any> = extend({}, event, null, true) as Record<string, any>;
+        eventObj[this.fields.startTime] = (event.data as Record<string, any>)[this.fields.startTime];
+        eventObj[this.fields.endTime] = (event.data as Record<string, any>)[this.fields.endTime];
         return eventObj;
     }
 
@@ -606,25 +610,25 @@ export class MonthEvent extends EventBase {
         if (cellTd.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS)) {
             cellTd.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS).appendChild(element);
         } else {
-            let wrapper: HTMLElement = createElement('div', { className: cls.APPOINTMENT_WRAPPER_CLASS });
+            const wrapper: HTMLElement = createElement('div', { className: cls.APPOINTMENT_WRAPPER_CLASS });
             wrapper.appendChild(element);
             cellTd.appendChild(wrapper);
         }
     }
 
     private renderWrapperElement(cellTd: HTMLElement): void {
-        let element: HTMLElement = cellTd.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS);
+        const element: HTMLElement = cellTd.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS);
         if (!isNullOrUndefined(element)) {
             this.monthHeaderHeight = element.offsetTop - (<HTMLElement>cellTd).offsetTop;
         } else {
-            let wrapper: HTMLElement = createElement('div', { className: cls.APPOINTMENT_WRAPPER_CLASS });
+            const wrapper: HTMLElement = createElement('div', { className: cls.APPOINTMENT_WRAPPER_CLASS });
             cellTd.appendChild(wrapper);
             this.monthHeaderHeight = wrapper.offsetTop - (<HTMLElement>cellTd).offsetTop;
         }
     }
 
     public getMoreIndicatorElement(count: number, startDate: Date, endDate: Date): HTMLElement {
-        let moreIndicatorElement: HTMLElement = createElement('div', {
+        const moreIndicatorElement: HTMLElement = createElement('div', {
             className: cls.MORE_INDICATOR_CLASS,
             innerHTML: '+' + count + '&nbsp;' + (this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant('more')),
             attrs: {
@@ -638,15 +642,16 @@ export class MonthEvent extends EventBase {
     }
 
     public removeHeightProperty(selector: string): void {
-        let rows: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + selector + ' tbody tr'));
-        for (let row of rows) {
+        const rows: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + selector + ' tbody tr'));
+        for (const row of rows) {
             (row.firstElementChild as HTMLElement).style.height = '';
         }
     }
 
     public setMaxEventHeight(event: HTMLElement, cell: HTMLElement): void {
-        let headerHeight: number = util.getOuterHeight(cell.querySelector('.' + cls.DATE_HEADER_CLASS));
-        let height: number = (cell.offsetHeight - headerHeight) - (this.maxHeight ? 0 : this.moreIndicatorHeight);
+        const headerHeight: number = util.getOuterHeight(cell.querySelector('.' + cls.DATE_HEADER_CLASS));
+        const height: number = (cell.offsetHeight - headerHeight) - (this.maxHeight ? 0 : this.moreIndicatorHeight);
         setStyleAttribute(event, { 'height': height + 'px', 'align-items': 'center' });
     }
+
 }

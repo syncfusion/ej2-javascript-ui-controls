@@ -4,6 +4,7 @@ import { InsertMethods } from './insert-methods';
 
 /**
  * Split the Node based on selection
+ * 
  * @hidden
  * @deprecated
  */
@@ -13,6 +14,10 @@ export class NodeCutter {
     // Split Selection Node
     /**
      * GetSpliceNode method
+     *
+     * @param {Range} range - specifies the range
+     * @param {HTMLElement} node - specifies the node element.
+     * @returns {Node} - returns the node value
      * @hidden
      * @deprecated
      */
@@ -23,29 +28,34 @@ export class NodeCutter {
     }
 
     /**
+     * @param {Range} range - specifies the range
+     * @param {HTMLElement} node - specifies the node element.
+     * @param {boolean} isCollapsed - specifies the boolean value
+     * @returns {HTMLElement} - returns the element
      * @hidden
      * @deprecated
      */
     public SplitNode(range: Range, node: HTMLElement, isCollapsed: boolean): HTMLElement {
         if (node) {
-            let clone: Range = range.cloneRange();
-            let parent: HTMLElement = node.parentNode as HTMLElement;
-            let index: number = this.nodeSelection.getIndex(node);
+            const clone: Range = range.cloneRange();
+            const parent: HTMLElement = node.parentNode as HTMLElement;
+            const index: number = this.nodeSelection.getIndex(node);
             clone.collapse(isCollapsed);
+            // eslint-disable-next-line
             (isCollapsed) ? clone.setStartBefore(node) : clone.setEndAfter(node);
             let fragment : DocumentFragment = clone.extractContents();
             if ( isCollapsed ) {
                 node = parent.childNodes[index] as HTMLElement;
                 fragment = this.spliceEmptyNode(fragment, false) as DocumentFragment;
                 if (fragment && fragment.childNodes.length > 0) {
-                    let isEmpty: boolean = (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG'
+                    const isEmpty: boolean = (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG'
                         && this.isImgElm(fragment) && fragment.textContent === '') ? true : false;
                     if (!isEmpty) {
                         if (node) {
                             InsertMethods.AppendBefore(fragment, node);
                         } else {
                             parent.appendChild(fragment);
-                            let divNode: HTMLDivElement = document.createElement('div');
+                            const divNode: HTMLDivElement = document.createElement('div');
                             divNode.innerHTML = '&#65279;&#65279;';
                             node = divNode.firstChild as HTMLElement;
                             parent.appendChild(node);
@@ -54,17 +64,17 @@ export class NodeCutter {
                 }
             } else {
                 node = parent.childNodes.length > 1 ? parent.childNodes[index] as HTMLElement :
-                parent.childNodes[0] as HTMLElement;
+                    parent.childNodes[0] as HTMLElement;
                 fragment = this.spliceEmptyNode(fragment, true) as DocumentFragment;
                 if (fragment && fragment.childNodes.length > 0) {
-                    let isEmpty: boolean = (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG'
+                    const isEmpty: boolean = (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG'
                         && this.isImgElm(fragment) && fragment.textContent === '') ? true : false;
                     if (!isEmpty) {
                         if (node) {
                             InsertMethods.AppendBefore(fragment, node, true);
                         } else {
                             parent.appendChild(fragment);
-                            let divNode: HTMLDivElement = document.createElement('div');
+                            const divNode: HTMLDivElement = document.createElement('div');
                             divNode.innerHTML = '&#65279;&#65279;';
                             parent.insertBefore(divNode.firstChild, parent.firstChild);
                             node = parent.firstChild as HTMLElement;
@@ -80,7 +90,7 @@ export class NodeCutter {
     private isImgElm(fragment: DocumentFragment): boolean {
         let result: boolean = true;
         if (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG') {
-            let firstChild: Node = fragment.childNodes[0];
+            const firstChild: Node = fragment.childNodes[0];
             for (let i: number = 0; !isNOU(firstChild.childNodes) && i < firstChild.childNodes.length; i++) {
                 if (firstChild.childNodes[i].nodeName === 'IMG') {
                     result = false;
@@ -124,14 +134,19 @@ export class NodeCutter {
 
     /**
      * GetCursorRange method
+     *
+     * @param {Document} docElement - specifies the document
+     * @param {Range} range - specifies the range
+     * @param {Node} node - specifies the node.
+     * @returns {Range} - returns the range value
      * @hidden
      * @deprecated
      */
     public GetCursorRange(docElement: Document, range: Range, node: Node): Range {
         let cursorRange: Range = docElement.createRange();
-        let indexes: number[] = [];
+        const indexes: number[] = [];
         indexes.push(0);
-        let str: string = this.TrimLineBreak((node as Text).data);
+        const str: string = this.TrimLineBreak((node as Text).data);
         let index: number = str.indexOf(' ', 0);
         while ( index !== -1) {
             if (indexes.indexOf(index) < 0) {
@@ -153,7 +168,7 @@ export class NodeCutter {
             cursorRange = range;
             this.position = 1;
         } else {
-            let startOffset: number = this.GetCursorStart(indexes , range.startOffset, true);
+            const startOffset: number = this.GetCursorStart(indexes , range.startOffset, true);
             this.position = range.startOffset - startOffset;
             cursorRange.setStart(range.startContainer, startOffset);
             cursorRange.setEnd(range.startContainer, this.GetCursorStart(indexes, range.startOffset, false));
@@ -163,6 +178,11 @@ export class NodeCutter {
 
     /**
      * GetCursorNode method
+     *
+     * @param {Document} docElement - specifies the document
+     * @param {Range} range - specifies the range
+     * @param {Node} node - specifies the node.
+     * @returns {Node} - returns the node value
      * @hidden
      * @deprecated
      */
@@ -172,6 +192,9 @@ export class NodeCutter {
 
     /**
      * TrimLineBreak method
+     *
+     * @param {string} line - specifies the string value.
+     * @returns {string} - returns the string
      * @hidden
      * @deprecated
      */

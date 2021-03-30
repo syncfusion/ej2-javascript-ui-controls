@@ -9,8 +9,10 @@ import { SubTreeAlignments } from '../enum/enum';
  */
 
 export class LayoutInfo extends ChildProperty<LayoutInfo> {
+    /* eslint-disable */
     /**
      * Defines the orientation of the layout
+     *
      * @default'Horizontal'
      */
     @Property('Horizontal')
@@ -19,18 +21,21 @@ export class LayoutInfo extends ChildProperty<LayoutInfo> {
 
 
     /**
-     * Defines the type for the subtree 
+     * Defines the type for the subtree
+     *
      * @default'Center'
      * @blazorDefaultValue 'Center'
      * @isEnumeration true
      */
     @Property('Center')
     public type: SubTreeAlignments;
+    /* eslint-enable */
 
 
 
     /**
      * Defines the offset value
+     *
      * @default undefined
      */
     @Property(undefined)
@@ -38,12 +43,14 @@ export class LayoutInfo extends ChildProperty<LayoutInfo> {
 
     /**
      * Defines the routing for the layout
+     *
      * @default false
      */
     @Property(false)
     public enableRouting: boolean;
     /**
      * Defines the children for the layout
+     *
      * @default []
      */
     @Property([])
@@ -51,6 +58,7 @@ export class LayoutInfo extends ChildProperty<LayoutInfo> {
 
     /**
      * Defines assistant for the layout
+     *
      * @blazorDefaultValueIgnore
      * @default ''
      * @aspDefaultValueIgnore
@@ -61,6 +69,7 @@ export class LayoutInfo extends ChildProperty<LayoutInfo> {
 
     /**
      * Defines the level for the layout
+     *
      * @blazorDefaultValueIgnore
      */
     @Property('')
@@ -68,6 +77,7 @@ export class LayoutInfo extends ChildProperty<LayoutInfo> {
 
     /**
      * Defines the subtree for the layout
+     *
      * @blazorDefaultValueIgnore
      */
     @Property('')
@@ -75,12 +85,14 @@ export class LayoutInfo extends ChildProperty<LayoutInfo> {
 
     /**
      * Defines the row for the layout
+     *
      * @blazorDefaultValueIgnore
      */
     @Property('')
     public rows: number;
 
 }
+
 
 
 

@@ -1,13 +1,13 @@
 import { WTableFormat, WRowFormat, WCellFormat } from '../format/index';
 import {
     WidthType, WColor, AutoFitType, TextFormFieldType, CheckBoxSizeType, VerticalOrigin, VerticalAlignment,
-    HorizontalOrigin, HorizontalAlignment, LineFormatType, LineDashing, AutoShapeType, ContentControlType, ContentControlWidgetType
+    HorizontalOrigin, HorizontalAlignment, LineFormatType, LineDashing, AutoShapeType, ContentControlType, ContentControlWidgetType,
+    TextWrappingStyle
 } from '../../base/types';
 import { WListLevel } from '../list/list-level';
 import { WParagraphFormat, WCharacterFormat, WSectionFormat, WBorder, WBorders } from '../format/index';
 import { isNullOrUndefined, createElement, L10n } from '@syncfusion/ej2-base';
 import { Dictionary } from '../../base/dictionary';
-// tslint:disable-next-line:max-line-length
 import { ElementInfo, HelperMethods, Point, WidthInfo, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, BorderInfo } from '../editor/editor-helper';
 import { HeaderFooterType, TabLeader, FootnoteType } from '../../base/types';
 import { TextPosition } from '..';
@@ -15,7 +15,8 @@ import { ChartComponent } from '@syncfusion/ej2-office-chart';
 import { TextHelper } from './text-helper';
 import { LayoutViewer, WebLayoutViewer, DocumentHelper } from './viewer';
 import { Revision } from '../track-changes/track-changes';
-/** 
+import { Layout } from './layout';
+/**
  * @private
  */
 export class Rect {
@@ -35,23 +36,27 @@ export class Rect {
      * @private
      */
     public y: number;
-    /**
-     * @private
-     */
-    get right(): number {
+    public get right(): number {
         return this.x + this.width;
     }
-    /**
-     * @private
-     */
-    get bottom(): number {
+    public get bottom(): number {
         return this.y + this.height;
     }
-    constructor(x: number, y: number, width: number, height: number) {
+    public constructor(x: number, y: number, width: number, height: number) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
+    }
+    /** 
+     * @private
+     */
+    public isIntersecting(currentBound: Rect): boolean {
+        if (currentBound.y > this.bottom || this.y > currentBound.bottom ||
+            currentBound.x > this.right || this.x > currentBound.right) {
+            return false;
+        }
+        return true;
     }
 }
 /**
@@ -62,14 +67,14 @@ export class Padding {
     public left: number = 10;
     public top: number = 10;
     public bottom: number = 10;
-    constructor(right: number, left: number, top: number, bottom: number) {
+    public constructor(right: number, left: number, top: number, bottom: number) {
         this.right = right;
         this.left = left;
         this.top = top;
         this.bottom = bottom;
     }
 }
-/** 
+/**
  * @private
  */
 export class Margin {
@@ -89,21 +94,15 @@ export class Margin {
      * @private
      */
     public bottom: number;
-    constructor(leftMargin: number, topMargin: number, rightMargin: number, bottomMargin: number) {
+    public constructor(leftMargin: number, topMargin: number, rightMargin: number, bottomMargin: number) {
         this.left = leftMargin;
         this.top = topMargin;
         this.right = rightMargin;
         this.bottom = bottomMargin;
     }
-    /**
-     * @private
-     */
     public clone(): Margin {
         return new Margin(this.left, this.top, this.right, this.bottom);
     }
-    /**
-     * @private
-     */
     public destroy(): void {
         this.left = undefined;
         this.right = undefined;
@@ -112,10 +111,10 @@ export class Margin {
     }
 }
 
-/** 
+/**
  * @private
  */
-/* tslint:disable:no-empty-interfaces */
+/* eslint-disable */
 export interface IWidget { }
 /** 
  * @private
@@ -154,10 +153,7 @@ export abstract class Widget implements IWidget {
      * @private
      */
     public index: number = 0;
-    /**
-     * @private
-     */
-    get indexInOwner(): number {
+    public get indexInOwner(): number {
         if (this instanceof BodyWidget && this.page) {
             return this.page.bodyWidgets.indexOf(this);
         } else if (this.containerWidget && this.containerWidget.childWidgets) {
@@ -167,26 +163,17 @@ export abstract class Widget implements IWidget {
         }
         return -1;
     }
-    /**
-     * @private
-     */
-    get firstChild(): IWidget {
+    public get firstChild(): IWidget {
         return this.childWidgets.length > 0 ? this.childWidgets[0] : undefined;
     }
-    /**
-     * @private
-     */
-    get lastChild(): IWidget {
+    public get lastChild(): IWidget {
         if (this.childWidgets) {
             return this.childWidgets.length > 0 ?
                 this.childWidgets[this.childWidgets.length - 1] : undefined;
         }
         return undefined;
     }
-    /**
-     * @private
-     */
-    get previousWidget(): Widget {
+    public get previousWidget(): Widget {
         let widget: Widget = this;
         let index: number = this.indexInOwner;
         if (widget instanceof BodyWidget) {
@@ -196,10 +183,7 @@ export abstract class Widget implements IWidget {
         }
         return widget;
     }
-    /**
-     * @private
-     */
-    get nextWidget(): Widget {
+    public get nextWidget(): Widget {
         let widget: Widget = this;
         let index: number = this.indexInOwner;
         if (index === -1) {
@@ -214,10 +198,7 @@ export abstract class Widget implements IWidget {
         }
         return widget;
     }
-    /**
-     * @private
-     */
-    get previousRenderedWidget(): Widget {
+    public get previousRenderedWidget(): Widget {
         let widget: Widget = this;
         let index: number = this.indexInOwner;
         if (index < 0) {
@@ -263,10 +244,7 @@ export abstract class Widget implements IWidget {
         }
         return widget;
     }
-    /**
-     * @private
-     */
-    get nextRenderedWidget(): Widget {
+    public get nextRenderedWidget(): Widget {
         let widget: Widget = this;
         let index: number = this.indexInOwner;
         if (index < 0) {
@@ -315,10 +293,7 @@ export abstract class Widget implements IWidget {
         }
         return widget;
     }
-    /**
-     * @private
-     */
-    get previousSplitWidget(): Widget {
+    public get previousSplitWidget(): Widget {
         let widget: Widget = this;
         if (widget instanceof TableCellWidget) {
             return widget.getPreviousSplitWidget();
@@ -332,10 +307,7 @@ export abstract class Widget implements IWidget {
         }
         return undefined;
     }
-    /**
-     * @private
-     */
-    get nextSplitWidget(): Widget {
+    public get nextSplitWidget(): Widget {
         let widget: Widget = this;
         if (widget instanceof TableCellWidget) {
             return widget.getNextSplitWidget();
@@ -349,17 +321,10 @@ export abstract class Widget implements IWidget {
         }
         return undefined;
     }
-    /**
-     * @private
-     */
     public abstract equals(widget: Widget): boolean;
-    /**
-     * @private
-     */
+
     public abstract getTableCellWidget(point: Point): TableCellWidget;
-    /**
-     * @private
-     */
+
     public getPreviousSplitWidgets(): Widget[] {
         let widgets: Widget[] = [];
 
@@ -370,9 +335,7 @@ export abstract class Widget implements IWidget {
         }
         return widgets;
     }
-    /**
-     * @private
-     */
+
     public getSplitWidgets(): Widget[] {
         let widgets: Widget[] = this.getPreviousSplitWidgets();
         let widget: Widget = this;
@@ -382,9 +345,7 @@ export abstract class Widget implements IWidget {
         }
         return widgets;
     }
-    /**
-     * @private
-     */
+
     public combineWidget(viewer: LayoutViewer): Widget {
         let root: Widget = this;
         let widgets: Widget[] = this.getSplitWidgets();
@@ -418,9 +379,6 @@ export abstract class Widget implements IWidget {
         }
         widget.destroyInternal(viewer);
     }
-    /**
-     * @private
-     */
     public addWidgets(childWidgets: IWidget[]): void {
         while (childWidgets.length > 0) {
             let widget: IWidget = childWidgets.shift();
@@ -436,21 +394,12 @@ export abstract class Widget implements IWidget {
             this.childWidgets.push(widget);
         }
     }
-    /**
-     * @private
-     */
     public removeChild(index: number): void {
         if (index > -1 && index < this.childWidgets.length) {
             this.childWidgets.splice(index, 1);
         }
     }
-    /**
-     * @private
-     */
     public abstract destroyInternal(viewer: LayoutViewer): void;
-    /**
-     * @private
-     */
     public destroy(): void {
         if (this.childWidgets) {
             while (this.childWidgets.length > 0) {
@@ -492,10 +441,7 @@ export abstract class BlockContainer extends Widget {
      * @private
      */
     public sectionFormatIn: WSectionFormat = undefined;
-    /**
-     * @private
-     */
-    get sectionFormat(): WSectionFormat {
+    public get sectionFormat(): WSectionFormat {
         let container: BlockContainer = this;
         if (container instanceof BodyWidget) {
             return container.sectionFormatIn;
@@ -504,18 +450,12 @@ export abstract class BlockContainer extends Widget {
         }
         return undefined;
     }
-    /**
-     * @private
-     */
-    set sectionFormat(value: WSectionFormat) {
+    public set sectionFormat(value: WSectionFormat) {
         if (this instanceof BodyWidget) {
             this.sectionFormatIn = value;
         }
     }
-    /**
-     * @private
-     */
-    get sectionIndex(): number {
+    public get sectionIndex(): number {
         let container: BlockContainer = this;
         let index: number = 0;
         if (container instanceof BodyWidget) {
@@ -525,9 +465,6 @@ export abstract class BlockContainer extends Widget {
         }
         return index;
     }
-    /**
-     * @private
-     */
     public getHierarchicalIndex(hierarchicalIndex: string): string {
         let documentHelper: DocumentHelper = undefined;
         let node: BlockContainer = this;
@@ -561,18 +498,12 @@ export class BodyWidget extends BlockContainer {
     /**
      * Initialize the constructor of BodyWidget
      */
-    constructor() {
+    public constructor() {
         super();
     }
-    /**
-     * @private
-     */
     public equals(widget: Widget): boolean {
         return widget instanceof BodyWidget && widget.sectionFormat === this.sectionFormat;
     }
-    /**
-     * @private
-     */
     public getHierarchicalIndex(hierarchicalIndex: string): string {
         let documentHelper: DocumentHelper = undefined;
         let node: BodyWidget = this;
@@ -584,9 +515,6 @@ export class BodyWidget extends BlockContainer {
         }
         return hierarchicalIndex;
     }
-    /**
-     * @private
-     */
     public getTableCellWidget(touchPoint: Point): TableCellWidget {
         for (let i: number = 0; i < this.childWidgets.length; i++) {
             if ((this.childWidgets[i] as Widget).y <= touchPoint.y
@@ -604,9 +532,6 @@ export class BodyWidget extends BlockContainer {
         }
         return tableCellWidget;
     }
-    /**
-     * @private
-     */
     public destroyInternal(viewer: LayoutViewer): void {
         let height: number = this.height;
         if (!isNullOrUndefined(this.childWidgets)) {
@@ -630,7 +555,7 @@ export class BodyWidget extends BlockContainer {
         //         ((this as HeaderFooterWidget).currentNode as WHeaderFooter).layoutedWidgets.splice(index, 1);
         //     }
         //     this.currentNode = undefined;
-        /* tslint:disable: one-line */
+        /* eslint-disable brace-style */
         if (!isNullOrUndefined(this.page)) {
             let index: number = this.indexInOwner;
             if (this.indexInOwner > -1) {
@@ -650,9 +575,6 @@ export class BodyWidget extends BlockContainer {
         }
         this.destroy();
     }
-    /**
-     * @private
-     */
     public destroy(): void {
         // if (this.sectionFormat) {
         //     this.sectionFormat.destroy();
@@ -680,27 +602,18 @@ export class HeaderFooterWidget extends BlockContainer {
      * @private
      */
     public isEmpty: boolean = false;
-    constructor(type: HeaderFooterType) {
+    public constructor(type: HeaderFooterType) {
         super();
         this.headerFooterType = type;
     }
-    /**
-     * @private
-     */
     public getTableCellWidget(point: Point): TableCellWidget {
         return undefined;
     }
-    /**
-     * @private
-     */
     public equals(widget: Widget): boolean {
         // Todo: Need to work
         return widget instanceof HeaderFooterWidget
             && widget.containerWidget === this.containerWidget;
     }
-    /**
-     * @private
-     */
     public clone(): HeaderFooterWidget {
         let headerFooter: HeaderFooterWidget = new HeaderFooterWidget(this.headerFooterType);
         for (let i: number = 0; i < this.childWidgets.length; i++) {
@@ -716,9 +629,6 @@ export class HeaderFooterWidget extends BlockContainer {
         headerFooter.width = 0;
         return headerFooter;
     }
-    /**
-     * @private
-     */
     public destroyInternal(viewer: LayoutViewer): void {
         this.page = undefined;
         super.destroy();
@@ -757,10 +667,7 @@ export abstract class BlockWidget extends Widget {
      */
     public contentControlProperties: ContentControlProperties;
     public footNoteReference: FootnoteElementBox = undefined;
-    /**
-     * @private
-     */
-    get bodyWidget(): BlockContainer {
+    public get bodyWidget(): BlockContainer {
         let widget: Widget = this;
         while (widget.containerWidget) {
             if (widget.containerWidget instanceof TextFrame) {
@@ -776,10 +683,7 @@ export abstract class BlockWidget extends Widget {
         }
         return undefined;
     }
-    /**
-     * @private
-     */
-    get leftIndent(): number {
+    public get leftIndent(): number {
         let blockAdv: BlockWidget = this;
         if (blockAdv instanceof ParagraphWidget && blockAdv.paragraphFormat instanceof WParagraphFormat) {
             return blockAdv.paragraphFormat.leftIndent;
@@ -788,32 +692,20 @@ export abstract class BlockWidget extends Widget {
         }
         return 0;
     }
-    /**
-     * @private
-     */
-    get rightIndent(): number {
+    public get rightIndent(): number {
         let blockAdv: BlockWidget = this;
         if (blockAdv instanceof ParagraphWidget && blockAdv.paragraphFormat instanceof WParagraphFormat) {
             return (blockAdv as ParagraphWidget).paragraphFormat.rightIndent;
         }
         return 0;
     }
-    /**
-     * @private
-     */
-    get isInsideTable(): boolean {
+    public get isInsideTable(): boolean {
         return this.containerWidget instanceof TableCellWidget;
     }
-    /**
-     * @private
-     */
-    get isInHeaderFooter(): boolean {
+    public get isInHeaderFooter(): boolean {
         return this.bodyWidget instanceof HeaderFooterWidget;
     }
-    /**
-     * @private
-     */
-    get associatedCell(): TableCellWidget {
+    public get associatedCell(): TableCellWidget {
         if (this.containerWidget instanceof TableCellWidget) {
             return this.containerWidget as TableCellWidget;
         }
@@ -821,7 +713,9 @@ export abstract class BlockWidget extends Widget {
     }
     /**
      * Check whether the paragraph contains only page break.
+     * 
      * @private
+     * @returns {boolean}: Returns true if paragraph contains page break alone.
      */
     public isPageBreak(): boolean {
         let isPageBreak: boolean = false;
@@ -835,9 +729,6 @@ export abstract class BlockWidget extends Widget {
         }
         return isPageBreak;
     }
-    /**
-     * @private
-     */
     public getHierarchicalIndex(hierarchicalIndex: string): string {
         let node: BlockWidget = this;
         hierarchicalIndex = node.containerWidget.childWidgets.indexOf(node) + ';' + hierarchicalIndex;
@@ -852,17 +743,10 @@ export abstract class BlockWidget extends Widget {
         }
         return hierarchicalIndex;
     }
-    /**
-     * @private
-     */
     public abstract getMinimumAndMaximumWordWidth(minimumWordWidth: number, maximumWordWidth: number): WidthInfo;
-    /**
-     * @private
-     */
+
     public abstract clone(): BlockWidget;
-    /**
-     * @private
-     */
+
     public getIndex(): number {
         if (this instanceof ParagraphWidget || this instanceof TableWidget) {
             return (this as BlockWidget).containerWidget.childWidgets.indexOf(this);
@@ -873,9 +757,7 @@ export abstract class BlockWidget extends Widget {
         }
         return 0;
     }
-    /**
-     * @private
-     */
+
     public getContainerWidth(): number {
         if (this.isInsideTable) {
             return this.associatedCell.getCellWidth();
@@ -890,10 +772,7 @@ export abstract class BlockWidget extends Widget {
             return sectionFormat.pageWidth - (sectionFormat.leftMargin + sectionFormat.rightMargin);
         }
     }
-    /**
-     * @private
-     */
-    get bidi(): boolean {
+    public get bidi(): boolean {
         if (this instanceof ParagraphWidget && (this as ParagraphWidget).paragraphFormat instanceof WParagraphFormat) {
             return (this as ParagraphWidget).paragraphFormat.bidi;
         }
@@ -923,23 +802,14 @@ export class FootNoteWidget extends BlockContainer {
      * @private
      */
     public block: BlockWidget;
-    /**
-     * @private
-     */
     public getTableCellWidget(point: Point): TableCellWidget {
         return undefined;
     }
-    /**
-     * @private
-     */
     public equals(widget: Widget): boolean {
         // Todo: Need to work
         return widget instanceof FootNoteWidget
             && widget.containerWidget === this.containerWidget;
     }
-    /**
-     * @private
-     */
     public clone(): FootNoteWidget {
         let footNote: FootNoteWidget = new FootNoteWidget();
         for (let i: number = 0; i < this.childWidgets.length; i++) {
@@ -951,9 +821,6 @@ export class FootNoteWidget extends BlockContainer {
         footNote.block = this.block;
         return footNote;
     }
-    /**
-     * @private
-     */
     public destroyInternal(viewer: LayoutViewer): void {
         this.block = undefined;
         super.destroy();
@@ -980,10 +847,7 @@ export class ParagraphWidget extends BlockWidget {
      * @private
      */
     public floatingElements: ShapeElementBox[] = [];
-    /**
-     * @private
-     */
-    get isEndsWithPageBreak(): boolean {
+    public get isEndsWithPageBreak(): boolean {
         if (this.childWidgets.length > 0) {
             return (this.lastChild as LineWidget).isEndsWithPageBreak;
         }
@@ -992,20 +856,14 @@ export class ParagraphWidget extends BlockWidget {
     /**
      * Initialize the constructor of ParagraphWidget
      */
-    constructor() {
+    public constructor() {
         super();
         this.paragraphFormat = new WParagraphFormat(this);
         this.characterFormat = new WCharacterFormat(this);
     }
-    /**
-     * @private
-     */
     public equals(widget: Widget): boolean {
         return widget instanceof ParagraphWidget && widget.paragraphFormat === this.paragraphFormat;
     }
-    /**
-     * @private
-     */
     public isEmpty(): boolean {
         if (isNullOrUndefined(this.childWidgets) || this.childWidgets.length === 0) {
             return true;
@@ -1028,9 +886,6 @@ export class ParagraphWidget extends BlockWidget {
         }
         return true;
     }
-    /**
-     * @private
-     */
     public getInline(offset: number, indexInInline: number): ElementInfo {
         let inline: ElementBox = undefined;
         let count: number = 0;
@@ -1066,9 +921,6 @@ export class ParagraphWidget extends BlockWidget {
         }
         return { 'element': inline, 'index': indexInInline };
     }
-    /**
-     * @private
-     */
     public getLength(): number {
         let length: number = 0;
         for (let j: number = 0; j < this.childWidgets.length; j++) {
@@ -1083,16 +935,9 @@ export class ParagraphWidget extends BlockWidget {
         }
         return length;
     }
-    /**
-     * @private
-     */
     public getTableCellWidget(point: Point): TableCellWidget {
         return undefined;
     }
-    /**
-     * @private
-     */
-    // tslint:disable-next-line:max-func-body-length
     public getMinimumAndMaximumWordWidth(minimumWordWidth: number, maximumWordWidth: number): WidthInfo {
         minimumWordWidth = HelperMethods.convertPointToPixel(minimumWordWidth);
         maximumWordWidth = HelperMethods.convertPointToPixel(maximumWordWidth);
@@ -1101,14 +946,12 @@ export class ParagraphWidget extends BlockWidget {
             let text: string = '';
             let elements: Dictionary<TextElementBox, number> = new Dictionary<TextElementBox, number>();
             let imageWidths: number[] = [];
-            // tslint:disable-next-line:no-constant-condition
             do {
                 if (element instanceof TextElementBox && (element as TextElementBox).text !== '') {
                     elements.add(element as TextElementBox, text.length);
                     text += ((element as TextElementBox).text);
                 } else if (element instanceof FieldElementBox && element.fieldType === 0) {
                     let fieldBegin: FieldElementBox = element as FieldElementBox;
-                    // tslint:disable-next-line:max-line-length
                     if (!isNullOrUndefined(fieldBegin.fieldEnd)) {
                         element = isNullOrUndefined(fieldBegin.fieldSeparator) ? fieldBegin.fieldEnd as ElementBox : fieldBegin.fieldSeparator as ElementBox;
                     }
@@ -1125,7 +968,7 @@ export class ParagraphWidget extends BlockWidget {
 
             let matches: RegExpExecArray[] = [];
             let matchInfo: RegExpExecArray;
-            //tslint:disable no-conditional-assignment
+            // eslint-disable  no-cond-assign
             while (!isNullOrUndefined(matchInfo = pattern.exec(text))) {
                 matches.push(matchInfo);
             }
@@ -1186,7 +1029,6 @@ export class ParagraphWidget extends BlockWidget {
     private measureParagraph(): number {
         let width: number = 0;
         let element: ElementBox = (this.childWidgets[0] as LineWidget).children[0];
-        // tslint:disable-next-line:no-constant-condition
         do {
             if (element instanceof TextElementBox && element.text !== '') {
                 width += this.bodyWidget.page.documentHelper.textHelper.getWidth(element.text, element.characterFormat);
@@ -1212,9 +1054,6 @@ export class ParagraphWidget extends BlockWidget {
         }
         return width;
     }
-    /**
-     * @private
-     */
     public clone(): ParagraphWidget {
         let paragraph: ParagraphWidget = new ParagraphWidget();
         paragraph.paragraphFormat.copyFormat(this.paragraphFormat);
@@ -1234,9 +1073,6 @@ export class ParagraphWidget extends BlockWidget {
         }
         return paragraph;
     }
-    /**
-     * @private
-     */
     public destroyInternal(viewer: LayoutViewer): void {
         let height: number = this.height;
         if (!isNullOrUndefined(this.childWidgets)) {
@@ -1265,9 +1101,6 @@ export class ParagraphWidget extends BlockWidget {
         }
         this.destroy();
     }
-    /**
-     * @private
-     */
     public destroy(): void {
         // if (this.paragraphFormat) {
         //     this.paragraphFormat.destroy();
@@ -1516,7 +1349,7 @@ export class TableWidget extends BlockWidget {
     /**
      * @private
      */
-    //tslint:disable: max-func-body-length
+    /* eslint-disable  */
     public calculateGrid(): void {
         let tempGrid: number[] = [];
         let spannedCells: TableCellWidget[] = [];
@@ -1553,7 +1386,6 @@ export class TableWidget extends BlockWidget {
                             removeSpannedCell = false;
                             // If the cell is the last cell in the row and the row has grid after value..
                             if (j === row.childWidgets.length - 1 && row.rowFormat.gridAfter > 0) {
-                                // tslint:disable-next-line:max-line-length
                                 cellWidth = this.getCellWidth(spannedCells[k].cellFormat.preferredWidth, spannedCells[k].cellFormat.preferredWidthType, tableWidth, null);
                                 currOffset += cellWidth;
                             }
@@ -1563,7 +1395,6 @@ export class TableWidget extends BlockWidget {
                         // If the gird calculation is done from the UI level opearations such as resizing then table holder 
                         // will have the columns at that time we can get the column index from the table holder.
                         //Converts the cell width from point to twips point by 15 factor.
-                        // tslint:disable-next-line:max-line-length
                         cellWidth = this.getCellWidth(spannedCells[k].cellFormat.preferredWidth, spannedCells[k].cellFormat.preferredWidthType, tableWidth, null);
                         currOffset += cellWidth;
                         columnSpan = spannedCells[k].columnIndex + spannedCells[k].cellFormat.columnSpan;
@@ -1697,7 +1528,6 @@ export class TableWidget extends BlockWidget {
         let isAutoFit: boolean = this.tableFormat.allowAutoFit;
         // For continuous layout, window width should be considered. 
         // If preferred width exceeds this limit, it can take upto maximum of 2112 pixels (1584 points will be assigned by Microsoft Word).
-        //tslint:disable-next-line:max-line-length
         if (((!isNullOrUndefined(this.bodyWidget.page)) && this.bodyWidget.page.viewer instanceof WebLayoutViewer && isAutoFit && !this.isInsideTable && !(this.containerWidget instanceof TextFrame))) {
             containerWidth = HelperMethods.convertPixelToPoint(this.bodyWidget.page.viewer.clientArea.width - this.bodyWidget.page.viewer.padding.right * 3);
         } else {
@@ -1716,7 +1546,6 @@ export class TableWidget extends BlockWidget {
             let cellWidth: number = 0;
             let sizeInfo: ColumnSizeInfo = new ColumnSizeInfo();
             let offset: number = 0;
-            // tslint:disable-next-line:max-line-length
             if (rowFormat.gridBefore > 0 && (row.rowFormat.beforeWidth !== 0 || row.rowFormat.gridBeforeWidth !== 0) && ((this.bodyWidget.page.documentHelper.alignTablesRowByRow) ? row.ownerTable.tableFormat.tableAlignment === 'Left' : true)) {
                 cellWidth = this.getCellWidth(rowFormat.gridBeforeWidth, row.rowFormat.gridAfterWidthType, tableWidth, null);
                 sizeInfo.minimumWidth = cellWidth;
@@ -1741,18 +1570,14 @@ export class TableWidget extends BlockWidget {
                         removeSpannedCell = false;
                     }
                     else {
-                        // tslint:disable-next-line:max-line-length
                         sizeInfo = rowSpannedCell.getCellSizeInfo(isAutoFit);
                         cellWidth = this.getCellWidth(rowSpannedCell.cellFormat.preferredWidth, rowSpannedCell.cellFormat.preferredWidthType, tableWidth, rowSpannedCell);
                         // If the table gird alone calculated then column index of the rowspanned cell will be directly taken. 
-                        // tslint:disable-next-line:max-line-length
                         // If the gird calculation is done from the UI level operations such as resizing then table holder will have the columns at that time we can get the column index from the table holder.
-                        // tslint:disable-next-line:max-line-length
                         if (this.tableHolder.columns.length > 0) {
                             this.tableHolder.addColumns(columnSpan, columnSpan = this.tableHolder.columns.indexOf(rowSpannedCell.ownerColumn) + rowSpannedCell.cellFormat.columnSpan, cellWidth, sizeInfo, offset += cellWidth);
                             cell.columnIndex = columnSpan;
                         } else {
-                            // tslint:disable-next-line:max-line-length
                             this.tableHolder.addColumns(columnSpan, columnSpan = rowSpannedCell.columnIndex + rowSpannedCell.cellFormat.columnSpan, cellWidth, sizeInfo, offset += cellWidth);
                             cell.columnIndex = columnSpan;
                         }
@@ -1798,7 +1623,7 @@ export class TableWidget extends BlockWidget {
             this.tableHolder.autoFitColumn(containerWidth, tableWidth, isAutoWidth, this.isInsideTable);
         } else {
             // Fits the column width based on preferred width. i.e. Fixed layout.
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             this.tableHolder.fitColumns(containerWidth, tableWidth, isAutoWidth, this.leftIndent + this.rightIndent, isAutoFit);
         }
         if (!isAutoFit && isAutoWidth) {
@@ -1820,7 +1645,6 @@ export class TableWidget extends BlockWidget {
             }
             for (let j: number = 0; j < rw.childWidgets.length; j++) {
                 let cell: TableCellWidget = rw.childWidgets[j] as TableCellWidget;
-                // tslint:disable-next-line:max-line-length
                 cell.cellFormat.cellWidth = this.tableHolder.getCellWidth(cell.columnIndex, cell.cellFormat.columnSpan, tableWidth);
                 //By default, if cell preferred widthType is auto , width set based on table width and type is changed to 'Point'
             }
@@ -2835,7 +2659,6 @@ export class TableCellWidget extends BlockWidget {
             // For normal table cells only left border is rendered. for last cell left and right border is rendered.
             // this border widths are not included in margins.
             borderWidth = TableCellWidget.getCellLeftBorder(this).getLineWidth();
-            // tslint:disable-next-line:max-line-length
             // need to render rightBorder specifically for all the cells when the cellSpacing is greater than zero or for last cell of each row.
         }
         return borderWidth;
@@ -2872,14 +2695,26 @@ export class TableCellWidget extends BlockWidget {
      * @private
      */
     public getCellSizeInfo(isAutoFit: boolean): ColumnSizeInfo {
-        let contentChanged: boolean = false;
+        let isSetWidth: boolean = true;
+        let layout: Layout = undefined;
+        if (!isNullOrUndefined(this.bodyWidget) && !isNullOrUndefined(this.bodyWidget.page)) {
+            if (!isNullOrUndefined(this.bodyWidget.page.documentHelper)) {
+                layout = this.bodyWidget.page.documentHelper.layout;
+            }
+        }
+        if (!isNullOrUndefined(layout) && !isNullOrUndefined(layout.currentCell)) {
+            isSetWidth = false;
+            if (this === layout.currentCell) {
+                isSetWidth = true;
+            }
+        }
         // Gets the minimum preferred width for the table cell.
-        if (!this.sizeInfo.hasMinimumWidth) {
+        if (isSetWidth && !this.sizeInfo.hasMinimumWidth) {
             this.sizeInfo.minimumWidth = this.getMinimumPreferredWidth();
         }
         // Gets the minimum and maximum word widths.
         if (isAutoFit) {
-            if (!this.sizeInfo.hasMinimumWordWidth || contentChanged) {
+            if (isSetWidth && !this.sizeInfo.hasMinimumWordWidth) {
                 let size: WidthInfo = this.getMinimumAndMaximumWordWidth(0, 0);
                 this.sizeInfo.minimumWordWidth = size.minimumWordWidth + this.sizeInfo.minimumWidth;
                 this.sizeInfo.maximumWordWidth = size.maximumWordWidth + this.sizeInfo.minimumWidth;
@@ -2904,7 +2739,6 @@ export class TableCellWidget extends BlockWidget {
      */
     public getMinimumPreferredWidth(): number {
         let defaultWidth: number = 0;
-        // tslint:disable-next-line:max-line-length
         if ((this.cellFormat.preferredWidth > 0 && !this.ownerTable.tableFormat.allowAutoFit) || (this.cellFormat.preferredWidth > 0 &&
             this.cellFormat.preferredWidthType !== 'Auto')) {
             return this.cellFormat.preferredWidth;
@@ -2924,10 +2758,8 @@ export class TableCellWidget extends BlockWidget {
      * @private
      */
     public getPreviousCellLeftBorder(leftBorder: WBorder, previousCell: TableCellWidget): WBorder {
-        // tslint:disable-next-line:max-line-length
         if ((isNullOrUndefined(previousCell) || (!isNullOrUndefined(leftBorder) && (leftBorder.lineStyle === 'None' && !leftBorder.hasNoneStyle)))) {
             if (!isNullOrUndefined(leftBorder) && !((leftBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
-                // tslint:disable-next-line:max-line-length
                 leftBorder = this.getLeftBorderToRenderByHierarchy(leftBorder, TableRowWidget.getRowOf(leftBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(leftBorder.ownerBase as WBorders).tableFormat.borders);
             }
         }
@@ -2935,14 +2767,12 @@ export class TableCellWidget extends BlockWidget {
             return leftBorder;
         } else {
             let prevCellRightBorder: WBorder = undefined;
-            // tslint:disable-next-line:max-line-length
             if (!isNullOrUndefined(previousCell.cellFormat.borders) && !isNullOrUndefined(previousCell.cellFormat.borders.right) && previousCell.cellFormat.borders.right.lineStyle !== 'None') {
                 prevCellRightBorder = previousCell.cellFormat.borders.right;
             }
             if (!isNullOrUndefined(prevCellRightBorder) && prevCellRightBorder.lineStyle !== 'None') {
                 return this.getBorderBasedOnPriority(prevCellRightBorder, leftBorder);
             } else if (!isNullOrUndefined(leftBorder) && !((leftBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
-                // tslint:disable-next-line:max-line-length
                 return this.getLeftBorderToRenderByHierarchy(leftBorder, TableRowWidget.getRowOf(leftBorder.ownerBase as WBorders).rowFormat.borders, TableWidget.getTableOf(leftBorder.ownerBase as WBorders).tableFormat.borders);
             }
         }
@@ -3019,7 +2849,6 @@ export class TableCellWidget extends BlockWidget {
             !(leftBorder.lineStyle === 'None' && leftBorder.lineWidth === 0 && leftBorder.color === '#000000')))) {
 
             return leftBorder;
-            // tslint:disable-next-line:max-line-length
         } else if (!isNullOrUndefined(leftBorder) && (leftBorder.ownerBase instanceof WBorders) && TableCellWidget.getCellOf(leftBorder.ownerBase as WBorders).columnIndex === 0) {
             if (!isNullOrUndefined(tableBorders) && !isNullOrUndefined(tableBorders.left)) {
                 leftBorder = tableBorders.left;
@@ -3068,10 +2897,8 @@ export class TableCellWidget extends BlockWidget {
      * @private
      */
     public getAdjacentCellRightBorder(rightBorder: WBorder, nextCell: TableCellWidget): WBorder {
-        // tslint:disable-next-line:max-line-length
         if (isNullOrUndefined(nextCell) || (!isNullOrUndefined(rightBorder) && (rightBorder.lineStyle === 'None' && !rightBorder.hasNoneStyle))) {
             if (!isNullOrUndefined(rightBorder) && !((rightBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
-                // tslint:disable-next-line:max-line-length
                 rightBorder = this.getRightBorderToRenderByHierarchy(rightBorder, TableRowWidget.getRowOf(rightBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(rightBorder.ownerBase).tableFormat.borders);
             }
         }
@@ -3079,14 +2906,12 @@ export class TableCellWidget extends BlockWidget {
             return rightBorder;
         } else {
             let nextCellLeftBorder: WBorder = undefined;
-            // tslint:disable-next-line:max-line-length
             if (!isNullOrUndefined(nextCell.cellFormat.borders) && !isNullOrUndefined(nextCell.cellFormat.borders.left) && nextCell.cellFormat.borders.left.lineStyle !== 'None') {
                 nextCellLeftBorder = nextCell.cellFormat.borders.left;
             }
             if (!isNullOrUndefined(nextCellLeftBorder) && nextCellLeftBorder.lineStyle !== 'None') {
                 return this.getBorderBasedOnPriority(rightBorder, nextCellLeftBorder);
             } else if (!isNullOrUndefined(rightBorder) && !((rightBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
-                // tslint:disable-next-line:max-line-length
                 return this.getRightBorderToRenderByHierarchy(rightBorder, TableRowWidget.getRowOf(rightBorder.ownerBase as WBorders).rowFormat.borders, TableWidget.getTableOf(rightBorder.ownerBase as WBorders).tableFormat.borders);
 
             }
@@ -3101,7 +2926,6 @@ export class TableCellWidget extends BlockWidget {
             //If border defined with default values then border drawn based on hierarchy. 
             !(rightBorder.lineStyle === 'None' && rightBorder.lineWidth === 0 && rightBorder.color === '#000000')))) {
             return rightBorder;
-            // tslint:disable-next-line:max-line-length
         } else if (!isNullOrUndefined(rightBorder) && (rightBorder.ownerBase instanceof WBorders) && TableCellWidget.getCellOf(rightBorder.ownerBase).columnIndex === TableCellWidget.getCellOf(rightBorder.ownerBase).ownerRow.childWidgets.length - 1) {
             if (!isNullOrUndefined(tableBorders) && !isNullOrUndefined(tableBorders.right)) {
                 rightBorder = tableBorders.right;
@@ -3164,7 +2988,6 @@ export class TableCellWidget extends BlockWidget {
                         }
                         //If table cell Column index is greater than previous row cells count then last cell is taken as previous top cell.
                     } else {
-                        // tslint:disable-next-line:max-line-length
                         prevTopCell = (tableCell.ownerRow.previousWidget as TableRowWidget).childWidgets[(tableCell.ownerRow.previousWidget as TableRowWidget).childWidgets.length - 1] as TableCellWidget;
                     }
                 }
@@ -3181,10 +3004,8 @@ export class TableCellWidget extends BlockWidget {
      * @private
      */
     public getPreviousCellTopBorder(topBorder: WBorder, previousTopCell: TableCellWidget): WBorder {
-        // tslint:disable-next-line:max-line-length
         if (isNullOrUndefined(previousTopCell) || (!isNullOrUndefined(topBorder) && (topBorder.lineStyle === 'None' && !topBorder.hasNoneStyle))) {
             if (!isNullOrUndefined(topBorder) && !((topBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
-                // tslint:disable-next-line:max-line-length
                 topBorder = this.getTopBorderToRenderByHierarchy(topBorder, TableRowWidget.getRowOf(topBorder.ownerBase as WBorders).rowFormat.borders, TableWidget.getTableOf(topBorder.ownerBase as WBorders).tableFormat.borders);
             }
         }
@@ -3192,14 +3013,12 @@ export class TableCellWidget extends BlockWidget {
             return topBorder;
         } else {
             let prevTopCellBottomBorder: WBorder = undefined;
-            // tslint:disable-next-line:max-line-length
             if (!isNullOrUndefined(previousTopCell.cellFormat.borders) && !isNullOrUndefined(previousTopCell.cellFormat.borders.bottom) && previousTopCell.cellFormat.borders.bottom.lineStyle !== 'None') {
                 prevTopCellBottomBorder = previousTopCell.cellFormat.borders.bottom;
             }
             if (!isNullOrUndefined(prevTopCellBottomBorder) && prevTopCellBottomBorder.lineStyle !== 'None') {
                 return this.getBorderBasedOnPriority(topBorder, prevTopCellBottomBorder);
             } else if (!isNullOrUndefined(topBorder) && !((topBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
-                // tslint:disable-next-line:max-line-length
                 return this.getTopBorderToRenderByHierarchy(topBorder, TableRowWidget.getRowOf(topBorder.ownerBase as WBorders).rowFormat.borders, TableWidget.getTableOf(topBorder.ownerBase as WBorders).tableFormat.borders);
             }
         }
@@ -3213,7 +3032,6 @@ export class TableCellWidget extends BlockWidget {
             //If border defined with default values then border drawn based on hierarchy. 
             !(topBorder.lineStyle === 'None' && topBorder.lineWidth === 0 && topBorder.color === '#000000')))) {
             return topBorder;
-            // tslint:disable-next-line:max-line-length
         } else if (!isNullOrUndefined(topBorder) && (topBorder.ownerBase instanceof WBorders) && TableCellWidget.getCellOf(topBorder.ownerBase as WBorders).ownerRow.rowIndex === 0) {
             if (!isNullOrUndefined(tableBorders) && !isNullOrUndefined(tableBorders.top)) {
                 topBorder = tableBorders.top;
@@ -3241,7 +3059,6 @@ export class TableCellWidget extends BlockWidget {
             bottomBorder = cellBorder.bottom;
         }
         if (isNullOrUndefined(bottomBorder)) {
-            // tslint:disable-next-line:max-line-length
             bottomBorder = tableCell.getBottomBorderToRenderByHierarchy(bottomBorder, rowBorders, tableBorders); // select the left border based on heirarchy.
         }
         if (tableCell.ownerTable.tableFormat.cellSpacing > 0) {
@@ -3264,10 +3081,8 @@ export class TableCellWidget extends BlockWidget {
      * @private
      */
     public getAdjacentCellBottomBorder(bottomBorder: WBorder, nextBottomCell: TableCellWidget): WBorder {
-        // tslint:disable-next-line:max-line-length
         if (isNullOrUndefined(nextBottomCell) || (!isNullOrUndefined(bottomBorder) && (bottomBorder.lineStyle === 'None' && !bottomBorder.hasNoneStyle))) {
             if (!isNullOrUndefined(bottomBorder) && !((bottomBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
-                // tslint:disable-next-line:max-line-length
                 bottomBorder = this.getBottomBorderToRenderByHierarchy(bottomBorder, TableRowWidget.getRowOf(bottomBorder.ownerBase as WBorders).rowFormat.borders, TableWidget.getTableOf(bottomBorder.ownerBase as WBorders).tableFormat.borders);
             }
         }
@@ -3275,14 +3090,12 @@ export class TableCellWidget extends BlockWidget {
             return bottomBorder;
         } else {
             let prevBottomCellTopBorder: WBorder = undefined;
-            // tslint:disable-next-line:max-line-length
             if (!isNullOrUndefined(nextBottomCell.cellFormat.borders) && !isNullOrUndefined(nextBottomCell.cellFormat.borders.top) && nextBottomCell.cellFormat.borders.top.lineStyle !== 'None') {
                 prevBottomCellTopBorder = nextBottomCell.cellFormat.borders.top;
             }
             if (!isNullOrUndefined(prevBottomCellTopBorder) && prevBottomCellTopBorder.lineStyle !== 'None') {
                 return this.getBorderBasedOnPriority(bottomBorder, prevBottomCellTopBorder);
             } else if (!isNullOrUndefined(bottomBorder) && !((bottomBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
-                // tslint:disable-next-line:max-line-length
                 return this.getBottomBorderToRenderByHierarchy(bottomBorder, TableRowWidget.getRowOf(bottomBorder.ownerBase as WBorders).rowFormat.borders, TableWidget.getTableOf(bottomBorder.ownerBase as WBorders).tableFormat.borders);
             }
         }
@@ -3296,7 +3109,6 @@ export class TableCellWidget extends BlockWidget {
             //If border defined with default values then border drawn based on hierarchy. 
             !(bottomBorder.lineStyle === 'None' && bottomBorder.lineWidth === 0 && bottomBorder.color === '#000000')))) {
             return bottomBorder;
-            // tslint:disable-next-line:max-line-length
         } else if (!isNullOrUndefined(bottomBorder) && (bottomBorder.ownerBase instanceof WBorders) && TableCellWidget.getCellOf(bottomBorder.ownerBase as WBorders).ownerRow.rowIndex + TableCellWidget.getCellOf(bottomBorder.ownerBase as WBorders).cellFormat.rowSpan === TableCellWidget.getCellOf(bottomBorder.ownerBase as WBorders).ownerTable.childWidgets.length) {
             if (!isNullOrUndefined(tableBorders) && !isNullOrUndefined(tableBorders.bottom)) {
                 bottomBorder = tableBorders.bottom;
@@ -3467,6 +3279,10 @@ export class LineWidget implements IWidget {
     /**
      * @private
      */
+    public marginTop: number = 0;
+    /**
+     * @private
+     */
     get indexInOwner(): number {
         if (this.paragraph && this.paragraph.childWidgets) {
             return this.paragraph.childWidgets.indexOf(this);
@@ -3529,7 +3345,6 @@ export class LineWidget implements IWidget {
      */
     public isFirstLine(): boolean {
         let index: number = this.indexInOwner;
-        // tslint:disable-next-line:max-line-length
         if (index > -1 && (this.paragraph.previousSplitWidget === undefined || (this.paragraph.previousSplitWidget instanceof ParagraphWidget && (this.paragraph.previousSplitWidget as ParagraphWidget).isEndsWithPageBreak))) {
             return index === 0;
         }
@@ -3618,7 +3433,6 @@ export class LineWidget implements IWidget {
      * @param inline 
      * @param isEndOffset 
      */
-    // tslint:disable-next-line:max-line-length
     public getInlineForOffset(offset: number, isOffset?: boolean, inline?: ElementBox, isEndOffset?: boolean, isPrevOffset?: boolean, isNxtOffset?: boolean): ElementInfo {
         let startElement: ElementBox = this.children[this.children.length - 1] as ElementBox;
         let endElement: ElementBox;
@@ -3632,11 +3446,9 @@ export class LineWidget implements IWidget {
         while (element) {
             if (!endElement && !(element instanceof TabElementBox && element.text === '\t') &&
                 (element instanceof TextElementBox && !textHelper.isRTLText(element.text)
-                    // tslint:disable-next-line:max-line-length
                     && !((textHelper.containsSpecialCharAlone(element.text) || /^[0-9]+$/.test(element.text)) && element.characterFormat.bidi)
                     || !(element instanceof TextElementBox))) {
                 while (element.previousElement && (element.previousElement instanceof TextElementBox
-                    // tslint:disable-next-line:max-line-length
                     && !textHelper.isRTLText(element.previousElement.text) && !((textHelper.containsSpecialCharAlone(element.previousElement.text)
                         || /^[0-9]+$/.test(element.previousElement.text)) && element.previousElement.characterFormat.bidi)
                     || element.previousElement instanceof FieldElementBox
@@ -3658,7 +3470,6 @@ export class LineWidget implements IWidget {
                 }
                 if (element.previousElement && (isApplied
                     || (element.previousElement instanceof TextElementBox && (textHelper.isRTLText(element.previousElement.text) ||
-                        // tslint:disable-next-line:max-line-length
                         ((textHelper.containsSpecialCharAlone(element.previousElement.text) || /^[0-9]+$/.test(element.previousElement.text)) && element.previousElement.characterFormat.bidi))))) {
                     endElement = element.previousElement;
                 } else if (!element.previousElement) {
@@ -3719,7 +3530,6 @@ export class LineWidget implements IWidget {
             else {
                 if (endElement && (!element.nextElement || element === startElement || element.nextElement instanceof TextElementBox
                     && (textHelper.isRTLText(element.nextElement.text) ||
-                        // tslint:disable-next-line:max-line-length
                         ((textHelper.containsSpecialCharAlone(element.nextElement.text) || /^[0-9]+$/.test(element.nextElement.text)) && element.nextElement.characterFormat.bidi))
                     || element.nextElement instanceof ListTextElementBox)) {
                     if (offset === count + 1 && count === lineLength) {
@@ -3857,7 +3667,6 @@ export class LineWidget implements IWidget {
                     //    count += inlineElement.length;
                     //    continue;
                     //}
-                    // tslint:disable-next-line:max-line-length
                     if (inlineElement instanceof TextElementBox && ((inlineElement as TextElementBox).text === ' ' && inlineElement.revisions.length === 0 && isInsert)) {
                         let currentElement: ElementBox = this.getNextTextElement(this, i + 1);
                         inlineElement = !isNullOrUndefined(currentElement) ? currentElement : inlineElement;
@@ -4039,7 +3848,6 @@ export abstract class ElementBox {
      * Method to indicate whether current element is trackable.
      */
     get isValidNodeForTracking(): boolean {
-        // tslint:disable-next-line:max-line-length
         if (this instanceof BookmarkElementBox || this instanceof CommentCharacterElementBox || this instanceof EditRangeStartElementBox || this instanceof EditRangeEndElementBox || this instanceof ContentControl) {
             return false;
         }
@@ -4129,7 +3937,6 @@ export abstract class ElementBox {
         } else if (line.paragraph.previousRenderedWidget instanceof ParagraphWidget
             && line.paragraph.previousRenderedWidget.childWidgets.length > 0) {
             let prevParagraph: ParagraphWidget = line.paragraph.previousRenderedWidget as ParagraphWidget;
-            // tslint:disable-next-line:max-line-length
             this.linkFieldTraversingBackward(prevParagraph.childWidgets[prevParagraph.childWidgets.length - 1] as LineWidget, fieldEnd, this);
         }
         return true;
@@ -4202,7 +4009,6 @@ export abstract class ElementBox {
             this.linkFieldTraversingBackwardSeparator(line.previousLine, fieldSeparator, this);
         } else if (line.paragraph.previousRenderedWidget instanceof ParagraphWidget
             && line.paragraph.previousRenderedWidget.childWidgets.length > 0) {
-            // tslint:disable-next-line:max-line-length
             line = line.paragraph.previousRenderedWidget.childWidgets[line.paragraph.previousRenderedWidget.childWidgets.length - 1] as LineWidget;
             this.linkFieldTraversingBackwardSeparator(line, fieldSeparator, this);
         } else {
@@ -4260,7 +4066,6 @@ export abstract class ElementBox {
      */
     get nextValidNodeForTracking(): ElementBox {
         let elementBox: ElementBox = this;
-        //tslint:disable-next-line:max-line-length
         while (!isNullOrUndefined(elementBox) && (elementBox instanceof BookmarkElementBox || elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox || elementBox instanceof ContentControl)) {
             elementBox = elementBox.nextNode;
         }
@@ -4271,7 +4076,6 @@ export abstract class ElementBox {
      */
     get previousValidNodeForTracking(): ElementBox {
         let elementBox: ElementBox = this;
-        //tslint:disable-next-line:max-line-length
         while (!isNullOrUndefined(elementBox) && (elementBox instanceof BookmarkElementBox || elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox || elementBox instanceof ContentControl)) {
             elementBox = elementBox.previousNode;
         }
@@ -5499,6 +5303,30 @@ export class ShapeBase extends ShapeCommon {
     /**
      * @private
      */
+    public textWrappingStyle: TextWrappingStyle;
+    /**
+     * @private
+     */
+    public textWrappingType: string;
+    /**
+     * @private
+     */
+    public distanceBottom: number;
+    /**
+     * @private
+     */
+    public distanceLeft: number;
+    /**
+     * @private
+     */
+    public distanceRight: number;
+    /**
+     * @private
+     */
+    public distanceTop: number;
+    /**
+     * @private
+     */
     public layoutInCell: boolean;
     /**
      * @private
@@ -5542,6 +5370,12 @@ export class ShapeElementBox extends ShapeBase {
         shape.horizontalOrigin = this.horizontalOrigin;
         shape.zOrderPosition = this.zOrderPosition;
         shape.allowOverlap = this.allowOverlap;
+        shape.textWrappingStyle = this.textWrappingStyle;
+        shape.textWrappingType = this.textWrappingType;
+        shape.distanceBottom = this.distanceBottom;
+        shape.distanceLeft = this.distanceLeft;
+        shape.distanceRight = this.distanceRight;
+        shape.distanceTop = this.distanceTop;
         shape.layoutInCell = this.layoutInCell;
         shape.lockAnchor = this.lockAnchor;
         shape.autoShapeType = this.autoShapeType;
@@ -8010,7 +7844,6 @@ export class WTableHolder {
             }
             maxTotal += column.preferredWidth > column.maximumWordWidth ? column.preferredWidth : column.maximumWordWidth;
             minTotal += column.preferredWidth > column.minimumWordWidth ? column.preferredWidth : column.minimumWordWidth;
-            // tslint:disable-next-line:max-line-length
             let preferred: number = column.preferredWidth === 0 ? column.minimumWordWidth : column.preferredWidth > column.minimumWordWidth ? column.preferredWidth : column.minimumWordWidth;
             let difference: number = column.maximumWordWidth - preferred;
             remainingWidthTotal += difference > 0 ? difference : 0;
@@ -8033,7 +7866,6 @@ export class WTableHolder {
             }
         } else {
             // If the table preferred table width is set, then check its greater than total minimum word width. 
-            // tslint:disable-next-line:max-line-length
             // If yes then set table preferred table width as container width. Else, check whether the total minimum word width is less than container width.
             // If yes, then set total minimum word width as container width. Else, set the container width to container width.
             if (!isAuto) {
@@ -8042,7 +7874,6 @@ export class WTableHolder {
                 this.fitColumns(containerWidth, preferredTableWidth, isAuto);
                 return;
                 //}
-                // tslint:disable-next-line:max-line-length
                 //containerWidth = preferredTableWidth < totalMinimumWordWidth ? totalMinimumWordWidth < containerWidth ? totalMinimumWordWidth : containerWidth : preferredTableWidth;
             }
             // Try to fit minimum word width to match preferredTableWidth or containerWidth.
@@ -8106,7 +7937,7 @@ export class WTableHolder {
     /**
      * @private
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     public fitColumns(containerWidth: number, preferredTableWidth: number, isAutoWidth: boolean, indent?: number, isAutoFit?: boolean): void {
         if (isNullOrUndefined(indent)) {
             indent = 0;

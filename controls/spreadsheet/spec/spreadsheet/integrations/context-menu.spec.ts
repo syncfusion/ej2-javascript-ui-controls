@@ -155,4 +155,70 @@ describe('Spreadsheet context menu module ->', () => {
 
     });
 
+    describe('Public method checking ->', () => {
+        beforeAll((done: Function) => {
+            model = {
+                sheets: [
+                    {
+                        ranges: [{ dataSource: defaultData }]
+                    }
+                ]
+            };
+            helper.initializeSpreadsheet(model, done);
+        });
+
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+
+        it('addContextMenuItems', (done: Function) => {
+            helper.getInstance().contextMenuBeforeOpen = (args: any) => {
+                helper.invoke('addContextMenuItems', [[{ text: 'Custom Item 1' }], 'Paste Special', false]);
+                helper.invoke('addContextMenuItems', [[{ text: 'Custom Item 2' }], 'Paste Special']);
+            }
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+            const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(11);
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(4)').textContent).toBe('Custom Item 1');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(6)').textContent).toBe('Custom Item 2');
+                helper.click('#' + helper.id + '_contextmenu li:nth-child(6)');
+                setTimeout(() => {
+                    helper.getInstance().contextMenuBeforeOpen = null;
+                    done();
+                });
+            });
+        });
+
+        it('removeContextMenuItems', (done: Function) => {
+            helper.getInstance().contextMenuBeforeOpen = (args: any) => {
+                helper.invoke('removeContextMenuItems', [['Cut']]);
+            }
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+            const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(8);
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(1)').textContent).toBe('Copy');
+                helper.getInstance().contextMenuBeforeOpen = null;
+                done();
+            });
+        });
+
+        it('enableContextMenuItems', (done: Function) => {
+            helper.getInstance().contextMenuBeforeOpen = (args: any) => {
+                helper.invoke('enableContextMenuItems', [['Hyperlink'], false]);
+            }
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+            const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').classList).toContain('e-disabled');
+                helper.getInstance().contextMenuBeforeOpen = null;
+                done();
+            });
+        });
+    });
+
 });

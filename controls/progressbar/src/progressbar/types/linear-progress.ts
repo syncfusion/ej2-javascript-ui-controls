@@ -1,3 +1,6 @@
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable valid-jsdoc */
 import { ProgressBar } from '../../progressbar';
 import { ProgressAnimation } from '../utils/progress-animation';
 import { TextOption, ColorValue, colorNameToHex, convertHexToColor, setAttributes } from '../utils/helper';
@@ -22,16 +25,14 @@ export class Linear {
     }
     /** To render the linear track  */
     public renderLinearTrack(): void {
-        let progress: ProgressBar = this.progress;
-        let linearTrackGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearTrackGroup' });
+        const progress: ProgressBar = this.progress;
+        const linearTrackGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearTrackGroup' });
         let linearTrack: Element;
         let option: PathOption;
-        let thickness: number;
-        let stroke: string;
         this.isRange = (this.progress.rangeColors[0].color !== '' || this.progress.rangeColors[0].start !== null ||
             this.progress.rangeColors[0].end !== null);
-        thickness = (progress.trackThickness || progress.themeStyle.linearTrackThickness);
-        stroke = (progress.argsData.trackColor || progress.themeStyle.linearTrackColor);
+        const thickness: number = (progress.trackThickness || progress.themeStyle.linearTrackThickness);
+        const stroke: string = (progress.argsData.trackColor || progress.themeStyle.linearTrackColor);
         if (progress.cornerRadius === 'Round4px') {
             if (progress.segmentCount > 1) {
                 linearTrack = this.createRoundCornerSegment('_LinearTrack_', stroke, thickness, true, 0, progress);
@@ -64,14 +65,14 @@ export class Linear {
     /** To render the linear progress  */
     // tslint:disable-next-line:max-func-body-length
     public renderLinearProgress(refresh?: boolean, previousWidth: number = 0): void {
-        let progress: ProgressBar = this.progress; let option: PathOption;
-        let linearProgress: Element; let progressWidth: number;
+        const progress: ProgressBar = this.progress; let option: PathOption;
+        let linearProgress: Element;
         let linearProgressWidth: number; let clipPathLinear: Element;
         let clipPathIndeterminate: Element; let linearProgressGroup: Element;
-        let animationdelay: number; let thickness: number;
-        let stroke: string; let segmentWidth: number;
-        let strippedStroke: string; let ismaximum: boolean = (progress.value === progress.maximum);
-        progressWidth = progress.calculateProgressRange(progress.argsData.value);
+        let animationdelay: number;
+        let segmentWidth: number;
+        let strippedStroke: string; const ismaximum: boolean = (progress.value === progress.maximum);
+        const progressWidth: number = progress.calculateProgressRange(progress.argsData.value);
         progress.previousWidth = linearProgressWidth = progress.progressRect.width *
             ((progress.isIndeterminate && !progress.enableProgressSegments) ? 1 : progressWidth);
         if (!refresh) {
@@ -79,8 +80,8 @@ export class Linear {
         } else {
             linearProgressGroup = getElement(progress.element.id + '_LinearProgressGroup');
         }
-        thickness = (progress.progressThickness || progress.themeStyle.linearProgressThickness);
-        stroke = (!progress.isStriped) ? this.checkingLinearProgressColor() : 'url(#' + progress.element.id + '_LinearStriped)';
+        const thickness: number = (progress.progressThickness || progress.themeStyle.linearProgressThickness);
+        const stroke: string = (!progress.isStriped) ? this.checkingLinearProgressColor() : 'url(#' + progress.element.id + '_LinearStriped)';
         if (progress.cornerRadius === 'Round4px') {
             option = new PathOption(
                 progress.element.id + '_Linearprogress', stroke, 0, 'none', progress.themeStyle.progressOpacity, '0',
@@ -178,20 +179,16 @@ export class Linear {
     /** To render the linear buffer */
     private renderLinearBuffer(progress: ProgressBar): void {
         let linearBuffer: Element;
-        let secondaryProgressWidth: number;
         let clipPathBuffer: Element;
-        let linearBufferGroup: Element;
         let linearBufferWidth: number;
         let option: PathOption;
-        let thickness: number;
-        let stroke: string;
         let segmentWidth: number;
-        let ismaximum: boolean = (progress.secondaryProgress === progress.maximum);
-        secondaryProgressWidth = progress.calculateProgressRange(progress.secondaryProgress);
+        const ismaximum: boolean = (progress.secondaryProgress === progress.maximum);
+        const secondaryProgressWidth: number = progress.calculateProgressRange(progress.secondaryProgress);
         this.bufferWidth = linearBufferWidth = progress.progressRect.width * secondaryProgressWidth;
-        linearBufferGroup = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearBufferGroup' });
-        thickness = (progress.progressThickness || progress.themeStyle.linearProgressThickness);
-        stroke = this.checkingLinearProgressColor();
+        const linearBufferGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearBufferGroup' });
+        const thickness: number = (progress.progressThickness || progress.themeStyle.linearProgressThickness);
+        const stroke: string = this.checkingLinearProgressColor();
         if (progress.cornerRadius === 'Round4px') {
             if (progress.segmentCount > 1) {
                 linearBuffer = this.createRoundCornerSegment(
@@ -248,36 +245,30 @@ export class Linear {
     //tslint:disable-next-line:max-func-body-length
     public renderLinearLabel(): void {
         let linearlabel: Element;
-        let linearValue: number;
         let posX: number;
         let posY: number;
-        let argsData: ITextRenderEventArgs;
         let textSize: Size;
-        let labelValue: number;
-        let percentage: number = 100;
+        const percentage: number = 100;
         let option: TextOption;
         let defaultPos: number;
         let far: number;
         let center: number;
         let pos: boolean;
-        let rgbValue: ColorValue;
-        let contrast: number;
         let clipPath: Element;
-        let linearLabelGroup: Element;
-        let thickness: number = (this.progress.progressThickness || this.progress.themeStyle.linearProgressThickness);
-        let padding: number = 5;
-        let progress: ProgressBar = this.progress;
-        let textAlignment: TextAlignmentType = progress.labelStyle.textAlignment;
-        let labelText: string = progress.labelStyle.text;
-        let fontBackground: string = this.checkingLinearProgressColor();
-        let progressWidth: number = progress.progressRect.width * progress.calculateProgressRange(progress.value);
-        linearLabelGroup = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearLabelGroup' });
-        labelValue = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
-        linearValue = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : Math.round(labelValue);
+        const thickness: number = (this.progress.progressThickness || this.progress.themeStyle.linearProgressThickness);
+        const padding: number = 5;
+        const progress: ProgressBar = this.progress;
+        const textAlignment: TextAlignmentType = progress.labelStyle.textAlignment;
+        const labelText: string = progress.labelStyle.text;
+        const fontBackground: string = this.checkingLinearProgressColor();
+        const progressWidth: number = progress.progressRect.width * progress.calculateProgressRange(progress.value);
+        const linearLabelGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearLabelGroup' });
+        const labelValue: number = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
+        const linearValue: number = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : Math.round(labelValue);
         // Checking the font color
-        rgbValue = convertHexToColor(colorNameToHex(fontBackground));
-        contrast = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
-        argsData = {
+        const rgbValue: ColorValue = convertHexToColor(colorNameToHex(fontBackground));
+        const contrast: number = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
+        const argsData: ITextRenderEventArgs = {
             cancel: false, text: labelText ? labelText : String(linearValue) + '%', color: progress.labelStyle.color
         };
         progress.trigger('textRender', argsData);
@@ -355,10 +346,9 @@ export class Linear {
         thickness: number, refresh: boolean
     ): void {
         let linearActive: Element;
-        let activeClip: Element;
-        let progress: ProgressBar = this.progress;
+        const progress: ProgressBar = this.progress;
         let option: PathOption;
-        let ismaximum: boolean = (progress.value === progress.maximum);
+        const ismaximum: boolean = (progress.value === progress.maximum);
         if (progress.cornerRadius === 'Round4px') {
             if (progress.segmentCount > 1) {
                 linearActive = this.createRoundCornerSegment(
@@ -393,7 +383,7 @@ export class Linear {
                 linearActive.setAttribute('stroke-linecap', 'round');
             }
         }
-        activeClip = progress.createClipPath(progress.clipPath, progressWidth, null, refresh, thickness, false);
+        const activeClip: Element = progress.createClipPath(progress.clipPath, progressWidth, null, refresh, thickness, false);
         linearActive.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
         progressGroup.appendChild(linearActive);
         progressGroup.appendChild(progress.clipPath);
@@ -402,19 +392,18 @@ export class Linear {
 
     /** To render a striped stroke */
     private renderLinearStriped(color: string, group: Element, progress: ProgressBar): void {
-        let defs: Element = progress.renderer.createDefs();
+        const defs: Element = progress.renderer.createDefs();
         let linearGradient: Element = document.createElementNS(svgLink, gradientType);
-        let stripWidth: number = 14;
+        const stripWidth: number = 14;
         let stop: Element;
-        let gradOption: LinearGradient;
         let stopOption: StopElement[] = [];
-        gradOption = {
+        const gradOption: LinearGradient = {
             id: progress.element.id + '_LinearStriped', x1: (progress.progressRect.x).toString(),
             x2: (progress.progressRect.x + stripWidth).toString(),
             spreadMethod: 'repeat', gradientUnits: 'userSpaceOnUse', gradientTransform: 'rotate(-45)'
         };
         stopOption = [{ offset: '50%', 'stop-color': color, 'stop-opacity': '1' },
-        { offset: '50%', 'stop-color': color, 'stop-opacity': '0.4' }];
+            { offset: '50%', 'stop-color': color, 'stop-opacity': '0.4' }];
         linearGradient = setAttributes(gradOption, linearGradient);
         for (let i: number = 0; i < stopOption.length; i++) {
             stop = document.createElementNS(svgLink, stopElement);
@@ -431,23 +420,23 @@ export class Linear {
     /** checking progress color */
     private checkingLinearProgressColor(): string {
         let linearColor: string;
-        let progress: ProgressBar = this.progress;
-        let role: ModeType = progress.role;
+        const progress: ProgressBar = this.progress;
+        const role: ModeType = progress.role;
         switch (role) {
-            case 'Success':
-                linearColor = progress.themeStyle.success;
-                break;
-            case 'Info':
-                linearColor = progress.themeStyle.info;
-                break;
-            case 'Warning':
-                linearColor = progress.themeStyle.warning;
-                break;
-            case 'Danger':
-                linearColor = progress.themeStyle.danger;
-                break;
-            default:
-                linearColor = (progress.argsData.progressColor || progress.themeStyle.linearProgressColor);
+        case 'Success':
+            linearColor = progress.themeStyle.success;
+            break;
+        case 'Info':
+            linearColor = progress.themeStyle.info;
+            break;
+        case 'Warning':
+            linearColor = progress.themeStyle.warning;
+            break;
+        case 'Danger':
+            linearColor = progress.themeStyle.danger;
+            break;
+        default:
+            linearColor = (progress.argsData.progressColor || progress.themeStyle.linearProgressColor);
         }
         return linearColor;
     }
@@ -455,48 +444,48 @@ export class Linear {
     /** Bootstrap 3 & Bootstrap 4 corner path */
     private cornerRadius(x: number, y: number, width: number, height: number, radius: number, pathtype: string): string {
         let path: string = '';
-        let endWidth: number = width;
-        let endRadius: number = radius;
+        const endWidth: number = width;
+        const endRadius: number = radius;
         switch (pathtype) {
-            case 'start':
-                path = 'M' + x + ',' + y + ' '
-                    + 'h' + (width) + ' '
-                    + 'v' + (height) + ' '
-                    + 'h' + (- width) + ' '
-                    + 'a' + radius + ',' + radius + ' 0 0 1 ' + -radius + ',' + -radius + ' '
-                    + 'v' + (2 * radius - height) + ' '
-                    + 'a' + radius + ',' + radius + ' 0 0 1 ' + radius + ',' + -radius + ' '
-                    + 'z';
-                break;
-            case 'end':
-                path = 'M' + x + ',' + y + ' '
-                    + 'h' + (endWidth - endRadius) + ' '
-                    + 'a' + endRadius + ',' + endRadius + ' 0 0 1 ' + endRadius + ',' + endRadius + ' '
-                    + 'v' + (height - 2 * endRadius) + ' '
-                    + 'a' + endRadius + ',' + endRadius + ' 0 0 1 ' + -endRadius + ',' + endRadius + ' '
-                    + 'h' + (radius - endWidth) + ' '
-                    + 'v' + (- height) + ' '
-                    + 'z';
-                break;
-            case 'none':
-                path = 'M' + x + ',' + y + ' '
-                    + 'h' + (width) + ' '
-                    + 'v' + (height) + ' '
-                    + 'h' + (- width) + ' '
-                    + 'v' + (- height) + ' '
-                    + 'z';
-                break;
-            default:
-                path = 'M' + x + ',' + y + ' '
-                    + 'h' + (width - radius) + ' '
-                    + 'a' + radius + ',' + radius + ' 0 0 1 ' + radius + ',' + radius + ' '
-                    + 'v' + (height - 2 * radius) + ' '
-                    + 'a' + radius + ',' + radius + ' 0 0 1 ' + -radius + ',' + radius + ' '
-                    + 'h' + (radius - width) + ' '
-                    + 'a' + radius + ',' + radius + ' 0 0 1 ' + -radius + ',' + -radius + ' '
-                    + 'v' + (2 * radius - height) + ' '
-                    + 'a' + radius + ',' + radius + ' 0 0 1 ' + radius + ',' + -radius + ' '
-                    + 'z';
+        case 'start':
+            path = 'M' + x + ',' + y + ' '
+                + 'h' + (width) + ' '
+                + 'v' + (height) + ' '
+                + 'h' + (- width) + ' '
+                + 'a' + radius + ',' + radius + ' 0 0 1 ' + -radius + ',' + -radius + ' '
+                + 'v' + (2 * radius - height) + ' '
+                + 'a' + radius + ',' + radius + ' 0 0 1 ' + radius + ',' + -radius + ' '
+                + 'z';
+            break;
+        case 'end':
+            path = 'M' + x + ',' + y + ' '
+                + 'h' + (endWidth - endRadius) + ' '
+                + 'a' + endRadius + ',' + endRadius + ' 0 0 1 ' + endRadius + ',' + endRadius + ' '
+                + 'v' + (height - 2 * endRadius) + ' '
+                + 'a' + endRadius + ',' + endRadius + ' 0 0 1 ' + -endRadius + ',' + endRadius + ' '
+                + 'h' + (radius - endWidth) + ' '
+                + 'v' + (- height) + ' '
+                + 'z';
+            break;
+        case 'none':
+            path = 'M' + x + ',' + y + ' '
+                + 'h' + (width) + ' '
+                + 'v' + (height) + ' '
+                + 'h' + (- width) + ' '
+                + 'v' + (- height) + ' '
+                + 'z';
+            break;
+        default:
+            path = 'M' + x + ',' + y + ' '
+                + 'h' + (width - radius) + ' '
+                + 'a' + radius + ',' + radius + ' 0 0 1 ' + radius + ',' + radius + ' '
+                + 'v' + (height - 2 * radius) + ' '
+                + 'a' + radius + ',' + radius + ' 0 0 1 ' + -radius + ',' + radius + ' '
+                + 'h' + (radius - width) + ' '
+                + 'a' + radius + ',' + radius + ' 0 0 1 ' + -radius + ',' + -radius + ' '
+                + 'v' + (2 * radius - height) + ' '
+                + 'a' + radius + ',' + radius + ' 0 0 1 ' + radius + ',' + -radius + ' '
+                + 'z';
         }
         return path;
     }
@@ -507,14 +496,14 @@ export class Linear {
         progressWidth: number, progress: ProgressBar, opacity?: number
     ): Element {
         let locX: number = progress.progressRect.x;
-        let locY: number = progress.progressRect.y;
-        let width: number = progress.progressRect.width;
+        const locY: number = progress.progressRect.y;
+        const width: number = progress.progressRect.width;
         let option: PathOption;
         let pathType: string;
         let avlWidth: number;
-        let gapWidth: number = (progress.gapWidth || progress.themeStyle.linearGapWidth);
-        let segWidth: number = (width - ((progress.segmentCount - 1) * gapWidth)) / progress.segmentCount;
-        let segmentGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + id + 'SegmentGroup' });
+        const gapWidth: number = (progress.gapWidth || progress.themeStyle.linearGapWidth);
+        const segWidth: number = (width - ((progress.segmentCount - 1) * gapWidth)) / progress.segmentCount;
+        const segmentGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + id + 'SegmentGroup' });
         let segmentPath: Element;
         for (let i: number = 1; i <= progress.segmentCount; i++) {
             if (i === 1 || i === progress.segmentCount) {

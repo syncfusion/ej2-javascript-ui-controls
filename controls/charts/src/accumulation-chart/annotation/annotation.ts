@@ -1,4 +1,7 @@
-/** 
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable valid-jsdoc */
+/**
  * AccumulationChart annotation properties
  */
 
@@ -21,21 +24,22 @@ export class AccumulationAnnotation extends AnnotationBase {
 
     /**
      * Constructor for accumulation chart annotation.
-     * @private.
+     *
+     * @private
      */
-     constructor(control: AccumulationChart) {
+    constructor(control: AccumulationChart) {
         super(control);
         this.pie = control;
     }
 
-
     /**
      * Method to render the annotation for accumulation chart
-     * @param element 
+     *
+     * @param {Element} element Annotation element.
      */
     public renderAnnotations(element: Element): void {
         this.annotations = this.pie.annotations;
-        let redraw: boolean = this.pie.redraw;
+        const redraw: boolean = this.pie.redraw;
         this.parentElement = (redrawElement(redraw, this.pie.element.id + '_Annotation_Collections') ||
             createElement('div', {
                 id: this.pie.element.id + '_Annotation_Collections'
@@ -54,11 +58,13 @@ export class AccumulationAnnotation extends AnnotationBase {
         return 'Annotation';
     }
     /**
-     * To destroy the annotation. 
-     * @return {void}
+     * To destroy the annotation.
+     *
+     * @returns {void}
+     *
      * @private
      */
-    public destroy(control: AccumulationChart): void {
+    public destroy(): void {
         // Destroy method performed here
     }
 }

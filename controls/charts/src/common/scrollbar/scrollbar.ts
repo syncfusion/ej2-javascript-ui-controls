@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { EventHandler, Browser, remove } from '@syncfusion/ej2-base';
 import { DateFormatOptions  } from '@syncfusion/ej2-base';
 import { ScrollElements, createScrollSvg } from './scrollbar-elements';
@@ -91,9 +93,11 @@ export class ScrollBar {
 
     /**
      * Constructor for creating scrollbar
+     *
      * @param component
      * @param axis
      */
+
     constructor(component: Chart, axis?: Axis) {
         this.component = component;
         this.elements = [];
@@ -108,8 +112,10 @@ export class ScrollBar {
 
     /**
      * To Mouse x and y position
+     *
      * @param e
      */
+
     private getMouseXY(e: PointerEvent | MouseWheelEvent): void {
 
         let pageX: number;
@@ -123,14 +129,17 @@ export class ScrollBar {
             pageX = e.clientX;
             pageY = e.clientY;
         }
-        let svgRect: ClientRect = getElement(this.component.element.id + '_scrollBar_svg' + this.axis.name).getBoundingClientRect();
+        const svgRect: ClientRect = getElement(this.component.element.id + '_scrollBar_svg' + this.axis.name).getBoundingClientRect();
         this.mouseX = pageX - Math.max(svgRect.left, 0);
         this.mouseY = pageY - Math.max(svgRect.top, 0);
     }
     /**
      * Method to bind events for scrollbar svg object
+     *
      * @param element
+     * @returns {void}
      */
+
     private wireEvents(element: Element): void {
         EventHandler.add(element, Browser.touchStartEvent, this.scrollMouseDown, this);
         EventHandler.add(element, Browser.touchMoveEvent, this.scrollMouseMove, this);
@@ -141,8 +150,10 @@ export class ScrollBar {
     }
     /**
      * Method to remove events for srcollbar svg object
+     *
      * @param element
      */
+
     private unWireEvents(element: Element): void {
         EventHandler.remove(element, Browser.touchStartEvent, this.scrollMouseDown);
         EventHandler.remove(element, Browser.touchMoveEvent, this.scrollMouseMove);
@@ -154,15 +165,17 @@ export class ScrollBar {
 
     /**
      * Handles the mouse down on scrollbar
+     *
      * @param e
      */
+
     public scrollMouseDown(e: PointerEvent): void {
-        let id: string = (<Element>e.target).id;
-        let elem: ScrollElements = this.scrollElements;
+        const id: string = (<Element>e.target).id;
+        const elem: ScrollElements = this.scrollElements;
         this.getMouseXY(e);
         this.isResizeLeft = this.isExist(id, '_leftCircle_') || this.isExist(id, '_leftArrow_');
         this.isResizeRight = this.isExist(id, '_rightCircle_') || this.isExist(id, '_rightArrow_');
-      //  this.previousXY = this.isVertical ? this.mouseY : this.mouseX;
+        //  this.previousXY = this.isVertical ? this.mouseY : this.mouseX;
         this.previousXY = (this.isVertical && this.axis.isInversed) ? this.mouseY : this.isVertical ? this.width -
         this.mouseY : this.axis.isInversed ? this.width - this.mouseX : this.mouseX;
         this.previousWidth = elem.thumbRectWidth;
@@ -176,13 +189,13 @@ export class ScrollBar {
             this.isThumbDrag = true;
             (this.svgObject as HTMLElement).style.cursor = '-webkit-grabbing';
         } else if (this.isExist(id, 'scrollBarBackRect_')) {
-            let currentX: number = this.moveLength(this.previousXY, this.previousRectX);
+            const currentX: number = this.moveLength(this.previousXY, this.previousRectX);
             elem.thumbRectX = this.isWithIn(currentX) ? currentX : elem.thumbRectX;
             this.positionThumb(elem.thumbRectX, elem.thumbRectWidth);
             this.setZoomFactorPosition(elem.thumbRectX, elem.thumbRectWidth, false);
             if (this.isLazyLoad) {
-                let thumbMove: string = elem.thumbRectX > this.previousRectX ? 'RightMove' : 'LeftMove';
-                let args: IScrollEventArgs = this.calculateLazyRange(elem.thumbRectX, elem.thumbRectWidth, thumbMove);
+                const thumbMove: string = elem.thumbRectX > this.previousRectX ? 'RightMove' : 'LeftMove';
+                const args: IScrollEventArgs = this.calculateLazyRange(elem.thumbRectX, elem.thumbRectWidth, thumbMove);
                 if (args) {
                     this.component.trigger(scrollEnd, args);
                 }
@@ -190,9 +203,9 @@ export class ScrollBar {
         }
 
         /**
-         * Customer issue 
+         * Customer issue
          * Task ID - EJ2-28898
-         * Issue: While element's height is smaller than chart'height, html scroll bar presents. On that case while moving chart scrollbar, 
+         * Issue: While element's height is smaller than chart'height, html scroll bar presents. On that case while moving chart scrollbar,
          * html scrollbar goes up due to chart's svg removed from the dom when zoomFactor and zoomPosition chnaged
          * Fix: Only for scrolling purpose, height for element is set to chart's available height
          */
@@ -204,28 +217,34 @@ export class ScrollBar {
 
     /**
      * To check the matched string
+     *
      * @param id
      * @param match
      */
+
     private isExist(id: string, match: string): boolean {
         return id.indexOf(match) > -1;
     }
     /**
      * To check current poisition is within scrollbar region
+     *
      * @param currentX
      */
+
     private isWithIn(currentX: number): boolean {
-        let circleRadius: number = 8;
+        const circleRadius: number = 8;
         return (currentX - circleRadius >= 0 &&
             currentX + this.scrollElements.thumbRectWidth + circleRadius <= this.width);
     }
 
     /**
      * Method to find move length of thumb
+     *
      * @param mouseXY
      * @param thumbX
      * @param circleRadius
      */
+
     private moveLength(mouseXY: number, thumbX: number, circleRadius: number = 8): number {
         let moveLength: number = (10 / 100) * (this.width - circleRadius * 2);
         if (mouseXY < thumbX) {
@@ -238,16 +257,18 @@ export class ScrollBar {
     }
     /**
      * Method to calculate zoom factor and position
+     *
      * @param currentX
      * @param currentWidth
      */
+
     private setZoomFactorPosition(currentX: number, currentWidth: number, isRequire: boolean = true): void {
-        let axis: Axis = this.axis;
         this.isScrollUI = true;
-        let circleRadius: number = 8;
-        let circleWidth: number = 1;
-        let currentScrollWidth: number = currentX + currentWidth + circleRadius + circleWidth;
-        let currentZPWidth: number = circleRadius + (circleWidth / 2);
+        const axis: Axis = this.axis;
+        const circleRadius: number = 8;
+        const circleWidth: number = 1;
+        const currentScrollWidth: number = currentX + currentWidth + circleRadius + circleWidth;
+        const currentZPWidth: number = circleRadius + (circleWidth / 2);
         this.zoomPosition = (currentX - (currentX - currentZPWidth <= 0 ? currentZPWidth : 0)) / (this.isVertical
             ? axis.rect.height : this.width);
         this.zoomFactor = (currentWidth + (currentScrollWidth >= this.width ? circleRadius + circleWidth : 0)) / (this.isVertical
@@ -257,31 +278,33 @@ export class ScrollBar {
     }
     /**
      * Handles the mouse move on scrollbar
+     *
      * @param e
      */
+
     public scrollMouseMove(e: PointerEvent): void {
-        let target: Element = <Element>e.target;
-        let elem: ScrollElements = this.scrollElements;
+        const target: Element = <Element>e.target;
+        const elem: ScrollElements = this.scrollElements;
         this.getMouseXY(e);
         this.setCursor(target);
         this.setTheme(target);
         //let mouseXY: number = this.isVertical ? this.mouseY : this.mouseX;
         let mouseXY: number = (this.isVertical && this.axis.isInversed) ? this.width - this.mouseY : this.isVertical ?
-        this.mouseY : this.mouseX ;
-        let range: VisibleRangeModel = this.axis.visibleRange;
-        let zoomPosition: number = this.zoomPosition;
-        let zoomFactor: number = this.zoomFactor;
-        let moveLength: number = this.previousRectX - elem.thumbRectX;
-        let thumbMove: string = moveLength < 0 ? 'RightMove' : 'LeftMove';
+            this.mouseY : this.mouseX ;
+        const range: VisibleRangeModel = this.axis.visibleRange;
+        const zoomPosition: number = this.zoomPosition;
+        const zoomFactor: number = this.zoomFactor;
+        const moveLength: number = this.previousRectX - elem.thumbRectX;
+        const thumbMove: string = moveLength < 0 ? 'RightMove' : 'LeftMove';
         let args: IScrollEventArgs;
         if (this.isLazyLoad && (this.isThumbDrag || this.isResizeLeft || this.isResizeRight)) {
             args = this.calculateLazyRange(elem.thumbRectX, elem.thumbRectWidth, thumbMove);
         }
-        let currentRange: ScrollbarSettingsRangeModel = args ? args.currentRange : null;
+        const currentRange: ScrollbarSettingsRangeModel = args ? args.currentRange : null;
         if (this.isThumbDrag) {
             this.component.isScrolling = this.isThumbDrag;
             mouseXY = (this.isVertical || this.axis.isInversed) ? this.width - mouseXY : mouseXY;
-            let currentX: number = elem.thumbRectX + (mouseXY - this.previousXY);
+            const currentX: number = elem.thumbRectX + (mouseXY - this.previousXY);
             if ( mouseXY >= currentX + elem.thumbRectWidth) {
                 this.setCursor(target);
             } else {
@@ -295,28 +318,29 @@ export class ScrollBar {
             }
             this.component.trigger(scrollChanged, this.getArgs(scrollChanged, range, zoomPosition, zoomFactor, currentRange));
         } else if (this.isResizeLeft || this.isResizeRight) {
-            this.resizeThumb(e);
+            this.resizeThumb();
             this.component.trigger(scrollChanged, this.getArgs(scrollChanged, range, zoomPosition, zoomFactor, currentRange));
         }
     }
     /**
      * Handles the mouse wheel on scrollbar
+     *
      * @param e
      */
+
     public scrollMouseWheel(e: WheelEvent): void {
-        let svgRect: ClientRect = getElement(this.component.element.id + '_scrollBar_svg' + this.axis.name).getBoundingClientRect();
+        const svgRect: ClientRect = getElement(this.component.element.id + '_scrollBar_svg' + this.axis.name).getBoundingClientRect();
         this.mouseX = e.clientX - Math.max(svgRect.left, 0);
         this.mouseY = e.clientY - Math.max(svgRect.top, 0);
         let origin: number = 0.5;
-        let elem: ScrollElements = this.scrollElements;
-        let axis: Axis = this.axis;
-        let direction: number = (this.browserName === 'mozilla' && !this.isPointer) ?
-            -(e.detail) / 3 > 0 ? 1 : -1 : (e.wheelDelta / 120) > 0 ? 1 : -1;
-        let cumulative: number;
-        cumulative = Math.max(Math.max(1 / minMax(axis.zoomFactor, 0, 1), 1) + (0.25 * direction), 1);
-        let range: VisibleRangeModel = this.axis.visibleRange;
-        let zoomPosition: number = this.zoomPosition;
-        let zoomFactor: number = this.zoomFactor;
+        const elem: ScrollElements = this.scrollElements;
+        const axis: Axis = this.axis;
+        const direction: number = (this.browserName === 'mozilla' && !this.isPointer) ?
+            -(e.detail) / 3 > 0 ? 1 : -1 : (e['wheelDelta'] / 120) > 0 ? 1 : -1;
+        const cumulative: number = Math.max(Math.max(1 / minMax(axis.zoomFactor, 0, 1), 1) + (0.25 * direction), 1);
+        const range: VisibleRangeModel = this.axis.visibleRange;
+        const zoomPosition: number = this.zoomPosition;
+        const zoomFactor: number = this.zoomFactor;
         let args: IScrollEventArgs;
         if (cumulative >= 1) {
             origin = axis.orientation === 'Horizontal' ? this.mouseX / axis.rect.width : 1 - (this.mouseY / axis.rect.height);
@@ -348,28 +372,30 @@ export class ScrollBar {
     }
     /**
      * Handles the mouse up on scrollbar
+     *
      * @param e
      */
-    public scrollMouseUp(e: PointerEvent): void {
-        let circleRadius: number = 8;
-        let circleWidth: number = 1;
+
+    public scrollMouseUp(): void {
         let args: IScrollEventArgs;
         this.startX = this.scrollElements.thumbRectX;
-        let currentScrollWidth: number = this.startX + this.scrollElements.thumbRectWidth + circleRadius + circleWidth;
-        let currentZPWidth: number = circleRadius + (circleWidth / 2);
+        const circleRadius: number = 8;
+        const circleWidth: number = 1;
+        const currentScrollWidth: number = this.startX + this.scrollElements.thumbRectWidth + circleRadius + circleWidth;
+        const currentZPWidth: number = circleRadius + (circleWidth / 2);
         if ((this.isResizeLeft || this.isResizeRight) && !this.isLazyLoad) {
             this.axis.zoomFactor = (currentScrollWidth >= this.width - 1 && (this.startX - currentZPWidth) <= 0) ? 1 : this.zoomFactor;
         }
         if ( this.isLazyLoad ) {
-            let moveLength: number = this.previousRectX -  this.startX;
+            const moveLength: number = this.previousRectX -  this.startX;
             if ((moveLength > 0 || moveLength < 0) && this.isThumbDrag ) {
-                let thumbMove: string = moveLength < 0 ? 'RightMove' : 'LeftMove';
+                const thumbMove: string = moveLength < 0 ? 'RightMove' : 'LeftMove';
                 if (thumbMove === 'RightMove') {
                     this.startX = ( this.startX + Math.abs(moveLength)) < this.width - circleRadius ? this.startX :
-                    this.width - circleRadius - this.scrollElements.thumbRectWidth ;
+                        this.width - circleRadius - this.scrollElements.thumbRectWidth ;
                 } else {
                     this.startX = (this.startX + this.scrollElements.thumbRectWidth - Math.abs(moveLength)) > circleRadius ?
-                    this.startX : circleRadius;
+                        this.startX : circleRadius;
                 }
                 args = this.calculateLazyRange(this.startX, this.scrollElements.thumbRectWidth, thumbMove);
                 if (args) {
@@ -378,12 +404,12 @@ export class ScrollBar {
                 }
             }
             if (this.isResizeLeft || this.isResizeRight) {
-                  args = this.calculateLazyRange(this.startX, this.scrollElements.thumbRectWidth);
-                  if (args ) {
-                      this.component.trigger(scrollEnd, args);
-                      this.scrollStarted = false;
-                  }
-              }
+                args = this.calculateLazyRange(this.startX, this.scrollElements.thumbRectWidth);
+                if (args ) {
+                    this.component.trigger(scrollEnd, args);
+                    this.scrollStarted = false;
+                }
+            }
         }
 
         this.isThumbDrag = false;
@@ -399,7 +425,7 @@ export class ScrollBar {
         }
 
         /**
-         * Customer issue 
+         * Customer issue
          * Task ID - EJ2-28898
          * Chart's height setted is removed here.
          */
@@ -411,79 +437,99 @@ export class ScrollBar {
     public calculateMouseWheelRange (scrollThumbX : number, scrollThumbWidth : number) : IScrollEventArgs  {
         let zoomFactor: number;
         let zoomPosition: number;
-        let currentStart: number | Date;
-        let currentEnd: number | Date;
         let args: IScrollEventArgs;
-        let range: VisibleRangeModel = this.scrollRange;
-        let previousRange: ScrollbarSettingsRangeModel = this.getStartEnd(this.previousStart, this.previousEnd, false);
-        let circleRadius: number = 8;
+        const range: VisibleRangeModel = this.scrollRange;
+        const previousRange: ScrollbarSettingsRangeModel = this.getStartEnd(this.previousStart, this.previousEnd, false);
+        const circleRadius: number = 8;
         if ((scrollThumbX + scrollThumbWidth + circleRadius) <= this.width) {
             zoomPosition = (scrollThumbX - circleRadius) / this.width;
             zoomFactor = scrollThumbWidth / (this.width);
-         }
-        currentStart = range.min + zoomPosition * range.delta;
-        currentEnd = currentStart + zoomFactor * range.delta;
+        }
+        const currentStart: number | Date = range.min + zoomPosition * range.delta;
+        const currentEnd: number | Date = currentStart + zoomFactor * range.delta;
 
         if (currentEnd) {
             args = { axis: this.axis, currentRange: this.getStartEnd(currentStart, currentEnd, true), previousAxisRange: previousRange };
         }
         return args;
 
-     };
+    }
 
     /**
      * Range calculation for lazy loading
+     *
+     * @param scrollThumbX
+     * @param scrollThumbWidth
+     * @param thumbMove
+     * @param scrollThumbX
+     * @param scrollThumbWidth
+     * @param thumbMove
+     * @param scrollThumbX
+     * @param scrollThumbWidth
+     * @param thumbMove
      */
-   public calculateLazyRange(scrollThumbX: number, scrollThumbWidth: number, thumbMove?: string): IScrollEventArgs {
-    let currentScrollWidth: number = scrollThumbWidth;
-    let zoomFactor: number;
-    let zoomPosition: number;
-    let currentStart: number | Date;
-    let currentEnd: number | Date;
-    let args: IScrollEventArgs;
-    let range: VisibleRangeModel = this.scrollRange;
-    let previousRange: ScrollbarSettingsRangeModel = this.getStartEnd(this.previousStart, this.previousEnd, false);
-    let circleRadius: number = 8;
-    let circleWidth: number = 16;
-    if (this.isResizeRight || thumbMove === 'RightMove') {
-        currentScrollWidth = this.isResizeRight ? currentScrollWidth + circleWidth : currentScrollWidth;
-        zoomFactor = (currentScrollWidth + circleRadius) / this.width;
-        zoomPosition = thumbMove === 'RightMove' ? (scrollThumbX + circleRadius) / this.width : this.axis.zoomPosition;
-        currentStart = thumbMove === 'RightMove' ? (range.min + zoomPosition * range.delta) : this.previousStart;
-        currentEnd = currentStart + zoomFactor * range.delta;
-    } else if (this.isResizeLeft || thumbMove === 'LeftMove') {
-        zoomPosition = (scrollThumbX - circleRadius) / this.width;
-        zoomFactor = currentScrollWidth / this.width;
-        currentStart = range.min + zoomPosition * range.delta;
-        currentStart = currentStart >= range.min ? currentStart : range.min;
-        currentEnd = thumbMove === 'LeftMove' ? (currentStart + zoomFactor * range.delta) : this.previousEnd;
-    } else if (this.isThumbDrag) {
-        zoomPosition = thumbMove === 'RightMove' ? (scrollThumbX + circleRadius) / this.width : (scrollThumbX - circleRadius) / this.width ;
-        zoomFactor = (this.scrollElements.thumbRectWidth) / this.width;
-        currentStart = range.min + zoomPosition * range.delta;
-        currentStart = currentStart >= range.min ? currentStart : range.min;
-        currentEnd = currentStart + zoomFactor * range.delta;
+
+    public calculateLazyRange(scrollThumbX: number, scrollThumbWidth: number, thumbMove?: string): IScrollEventArgs {
+        let currentScrollWidth: number = scrollThumbWidth;
+        let zoomFactor: number;
+        let zoomPosition: number;
+        let currentStart: number | Date;
+        let currentEnd: number | Date;
+        let args: IScrollEventArgs;
+        const range: VisibleRangeModel = this.scrollRange;
+        const previousRange: ScrollbarSettingsRangeModel = this.getStartEnd(this.previousStart, this.previousEnd, false);
+        const circleRadius: number = 8;
+        const circleWidth: number = 16;
+        if (this.isResizeRight || thumbMove === 'RightMove') {
+            currentScrollWidth = this.isResizeRight ? currentScrollWidth + circleWidth : currentScrollWidth;
+            zoomFactor = (currentScrollWidth + circleRadius) / this.width;
+            zoomPosition = thumbMove === 'RightMove' ? (scrollThumbX + circleRadius) / this.width : this.axis.zoomPosition;
+            currentStart = thumbMove === 'RightMove' ? (range.min + zoomPosition * range.delta) : this.previousStart;
+            currentEnd = currentStart + zoomFactor * range.delta;
+        } else if (this.isResizeLeft || thumbMove === 'LeftMove') {
+            zoomPosition = (scrollThumbX - circleRadius) / this.width;
+            zoomFactor = currentScrollWidth / this.width;
+            currentStart = range.min + zoomPosition * range.delta;
+            currentStart = currentStart >= range.min ? currentStart : range.min;
+            currentEnd = thumbMove === 'LeftMove' ? (currentStart + zoomFactor * range.delta) : this.previousEnd;
+        } else if (this.isThumbDrag) {
+            zoomPosition = thumbMove === 'RightMove' ? (scrollThumbX + circleRadius) / this.width : (scrollThumbX - circleRadius) / this.width ;
+            zoomFactor = (this.scrollElements.thumbRectWidth) / this.width;
+            currentStart = range.min + zoomPosition * range.delta;
+            currentStart = currentStart >= range.min ? currentStart : range.min;
+            currentEnd = currentStart + zoomFactor * range.delta;
+        }
+        if (currentEnd) {
+            args = { axis: (this.component.isBlazor ? {} : this.axis) as Axis, currentRange:
+            this.getStartEnd(currentStart, currentEnd, true),
+            previousAxisRange: previousRange };
+        }
+        return args;
     }
-    if (currentEnd) {
-        args = { axis: (this.component.isBlazor ? {} : this.axis) as Axis, currentRange: this.getStartEnd(currentStart, currentEnd, true),
-                 previousAxisRange: previousRange };
-    }
-    return args;
-}
-/**
- * Get start and end values
- */
-private getStartEnd(start: number | Date, end: number | Date, isCurrentStartEnd: boolean): ScrollbarSettingsRangeModel {
-    let range: ScrollbarSettingsRangeModel;
-    let valueType: string = this.valueType;
-    if ((valueType === 'DateTime' || valueType === 'DateTimeCategory') && isCurrentStartEnd) {
-        this.previousStart = start as number;
-        this.previousEnd = end as number;
-    } else if (isCurrentStartEnd) {
-        this.previousStart = Math.round(start as number);
-        this.previousEnd = Math.ceil(end as number);
-    }
-    switch (valueType) {
+    /**
+     * Get start and end values
+     *
+     * @param start
+     * @param end
+     * @param isCurrentStartEnd
+     * @param start
+     * @param end
+     * @param isCurrentStartEnd
+     * @param start
+     * @param end
+     * @param isCurrentStartEnd
+     */
+
+    private getStartEnd(start: number | Date, end: number | Date, isCurrentStartEnd: boolean): ScrollbarSettingsRangeModel {
+        const valueType: string = this.valueType;
+        if ((valueType === 'DateTime' || valueType === 'DateTimeCategory') && isCurrentStartEnd) {
+            this.previousStart = start as number;
+            this.previousEnd = end as number;
+        } else if (isCurrentStartEnd) {
+            this.previousStart = Math.round(start as number);
+            this.previousEnd = Math.ceil(end as number);
+        }
+        switch (valueType) {
         case 'Double':
         case 'Category':
         case 'Logarithmic':
@@ -495,14 +541,17 @@ private getStartEnd(start: number | Date, end: number | Date, isCurrentStartEnd:
             start = new Date(start as number);
             end = new Date(end as number);
             break;
+        }
+        return { minimum: start, maximum: end };
     }
-    return range = { minimum: start, maximum: end };
-}
 
     /**
      * To render scroll bar
+     *
+     * @param isScrollExist
      * @private
      */
+
     public render(isScrollExist: boolean): Element {
         if (this.component.zoomModule || (isScrollExist && this.axis.scrollbarSettings.enable)) {
             this.getDefaults();
@@ -520,13 +569,19 @@ private getStartEnd(start: number | Date, end: number | Date, isCurrentStartEnd:
     }
     /**
      * Theming for scrollabr
+     *
+     * @returns {void}
      */
+
     private getTheme(): void {
         this.scrollbarThemeStyle = getScrollbarThemeColor(this.component.theme);
     }
     /**
      * Method to remove existing scrollbar
+     *
+     * @returns {void}
      */
+
     public removeScrollSvg(): void {
         if (document.getElementById(this.component.element.id + '_scrollBar_svg' + this.axis.name)) {
             remove(document.getElementById(this.component.element.id + '_scrollBar_svg' + this.axis.name));
@@ -534,28 +589,32 @@ private getStartEnd(start: number | Date, end: number | Date, isCurrentStartEnd:
     }
     /**
      * Method to set cursor fpr scrollbar
+     *
      * @param target
      */
+
     private setCursor(target: Element): void {
-        let id: string = target.id;
+        const id: string = target.id;
         (this.svgObject as HTMLElement).style.cursor = id.indexOf('scrollBarThumb_') > -1 || id.indexOf('_gripCircle') > -1 ?
             '-webkit-grab' : (id.indexOf('Circle_') > -1 || id.indexOf('Arrow_') > -1) ? this.isVertical ? 'ns-resize' :
                 'ew-resize' : 'auto';
     }
     /**
      * Method to set theme for sollbar
+     *
      * @param target
      */
+
     private setTheme(target: Element): void {
-        let id: string = target.id;
-        let isLeftHover: boolean = id.indexOf('_leftCircle_') > -1 || id.indexOf('_leftArrow_') > -1;
-        let isRightHover: boolean = id.indexOf('_rightCircle_') > -1 || id.indexOf('_rightArrow_') > -1;
-        let style: IScrollbarThemeStyle = this.scrollbarThemeStyle;
-        let leftArrowEle: HTMLElement = this.scrollElements.leftArrowEle as HTMLElement;
-        let rightArrowEle: HTMLElement = this.scrollElements.rightArrowEle as HTMLElement;
-        let leftCircleEle: HTMLElement = this.scrollElements.leftCircleEle as HTMLElement;
-        let rightCircleEle: HTMLElement = this.scrollElements.rightCircleEle as HTMLElement;
-        let isAxis: boolean = this.isCurrentAxis(target, leftArrowEle);
+        const id: string = target.id;
+        const isLeftHover: boolean = id.indexOf('_leftCircle_') > -1 || id.indexOf('_leftArrow_') > -1;
+        const isRightHover: boolean = id.indexOf('_rightCircle_') > -1 || id.indexOf('_rightArrow_') > -1;
+        const style: IScrollbarThemeStyle = this.scrollbarThemeStyle;
+        const leftArrowEle: HTMLElement = this.scrollElements.leftArrowEle as HTMLElement;
+        const rightArrowEle: HTMLElement = this.scrollElements.rightArrowEle as HTMLElement;
+        const leftCircleEle: HTMLElement = this.scrollElements.leftCircleEle as HTMLElement;
+        const rightCircleEle: HTMLElement = this.scrollElements.rightCircleEle as HTMLElement;
+        const isAxis: boolean = this.isCurrentAxis(target, leftArrowEle);
         leftCircleEle.style.fill = isLeftHover && isAxis ? style.circleHover : style.circle;
         rightCircleEle.style.fill = isRightHover && isAxis ? style.circleHover : style.circle;
         leftCircleEle.style.stroke = isLeftHover && isAxis ? style.circleHover : style.circle;
@@ -571,27 +630,31 @@ private getStartEnd(start: number | Date, end: number | Date, isCurrentStartEnd:
     }
     /**
      * To check current axis
+     *
      * @param target
      * @param ele
      */
+
     private isCurrentAxis(target: Element, ele: Element): boolean {
         return (target.id.split('_')[2] === ele.id.split('_')[2]);
     }
     /**
      * Method to resize thumb
+     *
      * @param e
      */
-    private resizeThumb(e: PointerEvent): void {
+
+    private resizeThumb(): void {
         let currentWidth: number;
-        let circleRadius: number = 8;
-        let padding: number = 5;
-        let gripWidth: number = 14;
-        let minThumbWidth: number = circleRadius * 2 + padding * 2 + gripWidth;
-        let thumbX: number = this.previousRectX;
+        const circleRadius: number = 8;
+        const padding: number = 5;
+        const gripWidth: number = 14;
+        const minThumbWidth: number = circleRadius * 2 + padding * 2 + gripWidth;
+        const thumbX: number = this.previousRectX;
         // let mouseXY: number = this.isVertical ? this.mouseY : this.mouseX;
-        let mouseXY: number = (this.isVertical && this.axis.isInversed) ? this.mouseY : this.isVertical ? this.width -
+        const mouseXY: number = (this.isVertical && this.axis.isInversed) ? this.mouseY : this.isVertical ? this.width -
             this.mouseY : this.axis.isInversed ? this.width - this.mouseX : this.mouseX;
-        let diff: number = Math.abs(this.previousXY - mouseXY);
+        const diff: number = Math.abs(this.previousXY - mouseXY);
         if (this.isResizeLeft && mouseXY >= 0) {
             let currentX: number = thumbX + (mouseXY > this.previousXY ? diff : -diff);
             currentWidth = currentX - circleRadius >= 0 ? this.previousWidth + (mouseXY > this.previousXY ? -diff : diff) :
@@ -620,15 +683,16 @@ private getStartEnd(start: number | Date, end: number | Date, isCurrentStartEnd:
     }
     /**
      * Method to position the scrollbar thumb
+     *
      * @param currentX
      * @param currentWidth
      */
+
     private positionThumb(currentX: number, currentWidth: number): void {
-        let circlePadding: number = 3;
-        let elem: ScrollElements = this.scrollElements;
-        let gripWidth: number = 14;
-        let gripCircleDiameter: number = 2;
-        let padding: number = gripWidth / 2 - gripCircleDiameter;
+        const elem: ScrollElements = this.scrollElements;
+        const gripWidth: number = 14;
+        const gripCircleDiameter: number = 2;
+        const padding: number = gripWidth / 2 - gripCircleDiameter;
         elem.slider.setAttribute('x', currentX.toString());
         elem.slider.setAttribute('width', currentWidth.toString());
         elem.leftCircleEle.setAttribute('cx', currentX.toString());
@@ -641,19 +705,21 @@ private getStartEnd(start: number | Date, end: number | Date, isCurrentStartEnd:
     }
     /**
      * Method to get default values
+     *
+     * @returns {void}
      */
+
     private getDefaults(): void {
-        let axis: Axis = this.axis;
+        const axis: Axis = this.axis;
+        const circleRadius: number = 8;
+        const padding: number = 5;
+        const gripWidth: number = 14;
+        const minThumbWidth: number = circleRadius * 2 + padding * 2 + gripWidth;
         if (this.axis.scrollbarSettings.enable) {
             this.isLazyLoad = true;
             this.getLazyDefaults(axis);
         }
-        let circleRadius: number = 8;
-        let padding: number = 5;
-        let gripWidth: number = 14;
-        let minThumbWidth: number = circleRadius * 2 + padding * 2 + gripWidth;
         this.isVertical = axis.orientation === 'Vertical';
-        let lazyRange: ScrollbarSettingsRangeModel = axis.scrollbarSettings.range;
         this.zoomFactor = this.isLazyLoad ? this.zoomFactor : axis.zoomFactor;
         this.zoomPosition = this.isLazyLoad ? this.zoomPosition : axis.zoomPosition;
         let currentWidth: number = this.zoomFactor * (this.isVertical ? axis.rect.height : axis.rect.width);
@@ -662,8 +728,8 @@ private getStartEnd(start: number | Date, end: number | Date, isCurrentStartEnd:
         this.scrollY = axis.rect.y;
         this.width = this.isVertical ? axis.rect.height : axis.rect.width;
         this.height = 16;
-        let currentX: number = this.zoomPosition * (this.isVertical ? axis.rect.height : this.width);
-        let minThumbX: number = (this.width - minThumbWidth - circleRadius);
+        const currentX: number = this.zoomPosition * (this.isVertical ? axis.rect.height : this.width);
+        const minThumbX: number = (this.width - minThumbWidth - circleRadius);
         this.scrollElements.thumbRectX = currentX > minThumbX ? minThumbX : currentX < circleRadius ? circleRadius : currentX;
         this.scrollElements.thumbRectWidth = ((currentWidth + this.scrollElements.thumbRectX) < this.width - (circleRadius * 2))
             ? currentWidth : this.width - this.scrollElements.thumbRectX - circleRadius;
@@ -671,41 +737,42 @@ private getStartEnd(start: number | Date, end: number | Date, isCurrentStartEnd:
 
     /**
      * Lazy load default values
+     *
+     * @param axis
      */
+
     public getLazyDefaults(axis: Axis): void {
         let start: number;
         let end: number;
         let valueType: string = axis.valueType;
-        let scrollbarSettings: ScrollbarSettingsModel = axis.scrollbarSettings;
+        const scrollbarSettings: ScrollbarSettingsModel = axis.scrollbarSettings;
+        const range: ScrollbarSettingsRangeModel = axis.scrollbarSettings.range;
+        const visibleRange: VisibleRangeModel = axis.visibleRange;
+        const pointsLength: number = axis.scrollbarSettings.pointsLength;
         this.valueType = valueType = (!scrollbarSettings.range.minimum || !scrollbarSettings.range.maximum) &&
             scrollbarSettings.pointsLength ? 'Double' : valueType;
-        let range: ScrollbarSettingsRangeModel = axis.scrollbarSettings.range;
-        let visibleRange: VisibleRangeModel = axis.visibleRange;
-        let pointsLength: number = axis.scrollbarSettings.pointsLength;
-        let zoomFactor: number;
-        let zoomPosition: number;
-        let option: DateFormatOptions = {
+        const option: DateFormatOptions = {
             skeleton: 'full',
             type: 'dateTime'
         };
-        let dateParser: Function = this.component.intl.getDateParser(option);
-        let dateFormatter: Function = this.component.intl.getDateFormat(option);
+        const dateParser: Function = this.component.intl.getDateParser(option);
+        const dateFormatter: Function = this.component.intl.getDateFormat(option);
         switch (valueType) {
-            case 'Double':
-            case 'Category':
-            case 'Logarithmic':
-                start = range.minimum ? range.minimum as number : pointsLength ? 0 : visibleRange.min;
-                end = range.maximum ? range.maximum as number : pointsLength ? (pointsLength - 1) : visibleRange.max;
-                break;
-            case 'DateTime':
-            case 'DateTimeCategory':
-                start = range.minimum ? Date.parse(dateParser(dateFormatter(range.minimum))) : visibleRange.min;
-                end = range.maximum ? Date.parse(dateParser(dateFormatter(range.maximum))) : visibleRange.max;
-                break;
+        case 'Double':
+        case 'Category':
+        case 'Logarithmic':
+            start = range.minimum ? range.minimum as number : pointsLength ? 0 : visibleRange.min;
+            end = range.maximum ? range.maximum as number : pointsLength ? (pointsLength - 1) : visibleRange.max;
+            break;
+        case 'DateTime':
+        case 'DateTimeCategory':
+            start = range.minimum ? Date.parse(dateParser(dateFormatter(range.minimum))) : visibleRange.min;
+            end = range.maximum ? Date.parse(dateParser(dateFormatter(range.maximum))) : visibleRange.max;
+            break;
         }
         start = Math.min(start, visibleRange.min); end = Math.max(end, visibleRange.max);
-        zoomFactor = (visibleRange.max - visibleRange.min) / (end - start);
-        zoomPosition = (visibleRange.min - start) / (end - start);
+        const zoomFactor: number = (visibleRange.max - visibleRange.min) / (end - start);
+        const zoomPosition: number = (visibleRange.min - start) / (end - start);
         this.zoomFactor = range.minimum || range.maximum ? zoomFactor : (this.axis.maxPointLength / axis.scrollbarSettings.pointsLength);
         this.zoomPosition = range.minimum || range.maximum ? zoomPosition : axis.zoomPosition;
         this.scrollRange.min = start;
@@ -716,30 +783,36 @@ private getStartEnd(start: number | Date, end: number | Date, isCurrentStartEnd:
     }
     /**
      * Method to get log range
+     *
+     * @param axis
      */
+
     public getLogRange(axis: Axis): ScrollbarSettingsRangeModel {
-        let logRange: ScrollbarSettingsRangeModel;
-        let range: ScrollbarSettingsRangeModel = axis.scrollbarSettings.range;
+        const range: ScrollbarSettingsRangeModel = axis.scrollbarSettings.range;
         let start: number = logBase(<number>range.minimum, axis.logBase);
-        start = isFinite(start) ? start : <number>range.minimum;
         let end: number = logBase(<number>range.maximum, axis.logBase);
+        start = isFinite(start) ? start : <number>range.minimum;
         end = isFinite(start) ? end : <number>range.maximum;
-        logRange = { minimum: Math.floor(start / 1), maximum: Math.ceil(end / 1) };
-        return logRange;
+        return { minimum: Math.floor(start / 1), maximum: Math.ceil(end / 1) };
     }
 
     /**
      * Method for injecting scrollbar module
+     *
      * @param axis
      * @param component
      */
+
     public injectTo(axis: Axis, component: Chart): void {
         axis.zoomingScrollBar = new ScrollBar(component, axis);
     }
 
     /**
      * Method to destroy scrollbar
+     *
+     * @returns {void}
      */
+
     public destroy(): void {
         if (this.axes) {
             this.axes.map((axis: Axis) => {
@@ -755,7 +828,10 @@ private getStartEnd(start: number | Date, end: number | Date, isCurrentStartEnd:
     }
     /**
      * Method to get scrollbar module name
+     *
+     * @returns {string}
      */
+
     public getModuleName(): string {
         return 'ScrollBar';
     }
@@ -764,7 +840,7 @@ private getStartEnd(start: number | Date, end: number | Date, isCurrentStartEnd:
         eventName: string, range?: VisibleRangeModel, zoomPosition?: number,
         zoomFactor?: number, currentRanges?: ScrollbarSettingsRangeModel
     ): IScrollEventArgs {
-        let scrollArgs: IScrollEventArgs = {
+        const scrollArgs: IScrollEventArgs = {
             axis: (this.component.isBlazor ? {} : this.axis) as Axis,
             name: eventName,
             range: this.axis.visibleRange,

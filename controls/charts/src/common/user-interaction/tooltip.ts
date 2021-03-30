@@ -1,4 +1,5 @@
-import { createElement, extend } from '@syncfusion/ej2-base';
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+import { extend } from '@syncfusion/ej2-base';
 import { Chart } from '../../chart';
 import { AccumulationChart } from '../../accumulation-chart/accumulation';
 import { AccPoints, AccumulationSeries } from '../../accumulation-chart/model/acc-base';
@@ -40,8 +41,10 @@ export class BaseTooltip extends ChartData {
     public headerText: string;
     /**
      * Constructor for tooltip module.
-     * @private.
+     *
+     * @private
      */
+
     constructor(chart: Chart | AccumulationChart) {
         super(chart as Chart);
         this.element = this.chart.element;
@@ -57,17 +60,19 @@ export class BaseTooltip extends ChartData {
 
     /**
      * Renders the tooltip.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
+
     public getTooltipElement(isTooltip: boolean): HTMLDivElement {
         this.inverted = this.chart.requireInvertedAxis;
         this.header = (this.control.tooltip.header === null) ?
             ((this.control.tooltip.shared) ? '<b>${point.x}</b>' : '<b>${series.name}</b>')
             : (this.control.tooltip.header);
         this.formattedText = [];
-        let tooltipDiv: HTMLElement = document.getElementById(this.chart.element.id + '_tooltip');
-        let isStockChart: boolean = this.chart.element.id.indexOf('stockChart') > -1;
+        const tooltipDiv: HTMLElement = document.getElementById(this.chart.element.id + '_tooltip');
+        const isStockChart: boolean = this.chart.element.id.indexOf('stockChart') > -1;
         if (!isTooltip && !tooltipDiv || isStockChart) {
             return this.createElement();
         }
@@ -75,7 +80,7 @@ export class BaseTooltip extends ChartData {
     }
 
     public createElement(): HTMLDivElement {
-        let tooltipDiv: HTMLDivElement = document.createElement('div');
+        const tooltipDiv: HTMLDivElement = document.createElement('div');
         tooltipDiv.id = this.element.id + '_tooltip'; tooltipDiv.className = 'ejSVGTooltip';
         tooltipDiv.setAttribute('style', 'pointer-events:none; position:absolute;z-index: 1');
         return tooltipDiv;
@@ -102,7 +107,7 @@ export class BaseTooltip extends ChartData {
         return false;
     }
 
-    public removeHighlight(chart: Chart | AccumulationChart): void {
+    public removeHighlight(): void {
         let item: PointData | AccPointData;
         let series: Series;
         for (let i: number = 0, len: number = this.previousPoints.length; i < len; i++) {
@@ -122,9 +127,9 @@ export class BaseTooltip extends ChartData {
     }
 
     public highlightPoint(series: Series | AccumulationSeries, pointIndex: number, highlight: boolean): void {
-        let element: HTMLElement = this.getElement(this.element.id + '_Series_' + series.index + '_Point_' + pointIndex);
-        let selectionModule: AccumulationSelection = (this.control as AccumulationChart).accumulationSelectionModule;
-        let isSelectedElement: boolean = selectionModule && selectionModule.selectedDataIndexes.length > 0 ? true : false;
+        const element: HTMLElement = this.getElement(this.element.id + '_Series_' + series.index + '_Point_' + pointIndex);
+        const selectionModule: AccumulationSelection = (this.control as AccumulationChart).accumulationSelectionModule;
+        const isSelectedElement: boolean = selectionModule && selectionModule.selectedDataIndexes.length > 0 ? true : false;
         if (element) {
             if ((!isSelectedElement || isSelectedElement && element.getAttribute('class')
                 && element.getAttribute('class').indexOf('_ej2_chart_selection_series_') === -1)) {
@@ -136,7 +141,7 @@ export class BaseTooltip extends ChartData {
     }
 
     public highlightPoints(): void {
-        for (let item of this.currentPoints) {
+        for (const item of this.currentPoints) {
             if (item.series.isRectSeries && item.series.category === 'Series') {
                 this.highlightPoint(item.series, item.point.index, true);
             }
@@ -148,8 +153,8 @@ export class BaseTooltip extends ChartData {
         point: Points | AccPoints, shapes: ChartShape[], offset: number, bounds: Rect, extraPoints: PointData[] = null,
         templatePoint: Points | AccPoints = null, customTemplate?: string
     ): void {
-        let series: Series = <Series>this.currentPoints[0].series;
-        let module: AccumulationTooltip | Tooltip = (<Chart>chart).tooltipModule || (<AccumulationChart>chart).accumulationTooltipModule;
+        const series: Series = <Series>this.currentPoints[0].series;
+        const module: AccumulationTooltip | Tooltip = (<Chart>chart).tooltipModule || (<AccumulationChart>chart).accumulationTooltipModule;
         if (!module) { // For the tooltip enable is false.
             return;
         }
@@ -157,8 +162,8 @@ export class BaseTooltip extends ChartData {
         let inverted: boolean = this.chart.requireInvertedAxis && series.isRectSeries;
         let position: TooltipPlacement = null;
         if (this.text.length <= 1) {
-            let contentSize: Size = measureText(this.text[0], chart.tooltip.textStyle);
-            let headerSize: Size = (!(this.header === '' || this.header === '<b></b>')) ? measureText(this.header, this.textStyle) :
+            const contentSize: Size = measureText(this.text[0], chart.tooltip.textStyle);
+            const headerSize: Size = (!(this.header === '' || this.header === '<b></b>')) ? measureText(this.header, this.textStyle) :
                 new Size(0, 0);
             // marker size + arrowpadding + 2 * padding + markerpadding
             const markerSize: number = 10 + 12 + (2 * 10) + 5;
@@ -207,13 +212,13 @@ export class BaseTooltip extends ChartData {
                     controlInstance: this.chart,
                     tooltipPlacement: position,
                     tooltipRender: () => {
-                        module.removeHighlight(module.control);
+                        module.removeHighlight();
                         module.highlightPoints();
                         module.updatePreviousPoint(extraPoints);
                     },
                     animationComplete: (args: ITooltipAnimationCompleteArgs) => {
                         if (args.tooltip.fadeOuted) {
-                            module.fadeOut(<PointData[]>module.previousPoints, chart);
+                            module.fadeOut(<PointData[]>module.previousPoints);
                         }
                     }
                 },
@@ -237,15 +242,15 @@ export class BaseTooltip extends ChartData {
                 this.svgTooltip.dataBind();
             }
         }
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this.chart as any).isReact) { (this.chart as any).renderReactTemplates(); }
     }
 
     private getPositionBySize(textSize: Size, bounds: Rect, arrowLocation: ChartLocation, position: TooltipPlacement): TooltipPlacement {
-        let isTop: boolean = this.isTooltipFitPosition('Top', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
-        let isBottom: boolean = this.isTooltipFitPosition('Bottom', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
-        let isRight: boolean = this.isTooltipFitPosition('Right', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
-        let isLeft: boolean = this.isTooltipFitPosition('Left', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
+        const isTop: boolean = this.isTooltipFitPosition('Top', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
+        const isBottom: boolean = this.isTooltipFitPosition('Bottom', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
+        const isRight: boolean = this.isTooltipFitPosition('Right', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
+        const isLeft: boolean = this.isTooltipFitPosition('Left', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
         let tooltipPos: TooltipPlacement;
         if (isTop || isBottom || isRight || isLeft) {
             if (position === 'Top') {
@@ -258,9 +263,9 @@ export class BaseTooltip extends ChartData {
                 tooltipPos = isLeft ? 'Left' : (isRight ? 'Right' : (isTop ? 'Top' : 'Bottom'));
             }
         } else {
-            let size: number[] = [(arrowLocation.x - bounds.x), ((bounds.x + bounds.width) - arrowLocation.x), (arrowLocation.y - bounds.y),
-            ((bounds.y + bounds.height) - arrowLocation.y)];
-            let index: number = size.indexOf(Math.max.apply(this, size));
+            const size: number[] = [(arrowLocation.x - bounds.x), ((bounds.x + bounds.width) - arrowLocation.x),
+                (arrowLocation.y - bounds.y), ((bounds.y + bounds.height) - arrowLocation.y)];
+            const index: number = size.indexOf(Math.max.apply(this, size));
             position = (index === 0) ? 'Left' : (index === 1) ? 'Right' : (index === 2) ? 'Top' : 'Bottom';
             return position;
         }
@@ -268,33 +273,33 @@ export class BaseTooltip extends ChartData {
     }
 
     private isTooltipFitPosition(position: TooltipPlacement, bounds: Rect, location: ChartLocation, size: Size): boolean {
-        let start: ChartLocation = new ChartLocation(0, 0);
-        let end: ChartLocation = new ChartLocation(0, 0);
+        const start: ChartLocation = new ChartLocation(0, 0);
+        const end: ChartLocation = new ChartLocation(0, 0);
         switch (position) {
-            case 'Top':
-                start.x = location.x - (size.width / 2);
-                start.y = location.y - size.height;
-                end.x = location.x + (size.width / 2);
-                end.y = location.y;
-                break;
-            case 'Bottom':
-                start.x = location.x - (size.width / 2);
-                start.y = location.y;
-                end.x = location.x + (size.width / 2);
-                end.y = location.y + size.height;
-                break;
-            case 'Right':
-                start.x = location.x;
-                start.y = location.y - (size.height / 2);
-                end.x = location.x + size.width;
-                end.y = location.y + (size.height / 2);
-                break;
-            case 'Left':
-                start.x = location.x - size.width;
-                start.y = location.y - (size.height / 2);
-                end.x = location.x;
-                end.y = location.y + (size.height / 2);
-                break;
+        case 'Top':
+            start.x = location.x - (size.width / 2);
+            start.y = location.y - size.height;
+            end.x = location.x + (size.width / 2);
+            end.y = location.y;
+            break;
+        case 'Bottom':
+            start.x = location.x - (size.width / 2);
+            start.y = location.y;
+            end.x = location.x + (size.width / 2);
+            end.y = location.y + size.height;
+            break;
+        case 'Right':
+            start.x = location.x;
+            start.y = location.y - (size.height / 2);
+            end.x = location.x + size.width;
+            end.y = location.y + (size.height / 2);
+            break;
+        case 'Left':
+            start.x = location.x - size.width;
+            start.y = location.y - (size.height / 2);
+            end.x = location.x;
+            end.y = location.y + (size.height / 2);
+            break;
         }
         return (withInBounds(start.x, start.y, bounds) && withInBounds(end.x, end.y, bounds));
     }
@@ -310,8 +315,8 @@ export class BaseTooltip extends ChartData {
     }
 
     private findPalette() : string[] {
-        let colors : string[] = [];
-        for (let data of this.currentPoints) {
+        const colors : string[] = [];
+        for (const data of this.currentPoints) {
             colors.push(this.findColor(data, <Series>data.series));
         }
         return colors;
@@ -322,7 +327,7 @@ export class BaseTooltip extends ChartData {
             return data.point.color;
         } else {
             return (data.point.color && data.point.color !== '#ffffff' ? data.point.color
-                                                                       : (<Points>data.point).interior) ||
+                : (<Points>data.point).interior) ||
                                                                          series.marker.fill || series.interior;
         }
     }
@@ -335,15 +340,15 @@ export class BaseTooltip extends ChartData {
         this.previousPoints = <PointData[]>extend([], this.currentPoints, null, true);
     }
 
-    public fadeOut(data: PointData[], chart: Chart | AccumulationChart): void {
-        let svgElement: HTMLElement = this.chart.enableCanvas ? this.getElement(this.element.id + '_tooltip_group') :
-         this.getElement(this.element.id + '_tooltip_svg');
-        let isTooltip: boolean = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0);
+    public fadeOut(data: PointData[]): void {
+        const svgElement: HTMLElement = this.chart.enableCanvas ? this.getElement(this.element.id + '_tooltip_group') :
+            this.getElement(this.element.id + '_tooltip_svg');
+        const isTooltip: boolean = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0);
         if (!isTooltip) {
             this.valueX = null;
             this.valueY = null;
             this.currentPoints = [];
-            this.removeHighlight(chart);
+            this.removeHighlight();
             this.removeHighlightedMarker(data);
             this.svgTooltip = null;
             this.control.trigger('animationComplete', {});
@@ -355,11 +360,11 @@ export class BaseTooltip extends ChartData {
     */
     public removeHighlightedMarker(data: PointData[]): void {
         if (this.chart.markerRender) {
-        for (let item of data) {
-            removeElement(this.element.id + '_Series_' + item.series.index +
+            for (const item of data) {
+                removeElement(this.element.id + '_Series_' + item.series.index +
                 '_Point_' + item.point.index + '_Trackball');
-        }
-        this.chart.markerRender.removeHighlightedMarker();
+            }
+            this.chart.markerRender.removeHighlightedMarker();
         }
         this.previousPoints = [];
     }
@@ -384,7 +389,7 @@ export class BaseTooltip extends ChartData {
 
     public removeText(): void {
         this.textElements = [];
-        let element: Element = this.getElement(this.element.id + '_tooltip_group');
+        const element: Element = this.getElement(this.element.id + '_tooltip_group');
         if (element && element.childNodes.length > 0) {
             while (element.lastChild && element.childNodes.length !== 1) {
                 element.removeChild(element.lastChild);
@@ -396,24 +401,25 @@ export class BaseTooltip extends ChartData {
     public stopAnimation(): void {
         stopTimer(this.toolTipInterval);
     }
-   /**
-    * Removes the tooltip on mouse leave.
-    * @return {void}
-    * @private
-    */
+    /**
+     * Removes the tooltip on mouse leave.
+     *
+     * @returns {void}
+     * @private
+     */
 
     public removeTooltip(duration: number): void {
-        let tooltipElement: HTMLElement =  this.getElement(this.element.id + '_tooltip');
-        let tooltipTemplate: HTMLElement = tooltipElement ? this.getElement(tooltipElement.id + 'parent_template') : null;
-        let isTemplateRendered: boolean = tooltipTemplate && tooltipTemplate.innerHTML !== '<div></div>';
+        const tooltipElement: HTMLElement =  this.getElement(this.element.id + '_tooltip');
+        const tooltipTemplate: HTMLElement = tooltipElement ? this.getElement(tooltipElement.id + 'parent_template') : null;
+        const isTemplateRendered: boolean = tooltipTemplate && tooltipTemplate.innerHTML !== '<div></div>';
         this.stopAnimation();
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this.chart as any).isReact && isTemplateRendered) { (this.chart as any).clearTemplate([tooltipTemplate.id], [0]); }
         if (tooltipElement && this.previousPoints.length > 0) {
-            this.toolTipInterval = setTimeout(
+            this.toolTipInterval = +setTimeout(
                 (): void => {
                     if (this.svgTooltip) {
-                    this.svgTooltip.fadeOut();
+                        this.svgTooltip.fadeOut();
                     }
                 },
                 duration);

@@ -30,7 +30,7 @@ export const markdownSelectionTags: { [key: string]: string } = {
  */
 export const markdownListsTags: { [key: string]: string } = {
     'OL': '1. ',
-    'UL': '- ',
+    'UL': '- '
 };
 /**
  * Default html key config for adapter
@@ -119,6 +119,7 @@ export const listConversionFilters: { [key: string]: string } = {
 
 /**
  * Dom-Node Grouping of self closing tags
+ * 
  * @hidden
  */
 export const selfClosingTags: string[] = [

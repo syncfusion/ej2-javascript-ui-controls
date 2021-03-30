@@ -5,7 +5,7 @@ import { IRichTextEditor, ActionBeginEventArgs } from '../base/interface';
  */
 export class ExecCommandCallBack {
     protected parent: IRichTextEditor;
-    constructor(parent?: IRichTextEditor) {
+    public constructor(parent?: IRichTextEditor) {
         this.parent = parent;
         this.addEventListener();
     }
@@ -27,5 +27,4 @@ export class ExecCommandCallBack {
         this.parent.off(events.execCommandCallBack, this.commandCallBack);
         this.parent.off(events.destroy, this.removeEventListener);
     }
-
 }

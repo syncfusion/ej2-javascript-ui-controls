@@ -52,6 +52,7 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
      * width:'1000px', height:'500px' });
      * barcode.appendTo('#barcode');
      * ```
+     *
      * @default '100%'
      */
     @Property('100%')
@@ -68,7 +69,9 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
      * height:'1000px', height:'500px' });
      * barcode.appendTo('#barcode');
      * ```
+     *
      * @default '100'
+     *
      */
     @Property('100px')
     public height: string | number;
@@ -78,56 +81,72 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
      * Defines the barcode rendering mode.
      * * SVG - Renders the bar-code objects as SVG elements
      * * Canvas - Renders the bar-code in a canvas
+     *
      * @default 'SVG'
+     *
      */
     @Property('SVG')
     public mode: RenderingMode;
 
     /**
      * Defines the type of barcode to be rendered.
+     *
      * @default 'Code128'
+     *
      */
     @Property('Code128')
     public type: BarcodeType;
 
     /**
      * Defines the value of the barcode to be rendered.
+     *
      * @default undefined
+     *
      */
     @Property(undefined)
     public value: string;
 
     /**
      * Defines the checksum for the barcode.
+     *
      * @default 'true'
+     *
      */
     @Property(true)
     public enableCheckSum: boolean;
 
     /**
      * Defines the text properties for the barcode.
+     *
      * @default ''
+     *
      */
     @Complex<DisplayTextModel>({}, DisplayText)
     public displayText: DisplayTextModel;
 
     /**
      * Defines the margin properties for the barcode.
+     *
      * @default ''
+     *
      */
     @Complex<MarginModel>({}, Margin)
     public margin: MarginModel;
 
     /**
      * Defines the background color of the barcode.
+     *
      * @default 'white'
+     *
      */
     @Property('white')
     public backgroundColor: string;
 
     /**
      * Defines the forecolor of the barcode.
+     *
      * @default 'black'
+     *
      */
     @Property('black')
     public foreColor: string;
@@ -140,9 +159,11 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
     public invalid: EmitType<Object>;
 
 
+
     /** @private */
     public localeObj: L10n;
     /** @private */
+    // eslint-disable-next-line
     private defaultLocale: Object;
 
     private barcodeCanvas: HTMLElement;
@@ -150,6 +171,9 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
     private barcodeRenderer: BarcodeRenderer;
     /**
      * Constructor for creating the widget
+     *
+     * @param {BarcodeGeneratorModel} options The barcode model.
+     * @param {HTMLElement | string} element The barcode element.
      */
     constructor(options?: BarcodeGeneratorModel, element?: HTMLElement | string) {
         super(options, <HTMLElement | string>element);
@@ -157,12 +181,13 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
 
 
     private triggerEvent(eventName: BarcodeEvent, message: string): void {
-        let arg: ValidateEvent = {
+        const arg: ValidateEvent = {
             message: message
         };
         this.trigger(BarcodeEvent[eventName], arg);
     }
 
+    // eslint-disable-next-line
     public onPropertyChanged(newProp: BarcodeGeneratorModel, oldProp: BarcodeGeneratorModel): void {
         if (this.mode === 'Canvas' && newProp.mode !== 'Canvas') {
             this.refreshCanvasBarcode();
@@ -172,21 +197,21 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
         if (newProp.width) {
             this.barcodeCanvas.setAttribute('width', String(newProp.width));
         }
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'width':
-                    this.element.style.width = this.getElementSize(this.width);
-                    this.barcodeCanvas.setAttribute('width', String(this.element.offsetWidth));
-                    break;
-                case 'height':
-                    this.element.style.height = this.getElementSize(this.height);
-                    this.barcodeCanvas.setAttribute('height', String(this.element.offsetHeight));
-                    break;
-                case 'backgroundColor':
-                    this.barcodeCanvas.setAttribute('style', 'background:' + newProp.backgroundColor);
-                    break;
-                case 'mode':
-                    this.initialize();
+            case 'width':
+                this.element.style.width = this.getElementSize(this.width);
+                this.barcodeCanvas.setAttribute('width', String(this.element.offsetWidth));
+                break;
+            case 'height':
+                this.element.style.height = this.getElementSize(this.height);
+                this.barcodeCanvas.setAttribute('height', String(this.element.offsetHeight));
+                break;
+            case 'backgroundColor':
+                this.barcodeCanvas.setAttribute('style', 'background:' + newProp.backgroundColor);
+                break;
+            case 'mode':
+                this.initialize();
             }
 
         }
@@ -198,8 +223,8 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
         this.element.style.height = this.getElementSize(this.height);
         //Initialize the width of the barcode generator
         this.element.style.width = this.getElementSize(this.width);
-        let height: number = this.mode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5;
-        let width: number = this.mode === 'SVG' ? this.element.offsetWidth : this.element.offsetWidth * 1.5;
+        const height: number = this.mode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5;
+        const width: number = this.mode === 'SVG' ? this.element.offsetWidth : this.element.offsetWidth * 1.5;
         this.barcodeCanvas = this.barcodeRenderer.renderRootElement(
             {
                 id: this.element.id + 'content',
@@ -211,71 +236,76 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
 
     /**
      * Export the barcode as an image in the specified image type and downloads it in the browser.
-     *  @param {string} fileName - Specifies the filename of the barcode image to be download. 
+     *
+     * @returns {void} Export the barcode as an image in the specified image type and downloads it in the browser.
+     *  @param {string} filename - Specifies the filename of the barcode image to be download.
      *  @param {BarcodeExportType} exportType - Defines the format of the barcode to be exported
      */
     public exportImage(filename: string, exportType: BarcodeExportType ): void {
         exportAsImage(exportType, filename, this.element, false, this);
     }
 
+
     /**
      * Export the barcode as an image in the specified image type and returns it as base64 string.
-     *  @param {BarcodeExportType} barcodeExportType - Defines the format of the barcode to be exported
+     *
+     * @returns {string} Export the barcode as an image in the specified image type and returns it as base64 string.
+     *  @param {BarcodeExportType} exportType - Defines the format of the barcode to be exported
      */
     public exportAsBase64Image(exportType: BarcodeExportType): Promise<string> {
-        let returnValue: Promise<string> =  exportAsImage(exportType, '', this.element, true, this);
+        const returnValue: Promise<string> =  exportAsImage(exportType, '', this.element, true, this);
         return returnValue;
     }
 
     private renderElements(): void {
         let barCode: Code39Extension | Code32 | Code39 | CodaBar | Code128A | Code128 | Ean8 |
-            Ean13 | UpcE | UpcA | Code11 | Code93 | Code93Extension;
+        Ean13 | UpcE | UpcA | Code11 | Code93 | Code93Extension;
         switch (this.type) {
-            case 'Code39Extension':
-                barCode = new Code39Extension;
-                break;
-            case 'Code39':
-                barCode = new Code39();
-                break;
-            case 'Codabar':
-                barCode = new CodaBar();
-                break;
-            case 'Code128A':
-                barCode = new Code128A();
-                break;
-            case 'Code128B':
-                barCode = new Code128B();
-                break;
-            case 'Code128C':
-                barCode = new Code128C();
-                break;
-            case 'Code128':
-                barCode = new Code128();
-                break;
-            case 'Ean8':
-                barCode = new Ean8();
-                break;
-            case 'Ean13':
-                barCode = new Ean13();
-                break;
-            case 'UpcA':
-                barCode = new UpcA();
-                break;
-            case 'UpcE':
-                barCode = new UpcE();
-                break;
-            case 'Code11':
-                barCode = new Code11();
-                break;
-            case 'Code93':
-                barCode = new Code93();
-                break;
-            case 'Code93Extension':
-                barCode = new Code93Extension();
-                break;
-            case 'Code32':
-                barCode = new Code32();
-                break;
+        case 'Code39Extension':
+            barCode = new Code39Extension;
+            break;
+        case 'Code39':
+            barCode = new Code39();
+            break;
+        case 'Codabar':
+            barCode = new CodaBar();
+            break;
+        case 'Code128A':
+            barCode = new Code128A();
+            break;
+        case 'Code128B':
+            barCode = new Code128B();
+            break;
+        case 'Code128C':
+            barCode = new Code128C();
+            break;
+        case 'Code128':
+            barCode = new Code128();
+            break;
+        case 'Ean8':
+            barCode = new Ean8();
+            break;
+        case 'Ean13':
+            barCode = new Ean13();
+            break;
+        case 'UpcA':
+            barCode = new UpcA();
+            break;
+        case 'UpcE':
+            barCode = new UpcE();
+            break;
+        case 'Code11':
+            barCode = new Code11();
+            break;
+        case 'Code93':
+            barCode = new Code93();
+            break;
+        case 'Code93Extension':
+            barCode = new Code93Extension();
+            break;
+        case 'Code32':
+            barCode = new Code32();
+            break;
         }
         if (this.mode === 'Canvas') {
             (this.barcodeCanvas as HTMLCanvasElement).getContext('2d').setTransform(1, 0, 0, 1, 0, 0);
@@ -296,7 +326,7 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
         barCode.isSvgMode = this.mode === 'SVG' ? true : false;
         barCode.displayText = this.displayText;
         barCode.enableCheckSum = this.enableCheckSum;
-        let validateMessage: string = barCode.validateInput(this.value);
+        const validateMessage: string = barCode.validateInput(this.value);
         if (validateMessage === undefined) {
             if (this.type === 'Code39Extension') {
                 (barCode as Code39Extension).drawCode39(this.barcodeCanvas);
@@ -320,22 +350,21 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
     }
 
     private clearCanvas(view: BarcodeGenerator): void {
-        let width: number;
-        let height: number;
-        width = view.element.offsetWidth;
-        height = view.element.offsetHeight;
+        const width: number = view.element.offsetWidth;
+        const height: number = view.element.offsetHeight;
         if (view.mode !== 'SVG') {
-            let ctx: CanvasRenderingContext2D = BarcodeCanvasRenderer.getContext(this.barcodeCanvas as HTMLCanvasElement);
+            const ctx: CanvasRenderingContext2D = BarcodeCanvasRenderer.getContext(this.barcodeCanvas as HTMLCanvasElement);
             ctx.clearRect(0, 0, width, height);
         }
     }
 
     /**
      * Get the properties to be maintained in the persisted state.
-     * @return {string}
+     *
+     * @returns {string} Get the properties to be maintained in the persisted state.
      */
     public getPersistData(): string {
-        let keyEntity: string[] = ['loaded'];
+        const keyEntity: string[] = ['loaded'];
         return this.addOnPersist(keyEntity);
     }
 
@@ -344,9 +373,10 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
 
     /**
      * @private
-     * @param real 
+     * @param real
      */
 
+    // eslint-disable-next-line
     private getElementSize(real: string | number, rulerSize?: number): string {
         let value: string;
         if (real.toString().indexOf('px') > 0 || real.toString().indexOf('%') > 0) {
@@ -363,12 +393,12 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
         this.initialize();
         this.initializePrivateVariables();
         this.setCulture();
-        let measureElement: HTMLCollection = document.getElementsByClassName('barcodeMeasureElement');
+        const measureElement: HTMLCollection = document.getElementsByClassName('barcodeMeasureElement');
         if (measureElement.length > 0) {
             for (let i: number = measureElement.length - 1; i >= 0; i--) {
                 measureElement[i].parentNode.removeChild(measureElement[i]);
             }
-            let element: string = 'barcodeMeasureElement';
+            const element: string = 'barcodeMeasureElement';
             window[element] = null;
         }
     }
@@ -390,6 +420,8 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
 
     /**
      * Renders the barcode control with nodes and connectors
+     *
+     * @returns {void}
      */
     public render(): void {
 
@@ -406,6 +438,8 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
 
     /**
      * Returns the module name of the barcode
+     *
+     * @returns {string}  Returns the module name of the barcode
      */
     public getModuleName(): string {
         return 'barcode';
@@ -413,19 +447,24 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
 
 
     /**
-     * To provide the array of modules needed for control rendering
-     * @return {ModuleDeclaration[]}
+     *To provide the array of modules needed for control rendering
+     *
+     * @function destroy
+     * @returns {ModuleDeclaration[]} To provide the array of modules needed for control rendering
      * @private
      */
     public requiredModules(): ModuleDeclaration[] {
 
-        let modules: ModuleDeclaration[] = [];
+        const modules: ModuleDeclaration[] = [];
 
         return modules;
     }
 
     /**
-     * Destroys the barcode control
+     * It is used to destroy the Barcode component.
+     *
+     * @function destroy
+     * @returns {void}
      */
     public destroy(): void {
         this.notify('destroy', {});

@@ -7,42 +7,49 @@ export interface NodeBaseModel {
 
     /**
      * Represents the unique id of nodes/connectors
+     *
      * @default ''
      */
     id?: string;
 
     /**
      * Defines the visual order of the node/connector in DOM
+     *
      * @default -1
      */
     zIndex?: number;
 
     /**
      * Defines the space to be left between the node and its immediate parent
+     *
      * @default {}
      */
     margin?: MarginModel;
 
     /**
      * Sets the visibility of the node/connector
+     *
      * @default true
      */
     visible?: boolean;
 
     /**
      * defines the tooltip for the node
+     *
      * @default {}
      */
     tooltip?: DiagramTooltipModel;
 
     /**
      * Defines whether the node should be automatically positioned or not. Applicable, if layout option is enabled.
+     *
      * @default false
      */
     excludeFromLayout?: boolean;
 
     /**
      * Allows the user to save custom information/data about a node/connector
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -51,6 +58,7 @@ export interface NodeBaseModel {
 
     /**
      * Flip the element in Horizontal/Vertical directions
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValue None
      * @default None
@@ -59,6 +67,7 @@ export interface NodeBaseModel {
 
     /**
      * Defines the symbol info of a connector
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined

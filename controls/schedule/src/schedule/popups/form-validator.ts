@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import * as cls from '../base/css-constant';
@@ -10,13 +11,13 @@ export class FieldValidator {
     private element: HTMLElement;
     private ignoreError: boolean;
 
-    public renderFormValidator(form: HTMLFormElement, rules: { [key: string]: Object }, element: HTMLElement): void {
+    public renderFormValidator(form: HTMLFormElement, rules: Record<string, any>, element: HTMLElement): void {
         this.element = element;
         this.formObj = new FormValidator(form, {
             customPlacement: (inputElement: HTMLElement, error: HTMLElement) => {
                 this.errorPlacement(inputElement, error);
             },
-            rules: rules as { [name: string]: { [rule: string]: Object } },
+            rules: rules as { [name: string]: { [rule: string]: any } },
             validationComplete: (args: { status: string, inputName: string, element: HTMLElement, message: string }) => {
                 this.validationComplete(args);
             },
@@ -27,7 +28,7 @@ export class FieldValidator {
     }
 
     private focusOut(args: FocusEvent): void {
-        let target: Element = (args.relatedTarget as Element);
+        const target: Element = (args.relatedTarget as Element);
         if (target && (target.classList.contains('e-dlg-closeicon-btn') || target.classList.contains('e-close')
             || target.classList.contains(cls.ALLDAY_CELLS_CLASS) || target.classList.contains(cls.HEADER_CELLS_CLASS)
             || target.classList.contains(cls.QUICK_POPUP_EVENT_DETAILS_CLASS) || target.classList.contains(cls.WORK_CELLS_CLASS)
@@ -39,15 +40,15 @@ export class FieldValidator {
     }
 
     private validationComplete(args: { status: string, inputName: string, element: HTMLElement, message: string }): void {
-        let elem: HTMLElement = this.element.querySelector('#' + args.inputName + '_Error') as HTMLElement;
+        const elem: HTMLElement = this.element.querySelector('#' + args.inputName + '_Error') as HTMLElement;
         if (elem) {
             elem.style.display = (args.status === 'failure') ? '' : 'none';
         }
     }
 
     private errorPlacement(inputElement: HTMLElement, error: HTMLElement): void {
-        let id: string = error.getAttribute('for');
-        let elem: Element = this.element.querySelector('#' + id + '_Error');
+        const id: string = error.getAttribute('for');
+        const elem: Element = this.element.querySelector('#' + id + '_Error');
         if (!elem && !this.ignoreError) {
             this.createTooltip(inputElement, error, id, '');
         }
@@ -56,7 +57,7 @@ export class FieldValidator {
     private createTooltip(element: Element, error: HTMLElement, name: string, display: string): void {
         let dlgContent: Element;
         let client: ClientRect;
-        let inputClient: ClientRect = element.getBoundingClientRect();
+        const inputClient: ClientRect = element.getBoundingClientRect();
         if (this.element.classList.contains(cls.POPUP_WRAPPER_CLASS)) {
             dlgContent = this.element;
             client = this.element.getBoundingClientRect();
@@ -64,16 +65,16 @@ export class FieldValidator {
             dlgContent = this.element.querySelector('.e-schedule-dialog .e-dlg-content');
             client = dlgContent.getBoundingClientRect();
         }
-        let div: HTMLElement = createElement('div', {
+        const div: HTMLElement = createElement('div', {
             className: 'e-tooltip-wrap e-popup ' + cls.ERROR_VALIDATION_CLASS,
             id: name + '_Error',
             styles: 'display:' + display + ';top:' +
                 (inputClient.bottom - client.top + dlgContent.scrollTop + 9) + 'px;left:' +
                 (inputClient.left - client.left + dlgContent.scrollLeft + inputClient.width / 2) + 'px;'
         });
-        let content: Element = createElement('div', { className: 'e-tip-content' });
+        const content: Element = createElement('div', { className: 'e-tip-content' });
         content.appendChild(error);
-        let arrow: Element = createElement('div', { className: 'e-arrow-tip e-tip-top' });
+        const arrow: Element = createElement('div', { className: 'e-arrow-tip e-tip-top' });
         arrow.appendChild(createElement('div', { className: 'e-arrow-tip-outer e-tip-top' }));
         arrow.appendChild(createElement('div', { className: 'e-arrow-tip-inner e-tip-top' }));
         div.appendChild(content);
@@ -84,8 +85,8 @@ export class FieldValidator {
 
     public destroyToolTip(): void {
         if (this.element) {
-            let elements: Element[] = [].slice.call(this.element.querySelectorAll('.' + cls.ERROR_VALIDATION_CLASS));
-            for (let elem of elements) {
+            const elements: Element[] = [].slice.call(this.element.querySelectorAll('.' + cls.ERROR_VALIDATION_CLASS));
+            for (const elem of elements) {
                 remove(elem);
             }
         }
@@ -94,12 +95,10 @@ export class FieldValidator {
         }
     }
 
-    /**
-     * @hidden
-     */
     public destroy(): void {
         if (this.formObj && this.formObj.element && !this.formObj.isDestroyed) {
             this.formObj.destroy();
         }
     }
+
 }

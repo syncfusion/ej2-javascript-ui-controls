@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { L10n, isBlazor } from '@syncfusion/ej2-base';
 import { remove } from '@syncfusion/ej2-base';
 import { ContextMenu as Menu, MenuItemModel, MenuEventArgs } from '@syncfusion/ej2-navigations';
@@ -53,6 +54,7 @@ export interface ContextMenuClassList {
 
 /**
  * 'ContextMenu module used to handle context menu actions.'
+ *
  * @private
  */
 export class DiagramContextMenu {
@@ -88,7 +90,10 @@ export class DiagramContextMenu {
         this.addEventListener();
     }
     /**
-     * @hidden
+     * addEventListener method \
+     *
+     * @returns { void } addEventListener method .\
+     *
      * @private
      */
     public addEventListener(): void {
@@ -97,7 +102,10 @@ export class DiagramContextMenu {
     }
 
     /**
-     * @hidden
+     * removeEventListener method \
+     *
+     * @returns { void } removeEventListener method .\
+     *
      * @private
      */
     public removeEventListener(): void {
@@ -110,7 +118,7 @@ export class DiagramContextMenu {
         if (!isBlazor()) {
             this.element = createHtmlElement('ul', { id: this.parent.element.id + '_contextMenu' }) as HTMLUListElement;
             this.parent.element.appendChild(this.element);
-            let target: string = '#' + this.parent.element.id;
+            const target: string = '#' + this.parent.element.id;
             this.contextMenu = new Menu({
                 items: this.getMenuItems(),
                 enableRtl: this.parent.enableRtl,
@@ -130,11 +138,11 @@ export class DiagramContextMenu {
     }
 
     private getMenuItems(): ContextMenuItemModel[] {
-        let menuItems: MenuItemModel[] = [];
-        let orderItems: MenuItemModel[] = [];
-        let groupItems: MenuItemModel[] = [];
+        const menuItems: MenuItemModel[] = [];
+        const orderItems: MenuItemModel[] = [];
+        const groupItems: MenuItemModel[] = [];
         if (!this.parent.contextMenuSettings.showCustomMenuOnly) {
-            for (let item of this.getDefaultItems()) {
+            for (const item of this.getDefaultItems()) {
                 if (item.toLocaleLowerCase().indexOf('group') !== -1) {
                     if (item.toLocaleLowerCase() !== 'grouping') {
                         groupItems.push(this.buildDefaultItems(item));
@@ -148,18 +156,18 @@ export class DiagramContextMenu {
                 }
             }
             if (groupItems.length > 0) {
-                let orderGroup: ContextMenuItemModel = this.buildDefaultItems('grouping');
+                const orderGroup: ContextMenuItemModel = this.buildDefaultItems('grouping');
                 orderGroup.items = groupItems;
                 menuItems.push(orderGroup);
             }
             if (orderItems.length > 0) {
-                let orderGroup: ContextMenuItemModel = this.buildDefaultItems('order');
+                const orderGroup: ContextMenuItemModel = this.buildDefaultItems('order');
                 orderGroup.items = orderItems;
                 menuItems.push(orderGroup);
             }
         }
         if (this.parent.contextMenuSettings.items) {
-            for (let customItem of this.parent.contextMenuSettings.items) {
+            for (const customItem of this.parent.contextMenuSettings.items) {
                 menuItems.push(customItem);
             }
         }
@@ -178,51 +186,51 @@ export class DiagramContextMenu {
     private contextMenuItemClick(args: DiagramMenuEventArgs): void {
         document.getElementById(this.parent.element.id + 'content').focus();
         this.parent.trigger(contextMenuClick, args);
-        let item: string = this.getKeyFromId(args.item.id);
+        const item: string = this.getKeyFromId(args.item.id);
         if (!args.cancel) {
             switch (item) {
-                case 'cut':
-                    this.parent.cut();
-                    break;
-                case 'copy':
-                    this.parent.copy();
-                    break;
-                case 'undo':
-                    this.parent.undo();
-                    break;
-                case 'redo':
-                    this.parent.redo();
-                    break;
-                case 'paste':
-                    this.parent.paste();
-                    break;
-                case 'selectAll':
-                    this.parent.selectAll();
-                    break;
-                case 'group':
-                    this.parent.group();
-                    break;
-                case 'unGroup':
-                    this.parent.unGroup();
-                    break;
-                case 'bringToFrontOrder':
-                    this.parent.bringToFront();
-                    break;
-                case 'moveForwardOrder':
-                    this.parent.moveForward();
-                    break;
-                case 'sendToBackOrder':
-                    this.parent.sendToBack();
-                    break;
-                case 'sendBackwardOrder':
-                    this.parent.sendBackward();
-                    break;
+            case 'cut':
+                this.parent.cut();
+                break;
+            case 'copy':
+                this.parent.copy();
+                break;
+            case 'undo':
+                this.parent.undo();
+                break;
+            case 'redo':
+                this.parent.redo();
+                break;
+            case 'paste':
+                this.parent.paste();
+                break;
+            case 'selectAll':
+                this.parent.selectAll();
+                break;
+            case 'group':
+                this.parent.group();
+                break;
+            case 'unGroup':
+                this.parent.unGroup();
+                break;
+            case 'bringToFrontOrder':
+                this.parent.bringToFront();
+                break;
+            case 'moveForwardOrder':
+                this.parent.moveForward();
+                break;
+            case 'sendToBackOrder':
+                this.parent.sendToBack();
+                break;
+            case 'sendBackwardOrder':
+                this.parent.sendBackward();
+                break;
             }
         }
     }
 
     private contextMenuOnClose(args: OpenCloseMenuEventArgs): void {
-        let parent: string = 'parentObj';
+        const parent: string = 'parentObj';
         if (args.items.length > 0 && args.items[0][parent] instanceof Menu) {
             this.updateItemStatus();
         }
@@ -239,10 +247,19 @@ export class DiagramContextMenu {
         this.isOpen = false;
     }
 
-    /** @private */
+    /**
+     * ensureItems method \
+     *
+     * @returns { void } ensureItems method .\
+     * @param {MenuItemModel} item - provide the item value.
+     * @param {Event} event - provide the event value.
+     *
+     * @private
+     */
     public ensureItems(item: MenuItemModel, event?: Event): void {
-        let key: string = this.getKeyFromId(item.id);
-        let dItem: ContextMenuItemModel = this.defaultItems[key];
+        const key: string = this.getKeyFromId(item.id);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const dItem: ContextMenuItemModel = this.defaultItems[key];
         if (this.getDefaultItems().indexOf(key) !== -1) {
             if ((item as ContextMenuItemModel).target && (event || this.parent.checkMenu) &&
                 !this.ensureTarget(item)) {
@@ -262,10 +279,11 @@ export class DiagramContextMenu {
         this.contextMenu.refresh();
     }
 
+
     private updateItems(): void {
         let canInsert: boolean = true;
         for (let i: number = 0; i < this.parent.contextMenuSettings.items.length; i++) {
-            let items: ContextMenuItemModel = this.parent.contextMenuSettings.items[i];
+            const items: ContextMenuItemModel = this.parent.contextMenuSettings.items[i];
             for (let j: number = 0; j < this.contextMenu.items.length; j++) {
                 if (this.contextMenu.items[j].text === this.parent.contextMenuSettings.items[i].text) {
                     canInsert = false;
@@ -285,10 +303,10 @@ export class DiagramContextMenu {
         if (this.parent.checkMenu) { this.hiddenItems = []; }
         let diagramArgs: DiagramBeforeMenuOpenEventArgs = args as DiagramBeforeMenuOpenEventArgs;
         diagramArgs.hiddenItems = [];
-        for (let item of args.items) {
+        for (const item of args.items) {
             this.ensureItems(item, args.event);
             if (item.items.length) {
-                for (let newItem of item.items) {
+                for (const newItem of item.items) {
                     this.ensureItems(newItem, args.event);
                 }
             }
@@ -306,15 +324,16 @@ export class DiagramContextMenu {
         let hidden: boolean = true;
         this.hiddenItems = this.hiddenItems.concat(diagramArgs.hiddenItems);
         this.contextMenu.enableItems(this.disableItems, false, true);
-        let contextItems: DiagramContextMenu = this;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const contextItems: DiagramContextMenu = this;
         for (let i: number = 0; i < args.items.length; i++) {
-            let item: MenuItemModel = args.items[i];
+            const item: MenuItemModel = args.items[i];
             if (contextItems.hiddenItems.indexOf(item.id) > -1) {
                 contextItems.contextMenu.hideItems([item.id], true);
             }
         }
         for (let i: number = 0; i < contextItems.contextMenu.items.length; i++) {
-            let item: MenuItemModel = contextItems.contextMenu.items[i];
+            const item: MenuItemModel = contextItems.contextMenu.items[i];
             if (contextItems.hiddenItems.indexOf(item.id) === -1) {
                 hidden = false;
                 contextItems.contextMenu.showItems([item.id], true);
@@ -332,53 +351,52 @@ export class DiagramContextMenu {
     }
 
     private ensureTarget(item: MenuItemModel): boolean {
-        let selectedLength: number = this.parent.selectedItems.nodes.length +
+        const selectedLength: number = this.parent.selectedItems.nodes.length +
             this.parent.selectedItems.connectors.length;
-        let itemText: string = this.getKeyFromId(item.id);
+        const itemText: string = this.getKeyFromId(item.id);
         let target: boolean = false;
         switch (itemText) {
-            case 'undo':
-                target = this.parent.historyManager && this.parent.historyManager.canUndo ? true : false;
-                break;
-            case 'redo':
-                target = this.parent.historyManager && this.parent.historyManager.canRedo ? true : false;
-                break;
-            case 'paste':
-                target = this.parent.commandHandler.clipboardData.clipObject ? true : false;
-                break;
-            case 'selectAll':
-                target = this.parent.nodes.length + this.parent.connectors.length ? true : false;
-                break;
-            case 'grouping':
-                target = ((selectedLength > 1) || (this.parent.selectedItems.nodes[0] && this.parent.selectedItems.nodes[0].children
+        case 'undo':
+            target = this.parent.historyManager && this.parent.historyManager.canUndo ? true : false;
+            break;
+        case 'redo':
+            target = this.parent.historyManager && this.parent.historyManager.canRedo ? true : false;
+            break;
+        case 'paste':
+            target = this.parent.commandHandler.clipboardData.clipObject ? true : false;
+            break;
+        case 'selectAll':
+            target = this.parent.nodes.length + this.parent.connectors.length ? true : false;
+            break;
+        case 'grouping':
+            target = ((selectedLength > 1) || (this.parent.selectedItems.nodes[0] && this.parent.selectedItems.nodes[0].children
                     && this.parent.selectedItems.nodes[0].children.length > 1)) ? true : false;
-                break;
-            case 'group':
-                target = selectedLength > 1;
-                break;
-            case 'unGroup':
-                target = ((this.parent.selectedItems.nodes[0] && this.parent.selectedItems.nodes[0].children
+            break;
+        case 'group':
+            target = selectedLength > 1;
+            break;
+        case 'unGroup':
+            target = ((this.parent.selectedItems.nodes[0] && this.parent.selectedItems.nodes[0].children
                     && this.parent.selectedItems.nodes[0].children.length > 1)) ? true : false;
-                break;
-            case 'cut':
-            case 'copy':
-            case 'order':
-            case 'bringToFrontOrder':
-            case 'moveForwardOrder':
-            case 'sendToBackOrder':
-            case 'sendBackwardOrder':
-                target = selectedLength ? true : false;
-                break;
+            break;
+        case 'cut':
+        case 'copy':
+        case 'order':
+        case 'bringToFrontOrder':
+        case 'moveForwardOrder':
+        case 'sendToBackOrder':
+        case 'sendBackwardOrder':
+            target = selectedLength ? true : false;
+            break;
         }
         return target;
     }
 
 
     /**
-     * To destroy the Context menu.
-     * @method destroy
-     * @return {void}
-     * @private
+     *To destroy the context menu
+     *
+     * @returns {void} To destroy the context menu
      */
     public destroy(): void {
         if (!isBlazor()) {
@@ -404,48 +422,48 @@ export class DiagramContextMenu {
     private buildDefaultItems(item: string): ContextMenuItemModel {
         let menuItem: ContextMenuItemModel;
         switch (item) {
-            case 'copy':
-                menuItem = { target: menuClass.content, iconCss: menuClass.copy };
-                break;
-            case 'cut':
-                menuItem = { target: menuClass.content, iconCss: menuClass.cut };
-                break;
-            case 'paste':
-                menuItem = { target: menuClass.content, iconCss: menuClass.paste };
-                break;
-            case 'undo':
-                menuItem = { target: menuClass.content, iconCss: menuClass.undo };
-                break;
-            case 'redo':
-                menuItem = { target: menuClass.content, iconCss: menuClass.redo };
-                break;
-            case 'grouping':
-                menuItem = { target: menuClass.content };
-                break;
-            case 'group':
-                menuItem = { target: menuClass.content, iconCss: menuClass.group };
-                break;
-            case 'unGroup':
-                menuItem = { target: menuClass.content, iconCss: menuClass.unGroup };
-                break;
-            case 'order':
-                menuItem = { target: menuClass.content, iconCss: menuClass.order };
-                break;
-            case 'bringToFrontOrder':
-                menuItem = { target: menuClass.content, iconCss: menuClass.bringToFront };
-                break;
-            case 'moveForwardOrder':
-                menuItem = { target: menuClass.content, iconCss: menuClass.moveForward };
-                break;
-            case 'sendToBackOrder':
-                menuItem = { target: menuClass.content, iconCss: menuClass.sendToBack };
-                break;
-            case 'sendBackwardOrder':
-                menuItem = { target: menuClass.content, iconCss: menuClass.sendBackward };
-                break;
-            case 'selectAll':
-                menuItem = { target: menuClass.content };
-                break;
+        case 'copy':
+            menuItem = { target: menuClass.content, iconCss: menuClass.copy };
+            break;
+        case 'cut':
+            menuItem = { target: menuClass.content, iconCss: menuClass.cut };
+            break;
+        case 'paste':
+            menuItem = { target: menuClass.content, iconCss: menuClass.paste };
+            break;
+        case 'undo':
+            menuItem = { target: menuClass.content, iconCss: menuClass.undo };
+            break;
+        case 'redo':
+            menuItem = { target: menuClass.content, iconCss: menuClass.redo };
+            break;
+        case 'grouping':
+            menuItem = { target: menuClass.content };
+            break;
+        case 'group':
+            menuItem = { target: menuClass.content, iconCss: menuClass.group };
+            break;
+        case 'unGroup':
+            menuItem = { target: menuClass.content, iconCss: menuClass.unGroup };
+            break;
+        case 'order':
+            menuItem = { target: menuClass.content, iconCss: menuClass.order };
+            break;
+        case 'bringToFrontOrder':
+            menuItem = { target: menuClass.content, iconCss: menuClass.bringToFront };
+            break;
+        case 'moveForwardOrder':
+            menuItem = { target: menuClass.content, iconCss: menuClass.moveForward };
+            break;
+        case 'sendToBackOrder':
+            menuItem = { target: menuClass.content, iconCss: menuClass.sendToBack };
+            break;
+        case 'sendBackwardOrder':
+            menuItem = { target: menuClass.content, iconCss: menuClass.sendBackward };
+            break;
+        case 'selectAll':
+            menuItem = { target: menuClass.content };
+            break;
         }
         this.defaultItems[item] = {
             text: this.getLocaleText(item), id: this.generateID(item),

@@ -13,6 +13,8 @@ export class WorkbookSort {
     private parent: Workbook;
     /**
      * Constructor for WorkbookSort module.
+     *
+     * @param {Workbook} parent - Specifies the workbook.
      */
     constructor(parent: Workbook) {
         this.parent = parent;
@@ -20,7 +22,8 @@ export class WorkbookSort {
     }
 
     /**
-     * To destroy the sort module. 
+     * To destroy the sort module.
+     * @returns {void} - To destroy the sort module.
      */
     protected destroy(): void {
         this.removeEventListener();
@@ -39,14 +42,17 @@ export class WorkbookSort {
 
     /**
      * Sorts range of cells in the sheet.
-     * @param args - arguments for sorting.
+     *
+     * @param {BeforeSortEventArgs} eventArgs.args - arguments for sorting.
+     * @param {Promise<SortEventArgs>} eventArgs.promise - Specify the promise.
+     * @returns {void} - Sorts range of cells in the sheet.
      */
     private initiateSortHandler(eventArgs: { args: BeforeSortEventArgs, promise: Promise<SortEventArgs> }): void {
-        let args: BeforeSortEventArgs = eventArgs.args;
-        let deferred: Deferred = new Deferred();
-        let sheet: SheetModel = this.parent.getActiveSheet();
+        const args: BeforeSortEventArgs = eventArgs.args;
+        const deferred: Deferred = new Deferred();
+        const sheet: SheetModel = this.parent.getActiveSheet();
         let range: number[] = getSwapRange(getIndexesFromAddress(args.range));
-        let sortOptions: SortOptions = args.sortOptions || { sortDescriptors: {}, containsHeader: true };
+        const sortOptions: SortOptions = args.sortOptions || { sortDescriptors: {}, containsHeader: true };
         let isSingleCell: boolean = false;
 
         eventArgs.promise = deferred.promise;
@@ -56,7 +62,7 @@ export class WorkbookSort {
         }
 
         let containsHeader: boolean = sortOptions.containsHeader;
-        if (range[0] === range[2]) { //if selected range is a single cell 
+        if (range[0] === range[2]) { //if selected range is a single cell
             range = this.getSortDataRange(range[0], range[1], sheet);
             isSingleCell = true;
             if (isNullOrUndefined(sortOptions.containsHeader)) {
@@ -82,13 +88,13 @@ export class WorkbookSort {
         let sRIdx: number = range[0] = containsHeader ? range[0] + 1 : range[0];
         let sCIdx: number;
         let eCIdx: number;
-        let cell: number[] = getCellIndexes(sheet.activeCell);
-        let header: string = getColumnHeaderText(cell[1] + 1);
+        const cell: number[] = getCellIndexes(sheet.activeCell);
+        const header: string = getColumnHeaderText(cell[1] + 1);
         let sortDescriptors: SortDescriptor | SortDescriptor[] = sortOptions.sortDescriptors;
-        let address: string = getRangeAddress(range);
+        const address: string = getRangeAddress(range);
         getData(this.parent, `${sheet.name}!${address}`, true).then((jsonData: { [key: string]: CellModel }[]) => {
-            let dataManager: DataManager = new DataManager(jsonData);
-            let query: Query = new Query();
+            const dataManager: DataManager = new DataManager(jsonData);
+            const query: Query = new Query();
             if (Array.isArray(sortDescriptors)) { //multi-column sorting.
                 if (!sortDescriptors || sortDescriptors.length === 0) {
                     sortDescriptors = [{ field: header }];
@@ -98,7 +104,7 @@ export class WorkbookSort {
                         sortDescriptors[length - 1].field = header;
                     }
                     if (!sortDescriptors[i].field) { continue; }
-                    let comparerFn: Function = sortDescriptors[i].sortComparer
+                    const comparerFn: Function = sortDescriptors[i].sortComparer
                         || this.sortComparer.bind(this, sortDescriptors[i], sortOptions.caseSensitive);
                     query.sortBy(sortDescriptors[i].field, comparerFn);
                 }
@@ -114,7 +120,7 @@ export class WorkbookSort {
             dataManager.executeQuery(query).then((e: ReturnOption) => {
                 let colName: string;
                 let cell: CellModel = {};
-                let rowKey: string = '__rowIndex';
+                const rowKey: string = '__rowIndex';
                 Array.prototype.forEach.call(e.result, (data: { [key: string]: CellModel }, index: number) => {
                     if (!data) { return; }
                     sCIdx = range[1];
@@ -126,7 +132,7 @@ export class WorkbookSort {
                         setCell(sRIdx, sCIdx, sheet, cell);
                     }
                 });
-                let eventArgs: SortEventArgs = { range: `${sheet.name}!${address}`, sortOptions: args.sortOptions };
+                const eventArgs: SortEventArgs = { range: `${sheet.name}!${address}`, sortOptions: args.sortOptions };
                 deferred.resolve(eventArgs);
             });
         });
@@ -134,7 +140,7 @@ export class WorkbookSort {
 
     private isSameStyle(firstCellStyle: CellStyleModel = {}, secondCellStyle: CellStyleModel = {}): boolean {
         let sameStyle: boolean = true;
-        let keys: string[] = Object.keys(firstCellStyle);
+        const keys: string[] = Object.keys(firstCellStyle);
         for (let i: number = 0; i < keys.length; i++) {
             if (firstCellStyle[keys[i]] === secondCellStyle[keys[i]] || this.parent.cellStyle[keys[i]] === firstCellStyle[keys[i]]) {
                 sameStyle = true;
@@ -194,15 +200,17 @@ export class WorkbookSort {
 
     /**
      * Compares the two cells for sorting.
-     * @param sortDescriptor - protocol for sorting.
-     * @param caseSensitive - value for case sensitive.
-     * @param x - first cell
-     * @param y - second cell
+     *
+     * @param {SortDescriptor} sortDescriptor - protocol for sorting.
+     * @param {boolean} caseSensitive - value for case sensitive.
+     * @param {CellModel} x - first cell
+     * @param {CellModel} y - second cell
+     * @returns {number} - Compares the two cells for sorting.
      */
     private sortComparer(sortDescriptor: SortDescriptor, caseSensitive: boolean, x: CellModel, y: CellModel): number {
-        let direction: string = sortDescriptor.order || '';
-        let comparer: Function = DataUtil.fnSort(direction);
-        let caseOptions: { [key: string]: string } = { sensitivity: caseSensitive ? 'case' : 'base' };
+        const direction: string = sortDescriptor.order || '';
+        const comparer: Function = DataUtil.fnSort(direction);
+        const caseOptions: { [key: string]: string } = { sensitivity: caseSensitive ? 'case' : 'base' };
         if (x && y && (typeof x.value === 'string' || typeof y.value === 'string')) {
             if (isNumber(x.value)) { // Imported number values are of string type, need to handle this case in server side
                 x.value = <string>parseIntValue(x.value);
@@ -210,7 +218,7 @@ export class WorkbookSort {
             if (isNumber(y.value)) {
                 y.value = <string>parseIntValue(y.value);
             }
-            let collator: Intl.Collator = new Intl.Collator(this.parent.locale, caseOptions);
+            const collator: Intl.Collator = new Intl.Collator(this.parent.locale, caseOptions);
             if (!direction || direction.toLowerCase() === 'ascending') {
                 return collator.compare(x.value as string, y.value as string);
             } else {
@@ -231,7 +239,8 @@ export class WorkbookSort {
 
     /**
      * Gets the module name.
-     * @returns string
+     *
+     * @returns {string} - Get the module name.
      */
     protected getModuleName(): string {
         return 'workbookSort';

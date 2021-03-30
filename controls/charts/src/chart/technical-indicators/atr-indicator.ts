@@ -1,3 +1,8 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
 import { Chart } from '../chart';
 import { TechnicalIndicator } from './technical-indicator';
@@ -11,10 +16,11 @@ export class AtrIndicator extends TechnicalAnalysis {
 
     /**
      * Defines the predictions using Average True Range approach
+     *
      * @private
      */
     public initDataSource(indicator: TechnicalIndicator, chart: Chart): void {
-        let validData: Points[] = indicator.points;
+        const validData: Points[] = indicator.points;
         if (validData.length > 0 && validData.length > indicator.period) {
             this.calculateATRPoints(indicator, validData);
         }
@@ -22,6 +28,7 @@ export class AtrIndicator extends TechnicalAnalysis {
 
     /**
      *  To calculate Average True Range indicator points
+     *
      * @private
      */
     private calculateATRPoints(indicator: TechnicalIndicator, validData: Points[]): void {
@@ -30,14 +37,14 @@ export class AtrIndicator extends TechnicalAnalysis {
         let highClose: number = 0;
         let lowClose: number = 0;
         let trueRange: number = 0;
-        let points: Points[] = [];
-        let temp: Object[] = [];
-        let period: number = indicator.period;
+        const points: Points[] = [];
+        const temp: Object[] = [];
+        const period: number = indicator.period;
         let sum: number = 0;
-        let y: string = 'y';
-        let signalSeries: Series = indicator.targetSeries[0];
+        const y: string = 'y';
+        const signalSeries: Series = indicator.targetSeries[0];
         for (let i: number = 0; i < validData.length; i++) {
-            /** 
+            /**
              * Current High less the current Low
              * Current High less the previous Close (absolute value)
              * Current Low less the previous Close (absolute value)
@@ -74,11 +81,12 @@ export class AtrIndicator extends TechnicalAnalysis {
 
     /**
      * To destroy the Average true range indicator.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy the Average true range indicator
          */

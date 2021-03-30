@@ -2,48 +2,48 @@
  * Kanban Constants
  */
 
-// Constants for public events 
+// Constants for public events
 
-/** @hidden */
+/** @private */
 export const actionBegin: string = 'actionBegin';
-/** @hidden */
+/** @private */
 export const actionComplete: string = 'actionComplete';
-/** @hidden */
+/** @private */
 export const actionFailure: string = 'actionFailure';
-/** @hidden */
+/** @private */
 export const cardClick: string = 'cardClick';
-/** @hidden */
+/** @private */
 export const cardDoubleClick: string = 'cardDoubleClick';
-/** @hidden */
+/** @private */
 export const cardRendered: string = 'cardRendered';
-/** @hidden */
+/** @private */
 export const queryCellInfo: string = 'queryCellInfo';
-/** @hidden */
+/** @private */
 export const dataBinding: string = 'dataBinding';
-/** @hidden */
+/** @private */
 export const dataBound: string = 'dataBound';
-/** @hidden */
+/** @private */
 export const dragStart: string = 'dragStart';
-/** @hidden */
+/** @private */
 export const drag: string = 'drag';
-/** @hidden */
+/** @private */
 export const dragStop: string = 'dragStop';
-/** @hidden */
+/** @private */
 export const documentClick: string = 'document-click';
-/** @hidden */
+/** @private */
 export const dialogOpen: string = 'dialogOpen';
-/** @hidden */
+/** @private */
 export const dialogClose: string = 'dialogClose';
 
 // Constants for internal events
 
-/** @hidden */
+/** @private */
 export const contentReady: string = 'content-ready';
-/** @hidden */
+/** @private */
 export const dataReady: string = 'data-ready';
-/** @hidden */
+/** @private */
 export const bottomSpace: number = 25;
-/** @hidden */
+/** @private */
 export const cardSpace: number = 16;
-/** @hidden */
+/** @private */
 export const toggleWidth: number = 50;

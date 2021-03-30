@@ -6,6 +6,7 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
 export class NavigationPaneSettings extends ChildProperty<NavigationPaneSettings> {
     /**
      * Specifies the maximum width of navigationpane.
+     *
      * @default '650px'
      */
     @Property('650px')
@@ -13,6 +14,7 @@ export class NavigationPaneSettings extends ChildProperty<NavigationPaneSettings
 
     /**
      * Specifies the minimum width of navigationpane.
+     *
      * @default '240px'
      */
     @Property('240px')
@@ -20,9 +22,9 @@ export class NavigationPaneSettings extends ChildProperty<NavigationPaneSettings
 
     /**
      * Enables or disables the navigation pane.
+     *
      * @default true
      */
     @Property(true)
     public visible: boolean;
 }
-

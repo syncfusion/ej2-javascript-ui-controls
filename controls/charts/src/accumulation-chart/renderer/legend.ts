@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable valid-jsdoc */
 /**
  * AccumulationChart legend
  */
@@ -23,7 +27,8 @@ export class AccumulationLegend extends BaseLegend {
     private maxColumnWidth: number;
     /**
      * Constructor for Accumulation Legend.
-     * @param chart 
+     *
+     * @param {AccumulationChart} chart Get a chart as a parameter.
      */
     constructor(chart: AccumulationChart) {
         super(chart);
@@ -32,7 +37,8 @@ export class AccumulationLegend extends BaseLegend {
     }
     /**
      * Get the legend options.
-     * @return {void}
+     *
+     * @returns {void} Legend options.
      * @private
      */
     public getLegendOptions(chart: AccumulationChart, series: AccumulationSeries[]): void {
@@ -43,7 +49,7 @@ export class AccumulationLegend extends BaseLegend {
                 seriesType = (series[i].innerRadius !== '0' && series[i].innerRadius !== '0%') ?
                     <AccumulationType>'Doughnut' : 'Pie';
             }
-            for (let point of series[i].points) {
+            for (const point of series[i].points) {
                 if (!isNullOrUndefined(point.x) && !isNullOrUndefined(point.y)) {
                     this.legendCollections.push(new LegendOptions(
                         point.x.toString(), point.color, series[i].legendShape, point.visible, seriesType, point.legendImageUrl, null, null,
@@ -55,6 +61,7 @@ export class AccumulationLegend extends BaseLegend {
     }
     /**
      * To find legend bounds for accumulation chart.
+     *
      * @private
      */
     public getLegendBounds(availableSize: Size, legendBounds: Rect, legend: LegendSettingsModel): void {
@@ -62,11 +69,11 @@ export class AccumulationLegend extends BaseLegend {
         this.isTitle = legend.title ? true : false;
         let extraWidth: number = 0;
         let extraHeight: number = 0;
-        let padding: number = legend.padding;
-        let titlePosition: LegendTitlePosition = legend.titlePosition;
+        const padding: number = legend.padding;
+        const titlePosition: LegendTitlePosition = legend.titlePosition;
         let titlePlusArrowSpace: number = 0;
-        let arrowWidth: number = this.arrowWidth;
-        let arrowHeight: number = legend.enablePages ? 0 : this.arrowHeight;
+        const arrowWidth: number = this.arrowWidth;
+        const arrowHeight: number = legend.enablePages ? 0 : this.arrowHeight;
         if (!this.isVertical) {
             extraHeight = !legend.height ? ((availableSize.height / 100) * 5) : 0;
         } else {
@@ -74,21 +81,21 @@ export class AccumulationLegend extends BaseLegend {
         }
         legendBounds.width += extraWidth;
         legendBounds.height += extraHeight;
-        let shapePadding: number = legend.shapePadding;
+        const shapePadding: number = legend.shapePadding;
         let maximumWidth: number = 0;
-        let shapeWidth: number = legend.shapeWidth;
+        const shapeWidth: number = legend.shapeWidth;
         let rowWidth: number = 0;
         let rowCount: number = 0;
-        let columnWidth: number[] = [];
+        const columnWidth: number[] = [];
         let columnHeight: number = 0;
         let legendWidth: number = 0;
         let titleHeight: number = 0;
         this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle).height, legend.shapeHeight);
         let legendEventArgs: IAccLegendRenderEventArgs;
         let render: boolean = false;
-        for (let legendOption of this.legendCollections) {
+        for (const legendOption of this.legendCollections) {
             legendEventArgs = { fill: legendOption.fill, text : legendOption.text, shape : legendOption.shape,
-                                name: 'legendRender', cancel: false };
+                name: 'legendRender', cancel: false };
             this.chart.trigger('legendRender', legendEventArgs);
             legendOption.render = !legendEventArgs.cancel;
             legendOption.text = legendEventArgs.text;
@@ -147,8 +154,8 @@ export class AccumulationLegend extends BaseLegend {
             }
         }
         this.maxColumns = 0; // initialization for max columns
-        let width: number = this.isVertical ? this.getMaxColumn(columnWidth, legendBounds.width, padding, rowWidth + padding) :
-        Math.max(rowWidth + padding, maximumWidth);
+        const width: number = this.isVertical ? this.getMaxColumn(columnWidth, legendBounds.width, padding, rowWidth + padding) :
+            Math.max(rowWidth + padding, maximumWidth);
         if (render) { // if any legends not skipped in event check
             this.setBounds(width, columnHeight, legend, legendBounds);
         } else {
@@ -157,11 +164,13 @@ export class AccumulationLegend extends BaseLegend {
     }
     /**
      * To find maximum column size for legend
+     *
+     * @returns {number} Get a maximum columns.
      */
     private getMaxColumn(columns: number[], width: number, padding: number, rowWidth: number): number {
         let maxPageColumn: number = padding;
         this.maxColumnWidth = Math.max.apply(null, columns);
-        for (let column of columns) {
+        for (const column of columns) {
             maxPageColumn += this.maxColumnWidth;
             this.maxColumns++;
             if (maxPageColumn + padding > width) {
@@ -180,8 +189,10 @@ export class AccumulationLegend extends BaseLegend {
     }
     /**
      * To find available width from legend x position.
+     *
+     * @returns {number} Get a available width.
      */
-    private getAvailWidth(tx: number, width: number, legendX: number): number {
+    private getAvailWidth(tx: number, width: number): number {
         if (this.isVertical) {
             width = this.maxWidth;
         }
@@ -189,11 +200,12 @@ export class AccumulationLegend extends BaseLegend {
     }
     /**
      * To find legend rendering locations from legend options.
+     *
      * @private
      */
     public getRenderPoint(legendOption: LegendOptions, start: ChartLocation, textPadding: number, prevLegend: LegendOptions,
                           rect: Rect, count: number, firstLegend: number): void {
-        let padding: number = this.legend.padding;
+        const padding: number = this.legend.padding;
         if (this.isVertical) {
             if (count === firstLegend || (prevLegend.location.y + (this.maxItemHeight * 1.5) + (padding * 2) > rect.y + rect.height )) {
                 legendOption.location.x = prevLegend.location.x + ((count === firstLegend) ? 0 : this.maxColumnWidth);
@@ -205,7 +217,7 @@ export class AccumulationLegend extends BaseLegend {
                 legendOption.location.y = prevLegend.location.y + this.maxItemHeight + padding;
             }
         } else {
-            let previousBound: number = (prevLegend.location.x + textPadding + prevLegend.textSize.width);
+            const previousBound: number = (prevLegend.location.x + textPadding + prevLegend.textSize.width);
             if ((previousBound + (legendOption.textSize.width + textPadding)) > (rect.x + rect.width + this.legend.shapeWidth / 2)) {
                 legendOption.location.y = (count === firstLegend) ? prevLegend.location.y :
                     prevLegend.location.y + this.maxItemHeight + padding;
@@ -216,56 +228,61 @@ export class AccumulationLegend extends BaseLegend {
             }
             this.totalPages = this.totalRowCount;
         }
-        let availablewidth: number = this.getAvailWidth(legendOption.location.x, this.legendBounds.width, this.legendBounds.x);
+        const availablewidth: number = this.getAvailWidth(legendOption.location.x, this.legendBounds.width);
         legendOption.text = textTrim(+availablewidth.toFixed(4), legendOption.text, this.legend.textStyle);
     }
     /**
      * finding the smart legend place according to positions.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public getSmartLegendLocation(labelBound: Rect, legendBound: Rect, margin: MarginModel): void {
         let space: number;
         switch (this.position) {
-            case 'Left':
-                space = ((labelBound.x - legendBound.width) - margin.left) / 2;
-                legendBound.x = (labelBound.x - legendBound.width) < margin.left ? legendBound.x :
+        case 'Left':
+            space = ((labelBound.x - legendBound.width) - margin.left) / 2;
+            legendBound.x = (labelBound.x - legendBound.width) < margin.left ? legendBound.x :
                 (labelBound.x - legendBound.width) - space;
             break;
-            case 'Right':
-                space = ((this.chart.availableSize.width - margin.right) - (labelBound.x + labelBound.width + legendBound.width)) / 2;
-                legendBound.x = (labelBound.x + labelBound.width + legendBound.width) > (this.chart.availableSize.width - margin.right) ?
+        case 'Right':
+            space = ((this.chart.availableSize.width - margin.right) - (labelBound.x + labelBound.width + legendBound.width)) / 2;
+            legendBound.x = (labelBound.x + labelBound.width + legendBound.width) > (this.chart.availableSize.width - margin.right) ?
                 legendBound.x : (labelBound.x + labelBound.width + space);
             break;
-            case 'Top':
-                this.getTitleRect(this.chart as AccumulationChart);
-                space = ((labelBound.y - legendBound.height) - (this.titleRect.y + this.titleRect.height)) / 2;
-                legendBound.y = (labelBound.y - legendBound.height) < margin.top ? legendBound.y :
+        case 'Top':
+            this.getTitleRect(this.chart as AccumulationChart);
+            space = ((labelBound.y - legendBound.height) - (this.titleRect.y + this.titleRect.height)) / 2;
+            legendBound.y = (labelBound.y - legendBound.height) < margin.top ? legendBound.y :
                 (labelBound.y - legendBound.height) - space;
             break;
-            case 'Bottom':
-                space = ((this.chart.availableSize.height - margin.bottom) - (labelBound.y + labelBound.height + legendBound.height)) / 2;
-                legendBound.y = labelBound.y + labelBound.height + legendBound.height > (this.chart.availableSize.height - margin.bottom) ?
+        case 'Bottom':
+            space = ((this.chart.availableSize.height - margin.bottom) - (labelBound.y + labelBound.height + legendBound.height)) / 2;
+            legendBound.y = labelBound.y + labelBound.height + legendBound.height > (this.chart.availableSize.height - margin.bottom) ?
                 legendBound.y : (labelBound.y + labelBound.height) + space;
             break;
         }
     }
     /**
      * To get title rect.
+     *
+     * @returns {void} Get a title rect.
      */
     private getTitleRect(accumulation: AccumulationChart): void {
         if (!accumulation.title) {
             return null;
         }
-        let titleSize: Size = measureText(accumulation.title, accumulation.titleStyle);
+        const titleSize: Size = measureText(accumulation.title, accumulation.titleStyle);
         this.titleRect = new Rect(
             accumulation.availableSize.width / 2 - titleSize.width / 2, accumulation.margin.top, titleSize.width, titleSize.height);
     }
     /**
      * To get legend by index
+     *
+     * @returns {LegendOptions} Return legend index.
      */
     private legendByIndex(index: number, legendCollections: LegendOptions[]): LegendOptions {
-        for (let legend of legendCollections) {
+        for (const legend of legendCollections) {
             if (legend.pointIndex === index) {
                 return legend;
             }
@@ -273,34 +290,33 @@ export class AccumulationLegend extends BaseLegend {
         return null;
     }
     /**
-     * To show or hide the legend on clicking the legend. 
-     * @return {void}
+     * To show or hide the legend on clicking the legend.
+     *
+     * @returns {void}
      */
     public click(event: Event): void {
-        let targetId: string = (<HTMLElement>event.target).id;
-        let chart: AccumulationChart = this.chart as AccumulationChart;
-        let legendItemsId: string[] = [this.legendID + '_text_', this.legendID + '_shape_',
-        this.legendID + '_shape_marker_'];
-        let selectedDataIndexes: Indexes[] = [];
+        const targetId: string = (<HTMLElement>event.target).id;
+        const chart: AccumulationChart = this.chart as AccumulationChart;
+        const legendItemsId: string[] = [this.legendID + '_text_', this.legendID + '_shape_', this.legendID + '_shape_marker_'];
         if ((<AccumulationChart>this.chart).accumulationSelectionModule) {
-            selectedDataIndexes = <Indexes[]>extend([], (<AccumulationChart>this.chart).accumulationSelectionModule.selectedDataIndexes,
-                                                    null, true);
+            const selectedDataIndexes : Indexes[] =
+                <Indexes[]>extend([], (<AccumulationChart>this.chart).accumulationSelectionModule.selectedDataIndexes, null, true);
         }
         this.chart.animateSeries = false;
-        for (let id of legendItemsId) {
+        for (const id of legendItemsId) {
             if (targetId.indexOf(id) > -1) {
-                let pointIndex: number = parseInt(targetId.split(id)[1], 10);
+                const pointIndex: number = parseInt(targetId.split(id)[1], 10);
                 if ((this.chart as AccumulationChart).legendSettings.toggleVisibility && !isNaN(pointIndex)) {
-                    let currentSeries: AccumulationSeries = (<AccumulationChart>this.chart).visibleSeries[0];
-                    let point: AccPoints = pointByIndex(pointIndex, currentSeries.points);
-                    let legendOption: LegendOptions = this.legendByIndex(pointIndex, this.legendCollections);
+                    const currentSeries: AccumulationSeries = (<AccumulationChart>this.chart).visibleSeries[0];
+                    const point: AccPoints = pointByIndex(pointIndex, currentSeries.points);
+                    const legendOption: LegendOptions = this.legendByIndex(pointIndex, this.legendCollections);
                     point.visible = !point.visible;
                     legendOption.visible = point.visible;
                     currentSeries.sumOfPoints += point.visible ? point.y : -point.y;
                     chart.redraw = chart.enableAnimation;
                     this.sliceVisibility(pointIndex, point.visible);
                     chart.removeSvg();
-                    //To remove the blazor templates                  
+                    //To remove the blazor templates
                     blazorTemplatesReset(chart);
                     (<AccumulationChart>this.chart).refreshPoints(currentSeries.points);
                     (<AccumulationChart>this.chart).renderElements();
@@ -331,9 +347,10 @@ export class AccumulationLegend extends BaseLegend {
 
     /**
      * Slice animation
-     * @param element 
-     * @param name 
-     * @param isVisible 
+     *
+     * @param {Element} element slice element.
+     * @param {boolean} isVisible boolean value of slice.
+     * @returns {void} slice animation method.
      */
     private sliceAnimate(element: Element, isVisible: boolean): void {
         if (!element) {
@@ -345,22 +362,25 @@ export class AccumulationLegend extends BaseLegend {
             name: isVisible ? 'FadeIn' : 'FadeOut',
             end: (args: AnimationOptions): void => {
                 args.element.style.visibility = isVisible ? 'visible' : 'hidden';
-            },
+            }
         });
     }
     /**
      * Get module name
+     *
+     * @returns {string} Return module name.
      */
     protected getModuleName(): string {
         return 'AccumulationLegend';
     }
 
     /**
-     * To destroy the Legend. 
-     * @return {void}
+     * To destroy the Legend.
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(chart: AccumulationChart): void {
+    public destroy(): void {
         /**
          * Destroy method calling here
          */

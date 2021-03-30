@@ -502,12 +502,10 @@
       }
     }
 
+    // sass-lint:disable-all
     .e-pivotchart-type-dialog {
       max-width: 350px;
-
-      .e-dlg-content {
-        overflow: visible;
-      }
+      max-height: 380px !important;
 
       .e-chart-type-option-wrapper,
       .e-chart-type-option-container,
@@ -517,9 +515,13 @@
         .e-chart-type-option-text {
           padding-bottom: 5px;
         }
+      }
 
-        .e-input-group.e-control-wrapper {
-          padding: 1px;
+      .e-multiple-axes-mode-wrapper {
+        padding-top: 20px;
+
+        .e-multiple-axes-mode-text {
+          padding-bottom: 5px;
         }
       }
 
@@ -529,12 +531,11 @@
       }
 
       .e-icons.e-frame {
-        height: 18px;
-        width: 18px;
+        height: $pivotgrid-checkbox-frame-size;
+        width: $pivotgrid-checkbox-frame-size;
       }
     }
 
-    // sass-lint:disable-all
     .e-pivot-format-dialog {
       max-height: 500px !important;
       max-width: 350px;
@@ -950,6 +951,14 @@
   .e-bigger.e-pivotview-report-dialog {
     .e-pivotview-report-label {
       margin-top: $pivotgrid-bigger-report-label-margin-top;
+    }
+  }
+
+  .e-bigger .e-pivotchart-type-dialog,
+  .e-bigger.e-pivotchart-type-dialog {
+    .e-icons.e-frame {
+      height: $pivotgrid-bigger-checkbox-frame-size;
+      width: $pivotgrid-bigger-checkbox-frame-size;
     }
   }
 }

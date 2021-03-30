@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';import { measureText, Rect, TextOption, Size, PathOption, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { Chart, ILegendRegions } from '../../chart';import { Font, Border, Margin, ContainerPadding } from '../model/base';import { Theme } from '../model/theme';import { MarginModel, FontModel, BorderModel, ContainerPaddingModel } from '../model/base-model';import { subtractThickness, Thickness, drawSymbol, ChartLocation, titlePositionX, getTitle, textTrim } from '../utils/helper';import { RectOption, textElement, stringToNumber } from '../utils/helper';import { removeElement, showTooltip, getElement, appendChildElement } from '../utils/helper';import { LegendPosition, LegendShape, ChartSeriesType, ChartShape } from '../../chart/utils/enum';import { AccumulationType } from '../../accumulation-chart/model/enum';import { AccumulationChart } from '../../accumulation-chart/accumulation';import { BulletChart } from '../../bullet-chart/bullet-chart';import { Alignment, LegendTitlePosition } from '../utils/enum';
+import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';import { measureText, Rect, TextOption, Size, PathOption, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { Chart, ILegendRegions } from '../../chart';import { Font, Border, Margin, ContainerPadding } from '../model/base';import { Theme } from '../model/theme';import { MarginModel, FontModel, BorderModel, ContainerPaddingModel } from '../model/base-model';import { subtractThickness, Thickness, drawSymbol, ChartLocation, titlePositionX, getTitle, textTrim } from '../utils/helper';import { RectOption, textElement, stringToNumber } from '../utils/helper';import { removeElement, showTooltip, getElement, appendChildElement } from '../utils/helper';import { LegendPosition, LegendShape, ChartSeriesType, ChartShape, LegendMode } from '../../chart/utils/enum';import { AccumulationType } from '../../accumulation-chart/model/enum';import { AccumulationChart } from '../../accumulation-chart/accumulation';import { BulletChart } from '../../bullet-chart/bullet-chart';import { Alignment, LegendTitlePosition } from '../utils/enum';
 
 /**
  * Interface for a class Location
@@ -7,14 +7,18 @@ export interface LocationModel {
 
     /**
      * X coordinate of the legend in pixels.
+     *
      * @default 0
      */
+
     x?: number;
 
     /**
      * Y coordinate of the legend in pixels.
+     *
      * @default 0
      */
+
     y?: number;
 
 }
@@ -26,20 +30,26 @@ export interface LegendSettingsModel {
 
     /**
      * If set to true, legend will be visible.
+     *
      * @default true
      */
+
     visible?: boolean;
 
     /**
      * The height of the legend in pixels.
+     *
      * @default null
      */
+
     height?: string;
 
     /**
      * The width of the legend in pixels.
+     *
      * @default null
      */
+
     width?: string;
 
     /**
@@ -71,14 +81,28 @@ export interface LegendSettingsModel {
      * * Bottom: Displays the legend at the bottom of the chart.
      * * Right: Displays the legend at the right of the chart.
      * * Custom: Displays the legend  based on the given x and y values.
+     *
      * @default 'Auto'
      */
+
     position?: LegendPosition;
 
     /**
+    * Mode of legend items
+    * * Series: Legend items generated based on series count.
+    * * Point: Legend items generated based on unique data points. 
+    * * Range: Legend items generated based on range color mapping property. 
+    * * Gradient: Single linear bar generated based on range color mapping property.
+    * This property is applicable for chart component only.
+    */
+    mode?: LegendMode;
+
+    /**
      * Option to customize the padding between legend items.
+     *
      * @default 8
      */
+
     padding?: number;
 
     /**
@@ -86,8 +110,10 @@ export interface LegendSettingsModel {
      * * Near: Aligns the legend to the left of the chart.
      * * Center: Aligns the legend to the center of the chart.
      * * Far: Aligns the legend to the right of the chart.
+     *
      * @default 'Center'
      */
+
     alignment?: Alignment;
 
     /**
@@ -97,14 +123,18 @@ export interface LegendSettingsModel {
 
     /**
      * Shape height of the legend in pixels.
+     *
      * @default 10
      */
+
     shapeHeight?: number;
 
     /**
      * Shape width of the legend in pixels.
+     *
      * @default 10
      */
+
     shapeWidth?: number;
 
     /**
@@ -126,44 +156,58 @@ export interface LegendSettingsModel {
 
     /**
      * Padding between the legend shape and text.
+     *
      * @default 5
      */
+
     shapePadding?: number;
 
     /**
      * The background color of the legend that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default 'transparent'
      */
+
     background?: string;
 
     /**
      * Opacity of the legend.
+     *
      * @default 1
      */
+
     opacity?: number;
 
     /**
      * If set to true, series' visibility collapses based on the legend visibility.
+     *
      * @default true
      */
+
     toggleVisibility?: boolean;
 
     /**
      * Description for legends.
+     *
      * @default null
      */
+
     description?: string;
 
     /**
      * TabIndex value for the legend.
+     *
      * @default 3
      */
+
     tabIndex?: number;
 
     /**
      * Title for legends.
+     *
      * @default null
      */
+
     title?: string;
 
     /**
@@ -173,20 +217,26 @@ export interface LegendSettingsModel {
 
     /**
      * legend title position
+     *
      * @default 'Top'
      */
+
     titlePosition?: LegendTitlePosition;
 
     /**
      * maximum width for the legend title.
+     *
      * @default 100
      */
+
     maximumTitleWidth?: number;
 
     /**
      * If set to true, legend will be visible using pages.
+     *
      * @default true
      */
+
     enablePages?: boolean;
 
 }

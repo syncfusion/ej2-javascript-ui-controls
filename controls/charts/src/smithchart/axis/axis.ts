@@ -5,20 +5,23 @@ import { SmithchartFontModel} from '../utils/utils-model';
 import { SmithchartMajorGridLinesModel, SmithchartMinorGridLinesModel, SmithchartAxisLineModel  } from '../axis/axis-model';
 import { Theme} from '../model/theme';
 
-/**   
- * Configures the major Grid lines in the `axis`.    
+/**
+ * Configures the major Grid lines in the `axis`.
  */
 export class SmithchartMajorGridLines extends ChildProperty<SmithchartMajorGridLines> {
 
-   /**
-    * width of the major grid lines
-    * @default 1
-    */
+    /**
+     * width of the major grid lines
+     *
+     * @default 1
+     */
+
     @Property(1)
     public width: number;
 
     /**
      * The dash array of the major grid lines.
+     *
      * @default ''
      */
 
@@ -27,6 +30,7 @@ export class SmithchartMajorGridLines extends ChildProperty<SmithchartMajorGridL
 
     /**
      * visibility of  major grid lines.
+     *
      * @default true
      */
 
@@ -35,6 +39,7 @@ export class SmithchartMajorGridLines extends ChildProperty<SmithchartMajorGridL
 
     /**
      * option for customizing the majorGridLine color
+     *
      * @default null
      */
 
@@ -44,6 +49,7 @@ export class SmithchartMajorGridLines extends ChildProperty<SmithchartMajorGridL
 
     /**
      * opacity of  major grid lines.
+     *
      * @default 1
      */
 
@@ -51,13 +57,14 @@ export class SmithchartMajorGridLines extends ChildProperty<SmithchartMajorGridL
     public opacity: number;
 }
 
-/**   
- * Configures the major grid lines in the `axis`.    
+/**
+ * Configures the major grid lines in the `axis`.
  */
 export class SmithchartMinorGridLines extends ChildProperty<SmithchartMinorGridLines> {
 
     /**
      * width of the minor grid lines
+     *
      * @default 1
      */
     @Property(1)
@@ -65,6 +72,7 @@ export class SmithchartMinorGridLines extends ChildProperty<SmithchartMinorGridL
 
     /**
      * The dash array of the minor grid lines.
+     *
      * @default ''
      */
 
@@ -73,6 +81,7 @@ export class SmithchartMinorGridLines extends ChildProperty<SmithchartMinorGridL
 
     /**
      * visibility of  minor grid lines.
+     *
      * @default false
      */
 
@@ -81,6 +90,7 @@ export class SmithchartMinorGridLines extends ChildProperty<SmithchartMinorGridL
 
     /**
      * option for customizing the minorGridLine color
+     *
      * @default null
      */
 
@@ -90,32 +100,36 @@ export class SmithchartMinorGridLines extends ChildProperty<SmithchartMinorGridL
 
     /**
      * count of  minor grid lines.
+     *
      * @default 8
      */
     @Property(8)
     public count: number;
 }
 
-/**   
- * Configures the axis lines in the `axis`.    
+/**
+ * Configures the axis lines in the `axis`.
  */
 export class SmithchartAxisLine extends ChildProperty<SmithchartAxisLine> {
     /**
      * visibility of  axis line.
+     *
      * @default true
      */
-   @Property(true)
-   public visible: boolean;
+    @Property(true)
+    public visible: boolean;
 
-   /**
-    * width of the axis lines
-    * @default 1
-    */
-   @Property(1)
+    /**
+     * width of the axis lines
+     *
+     * @default 1
+     */
+    @Property(1)
     public width: number;
 
     /**
      * option for customizing the axisLine color
+     *
      * @default null
      */
 
@@ -125,10 +139,11 @@ export class SmithchartAxisLine extends ChildProperty<SmithchartAxisLine> {
 
     /**
      * The dash array of the axis line.
+     *
      * @default ''
      */
 
-   @Property('')
+    @Property('')
     public dashArray: string;
 
 }
@@ -136,30 +151,33 @@ export class SmithchartAxisLine extends ChildProperty<SmithchartAxisLine> {
 export class SmithchartAxis extends ChildProperty<SmithchartAxis> {
     /**
      * visibility of  axis.
+     *
      * @default true
      */
-  @Property(true)
-  public visible: boolean;
+    @Property(true)
+    public visible: boolean;
 
     /**
      * position of  axis line.
+     *
      * @default Outside
      */
 
-  @Property('Outside')
-  public labelPosition: AxisLabelPosition;
+    @Property('Outside')
+    public labelPosition: AxisLabelPosition;
 
     /**
      * axis labels will be hide when overlap with each other.
+     *
      * @default Hide
      */
-  @Property('Hide')
-  public labelIntersectAction: SmithchartLabelIntersectAction;
+    @Property('Hide')
+    public labelIntersectAction: SmithchartLabelIntersectAction;
 
     /**
      * Options for customizing major grid lines.
      */
-   @Complex<SmithchartMajorGridLinesModel>({}, SmithchartMajorGridLines)
+    @Complex<SmithchartMajorGridLinesModel>({}, SmithchartMajorGridLines)
     public majorGridLines: SmithchartMajorGridLinesModel;
 
     /**
@@ -185,4 +203,3 @@ export class SmithchartAxis extends ChildProperty<SmithchartAxis> {
 
 }
 
- 

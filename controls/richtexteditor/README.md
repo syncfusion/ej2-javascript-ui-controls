@@ -1,4 +1,4 @@
-[![npm](http://ej2.syncfusion.com/github-badges?package=@syncfusion/ej2-richtexteditor)](https://www.npmjs.com/package/@syncfusion/ej2-richtexteditor)&nbsp;&nbsp;[![coverage](http://ej2.syncfusion.com/badges/ej2-richtexteditor/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-richtexteditor)
+[![coverage](http://ej2.syncfusion.com/badges/ej2-richtexteditor/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-richtexteditor)
 
 # ej2-richtexteditor
 

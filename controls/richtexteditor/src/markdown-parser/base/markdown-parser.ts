@@ -17,6 +17,7 @@ import { ClearFormat } from './../plugin/clearformat';
 
 /**
  * MarkdownParser internal component
+ * 
  * @hidden
  * @deprecated
  */
@@ -36,10 +37,12 @@ export class MarkdownParser {
     public clearObj: ClearFormat;
     /**
      * Constructor for creating the component
+     *
+     * @param {IMarkdownParserModel} options - specifies the options
      * @hidden
      * @deprecated
      */
-    constructor(options: IMarkdownParserModel) {
+    public constructor(options: IMarkdownParserModel) {
         this.initialize();
         extend(this, this, options, true);
         this.observer = new Observer(this);
@@ -63,6 +66,7 @@ export class MarkdownParser {
         this.observer.on(EVENTS.KEY_UP, this.editorKeyUp, this);
         this.observer.on(EVENTS.MODEL_CHANGED, this.onPropertyChanged, this);
     }
+    // eslint-disable-next-line
     private onPropertyChanged(props: { [key: string]: Object }): void {
         this.observer.notify(EVENTS.MODEL_CHANGED_PLUGIN, props);
     }
@@ -72,42 +76,52 @@ export class MarkdownParser {
     private editorKeyUp(e: IMDKeyboardEvent): void {
         this.observer.notify(EVENTS.KEY_UP_HANDLER, e);
     }
+    /* eslint-disable */
     /**
      * markdown execCommand method
+     *
+     * @param {MarkdownExecCommand} command - specifies the command
+     * @param {T} - specifies the value
+     * @param {Event} event - specifies the event
+     * @param {Function} callBack - specifies the call back function
+     * @param {string} text - specifies the string value
+     * @param {T} exeValue - specifies the value
+     * @returns {void}
      * @hidden
      * @deprecated
      */
+    /* eslint-enable */
+    // eslint-disable-next-line
     public execCommand<T>(command: MarkdownExecCommand, value: T, event?: Event, callBack?: Function, text?: string, exeValue?: T): void {
         switch (command.toLocaleLowerCase()) {
-            case 'lists':
-                this.observer.notify(CONSTANT.LISTS_COMMAND, { subCommand: value, event: event, callBack: callBack });
-                break;
-            case 'formats':
-                this.observer.notify(EVENTS.FORMAT_TYPE, { subCommand: value, event: event, callBack: callBack });
-                break;
-            case 'actions':
-                this.observer.notify(EVENTS.ACTION, { subCommand: value, event: event, callBack: callBack });
-                break;
-            case 'style':
-            case 'effects':
-            case 'casing':
-                this.observer.notify(CONSTANT.selectionCommand, { subCommand: value, event: event, callBack: callBack });
-                break;
-            case 'links':
-            case 'images':
-                this.observer.notify(CONSTANT.LINK_COMMAND, { subCommand: value, event: event, callBack: callBack, item: exeValue });
-                break;
-            case 'table':
-                switch (value.toString().toLocaleLowerCase()) {
-                    case 'createtable':
-                        this.observer.notify(CONSTANT.MD_TABLE, { subCommand: value, item: exeValue, event: event, callBack: callBack });
-                        break;
-                }
-                break;
-            case 'clear':
-                this.observer.notify(CONSTANT.CLEAR_COMMAND, { subCommand: value, event: event, callBack: callBack });
-                break;
-
+        case 'lists':
+            this.observer.notify(CONSTANT.LISTS_COMMAND, { subCommand: value, event: event, callBack: callBack });
+            break;
+        case 'formats':
+            this.observer.notify(EVENTS.FORMAT_TYPE, { subCommand: value, event: event, callBack: callBack });
+            break;
+        case 'actions':
+            this.observer.notify(EVENTS.ACTION, { subCommand: value, event: event, callBack: callBack });
+            break;
+        case 'style':
+        case 'effects':
+        case 'casing':
+            this.observer.notify(CONSTANT.selectionCommand, { subCommand: value, event: event, callBack: callBack });
+            break;
+        case 'links':
+        case 'images':
+            this.observer.notify(CONSTANT.LINK_COMMAND, { subCommand: value, event: event, callBack: callBack, item: exeValue });
+            break;
+        case 'table':
+            switch (value.toString().toLocaleLowerCase()) {
+                case 'createtable':
+                    this.observer.notify(CONSTANT.MD_TABLE, { subCommand: value, item: exeValue, event: event, callBack: callBack });
+                    break;
+            }
+            break;
+        case 'clear':
+            this.observer.notify(CONSTANT.CLEAR_COMMAND, { subCommand: value, event: event, callBack: callBack });
+            break;
         }
     }
 }

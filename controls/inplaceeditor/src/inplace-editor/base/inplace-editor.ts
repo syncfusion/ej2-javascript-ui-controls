@@ -7,7 +7,7 @@ import { Button, ButtonModel } from '@syncfusion/ej2-buttons';
 import { RichTextEditorModel } from '@syncfusion/ej2-richtexteditor';
 import { DatePicker, DatePickerModel, DateTimePicker, DateRange, RangeEventArgs } from '@syncfusion/ej2-calendars';
 import { DateTimePickerModel, DateRangePickerModel, TimePickerModel } from '@syncfusion/ej2-calendars';
-import { createSpinner, hideSpinner, SpinnerArgs, showSpinner } from '@syncfusion/ej2-popups';
+import { createSpinner, hideSpinner, SpinnerArgs, showSpinner} from '@syncfusion/ej2-popups';
 import { Tooltip, TooltipEventArgs, TipPointerPosition } from '@syncfusion/ej2-popups';
 import { NumericTextBox, NumericTextBoxModel, TextBox, TextBoxModel, SliderChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { ColorPickerModel, FormValidator, MaskedTextBox, MaskedTextBoxModel, SliderModel } from '@syncfusion/ej2-inputs';
@@ -41,9 +41,9 @@ import { parseValue, getCompValue } from './util';
  */
 export interface SanitizeSelectors {
     /** Returns the tags. */
-    tags?: string[];
+    tags?: string[]
     /** Returns the attributes. */
-    attributes?: SanitizeRemoveAttrs[];
+    attributes?: SanitizeRemoveAttrs[]
 }
 
 /**
@@ -51,17 +51,19 @@ export interface SanitizeSelectors {
  */
 export interface BeforeSanitizeHtmlArgs {
     /** Illustrates whether the current action needs to be prevented or not. */
-    cancel?: boolean;
+    cancel?: boolean
     /** It is a callback function and executed it before our inbuilt action. It should return HTML as a string.
+     * 
      * @function
      * @param {string} value - Returns the value.
-     * @returns {string}
+     * @returns {string} - returns the string value
      */
-    helper?: Function;
+    // eslint-disable-next-line
+    helper?: Function
     /** Returns the selectors object which carrying both tags and attributes selectors to block list of cross-site scripting attack.
      *  Also possible to modify the block list in this event.
      */
-    selectors?: SanitizeSelectors;
+    selectors?: SanitizeSelectors
 }
 
 /**
@@ -69,9 +71,9 @@ export interface BeforeSanitizeHtmlArgs {
  */
 export interface SanitizeRemoveAttrs {
     /** Defines the attribute name to sanitize */
-    attribute?: string;
+    attribute?: string
     /** Defines the selector that sanitize the specified attributes within the selector */
-    selector?: string;
+    selector?: string
 }
 
 /**
@@ -89,6 +91,7 @@ export type EditableType = 'Click' | 'DblClick' | 'EditIconClick';
 /**
  * Specifies the value to be set when initial rendering.
  */
+// eslint-disable-next-line
 export type textOptionType = 'Never' | 'Always';
 /**
  * Specifies the adaptor type that are used DataManager to communicate with DataSource.
@@ -98,7 +101,7 @@ export type AdaptorType = 'UrlAdaptor' | 'ODataV4Adaptor' | 'WebApiAdaptor';
  * Specifies the type of components that integrated with In-place editor to make it as editable.
  */
 export type InputType = 'AutoComplete' | 'Color' | 'ComboBox' | 'Date' | 'DateRange' | 'DateTime' | 'DropDownList' |
-    'Mask' | 'MultiSelect' | 'Numeric' | 'RTE' | 'Slider' | 'Text' | 'Time';
+'Mask' | 'MultiSelect' | 'Numeric' | 'RTE' | 'Slider' | 'Text' | 'Time';
 type ComponentTypes = DatePicker | DateTimePicker | DropDownList | MaskedTextBox | NumericTextBox | TextBox;
 type DropDownTypes = AutoCompleteModel | ComboBoxModel | DropDownListModel | MultiSelectModel;
 
@@ -129,6 +132,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private initRender: boolean = true;
     private inlineWrapper: HTMLElement;
     private isTemplate: boolean = false;
+    private isVue: boolean = false;
     private formValidate: FormValidator;
     private componentObj: ComponentTypes;
     private isExtModule: boolean = false;
@@ -190,22 +194,21 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      * @hidden
      */
     public timeModule: TimePicker;
-
     /**
-     * * Specifies the name of the field which is used to map data to the server. 
+     * Specifies the name of the field which is used to map data to the server. 
      * If name is not given, then component ID is taken as mapping field name.
-     * 
+     *
      * {% codeBlock src='inplace-editor/name/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default ''
      */
     @Property('')
     public name: string;
     /**
      * Specifies the display value for input when original input value is empty.
-     * 
+     *
      * {% codeBlock src='inplace-editor/value/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default null
      * @isGenericType true
      */
@@ -213,9 +216,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     public value: string | number | Date | string[] | Date[] | number[];
     /**
      * Specifies the HTML element ID as a string that can be added as a editable field.
-     * 
+     *
      * {% codeBlock src='inplace-editor/template/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default ''
      * @blazorType string
      */
@@ -223,86 +226,88 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     public template: string | HTMLElement;
     /**
      * Defines whether to allow the cross-scripting site or not.
+     * 
      * @default true
      */
     @Property(true)
     public enableHtmlSanitizer: boolean;
     /**
      * Defines single/multiple classes (separated by space) to be used for customization of In-place editor.
+     * 
      * @default ''
      */
     @Property('')
     public cssClass: string;
     /**
      * Defines the unique primary key of editable field which can be used for saving data in data-base.
-     * 
+     *
      * {% codeBlock src='inplace-editor/primary-key/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default ''
      */
     @Property('')
     public primaryKey: string | number;
     /**
      * Sets the text to be shown when an element has 'Empty' value.
-     * 
+     *
      * {% codeBlock src='inplace-editor/empty-text/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default 'Empty'
      */
     @Property('Empty')
     public emptyText: string;
     /**
      * Gets the url for server submit action.
-     * 
+     *
      * {% codeBlock src='inplace-editor/url/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default ''
      */
     @Property('')
     public url: string;
     /**
      * Specifies the mode to be render while editing. The possible modes are :
-     * 
+     *
      * - `Inline`: Editable content is displayed as inline text and ok/cancel buttons are displayed at right bottom corner of input.
      * - `Popup`: Editable content and ok/cancel buttons are displayed inside popup while editing.
-     * 
+     *
      * {% codeBlock src='inplace-editor/mode/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default 'Popup'
      */
     @Property('Popup')
     public mode: RenderMode;
     /**
      * Specifies the adaptor type that are used DataManager to communicate with DataSource. The possible values are,
-     * 
+     *
      * - `UrlAdaptor`: Base adaptor for interacting with remote data services.
      * - `ODataV4Adaptor`: Used to interact with ODataV4 service.
      * - `WebApiAdaptor`: Used to interact with Web api created with OData endpoint.
-     * 
+     *
      * {% codeBlock src='inplace-editor/adaptor/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default 'UrlAdaptor'
      */
     @Property('UrlAdaptor')
     public adaptor: AdaptorType;
     /**
      * Specifies the type of components that integrated with In-place editor to make it as editable.
-     * 
+     *
      * {% codeBlock src='inplace-editor/type/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default 'Text'
      */
     @Property('Text')
     public type: InputType;
     /**
      * Specifies the event action of input to enter edit mode instead of using edit icon. The possible values are:
-     * 
+     *
      * - `Click`: Do the single click action on input to enter into the edit mode.
      * - `DblClick`: Do the single double click action on input to enter into the edit mode.
      * - `EditIconClick`: Disables the editing of event action of input and allows user to edit only through edit icon.
-     * 
+     *
      * {% codeBlock src='inplace-editor/editable-on/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default 'Click'
      */
     @Property('Click')
@@ -311,9 +316,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      * Specifies the option to be set on initial rendering. It is applicable for DropDownList,
      * AutoComplete, ComboBox, and MultiSelect component types.
      * The possible options are:
-     * 
+     *
      * - `Never`: The corresponding field value will never be set initially in the component.
      * - `Always`: The corresponding field value will be set initially in the component.
+     * 
      * @default 'Never'
      */
     @Property('Never')
@@ -321,10 +327,11 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     /**
      * Specifies the action to be perform when user clicks outside the container, that is focus out of editable content.
      * The possible options are,
-     * 
+     *
      * - `Cancel`: Cancel's the editing and resets the old content.
      * - `Submit`: Submit the edited content to the server.
      * - `Ignore`: No action is perform with this type and allows to have many containers open.
+     * 
      * @default 'Submit'
      */
     @Property('Submit')
@@ -332,66 +339,67 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     /**
      * Enable or disable persisting component's state between page reloads. If enabled, following list of states will be persisted.
      * 1. value
-     * 
+     *
      * {% codeBlock src='inplace-editor/enable-persistence/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default false
      */
     @Property(false)
     public enablePersistence: boolean;
     /**
      * Specifies whether to enable editing mode or not.
+     * 
      * @default false
      */
     @Property(false)
     public disabled: boolean;
     /**
      * Used to show/hide the ok/cancel buttons of In-place editor.
-     * 
+     *
      * {% codeBlock src='inplace-editor/show-buttons/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default true
      */
     @Property(true)
     public showButtons: boolean;
     /**
      * Specifies to show/hide the editing mode.
-     * 
+     *
      * {% codeBlock src='inplace-editor/enable-edit-mode/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default false
      */
     @Property(false)
     public enableEditMode: boolean;
     /**
      * Sets to trigger the submit action with enter key pressing of input.
-     * 
+     *
      * {% codeBlock src='inplace-editor/submit-on-enter/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default true
      */
     @Property(true)
     public submitOnEnter: boolean;
     /**
      * Specifies the object to customize popup display settings like positions, animation etc.
-     * 
+     *
      * {% codeBlock src='inplace-editor/popup-settings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default {}
      */
     @Complex<PopupSettingsModel>({}, PopupSettings)
     public popupSettings: PopupSettingsModel;
-    // tslint:disable
+    /* eslint-disable */
     /**
      * Specifies the model object configuration for the integrated components like AutoComplete, DatePicker,NumericTextBox, etc.
-     * 
+     *
      * {% codeBlock src='inplace-editor/model/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default null
      */
     @Property(null)
     public model: AutoCompleteModel | ColorPickerModel | ComboBoxModel | DatePickerModel | DateRangePickerModel | DateTimePickerModel | DropDownListModel | MaskedTextBoxModel | MultiSelectModel | NumericTextBoxModel | RichTextEditorModel | SliderModel | TextBoxModel | TimePickerModel;
-    // tslint:enable
+    /* eslint-enable */
     /**
      * Used to customize the "Save" button UI appearance by defining Button model configuration.
      *
@@ -403,30 +411,33 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     public saveButton: ButtonModel;
     /**
      * Used to customize the "Cancel" button UI appearance by defining Button model configuration.
-     * 
+     *
      * {% codeBlock src='inplace-editor/cancel-button/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default { iconCss: 'e-icons e-cancel-icon' }
      */
     @Property({ iconCss: 'e-icons e-cancel-icon' })
     public cancelButton: ButtonModel;
     /**
      * Maps the validation rules for the input.
-     * 
+     *
      * {% codeBlock src='inplace-editor/validation-rules/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default null
      */
+    /* eslint-disable */
     @Property(null)
     public validationRules: { [name: string]: { [rule: string]: Object } };
+    /* eslint-disable */
     /**
      * The event will be fired once the component rendering is completed.
-     * @event
+     *
+     * @event 'event'
      * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;
-    /** 
+    /**
      * Event triggers before sanitize the value.
      * @event 
      * @blazorProperty 'OnSanitizeHtml'
@@ -435,70 +446,80 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     public beforeSanitizeHtml: EmitType<BeforeSanitizeHtmlArgs>;
     /**
      * The event will be fired before the data submitted to the server.
-     * @event
+     *
+     * @event 'event'
      * @blazorProperty 'OnActionBegin'
      */
     @Event()
     public actionBegin: EmitType<ActionBeginEventArgs>;
     /**
      * The event will be fired when data submitted successfully to the server.
-     * @event
+     *
+     * @event 'event'
      * @blazorProperty 'OnActionSuccess'
      */
     @Event()
     public actionSuccess: EmitType<ActionEventArgs>;
     /**
      * The event will be fired when data submission failed.
-     * @event
+     *
+     * @event 'event'
      * @blazorProperty 'OnActionFailure'
      */
     @Event()
     public actionFailure: EmitType<ActionEventArgs>;
     /**
      * The event will be fired while validating current value.
-     * @event
+     *
+     * @event 'event'
      * @blazorProperty 'Validating'
      */
     @Event()
     public validating: EmitType<ValidateEventArgs>;
     /**
      * The event will be fired before changing the mode from default to edit mode.
-     * @event
+     *
+     * @event 'event'
      */
     @Event()
     public beginEdit: EmitType<BeginEditEventArgs>;
     /**
      * The event will be fired when the integrated component value has changed that render based on the `type` property
      * in the In-place editor.
-     * @event
+     *
+     * @event 'event'
      * @blazorProperty 'ValueChange'
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
     /**
      * Event triggers when click the submit button.
-     * @event 
+     *
+     * @event 'event'
      * @blazorProperty 'SubmitClick'
      */
     @Event()
     public submitClick: EmitType<MouseEvent>;
     /**
      * Event triggers when click the cancel button.
-     * @event 
+     *
+     * @event 'event'
      * @blazorProperty 'CancelClick'
      */
     @Event()
     public cancelClick: EmitType<MouseEvent>;
-
     /**
      * The event will be fired when the component gets destroyed.
-     * @event
+     *
+     * @event 'event'
      * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Event>;
     /**
      * Initialize the event handler
+     *
+     * @returns {void}
      * @private
      */
     protected preRender(): void {
@@ -512,6 +533,8 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     }
     /**
      * To Initialize the In-place editor rendering
+     *
+     * @returns {void}
      * @private
      */
     protected render(): void {
@@ -523,9 +546,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.updateAdaptor();
         this.appendValueElement();
         this.updateValue();
+        // eslint-disable-next-line
         this.textOption === 'Never' ?
-        this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)))
-        : this.renderInitialValue();
+            this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)))
+            : this.renderInitialValue();
         this.wireEvents();
         this.setRtl(this.enableRtl);
         this.enableEditor(this.enableEditMode);
@@ -534,17 +558,19 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     }
     /**
      * Initializes a new instance of the In-place editor class.
-     * @param options  - Specifies In-place editor model properties as options.
-     * @param element  - Specifies the element for which In-place editor applies.
+     *
+     * @param {InPlaceEditorModel} options  - Specifies In-place editor model properties as options.
+     * @param {string} element  - Specifies the element for which In-place editor applies.
      */
-    constructor(options?: InPlaceEditorModel, element?: string | HTMLElement) {
+    public constructor(options?: InPlaceEditorModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
     }
     private setClass(action: string, val: string): void {
         if (!this.isEmpty(val)) {
-            let allClassName: string[] = val.split(' ');
+            const allClassName: string[] = val.split(' ');
             for (let i: number = 0; i < allClassName.length; i++) {
                 if (allClassName[i].trim() !== '') {
+                    // eslint-disable-next-line
                     action === 'add' ? addClass([this.element], [allClassName[i]]) : removeClass([this.element], [allClassName[i]]);
                 }
             }
@@ -578,41 +604,46 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
     }
     private getInitFieldMapValue(): void {
-        let model: DropDownTypes = this.model as DropDownTypes;
-        let mText: string = model.fields.text;
-        let mVal: string = model.fields.value;
-        let query: Query = isNOU(model.query) ? new Query() : model.query;
+        const model: DropDownTypes = this.model as DropDownTypes;
+        const mText: string = model.fields.text;
+        const mVal: string = model.fields.value;
+        const query: Query = isNOU(model.query) ? new Query() : model.query;
         if (model.dataSource instanceof DataManager) {
             (model.dataSource as DataManager).executeQuery(this.getInitQuery(model, query)).then((e: ReturnOption) => {
-                this.updateInitValue(mText, mVal, e.result as { [key: string]: Object }[]);
+                // eslint-disable-next-line
+                this.updateInitValue(mText, mVal, e.result as { [key: string]: object }[]);
             });
         } else {
             this.updateInitValue(mText, mVal, new DataManager(model.dataSource).executeLocal(
-                this.getInitQuery(model, query)) as { [key: string]: Object }[]);
+                // eslint-disable-next-line
+                this.getInitQuery(model, query)) as { [key: string]: object }[]);
         }
     }
     private getInitQuery(model: DropDownTypes, query: Query): Query {
         let predicate: Predicate;
-        let mVal: string = model.fields.value;
-        let value: string[] | number[] = this.value as string[] | number[];
+        const mVal: string = model.fields.value;
+        const value: string[] | number[] = this.value as string[] | number[];
         if (this.type !== 'MultiSelect' || typeof(this.value) !== 'object') {
             predicate = new Predicate(mVal, 'equal', this.value as string);
         } else {
             let i: number = 0;
-            for (let val of value) {
+            for (const val of value) {
                 predicate = ((i === 0) ? predicate = new Predicate(mVal, 'equal', val) : predicate.or(mVal, 'equal', val));
                 i++;
             }
         }
         return query.where(predicate);
     }
-    private updateInitValue(mText: string, mVal: string, result: { [key: string]: Object }[]): void {
-        if (result.length <= 0) { return; }
+    // eslint-disable-next-line
+    private updateInitValue(mText: string, mVal: string, result: { [key: string]: object }[]): void {
+        if (result.length <= 0) {
+            return;
+        }
         if (result.length === 1) {
             this.valueEle.innerHTML = this.checkValue(getValue((isNOU(mText) ? mVal : mText), result[0]));
         } else {
-            let val: string[] = [];
-            for (let obj of result) {
+            const val: string[] = [];
+            for (const obj of result) {
                 val.push(getValue((isNOU(mText) ? mVal : mText), obj) as string);
             }
             this.valueEle.innerHTML = this.checkValue(val.toString());
@@ -621,24 +652,42 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.valueWrap.classList.remove(classes.LOAD);
     }
     private renderValue(val: string): void {
+        // eslint-disable-next-line
         this.enableHtmlSanitizer && this.type !== 'RTE' && this.type !== 'MultiSelect' ? this.valueEle.innerText = val :
             this.valueEle.innerHTML = val;
-        if (this.type === 'Color') { setStyleAttribute(this.valueEle, { 'color': val }); }
+        if (this.type === 'Color') {
+            setStyleAttribute(this.valueEle, { 'color': val });
+        }
         if (this.mode === 'Inline') {
-            removeClass([this.valueWrap], [classes.HIDE]);
+            if (this.isEditorOpen()) {
+                removeClass([this.valueWrap], [classes.HIDE]);
+            }
+        }
+    }
+    private isEditorOpen(): boolean {
+        if (this.isVue && (this.enableEditMode || (!isNOU(this.valueWrap) &&
+        !(this.valueWrap.classList.contains(classes.HIDE) || this.valueWrap.classList.contains('e-tooltip'))))) {
+            return false;
+        } else {
+            return true;
         }
     }
     private renderEditor(): void {
         this.prevValue = this.value;
         this.beginEditArgs = { mode: this.mode, cancelFocus: false, cancel: false };
         this.trigger('beginEdit', this.beginEditArgs);
-        if (this.beginEditArgs.cancel) { return; }
-        let tipOptions: Object = undefined;
-        let target: HTMLElement = <HTMLElement>select('.' + classes.VALUE_WRAPPER, this.element);
+        if (this.beginEditArgs.cancel) {
+            return;
+        }
+        // eslint-disable-next-line
+        let tipOptions: object = undefined;
+        const target: HTMLElement = <HTMLElement>select('.' + classes.VALUE_WRAPPER, this.element);
         if (this.editableOn !== 'EditIconClick') {
             target.parentElement.removeAttribute('title');
         }
-        if (this.valueWrap.classList.contains(classes.OPEN)) { return; }
+        if (this.valueWrap.classList.contains(classes.OPEN)) {
+            return;
+        }
         if (this.mode === 'Inline') {
             addClass([this.valueWrap], [classes.HIDE]);
             this.inlineWrapper = this.createElement('div', { className: classes.INLINE });
@@ -652,7 +701,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             if (!isNOU(this.popupSettings.model) && this.popupSettings.model.afterOpen) {
                 this.popupSettings.model.afterOpen = this.afterOpenHandler.bind(this);
             }
-            let content: HTMLElement = this.createElement('div', { className: classes.POPUP });
+            const content: HTMLElement = this.createElement('div', { className: classes.POPUP });
             if (!this.isEmpty(this.popupSettings.title)) {
                 this.titleEle.innerHTML = this.popupSettings.title;
                 content.appendChild(this.titleEle);
@@ -673,8 +722,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
         addClass([this.valueWrap], [classes.OPEN]);
         this.setProperties({ enableEditMode: true }, true);
-        // tslint:disable-next-line:no-any
-        if ((this as any).isReact) { this.renderReactTemplates(); }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((this as any).isReact) {
+            this.renderReactTemplates();
+        }
     }
 
     private renderAndOpen(): void {
@@ -692,7 +743,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                 && (!isNOU(model.value) && (model.value as string[] | number[]).length === 0))) {
                 this.showDropDownPopup();
             }
-        } else { this.renderAndOpen(); }
+        } else {
+            this.renderAndOpen();
+        }
     }
 
     private showDropDownPopup(): void {
@@ -703,12 +756,14 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             }
             (this.componentObj as DropDownList).showPopup();
         } else {
-            if (this.isExtModule) { this.notify(((this.type === 'MultiSelect') ? events.setFocus : events.showPopup), {}); }
+            if (this.isExtModule) {
+                this.notify(((this.type === 'MultiSelect') ? events.setFocus : events.showPopup), {});
+            }
         }
     }
 
     private setAttribute(ele: HTMLElement, attr: string[]): void {
-        let value: string = this.name && this.name.length !== 0 ? this.name : this.element.id;
+        const value: string = this.name && this.name.length !== 0 ? this.name : this.element.id;
         attr.forEach((val: string) => {
             ele.setAttribute(val, ((val === 'id') ? (value + '_editor') : value));
         });
@@ -718,8 +773,8 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.containerEle = this.createElement('div', { className: classes.WRAPPER });
         this.loader = this.createElement('div', { className: classes.LOADING });
         this.formEle = this.createElement('form', { className: classes.FORM }) as HTMLFormElement;
-        let ctrlGroupEle: HTMLElement = this.createElement('div', { className: classes.CTRL_GROUP });
-        let inputWrap: HTMLElement = this.createElement('div', { className: classes.INPUT });
+        const ctrlGroupEle: HTMLElement = this.createElement('div', { className: classes.CTRL_GROUP });
+        const inputWrap: HTMLElement = this.createElement('div', { className: classes.INPUT });
         target.appendChild(this.containerEle);
         this.loadSpinner();
         this.containerEle.appendChild(this.formEle);
@@ -758,8 +813,8 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
     }
     private renderButtons(): HTMLElement {
-        let btnWrap: HTMLElement = this.createElement('div', { className: classes.BUTTONS });
-        let primary: string = (!isNOU(this.saveButton.content) && this.saveButton.content.length !== 0) ? (' ' + classes.PRIMARY) : '';
+        const btnWrap: HTMLElement = this.createElement('div', { className: classes.BUTTONS });
+        const primary: string = (!isNOU(this.saveButton.content) && this.saveButton.content.length !== 0) ? (' ' + classes.PRIMARY) : '';
         this.submitBtn = this.createButtons({
             constant: 'save', type: 'submit', container: btnWrap,
             title: { save: 'Save' }, model: this.saveButton,
@@ -775,7 +830,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private createButtons(args: IButton): Button {
         let btnObj: Button = undefined;
         if (Object.keys(args.model).length > 0) {
-            let btnEle: HTMLButtonElement = <HTMLButtonElement>this.createElement('button', {
+            const btnEle: HTMLButtonElement = <HTMLButtonElement>this.createElement('button', {
                 className: args.className,
                 attrs: { 'type': args.type, 'title': this.getLocale(args.title, args.constant) }
             });
@@ -789,15 +844,17 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         let classProp: string;
         if (!isNOU(this.model.cssClass)) {
             classProp = this.model.cssClass.indexOf(classes.ELEMENTS) < 0 ?
-            this.model.cssClass === '' ? classes.ELEMENTS : this.model.cssClass + ' ' + classes.ELEMENTS :
-            this.model.cssClass;
+                this.model.cssClass === '' ? classes.ELEMENTS : this.model.cssClass + ' ' + classes.ELEMENTS :
+                this.model.cssClass;
         } else {
             classProp = classes.ELEMENTS;
         }
         extend(this.model, this.model, {
             cssClass: classProp, enableRtl: this.enableRtl, locale: this.locale, change: this.changeHandler.bind(this)
         });
-        if (!isNOU(this.value)) { this.updateModelValue(); }
+        if (!isNOU(this.value)) {
+            this.updateModelValue();
+        }
         if (this.isExtModule) {
             this.notify(events.render, { module: modulesList[this.type], target: ele, type: this.type });
         } else {
@@ -805,42 +862,42 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                 (this.model as DropDownListModel).showClearButton = true;
             }
             switch (this.type) {
-                case 'Date':
-                    this.componentObj = new DatePicker(this.model as DatePickerModel);
-                    break;
-                case 'DateTime':
-                    this.componentObj = new DateTimePicker(this.model as DateTimePickerModel);
-                    break;
-                case 'DropDownList':
-                    this.componentObj = new DropDownList(this.model as DropDownListModel);
-                    break;
-                case 'Mask':
-                    this.componentObj = new MaskedTextBox(this.model as MaskedTextBoxModel);
-                    break;
-                case 'Numeric':
-                    if (this.model.value) {
-                        this.model.value = (this.model.value as string).toString().replace(/[`~!@#$%^&*()_|\=?;:'",<>\{\}\[\]\\\/]/gi, '');
-                    }
-                    this.componentObj = new NumericTextBox(this.model as NumericTextBoxModel);
-                    break;
-                case 'Text':
-                    this.componentObj = new TextBox(this.model as TextBoxModel);
-                    break;
+            case 'Date':
+                this.componentObj = new DatePicker(this.model as DatePickerModel);
+                break;
+            case 'DateTime':
+                this.componentObj = new DateTimePicker(this.model as DateTimePickerModel);
+                break;
+            case 'DropDownList':
+                this.componentObj = new DropDownList(this.model as DropDownListModel);
+                break;
+            case 'Mask':
+                this.componentObj = new MaskedTextBox(this.model as MaskedTextBoxModel);
+                break;
+            case 'Numeric':
+                if (this.model.value) {
+                    this.model.value = (this.model.value as string).toString().replace(/[`~!@#$%^&*()_|\=?;:'",<>\{\}\[\]\\\/]/gi, '');
+                }
+                this.componentObj = new NumericTextBox(this.model as NumericTextBoxModel);
+                break;
+            case 'Text':
+                this.componentObj = new TextBox(this.model as TextBoxModel);
+                break;
             }
             this.componentObj.appendTo(ele as HTMLInputElement);
         }
     }
     private updateAdaptor(): void {
         switch (this.adaptor) {
-            case 'UrlAdaptor':
-                this.dataAdaptor = new UrlAdaptor;
-                break;
-            case 'WebApiAdaptor':
-                this.dataAdaptor = new WebApiAdaptor;
-                break;
-            case 'ODataV4Adaptor':
-                this.dataAdaptor = new ODataV4Adaptor;
-                break;
+        case 'UrlAdaptor':
+            this.dataAdaptor = new UrlAdaptor;
+            break;
+        case 'WebApiAdaptor':
+            this.dataAdaptor = new WebApiAdaptor;
+            break;
+        case 'ODataV4Adaptor':
+            this.dataAdaptor = new ODataV4Adaptor;
+            break;
         }
     }
     private loadSpinner(callType?: string): void {
@@ -852,8 +909,12 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         } else {
             this.spinObj = { target: this.loader, width: Browser.isDevice ? '16px' : '14px' };
         }
-        if (this.formEle) { addClass([this.formEle], [classes.LOAD]); }
-        if (this.btnElements) { addClass([this.btnElements], [classes.HIDE]); }
+        if (this.formEle) {
+            addClass([this.formEle], [classes.LOAD]);
+        }
+        if (this.btnElements) {
+            addClass([this.btnElements], [classes.HIDE]);
+        }
         setStyleAttribute(this.loader, { 'width': '100%' });
         createSpinner(this.spinObj);
         showSpinner(this.spinObj.target);
@@ -866,28 +927,34 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             removeClass([this.loader], [classes.RTE_SPIN_WRAP]);
             removeClass([this.getEditElement()], [classes.CTRL_OVERLAY]);
         }
-        if (this.formEle) { removeClass([this.formEle], [classes.LOAD]); }
-        if (this.btnElements) { removeClass([this.btnElements], [classes.HIDE]); }
+        if (this.formEle) {
+            removeClass([this.formEle], [classes.LOAD]);
+        }
+        if (this.btnElements) {
+            removeClass([this.btnElements], [classes.HIDE]);
+        }
         removeClass([this.loader], [classes.SHOW]);
     }
     private getEditElement(): Element {
         return select('.' + classes.ELEMENTS, this.formEle);
     }
-    private getLocale(prop: Object, val: string): string {
+     // eslint-disable-next-line
+     private getLocale(prop: object, val: string): string {
         return new L10n('inplace-editor', prop, this.locale).getConstant(val);
     }
     private checkValue(val: string): string {
         return (!this.isEmpty(val)) ? val : this.emptyText;
     }
     public extendModelValue(val: string | number | boolean | Date | DateRange | string[] | Date[] | number[] | boolean[]): void {
-        let model: object = this.model;
+         // eslint-disable-next-line
+         const model: object = this.model;
         extend(model, { value: val });
         this.setProperties({ model: model }, true);
     }
     private updateValue(): void {
         let value : string | number | string[] | number[] | Date | Date[] = this.value;
         if (this.enableHtmlSanitizer && typeof(this.value) === 'string') {
-                value = this.sanitizeHelper(this.value);
+            value = this.sanitizeHelper(this.value);
         }
         if (!isNOU(this.value)) {
             this.setProperties({ value: getCompValue(this.type, value) }, true);
@@ -916,7 +983,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         let value: string;
         if (Array.prototype.indexOf.call(this.dropDownEle, this.type) > -1 && this.type !== 'MultiSelect') {
             value = display ? (select('.e-' + this.type.toLocaleLowerCase(), this.containerEle) as HTMLInputElement).value :
-            this.value.toString();
+                this.value.toString();
         } else if (this.type === 'MultiSelect') {
             this.notify(events.accessValue, { type: this.type });
             value = display ? this.printValue : (this.value as string[] | number[]).join();
@@ -925,7 +992,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     }
 
     private getSendValue(): string {
-        if (this.isEmpty(this.value as string)) { return ''; }
+        if (this.isEmpty(this.value as string)) {
+            return '';
+        }
         if (Array.prototype.indexOf.call(this.dropDownEle, this.type) > -1) {
             return this.getDropDownsValue(false);
         } else if (Array.prototype.indexOf.call(this.dateType, this.type) > -1) {
@@ -948,14 +1017,19 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
     }
     private setRtl(value: boolean): void {
+        // eslint-disable-next-line
         value ? addClass([this.element], [classes.RTL]) : removeClass([this.element], [classes.RTL]);
     }
     private setFocus(): void {
-        if (this.isTemplate) { return; }
+        if (this.isTemplate) {
+            return;
+        }
+        // eslint-disable-next-line
         this.isExtModule ? this.notify(events.setFocus, {}) : this.componentObj.element.focus();
     }
     private removeEditor(isBlazorDestroy?: boolean): void {
-        let blazorContain: string[] = Object.keys(window) as string[];
+        // eslint-disable-next-line
+        const blazorContain: string[] = Object.keys(window) as string[];
         if (isBlazor() && !this.isStringTemplate) {
             resetBlazorTemplate(this.element.id + 'template', 'Template');
         }
@@ -981,15 +1055,19 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
         this.containerEle = undefined;
         removeClass([this.valueWrap], [classes.OPEN, classes.HIDE]);
-        if (!isBlazorDestroy) { this.setProperties({ enableEditMode: false }, true); }
+        if (!isBlazorDestroy) {
+            this.setProperties({ enableEditMode: false }, true);
+        }
         if (this.editableOn !== 'EditIconClick') {
-            let titleConstant: string = (this.editableOn === 'DblClick') ? 'editAreaDoubleClick' : 'editAreaClick';
+            const titleConstant: string = (this.editableOn === 'DblClick') ? 'editAreaDoubleClick' : 'editAreaClick';
             if (!isNOU(this.valueWrap.parentElement)) {
                 this.valueWrap.parentElement.setAttribute('title', this.getLocale(localeConstant[this.editableOn], titleConstant));
             }
         }
-        // tslint:disable-next-line:no-any
-        if ((this as any).isReact) { this.clearTemplate(); }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((this as any).isReact) {
+            this.clearTemplate();
+        }
     }
     private destroyComponents(): void {
         if (this.showButtons) {
@@ -1032,18 +1110,20 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.btnElements = undefined;
     }
     private getQuery(params: { [key: string]: string | number }): Query {
-        let query: Query = new Query();
+        const query: Query = new Query();
         Object.keys(params).forEach((key: string) => {
             query.addParams(key, params[key] as string);
         });
         return query;
     }
     private sendValue(): void {
-        let eventArgs: ActionBeginEventArgs = { data: { name: this.name, primaryKey: this.primaryKey, value: this.getSendValue() } };
+        const eventArgs: ActionBeginEventArgs = { data: { name: this.name, primaryKey: this.primaryKey, value: this.getSendValue() } };
         this.trigger('actionBegin', eventArgs, (actionBeginArgs: ActionBeginEventArgs) => {
             if (actionBeginArgs.cancel) {
                 this.removeSpinner('submit');
-                if (this.mode === 'Popup') { this.updateArrow(); }
+                if (this.mode === 'Popup') {
+                    this.updateArrow();
+                }
             } else {
                 if (!this.isEmpty(this.url) && !this.isEmpty(this.primaryKey as string)
                     && (this.initRender || (!this.initRender && this.prevValue !== this.value))) {
@@ -1053,11 +1133,12 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                             this.getQuery(actionBeginArgs.data), this.successHandler.bind(this), this.failureHandler.bind(this)
                         );
                     } else {
-                        let crud: Promise<Object> = this.dataManager.insert(actionBeginArgs.data) as Promise<Object>;
+                        // eslint-disable-next-line
+                        const crud: Promise<Object> = this.dataManager.insert(actionBeginArgs.data) as Promise<Object>;
                         crud.then((e: ReturnOption) => this.successHandler(e)).catch((e: ReturnOption) => this.failureHandler(e));
                     }
                 } else {
-                    let eventArg: ActionEventArgs = { data: {}, value: actionBeginArgs.data.value as string };
+                    const eventArg: ActionEventArgs = { data: {}, value: actionBeginArgs.data.value as string };
                     this.triggerSuccess(eventArg);
                 }
                 this.dataManager = undefined;
@@ -1072,15 +1153,17 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     }
     private templateCompile(trgEle: HTMLElement, tempStr: string): void {
         let tempEle: HTMLElement[];
-        let blazorContain: string[] = Object.keys(window) as string[];
+        // eslint-disable-next-line
+        const blazorContain: string[] = Object.keys(window) as string[];
         if (typeof tempStr === 'string') {
             tempStr = tempStr.trim();
         }
-        let compiler: Function = compile(tempStr);
+        // eslint-disable-next-line
+        const compiler: Function = compile(tempStr);
         if (!isNOU(compiler)) {
-            let isString: boolean = (isBlazor() &&
+            const isString: boolean = (isBlazor() &&
             !this.isStringTemplate && (tempStr).indexOf('<div>Blazor') === 0) ?
-            this.isStringTemplate : true;
+                this.isStringTemplate : true;
             tempEle = compiler({}, this, 'template', this.element.id + 'template', isString);
         }
         if (!isNOU(compiler) && tempEle.length > 0) {
@@ -1092,17 +1175,20 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             }
         }
     }
-    /** 
+    /**
+     * @param {string} value - specifies the string value
+     * @returns {string} - returns the string
      * @hidden
      */
     public sanitizeHelper(value: string): string {
         if (this.enableHtmlSanitizer) {
-            let item: BeforeSanitizeHtmlArgs = SanitizeHtmlHelper.beforeSanitize();
-            let beforeEvent: BeforeSanitizeHtmlArgs = {
+            const item: BeforeSanitizeHtmlArgs = SanitizeHtmlHelper.beforeSanitize();
+            const beforeEvent: BeforeSanitizeHtmlArgs = {
                 cancel: false,
                 helper: null
             };
             extend(item, item, beforeEvent);
+            // eslint-disable-next-line
             this.trigger('beforeSanitizeHtml', item, (args: BeforeSanitizeHtmlArgs) => {
                 if (item.cancel && !isNOU(item.helper)) {
                     value = item.helper(value);
@@ -1135,39 +1221,41 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     }
 
     private disable(value: boolean): void {
+        // eslint-disable-next-line
         value ? addClass([this.element], [classes.DISABLE]) : removeClass([this.element], [classes.DISABLE]);
     }
     private enableEditor(val: boolean): void {
+        // eslint-disable-next-line
         (val) ? this.renderEditor() : this.cancelHandler();
     }
     private checkValidation(fromSubmit : boolean , isValidate?: boolean): void {
         let args: ValidateEventArgs;
         if (this.validationRules) {
-            let rules: string[] = Object.keys(this.validationRules);
+            const rules: string[] = Object.keys(this.validationRules);
             let validationLength : number =  Object.keys(this.validationRules[rules[0]]).length;
             validationLength = 'validateHidden' in this.validationRules[rules[0]] ? validationLength - 1 : validationLength;
             let count : number = 0;
             this.formValidate = new FormValidator(this.formEle as HTMLFormElement, {
                 rules: this.validationRules,
                 validationComplete: (e: FormEventArgs) => {
-                        count = count + 1;
-                        args = {
-                            errorMessage: e.message,
-                            data: { name: this.name, primaryKey: this.primaryKey, value: this.checkValue(this.getSendValue()) }
-                        };
-                        this.trigger('validating', args, (validateArgs: ValidateEventArgs) => {
-                            if (e.status === 'failure') {
-                                e.errorElement.innerText = validateArgs.errorMessage;
-                                this.toggleErrorClass(true);
-                            } else {
-                                this.toggleErrorClass(false);
-                            }
-                            if (!isNOU(fromSubmit) && fromSubmit && (validationLength === count || e.status === 'failure')) {
-                                fromSubmit = false;
-                                this.afterValidation(isValidate);
-                                count = 0;
-                            }
-                        });
+                    count = count + 1;
+                    args = {
+                        errorMessage: e.message,
+                        data: { name: this.name, primaryKey: this.primaryKey, value: this.checkValue(this.getSendValue()) }
+                    };
+                    this.trigger('validating', args, (validateArgs: ValidateEventArgs) => {
+                        if (e.status === 'failure') {
+                            e.errorElement.innerText = validateArgs.errorMessage;
+                            this.toggleErrorClass(true);
+                        } else {
+                            this.toggleErrorClass(false);
+                        }
+                        if (!isNOU(fromSubmit) && fromSubmit && (validationLength === count || e.status === 'failure')) {
+                            fromSubmit = false;
+                            this.afterValidation(isValidate);
+                            count = 0;
+                        }
+                    });
                 },
                 customPlacement: (inputElement: HTMLElement, errorElement: HTMLElement) => {
                     if (this.formEle) {
@@ -1200,16 +1288,22 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private afterValidation(isValidate: boolean): void {
         if (!this.formEle.classList.contains(classes.ERROR) && isValidate) {
             this.loadSpinner('validate');
-            if (this.mode === 'Popup') { this.updateArrow(); }
+            if (this.mode === 'Popup') {
+                this.updateArrow();
+            }
             this.sendValue();
         }
     }
     private toggleErrorClass(value: boolean): void {
-        if (isNOU(this.formEle)) { return; }
-        let inputEle: HTMLElement = <HTMLElement>select('.e-input-group', this.formEle);
-        let errorClass: Function = (element: HTMLElement[], val: string, action: string) => {
+        if (isNOU(this.formEle)) {
+            return;
+        }
+        const inputEle: HTMLElement = <HTMLElement>select('.e-input-group', this.formEle);
+        // eslint-disable-next-line
+        const errorClass: Function = (element: HTMLElement[], val: string, action: string) => {
             [].slice.call(element).forEach((ele: HTMLElement) => {
                 if (ele) {
+                    // eslint-disable-next-line
                     action === 'add' ? addClass([ele], [val]) : removeClass([ele], [val]);
                 }
             });
@@ -1217,19 +1311,21 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         errorClass([this.formEle, inputEle], classes.ERROR, value ? 'add' : 'remove');
     }
     private updateArrow(): void {
-        let pos: TipPointerPosition = this.tipObj.tipPointerPosition;
+        const pos: TipPointerPosition = this.tipObj.tipPointerPosition;
         this.tipObj.tipPointerPosition = (pos === 'Middle') ? 'Auto' : 'Middle';
         this.tipObj.tipPointerPosition = pos;
         this.tipObj.dataBind();
     }
     private triggerSuccess(args: ActionEventArgs): void {
-        let val: string = args.value;
+        const val: string = args.value;
         this.trigger('actionSuccess', args, (actionArgs: ActionEventArgs) => {
             this.removeSpinner('submit');
             if (!actionArgs.cancel) {
                 this.renderValue(this.checkValue((actionArgs.value !== val) ? actionArgs.value : this.getRenderValue()));
             }
-            if (actionArgs.cancel && this.mode === 'Inline') { removeClass([this.valueWrap], [classes.HIDE]); }
+            if (actionArgs.cancel && this.mode === 'Inline') {
+                removeClass([this.valueWrap], [classes.HIDE]);
+            }
             this.removeEditor();
         });
     }
@@ -1247,8 +1343,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         EventHandler.add(document, 'mousedown', this.docClickHandler, this);
     }
     private wireEditEvent(event: string): void {
-        if (event === 'EditIconClick') { return; }
-        let titleConstant: string = (event === 'Click') ? 'editAreaClick' : 'editAreaDoubleClick';
+        if (event === 'EditIconClick') {
+            return;
+        }
+        const titleConstant: string = (event === 'Click') ? 'editAreaClick' : 'editAreaDoubleClick';
         this.element.setAttribute('title', this.getLocale(localeConstant[event], titleConstant));
         if (Browser.isDevice && Browser.isIos && event === 'DblClick') {
             this.touchModule = new Touch(this.valueWrap, { tap: this.doubleTapHandler.bind(this) });
@@ -1288,7 +1386,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         EventHandler.remove(document, 'mousedown', this.docClickHandler);
     }
     private unWireEditEvent(event: string): void {
-        if (event === 'EditIconClick') { return; }
+        if (event === 'EditIconClick') {
+            return;
+        }
         this.element.removeAttribute('title');
         if (Browser.isDevice && Browser.isIos && event === 'DblClick') {
             this.touchModule.destroy();
@@ -1304,7 +1404,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         e.preventDefault();
     }
     private btnKeyDownHandler(e: KeyboardEvent): void {
-        let trg: HTMLElement = <HTMLElement>e.target;
+        const trg: HTMLElement = <HTMLElement>e.target;
         if ((e.keyCode === 13 && e.which === 13) || (e.keyCode === 32 && e.which === 32)) {
             if (trg.classList.contains(classes.BTN_SAVE)) {
                 this.save();
@@ -1340,7 +1440,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         if (!this.beginEditArgs.cancelFocus) {
             if (this.mode === 'Inline' && (['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'].indexOf(this.type) > -1)
                 && (this.model as AutoCompleteModel | ComboBoxModel | DropDownListModel
-                    | MultiSelectModel).dataSource instanceof DataManager) {
+                | MultiSelectModel).dataSource instanceof DataManager) {
                 this.showDropDownPopup();
             } else {
                 this.setFocus();
@@ -1352,7 +1452,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
     }
     private popMouseDown(e: MouseEvent): void {
-        let trgClass: DOMTokenList = (<Element>e.target).classList;
+        const trgClass: DOMTokenList = (<Element>e.target).classList;
         if (trgClass.contains('e-chips-close') && !trgClass.contains('e-close-hooker')) {
             this.updateArrow();
         }
@@ -1377,21 +1477,26 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.removeEditor();
     }
     private popClickHandler(e: MouseEvent): void {
-        let tipTarget: HTMLElement = <HTMLElement>select('.' + classes.VALUE_WRAPPER, this.element);
+        const tipTarget: HTMLElement = <HTMLElement>select('.' + classes.VALUE_WRAPPER, this.element);
         if ((<Element>e.target).classList.contains('e-chips-close')) {
             this.tipObj.refresh(tipTarget);
         }
     }
+    // eslint-disable-next-line
     private successHandler(e: Object): void {
         this.initRender = false;
-        let eventArgs: ActionEventArgs = { data: e, value: this.getSendValue() };
+        const eventArgs: ActionEventArgs = { data: e, value: this.getSendValue() };
         this.triggerSuccess(eventArgs);
     }
+    // eslint-disable-next-line
     private failureHandler(e: Object): void {
-        let eventArgs: ActionEventArgs = { data: e, value: this.getSendValue() };
+        const eventArgs: ActionEventArgs = { data: e, value: this.getSendValue() };
+        // eslint-disable-next-line
         this.trigger('actionFailure', eventArgs, (args: ActionEventArgs) => {
             this.removeSpinner('submit');
-            if (this.mode === 'Popup') { this.updateArrow(); }
+            if (this.mode === 'Popup') {
+                this.updateArrow();
+            }
         });
     }
     private enterKeyDownHandler(e: KeyboardEvent): void {
@@ -1428,15 +1533,15 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
     }
     private docClickHandler(e: Event): void {
-        let trg: Element = <Element>e.target;
+        const trg: Element = <Element>e.target;
         if (this.isClearTarget) {
             this.isClearTarget = false;
             return;
         }
-        let relateRoot: Element = closest(trg, '.' + classes.ROOT);
-        let relateTipRoot: Element = closest(trg, '.' + classes.ROOT_TIP);
-        let relateElements: Element = closest(trg, '.' + classes.ELEMENTS);
-        let relateRTEElements: Element = closest(trg, '.e-rte-elements');
+        const relateRoot: Element = closest(trg, '.' + classes.ROOT);
+        const relateTipRoot: Element = closest(trg, '.' + classes.ROOT_TIP);
+        const relateElements: Element = closest(trg, '.' + classes.ELEMENTS);
+        const relateRTEElements: Element = closest(trg, '.e-rte-elements');
         if ((!isNOU(relateRoot) && relateRoot.isEqualNode(this.element)) ||
             (!isNOU(relateTipRoot) && this.tipObj && (relateTipRoot.id.indexOf(this.valueWrap.id) > -1)) ||
             !isNOU(relateElements) || !isNOU(relateRTEElements) || trg.classList.contains('e-chips-close')) {
@@ -1450,8 +1555,8 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
     }
     private changeHandler(e: InputChangeEventArgs | ColorPickerEventArgs | MultiSelectChangeEventArgs | SliderChangeEventArgs |
-        RangeEventArgs | DropDownsChangeEventArgs): void {
-        let eventArgs: ChangeEventArgs = {
+    RangeEventArgs | DropDownsChangeEventArgs): void {
+        const eventArgs: ChangeEventArgs = {
             previousValue: this.compPrevValue === undefined ? this.value : this.compPrevValue,
             value: (e as InputChangeEventArgs).value
         };
@@ -1464,20 +1569,25 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     }
     /**
      * Validate current editor value.
-     * @returns void
+     *
+     * @returns {void}
      */
     public validate(): void {
         this.checkValidation(true, false);
     }
     /**
      * Submit the edited input value to the server.
-     * @returns void
+     *
+     * @returns {void}
      */
     public save(): void {
-        if (!this.formEle) { return; }
+        if (!this.formEle) {
+            return;
+        }
         this.element.focus();
         this.editEle = <HTMLElement>select('.' + classes.INPUT, this.formEle);
         let errEle: HTMLElement = null;
+        // eslint-disable-next-line
         errEle = <HTMLElement>select('.' + classes.ERROR, this.editEle);
         if (!this.isTemplate) {
             this.setValue();
@@ -1486,7 +1596,8 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     }
     /**
      * Removes the control from the DOM and also removes all its related events.
-     * @returns void
+     *
+     * @returns {void}
      */
     public destroy(): void {
         this.removeEditor(isBlazor());
@@ -1494,20 +1605,25 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             this.notify(events.destroy, {});
         }
         this.unWireEvents();
-        let classList: string[] = [classes.DISABLE, classes.RTL];
+        const classList: string[] = [classes.DISABLE, classes.RTL];
         classList.forEach((val: string): void => {
             removeClass([this.element], [val]);
         });
         while (this.element.firstElementChild) {
             this.element.removeChild(this.element.firstElementChild);
         }
-        if (!(isBlazor() && this.isServerRendered)) { super.destroy(); }
-        // tslint:disable-next-line:no-any
-        if ((this as any).isReact) { this.clearTemplate(); }
+        if (!(isBlazor() && this.isServerRendered)) {
+            super.destroy();
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((this as any).isReact) {
+            this.clearTemplate();
+        }
     }
     /**
      * Get the properties to be maintained in the persisted state.
-     * @returns string
+     *
+     * @returns {string} - returns the string
      */
 
     protected getPersistData(): string {
@@ -1515,17 +1631,19 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     }
     /**
      * To provide the array of modules needed for component rendering
-     * @return {ModuleDeclaration[]}
+     *
+     * @returns {ModuleDeclaration[]} - returns the module declaration
      * @hidden
      */
     public requiredModules(): ModuleDeclaration[] {
-        let modules: ModuleDeclaration[] = [];
+        const modules: ModuleDeclaration[] = [];
         modules.push({ member: modulesList[this.type], args: [this] });
         return modules;
     }
     /**
      * Returns the current module name.
-     * @returns string
+     *
+     * @returns {string} - returrns the string
      * @private
      */
     protected getModuleName(): string {
@@ -1533,50 +1651,56 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     }
     /**
      * Gets called when the model property changes.The data that describes the old and new values of property that changed.
-     * @param  {InPlaceEditorModel} newProp
-     * @param  {InPlaceEditorModel} oldProp
-     * @returns void
+     *
+     * @param  {InPlaceEditorModel} newProp - specifies the new property
+     * @param  {InPlaceEditorModel} oldProp - specifies the old property
+     * @returns {void}
      * @private
      */
     public onPropertyChanged(newProp: InPlaceEditorModel, oldProp: InPlaceEditorModel): void {
-        this.removeEditor();
-        for (let prop of Object.keys(newProp)) {
+        if (this.isEditorOpen()) {
+            this.removeEditor();
+        }
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'showButtons':
-                    (newProp.showButtons) ? this.appendButtons(this.formEle) : this.destroyButtons();
-                    break;
-                case 'value':
-                    this.updateValue();
-                    this.textOption === 'Never' ? this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)))
-                    : this.renderInitialValue();
-                    break;
-                case 'emptyText':
-                    this.textOption === 'Never' ? this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)))
-                    : this.renderInitialValue();
-                    break;
-                case 'template':
-                    this.checkIsTemplate();
-                    break;
-                case 'disabled':
-                    this.disable(newProp.disabled);
-                    break;
-                case 'enableRtl':
-                    this.setRtl(newProp.enableRtl);
-                    break;
-                case 'cssClass':
-                    this.setClass('remove', oldProp.cssClass);
-                    this.setClass('add', newProp.cssClass);
-                    break;
-                case 'mode':
-                    this.enableEditor(this.enableEditMode);
-                    break;
-                case 'enableEditMode':
-                    this.enableEditor(newProp.enableEditMode);
-                    break;
-                case 'editableOn':
-                    this.unWireEditEvent(oldProp.editableOn);
-                    if (newProp.editableOn !== 'EditIconClick') { this.wireEditEvent(newProp.editableOn); }
-                    break;
+            case 'showButtons':
+                // eslint-disable-next-line
+                (newProp.showButtons) ? this.appendButtons(this.formEle) : this.destroyButtons();
+                break;
+            case 'value':
+                this.updateValue();
+                // eslint-disable-next-line
+                this.textOption === 'Never' ? this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)))
+                : this.renderInitialValue();
+                break;
+            case 'emptyText':
+                // eslint-disable-next-line
+                this.textOption === 'Never' ? this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)))
+                : this.renderInitialValue();
+                break;
+            case 'template':
+                this.checkIsTemplate();
+                break;
+            case 'disabled':
+                this.disable(newProp.disabled);
+                break;
+            case 'enableRtl':
+                this.setRtl(newProp.enableRtl);
+                break;
+            case 'cssClass':
+                this.setClass('remove', oldProp.cssClass);
+                this.setClass('add', newProp.cssClass);
+                break;
+            case 'mode':
+                this.enableEditor(this.enableEditMode);
+                break;
+            case 'enableEditMode':
+                this.enableEditor(newProp.enableEditMode);
+                break;
+            case 'editableOn':
+                this.unWireEditEvent(oldProp.editableOn);
+                if (newProp.editableOn !== 'EditIconClick') { this.wireEditEvent(newProp.editableOn); }
+                break;
             }
         }
     }

@@ -7,9 +7,12 @@ export class UpcA extends OneDimension {
 
 
     /**
-     * Validate the given input to check whether the input is valid one or not
+     * Validate the given input.
+     *
+     * @returns {string} Validate the given input.
+     * @param {string} value - provide the input values .
+     * @private
      */
-    /** @private */
     public validateInput(value: string): string {
         if (value.search(/^[0-9]{11}$/) !== -1 && this.enableCheckSum) {
             this.value += this.checkSumData(this.value);
@@ -22,13 +25,14 @@ export class UpcA extends OneDimension {
     }
 
     private checkSumData(value: string): number {
-        let sum1: number = 3 * (Number(value[0]) + Number(value[2]) + Number(value[4])
+        const sum1: number = 3 * (Number(value[0]) + Number(value[2]) + Number(value[4])
             + Number(value[6]) + Number(value[8]) + Number(value[10]));
-        let sum2: number = (Number(value[9]) + Number(value[7]) + Number(value[5]) + Number(value[3]) + Number(value[1]));
-        let checkSumValue: number = (sum1 + sum2);
+        const sum2: number = (Number(value[9]) + Number(value[7]) + Number(value[5]) + Number(value[3]) + Number(value[1]));
+        const checkSumValue: number = (sum1 + sum2);
         return (10 - checkSumValue % 10) % 10;
     }
 
+    // eslint-disable-next-line
     private getBinaries(): object {
         return {
             'L': [ // The L (left) type of encoding
@@ -44,27 +48,32 @@ export class UpcA extends OneDimension {
 
 
 
-    /** @private */
+    /**
+     * Draw the barcode SVG.\
+     *
+     * @returns {void} Draw the barcode SVG .
+     * @param {HTMLElement} canvas - Provide the canvas element .
+     * @private
+     */
     public draw(canvas: HTMLElement): void {
-            let givenCharacter: string = this.value;
-            let endDigits: string = '00000000';
-            let middleBar: string = '01010';
-            let code: string[] = [];
-            code.push(endDigits);
-            code.push('101' + this.leftValue(true, 'L', this.value[0]));
-            code.push(this.leftValue(true, 'LLLLL', this.value.substr(1, 5)));
-            code.push(middleBar);
-            code.push(this.leftValue(true, 'RRRRR', this.value.substr(6, 5)));
-            code.push(this.leftValue(true, 'R', this.value[11]) + '101');
-            code.push(endDigits);
-            this.calculateBarCodeAttributes(code, canvas);
+        const endDigits: string = '00000000';
+        const middleBar: string = '01010';
+        const code: string[] = [];
+        code.push(endDigits);
+        code.push('101' + this.leftValue(true, 'L', this.value[0]));
+        code.push(this.leftValue(true, 'LLLLL', this.value.substr(1, 5)));
+        code.push(middleBar);
+        code.push(this.leftValue(true, 'RRRRR', this.value.substr(6, 5)));
+        code.push(this.leftValue(true, 'R', this.value[11]) + '101');
+        code.push(endDigits);
+        this.calculateBarCodeAttributes(code, canvas);
     }
 
     private leftValue(isLeft: boolean, structure: string, leftString: string): string {
         let code: string;
         let tempValue: string;
-        let codes: object;
-        codes = this.getBinaries();
+        // eslint-disable-next-line
+        const codes: object = this.getBinaries();
         for (let i: number = 0; i < leftString.length; i++) {
             tempValue = codes[structure[i]];
             if (i === 0) {

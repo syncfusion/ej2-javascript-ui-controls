@@ -19,24 +19,15 @@ export class HistoryInfo extends BaseHistoryInfo {
     private isChildHistoryInfo: boolean = false;
     public editRangeStart: EditRangeStartElementBox = undefined;
 
-    /**
-     * @private
-     */
-    get hasAction(): boolean {
+    public get hasAction(): boolean {
         return !isNullOrUndefined(this.modifiedActions);
     }
-    constructor(node: DocumentEditor, isChild: boolean) {
+    public constructor(node: DocumentEditor, isChild: boolean) {
         super(node);
         this.documentHelper = node.documentHelper;
         this.isChildHistoryInfo = isChild;
 
     }
-
-    /**
-     * Adds the modified actions
-     * @param  {BaseHistoryInfo} baseHistoryInfo
-     * @private
-     */
     public addModifiedAction(baseHistoryInfo: BaseHistoryInfo): void {
         // For complex actions such as Replace text, Insert/Remove Hyperlink etc.
         if (!(this.editorHistory.isUndoing || this.editorHistory.isRedoing)) {
@@ -46,10 +37,6 @@ export class HistoryInfo extends BaseHistoryInfo {
             this.modifiedActions.push(baseHistoryInfo);
         }
     }
-    /**
-     * Reverts this instance
-     * @private
-     */
     public revert(): void {
         this.editorHistory.currentHistoryInfo = this;
         if (this.action === 'BordersAndShading') {
@@ -59,14 +46,14 @@ export class HistoryInfo extends BaseHistoryInfo {
             if (this.editorHistory.isUndoing) {
                 let i: number = this.modifiedActions.length;
                 while (i > 0) {
-                    let baseHistoryInfo: BaseHistoryInfo = this.modifiedActions[i - 1];
+                    const baseHistoryInfo: BaseHistoryInfo = this.modifiedActions[i - 1];
                     baseHistoryInfo.revert();
                     i = i - 1;
                 }
             } else {
                 let i: number = 0;
                 while (i < this.modifiedActions.length) {
-                    let baseHistoryInfo: BaseHistoryInfo = this.modifiedActions[i];
+                    const baseHistoryInfo: BaseHistoryInfo = this.modifiedActions[i];
                     baseHistoryInfo.revert();
                     i = i + 1;
                 }
@@ -74,9 +61,9 @@ export class HistoryInfo extends BaseHistoryInfo {
         }
 
         if (this.action === 'RestrictEditing') {
-            let user: string = this.editRangeStart.user !== '' ? this.editRangeStart.user : this.editRangeStart.group;
+            const user: string = this.editRangeStart.user !== '' ? this.editRangeStart.user : this.editRangeStart.group;
             if (this.editorHistory.isUndoing) {
-                let index: number = this.owner.documentHelper.editRanges.get(user).indexOf(this.editRangeStart);
+                const index: number = this.owner.documentHelper.editRanges.get(user).indexOf(this.editRangeStart);
                 if (index !== -1) {
                     this.owner.documentHelper.editRanges.get(user).splice(index, 1);
                 }
@@ -91,13 +78,10 @@ export class HistoryInfo extends BaseHistoryInfo {
             this.editorHistory.updateComplexHistoryInternal();
         }
     }
-    /**
-     * @private
-     */
     public destroy(): void {
         if (!isNullOrUndefined(this.modifiedActions)) {
             while (this.modifiedActions.length > 0) {
-                let baseHistoryInfo: BaseHistoryInfo = this.modifiedActions[this.modifiedActions.length - 1];
+                const baseHistoryInfo: BaseHistoryInfo = this.modifiedActions[this.modifiedActions.length - 1];
                 baseHistoryInfo.destroy();
                 this.modifiedActions.splice(this.modifiedActions.indexOf(baseHistoryInfo), 1);
             }

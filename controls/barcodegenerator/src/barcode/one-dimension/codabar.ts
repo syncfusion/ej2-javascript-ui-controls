@@ -5,8 +5,16 @@ import { OneDimension } from '../one-dimension';
  * codabar used to calculate the barcode of type codabar
  */
 export class CodaBar extends OneDimension {
-    /** @private */
+
+    /**
+     * Validate the given input.
+     *
+     * @returns {string} Validate the given input.
+     *  @param {string} char - provide the input values .
+     * @private
+     */
     public validateInput(char: string): string {
+        // eslint-disable-next-line
         if (char.search(/^[0-9A-D\-\.\$\/\+\%\:]+$/) === -1) {
             return 'Supports 0-9, A-D and symbols (-,$, /, ., +).';
         } else {
@@ -14,9 +22,10 @@ export class CodaBar extends OneDimension {
         }
     }
 
-
+    // eslint-disable-next-line
     private getCodeValue(): object {
-        let codes: object = {
+        // eslint-disable-next-line
+        const codes: object = {
             '0': '101010011',
             '1': '101011001',
             '2': '101001011',
@@ -46,20 +55,27 @@ export class CodaBar extends OneDimension {
     }
 
     private getPatternCollection(givenCharacter: string, codes: string[]): number[] {
-        let code: number[] = [];
+        const code: number[] = [];
         for (let i: number = 0; i < givenCharacter.length; i++) {
-            let char: string = givenCharacter[i];
+            const char: string = givenCharacter[i];
             code.push(codes[char]);
         }
         return code;
     }
 
-    /** @private */
+
+    /**
+     * Draw the barcode SVG.\
+     *
+     * @returns {void} Draw the barcode SVG .
+     *  @param {HTMLElement} canvas - Provide the canvas element .
+     * @private
+     */
     public draw(canvas: HTMLElement): void {
-        let codes: string[] = this.getCodeValue() as string[];
+        const codes: string[] = this.getCodeValue() as string[];
         let givenCharacter: string = this.value;
         givenCharacter = this.appendStartStopCharacters(givenCharacter);
-        let code: number[] = this.getPatternCollection(givenCharacter, codes);
+        const code: number[] = this.getPatternCollection(givenCharacter, codes);
         this.calculateBarCodeAttributes(code, canvas);
     }
 }

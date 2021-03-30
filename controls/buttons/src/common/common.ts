@@ -5,16 +5,26 @@ import { Switch } from '../switch';
 
 /**
  * Initialize wrapper element for angular.
+ *
  * @private
+ *
+ * @param {CreateElementArgs} createElement - Specifies created element args
+ * @param {string} tag - Specifies tag name
+ * @param {string} type - Specifies type name
+ * @param {HTMLInputElement} element - Specifies input element
+ * @param {string} WRAPPER - Specifies wrapper element
+ * @param {string} role - Specifies role
+ * @returns {HTMLInputElement} - Input Element
  */
 export function wrapperInitialize(
     createElement: CreateElementArgs, tag: string, type: string, element: HTMLInputElement, WRAPPER: string,
     role: string): HTMLInputElement {
     let input: HTMLInputElement = element;
     if (element.tagName === tag) {
-        let ejInstance: Object = getValue('ej2_instances', element);
+        // eslint-disable-next-line
+        const ejInstance: Object = getValue('ej2_instances', element);
         input = createElement('input', { attrs: { 'type': type } }) as HTMLInputElement;
-        let props: string[] = ['change', 'cssClass', 'label', 'labelPosition', 'id'];
+        const props: string[] = ['change', 'cssClass', 'label', 'labelPosition', 'id'];
         for (let index: number = 0, len: number = element.attributes.length; index < len; index++) {
             if (props.indexOf(element.attributes[index].nodeName) === -1) {
                 input.setAttribute(element.attributes[index].nodeName, element.attributes[index].nodeValue);
@@ -28,9 +38,16 @@ export function wrapperInitialize(
     return input;
 }
 
+/**
+ * Get the text node.
+ *
+ * @param {HTMLElement} element - Specifies html element
+ * @private
+ * @returns {Node} - Text node.
+ */
 export function getTextNode(element: HTMLElement): Node {
     let node: Node;
-    let childnode: NodeList = element.childNodes;
+    const childnode: NodeList = element.childNodes;
     for (let i: number = 0; i < childnode.length; i++) {
         node = childnode[i];
         if (node.nodeType === 3) {
@@ -42,7 +59,12 @@ export function getTextNode(element: HTMLElement): Node {
 
 /**
  * Destroy the button components.
+ *
  * @private
+ * @param {Switch | CheckBox} ejInst - Specifies eJ2 Instance
+ * @param {Element} wrapper - Specifies wrapper element
+ * @param {string} tagName - Specifies tag name
+ * @returns {void}
  */
 export function destroy(ejInst: Switch | CheckBox, wrapper: Element, tagName: string): void {
     if (tagName === 'INPUT') {
@@ -60,7 +82,17 @@ export function destroy(ejInst: Switch | CheckBox, wrapper: Element, tagName: st
     }
 }
 
-
+/**
+ * Initialize control pre rendering.
+ *
+ * @private
+ * @param {Switch | CheckBox} proxy - Specifies proxy
+ * @param {string} control - Specifies control
+ * @param {string} wrapper - Specifies wrapper element
+ * @param {HTMLInputElement} element - Specifies input element
+ * @param {string} moduleName - Specifies module name
+ * @returns {void}
+ */
 export function preRender(proxy: Switch | CheckBox, control: string, wrapper: string, element: HTMLInputElement, moduleName: string): void {
     element = wrapperInitialize(proxy.createElement, control, 'checkbox', element, wrapper, moduleName);
     proxy.element = element;
@@ -74,11 +106,16 @@ export function preRender(proxy: Switch | CheckBox, control: string, wrapper: st
 
 /**
  * Creates CheckBox component UI with theming and ripple support.
+ *
  * @private
+ * @param {CreateElementArgs} createElement - Specifies Created Element args
+ * @param {boolean} enableRipple - Specifies ripple effect
+ * @param {CheckBoxUtilModel} options - Specifies Checkbox util Model
+ * @returns {Element} - Checkbox Element
  */
 export function createCheckBox(
     createElement: CreateElementArgs, enableRipple: boolean = false, options: CheckBoxUtilModel = {}): Element {
-    let wrapper: Element = createElement('div', { className: 'e-checkbox-wrapper e-css' });
+    const wrapper: Element = createElement('div', { className: 'e-checkbox-wrapper e-css' });
     if (options.cssClass) {
         addClass([wrapper], options.cssClass.split(' '));
     }
@@ -86,25 +123,38 @@ export function createCheckBox(
         wrapper.classList.add('e-rtl');
     }
     if (enableRipple) {
-        let rippleSpan: HTMLElement = createElement('span', { className: 'e-ripple-container' });
+        const rippleSpan: HTMLElement = createElement('span', { className: 'e-ripple-container' });
         rippleEffect(rippleSpan, { isCenterRipple: true, duration: 400 });
         wrapper.appendChild(rippleSpan);
     }
-    let frameSpan: Element = createElement('span', { className: 'e-frame e-icons' });
+    const frameSpan: Element = createElement('span', { className: 'e-frame e-icons' });
     if (options.checked) {
         frameSpan.classList.add('e-check');
     }
     wrapper.appendChild(frameSpan);
     if (options.label) {
-        let labelSpan: Element = createElement('span', { className: 'e-label', innerHTML: options.label });
+        const labelSpan: Element = createElement('span', { className: 'e-label'});
+        if (options.disableHtmlEncode) {
+            labelSpan.textContent = options.label;
+        } else {
+            labelSpan.innerHTML = options.label;
+        }
         wrapper.appendChild(labelSpan);
     }
     return wrapper;
 }
 
+/**
+ * Handles ripple mouse.
+ *
+ * @private
+ * @param {MouseEvent} e - Specifies mouse event
+ * @param {Element} rippleSpan - Specifies Ripple span element
+ * @returns {void}
+ */
 export function rippleMouseHandler(e: MouseEvent, rippleSpan: Element): void {
     if (rippleSpan) {
-        let event: MouseEvent = document.createEvent('MouseEvents');
+        const event: MouseEvent = document.createEvent('MouseEvents');
         event.initEvent(e.type, false, true);
         rippleSpan.dispatchEvent(event);
     }
@@ -112,7 +162,11 @@ export function rippleMouseHandler(e: MouseEvent, rippleSpan: Element): void {
 
 /**
  * Append hidden input to given element
+ *
  * @private
+ * @param {Switch | CheckBox} proxy - Specifies Proxy
+ * @param {Element} wrap - Specifies Wrapper ELement
+ * @returns {void}
  */
 export function setHiddenInput(proxy: Switch | CheckBox, wrap: Element): void {
     if (proxy.element.getAttribute('ejs-for')) {
@@ -127,12 +181,14 @@ export interface CheckBoxUtilModel {
     label?: string;
     enableRtl?: boolean;
     cssClass?: string;
+    disableHtmlEncode?: boolean;
 }
 /**
  * Interface for change event arguments.
  */
 export interface ChangeEventArgs extends BaseEventArgs {
     /** Returns the event parameters of the CheckBox or Switch.
+     *
      * @blazorType MouseEventArgs
      */
     event?: Event;

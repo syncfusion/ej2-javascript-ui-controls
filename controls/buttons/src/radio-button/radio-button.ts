@@ -36,14 +36,16 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
 
     /**
      * Event trigger when the RadioButton state has been changed by user interaction.
-     * @event
+     *
+     * @event change
      */
     @Event()
     public change: EmitType<ChangeArgs>;
 
     /**
      * Triggers once the component rendering is completed.
-     * @event
+     *
+     * @event created
      */
     @Event()
     public created: EmitType<Event>;
@@ -51,6 +53,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     /**
      * Specifies a value that indicates whether the RadioButton is `checked` or not.
      * When set to `true`, the RadioButton will be in `checked` state.
+     *
      * @default false
      */
     @Property(false)
@@ -59,6 +62,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     /**
      * Defines class/multiple classes separated by a space in the RadioButton element.
      * You can add custom styles to the RadioButton by using this property.
+     *
      * @default ''
      */
     @Property('')
@@ -67,6 +71,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     /**
      * Specifies a value that indicates whether the RadioButton is `disabled` or not.
      * When set to `true`, the RadioButton will be in `disabled` state.
+     *
      * @default false
      */
     @Property(false)
@@ -74,6 +79,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
 
     /**
      * Defines the caption for the RadioButton, that describes the purpose of the RadioButton.
+     *
      * @default ''
      */
     @Property('')
@@ -84,6 +90,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
      * The possible values are:
      * * Before: The label is positioned to left of the RadioButton.
      * * After: The label is positioned to right of the RadioButton.
+     *
      * @default 'After'
      */
     @Property('After')
@@ -92,6 +99,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     /**
      * Defines `name` attribute for the RadioButton.
      * It is used to reference form data (RadioButton value) after a form is submitted.
+     *
      * @default ''
      */
     @Property('')
@@ -100,6 +108,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     /**
      * Defines `value` attribute for the RadioButton.
      * It is a form data passed to the server when submitting the form.
+     *
      * @default ''
      */
     @Property('')
@@ -107,6 +116,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
 
     /**
      * Defines whether to allow the cross-scripting site or not.
+     *
      * @default false
      */
     @Property(false)
@@ -115,6 +125,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
+     *
      * @default {}
      */
     @Property({})
@@ -122,7 +133,10 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
 
     /**
      * Constructor for creating the widget
+     *
      * @private
+     * @param {RadioButtonModel} options - Specifies Radio button model
+     * @param {string | HTMLInputElement} element - Specifies target element
      */
     constructor(options?: RadioButtonModel, element?: string | HTMLInputElement) {
         super(options, <string | HTMLInputElement>element);
@@ -140,7 +154,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
 
     private updateChange(): void {
         let input: HTMLInputElement; let instance: RadioButton;
-        let radioGrp: NodeListOf<Element> = this.getRadioGroup();
+        const radioGrp: NodeListOf<Element> = this.getRadioGroup();
         for (let i: number = 0; i < radioGrp.length; i++) {
             input = radioGrp[i] as HTMLInputElement;
             if (input !== this.element) {
@@ -152,29 +166,30 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
 
     /**
      * Destroys the widget.
-     * @returns void
+     *
+     * @returns {void}
      */
     public destroy(): void {
-            let radioWrap: Element = this.element.parentElement;
-            super.destroy();
-            if (!this.disabled) {
-                this.unWireEvents();
+        const radioWrap: Element = this.element.parentElement;
+        super.destroy();
+        if (!this.disabled) {
+            this.unWireEvents();
+        }
+        if (this.tagName === 'INPUT') {
+            if (radioWrap.parentNode) {
+                radioWrap.parentNode.insertBefore(this.element, radioWrap);
             }
-            if (this.tagName === 'INPUT') {
-                if (radioWrap.parentNode) {
-                    radioWrap.parentNode.insertBefore(this.element, radioWrap);
-                }
-                detach(radioWrap);
-                this.element.checked = false;
-                ['name', 'value', 'disabled'].forEach((key: string) => {
-                    this.element.removeAttribute(key);
-                });
-            } else {
-                ['role', 'aria-checked', 'class'].forEach((key: string) => {
-                    radioWrap.removeAttribute(key);
-                });
-                radioWrap.innerHTML = '';
-            }
+            detach(radioWrap);
+            this.element.checked = false;
+            ['name', 'value', 'disabled'].forEach((key: string) => {
+                this.element.removeAttribute(key);
+            });
+        } else {
+            ['role', 'aria-checked', 'class'].forEach((key: string) => {
+                radioWrap.removeAttribute(key);
+            });
+            radioWrap.innerHTML = '';
+        }
     }
 
     private focusHandler(): void {
@@ -182,7 +197,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     }
 
     private focusOutHandler(): void {
-        let label: Element = this.getLabel();
+        const label: Element = this.getLabel();
         if (label) {
             label.classList.remove('e-focus');
         }
@@ -194,11 +209,12 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
 
     /**
      * To get the value of selected radio button in a group.
+     *
      * @method getSelectedValue
-     * @return {string}
+     * @returns {string} - Selected Value
      */
     public getSelectedValue(): string {
-        let input: HTMLInputElement; let radioGrp: NodeListOf<Element> = this.getRadioGroup();
+        let input: HTMLInputElement; const radioGrp: NodeListOf<Element> = this.getRadioGroup();
         for (let i: number = 0, len: number = radioGrp.length; i < len; i++) {
             input = radioGrp[i] as HTMLInputElement;
             if (input.checked ) { return input.value; }
@@ -212,7 +228,9 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
 
     /**
      * Gets the properties to be maintained in the persistence state.
+     *
      * @private
+     * @returns {string} - Persist Data
      */
     public getPersistData(): string {
         return this.addOnPersist(['checked']);
@@ -235,7 +253,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
         if (this.name) {
             this.element.setAttribute('name', this.name);
         }
-        let value: string = this.element.getAttribute('value');
+        const value: string = this.element.getAttribute('value');
         if (this.isVue && value && value === this.value) {
             this.checked = true;
         }
@@ -257,7 +275,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
             wrapper = this.createElement('div', { className: WRAPPER });
             this.element.parentNode.insertBefore(wrapper, this.element);
         }
-        let label: HTMLElement = this.createElement('label', { attrs: { for: this.element.id } });
+        const label: HTMLElement = this.createElement('label', { attrs: { for: this.element.id } });
         wrapper.appendChild(this.element);
         wrapper.appendChild(label);
         if (isRippleEnabled) {
@@ -287,7 +305,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     }
 
     private labelRippleHandler(e: MouseEvent): void {
-        let ripple: Element = this.getLabel().getElementsByClassName(RIPPLE)[0];
+        const ripple: Element = this.getLabel().getElementsByClassName(RIPPLE)[0];
         rippleMouseHandler(e, ripple);
     }
 
@@ -300,69 +318,75 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
 
     /**
      * Called internally if any of the property value changes.
+     *
      * @private
+     * @param {RadioButtonModel} newProp - Specifies New Properties
+     * @param {RadioButtonModel} oldProp - Specifies Old Properties
+     * @returns {void}
      */
     public onPropertyChanged(newProp: RadioButtonModel, oldProp: RadioButtonModel): void {
-        let label: Element = this.getLabel();
-        for (let prop of Object.keys(newProp)) {
+        const label: Element = this.getLabel();
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'checked':
-                    if (newProp.checked) {
-                        this.updateChange();
-                    }
-                    this.element.checked = newProp.checked;
-                    break;
-                case 'disabled':
-                    if (newProp.disabled) {
-                        this.setDisabled();
-                        this.unWireEvents();
-                    } else {
-                        this.element.disabled = false;
-                        this.wireEvents();
-                    }
-                    break;
-                case 'cssClass':
-                    if (oldProp.cssClass) {
-                        removeClass([label], oldProp.cssClass.split(' '));
-                    }
-                    if (newProp.cssClass) {
-                        addClass([label], newProp.cssClass.split(' '));
-                    }
-                    break;
-                case 'enableRtl':
-                    if (newProp.enableRtl) {
-                        label.classList.add(RTL);
-                    } else {
-                        label.classList.remove(RTL);
-                    }
-                    break;
-                case 'label':
-                    this.setText(newProp.label);
-                    break;
-                case 'labelPosition':
-                    if (newProp.labelPosition === 'Before') {
-                        label.classList.add('e-right');
-                    } else {
-                        label.classList.remove('e-right');
-                    }
-                    break;
-                case 'name':
-                    this.element.setAttribute('name', newProp.name);
-                    break;
-                case 'value':
-                    if (!isNullOrUndefined(this.htmlAttributes) && this.htmlAttributes.value) { break; }
-                    this.element.setAttribute('value', newProp.value);
-                    break;
-                case 'htmlAttributes':
-                    this.updateHtmlAttribute();
-                    break;
+            case 'checked':
+                if (newProp.checked) {
+                    this.updateChange();
+                }
+                this.element.checked = newProp.checked;
+                break;
+            case 'disabled':
+                if (newProp.disabled) {
+                    this.setDisabled();
+                    this.unWireEvents();
+                } else {
+                    this.element.disabled = false;
+                    this.wireEvents();
+                }
+                break;
+            case 'cssClass':
+                if (oldProp.cssClass) {
+                    removeClass([label], oldProp.cssClass.split(' '));
+                }
+                if (newProp.cssClass) {
+                    addClass([label], newProp.cssClass.split(' '));
+                }
+                break;
+            case 'enableRtl':
+                if (newProp.enableRtl) {
+                    label.classList.add(RTL);
+                } else {
+                    label.classList.remove(RTL);
+                }
+                break;
+            case 'label':
+                this.setText(newProp.label);
+                break;
+            case 'labelPosition':
+                if (newProp.labelPosition === 'Before') {
+                    label.classList.add('e-right');
+                } else {
+                    label.classList.remove('e-right');
+                }
+                break;
+            case 'name':
+                this.element.setAttribute('name', newProp.name);
+                break;
+            case 'value':
+                if (!isNullOrUndefined(this.htmlAttributes) && this.htmlAttributes.value) { break; }
+                this.element.setAttribute('value', newProp.value);
+                break;
+            case 'htmlAttributes':
+                this.updateHtmlAttribute();
+                break;
             }
         }
     }
 
     /**
      * Initialize checked Property, Angular and React and Unique ID support.
+     *
      * @private
+     * @returns {void}
      */
     protected preRender(): void {
         let element: HTMLInputElement = this.element;
@@ -377,7 +401,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
             this.element.id = getUniqueID('e-' + this.getModuleName());
         }
         if (this.tagName === 'EJS-RADIOBUTTON') {
-            let formControlName: string = this.element.getAttribute('formcontrolname');
+            const formControlName: string = this.element.getAttribute('formcontrolname');
             if (formControlName) {
                 this.setProperties({ 'name': formControlName }, true); this.element.setAttribute('name', formControlName);
             }
@@ -386,7 +410,9 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
 
     /**
      * Initialize the control rendering
+     *
      * @private
+     * @returns {void}
      */
     protected render(): void {
         this.initialize();
@@ -401,29 +427,27 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     }
 
     private setText(text: string): void {
-        let label: Element = this.getLabel();
-        if (label) {
-            let textLabel: Element = label.getElementsByClassName(LABEL)[0];
-            if (textLabel) {
-                textLabel.textContent = text;
-            } else {
-                text = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(text) : text;
-                textLabel = this.createElement('span', { className: LABEL, innerHTML: text });
-                label.appendChild(textLabel);
-            }
-            if (this.labelPosition === 'Before') {
-                this.getLabel().classList.add('e-right');
-            } else {
-                this.getLabel().classList.remove('e-right');
-            }
+        const label: Element = this.getLabel();
+        let textLabel: Element = label.getElementsByClassName(LABEL)[0];
+        if (textLabel) {
+            textLabel.textContent = text;
+        } else {
+            text = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(text) : text;
+            textLabel = this.createElement('span', { className: LABEL, innerHTML: text });
+            label.appendChild(textLabel);
+        }
+        if (this.labelPosition === 'Before') {
+            this.getLabel().classList.add('e-right');
+        } else {
+            this.getLabel().classList.remove('e-right');
         }
     }
 
     private updateHtmlAttribute(): void {
         if (!isNullOrUndefined(this.htmlAttributes)) {
-            for (let key of Object.keys(this.htmlAttributes)) {
+            for (const key of Object.keys(this.htmlAttributes)) {
                 if (ATTRIBUTES.indexOf(key) > -1) {
-                    let wrapper: Element = this.element.parentElement;
+                    const wrapper: Element = this.element.parentElement;
                     if (key === 'class') {
                         addClass([wrapper], this.htmlAttributes[key].split(' '));
                     } else if (key === 'title' || key === 'style') {
@@ -437,12 +461,12 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     }
 
     protected unWireEvents(): void {
-        let label: Element = this.getLabel();
+        const label: Element = this.getLabel();
         EventHandler.remove(this.element, 'change', this.changeHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
         EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
-        let rippleLabel: Element = label.getElementsByClassName(LABEL)[0];
+        const rippleLabel: Element = label.getElementsByClassName(LABEL)[0];
         if (rippleLabel) {
             EventHandler.remove(rippleLabel, 'mousedown', this.labelRippleHandler);
             EventHandler.remove(rippleLabel, 'mouseup', this.labelRippleHandler);
@@ -453,12 +477,12 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     }
 
     protected wireEvents(): void {
-        let label: Element = this.getLabel();
+        const label: Element = this.getLabel();
         EventHandler.add(this.element, 'change', this.changeHandler, this);
         EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
-        let rippleLabel: Element = label.getElementsByClassName(LABEL)[0];
+        const rippleLabel: Element = label.getElementsByClassName(LABEL)[0];
         if (rippleLabel) {
             EventHandler.add(rippleLabel, 'mousedown', this.labelRippleHandler, this);
             EventHandler.add(rippleLabel, 'mouseup', this.labelRippleHandler, this);
@@ -471,20 +495,24 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     /**
      * Click the RadioButton element
      * its native method
+     *
      * @public
+     * @returns {void}
      */
     public click(): void {
         this.element.click();
-   }
+    }
 
-   /**
-    * Sets the focus to RadioButton
-    * its native method
-    * @public
-    */
-   public focusIn(): void {
-       this.element.focus();
-  }
+    /**
+     * Sets the focus to RadioButton
+     * its native method
+     *
+     * @public
+     * @returns {void}
+     */
+    public focusIn(): void {
+        this.element.focus();
+    }
 }
 /**
  * Interface for Radio Button change event arguments.

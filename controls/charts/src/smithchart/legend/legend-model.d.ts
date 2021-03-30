@@ -6,35 +6,40 @@ import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import {
 export interface LegendTitleModel {
 
     /**
- * visibility for legend title.
- * @default true
- */
+     * visibility for legend title.
+     *
+     * @default true
+     */
+
     visible?: boolean;
 
     /**
- * text for legend title.
- * @default ''
- */
+     * text for legend title.
+     *
+     * @default ''
+     */
 
     text?: string;
 
     /**
- * description for legend title.
- * @default ''
- */
+     * description for legend title.
+     *
+     * @default ''
+     */
+
     description?: string;
 
     /**
- * alignment for legend title.
- * @default Center
- */
+     * alignment for legend title.
+     *
+     * @default Center
+     */
 
     textAlignment?: SmithchartAlignment;
 
     /**
- *  options for customizing font
- */
-
+     *  options for customizing font
+     */
 
     textStyle?: SmithchartFont;
 
@@ -46,15 +51,17 @@ export interface LegendTitleModel {
 export interface LegendLocationModel {
 
     /**
- * x location for legend.
- * @default 0
- */
+     * x location for legend.
+     *
+     * @default 0
+     */
     x?: number;
 
     /**
- * y location for legend.
- * @default 0
- */
+     * y location for legend.
+     *
+     * @default 0
+     */
 
     y?: number;
 
@@ -66,15 +73,17 @@ export interface LegendLocationModel {
 export interface LegendItemStyleBorderModel {
 
     /**
- * border width for legend item.
- * @default 1
- */
+     * border width for legend item.
+     *
+     * @default 1
+     */
     width?: number;
 
     /**
- * border color for legend item.
- * @default null
- */
+     * border color for legend item.
+     *
+     * @default null
+     */
 
     color?: string;
 
@@ -86,20 +95,22 @@ export interface LegendItemStyleBorderModel {
 export interface LegendItemStyleModel {
 
     /**
- * specify the width for legend item.
- * @default 10
- */
+     * specify the width for legend item.
+     *
+     * @default 10
+     */
     width?: number;
 
     /**
- * specify the height for legend item.
- * @default 10
- */
+     * specify the height for legend item.
+     *
+     * @default 10
+     */
     height?: number;
 
     /**
- *  options for customizing legend item style border
- */
+     * options for customizing legend item style border
+     */
 
     border?: LegendItemStyleBorderModel;
 
@@ -112,14 +123,16 @@ export interface LegendBorderModel {
 
     /**
      * border width for legend.
+     *
      * @default 1
      */
     width?: number;
 
     /**
- * border color for legend.
- * @default null
- */
+     * border color for legend.
+     *
+     * @default null
+     */
 
     color?: string;
 
@@ -131,115 +144,124 @@ export interface LegendBorderModel {
 export interface SmithchartLegendSettingsModel {
 
     /**
- * visibility for legend.
- * @default false
- */
+     * visibility for legend.
+     *
+     * @default false
+     */
     visible?: boolean;
 
     /**
-   * position for legend.
-   * @default 'bottom'
-   */
+     * position for legend.
+     *
+     * @default 'bottom'
+     */
 
     position?: string;
 
     /**
-   * alignment for legend.
-   * @default Center
-   */
+     * alignment for legend.
+     *
+     * @default Center
+     */
 
     alignment?: SmithchartAlignment;
 
     /**
-   * width for legend.
-   * @default null
-   */
+     * width for legend.
+     *
+     * @default null
+     */
     width?: number;
 
     /**
- * height for legend.
- * @default null
- */
+     * height for legend.
+     *
+     * @default null
+     */
 
     height?: number;
 
     /**
-   * shape for legend.
-   * @default 'circle'
-   */
+     * shape for legend.
+     *
+     * @default 'circle'
+     */
 
     shape?: string;
 
     /**
-   * rowCount for legend.
-   * @default null
-   */
+     * rowCount for legend.
+     *
+     * @default null
+     */
 
     rowCount?: number;
 
     /**
-   * columnCount for legend.
-   * @default null
-   */
+     * columnCount for legend.
+     *
+     * @default null
+     */
 
     columnCount?: number;
 
     /**
- * spacing between legend item.
- * @default 8
- */
+     * spacing between legend item.
+     *
+     * @default 8
+     */
+
     itemPadding?: number;
 
     /**
- * Padding between the legend shape and text.
- * @default 5
- */
+     * Padding between the legend shape and text.
+     *
+     * @default 5
+     */
+
     shapePadding?: number;
 
     /**
- * description for legend
- * @default ''
- */
+     * description for legend
+     *
+     * @default ''
+     */
     description?: string;
 
     /**
- * If set to true, series' visibility collapses based on the legend visibility.
- * @default true
- */
+     * If set to true, series' visibility collapses based on the legend visibility.
+     *
+     * @default true
+     */
     toggleVisibility?: boolean;
 
     /**
-    *  options for customizing legend title
-    */
-
+     *  options for customizing legend title
+     */
 
     title?: LegendTitleModel;
 
     /**
-      *  options for customizing legend location
-      */
-
+     *  options for customizing legend location
+     */
 
     location?: LegendLocationModel;
 
     /**
-      *  options for customizing legend item style
-      */
-
+     *  options for customizing legend item style
+     */
 
     itemStyle?: LegendItemStyleModel;
 
     /**
-      *  options for customizing legend border
-      */
-
+     *  options for customizing legend border
+     */
 
     border?: LegendBorderModel;
 
     /**
-    *  options for customizing font
-    */
-
+     *  options for customizing font
+     */
 
     textStyle?: SmithchartFont;
 

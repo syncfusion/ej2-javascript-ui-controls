@@ -8,10 +8,10 @@ import { MenuItemModel } from '@syncfusion/ej2-navigations';
  */
 describe('Ribbon ->', () => {
     beforeAll(() => {
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const isDef: any = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
             this.skip(); // skips test (in Chai)
             return;
@@ -87,11 +87,11 @@ describe('Ribbon ->', () => {
 
     it('memory leak', () => {
         profile.sample();
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let average: any = inMB(profile.averageChange);
         // check average change in memory samples to not be over 10MB
         expect(average).toBeLessThan(10);
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let memory: any = inMB(getMemoryProfile());
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);

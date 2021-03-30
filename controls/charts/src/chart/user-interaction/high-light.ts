@@ -1,3 +1,6 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable valid-jsdoc */
 /**
  * Highlight src file
  */
@@ -8,16 +11,17 @@ import { Series } from '../series/chart-series';
 
 import { Selection } from './selection';
 
-// tslint:disable:no-string-literal
 /**
  * `Highlight` module handles the selection for chart.
+ *
  * @private
  */
 export class Highlight extends Selection {
 
     /**
      * Constructor for selection module.
-     * @private.
+     *
+     * @private
      */
 
     constructor(chart: Chart) {
@@ -54,7 +58,8 @@ export class Highlight extends Selection {
 
     /**
      * Method to select the point and series.
-     * @return {void}
+     *
+     * @returns {void}
      */
     public invokeHighlight(chart: Chart): void {
         this.declarePrivateVariables(chart);
@@ -65,6 +70,7 @@ export class Highlight extends Selection {
 
     /**
      * Get module name.
+     *
      * @private
      */
     public getModuleName(): string {
@@ -72,10 +78,11 @@ export class Highlight extends Selection {
     }
     /**
      * To destroy the highlight.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         this.unWireEvents();
         // Destroy method performed here
     }

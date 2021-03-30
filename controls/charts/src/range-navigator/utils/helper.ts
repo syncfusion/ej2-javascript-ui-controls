@@ -1,10 +1,14 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable valid-jsdoc */
 import { VisibleRangeModel } from '../../chart/axis/axis';
 /**
  * Methods for calculating coefficient.
  */
 /** @private */
 export function rangeValueToCoefficient(value: number, range: VisibleRangeModel, inversed: boolean): number {
-    let result: number = (value - <number>range.min) / (range.delta);
+    const result: number = (value - <number>range.min) / (range.delta);
     return inversed ? (1 - result) : result;
 
 }
@@ -21,13 +25,13 @@ export function getXLocation(
 export function getRangeValueXByPoint(
     value: number, size: number, range: VisibleRangeModel, inversed: boolean
 ): number {
-    let actualValue: number = !inversed ? value / size : (1 - (value / size));
+    const actualValue: number = !inversed ? value / size : (1 - (value / size));
     return actualValue * (range.delta) + range.min;
 }
 
 /** @private */
 export function getExactData(points: DataPoint[], start: number, end: number): DataPoint[] {
-    let selectedData: DataPoint[] = [];
+    const selectedData: DataPoint[] = [];
     points.map((point: DataPoint) => {
         if (point.xValue >= start && point.xValue <= end) {
             selectedData.push({
@@ -49,6 +53,7 @@ export function getNearestValue(values: number[], point: number): number {
 
 /**
  * Data point
+ *
  * @public
  */
 export class DataPoint {
@@ -63,6 +68,7 @@ export class DataPoint {
     /** point visibility */
     public visible?: boolean;
 
+    // eslint-disable-next-line @typescript-eslint/no-inferrable-types
     constructor(x: Object, y: Object, xValue?: number, yValue?: number, visible: boolean = true) {
         this.x = x;
         this.y = y;

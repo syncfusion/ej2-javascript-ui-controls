@@ -5,6 +5,7 @@ import { Text } from './text-properties';
 import { Paragraph } from './paragraph-properties';
 /**
  * Text Properties pane
+ *
  * @private
  */
 export class TextProperties {
@@ -13,11 +14,11 @@ export class TextProperties {
     private text: Text;
     private paragraph: Paragraph;
     private isInitial: boolean = true;
-    get documentEditor(): DocumentEditor {
+    private get documentEditor(): DocumentEditor {
         return this.container.documentEditor;
     }
 
-    constructor(container: DocumentEditorContainer, id: string, isTableProperties: boolean, isRtl?: boolean) {
+    public constructor(container: DocumentEditorContainer, id: string, isTableProperties: boolean, isRtl?: boolean) {
         this.container = container;
         this.text = new Text(container, isRtl);
         this.paragraph = new Paragraph(container);
@@ -53,7 +54,7 @@ export class TextProperties {
     public set appliedNumberingStyle(value: string) {
         this.paragraph.appliedNumberingStyle = value;
     }
-    public showTextProperties = (isShow: boolean): void => {
+    public showTextProperties(isShow: boolean): void {
         if (isShow) {
             this.onSelectionChange();
         }
@@ -64,7 +65,6 @@ export class TextProperties {
         this.documentEditor.resize();
     }
     private initializeTextProperties(id: string, isTableProperties: boolean, isRtl?: boolean): void {
-        /* tslint:disable-next-line:max-line-length */
         this.element = createElement('div', { id: id + 'id_' + this.generateUniqueID(), className: 'e-de-prop-pane' });
         this.text.initializeTextPropertiesDiv(this.element, isRtl);
         this.paragraph.initializeParagraphPropertiesDiv(this.element, isRtl);
@@ -73,7 +73,7 @@ export class TextProperties {
             this.container.propertiesPaneContainer.appendChild(this.element);
         }
     }
-    private generateUniqueID = (): string => {
+    private generateUniqueID(): string {
         return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     }
     public wireEvents(): void {

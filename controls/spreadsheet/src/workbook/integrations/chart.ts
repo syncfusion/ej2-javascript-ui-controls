@@ -12,6 +12,8 @@ export class WorkbookChart {
 
     /**
      * Constructor for WorkbookChart module.
+     * 
+     * @param {Workbook} parent - Constructor for WorkbookChart module.
      */
     constructor(parent: Workbook) {
         this.parent = parent;
@@ -44,7 +46,7 @@ export class WorkbookChart {
         args.isInitCell = isNullOrUndefined(args.isInitCell) ? false : args.isInitCell;
         args.isUndoRedo = isNullOrUndefined(args.isUndoRedo) ? true : args.isUndoRedo;
         args.isPaste = isNullOrUndefined(args.isPaste) ? false : args.isPaste;
-        let chart: ChartModel[] = args.chart;
+        const chart: ChartModel[] = args.chart;
         if (chart.length > 0) {
             while (i < chart.length) {
                 if (args.isCut === false) {
@@ -83,11 +85,11 @@ export class WorkbookChart {
                     this.parent.chartCount++;
                 }
                 if (!args.isInitCell || args.isPaste) {
-                    let sheetIdx: number = (chart[i].range && chart[i].range.indexOf('!') > 0) ?
+                    const sheetIdx: number = (chart[i].range && chart[i].range.indexOf('!') > 0) ?
                         getSheetIndex(this.parent, chart[i].range.split('!')[0]) : this.parent.activeSheetIndex;
-                    let indexes: number[] = args.isPaste ? getRangeIndexes(args.range) : getRangeIndexes(chart[i].range);
-                    let sheet: SheetModel = sheetIdx ? this.parent.sheets[sheetIdx] : this.parent.getActiveSheet();
-                    let cell: CellModel = getCell(indexes[0], indexes[1], sheet);
+                    const indexes: number[] = args.isPaste ? getRangeIndexes(args.range) : getRangeIndexes(chart[i].range);
+                    const sheet: SheetModel = sheetIdx ? this.parent.sheets[sheetIdx] : this.parent.getActiveSheet();
+                    const cell: CellModel = getCell(indexes[0], indexes[1], sheet);
                     if (cell && cell.chart) {
                         cell.chart.push(chart[i]);
                     } else {
@@ -102,16 +104,16 @@ export class WorkbookChart {
     private refreshChartData(args: { cell: CellModel, rIdx: number, cIdx: number, sheetIdx: number }): void {
         let i: number;
         let j: number = 1;
-        let cnt: number = this.parent.sheets.length + 1;
+        const cnt: number = this.parent.sheets.length + 1;
         while (j < cnt) {
-            let charts: ChartModel[] = this.parent.chartColl;
+            const charts: ChartModel[] = this.parent.chartColl;
             i = charts ? charts.length : 0;
             if (i) {
                 while (i--) {
-                    let chart: ChartModel = this.parent.chartColl[i];
-                    let isInRange: boolean = inRange(getRangeIndexes(chart.range), args.rIdx, args.cIdx);
-                    let rangeSheetIdx: number = chart.range.indexOf('!') > -1 ?
-                            getSheetIndex(this.parent, getSheetNameFromAddress(chart.range)) : this.parent.activeSheetIndex;
+                    const chart: ChartModel = this.parent.chartColl[i];
+                    const isInRange: boolean = inRange(getRangeIndexes(chart.range), args.rIdx, args.cIdx);
+                    const rangeSheetIdx: number = chart.range.indexOf('!') > -1 ?
+                        getSheetIndex(this.parent, getSheetNameFromAddress(chart.range)) : this.parent.activeSheetIndex;
                     if (isInRange && rangeSheetIdx === this.parent.activeSheetIndex) {
                         this.parent.notify(updateChart, { chart: chart });
                     }
@@ -124,16 +126,16 @@ export class WorkbookChart {
     private refreshChartSize(args: { height: string, width: string, overlayEle: HTMLElement }): void {
         let chartCnt: number;
         let j: number = 1;
-        let sheetCnt: number = this.parent.sheets.length + 1;
+        const sheetCnt: number = this.parent.sheets.length + 1;
         while (j < sheetCnt) {
-            let charts: ChartModel[] = this.parent.chartColl;
+            const charts: ChartModel[] = this.parent.chartColl;
             chartCnt = charts ? charts.length : 0;
             if (chartCnt) {
                 while (chartCnt--) {
-                    let chart: ChartModel = this.parent.chartColl[chartCnt];
+                    const chart: ChartModel = this.parent.chartColl[chartCnt];
                     if (!isNullOrUndefined(args.overlayEle.querySelector('#' + chart.id))) {
-                        let chartObj: HTMLElement = this.parent.element.querySelector('.' + chart.id);
-                        let excelFilter: Chart = getComponent(chartObj, 'chart');
+                        const chartObj: HTMLElement = this.parent.element.querySelector('.' + chart.id);
+                        const excelFilter: Chart = getComponent(chartObj, 'chart');
                         excelFilter.height = args.height;
                         excelFilter.width = args.width;
                     }
@@ -145,8 +147,8 @@ export class WorkbookChart {
 
     private focusChartBorder(args: { id: string }): void {
         for (let idx: number = 0; idx < this.parent.chartColl.length; idx++) {
-            let overlayEle: HTMLElement = document.getElementById(args.id);
-            let chartEle: HTMLElement = document.getElementById(this.parent.chartColl[idx].id);
+            const overlayEle: HTMLElement = document.getElementById(args.id);
+            const chartEle: HTMLElement = document.getElementById(this.parent.chartColl[idx].id);
             if (overlayEle && chartEle && closest(chartEle, '.' + overlayEle.classList[1]) === overlayEle) {
                 this.parent.notify(initiateChart, {
                     option: this.parent.chartColl[idx], chartCount: this.parent.chartCount, isRefresh: true
@@ -157,8 +159,8 @@ export class WorkbookChart {
 
     private deleteChartColl(args: { id: string }): void {
         for (let idx: number = 0; idx < this.parent.chartColl.length; idx++) {
-            let chartElement: HTMLElement = document.getElementById(this.parent.chartColl[idx].id);
-            let overlayElement: HTMLElement = document.getElementById(args.id);
+            const chartElement: HTMLElement = document.getElementById(this.parent.chartColl[idx].id);
+            const overlayElement: HTMLElement = document.getElementById(args.id);
             if (overlayElement && chartElement && closest(chartElement, '.' + overlayElement.classList[1]) === overlayElement) {
                 this.parent.chartColl.splice(idx, 1);
             }
@@ -167,6 +169,8 @@ export class WorkbookChart {
 
     /**
      * To Remove the event listeners.
+     * 
+     * @returns {void} - To Remove the event listeners.
      */
     public destroy(): void {
         this.removeEventListener();
@@ -175,6 +179,8 @@ export class WorkbookChart {
 
     /**
      * Get the workbook chart module name.
+     * 
+     * @returns {string} - Get the workbook chart module name.
      */
     public getModuleName(): string {
         return 'workbookChart';

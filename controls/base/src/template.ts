@@ -56,10 +56,10 @@ export function expression(value?: RegExp): RegExp {
  * @param  {Object} helper? - Helper functions as an object.
  * @private
  */
-export function compile(template: string, helper?: Object): () => string {
+export function compile(template: string, helper?: Object, ignorePrefix?: boolean): () => string {
     let argName: string = 'data';
 
-    let evalExpResult: string = evalExp(template, argName, helper);
+    let evalExpResult: string = evalExp(template, argName, helper, ignorePrefix);
     let fnCode: string = `var str="${evalExpResult}"; return str;`;
 
     // tslint:disable-next-line:no-function-constructor-with-string-args
@@ -69,7 +69,7 @@ export function compile(template: string, helper?: Object): () => string {
 }
 
 // function used to evaluate the function expression
-function evalExp(str: string, nameSpace: string, helper?: Object): string {
+function evalExp(str: string, nameSpace: string, helper?: Object, ignorePrefix?: boolean): string {
     let varCOunt: number = 0;
     /**
      * Variable containing Local Keys
@@ -101,12 +101,12 @@ function evalExp(str: string, nameSpace: string, helper?: Object): string {
                     //handling else-if condition
                     cnt = '";} ' + cnt.replace(matches[1], rlStr.replace(WORD, (str: string): string => {
                         str = str.trim();
-                        return addNameSpace(str, !(QUOTES.test(str)) && (localKeys.indexOf(str) === -1), nameSpace, localKeys);
+                        return addNameSpace(str, !(QUOTES.test(str)) && (localKeys.indexOf(str) === -1), nameSpace, localKeys, ignorePrefix);
                     })) + '{ \n str = str + "';
                 } else if (IF_STMT.test(cnt)) {
                     //handling if condition
                     cnt = '"; ' + cnt.replace(matches[1], rlStr.replace(WORDIF, (strs: string): string => {
-                        return HandleSpecialCharArrObj(strs, nameSpace, localKeys, true);
+                        return HandleSpecialCharArrObj(strs, nameSpace, localKeys, ignorePrefix);
                     })) + '{ \n str = str + "';
                 } else if (FOR_STMT.test(cnt)) {
 
@@ -119,8 +119,8 @@ function evalExp(str: string, nameSpace: string, helper?: Object): string {
                         localKeys.push(rlStr[0] + 'Index');
                         varCOunt = varCOunt + 1;
                         // tslint:disable-next-line
-                        return 'var i' + varCOunt + '=0; i' + varCOunt + ' < ' + addNameSpace(rlStr[1], true, nameSpace, localKeys) + '.length; i' + varCOunt + '++';
-                    }) + '{ \n ' + 'var ' + rlStr[0] + '= ' + addNameSpace(rlStr[1], true, nameSpace, localKeys)
+                        return 'var i' + varCOunt + '=0; i' + varCOunt + ' < ' + addNameSpace(rlStr[1], true, nameSpace, localKeys, ignorePrefix) + '.length; i' + varCOunt + '++';
+                    }) + '{ \n ' + rlStr[0] + '= ' + addNameSpace(rlStr[1], true, nameSpace, localKeys, ignorePrefix)
                         + '[i' + varCOunt + ']; \n var ' + rlStr[0] + 'Index=i' + varCOunt + '; \n str = str + "';
 
                 } else {
@@ -139,7 +139,7 @@ function evalExp(str: string, nameSpace: string, helper?: Object): string {
                         if (splArrRegexp.test(cnt)) {
                             // tslint:disable-next-line
                             cnt = '"+ ' + (fNameSpace === 'global' ? '' : fNameSpace) + cnt.replace(matches[1], rlStr.replace(WORDFUNC, (strs: string): string => {
-                                                return HandleSpecialCharArrObj(strs, nameSpace, localKeys);
+                                                return HandleSpecialCharArrObj(strs, nameSpace, localKeys, ignorePrefix);
                                             })) + '+ "';
                         }
                     } else {
@@ -150,7 +150,8 @@ function evalExp(str: string, nameSpace: string, helper?: Object): string {
                             matches[1].replace(/,( |)data.|,/gi, ',' + nameSpace + '.').replace(/,( |)data.window/gi, ',window'),
                             (fNameSpace === 'global' ? false : true),
                             nameSpace,
-                            localKeys
+                            localKeys,
+                            ignorePrefix
                         )
                     ) +
                     '+"';
@@ -178,19 +179,15 @@ function evalExp(str: string, nameSpace: string, helper?: Object): string {
                     // evaluate normal expression
                     cnt = '"+' + addNameSpace(
                         cnt.replace(/\,/gi, '+' + nameSpace + '.'),
-                        (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '+"';
+                        (localKeys.indexOf(cnt) === -1), nameSpace, localKeys, ignorePrefix) + '+"';
                 }
             }
             return cnt;
         });
 }
 
-function addNameSpace(str: string, addNS: Boolean, nameSpace: string, ignoreList: string[], emptyStrCheck?: boolean): string {
-    /* istanbul ignore next */
-    if (emptyStrCheck && str === '') {
-        return str;
-    }
-    return ((addNS && !(NOT_NUMBER.test(str)) && ignoreList.indexOf(str.split('.')[0]) === -1) ? nameSpace + '.' + str : str);
+function addNameSpace(str: string, addNS: Boolean, nameSpace: string, ignoreList: string[], ignorePrefix:boolean): string {
+    return ((addNS && !(NOT_NUMBER.test(str)) && ignoreList.indexOf(str.split('.')[0]) === -1 && !ignorePrefix) ? nameSpace + '.' + str : str);
 }
 
 function NameSpaceArrObj(str: string, addNS: Boolean, nameSpace: string, ignoreList: string[]): string {
@@ -220,7 +217,7 @@ function SlashReplace(tempStr: string): any {
     return tempStr;
 }
 
-function HandleSpecialCharArrObj(str: string, nameSpaceNew: string, keys: string[], emptyStrCheck?: boolean): string {
+function HandleSpecialCharArrObj(str: string, nameSpaceNew: string, keys: string[], ignorePrefix: boolean): string {
     str = str.trim();
     let windowFunc: RegExp = /\window\./gm;
     if (!windowFunc.test(str)) {
@@ -232,7 +229,7 @@ function HandleSpecialCharArrObj(str: string, nameSpaceNew: string, keys: string
         if (ARR_OBJ.test(str)) {
             return NameSpaceArrObj(str, !(quotes.test(str)) && (keys.indexOf(str) === -1), nameSpaceNew, keys);
         } else {
-            return addNameSpace(str, !(quotes.test(str)) && (keys.indexOf(str) === -1), nameSpaceNew, keys, emptyStrCheck);
+            return addNameSpace(str, !(quotes.test(str)) && (keys.indexOf(str) === -1), nameSpaceNew, keys, ignorePrefix);
         }
     } else {
         return str;

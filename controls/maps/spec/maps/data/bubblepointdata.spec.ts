@@ -1,7 +1,7 @@
 /**
  * Countries population
  */
-//tslint:disable
+/* eslint-disable */
 export let data: any = [
     { 'name': 'Oroville', 'value': bubblesize(32358260), 'color': '#7F38A0 ' },
 	 { 'name': 'Malpur', 'value': bubblesize(32358260), 'color': 'red' },

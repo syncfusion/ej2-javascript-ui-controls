@@ -1,7 +1,7 @@
 /**
  * 
  */
-//tslint:disable
+/* eslint-disable */
 export let econmics: Object[] =[
     {State:"United States", GDP:17946, percentage:11.08, Rank:1},	 
     {State:"China", GDP:10866, percentage: 28.42, Rank:2},	 

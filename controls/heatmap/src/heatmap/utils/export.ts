@@ -20,7 +20,9 @@ export class ExportUtils {
     private printWindow: Window;
     /**
      * Constructor for Heatmap
-     * @param control
+     *
+     * @param  {HeatMap} control - specifies the control
+     *
      */
     constructor(control : HeatMap) {
         this.control = control;
@@ -28,18 +30,21 @@ export class ExportUtils {
 
     /**
      * To export the file as image/svg format
+     *
      * @param type
      * @param fileName
      * @private
      */
+
     public export(
         type: ExportType, fileName: string, orientation?: PdfPageOrientation
     ): void {
-        let controlValue: IControlValue = this.getControlsValue();
-        let width: number = controlValue.width;
-        let height: number = controlValue.height;
-        let element: HTMLCanvasElement = this.control.svgObject as HTMLCanvasElement;
-        let isCanvas: boolean = (this.control as HeatMap). enableCanvasRendering;
+        const controlValue: IControlValue = this.getControlsValue();
+        const width: number = controlValue.width;
+        const height: number = controlValue.height;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let element: any = this.control.svgObject;
+        const isCanvas: boolean = (this.control as HeatMap). enableCanvasRendering;
         let image: string;
         if (!isCanvas) {
             element = <HTMLCanvasElement>createElement('canvas', {
@@ -50,12 +55,12 @@ export class ExportUtils {
                 }
             });
         }
-        let isDownload: boolean = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
+        const isDownload: boolean = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
         orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
-        let svgData: string = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+        const svgData: string = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
             controlValue.svg.outerHTML +
             '</svg>';
-        let url: string = window.URL.createObjectURL(
+        const url: string = window.URL.createObjectURL(
             new Blob(
                 type === 'SVG' ? [svgData] :
                     [(new XMLSerializer()).serializeToString(controlValue.svg)],
@@ -64,7 +69,7 @@ export class ExportUtils {
         );
         if (type === 'SVG') {
             if (Browser.info.name === 'msie') {
-                let svg: Blob = new Blob([(new XMLSerializer()).serializeToString(controlValue.svg)], { type: 'application/octet-stream' });
+                const svg: Blob = new Blob([(new XMLSerializer()).serializeToString(controlValue.svg)], { type: 'application/octet-stream' });
                 window.navigator.msSaveOrOpenBlob(svg, fileName + '.' + type.toLocaleLowerCase());
             } else {
                 this.triggerDownload(fileName, type, url, isDownload);
@@ -81,8 +86,8 @@ export class ExportUtils {
                 this.doExport(type, image, fileName);
             }
         } else {
-            let image: HTMLImageElement = new Image();
-            let ctx: CanvasRenderingContext2D = element.getContext('2d');
+            const image: HTMLImageElement = new Image();
+            const ctx: CanvasRenderingContext2D = element.getContext('2d');
             image.onload = (() => {
                 ctx.drawImage(image, 0, 0);
                 window.URL.revokeObjectURL(url);
@@ -104,17 +109,19 @@ export class ExportUtils {
 
         }
         if (!isCanvas) {
-            let id : HTMLElement = document.getElementById(this.control.element.id);
+            const id : HTMLElement = document.getElementById(this.control.element.id);
             removeElement( id + '_canvas');
         }
     }
     /**
      * To trigger the download element
+     *
      * @param fileName
      * @param type
      * @param url
      * @private
      */
+
     public triggerDownload(fileName: string, type: ExportType, url: string, isDownload: boolean): void {
         createElement('a', {
             attrs: {
@@ -129,22 +136,24 @@ export class ExportUtils {
     }
     /**
      * To get the maximum size value
+     *
      * @param controls
      * @param name
      */
+
     private getControlsValue(): IControlValue {
         let width: number = 0;
         let height: number = 0;
-        let isCanvas: boolean = (this.control as HeatMap).enableCanvasRendering;
-        let svgObject: Element = new SvgRenderer('').createSvg({
+        const isCanvas: boolean = (this.control as HeatMap).enableCanvasRendering;
+        const svgObject: Element = new SvgRenderer('').createSvg({
             id: 'Svg_Export_Element',
             width: 200, height: 200
         });
-        let svg: Node = this.control.svgObject.cloneNode(true);
-        let groupEle: Element = this.control.renderer.createGroup(
-        {
-            style: 'transform: translateY(' + height + 'px)'
-        });
+        const svg: Node = this.control.svgObject.cloneNode(true);
+        const groupEle: Element = this.control.renderer.createGroup(
+            {
+                style: 'transform: translateY(' + height + 'px)'
+            });
         if (!isCanvas) {
             groupEle.appendChild(svg);
         }
@@ -165,27 +174,26 @@ export class ExportUtils {
         };
     }
     private createCanvas(): HTMLCanvasElement {
-        let heatmap: HeatMap = (this.control as HeatMap);
-        let renderMode: DrawType = heatmap.renderingMode;
+        const heatmap: HeatMap = (this.control as HeatMap);
+        const renderMode: DrawType = heatmap.renderingMode;
         heatmap.renderingMode = 'Canvas';
         heatmap.refresh();
-        let canvas: HTMLCanvasElement = <HTMLCanvasElement>heatmap.svgObject;
+        const canvas: HTMLCanvasElement = <HTMLCanvasElement>heatmap.svgObject;
         heatmap.renderingMode = renderMode;
         heatmap.refresh();
         return canvas;
     }
 
     private exportPdf(element: HTMLCanvasElement, orientation: PdfPageOrientation,
-                      width: number, height: number, isDownload: boolean, fileName: String): void {
-        let document: PdfDocument = new PdfDocument();
-        let margin: PdfMargins = document.pageSettings.margins;
-        let pdfDefaultWidth: number = document.pageSettings.width;
-        let pdfDefaultHeight: number = document.pageSettings.height;
-        let exactWidth: number; let exactHeight: number;
+                      width: number, height: number, isDownload: boolean, fileName: string): void {
+        const document: PdfDocument = new PdfDocument();
+        const margin: PdfMargins = document.pageSettings.margins;
+        const pdfDefaultWidth: number = document.pageSettings.width;
+        const pdfDefaultHeight: number = document.pageSettings.height;
         let imageString: string = element.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
         document.pageSettings.orientation = orientation;
-        exactWidth = (pdfDefaultWidth < width) ? (width + margin.left + margin.right) : pdfDefaultWidth;
-        exactHeight = (pdfDefaultHeight < height) ? (height + margin.top + margin.bottom) : pdfDefaultHeight;
+        const exactWidth: number = (pdfDefaultWidth < width) ? (width + margin.left + margin.right) : pdfDefaultWidth;
+        const exactHeight: number = (pdfDefaultHeight < height) ? (height + margin.top + margin.bottom) : pdfDefaultHeight;
         document.pageSettings.size = new SizeF(exactWidth, exactHeight);
         imageString = imageString.slice(imageString.indexOf(',') + 1);
         document.pages.add().graphics.drawImage(
@@ -199,27 +207,27 @@ export class ExportUtils {
     private doExport(
         type: ExportType, image: string, fileName: string): void {
         let images: HTMLElement | string[] = [];
-        let fileType: string = type || 'JPG';
+        const fileType: string = type || 'JPG';
         images = [image];
         this.exportImage(images, fileName, fileType, image);
     }
     private exportImage(images:  string[] | HTMLElement, fileName: string, fileType: string, image: string): void {
-        let buffers: ArrayBuffer[] = [];
-        let length: number = (!(images instanceof HTMLElement)) ? images.length : 0;
+        const buffers: ArrayBuffer[] = [];
+        const length: number = (!(images instanceof HTMLElement)) ? images.length : 0;
         for (let g: number = 0; g < length; g++) {
             image = images[g];
             image = image.replace(/^data:[a-z]*;,/, '');
-            let image1: string[] = image.split(',');
-            let byteString: string = atob(image1[1]);
-            let buffer: ArrayBuffer = new ArrayBuffer(byteString.length);
-            let intArray: Uint8Array = new Uint8Array(buffer);
+            const image1: string[] = image.split(',');
+            const byteString: string = atob(image1[1]);
+            const buffer: ArrayBuffer = new ArrayBuffer(byteString.length);
+            const intArray: Uint8Array = new Uint8Array(buffer);
             for (let i: number = 0; i < byteString.length; i++) {
                 intArray[i] = byteString.charCodeAt(i);
             }
             buffers.push(buffer);
         }
         for (let j: number = 0; j < buffers.length; j++) {
-            let b: Blob = new Blob([buffers[j]], { type: 'application/octet-stream' });
+            const b: Blob = new Blob([buffers[j]], { type: 'application/octet-stream' });
             if (Browser.info.name === 'msie') {
                 window.navigator.msSaveOrOpenBlob(b, fileName + '.' + fileType.toLocaleLowerCase());
             }
@@ -228,9 +236,11 @@ export class ExportUtils {
 
     /**
      * To print the heatmap elements.
+     *
      * @param elements
      * @private
      */
+
     public print(): void {
         this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
         this.printWindow.moveTo(0, 0);
@@ -238,24 +248,26 @@ export class ExportUtils {
         if (this.control.renderingMode === 'SVG') {
             printWindow(this.getHTMLContent(), this.printWindow);
         } else {
-        let element: HTMLCanvasElement = this.control.svgObject as HTMLCanvasElement;
-        let dataUrl: string = element.toDataURL();
-        let image: HTMLImageElement = new Image();
-        let ctx: CanvasRenderingContext2D = element.getContext('2d');
-        image.onload = (() => {
-            ctx.drawImage(image, 0, 0);
-         });
-        image.src = dataUrl;
-        printWindow( image, this.printWindow);
+            const element: HTMLCanvasElement = this.control.svgObject as HTMLCanvasElement;
+            const dataUrl: string = element.toDataURL();
+            const image: HTMLImageElement = new Image();
+            const ctx: CanvasRenderingContext2D = element.getContext('2d');
+            image.onload = (() => {
+                ctx.drawImage(image, 0, 0);
+            });
+            image.src = dataUrl;
+            printWindow( image, this.printWindow);
         }
     }
     /**
      * To get the html string of the heatmap.
+     *
      * @param elements
      * @private
      */
+
     private getHTMLContent(): Element {
-        let div: Element = createElement('div');
+        const div: Element = createElement('div');
         div.appendChild(this.control.element.cloneNode(true) as Element);
         return div;
     }

@@ -482,7 +482,7 @@ describe('Chart Control', () => {
             ele.remove();
         });
         it('checking data label template and zooming', (done: Function) => {
-            let wheelArgs: wheel = {
+            let wheelArgs: unknown = {
                 preventDefault: () => {
                     // not applicable
                 },

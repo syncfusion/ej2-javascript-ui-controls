@@ -4794,9 +4794,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To update the specified row by given values without changing into edited state.
+     * 
+     * {% codeBlock src='grid/updateRow/index.md' %}{% endcodeBlock %}
+     * 
      * @param {number} index Defines the row index.
      * @param {Object} data Defines the data object to be updated.
-     * {% codeBlock src='grid/updateRow/index.md' %}{% endcodeBlock %}
      */
     public updateRow(index: number, data: Object): void {
         if (this.editModule) {
@@ -5926,9 +5928,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
     /** 
-     * Ungroups a column by column name. 
-     * @param  {string} columnName - Defines the column name to ungroup.
-     * {% codeBlock src='grid/ungroupColumn/index.md' %}{% endcodeBlock %}  
+     * Ungroups a column by column name.
+     * 
+     * {% codeBlock src='grid/ungroupColumn/index.md' %}{% endcodeBlock %}
+     *  
+     * @param  {string} columnName - Defines the column name to ungroup.  
      * @return {void} 
      */
     public ungroupColumn(columnName: string): void {

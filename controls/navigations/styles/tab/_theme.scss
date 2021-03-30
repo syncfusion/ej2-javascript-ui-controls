@@ -1755,4 +1755,29 @@
       }
     }
   }
+
+  .e-tab-clone-element {
+    background: $tab-clone-item-bg-color;
+    color: $tab-clone-text-color;
+
+    .e-tab-wrap {
+      border-radius: $tab-item-wrap-border-radius;
+      color: $tab-clone-text-color;
+
+      @if $tab-skin == 'fabric' {
+        border: 1px $tab-wrap-border-color;
+      }
+      @else if $tab-skin == 'highcontrast' {
+        border: 2px $tab-wrap-border-color;
+      }
+
+      @if $tab-skin == 'bootstrap4' {
+        border: $tab-vscroll-nav-border;
+      }
+
+      .e-tab-icon {
+        color: $tab-clone-text-color;
+      }
+    }
+  }
 }

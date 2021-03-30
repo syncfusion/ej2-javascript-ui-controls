@@ -14,26 +14,35 @@ import { BarcodeType } from './enum/enum';
 export abstract class OneDimension extends BarcodeBase {
 
     private getInstance(id: string): BarcodeRenderer {
-        let barCode: HTMLElement = document.getElementById(id);
-        let barcodeRenderer: BarcodeRenderer = new BarcodeRenderer(barCode.id, this.isSvgMode);
+        const barCode: HTMLElement = document.getElementById(id);
+        const barcodeRenderer: BarcodeRenderer = new BarcodeRenderer(barCode.id, this.isSvgMode);
         return barcodeRenderer;
     }
 
-    /** @private */
+
+    /**
+     * Return the drawable size of the rectangle .
+     *
+     * @returns {Rect} Return the drawable size of the rectangle.
+     *  @param {MarginModel} margin - Specifies the filename of the barcode image to be download.
+     *  @param {number} w - Specifies the filename of the barcode image to be download.
+     *  @param {number} h - Defines the format of the barcode to be exported
+     * @private
+     */
     public getDrawableSize(margin: MarginModel, w: number, h: number): Rect {
-        let topMargin: number;
-        let rightMargin: number;
-        topMargin = ((this.isSvgMode ? margin.bottom : margin.bottom * 1.5) + (this.isSvgMode ? margin.top : margin.top * 1.5));
-        rightMargin = ((this.isSvgMode ? margin.right : margin.right * 1.5) + (this.isSvgMode ? margin.left : margin.left * 1.5));
-        let barcodeSize: Rect = new Rect(margin.left, margin.top, (w - rightMargin), h - topMargin);
+        const topMargin: number = ((this.isSvgMode ? margin.bottom : margin.bottom * 1.5)
+            + (this.isSvgMode ? margin.top : margin.top * 1.5));
+        const rightMargin: number = ((this.isSvgMode ? margin.right : margin.right * 1.5)
+            + (this.isSvgMode ? margin.left : margin.left * 1.5));
+        const barcodeSize: Rect = new Rect(margin.left, margin.top, (w - rightMargin), h - topMargin);
         return barcodeSize;
-    };
+    }
 
     private getBaseAttributes(
         width: number, height: number, offSetX: number, offsetY: number,
         color: string, string?: string, stringSize?: number, visibility?: boolean, fontStyle?: string):
         BaseAttributes {
-        let options: BaseAttributes = {
+        const options: BaseAttributes = {
             width: width, height: height, x: offSetX, y: offsetY, color: color, string: string,
             stringSize: stringSize, visibility: visibility, fontStyle: fontStyle
         };
@@ -41,27 +50,27 @@ export abstract class OneDimension extends BarcodeBase {
             options.height = options.height / 1.5;
         }
         if (string && !this.isSvgMode) {
-            let scaleValue: number = this.margin.bottom * 1.5 - this.margin.bottom;
+            const scaleValue: number = this.margin.bottom * 1.5 - this.margin.bottom;
             options.y += scaleValue;
         }
         return options;
     }
 
     private getBarLineRatio(code: string[] | string, widthValue: number): number {
-        let type: string = this.type;
+        const type: string = this.type;
         if (type === 'Code39' || type === 'Code32' || type === 'Code39Extension' || type === 'Code11') {
             // total number of line for single width lines
-            let singlewidth: number = code.length * ((type === 'Code39' || type === 'Code32' || type === 'Code39Extension') ? 6 : 3);
+            const singlewidth: number = code.length * ((type === 'Code39' || type === 'Code32' || type === 'Code39Extension') ? 6 : 3);
             // total number of line for double width lines
-            let doublwidth: number = code.length * ((type === 'Code39' || type === 'Code32' || type === 'Code39Extension') ? 3 : 2) * 2;
+            const doublwidth: number = code.length * ((type === 'Code39' || type === 'Code32' || type === 'Code39Extension') ? 3 : 2) * 2;
             return (widthValue / (doublwidth + singlewidth + code.length - 1));
         } else if (type === 'Code128A' || type === 'Code128B' || type === 'Code128C' || type === 'Code128') {
-            let lineCount: number = (code[0] as string).length;
+            const lineCount: number = (code[0] as string).length;
             return (widthValue / (lineCount + code.length - 1));
         } else if (type === 'Code93Extension') {
             let count: number = 0;
             for (let i: number = 0; i < code.length; i++) {
-                let numberOfDigits: string = code[i];
+                const numberOfDigits: string = code[i];
                 for (let j: number = 0; j < numberOfDigits.length; j++) {
                     count += Number(numberOfDigits[j]);
                 }
@@ -70,7 +79,7 @@ export abstract class OneDimension extends BarcodeBase {
         } else {
             let lineCount: number = 0;
             for (let i: number = 0; i < code.length; i++) {
-                let numberOfDigits: number = code[i].length;
+                const numberOfDigits: number = code[i].length;
                 lineCount += numberOfDigits;
             }
             let additionalValue: number;
@@ -108,7 +117,7 @@ export abstract class OneDimension extends BarcodeBase {
             (((j === 0 && k === numberOfDigits - 1) || j === 2 && k === numberOfDigits - 2)
                 && (this.type === 'Ean8' || this.type === 'Ean13')))
             || (this.type === 'UpcE' && j === 2 && k === 0)
-            || (barType === 'threeBars' && (j === 2 && k === numberOfDigits - 1))
+            || (this.type != 'UpcA' && barType === 'threeBars' && (j === 2 && k === numberOfDigits - 1))
             || this.type === 'UpcA' && ((j === 1 && k === numberOfDigits - 2)
                 || (j === 3 && k === numberOfDigits - 2))
             || (barType === 'noBars' && j === 0 && k === 0)) {
@@ -122,7 +131,7 @@ export abstract class OneDimension extends BarcodeBase {
         k: number, j: number, numberOfDigits: number, code: number[] | string[],
         temp?: boolean, doublwidth?: number):
         boolean {
-        let type: string = this.type;
+        const type: string = this.type;
         if ((k === numberOfDigits && j === code.length - 2 && (type === 'Code39' || type === 'Code39Extension'))
             || (type === 'Code11' && j === code.length - 1 && k === numberOfDigits - 1)
             || type === 'Code93Extension' && j === code.length - 1 && k === numberOfDigits - 1
@@ -168,7 +177,7 @@ export abstract class OneDimension extends BarcodeBase {
     private getWidthValue(number: number, width: number, type: string): number {
         if (this.type !== 'Code93Extension') {
             if (number) {
-                let dividerValue: number = type === 'Code32' ? 3 : 2;
+                const dividerValue: number = type === 'Code32' ? 3 : 2;
                 width = number % dividerValue ? 1 : 2;
             } else {
                 width = 1;
@@ -188,25 +197,32 @@ export abstract class OneDimension extends BarcodeBase {
         return width;
     }
 
-    /* tslint:disable */
-    /** @private */
+    /* eslint:disable */
+    /**
+     * Returns the module name of the barcode
+     *
+     * @param {number[] | string[]} code - Returns the code as string or number collection.
+     * @param {HTMLElement} canvas - Returns the canvas.
+     * @param {string} isUpcE - Returns the UPCE values as string.
+     * @returns {void}  Calculate the barcode attribute
+     * @private
+     */
     public calculateBarCodeAttributes(code: number[] | string[], canvas: HTMLElement, isUpcE?: string): void {
-        let temp: boolean = false;
-        let canDoubleWidth: number;
-        let barcodeSize: Rect = this.getDrawableSize(this.margin, this.width as number, this.height as number);
+        let temp: boolean = false; let canDoubleWidth: number;
+        const barcodeSize: Rect = this.getDrawableSize(this.margin, this.width as number, this.height as number);
         if (barcodeSize.height > 0 && barcodeSize.width > 0) {
-            let tempBaseAttributes: BaseAttributes; let options: BaseAttributes[] = []; let offsetX: number = barcodeSize.x;
+            let tempBaseAttributes: BaseAttributes; const options: BaseAttributes[] = []; let offsetX: number = barcodeSize.x;
             let ratio: number = this.getBarLineRatio(code as string[], barcodeSize.width);
             ratio = this.isSvgMode ? ratio : ratio / 1.5;
-            let startValue: number = 0; let endValue: number; let type: string = this.type;
-            let position: string = this.displayText.position; let scaleValue: number = this.isSvgMode ? 1 : 1.5;
+            let startValue: number = 0; let endValue: number; const type: string = this.type;
+            const position: string = this.displayText.position; const scaleValue: number = this.isSvgMode ? 1 : 1.5;
             let textOptions: BaseAttributes; let textSize: Size; let textHeight: number; let textProperty: DisplayTextModel;
             for (let j: number = 0; j < code.length; j++) {
-                let codeValue: string = code[j] as string;
-                let check: boolean = (type !== 'UpcA' && type !== 'UpcE' && type !== 'Code11' && type !== 'Code93' && type !== 'Code93Extension');
-                let barType: string = this.barCodeType(this.type);
-                let extraHeight: boolean = this.checkExtraHeight(j, type, code);
-                let numberOfDigits: number = codeValue.length;
+                const codeValue: string = code[j] as string;
+                const check: boolean = (type !== 'UpcA' && type !== 'UpcE' && type !== 'Code11' && type !== 'Code93' && type !== 'Code93Extension');
+                const barType: string = this.barCodeType(this.type);
+                const extraHeight: boolean = this.checkExtraHeight(j, type, code);
+                const numberOfDigits: number = codeValue.length;
                 temp = false;
                 for (let k: number = 0; check ? k <= numberOfDigits : k < numberOfDigits; k++) {
                     let renderText: boolean = false;
@@ -219,11 +235,11 @@ export abstract class OneDimension extends BarcodeBase {
                         }
                         renderText = true;
                     }
-                    let canDrawCheck: boolean = (type === 'Code39' || type === 'Code93Extension' || type === 'Code32' || type === 'Code11' || type === 'Code39Extension');
-                    let candraw: boolean = canDrawCheck ? (k % 2 ? false : true) : (codeValue[k] === '1' ? true : false);
-                    let string: string = codeValue.toString(); let number: number = Number(string[k]); let width: number;
-                    width = this.getWidthValue(number,width,type); width = width * ratio; textProperty = this.displayText;
-                    let text: string = this.getDisplayText(j, textProperty);
+                    const canDrawCheck: boolean = (type === 'Code39' || type === 'Code93Extension' || type === 'Code32' || type === 'Code11' || type === 'Code39Extension');
+                    const candraw: boolean = canDrawCheck ? (k % 2 ? false : true) : (codeValue[k] === '1' ? true : false);
+                    const string: string = codeValue.toString(); const number: number = Number(string[k]); let width: number;
+                    width = this.getWidthValue(number, width, type); width = width * ratio; textProperty = this.displayText;
+                    const text: string = this.getDisplayText(j, textProperty);
                     textOptions = this.getBaseAttributes(
                         undefined, undefined, startValue,
                         position === 'Bottom' ? (barcodeSize.y + barcodeSize.height) + 2 : (barcodeSize.y + textHeight) - 2,
@@ -244,8 +260,8 @@ export abstract class OneDimension extends BarcodeBase {
                         textOptions.string = this.value[0]; this.drawText(canvas as HTMLCanvasElement, textOptions);
                     }
                     if (!extraHeight || renderText || (type === 'UpcA' && extraHeight)) {
-                        let checkCode: boolean = type === 'Code39' || type === 'Code32' || type === 'Code93Extension' || type === 'Code39Extension' || type === 'Code11';
-                        let value: number = barcodeSize.height;
+                        const checkCode: boolean = type === 'Code39' || type === 'Code32' || type === 'Code93Extension' || type === 'Code39Extension' || type === 'Code11';
+                        const value: number = barcodeSize.height;
                         let barCodeHeight: number = (((value) - textHeight * scaleValue) > 0 ? ((value) - textHeight * scaleValue) : 0);
                         if (checkCode || type === 'Ean8' || type === 'Ean13') {
                             barCodeHeight = position === 'Top' && barType !== 'noBars' ? (barCodeHeight - textHeight) : barCodeHeight;
@@ -261,8 +277,8 @@ export abstract class OneDimension extends BarcodeBase {
                             if (canDoubleWidth > 1) {
                                 temp = true;
                             }
-                            let rectWidth: number = canDoubleWidth > 1 ? (canDoubleWidth * width) : width;
-                            let rectHeight: number = (barcodeSize.height - textHeight * scaleValue);
+                            const rectWidth: number = canDoubleWidth > 1 ? (canDoubleWidth * width) : width;
+                            const rectHeight: number = (barcodeSize.height - textHeight * scaleValue);
                             let height: number = extraHeight ? barcodeSize.height : rectHeight;
                             height = position === 'Top' && barType !== 'noBars' ? (height - this.displayText.margin.top) - textHeight : height;
                             tempBaseAttributes = this.getBaseAttributes(
@@ -297,7 +313,7 @@ export abstract class OneDimension extends BarcodeBase {
             this.drawImage(canvas as HTMLCanvasElement, options);
         }
     }
-    /* tslint:enable */
+    /* eslint:enable */
 
     private canIncrementCheck(type: string, j: number, code: number[] | string[]): boolean {
         if ((type === 'Code39' || type === 'Code32' || type === 'Code39Extension' || type === 'Code93Extension'
@@ -339,11 +355,20 @@ export abstract class OneDimension extends BarcodeBase {
         }
     }
 
-    /** @private */
+    /**
+     *Will draw the image for the barcode .
+     *
+     * @param {HTMLCanvasElement} canvas  Barcode canvas element.
+     * @param {BaseAttributes []} options Barcode attributes .
+     * @function drawImage
+     * @returns {void} Export the barcode as an image in the specified image type and downloads it in the browser.
+     * @memberof Barcode
+     * @private
+     */
     public drawImage(
         canvas: HTMLCanvasElement, options: BaseAttributes[])
         : void {
-        let barcodeRenderer: BarcodeRenderer = this.getInstance(canvas.id);
+        const barcodeRenderer: BarcodeRenderer = this.getInstance(canvas.id);
         for (let i: number = 0; i < options.length; i++) {
             barcodeRenderer.renderRectElement(canvas as HTMLCanvasElement, options[i]);
         }
@@ -354,15 +379,15 @@ export abstract class OneDimension extends BarcodeBase {
         options: BaseAttributes, size: Size, endValue: number, startValue: number, textProperty: DisplayTextModel):
         void {
         if (options.x + size.width > endValue || (options.x < startValue) && options.stringSize > 2) {
-            let rightAlign: boolean = options.x < startValue && textProperty.margin.right ? true : false;
+            // eslint-disable-next-line
+            const rightAlign: boolean = options.x < startValue && textProperty.margin.right ? true : false;
             if (options.x < startValue && textProperty.margin.right) {
                 // if the displaytext rendering overlaps the barcode then need to reduce the displaytext size gradually by 2
                 options.stringSize -= 2;
-                let newSize: Size = measureText(options);
+                const newSize: Size = measureText(options);
                 // used to get the middle value for the text as well the total barcode size
                 options.x += (((endValue - startValue)) / 2) - newSize.width * .5;
-                let diff: number;
-                diff = textProperty.margin.right - (endValue - (options.x + size.width));
+                const diff: number = textProperty.margin.right - (endValue - (options.x + size.width));
                 options.x -= diff;
                 this.updateDisplayTextSize(options, newSize, endValue, startValue, textProperty);
             }
@@ -378,21 +403,21 @@ export abstract class OneDimension extends BarcodeBase {
         if ((textProperty.margin.left || textProperty.margin.right)) {
             if (options.x - startValue < textProperty.margin.left && textProperty.margin.left) {
                 leftMargin = true;
-                let diff: number = textProperty.margin.left - (options.x - startValue);
+                const diff: number = textProperty.margin.left - (options.x - startValue);
                 options.x += diff;
                 this.updateDisplayTextSize(options, size, endValue, startValue, textProperty);
             }
             if ((endValue - (options.x + size.width) < textProperty.margin.right) && textProperty.margin.right && !leftMargin) {
-                let diff: number = textProperty.margin.right - (endValue - (options.x + size.width));
+                const diff: number = textProperty.margin.right - (endValue - (options.x + size.width));
                 options.x -= diff;
                 this.updateDisplayTextSize(options, size, endValue, startValue, textProperty);
             } else if ((endValue - (options.x + size.width) < textProperty.margin.right)) {
-                let newSize: Size = measureText(options);
+                const newSize: Size = measureText(options);
                 this.updateOverlappedTextPosition((endValue - startValue), options, newSize, startValue, textProperty, endValue);
                 this.updateDisplayTextSize(options, newSize, endValue, startValue, textProperty);
             }
         }
-    };
+    }
 
 
     private updateOverlappedTextPosition(
@@ -401,7 +426,7 @@ export abstract class OneDimension extends BarcodeBase {
         if ((size.width > width || textProperty) && (endValue - (options.x + size.width) <= textProperty.margin.right)
             && options.stringSize > 2) {
             options.stringSize -= !textProperty ? 2 : .2;
-            let newSize: Size = measureText(options);
+            const newSize: Size = measureText(options);
             this.updateOverlappedTextPosition(width, options, newSize, startValue, textProperty, endValue);
         } else if (!textProperty.margin.left && !textProperty.margin.right && options.stringSize > 2) {
             this.getAlignmentPosition(options, endValue, startValue, size);
@@ -413,7 +438,7 @@ export abstract class OneDimension extends BarcodeBase {
         if (!this.isSvgMode) {
             options.y /= 1.5;
         }
-        let barcodeRenderer: BarcodeRenderer = this.getInstance(canvas.id);
+        const barcodeRenderer: BarcodeRenderer = this.getInstance(canvas.id);
         barcodeRenderer.renderTextElement(canvas as HTMLCanvasElement, options);
     }
 }

@@ -19,7 +19,7 @@ export interface KeyGestureModel {
      * * Number8 = The 8 key
      * * Number9 = The 9 key
      * * Number0 = The 0 key
-     * * BackSpace = The BackSpace key 
+     * * BackSpace = The BackSpace key
      * * F1 = The f1 key
      * * F2 = The f2 key
      * * F3 = The f3 key
@@ -65,15 +65,16 @@ export interface KeyGestureModel {
      * * Escape = The Escape key
      * * Tab = The tab key
      * * Delete = The delete key
-     * * Enter = The enter key 
-     * * The Space key 
-     * * The page up key 
-     * * The page down key 
-     * * The end key 
-     * * The home key 
+     * * Enter = The enter key
+     * * The Space key
+     * * The page up key
+     * * The page down key
+     * * The end key
+     * * The home key
      * * The Minus
      * * The Plus
      * * The Star
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @aspNumberEnum
@@ -89,6 +90,7 @@ export interface KeyGestureModel {
      * * Meta - meta key im mac
      * * Alt - alt key
      * * Shift - shift key
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @aspNumberEnum
@@ -106,12 +108,14 @@ export interface CommandModel {
 
     /**
      * Defines the name of the command
+     *
      * @default ''
      */
     name?: string;
 
     /**
      * Check the command is executable at the moment or not
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -141,7 +145,7 @@ export interface CommandModel {
      * annotations : [{ content: 'text' }];
      * ...
      * };
-     * 
+     *
      * let diagram: Diagram = new Diagram({
      * ...
      * nodes:[node],
@@ -202,6 +206,7 @@ export interface ContextMenuSettingsModel {
 
     /**
      * Enables/Disables the context menu items
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -210,6 +215,7 @@ export interface ContextMenuSettingsModel {
 
     /**
      * Shows only the custom context menu items
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -233,6 +239,7 @@ export interface ContextMenuSettingsModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined

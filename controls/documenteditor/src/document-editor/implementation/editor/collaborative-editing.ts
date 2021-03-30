@@ -28,9 +28,6 @@ export class CollaborativeEditing {
     private saveTimer: number;
 
     //private lockEnd: string = '';
-    /**
-     * @private
-     */
     private get documentHelper(): DocumentHelper {
         return this.owner.documentHelper;
     }
@@ -40,58 +37,56 @@ export class CollaborativeEditing {
     private get collaborativeEditingSettings(): CollaborativeEditingSettingsModel {
         return this.owner.documentEditorSettings.collaborativeEditingSettings;
     }
-    /**
-     * @private
-     */
-    constructor(editor: DocumentEditor) {
+
+    public constructor(editor: DocumentEditor) {
         this.owner = editor;
     }
-    /**
-     * @private
-     */
-    public getModuleName(): string {
+    private getModuleName(): string {
         return 'CollaborativeEditing';
     }
     /**
-     * To update the action which need to perform. 
+     * To update the action which need to perform.
+     *
+     * @param {CollaborativeEditingEventArgs} data - Specifies the data.
+     * @returns {void}
      */
     public updateAction(data: CollaborativeEditingEventArgs | CollaborativeEditingEventArgs[]): void {
         if (!Array.isArray(data)) {
             data = [data];
         }
         for (let i: number = 0; i < data.length; i++) {
-            let documentData: CollaborativeEditingEventArgs = data[i];
+            const documentData: CollaborativeEditingEventArgs = data[i];
             switch (documentData.action) {
-                case 'LockContent':
-                    // Transform position
-                    this.transFormLockRegion(documentData);
-                    this.lockRegion(documentData.selectionInfo.start, documentData.selectionInfo.end, documentData.author);
-                    break;
-                case 'SaveContent':
-                    this.version = documentData.version;
-                    this.updateRegion(documentData.author, documentData.data);
-                    break;
-                case 'UnlockContent':
-                    this.version = documentData.version;
-                    this.updateRegion(documentData.author, documentData.data);
-                    this.removeEditRange(documentData.author);
-                    break;
+            case 'LockContent':
+                // Transform position
+                this.transFormLockRegion(documentData);
+                this.lockRegion(documentData.selectionInfo.start, documentData.selectionInfo.end, documentData.author);
+                break;
+            case 'SaveContent':
+                this.version = documentData.version;
+                this.updateRegion(documentData.author, documentData.data);
+                break;
+            case 'UnlockContent':
+                this.version = documentData.version;
+                this.updateRegion(documentData.author, documentData.data);
+                this.removeEditRange(documentData.author);
+                break;
             }
         }
     }
 
     private transFormLockRegion(data: CollaborativeEditingEventArgs): void {
-        let previousLockInfo: LockSelectionInfo = data.selectionInfo.previousLockInfo;
+        const previousLockInfo: LockSelectionInfo = data.selectionInfo.previousLockInfo;
         if (!isNullOrUndefined(previousLockInfo)) {
-            let author: string = previousLockInfo.author;
+            const author: string = previousLockInfo.author;
             let sectionDiff: number = 0;
             let blockDiff: number = 0;
             if (this.documentHelper.editRanges.containsKey(author)) {
-                let editRange: EditRangeStartElementBox[] = this.documentHelper.editRanges.get(author);
+                const editRange: EditRangeStartElementBox[] = this.documentHelper.editRanges.get(author);
                 if (editRange.length > 0) {
-                    let position: PositionInfo = this.selection.getPosition(editRange[0]);
-                    let endOffset: string[] = this.selection.getHierarchicalIndexByPosition(position.endPosition).split(';');
-                    let previousOffset: string[] = previousLockInfo.end.split(';');
+                    const position: PositionInfo = this.selection.getPosition(editRange[0]);
+                    const endOffset: string[] = this.selection.getHierarchicalIndexByPosition(position.endPosition).split(';');
+                    const previousOffset: string[] = previousLockInfo.end.split(';');
                     sectionDiff = parseInt(endOffset[0], 10) - parseInt(previousOffset[0], 10);
                     blockDiff = parseInt(endOffset[1], 10) - parseInt(previousOffset[1], 10);
                     // Same section
@@ -109,6 +104,9 @@ export class CollaborativeEditing {
 
     /**
      * Lock selected region from editing by other users.
+     *
+     * @param {string} user - Specifies the user.
+     * @returns {void}
      */
     public lockContent(user: string): void {
         if (this.canLock()) {
@@ -119,33 +117,33 @@ export class CollaborativeEditing {
                 end = this.owner.selection.start;
             }
             if (start.paragraph.isInsideTable) {
-                let table: TableWidget = this.owner.documentHelper.layout.getParentTable(start.paragraph);
-                let firstPara: ParagraphWidget = this.owner.selection.getFirstParagraphBlock(table);
+                const table: TableWidget = this.owner.documentHelper.layout.getParentTable(start.paragraph);
+                const firstPara: ParagraphWidget = this.owner.selection.getFirstParagraphBlock(table);
                 start.setPosition(firstPara.childWidgets[0] as LineWidget, true);
             } else {
                 start.paragraphStartInternal(this.owner.selection, false);
             }
             if (end.paragraph.isInsideTable) {
-                let table: TableWidget = this.owner.documentHelper.layout.getParentTable(end.paragraph);
-                let lastPara: ParagraphWidget = this.owner.selection.getLastParagraphBlock(table);
-                let offset: number = (lastPara.lastChild as LineWidget).getEndOffset();
+                const table: TableWidget = this.owner.documentHelper.layout.getParentTable(end.paragraph);
+                const lastPara: ParagraphWidget = this.owner.selection.getLastParagraphBlock(table);
+                const offset: number = (lastPara.lastChild as LineWidget).getEndOffset();
                 end.setPositionParagraph((lastPara.lastChild as LineWidget), offset);
             } else {
                 end.moveToParagraphEndInternal(this.owner.selection, false);
             }
-            let startOffset: string = this.owner.selection.getHierarchicalIndexByPosition(start);
-            let endOffset: string = this.owner.selection.getHierarchicalIndexByPosition(end);
-            let selectionInfo: LockSelectionInfo = {
+            const startOffset: string = this.owner.selection.getHierarchicalIndexByPosition(start);
+            const endOffset: string = this.owner.selection.getHierarchicalIndexByPosition(end);
+            const selectionInfo: LockSelectionInfo = {
                 start: startOffset,
                 end: endOffset,
                 roomName: this.owner.documentEditorSettings.collaborativeEditingSettings.roomName,
-                author: this.owner.currentUser,
+                author: isNullOrUndefined(user) ? this.owner.currentUser : user,
                 version: this.version
             };
-            let startInfo: ParagraphInfo = this.selection.getParagraphInfo(start);
-            let endInfo: ParagraphInfo = this.selection.getParagraphInfo(end);
+            const startInfo: ParagraphInfo = this.selection.getParagraphInfo(start);
+            const endInfo: ParagraphInfo = this.selection.getParagraphInfo(end);
             this.owner.selection.select(startOffset, endOffset);
-            let ajax: XmlHttpRequestHandler = new XmlHttpRequestHandler();
+            const ajax: XmlHttpRequestHandler = new XmlHttpRequestHandler();
             ajax.url = this.owner.serviceUrl + this.owner.serverActionSettings.canLock;
             ajax.contentType = 'application/json;charset=UTF-8';
             ajax.onSuccess = (result: CollaborativeEditingEventArgs) => {
@@ -159,15 +157,16 @@ export class CollaborativeEditing {
     }
     /**
      * @private
+     * @returns {boolean} - Returns can lock.
      */
     public canLock(): boolean {
-        let editRanges: Dictionary<string, EditRangeStartElementBox[]> = this.documentHelper.editRanges;
+        const editRanges: Dictionary<string, EditRangeStartElementBox[]> = this.documentHelper.editRanges;
         if (editRanges.containsKey(this.owner.currentUser)) {
             return false;
         }
-        let userNames: string[] = editRanges.keys;
+        const userNames: string[] = editRanges.keys;
         for (let i: number = 0; i < userNames.length; i++) {
-            let range: EditRangeStartElementBox[] = editRanges.get(userNames[i]);
+            const range: EditRangeStartElementBox[] = editRanges.get(userNames[i]);
             if (!isNullOrUndefined(range) && range.length > 0) {
                 if (this.isSelectionInEditableRange(range[0])) {
                     return false;
@@ -178,15 +177,15 @@ export class CollaborativeEditing {
     }
 
     private getPreviousLockedRegion(): EditRangeStartElementBox {
-        let editRanges: Dictionary<string, EditRangeStartElementBox[]> = this.documentHelper.editRanges;
+        const editRanges: Dictionary<string, EditRangeStartElementBox[]> = this.documentHelper.editRanges;
         if (editRanges.containsKey(this.owner.currentUser)) {
             return undefined;
         }
         let previous: EditRangeStartElementBox;
-        let userNames: string[] = editRanges.keys;
+        const userNames: string[] = editRanges.keys;
         for (let i: number = 0; i < userNames.length; i++) {
-            let range: EditRangeStartElementBox = editRanges.get(userNames[i])[0];
-            let startPosition: TextPosition = this.selection.getPosition(range).startPosition;
+            const range: EditRangeStartElementBox = editRanges.get(userNames[i])[0];
+            const startPosition: TextPosition = this.selection.getPosition(range).startPosition;
             if (startPosition.isExistBefore(this.selection.start)) {
                 if (isNullOrUndefined(previous)) {
                     previous = range;
@@ -199,14 +198,16 @@ export class CollaborativeEditing {
     }
     /**
      * @private
+     * @param {string} user - Specifies the user.
+     * @returns {void}
      */
     public unlockContent(user: string): void {
         if (this.documentHelper.editRanges.containsKey(user)) {
             if (this.saveTimer) {
                 clearTimeout(this.saveTimer);
             }
-            let sfdtContent: string = JSON.stringify(this.serializeEditableRegion(user));
-            let saveObject: CollaborativeEditingEventArgs = {
+            const sfdtContent: string = JSON.stringify(this.serializeEditableRegion(user));
+            const saveObject: CollaborativeEditingEventArgs = {
                 action: 'UnlockContent',
                 author: user,
                 version: this.version,
@@ -238,7 +239,9 @@ export class CollaborativeEditing {
     }
     /**
      * Save locked content to other clients.
+     *
      * @private
+     * @returns {void}
      */
     public saveContent(): void {
         if (this.saveTimer) {
@@ -248,18 +251,16 @@ export class CollaborativeEditing {
         if (isNullOrUndefined(timeOut)) {
             timeOut = 3000;
         }
-        /* tslint:disable:align */
         this.saveTimer = setTimeout(() => {
             this.saveContentInternal();
         }, timeOut);
-        /* tslint:enable:align */
     }
 
     private saveContentInternal(): void {
         if (this.documentHelper.editRanges.containsKey(this.owner.currentUser)) {
-            let editRangeStart: EditRangeStartElementBox = this.documentHelper.editRanges.get(this.owner.currentUser)[0];
-            let position: PositionInfo = this.selection.getPosition(editRangeStart);
-            let saveObject: CollaborativeEditingEventArgs = {
+            const editRangeStart: EditRangeStartElementBox = this.documentHelper.editRanges.get(this.owner.currentUser)[0];
+            const position: PositionInfo = this.selection.getPosition(editRangeStart);
+            const saveObject: CollaborativeEditingEventArgs = {
                 action: 'SaveContent',
                 author: this.owner.currentUser,
                 version: this.version,
@@ -278,29 +279,29 @@ export class CollaborativeEditing {
     }
 
     private serializeEditableRegion(user: string): string {
-        let startElement: EditRangeStartElementBox = this.documentHelper.editRanges.get(user)[0];
-        let endElement: EditRangeEndElementBox = startElement.editRangeEnd;
+        const startElement: EditRangeStartElementBox = this.documentHelper.editRanges.get(user)[0];
+        const endElement: EditRangeEndElementBox = startElement.editRangeEnd;
 
-        let start: TextPosition = new TextPosition(this.owner);
+        const start: TextPosition = new TextPosition(this.owner);
         start.setPosition(startElement.line, true);
-        let end: TextPosition = new TextPosition(this.owner);
+        const end: TextPosition = new TextPosition(this.owner);
         end.setPosition(endElement.line, false);
         this.owner.sfdtExportModule.isPartialExport = true;
-        // tslint:disable-next-line:max-line-length
-        let sfdtContent: string = this.owner.sfdtExportModule.write(start.currentWidget, start.offset, end.currentWidget, end.offset, false);
+        // eslint-disable-next-line max-len
+        const sfdtContent: string = this.owner.sfdtExportModule.write(start.currentWidget, start.offset, end.currentWidget, end.offset, false);
         this.owner.sfdtExportModule.isPartialExport = false;
         return sfdtContent;
     }
 
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     private successHandler(result: CollaborativeEditingEventArgs, selectionInfo: LockSelectionInfo, startInfo: ParagraphInfo, endInfo: ParagraphInfo): void {
-        let canLock: boolean = JSON.parse(result.data).canLock;
+        const canLock: boolean = JSON.parse(result.data).canLock;
         if (canLock) {
             selectionInfo.start = this.selection.getHierarchicalIndex(startInfo.paragraph, startInfo.offset.toString());
             selectionInfo.end = this.selection.getHierarchicalIndex(endInfo.paragraph, endInfo.offset.toString());
-            let previousEditRange: EditRangeStartElementBox = this.getPreviousLockedRegion();
+            const previousEditRange: EditRangeStartElementBox = this.getPreviousLockedRegion();
             if (previousEditRange) {
-                let position: PositionInfo = this.selection.getPosition(previousEditRange);
+                const position: PositionInfo = this.selection.getPosition(previousEditRange);
                 selectionInfo.previousLockInfo = {
                     start: this.selection.getHierarchicalIndexByPosition(position.startPosition),
                     end: this.selection.getHierarchicalIndexByPosition(position.endPosition),
@@ -309,7 +310,7 @@ export class CollaborativeEditing {
                     version: 0
                 };
             }
-            let lockObject: CollaborativeEditingEventArgs = {
+            const lockObject: CollaborativeEditingEventArgs = {
                 action: 'LockContent',
                 selectionInfo: selectionInfo,
                 author: this.owner.currentUser,
@@ -319,42 +320,46 @@ export class CollaborativeEditing {
             };
             this.owner.trigger('actionComplete', lockObject);
         } else {
-            let localizeValue: L10n = new L10n('documenteditor', this.owner.defaultLocale);
+            const localizeValue: L10n = new L10n('documenteditor', this.owner.defaultLocale);
             localizeValue.setLocale(this.owner.locale);
             DialogUtility.alert({
                 content: localizeValue.getConstant('Already locked'),
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 closeOnEscape: true, showCloseIcon: true, position: { X: 'Center', Y: 'Center' }
             });
         }
     }
     private failureHandler(): void {
-        let localizeValue: L10n = new L10n('documenteditor', this.owner.defaultLocale);
+        const localizeValue: L10n = new L10n('documenteditor', this.owner.defaultLocale);
         localizeValue.setLocale(this.owner.locale);
         DialogUtility.alert({
             content: localizeValue.getConstant('Error in establishing connection with web server'),
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             closeOnEscape: true, showCloseIcon: true, position: { X: 'Center', Y: 'Center' }
         });
     }
     /**
      * Locker specified region for specified user.
+     *
      * @private
+     * @param {string} start - Specified the selection start.
+     * @param {string} end - Specifies the selection end.
+     * @param {string} user - Specifies the user
+     * @returns {void}
      */
     public lockRegion(start: string, end: string, user: string): void {
-        let startPosition: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(start);
-        let endPosition: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(end);
+        const startPosition: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(start);
+        const endPosition: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(end);
         this.lockRegionInternal(startPosition, endPosition, user);
     }
     private lockRegionInternal(start: TextPosition, end: TextPosition, user: string): void {
-        let editStart: EditRangeStartElementBox = this.owner.editor.addEditElement(user);
-        let editEnd: EditRangeEndElementBox = editStart.editRangeEnd;
+        const editStart: EditRangeStartElementBox = this.owner.editor.addEditElement(user);
+        const editEnd: EditRangeEndElementBox = editStart.editRangeEnd;
         this.insertElements(start, end, [editEnd], [editStart]);
         this.updateLockInfo(editStart.paragraph, editEnd.paragraph, user, true);
         this.owner.viewer.updateScrollBars();
     }
 
-    /**
-     * @private
-     */
     private insertElements(start: TextPosition, end: TextPosition, endElements: ElementBox[], startElements?: ElementBox[]): void {
         if (!isNullOrUndefined(startElements)) {
             this.insertElementsInternal(start, startElements);
@@ -364,24 +369,20 @@ export class CollaborativeEditing {
         }
     }
 
-    /**
-     * @private
-     */
     private insertElementsInternal(position: TextPosition, elements: ElementBox[]): void {
         let indexInInline: number = 0;
         if (position.paragraph.isEmpty()) {
-            let paragraph: ParagraphWidget = position.paragraph as ParagraphWidget;
+            const paragraph: ParagraphWidget = position.paragraph as ParagraphWidget;
             (paragraph.childWidgets[0] as LineWidget).children.push(elements[0]);
             elements[0].line = (paragraph.childWidgets[0] as LineWidget);
             this.documentHelper.layout.reLayoutParagraph(paragraph, 0, 0);
         } else {
-            // tslint:disable-next-line:max-line-length
-            let inlineObj: ElementInfo = position.currentWidget.getInline(position.offset, indexInInline);
-            let curInline: ElementBox = inlineObj.element;
+            const inlineObj: ElementInfo = position.currentWidget.getInline(position.offset, indexInInline);
+            const curInline: ElementBox = inlineObj.element;
             indexInInline = inlineObj.index;
-            let firstElement: ElementBox = elements[0];
+            const firstElement: ElementBox = elements[0];
             this.insertElementInternal(curInline, firstElement, indexInInline);
-            let index: number = firstElement.indexInOwner;
+            const index: number = firstElement.indexInOwner;
             let lastElement: ElementBox = firstElement;
             for (let i: number = 1; i < elements.length; i++) {
                 lastElement = elements[i];
@@ -391,14 +392,13 @@ export class CollaborativeEditing {
 
     }
 
-    // tslint:disable-next-line:max-line-length
     private insertElementInternal(element: ElementBox, newElement: ElementBox, index: number): void {
-        let line: LineWidget = element.line;
-        let paragraph: ParagraphWidget = line.paragraph;
+        const line: LineWidget = element.line;
+        const paragraph: ParagraphWidget = line.paragraph;
         let insertIndex: number = element.indexInOwner;
-        let isBidi: boolean = paragraph.paragraphFormat.bidi && element.isRightToLeft;
+        const isBidi: boolean = paragraph.paragraphFormat.bidi && element.isRightToLeft;
         if (index === element.length) {
-            // Add new Element in current 
+            // Add new Element in current
             if (!isBidi) {
                 insertIndex++;
             }
@@ -414,15 +414,15 @@ export class CollaborativeEditing {
         newElement.line = element.line;
     }
 
-    //#region Save content 
+    //#region Save content
 
 
 
     private setEditableRegion(): void {
         if (this.documentHelper.editRanges.containsKey(this.owner.currentUser)) {
-            let editRanges: EditRangeStartElementBox[] = this.documentHelper.editRanges.get(this.owner.currentUser);
-            let editRangeStart: EditRangeStartElementBox = editRanges[0];
-            let firstBlock: BlockWidget = this.getParentBlock(editRangeStart.paragraph);
+            const editRanges: EditRangeStartElementBox[] = this.documentHelper.editRanges.get(this.owner.currentUser);
+            const editRangeStart: EditRangeStartElementBox = editRanges[0];
+            const firstBlock: BlockWidget = this.getParentBlock(editRangeStart.paragraph);
             this.lockStart = this.owner.selection.getHierarchicalIndex(firstBlock, '0').split(';');
         }
     }
@@ -434,7 +434,7 @@ export class CollaborativeEditing {
             if (!this.owner.selection.isForward) {
                 [start, end] = [end, start];
             }
-            let position: PositionInfo = this.owner.selection.getPosition(editRange);
+            const position: PositionInfo = this.owner.selection.getPosition(editRange);
             if ((start.isExistAfter(position.startPosition) || start.isAtSamePosition(position.startPosition))
                 && (end.isExistBefore(position.endPosition) || end.isAtSamePosition(position.endPosition)) ||
                 ((position.startPosition.isExistAfter(start) || position.startPosition.isAtSamePosition(start))
@@ -451,8 +451,10 @@ export class CollaborativeEditing {
 
     /**
      * Updated modified content from remote user
+     *
+     * @returns {void}
      */
-    // tslint:disable:max-func-body-length
+    /* eslint-disable  */
     public updateRegion(user: string, content: string): void {
         if (this.documentHelper.editRanges.containsKey(user)) {
             let editRanges: EditRangeStartElementBox[] = this.documentHelper.editRanges.get(user);
@@ -503,7 +505,6 @@ export class CollaborativeEditing {
                 if (sections.length !== blocks.length) {
                     if (sections.length === 1) {
                         let bodyWidget: BodyWidget = sections[0];
-                        // tslint:disable-next-line:max-line-length
                         sections.unshift(this.owner.editor.splitBodyWidget(bodyWidget, blocks[blocks.length - 2].sectionFormat, bodyWidget.childWidgets[lastInsertIndex - 1] as BlockWidget));
                     }
                     if (sections.length < blocks.length) {
@@ -609,7 +610,7 @@ export class CollaborativeEditing {
             }
         }
     }
-    /* tslint:disable:no-any */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     private getRevisionTextPosition(revision: Revision): TextPosition {
         if (revision.range.length > 0) {
             let range: any = revision.range[0];
@@ -632,7 +633,7 @@ export class CollaborativeEditing {
         }
         return undefined;
     }
-    /* tslint:enable:no-any */
+    /* eslint-enable @typescript-eslint/no-explicit-any */
     private tranformSelection(startParagrahInfo: ParagraphInfo, endParagraphInfo: ParagraphInfo): void {
         this.documentHelper.skipScrollToPosition = true;
         let startIndex: string = this.selection.getHierarchicalIndex(startParagrahInfo.paragraph, startParagrahInfo.offset.toString());
@@ -726,10 +727,7 @@ export class CollaborativeEditing {
         }
     }
 
-    /**
-     * @private
-     */
-    public removeFieldInBlock(block: BlockWidget, isBookmark?: boolean, contentControl?: boolean): void {
+    private removeFieldInBlock(block: BlockWidget, isBookmark?: boolean, contentControl?: boolean): void {
         if (block instanceof TableWidget) {
             this.removeFieldTable(block, isBookmark, contentControl);
         } else {
@@ -738,10 +736,7 @@ export class CollaborativeEditing {
         }
     }
 
-    /**
-     * @private
-     */
-    public removeFieldTable(table: TableWidget, isBookmark?: boolean, contentControl?: boolean): void {
+    private removeFieldTable(table: TableWidget, isBookmark?: boolean, contentControl?: boolean): void {
         for (let i: number = 0; i < table.childWidgets.length; i++) {
             let rowWidget: TableRowWidget = table.childWidgets[i] as TableRowWidget;
             for (let j: number = 0; j < rowWidget.childWidgets.length; j++) {
@@ -767,9 +762,6 @@ export class CollaborativeEditing {
     }
     //#endregion
 
-    /**
-     * @private
-     */
     private updateNextBlocksIndex(block: BlockWidget, increaseIndex: boolean): void {
         let nextBlock: BlockWidget = block.getSplitWidgets().pop().nextRenderedWidget as BlockWidget;
         let incrementCount: number = 1;
@@ -795,7 +787,12 @@ export class CollaborativeEditing {
         }
     }
     /**
+     * Update locked region highlight. 
+     *
      * @private
+     * @param {string} user - Specified the user.
+     * @param {boolean} isLocked - Specifies the isLocked.
+     * @returns {void} 
      */
     public updateLockRegion(user?: string, isLocked?: boolean): void {
         if (isNullOrUndefined(user)) {
@@ -837,9 +834,11 @@ export class CollaborativeEditing {
     }
     /**
      * Pull pending actions from server.
+     *
+     * @returns {void} 
      */
-    /* tslint:disable:no-any */
     public pullAction(): void {
+        /* eslint-disable @typescript-eslint/no-explicit-any */
         if (this.owner) {
             let ajax: XmlHttpRequestHandler = new XmlHttpRequestHandler();
             ajax.url = this.owner.serviceUrl + this.owner.serverActionSettings.getPendingActions;
@@ -856,9 +855,11 @@ export class CollaborativeEditing {
         }
     }
 
-    /* tslint:enable:no-any */
+    /* eslint-enable @typescript-eslint/no-explicit-any */
     /**
      * Destroy collaborative editing module.
+     *
+     * @returns {void}
      */
     public destroy(): void {
         this.owner = undefined;

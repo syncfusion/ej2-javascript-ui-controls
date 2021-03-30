@@ -109,11 +109,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public serviceLocator: ServiceLocator;
     /**
      * The `toolbarModule` is used to manipulate ToolBar items and its action in the RichTextEditor.
+     *
      * @hidden
      * @deprecated
      */
     public toolbarModule: Toolbar;
-
     /**
      * @hidden
      * @deprecated
@@ -130,7 +130,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @deprecated
      */
     public fullScreenModule: FullScreen;
-
     /**
      * @hidden
      * @deprecated
@@ -185,27 +184,27 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * By default, toolbar is float at the top of the RichTextEditor.
      * When you scroll down, the toolbar will scroll along with the page on Rich Text Editor with the specified offset value.
      * * enable: set boolean value to show or hide the toolbar.
-     * * enableFloating: Set Boolean value to enable or disable the floating toolbar. 
+     * * enableFloating: Set Boolean value to enable or disable the floating toolbar.
      * Preserves the toolbar at top of the Rich Text Editor on scrolling.
      * * type: it has two possible options
-     *      1. Expand: Hide the overflowing toolbar items in the next row. Click the expand arrow to view overflowing toolbar items
-     *      2. MultiRow: The toolbar overflowing items wrapped in the next row.
+     * 1. Expand: Hide the overflowing toolbar items in the next row. Click the expand arrow to view overflowing toolbar items
+     * 2. MultiRow: The toolbar overflowing items wrapped in the next row.
      * * items: Specifies the array of items aligned horizontally in the toolbar.
      * > | and - can insert a vertical and horizontal separator lines in the toolbar.
      * * itemConfigs: Modify the default toolbar item configuration like icon class.
-     * 
+     *
      * > By default, The toolbar is rendered with scrollable in mobile devices and does not support the toolbar type.
-     * 
+     *
      * {% codeBlock src='rich-text-editor/toolbar-settings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default
      * {
-     *  enable: true,
-     *  enableFloating: true,
-     *  type: ToolbarType.Expand,
-     *  items: ['Bold', 'Italic', 'Underline', '|', 'Formats', 'Alignments', 'OrderedList',
-     *  'UnorderedList', '|', 'CreateLink', 'Image', '|', 'SourceCode', 'Undo', 'Redo'],
-     *  itemConfigs: {}
+     * enable: true,
+     * enableFloating: true,
+     * type: ToolbarType.Expand,
+     * items: ['Bold', 'Italic', 'Underline', '|', 'Formats', 'Alignments', 'OrderedList',
+     * 'UnorderedList', '|', 'CreateLink', 'Image', '|', 'SourceCode', 'Undo', 'Redo'],
+     * itemConfigs: {}
      * }
      */
     @Complex<ToolbarSettingsModel>({}, ToolbarSettings)
@@ -215,22 +214,21 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * * It has following fields:
      * * enable - set boolean value to show or hide the quick toolbar
      * * actionOnScroll - it has two possible options
-     *     1. hide: The quickToolbar is closed when the parent element is scrolled. 
-     *     2. none: The quickToolbar cannot be closed even the parent element is scrolled.
+     * 1. hide: The quickToolbar is closed when the parent element is scrolled.
+     * 2. none: The quickToolbar cannot be closed even the parent element is scrolled.
      * * link  - Specifies the items to be rendered in quick toolbar based on link element such as `Open`, `Edit`, and `UnLink`.
      * * image - Specifies the items to be rendered in quick toolbar based on image element such as 'Replace',
      * 'Align', 'Caption', 'Remove', 'InsertLink', 'Display', 'AltText', 'Dimension'.
      * * text	 - Specifies the items to be rendered in quick toolbar based on text element such as 'Cut', 'Copy', 'Paste'.
-     * 
+     *
      * {% codeBlock src='rich-text-editor/quick-toolbar-settings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default
      * {
-     *  enable: true,
-     *  actionOnScroll: 'hide',
-     *  link: ['Open', 'Edit', 'UnLink'],
-     *  image: ['Replace', 'Align', 'Caption', 'Remove', '-', 'InsertLink', 'Display', 'AltText', 'Dimension'],
-     *  text: ['Cut', 'Copy', 'Paste']
+     * enable: true,
+     * actionOnScroll: 'hide',
+     * link: ['Open', 'Edit', 'UnLink'],
+     * image: ['Replace', 'Align', 'Caption', 'Remove', '-', 'InsertLink', 'Display', 'AltText', 'Dimension'],
      * }
      */
     @Complex<QuickToolbarSettingsModel>({}, QuickToolbarSettings)
@@ -243,24 +241,24 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * * deniedTags	 -  Specifies the tags to restrict when pasting in RTE.
      * * keepFormat	 -   Set boolean value to keep or remove the from when pasting.
      * * plainText	 -   Set boolean value to paste as plain text or not.
-     * 
+     *
      * {% codeBlock src='rich-text-editor/paste-cleanup-settings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default
      * {
-     *  prompt: false,
-     *  deniedAttrs: null,
-     *  allowedStyleProps: ['background', 'background-color', 'border', 'border-bottom', 'border-left', 'border-radius',
-     *  'border-right', 'border-style', 'border-top', 'border-width', 'clear', 'color', 'cursor',
-     *  'direction', 'display', 'float', 'font', 'font-family', 'font-size', 'font-weight', 'font-style',
-     *  'height', 'left', 'line-height', 'margin', 'margin-top', 'margin-left',
-     *  'margin-right', 'margin-bottom', 'max-height', 'max-width', 'min-height', 'min-width',
-     *  'overflow', 'overflow-x', 'overflow-y', 'padding', 'padding-bottom', 'padding-left', 'padding-right',
-     *  'padding-top', 'position', 'right', 'table-layout', 'text-align', 'text-decoration', 'text-indent',
-     *  'top', 'vertical-align', 'visibility', 'white-space', 'width'],
-     *  deniedTags: null,
-     *  keepFormat: true,
-     *  plainText:  false
+     * prompt: false,
+     * deniedAttrs: null,
+     * allowedStyleProps: ['background', 'background-color', 'border', 'border-bottom', 'border-left', 'border-radius',
+     * 'border-right', 'border-style', 'border-top', 'border-width', 'clear', 'color', 'cursor',
+     * 'direction', 'display', 'float', 'font', 'font-family', 'font-size', 'font-weight', 'font-style',
+     * 'height', 'left', 'line-height', 'margin', 'margin-top', 'margin-left',
+     * 'margin-right', 'margin-bottom', 'max-height', 'max-width', 'min-height', 'min-width',
+     * 'overflow', 'overflow-x', 'overflow-y', 'padding', 'padding-bottom', 'padding-left', 'padding-right',
+     * 'padding-top', 'position', 'right', 'table-layout', 'text-align', 'text-decoration', 'text-indent',
+     * 'top', 'vertical-align', 'visibility', 'white-space', 'width'],
+     * deniedTags: null,
+     * keepFormat: true,
+     * plainText:  false
      * }
      */
     @Complex<PasteCleanupSettingsModel>({}, PasteCleanupSettings)
@@ -270,45 +268,45 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * * enable - Set Boolean value to enable, the editors content is placed in an iframe and isolated from the rest of the page.
      * * attributes - Custom style to be used inside the iframe to display content. This style is added to the iframe body.
      * * resources - we can add both styles and scripts to the iframe.
-     *    1. styles[] - An array of CSS style files to inject inside the iframe to display content
-     *    2. scripts[] - An array of JS script files to inject inside the iframe
-     * 
+     * 1. styles[] - An array of CSS style files to inject inside the iframe to display content
+     * 2. scripts[] - An array of JS script files to inject inside the iframe
+     *
      * {% codeBlock src='rich-text-editor/iframe-settings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default
      * {
-     *  enable: false,
-     *  attributes: null,
-     *  resources: { styles: [], scripts: [] }
+     * enable: false,
+     * attributes: null,
+     * resources: { styles: [], scripts: [] }
      * }
      */
     @Complex<IFrameSettingsModel>({}, IFrameSettings)
     public iframeSettings: IFrameSettingsModel;
     /**
      * Specifies the image insert options in Rich Text Editor component and control with the following properties.
-     * * allowedTypes - Specifies the extensions of the image types allowed to insert on bowering and 
+     * * allowedTypes - Specifies the extensions of the image types allowed to insert on bowering and
      * passing the extensions with comma separators. For example, pass allowedTypes as .jpg and .png.
-     * * display - Sets the default display for an image when it is inserted in to the RichTextEditor. 
+     * * display - Sets the default display for an image when it is inserted in to the RichTextEditor.
      * Possible options are: 'inline' and 'block'.
      * * width - Sets the default width of the image when it is inserted in the RichTextEditor.
      * * saveFormat - Specifies the format to store the image in the Rich Text Editor (Base64 or Blob).
-     * > If you want to insert a lot of tiny images in the editor and don't want a specific physical location for 
+     * > If you want to insert a lot of tiny images in the editor and don't want a specific physical location for
      * saving images, you can opt to save format as Base64.
      * * height - Sets the default height of the image when it is inserted in the RichTextEditor.
      * * saveUrl - Specifies the service URL of save action that will receive the uploaded files and save them in the server.
      * * path - Specifies the path of the location to store the images and refer it to display the images.
-     * 
+     *
      * {% codeBlock src='rich-text-editor/insert-image-settings/index.md' %}{% endcodeBlock %}
-     * 
-     * @default 
+     *
+     * @default
      * {
-     *  allowedTypes: ['.jpeg', '.jpg', '.png'],
-     *  display: 'inline',
-     *  width: 'auto', 
-     *  height: 'auto', 
-     *  saveFormat: 'Blob'
-     *  saveUrl: null, 
-     *  path: null,
+     * allowedTypes: ['.jpeg', '.jpg', '.png'],
+     * display: 'inline',
+     * width: 'auto',
+     * height: 'auto',
+     * saveFormat: 'Blob'
+     * saveUrl: null,
+     * path: null,
      * }
      */
     @Complex<ImageSettingsModel>({}, ImageSettings)
@@ -321,24 +319,25 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * * minWidth - Sets the default minWidth of the table when it is inserted in the RichTextEditor.
      * * maxWidth - Sets the default maxWidth of the table when it is inserted in the RichTextEditor.
      * * resize - To enable resize the table.
-     * 
+     *
      * {% codeBlock src='rich-text-editor/table-settings/index.md' %}{% endcodeBlock %}
-     * 
-     * @default 
+     *
+     * @default
      * {
-     *  width: '100%',
-     *  styles: [{ text: 'Dashed Borders', class: 'e-dashed-borders', command: 'Table', subCommand: 'Dashed' },
+     * width: '100%',
+     * styles: [{ text: 'Dashed Borders', class: 'e-dashed-borders', command: 'Table', subCommand: 'Dashed' },
      * { text: 'Alternate Rows', class: 'e-alternate-rows', command: 'Table', subCommand: 'Alternate' }],
      * resize: true,
-     *  minWidth: 0, 
-     *  maxWidth: null,
+     * minWidth: 0,
+     * maxWidth: null,
      * }
      */
     @Complex<TableSettingsModel>({}, TableSettings)
     public tableSettings: TableSettingsModel;
     /**
-     * Preserves the toolbar at the top of the Rich Text Editor on scrolling and 
+     * Preserves the toolbar at the top of the Rich Text Editor on scrolling and
      * specifies the offset of the floating toolbar from documents top position
+     *
      * @default 0
      */
     @Property(0)
@@ -346,15 +345,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Enable or disable the inline edit mode.
      * * enable - set boolean value to enable or disable the inline edit mode.
-     * * onSelection - If its set to true, upon selecting the text, the toolbar is opened in inline. 
+     * * onSelection - If its set to true, upon selecting the text, the toolbar is opened in inline.
      * If its set to false, upon clicking to the target element, the toolbar is opened.
-     * 
+     *
      * {% codeBlock src='rich-text-editor/inline-mode/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default
      * {
-     *  enable: false,
-     *  onSelection: true
+     * enable: false,
+     * onSelection: true
      * }
      */
     @Complex<InlineModeModel>({}, InlineMode)
@@ -367,66 +366,69 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * * navigationPaneSettings - Specifies the navigation pane settings of the image manager.
      * * toolbarSettings - Specifies the group of items aligned horizontally in the toolbar.
      * * uploadSettings - Specifies the upload settings for the image manager.
-     * 
+     *
      * @default
      * {
-     *  enable: false,
-     *  path: '/',
-     *  ajaxSettings: { getImageUrl: null, url: null, uploadUrl: null },
-     *  contextMenuSettings: {
-     *   visible: true,
-     *   file: ['Open', '|', 'Cut', 'Copy', '|', 'Delete', 'Rename', '|', 'Details'],
-     *   folder: ['Open', '|', 'Cut', 'Copy', 'Paste', '|', 'Delete', 'Rename', '|', 'Details'],
-     *   layout: ['SortBy', 'View', 'Refresh', '|', 'Paste', '|', 'NewFolder', 'Upload', '|', 'Details', '|', 'SelectAll']
-     *  },
-     *  navigationPaneSettings: {
-     *   visible: true,
-     *   items: [
-     *    'NewFolder', 'Upload', 'Cut', 'Copy', 'Paste', 'Delete', 'Download',
-     *    'Rename', 'SortBy', 'Refresh', 'Selection', 'View', 'Details'
-     *   ]
-     *  },
-     *  toolbarSettings: { visible: true, items: ['Upload', 'NewFolder'] },
-     *  uploadSettings: { autoUpload: true, minFileSize: 0, maxFileSize: 30000000, allowedExtensions: '', autoClose: false }
+     * enable: false,
+     * path: '/',
+     * ajaxSettings: { getImageUrl: null, url: null, uploadUrl: null },
+     * contextMenuSettings: {
+     * visible: true,
+     * file: ['Open', '|', 'Cut', 'Copy', '|', 'Delete', 'Rename', '|', 'Details'],
+     * folder: ['Open', '|', 'Cut', 'Copy', 'Paste', '|', 'Delete', 'Rename', '|', 'Details'],
+     * layout: ['SortBy', 'View', 'Refresh', '|', 'Paste', '|', 'NewFolder', 'Upload', '|', 'Details', '|', 'SelectAll']
+     * },
+     * navigationPaneSettings: {
+     * visible: true,
+     * items: [
+     * 'NewFolder', 'Upload', 'Cut', 'Copy', 'Paste', 'Delete', 'Download',
+     * 'Rename', 'SortBy', 'Refresh', 'Selection', 'View', 'Details'
+     * ]
+     * },
+     * toolbarSettings: { visible: true, items: ['Upload', 'NewFolder'] },
+     * uploadSettings: { autoUpload: true, minFileSize: 0, maxFileSize: 30000000, allowedExtensions: '', autoClose: false }
      * }
      */
     @Complex<FileManagerSettingsModel>({}, FileManagerSettings)
     public fileManagerSettings: FileManagerSettingsModel;
     /**
      * Specifies the width of the RichTextEditor.
+     *
      * @default '100%'
      */
     @Property('100%')
     public width: string | number;
     /**
-     * Enables or disables the persisting component's state between page reloads. 
+     * Enables or disables the persisting component's state between page reloads.
      * If enabled, the value of Rich Text Editor is persisted
-     * 
+     *
      * {% codeBlock src='rich-text-editor/enable-persistence/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default false.
      */
     @Property(false)
     public enablePersistence: boolean;
     /**
-     * Enables or disables the resizing option in the editor. 
+     * Enables or disables the resizing option in the editor.
      * If enabled, the Rich Text Editor can be resized by dragging the resize icon in the bottom right corner.
-     * 
+     *
      * {% codeBlock src='rich-text-editor/enable-resize/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default false.
      */
     @Property(false)
     public enableResize: boolean;
     /**
-     * Allows additional HTML attributes such as title, name, etc., and 
+     * Allows additional HTML attributes such as title, name, etc., and
      * It will be accepts n number of attributes in a key-value pair format.
+     *
      * @default {}.
      */
     @Property({})
-    public htmlAttributes: { [key: string]: string; };
+    public htmlAttributes: { [key: string]: string };
     /**
      * Specifies the placeholder for the RichTextEditor’s content used when the Rich Text Editor body is empty.
+     *
      * @default null.
      */
     @Property(null)
@@ -436,6 +438,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Enables or disables the auto-save option which performs the save action while in the idle state after typed content.
      * If enabled, the Rich Text Editor will save the content on idle state with `saveInterval` property's value.
      * The change event will be triggered if the content has changed from the last saved state.
+     *
      * @default false.
      */
     @Property(false)
@@ -443,250 +446,257 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * The user interactions on the component are disabled, when set to true.
+     *
      * @default false.
      */
     @Property(false)
     public readonly: boolean;
     /**
      * Specifies a value that indicates whether the component is enabled or not.
-     * 
+     *
      * {% codeBlock src='rich-text-editor/enabled/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default true.
      */
     @Property(true)
     public enabled: boolean;
     /**
      * Defines whether to allow the cross-scripting site or not.
+     *
      * @default true
      */
     @Property(true)
     public enableHtmlSanitizer: boolean;
     /**
-     * specifies the value whether the source code is displayed with encoded format. 
+     * specifies the value whether the source code is displayed with encoded format.
+     *
      * @default false.
      */
     @Property(false)
     public enableHtmlEncode: boolean;
     /**
      * Specifies a value that indicates whether the xhtml is enabled or not.
+     *
      * @default false.
      */
     @Property(false)
     public enableXhtml: boolean;
-    /**    
-     * Specifies the height of the Rich Text Editor component.    
-     * @default "auto"    
+    /**
+     * Specifies the height of the Rich Text Editor component.
+     *
+     * @default "auto"
      */
     @Property('auto')
     public height: string | number;
-    /**    
+    /**
      * Specifies the CSS class name appended with the root element of the RichTextEditor.
      * One or more custom CSS classes can be added to a RichTextEditor.
-     * @default null  
+     *
+     * @default null
      */
     @Property(null)
     public cssClass: string;
-    /**     
-     * Specifies the value displayed in the RichTextEditor's content area and it should be string. 
+    /**
+     * Specifies the value displayed in the RichTextEditor's content area and it should be string.
      * The content of Rich Text Editor can be loaded with dynamic data such as database, AJAX content, and more.
-     * 
+     *
      * {% codeBlock src='rich-text-editor/value/index.md' %}{% endcodeBlock %}
-     * 
-     * @default null 
+     *
+     * @default null
      */
     @Property(null)
     public value: string;
-    /**     
-     * Specifies the count of undo history which is stored in undoRedoManager. 
-     * 
+    /**
+     * Specifies the count of undo history which is stored in undoRedoManager.
+     *
      * {% codeBlock src='rich-text-editor/undo-redo-steps/index.md' %}{% endcodeBlock %}
-     * 
-     * @default 30 
+     *
+     * @default 30
      */
     @Property(30)
     public undoRedoSteps: number;
-    /**     
-     * Specifies the interval value in milliseconds that store actions in undoRedoManager. The minimum value is 300 milliseconds. 
-     * @default 300 
+    /**
+     * Specifies the interval value in milliseconds that store actions in undoRedoManager. The minimum value is 300 milliseconds.
+     *
+     * @default 300
      */
     @Property(300)
     public undoRedoTimer: number;
     /**
      * Specifies the editing mode of the RichTextEditor.
-     * 
-     *   - `HTML` - Render Rich Text Editor as HTML editor using &lt;IFRAME&gt; element or content editable &lt;div&gt; element
-     *     or &lt;textarea&gt; element.
-     * 
-     *   - `Markdown` - Render Rich Text Editor as markdown editor using &lt;textarea&gt;.
-     * 
+     *
+     * - `HTML` - Render Rich Text Editor as HTML editor using &lt;IFRAME&gt; element or content editable &lt;div&gt; element
+     * or &lt;textarea&gt; element.
+     *
+     * - `Markdown` - Render Rich Text Editor as markdown editor using &lt;textarea&gt;.
+     *
      * @default 'HTML'
      */
     @Property('HTML')
     public editorMode: EditorMode;
-    /**     
+    /**
      * Customizes the key actions in RichTextEditor.
      * For example, when using German keyboard, the key actions can be customized using these shortcuts.
-     * 
+     *
      * {% codeBlock src='rich-text-editor/keyconfig/index.md' %}{% endcodeBlock %}
-     * 
-     * @default null 
+     *
+     * @default null
      */
     @Property(null)
     public keyConfig: { [key: string]: string };
-    /**     
-     * Sets Boolean value to enable or disable the display of the character counter. 
-     * 
+    /**
+     * Sets Boolean value to enable or disable the display of the character counter.
+     *
      * {% codeBlock src='rich-text-editor/show-char-count/index.md' %}{% endcodeBlock %}
-     * 
-     * @default false 
+     *
+     * @default false
      */
     @Property(false)
     public showCharCount: boolean;
-    /**     
-     * Allows the tab key action in the Rich Text Editor content. 
-     * 
+    /**
+     * Allows the tab key action in the Rich Text Editor content.
+     *
      * {% codeBlock src='rich-text-editor/enable-tab-key/index.md' %}{% endcodeBlock %}
-     * 
-     * @default false 
+     *
+     * @default false
      */
     @Property(false)
     public enableTabKey: boolean;
-    /**     
+    /**
      * Enable `enableAutoUrl` to accept the given URL (relative or absolute) without validating the URL for hyperlinks, otherwise
      * the given URL will automatically convert to absolute path URL by prefixing `https://` for hyperlinks.
-     * 
+     *
      * {% codeBlock src='rich-text-editor/enable-autourl/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default false
      */
     @Property(false)
     public enableAutoUrl: boolean;
-    /**     
+    /**
      * Specifies the maximum number of characters allowed in the Rich Text Editor component.
-     * 
+     *
      * {% codeBlock src='rich-text-editor/max-length/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default -1
      */
     @Property(-1)
     public maxLength: number;
     /**
      * Predefine the collection of paragraph styles along with quote and code style that populate in format dropdown from the toolbar.
-     * 
+     *
      * {% codeBlock src='rich-text-editor/format/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default
      * {
-     *  default: 'Paragraph',
-     *  width: '65px',
-     *  types: [
-     *      { text: 'Paragraph' },
-     *      { text: 'Code' },
-     *      { text: 'Quotation' },
-     *      { text: 'Heading 1' },
-     *      { text: 'Heading 2' },
-     *      { text: 'Heading 3' },
-     *      { text: 'Heading 4' },
-     *      { text: 'Heading 5' },
-     *      { text: 'Heading 6' }
-     *  ]
+     * default: 'Paragraph',
+     * width: '65px',
+     * types: [
+     * { text: 'Paragraph' },
+     * { text: 'Code' },
+     * { text: 'Quotation' },
+     * { text: 'Heading 1' },
+     * { text: 'Heading 2' },
+     * { text: 'Heading 3' },
+     * { text: 'Heading 4' },
+     * { text: 'Heading 5' },
+     * { text: 'Heading 6' }
+     * ]
      * }
      */
     @Complex<FormatModel>({}, Format)
     public format: FormatModel;
-    /**     
+    /**
      * Predefine the font families that populate in font family dropdown list from the toolbar.
-     * 
+     *
      * {% codeBlock src='rich-text-editor/font-family/index.md' %}{% endcodeBlock %}
-     * 
-     * @default 
+     *
+     * @default
      * {
-     *  default: 'Segoe UI',
-     *  width: '65px',
-     *  items: [
-     *      { text: 'Segoe UI', value: 'Segoe UI' },
-     *      { text: 'Arial',  value: 'Arial,Helvetica,sans-serif' },
-     *      { text: 'Courier New', value: 'Courier New,Courier,monospace' },
-     *      { text: 'Georgia', value: 'Georgia,serif' },
-     *      { text: 'Impact', value: 'Impact,Charcoal,sans-serif' },
-     *      { text: 'Lucida Console', value: 'Lucida Console,Monaco,monospace' },
-     *      { text: 'Tahoma', value: 'Tahoma,Geneva,sans-serif' },
-     *      { text: 'Times New Roman', value: 'Times New Roman,Times,serif' },
-     *      { text: 'Trebuchet MS', value: 'Trebuchet MS,Helvetica,sans-serif' },
-     *      { text: 'Verdana', value: 'Verdana,Geneva,sans-serif' }
-     *     ]
+     * default: 'Segoe UI',
+     * width: '65px',
+     * items: [
+     * { text: 'Segoe UI', value: 'Segoe UI' },
+     * { text: 'Arial',  value: 'Arial,Helvetica,sans-serif' },
+     * { text: 'Courier New', value: 'Courier New,Courier,monospace' },
+     * { text: 'Georgia', value: 'Georgia,serif' },
+     * { text: 'Impact', value: 'Impact,Charcoal,sans-serif' },
+     * { text: 'Lucida Console', value: 'Lucida Console,Monaco,monospace' },
+     * { text: 'Tahoma', value: 'Tahoma,Geneva,sans-serif' },
+     * { text: 'Times New Roman', value: 'Times New Roman,Times,serif' },
+     * { text: 'Trebuchet MS', value: 'Trebuchet MS,Helvetica,sans-serif' },
+     * { text: 'Verdana', value: 'Verdana,Geneva,sans-serif' }
+     * ]
      * }
      */
     @Complex<FontFamilyModel>({}, FontFamily)
     public fontFamily: FontFamilyModel;
-    /**     
+    /**
      * Predefine the font sizes that populate in font size dropdown list from the toolbar.
-     * 
+     *
      * {% codeBlock src='rich-text-editor/font-size/index.md' %}{% endcodeBlock %}
-     * 
-     * @default 
+     *
+     * @default
      * {
-     *  default: '10',
-     *  width: '35px',
-     *  items: [
-     *      { text: '8', value: '8pt' },
-     *      { text: '10', value: '10pt' },
-     *      { text: '12', value: '12pt' },
-     *      { text: '14', value: '14pt' },
-     *      { text: '18', value: '18pt' },
-     *      { text: '24', value: '24pt' },
-     *      { text: '36', value: '36pt' }
-     *    ]
+     * default: '10',
+     * width: '35px',
+     * items: [
+     * { text: '8', value: '8pt' },
+     * { text: '10', value: '10pt' },
+     * { text: '12', value: '12pt' },
+     * { text: '14', value: '14pt' },
+     * { text: '18', value: '18pt' },
+     * { text: '24', value: '24pt' },
+     * { text: '36', value: '36pt' }
+     * ]
      * }
      */
     @Complex<FontSizeModel>({}, FontSize)
     public fontSize: FontSizeModel;
-    /**     
+    /**
      * Predefine the color palette that can be rendered for font color toolbar command .
-     * 
+     *
      * {% codeBlock src='rich-text-editor/font-color/index.md' %}{% endcodeBlock %}
-     * 
-     * @default 
+     *
+     * @default
      * {
-     *  columns: 10,
-     *  colorCode: {
-     *      'Custom': [
-     *          '', '#000000', '#e7e6e6', '#44546a', '#4472c4', '#ed7d31', '#a5a5a5', '#ffc000', '#70ad47', '#ff0000',
-     *          '#f2f2f2', '#808080', '#cfcdcd', '#d5dce4', '#d9e2f3', '#fbe4d5', '#ededed', '#fff2cc', '#e2efd9', '#ffcccc',
-     *          '#d9d9d9', '#595959', '#aeaaaa', '#acb9ca', '#b4c6e7', '#f7caac', '#dbdbdb', '#ffe599', '#c5e0b3', '#ff8080',
-     *          '#bfbfbf', '#404040', '#747070', '#8496b0', '#8eaadb', '#f4b083', '#c9c9c9', '#ffd966', '#a8d08d', '#ff3333',
-     *          '#a6a6a6', '#262626', '#3b3838', '#323e4f', '#2f5496', '#c45911', '#7b7b7b', '#bf8f00', '#538135', '#b30000',
-     *          '#7f7f7f', '#0d0d0d', '#161616', '#212934', '#1f3763', '#823b0b', '#525252', '#7f5f00', '#375623', '#660000']
-     *    }
-     *  }
+     * columns: 10,
+     * colorCode: {
+     * 'Custom': [
+     * '', '#000000', '#e7e6e6', '#44546a', '#4472c4', '#ed7d31', '#a5a5a5', '#ffc000', '#70ad47', '#ff0000',
+     * '#f2f2f2', '#808080', '#cfcdcd', '#d5dce4', '#d9e2f3', '#fbe4d5', '#ededed', '#fff2cc', '#e2efd9', '#ffcccc',
+     * '#d9d9d9', '#595959', '#aeaaaa', '#acb9ca', '#b4c6e7', '#f7caac', '#dbdbdb', '#ffe599', '#c5e0b3', '#ff8080',
+     * '#bfbfbf', '#404040', '#747070', '#8496b0', '#8eaadb', '#f4b083', '#c9c9c9', '#ffd966', '#a8d08d', '#ff3333',
+     * '#a6a6a6', '#262626', '#3b3838', '#323e4f', '#2f5496', '#c45911', '#7b7b7b', '#bf8f00', '#538135', '#b30000',
+     * '#7f7f7f', '#0d0d0d', '#161616', '#212934', '#1f3763', '#823b0b', '#525252', '#7f5f00', '#375623', '#660000']
+     * }
+     * }
      */
     @Complex<FontColorModel>({}, FontColor)
     public fontColor: FontColorModel;
-    /**     
+    /**
      * Predefine the color palette that can be rendered for background color (text highlighted color) toolbar command.
-     * 
+     *
      * {% codeBlock src='rich-text-editor/background-color/index.md' %}{% endcodeBlock %}
-     * 
-     * @default 
+     *
+     * @default
      * {
-     *  columns: 5,
-     *  colorCode: {
-     *          'Custom': ['#ffff00', '#00ff00', '#00ffff', '#ff00ff', '#0000ff', '#ff0000',
-     *              '#000080', '#008080', '#008000', '#800080', '#800000', '#808000',
-     *              '#c0c0c0', '#000000', '']
-     *   }
+     * columns: 5,
+     * colorCode: {
+     * 'Custom': ['#ffff00', '#00ff00', '#00ffff', '#ff00ff', '#0000ff', '#ff0000',
+     * '#000080', '#008080', '#008000', '#800080', '#800000', '#808000',
+     * '#c0c0c0', '#000000', '']
+     * }
      * }
      */
     @Complex<BackgroundColorModel>({}, BackgroundColor)
     public backgroundColor: BackgroundColorModel;
     /**
      * Accepts the template design and assigns it as RichTextEditor’s content.
-     * The built-in template engine which provides options to compile template string into a executable function. 
+     * The built-in template engine which provides options to compile template string into a executable function.
      * For EX: We have expression evolution as like ES6 expression string literals
-     * 
+     *
      * {% codeBlock src='rich-text-editor/value-template/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default null
      */
     @Property(null)
@@ -695,35 +705,38 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Specifies the saveInterval in milliseconds for autosave the value.
      * The change event will be triggered if the content was changed from the last saved interval.
-     * 
+     *
      * {% codeBlock src='rich-text-editor/save-interval/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default 10000
      */
     @Property(10000)
     public saveInterval: number;
 
     /**
-     * Triggers before command execution using toolbar items or executeCommand method. 
-     * If you cancel this event, the command cannot be executed. 
+     * Triggers before command execution using toolbar items or executeCommand method.
+     * If you cancel this event, the command cannot be executed.
      * Set the cancel argument to true to cancel the command execution.
-     * @event
+     *
+     * @event 'actionBegin'
      * @blazorProperty 'OnActionBegin'
      */
     @Event()
     public actionBegin: EmitType<ActionBeginEventArgs>;
-    /** 
+    /**
      * Triggers after command execution using toolbar items or executeCommand method.
-     * @event
+     *
+     * @event 'actionComplete'
      * @blazorProperty 'OnActionComplete'
      */
     @Event()
     public actionComplete: EmitType<ActionCompleteEventArgs>;
     /**
      * Event triggers when the dialog is being opened.
-     * If you cancel this event, the dialog remains closed. 
+     * If you cancel this event, the dialog remains closed.
      * Set the cancel argument to true to cancel the open of a dialog.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'OnDialogOpen'
      * @blazorType Syncfusion.EJ2.Blazor.Popups.BeforeOpenEventArgs
      */
@@ -732,17 +745,21 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public beforeDialogOpen: EmitType<BeforeOpenEventArgs>;
     /**
      * Event triggers when a dialog is opened.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'DialogOpened'
      * @blazorType DialogOpenEventArgs
      */
+    /* eslint-disable */
     @Event()
     public dialogOpen: EmitType<Object>;
+    /* eslint-enable */
     /**
      * Event triggers when the dialog is being closed.
      * If you cancel this event, the dialog remains opened.
      * Set the cancel argument to true to prevent closing a dialog.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'OnDialogClose'
      * @blazorType Syncfusion.EJ2.Blazor.Popups.BeforeOpenEventArgs
      */
@@ -750,183 +767,226 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public beforeDialogClose: EmitType<BeforeCloseEventArgs>;
     /**
      * Event triggers after the dialog has been closed.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'DialogClosed'
      * @blazorType DialogCloseEventArgs
      */
+    /* eslint-disable */
     @Event()
     public dialogClose: EmitType<Object>;
+    /* eslint-enable */
     /**
      * Event triggers when the quick toolbar is being opened.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'OnQuickToolbarOpen'
      */
-
     @Event()
     public beforeQuickToolbarOpen: EmitType<BeforeQuickToolbarOpenArgs>;
     /**
      * Event triggers when a quick toolbar is opened.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'QuickToolbarOpened'
      * @blazorType QuickToolbarEventArgs
      */
+    /* eslint-disable */
     @Event()
     public quickToolbarOpen: EmitType<Object>;
+    /* eslint-enable */
     /**
      * Event triggers after the quick toolbar has been closed.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'QuickToolbarClosed'
      * @blazorType QuickToolbarEventArgs
      */
+    /* eslint-disable */
     @Event()
     public quickToolbarClose: EmitType<Object>;
-    /** 
+    /* eslint-enable */
+    /**
      * Triggers when the undo and redo status is updated.
-     * @event
+     *
+     * @event 'object'
      * @blazorType ToolbarUpdateEventArgs
      */
+    /* eslint-disable */
     @Event()
     private toolbarStatusUpdate: EmitType<Object>;
+    /* eslint-enable */
     /**
      * Event triggers when the image is selected or dragged into the insert image dialog.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'OnImageSelected'
      */
     @Event()
     public imageSelected: EmitType<SelectedEventArgs>;
     /**
      * Event triggers before the image upload process.
-     * @event
+     *
+     * @event 'beforeImageUpload'
      */
     @Event()
     public beforeImageUpload: EmitType<BeforeUploadEventArgs>;
     /**
      * Event triggers when the selected image begins to upload in the insert image dialog.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'OnImageUploading'
      */
     @Event()
     public imageUploading: EmitType<UploadingEventArgs>;
     /**
      * Event triggers when the image is successfully uploaded to the server side.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'OnImageUploadSuccess'
      * @blazorType ImageSuccessEventArgs
      */
+    /* eslint-disable */
     @Event()
     public imageUploadSuccess: EmitType<Object>;
+    /* eslint-enable */
     /**
      * Event triggers when there is an error in the image upload.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'OnImageUploadFailed'
      * @blazorType ImageFailedEventArgs
      */
+    /* eslint-disable */
     @Event()
     public imageUploadFailed: EmitType<Object>;
+    /* eslint-enable */
     /**
      * Event triggers when the selected image is cleared from the insert image dialog.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'OnImageRemoving'
      */
     @Event()
     public imageRemoving: EmitType<RemovingEventArgs>;
     /**
      * Event triggers when the selected image is cleared from the Rich Text Editor Content.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'OnImageDelete'
      */
     @Event()
     public afterImageDelete: EmitType<AfterImageDeleteEventArgs>;
-    /** 
+    /**
      * Triggers when the Rich Text Editor is rendered.
-     * @event 
+     *
+     * @event 'object'
      * @blazorProperty 'Created'
      */
+    /* eslint-disable */
     @Event()
     public created: EmitType<Object>;
-    /** 
+    /* eslint-enable */
+    /**
      * Triggers when the Rich Text Editor is destroyed.
-     * @event 
+     *
+     * @event 'object'
      * @blazorProperty 'Destroyed'
      * @blazorType DestroyedEventArgs
      */
+    /* eslint-disable */
     @Event()
     public destroyed: EmitType<Object>;
-    /** 
+    /* eslint-enable */
+    /**
      * Event triggers before sanitize the value. It's only applicable to editorMode as `HTML`.
-     * @event 
+     *
+     * @event 'object'
      * @blazorProperty 'OnSanitizeHtml'
      */
     @Event()
     public beforeSanitizeHtml: EmitType<BeforeSanitizeHtmlArgs>;
     /**
      * Triggers when Rich Text Editor is focused out.
-     * @event
+     *
+     * @event 'object'
      * @blazorType BlurEventArgs
      */
+    /* eslint-disable */
     @Event()
     public blur: EmitType<Object>;
+    /* eslint-enable */
     /**
      * Triggers when Rich Text Editor Toolbar items is clicked.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'OnToolbarClick'
      * @blazorType ToolbarClickEventArgs
      */
+    /* eslint-disable */
     @Event()
     public toolbarClick: EmitType<Object>;
-    /** 
+    /* eslint-enable */
+    /**
      * Triggers when Rich Text Editor is focused in
-     * @event
+     *
+     * @event 'object'
      * @blazorType FocusEventArgs
      */
+    /* eslint-disable */
     @Event()
     public focus: EmitType<Object>;
-    /** 
+    /* eslint-enable */
+    /**
      * Triggers only when Rich Text Editor is blurred and changes are done to the content.
-     * @event 
+     *
+     * @event 'object'
      * @blazorProperty 'ValueChange'
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
-    /** 
+    /**
      * Triggers only when resizing the image.
-     * @event 
+     *
+     * @event 'object'
      * @blazorProperty 'Resizing'
      */
     @Event()
     public resizing: EmitType<ResizeArgs>;
-    /** 
+    /**
      * Triggers only when start resize the image.
-     * @event 
+     *
+     * @event 'object'
      * @blazorProperty 'OnResizeStart'
      */
     @Event()
     public resizeStart: EmitType<ResizeArgs>;
-    /** 
+    /**
      * Triggers only when stop resize the image.
-     * @event 
+     *
+     * @event 'object'
      * @blazorProperty 'OnResizeStop'
      */
     @Event()
     public resizeStop: EmitType<ResizeArgs>;
     /**
      * Triggers before drop the image.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'OnImageDrop'
      */
     @Event()
     public beforeImageDrop: EmitType<ImageDropEventArgs>;
-    /**     
-     * Customize keyCode to change the key value. 
-     * 
+    /**
+     * Customize keyCode to change the key value.
+     *
      * {% codeBlock src='rich-text-editor/formatter/index.md' %}{% endcodeBlock %}
-     * 
-     * @default null 
+     *
+     * @default null
      * @blazorType object
      */
     @Property(null)
     public formatter: IFormatter;
-
     public keyboardModule: KeyboardEvents;
     public localeObj: L10n;
     public valueContainer: HTMLTextAreaElement;
@@ -934,17 +994,18 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private clickPoints: { [key: string]: number };
     private initialValue: string;
 
-    constructor(options?: RichTextEditorModel, element?: string | HTMLElement) {
+    public constructor(options?: RichTextEditorModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
     }
     /**
      * To provide the array of modules needed for component rendering
-     * @return {ModuleDeclaration[]}
+     *
+     * @returns {ModuleDeclaration[]} - specifies the declaration.
      * @hidden
      * @deprecated
      */
     public requiredModules(): ModuleDeclaration[] {
-        let modules: ModuleDeclaration[] = [];
+        const modules: ModuleDeclaration[] = [];
         if (this.toolbarSettings.enable) {
             modules.push(
                 { member: 'toolbar', args: [this, this.serviceLocator] }
@@ -1019,16 +1080,22 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * setEnable method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public setEnable(): void {
         this.updateEnable();
+        // eslint-disable-next-line
         (this.enabled) ? this.eventInitializer() : this.unWireEvents();
     }
 
     /**
      * For internal use only - Initialize the event handler;
+     *
+     * @returns {void}
+     * @hidden
      * @private
      */
     protected preRender(): void {
@@ -1048,12 +1115,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private persistData (): void {
         if (this.enablePersistence && this.originalElement.tagName === 'TEXTAREA') {
             this.element.id = this.originalElement.id + '_wrapper';
-            let data: string = window.localStorage.getItem(this.getModuleName() + this.element.id);
+            const data: string = window.localStorage.getItem(this.getModuleName() + this.element.id);
             if (!(isNOU(data) || (data === ''))) {
                 this.setProperties(JSON.parse(data), true);
             }
         }
-    };
+    }
 
     private setContainer(): void {
         this.originalElement = this.element.cloneNode(true) as HTMLElement;
@@ -1064,9 +1131,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.htmlAttributes = { 'tabindex': this.element.getAttribute('tabindex') };
             this.element.removeAttribute('tabindex');
         }
-        if (!this.isBlazor()) { this.element.innerHTML = ''; }
-        let invalidAttr: string[] = ['class', 'style', 'id', 'ejs-for'];
-        let htmlAttr: { [key: string]: string; } = {};
+        if (!this.isBlazor()) {
+            this.element.innerHTML = '';
+        }
+        const invalidAttr: string[] = ['class', 'style', 'id', 'ejs-for'];
+        const htmlAttr: { [key: string]: string } = {};
         for (let a: number = 0; a < this.element.attributes.length; a++) {
             if (invalidAttr.indexOf(this.element.attributes[a].name) === -1 &&
                 !(/^data-val/.test(this.element.attributes[a].name))) { // data-val for asp.net core data annotation validation.
@@ -1079,10 +1148,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.element.id = this.htmlAttributes.id;
         }
         if (this.element.tagName === 'TEXTAREA') {
-            let rteOuterWrapper: HTMLElement = this.createElement('div', {
+            const rteOuterWrapper: HTMLElement = this.createElement('div', {
                 className: this.element.getAttribute('class')
             }) as HTMLElement;
-            if (!this.isBlazor()) { this.element.innerHTML = ''; }
+            if (!this.isBlazor()) {
+                this.element.innerHTML = '';
+            }
             this.element.parentElement.insertBefore(rteOuterWrapper, this.element);
             if (isBlazor()) {
                 rteOuterWrapper.appendChild(this.element);
@@ -1093,7 +1164,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.valueContainer = this.element as HTMLTextAreaElement;
             }
             removeClass([this.valueContainer], this.element.getAttribute('class').split(' '));
-            if (this.isBlazor()) { addClass([this.element], classes.CLS_RTE_HIDDEN); }
+            if (this.isBlazor()) {
+                addClass([this.element], classes.CLS_RTE_HIDDEN);
+            }
             this.element = rteOuterWrapper;
         } else {
             this.valueContainer = this.createElement('textarea', {
@@ -1107,6 +1180,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * getPersistData method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -1115,6 +1190,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Focuses the Rich Text Editor component
+     *
+     * @returns {void}
      * @public
      */
     public focusIn(): void {
@@ -1125,6 +1202,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Blurs the Rich Text Editor component
+     *
+     * @returns {void}
      * @public
      */
     public focusOut(): void {
@@ -1135,6 +1214,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Selects all the content in RichTextEditor
+     *
+     * @returns {void}
      * @public
      */
     public selectAll(): void {
@@ -1142,8 +1223,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Selects a content range or an element
+     *
      * @param {Range} range - Specify the range which you want to select within the content.
      * The method used to select a particular sentence or word or entire document.
+     *
+     * @returns {void}
      * @public
      */
     public selectRange(range: Range): void {
@@ -1151,6 +1235,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Retrieves the HTML markup content from currently selected content of RichTextEditor.
+     *
+     * @returns {void}
      * @public
      */
     public getSelection(): string {
@@ -1163,28 +1249,31 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         return str;
     }
     /**
-     * Executes the commands 
-     * @param {CommandName} CommandName - Specifies the name of the command to be executed.
+     * Executes the commands
+     *
+     * @returns {void}
+     * @param {CommandName} commandName - Specifies the name of the command to be executed.
      * @param {string | HTMLElement | ILinkCommandsArgs | IImageCommandsArgs} value - Specifies the value that you want to execute.
+     * @param {ExecuteCommandOption} option - specifies the command option
      * @public
      */
     public executeCommand(
         commandName: CommandName, value?: string | HTMLElement | ILinkCommandsArgs |
-            IImageCommandsArgs | ITableCommandsArgs,
+        IImageCommandsArgs | ITableCommandsArgs,
         option?: ExecuteCommandOption): void {
         value = this.htmlPurifier(commandName, value);
         if (this.editorMode === 'HTML') {
-            let range: Range = this.getRange();
+            const range: Range = this.getRange();
             if (this.iframeSettings.enable) {
                 this.formatter.editorManager.nodeSelection.Clear(this.element.ownerDocument);
             }
-            let toFocus: boolean = (this.iframeSettings.enable &&
+            const toFocus: boolean = (this.iframeSettings.enable &&
                 range.startContainer === this.inputElement) ? true : !this.inputElement.contains(range.startContainer);
             if (toFocus) {
                 this.focusIn();
             }
         }
-        let tool: IExecutionGroup = executeGroup[commandName];
+        const tool: IExecutionGroup = executeGroup[commandName];
         if (option && option.undo) {
             if (option.undo && this.formatter.getUndoRedoStack().length === 0) {
                 this.formatter.saveData();
@@ -1207,77 +1296,86 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     private htmlPurifier(
         command: CommandName, value?: string | HTMLElement | ILinkCommandsArgs |
-            IImageCommandsArgs | ITableCommandsArgs): string {
+        IImageCommandsArgs | ITableCommandsArgs): string {
         if (this.editorMode === 'HTML') {
             switch (command) {
-                case 'insertHTML':
-                    if (this.enableHtmlSanitizer) {
-                        if (typeof value === 'string') {
-                            value = this.htmlEditorModule.sanitizeHelper(value);
-                        } else {
-                            value = this.htmlEditorModule.sanitizeHelper((value as HTMLElement).outerHTML);
-                        }
+            case 'insertHTML':
+                if (this.enableHtmlSanitizer) {
+                    if (typeof value === 'string') {
+                        value = this.htmlEditorModule.sanitizeHelper(value);
+                    } else {
+                        value = this.htmlEditorModule.sanitizeHelper((value as HTMLElement).outerHTML);
                     }
-                    break;
-                case 'insertTable':
-                    if (isNOU((value as { [key: string]: object }).width)) {
-                        (value as { [key: string]: object }).width = { minWidth: this.tableSettings.minWidth,
+                }
+                break;
+            case 'insertTable':
+                // eslint-disable-next-line
+                if (isNOU((value as { [key: string]: object }).width)) {
+                    // eslint-disable-next-line
+                    (value as { [key: string]: object }).width = { minWidth: this.tableSettings.minWidth,
                         maxWidth: this.tableSettings.maxWidth, width: this.tableSettings.width };
+                }
+                break;
+            case 'insertImage': {
+                const temp: HTMLElement = this.createElement('img', {
+                    attrs: {
+                        src: (value as IImageCommandsArgs).url as string
                     }
-                    break;
-                case 'insertImage':
-                    let temp: HTMLElement = this.createElement('img', {
-                        attrs: {
-                            src: (value as IImageCommandsArgs).url as string
-                        }
-                    });
-                    let imageValue: string = temp.outerHTML;
-                    if (this.enableHtmlSanitizer) {
-                        imageValue = this.htmlEditorModule.sanitizeHelper(temp.outerHTML);
-                    }
-                    let url: string = (imageValue !== '' && (this.createElement('div', {
-                        innerHTML: imageValue
-                    }).firstElementChild).getAttribute('src')) || null;
-                    url = !isNOU(url) ? url : '';
-                    (value as IImageCommandsArgs).url = url;
-                    if (isNOU((value as { [key: string]: object }).width)) {
-                        (value as { [key: string]: object }).width = { minWidth: this.insertImageSettings.minWidth,
+                });
+                let imageValue: string = temp.outerHTML;
+                if (this.enableHtmlSanitizer) {
+                    imageValue = this.htmlEditorModule.sanitizeHelper(temp.outerHTML);
+                }
+                let url: string = (imageValue !== '' && (this.createElement('div', {
+                    innerHTML: imageValue
+                }).firstElementChild).getAttribute('src')) || null;
+                url = !isNOU(url) ? url : '';
+                (value as IImageCommandsArgs).url = url;
+                // eslint-disable-next-line
+                if (isNOU((value as { [key: string]: object }).width)) {
+                    // eslint-disable-next-line
+                    (value as { [key: string]: object }).width = { minWidth: this.insertImageSettings.minWidth,
                         maxWidth: this.insertImageSettings.maxWidth, width: this.insertImageSettings.width };
-                    }
-                    if (isNOU((value as { [key: string]: object }).height)) {
-                        (value as { [key: string]: object }).height = { minHeight: this.insertImageSettings.minHeight,
+                }
+                // eslint-disable-next-line
+                if (isNOU((value as { [key: string]: object }).height)) {
+                    // eslint-disable-next-line
+                    (value as { [key: string]: object }).height = { minHeight: this.insertImageSettings.minHeight,
                         maxHeight: this.insertImageSettings.maxHeight, height: this.insertImageSettings.height };
+                }
+                break; }
+            case 'createLink': {
+                const tempNode: HTMLElement = this.createElement('a', {
+                    attrs: {
+                        href: (value as ILinkCommandsArgs).url as string
                     }
-                    break;
-                case 'createLink':
-                    let tempNode: HTMLElement = this.createElement('a', {
-                        attrs: {
-                            href: (value as ILinkCommandsArgs).url as string
-                        }
-                    });
-                    let linkValue: string = tempNode.outerHTML;
-                    if (this.enableHtmlSanitizer) {
-                        linkValue = this.htmlEditorModule.sanitizeHelper(tempNode.outerHTML);
-                    }
-                    let href: string = (linkValue !== '' && (this.createElement('div', {
-                        innerHTML: linkValue
-                    }).firstElementChild).getAttribute('href')) || null;
-                    href = !isNOU(href) ? href : '';
-                    (value as ILinkCommandsArgs).url = href;
-                    break;
+                });
+                let linkValue: string = tempNode.outerHTML;
+                if (this.enableHtmlSanitizer) {
+                    linkValue = this.htmlEditorModule.sanitizeHelper(tempNode.outerHTML);
+                }
+                let href: string = (linkValue !== '' && (this.createElement('div', {
+                    innerHTML: linkValue
+                }).firstElementChild).getAttribute('href')) || null;
+                href = !isNOU(href) ? href : '';
+                (value as ILinkCommandsArgs).url = href;
+                break; }
             }
         }
         return value as string;
     }
 
     private encode(value: string): string {
-        let divNode: HTMLElement = this.createElement('div');
+        const divNode: HTMLElement = this.createElement('div');
         divNode.innerText = value.trim();
+        // eslint-disable-next-line
         return divNode.innerHTML.replace(/<br\s*[\/]?>/gi, '\n');
     }
 
     /**
      * For internal use only - To Initialize the component rendering.
+     *
+     * @returns {void}
      * @private
      * @deprecated
      */
@@ -1290,7 +1388,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.notify(events.initialLoad, {});
         this.trigger(events.load);
         this.RTERender();
-        let execCommandCallBack: ExecCommandCallBack = new ExecCommandCallBack(this);
+        // eslint-disable-next-line
+        const execCommandCallBack: ExecCommandCallBack = new ExecCommandCallBack(this);
         this.notify(events.initialEnd, {});
         if (this.enableXhtml) {
             this.setProperties({ value: this.getXhtml() }, true);
@@ -1307,14 +1406,18 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.defaultResetValue = this.value;
             }
         }
+        // eslint-disable-next-line
         (!this.enabled) ? this.unWireEvents() : this.eventInitializer();
         this.renderComplete();
     }
 
     /**
      * For internal use only - Initialize the event handler
+     *
+     * @returns {void}
      * @private
      * @deprecated
+     * @hidden
      */
     protected eventInitializer(): void {
         this.wireEvents();
@@ -1322,32 +1425,40 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * For internal use only - keydown the event handler;
+     *
+     * @param {KeyboardEvent} e - specifies the event.
+     * @returns {void}
      * @private
      * @deprecated
+     * @hidden
      */
     public keyDown(e: KeyboardEvent): void {
         this.notify(events.keyDown, { member: 'keydown', args: e });
         this.restrict(e);
         if (this.editorMode === 'HTML' && ((e.which === 8 && e.code === 'Backspace') || (e.which === 46 && e.code === 'Delete'))) {
-            let range: Range = this.getRange();
-            let startNode: Element = range.startContainer.nodeName === '#text' ? range.startContainer.parentElement :
+            const range: Range = this.getRange();
+            const startNode: Element = range.startContainer.nodeName === '#text' ? range.startContainer.parentElement :
                 range.startContainer as Element;
             if (closest(startNode, 'pre') &&
                 (e.which === 8 && range.startContainer.textContent.charCodeAt(range.startOffset - 1) === 8203) ||
                 (e.which === 46 && range.startContainer.textContent.charCodeAt(range.startOffset) === 8203)) {
-                let regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
-                let pointer: number = e.which === 8 ? range.startOffset - 1 : range.startOffset;
+                const regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
+                const pointer: number = e.which === 8 ? range.startOffset - 1 : range.startOffset;
                 range.startContainer.textContent = range.startContainer.textContent.replace(regEx, '');
                 this.formatter.editorManager.nodeSelection.setCursorPoint(
                     this.contentModule.getDocument(), range.startContainer as Element, pointer);
             } else if ((e.code === 'Backspace' && e.which === 8) &&
                 range.startContainer.textContent.charCodeAt(0) === 8203 && range.collapsed) {
-                let parentEle: Element = range.startContainer.parentElement;
+                const parentEle: Element = range.startContainer.parentElement;
                 let index: number;
                 let i: number;
-                for (i = 0; i < parentEle.childNodes.length; i++) { if (parentEle.childNodes[i] === range.startContainer) { index = i; } }
+                for (i = 0; i < parentEle.childNodes.length; i++) {
+                    if (parentEle.childNodes[i] === range.startContainer) {
+                        index = i;
+                    }
+                }
                 let bool: boolean = true;
-                let removeNodeArray: number[] = [];
+                const removeNodeArray: number[] = [];
                 for (i = index; i >= 0; i--) {
                     if (parentEle.childNodes[i].nodeType === 3 && parentEle.childNodes[i].textContent.charCodeAt(0) === 8203 && bool) {
                         removeNodeArray.push(i);
@@ -1372,22 +1483,23 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         (e.code === 'Backspace' && e.which === 8))) {
             this.formatter.process(this, null, e);
             switch ((e as KeyboardEventArgs).action) {
-                case 'toolbar-focus':
-                    if (this.toolbarSettings.enable) {
-                        let selector: string = '.e-toolbar-item[aria-disabled="false"][title] [tabindex]';
-                        (this.toolbarModule.baseToolbar.toolbarObj.element.querySelector(selector) as HTMLElement).focus();
-                    }
-                    break;
-                case 'escape':
-                    (this.contentModule.getEditPanel() as HTMLElement).focus();
-                    break;
+            case 'toolbar-focus':
+                if (this.toolbarSettings.enable) {
+                    // eslint-disable-next-line
+                    let selector: string = '.e-toolbar-item[aria-disabled="false"][title] [tabindex]';
+                    (this.toolbarModule.baseToolbar.toolbarObj.element.querySelector(selector) as HTMLElement).focus();
+                }
+                break;
+            case 'escape':
+                (this.contentModule.getEditPanel() as HTMLElement).focus();
+                break;
             }
         }
         if (!isNOU(this.placeholder)) {
             if ((!isNOU(this.placeHolderWrapper)) && (this.inputElement.textContent.length !== 1)) {
                 this.placeHolderWrapper.style.display = 'none';
             } else {
-            this.setPlaceHolder();
+                this.setPlaceHolder();
             }
         }
 
@@ -1400,7 +1512,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.inputElement.innerHTML === '<br>')) {
             this.inputElement.innerHTML = getEditValue('<p><br></p>', this);
         }
-        let allowedKeys: boolean = e.which === 32 || e.which === 13 || e.which === 8 || e.which === 46;
+        const allowedKeys: boolean = e.which === 32 || e.which === 13 || e.which === 8 || e.which === 46;
         if (((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys) || (this.editorMode === 'Markdown'
             && ((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys)) && !this.inlineMode.enable) {
             if (this.editorMode === 'HTML') {
@@ -1417,12 +1529,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.notify(events.toolbarRefresh, { args: e });
         }
         if (!isNOU(this.placeholder)) {
-            if (!(e.key === 'Enter' && e.keyCode === 13) && this.inputElement.innerHTML === '<p><br></p>') {
-                this.setPlaceHolder();
-            }
+            this.setPlaceHolder();
         }
     }
-    /** 
+    /**
+     * @param {string} value - specifies the value.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -1440,21 +1552,25 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * This method will clean up the HTML against cross-site scripting attack and return the HTML as string.
      * It's only applicable to editorMode as `HTML`.
+     *
      * @param {string} value - Specifies the value that you want to sanitize.
-     * @return {string}
+     * @returns {string} - specifies the the string value
      */
     public sanitizeHtml(value: string): string {
         return this.serializeValue(value);
     }
 
-    /** 
+    /**
      * updateValue method
+     *
+     * @param {string} value - specifies the string value.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public updateValue(value?: string): void {
         if (isNOU(value)) {
-            let inputVal: string = this.inputElement.innerHTML;
+            const inputVal: string = this.inputElement.innerHTML;
             this.setProperties({ value: isEditableValueEmpty(inputVal) ? null : inputVal });
         } else {
             this.setProperties({ value: value });
@@ -1465,7 +1581,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (!isIDevice()) {
             this.notify(events.editAreaClick, { member: 'editAreaClick', args: e });
         } else {
-            let touch: Touch = <Touch>((e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e);
+            const touch: Touch = <Touch>((e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e);
             if (this.clickPoints.clientX === touch.clientX && this.clickPoints.clientY === touch.clientY) {
                 this.notify(events.editAreaClick, { member: 'editAreaClick', args: e });
             }
@@ -1473,7 +1589,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private notifyMouseUp(e: MouseEvent | TouchEvent): void {
-        let touch: Touch = <Touch>((e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e);
+        const touch: Touch = <Touch>((e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e);
         this.notify(events.mouseUp, { member: 'mouseUp', args: e,
             touchData: { prevClientX: this.clickPoints.clientX, prevClientY: this.clickPoints.clientY,
                 clientX: touch.clientX, clientY: touch.clientY }
@@ -1487,8 +1603,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private mouseUp(e: MouseEvent | TouchEvent): void {
         if (this.quickToolbarSettings.showOnRightClick && Browser.isDevice) {
-            let target: Element = e.target as Element;
-            let closestTable: Element = closest(target, 'table');
+            const target: Element = e.target as Element;
+            const closestTable: Element = closest(target, 'table');
             if (target && target.nodeName === 'A' || target.nodeName === 'IMG' || (target.nodeName === 'TD' || target.nodeName === 'TH' ||
                 target.nodeName === 'TABLE' || (closestTable && this.contentModule.getEditPanel().contains(closestTable)))) {
                 return;
@@ -1497,15 +1613,19 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.notifyMouseUp(e);
     }
 
-    /** 
+    /**
+     * @param {Function} module - specifies the module function.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
+    // eslint-disable-next-line
     public ensureModuleInjected(module: Function): boolean {
         return this.getInjectedModules().indexOf(module) >= 0;
     }
 
     /**
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -1514,6 +1634,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -1522,21 +1643,25 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
+     * @param {KeyboardEvent} e - specifies the keyboard event.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public onPaste(e?: KeyboardEvent | ClipboardEvent): void {
-        let evenArgs: { [key: string]: Object } = {
+        // eslint-disable-next-line
+        const evenArgs: { [key: string]: Object } = {
             originalEvent: e,
             cancel: false,
             requestType: 'Paste'
         };
+        // eslint-disable-next-line
         this.trigger(events.actionBegin, evenArgs, (pasteArgs: { [key: string]: Object }) => {
-            let currentLength: number = this.getText().length;
-            let selectionLength: number = this.getSelection().length;
-            let pastedContentLength: number = (isNOU(e as ClipboardEvent) || isNOU((e as ClipboardEvent).clipboardData))
-            ? 0 : (e as ClipboardEvent).clipboardData.getData('text/plain').length;
-            let totalLength: number = (currentLength - selectionLength) + pastedContentLength;
+            const currentLength: number = this.getText().length;
+            const selectionLength: number = this.getSelection().length;
+            const pastedContentLength: number = (isNOU(e as ClipboardEvent) || isNOU((e as ClipboardEvent).clipboardData))
+                ? 0 : (e as ClipboardEvent).clipboardData.getData('text/plain').length;
+            const totalLength: number = (currentLength - selectionLength) + pastedContentLength;
             if (this.editorMode === 'Markdown') {
                 if (!(this.maxLength === -1 || totalLength < this.maxLength)) {
                     e.preventDefault();
@@ -1548,12 +1673,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 if (!isNOU(this.pasteCleanupModule)) {
                     this.notify(events.pasteClean, { args: e as ClipboardEvent });
                 } else {
-                    let args: Object = { requestType: 'Paste', editorMode: this.editorMode, event: e };
+                    // eslint-disable-next-line
+                    const args: Object = { requestType: 'Paste', editorMode: this.editorMode, event: e };
                     let value: string = null;
                     if (e && !isNOU((e as ClipboardEvent).clipboardData)) {
                         value = (e as ClipboardEvent).clipboardData.getData('text/plain');
                     }
-                    let file: File = e && (e as ClipboardEvent).clipboardData && (e as ClipboardEvent).clipboardData.items.length > 0 ?
+                    const file: File = e && (e as ClipboardEvent).clipboardData && (e as ClipboardEvent).clipboardData.items.length > 0 ?
                         (e as ClipboardEvent).clipboardData.items[0].getAsFile() : null;
                     if (value !== null) {
                         this.notify(events.paste, {
@@ -1562,7 +1688,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                             text: value
                         });
                     }
-                    setTimeout(() => { this.formatter.onSuccess(this, args); }, 0);
+                    setTimeout(() => {
+                        this.formatter.onSuccess(this, args);
+                    }, 0);
                 }
             } else {
                 e.preventDefault();
@@ -1570,42 +1698,47 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         });
     }
 
-    /** 
+    /**
+     * @param {string} action - specifies the string value.
+     * @param {MouseEvent} event - specifies the event.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public clipboardAction(action: string, event: MouseEvent | KeyboardEvent): void {
         switch (action.toLowerCase()) {
-            case 'cut':
-                this.onCut();
-                this.formatter.onSuccess(this, {
-                    requestType: 'Cut',
-                    editorMode: this.editorMode,
-                    event: event
-                });
-                break;
-            case 'copy':
-                this.onCopy();
-                this.formatter.onSuccess(this, {
-                    requestType: 'Copy',
-                    editorMode: this.editorMode,
-                    event: event
-                });
-                break;
-            case 'paste':
-                this.onPaste(event as KeyboardEvent);
-                break;
+        case 'cut':
+            this.onCut();
+            this.formatter.onSuccess(this, {
+                requestType: 'Cut',
+                editorMode: this.editorMode,
+                event: event
+            });
+            break;
+        case 'copy':
+            this.onCopy();
+            this.formatter.onSuccess(this, {
+                requestType: 'Copy',
+                editorMode: this.editorMode,
+                event: event
+            });
+            break;
+        case 'paste':
+            this.onPaste(event as KeyboardEvent);
+            break;
         }
     }
     /**
      * Destroys the component (detaches/removes all event handlers, attributes, classes, and empties the component element).
-     * @method destroy
-     * @return {void}
+     *
+     * @returns {void}
      */
     public destroy(): void {
-        if (this.isDestroyed || !this.isRendered) { return; }
+        if (this.isDestroyed || !this.isRendered) {
+            return;
+        }
         if (this.element.offsetParent === null) {
-            if (!isNOU(this.toolbarModule)) { this.toolbarModule.destroy(); }
+            this.toolbarModule.destroy();
             return;
         }
         this.notify(events.destroy, {});
@@ -1649,7 +1782,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.placeHolderWrapper = null;
         }
         if (!isNOU(this.cssClass)) {
-            let allClassName: string[] = this.cssClass.split(' ');
+            const allClassName: string[] = this.cssClass.split(' ');
             for (let i: number = 0; i < allClassName.length; i++) {
                 if (allClassName[i].trim() !== '') {
                     removeClass([this.element], allClassName[i]);
@@ -1660,13 +1793,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.removeAttributes();
         super.destroy();
         this.isRendered = false;
-        if (this.enablePersistence) { window.localStorage.removeItem(this.getModuleName() + this.element.id); }
+        if (this.enablePersistence) {
+            window.localStorage.removeItem(this.getModuleName() + this.element.id);
+        }
     }
 
 
     private removeHtmlAttributes(): void {
         if (this.htmlAttributes) {
-            let keys: string[] = Object.keys(this.htmlAttributes);
+            const keys: string[] = Object.keys(this.htmlAttributes);
             for (let i: number = 0; i < keys.length && this.element.hasAttribute(keys[i]); i++) {
                 this.element.removeAttribute(keys[i]);
             }
@@ -1703,7 +1838,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Returns the HTML or Text inside the RichTextEditor.
-     * @return {Element} 
+     *
+     * @returns {Element} - specifies the element.
      */
     public getContent(): Element {
         if (this.iframeSettings.enable && isBlazor()) {
@@ -1714,7 +1850,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Returns the text content as string.
-     * @return {string} 
+     *
+     * @returns {string} - specifies the string value.
      */
     public getText(): string {
         return this.contentModule.getText();
@@ -1722,36 +1859,41 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Returns the html value of the selected content as string.
-     * @return {string} 
+     *
+     * @returns {string} - specifies the string value.
      */
     public getSelectedHtml(): string {
         let range: Range;
-        let wrapperElm: HTMLElement = this.createElement('div');
-        let selection: Selection = this.contentModule.getDocument().getSelection();
+        const wrapperElm: HTMLElement = this.createElement('div');
+        const selection: Selection = this.contentModule.getDocument().getSelection();
         if (selection.rangeCount > 0) {
             range = selection.getRangeAt(0);
-            let selectedHtml: DocumentFragment = range.cloneContents();
+            const selectedHtml: DocumentFragment = range.cloneContents();
             wrapperElm.appendChild(selectedHtml);
         }
         return wrapperElm.innerHTML;
     }
 
     /**
-     * It shows the inline quick toolbar 
+     * It shows the inline quick toolbar
+     *
+     * @returns {void}
      */
     public showInlineToolbar(): void {
         if (this.inlineMode.enable) {
-            let currentRange: Range = this.getRange();
-            let targetElm: HTMLElement = currentRange.endContainer.nodeName === '#text' ?
-            currentRange.endContainer.parentElement : currentRange.endContainer as HTMLElement;
-            let x: number = currentRange.getClientRects()[0].left;
-            let y: number = currentRange.getClientRects()[0].top;
+            const currentRange: Range = this.getRange();
+            const targetElm: HTMLElement = currentRange.endContainer.nodeName === '#text' ?
+                currentRange.endContainer.parentElement : currentRange.endContainer as HTMLElement;
+            const x: number = currentRange.getClientRects()[0].left;
+            const y: number = currentRange.getClientRects()[0].top;
             this.quickToolbarModule.showInlineQTBar(x, y, (targetElm as HTMLElement));
         }
     }
 
     /**
-     * It hides the inline quick toolbar 
+     * It hides the inline quick toolbar
+     *
+     * @returns {void}
      */
     public hideInlineToolbar(): void {
         this.quickToolbarModule.hideInlineQTBar();
@@ -1759,6 +1901,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {void}
      * @private
      * @deprecated
      */
@@ -1768,112 +1912,129 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Called internally if any of the property value changed.
+     *
+     * @param {RichTextEditorModel} newProp - specifies the the property.
+     * @param {RichTextEditorModel} oldProp - specifies the old property.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public onPropertyChanged(newProp: RichTextEditorModel, oldProp: RichTextEditorModel): void {
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'value':
-                    let val: string;
-                    let nVal: string = newProp[prop];
-                    val = this.editorMode === 'HTML' ? getEditValue(nVal, this) : nVal;
-                    if (!isNOU(nVal) && nVal !== '') {
-                        this.value = this.serializeValue(((this.enableHtmlEncode) ? this.encode(decode(val)) : val));
+            case 'value': {
+                const nVal: string = newProp[prop];
+                const val: string = this.editorMode === 'HTML' ? getEditValue(nVal, this) : nVal;
+                if (!isNOU(nVal) && nVal !== '') {
+                    this.value = this.serializeValue(((this.enableHtmlEncode) ? this.encode(decode(val)) : val));
+                }
+                this.updatePanelValue();
+                this.setPlaceHolder();
+                this.notify(events.xhtmlValidation, { module: 'XhtmlValidation', newProp: newProp, oldProp: oldProp });
+                if (this.enableXhtml) {
+                    this.setProperties({ value: this.getXhtml() }, true);
+                }
+                if (this.showCharCount) {
+                    this.countModule.refresh();
+                }
+                break;
+            }
+            case 'valueTemplate':
+                this.setValue();
+                if (this.showCharCount) {
+                    this.countModule.refresh();
+                }
+                break;
+            case 'width': this.setWidth(newProp[prop]);
+                if (this.toolbarSettings.enable) {
+                    this.toolbarModule.refreshToolbarOverflow();
+                    this.resizeHandler();
+                }
+                break;
+            case 'height':
+                this.setHeight(newProp[prop]);
+                this.setContentHeight();
+                this.autoResize();
+                break;
+            case 'readonly':
+                this.setReadOnly(false);
+                break;
+            case 'cssClass':
+                this.element.classList.remove(oldProp[prop]);
+                this.setCssClass(newProp[prop]);
+                break;
+            case 'enabled': this.setEnable(); break;
+            case 'enableRtl': this.updateRTL(); break;
+            case 'placeholder':
+                this.placeholder = newProp[prop];
+                this.setPlaceHolder();
+                break;
+            case 'htmlAttributes':
+                setAttributes(this.htmlAttributes, this, false, false); break;
+            case 'iframeSettings': {
+                const frameSetting: IFrameSettingsModel = oldProp[prop];
+                if (frameSetting.resources) {
+                    const iframe: HTMLDocument = this.contentModule.getDocument();
+                    const header: HTMLHeadElement = iframe.querySelector('head');
+                    let files: Element[];
+                    if (frameSetting.resources.scripts) {
+                        files = <NodeListOf<Element> & Element[]>header.querySelectorAll('.' + classes.CLS_SCRIPT_SHEET);
+                        this.removeSheets(files);
                     }
-                    this.updatePanelValue();
-                    this.setPlaceHolder();
-                    this.notify(events.xhtmlValidation, { module: 'XhtmlValidation', newProp: newProp, oldProp: oldProp });
-                    if (this.enableXhtml) {
-                        this.setProperties({ value: this.getXhtml() }, true);
+                    if (frameSetting.resources.styles) {
+                        files = <NodeListOf<Element> & Element[]>header.querySelectorAll('.' + classes.CLS_STYLE_SHEET);
+                        this.removeSheets(files);
                     }
-                    if (this.showCharCount) { this.countModule.refresh(); } break;
-                case 'valueTemplate':
-                    this.setValue();
-                    if (this.showCharCount) { this.countModule.refresh(); }
-                    break;
-                case 'width': this.setWidth(newProp[prop]);
-                    if (this.toolbarSettings.enable) {
-                        this.toolbarModule.refreshToolbarOverflow();
-                        this.resizeHandler();
-                    }
-                    break;
-                case 'height':
-                    this.setHeight(newProp[prop]);
-                    this.setContentHeight();
-                    this.autoResize();
-                    break;
-                case 'readonly': this.setReadOnly(false); break;
-                case 'cssClass':
-                    this.element.classList.remove(oldProp[prop]);
-                    this.setCssClass(newProp[prop]);
-                    break;
-                case 'enabled': this.setEnable(); break;
-                case 'enableRtl': this.updateRTL(); break;
-                case 'placeholder':
-                    this.placeholder = newProp[prop];
-                    this.setPlaceHolder();
-                    break;
-                case 'htmlAttributes':
-                    setAttributes(this.htmlAttributes, this, false, false); break;
-                case 'iframeSettings':
-                    let frameSetting: IFrameSettingsModel = oldProp[prop];
-                    if (frameSetting.resources) {
-                        let iframe: HTMLDocument = this.contentModule.getDocument();
-                        let header: HTMLHeadElement = iframe.querySelector('head');
-                        let files: Element[];
-                        if (frameSetting.resources.scripts) {
-                            files = <NodeListOf<Element> & Element[]>header.querySelectorAll('.' + classes.CLS_SCRIPT_SHEET);
-                            this.removeSheets(files);
-                        }
-                        if (frameSetting.resources.styles) {
-                            files = <NodeListOf<Element> & Element[]>header.querySelectorAll('.' + classes.CLS_STYLE_SHEET);
-                            this.removeSheets(files);
-                        }
-                    }
-                    this.setIframeSettings(); break;
-                case 'locale': super.refresh(); break;
-                case 'inlineMode':
-                    this.notify(events.modelChanged, { module: 'quickToolbar', newProp: newProp, oldProp: oldProp });
-                    this.setContentHeight();
-                    break;
-                case 'toolbarSettings':
-                    this.notify(events.modelChanged, { module: 'toolbar', newProp: newProp, oldProp: oldProp });
-                    this.setContentHeight();
-                    break;
-                case 'maxLength':
-                    if (this.showCharCount) { this.countModule.refresh(); }
-                    break;
-                case 'showCharCount':
-                    if (newProp[prop] && this.countModule) {
-                        this.countModule.renderCount();
-                    } else if (newProp[prop] === false && this.countModule) {
-                        this.countModule.destroy();
-                    }
-                    break;
-                case 'enableHtmlEncode':
-                    this.updateValueData(); this.updatePanelValue(); this.setPlaceHolder();
-                    if (this.showCharCount) { this.countModule.refresh(); }
-                    break;
-                case 'undoRedoSteps':
-                case 'undoRedoTimer':
-                    this.formatter.editorManager.observer.notify(CONSTANT.MODEL_CHANGED, { newProp: newProp, oldProp: oldProp });
-                    break;
-                    case 'enableXhtml':
-                        this.notify(events.xhtmlValidation, { module: 'XhtmlValidation', newProp: newProp, oldProp: oldProp });
-                     break;
-                case 'quickToolbarSettings':
-                    newProp.quickToolbarSettings.showOnRightClick ? this.wireContextEvent() : this.unWireContextEvent();
-                    this.notify(events.modelChanged, { newProp: newProp, oldProp: oldProp });
-                    break;
-                default:
-                    this.notify(events.modelChanged, { newProp: newProp, oldProp: oldProp });
-                    break;
+                }
+                this.setIframeSettings(); break; }
+            case 'locale': super.refresh(); break;
+            case 'inlineMode':
+                this.notify(events.modelChanged, { module: 'quickToolbar', newProp: newProp, oldProp: oldProp });
+                this.setContentHeight();
+                break;
+            case 'toolbarSettings':
+                this.notify(events.modelChanged, { module: 'toolbar', newProp: newProp, oldProp: oldProp });
+                this.setContentHeight();
+                break;
+            case 'maxLength':
+                if (this.showCharCount) {
+                    this.countModule.refresh();
+                }
+                break;
+            case 'showCharCount':
+                if (newProp[prop] && this.countModule) {
+                    this.countModule.renderCount();
+                } else if (newProp[prop] === false && this.countModule) {
+                    this.countModule.destroy();
+                }
+                break;
+            case 'enableHtmlEncode':
+                this.updateValueData(); this.updatePanelValue(); this.setPlaceHolder();
+                if (this.showCharCount) {
+                    this.countModule.refresh();
+                }
+                break;
+            case 'undoRedoSteps':
+            case 'undoRedoTimer':
+                this.formatter.editorManager.observer.notify(CONSTANT.MODEL_CHANGED, { newProp: newProp, oldProp: oldProp });
+                break;
+            case 'enableXhtml':
+                this.notify(events.xhtmlValidation, { module: 'XhtmlValidation', newProp: newProp, oldProp: oldProp });
+                break;
+            case 'quickToolbarSettings':
+                // eslint-disable-next-line
+                newProp.quickToolbarSettings.showOnRightClick ? this.wireContextEvent() : this.unWireContextEvent();
+                this.notify(events.modelChanged, { newProp: newProp, oldProp: oldProp });
+                break;
+            default:
+                this.notify(events.modelChanged, { newProp: newProp, oldProp: oldProp });
+                break;
             }
         }
     }
     /**
      * @hidden
+     * @returns {void}
      * @deprecated
      */
     public updateValueData(): void {
@@ -1895,7 +2056,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private updatePanelValue(): void {
         let value: string = this.value;
         value = (this.enableHtmlEncode && this.value) ? decode(value) : value;
-        let getTextArea: HTMLInputElement = this.element.querySelector('.e-rte-srctextarea') ;
+        const getTextArea: HTMLInputElement = this.element.querySelector('.e-rte-srctextarea') ;
         if (value) {
             if (getTextArea && getTextArea.style.display === 'block') {
                 getTextArea.value = this.value;
@@ -1941,6 +2102,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * setPlaceHolder method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -1959,7 +2122,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.placeHolderWrapper.innerHTML = this.placeholder;
                 if (this.inputElement.textContent.length === 0 &&
                 !isNOU(this.inputElement.firstChild) && this.inputElement.firstChild.nodeName === 'P' &&
-                !isNOU(this.inputElement.firstChild.firstChild) && this.inputElement.firstChild.firstChild.nodeName === 'BR') {
+                !isNOU(this.inputElement.firstChild.firstChild) && this.inputElement.firstChild.firstChild.nodeName === 'BR' &&
+                this.inputElement.innerHTML !== '<p><br></p><p><br></p>') {
                     this.placeHolderWrapper.style.display = 'block';
                 } else {
                     this.placeHolderWrapper.style.display = 'none';
@@ -1979,7 +2143,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     private setCssClass(cssClass: string): void {
         if (!isNOU(cssClass)) {
-            let allClassName: string[] = cssClass.split(' ');
+            const allClassName: string[] = cssClass.split(' ');
             for (let i: number = 0; i < allClassName.length; i++) {
                 if (allClassName[i].trim() !== '') {
                     this.element.classList.add(allClassName[i]);
@@ -2000,6 +2164,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * setReadOnly method
+     *
+     * @param {boolean} initial - specifies the boolean value
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -2015,30 +2182,35 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * By default, prints all the pages of the RichTextEditor.
-     * @return {void}
+     *
+     * @returns {void}
      */
     public print(): void {
         let printWind: Window;
-        let printArgs: PrintEventArgs = {
+        const printArgs: PrintEventArgs = {
             element: this.inputElement,
             requestType: 'print',
             cancel: false
         };
         this.trigger(events.actionBegin, printArgs, (printingArgs: PrintEventArgs) => {
             printWind = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth);
-            if (Browser.info.name === 'msie') { printWind.resizeTo(screen.availWidth, screen.availHeight); }
+            if (Browser.info.name === 'msie') {
+                printWind.resizeTo(screen.availWidth, screen.availHeight);
+            }
             printWind = printWindow(this.inputElement, printWind);
             if (!printingArgs.cancel) {
-                let actionArgs: ActionCompleteEventArgs = {
+                const actionArgs: ActionCompleteEventArgs = {
                     requestType: 'print'
                 };
                 this.trigger(events.actionComplete, actionArgs);
-             }
+            }
         });
     }
 
     /**
      * Refresh the view of the editor.
+     *
+     * @returns {void}
      * @public
      */
     public refreshUI(): void {
@@ -2046,15 +2218,20 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Shows the Rich Text Editor component in full-screen mode.
+     *
+     * @returns {void}
      */
     public showFullScreen(): void {
         this.fullScreenModule.showFullScreen();
     }
     /**
      * Enables the give toolbar items in the Rich Text Editor component.
-     * @param {boolean} muteToolbarUpdate enable/disables the toolbar item status in RichTextEditor.
+     *
+     * @returns {void}
      * @param {string | string[]} items - Specifies the single or collection of items
+     * @param {boolean} muteToolbarUpdate enable/disables the toolbar item status in RichTextEditor.
      * that you want to be enable in Rich Text Editor’s Toolbar.
+     *
      * @public
      */
     public enableToolbarItem(items: string | string[], muteToolbarUpdate?: boolean): void {
@@ -2062,9 +2239,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Disables the given toolbar items in the Rich Text Editor component.
-     * @param {boolean} muteToolbarUpdate enable/disables the toolbar item status in RichTextEditor.
+     *
+     * @returns {void}
      * @param {string | string[]} items - Specifies the single or collection of items
+     * @param {boolean} muteToolbarUpdate enable/disables the toolbar item status in RichTextEditor.
      * that you want to be disable in Rich Text Editor’s Toolbar.
+     *
      * @public
      */
     public disableToolbarItem(items: string | string[], muteToolbarUpdate?: boolean): void {
@@ -2072,8 +2252,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Removes the give toolbar items from the Rich Text Editor component.
-     * @param {string | string[]} items - Specifies the single or collection of items 
+     *
+     * @returns {void}
+     * @param {string | string[]} items - Specifies the single or collection of items
      * that you want to be remove from Rich Text Editor’s Toolbar.
+     *
      * @public
      */
     public removeToolbarItem(items: string | string[]): void {
@@ -2082,6 +2265,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Get the selected range from the RichTextEditor's content.
+     *
+     * @returns {void}
      * @public
      * @deprecated
      */
@@ -2096,7 +2281,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private RTERender(): void {
-        let rendererFactory: RendererFactory = this.serviceLocator.getService<RendererFactory>('rendererFactory');
+        const rendererFactory: RendererFactory = this.serviceLocator.getService<RendererFactory>('rendererFactory');
         this.contentModule = rendererFactory.getRenderer(RenderType.Content);
         this.fullScreenModule = new FullScreen(this);
         this.renderModule.render();
@@ -2119,8 +2304,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private setIframeSettings(): void {
         if (this.iframeSettings.resources) {
-            let styleSrc: string[] = this.iframeSettings.resources.styles;
-            let scriptSrc: string[] = this.iframeSettings.resources.scripts;
+            const styleSrc: string[] = this.iframeSettings.resources.styles;
+            const scriptSrc: string[] = this.iframeSettings.resources.scripts;
             if (this.iframeSettings.resources.scripts.length > 0) {
                 this.InjectSheet(true, scriptSrc);
             }
@@ -2135,15 +2320,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private InjectSheet(scriptSheet: boolean, srcList: string[]): void {
         try {
             if (srcList && srcList.length > 0) {
-                let iFrame: HTMLDocument = this.contentModule.getDocument();
-                let target: HTMLElement = iFrame.querySelector('head');
+                const iFrame: HTMLDocument = this.contentModule.getDocument();
+                const target: HTMLElement = iFrame.querySelector('head');
                 for (let i: number = 0; i < srcList.length; i++) {
                     if (scriptSheet) {
-                        let scriptEle: HTMLScriptElement = this.createScriptElement();
+                        const scriptEle: HTMLScriptElement = this.createScriptElement();
                         scriptEle.src = srcList[i];
                         target.appendChild(scriptEle);
                     } else {
-                        let styleEle: HTMLLinkElement = this.createStyleElement();
+                        const styleEle: HTMLLinkElement = this.createStyleElement();
                         styleEle.href = srcList[i];
                         target.appendChild(styleEle);
                     }
@@ -2155,7 +2340,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     private createScriptElement(): HTMLScriptElement {
-        let scriptEle: HTMLScriptElement = this.createElement('script', {
+        const scriptEle: HTMLScriptElement = this.createElement('script', {
             className: classes.CLS_SCRIPT_SHEET
         }) as HTMLScriptElement;
         scriptEle.type = 'text/javascript';
@@ -2163,7 +2348,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private createStyleElement(): HTMLLinkElement {
-        let styleEle: HTMLLinkElement = this.createElement('link', {
+        const styleEle: HTMLLinkElement = this.createElement('link', {
             className: classes.CLS_STYLE_SHEET
         }) as HTMLLinkElement;
         styleEle.rel = 'stylesheet';
@@ -2179,19 +2364,18 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             if (typeof this.valueTemplate === 'string') {
                 this.setProperties({ value: this.valueTemplate });
             } else {
-                let compiledString: Function;
-                compiledString = compile(this.valueTemplate);
-                let compiledTemplate: Element[] = compiledString({});
+                // eslint-disable-next-line
+                const compiledString: Function = compile(this.valueTemplate);
+                const compiledTemplate: Element[] = compiledString({});
                 for (let i: number = 0; i < compiledTemplate.length; i++) {
-                    let item: Element = compiledTemplate[i] as Element;
+                    const item: Element = compiledTemplate[i] as Element;
                     append([item], this.element);
                 }
-                if (this.element.innerHTML.trim() !== '') {
                 this.setProperties({ value: this.element.innerHTML.trim() });
-                }
             }
         } else {
-            let  innerHtml: string = !isNOU(this.element.innerHTML) && this.element.innerHTML.replace(/<(\/?|\!?)(!--!--)>/g, '').trim();
+            // eslint-disable-next-line
+            const  innerHtml: string = !isNOU(this.element.innerHTML) && this.element.innerHTML.replace(/<(\/?|\!?)(!--!--)>/g, '').trim();
             if (innerHtml !== '') {
                 if (this.element.tagName === 'TEXTAREA') {
                     this.setProperties({ value: decode(innerHtml) });
@@ -2208,23 +2392,30 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Image max width calculation method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public getInsertImgMaxWidth(): string | number {
-        let maxWidth: string | number = this.insertImageSettings.maxWidth;
-        let imgPadding: number = 12;
-        let imgResizeBorder: number = 2;
-        let editEle: HTMLElement = this.contentModule.getEditPanel() as HTMLElement;
-        let eleStyle: CSSStyleDeclaration = window.getComputedStyle(editEle);
-        let editEleMaxWidth: number = editEle.offsetWidth - (imgPadding + imgResizeBorder +
-            parseFloat(eleStyle.paddingLeft.split('px')[0]) + parseFloat(eleStyle.paddingRight.split('px')[0]) +
-            parseFloat(eleStyle.marginLeft.split('px')[0]) + parseFloat(eleStyle.marginRight.split('px')[0]));
+        const maxWidth: string | number = this.insertImageSettings.maxWidth;
+        // eslint-disable-next-line
+        const imgPadding: number = 12
+        const imgResizeBorder: number = 2;
+        const editEle: HTMLElement = this.contentModule.getEditPanel() as HTMLElement;
+        const eleStyle: CSSStyleDeclaration = window.getComputedStyle(editEle);
+        const editEleMaxWidth: number = editEle.offsetWidth - (imgPadding + imgResizeBorder +
+                parseFloat(eleStyle.paddingLeft.split('px')[0]) + parseFloat(eleStyle.paddingRight.split('px')[0]) +
+                parseFloat(eleStyle.marginLeft.split('px')[0]) + parseFloat(eleStyle.marginRight.split('px')[0]));
         return isNOU(maxWidth) ? editEleMaxWidth : maxWidth;
     }
 
     /**
      * setContentHeight method
+     *
+     * @param {string} target - specifies the target value.
+     * @param {boolean} isExpand - specifies  the bollean value.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -2233,7 +2424,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         let topValue: number = 0;
         let rteHeightPercent: string;
         let heightPercent: boolean;
-        let cntEle: HTMLElement = (this.sourceCodeModule.getPanel() &&
+        const cntEle: HTMLElement = (this.sourceCodeModule.getPanel() &&
             this.sourceCodeModule.getPanel().parentElement.style.display === 'block') ? this.sourceCodeModule.getPanel().parentElement :
             <HTMLElement>this.contentModule.getPanel();
         let rteHeight: number = this.element.offsetHeight;
@@ -2244,10 +2435,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 rteHeightPercent = this.height as string;
             }
         }
-        let tbHeight: number = this.getToolbar() ? this.toolbarModule.getToolbarHeight() : 0;
-        let rzHandle: HTMLElement = this.element.querySelector('.' + classes.CLS_RTE_RES_HANDLE) as HTMLElement;
-        let rzHeight: number = this.enableResize ? (!isNOU(rzHandle) ? (rzHandle.offsetHeight + 8) : 0) : 0;
-        let expandPopHeight: number = this.getToolbar() ? this.toolbarModule.getExpandTBarPopHeight() : 0;
+        const tbHeight: number = this.getToolbar() ? this.toolbarModule.getToolbarHeight() : 0;
+        const rzHandle: HTMLElement = this.element.querySelector('.' + classes.CLS_RTE_RES_HANDLE) as HTMLElement;
+        const rzHeight: number = this.enableResize ? (!isNOU(rzHandle) ? (rzHandle.offsetHeight + 8) : 0) : 0;
+        const expandPopHeight: number = this.getToolbar() ? this.toolbarModule.getExpandTBarPopHeight() : 0;
         if (this.toolbarSettings.type === ToolbarType.Expand && isExpand && target !== 'preview') {
             heightValue = (this.height === 'auto' && rzHeight === 0) ? 'auto' : rteHeight - (tbHeight + expandPopHeight + rzHeight) + 'px';
             topValue = (!this.toolbarSettings.enableFloating) ? expandPopHeight : 0;
@@ -2260,11 +2451,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         setStyleAttribute(cntEle, { height: heightValue, marginTop: topValue + 'px' });
         if (this.iframeSettings.enable && target === 'sourceCode') {
-            let codeElement: HTMLElement = <HTMLElement>select('.' + classes.CLS_RTE_CONTENT, this.element);
+            const codeElement: HTMLElement = <HTMLElement>select('.' + classes.CLS_RTE_CONTENT, this.element);
             setStyleAttribute(codeElement, { height: heightValue, marginTop: topValue + 'px' });
         }
         if (this.toolbarSettings.enableFloating && this.getToolbar() && !this.inlineMode.enable) {
-            let tbWrapHeight: string = (isExpand ? (tbHeight + expandPopHeight) : tbHeight) + 'px';
+            const tbWrapHeight: string = (isExpand ? (tbHeight + expandPopHeight) : tbHeight) + 'px';
             setStyleAttribute(this.getToolbar().parentElement, { height: tbWrapHeight });
         }
         if (rzHeight === 0) {
@@ -2273,6 +2464,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Retrieves the HTML from RichTextEditor.
+     *
+     * @returns {void}
      * @public
      */
     public getHtml(): string {
@@ -2281,6 +2474,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Retrieves the Rich Text Editor's XHTML validated HTML content when `enableXhtml` property is enabled.
+     *
+     * @returns {void}
      * @public
      */
     public getXhtml(): string {
@@ -2293,24 +2488,31 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Shows the source HTML/MD markup.
+     *
+     * @returns {void}
      * @public
      */
     public showSourceCode(): void {
-        if (this.readonly) { return; }
+        if (this.readonly) {
+            return;
+        }
         this.notify(events.sourceCode, {});
     }
 
     /**
      * Returns the maximum number of characters in the Rich Text Editor.
+     *
+     * @returns {void}
      * @public
      */
     public getCharCount(): number {
-        let htmlText : string = this.editorMode === 'Markdown' ? (this.inputElement as HTMLTextAreaElement).value.trim() :
+        const htmlText : string = this.editorMode === 'Markdown' ? (this.inputElement as HTMLTextAreaElement).value.trim() :
             (this.inputElement as HTMLTextAreaElement).textContent.trim();
         return htmlText.length;
     }
 
     /**
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -2325,6 +2527,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -2333,6 +2536,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -2341,7 +2545,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
+     * @returns {void}
      * getID method
+     *
      * @hidden
      * @deprecated
      */
@@ -2350,7 +2556,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private mouseDownHandler(e: MouseEvent | TouchEvent): void {
-        let touch: Touch = <Touch>((e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e);
+        const touch: Touch = <Touch>((e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e);
         addClass([this.element], [classes.CLS_FOCUS]);
         this.preventDefaultResize(e as MouseEvent);
         this.notify(events.mouseDown, { args: e });
@@ -2365,9 +2571,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * preventDefaultResize method
+     *
+     * @param {FocusEvent} e - specifies the event.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
+    // eslint-disable-next-line
     public preventDefaultResize(e: FocusEvent | MouseEvent): void {
         if (Browser.info.name === 'msie') {
             this.contentModule.getEditPanel().addEventListener('mscontrolselect', this.preventImgResize);
@@ -2377,6 +2587,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
 
+    // eslint-disable-next-line
     private defaultResize(e: FocusEvent): void {
         if (Browser.info.name === 'msie') {
             this.contentModule.getEditPanel().removeEventListener('mscontrolselect', this.preventImgResize);
@@ -2420,7 +2631,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.cloneValue = (this.inputElement as HTMLTextAreaElement).value === '' ? null :
                     (this.inputElement as HTMLTextAreaElement).value;
             }
-            let active: Element = document.activeElement;
+            const active: Element = document.activeElement;
             if (active === this.element || active === this.getToolbarElement() || active === this.contentModule.getEditPanel()
                 || ((this.iframeSettings.enable && active === this.contentModule.getPanel()) &&
                 e.target && !(e.target as HTMLElement).classList.contains('e-img-inner')
@@ -2430,7 +2641,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 (this.contentModule.getEditPanel() as HTMLElement).focus();
                 if (!isNOU(this.getToolbarElement())) {
                     this.getToolbarElement().setAttribute('tabindex', '-1');
-                    let items: NodeList = this.getToolbarElement().querySelectorAll('[tabindex="0"]');
+                    const items: NodeList = this.getToolbarElement().querySelectorAll('[tabindex="0"]');
                     for (let i: number = 0; i < items.length; i++) {
                         (items[i] as HTMLElement).setAttribute('tabindex', '-1');
                     }
@@ -2444,7 +2655,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
         }
         if (!isNOU(this.getToolbarElement())) {
-            let toolbarItem: NodeList = this.getToolbarElement().querySelectorAll('input,select,button,a,[tabindex]');
+            const toolbarItem: NodeList = this.getToolbarElement().querySelectorAll('input,select,button,a,[tabindex]');
             for (let i: number = 0; i < toolbarItem.length; i++) {
                 if ((!(toolbarItem[i] as HTMLElement).classList.contains('e-rte-dropdown-btn') &&
                 !(toolbarItem[i] as HTMLElement).classList.contains('e-insert-table-btn')) &&
@@ -2461,7 +2672,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (!isNOU(this.tableModule)) {
             this.tableModule.removeResizeElement();
         }
-        let getTextArea: HTMLInputElement = this.element.querySelector('.e-rte-srctextarea') ;
+        const getTextArea: HTMLInputElement = this.element.querySelector('.e-rte-srctextarea') ;
         if (this.editorMode === 'HTML') {
             value = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.enableHtmlEncode ?
                 this.encode(decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
@@ -2487,8 +2698,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private onDocumentClick(e: MouseEvent): void {
-        let target: HTMLElement = <HTMLElement>e.target;
-        let rteElement: Element = closest(target, '.' + classes.CLS_RTE);
+        const target: HTMLElement = <HTMLElement>e.target;
+        const rteElement: Element = closest(target, '.' + classes.CLS_RTE);
         if (!this.element.contains(e.target as Node) && document !== e.target && rteElement !== this.element &&
             !closest(target, '[aria-owns="' + this.getID() + '"]')) {
             this.isBlur = true;
@@ -2500,10 +2711,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private blurHandler(e: FocusEvent): void {
         let trg: Element = e.relatedTarget as Element;
         if (trg) {
-            let rteElement: Element = closest(trg, '.' + classes.CLS_RTE);
+            const rteElement: Element = closest(trg, '.' + classes.CLS_RTE);
             if (rteElement && rteElement === this.element) {
                 this.isBlur = false;
-                if (trg === this.getToolbarElement()) { trg.setAttribute('tabindex', '-1'); }
+                if (trg === this.getToolbarElement()) {
+                    trg.setAttribute('tabindex', '-1');
+                }
             } else if (closest(trg, '[aria-owns="' + this.getID() + '"]')) {
                 this.isBlur = false;
             } else {
@@ -2514,7 +2727,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.isBlur && isNOU(trg)) {
             removeClass([this.element], [classes.CLS_FOCUS]);
             this.notify(events.focusChange, {});
-            let value: string = this.getUpdatedValue();
+            const value: string = this.getUpdatedValue();
             this.setProperties({ value: value });
             this.notify(events.toolbarRefresh, { args: e, documentNode: document });
             this.invokeChangeEvent();
@@ -2535,6 +2748,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * invokeChangeEvent method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -2549,6 +2764,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * invokeChangeEvent method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -2559,7 +2776,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         } else {
             currentValue = this.value;
         }
-        let eventArgs: ChangeEventArgs = {
+        const eventArgs: ChangeEventArgs = {
             value: currentValue
         };
         if (this.value !== this.cloneValue) {
@@ -2568,12 +2785,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     /**
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public wireScrollElementsEvents(): void {
         this.scrollParentElements = getScrollableParent(this.element);
-        for (let element of this.scrollParentElements) {
+        for (const element of this.scrollParentElements) {
             EventHandler.add(element, 'scroll', this.scrollHandler, this);
         }
         if (!this.iframeSettings.enable) {
@@ -2592,16 +2810,19 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private unWireContextEvent(): void {
         EventHandler.remove(this.inputElement, 'contextmenu', this.contextHandler);
-        if (Browser.isDevice && this.touchModule) { this.touchModule.destroy(); }
+        if (Browser.isDevice && this.touchModule) {
+            this.touchModule.destroy();
+        }
     }
 
     /**
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public unWireScrollElementsEvents(): void {
         this.scrollParentElements = getScrollableParent(this.element);
-        for (let element of this.scrollParentElements) {
+        for (const element of this.scrollParentElements) {
             EventHandler.remove(element, 'scroll', this.scrollHandler);
         }
         if (!this.iframeSettings.enable) {
@@ -2615,7 +2836,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private contextHandler(e: MouseEvent): void {
-        let closestElem: Element = closest((e.target as HTMLElement), 'a, table, img');
+        const closestElem: Element = closest((e.target as HTMLElement), 'a, table, img');
         if (this.inlineMode.onSelection === false ||  (!isNOU(closestElem) && this.inputElement.contains(closestElem)
         && (closestElem.tagName === 'IMG' || closestElem.tagName === 'TABLE' || closestElem.tagName === 'A'))) {
             e.preventDefault();
@@ -2623,21 +2844,26 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private resetHandler(): void {
-        let defaultValue: string = this.valueContainer.defaultValue.trim();
+        const defaultValue: string = this.valueContainer.defaultValue.trim();
         this.setProperties({ value: defaultValue === '' ? null : (this.isBlazor() ? this.defaultResetValue : defaultValue) });
     }
 
     /**
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public autoResize(): void {
         if (this.height === 'auto') {
             if (this.editorMode === 'Markdown') {
-                setTimeout(() => { this.setAutoHeight(this.inputElement); }, 0);
+                setTimeout(() => {
+                    this.setAutoHeight(this.inputElement);
+                }, 0);
             } else if (this.iframeSettings.enable) {
-                let iframeElement: HTMLIFrameElement = this.element.querySelector('#' + this.getID() + '_rte-view');
-                setTimeout(() => { this.setAutoHeight(iframeElement); }, 100);
+                const iframeElement: HTMLIFrameElement = this.element.querySelector('#' + this.getID() + '_rte-view');
+                setTimeout(() => {
+                    this.setAutoHeight(iframeElement);
+                }, 100);
                 this.inputElement.style.overflow = 'hidden';
             }
         } else {
@@ -2656,14 +2882,16 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.element.addEventListener('focusout', this.onBlurHandler, true);
         this.on(events.contentChanged, this.contentChanged, this);
         this.on(events.resizeInitialized, this.updateResizeFlag, this);
-        if (this.readonly && this.enabled) { return; }
+        if (this.readonly && this.enabled) {
+            return;
+        }
         this.bindEvents();
     }
     private restrict(e: MouseEvent | KeyboardEvent): void {
         if (this.maxLength >= 0 ) {
-            let element: string = this.editorMode === 'Markdown' ? this.contentModule.getText() :
-            ((e as MouseEvent).currentTarget as HTMLElement).textContent.trim();
-            let array: number[] = [8, 16, 17, 37, 38, 39, 40, 46, 65];
+            const element: string = this.editorMode === 'Markdown' ? this.contentModule.getText() :
+                ((e as MouseEvent).currentTarget as HTMLElement).textContent.trim();
+            const array: number[] = [8, 16, 17, 37, 38, 39, 40, 46, 65];
             let arrayKey: number;
             for (let i: number = 0; i <= array.length - 1; i++) {
                 if ((e as MouseEvent).which === array[i]) {
@@ -2686,7 +2914,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             keyAction: this.keyDown.bind(this), keyConfigs:
                 { ...this.formatter.keyConfig, ...this.keyConfig }, eventName: 'keydown'
         });
-        let formElement: Element = closest(this.valueContainer, 'form');
+        const formElement: Element = closest(this.valueContainer, 'form');
         if (formElement) {
             EventHandler.add(formElement, 'reset', this.resetHandler, this);
         }
@@ -2713,12 +2941,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private editorKeyDown(e: IHtmlKeyboardEvent): void {
         switch (e.event.action) {
-            case 'copy':
-                this.onCopy();
-                break;
-            case 'cut':
-                this.onCut();
-                break;
+        case 'copy':
+            this.onCopy();
+            break;
+        case 'cut':
+            this.onCut();
+            break;
         }
         if (e.callBack && (e.event.action === 'copy' || e.event.action === 'cut' || e.event.action === 'delete')) {
             e.callBack({
@@ -2734,7 +2962,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.element.removeEventListener('focusout', this.onBlurHandler, true);
         this.off(events.contentChanged, this.contentChanged);
         this.off(events.resizeInitialized, this.updateResizeFlag);
-        if (this.readonly && this.enabled) { return; }
+        if (this.readonly && this.enabled) {
+            return;
+        }
         this.unbindEvents();
     }
 
@@ -2742,7 +2972,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.keyboardModule) {
             this.keyboardModule.destroy();
         }
-        let formElement: Element = closest(this.valueContainer, 'form');
+        const formElement: Element = closest(this.valueContainer, 'form');
         if (formElement) {
             EventHandler.remove(formElement, 'reset', this.resetHandler);
         }

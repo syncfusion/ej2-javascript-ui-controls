@@ -1002,7 +1002,7 @@ describe('Waterfall Series', () => {
         it('checking mouse wheel zooming', (done: Function) => {
             loaded = (args: Object): void => {
                 chartObj.loaded = null;
-                let wheelArgs: wheel = {
+                let wheelArgs: unknown = {
                     preventDefault: prevent,
                     wheelDelta: 120,
                     detail: 3,

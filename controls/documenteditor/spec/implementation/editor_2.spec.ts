@@ -2954,35 +2954,3 @@ console.log('copy with content control');
         expect(() => { editor.editorModule.paste(); }).not.toThrowError();
     });
 });
-describe('Text Replace', () => {
-    let editor: DocumentEditor = undefined;
-    beforeAll(() => {
-        let ele: HTMLElement = createElement('div', { id: 'container' });
-        document.body.appendChild(ele);
-        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
-        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
-        editor.appendTo('#container');
-    });
-    afterAll((done) => {
-        editor.destroy();
-        document.body.removeChild(document.getElementById('container'));
-        editor = undefined;
-        setTimeout(function () {
-            done();
-        }, 1000);
-    });
-    it('Text replace should not delete, after empty space', () => {
-        editor.openBlank();
-        editor.editorModule.insertText('Test Test Test');
-        editor.selection.start.offset = 5;
-        editor.selection.end.offset = 9;
-        editor.editor.insertText('t');
-        let line: LineWidget = (editor.selection.start.paragraph.childWidgets[0] as LineWidget);
-        let element: TextElementBox = (line.children[0] as TextElementBox)
-        expect(element.text).toBe('Test t Test');
-    });
-});

@@ -8,6 +8,7 @@ export interface HScrollModel extends ComponentModel{
 
     /**
      * Specifies the left or right scrolling distance of the horizontal scrollbar moving.
+     *
      * @default null
      */
     scrollStep?: number;

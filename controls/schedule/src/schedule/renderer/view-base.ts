@@ -3,81 +3,73 @@ import {
     cldrData, Internationalization, addClass, setStyleAttribute, formatUnit, EventHandler
 } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
-import { TdData, ResourceDetails } from '../base/interface';
+import { TdData, ResourceDetails, CallbackFunction } from '../base/interface';
 import * as cls from '../base/css-constant';
 import * as util from '../base/util';
 
 /**
  * view base
  */
-
-export namespace ViewHelper {
-    export const getDayName: Function = (proxy: Schedule, date: Date) => {
-        return proxy.getDayNames('abbreviated')[date.getDay()];
-    };
-    export const getDate: Function = (proxy: Schedule, date: Date) => {
-        return proxy.globalize.formatDate(date, { format: 'd', calendar: proxy.getCalendarMode() });
-    };
-    export const getTime: Function = (proxy: Schedule, date: Date) => {
-        if (proxy.isAdaptive) {
-            if (proxy.timeFormat === 'HH:mm' || proxy.timeFormat === 'HH.mm') {
-                return proxy.globalize.formatDate(date, { format: 'H', calendar: proxy.getCalendarMode() });
-            }
-            return proxy.globalize.formatDate(date, { skeleton: 'h', calendar: proxy.getCalendarMode() });
-        }
-        return proxy.getTimeString(date);
-    };
-    export const getTimelineDate: Function = (proxy: Schedule, date: Date) => {
-        let skeleton: string = 'MMMd';
-        let text: string = proxy.globalize.formatDate(date, { skeleton: skeleton, calendar: proxy.getCalendarMode() }) + ', ' +
-            proxy.getDayNames('wide')[date.getDay()];
-        return util.capitalizeFirstWord(text, 'multiple');
-    };
-    export const getWeekNumberContent: Function = (proxy: Schedule, dates: Date[]) => {
-        let weekNumber: number;
-        if (proxy.weekRule === 'FirstDay') {
-            let weekNumberDate: Date = util.getWeekLastDate(dates.slice(-1)[0], proxy.firstDayOfWeek);
-            weekNumber = util.getWeekNumber(weekNumberDate);
-        } else if (proxy.weekRule === 'FirstFourDayWeek') {
-            let weekFirstDate: Date = util.getWeekFirstDate(dates.slice(-1)[0], proxy.firstDayOfWeek);
-            let weekLastDate: Date = util.getWeekLastDate(dates.slice(-1)[0], proxy.firstDayOfWeek);
-            let weekMidDate: Date = util.getWeekMiddleDate(weekFirstDate, weekLastDate);
-            weekNumber = util.getWeekNumber(weekMidDate);
-        } else if (proxy.weekRule === 'FirstFullWeek') {
-            let weekFirstDate: Date = util.getWeekFirstDate(dates.slice(-1)[0], proxy.firstDayOfWeek);
-            weekNumber = util.getWeekNumber(weekFirstDate);
-        }
-        return weekNumber;
-    };
-}
 export class ViewBase {
     public element: HTMLElement;
     public parent: Schedule;
     public renderDates: Date[];
     public colLevels: TdData[][];
     public viewIndex: number;
+
     /**
      * Constructor
+     *
+     * @param {Schedule} parent Accepts the schedule instance
      */
     constructor(parent: Schedule) {
         this.parent = parent;
     }
+
     public isTimelineView(): boolean {
         return this.parent.currentView.indexOf('Timeline') !== -1;
     }
+
     public getContentRows(): Element[] {
         return [];
     }
+
     public serverRenderLayout(): void {
         // Need only for layout server rendering
     }
+
+    public getDayName(date: Date): string {
+        return this.parent.getDayNames('abbreviated')[date.getDay()];
+    }
+
+    public getDate(date: Date): string {
+        return this.parent.globalize.formatDate(date, { format: 'd', calendar: this.parent.getCalendarMode() });
+    }
+
+    public getTime(date: Date): string {
+        if (this.parent.isAdaptive) {
+            if (this.parent.activeViewOptions.timeFormat === 'HH:mm' || this.parent.activeViewOptions.timeFormat === 'HH.mm') {
+                return this.parent.globalize.formatDate(date, { format: 'H', calendar: this.parent.getCalendarMode() });
+            }
+            return this.parent.globalize.formatDate(date, { skeleton: 'h', calendar: this.parent.getCalendarMode() });
+        }
+        return this.parent.getTimeString(date);
+    }
+
+    public getTimelineDate(date: Date): string {
+        const text: string = this.parent.globalize.formatDate(date, { skeleton: 'MMMd', calendar: this.parent.getCalendarMode() }) + ', ' +
+            this.parent.getDayNames('wide')[date.getDay()];
+        return util.capitalizeFirstWord(text, 'multiple');
+    }
+
     public createEventTable(trCount: number): Element {
-        let eventTable: Element = createElement('div', { className: cls.EVENT_TABLE_CLASS });
+        const eventTable: Element = createElement('div', { className: cls.EVENT_TABLE_CLASS });
         append(this.getEventRows(trCount), eventTable);
         return eventTable;
     }
+
     public getEventRows(trCount: number): Element[] {
-        let eventRows: Element[] = [];
+        const eventRows: Element[] = [];
         let eventContainer: Element;
         for (let row: number = 0; row < trCount; row++) {
             eventContainer = createElement('div', { className: cls.APPOINTMENT_CONTAINER_CLASS });
@@ -88,45 +80,51 @@ export class ViewBase {
         }
         return eventRows;
     }
+
     public collapseRows(wrap: Element): void {
         if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
             this.parent.resourceBase.hideResourceRows(wrap.querySelector('tbody'));
             this.parent.resourceBase.hideResourceRows(wrap.querySelector('.' + cls.EVENT_TABLE_CLASS));
         }
     }
+
     public createTableLayout(className?: string): Element {
-        let clsName: string = className || '';
-        let table: Element = createElement('table', { className: cls.SCHEDULE_TABLE_CLASS + ' ' + clsName });
-        let tbody: Element = createElement('tbody');
+        const clsName: string = className || '';
+        const table: Element = createElement('table', { className: cls.SCHEDULE_TABLE_CLASS + ' ' + clsName });
+        const tbody: Element = createElement('tbody');
         table.appendChild(tbody);
         return table;
     }
+
     public createColGroup(table: Element, lastRow: TdData[]): void {
         let length: number = lastRow.length;
         if (lastRow[0] && lastRow[0].colSpan) {
             length = lastRow.map((value: TdData) => value.colSpan).reduce((prev: number, next: number) => prev + next);
         }
-        let colGroupEle: Element = createElement('colgroup');
+        const colGroupEle: Element = createElement('colgroup');
         for (let i: number = 0; i < length; i++) {
             colGroupEle.appendChild(createElement('col'));
         }
         prepend([colGroupEle], table);
     }
+
     public getScrollXIndent(content: HTMLElement): number {
         return content.offsetHeight - content.clientHeight > 0 ? util.getScrollBarWidth() : 0;
     }
+
     public scrollTopPanel(target: HTMLElement): void {
         (this.getDatesHeaderElement().firstElementChild as Element).scrollLeft = target.scrollLeft;
     }
+
     public scrollHeaderLabels(target: HTMLElement): void {
-        let headerTable: HTMLElement = this.element.querySelector('.e-date-header-wrap table') as HTMLElement;
-        let colWidth: number = headerTable.offsetWidth / headerTable.querySelectorAll('colgroup col').length;
-        let applyLeft: Function = (headerCells: HTMLElement[], isRtl: boolean) => {
+        const headerTable: HTMLElement = this.element.querySelector('.e-date-header-wrap table') as HTMLElement;
+        const colWidth: number = headerTable.offsetWidth / headerTable.querySelectorAll('colgroup col').length;
+        const applyLeft: CallbackFunction = (headerCells: HTMLElement[], isRtl: boolean) => {
             let currentCell: HTMLElement;
             let tdLeft: number = 0;
             let colSpan: number = 0;
-            let hiddenLeft: number = isRtl ? target.scrollWidth - target.offsetWidth - target.scrollLeft : target.scrollLeft;
-            for (let cell of headerCells) {
+            const hiddenLeft: number = isRtl ? target.scrollWidth - target.offsetWidth - target.scrollLeft : target.scrollLeft;
+            for (const cell of headerCells) {
                 colSpan += parseInt(cell.getAttribute('colSpan'), 10);
                 if (colSpan > Math.floor(hiddenLeft / colWidth)) {
                     currentCell = cell;
@@ -138,35 +136,38 @@ export class ViewBase {
                 (currentCell.children[0] as HTMLElement).style[isRtl ? 'right' : 'left'] = (hiddenLeft - tdLeft) + 'px';
             }
         };
-        let classNames: string[] = ['.e-header-year-cell', '.e-header-month-cell', '.e-header-week-cell', '.e-header-cells'];
-        for (let className of classNames) {
-            let headerCells: HTMLElement[] = [].slice.call(this.element.querySelectorAll(className));
+        const classNames: string[] = ['.e-header-year-cell', '.e-header-month-cell', '.e-header-week-cell', '.e-header-cells'];
+        for (const className of classNames) {
+            const headerCells: HTMLElement[] = [].slice.call(this.element.querySelectorAll(className));
             if (headerCells.length > 0) {
-                for (let element of headerCells) {
+                for (const element of headerCells) {
                     (element.children[0] as HTMLElement).style[this.parent.enableRtl ? 'right' : 'left'] = '';
                 }
                 applyLeft(headerCells, this.parent.enableRtl);
             }
         }
     }
+
     public addAttributes(td: TdData, element: Element): void {
         if (td.template) { append(td.template, element); }
         if (td.colSpan) { element.setAttribute('colspan', td.colSpan.toString()); }
         if (td.className) { addClass([element], td.className); }
     }
+
     public getHeaderBarHeight(): number {
         let headerBarHeight: number = 2;
         if (this.parent.headerModule) {
             headerBarHeight += util.getOuterHeight(this.parent.headerModule.getHeaderElement());
         }
         if (this.parent.uiStateValues.isGroupAdaptive) {
-            let resHeader: HTMLElement = (<HTMLElement>this.parent.element.querySelector('.' + cls.RESOURCE_HEADER_TOOLBAR));
+            const resHeader: HTMLElement = (<HTMLElement>this.parent.element.querySelector('.' + cls.RESOURCE_HEADER_TOOLBAR));
             if (resHeader) {
                 headerBarHeight += resHeader.offsetHeight;
             }
         }
         return headerBarHeight;
     }
+
     public renderPanel(type: string): void {
         if (type === cls.PREVIOUS_PANEL_CLASS) {
             prepend([this.element], this.parent.element.querySelector('.' + cls.TABLE_CONTAINER_CLASS));
@@ -174,35 +175,44 @@ export class ViewBase {
             this.parent.element.querySelector('.' + cls.TABLE_CONTAINER_CLASS).appendChild(this.element);
         }
     }
+
     public setPanel(panel: HTMLElement): void {
         this.element = panel;
     }
+
     public getPanel(): HTMLElement {
         return this.element;
     }
+
     public getDatesHeaderElement(): HTMLElement {
         return this.element.querySelector('.' + cls.DATE_HEADER_CONTAINER_CLASS) as HTMLElement;
     }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getDateSlots(renderDates: Date[], workDays: number[]): TdData[] {
-        // Here getDateSlots only need in vertical and month views
-        return [];
+        return []; // Here getDateSlots only need in vertical and month views
     }
+
     public generateColumnLevels(): TdData[][] {
-        // Here generateColumnLevels only need in vertical and month views
-        return [];
+        return []; // Here generateColumnLevels only need in vertical and month views
     }
+
     public getColumnLevels(): TdData[][] {
         return this.colLevels;
     }
+
     public highlightCurrentTime(): void {
         // Here showTimeIndicator functionalities
     }
+
     public startDate(): Date {
         return this.renderDates[0];
     }
+
     public endDate(): Date {
         return util.addDays(this.renderDates[this.renderDates.length - 1], 1);
     }
+
     public getStartHour(): Date {
         let startHour: Date = this.parent.getStartEndTime(this.parent.activeViewOptions.startHour);
         if (isNullOrUndefined(startHour)) {
@@ -210,6 +220,7 @@ export class ViewBase {
         }
         return startHour;
     }
+
     public getEndHour(): Date {
         let endHour: Date = this.parent.getStartEndTime(this.parent.activeViewOptions.endHour);
         if (isNullOrUndefined(endHour)) {
@@ -217,19 +228,23 @@ export class ViewBase {
         }
         return endHour;
     }
+
     public isCurrentDate(date: Date): boolean {
         return date.setHours(0, 0, 0, 0) === this.parent.getCurrentTime().setHours(0, 0, 0, 0);
     }
+
     public isCurrentMonth(date: Date): boolean {
         return date.getFullYear() ===
             this.parent.getCurrentTime().getFullYear() && date.getMonth() === this.parent.getCurrentTime().getMonth();
     }
+
     public isWorkDay(date: Date, workDays: number[] = this.parent.activeViewOptions.workDays): boolean {
         if (workDays.indexOf(date.getDay()) >= 0) {
             return true;
         }
         return false;
     }
+
     public isWorkHour(date: Date, startHour: Date, endHour: Date, workDays: number[]): boolean {
         if (isNullOrUndefined(startHour) || isNullOrUndefined(endHour)) {
             return false;
@@ -239,11 +254,12 @@ export class ViewBase {
         return !(util.getDateInMs(date) < util.getDateInMs(startHour) || util.getDateInMs(date) >= util.getDateInMs(endHour) ||
             !this.isWorkDay(date, workDays));
     }
+
     public getRenderDates(workDays?: number[]): Date[] {
-        let renderDates: Date[] = [];
+        const renderDates: Date[] = [];
         // Due to same code for vertical and time line, week & work week views, if condition has used
         if (this.parent.currentView === 'Week' || this.parent.currentView === 'TimelineWeek') {
-            let selectedDate: Date = util.resetTime(this.parent.selectedDate);
+            const selectedDate: Date = util.resetTime(this.parent.selectedDate);
             let start: Date = util.getWeekFirstDate(selectedDate, this.parent.activeViewOptions.firstDayOfWeek);
             for (let i: number = 0, length: number = util.WEEK_LENGTH * this.parent.activeViewOptions.interval; i < length; i++) {
                 if (this.parent.activeViewOptions.showWeekend) {
@@ -264,7 +280,7 @@ export class ViewBase {
                 start = util.addDays(start, 1);
             }
         } else {
-            let dayCount: number = this.parent.currentView === 'Agenda' ? this.parent.agendaDaysCount :
+            const dayCount: number = this.parent.currentView === 'Agenda' ? this.parent.agendaDaysCount :
                 this.parent.activeViewOptions.interval;
             let start: Date = util.resetTime(this.parent.selectedDate);
             do {
@@ -286,10 +302,11 @@ export class ViewBase {
         }
         return renderDates;
     }
+
     public getNextPreviousDate(type: string): Date {
         if (this.parent.currentView === 'Day' || this.parent.currentView === 'TimelineDay') {
             if (this.parent.activeViewOptions.showWeekend) {
-                let daysCount: number = this.parent.activeViewOptions.interval;
+                const daysCount: number = this.parent.activeViewOptions.interval;
                 return util.addDays(this.parent.selectedDate, type === 'next' ? daysCount : -daysCount);
             } else {
                 let date: Date;
@@ -313,27 +330,30 @@ export class ViewBase {
                 return date;
             }
         }
-        let weekLength: number = type === 'next' ? util.WEEK_LENGTH : -util.WEEK_LENGTH;
+        const weekLength: number = type === 'next' ? util.WEEK_LENGTH : -util.WEEK_LENGTH;
         return util.addDays(this.parent.selectedDate, weekLength * this.parent.activeViewOptions.interval);
     }
+
     public getLabelText(view: string): string {
-        let viewStr: string = view.charAt(0).toLowerCase() + view.substring(1);
+        const viewStr: string = view.charAt(0).toLowerCase() + view.substring(1);
         return this.parent.localeObj.getConstant(viewStr) + ' of ' + util.capitalizeFirstWord(
             this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'long', calendar: this.parent.getCalendarMode() }),
             'single');
     }
+
     public getDateRangeText(): string {
         if (this.parent.isAdaptive) {
-            let formatDate: string = (this.parent.activeViewOptions.dateFormat) ? this.parent.activeViewOptions.dateFormat : 'MMMM y';
+            const formatDate: string = (this.parent.activeViewOptions.dateFormat) ? this.parent.activeViewOptions.dateFormat : 'MMMM y';
             return util.capitalizeFirstWord(
                 this.parent.globalize.formatDate(this.parent.selectedDate, { format: formatDate, calendar: this.parent.getCalendarMode() }),
                 'single');
         }
         return this.formatDateRange(this.renderDates[0], this.renderDates[this.renderDates.length - 1]);
     }
+
     public formatDateRange(startDate: Date, endDate?: Date): string {
-        let globalize: Internationalization = this.parent.globalize;
-        let mode: string = this.parent.getCalendarMode();
+        const globalize: Internationalization = this.parent.globalize;
+        const mode: string = this.parent.getCalendarMode();
         if (startDate === endDate) {
             endDate = null;
         }
@@ -357,7 +377,7 @@ export class ViewBase {
         if (!endDate) {
             return util.capitalizeFirstWord(globalize.formatDate(startDate, { format: longDateFormat, calendar: mode }), 'single');
         }
-        let dateFormat: string = longDateFormat.trim().toLocaleLowerCase();
+        const dateFormat: string = longDateFormat.trim().toLocaleLowerCase();
         if (dateFormat.substr(0, 1) === 'd') {
             if (startDate.getFullYear() === endDate.getFullYear()) {
                 if (startDate.getMonth() === endDate.getMonth()) {
@@ -391,8 +411,9 @@ export class ViewBase {
         }
         return util.capitalizeFirstWord(formattedStr, 'multiple');
     }
+
     public getMobileDateElement(date: Date, className?: string): Element {
-        let wrap: Element = createElement('div', {
+        const wrap: Element = createElement('div', {
             className: className,
             innerHTML: '<div class="e-m-date">' + this.parent.globalize.formatDate(
                 date, { format: 'd', calendar: this.parent.getCalendarMode() }) + '</div>' + '<div class="e-m-day">' +
@@ -401,13 +422,14 @@ export class ViewBase {
         });
         return wrap;
     }
+
     public setResourceHeaderContent(tdElement: Element, tdData: TdData, className: string = cls.TEXT_ELLIPSIS): void {
         if (this.parent.activeViewOptions.resourceHeaderTemplate) {
-            let data: ResourceDetails = { resource: tdData.resource, resourceData: tdData.resourceData };
-            let scheduleId: string = this.parent.element.id + '_';
-            let viewName: string = this.parent.activeViewOptions.resourceHeaderTemplateName;
-            let templateId: string = scheduleId + viewName + 'resourceHeaderTemplate';
-            let quickTemplate: HTMLElement[] =
+            const data: ResourceDetails = { resource: tdData.resource, resourceData: tdData.resourceData };
+            const scheduleId: string = this.parent.element.id + '_';
+            const viewName: string = this.parent.activeViewOptions.resourceHeaderTemplateName;
+            const templateId: string = scheduleId + viewName + 'resourceHeaderTemplate';
+            const quickTemplate: HTMLElement[] =
                 [].slice.call(this.parent.getResourceHeaderTemplate()(data, this.parent, 'resourceHeaderTemplate', templateId, false));
             append(quickTemplate, tdElement);
         } else {
@@ -424,6 +446,7 @@ export class ViewBase {
         this.parent.resourceBase.renderResourceHeader();
         this.parent.resourceBase.renderResourceTree();
     }
+
     public addAutoHeightClass(element: Element): void {
         if (!this.parent.uiStateValues.isGroupAdaptive && this.parent.rowAutoHeight && this.isTimelineView()
             && this.parent.activeViewOptions.group.resources.length > 0) {
@@ -437,12 +460,12 @@ export class ViewBase {
 
     public setColWidth(content: HTMLElement): void {
         if (this.isTimelineView()) {
-            let colElements: HTMLElement[] = this.getColElements();
-            let contentBody: HTMLElement = this.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody') as HTMLElement;
+            const colElements: HTMLElement[] = this.getColElements();
+            const contentBody: HTMLElement = this.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody') as HTMLElement;
             const colWidth: number = Math.ceil(contentBody.offsetWidth / (colElements.length / 2));
             colElements.forEach((col: HTMLElement) => setStyleAttribute(col, { 'width': formatUnit(colWidth) }));
             if (content.offsetHeight !== content.clientHeight) {
-                let resourceColumn: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS);
+                const resourceColumn: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS);
                 if (!isNullOrUndefined(resourceColumn)) {
                     setStyleAttribute(resourceColumn, { 'height': formatUnit(content.clientHeight) });
                 }
@@ -451,8 +474,8 @@ export class ViewBase {
     }
 
     public resetColWidth(): void {
-        let colElements: HTMLElement[] = this.getColElements();
-        for (let col of colElements) {
+        const colElements: HTMLElement[] = this.getColElements();
+        for (const col of colElements) {
             col.style.width = '';
         }
     }
@@ -463,8 +486,8 @@ export class ViewBase {
 
     public wireExpandCollapseIconEvents(): void {
         if (this.parent.resourceBase && this.parent.resourceBase.resourceCollection.length > 1) {
-            let treeIcons: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.RESOURCE_TREE_ICON_CLASS));
-            for (let icon of treeIcons) {
+            const treeIcons: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.RESOURCE_TREE_ICON_CLASS));
+            for (const icon of treeIcons) {
                 EventHandler.clearEvents(icon);
                 EventHandler.add(icon, 'click', this.parent.resourceBase.onTreeIconClick, this.parent.resourceBase);
             }
@@ -475,9 +498,9 @@ export class ViewBase {
         if (['Month', 'TimelineMonth'].indexOf(this.parent.currentView) === -1 || isNullOrUndefined(scrollDate)) {
             return;
         }
-        let scrollWrap: HTMLElement = this.getContentAreaElement();
-        let tdDate: number = this.parent.getMsFromDate(new Date(util.resetTime(new Date(+scrollDate)).getTime()));
-        let dateElement: HTMLElement = scrollWrap.querySelector(`.${cls.WORK_CELLS_CLASS}[data-date="${tdDate}"]`) as HTMLElement;
+        const scrollWrap: HTMLElement = this.getContentAreaElement();
+        const tdDate: number = new Date(util.resetTime(new Date(+scrollDate)).getTime()).getTime();
+        const dateElement: HTMLElement = scrollWrap.querySelector(`.${cls.WORK_CELLS_CLASS}[data-date="${tdDate}"]`) as HTMLElement;
         if (this.parent.currentView === 'Month' && dateElement) {
             scrollWrap.scrollTop = dateElement.offsetTop;
         }
@@ -492,20 +515,22 @@ export class ViewBase {
 
     public setPersistence(): void {
         if (this.parent.enablePersistence) {
-            let contentWrap: HTMLElement = this.element.querySelector('.e-content-wrap') as HTMLElement;
+            const contentWrap: HTMLElement = this.element.querySelector('.e-content-wrap') as HTMLElement;
             if (!isNullOrUndefined(contentWrap)) {
                 this.parent.scrollLeft = contentWrap.scrollLeft;
                 this.parent.scrollTop = contentWrap.scrollTop;
             }
         }
     }
+
     public retainScrollPosition(): void {
         if (this.parent.enablePersistence) {
-            let conWrap: HTMLElement = this.parent.element.querySelector('.e-content-wrap') as HTMLElement;
+            const conWrap: HTMLElement = this.parent.element.querySelector('.e-content-wrap') as HTMLElement;
             if (!isNullOrUndefined(conWrap) && !isNullOrUndefined(this.parent.scrollLeft) && !isNullOrUndefined(this.parent.scrollTop)) {
                 conWrap.scrollTop = this.parent.scrollTop;
                 conWrap.scrollLeft = this.parent.scrollLeft;
             }
         }
     }
+
 }

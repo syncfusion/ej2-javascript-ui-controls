@@ -1,13 +1,13 @@
-import {
-    extend, isNullOrUndefined, createElement, EventHandler, addClass, append, removeClass, remove, closest, classList
-} from '@syncfusion/ej2-base';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable max-len */
+import { extend, isNullOrUndefined, createElement, EventHandler, addClass, append, removeClass, remove, closest, classList } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { TreeView, NodeClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Data } from '../actions/data';
 import { Schedule } from '../base/schedule';
 import { ReturnType } from '../base/type';
-import { TdData, ResourceDetails, NotifyEventArgs, ActionEventArgs, RenderCellEventArgs } from '../base/interface';
+import { TdData, ResourceDetails, NotifyEventArgs, ActionEventArgs, RenderCellEventArgs, CallbackFunction } from '../base/interface';
 import { ResourcesModel } from '../models/resources-model';
 import * as cls from '../base/css-constant';
 import * as events from '../base/constant';
@@ -39,10 +39,10 @@ export class ResourceBase {
     }
 
     public renderResourceHeaderIndent(tr: Element): void {
-        let resColTd: Element = createElement('td', { className: cls.RESOURCE_LEFT_TD_CLASS });
-        let resColDiv: Element = createElement('div', { className: cls.RESOURCE_TEXT_CLASS });
+        const resColTd: Element = createElement('td', { className: cls.RESOURCE_LEFT_TD_CLASS });
+        const resColDiv: Element = createElement('div', { className: cls.RESOURCE_TEXT_CLASS });
         resColTd.appendChild(resColDiv);
-        let args: RenderCellEventArgs = { elementType: 'emptyCells', element: resColTd };
+        const args: RenderCellEventArgs = { elementType: 'emptyCells', element: resColTd };
         this.parent.trigger(events.renderCell, args);
         tr.appendChild(resColTd);
     }
@@ -51,33 +51,33 @@ export class ResourceBase {
         if (this.resourceCollection.length <= 1 || this.parent.virtualScrollModule) {
             return;
         }
-        let trCount: number = this.lastResourceLevel.length;
+        const trCount: number = this.lastResourceLevel.length;
         for (let i: number = 0; i < trCount; i++) {
-            let resData: { [key: string]: Object } = this.lastResourceLevel[i].resourceData;
-            let res: ResourcesModel = this.lastResourceLevel[i].resource;
+            const resData: Record<string, any> = this.lastResourceLevel[i].resourceData;
+            const res: ResourcesModel = this.lastResourceLevel[i].resource;
             if (resData.ClassName === cls.RESOURCE_PARENT_CLASS && !resData[res.expandedField] &&
                 !isNullOrUndefined(resData[res.expandedField])) {
-                let trCollection: HTMLElement[] = [].slice.call(tBody.children);
-                let slicedCollection: HTMLElement[] = trCollection.slice(i + 1, i + (parseInt(resData.Count as string, 0) + 1));
+                const trCollection: HTMLElement[] = [].slice.call(tBody.children);
+                const slicedCollection: HTMLElement[] = trCollection.slice(i + 1, i + (parseInt(resData.Count as string, 10) + 1));
                 addClass(slicedCollection, cls.HIDDEN_CLASS);
             }
         }
     }
 
     public createResourceColumn(): Element {
-        let resColl: ResourcesModel[] = this.resourceCollection;
-        let resDiv: Element = createElement('div', { className: cls.RESOURCE_COLUMN_WRAP_CLASS });
-        let tbl: Element = this.parent.activeView.createTableLayout(cls.RESOURCE_COLUMN_TABLE_CLASS);
+        const resColl: ResourcesModel[] = this.resourceCollection;
+        const resDiv: Element = createElement('div', { className: cls.RESOURCE_COLUMN_WRAP_CLASS });
+        const tbl: Element = this.parent.activeView.createTableLayout(cls.RESOURCE_COLUMN_TABLE_CLASS);
         if (!this.parent.uiStateValues.isGroupAdaptive && this.parent.rowAutoHeight && this.parent.activeView.isTimelineView()
             && this.parent.activeViewOptions.group.resources.length > 0) {
             addClass([tbl], cls.AUTO_HEIGHT);
         }
-        let tBody: Element = tbl.querySelector('tbody');
+        const tBody: Element = tbl.querySelector('tbody');
         let resData: TdData[] = this.generateTreeData(true) as TdData[];
         this.countCalculation(resColl.slice(0, -2), resColl.slice(0, -1));
         this.renderedResources = this.lastResourceLevel;
         if (this.parent.virtualScrollModule) {
-            let resourceCount: number = this.parent.virtualScrollModule.getRenderedCount();
+            const resourceCount: number = this.parent.virtualScrollModule.getRenderedCount();
             this.setExpandedResources();
             resData = this.expandedResources.slice(0, resourceCount);
             this.renderedResources = resData;
@@ -90,19 +90,20 @@ export class ResourceBase {
     }
 
     public setRenderedResources(): void {
-        let resColl: ResourcesModel[] = this.resourceCollection;
-        this.generateTreeData(true) as TdData[];
+        const resColl: ResourcesModel[] = this.resourceCollection;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const temp: TdData[] = this.generateTreeData(true) as TdData[];
         this.countCalculation(resColl.slice(0, -2), resColl.slice(0, -1));
         this.renderedResources = this.lastResourceLevel;
     }
 
     public setExpandedResources(): void {
-        let resources: TdData[] = [];
+        const resources: TdData[] = [];
         for (let i: number = 0; i < this.lastResourceLevel.length; i++) {
-            let resource: { [key: string]: Object } = this.lastResourceLevel[i].resourceData;
-            let count: number = resource.Count as number;
+            const resource: Record<string, any> = this.lastResourceLevel[i].resourceData;
+            const count: number = resource.Count as number;
             resources.push(this.lastResourceLevel[i]);
-            let isExpanded: boolean = resource[this.lastResourceLevel[i].resource.expandedField] as boolean;
+            const isExpanded: boolean = resource[this.lastResourceLevel[i].resource.expandedField] as boolean;
             if (!isNullOrUndefined(isExpanded) && !isExpanded && count > 0) {
                 i = i + count;
             }
@@ -111,15 +112,15 @@ export class ResourceBase {
     }
 
     public getContentRows(resData: TdData[]): Element[] {
-        let resRows: Element[] = [];
+        const resRows: Element[] = [];
         let left: string;
         let rIndex: number;
-        let resColl: ResourcesModel[] = this.resourceCollection;
-        let tr: Element = createElement('tr');
-        let td: Element = createElement('td', { attrs: { tabindex: '0' } });
+        const resColl: ResourcesModel[] = this.resourceCollection;
+        const tr: Element = createElement('tr');
+        const td: Element = createElement('td', { attrs: { tabindex: '0' } });
         for (let i: number = 0; i < resData.length; i++) {
-            let ntd: Element = td.cloneNode() as Element;
-            rIndex = util.findIndexInData(<{ [key: string]: Object }[]>resColl, 'name', resData[i].resource.name);
+            const ntd: Element = td.cloneNode() as Element;
+            rIndex = util.findIndexInData(<Record<string, any>[]>resColl, 'name', resData[i].resource.name);
             if (rIndex === resColl.length - 1) {
                 extend(resData[i].resourceData, { ClassName: cls.RESOURCE_CHILD_CLASS });
                 this.renderedResources[i].className = [cls.RESOURCE_CHILD_CLASS];
@@ -137,7 +138,7 @@ export class ResourceBase {
                 } else {
                     iconClass = cls.RESOURCE_EXPAND_CLASS;
                 }
-                let iconDiv: HTMLElement = createElement('div');
+                const iconDiv: HTMLElement = createElement('div');
                 addClass([iconDiv], [cls.RESOURCE_TREE_ICON_CLASS, iconClass]);
                 this.setMargin(iconDiv, left);
                 ntd.appendChild(iconDiv);
@@ -151,11 +152,11 @@ export class ResourceBase {
             if (!this.parent.activeViewOptions.resourceHeaderTemplate) {
                 this.setMargin(ntd.querySelector('.' + cls.RESOURCE_TEXT_CLASS) as HTMLElement, left);
             }
-            let classCollection: string[] = [cls.RESOURCE_CELLS_CLASS, resData[i].resourceData.ClassName as string];
+            const classCollection: string[] = [cls.RESOURCE_CELLS_CLASS, resData[i].resourceData.ClassName as string];
             addClass([ntd], classCollection);
-            let args: RenderCellEventArgs = { elementType: 'resourceHeader', element: ntd, groupIndex: resData[i].groupIndex };
+            const args: RenderCellEventArgs = { elementType: 'resourceHeader', element: ntd, groupIndex: resData[i].groupIndex };
             this.parent.trigger(events.renderCell, args);
-            let ntr: Element = tr.cloneNode() as Element;
+            const ntr: Element = tr.cloneNode() as Element;
             ntr.appendChild(ntd);
             resRows.push(ntr);
         }
@@ -171,23 +172,21 @@ export class ResourceBase {
     }
 
     private countCalculation(parentCollection: ResourcesModel[], wholeCollection: ResourcesModel[]): void {
-        let collection: { [key: string]: Object }[];
+        let collection: Record<string, any>[];
         for (let y: number = 0; y < parentCollection.length; y++) {
-            let data: { [key: string]: Object }[] = parentCollection[parentCollection.length - (y + 1)]
-                .dataSource as { [key: string]: Object }[];
+            const data: Record<string, any>[] = parentCollection[parentCollection.length - (y + 1)].dataSource as Record<string, any>[];
             for (let x: number = 0; x < data.length; x++) {
                 let totalCount: number = 0;
                 if (this.parent.activeViewOptions.group.byGroupID) {
-                    collection = new DataManager(wholeCollection[wholeCollection.length - 1].dataSource)
-                        .executeLocal(new Query().where(wholeCollection[wholeCollection.length - 1].groupIDField, 'equal', data[x]
-                        [parentCollection[parentCollection.length - (y + 1)].idField] as string)) as { [key: string]: Object }[];
+                    const query: Query = new Query().where(wholeCollection[wholeCollection.length - 1].groupIDField, 'equal', data[x][parentCollection[parentCollection.length - (y + 1)].idField] as string);
+                    collection = new DataManager(wholeCollection[wholeCollection.length - 1].dataSource).executeLocal(query) as Record<string, any>[];
                 } else {
-                    collection = wholeCollection[wholeCollection.length - 1].dataSource as { [key: string]: Object }[];
+                    collection = wholeCollection[wholeCollection.length - 1].dataSource as Record<string, any>[];
                 }
                 for (let z: number = 0; z < collection.length; z++) {
-                    totalCount = totalCount + parseInt(collection[z].Count as string, 0);
+                    totalCount = totalCount + parseInt(collection[z].Count as string, 10);
                 }
-                totalCount = totalCount + parseInt(data[x].Count as string, 0);
+                totalCount = totalCount + parseInt(data[x].Count as string, 10);
                 extend(data[x], { Count: totalCount });
             }
             wholeCollection = wholeCollection.slice(0, -1);
@@ -198,14 +197,14 @@ export class ResourceBase {
         if (this.parent.eventTooltip) {
             this.parent.eventTooltip.close();
         }
-        let target: Element = <HTMLElement>e.target;
+        const target: Element = <HTMLElement>e.target;
         let hide: boolean;
-        let trElement: HTMLTableRowElement = closest(target as Element, '.' + cls.RESOURCE_PARENT_CLASS)
+        const trElement: HTMLTableRowElement = closest(target as Element, '.' + cls.RESOURCE_PARENT_CLASS)
             .parentElement as HTMLTableRowElement;
-        let index: number = parseInt(trElement.children[0].getAttribute('data-group-index'), 10);
+        const index: number = parseInt(trElement.children[0].getAttribute('data-group-index'), 10);
         let args: ActionEventArgs = {
             cancel: false, event: e, groupIndex: index,
-            requestType: !target.classList.contains(cls.RESOURCE_COLLAPSE_CLASS) ? 'resourceExpand' : 'resourceCollapse',
+            requestType: !target.classList.contains(cls.RESOURCE_COLLAPSE_CLASS) ? 'resourceExpand' : 'resourceCollapse'
         };
         this.parent.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
             if (!actionArgs.cancel) {
@@ -216,8 +215,8 @@ export class ResourceBase {
                     classList(target, [cls.RESOURCE_COLLAPSE_CLASS], [cls.RESOURCE_EXPAND_CLASS]);
                     hide = false;
                 }
-                let eventElements: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
-                for (let element of eventElements) {
+                const eventElements: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
+                for (const element of eventElements) {
                     remove(element);
                 }
                 if (this.parent.virtualScrollModule) {
@@ -225,11 +224,11 @@ export class ResourceBase {
                 } else {
                     this.updateContent(index, hide);
                 }
-                let data: NotifyEventArgs = { cssProperties: this.parent.getCssProperties(), module: 'scroll' };
+                const data: NotifyEventArgs = { cssProperties: this.parent.getCssProperties(), module: 'scroll' };
                 this.parent.notify(events.scrollUiUpdate, data);
                 args = {
                     cancel: false, event: e, groupIndex: index,
-                    requestType: target.classList.contains(cls.RESOURCE_COLLAPSE_CLASS) ? 'resourceExpanded' : 'resourceCollapsed',
+                    requestType: target.classList.contains(cls.RESOURCE_COLLAPSE_CLASS) ? 'resourceExpanded' : 'resourceCollapsed'
                 };
                 this.parent.notify(events.dataReady, {});
                 this.parent.trigger(events.actionComplete, args);
@@ -238,28 +237,27 @@ export class ResourceBase {
     }
 
     public updateContent(index: number, hide: boolean): void {
-        let rowCollection: HTMLTableRowElement[] = [];
-        let workCellCollection: HTMLTableRowElement[] = [];
-        let headerRowCollection: HTMLTableRowElement[] = [];
+        const rowCollection: HTMLTableRowElement[] = [];
+        const workCellCollection: HTMLTableRowElement[] = [];
+        const headerRowCollection: HTMLTableRowElement[] = [];
         let pNode: boolean;
-        let clickedRes: { [key: string]: Object } = this.lastResourceLevel[index].resourceData as { [key: string]: Object };
-        let resRows: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.RESOURCE_COLUMN_WRAP_CLASS + ' ' + 'tr'));
-        let contentRows: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CONTENT_WRAP_CLASS + ' ' + 'tbody tr'));
-        let eventRows: Element[] = [].slice.call(this.parent.element.querySelectorAll
-            ('.' + cls.CONTENT_WRAP_CLASS + ' .' + cls.APPOINTMENT_CONTAINER_CLASS));
+        const clickedRes: Record<string, any> = this.lastResourceLevel[index].resourceData as Record<string, any>;
+        const resRows: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.RESOURCE_COLUMN_WRAP_CLASS + ' ' + 'tr'));
+        const contentRows: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CONTENT_WRAP_CLASS + ' ' + 'tbody tr'));
+        const eventRows: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CONTENT_WRAP_CLASS + ' .' + cls.APPOINTMENT_CONTAINER_CLASS));
         for (let j: number = 0; j < clickedRes.Count; j++) {
             rowCollection.push(resRows[index + j + 1] as HTMLTableRowElement);
             workCellCollection.push(contentRows[index + j + 1] as HTMLTableRowElement);
             headerRowCollection.push(eventRows[index + j + 1] as HTMLTableRowElement);
         }
-        let clonedCollection: TdData[] = this.lastResourceLevel;
+        const clonedCollection: TdData[] = this.lastResourceLevel;
         for (let i: number = 0; i < rowCollection.length; i++) {
             let expanded: boolean = true;
             pNode = rowCollection[i].children[0].classList.contains(cls.RESOURCE_PARENT_CLASS);
             clonedCollection[index].resourceData[clonedCollection[index].resource.expandedField] = !hide;
             if (hide) {
                 if (pNode) {
-                    let trElem: Element = rowCollection[i].querySelector('.' + cls.RESOURCE_TREE_ICON_CLASS);
+                    const trElem: Element = rowCollection[i].querySelector('.' + cls.RESOURCE_TREE_ICON_CLASS);
                     if (trElem) {
                         classList(trElem, [cls.RESOURCE_EXPAND_CLASS], [cls.RESOURCE_COLLAPSE_CLASS]);
                     }
@@ -269,17 +267,16 @@ export class ResourceBase {
                 }
             } else {
                 if (pNode) {
-                    let rowIndex: number = rowCollection[i].rowIndex;
+                    const rowIndex: number = rowCollection[i].rowIndex;
                     if (!clonedCollection[rowIndex].resourceData[clonedCollection[rowIndex].resource.expandedField]
-                        && !isNullOrUndefined(clonedCollection[rowIndex].resourceData[clonedCollection
-                        [rowIndex].resource.expandedField])) {
-                        rowCollection.splice(i + 1, (parseInt(clonedCollection[rowIndex].resourceData.Count as string, 0)));
-                        workCellCollection.splice(i + 1, (parseInt(clonedCollection[rowIndex].resourceData.Count as string, 0)));
-                        headerRowCollection.splice(i + 1, (parseInt(clonedCollection[rowIndex].resourceData.Count as string, 0)));
+                        && !isNullOrUndefined(clonedCollection[rowIndex].resourceData[clonedCollection[rowIndex].resource.expandedField])) {
+                        rowCollection.splice(i + 1, (parseInt(clonedCollection[rowIndex].resourceData.Count as string, 10)));
+                        workCellCollection.splice(i + 1, (parseInt(clonedCollection[rowIndex].resourceData.Count as string, 10)));
+                        headerRowCollection.splice(i + 1, (parseInt(clonedCollection[rowIndex].resourceData.Count as string, 10)));
                         expanded = false;
                     }
                     if (expanded) {
-                        let trElem: Element = rowCollection[i].querySelector('.' + cls.RESOURCE_TREE_ICON_CLASS);
+                        const trElem: Element = rowCollection[i].querySelector('.' + cls.RESOURCE_TREE_ICON_CLASS);
                         if (trElem) {
                             classList(trElem, [cls.RESOURCE_COLLAPSE_CLASS], [cls.RESOURCE_EXPAND_CLASS]);
                         }
@@ -292,26 +289,27 @@ export class ResourceBase {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public updateVirtualContent(index: number, expand: boolean, e: Event, target: Element): void {
         this.lastResourceLevel[index].resourceData[this.lastResourceLevel[index].resource.expandedField] = !expand;
         this.setExpandedResources();
-        let resourceCount: number = this.parent.virtualScrollModule.getRenderedCount();
-        let startIndex: number = this.expandedResources.indexOf(this.renderedResources[0]);
+        const resourceCount: number = this.parent.virtualScrollModule.getRenderedCount();
+        const startIndex: number = this.expandedResources.indexOf(this.renderedResources[0]);
         this.renderedResources = this.expandedResources.slice(startIndex, startIndex + resourceCount);
         if (this.renderedResources.length < resourceCount) {
             let sIndex: number = this.expandedResources.length - resourceCount;
             sIndex = (sIndex > 0) ? sIndex : 0;
             this.renderedResources = this.expandedResources.slice(sIndex, this.expandedResources.length);
         }
-        let virtualTrack: HTMLElement = this.parent.element.querySelector('.' + cls.VIRTUAL_TRACK_CLASS);
+        const virtualTrack: HTMLElement = this.parent.element.querySelector('.' + cls.VIRTUAL_TRACK_CLASS);
         this.parent.virtualScrollModule.updateVirtualTrackHeight(virtualTrack);
-        let resTable: HTMLElement =
+        const resTable: HTMLElement =
             this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS + ' ' + 'table') as HTMLElement;
-        let contentTable: HTMLElement =
+        const contentTable: HTMLElement =
             this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' ' + 'table') as HTMLElement;
-        let eventTable: HTMLElement = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS) as HTMLElement;
+        const eventTable: HTMLElement = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS) as HTMLElement;
         this.parent.virtualScrollModule.updateContent(resTable, contentTable, eventTable, this.renderedResources);
-        let timeIndicator: HTMLElement = this.parent.element.querySelector('.' + cls.CURRENT_TIMELINE_CLASS) as HTMLElement;
+        const timeIndicator: HTMLElement = this.parent.element.querySelector('.' + cls.CURRENT_TIMELINE_CLASS) as HTMLElement;
         if (!isNullOrUndefined(timeIndicator)) {
             timeIndicator.style.height =
                 (this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement).offsetHeight + 'px';
@@ -319,11 +317,11 @@ export class ResourceBase {
     }
 
     public renderResourceHeader(): void {
-        let resourceWrapper: HTMLElement = createElement('div', { className: cls.RESOURCE_TOOLBAR_CONTAINER });
+        const resourceWrapper: HTMLElement = createElement('div', { className: cls.RESOURCE_TOOLBAR_CONTAINER });
         resourceWrapper.innerHTML = '<div class="' + cls.RESOURCE_HEADER_TOOLBAR + '"><div class="' + cls.RESOURCE_MENU + '">' +
             '<div class="e-icons ' + cls.RESOURCE_MENU_ICON + '"></div></div><div class="' + cls.RESOURCE_LEVEL_TITLE + '"></div></div>';
         if (this.parent.currentView === 'MonthAgenda') {
-            let target: Element = this.parent.activeView.getPanel().querySelector('.' + cls.CONTENT_WRAP_CLASS);
+            const target: Element = this.parent.activeView.getPanel().querySelector('.' + cls.CONTENT_WRAP_CLASS);
             target.insertBefore(resourceWrapper, target.querySelector('.' + cls.WRAPPER_CONTAINER_CLASS));
         } else {
             this.parent.element.insertBefore(resourceWrapper, this.parent.element.querySelector('.' + cls.TABLE_CONTAINER_CLASS));
@@ -334,22 +332,22 @@ export class ResourceBase {
 
     public renderResourceTree(): void {
         this.popupOverlay = createElement('div', { className: cls.RESOURCE_TREE_POPUP_OVERLAY });
-        let treeWrapper: HTMLElement = createElement('div', { className: cls.RESOURCE_TREE_POPUP + ' e-popup-close' });
+        const treeWrapper: HTMLElement = createElement('div', { className: cls.RESOURCE_TREE_POPUP + ' e-popup-close' });
         if (this.parent.currentView === 'MonthAgenda') {
-            let target: Element = this.parent.activeView.getPanel().querySelector('.' + cls.WRAPPER_CONTAINER_CLASS);
+            const target: Element = this.parent.activeView.getPanel().querySelector('.' + cls.WRAPPER_CONTAINER_CLASS);
             target.insertBefore(treeWrapper, target.children[0]);
             target.appendChild(this.popupOverlay);
         } else {
             this.parent.element.querySelector('.' + cls.TABLE_CONTAINER_CLASS).appendChild(treeWrapper);
             this.parent.element.querySelector('.' + cls.TABLE_CONTAINER_CLASS).appendChild(this.popupOverlay);
         }
-        let resourceTree: HTMLElement = createElement('div', { className: cls.RESOURCE_TREE });
+        const resourceTree: HTMLElement = createElement('div', { className: cls.RESOURCE_TREE });
         treeWrapper.appendChild(resourceTree);
         this.treeViewObj = new TreeView({
             cssClass: this.parent.cssClass,
             enableRtl: this.parent.enableRtl,
             fields: {
-                dataSource: [].slice.call(this.generateTreeData()) as { [key: string]: Object }[],
+                dataSource: [].slice.call(this.generateTreeData()) as Record<string, any>[],
                 id: 'resourceId',
                 text: 'resourceName',
                 child: 'resourceChild'
@@ -373,12 +371,12 @@ export class ResourceBase {
     }
 
     private generateTreeData(isTimeLine?: boolean): ResourceDetails[] | TdData[] {
-        let treeCollection: ResourceDetails[] = [];
-        let resTreeColl: TdData[] = [];
+        const treeCollection: ResourceDetails[] = [];
+        const resTreeColl: TdData[] = [];
         let groupIndex: number = 0;
         for (let i: number = 0, len: number = this.resourceTreeLevel.length; i < len; i++) {
-            let treeHandler: Function = (treeLevel: TreeSlotData, index: number, levelId: string): ResourceDetails => {
-                let resource: ResourcesModel = this.resourceCollection[index];
+            const treeHandler: CallbackFunction = (treeLevel: TreeSlotData, index: number, levelId: string): ResourceDetails => {
+                const resource: ResourcesModel = this.resourceCollection[index];
                 let treeArgs: ResourceDetails;
                 let resObj: TdData;
                 if (!isTimeLine) {
@@ -401,7 +399,7 @@ export class ResourceBase {
                     treeArgs.resourceChild = [];
                 }
                 let count: number = 1;
-                for (let tree of treeLevel.child) {
+                for (const tree of treeLevel.child) {
                     if (!isTimeLine) {
                         treeArgs.resourceChild.push(treeHandler(tree, index + 1, levelId + '-' + count));
                     } else {
@@ -429,25 +427,26 @@ export class ResourceBase {
     }
 
     private renderResourceHeaderText(): void {
-        let resource: TdData = this.lastResourceLevel[this.parent.uiStateValues.groupIndex];
-        let headerCollection: HTMLElement[] = [];
+        const resource: TdData = this.lastResourceLevel[this.parent.uiStateValues.groupIndex];
+        const headerCollection: HTMLElement[] = [];
         for (let i: number = 0, len: number = resource.groupOrder.length; i < len; i++) {
-            let resourceLevel: ResourcesModel = this.resourceCollection[i];
-            let resourceText: Object[] = (<Object[]>resourceLevel.dataSource).filter((resData: { [key: string]: Object }) =>
-                resData[resourceLevel.idField] === resource.groupOrder[i]);
-            let resourceName: HTMLElement = createElement('div', {
+            const resourceLevel: ResourcesModel = this.resourceCollection[i];
+            const resourceText: Record<string, any>[] =
+                (resourceLevel.dataSource as Record<string, any>[]).filter((resData: Record<string, any>) =>
+                    resData[resourceLevel.idField] === resource.groupOrder[i]);
+            const resourceName: HTMLElement = createElement('div', {
                 className: cls.RESOURCE_NAME,
-                innerHTML: (<{ [key: string]: Object }>resourceText[0])[resourceLevel.textField] as string
+                innerHTML: (<Record<string, any>>resourceText[0])[resourceLevel.textField] as string
             });
             headerCollection.push(resourceName);
-            let levelIcon: HTMLElement = createElement('div', { className: 'e-icons e-icon-next' });
+            const levelIcon: HTMLElement = createElement('div', { className: 'e-icons e-icon-next' });
             headerCollection.push(levelIcon);
         }
         headerCollection.pop();
-        let target: HTMLElement = (this.parent.currentView === 'MonthAgenda') ? this.parent.activeView.getPanel() : this.parent.element;
-        let headerWrapper: Element = target.querySelector('.' + cls.RESOURCE_LEVEL_TITLE);
+        const target: HTMLElement = (this.parent.currentView === 'MonthAgenda') ? this.parent.activeView.getPanel() : this.parent.element;
+        const headerWrapper: Element = target.querySelector('.' + cls.RESOURCE_LEVEL_TITLE);
         util.removeChildren(headerWrapper);
-        for (let header of headerCollection) {
+        for (const header of headerCollection) {
             headerWrapper.appendChild(header);
         }
         if (this.lastResourceLevel.length === 1) {
@@ -455,12 +454,13 @@ export class ResourceBase {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private menuClick(event: Event): void {
         if (this.parent.element.querySelector('.' + cls.RESOURCE_TREE_POPUP).classList.contains(cls.POPUP_OPEN)) {
             this.treePopup.hide();
             removeClass([this.popupOverlay], cls.ENABLE_CLASS);
         } else {
-            let treeNodes: HTMLElement[] = [].slice.call(this.treeViewObj.element.querySelectorAll('.e-list-item:not(.e-has-child)'));
+            const treeNodes: HTMLElement[] = [].slice.call(this.treeViewObj.element.querySelectorAll('.e-list-item:not(.e-has-child)'));
             removeClass(treeNodes, 'e-active');
             addClass([treeNodes[this.parent.uiStateValues.groupIndex]], 'e-active');
             this.treePopup.show();
@@ -472,23 +472,19 @@ export class ResourceBase {
         if (!event.node.classList.contains('e-has-child')) {
             this.treePopup.hide();
             removeClass([this.popupOverlay], cls.ENABLE_CLASS);
-            let treeNodes: HTMLLIElement[] = [].slice.call(this.treeViewObj.element.querySelectorAll('.e-list-item:not(.e-has-child)'));
-            this.parent.uiStateValues.groupIndex = treeNodes.indexOf(event.node);
-            if (this.parent.isServerRenderer()) {
-                // tslint:disable-next-line:no-any
-                (this.parent as any).interopAdaptor.invokeMethodAsync('OnResourceClick', this.parent.uiStateValues.groupIndex).then(() => {
-                    if (this.parent.isDestroyed) { return; }
-                    this.renderResourceHeaderText();
-                    this.parent.activeView.serverRenderLayout();
-                    let processed: Object[] = this.parent.eventBase.processData(this.parent.eventsData as { [key: string]: Object }[]);
-                    this.parent.notify(events.dataReady, { processedData: processed });
-                }).catch((e: ReturnType) => this.parent.renderModule.dataManagerFailure(e));
-            } else {
-                this.parent.renderModule.render(this.parent.currentView, false);
-                let processed: Object[] = this.parent.eventBase.processData([...this.parent.blockData as { [key: string]: Object }[],
-                ...this.parent.eventsData as { [key: string]: Object }[]]);
-                this.parent.notify(events.dataReady, { processedData: processed });
-            }
+            const treeNodes: HTMLLIElement[] = [].slice.call(this.treeViewObj.element.querySelectorAll('.e-list-item:not(.e-has-child)'));
+            const groupIndex: number = treeNodes.indexOf(event.node);
+            let args: ActionEventArgs = { cancel: false, event: event.event, groupIndex: groupIndex, requestType: 'resourceChange' };
+            this.parent.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
+                if (!actionArgs.cancel) {
+                    this.parent.uiStateValues.groupIndex = actionArgs.groupIndex;
+                    this.parent.renderModule.render(this.parent.currentView);
+                    args = {
+                        cancel: false, event: event.event, groupIndex: this.parent.uiStateValues.groupIndex, requestType: 'resourceChanged'
+                    };
+                    this.parent.trigger(events.actionComplete, args);
+                }
+            });
         }
         event.event.preventDefault();
     }
@@ -497,7 +493,7 @@ export class ResourceBase {
         if (closest(args.event.target as Element, '.' + cls.RESOURCE_TREE_POPUP)) {
             return;
         }
-        let treeWrapper: Element = this.parent.element.querySelector('.' + cls.RESOURCE_TREE_POPUP);
+        const treeWrapper: Element = this.parent.element.querySelector('.' + cls.RESOURCE_TREE_POPUP);
         if (treeWrapper && treeWrapper.classList.contains(cls.POPUP_OPEN)) {
             this.treePopup.hide();
             removeClass([this.popupOverlay], cls.ENABLE_CLASS);
@@ -506,9 +502,9 @@ export class ResourceBase {
 
     public bindResourcesData(isSetModel: boolean): void {
         this.parent.showSpinner();
-        let promises: Promise<Object>[] = [];
-        for (let i: number = 0; i < this.parent.resources.length; i++) {
-            let dataModule: Data = new Data(this.parent.resources[i].dataSource, this.parent.resources[i].query);
+        const promises: Promise<any>[] = [];
+        for (const resource of this.parent.resources) {
+            const dataModule: Data = new Data(resource.dataSource, resource.query);
             promises.push(dataModule.getData(dataModule.generateQuery()));
         }
         Promise.all(promises).then((e: ReturnType[]) => this.dataManagerSuccess(e, isSetModel))
@@ -519,15 +515,15 @@ export class ResourceBase {
         if (this.parent.isDestroyed) { return; }
         this.parent.resourceCollection = [];
         for (let i: number = 0, length: number = e.length; i < length; i++) {
-            let resource: ResourcesModel = this.parent.resources[i];
-            let resourceObj: ResourcesModel = this.getResourceModel(resource, e[i].result);
+            const resource: ResourcesModel = this.parent.resources[i];
+            const resourceObj: ResourcesModel = this.getResourceModel(resource, e[i].result);
             this.parent.resourceCollection.push(resourceObj);
         }
         this.refreshLayout(isSetModel);
     }
 
-    private getResourceModel(resource: ResourcesModel, resourceData?: Object[]): ResourcesModel {
-        let resourceObj: ResourcesModel = {
+    private getResourceModel(resource: ResourcesModel, resourceData?: Record<string, any>[]): ResourcesModel {
+        const resourceObj: ResourcesModel = {
             field: resource.field,
             title: resource.title,
             name: resource.name,
@@ -558,8 +554,8 @@ export class ResourceBase {
         this.resourceCollection = [];
         this.colorIndex = null;
         if (this.parent.activeViewOptions.group.resources.length > 0) {
-            for (let resource of this.parent.activeViewOptions.group.resources) {
-                let index: number = util.findIndexInData(<{ [key: string]: Object }[]>this.parent.resourceCollection, 'name', resource);
+            for (const resource of this.parent.activeViewOptions.group.resources) {
+                const index: number = util.findIndexInData(<Record<string, any>[]>this.parent.resourceCollection, 'name', resource);
                 if (index >= 0) {
                     requiredResources.push(this.parent.resourceCollection[index]);
                 }
@@ -568,8 +564,8 @@ export class ResourceBase {
             requiredResources = this.parent.resourceCollection;
         }
         let index: number = 0;
-        for (let resource of requiredResources) {
-            let resources: ResourcesModel = this.getResourceModel(resource);
+        for (const resource of requiredResources) {
+            const resources: ResourcesModel = this.getResourceModel(resource);
             if (resource.name === this.parent.eventSettings.resourceColorField) {
                 this.colorIndex = index;
             }
@@ -582,28 +578,29 @@ export class ResourceBase {
     }
 
     public generateResourceLevels(innerDates: TdData[], isTimeLine?: boolean): TdData[][] {
-        let resources: ResourcesModel[] = this.resourceCollection;
-        let resTreeGroup: TdData[][][] = [];
+        const resources: ResourcesModel[] = this.resourceCollection;
+        const resTreeGroup: TdData[][][] = [];
         let lastColumnDates: TdData[] = [];
-        let group: Function = (resources: ResourcesModel[], index: number, prevResource?: ResourcesModel, prevResourceData?: Object,
-            prevOrder?: string[]): TdData[] => {
-            let resTree: TdData[] = [];
-            let resource: ResourcesModel = resources[0];
+        // eslint-disable-next-line
+        const group: CallbackFunction = (resources: ResourcesModel[], index: number, prevResource?: ResourcesModel, prevResourceData?: Record<string, any>, prevOrder?: string[]): TdData[] => {
+            const resTree: TdData[] = [];
+            const resource: ResourcesModel = resources[0];
             if (resource) {
-                let data: Object[];
+                let data: Record<string, any>[];
                 if (prevResourceData && this.parent.activeViewOptions.group.byGroupID) {
-                    let id: string = (prevResourceData as { [key: string]: Object })[prevResource.idField] as string;
-                    data = (resource.dataSource as Object[]).filter((e: { [key: string]: Object }) => e[resource.groupIDField] === id);
+                    const id: string = (prevResourceData as Record<string, any>)[prevResource.idField] as string;
+                    data = (resource.dataSource as Record<string, any>[]).filter((e: Record<string, any>) =>
+                        e[resource.groupIDField] === id);
                 } else {
-                    data = resource.dataSource as Object[];
+                    data = resource.dataSource as Record<string, any>[];
                 }
                 for (let i: number = 0; i < data.length; i++) {
                     let groupOrder: string[] = [];
                     if (prevOrder && prevOrder.length > 0) {
                         groupOrder = groupOrder.concat(prevOrder);
                     }
-                    groupOrder.push((data[i] as { [key: string]: Object })[resource.idField] as string);
-                    let items: TdData[] = group(resources.slice(1), index + 1, resource, data[i], groupOrder);
+                    groupOrder.push((data[i] as Record<string, any>)[resource.idField] as string);
+                    const items: TdData[] = group(resources.slice(1), index + 1, resource, data[i], groupOrder);
                     // Here validate child item empty top level resource only
                     if (index === 0 && items.length === 0 && this.resourceCollection.length > 1) {
                         continue;
@@ -612,9 +609,9 @@ export class ResourceBase {
                     let renderDates: Date[] = this.parent.activeView.renderDates;
                     let resWorkDays: number[];
                     if (!this.parent.activeViewOptions.group.byDate && index + 1 === this.resourceCollection.length) {
-                        let workDays: number[] = (data[i] as { [key: string]: Object })[resource.workDaysField] as number[];
-                        let resStartHour: string = (data[i] as { [key: string]: Object })[resource.startHourField] as string;
-                        let resEndHour: string = (data[i] as { [key: string]: Object })[resource.endHourField] as string;
+                        const workDays: number[] = data[i][resource.workDaysField] as number[];
+                        const resStartHour: string = data[i][resource.startHourField] as string;
+                        const resEndHour: string = data[i][resource.endHourField] as string;
                         if (workDays && workDays.length > 0) {
                             renderDates = this.parent.activeView.getRenderDates(workDays);
                             resWorkDays = workDays;
@@ -623,14 +620,14 @@ export class ResourceBase {
                             resWorkDays = this.parent.activeViewOptions.workDays;
                             dateCol = innerDates;
                         }
-                        let dateSlots: TdData[] = this.generateCustomHours(dateCol, resStartHour, resEndHour, groupOrder);
+                        const dateSlots: TdData[] = this.generateCustomHours(dateCol, resStartHour, resEndHour, groupOrder);
                         lastColumnDates = lastColumnDates.concat(dateSlots);
                     }
-                    let resCssClass: string = (data[i] as { [key: string]: Object })[resource.cssClassField] as string;
-                    let slotData: TreeSlotData = {
+                    const resCssClass: string = data[i][resource.cssClassField] as string;
+                    const slotData: TreeSlotData = {
                         type: 'resourceHeader', className: ['e-resource-cells'],
                         resourceLevelIndex: index, groupOrder: groupOrder,
-                        resource: resource, resourceData: data[i] as { [key: string]: Object },
+                        resource: resource, resourceData: data[i],
                         colSpan: this.parent.activeViewOptions.group.byDate ? 1 : dateCol.length,
                         renderDates: renderDates, workDays: resWorkDays, cssClass: resCssClass,
                         child: items
@@ -652,8 +649,8 @@ export class ResourceBase {
     }
 
     public generateCustomHours(renderDates: TdData[], startHour: string, endHour: string, groupOrder?: string[]): TdData[] {
-        let dateSlots: TdData[] = <TdData[]>extend([], renderDates, null, true);
-        for (let dateSlot of dateSlots) {
+        const dateSlots: TdData[] = <TdData[]>extend([], renderDates, null, true);
+        for (const dateSlot of dateSlots) {
             if (startHour) {
                 dateSlot.startHour = this.parent.getStartEndTime(startHour);
             }
@@ -668,15 +665,15 @@ export class ResourceBase {
     }
 
     private generateHeaderLevels(resTreeGroup: TdData[][][], lastColumnDates: TdData[], headerDates: TdData[]): TdData[][] {
-        let headerLevels: TdData[][] = [];
+        const headerLevels: TdData[][] = [];
         for (let i: number = resTreeGroup.length - 1; i >= 0; i--) {
             let temp: number = 0;
-            for (let currentLevelChilds of resTreeGroup[i]) {
-                for (let currentLevelChild of currentLevelChilds) {
+            for (const currentLevelChilds of resTreeGroup[i]) {
+                for (const currentLevelChild of currentLevelChilds) {
                     if (resTreeGroup[i + 1]) {
-                        let nextLevelChilds: TdData[] = resTreeGroup[i + 1][temp];
+                        const nextLevelChilds: TdData[] = resTreeGroup[i + 1][temp];
                         let colSpan: number = 0;
-                        for (let nextLevelChild of nextLevelChilds) {
+                        for (const nextLevelChild of nextLevelChilds) {
                             if (!this.parent.activeViewOptions.group.byGroupID || (this.parent.activeViewOptions.group.byGroupID &&
                                 nextLevelChild.resourceData[nextLevelChild.resource.groupIDField] ===
                                 currentLevelChild.resourceData[currentLevelChild.resource.idField])) {
@@ -695,7 +692,7 @@ export class ResourceBase {
         this.lastResourceLevel = headerLevels.slice(-1)[0] || [];
         if (!this.parent.activeViewOptions.group.byDate) {
             let index: number = 0;
-            for (let lastLevelResource of this.lastResourceLevel) {
+            for (const lastLevelResource of this.lastResourceLevel) {
                 for (let i: number = 0; i < lastLevelResource.colSpan; i++) {
                     lastColumnDates[index].groupIndex = lastLevelResource.groupIndex;
                     index++;
@@ -704,20 +701,20 @@ export class ResourceBase {
             headerLevels.push(lastColumnDates);
             return headerLevels;
         }
-        let dateHeaderLevels: TdData[][] = [];
-        let levels: TdData[][] = <TdData[][]>extend([], headerLevels, null, true);
+        const dateHeaderLevels: TdData[][] = [];
+        const levels: TdData[][] = <TdData[][]>extend([], headerLevels, null, true);
         let dateColSpan: number = 0;
-        for (let firstRowTd of levels[0]) {
+        for (const firstRowTd of levels[0]) {
             dateColSpan += firstRowTd.colSpan;
         }
-        let datesColumn: TdData[] = [];
-        for (let headerDate of headerDates) {
+        const datesColumn: TdData[] = [];
+        for (const headerDate of headerDates) {
             headerDate.colSpan = dateColSpan;
             datesColumn.push(headerDate);
-            let resGroup: TdData[][] = <TdData[][]>extend([], levels, null, true);
+            const resGroup: TdData[][] = <TdData[][]>extend([], levels, null, true);
             for (let k: number = 0, length: number = resGroup.length; k < length; k++) {
                 if (k === resGroup.length - 1) {
-                    for (let resTd of resGroup[k]) {
+                    for (const resTd of resGroup[k]) {
                         resTd.date = headerDate.date;
                         resTd.workDays = headerDate.workDays;
                         resTd.startHour = this.parent.getStartEndTime((resTd.resourceData[resTd.resource.startHourField] as string)) ||
@@ -736,8 +733,8 @@ export class ResourceBase {
         return dateHeaderLevels;
     }
 
-    public setResourceValues(eventObj: { [key: string]: Object }, groupIndex?: number): void {
-        let setValues: Function = (index: number, field: string, value: Object) => {
+    public setResourceValues(eventObj: Record<string, any>, groupIndex?: number): void {
+        const setValues: CallbackFunction = (index: number, field: string, value: Record<string, any>) => {
             if (this.resourceCollection[index].allowMultiple && this.parent.activeViewOptions.group.allowGroupEdit) {
                 eventObj[field] = [value];
             } else {
@@ -749,73 +746,72 @@ export class ResourceBase {
                 this.parent.activeCellsData.groupIndex;
         }
         if (this.parent.activeViewOptions.group.resources.length > 0 && !isNullOrUndefined(groupIndex)) {
-            let groupOrder: number[] | string[] = this.lastResourceLevel[groupIndex].groupOrder;
+            const groupOrder: number[] | string[] = this.lastResourceLevel[groupIndex].groupOrder;
             for (let index: number = 0; index < this.resourceCollection.length; index++) {
                 setValues(index, this.resourceCollection[index].field, groupOrder[index]);
             }
         } else if (this.parent.resourceCollection.length > 0) {
             for (let index: number = 0; index < this.resourceCollection.length; index++) {
-                let data: { [key: string]: Object } = (this.resourceCollection[index] as
-                    { [key: string]: Object[] }).dataSource[0] as { [key: string]: Object };
+                const data: Record<string, any> = (this.resourceCollection[index] as Record<string, unknown[]>).dataSource[0] as Record<string, any>;
                 if (data) { setValues(index, this.resourceCollection[index].field, data[this.resourceCollection[index].idField]); }
             }
         }
     }
 
-    public getResourceColor(eventObj: { [key: string]: Object }, groupOrder?: string[]): string {
-        let colorFieldIndex: number = (!isNullOrUndefined(groupOrder) &&
+    public getResourceColor(eventObj: Record<string, any>, groupOrder?: string[]): string {
+        const colorFieldIndex: number = (!isNullOrUndefined(groupOrder) &&
             this.colorIndex > groupOrder.length - 1) ? groupOrder.length - 1 : this.colorIndex;
-        let resource: ResourcesModel = this.resourceCollection[colorFieldIndex];
+        const resource: ResourcesModel = this.resourceCollection[colorFieldIndex];
         if (isNullOrUndefined(groupOrder) && this.parent.activeViewOptions.group.allowGroupEdit && resource.allowMultiple) {
             return undefined;
         }
-        let id: string = isNullOrUndefined(groupOrder) ? <string>eventObj[resource.field] : <string>groupOrder[colorFieldIndex];
-        let data: Object[] = this.filterData(resource.dataSource as Object[], resource.idField, id);
+        const id: string = isNullOrUndefined(groupOrder) ? <string>eventObj[resource.field] : <string>groupOrder[colorFieldIndex];
+        const data: Record<string, any>[] = this.filterData(resource.dataSource as Record<string, any>[], resource.idField, id);
         if (data.length > 0) {
-            return (data[0] as { [key: string]: Object })[resource.colorField] as string;
+            return data[0][resource.colorField] as string;
         }
         return undefined;
     }
 
-    public getCssClass(eventObj: { [key: string]: Object }): string {
-        let resource: ResourcesModel = this.resourceCollection.slice(-1)[0];
+    public getCssClass(eventObj: Record<string, any>): string {
+        const resource: ResourcesModel = this.resourceCollection.slice(-1)[0];
         if (this.parent.activeViewOptions.group.allowGroupEdit && resource.allowMultiple) {
             return undefined;
         }
-        let data: Object[] = this.filterData(resource.dataSource as Object[], resource.idField, eventObj[resource.field] as string);
+        const data: Record<string, any>[] = this.filterData(resource.dataSource as Record<string, any>[], resource.idField, eventObj[resource.field] as string);
         if (data.length > 0) {
-            return (data[0] as { [key: string]: Object })[resource.cssClassField] as string;
+            return data[0][resource.cssClassField] as string;
         }
         return undefined;
     }
 
     public getResourceRenderDates(): Date[] {
-        let resourceDates: Date[] = [].concat.apply([], this.lastResourceLevel.map((e: TdData) => e.renderDates));
-        let removeDuplicateDates: Function = (dateColl: Date[]) => dateColl.filter((date: Date, index: number, dates: Date[]) =>
+        const resourceDates: Date[] = [].concat.apply([], ...this.lastResourceLevel.map((e: TdData) => e.renderDates));
+        const removeDuplicateDates: CallbackFunction = (dateColl: Date[]) => dateColl.filter((date: Date, index: number, dates: Date[]) =>
             dates.map((dateObj: Date) => dateObj.getTime()).indexOf(date.getTime()) === index);
-        let renderDates: Date[] = removeDuplicateDates(resourceDates);
+        const renderDates: Date[] = removeDuplicateDates(resourceDates);
         renderDates.sort((a: Date, b: Date) => a.getTime() - b.getTime());
         return renderDates;
     }
 
-    private filterData(dataSource: Object[], field: string, value: string): Object[] {
-        return dataSource.filter((data: { [key: string]: Object }) => data[field] === value);
+    private filterData(dataSource: Record<string, any>[], field: string, value: string): Record<string, any>[] {
+        return dataSource.filter((data: Record<string, any>) => data[field] === value);
     }
 
-    public getResourceData(eventObj: { [key: string]: Object }, index: number, groupEditIndex: number[]): void {
+    public getResourceData(eventObj: Record<string, any>, index: number, groupEditIndex: number[]): void {
         if (this.parent.activeViewOptions.group.allowGroupEdit) {
-            let resourceObj: { [key: string]: Object } = {};
-            for (let groupIndex of groupEditIndex) {
-                let resourceLevel: Object[] = this.lastResourceLevel[groupIndex].groupOrder as Object[];
+            const resourceObj: Record<string, any> = {};
+            for (const groupIndex of groupEditIndex) {
+                const resourceLevel: Record<string, any>[] = this.lastResourceLevel[groupIndex].groupOrder as unknown as Record<string, any>[];
                 for (let level: number = 0, length: number = resourceLevel.length; level < length; level++) {
-                    let fieldName: string = this.resourceCollection[level as number].field;
+                    const fieldName: string = this.resourceCollection[level as number].field;
                     if (isNullOrUndefined(resourceObj[fieldName])) {
                         resourceObj[fieldName] = [];
                     }
-                    (<Object[]>resourceObj[fieldName]).push(resourceLevel[level]);
+                    (<Record<string, any>[]>resourceObj[fieldName]).push(resourceLevel[level]);
                 }
             }
-            eventObj = extend(eventObj, resourceObj) as { [key: string]: Object };
+            eventObj = extend(eventObj, resourceObj) as Record<string, any>;
         } else {
             for (let level: number = 0, length: number = this.resourceCollection.length; level < length; level++) {
                 eventObj[this.resourceCollection[level].field] = this.lastResourceLevel[index].groupOrder[level];
@@ -823,12 +819,12 @@ export class ResourceBase {
         }
     }
 
-    public addResource(resources: Object | Object[], name: string, index: number): void {
-        let resourceCollection: Object[] = (resources instanceof Array) ? resources : [resources];
-        for (let resource of this.parent.resourceCollection) {
+    public addResource(resources: Record<string, any> | Record<string, any>[], name: string, index: number): void {
+        const resourceCollection: Record<string, any>[] = (resources instanceof Array) ? resources : [resources];
+        for (const resource of this.parent.resourceCollection) {
             if (resource.name === name) {
-                resourceCollection.forEach((addObj: Object, i: number) =>
-                    new DataManager({ json: resource.dataSource as Object[] }).insert(addObj, null, null, index + i));
+                resourceCollection.forEach((addObj: Record<string, any>, i: number) =>
+                    new DataManager({ json: resource.dataSource as Record<string, any>[] }).insert(addObj, null, null, index + i));
                 break;
             }
         }
@@ -836,11 +832,11 @@ export class ResourceBase {
     }
 
     public removeResource(resourceId: string | string[] | number | number[], name: string): void {
-        let resourceCollection: (string | number)[] = (resourceId instanceof Array) ? resourceId : [resourceId];
-        for (let resource of this.parent.resourceCollection) {
+        const resourceCollection: (string | number)[] = (resourceId instanceof Array) ? resourceId : [resourceId];
+        for (const resource of this.parent.resourceCollection) {
             if (resource.name === name) {
                 resourceCollection.forEach((removeObj: string | number) =>
-                    new DataManager({ json: resource.dataSource as Object[] }).remove(resource.idField, removeObj));
+                    new DataManager({ json: resource.dataSource as Record<string, any>[] }).remove(resource.idField, removeObj));
                 break;
             }
         }
@@ -848,9 +844,8 @@ export class ResourceBase {
     }
 
     public getIndexFromResourceId(
-        id: string | number, name: string, resourceData?: ResourcesModel, event?: { [key: string]: Object }, parentField?: string)
-        : number {
-        let resource: { [key: string]: Object } = (resourceData.dataSource as Object[]).filter((e: { [key: string]: Object }) => {
+        id: string | number, name: string, resourceData?: ResourcesModel, event?: Record<string, any>, parentField?: string): number {
+        const resource: Record<string, any> = (resourceData.dataSource as Record<string, any>[]).filter((e: Record<string, any>) => {
             if (event && e[resourceData.idField] === id) {
                 if (e[resourceData.groupIDField] === event[parentField]) {
                     return e[resourceData.idField] === id;
@@ -859,27 +854,26 @@ export class ResourceBase {
             } else {
                 return e[resourceData.idField] === id;
             }
-        })[0] as { [key: string]: Object };
+        })[0] as Record<string, any>;
 
         return (this.lastResourceLevel.map((e: TdData) => e.resourceData).indexOf(resource));
     }
 
     public resourceExpand(id: string | number, name: string, hide: boolean): void {
-        let resource: ResourcesModel = this.parent.resourceCollection.filter((e: ResourcesModel) => {
+        const resource: ResourcesModel = this.parent.resourceCollection.filter((e: ResourcesModel) => {
             if (e.name === name) {
                 return e;
             }
             return null;
         })[0];
         let index: number = 0;
-        let resourceData: { [key: string]: Object } = (resource.dataSource as Object[]).filter((e: { [key: string]: Object }) =>
-            e[resource.idField] === id)[0] as { [key: string]: Object };
+        const resourceData: Record<string, any> = (resource.dataSource as Record<string, any>[]).filter((e: Record<string, any>) => e[resource.idField] === id)[0] as Record<string, any>;
         if (!this.parent.activeViewOptions.group.byGroupID) {
             index = this.getIndexFromResourceId(id, name, resource);
         } else {
             index = this.lastResourceLevel.map((e: TdData) => e.resourceData).indexOf(resourceData);
         }
-        let target: HTMLElement =
+        const target: HTMLElement =
             this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS + ' ' + `[data-group-index="${index}"]` +
                 ' ' + '.' + cls.RESOURCE_TREE_ICON_CLASS) as HTMLElement;
         if (target) {
@@ -894,37 +888,36 @@ export class ResourceBase {
         if (this.parent.isAdaptive || ['Agenda', 'MonthAgenda'].indexOf(this.parent.currentView) > -1) {
             return;
         }
-        let levelName: string = name || this.parent.resourceCollection.slice(-1)[0].name;
+        const levelName: string = name || this.parent.resourceCollection.slice(-1)[0].name;
         let levelIndex: number = this.parent.resourceCollection.length - 1;
-        let resource: ResourcesModel = this.parent.resourceCollection.filter((e: ResourcesModel, index: number) => {
+        const resource: ResourcesModel = this.parent.resourceCollection.filter((e: ResourcesModel, index: number) => {
             if (e.name === levelName) {
                 levelIndex = index;
                 return e;
             }
             return null;
         })[0];
-        let scrollElement: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+        const scrollElement: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
         let index: number = 0;
         if (this.parent.activeView.isTimelineView()) {
             if (!this.parent.activeViewOptions.group.byGroupID) {
                 index = this.getIndexFromResourceId(id, levelName, resource);
             } else {
-                let resourceData: { [key: string]: Object } = (resource.dataSource as Object[]).filter((e: { [key: string]: Object }) =>
-                    e[resource.idField] === id)[0] as { [key: string]: Object };
+                const resourceData: Record<string, any> = (resource.dataSource as Record<string, any>[]).filter((e: Record<string, any>) =>
+                    e[resource.idField] === id)[0] as Record<string, any>;
                 index = this.lastResourceLevel.map((e: TdData) => e.resourceData).indexOf(resourceData);
             }
             if (this.parent.virtualScrollModule) {
-                let virtual: HTMLElement = this.parent.element.querySelector('.' + cls.VIRTUAL_TRACK_CLASS) as HTMLElement;
-                let averageRowHeight: number = Math.round(virtual.offsetHeight / this.expandedResources.length);
+                const virtual: HTMLElement = this.parent.element.querySelector('.' + cls.VIRTUAL_TRACK_CLASS) as HTMLElement;
+                const averageRowHeight: number = Math.round(virtual.offsetHeight / this.expandedResources.length);
                 if (this.parent.rowAutoHeight) {
                     scrollElement.scrollTop = 0;
                     this.parent.virtualScrollModule.virtualScrolling();
                 }
-                scrollElement.scrollTop = (index * averageRowHeight)
-                    - (((this.parent.virtualScrollModule.bufferCount - 1) * averageRowHeight));
+                scrollElement.scrollTop = (index * averageRowHeight) - (((this.parent.virtualScrollModule.bufferCount - 1) * averageRowHeight));
                 this.parent.virtualScrollModule.virtualScrolling();
                 if (this.parent.rowAutoHeight) {
-                    let td: HTMLElement =
+                    const td: HTMLElement =
                         this.parent.element.querySelector(`.${cls.WORK_CELLS_CLASS}[data-group-index="${index}"]`) as HTMLElement;
                     if (td && !td.parentElement.classList.contains(cls.HIDDEN_CLASS)) {
                         scrollElement.scrollTop =
@@ -934,7 +927,7 @@ export class ResourceBase {
                     scrollElement.scrollTop = (index * averageRowHeight);
                 }
             } else {
-                let td: HTMLElement =
+                const td: HTMLElement =
                     this.parent.element.querySelector(`.${cls.WORK_CELLS_CLASS}[data-group-index="${index}"]`) as HTMLElement;
                 if (td && !td.parentElement.classList.contains(cls.HIDDEN_CLASS)) {
                     scrollElement.scrollTop = td.offsetTop;
@@ -945,14 +938,13 @@ export class ResourceBase {
                 index = this.getIndexFromResourceId(id, levelName, resource);
             } else {
                 if (levelName === this.parent.resourceCollection.slice(-1)[0].name) {
-                    index = (this.lastResourceLevel as Object[]).map((e: { [key: string]: Object }) =>
-                        (e.resourceData as { [key: string]: Object })[resource.idField]).indexOf(id);
+                    index = this.lastResourceLevel.map((e: TdData) => (e.resourceData as Record<string, any>)[resource.idField]).indexOf(id);
                 } else {
-                    index = (resource.dataSource as Object[]).map((e: { [key: string]: Object }) => e[resource.idField]).indexOf(id);
+                    index = (resource.dataSource as Record<string, any>[]).map((e: Record<string, any>) => e[resource.idField]).indexOf(id);
                 }
             }
-            let offsetTarget: Element = this.parent.element.querySelector(`.${cls.HEADER_ROW_CLASS}:nth-child(${levelIndex + 1})`);
-            let offset: number[] = [].slice.call(offsetTarget.children).map((node: HTMLElement) => node.offsetLeft);
+            const offsetTarget: Element = this.parent.element.querySelector(`.${cls.HEADER_ROW_CLASS}:nth-child(${levelIndex + 1})`);
+            const offset: number[] = [].slice.call(offsetTarget.children).map((node: HTMLElement) => node.offsetLeft);
             scrollElement.scrollLeft = offset[index];
         }
     }
@@ -969,9 +961,10 @@ export class ResourceBase {
             remove(this.parent.element.querySelector('.' + cls.RESOURCE_TREE_POPUP));
             remove(this.parent.element.querySelector('.' + cls.RESOURCE_TREE_POPUP_OVERLAY));
         }
-        let resToolBarEle: Element = this.parent.element.querySelector('.' + cls.RESOURCE_TOOLBAR_CONTAINER);
+        const resToolBarEle: Element = this.parent.element.querySelector('.' + cls.RESOURCE_TOOLBAR_CONTAINER);
         if (resToolBarEle) {
             remove(resToolBarEle);
         }
     }
+
 }

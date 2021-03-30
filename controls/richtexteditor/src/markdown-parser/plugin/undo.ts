@@ -17,7 +17,7 @@ export class UndoRedoCommands {
     private currentAction: string;
     public undoRedoSteps: number;
     public undoRedoTimer: number;
-    constructor(parent?: MarkdownParser, options?: { [key: string]: number }) {
+    public constructor(parent?: MarkdownParser, options?: { [key: string]: number }) {
         this.parent = parent;
         this.undoRedoSteps = !isNullOrUndefined(options) ? options.undoRedoSteps : 30;
         this.undoRedoTimer = !isNullOrUndefined(options) ? options.undoRedoTimer : 300;
@@ -25,26 +25,28 @@ export class UndoRedoCommands {
         this.addEventListener();
     }
     protected addEventListener(): void {
-        let debounceListener: Function = debounce(this.keyUp, this.undoRedoTimer);
+        // eslint-disable-next-line
+        const debounceListener: Function = debounce(this.keyUp, this.undoRedoTimer);
         this.parent.observer.on(EVENTS.KEY_UP_HANDLER, debounceListener, this);
         this.parent.observer.on(EVENTS.KEY_DOWN_HANDLER, this.keyDown, this);
         this.parent.observer.on(EVENTS.ACTION, this.onAction, this);
         this.parent.observer.on(EVENTS.MODEL_CHANGED_PLUGIN, this.onPropertyChanged, this);
     }
     private onPropertyChanged(props: { [key: string]: Object }): void {
-        for (let prop of Object.keys(props.newProp)) {
+        for (const prop of Object.keys(props.newProp)) {
             switch (prop) {
-                case 'undoRedoSteps':
-                    this.undoRedoSteps = (props.newProp as { [key: string]: number }).undoRedoSteps;
-                    break;
-                case 'undoRedoTimer':
-                    this.undoRedoTimer = (props.newProp as { [key: string]: number }).undoRedoTimer;
-                    break;
+            case 'undoRedoSteps':
+                this.undoRedoSteps = (props.newProp as { [key: string]: number }).undoRedoSteps;
+                break;
+            case 'undoRedoTimer':
+                this.undoRedoTimer = (props.newProp as { [key: string]: number }).undoRedoTimer;
+                break;
             }
         }
     }
     protected removeEventListener(): void {
-        let debounceListener: Function = debounce(this.keyUp, 300);
+        // eslint-disable-next-line
+        const debounceListener: Function = debounce(this.keyUp, 300);
         this.parent.observer.off(EVENTS.KEY_UP_HANDLER, debounceListener);
         this.parent.observer.off(EVENTS.KEY_DOWN_HANDLER, this.keyDown);
         this.parent.observer.off(EVENTS.ACTION, this.onAction);
@@ -52,8 +54,9 @@ export class UndoRedoCommands {
     }
     /**
      * Destroys the ToolBar.
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -63,6 +66,9 @@ export class UndoRedoCommands {
 
     /**
      * onAction method
+     *
+     * @param {IMarkdownSubCommands} e - specifies the sub commands
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -74,17 +80,18 @@ export class UndoRedoCommands {
         }
     }
     private keyDown(e: IMDKeyboardEvent): void {
-        let event: KeyboardEvent = e.event as KeyboardEvent;
-        let proxy: this = this;
+        const event: KeyboardEvent = e.event as KeyboardEvent;
+        // eslint-disable-next-line
+        const proxy: this = this;
         switch ((event as KeyboardEventArgs).action) {
-            case 'undo':
-                event.preventDefault();
-                proxy.undo(e);
-                break;
-            case 'redo':
-                event.preventDefault();
-                proxy.redo(e);
-                break;
+        case 'undo':
+            event.preventDefault();
+            proxy.undo(e);
+            break;
+        case 'redo':
+            event.preventDefault();
+            proxy.redo(e);
+            break;
         }
     }
     private keyUp(e: IMDKeyboardEvent): void {
@@ -94,18 +101,21 @@ export class UndoRedoCommands {
     }
     /**
      * MD collection stored string format.
-     * @method saveData
-     * @return {void}
+     *
+     * @param {KeyboardEvent} e - specifies the key board event
+     * @function saveData
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public saveData(e?: KeyboardEvent | MouseEvent | IUndoCallBack): void {
-        let textArea: HTMLTextAreaElement = this.parent.element as HTMLTextAreaElement;
+        const textArea: HTMLTextAreaElement = this.parent.element as HTMLTextAreaElement;
         this.selection.save(textArea.selectionStart, textArea.selectionEnd);
-        let start: number = textArea.selectionStart;
-        let end: number = textArea.selectionEnd;
-        let textValue: string = (this.parent.element as HTMLTextAreaElement).value;
-        let changEle: { [key: string]: string | Object } = { text: textValue, start: start, end: end };
+        const start: number = textArea.selectionStart;
+        const end: number = textArea.selectionEnd;
+        const textValue: string = (this.parent.element as HTMLTextAreaElement).value;
+        // eslint-disable-next-line
+        const changEle: { [key: string]: string | Object } = { text: textValue, start: start, end: end};
         if (this.undoRedoStack.length >= this.steps) {
             this.undoRedoStack = this.undoRedoStack.slice(0, this.steps + 1);
         }
@@ -125,17 +135,19 @@ export class UndoRedoCommands {
     }
     /**
      * Undo the editable text.
-     * @method undo
-     * @return {void}
+     *
+     * @param {IMarkdownSubCommands} e - specifies the sub commands
+     * @function undo
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public undo(e?: IMarkdownSubCommands | IMDKeyboardEvent): void {
         if (this.steps > 0) {
             this.currentAction = 'Undo';
-            let start: number = this.undoRedoStack[this.steps - 1].start;
-            let end: number = this.undoRedoStack[this.steps - 1].end;
-            let removedContent: string = this.undoRedoStack[this.steps - 1].text as string;
+            const start: number = this.undoRedoStack[this.steps - 1].start;
+            const end: number = this.undoRedoStack[this.steps - 1].end;
+            const removedContent: string = this.undoRedoStack[this.steps - 1].text as string;
             (this.parent.element as HTMLTextAreaElement).value = removedContent;
             (this.parent.element as HTMLTextAreaElement).focus();
             this.steps--;
@@ -144,16 +156,18 @@ export class UndoRedoCommands {
     }
     /**
      * Redo the editable text.
-     * @method redo
-     * @return {void}
+     *
+     * @param {IMarkdownSubCommands} e - specifies the sub commands
+     * @function redo
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public redo(e?: IMarkdownSubCommands | IMDKeyboardEvent): void {
         if (this.undoRedoStack[this.steps + 1] != null) {
             this.currentAction = 'Redo';
-            let start: number = this.undoRedoStack[this.steps + 1].start;
-            let end: number = this.undoRedoStack[this.steps + 1].end;
+            const start: number = this.undoRedoStack[this.steps + 1].start;
+            const end: number = this.undoRedoStack[this.steps + 1].end;
             (this.parent.element as HTMLTextAreaElement).value = this.undoRedoStack[this.steps + 1].text as string;
             (this.parent.element as HTMLTextAreaElement).focus();
             this.steps++;
@@ -174,11 +188,13 @@ export class UndoRedoCommands {
     }
     /**
      * getUndoStatus method
+     *
+     * @returns {boolean} - returns the boolean value
      * @hidden
      * @deprecated
      */
     public getUndoStatus(): { [key: string]: boolean } {
-        let status: { [key: string]: boolean } = { undo: false, redo: false };
+        const status: { [key: string]: boolean } = { undo: false, redo: false };
         if (this.steps > 0) {
             status.undo = true;
         }

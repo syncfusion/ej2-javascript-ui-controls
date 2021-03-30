@@ -30,10 +30,11 @@ export class Toolbar {
         return 'toolbar';
     }
     /**
+     * @returns {void} .
      * @private
      */
     public renderToolbar(): void {
-        let toolbarItems: (ToolbarItem | string | ItemModel)[] = this.parent.toolbar || [];
+        const toolbarItems: (ToolbarItem | string | ItemModel)[] = this.parent.toolbar || [];
         if (toolbarItems.length > 0) {
             this.element = createElement(
                 'div', { id: this.parent.controlId + '_Gantt_Toolbar', className: cls.toolbar }
@@ -43,12 +44,12 @@ export class Toolbar {
             } else {
                 this.parent.element.appendChild(this.element);
             }
-            let preItems: ToolbarItem[] = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
+            const preItems: ToolbarItem[] = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
                 'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport',
                 'PdfExport', 'Indent', 'Outdent'];
-            for (let item of preItems) {
-                let itemStr: string = item.toLowerCase();
-                let localeName: string = item[0].toLowerCase() + item.slice(1);
+            for (const item of preItems) {
+                const itemStr: string = item.toLowerCase();
+                const localeName: string = item[0].toLowerCase() + item.slice(1);
                 this.predefinedItems[item] = {
                     id: this.parent.element.id + '_' + itemStr, prefixIcon: 'e-' + itemStr,
                     text: this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant(localeName),
@@ -59,7 +60,7 @@ export class Toolbar {
                     align: this.parent.isAdaptive ? 'Right' : 'Left'
                 };
             }
-            let searchLocalText: string = this.parent.localeObj.getConstant('search');
+            const searchLocalText: string = this.parent.localeObj.getConstant('search');
             if (this.parent.isAdaptive) {
                 (this.predefinedItems as { Search: ItemModel }).Search = {
                     id: this.id + '_searchbutton',
@@ -72,6 +73,7 @@ export class Toolbar {
                     id: this.id + '_search',
                     template: '<div class="e-input-group e-search" role="search">' +
                 '<input id="' + this.id + '_searchbar" class="e-input" name="input" type="search"' +
+                // eslint-disable-next-line
                 'placeholder= \"' + searchLocalText + '\"/>' +
                 '<span id="' + this.id + '_searchbutton" class="e-input-group-icon e-search-icon e-icons"' +
                 'tabindex="-1" title="' + searchLocalText + '" aria-label= "search"></span>' +
@@ -85,7 +87,7 @@ export class Toolbar {
     }
 
     private createToolbar(): void {
-        let items: ItemModel[] = this.getItems();
+        const items: ItemModel[] = this.getItems();
         this.toolbar = new NavToolbar({
             items: items,
             clicked: this.toolbarClickHandler.bind(this),
@@ -93,8 +95,8 @@ export class Toolbar {
         });
         this.toolbar.isStringTemplate = true;
         this.toolbar.appendTo(this.element);
-        let cancelItem: Element = this.element.querySelector('#' + this.parent.element.id + '_cancel');
-        let updateItem: Element = this.element.querySelector('#' + this.parent.element.id + '_update');
+        const cancelItem: Element = this.element.querySelector('#' + this.parent.element.id + '_cancel');
+        const updateItem: Element = this.element.querySelector('#' + this.parent.element.id + '_update');
         if (cancelItem) {
             addClass([cancelItem], cls.focusCell);
         }
@@ -104,10 +106,10 @@ export class Toolbar {
         if (this.parent.isAdaptive) {
             this.element.insertBefore(this.getSearchBarElement(), this.element.childNodes[0]);
             this.searchElement = this.element.querySelector('#' + this.parent.element.id + '_searchbar');
-            let textObj: TextBox = new TextBox({
+            const textObj: TextBox = new TextBox({
                 placeholder: this.parent.localeObj.getConstant('search'),
                 floatLabelType: 'Never',
-                showClearButton: true,
+                showClearButton: true
             });
             textObj.appendTo(this.searchElement);
         } else {
@@ -127,9 +129,9 @@ export class Toolbar {
         }
     }
     private getSearchBarElement(): HTMLElement {
-        let div: HTMLElement = createElement('div', { className: 'e-adaptive-searchbar', styles: 'display: none' });
-        let textbox: HTMLElement = createElement('input', { attrs: { type: 'text' }, id: this.parent.element.id + '_searchbar' });
-        let span: HTMLElement = createElement('span', { className: 'e-backarrowspan e-icons' });
+        const div: HTMLElement = createElement('div', { className: 'e-adaptive-searchbar', styles: 'display: none' });
+        const textbox: HTMLElement = createElement('input', { attrs: { type: 'text' }, id: this.parent.element.id + '_searchbar' });
+        const span: HTMLElement = createElement('span', { className: 'e-backarrowspan e-icons' });
         span.onclick = () => {
             div.style.display = 'none';
             (this.element.childNodes[1] as HTMLElement).style.display = 'block';
@@ -146,8 +148,9 @@ export class Toolbar {
             EventHandler.add(this.searchElement, 'blur', this.blurHandler, this);
         }
     }
+    // eslint-disable-next-line
     private propertyChanged(property: object): void {
-        let module: string = getValue('module', property);
+        const module: string = getValue('module', property);
         if (module !== this.getModuleName() || !this.parent.toolbar) {
             return;
         }
@@ -180,6 +183,8 @@ export class Toolbar {
     }
     /**
      * Method to set value for search input box
+     *
+     * @returns {void} .
      * @hidden
      */
     public updateSearchTextBox(): void {
@@ -188,8 +193,8 @@ export class Toolbar {
         }
     }
     private getItems(): ItemModel[] {
-        let items: ItemModel[] = [];
-        let toolbarItems: (ToolbarItem | string | ItemModel)[] = this.parent.toolbar;
+        const items: ItemModel[] = [];
+        const toolbarItems: (ToolbarItem | string | ItemModel)[] = this.parent.toolbar;
         let searchIndex: number = -1;
         toolbarItems.forEach((item: string | ItemModel, index: number) => {
             if ((typeof (item) === 'string' && item === 'Search') ||
@@ -198,10 +203,10 @@ export class Toolbar {
             }
         });
         if (searchIndex > -1) {
-            let searchItem: (string | ItemModel)[] = toolbarItems.splice(searchIndex, 1);
+            const searchItem: (string | ItemModel)[] = toolbarItems.splice(searchIndex, 1);
             toolbarItems.push(searchItem[0]);
         }
-        for (let item of toolbarItems) {
+        for (const item of toolbarItems) {
             if (typeof item === 'string') {
                 items.push(this.getItemObject(item));
             } else {
@@ -212,7 +217,7 @@ export class Toolbar {
     }
 
     private getItem(itemObject: ItemModel): ItemModel {
-        let item: ItemModel = this.predefinedItems[itemObject.text];
+        const item: ItemModel = this.predefinedItems[itemObject.text];
         return item ? extend(item, item, itemObject) : itemObject;
     }
 
@@ -220,8 +225,8 @@ export class Toolbar {
         return this.predefinedItems[itemName] || { text: itemName, id: this.id + '_' + itemName };
     }
     private toolbarClickHandler(arg: ClickEventArgs): void {
-        let gObj: Gantt = this.parent;
-        let gID: string = this.id;
+        const gObj: Gantt = this.parent;
+        const gID: string = this.id;
         extend(arg, { cancel: false });
         gObj.trigger(events.toolbarClick, arg, (args: ClickEventArgs) => {
             if (args.cancel) {
@@ -238,86 +243,90 @@ export class Toolbar {
                     }
                 }
                 switch (!isNullOrUndefined(args.item) && args.item.id) {
-                    case gID + '_edit':
-                        if (gObj.editModule && gObj.editSettings.allowEditing) {
-                            gObj.editModule.dialogModule.openToolbarEditDialog();
-                        }
-                        break;
-                    case gID + '_indent':
-                        if (gObj.editModule && gObj.selectionModule.getSelectedRecords().length) {
-                            gObj.indent();
-                        }
-                        break;
-                    case gID + '_outdent':
-                        if (gObj.editModule && gObj.selectionModule.getSelectedRecords().length) {
-                            gObj.outdent();
-                        }
-                        break;
-                    case gID + '_update':
-                        gObj.editModule.cellEditModule.isCellEdit = false;
-                        gObj.treeGrid.grid.saveCell();
-                        break;
-                    case gID + '_cancel':
-                        gObj.cancelEdit();
-                        break;
-                    case gID + '_add':
-                        if (gObj.editModule && gObj.editSettings.allowAdding) {
-                            gObj.editModule.dialogModule.openAddDialog();
-                        }
-                        break;
-                    case gID + '_delete':
-                        if (this.parent.selectionModule && this.parent.editModule) {
-                            if ((this.parent.selectionSettings.mode !== 'Cell' && this.parent.selectionModule.selectedRowIndexes.length)
+                case gID + '_edit':
+                    if (gObj.editModule && gObj.editSettings.allowEditing) {
+                        gObj.editModule.dialogModule.openToolbarEditDialog();
+                    }
+                    break;
+                case gID + '_indent':
+                    if (gObj.editModule && gObj.selectionModule.getSelectedRecords().length) {
+                        gObj.indent();
+                    }
+                    break;
+                case gID + '_outdent':
+                    if (gObj.editModule && gObj.selectionModule.getSelectedRecords().length) {
+                        gObj.outdent();
+                    }
+                    break;
+                case gID + '_update':
+                    gObj.editModule.cellEditModule.isCellEdit = false;
+                    gObj.treeGrid.grid.saveCell();
+                    break;
+                case gID + '_cancel':
+                    gObj.cancelEdit();
+                    break;
+                case gID + '_add':
+                    if (gObj.editModule && gObj.editSettings.allowAdding) {
+                        gObj.editModule.dialogModule.openAddDialog();
+                    }
+                    break;
+                case gID + '_delete':
+                    if (this.parent.selectionModule && this.parent.editModule) {
+                        if ((this.parent.selectionSettings.mode !== 'Cell' && this.parent.selectionModule.selectedRowIndexes.length)
                                 || (this.parent.selectionSettings.mode === 'Cell' &&
                                     this.parent.selectionModule.getSelectedRowCellIndexes().length)) {
-                                this.parent.editModule.startDeleteAction();
-                            }
+                            this.parent.editModule.startDeleteAction();
                         }
-                        break;
-                    case gID + '_search':
-                        let searchButtonId: string = getValue('originalEvent.target.id', args);
-                        if (searchButtonId === this.parent.element.id + '_searchbutton' && this.parent.filterModule) {
-                            let keyVal: string =
+                    }
+                    break;
+                case gID + '_search':
+                {
+                    const searchButtonId: string = getValue('originalEvent.target.id', args);
+                    if (searchButtonId === this.parent.element.id + '_searchbutton' && this.parent.filterModule) {
+                        const keyVal: string =
                                 (<HTMLInputElement>this.element.querySelector('#' + this.parent.element.id + '_searchbar')).value;
-                            if (this.parent.searchSettings.key !== keyVal) {
-                                this.parent.searchSettings.key = keyVal;
-                                this.parent.dataBind();
-                            }
+                        if (this.parent.searchSettings.key !== keyVal) {
+                            this.parent.searchSettings.key = keyVal;
+                            this.parent.dataBind();
                         }
-                        break;
-                    case gID + '_searchbutton':
-                        let adaptiveSearchbar: HTMLElement = this.element.querySelector('.e-adaptive-searchbar');
-                        (adaptiveSearchbar.parentElement.childNodes[1] as HTMLElement).style.display = 'none';
-                        adaptiveSearchbar.style.display = 'block';
-                        break;
-                    case gID + '_expandall':
-                        this.parent.ganttChartModule.expandCollapseAll('expand');
-                        break;
-                    case gID + '_collapseall':
-                        this.parent.ganttChartModule.expandCollapseAll('collapse');
-                        break;
-                    case gID + '_prevtimespan':
-                        this.parent.previousTimeSpan();
-                        break;
-                    case gID + '_nexttimespan':
-                        this.parent.nextTimeSpan();
-                        break;
-                    case gID + '_zoomin':
-                        this.zoomIn();
-                        break;
-                    case gID + '_zoomout':
-                        this.zoomOut();
-                        break;
-                    case gID + '_zoomtofit':
-                        this.zoomToFit();
-                        break;
+                    }
+                    break;
+                }
+                case gID + '_searchbutton':
+                {
+                    const adaptiveSearchbar: HTMLElement = this.element.querySelector('.e-adaptive-searchbar');
+                    (adaptiveSearchbar.parentElement.childNodes[1] as HTMLElement).style.display = 'none';
+                    adaptiveSearchbar.style.display = 'block';
+                    break;
+                }
+                case gID + '_expandall':
+                    this.parent.ganttChartModule.expandCollapseAll('expand');
+                    break;
+                case gID + '_collapseall':
+                    this.parent.ganttChartModule.expandCollapseAll('collapse');
+                    break;
+                case gID + '_prevtimespan':
+                    this.parent.previousTimeSpan();
+                    break;
+                case gID + '_nexttimespan':
+                    this.parent.nextTimeSpan();
+                    break;
+                case gID + '_zoomin':
+                    this.zoomIn();
+                    break;
+                case gID + '_zoomout':
+                    this.zoomOut();
+                    break;
+                case gID + '_zoomtofit':
+                    this.zoomToFit();
+                    break;
                 }
             }
         });
     }
     /**
      *
-     * @return {void}
+     * @returns {void} .
      * @private
      */
     public zoomIn(): void {
@@ -325,7 +334,7 @@ export class Toolbar {
     }
     /**
      *
-     * @return {void}
+     * @returns {void} .
      * @private
      */
     public zoomToFit(): void {
@@ -334,7 +343,7 @@ export class Toolbar {
     }
     /**
      *
-     * @return {void}
+     * @returns {void} .
      * @private
      */
     public zoomOut(): void {
@@ -342,27 +351,32 @@ export class Toolbar {
     }
     /**
      * To refresh toolbar items bases current state of tasks
+     *
+     * @param {RowSelectEventArgs} args .
+     * @returns {void} .
      */
     public refreshToolbarItems(args?: RowSelectEventArgs): void {
-        let gObj: Gantt = this.parent;
+        const gObj: Gantt = this.parent;
         let enableItems: string[] = [];
         let disableItems: string[] = [];
-        let edit: EditSettingsModel = gObj.editSettings;
-        let gID: string = this.id;
-        let ind: number = gObj.selectedRowIndex;
+        const edit: EditSettingsModel = gObj.editSettings;
+        const gID: string = this.id;
+        const ind: number = gObj.selectedRowIndex;
         let previousGanttRecord: IGanttData;
-        let isSelected: boolean = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length === 1 ||
+        const isSelected: boolean = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length === 1 ||
             gObj.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
-        let toolbarItems: ItemModel[] = this.toolbar ? this.toolbar.items : [];
-        let toolbarDefaultItems: string[] = [gID + '_add', gID + '_edit', gID + '_delete',
-        gID + '_update', gID + '_cancel', gID + '_indent', gID + '_outdent'];
-        let isResouceParent: boolean = (this.parent.viewType === 'ResourceView' && getValue('data.level', args) !== 0
+        const toolbarItems: ItemModel[] = this.toolbar ? this.toolbar.items : [];
+        const toolbarDefaultItems: string[] = [gID + '_add', gID + '_edit', gID + '_delete',
+            gID + '_update', gID + '_cancel', gID + '_indent', gID + '_outdent'];
+        const isResouceParent: boolean = (this.parent.viewType === 'ResourceView' && getValue('data.level', args) !== 0
             || this.parent.viewType === 'ProjectView');
         if (!isNullOrUndefined(this.parent.editModule)) {
-            let touchEdit: boolean = gObj.editModule.taskbarEditModule ?
+            const touchEdit: boolean = gObj.editModule.taskbarEditModule ?
                 gObj.editModule.taskbarEditModule.touchEdit : false;
-            let hasData: number = gObj.flatData && gObj.flatData.length;
+            const hasData: number = gObj.flatData && gObj.flatData.length;
+            // eslint-disable-next-line
             edit.allowAdding && !touchEdit ? enableItems.push(gID + '_add') : disableItems.push(gID + '_add');
+            // eslint-disable-next-line
             edit.allowEditing && isResouceParent && hasData && isSelected && !touchEdit ?
                 enableItems.push(gID + '_edit') : disableItems.push(gID + '_edit');
             if (!edit.allowEditing || ind === 0 || ind === -1 || !hasData || !isSelected || this.parent.viewType === 'ResourceView') {
@@ -383,8 +397,9 @@ export class Toolbar {
                     }
                 }
             }
-            let isDeleteSelected: boolean = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length > 0 ||
+            const isDeleteSelected: boolean = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length > 0 ||
                 gObj.selectionModule.getSelectedRowCellIndexes().length > 0 ? true : false : false;
+            // eslint-disable-next-line
             edit.allowDeleting && isResouceParent && hasData && isDeleteSelected && !touchEdit ?
                 enableItems.push(gID + '_delete') : disableItems.push(gID + '_delete');
             if (gObj.editSettings.mode === 'Auto' && !isNullOrUndefined(gObj.editModule.cellEditModule)
@@ -442,14 +457,15 @@ export class Toolbar {
 
     /**
      * Enables or disables ToolBar items.
+     *
      * @param {string[]} items - Defines the collection of itemID of ToolBar items.
      * @param {boolean} isEnable - Defines the items to be enabled or disabled.
-     * @return {void}
+     * @returns {void} .
      * @hidden
      */
     public enableItems(items: string[], isEnable: boolean): void {
-        for (let item of items) {
-            let element: HTMLElement = this.element.querySelector('#' + item);
+        for (const item of items) {
+            const element: HTMLElement = this.element.querySelector('#' + item);
             if (element) {
                 this.toolbar.enableItems(element.parentElement, isEnable);
             }
@@ -458,8 +474,9 @@ export class Toolbar {
 
     /**
      * Destroys the Sorting of TreeGrid.
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void} .
      * @private
      */
     public destroy(): void {

@@ -1,6 +1,7 @@
+/* eslint-disable */
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dictionary } from './dictionary';
-/** 
+/**
  * @private
  */
 export class WUniqueFormat {
@@ -8,7 +9,7 @@ export class WUniqueFormat {
     public referenceCount: number = 0;
     public uniqueFormatType: number;
 
-    constructor(type: number) {
+    public constructor(type: number) {
         this.uniqueFormatType = type;
         this.propertiesHash = new Dictionary<number, object>();
     }
@@ -18,45 +19,45 @@ export class WUniqueFormat {
     public isEqual(source: Dictionary<number, object>, property: string, modifiedValue: object): boolean {
         let isEqual: boolean = false;
         switch (this.uniqueFormatType) {
-            case 1:
-                isEqual = this.isBorderEqual(source, property, modifiedValue);
-                break;
-            case 2:
-                isEqual = this.isCharacterFormatEqual(source, property, modifiedValue);
-                break;
-            case 3:
-                isEqual = this.isParagraphFormatEqual(source, property, modifiedValue);
-                break;
-            case 4:
-                isEqual = this.isCellFormatEqual(source, property, modifiedValue);
-                break;
-            case 5:
-                isEqual = this.isShadingEqual(source, property, modifiedValue);
-                break;
-            case 6:
-                isEqual = this.isRowFormatEqual(source, property, modifiedValue);
-                break;
-            case 7:
-                isEqual = this.isListFormatEqual(source, property, modifiedValue);
-                break;
-            case 8:
-                isEqual = this.isTableFormatEqual(source, property, modifiedValue);
-                break;
-            case 9:
-                isEqual = this.isListLevelEqual(source, property, modifiedValue);
-                break;
-            case 10:
-                isEqual = this.isSectionFormatEqual(source, property, modifiedValue);
-                break;
-            default:
-                break;
+        case 1:
+            isEqual = this.isBorderEqual(source, property, modifiedValue);
+            break;
+        case 2:
+            isEqual = this.isCharacterFormatEqual(source, property, modifiedValue);
+            break;
+        case 3:
+            isEqual = this.isParagraphFormatEqual(source, property, modifiedValue);
+            break;
+        case 4:
+            isEqual = this.isCellFormatEqual(source, property, modifiedValue);
+            break;
+        case 5:
+            isEqual = this.isShadingEqual(source, property, modifiedValue);
+            break;
+        case 6:
+            isEqual = this.isRowFormatEqual(source, property, modifiedValue);
+            break;
+        case 7:
+            isEqual = this.isListFormatEqual(source, property, modifiedValue);
+            break;
+        case 8:
+            isEqual = this.isTableFormatEqual(source, property, modifiedValue);
+            break;
+        case 9:
+            isEqual = this.isListLevelEqual(source, property, modifiedValue);
+            break;
+        case 10:
+            isEqual = this.isSectionFormatEqual(source, property, modifiedValue);
+            break;
+        default:
+            break;
         }
         return isEqual;
     }
-    // tslint:disable-next-line:max-line-length
+
     private isNotEqual(property: string, source: Dictionary<number, object>, modifiedProperty: string, modifiedValue: object, uniqueFormatType: number): boolean {
         let targetValue: object = undefined;
-        let propertyType: number = WUniqueFormat.getPropertyType(uniqueFormatType, property);
+        const propertyType: number = WUniqueFormat.getPropertyType(uniqueFormatType, property);
         if (this.propertiesHash.containsKey(propertyType)) {
             targetValue = this.propertiesHash.get(propertyType);
         }
@@ -66,7 +67,7 @@ export class WUniqueFormat {
         } else if (source.containsKey(propertyType)) {
             sourceValue = source.get(propertyType);
         }
-        // tslint:disable-next-line:max-line-length
+
         if (!(targetValue === sourceValue || (!isNullOrUndefined(targetValue) && !isNullOrUndefined(sourceValue) && targetValue === sourceValue))) {
             return true;
         }
@@ -78,38 +79,38 @@ export class WUniqueFormat {
     public static getPropertyType(uniqueFormatType: number, property: string): number {
         let type: number = 0;
         switch (uniqueFormatType) {
-            case 1:
-                type = this.getBorderPropertyType(property);
-                break;
-            case 2:
-                type = this.getCharacterFormatPropertyType(property);
-                break;
-            case 3:
-                type = this.getParaFormatPropertyType(property);
-                break;
-            case 4:
-                type = this.getCellFormatPropertyType(property);
-                break;
-            case 5:
-                type = this.getShadingPropertyType(property);
-                break;
-            case 6:
-                type = this.getRowFormatType(property);
-                break;
-            case 7:
-                type = this.getListFormatType(property);
-                break;
-            case 8:
-                type = this.getTableFormatType(property);
-                break;
-            case 9:
-                type = this.getListLevelType(property);
-                break;
-            case 10:
-                type = this.getSectionFormatType(property);
-                break;
-            default:
-                break;
+        case 1:
+            type = this.getBorderPropertyType(property);
+            break;
+        case 2:
+            type = this.getCharacterFormatPropertyType(property);
+            break;
+        case 3:
+            type = this.getParaFormatPropertyType(property);
+            break;
+        case 4:
+            type = this.getCellFormatPropertyType(property);
+            break;
+        case 5:
+            type = this.getShadingPropertyType(property);
+            break;
+        case 6:
+            type = this.getRowFormatType(property);
+            break;
+        case 7:
+            type = this.getListFormatType(property);
+            break;
+        case 8:
+            type = this.getTableFormatType(property);
+            break;
+        case 9:
+            type = this.getListLevelType(property);
+            break;
+        case 10:
+            type = this.getSectionFormatType(property);
+            break;
+        default:
+            break;
         }
         return type;
     }
@@ -821,8 +822,8 @@ export class WUniqueFormat {
      * @private
      */
     public cloneItems(format: WUniqueFormat, property: string, value: object, uniqueFormatType: number): void {
-        let propertyType: number = WUniqueFormat.getPropertyType(uniqueFormatType, property);
-        let keys: number[] = format.propertiesHash.keys;
+        const propertyType: number = WUniqueFormat.getPropertyType(uniqueFormatType, property);
+        const keys: number[] = format.propertiesHash.keys;
         for (let i: number = 0; i < keys.length; i++) {
             if (keys[i] === propertyType) {
                 this.propertiesHash.add(propertyType, value);
@@ -838,8 +839,8 @@ export class WUniqueFormat {
      * @private
      */
     public mergeProperties(format: WUniqueFormat): Dictionary<number, object> {
-        let hash: Dictionary<number, object> = format.cloneProperties();
-        let keys: number[] = this.propertiesHash.keys;
+        const hash: Dictionary<number, object> = format.cloneProperties();
+        const keys: number[] = this.propertiesHash.keys;
         for (let i: number = 0; i < keys.length; i++) {
             if (!hash.containsKey(keys[i])) {
                 hash.add(keys[i], this.propertiesHash.get(keys[i]));
@@ -851,8 +852,8 @@ export class WUniqueFormat {
      * @private
      */
     public cloneProperties(): Dictionary<number, object> {
-        let hash: Dictionary<number, object> = new Dictionary<number, object>();
-        let keys: number[] = this.propertiesHash.keys;
+        const hash: Dictionary<number, object> = new Dictionary<number, object>();
+        const keys: number[] = this.propertiesHash.keys;
         for (let i: number = 0; i < keys.length; i++) {
             hash.add(keys[i], this.propertiesHash.get(keys[i]));
         }

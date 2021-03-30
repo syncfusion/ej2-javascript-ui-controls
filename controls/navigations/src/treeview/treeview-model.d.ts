@@ -1,4 +1,4 @@
-﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined, BlazorDragEventArgs } from '@syncfusion/ej2-base';import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions, remove  } from '@syncfusion/ej2-base';import { Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/ej2-base';import { updateBlazorTemplate, resetBlazorTemplate , isBlazor, getElement  } from '@syncfusion/ej2-base';import { addClass, removeClass, closest, matches, detach, select, selectAll, isVisible, createElement, append } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { isNullOrUndefined as isNOU, Touch, TapEventArgs, getValue, setValue, extend, merge, attributes } from '@syncfusion/ej2-base';import { ListBase, ListBaseOptions, AriaAttributesMapping, FieldsMapping } from '@syncfusion/ej2-lists';import { createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';import { Input, InputObject } from '@syncfusion/ej2-inputs';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
+﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined, BlazorDragEventArgs } from '@syncfusion/ej2-base';import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions, remove  } from '@syncfusion/ej2-base';import { Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/ej2-base';import { updateBlazorTemplate, resetBlazorTemplate , isBlazor, getElement  } from '@syncfusion/ej2-base';import { addClass, removeClass, closest, matches, detach, select, selectAll, isVisible, append } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { isNullOrUndefined as isNOU, Touch, TapEventArgs, getValue, setValue, extend, merge, attributes } from '@syncfusion/ej2-base';import { ListBase, ListBaseOptions, AriaAttributesMapping, FieldsMapping } from '@syncfusion/ej2-lists';import { createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';import { Input, InputObject } from '@syncfusion/ej2-inputs';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import {ExpandOnSettings,SortOrder,FailureEventArgs,DataBoundEventArgs,DataSourceChangedEventArgs,DrawNodeEventArgs,NodeKeyPressEventArgs,NodeCheckEventArgs,NodeClickEventArgs,NodeExpandEventArgs,DragAndDropEventArgs,NodeEditEventArgs,NodeSelectEventArgs} from "./treeview";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -14,11 +14,13 @@ export interface FieldsSettingsModel {
 
     /**
      * Specifies the array of JavaScript objects or instance of DataManager to populate the nodes.
+     *
      * @default []
      * @aspDatasourceNullIgnore
      * @blazorDatasourceNullIgnore
      * @isGenericType true
      */
+    /* eslint-disable */
     dataSource?: DataManager | { [key: string]: Object }[];
 
     /**
@@ -64,6 +66,7 @@ export interface FieldsSettingsModel {
     /**
      * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/api/data/query/)
      * that will execute along with data processing.
+     *
      * @default null
      */
     query?: Query;
@@ -102,18 +105,21 @@ export interface ActionSettingsModel {
 
     /**
      * Specifies the type of animation.
+     *
      * @default 'SlideDown'
      */
     effect?: Effect;
 
     /**
      * Specifies the duration to animate.
+     *
      * @default 400
      */
     duration?: number;
 
     /**
      * Specifies the animation timing function.
+     *
      * @default 'linear'
      */
     easing?: string;
@@ -127,12 +133,14 @@ export interface NodeAnimationSettingsModel {
 
     /**
      * Specifies the animation that applies on collapsing the nodes.
+     *
      * @default { effect: 'SlideUp', duration: 400, easing: 'linear' }
      */
     collapse?: ActionSettingsModel;
 
     /**
      * Specifies the animation that applies on expanding the nodes.
+     *
      * @default { effect: 'SlideDown', duration: 400, easing: 'linear' }
      */
     expand?: ActionSettingsModel;
@@ -150,6 +158,7 @@ export interface TreeViewModel extends ComponentModel{
      * the mouse. For touch devices, drag and drop operation is performed by touch, touch move
      * and touch end. For more information on drag and drop nodes concept, refer to
      * [Drag and Drop](../../treeview/drag-and-drop/).
+     *
      * @default false
      */
     allowDragAndDrop?: boolean;
@@ -159,6 +168,7 @@ export interface TreeViewModel extends ComponentModel{
      * to true, the TreeView allows you to edit the node by double clicking the node or by navigating to
      * the node and pressing **F2** key. For more information on node editing, refer
      * to [Node Editing](../../treeview/node-editing/).
+     *
      * @default false
      */
     allowEditing?: boolean;
@@ -171,12 +181,14 @@ export interface TreeViewModel extends ComponentModel{
      *
      * For more information on multi-selection, refer to
      * [Multi-Selection](../../treeview/multiple-selection/).
+     *
      * @default false
      */
     allowMultiSelection?: boolean;
 
     /**
      * Specifies the type of animation applied on expanding and collapsing the nodes along with duration.
+     *
      * @default {expand: { effect: 'SlideDown', duration: 400, easing: 'linear' },
      * collapse: { effect: 'SlideUp', duration: 400, easing: 'linear' }}
      */
@@ -188,32 +200,37 @@ export interface TreeViewModel extends ComponentModel{
      * The `checkedNodes` property depends upon the value of `showCheckBox` property.
      * For more information on checkedNodes, refer to
      * [checkedNodes](../../treeview/check-box#checked-nodes).
+     *
      * @default []
      */
     checkedNodes?: string[];
 
     /**
      * Specifies the CSS classes to be added with root element of the TreeView to help customize the appearance of the component.
+     *
      * @default ''
      */
     cssClass?: string;
 
     /**
-     * Specifies a value that indicates whether the TreeView component is disabled or not. 
-     * When set to true, user interaction will not be occurred in TreeView. 
+     * Specifies a value that indicates whether the TreeView component is disabled or not.
+     * When set to true, user interaction will not be occurred in TreeView.
+     *
      * @default false
      */
     disabled?: boolean;
 
     /**
      * Defines the area in which the draggable element movement will be occurring. Outside that area will be restricted
-     * for the draggable element movement. By default, the draggable element movement occurs in the entire page. 
+     * for the draggable element movement. By default, the draggable element movement occurs in the entire page.
+     *
      * @default null
      */
     dragArea?: HTMLElement | string;
 
     /**
      * Defines whether to allow the cross-scripting site or not.
+     *
      * @default false
      */
     enableHtmlSanitizer?: boolean;
@@ -223,6 +240,7 @@ export interface TreeViewModel extends ComponentModel{
      * 1. `selectedNodes` - Represents the nodes that are selected in the TreeView component.
      * 2. `checkedNodes`  - Represents the nodes that are checked in the TreeView component.
      * 3. `expandedNodes` - Represents the nodes that are expanded in the TreeView component.
+     *
      * @default false
      */
     enablePersistence?: boolean;
@@ -230,6 +248,7 @@ export interface TreeViewModel extends ComponentModel{
     /**
      * Represents the expanded nodes in the TreeView component. We can set the nodes that need to be
      * expanded or get the ID of the nodes that are currently expanded by using this property.
+     *
      * @default []
      */
     expandedNodes?: string[];
@@ -242,12 +261,14 @@ export interface TreeViewModel extends ComponentModel{
      * * `DblClick` - The expand/collapse operation happens when you double-click the node in both desktop and mobile devices.
      * * `None` - The expand/collapse operation will not happen when you single-click or double-click the node in both desktop
      *  and mobile devices.
+     *
      * @default 'Auto'
      */
     expandOn?: ExpandOnSettings;
 
     /**
      * Specifies the data source and mapping fields to render TreeView nodes.
+     *
      * @default {id: 'id', text: 'text', dataSource: [], child: 'child', parentID: 'parentID', hasChildren: 'hasChildren',
      *  expanded: 'expanded', htmlAttributes: 'htmlAttributes', iconCss: 'iconCss', imageUrl: 'imageUrl', isChecked: 'isChecked',
      *  query: null, selected: 'selected', tableName: null, tooltip: 'tooltip', navigateUrl: 'navigateUrl'}
@@ -259,6 +280,7 @@ export interface TreeViewModel extends ComponentModel{
      * When disabled only the corresponding node's text gets selected.
      * For more information on Fields concept, refer to
      * [Fields](../../treeview/data-binding#local-data).
+     *
      * @default true
      */
     fullRowSelect?: boolean;
@@ -266,12 +288,14 @@ export interface TreeViewModel extends ComponentModel{
     /**
      * By default, the load on demand (Lazy load) is set to true. By disabling this property, all the tree nodes are rendered at the
      * beginning itself.
+     *
      * @default true
      */
     loadOnDemand?: boolean;
 
     /**
      * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
+     *
      * @private
      */
     locale?: string;
@@ -282,6 +306,7 @@ export interface TreeViewModel extends ComponentModel{
      * [template string](https://ej2.syncfusion.com/documentation/common/template-engine/)
      * or HTML element ID holding the content. For more information on template concept, refer to
      * [Template](../../treeview/template/).
+     *
      * @default null
      */
     nodeTemplate?: string;
@@ -293,6 +318,7 @@ export interface TreeViewModel extends ComponentModel{
      * it we can select only a single node.
      * For more information on selectedNodes, refer to
      * [selectedNodes](../../treeview/multiple-selection#selected-nodes).
+     *
      * @default []
      */
     selectedNodes?: string[];
@@ -303,6 +329,7 @@ export interface TreeViewModel extends ComponentModel{
      * * `None` - The nodes are not sorted.
      * * `Ascending` - The nodes are sorted in the ascending order.
      * * `Descending` - The nodes are sorted in the ascending order.
+     *
      * @default 'None'
      */
     sortOrder?: SortOrder;
@@ -311,38 +338,45 @@ export interface TreeViewModel extends ComponentModel{
      * Indicates that the nodes will display CheckBoxes in the TreeView.
      * The CheckBox will be displayed next to the expand/collapse icon of the node. For more information on CheckBoxes, refer to
      * [CheckBox](../../treeview/check-box/).
+     *
      * @default false
      */
     showCheckBox?: boolean;
 
     /**
      * Allow us to specify the parent and child nodes to get auto check while we check or uncheck a node.
+     *
      * @default true
      */
     autoCheck?: boolean;
 
     /**
      * If this property is set to true, then the entire TreeView node will be navigate-able instead of text element.
+     *
      * @default false
      */
     fullRowNavigable?: boolean;
 
     /**
-     * Triggers when any TreeView action failed to fetch the desired results. 
-     * @event 
+     * Triggers when any TreeView action failed to fetch the desired results.
+     *
+     * @event
      * @blazorProperty 'OnActionFailure'
      */
     actionFailure?: EmitType<FailureEventArgs>;
 
     /**
      * Triggers when the TreeView control is created successfully.
+     *
      * @event
      * @blazorProperty 'Created'
      */
+    /* eslint-disable */
     created?: EmitType<Object>;
 
     /**
      * Triggers when data source is populated in the TreeView.
+     *
      * @event
      * @blazorProperty 'DataBound'
      */
@@ -351,6 +385,7 @@ export interface TreeViewModel extends ComponentModel{
     /**
      * Triggers when data source is changed in the TreeView. The data source will be changed after performing some operation like
      * drag and drop, node editing, adding and removing node.
+     *
      * @event
      * @blazorProperty 'DataSourceChanged'
      */
@@ -358,6 +393,7 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers before the TreeView node is appended to the TreeView element. It helps to customize specific nodes.
+     *
      * @event
      * @blazorProperty 'OnDrawNode'
      */
@@ -365,13 +401,16 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers when the TreeView control is destroyed successfully.
+     *
      * @event
      * @blazorProperty 'Destroyed'
      */
+    /* eslint-disable */
     destroyed?: EmitType<Object>;
 
     /**
      * Triggers when key press is successful. It helps to customize the operations at key press.
+     *
      * @event
      * @blazorProperty 'OnKeyPress'
      */
@@ -379,6 +418,7 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers when the TreeView node is checked/unchecked successfully.
+     *
      * @event
      * @blazorProperty 'NodeChecked'
      */
@@ -386,6 +426,7 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers before the TreeView node is to be checked/unchecked.
+     *
      * @event
      * @blazorProperty 'NodeChecking'
      */
@@ -393,6 +434,7 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers when the TreeView node is clicked successfully.
+     *
      * @event
      * @blazorProperty 'NodeClicked'
      */
@@ -400,6 +442,7 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers when the TreeView node collapses successfully.
+     *
      * @event
      * @blazorProperty 'NodeCollapsed'
      */
@@ -407,6 +450,7 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers before the TreeView node collapses.
+     *
      * @event
      * @blazorProperty 'NodeCollapsing'
      */
@@ -414,6 +458,7 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers when the TreeView node is dragged (moved) continuously.
+     *
      * @deprecated
      * @event
      * @blazorProperty 'NodeDragging'
@@ -422,6 +467,7 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers when the TreeView node drag (move) starts.
+     *
      * @event
      * @blazorProperty 'OnNodeDragStart'
      */
@@ -429,6 +475,7 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers when the TreeView node drag (move) is stopped.
+     *
      * @event
      * @blazorProperty 'OnNodeDragged'
      */
@@ -436,6 +483,7 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers when the TreeView node is dropped on target element successfully.
+     *
      * @event
      * @blazorProperty 'NodeDropped'
      */
@@ -443,6 +491,7 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers when the TreeView node is renamed successfully.
+     *
      * @event
      * @blazorProperty 'NodeEdited'
      */
@@ -450,6 +499,7 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers before the TreeView node is renamed.
+     *
      * @event
      * @blazorProperty 'NodeEditing'
      */
@@ -457,6 +507,7 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers when the TreeView node expands successfully.
+     *
      * @event
      * @blazorProperty 'NodeExpanded'
      */
@@ -464,6 +515,7 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers before the TreeView node is to be expanded.
+     *
      * @event
      * @blazorProperty 'NodeExpanding'
      */
@@ -471,6 +523,7 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers when the TreeView node is selected/unselected successfully.
+     *
      * @event
      * @blazorProperty 'NodeSelected'
      */
@@ -478,6 +531,7 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers before the TreeView node is selected/unselected.
+     *
      * @event
      * @blazorProperty 'NodeSelecting'
      */

@@ -7,24 +7,28 @@ export interface GridlinesModel {
 
     /**
      * Sets the line color of gridlines
+     *
      * @default ''
      */
     lineColor?: string;
 
     /**
      * Defines the pattern of dashes and gaps used to stroke horizontal grid lines
+     *
      * @default ''
      */
     lineDashArray?: string;
 
     /**
      * A pattern of lines and gaps that defines a set of horizontal/vertical gridlines
+     *
      * @default [1.25, 18.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75]
      */
     lineIntervals?: number[];
 
     /**
      * A pattern of gaps that defines a set of horizontal/vertical grid dots
+     *
      * @default [1, 19, 0.5, 19.5, 0.5, 19.5, 0.5, 19.5, 0.5, 19.5]
      */
     dotIntervals?: number[];
@@ -45,6 +49,7 @@ export interface GridlinesModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default [20]
      */
     snapIntervals?: number[];
@@ -72,12 +77,14 @@ export interface SnapSettingsModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default {}
      */
     horizontalGridlines?: GridlinesModel;
 
     /**
      * Defines the vertical gridlines
+     *
      * @default {}
      */
     verticalGridlines?: GridlinesModel;
@@ -92,6 +99,7 @@ export interface SnapSettingsModel {
      * * SnapToVerticalLines - Enables the object to snap only with horizontal gridlines.
      * * SnapToLines - Enables the object to snap with both horizontal and Vertical gridlines.
      * * snapToObject - Enables the object to snap with the other objects in the diagram.
+     *
      * @default 'All'
      * @aspNumberEnum
      * @blazorNumberEnum
@@ -100,6 +108,7 @@ export interface SnapSettingsModel {
 
     /**
      * Defines the angle by which the object needs to be snapped
+     *
      * @default 5
      */
     snapAngle?: number;
@@ -108,12 +117,14 @@ export interface SnapSettingsModel {
      * Defines the diagram Grid pattern.
      * * Lines - Render the line for the grid
      * * Dots - Render the dot for the grid
+     *
      * @default 'Lines'
      */
     gridType?: GridType;
 
     /**
      * Sets the minimum distance between the selected object and the nearest object
+     *
      * @default 5
      */
     snapObjectDistance?: number;

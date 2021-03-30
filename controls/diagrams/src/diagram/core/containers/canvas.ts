@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable valid-jsdoc */
 import { Container } from './container';
 import { DiagramElement } from '../elements/diagram-element';
 import { rotateSize } from '../../utility/base-util';
@@ -14,19 +18,26 @@ export class Canvas extends Container {
 
     /**
      * Not applicable for canvas
-     *  @private 
+     *
+     *  @private
      */
     public measureChildren: boolean = undefined;
+
     /**
-     * Measures the minimum space that the canvas requires
-     * @param {Size} availableSize
+     * Measures the minimum space that the canvas requires \
+     *
+     * @returns { Size } Measures the minimum space that the canvas requires .\
+     * @param {string} id - provide the id value.
+     * @param {Function} callback - provide the Connector value.
+     *
+     * @private
      */
     public measure(availableSize: Size, id?: string, callback?: Function): Size {
         let desired: Size = undefined;
         let desiredBounds: Rect = undefined;
         if (this.hasChildren()) {
             //Measuring the children
-            for (let child of this.children) {
+            for (const child of this.children) {
                 if (child instanceof TextElement) {
                     if (child.canMeasure) {
                         availableSize.width = availableSize.width || this.maxWidth || this.minWidth;
@@ -42,12 +53,12 @@ export class Canvas extends Container {
                     childSize = rotateSize(childSize, child.rotateAngle);
                 }
 
-                let right: number = childSize.width + child.margin.right;
-                let bottom: number = childSize.height + child.margin.bottom;
-                let childBounds: Rect = new Rect(child.margin.left, child.margin.top, right, bottom);
+                const right: number = childSize.width + child.margin.right;
+                const bottom: number = childSize.height + child.margin.bottom;
+                const childBounds: Rect = new Rect(child.margin.left, child.margin.top, right, bottom);
 
                 if (child.float) {
-                    let position: PointModel = child.getAbsolutePosition(childSize);
+                    const position: PointModel = child.getAbsolutePosition(childSize);
                     if (position !== undefined) {
                         continue;
                     }
@@ -87,18 +98,18 @@ export class Canvas extends Container {
     public arrange(desiredSize: Size, isStack?: boolean): Size {
         this.outerBounds = new Rect();
         if (this.hasChildren()) {
-            let y: number;
-            let x: number;
-            y = this.offsetY - desiredSize.height * this.pivot.y + this.padding.top;
-            x = this.offsetX - desiredSize.width * this.pivot.x + this.padding.left;
-            for (let child of this.children) {
+            //let y: number;
+            //let x: number;
+            const y: number = this.offsetY - desiredSize.height * this.pivot.y + this.padding.top;
+            const x: number = this.offsetX - desiredSize.width * this.pivot.x + this.padding.left;
+            for (const child of this.children) {
                 if ((child.transform & Transform.Parent) !== 0) {
                     child.parentTransform = this.parentTransform + this.rotateAngle;
                     if (this.flip !== 'None' || this.elementActions & ElementAction.ElementIsGroup) {
                         child.parentTransform = (this.flip === 'Horizontal' || this.flip === 'Vertical') ?
                             -child.parentTransform : child.parentTransform;
                     }
-                    let childSize: Size = child.desiredSize.clone();
+                    const childSize: Size = child.desiredSize.clone();
 
                     let topLeft: PointModel;
                     let center: PointModel = { x: 0, y: 0 };
@@ -106,7 +117,7 @@ export class Canvas extends Container {
                     let childX: number = x;
                     let childY: number = y;
                     if (child.relativeMode === 'Point') {
-                        let position: PointModel = child.getAbsolutePosition(desiredSize);
+                        const position: PointModel = child.getAbsolutePosition(desiredSize);
                         if (position !== undefined) {
                             childX += position.x;
                             childY += position.y;
@@ -144,80 +155,70 @@ export class Canvas extends Container {
 
 
 
-    /**
-     * Aligns the child element based on its parent
-     * @param {DiagramElement} child 
-     * @param {Size} childSize 
-     * @param {Size} parentSize 
-     * @param {number} x 
-     * @param {number} y 
-     */
+
+    //Aligns the child element based on its parent
     private alignChildBasedOnParent(child: DiagramElement, childSize: Size, parentSize: Size, x: number, y: number): PointModel {
         switch (child.horizontalAlignment) {
-            case 'Auto':
-            case 'Left':
-                x += child.margin.left;
-                break;
-            case 'Right':
-                x += parentSize.width - childSize.width - child.margin.right;
-                break;
-            case 'Stretch':
-            case 'Center':
-                x += parentSize.width / 2 - childSize.width / 2;
-                break;
+        case 'Auto':
+        case 'Left':
+            x += child.margin.left;
+            break;
+        case 'Right':
+            x += parentSize.width - childSize.width - child.margin.right;
+            break;
+        case 'Stretch':
+        case 'Center':
+            x += parentSize.width / 2 - childSize.width / 2;
+            break;
         }
 
         switch (child.verticalAlignment) {
-            case 'Auto':
-            case 'Top':
-                y += child.margin.top;
-                break;
-            case 'Bottom':
-                y += parentSize.height - childSize.height - child.margin.bottom;
-                break;
-            case 'Stretch':
-            case 'Center':
-                y += parentSize.height / 2 - childSize.height / 2;
-                break;
+        case 'Auto':
+        case 'Top':
+            y += child.margin.top;
+            break;
+        case 'Bottom':
+            y += parentSize.height - childSize.height - child.margin.bottom;
+            break;
+        case 'Stretch':
+        case 'Center':
+            y += parentSize.height / 2 - childSize.height / 2;
+            break;
         }
 
         return { x: x, y: y };
     }
 
-    /**
-     * Aligns the child elements based on a point
-     * @param {DiagramElement} child 
-     * @param {number} x 
-     * @param {number} y 
-     */
+
+    //Aligns the child elements based on a point
     private alignChildBasedOnaPoint(child: DiagramElement, x: number, y: number): PointModel {
         x += child.margin.left - child.margin.right;
         y += child.margin.top - child.margin.bottom;
         switch (child.horizontalAlignment) {
-            case 'Auto':
-            case 'Left':
-                x = child.inversedAlignment ? x : (x - child.desiredSize.width);
-                break;
-            case 'Stretch':
-            case 'Center':
-                x -= child.desiredSize.width * child.pivot.x;
-                break;
-            case 'Right':
-                x = child.inversedAlignment ? (x - child.desiredSize.width) : x;
-                break;
+        case 'Auto':
+        case 'Left':
+            x = child.inversedAlignment ? x : (x - child.desiredSize.width);
+            break;
+        case 'Stretch':
+        case 'Center':
+            x -= child.desiredSize.width * child.pivot.x;
+            break;
+        case 'Right':
+            x = child.inversedAlignment ? (x - child.desiredSize.width) : x;
+            break;
         }
         switch (child.verticalAlignment) {
-            case 'Auto':
-            case 'Top':
-                y = child.inversedAlignment ? y : (y - child.desiredSize.height);
-                break;
-            case 'Stretch':
-            case 'Center':
-                y -= child.desiredSize.height * child.pivot.y;
-                break;
-            case 'Bottom':
-                y = child.inversedAlignment ? (y - child.desiredSize.height) : y;
-                break;
+        case 'Auto':
+        case 'Top':
+            y = child.inversedAlignment ? y : (y - child.desiredSize.height);
+            break;
+        case 'Stretch':
+        case 'Center':
+            y -= child.desiredSize.height * child.pivot.y;
+            break;
+        case 'Bottom':
+            y = child.inversedAlignment ? (y - child.desiredSize.height) : y;
+            break;
         }
         return { x: x, y: y };
     }

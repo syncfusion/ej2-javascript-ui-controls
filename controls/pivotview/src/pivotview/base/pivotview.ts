@@ -1923,7 +1923,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             endAt: 'Ending at',
             groupBy: 'Interval by',
             selectGroup: 'Select groups',
-            multipleAxes: 'Multiple Axes',
+            multipleAxes: 'Multiple Axis',
             showLegend: 'Show Legend',
             exit: 'Exit',
             chartTypeSettings: 'Chart Type Settings',
@@ -1936,7 +1936,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             replaceConfirmBefore: 'A report named ',
             replaceConfirmAfter: ' already exists. Do you want to replace it?',
             invalidJSON: 'Invalid JSON data',
-            invalidCSV: 'Invalid CSV data'
+            invalidCSV: 'Invalid CSV data',
+            stacked: 'Stacked',
+            single: 'Single',
+            multipleAxisMode: 'Multiple Axis Mode'
         };
         /* eslint-enable */
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
@@ -2450,6 +2453,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             let dataSource: string[][] | IDataSet[] = [];
             if (this.dataSourceSettings.type === 'CSV') {
                 let jsonObject: string[] = this.request.responseText.split(/\r?\n|\r/);
+                // (dataSource as string[][]).push(jsonObject[0].split(',').map(function (e) { return e.replace(/ /g, '').replace(/^\"(.+)\"$/, "$1"); }));
                 for (let i: number = 0; i < jsonObject.length; i++) {
                     if (!isNullOrUndefined(jsonObject[i]) && jsonObject[i] !== '') {
                         (dataSource as string[][]).push(jsonObject[i].split(','));
@@ -3656,7 +3660,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     transform: horiOffset + 0 + 'px)'
                 });
                 /* eslint-disable */
-                (this.grid.element.querySelector('.' + cls.MOVABLECHILD_DIV) as any).style.width = vWidth + 'px';
+                (this.grid.element.querySelector('.' + cls.MOVABLECHILD_DIV) as any).style.width = (vWidth + (mCnt.parentElement.offsetWidth - mCnt.parentElement.clientWidth)) + 'px';
                 if (this.grid.height !== 'auto') {
                     (this.grid.contentModule as any).setHeightToContent(this.virtualDiv.offsetHeight + movableTable.clientHeight);
                 } else {
@@ -4872,7 +4876,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             (this.dataSourceSettings.dataSource as DataManager).
                 executeQuery(new Query().requiresCount()).then(this.executeQuery.bind(this));
         } else {
-            (this.dataSourceSettings.dataSource as DataManager).executeQuery(new Query()).then(this.executeQuery.bind(this));
+            if ((this.dataSourceSettings.dataSource as DataManager).defaultQuery) {
+                (this.dataSourceSettings.dataSource as DataManager).executeQuery((this.dataSourceSettings.dataSource as DataManager).defaultQuery).then(this.executeQuery.bind(this));
+            } else {
+                (this.dataSourceSettings.dataSource as DataManager).executeQuery(new Query()).then(this.executeQuery.bind(this));
+            }
         }
     }
 
@@ -5007,22 +5015,20 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     for (let j: number = 1; (pivotValues[i] && j < pivotValues[i].length); j++) {
                         if ((pivotValues[i][j] as IAxisSet).axis === 'value') {
                             let label: string = this.hyperlinkSettings.headerText;
-                            if ((pivotValues[colIndex[label.split(headerDelimiter).length - 1]] &&
-                                (pivotValues[colIndex[label.split(headerDelimiter).length - 1]][j] as IAxisSet) &&
-                                (pivotValues[colIndex[label.split(headerDelimiter).length - 1]][j] as IAxisSet).
-                                    valueSort && (pivotValues[colIndex[label.split(headerDelimiter).length - 1]][j] as IAxisSet).
-                                        valueSort[label])) {
-                                for (let index of colIndex) {
-                                    if ((pivotValues[index][j] as IAxisSet) &&
-                                        (pivotValues[index][j] as IAxisSet).axis === 'column' &&
-                                        (((pivotValues[index][j] as IAxisSet).valueSort.levelName as string).indexOf(label) > -1)) {
-                                        (pivotValues[index][j] as IAxisSet).enableHyperlink = true;
-                                    }
-                                }
-                                (pivotValues[i][j] as IAxisSet).enableHyperlink = true;
-                            } else if (((pivotValues[i][0] as IAxisSet).valueSort.levelName as string).indexOf(label) > -1) {
+                            if (((pivotValues[i][0] as IAxisSet).valueSort.levelName as string).indexOf(label) > -1) {
                                 (pivotValues[i][0] as IAxisSet).enableHyperlink = true;
                                 (pivotValues[i][j] as IAxisSet).enableHyperlink = true;
+                            }
+                            else {
+                                let isApplyHyperLink: boolean = false;
+                                for (let k: number = 0; k < colIndex.length; k++) {
+                                    label = headerDelimiter + this.hyperlinkSettings.headerText;
+                                    if ((headerDelimiter + (pivotValues[colIndex[k]][j] as any).valueSort.levelName as string).indexOf(label) > -1) {
+                                        (pivotValues[colIndex[k]][j] as IAxisSet).enableHyperlink = true;
+                                        isApplyHyperLink = true;
+                                    }
+                                }
+                                (pivotValues[i][j] as IAxisSet).enableHyperlink = isApplyHyperLink;
                             }
                         }
                     }

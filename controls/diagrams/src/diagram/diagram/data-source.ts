@@ -37,6 +37,7 @@ import { DataMappingItemsModel } from './data-mapping-model';
 export class CrudAction extends ChildProperty<CrudAction> {
     /**
      * set an URL to get a data from database
+     *
      * @default ''
      */
     @Property('')
@@ -44,6 +45,7 @@ export class CrudAction extends ChildProperty<CrudAction> {
 
     /**
      * set an URL to add a data into database
+     *
      * @default ''
      */
     @Property('')
@@ -51,6 +53,7 @@ export class CrudAction extends ChildProperty<CrudAction> {
 
     /**
      * set an URL to update the existing data in database
+     *
      * @default ''
      */
     @Property('')
@@ -58,6 +61,7 @@ export class CrudAction extends ChildProperty<CrudAction> {
 
     /**
      * set an URL to remove an data in database
+     *
      * @default ''
      */
     @Property('')
@@ -65,6 +69,7 @@ export class CrudAction extends ChildProperty<CrudAction> {
 
     /**
      * Add custom fields to node
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -76,6 +81,7 @@ export class CrudAction extends ChildProperty<CrudAction> {
 export class ConnectionDataSource extends ChildProperty<ConnectionDataSource> {
     /**
      * set an id for connector dataSource
+     *
      * @default ''
      */
     @Property('')
@@ -83,6 +89,7 @@ export class ConnectionDataSource extends ChildProperty<ConnectionDataSource> {
 
     /**
      * define sourceID to connect with connector
+     *
      * @default ''
      */
     @Property('')
@@ -90,6 +97,7 @@ export class ConnectionDataSource extends ChildProperty<ConnectionDataSource> {
 
     /**
      * define targetID to connect with connector
+     *
      * @default ''
      */
     @Property('')
@@ -97,6 +105,7 @@ export class ConnectionDataSource extends ChildProperty<ConnectionDataSource> {
 
     /**
      * define sourcePoint to render connector startPoint
+     *
      * @default null
      */
     @Property(null)
@@ -104,6 +113,7 @@ export class ConnectionDataSource extends ChildProperty<ConnectionDataSource> {
 
     /**
      * define sourcePoint to render connector startPoint
+     *
      * @default null
      */
     @Property(null)
@@ -111,6 +121,7 @@ export class ConnectionDataSource extends ChildProperty<ConnectionDataSource> {
 
     /**
      * define targetPoint to render connector targetPoint
+     *
      * @default null
      */
     @Property(null)
@@ -118,6 +129,7 @@ export class ConnectionDataSource extends ChildProperty<ConnectionDataSource> {
 
     /**
      * define targetPoint to render connector targetPoint
+     *
      * @default null
      */
     @Property(null)
@@ -125,6 +137,7 @@ export class ConnectionDataSource extends ChildProperty<ConnectionDataSource> {
 
     /**
      * Sets the data source either as a collection of objects or as an URL of DataManager
+     *
      * @default null
      */
     @Property(null)
@@ -132,6 +145,7 @@ export class ConnectionDataSource extends ChildProperty<ConnectionDataSource> {
 
     /**
      * Add CrudAction to connector data source
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -145,6 +159,7 @@ export class ConnectionDataSource extends ChildProperty<ConnectionDataSource> {
 export class DataSource extends ChildProperty<DataSource> {
     /**
      * Sets the unique id of the data source items
+     *
      * @default ''
      */
 
@@ -153,6 +168,7 @@ export class DataSource extends ChildProperty<DataSource> {
 
     /**
      * Sets the data source either as a collection of objects or as an URL of DataManager
+     *
      * @default null
      * @deprecated
      */
@@ -162,6 +178,7 @@ export class DataSource extends ChildProperty<DataSource> {
 
     /**
      * Sets the data source either as a collection of objects or as an URL of DataManager
+     *
      * @default null
      */
 
@@ -170,6 +187,7 @@ export class DataSource extends ChildProperty<DataSource> {
 
     /**
      * Sets the unique id of the root data source item
+     *
      * @default ''
      */
     @Property('')
@@ -177,6 +195,7 @@ export class DataSource extends ChildProperty<DataSource> {
 
     /**
      * Sets the unique id that defines the relationship between the data source items
+     *
      * @default ''
      */
     @Property('')
@@ -184,6 +203,7 @@ export class DataSource extends ChildProperty<DataSource> {
 
     /**
      * Binds the custom data with node model
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -194,6 +214,7 @@ export class DataSource extends ChildProperty<DataSource> {
 
     /**
      * A collection of JSON objects where each object represents an Data Map Items.
+     *
      * @default []
      */
     @Collection<DataMappingItems>([], DataMappingItems)
@@ -201,6 +222,7 @@ export class DataSource extends ChildProperty<DataSource> {
 
     /**
      * Add CrudAction to data source
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -211,6 +233,7 @@ export class DataSource extends ChildProperty<DataSource> {
 
     /**
      * define connectorDataSource collection
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined

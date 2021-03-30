@@ -500,7 +500,7 @@ describe('Chart', () => {
             loaded = (args: Object): void => {
 
                 chartObj.loaded = null;
-                let wheelArgs: Wheel = {
+                let wheelArgs: unknown = {
                     preventDefault: prevent,
                     wheelDelta: 120,
                     detail: 3,

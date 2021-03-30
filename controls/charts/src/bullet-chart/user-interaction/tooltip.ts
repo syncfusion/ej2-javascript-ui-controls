@@ -1,6 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable prefer-const */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable @typescript-eslint/ban-types */
 import { BulletChart } from '../bullet-chart';
 import { compile as templateComplier, updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
-import { BulletLabelStyleModel } from '../model/bullet-base-model';
 import { stringToNumber } from '../../common/utils/helper';
 import { IBulletTooltipContent, IBulletchartTooltipEventArgs } from '../model/bullet-interface';
 import { tooltipRender } from '../../common/model/constants';
@@ -16,12 +22,13 @@ export class BulletTooltip {
     public toolTipInterval: number;
     private control: BulletChart;
     private templateFn: Function;
-     /** @private */
-     public bulletAxis: BulletChartAxis;
+    /** @private */
+    public bulletAxis: BulletChartAxis;
 
     /**
      * Constructor for tooltip module.
-     * @private.
+     *
+     * @private
      */
     constructor(bullet: BulletChart) {
         this.control = bullet;
@@ -32,25 +39,22 @@ export class BulletTooltip {
     /**
      * To create tooltip div element
      */
-    public _elementTooltip(e: PointerEvent, targetClass: string, targetId: string, mouseX: number, mouseY: number): void {
-        let titleStyle: BulletLabelStyleModel = this.control.titleStyle;
+    public _elementTooltip(e: PointerEvent, targetClass: string, targetId: string, mouseX: number): void {
         let tooltipDiv: HTMLDivElement = <HTMLDivElement>this.control.createElement('div');
         tooltipDiv.id = 'tooltip';
         tooltipDiv.className = 'tooltipDiv';
         let target: Element = e.target as Element;
-        let pointer: PointerEvent = e;
         let pageX: number = mouseX + 20;
         let pageY: number = e.clientY;
         let str: string = '';
-        let font : string = this.control.tooltip.textStyle.fontStyle ? this.control.tooltip.textStyle.fontStyle :
-        BulletChartTheme.tooltipLabelFont.fontStyle;
+        let font: string = this.control.tooltip.textStyle.fontStyle ? this.control.tooltip.textStyle.fontStyle :
+            BulletChartTheme.tooltipLabelFont.fontStyle;
         let fill: string = this.control.tooltip.fill ? this.control.tooltip.fill : this.control.themeStyle.tooltipFill;
         let color: string = BulletChartTheme.tooltipLabelFont.color || this.control.themeStyle.tooltipBoldLabel;
-        let fontSize: string = BulletChartTheme.titleFont.size;
         let style: string = 'left:' + pageX + 'px;' + 'top:' + pageY + 'px;' +
-        'display: block; position: absolute; "z-index": "13000",cursor: default;' +
-        'font-family: Segoe UI;' + 'color:' + color + '; font-size: 13px; background-color:' +
-        fill + '; border: 1px solid #707070;' + 'font-style:' + font + ';';
+            'display: block; position: absolute; "z-index": "13000",cursor: default;' +
+            'font-family: Segoe UI;' + 'color:' + color + '; font-size: 13px; background-color:' +
+            fill + '; border: 1px solid #707070;' + 'font-style:' + font + ';';
         // adding css prop to the div
         tooltipDiv.setAttribute('style', style);
         if (targetClass === this.control.svgObject.id + '_Caption') {
@@ -72,8 +76,6 @@ export class BulletTooltip {
     public _displayTooltip(e: PointerEvent, targetClass: string, targetId: string, mouseX: number, mouseY: number): void {
         if (targetClass !== 'undefined' && this.control.tooltip.enable && (targetClass === this.control.svgObject.id + '_FeatureMeasure' ||
             targetClass === this.control.svgObject.id + '_ComparativeMeasure')) {
-            let locale: string = this.control.locale;
-            let localizedText: boolean = locale && this.control.enableGroupSeparator;
             let data: IBulletTooltipContent;
             let blazorTooltipData: IBulletTooltipContent;
             let measureId: string;
@@ -81,7 +83,6 @@ export class BulletTooltip {
             let targetVal: string[] = [];
             let categoryVal: number;
             let tooltipdiv: HTMLDivElement;
-            let pointer: PointerEvent = e;
             let format: string = this.bulletAxis.getFormat(this.control);
             let isCustomFormat: boolean = format.match('{value}') !== null;
             measureId = targetId.substring(targetId.lastIndexOf('_') + 1);
@@ -97,7 +98,6 @@ export class BulletTooltip {
             let labelCategoryText: string = categoryVal ? (categoryVal).toString() : '';
             labelCurrentText = this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, +currentVal);
             for (let i: number = 0; i < targetVal.length; i++) {
-                // tslint:disable-next-line:max-line-length
                 targetValues = targetValues.concat(this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, +targetVal[i]));
             }
             labelCategoryText = this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, +categoryVal);
@@ -117,8 +117,8 @@ export class BulletTooltip {
                 this.updateTemplateFn();
                 let elem: Element = this.control.createElement('div', { id: this.control.element.id + 'parent_template' });
                 let templateElement: HTMLCollection = this.templateFn(
-                        blazorTooltipData, this.control, 'template', elem.id + '_blazorTemplate', '', null, elem
-                    );
+                    blazorTooltipData, this.control, 'template', elem.id + '_blazorTemplate', '', null, elem
+                );
                 while (templateElement && templateElement.length > 0) {
                     if (isBlazor() || templateElement.length === 1) {
                         elem.appendChild(templateElement[0]);
@@ -167,7 +167,7 @@ export class BulletTooltip {
                     );
                 }
             } else {
-                let divStyle: string = style + 'left:' + (xPos + 20) + 'px;' + 'top:' + (yPos + 20) + 'px;' +
+                const divStyle: string = style + 'left:' + (xPos + 20) + 'px;' + 'top:' + (yPos + 20) + 'px;' +
                     '-webkit-border-radius: 5px 5px 5px 5px; -moz-border-radius: 5px 5px 5px 5px;-o-border-radius: 5px 5px 5px 5px;' +
                     'border-radius: 5px 5px 5px 5px;' + 'background-color:' + fill + ';' + 'color:' +
                     tooltipdiv.style.color + '; border:' + borderWidth + 'px Solid' + ' ' + borderColor + ';' +
@@ -189,7 +189,6 @@ export class BulletTooltip {
      */
     public updateTemplateFn(): void {
         if (this.control.tooltip.template) {
-            let e: Object;
             try {
                 if (document.querySelectorAll(this.control.tooltip.template).length) {
                     this.templateFn = templateComplier(document.querySelector(this.control.tooltip.template).innerHTML.trim());
@@ -207,10 +206,11 @@ export class BulletTooltip {
     }
     /**
      * To destroy the tooltip.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(chart: BulletChart): void {
+    public destroy(): void {
         // Destroy method called here
     }
 }

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 19.1.54 (2021-03-30)
+
+### Accordion
+
+#### Breaking Changes
+
+- The following properties type was changed.
+
+| Property | Previous Type | Current Type                   |
+|----------|---------------|--------------------------------|
+| Disabled | `anonymous`      | `boolean` |
+| Expanded | `anonymous`      | `boolean` |
+| Visible | `anonymous`      | `boolean` |
+
 ## 18.4.47 (2021-03-09)
 
 ### TreeView
@@ -9,6 +23,7 @@
 #### Bug Fixes
 
 - `#310875` - The issue with "The `isChecked` attribute is not working when using the `sortOrder` property in TreeView" has been resolved.
+- `#282214` - Now the `isChecked` attribute value is updated properly in the `NodeChecked` event arguments in the TreeView component.
 
 ## 18.4.44 (2021-02-23)
 
@@ -69,7 +84,7 @@
 
 #### Bug Fixes
 
-- `#309133` - Accordion item is automatically closed when the onChange is raised in input element has been fixed.
+- `#309133` - Accordion item is automatically closed when the `onChange` is raised in input element has been fixed.
 
 ### Tab
 

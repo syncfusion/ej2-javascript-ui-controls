@@ -101,23 +101,6 @@ describe('Data-Binding', () => {
             };
             ganttObj.refresh();
         });
-        it('CR-EJ2-47157: End date of segments given as string', (done: Function) => {
-            ganttObj.dataSource = [{
-                TaskID: 1, TaskName: 'Plan timeline', StartDate: new Date('02/06/2017'), EndDate: new Date('02/20/2017'),
-                Progress: '60',
-                Segments: [
-                    { StartDate:'02/06/2017', EndDate: '02/08/2017' },
-                    { StartDate: '02/09/2017', EndDate: '02/10/2017' },
-                    { StartDate: '02/10/2017', EndDate: '02/15/2017' }
-                  ]
-            }];
-            ganttObj.dataBound = () => {
-                let flatData: IGanttData[] = ganttObj.flatData;
-                expect(flatData.length).toBe(1);
-                done();
-            };
-            ganttObj.refresh();
-        });
         afterAll(() => {
             destroyGantt(ganttObj);
         });

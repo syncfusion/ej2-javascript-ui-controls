@@ -321,6 +321,12 @@ export function throwError(message: string): void {
 export function print(element: Element, printWindow?: Window): Window {
     let div: Element = document.createElement('div');
     let links: HTMLElement[] = [].slice.call(document.getElementsByTagName('head')[0].querySelectorAll('base, link, style'));
+    let blinks: HTMLElement[] = [].slice.call(document.getElementsByTagName('body')[0].querySelectorAll('link, style'));
+    if (blinks.length) {
+        for (let l: number = 0, len: number = blinks.length; l < len; l++) {
+            links.push(blinks[l]);
+        }
+    }
     let reference: string = '';
     if (isNullOrUndefined(printWindow)) {
         printWindow = window.open('', 'print', 'height=452,width=1024,tabbar=no');

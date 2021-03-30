@@ -10,25 +10,29 @@ import { isIDevice, setEditFrameFocus } from '../../common/util';
 
 export class ClearFormat {
     private static BLOCK_TAGS: string[] = ['address', 'article', 'aside', 'blockquote',
-     'details', 'dd', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer',
-    'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hgroup', 'li', 'main', 'nav',
-    'noscript', 'ol', 'p', 'pre', 'section', 'ul' ];
+        'details', 'dd', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer',
+        'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hgroup', 'li', 'main', 'nav',
+        'noscript', 'ol', 'p', 'pre', 'section', 'ul' ];
     private static NONVALID_PARENT_TAGS: string[] = ['thead', 'tbody', 'ul', 'ol', 'table', 'tfoot', 'tr'];
     private static IGNORE_PARENT_TAGS: string[] = ['ul', 'ol', 'table'];
     private static NONVALID_TAGS: string[] = ['thead', 'tbody', 'figcaption', 'td', 'tr', 'th',   'tfoot', 'figcaption', 'li'  ];
-
     /**
      * clear method
+     *
+     * @param {Document} docElement - specifies the document element.
+     * @param {Node} endNode - specifies the end node
+     * @param {string} selector - specifies the string value
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public static clear(docElement: Document, endNode: Node, selector?: string): void {
-        let nodeSelection: NodeSelection = new NodeSelection();
-        let nodeCutter: NodeCutter = new NodeCutter();
+        const nodeSelection: NodeSelection = new NodeSelection();
+        const nodeCutter: NodeCutter = new NodeCutter();
         let range: Range = nodeSelection.getRange(docElement);
-        let isCollapsed: boolean = range.collapsed;
-        let nodes: Node[] = nodeSelection.getInsertNodeCollection(range);
-        let save: NodeSelection =  nodeSelection.save(range, docElement);
+        const isCollapsed: boolean = range.collapsed;
+        const nodes: Node[] = nodeSelection.getInsertNodeCollection(range);
+        const save: NodeSelection =  nodeSelection.save(range, docElement);
         if (!isCollapsed) {
             let preNode: Node;
             if (nodes[0].nodeName === 'BR' && closest(nodes[0], 'table')) {
@@ -46,13 +50,13 @@ export class ClearFormat {
                     i++;
                     lastText = nodes[nodes.length - i];
                 }
-                let lasNode: Node = nodeCutter.GetSpliceNode(range, lastText as HTMLElement);
+                const lasNode: Node = nodeCutter.GetSpliceNode(range, lastText as HTMLElement);
                 nodeSelection.setSelectionText(docElement, preNode, lasNode, 0, (lasNode.nodeType === 3) ?
                 lasNode.textContent.length : lasNode.childNodes.length);
                 range = nodeSelection.getRange(docElement);
             }
             let exactNodes: Node[] = nodeSelection.getNodeCollection(range);
-            let cloneSelectNodes: Node[] = exactNodes.slice();
+            const cloneSelectNodes: Node[] = exactNodes.slice();
             this.clearInlines(
                 nodeSelection.getSelectionNodes(cloneSelectNodes),
                 cloneSelectNodes,
@@ -62,9 +66,11 @@ export class ClearFormat {
             this.reSelection(docElement, save, exactNodes);
             range = nodeSelection.getRange(docElement);
             exactNodes = nodeSelection.getNodeCollection(range);
-            let cloneParentNodes: Node[] = exactNodes.slice();
+            const cloneParentNodes: Node[] = exactNodes.slice();
             this.clearBlocks(docElement, cloneParentNodes, endNode, nodeCutter, nodeSelection);
-            if (isIDevice()) { setEditFrameFocus(endNode as Element, selector); }
+            if (isIDevice()) {
+                setEditFrameFocus(endNode as Element, selector);
+            }
             this.reSelection(docElement, save, exactNodes);
         }
     }
@@ -73,7 +79,7 @@ export class ClearFormat {
         docElement: Document,
         save: NodeSelection,
         exactNodes: Node[] ): void {
-        let selectionNodes: Node[] = save.getInsertNodes(exactNodes);
+        const selectionNodes: Node[] = save.getInsertNodes(exactNodes);
         save.startContainer = save.getNodeArray(
             selectionNodes[0],
             true,
@@ -104,7 +110,7 @@ export class ClearFormat {
                 ( this.BLOCK_TAGS.indexOf(nodes[index].parentNode.nodeName.toLocaleLowerCase()) > -1 )
                 && parentNodes.indexOf(nodes[index].parentNode) === -1
                 && endNode !== nodes[index].parentNode ) {
-                    parentNodes.push(nodes[index].parentNode);
+                parentNodes.push(nodes[index].parentNode);
             }
         }
         parentNodes = this.spliceParent(parentNodes, nodes)[0];
@@ -114,7 +120,7 @@ export class ClearFormat {
 
     private static spliceParent(parentNodes: Node[], nodes: Node[]): Node[][] {
         for (let index1: number = 0; index1 < parentNodes.length; index1++) {
-            let len: number = parentNodes[index1].childNodes.length;
+            const len: number = parentNodes[index1].childNodes.length;
             for (let index2: number = 0; index2 < len; index2++) {
                 if ( (nodes.indexOf(parentNodes[index1].childNodes[index2]) > 0)
                 && (parentNodes[index1].childNodes[index2].childNodes.length > 0)) {
@@ -128,15 +134,15 @@ export class ClearFormat {
                         }
                     }
                     index2 = parentNodes[index1].childNodes.length;
-                    let parentIndex: number = parentNodes.indexOf(parentNodes[index1].parentNode);
-                    let nodeIndex: number = nodes.indexOf(parentNodes[index1].parentNode);
+                    const parentIndex: number = parentNodes.indexOf(parentNodes[index1].parentNode);
+                    const nodeIndex: number = nodes.indexOf(parentNodes[index1].parentNode);
                     if (parentIndex > -1) {
                         parentNodes.splice(parentIndex, 1);
                     }
                     if (nodeIndex > -1) {
                         nodes.splice(nodeIndex, 1);
                     }
-                    let elementIndex: number = nodes.indexOf(parentNodes[index1]);
+                    const elementIndex: number = nodes.indexOf(parentNodes[index1]);
                     if (elementIndex > -1) {
                         nodes.splice(elementIndex, 1);
                     }
@@ -149,7 +155,7 @@ export class ClearFormat {
     }
 
     private static removeChild(parentNodes: Node[], parentNode: Node): Node[] {
-        let count: number = parentNode.childNodes.length;
+        const count: number = parentNode.childNodes.length;
         if (count > 0) {
             for (let index: number = 0; index < count; index++) {
                 if (parentNodes.indexOf(parentNode.childNodes[index]) > -1) {
@@ -198,7 +204,7 @@ export class ClearFormat {
                         && parentNodes[index1].childNodes[0].nodeName.toLocaleLowerCase() === 'p')) {
                     InsertMethods.Wrap(parentNodes[index1] as HTMLElement, docElement.createElement('p'));
                 }
-                let childNodes: Node[] = InsertMethods.unwrap(parentNodes[index1]);
+                const childNodes: Node[] = InsertMethods.unwrap(parentNodes[index1]);
                 if ( childNodes.length === 1
                     && childNodes[0].parentNode.nodeName.toLocaleLowerCase() === 'p') {
                     InsertMethods.Wrap(parentNodes[index1] as HTMLElement, docElement.createElement('p'));
@@ -209,7 +215,7 @@ export class ClearFormat {
                         this.unWrap(docElement, [childNodes[index2]], nodeCutter, nodeSelection);
                     } else if (this.BLOCK_TAGS.indexOf(childNodes[index2].nodeName.toLocaleLowerCase()) > -1 &&
                     childNodes[index2].nodeName.toLocaleLowerCase() !== 'p') {
-                        let blockNodes: Node[] = this.removeParent([childNodes[index2]]);
+                        const blockNodes: Node[] = this.removeParent([childNodes[index2]]);
                         this.unWrap(docElement, blockNodes, nodeCutter, nodeSelection);
                     } else if (this.BLOCK_TAGS.indexOf(childNodes[index2].nodeName.toLocaleLowerCase()) > -1 &&
                         childNodes[index2].parentNode.nodeName.toLocaleLowerCase() === childNodes[index2].nodeName.toLocaleLowerCase()) {
@@ -232,6 +238,7 @@ export class ClearFormat {
         nodes: Node[],
         range: Range,
         nodeCutter: NodeCutter,
+        // eslint-disable-next-line
         endNode: Node): void {
         for (let index: number = 0; index < textNodes.length; index++) {
             if ( textNodes[index].parentNode &&
@@ -243,7 +250,7 @@ export class ClearFormat {
     }
 
     private static removeInlineParent(textNodes: Node): void {
-        let nodes: Node[] = InsertMethods.unwrap( textNodes );
+        const nodes: Node[] = InsertMethods.unwrap( textNodes );
         for (let index: number = 0; index < nodes.length; index++) {
             if ( nodes[index].parentNode.childNodes.length === 1
                 && IsFormatted.inlineTags.indexOf(nodes[index].parentNode.nodeName.toLocaleLowerCase()) > -1 ) {
@@ -253,5 +260,4 @@ export class ClearFormat {
             }
         }
     }
-
 }

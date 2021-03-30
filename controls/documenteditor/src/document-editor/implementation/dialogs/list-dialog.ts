@@ -3,7 +3,7 @@ import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { createElement, L10n } from '@syncfusion/ej2-base';
 import { LayoutViewer } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-// tslint:disable-next-line:max-line-length
+
 import { WCharacterFormat, WParagraphFormat } from '../format/index';
 import { WList } from '../list/list';
 import { WAbstractList } from '../list/abstract-list';
@@ -17,7 +17,7 @@ import { DocumentHelper } from '../viewer';
 /**
  * The List dialog is used to create or modify lists.
  */
-/* tslint:disable:no-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export class ListDialog {
     /**
      * @private
@@ -46,29 +46,34 @@ export class ListDialog {
 
     /**
      * @private
+     * @returns {WListLevel} Returns list level
      */
-    get listLevel(): WListLevel {
+    public get listLevel(): WListLevel {
         if (!isNullOrUndefined(this.viewModel)) {
             return this.viewModel.listLevel;
         }
         return undefined;
     }
+
     /**
      * @private
+     * @returns {WList} Returns list
      */
-    get list(): WList {
+    public get list(): WList {
         if (!isNullOrUndefined(this.viewModel)) {
             return this.viewModel.list;
         }
         return undefined;
     }
+
     /**
      * @private
+     * @returns {number} Returns level number
      */
-    get levelNumber(): number {
+    public get levelNumber(): number {
         if (this.listLevel.ownerBase instanceof WLevelOverride) {
             return (this.listLevel.ownerBase as WLevelOverride).levelNumber;
-            // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         } else if (this.listLevel.ownerBase instanceof WAbstractList && !isNullOrUndefined((this.listLevel.ownerBase as WAbstractList).levels)) {
             return (this.listLevel.ownerBase as WAbstractList).levels.indexOf(this.listLevel);
         } else {
@@ -76,26 +81,30 @@ export class ListDialog {
         }
     }
     /**
+     * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
      */
-    constructor(documentHelper: DocumentHelper) {
+    public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
         this.viewModel = new ListViewModel();
     }
-    get owner(): LayoutViewer {
+    private get owner(): LayoutViewer {
         return this.documentHelper.owner.viewer;
     }
+
     /**
      * @private
+     * @returns {string} Returns module name
      */
     public getModuleName(): string {
         return 'ListDialog';
     }
     /**
      * @private
+     * @returns {void}
      */
     public showListDialog(): void {
-        let locale: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        const locale: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         locale.setLocale(this.documentHelper.owner.locale);
 
         if (!this.target) {
@@ -107,7 +116,7 @@ export class ListDialog {
         this.documentHelper.dialog2.width = 'auto';
         this.documentHelper.dialog2.content = this.target;
         let buttonClass: string;
-        let isRtl: boolean = this.documentHelper.owner.enableRtl;
+        const isRtl: boolean = this.documentHelper.owner.enableRtl;
         if (isRtl) {
             buttonClass = 'e-flat e-list-dlg-font e-de-dlg-target.e-de-rtl e-font-rtl';
         } else {
@@ -128,32 +137,36 @@ export class ListDialog {
         this.wireAndBindEvent(locale, isRtl);
         this.documentHelper.dialog2.beforeOpen = this.loadListDialog;
         this.documentHelper.dialog2.close = this.closeListDialog;
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         this.documentHelper.dialog2.position = { X: 'center', Y: 'top' };
         this.documentHelper.dialog2.show();
     }
     /**
      * Shows the table properties dialog
+     *
      * @private
+     * @param {L10n} locale - Specifies the locale value
+     * @param {boolean} isRtl - Specifies the is rtl
+     * @returns {void}
      */
     public initListDialog(locale: L10n, isRtl?: boolean): void {
-        let instance: ListDialog = this;
-        let containerId: string = this.documentHelper.owner.containerId;
-        let id: string = containerId + '_insert_list';
+        const containerId: string = this.documentHelper.owner.containerId;
+        const id: string = containerId + '_insert_list';
         this.target = createElement('div', { id: id, className: 'e-de-list-dlg' });
-        // tslint:disable-next-line:max-line-length
-        let listLevelDiv: HTMLElement = createElement('div', { innerHTML: '<label id="' + containerId + '_listLevellabel" style="display:block;" class=e-de-list-ddl-header-list-level>' + locale.getConstant('List level') + '</label><label id="' + containerId + '_modifyLabel" style="display:block;" class=e-de-list-ddl-subheader>' + locale.getConstant('Choose level to modify') + '</label><select style="height:20px;width:43%" id="' + containerId + '_listLevel"><option>' + locale.getConstant('Level') + ' 1' + '</option><option>' + locale.getConstant('Level') + ' 2' + '</option><option>' + locale.getConstant('Level') + ' 3' + '</option><option>' + locale.getConstant('Level') + ' 4' + '</option><option>' + locale.getConstant('Level') + ' 5' + '</option><option>' + locale.getConstant('Level') + ' 6' + '</option><option>' + locale.getConstant('Level') + ' 7' + '</option><option>' + locale.getConstant('Level') + ' 8' + '</option><option>' + locale.getConstant('Level') + ' 9' + '</option></select>' });
+
+        const listLevelDiv: HTMLElement = createElement('div', { innerHTML: '<label id="' + containerId + '_listLevellabel" style="display:block;" class=e-de-list-ddl-header-list-level>' + locale.getConstant('List level') + '</label><label id="' + containerId + '_modifyLabel" style="display:block;" class=e-de-list-ddl-subheader>' + locale.getConstant('Choose level to modify') + '</label><select style="height:20px;width:43%" id="' + containerId + '_listLevel"><option>' + locale.getConstant('Level') + ' 1' + '</option><option>' + locale.getConstant('Level') + ' 2' + '</option><option>' + locale.getConstant('Level') + ' 3' + '</option><option>' + locale.getConstant('Level') + ' 4' + '</option><option>' + locale.getConstant('Level') + ' 5' + '</option><option>' + locale.getConstant('Level') + ' 6' + '</option><option>' + locale.getConstant('Level') + ' 7' + '</option><option>' + locale.getConstant('Level') + ' 8' + '</option><option>' + locale.getConstant('Level') + ' 9' + '</option></select>' });
         this.target.appendChild(listLevelDiv);
-        let div: HTMLElement = createElement('div');
+        const div: HTMLElement = createElement('div');
         let divStyle: string;
         if (isRtl) {
             divStyle = '<div style="float:right;display:block;width:241px;">';
         } else {
             divStyle = '<div style="float:left;display:block;">';
         }
-        // tslint:disable-next-line:max-line-length
-        let numberStyleDiv: HTMLElement = createElement('div', { innerHTML: divStyle + '<label id="' + containerId + '_numberFormatLabel" style="display:block;" class=e-de-list-ddl-header>' + locale.getConstant('Number format') + '</label><label id="' + containerId + '_numberStyleLabel" style="display:block;" class=e-de-list-ddl-subheader>' + locale.getConstant('Number style for this level') + '</label><select style="height:20px;width:100%" id="' + containerId + '_numberStyle"><option>' + locale.getConstant('Arabic') + '</option><option>' + locale.getConstant('UpRoman') + '</option><option>' + locale.getConstant('LowRoman') + '</option><option>' + locale.getConstant('UpLetter') + '</option><option>' + locale.getConstant('LowLetter') + '</option><option>' + locale.getConstant('Number') + '</option><option>' + locale.getConstant('Leading zero') + '</option><option>' + locale.getConstant('Bullet') + '</option><option>' + locale.getConstant('Ordinal') + '</option><option>' + locale.getConstant('Ordinal Text') + '</option><option>' + locale.getConstant('Special') + '</option><option>' + locale.getConstant('For East') + '</option></select><label id="' + containerId + '_startAtLabel" style="display:block;" class=e-de-list-ddl-subheaderbottom>' + locale.getConstant('Start at') + '</label><input type="text" id="' + containerId + '_startAt">' });
+
+        const numberStyleDiv: HTMLElement = createElement('div', { innerHTML: divStyle + '<label id="' + containerId + '_numberFormatLabel" style="display:block;" class=e-de-list-ddl-header>' + locale.getConstant('Number format') + '</label><label id="' + containerId + '_numberStyleLabel" style="display:block;" class=e-de-list-ddl-subheader>' + locale.getConstant('Number style for this level') + '</label><select style="height:20px;width:100%" id="' + containerId + '_numberStyle"><option>' + locale.getConstant('Arabic') + '</option><option>' + locale.getConstant('UpRoman') + '</option><option>' + locale.getConstant('LowRoman') + '</option><option>' + locale.getConstant('UpLetter') + '</option><option>' + locale.getConstant('LowLetter') + '</option><option>' + locale.getConstant('Number') + '</option><option>' + locale.getConstant('Leading zero') + '</option><option>' + locale.getConstant('Bullet') + '</option><option>' + locale.getConstant('Ordinal') + '</option><option>' + locale.getConstant('Ordinal Text') + '</option><option>' + locale.getConstant('Special') + '</option><option>' + locale.getConstant('For East') + '</option></select><label id="' + containerId + '_startAtLabel" style="display:block;" class=e-de-list-ddl-subheaderbottom>' + locale.getConstant('Start at') + '</label><input type="text" id="' + containerId + '_startAt">' });
         div.appendChild(numberStyleDiv);
-        // tslint:disable-next-line:max-line-length
+
         this.numberFormatDiv = createElement('div', { className: 'e-de-list-dlg-subdiv', innerHTML: '<div><div><label id="' + containerId + '_formatLabel" style="display:inline-block;width:86%" class=e-de-list-ddl-subheader>' + locale.getConstant('Enter formatting for number') + '</label><button type="button" id="' + containerId + '_list_info" class="e-control e-btn e-primary e-de-list-format-info">i</button></div><input style=width:180px; type="text" id="' + containerId + '_numberFormat" class=e-input></div><label id="' + containerId + '_restartLabel" style="display:block;" class=e-de-list-ddl-subheaderbottom>' + locale.getConstant('Restart list after') + '</label><select style="height:20px;width:100%" id="' + containerId + '_restartBy"><option>' + locale.getConstant('No Restart') + '</option></select></div>' });
         div.appendChild(this.numberFormatDiv);
         this.target.appendChild(div);
@@ -163,30 +176,29 @@ export class ListDialog {
         } else {
             indentsDivLabelStyle = 'display:block; ';
         }
-        // tslint:disable-next-line:max-line-length
-        let indentsDiv: HTMLElement = createElement('div', { innerHTML: divStyle + '<label id="' + containerId + '_IndentsLabel" style=' + indentsDivLabelStyle + 'class=e-de-list-ddl-header>' + locale.getConstant('Position') + '</label><label id="' + containerId + '_textIndentLabel" style=' + indentsDivLabelStyle + 'class=e-de-list-ddl-subheader>' + locale.getConstant('Text indent at') + '</label><input type="text" id="' + containerId + '_textIndent"><label id="' + containerId + '_followCharacterLabel" style=' + indentsDivLabelStyle + 'class=e-de-list-ddl-subheaderbottom>' + locale.getConstant('Follow number with') + '</label><select style="height:20px;width:100%" id="' + containerId + '_followCharacter"><option>' + locale.getConstant('Tab character') + '</option><option>' + locale.getConstant('Space') + '</option><option>' + locale.getConstant('Nothing') + '</option></select></div><div id="e-de-list-dlg-div" class="e-de-list-dlg-div"><label id="' + containerId + '_alignedAtLabel" style="display:block;" class=e-de-list-ddl-subheader>' + locale.getConstant('Aligned at') + '</label><input type="text" id="' + containerId + '_alignedAt"></div>', });
+
+        const indentsDiv: HTMLElement = createElement('div', { innerHTML: divStyle + '<label id="' + containerId + '_IndentsLabel" style=' + indentsDivLabelStyle + 'class=e-de-list-ddl-header>' + locale.getConstant('Position') + '</label><label id="' + containerId + '_textIndentLabel" style=' + indentsDivLabelStyle + 'class=e-de-list-ddl-subheader>' + locale.getConstant('Text indent at') + '</label><input type="text" id="' + containerId + '_textIndent"><label id="' + containerId + '_followCharacterLabel" style=' + indentsDivLabelStyle + 'class=e-de-list-ddl-subheaderbottom>' + locale.getConstant('Follow number with') + '</label><select style="height:20px;width:100%" id="' + containerId + '_followCharacter"><option>' + locale.getConstant('Tab character') + '</option><option>' + locale.getConstant('Space') + '</option><option>' + locale.getConstant('Nothing') + '</option></select></div><div id="e-de-list-dlg-div" class="e-de-list-dlg-div"><label id="' + containerId + '_alignedAtLabel" style="display:block;" class=e-de-list-ddl-subheader>' + locale.getConstant('Aligned at') + '</label><input type="text" id="' + containerId + '_alignedAt"></div>' });
         this.target.appendChild(indentsDiv);
 
     }
     private wireAndBindEvent(locale: L10n, isRtl: boolean): void {
-        let instance: ListDialog = this;
-        let containerId: string = this.documentHelper.owner.containerId;
+        const containerId: string = this.documentHelper.owner.containerId;
         if (isRtl) {
             document.getElementById('e-de-list-dlg-div').classList.add('e-de-rtl');
             this.numberFormatDiv.classList.add('e-de-rtl');
         }
-        let startAtTextBox: HTMLInputElement = document.getElementById(containerId + '_startAt') as HTMLInputElement;
-        let textIndentAtTextBox: HTMLInputElement = document.getElementById(containerId + '_textIndent') as HTMLInputElement;
-        let alignedAtTextBox: HTMLInputElement = document.getElementById(containerId + '_alignedAt') as HTMLInputElement;
+        const startAtTextBox: HTMLInputElement = document.getElementById(containerId + '_startAt') as HTMLInputElement;
+        const textIndentAtTextBox: HTMLInputElement = document.getElementById(containerId + '_textIndent') as HTMLInputElement;
+        const alignedAtTextBox: HTMLInputElement = document.getElementById(containerId + '_alignedAt') as HTMLInputElement;
         this.startAt = new NumericTextBox({
             format: '#',
             decimals: 0,
             min: 0,
             max: 50,
             width: '180px',
-            enablePersistence: false,
+            enablePersistence: false
         });
-        this.startAt.addEventListener('change', instance.onStartValueChanged);
+        this.startAt.addEventListener('change', this.onStartValueChanged);
         this.startAt.appendTo(startAtTextBox);
         this.textIndent = new NumericTextBox({
             format: '#',
@@ -197,7 +209,7 @@ export class ListDialog {
             step: 4,
             enablePersistence: false
         });
-        this.textIndent.addEventListener('change', instance.onTextIndentChanged);
+        this.textIndent.addEventListener('change', this.onTextIndentChanged);
         this.textIndent.appendTo(textIndentAtTextBox);
         this.alignedAt = new NumericTextBox({
             format: '#',
@@ -206,41 +218,55 @@ export class ListDialog {
             width: '180px',
             enablePersistence: false
         });
-        this.alignedAt.addEventListener('change', instance.onAlignedAtValueChanged);
+        this.alignedAt.addEventListener('change', this.onAlignedAtValueChanged);
         this.alignedAt.appendTo(alignedAtTextBox);
-        let listLevel: HTMLSelectElement = document.getElementById(containerId + '_listLevel') as HTMLSelectElement;
-        // tslint:disable-next-line:max-line-length
-        this.listLevelElement = new DropDownList({ popupHeight: '150px', width: '180px', enableRtl: isRtl, change: instance.onListLevelValueChanged });
+        const listLevel: HTMLSelectElement = document.getElementById(containerId + '_listLevel') as HTMLSelectElement;
+
+        this.listLevelElement = new DropDownList({ popupHeight: '150px', width: '180px', enableRtl: isRtl, change: this.onListLevelValueChanged });
         this.listLevelElement.appendTo(listLevel);
-        let followCharacterElement: HTMLSelectElement = document.getElementById(containerId + '_followCharacter') as HTMLSelectElement;
-        // tslint:disable-next-line:max-line-length
-        this.followNumberWith = new DropDownList({ popupHeight: '150px', width: '180px', enableRtl: isRtl, change: instance.onFollowCharacterValueChanged });
+        const followCharacterElement: HTMLSelectElement = document.getElementById(containerId + '_followCharacter') as HTMLSelectElement;
+
+        this.followNumberWith = new DropDownList({ popupHeight: '150px', width: '180px', enableRtl: isRtl, change: this.onFollowCharacterValueChanged });
         this.followNumberWith.appendTo(followCharacterElement);
-        let numberStyleEle: HTMLSelectElement = document.getElementById(containerId + '_numberStyle') as HTMLSelectElement;
-        // tslint:disable-next-line:max-line-length
-        this.numberStyle = new DropDownList({ popupHeight: '150px', width: '180px', enableRtl: isRtl, change: instance.onLevelPatternValueChanged });
+        const numberStyleEle: HTMLSelectElement = document.getElementById(containerId + '_numberStyle') as HTMLSelectElement;
+
+        this.numberStyle = new DropDownList({ popupHeight: '150px', width: '180px', enableRtl: isRtl, change: this.onLevelPatternValueChanged });
         this.numberStyle.appendTo(numberStyleEle);
         this.numberFormat = document.getElementById(containerId + '_numberFormat') as HTMLInputElement;
-        this.numberFormat.addEventListener('change', instance.onNumberFormatChanged);
-        let restartElement: HTMLSelectElement = document.getElementById(containerId + '_restartBy') as HTMLSelectElement;
+        this.numberFormat.addEventListener('change', this.onNumberFormatChanged);
+        const restartElement: HTMLSelectElement = document.getElementById(containerId + '_restartBy') as HTMLSelectElement;
         this.restartBy = new DropDownList({ popupHeight: '150px', width: '180px', enableRtl: isRtl });
         this.restartBy.appendTo(restartElement);
-        let button: HTMLElement = document.getElementById(containerId + '_list_info');
+        const button: HTMLElement = document.getElementById(containerId + '_list_info');
         this.formatInfoToolTip = new Tooltip({ width: 200 });
-        // tslint:disable-next-line:max-line-length
+
         this.formatInfoToolTip.content = locale.getConstant('Number format tooltip information');
         this.formatInfoToolTip.position = 'RightTop';
         this.formatInfoToolTip.appendTo(button);
     }
+    /**
+     * @private
+     * @param {ChangeEventArgs} args - Specifies the change event args.
+     * @returns {void}
+     */
     private onTextIndentChanged = (args: ChangeEventArgs): void => {
         this.viewModel.listLevel.paragraphFormat.leftIndent = args.value as number;
-    }
-
+    };
+    /**
+     * @private
+     * @param {ChangeEventArgs} args - Specifies the change event args.
+     * @returns {void}
+     */
     private onStartValueChanged = (args: ChangeEventArgs): void => {
         if (!isNullOrUndefined(this.viewModel) && !isNullOrUndefined(this.viewModel.listLevel)) {
             this.viewModel.listLevel.startAt = args.value as number;
         }
-    }
+    };
+    /**
+     * @private
+     * @param {ChangeEventArgs} args - Specifies the change event args.
+     * @returns {void}
+     */
     private onListLevelValueChanged = (args: ChangeEventArgs): void => {
         this.viewModel.levelNumber = parseInt((args.value as string).slice((args.value as string).length - 1), 10) - 1;
         if (isNullOrUndefined(this.listLevel)) {
@@ -254,49 +280,69 @@ export class ListDialog {
         }
         this.updateDialogValues();
         this.updateRestartLevelBox();
-    }
+    };
+    /**
+     * @private
+     * @param {any} args - Specifies the change event args.
+     * @returns {void}
+     */
     private onNumberFormatChanged = (args: any): void => {
         this.viewModel.listLevel.numberFormat = args.target.value;
-    }
+    };
+    /**
+     * @private
+     * @param {ChangeEventArgs} args - Specifies the change event args.
+     * @returns {void}
+     */
     private onAlignedAtValueChanged = (args: ChangeEventArgs): void => {
         this.viewModel.listLevel.paragraphFormat.firstLineIndent = args.value as number;
-    }
+    };
     private updateRestartLevelBox(): void {
-        let containerId: string = this.documentHelper.owner.containerId;
-        let listLevel: HTMLSelectElement = document.getElementById(containerId + '_listLevel') as HTMLSelectElement;
-        let restartBy: HTMLSelectElement = document.getElementById(containerId + '_restartBy') as HTMLSelectElement;
+        const containerId: string = this.documentHelper.owner.containerId;
+        const listLevel: HTMLSelectElement = document.getElementById(containerId + '_listLevel') as HTMLSelectElement;
+        const restartBy: HTMLSelectElement = document.getElementById(containerId + '_restartBy') as HTMLSelectElement;
         for (let i: number = 0; i < restartBy.options.length; i) {
             restartBy.options.remove(i);
         }
         if (listLevel.selectedIndex === 0) {
-            let option: HTMLOptionElement = document.createElement('option') as HTMLOptionElement;
+            const option: HTMLOptionElement = document.createElement('option') as HTMLOptionElement;
             option.value = 'No Restart';
             option.innerHTML = 'No Restart';
             restartBy.appendChild(option);
         } else {
             for (let i: number = listLevel.selectedIndex; i > 0; i--) {
-                let option: HTMLOptionElement = document.createElement('option') as HTMLOptionElement;
+                const option: HTMLOptionElement = document.createElement('option') as HTMLOptionElement;
                 option.value = 'Level ' + i;
                 option.innerHTML = 'Level ' + i;
                 restartBy.appendChild(option);
             }
-            let option: HTMLOptionElement = document.createElement('option') as HTMLOptionElement;
+            const option: HTMLOptionElement = document.createElement('option') as HTMLOptionElement;
             option.value = 'No Restart';
             option.innerHTML = 'No Restart';
             restartBy.appendChild(option);
         }
         restartBy.selectedIndex = 0;
     }
+    /**
+     * @private
+     * @param {ChangeEventArgs} args - Specifies the change event args.
+     * @returns {void}
+     */
     private onFollowCharacterValueChanged = (args: ChangeEventArgs): void => {
         if (args.value) {
             this.viewModel.followCharacter = args.value as FollowCharacterType;
         }
-    }
+    };
+    /**
+     * @private
+     * @param {ChangeEventArgs} args - Specifies the change event args.
+     * @returns {void}
+     */
     private onLevelPatternValueChanged = (args: ChangeEventArgs): void => {
         this.viewModel.listLevelPattern = args.value as ListLevelPattern;
-        let numberFormat: string = '%' + (this.levelNumber + 1).toString();
-        // tslint:disable-next-line:max-line-length
-        let numberFormatTextBox: HTMLInputElement = document.getElementById(this.documentHelper.owner.containerId + '_numberFormat') as HTMLInputElement;
+        const numberFormat: string = '%' + (this.levelNumber + 1).toString();
+
+        const numberFormatTextBox: HTMLInputElement = document.getElementById(this.documentHelper.owner.containerId + '_numberFormat') as HTMLInputElement;
 
         if (this.listLevel.listLevelPattern === 'Bullet') {
             this.listLevel.numberFormat = '\uf0b7';
@@ -311,34 +357,38 @@ export class ListDialog {
             }
             numberFormatTextBox.value = this.listLevel.numberFormat;
         }
-    }
+    };
     private listPatternConverter(listLevelPattern: ListLevelPattern): number {
         switch (listLevelPattern) {
-            case 'Arabic': return 0;
-            case 'LowLetter': return 1;
-            case 'LowRoman': return 2;
-            case 'UpLetter': return 3;
-            case 'UpRoman': return 4;
-            case 'Number': return 5;
-            case 'LeadingZero': return 6;
-            case 'Bullet': return 7;
-            case 'Ordinal': return 8;
-            case 'OrdinalText': return 9;
-            case 'Special': return 10;
-            case 'FarEast': return 11;
-            default: return 12;
+        case 'Arabic': return 0;
+        case 'LowLetter': return 1;
+        case 'LowRoman': return 2;
+        case 'UpLetter': return 3;
+        case 'UpRoman': return 4;
+        case 'Number': return 5;
+        case 'LeadingZero': return 6;
+        case 'Bullet': return 7;
+        case 'Ordinal': return 8;
+        case 'OrdinalText': return 9;
+        case 'Special': return 10;
+        case 'FarEast': return 11;
+        default: return 12;
         }
     }
     private followCharacterConverter(followCharacter: FollowCharacterType): number {
         switch (followCharacter) {
-            case 'Tab':
-                return 0;
-            case 'Space':
-                return 1;
-            default:
-                return 2;
+        case 'Tab':
+            return 0;
+        case 'Space':
+            return 1;
+        default:
+            return 2;
         }
     }
+    /**
+     * @private
+     * @returns {void}
+     */
     private loadListDialog = (): void => {
         this.documentHelper.updateFocus();
         if (isNullOrUndefined(this.documentHelper.owner)) {
@@ -363,10 +413,10 @@ export class ListDialog {
         if (this.documentHelper.selection.caret.style.display !== 'none') {
             this.documentHelper.selection.caret.style.display = 'none';
         }
-    }
+    };
     private updateDialogValues(): void {
-        // tslint:disable-next-line:max-line-length
-        let restartByTextBox: HTMLSelectElement = document.getElementById(this.documentHelper.owner.containerId + '_restartBy') as HTMLSelectElement;
+
+        //const restartByTextBox: HTMLSelectElement = document.getElementById(this.documentHelper.owner.containerId + '_restartBy') as HTMLSelectElement;
         if (!isNullOrUndefined(this.viewModel) && !isNullOrUndefined(this.viewModel.listLevel)) {
             this.startAt.value = this.viewModel.listLevel.startAt;
             this.textIndent.value = this.viewModel.listLevel.paragraphFormat.leftIndent;
@@ -375,30 +425,46 @@ export class ListDialog {
             this.numberFormat.value = this.viewModel.listLevel.numberFormat;
             this.numberStyle.index = this.listPatternConverter(this.viewModel.listLevelPattern);
             this.listLevelElement.index = this.viewModel.levelNumber;
-            this.viewModel.levelNumber = this.viewModel.levelNumber;
+            //this.viewModel.levelNumber = this.viewModel.levelNumber;
         }
     }
+    /**
+     * @private
+     * @returns {void}
+     */
     private showFontDialog = (): void => {
         this.documentHelper.owner.fontDialogModule.showFontDialog(this.listLevel.characterFormat);
-    }
+    };
+    /**
+     * @private
+     * @returns {void}
+     */
     private onApplyList = (): void => {
         if (!isNullOrUndefined(this.owner)) {
             this.documentHelper.selection.paragraphFormat.setList(this.list);
         }
         this.documentHelper.dialog2.hide();
         this.documentHelper.updateFocus();
-    }
+    };
+    /**
+     * @private
+     * @returns {void}
+     */
     private onCancelButtonClick = (): void => {
         this.disposeBindingForListUI();
         this.documentHelper.dialog2.hide();
         this.documentHelper.updateFocus();
         this.isListCharacterFormat = false;
-    }
+    };
+    /**
+     * @private
+     * @returns {void}
+     */
     private closeListDialog = (): void => {
         this.disposeBindingForListUI();
         this.documentHelper.updateFocus();
         this.isListCharacterFormat = false;
-    }
+    };
     private disposeBindingForListUI(): void {
         this.followNumberWith.index = -1;
         this.numberFormat.value = ' ';
@@ -410,6 +476,7 @@ export class ListDialog {
 
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         if (this.alignedAt) {
@@ -457,4 +524,4 @@ export class ListDialog {
     }
 
 }
- /* tslint:enable:no-any */
+/* eslint-enable @typescript-eslint/no-explicit-any */

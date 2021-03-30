@@ -9,75 +9,82 @@ export interface RecurrenceEditorModel extends ComponentModel{
 
     /**
      * Sets the recurrence pattern on the editor.
+     *
      * @default ['none', 'daily', 'weekly', 'monthly', 'yearly']
      */
     frequencies?: RepeatType[];
 
     /**
      * Sets the first day of the week.
+     *
      * @default 0
      */
     firstDayOfWeek?: number;
 
     /**
      * Sets the start date on recurrence editor.
+     *
      * @default new Date()
      * @aspDefaultValue DateTime.Now
-     * @blazorDefaultValue DateTime.Now
      */
     startDate?: Date;
 
     /**
      * Sets the user specific date format on recurrence editor.
+     *
      * @default null
      */
     dateFormat?: string;
 
     /**
      * Sets the specific calendar type to be applied on recurrence editor.
+     *
      * @default 'Gregorian'
-     * @deprecated
      */
     calendarMode?: CalendarType;
 
     /**
      * Allows styling with custom class names.
+     *
      * @default null
      */
     cssClass?: string;
 
     /**
      * Sets the recurrence rule as its output values.
+     *
      * @default null
      */
-    value?: String;
+    value?: string;
 
     /**
      * Sets the minimum date on recurrence editor.
+     *
      * @default new Date(1900, 0, 1)
      * @aspDefaultValue new DateTime(1900, 1, 1)
-     * @blazorDefaultValue new DateTime(1900, 1, 1)
      */
     minDate?: Date;
 
     /**
      * Sets the maximum date on recurrence editor.
+     *
      * @default new Date(2099, 11, 31)
      * @aspDefaultValue new DateTime(2099, 12, 31)
-     * @blazorDefaultValue new DateTime(2099, 12, 31)
      */
     maxDate?: Date;
 
     /**
      * Sets the current repeat type to be set on the recurrence editor.
+     *
      * @default 0
+     * @aspType int
      */
-    selectedType?: Number;
+    selectedType?: number;
 
     /**
      * Triggers for value changes on every sub-controls rendered within the recurrence editor.
-     * @event
-     * @blazorproperty 'OnChange'
+     *
+     * @event 'change'
      */
     change?: EmitType<RecurrenceEditorChangeEventArgs>;
 

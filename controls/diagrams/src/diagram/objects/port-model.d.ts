@@ -7,6 +7,7 @@ export interface PortModel {
 
     /**
      * Defines the unique id of the port
+     *
      * @default ''
      */
     id?: string;
@@ -18,6 +19,7 @@ export interface PortModel {
      * * Right - Aligns the diagram element at the right of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
+     *
      * @default 'Center'
      */
     horizontalAlignment?: HorizontalAlignment;
@@ -29,24 +31,28 @@ export interface PortModel {
      * * Bottom - Aligns the diagram element at the bottom of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
+     *
      * @default 'Center'
      */
     verticalAlignment?: VerticalAlignment;
 
     /**
      * Defines the space that the port has to be moved from its actual position
+     *
      * @default new Margin(0,0,0,0)
      */
     margin?: MarginModel;
 
     /**
      * Sets the width of the port
+     *
      * @default 12
      */
     width?: number;
 
     /**
      * Sets the height of the port
+     *
      * @default 12
      */
     height?: number;
@@ -70,6 +76,7 @@ export interface PortModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default {}
      */
     style?: ShapeStyleModel;
@@ -80,6 +87,7 @@ export interface PortModel {
      * * Circle - Sets the decorator shape as Circle
      * * Square - Sets the decorator shape as Square
      * * Custom - Sets the decorator shape as Custom
+     *
      * @default 'Square'
      */
     shape?: PortShapes;
@@ -90,6 +98,7 @@ export interface PortModel {
      * * Hidden - Always hides the port
      * * Hover - Shows the port when the mouse hovers over a node
      * * Connect - Shows the port when a connection end point is dragged over a node
+     *
      * @default 'Connect'
      * @aspNumberEnum
      * @blazorNumberEnum
@@ -98,12 +107,14 @@ export interface PortModel {
 
     /**
      * Defines the geometry of the port
+     *
      * @default ''
      */
     pathData?: string;
 
     /**
      * Defines the constraints of port
+     *
      * @default 'Default'
      * @aspNumberEnum
      * @blazorNumberEnum
@@ -112,6 +123,7 @@ export interface PortModel {
 
     /**
      * Allows the user to save custom information/data about a port
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -120,6 +132,7 @@ export interface PortModel {
 
     /**
      * Defines the collection of the objects that are connected to a particular port
+     *
      * @default undefined
      * @blazorDefaultValue new string[] { }
      */
@@ -127,6 +140,7 @@ export interface PortModel {
 
     /**
      * Defines the collection of the objects that are connected to a particular port
+     *
      * @default undefined
      * @blazorDefaultValue new string[] { }
      */
@@ -141,6 +155,7 @@ export interface PointPortModel extends PortModel{
 
     /**
      * Defines the position of the port with respect to the boundaries of nodes/connector
+     *
      * @default new Point(0.5,0.5)
      * @blazorType NodePortOffset
      */

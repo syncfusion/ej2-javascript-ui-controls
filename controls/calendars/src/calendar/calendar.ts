@@ -1,9 +1,8 @@
-
 import { Component, EventHandler, Internationalization, ModuleDeclaration, isBlazor } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, KeyboardEvents, L10n } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, KeyboardEventArgs, BaseEventArgs } from '@syncfusion/ej2-base';
 import { cldrData, getDefaultDateObject, rippleEffect } from '@syncfusion/ej2-base';
-import { createElement, removeClass, detach, closest, addClass, attributes } from '@syncfusion/ej2-base';
+import { removeClass, detach, closest, addClass, attributes } from '@syncfusion/ej2-base';
 import { getValue, getUniqueID, extend, Browser } from '@syncfusion/ej2-base';
 import { Property, Event, EmitType, isNullOrUndefined, throwError } from '@syncfusion/ej2-base';
 import { CalendarModel, CalendarBaseModel } from './calendar-model';
@@ -64,7 +63,7 @@ const dayMilliSeconds: number = 86400000;
 const minutesMilliSeconds: number = 60000;
 
 /**
- * 
+ *
  * @private
  */
 @NotifyPropertyChanges
@@ -111,6 +110,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected isAngular: boolean = false;
     /**
      * Gets or sets the minimum date that can be selected in the Calendar.
+     *
      * @default new Date(1900, 00, 01)
      * @blazorDefaultValue new DateTime(1900, 01, 01)
      * @deprecated
@@ -119,6 +119,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     public min: Date;
     /**
      * Specifies the component to be disabled or not.
+     *
      * @default true
      */
     @Property(true)
@@ -126,12 +127,14 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     /**
      * Specifies the root CSS class of the Calendar that allows to
      * customize the appearance by overriding the styles.
+     *
      * @default null
      */
     @Property(null)
     public cssClass: string;
     /**
      * Gets or sets the maximum date that can be selected in the Calendar.
+     *
      * @default new Date(2099, 11, 31)
      * @blazorDefaultValue new DateTime(2099, 12, 31)
      * @deprecated
@@ -140,17 +143,19 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     public max: Date;
     /**
      * Gets or sets the Calendar's first day of the week. By default, the first day of the week will be based on the current culture.
+     *
      * @default 0
      * @aspType int
      * @blazorType int
      * @deprecated
-     * > For more details about firstDayOfWeek refer to 
+     * > For more details about firstDayOfWeek refer to
      * [`First day of week`](../../calendar/how-to/first-day-of-week#change-the-first-day-of-the-week) documentation.
      */
     @Property(null)
     public firstDayOfWeek: number;
     /**
      * Gets or sets the Calendar's Type like gregorian or islamic.
+     *
      * @default Gregorian
      * @deprecated
      */
@@ -159,14 +164,15 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     /**
      * Specifies the initial view of the Calendar when it is opened.
      * With the help of this property, initial view can be changed to year or decade view.
+     *
      * @default Month
      * @deprecated
-     *  
+     *
      * <table>
      * <tr>
      * <td colSpan=1 rowSpan=1>
      * View<br/></td><td colSpan=1 rowSpan=1>
-     * Description<br/></td></tr> 
+     * Description<br/></td></tr>
      * <tr>
      * <td colSpan=1 rowSpan=1>
      * Month<br/></td><td colSpan=1 rowSpan=1>
@@ -181,7 +187,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * Calendar view shows the years of the decade.<br/></td></tr>
      * </table>
      *
-     * > For more details about start refer to 
+     * > For more details about start refer to
      * [`calendarView`](../../calendar/calendar-views#view-restriction)documentation.
      */
     @Property('Month')
@@ -189,51 +195,54 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     /**
      * Sets the maximum level of view such as month, year, and decade in the Calendar.
      * Depth view should be smaller than the start view to restrict its view navigation.
+     *
      * @default Month
      * @deprecated
-     * 
-     * <table> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * view<br/></td><td colSpan=1 rowSpan=1> 
-     * Description<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * Month<br/></td><td colSpan=1 rowSpan=1> 
-     * Calendar view shows up to the days of the month.<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * Year<br/></td><td colSpan=1 rowSpan=1> 
-     * Calendar view shows up to the months of the year.<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * Decade<br/></td><td colSpan=1 rowSpan=1> 
-     * Calendar view shows up to the years of the decade.<br/></td></tr> 
-     * </table> 
-     * 
-     * > For more details about depth refer to 
+     *
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * view<br/></td><td colSpan=1 rowSpan=1>
+     * Description<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Month<br/></td><td colSpan=1 rowSpan=1>
+     * Calendar view shows up to the days of the month.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Year<br/></td><td colSpan=1 rowSpan=1>
+     * Calendar view shows up to the months of the year.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Decade<br/></td><td colSpan=1 rowSpan=1>
+     * Calendar view shows up to the years of the decade.<br/></td></tr>
+     * </table>
+     *
+     * > For more details about depth refer to
      *  [`calendarView`](../../calendar/calendar-views#view-restriction)documentation.
      */
     @Property('Month')
     public depth: CalendarView;
     /**
      * Determines whether the week number of the year is to be displayed in the calendar or not.
+     *
      * @default false
      * @deprecated
-     * > For more details about weekNumber refer to 
+     * > For more details about weekNumber refer to
      * [`Calendar with week number`](../../calendar/how-to/render-the-calendar-with-week-numbers)documentation.
      */
     @Property(false)
     public weekNumber: boolean;
     /**
      * Specifies the rule for defining the first week of the year.
-     * 
+     *
      * @default FirstDay
      */
     @Property('FirstDay')
     public weekRule: WeekRule;
-    /** 
+    /**
      * Specifies whether the today button is to be displayed or not.
+     *
      * @default true
      * @deprecated
      */
@@ -246,107 +255,110 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * * `Narrow` - Sets the single character of day name (like S ) in day header.
      * * `Abbreviated` - Sets the min format of day name (like Sun ) in day header.
      * * `Wide` - Sets the long format of day name (like Sunday ) in day header.
+     *
      * @default Short
      * @deprecated
      */
     @Property('Short')
     public dayHeaderFormat: DayHeaderFormats;
-    /** 
+    /**
      * Enable or disable persisting component's state between page reloads. If enabled, following list of states will be persisted.
      * 1. value
+     *
      * @default false
      * @deprecated
      */
     @Property(false)
     public enablePersistence: boolean;
-    /**     
+    /**    
      * Customizes the key actions in Calendar.
      * For example, when using German keyboard, the key actions can be customized using these shortcuts.
-     * 
-     * <table> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * Key action<br/></td><td colSpan=1 rowSpan=1> 
-     * Key<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * controlUp<br/></td><td colSpan=1 rowSpan=1> 
-     * ctrl+38<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * controlDown<br/></td><td colSpan=1 rowSpan=1> 
-     * ctrl+40<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * select<br/></td><td colSpan=1 rowSpan=1> 
-     * enter<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * home<br/></td><td colSpan=1 rowSpan=1> 
-     * home<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * end<br/></td><td colSpan=1 rowSpan=1> 
-     * end<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * pageUp<br/></td><td colSpan=1 rowSpan=1> 
-     * pageup<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * pageDown<br/></td><td colSpan=1 rowSpan=1> 
-     * pagedown<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * shiftPageUp<br/></td><td colSpan=1 rowSpan=1> 
-     * shift+pageup<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * shiftPageDown<br/></td><td colSpan=1 rowSpan=1> 
-     * shift+pagedown<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * controlHome<br/></td><td colSpan=1 rowSpan=1> 
-     * ctrl+home<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * controlEnd<br/></td><td colSpan=1 rowSpan=1> 
-     * ctrl+end<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * altUpArrow<br/></td><td colSpan=1 rowSpan=1> 
-     * alt+uparrow<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * spacebar<br/></td><td colSpan=1 rowSpan=1> 
-     * space<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * altRightArrow<br/></td><td colSpan=1 rowSpan=1> 
-     * alt+rightarrow<br/></td></tr>  
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * altLeftArrow<br/></td><td colSpan=1 rowSpan=1> 
-     * alt+leftarrow<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * moveDown<br/></td><td colSpan=1 rowSpan=1> 
-     * downarrow<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * moveUp<br/></td><td colSpan=1 rowSpan=1> 
-     * uparrow<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * moveLeft<br/></td><td colSpan=1 rowSpan=1> 
-     * leftarrow<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * moveRight<br/></td><td colSpan=1 rowSpan=1> 
-     * rightarrow<br/></td></tr> 
+     *
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Key action<br/></td><td colSpan=1 rowSpan=1>
+     * Key<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * controlUp<br/></td><td colSpan=1 rowSpan=1>
+     * ctrl+38<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * controlDown<br/></td><td colSpan=1 rowSpan=1>
+     * ctrl+40<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * select<br/></td><td colSpan=1 rowSpan=1>
+     * enter<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * home<br/></td><td colSpan=1 rowSpan=1>
+     * home<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * end<br/></td><td colSpan=1 rowSpan=1>
+     * end<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * pageUp<br/></td><td colSpan=1 rowSpan=1>
+     * pageup<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * pageDown<br/></td><td colSpan=1 rowSpan=1>
+     * pagedown<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * shiftPageUp<br/></td><td colSpan=1 rowSpan=1>
+     * shift+pageup<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * shiftPageDown<br/></td><td colSpan=1 rowSpan=1>
+     * shift+pagedown<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * controlHome<br/></td><td colSpan=1 rowSpan=1>
+     * ctrl+home<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * controlEnd<br/></td><td colSpan=1 rowSpan=1>
+     * ctrl+end<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * altUpArrow<br/></td><td colSpan=1 rowSpan=1>
+     * alt+uparrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * spacebar<br/></td><td colSpan=1 rowSpan=1>
+     * space<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * altRightArrow<br/></td><td colSpan=1 rowSpan=1>
+     * alt+rightarrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * altLeftArrow<br/></td><td colSpan=1 rowSpan=1>
+     * alt+leftarrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * moveDown<br/></td><td colSpan=1 rowSpan=1>
+     * downarrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * moveUp<br/></td><td colSpan=1 rowSpan=1>
+     * uparrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * moveLeft<br/></td><td colSpan=1 rowSpan=1>
+     * leftarrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * moveRight<br/></td><td colSpan=1 rowSpan=1>
+     * rightarrow<br/></td></tr>
      * </table>
-     * 
+     *
      * {% codeBlock src='calendar/keyConfigs/index.md' %}{% endcodeBlock %}
+     *
      * @default null
      * @blazorType object
      * @deprecated
@@ -355,23 +367,26 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     public keyConfigs: { [key: string]: string };
     /**
      * By default, the date value will be processed based on system time zone.
-     * If you want to process the initial date value using server time zone 
+     * If you want to process the initial date value using server time zone
      * then specify the time zone value to `serverTimezoneOffset` property.
+     *
      * @default null
      * @deprecated
      */
     @Property(null)
     public serverTimezoneOffset: number;
-    /** 
+    /**
      * Triggers when Calendar is created.
-     * @event
+     *
+     * @event created
      * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
-    /** 
+    /**
      * Triggers when Calendar is destroyed.
-     * @event
+     *
+     * @event destroyed
      * @blazorProperty 'Destroyed'
      */
     @Event()
@@ -379,14 +394,16 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
 
     /**
      * Triggers when the Calendar is navigated to another level or within the same level of view.
-     * @event
+     *
+     * @event navigated
      * @blazorProperty 'Navigated'
      */
     @Event()
     public navigated: EmitType<NavigatedEventArgs>;
-    /**     
+    /**
      * Triggers when each day cell of the Calendar is rendered.
-     * @event
+     *
+     * @event renderDayCell
      * @blazorProperty 'OnRenderDayCell'
      */
     @Event()
@@ -394,15 +411,18 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     /**
      * Initialized new instance of Calendar Class.
      * Constructor for creating the widget
-     * @param  {CalendarModel} options?
-     * @param  {string|HTMLElement} element?
+     *
+     * @param {CalendarBaseModel} options - Specifies the CalendarBase model.
+     * @param {string | HTMLElement} element - Specifies the element to render as component.
+     * @private
      */
-    constructor(options?: CalendarBaseModel, element?: string | HTMLElement) {
+    public constructor(options?: CalendarBaseModel, element?: string | HTMLElement) {
         super(options, element);
     }
     /**
      * To Initialize the control rendering.
-     * @returns void
+     *
+     * @returns {void}
      * @private
      */
     protected render(): void {
@@ -412,7 +432,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             if (+(this.min.setSeconds(0)) === +new Date(1900, 0, 1, 0, 0, 0)) {
                 this.min = new Date(1944, 2, 18);
             }
-            if (+this.max === +new Date(2099, 11, 31)) { this.max = new Date(2069, 10, 16); }
+            if (+this.max === +new Date(2099, 11, 31)) {
+                this.max = new Date(2069, 10, 16);
+            }
         }
         this.globalize = new Internationalization(this.locale);
         if (isNullOrUndefined(this.firstDayOfWeek) || this.firstDayOfWeek > 6 || this.firstDayOfWeek < 0) {
@@ -494,9 +516,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
     }
 
-    protected setOverlayIndex(popupWrapper: HTMLElement, popupElement: HTMLElement, modal: HTMLElement, isDevice: Boolean): void {
+    protected setOverlayIndex(popupWrapper: HTMLElement, popupElement: HTMLElement, modal: HTMLElement, isDevice: boolean): void {
         if (isDevice && !isNullOrUndefined(popupElement) && !isNullOrUndefined(modal) && !isNullOrUndefined(popupWrapper)) {
-            let index: number = parseInt(popupElement.style.zIndex, 10) ? parseInt(popupElement.style.zIndex, 10) : 1000;
+            const index: number = parseInt(popupElement.style.zIndex, 10) ? parseInt(popupElement.style.zIndex, 10) : 1000;
             modal.style.zIndex = (index - 1).toString();
             popupWrapper.style.zIndex = index.toString();
         }
@@ -527,20 +549,20 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
 
 
     protected createHeader(): void {
-        let ariaPrevAttrs: Object = {
+        const ariaPrevAttrs: Object = {
             'aria-disabled': 'false',
             'aria-label': 'previous month'
         };
-        let ariaNextAttrs: Object = {
+        const ariaNextAttrs: Object = {
             'aria-disabled': 'false',
             'aria-label': 'next month'
 
         };
-        let ariaTitleAttrs: Object = {
+        const ariaTitleAttrs: Object = {
             'aria-atomic': 'true', 'aria-live': 'assertive', 'aria-label': 'title'
         };
         this.headerElement = this.createElement('div', { className: HEADER });
-        let iconContainer: HTMLElement = this.createElement('div', { className: ICONCONTAINER });
+        const iconContainer: HTMLElement = this.createElement('div', { className: ICONCONTAINER });
         this.previousIcon = this.createElement('button', { className: '' + PREVICON, attrs: { type: 'button' } });
         rippleEffect(this.previousIcon, {
             duration: 400,
@@ -587,15 +609,15 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
     }
     protected getCultureValues(): string[] {
-        let culShortNames: string[] = [];
+        const culShortNames: string[] = [];
         let cldrObj: string[];
-        let dayFormat: string = (isBlazor() ? 'days.' : 'days.stand-alone.') + this.dayHeaderFormat.toLowerCase();
+        const dayFormat: string = (isBlazor() ? 'days.' : 'days.stand-alone.') + this.dayHeaderFormat.toLowerCase();
         if (this.locale === 'en' || this.locale === 'en-US') {
             cldrObj = <string[]>(getValue(dayFormat, getDefaultDateObject()));
         } else {
             cldrObj = <string[]>(this.getCultureObjects(cldrData, '' + this.locale));
         }
-        for (let obj of Object.keys(cldrObj)) {
+        for (const obj of Object.keys(cldrObj)) {
             culShortNames.push(getValue(obj, cldrObj));
         }
         return culShortNames;
@@ -613,9 +635,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 detach(this.calendarElement.querySelectorAll('.e-content .e-week-header')[0]);
             }
         }
-        let daysCount: number = 6;
+        const daysCount: number = 6;
         let html: string = '';
-        let shortNames: string[];
         if (this.firstDayOfWeek > 6 || this.firstDayOfWeek < 0) {
             this.setProperties({ firstDayOfWeek: 0 }, true);
         }
@@ -628,7 +649,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 addClass([this.calendarElement], '' + WEEKNUMBER);
             }
         }
-        shortNames = this.shiftArray(((this.getCultureValues().length > 0 && this.getCultureValues())), this.firstDayOfWeek);
+        // eslint-disable-next-line max-len
+        const shortNames: string[] = this.shiftArray(((this.getCultureValues().length > 0 && this.getCultureValues())), this.firstDayOfWeek);
         for (let days: number = 0; days <= daysCount; days++) {
             html += '<th  class="">' + this.toCapitalize(shortNames[days]) + '</th>';
         }
@@ -647,14 +669,14 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             }
         }
         switch (this.start) {
-            case 'Year':
-                this.renderYears();
-                break;
-            case 'Decade':
-                this.renderDecades();
-                break;
-            default:
-                this.renderMonths();
+        case 'Year':
+            this.renderYears();
+            break;
+        case 'Decade':
+            this.renderDecades();
+            break;
+        default:
+            this.renderMonths();
         }
     }
     protected updateFooter(): void {
@@ -663,9 +685,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected createContentFooter(): void {
         if (this.showTodayButton) {
-            let minimum: Date = new Date(+this.min);
-            let maximum: Date = new Date(+this.max);
-            let l10nLocale: object = { today: 'Today' };
+            const minimum: Date = new Date(+this.min);
+            const maximum: Date = new Date(+this.max);
+            const l10nLocale: object = { today: 'Today' };
             this.globalize = new Internationalization(this.locale);
             this.l10 = new L10n(this.getModuleName(), l10nLocale, this.locale);
             this.todayElement = this.createElement('button', { attrs: { role: 'button' } });
@@ -743,11 +765,10 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected checkDeviceMode(ref?: object): void {
         if (Browser.isDevice && isBlazor() && ref) {
-            // tslint:disable-next-line
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (ref as any).invokeMethodAsync('OnDevice', true);
         }
     }
-    // tslint:disable-next-line:max-func-body-length
     protected keyActionHandle(e: KeyboardEventArgs, value?: Date, multiSelection?: boolean): void {
         if (isBlazor() && this.blazorRef) {
             e.preventDefault();
@@ -757,7 +778,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             }
             multiSelection = false;
         }
-        let focusedDate: Element = this.tableBodyElement.querySelector('tr td.e-focused-date');
+        const focusedDate: Element = this.tableBodyElement.querySelector('tr td.e-focused-date');
         let selectedDate: Element;
         if (multiSelection) {
             if (!isNullOrUndefined(focusedDate) && +value === parseInt(focusedDate.getAttribute('id').split('_')[0], 10)) {
@@ -770,8 +791,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
         if (isBlazor() && this.blazorRef) {
             (this.tableBodyElement as HTMLElement).focus();
-            let targetEle: HTMLElement = e.target as HTMLElement;
-            let args: object = {
+            const targetEle: HTMLElement = e.target as HTMLElement;
+            /* eslint-disable @typescript-eslint/naming-convention */
+            const args: object = {
                 Action: e.action, Key: e.key, Events: e,
                 SelectDate: selectedDate ? selectedDate.id : null,
                 FocusedDate: focusedDate ? focusedDate.id : null,
@@ -779,7 +801,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 Id: focusedDate ? focusedDate.id : selectedDate ? selectedDate.id : null,
                 TargetClassList: targetEle.classList.toString()
             };
-            // tslint:disable-next-line
+            /* eslint-enable @typescript-eslint/naming-convention */
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.blazorRef as any).invokeMethodAsync('OnCalendarKeyboardEvent', args);
             if (targetEle.classList.contains('e-today')) {
                 targetEle.blur();
@@ -790,150 +813,169 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             }
         } else {
             let view: number = this.getViewNumber(this.currentView());
-            let depthValue: number = this.getViewNumber(this.depth);
-            let levelRestrict: boolean = (view === depthValue && this.getViewNumber(this.start) >= depthValue);
+            const depthValue: number = this.getViewNumber(this.depth);
+            const levelRestrict: boolean = (view === depthValue && this.getViewNumber(this.start) >= depthValue);
             this.effect = '';
             switch (e.action) {
-                case 'moveLeft':
-                    this.KeyboardNavigate(-1, view, e, this.max, this.min);
-                    e.preventDefault();
-                    break;
-                case 'moveRight':
-                    this.KeyboardNavigate(1, view, e, this.max, this.min);
-                    e.preventDefault();
-                    break;
-                case 'moveUp':
-                    if (view === 0) {
-                        this.KeyboardNavigate(-7, view, e, this.max, this.min); // move the current date to the previous seven days.
-                    } else {
-                        this.KeyboardNavigate(-4, view, e, this.max, this.min); // move the current year to the previous four days.
-                    }
-                    e.preventDefault();
-                    break;
-                case 'moveDown':
-                    if (view === 0) {
-                        this.KeyboardNavigate(7, view, e, this.max, this.min);
-                    } else {
-                        this.KeyboardNavigate(4, view, e, this.max, this.min);
-                    }
-                    e.preventDefault();
-                    break;
-                case 'select':
-                    if (e.target === this.todayElement) {
-                        this.todayButtonClick(e, value);
-                    } else {
-                        let element: Element = !isNullOrUndefined(focusedDate) ? focusedDate : selectedDate;
-                        if (!isNullOrUndefined(element) && !element.classList.contains(DISABLED)) {
-                            if (levelRestrict) {
-                                let d: Date = new Date(parseInt('' + (element).id, 0));
-                                this.selectDate(e, d, (element));
-                            } else {
-                                this.contentClick(null, --view, (element), value);
-                            }
+            case 'moveLeft':
+                this.keyboardNavigate(-1, view, e, this.max, this.min);
+                e.preventDefault();
+                break;
+            case 'moveRight':
+                this.keyboardNavigate(1, view, e, this.max, this.min);
+                e.preventDefault();
+                break;
+            case 'moveUp':
+                if (view === 0) {
+                    this.keyboardNavigate(-7, view, e, this.max, this.min); // move the current date to the previous seven days.
+                } else {
+                    this.keyboardNavigate(-4, view, e, this.max, this.min); // move the current year to the previous four days.
+                }
+                e.preventDefault();
+                break;
+            case 'moveDown':
+                if (view === 0) {
+                    this.keyboardNavigate(7, view, e, this.max, this.min);
+                } else {
+                    this.keyboardNavigate(4, view, e, this.max, this.min);
+                }
+                e.preventDefault();
+                break;
+            case 'select':
+                if (e.target === this.todayElement) {
+                    this.todayButtonClick(e, value);
+                } else {
+                    const element: Element = !isNullOrUndefined(focusedDate) ? focusedDate : selectedDate;
+                    if (!isNullOrUndefined(element) && !element.classList.contains(DISABLED)) {
+                        if (levelRestrict) {
+                            // eslint-disable-next-line radix
+                            const d: Date = new Date(parseInt('' + (element).id, 0));
+                            this.selectDate(e, d, (element));
+                        } else {
+                            this.contentClick(null, --view, (element), value);
                         }
                     }
-                    break;
-                case 'controlUp':
-                    this.title();
-                    e.preventDefault();
-                    break;
-                case 'controlDown':
-                    if (!isNullOrUndefined(focusedDate) || !isNullOrUndefined(selectedDate) && !levelRestrict) {
-                        this.contentClick(null, --view, (focusedDate || selectedDate), value);
-                    }
-                    e.preventDefault();
-                    break;
-                case 'home':
-                    this.currentDate = this.firstDay(this.currentDate);
-                    detach(this.tableBodyElement);
-                    (view === 0) ? this.renderMonths(e) : ((view === 1) ? this.renderYears(e) : this.renderDecades(e));
-                    e.preventDefault();
-                    break;
-                case 'end':
-                    this.currentDate = this.lastDay(this.currentDate, view);
-                    detach(this.tableBodyElement);
-                    (view === 0) ? this.renderMonths(e) : ((view === 1) ? this.renderYears(e) : this.renderDecades(e));
-                    e.preventDefault();
-                    break;
-                case 'pageUp':
-                    this.addMonths(this.currentDate, -1);
-                    this.navigateTo('Month', this.currentDate);
-                    e.preventDefault();
-                    break;
-                case 'pageDown':
-                    this.addMonths(this.currentDate, 1);
-                    this.navigateTo('Month', this.currentDate);
-                    e.preventDefault();
-                    break;
-                case 'shiftPageUp':
-                    this.addYears(this.currentDate, -1);
-                    this.navigateTo('Month', this.currentDate);
-                    e.preventDefault();
-                    break;
-                case 'shiftPageDown':
-                    this.addYears(this.currentDate, 1);
-                    this.navigateTo('Month', this.currentDate);
-                    e.preventDefault();
-                    break;
-                case 'controlHome':
-                    this.navigateTo('Month', new Date(this.currentDate.getFullYear(), 0, 1));
-                    e.preventDefault();
-                    break;
-                case 'controlEnd':
-                    this.navigateTo('Month', new Date(this.currentDate.getFullYear(), 11, 31));
-                    e.preventDefault();
-                    break;
+                }
+                break;
+            case 'controlUp':
+                this.title();
+                e.preventDefault();
+                break;
+            case 'controlDown':
+                if (!isNullOrUndefined(focusedDate) || !isNullOrUndefined(selectedDate) && !levelRestrict) {
+                    this.contentClick(null, --view, (focusedDate || selectedDate), value);
+                }
+                e.preventDefault();
+                break;
+            case 'home':
+                this.currentDate = this.firstDay(this.currentDate);
+                detach(this.tableBodyElement);
+                if (view === 0) {
+                    this.renderMonths(e);
+                } else if (view === 1) {
+                    this.renderYears(e);
+                } else {
+                    this.renderDecades(e);
+                }
+                e.preventDefault();
+                break;
+            case 'end':
+                this.currentDate = this.lastDay(this.currentDate, view);
+                detach(this.tableBodyElement);
+                if (view === 0) {
+                    this.renderMonths(e);
+                } else if (view === 1) {
+                    this.renderYears(e);
+                } else {
+                    this.renderDecades(e);
+                }
+                e.preventDefault();
+                break;
+            case 'pageUp':
+                this.addMonths(this.currentDate, -1);
+                this.navigateTo('Month', this.currentDate);
+                e.preventDefault();
+                break;
+            case 'pageDown':
+                this.addMonths(this.currentDate, 1);
+                this.navigateTo('Month', this.currentDate);
+                e.preventDefault();
+                break;
+            case 'shiftPageUp':
+                this.addYears(this.currentDate, -1);
+                this.navigateTo('Month', this.currentDate);
+                e.preventDefault();
+                break;
+            case 'shiftPageDown':
+                this.addYears(this.currentDate, 1);
+                this.navigateTo('Month', this.currentDate);
+                e.preventDefault();
+                break;
+            case 'controlHome':
+                this.navigateTo('Month', new Date(this.currentDate.getFullYear(), 0, 1));
+                e.preventDefault();
+                break;
+            case 'controlEnd':
+                this.navigateTo('Month', new Date(this.currentDate.getFullYear(), 11, 31));
+                e.preventDefault();
+                break;
             }
-            if (this.getModuleName() === 'calendar') { this.table.focus(); }
+            if (this.getModuleName() === 'calendar') {
+                this.table.focus();
+            }
         }
     }
 
-    protected KeyboardNavigate(number: number, currentView: number, e: KeyboardEvent, max: Date, min: Date): void {
-        let date: Date = new Date(this.checkValue(this.currentDate));
+    protected keyboardNavigate(number: number, currentView: number, e: KeyboardEvent, max: Date, min: Date): void {
+        const date: Date = new Date(this.checkValue(this.currentDate));
         switch (currentView) {
-            case 2:
-                this.addYears(this.currentDate, number);
+        case 2:
+            this.addYears(this.currentDate, number);
+            if (this.isMonthYearRange(this.currentDate)) {
+                detach(this.tableBodyElement);
+                this.renderDecades(e);
+            } else {
+                this.currentDate = date;
+            }
+            break;
+        case 1:
+            this.addMonths(this.currentDate, number);
+            if (this.calendarMode === 'Gregorian') {
                 if (this.isMonthYearRange(this.currentDate)) {
                     detach(this.tableBodyElement);
-                    this.renderDecades(e);
+                    this.renderYears(e);
                 } else {
                     this.currentDate = date;
                 }
-                break;
-            case 1:
-                this.addMonths(this.currentDate, number);
-                if (this.calendarMode === 'Gregorian') {
-                    if (this.isMonthYearRange(this.currentDate)) {
-                        detach(this.tableBodyElement);
-                        this.renderYears(e);
-                    } else {
-                        this.currentDate = date;
-                    }
-                } else {
-                    if (this.isMonthYearRange(this.currentDate)) {
-                        detach(this.tableBodyElement);
-                        this.renderYears(e);
-                    } else {
-                        this.currentDate = date;
-                    }
-                }
-                break;
-            case 0:
-                this.addDay(this.currentDate, number, e, max, min);
-                if (this.isMinMaxRange(this.currentDate)) {
+            } else {
+                if (this.isMonthYearRange(this.currentDate)) {
                     detach(this.tableBodyElement);
-                    this.renderMonths(e);
+                    this.renderYears(e);
                 } else {
                     this.currentDate = date;
                 }
-                break;
+            }
+            break;
+        case 0:
+            this.addDay(this.currentDate, number, e, max, min);
+            if (this.isMinMaxRange(this.currentDate)) {
+                detach(this.tableBodyElement);
+                this.renderMonths(e);
+            } else {
+                this.currentDate = date;
+            }
+            break;
         }
     }
 
     /**
      * Initialize the event handler
+     *
+     * @param {Date} value - Specifies value of date.
+     * @returns {void}
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected preRender(value?: Date): void {
         this.navigatePreviousHandler = this.navigatePrevious.bind(this);
         this.navigateNextHandler = this.navigateNext.bind(this);
@@ -941,11 +983,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         this.navigateHandler = (e: MouseEvent): void => {
             this.triggerNavigate(e);
         };
-    };
+    }
     protected minMaxDate(localDate: Date): Date {
-        let currentDate: Date = new Date(new Date(+localDate).setHours(0, 0, 0, 0));
-        let minDate: Date = new Date(new Date(+this.min).setHours(0, 0, 0, 0));
-        let maxDate: Date = new Date(new Date(+this.max).setHours(0, 0, 0, 0));
+        const currentDate: Date = new Date(new Date(+localDate).setHours(0, 0, 0, 0));
+        const minDate: Date = new Date(new Date(+this.min).setHours(0, 0, 0, 0));
+        const maxDate: Date = new Date(new Date(+this.max).setHours(0, 0, 0, 0));
         if (+currentDate === +minDate || +currentDate === +maxDate) {
             if (+localDate < +this.min) {
                 localDate = new Date(+this.min);
@@ -957,7 +999,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         return localDate;
     }
     protected renderMonths(e?: Event, value?: Date, isCustomDate?: boolean): void {
-        let numCells: number = this.weekNumber ? 8 : 7;
+        const numCells: number = this.weekNumber ? 8 : 7;
         let tdEles: HTMLElement[];
         if (this.calendarMode === 'Gregorian') {
             tdEles = this.renderDays(this.currentDate, value, null, null, isCustomDate);
@@ -971,30 +1013,26 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             this.islamicModule.islamicRenderTemplate(tdEles, numCells, MONTH, e, value);
         }
     }
-    // tslint:disable-next-line:max-func-body-length
     protected renderDays(currentDate: Date, value?: Date, multiSelection?: boolean, values?: Date[], isTodayDate?: boolean): HTMLElement[] {
-        let tdEles: HTMLElement[] = [];
-        let cellsCount: number = 42;
-        let todayDate: Date = isTodayDate ? new Date(+currentDate) : this.getDate(new Date(), this.timezone);
+        const tdEles: HTMLElement[] = [];
+        const cellsCount: number = 42;
+        const todayDate: Date = isTodayDate ? new Date(+currentDate) : this.getDate(new Date(), this.timezone);
         let localDate: Date = new Date(this.checkValue(currentDate));
         let minMaxDate: Date;
-        let numCells: number = this.weekNumber ? 8 : 7;
-        // 8 and 7 denotes the number of columns to be specified.
-        let currentMonth: number = localDate.getMonth();
+        const currentMonth: number = localDate.getMonth();
         this.titleUpdate(currentDate, 'days');
-        let d: Date = localDate;
+        const d: Date = localDate;
         localDate = new Date(d.getFullYear(), d.getMonth(), 0, d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds());
         while (localDate.getDay() !== this.firstDayOfWeek) {
             this.setStartDate(localDate, -1 * dayMilliSeconds);
         }
         for (let day: number = 0; day < cellsCount; ++day) {
-            let weekEle: HTMLElement = this.createElement('td', { className: CELL });
-            let weekAnchor: HTMLElement = this.createElement('span');
+            const weekEle: HTMLElement = this.createElement('td', { className: CELL });
+            const weekAnchor: HTMLElement = this.createElement('span');
             if (day % 7 === 0 && this.weekNumber) {
-                let numberOfDays : number;
                 // 6 days are added to get Last day of the week and 3 days are added to get middle day of the week.
-                numberOfDays = this.weekRule === 'FirstDay' ? 6 : (this.weekRule === 'FirstFourDayWeek' ? 3 : 0);
-                let finalDate : Date = new Date(localDate.getFullYear(), localDate.getMonth(), (localDate.getDate() + numberOfDays));
+                const numberOfDays : number = this.weekRule === 'FirstDay' ? 6 : (this.weekRule === 'FirstFourDayWeek' ? 3 : 0);
+                const finalDate : Date = new Date(localDate.getFullYear(), localDate.getMonth(), (localDate.getDate() + numberOfDays));
                 weekAnchor.textContent = '' + this.getWeek(finalDate);
                 weekEle.appendChild(weekAnchor);
                 addClass([weekEle], '' + WEEKNUMBER);
@@ -1002,13 +1040,13 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             }
             minMaxDate = new Date(+localDate);
             localDate = this.minMaxDate(localDate);
-            let dateFormatOptions: object = { type: 'dateTime', skeleton: isBlazor() ? 'D' : 'full' };
-            let date: Date = this.globalize.parseDate(this.globalize.formatDate(localDate, dateFormatOptions), dateFormatOptions);
-            let tdEle: HTMLElement = this.dayCell(localDate);
-            let title: string = this.globalize.formatDate(localDate, { type: 'date', skeleton: isBlazor() ? 'D' : 'full' });
-            let dayLink: HTMLElement = this.createElement('span');
+            const dateFormatOptions: object = { type: 'dateTime', skeleton: isBlazor() ? 'D' : 'full' };
+            const date: Date = this.globalize.parseDate(this.globalize.formatDate(localDate, dateFormatOptions), dateFormatOptions);
+            const tdEle: HTMLElement = this.dayCell(localDate);
+            const title: string = this.globalize.formatDate(localDate, { type: 'date', skeleton: isBlazor() ? 'D' : 'full' });
+            const dayLink: HTMLElement = this.createElement('span');
             dayLink.textContent = this.globalize.formatDate(localDate, { format: 'd', type: 'date', skeleton: isBlazor() ? 'd' : 'yMd'});
-            let disabled: boolean = (this.min > localDate) || (this.max < localDate);
+            const disabled: boolean = (this.min > localDate) || (this.max < localDate);
             if (disabled) {
                 addClass([tdEle], DISABLED);
                 addClass([tdEle], OVERLAY);
@@ -1028,17 +1066,17 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 element: tdEle,
                 isOutOfRange: disabled
             };
-            let argument: RenderDayCellEventArgs = this.renderDayCellArgs;
+            const argument: RenderDayCellEventArgs = this.renderDayCellArgs;
             this.renderDayCellEvent(argument);
             if (argument.isDisabled) {
-                let selectDate: Date = new Date(this.checkValue(value));
-                let argsDate: Date = new Date(this.checkValue(argument.date));
+                const selectDate: Date = new Date(this.checkValue(value));
+                const argsDate: Date = new Date(this.checkValue(argument.date));
                 if (multiSelection) {
                     if (!isNullOrUndefined(values) && values.length > 0) {
                         for (let index: number = 0; index < values.length; index++) {
-                            let localDateString: number =
+                            const localDateString: number =
                                 +new Date(this.globalize.formatDate(argument.date, { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' }));
-                            let tempDateString: number =
+                            const tempDateString: number =
                                 +new Date(this.globalize.formatDate(values[index], { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' }));
                             if (localDateString === tempDateString) {
                                 values.splice(index, 1);
@@ -1057,8 +1095,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                     this.todayDisabled = true;
                 }
             }
-            let otherMnthBool: boolean = tdEle.classList.contains(OTHERMONTH);
-            let disabledCls: boolean = tdEle.classList.contains(DISABLED);
+            const otherMnthBool: boolean = tdEle.classList.contains(OTHERMONTH);
+            const disabledCls: boolean = tdEle.classList.contains(DISABLED);
             if (!disabledCls) {
                 EventHandler.add(tdEle, 'click', this.clickHandler, this);
             }
@@ -1068,10 +1106,10 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             // }
             if (multiSelection && !isNullOrUndefined(values) && !disabledCls) {
                 for (let tempValue: number = 0; tempValue < values.length; tempValue++) {
-                    let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-                    let formatOptions: object = { format: this.getFromatStringValue(), type: 'date', skeleton: 'short', calendar: type };
-                    let localDateString: string = this.globalize.formatDate(localDate, formatOptions);
-                    let tempDateString: string = this.globalize.formatDate(values[tempValue], formatOptions);
+                    const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+                    const formatOptions: object = { format: this.getFromatStringValue(), type: 'date', skeleton: 'short', calendar: type };
+                    const localDateString: string = this.globalize.formatDate(localDate, formatOptions);
+                    const tempDateString: string = this.globalize.formatDate(values[tempValue], formatOptions);
                     if ((localDateString === tempDateString && this.getDateVal(localDate, values[tempValue]))
                         || (this.getDateVal(localDate, value))) {
                         addClass([tdEle], SELECTED);
@@ -1101,9 +1139,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         if (currentDate.getDate() === localDate.getDate() && !otherMonth && !disabled) {
             addClass([tableElement], FOCUSEDDATE);
         } else {
+            // eslint-disable-next-line radix
             if (currentDate >= this.max && parseInt(tableElement.id, 0) === +this.max && !otherMonth && !disabled) {
                 addClass([tableElement], FOCUSEDDATE);
             }
+            // eslint-disable-next-line radix
             if (currentDate <= this.min && parseInt(tableElement.id, 0) === +this.min && !otherMonth && !disabled) {
                 addClass([tableElement], FOCUSEDDATE);
             }
@@ -1111,28 +1151,26 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected renderYears(e?: Event, value?: Date): void {
         this.removeTableHeadElement();
-        let numCells: number = 4;
-        let days: number[];
-        let tdEles: HTMLElement[] = [];
-        let valueUtil: boolean = isNullOrUndefined(value);
-        let curDate: Date = new Date(this.checkValue(this.currentDate));
-        let mon: number = curDate.getMonth();
-        let yr: number = curDate.getFullYear();
-        let localDate: Date = curDate;
-        let curYrs: number = localDate.getFullYear();
-        let minYr: number = new Date(this.checkValue(this.min)).getFullYear();
-        let minMonth: number = new Date(this.checkValue(this.min)).getMonth();
-        let maxYr: number = new Date(this.checkValue(this.max)).getFullYear();
-        let maxMonth: number = new Date(this.checkValue(this.max)).getMonth();
+        const numCells: number = 4;
+        const tdEles: HTMLElement[] = [];
+        const valueUtil: boolean = isNullOrUndefined(value);
+        const curDate: Date = new Date(this.checkValue(this.currentDate));
+        const mon: number = curDate.getMonth();
+        const yr: number = curDate.getFullYear();
+        const localDate: Date = curDate;
+        const curYrs: number = localDate.getFullYear();
+        const minYr: number = new Date(this.checkValue(this.min)).getFullYear();
+        const minMonth: number = new Date(this.checkValue(this.min)).getMonth();
+        const maxYr: number = new Date(this.checkValue(this.max)).getFullYear();
+        const maxMonth: number = new Date(this.checkValue(this.max)).getMonth();
         localDate.setMonth(0);
         this.titleUpdate(this.currentDate, 'months');
-        let disabled: boolean = (this.min > localDate) || (this.max < localDate);
         localDate.setDate(1);
         for (let month: number = 0; month < 12; ++month) {
-            let tdEle: HTMLElement = this.dayCell(localDate);
-            let dayLink: HTMLElement = this.createElement('span');
-            let localMonth: boolean = (value && (value).getMonth() === localDate.getMonth());
-            let select: boolean = (value && (value).getFullYear() === yr && localMonth);
+            const tdEle: HTMLElement = this.dayCell(localDate);
+            const dayLink: HTMLElement = this.createElement('span');
+            const localMonth: boolean = (value && (value).getMonth() === localDate.getMonth());
+            const select: boolean = (value && (value).getFullYear() === yr && localMonth);
             dayLink.textContent = this.toCapitalize(this.globalize.formatDate(localDate, {
                 format: isBlazor() ? 'MMM' : null, type: 'dateTime', skeleton: 'MMM'
             }));
@@ -1158,30 +1196,30 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected renderDecades(e?: Event, value?: Date): void {
         this.removeTableHeadElement();
-        let numCells: number = 4;
-        let yearCell: number = 12;
-        let tdEles: HTMLElement[] = [];
-        let localDate: Date = new Date(this.checkValue(this.currentDate));
+        const numCells: number = 4;
+        const yearCell: number = 12;
+        const tdEles: HTMLElement[] = [];
+        const localDate: Date = new Date(this.checkValue(this.currentDate));
         localDate.setMonth(0);
         localDate.setDate(1);
-        let localYr: number = localDate.getFullYear();
-        let startYr: Date = new Date(localDate.setFullYear((localYr - localYr % 10)));
-        let endYr: Date = new Date(localDate.setFullYear((localYr - localYr % 10 + (10 - 1))));
-        let startFullYr: number = startYr.getFullYear();
-        let endFullYr: number = endYr.getFullYear();
-        let startHdrYr: string = this.globalize.formatDate(startYr, {
+        const localYr: number = localDate.getFullYear();
+        const startYr: Date = new Date(localDate.setFullYear((localYr - localYr % 10)));
+        const endYr: Date = new Date(localDate.setFullYear((localYr - localYr % 10 + (10 - 1))));
+        const startFullYr: number = startYr.getFullYear();
+        const endFullYr: number = endYr.getFullYear();
+        const startHdrYr: string = this.globalize.formatDate(startYr, {
             format: isBlazor() ? 'yyyy' : null, type: 'dateTime', skeleton: 'y'
         });
-        let endHdrYr: string = this.globalize.formatDate(endYr, { format: isBlazor() ? 'yyyy' : null, type: 'dateTime', skeleton: 'y' });
+        const endHdrYr: string = this.globalize.formatDate(endYr, { format: isBlazor() ? 'yyyy' : null, type: 'dateTime', skeleton: 'y' });
         this.headerTitleElement.textContent = startHdrYr + ' - ' + (endHdrYr);
-        let start: Date = new Date(localYr - (localYr % 10) - 1, 0, 1);
-        let startYear: number = start.getFullYear();
+        const start: Date = new Date(localYr - (localYr % 10) - 1, 0, 1);
+        const startYear: number = start.getFullYear();
         for (let rowIterator: number = 0; rowIterator < yearCell; ++rowIterator) {
-            let year: number = startYear + rowIterator;
+            const year: number = startYear + rowIterator;
             localDate.setFullYear(year);
-            let tdEle: HTMLElement = this.dayCell(localDate);
+            const tdEle: HTMLElement = this.dayCell(localDate);
             attributes(tdEle, { 'role': 'gridcell' });
-            let dayLink: HTMLElement = this.createElement('span');
+            const dayLink: HTMLElement = this.createElement('span');
             dayLink.textContent = this.globalize.formatDate(localDate, {
                 format: isBlazor() ? 'yyyy' : null, type: 'dateTime', skeleton: 'y'
             });
@@ -1213,23 +1251,24 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         this.renderTemplate(tdEles, numCells, 'e-decade', e, value);
     }
     protected dayCell(localDate: Date): HTMLElement {
-        let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-        let dateFormatOptions: object = { skeleton: isBlazor() ? 'F' : 'full', type: 'dateTime', calendar: type };
-        let date: Date = this.globalize.parseDate(this.globalize.formatDate(localDate, dateFormatOptions), dateFormatOptions);
-        let value: number = date.valueOf();
-        let attrs: Object = {
+        const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+        const dateFormatOptions: object = { skeleton: isBlazor() ? 'F' : 'full', type: 'dateTime', calendar: type };
+        const date: Date = this.globalize.parseDate(this.globalize.formatDate(localDate, dateFormatOptions), dateFormatOptions);
+        const value: number = date.valueOf();
+        const attrs: Object = {
             className: CELL, attrs: { 'id': '' + getUniqueID('' + value), 'aria-selected': 'false', 'role': 'gridcell' }
         };
         return this.createElement('td', attrs);
     }
     protected firstDay(date: Date): Date {
-        let collection: Element[] = this.currentView() !== 'Decade' ? <NodeListOf<HTMLTableDataCellElement> & Element[]>
+        const collection: Element[] = this.currentView() !== 'Decade' ? <NodeListOf<HTMLTableDataCellElement> & Element[]>
             this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERMONTH + '') :
             <NodeListOf<HTMLTableDataCellElement> & Element[]>
             this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERDECADE + '');
         if (collection.length) {
             for (let i: number = 0; i < collection.length; i++) {
                 if (!collection[i].classList.contains(DISABLED)) {
+                    // eslint-disable-next-line radix
                     date = new Date(parseInt(collection[i].id, 0));
                     break;
                 }
@@ -1238,9 +1277,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         return date;
     }
     protected lastDay(date: Date, view: number): Date {
-        let lastDate: Date = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        const lastDate: Date = new Date(date.getFullYear(), date.getMonth() + 1, 0);
         if (view !== 2) {
-            let timeOffset: number = Math.abs(lastDate.getTimezoneOffset() - this.firstDay(date).getTimezoneOffset());
+            const timeOffset: number = Math.abs(lastDate.getTimezoneOffset() - this.firstDay(date).getTimezoneOffset());
             if (timeOffset) {
                 lastDate.setHours(this.firstDay(date).getHours() + (timeOffset / 60));
             }
@@ -1248,18 +1287,19 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         } else {
             return this.findLastDay(this.firstDay(lastDate));
         }
-    };
+    }
     protected checkDateValue(value: Date): Date {
         return (!isNullOrUndefined(value) && value instanceof Date && !isNaN(+value)) ? value : null;
     }
     protected findLastDay(date: Date): Date {
-        let collection: Element[] = this.currentView() === 'Decade' ? <NodeListOf<HTMLTableDataCellElement> & Element[]>
+        const collection: Element[] = this.currentView() === 'Decade' ? <NodeListOf<HTMLTableDataCellElement> & Element[]>
             this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERDECADE + '') :
             <NodeListOf<HTMLTableDataCellElement> & Element[]>
             this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERMONTH + '');
         if (collection.length) {
             for (let i: number = collection.length - 1; i >= 0; i--) {
                 if (!collection[i].classList.contains(DISABLED)) {
+                    // eslint-disable-next-line radix
                     date = new Date(parseInt(collection[i].id, 0));
                     break;
                 }
@@ -1279,16 +1319,17 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
 
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected renderTemplate(elements: HTMLElement[], count: number, classNm: string, e?: Event, value?: Date): void {
-        let view: number = this.getViewNumber(this.currentView());
+        const view: number = this.getViewNumber(this.currentView());
         let trEle: HTMLElement;
         this.tableBodyElement = this.createElement('tbody');
         this.table.appendChild(this.tableBodyElement);
         removeClass([this.contentElement, this.headerElement], [MONTH, DECADE, YEAR]);
         addClass([this.contentElement, this.headerElement], [classNm]);
-        let weekNumCell: number = 41;
-        let numberCell: number = 35;
-        let otherMonthCell: number = 6;
+        const weekNumCell: number = 41;
+        const numberCell: number = 35;
+        const otherMonthCell: number = 6;
         let row: number = count;
         let rowIterator: number = 0;
         for (let dayCell: number = 0; dayCell < elements.length / count; ++dayCell) {
@@ -1336,8 +1377,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected clickHandler(e: MouseEvent, value: Date): void {
         this.clickEventEmitter(e);
-        let eve: Element = <HTMLElement>e.currentTarget;
-        let view: number = this.getViewNumber(this.currentView());
+        const eve: Element = <HTMLElement>e.currentTarget;
+        const view: number = this.getViewNumber(this.currentView());
         if (eve.classList.contains(OTHERMONTH)) {
             this.contentClick(e, 0, null, value);
         } else if (view === this.getViewNumber(this.depth) && this.getViewNumber(this.start) >= this.getViewNumber(this.depth)) {
@@ -1358,205 +1399,222 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected clickEventEmitter(e: MouseEvent): void {
         e.preventDefault();
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected contentClick(e?: MouseEvent, view?: number, element?: Element, value?: Date): void {
-        let currentView: number = this.getViewNumber(this.currentView());
-        let d: Date = this.getIdValue(e, element);
+        const currentView: number = this.getViewNumber(this.currentView());
+        const d: Date = this.getIdValue(e, element);
         switch (view) {
-            case 0:
-                if (currentView === this.getViewNumber(this.depth) && this.getViewNumber(this.start) >= this.getViewNumber(this.depth)) {
-                    detach(this.tableBodyElement);
+        case 0:
+            if (currentView === this.getViewNumber(this.depth) && this.getViewNumber(this.start) >= this.getViewNumber(this.depth)) {
+                detach(this.tableBodyElement);
+                this.currentDate = d;
+                this.effect = ZOOMIN;
+                this.renderMonths(e);
+            } else {
+
+                if (this.calendarMode === 'Gregorian') {
+                    this.currentDate.setMonth(d.getMonth());
+                    if (d.getMonth() > 0 && this.currentDate.getMonth() !== d.getMonth()) {
+                        this.currentDate.setDate(0);
+                    }
+                    this.currentDate.setFullYear(d.getFullYear());
+                } else {
                     this.currentDate = d;
-                    this.effect = ZOOMIN;
-                    this.renderMonths(e);
-                } else {
-
-                    if (this.calendarMode === 'Gregorian') {
-                        this.currentDate.setMonth(d.getMonth());
-                        if (d.getMonth() > 0 && this.currentDate.getMonth() !== d.getMonth()) {
-                            this.currentDate.setDate(0);
-                        }
-                        this.currentDate.setFullYear(d.getFullYear());
-                    } else {
-                        this.currentDate = d;
-                    }
-
-                    this.effect = ZOOMIN;
-                    detach(this.tableBodyElement);
-                    this.renderMonths(e);
                 }
-                break;
-            case 1:
-                if (currentView === this.getViewNumber(this.depth) && this.getViewNumber(this.start) >= this.getViewNumber(this.depth)) {
-                    this.selectDate(e, d, null);
+
+                this.effect = ZOOMIN;
+                detach(this.tableBodyElement);
+                this.renderMonths(e);
+            }
+            break;
+        case 1:
+            if (currentView === this.getViewNumber(this.depth) && this.getViewNumber(this.start) >= this.getViewNumber(this.depth)) {
+                this.selectDate(e, d, null);
+            } else {
+                if (this.calendarMode === 'Gregorian') {
+                    this.currentDate.setFullYear(d.getFullYear());
                 } else {
-                    if (this.calendarMode === 'Gregorian') {
-                        this.currentDate.setFullYear(d.getFullYear());
-                    } else {
-                        let islamicDate: IslamicDateArgs = this.islamicModule.getIslamicDate(d);
-                        this.currentDate = this.islamicModule.toGregorian(islamicDate.year, islamicDate.month, 1);
-                    }
-                    this.effect = ZOOMIN;
-                    detach(this.tableBodyElement);
-                    this.renderYears(e);
+                    const islamicDate: IslamicDateArgs = this.islamicModule.getIslamicDate(d);
+                    this.currentDate = this.islamicModule.toGregorian(islamicDate.year, islamicDate.month, 1);
                 }
+                this.effect = ZOOMIN;
+                detach(this.tableBodyElement);
+                this.renderYears(e);
+            }
         }
     }
     protected switchView(view: number, e?: Event, multiSelection?: boolean, isCustomDate?: boolean): void {
         switch (view) {
-            case 0:
-                detach(this.tableBodyElement);
-                this.renderMonths(e, null, isCustomDate);
-                if (multiSelection && !isNullOrUndefined(this.tableBodyElement.querySelectorAll('.' + FOCUSEDDATE)[0])) {
-                    this.tableBodyElement.querySelectorAll('.' + FOCUSEDDATE)[0].classList.remove(FOCUSEDDATE);
-                }
-                break;
-            case 1:
-                detach(this.tableBodyElement);
-                this.renderYears(e);
-                break;
-            case 2:
-                detach(this.tableBodyElement);
-                this.renderDecades(e);
+        case 0:
+            detach(this.tableBodyElement);
+            this.renderMonths(e, null, isCustomDate);
+            if (multiSelection && !isNullOrUndefined(this.tableBodyElement.querySelectorAll('.' + FOCUSEDDATE)[0])) {
+                this.tableBodyElement.querySelectorAll('.' + FOCUSEDDATE)[0].classList.remove(FOCUSEDDATE);
+            }
+            break;
+        case 1:
+            detach(this.tableBodyElement);
+            this.renderYears(e);
+            break;
+        case 2:
+            detach(this.tableBodyElement);
+            this.renderDecades(e);
         }
     }
     /**
-     * To get component name  
+     * To get component name
+     *
+     * @returns {string} Returns the component name.
      * @private
      */
     protected getModuleName(): string {
         return 'calendar';
     }
     /**
+     *
+     * @returns {void}
      * @deprecated
      */
     public requiredModules(): ModuleDeclaration[] {
-        let modules: ModuleDeclaration[] = [];
+        const modules: ModuleDeclaration[] = [];
         if (this) {
             modules.push({ args: [this], member: 'islamic' });
         }
 
         return modules;
     }
-
+    /* eslint-disable valid-jsdoc, jsdoc/require-returns-description */
     /**
      * Gets the properties to be maintained upon browser refresh.
-     * @returns string
+     *
+     * @returns {string}
      */
     public getPersistData(): string {
-        let keyEntity: string[] = ['value'];
+        const keyEntity: string[] = ['value'];
         return this.addOnPersist(keyEntity);
     }
+    /* eslint-enable valid-jsdoc, jsdoc/require-returns-description */
     /**
      * Called internally if any of the property value changed.
-     * returns void
+     *
+     * @param {CalendarBaseModel} newProp - Returns the dynamic property value of the component.
+     * @param {CalendarBaseModel} oldProp - Returns the previous property value of the component.
+     * @param {boolean} multiSelection - - Specifies whether multiple date selection is enabled or not.
+     * @param {Date[]} values - Specifies the dates.
+     * @returns {void}
      * @private
      */
     public onPropertyChanged(newProp: CalendarBaseModel, oldProp: CalendarBaseModel, multiSelection?: boolean, values?: Date[]): void {
         this.effect = '';
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'enableRtl':
-                    if (newProp.enableRtl) {
-                        if (this.getModuleName() === 'calendar') {
-                            this.element.classList.add('e-rtl');
-                        } else {
-                            this.calendarElement.classList.add('e-rtl');
-                        }
+            case 'enableRtl':
+                if (newProp.enableRtl) {
+                    if (this.getModuleName() === 'calendar') {
+                        this.element.classList.add('e-rtl');
                     } else {
-                        if (this.getModuleName() === 'calendar') {
-                            this.element.classList.remove('e-rtl');
-                        } else {
-                            this.calendarElement.classList.remove('e-rtl');
-                        }
+                        this.calendarElement.classList.add('e-rtl');
                     }
-                    break;
-                case 'dayHeaderFormat':
-                    this.getCultureValues();
-                    this.createContentHeader();
-                    this.adjustLongHeaderSize();
-                    break;
-                case 'min':
-                case 'max':
-                    this.rangeValidation(this.min, this.max);
-                    prop === 'min' ? this.setProperties({ min: this.checkDateValue(new Date(this.checkValue(newProp.min))) }, true) :
-                        this.setProperties({ max: this.checkDateValue(new Date(this.checkValue(newProp.max))) }, true);
-                    this.setProperties({ start: this.currentView() }, true);
-                    detach(this.tableBodyElement);
-                    this.minMaxUpdate();
-                    if (multiSelection) {
-                        this.validateValues(multiSelection, values);
+                } else {
+                    if (this.getModuleName() === 'calendar') {
+                        this.element.classList.remove('e-rtl');
+                    } else {
+                        this.calendarElement.classList.remove('e-rtl');
                     }
-                    this.createContentBody();
-                    if ((this.todayDate < this.min || this.max < this.todayDate) && (this.footer) && (this.todayElement)) {
+                }
+                break;
+            case 'dayHeaderFormat':
+                this.getCultureValues();
+                this.createContentHeader();
+                this.adjustLongHeaderSize();
+                break;
+            case 'min':
+            case 'max':
+                this.rangeValidation(this.min, this.max);
+                if (prop === 'min') {
+                    this.setProperties({ min: this.checkDateValue(new Date(this.checkValue(newProp.min))) }, true);
+                } else {
+                    this.setProperties({ max: this.checkDateValue(new Date(this.checkValue(newProp.max))) }, true);
+                }
+                this.setProperties({ start: this.currentView() }, true);
+                detach(this.tableBodyElement);
+                this.minMaxUpdate();
+                if (multiSelection) {
+                    this.validateValues(multiSelection, values);
+                }
+                this.createContentBody();
+                if ((this.todayDate < this.min || this.max < this.todayDate) && (this.footer) && (this.todayElement)) {
+                    detach(this.todayElement);
+                    detach(this.footer);
+                    this.todayElement = this.footer = null;
+                    this.createContentFooter();
+                } else {
+                    if ((this.footer) && (this.todayElement) && this.todayElement.classList.contains('e-disabled')) {
+                        removeClass([this.todayElement], DISABLED);
                         detach(this.todayElement);
                         detach(this.footer);
                         this.todayElement = this.footer = null;
                         this.createContentFooter();
-                    } else {
-                        if ((this.footer) && (this.todayElement) && this.todayElement.classList.contains('e-disabled')) {
-                            removeClass([this.todayElement], DISABLED);
-                            detach(this.todayElement);
-                            detach(this.footer);
-                            this.todayElement = this.footer = null;
-                            this.createContentFooter();
-                        }
                     }
-                    break;
-                case 'start':
-                case 'depth':
-                case 'weekNumber':
-                case 'firstDayOfWeek':
-                case 'weekRule':
-                    this.checkView();
-                    this.createContentHeader();
-                    this.createContentBody();
-                    break;
+                }
+                break;
+            case 'start':
+            case 'depth':
+            case 'weekNumber':
+            case 'firstDayOfWeek':
+            case 'weekRule':
+                this.checkView();
+                this.createContentHeader();
+                this.createContentBody();
+                break;
 
-                case 'locale':
-                    this.globalize = new Internationalization(this.locale);
-                    this.createContentHeader();
-                    this.createContentBody();
-                    this.l10.setLocale(this.locale);
-                    this.updateFooter();
-                    break;
-                case 'showTodayButton':
-                    if (newProp.showTodayButton) {
-                        this.createContentFooter();
-                    } else {
-                        if (!isNullOrUndefined(this.todayElement) && !isNullOrUndefined(this.footer)) {
-                            detach(this.todayElement);
-                            detach(this.footer);
-                            this.todayElement = this.footer = undefined;
-                        }
+            case 'locale':
+                this.globalize = new Internationalization(this.locale);
+                this.createContentHeader();
+                this.createContentBody();
+                this.l10.setLocale(this.locale);
+                this.updateFooter();
+                break;
+            case 'showTodayButton':
+                if (newProp.showTodayButton) {
+                    this.createContentFooter();
+                } else {
+                    if (!isNullOrUndefined(this.todayElement) && !isNullOrUndefined(this.footer)) {
+                        detach(this.todayElement);
+                        detach(this.footer);
+                        this.todayElement = this.footer = undefined;
                     }
-                    this.setProperties({ showTodayButton: newProp.showTodayButton }, true);
-                    break;
+                }
+                this.setProperties({ showTodayButton: newProp.showTodayButton }, true);
+                break;
             }
         }
     }
     /**
      * values property updated with considered disabled dates of the calendar.
+     *
+     * @param {boolean} multiSelection - Specifies whether multiple date selection is enabled.
+     * @param {Date[]} values - Specifies the dates to validate.
+     * @returns {void}
      */
     protected validateValues(multiSelection?: boolean, values?: Date[]): void {
         if (multiSelection && !isNullOrUndefined(values) && values.length > 0) {
-            let copyValues: Date[] = this.copyValues(values);
+            const copyValues: Date[] = this.copyValues(values);
             for (let skipIndex: number = 0; skipIndex < copyValues.length; skipIndex++) {
-                let tempValue: Date = copyValues[skipIndex];
-                let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+                const tempValue: Date = copyValues[skipIndex];
+                const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
                 let tempValueString: string;
                 if (this.calendarMode === 'Gregorian') {
-                    /* tslint:disable-next-line:max-line-length */
                     tempValueString = this.globalize.formatDate(tempValue, { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' });
                 } else {
-                    /* tslint:disable-next-line:max-line-length */
                     tempValueString = this.globalize.formatDate(tempValue, { type: 'dateTime', skeleton: 'full', calendar: 'islamic' });
                 }
-                let minFormatOption: object = { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd', calendar: type };
-                let minStringValue: string = this.globalize.formatDate(this.min, minFormatOption);
-                let minString: string = minStringValue;
-                let maxFormatOption: object = { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd', calendar: type };
-                let maxStringValue: string = this.globalize.formatDate(this.max, maxFormatOption);
-                let maxString: string = maxStringValue;
+                const minFormatOption: object = { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd', calendar: type };
+                const minStringValue: string = this.globalize.formatDate(this.min, minFormatOption);
+                const minString: string = minStringValue;
+                const maxFormatOption: object = { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd', calendar: type };
+                const maxStringValue: string = this.globalize.formatDate(this.max, maxFormatOption);
+                const maxString: string = maxStringValue;
                 if (+new Date(tempValueString) < +new Date(minString) ||
                     +new Date(tempValueString) > +new Date(maxString)) {
                     copyValues.splice(skipIndex, 1);
@@ -1574,7 +1632,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
     }
     protected copyValues(values: Date[]): Date[] {
-        let copyValues: Date[] = [];
+        const copyValues: Date[] = [];
         if (!isNullOrUndefined(values) && values.length > 0) {
             for (let index: number = 0; index < values.length; index++) {
                 copyValues.push(new Date(+values[index]));
@@ -1583,10 +1641,10 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         return copyValues;
     }
     protected titleUpdate(date: Date, view: string): void {
-        let globalize: Internationalization = new Internationalization(this.locale);
+        const globalize: Internationalization = new Internationalization(this.locale);
         let dayFormatOptions: string;
         let monthFormatOptions: string;
-        let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+        const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
         if (this.calendarMode === 'Gregorian') {
             dayFormatOptions = globalize.formatDate(date, { type: 'dateTime', skeleton: isBlazor() ? 'y' : 'yMMMM', calendar: type });
             monthFormatOptions = globalize.formatDate(date, {
@@ -1598,20 +1656,20 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             monthFormatOptions = globalize.formatDate(date, { type: 'dateTime', format: 'y', calendar: type });
         }
         switch (view) {
-            case 'days':
-                this.headerTitleElement.textContent = this.toCapitalize(dayFormatOptions);
-                break;
-            case 'months':
-                this.headerTitleElement.textContent = monthFormatOptions;
+        case 'days':
+            this.headerTitleElement.textContent = this.toCapitalize(dayFormatOptions);
+            break;
+        case 'months':
+            this.headerTitleElement.textContent = monthFormatOptions;
         }
     }
     protected setActiveDescendant(): string {
         let id: string;
-        let focusedEle: Element = this.tableBodyElement.querySelector('tr td.e-focused-date');
-        let selectedEle: Element = this.tableBodyElement.querySelector('tr td.e-selected');
-        let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+        const focusedEle: Element = this.tableBodyElement.querySelector('tr td.e-focused-date');
+        const selectedEle: Element = this.tableBodyElement.querySelector('tr td.e-selected');
+        const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
         let title: string;
-        let view: String = this.currentView();
+        const view: string = this.currentView();
         if (view === 'Month') {
             title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: isBlazor() ? 'D' : 'full', calendar: type });
         } else if (view === 'Year') {
@@ -1638,22 +1696,23 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected iconHandler(): void {
         new Date(this.checkValue(this.currentDate)).setDate(1);
         switch (this.currentView()) {
-            case 'Month':
-                this.previousIconHandler(this.compareMonth(new Date(this.checkValue(this.currentDate)), this.min) < 1);
-                this.nextIconHandler(this.compareMonth(new Date(this.checkValue(this.currentDate)), this.max) > -1);
-                break;
-            case 'Year':
-                this.previousIconHandler(this.compareYear(new Date(this.checkValue(this.currentDate)), this.min) < 1);
-                this.nextIconHandler(this.compareYear(new Date(this.checkValue(this.currentDate)), this.max) > -1);
-                break;
-            case 'Decade':
-                this.previousIconHandler(this.compareDecade(new Date(this.checkValue(this.currentDate)), this.min) < 1);
-                this.nextIconHandler(this.compareDecade(new Date(this.checkValue(this.currentDate)), this.max) > -1);
+        case 'Month':
+            this.previousIconHandler(this.compareMonth(new Date(this.checkValue(this.currentDate)), this.min) < 1);
+            this.nextIconHandler(this.compareMonth(new Date(this.checkValue(this.currentDate)), this.max) > -1);
+            break;
+        case 'Year':
+            this.previousIconHandler(this.compareYear(new Date(this.checkValue(this.currentDate)), this.min) < 1);
+            this.nextIconHandler(this.compareYear(new Date(this.checkValue(this.currentDate)), this.max) > -1);
+            break;
+        case 'Decade':
+            this.previousIconHandler(this.compareDecade(new Date(this.checkValue(this.currentDate)), this.min) < 1);
+            this.nextIconHandler(this.compareDecade(new Date(this.checkValue(this.currentDate)), this.max) > -1);
         }
     }
     /**
      * Destroys the widget.
-     * @returns void
+     *
+     * @returns {void}
      */
     public destroy(): void {
         if (this.getModuleName() === 'calendar' && this.element) {
@@ -1672,8 +1731,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             this.nextIconHandler(true);
             this.keyboardModule.destroy();
             this.element.removeAttribute('data-role');
-            (!isNullOrUndefined(this.calendarEleCopy.getAttribute('tabindex'))) ?
-                this.element.setAttribute('tabindex', this.tabIndex) : this.element.removeAttribute('tabindex');
+            if (!isNullOrUndefined(this.calendarEleCopy.getAttribute('tabindex'))) {
+                this.element.setAttribute('tabindex', this.tabIndex);
+            } else {
+                this.element.removeAttribute('tabindex');
+            }
         }
         if (this.element) {
             this.element.innerHTML = '';
@@ -1703,20 +1765,20 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected previous(): void {
         this.effect = '';
-        let currentView: number = this.getViewNumber(this.currentView());
+        const currentView: number = this.getViewNumber(this.currentView());
         switch (this.currentView()) {
-            case 'Month':
-                this.addMonths(this.currentDate, -1);
-                this.switchView(currentView);
-                break;
-            case 'Year':
-                this.addYears(this.currentDate, -1);
-                this.switchView(currentView);
-                break;
-            case 'Decade':
-                this.addYears(this.currentDate, -10);
-                this.switchView(currentView);
-                break;
+        case 'Month':
+            this.addMonths(this.currentDate, -1);
+            this.switchView(currentView);
+            break;
+        case 'Year':
+            this.addYears(this.currentDate, -1);
+            this.switchView(currentView);
+            break;
+        case 'Decade':
+            this.addYears(this.currentDate, -10);
+            this.switchView(currentView);
+            break;
         }
     }
     protected navigatePrevious(e: MouseEvent | KeyboardEvent): void {
@@ -1734,20 +1796,20 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected next(): void {
         this.effect = '';
-        let currentView: number = this.getViewNumber(this.currentView());
+        const currentView: number = this.getViewNumber(this.currentView());
         switch (this.currentView()) {
-            case 'Month':
-                this.addMonths(this.currentDate, 1);
-                this.switchView(currentView);
-                break;
-            case 'Year':
-                this.addYears(this.currentDate, 1);
-                this.switchView(currentView);
-                break;
-            case 'Decade':
-                this.addYears(this.currentDate, 10);
-                this.switchView(currentView);
-                break;
+        case 'Month':
+            this.addMonths(this.currentDate, 1);
+            this.switchView(currentView);
+            break;
+        case 'Year':
+            this.addYears(this.currentDate, 1);
+            this.switchView(currentView);
+            break;
+        case 'Decade':
+            this.addYears(this.currentDate, 10);
+            this.switchView(currentView);
+            break;
         }
     }
     protected navigateNext(eve: MouseEvent | KeyboardEvent): void {
@@ -1764,9 +1826,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     /**
      * This method is used to navigate to the month/year/decade view of the Calendar.
-     * @param  {string} view - Specifies the view of the Calendar.
-     * @param  {Date} date - Specifies the focused date in a view.
-     * @returns void
+     *
+     * @param {string} view - Specifies the view of the Calendar.
+     * @param {Date} date - Specifies the focused date in a view.
+     * @param {boolean} isCustomDate - Specifies whether the calendar is rendered with custom today date or not.
+     * @returns {void}
      */
     public navigateTo(view: CalendarView, date: Date, isCustomDate?: boolean): void {
         if (+date >= +this.min && +date <= +this.max) {
@@ -1786,9 +1850,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
         this.switchView(this.getViewNumber(view), null, null, isCustomDate);
     }
-    /** 
+    /* eslint-disable valid-jsdoc, jsdoc/require-returns-description */
+    /**
      * Gets the current view of the Calendar.
-     * @returns string 
+     *
+     * @returns {string}
      */
     public currentView(): string {
         if (this.contentElement.classList.contains(YEAR)) {
@@ -1799,52 +1865,54 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             return 'Month';
         }
     }
+    /* eslint-enable valid-jsdoc, jsdoc/require-returns-description */
     protected getDateVal(date: Date, value: Date): boolean {
         return (!isNullOrUndefined(value) && date.getDate() === (value).getDate()
             && date.getMonth() === (value).getMonth() && date.getFullYear() === (value).getFullYear());
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected getCultureObjects(ld: Object, c: string): Object {
-        let gregorianFormat: string = (isBlazor() ? '.dates.days.' :
+        const gregorianFormat: string = (isBlazor() ? '.dates.days.' :
             '.dates.calendars.gregorian.days.format.') + this.dayHeaderFormat.toLowerCase();
-        let islamicFormat: string = (isBlazor() ? '.dates.days.' :
+        const islamicFormat: string = (isBlazor() ? '.dates.days.' :
             '.dates.calendars.islamic.days.format.') + this.dayHeaderFormat.toLowerCase();
-        let mainVal: string = isBlazor() ? '' : 'main.';
+        const mainVal: string = isBlazor() ? '' : 'main.';
         if (this.calendarMode === 'Gregorian') {
             return getValue(mainVal + '' + this.locale + gregorianFormat, ld);
         } else {
             return getValue('main.' + '' + this.locale + islamicFormat, ld);
         }
-    };
+    }
     protected getWeek(d: Date): number {
-        let currentDate: number = new Date(this.checkValue(d)).valueOf();
-        let date: number = new Date(d.getFullYear(), 0, 1).valueOf();
+        const currentDate: number = new Date(this.checkValue(d)).valueOf();
+        const date: number = new Date(d.getFullYear(), 0, 1).valueOf();
         return Math.ceil((((currentDate - date) + dayMilliSeconds) / dayMilliSeconds) / 7);
     }
     protected setStartDate(date: Date, time: number): void {
-        let tzOffset: number = date.getTimezoneOffset();
-        let d: Date = new Date(date.getTime() + time);
-        let tzOffsetDiff: number = d.getTimezoneOffset() - tzOffset;
+        const tzOffset: number = date.getTimezoneOffset();
+        const d: Date = new Date(date.getTime() + time);
+        const tzOffsetDiff: number = d.getTimezoneOffset() - tzOffset;
         date.setTime(d.getTime() + tzOffsetDiff * minutesMilliSeconds);
     }
     protected addMonths(date: Date, i: number): void {
         if (this.calendarMode === 'Gregorian') {
-            let day: number = date.getDate();
+            const day: number = date.getDate();
             date.setDate(1);
             date.setMonth(date.getMonth() + i);
             date.setDate(Math.min(day, this.getMaxDays(date)));
         } else {
-            let islamicDate: IslamicDateArgs = this.islamicModule.getIslamicDate(date);
+            const islamicDate: IslamicDateArgs = this.islamicModule.getIslamicDate(date);
             this.currentDate = this.islamicModule.toGregorian(islamicDate.year, (islamicDate.month) + i, 1);
         }
     }
     protected addYears(date: Date, i: number): void {
         if (this.calendarMode === 'Gregorian') {
-            let day: number = date.getDate();
+            const day: number = date.getDate();
             date.setDate(1);
             date.setFullYear(date.getFullYear() + i);
             date.setDate(Math.min(day, this.getMaxDays(date)));
         } else {
-            let islamicDate: IslamicDateArgs = this.islamicModule.getIslamicDate(date);
+            const islamicDate: IslamicDateArgs = this.islamicModule.getIslamicDate(date);
             this.currentDate = this.islamicModule.toGregorian(islamicDate.year + i, (islamicDate.month), 1);
         }
     }
@@ -1855,11 +1923,12 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         } else {
             eve = element;
         }
-        let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-        let dateFormatOptions: object = { type: 'dateTime', skeleton: isBlazor() ? 'F' : 'full', calendar: type };
-        let dateString: string = this.globalize.formatDate(new Date(parseInt('' + eve.getAttribute('id'), 0)), dateFormatOptions);
-        let date: Date = this.globalize.parseDate(dateString, dateFormatOptions);
-        let value: number = date.valueOf() - date.valueOf() % 1000;
+        const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+        const dateFormatOptions: object = { type: 'dateTime', skeleton: isBlazor() ? 'F' : 'full', calendar: type };
+        // eslint-disable-next-line radix
+        const dateString: string = this.globalize.formatDate(new Date(parseInt('' + eve.getAttribute('id'), 0)), dateFormatOptions);
+        const date: Date = this.globalize.parseDate(dateString, dateFormatOptions);
+        const value: number = date.valueOf() - date.valueOf() % 1000;
         return new Date(value);
         //return this.globalize.parseDate(dateString, dateFormatOptions);
     }
@@ -1870,7 +1939,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
     }
     protected selectDate(e: MouseEvent | KeyboardEventArgs, date: Date, node: Element, multiSelection?: boolean, values?: Date[]): void {
-        let element: Element = node || <Element>e.currentTarget;
+        const element: Element = node || <Element>e.currentTarget;
         this.isDateSelected = false;
         if (this.currentView() === 'Decade') {
             this.setDateDecade(this.currentDate, date.getFullYear());
@@ -1878,7 +1947,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             this.setDateYear(this.currentDate, date);
         } else {
             if (multiSelection && !this.checkPresentDate(date, values)) {
-                let copyValues: Date[] = this.copyValues(values);
+                const copyValues: Date[] = this.copyValues(values);
                 if (!isNullOrUndefined(values) && copyValues.length > 0) {
                     copyValues.push(new Date(this.checkValue(date)));
                     this.setProperties({ values: copyValues }, true);
@@ -1902,11 +1971,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             removeClass([tableBodyElement.querySelector('.' + FOCUSEDDATE)], FOCUSEDDATE);
         }
         if (multiSelection) {
-            let copyValues: Date[] = this.copyValues(values);
-            let collection: Element[] = Array.prototype.slice.call(this.tableBodyElement.querySelectorAll('td'));
+            const copyValues: Date[] = this.copyValues(values);
+            const collection: Element[] = Array.prototype.slice.call(this.tableBodyElement.querySelectorAll('td'));
             for (let index: number = 0; index < collection.length; index++) {
-                let tempElement: Element = tableBodyElement.querySelectorAll('td' + '.' + FOCUSEDDATE)[0];
-                let selectedElement: Element = tableBodyElement.querySelectorAll('td' + '.' + SELECTED)[0];
+                const tempElement: Element = tableBodyElement.querySelectorAll('td' + '.' + FOCUSEDDATE)[0];
+                const selectedElement: Element = tableBodyElement.querySelectorAll('td' + '.' + SELECTED)[0];
                 if (collection[index] === tempElement) {
                     removeClass([collection[index]], FOCUSEDDATE);
                 }
@@ -1918,12 +1987,12 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             if (element.classList.contains(SELECTED)) {
                 removeClass([element], SELECTED);
                 for (let i: number = 0; i < copyValues.length; i++) {
-                    let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-                    let formatOptions: object = { format: this.getFromatStringValue(), type: 'date', skeleton: 'short', calendar: type };
-                    let localDateString: string = this.globalize.formatDate(date, formatOptions);
-                    let tempDateString: string = this.globalize.formatDate(copyValues[i], formatOptions);
+                    const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+                    const formatOptions: object = { format: this.getFromatStringValue(), type: 'date', skeleton: 'short', calendar: type };
+                    const localDateString: string = this.globalize.formatDate(date, formatOptions);
+                    const tempDateString: string = this.globalize.formatDate(copyValues[i], formatOptions);
                     if (localDateString === tempDateString) {
-                        let index: number = copyValues.indexOf(copyValues[i]);
+                        const index: number = copyValues.indexOf(copyValues[i]);
                         copyValues.splice(index, 1);
                         addClass([element], FOCUSEDDATE);
                     }
@@ -1939,7 +2008,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     private getFromatStringValue(): string {
         return isBlazor() ?
-            // tslint:disable-next-line
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             'M' + (getDefaultDateObject() as any).dateSeperator + 'd' + (getDefaultDateObject() as any).dateSeperator + 'yy'
             : null;
     }
@@ -1947,13 +2016,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         let previousValue: boolean = false;
         if (!isNullOrUndefined(values)) {
             for (let checkPrevious: number = 0; checkPrevious < values.length; checkPrevious++) {
-                let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-                /* tslint:disable-next-line:max-line-length */
-                let localDateString: string = this.globalize.formatDate(dates, {
+                const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+                const localDateString: string = this.globalize.formatDate(dates, {
                     format: this.getFromatStringValue(), type: 'date', skeleton: 'short', calendar: type
                 });
-                /* tslint:disable-next-line:max-line-length */
-                let tempDateString: string = this.globalize.formatDate(values[checkPrevious], {
+                const tempDateString: string = this.globalize.formatDate(values[checkPrevious], {
                     format: this.getFromatStringValue(), type: 'date', skeleton: 'short', calendar: type
                 });
                 if (localDateString === tempDateString) {
@@ -2037,7 +2104,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 && date.getFullYear() <= this.max.getFullYear();
 
         } else {
-            let islamicDate: IslamicObject = this.islamicModule.getIslamicDate(date);
+            const islamicDate: IslamicObject = this.islamicModule.getIslamicDate(date);
             return islamicDate.month >= (<IslamicObject>(this.islamicModule.getIslamicDate(new Date(1944, 1, 18)))).month
                 && islamicDate.year >= (<IslamicObject>(this.islamicModule.getIslamicDate(new Date(1944, 1, 18)))).year
                 && islamicDate.month <= (<IslamicObject>(this.islamicModule.getIslamicDate(new Date(2069, 1, 16)))).month
@@ -2056,18 +2123,18 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected addDay(date: Date, i: number, e: KeyboardEvent, max: Date, min: Date): void {
         let column: number = i;
-        let value: Date = new Date(+date);
+        const value: Date = new Date(+date);
         if (!isNullOrUndefined(this.tableBodyElement) && !isNullOrUndefined(e)) {
             while (this.findNextTD(new Date(+date), column, max, min)) {
                 column += i;
             }
-            let rangeValue: Date = new Date(value.setDate(value.getDate() + column));
+            const rangeValue: Date = new Date(value.setDate(value.getDate() + column));
             column = (+rangeValue > +max || +rangeValue < +min) ? column === i ? i - i : i : column;
         }
         date.setDate(date.getDate() + column);
     }
     protected findNextTD(date: Date, column: number, max: Date, min: Date): boolean {
-        let value: Date = new Date(date.setDate(date.getDate() + column));
+        const value: Date = new Date(date.setDate(date.getDate() + column));
         let collection: Element[] = [];
         let isDisabled: boolean = false;
         if ((!isNullOrUndefined(value) && value.getMonth()) === (!isNullOrUndefined(this.currentDate) && this.currentDate.getMonth())) {
@@ -2087,8 +2154,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         if (+value <= (+(max)) && +value >= (+(min))) {
             if (collection.length) {
                 for (let i: number = 0; i < collection.length; i++) {
+                    // eslint-disable-next-line radix
                     isDisabled = (+value === +new Date(parseInt(collection[i].id, 0))) ? true : false;
-                    if (isDisabled) { break; }
+                    if (isDisabled) {
+                        break;
+                    }
                 }
             }
         }
@@ -2096,10 +2166,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected getMaxDays(d: Date): number {
         let date: number;
-        let month: number;
-        let tmpDate: Date = new Date(this.checkValue(d));
+        const tmpDate: Date = new Date(this.checkValue(d));
         date = 28;
-        month = tmpDate.getMonth();
+        const month: number = tmpDate.getMonth();
         while (tmpDate.getMonth() === month) {
             ++date;
             tmpDate.setDate(date);
@@ -2109,7 +2178,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected setDateDecade(date: Date, year: number): void {
         date.setFullYear(year);
         this.setProperties({ value: new Date(this.checkValue(date)) }, true);
-    };
+    }
     protected setDateYear(date: Date, value: Date): void {
         date.setFullYear(value.getFullYear(), value.getMonth(), date.getDate());
         if (value.getMonth() !== date.getMonth()) {
@@ -2175,6 +2244,7 @@ export class Calendar extends CalendarBase {
 
     /**
      * Gets or sets the selected date of the Calendar.
+     *
      * @default null
      * @isGenericType true
      * @deprecated
@@ -2185,6 +2255,7 @@ export class Calendar extends CalendarBase {
     /**
      * Gets or sets multiple selected dates of the calendar.
      * {% codeBlock src='calendar/values/index.md' %}{% endcodeBlock %}
+     *
      * @default null
      */
     @Property(null)
@@ -2192,6 +2263,7 @@ export class Calendar extends CalendarBase {
 
     /**
      * Specifies the option to enable the multiple dates selection of the calendar.
+     *
      * @default false
      */
     @Property(false)
@@ -2199,7 +2271,8 @@ export class Calendar extends CalendarBase {
 
     /**
      * Triggers when the Calendar value is changed.
-     * @event
+     *
+     * @event change
      * @blazorProperty 'ValueChange'
      */
     @Event()
@@ -2207,15 +2280,18 @@ export class Calendar extends CalendarBase {
     /**
      * Initialized new instance of Calendar Class.
      * Constructor for creating the widget
-     * @param  {CalendarModel} options?
-     * @param  {string|HTMLElement} element?
+     *
+     * @param {CalendarModel} options - Specifies the Calendar model.
+     * @param {string | HTMLElement} element - Specifies the element to render as component.
+     * @private
      */
-    constructor(options?: CalendarModel, element?: string | HTMLElement) {
+    public constructor(options?: CalendarModel, element?: string | HTMLElement) {
         super(options, element);
     }
     /**
      * To Initialize the control rendering.
-     * @returns void
+     *
+     * @returns {void}
      * @private
      */
     protected render(): void {
@@ -2223,8 +2299,8 @@ export class Calendar extends CalendarBase {
             throwError('Requires the injectable Islamic modules to render Calendar in Islamic mode');
         }
         if (this.isMultiSelection && typeof this.values === 'object' && !isNullOrUndefined(this.values) && this.values.length > 0) {
-            let tempValues: number[] = [];
-            let copyValues: Date[] = [];
+            const tempValues: number[] = [];
+            const copyValues: Date[] = [];
             for (let limit: number = 0; limit < this.values.length; limit++) {
                 if (tempValues.indexOf(+this.values[limit]) === -1) {
                     tempValues.push(+this.values[limit]);
@@ -2235,7 +2311,7 @@ export class Calendar extends CalendarBase {
             for (let index: number = 0; index < this.values.length; index++) {
                 if (!this.checkDateValue(this.values[index])) {
                     if (typeof (this.values[index]) === 'string' && this.checkDateValue(new Date(this.checkValue(this.values[index])))) {
-                        let copyDate: Date = new Date(this.checkValue(this.values[index]));
+                        const copyDate: Date = new Date(this.checkValue(this.values[index]));
                         this.values.splice(index, 1);
                         this.values.splice(index, 0, copyDate);
                     } else {
@@ -2254,7 +2330,7 @@ export class Calendar extends CalendarBase {
         }
         super.render();
         if (this.getModuleName() === 'calendar') {
-            let form: Element = closest(this.element, 'form');
+            const form: Element = closest(this.element, 'form');
             if (form) {
                 EventHandler.add(form, 'reset', this.formResetHandler.bind(this));
             }
@@ -2284,19 +2360,19 @@ export class Calendar extends CalendarBase {
         }
     }
     protected isDayLightSaving(): boolean {
-        let secondOffset: number = new Date(this.value.getFullYear(), 6 , 1).getTimezoneOffset();
-        let firstOffset: number = new Date(this.value.getFullYear(), 0 , 1).getTimezoneOffset();
+        const secondOffset: number = new Date(this.value.getFullYear(), 6 , 1).getTimezoneOffset();
+        const firstOffset: number = new Date(this.value.getFullYear(), 0 , 1).getTimezoneOffset();
         return (this.value.getTimezoneOffset() < Math.max(firstOffset, secondOffset));
     }
     protected setTimeZone(offsetValue: number ): void {
         if (!isNullOrUndefined(this.serverTimezoneOffset) && this.value) {
-            let serverTimezoneDiff: number = offsetValue;
-            let clientTimeZoneDiff: number = new Date().getTimezoneOffset() / 60;
+            const serverTimezoneDiff: number = offsetValue;
+            const clientTimeZoneDiff: number = new Date().getTimezoneOffset() / 60;
             let timeZoneDiff: number = serverTimezoneDiff + clientTimeZoneDiff;
             timeZoneDiff = this.isDayLightSaving() ? timeZoneDiff-- : timeZoneDiff;
             this.value = new Date(this.value.getTime() + (timeZoneDiff * 60 * 60 * 1000));
         } else if (!isNullOrUndefined(this.timezone)) {
-            let date: Date = this.value || new Date();
+            const date: Date = this.value || new Date();
             this.setProperties({ value: super.getDate(date, this.timezone) }, true);
         }
     }
@@ -2355,12 +2431,12 @@ export class Calendar extends CalendarBase {
 
     protected todayButtonClick(e?: MouseEvent | KeyboardEvent): void {
         if (this.showTodayButton) {
-            let tempValue: Date = this.generateTodayVal(this.value);
+            const tempValue: Date = this.generateTodayVal(this.value);
             this.setProperties({ value: super.getDate(tempValue, this.timezone) }, true);
             this.isTodayClicked = true;
             this.todayButtonEvent = e;
             if (this.isMultiSelection) {
-                let copyValues: Date[] = this.copyValues(this.values);
+                const copyValues: Date[] = this.copyValues(this.values);
                 if (!super.checkPresentDate(tempValue, this.values)) {
                     copyValues.push(tempValue);
                     this.setProperties({ values: copyValues });
@@ -2374,6 +2450,8 @@ export class Calendar extends CalendarBase {
     }
     /**
      * Initialize the event handler
+     *
+     * @returns {void}
      * @private
      */
     protected preRender(): void {
@@ -2382,8 +2460,9 @@ export class Calendar extends CalendarBase {
         };
         this.checkView();
         super.preRender(this.value);
-    };
+    }
     /**
+     * @returns {void}
      * @deprecated
      */
     public createContent(): void {
@@ -2398,7 +2477,7 @@ export class Calendar extends CalendarBase {
         super.renderMonths(e, this.value, isCustomDate);
     }
     protected renderDays(currentDate: Date, value?: Date, isMultiSelect?: boolean, values?: Date[], isCustomDate?: boolean): HTMLElement[] {
-        let tempDays: HTMLElement[] = super.renderDays(currentDate, this.value, this.isMultiSelection, this.values, isCustomDate);
+        const tempDays: HTMLElement[] = super.renderDays(currentDate, this.value, this.isMultiSelection, this.values, isCustomDate);
         if (this.isMultiSelection) {
             super.validateValues(this.isMultiSelection, this.values);
         }
@@ -2429,11 +2508,11 @@ export class Calendar extends CalendarBase {
         this.changeHandler();
     }
     protected clickHandler(e: MouseEvent): void {
-        let eve: Element = <HTMLElement>e.currentTarget;
+        const eve: Element = <HTMLElement>e.currentTarget;
         this.isPopupClicked = true;
         if (eve.classList.contains(OTHERMONTH)) {
             if (this.isMultiSelection) {
-                let copyValues: Date[] = this.copyValues(this.values);
+                const copyValues: Date[] = this.copyValues(this.values);
                 copyValues.push(this.getIdValue(e, null));
                 this.setProperties({ values: copyValues }, true);
                 this.setProperties({ value: this.values[this.values.length - 1] }, true);
@@ -2441,7 +2520,7 @@ export class Calendar extends CalendarBase {
                 this.setProperties({ value: this.getIdValue(e, null) }, true);
             }
         }
-        let storeView: string = this.currentView();
+        const storeView: string = this.currentView();
         super.clickHandler(e, this.value);
         if (this.isMultiSelection && this.currentDate !== this.value &&
             !isNullOrUndefined(this.tableBodyElement.querySelectorAll('.' + FOCUSEDDATE)[0]) && storeView === 'Year') {
@@ -2453,82 +2532,90 @@ export class Calendar extends CalendarBase {
         super.switchView(view, e, this.isMultiSelection, isCustomDate);
     }
     /**
-     * To get component name  
+     * To get component name
+     *
+     * @returns {string} Return the component name.
      * @private
      */
     protected getModuleName(): string {
         super.getModuleName();
         return 'calendar';
     }
+    /* eslint-disable valid-jsdoc, jsdoc/require-returns-description */
     /**
      * Gets the properties to be maintained upon browser refresh.
-     * @returns string
+     *
+     * @returns {string}
      */
     public getPersistData(): string {
         super.getPersistData();
-        let keyEntity: string[] = ['value', 'values'];
+        const keyEntity: string[] = ['value', 'values'];
         return this.addOnPersist(keyEntity);
     }
+    /* eslint-enable valid-jsdoc, jsdoc/require-returns-description */
     /**
      * Called internally if any of the property value changed.
-     * returns void
+     *
+     * @param {CalendarModel} newProp - Returns the dynamic property value of the component.
+     * @param {CalendarModel} oldProp - Returns the previous property value of the component.
+     * @returns {void}
      * @private
      */
     public onPropertyChanged(newProp: CalendarModel, oldProp: CalendarModel): void {
         this.effect = '';
         this.rangeValidation(this.min, this.max);
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'value':
-                    if (this.isDateSelected) {
-                        if (typeof newProp.value === 'string') {
-                            this.setProperties({ value: new Date(this.checkValue(newProp.value)) }, true);
-                        } else {
-                            newProp.value = new Date(this.checkValue(newProp.value));
-                        }
-                        if (isNaN(+this.value)) {
-                            this.setProperties({ value: oldProp.value }, true);
-                        }
-                        this.update();
+            case 'value':
+                if (this.isDateSelected) {
+                    if (typeof newProp.value === 'string') {
+                        this.setProperties({ value: new Date(this.checkValue(newProp.value)) }, true);
+                    } else {
+                        newProp.value = new Date(this.checkValue(newProp.value));
                     }
-                    break;
-                case 'values':
-                    if (this.isDateSelected) {
-                        if (typeof newProp.values === 'string' || typeof newProp.values === 'number') {
-                            this.setProperties({ values: null }, true);
-                        } else {
-                            let copyValues: Date[] = this.copyValues(this.values);
-                            for (let index: number = 0; index < copyValues.length; index++) {
-                                let tempDate: Date = copyValues[index];
-                                if (this.checkDateValue(tempDate) && !super.checkPresentDate(tempDate, copyValues)) {
-                                    copyValues.push(tempDate);
-                                }
-                            }
-                            this.setProperties({ values: copyValues }, true);
-                            if (this.values.length > 0) {
-                                this.setProperties({ value: newProp.values[newProp.values.length - 1] }, true);
+                    if (isNaN(+this.value)) {
+                        this.setProperties({ value: oldProp.value }, true);
+                    }
+                    this.update();
+                }
+                break;
+            case 'values':
+                if (this.isDateSelected) {
+                    if (typeof newProp.values === 'string' || typeof newProp.values === 'number') {
+                        this.setProperties({ values: null }, true);
+                    } else {
+                        const copyValues: Date[] = this.copyValues(this.values);
+                        for (let index: number = 0; index < copyValues.length; index++) {
+                            const tempDate: Date = copyValues[index];
+                            if (this.checkDateValue(tempDate) && !super.checkPresentDate(tempDate, copyValues)) {
+                                copyValues.push(tempDate);
                             }
                         }
-                        this.validateValues(this.isMultiSelection, this.values);
-                        this.update();
+                        this.setProperties({ values: copyValues }, true);
+                        if (this.values.length > 0) {
+                            this.setProperties({ value: newProp.values[newProp.values.length - 1] }, true);
+                        }
                     }
-                    break;
-                case 'isMultiSelection':
-                    if (this.isDateSelected) {
-                        this.setProperties({ isMultiSelection: newProp.isMultiSelection }, true);
-                        this.update();
-                    }
-                    break;
-                case 'enabled':
-                    this.setEnable(this.enabled);
-                    break;
-                case 'cssClass':
-                    if (this.getModuleName() === 'calendar') {
-                        this.setClass(newProp.cssClass, oldProp.cssClass);
-                    }
-                    break;
-                default:
-                    super.onPropertyChanged(newProp, oldProp, this.isMultiSelection, this.values);
+                    this.validateValues(this.isMultiSelection, this.values);
+                    this.update();
+                }
+                break;
+            case 'isMultiSelection':
+                if (this.isDateSelected) {
+                    this.setProperties({ isMultiSelection: newProp.isMultiSelection }, true);
+                    this.update();
+                }
+                break;
+            case 'enabled':
+                this.setEnable(this.enabled);
+                break;
+            case 'cssClass':
+                if (this.getModuleName() === 'calendar') {
+                    this.setClass(newProp.cssClass, oldProp.cssClass);
+                }
+                break;
+            default:
+                super.onPropertyChanged(newProp, oldProp, this.isMultiSelection, this.values);
             }
         }
         this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
@@ -2536,12 +2623,13 @@ export class Calendar extends CalendarBase {
 
     /**
      * Destroys the widget.
-     * @returns void
+     *
+     * @returns {void}
      */
     public destroy(): void {
         super.destroy();
         if (this.getModuleName() === 'calendar') {
-            let form: Element = closest(this.element, 'form');
+            const form: Element = closest(this.element, 'form');
             if (form) {
                 EventHandler.remove(form, 'reset', this.formResetHandler.bind(this));
             }
@@ -2549,34 +2637,40 @@ export class Calendar extends CalendarBase {
     }
     /**
      * This method is used to navigate to the month/year/decade view of the Calendar.
-     * @param  {string} view - Specifies the view of the Calendar.
-     * @param  {Date} date - Specifies the focused date in a view.
-     * @returns void
+     *
+     * @param {string} view - Specifies the view of the Calendar.
+     * @param {Date} date - Specifies the focused date in a view.
+     * @param {boolean} isCustomDate - Specifies whether the calendar is rendered with custom today date or not.
+     * @returns {void}
      * @deprecated
      */
     public navigateTo(view: CalendarView, date: Date, isCustomDate?: boolean): void {
         this.minMaxUpdate();
         super.navigateTo(view, date, isCustomDate);
     }
-    /** 
+    /* eslint-disable valid-jsdoc, jsdoc/require-returns-description */
+    /**
      * Gets the current view of the Calendar.
-     * @returns string
+     *
+     * @returns {string}
      * @deprecated
      */
     public currentView(): string {
         return super.currentView();
     }
+    /* eslint-enable valid-jsdoc, jsdoc/require-returns-description */
     /**
      * This method is used to add the single or multiple dates to the values property of the Calendar.
-     * @param  {Date || Date[]} dates - Specifies the date or dates to be added to the values property of the Calendar.
-     * @returns void
+     *
+     * @param {Date | Date[]} dates - Specifies the date or dates to be added to the values property of the Calendar.
+     * @returns {void}
      * @deprecated
      */
     public addDate(dates: Date | Date[]): void {
         if (typeof dates !== 'string' && typeof dates !== 'number') {
             let copyValues: Date[] = this.copyValues(this.values);
             if (typeof dates === 'object' && (<Date[]>(dates)).length > 0) {
-                let tempDates: Date[] = <Date[]>dates;
+                const tempDates: Date[] = <Date[]>dates;
                 for (let i: number = 0; i < tempDates.length; i++) {
                     if (this.checkDateValue(tempDates[i]) && !super.checkPresentDate(tempDates[i], copyValues)) {
                         if (!isNullOrUndefined(copyValues) && copyValues.length > 0) {
@@ -2607,15 +2701,16 @@ export class Calendar extends CalendarBase {
     }
     /**
      * This method is used to remove the single or multiple dates from the values property of the Calendar.
-     * @param  {Date || Date[]} dates - Specifies the date or dates which need to be removed from the values property of the Calendar.
-     * @returns void
+     *
+     * @param {Date | Date[]} dates - Specifies the date or dates which need to be removed from the values property of the Calendar.
+     * @returns {void}
      * @deprecated
      */
     public removeDate(dates: Date | Date[]): void {
         if (typeof dates !== 'string' && typeof dates !== 'number' && !isNullOrUndefined(this.values) && this.values.length > 0) {
-            let copyValues: Date[] = this.copyValues(this.values);
+            const copyValues: Date[] = this.copyValues(this.values);
             if (typeof dates === 'object' && ((<Date[]>(dates)).length > 0)) {
-                let tempDates: Date[] = <Date[]>dates;
+                const tempDates: Date[] = <Date[]>dates;
                 for (let index: number = 0; index < tempDates.length; index++) {
                     for (let i: number = 0; i < copyValues.length; i++) {
                         if (+copyValues[i] === +tempDates[index]) {
@@ -2642,10 +2737,13 @@ export class Calendar extends CalendarBase {
 
     /**
      * To set custom today date in calendar
+     *
+     * @param {Date} date - Specifies date value to be set.
      * @private
+     * @returns {void}
      */
     public setTodayDate(date: Date): void {
-        let todayDate: Date = new Date(+date);
+        const todayDate: Date = new Date(+date);
         this.setProperties({ value: todayDate }, true);
         super.todayButtonClick(null, todayDate, true);
     }
@@ -2664,7 +2762,7 @@ export class Calendar extends CalendarBase {
         this.changeHandler(e);
     }
 
-
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected changeEvent(e: Event): void {
         if ((this.value && this.value.valueOf()) !== (this.previousDate && +this.previousDate.valueOf())
         || this.isMultiSelection) {
@@ -2701,73 +2799,74 @@ export class Calendar extends CalendarBase {
 
 export interface NavigatedEventArgs extends BaseEventArgs {
     /** Defines the current view of the Calendar. */
-    view?: string;
+    view?: string
     /** Defines the focused date in a view. */
-    date?: Date;
+    date?: Date
     /**
      * Specifies the original event arguments.
      */
-    event?: KeyboardEvent | MouseEvent | Event;
+    event?: KeyboardEvent | MouseEvent | Event
 
 }
 
 export interface RenderDayCellEventArgs extends BaseEventArgs {
     /** Specifies whether to disable the current date or not. */
-    isDisabled?: boolean;
+    isDisabled?: boolean
     /** Specifies the day cell element. */
-    element?: HTMLElement;
+    element?: HTMLElement
     /** Defines the current date of the Calendar. */
-    date?: Date;
+    date?: Date
     /** Defines whether the current date is out of range (less than min or greater than max) or not. */
-    isOutOfRange?: boolean;
+    isOutOfRange?: boolean
 }
 export interface ChangedEventArgs extends BaseEventArgs {
-    /** Defines the selected date of the Calendar. 
+    /** Defines the selected date of the Calendar.
+     *
      * @isGenericType true
      */
-    value?: Date;
+    value?: Date
 
     /** Defines the multiple selected date of the Calendar. */
-    values?: Date[];
+    values?: Date[]
 
     /**
      * Specifies the original event arguments.
      */
-    event?: KeyboardEvent | MouseEvent | Event;
+    event?: KeyboardEvent | MouseEvent | Event
 
     /** Defines the element. */
-    element?: HTMLElement | HTMLInputElement;
+    element?: HTMLElement | HTMLInputElement
 
-    /** 
+    /**
      * If the event is triggered by interaction, it returns true. Otherwise, it returns false.
      */
-    isInteracted?: boolean;
+    isInteracted?: boolean
 }
 
 export interface IslamicObject {
-    year: number;
-    date: number;
-    month: number;
+    year: number
+    date: number
+    month: number
 }
 
 /**
  * Defines the argument for the focus event.
  */
 export interface FocusEventArgs {
-    model?: Object;
+    model?: Object
 }
 
 /**
  * Defines the argument for the blur event.
  */
 export interface BlurEventArgs {
-    model?: Object;
+    model?: Object
 }
 
 export interface ClearedEventArgs {
     /**
      * Specifies the original event arguments.
      */
-    event?: MouseEvent | Event;
+    event?: MouseEvent | Event
 
 }

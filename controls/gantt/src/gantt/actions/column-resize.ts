@@ -1,7 +1,7 @@
 import { TreeGrid, Resize as TreeGridResize } from '@syncfusion/ej2-treegrid';
 import { Gantt } from '../base/gantt';
 import { ResizeArgs } from '@syncfusion/ej2-grids';
-/** 
+/**
  * Column resize action related code goes here
  */
 export class Resize {
@@ -15,6 +15,8 @@ export class Resize {
 
     /**
      * Get module name
+     *
+     * @returns {void} .
      */
     private getModuleName(): string {
         return 'resize';
@@ -22,7 +24,8 @@ export class Resize {
 
     /**
      * To bind resize events.
-     * @return {void}
+     *
+     * @returns {void} .
      * @private
      */
     private bindEvents(): void {
@@ -39,7 +42,8 @@ export class Resize {
 
     /**
      * To destroy the column-resizer.
-     * @return {void}
+     *
+     * @returns {void} .
      * @private
      */
     public destroy(): void {

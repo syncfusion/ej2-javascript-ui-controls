@@ -1,7 +1,7 @@
 /**
  * Metals Data 
  */
-//tslint:disable
+/* eslint-disable */
 export let Continent_Data: Object[] = [
     { Continent: 'Africa', Gender: 'Male', Population: 518636010, Id: "AfricaMale", PieHeight: '90px', PieWidth: '90px' },
     { Continent: 'Africa', Gender: 'Female', Population: 519058499, Id: "AfricaFemale", PieHeight: '90px', PieWidth: '90px' },

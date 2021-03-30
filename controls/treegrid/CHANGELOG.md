@@ -2,103 +2,18 @@
 
 ## [Unreleased]
 
-## 18.4.49 (2021-03-23)
+## 19.1.54 (2021-03-30)
 
-### TreeGrid
-
-#### Bug Fixes
-
-- `#317991` - Filter action works properly while using query property.
-- `#318515` - Primary key column missing warning message shows properly.
-
-## 18.4.48 (2021-03-16)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#317066` - Resolved auto scroll issue while context menu item opens when Virtualization is enabled.
-
-## 18.4.46 (2021-03-02)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#315811` - `collpaseAll` method works fine when we use Virtualization with large number of child records.
-
-## 18.4.44 (2021-02-23)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#314373` - Treegrid refresh method works fine when we enable Virtualization and `enableCollapseAll`.
-
-## 18.4.42 (2021-02-09)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#312347` - `selectRow` method works fine with Virtualization.
-- `#311453` - Expanding rows works fine when we enabled `frozenColumns` and `enableCollapseAll` property.
-
-## 18.4.41 (2021-02-02)
-
-### TreeGrid
+### Tree Grid
 
 #### New Features
 
-- `#300136` - Provided support for tab like behaviour on navigating over the cells for Cell and Batch Editing.
-
-## 18.4.39 (2021-01-28)
-
-### TreeGrid
-
-#### New Features
-
-- `#280065` - Provided support to maintain Tree Grid state(expand/collapse) while on Exporting.
-
-## 18.4.35 (2021-01-19)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#309151` - `childMapping` property is properly generated in hierarchy dataSource.
-
-## 18.4.34 (2021-01-12)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#308605`, `#308426` - Row drag and drop works properly when allowTextWrap is enabled.
-- `#309562` - `refresh` method works fine when invoked from the `recordDoubleClick` event with `allowEditing` set as false.
-
-## 18.4.33 (2021-01-05)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#308346` - `expandAll` and `collapseAll` works fine with Virtualization enabled.
-
-## 18.4.31 (2020-12-22)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#301365`- Template rendering for the tree column works fine.
-- `#304800`- Exporting of data while using `RemoteSaveAdaptor` works fine.
-- `#306549`- Expand collapse of multiple levels of the same parent works fine while using custom binding.
-- `#307187`- Hierarchy level maintains properly while perform drag and drop between Tree Grid in self-referential data binding.
+- `#274416, #274607, #313192, #F159014` -  Provided Infinite Scrolling support for Tree Grid which allows you to lazy load data when scroller reaches the near end.
+- `#280065` - Provided support to maintain Expand/Collapse state of Tree Grid while exporting the data.
 
 ## 18.4.30 (2020-12-17)
 
-### TreeGrid
+### Tree Grid
 
 #### New Features
 

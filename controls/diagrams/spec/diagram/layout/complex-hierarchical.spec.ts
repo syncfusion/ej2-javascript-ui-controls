@@ -768,7 +768,7 @@ describe('Diagram Control', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
     });
-    describe('EJ2-46383 - nodes isExpanded property true at initial rendering unwanted scroll ', () => {
+     describe('EJ2-46383 - nodes isExpanded property true at initial rendering unwanted scroll ', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let items1: DataManager = new DataManager(complexData as JSON[], new Query().take(3));
@@ -893,6 +893,7 @@ describe('Diagram Control', () => {
             done();
         });
     });
+
     describe('Complex Tree Layout', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

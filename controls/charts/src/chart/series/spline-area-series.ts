@@ -1,6 +1,10 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { ChartLocation, getPoint, withInRange, TransformToVisible } from '../../common/utils/helper';
 import { PathOption } from '@syncfusion/ej2-svg-base';
-import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
 import { SplineBase } from './spline-base';
 import { Axis } from '../../chart/axis/axis';
@@ -13,7 +17,8 @@ export class SplineAreaSeries extends SplineBase {
 
     /**
      * Render the splineArea series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
@@ -21,14 +26,13 @@ export class SplineAreaSeries extends SplineBase {
         let direction: string = '';
         let startPoint: ChartLocation = null;
         let startPoint1: ChartLocation = null;
-        let pt1: ChartLocation;
         let pt2: ChartLocation;
         let bpt1: ChartLocation;
         let bpt2: ChartLocation;
         let controlPt1: ChartLocation;
         let controlPt2: ChartLocation;
         let realPoints: Points[] = [];
-        let points: Points[] = [];
+        const points: Points[] = [];
         let point: Points;
         let pointIndex: number = 0;
         realPoints = this.filterEmptyPoints(series);
@@ -42,10 +46,10 @@ export class SplineAreaSeries extends SplineBase {
                 points.push(point);
             }
         }
-        let pointsLength: number = points.length;
+        const pointsLength: number = points.length;
         let previous: number;
-        let getCoordinate: Function = series.chart.chartAreaType === 'PolarRadar' ? TransformToVisible : getPoint;
-        let origin: number = series.chart.chartAreaType === 'PolarRadar' ? series.points[0].yValue :
+        const getCoordinate: Function = series.chart.chartAreaType === 'PolarRadar' ? TransformToVisible : getPoint;
+        const origin: number = series.chart.chartAreaType === 'PolarRadar' ? series.points[0].yValue :
             Math.max(<number>series.yAxis.visibleRange.min, 0);
         for (let i: number = 0; i < pointsLength; i++) {
             point = points[i];
@@ -57,7 +61,6 @@ export class SplineAreaSeries extends SplineBase {
                 if (firstPoint) {
                     controlPt1 = series.drawPoints[previous].controlPoint1;
                     controlPt2 = series.drawPoints[previous].controlPoint2;
-                    pt1 = getCoordinate(firstPoint.xValue, firstPoint.yValue, xAxis, yAxis, isInverted, series);
                     pt2 = getCoordinate(point.xValue, point.yValue, xAxis, yAxis, isInverted, series);
                     bpt1 = getCoordinate(controlPt1.x, controlPt1.y, xAxis, yAxis, isInverted, series);
                     bpt2 = getCoordinate(controlPt2.x, controlPt2.y, xAxis, yAxis, isInverted, series);
@@ -105,11 +108,12 @@ export class SplineAreaSeries extends SplineBase {
     }
 
     /**
-     * To destroy the spline. 
-     * @return {void}
+     * To destroy the spline.
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method calling here
          */

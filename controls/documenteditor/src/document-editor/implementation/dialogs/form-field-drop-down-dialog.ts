@@ -8,7 +8,6 @@ import { ListView } from '@syncfusion/ej2-lists';
 /**
  * Form field drop-down dialog is used to modify the value in drop-down form field.
  */
-/* tslint:disable:no-any */
 export class DropDownFormFieldDialog {
     private target: HTMLElement;
     private owner: DocumentEditor;
@@ -27,22 +26,24 @@ export class DropDownFormFieldDialog {
     private fieldBegin: FieldElementBox;
     private dropDownItems: string[];
 
-    constructor(owner: DocumentEditor) {
+    public constructor(owner: DocumentEditor) {
         this.owner = owner;
     }
-    /**
-     * @private
-     */
-    get documentHelper(): DocumentHelper {
+
+    private get documentHelper(): DocumentHelper {
         return this.owner.documentHelper;
     }
-    /**
-     * @private
-     */
-    public getModuleName(): string {
+
+    private getModuleName(): string {
         return 'DropDownFormFieldDialog';
     }
-    // tslint:disable:max-func-body-length
+    /* eslint-disable  */
+    /**
+     * @private
+     * @param {L10n} localValue - Specifies the locale value
+     * @param {boolean} isRtl - Specifies the is rtl
+     * @returns {void}
+     */
     private initTextDialog(localValue: L10n, isRtl?: boolean): void {
         this.target = createElement('div');
         let dialogDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
@@ -187,6 +188,7 @@ export class DropDownFormFieldDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public show(): void {
         let localObj: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
@@ -213,6 +215,7 @@ export class DropDownFormFieldDialog {
 
     /**
      * @private
+     * @returns {void}
      */
     public loadDropDownDialog(): void {
         let inline: ElementBox = this.owner.selection.getCurrentFormField();
@@ -255,6 +258,7 @@ export class DropDownFormFieldDialog {
 
     /**
      * @private
+     * @returns {void}
      */
     public addItemtoList = (): void => {
         this.dropDownItems.push((this.drpDownItemsInput as HTMLInputElement).value);
@@ -266,6 +270,7 @@ export class DropDownFormFieldDialog {
 
     /**
      * @private
+     * @returns {void}
      */
     public removeItemFromList = (): void => {
         for (let i: number = 0; i < this.dropDownItems.length; i++) {
@@ -276,12 +281,18 @@ export class DropDownFormFieldDialog {
         this.updateList();
     }
 
+    /**
+     * @private
+     * @returns {void}
+     */
     private selectHandler = (args: any): void => {
         this.currentSelectedItem = args.text;
     }
 
+
     /**
      * @private
+     * @returns {void}
      */
     public moveUpItem = (): void => {
         let index: number = this.getSelectedIndex();
@@ -289,8 +300,10 @@ export class DropDownFormFieldDialog {
         this.updateList();
     }
 
+
     /**
      * @private
+     * @returns {void}
      */
     public moveDownItem = (): void => {
         let index: number = this.getSelectedIndex();
@@ -343,8 +356,10 @@ export class DropDownFormFieldDialog {
         }
     }
 
+
     /**
      * @private
+     * @returns {void}
      */
     public onKeyUpOnTextBox = (): void => {
         this.enableOrDisableButton();
@@ -356,15 +371,19 @@ export class DropDownFormFieldDialog {
         }
     }
 
+
     /**
      * @private
+     * @returns {void}
      */
     public onCancelButtonClick = (): void => {
         this.documentHelper.dialog.hide();
     }
 
+
     /**
      * @private
+     * @returns {void}
      */
     public insertDropDownField = (): void => {
         let dropDownField: DropDownFormField = new DropDownFormField();
@@ -377,11 +396,19 @@ export class DropDownFormFieldDialog {
         this.closeDropDownField();
     }
 
+    /**
+     * @private
+     * @returns {void}
+     */
     private closeDropDownField = (): void => {
         this.documentHelper.dialog.hide();
         this.documentHelper.dialog.element.style.pointerEvents = '';
     }
 
+    /**
+     * @private
+     * @returns {void}
+     */
     private destroy(): void {
         let dropDownDialogTarget: HTMLElement = this.target;
         if (dropDownDialogTarget) {

@@ -15,7 +15,7 @@ export enum BlazorAction {
     interaction = 1 << 2,
     /** Enable when the group action start in history */
     GroupingInProgress = 1 << 3,
-	/** Enable when the group action start to clone another group node */
+    /** Enable when the group action start to clone another group node */
     GroupClipboardInProcess = 1 << 4,
     /** Enable when the clear the object to prevent the server update */
     ClearObject = 1 << 5
@@ -108,7 +108,7 @@ export type FlipDirection =
 
 
 /**
- * Defines the orientation of the Page 
+ * Defines the orientation of the Page
  * Landscape - Display with page Width is more than the page Height.
  * Portrait - Display with page Height is more than the page width.
  */
@@ -356,6 +356,7 @@ export type AnnotationTypes =
  * PNG - Saves the file in PNG Format
  * BMP - Save the file in BMP Format
  * SVG - save the file in SVG format
+ *
  * @IgnoreSingular
  */
 export type FileFormats =
@@ -372,6 +373,7 @@ export type FileFormats =
  * Defines whether the diagram has to be exported as an image or it has to be converted as image url
  * Download
  * Data
+ *
  * @IgnoreSingular
  */
 export type ExportModes =
@@ -385,6 +387,7 @@ export type ExportModes =
  * PageSettings -  With the given page settings image has to be exported.
  * Content - The diagram content is export
  * CustomBounds - Exported with given bounds.
+ *
  * @IgnoreSingular
  */
 
@@ -400,6 +403,7 @@ export type DiagramRegions =
  * Defines the type of annotation template
  * String -  Defines annotation template to be in string
  * Template - Defines annotation template to be in html content
+ *
  * @IgnoreSingular
  */
 
@@ -416,6 +420,7 @@ export type AnnotationType =
  * Hover - Shows the port when the mouse hovers over a node
  * Connect - Shows the port when a connection end point is dragged over a node
  * Default - By default the ports will be visible when a node is hovered and being tried to connect
+ *
  * @aspNumberEnum
  * @blazorNumberEnum
  */
@@ -439,6 +444,7 @@ export enum PortVisibility {
  * SnapToVerticalLines - Enables the object to snap only with horizontal gridlines.
  * SnapToLines - Enables the object to snap with both horizontal and Vertical gridlines.
  * snapToObject - Enables the object to snap with the other objects in the diagram.
+ *
  * @IgnoreSingular
  * @aspNumberEnum
  * @blazorNumberEnum
@@ -481,6 +487,7 @@ export enum SnapConstraints {
  * Rotate - Shows/hides the rotate handle of the selector
  * UserHandles - Shows/hides the user handles of the selector
  * Resize - Shows/hides all resize handles of the selector
+ *
  * @aspNumberEnum
  * @blazorNumberEnum
  * @IgnoreSingular
@@ -522,7 +529,7 @@ export enum SelectorConstraints {
 }
 
 /**
- * Defines the type of the panel 
+ * Defines the type of the panel
  * None - Defines that the panel will not rearrange its children. Instead, it will be positioned based on its children.
  * Canvas - Defines the type of the panel as Canvas
  * Stack - Defines the type of the panel as Stack
@@ -746,7 +753,7 @@ export enum ConnectionPointOrigin {
 
 
 /**
- * Defines the child nodes need to arranged in linear manner in layout 
+ * Defines the child nodes need to arranged in linear manner in layout
  * Linear - Child nodes will be arranged in linear manner
  * Nonlinear - Child nodes will be arranged in not linear manner
  */
@@ -814,7 +821,7 @@ export type TextAlign =
  * * DragSegmentThump - Drag the segment thumb of the connector.
  * * AllowDrop - Allow to drop a node.
  * * Bridging - Creates bridge  on intersection of two connectors.
- * * BridgeObstacle - 
+ * * BridgeObstacle -
  * * InheritBridging - Creates bridge  on intersection of two connectors.
  * * PointerEvents - Sets the pointer events.
  * * Tooltip - Displays a tooltip for the connectors.
@@ -822,6 +829,7 @@ export type TextAlign =
  * * Interaction - Features of the connector used for interaction.
  * * ReadOnly - Enables ReadOnly
  * * Default - Default features of the connector.
+ *
  * @aspNumberEnum
  * @blazorNumberEnum
  * @IgnoreSingular
@@ -884,6 +892,7 @@ export enum ConnectorConstraints {
  * Rotate - Enables/Disable rotate support for the annotation
  * Interaction - Enables annotation to inherit the interaction option
  * None - Disable all annotation constraints
+ *
  * @aspNumberEnum
  * @blazorNumberEnum
  * @IgnoreSingular
@@ -937,6 +946,7 @@ export enum AnnotationConstraints {
  * InheritTooltip - Enables or disables tool tip for the Nodes
  * ReadOnly - Enables the  ReadOnly support for Annotation
  * Default - Enables all constraints
+ *
  * @aspNumberEnum
  * @blazorNumberEnum
  * @IgnoreSingular
@@ -1007,7 +1017,8 @@ export enum NodeConstraints {
 /** Enables/Disables The element actions
  * None - Diables all element actions are none
  * ElementIsPort - Enable element action is port
- * ElementIsGroup - Enable element action as Group 
+ * ElementIsGroup - Enable element action as Group
+ *
  * @private
  */
 export enum ElementAction {
@@ -1017,8 +1028,9 @@ export enum ElementAction {
     ElementIsPort = 1 << 1,
     /** Enable the element action as Group  */
     ElementIsGroup = 1 << 2,
-    /** Enable the element action if swimlaneHeader is rendred  */
-    HorizontalLaneHeader = 1 << 3,
+     /** Enable the element action if swimlaneHeader is rendered  */
+     HorizontalLaneHeader = 1 << 3,
+
 }
 
 /** Enables/Disables the handles of the selector
@@ -1034,6 +1046,7 @@ export enum ElementAction {
  * ResizeNorthWest - Enable ResizeNorthWest Resize
  * ResizeNorth - Enable ResizeNorth Resize
  * Default - Enables all constraints
+ *
  * @private
  */
 export enum ThumbsConstraints {
@@ -1080,6 +1093,7 @@ export enum ThumbsConstraints {
  * ZoomTextEdit - Enables/Disables zooming the text box while editing the text
  * Virtualization - Enables/Disable Virtualization support the diagram
  * Default - Enables/Disable all constraints
+ *
  * @aspNumberEnum
  * @blazorNumberEnum
  * @IgnoreSingular
@@ -1123,9 +1137,10 @@ export enum DiagramConstraints {
  * SingleSelect - Enables/Disable single select support for the diagram
  * MultipleSelect - Enables/Disable MultipleSelect select support for the diagram
  * ZoomPan - Enables/Disable ZoomPan support for the diagram
- * DrawOnce - Enables/Disable continuousDraw support for the diagram 
+ * DrawOnce - Enables/Disable continuousDraw support for the diagram
  * ContinuousDraw - Enables/Disable continuousDraw support for the diagram
  * Default - Enables/Disable all constraints
+ *
  * @aspNumberEnum
  * @blazorNumberEnum
  * @IgnoreSingular
@@ -1148,7 +1163,7 @@ export enum DiagramTools {
 }
 
 /**
- * Defines the bridge direction 
+ * Defines the bridge direction
  * Top - Defines the direction of the bridge as Top
  * Bottom - Defines the direction of the bridge as Bottom
  * Left - Sets the bridge direction as left
@@ -1443,6 +1458,7 @@ export type BpmnShapes =
  * ForkNode - Sets the type of the UMLActivity Shape as ForkNode
  * JoinNode - Sets the type of the UMLActivity Shape as JoinNode
  * TimeEvent - Represents the UMLActivity shape as TimeEvent
+ *
  * @IgnoreSingular
  */
 export type UmlActivityShapes =
@@ -1478,6 +1494,7 @@ export type UmlActivityShapes =
  * Object - Sets the type of the UMLActivity Flow as Object
  * Control - Sets the type of the UMLActivity Flow as Control
  * Exception - Sets the type of the UMLActivity Flow as Exception
+ *
  * @IgnoreSingular
  */
 export type UmlActivityFlows =
@@ -1958,11 +1975,11 @@ export enum Transform {
 }
 
 /**
- * Defines the nudging direction 
- * Left - Nudge the object in the left direction 
- * Right - Nudge the object in the right direction 
- * Up - Nudge the object in the up direction 
- * Down - Nudge the object in the down direction 
+ * Defines the nudging direction
+ * Left - Nudge the object in the left direction
+ * Right - Nudge the object in the right direction
+ * Up - Nudge the object in the up direction
+ * Down - Nudge the object in the down direction
  */
 export type NudgeDirection =
     /** Left - Nudge the object in the left direction */
@@ -1993,8 +2010,8 @@ export type Stretch =
 
 /**
  * Defines the BoundaryConstraints for the diagram
- * Infinity - Allow the interactions to take place at the infinite height and width 
- * Diagram - Allow the interactions to take place around the diagram height and width 
+ * Infinity - Allow the interactions to take place at the infinite height and width
+ * Diagram - Allow the interactions to take place around the diagram height and width
  * Page - Allow the interactions to take place around the page height and width
  */
 
@@ -2054,6 +2071,7 @@ export type ScrollLimit =
  * * Meta - meta key im mac
  * * Alt - alt key
  * * Shift - shift key
+ *
  * @aspNumberEnum
  * @blazorNumberEnum
  * @IgnoreSingular
@@ -2086,7 +2104,7 @@ export enum KeyModifiers {
  * * Number8 = The 8 key
  * * Number9 = The 9 key
  * * Number0 = The 0 key
- * * BackSpace = The BackSpace key 
+ * * BackSpace = The BackSpace key
  * * F1 = The f1 key
  * * F2 = The f2 key
  * * F3 = The f3 key
@@ -2132,15 +2150,16 @@ export enum KeyModifiers {
  * * Escape = The Escape key
  * * Tab = The tab key
  * * Delete = The delete key
- * * Enter = The enter key 
- * * The Space key 
- * * The page up key 
- * * The page down key 
- * * The end key 
- * * The home key 
+ * * Enter = The enter key
+ * * The Space key
+ * * The page up key
+ * * The page down key
+ * * The end key
+ * * The home key
  * * The Minus
  * * The Plus
  * * The Star
+ *
  * @aspNumberEnum
  * @blazorNumberEnum
  * @IgnoreSingular
@@ -2288,7 +2307,7 @@ export enum Keys {
  * * UndoRedo - Indicates the diagram undo/redo is in action.
  * * TextEdit - Indicates the text editing is in progress.
  * * Group - Indicates the group is in progress.
- * * Clear - Indicates diagram have clear all. 
+ * * Clear - Indicates diagram have clear all.
  * * PreventClearSelection - prevents diagram from clear selection
  */
 export enum DiagramAction {
@@ -2323,10 +2342,9 @@ export enum DiagramAction {
     /** Indicates whether drag is initiated by mouse  */
     DragUsingMouse = 1 << 15,
     /** Indicates whether decorator property is changed or not */
-    DecoratorPropertyChange = 1 << 16,
+    DecoratorPropertyChange = 1 << 16, 
     /** Avoid dropping of child nodes into the swim lane */
     PreventLaneContainerUpdate = 1 << 17
-
 }
 /** @private */
 export type DiagramHistoryAction = 'AddNodeToLane';
@@ -2385,7 +2403,7 @@ export enum NoOfSegments {
 /** @private */
 export type SourceTypes = 'HierarchicalData' | 'MindMap';
 
-/** 
+/**
  * Defines the relative mode of the tooltip
  * Object - sets the tooltip position relative to the node
  * Mouse - sets the tooltip position relative to the mouse
@@ -2454,6 +2472,7 @@ export type SubTreeAlignments =
 
 /**
  * events of diagram
+ *
  * @private
  */
 export enum DiagramEvent {
@@ -2518,6 +2537,7 @@ export type FitModes =
     'Height';
 
 /** Enables/Disables certain features of port connection
+ *
  * @aspNumberEnum
  * @blazorNumberEnum
  * @IgnoreSingular
@@ -2566,7 +2586,7 @@ export type SelectionChangeCause =
     'Unknown';
 
 /**
- * Defines the change state 
+ * Defines the change state
  * Changing - Sets the event state as Changing
  * Changed - Sets the event state as Changed
  * canceled - Sets the event state as canceled
@@ -2692,7 +2712,7 @@ export type UmlScope = 'Public' | 'Protected' | 'Private' | 'Package';
  * * Dependency - Indicates the scope is package.
  */
 export type ClassifierShape = 'Aggregation' | 'Class' | 'Interface' | 'Enumeration' | 'Inheritance' |
-    'Association' | 'Composition' | 'Realization' | 'Dependency';
+'Association' | 'Composition' | 'Realization' | 'Dependency';
 /**
  * Defines the direction the uml connectors
  * * Default - Indicates the direction is Default.
@@ -2704,6 +2724,6 @@ export type AssociationFlow = 'Directional' | 'Default' | 'BiDirectional';
  * Define the Multiplicity of uml connector shapes
  * * OneToOne - Indicates the connector multiplicity is OneToOne.
  * * OneToMany - Indicates the connector multiplicity is OneToMany.
- * * ManyToOne - Indicates the connector multiplicity is ManyToOne. 
+ * * ManyToOne - Indicates the connector multiplicity is ManyToOne.
  */
 export type Multiplicity = 'OneToOne' | 'OneToMany' | 'ManyToOne';

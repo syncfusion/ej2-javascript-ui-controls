@@ -22,11 +22,17 @@ export class ChartRows extends DateProcessor {
     private baselineTop: number = 0;
     public baselineHeight: number = 3;
     private baselineColor: string;
+    // eslint-disable-next-line
     private parentTaskbarTemplateFunction: Function;
+    // eslint-disable-next-line
     private leftTaskLabelTemplateFunction: Function;
+    // eslint-disable-next-line
     private rightTaskLabelTemplateFunction: Function;
+    // eslint-disable-next-line
     private taskLabelTemplateFunction: Function;
+    // eslint-disable-next-line
     private childTaskbarTemplateFunction: Function;
+    // eslint-disable-next-line
     private milestoneTemplateFunction: Function;
     private templateData: IGanttData;
     private touchLeftConnectorpoint: string = '';
@@ -48,7 +54,8 @@ export class ChartRows extends DateProcessor {
 
     /**
      * To initialize the public property.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     private initPublicProp(): void {
@@ -68,7 +75,8 @@ export class ChartRows extends DateProcessor {
 
     /**
      * To render chart rows.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     private createChartTable(): void {
@@ -77,8 +85,8 @@ export class ChartRows extends DateProcessor {
             styles: 'z-index: 2;position: absolute;width:' + this.parent.timelineModule.totalTimelineWidth + 'px;',
             attrs: { cellspacing: '0.25px' }
         });
-        let colgroup: Element = createElement('colgroup');
-        let column: Element = createElement('col', { styles: 'width:' + this.parent.timelineModule.totalTimelineWidth + 'px;' });
+        const colgroup: Element = createElement('colgroup');
+        const column: Element = createElement('col', { styles: 'width:' + this.parent.timelineModule.totalTimelineWidth + 'px;' });
         colgroup.appendChild(column);
         this.taskTable.appendChild(colgroup);
         this.ganttChartTableBody = createElement('tbody', {
@@ -87,7 +95,7 @@ export class ChartRows extends DateProcessor {
         this.taskTable.appendChild(this.ganttChartTableBody);
         if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
             this.parent.ganttChartModule.virtualRender.renderWrapper();
-            let wrapper: HTMLElement = getValue('wrapper', this.parent.ganttChartModule.virtualRender);
+            const wrapper: HTMLElement = getValue('wrapper', this.parent.ganttChartModule.virtualRender);
             wrapper.style.transform = 'translate(0px, 0px)';
         } else {
             this.parent.ganttChartModule.chartBodyContent.appendChild(this.taskTable);
@@ -101,7 +109,8 @@ export class ChartRows extends DateProcessor {
     }
     /**
      * To render chart rows.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public renderChartRows(): void {
@@ -111,11 +120,13 @@ export class ChartRows extends DateProcessor {
 
     /**
      * To get gantt Indicator.
-     * @return {NodeList}
+     *
+     * @param {IIndicator} indicator .
+     * @returns {NodeList} .
      * @private
      */
     private getIndicatorNode(indicator: IIndicator): NodeList {
-        let templateString: string = '<label class="' + cls.label + ' ' + cls.taskIndicatorDiv + '"  style="line-height:'
+        const templateString: string = '<label class="' + cls.label + ' ' + cls.taskIndicatorDiv + '"  style="line-height:'
             + (this.parent.rowHeight) + 'px;' +
             'left:' + this.getIndicatorleft(indicator.date) + 'px;"><i class="' + indicator.iconClass + '"></i> </label>';
         return this.createDivElement(templateString);
@@ -123,23 +134,28 @@ export class ChartRows extends DateProcessor {
 
     /**
      * To get gantt Indicator.
-     * @return {number}
+     *
+     * @param {Date | string} date .
+     * @returns {number} .
      * @private
      */
     public getIndicatorleft(date: Date | string): number {
         date = this.parent.dateValidationModule.getDateFromFormat(date);
-        let left: number = this.parent.dataOperation.getTaskLeft(date, false);
+        const left: number = this.parent.dataOperation.getTaskLeft(date, false);
         return left;
     }
 
     /**
      * To get child taskbar Node.
-     * @return {NodeList}
+     *
+     *  @param {number} i .
+     * @param {NodeList} rootElement .
+     * @returns {NodeList} .
      * @private
      */
     private getChildTaskbarNode(i: number, rootElement?: NodeList): NodeList {
         let childTaskbarNode: NodeList = null;
-        let data: IGanttData = this.templateData;
+        const data: IGanttData = this.templateData;
         if (this.childTaskbarTemplateFunction) {
             childTaskbarNode = this.childTaskbarTemplateFunction(
                 extend({ index: i }, data), this.parent, 'TaskbarTemplate',
@@ -157,7 +173,7 @@ export class ChartRows extends DateProcessor {
                     (this.taskBarHeight) + 'px;"></div>');
                 progressDiv = this.createDivElement('<div class="' + cls.childProgressBarInnerDiv + ' ' +
                     cls.traceChildProgressBar + ' ' + (data.ganttProperties.isAutoSchedule ?
-                        '' : cls.manualChildProgressBar) + '"' +
+                    '' : cls.manualChildProgressBar) + '"' +
                     ' style="border-style:' + (data.ganttProperties.progressWidth ? 'solid;' : 'none;') +
                     'width:' + data.ganttProperties.progressWidth + 'px;height:100%;' +
                     'border-top-right-radius:' + this.getBorderRadius(data.ganttProperties) + 'px;' +
@@ -166,11 +182,11 @@ export class ChartRows extends DateProcessor {
 
             }
             if (this.taskLabelTemplateFunction && !isNullOrUndefined(progressDiv) && progressDiv.length > 0) {
-                let taskLabelTemplateNode: NodeList = this.taskLabelTemplateFunction(
+                const taskLabelTemplateNode: NodeList = this.taskLabelTemplateFunction(
                     extend({ index: i }, data), this.parent, 'TaskLabelTemplate',
                     this.getTemplateID('TaskLabelTemplate'), false, undefined, progressDiv[0]);
                 if (taskLabelTemplateNode && taskLabelTemplateNode.length > 0) {
-                    let tempDiv: Element = createElement('div');
+                    const tempDiv: Element = createElement('div');
                     tempDiv.appendChild(taskLabelTemplateNode[0]);
                     labelString = tempDiv.innerHTML;
                 }
@@ -185,7 +201,7 @@ export class ChartRows extends DateProcessor {
                     'width:' + (this.parent.viewType === 'ResourceView' ? (data.ganttProperties.width - 10) : '') + 'px; height:' +
                     this.taskBarHeight + 'px;">' + labelString + '</span>';
             }
-            let template: string = !isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length > 0 ?
+            const template: string = !isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length > 0 ?
                 this.splitTaskbar(data, labelString) : (data.ganttProperties.startDate && data.ganttProperties.endDate
                     && data.ganttProperties.duration) ? (taskLabel) :
                     (data.ganttProperties.startDate && !data.ganttProperties.endDate && !data.ganttProperties.duration) ? (
@@ -196,12 +212,12 @@ export class ChartRows extends DateProcessor {
                         (data.ganttProperties.endDate && !data.ganttProperties.startDate && !data.ganttProperties.duration) ?
                             ('<div class="' + cls.childProgressBarInnerDiv + ' ' + cls.traceChildTaskBar + ' ' +
                                 cls.unscheduledTaskbarRight + ' ' + (data.ganttProperties.isAutoSchedule ?
-                                    '' : cls.manualChildTaskBar) + '"' +
+                                '' : cls.manualChildTaskBar) + '"' +
                                 'style="left:' + data.ganttProperties.left + 'px; height:' + this.taskBarHeight + 'px;"></div>') :
                             (data.ganttProperties.duration && !data.ganttProperties.startDate && !data.ganttProperties.endDate) ?
                                 ('<div class="' + cls.childProgressBarInnerDiv + ' ' + cls.traceChildTaskBar + ' ' +
                                     cls.unscheduledTaskbar + ' ' + (data.ganttProperties.isAutoSchedule ?
-                                        '' : cls.manualChildTaskBar) + '"' +
+                                    '' : cls.manualChildTaskBar) + '"' +
                                     'style="left:' + data.ganttProperties.left + 'px; width:' + data.ganttProperties.width + 'px;' +
                                     ' height:' + this.taskBarHeight + 'px;"></div>') : '';
             if (data.ganttProperties.startDate && data.ganttProperties.endDate && data.ganttProperties.duration &&
@@ -222,13 +238,12 @@ export class ChartRows extends DateProcessor {
 
     private splitTaskbar(data: IGanttData, labelString: string): string {
         let splitTasks: string = '';
-        let width: number = 0;
         for (let i: number = 0; i < data.ganttProperties.segments.length; i++) {
-            let segment: ITaskSegment = data.ganttProperties.segments[i];
-            let segmentPosition: string = (i === 0) ? 'e-segment-first' : (i === data.ganttProperties.segments.length - 1)
+            const segment: ITaskSegment = data.ganttProperties.segments[i];
+            const segmentPosition: string = (i === 0) ? 'e-segment-first' : (i === data.ganttProperties.segments.length - 1)
                 ? 'e-segment-last' : 'e-segment-inprogress';
             splitTasks += (
-                //split taskbar        
+                //split taskbar
                 '<div class="' + cls.childTaskBarInnerDiv + ' ' + segmentPosition + ' ' + cls.traceChildTaskBar + ' ' +
                 ' e-segmented-taskbar' +
                 '"style="width:' + segment.width + 'px;position: absolute; left:' + segment.left + 'px;height:' +
@@ -257,22 +272,22 @@ export class ChartRows extends DateProcessor {
     }
 
     private getSplitTaskbarLeftResizerNode(): string {
-        let lResizerLeft: number = -(this.parent.isAdaptive ? 12 : 2);
-        let template: string = '<div class="' + cls.taskBarLeftResizer + ' ' + cls.icon + '"' +
+        const lResizerLeft: number = -(this.parent.isAdaptive ? 12 : 2);
+        const template: string = '<div class="' + cls.taskBarLeftResizer + ' ' + cls.icon + '"' +
             ' style="left:' + lResizerLeft + 'px;height:' + (this.taskBarHeight) + 'px;"></div>';
         return template;
     }
 
     private getSplitTaskbarRightResizerNode(segment: ITaskSegment): string {
-        let rResizerLeft: number = this.parent.isAdaptive ? -2 : -10;
-        let template: string = '<div class="' + cls.taskBarRightResizer + ' ' + cls.icon + '"' +
+        const rResizerLeft: number = this.parent.isAdaptive ? -2 : -10;
+        const template: string = '<div class="' + cls.taskBarRightResizer + ' ' + cls.icon + '"' +
             ' style="left:' + (segment.width + rResizerLeft) + 'px;' +
             'height:' + (this.taskBarHeight) + 'px;"></div>';
         return template;
     }
 
     private getSplitProgressResizerNode(segment: ITaskSegment): string {
-        let template: string = '<div class="' + cls.childProgressResizer + '"' +
+        const template: string = '<div class="' + cls.childProgressResizer + '"' +
             ' style="left:' + (segment.progressWidth - 6) + 'px;margin-top:' +
             (this.taskBarHeight - 4) + 'px;"><div class="' + cls.progressBarHandler + '"' +
             '><div class="' + cls.progressHandlerElement + '"></div>' +
@@ -282,15 +297,15 @@ export class ChartRows extends DateProcessor {
 
     public getSegmentIndex(splitStartDate: Date, record: IGanttData): number {
         let segmentIndex: number = -1;
-        let ganttProp: ITaskData = record.ganttProperties;
-        let segments: ITaskSegment[] = ganttProp.segments;
+        const ganttProp: ITaskData = record.ganttProperties;
+        const segments: ITaskSegment[] = ganttProp.segments;
         if (!isNullOrUndefined(segments)) {
             segments.sort((a: ITaskSegment, b: ITaskSegment) => {
                 return a.startDate.getTime() - b.startDate.getTime();
             });
-            let length: number = segments.length;
+            const length: number = segments.length;
             for (let i: number = 0; i < length; i++) {
-                let segment: ITaskSegment = segments[i];
+                const segment: ITaskSegment = segments[i];
                 // To find if user tend to split the start date of a main taskbar
                 // purpose of this to restrict the split action
                 if (splitStartDate.getTime() === ganttProp.startDate.getTime()) {
@@ -314,7 +329,7 @@ export class ChartRows extends DateProcessor {
                     }
                     this.incrementSegments(segments, i, record);
                     segmentIndex = segment.segmentIndex;
-                    // To find if the user tend to split the segment and find the segment index 
+                    // To find if the user tend to split the segment and find the segment index
                 } else {
                     segment.endDate = this.parent.dataOperation.getEndDate(
                         segment.startDate, segment.duration, ganttProp.durationUnit, ganttProp, false
@@ -330,35 +345,33 @@ export class ChartRows extends DateProcessor {
     }
 
     public mergeTask(taskId: number | string, segmentIndexes: { firstSegmentIndex: number, secondSegmentIndex: number }[]): void {
-        let indexes: { firstSegmentIndex: number, secondSegmentIndex: number }[] = segmentIndexes;
-        let mergeArrayLength: number = segmentIndexes.length;
-        let taskFields: TaskFieldsModel = this.parent.taskFields;
-        let mergeData: IGanttData = this.parent.flatData.filter((x: IGanttData): IGanttData => {
+        const mergeArrayLength: number = segmentIndexes.length;
+        const taskFields: TaskFieldsModel = this.parent.taskFields;
+        const mergeData: IGanttData = this.parent.flatData.filter((x: IGanttData): IGanttData => {
             if (x[taskFields.id] === taskId) {
                 return x;
             } else {
                 return null;
             }
         })[0];
-        let segments: ITaskSegment[] = mergeData.ganttProperties.segments;
+        const segments: ITaskSegment[] = mergeData.ganttProperties.segments;
         segmentIndexes = segmentIndexes.sort((a: { firstSegmentIndex: number, secondSegmentIndex: number },
-            b: { firstSegmentIndex: number, secondSegmentIndex: number }): number => {
+                                              b: { firstSegmentIndex: number, secondSegmentIndex: number }): number => {
             return b.firstSegmentIndex - a.firstSegmentIndex;
         });
         for (let arrayLength: number = 0; arrayLength < mergeArrayLength; arrayLength++) {
-            let segment: ITaskSegment;
-            let firstSegment: ITaskSegment = segments[segmentIndexes[arrayLength].firstSegmentIndex];
-            let secondSegment: ITaskSegment = segments[segmentIndexes[arrayLength].secondSegmentIndex];
-            let duration: number = firstSegment.duration + secondSegment.duration;
-            let endDate: Date = this.parent.dataOperation.getEndDate(
+            const firstSegment: ITaskSegment = segments[segmentIndexes[arrayLength].firstSegmentIndex];
+            const secondSegment: ITaskSegment = segments[segmentIndexes[arrayLength].secondSegmentIndex];
+            const duration: number = firstSegment.duration + secondSegment.duration;
+            const endDate: Date = this.parent.dataOperation.getEndDate(
                 firstSegment.startDate, duration, mergeData.ganttProperties.durationUnit, mergeData.ganttProperties, false
             );
-            segment = {
+            const segment: ITaskSegment = {
                 startDate: firstSegment.startDate,
                 endDate: endDate,
                 duration: duration
             };
-            let insertIndex: number = segmentIndexes[arrayLength].firstSegmentIndex;
+            const insertIndex: number = segmentIndexes[arrayLength].firstSegmentIndex;
             segments.splice(insertIndex, 2, segment);
             this.parent.setRecordValue('segments', segments, mergeData.ganttProperties, true);
             this.parent.dataOperation.updateMappingData(mergeData, 'segments');
@@ -385,38 +398,39 @@ export class ChartRows extends DateProcessor {
         } else {
             this.refreshRow(this.parent.currentViewData.indexOf(data));
         }
-        let tr: Element = this.ganttChartTableBody.querySelectorAll('tr')[this.parent.currentViewData.indexOf(data)];
-        this.triggerQueryTaskbarInfoByIndex(tr, data);
-        this.parent.selectionModule.clearSelection();
-        let args: CObject = {
+        const tr: Element = this.ganttChartTableBody.querySelectorAll('tr')[this.parent.currentViewData.indexOf(data)];
+        const args: CObject = {
             requestType: requestType,
             rowData: data
         };
+        this.triggerQueryTaskbarInfoByIndex(tr, data);
+        this.parent.selectionModule.clearSelection();
         this.parent.trigger('actionComplete', args);
         setValue('isEdit', false, this.parent.contextMenuModule);
     }
 
     /**
      * public method to split task bar.
+     *
      * @public
      */
 
     public splitTask(taskId: number | string, splitDates: Date | Date[]): void {
-        let taskFields: TaskFieldsModel = this.parent.taskFields;
-        let splitDate: Date = splitDates as Date;
-        let splitRecord: IGanttData = this.parent.flatData.filter((x: IGanttData): IGanttData => {
+        const taskFields: TaskFieldsModel = this.parent.taskFields;
+        const splitDate: Date = splitDates as Date;
+        const splitRecord: IGanttData = this.parent.flatData.filter((x: IGanttData): IGanttData => {
             if (x[taskFields.id] === taskId) {
                 return x;
             } else {
                 return null;
             }
         })[0];
-        let ganttProp: ITaskData = splitRecord.ganttProperties;
+        const ganttProp: ITaskData = splitRecord.ganttProperties;
         this.dropSplit = false;
         let segmentIndex: number = -1;
         let segments: ITaskSegment[] = ganttProp.segments;
         if (isNullOrUndefined((splitDates as Date[]).length) || (splitDates as Date[]).length < 0) {
-            let splitStartDate: Date = this.parent.dataOperation.checkStartDate(splitDate, ganttProp, false);
+            const splitStartDate: Date = this.parent.dataOperation.checkStartDate(splitDate, ganttProp, false);
             if (splitStartDate.getTime() !== ganttProp.startDate.getTime()) {
                 if (ganttProp.isAutoSchedule) {
                     if (!isNullOrUndefined(segments)) {
@@ -426,10 +440,10 @@ export class ChartRows extends DateProcessor {
                     if (this.dropSplit === false && (splitDate as Date).getTime() > ganttProp.startDate.getTime() &&
                         (splitDate as Date).getTime() < ganttProp.endDate.getTime()) {
                         segments = segmentIndex !== -1 ? segments : [];
-                        let startDate: Date = segmentIndex !== -1 ?
+                        const startDate: Date = segmentIndex !== -1 ?
                             segments[segmentIndex].startDate : new Date(ganttProp.startDate.getTime());
-                        let endDate: Date = segmentIndex !== -1 ? segments[segmentIndex].endDate : new Date(ganttProp.endDate.getTime());
-                        let segmentDuration: number = this.parent.dataOperation.getDuration(
+                        const endDate: Date = segmentIndex !== -1 ? segments[segmentIndex].endDate : new Date(ganttProp.endDate.getTime());
+                        const segmentDuration: number = this.parent.dataOperation.getDuration(
                             startDate, endDate, ganttProp.durationUnit, ganttProp.isAutoSchedule, ganttProp.isMilestone
                         );
                         this.parent.setRecordValue(
@@ -462,7 +476,7 @@ export class ChartRows extends DateProcessor {
     }
 
     private constructSegments(dates: Date[], taskData: ITaskData): ITaskSegment[] {
-        let segmentsArray: ITaskSegment[] = [];
+        const segmentsArray: ITaskSegment[] = [];
         let segment: ITaskSegment;
         let startDate: Date = new Date();
         let endDate: Date;
@@ -496,15 +510,14 @@ export class ChartRows extends DateProcessor {
     private splitSegmentedTaskbar(
         startDate: Date, endDate: Date, splitDate: Date, segmentIndex: number, segments: ITaskSegment[], ganttData: IGanttData,
         segmentDuration: number): ITaskSegment[] {
-        let ganttProp: ITaskData = ganttData.ganttProperties;
-        let taskFields: TaskFieldsModel = this.parent.taskFields;
+        const ganttProp: ITaskData = ganttData.ganttProperties;
+        const checkClickState: number = this.parent.nonWorkingDayIndex.indexOf(splitDate.getDay());
+        const increment: number = checkClickState === -1 ? 0 : checkClickState === 0 ? 1 : 2;
         startDate = this.parent.dataOperation.checkStartDate(startDate, ganttProp, false);
         let segmentEndDate: Date = new Date(splitDate.getTime());
         segmentEndDate = this.parent.dataOperation.checkEndDate(segmentEndDate, ganttProp, false);
-        let checkClickState: number = this.parent.nonWorkingDayIndex.indexOf(splitDate.getDay());
-        let increment: number = checkClickState === -1 ? 0 : checkClickState === 0 ? 1 : 2;
         for (let i: number = 0; i < 2; i++) {
-            let segment: ITaskSegment = {
+            const segment: ITaskSegment = {
                 startDate: startDate,
                 endDate: segmentEndDate,
                 duration: this.parent.dataOperation.getDuration(
@@ -512,6 +525,7 @@ export class ChartRows extends DateProcessor {
                     ganttProp.isAutoSchedule, ganttProp.isMilestone),
                 offsetDuration: 1
             };
+            const endDateState: number = this.parent.nonWorkingDayIndex.indexOf(segmentEndDate.getDay());
             if (segmentIndex !== -1) {
                 segments.splice(segmentIndex, 1);
                 segmentIndex = -1;
@@ -522,9 +536,8 @@ export class ChartRows extends DateProcessor {
             startDate = this.parent.dataOperation.checkStartDate(startDate, ganttProp, false);
             segmentEndDate = new Date(endDate.getTime());
             segmentEndDate.setDate(segmentEndDate.getDate() + 1);
-            let endDateState: number = this.parent.nonWorkingDayIndex.indexOf(segmentEndDate.getDay());
             if (endDateState !== -1) {
-                let diff: number = segmentDuration - segment.duration;
+                const diff: number = segmentDuration - segment.duration;
                 segmentEndDate =
                     this.parent.dataOperation.getEndDate(startDate, diff, ganttProp.durationUnit, ganttProp, false);
             } else {
@@ -538,15 +551,14 @@ export class ChartRows extends DateProcessor {
     }
 
     public incrementSegments(segments: ITaskSegment[], segmentIndex: number, ganttData: IGanttData): void {
-        let ganttProp: ITaskData = ganttData.ganttProperties;
+        const ganttProp: ITaskData = ganttData.ganttProperties;
         for (let i: number = segmentIndex + 1; i < segments.length; i++) {
-            let segment: ITaskSegment = segments[i];
-            let endDate: Date;
+            const segment: ITaskSegment = segments[i];
             let startDate: Date = i !== 0 ? new Date(segments[i - 1].endDate.getTime()) : new Date(segment.startDate.getTime());
             startDate = this.parent.dataOperation.getEndDate(startDate, segment.offsetDuration, ganttProp.durationUnit, ganttProp, false);
             startDate = this.parent.dataOperation.checkStartDate(startDate, ganttProp, false);
             segment.startDate = startDate;
-            endDate = segment.endDate = this.parent.dataOperation.getEndDate(
+            const endDate: Date = segment.endDate = this.parent.dataOperation.getEndDate(
                 startDate, segment.duration, ganttProp.durationUnit, ganttProp, false
             );
             segment.endDate = endDate;
@@ -566,24 +578,27 @@ export class ChartRows extends DateProcessor {
 
     /**
      * To get milestone node.
-     * @return {NodeList}
+     *
+     * @param {number} i .
+     * @param {NodeList} rootElement .
+     * @returns {NodeList} .
      * @private
      */
     private getMilestoneNode(i: number, rootElement?: NodeList): NodeList {
         let milestoneNode: NodeList = null;
-        let data: IGanttData = this.templateData;
+        const data: IGanttData = this.templateData;
         if (this.milestoneTemplateFunction) {
             milestoneNode = this.milestoneTemplateFunction(
                 extend({ index: i }, data), this.parent, 'MilestoneTemplate',
                 this.getTemplateID('MilestoneTemplate'), false, undefined, rootElement[0]);
         } else {
-            let template: string = '<div class="' + cls.traceMilestone + '" style="position:absolute;">' +
+            const template: string = '<div class="' + cls.traceMilestone + '" style="position:absolute;">' +
                 '<div class="' + cls.milestoneTop + ' ' + ((!data.ganttProperties.startDate && !data.ganttProperties.endDate) ?
-                    cls.unscheduledMilestoneTop : '') + '" style="border-right-width:' +
+                cls.unscheduledMilestoneTop : '') + '" style="border-right-width:' +
                 this.milesStoneRadius + 'px;border-left-width:' + this.milesStoneRadius + 'px;border-bottom-width:' +
                 this.milesStoneRadius + 'px;"></div>' +
                 '<div class="' + cls.milestoneBottom + ' ' + ((!data.ganttProperties.startDate && !data.ganttProperties.endDate) ?
-                    cls.unscheduledMilestoneBottom : '') + '" style="top:' +
+                cls.unscheduledMilestoneBottom : '') + '" style="top:' +
                 (this.milesStoneRadius) + 'px;border-right-width:' + this.milesStoneRadius + 'px; border-left-width:' +
                 this.milesStoneRadius + 'px; border-top-width:' + this.milesStoneRadius + 'px;"></div></div>';
             milestoneNode = this.createDivElement(template);
@@ -593,12 +608,13 @@ export class ChartRows extends DateProcessor {
 
     /**
      * To get task baseline Node.
-     * @return {NodeList}
+     *
+     * @returns {NodeList} .
      * @private
      */
     private getTaskBaselineNode(): NodeList {
-        let data: IGanttData = this.templateData;
-        let template: string = '<div class="' + cls.baselineBar + ' ' + '" style="margin-top:' + this.baselineTop +
+        const data: IGanttData = this.templateData;
+        const template: string = '<div class="' + cls.baselineBar + ' ' + '" style="margin-top:' + this.baselineTop +
             'px;left:' + data.ganttProperties.baselineLeft + 'px;' +
             'width:' + data.ganttProperties.baselineWidth + 'px;height:' +
             this.baselineHeight + 'px;' + (this.baselineColor ? 'background-color: ' + this.baselineColor + ';' : '') + '"></div>';
@@ -607,12 +623,13 @@ export class ChartRows extends DateProcessor {
 
     /**
      * To get milestone baseline node.
-     * @return {NodeList}
+     *
+     * @returns {NodeList} .
      * @private
      */
     private getMilestoneBaselineNode(): NodeList {
-        let data: IGanttData = this.templateData;
-        let template: string = '<div class="' + cls.baselineMilestoneContainer + ' ' + '" style="' +
+        const data: IGanttData = this.templateData;
+        const template: string = '<div class="' + cls.baselineMilestoneContainer + ' ' + '" style="' +
             'left:' + (data.ganttProperties.baselineLeft - this.milesStoneRadius) + 'px;' +
             'margin-top:' + (-Math.floor(this.parent.rowHeight - this.milestoneMarginTop) + 2) +
             'px">' + '<div class="' + cls.baselineMilestoneDiv + '">' + '<div class="' + cls.baselineMilestoneDiv +
@@ -636,11 +653,13 @@ export class ChartRows extends DateProcessor {
 
     /**
      * To get left label node.
-     * @return {NodeList}
+     *
+     * @param {number} i .
+     * @returns {NodeList} .
      * @private
      */
     private getLeftLabelNode(i: number): NodeList {
-        let leftLabelNode: NodeList = this.leftLabelContainer();
+        const leftLabelNode: NodeList = this.leftLabelContainer();
         (<HTMLElement>leftLabelNode[0]).setAttribute('aria-label', this.generateTaskLabelAriaLabel('left'));
         let leftLabelTemplateNode: NodeList = null;
         if (this.leftTaskLabelTemplateFunction) {
@@ -648,7 +667,7 @@ export class ChartRows extends DateProcessor {
                 extend({ index: i }, this.templateData), this.parent, 'LeftLabelTemplate',
                 this.getTemplateID('LeftLabelTemplate'), false, undefined, leftLabelNode[0]);
         } else {
-            let field: string = this.parent.labelSettings.leftLabel;
+            const field: string = this.parent.labelSettings.leftLabel;
             let labelString: string = this.getTaskLabel(field);
             if (labelString) {
                 labelString = labelString === 'isCustomTemplate' ? field : labelString;
@@ -661,25 +680,27 @@ export class ChartRows extends DateProcessor {
         return leftLabelNode;
     }
     private getLableText(labelString: string, labelDiv: string): NodeList {
-        let templateString: HTMLElement = createElement('div', {
+        const templateString: HTMLElement = createElement('div', {
             className: labelDiv, styles: 'height:' + (this.taskBarHeight) + 'px;' +
                 'margin-top:' + this.taskBarMarginTop + 'px;'
         });
-        let spanElem: HTMLElement = createElement('span', { className: cls.label });
-        let property: string = this.parent.disableHtmlEncode ? 'textContent' : 'innerHTML';
+        const spanElem: HTMLElement = createElement('span', { className: cls.label });
+        const property: string = this.parent.disableHtmlEncode ? 'textContent' : 'innerHTML';
         spanElem[property] = labelString;
         templateString.appendChild(spanElem);
-        let div: HTMLElement = createElement('div');
+        const div: HTMLElement = createElement('div');
         div.appendChild(templateString);
         return div.childNodes;
     }
     /**
      * To get right label node.
-     * @return {NodeList}
+     *
+     * @param {number} i .
+     * @returns {NodeList} .
      * @private
      */
     private getRightLabelNode(i: number): NodeList {
-        let rightLabelNode: NodeList = this.rightLabelContainer();
+        const rightLabelNode: NodeList = this.rightLabelContainer();
         (<HTMLElement>rightLabelNode[0]).setAttribute('aria-label', this.generateTaskLabelAriaLabel('right'));
         let rightLabelTemplateNode: NodeList = null;
         if (this.rightTaskLabelTemplateFunction) {
@@ -687,7 +708,7 @@ export class ChartRows extends DateProcessor {
                 extend({ index: i }, this.templateData), this.parent, 'RightLabelTemplate',
                 this.getTemplateID('RightLabelTemplate'), false, undefined, rightLabelNode[0]);
         } else {
-            let field: string = this.parent.labelSettings.rightLabel;
+            const field: string = this.parent.labelSettings.rightLabel;
             let labelString: string = this.getTaskLabel(field);
             if (labelString) {
                 labelString = labelString === 'isCustomTemplate' ? field : labelString;
@@ -701,9 +722,9 @@ export class ChartRows extends DateProcessor {
     }
 
     private getManualTaskbar(): NodeList {
-        let data: IGanttData = this.templateData;
-        let taskbarHeight: number = (this.taskBarHeight / 2 - 1);
-        let innerDiv: string = (data.ganttProperties.startDate && data.ganttProperties.endDate && data.ganttProperties.duration) ?
+        const data: IGanttData = this.templateData;
+        const taskbarHeight: number = (this.taskBarHeight / 2 - 1);
+        const innerDiv: string = (data.ganttProperties.startDate && data.ganttProperties.endDate && data.ganttProperties.duration) ?
             ('<div class="' + cls.manualParentTaskBar + '" style="width:' + data.ganttProperties.width + 'px;' + 'height:' +
                 taskbarHeight / 5 + 'px;border-left-width:' + taskbarHeight / 5 +
                 'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>') :
@@ -716,7 +737,7 @@ export class ChartRows extends DateProcessor {
                         '" style="width:' + data.ganttProperties.width + 'px;' + 'height:' +
                         taskbarHeight * 2 + 'px;border-left-width:' + taskbarHeight / 5 +
                         'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>');
-        let template: string = '<div class="' + cls.manualParentMainContainer + '"' +
+        const template: string = '<div class="' + cls.manualParentMainContainer + '"' +
             'style=left:' + (data.ganttProperties.left - data.ganttProperties.autoLeft) + 'px;' +
             'width:' + data.ganttProperties.width + 'px;' +
             'height:' + taskbarHeight + 'px;>' + innerDiv + ((data.ganttProperties.startDate && data.ganttProperties.endDate &&
@@ -727,7 +748,7 @@ export class ChartRows extends DateProcessor {
                 'left:' + (data.ganttProperties.width - taskbarHeight / 5) + 'px;height:' +
                 (taskbarHeight) + 'px;border-right-width:' + taskbarHeight / 5 + 'px;border-bottom:' +
                 taskbarHeight / 5 + 'px solid transparent;>' + '</div></div>' : '');
-        let milestoneTemplate: string = '<div class="' + cls.manualParentMilestone + '" style="position:absolute;left:' +
+        const milestoneTemplate: string = '<div class="' + cls.manualParentMilestone + '" style="position:absolute;left:' +
             (data.ganttProperties.left - data.ganttProperties.autoLeft - (this.milestoneHeight / 2)) +
             'px;width:' + (this.milesStoneRadius * 2) +
             'px;">' + '<div class="' + cls.manualParentMilestoneTop + '" style="border-right-width:' +
@@ -740,38 +761,41 @@ export class ChartRows extends DateProcessor {
     }
     /**
      * To get parent taskbar node.
-     * @return {NodeList}
+     *
+     * @param {number} i .
+     * @param {NodeList} rootElement .
+     * @returns {NodeList} .
      * @private
      */
     private getParentTaskbarNode(i: number, rootElement?: NodeList): NodeList {
         let parentTaskbarNode: NodeList = null;
-        let data: IGanttData = this.templateData;
+        const data: IGanttData = this.templateData;
         if (this.parentTaskbarTemplateFunction) {
             parentTaskbarNode = this.parentTaskbarTemplateFunction(
                 extend({ index: i }, data), this.parent, 'ParentTaskbarTemplate',
                 this.getTemplateID('ParentTaskbarTemplate'), false, undefined, rootElement[0]);
         } else {
             let labelString: string = ''; let labelDiv: NodeList;
-            let tHeight: number = this.taskBarHeight / 5;
-            let template: NodeList = this.createDivElement('<div class="' + cls.parentTaskBarInnerDiv + ' ' +
+            const tHeight: number = this.taskBarHeight / 5;
+            const template: NodeList = this.createDivElement('<div class="' + cls.parentTaskBarInnerDiv + ' ' +
                 this.getExpandClass(data) + ' ' + cls.traceParentTaskBar + '"' +
                 ' style="width:' + (data.ganttProperties.isAutoSchedule ? data.ganttProperties.width :
-                    data.ganttProperties.autoWidth) + 'px;height:' + (data.ganttProperties.isAutoSchedule ? this.taskBarHeight :
-                        (tHeight * 3)) + 'px;margin-top:' + (data.ganttProperties.isAutoSchedule ? '' :
-                            (tHeight * 2)) + 'px;">' +
+                data.ganttProperties.autoWidth) + 'px;height:' + (data.ganttProperties.isAutoSchedule ? this.taskBarHeight :
+                (tHeight * 3)) + 'px;margin-top:' + (data.ganttProperties.isAutoSchedule ? '' :
+                (tHeight * 2)) + 'px;">' +
                 '</div>');
-            let progressBarInnerDiv: NodeList = this.createDivElement('<div class="' + cls.parentProgressBarInnerDiv + ' ' +
+            const progressBarInnerDiv: NodeList = this.createDivElement('<div class="' + cls.parentProgressBarInnerDiv + ' ' +
              this.getExpandClass(data) + ' ' + cls.traceParentProgressBar + '"' +
                 ' style="border-style:' + (data.ganttProperties.progressWidth ? 'solid;' : 'none;') +
                 'width:' + data.ganttProperties.progressWidth + 'px;' +
                 'border-top-right-radius:' + this.getBorderRadius(data) + 'px;' +
                 'border-bottom-right-radius:' + this.getBorderRadius(data) + 'px;height:100%;"></div>');
             if (this.taskLabelTemplateFunction) {
-                let parentTaskLabelNode: NodeList = this.taskLabelTemplateFunction(
+                const parentTaskLabelNode: NodeList = this.taskLabelTemplateFunction(
                     extend({ index: i }, data), this.parent, 'TaskLabelTemplate',
                     this.getTemplateID('TaskLabelTemplate'), false, undefined, progressBarInnerDiv[0]);
                 if (parentTaskLabelNode && parentTaskLabelNode.length > 0) {
-                    let div: Element = createElement('div');
+                    const div: Element = createElement('div');
                     div.appendChild(parentTaskLabelNode[0]);
                     labelString = div.innerHTML;
                 }
@@ -787,7 +811,7 @@ export class ChartRows extends DateProcessor {
                     this.taskBarHeight + 'px;">' + labelString + '</span>');
                 progressBarInnerDiv[0].appendChild([].slice.call(labelDiv)[0]);
             }
-            let milestoneTemplate: string = '<div class="' + cls.parentMilestone + '" style="position:absolute;">' +
+            const milestoneTemplate: string = '<div class="' + cls.parentMilestone + '" style="position:absolute;">' +
                 '<div class="' + cls.parentMilestoneTop + '" style="border-right-width:' +
                 this.milesStoneRadius + 'px;border-left-width:' + this.milesStoneRadius + 'px;border-bottom-width:' +
                 this.milesStoneRadius + 'px;"></div>' +
@@ -803,12 +827,13 @@ export class ChartRows extends DateProcessor {
     }
     /**
      * To get taskbar row('TR') node
-     * @return {NodeList}
+     *
+     * @returns {NodeList} .
      * @private
      */
     private getTableTrNode(): NodeList {
-        let table: Element = createElement('table');
-        let className: string = (this.parent.gridLines === 'Horizontal' || this.parent.gridLines === 'Both') ?
+        const table: Element = createElement('table');
+        const className: string = (this.parent.gridLines === 'Horizontal' || this.parent.gridLines === 'Both') ?
             'e-chart-row-border' : '';
         table.innerHTML = '<tr class="' + this.getRowClassName(this.templateData) + ' ' + cls.chartRow + '"' +
             'style="display:' + this.getExpandDisplayProp(this.templateData) + ';height:' +
@@ -820,7 +845,8 @@ export class ChartRows extends DateProcessor {
 
     /**
      * To initialize chart templates.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     private initializeChartTemplate(): void {
@@ -848,7 +874,7 @@ export class ChartRows extends DateProcessor {
     }
 
     private createDivElement(template: string): NodeList {
-        let div: Element = createElement('div');
+        const div: Element = createElement('div');
         div.innerHTML = template;
         return div.childNodes;
     }
@@ -861,9 +887,13 @@ export class ChartRows extends DateProcessor {
         }
         return result;
     }
-    /** @private */
+    /**
+     * @param {string} templateName .
+     * @returns {string} .
+     * @private
+     */
     public getTemplateID(templateName: string): string {
-        let ganttID: string = this.parent.element.id;
+        const ganttID: string = this.parent.element.id;
         return ganttID + templateName;
     }
 
@@ -929,54 +959,54 @@ export class ChartRows extends DateProcessor {
     }
 
     private leftLabelContainer(): NodeList {
-        let template: string = '<div class="' + ((this.leftTaskLabelTemplateFunction) ? cls.leftLabelTempContainer :
+        const template: string = '<div class="' + ((this.leftTaskLabelTemplateFunction) ? cls.leftLabelTempContainer :
             cls.leftLabelContainer) + ' ' + '" tabindex="-1" style="height:' +
             (this.parent.rowHeight - 1) + 'px;width:' + this.taskNameWidth(this.templateData) + '"></div>';
         return this.createDivElement(template);
     }
 
     private taskbarContainer(): NodeList {
-        let data: IGanttData = this.templateData;
-        let manualParent: boolean = this.parent.editModule && this.parent.editSettings.allowTaskbarEditing &&
+        const data: IGanttData = this.templateData;
+        const manualParent: boolean = this.parent.editModule && this.parent.editSettings.allowTaskbarEditing &&
             this.parent.editModule.taskbarEditModule.taskBarEditAction === 'ParentResizing' ?
             true : false;
-        let template: string = '<div class="' + cls.taskBarMainContainer + ' ' +
+        const template: string = '<div class="' + cls.taskBarMainContainer + ' ' +
             this.parent.getUnscheduledTaskClass(data.ganttProperties) + ' ' +
             ((data.ganttProperties.cssClass) ? data.ganttProperties.cssClass : '') + '" ' +
             ' tabindex="-1" style="' + ((data.ganttProperties.isMilestone && !manualParent) ?
-                ('width:' + this.milestoneHeight + 'px;height:' +
+            ('width:' + this.milestoneHeight + 'px;height:' +
                     this.milestoneHeight + 'px;margin-top:' + this.milestoneMarginTop + 'px;left:' + (data.ganttProperties.left -
                         (this.milestoneHeight / 2)) + 'px;') : ('width:' + data.ganttProperties.width +
                      'px;margin-top:' + this.taskBarMarginTop + 'px;left:' + (!data.hasChildRecords || data.ganttProperties.isAutoSchedule ?
-                         data.ganttProperties.left : data.ganttProperties.autoLeft) + 'px;height:' +
+                data.ganttProperties.left : data.ganttProperties.autoLeft) + 'px;height:' +
                             this.taskBarHeight + 'px;cursor:' + (data.ganttProperties.isAutoSchedule ? 'move;' : 'auto;'))) + '"></div>';
         return this.createDivElement(template);
     }
 
     private rightLabelContainer(): NodeList {
-        let template: string = '<div class="' + ((this.rightTaskLabelTemplateFunction) ? cls.rightLabelTempContainer :
+        const template: string = '<div class="' + ((this.rightTaskLabelTemplateFunction) ? cls.rightLabelTempContainer :
             cls.rightLabelContainer) + '" ' + ' tabindex="-1" style="left:' + this.getRightLabelLeft(this.templateData) + 'px;height:'
             + (this.parent.rowHeight - 1) + 'px;"></div>';
         return this.createDivElement(template);
     }
 
     private childTaskbarLeftResizer(): NodeList {
-        let lResizerLeft: number = -(this.parent.isAdaptive ? 12 : 2);
-        let template: string = '<div class="' + cls.taskBarLeftResizer + ' ' + cls.icon + '"' +
+        const lResizerLeft: number = -(this.parent.isAdaptive ? 12 : 2);
+        const template: string = '<div class="' + cls.taskBarLeftResizer + ' ' + cls.icon + '"' +
             ' style="left:' + lResizerLeft + 'px;height:' + (this.taskBarHeight) + 'px;"></div>';
         return this.createDivElement(template);
     }
 
     private childTaskbarRightResizer(): NodeList {
-        let rResizerLeft: number = this.parent.isAdaptive ? -2 : -10;
-        let template: string = '<div class="' + cls.taskBarRightResizer + ' ' + cls.icon + '"' +
+        const rResizerLeft: number = this.parent.isAdaptive ? -2 : -10;
+        const template: string = '<div class="' + cls.taskBarRightResizer + ' ' + cls.icon + '"' +
             ' style="left:' + (this.templateData.ganttProperties.width + rResizerLeft) + 'px;' +
             'height:' + (this.taskBarHeight) + 'px;"></div>';
         return this.createDivElement(template);
     }
 
     private childTaskbarProgressResizer(): NodeList {
-        let template: string = '<div class="' + cls.childProgressResizer + '"' +
+        const template: string = '<div class="' + cls.childProgressResizer + '"' +
             ' style="left:' + (this.templateData.ganttProperties.progressWidth - 6) + 'px;margin-top:' +
             (this.taskBarHeight - 4) + 'px;"><div class="' + cls.progressBarHandler + '"' +
             '><div class="' + cls.progressHandlerElement + '"></div>' +
@@ -985,11 +1015,11 @@ export class ChartRows extends DateProcessor {
     }
 
     private getLeftPointNode(): NodeList {
-        let data: IGanttData = this.templateData;
-        let pointerLeft: number = -((this.parent.isAdaptive ? 14 : 2) + this.connectorPointWidth);
-        let mileStoneLeft: number = -(this.connectorPointWidth + 2);
-        let pointerTop: number = Math.floor(this.milesStoneRadius - (this.connectorPointWidth / 2));
-        let template: string = '<div class="' + cls.leftConnectorPointOuterDiv + '" style="' +
+        const data: IGanttData = this.templateData;
+        const pointerLeft: number = -((this.parent.isAdaptive ? 14 : 2) + this.connectorPointWidth);
+        const mileStoneLeft: number = -(this.connectorPointWidth + 2);
+        const pointerTop: number = Math.floor(this.milesStoneRadius - (this.connectorPointWidth / 2));
+        const template: string = '<div class="' + cls.leftConnectorPointOuterDiv + '" style="' +
             ((data.ganttProperties.isMilestone) ? ('margin-top:' + pointerTop + 'px;left:' + mileStoneLeft +
                 'px;') : ('margin-top:' + this.connectorPointMargin + 'px;left:' + pointerLeft + 'px;')) + '">' +
             '<div class="' + cls.connectorPointLeft + ' ' + this.parent.getUnscheduledTaskClass(data.ganttProperties) +
@@ -999,10 +1029,10 @@ export class ChartRows extends DateProcessor {
     }
 
     private getRightPointNode(): NodeList {
-        let data: IGanttData = this.templateData;
-        let pointerRight: number = this.parent.isAdaptive ? 10 : -2;
-        let pointerTop: number = Math.floor(this.milesStoneRadius - (this.connectorPointWidth / 2));
-        let template: string = '<div class="' + cls.rightConnectorPointOuterDiv + '" style="' +
+        const data: IGanttData = this.templateData;
+        const pointerRight: number = this.parent.isAdaptive ? 10 : -2;
+        const pointerTop: number = Math.floor(this.milesStoneRadius - (this.connectorPointWidth / 2));
+        const template: string = '<div class="' + cls.rightConnectorPointOuterDiv + '" style="' +
             ((data.ganttProperties.isMilestone) ? ('left:' + (this.milestoneHeight - 2) + 'px;margin-top:' +
                 pointerTop + 'px;') : ('left:' + (data.ganttProperties.width + pointerRight) + 'px;margin-top:' +
                     this.connectorPointMargin + 'px;')) + '">' +
@@ -1013,12 +1043,14 @@ export class ChartRows extends DateProcessor {
     }
 
     /**
-     * To get task label. 
-     * @return {string}
+     * To get task label.
+     *
+     * @param {string} field .
+     * @returns {string} .
      * @private
      */
     private getTaskLabel(field: string): string {
-        let length: number = this.parent.ganttColumns.length;
+        const length: number = this.parent.ganttColumns.length;
         let resultString: string = null;
         if (!isNullOrUndefined(field) && field !== '') {
             if (field === this.parent.taskFields.resourceInfo) {
@@ -1050,7 +1082,7 @@ export class ChartRows extends DateProcessor {
     private getRowClassName(data: IGanttData): string {
         data = this.templateData;
         let rowClass: string = 'gridrowtaskId';
-        let parentItem: IParent = data.parentItem;
+        const parentItem: IParent = data.parentItem;
         if (parentItem) {
             rowClass += parentItem.taskId.toString();
         }
@@ -1061,7 +1093,7 @@ export class ChartRows extends DateProcessor {
 
     private getBorderRadius(data: IGanttData): number {
         data = this.templateData;
-        let diff: number = data.ganttProperties.width - data.ganttProperties.progressWidth;
+        const diff: number = data.ganttProperties.width - data.ganttProperties.progressWidth;
         if (diff <= 4) {
             return 4 - diff;
         } else {
@@ -1070,7 +1102,7 @@ export class ChartRows extends DateProcessor {
     }
 
     private getSplitTaskBorderRadius(data: ITaskSegment): number {
-        let diff: number = data.width - data.progressWidth;
+        const diff: number = data.width - data.progressWidth;
         if (diff <= 4) {
             return 4 - diff;
         } else {
@@ -1079,7 +1111,7 @@ export class ChartRows extends DateProcessor {
     }
     private taskNameWidth(ganttData: IGanttData): string {
         ganttData = this.templateData;
-        let ganttProp: ITaskData = ganttData.ganttProperties;
+        const ganttProp: ITaskData = ganttData.ganttProperties;
         let width: number;
         if (ganttData.ganttProperties.isMilestone) {
             width = (ganttData.ganttProperties.left - (this.parent.getTaskbarHeight() / 2));
@@ -1101,7 +1133,7 @@ export class ChartRows extends DateProcessor {
 
     private getRightLabelLeft(ganttData: IGanttData): number {
         ganttData = this.templateData;
-        let ganttProp: ITaskData = ganttData.ganttProperties;
+        const ganttProp: ITaskData = ganttData.ganttProperties;
         let left: number;
         let endLeft: number;
         let width: number;
@@ -1142,11 +1174,11 @@ export class ChartRows extends DateProcessor {
         ganttData = this.templateData;
         let resource: string = null;
         if (!isNullOrUndefined(ganttData.ganttProperties.resourceInfo)) {
-            let length: number = ganttData.ganttProperties.resourceInfo.length;
+            const length: number = ganttData.ganttProperties.resourceInfo.length;
             if (length > 0) {
                 for (let i: number = 0; i < length; i++) {
                     let resourceName: string = ganttData.ganttProperties.resourceInfo[i][this.parent.resourceFields.name];
-                    let resourceUnit: number = ganttData.ganttProperties.resourceInfo[i][this.parent.resourceFields.unit];
+                    const resourceUnit: number = ganttData.ganttProperties.resourceInfo[i][this.parent.resourceFields.unit];
                     if (resourceUnit !== 100) {
                         resourceName += '[' + resourceUnit + '%' + ']';
                     }
@@ -1166,7 +1198,8 @@ export class ChartRows extends DateProcessor {
 
     /**
      * To initialize private variable help to render task bars.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     private initChartHelperPrivateVariable(): void {
@@ -1194,7 +1227,8 @@ export class ChartRows extends DateProcessor {
 
     /**
      * Function used to refresh Gantt rows.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public refreshGanttRows(): void {
@@ -1202,9 +1236,8 @@ export class ChartRows extends DateProcessor {
         this.createTaskbarTemplate();
         if (this.parent.viewType === 'ResourceView' && this.parent.showOverAllocation) {
             for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
-                let data: IGanttData = this.parent.currentViewData[i];
+                const data: IGanttData = this.parent.currentViewData[i];
                 if (data.childRecords.length > 0) {
-                    /* tslint:disable-next-line */
                     this.parent.setRecordValue('workTimelineRanges', this.parent.dataOperation.mergeRangeCollections(data.ganttProperties.workTimelineRanges, true), data.ganttProperties, true);
                     this.parent.dataOperation.calculateRangeLeftWidth(data.ganttProperties.workTimelineRanges);
                 }
@@ -1215,29 +1248,32 @@ export class ChartRows extends DateProcessor {
 
     /**
      * To render taskbars.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     private createTaskbarTemplate(): void {
         this.updateTaskbarBlazorTemplate(false);
-        let trs: Element[] = [].slice.call(this.ganttChartTableBody.querySelectorAll('tr'));
+        const trs: Element[] = [].slice.call(this.ganttChartTableBody.querySelectorAll('tr'));
         this.ganttChartTableBody.innerHTML = '';
-        let collapsedResourceRecord: IGanttData[] = [];
-        let prevCurrentView: Object[] = this.parent.treeGridModule.prevCurrentView as object[];
+        const collapsedResourceRecord: IGanttData[] = [];
+        // eslint-disable-next-line
+        const prevCurrentView: Object[] = this.parent.treeGridModule.prevCurrentView as object[];
         if (this.parent.enableImmutableMode && prevCurrentView && prevCurrentView.length > 0) {
             this.refreshedTr = []; this.refreshedData = [];
-            let oldKeys: object = {};
-            let oldRowElements: Element[] = [];
-            let key: string = this.parent.treeGrid.getPrimaryKeyFieldNames()[0];
+            // eslint-disable-next-line
+            const oldKeys: object = {};
+            const oldRowElements: Element[] = [];
+            const key: string = this.parent.treeGrid.getPrimaryKeyFieldNames()[0];
             for (let i: number = 0; i < prevCurrentView.length; i++) {
                 oldRowElements[i] = trs[i];
                 oldKeys[prevCurrentView[i][key]] = i;
             }
             for (let index: number = 0; index < this.parent.currentViewData.length; index++) {
-                let oldIndex: number = oldKeys[this.parent.currentViewData[index][key]];
-                let modifiedRecIndex: number = this.parent.modifiedRecords.indexOf(this.parent.currentViewData[index]);
+                const oldIndex: number = oldKeys[this.parent.currentViewData[index][key]];
+                const modifiedRecIndex: number = this.parent.modifiedRecords.indexOf(this.parent.currentViewData[index]);
                 if (isNullOrUndefined(oldIndex) || modifiedRecIndex !== -1) {
-                    let tRow: Node = this.getGanttChartRow(index, this.parent.currentViewData[index]);
+                    const tRow: Node = this.getGanttChartRow(index, this.parent.currentViewData[index]);
                     this.ganttChartTableBody.appendChild(tRow);
                     this.refreshedTr.push(this.ganttChartTableBody.querySelectorAll('tr')[index]);
                     this.refreshedData.push(this.parent.currentViewData[index]);
@@ -1245,14 +1281,14 @@ export class ChartRows extends DateProcessor {
                     this.ganttChartTableBody.appendChild(oldRowElements[oldIndex]);
                 }
                 this.ganttChartTableBody.querySelectorAll('tr')[index].setAttribute('aria-rowindex', index.toString());
-           }
+            }
         }  else {
-             for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
-                let tempTemplateData: IGanttData = this.parent.currentViewData[i];
+            for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
+                const tempTemplateData: IGanttData = this.parent.currentViewData[i];
                 if (this.parent.viewType === 'ResourceView' && !tempTemplateData.expanded && this.parent.enableMultiTaskbar) {
                     collapsedResourceRecord.push(tempTemplateData);
                 }
-                let tRow: Node = this.getGanttChartRow(i, tempTemplateData);
+                const tRow: Node = this.getGanttChartRow(i, tempTemplateData);
                 this.ganttChartTableBody.appendChild(tRow);
                 // To maintain selection when virtualization is enabled
                 if (this.parent.selectionModule && this.parent.allowSelection) {
@@ -1276,26 +1312,28 @@ export class ChartRows extends DateProcessor {
 
     /**
      * To render taskbars.
-     * @return {Node}
+     *
+     * @param {number} i .
+     * @param {IGanttData} tempTemplateData .
+     * @returns {Node} .
      * @private
      */
-    /* tslint:disable-next-line:max-func-body-length */
     public getGanttChartRow(i: number, tempTemplateData: IGanttData): Node {
         this.templateData = tempTemplateData;
         let taskBaselineTemplateNode: NodeList = null;
-        let parentTrNode: NodeList = this.getTableTrNode();
-        let leftLabelNode: NodeList = this.getLeftLabelNode(i);
-        let taskbarContainerNode: NodeList = this.taskbarContainer();
+        const parentTrNode: NodeList = this.getTableTrNode();
+        const leftLabelNode: NodeList = this.getLeftLabelNode(i);
+        const taskbarContainerNode: NodeList = this.taskbarContainer();
         (<HTMLElement>taskbarContainerNode[0]).setAttribute('aria-label', this.generateAriaLabel(this.templateData));
         (<HTMLElement>taskbarContainerNode[0]).setAttribute('rowUniqueId', this.templateData.ganttProperties.rowUniqueID);
         if (!this.templateData.hasChildRecords) {
-            let connectorLineLeftNode: NodeList = this.getLeftPointNode();
+            const connectorLineLeftNode: NodeList = this.getLeftPointNode();
             taskbarContainerNode[0].appendChild([].slice.call(connectorLineLeftNode)[0]);
         }
         if (this.templateData.hasChildRecords) {
-            let parentTaskbarTemplateNode: NodeList = this.getParentTaskbarNode(i, taskbarContainerNode);
+            const parentTaskbarTemplateNode: NodeList = this.getParentTaskbarNode(i, taskbarContainerNode);
             if (!this.templateData.ganttProperties.isAutoSchedule) {
-                let manualTaskbar: NodeList = this.getManualTaskbar();
+                const manualTaskbar: NodeList = this.getManualTaskbar();
                 taskbarContainerNode[0].appendChild([].slice.call(manualTaskbar)[0]);
             }
             if (parentTaskbarTemplateNode && parentTaskbarTemplateNode.length > 0) {
@@ -1306,7 +1344,7 @@ export class ChartRows extends DateProcessor {
                 taskBaselineTemplateNode = this.getTaskBaselineNode();
             }
         } else if (this.templateData.ganttProperties.isMilestone) {
-            let milestoneTemplateNode: NodeList = this.getMilestoneNode(i, taskbarContainerNode);
+            const milestoneTemplateNode: NodeList = this.getMilestoneNode(i, taskbarContainerNode);
             if (milestoneTemplateNode && milestoneTemplateNode.length > 0) {
                 taskbarContainerNode[0].appendChild([].slice.call(milestoneTemplateNode)[0]);
             }
@@ -1315,7 +1353,7 @@ export class ChartRows extends DateProcessor {
                 taskBaselineTemplateNode = this.getMilestoneBaselineNode();
             }
         } else {
-            let scheduledTask: boolean = isScheduledTask(this.templateData.ganttProperties);
+            const scheduledTask: boolean = isScheduledTask(this.templateData.ganttProperties);
             let childTaskbarProgressResizeNode: NodeList = null; let childTaskbarRightResizeNode: NodeList = null;
             let childTaskbarLeftResizeNode: NodeList = null;
             if (!isNullOrUndefined(scheduledTask)) {
@@ -1327,15 +1365,15 @@ export class ChartRows extends DateProcessor {
                         childTaskbarRightResizeNode = this.childTaskbarRightResizer();
                     }
                 }
-                let childTaskbarTemplateNode: NodeList = this.getChildTaskbarNode(i, taskbarContainerNode);
+                const childTaskbarTemplateNode: NodeList = this.getChildTaskbarNode(i, taskbarContainerNode);
                 if (childTaskbarLeftResizeNode) {
                     taskbarContainerNode[0].appendChild([].slice.call(childTaskbarLeftResizeNode)[0]);
                 }
                 if (childTaskbarTemplateNode && childTaskbarTemplateNode.length > 0) {
                     if (this.templateData.ganttProperties.segments && this.templateData.ganttProperties.segments.length > 0) {
-                        let length: number = this.templateData.ganttProperties.segments.length;
+                        const length: number = this.templateData.ganttProperties.segments.length;
+                        const connector: string = ('<div class="e-gantt-split-container-line"></div>');
                         let segmentConnector: NodeList = null;
-                        let connector: string = ('<div class="e-gantt-split-container-line"></div>');
                         segmentConnector = this.createDivElement(connector);
                         taskbarContainerNode[0].appendChild([].slice.call(segmentConnector)[0]);
                         for (let i: number = 0; i < length; i++) {
@@ -1358,17 +1396,18 @@ export class ChartRows extends DateProcessor {
             }
         }
         if (!this.templateData.hasChildRecords) {
-            let connectorLineRightNode: NodeList = this.getRightPointNode();
+            const connectorLineRightNode: NodeList = this.getRightPointNode();
             taskbarContainerNode[0].appendChild([].slice.call(connectorLineRightNode)[0]);
         }
-        let rightLabelNode: NodeList = this.getRightLabelNode(i);
+        const rightLabelNode: NodeList = this.getRightLabelNode(i);
         parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(leftLabelNode)[0]);
         parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(taskbarContainerNode)[0]);
         if (this.templateData.ganttProperties.indicators && this.templateData.ganttProperties.indicators.length > 0) {
             let taskIndicatorNode: NodeList;
+            // eslint-disable-next-line
             let taskIndicatorTextFunction: Function;
             let taskIndicatorTextNode: NodeList;
-            let indicators: IIndicator[] = this.templateData.ganttProperties.indicators;
+            const indicators: IIndicator[] = this.templateData.ganttProperties.indicators;
             for (let indicatorIndex: number = 0; indicatorIndex < indicators.length; indicatorIndex++) {
                 taskIndicatorNode = this.getIndicatorNode(indicators[indicatorIndex]);
                 if (indicators[indicatorIndex].name.indexOf('$') > -1 || indicators[indicatorIndex].name.indexOf('#') > -1) {
@@ -1376,7 +1415,7 @@ export class ChartRows extends DateProcessor {
                     taskIndicatorTextNode = taskIndicatorTextFunction(
                         extend({ index: i }, this.templateData), this.parent, 'indicatorLabelText');
                 } else {
-                    let text: Element = createElement('Text');
+                    const text: Element = createElement('Text');
                     text.innerHTML = indicators[indicatorIndex].name;
                     taskIndicatorTextNode = text.childNodes;
                 }
@@ -1392,45 +1431,47 @@ export class ChartRows extends DateProcessor {
         if (!isNullOrUndefined(taskBaselineTemplateNode)) {
             parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(taskBaselineTemplateNode)[0]);
         }
-        let tRow: Node = parentTrNode[0].childNodes[0];
+        const tRow: Node = parentTrNode[0].childNodes[0];
         this.setAriaRowIndex(tempTemplateData, tRow);
         return tRow;
     }
     /**
      * To set aria-rowindex for chart rows
-     * @return {void}
+     *
+     * @returns {void} .
      * @private
      */
 
     public setAriaRowIndex(tempTemplateData: IGanttData, tRow: Node): void {
-        let dataSource: IGanttData[] = this.parent.treeGrid.getCurrentViewRecords() as IGanttData[];
-        let visualData: IGanttData[] = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
-         getValue('virtualScrollModule.visualData', this.parent.treeGrid) : dataSource;
-        let index: number = visualData.indexOf(tempTemplateData);
+        const dataSource: IGanttData[] = this.parent.treeGrid.getCurrentViewRecords() as IGanttData[];
+        const visualData: IGanttData[] = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
+            getValue('virtualScrollModule.visualData', this.parent.treeGrid) : dataSource;
+        const index: number = visualData.indexOf(tempTemplateData);
         (tRow as Element).setAttribute('aria-rowindex', index.toString());
     }
     /**
      * To trigger query taskbar info event.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public triggerQueryTaskbarInfo(): void {
         if (!this.parent.queryTaskbarInfo) {
             return;
         }
-        let length: number = this.refreshedTr.length > 0 ?
-         this.refreshedTr.length : this.ganttChartTableBody.querySelectorAll('tr').length;
+        const length: number = this.refreshedTr.length > 0 ?
+            this.refreshedTr.length : this.ganttChartTableBody.querySelectorAll('tr').length;
         let trElement: Element;
         let data: IGanttData;
         for (let index: number = 0; index < length; index++) {
             trElement = this.refreshedTr.length > 0 ? this.refreshedTr[index] : this.ganttChartTableBody.querySelectorAll('tr')[index];
             data = this.refreshedData.length > 0 ? this.refreshedData[index] : this.parent.currentViewData[index];
-            let segmentLength: number = !isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length;
+            const segmentLength: number = !isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length;
             if (segmentLength > 0) {
                 for (let i: number = 0; i < segmentLength; i++) {
-                    let segmentedTasks: HTMLCollectionOf<HTMLElement> =
+                    const segmentedTasks: HTMLCollectionOf<HTMLElement> =
                         trElement.getElementsByClassName('e-segmented-taskbar') as HTMLCollectionOf<HTMLElement>;
-                    let segmentElement: HTMLElement = segmentedTasks[i] as HTMLElement;
+                    const segmentElement: HTMLElement = segmentedTasks[i] as HTMLElement;
                     this.triggerQueryTaskbarInfoByIndex(segmentElement, data);
                 }
             } else {
@@ -1439,32 +1480,33 @@ export class ChartRows extends DateProcessor {
         }
     }
     /**
-     * 
-     * @param trElement 
-     * @param data 
+     *
+     * @param {Element} trElement .
+     * @param {IGanttData} data .
+     * @returns {void} .
      * @private
      */
     public triggerQueryTaskbarInfoByIndex(trElement: Element, data: IGanttData): void {
-        let taskbarElement: Element;
-        taskbarElement = !isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length > 0 ? trElement :
+        // eslint-disable-next-line
+        const taskbarElement: Element = !isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length > 0 ? trElement :
             trElement.querySelector('.' + cls.taskBarMainContainer);
         let rowElement: Element;
         let triggerTaskbarElement: Element;
-        let args: IQueryTaskbarInfoEventArgs = {
+        const args: IQueryTaskbarInfoEventArgs = {
             data: data,
             rowElement: trElement,
             taskbarElement: taskbarElement,
             taskbarType: data.hasChildRecords ? 'ParentTask' : data.ganttProperties.isMilestone ? 'Milestone' : 'ChildTask'
         };
-        let classCollections: string[] = this.getClassName(args);
+        const classCollections: string[] = this.getClassName(args);
         if (args.taskbarType === 'Milestone') {
             args.milestoneColor = taskbarElement.querySelector(classCollections[0]) ?
                 getComputedStyle(taskbarElement.querySelector(classCollections[0])).borderBottomColor : null;
             args.baselineColor = trElement.querySelector(classCollections[1]) ?
                 getComputedStyle(trElement.querySelector(classCollections[1])).borderBottomColor : null;
         } else {
-            let childTask: HTMLElement = taskbarElement.querySelector(classCollections[0]);
-            let progressTask: HTMLElement = taskbarElement.querySelector(classCollections[1]);
+            const childTask: HTMLElement = taskbarElement.querySelector(classCollections[0]);
+            const progressTask: HTMLElement = taskbarElement.querySelector(classCollections[1]);
             args.taskbarBgColor = isNullOrUndefined(childTask) ? null : taskbarElement.classList.contains(cls.traceChildTaskBar) ?
                 getComputedStyle(taskbarElement).backgroundColor :
                 getComputedStyle(taskbarElement.querySelector(classCollections[0])).backgroundColor;
@@ -1499,13 +1541,17 @@ export class ChartRows extends DateProcessor {
 
     /**
      * To update query taskbar info args.
-     * @return {void}
+     *
+     * @param {IQueryTaskbarInfoEventArgs} args .
+     * @param {Element} rowElement .
+     * @param {Element} taskBarElement .
+     * @returns {void}
      * @private
      */
     private updateQueryTaskbarInfoArgs(args: IQueryTaskbarInfoEventArgs, rowElement?: Element, taskBarElement?: Element): void {
-        let trElement: Element = isBlazor() && rowElement ? rowElement : args.rowElement;
-        let taskbarElement: Element = isBlazor() && taskBarElement ? taskBarElement : args.taskbarElement;
-        let classCollections: string[] = this.getClassName(args);
+        const trElement: Element = isBlazor() && rowElement ? rowElement : args.rowElement;
+        const taskbarElement: Element = isBlazor() && taskBarElement ? taskBarElement : args.taskbarElement;
+        const classCollections: string[] = this.getClassName(args);
         if (args.taskbarType === 'Milestone') {
             if (taskbarElement.querySelector(classCollections[0]) &&
                 getComputedStyle(taskbarElement.querySelector(classCollections[0])).borderBottomColor !== args.milestoneColor) {
@@ -1574,7 +1620,7 @@ export class ChartRows extends DateProcessor {
         }
     }
     private getClassName(args: IQueryTaskbarInfoEventArgs): string[] {
-        let classCollection: string[] = [];
+        const classCollection: string[] = [];
         classCollection.push('.' + (args.taskbarType === 'ParentTask' ?
             cls.traceParentTaskBar : args.taskbarType === 'ChildTask' ? cls.traceChildTaskBar : cls.milestoneTop));
         classCollection.push('.' + (args.taskbarType === 'ParentTask' ?
@@ -1583,12 +1629,15 @@ export class ChartRows extends DateProcessor {
     }
     /**
      * To compile template string.
-     * @return {Function}
+     *
+     * @param {string} template .
+     * @returns {Function} .
      * @private
      */
+    // eslint-disable-next-line
     public templateCompiler(template: string): Function {
         if (!isNullOrUndefined(template) && template !== '') {
-           try {
+            try {
                 if (document.querySelectorAll(template).length) {
                     return compile(document.querySelector(template).innerHTML.trim(), this.parent);
                 } else {
@@ -1603,14 +1652,17 @@ export class ChartRows extends DateProcessor {
 
     /**
      * To refresh edited TR
-     * @param index 
+     *
+     * @param {number} index .
+     * @param {boolean} isValidateRange .
+     * @returns {void} .
      * @private
      */
     public refreshRow(index: number, isValidateRange?: boolean): void {
-        let tr: Node = this.ganttChartTableBody.childNodes[index];
-        let selectedItem: IGanttData = this.parent.currentViewData[index];
+        const tr: Node = this.ganttChartTableBody.childNodes[index];
+        const selectedItem: IGanttData = this.parent.currentViewData[index];
         if (index !== -1 && selectedItem) {
-            let data: IGanttData = selectedItem;
+            const data: IGanttData = selectedItem;
             if (this.parent.viewType === 'ResourceView' && data.hasChildRecords && !data.expanded && this.parent.enableMultiTaskbar) {
                 tr.replaceChild(this.getResourceParent(data).childNodes[0], tr.childNodes[0]);
             } else {
@@ -1624,47 +1676,46 @@ export class ChartRows extends DateProcessor {
                     this.parent.ganttChartModule.renderRangeContainer([data]);
                 }
             }
-            let segmentLength: number = !isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length;
+            const segmentLength: number = !isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length;
             if (segmentLength > 0) {
                 for (let i: number = 0; i < segmentLength; i++) {
-                    let segmentedTasks: HTMLCollectionOf<HTMLElement> =
+                    const segmentedTasks: HTMLCollectionOf<HTMLElement> =
                         (tr as Element).getElementsByClassName('e-segmented-taskbar') as HTMLCollectionOf<HTMLElement>;
-                    let segmentElement: HTMLElement = segmentedTasks[i] as HTMLElement;
+                    const segmentElement: HTMLElement = segmentedTasks[i] as HTMLElement;
                     this.triggerQueryTaskbarInfoByIndex(segmentElement, data);
                 }
             } else {
                 this.triggerQueryTaskbarInfoByIndex(tr as Element, data);
             }
             this.triggerQueryTaskbarInfoByIndex(tr as Element, data);
-            /* tslint:disable-next-line */
-            let dataId: number | string = this.parent.viewType === 'ProjectView' ? data.ganttProperties.taskId : data.ganttProperties.rowUniqueID;
+            const dataId: number | string = this.parent.viewType === 'ProjectView' ? data.ganttProperties.taskId : data.ganttProperties.rowUniqueID;
             this.parent.treeGrid.grid.setRowData(dataId, data);
-            let row: Row<Column> = this.parent.treeGrid.grid.getRowObjectFromUID(
+            const row: Row<Column> = this.parent.treeGrid.grid.getRowObjectFromUID(
                 this.parent.treeGrid.grid.getDataRows()[index].getAttribute('data-uid'));
             row.data = data;
         }
     }
 
     private getResourceParent(record: IGanttData): Node {
-        let chartRows: NodeListOf<Element> = this.parent.ganttChartModule.getChartRows();
+        const chartRows: NodeListOf<Element> = this.parent.ganttChartModule.getChartRows();
         this.templateData = record;
-        let parentTrNode: NodeList = this.getTableTrNode();
-        let leftLabelNode: NodeList = this.leftLabelContainer();
-        let collapseParent: HTMLElement = createElement('div', {
+        const parentTrNode: NodeList = this.getTableTrNode();
+        const leftLabelNode: NodeList = this.leftLabelContainer();
+        const collapseParent: HTMLElement = createElement('div', {
             className: 'e-collapse-parent'
         });
         parentTrNode[0].childNodes[0].childNodes[0].appendChild(collapseParent);
-        let tasks: IGanttData[] = this.parent.dataOperation.setSortedChildTasks(record);
+        const tasks: IGanttData[] = this.parent.dataOperation.setSortedChildTasks(record);
         this.parent.dataOperation.updateOverlappingIndex(tasks);
         for (let i: number = 0; i < chartRows.length; i++) {
             if ((<HTMLElement>chartRows[i]).classList.contains('gridrowtaskId'
                 + record.ganttProperties.rowUniqueID + 'level' + (record.level + 1))) {
-                let cloneElement: HTMLElement = chartRows[i].querySelector('.e-taskbar-main-container');
+                const cloneElement: HTMLElement = chartRows[i].querySelector('.e-taskbar-main-container');
                 addClass([cloneElement], 'collpse-parent-border');
-                let id: string = chartRows[i].querySelector('.' + cls.taskBarMainContainer).getAttribute('rowUniqueId');
-                let ganttData: IGanttData = this.parent.getRecordByID(id);
-                let zIndex: string = (ganttData.ganttProperties.eOverlapIndex).toString();
-                let cloneChildElement: HTMLElement = cloneElement.cloneNode(true) as HTMLElement;
+                const id: string = chartRows[i].querySelector('.' + cls.taskBarMainContainer).getAttribute('rowUniqueId');
+                const ganttData: IGanttData = this.parent.getRecordByID(id);
+                const zIndex: string = (ganttData.ganttProperties.eOverlapIndex).toString();
+                const cloneChildElement: HTMLElement = cloneElement.cloneNode(true) as HTMLElement;
                 cloneChildElement.style.zIndex = zIndex;
                 parentTrNode[0].childNodes[0].childNodes[0].childNodes[0].appendChild(cloneChildElement);
             }
@@ -1674,7 +1725,10 @@ export class ChartRows extends DateProcessor {
     }
     /**
      * To refresh all edited records
-     * @param items 
+     *
+     * @param {IGanttData} items .
+     * @param {boolean} isValidateRange .
+     * @returns {void} .
      * @private
      */
     public refreshRecords(items: IGanttData[], isValidateRange?: boolean): void {
@@ -1687,7 +1741,7 @@ export class ChartRows extends DateProcessor {
                 items = sortedRecords;
             }
             for (let i: number = 0; i < items.length; i++) {
-                let index: number = this.parent.currentViewData.indexOf(items[i]);
+                const index: number = this.parent.currentViewData.indexOf(items[i]);
                 this.refreshRow(index, isValidateRange);
             }
             this.parent.ganttChartModule.updateLastRowBottomWidth();
@@ -1711,14 +1765,14 @@ export class ChartRows extends DateProcessor {
     private generateAriaLabel(data: IGanttData): string {
         data = this.templateData;
         let defaultValue: string = '';
-        let nameConstant: string = this.parent.localeObj.getConstant('name');
-        let startDateConstant: string = this.parent.localeObj.getConstant('startDate');
-        let endDateConstant: string = this.parent.localeObj.getConstant('endDate');
-        let durationConstant: string = this.parent.localeObj.getConstant('duration');
-        let taskNameVal: string = data.ganttProperties.taskName;
-        let startDateVal: Date = data.ganttProperties.startDate;
-        let endDateVal: Date = data.ganttProperties.endDate;
-        let durationVal: number = data.ganttProperties.duration;
+        const nameConstant: string = this.parent.localeObj.getConstant('name');
+        const startDateConstant: string = this.parent.localeObj.getConstant('startDate');
+        const endDateConstant: string = this.parent.localeObj.getConstant('endDate');
+        const durationConstant: string = this.parent.localeObj.getConstant('duration');
+        const taskNameVal: string = data.ganttProperties.taskName;
+        const startDateVal: Date = data.ganttProperties.startDate;
+        const endDateVal: Date = data.ganttProperties.endDate;
+        const durationVal: number = data.ganttProperties.duration;
 
         if (data.ganttProperties.isMilestone) {
             defaultValue = nameConstant + ' ' + taskNameVal + ' ' + startDateConstant + ' '
@@ -1743,12 +1797,12 @@ export class ChartRows extends DateProcessor {
 
     private generateSpiltTaskAriaLabel(data: ITaskSegment, ganttProp: ITaskData): string {
         let defaultValue: string = '';
-        let startDateConstant: string = this.parent.localeObj.getConstant('startDate');
-        let endDateConstant: string = this.parent.localeObj.getConstant('endDate');
-        let durationConstant: string = this.parent.localeObj.getConstant('duration');
-        let startDateVal: Date = data.startDate;
-        let endDateVal: Date = data.endDate;
-        let durationVal: number = data.duration;
+        const startDateConstant: string = this.parent.localeObj.getConstant('startDate');
+        const endDateConstant: string = this.parent.localeObj.getConstant('endDate');
+        const durationConstant: string = this.parent.localeObj.getConstant('duration');
+        const startDateVal: Date = data.startDate;
+        const endDateVal: Date = data.endDate;
+        const durationVal: number = data.duration;
         if (startDateVal) {
             defaultValue += startDateConstant + ' ' + this.parent.getFormatedDate(startDateVal) + ' ';
         }

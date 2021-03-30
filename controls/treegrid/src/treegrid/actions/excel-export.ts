@@ -9,6 +9,7 @@ import { DataManager, Query, ReturnOption } from '@syncfusion/ej2-data';
 import * as event from '../base/constant';
 /**
  * TreeGrid Excel Export module
+ *
  * @hidden
  */
 export class ExcelExport {
@@ -17,6 +18,8 @@ export class ExcelExport {
     private isCollapsedStatePersist: boolean = false;
     /**
      * Constructor for Excel Export module
+     *
+     * @param {TreeGrid} parent - Tree Grid instance
      */
     constructor(parent?: TreeGrid) {
         Grid.Inject(GridExcel);
@@ -26,80 +29,85 @@ export class ExcelExport {
     }
     /**
      * For internal use only - Get the module name.
+     *
      * @private
+     * @returns {string} Returns ExcelExport module name
      */
     protected getModuleName(): string {
-      return 'ExcelExport';
+        return 'ExcelExport';
     }
     /**
      * @hidden
+     * @returns {void}
      */
     public addEventListener(): void {
         this.parent.on('updateResults', this.updateExcelResultModel, this);
         this.parent.on('excelCellInfo', this.excelQueryCellInfo, this);
         this.parent.grid.on('export-RowDataBound', this.exportRowDataBound, this);
         this.parent.grid.on('finalPageSetup', this.finalPageSetup, this);
-      }
-      /**
-       * To destroy the Excel Export
-       * @return {void}
-       * @hidden
-       */
-       public destroy(): void {
-         this.removeEventListener();
-       }
-      /**
-       * @hidden
-       */
-      public removeEventListener(): void {
+    }
+    /**
+     * To destroy the Excel Export
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public destroy(): void {
+        this.removeEventListener();
+    }
+    /**
+     * @hidden
+     * @returns {void}
+     */
+    public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off('updateResults', this.updateExcelResultModel);
         this.parent.off('excelCellInfo', this.excelQueryCellInfo);
         this.parent.grid.off('export-RowDataBound', this.exportRowDataBound);
         this.parent.grid.off('finalPageSetup', this.finalPageSetup);
-      }
-      private updateExcelResultModel(returnResult: { result: ITreeData[], count: number }): void {
+    }
+    private updateExcelResultModel(returnResult: { result: ITreeData[], count: number }): void {
         this.dataResults = <ReturnOption>returnResult;
-      }
+    }
     public Map(
         excelExportProperties?: ExcelExportProperties,
-        /* tslint:disable-next-line:no-any */
+        /* eslint-disable-next-line */
         isMultipleExport?: boolean, workbook?: any, isBlob?: boolean, isCsv?: boolean) : Promise<Object> {
-        let dataSource: Object = this.parent.dataSource;
-        let property: Object = Object();
+        const dataSource: Object = this.parent.dataSource;
+        const property: Object = Object();
         setValue('isCsv', isCsv, property);
         setValue('cancel', false, property);
         if (!isNullOrUndefined(excelExportProperties)) {
-          this.isCollapsedStatePersist = (excelExportProperties as TreeGridExcelExportProperties).isCollapsedStatePersist;
+            this.isCollapsedStatePersist = (excelExportProperties as TreeGridExcelExportProperties).isCollapsedStatePersist;
         }
-        return new Promise((resolve: Function, reject: Function) => {
-          let dm: DataManager = this.isLocal() && !(dataSource instanceof DataManager) ? new DataManager(dataSource)
-                                                   : <DataManager>this.parent.dataSource;
-          let query: Query = new Query();
-          if (!this.isLocal()) {
-            query = this.generateQuery(query);
-            setValue('query', query, property);
-          }
-          this.parent.trigger(event.beforeExcelExport, extend(property, excelExportProperties));
-          if (getObject('cancel', property)) {
-              return null;
-          }
-          dm.executeQuery(query).then((e: Object) => {
-            let customData: object = null;
-            if (!isNullOrUndefined(excelExportProperties) && !isNullOrUndefined(excelExportProperties.dataSource)) {
-              customData = excelExportProperties.dataSource;
+        return new Promise((resolve: Function) => {
+            const dm: DataManager = this.isLocal() && !(dataSource instanceof DataManager) ? new DataManager(dataSource)
+                : <DataManager>this.parent.dataSource;
+            let query: Query = new Query();
+            if (!this.isLocal()) {
+                query = this.generateQuery(query);
+                setValue('query', query, property);
             }
-            excelExportProperties = this.manipulateExportProperties(excelExportProperties, dataSource, <Ajax>e);
-            return this.parent.grid.excelExportModule.Map(
-              this.parent.grid, excelExportProperties, isMultipleExport, workbook, isCsv, isBlob).then((book: Object) => {
-                if (customData != null) {
-                  excelExportProperties.dataSource = customData;
-                } else {
-                  delete excelExportProperties.dataSource;
+            this.parent.trigger(event.beforeExcelExport, extend(property, excelExportProperties));
+            if (getObject('cancel', property)) {
+                return null;
+            }
+            dm.executeQuery(query).then((e: Object) => {
+                let customData: Object = null;
+                if (!isNullOrUndefined(excelExportProperties) && !isNullOrUndefined(excelExportProperties.dataSource)) {
+                    customData = excelExportProperties.dataSource;
                 }
-                resolve(book);
-              });
-          });
+                excelExportProperties = this.manipulateExportProperties(excelExportProperties, dataSource, <Ajax>e);
+                return this.parent.grid.excelExportModule.Map(
+                    this.parent.grid, excelExportProperties, isMultipleExport, workbook, isCsv, isBlob).then((book: Object) => {
+                    if (customData != null) {
+                        excelExportProperties.dataSource = customData;
+                    } else {
+                        delete excelExportProperties.dataSource;
+                    }
+                    resolve(book);
+                });
+            });
         });
     }
     protected generateQuery(query: Query, property?: ExcelExportProperties) : Query {
@@ -118,74 +126,77 @@ export class ExcelExport {
         setValue('query',  this.parent.grid.getDataModule().generateQuery(true), args);
         setValue('isExport',  true, args);
         if (!isNullOrUndefined(property) && !isNullOrUndefined(property.exportType)) {
-          setValue('exportType',  property.exportType, args);
+            setValue('exportType',  property.exportType, args);
         }
         if (!this.isLocal()) {
-          this.parent.parentData = [];
-          this.parent.dataModule.convertToFlatData(getObject('result', queryResult));
-          setValue('expresults',  this.parent.flatData, args);
+            this.parent.parentData = [];
+            this.parent.dataModule.convertToFlatData(getObject('result', queryResult));
+            setValue('expresults',  this.parent.flatData, args);
         }
         this.parent.notify('dataProcessor', args);
         //args = this.parent.dataModule.dataProcessor(args);
         args = <BeforeDataBoundArgs>this.dataResults;
         dtSrc = isNullOrUndefined(args.result) ? this.parent.flatData.slice(0) : args.result;
         if (!this.isLocal()) {
-          this.parent.flatData = [];
+            this.parent.flatData = [];
         }
         if (property && property.dataSource && this.isLocal()) {
-          let flatsData: object[] = this.parent.flatData;
-          let dataSrc: object = property.dataSource instanceof DataManager ? property.dataSource.dataSource.json : property.dataSource;
-          this.parent.dataModule.convertToFlatData(dataSrc);
-          dtSrc = this.parent.flatData;
-          this.parent.flatData = flatsData;
+            const flatsData: Object[] = this.parent.flatData;
+            const dataSrc: Object = property.dataSource instanceof DataManager ? property.dataSource.dataSource.json : property.dataSource;
+            this.parent.dataModule.convertToFlatData(dataSrc);
+            dtSrc = this.parent.flatData;
+            this.parent.flatData = flatsData;
         }
         property = isNullOrUndefined(property) ? Object() : property;
         property.dataSource = new DataManager({json: <Object[]>dtSrc});
         return property;
     }
-      /**
-       * TreeGrid Excel Export cell modifier
-       * @hidden
-       */
-      private excelQueryCellInfo(args?: ExcelQueryCellInfoEventArgs) : void {
+    /**
+     * TreeGrid Excel Export cell modifier
+     *
+     * @param {ExcelQueryCellInfoEventArgs} args - current cell details
+     * @hidden
+     * @returns {void}
+     */
+    private excelQueryCellInfo(args?: ExcelQueryCellInfoEventArgs) : void {
         if (this.parent.grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex) {
-            let style: ExcelStyle = {};
-            let data: ITreeData = <ITreeData>args.data;
-            let ispadfilter: boolean = isNullOrUndefined(data.filterLevel);
-            let pad: number = ispadfilter ? data.level : data.filterLevel;
+            const style: ExcelStyle = {};
+            const data: ITreeData = <ITreeData>args.data;
+            const ispadfilter: boolean = isNullOrUndefined(data.filterLevel);
+            const pad: number = ispadfilter ? data.level : data.filterLevel;
             style.indent = pad;
             args.style = style;
-          }
+        }
         this.parent.notify('updateResults', args);
         this.parent.trigger('excelQueryCellInfo', args);
-      }
-      private exportRowDataBound(excelRow: {excelRows: ExcelRow[], rowObj: Row<Column>, type: string}) : void {
-          if (excelRow.type === 'excel') {
-              let excelrowobj: ITreeData = excelRow.rowObj.data;
-              let filtercolumnlength: number = this.parent.grid.filterSettings.columns.length;
-              if (excelrowobj.parentItem && getParentData(this.parent, excelrowobj.parentItem.uniqueID, Boolean(filtercolumnlength))) {
-                  let rowlength: number = excelRow.excelRows.length;
-                  let rowlevel: number = excelrowobj.level;
-                  let expandedStatus: boolean = false; let sublevelState: boolean = false;
-                  let state: boolean = getExpandStatus(this.parent, excelrowobj, this.parent.parentData);
-                  if (this.isCollapsedStatePersist && (!state || !this.parent.isLocalData)) {
-                      expandedStatus = true;
-                      sublevelState = excelrowobj.expanded ? false : true;
-                  }
-                  excelRow.excelRows[rowlength - 1].grouping = { outlineLevel: rowlevel, isCollapsed: sublevelState,
-                                                                 isHidden: expandedStatus };
-              }
-          }
-      }
-      /* tslint:disable-next-line:max-func-body-length */
-      private finalPageSetup( /* tslint:disable-next-line:no-any */  workbook: any): void {
-          for (let i: number = 0; i < workbook.worksheets.length; i++) {
-              if (workbook.worksheets[i].rows) {
-                  workbook.worksheets[i].pageSetup = { isSummaryRowBelow: false };
-              }
-          }
-      }
-      private isLocal(): Boolean {
+    }
+    private exportRowDataBound(excelRow: {excelRows: ExcelRow[], rowObj: Row<Column>, type: string}) : void {
+        if (excelRow.type === 'excel') {
+            const excelrowobj: ITreeData = excelRow.rowObj.data;
+            const filtercolumnlength: number = this.parent.grid.filterSettings.columns.length;
+            if (excelrowobj.parentItem && getParentData(this.parent, excelrowobj.parentItem.uniqueID, Boolean(filtercolumnlength))) {
+                const rowlength: number = excelRow.excelRows.length;
+                const rowlevel: number = excelrowobj.level;
+                let expandedStatus: boolean = false; let sublevelState: boolean = false;
+                const state: boolean = getExpandStatus(this.parent, excelrowobj, this.parent.parentData);
+                if (this.isCollapsedStatePersist && (!state || !this.parent.isLocalData)) {
+                    expandedStatus = true;
+                    sublevelState = excelrowobj.expanded ? false : true;
+                }
+                excelRow.excelRows[rowlength - 1].grouping = { outlineLevel: rowlevel, isCollapsed: sublevelState,
+                    isHidden: expandedStatus };
+            }
+        }
+    }
+    /* eslint-disable-next-line */
+      private finalPageSetup(workbook: any): void {
+        for (let i: number = 0; i < workbook.worksheets.length; i++) {
+            if (workbook.worksheets[i].rows) {
+                workbook.worksheets[i].pageSetup = { isSummaryRowBelow: false };
+            }
+        }
+    }
+    private isLocal(): boolean {
         return !isRemoteData(this.parent) && isOffline(this.parent);
-      }
+    }
 }

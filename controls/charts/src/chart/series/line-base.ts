@@ -1,3 +1,9 @@
+/* eslint-disable no-trailing-spaces */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { getAnimationFunction, ChartLocation, pathAnimation, getElement } from '../../common/utils/helper';
 import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { VisibleRangeModel, Axis } from '../axis/axis';
@@ -20,23 +26,24 @@ export class LineBase {
     }
     /**
      * To improve the chart performance.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public enableComplexProperty(series: Series): Points[] {
-        let tempPoints: Points[] = [];
-        let tempPoints2: Points[] = [];
-        let xVisibleRange: VisibleRangeModel = series.xAxis.visibleRange;
-        let yVisibleRange: VisibleRangeModel = series.yAxis.visibleRange;
-        let seriesPoints: Points[] = <Points[]>series.points;
-        let areaBounds: Rect = series.clipRect;
-        let xTolerance: number = Math.abs(xVisibleRange.delta / areaBounds.width);
-        let yTolerance: number = Math.abs(yVisibleRange.delta / areaBounds.height);
+        const tempPoints: Points[] = [];
+        const tempPoints2: Points[] = [];
+        const xVisibleRange: VisibleRangeModel = series.xAxis.visibleRange;
+        const yVisibleRange: VisibleRangeModel = series.yAxis.visibleRange;
+        const seriesPoints: Points[] = <Points[]>series.points;
+        const areaBounds: Rect = series.clipRect;
+        const xTolerance: number = Math.abs(xVisibleRange.delta / areaBounds.width);
+        const yTolerance: number = Math.abs(yVisibleRange.delta / areaBounds.height);
         let prevXValue: number = (seriesPoints[0] && seriesPoints[0].x > xTolerance) ? 0 : xTolerance;
         let prevYValue: number = (seriesPoints[0] && seriesPoints[0].y > yTolerance) ? 0 : yTolerance;
         let xVal: number = 0;
         let yVal: number = 0;
-        for (let currentPoint of seriesPoints) {
+        for (const currentPoint of seriesPoints) {
             currentPoint.symbolLocations = [];
             xVal = currentPoint.xValue ? currentPoint.xValue : xVisibleRange.min;
             yVal = currentPoint.yValue ? currentPoint.yValue : yVisibleRange.min;
@@ -59,12 +66,13 @@ export class LineBase {
     }
     /**
      * To generate the line path direction
-     * @param firstPoint 
-     * @param secondPoint 
-     * @param series 
-     * @param isInverted 
-     * @param getPointLocation 
-     * @param startPoint 
+     *
+     * @param {Points} firstPoint firstPoint
+     * @param {Points} secondPoint secondPoint
+     * @param {Series} series series
+     * @param {boolean} isInverted isInverted
+     * @param {Function} getPointLocation getPointLocation
+     * @param {string} startPoint startPoint
      */
     public getLineDirection(
         firstPoint: Points, secondPoint: Points, series: Series,
@@ -73,10 +81,10 @@ export class LineBase {
     ): string {
         let direction: string = '';
         if (firstPoint != null) {
-            let point1: ChartLocation = getPointLocation(
+            const point1: ChartLocation = getPointLocation(
                 firstPoint.xValue, firstPoint.yValue, series.xAxis, series.yAxis, isInverted, series
             );
-            let point2: ChartLocation = getPointLocation(
+            const point2: ChartLocation = getPointLocation(
                 secondPoint.xValue, secondPoint.yValue, series.xAxis, series.yAxis, isInverted, series
             );
             direction = startPoint + ' ' + (point1.x) + ' ' + (point1.y) + ' ' +
@@ -86,15 +94,16 @@ export class LineBase {
 
     }
     /**
-     * To append the line path. 
-     * @return {void}
+     * To append the line path.
+     *
+     * @returns {void}
      * @private
      */
     public appendLinePath(options: PathOption, series: Series, clipRect: string): void {
-        let element: Element = getElement(options.id);
-        let chart: Chart = series.chart;
-        let previousDirection: string = element ? element.getAttribute('d') : null;
-        let htmlObject: HTMLElement =
+        const element: Element = getElement(options.id);
+        const chart: Chart = series.chart;
+        const previousDirection: string = element ? element.getAttribute('d') : null;
+        const htmlObject: HTMLElement =
             series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y])) as HTMLElement;
         if (htmlObject) {
             htmlObject.setAttribute('clip-path', clipRect);
@@ -108,8 +117,9 @@ export class LineBase {
     }
 
     /**
-     * To render the marker for the series. 
-     * @return {void}
+     * To render the marker for the series.
+     *
+     * @returns {void}
      * @private
      */
     public renderMarker(series: Series): void {
@@ -118,15 +128,16 @@ export class LineBase {
         }
     }
     /**
-     * To do the progressive animation. 
-     * @return {void}
+     * To do the progressive animation.
+     *
+     * @returns {void}
      * @private
      */
     public doProgressiveAnimation(series: Series, option: AnimationModel): void {
-        let animation: Animation = new Animation({});
-        let path: HTMLElement = <HTMLElement>series.pathElement;
-        let strokeDashArray: string = path.getAttribute('stroke-dasharray');
-        let pathLength: number = (<SVGPathElement>series.pathElement).getTotalLength();
+        const animation: Animation = new Animation({});
+        const path: HTMLElement = <HTMLElement>series.pathElement;
+        const strokeDashArray: string = path.getAttribute('stroke-dasharray');
+        const pathLength: number = (<SVGPathElement>series.pathElement).getTotalLength();
         let currentTime: number;
         path.style.visibility = 'hidden';
         animation.animate(path, {
@@ -139,7 +150,7 @@ export class LineBase {
                     path.setAttribute('stroke-dasharray', currentTime + ',' + pathLength);
                 }
             },
-            end: (model: AnimationOptions) => {
+            end: () => {
                 path.setAttribute('stroke-dasharray', strokeDashArray);
                 series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
             }
@@ -147,14 +158,15 @@ export class LineBase {
     }
     /**
      * To store the symbol location and region
-     * @param point 
-     * @param series 
-     * @param isInverted 
-     * @param getLocation 
+     *
+     * @param {Points} point point
+     * @param {Series} series series
+     * @param {boolean} isInverted isInverted
+     * @param {Function} getLocation getLocation
      */
     public storePointLocation(point: Points, series: Series, isInverted: boolean, getLocation: Function): void {
-        let markerWidth: number = (series.marker && series.marker.width) ? series.marker.width : 0;
-        let markerHeight: number = (series.marker && series.marker.height) ? series.marker.height : 0;
+        const markerWidth: number = (series.marker && series.marker.width) ? series.marker.width : 0;
+        const markerHeight: number = (series.marker && series.marker.height) ? series.marker.height : 0;
         point.symbolLocations.push(
             getLocation(
                 point.xValue, point.yValue,
@@ -172,8 +184,9 @@ export class LineBase {
     }
     /**
      * To find point with in the visible range
-     * @param point 
-     * @param yAxis 
+     *
+     * @param {Points} point point
+     * @param {Axis} yAxis yAxis
      * @private
      */
     public withinYRange(point: Points, yAxis: Axis): boolean {
@@ -182,11 +195,12 @@ export class LineBase {
 
     /**
      * To get first and last visible points
+     *
      * @private
      */
     public getFirstLastVisiblePoint(points: Points[]): { first: Points, last: Points } {
         let first: Points = null; let last: Points = null;
-        for (let point of points) {
+        for (const point of points) {
             if (first === null && point.visible) {
                 first = last = point;
             }
@@ -195,18 +209,19 @@ export class LineBase {
         return { first: first ? first : points[0], last: last ? last : points[points.length - 1] };
     }
     /**
-     * To do the linear animation. 
-     * @return {void}   
+     * To do the linear animation.
+     *
+     * @returns {void}   
      * @private
      */
     public doLinearAnimation(series: Series, animation: AnimationModel): void {
-        let clipRect: HTMLElement = <HTMLElement>series.clipRectElement.childNodes[0].childNodes[0];
-        let duration: number = series.chart.animated ? series.chart.duration : animation.duration;
-        let effect: Function = getAnimationFunction('Linear');
-        let elementHeight: number = +clipRect.getAttribute('height');
-        let elementWidth: number = +clipRect.getAttribute('width');
-        let xCenter: number = +clipRect.getAttribute('x');
-        let yCenter: number = series.chart.requireInvertedAxis ? +clipRect.getAttribute('height') + +clipRect.getAttribute('y') :
+        const clipRect: HTMLElement = <HTMLElement>series.clipRectElement.childNodes[0].childNodes[0];
+        const duration: number = series.chart.animated ? series.chart.duration : animation.duration;
+        const effect: Function = getAnimationFunction('Linear');
+        const elementHeight: number = +clipRect.getAttribute('height');
+        const elementWidth: number = +clipRect.getAttribute('width');
+        const xCenter: number = +clipRect.getAttribute('x');
+        const yCenter: number = series.chart.requireInvertedAxis ? +clipRect.getAttribute('height') + +clipRect.getAttribute('y') :
             +clipRect.getAttribute('y');
         let value: number;
         clipRect.style.visibility = 'hidden';
@@ -227,7 +242,7 @@ export class LineBase {
                     }
                 }
             },
-            end: (model: AnimationOptions) => {
+            end: () => {
                 clipRect.setAttribute('transform', 'translate(0,0)');
                 series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
             }

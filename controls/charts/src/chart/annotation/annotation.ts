@@ -1,3 +1,6 @@
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-returns */
 import { Chart } from '../../chart/chart';
 import { ChartAnnotationSettings } from './../model/chart-base';
 import { AnnotationBase } from '../../common/annotation/annotation';
@@ -15,7 +18,8 @@ export class ChartAnnotation extends AnnotationBase {
 
     /**
      * Constructor for chart annotation.
-     * @private.
+     *
+     * @private
      */
     constructor(control: Chart, annotations: ChartAnnotationSettings[]) {
         super(control);
@@ -25,7 +29,8 @@ export class ChartAnnotation extends AnnotationBase {
 
     /**
      * Method to render the annotation for chart
-     * @param element
+     *
+     * @param {Element} element annotation element
      * @private
      */
     public renderAnnotations(element: Element): void {
@@ -41,11 +46,12 @@ export class ChartAnnotation extends AnnotationBase {
     }
 
     /**
-     * To destroy the annotation. 
-     * @return {void}
+     * To destroy the annotation.
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(control: Chart): void {
+    public destroy(): void {
         // Destroy method performed here
     }
 

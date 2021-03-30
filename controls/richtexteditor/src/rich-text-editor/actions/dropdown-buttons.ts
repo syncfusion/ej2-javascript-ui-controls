@@ -30,7 +30,7 @@ export class DropDownButtons {
     protected toolbarRenderer: IRenderer;
     protected renderFactory: RendererFactory;
 
-    constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
+    public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.locator = serviceLocator;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
@@ -42,8 +42,10 @@ export class DropDownButtons {
     }
 
     private beforeRender(args: MenuEventArgs): void {
-        let item: IDropDownItemModel = args.item as IDropDownItemModel;
-        if (item.cssClass) { addClass([args.element], item.cssClass); }
+        const item: IDropDownItemModel = args.item as IDropDownItemModel;
+        if (item.cssClass) {
+            addClass([args.element], item.cssClass);
+        }
         if (item.command === 'Alignments' || item.subCommand === 'JustifyLeft'
             || item.subCommand === 'JustifyRight' || item.subCommand === 'JustifyCenter') {
             args.element.setAttribute('title', getTooltipText(item.subCommand.toLocaleLowerCase(), this.locator));
@@ -57,113 +59,131 @@ export class DropDownButtons {
 
     /**
      * renderDropDowns method
+     *
+     * @param {IDropDownRenderArgs} args - specifies the arguments
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public renderDropDowns(args: IDropDownRenderArgs): void {
         this.initializeInstance();
-        let type: string = args.containerType; let tbElement: HTMLElement = args.container;
+        const type: string = args.containerType;
+        const tbElement: HTMLElement = args.container;
         model.templateItems.forEach((item: string) => {
             let targetElement: Element = undefined;
             if (getIndex(item, args.items) !== -1) {
                 switch (item) {
-                    case 'formats':
-                        targetElement = select('#' + this.parent.getID() + '_' + type + '_Formats', tbElement);
-                        if (isNullOrUndefined(targetElement) || targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) { return; }
-                        let formatItem: IDropDownItemModel[] = this.parent.format.types.slice();
-                        formatItem.forEach((item: IDropDownItemModel): void => {
-                            Object.defineProperties((item as object), {
-                                command: { value: 'Formats', enumerable: true }, subCommand: { value: item.value, enumerable: true }
-                            });
+                case 'formats': {
+                    targetElement = select('#' + this.parent.getID() + '_' + type + '_Formats', tbElement);
+                    if (isNullOrUndefined(targetElement) || targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
+                        return;
+                    }
+                    const formatItem: IDropDownItemModel[] = this.parent.format.types.slice();
+                    formatItem.forEach((item: IDropDownItemModel): void => {
+                        // eslint-disable-next-line
+                        Object.defineProperties((item as object), {
+                            command: { value: 'Formats', enumerable: true }, subCommand: { value: item.value, enumerable: true }
                         });
-                        let formatContent: string = isNullOrUndefined(this.parent.format.default) ? formatItem[0].text :
-                            this.parent.format.default;
-                        this.formatDropDown = this.toolbarRenderer.renderDropDownButton({
-                            iconCss: ((type === 'quick') ? 'e-formats e-icons' : ''),
-                            content: this.dropdownContent(
-                                this.parent.format.width,
-                                type,
-                                ((type === 'quick') ? '' : getDropDownValue(formatItem, formatContent, 'text', 'text'))),
-                            cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_FORMATS_TB_BTN,
-                            itemName: 'Formats', items: formatItem, element: targetElement
-                        } as IDropDownModel);
-                        break;
-                    case 'fontname':
-                        targetElement = select('#' + this.parent.getID() + '_' + type + '_FontName', tbElement);
-                        if (isNullOrUndefined(targetElement) || targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) { return; }
-                        let fontItem: IDropDownItemModel[] = this.parent.fontFamily.items.slice();
-                        fontItem.forEach((item: IDropDownItemModel): void => {
-                            Object.defineProperties((item as object), {
-                                command: { value: 'Font', enumerable: true }, subCommand: { value: 'FontName', enumerable: true }
-                            });
+                    });
+                    const formatContent: string = isNullOrUndefined(this.parent.format.default) ? formatItem[0].text :
+                        this.parent.format.default;
+                    this.formatDropDown = this.toolbarRenderer.renderDropDownButton({
+                        iconCss: ((type === 'quick') ? 'e-formats e-icons' : ''),
+                        content: this.dropdownContent(
+                            this.parent.format.width,
+                            type,
+                            ((type === 'quick') ? '' : getDropDownValue(formatItem, formatContent, 'text', 'text'))),
+                        cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_FORMATS_TB_BTN,
+                        itemName: 'Formats', items: formatItem, element: targetElement
+                    } as IDropDownModel);
+                    break; }
+                case 'fontname': {
+                    targetElement = select('#' + this.parent.getID() + '_' + type + '_FontName', tbElement);
+                    if (isNullOrUndefined(targetElement) || targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
+                        return;
+                    }
+                    const fontItem: IDropDownItemModel[] = this.parent.fontFamily.items.slice();
+                    fontItem.forEach((item: IDropDownItemModel): void => {
+                        // eslint-disable-next-line
+                        Object.defineProperties((item as object), {
+                            command: { value: 'Font', enumerable: true }, subCommand: { value: 'FontName', enumerable: true }
                         });
-                        let fontNameContent: string = isNullOrUndefined(this.parent.fontFamily.default) ? fontItem[0].text :
-                            this.parent.fontFamily.default;
-                        this.fontNameDropDown = this.toolbarRenderer.renderDropDownButton({
-                            iconCss: ((type === 'quick') ? 'e-font-name e-icons' : ''),
-                            content: this.dropdownContent(
-                                this.parent.fontFamily.width,
-                                type,
-                                ((type === 'quick') ? '' : getDropDownValue(fontItem, fontNameContent, 'text', 'text'))),
-                            cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_FONT_NAME_TB_BTN,
-                            itemName: 'FontName', items: fontItem, element: targetElement
-                        } as IDropDownModel);
-                        if (!isNullOrUndefined(this.parent.fontFamily.default)) {
-                            this.getEditNode().style.fontFamily = this.parent.fontFamily.default;
-                        }
-                        break;
-                    case 'fontsize':
-                        targetElement = select('#' + this.parent.getID() + '_' + type + '_FontSize', tbElement);
-                        if (isNullOrUndefined(targetElement) || targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) { return; }
-                        let fontsize: IDropDownItemModel[] = this.parent.fontSize.items.slice();
-                        fontsize.forEach((item: IDropDownItemModel): void => {
-                            Object.defineProperties((item as object), {
-                                command: { value: 'Font', enumerable: true }, subCommand: { value: 'FontSize', enumerable: true }
-                            });
+                    });
+                    const fontNameContent: string = isNullOrUndefined(this.parent.fontFamily.default) ? fontItem[0].text :
+                        this.parent.fontFamily.default;
+                    this.fontNameDropDown = this.toolbarRenderer.renderDropDownButton({
+                        iconCss: ((type === 'quick') ? 'e-font-name e-icons' : ''),
+                        content: this.dropdownContent(
+                            this.parent.fontFamily.width,
+                            type,
+                            ((type === 'quick') ? '' : getDropDownValue(fontItem, fontNameContent, 'text', 'text'))),
+                        cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_FONT_NAME_TB_BTN,
+                        itemName: 'FontName', items: fontItem, element: targetElement
+                    } as IDropDownModel);
+                    if (!isNullOrUndefined(this.parent.fontFamily.default)) {
+                        this.getEditNode().style.fontFamily = this.parent.fontFamily.default;
+                    }
+                    break; }
+                case 'fontsize': {
+                    targetElement = select('#' + this.parent.getID() + '_' + type + '_FontSize', tbElement);
+                    if (isNullOrUndefined(targetElement) || targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
+                        return;
+                    }
+                    const fontsize: IDropDownItemModel[] = this.parent.fontSize.items.slice();
+                    fontsize.forEach((item: IDropDownItemModel): void => {
+                        // eslint-disable-next-line
+                        Object.defineProperties((item as object), {
+                            command: { value: 'Font', enumerable: true }, subCommand: { value: 'FontSize', enumerable: true }
                         });
-                        let fontSizeContent: string = isNullOrUndefined(this.parent.fontSize.default) ? fontsize[1].text :
-                            this.parent.fontSize.default;
-                        this.fontSizeDropDown = this.toolbarRenderer.renderDropDownButton({
-                            content: this.dropdownContent(
-                                this.parent.fontSize.width,
-                                type,
-                                getFormattedFontSize(getDropDownValue(
-                                    fontsize, fontSizeContent.replace(/\s/g, ''), 'value', 'text'))),
-                            cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_FONT_SIZE_TB_BTN,
-                            itemName: 'FontSize', items: fontsize, element: targetElement
-                        } as IDropDownModel);
-                        if (!isNullOrUndefined(this.parent.fontSize.default)) {
-                            this.getEditNode().style.fontSize = this.parent.fontSize.default;
-                        }
-                        break;
-                    case 'alignments':
-                        targetElement = select('#' + this.parent.getID() + '_' + type + '_Alignments', tbElement);
-                        if (isNullOrUndefined(targetElement) || targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) { return; }
-                        this.alignDropDown = this.toolbarRenderer.renderDropDownButton({
-                            iconCss: 'e-justify-left e-icons',
-                            cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS,
-                            itemName: 'Alignments', items: model.alignmentItems, element: targetElement
-                        } as IDropDownModel);
-                        break;
-                    case 'align': this.imageAlignmentDropDown(type, tbElement, targetElement);
-                        break;
-                    case 'display': this.imageDisplayDropDown(type, tbElement, targetElement);
-                        break;
-                    case 'tablerows': this.rowDropDown(type, tbElement, targetElement);
-                        break;
-                    case 'tablecolumns': this.columnDropDown(type, tbElement, targetElement);
-                        break;
-                    case 'tablecellverticalalign': this.verticalAlignDropDown(type, tbElement, targetElement);
-                        break;
-                    case 'styles': this.tableStylesDropDown(type, tbElement, targetElement); break;
+                    });
+                    const fontSizeContent: string = isNullOrUndefined(this.parent.fontSize.default) ? fontsize[1].text :
+                        this.parent.fontSize.default;
+                    this.fontSizeDropDown = this.toolbarRenderer.renderDropDownButton({
+                        content: this.dropdownContent(
+                            this.parent.fontSize.width,
+                            type,
+                            getFormattedFontSize(getDropDownValue(
+                                fontsize, fontSizeContent.replace(/\s/g, ''), 'value', 'text'))),
+                        cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_FONT_SIZE_TB_BTN,
+                        itemName: 'FontSize', items: fontsize, element: targetElement
+                    } as IDropDownModel);
+                    if (!isNullOrUndefined(this.parent.fontSize.default)) {
+                        this.getEditNode().style.fontSize = this.parent.fontSize.default;
+                    }
+                    break; }
+                case 'alignments':
+                    targetElement = select('#' + this.parent.getID() + '_' + type + '_Alignments', tbElement);
+                    if (isNullOrUndefined(targetElement) || targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
+                        return;
+                    }
+                    this.alignDropDown = this.toolbarRenderer.renderDropDownButton({
+                        iconCss: 'e-justify-left e-icons',
+                        cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS,
+                        itemName: 'Alignments', items: model.alignmentItems, element: targetElement
+                    } as IDropDownModel);
+                    break;
+                case 'align': this.imageAlignmentDropDown(type, tbElement, targetElement);
+                    break;
+                case 'display': this.imageDisplayDropDown(type, tbElement, targetElement);
+                    break;
+                case 'tablerows': this.rowDropDown(type, tbElement, targetElement);
+                    break;
+                case 'tablecolumns': this.columnDropDown(type, tbElement, targetElement);
+                    break;
+                case 'tablecell': this.cellDropDown(type, tbElement, targetElement);
+                    break;
+                case 'tablecellverticalalign': this.verticalAlignDropDown(type, tbElement, targetElement);
+                    break;
+                case 'styles': this.tableStylesDropDown(type, tbElement, targetElement); break;
                 }
             }
         });
     }
 
     private getUpdateItems(items: IDropDownItemModel[], value: string): IDropDownItemModel[] {
-        let dropDownItems: IDropDownItemModel[] = items.slice();
+        const dropDownItems: IDropDownItemModel[] = items.slice();
         dropDownItems.forEach((item: IDropDownItemModel): void => {
+            // eslint-disable-next-line
             Object.defineProperties((item as object), {
                 command: { value: (value === 'Format' ? 'Formats' : 'Font'), enumerable: true },
                 subCommand: { value: (value === 'Format' ? item.value : value), enumerable: true }
@@ -172,102 +192,103 @@ export class DropDownButtons {
         return dropDownItems;
     }
 
+    // eslint-disable-next-line
     private onPropertyChanged(model: { [key: string]: Object }): void {
-        let newProp: RichTextEditorModel = model.newProp;
+        const newProp: RichTextEditorModel = model.newProp;
         let type: string;
         let content: string;
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'fontFamily':
-                    if (this.fontNameDropDown) {
-                        for (let fontFamily of Object.keys(newProp.fontFamily)) {
-                            switch (fontFamily) {
-                                case 'default':
-                                case 'width':
-                                    let fontItems: IDropDownItemModel[] = this.fontNameDropDown.items;
-                                    type = !isNullOrUndefined(
-                                        closest(this.fontNameDropDown.element, '.' + classes.CLS_QUICK_TB)) ?
-                                        'quick' : 'toolbar';
-                                    let fontNameContent: string = isNullOrUndefined(this.parent.fontFamily.default) ? fontItems[0].text :
-                                        this.parent.fontFamily.default;
-                                    content = this.dropdownContent(
-                                        this.parent.fontFamily.width, type,
-                                        ((type === 'quick') ? '' : getDropDownValue(fontItems, fontNameContent, 'text', 'text')));
-                                    this.fontNameDropDown.setProperties({ content: content });
-                                    if (!isNullOrUndefined(this.parent.fontFamily.default)) {
-                                        this.getEditNode().style.fontFamily = this.parent.fontFamily.default;
-                                    } else {
-                                        this.getEditNode().style.removeProperty('font-family');
-                                    }
-                                    break;
-                                case 'items':
-                                    this.fontNameDropDown.setProperties({
-                                        items: this.getUpdateItems(newProp.fontFamily.items, 'FontName')
-                                    });
-                                    break;
+            case 'fontFamily':
+                if (this.fontNameDropDown) {
+                    for (const fontFamily of Object.keys(newProp.fontFamily)) {
+                        switch (fontFamily) {
+                        case 'default':
+                        case 'width': {
+                            const fontItems: IDropDownItemModel[] = this.fontNameDropDown.items;
+                            type = !isNullOrUndefined(
+                                closest(this.fontNameDropDown.element, '.' + classes.CLS_QUICK_TB)) ?
+                                'quick' : 'toolbar';
+                            const fontNameContent: string = isNullOrUndefined(this.parent.fontFamily.default) ? fontItems[0].text :
+                                this.parent.fontFamily.default;
+                            content = this.dropdownContent(
+                                this.parent.fontFamily.width, type,
+                                ((type === 'quick') ? '' : getDropDownValue(fontItems, fontNameContent, 'text', 'text')));
+                            this.fontNameDropDown.setProperties({ content: content });
+                            if (!isNullOrUndefined(this.parent.fontFamily.default)) {
+                                this.getEditNode().style.fontFamily = this.parent.fontFamily.default;
+                            } else {
+                                this.getEditNode().style.removeProperty('font-family');
                             }
+                            break; }
+                        case 'items':
+                            this.fontNameDropDown.setProperties({
+                                items: this.getUpdateItems(newProp.fontFamily.items, 'FontName')
+                            });
+                            break;
                         }
                     }
-                    break;
-                case 'fontSize':
-                    if (this.fontSizeDropDown) {
-                        for (let fontSize of Object.keys(newProp.fontSize)) {
-                            switch (fontSize) {
-                                case 'default':
-                                case 'width':
-                                    let fontsize: IDropDownItemModel[] = this.fontSizeDropDown.items;
-                                    type = !isNullOrUndefined(
-                                        closest(this.fontSizeDropDown.element, '.' + classes.CLS_QUICK_TB)) ? 'quick' : 'toolbar';
-                                    let fontSizeContent: string = isNullOrUndefined(this.parent.fontSize.default) ? fontsize[1].text :
-                                        this.parent.fontSize.default;
-                                    content = this.dropdownContent(
-                                        this.parent.fontSize.width, type,
-                                        getFormattedFontSize(getDropDownValue(
-                                            fontsize,
-                                            fontSizeContent.replace(/\s/g, ''),
-                                            'value',
-                                            'text')));
-                                    this.fontSizeDropDown.setProperties({ content: content });
-                                    if (!isNullOrUndefined(this.parent.fontSize.default)) {
-                                        this.getEditNode().style.fontSize = this.parent.fontSize.default;
-                                    } else {
-                                        this.getEditNode().style.removeProperty('font-size');
-                                    }
-                                    break;
-                                case 'items':
-                                    this.fontSizeDropDown.setProperties({
-                                        items: this.getUpdateItems(newProp.fontSize.items, 'FontSize')
-                                    });
-                                    break;
+                }
+                break;
+            case 'fontSize':
+                if (this.fontSizeDropDown) {
+                    for (const fontSize of Object.keys(newProp.fontSize)) {
+                        switch (fontSize) {
+                        case 'default':
+                        case 'width': {
+                            const fontsize: IDropDownItemModel[] = this.fontSizeDropDown.items;
+                            type = !isNullOrUndefined(
+                                closest(this.fontSizeDropDown.element, '.' + classes.CLS_QUICK_TB)) ? 'quick' : 'toolbar';
+                            const fontSizeContent: string = isNullOrUndefined(this.parent.fontSize.default) ? fontsize[1].text :
+                                this.parent.fontSize.default;
+                            content = this.dropdownContent(
+                                this.parent.fontSize.width, type,
+                                getFormattedFontSize(getDropDownValue(
+                                    fontsize,
+                                    fontSizeContent.replace(/\s/g, ''),
+                                    'value',
+                                    'text')));
+                            this.fontSizeDropDown.setProperties({ content: content });
+                            if (!isNullOrUndefined(this.parent.fontSize.default)) {
+                                this.getEditNode().style.fontSize = this.parent.fontSize.default;
+                            } else {
+                                this.getEditNode().style.removeProperty('font-size');
                             }
+                            break; }
+                        case 'items':
+                            this.fontSizeDropDown.setProperties({
+                                items: this.getUpdateItems(newProp.fontSize.items, 'FontSize')
+                            });
+                            break;
                         }
                     }
-                    break;
-                case 'format':
-                    if (this.formatDropDown) {
-                        for (let format of Object.keys(newProp.format)) {
-                            switch (format) {
-                                case 'default':
-                                case 'width':
-                                    let formatItems: IDropDownItemModel[] = this.formatDropDown.items;
-                                    type = !isNullOrUndefined(
-                                        closest(this.formatDropDown.element, '.' + classes.CLS_QUICK_TB)) ? 'quick' : 'toolbar';
-                                    let formatContent: string = isNullOrUndefined(this.parent.format.default) ? formatItems[0].text :
-                                        this.parent.format.default;
-                                    content = this.dropdownContent(
-                                        this.parent.format.width, type,
-                                        ((type === 'quick') ? '' : getDropDownValue(formatItems, formatContent, 'text', 'text')));
-                                    this.formatDropDown.setProperties({ content: content });
-                                    break;
-                                case 'types':
-                                    this.formatDropDown.setProperties({
-                                        items: this.getUpdateItems(newProp.format.types, 'Format')
-                                    });
-                                    break;
-                            }
+                }
+                break;
+            case 'format':
+                if (this.formatDropDown) {
+                    for (const format of Object.keys(newProp.format)) {
+                        switch (format) {
+                        case 'default':
+                        case 'width': {
+                            const formatItems: IDropDownItemModel[] = this.formatDropDown.items;
+                            type = !isNullOrUndefined(
+                                closest(this.formatDropDown.element, '.' + classes.CLS_QUICK_TB)) ? 'quick' : 'toolbar';
+                            const formatContent: string = isNullOrUndefined(this.parent.format.default) ? formatItems[0].text :
+                                this.parent.format.default;
+                            content = this.dropdownContent(
+                                this.parent.format.width, type,
+                                ((type === 'quick') ? '' : getDropDownValue(formatItems, formatContent, 'text', 'text')));
+                            this.formatDropDown.setProperties({ content: content });
+                            break; }
+                        case 'types':
+                            this.formatDropDown.setProperties({
+                                items: this.getUpdateItems(newProp.format.types, 'Format')
+                            });
+                            break;
                         }
                     }
-                    break;
+                }
+                break;
             }
         }
     }
@@ -276,7 +297,9 @@ export class DropDownButtons {
     }
     private rowDropDown(type: string, tbElement: HTMLElement, targetElement: Element): void {
         targetElement = select('#' + this.parent.getID() + '_' + type + '_TableRows', tbElement);
-        if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) { return; }
+        if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
+            return;
+        }
         this.tableRowsDropDown = this.toolbarRenderer.renderDropDownButton({
             iconCss: 'e-table-rows e-icons',
             cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_QUICK_DROPDOWN,
@@ -287,7 +310,9 @@ export class DropDownButtons {
     }
     private columnDropDown(type: string, tbElement: HTMLElement, targetElement: Element): void {
         targetElement = select('#' + this.parent.getID() + '_' + type + '_TableColumns', tbElement);
-        if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) { return; }
+        if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
+            return;
+        }
         this.tableColumnsDropDown = this.toolbarRenderer.renderDropDownButton({
             iconCss: 'e-table-columns e-icons',
             cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_QUICK_DROPDOWN,
@@ -296,9 +321,24 @@ export class DropDownButtons {
             element: targetElement
         } as IDropDownModel);
     }
+
+    private cellDropDown(type: string, tbElement: HTMLElement, targetElement: Element): void {
+        targetElement = select('#' + this.parent.getID() + '_' + type + '_TableCell', tbElement);
+        if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) { return; }
+        this.tableRowsDropDown = this.toolbarRenderer.renderDropDownButton({
+            iconCss: 'e-table-cell e-icons',
+            cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_QUICK_DROPDOWN,
+            itemName: 'TableCell',
+            items: model.tableCellItems,
+            element: targetElement
+        } as IDropDownModel);
+    }
+
     private verticalAlignDropDown(type: string, tbElement: HTMLElement, targetElement: Element): void {
         targetElement = select('#' + this.parent.getID() + '_' + type + '_TableCellVerticalAlign', tbElement);
-        if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) { return; }
+        if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
+            return;
+        }
         this.tableCellVerticalAlignDropDown = this.toolbarRenderer.renderDropDownButton({
             iconCss: 'e-table-cell-ver-align e-icons',
             cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_QUICK_DROPDOWN,
@@ -310,7 +350,9 @@ export class DropDownButtons {
 
     private imageDisplayDropDown(type: string, tbElement: HTMLElement, targetElement: Element): void {
         targetElement = select('#' + this.parent.getID() + '_' + type + '_Display', tbElement);
-        if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) { return; }
+        if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
+            return;
+        }
         this.displayDropDown = this.toolbarRenderer.renderDropDownButton({
             iconCss: 'e-display e-icons',
             cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_QUICK_DROPDOWN,
@@ -321,7 +363,9 @@ export class DropDownButtons {
     }
     private imageAlignmentDropDown(type: string, tbElement: HTMLElement, targetElement: Element): void {
         targetElement = select('#' + this.parent.getID() + '_' + type + '_Align', tbElement);
-        if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) { return; }
+        if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
+            return;
+        }
         this.imageAlignDropDown = this.toolbarRenderer.renderDropDownButton({
             iconCss: 'e-justify-left e-icons',
             cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ICONS + ' ' + classes.CLS_QUICK_DROPDOWN,
@@ -333,7 +377,9 @@ export class DropDownButtons {
 
     private tableStylesDropDown(type: string, tbElement: HTMLElement, targetElement: Element): void {
         targetElement = select('#' + this.parent.getID() + '_' + type + '_Styles', tbElement);
-        if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) { return; }
+        if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
+            return;
+        }
         this.imageAlignDropDown = this.toolbarRenderer.renderDropDownButton({
             iconCss: 'e-style e-icons',
             cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ICONS + ' ' + classes.CLS_QUICK_DROPDOWN,
@@ -354,6 +400,8 @@ export class DropDownButtons {
 
     /**
      * destroyDropDowns method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -396,6 +444,7 @@ export class DropDownButtons {
         }
     }
 
+    // eslint-disable-next-line
     private setRtl(args: { [key: string]: Object }): void {
         if (this.formatDropDown) {
             this.formatDropDown.setProperties({ enableRtl: args.enableRtl });
@@ -418,7 +467,9 @@ export class DropDownButtons {
     }
 
     protected addEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.on(events.beforeDropDownItemRender, this.beforeRender, this);
         this.parent.on(events.iframeMouseDown, this.onIframeMouseDown, this);
         this.parent.on(events.rtlMode, this.setRtl, this);
@@ -431,7 +482,9 @@ export class DropDownButtons {
     }
 
     protected removeEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.off(events.iframeMouseDown, this.onIframeMouseDown);
         this.parent.off(events.rtlMode, this.setRtl);
         this.parent.off(events.beforeDropDownItemRender, this.beforeRender);

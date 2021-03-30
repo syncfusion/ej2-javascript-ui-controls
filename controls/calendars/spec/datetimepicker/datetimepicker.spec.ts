@@ -1923,7 +1923,7 @@ describe('keyboard events', () => {
         datetimepicker.appendTo('#dateTime');
         (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
         keyEventArgs.action = 'escape';
-        datetimepicker.CalendarKeyActionHandle(keyEventArgs);
+        datetimepicker.calendarKeyActionHandle(keyEventArgs);
     });
     it('enter key test case', function () {
         datetimepicker = new DateTimePicker({
@@ -1931,15 +1931,15 @@ describe('keyboard events', () => {
         datetimepicker.appendTo('#dateTime');
         (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
         keyEventArgs.action = 'escape';
-        datetimepicker.CalendarKeyActionHandle(keyEventArgs);
+        datetimepicker.calendarKeyActionHandle(keyEventArgs);
         setTimeout(function () {
             expect(isNullOrUndefined(datetimepicker.popupWrapper)).toBe(true), 1000
         })
         keyEventArgs.action = 'enter';
-        datetimepicker.CalendarKeyActionHandle(keyEventArgs);
+        datetimepicker.calendarKeyActionHandle(keyEventArgs);
         keyEventArgs.action = 'escape';
         // datetimepicker.popupWrapper = datetimepicker.popupObj = null
-        datetimepicker.CalendarKeyActionHandle(keyEventArgs);
+        datetimepicker.calendarKeyActionHandle(keyEventArgs);
         // expect(document.activeElement).toBe(datetimepicker.inputElement);
     });
     it('tab key when popup open test case', function () {
@@ -1949,7 +1949,7 @@ describe('keyboard events', () => {
         datetimepicker.appendTo('#dateTime');
         (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
         keyEventArgs.action = 'tab';
-        datetimepicker.CalendarKeyActionHandle(keyEventArgs);
+        datetimepicker.calendarKeyActionHandle(keyEventArgs);
         setTimeout(function () {
             expect(isNullOrUndefined(datetimepicker.popupWrapper)).toBe(true), 1000
         })
@@ -1991,7 +1991,7 @@ describe('keyboard events', () => {
         datetimepicker.element.focus();
         keyEventArgs.action = 'tab';
         keyEventArgs.keyCode = 9;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         expect(datetimepicker.inputElement.value).toBe('12/12/2016 10:00 AM');
     });
     it('popup close testing', () => {
@@ -2021,7 +2021,7 @@ describe('keyboard events', () => {
         datetimepicker.inputKeyAction(keyEventArgs);
         keyEventArgs.action = 'up';
         keyEventArgs.keyCode = 38;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         expect(datetimepicker.inputElement.value).toBe('12/12/2016 9:30 AM');
         expect(datetimepicker.dateTimeWrapper.querySelectorAll('.e-navigation')[0].getAttribute('data-value')).toBe('9:30 AM');
     });
@@ -2034,7 +2034,7 @@ describe('keyboard events', () => {
         datetimepicker.inputKeyAction(keyEventArgs);
         keyEventArgs.action = 'down';
         keyEventArgs.keyCode = 40;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         expect(datetimepicker.dateTimeWrapper.querySelectorAll('.e-navigation')[0].getAttribute('data-value')).toBe('12:00 AM');
     });
     it('null value with up navigation testing', () => {
@@ -2056,10 +2056,10 @@ describe('keyboard events', () => {
         datetimepicker.inputKeyAction(keyEventArgs);
         keyEventArgs.action = 'up';
         keyEventArgs.keyCode = 38;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         expect(datetimepicker.inputElement.value).toBe('12/12/2016 11:30 PM');
         expect(datetimepicker.dateTimeWrapper.querySelectorAll('.e-navigation')[0].getAttribute('data-value')).toBe('11:30 PM');
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         expect(datetimepicker.inputElement.value).toBe('12/12/2016 11:00 PM');
         expect(datetimepicker.dateTimeWrapper.querySelectorAll('.e-navigation')[0].getAttribute('data-value')).toBe('11:00 PM');
     });
@@ -2072,10 +2072,10 @@ describe('keyboard events', () => {
         datetimepicker.inputKeyAction(keyEventArgs);
         keyEventArgs.action = 'down';
         keyEventArgs.keyCode = 40;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         expect(datetimepicker.inputElement.value).toBe('12/12/2016 12:00 AM');
         expect(datetimepicker.dateTimeWrapper.querySelectorAll('.e-active')[0].getAttribute('data-value')).toBe('11:30 PM');
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         expect(datetimepicker.inputElement.value).toBe('12/12/2016 12:30 AM');
         expect(datetimepicker.dateTimeWrapper.querySelectorAll('.e-active')[0].getAttribute('data-value')).toBe('11:30 PM');
     });
@@ -2088,7 +2088,7 @@ describe('keyboard events', () => {
         datetimepicker.inputKeyAction(keyEventArgs);
         keyEventArgs.action = 'up';
         keyEventArgs.keyCode = 38;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         expect(datetimepicker.dateTimeWrapper.querySelectorAll('.e-navigation')[0].getAttribute('data-value')).toBe('11:00 PM');
         expect(datetimepicker.inputElement.value).toBe('12/12/2016 11:00 PM');
     });
@@ -2104,7 +2104,7 @@ describe('keyboard events', () => {
             datetimepicker.show('time')
             keyEventArgs.action = 'up';
             keyEventArgs.keyCode = 38;
-            datetimepicker.TimeKeyActionHandle(keyEventArgs);
+            datetimepicker.timeKeyActionHandle(keyEventArgs);
             expect(datetimepicker.dateTimeWrapper.querySelectorAll('.e-navigation')[0].getAttribute('data-value')).toBe('12:00 AM');
         }, 450);
 
@@ -2121,7 +2121,7 @@ describe('keyboard events', () => {
             datetimepicker.element.focus();
             keyEventArgs.action = 'down';
             keyEventArgs.keyCode = 40;
-            datetimepicker.TimeKeyActionHandle(keyEventArgs);
+            datetimepicker.timeKeyActionHandle(keyEventArgs);
             expect(datetimepicker.dateTimeWrapper.querySelectorAll('.e-navigation')[0].getAttribute('data-value')).toBe('12:30 AM');
             done();
         }, 450);
@@ -2133,7 +2133,7 @@ describe('keyboard events', () => {
         datetimepicker.show('time')
         keyEventArgs.action = 'up';
         keyEventArgs.keyCode = 38;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         expect(datetimepicker.inputElement.value).toBe('12/12/2016 11:00 PM');
         expect(datetimepicker.dateTimeWrapper.querySelectorAll('.e-active')[0].getAttribute('data-value')).toBe('11:30 PM');
     });
@@ -2149,7 +2149,7 @@ describe('keyboard events', () => {
         datetimepicker.show('time')
         keyEventArgs.action = 'down';
         keyEventArgs.keyCode = 40;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         expect(datetimepicker.dateTimeWrapper.querySelectorAll('.e-navigation')[0].getAttribute('data-value')).toBe('12:00 AM');
     });
     it('Enter key testing', () => {
@@ -2165,7 +2165,7 @@ describe('keyboard events', () => {
         datetimepicker.element.focus();
         keyEventArgs.action = 'escape';
         keyEventArgs.keyCode = 27;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
     });
     it('keyboard navigation testing', () => {
         datetimepicker = new DateTimePicker({ value: new Date("12/12/2016 12:30"), readonly: true });
@@ -2183,7 +2183,7 @@ describe('keyboard events', () => {
         datetimepicker.show('time')
         keyEventArgs.action = 'end';
         keyEventArgs.keyCode = 35;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         expect(datetimepicker.dateTimeWrapper.querySelectorAll('.e-navigation')[0].getAttribute('data-value')).toBe('11:30 PM');
         expect(datetimepicker.inputElement.value).toBe('12/12/2016 11:30 PM');
     });
@@ -2194,7 +2194,7 @@ describe('keyboard events', () => {
         datetimepicker.show('time')
         keyEventArgs.action = 'home';
         keyEventArgs.keyCode = 36;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         expect(datetimepicker.dateTimeWrapper.querySelectorAll('.e-navigation')[0].getAttribute('data-value')).toBe('12:00 AM');
         expect(datetimepicker.inputElement.value).toBe('12/12/2016 12:00 AM');
     });
@@ -2204,8 +2204,8 @@ describe('keyboard events', () => {
         datetimepicker.element.focus();
         keyEventArgs.action = 'escape';
         keyEventArgs.keyCode = 27;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
     });
     it('label element innerHTML testing', () => {
         datetimepicker = new DateTimePicker({ placeholder: 'Select Time' });
@@ -2220,15 +2220,15 @@ describe('keyboard events', () => {
         datetimepicker.inputKeyAction(keyEventArgs);
         keyEventArgs.action = 'up';
         keyEventArgs.keyCode = 38;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         expect(datetimepicker.dateTimeWrapper.querySelectorAll('.e-navigation')[0].getAttribute('data-value')).toBe('11:00 PM');
         expect(datetimepicker.inputElement.value).toBe('12/12/2016 11:00 PM');
         keyEventArgs.action = 'home';
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         expect(datetimepicker.dateTimeWrapper.querySelectorAll('.e-navigation')[0].getAttribute('data-value')).toBe('12:00 AM');
         expect(datetimepicker.inputElement.value).toBe('12/12/2016 12:00 AM');
         keyEventArgs.action = 'end';
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         expect(datetimepicker.dateTimeWrapper.querySelectorAll('.e-navigation')[0].getAttribute('data-value')).toBe('11:30 PM');
         expect(datetimepicker.inputElement.value).toBe('12/12/2016 11:30 PM');
     });
@@ -2241,7 +2241,7 @@ describe('keyboard events', () => {
         datetimepicker.inputKeyAction(keyEventArgs);
         keyEventArgs.action = 'down';
         keyEventArgs.keyCode = 40;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         expect(datetimepicker.dateTimeWrapper.querySelectorAll('.e-navigation')[0].getAttribute('data-value')).toBe('11:30 PM');
         expect(datetimepicker.inputElement.value).toBe('12/12/2016 11:30 PM');
     });
@@ -2252,10 +2252,10 @@ describe('keyboard events', () => {
         datetimepicker.show('time');
         keyEventArgs.action = 'down';
         keyEventArgs.keyCode = 40;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         keyEventArgs.action = 'enter';
         keyEventArgs.keyCode = 13;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         datetimepicker.show('time');
         expect(datetimepicker.dateTimeWrapper.querySelectorAll('.e-active')[0].getAttribute('data-value')).toBe('11:30 PM');
         expect(datetimepicker.inputElement.value).toBe('12/12/2016 11:30 PM');
@@ -2267,13 +2267,13 @@ describe('keyboard events', () => {
         datetimepicker.show('time');
         keyEventArgs.action = 'down';
         keyEventArgs.keyCode = 40;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         keyEventArgs.action = 'up';
         keyEventArgs.keyCode = 38;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         keyEventArgs.action = 'enter';
         keyEventArgs.keyCode = 13;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
     });
     it('last element to previous element navigation testing', () => {
         datetimepicker = new DateTimePicker({ value: new Date("12/12/2016 23:20") });
@@ -2282,7 +2282,7 @@ describe('keyboard events', () => {
         datetimepicker.show('time');
         keyEventArgs.action = 'enter';
         keyEventArgs.keyCode = 13;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
     });
     it('last element to previous element navigation testing', () => {
         datetimepicker = new DateTimePicker({ value: new Date("12/12/2016 23:00") });
@@ -2291,12 +2291,12 @@ describe('keyboard events', () => {
         datetimepicker.show('time');
         keyEventArgs.action = 'down';
         keyEventArgs.keyCode = 40;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         expect(datetimepicker.dateTimeWrapper.querySelectorAll('.e-navigation')[0].getAttribute('data-value')).toBe('11:30 PM');
         expect(datetimepicker.inputElement.value).toBe('12/12/2016 11:30 PM');
         keyEventArgs.action = 'up';
         keyEventArgs.keyCode = 38;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
     });
     it('last element to previous element navigation testing', () => {
         datetimepicker = new DateTimePicker({ value: new Date("12/12/2016 23:00"), strictMode: true });
@@ -2305,12 +2305,12 @@ describe('keyboard events', () => {
         datetimepicker.show('time');
         keyEventArgs.action = 'down';
         keyEventArgs.keyCode = 40;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         expect(datetimepicker.dateTimeWrapper.querySelectorAll('.e-navigation')[0].getAttribute('data-value')).toBe('11:30 PM');
         expect(datetimepicker.inputElement.value).toBe('12/12/2016 11:30 PM');
         keyEventArgs.action = 'up';
         keyEventArgs.keyCode = 38;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
     });
     it('last element to previous element navigation testing', () => {
         datetimepicker = new DateTimePicker({ value: new Date("12/12/2016 23:00") });
@@ -2330,7 +2330,7 @@ describe('keyboard events', () => {
         datetimepicker.appendTo('#dateTime');
         keyEventArgs.action = 'down';
         keyEventArgs.keyCode = 40;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
     });
     it('last element to previous element navigation testing', () => {
         datetimepicker = new DateTimePicker({ value: new Date("12/12/2016 23:00"), width: 40 });
@@ -2355,15 +2355,15 @@ describe('keyboard events', () => {
         datetimepicker.show('time');
         keyEventArgs.action = 'down';
         keyEventArgs.keyCode = 40;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         expect(datetimepicker.dateTimeWrapper.querySelectorAll('.e-navigation')[0].getAttribute('data-value')).toBe('11:30 PM');
         expect(datetimepicker.inputElement.value).toBe('12/12/2016 11:30 PM');
         keyEventArgs.action = 'up';
         keyEventArgs.keyCode = 38;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         keyEventArgs.action = 'enter';
         keyEventArgs.keyCode = 13;
-        datetimepicker.TimeKeyActionHandle(keyEventArgs);
+        datetimepicker.timeKeyActionHandle(keyEventArgs);
         datetimepicker.updateValue();
     });
     it('Control rendering test for angular support', () => {

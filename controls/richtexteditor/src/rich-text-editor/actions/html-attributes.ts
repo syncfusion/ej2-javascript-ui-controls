@@ -3,16 +3,24 @@
  */
 import { IRichTextEditor } from '../base/interface';
 
+/**
+ * @param {string} htmlAttributes - specifies the string value
+ * @param {IRichTextEditor} rte - specifies the rte value
+ * @param {boolean} isFrame - specifies the boolean value
+ * @param {boolean} initial - specifies the boolean value
+ * @returns {void}
+ * @hidden
+ */
 export function setAttributes(htmlAttributes: { [key: string]: string }, rte: IRichTextEditor, isFrame: boolean, initial: boolean): void {
     let target: HTMLElement;
     if (isFrame) {
-        let iFrame: HTMLDocument = rte.contentModule.getDocument();
+        const iFrame: HTMLDocument = rte.contentModule.getDocument();
         target = iFrame.querySelector('body');
     } else {
         target = rte.element;
     }
     if (Object.keys(htmlAttributes).length) {
-        for (let htmlAttr of Object.keys(htmlAttributes)) {
+        for (const htmlAttr of Object.keys(htmlAttributes)) {
             if (htmlAttr === 'class') {
                 target.classList.add(htmlAttributes[htmlAttr]);
             } else if (htmlAttr === 'disabled' && htmlAttributes[htmlAttr] === 'disabled') {
@@ -29,7 +37,7 @@ export function setAttributes(htmlAttributes: { [key: string]: string }, rte: IR
                 rte.placeholder = htmlAttributes[htmlAttr];
                 rte.setPlaceHolder();
             } else {
-                let validateAttr: string[] = ['name', 'required'];
+                const validateAttr: string[] = ['name', 'required'];
                 if (validateAttr.indexOf(htmlAttr) > -1) {
                     rte.valueContainer.setAttribute(htmlAttr, htmlAttributes[htmlAttr]);
                 } else {

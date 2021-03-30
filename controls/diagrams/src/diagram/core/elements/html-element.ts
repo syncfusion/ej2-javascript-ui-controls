@@ -7,8 +7,17 @@ import { templateCompiler } from '../../utility/base-util';
  * HTMLElement defines the basic html elements
  */
 export class DiagramHtmlElement extends DiagramElement {
+
     /**
-     * set the id for each element
+     * set the id for each element \
+     *
+     * @returns { void }set the id for each element\
+     * @param {string} nodeId - provide the x value.
+     * @param {string} diagramId - provide the y value.
+     * @param {string} annotationId - provide the id value.
+     * @param {string} nodeTemplate - provide the id value.
+     *
+     * @private
      */
     public constructor(nodeId: string, diagramId: string, annotationId?: string, nodeTemplate?: string) {
         super();
@@ -18,11 +27,18 @@ export class DiagramHtmlElement extends DiagramElement {
         this.templateFn = templateCompiler(nodeTemplate);
     }
 
-    /** @private */
+    /**
+     * getNodeTemplate method \
+     *
+     * @returns { Function } getNodeTemplate method .\
+     *
+     * @private
+     */
     public getNodeTemplate(): Function {
         return this.templateFn;
     }
 
+    // eslint-disable-next-line @typescript-eslint/ban-types
     private templateFn: Function;
 
     private data: string | HTMLElement = '';
@@ -33,6 +49,7 @@ export class DiagramHtmlElement extends DiagramElement {
 
     /**
      * check whether it is html element or not
+     *
      * @private
      */
     public isTemplate: boolean;
@@ -44,6 +61,7 @@ export class DiagramHtmlElement extends DiagramElement {
     public annotationId: string = '';
     /**
      * defines the constraints of the annotation on rendering template on label.
+     *
      * @private
      */
     public constraints: AnnotationConstraints;
@@ -55,14 +73,25 @@ export class DiagramHtmlElement extends DiagramElement {
      * Specifies whether the getcontent has to be executed or not.
      */
     private canReset: boolean;
+
     /**
-     * Gets or sets the geometry of the html element
+     * Gets or sets the geometry of the html element \
+     *
+     * @returns { string | HTMLElement } Gets or sets the geometry of the html element \
+     *
+     * @private
      */
     public get content(): string | HTMLElement {
         return this.data;
     }
+
     /**
-     * Gets or sets the value of the html element
+     * Gets or sets the value of the html element \
+     *
+     * @returns { void }Gets or sets the value of the html element\
+     * @param {string | HTMLElement} value - provide the value value.
+     *
+     * @private
      */
     public set content(value: string | HTMLElement) {
         this.data = value;
@@ -78,6 +107,7 @@ export class DiagramHtmlElement extends DiagramElement {
 
     /**
      * defines geometry of the html element
+     *
      * @private
      */
     public template: HTMLElement;

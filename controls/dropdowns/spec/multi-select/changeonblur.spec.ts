@@ -472,7 +472,7 @@ describe('MultiSelect - changeonblur', () => {
             (<any>dropDowns).wrapperClick(mouseEventArgs);
             mouseEventArgs.target = dropDowns.componentWrapper.querySelector('.e-chips-close.e-close-hooker');
             mouseEventArgs.type = 'mouseup';
-            dropDowns.ClearAll(mouseEventArgs);
+            dropDowns.clearAll(mouseEventArgs);
             expect(ischanged).toBe(true);
         });
     });
@@ -514,7 +514,7 @@ describe('MultiSelect - changeonblur', () => {
             (<any>dropDowns).wrapperClick(mouseEventArgs);
             mouseEventArgs.target = dropDowns.componentWrapper.querySelector('.e-chips-close.e-close-hooker');
             mouseEventArgs.type = 'mouseup';
-            dropDowns.ClearAll(mouseEventArgs);
+            dropDowns.clearAll(mouseEventArgs);
             expect(ischanged).toBe(true);
         });
     });

@@ -20,6 +20,8 @@ export class ConditionalFormatting {
 
     /**
      * Constructor for the Spreadsheet Conditional Formatting module.
+     *
+     * @param {Spreadsheet} parent - Constructor for the Spreadsheet Conditional Formatting module.
      */
     constructor(parent: Spreadsheet) {
         this.parent = parent;
@@ -28,7 +30,8 @@ export class ConditionalFormatting {
 
     /**
      * To destroy the Conditional Formatting module.
-     * @return {void}
+     *
+     * @returns {void} - To destroy the Conditional Formatting module.
      */
     protected destroy(): void {
         this.removeEventListener();
@@ -59,7 +62,7 @@ export class ConditionalFormatting {
 
     private setCF(conditionalFormat: ConditionalFormatModel): void {
         conditionalFormat.range = conditionalFormat.range || this.parent.getActiveSheet().selectedRange;
-        let eventArgs: CFormattingEventArgs = {
+        const eventArgs: CFormattingEventArgs = {
             range: conditionalFormat.range, type: conditionalFormat.type, cFColor: conditionalFormat.cFColor,
             value: conditionalFormat.value, cancel: false
         };
@@ -76,11 +79,11 @@ export class ConditionalFormatting {
     }
 
     private addClearCFHandler(args: { conditionalFormats: ConditionalFormatModel[], oldRange: string[], selectedRange: string }): void {
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let clearCFormats: ConditionalFormatModel[] = args.conditionalFormats;
-        let oldRange: string[] = args.oldRange;
-        let selectedRange: string = args.selectedRange;
-        let conditionalFormats: ConditionalFormatModel[] = sheet.conditionalFormats;
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const clearCFormats: ConditionalFormatModel[] = args.conditionalFormats;
+        const oldRange: string[] = args.oldRange;
+        const selectedRange: string = args.selectedRange;
+        const conditionalFormats: ConditionalFormatModel[] = sheet.conditionalFormats;
         for (let cCFIdx: number = 0; cCFIdx < clearCFormats.length; cCFIdx++) {
             let isApply: boolean = false;
             for (let cFIdx: number = 0; cFIdx < conditionalFormats.length; cFIdx++) {
@@ -89,17 +92,17 @@ export class ConditionalFormatting {
                     isApply = true;
                     conditionalFormats[cFIdx].range = oldRange[cCFIdx];
                     sheet.conditionalFormats[cFIdx].range = oldRange[cCFIdx];
-                    let sRangeIdx: number[] = getRangeIndexes(selectedRange);
-                    let cFRanges: string[] = oldRange[cCFIdx].split(',');
+                    const sRangeIdx: number[] = getRangeIndexes(selectedRange);
+                    const cFRanges: string[] = oldRange[cCFIdx].split(',');
                     for (let cFRangeIdx: number = 0; cFRangeIdx < cFRanges.length; cFRangeIdx++) {
-                        let newRangeIdxs: number[] = getRangeIndexes(cFRanges[cFRangeIdx]);
+                        const newRangeIdxs: number[] = getRangeIndexes(cFRanges[cFRangeIdx]);
                         for (let cFRowIdx: number = newRangeIdxs[0]; cFRowIdx <= newRangeIdxs[2]; cFRowIdx++) {
                             for (let cFColIdx: number = newRangeIdxs[1]; cFColIdx <= newRangeIdxs[3]; cFColIdx++) {
                                 for (let sRRowIdx: number = sRangeIdx[0]; sRRowIdx <= sRangeIdx[2]; sRRowIdx++) {
                                     for (let sRColIdx: number = sRangeIdx[1]; sRColIdx <= sRangeIdx[3]; sRColIdx++) {
                                         if (sRRowIdx === cFRowIdx && sRColIdx === cFColIdx) {
-                                            let td: HTMLElement = this.parent.getCell(cFRowIdx, cFColIdx);
-                                            let cell: CellModel = sheet.rows[cFRowIdx] ? sheet.rows[cFRowIdx].cells[cFColIdx] ?
+                                            const td: HTMLElement = this.parent.getCell(cFRowIdx, cFColIdx);
+                                            const cell: CellModel = sheet.rows[cFRowIdx] ? sheet.rows[cFRowIdx].cells[cFColIdx] ?
                                                 sheet.rows[cFRowIdx].cells[cFColIdx] : null : null;
                                             if (cell) {
                                                 this.cFInitialCheckHandler({
@@ -116,7 +119,7 @@ export class ConditionalFormatting {
                 }
             }
             if (!isApply) {
-                let conditionalFormat: ConditionalFormatModel = clearCFormats[cCFIdx];
+                const conditionalFormat: ConditionalFormatModel = clearCFormats[cCFIdx];
                 conditionalFormat.range = oldRange[cCFIdx];
                 this.parent.notify(setCFRule, { conditionalFormat: conditionalFormat });
             }
@@ -124,7 +127,7 @@ export class ConditionalFormatting {
     }
 
     private cFDeleteHandler(args: { rowIdx: number, colIdx: number }): void {
-        let td: HTMLElement = this.parent.getCell(args.rowIdx, args.colIdx);
+        const td: HTMLElement = this.parent.getCell(args.rowIdx, args.colIdx);
         if (td) {
             if (td.querySelector('.e-cf-databar')) {
                 td.removeChild(td.querySelector('.e-cf-databar'));
@@ -136,9 +139,9 @@ export class ConditionalFormatting {
     }
 
     private clearCFHandler(args: { rIdx: number, cIdx: number }): void {
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let tdEle: HTMLElement = this.parent.getCell(args.rIdx, args.cIdx);
-        let cell: CellModel = getCell(args.rIdx, args.cIdx, sheet);
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const tdEle: HTMLElement = this.parent.getCell(args.rIdx, args.cIdx);
+        const cell: CellModel = getCell(args.rIdx, args.cIdx, sheet);
         if (!tdEle) {
             return;
         }
@@ -151,14 +154,14 @@ export class ConditionalFormatting {
         if (tdEle.style) {
             if (tdEle.style.backgroundColor) {
                 tdEle.style.backgroundColor = '';
-                let style: CellStyleModel = this.parent.getCellStyleValue(['backgroundColor'], [args.rIdx, args.cIdx]);
+                const style: CellStyleModel = this.parent.getCellStyleValue(['backgroundColor'], [args.rIdx, args.cIdx]);
                 this.parent.notify(applyCellFormat, <CellFormatArgs>{
                     style: style, rowIdx: args.rIdx, colIdx: args.cIdx
                 });
             }
             if (tdEle.style.color) {
                 tdEle.style.color = '';
-                let style: CellStyleModel = this.parent.getCellStyleValue(['color'], [args.rIdx, args.cIdx]);
+                const style: CellStyleModel = this.parent.getCellStyleValue(['color'], [args.rIdx, args.cIdx]);
                 this.parent.notify(applyCellFormat, <CellFormatArgs>{
                     style: style, rowIdx: args.rIdx, colIdx: args.cIdx
                 });
@@ -186,9 +189,9 @@ export class ConditionalFormatting {
 
 
     private initiateCFHandler(args: { action: string }): void {
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
 
-        let dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+        const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
         dialogInst.show({
             width: 375, showCloseIcon: true, isModal: true, cssClass: 'e-conditionalformatting-dlg',
             header: args.action.replace('...', ''),
@@ -216,19 +219,19 @@ export class ConditionalFormatting {
     private dlgClickHandler(action: string): void {
         let value1: string = '';
         let value2: string = '';
-        let dlgCont: HTMLElement = this.parent.element.querySelector('.e-conditionalformatting-dlg').
+        const dlgCont: HTMLElement = this.parent.element.querySelector('.e-conditionalformatting-dlg').
             getElementsByClassName('e-dlg-content')[0].querySelector('.e-cf-dlg') as HTMLElement;
-        let mainCont: HTMLElement = dlgCont.querySelector('.e-cfmain');
+        const mainCont: HTMLElement = dlgCont.querySelector('.e-cfmain');
         if (mainCont) {
-            let inpEle: HTMLElement = mainCont.getElementsByTagName('input')[0];
+            const inpEle: HTMLElement = mainCont.getElementsByTagName('input')[0];
             if (inpEle && inpEle.parentElement.classList.contains('e-cfmain')) {
                 value1 = mainCont.getElementsByTagName('input')[0].value;
             }
             value2 = mainCont.getElementsByTagName('input')[1] ?
                 dlgCont.querySelector('.e-cfmain').getElementsByTagName('input')[1].value : '';
         }
-        let cFColor: string = this.getCFColor(dlgCont.querySelector('.e-cfsub').getElementsByTagName('input')[0].value);
-        let cFType: string = action === 'Duplicate Values...' ?
+        const cFColor: string = this.getCFColor(dlgCont.querySelector('.e-cfsub').getElementsByTagName('input')[0].value);
+        const cFType: string = action === 'Duplicate Values...' ?
             dlgCont.querySelector('.e-cfmain').getElementsByTagName('input')[0].value : this.getType(action);
         if (value1 !== '' && value2 !== '') {
             this.setCF({
@@ -249,86 +252,86 @@ export class ConditionalFormatting {
     }
 
     private getType(action: string): string {
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
         let result: string = '';
         switch (action) {
-            case l10n.getConstant('GreaterThan') + '...':
-                result = 'GreaterThan';
-                break;
-            case l10n.getConstant('LessThan') + '...':
-                result = 'LessThan';
-                break;
-            case l10n.getConstant('Between') + '...':
-                result = 'Between';
-                break;
-            case l10n.getConstant('CFEqualTo') + '...':
-                result = 'EqualTo';
-                break;
-            case l10n.getConstant('TextThatContains') + '...':
-                result = 'ContainsText';
-                break;
-            case l10n.getConstant('ADateOccuring') + '...':
-                result = 'DateOccur';
-                break;
-            case l10n.getConstant('Top10Items') + '...':
-                result = 'Top10Items';
-                break;
-            case l10n.getConstant('Bottom10Items') + '...':
-                result = 'Bottom10Items';
-                break;
-            case l10n.getConstant('Top10') + ' %...':
-                result = 'Top10Percentage';
-                break;
-            case l10n.getConstant('Bottom10') + ' %...':
-                result = 'Bottom10Percentage';
-                break;
-            case l10n.getConstant('AboveAverage') + '...':
-                result = 'AboveAverage';
-                break;
-            case l10n.getConstant('BelowAverage') + '...':
-                result = 'BelowAverage';
-                break;
+        case l10n.getConstant('GreaterThan') + '...':
+            result = 'GreaterThan';
+            break;
+        case l10n.getConstant('LessThan') + '...':
+            result = 'LessThan';
+            break;
+        case l10n.getConstant('Between') + '...':
+            result = 'Between';
+            break;
+        case l10n.getConstant('CFEqualTo') + '...':
+            result = 'EqualTo';
+            break;
+        case l10n.getConstant('TextThatContains') + '...':
+            result = 'ContainsText';
+            break;
+        case l10n.getConstant('ADateOccuring') + '...':
+            result = 'DateOccur';
+            break;
+        case l10n.getConstant('Top10Items') + '...':
+            result = 'Top10Items';
+            break;
+        case l10n.getConstant('Bottom10Items') + '...':
+            result = 'Bottom10Items';
+            break;
+        case l10n.getConstant('Top10') + ' %...':
+            result = 'Top10Percentage';
+            break;
+        case l10n.getConstant('Bottom10') + ' %...':
+            result = 'Bottom10Percentage';
+            break;
+        case l10n.getConstant('AboveAverage') + '...':
+            result = 'AboveAverage';
+            break;
+        case l10n.getConstant('BelowAverage') + '...':
+            result = 'BelowAverage';
+            break;
         }
         return result;
     }
 
     private getCFColor(value: string): string {
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
         let result: string = 'RedFT';
         switch (value) {
-            case l10n.getConstant('LightRedFillWithDarkRedText'):
-                result = 'RedFT';
-                break;
-            case l10n.getConstant('YellowFillWithDarkYellowText'):
-                result = 'YellowFT';
-                break;
-            case l10n.getConstant('GreenFillWithDarkGreenText'):
-                result = 'GreenFT';
-                break;
-            case l10n.getConstant('RedFill'):
-                result = 'RedF';
-                break;
-            case l10n.getConstant('RedText'):
-                result = 'RedT';
-                break;
+        case l10n.getConstant('LightRedFillWithDarkRedText'):
+            result = 'RedFT';
+            break;
+        case l10n.getConstant('YellowFillWithDarkYellowText'):
+            result = 'YellowFT';
+            break;
+        case l10n.getConstant('GreenFillWithDarkGreenText'):
+            result = 'GreenFT';
+            break;
+        case l10n.getConstant('RedFill'):
+            result = 'RedF';
+            break;
+        case l10n.getConstant('RedText'):
+            result = 'RedT';
+            break;
         }
         return result;
     }
 
     private cFDlgContent(action: string): HTMLElement {
-        let dlgText: string = this.getDlgText(action);
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let dlgContent: HTMLElement = this.parent.createElement('div', { className: 'e-cf-dlg' });
-        let mainDiv: HTMLElement = this.parent.createElement('div', { className: 'e-cfmain' });
-        let subDiv: HTMLElement = this.parent.createElement('div', { className: 'e-cfsub' });
+        const dlgText: string = this.getDlgText(action);
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const dlgContent: HTMLElement = this.parent.createElement('div', { className: 'e-cf-dlg' });
+        const mainDiv: HTMLElement = this.parent.createElement('div', { className: 'e-cfmain' });
+        const subDiv: HTMLElement = this.parent.createElement('div', { className: 'e-cfsub' });
 
-        let value1Text: HTMLElement = this.parent.createElement('span', { className: 'e-header e-top-header', innerHTML: dlgText });
-        let value1Inp: HTMLElement =
+        const value1Text: HTMLElement = this.parent.createElement('span', { className: 'e-header e-top-header', innerHTML: dlgText });
+        const value1Inp: HTMLElement =
             this.parent.createElement('input', { className: 'e-input', id: 'valueInput', attrs: { type: 'text' } });
-        let duplicateSelectEle: HTMLElement = this.parent.createElement('input', { className: 'e-select' });
+        const duplicateSelectEle: HTMLElement = this.parent.createElement('input', { className: 'e-select' });
 
-        let subDivText: HTMLElement = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('With') });
-        let colorSelectEle: HTMLElement = this.parent.createElement('input', { className: 'e-select' });
+        const subDivText: HTMLElement = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('With') });
+        const colorSelectEle: HTMLElement = this.parent.createElement('input', { className: 'e-select' });
         dlgContent.appendChild(mainDiv);
         dlgContent.appendChild(subDiv);
 
@@ -338,7 +341,7 @@ export class ConditionalFormatting {
                 mainDiv.appendChild(value1Inp);
                 if (action === l10n.getConstant('Top10Items') + '...' || action === l10n.getConstant('Top10') + ' %...' ||
                     action === l10n.getConstant('Bottom10Items') + '...' || action === l10n.getConstant('Bottom10') + ' %...') {
-                    let numeric: NumericTextBox = new NumericTextBox({
+                    const numeric: NumericTextBox = new NumericTextBox({
                         value: 10
                     });
                     numeric.appendTo(value1Inp);
@@ -346,11 +349,11 @@ export class ConditionalFormatting {
             }
         } else {
             mainDiv.appendChild(duplicateSelectEle);
-            let dupData: { [key: string]: Object }[] = [
+            const dupData: { [key: string]: Object }[] = [
                 { text: l10n.getConstant('Duplicate'), id: 'duplicate' },
-                { text: l10n.getConstant('Unique'), id: 'unique' },
+                { text: l10n.getConstant('Unique'), id: 'unique' }
             ];
-            let dupList: DropDownList = new DropDownList({
+            const dupList: DropDownList = new DropDownList({
                 dataSource: dupData,
                 index: 0,
                 popupHeight: '200px'
@@ -358,23 +361,23 @@ export class ConditionalFormatting {
             dupList.appendTo(duplicateSelectEle);
         }
         if (action === l10n.getConstant('Between') + '...') {
-            let value2Text: HTMLElement = this.parent.createElement(
+            const value2Text: HTMLElement = this.parent.createElement(
                 'span', { className: 'e-header e-header-2', innerHTML: l10n.getConstant('And') });
-            let value2Inp: HTMLElement = this.parent.createElement('input', { className: 'e-input' });
+            const value2Inp: HTMLElement = this.parent.createElement('input', { className: 'e-input' });
             mainDiv.appendChild(value2Text);
             mainDiv.appendChild(value2Inp);
         }
         subDiv.appendChild(subDivText);
         subDiv.appendChild(colorSelectEle);
 
-        let colorData: { [key: string]: Object }[] = [
+        const colorData: { [key: string]: Object }[] = [
             { text: l10n.getConstant('LightRedFillWithDarkRedText'), value: 'redft', id: 'redft' },
             { text: l10n.getConstant('YellowFillWithDarkYellowText'), id: 'yellowft' },
             { text: l10n.getConstant('GreenFillWithDarkGreenText'), id: 'greenft' },
             { text: l10n.getConstant('RedFill'), id: 'redf' },
-            { text: l10n.getConstant('RedText'), id: 'redt' },
+            { text: l10n.getConstant('RedText'), id: 'redt' }
         ];
-        let colorList: DropDownList = new DropDownList({
+        const colorList: DropDownList = new DropDownList({
             dataSource: colorData,
             index: 0,
             popupHeight: '200px'
@@ -385,11 +388,11 @@ export class ConditionalFormatting {
 
     private checkCellHandler(rowIdx: number, colIdx: number, conditionalFormat: ConditionalFormatModel): boolean {
         let isApply: boolean = false;
-        let ranges: string[] = conditionalFormat.range.trim().split(',');
+        const ranges: string[] = conditionalFormat.range.trim().split(',');
         for (let rangeIdx: number = 0; rangeIdx < ranges.length; rangeIdx++) {
             let cFrange: string = ranges[rangeIdx];
             cFrange = cFrange.indexOf(':') > -1 ? cFrange : cFrange + ':' + cFrange;
-            let indexes: number[] = getRangeIndexes(cFrange);
+            const indexes: number[] = getRangeIndexes(cFrange);
             if (rowIdx >= indexes[0] && rowIdx <= indexes[2] && colIdx >= indexes[1] && colIdx <= indexes[3]) {
                 isApply = true;
                 break;
@@ -399,54 +402,54 @@ export class ConditionalFormatting {
     }
 
     private getDlgText(action: string): string {
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
         let result: string = '';
         switch (action) {
-            case l10n.getConstant('GreaterThan') + '...':
-                result = l10n.getConstant('FormatCellsGreaterThan');
-                break;
-            case l10n.getConstant('LessThan') + '...':
-                result = l10n.getConstant('FormatCellsLessThan');
-                break;
-            case l10n.getConstant('Between') + '...':
-                result = l10n.getConstant('FormatCellsBetween');
-                break;
-            case l10n.getConstant('CFEqualTo') + '...':
-                result = l10n.getConstant('FormatCellsEqualTo');
-                break;
-            case l10n.getConstant('TextThatContains') + '...':
-                result = l10n.getConstant('FormatCellsThatContainTheText');
-                break;
-            case l10n.getConstant('ADateOccuring') + '...':
-                result = l10n.getConstant('FormatCellsThatContainADateOccurring');
-                break;
-            case l10n.getConstant('DuplicateValues') + '...':
-                result = l10n.getConstant('FormatCellsDuplicate');
-                break;
-            case l10n.getConstant('Top10Items') + '...':
-                result = l10n.getConstant('FormatCellsTop');
-                break;
-            case l10n.getConstant('Top10') + ' %...':
-                result = l10n.getConstant('FormatCellsTop');
-                break;
-            case l10n.getConstant('Bottom10Items') + '...':
-                result = l10n.getConstant('FormatCellsBottom');
-                break;
-            case l10n.getConstant('Bottom10') + ' %...':
-                result = l10n.getConstant('FormatCellsBottom');
-                break;
-            case l10n.getConstant('AboveAverage') + '...':
-                result = l10n.getConstant('FormatCellsAbove');
-                break;
-            case l10n.getConstant('BelowAverage') + '...':
-                result = l10n.getConstant('FormatCellsBelow');
-                break;
+        case l10n.getConstant('GreaterThan') + '...':
+            result = l10n.getConstant('FormatCellsGreaterThan');
+            break;
+        case l10n.getConstant('LessThan') + '...':
+            result = l10n.getConstant('FormatCellsLessThan');
+            break;
+        case l10n.getConstant('Between') + '...':
+            result = l10n.getConstant('FormatCellsBetween');
+            break;
+        case l10n.getConstant('CFEqualTo') + '...':
+            result = l10n.getConstant('FormatCellsEqualTo');
+            break;
+        case l10n.getConstant('TextThatContains') + '...':
+            result = l10n.getConstant('FormatCellsThatContainTheText');
+            break;
+        case l10n.getConstant('ADateOccuring') + '...':
+            result = l10n.getConstant('FormatCellsThatContainADateOccurring');
+            break;
+        case l10n.getConstant('DuplicateValues') + '...':
+            result = l10n.getConstant('FormatCellsDuplicate');
+            break;
+        case l10n.getConstant('Top10Items') + '...':
+            result = l10n.getConstant('FormatCellsTop');
+            break;
+        case l10n.getConstant('Top10') + ' %...':
+            result = l10n.getConstant('FormatCellsTop');
+            break;
+        case l10n.getConstant('Bottom10Items') + '...':
+            result = l10n.getConstant('FormatCellsBottom');
+            break;
+        case l10n.getConstant('Bottom10') + ' %...':
+            result = l10n.getConstant('FormatCellsBottom');
+            break;
+        case l10n.getConstant('AboveAverage') + '...':
+            result = l10n.getConstant('FormatCellsAbove');
+            break;
+        case l10n.getConstant('BelowAverage') + '...':
+            result = l10n.getConstant('FormatCellsBelow');
+            break;
         }
         return result;
     }
 
     private cFInitialRender(args: { rowIdx: number, colIdx: number, cell: CellModel, td?: HTMLElement }): void {
-        let cFRules: ConditionalFormatModel[] = this.parent.getActiveSheet().conditionalFormats;
+        const cFRules: ConditionalFormatModel[] = this.parent.getActiveSheet().conditionalFormats;
         if (cFRules) {
             for (let cFRIdx: number = 0; cFRIdx < cFRules.length; cFRIdx++) {
                 let isApply: boolean = false;
@@ -466,13 +469,12 @@ export class ConditionalFormatting {
             rowIdx: number, colIdx: number, cell: CellModel, td?: HTMLElement,
             conditionalFormat: ConditionalFormatModel
         }): void {
-        let sheet: SheetModel = this.parent.getActiveSheet();
         let formatStyle: CellStyleModel;
         let isApply: boolean = false;
-        let cFColors: string[] = ['e-redft', 'e-yellowft', 'e-greenft', 'e-redf', 'e-redt'];
-        let value: string = args.cell.value || '';
-        let cFRule: ConditionalFormatModel = args.conditionalFormat;
-        let td: HTMLElement = args.td || this.parent.getCell(args.rowIdx, args.colIdx);
+        const cFColors: string[] = ['e-redft', 'e-yellowft', 'e-greenft', 'e-redf', 'e-redt'];
+        const value: string = args.cell.value || '';
+        const cFRule: ConditionalFormatModel = args.conditionalFormat;
+        const td: HTMLElement = args.td || this.parent.getCell(args.rowIdx, args.colIdx);
         if (!td) {
             return;
         }
@@ -511,33 +513,31 @@ export class ConditionalFormatting {
             if (style.textDecoration) {
                 td.style.setProperty('text-decoration', style.textDecoration);
             }
-            }
         }
+    }
 
     private checkConditionalFormatHandler(args: { rowIdx: number, colIdx: number, cell: CellModel }): void {
         let indexes: number[];
         let isApply: boolean = false;
         let result: boolean = false;
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let cell: CellModel = args.cell;
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const cell: CellModel = args.cell;
         let td: HTMLElement;
-        let cFRules: ConditionalFormatModel[] = sheet.conditionalFormats as ConditionalFormatModel[];
-        let mainCnt: Element = this.parent.getMainContent();
-        let value: string = !cell ? '' : !isNullOrUndefined(cell.value) ? cell.value : '';
-        let cFColors: string[] = ['e-redft', 'e-yellowft', 'e-greenft', 'e-redf', 'e-redt'];
-        let cFRIdx: number;
+        const cFRules: ConditionalFormatModel[] = sheet.conditionalFormats as ConditionalFormatModel[];
+        const value: string = !cell ? '' : !isNullOrUndefined(cell.value) ? cell.value : '';
+        const cFColors: string[] = ['e-redft', 'e-yellowft', 'e-greenft', 'e-redf', 'e-redt'];
         td = this.parent.getCell(args.rowIdx, args.colIdx);
         if (!cFRules || cFRules.length < 1) {
             return;
         }
         for (let cFRuleIdx: number = cFRules.length - 1; cFRuleIdx >= 0; cFRuleIdx--) {
-            let cFRanges: string[] = cFRules[cFRuleIdx].range.trim().split(',');
+            const cFRanges: string[] = cFRules[cFRuleIdx].range.trim().split(',');
             for (let rangeIdx: number = 0; rangeIdx < cFRanges.length; rangeIdx++) {
                 let range: string = cFRanges[rangeIdx];
                 range = range.indexOf(':') > -1 ? range : range + ':' + range;
                 indexes = getRangeIndexes(range);
                 if (args.rowIdx >= indexes[0] && args.colIdx >= indexes[1] && args.rowIdx <= indexes[2] && args.colIdx <= indexes[3]) {
-                    cFRIdx = cFRuleIdx;
+                    const cFRIdx: number = cFRuleIdx;
                     result = true;
                     break;
                 }
@@ -545,7 +545,7 @@ export class ConditionalFormatting {
             if (result) {
                 if (('GreaterThan' + 'LessThan' + 'EqualTo' + 'Between' + 'ContainsText' +
                     'DateOccur').includes(sheet.conditionalFormats[cFRuleIdx].type)) {
-                    let cellVal: string = getCell(args.rowIdx, args.colIdx, sheet) && getCell(args.rowIdx, args.colIdx, sheet).value ?
+                    const cellVal: string = getCell(args.rowIdx, args.colIdx, sheet) && getCell(args.rowIdx, args.colIdx, sheet).value ?
                         getCell(args.rowIdx, args.colIdx, sheet).value : '';
                     if (isNullOrUndefined(cellVal) && cellVal === '') {
                         isApply = false;
@@ -563,7 +563,7 @@ export class ConditionalFormatting {
                             if (!sheet.rows[rIdx]) { setRow(sheet, rIdx, {}); }
                             for (let cIdx: number = indexes[1]; cIdx <= indexes[3]; cIdx++) {
                                 if (!sheet.rows[rIdx].cells || !sheet.rows[rIdx].cells[cIdx]) { setCell(rIdx, cIdx, sheet, {}); }
-                                let cellVal: string = getCell(rIdx, cIdx, sheet) && getCell(rIdx, cIdx, sheet).value ?
+                                const cellVal: string = getCell(rIdx, cIdx, sheet) && getCell(rIdx, cIdx, sheet).value ?
                                     getCell(rIdx, cIdx, sheet).value : '';
                                 isApply = this.cFRCheck(sheet.conditionalFormats[cFRuleIdx], cellVal, td, rIdx, cIdx, false);
                                 td = this.parent.getCell(rIdx, cIdx);
@@ -594,16 +594,16 @@ export class ConditionalFormatting {
     }
 
     private setColor(td: HTMLElement, rIdx: number, cIdx: number, cFRuleIdx: number, isApply: boolean): void {
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let cFRules: ConditionalFormatModel[] = sheet.conditionalFormats as ConditionalFormatModel[];
-        let cFColors: string[] = ['e-redft', 'e-yellowft', 'e-greenft', 'e-redf', 'e-redt'];
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const cFRules: ConditionalFormatModel[] = sheet.conditionalFormats as ConditionalFormatModel[];
+        const cFColors: string[] = ['e-redft', 'e-yellowft', 'e-greenft', 'e-redf', 'e-redt'];
         let isActiveCF: boolean = false;
         if (cFRules[cFRuleIdx].cFColor) {
             if (td && td.classList.contains('e-' + cFRules[cFRuleIdx].cFColor.toLowerCase())) {
                 isActiveCF = true;
             }
         } else if (cFRules[cFRuleIdx].format.style.backgroundColor && td.style.backgroundColor) {
-            let rgb: { r: number, g: number, b: number } = this.hexToRgb(cFRules[cFRuleIdx].format.style.backgroundColor);
+            const rgb: { r: number, g: number, b: number } = this.hexToRgb(cFRules[cFRuleIdx].format.style.backgroundColor);
             if ('rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')' === td.style.backgroundColor) {
                 isActiveCF = true;
             }
@@ -638,8 +638,8 @@ export class ConditionalFormatting {
                 }
                 td.removeAttribute('style');
             }
-            let cell: CellModel = getCell(rIdx, cIdx, this.parent.getActiveSheet());
-            let style: CellStyleModel = cell.style ? cell.style : {};
+            const cell: CellModel = getCell(rIdx, cIdx, this.parent.getActiveSheet());
+            const style: CellStyleModel = cell.style ? cell.style : {};
             this.parent.notify(applyCellFormat, <CellFormatArgs>{
                 style: style, rowIdx: rIdx, colIdx: cIdx
             });
@@ -647,7 +647,7 @@ export class ConditionalFormatting {
     }
 
     private hexToRgb(hex: string): { r: number, g: number, b: number } {
-        let result: RegExpExecArray = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        const result: RegExpExecArray = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         return result ? {
             r: parseInt(result[1], 16),
             g: parseInt(result[2], 16),
@@ -655,14 +655,13 @@ export class ConditionalFormatting {
         } : null;
     }
 
-    // tslint:disable-next-line:max-func-body-length
     private cFRCheck(
         cFRule: ConditionalFormatModel, value: string, td: HTMLElement, rIdx?: number, cIdx?: number, isInitial?: boolean): boolean {
         let cFRuleValue1: string = '';
         let cFRuleValue2: string = '';
-        let cellValue: string = value.toString();
+        const cellValue: string = value.toString();
         if (cFRule.value) {
-            let valueArr: string[] = cFRule.value.split(',');
+            const valueArr: string[] = cFRule.value.split(',');
             if (valueArr.length > 1) {
                 if (valueArr[0].split('(').length > 1) {
                     let valueStr: string = '';
@@ -697,68 +696,68 @@ export class ConditionalFormatting {
             'FiveArrows' + 'ThreeTrafficLights1' + 'ThreeTrafficLights2' + 'ThreeSigns' + 'FourTrafficLights' +
                 'FourRedToBlack' + 'ThreeSymbols' + 'ThreeSymbols2' + 'ThreeFlags' + 'FourRating' + 'FiveQuarters' +
                 'FiveRating' + 'ThreeTriangles' + 'ThreeStars' + 'FiveBoxes').includes(type)) {
-                type = 'IconSet';
-            }
+            type = 'IconSet';
+        }
         switch (type) {
-            case 'GreaterThan':
-                isApply = this.isGreaterThanLessThan(cFRule, cellValue as string, cFRuleValue1 as string, true);
-                break;
-            case 'LessThan':
-                isApply = this.isGreaterThanLessThan(cFRule, cellValue as string, cFRuleValue1 as string, false);
-                break;
-            case 'Between':
-                isApply = this.isBetWeen(cFRule, cellValue as string, cFRuleValue1 as string, cFRuleValue2 as string);
-                break;
-            case 'EqualTo':
-                isApply = this.isEqualTo(cFRule, cellValue as string, cFRuleValue1 as string);
-                break;
-            case 'ContainsText':
-                isApply = this.isContainsText(cellValue as string, cFRuleValue1);
-                break;
-            case 'DateOccur':
-                let dateEventArgs: { [key: string]: string | number } = {
-                    value: cFRuleValue1,
-                    rowIndex: 0,
-                    colIndex: 0,
-                    sheetIndex: 0,
-                    updatedVal: ''
-                };
-                this.parent.notify(checkDateFormat, dateEventArgs);
-                if (cellValue === dateEventArgs.updatedVal) {
-                    isApply = true;
-                }
-                break;
-            case 'Unique':
-            case 'Duplicate':
-                isApply = this.isDuplicateUnique(cellValue, cFRule, false);
-                break;
-            case 'Top10Items':
-                isApply = this.isTopBottomTenValue(cellValue, cFRuleValue1, cFRule, true);
-                break;
-            case 'Bottom10Items':
-                isApply = this.isTopBottomTenValue(cellValue, cFRuleValue1, cFRule, false);
-                break;
-            case 'Top10Percentage':
-                isApply = this.isTopBottomTenPercentage(cellValue, cFRuleValue1, cFRule, true);
-                break;
-            case 'Bottom10Percentage':
-                isApply = this.isTopBottomTenPercentage(cellValue, cFRuleValue1, cFRule, false);
-                break;
-            case 'AboveAverage':
-                isApply = this.isAboveBelowAverage(cellValue, cFRuleValue1, cFRule, true);
-                break;
-            case 'BelowAverage':
-                isApply = this.isAboveBelowAverage(cellValue, cFRuleValue1, cFRule, false);
-                break;
-            case 'DataBar':
-                this.isDataBarColorScalesIconSets(type, cellValue, cFRule, td, rIdx, cIdx, isInitial);
-                break;
-            case 'ColorScale':
-                this.isDataBarColorScalesIconSets(type, cellValue, cFRule, td, rIdx, cIdx, isInitial);
-                break;
-            case 'IconSet':
-                this.isDataBarColorScalesIconSets(type, cellValue, cFRule, td, rIdx, cIdx, isInitial);
-                break;
+        case 'GreaterThan':
+            isApply = this.isGreaterThanLessThan(cFRule, cellValue as string, cFRuleValue1 as string, true);
+            break;
+        case 'LessThan':
+            isApply = this.isGreaterThanLessThan(cFRule, cellValue as string, cFRuleValue1 as string, false);
+            break;
+        case 'Between':
+            isApply = this.isBetWeen(cFRule, cellValue as string, cFRuleValue1 as string, cFRuleValue2 as string);
+            break;
+        case 'EqualTo':
+            isApply = this.isEqualTo(cFRule, cellValue as string, cFRuleValue1 as string);
+            break;
+        case 'ContainsText':
+            isApply = this.isContainsText(cellValue as string, cFRuleValue1);
+            break;
+        case 'DateOccur':
+            const dateEventArgs: { [key: string]: string | number } = {
+                value: cFRuleValue1,
+                rowIndex: 0,
+                colIndex: 0,
+                sheetIndex: 0,
+                updatedVal: ''
+            };
+            this.parent.notify(checkDateFormat, dateEventArgs);
+            if (cellValue === dateEventArgs.updatedVal) {
+                isApply = true;
+            }
+            break;
+        case 'Unique':
+        case 'Duplicate':
+            isApply = this.isDuplicateUnique(cellValue, cFRule, false);
+            break;
+        case 'Top10Items':
+            isApply = this.isTopBottomTenValue(cellValue, cFRuleValue1, cFRule, true);
+            break;
+        case 'Bottom10Items':
+            isApply = this.isTopBottomTenValue(cellValue, cFRuleValue1, cFRule, false);
+            break;
+        case 'Top10Percentage':
+            isApply = this.isTopBottomTenPercentage(cellValue, cFRuleValue1, cFRule, true);
+            break;
+        case 'Bottom10Percentage':
+            isApply = this.isTopBottomTenPercentage(cellValue, cFRuleValue1, cFRule, false);
+            break;
+        case 'AboveAverage':
+            isApply = this.isAboveBelowAverage(cellValue, cFRuleValue1, cFRule, true);
+            break;
+        case 'BelowAverage':
+            isApply = this.isAboveBelowAverage(cellValue, cFRuleValue1, cFRule, false);
+            break;
+        case 'DataBar':
+            this.isDataBarColorScalesIconSets(type, cellValue, cFRule, td, rIdx, cIdx, isInitial);
+            break;
+        case 'ColorScale':
+            this.isDataBarColorScalesIconSets(type, cellValue, cFRule, td, rIdx, cIdx, isInitial);
+            break;
+        case 'IconSet':
+            this.isDataBarColorScalesIconSets(type, cellValue, cFRule, td, rIdx, cIdx, isInitial);
+            break;
         }
         return isApply;
     }
@@ -766,20 +765,20 @@ export class ConditionalFormatting {
     private isDataBarColorScalesIconSets(
         type: string, cellValue: string, cFRule: ConditionalFormatModel, td: HTMLElement,
         rIdx: number, cIdx: number, isInitial: boolean): void {
-        let sheet: SheetModel = this.parent.getActiveSheet();
+        const sheet: SheetModel = this.parent.getActiveSheet();
         if (isInitial) {
             type === 'DataBar' ? this.applyDataBars(cellValue, cFRule, td, rIdx, cIdx) : type === 'ColorScale' ?
                 this.applyColorScale(cellValue, cFRule, td, rIdx, cIdx, isInitial) :
                 this.applyIconSet(cellValue, cFRule, td, rIdx, cIdx, isInitial);
         } else {
             td = null;
-            let rangeArr: string[] = cFRule.range.split(',');
+            const rangeArr: string[] = cFRule.range.split(',');
             for (let rangeIdx: number = 0; rangeIdx < rangeArr.length; rangeIdx++) {
-                let selIndexes: number[] = getRangeIndexes(rangeArr[rangeIdx]);
+                const selIndexes: number[] = getRangeIndexes(rangeArr[rangeIdx]);
                 for (let rIdx: number = selIndexes[0]; rIdx <= selIndexes[2]; rIdx++) {
                     for (let cIdx: number = selIndexes[1]; cIdx <= selIndexes[3]; cIdx++) {
                         if (getCell(rIdx, cIdx, sheet)) {
-                            let cellVal: string = getCell(rIdx, cIdx, sheet).value;
+                            const cellVal: string = getCell(rIdx, cIdx, sheet).value;
                             td = this.parent.getCell(rIdx, cIdx);
                             type === 'DataBar' ? this.applyDataBars(cellVal, cFRule, td, rIdx, cIdx) :
                                 type === 'ColorScale' ?
@@ -795,52 +794,48 @@ export class ConditionalFormatting {
     private applyIconSet(
         val: string, cFRule: ConditionalFormatModel, tdEle: HTMLElement, rIdx: number,
         cIdx: number, isInitial: boolean): void {
-        let value: number = parseInt(val, 10);
-        let rowIdx: number;
-        let colIdx: number;
-        let iconList: string[] = this.getIconList(cFRule.type).split(',');
-        let min: number;
-        let max: number;
+        const value: number = parseInt(val, 10);
+        const iconList: string[] = this.getIconList(cFRule.type).split(',');
         let valArr: number[] = [];
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let actCell: CellModel = sheet.rows[rIdx] && sheet.rows[rIdx].cells[cIdx] ? sheet.rows[rIdx].cells[cIdx] : null;
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const actCell: CellModel = sheet.rows[rIdx] && sheet.rows[rIdx].cells[cIdx] ? sheet.rows[rIdx].cells[cIdx] : null;
         if (!actCell) {
             return;
         }
-        let td: HTMLElement = tdEle ||
+        const td: HTMLElement = tdEle ||
             this.parent.getMainContent().getElementsByClassName('e-row')[rIdx].getElementsByClassName('e-cell')[cIdx] as HTMLElement;
-        let rangeArr: string[] = cFRule.range.split(',');
+        const rangeArr: string[] = cFRule.range.split(',');
         for (let rIdx: number = 0; rIdx < rangeArr.length; rIdx++) {
-            let selIndexes: number[] = getRangeIndexes(rangeArr[rIdx]);
+            const selIndexes: number[] = getRangeIndexes(rangeArr[rIdx]);
             valArr = this.getNumericArray(selIndexes, valArr);
         }
         valArr = valArr.sort((n1: number, n2: number) => n1 - n2);
-        min = valArr[0];
-        max = valArr[valArr.length - 1];
+        const min: number = valArr[0];
+        const max: number = valArr[valArr.length - 1];
         let currentSymbol: string;
         if (iconList.length === 3) {
-            let maxPercent: number = min + (0.67 * ((max) - (min)));
-            let minPercent: number = min + (0.33 * ((max) - (min)));
+            const maxPercent: number = min + (0.67 * ((max) - (min)));
+            const minPercent: number = min + (0.33 * ((max) - (min)));
             currentSymbol =
                 'e-' + (value >= maxPercent ? iconList[0].trim() : value >= minPercent ? iconList[1].trim() : iconList[2].trim());
         } else if (iconList.length === 4) {
-            let percent1: number = min + (0.25 * ((max) - (min)));
-            let percent2: number = min + (0.50 * ((max) - (min)));
-            let percent3: number = min + (0.75 * ((max) - (min)));
+            const percent1: number = min + (0.25 * ((max) - (min)));
+            const percent2: number = min + (0.50 * ((max) - (min)));
+            const percent3: number = min + (0.75 * ((max) - (min)));
             currentSymbol =
                 'e-' + (value >= percent3 ? iconList[0].trim() : value >= percent2 ? iconList[1].trim() : value >= percent1 ?
                     iconList[2].trim() : iconList[3].trim());
         } else if (iconList.length === 5) {
-            let percent1: number = min + (0.20 * ((max) - (min)));
-            let percent2: number = min + (0.40 * ((max) - (min)));
-            let percent3: number = min + (0.60 * ((max) - (min)));
-            let percent4: number = min + (0.80 * ((max) - (min)));
+            const percent1: number = min + (0.20 * ((max) - (min)));
+            const percent2: number = min + (0.40 * ((max) - (min)));
+            const percent3: number = min + (0.60 * ((max) - (min)));
+            const percent4: number = min + (0.80 * ((max) - (min)));
             currentSymbol =
                 'e-' + (value >= percent4 ? iconList[0].trim() : value >= percent3 ? iconList[1].trim() : value >= percent2 ?
                     iconList[2].trim() : value >= percent1 ? iconList[3].trim() : iconList[4].trim());
         }
         if (!isNullOrUndefined(actCell)) {
-            let cfIcon: HTMLElement = this.parent.createElement('span', { className: 'e-icon' });
+            const cfIcon: HTMLElement = this.parent.createElement('span', { className: 'e-icon' });
             cfIcon.classList.add('e-iconsetspan');
             cfIcon.classList.add(currentSymbol);
             this.applyIconSetIcon({ rowIndex: rIdx, colIndex: cIdx }, cfIcon, td);
@@ -848,12 +843,11 @@ export class ConditionalFormatting {
     }
 
     private applyIconSetIcon(activeObj: { rowIndex: number, colIndex: number }, cfIcon: Element, td: Element): void {
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let rowIdx: number = activeObj.rowIndex;
-        let colIdx: number = activeObj.colIndex;
-        let cellVal: string = getCell(rowIdx, colIdx, sheet).value;
-        let activeEle: HTMLElement = td as HTMLElement;
-        let sheetIdx: number = sheet.index;
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const rowIdx: number = activeObj.rowIndex;
+        const colIdx: number = activeObj.colIndex;
+        const cellVal: string = getCell(rowIdx, colIdx, sheet).value;
+        const activeEle: HTMLElement = td as HTMLElement;
         if (activeEle.classList.contains('e-iconset') && activeEle.querySelector('.e-iconsetspan')) {
             activeEle.removeChild(activeEle.querySelector('.e-iconsetspan'));
         }
@@ -864,70 +858,68 @@ export class ConditionalFormatting {
     }
 
     private getIconList(iconName: string): string {
-        let result: string = '3arrows-1,3arrows-2,3arrows-3';
+        const result: string = '3arrows-1,3arrows-2,3arrows-3';
         switch (iconName) {
-            case 'ThreeArrows':
-                return '3arrows-1,3arrows-2,3arrows-3';
-            case 'ThreeArrowsGray':
-                return '3arrowsgray-1,3arrowsgray-2,3arrowsgray-3';
-            case 'FourArrowsGray':
-                return '4arrowsgray-1,4arrowsgray-2,4arrowsgray-3,4arrowsgray-4';
-            case 'FourArrows':
-                return '4arrows-1,4arrows-2,4arrows-3,4arrows-4';
-            case 'FiveArrowsGray':
-                return '5arrowsgray-1,5arrowsgray-2,5arrowsgray-3,5arrowsgray-4,5arrowsgray-5';
-            case 'FiveArrows':
-                return '5arrows-1,5arrows-2,5arrows-3,5arrows-4,5arrows-5';
-            case 'ThreeTrafficLights1':
-                return '3trafficlights-1,3trafficlights-2,3trafficlights-3';
-            case 'ThreeTrafficLights2':
-                return '3rafficlights2-1,3rafficlights2-2,3rafficlights2-3';
-            case 'ThreeSigns':
-                return '3signs-1,3signs-2,3signs-3';
-            case 'FourTrafficLights':
-                return '4trafficlights-1,4trafficlights-2,4trafficlights-3,4trafficlights-4';
-            case 'FourRedToBlack':
-                return '4redtoblack-1,4redtoblack-2,4redtoblack-3,4redtoblack-4';
-            case 'ThreeSymbols':
-                return '3symbols-1,3symbols-2,3symbols-3';
-            case 'ThreeSymbols2':
-                return '3symbols2-1,3symbols2-2,3symbols2-3';
-            case 'ThreeFlags':
-                return '3flags-1,3flags-2,3flags-3';
-            case 'FourRating':
-                return '4rating-1,4rating-2,4rating-3,4rating-4';
-            case 'FiveQuarters':
-                return '5quarters-1,5quarters-2,5quarters-3,5quarters-4,5quarters-5';
-            case 'FiveRating':
-                return '5rating-1,5rating-2,5rating-3,5rating-4,5rating-5';
-            case 'ThreeTriangles':
-                return '3triangles-1,3triangles-2,3triangles-3';
-            case 'ThreeStars':
-                return '3stars-1,3stars-2,3stars-3';
-            case 'FiveBoxes':
-                return '5boxes-1,5boxes-2,5boxes-3,5boxes-4,5boxes-5';
+        case 'ThreeArrows':
+            return '3arrows-1,3arrows-2,3arrows-3';
+        case 'ThreeArrowsGray':
+            return '3arrowsgray-1,3arrowsgray-2,3arrowsgray-3';
+        case 'FourArrowsGray':
+            return '4arrowsgray-1,4arrowsgray-2,4arrowsgray-3,4arrowsgray-4';
+        case 'FourArrows':
+            return '4arrows-1,4arrows-2,4arrows-3,4arrows-4';
+        case 'FiveArrowsGray':
+            return '5arrowsgray-1,5arrowsgray-2,5arrowsgray-3,5arrowsgray-4,5arrowsgray-5';
+        case 'FiveArrows':
+            return '5arrows-1,5arrows-2,5arrows-3,5arrows-4,5arrows-5';
+        case 'ThreeTrafficLights1':
+            return '3trafficlights-1,3trafficlights-2,3trafficlights-3';
+        case 'ThreeTrafficLights2':
+            return '3rafficlights2-1,3rafficlights2-2,3rafficlights2-3';
+        case 'ThreeSigns':
+            return '3signs-1,3signs-2,3signs-3';
+        case 'FourTrafficLights':
+            return '4trafficlights-1,4trafficlights-2,4trafficlights-3,4trafficlights-4';
+        case 'FourRedToBlack':
+            return '4redtoblack-1,4redtoblack-2,4redtoblack-3,4redtoblack-4';
+        case 'ThreeSymbols':
+            return '3symbols-1,3symbols-2,3symbols-3';
+        case 'ThreeSymbols2':
+            return '3symbols2-1,3symbols2-2,3symbols2-3';
+        case 'ThreeFlags':
+            return '3flags-1,3flags-2,3flags-3';
+        case 'FourRating':
+            return '4rating-1,4rating-2,4rating-3,4rating-4';
+        case 'FiveQuarters':
+            return '5quarters-1,5quarters-2,5quarters-3,5quarters-4,5quarters-5';
+        case 'FiveRating':
+            return '5rating-1,5rating-2,5rating-3,5rating-4,5rating-5';
+        case 'ThreeTriangles':
+            return '3triangles-1,3triangles-2,3triangles-3';
+        case 'ThreeStars':
+            return '3stars-1,3stars-2,3stars-3';
+        case 'FiveBoxes':
+            return '5boxes-1,5boxes-2,5boxes-3,5boxes-4,5boxes-5';
         }
         return result;
     }
 
     private applyColorScale(
         val: string, cFRule: ConditionalFormatModel, tdEle: HTMLElement, rIdx: number, cIdx: number, isInitial: boolean): void {
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let value: number = parseInt(val, 10);
-        let rowIdx: number;
-        let colIdx: number;
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const value: number = parseInt(val, 10);
         let id: number;
         let valArr: number[] = [];
-        let colors: string[] = this.getColor(cFRule.type);
-        let actCell: CellModel = sheet.rows[rIdx] && sheet.rows[rIdx].cells[cIdx] ? sheet.rows[rIdx].cells[cIdx] : null;
+        const colors: string[] = this.getColor(cFRule.type);
+        const actCell: CellModel = sheet.rows[rIdx] && sheet.rows[rIdx].cells[cIdx] ? sheet.rows[rIdx].cells[cIdx] : null;
         if (!actCell) {
             return;
         }
-        let rangeArr: string[] = cFRule.range.split(',');
-        let td: HTMLElement = tdEle ||
+        const rangeArr: string[] = cFRule.range.split(',');
+        const td: HTMLElement = tdEle ||
             this.parent.getMainContent().getElementsByClassName('e-row')[rIdx].getElementsByClassName('e-cell')[cIdx] as HTMLElement;
         for (let rIdx: number = 0; rIdx < rangeArr.length; rIdx++) {
-            let selIndexes: number[] = getRangeIndexes(rangeArr[rIdx]);
+            const selIndexes: number[] = getRangeIndexes(rangeArr[rIdx]);
             valArr = this.getNumericArray(selIndexes, valArr);
         }
         valArr = valArr.sort((n1: number, n2: number) => n1 - n2).reverse();
@@ -937,7 +929,7 @@ export class ConditionalFormatting {
                 break;
             }
         }
-        let hexcode: string = (id === 0) ? colors[0] : (id === valArr.length - 1) ? colors[colors.length - 1] :
+        const hexcode: string = (id === 0) ? colors[0] : (id === valArr.length - 1) ? colors[colors.length - 1] :
             (valArr.length === 3 && id === 1) ? colors[1] : this.getGradient(id, colors[0], colors[1], colors[2], valArr.length);
         if (!isNullOrUndefined(actCell)) {
             let style: CellStyleModel = {};
@@ -951,34 +943,30 @@ export class ConditionalFormatting {
         }
     }
 
-    // tslint:disable-next-line:max-func-body-length
     private applyDataBars(val: string, cFRule: ConditionalFormatModel, tdEle: HTMLElement, rIdx: number, cIdx: number): void {
-        let value: number;
-        let rowIdx: number;
-        let colIdx: number;
-        let sheet: SheetModel = this.parent.getActiveSheet();
+        const sheet: SheetModel = this.parent.getActiveSheet();
         let left: CSSStyleDeclaration = {} as CSSStyleDeclaration;
         let right: CSSStyleDeclaration = {} as CSSStyleDeclaration;
         let posColor: string = '';
         let negColor: string = '';
         let cFColor: string = cFRule.type;
-        let actCell: CellModel = sheet.rows[rIdx] && sheet.rows[rIdx].cells[cIdx] ? sheet.rows[rIdx].cells[cIdx] : null;
+        const actCell: CellModel = sheet.rows[rIdx].cells && sheet.rows[rIdx].cells[cIdx] ? sheet.rows[rIdx].cells[cIdx] : null;
         if (!actCell) {
             return;
         }
         let valArr: number[] = [];
-        let row: HTMLElement = this.parent.getMainContent().getElementsByClassName('e-row')[rIdx] as HTMLElement;
-        let td: HTMLElement = tdEle ||
+        const row: HTMLElement = this.parent.getMainContent().getElementsByClassName('e-row')[rIdx] as HTMLElement;
+        const td: HTMLElement = tdEle ||
             this.parent.getMainContent().getElementsByClassName('e-row')[rIdx].getElementsByClassName('e-cell')[cIdx] as HTMLElement;
-        let rowHeight: number = !row ? 20 : row.style ? parseInt(row.style.height, 10) : 20;
+        const rowHeight: number = !row ? 20 : row.style ? parseInt(row.style.height, 10) : 20;
         let posArr: number[] = [];
         let negArr: number[] = [];
         let topVal: number;
         let leftStandardWidth: number = 0;
-        value = parseInt(val, 10);
-        let rangeArr: string[] = cFRule.range.split(',');
+        const value: number = parseInt(val, 10);
+        const rangeArr: string[] = cFRule.range.split(',');
         for (let rIdx: number = 0; rIdx < rangeArr.length; rIdx++) {
-            let selIndexes: number[] = getRangeIndexes(rangeArr[rIdx]);
+            const selIndexes: number[] = getRangeIndexes(rangeArr[rIdx]);
             valArr = this.getNumericArray(selIndexes, valArr);
         }
         for (let idx: number = 0; idx < valArr.length; idx++) {
@@ -1006,10 +994,10 @@ export class ConditionalFormatting {
             }
         }
         if (isNumber(value)) {
-            let databar: HTMLElement = this.parent.createElement('div', { id: 'spreadsheet-databar', className: 'e-cf-databar' });
-            let leftSpan: HTMLElement = this.parent.createElement('span', { id: 'spreadsheet-leftspan', className: 'e-databar' });
-            let rightSpan: HTMLElement = this.parent.createElement('span', { id: 'spreadsheet-rightspan', className: 'e-databar' });
-            let dataSpan: HTMLElement = this.parent.createElement('span', { id: 'spreadsheet-dataspan', className: 'e-databar-value' });
+            const databar: HTMLElement = this.parent.createElement('div', { id: 'spreadsheet-databar', className: 'e-cf-databar' });
+            const leftSpan: HTMLElement = this.parent.createElement('span', { id: 'spreadsheet-leftspan', className: 'e-databar' });
+            const rightSpan: HTMLElement = this.parent.createElement('span', { id: 'spreadsheet-rightspan', className: 'e-databar' });
+            const dataSpan: HTMLElement = this.parent.createElement('span', { id: 'spreadsheet-dataspan', className: 'e-databar-value' });
             let iconSetSpan: HTMLElement;
             left = leftSpan.style;
             right = rightSpan.style;
@@ -1062,15 +1050,15 @@ export class ConditionalFormatting {
     }
 
     private getNumericArray(selIndexes: number[], valArr: number[]): number[] {
-        let sheet: SheetModel = this.parent.getActiveSheet();
+        const sheet: SheetModel = this.parent.getActiveSheet();
         for (let rIdx: number = selIndexes[0]; rIdx <= selIndexes[2]; rIdx++) {
             for (let cIdx: number = selIndexes[1]; cIdx <= selIndexes[3]; cIdx++) {
-                let cellVal: string =
+                const cellVal: string =
                     getCell(rIdx, cIdx, sheet) && getCell(rIdx, cIdx, sheet).value ? getCell(rIdx, cIdx, sheet).value : '';
                 if (!isNullOrUndefined(cellVal) && !isNumber(cellVal) && !isDateTime(cellVal)) {
                     continue;
                 } else {
-                    let cellValue: number = parseInt(cellVal, 10);
+                    const cellValue: number = parseInt(cellVal, 10);
                     if (!isNullOrUndefined(cellVal) && cellVal !== '') {
                         valArr.push(cellValue);
                     }
@@ -1084,34 +1072,34 @@ export class ConditionalFormatting {
         if (cfColor === 'LB') {
             return ['#008aef'];
         }
-        let colorCodeArr: string[] = cfColor.split('');
-        let colorArr: string[] = [];
+        const colorCodeArr: string[] = cfColor.split('');
+        const colorArr: string[] = [];
         for (let i: number = 0; i < colorCodeArr.length; i++) {
             switch (colorCodeArr[i]) {
-                case 'G':
-                    colorArr.push('#63be7b');
-                    break;
-                case 'Y':
-                    colorArr.push('#ffeb84');
-                    break;
-                case 'R':
-                    colorArr.push('#f8696b');
-                    break;
-                case 'W':
-                    colorArr.push('#ffffff');
-                    break;
-                case 'B':
-                    colorArr.push('#5a8ac6');
-                    break;
-                case 'O':
-                    colorArr.push('#ffb628');
-                    break;
-                case 'LB':
-                    colorArr.push('#008aef');
-                    break;
-                case 'P':
-                    colorArr.push('#d6007b');
-                    break;
+            case 'G':
+                colorArr.push('#63be7b');
+                break;
+            case 'Y':
+                colorArr.push('#ffeb84');
+                break;
+            case 'R':
+                colorArr.push('#f8696b');
+                break;
+            case 'W':
+                colorArr.push('#ffffff');
+                break;
+            case 'B':
+                colorArr.push('#5a8ac6');
+                break;
+            case 'O':
+                colorArr.push('#ffb628');
+                break;
+            case 'LB':
+                colorArr.push('#008aef');
+                break;
+            case 'P':
+                colorArr.push('#d6007b');
+                break;
             }
         }
         return colorArr;
@@ -1121,33 +1109,32 @@ export class ConditionalFormatting {
         if (isNullOrUndefined(end)) {
             return this.getLinear(start, middle, t / large);
         } else {
-            let center: number = large / 2;
+            const center: number = large / 2;
             return t >= center ? this.getLinear(middle, end, Math.abs((t - center) / center)) : this.getLinear(start, middle, t / center);
         }
     }
 
     private getLinear(s: string, e: string, x: number): string {
-        let r: String = this.byteLinear(s[1] + s[2], e[1] + e[2], x);
-        let g: string = this.byteLinear(s[3] + s[4], e[3] + e[4], x);
-        let b: string = this.byteLinear(s[5] + s[6], e[5] + e[6], x);
+        const r: String = this.byteLinear(s[1] + s[2], e[1] + e[2], x);
+        const g: string = this.byteLinear(s[3] + s[4], e[3] + e[4], x);
+        const b: string = this.byteLinear(s[5] + s[6], e[5] + e[6], x);
         return '#' + r + g + b;
     }
 
     private byteLinear(a: string, b: string, x: number): string {
-        let y: number = (parseInt(a, 16) * (1 - x) + parseInt(b, 16) * x) | 0;
+        const y: number = (parseInt(a, 16) * (1 - x) + parseInt(b, 16) * x) | 0;
         return Math.abs(y).toString(16);
     }
 
     private isGreaterThanLessThan(cFRule: ConditionalFormatModel, value: string, input: string, isGrearThan: boolean): boolean {
-        let numRegx: RegExp = new RegExp(/[^.0-9]+/g);
-        let txtRegx: RegExp = new RegExp(/[^.-a-zA-Z 0-9]+/g);
+        const txtRegx: RegExp = new RegExp(/[^.-a-zA-Z 0-9]+/g);
         let isApply: boolean = false;
         if (isNumber(value)) {
             if (isNumber(input)) {
                 isApply = isGrearThan ? parseFloat(value) > parseFloat(input.replace(txtRegx, '')) :
                     parseFloat(value) < parseFloat(input.replace(txtRegx, ''));
             } else {
-                let dateEventArgs: { [key: string]: string | number | boolean } = {
+                const dateEventArgs: { [key: string]: string | number | boolean } = {
                     value: input,
                     rowIndex: 0,
                     colIndex: 0,
@@ -1171,8 +1158,7 @@ export class ConditionalFormatting {
     }
 
     private isBetWeen(cFRule: ConditionalFormatModel, value: string, input1: string, input2: string): boolean {
-        let numRegx: RegExp = new RegExp(/[^.0-9]+/g);
-        let txtRegx: RegExp = new RegExp(/[^.-a-zA-Z 0-9]+/g);
+        const txtRegx: RegExp = new RegExp(/[^.-a-zA-Z 0-9]+/g);
         let isApply: boolean = false;
         input1 = input1.replace(txtRegx, '');
         input2 = input2.replace(txtRegx, '');
@@ -1181,7 +1167,7 @@ export class ConditionalFormatting {
                 isApply = parseFloat(value) >= parseFloat(input1) && parseFloat(value) <= parseFloat(input2);
             } else {
                 if (input1 && input2) {
-                    let dateEventArgs1: { [key: string]: string | number | boolean } = {
+                    const dateEventArgs1: { [key: string]: string | number | boolean } = {
                         value: input1,
                         rowIndex: 0,
                         colIndex: 0,
@@ -1190,7 +1176,7 @@ export class ConditionalFormatting {
                         updatedVal: '',
                         isTime: false
                     };
-                    let dateEventArgs2: { [key: string]: string | number | boolean } = {
+                    const dateEventArgs2: { [key: string]: string | number | boolean } = {
                         value: input2,
                         rowIndex: 0,
                         colIndex: 0,
@@ -1214,14 +1200,13 @@ export class ConditionalFormatting {
     }
 
     private isEqualTo(cFRule: ConditionalFormatModel, value: string, input: string): boolean {
-        let numRegx: RegExp = new RegExp(/[^.0-9]+/g);
-        let txtRegx: RegExp = new RegExp(/[^.-a-zA-Z 0-9]+/g);
+        const txtRegx: RegExp = new RegExp(/[^.-a-zA-Z 0-9]+/g);
         let isApply: boolean = false;
         if (isNumber(value)) {
             if (isNumber(input)) {
                 isApply = parseFloat(value) === parseFloat(input.replace(txtRegx, ''));
             } else {
-                let dateTimeArgs: { [key: string]: string | number | boolean } = {
+                const dateTimeArgs: { [key: string]: string | number | boolean } = {
                     value: input,
                     rowIndex: 0,
                     colIndex: 0,
@@ -1243,8 +1228,7 @@ export class ConditionalFormatting {
     }
 
     private isContainsText(value: string, input: string): boolean {
-        let numRegx: RegExp = new RegExp(/[^.0-9]+/g);
-        let txtRegx: RegExp = new RegExp(/[^.-a-zA-Z 0-9]+/g);
+        const txtRegx: RegExp = new RegExp(/[^.-a-zA-Z 0-9]+/g);
         let isApply: boolean = false;
         if (isNullOrUndefined(value) || !value.length) {
             isApply = false;
@@ -1266,9 +1250,8 @@ export class ConditionalFormatting {
     }
 
     private isTopBottomTenValue(cellValue: string, inp: string, cFRule: ConditionalFormatModel, isTop: boolean): boolean {
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let numRegx: RegExp = new RegExp(/[^.0-9]+/g);
-        let txtRegx: RegExp = new RegExp(/[^.-a-zA-Z 0-9]+/g);
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const txtRegx: RegExp = new RegExp(/[^.-a-zA-Z 0-9]+/g);
         let value: number = parseInt(cellValue, 10);
         let input: number = parseInt(inp, 10);
         let result: boolean = false;
@@ -1281,9 +1264,9 @@ export class ConditionalFormatting {
                 input = parseFloat(inp);
             }
             let dataArray: number[] = []; let cellVal: number | string;
-            let rangeArr: string[] = cFRule.range.split(',');
+            const rangeArr: string[] = cFRule.range.split(',');
             for (let rangeIdx: number = 0; rangeIdx < rangeArr.length; rangeIdx++) {
-                let cFRuleIndexes: number[] = getRangeIndexes(rangeArr[rangeIdx]);
+                const cFRuleIndexes: number[] = getRangeIndexes(rangeArr[rangeIdx]);
                 for (let rowIdx: number = cFRuleIndexes[0]; rowIdx <= cFRuleIndexes[2]; rowIdx++) {
                     for (let colIdx: number = cFRuleIndexes[1]; colIdx <= cFRuleIndexes[3]; colIdx++) {
                         cellVal = getCell(rowIdx, colIdx, sheet) && getCell(rowIdx, colIdx, sheet).value ?
@@ -1304,9 +1287,8 @@ export class ConditionalFormatting {
     }
 
     private isTopBottomTenPercentage(val: string, inp: string, cFRule: ConditionalFormatModel, isTop: boolean): boolean {
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let numRegx: RegExp = new RegExp(/[^.0-9]+/g);
-        let txtRegx: RegExp = new RegExp(/[^.-a-zA-Z 0-9]+/g);
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const txtRegx: RegExp = new RegExp(/[^.-a-zA-Z 0-9]+/g);
         let value: number = parseInt(val, 10);
         let input: number = parseInt(inp, 10);
         let result: boolean = false;
@@ -1318,10 +1300,10 @@ export class ConditionalFormatting {
                 value = dateToInt(val);
                 input = parseFloat(inp);
             }
-            let dataArr: number[] = []; let cellVal: string | number; let diff: number; let count: number = 0; let considerCount: number;
-            let rangeArr: string[] = cFRule.range.split(',');
+            let dataArr: number[] = []; let cellVal: string | number; let count: number = 0; let considerCount: number;
+            const rangeArr: string[] = cFRule.range.split(',');
             for (let rangeIdx: number = 0; rangeIdx < rangeArr.length; rangeIdx++) {
-                let cFRuleIndexes: number[] = getRangeIndexes(rangeArr[rangeIdx]);
+                const cFRuleIndexes: number[] = getRangeIndexes(rangeArr[rangeIdx]);
                 for (let rIdx: number = cFRuleIndexes[0]; rIdx <= cFRuleIndexes[2]; rIdx++) {
                     for (let cIdx: number = cFRuleIndexes[1]; cIdx <= cFRuleIndexes[3]; cIdx++) {
                         cellVal = getCell(rIdx, cIdx, sheet) && getCell(rIdx, cIdx, sheet).value ? getCell(rIdx, cIdx, sheet).value : '';
@@ -1333,7 +1315,7 @@ export class ConditionalFormatting {
                     }
                 }
             }
-            diff = 100 / count;
+            const diff: number = 100 / count;
             considerCount = input / diff;
             considerCount = Math.ceil(considerCount);
             dataArr =
@@ -1345,13 +1327,13 @@ export class ConditionalFormatting {
     }
 
     private isAboveBelowAverage(val: string, inp: string, cFRule: ConditionalFormatModel, isAbove: boolean): boolean {
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let value: number = parseFloat(val);
-        let rangeColl: string[] = cFRule.range.split(',');
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const value: number = parseFloat(val);
+        const rangeColl: string[] = cFRule.range.split(',');
         let result: boolean = false;
-        let dataArr: number[] = []; let cellValue: string | number; let average: number = 0;
+        const dataArr: number[] = []; let cellValue: string | number; let average: number = 0;
         for (let rangeIdx: number = 0; rangeIdx < rangeColl.length; rangeIdx++) {
-            let cFRuleIndexes: number[] = getRangeIndexes(rangeColl[rangeIdx]);
+            const cFRuleIndexes: number[] = getRangeIndexes(rangeColl[rangeIdx]);
             for (let rIdx: number = cFRuleIndexes[0]; rIdx <= cFRuleIndexes[2]; rIdx++) {
                 for (let cIdx: number = cFRuleIndexes[1]; cIdx <= cFRuleIndexes[3]; cIdx++) {
                     cellValue = getCell(rIdx, cIdx, sheet) && getCell(rIdx, cIdx, sheet).value ? getCell(rIdx, cIdx, sheet).value : '';
@@ -1371,17 +1353,17 @@ export class ConditionalFormatting {
     }
 
     private isDuplicateUnique(val: string, cFRule: ConditionalFormatModel, isAbove: boolean): boolean {
-        let type: string = cFRule.type;
+        const type: string = cFRule.type;
         let count: number = 0;
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let value: string = val;
-        let rangeColl: string[] = cFRule.range.split(',');
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const value: string = val;
+        const rangeColl: string[] = cFRule.range.split(',');
         let cellValue: string;
         if (isNullOrUndefined(value) || value === '') {
             return false;
         }
         for (let rIdx: number = 0; rIdx < rangeColl.length; rIdx++) {
-            let cFRuleIndexes: number[] = getRangeIndexes(rangeColl[rIdx]);
+            const cFRuleIndexes: number[] = getRangeIndexes(rangeColl[rIdx]);
             for (let rowIdx: number = cFRuleIndexes[0]; rowIdx <= cFRuleIndexes[2]; rowIdx++) {
                 for (let colIdx: number = cFRuleIndexes[1]; colIdx <= cFRuleIndexes[3]; colIdx++) {
                     cellValue = getCell(rowIdx, colIdx, sheet) && getCell(rowIdx, colIdx, sheet).value ?
@@ -1400,31 +1382,32 @@ export class ConditionalFormatting {
 
     private setFormat(style: CellStyleModel, cFRule: ConditionalFormatModel): CellStyleModel {
         switch (cFRule.cFColor) {
-            case 'RedFT':
-                style.backgroundColor = '#ffc7ce';
-                style.color = '#9c0055';
-                break;
-            case 'YellowFT':
-                style.backgroundColor = '#ffeb9c';
-                style.color = '#9c6500';
-                break;
-            case 'GreenFT':
-                style.backgroundColor = '#c6efce';
-                style.color = '#006100';
-                break;
-            case 'RedF':
-                style.backgroundColor = '#ffc7ce';
-                break;
-            case 'RedT':
-                style.color = '#9c0055';
-                break;
+        case 'RedFT':
+            style.backgroundColor = '#ffc7ce';
+            style.color = '#9c0055';
+            break;
+        case 'YellowFT':
+            style.backgroundColor = '#ffeb9c';
+            style.color = '#9c6500';
+            break;
+        case 'GreenFT':
+            style.backgroundColor = '#c6efce';
+            style.color = '#006100';
+            break;
+        case 'RedF':
+            style.backgroundColor = '#ffc7ce';
+            break;
+        case 'RedT':
+            style.color = '#9c0055';
+            break;
         }
         return style;
     }
 
     /**
      * Gets the module name.
-     * @returns string
+     *
+     * @returns {string} - Gets the module name.
      */
     protected getModuleName(): string {
         return 'conditionalFormatting';

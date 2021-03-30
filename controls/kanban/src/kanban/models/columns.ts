@@ -1,12 +1,13 @@
 import { Property, ChildProperty } from '@syncfusion/ej2-base';
 
-/**  
+/**
  * Holds the configuration of columns in kanban board.
  */
 export class Columns extends ChildProperty<Columns> {
 
     /**
      * Defines the column keyField
+     *
      * @default null
      */
     @Property()
@@ -14,6 +15,7 @@ export class Columns extends ChildProperty<Columns> {
 
     /**
      * Defines the column header title
+     *
      * @default null
      */
     @Property()
@@ -21,6 +23,7 @@ export class Columns extends ChildProperty<Columns> {
 
     /**
      * Defines the column template
+     *
      * @default null
      */
     @Property()
@@ -28,6 +31,7 @@ export class Columns extends ChildProperty<Columns> {
 
     /**
      * Enable or disable toggle column
+     *
      * @default false
      */
     @Property(false)
@@ -35,6 +39,7 @@ export class Columns extends ChildProperty<Columns> {
 
     /**
      * Defines the collapsed or expandable state
+     *
      * @default true
      */
     @Property(true)
@@ -42,6 +47,7 @@ export class Columns extends ChildProperty<Columns> {
 
     /**
      * Defines the minimum card count in column
+     *
      * @default null
      * @aspType int
      */
@@ -50,6 +56,7 @@ export class Columns extends ChildProperty<Columns> {
 
     /**
      * Defines the maximum card count in column
+     *
      * @default null
      * @aspType int
      */
@@ -58,6 +65,7 @@ export class Columns extends ChildProperty<Columns> {
 
     /**
      * Enable or disable card count in column
+     *
      * @default true
      */
     @Property(true)
@@ -65,6 +73,7 @@ export class Columns extends ChildProperty<Columns> {
 
     /**
      * Enable or disable cell add button
+     *
      * @default false
      */
     @Property(false)
@@ -72,6 +81,7 @@ export class Columns extends ChildProperty<Columns> {
 
     /**
      * Enable or disable column drag
+     *
      * @default true
      */
     @Property(true)
@@ -79,6 +89,7 @@ export class Columns extends ChildProperty<Columns> {
 
     /**
      * Enable or disable column drop
+     *
      * @default true
      */
     @Property(true)
@@ -86,6 +97,7 @@ export class Columns extends ChildProperty<Columns> {
 
     /**
      * Defines the column transition
+     *
      * @default []
      */
     @Property([])

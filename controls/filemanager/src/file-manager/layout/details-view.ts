@@ -57,6 +57,8 @@ export class DetailsView {
 
     /**
      * Constructor for the GridView module
+     *
+     * @param {FileManager} parent - specifies the parent.
      * @hidden
      */
     constructor(parent?: FileManager) {
@@ -103,15 +105,15 @@ export class DetailsView {
         };
     }
 
-    // tslint:disable-next-line
     /* istanbul ignore next */
     private render(args: ReadArgs | SearchArgs): void {
         showSpinner(this.parent.element);
         if (this.parent.view === 'Details') {
             removeClass([this.parent.element], CLS.MULTI_SELECT);
-            let items: Object[] = getSortedData(this.parent, args.files);
+            // eslint-disable-next-line
+            const items: Object[] = getSortedData(this.parent, args.files);
             this.checkNameWidth();
-            let columns: ColumnModel[] = this.getColumns();
+            const columns: ColumnModel[] = this.getColumns();
             let sortSettings: SortDescriptorModel[];
             if (this.parent.isMobile) {
                 sortSettings = [];
@@ -119,7 +121,7 @@ export class DetailsView {
                 if (this.parent.sortOrder !== 'None') {
                     sortSettings = [{ direction: this.parent.sortOrder, field: this.parent.sortBy }];
                 }
-        }
+            }
             this.gridObj = new Grid({
                 dataSource: items,
                 allowSorting: true,
@@ -144,6 +146,7 @@ export class DetailsView {
                 headerCellInfo: this.onHeaderCellInfo.bind(this),
                 width: '100%',
                 beforeCopy: (args: BeforeCopyEventArgs) => { args.cancel = true; },
+                // eslint-disable-next-line
                 load: function (args: Object): void {
                     this.focusModule.destroy();
                 },
@@ -158,7 +161,7 @@ export class DetailsView {
     }
 
     private checkNameWidth(): void {
-        let initialColumn: ColumnModel[] = this.parent.detailsViewSettings.columns;
+        const initialColumn: ColumnModel[] = this.parent.detailsViewSettings.columns;
         this.isNameWidth = false;
         for (let i: number = 0; i < initialColumn.length; i++) {
             if (initialColumn[i].field === 'name') {
@@ -191,7 +194,7 @@ export class DetailsView {
                     field: 'name', headerText: getLocaleText(this.parent, 'Name'), width: 'auto', minWidth: 120, headerTextAlign: 'Left',
                     template: '<div class="e-fe-text">${name}</div><div class="e-fe-date">${_fm_modified}</div>' +
                         '<span class="e-fe-size">${size}</span>'
-                },
+                }
             ];
         } else {
             columns = JSON.parse(JSON.stringify(this.parent.detailsViewSettings.columns));
@@ -200,16 +203,16 @@ export class DetailsView {
                 columns[i].headerText = getLocaleText(this.parent, columns[i].headerText);
             }
         }
-        let iWidth: string = ((this.parent.isMobile || this.parent.isBigger) ? '54' : '46');
-        let icon: ColumnModel = {
+        const iWidth: string = ((this.parent.isMobile || this.parent.isBigger) ? '54' : '46');
+        const icon: ColumnModel = {
             field: 'type', width: iWidth, minWidth: iWidth, template: '<span class="e-fe-icon ${_fm_iconClass}"></span>',
             allowResizing: false, allowSorting: true, customAttributes: { class: 'e-fe-grid-icon' },
-            headerTemplate: '<span class="e-fe-icon e-fe-folder"></span>',
+            headerTemplate: '<span class="e-fe-icon e-fe-folder"></span>'
         };
         columns.unshift(icon);
         if (this.parent.allowMultiSelection) {
-            let cWidth: string = (this.parent.isBigger ? '36' : '26');
-            let cBox: ColumnModel = {
+            const cWidth: string = (this.parent.isBigger ? '36' : '26');
+            const cBox: ColumnModel = {
                 type: 'checkbox', width: cWidth, minWidth: cWidth, customAttributes: { class: 'e-fe-checkbox' },
                 allowResizing: false, allowSorting: false
             };
@@ -227,10 +230,10 @@ export class DetailsView {
 
     private adjustHeight(): void {
         if (!this.gridObj) { return; }
-        let pane: HTMLElement = <HTMLElement>select('#' + this.parent.element.id + CLS.CONTENT_ID, this.parent.element);
-        let bar: HTMLElement = <HTMLElement>select('#' + this.parent.element.id + CLS.BREADCRUMBBAR_ID, this.parent.element);
-        let gridHeader: HTMLElement = <HTMLElement>select('.' + CLS.GRID_HEADER, this.parent.element);
-        let height: number = (pane.offsetHeight - bar.offsetHeight - gridHeader.offsetHeight);
+        const pane: HTMLElement = <HTMLElement>select('#' + this.parent.element.id + CLS.CONTENT_ID, this.parent.element);
+        const bar: HTMLElement = <HTMLElement>select('#' + this.parent.element.id + CLS.BREADCRUMBBAR_ID, this.parent.element);
+        const gridHeader: HTMLElement = <HTMLElement>select('.' + CLS.GRID_HEADER, this.parent.element);
+        const height: number = (pane.offsetHeight - bar.offsetHeight - gridHeader.offsetHeight);
         this.gridObj.height = height;
         this.gridObj.dataBind();
     }
@@ -244,7 +247,7 @@ export class DetailsView {
     private onRowDataBound(args: RowDataBoundEventArgs): void {
         let td: Element = select('.e-fe-grid-name', args.row);
         if (!td) {
-            let columns: ColumnModel[] = this.parent.detailsViewSettings.columns;
+            const columns: ColumnModel[] = this.parent.detailsViewSettings.columns;
             for (let i: number = 0; i < columns.length; i++) {
                 if (columns[i].field === 'name') {
                     td = args.row.children[this.parent.allowMultiSelection ? (i + 2) : (i + 1)];
@@ -262,31 +265,32 @@ export class DetailsView {
             }
         }
         if (!this.parent.showFileExtension && getValue('isFile', args.data)) {
-            let textEle: Element = args.row.querySelector('.e-fe-text');
+            const textEle: Element = args.row.querySelector('.e-fe-text');
             if (textEle) {
-                let name: string = getValue('name', args.data);
-                let type: string = getValue('type', args.data);
+                const name: string = getValue('name', args.data);
+                const type: string = getValue('type', args.data);
                 textEle.innerHTML = name.substr(0, name.length - type.length);
             }
         }
         if (getValue('size', args.data) !== undefined && args.row.querySelector('.e-fe-size')) {
-            let sizeEle: Element = args.row.querySelector('.e-fe-size');
+            const sizeEle: Element = args.row.querySelector('.e-fe-size');
             let modifiedSize: string;
             if (!getValue('isFile', args.data)) {
                 modifiedSize = '';
             } else {
-                let sizeValue: number = getValue('size', args.data);
-                let intl: Internationalization = new Internationalization(this.parent.locale);
-                let value: string = intl.formatNumber((sizeValue / 1024), { format: 'n' });
+                const sizeValue: number = getValue('size', args.data);
+                const intl: Internationalization = new Internationalization(this.parent.locale);
+                const value: string = intl.formatNumber((sizeValue / 1024), { format: 'n' });
                 modifiedSize = value + ' ' + getLocaleText(this.parent, 'KB');
             }
             sizeEle.innerHTML = modifiedSize;
         }
         if (this.parent.isMobile) {
             if (getValue('_fm_modified', args.data) !== undefined && args.row.querySelector('.e-fe-date')) {
-                let dateEle: Element = args.row.querySelector('.e-fe-date');
-                let intl: Internationalization = new Internationalization(this.parent.locale);
-                let columns: ColumnModel[] = this.parent.detailsViewSettings.columns;
+                const dateEle: Element = args.row.querySelector('.e-fe-date');
+                const intl: Internationalization = new Internationalization(this.parent.locale);
+                const columns: ColumnModel[] = this.parent.detailsViewSettings.columns;
+                // eslint-disable-next-line
                 let format: Object;
                 for (let i: number = 0; i < columns.length; i++) {
                     if (columns[i].field === 'dateModified') {
@@ -294,18 +298,18 @@ export class DetailsView {
                         break;
                     }
                 }
-                let formattedString: string = intl.formatDate(new Date(getValue('_fm_modified', args.data)), format);
+                const formattedString: string = intl.formatDate(new Date(getValue('_fm_modified', args.data)), format);
                 dateEle.innerHTML = formattedString;
             }
         }
-        let checkWrap: Element = args.row.querySelector('.' + CLS.CB_WRAP);
+        const checkWrap: Element = args.row.querySelector('.' + CLS.CB_WRAP);
         if (checkWrap) {
             checkWrap.classList.add('e-small');
         }
         if (!hasEditAccess(args.data)) {
             args.row.className += ' ' + getAccessClass(args.data);
         }
-        let eventArgs: FileLoadEventArgs = {
+        const eventArgs: FileLoadEventArgs = {
             element: args.row as HTMLElement,
             fileDetails: args.data,
             module: 'DetailsView'
@@ -319,11 +323,12 @@ export class DetailsView {
             this.parent.sortBy = args.columnName;
             if (this.parent.selectedItems.length !== 0) {
                 this.sortItem = true;
-                let rows: number[] = this.gridObj.getSelectedRowIndexes();
+                const rows: number[] = this.gridObj.getSelectedRowIndexes();
                 let len: number = rows.length;
                 this.sortSelectedNodes = [];
                 while (len > 0) {
-                    let data: Object = this.gridObj.getRowsObject()[rows[len - 1]].data;
+                    // eslint-disable-next-line
+                    const data: Object = this.gridObj.getRowsObject()[rows[len - 1]].data;
                     this.sortSelectedNodes.push(getValue(this.parent.hasId ? 'id' : 'name', data));
                     len--;
                 }
@@ -333,7 +338,7 @@ export class DetailsView {
     }
 
     private onHeaderCellInfo(args: HeaderCellInfoEventArgs): void {
-        let checkWrap: Element = args.node.querySelector('.' + CLS.CB_WRAP);
+        const checkWrap: Element = args.node.querySelector('.' + CLS.CB_WRAP);
         if (checkWrap) {
             checkWrap.classList.add('e-small');
         }
@@ -341,7 +346,8 @@ export class DetailsView {
 
     private onBeforeDataBound(args: BeforeDataBoundArgs): void {
         showSpinner(this.parent.element);
-        let items: Object[] = getSortedData(this.parent, this.gridObj.dataSource as Object[]);
+        // eslint-disable-next-line
+        const items: Object[] = getSortedData(this.parent, this.gridObj.dataSource as Object[]);
         args.result = items;
     }
     /* istanbul ignore next */
@@ -390,22 +396,22 @@ export class DetailsView {
             }
         }
         if (this.gridObj.currentViewData.length * this.gridObj.getRowHeight() < this.gridObj.height) {
-            let hdTable: HTMLElement = <HTMLElement>this.gridObj.getHeaderContent();
+            const hdTable: HTMLElement = <HTMLElement>this.gridObj.getHeaderContent();
             hdTable.style.paddingRight = '';
             hdTable.style.paddingLeft = '';
-            let hdContent: HTMLElement = <HTMLElement>select('.e-headercontent', hdTable);
+            const hdContent: HTMLElement = <HTMLElement>select('.e-headercontent', hdTable);
             hdContent.style.borderRightWidth = '0';
-            let cnTable: HTMLElement = <HTMLElement>this.gridObj.getContent().querySelector('.e-content');
+            const cnTable: HTMLElement = <HTMLElement>this.gridObj.getContent().querySelector('.e-content');
             cnTable.style.overflowY = '';
             cnTable.classList.add('e-scrollShow');
         } else {
-            let hdTable: HTMLElement = <HTMLElement>this.gridObj.getHeaderContent();
+            const hdTable: HTMLElement = <HTMLElement>this.gridObj.getHeaderContent();
             if (!this.parent.enableRtl) {
                 hdTable.style.paddingRight = '16px';
             } else {
                 hdTable.style.paddingLeft = '16px';
             }
-            let cnTable: Element = this.gridObj.getContent().querySelector('.e-content');
+            const cnTable: Element = this.gridObj.getContent().querySelector('.e-content');
             cnTable.classList.remove('e-scrollShow');
         }
         this.isRendered = true;
@@ -417,10 +423,11 @@ export class DetailsView {
     }
 
     private selectRecords(nodes: string[]): void {
-        let gridRecords: Object[] = this.gridObj.getCurrentViewRecords();
-        let sRecords: number[] = [];
+        // eslint-disable-next-line
+        const gridRecords: Object[] = this.gridObj.getCurrentViewRecords();
+        const sRecords: number[] = [];
         for (let i: number = 0, len: number = gridRecords.length; i < len; i++) {
-            let node: string = this.parent.hasId ? getValue('id', gridRecords[i]) : getName(this.parent, gridRecords[i]);
+            const node: string = this.parent.hasId ? getValue('id', gridRecords[i]) : getName(this.parent, gridRecords[i]);
             if (nodes.indexOf(node) !== -1) {
                 sRecords.push(i);
             }
@@ -431,14 +438,18 @@ export class DetailsView {
         }
     }
 
+    // eslint-disable-next-line
     private addSelection(data: Object): void {
-        let items: Object[] = this.gridObj.getCurrentViewRecords();
+        // eslint-disable-next-line
+        const items: Object[] = this.gridObj.getCurrentViewRecords();
+        // eslint-disable-next-line
         let rData: Object[] = [];
         if (this.parent.hasId) {
             rData = new DataManager(items).
                 executeLocal(new Query().where('id', 'equal', this.parent.renamedId, false));
         } else {
-            let nData: Object[] = new DataManager(items).
+            // eslint-disable-next-line
+            const nData: Object[] = new DataManager(items).
                 executeLocal(new Query().where('name', 'equal', getValue('name', data), false));
             if (nData.length > 0) {
                 rData = new DataManager(nData).
@@ -446,7 +457,7 @@ export class DetailsView {
             }
         }
         if (rData.length > 0) {
-            let index: number = items.indexOf(rData[0]);
+            const index: number = items.indexOf(rData[0]);
             this.gridObj.selectRows([index]);
         }
     }
@@ -455,6 +466,7 @@ export class DetailsView {
         if (this.parent.sortOrder !== 'None') {
             this.gridObj.sortModule.sortColumn(this.parent.sortBy, this.parent.sortOrder);
         } else {
+            // eslint-disable-next-line
             this.gridObj.dataSource = getSortedData(this.parent, this.gridObj.dataSource as Object[]);
         }
     }
@@ -464,56 +476,56 @@ export class DetailsView {
             /* istanbul ignore next */
             return;
         }
-        for (let prop of Object.keys(e.newProp)) {
+        for (const prop of Object.keys(e.newProp)) {
             switch (prop) {
-                case 'allowDragAndDrop':
-                    this.createDragObj();
-                    break;
-                case 'height':
-                    this.adjustHeight();
-                    break;
-                case 'detailsViewSettings':
-                    if (!isNullOrUndefined(this.gridObj)) {
-                        this.checkNameWidth();
-                        let columns: ColumnModel[] = this.getColumns();
-                        this.gridObj.columns = columns;
-                        this.gridObj.allowResizing = this.parent.detailsViewSettings.columnResizing;
-                        this.gridObj.dataBind();
-                        this.gridObj.refreshColumns();
+            case 'allowDragAndDrop':
+                this.createDragObj();
+                break;
+            case 'height':
+                this.adjustHeight();
+                break;
+            case 'detailsViewSettings':
+                if (!isNullOrUndefined(this.gridObj)) {
+                    this.checkNameWidth();
+                    const columns: ColumnModel[] = this.getColumns();
+                    this.gridObj.columns = columns;
+                    this.gridObj.allowResizing = this.parent.detailsViewSettings.columnResizing;
+                    this.gridObj.dataBind();
+                    this.gridObj.refreshColumns();
+                }
+                break;
+            case 'selectedItems':
+                this.interaction = false;
+                if (this.parent.selectedItems.length !== 0) {
+                    if (!this.parent.allowMultiSelection) {
+                        const slItems: string[] = this.parent.selectedItems.slice(this.parent.selectedItems.length - 1);
+                        this.parent.setProperties({ selectedItems: slItems }, true);
                     }
-                    break;
-                case 'selectedItems':
-                    this.interaction = false;
-                    if (this.parent.selectedItems.length !== 0) {
-                        if (!this.parent.allowMultiSelection) {
-                            let slItems: string[] = this.parent.selectedItems.slice(this.parent.selectedItems.length - 1);
-                            this.parent.setProperties({ selectedItems: slItems }, true);
-                        }
-                        this.selectRecords(this.parent.selectedItems);
-                        this.parent.setProperties({ selectedItems: this.parent.selectedItems }, true);
-                    } else if (!isNOU(this.gridObj)) {
-                        this.gridObj.clearSelection();
-                    }
-                    break;
-                case 'showFileExtension':
-                    read(this.parent, events.pathChanged, this.parent.path);
-                    break;
-                case 'showHiddenItems':
-                    read(this.parent, events.pathChanged, this.parent.path);
-                    break;
-                case 'allowMultiSelection':
-                    if (!isNullOrUndefined(this.gridObj)) {
-                        this.currentSelectedItem = this.parent.selectedItems;
-                        this.gridObj.selectionSettings.type = e.newProp.allowMultiSelection ? 'Multiple' : 'Single';
-                        this.isSelectionUpdate = true;
-                        this.renderCheckBox();
-                    }
-                    break;
-                case 'view':
-                    updateLayout(this.parent, 'Details');
-                    break;
-                case 'width':
-                    this.onDetailsResize();
+                    this.selectRecords(this.parent.selectedItems);
+                    this.parent.setProperties({ selectedItems: this.parent.selectedItems }, true);
+                } else if (!isNOU(this.gridObj)) {
+                    this.gridObj.clearSelection();
+                }
+                break;
+            case 'showFileExtension':
+                read(this.parent, events.pathChanged, this.parent.path);
+                break;
+            case 'showHiddenItems':
+                read(this.parent, events.pathChanged, this.parent.path);
+                break;
+            case 'allowMultiSelection':
+                if (!isNullOrUndefined(this.gridObj)) {
+                    this.currentSelectedItem = this.parent.selectedItems;
+                    this.gridObj.selectionSettings.type = e.newProp.allowMultiSelection ? 'Multiple' : 'Single';
+                    this.isSelectionUpdate = true;
+                    this.renderCheckBox();
+                }
+                break;
+            case 'view':
+                updateLayout(this.parent, 'Details');
+                break;
+            case 'width':
+                this.onDetailsResize();
             }
         }
     }
@@ -539,10 +551,10 @@ export class DetailsView {
     }
 
     private updatePathColumn(): void {
-        let len: number = this.gridObj.columns.length;
-        let columnData: ColumnModel[] = JSON.parse(JSON.stringify(this.gridObj.columns));
+        const len: number = this.gridObj.columns.length;
+        const columnData: ColumnModel[] = JSON.parse(JSON.stringify(this.gridObj.columns));
         if (columnData[len - 1].field && columnData[len - 1].field !== 'filterPath' && !this.parent.isMobile) {
-            let pathColumn: ColumnModel = {
+            const pathColumn: ColumnModel = {
                 field: 'filterPath', headerText: getLocaleText(this.parent, 'Path'), minWidth: 180, width: 'auto'
             };
             (<ColumnModel[]>this.gridObj.columns).push(pathColumn);
@@ -554,12 +566,13 @@ export class DetailsView {
     }
 
     private checkEmptyDiv(args: ReadArgs | SearchArgs): void {
-        let items: Object[] = getSortedData(this.parent, args.files);
+        // eslint-disable-next-line
+        const items: Object[] = getSortedData(this.parent, args.files);
         if (items.length === 0 && !isNOU(this.element.querySelector('.' + CLS.GRID_VIEW))) {
             createEmptyElement(this.parent, this.element, args);
         } else if (items.length !== 0 && this.element.querySelector('.' + CLS.EMPTY)) {
             if (this.element.querySelector('.' + CLS.GRID_VIEW).querySelector('.' + CLS.EMPTY)) {
-                let emptyDiv: Element = this.element.querySelector('.' + CLS.GRID_VIEW).querySelector('.' + CLS.EMPTY);
+                const emptyDiv: Element = this.element.querySelector('.' + CLS.GRID_VIEW).querySelector('.' + CLS.EMPTY);
                 this.element.querySelector('.' + CLS.GRID_VIEW).removeChild(emptyDiv);
             } else {
                 this.element.removeChild(this.element.querySelector('.' + CLS.EMPTY));
@@ -569,13 +582,15 @@ export class DetailsView {
 
     private onOpenInit(): void {
         if (this.parent.activeModule === 'detailsview') {
-            let data: Object = this.gridObj.getSelectedRecords()[0];
+            // eslint-disable-next-line
+            const data: Object = this.gridObj.getSelectedRecords()[0];
             this.openContent(data);
         }
     }
 
     public DblClickEvents(args: RecordDoubleClickEventArgs): void {
         this.gridObj.selectRows([args.rowIndex]);
+        // eslint-disable-next-line
         let data: Object;
         if (args.rowData) {
             data = JSON.parse(JSON.stringify(args.rowData));
@@ -583,26 +598,27 @@ export class DetailsView {
         }
     }
 
+    // eslint-disable-next-line
     public openContent(data: Object): void {
         if (!hasReadAccess(data)) {
             createDeniedDialog(this.parent, data, events.permissionRead);
             return;
         }
-        let eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: data, module: 'DetailsView' };
+        const eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: data, module: 'DetailsView' };
         this.parent.trigger('fileOpen', eventArgs, (fileOpenArgs: FileOpenEventArgs) => {
             if (!fileOpenArgs.cancel) {
-                let name: string = getValue('name', data);
+                const name: string = getValue('name', data);
                 if (getValue('isFile', data)) {
-                    let icon: string = fileType(data);
+                    const icon: string = fileType(data);
                     if (icon === CLS.ICON_IMAGE) {
-                        let imgUrl: string = getImageUrl(this.parent, data);
+                        const imgUrl: string = getImageUrl(this.parent, data);
                         createImageDialog(this.parent, name, imgUrl);
                     }
                 } else {
-                    let val: string = this.parent.breadcrumbbarModule.searchObj.element.value;
+                    const val: string = this.parent.breadcrumbbarModule.searchObj.element.value;
                     if (val === '' && !this.parent.isFiltered) {
-                        let id: string = getValue('id', data);
-                        let newPath: string = this.parent.path + (isNOU(id) ? name : id) + '/';
+                        const id: string = getValue('id', data);
+                        const newPath: string = this.parent.path + (isNOU(id) ? name : id) + '/';
                         this.parent.setProperties({ path: newPath }, true);
                         this.parent.pathNames.push(name);
                         this.parent.pathId.push(getValue('_fm_id', data));
@@ -662,14 +678,15 @@ export class DetailsView {
     }
 
     private removePathColumn(isRefresh: boolean): void {
-        let len: number = this.gridObj.columns.length;
-        let columnData: ColumnModel[] = JSON.parse(JSON.stringify(this.gridObj.columns));
+        const len: number = this.gridObj.columns.length;
+        const columnData: ColumnModel[] = JSON.parse(JSON.stringify(this.gridObj.columns));
         if (columnData[len - 1].field && (columnData[len - 1].field === 'filterPath')) {
             /* istanbul ignore next */
             if (this.gridObj.sortSettings.columns[0].field === 'filterPath') {
                 if (this.parent.sortOrder !== 'None') {
                     this.gridObj.sortColumn('name', this.parent.sortOrder);
                 } else {
+                    // eslint-disable-next-line
                     this.gridObj.dataSource = getSortedData(this.parent, this.gridObj.dataSource as Object[]);
                 }
                 this.parent.notify(events.sortByChange, {});
@@ -863,6 +880,7 @@ export class DetailsView {
 
     private onActionFailure(): void { this.interaction = true; }
 
+    // eslint-disable-next-line
     private onMenuItemData(args: { [key: string]: Object; }): void {
         if (this.parent.activeModule === this.getModuleName()) {
             this.parent.itemData = [this.gridObj.getRowInfo(<Element>args.target).rowData];
@@ -887,16 +905,17 @@ export class DetailsView {
     }
 
     public dragHelper(args: { element: HTMLElement, sender: MouseEvent & TouchEvent }): HTMLElement {
-        let dragTarget: Element = <Element>args.sender.target;
-        let dragLi: Element = dragTarget.closest('tr.e-row');
+        const dragTarget: Element = <Element>args.sender.target;
+        const dragLi: Element = dragTarget.closest('tr.e-row');
         if (!dragLi) { return null; }
-        let name: string = (<HTMLElement>dragLi.getElementsByClassName('e-fe-text')[0]).innerText;
+        const name: string = (<HTMLElement>dragLi.getElementsByClassName('e-fe-text')[0]).innerText;
         if (dragLi && !dragLi.querySelector('.e-active')) {
             this.selectRecords([name]);
         }
         getModule(this.parent, dragLi);
         this.parent.activeElements = [];
         this.parent.dragData = [];
+        // eslint-disable-next-line
         this.parent.dragData = <{ [key: string]: Object; }[]>this.gridObj.getSelectedRecords();
         this.parent.dragPath = this.parent.path;
         this.parent.activeElements = this.gridObj.getSelectedRows();
@@ -907,11 +926,11 @@ export class DetailsView {
     /* istanbul ignore next */
     private onDetailsResize(): void {
         if (this.parent.view === 'Details' && !this.parent.isMobile && !isNOU(this.gridObj)) {
-            let gridHeader: HTMLElement = <HTMLElement>this.gridObj.getHeaderContent().querySelector('.e-headercontent');
-            let gridHeaderColGroup: HTMLElement = <HTMLElement>gridHeader.firstChild.childNodes[0];
-            let gridContentColGroup: HTMLElement =
+            const gridHeader: HTMLElement = <HTMLElement>this.gridObj.getHeaderContent().querySelector('.e-headercontent');
+            const gridHeaderColGroup: HTMLElement = <HTMLElement>gridHeader.firstChild.childNodes[0];
+            const gridContentColGroup: HTMLElement =
                 <HTMLElement>this.gridObj.getContent().querySelector('.e-content .e-table').children[0];
-            let gridHeaderColNames: ColumnModel[] = this.gridObj.getColumns();
+            const gridHeaderColNames: ColumnModel[] = this.gridObj.getColumns();
             for (let i: number = 0; i < gridHeaderColNames.length; i++) {
                 if ((!this.isNameWidth && gridHeaderColNames[i].field === 'name') || gridHeaderColNames[i].field === 'filterPath') {
                     if (this.parent.breadcrumbbarModule.searchObj.element.value === '' && !this.parent.isFiltered) {
@@ -974,12 +993,15 @@ export class DetailsView {
     private onDropInit(args: DragEventArgs): void {
         if (this.parent.targetModule === this.getModuleName()) {
             /* istanbul ignore next */
-            let cwdData: Object = getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent);
+            // eslint-disable-next-line
+            const cwdData: Object = getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent);
             if (!args.target.closest('tr')) {
                 this.parent.dropPath = this.parent.path;
                 this.parent.dropData = cwdData;
             } else {
+                // eslint-disable-next-line
                 let info: { [key: string]: Object; } = null;
+                // eslint-disable-next-line
                 info = <{ [key: string]: Object; }>this.gridObj.getRowInfo(args.target).rowData;
                 this.parent.dropPath = info.isFile ? this.parent.path : getFullPath(this.parent, info, this.parent.path);
                 this.parent.dropData = info.isFile ? cwdData : info;
@@ -1012,6 +1034,8 @@ export class DetailsView {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} - returns modules name.
      * @private
      */
     private getModuleName(): string {
@@ -1028,13 +1052,13 @@ export class DetailsView {
     }
 
     private updateType(item: Element): void {
-        let folder: Element = select('.' + CLS.FOLDER, item);
+        const folder: Element = select('.' + CLS.FOLDER, item);
         this.parent.isFile = isNOU(folder) ? true : false;
     }
 
     /* istanbul ignore next */
     private onSelection(action: string, args: RowSelectingEventArgs | RowDeselectEventArgs): void {
-        let eventArgs: FileSelectionEventArgs = {
+        const eventArgs: FileSelectionEventArgs = {
             action: action, fileDetails: args.data, isInteracted: this.interaction, cancel: false, target: args.target
         };
         this.parent.trigger('fileSelection', eventArgs);
@@ -1051,12 +1075,12 @@ export class DetailsView {
         }
         this.gridObj.element.setAttribute('tabindex', '-1');
         this.triggerSelect('select', args);
-        let item: Element = this.gridObj.getRowByIndex(this.gridObj.selectedRowIndex);
+        const item: Element = this.gridObj.getRowByIndex(this.gridObj.selectedRowIndex);
         this.updateType(item);
         if (!isNOU(item) && !isNOU(item.querySelector('.e-checkselect'))) {
             if (this.gridObj.getSelectedRowIndexes().length !== 1) {
-                let lastItemIndex: number = this.gridObj.getSelectedRowIndexes()[this.gridObj.getSelectedRowIndexes().length - 2];
-                let lastItem: Element = this.gridObj.getRowByIndex(lastItemIndex);
+                const lastItemIndex: number = this.gridObj.getSelectedRowIndexes()[this.gridObj.getSelectedRowIndexes().length - 2];
+                const lastItem: Element = this.gridObj.getRowByIndex(lastItemIndex);
                 lastItem.querySelector('.e-checkselect').setAttribute('tabindex', '-1');
             }
             item.querySelector('.e-rowcell.e-fe-checkbox').removeAttribute('tabindex');
@@ -1064,7 +1088,7 @@ export class DetailsView {
         if (!isNOU(this.gridObj) && !isNOU(this.gridObj.element.querySelector('.e-checkselectall'))) {
             this.gridObj.element.querySelector('.e-checkselectall').setAttribute('tabindex', '-1');
         }
-        let rows: number[] = this.gridObj.getSelectedRowIndexes();
+        const rows: number[] = this.gridObj.getSelectedRowIndexes();
         if (!this.parent.allowMultiSelection) {
             for (let i: number = 0; i < rows.length; i++) {
                 if (rows[i] === this.gridObj.selectedRowIndex) {
@@ -1074,13 +1098,14 @@ export class DetailsView {
                 }
             }
         }
-        let len: number = rows.length;
+        const len: number = rows.length;
         if (len > 0) {
-            let data: Object = this.gridObj.getRowsObject()[rows[len - 1]].data;
+            // eslint-disable-next-line
+            const data: Object = this.gridObj.getRowsObject()[rows[len - 1]].data;
             this.parent.currentItemText = getValue('name', data);
         }
-        let indexes: number[] = getValue('rowIndexes', args);
-        let multiSelect: boolean = getValue('enableSelectMultiTouch', this.gridObj.selectionModule);
+        const indexes: number[] = getValue('rowIndexes', args);
+        const multiSelect: boolean = getValue('enableSelectMultiTouch', this.gridObj.selectionModule);
         if (this.parent.isDevice && isNOU(indexes) && args.target && !multiSelect && !args.target.closest('.e-headercell')) {
             this.parent.isFile = getValue('isFile', args.data);
             if (!this.parent.isFile) {
@@ -1089,7 +1114,7 @@ export class DetailsView {
         }
         this.parent.visitedItem = <Element>args.row;
         if (this.parent.allowMultiSelection && !isNOU(item) && !isNOU(item.querySelector('.e-checkselect'))) {
-            let checkItem: HTMLElement = <HTMLElement>item.querySelector('.e-checkselect');
+            const checkItem: HTMLElement = <HTMLElement>item.querySelector('.e-checkselect');
             checkItem.focus();
         }
         this.addFocus(this.gridObj.selectedRowIndex);
@@ -1108,11 +1133,12 @@ export class DetailsView {
 
     private selectedRecords(): void {
         this.parent.setProperties({ selectedItems: [] }, true);
-        let selectedRecords: Object[] = this.gridSelectNodes();
+        // eslint-disable-next-line
+        const selectedRecords: Object[] = this.gridSelectNodes();
         let selectSize: number = 0;
         while (selectSize < selectedRecords.length) {
-            let record: FileDetails = <FileDetails>selectedRecords[selectSize];
-            let name: string = getItemName(this.parent, record);
+            const record: FileDetails = <FileDetails>selectedRecords[selectSize];
+            const name: string = getItemName(this.parent, record);
             this.parent.selectedItems.push(name);
             selectSize++;
         }
@@ -1124,7 +1150,7 @@ export class DetailsView {
         if (!this.parent.allowMultiSelection && isNOU(args.data)) {
             this.gridObj.getRowByIndex(<number>args.rowIndex).removeAttribute('tabindex');
         } else if (this.gridObj.getSelectedRowIndexes().length > 1) {
-            let lastItemIndex: number = this.gridObj.getSelectedRowIndexes()[this.gridObj.getSelectedRowIndexes().length - 2];
+            const lastItemIndex: number = this.gridObj.getSelectedRowIndexes()[this.gridObj.getSelectedRowIndexes().length - 2];
             this.gridObj.getRowByIndex(lastItemIndex).querySelector('.e-checkselect').removeAttribute('tabindex');
         }
         if (this.gridObj.selectedRowIndex === -1) {
@@ -1145,7 +1171,7 @@ export class DetailsView {
     }
 
     private triggerSelect(action?: string, args?: RowSelectEventArgs): void {
-        let eventArgs: FileSelectEventArgs = { action: action, fileDetails: args.data, isInteracted: this.interaction };
+        const eventArgs: FileSelectEventArgs = { action: action, fileDetails: args.data, isInteracted: this.interaction };
         this.parent.trigger('fileSelect', eventArgs);
         this.interaction = true;
     }
@@ -1156,7 +1182,7 @@ export class DetailsView {
             {
                 keyAction: this.keyupHandler.bind(this),
                 keyConfigs: this.keyConfigs,
-                eventName: 'keyup',
+                eventName: 'keyup'
             }
         );
         this.keyboardDownModule = new KeyboardEvents(
@@ -1164,7 +1190,7 @@ export class DetailsView {
             {
                 keyAction: this.keydownHandler.bind(this),
                 keyConfigs: this.keyConfigs,
-                eventName: 'keydown',
+                eventName: 'keydown'
             }
         );
         EventHandler.add(this.gridObj.element, 'blur', this.removeFocus, this);
@@ -1179,8 +1205,9 @@ export class DetailsView {
 
     private wireClickEvent(toBind: boolean): void {
         if (toBind) {
-            let proxy: DetailsView = this;
-            let ele: HTMLElement = <HTMLElement>this.gridObj.getContent();
+            // eslint-disable-next-line
+            const proxy: DetailsView = this;
+            const ele: HTMLElement = <HTMLElement>this.gridObj.getContent();
             this.clickObj = new Touch(ele, {
                 tap: (eve: TapEventArgs) => {
                     if (eve.tapCount === 1 && (<HTMLElement>eve.originalEvent.target).classList.contains('e-content')) {
@@ -1194,10 +1221,10 @@ export class DetailsView {
                             setValue('enableSelectMultiTouch', proxy.parent.allowMultiSelection, proxy.gridObj.selectionModule);
                             addClass([proxy.parent.element], CLS.MULTI_SELECT);
                         }
-                        let target: Element = <Element>e.originalEvent.target;
+                        const target: Element = <Element>e.originalEvent.target;
                         if (target) {
-                            let row: Element = closest(target, '.' + CLS.ROW);
-                            let index: number = proxy.gridObj.getRows().indexOf(row);
+                            const row: Element = closest(target, '.' + CLS.ROW);
+                            const index: number = proxy.gridObj.getRows().indexOf(row);
                             proxy.gridObj.selectRow(index);
                         }
                     }
@@ -1232,168 +1259,185 @@ export class DetailsView {
     }
 
     /* istanbul ignore next */
-    // tslint:disable-next-line:max-func-body-length
+    // eslint:disable-next-line
     private keydownHandler(e: KeyboardEventArgs): void {
         if (!this.isRendered) { return; }
         switch (e.action) {
-            case 'end':
-            case 'home':
-            case 'space':
-            case 'ctrlSpace':
-            case 'shiftSpace':
-            case 'csSpace':
-            case 'ctrlA':
-            case 'enter':
-            case 'altEnter':
-            case 'ctrlEnd':
-            case 'shiftEnd':
-            case 'csEnd':
-            case 'ctrlHome':
-            case 'shiftHome':
-            case 'csHome':
-            case 'ctrlDown':
-            case 'shiftDown':
-            case 'csDown':
-            case 'ctrlLeft':
-            case 'shiftLeft':
-            case 'csLeft':
-            case 'esc':
-            case 'del':
-            case 'shiftdel':
-            case 'ctrlC':
-            case 'ctrlV':
-            case 'ctrlX':
-            case 'f2':
-            case 'moveDown':
-            case 'moveUp':
-                e.preventDefault();
-                break;
-            default:
-                break;
+        case 'end':
+        case 'home':
+        case 'space':
+        case 'ctrlSpace':
+        case 'shiftSpace':
+        case 'csSpace':
+        case 'ctrlA':
+        case 'enter':
+        case 'altEnter':
+        case 'ctrlEnd':
+        case 'shiftEnd':
+        case 'csEnd':
+        case 'ctrlHome':
+        case 'shiftHome':
+        case 'csHome':
+        case 'ctrlDown':
+        case 'shiftDown':
+        case 'csDown':
+        case 'ctrlLeft':
+        case 'shiftLeft':
+        case 'csLeft':
+        case 'esc':
+        case 'del':
+        case 'shiftdel':
+        case 'ctrlC':
+        case 'ctrlV':
+        case 'ctrlX':
+        case 'f2':
+        case 'moveDown':
+        case 'moveUp':
+            e.preventDefault();
+            break;
+        default:
+            break;
         }
     }
 
     /* istanbul ignore next */
-    // tslint:disable-next-line:max-func-body-length
+    // eslint:disable-next-line
     private keyupHandler(e: KeyboardEventArgs): void {
         if (!this.isRendered) { return; }
         e.preventDefault();
-        let action: string = e.action;
-        let gridItems: object[] = getSortedData(this.parent, this.gridObj.dataSource as Object[]);
-        let gridLength: number = gridItems.length;
-        let focItem: Element = this.getFocusedItem();
-        let focIndex: number = this.getFocusedItemIndex();
-        let selIndex: number = this.gridObj.selectedRowIndex;
-        let selRowIndeces: number[] = this.gridObj.getSelectedRowIndexes();
+        const action: string = e.action;
+        // eslint-disable-next-line
+        const gridItems: object[] = getSortedData(this.parent, this.gridObj.dataSource as Object[]);
+        const gridLength: number = gridItems.length;
+        const focItem: Element = this.getFocusedItem();
+        const focIndex: number = this.getFocusedItemIndex();
+        const selIndex: number = this.gridObj.selectedRowIndex;
+        const selRowIndeces: number[] = this.gridObj.getSelectedRowIndexes();
+        // eslint-disable-next-line
+        let rowData: object;
+        let firstItem: string[];
+        let lastItem: string[];
         switch (action) {
-            case 'altEnter':
-                GetDetails(this.parent, this.parent.selectedItems, this.parent.path, 'details');
-                break;
-            case 'esc':
-                removeActive(this.parent);
-                break;
-            case 'del':
-            case 'shiftdel':
-                this.performDelete();
-                break;
-            case 'enter':
-                if (this.gridObj.selectedRowIndex === -1) { break; }
-                let rowData: object = this.gridObj.getRowsObject()[this.gridObj.selectedRowIndex].data;
-                if (rowData) {
-                    let data: object = JSON.parse(JSON.stringify(rowData));
-                    this.openContent(data);
-                }
-                break;
-            case 'ctrlC':
-                copyFiles(this.parent);
-                break;
-            case 'ctrlV':
-                this.parent.folderPath = '';
-                pasteHandler(this.parent);
-                break;
-            case 'ctrlX':
-                cutFiles(this.parent);
-                break;
-            case 'ctrlD':
-                this.doDownload();
-                break;
-            case 'f2':
-                this.performRename();
-                break;
-            case 'ctrlA':
-                if (!isNOU(gridItems[0]) && this.parent.allowMultiSelection) {
-                    this.gridObj.selectionModule.selectRowsByRange(0, gridItems.length - 1);
-                }
-                break;
-            case 'ctrlHome':
-            case 'tab':
-                if (!isNOU(gridItems[0])) {
-                    if (!this.parent.allowMultiSelection && e.action === 'ctrlHome') {
-                        this.gridObj.selectRow(0);
-                    } else if (this.gridObj.selectedRowIndex !== -1 && e.action === 'tab') {
-                        return;
-                    } else {
-                        this.addFocus(0);
-                    }
-                }
-                break;
-            case 'ctrlEnd':
-                if (!isNOU(gridItems[0])) {
-                    (!this.parent.allowMultiSelection) ?
-                        this.gridObj.selectRow(gridLength - 1) : this.addFocus(gridLength - 1);
-                }
-                break;
-            case 'shiftHome':
-            case 'shiftEnd':
-            case 'csHome':
-            case 'csEnd':
-                if (!this.parent.allowMultiSelection) {
-                    this.gridObj.selectRow((e.action === 'shiftHome' || e.action === 'csHome') ? 0 : gridItems.length - 1);
+        case 'altEnter':
+            GetDetails(this.parent, this.parent.selectedItems, this.parent.path, 'details');
+            break;
+        case 'esc':
+            removeActive(this.parent);
+            break;
+        case 'del':
+        case 'shiftdel':
+            this.performDelete();
+            break;
+        case 'enter':
+            if (this.gridObj.selectedRowIndex === -1) { break; }
+            rowData = this.gridObj.getRowsObject()[this.gridObj.selectedRowIndex].data;
+            if (rowData) {
+                // eslint-disable-next-line
+                const data: object = JSON.parse(JSON.stringify(rowData));
+                this.openContent(data);
+            }
+            break;
+        case 'ctrlC':
+            copyFiles(this.parent);
+            break;
+        case 'ctrlV':
+            this.parent.folderPath = '';
+            pasteHandler(this.parent);
+            break;
+        case 'ctrlX':
+            cutFiles(this.parent);
+            break;
+        case 'ctrlD':
+            this.doDownload();
+            break;
+        case 'f2':
+            this.performRename();
+            break;
+        case 'ctrlA':
+            if (!isNOU(gridItems[0]) && this.parent.allowMultiSelection) {
+                this.gridObj.selectionModule.selectRowsByRange(0, gridItems.length - 1);
+            }
+            break;
+        case 'ctrlHome':
+        case 'tab':
+            if (!isNOU(gridItems[0])) {
+                if (!this.parent.allowMultiSelection && e.action === 'ctrlHome') {
+                    this.gridObj.selectRow(0);
+                } else if (this.gridObj.selectedRowIndex !== -1 && e.action === 'tab') {
+                    return;
                 } else {
-                    if (!isNOU(gridItems[0])) {
-                        if (!isNOU(selIndex) && selIndex !== -1) {
-                            this.checkRowsKey(gridItems, selIndex, null, e);
+                    this.addFocus(0);
+                }
+            }
+            break;
+        case 'ctrlEnd':
+            if (!isNOU(gridItems[0])) {
+                if (!this.parent.allowMultiSelection) {
+                    this.gridObj.selectRow(gridLength - 1);
+                }
+                else {
+                    this.addFocus(gridLength - 1);
+                }
+            }
+            break;
+        case 'shiftHome':
+        case 'shiftEnd':
+        case 'csHome':
+        case 'csEnd':
+            if (!this.parent.allowMultiSelection) {
+                this.gridObj.selectRow((e.action === 'shiftHome' || e.action === 'csHome') ? 0 : gridItems.length - 1);
+            } else {
+                if (!isNOU(gridItems[0])) {
+                    if (!isNOU(selIndex) && selIndex !== -1) {
+                        this.checkRowsKey(gridItems, selIndex, null, e);
+                    } else {
+                        if (e.action === 'csHome' || e.action === 'shiftHome') {
+                            this.gridObj.selectRow(0);
                         } else {
-                            (e.action === 'csHome' || e.action === 'shiftHome') ?
-                                this.gridObj.selectRow(0) : this.gridObj.selectionModule.selectRowsByRange(0, gridItems.length - 1);
+                            this.gridObj.selectionModule.selectRowsByRange(0, gridItems.length - 1);
                         }
                     }
                 }
-                break;
-            case 'space':
-            case 'csSpace':
-            case 'shiftSpace':
-            case 'ctrlSpace':
-                this.spaceSelection(selRowIndeces, focIndex, selIndex, e);
-                break;
-            case 'csUp':
-            case 'csDown':
-            case 'shiftUp':
-            case 'shiftDown':
-                this.shiftMoveMethod(gridItems, selIndex, focIndex, selRowIndeces, e);
-                break;
-            case 'ctrlUp':
-            case 'ctrlDown':
-                (!this.parent.allowMultiSelection) ? this.moveFunction(gridItems, e, selIndex) :
-                    this.ctrlMoveFunction(gridItems, e, selIndex);
-                break;
-            case 'home':
-                let firstItem: string[] = [getValue(this.parent.hasId ? 'id' : 'name', gridItems[0])];
-                this.parent.setProperties({ selectedItems: firstItem }, true);
-                this.selectRecords(firstItem);
-                break;
-            case 'moveUp':
-            case 'moveDown':
+            }
+            break;
+        case 'space':
+        case 'csSpace':
+        case 'shiftSpace':
+        case 'ctrlSpace':
+            this.spaceSelection(selRowIndeces, focIndex, selIndex, e);
+            break;
+        case 'csUp':
+        case 'csDown':
+        case 'shiftUp':
+        case 'shiftDown':
+            this.shiftMoveMethod(gridItems, selIndex, focIndex, selRowIndeces, e);
+            break;
+        case 'ctrlUp':
+        case 'ctrlDown':
+            if (!this.parent.allowMultiSelection) {
                 this.moveFunction(gridItems, e, selIndex);
-                break;
-            case 'end':
-                let lastItem: string[] = [getValue(this.parent.hasId ? 'id' : 'name', gridItems[gridLength - 1])];
-                this.parent.setProperties({ selectedItems: lastItem }, true);
-                this.selectRecords(lastItem);
-                break;
+            } else {
+                this.ctrlMoveFunction(gridItems, e, selIndex);
+            }
+            break;
+        case 'home':
+            firstItem = [getValue(this.parent.hasId ? 'id' : 'name', gridItems[0])];
+            this.parent.setProperties({ selectedItems: firstItem }, true);
+            this.selectRecords(firstItem);
+            break;
+        case 'moveUp':
+        case 'moveDown':
+            this.moveFunction(gridItems, e, selIndex);
+            break;
+        case 'end':
+            lastItem = [getValue(this.parent.hasId ? 'id' : 'name', gridItems[gridLength - 1])];
+            this.parent.setProperties({ selectedItems: lastItem }, true);
+            this.selectRecords(lastItem);
+            break;
         }
     }
 
+    // eslint-disable-next-line
     public gridSelectNodes(): Object[] {
         return this.gridObj.getSelectedRecords();
     }
@@ -1401,7 +1445,8 @@ export class DetailsView {
     private doDownload(): void {
         if (this.parent.selectedItems.length !== 0) {
             this.parent.itemData = this.gridObj.getSelectedRecords();
-            let items: Object[] = this.parent.itemData;
+            // eslint-disable-next-line
+            const items: Object[] = this.parent.itemData;
             for (let i: number = 0; i < items.length; i++) {
                 if (!hasDownloadAccess(items[i])) {
                     createDeniedDialog(this.parent, items[i], events.permissionDownload);
@@ -1415,7 +1460,8 @@ export class DetailsView {
     private performDelete(): void {
         if (this.parent.selectedItems && this.parent.selectedItems.length > 0) {
             this.parent.itemData = this.gridObj.getSelectedRecords();
-            let items: Object[] = this.parent.itemData;
+            // eslint-disable-next-line
+            const items: Object[] = this.parent.itemData;
             for (let i: number = 0; i < items.length; i++) {
                 if (!hasEditAccess(items[i])) {
                     createDeniedDialog(this.parent, items[i], events.permissionEdit);
@@ -1434,10 +1480,12 @@ export class DetailsView {
     }
 
     private updateRenameData(): void {
-        let data: Object = this.gridSelectNodes()[0];
+        // eslint-disable-next-line
+        const data: Object = this.gridSelectNodes()[0];
         updateRenamingData(this.parent, data);
     }
 
+    // eslint-disable-next-line
     private shiftMoveMethod(gridItems: object[], selIndex: number, focIndex: number, selRowIndeces: number[], e: KeyboardEventArgs): void {
         if (!this.parent.allowMultiSelection) {
             this.moveFunction(gridItems, e, selIndex);
@@ -1453,6 +1501,7 @@ export class DetailsView {
         }
     }
 
+    // eslint-disable-next-line
     private moveFunction(selectedItems: object[], e: KeyboardEventArgs, rowIndex: number): void {
         if (!isNOU(this.getFocusedItem()) && this.parent.allowMultiSelection) {
             if (e.action === 'moveDown') {
@@ -1484,7 +1533,7 @@ export class DetailsView {
             selRowIndeces.push(this.getFocusedItemIndex());
             this.gridObj.selectRows(selRowIndeces);
         } else if (selIndex !== -1 && e.action === 'ctrlSpace' && this.parent.allowMultiSelection) {
-            let lItem: number = selIndex;
+            const lItem: number = selIndex;
             selRowIndeces.pop();
             this.gridObj.selectRows(selRowIndeces);
             this.addFocus(lItem);
@@ -1493,10 +1542,11 @@ export class DetailsView {
         }
     }
 
+    // eslint-disable-next-line
     private ctrlMoveFunction(items: object[], e: KeyboardEventArgs, rowIndex: number): void {
         let nextItem: number;
         if (!isNOU(this.getFocusedItem())) {
-            let nextIndex: number = this.getFocusedItemIndex();
+            const nextIndex: number = this.getFocusedItemIndex();
             nextItem = (e.action === 'ctrlDown' || e.action === 'csDown') ?
                 nextIndex + ((nextIndex < items.length - 1) ? 1 : 0) : nextIndex - ((nextIndex < 1) ? 0 : 1);
         } else if (!isNOU(rowIndex) && rowIndex !== -1) {
@@ -1510,6 +1560,7 @@ export class DetailsView {
         this.addFocus(nextItem);
     }
 
+    // eslint-disable-next-line
     private checkRowsKey(items: object[], indexValue: number, focIndex: (null | number), e: KeyboardEventArgs): void {
         if (this.gridObj.checkAllRows === 'Uncheck' || this.gridObj.checkAllRows === 'Intermediate') {
             if (e.action !== 'csHome' && e.action !== 'csEnd') {
@@ -1527,8 +1578,11 @@ export class DetailsView {
                     this.gridObj.
                         selectRows(this.InnerItems(isNOU(indexValue) ? 0 : indexValue, isNOU(focIndex) ? items.length - 1 : focIndex, e));
                 } else {
-                    ((isNOU(indexValue)) ? this.gridObj.selectRow(0) :
-                        this.gridObj.selectRows(this.InnerItems(isNOU(focIndex) ? 0 : focIndex, indexValue, e)));
+                    if (isNOU(indexValue)) {
+                        this.gridObj.selectRow(0);
+                    } else {
+                        this.gridObj.selectRows(this.InnerItems(isNOU(focIndex) ? 0 : focIndex, indexValue, e));
+                    }
                 }
             }
         } else {
@@ -1537,7 +1591,7 @@ export class DetailsView {
     }
 
     private InnerItems(fItem: number, lItem: number, e: KeyboardEventArgs): number[] {
-        let itemArr: number[] = this.gridObj.getSelectedRowIndexes();
+        const itemArr: number[] = this.gridObj.getSelectedRowIndexes();
         if (e.action === 'csEnd') {
             for (let i: number = fItem + 1; i <= lItem; i++) {
                 itemArr.push(i);
@@ -1551,25 +1605,29 @@ export class DetailsView {
     }
 
     private shiftSelectFocusItem(selIndex: number, fIndex: number, selRowIndexes: number[], e: KeyboardEventArgs): void {
-        let lItem: number;
-        let fItem: number;
-        lItem = fIndex + ((e.action === 'shiftDown' || e.action === 'csDown') ? 1 : -1);
-        fItem = isNOU(this.startIndex) ? selIndex : selRowIndexes[0];
+        const lItem: number = fIndex + ((e.action === 'shiftDown' || e.action === 'csDown') ? 1 : -1);
+        const fItem: number = isNOU(this.startIndex) ? selIndex : selRowIndexes[0];
         if (fItem === lItem) {
             this.gridObj.selectRow(fItem);
         } else {
-            (fItem < lItem) ?
-                ((e.action === 'shiftDown' || e.action === 'csDown') ? this.gridObj.selectionModule.selectRowsByRange(fItem, lItem) :
-                    this.gridObj.selectionModule.selectRowsByRange(lItem, fItem)) : ((e.action === 'shiftDown' || e.action === 'csDown') ?
-                        this.gridObj.selectionModule.selectRowsByRange(lItem, fItem) :
-                        this.gridObj.selectionModule.selectRowsByRange(fItem, lItem));
+            if (fItem < lItem) {
+                if (e.action === 'shiftDown' || e.action === 'csDown') {
+                    this.gridObj.selectionModule.selectRowsByRange(fItem, lItem);
+                } else {
+                    this.gridObj.selectionModule.selectRowsByRange(lItem, fItem);
+                }
+            } else if (e.action === 'shiftDown' || e.action === 'csDown'){
+                this.gridObj.selectionModule.selectRowsByRange(lItem, fItem);
+            } else{
+                this.gridObj.selectionModule.selectRowsByRange(fItem, lItem);
+            }
         }
         this.startIndex = this.gridObj.selectedRowIndex;
     }
 
     private addFocus(item: number | null): void {
-        let fItem: Element = this.getFocusedItem();
-        let itemElement: HTMLElement = <HTMLElement>this.gridObj.getRowByIndex(item);
+        const fItem: Element = this.getFocusedItem();
+        const itemElement: HTMLElement = <HTMLElement>this.gridObj.getRowByIndex(item);
         if (fItem) {
             fItem.removeAttribute('tabindex');
             removeClass([fItem], [CLS.FOCUS, CLS.FOCUSED]);
@@ -1597,6 +1655,7 @@ export class DetailsView {
         return check;
     }
 
+    // eslint-disable-next-line
     private shiftSelectedItem(selIndex: number, selRowIndexes: number[], gridItems: object[], e: KeyboardEventArgs): void {
         if (selIndex === -1) {
             this.gridObj.selectRow(0);
@@ -1634,42 +1693,46 @@ export class DetailsView {
         }
     }
 
+    // eslint-disable-next-line
     private onMethodCall(e: Object): void {
         if (this.parent.view !== 'Details') { return; }
-        let action: string = getValue('action', e);
+        const action: string = getValue('action', e);
         switch (action) {
-            case 'deleteFiles':
-                this.deleteFiles(getValue('ids', e));
-                break;
-            case 'downloadFiles':
-                this.downloadFiles(getValue('ids', e));
-                break;
-            case 'openFile':
-                this.openFile(getValue('id', e));
-                break;
-            case 'createFolder':
-                this.interaction = false;
-                break;
-            case 'renameFile':
-                this.interaction = false;
-                this.renameFile(getValue('id', e), getValue('newName', e));
-                break;
-            case 'selectAll':
-                this.interaction = false;
-                this.onSelectAllInit();
-                break;
-            case 'clearSelection':
-                this.interaction = false;
-                this.onClearAllInit();
-                break;
+        case 'deleteFiles':
+            this.deleteFiles(getValue('ids', e));
+            break;
+        case 'downloadFiles':
+            this.downloadFiles(getValue('ids', e));
+            break;
+        case 'openFile':
+            this.openFile(getValue('id', e));
+            break;
+        case 'createFolder':
+            this.interaction = false;
+            break;
+        case 'renameFile':
+            this.interaction = false;
+            this.renameFile(getValue('id', e), getValue('newName', e));
+            break;
+        case 'selectAll':
+            this.interaction = false;
+            this.onSelectAllInit();
+            break;
+        case 'clearSelection':
+            this.interaction = false;
+            this.onClearAllInit();
+            break;
         }
     }
 
+    // eslint-disable-next-line
     private getRecords(nodes: string[]): Object[] {
-        let gridRecords: Object[] = this.gridObj.getCurrentViewRecords();
-        let records: Object[] = [];
-        let hasFilter: boolean = (this.parent.breadcrumbbarModule.searchObj.element.value !== '' || this.parent.isFiltered) ? true : false;
-        let filter: string = this.parent.hasId ? 'id' : 'name';
+        // eslint-disable-next-line
+        const gridRecords: Object[] = this.gridObj.getCurrentViewRecords();
+        // eslint-disable-next-line
+        const records: Object[] = [];
+        const hasFilter: boolean = (this.parent.breadcrumbbarModule.searchObj.element.value !== '' || this.parent.isFiltered) ? true : false;
+        const filter: string = this.parent.hasId ? 'id' : 'name';
         if (this.parent.hasId || !hasFilter) {
             for (let i: number = 0, len: number = gridRecords.length; i < len; i++) {
                 if (nodes.indexOf(getValue(filter, gridRecords[i])) !== -1) {
@@ -1678,7 +1741,7 @@ export class DetailsView {
             }
         } else {
             for (let i: number = 0, len: number = gridRecords.length; i < len; i++) {
-                let name: string = getValue('filterPath', gridRecords[i]) + getValue('name', gridRecords[i]);
+                const name: string = getValue('filterPath', gridRecords[i]) + getValue('name', gridRecords[i]);
                 if (nodes.indexOf(name) !== -1) {
                     records.push(gridRecords[i]);
                 }
@@ -1693,10 +1756,12 @@ export class DetailsView {
             this.performDelete();
             return;
         }
-        let records: Object[] = this.getRecords(ids);
+        // eslint-disable-next-line
+        const records: Object[] = this.getRecords(ids);
         if (records.length === 0) { return; }
-        let data: Object[] = [];
-        let newIds: string[] = [];
+        // eslint-disable-next-line
+        const data: Object[] = [];
+        const newIds: string[] = [];
         for (let i: number = 0; i < records.length; i++) {
             data[i] = records[i];
             newIds[i] = getItemName(this.parent, data[i]);
@@ -1709,10 +1774,12 @@ export class DetailsView {
             this.doDownload();
             return;
         }
-        let dRecords: Object[] = this.getRecords(ids);
+        // eslint-disable-next-line
+        const dRecords: Object[] = this.getRecords(ids);
         if (dRecords.length === 0) { return; }
-        let data: Object[] = [];
-        let newIds: string[] = [];
+        // eslint-disable-next-line
+        const data: Object[] = [];
+        const newIds: string[] = [];
         for (let i: number = 0; i < dRecords.length; i++) {
             data[i] = dRecords[i];
             newIds[i] = getItemName(this.parent, data[i]);
@@ -1722,7 +1789,8 @@ export class DetailsView {
 
     private openFile(id: string): void {
         if (isNOU(id)) { return; }
-        let records: Object[] = this.getRecords([id]);
+        // eslint-disable-next-line
+        const records: Object[] = this.getRecords([id]);
         if (records.length > 0) {
             this.openContent(records[0]);
         }
@@ -1734,7 +1802,8 @@ export class DetailsView {
             this.performRename();
             return;
         }
-        let records: Object[] = this.getRecords([id]);
+        // eslint-disable-next-line
+        const records: Object[] = this.getRecords([id]);
         if (records.length > 0) {
             updateRenamingData(this.parent, records[0]);
             if (!isNOU(name)) {

@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable @typescript-eslint/ban-types */
 import { BulletChart } from '../bullet-chart';
 import { DataManager } from '@syncfusion/ej2-data';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -7,7 +11,7 @@ import { RangeModel } from '../model/bullet-base-model';
 import { IFeatureBarBounds } from '../model/bullet-interface';
 import { Animation, AnimationOptions } from '@syncfusion/ej2-base';
 import { AnimationModel } from '../../common/model/base-model';
-import { getAnimationFunction,  } from '../../common/utils/helper';
+import { getAnimationFunction } from '../../common/utils/helper';
 import { TargetType } from '../utils/enum';
 
 interface IFeatureMeasureType {
@@ -64,31 +68,32 @@ export class ScaleGroup {
 
     /**
      * To render range scale of the bulletChart graph
-     * @param scaleGroup
+     *
+     * @param {Element} scaleGroup
      */
 
     public drawScaleGroup(scaleGroup: Element): number[] {
-        let rangeGroup: Element = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_rangeGroup' });
-        let max: number = this.bulletChart.maximum;
-        let ranges: RangeModel[] = this.bulletChart.ranges as RangeModel[];
+        const rangeGroup: Element = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_rangeGroup' });
+        const max: number = this.bulletChart.maximum;
+        const ranges: RangeModel[] = this.bulletChart.ranges as RangeModel[];
         this.scaleSettingsGroup = scaleGroup;
         let rect: RectOption;
-        let bullet : BulletChart = this.bulletChart;
-        let enableRtl : boolean = bullet.enableRtl;
-        let initialRect: Rect = bullet.initialClipRect;
+        const bullet: BulletChart = this.bulletChart;
+        const enableRtl: boolean = bullet.enableRtl;
+        const initialRect: Rect = bullet.initialClipRect;
         let locX: number = initialRect.x + ((enableRtl && bullet.orientation === 'Horizontal') ? initialRect.width : 0);
-        let locY: number = initialRect.y + ((!enableRtl && bullet.orientation === 'Vertical') ? initialRect.height  : 0);
-        let area : number = 0;
+        let locY: number = initialRect.y + ((!enableRtl && bullet.orientation === 'Vertical') ? initialRect.height : 0);
+        let area: number = 0;
         bullet.rangeCollection = [];
-        let start : number = 0;
-        let range : number = (bullet.orientation === 'Horizontal') ? initialRect.width : initialRect.height;
-        let fillRange : number = (bullet.orientation === 'Horizontal') ? initialRect.height : initialRect.width;
-        for (let i: number = 0; i < ranges.length ; i++) {
+        let start: number = 0;
+        const range: number = (bullet.orientation === 'Horizontal') ? initialRect.width : initialRect.height;
+        const fillRange: number = (bullet.orientation === 'Horizontal') ? initialRect.height : initialRect.width;
+        for (let i: number = 0; i < ranges.length; i++) {
             area = (range) * ((ranges[i].end - start) / max);
             if (bullet.orientation === 'Horizontal') {
-                locX -=  (enableRtl) ? area : 0;
+                locX -= (enableRtl) ? area : 0;
             } else {
-                locY -=  (!enableRtl) ? area : 0;
+                locY -= (!enableRtl) ? area : 0;
             }
             rect = new RectOption(
                 bullet.svgObject.id + '_range_' + i,
@@ -97,13 +102,13 @@ export class ScaleGroup {
                 { width: 1 }, ranges[i].opacity,
                 new Rect(locX, locY, ((bullet.orientation === 'Horizontal') ? area : fillRange),
                          ((bullet.orientation === 'Horizontal') ? fillRange : area)));
-            let svgRect: Element = bullet.renderer.drawRectangle(rect);
+            const svgRect: Element = bullet.renderer.drawRectangle(rect);
             rangeGroup.appendChild(svgRect);
             scaleGroup.appendChild(rangeGroup);
             if (bullet.orientation === 'Horizontal') {
-                locX +=  (enableRtl) ? 0 : area;
+                locX += (enableRtl) ? 0 : area;
             } else {
-                locY +=  (!enableRtl) ? 0 : area;
+                locY += (!enableRtl) ? 0 : area;
             }
             bullet.rangeCollection.push(area);
             start = ranges[i].end;
@@ -117,7 +122,8 @@ export class ScaleGroup {
 
     /**
      * To render the feature bar of the bulletChart chart
-     * @param dataCount
+     *
+     * @param {number} dataCount Count of the bar.
      */
     public renderFeatureBar(dataCount: number): void {
         if (dataCount === 0) {
@@ -127,19 +133,20 @@ export class ScaleGroup {
     }
     /**
      * To render the horizontal feature bar of the bulletChart chart
-     * @param dataCount
+     *
+     * @param {number} dataCount Count of the bar.
      */
     private renderCommonFeatureBar(dataCount: number, isHorizontal: boolean): void {
         let categoryValue: string;
-        let dotWidth: number = 6;
-        let padding : number = 5;
-        let bulletChart: BulletChart = this.bulletChart;
-        let initialBoundsStart: number = isHorizontal ? (bulletChart.initialClipRect.y + bulletChart.initialClipRect.height) :
-        bulletChart.initialClipRect.x;
+        const dotWidth: number = 6;
+        const padding: number = 5;
+        const bulletChart: BulletChart = this.bulletChart;
+        const initialBoundsStart: number = isHorizontal ? (bulletChart.initialClipRect.y + bulletChart.initialClipRect.height) :
+            bulletChart.initialClipRect.x;
         let lPoint: number;
-        let featueGroup: Element = bulletChart.renderer.createGroup({ 'id': bulletChart.svgObject.id + '_featureGroup' });
+        const featueGroup: Element = bulletChart.renderer.createGroup({ 'id': bulletChart.svgObject.id + '_featureGroup' });
         let data: Object;
-        let featureBarSize: number = (isHorizontal ? bulletChart.initialClipRect.height : bulletChart.initialClipRect.width) / dataCount;
+        const featureBarSize: number = (isHorizontal ? bulletChart.initialClipRect.height : bulletChart.initialClipRect.width) / dataCount;
         let bounds: IFeatureMeasureType;
         for (let i: number = 0; i < dataCount; i++) {
             data = bulletChart.dataSource[i];
@@ -151,7 +158,7 @@ export class ScaleGroup {
             }
             bounds = this.calculateFeatureMeasureBounds(data[bulletChart.valueField], categoryValue, isHorizontal);
             if (data && bulletChart.type === 'Dot') {
-                let value: number = data[bulletChart.valueField];
+                const value: number = data[bulletChart.valueField];
                 if (isHorizontal) {
                     bounds.pointX = bounds.pointX + (((value > 0) && !bulletChart.enableRtl) ||
                         ((value < 0) && bulletChart.enableRtl) ? (bounds.width) : 0) - dotWidth / 2;
@@ -161,20 +168,20 @@ export class ScaleGroup {
                 }
                 bounds.width = dotWidth;
             }
-// Drawing feature bar rect element
+            // Drawing feature bar rect element
             if (bounds) {
-                let svgRect: Element = isHorizontal ? this.featureBar(bounds.pointX, lPoint, bounds.width, i) :
-                this.verticalFeatureBar(lPoint, bounds.pointX, bounds.width, i);
+                const svgRect: Element = isHorizontal ? this.featureBar(bounds.pointX, lPoint, bounds.width, i) :
+                    this.verticalFeatureBar(lPoint, bounds.pointX, bounds.width, i);
                 featueGroup.appendChild(svgRect);
                 this.feature = svgRect as HTMLElement;
                 this.scaleSettingsGroup.appendChild(featueGroup);
                 this.featureBarBounds[i] = { x: bounds.pointX, y: lPoint, width: bounds.width, height: bulletChart.valueHeight };
-// Drawing category text element
+                // Drawing category text element
                 if (!isNullOrUndefined(categoryValue)) {
-                    let categoryTextSize : Size = measureText(categoryValue, bulletChart.categoryLabelStyle);
-                    let categorySize: number = isHorizontal ? categoryTextSize.width : categoryTextSize.height;
-                    let initialRect : Rect = bulletChart.initialClipRect;
-                    let x : number;
+                    const categoryTextSize: Size = measureText(categoryValue, bulletChart.categoryLabelStyle);
+                    const categorySize: number = isHorizontal ? categoryTextSize.width : categoryTextSize.height;
+                    const initialRect: Rect = bulletChart.initialClipRect;
+                    let x: number;
                     let categoryOptions: TextOption;
                     if (isHorizontal) {
                         x = (bulletChart.enableRtl) ? (initialRect.x + initialRect.width + padding + categorySize / 2) :
@@ -193,40 +200,40 @@ export class ScaleGroup {
                 }
             }
             if (bulletChart.animation.enable) {
-                this.doValueBarAnimation(this.scaleSettingsGroup);
+                this.doValueBarAnimation();
             }
         }
     }
     private featureBar(pointX: number, pointY: number, width: number, i: number): Element {
-        let featureBarOptions: RectOption = new RectOption(
+        const featureBarOptions: RectOption = new RectOption(
             this.bulletChart.svgObject.id + '_FeatureMeasure_' + i,
             this.bulletChart.valueFill,
             this.bulletChart.valueBorder,
             1,
             new Rect(pointX, pointY, width, this.bulletChart.valueHeight)
         );
-        let svgRect: Element = this.bulletChart.renderer.drawRectangle(featureBarOptions);
+        const svgRect: Element = this.bulletChart.renderer.drawRectangle(featureBarOptions);
         svgRect.setAttribute('class', this.bulletChart.svgObject.id + '_FeatureMeasure');
         svgRect.id = this.bulletChart.svgObject.id + '_FeatureMeasure_' + i;
         return svgRect;
     }
 
     private verticalFeatureBar(pointX: number, pointY: number, width: number, i: number): Element {
-        let featureBarOptions: RectOption = new RectOption(
+        const featureBarOptions: RectOption = new RectOption(
             this.bulletChart.svgObject.id + '_FeatureMeasure_' + i,
             this.bulletChart.valueFill,
             this.bulletChart.valueBorder,
             1,
             new Rect(pointX, pointY, this.bulletChart.valueHeight, width)
         );
-        let svgRect: Element = this.bulletChart.renderer.drawRectangle(featureBarOptions);
+        const svgRect: Element = this.bulletChart.renderer.drawRectangle(featureBarOptions);
         svgRect.setAttribute('class', this.bulletChart.svgObject.id + '_FeatureMeasure');
         svgRect.id = this.bulletChart.svgObject.id + '_FeatureMeasure_' + i;
         return svgRect;
     }
 
     private drawcategory(lPointX: number, lPointY: number, categoryValue: string): TextOption {
-        let categoryOptions: TextOption = {
+        const categoryOptions: TextOption = {
             'id': '',
             'anchor': 'middle',
             'x': lPointX,
@@ -241,7 +248,8 @@ export class ScaleGroup {
 
     /**
      * To render comparative symbol of the bulletChart chart
-     * @param dataCount
+     *
+     * @param {number} dataCount Data count value.
      */
     public renderComparativeSymbol(dataCount: number): void {
         if (dataCount === 0) {
@@ -250,27 +258,26 @@ export class ScaleGroup {
         this.renderCommonComparativeSymbol(dataCount, this.isHorizontal);
     }
     private renderCommonComparativeSymbol(dataCount: number, isHorizontal: boolean): void {
-        let bulletChart: BulletChart = this.bulletChart;
+        const bulletChart: BulletChart = this.bulletChart;
         let value: number;
-        let rect: Rect = bulletChart.initialClipRect;
-        let scaleLength: number = isHorizontal ? rect.width : rect.height;
+        const rect: Rect = bulletChart.initialClipRect;
+        const scaleLength: number = isHorizontal ? rect.width : rect.height;
         let y1: number;
         let y2: number;
         let x1: number;
-        let pointY: number = isHorizontal ? (rect.y + rect.height) : rect.x;
-        let comparativeGroup: Element = bulletChart.renderer.createGroup({ 'id': bulletChart.svgObject.id + '_comparativeGroup' });
-        let minimum: number = bulletChart.minimum;
-        let maximum: number = bulletChart.maximum;
-        let delta: number = maximum - minimum;
-        let targetWidth: number = bulletChart.targetWidth;
-        let pointX: number = isHorizontal ? (rect.x - (targetWidth / 2)) : (rect.y + rect.height);
+        const pointY: number = isHorizontal ? (rect.y + rect.height) : rect.x;
+        const comparativeGroup: Element = bulletChart.renderer.createGroup({ 'id': bulletChart.svgObject.id + '_comparativeGroup' });
+        const minimum: number = bulletChart.minimum;
+        const maximum: number = bulletChart.maximum;
+        const delta: number = maximum - minimum;
+        const targetWidth: number = bulletChart.targetWidth;
+        const pointX: number = isHorizontal ? (rect.x - (targetWidth / 2)) : (rect.y + rect.height);
         let temp: number;
-        let values : number[] = [];
-        let targetTypes: TargetType[] = bulletChart.targetTypes;
+        let values: number[] = [];
+        const targetTypes: TargetType[] = bulletChart.targetTypes;
         let targetType: TargetType = 'Rect';
-        let targetTypeLength: number = targetTypes.length;
-        let featureBarSize: number = (isHorizontal ? rect.height : rect.width) / dataCount;
-        let compareMeasureOptions: object;
+        const targetTypeLength: number = targetTypes.length;
+        const featureBarSize: number = (isHorizontal ? rect.height : rect.width) / dataCount;
         let svgElement: Element;
         for (let k: number = 0; k < dataCount; k++) {
             value = bulletChart.dataSource[k][bulletChart.targetField];
@@ -309,15 +316,15 @@ export class ScaleGroup {
         targetType: TargetType, isHorizontal: boolean, x1: number, y1: number, y2: number, value: number, k: number): Element {
         let shapeObject: object;
         let shapeElement: Element;
-        let bulletChart: BulletChart = this.bulletChart;
-        let strokeWidth: number = (targetType === 'Cross') ? bulletChart.targetWidth - 1 : 1;
-        let size: number = (targetType === 'Circle') ? bulletChart.targetWidth - 1 : bulletChart.targetWidth;
-        let lx: number = isHorizontal ? x1 + (size / 2) :  y1 + ((y2 - y1) / 2);
-        let ly: number = isHorizontal ? y1 + ((y2 - y1) / 2) : x1;
-        let id: string = bulletChart.svgObject.id + '_ComparativeMeasure_' + k;
-        let className: string = bulletChart.svgObject.id + '_ComparativeMeasure';
+        const bulletChart: BulletChart = this.bulletChart;
+        const strokeWidth: number = (targetType === 'Cross') ? bulletChart.targetWidth - 1 : 1;
+        const size: number = (targetType === 'Circle') ? bulletChart.targetWidth - 1 : bulletChart.targetWidth;
+        const lx: number = isHorizontal ? x1 + (size / 2) : y1 + ((y2 - y1) / 2);
+        const ly: number = isHorizontal ? y1 + ((y2 - y1) / 2) : x1;
+        const id: string = bulletChart.svgObject.id + '_ComparativeMeasure_' + k;
+        const className: string = bulletChart.svgObject.id + '_ComparativeMeasure';
         if (targetType === 'Rect') {
-            shapeObject = isHorizontal ? this.compareMeasure(x1, y1, y2, k, value) : this.compareVMeasure(y1, y2, x1, k, value);
+            shapeObject = isHorizontal ? this.compareMeasure(x1, y1, y2, k, value) : this.compareVMeasure(y1, y2, x1, k);
             shapeElement = bulletChart.renderer.drawLine(shapeObject);
         } else if (targetType === 'Circle') {
             shapeObject = new CircleOption(
@@ -325,8 +332,8 @@ export class ScaleGroup {
             );
             shapeElement = bulletChart.renderer.drawCircle(shapeObject);
         } else {
-            let crossDirection: string = 'M ' + (lx - size) + ' ' + (ly - size) + ' L ' + (lx + size) + ' ' + (ly + size) + ' M ' +
-            (lx - size) + ' ' + (ly + size) + ' L ' + (lx + size) + ' ' + (ly - size);
+            const crossDirection: string = 'M ' + (lx - size) + ' ' + (ly - size) + ' L ' + (lx + size) + ' ' + (ly + size) + ' M ' +
+                (lx - size) + ' ' + (ly + size) + ' L ' + (lx + size) + ' ' + (ly - size);
             shapeObject = new PathOption(id, 'transparent', strokeWidth, bulletChart.targetColor, 1, '', crossDirection);
             shapeElement = bulletChart.renderer.drawPath(shapeObject);
         }
@@ -334,8 +341,8 @@ export class ScaleGroup {
         return shapeElement;
     }
     private compareMeasure(x1: number, y1: number, y2: number, i: number, value: number): object {
-        let bulletChart: BulletChart = this.bulletChart;
-        let compareMeasureOptions: object = {
+        const bulletChart: BulletChart = this.bulletChart;
+        const compareMeasureOptions: object = {
             'class': bulletChart.svgObject.id + '_ComparativeMeasure',
             'id': bulletChart.svgObject.id + '_ComparativeMeasure_' + i,
             'x1': (value === bulletChart.maximum) ? x1 - (bulletChart.targetWidth / 2) :
@@ -349,9 +356,9 @@ export class ScaleGroup {
         };
         return compareMeasureOptions;
     }
-    private compareVMeasure(x1: number, x2: number, y1: number, i: number, value: number): object {
-        let bulletChart: BulletChart = this.bulletChart;
-        let compareMeasureOptions: object = {
+    private compareVMeasure(x1: number, x2: number, y1: number, i: number): object {
+        const bulletChart: BulletChart = this.bulletChart;
+        const compareMeasureOptions: object = {
             'class': bulletChart.svgObject.id + '_ComparativeMeasure',
             'id': bulletChart.svgObject.id + '_ComparativeMeasure_' + i,
             'x1': x1,
@@ -365,51 +372,54 @@ export class ScaleGroup {
     }
     /**
      * To calculate the bounds on vertical and horizontal orientation changes
-     * @param value
-     * @param categoryValue
+     *
+     * @param {number} value Value of the scale.
+     * @param {string} categoryValue Value of the category.
+     * @param {boolean} isHorizontal Boolean value.
+     * @returns {IFeatureMeasureType} calculateFeatureMeasureBounds
      */
     private calculateFeatureMeasureBounds(value: number, categoryValue: string, isHorizontal: boolean): IFeatureMeasureType {
-        let bulletChart: BulletChart  = this.bulletChart;
-        let min: number = bulletChart.minimum;
+        const bulletChart: BulletChart = this.bulletChart;
+        const min: number = bulletChart.minimum;
         value = (value < min && min < 0) ? min : value;
         if (value >= min) {
             let pointX: number;
             let lastPointX: number;
             let width: number;
-            let loc: number = isHorizontal ? bulletChart.initialClipRect.x : bulletChart.initialClipRect.y;
-            let scaleLength: number = isHorizontal ? bulletChart.initialClipRect.width : bulletChart.initialClipRect.height;
-            let delta: number = bulletChart.maximum - bulletChart.minimum;
-            let valueDiff: number = bulletChart.maximum - value;
-            let orientation: string = ((!bulletChart.enableRtl) ? 'forward' : 'backward') + this.scaleOrientation.toLowerCase();
+            const loc: number = isHorizontal ? bulletChart.initialClipRect.x : bulletChart.initialClipRect.y;
+            const scaleLength: number = isHorizontal ? bulletChart.initialClipRect.width : bulletChart.initialClipRect.height;
+            const delta: number = bulletChart.maximum - bulletChart.minimum;
+            const valueDiff: number = bulletChart.maximum - value;
+            const orientation: string = ((!bulletChart.enableRtl) ? 'forward' : 'backward') + this.scaleOrientation.toLowerCase();
             categoryValue = isNullOrUndefined(categoryValue) ? '' : categoryValue;
-            let stringLength: number = measureText(categoryValue.toString(), bulletChart.labelStyle).width;
+            const stringLength: number = measureText(categoryValue.toString(), bulletChart.labelStyle).width;
             switch (orientation) {
-                case 'forwardhorizontal':
-                case 'backwardvertical':
-                    pointX = loc + ((min > 0) ? 0 : scaleLength / delta * Math.abs(min));
-                    width = scaleLength / (delta / ((min > 0) ? delta - valueDiff : value));
-                    if (value < 0) {
-                        width = Math.abs(width);
-                        pointX -= width;
-                    }
-                    width = (pointX + width < loc + scaleLength) ? width : loc + scaleLength - pointX;
-                    lastPointX = loc - ((orientation === 'forwardhorizontal') ? (stringLength / 2 + 5) :
-                        this.labelOffset);
-                    break;
-                default:
-                    pointX = loc + (scaleLength - scaleLength / (delta / (delta - valueDiff)));
-                    width = (min > 0) ? scaleLength / (delta / (delta - valueDiff)) : scaleLength / (delta / (value));
-                    if (value < 0) {
-                        width = Math.abs(width);
-                        pointX -= width;
-                    }
-                    if (pointX < loc) {
-                        width = pointX + width - loc;
-                        pointX = loc;
-                    }
-                    lastPointX = loc + scaleLength + ((orientation === 'backwardhorizontal') ? (stringLength / 2 +
-                        5) : 5);
-                    break;
+            case 'forwardhorizontal':
+            case 'backwardvertical':
+                pointX = loc + ((min > 0) ? 0 : scaleLength / delta * Math.abs(min));
+                width = scaleLength / (delta / ((min > 0) ? delta - valueDiff : value));
+                if (value < 0) {
+                    width = Math.abs(width);
+                    pointX -= width;
+                }
+                width = (pointX + width < loc + scaleLength) ? width : loc + scaleLength - pointX;
+                lastPointX = loc - ((orientation === 'forwardhorizontal') ? (stringLength / 2 + 5) :
+                    this.labelOffset);
+                break;
+            default:
+                pointX = loc + (scaleLength - scaleLength / (delta / (delta - valueDiff)));
+                width = (min > 0) ? scaleLength / (delta / (delta - valueDiff)) : scaleLength / (delta / (value));
+                if (value < 0) {
+                    width = Math.abs(width);
+                    pointX -= width;
+                }
+                if (pointX < loc) {
+                    width = pointX + width - loc;
+                    pointX = loc;
+                }
+                lastPointX = loc + scaleLength + ((orientation === 'backwardhorizontal') ? (stringLength / 2 +
+                    5) : 5);
+                break;
             }
             return { pointX: pointX, width: width, lastPointX: lastPointX };
         }
@@ -418,22 +428,21 @@ export class ScaleGroup {
 
     /**
      * Animates the feature bar.
-     * @param  {FeatureBar} scale - Defines the feature bar to animate.
-     * @return {void}
+     *
+     * @returns {void}
      */
-
-    public doValueBarAnimation(scale: Element): void {
-        let valueBarElement: HTMLElement = this.feature;
+    public doValueBarAnimation(): void {
+        const valueBarElement: HTMLElement = this.feature;
         if (!valueBarElement) {
             return null;
         }
-        let animateOption: AnimationModel = this.bulletChart.animation;
-        let animateDuration: number = this.bulletChart.animateSeries ? this.bulletChart.animation.duration : animateOption.duration;
-        let effectType: Function = getAnimationFunction('Linear');
-        let isValuePlot: boolean = this.bulletChart.dataSource < 0;
+        const animateOption: AnimationModel = this.bulletChart.animation;
+        const animateDuration: number = this.bulletChart.animateSeries ? this.bulletChart.animation.duration : animateOption.duration;
+        const effectType: Function = getAnimationFunction('Linear');
+        const isValuePlot: boolean = this.bulletChart.dataSource < 0;
         let valueX: number;
         let valueY: number;
-        let elementBarHeight: number = valueBarElement.getBoundingClientRect().height;
+        const elementBarHeight: number = valueBarElement.getBoundingClientRect().height;
         let elementBarWidth: number = valueBarElement.getBoundingClientRect().width;
         let centerX: number;
         let centerY: number;
@@ -457,7 +466,7 @@ export class ScaleGroup {
                         ') scale(' + (valueActual / elementBarWidth) + ', 1) translate(' + (-centerX) + ' ' + (-centerY) + ')');
                 }
             },
-            end: (model: AnimationOptions) => {
+            end: () => {
                 valueBarElement.setAttribute('transform', 'translate(0,0)');
                 valueBarElement.style.visibility = 'visible';
             }
@@ -466,18 +475,16 @@ export class ScaleGroup {
     }
     /**
      * Animates the comparative bar.
-     * @param  {FeatureBar} scale - Defines the feature bar to animate.
-     * @return {void}
+     *
+     * @param {number} index Defines the feature bar to animate.
+     * @returns {void}
      */
-
-    public doTargetBarAnimation(index : number): void {
-        let targetBarelement: HTMLElement ;
-        let option: AnimationModel = this.bulletChart.animation;
+    public doTargetBarAnimation(index: number): void {
         let x: number;
         let y: number;
         let centerX: number;
         let centerY: number;
-        targetBarelement = (<HTMLElement>this.comparative[index]);
+        const targetBarelement: HTMLElement = (<HTMLElement>this.comparative[index]);
         if (!targetBarelement) {
             return null;
         }
@@ -489,31 +496,31 @@ export class ScaleGroup {
         }
         targetBarelement.style.visibility = 'hidden';
         this.animateRect(targetBarelement, centerX, centerY, index + 1);
-   }
+    }
 
-   private animateRect(targetBarelement : HTMLElement, centerX: number, centerY: number, index : number ) : void {
-    let effect: Function = getAnimationFunction('Linear');
-    let value: number;
-    let option: AnimationModel = this.bulletChart.animation;
-    let threshold : number = this.comparative.length;
-    let duration: number = this.bulletChart.animateSeries ? this.bulletChart.animation.duration : option.duration;
-    new Animation({}).animate(targetBarelement, {
-        duration: duration,
-        delay: option.delay,
-        progress: (args: AnimationOptions): void => {
-            if (args.timeStamp >= args.delay) {
-                targetBarelement.style.visibility = 'visible';
-                value = effect(args.timeStamp - args.delay, 0, 1, args.duration);
-                targetBarelement.setAttribute('transform', 'translate(' + centerX + ' ' + centerY / 2 +
-                    ') scale(1,' + (value) + ') translate(' + (-centerX) + ' ' + (-centerY / 2) + ')');
+    private animateRect(targetBarelement: HTMLElement, centerX: number, centerY: number, index: number): void {
+        const effect: Function = getAnimationFunction('Linear');
+        let value: number;
+        const option: AnimationModel = this.bulletChart.animation;
+        const threshold: number = this.comparative.length;
+        const duration: number = this.bulletChart.animateSeries ? this.bulletChart.animation.duration : option.duration;
+        new Animation({}).animate(targetBarelement, {
+            duration: duration,
+            delay: option.delay,
+            progress: (args: AnimationOptions): void => {
+                if (args.timeStamp >= args.delay) {
+                    targetBarelement.style.visibility = 'visible';
+                    value = effect(args.timeStamp - args.delay, 0, 1, args.duration);
+                    targetBarelement.setAttribute('transform', 'translate(' + centerX + ' ' + centerY / 2 +
+                        ') scale(1,' + (value) + ') translate(' + (-centerX) + ' ' + (-centerY / 2) + ')');
+                }
+            },
+            end: () => {
+                targetBarelement.setAttribute('transform', 'translate(0,0)');
+                if (index < threshold) {
+                    this.doTargetBarAnimation(index + 1);
+                }
             }
-        },
-        end: (model: AnimationOptions) => {
-            targetBarelement.setAttribute('transform', 'translate(0,0)');
-            if (index < threshold) {
-                this.doTargetBarAnimation(index + 1);
-            }
-        }
-     });
-   }
+        });
+    }
 }

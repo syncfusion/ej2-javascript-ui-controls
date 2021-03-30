@@ -5,6 +5,7 @@ import { ClickEventArgs } from '@syncfusion/ej2-navigations/src/toolbar';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * Toolbar Module for TreeGrid
+ *
  * @hidden
  */
 export class Toolbar {
@@ -17,7 +18,9 @@ export class Toolbar {
 
     /**
      * For internal use only - Get the module name.
+     *
      * @private
+     * @returns {string} - Returns Toolbar module name
      */
     private getModuleName(): string {
         return 'toolbar';
@@ -25,6 +28,7 @@ export class Toolbar {
 
     /**
      * @hidden
+     * @returns {void}
      */
     public addEventListener(): void {
         this.parent.on(events.rowSelected, this.refreshToolbar, this);
@@ -33,6 +37,7 @@ export class Toolbar {
 
     /**
      * @hidden
+     * @returns {void}
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -41,7 +46,7 @@ export class Toolbar {
     }
 
     private refreshToolbar(args: RowSelectEventArgs): void {
-        let tObj: TreeGrid = this.parent; let isParent: boolean;
+        const tObj: TreeGrid = this.parent;
         if ((args.row as HTMLTableRowElement).rowIndex === 0 || tObj.getSelectedRecords().length > 1) {
             this.enableItems([tObj.element.id + '_gridcontrol_indent', tObj.element.id + '_gridcontrol_outdent'], false);
         } else {
@@ -70,7 +75,7 @@ export class Toolbar {
         }
     }
     private toolbarClickHandler(args: ClickEventArgs): void {
-        let tObj: TreeGrid = this.parent;
+        const tObj: TreeGrid = this.parent;
         if (this.parent.editSettings.mode === 'Cell' && this.parent.grid.editSettings.mode === 'Batch' &&
             args.item.id === this.parent.grid.element.id + '_update') {
             args.cancel = true;
@@ -83,7 +88,7 @@ export class Toolbar {
             this.parent.collapseAll();
         }
         if (args.item.id === tObj.grid.element.id + '_indent' && tObj.getSelectedRecords().length) {
-            let record: ITreeData = tObj.getCurrentViewRecords()[tObj.getSelectedRowIndexes()[0] - 1];
+            const record: ITreeData = tObj.getCurrentViewRecords()[tObj.getSelectedRowIndexes()[0] - 1];
             let dropIndex: number;
             if (record.level > (tObj.getSelectedRecords()[0] as ITreeData).level) {
                 for (let i: number = 0; i < tObj.getCurrentViewRecords().length; i++) {
@@ -97,8 +102,8 @@ export class Toolbar {
             tObj.reorderRows([tObj.getSelectedRowIndexes()[0]], dropIndex, 'child');
         }
         if (args.item.id === tObj.grid.element.id + '_outdent' && tObj.getSelectedRecords().length) {
-            let index: number = tObj.getSelectedRowIndexes()[0];
-            let dropIndex: number; let parentItem: ITreeData = (tObj.getSelectedRecords()[0] as ITreeData).parentItem;
+            const index: number = tObj.getSelectedRowIndexes()[0];
+            let dropIndex: number; const parentItem: ITreeData = (tObj.getSelectedRecords()[0] as ITreeData).parentItem;
             for (let i: number = 0; i < tObj.getCurrentViewRecords().length; i++) {
                 if ((tObj.getCurrentViewRecords()[i] as ITreeData).taskData === parentItem.taskData) {
                     dropIndex = i;
@@ -109,7 +114,8 @@ export class Toolbar {
     }
     /**
      * Gets the toolbar of the TreeGrid.
-     * @return {Element}
+     *
+     * @returns {Element} - Returns Toolbar element
      * @hidden
      */
     public getToolbar(): Element {
@@ -118,9 +124,10 @@ export class Toolbar {
 
     /**
      * Enables or disables ToolBar items.
+     *
      * @param {string[]} items - Defines the collection of itemID of ToolBar items.
      * @param {boolean} isEnable - Defines the items to be enabled or disabled.
-     * @return {void}
+     * @returns {void}
      * @hidden
      */
     public enableItems(items: string[], isEnable: boolean): void {
@@ -129,8 +136,9 @@ export class Toolbar {
 
     /**
      * Destroys the ToolBar.
+     *
      * @method destroy
-     * @return {void}
+     * @returns {void}
      */
     public destroy(): void {
         this.removeEventListener();

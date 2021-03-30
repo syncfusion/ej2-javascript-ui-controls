@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * types
  */
@@ -5,23 +6,22 @@
 /**
  * An enum that denotes the view mode of the Scheduler.
  */
-export type View = 'Day' | 'Week' | 'WorkWeek' | 'Month' | 'Year' | 'Agenda' | 'MonthAgenda' | 'TimelineDay' | 'TimelineWeek' |
-    'TimelineWorkWeek' | 'TimelineMonth' | 'TimelineYear';
+export type View = 'Day' | 'Week' | 'WorkWeek' | 'Month' | 'Year' | 'Agenda' | 'MonthAgenda' | 'TimelineDay' | 'TimelineWeek' | 'TimelineWorkWeek' | 'TimelineMonth' | 'TimelineYear';
 
 /**
  * An enum that holds the actions available in scheduler.
  */
-export type CurrentAction = 'Add' | 'Save' | 'Delete' | 'DeleteOccurrence' | 'DeleteSeries' | 'EditOccurrence'
-    | 'EditSeries' | 'EditFollowingEvents' | 'DeleteFollowingEvents';
+export type CurrentAction = 'Add' | 'Save' | 'Delete' | 'DeleteOccurrence' | 'DeleteSeries' | 'EditOccurrence' | 'EditSeries' | 'EditFollowingEvents' | 'DeleteFollowingEvents';
 
-/** @deprecated */
-export type ReturnType = { result: Object[], count: number, aggregates?: Object };
+/**
+ * An enum that holds the options for success result.
+ */
+export type ReturnType = { result: Record<string, any>[], count: number, aggregates?: Record<string, any> };
 
 /**
  * An enum that holds the available popup types in the scheduler.
  */
-export type PopupType = 'Editor' | 'EventContainer' | 'QuickInfo' | 'RecurrenceAlert' | 'DeleteAlert' | 'ViewEventInfo' | 'EditEventInfo' |
-    'ValidationAlert' | 'RecurrenceValidationAlert';
+export type PopupType = 'Editor' | 'EventContainer' | 'QuickInfo' | 'RecurrenceAlert' | 'DeleteAlert' | 'ViewEventInfo' | 'EditEventInfo' | 'ValidationAlert' | 'RecurrenceValidationAlert';
 
 /**
  * An enum that holds the header row type in the timeline scheduler.
@@ -40,6 +40,6 @@ export type ExcelFormat = 'csv' | 'xlsx';
  */
 export type TemplateType = 'Both' | 'Cell' | 'Event';
 /**
- * An enum that holds the type week options available in scheduler.
+ * An enum that holds the different type of week number options in the scheduler.
  */
 export type WeekRule = 'FirstDay' | 'FirstFourDayWeek' | 'FirstFullWeek';

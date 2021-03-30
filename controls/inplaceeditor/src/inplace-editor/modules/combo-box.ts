@@ -11,7 +11,7 @@ export class ComboBox implements IComponent {
     protected parent: InPlaceEditor;
     public compObj: EJ2ComboBox = undefined;
 
-    constructor(parent?: InPlaceEditor) {
+    public constructor(parent?: InPlaceEditor) {
         this.parent = parent;
         this.parent.comboBoxModule = this;
         this.base = new Base(this.parent, this);
@@ -28,12 +28,23 @@ export class ComboBox implements IComponent {
 
     /**
      * @hidden
+     * @returns {void}
      */
     public showPopup(): void {
         this.compObj.focusIn();
         this.compObj.showPopup();
     }
 
+    /**
+     * Destroys the module.
+     * 
+     * @function destroy
+     * @returns {void}
+     * @hidden
+     */
+    public destroy(): void {
+        this.base.destroy();
+    }
     public updateValue(e: NotifyParams): void {
         if (this.compObj && e.type === 'ComboBox') {
             this.parent.setProperties({ value: this.compObj.value }, true);
@@ -42,17 +53,9 @@ export class ComboBox implements IComponent {
     }
 
     /**
-     * Destroys the module.
-     * @method destroy
-     * @return {void}
-     * @hidden
-     */
-    public destroy(): void {
-        this.base.destroy();
-    }
-
-    /**
      * For internal use only - Get the module name.
+     * 
+     * @returns {string} - returns the string
      */
     private getModuleName(): string {
         return 'combo-box';

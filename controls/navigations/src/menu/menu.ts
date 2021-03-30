@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/triple-slash-reference */
+/* eslint-disable @typescript-eslint/ban-types */
 /// <reference path='../common/menu-base-model.d.ts'/>
 import { attributes, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
 import { Browser, Complex, getUniqueID, SanitizeHtmlHelper  } from '@syncfusion/ej2-base';
@@ -37,20 +39,23 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
 
     /**
      * Specified the orientation of Menu whether it can be horizontal or vertical.
+     *
      * @default 'Horizontal'
      */
-     @Property('Horizontal')
-     public orientation: Orientation;
+    @Property('Horizontal')
+    public orientation: Orientation;
 
     /**
      * Specifies target element to open/close Menu while click in Hamburger mode.
-     * @default ''  
+     *
+     * @default ''
      */
     @Property('')
     public target: string;
 
     /**
      * Specifies the template for Menu item.
+     *
      * @default null
      */
     @Property(null)
@@ -58,6 +63,7 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
 
     /**
      * Specifies whether to enable / disable the scrollable option in Menu.
+     *
      * @default false
      */
     @Property(false)
@@ -65,6 +71,7 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
 
     /**
      * Specifies whether to enable / disable the hamburger mode in Menu.
+     *
      * @default false
      */
     @Property(false)
@@ -72,6 +79,7 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
 
     /**
      * Specifies the title text for hamburger mode in Menu.
+     *
      * @default 'Menu'
      */
     @Property('Menu')
@@ -79,6 +87,7 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
 
     /**
      * Defines whether to allow the cross-scripting site or not.
+     *
      * @default false
      */
     @Property(false)
@@ -86,16 +95,20 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
 
     /**
      * Specifies mapping fields from the dataSource.
+     *
      * @default { itemId: "id", text: "text", parentId: "parentId", iconCss: "iconCss", url: "url", separator: "separator",
      * children: "items" }
      */
-	// tslint:disable-next-line
-    @Complex<FieldSettingsModel>({ itemId: "id", text: "text", parentId: "parentId", iconCss: "iconCss", url: "url", separator: "separator", children: "items" }, FieldSettings)
+    // eslint:disable-next-line
+    @Complex<FieldSettingsModel>({ itemId: 'id', text: 'text', parentId: 'parentId', iconCss: 'iconCss', url: 'url', separator: 'separator', children: 'items' }, FieldSettings)
     public fields: FieldSettingsModel;
 
     /**
      * Constructor for creating the component.
+     *
      * @private
+     * @param {MenuModel} options - Specifies the menu model
+     * @param {string} element - Specifies the element
      */
     constructor(options?: MenuModel, element?: string | HTMLUListElement) {
         super(options, <HTMLUListElement | string>element);
@@ -103,8 +116,9 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
 
     /**
      * Get module name.
-     * @returns string
+     *
      * @private
+     * @returns {string} - Module Name
      */
     protected getModuleName(): string {
         return 'menu';
@@ -112,7 +126,9 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
 
     /**
      * For internal use only - prerender processing.
+     *
      * @private
+     * @returns {void}
      */
     protected preRender(): void {
         this.isMenu = true;
@@ -163,16 +179,17 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
     }
 
     /**
-     * Called internally if any of the property value changed
+     * Called internally if any of the property value changed.
+     *
      * @private
-     * @param {MenuModel} newProp
-     * @param {MenuModel} oldProp
-     * @returns void
+     * @param {MenuModel} newProp - Specifies the new properties.
+     * @param {MenuModel} oldProp - Specifies the old properties.
+     * @returns {void}
      */
     public onPropertyChanged(newProp: MenuModel, oldProp: MenuModel): void {
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'orientation':
+            case 'orientation':
                 if (newProp.orientation === 'Vertical') {
                     this.element.classList.add(VMENU);
                     if (this.hamburgerMode) {
@@ -189,56 +206,56 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
                     this.element.removeAttribute('aria-orientation');
                 }
                 break;
-                case 'items':
-                    if (!Object.keys(oldProp.items).length) { this.updateMenuItems(newProp.items); }
-                    break;
-                case 'hamburgerMode':
-                    if (!this.element.previousElementSibling) {
-                        super.createHeaderContainer();
-                    }
-                    if (newProp.hamburgerMode) {
-                        this.element.parentElement.classList.add(HAMBURGER);
-                        [].slice.call(this.element.getElementsByClassName('e-blankicon')).forEach((li: HTMLElement): void => {
-                            li.style[this.enableRtl ? 'paddingRight' : 'paddingLeft'] = '';
-                        });
-                    } else {
-                        this.element.parentElement.classList.remove(HAMBURGER);
-                        if (this.orientation === 'Vertical') { this.setBlankIconStyle(this.element); }
-                    }
-                    if (this.orientation === 'Vertical') {
-                        if (!this.target) { this.element.previousElementSibling.classList.add(VMENU); }
-                        this.element.classList.remove('e-hide-menu');
-                    } else {
-                        if (this.target) {
-                            this.element.previousElementSibling.classList.add(VMENU);
-                        } else {
-                            this.element.previousElementSibling.classList.remove(VMENU);
-                        }
-                        this.element.classList[newProp.hamburgerMode ? 'add' : 'remove']('e-hide-menu');
-                    }
-                    break;
-                case 'title':
-                    if (this.hamburgerMode && this.element.previousElementSibling) {
-                        newProp.title = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(newProp.title) : newProp.title;
-                        this.element.previousElementSibling.querySelector('.e-menu-title').innerHTML = newProp.title;
-                    }
+            case 'items':
+                if (!Object.keys(oldProp.items).length) { this.updateMenuItems(newProp.items); }
                 break;
-                case 'target':
-                    if (this.hamburgerMode) {
-                        this.unWireEvents(oldProp.target);
-                        this.wireEvents();
-                        if (this.orientation === 'Horizontal') {
-                            if (!newProp.target) {
-                                if (!this.element.previousElementSibling) {
-                                    super.createHeaderContainer();
-                                }
-                                this.element.previousElementSibling.classList.remove(VMENU);
-                            } else {
-                                this.element.previousElementSibling.classList.add(VMENU);
-                            }
-                            this.element.classList.add('e-hide-menu');
-                        }
+            case 'hamburgerMode':
+                if (!this.element.previousElementSibling) {
+                    super.createHeaderContainer();
+                }
+                if (newProp.hamburgerMode) {
+                    this.element.parentElement.classList.add(HAMBURGER);
+                    [].slice.call(this.element.getElementsByClassName('e-blankicon')).forEach((li: HTMLElement): void => {
+                        li.style[this.enableRtl ? 'paddingRight' : 'paddingLeft'] = '';
+                    });
+                } else {
+                    this.element.parentElement.classList.remove(HAMBURGER);
+                    if (this.orientation === 'Vertical') { this.setBlankIconStyle(this.element); }
+                }
+                if (this.orientation === 'Vertical') {
+                    if (!this.target) { this.element.previousElementSibling.classList.add(VMENU); }
+                    this.element.classList.remove('e-hide-menu');
+                } else {
+                    if (this.target) {
+                        this.element.previousElementSibling.classList.add(VMENU);
+                    } else {
+                        this.element.previousElementSibling.classList.remove(VMENU);
                     }
+                    this.element.classList[newProp.hamburgerMode ? 'add' : 'remove']('e-hide-menu');
+                }
+                break;
+            case 'title':
+                if (this.hamburgerMode && this.element.previousElementSibling) {
+                    newProp.title = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(newProp.title) : newProp.title;
+                    this.element.previousElementSibling.querySelector('.e-menu-title').innerHTML = newProp.title;
+                }
+                break;
+            case 'target':
+                if (this.hamburgerMode) {
+                    this.unWireEvents(oldProp.target);
+                    this.wireEvents();
+                    if (this.orientation === 'Horizontal') {
+                        if (!newProp.target) {
+                            if (!this.element.previousElementSibling) {
+                                super.createHeaderContainer();
+                            }
+                            this.element.previousElementSibling.classList.remove(VMENU);
+                        } else {
+                            this.element.previousElementSibling.classList.add(VMENU);
+                        }
+                        this.element.classList.add('e-hide-menu');
+                    }
+                }
                 break;
             }
         }
@@ -246,11 +263,10 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
     }
 
     private createMenuItems(item: obj): void {
-        let pIdField: string;
         let idx: number[];
         let i: number;
         let items: MenuItemModel[] = this.items as objColl;
-        pIdField = this.getField('parentId');
+        const pIdField: string = this.getField('parentId');
         if (item[pIdField]) {
             idx = this.getIndex(item[pIdField].toString(), true);
             for (i = 0; i < idx.length; i++) {
@@ -267,8 +283,9 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
 
     /**
      * This method is used to open the Menu in hamburger mode.
+     *
      * @method open
-     * @returns void
+     * @returns {void}
      */
     public open(): void {
         super.openHamburgerMenu();
@@ -276,6 +293,8 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
 
     /**
      * Closes the Menu if it is opened in hamburger mode.
+     *
+     * @returns {void}
      */
     public close(): void {
         super.closeHamburgerMenu();

@@ -2,7 +2,7 @@ import { Ajax } from '@syncfusion/ej2-base';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataUtil, Aggregates, Group } from './util';
 import { Query } from './query';
-import { ODataAdaptor, JsonAdaptor, CacheAdaptor, RemoteSaveAdaptor, RemoteOptions, AjaxAdaptor } from './adaptors';
+import { ODataAdaptor, JsonAdaptor, CacheAdaptor, RemoteSaveAdaptor, RemoteOptions, CustomDataAdaptor } from './adaptors';
 /**
  * DataManager is used to manage and manipulate relational data. 
  */
@@ -69,7 +69,7 @@ export class DataManager {
                 jsonp: dataSource.jsonp,
                 dataType: dataSource.dataType,
                 offline: dataSource.offline !== undefined ? dataSource.offline
-                    : dataSource.adaptor instanceof RemoteSaveAdaptor || dataSource.adaptor instanceof AjaxAdaptor ?
+                    : dataSource.adaptor instanceof RemoteSaveAdaptor || dataSource.adaptor instanceof CustomDataAdaptor ?
                         false : dataSource.url ? false : true,
                 requiresFormat: dataSource.requiresFormat
             };
@@ -187,11 +187,11 @@ export class DataManager {
         let args: Object = { query: query };
 
         if (!this.dataSource.offline && (this.dataSource.url !== undefined && this.dataSource.url !== '')
-            || (!isNullOrUndefined(this.adaptor[makeRequest])) || this.isAjaxAdaptor(this.adaptor)) {
+            || (!isNullOrUndefined(this.adaptor[makeRequest])) || this.isCustomDataAdaptor(this.adaptor)) {
             let result: ReturnOption = this.adaptor.processQuery(this, query);
             if (!isNullOrUndefined(this.adaptor[makeRequest])) {
                 this.adaptor[makeRequest](result, deffered, args, <Query>query);
-            } else if (!isNullOrUndefined(result.url) || this.isAjaxAdaptor(this.adaptor)) {
+            } else if (!isNullOrUndefined(result.url) || this.isCustomDataAdaptor(this.adaptor)) {
                 this.makeRequest(result, deffered, args, <Query>query);
             } else {
                 args = DataManager.getDeferedArgs(<Query>query, result as ReturnOption, args as ReturnOption);
@@ -225,7 +225,7 @@ export class DataManager {
         return args;
     }
     private static nextTick(fn: Function): void {
-        (window.setImmediate || window.setTimeout)(fn, 0);
+        ((window as any).setImmediate || window.setTimeout)(fn, 0);
     }
     private extendRequest(url: Object, fnSuccess: Function, fnFail: Function): Object {
         return extend(
@@ -281,7 +281,7 @@ export class DataManager {
             return childReq;
         };
         let fnSuccess: Function = (data: string | Object, request: Ajax) => {
-            if (this.isAjaxAdaptor(this.adaptor)) {
+            if (this.isCustomDataAdaptor(this.adaptor)) {
                 request = extend({}, this.ajaxReqOption, request) as Ajax;
             }
             if (request.httpRequest.getResponseHeader('Content-Type').indexOf('xml') === -1 && this.dateParse) {
@@ -307,7 +307,7 @@ export class DataManager {
             }
         };
         let req: Object = this.extendRequest(url, fnSuccess, fnFail);
-        if (!this.isAjaxAdaptor(this.adaptor)) {
+        if (!this.isCustomDataAdaptor(this.adaptor)) {
             let ajax: Ajax = new Ajax(req);
             ajax.beforeSend = () => {
                 this.beforeSend(ajax.httpRequest, ajax);
@@ -402,7 +402,7 @@ export class DataManager {
 
         if (!isNullOrUndefined(this.adaptor[doAjaxRequest])) {
             return this.adaptor[doAjaxRequest](req);
-        } else if (!this.isAjaxAdaptor(this.adaptor)) {
+        } else if (!this.isCustomDataAdaptor(this.adaptor)) {
             let deff: Deferred = new Deferred();
             let ajax: Ajax = new Ajax(req);
             ajax.beforeSend = () => {
@@ -511,13 +511,13 @@ export class DataManager {
         }
     }
 
-    private isAjaxAdaptor(dataSource: AdaptorOptions): boolean {
+    private isCustomDataAdaptor(dataSource: AdaptorOptions): boolean {
         return (<{ getModuleName?: Function }>this.adaptor).getModuleName &&
-            (<{ getModuleName?: Function }>this.adaptor).getModuleName() === 'AjaxAdaptor';
+            (<{ getModuleName?: Function }>this.adaptor).getModuleName() === 'CustomDataAdaptor';
     }
 
     private successFunc(record: string | Object, request: Ajax): void {
-        if (this.isAjaxAdaptor(this.adaptor)) {
+        if (this.isCustomDataAdaptor(this.adaptor)) {
             request = extend({}, this.ajaxReqOption, request) as Ajax;
         }
         try {
@@ -544,7 +544,7 @@ export class DataManager {
             res);
         this.ajaxDeffered = new Deferred();
 
-        if (!this.isAjaxAdaptor(this.adaptor)) {
+        if (!this.isCustomDataAdaptor(this.adaptor)) {
             let ajax: Ajax = new Ajax(res);
 
             ajax.beforeSend = () => {

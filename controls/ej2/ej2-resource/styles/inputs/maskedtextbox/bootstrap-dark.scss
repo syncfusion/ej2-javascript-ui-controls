@@ -1,0 +1,54 @@
+
+//default 
+$mask-error-color: $brand-danger-dark !default;
+$mask-font-family: Arial, $font-family !default;
+$mask-font-size: 13px !default;
+$mask-bigger-font-size: 14px !default;
+//enddefault
+
+@include export-module('maskedtextbox-layout') {
+  /*! maskedtextbox layout */
+  .e-control-wrapper.e-mask #{&}.e-maskedtextbox {
+    @if $skin-name != 'bootstrap' {
+      font-family: $mask-font-family;
+      font-size: $mask-font-size;
+       }
+    }
+
+  .e-bigger .e-control-wrapper.e-mask #{&}.e-maskedtextbox {
+    @if $skin-name != 'bootstrap' {
+      font-size: $mask-bigger-font-size;
+        }
+     }
+
+  .e-control-wrapper.e-mask.e-bigger #{&}.e-maskedtextbox {
+    @if $skin-name != 'bootstrap' {
+      font-size: $mask-bigger-font-size;
+        }
+     }
+
+  .e-content-placeholder.e-mask.e-placeholder-mask {
+    background-size: 300px 33px;
+    min-height: 33px;
+  }
+
+  .e-bigger .e-content-placeholder.e-mask.e-placeholder-mask,
+  .e-bigger.e-content-placeholder.e-mask.e-placeholder-mask {
+    background-size: 300px 40px;
+    min-height: 40px;
+  }
+}
+@include export-module('maskedit-theme') {
+  /*! maskedtextbox theme */
+  .e-control-wrapper.e-mask.e-error #{&}.e-maskedtextbox {
+    @if $skin-name != 'bootstrap' {
+      color: $mask-error-color;
+      }
+    }
+
+  .e-utility-mask.e-error {
+    @if $skin-name != 'bootstrap' {
+      color: $mask-error-color;
+      }
+    }
+}

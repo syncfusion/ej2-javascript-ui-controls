@@ -1,4 +1,4 @@
-[![npm](http://ej2.syncfusion.com/github-badges?package=@syncfusion/ej2-kanban)](https://www.npmjs.com/package/@syncfusion/ej2-kanban)&nbsp;&nbsp;[![coverage](http://ej2.syncfusion.com/badges/ej2-kanban/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-kanban)
+[![coverage](http://ej2.syncfusion.com/badges/ej2-kanban/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-kanban)
 
 # ej2-kanban
 

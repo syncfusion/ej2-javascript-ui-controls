@@ -10,6 +10,7 @@ import { IHtmlUndoRedoData } from '../../editor-manager/base/interface';
 import { NodeSelection } from '../../selection/selection';
 /**
  * Formatter
+ * 
  * @hidden
  * @deprecated
  */
@@ -18,16 +19,18 @@ export class Formatter {
     private timeInterval: number;
     /**
      * To execute the command
-     * @param  {IRichTextEditor} self
-     * @param  {ActionBeginEventArgs} args
-     * @param  {MouseEvent|KeyboardEvent} event
-     * @param  {IItemCollectionArgs} value
+     *
+     * @param  {IRichTextEditor} self - specifies the self element.
+     * @param  {ActionBeginEventArgs} args - specifies the event arguments.
+     * @param  {MouseEvent|KeyboardEvent} event - specifies the keyboard event.
+     * @param  {IItemCollectionArgs} value - specifies the collection arguments
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public process(self: IRichTextEditor, args: ActionBeginEventArgs, event: MouseEvent | KeyboardEvent, value: IItemCollectionArgs): void {
-        let selection: Selection = self.contentModule.getDocument().getSelection();
-        let range: Range = (selection.rangeCount > 0) ? selection.getRangeAt(selection.rangeCount - 1) : null;
+        const selection: Selection = self.contentModule.getDocument().getSelection();
+        const range: Range = (selection.rangeCount > 0) ? selection.getRangeAt(selection.rangeCount - 1) : null;
         let saveSelection: NodeSelection;
         if (self.editorMode === 'HTML') {
             saveSelection = this.editorManager.nodeSelection.save(range, self.contentModule.getDocument());
@@ -46,16 +49,18 @@ export class Formatter {
             return;
         }
         if (isNullOrUndefined(args)) {
-            let action: string = (event as KeyboardEventArgs).action;
+            const action: string = (event as KeyboardEventArgs).action;
             if (action !== 'tab' && action !== 'enter' && action !== 'space' && action !== 'escape') {
                 args = {};
                 if (self.editorMode === 'Markdown' && action === 'insert-table') {
-                    value = <{}>{
+                    // eslint-disable-next-line
+                    value  = <{}>{
                         'headingText': self.localeObj.getConstant('TableHeadingText'),
                         'colText': self.localeObj.getConstant('TableColText')
                     };
                 }
-                let items: object = {
+                // eslint-disable-next-line
+                const items: object = {
                     originalEvent: event, cancel: false,
                     requestType: action || ((event as KeyboardEventArgs).key + 'Key'),
                     itemCollection: value
@@ -73,8 +78,8 @@ export class Formatter {
                     }
                 });
             }
-            let isTableModule : boolean = isNullOrUndefined(self.tableModule) ? true : self.tableModule ?
-             self.tableModule.ensureInsideTableList : false;
+            const isTableModule : boolean = isNullOrUndefined(self.tableModule) ? true : self.tableModule ?
+                self.tableModule.ensureInsideTableList : false;
             if ((event.which === 9 && isTableModule) || event.which !== 9) {
                 this.editorManager.observer.notify((event.type === 'keydown' ? KEY_DOWN : KEY_UP), {
                     event: event,
@@ -99,7 +104,7 @@ export class Formatter {
                     if (self.editorMode === 'HTML') {
                         saveSelection.restore();
                     }
-                    let command: string = actionBeginArgs.item.subCommand.toLocaleLowerCase();
+                    const command: string = actionBeginArgs.item.subCommand.toLocaleLowerCase();
                     if (command === 'paste' || command === 'cut' || command === 'copy') {
                         self.clipboardAction(command, event);
                     } else {
@@ -110,7 +115,7 @@ export class Formatter {
                             event, this.onSuccess.bind(this, self),
                             (actionBeginArgs.item as IDropDownItemModel).value,
                             actionBeginArgs.item.subCommand === 'Pre' && args.name === 'dropDownSelect' ?
-                            { name: args.name } : value,
+                                { name: args.name } : value,
                             ('#' + self.getID() + ' iframe')
                         );
                     }
@@ -127,6 +132,10 @@ export class Formatter {
     }
     /**
      * onKeyHandler method
+     *
+     * @param {IRichTextEditor} self - specifies the self element.
+     * @param {KeyboardEvent} e - specifies the keyboard event.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -140,6 +149,10 @@ export class Formatter {
     }
     /**
      * onSuccess method
+     *
+     * @param {IRichTextEditor} self - specifies the self element.
+     * @param {IMarkdownFormatterCallBack} events - specifies the event call back
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -152,7 +165,7 @@ export class Formatter {
         self.trigger(CONSTANT.actionComplete, events, (callbackArgs: IMarkdownFormatterCallBack | IHtmlFormatterCallBack) => {
             self.setPlaceHolder();
             if (callbackArgs.requestType === 'Images' || callbackArgs.requestType === 'Links' && self.editorMode === 'HTML') {
-                let args: IHtmlFormatterCallBack = callbackArgs as IHtmlFormatterCallBack;
+                const args: IHtmlFormatterCallBack = callbackArgs as IHtmlFormatterCallBack;
                 if (callbackArgs.requestType === 'Links' && callbackArgs.event &&
                     (callbackArgs.event as KeyboardEvent).type === 'keydown' &&
                     (callbackArgs.event as KeyboardEvent).keyCode === 32) {
@@ -168,6 +181,9 @@ export class Formatter {
     }
     /**
      * Save the data for undo and redo action.
+     *
+     * @param {KeyboardEvent} e - specifies the keyboard event.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -177,6 +193,8 @@ export class Formatter {
 
     /**
      * getUndoStatus method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -184,22 +202,30 @@ export class Formatter {
         return this.editorManager.undoRedoManager.getUndoStatus();
     }
 
+    /* eslint-disable */
     /**
      * getUndoRedoStack method
+     *
+     * @param {IHtmlUndoRedoData}  - specifies the redo data.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
+    /* eslint-enable */
     public getUndoRedoStack(): IHtmlUndoRedoData[] | MarkdownUndoRedoData[] {
         return this.editorManager.undoRedoManager.undoRedoStack;
     }
 
     /**
      * enableUndo method
+     *
+     * @param {IRichTextEditor} self - specifies the self element.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public enableUndo(self: IRichTextEditor): void {
-        let status: { [key: string]: boolean } = this.getUndoStatus();
+        const status: { [key: string]: boolean } = this.getUndoStatus();
         if (self.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             updateUndoRedoStatus(self.quickToolbarModule.inlineQTBar.quickTBarObj, status);
             self.trigger(CONSTANT.toolbarStatusUpdate, status);

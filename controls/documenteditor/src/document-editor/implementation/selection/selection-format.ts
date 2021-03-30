@@ -18,6 +18,7 @@ import { WAbstractList } from '../list/abstract-list';
 import { WListLevel } from '../list/list-level';
 import { WLevelOverride } from '../list/level-override';
 import { Dictionary } from '../../base/dictionary';
+/* eslint-disable */
 /**
  * Selection character format implementation
  */
@@ -66,6 +67,7 @@ export class SelectionCharacterFormat {
     public styleName: string;
     /**
      * Gets the font size of selected contents.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -74,6 +76,7 @@ export class SelectionCharacterFormat {
     }
     /**
      * Sets the font size of selected contents.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -86,6 +89,7 @@ export class SelectionCharacterFormat {
     }
     /**
      * Gets or sets the font family of selected contents.
+     *
      * @aspType string
      * @blazorType string
      */
@@ -94,6 +98,7 @@ export class SelectionCharacterFormat {
     }
     /**
      * Sets the font family of selected contents.
+     *
      * @aspType string
      * @blazorType string
      */
@@ -106,6 +111,7 @@ export class SelectionCharacterFormat {
     }
     /**
      * Gets or sets the font color of selected contents.
+     *
      * @aspType string
      * @blazorType string
      */
@@ -114,6 +120,7 @@ export class SelectionCharacterFormat {
     }
     /**
      * Sets the font color of selected contents.
+     *
      * @aspType string
      * @blazorType string
      */
@@ -126,6 +133,7 @@ export class SelectionCharacterFormat {
     }
     /**
      * Gets or sets the bold formatting of selected contents.
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -134,6 +142,7 @@ export class SelectionCharacterFormat {
     }
     /**
      * Sets the bold formatting of selected contents.
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -146,6 +155,7 @@ export class SelectionCharacterFormat {
     }
     /**
      * Gets or sets the italic formatting of selected contents.
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -154,6 +164,7 @@ export class SelectionCharacterFormat {
     }
     /**
      * Sets the italic formatting of selected contents.
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -230,6 +241,7 @@ export class SelectionCharacterFormat {
     }
     /**
      * Gets or sets the allCaps formatting of selected contents.
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -238,6 +250,7 @@ export class SelectionCharacterFormat {
     }
     /**
      * Sets the allCaps formatting of selected contents.
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -249,6 +262,7 @@ export class SelectionCharacterFormat {
         this.notifyPropertyChanged('allCaps');
     }
     /**
+     * @param selection
      * @private
      */
     constructor(selection: Selection) {
@@ -256,45 +270,45 @@ export class SelectionCharacterFormat {
     }
     private getPropertyValue(property: string): Object {
         switch (property) {
-            case 'bold':
-                return this.bold;
-            case 'italic':
-                return this.italic;
-            case 'fontSize':
-                if (this.fontSize >= 1) {
-                    return this.fontSize;
-                }
-                return undefined;
-            case 'fontFamily':
-                return this.fontFamily;
-            case 'strikethrough':
-                return this.strikethrough;
-            case 'baselineAlignment':
-                return this.baselineAlignment;
-            case 'highlightColor':
-                return this.highlightColor;
-            case 'underline':
-                return this.underline;
-            case 'fontColor':
-                return this.fontColor;
-            case 'allCaps':
-                return this.allCaps;
-            default:
-                return undefined;
+        case 'bold':
+            return this.bold;
+        case 'italic':
+            return this.italic;
+        case 'fontSize':
+            if (this.fontSize >= 1) {
+                return this.fontSize;
+            }
+            return undefined;
+        case 'fontFamily':
+            return this.fontFamily;
+        case 'strikethrough':
+            return this.strikethrough;
+        case 'baselineAlignment':
+            return this.baselineAlignment;
+        case 'highlightColor':
+            return this.highlightColor;
+        case 'underline':
+            return this.underline;
+        case 'fontColor':
+            return this.fontColor;
+        case 'allCaps':
+            return this.allCaps;
+        default:
+            return undefined;
         }
     }
     /**
      * Notifies whenever property gets changed.
-     * @param  {string} propertyName
+     *
+     * @param {string} propertyName
      */
     private notifyPropertyChanged(propertyName: string): void {
-        // tslint:disable-next-line:max-line-length
         if (!isNullOrUndefined(this.selection) && (this.selection.isCleared || (this.selection.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) ||
             !this.selection.owner.isDocumentLoaded || this.selection.owner.isPastingContent) && !this.selection.isRetrieveFormatting) {
             return;
         }
         if (!isNullOrUndefined(this.selection) && !isNullOrUndefined(this.selection.start) && !this.selection.isRetrieveFormatting) {
-            let propertyValue: Object = this.getPropertyValue(propertyName);
+            const propertyValue: Object = this.getPropertyValue(propertyName);
             if (!isNullOrUndefined(propertyValue)) {
                 this.selection.owner.editorModule.onApplyCharacterFormat(propertyName, propertyValue);
             }
@@ -302,8 +316,9 @@ export class SelectionCharacterFormat {
     }
     /**
      * Copies the source format.
-     * @param  {WCharacterFormat} format
-     * @returns void
+     *
+     * @param {WCharacterFormat} format
+     * @returns {void}
      * @private
      */
     public copyFormat(format: WCharacterFormat): void {
@@ -327,7 +342,8 @@ export class SelectionCharacterFormat {
     }
     /**
      * Combines the format.
-     * @param  {WCharacterFormat} format
+     *
+     * @param {WCharacterFormat} format
      * @private
      */
     public combineFormat(format: WCharacterFormat): void {
@@ -382,8 +398,9 @@ export class SelectionCharacterFormat {
     }
     /**
      * Clones the format.
-     * @param  {SelectionCharacterFormat} selectionCharacterFormat
-     * @returns void
+     *
+     * @param {SelectionCharacterFormat} selectionCharacterFormat
+     * @returns {void}
      * @private
      */
     public cloneFormat(selectionCharacterFormat: SelectionCharacterFormat): void {
@@ -407,7 +424,8 @@ export class SelectionCharacterFormat {
     }
     /**
      * Checks whether current format is equal to the source format or not.
-     * @param  {SelectionCharacterFormat} format
+     *
+     * @param {SelectionCharacterFormat} format
      * @returns boolean
      * @private
      */
@@ -426,7 +444,8 @@ export class SelectionCharacterFormat {
     }
     /**
      * Clears the format.
-     * @returns void
+     *
+     * @returns {void}
      * @private
      */
     public clearFormat(): void {
@@ -450,7 +469,8 @@ export class SelectionCharacterFormat {
     }
     /**
      * Destroys the maintained resources.
-     * @returns void
+     *
+     * @returns {void}
      * @private
      */
     public destroy(): void {
@@ -503,6 +523,7 @@ export class SelectionParagraphFormat {
     public styleName: string;
     /**
      * Gets or Sets the left indent for selected paragraphs.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -512,6 +533,7 @@ export class SelectionParagraphFormat {
     }
     /**
      * Sets the left indent for selected paragraphs.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -525,6 +547,7 @@ export class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the right indent for selected paragraphs.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -534,6 +557,7 @@ export class SelectionParagraphFormat {
     }
     /**
      * Sets the right indent for selected paragraphs.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -547,6 +571,7 @@ export class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the first line indent for selected paragraphs.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -556,6 +581,7 @@ export class SelectionParagraphFormat {
     }
     /**
      * Sets the first line indent for selected paragraphs.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -569,6 +595,7 @@ export class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the text alignment for selected paragraphs.
+     *
      * @default undefined
      */
     public get textAlignment(): TextAlignment {
@@ -576,6 +603,7 @@ export class SelectionParagraphFormat {
     }
     /**
      * Sets the text alignment for selected paragraphs.
+     *
      * @default undefined
      */
     public set textAlignment(value: TextAlignment) {
@@ -587,6 +615,7 @@ export class SelectionParagraphFormat {
     }
     /**
      * Sets the after spacing for selected paragraphs.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -596,6 +625,7 @@ export class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the after spacing for selected paragraphs.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -609,6 +639,7 @@ export class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the before spacing for selected paragraphs.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -618,6 +649,7 @@ export class SelectionParagraphFormat {
     }
     /**
      * Sets the before spacing for selected paragraphs.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -631,6 +663,7 @@ export class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the line spacing for selected paragraphs.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -640,6 +673,7 @@ export class SelectionParagraphFormat {
     }
     /**
      * Sets the line spacing for selected paragraphs.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -653,6 +687,7 @@ export class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the line spacing type for selected paragraphs.
+     *
      * @default undefined
      */
     public get lineSpacingType(): LineSpacingType {
@@ -660,6 +695,7 @@ export class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the line spacing type for selected paragraphs.
+     *
      * @default undefined
      */
     public set lineSpacingType(value: LineSpacingType) {
@@ -671,6 +707,7 @@ export class SelectionParagraphFormat {
     }
     /**
      * Sets the list level number for selected paragraphs.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -680,6 +717,7 @@ export class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the list level number for selected paragraphs.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -693,6 +731,7 @@ export class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the bidirectional property for selected paragraphs
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -701,6 +740,7 @@ export class SelectionParagraphFormat {
     }
     /**
      * Sets the bidirectional property for selected paragraphs
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -710,6 +750,7 @@ export class SelectionParagraphFormat {
     }
     /**
      * Gets or sets a value indicating whether to add space between the paragraphs of same style.
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -718,6 +759,7 @@ export class SelectionParagraphFormat {
     }
     /**
      * Sets a value indicating whether to add space between the paragraphs of same style.
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -734,25 +776,26 @@ export class SelectionParagraphFormat {
 
     /**
      * Gets the list text for selected paragraphs.
+     *
      * @aspType string
      * @blazorType string
      */
     public get listText(): string {
         let listFormat: string = undefined;
-        let list: WList = this.documentHelper.getListById(this.listId);
+        const list: WList = this.documentHelper.getListById(this.listId);
         if (list instanceof WList && this.listLevelNumberIn > -1 && this.listLevelNumberIn < 9) {
-            let listLevel: WListLevel = list.getListLevel(this.listLevelNumber);
+            const listLevel: WListLevel = list.getListLevel(this.listLevelNumber);
             if (listLevel instanceof WListLevel) {
                 if (listLevel.listLevelPattern === 'Bullet') {
                     listFormat = listLevel.numberFormat;
                 } else {
                     listFormat = listLevel.numberFormat;
                     for (let i: number = 0; i < 9; i++) {
-                        let levelPattern: string = '%' + (i + 1);
+                        const levelPattern: string = '%' + (i + 1);
                         if (listFormat.indexOf(levelPattern) > -1) {
-                            let level: WListLevel = i === this.listLevelNumberIn ? listLevel : list.getListLevel(i);
-                            let listTextElement: ListTextElementBox = this.selection.getListTextElementBox(this.selection.start.paragraph);
-                            let listText: string = listTextElement ? listTextElement.text : '';
+                            const level: WListLevel = i === this.listLevelNumberIn ? listLevel : list.getListLevel(i);
+                            const listTextElement: ListTextElementBox = this.selection.getListTextElementBox(this.selection.start.paragraph);
+                            const listText: string = listTextElement ? listTextElement.text : '';
                             listFormat = listText;
                         }
                     }
@@ -762,6 +805,8 @@ export class SelectionParagraphFormat {
         return listFormat;
     }
     /**
+     * @param selection
+     * @param documentHelper
      * @private
      */
     constructor(selection: Selection, documentHelper: DocumentHelper) {
@@ -771,33 +816,34 @@ export class SelectionParagraphFormat {
 
     private getPropertyValue(property: string): Object {
         switch (property) {
-            case 'leftIndent':
-                return this.leftIndent;
-            case 'rightIndent':
-                return this.rightIndent;
-            case 'firstLineIndent':
-                return this.firstLineIndent;
-            case 'beforeSpacing':
-                return this.beforeSpacing;
-            case 'afterSpacing':
-                return this.afterSpacing;
-            case 'textAlignment':
-                return this.textAlignment;
-            case 'lineSpacing':
-                return this.lineSpacing;
-            case 'lineSpacingType':
-                return this.lineSpacingType;
-            case 'bidi':
-                return this.bidi;
-            case 'contextualSpacing':
-                return this.contextualSpacing;
-            default:
-                return undefined;
+        case 'leftIndent':
+            return this.leftIndent;
+        case 'rightIndent':
+            return this.rightIndent;
+        case 'firstLineIndent':
+            return this.firstLineIndent;
+        case 'beforeSpacing':
+            return this.beforeSpacing;
+        case 'afterSpacing':
+            return this.afterSpacing;
+        case 'textAlignment':
+            return this.textAlignment;
+        case 'lineSpacing':
+            return this.lineSpacing;
+        case 'lineSpacingType':
+            return this.lineSpacingType;
+        case 'bidi':
+            return this.bidi;
+        case 'contextualSpacing':
+            return this.contextualSpacing;
+        default:
+            return undefined;
         }
     }
     /**
      * Notifies whenever the property gets changed.
-     * @param  {string} propertyName
+     *
+     * @param {string} propertyName
      */
     private notifyPropertyChanged(propertyName: string): void {
         if (!isNullOrUndefined(this.selection) &&
@@ -806,14 +852,14 @@ export class SelectionParagraphFormat {
             return;
         }
         if (!isNullOrUndefined(this.selection) && !isNullOrUndefined(this.selection.start) && !this.selection.isRetrieveFormatting) {
-            let editorModule: Editor = this.selection.owner.editorModule;
+            const editorModule: Editor = this.selection.owner.editorModule;
             if (propertyName === 'lineSpacing' || propertyName === 'lineSpacingType') {
-                let editorHistory: EditorHistory = this.selection.owner.editorHistory;
+                const editorHistory: EditorHistory = this.selection.owner.editorHistory;
                 if (!(editorHistory && (editorHistory.isUndoing || editorHistory.isRedoing)) && this.validateLineSpacing()) {
                     this.selection.owner.editorHistory.initComplexHistory(this.selection, 'LineSpacing');
                     if (propertyName === 'lineSpacing') {
                         this.lineSpacingTypeIn = 'Multiple';
-                        let value: Object = this.getPropertyValue('lineSpacingType');
+                        const value: Object = this.getPropertyValue('lineSpacingType');
                         editorModule.onApplyParagraphFormat('lineSpacingType', value, false, false);
                         editorModule.onApplyParagraphFormat(propertyName, this.getPropertyValue(propertyName), false, false);
                     } else {
@@ -825,7 +871,7 @@ export class SelectionParagraphFormat {
                     return;
                 }
             }
-            let value: Object = this.getPropertyValue(propertyName);
+            const value: Object = this.getPropertyValue(propertyName);
             if ((propertyName === 'leftIndent' || propertyName === 'rightIndent' || propertyName === 'firstLineIndent')
                 && !(value >= -1056 && value < 1056)) {
                 return;
@@ -839,8 +885,9 @@ export class SelectionParagraphFormat {
     }
     /**
      * Copies the format.
-     * @param  {WParagraphFormat} format
-     * @returns void
+     *
+     * @param {WParagraphFormat} format
+     * @returns {void}
      * @private
      */
     public copyFormat(format: WParagraphFormat): void {
@@ -865,7 +912,8 @@ export class SelectionParagraphFormat {
     }
     /**
      * Copies to format.
-     * @param  {WParagraphFormat} format
+     *
+     * @param {WParagraphFormat} format
      * @private
      */
     public copyToFormat(format: WParagraphFormat): void {
@@ -906,7 +954,8 @@ export class SelectionParagraphFormat {
     }
     /**
      * Combines the format.
-     * @param  {WParagraphFormat} format
+     *
+     * @param {WParagraphFormat} format
      * @private
      */
     public combineFormat(format: WParagraphFormat): void {
@@ -934,11 +983,9 @@ export class SelectionParagraphFormat {
         if (!isNullOrUndefined(this.textAlignment) && this.textAlignment !== format.textAlignment) {
             this.textAlignment = undefined;
         }
-        // tslint:disable-next-line:max-line-length
         if (this.listLevelNumber >= 0 && !isNullOrUndefined(this.listId) && (isNullOrUndefined(format.listFormat) || format.listFormat.listLevelNumber !== this.listLevelNumber)) {
             this.listLevelNumber = -1;
         }
-        // tslint:disable-next-line:max-line-length
         if (isNullOrUndefined(format.listFormat) || isNullOrUndefined(format.listFormat.listId) || (!isNullOrUndefined(this.listId) && this.listId !== format.listFormat.listId)) {
             this.listId = undefined;
         }
@@ -954,7 +1001,8 @@ export class SelectionParagraphFormat {
     }
     /**
      * Clears the format.
-     * @returns void
+     *
+     * @returns {void}
      * @private
      */
     public clearFormat(): void {
@@ -974,19 +1022,20 @@ export class SelectionParagraphFormat {
     }
     /**
      * Gets the clone of list at current selection.
+     *
      * @returns WList
      * @private
      */
     public getList(): WList {
-        let list: WList = this.documentHelper.getListById(this.listId);
+        const list: WList = this.documentHelper.getListById(this.listId);
         if (!isNullOrUndefined(list)) {
-            let listAdv: WList = new WList();
-            let abstractList: WAbstractList = new WAbstractList();
-            let currentAbstractList: WAbstractList = this.documentHelper.getAbstractListById(list.abstractListId);
-            let editor: Editor = this.selection.owner.editorModule;
+            const listAdv: WList = new WList();
+            const abstractList: WAbstractList = new WAbstractList();
+            const currentAbstractList: WAbstractList = this.documentHelper.getAbstractListById(list.abstractListId);
+            const editor: Editor = this.selection.owner.editorModule;
             if (!isNullOrUndefined(currentAbstractList)) {
                 for (let i: number = 0; i < currentAbstractList.levels.length; i++) {
-                    let level: WListLevel = editor.cloneListLevel(currentAbstractList.levels[i]);
+                    const level: WListLevel = editor.cloneListLevel(currentAbstractList.levels[i]);
                     abstractList.levels.push(level);
                     level.ownerBase = abstractList;
                 }
@@ -995,7 +1044,7 @@ export class SelectionParagraphFormat {
             }
             if (!isNullOrUndefined(list.levelOverrides)) {
                 for (let i: number = 0; i < list.levelOverrides.length; i++) {
-                    let levelOverride: WLevelOverride = editor.cloneLevelOverride(list.levelOverrides[i]);
+                    const levelOverride: WLevelOverride = editor.cloneLevelOverride(list.levelOverrides[i]);
                     listAdv.levelOverrides.push(levelOverride);
                 }
             }
@@ -1008,21 +1057,21 @@ export class SelectionParagraphFormat {
     }
     /**
      * Modifies the list at current selection.
-     * @param  {WList} listAdv
+     *
+     * @param {WList} listAdv
      * @private
      */
     public setList(listAdv: WList): void {
-        // tslint:disable-next-line:max-line-length
         if ((this.documentHelper.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) || !this.documentHelper.owner.isDocumentLoaded) {
             return;
         }
-        let list: WList = this.documentHelper.getListById(this.listId);
+        const list: WList = this.documentHelper.getListById(this.listId);
         let collection: Dictionary<number, ModifiedLevel> = undefined;
-        let currentAbstractList: WAbstractList = listAdv ? this.documentHelper.getAbstractListById(listAdv.abstractListId) : undefined;
+        const currentAbstractList: WAbstractList = listAdv ? this.documentHelper.getAbstractListById(listAdv.abstractListId) : undefined;
         if (!isNullOrUndefined(list) && !isNullOrUndefined(listAdv)
             && !isNullOrUndefined(currentAbstractList) && listAdv.sourceListId === list.listId) {
-            let history: EditorHistory = this.documentHelper.owner.editorHistory;
-            let listLevel: WListLevel = this.documentHelper.layout.getListLevel(list, 1);
+            const history: EditorHistory = this.documentHelper.owner.editorHistory;
+            const listLevel: WListLevel = this.documentHelper.layout.getListLevel(list, 1);
             this.selection.owner.isLayoutEnabled = false;
             this.documentHelper.owner.editorModule.setOffsetValue(this.selection);
             if (history) {
@@ -1062,7 +1111,8 @@ export class SelectionParagraphFormat {
     }
     /**
      * Destroys the managed resources.
-     * @returns void
+     *
+     * @returns {void}
      * @private
      */
     public destroy(): void {
@@ -1114,6 +1164,7 @@ export class SelectionSectionFormat {
     public bidi: boolean = undefined;
     /**
      * Gets or sets the page height.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -1122,6 +1173,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page height.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -1131,6 +1183,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page width.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -1139,6 +1192,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page width.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -1148,6 +1202,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page left margin.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -1156,6 +1211,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page left margin.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -1165,6 +1221,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page bottom margin.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -1173,6 +1230,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page bottom margin.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -1182,6 +1240,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page top margin.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -1190,6 +1249,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page top margin.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -1199,6 +1259,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page right margin.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -1207,6 +1268,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page right margin.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -1216,6 +1278,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the header distance.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -1224,6 +1287,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the header distance.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -1233,6 +1297,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the starting page number.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -1241,6 +1306,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the starting page number.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -1250,6 +1316,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets a value indicating whether to restart page numbering.
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -1258,6 +1325,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets a value indicating whether to restart page numbering.
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -1267,6 +1335,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the footer distance.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -1275,6 +1344,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the footer distance.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -1284,6 +1354,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets a value indicating whether the section has different first page.
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -1292,6 +1363,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets a value indicating whether the section has different first page.
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -1301,6 +1373,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets a value indicating whether the section has different odd and even page.
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -1309,6 +1382,7 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets a value indicating whether the section has different odd and even page.
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -1396,6 +1470,7 @@ export class SelectionSectionFormat {
         this.notifyPropertyChanged('restartIndexForEndnotes');
     }
     /**
+     * @param selection
      * @private
      */
     constructor(selection: Selection) {
@@ -1403,8 +1478,9 @@ export class SelectionSectionFormat {
     }
     /**
      * Copies the format.
-     * @param  {WSectionFormat} format
-     * @returns void
+     *
+     * @param {WSectionFormat} format
+     * @returns {void}
      * @private
      */
     public copyFormat(format: WSectionFormat): void {
@@ -1429,14 +1505,14 @@ export class SelectionSectionFormat {
         this.initialFootNoteNumber = format.initialFootNoteNumber;
     }
     private notifyPropertyChanged(propertyName: string): void {
-        let selection: Selection = this.selection;
+        const selection: Selection = this.selection;
         if (!isNullOrUndefined(selection) && (selection.isCleared || selection.owner.isPastingContent
             || selection.owner.isReadOnlyMode || !selection.owner.isDocumentLoaded)
             && !selection.isRetrieveFormatting) {
             return;
         }
         if (!isNullOrUndefined(selection) && !isNullOrUndefined(selection.start) && !selection.isRetrieveFormatting) {
-            let value: Object = this.getPropertyvalue(propertyName);
+            const value: Object = this.getPropertyvalue(propertyName);
             if (!isNullOrUndefined(value)) {
                 selection.owner.editorModule.onApplySectionFormat(propertyName, value);
             }
@@ -1444,79 +1520,80 @@ export class SelectionSectionFormat {
     }
     private getPropertyvalue(propertyName: string): Object {
         switch (propertyName) {
-            case 'pageHeight':
-                if (this.pageHeight > 0) {
-                    return this.pageHeight;
-                }
-                return undefined;
-            case 'pageWidth':
-                if (this.pageWidth > 0) {
-                    return this.pageWidth;
-                }
-                return undefined;
-            case 'leftMargin':
-                if (this.leftMargin >= 0) {
-                    return this.leftMargin;
-                }
-                return undefined;
-            case 'rightMargin':
-                if (this.rightMargin >= 0) {
-                    return this.rightMargin;
-                }
-                return undefined;
-            case 'topMargin':
-                if (this.topMargin >= 0) {
-                    return this.topMargin;
-                }
-                return undefined;
-            case 'bottomMargin':
-                if (this.bottomMargin >= 0) {
-                    return this.bottomMargin;
-                }
-                return undefined;
-            case 'differentFirstPage':
-                if (!isNullOrUndefined(this.differentFirstPage)) {
-                    return this.differentFirstPage;
-                }
-                return undefined;
-            case 'differentOddAndEvenPages':
-                if (!isNullOrUndefined(this.differentOddAndEvenPages)) {
-                    return this.differentOddAndEvenPages;
-                }
-                return undefined;
-            case 'headerDistance':
-                return this.headerDistanceIn;
-            case 'footerDistance':
-                return this.footerDistance;
-            case 'pageStartingNumber':
-                if (!isNullOrUndefined(this.pageStartingNumber)) {
-                    return this.pageStartingNumber;
-                }
-                return undefined;
-            case 'restartPageNumbering':
-                if (!isNullOrUndefined(this.restartPageNumbering)) {
-                    return this.restartPageNumbering;
-                }
-                return undefined;
-            case 'endnoteNumberFormat':
-                return this.endnoteNumberFormatIn;
-            case 'restartIndexForEndnotes':
-                return this.restartIndexForEndnotesIn;
-            case 'restartIndexForFootnotes':
-                return this.restartIndexForFootnotesIn;
-            case 'footNoteNumberFormat':
-                return this.footNoteNumberFormatIn;
-            case 'initialFootNoteNumber':
-                return this.initialFootNoteNumber;
-            case 'initialEndNoteNumber':
-                return this.initialEndNoteNumber;
-            default:
-                return undefined;
+        case 'pageHeight':
+            if (this.pageHeight > 0) {
+                return this.pageHeight;
+            }
+            return undefined;
+        case 'pageWidth':
+            if (this.pageWidth > 0) {
+                return this.pageWidth;
+            }
+            return undefined;
+        case 'leftMargin':
+            if (this.leftMargin >= 0) {
+                return this.leftMargin;
+            }
+            return undefined;
+        case 'rightMargin':
+            if (this.rightMargin >= 0) {
+                return this.rightMargin;
+            }
+            return undefined;
+        case 'topMargin':
+            if (this.topMargin >= 0) {
+                return this.topMargin;
+            }
+            return undefined;
+        case 'bottomMargin':
+            if (this.bottomMargin >= 0) {
+                return this.bottomMargin;
+            }
+            return undefined;
+        case 'differentFirstPage':
+            if (!isNullOrUndefined(this.differentFirstPage)) {
+                return this.differentFirstPage;
+            }
+            return undefined;
+        case 'differentOddAndEvenPages':
+            if (!isNullOrUndefined(this.differentOddAndEvenPages)) {
+                return this.differentOddAndEvenPages;
+            }
+            return undefined;
+        case 'headerDistance':
+            return this.headerDistanceIn;
+        case 'footerDistance':
+            return this.footerDistance;
+        case 'pageStartingNumber':
+            if (!isNullOrUndefined(this.pageStartingNumber)) {
+                return this.pageStartingNumber;
+            }
+            return undefined;
+        case 'restartPageNumbering':
+            if (!isNullOrUndefined(this.restartPageNumbering)) {
+                return this.restartPageNumbering;
+            }
+            return undefined;
+        case 'endnoteNumberFormat':
+            return this.endnoteNumberFormatIn;
+        case 'restartIndexForEndnotes':
+            return this.restartIndexForEndnotesIn;
+        case 'restartIndexForFootnotes':
+            return this.restartIndexForFootnotesIn;
+        case 'footNoteNumberFormat':
+            return this.footNoteNumberFormatIn;
+        case 'initialFootNoteNumber':
+            return this.initialFootNoteNumber;
+        case 'initialEndNoteNumber':
+            return this.initialEndNoteNumber;
+        default:
+            return undefined;
         }
     }
     /**
      * Combines the format.
-     * @param  {WSectionFormat} format
+     *
+     * @param {WSectionFormat} format
      * @private
      */
     public combineFormat(format: WSectionFormat): void {
@@ -1580,7 +1657,8 @@ export class SelectionSectionFormat {
     }
     /**
      * Clears the format.
-     * @returns void
+     *
+     * @returns {void}
      * @private
      */
     public clearFormat(): void {
@@ -1606,7 +1684,8 @@ export class SelectionSectionFormat {
     }
     /**
      * Destroys the managed resources.
-     * @returns void
+     *
+     * @returns {void}
      * @private
      */
     public destroy(): void {
@@ -1651,6 +1730,7 @@ export class SelectionTableFormat {
     private bidiIn: boolean = undefined;
     /**
      * Gets or sets the table.
+     *
      * @private
      */
     get table(): TableWidget {
@@ -1661,6 +1741,7 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the left indent for selected table.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -1669,6 +1750,7 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the left indent for selected table.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -1681,6 +1763,7 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the default top margin of cell for selected table.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -1690,6 +1773,7 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the default top margin of cell for selected table.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -1703,6 +1787,7 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the background for selected table.
+     *
      * @default undefined
      * @aspType string
      * @blazorType string
@@ -1712,6 +1797,7 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the background for selected table.
+     *
      * @default undefined
      * @aspType string
      * @blazorType string
@@ -1725,6 +1811,7 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the table alignment for selected table.
+     *
      * @default undefined
      */
     public get tableAlignment(): TableAlignment {
@@ -1732,6 +1819,7 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the table alignment for selected table.
+     *
      * @default undefined
      */
     public set tableAlignment(value: TableAlignment) {
@@ -1743,6 +1831,7 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the default left margin of cell for selected table.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -1752,6 +1841,7 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the default left margin of cell for selected table.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -1765,6 +1855,7 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the default bottom margin of cell for selected table.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -1774,6 +1865,7 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the default bottom margin of cell for selected table.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -1787,6 +1879,7 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the cell spacing for selected table.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -1796,6 +1889,7 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the cell spacing for selected table.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -1809,6 +1903,7 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the default right margin of cell for selected table.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -1818,6 +1913,7 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the default right margin of cell for selected table.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -1831,6 +1927,7 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the preferred width for selected table.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -1840,6 +1937,7 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the preferred width for selected table.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
@@ -1853,6 +1951,7 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the preferred width type for selected table.
+     *
      * @default undefined
      */
     public get preferredWidthType(): WidthType {
@@ -1860,6 +1959,7 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the preferred width type for selected table.
+     *
      * @default undefined
      */
     public set preferredWidthType(value: WidthType) {
@@ -1871,6 +1971,7 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or sets the bidi property
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -1879,6 +1980,7 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or sets the bidi property
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -1887,6 +1989,7 @@ export class SelectionTableFormat {
         this.notifyPropertyChanged('bidi');
     }
     /**
+     * @param selection
      * @private
      */
     constructor(selection: Selection) {
@@ -1894,32 +1997,32 @@ export class SelectionTableFormat {
     }
     private getPropertyValue(propertyName: string): Object {
         switch (propertyName) {
-            case 'tableAlignment':
-                return this.tableAlignment;
-            case 'leftIndent':
-                return this.leftIndent;
-            case 'cellSpacing':
-                return this.cellSpacing;
-            case 'leftMargin':
-                return this.leftMargin;
-            case 'rightMargin':
-                return this.rightMargin;
-            case 'topMargin':
-                return this.topMargin;
-            case 'bottomMargin':
-                return this.bottomMargin;
-            case 'background':
-                let shading: WShading = new WShading();
-                shading.backgroundColor = this.background;
-                return shading;
-            case 'preferredWidth':
-                return this.preferredWidth;
-            case 'preferredWidthType':
-                return this.preferredWidthType;
-            case 'bidi':
-                return this.bidi;
-            default:
-                return undefined;
+        case 'tableAlignment':
+            return this.tableAlignment;
+        case 'leftIndent':
+            return this.leftIndent;
+        case 'cellSpacing':
+            return this.cellSpacing;
+        case 'leftMargin':
+            return this.leftMargin;
+        case 'rightMargin':
+            return this.rightMargin;
+        case 'topMargin':
+            return this.topMargin;
+        case 'bottomMargin':
+            return this.bottomMargin;
+        case 'background':
+            const shading: WShading = new WShading();
+            shading.backgroundColor = this.background;
+            return shading;
+        case 'preferredWidth':
+            return this.preferredWidth;
+        case 'preferredWidthType':
+            return this.preferredWidthType;
+        case 'bidi':
+            return this.bidi;
+        default:
+            return undefined;
         }
     }
     private notifyPropertyChanged(propertyName: string): void {
@@ -1929,7 +2032,7 @@ export class SelectionTableFormat {
             return;
         }
         if (!isNullOrUndefined(this.selection) && !isNullOrUndefined(this.selection.start) && !this.selection.isRetrieveFormatting) {
-            let value: Object = this.getPropertyValue(propertyName);
+            const value: Object = this.getPropertyValue(propertyName);
             if (propertyName === 'background') {
                 propertyName = 'shading';
             }
@@ -1940,8 +2043,9 @@ export class SelectionTableFormat {
     }
     /**
      * Copies the format.
-     * @param  {WTableFormat} format Format to copy.
-     * @returns void
+     *
+     * @param {WTableFormat} format Format to copy.
+     * @returns {void}
      * @private
      */
     public copyFormat(format: WTableFormat): void {
@@ -1959,7 +2063,8 @@ export class SelectionTableFormat {
     }
     /**
      * Clears the format.
-     * @returns void
+     *
+     * @returns {void}
      * @private
      */
     public clearFormat(): void {
@@ -1977,7 +2082,8 @@ export class SelectionTableFormat {
     }
     /**
      * Destroys the managed resources.
-     * @returns void
+     *
+     * @returns {void}
      * @private
      */
     public destroy(): void {
@@ -2010,6 +2116,7 @@ export class SelectionCellFormat {
     private preferredWidthTypeIn: WidthType = undefined;
     /**
      * Gets or sets the vertical alignment of the selected cells.
+     *
      * @default undefined
      */
     public get verticalAlignment(): CellVerticalAlignment {
@@ -2017,6 +2124,7 @@ export class SelectionCellFormat {
     }
     /**
      * Gets or sets the vertical alignment of the selected cells.
+     *
      * @default undefined
      */
     public set verticalAlignment(value: CellVerticalAlignment) {
@@ -2028,11 +2136,12 @@ export class SelectionCellFormat {
     }
     /**
      * Gets or Sets the left margin for selected cells.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
      */
-    /* tslint:disable */
+    /* eslint-disable */
     public get leftMargin(): number {
         return this.leftMarginIn;
     }
@@ -2130,7 +2239,7 @@ export class SelectionCellFormat {
      * @aspType string
      * @blazorType string
      */
-    /* tslint:enable */
+
     public set background(value: string) {
         if (value === this.backgroundIn) {
             return;
@@ -2138,7 +2247,6 @@ export class SelectionCellFormat {
         this.backgroundIn = value;
         this.notifyPropertyChanged('background');
     }
-    /* tslint:disable */
     /**
      * Gets or Sets the preferred width type for selected cells.
      * @default undefined
@@ -2185,16 +2293,16 @@ export class SelectionCellFormat {
     constructor(selection: Selection) {
         this.selection = selection;
     }
-    /* tslint:enable */
+
     private notifyPropertyChanged(propertyName: string): void {
-        let selection: Selection = this.selection;
+        const selection: Selection = this.selection;
         if (!isNullOrUndefined(selection)) {
             if ((selection.isCleared || !selection.owner.isDocumentLoaded
                 || selection.owner.isReadOnlyMode || selection.owner.isPastingContent) && !selection.isRetrieveFormatting) {
                 return;
             }
             if (!isNullOrUndefined(this.selection.start) && !this.selection.isRetrieveFormatting) {
-                let value: Object = this.getPropertyValue(propertyName);
+                const value: Object = this.getPropertyValue(propertyName);
                 if (propertyName === 'background') {
                     propertyName = 'shading';
                 }
@@ -2206,33 +2314,34 @@ export class SelectionCellFormat {
     }
     private getPropertyValue(propertyName: string): Object {
         switch (propertyName) {
-            case 'verticalAlignment':
-                return this.verticalAlignment;
-            case 'leftMargin':
-                return this.leftMargin;
-            case 'rightMargin':
-                return this.rightMargin;
-            case 'topMargin':
-                return this.topMargin;
-            case 'bottomMargin':
-                return this.bottomMargin;
-            case 'preferredWidth':
-                return this.preferredWidth;
-            case 'preferredWidthType':
-                return this.preferredWidthType;
-            case 'background':
-                let shading: WShading = new WShading();
-                shading.backgroundColor = this.background;
-                return shading;
-            default:
-                return undefined;
+        case 'verticalAlignment':
+            return this.verticalAlignment;
+        case 'leftMargin':
+            return this.leftMargin;
+        case 'rightMargin':
+            return this.rightMargin;
+        case 'topMargin':
+            return this.topMargin;
+        case 'bottomMargin':
+            return this.bottomMargin;
+        case 'preferredWidth':
+            return this.preferredWidth;
+        case 'preferredWidthType':
+            return this.preferredWidthType;
+        case 'background':
+            const shading: WShading = new WShading();
+            shading.backgroundColor = this.background;
+            return shading;
+        default:
+            return undefined;
         }
     }
     /**
      * Copies the format.
-     * @param  {WCellFormat} format Source Format to copy.
-     * @returns void
+     *
      * @private
+     * @param {WCellFormat} format - Source Format to copy.
+     * @returns {void}
      */
     public copyFormat(format: WCellFormat): void {
         this.leftMargin = format.leftMargin;
@@ -2246,8 +2355,9 @@ export class SelectionCellFormat {
     }
     /**
      * Clears the format.
-     * @returns void
+     *
      * @private
+     * @returns {void}
      */
     public clearCellFormat(): void {
         this.leftMargin = undefined;
@@ -2259,7 +2369,8 @@ export class SelectionCellFormat {
     }
     /**
      * Combines the format.
-     * @param  {WCellFormat} format 
+     *
+     * @param {WCellFormat} format - Returns cell format
      * @private
      */
     public combineFormat(format: WCellFormat): void {
@@ -2290,8 +2401,9 @@ export class SelectionCellFormat {
     }
     /**
      * Clears the format.
-     * @returns void
+     *
      * @private
+     * @returns {void}
      */
     public clearFormat(): void {
         this.background = undefined;
@@ -2303,8 +2415,9 @@ export class SelectionCellFormat {
     }
     /**
      * Destroys the manages resources.
-     * @returns void
+     *
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         this.backgroundIn = undefined;
@@ -2327,18 +2440,22 @@ export class SelectionRowFormat {
     private allowRowBreakAcrossPagesIn: boolean = undefined;
     /**
      * Gets or Sets the height for selected rows.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
+     * @returns {number} - Returns the height
      */
     public get height(): number {
         return this.heightIn;
     }
     /**
      * Gets or Sets the height for selected rows.
+     *
      * @default undefined
      * @aspType int
      * @blazorType int
+     * @param {number} value - Specified the value
      */
     public set height(value: number) {
         if (value === this.heightIn) {
@@ -2349,14 +2466,18 @@ export class SelectionRowFormat {
     }
     /**
      * Gets or Sets the height type for selected rows.
+     *
      * @default undefined
+     * @returns {HeightType} - Returns height type
      */
     public get heightType(): HeightType {
         return this.heightTypeIn;
     }
     /**
      * Gets or Sets the height type for selected rows.
+     *
      * @default undefined
+     * @param {HeightType} value - Specified the value
      */
     public set heightType(value: HeightType) {
         if (value === this.heightTypeIn) {
@@ -2367,18 +2488,22 @@ export class SelectionRowFormat {
     }
     /**
      * Gets or Sets a value indicating whether the selected rows are header rows or not.
+     *
      * @default undefined
      * @aspType bool
      * @blazorType bool
+     * @returns {boolean} - Returns the is header
      */
     public get isHeader(): boolean {
         return this.isHeaderIn;
     }
     /**
      * Gets or Sets a value indicating whether the selected rows are header rows or not.
+     *
      * @default undefined
      * @aspType bool
      * @blazorType bool
+     * @param {boolean} value - Specified the value
      */
     public set isHeader(value: boolean) {
         if (value === this.isHeaderIn) {
@@ -2389,16 +2514,20 @@ export class SelectionRowFormat {
     }
     /**
      * Gets or Sets a value indicating whether to allow break across pages for selected rows.
+     *
      * @default undefined
      * @aspType bool
      * @blazorType bool
+     * @returns {boolean} - Returns the allow break across page
      */
     public get allowBreakAcrossPages(): boolean {
         return this.allowRowBreakAcrossPagesIn;
     }
     /**
      * Gets or Sets a value indicating whether to allow break across pages for selected rows.
+     *
      * @default undefined
+     * @param {boolean} value - Specified the value
      * @aspType bool
      * @blazorType bool
      */
@@ -2410,19 +2539,20 @@ export class SelectionRowFormat {
         this.notifyPropertyChanged('allowBreakAcrossPages');
     }
     /**
+     * @param {Selection} selection - Specifies the selection
      * @private
      */
-    constructor(selection: Selection) {
+    public constructor(selection: Selection) {
         this.selection = selection;
     }
     private notifyPropertyChanged(propertyName: string): void {
-        let selection: Selection = this.selection;
+        const selection: Selection = this.selection;
         if (!isNullOrUndefined(selection) && (selection.isCleared || selection.owner.isReadOnlyMode
             || !selection.owner.isDocumentLoaded || selection.owner.isPastingContent) && !selection.isRetrieveFormatting) {
             return;
         }
         if (!isNullOrUndefined(selection) && !isNullOrUndefined(selection.start) && !selection.isRetrieveFormatting) {
-            let value: Object = this.getPropertyValue(propertyName);
+            const value: Object = this.getPropertyValue(propertyName);
             if (!isNullOrUndefined(value)) {
                 selection.owner.editorModule.onApplyTableRowFormat(propertyName, value);
             }
@@ -2430,23 +2560,24 @@ export class SelectionRowFormat {
     }
     private getPropertyValue(propertyName: string): Object {
         switch (propertyName) {
-            case 'height':
-                return this.height;
-            case 'heightType':
-                return this.heightType;
-            case 'isHeader':
-                return this.isHeader;
-            case 'allowBreakAcrossPages':
-                return this.allowBreakAcrossPages;
-            default:
-                return undefined;
+        case 'height':
+            return this.height;
+        case 'heightType':
+            return this.heightType;
+        case 'isHeader':
+            return this.isHeader;
+        case 'allowBreakAcrossPages':
+            return this.allowBreakAcrossPages;
+        default:
+            return undefined;
         }
     }
     /**
      * Copies the format.
-     * @param  {WRowFormat} format
-     * @returns void
+     *
+     * @param {WRowFormat} format - Specified row format
      * @private
+     * @returns {void} 
      */
     public copyFormat(format: WRowFormat): void {
         this.height = format.height;
@@ -2456,7 +2587,8 @@ export class SelectionRowFormat {
     }
     /**
      * Combines the format.
-     * @param  {WRowFormat} format
+     *
+     * @param {WRowFormat} format - Secifies row format
      * @private
      */
     public combineFormat(format: WRowFormat): void {
@@ -2475,8 +2607,9 @@ export class SelectionRowFormat {
     }
     /**
      * Clears the row format.
-     * @returns void
+     *
      * @private
+     * @returns {void}
      */
     public clearRowFormat(): void {
         this.height = undefined;
@@ -2486,8 +2619,9 @@ export class SelectionRowFormat {
     }
     /**
      * Clears the format.
-     * @returns void
+     *
      * @private
+     * @returns {void}
      */
     public clearFormat(): void {
         this.height = 0;
@@ -2497,8 +2631,9 @@ export class SelectionRowFormat {
     }
     /**
      * Destroys the managed resources.
-     * @returns void
+     *
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         this.heightIn = undefined;
@@ -2522,8 +2657,10 @@ export class SelectionImageFormat {
     public selection: Selection;
     /**
      * Gets the width of the image.
+     *
      * @aspType int
      * @blazorType int
+     * @returns {number} - Returns image width
      */
     public get width(): number {
         if (this.image) {
@@ -2533,8 +2670,10 @@ export class SelectionImageFormat {
     }
     /**
      * Gets the height of the image.
+     *
      * @aspType int
      * @blazorType int
+     * @returns {number} - Returns image height
      */
     public get height(): number {
         if (this.image) {
@@ -2543,22 +2682,30 @@ export class SelectionImageFormat {
         return 0;
     }
     /**
+     * @param {Selection} selection - Specifies selecion module
      * @private
      */
-    constructor(selection: Selection) {
+    public constructor(selection: Selection) {
         this.selection = selection;
     }
     /**
      * Resizes the image based on given size.
-     * @param width 
-     * @param height 
+     *
+     * @param {number} width - Specified the image width
+     * @param {number} height - Specifies the image height
+     * @private
+     * @returns {void}
      */
     public resize(width: number, height: number): void {
         this.updateImageFormat(width, height);
     }
     /**
      * Update image width and height
+     *
+     * @param {number} width - Specified the image width
+     * @param {number} height - Specifies the image height
      * @private
+     * @returns {void}
      */
     public updateImageFormat(width: number, height: number): void {
         if (this.image) {
@@ -2568,16 +2715,19 @@ export class SelectionImageFormat {
         }
     }
     /**
+     * @param {ImageElementBox} image - Specifies image element box
      * @private
+     * @returns {void}
      */
     public copyImageFormat(image: ImageElementBox): void {
         this.image = image;
     }
     /**
      * @private
+     * @returns {void}
      */
     public clearImageFormat(): void {
         this.image = undefined;
     }
 }
-/* tslint:enable */
+/* eslint-enable */

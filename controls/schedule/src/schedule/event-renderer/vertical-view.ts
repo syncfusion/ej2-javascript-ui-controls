@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { append, createElement, extend, EventHandler, prepend, Animation, formatUnit } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, setStyleAttribute, remove, removeClass, addClass } from '@syncfusion/ej2-base';
 import { EventFieldsMapping, ElementData, EventRenderedArgs, TdData } from '../base/interface';
@@ -12,26 +13,24 @@ import * as cls from '../base/css-constant';
  */
 export class VerticalEvent extends EventBase {
     public dateRender: Date[][] = [];
-    private renderedEvents: Object[][] = [];
-    private renderedAllDayEvents: Object[][] = [];
-    private overlapEvents: Object[][] = [];
-    private moreEvents: Object[] = [];
-    private overlapList: Object[] = [];
-    private allDayEvents: Object[] = [];
+    private renderedEvents: Record<string, any>[][] = [];
+    private renderedAllDayEvents: Record<string, any>[][] = [];
+    private overlapEvents: Record<string, any>[][] = [];
+    private moreEvents: HTMLElement[] = [];
+    private overlapList: Record<string, any>[] = [];
+    private allDayEvents: Record<string, any>[] = [];
     private slotCount: number = this.parent.activeViewOptions.timeScale.slotCount;
     private interval: number = this.parent.activeViewOptions.timeScale.interval;
     public allDayLevel: number = 0;
     private startHour: Date = this.parent.activeView.getStartHour();
     private endHour: Date = this.parent.activeView.getEndHour();
     private element: HTMLElement;
-    public allDayElement: Element[];
+    public allDayElement: HTMLElement[];
     private animation: Animation;
     public fields: EventFieldsMapping;
     public cellHeight: number;
     public resources: TdData[];
-    /**
-     * Constructor for vertical view
-     */
+
     constructor(parent: Schedule) {
         super(parent);
         this.element = this.parent.activeView.getPanel();
@@ -41,13 +40,13 @@ export class VerticalEvent extends EventBase {
     }
 
     public renderAppointments(): void {
-        let wrapperElements: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.BLOCK_APPOINTMENT_CLASS +
+        const wrapperElements: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.BLOCK_APPOINTMENT_CLASS +
             ',.' + cls.APPOINTMENT_CLASS + ',.' + cls.ROW_COUNT_WRAPPER_CLASS));
-        let isDragging: boolean = (this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction) ? true : false;
-        for (let wrapper of wrapperElements) {
+        const isDragging: boolean = (this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction) ? true : false;
+        for (const wrapper of wrapperElements) {
             if (isDragging && !(wrapper.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS) ||
                 wrapper.classList.contains(cls.ROW_COUNT_WRAPPER_CLASS))) {
-                let groupIndex: number = parseInt(wrapper.getAttribute('data-group-index'), 10);
+                const groupIndex: number = parseInt(wrapper.getAttribute('data-group-index'), 10);
                 for (let j: number = 0, len: number = this.parent.crudModule.crudObj.sourceEvent.length; j < len; j++) {
                     if (groupIndex === this.parent.crudModule.crudObj.sourceEvent[j].groupIndex ||
                         groupIndex === this.parent.crudModule.crudObj.targetEvent[j].groupIndex) {
@@ -66,7 +65,7 @@ export class VerticalEvent extends EventBase {
         if (this.parent.eventsProcessed.length === 0 && this.parent.blockProcessed.length === 0) {
             return;
         }
-        let expandCollapse: HTMLElement = this.element.querySelector('.' + cls.ALLDAY_APPOINTMENT_SECTION_CLASS) as HTMLElement;
+        const expandCollapse: HTMLElement = this.element.querySelector('.' + cls.ALLDAY_APPOINTMENT_SECTION_CLASS) as HTMLElement;
         EventHandler.remove(expandCollapse, 'click', this.rowExpandCollapse);
         EventHandler.add(expandCollapse, 'click', this.rowExpandCollapse, this);
         this.renderedEvents = [];
@@ -75,10 +74,10 @@ export class VerticalEvent extends EventBase {
         this.processBlockEvents();
         this.renderEvents('normalEvents');
         if (this.allDayEvents.length > 0) {
-            this.allDayEvents = this.allDayEvents.filter((item: { [key: string]: Object }, index: number, arr: Object[]) =>
-                index === arr.map((item: { [key: string]: Object }) => item.Guid).indexOf(item.Guid));
+            this.allDayEvents = this.allDayEvents.filter((item: Record<string, any>, index: number, arr: Record<string, any>[]) =>
+                index === arr.map((item: Record<string, any>) => item.Guid).indexOf(item.Guid));
             removeClass(this.allDayElement, cls.ALLDAY_ROW_ANIMATE_CLASS);
-            this.slots.push(this.parent.activeView.renderDates.map((date: Date) => +date));
+            this.slots.push(this.parent.activeView.renderDates.map((date: Date) => +date) as any);
             this.renderEvents('allDayEvents');
         }
         this.parent.notify(events.contentReady, {});
@@ -109,16 +108,16 @@ export class VerticalEvent extends EventBase {
         return appHeight;
     }
 
-    private appendEvent(eventObj: { [key: string]: Object }, appointmentElement: HTMLElement, index: number, appLeft: string): void {
-        let appointmentWrap: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_CLASS));
+    private appendEvent(eventObj: Record<string, any>, appointmentElement: HTMLElement, index: number, appLeft: string): void {
+        const appointmentWrap: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_CLASS));
         if (this.parent.enableRtl) {
             setStyleAttribute(appointmentElement, { 'right': appLeft });
         } else {
             setStyleAttribute(appointmentElement, { 'left': appLeft });
         }
-        let eventType: string = appointmentElement.classList.contains(cls.BLOCK_APPOINTMENT_CLASS) ? 'blockEvent' : 'event';
-        let args: EventRenderedArgs = {
-            data: extend({}, eventObj, null, true) as { [key: string]: Object },
+        const eventType: string = appointmentElement.classList.contains(cls.BLOCK_APPOINTMENT_CLASS) ? 'blockEvent' : 'event';
+        const args: EventRenderedArgs = {
+            data: extend({}, eventObj, null, true) as Record<string, any>,
             element: appointmentElement, cancel: false, type: eventType
         };
         this.parent.trigger(events.eventRendered, args, (eventArgs: EventRenderedArgs) => {
@@ -129,19 +128,20 @@ export class VerticalEvent extends EventBase {
     }
 
     private processBlockEvents(): void {
-        let resources: number[] = this.getResourceList();
+        const resources: number[] = this.getResourceList();
         let dateCount: number = 0;
-        for (let resource of resources) {
-            let renderDates: Date[] = this.dateRender[resource];
+        for (const resource of resources) {
+            const renderDates: Date[] = this.dateRender[resource];
             for (let day: number = 0, length: number = renderDates.length; day < length; day++) {
-                let startDate: Date = new Date(renderDates[day].getTime());
-                let endDate: Date = util.addDays(renderDates[day], 1);
-                let filterEvents: Object[] = this.filterEvents(startDate, endDate, this.parent.blockProcessed, this.resources[resource]);
-                for (let event of filterEvents) {
+                const startDate: Date = new Date(renderDates[day].getTime());
+                const endDate: Date = util.addDays(renderDates[day], 1);
+                const filterEvents: Record<string, any>[] =
+                    this.filterEvents(startDate, endDate, this.parent.blockProcessed, this.resources[resource]);
+                for (const event of filterEvents) {
                     if (this.parent.resourceBase) {
-                        this.setValues(event as { [key: string]: Object }, resource);
+                        this.setValues(event, resource);
                     }
-                    this.renderBlockEvents(<{ [key: string]: Object }>event, day, resource, dateCount);
+                    this.renderBlockEvents(event, day, resource, dateCount);
                     this.cssClass = null;
                     this.groupOrder = null;
                 }
@@ -150,37 +150,37 @@ export class VerticalEvent extends EventBase {
         }
     }
 
-    private renderBlockEvents(eventObj: { [key: string]: Object }, dayIndex: number, resource: number, dayCount: number): void {
-        let spannedData: { [key: string]: Object } = this.isSpannedEvent(eventObj, dayIndex, resource);
-        let eStart: Date = spannedData[this.fields.startTime] as Date;
-        let eEnd: Date = spannedData[this.fields.endTime] as Date;
-        let currentDate: Date = util.resetTime(new Date(this.dateRender[resource][dayIndex].getTime()));
-        let schedule: { [key: string]: Date } = util.getStartEndHours(currentDate, this.startHour, this.endHour);
+    private renderBlockEvents(eventObj: Record<string, any>, dayIndex: number, resource: number, dayCount: number): void {
+        const spannedData: Record<string, any> = this.isSpannedEvent(eventObj, dayIndex, resource);
+        const eStart: Date = spannedData[this.fields.startTime] as Date;
+        const eEnd: Date = spannedData[this.fields.endTime] as Date;
+        const currentDate: Date = util.resetTime(new Date(this.dateRender[resource][dayIndex].getTime()));
+        const schedule: { [key: string]: Date } = util.getStartEndHours(currentDate, this.startHour, this.endHour);
         if (eStart <= eEnd && this.isValidEvent(eventObj, eStart, eEnd, schedule)) {
             let blockTop: string;
             let blockHeight: string;
             if (spannedData[this.fields.isAllDay]) {
-                let contentWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table') as HTMLElement;
+                const contentWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table') as HTMLElement;
                 blockHeight = formatUnit(contentWrap.offsetHeight);
                 blockTop = formatUnit(0);
             } else {
                 blockHeight = formatUnit(this.getHeight(eStart, eEnd));
                 blockTop = formatUnit(this.getTopValue(eStart, dayIndex, resource));
             }
-            let appointmentElement: HTMLElement = this.createBlockAppointmentElement(eventObj, resource);
+            const appointmentElement: HTMLElement = this.createBlockAppointmentElement(eventObj, resource);
             setStyleAttribute(appointmentElement, { 'width': '100%', 'height': blockHeight, 'top': blockTop });
-            let index: number = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
+            const index: number = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
             this.appendEvent(eventObj, appointmentElement, index, '0px');
         }
     }
 
     private renderEvents(eventType: string): void {
         removeClass(this.allDayElement, cls.ALLDAY_ROW_ANIMATE_CLASS);
-        let eventCollection: Object[] = (eventType === 'allDayEvents') ? this.sortByDateTime(this.allDayEvents) : undefined;
-        let resources: number[] = this.getResourceList();
+        const eventCollection: Record<string, any>[] = (eventType === 'allDayEvents') ? this.sortByDateTime(this.allDayEvents) : undefined;
+        const resources: number[] = this.getResourceList();
         let dateCount: number = 0;
         let isRender: boolean;
-        for (let resource of resources) {
+        for (const resource of resources) {
             isRender = true;
             if (this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction && eventType !== 'allDayEvents') {
                 if (this.parent.crudModule.crudObj.sourceEvent.filter((data: TdData) => data.groupIndex === resource).length === 0 &&
@@ -189,41 +189,42 @@ export class VerticalEvent extends EventBase {
                 }
             }
             this.slots = [];
-            let renderDates: Date[] = this.dateRender[resource];
-            let renderedDate: Date[] = this.getRenderedDates(renderDates) || renderDates;
-            this.slots.push(renderDates.map((date: Date) => { return +date; }));
+            const renderDates: Date[] = this.dateRender[resource];
+            const renderedDate: Date[] = this.getRenderedDates(renderDates) || renderDates;
+            this.slots.push(renderDates.map((date: Date) => { return +date; }) as any);
             for (let day: number = 0, length: number = renderDates.length; day < length &&
                 renderDates[day] <= renderedDate[renderedDate.length - 1]; day++) {
                 this.renderedEvents = [];
-                let startDate: Date = new Date(renderDates[day].getTime());
-                let endDate: Date = util.addDays(renderDates[day], 1);
-                let filterEvents: Object[] = this.filterEvents(startDate, endDate, eventCollection, this.resources[resource]);
+                const startDate: Date = new Date(renderDates[day].getTime());
+                const endDate: Date = util.addDays(renderDates[day], 1);
+                const filterEvents: Record<string, any>[] =
+                    this.filterEvents(startDate, endDate, eventCollection, this.resources[resource]);
                 if (isRender) {
-                    for (let event of filterEvents) {
+                    for (const event of filterEvents) {
                         if (this.parent.resourceBase) {
-                            this.setValues(event as { [key: string]: Object }, resource);
+                            this.setValues(event, resource);
                         }
                         if (eventType === 'allDayEvents') {
-                            this.renderAllDayEvents(<{ [key: string]: Object }>event, day, resource, dateCount);
+                            this.renderAllDayEvents(event, day, resource, dateCount);
                         } else {
-                            if (this.isAllDayAppointment(<{ [key: string]: Object }>event)) {
-                                this.allDayEvents.push(extend({}, event, null, true));
+                            if (this.isAllDayAppointment(event)) {
+                                this.allDayEvents.push(extend({}, event, null, true) as Record<string, any>);
                             } else {
                                 if (this.parent.eventSettings.enableMaxHeight) {
-                                    if (this.getOverlapIndex(<{ [key: string]: Object }>event, day, false, resource) > 0) {
+                                    if (this.getOverlapIndex(event, day, false, resource) > 0) {
                                         continue;
                                     }
                                 }
-                                this.renderNormalEvents(<{ [key: string]: Object }>event, day, resource, dateCount);
+                                this.renderNormalEvents(event, day, resource, dateCount);
                             }
                         }
                         this.cssClass = null;
                         this.groupOrder = null;
                     }
                 } else {
-                    for (let event of filterEvents) {
-                        if (this.isAllDayAppointment(<{ [key: string]: Object }>event)) {
-                            this.allDayEvents.push(extend({}, event, null, true));
+                    for (const event of filterEvents) {
+                        if (this.isAllDayAppointment(event)) {
+                            this.allDayEvents.push(extend({}, event, null, true) as Record<string, any>);
                         }
                     }
                 }
@@ -232,7 +233,7 @@ export class VerticalEvent extends EventBase {
         }
     }
 
-    private setValues(event: { [key: string]: Object }, resourceIndex: number): void {
+    private setValues(event: Record<string, any>, resourceIndex: number): void {
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             this.cssClass = this.resources[resourceIndex].cssClass;
             this.groupOrder = this.resources[resourceIndex].groupOrder;
@@ -242,17 +243,20 @@ export class VerticalEvent extends EventBase {
     }
 
     private getResourceList(): number[] {
-        let resources: number[] = Array.apply(null, {
+        // eslint-disable-next-line prefer-spread
+        const resources: number[] = Array.apply(null, {
             length: (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) ?
                 this.resources.length : 1
         }).map((value: number, index: number) => { return index; });
         return resources;
     }
 
-    private createAppointmentElement(record: { [key: string]: Object }, isAllDay: boolean, data: Object, resource: number): HTMLElement {
-        let fieldMapping: EventFieldsMapping = this.parent.eventFields;
-        let recordSubject: string = (record[fieldMapping.subject] || this.parent.eventSettings.fields.subject.default) as string;
-        let appointmentWrapper: HTMLElement = createElement('div', {
+    // eslint-disable-next-line max-len
+    private createAppointmentElement(record: Record<string, any>, isAllDay: boolean, data: Record<string, any>, resource: number): HTMLElement {
+        const fieldMapping: EventFieldsMapping = this.parent.eventFields;
+        const recordSubject: string = (record[fieldMapping.subject] || this.parent.eventSettings.fields.subject.default 
+            || this.parent.localeObj.getConstant('addTitle')) as string;
+        const appointmentWrapper: HTMLElement = createElement('div', {
             className: cls.APPOINTMENT_CLASS,
             attrs: {
                 'data-id': 'Appointment_' + record[fieldMapping.id],
@@ -268,34 +272,33 @@ export class VerticalEvent extends EventBase {
         if (record[this.fields.isReadonly]) {
             addClass([appointmentWrapper], 'e-read-only');
         }
-        let appointmentDetails: HTMLElement = createElement('div', { className: cls.APPOINTMENT_DETAILS });
+        const appointmentDetails: HTMLElement = createElement('div', { className: cls.APPOINTMENT_DETAILS });
         appointmentWrapper.appendChild(appointmentDetails);
         if (this.parent.activeViewOptions.group.resources.length > 0) {
-            let resourceIndex: number = this.parent.uiStateValues.isGroupAdaptive ? this.parent.uiStateValues.groupIndex : resource;
+            const resourceIndex: number = this.parent.uiStateValues.isGroupAdaptive ? this.parent.uiStateValues.groupIndex : resource;
             appointmentWrapper.setAttribute('data-group-index', resourceIndex.toString());
         }
         let templateElement: HTMLElement[];
-        let eventData: { [key: string]: Object } = <{ [key: string]: Object }>data;
+        const eventData: Record<string, any> = data;
         if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-            let elementId: string = this.parent.element.id + '_';
-            let viewName: string = this.parent.activeViewOptions.eventTemplateName;
-            let templateId: string = elementId + viewName + 'eventTemplate';
-            let templateArgs: Object = util.addLocalOffsetToEvent(record, this.parent.eventFields);
-            templateElement = this.parent.getAppointmentTemplate()(templateArgs, this.parent, 'eventTemplate', templateId, false);
+            const elementId: string = this.parent.element.id + '_';
+            const viewName: string = this.parent.activeViewOptions.eventTemplateName;
+            const templateId: string = elementId + viewName + 'eventTemplate';
+            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId, false);
         } else {
-            let appointmentSubject: HTMLElement = createElement('div', { className: cls.SUBJECT_CLASS, innerHTML: recordSubject });
+            const appointmentSubject: HTMLElement = createElement('div', { className: cls.SUBJECT_CLASS, innerHTML: recordSubject });
             if (isAllDay) {
                 if (record[fieldMapping.isAllDay]) {
                     templateElement = [appointmentSubject];
                 } else {
                     templateElement = [];
-                    let appointmentStartTime: HTMLElement = createElement('div', {
+                    const appointmentStartTime: HTMLElement = createElement('div', {
                         className: cls.APPOINTMENT_TIME + (this.parent.isAdaptive ? ' ' + cls.DISABLE_CLASS : ''),
                         innerHTML: this.parent.getTimeString(record[fieldMapping.startTime] as Date)
                     });
-                    let appointmentEndTime: HTMLElement = createElement('div', {
+                    const appointmentEndTime: HTMLElement = createElement('div', {
                         className: cls.APPOINTMENT_TIME + (this.parent.isAdaptive ? ' ' + cls.DISABLE_CLASS : ''),
-                        innerHTML: this.parent.getTimeString(record[fieldMapping.endTime] as Date),
+                        innerHTML: this.parent.getTimeString(record[fieldMapping.endTime] as Date)
                     });
                     addClass([appointmentSubject], 'e-text-center');
                     if (!eventData.isLeft) {
@@ -307,13 +310,13 @@ export class VerticalEvent extends EventBase {
                     }
                 }
             } else {
-                let timeStr: string = this.parent.getTimeString(record[fieldMapping.startTime] as Date) + ' - ' +
+                const timeStr: string = this.parent.getTimeString(record[fieldMapping.startTime] as Date) + ' - ' +
                     this.parent.getTimeString(record[fieldMapping.endTime] as Date);
-                let appointmentTime: HTMLElement = createElement('div', {
+                const appointmentTime: HTMLElement = createElement('div', {
                     className: cls.APPOINTMENT_TIME + (this.parent.isAdaptive ? ' ' + cls.DISABLE_CLASS : ''),
-                    innerHTML: timeStr,
+                    innerHTML: timeStr
                 });
-                let appointmentLocation: HTMLElement = createElement('div', {
+                const appointmentLocation: HTMLElement = createElement('div', {
                     className: cls.LOCATION_CLASS,
                     innerHTML: (record[fieldMapping.location] || this.parent.eventSettings.fields.location.default || '') as string
                 });
@@ -323,10 +326,14 @@ export class VerticalEvent extends EventBase {
         append(templateElement, appointmentDetails);
         if (!this.parent.isAdaptive &&
             (!isNullOrUndefined(record[fieldMapping.recurrenceRule]) || !isNullOrUndefined(record[fieldMapping.recurrenceID]))) {
-            let iconClass: string = (record[fieldMapping.id] === record[fieldMapping.recurrenceID]) ?
+            const iconClass: string = (record[fieldMapping.id] === record[fieldMapping.recurrenceID]) ?
                 cls.EVENT_RECURRENCE_ICON_CLASS : cls.EVENT_RECURRENCE_EDIT_ICON_CLASS;
-            let recurrenceIcon: HTMLElement = createElement('div', { className: cls.ICON + ' ' + iconClass });
-            isAllDay ? appointmentDetails.appendChild(recurrenceIcon) : appointmentWrapper.appendChild(recurrenceIcon);
+            const recurrenceIcon: HTMLElement = createElement('div', { className: cls.ICON + ' ' + iconClass });
+            if (isAllDay) {
+                appointmentDetails.appendChild(recurrenceIcon);
+            } else {
+                appointmentWrapper.appendChild(recurrenceIcon);
+            }
         }
         this.renderSpannedIcon(isAllDay ? appointmentDetails : appointmentWrapper, eventData);
         if (!isNullOrUndefined(this.cssClass)) {
@@ -338,14 +345,14 @@ export class VerticalEvent extends EventBase {
     }
 
     private createMoreIndicator(allDayRow: HTMLElement[], count: number, currentDay: number): void {
-        let index: number = currentDay + count;
-        let countWrapper: HTMLElement = allDayRow[index] as HTMLElement;
+        const index: number = currentDay + count;
+        const countWrapper: HTMLElement = allDayRow[index] as HTMLElement;
         if (countWrapper.childElementCount <= 0) {
-            let innerCountWrap: Element = createElement('div', {
+            const innerCountWrap: Element = createElement('div', {
                 className: cls.ROW_COUNT_WRAPPER_CLASS,
                 id: cls.ROW_COUNT_WRAPPER_CLASS + '-' + index.toString()
             });
-            let moreIndicatorElement: Element = createElement('div', {
+            const moreIndicatorElement: Element = createElement('div', {
                 className: cls.MORE_INDICATOR_CLASS,
                 attrs: { 'tabindex': '0', 'role': 'list', 'data-index': index.toString(), 'data-count': '1' },
                 innerHTML: '+1&nbsp;' + (this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant('more'))
@@ -354,92 +361,92 @@ export class VerticalEvent extends EventBase {
             countWrapper.appendChild(innerCountWrap);
             EventHandler.add(moreIndicatorElement, 'click', this.rowExpandCollapse, this);
         } else {
-            let countCell: HTMLElement = countWrapper.querySelector('.' + cls.MORE_INDICATOR_CLASS) as HTMLElement;
-            let moreCount: number = parseInt(countCell.getAttribute('data-count'), 10) + 1;
+            const countCell: HTMLElement = countWrapper.querySelector('.' + cls.MORE_INDICATOR_CLASS) as HTMLElement;
+            const moreCount: number = parseInt(countCell.getAttribute('data-count'), 10) + 1;
             countCell.setAttribute('data-count', moreCount.toString());
             countCell.innerHTML = '+' + moreCount + '&nbsp;' + (this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant('more'));
         }
     }
 
-    private renderSpannedIcon(element: HTMLElement, spanEvent: { [key: string]: Object }): void {
-        let iconElement: HTMLElement = createElement('div', { className: cls.EVENT_INDICATOR_CLASS + ' ' + cls.ICON });
+    private renderSpannedIcon(element: HTMLElement, spanEvent: Record<string, any>): void {
+        const iconElement: HTMLElement = createElement('div', { className: cls.EVENT_INDICATOR_CLASS + ' ' + cls.ICON });
         if (spanEvent.isLeft) {
-            let iconLeft: HTMLElement = iconElement.cloneNode() as HTMLElement;
+            const iconLeft: HTMLElement = iconElement.cloneNode() as HTMLElement;
             addClass([iconLeft], cls.EVENT_ICON_LEFT_CLASS);
             prepend([iconLeft], element);
         }
         if (spanEvent.isRight) {
-            let iconRight: HTMLElement = iconElement.cloneNode() as HTMLElement;
+            const iconRight: HTMLElement = iconElement.cloneNode() as HTMLElement;
             addClass([iconRight], cls.EVENT_ICON_RIGHT_CLASS);
             append([iconRight], element);
         }
         if (spanEvent.isTop) {
-            let iconTop: HTMLElement = iconElement.cloneNode() as HTMLElement;
+            const iconTop: HTMLElement = iconElement.cloneNode() as HTMLElement;
             addClass([iconTop], cls.EVENT_ICON_UP_CLASS);
             prepend([iconTop], element);
         }
         if (spanEvent.isBottom) {
-            let iconBottom: HTMLElement = iconElement.cloneNode() as HTMLElement;
+            const iconBottom: HTMLElement = iconElement.cloneNode() as HTMLElement;
             addClass([iconBottom], cls.EVENT_ICON_DOWN_CLASS);
             append([iconBottom], element);
         }
     }
 
-    public isSpannedEvent(record: { [key: string]: Object }, day: number, resource: number): { [key: string]: Object } {
+    public isSpannedEvent(record: Record<string, any>, day: number, resource: number): Record<string, any> {
         let currentDate: Date = util.resetTime(this.dateRender[resource][day]);
-        let renderedDate: Date[] = this.getRenderedDates(this.dateRender[resource]) || [currentDate];
-        let currentDay: Date[] = renderedDate.filter((date: Date) => date.getDay() === day);
+        const renderedDate: Date[] = this.getRenderedDates(this.dateRender[resource]) || [currentDate];
+        const currentDay: Date[] = renderedDate.filter((date: Date) => date.getDay() === day);
         if (currentDay.length === 0) {
             currentDate = util.resetTime(renderedDate[0]);
         }
-        let fieldMapping: EventFieldsMapping = this.parent.eventFields;
-        let startEndHours: { [key: string]: Date } = util.getStartEndHours(currentDate, this.startHour, this.endHour);
-        let event: { [key: string]: Object } = extend({}, record, null, true) as { [key: string]: Object };
+        const fieldMapping: EventFieldsMapping = this.parent.eventFields;
+        const startEndHours: { [key: string]: Date } = util.getStartEndHours(currentDate, this.startHour, this.endHour);
+        const event: Record<string, any> = extend({}, record, null, true) as Record<string, any>;
         event.isSpanned = { isBottom: false, isTop: false };
         if ((<Date>record[fieldMapping.startTime]).getTime() < startEndHours.startHour.getTime()) {
             event[fieldMapping.startTime] = startEndHours.startHour;
-            (event.isSpanned as { [key: string]: Object }).isTop = true;
+            (event.isSpanned as Record<string, any>).isTop = true;
         }
         if ((<Date>record[fieldMapping.endTime]).getTime() > startEndHours.endHour.getTime()) {
             event[fieldMapping.endTime] = startEndHours.endHour;
-            (event.isSpanned as { [key: string]: Object }).isBottom = true;
+            (event.isSpanned as Record<string, any>).isBottom = true;
         }
         return event;
     }
 
-    public renderAllDayEvents
-        (eventObj: { [key: string]: Object }, dayIndex: number, resource: number, dayCount: number, inline?: boolean): void {
+    public renderAllDayEvents(eventObj: Record<string, any>, dayIndex: number, resource: number, dayCount: number, inline?: boolean): void {
         let currentDates: Date[] = this.getRenderedDates(this.dateRender[resource]) || this.dateRender[resource];
         if (this.parent.activeViewOptions.group.byDate) {
-            this.slots[0] = [this.dateRender[resource][dayIndex].getTime()];
+            (this.slots as any)[0] = [this.dateRender[resource][dayIndex].getTime()];
             currentDates = [this.dateRender[resource][dayIndex]];
         }
-        let record: { [key: string]: Object } = this.splitEvent(eventObj, currentDates)[0];
-        let allDayRowCell: Element = this.element.querySelector('.' + cls.ALLDAY_CELLS_CLASS + ':first-child');
-        let cellTop: number = (<HTMLElement>allDayRowCell).offsetTop;
-        let eStart: Date = new Date((record[this.parent.eventFields.startTime] as Date).getTime());
-        let eEnd: Date = new Date((record[this.parent.eventFields.endTime] as Date).getTime());
-        let appWidth: number = 0; let appLeft: string = '0%'; let topValue: number = 1; let appLevel: number = 0;
-        let isDateRange: boolean = currentDates[0].getTime() <= eStart.getTime() &&
+        const record: Record<string, any> = this.splitEvent(eventObj, currentDates)[0];
+        const allDayRowCell: Element = this.element.querySelector('.' + cls.ALLDAY_CELLS_CLASS + ':first-child');
+        const cellTop: number = (<HTMLElement>allDayRowCell).offsetTop;
+        const eStart: Date = new Date((record[this.parent.eventFields.startTime] as Date).getTime());
+        const eEnd: Date = new Date((record[this.parent.eventFields.endTime] as Date).getTime());
+        let appWidth: number = 0;
+        let topValue: number = 1;
+        const isDateRange: boolean = currentDates[0].getTime() <= eStart.getTime() &&
             util.addDays(currentDates.slice(-1)[0], 1).getTime() >= eStart.getTime();
         if (eStart <= eEnd && isDateRange) {
-            let isAlreadyRendered: Object[] = [];
+            let isAlreadyRendered: Record<string, any>[] = [];
             if (this.renderedAllDayEvents[resource]) {
-                isAlreadyRendered = this.renderedAllDayEvents[resource].filter((event: { [key: string]: Object }) =>
+                isAlreadyRendered = this.renderedAllDayEvents[resource].filter((event: Record<string, any>) =>
                     event.Guid === eventObj.Guid);
                 if (this.parent.activeViewOptions.group.byDate) {
-                    isAlreadyRendered = isAlreadyRendered.filter((event: { [key: string]: Object }) =>
+                    isAlreadyRendered = isAlreadyRendered.filter((event: Record<string, any>) =>
                         event[this.parent.eventFields.startTime] >= currentDates[dayIndex] &&
                         event[this.parent.eventFields.endTime] <= util.addDays(new Date(+currentDates[dayIndex]), 1)
                     );
                 }
             }
             if (isAlreadyRendered.length === 0) {
-                let allDayDifference: number = (record.data as { [key: string]: Object }).count as number;
-                let allDayIndex: number = this.getOverlapIndex(record, dayIndex, true, resource);
+                const allDayDifference: number = (record.data as Record<string, any>).count as number;
+                const allDayIndex: number = this.getOverlapIndex(record, dayIndex, true, resource);
                 record.Index = allDayIndex;
                 this.allDayLevel = (this.allDayLevel < allDayIndex) ? allDayIndex : this.allDayLevel;
-                let widthAdjustment: number = (<{ [key: string]: Object }>record.data).isRight ? 0 :
+                const widthAdjustment: number = (<Record<string, any>>record.data).isRight ? 0 :
                     this.parent.currentView === 'Day' ? 4 : 7;
                 if (allDayDifference >= 0) {
                     appWidth = (allDayDifference * 100) - widthAdjustment;
@@ -447,23 +454,24 @@ export class VerticalEvent extends EventBase {
                 if (isNullOrUndefined(this.renderedAllDayEvents[resource])) {
                     this.renderedAllDayEvents[resource] = [];
                 }
-                this.renderedAllDayEvents[resource].push(extend({}, record, null, true));
-                let allDayRow: HTMLElement[] = [].slice.call(this.element.querySelector('.' + cls.ALLDAY_ROW_CLASS).children);
-                let wIndex: number = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
-                let eventWrapper: Element = this.element.querySelector('.' + cls.ALLDAY_APPOINTMENT_WRAPPER_CLASS +
+                this.renderedAllDayEvents[resource].push(extend({}, record, null, true) as Record<string, any>);
+                const allDayRow: HTMLElement[] = [].slice.call(this.element.querySelector('.' + cls.ALLDAY_ROW_CLASS).children);
+                const wIndex: number = this.parent.activeViewOptions.group.byDate ?
+                    (this.resources.length * dayIndex) + resource : dayCount;
+                const eventWrapper: Element = this.element.querySelector('.' + cls.ALLDAY_APPOINTMENT_WRAPPER_CLASS +
                     ':nth-child(' + (wIndex + 1) + ')');
                 let appointmentElement: HTMLElement;
                 if (inline) {
                     appointmentElement = this.parent.inlineModule.createInlineAppointmentElement(eventObj);
                 } else {
-                    appointmentElement = this.createAppointmentElement(eventObj, true, record.data, resource);
+                    appointmentElement = this.createAppointmentElement(eventObj, true, record.data as Record<string, any>, resource);
                 }
                 addClass([appointmentElement], cls.ALLDAY_APPOINTMENT_CLASS);
-                let args: EventRenderedArgs = { data: eventObj, element: appointmentElement, cancel: false };
+                const args: EventRenderedArgs = { data: eventObj, element: appointmentElement, cancel: false };
                 this.parent.trigger(events.eventRendered, args, (eventArgs: EventRenderedArgs) => {
                     if (!eventArgs.cancel) {
                         eventWrapper.appendChild(appointmentElement);
-                        let appHeight: number = appointmentElement.offsetHeight;
+                        const appHeight: number = appointmentElement.offsetHeight;
                         topValue += (allDayIndex === 0 ? cellTop : (cellTop + (allDayIndex * appHeight))) + 1;
                         setStyleAttribute(appointmentElement, { 'width': appWidth + '%', 'top': formatUnit(topValue) });
                         if (allDayIndex > 1) {
@@ -473,7 +481,7 @@ export class VerticalEvent extends EventBase {
                             }
                         }
                         allDayRowCell.setAttribute('data-count', this.allDayLevel.toString());
-                        let allDayRowHeight: number = ((!this.parent.uiStateValues.expand && this.allDayLevel > 2) ?
+                        const allDayRowHeight: number = ((!this.parent.uiStateValues.expand && this.allDayLevel > 2) ?
                             (3 * appHeight) : ((this.allDayLevel + 1) * appHeight)) + 4;
                         this.setAllDayRowHeight(allDayRowHeight);
                         this.addOrRemoveClass();
@@ -484,21 +492,20 @@ export class VerticalEvent extends EventBase {
         }
     }
 
-    public renderNormalEvents
-        (eventObj: { [key: string]: Object }, dayIndex: number, resource: number, dayCount: number, inline?: boolean): void {
-        let record: { [key: string]: Object } = this.isSpannedEvent(eventObj, dayIndex, resource);
-        let eStart: Date = record[this.fields.startTime] as Date;
-        let eEnd: Date = record[this.fields.endTime] as Date;
-        let appWidth: string = '0%'; let appLeft: string = '0%'; let topValue: number = 0;
-        let currentDate: Date = util.resetTime(new Date(this.dateRender[resource][dayIndex].getTime()));
-        let schedule: { [key: string]: Date } = util.getStartEndHours(currentDate, this.startHour, this.endHour);
-        let isValidEvent: boolean = this.isValidEvent(eventObj, eStart, eEnd, schedule);
+    public renderNormalEvents(eventObj: Record<string, any>, dayIndex: number, resource: number, dayCount: number, inline?: boolean): void {
+        const record: Record<string, any> = this.isSpannedEvent(eventObj, dayIndex, resource);
+        const eStart: Date = record[this.fields.startTime] as Date;
+        const eEnd: Date = record[this.fields.endTime] as Date;
+        let appWidth: string = '0%'; const appLeft: string = '0%'; let topValue: number = 0;
+        const currentDate: Date = util.resetTime(new Date(this.dateRender[resource][dayIndex].getTime()));
+        const schedule: { [key: string]: Date } = util.getStartEndHours(currentDate, this.startHour, this.endHour);
+        const isValidEvent: boolean = this.isValidEvent(eventObj, eStart, eEnd, schedule);
         if (eStart <= eEnd && isValidEvent) {
-            let appHeight: number = this.getHeight(eStart, eEnd);
+            const appHeight: number = this.getHeight(eStart, eEnd);
             if (eStart.getTime() > schedule.startHour.getTime()) {
                 topValue = this.getTopValue(eStart, dayIndex, resource);
             }
-            let appIndex: number = this.getOverlapIndex(record, dayIndex, false, resource);
+            const appIndex: number = this.getOverlapIndex(record, dayIndex, false, resource);
             record.Index = appIndex;
             this.overlapList.push(record);
             if (this.overlapList.length > 1) {
@@ -511,37 +518,37 @@ export class VerticalEvent extends EventBase {
                 this.overlapEvents.push([record]);
             }
             appWidth = this.getEventWidth();
-            let argsData: ElementData = {
+            const argsData: ElementData = {
                 index: appIndex, left: appLeft, width: appWidth,
                 day: dayIndex, dayIndex: dayCount, record: record, resource: resource
             };
-            let tempData: { [key: string]: Object } = this.adjustOverlapElements(argsData);
+            const tempData: Record<string, any> = this.adjustOverlapElements(argsData);
             appWidth = (tempData.appWidth) as string;
             if (isNullOrUndefined(this.renderedEvents[resource])) {
                 this.renderedEvents[resource] = [];
             }
-            this.renderedEvents[resource].push(extend({}, record, null, true));
+            this.renderedEvents[resource].push(extend({}, record, null, true) as Record<string, any>);
             let appointmentElement: HTMLElement;
             if (inline) {
                 appointmentElement = this.parent.inlineModule.createInlineAppointmentElement(eventObj);
             } else {
-                appointmentElement = this.createAppointmentElement(eventObj, false, record.isSpanned, resource);
+                appointmentElement = this.createAppointmentElement(eventObj, false, record.isSpanned as Record<string, any>, resource);
             }
             setStyleAttribute(appointmentElement, {
                 'width': (this.parent.eventSettings.enableMaxHeight ? '100%' : tempData.appWidth),
                 'height': appHeight + 'px', 'top': topValue + 'px'
             });
-            let iconHeight: number = appointmentElement.querySelectorAll('.' + cls.EVENT_INDICATOR_CLASS).length * 15;
-            let maxHeight: number = appHeight - 40 - iconHeight;
-            let subjectElement: HTMLElement = appointmentElement.querySelector('.' + cls.SUBJECT_CLASS) as HTMLElement;
+            const iconHeight: number = appointmentElement.querySelectorAll('.' + cls.EVENT_INDICATOR_CLASS).length * 15;
+            const maxHeight: number = appHeight - 40 - iconHeight;
+            const subjectElement: HTMLElement = appointmentElement.querySelector('.' + cls.SUBJECT_CLASS) as HTMLElement;
             if (!this.parent.isAdaptive && subjectElement) {
                 subjectElement.style.maxHeight = formatUnit(maxHeight);
             }
-            let index: number = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
+            const index: number = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
             this.appendEvent(eventObj, appointmentElement, index, tempData.appLeft as string);
             this.wireAppointmentEvents(appointmentElement, eventObj);
             if (appointmentElement.offsetHeight < this.cellHeight) {
-                let resizeHandlers: HTMLElement[] = [].slice.call(appointmentElement.querySelectorAll('.' + cls.EVENT_RESIZE_CLASS));
+                const resizeHandlers: HTMLElement[] = [].slice.call(appointmentElement.querySelectorAll('.' + cls.EVENT_RESIZE_CLASS));
                 resizeHandlers.forEach((resizeHandler: HTMLElement) => {
                     resizeHandler.style.height = Math.ceil(appointmentElement.offsetHeight / resizeHandler.offsetHeight) + 'px';
                 });
@@ -550,31 +557,31 @@ export class VerticalEvent extends EventBase {
     }
 
     private getEventWidth(): string {
-        let width: number = this.parent.currentView === 'Day' ? 97 : 94;
-        let tempWidth: number = ((width - this.overlapEvents.length) / this.overlapEvents.length);
+        const width: number = this.parent.currentView === 'Day' ? 97 : 94;
+        const tempWidth: number = ((width - this.overlapEvents.length) / this.overlapEvents.length);
         return (tempWidth < 0 ? 0 : tempWidth) + '%';
     }
 
     private getEventLeft(appWidth: string, index: number): string {
-        let tempLeft: number = (parseFloat(appWidth) + 1) * index;
+        const tempLeft: number = (parseFloat(appWidth) + 1) * index;
         return (tempLeft > 99 ? 99 : tempLeft) + '%';
     }
 
     public getTopValue(date: Date, day: number, resource: number): number {
-        let startEndHours: { [key: string]: Date } =
+        const startEndHours: { [key: string]: Date } =
             util.getStartEndHours(util.resetTime(this.dateRender[resource][day]), this.startHour, this.endHour);
-        let startHour: Date = startEndHours.startHour;
-        let diffInMinutes: number = ((date.getHours() - startHour.getHours()) * 60) + (date.getMinutes() - startHour.getMinutes());
+        const startHour: Date = startEndHours.startHour;
+        const diffInMinutes: number = ((date.getHours() - startHour.getHours()) * 60) + (date.getMinutes() - startHour.getMinutes());
         return (this.parent.activeViewOptions.timeScale.enable) ? ((diffInMinutes * this.cellHeight * this.slotCount) / this.interval) : 0;
     }
 
-    private getOverlapIndex(record: { [key: string]: Object }, day: number, isAllDay: boolean, resource: number): number {
-        let fieldMapping: EventFieldsMapping = this.parent.eventFields;
-        let eventsList: Object[] = []; let appIndex: number = -1; this.overlapEvents = [];
+    private getOverlapIndex(record: Record<string, any>, day: number, isAllDay: boolean, resource: number): number {
+        const fieldMapping: EventFieldsMapping = this.parent.eventFields;
+        let eventsList: Record<string, any>[] = []; let appIndex: number = -1; this.overlapEvents = [];
         if (isAllDay) {
             if (!isNullOrUndefined(this.renderedAllDayEvents[resource])) {
-                let date: Date = util.resetTime(new Date(this.dateRender[resource][day].getTime()));
-                eventsList = this.renderedAllDayEvents[resource].filter((app: { [key: string]: Object }) =>
+                const date: Date = util.resetTime(new Date(this.dateRender[resource][day].getTime()));
+                eventsList = this.renderedAllDayEvents[resource].filter((app: Record<string, any>) =>
                     util.resetTime(<Date>app[fieldMapping.startTime]).getTime() <= date.getTime() &&
                     util.resetTime(<Date>app[fieldMapping.endTime]).getTime() >= date.getTime());
                 if (this.parent.activeViewOptions.group.resources.length > 0) {
@@ -582,76 +589,80 @@ export class VerticalEvent extends EventBase {
                 }
             }
         } else {
-            let appointmentList: Object[] = !isNullOrUndefined(this.renderedEvents[resource]) ? this.renderedEvents[resource] : [];
-            let appointment: Object[] = [];
-            let recordStart: Date = record[fieldMapping.startTime] as Date;
-            let recordEnd: Date = record[fieldMapping.endTime] as Date;
-            this.overlapList = appointmentList.filter((data: { [key: string]: Object }) =>
+            const appointmentList: Record<string, any>[] = !isNullOrUndefined(this.renderedEvents[resource]) ?
+                this.renderedEvents[resource] : [];
+            let appointment: Record<string, any>[] = [];
+            const recordStart: Date = record[fieldMapping.startTime] as Date;
+            const recordEnd: Date = record[fieldMapping.endTime] as Date;
+            this.overlapList = appointmentList.filter((data: Record<string, any>) =>
                 (data[fieldMapping.endTime] > recordStart && data[fieldMapping.startTime] <= recordEnd) ||
                 (data[fieldMapping.startTime] >= recordEnd && data[fieldMapping.endTime] <= recordStart));
             if (this.parent.activeViewOptions.group.resources.length > 0) {
                 this.overlapList = this.filterEventsByResource(this.resources[resource], this.overlapList);
             }
-            this.overlapList.forEach((obj: { [key: string]: Object }) => {
-                let filterList: Object[] = appointmentList.filter((data: { [key: string]: Object }) =>
+            this.overlapList.forEach((obj: Record<string, any>) => {
+                let filterList: Record<string, any>[] = appointmentList.filter((data: Record<string, any>) =>
                     data[fieldMapping.endTime] > obj[fieldMapping.startTime] && data[fieldMapping.startTime] <= obj[fieldMapping.endTime]);
                 if (this.parent.activeViewOptions.group.resources.length > 0) {
                     filterList = this.filterEventsByResource(this.resources[resource], filterList);
                 }
-                let collection: object[] = filterList.filter((val: object) =>
+                let collection: Record<string, any>[] = filterList.filter((val: Record<string, any>) =>
                     this.overlapList.indexOf(val) === -1);
                 if (collection.length > 0) {
                     appointment = appointment.concat(collection);
                 }
             });
-            for (let i: number = 0; i < appointment.length - 1; i++) {
-                for (let j: number = i + 1; j < appointment.length; j++) {
-                    if ((appointment[i] as { [key: string]: Object }).Id === (appointment[j] as { [key: string]: Object }).Id) {
-                        appointment.splice(j, 0); j--;
+            for (let i = 0; i < appointment.length - 1; i++) {
+                for (let j = i + 1; j < appointment.length; j++) {
+                    if (appointment[i].Id === appointment[j].Id) {
+                        appointment.splice(j, 1); j--;
                     }
                 }
             }
             this.overlapList = this.overlapList.concat(appointment);
             eventsList = this.overlapList;
-            for (let event of eventsList) {
-                let record: { [key: string]: Object } = event as { [key: string]: Object };
-                let index: number = <number>record.Index;
-                (isNullOrUndefined(this.overlapEvents[index])) ? this.overlapEvents[index] = [event] :
+            for (const event of eventsList) {
+                const record: Record<string, any> = event;
+                const index: number = <number>record.Index;
+                if (isNullOrUndefined(this.overlapEvents[index])) {
+                    this.overlapEvents[index] = [event];
+                } else {
                     this.overlapEvents[index].push(event);
+                }
             }
         }
         if (!isAllDay) {
-            eventsList = eventsList.filter((obj: { [key: string]: Object }) => {
-                return obj[fieldMapping.startTime] === record[fieldMapping.startTime] &&
-                    obj[fieldMapping.endTime] > record[fieldMapping.endTime] ||
-                    obj[fieldMapping.endTime] > record[fieldMapping.startTime] &&
-                    obj[fieldMapping.startTime] < record[fieldMapping.endTime] ||
-                    obj[fieldMapping.endTime] === record[fieldMapping.startTime] &&
-                    obj[fieldMapping.startTime] === record[fieldMapping.endTime];
+            eventsList = eventsList.filter(function (obj) {
+                return obj[fieldMapping.startTime] === record[fieldMapping.startTime] && obj[fieldMapping.endTime] > record[fieldMapping.endTime] ||
+                    obj[fieldMapping.endTime] > record[fieldMapping.startTime] && obj[fieldMapping.startTime] < record[fieldMapping.endTime] ||
+                    obj[fieldMapping.endTime] === record[fieldMapping.startTime] && obj[fieldMapping.startTime] === record[fieldMapping.endTime];
             });
         }
         if (eventsList.length > 0) {
-            let appLevel: Object[] = eventsList.map((obj: { [key: string]: Object }) => obj.Index);
+            const appLevel: number[] = eventsList.map((obj: Record<string, any>) => obj.Index) as number[];
             appIndex = (appLevel.length > 0) ? this.getSmallestMissingNumber(appLevel) : 0;
         }
         return (appIndex === -1) ? 0 : appIndex;
     }
 
-    private adjustOverlapElements(args: ElementData): { [key: string]: Object } {
-        let data: { [key: string]: Object } = { appWidth: args.width, appLeft: args.left };
+    private adjustOverlapElements(args: ElementData): Record<string, any> {
+        const data: Record<string, any> = { appWidth: args.width, appLeft: args.left };
         for (let i: number = 0, length1: number = this.overlapEvents.length; i < length1; i++) {
             if (!isNullOrUndefined(this.overlapEvents[i])) {
                 for (let j: number = 0, length2: number = this.overlapEvents[i].length; j < length2; j++) {
-                    let dayCount: number = this.parent.activeViewOptions.group.byDate ? (this.resources.length * args.day) + args.resource :
-                        args.dayIndex;
-                    let element: HTMLElement = this.element.querySelector('#e-appointment-wrapper-' + dayCount) as HTMLElement;
+                    const dayCount: number = this.parent.activeViewOptions.group.byDate ?
+                        (this.resources.length * args.day) + args.resource : args.dayIndex;
+                    const element: HTMLElement = this.element.querySelector('#e-appointment-wrapper-' + dayCount) as HTMLElement;
                     if (element.childElementCount > 0) {
-                        let eleGuid: string = (<{ [key: string]: Object }>this.overlapEvents[i][j]).Guid as string;
+                        const eleGuid: string = (<Record<string, any>>this.overlapEvents[i][j]).Guid as string;
                         if (element.querySelectorAll('div[data-guid="' + eleGuid + '"]').length > 0 && eleGuid !== args.record.Guid) {
-                            let apps: HTMLElement = element.querySelector('div[data-guid="' + eleGuid + '"]') as HTMLElement;
+                            const apps: HTMLElement = element.querySelector('div[data-guid="' + eleGuid + '"]') as HTMLElement;
                             if (parseFloat(args.width) <= parseFloat(apps.style.width)) {
-                                (this.parent.enableRtl) ? apps.style.right = this.getEventLeft(args.width, i) :
+                                if (this.parent.enableRtl) {
+                                    apps.style.right = this.getEventLeft(args.width, i);
+                                } else {
                                     apps.style.left = this.getEventLeft(args.width, i);
+                                }
                                 apps.style.width = ((parseFloat(args.width))) + '%';
                                 data.appWidth = apps.style.width;
                             } else {
@@ -673,8 +684,8 @@ export class VerticalEvent extends EventBase {
     }
 
     private setAllDayRowHeight(height: number): void {
-        for (let element of this.allDayElement) {
-            (<HTMLElement>element).style.height = (height / 12) + 'em';
+        for (const element of this.allDayElement) {
+            element.style.height = (height / 12) + 'em';
         }
         this.animation.animate(this.allDayElement[0] as HTMLElement);
     }
@@ -689,7 +700,7 @@ export class VerticalEvent extends EventBase {
                 element.setAttribute('tabindex', '0');
             }
         });
-        let moreEventCount: HTMLElement = this.element.querySelector('.' + cls.ALLDAY_APPOINTMENT_SECTION_CLASS) as HTMLElement;
+        const moreEventCount: HTMLElement = this.element.querySelector('.' + cls.ALLDAY_APPOINTMENT_SECTION_CLASS) as HTMLElement;
         if (this.parent.uiStateValues.expand) {
             removeClass([moreEventCount], cls.APPOINTMENT_ROW_EXPAND_CLASS);
             addClass([moreEventCount], cls.APPOINTMENT_ROW_COLLAPSE_CLASS);
@@ -697,25 +708,32 @@ export class VerticalEvent extends EventBase {
             removeClass([moreEventCount], cls.APPOINTMENT_ROW_COLLAPSE_CLASS);
             addClass([moreEventCount], cls.APPOINTMENT_ROW_EXPAND_CLASS);
         }
-        (this.allDayLevel > 2) ? removeClass([moreEventCount], cls.DISABLE_CLASS) : addClass([moreEventCount], cls.DISABLE_CLASS);
-        let countCell: Element[] = [].slice.call(this.element.querySelectorAll('.' + cls.ROW_COUNT_WRAPPER_CLASS));
-        countCell.filter((element: Element) => {
-            (!this.parent.uiStateValues.expand && this.allDayLevel > 2) ? removeClass([element], cls.DISABLE_CLASS) :
+        if (this.allDayLevel > 2) {
+            removeClass([moreEventCount], cls.DISABLE_CLASS);
+        } else {
+            addClass([moreEventCount], cls.DISABLE_CLASS);
+        }
+        const countCell: Element[] = [].slice.call(this.element.querySelectorAll('.' + cls.ROW_COUNT_WRAPPER_CLASS));
+        countCell.forEach((element: Element) => {
+            if (!this.parent.uiStateValues.expand && this.allDayLevel > 2) {
+                removeClass([element], cls.DISABLE_CLASS);
+            } else {
                 addClass([element], cls.DISABLE_CLASS);
+            }
         });
     }
 
     private getEventHeight(): number {
-        let eventElement: HTMLElement = createElement('div', { className: cls.APPOINTMENT_CLASS, styles: 'visibility:hidden' });
-        let eventWrapper: Element = this.element.querySelector('.' + cls.ALLDAY_APPOINTMENT_WRAPPER_CLASS + ':first-child');
+        const eventElement: HTMLElement = createElement('div', { className: cls.APPOINTMENT_CLASS, styles: 'visibility:hidden' });
+        const eventWrapper: Element = this.element.querySelector('.' + cls.ALLDAY_APPOINTMENT_WRAPPER_CLASS + ':first-child');
         eventWrapper.appendChild(eventElement);
-        let height: number = eventElement.offsetHeight;
+        const height: number = eventElement.offsetHeight;
         remove(eventElement);
         return height;
     }
 
     private rowExpandCollapse(): void {
-        let target: HTMLElement = this.element.querySelector('.' + cls.ALLDAY_APPOINTMENT_SECTION_CLASS) as HTMLElement;
+        const target: HTMLElement = this.element.querySelector('.' + cls.ALLDAY_APPOINTMENT_SECTION_CLASS) as HTMLElement;
         this.parent.uiStateValues.expand = target.classList.contains(cls.APPOINTMENT_ROW_EXPAND_CLASS);
         let rowHeight: number;
         if (this.parent.uiStateValues.expand) {
@@ -735,4 +753,5 @@ export class VerticalEvent extends EventBase {
     private animationUiUpdate(): void {
         this.parent.notify(events.contentReady, {});
     }
+
 }

@@ -11,7 +11,9 @@ export class Save {
 
     /**
      * Constructor for Save module in Spreadsheet.
+     *
      * @private
+     * @param {Spreadsheet} parent - Specifies the Spreadsheet instance.
      */
     constructor(parent: Spreadsheet) {
         this.parent = parent;
@@ -20,8 +22,9 @@ export class Save {
     }
 
     /**
-     * To destroy the Save module. 
-     * @return {void}
+     * To destroy the Save module.
+     *
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
@@ -45,7 +48,8 @@ export class Save {
 
     /**
      * Get the module name.
-     * @returns string
+     *
+     * @returns {string} - Get the module name.
      * @private
      */
     public getModuleName(): string {
@@ -54,22 +58,26 @@ export class Save {
 
     /**
      * Initiate save process.
+     *
      * @hidden
+     * @returns {void} - Initiate save process.
      */
-    private initiateSave(args: { [key: string]: Object }): void {
+    private initiateSave(): void {
         this.parent.showSpinner();
     }
 
     /**
      * Save action completed.
+     *
      * @hidden
+     * @returns {void} - Save action completed.
      */
-    private saveCompleted(args: { [key: string]: Object }): void {
+    private saveCompleted(): void {
         this.parent.hideSpinner();
     }
 
     private showErrorDialog(args: { content: string }): void {
-        let dialogInst: Dialog = this.parent.serviceLocator.getService(dialog) as Dialog;
+        const dialogInst: Dialog = this.parent.serviceLocator.getService(dialog) as Dialog;
         dialogInst.show({
             target: this.parent.element, isModal: true, showCloseIcon: true, height: 180, width: 400, content: args.content,
             beforeOpen: (): void => focus(this.parent.element)

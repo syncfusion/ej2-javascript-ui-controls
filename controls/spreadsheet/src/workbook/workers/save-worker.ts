@@ -10,7 +10,9 @@ export class SaveWorker {
 
     /**
      * Constructor for SaveWorker module in Workbook library.
+     *
      * @private
+     * @param {Workbook} parent - Specifies the workbook.
      */
     constructor(parent: Workbook) {
         this.parent = parent;
@@ -18,6 +20,10 @@ export class SaveWorker {
 
     /**
      * Process sheet.
+     *
+     * @param {string} sheet - specify the sheet
+     * @param {number} sheetIndex - specify the sheetIndex
+     * @returns {Object} - Process sheet.
      * @hidden
      */
     protected processSheet(sheet: string, sheetIndex: number): Object {
@@ -34,12 +40,17 @@ export class SaveWorker {
 
     /**
      * Process save action.
+     *
+     * @param {Object} saveJSON - specify the object
+     * @param {SaveOptions | { [key: string]: string }} saveSettings - specify the saveSettings
+     * @param {Object} customParams - specify the customParams
+     * @returns {void} - Process save action.
      * @hidden
      */
     protected processSave(
         saveJSON: Object, saveSettings: SaveOptions | { [key: string]: string },
         customParams: Object): void {
-        let formData: FormData = new FormData();
+        const formData: FormData = new FormData();
         let i: number;
         let keys: string[] = Object.keys(saveSettings);
 
@@ -53,45 +64,45 @@ export class SaveWorker {
             formData.append(keys[i], customParams[keys[i]]);
         }
         fetch(saveSettings.url, { method: 'POST', body: formData })
-        .then((response: Response) => {
-            if (response.ok) {
-                return response.blob();
-            } else {
-                return Promise.reject({
-                    message: response.statusText
-                });
-            }
-        })
-        .then((data: Blob) => {
-            new Promise((resolve: Function) => {
-                let reader: FileReader = new FileReader();
-                reader.onload = () => {
-                    let result: string = reader.result.toString();
-                    if (result.indexOf('data:text/plain;base64,') > -1 || result.indexOf('data:text/html;base64,') > -1 ||
-                        result.indexOf('data:application/json;base64,') > -1) {
-                        let str: string[];
-                        result = result.replace('data:text/plain;base64,', ''); result = result.replace('data:text/html;base64,', '');
-                        if (result.indexOf('data:application/json;base64,') > -1) {
-                            result = result.replace('data:application/json;base64,', '');
-                            str = atob(result).split('.');
+            .then((response: Response) => {
+                if (response.ok) {
+                    return response.blob();
+                } else {
+                    return Promise.reject({
+                        message: response.statusText
+                    });
+                }
+            })
+                .then((data: Blob) => {
+                new Promise((resolve: Function) => {
+                    let reader: FileReader = new FileReader();
+                    reader.onload = () => {
+                        let result: string = reader.result.toString();
+                        if (result.indexOf('data:text/plain;base64,') > -1 || result.indexOf('data:text/html;base64,') > -1 ||
+                            result.indexOf('data:application/json;base64,') > -1) {
+                            let str: string[];
+                            result = result.replace('data:text/plain;base64,', ''); result = result.replace('data:text/html;base64,', '');
+                            if (result.indexOf('data:application/json;base64,') > -1) {
+                                result = result.replace('data:application/json;base64,', '');
+                                str = atob(result).split('.');
+                            } else {
+                                str = atob(result).split(/(\r\n|\n|\r)/gm);
+                            }    
+                            if (str.length) {
+                                let text: string = str[0].length > 1 && str[0][0] === '"' ? str[0].split('"')[1] + '.' : str[0];
+                                (postMessage as Function)({ dialog: text });
+                            }
                         } else {
-                            str = atob(result).split(/(\r\n|\n|\r)/gm);
+                            (postMessage as Function)(data);
                         }
-                        if (str.length) {
-                            let text: string = str[0].length > 1 && str[0][0] === '"' ? str[0].split('"')[1] + '.' : str[0];
-                            (postMessage as Function)({ dialog: text });
-                        }
-                    } else {
-                        (postMessage as Function)(data);
-                    }
-                    resolve(reader.result);
-                };
-                reader.readAsDataURL(data);
+                        resolve(reader.result);
+                    };
+                    reader.readAsDataURL(data);
+                });
+            })
+            .catch((error: Error) => {
+                (postMessage as Function)({ error: error.message });
             });
-        })
-        .catch((error: Error) => {
-            (postMessage as Function)({ error: error.message });
-        });
 
         // try {
         //     let httpRequest: XMLHttpRequest = new XMLHttpRequest();

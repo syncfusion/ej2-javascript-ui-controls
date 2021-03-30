@@ -1,6 +1,10 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { ChartLocation, StackValues, getPoint, withInRange, TransformToVisible } from '../../common/utils/helper';
 import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
-import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
 import { LineBase } from './line-base';
 import { AnimationModel } from '../../common/model/base-model';
@@ -14,18 +18,17 @@ export class StackingLineSeries extends LineBase {
 
     /**
      * Render the Stacking line series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
-        let polarType: boolean = series.chart.chartAreaType === 'PolarRadar';
-        let getCoordinate: Function = polarType ? TransformToVisible : getPoint;
+        const polarType: boolean = series.chart.chartAreaType === 'PolarRadar';
+        const getCoordinate: Function = polarType ? TransformToVisible : getPoint;
         let direction: string = '';
-        let visiblePts: Points[] = this.enableComplexProperty(series);
-        let pointsLength: number = visiblePts.length;
-        let stackedvalue: StackValues = series.stackedValues;
-        let startPoint: number = 0;
-        let options: PathOption;
+        const visiblePts: Points[] = this.enableComplexProperty(series);
+        const pointsLength: number = visiblePts.length;
+        const stackedvalue: StackValues = series.stackedValues;
         let point1: ChartLocation;
         let point2: ChartLocation;
         for (let i: number = 0; i < pointsLength; i++) {
@@ -56,16 +59,15 @@ export class StackingLineSeries extends LineBase {
                         );
                         direction = direction.concat('M' + ' ' + (point1.x) + ' ' + (point1.y) + ' ');
                     }
-                    startPoint = i + 1;
                 }
             }
         }
         if (series.chart.chartAreaType === 'PolarRadar' && visiblePts.length > 1) {
-            point1 = { 'y': stackedvalue.endValues[0], 'x': series.points[0].xValue, };
+            point1 = { 'y': stackedvalue.endValues[0], 'x': series.points[0].xValue };
             point2 = getCoordinate(point1.x, point1.y, xAxis, yAxis, isInverted, series);
             direction += ('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
         }
-        options = new PathOption(
+        const options: PathOption = new PathOption(
             series.chart.element.id + '_Series_' + series.index, 'none', series.width, series.interior,
             series.opacity, series.dashArray, direction);
         this.appendLinePath(options, series, '');
@@ -73,19 +75,21 @@ export class StackingLineSeries extends LineBase {
     }
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
     public doAnimation(series: Series): void {
-        let option: AnimationModel = series.animation;
+        const option: AnimationModel = series.animation;
         this.doLinearAnimation(series, option);
     }
     /**
-     * To destroy the stacking line. 
-     * @return {void}
+     * To destroy the stacking line.
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method calling here
          */

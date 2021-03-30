@@ -1,75 +1,75 @@
 /**
  * Constants
  */
-/** @hidden */
+/** @private */
 export const cellClick: string = 'cellClick';
-/** @hidden */
+/** @private */
 export const cellDoubleClick: string = 'cellDoubleClick';
-/** @hidden */
+/** @private */
 export const moreEventsClick: string = 'moreEventsClick';
-/** @hidden */
+/** @private */
 export const select: string = 'select';
-/** @hidden */
+/** @private */
 export const hover: string = 'hover';
-/** @hidden */
+/** @private */
 export const actionBegin: string = 'actionBegin';
-/** @hidden */
+/** @private */
 export const actionComplete: string = 'actionComplete';
-/** @hidden */
+/** @private */
 export const actionFailure: string = 'actionFailure';
-/** @hidden */
+/** @private */
 export const navigating: string = 'navigating';
-/** @hidden */
+/** @private */
 export const renderCell: string = 'renderCell';
-/** @hidden */
+/** @private */
 export const eventClick: string = 'eventClick';
-/** @hidden */
+/** @private */
 export const eventRendered: string = 'eventRendered';
-/** @hidden */
+/** @private */
 export const dataBinding: string = 'dataBinding';
-/** @hidden */
+/** @private */
 export const dataBound: string = 'dataBound';
-/** @hidden */
+/** @private */
 export const popupOpen: string = 'popupOpen';
-/** @hidden */
+/** @private */
 export const popupClose: string = 'popupClose';
-/** @hidden */
+/** @private */
 export const dragStart: string = 'dragStart';
-/** @hidden */
+/** @private */
 export const drag: string = 'drag';
-/** @hidden */
+/** @private */
 export const dragStop: string = 'dragStop';
-/** @hidden */
+/** @private */
 export const resizeStart: string = 'resizeStart';
-/** @hidden */
+/** @private */
 export const resizing: string = 'resizing';
-/** @hidden */
+/** @private */
 export const resizeStop: string = 'resizeStop';
-/** @hidden */
+/** @private */
 export const inlineClick: string = 'inlineClick';
 
 /**
  * Specifies schedule internal events
  */
-/** @hidden */
+/** @private */
 export const initialLoad: string = 'initial-load';
-/** @hidden */
+/** @private */
 export const initialEnd: string = 'initial-end';
-/** @hidden */
+/** @private */
 export const dataReady: string = 'data-ready';
-/** @hidden */
+/** @private */
 export const eventsLoaded: string = 'events-loaded';
-/** @hidden */
+/** @private */
 export const contentReady: string = 'content-ready';
-/** @hidden */
+/** @private */
 export const scroll: string = 'scroll';
-/** @hidden */
+/** @private */
 export const virtualScroll: string = 'virtual-scroll';
-/** @hidden */
+/** @private */
 export const scrollUiUpdate: string = 'scroll-ui-update';
-/** @hidden */
+/** @private */
 export const uiUpdate: string = 'ui-update';
-/** @hidden */
+/** @private */
 export const documentClick: string = 'document-click';
-/** @hidden */
+/** @private */
 export const cellMouseDown: string = 'cell-mouse-down';

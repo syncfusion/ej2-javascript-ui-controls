@@ -1,10 +1,13 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
 /**
  * Chart legend
  */
 import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { LegendOptions, BaseLegend } from '../../common/legend/legend';
 import { LegendShape } from '../../chart/utils/enum';
-import { Chart } from '../../chart/chart';
 import { Range } from '../model/bullet-base';
 import { LegendSettingsModel } from '../../common/legend/legend-model';
 import { textTrim, ChartLocation} from '../../common/utils/helper';
@@ -59,16 +62,17 @@ export class BulletChartLegend extends BaseLegend {
     }
     /**
      * Get the legend options.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
-    public getLegendOptions(visibleRangeCollection: Range[], chart: BulletChart): void {
+    public getLegendOptions(visibleRangeCollection: Range[]): void {
         this.legendCollections = [];
         let fill: string;
         let count: number = 0;
-        let key: string = 'color';
-        let bulletChart: BulletChart = this.chart as BulletChart;
-        for (let range of visibleRangeCollection) {
+        const key: string = 'color';
+        const bulletChart: BulletChart = this.chart as BulletChart;
+        for (const range of visibleRangeCollection) {
             if (range.name !== null) {
                 fill = range.color ? range.color : bulletChart.themeStyle.rangeStrokes[range.index][key];
                 this.legendCollections.push(new LegendOptions(
@@ -80,40 +84,41 @@ export class BulletChartLegend extends BaseLegend {
         }
         if (bulletChart.dataSource !== null && bulletChart.valueField !== '') {
             fill = bulletChart.valueFill || 'black';
-            let shape: LegendShape = bulletChart.orientation === 'Vertical' ? 'TargetRect' : 'ActualRect';
+            const shape: LegendShape = bulletChart.orientation === 'Vertical' ? 'TargetRect' : 'ActualRect';
             this.legendCollections.push(new LegendOptions(
                 'Actual', fill, shape, this.chart.legendSettings.visible, null, '', null, false, count++, null
             ));
         }
         if (bulletChart.dataSource !== null && bulletChart.targetField !== '') {
             fill = bulletChart.targetColor || 'black';
-            let shape: LegendShape = bulletChart.orientation === 'Vertical' ? 'ActualRect' : 'TargetRect';
+            const shape: LegendShape = bulletChart.orientation === 'Vertical' ? 'ActualRect' : 'TargetRect';
             for (let i: number = 0; i < Object.keys(bulletChart.dataSource).length; i++) {
                 if (isNullOrUndefined(bulletChart.dataSource[i][bulletChart.targetField].length)
                 || bulletChart.dataSource[i][bulletChart.targetField].length === 1) {
-            while (i === 0) {
-                    this.legendCollections.push(new LegendOptions(
-                        'Target', fill, shape, this.chart.legendSettings.visible, null, '', null, false, count++, null
-                    ));
-                    break;
+                    while (i === 0) {
+                        this.legendCollections.push(new LegendOptions(
+                            'Target', fill, shape, this.chart.legendSettings.visible, null, '', null, false, count++, null
+                        ));
+                        break;
                     }
                 } else {
-                    let targetTypes: TargetType[] = bulletChart.targetTypes;
-                    let targetType: string[] = [];
-                    let targetTypeLength: number = targetTypes.length;
+                    const targetTypes: TargetType[] = bulletChart.targetTypes;
+                    const targetType: string[] = [];
+                    const targetTypeLength: number = targetTypes.length;
                     while (i === 0) {
-                    for (let i: number = 0; i < targetTypeLength ; i++) {
-                        targetType[i] = targetTypes[i % targetTypeLength];
-                        targetType[i] = (targetType[i] === 'Rect') ? bulletChart.orientation === 'Vertical' ?
-                        'ActualRect' : 'TargetRect' : (targetType[i]);
-                        targetType[i] = (targetType[i] === 'Cross') ? 'Multiply' :  targetType[i];
-                        this.legendCollections.push(new LegendOptions(
-                        'Target_' + i, fill, <LegendShape>targetType[i], this.chart.legendSettings.visible,
-                        null, '', null, false, count++, null
-                        ));
+                        for (let i: number = 0; i < targetTypeLength ; i++) {
+                            targetType[i] = targetTypes[i % targetTypeLength];
+                            targetType[i] = (targetType[i] === 'Rect') ? bulletChart.orientation === 'Vertical' ?
+                                'ActualRect' : 'TargetRect' : (targetType[i]);
+                            targetType[i] = (targetType[i] === 'Cross') ? 'Multiply' :  targetType[i];
+                            this.legendCollections.push(
+                                new LegendOptions(
+                                    'Target_' + i, fill, <LegendShape>targetType[i], this.chart.legendSettings.visible,
+                                    null, '', null, false, count++, null
+                                ));
+                        }
+                        break;
                     }
-                    break;
-                }
                 }
             }
         }
@@ -121,7 +126,7 @@ export class BulletChartLegend extends BaseLegend {
     /** @private */
     public getLegendBounds(availableSize: Size, bulletLegendBounds: Rect, legend: LegendSettingsModel): void {
         let extraWidth: number = 0;
-        let padding: number = legend.padding;
+        const padding: number = legend.padding;
         let extraHeight: number = 0;
         if (!this.isVertical) {
             extraHeight = !legend.height ? ((availableSize.height / 100) * 5) : 0;
@@ -135,13 +140,12 @@ export class BulletChartLegend extends BaseLegend {
         let legendRowCount: number = 0;
         let legendWidth: number = 0;
         let columnHeight: number = 0;
-        let shapeHeight: number = legend.shapeHeight;
-        let shapeWidth: number = legend.shapeWidth;
-        let shapePadding: number = legend.shapePadding;
+        const shapeWidth: number = legend.shapeWidth;
+        const shapePadding: number = legend.shapePadding;
         let legendEventArgs: IBulletLegendRenderEventArgs;
         this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle).height, legend.shapeHeight);
         let render: boolean = false;
-        for (let bulletLegendOption of this.legendCollections) {
+        for (const bulletLegendOption of this.legendCollections) {
             legendEventArgs = {
                 fill: bulletLegendOption.fill, text: bulletLegendOption.text, shape: bulletLegendOption.shape,
                 name: legendRender, cancel: false
@@ -180,8 +184,8 @@ export class BulletChartLegend extends BaseLegend {
     public getRenderPoint(
         bulletLegendOption: LegendOptions, start: ChartLocation, textPadding: number, prevLegend: LegendOptions,
         rect: Rect, count: number, firstLegend: number): void {
-        let previousBound: number = (prevLegend.location.x + textPadding + prevLegend.textSize.width);
-        let padding: number = this.legend.padding;
+        const previousBound: number = (prevLegend.location.x + textPadding + prevLegend.textSize.width);
+        const padding: number = this.legend.padding;
         if ((previousBound + (bulletLegendOption.textSize.width + textPadding)) > (rect.x + rect.width + this.legend.shapeWidth / 2) ||
             this.isVertical) {
             bulletLegendOption.location.x = start.x;
@@ -191,16 +195,17 @@ export class BulletChartLegend extends BaseLegend {
             bulletLegendOption.location.x = (count === firstLegend) ? prevLegend.location.x : previousBound;
             bulletLegendOption.location.y = prevLegend.location.y;
         }
-        let availwidth: number = (this.legendBounds.x + this.legendBounds.width) - (bulletLegendOption.location.x +
+        const availwidth: number = (this.legendBounds.x + this.legendBounds.width) - (bulletLegendOption.location.x +
             textPadding - this.legend.shapeWidth / 2);
         bulletLegendOption.text = textTrim(+availwidth.toFixed(4), bulletLegendOption.text, this.legend.textStyle);
     }
     /**
      * To show the tooltip for the trimmed text in legend.
-     * @return {void}
+     *
+     * @returns {void}
      */
     public click(event: Event | PointerEvent): void {
-        let symbolTargetId: string = (<HTMLElement>event.target).id;
+        const symbolTargetId: string = (<HTMLElement>event.target).id;
         if (symbolTargetId.indexOf(this.legendID + '_pagedown') > -1) {
             this.changePage(event, false);
         } else if (symbolTargetId.indexOf(this.legendID + '_pageup') > -1) {
@@ -217,14 +222,14 @@ export class BulletChartLegend extends BaseLegend {
 
     /**
      * To destroy the Legend.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method calling here
          */
-       this.removeEventListener();
+        this.removeEventListener();
     }
-
 }

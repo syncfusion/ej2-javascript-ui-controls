@@ -34,7 +34,7 @@ describe('Chart Control', () => {  beforeAll(() => {
         return;
     }
 });
-    // tslint:disable-next-line:align
+    // eslint-disable-next-line @typescript-eslint/indent
     describe('Chart Tooltip', () => {
         let chartObj: Chart;
         let elem: HTMLElement = createElement('div', { id: 'container' });

@@ -7,12 +7,14 @@ export interface FontModel {
 
     /**
      * Font size for the text.
+     *
      * @default '16px'
      */
     size?: string;
 
     /**
      * Color for the text.
+     *
      * @default ''
      */
     color?: string;
@@ -24,24 +26,28 @@ export interface FontModel {
 
     /**
      * FontWeight for the text.
+     *
      * @default 'Normal'
      */
     fontWeight?: string;
 
     /**
      * FontStyle for the text.
+     *
      * @default 'Normal'
      */
     fontStyle?: string;
 
     /**
      * text alignment
+     *
      * @default 'Center'
      */
     textAlignment?: Alignment;
 
     /**
      * Specifies the heat map text overflow
+     *
      * @default 'Trim'
      */
     textOverflow?: TextOverflow;
@@ -55,24 +61,28 @@ export interface MarginModel {
 
     /**
      * Left margin in pixels.
+     *
      * @default 10
      */
     left?: number;
 
     /**
      * Right margin in pixels.
+     *
      * @default 10
      */
     right?: number;
 
     /**
      * Top margin in pixels.
+     *
      * @default 10
      */
     top?: number;
 
     /**
      * Bottom margin in pixels.
+     *
      * @default 10
      */
     bottom?: number;
@@ -86,18 +96,21 @@ export interface BorderModel {
 
     /**
      * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default ''
      */
     color?: string;
 
     /**
      * The width of the border in pixels.
+     *
      * @default 1
      */
     width?: number;
 
     /**
      * The radius of the border in pixels.
+     *
      * @default ''
      */
     radius?: number;
@@ -111,12 +124,14 @@ export interface TooltipBorderModel {
 
     /**
      * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default ''
      */
     color?: string;
 
     /**
      * The width of the border in pixels.
+     *
      * @default 0
      */
     width?: number;
@@ -130,12 +145,14 @@ export interface BubbleDataModel {
 
     /**
      * Mapping property to set size.
+     *
      * @default null
      */
     size?: string;
 
     /**
      * Mapping property to set color.
+     *
      * @default null
      */
     color?: string;
@@ -149,6 +166,7 @@ export interface TitleModel {
 
     /**
      * Title text
+     *
      * @default ''
      */
     text?: string;
@@ -167,12 +185,14 @@ export interface FillColorModel {
 
     /**
      * minimum fill color for cell color range
+     *
      * @default '#eeeeee'
      */
     minColor?: string;
 
     /**
      * maximum fill color for cell color range
+     *
      * @default '#eeeeee'
      */
     maxColor?: string;
@@ -186,42 +206,49 @@ export interface PaletteCollectionModel {
 
     /**
      * Palette color value
+     *
      * @default null
      */
     value?: number;
 
     /**
      * Palette color text
+     *
      * @default ''
      */
     color?: string;
 
     /**
      * Palette color label
+     *
      * @default ''
      */
     label?: string;
 
     /**
      * Palette start value
+     *
      * @default null
      */
     startValue?: number;
 
     /**
      * Palette end value
+     *
      * @default null
      */
     endValue?: number;
 
     /**
      * Palette minColor value
+     *
      * @default null
      */
     minColor?: string;
 
     /**
      * Palette maxColor value
+     *
      * @default null
      */
     maxColor?: string;
@@ -235,25 +262,28 @@ export interface AxisLabelBorderModel {
 
     /**
      * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default ''
      */
     color?: string;
 
     /**
      * The width of the border in pixels.
+     *
      * @default 1
-     * @blazordefaultvalue 0
+     * @blazorDefaultValue 0
      */
     width?: number;
 
     /**
      * Border type for labels
-     * * Rectangle 
+     * * Rectangle
      * * Without Top Border
      * * Without Top/Bottom Border
      * * Without Border
      * * Without Bottom Border
      * * Brace
+     *
      * @default 'Rectangle'
      */
     type?: BorderType;
@@ -267,12 +297,14 @@ export interface BubbleSizeModel {
 
     /**
      * Specifies the minimum radius value of the cell in percentage.
+     *
      * @default '0%'
      */
     minimum?: string;
 
     /**
      * Specifies the maximum radius value of the cell in percentage.
+     *
      * @default '100%'
      */
 
@@ -287,6 +319,7 @@ export interface MultiLevelCategoriesModel {
 
     /**
      * Start value of the multi level labels
+     *
      * @default null
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
@@ -295,6 +328,7 @@ export interface MultiLevelCategoriesModel {
 
     /**
      * End value of the multi level labels
+     *
      * @default null
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
@@ -303,12 +337,14 @@ export interface MultiLevelCategoriesModel {
 
     /**
      * multi level labels text.
+     *
      * @default ''
      */
     text?: string;
 
     /**
      * Maximum width of the text for multi level labels.
+     *
      * @default null
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
@@ -323,19 +359,21 @@ export interface MultiLevelCategoriesModel {
 export interface MultiLevelLabelsModel {
 
     /**
-     * Defines the position of the multi level labels. They are, 
+     * Defines the position of the multi level labels. They are,
      * * Near: Places the multi level labels at Near.
      * * Center: Places the multi level labels at Center.
      * * Far: Places the multi level labels at Far.
+     *
      * @default 'Center'
      */
     alignment?: Alignment;
 
     /**
-     * Defines the textOverFlow for multi level labels. They are, 
+     * Defines the textOverFlow for multi level labels. They are,
      * * Trim: Trim textOverflow for multi level labels.
      * * Wrap: Wrap textOverflow for multi level labels.
      * * none: None textOverflow for multi level labels.
+     *
      * @default 'Wrap'
      */
     overflow?: TextOverflow;

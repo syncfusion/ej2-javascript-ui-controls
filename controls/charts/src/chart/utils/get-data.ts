@@ -1,3 +1,7 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { Chart } from '../chart';
 import { withInBounds, PointData, getValueXByPoint, getValueYByPoint, AccPointData } from '../../common/utils/helper';
 import { Rect } from '@syncfusion/ej2-svg-base';
@@ -5,6 +9,7 @@ import { Series, Points } from '../series/chart-series';
 
 /**
  * To get the data on mouse move.
+ *
  * @private
  */
 export class ChartData {
@@ -19,6 +24,7 @@ export class ChartData {
 
     /**
      * Constructor for the data.
+     *
      * @private
      */
 
@@ -28,11 +34,12 @@ export class ChartData {
     }
     /**
      * Method to get the Data.
+     *
      * @private
      */
 
     public getData(): PointData {
-        let chart: Chart = this.chart;
+        const chart: Chart = this.chart;
         let point: Points = null;
         let series: Series = null;
         let width: number; let height: number;
@@ -46,10 +53,10 @@ export class ChartData {
             mouseX = chart.mouseX; mouseY = chart.mouseY;
             if (series.dragSettings.enable && series.isRectSeries) {
                 if (!(series.type === 'Bar' && chart.isTransposed) && (chart.isTransposed || series.type === 'Bar')) {
-                    let markerWidth: number = series.marker.width / 2;
+                    const markerWidth: number = series.marker.width / 2;
                     mouseX = series.yAxis.isInversed ? mouseX + markerWidth : mouseX - markerWidth;
                 } else {
-                    let markerHeight: number = series.marker.height / 2;
+                    const markerHeight: number = series.marker.height / 2;
                     mouseY = series.yAxis.isInversed ? mouseY - markerHeight : mouseY + markerHeight;
                 }
             }
@@ -69,8 +76,7 @@ export class ChartData {
     }
 
     private getRectPoint(series: Series, rect: Rect, x: number, y: number): Points {
-        let currentRect: Rect;
-        let chart: Chart = this.chart;
+        const chart: Chart = this.chart;
         let fromCenterX: number; let fromCenterY: number;
         let clickAngle: number; let arcAngle: number = 0;
         let startAngle: number; let endAngle: number;
@@ -78,7 +84,7 @@ export class ChartData {
         if (chart.isScrolling) {
             return null;
         }
-        for (let point of series.points) {
+        for (const point of series.points) {
             if (!point.regionData) {
                 if (!point.regions || !point.regions.length) {
                     continue;
@@ -139,17 +145,18 @@ export class ChartData {
     }
     /**
      * To check the point in threshold region for column and bar series
-     * @param x
-     * @param y
-     * @param point
-     * @param rect
-     * @param series
+     *
+     * @param {number} x X coordinate
+     * @param {number} y Y coodinate
+     * @param {Points} point point
+     * @param {Rect} rect point rect region
+     * @param {Series} series series
      */
     private isPointInThresholdRegion(x: number, y: number, point: Points, rect: Rect, series: Series): boolean {
-        let isBar: boolean = series.type === 'Bar';
-        let isInversed: boolean = series.yAxis.isInversed;
-        let isTransposed: boolean = series.chart.isTransposed;
-        let heightValue: number = 10; let yValue: number = 0;
+        const isBar: boolean = series.type === 'Bar';
+        const isInversed: boolean = series.yAxis.isInversed;
+        const isTransposed: boolean = series.chart.isTransposed;
+        const heightValue: number = 10; let yValue: number = 0;
         let xValue: number = 0;
         let width: number;
         let height: number = width = 2 * heightValue;
@@ -201,10 +208,10 @@ export class ChartData {
      * @private
      */
     public getClosest(series: Series, value: number): number {
-        let xData: number[] = series.xData;
+        const xData: number[] = series.xData;
         let closest: number;
         if (value >= <number>series.xMin - 0.5 && value <= <number>series.xMax + 0.5) {
-            for (let data of xData) {
+            for (const data of xData) {
                 if (closest == null || Math.abs(data - value) < Math.abs(closest - value)) {
                     closest = data;
                 }
@@ -217,15 +224,15 @@ export class ChartData {
 
     public getClosestX(chart: Chart, series: Series): PointData {
         let value: number;
-        let rect: Rect = series.clipRect;
+        const rect: Rect = series.clipRect;
         if (!chart.requireInvertedAxis) {
             value = getValueXByPoint( chart.mouseX - rect.x, rect.width, series.xAxis);
         } else {
             value = getValueYByPoint(chart.mouseY - rect.y, rect.height, series.xAxis);
         }
 
-        let closest: number = this.getClosest(series, value);
-        for (let point of series.points) {
+        const closest: number = this.getClosest(series, value);
+        for (const point of series.points) {
             if (closest === point.xValue && point.visible) {
                 return new PointData(point, series);
             }

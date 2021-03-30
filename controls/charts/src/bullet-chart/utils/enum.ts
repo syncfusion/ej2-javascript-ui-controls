@@ -2,6 +2,7 @@
  * It defines orientation of the bullet chart.
  * * horizontal
  * * vertical
+ *
  * @private
  */
 export type OrientationType =
@@ -14,6 +15,7 @@ export type OrientationType =
  * It defines flow direction of the bullet chart.
  * * Forward
  * * Backward
+ *
  * @private
  */
 export type FlowType =
@@ -27,6 +29,7 @@ export type FlowType =
  * * Far
  * * Near
  * * Center
+ *
  * @private
  */
 export type TickPlacement =
@@ -41,6 +44,7 @@ export type TickPlacement =
  * It defines flow direction of the bullet chart.
  * * Forward
  * * Backward
+ *
  * @private
  */
 export type FeatureType =
@@ -53,6 +57,7 @@ export type FeatureType =
  * It defines tick placement of bullet chart.
  * * Outside
  * * Inside
+ *
  * @private
  */
 export type TickPosition =
@@ -65,6 +70,7 @@ export type TickPosition =
  * It defines label placement of bullet chart.
  * * Outside
  * * Inside
+ *
  * @private
  */
 export type LabelsPlacement =
@@ -77,6 +83,7 @@ export type LabelsPlacement =
  * It defines label position of bullet chart.
  * * Below
  * * Above
+ *
  * @private
  */
 export type LabelsPosition =
@@ -90,6 +97,7 @@ export type LabelsPosition =
  * * Start
  * * Middle
  * * End
+ *
  * @private
  */
 export type TextAnchor =
@@ -106,6 +114,7 @@ export type TextAnchor =
  * * Right
  * * Top
  * * Bottom
+ *
  * @private
  */
 export type TextPosition =
@@ -123,12 +132,13 @@ export type TextPosition =
  * * Rect
  * * Circle
  * * Cross
+ *
  * @private
  */
 export type TargetType =
     /** Rect bulletchart target type */
     'Rect' |
     /** Circle bulletchart target type */
-    'Circle'|
+    'Circle' |
     /** Cross bulletchart target type */
     'Cross';

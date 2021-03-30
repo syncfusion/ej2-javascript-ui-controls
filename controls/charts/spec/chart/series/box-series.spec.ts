@@ -869,7 +869,7 @@ describe('Chart Control - Box and Whisker Series', () => {
         it('Checking mouse wheel zooming and selection', (done: Function) => {
             loaded = (args: Object): void => {
                 chartObj.loaded = null;
-                let wheelArgs: wheel = {
+                let wheelArgs: unknown = {
                     preventDefault: prevent,
                     wheelDelta: 120,
                     detail: 3,

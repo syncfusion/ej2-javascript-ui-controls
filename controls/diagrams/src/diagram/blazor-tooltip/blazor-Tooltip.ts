@@ -1,3 +1,7 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/ban-types */
 import { Property, ChildProperty, Event, BaseEventArgs, append, compile, createElement } from '@syncfusion/ej2-base';
 import { Touch, Browser, Animation as tooltipAnimation, AnimationModel as tooltipAnimationModel } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, formatUnit } from '@syncfusion/ej2-base';
@@ -10,23 +14,27 @@ import { Effect } from '@syncfusion/ej2-base';
 
 /**
  * Applicable tip positions attached to the Tooltip.
+ *
  * @private
  */
 export type TipPointerPosition = 'Auto' | 'Start' | 'Middle' | 'End';
 
 /**
  * Animation options that are common for both open and close actions of the Tooltip
+ *
  *  @private
  */
 export class BlazorAnimation extends ChildProperty<BlazorAnimation> {
     /**
      * Animation settings to be applied on the Tooltip, while it is being shown over the target.
+     *
      * @ignoreapilink
      */
     @Property<TooltipAnimationSettings>({ effect: 'FadeIn', duration: 150, delay: 0 })
     public open: TooltipAnimationSettings;
     /**
      * Animation settings to be applied on the Tooltip, when it is closed.
+     *
      * @ignoreapilink
      */
     @Property<TooltipAnimationSettings>({ effect: 'FadeOut', duration: 150, delay: 0 })
@@ -35,6 +43,7 @@ export class BlazorAnimation extends ChildProperty<BlazorAnimation> {
 
 /**
  * Describes the element positions.
+ *
  * @private
  */
 interface ElementPosition extends OffsetPosition {
@@ -44,6 +53,7 @@ interface ElementPosition extends OffsetPosition {
 }
 /**
  * Interface for Tooltip event arguments.
+ *
  * @private
  */
 export interface TooltipEventArgs extends BaseEventArgs {
@@ -69,16 +79,19 @@ export interface TooltipEventArgs extends BaseEventArgs {
     element: HTMLElement;
     /**
      * It is used to denote the Collided Tooltip position
+     *
      */
     collidedPosition?: string;
-    /** 
+    /**
      * If the event is triggered by interaction, it returns true. Otherwise, it returns false.
+     *
      */
     isInteracted?: boolean;
 
 }
 /**
  * Animation options that are common for both open and close actions of the Tooltip.
+ *
  * @private
  */
 export interface TooltipAnimationSettings {
@@ -214,7 +227,7 @@ export class BlazorTooltip {
             this.reposition(target);
             this.adjustArrow(target, this.position, this.tooltipPositionX, this.tooltipPositionY);
         }
-    };
+    }
     private formatPosition(): void {
         if (this.position.indexOf('Top') === 0 || this.position.indexOf('Bottom') === 0) {
             [this.tooltipPositionY, this.tooltipPositionX] = this.position.split(/(?=[A-Z])/);
@@ -238,7 +251,8 @@ export class BlazorTooltip {
             addClass([this.tooltipEle], POPUP_OPEN);
             tooltipAnimation.stop(this.tooltipEle);
             let animationOptions: tooltipAnimationModel;
-            let currentTooltip: BlazorTooltip = this;
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
+            const currentTooltip: BlazorTooltip = this;
             currentTooltip.isHidden = true;
             if (this.animation.close) {
                 animationOptions = {
@@ -290,7 +304,7 @@ export class BlazorTooltip {
         e: Event,
         showAnimation: TooltipAnimationSettings): void {
         this.formatPosition();
-        let isBlazorTooltipRendered: boolean = false;
+        const isBlazorTooltipRendered: boolean = false;
         if (beforeRenderArgs.cancel) {
             this.isHidden = true;
             //  this.clear();
@@ -352,7 +366,7 @@ export class BlazorTooltip {
                 addClass([ctrlObj.tooltipEle], POPUP_OPEN);
             }
         }
-    };
+    }
 
     private setTipClass(position: Position): void {
         if (position.indexOf('Right') === 0) {
@@ -368,25 +382,25 @@ export class BlazorTooltip {
 
     private renderArrow(): void {
         this.setTipClass(this.position);
-        let tip: HTMLElement = createElement('div', { className: ARROW_TIP + ' ' + this.tipClass });
+        const tip: HTMLElement = createElement('div', { className: ARROW_TIP + ' ' + this.tipClass });
         tip.appendChild(createElement('div', { className: ARROW_TIP_OUTER + ' ' + this.tipClass }));
         tip.appendChild(createElement('div', { className: ARROW_TIP_INNER + ' ' + this.tipClass }));
         this.tooltipEle.appendChild(tip);
     }
     private getTooltipPosition(target: HTMLElement): OffsetPosition {
         this.tooltipEle.style.display = 'block';
-        let pos: OffsetPosition = calculatePosition(target, this.tooltipPositionX, this.tooltipPositionY);
-        let offsetPos: OffsetPosition = this.calculateTooltipOffset(this.position);
-        let elePos: OffsetPosition = this.collisionFlipFit(target, pos.left + offsetPos.left, pos.top + offsetPos.top);
+        const pos: OffsetPosition = calculatePosition(target, this.tooltipPositionX, this.tooltipPositionY);
+        const offsetPos: OffsetPosition = this.calculateTooltipOffset(this.position);
+        const elePos: OffsetPosition = this.collisionFlipFit(target, pos.left + offsetPos.left, pos.top + offsetPos.top);
         this.tooltipEle.style.display = '';
         return elePos;
     }
     private checkCollision(target: HTMLElement, x: number, y: number): ElementPosition {
-        let elePos: ElementPosition = {
+        const elePos: ElementPosition = {
             left: x, top: y, position: this.position,
             horizontal: this.tooltipPositionX, vertical: this.tooltipPositionY
         };
-        let affectedPos: string[] = isCollide(this.tooltipEle, (this.target ? this.element.element : null) as HTMLElement, x, y);
+        const affectedPos: string[] = isCollide(this.tooltipEle, (this.target ? this.element.element : null) as HTMLElement, x, y);
         if (affectedPos.length > 0) {
             elePos.horizontal = affectedPos.indexOf('left') >= 0 ? 'Right' : affectedPos.indexOf('right') >= 0 ? 'Left' :
                 this.tooltipPositionX;
@@ -397,7 +411,7 @@ export class BlazorTooltip {
     }
 
     private collisionFlipFit(target: HTMLElement, x: number, y: number): OffsetPosition {
-        let elePos: ElementPosition = this.checkCollision(target, x, y);
+        const elePos: ElementPosition = this.checkCollision(target, x, y);
         let newpos: Position = elePos.position;
         if (this.tooltipPositionY !== elePos.vertical) {
             newpos = ((this.position.indexOf('Bottom') === 0 || this.position.indexOf('Top') === 0) ?
@@ -420,9 +434,9 @@ export class BlazorTooltip {
         };
         this.element.trigger('beforeCollision', this.tooltipEventArgs);
         if (elePos.position !== newpos) {
-            let pos: OffsetPosition = calculatePosition(target, elePos.horizontal, elePos.vertical);
+            const pos: OffsetPosition = calculatePosition(target, elePos.horizontal, elePos.vertical);
             this.adjustArrow(target, newpos, elePos.horizontal, elePos.vertical);
-            let offsetPos: OffsetPosition = this.calculateTooltipOffset(newpos);
+            const offsetPos: OffsetPosition = this.calculateTooltipOffset(newpos);
             offsetPos.top -= (('TopBottom'.indexOf(this.position.split(/(?=[A-Z])/)[0]) !== -1) &&
                 ('TopBottom'.indexOf(newpos.split(/(?=[A-Z])/)[0]) !== -1)) ? (2 * this.offsetY) : 0;
             offsetPos.left -= (('RightLeft'.indexOf(this.position.split(/(?=[A-Z])/)[0]) !== -1) &&
@@ -433,12 +447,12 @@ export class BlazorTooltip {
         } else {
             this.adjustArrow(target, newpos, elePos.horizontal, elePos.vertical);
         }
-        let eleOffset: OffsetPosition = { left: elePos.left, top: elePos.top };
-        let left: number = fit(
+        const eleOffset: OffsetPosition = { left: elePos.left, top: elePos.top };
+        const left: number = fit(
             this.tooltipEle, (this.target ? this.element.element : null) as HTMLElement, { X: true, Y: false }, eleOffset).left;
         this.tooltipEle.style.display = 'block';
         if (this.showTipPointer && (newpos.indexOf('Bottom') === 0 || newpos.indexOf('Top') === 0)) {
-            let arrowEle: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP) as HTMLElement;
+            const arrowEle: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP) as HTMLElement;
             let arrowleft: number = parseInt(arrowEle.style.left, 10) - (left - elePos.left);
             if (arrowleft < 0) {
                 arrowleft = 0;
@@ -455,64 +469,64 @@ export class BlazorTooltip {
 
 
     private calculateTooltipOffset(position: Position): OffsetPosition {
-        let pos: OffsetPosition = { top: 0, left: 0 };
-        let tooltipEleWidth: number = this.tooltipEle.offsetWidth;
-        let tooltipEleHeight: number = this.tooltipEle.offsetHeight;
-        let arrowEle: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP) as HTMLElement;
-        let tipWidth: number = arrowEle ? arrowEle.offsetWidth : 0;
-        let tipHeight: number = arrowEle ? arrowEle.offsetHeight : 0;
-        let tipAdjust: number = (this.showTipPointer ? SHOW_POINTER_TIP_GAP : HIDE_POINTER_TIP_GAP);
-        let tipHeightAdjust: number = (tipHeight / 2) + POINTER_ADJUST + (this.tooltipEle.offsetHeight - this.tooltipEle.clientHeight);
-        let tipWidthAdjust: number = (tipWidth / 2) + POINTER_ADJUST + (this.tooltipEle.offsetWidth - this.tooltipEle.clientWidth);
+        const pos: OffsetPosition = { top: 0, left: 0 };
+        const tooltipEleWidth: number = this.tooltipEle.offsetWidth;
+        const tooltipEleHeight: number = this.tooltipEle.offsetHeight;
+        const arrowEle: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP) as HTMLElement;
+        const tipWidth: number = arrowEle ? arrowEle.offsetWidth : 0;
+        const tipHeight: number = arrowEle ? arrowEle.offsetHeight : 0;
+        const tipAdjust: number = (this.showTipPointer ? SHOW_POINTER_TIP_GAP : HIDE_POINTER_TIP_GAP);
+        const tipHeightAdjust: number = (tipHeight / 2) + POINTER_ADJUST + (this.tooltipEle.offsetHeight - this.tooltipEle.clientHeight);
+        const tipWidthAdjust: number = (tipWidth / 2) + POINTER_ADJUST + (this.tooltipEle.offsetWidth - this.tooltipEle.clientWidth);
         switch (position) {
-            case 'RightTop':
-                pos.left += tipWidth + tipAdjust;
-                pos.top -= tooltipEleHeight - tipHeightAdjust;
-                break;
-            case 'RightCenter':
-                pos.left += tipWidth + tipAdjust;
-                pos.top -= (tooltipEleHeight / 2);
-                break;
-            case 'RightBottom':
-                pos.left += tipWidth + tipAdjust;
-                pos.top -= (tipHeightAdjust);
-                break;
-            case 'BottomRight':
-                pos.top += (tipHeight + tipAdjust);
-                pos.left -= (tipWidthAdjust);
-                break;
-            case 'BottomCenter':
-                pos.top += (tipHeight + tipAdjust);
-                pos.left -= (tooltipEleWidth / 2);
-                break;
-            case 'BottomLeft':
-                pos.top += (tipHeight + tipAdjust);
-                pos.left -= (tooltipEleWidth - tipWidthAdjust);
-                break;
-            case 'LeftBottom':
-                pos.left -= (tipWidth + tooltipEleWidth + tipAdjust);
-                pos.top -= (tipHeightAdjust);
-                break;
-            case 'LeftCenter':
-                pos.left -= (tipWidth + tooltipEleWidth + tipAdjust);
-                pos.top -= (tooltipEleHeight / 2);
-                break;
-            case 'LeftTop':
-                pos.left -= (tipWidth + tooltipEleWidth + tipAdjust);
-                pos.top -= (tooltipEleHeight - tipHeightAdjust);
-                break;
-            case 'TopLeft':
-                pos.top -= (tooltipEleHeight + tipHeight + tipAdjust);
-                pos.left -= (tooltipEleWidth - tipWidthAdjust);
-                break;
-            case 'TopRight':
-                pos.top -= (tooltipEleHeight + tipHeight + tipAdjust);
-                pos.left -= (tipWidthAdjust);
-                break;
-            default:
-                pos.top -= (tooltipEleHeight + tipHeight + tipAdjust);
-                pos.left -= (tooltipEleWidth / 2);
-                break;
+        case 'RightTop':
+            pos.left += tipWidth + tipAdjust;
+            pos.top -= tooltipEleHeight - tipHeightAdjust;
+            break;
+        case 'RightCenter':
+            pos.left += tipWidth + tipAdjust;
+            pos.top -= (tooltipEleHeight / 2);
+            break;
+        case 'RightBottom':
+            pos.left += tipWidth + tipAdjust;
+            pos.top -= (tipHeightAdjust);
+            break;
+        case 'BottomRight':
+            pos.top += (tipHeight + tipAdjust);
+            pos.left -= (tipWidthAdjust);
+            break;
+        case 'BottomCenter':
+            pos.top += (tipHeight + tipAdjust);
+            pos.left -= (tooltipEleWidth / 2);
+            break;
+        case 'BottomLeft':
+            pos.top += (tipHeight + tipAdjust);
+            pos.left -= (tooltipEleWidth - tipWidthAdjust);
+            break;
+        case 'LeftBottom':
+            pos.left -= (tipWidth + tooltipEleWidth + tipAdjust);
+            pos.top -= (tipHeightAdjust);
+            break;
+        case 'LeftCenter':
+            pos.left -= (tipWidth + tooltipEleWidth + tipAdjust);
+            pos.top -= (tooltipEleHeight / 2);
+            break;
+        case 'LeftTop':
+            pos.left -= (tipWidth + tooltipEleWidth + tipAdjust);
+            pos.top -= (tooltipEleHeight - tipHeightAdjust);
+            break;
+        case 'TopLeft':
+            pos.top -= (tooltipEleHeight + tipHeight + tipAdjust);
+            pos.left -= (tooltipEleWidth - tipWidthAdjust);
+            break;
+        case 'TopRight':
+            pos.top -= (tooltipEleHeight + tipHeight + tipAdjust);
+            pos.left -= (tipWidthAdjust);
+            break;
+        default:
+            pos.top -= (tooltipEleHeight + tipHeight + tipAdjust);
+            pos.left -= (tooltipEleWidth / 2);
+            break;
         }
         pos.left += this.offsetX;
         pos.top += this.offsetY;
@@ -520,7 +534,7 @@ export class BlazorTooltip {
     }
 
     private reposition(target: HTMLElement): void {
-        let elePos: OffsetPosition = this.getTooltipPosition(target);
+        const elePos: OffsetPosition = this.getTooltipPosition(target);
         this.tooltipEle.style.left = elePos.left + 'px';
         this.tooltipEle.style.top = elePos.top + 'px';
     }
@@ -543,7 +557,7 @@ export class BlazorTooltip {
             if (this.showTipPointer) {
                 ctrlObj.renderArrow();
             }
-            let elePos: OffsetPosition = this.getTooltipPosition(target);
+            const elePos: OffsetPosition = this.getTooltipPosition(target);
             this.tooltipEle.classList.remove(POPUP_LIB);
             this.tooltipEle.style.left = elePos.left + 'px';
             this.tooltipEle.style.top = elePos.top + 'px';
@@ -555,13 +569,13 @@ export class BlazorTooltip {
     }
 
     private addDescribedBy(target: HTMLElement, id: string): void {
-        let describedby: string[] = (target.getAttribute('aria-describedby') || '').split(/\s+/);
+        const describedby: string[] = (target.getAttribute('aria-describedby') || '').split(/\s+/);
         if (describedby.indexOf(id) < 0) { describedby.push(id); }
         attributes(target, { 'aria-describedby': describedby.join(' ').trim(), 'data-tooltip-id': id });
     }
 
     private renderContent(target?: HTMLElement): void {
-        let tooltipContent: HTMLElement = this.tooltipEle.querySelector('.' + CONTENT) as HTMLElement;
+        const tooltipContent: HTMLElement = this.tooltipEle.querySelector('.' + CONTENT) as HTMLElement;
         if (this.cssClass) {
             addClass([this.tooltipEle], this.cssClass.split(' '));
         }
@@ -577,7 +591,7 @@ export class BlazorTooltip {
                 } else if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') < 0) {
                     tooltipContent.innerHTML = this.content;
                 } else {
-                    let templateFunction: Function = compile(this.content);
+                    const templateFunction: Function = compile(this.content);
                     append(templateFunction({}, null, null, this.element.element.id + 'content'), tooltipContent);
                     if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') >= 0) {
                         this.isBlazorTemplate = true;
@@ -593,8 +607,8 @@ export class BlazorTooltip {
     }
 
     private updateTipPosition(position: Position): void {
-        let selEle: NodeList = this.tooltipEle.querySelectorAll('.' + ARROW_TIP + ',.' + ARROW_TIP_OUTER + ',.' + ARROW_TIP_INNER);
-        let removeList: string[] = [TIP_BOTTOM, TIP_TOP, TIP_LEFT, TIP_RIGHT];
+        const selEle: NodeList = this.tooltipEle.querySelectorAll('.' + ARROW_TIP + ',.' + ARROW_TIP_OUTER + ',.' + ARROW_TIP_INNER);
+        const removeList: string[] = [TIP_BOTTOM, TIP_TOP, TIP_LEFT, TIP_RIGHT];
         removeClass(selEle, removeList);
         this.setTipClass(position);
         addClass(selEle, this.tipClass);
@@ -605,10 +619,10 @@ export class BlazorTooltip {
         this.updateTipPosition(position);
         let leftValue: string; let topValue: string;
         this.tooltipEle.style.display = 'block';
-        let tooltipWidth: number = this.tooltipEle.clientWidth; let tooltipHeight: number = this.tooltipEle.clientHeight;
-        let arrowEle: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP) as HTMLElement;
-        let arrowInnerELe: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP_INNER) as HTMLElement;
-        let tipWidth: number = arrowEle.offsetWidth; let tipHeight: number = arrowEle.offsetHeight;
+        const tooltipWidth: number = this.tooltipEle.clientWidth; const tooltipHeight: number = this.tooltipEle.clientHeight;
+        const arrowEle: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP) as HTMLElement;
+        const arrowInnerELe: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP_INNER) as HTMLElement;
+        const tipWidth: number = arrowEle.offsetWidth; const tipHeight: number = arrowEle.offsetHeight;
         this.tooltipEle.style.display = '';
         if (this.tipClass === TIP_BOTTOM || this.tipClass === TIP_TOP) {
             if (this.tipClass === TIP_BOTTOM) {
@@ -621,7 +635,7 @@ export class BlazorTooltip {
                 arrowInnerELe.style.top = '-' + (tipHeight - 6) + 'px';
             }
             if (target) {
-                let tipPosExclude: boolean = tooltipPositionX !== 'Center' || (tooltipWidth > target.offsetWidth);
+                const tipPosExclude: boolean = tooltipPositionX !== 'Center' || (tooltipWidth > target.offsetWidth);
                 if ((tipPosExclude && tooltipPositionX === 'Left') || (!tipPosExclude && this.tipPointerPosition === 'End')) {
                     leftValue = (tooltipWidth - tipWidth - POINTER_ADJUST) + 'px';
                 } else if ((tipPosExclude && tooltipPositionX === 'Right') || (!tipPosExclude && this.tipPointerPosition === 'Start')) {
@@ -640,7 +654,7 @@ export class BlazorTooltip {
                 // Arrow icon aligned -2px from ArrowOuterTip width
                 arrowInnerELe.style.left = (-(tipWidth) + (tipWidth - 2)) + 'px';
             }
-            let tipPosExclude: boolean = tooltipPositionY !== 'Center' || (tooltipHeight > target.offsetHeight);
+            const tipPosExclude: boolean = tooltipPositionY !== 'Center' || (tooltipHeight > target.offsetHeight);
             if ((tipPosExclude && tooltipPositionY === 'Top') || (!tipPosExclude && this.tipPointerPosition === 'End')) {
                 topValue = (tooltipHeight - tipHeight - POINTER_ADJUST) + 'px';
             } else if ((tipPosExclude && tooltipPositionY === 'Bottom') || (!tipPosExclude && this.tipPointerPosition === 'Start')) {
@@ -654,9 +668,11 @@ export class BlazorTooltip {
     }
 
     /**
-     * Core method to return the component name.
-     * @private
+     * Returns the module name of the blazor tooltip
+     *
+     * @returns {string}  Returns the module name of the blazor tooltip
      */
+
     public getModuleName(): string {
         return 'BlazorTooltip';
     }

@@ -33,6 +33,7 @@ export class LargeIconsView {
     private keyConfigs: { [key: string]: string };
     private isInteraction: boolean = true;
     private itemList: HTMLElement[];
+    // eslint-disable-next-line
     private items: Object[];
     private clickObj: Touch;
     private perRow: number;
@@ -49,7 +50,9 @@ export class LargeIconsView {
     private isInteracted: boolean = true;
 
     /**
-     * Constructor for the LargeIcons module
+     * Constructor for the LargeIcons module.
+     *
+     * @param {IFileManager} parent - specifies the parent element.
      * @hidden
      */
     constructor(parent?: IFileManager) {
@@ -114,8 +117,8 @@ export class LargeIconsView {
                 this.removeEventListener();
             }
             this.parent.notify(events.hideLayout, {});
-            let iconsView: Element = select('#' + this.parent.element.id + CLS.LARGEICON_ID, this.parent.element);
-            let ul: HTMLUListElement = select('ul', iconsView) as HTMLUListElement;
+            const iconsView: Element = select('#' + this.parent.element.id + CLS.LARGEICON_ID, this.parent.element);
+            const ul: HTMLUListElement = select('ul', iconsView) as HTMLUListElement;
             if (ul) {
                 remove(ul);
             }
@@ -133,6 +136,7 @@ export class LargeIconsView {
             this.items = [];
             this.items = this.renderList(args);
             this.items = getSortedData(this.parent, this.items);
+            // eslint-disable-next-line
             this.listElements = ListBase.createListFromJson(createElement, <{ [key: string]: Object; }[]>this.items, this.listObj);
             this.itemList = Array.prototype.slice.call(selectAll('.' + CLS.LIST_ITEM, this.listElements));
             this.element.appendChild(this.listElements);
@@ -140,7 +144,7 @@ export class LargeIconsView {
             this.createDragObj();
             iconsView.classList.remove(CLS.DISPLAY_NONE);
             if (this.itemList.length === 0) {
-                let emptyList: Element = this.element.querySelector('.' + CLS.LIST_PARENT);
+                const emptyList: Element = this.element.querySelector('.' + CLS.LIST_PARENT);
                 this.element.removeChild(emptyList);
                 createEmptyElement(this.parent, this.element, args);
             } else if (this.itemList.length !== 0 && this.element.querySelector('.' + CLS.EMPTY)) {
@@ -160,7 +164,7 @@ export class LargeIconsView {
                     this.parent.uploadItem = [];
                 }
             }
-            let activeEle: NodeListOf<Element> = this.element.querySelectorAll('.' + CLS.ACTIVE);
+            const activeEle: NodeListOf<Element> = this.element.querySelectorAll('.' + CLS.ACTIVE);
             if (activeEle.length !== 0) {
                 this.parent.activeModule = 'largeiconsview';
             }
@@ -204,7 +208,7 @@ export class LargeIconsView {
                     clone: true,
                     dragStart: (args: DragEventArgs & BlazorDragEventArgs) => {
                         dragStartHandler(this.parent, args, this.dragObj);
-                    },
+                    }
                 });
             } else if (this.dragObj && !this.parent.allowDragAndDrop) {
                 this.dragObj.destroy();
@@ -213,16 +217,17 @@ export class LargeIconsView {
     }
 
     public dragHelper(args: { element: HTMLElement, sender: MouseEvent & TouchEvent }): HTMLElement {
-        let dragTarget: Element = <Element>args.sender.target;
-        let dragLi: Element = closest(dragTarget, '.e-list-item');
+        const dragTarget: Element = <Element>args.sender.target;
+        const dragLi: Element = closest(dragTarget, '.e-list-item');
         if (!dragLi) { return null; }
         if (dragLi && !dragLi.classList.contains('e-active')) {
             this.setFocus(dragLi);
         }
-        let activeEle: NodeListOf<Element> = this.element.querySelectorAll('.' + CLS.ACTIVE);
+        const activeEle: NodeListOf<Element> = this.element.querySelectorAll('.' + CLS.ACTIVE);
         this.parent.activeElements = [];
         this.parent.dragData = [];
         for (let i: number = 0; i < activeEle.length; i++) {
+            // eslint-disable-next-line
             this.parent.dragData.push(<{ [key: string]: Object; }>this.getItemObject(activeEle[i]));
             this.parent.activeElements.push(activeEle[i]);
         }
@@ -234,10 +239,12 @@ export class LargeIconsView {
 
     private onDropInit(args: DragEventArgs): void {
         if (this.parent.targetModule === this.getModuleName()) {
-            let dropLi: Element = closest(args.target, '.e-list-item');
-            let cwdData: Object = getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent);
+            const dropLi: Element = closest(args.target, '.e-list-item');
+            // eslint-disable-next-line
+            const cwdData: Object = getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent);
             if (dropLi) {
-                let info: { [key: string]: Object; } = <{ [key: string]: Object; }>this.getItemObject(dropLi);
+                // eslint-disable-next-line
+                const info: { [key: string]: Object; } = <{ [key: string]: Object; }>this.getItemObject(dropLi);
                 this.parent.dropPath = info.isFile ? this.parent.path : getFullPath(this.parent, info, this.parent.path);
                 this.parent.dropData = info.isFile ? cwdData : info;
             } else {
@@ -249,6 +256,8 @@ export class LargeIconsView {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} - returns the module name.
      * @private
      */
     private getModuleName(): string {
@@ -256,21 +265,21 @@ export class LargeIconsView {
     }
 
     private adjustHeight(): void {
-        let pane: HTMLElement = <HTMLElement>select('#' + this.parent.element.id + CLS.CONTENT_ID, this.parent.element);
-        let bar: HTMLElement = <HTMLElement>select('#' + this.parent.element.id + CLS.BREADCRUMBBAR_ID, this.parent.element);
+        const pane: HTMLElement = <HTMLElement>select('#' + this.parent.element.id + CLS.CONTENT_ID, this.parent.element);
+        const bar: HTMLElement = <HTMLElement>select('#' + this.parent.element.id + CLS.BREADCRUMBBAR_ID, this.parent.element);
         this.element.style.height = (pane.offsetHeight - bar.offsetHeight) + 'px';
     }
 
     private onItemCreated(args: ItemCreatedArgs): void {
         args.item.removeAttribute('aria-level');
         if (!this.parent.showFileExtension && getValue('isFile', args.curData)) {
-            let textEle: Element = args.item.querySelector('.' + CLS.LIST_TEXT);
-            let txt: string = getValue('name', args.curData);
-            let type: string = getValue('type', args.curData);
+            const textEle: Element = args.item.querySelector('.' + CLS.LIST_TEXT);
+            const txt: string = getValue('name', args.curData);
+            const type: string = getValue('type', args.curData);
             textEle.innerHTML = txt.substr(0, txt.length - type.length);
         }
         this.renderCheckbox(args);
-        let eventArgs: FileLoadEventArgs = {
+        const eventArgs: FileLoadEventArgs = {
             element: args.item,
             fileDetails: args.curData,
             module: 'LargeIconsView'
@@ -280,8 +289,7 @@ export class LargeIconsView {
 
     private renderCheckbox(args: ItemCreatedArgs): void {
         if (!this.parent.allowMultiSelection) { return; }
-        let checkElement: Element;
-        checkElement = createCheckBox(createElement, false, {
+        const checkElement: Element = createCheckBox(createElement, false, {
             checked: false,
             cssClass: 'e-small'
         });
@@ -297,14 +305,14 @@ export class LargeIconsView {
             /* istanbul ignore next */
             if (getValue('name', args) === 'layout-change' && this.parent.fileAction === 'move' &&
                 this.parent.isCut && this.parent.selectedNodes && this.parent.selectedNodes.length !== 0) {
-                let indexes: number[] = this.getIndexes(this.parent.selectedNodes);
+                const indexes: number[] = this.getIndexes(this.parent.selectedNodes);
                 let length: number = 0;
                 while (length < indexes.length) {
                     addBlur(this.itemList[indexes[length]]);
                     length++;
                 }
             }
-            let activeEle: NodeListOf<Element> = this.element.querySelectorAll('.' + CLS.ACTIVE);
+            const activeEle: NodeListOf<Element> = this.element.querySelectorAll('.' + CLS.ACTIVE);
             if (activeEle.length !== 0) {
                 this.element.focus();
             }
@@ -316,7 +324,7 @@ export class LargeIconsView {
     }
 
     private checkItem(): void {
-        let checkEle: NodeListOf<Element> = this.element.querySelectorAll('.' + CLS.ACTIVE);
+        const checkEle: NodeListOf<Element> = this.element.querySelectorAll('.' + CLS.ACTIVE);
         if (checkEle) {
             let checkLength: number = 0;
             while (checkLength < checkEle.length) {
@@ -326,13 +334,15 @@ export class LargeIconsView {
         }
     }
 
+    // eslint-disable-next-line
     private renderList(args?: ReadArgs): Object[] {
         let i: number = 0;
-        let items: Object[] = JSON.parse(JSON.stringify(args.files));
+        // eslint-disable-next-line
+        const items: Object[] = JSON.parse(JSON.stringify(args.files));
         while (i < items.length) {
-            let icon: string = fileType(items[i]);
-            let name: string = getValue('name', items[i]);
-            let selected: string = getItemName(this.parent, items[i]);
+            const icon: string = fileType(items[i]);
+            const name: string = getValue('name', items[i]);
+            const selected: string = getItemName(this.parent, items[i]);
             let className: string = ((this.parent.selectedItems &&
                 this.parent.selectedItems.indexOf(selected) !== -1)) ?
                 CLS.LARGE_ICON + ' e-active' : CLS.LARGE_ICON;
@@ -340,7 +350,7 @@ export class LargeIconsView {
                 className += ' ' + getAccessClass(items[i]);
             }
             if (icon === CLS.ICON_IMAGE && this.parent.showThumbnail && hasReadAccess(items[i])) {
-                let imgUrl: string = getImageUrl(this.parent, items[i]);
+                const imgUrl: string = getImageUrl(this.parent, items[i]);
                 setValue('_fm_imageUrl', imgUrl, items[i]);
                 setValue('_fm_imageAttr', { alt: name }, items[i]);
             } else {
@@ -429,8 +439,8 @@ export class LargeIconsView {
     private onSelectAllInit(): void {
         if (this.parent.view === 'LargeIcons') {
             this.startItem = this.getFirstItem();
-            let lastItem: Element = this.getLastItem();
-            let eveArgs: KeyboardEventArgs = { ctrlKey: true, shiftKey: true } as KeyboardEventArgs;
+            const lastItem: Element = this.getLastItem();
+            const eveArgs: KeyboardEventArgs = { ctrlKey: true, shiftKey: true } as KeyboardEventArgs;
             this.doSelection(lastItem, eveArgs);
             this.isInteraction = true;
             this.isInteracted = true;
@@ -560,9 +570,10 @@ export class LargeIconsView {
 
     private onActionFailure(): void { this.isInteraction = true; this.isInteracted = true; }
 
+    // eslint-disable-next-line
     private onMenuItemData(args: { [key: string]: Object; }): void {
         if (this.parent.activeModule === this.getModuleName()) {
-            let ele: Element = closest(<Element>args.target, 'li');
+            const ele: Element = closest(<Element>args.target, 'li');
             this.parent.itemData = [this.getItemObject(ele)];
         }
     }
@@ -586,7 +597,7 @@ export class LargeIconsView {
 
     private oncutCopyInit(): void {
         if (this.parent.activeModule === this.getModuleName()) {
-            let activeEle: NodeListOf<Element> = this.element.querySelectorAll('.' + CLS.ACTIVE);
+            const activeEle: NodeListOf<Element> = this.element.querySelectorAll('.' + CLS.ACTIVE);
             this.parent.activeRecords = [];
             this.parent.activeElements = [];
             for (let i: number = 0; i < activeEle.length; i++) {
@@ -613,48 +624,49 @@ export class LargeIconsView {
     }
 
     private onPropertyChanged(e: NotifyArgs): void {
+        let currentSelected: string[];
         if (e.module !== this.getModuleName() && e.module !== 'common') {
             return;
         }
-        for (let prop of Object.keys(e.newProp)) {
+        for (const prop of Object.keys(e.newProp)) {
             switch (prop) {
-                case 'allowDragAndDrop':
-                    this.createDragObj();
-                    break;
-                case 'height':
-                    this.adjustHeight();
-                    break;
-                case 'selectedItems':
-                    this.isInteraction = false;
-                    this.isInteracted = false;
-                    let currentSelected: string[] = isNOU(this.parent.selectedItems) ? [] : this.parent.selectedItems.slice(0);
-                    currentSelected = this.parent.allowMultiSelection ? currentSelected :
-                        currentSelected.slice(currentSelected.length - 1);
-                    this.parent.setProperties({ selectedItems: [] }, true);
-                    this.onClearAllInit();
-                    if (currentSelected.length) {
-                        this.selectItems(currentSelected);
-                    }
-                    this.parent.setProperties({ selectedItems: this.parent.selectedItems }, true);
-                    this.isInteraction = true;
-                    this.isInteracted = true;
-                    break;
-                case 'showThumbnail':
-                    refresh(this.parent);
-                    break;
-                case 'showFileExtension':
-                    read(this.parent, events.pathChanged, this.parent.path);
-                    break;
-                case 'showHiddenItems':
-                    read(this.parent, events.pathChanged, this.parent.path);
-                    break;
-                case 'allowMultiSelection':
-                    if (this.parent.view !== 'LargeIcons') { break; }
-                    refresh(this.parent);
-                    break;
-                case 'view':
-                    updateLayout(this.parent, 'LargeIcons');
-                    break;
+            case 'allowDragAndDrop':
+                this.createDragObj();
+                break;
+            case 'height':
+                this.adjustHeight();
+                break;
+            case 'selectedItems':
+                this.isInteraction = false;
+                this.isInteracted = false;
+                currentSelected = isNOU(this.parent.selectedItems) ? [] : this.parent.selectedItems.slice(0);
+                currentSelected = this.parent.allowMultiSelection ? currentSelected :
+                    currentSelected.slice(currentSelected.length - 1);
+                this.parent.setProperties({ selectedItems: [] }, true);
+                this.onClearAllInit();
+                if (currentSelected.length) {
+                    this.selectItems(currentSelected);
+                }
+                this.parent.setProperties({ selectedItems: this.parent.selectedItems }, true);
+                this.isInteraction = true;
+                this.isInteracted = true;
+                break;
+            case 'showThumbnail':
+                refresh(this.parent);
+                break;
+            case 'showFileExtension':
+                read(this.parent, events.pathChanged, this.parent.path);
+                break;
+            case 'showHiddenItems':
+                read(this.parent, events.pathChanged, this.parent.path);
+                break;
+            case 'allowMultiSelection':
+                if (this.parent.view !== 'LargeIcons') { break; }
+                refresh(this.parent);
+                break;
+            case 'view':
+                updateLayout(this.parent, 'LargeIcons');
+                break;
             }
         }
     }
@@ -674,7 +686,7 @@ export class LargeIconsView {
             {
                 keyAction: this.keyActionHandler.bind(this),
                 keyConfigs: this.keyConfigs,
-                eventName: 'keyup',
+                eventName: 'keyup'
             }
         );
         this.keyboardDownModule = new KeyboardEvents(
@@ -682,7 +694,7 @@ export class LargeIconsView {
             {
                 keyAction: this.keydownActionHandler.bind(this),
                 keyConfigs: this.keyConfigs,
-                eventName: 'keydown',
+                eventName: 'keydown'
             }
         );
         EventHandler.add(this.element, 'mouseover', this.onMouseOver, this);
@@ -697,7 +709,7 @@ export class LargeIconsView {
 
     /* istanbul ignore next */
     private onMouseOver(e: MouseArgs): void {
-        let targetEle: Element = closest(e.target, '.e-list-item');
+        const targetEle: Element = closest(e.target, '.e-list-item');
         removeBlur(this.parent, 'hover');
         if (targetEle !== null) {
             targetEle.classList.add(CLS.HOVER);
@@ -706,7 +718,8 @@ export class LargeIconsView {
 
     private wireClickEvent(toBind: boolean): void {
         if (toBind) {
-            let proxy: LargeIconsView = this;
+            // eslint-disable-next-line
+            const proxy: LargeIconsView = this;
             this.clickObj = new Touch(this.element, {
                 tap: (eve: TapEventArgs) => {
                     eve.originalEvent.preventDefault();
@@ -747,8 +760,8 @@ export class LargeIconsView {
     }
 
     private doTapAction(eve: TapEventArgs): void {
-        let target: Element = <Element>eve.originalEvent.target;
-        let item: Element = closest(target, '.' + CLS.LIST_ITEM);
+        const target: Element = <Element>eve.originalEvent.target;
+        const item: Element = closest(target, '.' + CLS.LIST_ITEM);
         if (this.multiSelect || target.classList.contains(CLS.LIST_PARENT) || isNOU(item)) {
             this.clickHandler(eve);
         } else {
@@ -766,15 +779,21 @@ export class LargeIconsView {
     }
 
     private clickHandler(e: TapEventArgs): void {
-        let target: Element = <Element>e.originalEvent.target;
+        const target: Element = <Element>e.originalEvent.target;
         removeBlur(this.parent, 'hover');
         this.doSelection(target, e.originalEvent);
         this.parent.activeModule = 'largeiconsview';
     }
-    /** @hidden */
+    /**
+     *
+     * @param {Element} target - specifies the target element.
+     * @param {TouchEventArgs | MouseEventArgs | KeyboardEventArgs} e - specifies event arguements.
+     * @returns {void}
+     * @hidden
+     */
     public doSelection(target: Element, e: TouchEventArgs | MouseEventArgs | KeyboardEventArgs): void {
-        let item: Element = closest(target, '.' + CLS.LIST_ITEM);
-        let cList: DOMTokenList = target.classList;
+        const item: Element = closest(target, '.' + CLS.LIST_ITEM);
+        const cList: DOMTokenList = target.classList;
         this.parent.isFile = false;
         let action: string = 'select';
         if (e.which === 3 && !isNOU(item) && item.classList.contains(CLS.ACTIVE)) {
@@ -785,7 +804,7 @@ export class LargeIconsView {
                 && (e.ctrlKey || target.classList.contains(CLS.CHECK))) {
                 action = 'unselect';
             }
-            let fileSelectionArgs: FileSelectionEventArgs = this.triggerSelection(action, item);
+            const fileSelectionArgs: FileSelectionEventArgs = this.triggerSelection(action, item);
             if (fileSelectionArgs.cancel !== true) {
                 if ((!this.parent.allowMultiSelection || (!this.multiSelect && (e && !e.ctrlKey)))
                     && !cList.contains(CLS.FRAME)) {
@@ -797,8 +816,8 @@ export class LargeIconsView {
                     if (!this.startItem) {
                         this.startItem = item;
                     }
-                    let startIndex: number = this.itemList.indexOf(<HTMLElement>this.startItem);
-                    let endIndex: number = this.itemList.indexOf(<HTMLElement>item);
+                    const startIndex: number = this.itemList.indexOf(<HTMLElement>this.startItem);
+                    const endIndex: number = this.itemList.indexOf(<HTMLElement>item);
                     if (startIndex > endIndex) {
                         for (let i: number = startIndex; i >= endIndex; i--) {
                             this.addActive(this.itemList[i]);
@@ -828,13 +847,13 @@ export class LargeIconsView {
             this.clearSelection();
         }
         if (!isNOU(item)) {
-           this.updateType(item);
+            this.updateType(item);
         }
     }
 
     private dblClickHandler(e: TapEventArgs): void {
         this.parent.activeModule = 'largeiconsview';
-        let target: Element = <Element>e.originalEvent.target;
+        const target: Element = <Element>e.originalEvent.target;
         this.doOpenAction(target);
     }
 
@@ -851,24 +870,25 @@ export class LargeIconsView {
 
     private doOpenAction(target: Element): void {
         if (isNOU(target)) { return; }
-        let item: Element = closest(target, '.' + CLS.LIST_ITEM);
+        const item: Element = closest(target, '.' + CLS.LIST_ITEM);
         this.parent.isFile = false;
         if (!isNOU(item)) {
             this.updateType(item);
-            let details: Object = this.getItemObject(item);
+            // eslint-disable-next-line
+            const details: Object = this.getItemObject(item);
             if (!hasReadAccess(details)) {
                 createDeniedDialog(this.parent, details, events.permissionRead);
                 return;
             }
-            let eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: details, module: 'LargeIconsView' };
+            const eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: details, module: 'LargeIconsView' };
             this.parent.trigger('fileOpen', eventArgs, (fileOpenArgs: FileOpenEventArgs) => {
                 if (!fileOpenArgs.cancel) {
-                    let text: string = getValue('name', details);
+                    const text: string = getValue('name', details);
                     if (!this.parent.isFile) {
-                        let val: string = this.parent.breadcrumbbarModule.searchObj.element.value;
+                        const val: string = this.parent.breadcrumbbarModule.searchObj.element.value;
                         if (val === '' && !this.parent.isFiltered) {
-                            let id: string = getValue('id', details);
-                            let newPath: string = this.parent.path + (isNOU(id) ? text : id) + '/';
+                            const id: string = getValue('id', details);
+                            const newPath: string = this.parent.path + (isNOU(id) ? text : id) + '/';
                             this.parent.setProperties({ path: newPath }, true);
                             this.parent.pathNames.push(text);
                             this.parent.pathId.push(getValue('_fm_id', details));
@@ -880,9 +900,9 @@ export class LargeIconsView {
                         this.parent.isFiltered = false;
                         this.parent.setProperties({ selectedItems: [] }, true);
                     } else {
-                        let icon: string = fileType(details);
+                        const icon: string = fileType(details);
                         if (icon === CLS.ICON_IMAGE) {
-                            let imgUrl: string = getImageUrl(this.parent, details);
+                            const imgUrl: string = getImageUrl(this.parent, details);
                             createImageDialog(this.parent, text, imgUrl);
                         }
                     }
@@ -892,162 +912,162 @@ export class LargeIconsView {
     }
 
     private updateType(item: Element): void {
-        let folder: Element = select('.' + CLS.FOLDER, item);
+        const folder: Element = select('.' + CLS.FOLDER, item);
         this.parent.isFile = isNOU(folder) ? true : false;
     }
 
     /* istanbul ignore next */
-    // tslint:disable-next-line:max-func-body-length
+    // eslint:disable-next-line
     private keydownActionHandler(e: KeyboardEventArgs): void {
         if (!this.isRendered) { return; }
         switch (e.action) {
-            case 'end':
-            case 'home':
-            case 'moveDown':
-            case 'moveLeft':
-            case 'moveRight':
-            case 'moveUp':
-            case 'ctrlEnd':
-            case 'shiftEnd':
-            case 'csEnd':
-            case 'ctrlHome':
-            case 'shiftHome':
-            case 'csHome':
-            case 'ctrlDown':
-            case 'shiftDown':
-            case 'csDown':
-            case 'ctrlLeft':
-            case 'shiftLeft':
-            case 'csLeft':
-            case 'ctrlRight':
-            case 'shiftRight':
-            case 'csRight':
-            case 'space':
-            case 'ctrlSpace':
-            case 'shiftSpace':
-            case 'csSpace':
-            case 'ctrlA':
-            case 'enter':
-            case 'altEnter':
-            case 'esc':
-            case 'del':
-            case 'shiftdel':
-            case 'ctrlC':
-            case 'ctrlV':
-            case 'ctrlX':
-            case 'f2':
-            case 'ctrlD':
-                e.preventDefault();
-                break;
-            default:
-                break;
+        case 'end':
+        case 'home':
+        case 'moveDown':
+        case 'moveLeft':
+        case 'moveRight':
+        case 'moveUp':
+        case 'ctrlEnd':
+        case 'shiftEnd':
+        case 'csEnd':
+        case 'ctrlHome':
+        case 'shiftHome':
+        case 'csHome':
+        case 'ctrlDown':
+        case 'shiftDown':
+        case 'csDown':
+        case 'ctrlLeft':
+        case 'shiftLeft':
+        case 'csLeft':
+        case 'ctrlRight':
+        case 'shiftRight':
+        case 'csRight':
+        case 'space':
+        case 'ctrlSpace':
+        case 'shiftSpace':
+        case 'csSpace':
+        case 'ctrlA':
+        case 'enter':
+        case 'altEnter':
+        case 'esc':
+        case 'del':
+        case 'shiftdel':
+        case 'ctrlC':
+        case 'ctrlV':
+        case 'ctrlX':
+        case 'f2':
+        case 'ctrlD':
+            e.preventDefault();
+            break;
+        default:
+            break;
         }
     }
 
     /* istanbul ignore next */
-    // tslint:disable-next-line:max-func-body-length
+    // eslint:disable-next-line
     private keyActionHandler(e: KeyboardEventArgs): void {
         if (!this.isRendered) { return; }
-        let fItem: Element = this.getFocusedItem();
-        let firstItem: Element = this.getFirstItem();
-        let lastItem: Element = this.getLastItem();
+        const fItem: Element = this.getFocusedItem();
+        const firstItem: Element = this.getFirstItem();
+        const lastItem: Element = this.getLastItem();
         switch (e.action) {
-            case 'end':
-                this.navigateItem(lastItem);
-                break;
-            case 'home':
-                this.navigateItem(firstItem);
-                break;
-            case 'tab':
-                if (!isNOU(fItem)) {
-                    this.addFocus(fItem);
-                } else if (!isNOU(firstItem)) {
-                    this.addFocus(firstItem);
-                }
-                break;
-            case 'moveDown':
-                this.navigateDown(fItem, true);
-                break;
-            case 'moveLeft':
-                this.navigateRight(fItem, false);
-                break;
-            case 'moveRight':
-                this.navigateRight(fItem, true);
-                break;
-            case 'moveUp':
-                this.navigateDown(fItem, false);
-                break;
-            case 'ctrlEnd':
-            case 'shiftEnd':
-            case 'csEnd':
-                this.csEndKey(lastItem, e);
-                break;
-            case 'ctrlHome':
-            case 'shiftHome':
-            case 'csHome':
-                this.csHomeKey(firstItem, e);
-                break;
-            case 'ctrlDown':
-            case 'shiftDown':
-            case 'csDown':
-                this.csDownKey(fItem, e);
-                break;
-            case 'ctrlLeft':
-            case 'shiftLeft':
-            case 'csLeft':
-                this.csLeftKey(fItem, e);
-                break;
-            case 'ctrlRight':
-            case 'shiftRight':
-            case 'csRight':
-                this.csRightKey(fItem, e);
-                break;
-            case 'ctrlUp':
-            case 'shiftUp':
-            case 'csUp':
-                this.csUpKey(fItem, e);
-                break;
-            case 'space':
-                this.spaceKey(fItem);
-                break;
-            case 'ctrlSpace':
-            case 'shiftSpace':
-            case 'csSpace':
-                if (!isNOU(fItem)) { this.doSelection(fItem, e); }
-                break;
-            case 'ctrlA':
-                this.ctrlAKey(firstItem, lastItem);
-                break;
-            case 'enter':
-                this.doOpenAction(this.parent.visitedItem ? this.parent.visitedItem : this.getVisitedItem());
-                break;
-            case 'altEnter':
-                this.parent.notify(events.detailsInit, {});
-                GetDetails(this.parent, this.parent.selectedItems, this.parent.path, 'details');
-                break;
-            case 'esc':
-                removeActive(this.parent);
-                break;
-            case 'del':
-            case 'shiftdel':
-                this.performDelete();
-                break;
-            case 'ctrlC':
-                copyFiles(this.parent);
-                break;
-            case 'ctrlV':
-                this.parent.folderPath = '';
-                pasteHandler(this.parent);
-                break;
-            case 'ctrlX':
-                cutFiles(this.parent);
-                break;
-            case 'f2':
-                this.performRename();
-                break;
-            case 'ctrlD':
-                this.doDownload();
-                break;
+        case 'end':
+            this.navigateItem(lastItem);
+            break;
+        case 'home':
+            this.navigateItem(firstItem);
+            break;
+        case 'tab':
+            if (!isNOU(fItem)) {
+                this.addFocus(fItem);
+            } else if (!isNOU(firstItem)) {
+                this.addFocus(firstItem);
+            }
+            break;
+        case 'moveDown':
+            this.navigateDown(fItem, true);
+            break;
+        case 'moveLeft':
+            this.navigateRight(fItem, false);
+            break;
+        case 'moveRight':
+            this.navigateRight(fItem, true);
+            break;
+        case 'moveUp':
+            this.navigateDown(fItem, false);
+            break;
+        case 'ctrlEnd':
+        case 'shiftEnd':
+        case 'csEnd':
+            this.csEndKey(lastItem, e);
+            break;
+        case 'ctrlHome':
+        case 'shiftHome':
+        case 'csHome':
+            this.csHomeKey(firstItem, e);
+            break;
+        case 'ctrlDown':
+        case 'shiftDown':
+        case 'csDown':
+            this.csDownKey(fItem, e);
+            break;
+        case 'ctrlLeft':
+        case 'shiftLeft':
+        case 'csLeft':
+            this.csLeftKey(fItem, e);
+            break;
+        case 'ctrlRight':
+        case 'shiftRight':
+        case 'csRight':
+            this.csRightKey(fItem, e);
+            break;
+        case 'ctrlUp':
+        case 'shiftUp':
+        case 'csUp':
+            this.csUpKey(fItem, e);
+            break;
+        case 'space':
+            this.spaceKey(fItem);
+            break;
+        case 'ctrlSpace':
+        case 'shiftSpace':
+        case 'csSpace':
+            if (!isNOU(fItem)) { this.doSelection(fItem, e); }
+            break;
+        case 'ctrlA':
+            this.ctrlAKey(firstItem, lastItem);
+            break;
+        case 'enter':
+            this.doOpenAction(this.parent.visitedItem ? this.parent.visitedItem : this.getVisitedItem());
+            break;
+        case 'altEnter':
+            this.parent.notify(events.detailsInit, {});
+            GetDetails(this.parent, this.parent.selectedItems, this.parent.path, 'details');
+            break;
+        case 'esc':
+            removeActive(this.parent);
+            break;
+        case 'del':
+        case 'shiftdel':
+            this.performDelete();
+            break;
+        case 'ctrlC':
+            copyFiles(this.parent);
+            break;
+        case 'ctrlV':
+            this.parent.folderPath = '';
+            pasteHandler(this.parent);
+            break;
+        case 'ctrlX':
+            cutFiles(this.parent);
+            break;
+        case 'f2':
+            this.performRename();
+            break;
+        case 'ctrlD':
+            this.doDownload();
+            break;
         }
     }
 
@@ -1059,7 +1079,8 @@ export class LargeIconsView {
     private performDelete(): void {
         if (this.parent.selectedItems && this.parent.selectedItems.length > 0) {
             this.updateSelectedData();
-            let data: Object[] = this.parent.itemData;
+            // eslint-disable-next-line
+            const data: Object[] = this.parent.itemData;
             for (let i: number = 0; i < data.length; i++) {
                 if (!hasEditAccess(data[i])) {
                     createDeniedDialog(this.parent, data[i], events.permissionEdit);
@@ -1078,14 +1099,15 @@ export class LargeIconsView {
     }
 
     private updateRenameData(): void {
-        let item: Element = select('.' + CLS.LIST_ITEM + '.' + CLS.ACTIVE, this.element);
-        let data: Object = this.getItemObject(item);
+        const item: Element = select('.' + CLS.LIST_ITEM + '.' + CLS.ACTIVE, this.element);
+        // eslint-disable-next-line
+        const data: Object = this.getItemObject(item);
         updateRenamingData(this.parent, data);
     }
 
     private getVisitedItem(): Element {
-        let item: string = this.parent.selectedItems[this.parent.selectedItems.length - 1];
-        let indexes: number[] = this.getIndexes([item], this.parent.hasId);
+        const item: string = this.parent.selectedItems[this.parent.selectedItems.length - 1];
+        const indexes: number[] = this.getIndexes([item], this.parent.hasId);
         return this.itemList[indexes[0]];
     }
 
@@ -1110,12 +1132,12 @@ export class LargeIconsView {
     }
 
     private navigateDown(fItem: Element, isTowards: boolean): void {
-        let nItem: Element = this.getNextItem(fItem, isTowards, this.perRow);
+        const nItem: Element = this.getNextItem(fItem, isTowards, this.perRow);
         this.setFocus(nItem);
     }
 
     private navigateRight(fItem: Element, isTowards: boolean): void {
-        let nItem: Element = this.getNextItem(fItem, isTowards);
+        const nItem: Element = this.getNextItem(fItem, isTowards);
         this.setFocus(nItem);
     }
 
@@ -1140,7 +1162,7 @@ export class LargeIconsView {
 
     private setFocus(nextItem: Element): void {
         if (!isNOU(nextItem)) {
-            let fileSelectionArgs: FileSelectionEventArgs = this.triggerSelection('select', nextItem);
+            const fileSelectionArgs: FileSelectionEventArgs = this.triggerSelection('select', nextItem);
             if (fileSelectionArgs.cancel !== true) {
                 this.startItem = nextItem;
                 this.clearSelect();
@@ -1154,7 +1176,7 @@ export class LargeIconsView {
 
     private spaceKey(fItem: Element): void {
         if (!isNOU(fItem) && !fItem.classList.contains(CLS.ACTIVE)) {
-            let fileSelectionArgs: FileSelectionEventArgs = this.triggerSelection('select', fItem);
+            const fileSelectionArgs: FileSelectionEventArgs = this.triggerSelection('select', fItem);
             if (fileSelectionArgs.cancel !== true) {
                 this.addActive(fItem);
                 this.parent.notify(events.selectionChanged, {});
@@ -1166,7 +1188,7 @@ export class LargeIconsView {
     private ctrlAKey(firstItem: Element, lastItem: Element): void {
         if (this.parent.allowMultiSelection && !isNOU(firstItem)) {
             this.startItem = firstItem;
-            let eveArgs: KeyboardEventArgs = { ctrlKey: true, shiftKey: true } as KeyboardEventArgs;
+            const eveArgs: KeyboardEventArgs = { ctrlKey: true, shiftKey: true } as KeyboardEventArgs;
             this.doSelection(lastItem, eveArgs);
         }
     }
@@ -1175,7 +1197,7 @@ export class LargeIconsView {
         if (!this.parent.allowMultiSelection) {
             this.navigateItem(lastItem);
         } else if (!isNOU(lastItem)) {
-            (e.action === 'ctrlEnd') ? this.addFocus(lastItem) : this.doSelection(lastItem, e);
+            if (e.action === 'ctrlEnd') { this.addFocus(lastItem); } else { this.doSelection(lastItem, e); }
         }
     }
 
@@ -1183,7 +1205,11 @@ export class LargeIconsView {
         if (!this.parent.allowMultiSelection) {
             this.navigateItem(firstItem);
         } else if (!isNOU(firstItem)) {
-            (e.action === 'ctrlHome') ? this.addFocus(firstItem) : this.doSelection(firstItem, e);
+            if (e.action === 'ctrlHome') {
+                this.addFocus(firstItem);
+            } else{
+                this.doSelection(firstItem, e);
+            }
         }
     }
 
@@ -1191,9 +1217,13 @@ export class LargeIconsView {
         if (!this.parent.allowMultiSelection) {
             this.navigateDown(fItem, true);
         } else {
-            let dItem: Element = this.getNextItem(fItem, true, this.perRow);
+            const dItem: Element = this.getNextItem(fItem, true, this.perRow);
             if (!isNOU(dItem)) {
-                (e.action === 'ctrlDown') ? this.addFocus(dItem) : this.doSelection(dItem, e);
+                if (e.action === 'ctrlDown') {
+                    this.addFocus(dItem);
+                } else {
+                    this.doSelection(dItem, e);
+                }
             }
         }
     }
@@ -1202,9 +1232,13 @@ export class LargeIconsView {
         if (!this.parent.allowMultiSelection) {
             this.navigateRight(fItem, false);
         } else {
-            let lItem: Element = this.getNextItem(fItem, false);
+            const lItem: Element = this.getNextItem(fItem, false);
             if (!isNOU(lItem)) {
-                (e.action === 'ctrlLeft') ? this.addFocus(lItem) : this.doSelection(lItem, e);
+                if (e.action === 'ctrlLeft') {
+                    this.addFocus(lItem);
+                } else {
+                    this.doSelection(lItem, e);
+                }
             }
         }
     }
@@ -1213,9 +1247,13 @@ export class LargeIconsView {
         if (!this.parent.allowMultiSelection) {
             this.navigateRight(fItem, true);
         } else {
-            let rItem: Element = this.getNextItem(fItem, true);
+            const rItem: Element = this.getNextItem(fItem, true);
             if (!isNOU(rItem)) {
-                (e.action === 'ctrlRight') ? this.addFocus(rItem) : this.doSelection(rItem, e);
+                if (e.action === 'ctrlRight'){
+                    this.addFocus(rItem);
+                } else{
+                    this.doSelection(rItem, e);
+                }
             }
         }
     }
@@ -1224,9 +1262,13 @@ export class LargeIconsView {
         if (!this.parent.allowMultiSelection) {
             this.navigateDown(fItem, false);
         } else {
-            let uItem: Element = this.getNextItem(fItem, false, this.perRow);
+            const uItem: Element = this.getNextItem(fItem, false, this.perRow);
             if (!isNOU(uItem)) {
-                (e.action === 'ctrlUp') ? this.addFocus(uItem) : this.doSelection(uItem, e);
+                if (e.action === 'ctrlUp') {
+                    this.addFocus(uItem);
+                } else{
+                    this.doSelection(uItem, e);
+                }
             }
         }
     }
@@ -1253,7 +1295,7 @@ export class LargeIconsView {
                 preItem.removeAttribute('aria-selected');
             }
             this.checkState(preItem, false);
-            let index: number = this.parent.selectedItems.indexOf(this.getDataName(preItem));
+            const index: number = this.parent.selectedItems.indexOf(this.getDataName(preItem));
             if (index > -1) {
                 this.parent.selectedItems.splice(index, 1);
                 this.parent.setProperties({ selectedItems: this.parent.selectedItems }, true);
@@ -1263,13 +1305,14 @@ export class LargeIconsView {
     }
 
     private getDataName(item: Element): string {
-        let data: Object = this.getItemObject(item);
+        // eslint-disable-next-line
+        const data: Object = this.getItemObject(item);
         return getItemName(this.parent, data);
     }
 
     private addFocus(item: Element): void {
         this.element.setAttribute('tabindex', '-1');
-        let fItem: Element = this.getFocusedItem();
+        const fItem: Element = this.getFocusedItem();
         if (fItem) {
             fItem.removeAttribute('tabindex');
             removeClass([fItem], [CLS.FOCUS]);
@@ -1281,7 +1324,7 @@ export class LargeIconsView {
 
     private checkState(item: Element, toCheck: boolean): void {
         if (!this.parent.allowMultiSelection) { return; }
-        let checkEle: Element = select('.' + CLS.FRAME, item);
+        const checkEle: Element = select('.' + CLS.FRAME, item);
         if (isNOU(checkEle)) { return; }
         if (toCheck) {
             if (!checkEle.classList.contains(CLS.CHECK)) {
@@ -1297,7 +1340,7 @@ export class LargeIconsView {
     }
 
     private clearSelect(): void {
-        let eles: Element[] = Array.prototype.slice.call(selectAll('.' + CLS.ACTIVE, this.listElements));
+        const eles: Element[] = Array.prototype.slice.call(selectAll('.' + CLS.ACTIVE, this.listElements));
         let fileSelectionArgs: FileSelectionEventArgs;
         if (eles.length !== 0) {
             fileSelectionArgs = this.triggerSelection('unselect', eles[0]);
@@ -1335,8 +1378,9 @@ export class LargeIconsView {
         this.perRow = perRow;
     }
     private triggerSelection(action: string, item: Element): FileSelectionEventArgs {
-        let data: Object = this.getItemObject(item);
-        let eventArgs: FileSelectionEventArgs = {
+        // eslint-disable-next-line
+        const data: Object = this.getItemObject(item);
+        const eventArgs: FileSelectionEventArgs = {
             action: action, fileDetails: data, isInteracted: this.isInteraction, cancel: false, target: item
         };
         this.parent.trigger('fileSelection', eventArgs);
@@ -1345,24 +1389,25 @@ export class LargeIconsView {
     }
 
     private triggerSelect(action: string, item: Element): void {
-        let data: Object = this.getItemObject(item);
+        // eslint-disable-next-line
+        const data: Object = this.getItemObject(item);
         this.parent.visitedData = data;
-        let eventArgs: FileSelectEventArgs = { action: action, fileDetails: data, isInteracted: this.isInteracted };
+        const eventArgs: FileSelectEventArgs = { action: action, fileDetails: data, isInteracted: this.isInteracted };
         this.parent.trigger('fileSelect', eventArgs);
         this.isInteracted = true;
     }
 
     private selectItems(items: string[]): void {
-        let indexes: number[] = this.getIndexes(items, this.parent.hasId);
+        const indexes: number[] = this.getIndexes(items, this.parent.hasId);
         for (let j: number = 0, len: number = indexes.length; j < len; j++) {
-            let eveArgs: KeyboardEventArgs = { ctrlKey: true, shiftKey: false } as KeyboardEventArgs;
+            const eveArgs: KeyboardEventArgs = { ctrlKey: true, shiftKey: false } as KeyboardEventArgs;
             this.doSelection(this.itemList[indexes[j]], eveArgs);
         }
     }
 
     private getIndexes(items: string[], byId?: boolean): number[] {
-        let indexes: number[] = [];
-        let filter: string = byId ? 'id' : 'name';
+        const indexes: number[] = [];
+        const filter: string = byId ? 'id' : 'name';
         for (let i: number = 0, len: number = this.items.length; i < len; i++) {
             if (items.indexOf(getValue(filter, this.items[i])) !== -1) {
                 indexes.push(i);
@@ -1371,18 +1416,22 @@ export class LargeIconsView {
         return indexes;
     }
 
+    // eslint-disable-next-line
     private getItemObject(item: Element): Object {
-        let index: number = this.itemList.indexOf(<HTMLElement>item);
+        const index: number = this.itemList.indexOf(<HTMLElement>item);
         return this.items[index];
     }
 
+    // eslint-disable-next-line
     private addSelection(data: Object): void {
+        // eslint-disable-next-line
         let resultData: Object[] = [];
         if (this.parent.hasId) {
             resultData = new DataManager(this.items).
                 executeLocal(new Query().where('id', 'equal', this.parent.renamedId, false));
         } else {
-            let newData: Object[] = new DataManager(this.items).
+            // eslint-disable-next-line
+            const newData: Object[] = new DataManager(this.items).
                 executeLocal(new Query().where('name', 'equal', getValue('name', data), false));
             if (newData.length > 0) {
                 resultData = new DataManager(newData).
@@ -1390,60 +1439,62 @@ export class LargeIconsView {
             }
         }
         if (resultData.length > 0) {
-            let index: number = this.items.indexOf(resultData[0]);
-            let eveArgs: KeyboardEventArgs = { ctrlKey: true, shiftKey: false } as KeyboardEventArgs;
+            const index: number = this.items.indexOf(resultData[0]);
+            const eveArgs: KeyboardEventArgs = { ctrlKey: true, shiftKey: false } as KeyboardEventArgs;
             this.doSelection(this.itemList[index], eveArgs);
         }
     }
 
     private updateSelectedData(): void {
-        let data: object[] = [];
-        let items: Element[] = selectAll('.' + CLS.LIST_ITEM + '.' + CLS.ACTIVE, this.element);
+        // eslint-disable-next-line
+        const data: object[] = [];
+        const items: Element[] = selectAll('.' + CLS.LIST_ITEM + '.' + CLS.ACTIVE, this.element);
         for (let i: number = 0; i < items.length; i++) {
             data[i] = this.getItemObject(items[i]);
         }
         this.parent.itemData = data;
     }
 
+    // eslint-disable-next-line
     private onMethodCall(args: Object): void {
         if (this.parent.view !== 'LargeIcons') { return; }
-        let action: string = getValue('action', args);
+        const action: string = getValue('action', args);
         switch (action) {
-            case 'deleteFiles':
-                this.deleteFiles(getValue('ids', args));
-                break;
-            case 'downloadFiles':
-                this.downloadFiles(getValue('ids', args));
-                break;
-            case 'openFile':
-                this.openFile(getValue('id', args));
-                break;
-            case 'renameFile':
-                this.isInteraction = false;
-                this.isInteracted = false;
-                this.renameFile(getValue('id', args), getValue('newName', args));
-                break;
-            case 'createFolder':
-                this.isInteraction = false;
-                this.isInteracted = false;
-                break;
-            case 'clearSelection':
-                this.isInteraction = false;
-                this.isInteracted = false;
-                this.onClearAllInit();
-                break;
-            case 'selectAll':
-                this.isInteraction = false;
-                this.isInteracted = false;
-                this.onSelectAllInit();
-                break;
+        case 'deleteFiles':
+            this.deleteFiles(getValue('ids', args));
+            break;
+        case 'downloadFiles':
+            this.downloadFiles(getValue('ids', args));
+            break;
+        case 'openFile':
+            this.openFile(getValue('id', args));
+            break;
+        case 'renameFile':
+            this.isInteraction = false;
+            this.isInteracted = false;
+            this.renameFile(getValue('id', args), getValue('newName', args));
+            break;
+        case 'createFolder':
+            this.isInteraction = false;
+            this.isInteracted = false;
+            break;
+        case 'clearSelection':
+            this.isInteraction = false;
+            this.isInteracted = false;
+            this.onClearAllInit();
+            break;
+        case 'selectAll':
+            this.isInteraction = false;
+            this.isInteracted = false;
+            this.onSelectAllInit();
+            break;
         }
     }
 
     private getItemsIndex(items: string[]): number[] {
-        let indexes: number[] = [];
-        let isFilter: boolean = (this.parent.breadcrumbbarModule.searchObj.element.value !== '' || this.parent.isFiltered) ? true : false;
-        let filterName: string = this.parent.hasId ? 'id' : 'name';
+        const indexes: number[] = [];
+        const isFilter: boolean = (this.parent.breadcrumbbarModule.searchObj.element.value !== '' || this.parent.isFiltered) ? true : false;
+        const filterName: string = this.parent.hasId ? 'id' : 'name';
         if (this.parent.hasId || !isFilter) {
             for (let i: number = 0, len: number = this.items.length; i < len; i++) {
                 if (items.indexOf(getValue(filterName, this.items[i])) !== -1) {
@@ -1452,7 +1503,7 @@ export class LargeIconsView {
             }
         } else {
             for (let i: number = 0, len: number = this.items.length; i < len; i++) {
-                let name: string = getValue('filterPath', this.items[i]) + getValue('name', this.items[i]);
+                const name: string = getValue('filterPath', this.items[i]) + getValue('name', this.items[i]);
                 if (items.indexOf(name) !== -1) {
                     indexes.push(i);
                 }
@@ -1467,10 +1518,11 @@ export class LargeIconsView {
             this.performDelete();
             return;
         }
-        let indexes: number[] = this.getItemsIndex(ids);
+        const indexes: number[] = this.getItemsIndex(ids);
         if (indexes.length === 0) { return; }
-        let data: Object[] = [];
-        let newIds: string[] = [];
+        // eslint-disable-next-line
+        const data: Object[] = [];
+        const newIds: string[] = [];
         for (let i: number = 0; i < indexes.length; i++) {
             data[i] = this.items[indexes[i]];
             newIds[i] = getItemName(this.parent, data[i]);
@@ -1483,10 +1535,11 @@ export class LargeIconsView {
             this.doDownload();
             return;
         }
-        let index: number[] = this.getItemsIndex(ids);
+        const index: number[] = this.getItemsIndex(ids);
         if (index.length === 0) { return; }
-        let data: Object[] = [];
-        let newIds: string[] = [];
+        // eslint-disable-next-line
+        const data: Object[] = [];
+        const newIds: string[] = [];
         for (let i: number = 0; i < index.length; i++) {
             data[i] = this.items[index[i]];
             newIds[i] = getItemName(this.parent, data[i]);
@@ -1496,7 +1549,7 @@ export class LargeIconsView {
 
     private openFile(id: string): void {
         if (isNOU(id)) { return; }
-        let indexes: number[] = this.getItemsIndex([id]);
+        const indexes: number[] = this.getItemsIndex([id]);
         if (indexes.length > 0) {
             this.doOpenAction(this.itemList[indexes[0]]);
         }
@@ -1508,7 +1561,7 @@ export class LargeIconsView {
             this.performRename();
             return;
         }
-        let indexes: number[] = this.getItemsIndex([id]);
+        const indexes: number[] = this.getItemsIndex([id]);
         if (indexes.length > 0) {
             updateRenamingData(this.parent, this.items[indexes[0]]);
             if (isNOU(name)) {

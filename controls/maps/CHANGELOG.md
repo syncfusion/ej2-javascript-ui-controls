@@ -8,6 +8,17 @@
 
 ## [Unreleased]
 
+## 19.1.54 (2021-03-30)
+
+### Maps
+
+#### Bug Fixes
+
+- `#312465` - When the `zoomFactor` property is set as 0 in the tile maps, it now renders properly.
+- `#311273` - The `imageUrlValuePath` property now correctly renders markers as images.
+- `#312865` - Markers will now render properly when they are added dynamically in the click event with "Normal" geometry type maps.
+- `#317398` - `shapeSelection` method will now work properly with multi-layers on the Maps.
+
 ## 18.4.39 (2021-01-28)
 
 ### Maps
@@ -178,7 +189,7 @@
 
 #### Bug Fixes
 
-- `#I240833` - Some labels disappear when you change "colorMapping" and refresh the map issue has been fixed
+- `#I240833` - Some labels disappear when you change "colorMapping" and refresh the map issue has been fixed.
 - `I240804` - The issue with dynamically updating the zoom factor has been fixed
 - `I241873` - The issue with zooming the map component with a single click has been fixed
 
@@ -273,7 +284,7 @@
 
 #### Bug Fixes
 
-- Shape selection is now working fine with touch events
+- Shape selection is now working fine with touch events.
 
 ## 16.2.45 (2018-07-17)
 
@@ -281,7 +292,7 @@
 
 #### Bug Fixes
 
-- Marker click event is now working fine with OSM layer
+- Marker click event is now working fine with OSM layer.
 
 ## 16.2.44 (2018-07-10)
 

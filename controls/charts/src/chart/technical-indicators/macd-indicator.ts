@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
 import { Chart } from '../chart';
 import { TechnicalIndicator } from './technical-indicator';
@@ -9,19 +13,20 @@ import { TechnicalAnalysis } from './indicator-base';
 export class MacdIndicator extends TechnicalAnalysis {
     /**
      * Defines the collection of series to represent the MACD indicator
+     *
      * @private
      */
     public initSeriesCollection(indicator: TechnicalIndicator, chart: Chart): void {
         super.initSeriesCollection(indicator, chart);
 
         if (indicator.macdType === 'Line' || indicator.macdType === 'Both') {
-            let macdSeries: Series = new Series(indicator, 'targetSeries', {}, true);
+            const macdSeries: Series = new Series(indicator, 'targetSeries', {}, true);
             this.setSeriesProperties(
                 macdSeries, indicator, 'MacdLine', indicator.macdLine.color,
                 indicator.macdLine.width, chart);
         }
         if (indicator.macdType === 'Histogram' || indicator.macdType === 'Both') {
-            let histogramSeries: Series = new Series(indicator, 'targetSeries', {}, true);
+            const histogramSeries: Series = new Series(indicator, 'targetSeries', {}, true);
             histogramSeries.type = 'Column';
             this.setSeriesProperties(
                 histogramSeries, indicator, 'Histogram', indicator.macdPositiveColor,
@@ -31,18 +36,19 @@ export class MacdIndicator extends TechnicalAnalysis {
 
     /**
      * Defines the predictions using MACD approach
+     *
      * @private
      */
     public initDataSource(indicator: TechnicalIndicator, chart: Chart): void {
         let signalCollection: Points[] = [];
-        let fastPeriod: number = indicator.fastPeriod;
-        let slowPeriod: number = indicator.slowPeriod;
-        let trigger: number = indicator.period;
-        let length: number = fastPeriod + trigger;
+        const fastPeriod: number = indicator.fastPeriod;
+        const slowPeriod: number = indicator.slowPeriod;
+        const trigger: number = indicator.period;
+        const length: number = fastPeriod + trigger;
         let macdCollection: Points[] = [];
         let histogramCollection: Points[] = [];
-        let validData: Points[] = indicator.points;
-        let signalSeries: Series = indicator.targetSeries[0];
+        const validData: Points[] = indicator.points;
+        const signalSeries: Series = indicator.targetSeries[0];
 
         let histogramSeries: Series; let macdLineSeries: Series;
 
@@ -57,11 +63,11 @@ export class MacdIndicator extends TechnicalAnalysis {
 
         if (validData && length < validData.length && slowPeriod <= fastPeriod &&
             slowPeriod > 0 && (length - 2) >= 0) {
-            let shortEMA: number[] = this.calculateEMAValues(slowPeriod, validData, 'close');
-            let longEMA: number[] = this.calculateEMAValues(fastPeriod, validData, 'close');
-            let macdValues: number[] = this.getMACDVales(indicator, shortEMA, longEMA);
+            const shortEMA: number[] = this.calculateEMAValues(slowPeriod, validData, 'close');
+            const longEMA: number[] = this.calculateEMAValues(fastPeriod, validData, 'close');
+            const macdValues: number[] = this.getMACDVales(indicator, shortEMA, longEMA);
             macdCollection = this.getMACDPoints(indicator, macdValues, validData, macdLineSeries || signalSeries);
-            let signalEMA: number[] = this.calculateEMAValues(trigger, macdCollection, 'y');
+            const signalEMA: number[] = this.calculateEMAValues(trigger, macdCollection, 'y');
             signalCollection = this.getSignalPoints(indicator, signalEMA, validData, signalSeries);
             if (histogramSeries) {
                 histogramCollection = this.getHistogramPoints(
@@ -84,8 +90,8 @@ export class MacdIndicator extends TechnicalAnalysis {
     private calculateEMAValues(period: number, validData: Points[], field: string): number[] {
         let sum: number = 0;
         let initialEMA: number = 0;
-        let emaValues: number[] = [];
-        let emaPercent: number = (2 / (period + 1));
+        const emaValues: number[] = [];
+        const emaPercent: number = (2 / (period + 1));
         for (let i: number = 0; i < period; i++) {
             sum += Number(validData[i][field]);
         }
@@ -104,7 +110,7 @@ export class MacdIndicator extends TechnicalAnalysis {
      */
     private getMACDPoints(
         indicator: TechnicalIndicator, macdPoints: number[], validData: Points[], series: Series): Points[] {
-        let macdCollection: Points[] = [];
+        const macdCollection: Points[] = [];
         let dataMACDIndex: number = indicator.fastPeriod - 1;
         let macdIndex: number = 0;
         while (dataMACDIndex < validData.length) {
@@ -125,7 +131,7 @@ export class MacdIndicator extends TechnicalAnalysis {
 
         let dataSignalIndex: number = indicator.fastPeriod + indicator.period - 2;
         let signalIndex: number = 0;
-        let signalCollection: Points[] = [];
+        const signalCollection: Points[] = [];
         while (dataSignalIndex < validData.length) {
             signalCollection.push(this.getDataPoint(
                 validData[dataSignalIndex].x, signalEma[signalIndex], validData[dataSignalIndex], series,
@@ -140,8 +146,8 @@ export class MacdIndicator extends TechnicalAnalysis {
      * Calculates the MACD values
      */
     private getMACDVales(indicator: TechnicalIndicator, shortEma: number[], longEma: number[]): number[] {
-        let macdPoints: number[] = [];
-        let diff: number = indicator.fastPeriod - indicator.slowPeriod;
+        const macdPoints: number[] = [];
+        const diff: number = indicator.fastPeriod - indicator.slowPeriod;
         for (let i: number = 0; i < longEma.length; i++) {
             macdPoints.push((shortEma[i + diff] - longEma[i]));
         }
@@ -157,7 +163,7 @@ export class MacdIndicator extends TechnicalAnalysis {
 
         let dataHistogramIndex: number = indicator.fastPeriod + indicator.period - 2;
         let histogramIndex: number = 0;
-        let histogramCollection: Points[] = [];
+        const histogramCollection: Points[] = [];
 
         while (dataHistogramIndex < validData.length) {
             histogramCollection.push(this.getDataPoint(
@@ -171,11 +177,12 @@ export class MacdIndicator extends TechnicalAnalysis {
 
     /**
      * To destroy the MACD Indicator.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroys the MACD indicator
          */

@@ -337,7 +337,7 @@ describe('Dom', () => {
             expect(result).toBe(false);
         });
         it('Matches for the opera browser', () => {
-            matchelement.matches = matchelement.msMatchesSelector = matchelement.webkitMatchesSelector = null;
+            matchelement.matches = (matchelement as any).msMatchesSelector = matchelement.webkitMatchesSelector = null;
             result = Dom.matches(matchelement, '#match');
             expect(result).toBe(true);
         });

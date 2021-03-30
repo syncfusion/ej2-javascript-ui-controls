@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Kanban Types
  */
@@ -5,7 +6,7 @@
 /**
  * Defines types to be used as ReturnType.
  */
-export type ReturnType = { result: Object[], count: number, aggregates?: Object };
+export type ReturnType = { result: Record<string, any>[], count: number, aggregates?: Record<string, any> };
 
 /**
  * Defines types to be used as CurrentAction.

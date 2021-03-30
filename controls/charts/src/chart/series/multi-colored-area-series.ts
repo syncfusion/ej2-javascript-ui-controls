@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { getPoint, withInRange, ChartLocation } from '../../common/utils/helper';
 import { PathOption } from '@syncfusion/ej2-svg-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
 import { Axis } from '../../chart/axis/axis';
 import { MultiColoredSeries } from './multi-colored-base';
@@ -15,19 +17,20 @@ export class MultiColoredAreaSeries extends MultiColoredSeries {
 
     /**
      * Render Area series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
         let firstPoint: ChartLocation;
         let startPoint: ChartLocation = null;
         let direction: string = '';
-        let origin: number = Math.max(<number>series.yAxis.visibleRange.min, 0);
-        let options: PathOption[] = [];
+        const origin: number = Math.max(<number>series.yAxis.visibleRange.min, 0);
+        const options: PathOption[] = [];
         let startRegion: ChartLocation;
         let previous: Points;
         let rendered: boolean;
-        let segments: ChartSegmentModel[] = this.sortSegments(series, series.segments);
+        const segments: ChartSegmentModel[] = this.sortSegments(series, series.segments);
         series.visiblePoints.map((point: Points, i: number, seriesPoints: Points[]) => {
             point.symbolLocations = [];
             point.regions = [];
@@ -37,10 +40,10 @@ export class MultiColoredAreaSeries extends MultiColoredSeries {
                     point.xValue, origin, series, isInverted, getPoint, startPoint, 'M'
                 );
                 startPoint = startPoint || new ChartLocation(point.xValue, origin);
-                firstPoint = getPoint(point.xValue, point.yValue, xAxis, yAxis, isInverted, series);
+                firstPoint = getPoint(point.xValue, point.yValue, xAxis, yAxis, isInverted);
                 if (previous && this.setPointColor(point, previous, series, series.segmentAxis === 'X', segments)) {
                     rendered = true;
-                    startRegion = getPoint(startPoint.x, origin, xAxis, yAxis, isInverted, series);
+                    startRegion = getPoint(startPoint.x, origin, xAxis, yAxis, isInverted);
                     direction += ('L' + ' ' + (firstPoint.x) + ' ' + (firstPoint.y) + ' ');
                     direction += ('L' + ' ' + (firstPoint.x) + ' ' + (startRegion.y) + ' ');
                     this.generatePathOption(options, series, previous, direction, '_Point_' + previous.index);
@@ -84,11 +87,12 @@ export class MultiColoredAreaSeries extends MultiColoredSeries {
 
     /**
      * To destroy the area series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method calling here
          */
@@ -107,8 +111,9 @@ export class MultiColoredAreaSeries extends MultiColoredSeries {
 
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
 
     public doAnimation(series: Series): void {

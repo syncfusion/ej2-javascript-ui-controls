@@ -2,7 +2,6 @@ import { DocumentHelper } from '../viewer';
 import { L10n, createElement } from '@syncfusion/ej2-base';
 import { ListView } from '@syncfusion/ej2-lists';
 import { Button } from '@syncfusion/ej2-buttons';
-import { RestrictEditing } from './restrict-editing-pane';
 import { DialogUtility } from '@syncfusion/ej2-popups';
 /**
  * @private
@@ -13,40 +12,34 @@ export class AddUserDialog {
     private textBoxInput: HTMLInputElement;
     private userList: ListView;
     private addButton: Button;
-    private owner: RestrictEditing;
-    constructor(documentHelper: DocumentHelper, owner: RestrictEditing) {
+    public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
     }
 
-    /**
-     * @private
-     */
     public initUserDialog(localValue: L10n, isRtl?: boolean): void {
-        let instance: AddUserDialog = this;
-        let id: string = this.documentHelper.owner.containerId + '_addUser';
+        const id: string = this.documentHelper.owner.containerId + '_addUser';
         this.target = createElement('div', { id: id, className: 'e-de-user-dlg' });
-        let headerValue: string = localValue.getConstant('Enter User');
-        let dlgFields: HTMLElement = createElement('div', { innerHTML: headerValue, className: 'e-bookmark-dlgfields' });
+        const headerValue: string = localValue.getConstant('Enter User');
+        const dlgFields: HTMLElement = createElement('div', { innerHTML: headerValue, className: 'e-bookmark-dlgfields' });
         this.target.appendChild(dlgFields);
 
-        let commonDiv: HTMLElement = createElement('div', { className: 'e-de-user-dlg-common' });
+        const commonDiv: HTMLElement = createElement('div', { className: 'e-de-user-dlg-common' });
         this.target.appendChild(commonDiv);
 
-        let adduserDiv: HTMLElement = createElement('div', { className: 'e-de-user-dlg-list', styles: 'display:inline-flex' });
+        const adduserDiv: HTMLElement = createElement('div', { className: 'e-de-user-dlg-list', styles: 'display:inline-flex' });
         commonDiv.appendChild(adduserDiv);
         if (isRtl) {
             adduserDiv.classList.add('e-de-rtl');
         }
 
-        let textBoxDiv: HTMLElement = createElement('div', { className: 'e-de-user-dlg-textboxdiv' });
+        const textBoxDiv: HTMLElement = createElement('div', { className: 'e-de-user-dlg-textboxdiv' });
         adduserDiv.appendChild(textBoxDiv);
-        // tslint:disable-next-line:max-line-length
         this.textBoxInput = createElement('input', { className: 'e-input e-de-user-dlg-textbox-input', id: 'bookmark_text_box', attrs: { autofocus: 'true' } }) as HTMLInputElement;
         this.textBoxInput.setAttribute('type', 'text');
         textBoxDiv.appendChild(this.textBoxInput);
-        this.textBoxInput.addEventListener('keyup', instance.onKeyUpOnDisplayBox);
+        this.textBoxInput.addEventListener('keyup', this.onKeyUpOnDisplayBox);
 
-        let addButtonElement: HTMLElement = createElement('button', {
+        const addButtonElement: HTMLElement = createElement('button', {
             innerHTML: localValue.getConstant('Add'), id: 'add',
             attrs: { type: 'button' }
         });
@@ -56,11 +49,11 @@ export class AddUserDialog {
         this.addButton.disabled = true;
         this.addButton.appendTo(addButtonElement);
         this.addButton.addEventListener('click', this.addButtonClick);
-        let userCollectionDiv: HTMLElement = createElement('div');
+        const userCollectionDiv: HTMLElement = createElement('div');
         commonDiv.appendChild(userCollectionDiv);
-        let userDiv: HTMLElement = createElement('div', { innerHTML: localValue.getConstant('Users'), className: 'e-de-user-dlg-user' });
+        const userDiv: HTMLElement = createElement('div', { innerHTML: localValue.getConstant('Users'), className: 'e-de-user-dlg-user' });
         userCollectionDiv.appendChild(userDiv);
-        let listviewDiv: HTMLElement = createElement('div', { id: 'user_listView' });
+        const listviewDiv: HTMLElement = createElement('div', { id: 'user_listView' });
         userCollectionDiv.appendChild(listviewDiv);
 
         this.userList = new ListView({
@@ -73,9 +66,10 @@ export class AddUserDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public show = (): void => {
-        let localObj: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        const localObj: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         localObj.setLocale(this.documentHelper.owner.locale);
         if (!this.target) {
             this.initUserDialog(localObj, this.documentHelper.owner.enableRtl);
@@ -102,14 +96,19 @@ export class AddUserDialog {
             }];
         this.documentHelper.dialog.dataBind();
         this.documentHelper.dialog.show();
-    }
+    };
 
+    /**
+     * @private
+     * @returns {void}
+     */
     public loadUserDetails = (): void => {
         this.documentHelper.restrictEditingPane.addedUser.dataSource = this.documentHelper.userCollection;
         this.documentHelper.restrictEditingPane.addedUser.refresh();
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public okButtonClick = (): void => {
         this.documentHelper.restrictEditingPane.isAddUser = true;
@@ -117,22 +116,27 @@ export class AddUserDialog {
         this.documentHelper.restrictEditingPane.loadPaneValue();
         this.documentHelper.restrictEditingPane.isAddUser = false;
         this.documentHelper.dialog.hide();
-    }
+    };
 
     /**
      * @private
+     * @returns {void}
      */
     public hideDialog = (): void => {
         this.textBoxInput.value = '';
         this.documentHelper.dialog.hide();
-    }
+    };
 
     /**
      * @private
+     * @returns {void}
      */
     public onKeyUpOnDisplayBox = (): void => {
         this.addButton.disabled = this.textBoxInput.value === '';
-    }
+    };
+    /**
+     * @returns {void}
+     */
     public addButtonClick = (): void => {
         if (this.validateUserName(this.textBoxInput.value)) {
             if (this.documentHelper.userCollection.indexOf(this.textBoxInput.value) === -1) {
@@ -144,18 +148,19 @@ export class AddUserDialog {
         } else {
             DialogUtility.alert('Invalid user name');
         }
-    }
+    };
+
     public validateUserName(value: string): boolean {
         if (value.indexOf('@') === -1) {
             return false;
         } else {
-            let parts: string[] = value.split('@');
-            let domain: string = parts[1];
+            const parts: string[] = value.split('@');
+            const domain: string = parts[1];
             if (domain.indexOf('.') === -1) {
                 return false;
             } else {
-                let domainParts: string[] = domain.split('.');
-                let ext: string = domainParts[1];
+                const domainParts: string[] = domain.split('.');
+                const ext: string = domainParts[1];
                 if (domainParts.length > 2) {
                     return false;
                 }
@@ -169,12 +174,16 @@ export class AddUserDialog {
         return true;
 
     }
+
+    /**
+     * @returns {void}
+     */
     public deleteButtonClick = (): void => {
-        let index: number = this.documentHelper.userCollection.indexOf(this.userList.getSelectedItems().text as string);
+        const index: number = this.documentHelper.userCollection.indexOf(this.userList.getSelectedItems().text as string);
         if (index > -1) {
             this.documentHelper.userCollection.splice(index, 1);
             this.userList.dataSource = this.documentHelper.userCollection;
             this.userList.refresh();
         }
-    }
+    };
 }

@@ -1,8 +1,8 @@
 import { L10n, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { CheckBox, Button } from '@syncfusion/ej2-buttons';
+import { CheckBox, Button, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
-import { ListView } from '@syncfusion/ej2-lists';
+import { ListView, SelectEventArgs } from '@syncfusion/ej2-lists';
 import { TableOfContentsSettings } from '../index';
 import { TabLeader } from '../../base/types';
 import { DocumentHelper } from '../viewer';
@@ -35,27 +35,31 @@ export class TableOfContentsDialog {
     private textBoxInput: HTMLInputElement;
     private listViewInstance: ListView;
     /**
+     * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
      */
-    constructor(documentHelper: DocumentHelper) {
+    public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
     }
     private getModuleName(): string {
         return 'TableOfContentsDialog';
     }
-    /*tslint:disable max-func-body-length*/
+    /* eslint-disable   */
     /**
      * @private
+     * @param {L10n} localValue - Specifies the locale value
+     * @param {boolean} isRtl - Specifies the is rtl
+     * @returns {void}
      */
     public initTableOfContentDialog(locale: L10n, isRtl?: boolean): void {
         let instance: TableOfContentsDialog = this;
         let ownerId: string = this.documentHelper.owner.containerId;
         let id: string = ownerId + '_toc_dialog';
         this.target = createElement('div', { id: id, className: 'e-de-toc-dlg-container' });
-        // tslint:disable-next-line:max-line-length
+
         let generalDiv: HTMLDivElement = createElement('div', { id: 'general_div', className: 'e-de-toc-dlg-sub-container' }) as HTMLDivElement;
         this.target.appendChild(generalDiv);
-        // tslint:disable-next-line:max-line-length
+
         let genLabel: HTMLElement = createElement('div', { id: ownerId + '_genLabel', className: 'e-de-toc-dlg-main-heading', styles: 'margin-bottom: 13px;', innerHTML: locale.getConstant('General') });
         generalDiv.appendChild(genLabel);
         let leftGeneralDivStyles: string;
@@ -68,45 +72,45 @@ export class TableOfContentsDialog {
             rightBottomGeneralDivStyles = 'float:right;';
         }
 
-        // tslint:disable-next-line:max-line-length
+
         let topContainer: HTMLDivElement = createElement('div', { id: 'general_top_container', styles: 'display:inline-flex' }) as HTMLDivElement;
         let leftGeneralDiv: HTMLDivElement = createElement('div', { id: 'left_general', styles: leftGeneralDivStyles + 'position:relative;' }) as HTMLDivElement;
         topContainer.appendChild(leftGeneralDiv);
-        // tslint:disable-next-line:max-line-length
+
         let rightGeneralDiv: HTMLDivElement = createElement('div', { className: 'e-de-toc-dlg-right-general-div' }) as HTMLDivElement;
         topContainer.appendChild(rightGeneralDiv);
         generalDiv.appendChild(topContainer);
-        // tslint:disable-next-line:max-line-length
+
         let bottomContainer: HTMLDivElement = createElement('div', { id: 'general_bottom_container', styles: 'display:inline-flex' }) as HTMLDivElement;
         let leftBottomGeneralDiv: HTMLDivElement = createElement('div', { id: 'leftBottom_general', styles: 'float:left;' }) as HTMLDivElement;
         bottomContainer.appendChild(leftBottomGeneralDiv);
-        // tslint:disable-next-line:max-line-length
+
         let rightBottomGeneralDiv: HTMLDivElement = createElement('div', { className: 'e-de-toc-dlg-right-sub-container', styles: rightBottomGeneralDivStyles }) as HTMLDivElement;
         bottomContainer.appendChild(rightBottomGeneralDiv);
         generalDiv.appendChild(bottomContainer);
-        // tslint:disable-next-line:max-line-length
+
         let pageNumberDiv: HTMLDivElement = createElement('div', { id: 'pageNumber_div', className: 'e-de-toc-dlg-sub-container' }) as HTMLDivElement;
         let pageNumber: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'checkbox' }, id: this.target.id + '_pageNumber'
         });
         pageNumberDiv.appendChild(pageNumber);
-        // tslint:disable-next-line:max-line-length
+
         let rightAlignDiv: HTMLDivElement = createElement('div', { id: 'rightAlign_div', className: 'e-de-toc-dlg-sub-container' }) as HTMLDivElement;
         let rightAlign: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'checkbox' }, id: this.target.id + '_rightAlign'
         });
         rightAlignDiv.appendChild(rightAlign);
 
-        // tslint:disable-next-line:max-line-length
+
         this.pageNumber = new CheckBox({ label: locale.getConstant('Show page numbers'), enableRtl: isRtl, checked: true, change: this.changePageNumberValue });
-        // tslint:disable-next-line:max-line-length
+
         this.rightAlign = new CheckBox({ label: locale.getConstant('Right align page numbers'), enableRtl: isRtl, checked: true, change: this.changeRightAlignValue });
         this.pageNumber.appendTo(pageNumber); this.rightAlign.appendTo(rightAlign);
 
         let tabDiv: HTMLDivElement = createElement('div', { id: 'tab_div', className: 'e-de-toc-dlg-tab-div' }) as HTMLDivElement;
-        // tslint:disable-next-line:max-line-length
+
         let tabLeaderLabelDiv: HTMLDivElement = createElement('div', { id: 'tabLeaderLabel_div' }) as HTMLDivElement;
-        // tslint:disable-next-line:max-line-length
+
         let tabLeaderLabel: HTMLElement = createElement('label', { id: ownerId + '_tabLeaderLabel', className: 'e-de-toc-dlg-heading', innerHTML: locale.getConstant('Tab leader') + ':' });
         tabLeaderLabelDiv.appendChild(tabLeaderLabel);
         let tabLeaderDiv: HTMLDivElement = createElement('div', { id: 'tabLeader_div' }) as HTMLDivElement;
@@ -129,23 +133,23 @@ export class TableOfContentsDialog {
             attrs: { 'type': 'checkbox' }, id: this.target.id + '_hyperlink'
         });
         rightGeneralDiv.appendChild(hyperlink);
-        //tslint:disable-next-line:max-line-length
+
         this.hyperlink = new CheckBox({ label: locale.getConstant('Use hyperlinks instead of page numbers'), cssClass: 'e-de-toc-label', enableRtl: isRtl, checked: true });
         this.hyperlink.appendTo(hyperlink);
-        // tslint:disable-next-line:max-line-length
+
         let showDiv: HTMLDivElement = createElement('div', { id: 'show_div', className: 'e-de-toc-dlg-style-label' }) as HTMLDivElement;
-        // tslint:disable-next-line:max-line-length
+
         let showLevelLabelDiv: HTMLDivElement = createElement('div', { id: 'showLevelLabel_div', className: 'e-de-toc-dlg-show-level-div' }) as HTMLDivElement;
-        // tslint:disable-next-line:max-line-length
+
         let showLevelLabel: HTMLElement = createElement('label', { id: ownerId + '_showLevelLabel', className: 'e-de-toc-dlg-heading', innerHTML: locale.getConstant('Show levels') + ':' });
         showLevelLabelDiv.appendChild(showLevelLabel);
-        // tslint:disable-next-line:max-line-length
+
         let showLevelDiv: HTMLDivElement = createElement('div', { id: 'showLevel_div', className: 'e-de-toc-dlg-showlevel-div' }) as HTMLDivElement;
-        // tslint:disable-next-line:max-line-length
+
         let showLevel: HTMLInputElement = createElement('input', { id: ownerId + '_showLevel', attrs: { 'type': 'text' } }) as HTMLInputElement;
         showLevelDiv.appendChild(showLevel); showDiv.appendChild(showLevelLabelDiv); showDiv.appendChild(showLevelDiv);
         rightGeneralDiv.appendChild(showDiv);
-        this.showLevel = new NumericTextBox({ format: '#', value: 3, min: 1, max: 9, width: 210, change: this.changeShowLevelValue });
+        this.showLevel = new NumericTextBox({ format: '#', value: 3, min: 1, max: 9, width: 210, change: this.changeShowLevelValue.bind(this) });
         this.showLevel.appendTo(showLevel);
         if (isRtl) {
             this.hyperlink.cssClass = 'e-de-toc-label-rtl';
@@ -154,9 +158,9 @@ export class TableOfContentsDialog {
             rightBottomGeneralDiv.classList.add('e-de-rtl');
         }
 
-        // tslint:disable-next-line:max-line-length
+
         let buildTableDiv: HTMLDivElement = createElement('div', { id: 'buildTable_div', className: 'e-de-toc-dlg-sub-container' }) as HTMLDivElement;
-        // tslint:disable-next-line:max-line-length
+
         let buildTableLabel: HTMLElement = createElement('div', { id: ownerId + '_buildTableLabel', className: 'e-de-toc-dlg-main-heading e-de-toc-dlg-build-table', styles: 'margin-bottom: 13px;', innerHTML: locale.getConstant('Build table of contents from') + ':' });
         leftBottomGeneralDiv.appendChild(buildTableDiv);
         leftBottomGeneralDiv.appendChild(buildTableLabel);
@@ -172,7 +176,7 @@ export class TableOfContentsDialog {
         let tr1: HTMLTableRowElement = <HTMLTableRowElement>createElement('tr');
         let td1: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { styles: 'width:120px;padding-left:10px;' });
         let availableLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
-            // tslint:disable-next-line:max-line-length
+
             innerHTML: locale.getConstant('Available styles'), className: 'e-de-toc-dlg-main-heading e-de-toc-dlg-sub-level-heading', id: this.target.id + '_availableLabel'
         });
         td1.appendChild(availableLabel);
@@ -185,7 +189,7 @@ export class TableOfContentsDialog {
         tr1.appendChild(td1); tr1.appendChild(td2);
         table.appendChild(tr1);
 
-        // tslint:disable-next-line:max-line-length
+
         let tableDiv: HTMLDivElement = createElement('div', { id: 'table_div', className: 'e-de-toc-table-div' }) as HTMLDivElement;
         let table1: HTMLTableElement = <HTMLTableElement>createElement('TABLE');
         let tr2: HTMLTableRowElement = <HTMLTableRowElement>createElement('tr');
@@ -346,7 +350,7 @@ export class TableOfContentsDialog {
         let fieldsDiv: HTMLDivElement = createElement('div', { id: 'fields_div', styles: 'display: flex;' }) as HTMLDivElement;
         leftBottomGeneralDiv.appendChild(fieldsDiv);
         let outDiv: HTMLDivElement = createElement('div', { id: 'out_div' }) as HTMLDivElement;
-        // tslint:disable-next-line:max-line-length
+
         let outlineDiv: HTMLDivElement = createElement('div', { id: 'outline_div', className: 'e-de-toc-dlg-sub-container e-de-toc-dlg-outline-levels' }) as HTMLDivElement;
         let outline: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'checkbox' }, id: '_outline'
@@ -371,9 +375,9 @@ export class TableOfContentsDialog {
         resetButton.appendTo(resetElement);
         resetElement.addEventListener('click', this.reset);
 
-        // tslint:disable-next-line:max-line-length
+
         let tocStylesDiv: HTMLDivElement = createElement('div', { id: 'tocStyles_div', className: 'e-de-toc-dlg-sub-container' }) as HTMLDivElement;
-        // tslint:disable-next-line:max-line-length
+
         let tocStylesLabel: HTMLElement = createElement('div', {
             id: ownerId + '_tocStylesLabel', className: 'e-de-toc-dlg-main-heading e-de-toc-dlg-styles',
             innerHTML: locale.getConstant('Styles') + ':'
@@ -413,7 +417,7 @@ export class TableOfContentsDialog {
             modifyButtonDiv.classList.add('e-de-rtl');
         }
     }
-    private styleLocaleValue = (styleLocale: string[], localValue: L10n): string[] => {
+    private styleLocaleValue(styleLocale: string[], localValue: L10n): string[] {
         let styleName: string[] = [];
         for (let index: number = 0; index < styleLocale.length; index++) {
             styleName.push(localValue.getConstant(styleLocale[index]));
@@ -449,6 +453,7 @@ export class TableOfContentsDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public loadTableofContentDialog = (): void => {
         this.documentHelper.updateFocus();
@@ -464,6 +469,7 @@ export class TableOfContentsDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public closeTableOfContentDialog = (): void => {
         this.unWireEventsAndBindings();
@@ -471,26 +477,33 @@ export class TableOfContentsDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public onCancelButtonClick = (): void => {
         this.documentHelper.dialog3.hide();
         this.unWireEventsAndBindings();
         this.documentHelper.updateFocus();
     }
-    /* tslint:disable:no-any */
-    private selectHandler = (args: any): void => {
+    /**
+     * @param {SelectEventArgs} args - Specifies the event args.
+     * @returns {void}
+     */
+    private selectHandler = (args: SelectEventArgs): void => {
         (this.textBoxInput as HTMLInputElement).value = args.text;
-        /* tslint:disable:no-any */
         let value: any = document.getElementById('toclist');
         value.setSelectionRange(0, (args.text as string).length);
         value.focus();
     }
+    /**
+     * @private
+     * @returns {void}
+     */
     private showStyleDialog = (): void => {
         if (!isNullOrUndefined(this.documentHelper.owner.styleDialogModule)) {
             this.documentHelper.owner.styleDialogModule.show((this.textBoxInput as HTMLInputElement).value);
         }
     }
-    private changeShowLevelValue = (event: any): void => {
+    private changeShowLevelValue(event: any): void {
         let levels: number = event.value as number;
         let values: string[] = [];
         switch (levels) {
@@ -532,7 +545,8 @@ export class TableOfContentsDialog {
                 break;
         }
     }
-    private changeByValue = (headings: string[]): void => {
+
+    private changeByValue(headings: string[]): void {
         this.heading1.value = headings[0];
         this.heading2.value = headings[1];
         this.heading3.value = headings[2];
@@ -543,6 +557,9 @@ export class TableOfContentsDialog {
         this.heading8.value = headings[7];
         this.heading9.value = headings[8];
     }
+    /**
+     * @returns {void}
+     */
     private reset = (): void => {
         this.showLevel.enabled = true;
         this.showLevel.value = 3;
@@ -552,7 +569,11 @@ export class TableOfContentsDialog {
         this.changeByValue(values);
         this.normal.value = null;
     }
-    private changeStyle = (args: any): void => {
+    /**
+     * @param {KeyboardEvent} args - Specifies the event args.
+     * @returns {void}
+     */
+    private changeStyle = (args: KeyboardEvent): void => {
         let headingValue: string = (args.srcElement as HTMLInputElement).value;
         let value = this.getElementValue(args.srcElement as HTMLInputElement);
         if (headingValue !== value && headingValue !== '') {
@@ -615,7 +636,11 @@ export class TableOfContentsDialog {
                 return '1';
         }
     }
-    private changeHeadingStyle = (args: any): void => {
+    /**
+     * @param {KeyboardEvent} args - Specifies the event args.
+     * @returns {void}
+     */
+    private changeHeadingStyle = (args: KeyboardEvent): void => {
         let headingValue = (args.srcElement as HTMLInputElement).value;
         if (headingValue === '') {
             this.showLevel.enabled = true;
@@ -628,9 +653,10 @@ export class TableOfContentsDialog {
         }
     }
     /**
-     * @private
+     * @param {ChangeEventArgs} args - Specifies the event args.
+     * @returns {void}
      */
-    public changePageNumberValue = (args: any): void => {
+    public changePageNumberValue = (args: ChangeEventArgs): void => {
         if (args.checked) {
             this.rightAlign.checked = true;
             this.rightAlign.disabled = false;
@@ -641,9 +667,10 @@ export class TableOfContentsDialog {
         }
     }
     /**
-     * @private
+     * @param {ChangeEventArgs} args - Specifies the event args.
+     * @returns {void}
      */
-    public changeRightAlignValue = (args: any): void => {
+    public changeRightAlignValue = (args: ChangeEventArgs): void => {
         if (args.checked) {
             this.tabLeader.enabled = true;
         } else {
@@ -651,9 +678,10 @@ export class TableOfContentsDialog {
         }
     }
     /**
-     * @private
+     * @param {ChangeEventArgs} args - Specifies the event args.
+     * @returns {void}
      */
-    public changeStyleValue = (args: any): void => {
+    public changeStyleValue = (args: ChangeEventArgs): void => {
         if (args.checked) {
             this.heading1.disabled = false;
             this.heading2.disabled = false;
@@ -735,6 +763,7 @@ export class TableOfContentsDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public applyTableOfContentProperties = (): void => {
         let tocSettings: TableOfContentsSettings = {
@@ -753,6 +782,7 @@ export class TableOfContentsDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public unWireEventsAndBindings = (): void => {
         this.pageNumber.checked = false;
@@ -765,6 +795,7 @@ export class TableOfContentsDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         if (this.pageNumber) {

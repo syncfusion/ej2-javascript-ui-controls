@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/explicit-member-accessibility */
+/* eslint-disable @typescript-eslint/dot-notation */
+/* eslint-disable no-underscore-dangle */
 import { Maps } from '../../index';
 import { ShapeSettingsModel, ColorMappingSettingsModel, ColorValue } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -13,25 +16,33 @@ export class ColorMapping {
     }
     /**
      * To get color based on shape settings.
+     *
+     * @param { ShapeSettingsModel } shapeSettings - Specifies the shape settings.
+     * @param { object } layerData - Specifies the layer data.
+     * @param { string } color - Specifies the color.
+     * @returns {Object} - Returns the object.
      * @private
      */
-    public getShapeColorMapping(shapeSettings: ShapeSettingsModel, layerData: object, color: string): Object {
-        let colorValuePath: string = shapeSettings.colorValuePath ? shapeSettings.colorValuePath : shapeSettings.valuePath;
-        let equalValue: string = (!isNullOrUndefined(colorValuePath)) ? ((colorValuePath.indexOf('.') > -1) ?
-         getValueFromObject(layerData, colorValuePath) : layerData[colorValuePath]) : layerData[colorValuePath];
-        let colorValue: number = Number(equalValue);
-        let shapeColor: Object = this.getColorByValue(shapeSettings.colorMapping, colorValue, equalValue);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public getShapeColorMapping(shapeSettings: ShapeSettingsModel, layerData: any, color: string): any {
+        const colorValuePath: string = shapeSettings.colorValuePath ? shapeSettings.colorValuePath : shapeSettings.valuePath;
+        const equalValue: string = (!isNullOrUndefined(colorValuePath)) ? ((colorValuePath.indexOf('.') > -1) ?
+            getValueFromObject(layerData, colorValuePath) : layerData[colorValuePath]) : layerData[colorValuePath];
+        const colorValue: number = Number(equalValue);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const shapeColor: any = this.getColorByValue(shapeSettings.colorMapping, colorValue, equalValue);
         return !isNullOrUndefined(shapeColor) ? shapeColor : color;
     }
     /**
      * To color by value and color mapping
      */
-    public getColorByValue(colorMapping: ColorMappingSettingsModel[], colorValue: number, equalValue: string): Object {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public getColorByValue(colorMapping: ColorMappingSettingsModel[], colorValue: number, equalValue: string): any {
         if (isNaN(colorValue) && isNullOrUndefined(equalValue)) {
             return null;
         }
         let fill: string = ''; let opacity: number; let gradientColor: string[]; let gradientFill: string;
-        for (let colorMap of colorMapping) {
+        for (const colorMap of colorMapping) {
 
             if ((!isNullOrUndefined(colorMap.from) && !isNullOrUndefined(colorMap.to)
                 && (colorValue >= colorMap.from && colorValue <= colorMap.to)) ||
@@ -64,7 +75,7 @@ export class ColorMapping {
         rangeValue: number, equalValue: string): number {
         let opacity: number = 1;
         if (((rangeValue >= colorMapping.from && rangeValue <= colorMapping.to) || colorMapping.value === equalValue)) {
-            let ratio: number = !isNaN(rangeValue) ? (rangeValue - colorMapping.from) / (colorMapping.to - colorMapping.from) :
+            const ratio: number = !isNaN(rangeValue) ? (rangeValue - colorMapping.from) / (colorMapping.to - colorMapping.from) :
                 colorMapping.from / (colorMapping.to - colorMapping.from);
             opacity = (ratio * (colorMapping.maxOpacity - colorMapping.minOpacity)) + colorMapping.minOpacity;
         }
@@ -76,7 +87,7 @@ export class ColorMapping {
     }
 
     public componentToHex(value: number): string {
-        let hex: string = value.toString(16);
+        const hex: string = value.toString(16);
         return hex.length === 1 ? '0' + hex : hex;
     }
 
@@ -94,13 +105,11 @@ export class ColorMapping {
         return color;
     }
 
-    /* tslint:disable-next-line:max-func-body-length */
-    /* tslint:disable:no-string-literal */
     public getGradientColor(value: number, colorMap: ColorMappingSettingsModel): ColorValue {
-        let previousOffset: number = colorMap.from;
-        let nextOffset: number = colorMap.to;
+        const previousOffset: number = colorMap.from;
+        const nextOffset: number = colorMap.to;
         let percent: number = 0; let prev1: string;
-        let full: number = nextOffset - previousOffset; let midColor: string; let midreturn: ColorValue;
+        const full: number = nextOffset - previousOffset; let midColor: string; let midreturn: ColorValue;
         percent = (value - previousOffset) / full; let previousColor: string; let nextColor: string;
         if (colorMap.color.length <= 2) {
             previousColor = colorMap.color[0].charAt(0) === '#' ? colorMap.color[0] : this._colorNameToHex(colorMap.color[0]);
@@ -110,10 +119,11 @@ export class ColorMapping {
             previousColor = colorMap.color[0].charAt(0) === '#' ? colorMap.color[0] : this._colorNameToHex(colorMap.color[0]);
             nextColor = colorMap.color[colorMap.color.length - 1].charAt(0) === '#' ?
                 colorMap.color[colorMap.color.length - 1] : this._colorNameToHex(colorMap.color[colorMap.color.length - 1]);
-            let a: number = full / (colorMap.color.length - 1); let b: number; let c: number;
+            const a: number = full / (colorMap.color.length - 1); let b: number; let c: number;
 
-            let length: number = colorMap.color.length - 1;
-            let splitColorValueOffset: Object[] = []; let splitColor: Object = {};
+            const length: number = colorMap.color.length - 1;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const splitColorValueOffset: any[] = []; let splitColor: any = {};
             for (let j: number = 1; j < length; j++) {
                 c = j * a;
                 b = previousOffset + c;
@@ -123,12 +133,14 @@ export class ColorMapping {
             for (let i: number = 0; i < splitColorValueOffset.length; i++) {
                 if (previousOffset <= value && value <= splitColorValueOffset[i]['b'] && i === 0) {
                     midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
+                    // eslint-disable-next-line no-underscore-dangle
                         splitColorValueOffset[i]['color'] : this._colorNameToHex(splitColorValueOffset[i]['color']);
                     nextColor = midColor;
                     percent = value < splitColorValueOffset[i]['b'] ? 1 - Math.abs((value - splitColorValueOffset[i]['b']) / a)
                         : (value - splitColorValueOffset[i]['b']) / a;
                 } else if (splitColorValueOffset[i]['b'] <= value && value <= nextOffset && i === (splitColorValueOffset.length - 1)) {
                     midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
+                    // eslint-disable-next-line no-underscore-dangle
                         splitColorValueOffset[i]['color'] : this._colorNameToHex(splitColorValueOffset[i]['color']);
                     previousColor = midColor;
                     percent = value < splitColorValueOffset[i]['b'] ?
@@ -137,9 +149,11 @@ export class ColorMapping {
                 if (i !== splitColorValueOffset.length - 1 && i < splitColorValueOffset.length) {
                     if (splitColorValueOffset[i]['b'] <= value && value <= splitColorValueOffset[i + 1]['b']) {
                         midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
+                        // eslint-disable-next-line no-underscore-dangle
                             splitColorValueOffset[i]['color'] : this._colorNameToHex(splitColorValueOffset[i]['color']);
                         previousColor = midColor;
                         nextColor = splitColorValueOffset[i + 1]['color'].charAt(0) === '#' ?
+                        // eslint-disable-next-line no-underscore-dangle
                             splitColorValueOffset[i + 1]['color'] : this._colorNameToHex(splitColorValueOffset[i + 1]['color']);
                         percent = Math.abs((value - splitColorValueOffset[i + 1]['b'])) / a;
                     }
@@ -150,21 +164,22 @@ export class ColorMapping {
     }
 
     public getPercentageColor(percent: number, previous: string, next: string): ColorValue {
-        let nextColor: string = next.split('#')[1];
-        let prevColor: string = previous.split('#')[1];
-        let r: number = this.getPercentage(percent, parseInt(prevColor.substr(0, 2), 16), parseInt(nextColor.substr(0, 2), 16));
-        let g: number = this.getPercentage(percent, parseInt(prevColor.substr(2, 2), 16), parseInt(nextColor.substr(2, 2), 16));
-        let b: number = this.getPercentage(percent, parseInt(prevColor.substr(4, 2), 16), parseInt(nextColor.substr(4, 2), 16));
+        const nextColor: string = next.split('#')[1];
+        const prevColor: string = previous.split('#')[1];
+        const r: number = this.getPercentage(percent, parseInt(prevColor.substr(0, 2), 16), parseInt(nextColor.substr(0, 2), 16));
+        const g: number = this.getPercentage(percent, parseInt(prevColor.substr(2, 2), 16), parseInt(nextColor.substr(2, 2), 16));
+        const b: number = this.getPercentage(percent, parseInt(prevColor.substr(4, 2), 16), parseInt(nextColor.substr(4, 2), 16));
         return new ColorValue(r, g, b);
     }
 
     public getPercentage(percent: number, previous: number, next: number): number {
-        let full: number = next - previous;
+        const full: number = next - previous;
         return Math.round((previous + (full * percent)));
     }
 
     public _colorNameToHex(color: string): string {
-        let colors: object = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const colors: any = {
             'aliceblue': '#f0f8ff', 'antiquewhite': '#faebd7', 'aqua': '#00ffff', 'aquamarine': '#7fffd4', 'azure': '#f0ffff',
             'beige': '#f5f5dc', 'bisque': '#ffe4c4', 'black': '#000000', 'blanchedalmond': '#ffebcd', 'blue': '#0000ff',
             'blueviolet': '#8a2be2', 'brown': '#a52a2a', 'burlywood': '#deb887',

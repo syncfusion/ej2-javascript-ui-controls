@@ -14,6 +14,7 @@ import { randomId } from '../utility/base-util';
 export class Hyperlink extends ChildProperty<Hyperlink> {
     /**
      * Sets the fill color of the hyperlink
+     *
      * @default 'blue'
      */
     @Property('blue')
@@ -21,12 +22,14 @@ export class Hyperlink extends ChildProperty<Hyperlink> {
 
     /**
      * Defines the content for hyperlink
+     *
      * @default ''
      */
     @Property('')
     public content: string;
     /**
      * Defines the link for hyperlink
+     *
      * @default ''
      */
     @Property('')
@@ -38,6 +41,7 @@ export class Hyperlink extends ChildProperty<Hyperlink> {
      * * Underline - Decorates the text with an underline
      * * LineThrough - Decorates the text by striking it with a line
      * * None - Text will not have any specific decoration
+     *
      * @default 'None'
      */
     @Property('None')
@@ -49,6 +53,7 @@ export class Hyperlink extends ChildProperty<Hyperlink> {
 export class Annotation extends ChildProperty<Annotation> {
     /**
      * Sets the textual description of the node/connector
+     *
      * @default ''
      */
     @Property('')
@@ -56,6 +61,7 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Sets the textual description of the node/connector
+     *
      * @default 'undefined'
      */
     @Property(undefined)
@@ -65,6 +71,7 @@ export class Annotation extends ChildProperty<Annotation> {
      *  Defines the type of annotation template
      * String -  Defines annotation template to be in string
      * Template - Defines annotation template to be in html content
+     *
      * @default 'String'
      */
     @Property('String')
@@ -72,6 +79,7 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Defines the visibility of the label
+     *
      * @default true
      */
     @Property(true)
@@ -81,6 +89,7 @@ export class Annotation extends ChildProperty<Annotation> {
      * Enables or disables the default behaviors of the label.
      * * ReadOnly - Enables/Disables the ReadOnly Constraints
      * * InheritReadOnly - Enables/Disables the InheritReadOnly Constraints
+     *
      * @default 'InheritReadOnly'
      * @aspNumberEnum
      * @blazorNumberEnum
@@ -109,6 +118,7 @@ export class Annotation extends ChildProperty<Annotation> {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -118,6 +128,7 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Defines the unique id of the annotation
+     *
      * @default ''
      */
     @Property('')
@@ -125,6 +136,7 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Sets the width of the text
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -134,6 +146,7 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Sets the height of the text
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -143,6 +156,7 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Sets the rotate angle of the text
+     *
      * @default 0
      */
     @Property(0)
@@ -150,6 +164,7 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Defines the appearance of the text
+     *
      * @default new TextStyle()
      * @blazorType AnnotationStyle
      */
@@ -163,6 +178,7 @@ export class Annotation extends ChildProperty<Annotation> {
      * * Right - Aligns the diagram element at the right of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
+     *
      * @default 'Center'
      */
     @Property('Center')
@@ -175,6 +191,7 @@ export class Annotation extends ChildProperty<Annotation> {
      * * Bottom - Aligns the diagram element at the bottom of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
+     *
      * @default 'Center'
      */
     @Property('Center')
@@ -182,6 +199,7 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Sets the space to be left between an annotation and its parent node/connector
+     *
      * @default new Margin(0,0,0,0)
      */
     @Complex<MarginModel>({}, Margin)
@@ -189,6 +207,7 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Sets the space to be left between an annotation and its parent node/connector
+     *
      * @default new Margin(20,20,20,20)
      */
     @Complex<MarginModel>({ top: undefined, bottom: undefined, left: undefined, right: undefined }, Margin)
@@ -198,6 +217,7 @@ export class Annotation extends ChildProperty<Annotation> {
      * Sets the type of the annotation
      *  * Shape - Sets the annotation type as Shape
      *  * Path - Sets the annotation type as Path
+     *
      * @default 'Shape'
      */
     @Property('Shape')
@@ -212,7 +232,7 @@ export class Annotation extends ChildProperty<Annotation> {
      * let addInfo: {}  = { content: 'label' };
      * let nodes: NodeModel[] = [{
      * id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
-     * annotations: [{ id: 'label1', 
+     * annotations: [{ id: 'label1',
      * content: 'text', constraints: ~AnnotationConstraints.InheritReadOnly, addInfo: addInfo
      * }],
      * }];
@@ -223,6 +243,7 @@ export class Annotation extends ChildProperty<Annotation> {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -231,6 +252,7 @@ export class Annotation extends ChildProperty<Annotation> {
     public addInfo: Object;
 
     // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
         if (!(defaultValue as AnnotationModel).id) {
@@ -250,17 +272,19 @@ export class Annotation extends ChildProperty<Annotation> {
 export class ShapeAnnotation extends Annotation {
     /**
      * Sets the position of the annotation with respect to its parent bounds
+     *
      * @default { x: 0.5, y: 0.5 }
      * @blazorType NodeAnnotationOffset
      */
     @Complex<PointModel>({ x: 0.5, y: 0.5 }, Point)
     public offset: PointModel;
 
-    // tslint:disable-next-line:no-any
+    /* eslint-disable */
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
     }
 
+    // eslint-disable-next-line valid-jsdoc
     /**
      * @private
      * Returns the module of class ShapeAnnotation
@@ -268,19 +292,22 @@ export class ShapeAnnotation extends Annotation {
     public getClassName(): string {
         return 'ShapeAnnotation';
     }
+    /* eslint-enable */
 }
-/**   
- * Defines the connector annotation 
+/**
+ * Defines the connector annotation
  */
 export class PathAnnotation extends Annotation {
     /**
      * Sets the segment offset of annotation
+     *
      * @default 0.5
      */
     @Property(0.5)
     public offset: number;
     /**
      * Sets the displacement of an annotation from its actual position
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -293,6 +320,7 @@ export class PathAnnotation extends Annotation {
      *  * Center - Aligns the annotation at the center of a connector segment
      *  * Before - Aligns the annotation before a connector segment
      *  * After - Aligns the annotation after a connector segment
+     *
      * @default Center
      */
     @Property('Center')
@@ -300,19 +328,24 @@ export class PathAnnotation extends Annotation {
 
     /**
      * Enable/Disable the angle based on the connector segment
+     *
      * @default false
      */
     @Property(false)
     public segmentAngle: boolean;
 
-    // tslint:disable-next-line:no-any
+    /* eslint-disable */
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
     }
+    /* eslint-enable */
+
 
     /**
+     * Returns the module of class PathAnnotation.
+     *
+     * @returns {string}  Returns the module of class PathAnnotation.
      * @private
-     * Returns the module of class PathAnnotation
      */
     public getClassName(): string {
         return 'PathAnnotation';

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { append, addClass, createElement } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { Year } from './year';
@@ -13,53 +14,47 @@ export class TimelineYear extends Year {
     public viewClass: string = 'e-timeline-year-view';
     public isInverseTableSelect: boolean = true;
 
-    /**
-     * Constructor for timeline year view
-     */
     constructor(parent: Schedule) {
         super(parent);
     }
 
-    /**
-     * Get module name.
-     */
     protected getModuleName(): string {
         return 'timelineYear';
     }
 
     public renderHeader(headerWrapper: HTMLElement): void {
-        let tr: HTMLElement = createElement('tr');
+        const tr: HTMLElement = createElement('tr');
         headerWrapper.appendChild(tr);
         if (this.parent.activeViewOptions.orientation === 'Vertical' && this.parent.activeViewOptions.group.resources.length > 0 &&
             !this.parent.uiStateValues.isGroupAdaptive) {
             this.parent.resourceBase.renderResourceHeaderIndent(tr);
         } else {
-            let leftHeaderCells: HTMLElement = createElement('td', { className: cls.LEFT_INDENT_CLASS });
+            const leftHeaderCells: HTMLElement = createElement('td', { className: cls.LEFT_INDENT_CLASS });
             tr.appendChild(leftHeaderCells);
             leftHeaderCells.appendChild(this.renderResourceHeader(cls.LEFT_INDENT_WRAP_CLASS));
         }
-        let td: HTMLElement = createElement('td');
+        const td: HTMLElement = createElement('td');
         tr.appendChild(td);
-        let container: HTMLElement = createElement('div', { className: cls.DATE_HEADER_CONTAINER_CLASS });
+        const container: HTMLElement = createElement('div', { className: cls.DATE_HEADER_CONTAINER_CLASS });
         td.appendChild(container);
         if (this.parent.activeViewOptions.orientation === 'Horizontal' && this.parent.activeViewOptions.group.resources.length > 0 &&
             !this.parent.uiStateValues.isGroupAdaptive) {
             container.appendChild(this.renderResourceHeader(cls.DATE_HEADER_WRAP_CLASS));
             this.columnCount = this.colLevels.slice(-1)[0].length;
         } else {
-            let wrapper: HTMLElement = createElement('div', { className: cls.DATE_HEADER_WRAP_CLASS });
+            const wrapper: HTMLElement = createElement('div', { className: cls.DATE_HEADER_WRAP_CLASS });
             container.appendChild(wrapper);
-            let table: HTMLElement = this.createTableLayout() as HTMLElement;
+            const table: HTMLElement = this.createTableLayout() as HTMLElement;
             wrapper.appendChild(table);
             table.appendChild(this.createTableColGroup(this.columnCount));
-            let innerTr: HTMLElement = createElement('tr');
+            const innerTr: HTMLElement = createElement('tr');
             table.querySelector('tbody').appendChild(innerTr);
             for (let column: number = 0; column < this.columnCount; column++) {
-                let innerTd: HTMLElement = createElement('td', { className: cls.HEADER_CELLS_CLASS });
+                const innerTd: HTMLElement = createElement('td', { className: cls.HEADER_CELLS_CLASS });
                 if (this.parent.activeViewOptions.orientation === 'Horizontal') {
                     innerTd.innerHTML = `<span>${this.parent.getDayNames('abbreviated')[column % 7]}</span>`;
                 } else {
-                    let date: Date = new Date(this.parent.selectedDate.getFullYear(), column, 1);
+                    const date: Date = new Date(this.parent.selectedDate.getFullYear(), column, 1);
                     innerTd.innerHTML = `<span>${this.getMonthName(date)}</span>`;
                     innerTd.setAttribute('data-date', date.getTime().toString());
                 }
@@ -70,28 +65,28 @@ export class TimelineYear extends Year {
     }
 
     private renderResourceHeader(className: string): HTMLElement {
-        let wrap: HTMLElement = createElement('div', { className: className });
-        let tbl: Element = this.createTableLayout();
+        const wrap: HTMLElement = createElement('div', { className: className });
+        const tbl: Element = this.createTableLayout();
         wrap.appendChild(tbl);
-        let trEle: Element = createElement('tr');
+        const trEle: Element = createElement('tr');
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             this.colLevels = this.generateColumnLevels();
         } else {
-            let colData: TdData[] = [{ className: [cls.HEADER_CELLS_CLASS], type: 'headerCell' }];
+            const colData: TdData[] = [{ className: [cls.HEADER_CELLS_CLASS], type: 'headerCell' }];
             this.colLevels = [colData];
         }
-        for (let col of this.colLevels) {
-            let ntr: Element = trEle.cloneNode() as Element;
-            let count: TdData[] = className === cls.DATE_HEADER_WRAP_CLASS ? col : [col[0]];
-            for (let c of count) {
-                let tdEle: Element = createElement('td');
+        for (const col of this.colLevels) {
+            const ntr: Element = trEle.cloneNode() as Element;
+            const count: TdData[] = className === cls.DATE_HEADER_WRAP_CLASS ? col : [col[0]];
+            for (const c of count) {
+                const tdEle: Element = createElement('td');
                 if (c.className) { addClass([tdEle], c.className); }
                 if (className === cls.DATE_HEADER_WRAP_CLASS) {
                     if (c.template) { append(c.template, tdEle); }
                     if (c.colSpan) { tdEle.setAttribute('colspan', c.colSpan.toString()); }
                     this.setResourceHeaderContent(tdEle, c);
                 }
-                let args: RenderCellEventArgs = { elementType: c.type, element: tdEle, date: c.date, groupIndex: c.groupIndex };
+                const args: RenderCellEventArgs = { elementType: c.type, element: tdEle, date: c.date, groupIndex: c.groupIndex };
                 this.parent.trigger(event.renderCell, args);
                 ntr.appendChild(tdEle);
             }
@@ -104,11 +99,11 @@ export class TimelineYear extends Year {
     }
 
     public renderContent(contentWrapper: HTMLElement): void {
-        let tr: HTMLElement = createElement('tr');
+        const tr: HTMLElement = createElement('tr');
         contentWrapper.appendChild(tr);
-        let firstTd: HTMLElement = createElement('td');
-        let lastTd: HTMLElement = createElement('td');
-        let tdCollection: HTMLElement[] = [];
+        const firstTd: HTMLElement = createElement('td');
+        const lastTd: HTMLElement = createElement('td');
+        const tdCollection: HTMLElement[] = [];
         let monthTBody: HTMLTableSectionElement;
         if (this.parent.activeViewOptions.orientation === 'Vertical' && this.parent.activeViewOptions.group.resources.length > 0 &&
             !this.parent.uiStateValues.isGroupAdaptive) {
@@ -117,25 +112,25 @@ export class TimelineYear extends Year {
             this.rowCount = this.parent.resourceBase.lastResourceLevel.length;
         } else {
             tdCollection.push(firstTd);
-            let monthWrapper: HTMLElement = createElement('div', { className: cls.MONTH_HEADER_WRAPPER });
+            const monthWrapper: HTMLElement = createElement('div', { className: cls.MONTH_HEADER_WRAPPER });
             firstTd.appendChild(monthWrapper);
             monthWrapper.appendChild(this.createTableLayout() as HTMLElement);
             monthTBody = monthWrapper.querySelector('tbody');
         }
         tdCollection.push(lastTd);
         append(tdCollection, tr);
-        let content: HTMLElement = createElement('div', { className: cls.CONTENT_WRAP_CLASS });
+        const content: HTMLElement = createElement('div', { className: cls.CONTENT_WRAP_CLASS });
         lastTd.appendChild(content);
-        let contentTable: HTMLElement = this.createTableLayout(cls.CONTENT_TABLE_CLASS) as HTMLElement;
+        const contentTable: HTMLElement = this.createTableLayout(cls.CONTENT_TABLE_CLASS) as HTMLElement;
         content.appendChild(contentTable);
-        let eventWrapper: HTMLElement = createElement('div', { className: cls.EVENT_TABLE_CLASS });
+        const eventWrapper: HTMLElement = createElement('div', { className: cls.EVENT_TABLE_CLASS });
         content.appendChild(eventWrapper);
-        let contentTBody: HTMLTableSectionElement = contentTable.querySelector('tbody');
+        const contentTBody: HTMLTableSectionElement = contentTable.querySelector('tbody');
         if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
             if (this.parent.rowAutoHeight) {
                 addClass([contentTable], cls.AUTO_HEIGHT);
             }
-            let colCount: number = this.parent.activeViewOptions.orientation === 'Horizontal' ? this.colLevels.slice(-1)[0].length : 12;
+            const colCount: number = this.parent.activeViewOptions.orientation === 'Horizontal' ? this.colLevels.slice(-1)[0].length : 12;
             contentTable.appendChild(this.createTableColGroup(colCount));
             this.renderResourceContent(eventWrapper, monthTBody, contentTBody);
         } else {
@@ -150,12 +145,12 @@ export class TimelineYear extends Year {
             let monthDate: Date = new Date(this.parent.selectedDate.getFullYear(), month, 1);
             let monthStart: Date = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
             let monthEnd: Date = this.parent.calendarUtil.getMonthEndDate(new Date(monthDate.getTime()));
-            let tr: HTMLElement = createElement('tr', { attrs: { 'role': 'row' } });
-            let monthTr: HTMLElement = tr.cloneNode() as HTMLElement;
+            const tr: HTMLElement = createElement('tr', { attrs: { 'role': 'row' } });
+            const monthTr: HTMLElement = tr.cloneNode() as HTMLElement;
             monthBody.appendChild(monthTr);
-            let contentTr: HTMLElement = tr.cloneNode() as HTMLElement;
+            const contentTr: HTMLElement = tr.cloneNode() as HTMLElement;
             contentBody.appendChild(contentTr);
-            let monthTd: HTMLElement = createElement('td', { className: cls.MONTH_HEADER_CLASS, attrs: { 'role': 'gridcell' } });
+            const monthTd: HTMLElement = createElement('td', { className: cls.MONTH_HEADER_CLASS, attrs: { 'role': 'gridcell' } });
             if (this.parent.activeViewOptions.orientation === 'Horizontal') {
                 monthTd.setAttribute('data-date', monthDate.getTime().toString());
                 monthTd.innerHTML = `<span>${this.getMonthName(monthDate)}</span>`;
@@ -171,31 +166,31 @@ export class TimelineYear extends Year {
                     monthDate = new Date(this.parent.selectedDate.getFullYear(), column, 1);
                     monthStart = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
                     monthEnd = this.parent.calendarUtil.getMonthEndDate(new Date(monthDate.getTime()));
-                    let dayDate: number = (month - monthStart.getDay()) + 1;
+                    const dayDate: number = (month - monthStart.getDay()) + 1;
                     date = new Date(this.parent.selectedDate.getFullYear(), column, dayDate);
                     isDateAvail = dayDate > 0 && date.getTime() < monthEnd.getTime();
                 } else {
                     isDateAvail = column >= monthStart.getDay() && date.getTime() < monthEnd.getTime();
                 }
-                let td: HTMLElement = createElement('td', {
+                const td: HTMLElement = createElement('td', {
                     className: cls.WORK_CELLS_CLASS,
                     attrs: { 'role': 'gridcell', 'aria-selected': 'false' }
                 });
                 contentTr.appendChild(td);
-                let dateHeader: HTMLElement = createElement('div', {
+                const dateHeader: HTMLElement = createElement('div', {
                     className: cls.DATE_HEADER_CLASS + ' ' + cls.NAVIGATE_CLASS,
                     innerHTML: (isDateAvail) ? date.getDate().toString() : ''
                 });
-                let skeleton: string = 'full';
-                let annocementText: string =
+                const skeleton: string = 'full';
+                const annocementText: string =
                     this.parent.globalize.formatDate(date, {
                         skeleton: skeleton,
                         calendar: this.parent.getCalendarMode()
                     });
                 dateHeader.setAttribute('aria-label', annocementText);
                 if (isDateAvail) {
-                    let tds: HTMLElement[] = [td];
-                    let classList: string[] = [];
+                    const tds: HTMLElement[] = [td];
+                    const classList: string[] = [];
                     if (this.parent.activeViewOptions.workDays.indexOf(date.getDay()) > -1) {
                         classList.push(cls.WORKDAY_CLASS);
                     }
@@ -232,7 +227,7 @@ export class TimelineYear extends Year {
     private renderResourceContent(wrapper: HTMLElement, monthBody: HTMLTableSectionElement, contentBody: HTMLTableSectionElement): void {
         for (let row: number = 0; row < this.rowCount; row++) {
             wrapper.appendChild(createElement('div', { className: cls.APPOINTMENT_CONTAINER_CLASS }));
-            let tr: HTMLElement = createElement('tr', { attrs: { 'role': 'row' } });
+            const tr: HTMLElement = createElement('tr', { attrs: { 'role': 'row' } });
             contentBody.appendChild(tr);
             let resData: TdData;
             if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
@@ -241,9 +236,9 @@ export class TimelineYear extends Year {
             let monthDate: Date = new Date(this.parent.selectedDate.getFullYear(), row, 1);
             let date: Date = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
             if (this.parent.activeViewOptions.orientation === 'Horizontal') {
-                let monthTr: HTMLElement = tr.cloneNode() as HTMLElement;
+                const monthTr: HTMLElement = tr.cloneNode() as HTMLElement;
                 monthBody.appendChild(monthTr);
-                let monthTd: HTMLElement = createElement('td', {
+                const monthTd: HTMLElement = createElement('td', {
                     className: cls.MONTH_HEADER_CLASS,
                     innerHTML: `<span>${this.getMonthName(monthDate)}</span>`,
                     attrs: { 'role': 'gridcell', 'data-date': date.getTime().toString() }
@@ -266,7 +261,7 @@ export class TimelineYear extends Year {
                     groupIndex = this.colLevels.slice(-1)[0][month].groupIndex;
                     classList.push(cls.WORKDAY_CLASS);
                 }
-                let td: HTMLElement = createElement('td', {
+                const td: HTMLElement = createElement('td', {
                     className: cls.WORK_CELLS_CLASS,
                     attrs: {
                         'role': 'gridcell', 'aria-selected': 'false',
@@ -286,27 +281,26 @@ export class TimelineYear extends Year {
         }
     }
 
-    private renderCellTemplate(data: { [key: string]: Object }, td: HTMLElement): void {
+    private renderCellTemplate(data: Record<string, any>, td: HTMLElement): void {
         if (!this.parent.activeViewOptions.cellTemplate) {
             return;
         }
-        let dateValue: Date = util.addLocalOffset(data.date as Date);
-        let args: CellTemplateArgs = { date: dateValue, type: data.type as string };
+        const args: CellTemplateArgs = { date: data.date as Date, type: data.type as string };
         if (data.groupIndex) {
             args.groupIndex = data.groupIndex as number;
         }
-        let scheduleId: string = this.parent.element.id + '_';
-        let viewName: string = this.parent.activeViewOptions.cellTemplateName;
-        let templateId: string = scheduleId + viewName + 'cellTemplate';
-        let cellTemplate: HTMLElement[] =
+        const scheduleId: string = this.parent.element.id + '_';
+        const viewName: string = this.parent.activeViewOptions.cellTemplateName;
+        const templateId: string = scheduleId + viewName + 'cellTemplate';
+        const cellTemplate: HTMLElement[] =
             [].slice.call(this.parent.getCellTemplate()(args, this.parent, 'cellTemplate', templateId, false));
         append(cellTemplate, td);
     }
 
     public scrollToDate(scrollDate: Date): void {
         if (this.parent.activeViewOptions.group.resources.length === 0) {
-            let date: number = +new Date(util.resetTime(scrollDate));
-            let element: HTMLElement = this.element.querySelector('[data-date="' + date + '"]');
+            const date: number = +new Date(util.resetTime(scrollDate));
+            const element: HTMLElement = this.element.querySelector('[data-date="' + date + '"]');
             if (element) {
                 this.getScrollableElement().scrollLeft = element.offsetLeft;
                 this.getScrollableElement().scrollTop = element.offsetTop;
@@ -315,7 +309,7 @@ export class TimelineYear extends Year {
     }
 
     public getScrollableElement(): Element {
-        if (this.parent.isAdaptive && !this.isTimelineView() && !this.parent.isServerRenderer()) {
+        if (this.parent.isAdaptive && !this.isTimelineView()) {
             return this.element.querySelector('.' + cls.SCROLL_CONTAINER_CLASS);
         } else {
             return this.getContentAreaElement();

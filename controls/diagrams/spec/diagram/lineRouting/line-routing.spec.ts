@@ -7511,7 +7511,7 @@ describe('Diagram Control', () => {
                   lock: true,
                 }
             
-                const backNodes:any[] = []
+                const backNodes = []
             
                 flow.forEach((operation:any) => {
                   const group = {
@@ -7658,7 +7658,7 @@ describe('Diagram Control', () => {
             ele.remove();
         });
 
-        it('(EJ2-47194): Line routing is not working if the connection end point of the connector has two or more nodes', (done: Function) => {
+         it('(EJ2-47194): Line routing is not working if the connection end point of the connector has two or more nodes', (done: Function) => {
             for (var i = 0; i < diagram.connectors.length; i++) { console.log(getIntermediatePoints((diagram.connectors[i] as Connector).intermediatePoints, '(diagram.connectors[' + i + '] as Connector)')); }
             expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 70 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 20 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 155 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 20 && (diagram.connectors[0] as Connector).intermediatePoints[2].x == 155 && (diagram.connectors[0] as Connector).intermediatePoints[2].y == 105 && (diagram.connectors[0] as Connector).intermediatePoints[3].x == 645 && (diagram.connectors[0] as Connector).intermediatePoints[3].y == 105 && (diagram.connectors[0] as Connector).intermediatePoints[4].x == 645 && (diagram.connectors[0] as Connector).intermediatePoints[4].y == 45).toBe(true);
             expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 382.5 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 20 && (diagram.connectors[1] as Connector).intermediatePoints[1].x == 595 && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 20).toBe(true);

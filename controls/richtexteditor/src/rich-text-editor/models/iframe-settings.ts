@@ -7,12 +7,14 @@ import { ResourcesModel } from './iframe-settings-model';
 export class Resources extends ChildProperty<Resources> {
     /**
      * Specifies styles that inject into iframe.
+     * 
      * @default []
      */
     @Property([])
     public styles: string[];
     /**
      * Specifies scripts that inject into iframe.
+     * 
      * @default []
      */
     @Property([])
@@ -25,6 +27,7 @@ export class Resources extends ChildProperty<Resources> {
 export class IFrameSettings extends ChildProperty<IFrameSettings> {
     /**
      * Specifies whether to render iframe based editable element in RTE.
+     * 
      * @default false
      */
     @Property(false)
@@ -32,13 +35,15 @@ export class IFrameSettings extends ChildProperty<IFrameSettings> {
 
     /**
      * Defines additional attributes to render iframe.
+     * 
      * @default 'null'
      */
     @Property(null)
-    public attributes: { [key: string]: string; };
+    public attributes: { [key: string]: string };
 
     /**
      * The object used for inject styles and scripts.
+     * 
      * @default {}
      */
     @Complex<ResourcesModel>({}, Resources)

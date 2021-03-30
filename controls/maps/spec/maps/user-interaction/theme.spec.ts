@@ -211,7 +211,7 @@ describe('Map layer testing', () => {
             trigger.mousemoveEvent(element, 0, 0, 190, 230);
             trigger.mousemoveEvent(element, 0, 0, 190, 230);
             tooltipElement = document.getElementById('container_mapsTooltip_text');
-            expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#ffffff');
+            expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#FFFFFF');
         });
         it('Checking with tooltip color', () => {
             element = getElement(markerId + 1);
@@ -347,7 +347,7 @@ describe('Map layer testing', () => {
             trigger.mousemoveEvent(element, 0, 0, 190, 230);
             trigger.mousemoveEvent(element, 0, 0, 190, 230);
             tooltipElement = document.getElementById('container_mapsTooltip_text');
-            expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#ffffff');
+            expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#FFFFFF');
         });
         it('checking with MaterialDarktooltip color', () => {
             element = getElement(markerId + 1);
@@ -484,7 +484,7 @@ describe('Map layer testing', () => {
             trigger.mousemoveEvent(element, 0, 0, 190, 230);
             trigger.mousemoveEvent(element, 0, 0, 190, 230);
             tooltipElement = document.getElementById('container_mapsTooltip_text');
-            expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#000000');
+            expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#FFFFFF');
         });
         it('checking with Highcontrast tooltip default color', () => {
             element = getElement(markerId + 1);

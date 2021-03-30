@@ -12,7 +12,7 @@ export class Rte implements IComponent {
     protected parent: InPlaceEditor;
     public compObj: RichTextEditor = undefined;
 
-    constructor(parent?: InPlaceEditor) {
+    public constructor(parent?: InPlaceEditor) {
         RichTextEditor.Inject(HtmlEditor, MarkdownEditor, Toolbar, Link, Image, QuickToolbar, Table, FileManager);
         this.parent = parent;
         this.parent.rteModule = this;
@@ -52,8 +52,9 @@ export class Rte implements IComponent {
 
     /**
      * Destroys the rte module.
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
@@ -62,6 +63,8 @@ export class Rte implements IComponent {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} - returns the string
      */
     private getModuleName(): string {
         return 'rte';

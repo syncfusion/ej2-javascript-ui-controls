@@ -1,10 +1,16 @@
 /**
- * UMLActivityShapeDictionary defines the shape of the built-in uml activity shapes
+ * UMLActivityShapeDictionary defines the shape of the built-in uml activity shapes \
+ *
+ * @returns { string } UMLActivityShapeDictionary defines the shape of the built-in uml activity shapes .\
+ * @param {string} shape - provide the shape value.
+ *
+ * @private
  */
-/** @private */
 export function getUMLActivityShape(shape: string): string {
     return umlActivityShapes[shape.toString()];
 }
+
+/* eslint-disable */
 let umlActivityShapes: {} = {
     // Action,
     'Action': 'M 90 82.895 C 90 86.819 86.776 90 82.8 90 H 7.2 C 3.224 90 0 86.819 0 82.895' +
@@ -15,7 +21,7 @@ let umlActivityShapes: {} = {
     'MergeNode': 'M10,19.707L0.293,10L10,0.293L19.707,10L10,19.707z',
     // InitialNode,
     'InitialNode': 'M10,19.5c-5.238,0-9.5-4.262-9.5-9.5S4.762,0.5,10,0.5s9.5,4.262,9.5,9.5S15.238,19.5,10,19.5z',
-     // ForkNode,
+    // ForkNode,
     'ForkNode': 'm0.75,0.75l636.00002,0l0,290l-636.00002,0l0,-290z',
     // JoinNode,
     'JoinNode': 'm0.75,0.75l636.00002,0l0,290l-636.00002,0l0,-290z',
@@ -31,5 +37,6 @@ let umlActivityShapes: {} = {
     // StructuredNode,
     'StructuredNode': 'M0,0 L50,0 L50,50 L0,50 z',
     // Note,
-    'Note': 'M20 12 L4 12 L4 22 L22 22 L22 14 L20 14 L20 12 L22 14 Z',
+    'Note': 'M20 12 L4 12 L4 22 L22 22 L22 14 L20 14 L20 12 L22 14 Z'
 };
+/* eslint-enable */

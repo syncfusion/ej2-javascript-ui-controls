@@ -1,7 +1,7 @@
 /**
  * Selection Testcase
  */
-import { usMap, World_Map, unCountries, randomcountriesData1 } from '../data/data.spec';
+import { usMap, World_Map, unCountries, randomcountriesData1, africa } from '../data/data.spec';
 import { Population_Density } from '../data/PopulationDensity.spec';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { MouseEvents } from '../base/events.spec';
@@ -609,6 +609,97 @@ describe('Selection Settings', () => {
             expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');
             done();
         };
+            selections.appendTo('#' + id);
+        });
+    });
+   
+    describe('Testing selection with baselayers', () => {
+        let id: string = 'container';
+        let selections: Maps;
+        let trigger: MouseEvents = new MouseEvents();
+        let ele: HTMLDivElement;
+        let spec: Element;
+        let spec1: Element;
+      
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            selections = new Maps({
+                titleSettings: {
+                    text: 'WorldMap',
+                },
+                layers: [{
+                    layerType: 'Geometry',
+                    shapeData: World_Map,
+                    shapeSettings: {
+                        fill: '#80306A',
+                        colorValuePath: 'drillColor'
+                    },
+                    highlightSettings: {
+                        enable: true,
+                        fill: '#80306A'
+                    },
+                    selectionSettings: {
+                        enable: true,
+                        fill: 'red',
+                        opacity: 1,
+                        border: {
+                            color: 'yellow', width: 1
+                        }
+                    },
+                    tooltipSettings: {
+                        visible: true,
+                        valuePath: 'name'
+                    }
+                },
+                {
+                    layerType: 'Geometry',
+                    shapeData: africa,
+                    shapeSettings: {
+                        fill: '#80306A',
+                        colorValuePath: 'drillColor'
+                    },
+                    highlightSettings: {
+                        enable: true,
+                        fill: '#80306A'
+                    },
+                    selectionSettings: {
+                        enable: true,
+                        fill: 'red',
+                        opacity: 1,
+                        border: {
+                            color: 'yellow', width: 1
+                        }
+                    },
+                    tooltipSettings: {
+                        visible: true,
+                        valuePath: 'name'
+                    }
+                }]
+            });
+        });
+        afterAll(() => {
+            remove(ele);
+            selections.destroy();
+        });
+        it('Check shape is selected or not using baseLayerIndex', (done: Function) => {
+            selections.loaded = (args: ILoadedEventArgs) => {
+                selections.shapeSelection(selections.baseLayerIndex, 'admin', 'Angola', true);
+                spec = getElement('container_LayerIndex_0_shapeIndex_1_dataIndex_null');
+                expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');
+                done();
+            }
+            selections.appendTo('#' + id);
+        });
+        it('Set the layer type as sublayer', (done: Function) => {
+            selections.loaded = (args: ILoadedEventArgs) => {
+                selections.shapeSelection(1, 'admin', 'Angola', true);
+                spec = getElement('container_LayerIndex_1_shapeIndex_0_dataIndex_null');
+                expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');
+                done();
+            }
+            selections.layers[1].type = 'SubLayer',
+            selections.refresh();
             selections.appendTo('#' + id);
         });
     });

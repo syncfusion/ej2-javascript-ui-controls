@@ -23,9 +23,12 @@ export class CellEdit {
     }
     /**
      * Bind all editing related properties from Gantt to TreeGrid
+     *
+     * @returns {void} .
      */
     private bindTreeGridProperties(): void {
         this.parent.treeGrid.editSettings.allowEditing = this.parent.editSettings.allowEditing;
+        this.parent.treeGrid.editSettings.allowNextRowEdit = this.parent.editSettings.allowNextRowEdit;
         this.parent.treeGrid.editSettings.mode = 'Cell';
         this.parent.treeGrid.cellEdit = this.ensureEditCell.bind(this);
         if (this.parent.editSettings.allowEditing) {
@@ -34,13 +37,15 @@ export class CellEdit {
     }
     /**
      * Ensure current cell was editable or not
-     * @param args 
+     *
+     * @param {CellEditArgs} args .
+     * @returns {void | Deferred} .
      */
     private ensureEditCell(args: CellEditArgs): void | Deferred {
-        let data: IGanttData = args.rowData;
-        let field: string = args.columnName;
+        const data: IGanttData = args.rowData;
+        const field: string = args.columnName;
         this.editedColumn = this.parent.getColumnByField(field, this.parent.ganttColumns);
-        let taskSettings: TaskFieldsModel = this.parent.taskFields;
+        const taskSettings: TaskFieldsModel = this.parent.taskFields;
         if (this.parent.readOnly) {
             args.cancel = true;
             return;
@@ -54,7 +59,7 @@ export class CellEdit {
             || field === taskSettings.work || field === 'taskType')) {
             args.cancel = true;
         } else {
-            let callBackPromise: Deferred = new Deferred();
+            const callBackPromise: Deferred = new Deferred();
             this.parent.trigger('cellEdit', args, (arg: CellEditArgs) => {
                 if (isBlazor()) {
                     arg.cell = getElement(arg.cell);
@@ -80,20 +85,22 @@ export class CellEdit {
     }
     /**
      * To render edit dialog and to focus on notes tab
-     * @param args 
+     *
+     * @param {CellEditArgs} args .
+     * @returns {void} .
      */
     private openNotesEditor(args: CellEditArgs): void {
-        let taskSettings: TaskFieldsModel = this.parent.taskFields;
-        let data: IGanttData = args.rowData;
-        let field: string = args.columnName;
+        const taskSettings: TaskFieldsModel = this.parent.taskFields;
+        const data: IGanttData = args.rowData;
+        const field: string = args.columnName;
         if ((field === taskSettings.notes && !this.parent.showInlineNotes)) {
             args.cancel = true;
-            let columnTypes: string[] =
+            const columnTypes: string[] =
                 this.parent.editModule.dialogModule.updatedEditFields.map((x: EditDialogFieldSettingsModel) => { return x.type; });
-            let index: number = columnTypes.indexOf('Notes');
+            const index: number = columnTypes.indexOf('Notes');
             if (index !== -1) {
                 this.parent.editModule.dialogModule.openEditDialog(data.ganttProperties.rowUniqueID);
-                let tabObj: Tab = (<EJ2Intance>document.getElementById(this.parent.element.id + '_Tab')).ej2_instances[0];
+                const tabObj: Tab = (<EJ2Intance>document.getElementById(this.parent.element.id + '_Tab')).ej2_instances[0];
                 tabObj.selectedItem = index;
             }
         }
@@ -101,10 +108,10 @@ export class CellEdit {
             this.isCellEdit = true;
         }
     }
-    private isValueChange(args: object, field: string): boolean {
-        let data: IGanttData = getValue('data', args);
-        let editedValue: object = data[field];
-        let previousValue: object = getValue('previousData', args);
+    private isValueChange(args: Record<string, unknown>, field: string): boolean {
+        const data: IGanttData = getValue('data', args);
+        const editedValue: Record<string, unknown> = data[field];
+        const previousValue: Record<string, unknown> = getValue('previousData', args);
         if ((isNOU(editedValue) && !isNOU(previousValue)) || (!isNOU(editedValue) && isNOU(previousValue))) {
             return true;
         } else if (!isNOU(editedValue) && !isNOU(previousValue)) {
@@ -120,18 +127,22 @@ export class CellEdit {
     }
     /**
      * Initiate cell save action on Gantt with arguments from TreeGrid
-     * @param args 
-     * @param editedObj 
+     *
+     * @param {object} args .
+     * @param {object} editedObj .
+     * @returns {void} .
      * @private
      */
+    // eslint-disable-next-line
     public initiateCellEdit(args: object, editedObj: object): void {
-        let column: ColumnModel = getValue('column', args);
-        let data: IGanttData = getValue('data', args);
-        let editedArgs: ITaskbarEditedEventArgs = {};
+        const column: ColumnModel = getValue('column', args);
+        const data: IGanttData = getValue('data', args);
+        const editedArgs: ITaskbarEditedEventArgs = {};
         editedArgs.action = 'CellEditing';
         editedArgs.data = this.parent.getTaskByUniqueID(data.uniqueID);
-        let previousValue: object = getValue('previousData', args);
-        let editedValue: object = this.parent.allowUnscheduledTasks ? data[column.field] : ((isNullOrUndefined(data[column.field])
+        const previousValue: Record<string, unknown> = getValue('previousData', args);
+        // eslint-disable-next-line
+        const editedValue: object = this.parent.allowUnscheduledTasks ? data[column.field] : ((isNullOrUndefined(data[column.field])
             || data[column.field] === '') && (this.parent.taskFields.duration === column.field ||
                 this.parent.taskFields.startDate === column.field || this.parent.taskFields.endDate === column.field)) ? previousValue
             : data[column.field];
@@ -179,7 +190,9 @@ export class CellEdit {
     }
     /**
      * To update task name cell with new value
-     * @param args 
+     *
+     * @param {ITaskbarEditedEventArgs} args .
+     * @returns {void} .
      */
     private taskNameEdited(args: ITaskbarEditedEventArgs): void {
         this.parent.setRecordValue('taskData.' + this.parent.taskFields.name, args.data[this.parent.taskFields.name], args.data);
@@ -188,7 +201,9 @@ export class CellEdit {
     }
     /**
      * To update task notes cell with new value
-     * @param args 
+     *
+     * @param {ITaskbarEditedEventArgs} args .
+     * @returns {void} .
      */
     private notedEdited(args: ITaskbarEditedEventArgs): void {
         this.parent.setRecordValue('taskData.' + this.parent.taskFields.notes, args.data[this.parent.taskFields.name], args.data);
@@ -197,7 +212,9 @@ export class CellEdit {
     }
     /**
      * To update task schedule mode cell with new value
-     * @param args 
+     *
+     * @param {ITaskbarEditedEventArgs} args .
+     * @returns {void} .
      */
     private taskmodeEdited(args: ITaskbarEditedEventArgs): void {
         this.parent.setRecordValue(
@@ -209,11 +226,13 @@ export class CellEdit {
     }
     /**
      * To update task start date cell with new value
-     * @param args 
+     *
+     * @param {ITaskbarEditedEventArgs} args .
+     * @returns {void} .
      */
     private startDateEdited(args: ITaskbarEditedEventArgs): void {
-        let ganttData: IGanttData = args.data;
-        let ganttProb: ITaskData = args.data.ganttProperties;
+        const ganttData: IGanttData = args.data;
+        const ganttProb: ITaskData = args.data.ganttProperties;
         let currentValue: Date = args.data[this.parent.taskFields.startDate];
         currentValue = currentValue ? new Date(currentValue.getTime()) : null;
         currentValue = this.parent.dateValidationModule.checkStartDate(currentValue);
@@ -241,11 +260,10 @@ export class CellEdit {
     }
 
     public validateEndDateWithSegments(ganttProp: ITaskData): ITaskSegment[] {
-        let duration: number = 0;
-        let ganttSegments: ITaskSegment[] = [];
-        let segments: ITaskSegment[] = ganttProp.segments;
+        const ganttSegments: ITaskSegment[] = [];
+        const segments: ITaskSegment[] = ganttProp.segments;
         for (let i: number = 0; i < segments.length; i++) {
-            let segment: ITaskSegment = segments[i];
+            const segment: ITaskSegment = segments[i];
             let endDate: Date = segment.endDate;
             endDate = (!isNullOrUndefined(ganttProp.endDate)) && endDate.getTime() <
                 ganttProp.endDate.getTime() && i !== segments.length - 1 ? endDate : ganttProp.endDate;
@@ -267,10 +285,12 @@ export class CellEdit {
 
     /**
      * To update task end date cell with new value
-     * @param args 
+     *
+     * @param {ITaskbarEditedEventArgs} args .
+     * @returns {void} .
      */
     private endDateEdited(args: ITaskbarEditedEventArgs): void {
-        let ganttProb: ITaskData = args.data.ganttProperties;
+        const ganttProb: ITaskData = args.data.ganttProperties;
         let currentValue: Date = args.data[this.parent.taskFields.endDate];
         currentValue = currentValue ? new Date(currentValue.getTime()) : null;
         if (isNOU(currentValue)) {
@@ -329,11 +349,13 @@ export class CellEdit {
     }
     /**
      * To update duration cell with new value
-     * @param args 
+     *
+     * @param {ITaskbarEditedEventArgs} args .
+     * @returns {void} .
      */
     private durationEdited(args: ITaskbarEditedEventArgs): void {
-        let ganttProb: ITaskData = args.data.ganttProperties;
-        let durationString: string = args.data[this.parent.taskFields.duration];
+        const ganttProb: ITaskData = args.data.ganttProperties;
+        const durationString: string = args.data[this.parent.taskFields.duration];
         this.parent.dataOperation.updateDurationValue(durationString, ganttProb);
         this.updateDates(args);
         this.parent.editModule.updateResourceRelatedFields(args.data, 'duration');
@@ -341,13 +363,15 @@ export class CellEdit {
     }
     /**
      * To update start date, end date based on duration
-     * @param args
+     *
+     * @param {ITaskbarEditedEventArgs} args .
+     * @returns {void} .
      */
     private updateDates(args: ITaskbarEditedEventArgs): void {
-        let ganttProb: ITaskData = args.data.ganttProperties;
-        let endDate: Date = this.parent.dateValidationModule.getDateFromFormat(ganttProb.endDate);
-        let startDate: Date = this.parent.dateValidationModule.getDateFromFormat(ganttProb.startDate);
-        let currentDuration: number = ganttProb.duration;
+        const ganttProb: ITaskData = args.data.ganttProperties;
+        const endDate: Date = this.parent.dateValidationModule.getDateFromFormat(ganttProb.endDate);
+        const startDate: Date = this.parent.dateValidationModule.getDateFromFormat(ganttProb.startDate);
+        const currentDuration: number = ganttProb.duration;
         if (isNOU(currentDuration)) {
             this.parent.setRecordValue('isMilestone', false, ganttProb, true);
             this.parent.setRecordValue('endDate', null, ganttProb, true);
@@ -383,10 +407,12 @@ export class CellEdit {
     }
     /**
      * To update progress cell with new value
-     * @param args 
+     *
+     * @param {ITaskbarEditedEventArgs} args .
+     * @returns {void} .
      */
     private progressEdited(args: ITaskbarEditedEventArgs): void {
-        let ganttRecord: IGanttData = args.data;
+        const ganttRecord: IGanttData = args.data;
         this.parent.setRecordValue(
             'progress',
             (ganttRecord[this.parent.taskFields.progress] > 100 ? 100 : ganttRecord[this.parent.taskFields.progress]),
@@ -399,7 +425,7 @@ export class CellEdit {
             this.parent.editModule.taskbarEditModule.updateSegmentProgress(args.data.ganttProperties);
         }
         if (!args.data.hasChildRecords) {
-            let width: number = ganttRecord.ganttProperties.isAutoSchedule ? ganttRecord.ganttProperties.width :
+            const width: number = ganttRecord.ganttProperties.isAutoSchedule ? ganttRecord.ganttProperties.width :
                 ganttRecord.ganttProperties.autoWidth;
             this.parent.setRecordValue(
                 'progressWidth',
@@ -412,12 +438,14 @@ export class CellEdit {
     }
     /**
      * To update baselines with new baseline start date and baseline end date
-     * @param args 
+     *
+     * @param {ITaskbarEditedEventArgs} args .
+     * @returns {void} .
      */
     private baselineEdited(args: ITaskbarEditedEventArgs): void {
-        let ganttRecord: ITaskData = args.data.ganttProperties;
-        let baseLineStartDate: Date = args.data[this.parent.taskFields.baselineStartDate];
-        let baseLineEndDate: Date = args.data[this.parent.taskFields.baselineEndDate];
+        const ganttRecord: ITaskData = args.data.ganttProperties;
+        const baseLineStartDate: Date = args.data[this.parent.taskFields.baselineStartDate];
+        const baseLineEndDate: Date = args.data[this.parent.taskFields.baselineEndDate];
         if (baseLineEndDate && baseLineEndDate.getHours() === 0 && this.parent.defaultEndTime !== 86400) {
             this.parent.dateValidationModule.setTime(this.parent.defaultEndTime, baseLineEndDate);
         }
@@ -448,23 +476,31 @@ export class CellEdit {
     }
     /**
      * To update task's resource cell with new value
-     * @param args 
-     * @param editedObj 
+     *
+     * @param {ITaskbarEditedEventArgs} args .
+     * @param {object} editedObj .
+     * @param {IGanttData} previousData .
+     * @returns {void} .
      */
+    // eslint-disable-next-line
     private resourceEdited(args: ITaskbarEditedEventArgs, editedObj: Object, previousData: IGanttData): void {
-        let resourceSettings: ResourceFieldsModel = this.parent.resourceFields;
-        let editedResourceId: string[] = editedObj[this.parent.taskFields.resourceInfo];
+        const resourceSettings: ResourceFieldsModel = this.parent.resourceFields;
+        const editedResourceId: string[] = editedObj[this.parent.taskFields.resourceInfo];
         if (editedResourceId) {
-            let tempResourceInfo: Object[] = this.parent.dataOperation.setResourceInfo(editedObj);
-            let editedResouceLength: number = tempResourceInfo.length;
-            let previousResource: Object[] = previousData.ganttProperties.resourceInfo;
+            // eslint-disable-next-line
+            const tempResourceInfo: Object[] = this.parent.dataOperation.setResourceInfo(editedObj);
+            const editedResouceLength: number = tempResourceInfo.length;
+            // eslint-disable-next-line
+            const previousResource: Object[] = previousData.ganttProperties.resourceInfo;
             let index: number;
-            let editedResources: Object[] = [];
-            let resourceData: Object[] = this.parent.resources;
+            // eslint-disable-next-line
+            const editedResources: Object[] = [];
+            // eslint-disable-next-line
+            const resourceData: Object[] = this.parent.resources;
             let newIndex: number;
             for (let count: number = 0; count < editedResouceLength; count++) {
                 if (previousResource) {
-                    let previousResourceLength: number = previousResource.length;
+                    const previousResourceLength: number = previousResource.length;
                     for (newIndex = 0; newIndex < previousResourceLength; newIndex++) {
                         if (previousResource[newIndex][resourceSettings.id] === editedResourceId[count]) {
                             index = newIndex;
@@ -477,10 +513,12 @@ export class CellEdit {
                 if (!isNOU(index) && index !== -1) {
                     editedResources.push(previousResource[index]);
                 } else {
-                    let resource: Object[] = resourceData.filter((resourceInfo: Object) => {
+                    // eslint-disable-next-line
+                    const resource: Object[] = resourceData.filter((resourceInfo: Object) => {
                         return (editedResourceId[count] === resourceInfo[resourceSettings.id]);
                     });
-                    let ganttDataResource: Object = extend({}, resource[0]);
+                    // eslint-disable-next-line
+                    const ganttDataResource: Object = extend({}, resource[0]);
                     ganttDataResource[resourceSettings.unit] = 100;
                     editedResources.push(ganttDataResource);
                 }
@@ -497,10 +535,13 @@ export class CellEdit {
     }
     /**
      * To update task's predecessor cell with new value
-     * @param editedArgs 
-     * @param cellEditArgs 
+     *
+     * @param {ITaskbarEditedEventArgs} editedArgs .
+     * @param {object} cellEditArgs .
+     * @returns {void} .
      */
-    private dependencyEdited(editedArgs: ITaskbarEditedEventArgs, cellEditArgs: Object): void {
+    // eslint-disable-next-line
+    private dependencyEdited(editedArgs: ITaskbarEditedEventArgs, cellEditArgs: object): void {
         this.parent.predecessorModule.updateUnscheduledDependency(editedArgs.data);
         if (!this.parent.connectorLineEditModule.updatePredecessor(
             editedArgs.data,
@@ -510,11 +551,13 @@ export class CellEdit {
     }
     /**
      * To update task's work cell with new value
-     * @param editedArgs
+     *
+     * @param {ITaskbarEditedEventArgs} editedArgs .
+     * @returns {void} .
      */
     private workEdited(editedArgs: ITaskbarEditedEventArgs): void {
-        let ganttProb: ITaskData = editedArgs.data.ganttProperties;
-        let workValue: number = editedArgs.data[this.parent.taskFields.work];
+        const ganttProb: ITaskData = editedArgs.data.ganttProperties;
+        const workValue: number = editedArgs.data[this.parent.taskFields.work];
         this.parent.setRecordValue('work', workValue, ganttProb, true);
         this.parent.editModule.updateResourceRelatedFields(editedArgs.data, 'work');
         this.updateDates(editedArgs);
@@ -522,35 +565,44 @@ export class CellEdit {
     }
     /**
      * To update task type cell with new value
-     * @param args
-     * @param editedObj
+     *
+     * @param {ITaskbarEditedEventArgs} args .
+     * @param {object} editedObj .
+     * @returns {void} .
      */
+    // eslint-disable-next-line
     private typeEdited(args: ITaskbarEditedEventArgs, editedObj: Object): void {
-        let key: string = 'taskType';
-        let ganttProb: ITaskData = args.data.ganttProperties;
-        let taskType: string = editedObj[key];
+        const key: string = 'taskType';
+        const ganttProb: ITaskData = args.data.ganttProperties;
+        const taskType: string = editedObj[key];
         this.parent.setRecordValue('taskType', taskType, ganttProb, true);
         //this.parent.dataOperation.updateMappingData(args.data, 'taskType');
         this.updateEditedRecord(args);
     }
     /**
      * To compare start date and end date from Gantt record
-     * @param ganttRecord 
+     *
+     * @param {ITaskData} ganttRecord .
+     * @returns {number} .
      */
     private compareDatesFromRecord(ganttRecord: ITaskData): number {
-        let sDate: Date = this.parent.dateValidationModule.getValidStartDate(ganttRecord);
-        let eDate: Date = this.parent.dateValidationModule.getValidEndDate(ganttRecord);
+        const sDate: Date = this.parent.dateValidationModule.getValidStartDate(ganttRecord);
+        const eDate: Date = this.parent.dateValidationModule.getValidEndDate(ganttRecord);
         return this.parent.dateValidationModule.compareDates(sDate, eDate);
     }
     /**
      * To start method save action with edited cell value
-     * @param args 
+     *
+     * @param {ITaskbarEditedEventArgs} args .
+     * @returns {void} .
      */
     private updateEditedRecord(args: ITaskbarEditedEventArgs): void {
         this.parent.editModule.initiateUpdateAction(args);
     }
     /**
      * To remove all public private properties
+     *
+     * @returns {void} .
      * @private
      */
     public destroy(): void {

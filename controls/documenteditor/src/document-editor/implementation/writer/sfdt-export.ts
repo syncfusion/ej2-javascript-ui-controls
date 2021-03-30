@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { WList } from '../list/list';
 import { WAbstractList } from '../list/abstract-list';
 import { WListLevel } from '../list/list-level';
@@ -26,7 +27,7 @@ import { Revision } from '../track-changes/track-changes';
  * Exports the document to Sfdt format.
  */
 export class SfdtExport {
-    /* tslint:disable:no-any */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     private endLine: LineWidget = undefined;
     private endOffset: number = undefined;
     private endCell: TableCellWidget = undefined;
@@ -66,16 +67,13 @@ export class SfdtExport {
      * @private
      */
     public copyWithTrackChange: boolean = false;
-    /**
-     * documentHelper definition
-     */
-    constructor(documentHelper: DocumentHelper) {
+    public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
     }
-    get viewer(): LayoutViewer {
+    private get viewer(): LayoutViewer {
         return this.documentHelper.owner.viewer;
     }
-    get owner(): DocumentEditor {
+    private get owner(): DocumentEditor {
         return this.documentHelper.owner;
     }
     private getModuleName(): string {
@@ -97,6 +95,7 @@ export class SfdtExport {
     }
     /**
      * Serialize the data as Syncfusion document text.
+     *
      * @private
      */
     public serialize(): string {
@@ -104,11 +103,13 @@ export class SfdtExport {
     }
     /**
      * @private
+     * @param documentHelper - Specifies document helper instance.
+     * @returns {Promise<Blob>}
      */
     public saveAsBlob(documentHelper: DocumentHelper): Promise<Blob> {
-        let streamWriter: StreamWriter = new StreamWriter();
+        const streamWriter: StreamWriter = new StreamWriter();
         streamWriter.write(this.serialize());
-        let blob: Blob = streamWriter.buffer;
+        const blob: Blob = streamWriter.buffer;
         streamWriter.destroy();
         let promise: Promise<Blob>;
         return new Promise((resolve: Function, reject: Function) => {
@@ -118,9 +119,9 @@ export class SfdtExport {
     private updateEditRangeId(): void {
         let index: number = -1;
         for (let i: number = 0; i < this.documentHelper.editRanges.keys.length; i++) {
-            let keys: string[] = this.documentHelper.editRanges.keys;
+            const keys: string[] = this.documentHelper.editRanges.keys;
             for (let j: number = 0; j < keys[i].length; j++) {
-                let editRangeStart: EditRangeStartElementBox[] = this.documentHelper.editRanges.get(keys[i]);
+                const editRangeStart: EditRangeStartElementBox[] = this.documentHelper.editRanges.get(keys[i]);
                 for (let z: number = 0; z < editRangeStart.length; z++) {
                     index++;
                     editRangeStart[z].editRangeId = index;
@@ -129,11 +130,10 @@ export class SfdtExport {
             }
         }
     }
-    /** 
+    /**
      * @private
      */
-    // tslint:disable:max-func-body-length
-    // tslint:disable-next-line:max-line-length
+    /* eslint-disable  */
     public write(line?: LineWidget, startOffset?: number, endLine?: LineWidget, endOffset?: number, writeInlineStyles?: boolean, isExport?: boolean): any {
         if (writeInlineStyles) {
             this.writeInlineStyles = true;
@@ -358,11 +358,9 @@ export class SfdtExport {
         section.sectionFormat.headerDistance = bodyWidget.sectionFormat.headerDistance;
         section.sectionFormat.footerDistance = bodyWidget.sectionFormat.footerDistance;
         section.sectionFormat.bidi = bodyWidget.sectionFormat.bidi;
-        if (bodyWidget.sectionFormat.restartPageNumbering) {
+        if (!isNullOrUndefined(bodyWidget.page.endnoteWidget || bodyWidget.page.footnoteWidget)) {
             section.sectionFormat.restartPageNumbering = bodyWidget.sectionFormat.restartPageNumbering;
             section.sectionFormat.pageStartingNumber = bodyWidget.sectionFormat.pageStartingNumber;
-        }
-        if (!isNullOrUndefined(bodyWidget.page.endnoteWidget || bodyWidget.page.footnoteWidget)) {
             section.sectionFormat.endnoteNumberFormat = bodyWidget.sectionFormat.endnoteNumberFormat;
             section.sectionFormat.footNoteNumberFormat = bodyWidget.sectionFormat.footNoteNumberFormat;
             section.sectionFormat.restartIndexForFootnotes = bodyWidget.sectionFormat.restartIndexForFootnotes;
@@ -394,7 +392,6 @@ export class SfdtExport {
             }
         } else {
             let tableWidget: TableWidget = widget as TableWidget;
-            // tslint:disable-next-line:max-line-length
             if (tableWidget.hasOwnProperty('contentControlProperties') && tableWidget.contentControlProperties.type !== 'BuildingBlockGallery') {
                 let block: any = this.tableContentControl(tableWidget);
                 if (this.isBlockClosed) {
@@ -410,25 +407,23 @@ export class SfdtExport {
     private writeParagraphs(widget: ParagraphWidget): any {
         let blocks: any = this.blocks;
         let child: LineWidget = widget.childWidgets[0] as LineWidget;
-        let firstChild: ElementBox = child.children[0];
-        let secondChild: ElementBox = child.children[1];
-        if (firstChild instanceof ListTextElementBox || secondChild instanceof ListTextElementBox) {
-            firstChild = child.children[2];
-            secondChild = child.children[3];
+        let firstElement: ElementBox = child.children[0];
+        let secondElement: ElementBox = child.children[1];
+        if (firstElement instanceof ListTextElementBox || secondElement instanceof ListTextElementBox) {
+            firstElement = child.children[2];
+            secondElement = child.children[3];
         }
         if (this.nestedBlockEnabled) {
             blocks = [];
         }
-        // tslint:disable-next-line:max-line-length
-        if ((firstChild instanceof ContentControl && secondChild instanceof ContentControl && !this.nestedBlockContent) || (this.blockContent && firstChild instanceof ContentControl && !this.nestedBlockContent)) {
+        if ((firstElement instanceof ContentControl && secondElement instanceof ContentControl && !this.nestedBlockContent) || (this.blockContent && firstElement instanceof ContentControl && !this.nestedBlockContent)) {
             let nestedBlocks: boolean = false;
-            if (secondChild instanceof ContentControl) {
-                if ((secondChild as ContentControl).contentControlWidgetType === 'Block') {
+            if (secondElement instanceof ContentControl) {
+                if ((secondElement as ContentControl).contentControlWidgetType === 'Block') {
                     nestedBlocks = true;
                 }
             }
-            // tslint:disable-next-line:max-line-length
-            if ((nestedBlocks || (this.blockContent && firstChild instanceof ContentControl && !this.nestedBlockContent && (firstChild as ContentControl).type === 0 && (firstChild as ContentControl).contentControlWidgetType === 'Block'))) {
+            if ((nestedBlocks || (this.blockContent && firstElement instanceof ContentControl && !this.nestedBlockContent && (firstElement as ContentControl).type === 0 && (firstElement as ContentControl).contentControlWidgetType === 'Block'))) {
                 this.nestedBlockContent = true;
                 this.nestedBlockEnabled = true;
                 let block: any = this.blockContentControl(widget);
@@ -520,7 +515,6 @@ export class SfdtExport {
                 firstChild = child.children[2];
                 secondChild = child.children[3];
             }
-            // tslint:disable-next-line:max-line-length
             if ((firstChild instanceof ContentControl && secondChild instanceof ContentControl && !this.nestedBlockContent) || (this.blockContent && firstChild instanceof ContentControl && !this.nestedBlockContent)) {
                 if (!(secondChild instanceof ContentControl)) {
                     block.contentControlProperties = this.contentControlProperty(firstChild.contentControlProperties);
@@ -652,7 +646,6 @@ export class SfdtExport {
         if (!isNullOrUndefined(nextElement)) {
             if (nextElement.type === 1 && !this.nestedContent) {
                 if (this.multipleLineContent) {
-                    // tslint:disable-next-line:max-line-length
                     inlines[inlines.length - 1].contentControlProperties = this.contentControlProperty(nextElement.contentControlProperties);
                     this.multipleLineContent = false;
                     return;
@@ -689,7 +682,7 @@ export class SfdtExport {
         contentInline.push(inline);
         return contentInline;
     }
-    /* tslint:disable:max-func-body-length */
+    /* eslint-disable  */
     private writeInline(element: ElementBox): any {
         let inline: any = {};
         if (element.removedIds.length > 0) {
@@ -844,6 +837,12 @@ export class SfdtExport {
         inline.horizontalAlignment = element.horizontalAlignment;
         inline.zOrderPosition = element.zOrderPosition;
         inline.allowOverlap = element.allowOverlap;
+        inline.textWrappingStyle = element.textWrappingStyle;
+        inline.textWrappingType = element.textWrappingType;
+        inline.distanceBottom = element.distanceBottom;
+        inline.distanceLeft = element.distanceLeft;
+        inline.distanceRight = element.distanceRight;
+        inline.distanceTop = element.distanceTop;
         inline.layoutInCell = element.layoutInCell;
         inline.lockAnchor = element.lockAnchor;
         inline.autoShapeType = element.autoShapeType;
@@ -1250,7 +1249,6 @@ export class SfdtExport {
         } else {
             isParaSelected = true;
         }
-        // tslint:disable-next-line:max-line-length
         paragraph.paragraphFormat = this.writeParagraphFormat(isParaSelected ? paragraphWidget.paragraphFormat : new WParagraphFormat(paragraphWidget));
         paragraph.characterFormat = this.writeCharacterFormat(isParaSelected ? paragraphWidget.characterFormat : new WCharacterFormat(paragraphWidget));
         paragraph.inlines = [];
@@ -1520,7 +1518,6 @@ export class SfdtExport {
         if (documentHelper.footnotes.continuationSeparator.length > 0) {
             this.document.footnotes.continuationSeparator = [];
             for (let i: number = 0; i < documentHelper.footnotes.continuationSeparator.length; i++) {
-                // tslint:disable-next-line:max-line-length
                 this.writeBlock(documentHelper.footnotes.continuationSeparator[i], 0, this.document.footnotes.continuationSeparator);
             }
         }
@@ -1715,6 +1712,7 @@ export class SfdtExport {
     }
     /** 
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         this.lists = undefined;
@@ -1722,5 +1720,5 @@ export class SfdtExport {
         this.endOffset = undefined;
         this.documentHelper = undefined;
     }
-    /* tslint:enable:no-any */
+    /* eslint-enable @typescript-eslint/no-explicit-any */
 }

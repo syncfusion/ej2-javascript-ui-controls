@@ -7,42 +7,49 @@ export interface CardSettingsModel {
 
     /**
      * Show or hide the card header
+     *
      * @default true
      */
     showHeader?: boolean;
 
     /**
      * Defines the card header text
+     *
      * @default null
      */
     headerField?: string;
 
     /**
      * Defines the card content text
+     *
      * @default null
      */
     contentField?: string;
 
     /**
      * Defines the card content labels
+     *
      * @default null
      */
     tagsField?: string;
 
     /**
      * Defines the card color
+     *
      * @default null
      */
     grabberField?: string;
 
     /**
      * Defines the card icons
+     *
      * @default null
      */
     footerCssField?: string;
 
     /**
      * Defines the card template
+     *
      * @default null
      */
     template?: string;
@@ -52,6 +59,7 @@ export interface CardSettingsModel {
      * * Single
      * * Multiple
      * * None
+     *
      * @default 'Single'
      */
     selectionType?: SelectionType;

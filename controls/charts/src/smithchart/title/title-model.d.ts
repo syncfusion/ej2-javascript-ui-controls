@@ -6,45 +6,51 @@ import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import {
 export interface SubtitleModel {
 
     /**
- * visibility for sub title.
- * @default true
- */
+     * visibility for sub title.
+     *
+     * @default true
+     */
     visible?: boolean;
 
     /**
- * text for sub title.
- * @default ''
- */
+     * text for sub title.
+     *
+     * @default ''
+     */
     text?: string;
 
     /**
- * description for sub title.
- * @default ''
- */
+     * description for sub title.
+     *
+     * @default ''
+     */
     description?: string;
 
     /**
- * text alignment for sub title.
- * @default Far
- */
+     * text alignment for sub title.
+     *
+     * @default Far
+     */
     textAlignment?: SmithchartAlignment;
 
     /**
-  * trim the sub title.
-  * @default true
-  */
+     * trim the sub title.
+     *
+     * @default true
+     */
     enableTrim?: boolean;
 
     /**
- * maximum width of the sub title.
- * @aspDefaultValueIgnore
- * @default null
- */
+     * maximum width of the sub title.
+     *
+     * @aspDefaultValueIgnore
+     * @default null
+     */
     maximumWidth?: number;
 
     /**
- * options for customizing sub title font
- */
+     * options for customizing sub title font
+     */
 
     textStyle?: SmithchartFontModel;
 
@@ -56,58 +62,64 @@ export interface SubtitleModel {
 export interface TitleModel {
 
     /**
- * visibility for title.
- * @default true
- */
+     * visibility for title.
+     *
+     * @default true
+     */
     visible?: boolean;
 
     /**
- * text for title.
- * @default ''
- */
+     * text for title.
+     *
+     * @default ''
+     */
     text?: string;
 
     /**
- * description for title.
- * @default ''
- */
+     * description for title.
+     *
+     * @default ''
+     */
     description?: string;
 
     /**
- * text alignment for title.
- * @default Center
- */
+     * text alignment for title.
+     *
+     * @default Center
+     */
     textAlignment?: SmithchartAlignment;
 
     /**
- * trim the title.
- * @default true
- */
+     * trim the title.
+     *
+     * @default true
+     */
 
     enableTrim?: boolean;
 
     /**
- * maximum width of the sub title
- * @aspDefaultValueIgnore
- * @default null
- */
+     * maximum width of the sub title
+     *
+     * @aspDefaultValueIgnore
+     * @default null
+     */
     maximumWidth?: number;
 
     /**
- * options for customizing sub title
- */
+     * options for customizing sub title
+     */
 
     subtitle?: SubtitleModel;
 
     /**
- * options for customizing title font
- */
+     * options for customizing title font
+     */
 
     font?: SmithchartFontModel;
 
     /**
- * options for customizing title text
- */
+     * options for customizing title text
+     */
 
     textStyle?: SmithchartFontModel;
 

@@ -3,10 +3,11 @@
  */
 import { isUndefined } from '@syncfusion/ej2-base';
 import { OpenOptions, OpenFailureArgs, BeforeOpenEventArgs } from '../../spreadsheet/common/interface';
-import { workbookOpen, openSuccess, openFailure, sheetsDestroyed, workbookFormulaOperation, getRangeIndexes } from '../common/index';
+import { workbookOpen, openSuccess, openFailure, sheetsDestroyed, workbookFormulaOperation, getRangeIndexes, FilterCollectionModel, getCellAddress, sortImport, WorkbookAllModule } from '../common/index';
 import { sheetCreated, protectSheetWorkBook, getRangeAddress } from '../common/index';
 import { WorkbookModel, Workbook, initSheet, SheetModel } from '../base/index';
-import { beginAction } from '../../spreadsheet/common/event';
+import { beginAction, initiateFilterUI } from '../../spreadsheet/common/event';
+import { PredicateModel } from '@syncfusion/ej2-grids';
 
 export class WorkbookOpen {
     private parent: Workbook;
@@ -17,32 +18,45 @@ export class WorkbookOpen {
 
     /**
      * To open the excel file stream or excel url into the spreadsheet.
+     *
      * @param {OpenOptions} options - Options to open a excel file.
+     * @returns {OpenOptions} - To open the excel file stream or excel url into the spreadsheet.
      */
     public open(options: OpenOptions): void {
         if (!this.parent.allowOpen) {
             return;
         }
-        /* tslint:disable-next-line:no-any */
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         if ((options as any).jsonObject) {
-            /* tslint:disable-next-line:no-any */
-            this.fetchSuccess((options as any).jsonObject as string);
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            this.fetchSuccess((options as any).jsonObject as string, null);
             return;
         }
-        let formData: FormData = new FormData();
+        const formData: FormData = new FormData();
         if (options.file) {
             formData.append('file', options.file as string);
         } else {
             this.parent.isOpen = false;
             return;
         }
-        let eventArgs: BeforeOpenEventArgs = {
+        const args: {passWord: string} = { passWord: '' };
+        if (options.password && options.password.length) {
+            args.passWord = options.password;
+        }
+        if (args.passWord && args.passWord.length) {
+            options.password = args.passWord;
+        }
+        if (options.password) {
+            formData.append('password', options.password as string);
+        }
+        const eventArgs: BeforeOpenEventArgs = {
             file: options.file || null,
             cancel: false,
             requestData: {
                 method: 'POST',
                 body: formData
-            }
+            },
+            password: args.passWord
         };
         this.parent.trigger('beforeOpen', eventArgs);
         this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'beforeOpen' });
@@ -61,7 +75,7 @@ export class WorkbookOpen {
                     });
                 }
             })
-            .then((data: string) => this.fetchSuccess(data))
+            .then((data: string) => this.fetchSuccess(data, eventArgs))
             .catch((error: OpenFailureArgs) => this.fetchFailure(error));
     }
 
@@ -73,15 +87,15 @@ export class WorkbookOpen {
         this.parent.isOpen = false;
     }
 
-    private fetchSuccess(data: string): void {
-        let openError: string[] = ['UnsupportedFile', 'InvalidUrl'];
+    private fetchSuccess(data: string, eventArgs: OpenOptions): void {
+        const openError: string[] = ['UnsupportedFile', 'InvalidUrl', 'NeedPassword', 'InCorrectPassword'];
         let workbookData: string = data;
         workbookData = (typeof data === 'string') ? JSON.parse(data) : data;
-        /* tslint:disable-next-line:no-any */
-        let impData: WorkbookModel = (<any>workbookData).Workbook;
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        const impData: WorkbookModel = (<any>workbookData).Workbook;
         if (openError.indexOf(impData as string) > -1) {
             this.parent.notify(openSuccess, {
-                context: this, data: impData as string
+                context: this, data: impData as string, eventArgs: eventArgs
             });
             return;
         }
@@ -90,6 +104,13 @@ export class WorkbookOpen {
             context: this, data: impData as string
         });
         this.parent.isOpen = false;
+        if (eventArgs && eventArgs.password && eventArgs.password.length > 0) {
+            if (this.parent.showSheetTabs) {
+                this.parent.element.querySelector('.e-add-sheet-tab').removeAttribute('disabled');
+                this.parent.element.querySelector('.e-add-sheet-tab').classList.remove('e-disabled');
+            }
+            this.parent.password = "";
+        }
     }
 
     private updateModel(workbookModel: WorkbookModel): void {
@@ -103,7 +124,9 @@ export class WorkbookOpen {
             {
                 'sheets': workbookModel.sheets,
                 'activeSheetIndex': workbookModel.activeSheetIndex,
-                'definedNames': workbookModel.definedNames || []
+                'definedNames': workbookModel.definedNames || [],
+                'filterCollection': workbookModel.filterCollection || [],
+                'sortCollection': workbookModel.sortCollection || []
             },
             true
         );
@@ -112,14 +135,83 @@ export class WorkbookOpen {
         this.parent.notify(workbookFormulaOperation, { action: 'registerSheet', isImport: true });
         this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });
         this.parent.notify(protectSheetWorkBook, null);
+        if (this.parent.filterCollection) {
+            this.updateFilter();
+        }
     }
+    private updateFilter(): void {
+        for (let i: number = 0; i < this.parent.filterCollection.length; i++) {
+            let filterCol: FilterCollectionModel = this.parent.filterCollection[i];
+            let sIdx: number = filterCol.sheetIndex;
+            if (i === 0) {
+                sIdx = 0;
+            }
+            let predicates: PredicateModel[] = [];
+            if (filterCol.column) {
+                for (let j: number = 0; j < filterCol.column.length; j++) {
+                    let predicateCol: PredicateModel = {
+                        field: getCellAddress(0, filterCol.column[j]).charAt(0),
+                        operator: this.getFilterOperator(filterCol.criteria[j]), value: filterCol.value[j].toString().split('*').join('')
+                    };
+                    predicates.push(predicateCol);
+                }
+            }
+            for (let i: number = 0; i < predicates.length - 1; i++) {
+                if (predicates[i].field === predicates[i + 1].field) {
+                    if (!predicates[i].predicate) {
+                        predicates[i].predicate = 'or';
+                    }
+                    predicates[i + 1].predicate = 'or';
+                }
+            }
+            this.parent.notify(initiateFilterUI, { predicates: predicates !== [] ? predicates : null, range: filterCol.filterRange, sIdx: sIdx });
+        }
+        if (this.parent.sortCollection) {
+            this.parent.notify(sortImport, null);
+        }
+    }
+
+    private getFilterOperator(value: string)
+        {
+            switch (value)
+            {
+                case "BeginsWith":
+                    value = "startswith";
+                    break;
+                case "Less":
+                    value = "lessthan";
+                    break;
+                case "EndsWith":
+                    value = "endswith";
+                    break;
+                case "Equal":
+                    value = "equal";
+                    break;
+                case "Notequal":
+                    value = "notEqual";
+                    break;
+                case "Greater":
+                    value = "greaterthan";
+                    break;
+                case "Contains":
+                    value = "contains";
+                    break;
+                case "LessOrEqual":
+                    value = "lessthanorequal";
+                    break;
+                case "GreaterOrEqual":
+                    value = "greaterthanorequal";
+                    break;
+            }
+            return value;
+        }
 
     private setSelectAllRange(sheets: SheetModel[]): void {
         sheets.forEach((sheet: SheetModel) => {
             if (sheet.selectedRange) {
-                let selectedIndex: number[] = getRangeIndexes(sheet.selectedRange);
-                let rowCount: number = (isUndefined(sheet.rowCount) ? 100 : sheet.rowCount) - 1;
-                let colCount: number = (isUndefined(sheet.colCount) ? 100 : sheet.colCount) - 1;
+                const selectedIndex: number[] = getRangeIndexes(sheet.selectedRange);
+                const rowCount: number = (isUndefined(sheet.rowCount) ? 100 : sheet.rowCount) - 1;
+                const colCount: number = (isUndefined(sheet.colCount) ? 100 : sheet.colCount) - 1;
                 if (selectedIndex[2] === 65535) {
                     selectedIndex[2] = rowCount;
                 }
@@ -138,7 +230,9 @@ export class WorkbookOpen {
     }
 
     /**
-     * Adding event listener for workbook open. 
+     * Adding event listener for workbook open.
+     *
+     * @returns {void} - Adding event listener for workbook open.
      */
     private addEventListener(): void {
         this.parent.on(workbookOpen, this.open.bind(this));
@@ -146,6 +240,8 @@ export class WorkbookOpen {
 
     /**
      * Removing event listener workbook open.
+     *
+     * @returns {void} - removing event listener workbook open.
      */
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
@@ -155,6 +251,8 @@ export class WorkbookOpen {
 
     /**
      * To Remove the event listeners
+     *
+     * @returns {void} - To Remove the event listeners
      */
     public destroy(): void {
         this.removeEventListener();
@@ -163,6 +261,8 @@ export class WorkbookOpen {
 
     /**
      * Get the workbook open module name.
+     *
+     * @returns {string} - Get the module name.
      */
     public getModuleName(): string {
         return 'workbookOpen';

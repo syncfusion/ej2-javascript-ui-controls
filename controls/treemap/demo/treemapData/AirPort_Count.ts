@@ -1,7 +1,7 @@
 /**
  * Airport count
  */
-//tslint:disable
+/* eslint-disable */
 export let Airport_Count: Object[] = [
     { Title: 'State wise International Airport count in South America', State: "Brazil", Count: 25 },
     { Title: 'State wise International Airport count in South America', State: "Colombia", Count: 12 },

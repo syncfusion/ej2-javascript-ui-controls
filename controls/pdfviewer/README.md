@@ -1,4 +1,4 @@
-[![npm](http://ej2.syncfusion.com/github-badges?package=@syncfusion/ej2-pdfviewer)](https://www.npmjs.com/package/@syncfusion/ej2-pdfviewer)&nbsp;&nbsp;[![coverage](http://ej2.syncfusion.com/badges/ej2-pdfviewer/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-pdfviewer)
+[![coverage](http://ej2.syncfusion.com/badges/ej2-pdfviewer/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-pdfviewer)
 
 # ej2-pdfviewer
 

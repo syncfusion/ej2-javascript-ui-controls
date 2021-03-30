@@ -1,8 +1,9 @@
+/* eslint-disable max-len */
 import { CircularGauge } from '../circular-gauge';
 import { Axis, Label, Range, Tick } from './axis';
 import { getLocationFromAngle, PathOption, stringToNumber, TextOption, textElement, appendPath, toPixel } from '../utils/helper';
 import {
-    GaugeLocation, VisibleLabels, getAngleFromValue, isCompleteAngle, getPathArc,
+    GaugeLocation, VisibleLabels, getAngleFromValue, isCompleteAngle, getPathArc, getDegree,
     getRoundedPathArc, getRangeColor
 } from '../utils/helper';
 import { TickModel } from './axis-model';
@@ -19,19 +20,27 @@ export class AxisRenderer {
     private gauge: CircularGauge;
     /**
      * Constructor for axis renderer.
+     *
+     * @param {CircularGauge} gauge - Specifies the instance of the gauge
      * @private.
      */
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(gauge: CircularGauge) {
         this.gauge = gauge;
     }
 
     /**
      * Method to render the axis element of the circular gauge.
-     * @return {void}
+     *
+     * @param {Axis} axis - Specifies the axis.
+     * @param {number} index - Specifies the index.
+     * @param {Element} element - Specifies the element.
+     * @param {CircularGauge} gauge - Specifies the gauge.
+     * @returns {void}
      * @private
      */
     public drawAxisOuterLine(axis: Axis, index: number, element: Element, gauge: CircularGauge): void {
-        let background: string = axis.background;
+        const background: string = axis.background;
         this.setRangeColor(axis);
         if (background !== null) {
             appendPath(
@@ -47,23 +56,30 @@ export class AxisRenderer {
 
     /**
      * Method to check the angles.
-     * @return {void}
+     *
+     * @param {Axis} axis - Specifies the axis.
+     * @returns {void}
      * @private
      */
     public checkAngles(axis: Axis): void {
-        axis.startAngle = axis.startAngle >= 360 ? 360 : axis.startAngle <= -360 ? -360 : axis.startAngle ;
+        axis.startAngle = axis.startAngle >= 360 ? 360 : axis.startAngle <= -360 ? -360 : axis.startAngle;
         axis.endAngle = axis.endAngle >= 360 ? 360 : axis.endAngle <= -360 ? -360 : axis.endAngle;
     }
 
     /**
      * Method to render the axis line of the circular gauge.
-     * @return {void}
+     *
+     * @param {Axis} axis - Specifies the axis.
+     * @param {number} index - Specifies the index.
+     * @param {Element} element - Specifies the element.
+     * @param {CircularGauge} gauge - Specifies the gauge.
+     * @returns {void}
      * @private
      */
     public drawAxisLine(axis: Axis, index: number, element: Element, gauge: CircularGauge): void {
         let startAngle: number = axis.startAngle;
         let endAngle: number = axis.endAngle;
-        let color: string = axis.lineStyle.color || this.gauge.themeStyle.lineColor;
+        const color: string = axis.lineStyle.color || this.gauge.themeStyle.lineColor;
         if (axis.lineStyle.width > 0) {
             startAngle = !isCompleteAngle(startAngle, endAngle) ? startAngle : [0, endAngle = 360][0];
             appendPath(
@@ -79,18 +95,21 @@ export class AxisRenderer {
 
     /**
      * Method to render the axis labels of the circular gauge.
-     * @return {void}
+     *
+     * @param {Axis} axis - Specifies the axis.
+     * @param {number} index - Specifies the index.
+     * @param {Element} element - Specifies the element.
+     * @param {CircularGauge} gauge - Specifies the gauge.
+     * @returns {void}
      * @private
      */
-    /* tslint:disable:no-string-literal */
-    /* tslint:disable:max-func-body-length */
     public drawAxisLabels(axis: Axis, index: number, element: Element, gauge: CircularGauge): void {
-        let labelElement: Element = gauge.renderer.createGroup({
+        const labelElement: Element = gauge.renderer.createGroup({
             id: gauge.element.id + '_Axis_Labels_' + index
         });
-        let min: number = axis.visibleRange.min;
-        let max: number = axis.visibleRange.max;
-        let labelCollection: VisibleLabels[] = axis.visibleLabels;
+        const min: number = axis.visibleRange.min;
+        const max: number = axis.visibleRange.max;
+        const labelCollection: VisibleLabels[] = axis.visibleLabels;
         let location: GaugeLocation;
         let textWidth: number; let textHeight: number; let labelsVisible: boolean = true;
         let currentTextWidth: number; let currentTextHeight: number;
@@ -98,16 +117,16 @@ export class AxisRenderer {
         let lastLabelLocation: GaugeLocation;
         let lastLabelAngle: number; let lastLabelAnchor: string;
         let lastTextWidth: number; let lastTextHeight: number;
-        let style: Label = <Label>axis.labelStyle; let anchor: string; let angle: number;
+        const style: Label = <Label>axis.labelStyle; let anchor: string; let angle: number;
         let label: VisibleLabels; let radius: number = axis.currentRadius;
         let checkLabelOpposed: number = 0;
         checkLabelOpposed = (style.position === 'Inside' && axis.majorTicks.position === 'Outside' &&
-                            axis.minorTicks.position === 'Outside') || (style.position === 'Outside' &&
-                            axis.minorTicks.position === 'Inside' && axis.majorTicks.position === 'Inside') ?
-                            axis.lineStyle.width + axis.currentRadius / 20 :
-                            (style.position === axis.majorTicks.position ? axis.currentRadius / 20 : axis.currentRadius / 40);
-        let labelPadding: number = axis.labelStyle.shouldMaintainPadding ? 10 : checkLabelOpposed;
-        let color: string = style.font.color || this.gauge.themeStyle.labelColor;
+            axis.minorTicks.position === 'Outside') || (style.position === 'Outside' &&
+                axis.minorTicks.position === 'Inside' && axis.majorTicks.position === 'Inside') ?
+            axis.lineStyle.width + axis.currentRadius / 20 :
+            (style.position === axis.majorTicks.position ? axis.currentRadius / 20 : axis.currentRadius / 40);
+        const labelPadding: number = axis.labelStyle.shouldMaintainPadding ? 10 : checkLabelOpposed;
+        const color: string = style.font.color || this.gauge.themeStyle.labelColor;
         if (style.position === 'Outside') {
             radius += (axis.nearSize - (axis.maxLabelSize.height + axis.lineStyle.width / 2)) + (labelPadding / 2);
         } else if (style.position === 'Cross') {
@@ -158,7 +177,7 @@ export class AxisRenderer {
             style.font.fontFamily = this.gauge.themeStyle.labelFontFamily || style.font.fontFamily;
             if (axis.hideIntersectingLabel && (i !== 0)) {
                 //To remove the labels which is intersecting with last label.
-                let lastlabel: boolean = ((i !== (labelCollection.length - 1)) && ((isCompleteAngle(axis.startAngle, axis.endAngle) ||
+                const lastlabel: boolean = ((i !== (labelCollection.length - 1)) && ((isCompleteAngle(axis.startAngle, axis.endAngle) ||
                     axis.showLastLabel))) ? this.FindAxisLabelCollision(lastLabelLocation, lastTextWidth, lastTextHeight, currentLocation,
                                                                         currentTextWidth, currentTextHeight) : true;
                 //Checking wether the axis label is intersecting with previous label or not.
@@ -197,13 +216,19 @@ export class AxisRenderer {
 
     /**
      * Method to find the anchor of the axis label.
+     *
+     * @param {GaugeLocation} location - Specifies the location.
+     * @param {Label} style - Specifies the label style.
+     * @param {number} angle - Specifies the angle.
+     * @param {VisibleLabels} label - Specifies the labels.
+     * @returns {string} - Returns the anchor.
      * @private
      */
     private findAnchor(location: GaugeLocation, style: Label, angle: number, label: VisibleLabels): string {
         if (style.autoAngle) {
             return 'middle';
         }
-        let anchor: string = style.position === 'Inside' ?
+        const anchor: string = style.position === 'Inside' ?
             ((angle > 120 && angle < 240) ? 'start' : ((300 < angle || angle < 60) ? 'end' : 'middle')) :
             ((angle > 120 && angle < 240) ? 'end' : ((300 < angle || angle < 60) ? 'start' : 'middle'));
         location.y += style.position === 'Inside' ?
@@ -216,11 +241,20 @@ export class AxisRenderer {
 
     /**
      * Methode to check whether the labels are intersecting or not.
+     *
+     * @param {GaugeLocation} previousLocation - Specifies the previous location.
+     * @param {number} previousWidth - Specifies the previous width.
+     * @param {number} previousHeight - Specifies the previous height.
+     * @param {GaugeLocation} currentLocation - Specifies the current location.
+     * @param {number} currentWidth - Specifies the current width.
+     * @param {number} currentHeight - Specifies the current height.
+     * @returns {boolean} - Returns the boolean value.
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private FindAxisLabelCollision(previousLocation: GaugeLocation, previousWidth: number, previousHeight: number,
                                    currentLocation: GaugeLocation, currentWidth: number, currentHeight: number): boolean {
-        let labelVisisble: boolean = ((previousLocation.x > (currentLocation.x + (currentWidth))) ||
+        const labelVisisble: boolean = ((previousLocation.x > (currentLocation.x + (currentWidth))) ||
             ((previousLocation.x + (previousWidth)) < (currentLocation.x)) ||
             ((previousLocation.y + (previousHeight)) < (currentLocation.y)) ||
             ((previousLocation.y) > (currentLocation.y + (currentHeight))));
@@ -229,6 +263,14 @@ export class AxisRenderer {
 
     /**
      * Methode to get anchor position of label as start.
+     *
+     * @param {GaugeLocation} actualLocation - Specifies the actual location.
+     * @param {number} textWidth - Specifies the text width.
+     * @param {Label} style - Specifies the label style.
+     * @param {number} textHeight - Specifies the text height.
+     * @param {string} anchorPosition - Specifies the anchor position.
+     * @param {number} angle - Specifies the angle.
+     * @returns {GaugeLocation} - Returns the gauge location.
      * @private
      */
     private getAxisLabelStartPosition(actualLocation: GaugeLocation, textWidth: number, style: Label, textHeight: number,
@@ -237,36 +279,43 @@ export class AxisRenderer {
             actualLocation.x = actualLocation.x - textWidth;
         } else if (anchorPosition === 'middle') {
             actualLocation.x = actualLocation.x - (textWidth / 2);
-        } else {
-            actualLocation.x = actualLocation.x;
         }
         return actualLocation;
     }
 
     /**
      * Methode to offset label height and width based on angle.
+     *
+     * @param {number} angle - Specifies the angle.
+     * @param {number} size - Specifies the size.
+     * @returns {number} - Returns the fineal size.
      * @private
      */
     private offsetAxisLabelsize(angle: number, size: number): number {
-        let finalSize: number = ((angle >= 20 && angle <= 60) || (angle >= 120 && angle <= 160) || (angle >= 200 && angle <= 240) ||
+        const finalSize: number = ((angle >= 20 && angle <= 60) || (angle >= 120 && angle <= 160) || (angle >= 200 && angle <= 240) ||
             (angle >= 300 && angle <= 340)) ? size / 5 : 0;
         return finalSize;
     }
 
     /**
      * Method to render the axis minor tick lines of the circular gauge.
-     * @return {void}
+     *
+     * @param {Axis} axis - Specifies the axis.
+     * @param {number} index - Specifies the index.
+     * @param {Element} element - Specifies the element.
+     * @param {CircularGauge} gauge - Specifies the gauge.
+     * @returns {void}
      * @private
      */
     public drawMinorTickLines(axis: Axis, index: number, element: Element, gauge: CircularGauge): void {
-        let minorTickElements: Element = gauge.renderer.createGroup({
+        const minorTickElements: Element = gauge.renderer.createGroup({
             id: gauge.element.id + '_Axis_MinorTickLines_' + index
         });
-        let minorLineStyle: TickModel = axis.minorTicks;
-        let minorInterval: number = minorLineStyle.interval !== null ?
+        const minorLineStyle: TickModel = axis.minorTicks;
+        const minorInterval: number = minorLineStyle.interval !== null ?
             minorLineStyle.interval : (axis.visibleRange.interval / 2);
-        let isRangeColor: boolean = minorLineStyle.useRangeColor;
-        let color: string = minorLineStyle.color || this.gauge.themeStyle.minorTickColor;
+        const isRangeColor: boolean = minorLineStyle.useRangeColor;
+        const color: string = minorLineStyle.color || this.gauge.themeStyle.minorTickColor;
         if (minorLineStyle.width && minorLineStyle.height && minorInterval) {
             for (let i: number = axis.visibleRange.min, max: number = axis.visibleRange.max; i <= max; i += minorInterval) {
                 if (this.majorValues.indexOf(+i.toFixed(3)) < 0) {
@@ -286,17 +335,22 @@ export class AxisRenderer {
 
     /**
      * Method to render the axis major tick lines of the circular gauge.
-     * @return {void}
+     *
+     * @param {Axis} axis - Specifies the axis.
+     * @param {number} index - Specifies the index.
+     * @param {Element} element - Specifies the element.
+     * @param {CircularGauge} gauge - Specifies the gauge.
+     * @returns {void}
      * @private
      */
     public drawMajorTickLines(axis: Axis, index: number, element: Element, gauge: CircularGauge): void {
-        let majorTickElements: Element = gauge.renderer.createGroup({
+        const majorTickElements: Element = gauge.renderer.createGroup({
             id: gauge.element.id + '_Axis_MajorTickLines_' + index
         });
-        let majorLineStyle: TickModel = axis.majorTicks;
-        let isRangeColor: boolean = majorLineStyle.useRangeColor;
+        const majorLineStyle: TickModel = axis.majorTicks;
+        const isRangeColor: boolean = majorLineStyle.useRangeColor;
         this.majorValues = [];
-        let color: string = majorLineStyle.color || this.gauge.themeStyle.majorTickColor;
+        const color: string = majorLineStyle.color || this.gauge.themeStyle.majorTickColor;
         if (majorLineStyle.width && majorLineStyle.height && axis.visibleRange.interval) {
             for (let i: number = axis.visibleRange.min, max: number = axis.visibleRange.max,
                 interval: number = axis.visibleRange.interval; i <= max; i += interval) {
@@ -316,58 +370,324 @@ export class AxisRenderer {
 
     /**
      * Method to calcualte the tick elements for the circular gauge.
-     * @return {void}
+     *
+     * @param {number} value - Specifies the value.
+     * @param {Tick} options - Specifies the options.
+     * @param {Axis} axis - Specifies the axis.
+     * @returns {string} - Returns the string.
      * @private
      */
     public calculateTicks(value: number, options: Tick, axis: Axis): string {
-        let axisLineWidth: number = (axis.lineStyle.width / 2) + options.offset;
-        let angle: number = getAngleFromValue(
+        const axisLineWidth: number = (axis.lineStyle.width / 2) + options.offset;
+        const angle: number = getAngleFromValue(
             value, axis.visibleRange.max, axis.visibleRange.min,
             axis.startAngle, axis.endAngle, axis.direction === 'ClockWise'
         );
-        let start: GaugeLocation =
-        getLocationFromAngle(angle, axis.currentRadius +
-                             (options.position === 'Outside' ? axisLineWidth : options.position === 'Cross' ?
-                             options.height / 2 - options.offset : -axisLineWidth),
-                             this.gauge.midPoint);
-        let end: GaugeLocation =
-        getLocationFromAngle(angle, axis.currentRadius +
-                             (options.position === 'Outside' ? axisLineWidth : options.position === 'Cross' ?
-                              options.height / 2 - options.offset : -axisLineWidth) +
-                             (options.position === 'Outside' ? options.height : -options.height),
-                             this.gauge.midPoint);
+        const start: GaugeLocation =
+            getLocationFromAngle(angle, axis.currentRadius +
+                (options.position === 'Outside' ? axisLineWidth : options.position === 'Cross' ?
+                    options.height / 2 - options.offset : -axisLineWidth),
+                                 this.gauge.midPoint);
+        const end: GaugeLocation =
+            getLocationFromAngle(angle, axis.currentRadius +
+                (options.position === 'Outside' ? axisLineWidth : options.position === 'Cross' ?
+                    options.height / 2 - options.offset : -axisLineWidth) +
+                (options.position === 'Outside' ? options.height : -options.height),
+                                 this.gauge.midPoint);
         return 'M ' + start.x + ' ' + start.y + ' L ' + end.x + ' ' + end.y + ' ';
     }
 
     /**
-     * Method to render the axis range of the circular gauge.
-     * @return {void}
+     * Method to render the range path of the circular gauge.
+     *
+     * @param {Axis} axis - Specifies the axis.
+     * @param {Range} range - Specifies the range.
+     * @param {number} startWidth - Specifies the startwidth for the range.
+     * @param {number} endWidth - Specifies the endwidth for the range.
+     * @param {number} rangeIndex - Specifies the index of the range.
+     * @param {number} index - Specifies the index of the axis.
+     * @param {Element} rangeElement - Specifies the element.
+     * @param {number} colorIndex - Specifies the index of the lineargradient colorstop.
+     * @returns {void}
      * @private
      */
-    public drawAxisRange(axis: Axis, index: number, element: Element, gauge:
-        CircularGauge): void {
-        let startValue: number;
+    /* eslint-disable @typescript-eslint/dot-notation */
+    public drawRangePath(
+        axis: Axis, range: Range, startWidth: number, endWidth: number,
+        rangeIndex: number, index: number, rangeElement: Element, colorIndex: number
+    ): void {
+        let startValue: number; let direction: string;
         let endValue: number;
-        let rangeElement: Element;
-        let ele: Element;
-        ele = (document.getElementById(gauge.element.id + '_Axis_Ranges_ ' + index));
-        rangeElement = (ele) ? document.getElementById(gauge.element.id + '_Axis_Ranges_ ' + index) :
-            gauge.renderer.createGroup({ id: gauge.element.id + '_Axis_Ranges_' + index });
-        let location: GaugeLocation = this.gauge.midPoint;
+        const location: GaugeLocation = this.gauge.midPoint;
         let startAngle: number;
         let endAngle: number;
-        let isClockWise: boolean = axis.direction === 'ClockWise';
-        let min: number = axis.visibleRange.min;
-        let max: number = axis.visibleRange.max;
-        let startWidth: number;
-        let endWidth: number;
+        const isClockWise: boolean = axis.direction === 'ClockWise';
+        const min: number = axis.visibleRange.min;
+        const max: number = axis.visibleRange.max;
         let roundedStartAngle: number;
         let roundedEndAngle: number;
         let oldStart: number;
         let oldEnd: number;
         let gradientRangeColor: string;
+        if (range.isLinearCircularGradient) {
+            const rangeSplitValue: number = ((range.end - range.start) / range.linearGradient.colorStop.length);
+            const rangeStart: number = range.linearGradient.colorStop.length > 1 ?
+                (range.start + (rangeSplitValue * (colorIndex))) : range.start;
+            const rangeEnd: number = range.linearGradient.colorStop.length > 1 ? (rangeStart + rangeSplitValue) : range.end;
+            startValue = Math.min(Math.max(rangeStart, min), rangeEnd);
+            endValue = Math.min(Math.max(rangeStart, rangeEnd), max);
+        } else {
+            startValue = Math.min(Math.max(range.start, min), range.end);
+            endValue = Math.min(Math.max(range.start, range.end), max);
+        }
+        startAngle = getAngleFromValue(startValue, max, min, axis.startAngle, axis.endAngle, isClockWise);
+        endAngle = getAngleFromValue(endValue, max, min, axis.startAngle, axis.endAngle, isClockWise);
+        const isAngleCross360: boolean = (startAngle > endAngle);
+        if (axis.rangeGap != null && axis.rangeGap > 0
+            || (!isNullOrUndefined(range.linearGradient) && !range.isLinearCircularGradient
+                && (colorIndex === range.linearGradient.colorStop.length - 1))) {
+            startAngle = (rangeIndex === 0 && !axis.startAndEndRangeGap) ? startAngle :
+                colorIndex === 0 && range.isLinearCircularGradient ? axis.direction === 'AntiClockWise' ?
+                    startAngle - (axis.rangeGap / Math.PI) :
+                    startAngle + (axis.rangeGap / Math.PI) : !range.isLinearCircularGradient
+                    ? startAngle + (axis.rangeGap / Math.PI) : startAngle;
+            endAngle = (rangeIndex === axis.ranges.length - 1 && !axis.startAndEndRangeGap) ? endAngle :
+                !isNullOrUndefined(range.linearGradient) && colorIndex === range.linearGradient.colorStop.length - 1
+				&& range.isLinearCircularGradient ?
+                    axis.direction === 'AntiClockWise' ? endAngle + (axis.rangeGap / Math.PI) :
+                        endAngle - (axis.rangeGap / Math.PI) : !range.isLinearCircularGradient ?
+                        endAngle - (axis.rangeGap / Math.PI) : endAngle;
+        }
+        if ((startValue !== endValue) && (isAngleCross360 ? startAngle < (endAngle + 360) : (startAngle < endAngle))) {
+            endAngle = isClockWise ? endAngle : [startAngle, startAngle = endAngle][0];
+            endWidth = isClockWise ? endWidth : [startWidth, startWidth = endWidth][0];
+            const radius: number = range.roundedCornerRadius;
+            const process: number = (radius * 0.25);
+            const degreeValue: number = getDegree(startAngle, endAngle);
+            oldStart = ((((range.currentRadius - (startWidth / 2)) * ((startAngle * Math.PI) / 180) -
+                (radius / process)) / (range.currentRadius - (startWidth / 2))) * 180) / Math.PI;
+            oldEnd = ((((range.currentRadius - (endWidth / 2)) * ((endAngle * Math.PI) / 180) +
+                (radius / process)) / (range.currentRadius - (endWidth / 2))) * 180) / Math.PI;
+            roundedStartAngle = ((((range.currentRadius) * ((startAngle * Math.PI) / 180) +
+                (degreeValue < (range.roundedCornerRadius / 2) && range.isLinearCircularGradient
+                    ? degreeValue <= 1 ? 0 : (radius / 4) : radius)) / (range.currentRadius)) * 180) / Math.PI;
+            roundedEndAngle = ((((range.currentRadius) * ((endAngle * Math.PI) / 180) -
+                (degreeValue < (range.roundedCornerRadius / 2) && range.isLinearCircularGradient
+                    ? degreeValue <= 1 ? 0 : (radius / 4) : radius)) / (range.currentRadius)) * 180) / Math.PI;
+            if (this.gauge.gradientModule && ((!isNullOrUndefined(range.linearGradient)
+                && !isNullOrUndefined(range.linearGradient.colorStop)) || (!isNullOrUndefined(range.radialGradient)
+                    && !isNullOrUndefined(range.radialGradient.colorStop)))) {
+                if (range.isLinearCircularGradient) {
+                    endAngle -= isCompleteAngle(startAngle, endAngle) ? 0.0001 : 0;
+                    const degree: number = getDegree(startAngle, endAngle);
+                    const rangeColorLength: number = range.linearGradient.colorStop.length;
+                    const degreeRange: number = ((axis.startAngle === axis.endAngle ?
+                        (axis.startAngle === 0 && axis.endAngle === 0 ? 360 : axis.startAngle) :
+                        (axis.endAngle - axis.startAngle)) - degree * (rangeColorLength - 1));
+                    let degreeRangeValue: number;
+                    if (degreeRange <= 360 && degreeRange >= 270) {
+                        degreeRangeValue = 270;
+                    } else if (degreeRange <= 270 && degreeRange >= 180) {
+                        degreeRangeValue = 180;
+                    } else if (degreeRange <= 180 && degreeRange >= 90) {
+                        degreeRangeValue = 90;
+                    } else if (degreeRange <= 90 && degreeRange >= 0) {
+                        degreeRangeValue = 0;
+                    }
+                    const gradientDegree: number = axis.direction === 'AntiClockWise' ?
+                        (axis.startAngle === axis.endAngle ? 0 : axis.startAngle) + degree * ((rangeColorLength - 1) - colorIndex)
+                        : axis.startAngle + degree * (colorIndex);
+                    let gradientAngle: number = axis.startAngle < axis.endAngle ? axis.direction === 'AntiClockWise'
+                        ? axis.ranges.length > 1 ? rangeIndex === 0 ? (360 - (axis.startAngle
+                        + (degree * (colorIndex)))) : (axis.startAngle + (degree * (colorIndex + 1))) :
+                            axis.startAngle + (degreeRangeValue + degree * ((rangeColorLength - 1) - colorIndex)) : axis.startAngle
+                        + (degree * (colorIndex)) : axis.endAngle === 360 || axis.startAngle === axis.endAngle
+                        ? axis.direction === 'AntiClockWise' ? axis.startAngle === axis.endAngle ?
+                            (axis.startAngle === 0 && axis.endAngle === 0 ? 0 : 360) - axis.startAngle +
+                        degreeRangeValue + (degree * ((rangeColorLength - 1) - colorIndex))
+                            : degree * ((rangeColorLength - 1) - colorIndex) : degree * (colorIndex) :
+                        gradientDegree < 360 ? gradientDegree : gradientDegree - 360;
+                    range.gradientAngle = rangeIndex === 0 ? axis.rangeGap ? gradientAngle + axis.rangeGap
+                        : gradientAngle : axis.rangeGap > 0 ? axis.ranges[rangeIndex - 1]['gradientAngle'] + axis.rangeGap
+                        : axis.ranges[rangeIndex - 1]['gradientAngle'];
+                    if (axis.direction === 'AntiClockWise' && (axis.ranges.length > 1
+                        ? colorIndex === rangeColorLength - 1 : colorIndex === 0)) {
+                        range.gradientAntiAngle = gradientAngle;
+                    }
+                    if (rangeIndex !== 0) {
+                        gradientAngle = axis.direction === 'AntiClockWise' ? axis.ranges.length > 1 ?
+                            axis.ranges[rangeIndex - 1]['gradientAntiAngle'] - gradientAngle + axis.startAngle :
+                            axis.ranges[rangeIndex - 1]['gradientAntiAngle'] + gradientAngle :
+                            range.gradientAngle + gradientAngle - axis.startAngle;
+                        range.gradientAngle = axis.rangeGap != null && axis.rangeGap > 0 ? colorIndex === rangeColorLength - 1 ?
+                            gradientAngle + axis.ranges[rangeIndex - 1]['gradientAngle'] : gradientAngle : gradientAngle;
+                        if (axis.direction === 'AntiClockWise' && (axis.ranges.length > 1
+                            ? colorIndex === rangeColorLength - 1 : colorIndex === 0)) {
+                            range.gradientAntiAngle = gradientAngle;
+                        }
+                    }
+                    if (gradientAngle > 45 && gradientAngle <= 115
+                        || (gradientAngle >= 0 && gradientAngle <= 45 && (rangeColorLength - 1) <= 2)) {
+                        direction = axis.direction === 'AntiClockWise' ? 'bottom' : 'top';
+                    } else if (gradientAngle > 115 && gradientAngle < 170) {
+                        direction = axis.direction === 'AntiClockWise' ? 'left' : 'right';
+                    } else if (gradientAngle >= 170 && gradientAngle <= 280) {
+                        direction = axis.direction === 'AntiClockWise' ? 'top' : 'bottom';
+                    } else if (gradientAngle > 280 && gradientAngle <= 360
+                        || (gradientAngle >= 0 && gradientAngle <= 45 && (rangeColorLength - 1) >= 2)) {
+                        direction = axis.direction === 'AntiClockWise' ? 'right' : 'left';
+                    }
+                }
+                gradientRangeColor = this.gauge.gradientModule.getGradientColorString(
+                    range, colorIndex, direction, rangeIndex
+                );
+            }
+            range.rangeColor = gradientRangeColor ? gradientRangeColor : range.rangeColor;
+            if (range.roundedCornerRadius) {
+                if (range.isLinearCircularGradient && range.linearGradient.colorStop.length > 1) {
+                    if (colorIndex === 0 || colorIndex === range.linearGradient.colorStop.length - 1) {
+                        if (axis.direction === 'ClockWise') {
+                            this.roundedRangeAppendPathCalculation(
+                                range, rangeIndex, index, startWidth, endWidth, rangeElement,
+                                (colorIndex === range.linearGradient.colorStop.length - 1
+                                    ? Math.floor(startAngle) : Math.floor(roundedStartAngle)),
+                                (colorIndex !== 0 ? Math.ceil(roundedEndAngle) : Math.ceil(endAngle)),
+                                ((colorIndex === range.linearGradient.colorStop.length - 1) ? startAngle : oldStart),
+                                (colorIndex !== 0 ? oldEnd : endAngle), location, colorIndex
+                            );
+                        } else {
+                            this.roundedRangeAppendPathCalculation(
+                                range, rangeIndex, index, startWidth, endWidth, rangeElement,
+                                (colorIndex === 0 ? Math.floor(startAngle) : Math.floor(roundedStartAngle)),
+                                (colorIndex === range.linearGradient.colorStop.length - 1
+                                    ? Math.ceil(endAngle) : Math.ceil(roundedEndAngle)),
+                                ((colorIndex === 0) ? startAngle : oldStart),
+                                (colorIndex === range.linearGradient.colorStop.length - 1 ? endAngle : oldEnd),
+                                location, colorIndex
+                            );
+                        }
+                    } else {
+                        this.rangeAppendPathCalculation(
+                            range, rangeIndex, index, startWidth, endWidth, rangeElement,
+                            Math.floor(startAngle), Math.ceil(endAngle), colorIndex
+                        );
+                    }
+                } else {
+                    this.roundedRangeAppendPathCalculation(
+                        range, rangeIndex, index, startWidth, endWidth, rangeElement,
+                        Math.floor(roundedStartAngle), Math.ceil(roundedEndAngle), oldStart,
+                        oldEnd, location, colorIndex
+                    );
+                }
+            } else {
+                this.rangeAppendPathCalculation(
+                    range, rangeIndex, index, startWidth, endWidth, rangeElement,
+                    Math.floor(startAngle), Math.ceil(endAngle), colorIndex
+                );
+            }
+        }
+    }
+
+    /**
+     * Method to render the rounded range path of the circular gauge.
+     *
+     * @param {Range} range - Specifies the range.
+     * @param {number} rangeIndex - Specifies the index of the range.
+     * @param {number} index - Specifies the index of the axis.
+     * @param {number} startWidth - Specifies the startwidth for the range.
+     * @param {number} endWidth - Specifies the endwidth for the range.
+     * @param {Element} rangeElement - Specifies the element.
+     * @param {number} roundedStartAngle - Specifies the rounded path of the start angle.
+     * @param {number} roundedEndAngle - Specifies the rounded path of the end angle.
+     * @param {number} oldStart - Specifies the rounded path of the old start value.
+     * @param {number} oldEnd - Specifies the rounded path of the old end value..
+     * @param {GaugeLocation} location - Specifies the location.
+     * @param {number} colorIndex - Specifies the index of the lineargradient colorstop.
+     * @param {Axis} axis - Specifies the axis.
+     * @returns {void}
+     * @private
+     */
+    public roundedRangeAppendPathCalculation(
+        range: Range, rangeIndex: number,
+        index: number, startWidth: number, endWidth: number, rangeElement: Element,
+        roundedStartAngle: number, roundedEndAngle: number, oldStart: number, oldEnd: number,
+        location: GaugeLocation, colorIndex?: number
+    ): void {
+        range.pathElement.push(appendPath(
+            new PathOption(
+                (!range.isLinearCircularGradient ? this.gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex
+                    : this.gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex + '_Circular_' + colorIndex),
+                range.rangeColor, 0, range.rangeColor, range.opacity, '0',
+                getRoundedPathArc(
+                    location,
+                    Math.floor(roundedStartAngle), Math.ceil(roundedEndAngle), oldStart, oldEnd,
+                    range.currentRadius, startWidth, endWidth, range, this.gauge.axes[index] as Axis
+                ),
+                '', ''
+            ),
+            rangeElement, this.gauge
+        ));
+    }
+
+    /**
+     * Method to render the rounded range path of the circular gauge.
+     *
+     * @param {Range} range - Specifies the range.
+     * @param {number} rangeIndex - Specifies the index of the range.
+     * @param {number} index - Specifies the index of the axis.
+     * @param {number} startWidth - Specifies the startwidth for the range.
+     * @param {number} endWidth - Specifies the endwidth for the range.
+     * @param {Element} rangeElement - Specifies the element.
+     * @param {number} startAngle - Specifies the rounded path of the start angle.
+     * @param {number} endAngle - Specifies the rounded path of the end angle.
+     * @param {number} colorIndex - Specifies the index of the lineargradient colorstop.
+     * @returns {void}
+     * @private
+     */
+    public rangeAppendPathCalculation(
+        range: Range, rangeIndex: number,
+        index: number, startWidth: number, endWidth: number, rangeElement: Element, startAngle: number,
+        endAngle: number, colorIndex?: number
+    ): void {
+        range.pathElement.push(appendPath(
+            new PathOption(
+                !range.isLinearCircularGradient ? this.gauge.element.id + '_Axis_' + index + '_Range_' +
+                    rangeIndex : this.gauge.element.id + '_Axis_' + index + '_Range_' +
+                    rangeIndex + '_Circular_' + colorIndex,
+                range.rangeColor,
+                0, range.rangeColor, range.opacity, '0',
+                getPathArc(
+                    this.gauge.midPoint,
+                    Math.floor(startAngle), Math.ceil(endAngle),
+                    range.currentRadius, startWidth,
+                    endWidth, range, this.gauge.axes[index] as Axis
+                ),
+                '', ''
+            ),
+            rangeElement, this.gauge
+        ));
+    }
+
+    /**
+     * Method to render the axis range of the circular gauge.
+     *
+     * @param {Axis} axis - Specifies the axis.
+     * @param {number} index - Specifies the index.
+     * @param {Element} element - Specifies the element.
+     * @param {CircularGauge} gauge - Specifies the gauge instance.
+     * @returns {void}
+     * @private
+     */
+    public drawAxisRange(axis: Axis, index: number, element: Element): void {
+        const ele: Element = (document.getElementById(this.gauge.element.id + '_Axis_Ranges_ ' + index));
+        const rangeElement: Element = (ele) ? document.getElementById(this.gauge.element.id + '_Axis_Ranges_ ' + index) :
+            this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_Axis_Ranges_' + index });
+        let startWidth: number; let startEndDifference: number;
+        let endWidth: number; let previousEndWidth: number; let previousStartWidth: number;
         axis.ranges.map((range: Range, rangeIndex: number) => {
-            rangeIndex = rangeIndex;
+            range.isLinearCircularGradient = !isNullOrUndefined(this.gauge.gradientModule)
+            && !isNullOrUndefined(range.linearGradient) && isNullOrUndefined(range.linearGradient.startValue)
+            && isNullOrUndefined(range.linearGradient.endValue) && !isNullOrUndefined(range.linearGradient.colorStop);
             range.pathElement = [];
             if (!isNullOrUndefined(range.offset) && (<string>range.offset).length > 0) {
                 range.currentDistanceFromScale = stringToNumber(<string>range.offset, axis.currentRadius);
@@ -386,65 +706,29 @@ export class AxisRenderer {
                 endWidth = <number>range.endWidth;
             }
             range.currentRadius = this.calculateRangeRadiusWithPosition(axis, range, startWidth);
-            startValue = Math.min(Math.max(range.start, min), range.end);
-            endValue = Math.min(Math.max(range.start, range.end), max);
-            startAngle = getAngleFromValue(startValue, max, min, axis.startAngle, axis.endAngle, isClockWise);
-            endAngle = getAngleFromValue(endValue, max, min, axis.startAngle, axis.endAngle, isClockWise);
-            let isAngleCross360: boolean = (startAngle > endAngle);
-            if (axis.rangeGap != null && axis.rangeGap > 0) {
-                startAngle = (rangeIndex === 0 && !axis.startAndEndRangeGap) ? startAngle : startAngle + (axis.rangeGap / Math.PI);
-                endAngle = (rangeIndex === axis.ranges.length - 1 && !axis.startAndEndRangeGap) ? endAngle : endAngle -
-                    (axis.rangeGap / Math.PI);
-            }
-            if ((startValue !== endValue) && (isAngleCross360 ? startAngle < (endAngle + 360) : (startAngle < endAngle))) {
-                endAngle = isClockWise ? endAngle : [startAngle, startAngle = endAngle][0];
-                endWidth = isClockWise ? endWidth : [startWidth, startWidth = endWidth][0];
-                let radius: number = range.roundedCornerRadius;
-                let process: number = (radius * 0.25);
-                oldStart = ((((range.currentRadius - (startWidth / 2)) * ((startAngle * Math.PI) / 180) -
-                    (radius / process)) / (range.currentRadius - (startWidth / 2))) * 180) / Math.PI;
-                oldEnd = ((((range.currentRadius - (endWidth / 2)) * ((endAngle * Math.PI) / 180) +
-                    (radius / process)) / (range.currentRadius - (endWidth / 2))) * 180) / Math.PI;
-                roundedStartAngle = ((((range.currentRadius) * ((startAngle * Math.PI) / 180) +
-                    radius) / (range.currentRadius)) * 180) / Math.PI;
-                roundedEndAngle = ((((range.currentRadius) * ((endAngle * Math.PI) / 180) -
-                    radius) / (range.currentRadius)) * 180) / Math.PI;
-                if (gauge.gradientModule) {
-                    gradientRangeColor = gauge.gradientModule.getGradientColorString(range);
+            if (range.isLinearCircularGradient) {
+                for (let i: number = 0; i < range.linearGradient.colorStop.length; i++) {
+                    if (i <= (range.linearGradient.colorStop.length - 1)) {
+                        previousEndWidth = i === 0 ? endWidth : previousEndWidth;
+                        previousStartWidth = i === 0 ? startWidth : previousStartWidth;
+                        startEndDifference = (Math.abs(previousStartWidth - previousEndWidth) / (range.linearGradient.colorStop.length));
+                        if (i > 0) {
+                            startWidth = endWidth;
+                            endWidth = previousStartWidth > previousEndWidth ? startWidth - startEndDifference
+                                : startWidth + startEndDifference;
+                        } else {
+                            endWidth = previousStartWidth > previousEndWidth ? startWidth - startEndDifference
+                                : startWidth + startEndDifference;
+                        }
+                    } else {
+                        startWidth = previousStartWidth > previousEndWidth ? startWidth - startEndDifference
+                            : startWidth + startEndDifference;
+                        endWidth = (previousEndWidth);
+                    }
+                    this.drawRangePath(axis, range, startWidth, endWidth, rangeIndex, index, rangeElement, i);
                 }
-                range.rangeColor = gradientRangeColor ? gradientRangeColor : range.rangeColor;
-                if (range.roundedCornerRadius) {
-                    range.pathElement.push( appendPath(
-                        new PathOption(
-                            gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor,
-                            0, range.rangeColor, range.opacity, '0',
-                            getRoundedPathArc(
-                                location,
-                                Math.floor(roundedStartAngle), Math.ceil(roundedEndAngle), oldStart, oldEnd,
-                                range.currentRadius, startWidth, endWidth, range, axis
-                            ),
-                            '', ''
-                        ),
-                        rangeElement, gauge
-                    )
-                    );
-                } else {
-                         range.pathElement.push(appendPath(
-                                                          new PathOption(
-                                                                            gauge.element.id + '_Axis_' + index + '_Range_' +
-                                                                            rangeIndex,
-                                                                            range.rangeColor,
-                                                                            0, range.rangeColor, range.opacity, '0',
-                                                                            getPathArc(
-                                                                                        gauge.midPoint,
-                                                                                        Math.floor(startAngle), Math.ceil(endAngle),
-                                                                                        range.currentRadius, startWidth,
-                                                                                        endWidth, range, axis
-                                                                                      ),
-                                                                            '', ''
-                                                                        ),
-                                                          rangeElement, gauge
-                                                           ));                        }
+            } else {
+                this.drawRangePath(axis, range, startWidth, endWidth, rangeIndex, index, rangeElement, null);
             }
         }
         );
@@ -453,19 +737,19 @@ export class AxisRenderer {
 
     /**
      * Method to calculate the radius of the axis range.
+     *
      * @return {void}
      */
 
     private calculateRangeRadius(axis: Axis, range: Range): void {
-        let radius: string = range.radius !== null ? range.radius : '100%';
+        const radius: string = range.radius !== null ? range.radius : '100%';
         range.currentRadius = stringToNumber(
             radius, axis.currentRadius
         );
     }
 
     private calculateRangeRadiusWithPosition(axis: Axis, range: Range, startWidth: number): number {
-        let actualRadius: number;
-        actualRadius = !isNullOrUndefined(range.position) && range.position !== 'Auto' && isNullOrUndefined(range.radius) ?
+        const actualRadius: number = !isNullOrUndefined(range.position) && range.position !== 'Auto' && isNullOrUndefined(range.radius) ?
             (range.position === 'Outside' ? (range.currentRadius + axis.lineStyle.width / 2 + range.currentDistanceFromScale) :
                 range.position === 'Inside' ? (range.currentRadius - axis.lineStyle.width / 2 - range.currentDistanceFromScale) :
                     (range.currentRadius + startWidth / 2 - range.currentDistanceFromScale)) : range.currentRadius;
@@ -474,11 +758,13 @@ export class AxisRenderer {
 
     /**
      * Method to get the range color of the circular gauge.
-     * @return {void}
+     *
+     * @param {Axis} axis - Specifies the axis
+     * @returns {void}
      * @private
      */
     public setRangeColor(axis: Axis): void {
-        let rangeColors: string[] = getRangePalette(this.gauge.theme);
+        const rangeColors: string[] = getRangePalette(this.gauge.theme);
         axis.ranges.map((range: Range, index: number) => {
             range.rangeColor = range.color ? range.color : rangeColors[index % rangeColors.length];
         });

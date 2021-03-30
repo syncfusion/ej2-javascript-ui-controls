@@ -10,7 +10,7 @@ export class MarkdownToolbarStatus {
     public parent: IRichTextEditor;
     public element: HTMLTextAreaElement;
     public toolbarStatus: IToolbarStatus;
-    constructor(parent: IRichTextEditor) {
+    public constructor(parent: IRichTextEditor) {
         this.toolbarStatus = {
             bold: false,
             italic: false,
@@ -42,8 +42,9 @@ export class MarkdownToolbarStatus {
         this.parent.off(events.toolbarRefresh, this.onRefreshHandler);
         this.parent.off(events.destroy, this.removeEventListener);
     }
+    // eslint-disable-next-line
     private onRefreshHandler(args: { [key: string]: Node | Object }): void {
-        let parentsLines: { [key: string]: string | number }[] = this.selection.getSelectedParentPoints(this.element);
+        const parentsLines: { [key: string]: string | number }[] = this.selection.getSelectedParentPoints(this.element);
         this.toolbarStatus = {
             orderedlist: args.documentNode ? false : this.isListsApplied(parentsLines, 'OL'),
             unorderedlist: args.documentNode ? false : this.isListsApplied(parentsLines, 'UL'),
@@ -66,7 +67,7 @@ export class MarkdownToolbarStatus {
         let isApply: boolean = true;
         if (type === 'OL') {
             for (let i: number = 0; i < lines.length; i++) {
-                let lineSplit: string = (lines[i].text as string).trim().split(' ', 2)[0] + ' ';
+                const lineSplit: string = (lines[i].text as string).trim().split(' ', 2)[0] + ' ';
                 if (!/^[\d.]+[ ]+$/.test(lineSplit)) {
                     isApply = false;
                     break;
@@ -84,9 +85,9 @@ export class MarkdownToolbarStatus {
     }
     private currentFormat(lines: { [key: string]: string | number }[], documentNode: Node): string {
         let format: string = 'p';
-        let keys: string[] = Object.keys(this.parent.formatter.formatTags);
-        let direction: string = (this.element as HTMLTextAreaElement).selectionDirection;
-        let checkLine: string = direction === 'backward' ? lines[0].text as string : lines[lines.length - 1].text as string;
+        const keys: string[] = Object.keys(this.parent.formatter.formatTags);
+        const direction: string = (this.element as HTMLTextAreaElement).selectionDirection;
+        const checkLine: string = direction === 'backward' ? lines[0].text as string : lines[lines.length - 1].text as string;
         for (let i: number = 0; !documentNode && i < keys.length; i++) {
             if (keys[i] !== 'pre' && this.selection.isStartWith(checkLine, this.parent.formatter.formatTags[keys[i]])) {
                 format = keys[i];
@@ -102,17 +103,18 @@ export class MarkdownToolbarStatus {
     }
     private codeFormat(): boolean {
         let isFormat: boolean = false;
-        let textArea: HTMLTextAreaElement = this.parent.inputElement as HTMLTextAreaElement;
-        let start: number = textArea.selectionStart;
-        let splitAt: Function = (index: number) => (x: string) => [x.slice(0, index), x.slice(index)];
-        let splitText: string[] = splitAt(start)(textArea.value);
-        let cmdPre: string = this.parent.formatter.formatTags.pre;
-        let selectedText: string = this.getSelectedText(textArea);
+        const textArea: HTMLTextAreaElement = this.parent.inputElement as HTMLTextAreaElement;
+        const start: number = textArea.selectionStart;
+        // eslint-disable-next-line
+        const splitAt: Function = (index: number) => (x: string) => [x.slice(0, index), x.slice(index)];
+        const splitText: string[] = splitAt(start)(textArea.value);
+        const cmdPre: string = this.parent.formatter.formatTags.pre;
+        const selectedText: string = this.getSelectedText(textArea);
         if (selectedText !== '' && selectedText === selectedText.toLocaleUpperCase()) {
             return true;
         } else if (selectedText === '') {
-            let beforeText: string = textArea.value.substr(splitText[0].length - 1, 1);
-            let afterText: string = splitText[1].substr(0, 1);
+            const beforeText: string = textArea.value.substr(splitText[0].length - 1, 1);
+            const afterText: string = splitText[1].substr(0, 1);
             if ((beforeText !== '' && afterText !== '' && beforeText.match(/[a-z]/i)) &&
                 beforeText === beforeText.toLocaleUpperCase() && afterText === afterText.toLocaleUpperCase()) {
                 return true;

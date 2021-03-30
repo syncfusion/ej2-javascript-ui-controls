@@ -1,45 +1,43 @@
 import { Component, Property, Event, EmitType, EventHandler, L10n, setValue, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, detach, Internationalization, getUniqueID, closest } from '@syncfusion/ej2-base';
-import { addClass, removeClass, createElement, isBlazor } from '@syncfusion/ej2-base';
+import { addClass, removeClass, isBlazor } from '@syncfusion/ej2-base';
 import { FloatLabelType, Input, InputObject } from '../input/input';
 import { TextBoxModel} from './textbox-model';
 
-const ROOT: string = 'e-textbox';
-const CONTROL: string = 'e-control';
 const HIDE_CLEAR: string = 'e-clear-icon-hide';
 const TEXTBOX_FOCUS: string = 'e-input-focus';
 const containerAttr: string[] = ['title', 'style', 'class'];
 
 export interface FocusInEventArgs {
     /** Returns the TextBox container element */
-    container?: HTMLElement;
+    container?: HTMLElement
     /** Returns the event parameters from TextBox. */
-    event?: Event;
+    event?: Event
     /** Returns the entered value of the TextBox. */
-    value?: string;
+    value?: string
 }
 
 export interface FocusOutEventArgs {
     /** Returns the TextBox container element */
-    container?: HTMLElement;
+    container?: HTMLElement
     /** Returns the event parameters from TextBox. */
-    event?: Event;
+    event?: Event
     /** Returns the entered value of the TextBox. */
-    value?: string;
+    value?: string
 }
 
 export interface ChangedEventArgs extends FocusInEventArgs {
     /** Returns the previously entered value of the TextBox. */
-    previousValue?: string;
+    previousValue?: string
     /** DEPRECATED-Returns the original event. */
-    isInteraction?: boolean;
+    isInteraction?: boolean
     /** Returns the original event. */
-    isInteracted?: boolean;
+    isInteracted?: boolean
 }
 
 export interface InputEventArgs extends FocusInEventArgs {
     /** Returns the previously updated value of the TextBox. */
-    previousValue?: string;
+    previousValue?: string
 }
 /**
  * Represents the TextBox component that allows the user to enter the values based on it's type.
@@ -76,6 +74,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     /**
      * Specifies the behavior of the TextBox such as text, password, email, etc.
+     *
      * @default 'text'
      */
     @Property('text')
@@ -83,6 +82,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     /**
      * Specifies the boolean value whether the TextBox allows user to change the text.
+     *
      * @default false
      */
     @Property(false)
@@ -90,6 +90,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     /**
      * Sets the content of the TextBox.
+     *
      * @default null
      */
     @Property(null)
@@ -101,6 +102,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
      * * `Never` - The placeholder text should not be float ever.
      * * `Always` - The placeholder text floats above the TextBox always.
      * * `Auto` - The placeholder text floats above the TextBox while focusing or enter a value in Textbox.
+     *
      * @default Never
      */
     @Property('Never')
@@ -108,6 +110,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     /**
      * Specifies the CSS class value that is appended to wrapper of Textbox.
+     *
      * @default ''
      */
     @Property('')
@@ -116,6 +119,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     /**
      * Specifies the text that is shown as a hint/placeholder until the user focus or enter a value in Textbox.
      * The property is depending on the floatLabelType property.
+     *
      * @default null
      */
     @Property(null)
@@ -127,6 +131,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
      * Possible values are:
      * `on` - Specifies that autocomplete is enabled.
      * `off` - Specifies that autocomplete is disabled.
+     *
      * @default 'on'
      */
     @Property('on')
@@ -136,14 +141,16 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
      * {% codeBlock src='textbox/htmlAttributes/index.md' %}{% endcodeBlock %}
+     *
      * @default {}
      */
     @Property({})
-    public htmlAttributes: { [key: string]: string; };
+    public htmlAttributes: { [key: string]: string };
 
     /**
-     * Specifies a boolean value that enable or disable the multiline on the TextBox. 
+     * Specifies a boolean value that enable or disable the multiline on the TextBox.
      * The TextBox changes from single line to multiline when enable this multiline mode.
+     *
      * @default false
      */
     @Property(false)
@@ -151,6 +158,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     /**
      * Specifies a Boolean value that indicates whether the TextBox allow user to interact with it.
+     *
      * @default true
      */
     @Property(true)
@@ -158,6 +166,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     /**
      * Specifies a Boolean value that indicates whether the clear button is displayed in Textbox.
+     *
      * @default false
      */
     @Property(false)
@@ -165,6 +174,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     /**
      * Enable or disable persisting TextBox state between page reloads. If enabled, the `value` state will be persisted.
+     *
      * @default false
      */
     @Property(false)
@@ -172,6 +182,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     /**
      * Specifies the width of the Textbox component.
+     *
      * @default null
      */
     @Property(null)
@@ -179,7 +190,8 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     /**
      * Triggers when the TextBox component is created.
-     * @event
+     *
+     * @event created
      * @blazorProperty 'Created'
      */
     @Event()
@@ -187,7 +199,8 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     /**
      * Triggers when the TextBox component is destroyed.
-     * @event
+     *
+     * @event destroyed
      * @blazorProperty 'Destroyed'
      */
     @Event()
@@ -195,7 +208,8 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     /**
      * Triggers when the content of TextBox has changed and gets focus-out.
-     * @event
+     *
+     * @event change
      * @blazorProperty 'ValueChange'
      */
     @Event()
@@ -203,120 +217,136 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     /**
      * Triggers when the TextBox has focus-out.
-     * @event
+     *
+     * @event blur
      */
     @Event()
     public blur: EmitType<FocusOutEventArgs>;
 
     /**
      * Triggers when the TextBox gets focus.
-     * @event
+     *
+     * @event focus
      */
     @Event()
     public focus: EmitType<FocusInEventArgs>;
 
     /**
      * Triggers each time when the value of TextBox has changed.
-     * @event
+     *
+     * @event input
      */
     @Event()
     public input: EmitType<InputEventArgs>;
 
-    constructor(options?: TextBoxModel, element?: string | HTMLInputElement | HTMLTextAreaElement ) {
+    /**
+     *
+     * @param {TextBoxModel} options - Specifies the TextBox model.
+     * @param {string | HTMLInputElement | HTMLTextAreaElement} element - Specifies the element to render as component.
+     * @private
+     */
+    public constructor(options?: TextBoxModel, element?: string | HTMLInputElement | HTMLTextAreaElement ) {
         super(options, <string | HTMLInputElement | HTMLTextAreaElement> element);
         this.textboxOptions = options;
     }
 
     /**
      * Calls internally if any of the property value is changed.
+     *
+     * @param {TextBoxModel} newProp - Returns the dynamic property value of the component.
+     * @param {TextBoxModel} oldProp - Returns the previous property value of the component.
+     * @returns {void}
      * @private
      */
     public onPropertyChanged(newProp: TextBoxModel, oldProp: TextBoxModel): void {
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'floatLabelType':
-                    Input.removeFloating(this.textboxWrapper);
-                    Input.addFloating(this.respectiveElement, this.floatLabelType, this.placeholder);
-                    break;
-                case 'enabled':
-                    Input.setEnabled(this.enabled, this.respectiveElement, this.floatLabelType, this.textboxWrapper.container);
-                    this.bindClearEvent();
-                    break;
-                case 'width':
-                    Input.setWidth(newProp.width, this.textboxWrapper.container);
-                    break;
-                case 'value':
-                    let prevOnChange: boolean = this.isProtectedOnChange;
-                    this.isProtectedOnChange = true;
-                    if (!this.isBlank(this.value)) {
-                        this.value = this.value.toString();
-                    }
-                    this.isProtectedOnChange = prevOnChange;
-                    Input.setValue(this.value, this.respectiveElement, this.floatLabelType, this.showClearButton);
-                    if (this.isHiddenInput) {
+            case 'floatLabelType':
+                Input.removeFloating(this.textboxWrapper);
+                Input.addFloating(this.respectiveElement, this.floatLabelType, this.placeholder);
+                break;
+            case 'enabled':
+                Input.setEnabled(this.enabled, this.respectiveElement, this.floatLabelType, this.textboxWrapper.container);
+                this.bindClearEvent();
+                break;
+            case 'width':
+                Input.setWidth(newProp.width, this.textboxWrapper.container);
+                break;
+            case 'value': {
+                const prevOnChange: boolean = this.isProtectedOnChange;
+                this.isProtectedOnChange = true;
+                if (!this.isBlank(this.value)) {
+                    this.value = this.value.toString();
+                }
+                this.isProtectedOnChange = prevOnChange;
+                Input.setValue(this.value, this.respectiveElement, this.floatLabelType, this.showClearButton);
+                if (this.isHiddenInput) {
                     this.element.value = this.respectiveElement.value;
-                    }
-                    this.inputPreviousValue = this.respectiveElement.value;
-                    /* istanbul ignore next */
-                    if ((this.isAngular || this.isVue) && this.preventChange === true) {
-                        this.previousValue = this.isAngular ? this.value : this.previousValue;
-                        this.preventChange = false;
-                    } else if (isNullOrUndefined(this.isAngular) || !this.isAngular
+                }
+                this.inputPreviousValue = this.respectiveElement.value;
+                /* istanbul ignore next */
+                if ((this.isAngular || this.isVue) && this.preventChange === true) {
+                    this.previousValue = this.isAngular ? this.value : this.previousValue;
+                    this.preventChange = false;
+                } else if (isNullOrUndefined(this.isAngular) || !this.isAngular
                     || (this.isAngular && !this.preventChange) || (this.isAngular && isNullOrUndefined(this.preventChange))) {
-                        this.raiseChangeEvent();
-                    }
-                    break;
-                case 'htmlAttributes':
-                    this.updateHTMLAttrToElement();
-                    this.updateHTMLAttrToWrapper();
-                    let attributes: NamedNodeMap = this.element.attributes;
-                    this.checkAttributes(true);
-                    Input.validateInputType(this.textboxWrapper.container, this.element);
-                    break;
-                case 'readonly':
-                    Input.setReadonly(this.readonly, this.respectiveElement);
-                    break;
-                case 'type':
-                    if (this.respectiveElement.tagName !== 'TEXTAREA') {
+                    this.raiseChangeEvent();
+                }
+            }
+                break;
+            case 'htmlAttributes': {
+                this.updateHTMLAttrToElement();
+                this.updateHTMLAttrToWrapper();
+                this.checkAttributes(true);
+                Input.validateInputType(this.textboxWrapper.container, this.element);
+            }
+                break;
+            case 'readonly':
+                Input.setReadonly(this.readonly, this.respectiveElement);
+                break;
+            case 'type':
+                if (this.respectiveElement.tagName !== 'TEXTAREA') {
                     this.respectiveElement.setAttribute('type', this.type);
                     Input.validateInputType(this.textboxWrapper.container, this.element);
                     this.raiseChangeEvent();
-                    }
-                    break;
-                case 'showClearButton':
-                    if (this.respectiveElement.tagName !== 'TEXTAREA') {
+                }
+                break;
+            case 'showClearButton':
+                if (this.respectiveElement.tagName !== 'TEXTAREA') {
                     Input.setClearButton(this.showClearButton, this.respectiveElement, this.textboxWrapper);
                     this.bindClearEvent();
-                    }
-                    break;
-                case 'enableRtl':
-                    Input.setEnableRtl(this.enableRtl, [this.textboxWrapper.container]);
-                    break;
-                case 'placeholder':
-                    Input.setPlaceholder(this.placeholder, this.respectiveElement);
-                    break;
-                case 'autocomplete':
-                    if ( this.autocomplete !== 'on' && this.autocomplete !== '') {
-                        this.respectiveElement.autocomplete = this.autocomplete;
-                    } else {
-                        this.removeAttributes(['autocomplete']);
-                    }
-                    break;
-                case 'cssClass':
-                    this.updateCssClass(newProp.cssClass, oldProp.cssClass);
-                    break;
-                case 'locale':
-                    this.globalize = new Internationalization(this.locale);
-                    this.l10n.setLocale(this.locale);
-                    this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
-                    Input.setPlaceholder(this.placeholder, this.respectiveElement);
-                    break;
+                }
+                break;
+            case 'enableRtl':
+                Input.setEnableRtl(this.enableRtl, [this.textboxWrapper.container]);
+                break;
+            case 'placeholder':
+                Input.setPlaceholder(this.placeholder, this.respectiveElement);
+                break;
+            case 'autocomplete':
+                if ( this.autocomplete !== 'on' && this.autocomplete !== '') {
+                    this.respectiveElement.autocomplete = this.autocomplete;
+                } else {
+                    this.removeAttributes(['autocomplete']);
+                }
+                break;
+            case 'cssClass':
+                this.updateCssClass(newProp.cssClass, oldProp.cssClass);
+                break;
+            case 'locale':
+                this.globalize = new Internationalization(this.locale);
+                this.l10n.setLocale(this.locale);
+                this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
+                Input.setPlaceholder(this.placeholder, this.respectiveElement);
+                break;
             }
         }
     }
 
     /**
      * Gets the component name
+     *
+     * @returns {string} Returns the component name.
      * @private
      */
     public getModuleName(): string {
@@ -336,13 +366,13 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             }
             /* istanbul ignore next */
             if (this.element.tagName === 'EJS-TEXTBOX') {
-                let ejInstance: Object = getValue('ej2_instances', this.element);
-                let inputElement: string | HTMLInputElement | HTMLTextAreaElement = this.multiline ?
+                const ejInstance: Object = getValue('ej2_instances', this.element);
+                const inputElement: string | HTMLInputElement | HTMLTextAreaElement = this.multiline ?
                     <HTMLTextAreaElement>this.createElement('textarea') :
                     <HTMLInputElement>this.createElement('input');
                 let index: number = 0;
                 for (index; index < this.element.attributes.length; index++) {
-                    let attributeName: string = this.element.attributes[index].nodeName;
+                    const attributeName: string = this.element.attributes[index].nodeName;
                     if (attributeName !== 'id') {
                         inputElement.setAttribute(attributeName, this.element.attributes[index].nodeValue);
                         inputElement.innerHTML = this.element.innerHTML;
@@ -362,7 +392,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             }
             this.element.setAttribute('role', 'textbox');
             this.globalize = new Internationalization(this.locale);
-            let localeText: { placeholder: string } = { placeholder: this.placeholder };
+            const localeText: { placeholder: string } = { placeholder: this.placeholder };
             this.l10n = new L10n('textbox', localeText, this.locale);
             if (this.l10n.getConstant('placeholder') !== '') {
                 this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
@@ -383,9 +413,9 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 this.textarea.setAttribute('role', this.element.getAttribute('role'));
                 this.element.removeAttribute('role');
                 this.textarea.setAttribute('id', getUniqueID('textarea'));
-                let apiAttributes : string[] = ['placeholder', 'disabled', 'value', 'readonly', 'type', 'autocomplete'];
+                const apiAttributes : string[] = ['placeholder', 'disabled', 'value', 'readonly', 'type', 'autocomplete'];
                 for (let index: number = 0; index < this.element.attributes.length; index++) {
-                    let attributeName: string = this.element.attributes[index].nodeName;
+                    const attributeName: string = this.element.attributes[index].nodeName;
                     if (this.element.hasAttribute(attributeName) && containerAttr.indexOf(attributeName) < 0 &&
                         !(attributeName === 'id' || attributeName === 'type' || attributeName === 'e-mappinguid')) {
                         // e-mappinguid attribute is handled for Grid component.
@@ -401,48 +431,48 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     }
 
     private checkAttributes(isDynamic: boolean): void {
-        let attrs: string[]  = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+        const attrs: string[]  = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
             ['placeholder', 'disabled', 'value', 'readonly', 'type', 'autocomplete'];
-        for (let key of attrs) {
+        for (const key of attrs) {
             if (!isNullOrUndefined(this.element.getAttribute(key))) {
-            switch (key) {
+                switch (key) {
                 case 'disabled':
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['enabled'] === undefined)) || isDynamic) {
-                        let enabled: boolean = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
+                        const enabled: boolean = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
                             this.element.getAttribute(key) === 'true' ? false : true;
                         this.setProperties({enabled: enabled}, !isDynamic);
                     }
                     break;
                 case 'readonly':
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['readonly'] === undefined)) || isDynamic) {
-                        let readonly: boolean = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
+                        const readonly: boolean = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
                             || this.element.getAttribute(key) === 'true' ? true : false;
                         this.setProperties({readonly: readonly}, !isDynamic);
                     }
                     break;
                 case 'placeholder':
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['placeholder'] === undefined)) || isDynamic) {
                         this.setProperties({placeholder: this.element.placeholder}, !isDynamic);
                     }
                     break;
                 case 'autocomplete':
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['autocomplete'] === undefined)) || isDynamic) {
-                        let autoCompleteTxt: string = this.element.autocomplete === 'off' ? 'off' : 'on';
+                        const autoCompleteTxt: string = this.element.autocomplete === 'off' ? 'off' : 'on';
                         this.setProperties({ autocomplete: autoCompleteTxt }, !isDynamic);
                     }
                     break;
                 case 'value':
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['value'] === undefined)) || isDynamic) {
                         this.setProperties({value: this.element.value}, !isDynamic);
                     }
                     break;
                 case 'type':
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['type'] === undefined)) || isDynamic) {
                         this.setProperties({type: this.element.type}, !isDynamic);
                     }
@@ -454,6 +484,8 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     /**
      * To Initialize the control rendering
+     *
+     * @returns {void}
      * @private
      */
     public render(): void {
@@ -489,7 +521,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             if (this.floatLabelType === 'Auto') {
                 Input.wireFloatingEvents(this.respectiveElement);
             }
-            // tslint:disable-next-line
+            // eslint-disable-next-line max-len, @typescript-eslint/no-explicit-any
             Input.bindInitialEvent({ element: this.respectiveElement, buttons: null, customTag: null, floatLabelType: this.floatLabelType, properties: (this as any).properties });
         }
         this.wireEvents();
@@ -505,7 +537,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         }
         if (this.autocomplete !== 'on' && this.autocomplete !== '') {
             this.respectiveElement.autocomplete = this.autocomplete;
-            // tslint:disable-next-line
+            // eslint-disable-next-line @typescript-eslint/dot-notation
         } else if (!isNullOrUndefined(this.textboxOptions) && (this.textboxOptions['autocomplete'] !== undefined)) {
             this.removeAttributes(['autocomplete']);
         }
@@ -518,17 +550,17 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     private updateHTMLAttrToWrapper(): void {
         if ( !isNullOrUndefined(this.htmlAttributes)) {
-            for (let key of Object.keys(this.htmlAttributes)) {
+            for (const key of Object.keys(this.htmlAttributes)) {
                 if (containerAttr.indexOf(key) > -1 ) {
                     if (key === 'class') {
-                        let updatedClassValues : string = this.getInputValidClassList(this.htmlAttributes[key]);
+                        const updatedClassValues : string = this.getInputValidClassList(this.htmlAttributes[key]);
                         if (updatedClassValues !== '') {
                             addClass([this.textboxWrapper.container], updatedClassValues.split(' '));
                         }
                     } else if (key === 'style') {
                         let setStyle: string = this.textboxWrapper.container.getAttribute(key);
                         setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
-                        this.htmlAttributes[key];
+                            this.htmlAttributes[key];
                         this.textboxWrapper.container.setAttribute(key, setStyle);
                     } else {
                         this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[key]);
@@ -540,7 +572,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     private updateHTMLAttrToElement(): void {
         if ( !isNullOrUndefined(this.htmlAttributes)) {
-            for (let key of Object.keys(this.htmlAttributes)) {
+            for (const key of Object.keys(this.htmlAttributes)) {
                 if (containerAttr.indexOf(key) < 0 ) {
                     this.element.setAttribute(key, this.htmlAttributes[key]);
                 }
@@ -581,7 +613,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     private animationHandler() : void {
         this.textboxWrapper.container.classList.add('e-valid-input');
-        let label: HTMLElement = this.textboxWrapper.container.querySelector('.e-float-text');
+        const label: HTMLElement = this.textboxWrapper.container.querySelector('.e-float-text');
         if (!isNullOrUndefined(label)) {
             label.classList.add('e-label-top');
             if (label.classList.contains('e-label-bottom')) {
@@ -591,7 +623,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     }
 
     private resetValue(value: string) : void {
-        let prevOnChange: boolean = this.isProtectedOnChange;
+        const prevOnChange: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = true;
         this.value = value;
         this.isProtectedOnChange = prevOnChange;
@@ -603,7 +635,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             this.resetValue(this.initialValue);
         }
         if (!isNullOrUndefined(this.textboxWrapper)) {
-            let label: HTMLElement = this.textboxWrapper.container.querySelector('.e-float-text');
+            const label: HTMLElement = this.textboxWrapper.container.querySelector('.e-float-text');
             if (!isNullOrUndefined(label)) {
                 if ((isNullOrUndefined(this.initialValue) || this.initialValue === '')) {
                     label.classList.add('e-label-bottom');
@@ -617,7 +649,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     }
 
     private focusHandler(args: MouseEvent | TouchEvent | KeyboardEvent): void {
-        let eventArgs: FocusInEventArgs = {
+        const eventArgs: FocusInEventArgs = {
             container: this.textboxWrapper.container,
             event: args,
             value: this.value
@@ -629,7 +661,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         (this.previousValue !== this.respectiveElement.value)) {
             this.raiseChangeEvent(args, true);
         }
-        let eventArgs: FocusOutEventArgs = {
+        const eventArgs: FocusOutEventArgs = {
             container: this.textboxWrapper.container,
             event: args,
             value: this.value
@@ -638,9 +670,9 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     }
 
     private inputHandler(args: KeyboardEvent): void {
-        // tslint:disable-next-line
-        let textboxObj: any = this;
-        let eventArgs: InputEventArgs = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-this-alias
+        const textboxObj: any = this;
+        const eventArgs: InputEventArgs = {
             event: args,
             value: this.respectiveElement.value,
             previousValue: this.inputPreviousValue,
@@ -666,7 +698,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     }
 
     private raiseChangeEvent(event?: Event, interaction?: boolean): void {
-        let eventArgs: ChangedEventArgs = {
+        const eventArgs: ChangedEventArgs = {
             event: event,
             value: this.value,
             previousValue: this.previousValue,
@@ -692,13 +724,12 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     private resetInputHandler(event?: MouseEvent): void {
         event.preventDefault();
         if (!(this.textboxWrapper.clearButton.classList.contains(HIDE_CLEAR))) {
-            let previousValue: string = this.value;
             Input.setValue('', this.respectiveElement, this.floatLabelType, this.showClearButton);
             if (this.isHiddenInput) {
                 this.element.value = this.respectiveElement.value;
-                }
+            }
             this.setProperties({value: this.respectiveElement.value}, true);
-            let eventArgs: InputEventArgs = {
+            const eventArgs: InputEventArgs = {
                 event: event,
                 value: this.respectiveElement.value,
                 previousValue: this.inputPreviousValue,
@@ -728,8 +759,9 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     /**
      * Removes the component from the DOM and detaches all its related event handlers.
      * Also, it maintains the initial TextBox element from the DOM.
+     *
      * @method destroy
-     * @return {void}
+     * @returns {void}
      */
 
     public destroy(): void {
@@ -756,30 +788,33 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     /**
      * Adding the icons to the TextBox component.
+     *
      * @param { string } position - Specify the icon placement on the TextBox. Possible values are append and prepend.
-     * @param { string | string[] } iconClass - Icon classes which are need to add to the span element which is going to created.
+     * @param { string | string[] } icons - Icon classes which are need to add to the span element which is going to created.
      * Span element acts as icon or button element for TextBox.
-     * @return {void}
+     * @returns {void}
      */
     public addIcon(position: string, icons: string | string[]): void {
         Input.addIcon(position, icons, this.textboxWrapper.container, this.respectiveElement, this.createElement);
     }
-
+    /* eslint-disable valid-jsdoc, jsdoc/require-returns */
     /**
      * Gets the properties to be maintained in the persisted state.
-     * @return {string}
+     *
      */
     public getPersistData(): string {
-        let keyEntity: string[] = ['value'];
+        const keyEntity: string[] = ['value'];
         return this.addOnPersist(keyEntity);
     }
+    /* eslint-enable valid-jsdoc, jsdoc/require-returns */
     /**
      * Adding the multiple attributes as key-value pair to the TextBox element.
-     * @param { { [key: string]: string } } attributes - Specifies the attributes to be add to TextBox element.
-     * @return {void}
+     *
+     * @param {string} attributes - Specifies the attributes to be add to TextBox element.
+     * @returns {void}
      */
     public addAttributes(attributes: { [key: string]: string }): void {
-        for (let key of Object.keys(attributes)) {
+        for (const key of Object.keys(attributes)) {
             if (key === 'disabled') {
                 this.setProperties({ enabled: false }, true);
                 Input.setEnabled(this.enabled, this.respectiveElement, this.floatLabelType, this.textboxWrapper.container);
@@ -800,11 +835,12 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     }
     /**
      * Removing the multiple attributes as key-value pair to the TextBox element.
+     *
      * @param { string[] } attributes - Specifies the attributes name to be removed from TextBox element.
-     * @return {void}
+     * @returns {void}
      */
     public removeAttributes(attributes: string[]): void {
-        for (let key of attributes) {
+        for (const key of attributes) {
             if (key === 'disabled') {
                 this.setProperties({ enabled: true }, true);
                 Input.setEnabled(this.enabled, this.respectiveElement, this.floatLabelType, this.textboxWrapper.container);
@@ -822,7 +858,8 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     /**
      * Sets the focus to widget for interaction.
-     * @returns void
+     *
+     * @returns {void}
      */
     public focusIn(): void {
         if (document.activeElement !== this.respectiveElement && this.enabled) {
@@ -836,8 +873,9 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     }
 
     /**
-     * Remove the focus from widget, if the widget is in focus state. 
-     * @returns void
+     * Remove the focus from widget, if the widget is in focus state.
+     *
+     * @returns {void}
      */
     public focusOut(): void {
         if (document.activeElement === this.respectiveElement && this.enabled) {

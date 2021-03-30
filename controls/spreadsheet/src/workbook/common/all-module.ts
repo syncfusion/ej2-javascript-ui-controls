@@ -7,11 +7,13 @@ import { WorkbookConditionalFormat } from '../actions/conditional-formatting';
 
 /**
  * Workbook all module.
+ *
  * @private
  */
 export class WorkbookAllModule {
     /**
      * Constructor for Workbook all module.
+     *
      * @private
      */
     constructor() {
@@ -24,7 +26,9 @@ export class WorkbookAllModule {
 
     /**
      * For internal use only - Get the module name.
+     *
      * @private
+     * @returns {string} - Get the module name.
      */
     protected getModuleName(): string {
         return 'workbook-all';
@@ -32,7 +36,8 @@ export class WorkbookAllModule {
 
     /**
      * Destroys the Workbook all module.
-     * @return {void}
+     *
+     * @returns {void} - Destroys the Workbook all module.
      */
     public destroy(): void {
         /* code snippet */

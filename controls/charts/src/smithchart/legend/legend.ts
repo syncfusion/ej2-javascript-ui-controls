@@ -10,104 +10,117 @@ import { Theme} from '../model/theme';
 
 export class LegendTitle extends  ChildProperty<LegendTitle> {
 
-/**
- * visibility for legend title.
- * @default true
- */
-@Property(true)
-public visible: boolean;
+    /**
+     * visibility for legend title.
+     *
+     * @default true
+     */
 
-/**
- * text for legend title.
- * @default ''
- */
+    @Property(true)
+    public visible: boolean;
 
-@Property('')
-public text: string;
+    /**
+     * text for legend title.
+     *
+     * @default ''
+     */
 
-/**
- * description for legend title.
- * @default ''
- */
-@Property('')
-public description: string;
+    @Property('')
+    public text: string;
 
-/**
- * alignment for legend title.
- * @default Center
- */
+    /**
+     * description for legend title.
+     *
+     * @default ''
+     */
 
-@Property('Center')
-public textAlignment: SmithchartAlignment;
+    @Property('')
+    public description: string;
 
-/**
- *  options for customizing font
- */
+    /**
+     * alignment for legend title.
+     *
+     * @default Center
+     */
 
+    @Property('Center')
+    public textAlignment: SmithchartAlignment;
 
-   @Complex<SmithchartFontModel>(Theme.legendLabelFont, SmithchartFont)
-   public textStyle: SmithchartFont;
+    /**
+     *  options for customizing font
+     */
+
+    @Complex<SmithchartFontModel>(Theme.legendLabelFont, SmithchartFont)
+    public textStyle: SmithchartFont;
 
 }
+
 export class LegendLocation extends ChildProperty<LegendLocation> {
 
-/**
- * x location for legend.
- * @default 0
- */
-@Property(0)
-public x: number;
+    /**
+     * x location for legend.
+     *
+     * @default 0
+     */
+    @Property(0)
+    public x: number;
 
-/**
- * y location for legend.
- * @default 0
- */
+    /**
+     * y location for legend.
+     *
+     * @default 0
+     */
 
-@Property(0)
-public y: number;
+    @Property(0)
+    public y: number;
 
 }
+
 export class LegendItemStyleBorder extends ChildProperty<LegendItemStyleBorder> {
 
-/**
- * border width for legend item.
- * @default 1
- */
-@Property(1)
-public width: number;
+    /**
+     * border width for legend item.
+     *
+     * @default 1
+     */
+    @Property(1)
+    public width: number;
 
-/**
- * border color for legend item.
- * @default null
- */
+    /**
+     * border color for legend item.
+     *
+     * @default null
+     */
 
-@Property(null)
-public color: string;
+    @Property(null)
+    public color: string;
 
 }
 
 export class LegendItemStyle extends ChildProperty<LegendItemStyle> {
 
-/**
- * specify the width for legend item.
- * @default 10
- */
- @Property(10)
-public width: number;
+    /**
+     * specify the width for legend item.
+     *
+     * @default 10
+     */
+    @Property(10)
+    public width: number;
 
 
-/**
- * specify the height for legend item.
- * @default 10
- */
-@Property(10)
-public height: number;
+    /**
+     * specify the height for legend item.
+     *
+     * @default 10
+     */
+    @Property(10)
+    public height: number;
 
-/**
- *  options for customizing legend item style border
- */
+    /**
+     * options for customizing legend item style border
+     */
 
- @Complex<LegendItemStyleBorderModel>({}, LegendItemStyleBorder)
+    @Complex<LegendItemStyleBorderModel>({}, LegendItemStyleBorder)
     public border: LegendItemStyleBorderModel;
 
 }
@@ -115,19 +128,20 @@ public height: number;
 export class LegendBorder extends ChildProperty<LegendBorder> {
     /**
      * border width for legend.
+     *
      * @default 1
      */
-@Property(1)
-public width: number;
+    @Property(1)
+    public width: number;
 
-/**
- * border color for legend.
- * @default null
- */
+    /**
+     * border color for legend.
+     *
+     * @default null
+     */
 
-@Property(null)
-public color: string;
-
+    @Property(null)
+    public color: string;
 
 }
 
@@ -135,135 +149,144 @@ public color: string;
 
 export class SmithchartLegendSettings extends ChildProperty<SmithchartLegendSettings> {
 
-/**
- * visibility for legend.
- * @default false
- */
-@Property(false)
-  public visible: boolean;
+    /**
+     * visibility for legend.
+     *
+     * @default false
+     */
+    @Property(false)
+    public visible: boolean;
 
-  /**
-   * position for legend.
-   * @default 'bottom'
-   */
+    /**
+     * position for legend.
+     *
+     * @default 'bottom'
+     */
 
-@Property('bottom')
-  public position: string;
+    @Property('bottom')
+    public position: string;
 
-  /**
-   * alignment for legend.
-   * @default Center
-   */
+    /**
+     * alignment for legend.
+     *
+     * @default Center
+     */
 
-  @Property('Center')
-  public alignment: SmithchartAlignment;
+    @Property('Center')
+    public alignment: SmithchartAlignment;
 
-  /**
-   * width for legend.
-   * @default null
-   */
-@Property(null)
-public width: number;
+    /**
+     * width for legend.
+     *
+     * @default null
+     */
+    @Property(null)
+    public width: number;
 
-/**
- * height for legend.
- * @default null
- */
+    /**
+     * height for legend.
+     *
+     * @default null
+     */
 
-@Property(null)
-public height: number;
+    @Property(null)
+    public height: number;
 
-  /**
-   * shape for legend.
-   * @default 'circle'
-   */
+    /**
+     * shape for legend.
+     *
+     * @default 'circle'
+     */
 
-  @Property('circle')
-  public shape: string;
+    @Property('circle')
+    public shape: string;
 
-  /**
-   * rowCount for legend.
-   * @default null
-   */
+    /**
+     * rowCount for legend.
+     *
+     * @default null
+     */
 
-  @Property(null)
-  public rowCount: number;
+    @Property(null)
+    public rowCount: number;
 
-  /**
-   * columnCount for legend.
-   * @default null
-   */
+    /**
+     * columnCount for legend.
+     *
+     * @default null
+     */
 
-  @Property(null)
-  public columnCount: number;
+    @Property(null)
+    public columnCount: number;
 
-/**
- * spacing between legend item.
- * @default 8
- */
-  @Property(8)
-  public itemPadding: number;
+    /**
+     * spacing between legend item.
+     *
+     * @default 8
+     */
 
-/**
- * Padding between the legend shape and text.
- * @default 5
- */
+    @Property(8)
+    public itemPadding: number;
+
+    /**
+     * Padding between the legend shape and text.
+     *
+     * @default 5
+     */
+
     @Property(5)
     public shapePadding: number;
 
-/**
- * description for legend
- * @default ''
- */
-@Property('')
-public description: string;
+    /**
+     * description for legend
+     *
+     * @default ''
+     */
+    @Property('')
+    public description: string;
 
-/**
- * If set to true, series' visibility collapses based on the legend visibility.
- * @default true
- */
+    /**
+     * If set to true, series' visibility collapses based on the legend visibility.
+     *
+     * @default true
+     */
     @Property(true)
     public toggleVisibility: boolean;
 
-   /**
-    *  options for customizing legend title
-    */
+    /**
+     *  options for customizing legend title
+     */
 
-
-  @Complex<LegendTitleModel>({}, LegendTitle)
+    @Complex<LegendTitleModel>({}, LegendTitle)
     public title: LegendTitleModel;
 
-     /**
-      *  options for customizing legend location
-      */
-
+    /**
+     *  options for customizing legend location
+     */
 
     @Complex<LegendLocationModel>({}, LegendLocation)
     public location: LegendLocationModel;
 
-     /**
-      *  options for customizing legend item style
-      */
-
+    /**
+     *  options for customizing legend item style
+     */
 
     @Complex<LegendItemStyleModel>({}, LegendItemStyle)
     public itemStyle: LegendItemStyleModel;
 
-     /**
-      *  options for customizing legend border
-      */
+    /**
+     *  options for customizing legend border
+     */
 
+    @Complex<LegendBorderModel>({}, LegendBorder)
+    public border: LegendBorderModel;
 
-   @Complex<LegendBorderModel>({}, LegendBorder)
-   public border: LegendBorderModel;
+    /**
+     *  options for customizing font
+     */
 
-   /**
-    *  options for customizing font
-    */
-
-
-   @Complex<SmithchartFontModel>(Theme.legendLabelFont, SmithchartFont)
-   public textStyle: SmithchartFont;
+    @Complex<SmithchartFontModel>(Theme.legendLabelFont, SmithchartFont)
+    public textStyle: SmithchartFont;
 }
 
 

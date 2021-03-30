@@ -14,6 +14,8 @@ export class Merge {
     private parent: Spreadsheet;
     /**
      * Constructor for the Spreadsheet merge module.
+     *
+     * @param {Spreadsheet} parent - Specify the spreadsheet.
      * @private
      */
     constructor(parent: Spreadsheet) {
@@ -27,7 +29,7 @@ export class Merge {
                 height: 180, width: 400, isModal: true, showCloseIcon: true,
                 content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('PasteMergeAlert'),
                 beforeOpen: (args: BeforeOpenEventArgs): void => {
-                    let dlgArgs: DialogBeforeOpenEventArgs = {
+                    const dlgArgs: DialogBeforeOpenEventArgs = {
                         dialogName: 'MergeDialog',
                         element: args.element, target: args.target, cancel: args.cancel
                     };
@@ -36,7 +38,7 @@ export class Merge {
                         args.cancel = true;
                     }
                     focus(this.parent.element);
-                },
+                }
             });
             return;
         }
@@ -44,25 +46,24 @@ export class Merge {
     }
     private hideHandler(args: { rowIdx: number, colIdx: number, model: string, start: number, end: number, isEnd?: boolean,
         hide: boolean }): void {
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let mergeArgs: MergeArgs = { range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx] };
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const mergeArgs: MergeArgs = { range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx] };
         this.parent.notify(activeCellMergedRange, mergeArgs); mergeArgs.range = mergeArgs.range as number[];
-        let endIdx: number;
-        let cell: CellModel = getCell(mergeArgs.range[0], mergeArgs.range[1], sheet) || {};
-        let startIdx: number = args.model === 'row' ? mergeArgs.range[0] : mergeArgs.range[1];
-        endIdx = startIdx + ((cell[`${args.model}Span`] || 1) - 1);
+        const cell: CellModel = getCell(mergeArgs.range[0], mergeArgs.range[1], sheet) || {};
+        const startIdx: number = args.model === 'row' ? mergeArgs.range[0] : mergeArgs.range[1];
+        const endIdx: number = startIdx + ((cell[`${args.model}Span`] || 1) - 1);
         if ((!args.isEnd && (args.start === startIdx || isHiddenCol(sheet, startIdx))) || (args.isEnd && (args.start > startIdx &&
             !isHiddenCol(sheet, startIdx)))) { return; }
         if (cell[`${args.model}Span`] > 1 && endIdx >= args.start) {
             if (args.model === 'row' ? isHiddenRow(sheet, startIdx) : isHiddenCol(sheet, startIdx)) {
                 if (args.end < endIdx && (endIdx - args.end > 1 || cell.rowSpan > 1)) {
-                    let cellEle: HTMLTableCellElement = this.parent.getCell(args.rowIdx, args.end + 1) as HTMLTableCellElement;
+                    const cellEle: HTMLTableCellElement = this.parent.getCell(args.rowIdx, args.end + 1) as HTMLTableCellElement;
                     if (cellEle) {
                         if (endIdx - args.end > 1) { cellEle.colSpan = endIdx - args.end; }
                         cellEle.style.display = '';
                     }
                     if (cell.rowSpan > 1) {
-                        let rowSpan: number = cell.rowSpan - this.parent.hiddenCount(args.rowIdx, args.rowIdx + (cell.rowSpan - 1));
+                        const rowSpan: number = cell.rowSpan - this.parent.hiddenCount(args.rowIdx, args.rowIdx + (cell.rowSpan - 1));
                         if (rowSpan > 1) { cellEle.rowSpan = rowSpan; }
                     }
                 }
@@ -72,7 +73,7 @@ export class Merge {
         }
     }
     private checkPrevMerge(args: CellRenderArgs): void {
-        let cell: CellModel; let sheet: SheetModel = this.parent.getActiveSheet(); let mergeArgs: MergeArgs; let mergeCount: number;
+        let cell: CellModel; const sheet: SheetModel = this.parent.getActiveSheet(); let mergeArgs: MergeArgs; let mergeCount: number;
         if (args.isRow) {
             if (args.rowIdx - 1 > -1 && isHiddenRow(sheet, args.rowIdx - 1)) {
                 cell = getCell(args.rowIdx - 1, args.colIdx, sheet) || {};
@@ -123,16 +124,20 @@ export class Merge {
         }
     }
     private checkMerge(args: CellRenderArgs): void {
-        let sheet: SheetModel = this.parent.getActiveSheet();
+        const sheet: SheetModel = this.parent.getActiveSheet();
         let cell: CellModel = getCell(args.rowIdx, args.colIdx, sheet) || {};
         if (args.isRow) {
             if (cell.colSpan === undefined || isHiddenCol(sheet, args.colIdx - 1)) {
-                let mergeArgs: MergeArgs = { range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx] };
+                const mergeArgs: MergeArgs = { range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx] };
                 mergeArgs.range = mergeArgs.range as number[];
                 this.parent.notify(activeCellMergedRange, mergeArgs);
-                if (isHiddenCol(sheet, args.colIdx - 1) && !isHiddenCol(sheet, mergeArgs.range[1])) { return; }
+                if ((isHiddenCol(sheet, args.colIdx - 1) && !isHiddenCol(sheet, mergeArgs.range[1])) || (args.isFreezePane &&
+                    mergeArgs.range[0] < this.parent.frozenRowCount(sheet))) {
+                    args.insideFreezePane = mergeArgs.range[0] < this.parent.frozenRowCount(sheet); return;
+                }
                 cell = getCell(mergeArgs.range[0], mergeArgs.range[1], sheet);
-                let mergeCount: number = (mergeArgs.range[2] - args.rowIdx) + 1 - this.parent.hiddenCount(args.rowIdx, mergeArgs.range[2]);
+                const mergeCount: number = (mergeArgs.range[2] - args.rowIdx) + 1 -
+                    this.parent.hiddenCount(args.rowIdx, mergeArgs.range[2]);
                 if (mergeCount > 1) {
                     this.merge({ rowIdx: mergeArgs.range[0], colIdx: mergeArgs.range[1], element: args.td });
                     args.td.rowSpan = mergeCount;
@@ -141,12 +146,15 @@ export class Merge {
             }
         } else {
             if (cell.rowSpan === undefined || isHiddenRow(sheet, args.rowIdx - 1)) {
-                let mergeArgs: MergeArgs = { range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx] };
+                const mergeArgs: MergeArgs = { range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx] };
                 mergeArgs.range = mergeArgs.range as number[];
                 this.parent.notify(activeCellMergedRange, mergeArgs);
-                if (isHiddenRow(sheet, args.rowIdx - 1) && !isHiddenRow(sheet, mergeArgs.range[0])) { return; }
+                if ((isHiddenRow(sheet, args.rowIdx - 1) && !isHiddenRow(sheet, mergeArgs.range[0])) || (args.isFreezePane &&
+                    mergeArgs.range[1] < this.parent.frozenColCount(sheet))) {
+                    args.insideFreezePane = mergeArgs.range[1] < this.parent.frozenColCount(sheet); return;
+                }
                 cell = getCell(mergeArgs.range[0], mergeArgs.range[1], sheet);
-                let mergeCount: number = (mergeArgs.range[3] - args.colIdx) + 1 - this.parent.hiddenCount(
+                const mergeCount: number = (mergeArgs.range[3] - args.colIdx) + 1 - this.parent.hiddenCount(
                     args.colIdx, mergeArgs.range[3], 'columns');
                 if (mergeCount > 1) {
                     this.merge({ rowIdx: mergeArgs.range[0], colIdx: mergeArgs.range[1], element: args.td });
@@ -164,6 +172,8 @@ export class Merge {
     }
     /**
      * Destroy merge module.
+     *
+     * @returns {void} - Destroy merge module.
      */
     public destroy(): void {
         this.removeEventListener();
@@ -179,6 +189,8 @@ export class Merge {
     }
     /**
      * Get the merge module name.
+     *
+     * @returns {string} - Get the merge module name.
      */
     public getModuleName(): string {
         return 'merge';

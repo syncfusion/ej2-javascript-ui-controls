@@ -20,14 +20,25 @@ export class PathElement extends DiagramElement {
      */
     private pathData: string = '';
 
+
     /**
-     * Gets the geometry of the path element
+     *   Gets the geometry of the path element\
+     *
+     * @returns { string | SVGElement }  Gets the geometry of the path element.\
+     *
+     * @private
      */
     public get data(): string {
         return this.pathData;
     }
+
     /**
-     * Sets the geometry of the path element
+     *  Sets the geometry of the path element \
+     *
+     * @returns { void } Sets the geometry of the path element.\
+     * @param {string} value - provide the id value.
+     *
+     * @private
      */
     public set data(value: string) {
         if (this.pathData !== value) {
@@ -56,7 +67,14 @@ export class PathElement extends DiagramElement {
 
     private pointTimer: Object;
 
-    /** @private */
+
+    /**
+     * getPoints methods  \
+     *
+     * @returns { PointModel[] } Sets the geometry of the path element.\
+     *
+     * @private
+     */
     public getPoints(): PointModel[] {
         if (!this.pointTimer) {
             this.pointTimer = setTimeout(
@@ -71,9 +89,14 @@ export class PathElement extends DiagramElement {
         return translatePoints(this, this.points);
     }
 
+
     /**
-     * Measures the minimum space that is required to render the element
-     * @param {Size} availableSize
+     * Measures the minimum space that is required to render the element  \
+     *
+     * @returns { Size } Measures the minimum space that is required to render the element.\
+     * @param {Size} availableSize - provide the id value.
+     *
+     * @private
      */
     public measure(availableSize: Size): Size {
         //Performance issue - Avoiding measuring the connector path
@@ -98,9 +121,14 @@ export class PathElement extends DiagramElement {
         return this.desiredSize;
     }
 
+
     /**
-     * Arranges the path element
-     * @param {Size} desiredSize 
+     * Arranges the path element  \
+     *
+     * @returns { Size } Arranges the path element.\
+     * @param {Size} desiredSize - provide the id value.
+     *
+     * @private
      */
     public arrange(desiredSize: Size): Size {
         if (this.isDirt || this.actualSize.width !== desiredSize.width || this.actualSize.height !== desiredSize.height) {
@@ -116,11 +144,16 @@ export class PathElement extends DiagramElement {
         return this.actualSize;
     }
 
+
     /**
-     * Translates the path to 0,0 and scales the path based on the actual size
-     * @param {string} pathData 
-     * @param {Rect} bounds 
-     * @param {Size} actualSize 
+     *  Translates the path to 0,0 and scales the path based on the actual size  \
+     *
+     * @returns { Size } Arranges the path element.\
+     * @param {string} pathData - provide the id value.
+     * @param {Rect} bounds - provide the id value.
+     * @param {Size} actualSize - provide the id value.
+     *
+     * @private
      */
     public updatePath(pathData: string, bounds: Rect, actualSize: Size): string {
         let isScale: boolean = false;

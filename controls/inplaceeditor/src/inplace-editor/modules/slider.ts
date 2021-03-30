@@ -11,7 +11,7 @@ export class Slider implements IComponent {
     protected parent: InPlaceEditor;
     public compObj: EJ2Slider = undefined;
 
-    constructor(parent?: InPlaceEditor) {
+    public constructor(parent?: InPlaceEditor) {
         this.parent = parent;
         this.parent.sliderModule = this;
         this.base = new Base(this.parent, this);
@@ -39,8 +39,9 @@ export class Slider implements IComponent {
 
     /**
      * Destroys the slider module.
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
@@ -49,6 +50,8 @@ export class Slider implements IComponent {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} - returns the string
      */
     private getModuleName(): string {
         return 'slider';

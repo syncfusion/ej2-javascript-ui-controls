@@ -1073,6 +1073,8 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private handleOver(e: MouseEvent): void {
         if (this.tooltip.isVisible && this.tooltip.showOn === 'Hover') {
             this.tooltipToggle(e.currentTarget as HTMLElement);
+        } if (this.type === 'Default') {
+            this.tooltipToggle(this.getHandle());
         }
     }
     private handleLeave(e: MouseEvent): void {

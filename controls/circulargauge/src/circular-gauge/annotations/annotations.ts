@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { CircularGauge } from '../circular-gauge';
 import { Axis, Annotation } from '../axes/axis';
 import { stringToNumber, GaugeLocation, getLocationFromAngle, getFontStyle } from '../utils/helper';
@@ -15,23 +16,26 @@ export class Annotations {
     private elementId: string;
     /**
      * Constructor for Annotation module.
+     *
+     * @param {CircularGauge} gauge - Specifies the instance of the gauge.
      * @private.
      */
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(gauge: CircularGauge) {
         this.gauge = gauge;
         this.elementId = gauge.element.id;
     }
 
+    // eslint-disable-next-line valid-jsdoc
     /**
      * Method to render the annotation for circular gauge.
      */
-    //tslint:disable
     public renderAnnotation(axis: Axis, index: number): void {
-        let width: number = this.gauge.availableSize.width;
-        let element: HTMLElement = createElement('div', {
+        const width: number = this.gauge.availableSize.width;
+        const element: HTMLElement = createElement('div', {
             id: this.elementId + '_Annotations_' + index
         });
-        let parentElement: Element = getElement(this.elementId + '_Secondary_Element');
+        const parentElement: Element = getElement(this.elementId + '_Secondary_Element');
         if (!isNullOrUndefined(document.getElementById(this.elementId + '_Secondary_Element'))) {
             document.getElementById(this.elementId + '_Secondary_Element').style.width = width + 'px';
         }
@@ -43,36 +47,39 @@ export class Annotations {
         if (parentElement && element.childElementCount && !this.gauge.isBlazor) {
             parentElement.appendChild(element);
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (this.gauge as any).renderReactTemplates();
     }
 
+    // eslint-disable-next-line valid-jsdoc
     /**
      * Method to create annotation template for circular gauge.
      */
     public createTemplate(element: HTMLElement, annotationIndex: number, axisIndex: number): void {
-        let axis: Axis = <Axis>this.gauge.axes[axisIndex];
-        let annotation: Annotation = <Annotation>axis.annotations[annotationIndex];
-        let childElement: HTMLElement = createElement('div', {
+        const axis: Axis = <Axis>this.gauge.axes[axisIndex];
+        const annotation: Annotation = <Annotation>axis.annotations[annotationIndex];
+        const childElement: HTMLElement = createElement('div', {
             id: this.elementId + '_Axis_' + axisIndex + '_Annotation_' + annotationIndex,
             styles: 'position: absolute; z-index:' + annotation.zIndex + ';transform:' +
-                (annotation.autoAngle ? 'rotate(' + (annotation.angle - 90) + 'deg)' : 'rotate(0deg)') + ';'
+                    (annotation.autoAngle ? 'rotate(' + (annotation.angle - 90) + 'deg)' : 'rotate(0deg)') + ';'
         });
         let argsData: IAnnotationRenderEventArgs = {
             cancel: false, name: annotationRender, content: annotation.content,
             axis: axis, annotation: annotation, textStyle: annotation.textStyle
         };
         if (this.gauge.isBlazor) {
-            let {cancel, name, content, textStyle} : IAnnotationRenderEventArgs = argsData;
+            const {cancel, name, content, textStyle} : IAnnotationRenderEventArgs = argsData;
             argsData = {cancel, name, content, annotation, textStyle};
         }
         this.gauge.trigger('annotationRender', argsData, (observedArgs: IAnnotationRenderEventArgs) => {
-            let templateFn: Function;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let templateFn: any;
             let templateElement: HTMLCollection;
             if (!argsData.cancel) {
                 templateFn = getTemplateFunction(argsData.content, this.gauge);
                 if (templateFn && (!this.gauge.isBlazor ? templateFn(axis, this.gauge, argsData.content, this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex).length : {})) {
                     templateElement = Array.prototype.slice.call(templateFn(!this.gauge.isBlazor ? axis : {}, this.gauge, argsData.content, this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex));
-                    let length: number = templateElement.length;
+                    const length: number = templateElement.length;
                     for (let i: number = 0; i < length; i++) {
                         childElement.appendChild(templateElement[i]);
                     }
@@ -85,7 +92,7 @@ export class Annotations {
                 }
                 this.updateLocation(childElement, axis, <Annotation>annotation);
                 element.appendChild(childElement);
-                let parentElement: Element = document.getElementById(this.elementId + '_Secondary_Element');
+                const parentElement: Element = document.getElementById(this.elementId + '_Secondary_Element');
                 if (this.gauge.isBlazor && annotationIndex === (this.gauge.axes[axisIndex].annotations.length - 1) &&
                     element && parentElement) {
                     parentElement.appendChild(element);
@@ -99,14 +106,19 @@ export class Annotations {
 
     /**
      * Method to update the annotation location for circular gauge.
+     *
+     * @param {HTMLElement} element - Specifies the element.
+     * @param {Axis} axis - Specifies the axis.
+     * @param {Annotation} annotation - Specifies the annotation.
+     * @returns {void}
      */
     private updateLocation(element: HTMLElement, axis: Axis, annotation: Annotation): void {
-        let location: GaugeLocation = getLocationFromAngle(
+        const location: GaugeLocation = getLocationFromAngle(
             annotation.angle - 90,
             stringToNumber(annotation.radius, axis.currentRadius),
             this.gauge.midPoint
         );
-        let elementRect: ClientRect = measureElementRect(element);
+        const elementRect: ClientRect = measureElementRect(element);
         element.style.left = (location.x - (elementRect.width / 2)) + 'px';
         element.style.top = (location.y - (elementRect.height / 2)) + 'px';
         element.setAttribute('aria-label', annotation.description || 'Annotation');
@@ -114,6 +126,8 @@ export class Annotations {
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name
      */
     protected getModuleName(): string {
         // Returns te module name
@@ -121,7 +135,9 @@ export class Annotations {
     }
     /**
      * To destroy the annotation.
-     * @return {void}
+     *
+     * @param {CircularGauge} gauge - Specifies the instance of the gauge.
+     * @returns {void}
      * @private
      */
     public destroy(gauge: CircularGauge): void {

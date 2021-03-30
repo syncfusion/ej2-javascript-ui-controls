@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { withInRange, getPoint } from '../../common/utils/helper';
 import { PathOption } from '@syncfusion/ej2-svg-base';
-import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
 import { Axis } from '../../chart/axis/axis';
 import { MultiColoredSeries } from './multi-colored-base';
@@ -13,22 +15,23 @@ import { ChartSegmentModel } from './chart-series-model';
 export class MultiColoredLineSeries extends MultiColoredSeries {
     /**
      * Render Line Series.
-     * @return {void}.
+     *
+     * @returns {void}
      * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
         let previous: Points = null;
         let startPoint: string = 'M';
-        let visiblePoints: Points[] = this.enableComplexProperty(series);
-        let options: PathOption[] = [];
+        const visiblePoints: Points[] = this.enableComplexProperty(series);
+        const options: PathOption[] = [];
         let direction: string = '';
-        let segments : ChartSegmentModel[] = this.sortSegments(series, series.segments);
-        for (let point of visiblePoints) {
+        const segments : ChartSegmentModel[] = this.sortSegments(series, series.segments);
+        for (const point of visiblePoints) {
             point.regions = [];
             if (point.visible && withInRange(visiblePoints[point.index - 1], point, visiblePoints[point.index + 1], series)) {
                 direction += this.getLineDirection(previous, point, series, isInverted, getPoint, startPoint);
                 if (previous != null) {
-                   if (this.setPointColor(point, previous, series, series.segmentAxis === 'X', segments)) {
+                    if (this.setPointColor(point, previous, series, series.segmentAxis === 'X', segments)) {
                         options.push(new PathOption(
                             series.chart.element.id + '_Series_' + series.index + '_Point_' + previous.index,
                             'none', series.width, series.setPointColor(previous, series.interior),
@@ -63,8 +66,9 @@ export class MultiColoredLineSeries extends MultiColoredSeries {
 
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
 
     public doAnimation(series: Series): void {
@@ -83,12 +87,13 @@ export class MultiColoredLineSeries extends MultiColoredSeries {
     }
 
     /**
-     * To destroy the line series. 
-     * @return {void}
+     * To destroy the line series.
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method performed here
          */

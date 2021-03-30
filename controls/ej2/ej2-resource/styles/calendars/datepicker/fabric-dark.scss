@@ -1,0 +1,234 @@
+
+//default
+$datepicker-icon-color: none !default;
+$datepicker-active-icon-color: $datepicker-icon-color !default;
+$datepicker-popup-box-shadow: none !default;
+$datepicker-input-border-style: 1px solid $theme-primary !default;
+$datepicker-calendar-border-style: none !default;
+$datepicker-icon: '\e93a' !default;
+$datepicker-popup-border: 1px solid $neutral-light !default;
+$datepicker-icon-font-size: 16px !default;
+$datepicker-bigger-icon-font-size: 20px !default;
+$datepicker-overlay: rgba($neutral-black, .6) !default;
+$datepicker-icon-normal-margin: 0 !default;
+$datepicker-icon-bigger-margin: 0 !default;
+$datepicker-popup-bg-color: $neutral-lighter-alt !default;
+$datepicker-icon-hover-color: $hover-bg-color !default;
+$datepicker-icon-border-radius: 0 !default;
+$datepicker-popup-border-radius: 0 !default;
+$datepicker-box-sizing: border-box !default;
+$datepicker-othermonth-row: table-row !default;
+$datepicker-modal-header-bg: $theme-primary !default;
+$datepicker-modal-header-color: $neutral-white !default;
+$datepicker-modal-header-display: none !default;
+$datepicker-calendar-tbody-landscape-height: 150px !default;
+// mouse small icon
+$datepicker-small-icon-font-size: 14px !default;
+// Touch small icon
+$datepicker-bigger-small-icon-font-size: 18px !default;
+//enddefault
+@include export-module('datepicker-fabric-icons') {
+  /*! component icons */
+
+  .e-input-group-icon.e-date-icon,
+  #{if(&, '&', '*')}.e-control-wrapper .e-input-group-icon.e-date-icon {
+    font-size: $datepicker-icon-font-size;
+    margin: $datepicker-icon-normal-margin;
+    outline: none;
+
+    #{if(&, '&', '*')}::before {
+      content: '\e93a';
+      font-family: 'e-icons';
+  }
+
+    #{if(&, '&', '*')}:focus {
+      background: $datepicker-icon-hover-color;
+      border-radius: $datepicker-icon-border-radius;
+	}
+}
+
+  .e-bigger .e-input-group-icon.e-date-icon,
+  #{if(&, '&', '*')}.e-control-wrapper.e-bigger .e-input-group-icon.e-date-icon,
+  #{if(&, '&', '*')}.e-bigger .e-control-wrapper .e-input-group-icon.e-date-icon {
+    font-size: $datepicker-bigger-icon-font-size;
+    margin: $datepicker-icon-bigger-margin;
+
+    #{if(&, '&', '*')}::before {
+      content: '\e93a';
+      font-family: 'e-icons';
+  }
+
+    #{if(&, '&', '*')}:focus {
+      background: $datepicker-icon-hover-color;
+      border-radius: $datepicker-icon-border-radius;
+  }
+}
+
+  // mouse small icon
+  .e-small .e-input-group-icon.e-date-icon,
+  #{if(&, '&', '*')}.e-control-wrapper.e-small .e-input-group-icon.e-date-icon,
+  #{if(&, '&', '*')}.e-small .e-control-wrapper .e-input-group-icon.e-date-icon {
+    font-size: $datepicker-small-icon-font-size;
+  }
+
+  // Touch small icon
+  .e-small.e-bigger .e-input-group-icon.e-date-icon,
+  #{if(&, '&', '*')}.e-control-wrapper.e-small.e-bigger .e-input-group-icon.e-date-icon,
+  #{if(&, '&', '*')}.e-small.e-bigger .e-control-wrapper .e-input-group-icon.e-date-icon {
+    font-size: $datepicker-bigger-small-icon-font-size;
+  }
+}
+
+@include export-module('datepicker-layout') {
+
+  .e-input-group.e-control-wrapper.e-date-wrapper.e-non-edit.e-input-focus .e-input:focus ~ .e-clear-icon,
+  .e-float-input.e-control-wrapper.e-input-group.e-date-wrapper.e-non-edit.e-input-focus input:focus ~ .e-clear-icon {
+    display: flex;
+  }
+
+  .e-date-wrapper:not(.e-filled) {
+    #{if(&, '&', '*')} .e-date-icon.e-icons {
+      @if $skin-name == 'material' or $skin-name == 'material-dark' {
+        box-sizing: $datepicker-box-sizing;
+      }
+    }
+  }
+
+  #{&}.e-datepicker {
+
+    #{if(&, '&', '*')} .e-calendar {
+
+      #{if(&, '&', '*')} .e-content table tbody tr.e-month-hide:last-child {
+        display: $datepicker-othermonth-row;
+	}
+    }
+
+    #{if(&, '&', '*')}.e-popup-wrapper {
+      border-radius: $datepicker-popup-border-radius;
+      overflow-y: hidden;
+      pointer-events: auto;
+    }
+
+    #{if(&, '&', '*')}.e-date-modal {
+      background-color: $datepicker-overlay;
+      height: 100%;
+      left: 0;
+      opacity: .5;
+      pointer-events: auto;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 999;
+	}
+
+    #{if(&, '&', '*')} .e-model-header {
+      background-color: $datepicker-modal-header-bg;
+      color: $datepicker-modal-header-color;
+      cursor: default;
+      display: $datepicker-modal-header-display;
+      padding: 10px 10px 10px 15px;
+
+      #{if(&, '&', '*')} .e-model-year {
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 32px;
+        margin: 0;
+    }
+}
+
+    #{if(&, '&', '*')} .e-model-month,
+    #{if(&, '&', '*')} .e-model-day {
+      font-size: 20px;
+      font-weight: 500;
+      line-height: 32px;
+      margin: 0;
+    }
+}
+}
+
+// sass-lint:disable-all
+.e-date-overflow {
+  overflow: hidden !important;
+}
+
+.e-datepick-mob-popup-wrap {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  left: 0;
+  max-height: 100%;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1002;
+
+  .e-datepicker.e-popup-wrapper.e-lib.e-popup.e-control.e-popup-open {
+    position: relative;
+    top:0 !important;
+    left: 0 !important;
+  }
+}
+
+.e-content-placeholder.e-datepicker.e-placeholder-datepicker {
+  background-size: 250px 33px;
+  min-height: 33px;
+}
+
+.e-bigger .e-content-placeholder.e-datepicker.e-placeholder-datepicker,
+.e-bigger.e-content-placeholder.e-datepicker.e-placeholder-datepicker {
+  background-size: 250px 40px;
+  min-height: 40px;
+}
+
+// sass-lint:enable-all
+
+
+@media screen and (orientation: landscape) and (max-height: 360px) {
+
+  .e-datepicker .e-calendar.e-device .e-month table tbody {
+    display: inline-block;
+    height: $datepicker-calendar-tbody-landscape-height;
+    overflow: auto;
+  }
+}
+@include export-module('datepicker-theme') {
+  #{&}.e-datepicker,
+  .e-bigger.e-small #{&}.e-datepicker {
+    #{if(&, '&', '*')}.e-popup-wrapper {
+      border: $datepicker-popup-border;
+      box-shadow: $datepicker-popup-box-shadow;
+   }
+
+    #{if(&, '&', '*')} .e-calendar {
+      background-color: $datepicker-popup-bg-color;
+      border: $datepicker-calendar-border-style;
+   }
+
+  }
+
+  #{if(&, '&', '*')}.e-input-group {
+    #{if(&, '&', '*')}.e-date-wrapper.e-dateinput-active:active:not(.e-success):not(.e-warning):not(.e-error) {
+      border: $datepicker-input-border-style;
+	  }
+      }
+
+  .e-date-wrapper {
+    #{if(&, '&', '*')} span.e-input-group-icon {
+      #{if(&, '&', '*')}.e-date-icon.e-icons.e-active {
+        @if ($skin-name != 'bootstrap' and $skin-name != 'bootstrap-dark' and $skin-name != 'fabric' and $skin-name != 'fabric-dark') {
+          color: $datepicker-icon-color;
+        }
+      }#{if(&, '&', '*')}.e-date-icon.e-icons.e-active {
+        @if $skin-name == 'bootstrap4' {
+          background: $datepicker-icon-active-bg-color;
+          border-color: $datepicker-active-border-color;
+        }
+        @if ($skin-name != 'bootstrap' and $skin-name != 'bootstrap-dark' and $skin-name != 'fabric' and $skin-name != 'fabric-dark') {
+          color: $datepicker-active-icon-color;
+        }
+      }
+    }
+  }
+}

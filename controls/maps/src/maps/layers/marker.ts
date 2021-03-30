@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/member-delimiter-style */
+/* eslint-disable max-len */
+/* eslint-disable @typescript-eslint/dot-notation */
 import { Maps } from '../../index';
 import {
     LayerSettings, MarkerSettings, IMarkerRenderingEventArgs, markerRendering,
@@ -28,25 +31,26 @@ export class Marker {
      * @private
      */
     public sameMarkerData: MarkerClusterData[];
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(maps: Maps) {
         this.maps = maps;
         this.trackElements = [];
         this.sameMarkerData = [];
     }
 
-    /* tslint:disable:no-string-literal */
     public markerRender(layerElement: Element, layerIndex: number, factor: number, type: string): void {
-        let templateFn: Function;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let templateFn: any;
         let markerCount: number = 0;
         let nullCount: number = 0;
         let markerTemplateCount: number = 0; this.maps.translateType = 'marker';
-        let currentLayer: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex];
+        const currentLayer: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex];
         this.markerSVGObject = this.maps.renderer.createGroup({
             id: this.maps.element.id + '_Markers_Group',
             class: 'GroupElement',
             style: 'pointer-events: auto;'
         });
-        let markerTemplateEle: HTMLElement = createElement('div', {
+        const markerTemplateEle: HTMLElement = createElement('div', {
             id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_Markers_Template_Group',
             className: this.maps.element.id + '_template',
             styles: 'overflow: hidden; position: absolute;pointer-events: none;' +
@@ -55,10 +59,11 @@ export class Marker {
                 'height:' + this.maps.mapAreaRect.height + 'px;' +
                 'width:' + this.maps.mapAreaRect.width + 'px;'
         });
-        //tslint:disable
         currentLayer.markerSettings.map((markerSettings: MarkerSettings, markerIndex: number) => {
-            let markerData: Object[] = <Object[]>markerSettings.dataSource;
-            Array.prototype.forEach.call(markerData, (data: Object, dataIndex: number) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const markerData: any[] = <any[]>markerSettings.dataSource;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            Array.prototype.forEach.call(markerData, (data: any, dataIndex: number) => {
                 this.maps.markerNullCount = markerIndex > 0 && dataIndex === 0 ? 0 : this.maps.markerNullCount;
                 let eventArgs: IMarkerRenderingEventArgs = {
                     cancel: false, name: markerRendering, fill: markerSettings.fill, height: markerSettings.height,
@@ -73,12 +78,13 @@ export class Marker {
                     const { maps, marker, ...blazorEventArgs }: IMarkerRenderingEventArgs = eventArgs;
                     eventArgs = blazorEventArgs;
                     markerSettings.longitudeValuePath = !isNullOrUndefined(markerSettings.longitudeValuePath) ?
-                    markerSettings.longitudeValuePath : !isNullOrUndefined(data['Longitude']) ? 'Longitude' :
-                    !isNullOrUndefined(data['longitude']) ? 'longitude' : null;
+                        markerSettings.longitudeValuePath : !isNullOrUndefined(data['Longitude']) ? 'Longitude' :
+                            !isNullOrUndefined(data['longitude']) ? 'longitude' : null;
                     markerSettings.latitudeValuePath = !isNullOrUndefined(markerSettings.latitudeValuePath) ?
-                    markerSettings.latitudeValuePath : !isNullOrUndefined(data['Latitude']) ? 'Latitude' :
-                    !isNullOrUndefined(data['latitude']) ? 'latitude' : null;
+                        markerSettings.latitudeValuePath : !isNullOrUndefined(data['Latitude']) ? 'Latitude' :
+                            !isNullOrUndefined(data['latitude']) ? 'latitude' : null;
                 }
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 this.maps.trigger('markerRendering', eventArgs, (MarkerArgs: IMarkerRenderingEventArgs) => {
                     if (markerSettings.colorValuePath !== eventArgs.colorValuePath ) {
                         eventArgs = markerColorChoose(eventArgs, data);
@@ -86,15 +92,16 @@ export class Marker {
                     if (markerSettings.shapeValuePath !== eventArgs.shapeValuePath ) {
                         eventArgs = markerShapeChoose(eventArgs, data);
                     }
-                    let lng: number = (!isNullOrUndefined(markerSettings.longitudeValuePath)) ?
-                    Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : !isNullOrUndefined(data['longitude']) ?
-                    parseFloat(data['longitude']) : !isNullOrUndefined(data['Longitude']) ? parseFloat(data['Longitude']) : 0;
-                    let lat: number = (!isNullOrUndefined(markerSettings.latitudeValuePath)) ?
-                    Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : !isNullOrUndefined(data['latitude']) ?
-                    parseFloat(data['latitude']) : !isNullOrUndefined(data['Latitude']) ? parseFloat(data['Latitude']) : 0;
+                    const lng: number = (!isNullOrUndefined(markerSettings.longitudeValuePath)) ?
+                        Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : !isNullOrUndefined(data['longitude']) ?
+                            parseFloat(data['longitude']) : !isNullOrUndefined(data['Longitude']) ? parseFloat(data['Longitude']) : 0;
+                    const lat: number = (!isNullOrUndefined(markerSettings.latitudeValuePath)) ?
+                        Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : !isNullOrUndefined(data['latitude']) ?
+                            parseFloat(data['latitude']) : !isNullOrUndefined(data['Latitude']) ? parseFloat(data['Latitude']) : 0;
                     if (this.maps.isBlazor) {
-                        let data1: Object = {};
-                        let text: string[] = [];
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const data1: any = {};
+                        const text: string[] = [];
                         let j: number = 0;
                         for (let i: number = 0; i < Object.keys(data).length; i++) {
                             if (Object.keys(data)[i].toLowerCase() !== 'latitude' && Object.keys(data)[i].toLowerCase() !== 'longitude'
@@ -107,38 +114,40 @@ export class Marker {
                         }
                         data['text'] = data1['text'];
                     }
-                    let offset: Point = markerSettings.offset;
+                    const offset: Point = markerSettings.offset;
                     if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(lng) && !isNullOrUndefined(lat)) {
-                        let markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
+                        const markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
                             + markerIndex + '_dataIndex_' + dataIndex;
                         let location: Point = (this.maps.isTileMap) ? convertTileLatLongToPoint(
                             new MapLocation(lng, lat), factor, this.maps.tileTranslatePoint, true
                         ) : convertGeoToPoint(lat, lng, factor, currentLayer, this.maps);
-                        let animate: boolean = currentLayer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-                        let translate: Object = (this.maps.isTileMap) ? (currentLayer.type === "SubLayer" && isNullOrUndefined(this.maps.zoomModule)) ? location = convertTileLatLongToPoint(
+                        const animate: boolean = currentLayer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const translate: any = (this.maps.isTileMap) ? (currentLayer.type === 'SubLayer' && isNullOrUndefined(this.maps.zoomModule)) ? location = convertTileLatLongToPoint(
                             new MapLocation(lng, lat), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true
                         ) : new Object() :
                             !isNullOrUndefined(this.maps.zoomModule) && this.maps.zoomSettings.zoomFactor > 1 ?
                                 getZoomTranslate(this.maps, currentLayer, animate) :
                                 getTranslate(this.maps, currentLayer, animate);
-                        let scale: number = type === 'AddMarker' ? this.maps.scale : translate['scale'];
-                        let transPoint: Point = type === 'AddMarker' ? this.maps.translatePoint : translate['location'] as Point;
+                        const scale: number = type === 'AddMarker' ? this.maps.scale : translate['scale'];
+                        const transPoint: Point = type === 'AddMarker' ? this.maps.translatePoint : translate['location'] as Point;
                         if (eventArgs.template &&  (!isNaN(location.x) && !isNaN(location.y))) {
                             markerTemplateCount++;
                             markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplateEle, location,
-                                scale, offset, this.maps);
-                            (this.maps as any).renderReactTemplates();    
-                        } else if(!eventArgs.template && (!isNaN(location.x) && !isNaN(location.y))) {
+                                           scale, offset, this.maps);
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            (this.maps as any).renderReactTemplates();
+                        } else if (!eventArgs.template && (!isNaN(location.x) && !isNaN(location.y))) {
                             markerCount++;
                             marker(eventArgs, markerSettings, markerData, dataIndex,
-                                location, transPoint, markerID, offset, scale, this.maps, this.markerSVGObject);
+                                   location, transPoint, markerID, offset, scale, this.maps, this.markerSVGObject);
                         }
                     }
                     nullCount += (!isNaN(lat) && !isNaN(lng)) ? 0 : 1;
                     markerTemplateCount += (eventArgs.cancel) ? 1 : 0;
                     markerCount += (eventArgs.cancel) ? 1 : 0;
                     this.maps.markerNullCount = (isNullOrUndefined(lng) || isNullOrUndefined(lat)) ? this.maps.markerNullCount + 1 : this.maps.markerNullCount;
-                    let markerDataLength: number = markerData.length - this.maps.markerNullCount;
+                    const markerDataLength: number = markerData.length - this.maps.markerNullCount;
                     if (this.markerSVGObject.childElementCount === (markerDataLength - markerTemplateCount - nullCount) && (type !== 'Template')) {
                         layerElement.appendChild(this.markerSVGObject);
                         if (currentLayer.markerClusterSettings.allowClustering) {
@@ -146,10 +155,11 @@ export class Marker {
                             this.maps.element.appendChild(this.maps.svgObject);
                             if (currentLayer.layerType !== 'OSM' || !this.maps.zoomSettings.enable) {
                                 clusterTemplate(currentLayer, this.markerSVGObject,
-                                    this.maps, layerIndex, this.markerSVGObject, layerElement, true, false);
+                                                this.maps, layerIndex, this.markerSVGObject, layerElement, true, false);
                             } else {
                                 layerElement.appendChild(this.markerSVGObject);
                             }
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             (this.maps as any).renderReactTemplates();
                         }
                     }
@@ -158,7 +168,8 @@ export class Marker {
                         if (!this.maps.checkInitialRender) {
                             if (currentLayer.markerClusterSettings.allowClustering) {
                                 clusterTemplate(currentLayer, markerTemplateEle, this.maps,
-                                    layerIndex, this.markerSVGObject, layerElement, false, false);
+                                                layerIndex, this.markerSVGObject, layerElement, false, false);
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 (this.maps as any).renderReactTemplates();
                             }
                         }
@@ -169,23 +180,29 @@ export class Marker {
     }
     /**
      * To find zoom level for individual layers like India, USA.
-     */ 
-    private calculateIndividualLayerMarkerZoomLevel(mapWidth : number, mapHeight : number, 
-        maxZoomFact : number): number {
-        let latZoom: number; let lngZoom : number; let result: number; let scaleFactor : number;
-        let height : number =  Math.abs(this.maps.baseMapBounds.latitude.max - this.maps.baseMapBounds.latitude.min);
-        let width : number = Math.abs(this.maps.baseMapBounds.longitude.max - this.maps.baseMapBounds.longitude.min);
+     *
+     * @param {number} mapWidth - Specifies the width of the maps
+     * @param {number} mapHeight - Specifies the height of the maps
+     * @param {number} maxZoomFact - Specifies the maximum zoom factor
+     * @returns {number} - Returns the scale factor
+     */
+    private calculateIndividualLayerMarkerZoomLevel(mapWidth : number, mapHeight : number,
+                                                    maxZoomFact : number): number {
+        let latZoom: number; let lngZoom : number;
+        const height : number =  Math.abs(this.maps.baseMapBounds.latitude.max - this.maps.baseMapBounds.latitude.min);
+        const width : number = Math.abs(this.maps.baseMapBounds.longitude.max - this.maps.baseMapBounds.longitude.min);
         latZoom = Math.floor(Math.log(mapHeight / height));
         latZoom = (latZoom > maxZoomFact) ? maxZoomFact : latZoom;
         lngZoom = Math.floor(Math.log(mapWidth / width));
         lngZoom = (lngZoom > maxZoomFact) ? maxZoomFact : lngZoom;
-        result = Math.min(latZoom, lngZoom);
-        scaleFactor = Math.min(result, maxZoomFact - 1);
+        const result: number = Math.min(latZoom, lngZoom);
+        const scaleFactor: number = Math.min(result, maxZoomFact - 1);
         if (!this.maps.isTileMap) {
             compareZoomFactor(scaleFactor, this.maps);
         }
         return scaleFactor;
     }
+    // eslint-disable-next-line valid-jsdoc
     /**
      * To calculate center position and factor value dynamically
      */
@@ -193,23 +210,24 @@ export class Marker {
         if (this.maps.zoomSettings.shouldZoomInitially && this.maps.markerModule) {
             let minLong: number; let maxLat: number; let minLat: number; let maxLong: number;
             let latZoom: number; let lngZoom : number; let result: number; let zoomLevel : number;
-            let centerLat: number; let centerLong: number; let maxZoomFact = 10;
-            let mapWidth: number = this.maps.mapAreaRect.width;
-            let mapHeight: number = this.maps.mapAreaRect.height; 
-            let scaleFactor : number;
+            let centerLat: number; let centerLong: number; const maxZoomFact: number = 10;
+            const mapWidth: number = this.maps.mapAreaRect.width;
+            const mapHeight: number = this.maps.mapAreaRect.height;
             this.maps.markerZoomedState =  this.maps.markerZoomedState ? this.maps.markerZoomedState : isNullOrUndefined(this.maps.markerZoomFactor) ?
-            !this.maps.markerZoomedState : this.maps.markerZoomFactor > 1 ? this.maps.markerZoomedState : !this.maps.markerZoomedState;
+                !this.maps.markerZoomedState : this.maps.markerZoomFactor > 1 ? this.maps.markerZoomedState : !this.maps.markerZoomedState;
             this.maps.defaultState = this.maps.markerZoomedState ? !this.maps.markerZoomedState : this.maps.defaultState;
             Array.prototype.forEach.call(layersCollection, (currentLayer: LayerSettings, layerIndex: number) => {
-                let isMarker: boolean = currentLayer.markerSettings.length !== 0;
+                const isMarker: boolean = currentLayer.markerSettings.length !== 0;
                 if (isMarker) {
                     Array.prototype.forEach.call(currentLayer.markerSettings, (markerSetting: MarkerSettingsModel, markerIndex: number) => {
-                        let markerData: Object[] = <Object[]>markerSetting.dataSource;
-                        Array.prototype.forEach.call(markerData, (data: Object, dataIndex: number) => {
-                            let latitude: number = !isNullOrUndefined(data['latitude']) ? parseFloat(data['latitude']) :
-                          !isNullOrUndefined(data['Latitude']) ? parseFloat(data['Latitude']) : null;
-                          let longitude: number = !isNullOrUndefined(data['longitude']) ? parseFloat(data['longitude']) :
-                          !isNullOrUndefined(data['Longitude']) ? parseFloat(data['Longitude']) : null;
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const markerData: any[] = <any[]>markerSetting.dataSource;
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        Array.prototype.forEach.call(markerData, (data: any, dataIndex: number) => {
+                            const latitude: number = !isNullOrUndefined(data['latitude']) ? parseFloat(data['latitude']) :
+                                !isNullOrUndefined(data['Latitude']) ? parseFloat(data['Latitude']) : null;
+                            const longitude: number = !isNullOrUndefined(data['longitude']) ? parseFloat(data['longitude']) :
+                                !isNullOrUndefined(data['Longitude']) ? parseFloat(data['Longitude']) : null;
                             minLong = isNullOrUndefined(minLong) && dataIndex === 0 ?
                                 longitude : minLong;
                             maxLat = isNullOrUndefined(maxLat) && dataIndex === 0 ?
@@ -231,7 +249,7 @@ export class Marker {
                                 maxLat = latitude;
                             }
                         });
-                    });                    
+                    });
                 }
             });
             if (!isNullOrUndefined(minLat) && !isNullOrUndefined(minLong) &&
@@ -250,22 +268,22 @@ export class Marker {
                 let markerFactor: number;
                 if (this.maps.isTileMap || this.maps.baseMapRectBounds['min']['x'] === 0) {
                     zoomLevel = calculateZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeight, this.maps);
-                    if(this.maps.isTileMap) {
+                    if (this.maps.isTileMap) {
                         markerFactor = isNullOrUndefined(this.maps.markerZoomFactor) ?
-                        zoomLevel : isNullOrUndefined(this.maps.mapScaleValue) ?
-                        zoomLevel : this.maps.mapScaleValue > 1 && this.maps.markerZoomFactor !== 1? 
-                        this.maps.mapScaleValue : zoomLevel;
+                            zoomLevel : isNullOrUndefined(this.maps.mapScaleValue) ?
+                                zoomLevel : this.maps.mapScaleValue > 1 && this.maps.markerZoomFactor !== 1 ?
+                                    this.maps.mapScaleValue : zoomLevel;
                     } else {
                         markerFactor = isNullOrUndefined(this.maps.mapScaleValue) ?  zoomLevel :
-                        (Math.floor(this.maps.scale) !== 1 &&
-                            this.maps.mapScaleValue !==  zoomLevel) 
-                            && 
+                            (Math.floor(this.maps.scale) !== 1 &&
+                            this.maps.mapScaleValue !==  zoomLevel)
+                            &&
                             (isNullOrUndefined(this.maps.shouldZoomCurrentFactor))
-                            ? this.maps.mapScaleValue :  zoomLevel;
-                        if(((markerFactor === this.maps.mapScaleValue &&
+                                ? this.maps.mapScaleValue :  zoomLevel;
+                        if (((markerFactor === this.maps.mapScaleValue &&
                                 (this.maps.markerZoomFactor === 1 || this.maps.mapScaleValue === 1))
                                 && (!this.maps.enablePersistence))) {
-                               markerFactor =  zoomLevel;
+                            markerFactor =  zoomLevel;
                         }
                     }
                 } else {
@@ -278,42 +296,44 @@ export class Marker {
             }
         } else {
             this.maps.markerZoomedState = false;
-            if(this.maps.markerZoomFactor > 1) {
+            if (this.maps.markerZoomFactor > 1) {
                 this.maps.markerCenterLatitude = null;
                 this.maps.markerCenterLongitude = null;
                 this.maps.markerZoomFactor = 1;
-                if(!this.maps.enablePersistence){
+                if (!this.maps.enablePersistence){
                     this.maps.mapScaleValue = 1;
                 }
             }
-            if(this.maps.isTileMap && !this.maps.enablePersistence  
+            if (this.maps.isTileMap && !this.maps.enablePersistence
                 && this.maps.mapScaleValue <= 1) {
                 this.maps.tileZoomLevel = this.maps.mapScaleValue === 0 ? 1 : this.maps.mapScaleValue;
-                if(this.maps.mapScaleValue === 1 && this.maps.markerZoomFactor === 1) {
+                if (this.maps.mapScaleValue === 1 && this.maps.markerZoomFactor === 1) {
                     this.maps.tileTranslatePoint.x = 0;
                     this.maps.tileTranslatePoint.y = 0;
                 }
             }
         }
     }
+    // eslint-disable-next-line valid-jsdoc
     /**
      * To check and trigger marker click event
      */
     public markerClick(e: PointerEvent): void {
-        let target: string = (e.target as Element).id;
+        const target: string = (e.target as Element).id;
         if (target.indexOf('_LayerIndex_') === -1 || target.indexOf('_cluster_') > 0) {
             return;
         }
-        let options: { marker: MarkerSettingsModel, data: object } = this.getMarker(target);
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        const options: { marker: MarkerSettingsModel, data: object } = this.getMarker(target);
         if (isNullOrUndefined(options)) {
             return;
         }
         let eventArgs: IMarkerClickEventArgs = {
             cancel: false, name: markerClick, data: options.data, maps: this.maps,
             marker: options.marker, target: target, x: e.clientX, y: e.clientY,
-            latitude: options.data["latitude"] || options.data["Latitude"],
-            longitude: options.data["longitude"] || options.data["Longitude"],
-            value: options.data["name"]
+            latitude: options.data['latitude'] || options.data['Latitude'],
+            longitude: options.data['longitude'] || options.data['Longitude'],
+            value: options.data['name']
         };
         if (this.maps.isBlazor) {
             const { maps, marker, ...blazorEventArgs }: IMarkerClickEventArgs = eventArgs;
@@ -324,12 +344,14 @@ export class Marker {
     /**
      * To check and trigger Cluster click event
      */
+    // eslint-disable-next-line max-len
     public markerClusterClick(e: PointerEvent): void {
-        let target: string = (e.target as Element).id;
+        const target: string = (e.target as Element).id;
         if (target.indexOf('_LayerIndex_') === -1 || target.indexOf('_cluster_') === -1) {
             return;
         }
-        let options: { marker: MarkerSettingsModel, data: object, clusterCollection: MarkerClusterData[], markCollection: object[] } = this.getMarker(target);
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        const options: { marker: MarkerSettingsModel, data: object, clusterCollection: MarkerClusterData[], markCollection: object[] } = this.getMarker(target);
         if (isNullOrUndefined(options)) {
             return;
         }
@@ -339,18 +361,18 @@ export class Marker {
                 removeElement(this.maps.element.id + '_mapsTooltip');
             }
             if (this.sameMarkerData.length > 0 && !this.maps.markerClusterExpandCheck) {
-              this.maps.markerClusterExpandCheck = true;
+                this.maps.markerClusterExpandCheck = true;
                 mergeSeparateCluster(this.sameMarkerData, this.maps, this.markerSVGObject);
             }  else {
                 this.sameMarkerData = options.clusterCollection;
                 this.maps.markerClusterExpandCheck = false;
                 clusterSeparate(this.sameMarkerData, this.maps, this.markerSVGObject, true);
-                }
+            }
         }
         let eventArgs: IMarkerClusterClickEventArgs = {
             cancel: false, name: markerClusterClick, data: options, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY,
-            latitude: options.data["latitude"] || options.data["Latitude"], longitude: options.data["longitude"] || options.data["Longitude"],
+            latitude: options.data['latitude'] || options.data['Latitude'], longitude: options.data['longitude'] || options.data['Longitude'],
             markerClusterCollection: options['markCollection']
         };
         if (this.maps.isBlazor) {
@@ -361,61 +383,72 @@ export class Marker {
     }
     /**
      * To get marker from target id
+     *
+     * @param {string} target - Specifies the target
+     * @returns {string} - Returns the string
      */
-    private getMarker(target: string): { marker: MarkerSettingsModel, data: object, clusterCollection: MarkerClusterData[], markCollection: object[] } {
-        let id: string[] = target.split('_LayerIndex_');
-        let index: number = parseInt(id[1].split('_')[0], 10);
-        let layer: LayerSettings = <LayerSettings>this.maps.layers[index];
-      let data: object;
-      let markCollection: object[] = [];
-        let clusterCollection: MarkerClusterData[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private getMarker(target: string): { marker: MarkerSettingsModel, data: any, clusterCollection: MarkerClusterData[], markCollection: any[] } {
+        const id: string[] = target.split('_LayerIndex_');
+        const index: number = parseInt(id[1].split('_')[0], 10);
+        const layer: LayerSettings = <LayerSettings>this.maps.layers[index];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let data: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const markCollection: any[] = [];
+        const clusterCollection: MarkerClusterData[] = [];
         let marker: MarkerSettingsModel;
         this.maps.markerClusterExpand = layer.markerClusterSettings.allowClusterExpand;
         if (target.indexOf('_MarkerIndex_') > -1) {
-            let markerIndex: number = parseInt(id[1].split('_MarkerIndex_')[1].split('_')[0], 10);
-            let dataIndex: number = parseInt(id[1].split('_dataIndex_')[1].split('_')[0], 10);
+            const markerIndex: number = parseInt(id[1].split('_MarkerIndex_')[1].split('_')[0], 10);
+            const dataIndex: number = parseInt(id[1].split('_dataIndex_')[1].split('_')[0], 10);
             marker = layer.markerSettings[markerIndex];
             if (!isNaN(markerIndex)) {
                 data = marker.dataSource[dataIndex];
-                let collection: Object[] = [];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                let collection: any[] = [];
                 if (!marker.template && (target.indexOf('_cluster_') > -1) && (this.maps.layers[index].markerClusterSettings.allowClusterExpand)) {
-                    Array.prototype.forEach.call(marker.dataSource, (location, index) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    Array.prototype.forEach.call(marker.dataSource, (location: any, index: number) => {
                         if (location['latitude'] === data['latitude'] && location['longitude'] === data['longitude']) {
                             collection.push({ data: data, index: index });
                         }
                     });
                 }
                 if ((target.indexOf('_cluster_') > -1)) {
-                  let isClusterSame: boolean = false;
-                  let clusterElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target.split('_datalabel_')[0] : target);
-                  let indexes: number[] = clusterElement.innerHTML.split(',').map(Number);
-                  collection = [];
-                  for (let i of indexes) {
-                      collection.push({ data: marker.dataSource[i], index: i });
-                      if (this.maps.isBlazor) { marker.dataSource[i]["text"] = "";}
-                      markCollection.push(marker.dataSource[i]);
-                  }
-                  isClusterSame = false;
-                  clusterCollection.push(<MarkerClusterData>{
-                      data: collection, layerIndex: index, markerIndex: markerIndex, dataIndex: dataIndex,
-                      targetClusterIndex: +(target.split('_cluster_')[1].indexOf('_datalabel_') > -1 ? target.split('_cluster_')[1].split('_datalabel_')[0] : target.split('_cluster_')[1]),
-                      isClusterSame: isClusterSame
-                  });
-              }
+                    let isClusterSame: boolean = false;
+                    const clusterElement: HTMLElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target.split('_datalabel_')[0] : target);
+                    const indexes: number[] = clusterElement.innerHTML.split(',').map(Number);
+                    collection = [];
+                    for (const i of indexes) {
+                        collection.push({ data: marker.dataSource[i], index: i });
+                        // eslint-disable-next-line brace-style
+                        if (this.maps.isBlazor) { marker.dataSource[i]['text'] = ''; }
+                        markCollection.push(marker.dataSource[i]);
+                    }
+                    isClusterSame = false;
+                    clusterCollection.push(<MarkerClusterData>{
+                        data: collection, layerIndex: index, markerIndex: markerIndex, dataIndex: dataIndex,
+                        targetClusterIndex: +(target.split('_cluster_')[1].indexOf('_datalabel_') > -1 ? target.split('_cluster_')[1].split('_datalabel_')[0] : target.split('_cluster_')[1]),
+                        isClusterSame: isClusterSame
+                    });
+                }
                 return { marker: marker, data: data, clusterCollection: clusterCollection, markCollection: markCollection };
             }
         }
         return null;
     }
+    // eslint-disable-next-line valid-jsdoc
     /**
      * To check and trigger marker move event
      */
     public markerMove(e: PointerEvent): void {
-        let targetId: string = (e.target as Element).id;
+        const targetId: string = (e.target as Element).id;
         if (targetId.indexOf('_LayerIndex_') === -1 || targetId.indexOf('_cluster_') > 0) {
             return;
         }
-        let options: { marker: MarkerSettingsModel, data: object } = this.getMarker(targetId);
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        const options: { marker: MarkerSettingsModel, data: object } = this.getMarker(targetId);
         if (isNullOrUndefined(options)) {
             return;
         }
@@ -429,15 +462,17 @@ export class Marker {
         }
         this.maps.trigger(markerMouseMove, eventArgs);
     }
+    // eslint-disable-next-line valid-jsdoc
     /**
      * To check and trigger cluster move event
      */
     public markerClusterMouseMove(e: PointerEvent): void {
-        let targetId: string = (e.target as Element).id;
+        const targetId: string = (e.target as Element).id;
         if (targetId.indexOf('_LayerIndex_') === -1 || targetId.indexOf('_cluster_') === -1) {
             return;
         }
-        let options: { marker: MarkerSettingsModel, data: object, clusterCollection: MarkerClusterData[] } = this.getMarker(targetId);
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        const options: { marker: MarkerSettingsModel, data: object, clusterCollection: MarkerClusterData[] } = this.getMarker(targetId);
         if (this.maps.markerClusterExpand) {
             (e.target as Element).setAttribute('style', 'cursor: pointer');
         }
@@ -456,14 +491,18 @@ export class Marker {
     }
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name
      */
     protected getModuleName(): string {
         return 'Marker';
     }
 
     /**
-     * To destroy the layers. 
-     * @return {void}
+     * To destroy the layers.
+     *
+     * @param {Maps} maps - Specifies the instance of the map
+     * @returns {void}
      * @private
      */
     public destroy(maps: Maps): void {

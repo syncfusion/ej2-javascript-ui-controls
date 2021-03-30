@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { Chart, Alignment } from '..';
 import { AxisModel } from '../axis/axis-model';
 import { Axis, VisibleRangeModel } from '../axis/axis';
@@ -55,7 +56,7 @@ export interface IPointEventArgs extends IChartEventArgs {
     point: Points;
     /** Defines the point index */
     pointIndex: number;
-     /** Defines the series index */
+    /** Defines the series index */
     seriesIndex: number;
     /** Defines the current chart instance */
     chart: Chart;
@@ -101,9 +102,9 @@ export interface IScrollEventArgs {
     previousRange?: VisibleRangeModel;
     /** Defines the current scroll axis */
     axis?: Axis;
-     /** Defines axis previous range */
+    /** Defines axis previous range */
     previousAxisRange?: ScrollbarSettingsRangeModel;
-     /** Defines axis current range */
+    /** Defines axis current range */
     currentRange? : ScrollbarSettingsRangeModel;
 }
 
@@ -201,6 +202,8 @@ export interface ILegendClickEventArgs extends IChartEventArgs {
     legendShape: LegendShape;
     /** Defines the current series */
     series: Series;
+    /** Defines the list of points mapped to a legend */
+    points: Points[];
     /** Defines the current legend text */
     legendText: string;
 }
@@ -395,14 +398,12 @@ export interface IResizeEventArgs  {
     chart: Chart | AccumulationChart | StockChart;
     /** Defines the name of event */
 }
-
 export interface IBeforeResizeEventArgs {
     /** Defines the name of the Event */
     name: string;
     /** It is  used to cancel the resized event */
     cancelResizedEvent: boolean;
 }
-
 /**
  * Interface for point drag and drop
  */

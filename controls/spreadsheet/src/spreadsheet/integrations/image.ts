@@ -3,11 +3,11 @@
  */
 import { Spreadsheet } from '../base/index';
 import { getColIdxFromClientX, createImageElement, deleteImage, refreshImagePosition } from '../common/event';
-import { insertImage, refreshImgElem, refreshImgCellObj, getRowIdxFromClientY, } from '../common/event';
+import { insertImage, refreshImgElem, refreshImgCellObj, getRowIdxFromClientY } from '../common/event';
 import { Overlay, Dialog } from '../services/index';
 import { OpenOptions, overlay, dialog, BeforeImageData, BeforeImageRefreshData } from '../common/index';
 import { removeClass, L10n } from '@syncfusion/ej2-base';
-import { ImageModel, CellModel, getCell, setCell, getSheetIndex } from '../../workbook/index';
+import { ImageModel, CellModel, getCell, setCell, getSheetIndex, getRowsHeight, getColumnsWidth } from '../../workbook/index';
 import { getRangeIndexes, SheetModel, setImage } from '../../workbook/index';
 
 export class SpreadsheetImage {
@@ -20,7 +20,9 @@ export class SpreadsheetImage {
     }
 
     /**
-     * Adding event listener for success and failure 
+     * Adding event listener for success and failure
+     *
+     * @returns {void} - Adding event listener for success and failure
      */
     private addEventListener(): void {
         this.parent.on(insertImage, this.insertImage, this);
@@ -33,31 +35,35 @@ export class SpreadsheetImage {
 
     /**
      * Rendering upload component for importing images.
+     *
+     * @returns {void} - Rendering upload component for importing images.
      */
     private renderImageUpload(): void {
-        let uploadID: string = this.parent.element.id + '_imageUpload';
+        const uploadID: string = this.parent.element.id + '_imageUpload';
         this.parent.element.appendChild(this.parent.createElement('input', {
             id: uploadID,
             attrs: { type: 'file', accept: '.image, .jpg, .png, .gif ,jpeg', name: 'fileUpload' }
         }));
-        let uploadBox: HTMLElement = document.getElementById(uploadID);
+        const uploadBox: HTMLElement = document.getElementById(uploadID);
         uploadBox.onchange = this.imageSelect.bind(this);
         uploadBox.style.display = 'none';
     }
     /**
      * Process after select the excel and image file.
+     *
      * @param {Event} args - File select native event.
+     * @returns {void} - Process after select the excel and image file.
      */
     private imageSelect(args: Event): void {
-        /* tslint:disable-next-line:no-any */
-        let filesData: FileList = (args.target as any).files[0];
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        const filesData: FileList = (args.target as any).files[0];
         if (filesData && filesData.length < 1) {
             return;
         }
-        let impArgs: OpenOptions = {
+        const impArgs: OpenOptions = {
             file: filesData
         };
-        /* tslint:disable-next-line:no-any */
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         if ((impArgs.file as any).type.indexOf('image') === 0) {
             this.insertImage(impArgs);
         } else {
@@ -72,7 +78,9 @@ export class SpreadsheetImage {
     }
 
     /**
-     * Removing event listener for success and failure 
+     * Removing event listener for success and failure
+     *
+     * @returns {void} - Removing event listener for success and failure
      */
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
@@ -84,7 +92,7 @@ export class SpreadsheetImage {
 
         }
     }
-    // tslint:disable
+    /* eslint-disable */
     private insertImage(args: OpenOptions, range?: string): void {
         this.binaryStringVal(args).then(
             src => this.createImageElement({ options: { src: src as string }, range: range, isPublic: true })
@@ -98,22 +106,21 @@ export class SpreadsheetImage {
             reader.onerror = error => reject(error);
         });
     }
-    // tslint:enable
+    /* eslint-enable */
     private createImageElement(args: {
         options: {
             src: string, imageId?: string, height?: number,
             width?: number, top?: number, left?: number
         }, range: string, isPublic?: boolean, isUndoRedo?: boolean
     }): void {
-        let range: string = args.range ? (args.range.indexOf('!') > 0) ? args.range.split('!')[1] : args.range.split('!')[0]
+        const range: string = args.range ? (args.range.indexOf('!') > 0) ? args.range.split('!')[1] : args.range.split('!')[0]
             : this.parent.getActiveSheet().selectedRange;
-        let sheetIndex: number = (args.range && args.range.indexOf('!') > 0) ?
+        const sheetIndex: number = (args.range && args.range.indexOf('!') > 0) ?
             getSheetIndex(this.parent, args.range.split('!')[0]) : this.parent.activeSheetIndex;
-
-        let overlayObj: Overlay = this.parent.serviceLocator.getService(overlay) as Overlay;
-        let id: string = args.options.imageId ? args.options.imageId : this.parent.element.id + '_overlay_picture_' + this.pictureCount;
-        let indexes: number[] = getRangeIndexes(range);
-        let sheet: SheetModel = sheetIndex ? this.parent.sheets[sheetIndex] : this.parent.getActiveSheet();
+        const overlayObj: Overlay = this.parent.serviceLocator.getService(overlay) as Overlay;
+        const id: string = args.options.imageId ? args.options.imageId : this.parent.element.id + '_overlay_picture_' + this.pictureCount;
+        const indexes: number[] = getRangeIndexes(range);
+        const sheet: SheetModel = sheetIndex ? this.parent.sheets[sheetIndex] : this.parent.getActiveSheet();
         if (document.getElementById(id)) {
             return;
         }
@@ -125,7 +132,7 @@ export class SpreadsheetImage {
             this.parent.notify('actionBegin', { eventArgs: eventArgs, action: 'beforeInsertImage' });
         }
         if (eventArgs.cancel) { return; }
-        let element: HTMLElement = overlayObj.insertOverlayElement(id, range, sheetIndex);
+        const element: HTMLElement = overlayObj.insertOverlayElement(id, range, sheetIndex);
         element.style.backgroundImage = 'url(\'' + args.options.src + '\')';
         if (args.options.height || args.options.left) {
             element.style.height = args.options.height + 'px';
@@ -136,16 +143,18 @@ export class SpreadsheetImage {
         if (!args.options.imageId) {
             this.pictureCount++;
         }
-        let imgData: ImageModel = {
+        const imgData: ImageModel = {
             src: args.options.src, id: id, height: parseFloat(element.style.height.replace('px', '')),
-            width: parseFloat(element.style.width.replace('px', '')), top: parseFloat(element.style.top.replace('px', '')),
-            left: parseFloat(element.style.left.replace('px', ''))
+            width: parseFloat(element.style.width.replace('px', '')), top: sheet.frozenRows || sheet.frozenColumns ?
+            (indexes[0] ? getRowsHeight(sheet, 0, indexes[0] - 1) : 0) : parseFloat(element.style.top.replace('px', '')),
+            left: sheet.frozenRows || sheet.frozenColumns ? (indexes[1] ? getColumnsWidth(sheet, 0, indexes[1] - 1) : 0) :
+            parseFloat(element.style.left.replace('px', ''))
         };
         this.parent.setUsedRange(indexes[0], indexes[1]);
         if (args.isPublic || args.isUndoRedo) {
             this.parent.notify(setImage, { options: [imgData], range: sheet.name + '!' + range });
         }
-        let currCell: CellModel = getCell(indexes[0], indexes[1], sheet);
+        const currCell: CellModel = getCell(indexes[0], indexes[1], sheet);
         if (!currCell.image[currCell.image.length - 1].id) {
             currCell.image[currCell.image.length - 1].id = imgData.id;
         }
@@ -159,7 +168,7 @@ export class SpreadsheetImage {
     }
 
     private refreshImgElem(): void {
-        let overlayElem: HTMLElement = document.getElementsByClassName('e-ss-overlay-active')[0] as HTMLElement;
+        const overlayElem: HTMLElement = document.getElementsByClassName('e-ss-overlay-active')[0] as HTMLElement;
         if (overlayElem) {
             removeClass([overlayElem], 'e-ss-overlay-active');
         }
@@ -169,12 +178,12 @@ export class SpreadsheetImage {
         rowIdx: number, colIdx: number,
         sheetIdx: number, count: number, type: string, status: string
     }): void {
-        let count: number = args.count;
-        let sheetIdx: number = args.sheetIdx;
-        let sheet: SheetModel = this.parent.sheets[sheetIdx];
+        const count: number = args.count;
+        const sheetIdx: number = args.sheetIdx;
+        const sheet: SheetModel = this.parent.sheets[sheetIdx];
         let pictureElements: HTMLElement;
-        let currCellObj: CellModel = getCell(args.rowIdx, args.colIdx, sheet);
-        let imageLen: number = currCellObj.image.length;
+        const currCellObj: CellModel = getCell(args.rowIdx, args.colIdx, sheet);
+        const imageLen: number = currCellObj.image.length;
         let top: number; let left: number;
         for (let i: number = 0; i < imageLen; i++) {
             pictureElements = document.getElementById(currCellObj.image[i].id);
@@ -192,24 +201,16 @@ export class SpreadsheetImage {
     }
 
     private refreshImgCellObj(args: BeforeImageRefreshData): void {
-        let prevRowIdx: { clientY: number, isImage: boolean } = { clientY: args.prevTop, isImage: true };
-        this.parent.notify(getRowIdxFromClientY, prevRowIdx);
-        let currRowIdx: { clientY: number, isImage: boolean } = { clientY: args.currentTop, isImage: true };
-        this.parent.notify(getRowIdxFromClientY, currRowIdx);
-        let prevColIdx: { clientX: number, isImage: boolean } = { clientX: args.prevLeft, isImage: true };
-        this.parent.notify(getColIdxFromClientX, prevColIdx);
-        let currColIdx: { clientX: number, isImage: boolean } = { clientX: args.currentLeft, isImage: true };
-        this.parent.notify(getColIdxFromClientX, currColIdx);
-        let sheet: SheetModel = this.parent.sheets[this.parent.activeSheetIndex];
-        let prevCellObj: CellModel = getCell(prevRowIdx.clientY, prevColIdx.clientX, sheet);
-        let currCellObj: CellModel = getCell(currRowIdx.clientY, currColIdx.clientX, sheet);
-        let prevCellImg: object[] = prevCellObj ? prevCellObj.image : [];
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const prevCellObj: CellModel = getCell(args.prevRowIdx, args.prevColIdx, sheet);
+        const currCellObj: CellModel = getCell(args.currentRowIdx, args.currentColIdx, sheet);
+        const prevCellImg: object[] = prevCellObj ? prevCellObj.image : [];
         let prevImgObj: ImageModel;
         let currImgObj: ImageModel[];
-        let prevCellImgLen: number = (prevCellImg && prevCellImg.length) ? prevCellImg.length : 0;
+        const prevCellImgLen: number = (prevCellImg && prevCellImg.length) ? prevCellImg.length : 0;
         if (prevCellObj && prevCellObj.image && prevCellImg.length > 0) {
             for (let i: number = 0; i < prevCellImgLen; i++) {
-                if ((prevCellImg[i] as ImageModel).id === args.id) {
+                if (prevCellImg[i] && (prevCellImg[i] as ImageModel).id === args.id) {
                     prevImgObj = prevCellImg[i];
                     prevImgObj.height = args.currentHeight;
                     prevImgObj.width = args.currentWidth;
@@ -224,12 +225,12 @@ export class SpreadsheetImage {
                     currImgObj.push(prevImgObj);
                 }
             }
-            (currImgObj) ? setCell(currRowIdx.clientY, currColIdx.clientX, sheet, { image: currImgObj }, true) :
-                setCell(currRowIdx.clientY, currColIdx.clientX, sheet, { image: [prevImgObj] }, true);
+            currImgObj ? setCell(args.currentRowIdx, args.currentColIdx, sheet, { image: currImgObj }, true) :
+                setCell(args.currentRowIdx, args.currentColIdx, sheet, { image: [prevImgObj] }, true);
             if (args.requestType === 'imageRefresh' && !args.isUndoRedo) {
-                let eventArgs: BeforeImageRefreshData = {
-                    requestType: 'imageRefresh', currentRowIdx: currRowIdx.clientY, currentColIdx: currColIdx.clientX,
-                    prevRowIdx: prevRowIdx.clientY, prevColIdx: prevColIdx.clientX, prevTop: args.prevTop, prevLeft: args.prevLeft,
+                const eventArgs: BeforeImageRefreshData = {
+                    requestType: 'imageRefresh', currentRowIdx: args.currentRowIdx, currentColIdx:args.currentColIdx,
+                    prevRowIdx: args.prevRowIdx, prevColIdx: args.prevColIdx, prevTop: args.prevTop, prevLeft: args.prevLeft,
                     currentTop: args.currentTop, currentLeft: args.currentLeft, currentHeight: args.currentHeight,
                     currentWidth: args.currentWidth, prevHeight: args.prevHeight, prevWidth: args.prevWidth,
                     id: args.id, sheetIdx: this.parent.activeSheetIndex
@@ -240,32 +241,41 @@ export class SpreadsheetImage {
     }
 
     public deleteImage(args: { id: string, range?: string }): void {
-        let sheet: SheetModel;
-        let pictureElements: HTMLElement = document.getElementById(args.id);
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        const pictureElements: HTMLElement = document.getElementById(args.id);
         let rowIdx: number; let colIdx: number;
-        let cellObj: CellModel;
-        let prevCellImg: object[];
-        let imgLength: number;
         if (pictureElements) {
-            let imgTop: { clientY: number, isImage: boolean } = { clientY: pictureElements.offsetTop, isImage: true };
-            this.parent.notify(getRowIdxFromClientY, imgTop);
-            let imgleft: { clientX: number, isImage: boolean } = { clientX: pictureElements.offsetLeft, isImage: true };
-            this.parent.notify(getColIdxFromClientX, imgleft);
+            let imgTop: { clientY: number, isImage?: boolean, target?: Element }
+            let imgleft: { clientX: number, isImage?: boolean, target?: Element }
+            if (sheet.frozenRows || sheet.frozenColumns) {
+                const clientRect: ClientRect = pictureElements.getBoundingClientRect();
+                imgTop = { clientY: clientRect.top }; imgleft = { clientX: clientRect.left };
+                if (clientRect.top < this.parent.getColumnHeaderContent().getBoundingClientRect().bottom) {
+                    imgTop.target = this.parent.getColumnHeaderContent();
+                }
+                if (clientRect.left < this.parent.getRowHeaderContent().getBoundingClientRect().right) {
+                    imgleft.target = this.parent.getRowHeaderTable();
+                }
+            } else {
+                imgTop = { clientY: pictureElements.offsetTop, isImage: true };
+                imgleft = { clientX: pictureElements.offsetLeft, isImage: true };
+            }
+            this.parent.notify(getRowIdxFromClientY, imgTop); this.parent.notify(getColIdxFromClientX, imgleft);
             document.getElementById(args.id).remove();
             rowIdx = imgTop.clientY; colIdx = imgleft.clientX;
             sheet = this.parent.sheets[this.parent.activeSheetIndex];
         } else {
-            let rangeVal: string = args.range ? args.range.indexOf('!') > 0 ? args.range.split('!')[1] : args.range.split('!')[0] :
+            const rangeVal: string = args.range ? args.range.indexOf('!') > 0 ? args.range.split('!')[1] : args.range.split('!')[0] :
                 this.parent.getActiveSheet().selectedRange;
-            let sheetIndex: number = args.range && args.range.indexOf('!') > 0 ? getSheetIndex(this.parent, args.range.split('!')[0]) :
+            const sheetIndex: number = args.range && args.range.indexOf('!') > 0 ? getSheetIndex(this.parent, args.range.split('!')[0]) :
                 this.parent.activeSheetIndex;
-            let index: number[] = getRangeIndexes(rangeVal);
+            const index: number[] = getRangeIndexes(rangeVal);
             rowIdx = index[0]; colIdx = index[1];
             sheet = this.parent.sheets[sheetIndex];
         }
-        cellObj = getCell(rowIdx, colIdx, sheet);
-        prevCellImg = cellObj.image;
-        imgLength = prevCellImg.length;
+        const cellObj: CellModel = getCell(rowIdx, colIdx, sheet);
+        const prevCellImg: object[] = cellObj.image;
+        const imgLength: number = prevCellImg.length;
         for (let i: number = 0; i < imgLength; i++) {
             if ((prevCellImg[i] as ImageModel).id === args.id) {
                 prevCellImg.splice(i, 1);
@@ -276,6 +286,8 @@ export class SpreadsheetImage {
 
     /**
      * To Remove the event listeners.
+     *
+     * @returns {void} - To Remove the event listeners.
      */
     public destroy(): void {
         this.removeEventListener();
@@ -284,6 +296,8 @@ export class SpreadsheetImage {
 
     /**
      * Get the sheet picture module name.
+     *
+     * @returns {string} - Get the sheet picture module name.
      */
     public getModuleName(): string {
         return 'spreadsheetImage';

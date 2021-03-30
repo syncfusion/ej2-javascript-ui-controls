@@ -1,7 +1,7 @@
 /**
  * Metals Data 
  */
-//tslint:disable
+/* eslint-disable */
 export let Country_Population =[
     { Country:"China", Population:1388232693},
     

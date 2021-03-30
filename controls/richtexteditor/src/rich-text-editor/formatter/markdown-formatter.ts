@@ -3,9 +3,9 @@ import { MarkdownParser } from './../../markdown-parser/base/markdown-parser';
 import { IEditorModel, IMarkdownFormatterModel } from './../base/interface';
 import { extend } from '@syncfusion/ej2-base';
 import { markdownKeyConfig, markdownListsTags, markdownFormatTags, markdownSelectionTags } from './../../common/config';
-
 /**
  * Markdown adapter
+ * 
  * @hidden
  * @deprecated
  */
@@ -17,7 +17,7 @@ export class MarkdownFormatter extends Formatter {
     public editorManager: IEditorModel;
     private element: Element;
 
-    constructor(options?: IMarkdownFormatterModel) {
+    public constructor(options?: IMarkdownFormatterModel) {
         super();
         this.initialize();
         extend(this, this, options, true);
@@ -33,8 +33,11 @@ export class MarkdownFormatter extends Formatter {
     }
     /**
      * Update the formatter of RichTextEditor
-     * @param  {Element} editElement
-     * @param  {Document} doc
+     *
+     * @param  {Element} editElement - specifies the edit element.
+     * @param  {Document} doc - specifies the document.
+     * @param {number} options - specifies the options
+     * @returns {void}
      * @hidden
      * @deprecated
      */

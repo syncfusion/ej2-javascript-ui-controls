@@ -16,6 +16,7 @@ export interface DiagramModel extends ComponentModel{
      * width:'1000px', height:'500px' });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default '100%'
      */
     width?: string | number;
@@ -24,12 +25,14 @@ export interface DiagramModel extends ComponentModel{
      * Defines the diagram rendering mode.
      * * SVG - Renders the diagram objects as SVG elements
      * * Canvas - Renders the diagram in a canvas
+     *
      * @default 'SVG'
      */
     mode?: RenderingMode;
 
     /**
      * Defines the height of the diagram model.
+     *
      * @default '100%'
      */
     height?: string | number;
@@ -48,6 +51,7 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      */
     contextMenuSettings?: ContextMenuSettingsModel;
 
@@ -64,8 +68,9 @@ export interface DiagramModel extends ComponentModel{
      * * PanX - Enables/Disable PanX support for the diagram
      * * PanY - Enables/Disable PanY support for the diagram
      * * Pan - Enables/Disable Pan support the diagram
+     *
      * @default 'Default'
-     * @aspNumberEnum 
+     * @aspNumberEnum
      * @blazorNumberEnum
      */
     constraints?: DiagramConstraints;
@@ -76,8 +81,9 @@ export interface DiagramModel extends ComponentModel{
      * * SingleSelect - Enables/Disables single select support for the diagram
      * * MultipleSelect - Enables/Disable MultipleSelect select support for the diagram
      * * ZoomPan - Enables/Disable ZoomPan support for the diagram
-     * * DrawOnce - Enables/Disable ContinuousDraw support for the diagram 
+     * * DrawOnce - Enables/Disable ContinuousDraw support for the diagram
      * * ContinuousDraw - Enables/Disable ContinuousDraw support for the diagram
+     *
      * @default 'Default'
      * @aspNumberEnum
      * @blazorNumberEnum
@@ -92,12 +98,14 @@ export interface DiagramModel extends ComponentModel{
      * * Bottom - Defines the direction of the bridge as Bottom
      * * Left - Sets the bridge direction as left
      * * Right - Sets the bridge direction as right
+     *
      * @default top
      */
     bridgeDirection?: BridgeDirection;
 
     /**
      * Defines the background color of the diagram
+     *
      * @default 'transparent'
      */
     backgroundColor?: string;
@@ -118,6 +126,7 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default {}
      */
     snapSettings?: SnapSettingsModel;
@@ -144,6 +153,7 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default {}
      */
     rulerSettings?: RulerSettingsModel;
@@ -162,6 +172,7 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default {}
      */
     pageSettings?: PageSettingsModel;
@@ -179,6 +190,7 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default {}
      */
     serializationSettings?: SerializationSettingsModel;
@@ -208,6 +220,7 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -228,6 +241,7 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -253,6 +267,7 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default []
      * @blazorType ObservableCollection<DiagramConnector>
      */
@@ -260,6 +275,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Defines the basic elements for the diagram
+     *
      * @default []
      * @hidden
      */
@@ -268,18 +284,21 @@ export interface DiagramModel extends ComponentModel{
     /**
      * Defines the tooltip that should be shown when the mouse hovers over a node or connector
      * An object that defines the description, appearance and alignments of tooltip
+     *
      * @default {}
      */
     tooltip?: DiagramTooltipModel;
 
     /**
      * Configures the data source that is to be bound with diagram
+     *
      * @default {}
      */
     dataSourceSettings?: DataSourceModel;
 
     /**
      * Allows the user to save custom information/data about diagram
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -287,25 +306,29 @@ export interface DiagramModel extends ComponentModel{
     addInfo?: Object;
 
     /**
-     * Customizes the undo redo functionality 
+     * Customizes the undo redo functionality
+     *
      * @default undefined
      */
     historyManager?: History;
 
     /**
-     * Customizes the node template 
+     * Customizes the node template
+     *
      * @default undefined
      */
     nodeTemplate?: string;
 
     /**
-     * Customizes the annotation template 
+     * Customizes the annotation template
+     *
      * @default undefined
      */
     annotationTemplate?: string;
 
     /**
-     * This property represents the template content of a user handle. The user can define any HTML element as a template.  
+     * This property represents the template content of a user handle. The user can define any HTML element as a template.
+     *
      * @default undefined
      */
     userHandleTemplate?: string;
@@ -344,6 +367,7 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -353,6 +377,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Helps to assign the default properties of nodes
+     *
      * @blazorType DiagramNode
      */
     nodeDefaults?: NodeModel;
@@ -381,15 +406,17 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
-     * @deprecated 
+     * @deprecated
      */
     getConnectorDefaults?: Function | string;
 
     /**
      * Helps to assign the default properties of connector
+     *
      * @blazorType DiagramConnector
      */
     connectorDefaults?: ConnectorModel;
@@ -443,6 +470,7 @@ export interface DiagramModel extends ComponentModel{
      *   }
      * ...
      * }
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -486,6 +514,7 @@ export interface DiagramModel extends ComponentModel{
      * return value;
      * }
      * ```
+     *
      * @deprecated
      */
     getDescription?: Function | string;
@@ -523,6 +552,7 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -563,7 +593,7 @@ export interface DiagramModel extends ComponentModel{
      *      let handles: UserHandleModel[] = [
      *          { name: 'handle', margin: { top: 0, bottom: 0, left: 0, right: 0 }, offset: 0,
      *            pathData: 'M 376.892,225.284L 371.279,211.95L 376.892,198.617L 350.225,211.95L 376.892,225.284 Z',
-     *            side: 'Top', horizontalAlignment: 'Center', verticalAlignment: 'Center', 
+     *            side: 'Top', horizontalAlignment: 'Center', verticalAlignment: 'Center',
      *            pathColor: 'yellow' }];
      * let diagram: Diagram = new Diagram({
      * ...
@@ -574,6 +604,7 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @deprecated
      */
     getCustomTool?: Function | string;
@@ -602,7 +633,7 @@ export interface DiagramModel extends ComponentModel{
      * let handle: UserHandleModel[] = [
      * { name: 'handle', margin: { top: 0, bottom: 0, left: 0, right: 0 }, offset: 0,
      * pathData: 'M 376.892,225.284L 371.279,211.95L 376.892,198.617L 350.225,211.95L 376.892,225.284 Z',
-     * side: 'Top', horizontalAlignment: 'Center', verticalAlignment: 'Center', 
+     * side: 'Top', horizontalAlignment: 'Center', verticalAlignment: 'Center',
      * pathColor: 'yellow' }];
      * let diagram: Diagram = new Diagram({
      * ...
@@ -613,12 +644,14 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @deprecated
      */
     getCustomCursor?: Function | string;
 
     /**
      * A collection of JSON objects where each object represents a custom cursor action. Layer is a named category of diagram shapes.
+     *
      * @default []
      * @blazorType ObservableCollection<DiagramCustomCursor>
      */
@@ -647,6 +680,7 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -667,12 +701,14 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default {}
      */
     diagramSettings?: DiagramSettingsModel;
 
     /**
      * Defines the collection of selected items, size and position of the selector
+     *
      * @default {}
      * @blazorType DiagramSelectedItems
      */
@@ -680,24 +716,28 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Defines the current zoom value, zoom factor, scroll status and view port size of the diagram
+     *
      * @default {}
      */
     scrollSettings?: ScrollSettingsModel;
 
     /**
      * Layout is used to auto-arrange the nodes in the Diagram area
+     *
      * @default {}
      */
     layout?: LayoutModel;
 
     /**
      * Defines a set of custom commands and binds them with a set of desired key gestures
+     *
      * @default {}
      */
     commandManager?: CommandManagerModel;
 
     /**
      * Triggers after diagram is populated from the external data source
+     *
      * @event
      * @blazorProperty 'DataLoaded'
      * @deprecated
@@ -706,6 +746,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when a symbol is dragged into diagram from symbol palette
+     *
      * @event
      * @blazorProperty 'DragEnter'
      * @blazorType Syncfusion.Blazor.Diagrams.IBlazorDragEnterEventArgs
@@ -714,6 +755,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when a symbol is dragged outside of the diagram.
+     *
      * @event
      * @blazorProperty 'DragLeave'
      * @blazorType Syncfusion.Blazor.Diagrams.IBlazorDragLeaveEventArgs
@@ -722,6 +764,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when a symbol is dragged over diagram
+     *
      * @event
      * @blazorProperty 'DragOver'
      * @deprecated
@@ -730,6 +773,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when a node, connector or diagram is clicked
+     *
      * @event
      * @blazorProperty 'Clicked'
      * @blazorType Syncfusion.Blazor.Diagrams.IBlazorClickEventArgs
@@ -738,6 +782,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when a change is reverted or restored(undo/redo)
+     *
      * @event
      * @blazorProperty 'HistoryChanged'
      * @blazorType 'IBlazorHistoryChangeArgs'
@@ -746,6 +791,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when a custom entry change is reverted or restored(undo/redo)
+     *
      * @event
      * @blazorProperty 'CustomHistoryChanged'
      * @blazorType IBlazorCustomHistoryChangeArgs
@@ -754,6 +800,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when a node, connector or diagram model is clicked twice
+     *
      * @event
      * @blazorProperty 'OnDoubleClick'
      * @blazorType Syncfusion.Blazor.Diagrams.IBlazorDoubleClickEventArgs
@@ -762,6 +809,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when editor got focus at the time of node’s label or text node editing.
+     *
      * @event
      * @blazorProperty 'TextEdited'
      * @blazorType Syncfusion.Blazor.Diagrams.IBlazorTextEditEventArgs
@@ -770,6 +818,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when the diagram is zoomed or panned
+     *
      * @event
      * @blazorProperty 'ScrollChanged'
      * @blazorType 'IBlazorScrollChangeEventArgs'
@@ -779,6 +828,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when the selection is changed in diagram
+     *
      * @event
      * @blazorProperty 'SelectionChanged'
      * @blazorType 'IBlazorSelectionChangeEventArgs'
@@ -787,6 +837,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when a node is resized
+     *
      * @event
      * @blazorProperty 'OnSizeChange'
      */
@@ -794,6 +845,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when the connection is changed
+     *
      * @event
      * @blazorProperty 'OnConnectionChange'
      * @blazorType 'IBlazorConnectionChangeEventArgs'
@@ -802,6 +854,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when the connector's source point is changed
+     *
      * @event
      * @blazorProperty 'OnSourcePointChange'
      * @deprecated
@@ -810,6 +863,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when the connector's target point is changed
+     *
      * @event
      * @blazorProperty 'OnTargetPointChange'
      * @deprecated
@@ -818,6 +872,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers once the node or connector property changed.
+     *
      * @event
      * @blazorProperty 'PropertyChanged'
      * @blazorType Syncfusion.Blazor.Diagrams.IBlazorPropertyChangeEventArgs
@@ -826,6 +881,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers while dragging the elements in diagram
+     *
      * @event
      * @blazorProperty 'OnPositionChange'
      * @blazorType Syncfusion.Blazor.Diagrams.IBlazorDraggingEventArgs
@@ -834,6 +890,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when a user releases a key.
+     *
      * @event
      * @blazorProperty 'OnKeyUp'
      */
@@ -841,6 +898,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when a user is pressing a key.
+     *
      * @event
      * @blazorProperty 'OnKeyDown'
      */
@@ -848,6 +906,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers after animation is completed for the diagram elements.
+     *
      * @event
      * @blazorProperty 'OnAnimationComplete'
      * @deprecated
@@ -856,6 +915,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when the diagram elements are rotated
+     *
      * @event
      * @blazorProperty 'OnRotateChange'
      */
@@ -863,6 +923,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when a node/connector is added/removed to/from the diagram.
+     *
      * @deprecated
      * @event
      * @blazorProperty 'OnCollectionChange'
@@ -872,6 +933,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when a node/connector fixedUserHandle is clicked in the diagram.
+     *
      * @event
      * @blazorProperty 'FixedUserHandleClick'
      * @blazorType 'BlazorFixedUserHandleClickEventArgs'
@@ -880,6 +942,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when a mouseDown on the user handle.
+     *
      * @event
      * @blazorProperty 'OnUserHandleMouseDown'
      */
@@ -887,6 +950,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when a mouseUp on the user handle.
+     *
      * @event
      * @blazorProperty 'OnUserHandleMouseUp'
      */
@@ -894,6 +958,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when a mouseEnter on the user handle.
+     *
      * @event
      * @blazorProperty 'OnUserHandleMouseEnter'
      */
@@ -901,6 +966,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when a mouseLeave on the user handle.
+     *
      * @event
      * @blazorProperty 'OnUserHandleMouseLeave'
      */
@@ -908,6 +974,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when a segment is added/removed to/from the connector.
+     *
      * @event
      * @blazorProperty 'OnSegmentCollectionChange'
      * @deprecated
@@ -917,6 +984,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when the image node is loaded.
+     *
      * @deprecated
      * @event
      */
@@ -924,6 +992,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when the state of the expand and collapse icon change for a node.
+     *
      * @deprecated
      * @event
      * @blazorProperty 'OnExpandStateChange'
@@ -932,6 +1001,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggered when the diagram is rendered completely.
+     *
      * @event
      * @blazorProperty 'Created'
      */
@@ -939,6 +1009,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggered when mouse enters a node/connector.
+     *
      * @event
      * @blazorProperty 'MouseEnter'
      * @blazorType Syncfusion.Blazor.Diagrams.IBlazorMouseEventArgs
@@ -947,6 +1018,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggered when mouse leaves node/connector.
+     *
      * @event
      * @blazorProperty 'MouseLeave'
      * @blazorType Syncfusion.Blazor.Diagrams.IBlazorMouseEventArgs
@@ -955,6 +1027,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggered when mouse hovers a node/connector.
+     *
      * @event
      * @blazorProperty 'MouseOver'
      * @deprecated
@@ -964,6 +1037,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers before opening the context menu
+     *
      * @event
      * @blazorProperty 'OnContextMenuOpen'
      * @blazorType Syncfusion.Blazor.Diagrams.DiagramBeforeMenuOpenEventArgs
@@ -972,6 +1046,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers before rendering the context menu item
+     *
      * @event
      * @blazorProperty 'OnContextMenuItemRender'
      * @blazorType Syncfusion.Blazor.Diagrams.DiagramMenuEventArgs
@@ -981,6 +1056,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when a context menu item is clicked
+     *
      * @event
      * @blazorProperty 'ContextMenuItemClicked'
      * @blazorType Syncfusion.Blazor.Diagrams.DiagramMenuEventArgs
@@ -989,6 +1065,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when a command executed.
+     *
      * @event
      * @blazorProperty 'OnCommandExecuted'
      */
@@ -996,6 +1073,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * A collection of JSON objects where each object represents a layer. Layer is a named category of diagram shapes.
+     *
      * @default []
      * @blazorType ObservableCollection<DiagramLayer>
      */
@@ -1003,6 +1081,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when a symbol is dragged and dropped from symbol palette to drawing area
+     *
      * @event
      * @blazorProperty 'OnDrop'
      * @blazorType 'IBlazorDropEventArgs'

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  *  Menu spec document
  */
@@ -7,14 +9,14 @@ import { closest, createElement, Browser, isNullOrUndefined, select } from '@syn
 import { profile , inMB, getMemoryProfile } from './common.spec';
 
 function triggerMouseEvent(node: HTMLElement, eventType: string) {
-    let mouseEve: MouseEvent = document.createEvent('MouseEvents');
+    const mouseEve: MouseEvent = document.createEvent('MouseEvents');
     mouseEve.initEvent(eventType, true, true);
     node.dispatchEvent(mouseEve);
 }
 
 function appendStyles(css: string) {
-    let head: HTMLHeadElement = document.getElementsByTagName('head')[0];
-    let style: HTMLStyleElement = createElement('style') as HTMLStyleElement;
+    const head: HTMLHeadElement = document.getElementsByTagName('head')[0];
+    const style: HTMLStyleElement = createElement('style') as HTMLStyleElement;
     style.type = 'text/css';
     style.appendChild(document.createTextNode(css));
     head.appendChild(style);
@@ -31,7 +33,7 @@ describe('Menu', () => {
     });
 
     let menu: any;
-    let items: MenuItemModel[] = [
+    const items: MenuItemModel[] = [
         {
             text: 'Home',
             id: 'home',
@@ -118,7 +120,7 @@ describe('Menu', () => {
             id: 'login'
         }
     ];
-    let flatDatasource: { [key: string]: Object }[] = [
+    const flatDatasource: { [key: string]: Object }[] = [
         { id: "Op1", text: "File", iconCss: "", parentId: null },
         { id: "Op2", text: "Edit", iconCss: "", parentId: null },
         { id: "Op3", text: "Go", iconCss: "", parentId: null },
@@ -138,17 +140,17 @@ describe('Menu', () => {
         { id: "Op13", text: "Group 1", iconCss: "", parentId: "Op9" },
         { id: "Op14", text: "Group 2", iconCss: "", parentId: "Op9" }
     ];
-    let templateDatasource: { [key: string]: Object }[] = [
+    const templateDatasource: { [key: string]: Object }[] = [
         { title: "Option1" },
         { title: "Option2" },
         { title: "Option3" },
         { title: "Option4" },
         { title: "Option5" }
     ];
-    let ul: HTMLElement = createElement('ul', { id: 'menu' });
-    let sTag: HTMLElement = createElement('script', { id: 'menuTemplate', attrs: { type: 'text/x-template' } });
+    const ul: HTMLElement = createElement('ul', { id: 'menu' });
+    const sTag: HTMLElement = createElement('script', { id: 'menuTemplate', attrs: { type: 'text/x-template' } });
     sTag.innerHTML = '<div>${title}</div>';
-    let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+    const androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
         'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
 
     describe('DOM', () => {
@@ -158,19 +160,19 @@ describe('Menu', () => {
         it('Architecture Checking', () => {
             document.body.appendChild(ul);
             menu = new Menu({ items: items }, '#menu');
-            let wrap: HTMLElement = menu.getWrapper();
+            const wrap: HTMLElement = menu.getWrapper();
             expect(wrap.classList.contains('e-menu-wrapper')).toBeTruthy();
             expect(wrap.children[0].classList.contains('e-menu')).toBeTruthy();
             expect(wrap.children[0].getAttribute('role')).toEqual('menubar');
             expect(wrap.children[0].children[0].classList.contains('e-menu-item')).toBeTruthy();
             // Sub menu li
-            let li: HTMLElement = ul.children[1] as HTMLElement;
+            const li: HTMLElement = ul.children[1] as HTMLElement;
             expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
             expect(li.getAttribute('aria-haspopup')).toEqual('true');
             expect(li.getAttribute('aria-expanded')).toEqual('false');
             triggerMouseEvent(li, 'mouseover');
             expect(li.getAttribute('aria-expanded')).toEqual('true');
-            let popup: HTMLElement = menu.getPopups()[0];
+            const popup: HTMLElement = menu.getPopups()[0];
             expect(popup.classList.contains('e-menu-popup')).toBeTruthy();
             expect(popup.children[0].classList.contains('e-ul')).toBeTruthy();
             triggerMouseEvent(document.body, 'mouseover');
@@ -180,10 +182,10 @@ describe('Menu', () => {
             appendStyles('#menu { width: 400px; } .e-menu-wrapper { width: 250px; } #cookbooks-ej2menu-menu-popup.e-menu-popup, #book-ej2menu-menu-popup.e-menu-popup{ height: 200px; } #cookbooks-ej2menu-menu-popup.e-menu-popup .e-ul, #book-ej2menu-menu-popup.e-menu-popup .e-ul{ height: 250px; }');
             document.body.appendChild(ul);
             menu = new Menu({ items: items, enableScrolling: true }, '#menu');
-            let wrap: HTMLElement = menu.getWrapper();
+            const wrap: HTMLElement = menu.getWrapper();
             let li: HTMLElement = select('#book', wrap.children[0]) as HTMLElement;
             triggerMouseEvent(li, 'mouseover');
-            let popup: HTMLElement = menu.getPopups()[0];
+            const popup: HTMLElement = menu.getPopups()[0];
             expect(wrap.children[0].classList.contains('e-menu-hscroll')).toBeTruthy();
             expect(wrap.children[0].children[0].classList.contains('e-scroll-left-nav')).toBeTruthy();
             expect(wrap.children[0].lastElementChild.classList.contains('e-scroll-right-nav')).toBeTruthy();
@@ -201,7 +203,7 @@ describe('Menu', () => {
             appendStyles('#menu { height: 250px; } .e-menu-wrapper { height: 200px; }');
             document.body.appendChild(ul);
             menu = new Menu({ items: items, orientation: 'Vertical', enableScrolling: true }, '#menu');
-            let wrap: HTMLElement = menu.getWrapper();
+            const wrap: HTMLElement = menu.getWrapper();
             expect(ul.classList.contains('e-vertical')).toBeTruthy();
             expect(wrap.children[0].classList.contains('e-menu-vscroll')).toBeTruthy();
             expect(wrap.children[0].children[0].classList.contains('e-scroll-up-nav')).toBeTruthy();
@@ -212,7 +214,7 @@ describe('Menu', () => {
         it('Vertical Menu with scroll enabled', () => {
             document.body.appendChild(createElement('ejs-menu', { id: 'ng-menu' }));
             menu = new Menu({ items: items }, '#ng-menu');
-            let wrap: HTMLElement = menu.getWrapper();
+            const wrap: HTMLElement = menu.getWrapper();
             expect(wrap.classList.contains('e-menu-wrapper')).toBeTruthy();
             expect(wrap.tagName).toEqual('EJS-MENU');
             expect(wrap.children[0].classList.contains('e-menu')).toBeTruthy();
@@ -221,7 +223,7 @@ describe('Menu', () => {
         it('Hamburger mode with vertical orientation Checking', () => {
             document.body.appendChild(ul);
             menu = new Menu({ items: items, orientation: 'Vertical', hamburgerMode: true }, '#menu');
-            let wrap: HTMLElement = menu.getWrapper();
+            const wrap: HTMLElement = menu.getWrapper();
             expect(wrap.classList.contains('e-hamburger')).toEqual(true);
             expect(wrap.children[0].classList.contains('e-vertical')).toEqual(true);
         });
@@ -229,14 +231,14 @@ describe('Menu', () => {
         it('Hamburger mode with user interaction checking', () => {
             document.body.appendChild(ul);
             menu = new Menu({ items: items, hamburgerMode: true }, '#menu');
-            let wrap: HTMLElement = menu.getWrapper();
+            const wrap: HTMLElement = menu.getWrapper();
             (wrap.children[0].getElementsByClassName('e-menu-icon')[0] as HTMLElement).click();
             expect(menu.element.classList.contains('e-hide-menu')).toBeFalsy();
             // Sub menu li
-            let li: HTMLElement = ul.children[1] as HTMLElement;
+            const li: HTMLElement = ul.children[1] as HTMLElement;
             triggerMouseEvent(li, 'mouseover');
             expect(li.getElementsByTagName('ul').length).toBeGreaterThan(0);
-            let subLi: HTMLElement = li.getElementsByTagName('ul')[0].children[2] as HTMLElement;
+            const subLi: HTMLElement = li.getElementsByTagName('ul')[0].children[2] as HTMLElement;
             triggerMouseEvent(subLi, 'mouseover');
             expect(subLi.getElementsByTagName('ul').length).toBeGreaterThan(0);
             (wrap.children[0].getElementsByClassName('e-menu-icon')[0] as HTMLElement).click();
@@ -250,7 +252,7 @@ describe('Menu', () => {
 
         it('target with or without hamburger mode checking', () => {
             document.body.appendChild(ul);
-            let trgtElem: HTMLElement = createElement('button', { id: 'menuTrgt' });
+            const trgtElem: HTMLElement = createElement('button', { id: 'menuTrgt' });
             document.body.appendChild(trgtElem);
             menu = new Menu({ items: items, hamburgerMode: true }, '#menu');
             menu.target = '#menuTrgt';
@@ -270,7 +272,7 @@ describe('Menu', () => {
             menu = new Menu({ items: items, orientation: 'Vertical', target: '#menuTrgt' }, '#menu');
             menu.title = 'Hamburger';
             menu.dataBind();
-            let wrap: HTMLElement = menu.getWrapper();
+            const wrap: HTMLElement = menu.getWrapper();
             menu.hamburgerMode = true;
             menu.dataBind();
             expect(menu.element.previousElementSibling.classList.contains('e-vertical')).toBeFalsy();
@@ -285,20 +287,20 @@ describe('Menu', () => {
         it('cssClass Checking', () => {
             document.body.appendChild(ul);
             menu = new Menu({ items: items, cssClass: 'e-custom e-custom1' }, '#menu');
-            let wrap: HTMLElement = menu.getWrapper();
+            const wrap: HTMLElement = menu.getWrapper();
             expect(wrap.classList.contains('e-custom')).toEqual(true);
             expect(wrap.classList.contains('e-custom1')).toEqual(true);
         });
         it('orientation Checking', () => {
             document.body.appendChild(ul);
             menu = new Menu({ items: items, orientation: 'Vertical' }, '#menu');
-            let wrap: HTMLElement = menu.getWrapper();
+            const wrap: HTMLElement = menu.getWrapper();
             expect(wrap.children[0].classList.contains('e-vertical')).toEqual(true);
         });
         it('Hamburger mode Checking', () => {
             document.body.appendChild(ul);
             menu = new Menu({ items: items, hamburgerMode: true }, '#menu');
-            let wrap: HTMLElement = menu.getWrapper();
+            const wrap: HTMLElement = menu.getWrapper();
             expect(wrap.classList.contains('e-hamburger')).toEqual(true);
             menu.hamburgerMode = false;
             menu.dataBind();
@@ -309,20 +311,20 @@ describe('Menu', () => {
             menu = new Menu({ items: items, hamburgerMode: true }, '#menu');
             menu.title = 'Hamburger Menu';
             menu.dataBind();
-            let wrap: HTMLElement = menu.getWrapper();
+            const wrap: HTMLElement = menu.getWrapper();
             expect(wrap.getElementsByClassName('e-menu-title')[0].innerHTML).toEqual('Hamburger Menu');
         });
         it('flat datasource binding', () => {
             document.body.appendChild(ul);
             menu = new Menu({ items: flatDatasource }, '#menu');
-            let wrap: HTMLElement = menu.getWrapper();
+            const wrap: HTMLElement = menu.getWrapper();
             expect(wrap.children[0].classList.contains('e-menu')).toEqual(true);
         });
         it('template checking', () => {
             document.body.appendChild(ul);
             document.body.appendChild(sTag);
             menu = new Menu({ items: templateDatasource, fields: { text: 'title' }, template: "#menuTemplate" }, '#menu');
-            let wrap: HTMLElement = menu.getWrapper();
+            const wrap: HTMLElement = menu.getWrapper();
             expect(wrap.children[0].children[0].textContent).toEqual('Option1');
         });
         it('enableScrolling Checking', () => {
@@ -356,7 +358,7 @@ describe('Menu', () => {
             expect(ul.children[2].classList.contains('e-disabled')).toBeTruthy();
             (menu.element.children[1] as HTMLElement).click();
             menu.enableItems(['hacking', 'purchase', 'cookbooks'], false, true);
-            let popup: Element = menu.getPopups()[0].firstElementChild;
+            const popup: Element = menu.getPopups()[0].firstElementChild;
             expect(popup.children[0].classList.contains('e-disabled')).toBeTruthy();
             (popup.children[1] as HTMLElement).click();
             expect(menu.getPopups()[1].firstElementChild.children[1].classList.contains('e-disabled')).toBeFalsy();
@@ -412,8 +414,8 @@ describe('Menu', () => {
                 items: items,
                 showItemOnClick: true,
                 beforeOpen: (args: BeforeOpenCloseMenuEventArgs) => {
-                    if (args.parentItem.text = 'Book Categories') {
-                        let position: ClientRect = closest(args.event.target as Element, '.e-menu-item').getBoundingClientRect();
+                    if (args.parentItem.text === 'Book Categories') {
+                        const position: ClientRect = closest(args.event.target as Element, '.e-menu-item').getBoundingClientRect();
                         args.left = position.left + pageXOffset;
                         left = args.left + 'px';
                         args.element.parentElement.style.display = 'block';
@@ -423,7 +425,7 @@ describe('Menu', () => {
                 }
             }, '#menu');
             (ul.children[1] as HTMLElement).click();
-            let popup: HTMLElement = menu.getPopups()[0];
+            const popup: HTMLElement = menu.getPopups()[0];
             expect(popup.style.left).toEqual(left);
             expect(popup.style.top).toEqual(top);
             (ul.children[2] as HTMLElement).click();
@@ -533,7 +535,7 @@ describe('Menu', () => {
         it('showItemOnClick', () => {
             document.body.appendChild(ul);
             menu = new Menu({ items: items }, '#menu');
-            let li: HTMLElement = ul.children[1] as HTMLElement;
+            const li: HTMLElement = ul.children[1] as HTMLElement;
             triggerMouseEvent(li, 'mouseover');
             let popup: Element[] = menu.getPopups();
             expect(popup.length).toBe(1);
@@ -561,8 +563,8 @@ describe('Menu', () => {
             appendStyles('#menu { height: 400px; } .e-menu-wrapper { height: 250px; } #cookbooks-menu-popup.e-menu-popup{ height: 200px; } #cookbooks-menu-popup.e-menu-popup .e-ul{ height: 250px; }');
             document.body.appendChild(ul);
             menu = new Menu({ items: items, animationSettings: { effect: 'None' } }, '#menu');
-            let wrap: HTMLElement = menu.getWrapper();
-            let li: HTMLElement = ul.children[1] as HTMLElement;
+            const wrap: HTMLElement = menu.getWrapper();
+            const li: HTMLElement = ul.children[1] as HTMLElement;
             triggerMouseEvent(li, 'mouseover');
             let popup: HTMLElement = menu.getPopups()[0];
             menu.enableScrolling = true;
@@ -600,43 +602,43 @@ describe('Menu', () => {
         afterEach(() => {
             menu.destroy();
         });
-        let endEventArgs: any = {
+        const endEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             action: 'end',
             type: 'keyup',
             target: null
         };
-        let homeEventArgs: any = {
+        const homeEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             action: 'home',
             type: 'keyup',
             target: null
         };
-        let rightEventArgs: any = {
+        const rightEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             action: 'rightarrow',
             type: 'keyup',
             target: null
         };
-        let leftEventArgs: any = {
+        const leftEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             action: 'leftarrow',
             type: 'keyup',
             target: null
         };
-        let upEventArgs: any = {
+        const upEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             action: 'uparrow',
             type: 'keyup',
             target: null
         };
-        let downEventArgs: any = {
+        const downEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             action: 'downarrow',
             type: 'keyup',
             target: null
         };
-        let enterEventArgs: any = {
+        const enterEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             action: 'enter',
             type: 'keyup',
@@ -646,28 +648,28 @@ describe('Menu', () => {
             document.body.appendChild(ul);
             menu = new Menu({ items: items }, '#menu');
             menu.keyBoardHandler(endEventArgs);
-            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>ul.querySelectorAll('li');
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>ul.querySelectorAll('li');
             expect((li[li.length - 1] as Element).classList.contains('e-focused')).toBe(true);
         });
         it('home arrow action', () => {
             document.body.appendChild(ul);
             menu = new Menu({ items: items }, '#menu');
             menu.keyBoardHandler(homeEventArgs);
-            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>ul.querySelectorAll('li');
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>ul.querySelectorAll('li');
             expect((li[0] as Element).classList.contains('e-focused')).toBe(true);
         });
         it('right arrow action', () => {
             document.body.appendChild(ul);
             menu = new Menu({ items: items }, '#menu');
             menu.keyBoardHandler(rightEventArgs);
-            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>ul.querySelectorAll('li');
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>ul.querySelectorAll('li');
             expect((li[0] as Element).classList.contains('e-focused')).toBe(true);
         });
         it('left arrow action', () => {
             document.body.appendChild(ul);
             menu = new Menu({ items: items }, '#menu');
             menu.keyBoardHandler(leftEventArgs);
-            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>ul.querySelectorAll('li');
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>ul.querySelectorAll('li');
             expect((li[li.length - 1] as Element).classList.contains('e-focused')).toBe(true);
         });
         it('down arrow action', () => {
@@ -677,7 +679,7 @@ describe('Menu', () => {
             menu.keyBoardHandler(rightEventArgs);
             menu.keyBoardHandler(downEventArgs);
             menu.keyBoardHandler(downEventArgs);
-            let subElem: HTMLElement = menu.getPopups()[0];
+            const subElem: HTMLElement = menu.getPopups()[0];
             expect(isNullOrUndefined(subElem)).toBe(false);
             menu.keyBoardHandler(leftEventArgs);
         });
@@ -688,8 +690,8 @@ describe('Menu', () => {
             menu.keyBoardHandler(rightEventArgs);
             menu.keyBoardHandler(downEventArgs);
             menu.keyBoardHandler(upEventArgs);
-            let subElem: HTMLElement = menu.getPopups()[0];
-            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>subElem.querySelectorAll('li');
+            const subElem: HTMLElement = menu.getPopups()[0];
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>subElem.querySelectorAll('li');
             expect((li[li.length - 1] as Element).classList.contains('e-focused')).toBe(true);
             menu.closeMenu(1);
         });
@@ -708,7 +710,7 @@ describe('Menu', () => {
             menu.keyBoardHandler(downEventArgs);
             menu.keyBoardHandler(downEventArgs);
             menu.keyBoardHandler(rightEventArgs);
-            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>ul.querySelectorAll('li');
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>ul.querySelectorAll('li');
             expect((li[1] as Element).classList.contains('e-focused')).toBe(true);
         });
         it('rtl - left arrow action', () => {
@@ -717,8 +719,8 @@ describe('Menu', () => {
             menu.keyBoardHandler(downEventArgs);
             menu.keyBoardHandler(downEventArgs);
             menu.keyBoardHandler(leftEventArgs);
-            let subElem: HTMLElement = menu.getPopups()[0];
-            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>subElem.querySelectorAll('li');
+            const subElem: HTMLElement = menu.getPopups()[0];
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>subElem.querySelectorAll('li');
             expect((li[0] as Element).classList.contains('e-focused')).toBe(true);
             menu.closeMenu(1);
         });
@@ -726,10 +728,10 @@ describe('Menu', () => {
 
     it('memory leak', () => {
         profile.sample();
-        let average: any = inMB(profile.averageChange)
+        const average: any = inMB(profile.averageChange)
         // check average change in memory samples to not be over 10MB
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile())
+        const memory: any = inMB(getMemoryProfile())
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });

@@ -6,13 +6,16 @@ import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import {
 export interface SmithchartMajorGridLinesModel {
 
     /**
-    * width of the major grid lines
-    * @default 1
-    */
+     * width of the major grid lines
+     *
+     * @default 1
+     */
+
     width?: number;
 
     /**
      * The dash array of the major grid lines.
+     *
      * @default ''
      */
 
@@ -20,6 +23,7 @@ export interface SmithchartMajorGridLinesModel {
 
     /**
      * visibility of  major grid lines.
+     *
      * @default true
      */
 
@@ -27,6 +31,7 @@ export interface SmithchartMajorGridLinesModel {
 
     /**
      * option for customizing the majorGridLine color
+     *
      * @default null
      */
 
@@ -34,6 +39,7 @@ export interface SmithchartMajorGridLinesModel {
 
     /**
      * opacity of  major grid lines.
+     *
      * @default 1
      */
 
@@ -48,12 +54,14 @@ export interface SmithchartMinorGridLinesModel {
 
     /**
      * width of the minor grid lines
+     *
      * @default 1
      */
     width?: number;
 
     /**
      * The dash array of the minor grid lines.
+     *
      * @default ''
      */
 
@@ -61,6 +69,7 @@ export interface SmithchartMinorGridLinesModel {
 
     /**
      * visibility of  minor grid lines.
+     *
      * @default false
      */
 
@@ -68,6 +77,7 @@ export interface SmithchartMinorGridLinesModel {
 
     /**
      * option for customizing the minorGridLine color
+     *
      * @default null
      */
 
@@ -75,6 +85,7 @@ export interface SmithchartMinorGridLinesModel {
 
     /**
      * count of  minor grid lines.
+     *
      * @default 8
      */
     count?: number;
@@ -88,18 +99,21 @@ export interface SmithchartAxisLineModel {
 
     /**
      * visibility of  axis line.
+     *
      * @default true
      */
     visible?: boolean;
 
     /**
-    * width of the axis lines
-    * @default 1
-    */
+     * width of the axis lines
+     *
+     * @default 1
+     */
     width?: number;
 
     /**
      * option for customizing the axisLine color
+     *
      * @default null
      */
 
@@ -107,6 +121,7 @@ export interface SmithchartAxisLineModel {
 
     /**
      * The dash array of the axis line.
+     *
      * @default ''
      */
 
@@ -121,12 +136,14 @@ export interface SmithchartAxisModel {
 
     /**
      * visibility of  axis.
+     *
      * @default true
      */
     visible?: boolean;
 
     /**
      * position of  axis line.
+     *
      * @default Outside
      */
 
@@ -134,6 +151,7 @@ export interface SmithchartAxisModel {
 
     /**
      * axis labels will be hide when overlap with each other.
+     *
      * @default Hide
      */
     labelIntersectAction?: SmithchartLabelIntersectAction;

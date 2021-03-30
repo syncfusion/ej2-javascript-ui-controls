@@ -1,3 +1,7 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable valid-jsdoc */
 /**
  * AccumulationChart Tooltip file
  */
@@ -108,7 +112,7 @@ export class AccumulationTooltip extends BaseTooltip {
                                    point.series.clipRect, point.point, ['Circle'], 0, this.chart.initialClipRect,
                                    null, point.point, this.accumulation.tooltip.template ? argsData.template : '');
             } else {
-                this.removeHighlight(this.control);
+                this.removeHighlight();
                 remove(this.getElement(this.element.id + '_tooltip'));
             }
             this.isRemove = true;

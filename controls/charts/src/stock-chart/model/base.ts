@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';
 import { DataManager, Query} from '@syncfusion/ej2-data';
 import { MarkerSettings, Trendline } from '../../chart/series/chart-series';
@@ -21,6 +22,7 @@ export class StockChartFont extends ChildProperty<StockChartFont> {
 
     /**
      * Color for the text.
+     *
      * @default ''
      */
     @Property('')
@@ -28,6 +30,7 @@ export class StockChartFont extends ChildProperty<StockChartFont> {
 
     /**
      * Font size for the text.
+     *
      * @default '16px'
      */
     @Property('16px')
@@ -41,6 +44,7 @@ export class StockChartFont extends ChildProperty<StockChartFont> {
 
     /**
      * FontStyle for the text.
+     *
      * @default 'Normal'
      */
     @Property('Normal')
@@ -48,6 +52,7 @@ export class StockChartFont extends ChildProperty<StockChartFont> {
 
     /**
      * FontWeight for the text.
+     *
      * @default 'Normal'
      */
     @Property('Normal')
@@ -55,6 +60,7 @@ export class StockChartFont extends ChildProperty<StockChartFont> {
 
     /**
      * Opacity for the text.
+     *
      * @default 1
      */
     @Property(1)
@@ -62,6 +68,7 @@ export class StockChartFont extends ChildProperty<StockChartFont> {
 
     /**
      * Specifies the chart title text overflow
+     *
      * @default 'Trim'
      */
     @Property('Trim')
@@ -69,6 +76,7 @@ export class StockChartFont extends ChildProperty<StockChartFont> {
 
     /**
      * text alignment
+     *
      * @default 'Center'
      */
     @Property('Center')
@@ -85,6 +93,7 @@ export class StockChartBorder extends ChildProperty<StockChartBorder> {
 
     /**
      * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default ''
      */
     @Property('')
@@ -92,6 +101,7 @@ export class StockChartBorder extends ChildProperty<StockChartBorder> {
 
     /**
      * The width of the border in pixels.
+     *
      * @default 1
      */
     @Property(1)
@@ -111,6 +121,7 @@ export class StockChartArea extends ChildProperty<StockChartArea> {
 
     /**
      * The background of the chart area that accepts value in hex and rgba as a valid CSS color string..
+     *
      * @default 'transparent'
      */
     @Property('transparent')
@@ -118,6 +129,7 @@ export class StockChartArea extends ChildProperty<StockChartArea> {
 
     /**
      * The opacity for background.
+     *
      * @default 1
      */
     @Property(1)
@@ -132,6 +144,7 @@ export class StockMargin extends ChildProperty<StockMargin> {
 
     /**
      * Left margin in pixels.
+     *
      * @default 10
      */
     @Property(10)
@@ -139,6 +152,7 @@ export class StockMargin extends ChildProperty<StockMargin> {
 
     /**
      * Right margin in pixels.
+     *
      * @default 10
      */
     @Property(10)
@@ -146,6 +160,7 @@ export class StockMargin extends ChildProperty<StockMargin> {
 
     /**
      * Top margin in pixels.
+     *
      * @default 10
      */
     @Property(10)
@@ -153,6 +168,7 @@ export class StockMargin extends ChildProperty<StockMargin> {
 
     /**
      * Bottom margin in pixels.
+     *
      * @default 10
      */
     @Property(10)
@@ -167,6 +183,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
 
     /**
      *  If set true, strip line get render from axis origin.
+     *
      *  @default false
      */
     @Property(false)
@@ -174,6 +191,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
 
     /**
      * If set true, strip line for axis renders.
+     *
      * @default true
      */
     @Property(true)
@@ -181,6 +199,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
 
     /**
      * Start value of the strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -189,6 +208,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
 
     /**
      * Color of the strip line.
+     *
      * @default '#808080'
      */
     @Property('#808080')
@@ -196,6 +216,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
 
     /**
      * End value of the strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -204,6 +225,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
 
     /**
      * Size of the strip line, when it starts from the origin.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -212,6 +234,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
 
     /**
      * Size type of the strip line
+     *
      * @default Auto
      */
     @Property('Auto')
@@ -219,6 +242,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
 
     /**
      * Dash Array of the strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -227,6 +251,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
 
     /**
      * isRepeat value of the strip line.
+     *
      * @default false
      * @aspDefaultValueIgnore
      */
@@ -235,6 +260,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
 
     /**
      * repeatEvery value of the strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -243,6 +269,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
 
     /**
      * isSegmented value of the strip line
+     *
      * @default false
      * @aspDefaultValueIgnore
      */
@@ -251,6 +278,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
 
     /**
      * repeatUntil value of the strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -259,6 +287,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
 
     /**
      * segmentStart value of the strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -267,6 +296,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
 
     /**
      * segmentAxisName of the strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -275,6 +305,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
 
     /**
      * segmentEnd value of the strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -283,6 +314,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
 
     /**
      * Strip line Opacity
+     *
      * @default 1
      */
     @Property(1)
@@ -290,6 +322,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
 
     /**
      * Strip line text.
+     *
      * @default ''
      */
     @Property('')
@@ -303,6 +336,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
 
     /**
      * The angle to which the strip line text gets rotated.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -313,6 +347,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
      * Specifies the order of the strip line. They are,
      * * Behind: Places the strip line behind the series elements.
      * * Over: Places the strip line over the series elements.
+     *
      * @default 'Behind'
      */
     @Property('Behind')
@@ -323,6 +358,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
      * * Start: Places the strip line text at the start.
      * * Middle: Places the strip line text in the middle.
      * * End: Places the strip line text at the end.
+     *
      * @default 'Middle'
      */
     @Property('Middle')
@@ -333,6 +369,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
      * * Start: Places the strip line text at the start.
      * * Middle: Places the strip line text in the middle.
      * * End: Places the strip line text at the end.
+     *
      * @default 'Middle'
      */
     @Property('Middle')
@@ -351,6 +388,7 @@ class Animation extends ChildProperty<Animation> {
 
     /**
      * The option to delay animation of the series.
+     *
      * @default 0
      */
 
@@ -359,6 +397,7 @@ class Animation extends ChildProperty<Animation> {
 
     /**
      * If set to true, series gets animated on initial loading.
+     *
      * @default false
      */
 
@@ -367,6 +406,7 @@ class Animation extends ChildProperty<Animation> {
 
     /**
      * The duration of animation in milliseconds.
+     *
      * @default 1000
      */
 
@@ -378,6 +418,7 @@ export class StockEmptyPointSettings extends ChildProperty<StockEmptyPointSettin
 
     /**
      * To customize the fill color of empty points.
+     *
      * @default null
      */
     @Property(null)
@@ -385,6 +426,7 @@ export class StockEmptyPointSettings extends ChildProperty<StockEmptyPointSettin
 
     /**
      * To customize the mode of empty points.
+     *
      * @default Gap
      */
     @Property('Gap')
@@ -392,6 +434,7 @@ export class StockEmptyPointSettings extends ChildProperty<StockEmptyPointSettin
 
     /**
      * Options to customize the border of empty points.
+     *
      * @default "{color: 'transparent', width: 0}"
      */
     @Complex<StockChartBorderModel>({color: 'transparent', width: 0}, StockChartBorder)
@@ -405,6 +448,7 @@ export class StockChartConnector extends ChildProperty<StockChartConnector> {
      * specifies the type of the connector line. They are
      * * Smooth
      * * Line
+     *
      * @default 'Line'
      */
     @Property('Line')
@@ -412,6 +456,7 @@ export class StockChartConnector extends ChildProperty<StockChartConnector> {
 
     /**
      * Length of the connector line in pixels.
+     *
      * @default null
      */
     @Property(null)
@@ -419,6 +464,7 @@ export class StockChartConnector extends ChildProperty<StockChartConnector> {
 
     /**
      * Color of the connector line.
+     *
      * @default null
      */
     @Property(null)
@@ -426,6 +472,7 @@ export class StockChartConnector extends ChildProperty<StockChartConnector> {
 
     /**
      * dashArray of the connector line.
+     *
      * @default ''
      */
     @Property('')
@@ -433,6 +480,7 @@ export class StockChartConnector extends ChildProperty<StockChartConnector> {
 
     /**
      * Width of the connector line in pixels.
+     *
      * @default 1
      */
     @Property(1)
@@ -447,6 +495,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
     /**
      * The DataSource field that contains the x value.
      * It is applicable for series and technical indicators
+     *
      * @default ''
      */
 
@@ -455,6 +504,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
 
     /**
      * The DataSource field that contains the y value.
+     *
      * @default ''
      */
 
@@ -464,6 +514,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
     /**
      * The DataSource field that contains the open value of y
      * It is applicable for series and technical indicators
+     *
      * @default ''
      */
 
@@ -473,6 +524,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
     /**
      * The DataSource field that contains the close value of y
      * It is applicable for series and technical indicators
+     *
      * @default ''
      */
 
@@ -482,6 +534,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
     /**
      * The DataSource field that contains the high value of y
      * It is applicable for series and technical indicators
+     *
      * @default ''
      */
 
@@ -491,6 +544,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
     /**
      * The DataSource field that contains the low value of y
      * It is applicable for series and technical indicators
+     *
      * @default ''
      */
 
@@ -500,6 +554,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
     /**
      * Defines the data source field that contains the volume value in candle charts
      * It is applicable for financial series and technical indicators
+     *
      * @default ''
      */
 
@@ -509,6 +564,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
     /**
      * The DataSource field that contains the color value of point
      * It is applicable for series
+     *
      * @default ''
      */
 
@@ -525,6 +581,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
     /**
      * The name of the horizontal axis associated with the series. It requires `axes` of the chart.
      * It is applicable for series and technical indicators
+     *
      * @default null
      */
 
@@ -534,6 +591,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
     /**
      * The name of the vertical axis associated with the series. It requires `axes` of the chart.
      * It is applicable for series and technical indicators
+     *
      * @default null
      */
 
@@ -544,6 +602,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
      * The fill color for the series that accepts value in hex and rgba as a valid CSS color string.
      * It also represents the color of the signal lines in technical indicators.
      * For technical indicators, the default value is 'blue' and for series, it has null.
+     *
      * @default null
      */
 
@@ -552,6 +611,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
 
     /**
      * Defines the pattern of dashes and gaps to stroke the lines in `Line` type series.
+     *
      * @default '0'
      */
 
@@ -561,6 +621,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
     /**
      * The stroke width for the series that is applicable only for `Line` type series.
      * It also represents the stroke width of the signal lines in technical indicators.
+     *
      * @default 1
      */
 
@@ -569,6 +630,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
 
     /**
      * The name of the series visible in legend.
+     *
      * @default ''
      */
 
@@ -577,6 +639,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
 
     /**
      * Specifies the DataSource for the series. It can be an array of JSON objects or an instance of DataManager.
+     *
      * @default ''
      */
 
@@ -585,6 +648,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
 
     /**
      * Specifies query to select data from DataSource. This property is applicable only when the DataSource is `ej.DataManager`.
+     *
      * @default null
      */
     @Property()
@@ -593,6 +657,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
     /**
      * This property is used in financial charts to visualize the price movements in stock.
      * It defines the color of the candle/point, when the opening price is higher than the closing price.
+     *
      * @default '#e74c3d'
      */
 
@@ -602,6 +667,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
     /**
      * This property is used in stock charts to visualize the price movements in stock.
      * It defines the color of the candle/point, when the opening price is less than the closing price.
+     *
      * @default '#2ecd71'
      */
 
@@ -611,6 +677,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
     /**
      * This property is applicable for candle series.
      * It enables/disables to visually compare the current values with the previous values in stock.
+     *
      * @default false
      */
     @Property(false)
@@ -618,6 +685,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
 
     /**
      * Specifies the visibility of series.
+     *
      * @default true
      */
 
@@ -633,6 +701,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
 
     /**
      * The opacity of the series.
+     *
      * @default 1
      */
     @Property(1)
@@ -647,6 +716,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
      * * Hilo
      * * HiloOpenClose
      * * Candle
+     *
      * @default 'Candle'
      */
 
@@ -667,13 +737,15 @@ export class StockSeries extends ChildProperty<StockSeries> {
 
     /**
      * If set true, the Tooltip for series will be visible.
+     *
      * @default true
      */
     @Property(true)
     public enableTooltip: boolean;
 
     /**
-     * The provided value will be considered as a Tooltip name 
+     * The provided value will be considered as a Tooltip name
+     *
      * @default ''
      */
     @Property('')
@@ -681,6 +753,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
 
     /**
      * Custom style for the selected series or points.
+     *
      * @default null
      */
     @Property(null)
@@ -688,6 +761,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
 
     /**
      * It defines tension of cardinal spline types
+     *
      * @default 0.5
      */
     @Property(0.5)
@@ -708,6 +782,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
     /**
      * To render the column series points with particular column width. If the series type is histogram the
      * default value is 1 otherwise 0.7.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -716,6 +791,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
 
     /**
      * To render the column series points with particular column spacing. It takes value from 0 - 1.
+     *
      * @default 0
      */
     @Property(0)
@@ -761,18 +837,19 @@ export interface IStockEventRenderArgs {
     text: string;
     /** Event shape */
     type: FlagType;
-     /** Defines the name of the event */
-     name: string;
-     /** Defines the event cancel status */
-     cancel: boolean;
-     /** Defines the stock series */
-     series: StockSeriesModel;
+    /** Defines the name of the event */
+    name: string;
+    /** Defines the event cancel status */
+    cancel: boolean;
+    /** Defines the stock series */
+    series: StockSeriesModel;
 }
 
 
 export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     /**
      * Defines the type of the technical indicator
+     *
      * @default 'Sma'
      */
     @Property('Sma')
@@ -780,6 +857,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
 
     /**
      * Defines the period, the price changes over which will be considered to predict the trend
+     *
      * @default 14
      */
     @Property(14)
@@ -787,6 +865,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
 
     /**
      * Defines the period, the price changes over which will define the %D value in stochastic indicators
+     *
      * @default 3
      */
     @Property(3)
@@ -794,6 +873,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
 
     /**
      * Defines the look back period, the price changes over which will define the %K value in stochastic indicators
+     *
      * @default 14
      */
     @Property(14)
@@ -801,6 +881,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
 
     /**
      * Defines the over-bought(threshold) values. It is applicable for RSI and stochastic indicators
+     *
      * @default 80
      */
     @Property(80)
@@ -808,6 +889,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
 
     /**
      * Defines the over-sold(threshold) values. It is applicable for RSI and stochastic indicators
+     *
      * @default 20
      */
     @Property(20)
@@ -815,6 +897,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
 
     /**
      * Defines the field to compare the current value with previous values
+     *
      * @default 'Close'
      */
     @Property('Close')
@@ -822,6 +905,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
 
     /**
      * Sets the standard deviation values that helps to define the upper and lower bollinger bands
+     *
      * @default 2
      */
     @Property(2)
@@ -829,6 +913,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
 
     /**
      * Sets the slow period to define the Macd line
+     *
      * @default 12
      */
     @Property(12)
@@ -836,6 +921,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
 
     /**
      * Enables/Disables the over-bought and over-sold regions
+     *
      * @default true
      */
     @Property(true)
@@ -843,6 +929,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
 
     /**
      * Sets the fast period to define the Macd line
+     *
      * @default 26
      */
     @Property(26)
@@ -851,6 +938,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
 
     /**
      * Defines the appearance of the the MacdLine of Macd indicator
+     *
      * @default { color: '#ff9933', width: 2 }
      */
     @Complex<StockChartConnectorModel>({ color: '#ff9933', width: 2 }, StockChartConnector)
@@ -858,6 +946,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
 
     /**
      * Defines the type of the Macd indicator.
+     *
      * @default 'Both'
      */
     @Property('Both')
@@ -865,6 +954,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
 
     /**
      * Defines the color of the negative bars in Macd indicators
+     *
      * @default '#e74c3d'
      */
     @Property('#e74c3d')
@@ -872,6 +962,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
 
     /**
      * Defines the color of the positive bars in Macd indicators
+     *
      * @default '#2ecd71'
      */
     @Property('#2ecd71')
@@ -880,6 +971,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
 
     /**
      * Options for customizing the BollingerBand in the indicator.
+     *
      * @default 'rgba(211,211,211,0.25)'
      */
 
@@ -894,6 +986,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
 
     /**
      * Defines the name of the series, the data of which has to be depicted as indicator
+     *
      * @default ''
      */
     @Property('')
@@ -917,6 +1010,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     /**
      * The DataSource field that contains the high value of y
      * It is applicable for series and technical indicators
+     *
      * @default ''
      */
 
@@ -926,6 +1020,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     /**
      * The DataSource field that contains the open value of y
      * It is applicable for series and technical indicators
+     *
      * @default ''
      */
 
@@ -935,6 +1030,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     /**
      * The DataSource field that contains the low value of y
      * It is applicable for series and technical indicators
+     *
      * @default ''
      */
 
@@ -944,6 +1040,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     /**
      * The DataSource field that contains the x value.
      * It is applicable for series and technical indicators
+     *
      * @default ''
      */
 
@@ -953,6 +1050,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     /**
      * The DataSource field that contains the close value of y
      * It is applicable for series and technical indicators
+     *
      * @default ''
      */
 
@@ -962,6 +1060,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     /**
      * The DataSource field that contains the color value of point
      * It is applicable for series
+     *
      * @default ''
      */
 
@@ -971,6 +1070,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     /**
      * Defines the data source field that contains the volume value in candle charts
      * It is applicable for financial series and technical indicators
+     *
      * @default ''
      */
 
@@ -1002,6 +1102,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
      * });
      * chart.appendTo('#Chart');
      * ```
+     *
      * @default null
      */
 
@@ -1014,6 +1115,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
      * ```html
      * <div id='Chart'></div>
      * ```
+     *
      * @default null
      */
 
@@ -1031,6 +1133,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
      * The fill color for the series that accepts value in hex and rgba as a valid CSS color string.
      * It also represents the color of the signal lines in technical indicators.
      * For technical indicators, the default value is 'blue' and for series, it has null.
+     *
      * @default null
      */
 
@@ -1039,6 +1142,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
 
     /**
      * Defines the pattern of dashes and gaps to stroke the lines in `Line` type series.
+     *
      * @default '0'
      */
 
@@ -1048,6 +1152,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     /**
      * The stroke width for the series that is applicable only for `Line` type series.
      * It also represents the stroke width of the signal lines in technical indicators.
+     *
      * @default 1
      */
 
@@ -1057,6 +1162,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
 
     /**
      * Specifies query to select data from DataSource. This property is applicable only when the DataSource is `ej.DataManager`.
+     *
      * @default null
      */
     @Property()
@@ -1067,6 +1173,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
      * ```html
      * <div id='Chart'></div>
      * ```
+     *
      * @default ''
      */
 
@@ -1094,6 +1201,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * Specifies the title of an axis.
+     *
      * @default ''
      */
 
@@ -1110,6 +1218,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
     /**
      * Used to format the axis label that accepts any global string format like 'C', 'n1', 'P' etc.
      * It also accepts placeholder like '{value}°C' in which value represent the axis label, e.g, 20°C.
+     *
      * @default ''
      */
 
@@ -1118,6 +1227,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * It specifies the type of format to be used in dateTime format process.
+     *
      * @default 'DateTime'
      */
 
@@ -1126,6 +1236,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * Specifies the skeleton format in which the dateTime format will process.
+     *
      * @default ''
      */
 
@@ -1135,6 +1246,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * Left and right padding for the plot area in pixels.
+     *
      * @default 0
      */
 
@@ -1143,6 +1255,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * The base value for logarithmic axis. It requires `valueType` to be `Logarithmic`.
+     *
      * @default 10
      */
     @Property(10)
@@ -1167,6 +1280,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
      * });
      * chart.appendTo('#Chart');
      * ```
+     *
      * @default 0
      */
 
@@ -1176,6 +1290,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * Specifies the number of `columns` or `rows` an axis has to span horizontally or vertically.
+     *
      * @default 1
      */
 
@@ -1184,6 +1299,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * The maximum number of label count per 100 pixels with respect to the axis length.
+     *
      * @default 3
      */
 
@@ -1192,6 +1308,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * With this property, you can request axis to calculate intervals approximately equal to your specified interval.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -1201,6 +1318,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * The axis is scaled by this factor. When zoomFactor is 0.5, the chart is scaled by 200% along this axis. Value ranges from 0 to 1.
+     *
      * @default 1
      */
 
@@ -1209,6 +1327,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * Position of the zoomed axis. Value ranges from 0 to 1.
+     *
      * @default 0
      */
 
@@ -1217,6 +1336,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * If set to true, the axis will render at the opposite side of its default position.
+     *
      * @default false
      */
 
@@ -1225,6 +1345,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * If set to true, axis interval will be calculated automatically with respect to the zoomed range.
+     *
      * @default true
      */
 
@@ -1237,6 +1358,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
      * * DateTime: Renders a dateTime axis.
      * * Category: Renders a category axis.
      * * Logarithmic: Renders a log axis.
+     *
      * @default 'Double'
      * @blazorType Syncfusion.EJ2.Blazor.Charts.ValueType
      * @isEnumeration true
@@ -1251,6 +1373,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
      * * normal: Padding is applied to the axis based on the range calculation.
      * * additional: Interval of the axis is added as padding to the minimum and maximum values of the range.
      * * round: Axis range is rounded to the nearest possible value divided by the interval.
+     *
      * @default 'Auto'
      */
 
@@ -1263,6 +1386,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
      * * None: No action will be performed.
      * * Hide: Edge label will be hidden.
      * * Shift: Shifts the edge labels.
+     *
      * @default 'None'
      */
 
@@ -1273,6 +1397,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
      * Specifies the placement of a label for category axis. They are,
      * * betweenTicks: Renders the label between the ticks.
      * * onTicks: Renders the label on the ticks.
+     *
      * @default 'BetweenTicks'
      */
 
@@ -1287,6 +1412,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
      * * Days: Defines the interval of the axis in days.
      * * Hours: Defines the interval of the axis in hours.
      * * Minutes: Defines the interval of the axis in minutes.
+     *
      * @default 'Auto'
      */
 
@@ -1298,6 +1424,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
      * Specifies the placement of a ticks to the axis line. They are,
      * * inside: Renders the ticks inside to the axis line.
      * * outside: Renders the ticks outside to the axis line.
+     *
      * @default 'Outside'
      */
 
@@ -1307,6 +1434,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
     /**
      * Unique identifier of an axis.
      * To associate an axis with the series, set this name to the xAxisName/yAxisName properties of the series.
+     *
      * @default ''
      */
 
@@ -1317,6 +1445,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
      * Specifies the placement of a labels to the axis line. They are,
      * * inside: Renders the labels inside to the axis line.
      * * outside: Renders the labels outside to the axis line.
+     *
      * @default 'Outside'
      */
 
@@ -1326,6 +1455,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * If set to true, axis label will be visible.
+     *
      * @default true
      */
 
@@ -1334,6 +1464,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * The angle to which the axis label gets rotated.
+     *
      * @default 0
      */
 
@@ -1342,6 +1473,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * Specifies the number of minor ticks per interval.
+     *
      * @default 0
      */
 
@@ -1351,6 +1483,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * Specifies the value at which the axis line has to be intersect with the vertical axis or vice versa.
+     *
      * @default null
      */
 
@@ -1359,6 +1492,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * Specifies axis name with which the axis line has to be crossed
+     *
      * @default null
      */
 
@@ -1367,6 +1501,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * Specifies whether axis elements like axis labels, axis title, etc has to be crossed with axis line
+     *
      * @default true
      */
 
@@ -1376,6 +1511,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * Specifies the minimum range of an axis.
+     *
      * @default null
      */
 
@@ -1384,6 +1520,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * Specifies the interval for an axis.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -1393,6 +1530,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * Specifies the maximum range of an axis.
+     *
      * @default null
      */
 
@@ -1402,6 +1540,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * Specifies the maximum width of an axis label.
+     *
      * @default 34.
      */
     @Property(34)
@@ -1416,6 +1555,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * Specifies the Trim property for an axis.
+     *
      * @default false
      */
     @Property(false)
@@ -1453,6 +1593,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * It specifies whether the axis to be rendered in inversed manner or not.
+     *
      * @default false
      */
     @Property(false)
@@ -1464,6 +1605,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
      * * Hide: Hides the label when it intersects.
      * * Rotate45: Rotates the label to 45 degree when it intersects.
      * * Rotate90: Rotates the label to 90 degree when it intersects.
+     *
      * @default Hide
      */
 
@@ -1473,6 +1615,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * The polar radar radius position.
+     *
      * @default 100
      */
 
@@ -1481,6 +1624,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * The start angle for the series.
+     *
      * @default 0
      */
 
@@ -1489,6 +1633,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * TabIndex value for the axis.
+     *
      * @default 2
      */
     @Property(2)
@@ -1502,6 +1647,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
 
     /**
      * Description for axis and its element.
+     *
      * @default null
      */
     @Property(null)
@@ -1518,6 +1664,7 @@ export class StockChartRow extends ChildProperty<StockChartRow> {
     /**
      * The height of the row as a string accept input both as '100px' and '100%'.
      * If specified as '100%, row renders to the full height of its chart.
+     *
      * @default '100%'
      */
 
@@ -1537,6 +1684,7 @@ export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
 
     /**
      * Defines the period, the price changes over which will be considered to predict moving average trend line
+     *
      * @default 2
      */
     @Property(2)
@@ -1544,6 +1692,7 @@ export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
 
     /**
      * Defines the name of trendline
+     *
      * @default ''
      */
     @Property('')
@@ -1551,6 +1700,7 @@ export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
 
     /**
      * Defines the type of the trendline
+     *
      * @default 'Linear'
      */
     @Property('Linear')
@@ -1558,6 +1708,7 @@ export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
 
     /**
      * Defines the polynomial order of the polynomial trendline
+     *
      * @default 2
      */
     @Property(2)
@@ -1565,6 +1716,7 @@ export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
 
     /**
      * Defines the period, by which the trend has to forward forecast
+     *
      * @default 0
      */
     @Property(0)
@@ -1572,6 +1724,7 @@ export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
 
     /**
      * Defines the period, by which the trend has to backward forecast
+     *
      * @default 0
      */
     @Property(0)
@@ -1585,6 +1738,7 @@ export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
 
     /**
      * Enables/disables tooltip for trendlines
+     *
      * @default true
      */
     @Property(true)
@@ -1601,6 +1755,7 @@ export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
 
     /**
      * Defines the intercept of the trendline
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -1609,6 +1764,7 @@ export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
 
     /**
      * Defines the fill color of trendline
+     *
      * @default ''
      */
     @Property('')
@@ -1616,6 +1772,7 @@ export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
 
     /**
      * Sets the legend shape of the trendline
+     *
      * @default 'SeriesType'
      */
     @Property('SeriesType')
@@ -1623,6 +1780,7 @@ export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
 
     /**
      * Defines the width of the trendline
+     *
      * @default 1
      */
     @Property(1)
@@ -1637,6 +1795,7 @@ export class StockChartAnnotationSettings extends ChildProperty<StockChartAnnota
     /**
      * if set coordinateUnit as `Pixel` Y specifies the axis value
      * else is specifies pixel or percentage of coordinate
+     *
      * @default '0'
      */
     @Property('0')
@@ -1644,6 +1803,7 @@ export class StockChartAnnotationSettings extends ChildProperty<StockChartAnnota
     /**
      * if set coordinateUnit as `Pixel` X specifies the axis value
      * else is specifies pixel or percentage of coordinate
+     *
      * @default '0'
      */
     @Property('0')
@@ -1652,6 +1812,7 @@ export class StockChartAnnotationSettings extends ChildProperty<StockChartAnnota
 
     /**
      * Content of the annotation, which accepts the id of the custom element.
+     *
      * @default null
      */
     @Property(null)
@@ -1661,6 +1822,7 @@ export class StockChartAnnotationSettings extends ChildProperty<StockChartAnnota
      * Specifies the regions of the annotation. They are
      * * Chart - Annotation renders based on chart coordinates.
      * * Series - Annotation renders based on series coordinates.
+     *
      * @default 'Chart'
      */
 
@@ -1672,6 +1834,7 @@ export class StockChartAnnotationSettings extends ChildProperty<StockChartAnnota
      * * Near - Align the annotation element as left side.
      * * Far - Align the annotation element as right side.
      * * Center - Align the annotation element as mid point.
+     *
      * @default 'Center'
      */
 
@@ -1682,6 +1845,7 @@ export class StockChartAnnotationSettings extends ChildProperty<StockChartAnnota
      * Specifies the coordinate units of the annotation. They are
      * * Pixel - Annotation renders based on x and y pixel value.
      * * Point - Annotation renders based on x and y axis value.
+     *
      * @default 'Pixel'
      */
 
@@ -1693,6 +1857,7 @@ export class StockChartAnnotationSettings extends ChildProperty<StockChartAnnota
      * * Top - Align the annotation element as top side.
      * * Bottom - Align the annotation element as bottom side.
      * * Middle - Align the annotation element as mid point.
+     *
      * @default 'Middle'
      */
 
@@ -1702,6 +1867,7 @@ export class StockChartAnnotationSettings extends ChildProperty<StockChartAnnota
     /**
      * The name of vertical axis associated with the annotation.
      * It requires `axes` of chart.
+     *
      * @default null
      */
 
@@ -1710,6 +1876,7 @@ export class StockChartAnnotationSettings extends ChildProperty<StockChartAnnota
 
     /**
      * Information about annotation for assistive technology.
+     *
      * @default null
      */
     @Property(null)
@@ -1718,6 +1885,7 @@ export class StockChartAnnotationSettings extends ChildProperty<StockChartAnnota
     /**
      * The name of horizontal axis associated with the annotation.
      * It requires `axes` of chart.
+     *
      * @default null
      */
 
@@ -1731,6 +1899,7 @@ export class StockChartIndexes extends ChildProperty<StockChartIndexes> {
 
     /**
      * Specifies index of point
+     *
      * @default 0
      * @aspType int
      */
@@ -1739,6 +1908,7 @@ export class StockChartIndexes extends ChildProperty<StockChartIndexes> {
 
     /**
      * Specifies index of series
+     *
      * @default 0
      * @aspType int
      */
@@ -1753,7 +1923,7 @@ export class StockChartIndexes extends ChildProperty<StockChartIndexes> {
 export class StockEventsSettings extends ChildProperty<StockEventsSettings> {
     /**
      * Specifies type of stock events
-     * * Circle 
+     * * Circle
      * * Square
      * * Flag
      * * Text
@@ -1764,6 +1934,7 @@ export class StockEventsSettings extends ChildProperty<StockEventsSettings> {
      * * ArrowDown
      * * ArrowLeft
      * * ArrowRight
+     *
      * @default 'Circle'
      */
     @Property('Circle')
@@ -1795,6 +1966,7 @@ export class StockEventsSettings extends ChildProperty<StockEventsSettings> {
 
     /**
      * The background of the stock event that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default 'transparent'
      */
     @Property('transparent')
@@ -1802,6 +1974,7 @@ export class StockEventsSettings extends ChildProperty<StockEventsSettings> {
 
     /**
      * Enables the stock events to be render on series. If it disabled, stock event rendered on primaryXAxis.
+     *
      * @default true
      */
     @Property(true)
@@ -1813,6 +1986,7 @@ export class StockEventsSettings extends ChildProperty<StockEventsSettings> {
      * * Open
      * * High
      * * Close
+     *
      * @default 'close'
      */
     @Property('close')
@@ -1827,6 +2001,7 @@ export class StockEventsSettings extends ChildProperty<StockEventsSettings> {
     /**
      * To render stock events in particular series.
      * By default stock events will render for all series.
+     *
      * @default []
      */
 

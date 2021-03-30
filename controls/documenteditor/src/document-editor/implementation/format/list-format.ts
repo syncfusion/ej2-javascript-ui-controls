@@ -5,8 +5,8 @@ import { WUniqueFormats } from '../../base/unique-formats';
 import { WStyle, WParagraphStyle } from './style';
 import { WList } from '../list/list';
 import { WListLevel } from '../list/list-level';
-
-/** 
+/* eslint-disable */
+/**
  * @private
  */
 export class WListFormat {
@@ -16,24 +16,23 @@ export class WListFormat {
     public ownerBase: Object = undefined;
     public baseStyle: WStyle = undefined;
     public list: WList = undefined;
-    get listId(): number {
+    public get listId(): number {
         return this.getPropertyValue('listId') as number;
     }
-    set listId(listId: number) {
+    public set listId(listId: number) {
         this.setPropertyValue('listId', listId);
     }
-    get listLevelNumber(): number {
+    public get listLevelNumber(): number {
         return this.getPropertyValue('listLevelNumber') as number;
     }
-    set listLevelNumber(value: number) {
+    public set listLevelNumber(value: number) {
         this.setPropertyValue('listLevelNumber', value);
     }
-    get listLevel(): WListLevel {
+    public get listLevel(): WListLevel {
         let list: WList = undefined;
         if (!isNullOrUndefined(this.list)) {
             list = this.list;
         } else {
-            /* tslint:disable-next-line:no-any */
             let baseListStyle: any = this.baseStyle;
             while (!isNullOrUndefined(baseListStyle)) {
                 if (baseListStyle.paragraphFormat.listFormat.list) {
@@ -50,13 +49,12 @@ export class WListFormat {
             return undefined;
         }
     }
-    constructor(node?: Object) {
+    public constructor(node?: Object) {
         this.ownerBase = node;
     }
     private getPropertyValue(property: string): Object {
         if (!this.hasValue(property)) {
             if (this.baseStyle instanceof WParagraphStyle) {
-                /* tslint:disable-next-line:no-any */
                 let baseStyle: any = this.baseStyle;
                 while (!isNullOrUndefined(baseStyle)) {
                     if (baseStyle.paragraphFormat.listFormat.hasValue(property)) {
@@ -66,12 +64,12 @@ export class WListFormat {
                     }
                 }
                 if (!isNullOrUndefined(baseStyle)) {
-                    let propertyType: number = WUniqueFormat.getPropertyType(WListFormat.uniqueFormatType, property);
+                    const propertyType: number = WUniqueFormat.getPropertyType(WListFormat.uniqueFormatType, property);
                     return baseStyle.paragraphFormat.listFormat.uniqueListFormat.propertiesHash.get(propertyType);
                 }
             }
         } else {
-            let propertyType: number = WUniqueFormat.getPropertyType(WListFormat.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(WListFormat.uniqueFormatType, property);
             if (!isNullOrUndefined(this.uniqueListFormat) && this.uniqueListFormat.propertiesHash.containsKey(propertyType)) {
                 return this.uniqueListFormat.propertiesHash.get(propertyType);
             }
@@ -85,7 +83,7 @@ export class WListFormat {
         if (isNullOrUndefined(this.uniqueListFormat)) {
             this.initializeUniqueListFormat(property, value);
         } else {
-            let propertyType: number = WUniqueFormat.getPropertyType(this.uniqueListFormat.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(this.uniqueListFormat.uniqueFormatType, property);
             if (this.uniqueListFormat.propertiesHash.containsKey(propertyType) &&
                 this.uniqueListFormat.propertiesHash.get(propertyType) === value) {
                 //Do nothing, since no change in property value and return
@@ -95,15 +93,14 @@ export class WListFormat {
         }
     }
     private initializeUniqueListFormat(property: string, propValue: Object): void {
-        let uniqueListFormatTemp: Dictionary<number, object> = new Dictionary<number, object>();
+        const uniqueListFormatTemp: Dictionary<number, object> = new Dictionary<number, object>();
         this.addUniqueListFormat('listId', property, propValue, uniqueListFormatTemp);
         this.addUniqueListFormat('listLevelNumber', property, propValue, uniqueListFormatTemp);
         this.uniqueListFormat = WListFormat.uniqueListFormats.addUniqueFormat(uniqueListFormatTemp, WListFormat.uniqueFormatType);
     }
-    // tslint:disable-next-line:max-line-length
+
     private addUniqueListFormat(property: string, modifiedProperty: string, propValue: Object, uniqueListFormatTemp: Dictionary<number, object>): void {
-        let propertyType: number;
-        propertyType = WUniqueFormat.getPropertyType(WListFormat.uniqueFormatType, property);
+        const propertyType: number = WUniqueFormat.getPropertyType(WListFormat.uniqueFormatType, property);
         if (property === modifiedProperty) {
             uniqueListFormatTemp.add(propertyType, propValue);
         }
@@ -111,12 +108,12 @@ export class WListFormat {
     private static getPropertyDefaultValue(property: string): Object {
         let value: Object = undefined;
         switch (property) {
-            case 'listId':
-                value = -1;
-                break;
-            case 'listLevelNumber':
-                value = 0;
-                break;
+        case 'listId':
+            value = -1;
+            break;
+        case 'listLevelNumber':
+            value = 0;
+            break;
         }
         return value;
     }
@@ -136,7 +133,7 @@ export class WListFormat {
     }
     public hasValue(property: string): boolean {
         if (!isNullOrUndefined(this.uniqueListFormat)) {
-            let propertyType: number = WUniqueFormat.getPropertyType(this.uniqueListFormat.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(this.uniqueListFormat.uniqueFormatType, property);
             return this.uniqueListFormat.propertiesHash.containsKey(propertyType);
         }
         return false;
@@ -154,20 +151,13 @@ export class WListFormat {
     public static clear(): void {
         this.uniqueListFormats.clear();
     }
-    public ApplyStyle(baseStyle: WStyle): void {
+    public applyStyle(baseStyle: WStyle): void {
         this.baseStyle = baseStyle;
     }
-    /**
-     * For internal use
-     * @private
-     */
+
     public getValue(property: string): Object {
         return this.hasValue(property) ? this.getPropertyValue(property) : undefined;
     }
-    /**
-     * For internal use
-     * @private
-     */
     public mergeFormat(format: WListFormat): void {
         if (isNullOrUndefined(this.getValue('listId'))) {
             this.listId = format.getValue('listId') as number;
@@ -183,7 +173,7 @@ export class WListFormat {
         }
     }
     public cloneListFormat(): WListFormat {
-        let format: WListFormat = new WListFormat(undefined);
+        const format: WListFormat = new WListFormat(undefined);
         format.list = this.list;
         format.listId = this.listId;
         format.baseStyle = this.baseStyle;

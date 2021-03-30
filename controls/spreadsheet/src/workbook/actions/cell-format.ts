@@ -15,21 +15,27 @@ export class WorkbookCellFormat {
         this.addEventListener();
     }
     private format(args: SetCellFormatArgs): void {
-        let sheet: SheetModel; let rng: string | number[] = args.range; let eventArgs: BeforeCellFormatArgs;
+        let sheet: SheetModel; let rng: string | number[] = args.range;
         if (rng && typeof rng === 'string' && rng.indexOf('!') > -1) {
             rng = rng.split('!')[1]; sheet = this.parent.sheets[getSheetIndex(this.parent, (args.range as string).split('!')[0])];
         } else {
             sheet = this.parent.getActiveSheet();
         }
         if (rng === undefined) { rng = sheet.selectedRange; }
-        let triggerEvent: boolean = typeof (rng) !== 'object' && args.onActionUpdate;
-        eventArgs = { range: <string>rng, style: args.style, requestType: 'CellFormat' };
+        const triggerEvent: boolean = typeof (rng) !== 'object' && args.onActionUpdate;
+        const eventArgs: BeforeCellFormatArgs = {
+            range: <string>rng, style: Object.assign({}, args.style), requestType: 'CellFormat' };
+        if (args.borderType) {
+            eventArgs.borderType = args.borderType;
+        }
+        const style: CellStyleModel = {};
+        Object.assign(style, eventArgs.style, null, true);
         if (triggerEvent) {
             this.parent.trigger('beforeCellFormat', eventArgs);
             this.parent.notify('actionBegin', { eventArgs: eventArgs, action: 'format' });
             if (eventArgs.cancel) { args.cancel = true; return; }
         }
-        let indexes: number[] = typeof (eventArgs.range) === 'object' ? <number[]>eventArgs.range :
+        const indexes: number[] = typeof (eventArgs.range) === 'object' ? <number[]>eventArgs.range :
             getSwapRange(getRangeIndexes(<string>eventArgs.range));
         if (args.borderType) {
             this.setTypedBorder(sheet, args.style.border, indexes, args.borderType, args.onActionUpdate); delete args.style.border;
@@ -94,18 +100,19 @@ export class WorkbookCellFormat {
         if (isFullBorder) { eventArgs.style.border = border; } this.parent.setUsedRange(indexes[2], indexes[3]);
         if (args.refreshRibbon) { this.parent.notify(activeCellChanged, null); }
         if (triggerEvent) {
+            eventArgs.style = style;
             eventArgs.range = `${sheet.name}!${rng}`; this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'format' });
         }
     }
     private setBottomBorderPriority(sheet: SheetModel, rowIdx: number, colIdx: number): void {
         if (isHiddenRow(sheet, rowIdx + 1)) {
-            let pIdx: number = this.skipHiddenRows(sheet, rowIdx + 1);
-            let pCellStyle: string = this.parent.getCellStyleValue(['borderTop'], [pIdx, colIdx]).borderTop;
+            const pIdx: number = this.skipHiddenRows(sheet, rowIdx + 1);
+            const pCellStyle: string = this.parent.getCellStyleValue(['borderTop'], [pIdx, colIdx]).borderTop;
             if (pCellStyle !== '') { (sheet.rows[rowIdx].cells[colIdx].style as CellStyleExtendedModel).bottomPriority = true; }
         }
     }
     private setFullBorder(sheet: SheetModel, border: string, indexes: number[], i: number, j: number, actionUpdate: boolean): void {
-        let style: CellStyleModel = {};
+        const style: CellStyleModel = {};
         if (i === indexes[0]) {
             this.checkAdjustantBorder(sheet, 'borderBottom', i - 1, j);
             this.checkFullBorder(sheet, 'borderBottom', i - 1, j);
@@ -128,15 +135,15 @@ export class WorkbookCellFormat {
         }
     }
     private checkAdjustantBorder(sheet: SheetModel, prop: string, rowIdx: number, colIdx: number): void {
-        let style: CellStyleModel = {};
+        const style: CellStyleModel = {};
         if (this.parent.getCellStyleValue([prop], [rowIdx, colIdx])[prop] !== '') {
             style[prop] = undefined; this.setCellStyle(sheet, rowIdx, colIdx, style);
         }
     }
     private checkFullBorder(sheet: SheetModel, prop: string, rowIdx: number, colIdx: number): void {
-        let border: string = this.parent.getCellStyleValue(['border'], [rowIdx, colIdx]).border;
+        const border: string = this.parent.getCellStyleValue(['border'], [rowIdx, colIdx]).border;
         if (border !== '') {
-            let style: CellStyleModel = { border: undefined };
+            const style: CellStyleModel = { border: undefined };
             ['borderBottom', 'borderTop', 'borderLeft', 'borderRight'].forEach((value: string): void => {
                 if (value !== prop) { style[value] = border; }
             });
@@ -144,14 +151,14 @@ export class WorkbookCellFormat {
         }
     }
     private textDecorationActionUpdate(args: { style: CellStyleModel, refreshRibbon?: boolean, cancel?: boolean }): void {
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let eventArgs: BeforeCellFormatArgs = { range: sheet.selectedRange, style: args.style, requestType: 'CellFormat' };
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const eventArgs: BeforeCellFormatArgs = { range: sheet.selectedRange, style: args.style, requestType: 'CellFormat' };
         this.parent.trigger('beforeCellFormat', eventArgs);
         this.parent.notify('actionBegin', { eventArgs: eventArgs, action: 'format' });
         if (eventArgs.cancel) { args.cancel = true; return; }
-        let indexes: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
-        let value: TextDecoration = args.style.textDecoration; let changedValue: TextDecoration = value;
-        let activeCellIndexes: number[] = getRangeIndexes(sheet.activeCell);
+        const indexes: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
+        const value: TextDecoration = args.style.textDecoration; let changedValue: TextDecoration = value;
+        const activeCellIndexes: number[] = getRangeIndexes(sheet.activeCell);
         let cellValue: TextDecoration = this.parent.getCellStyleValue(['textDecoration'], activeCellIndexes).textDecoration;
         let changedStyle: CellStyleModel; let removeProp: boolean = false;
         if (cellValue === 'underline') {
@@ -224,7 +231,7 @@ export class WorkbookCellFormat {
         } else if (type === 'Inner') {
             for (let i: number = range[0]; i <= range[2]; i++) {
                 for (let j: number = range[1]; j <= range[3]; j++) {
-                    let style: CellStyleModel = {};
+                    const style: CellStyleModel = {};
                     prevBorder = this.parent.getCellStyleValue(['border'], [i, j]).border;
                     if (prevBorder !== '') {
                         style.border = undefined;
@@ -243,24 +250,24 @@ export class WorkbookCellFormat {
                 }
             }
         } else if (type === 'Vertical') {
-                for (let i: number = range[0]; i <= range[2]; i++) {
-                    for (let j: number = range[1]; j <= range[3]; j++) {
-                        let style: CellStyleModel = { borderRight: border, borderLeft: border };
-                        if (j === range[1]) {
-                            this.checkAdjustantBorder(sheet, 'borderRight', i, j - 1);
-                            this.checkFullBorder(sheet, 'borderRight', i, j - 1);
-                        }
-                        if (j === range[3]) {
-                            this.checkAdjustantBorder(sheet, 'borderLeft', i, j + 1);
-                            this.checkFullBorder(sheet, 'borderLeft', i, j + 1);
-                        }
-                        this.setCellBorder(sheet, style, i, j, actionUpdate);
+            for (let i: number = range[0]; i <= range[2]; i++) {
+                for (let j: number = range[1]; j <= range[3]; j++) {
+                    const style: CellStyleModel = { borderRight: border, borderLeft: border };
+                    if (j === range[1]) {
+                        this.checkAdjustantBorder(sheet, 'borderRight', i, j - 1);
+                        this.checkFullBorder(sheet, 'borderRight', i, j - 1);
                     }
+                    if (j === range[3]) {
+                        this.checkAdjustantBorder(sheet, 'borderLeft', i, j + 1);
+                        this.checkFullBorder(sheet, 'borderLeft', i, j + 1);
+                    }
+                    this.setCellBorder(sheet, style, i, j, actionUpdate);
                 }
+            }
         } else {
             for (let i: number = range[0]; i <= range[2]; i++) {
                 for (let j: number = range[1]; j <= range[3]; j++) {
-                    let style: CellStyleModel = { borderTop: border, borderBottom: border };
+                    const style: CellStyleModel = { borderTop: border, borderBottom: border };
                     if (i === range[0]) {
                         this.checkAdjustantBorder(sheet, 'borderBottom', i - 1, j);
                         this.checkFullBorder(sheet, 'borderBottom', i - 1, j);
@@ -314,36 +321,36 @@ export class WorkbookCellFormat {
     }
 
     private clearCellObj(options: ClearOptions): void {
-        let clrRange: string = options.range ? (options.range.indexOf('!') > 0) ? options.range.split('!')[1] : options.range.split('!')[0]
+        const clrRange: string = options.range ? (options.range.indexOf('!') > 0) ? options.range.split('!')[1] : options.range.split('!')[0]
             : this.parent.getActiveSheet().selectedRange;
-        let sheetIdx: number = (options.range && options.range.indexOf('!') > 0) ?
+        const sheetIdx: number = (options.range && options.range.indexOf('!') > 0) ?
             getSheetIndex(this.parent, options.range.split('!')[0]) : this.parent.activeSheetIndex;
-        let sheet: SheetModel = getSheet(this.parent, sheetIdx);
-        let range: number[] = getIndexesFromAddress(clrRange);
+        const sheet: SheetModel = getSheet(this.parent, sheetIdx);
+        const range: number[] = getIndexesFromAddress(clrRange);
         let sRowIdx: number = range[0];
-        let eRowIdx: number = range[2];
+        const eRowIdx: number = range[2];
         let sColIdx: number;
         let eColIdx: number;
         for (sRowIdx; sRowIdx <= eRowIdx; sRowIdx++) {
             sColIdx = range[1];
             eColIdx = range[3];
             for (sColIdx; sColIdx <= eColIdx; sColIdx++) {
-                let cell: CellModel = getCell(sRowIdx, sColIdx, sheet);
+                const cell: CellModel = getCell(sRowIdx, sColIdx, sheet);
                 if (cell) {
                     switch (options.type) {
-                        case 'Clear Formats':
-                            delete cell.format; delete cell.rowSpan; delete cell.style;
-                            delete cell.wrap; delete cell.colSpan;
-                            break;
-                        case 'Clear Contents':
-                            delete cell.value; delete cell.formula;
-                            break;
-                        case 'Clear Hyperlinks':
-                            delete cell.hyperlink;
-                            break;
-                        case 'Clear All':
-                            setCell(sRowIdx, sColIdx, sheet, {}, false);
-                            break;
+                    case 'Clear Formats':
+                        delete cell.format; delete cell.rowSpan; delete cell.style;
+                        delete cell.wrap; delete cell.colSpan;
+                        break;
+                    case 'Clear Contents':
+                        delete cell.value; delete cell.formula;
+                        break;
+                    case 'Clear Hyperlinks':
+                        delete cell.hyperlink;
+                        break;
+                    case 'Clear All':
+                        setCell(sRowIdx, sColIdx, sheet, {}, false);
+                        break;
                     }
                 }
             }
@@ -351,6 +358,8 @@ export class WorkbookCellFormat {
     }
     /**
      * To destroy workbook cell format.
+     *
+     * @returns {void} - To destroy workbook cell format.
      */
     public destroy(): void {
         this.removeEventListener();
@@ -358,6 +367,8 @@ export class WorkbookCellFormat {
     }
     /**
      * Get the workbook cell format module name.
+     *
+     *  @returns {void}
      */
     public getModuleName(): string {
         return 'workbookcellformat';

@@ -30,6 +30,7 @@ const cssClassName: CssClassNameT = {
  */
 @NotifyPropertyChanges
 export class Button extends Component<HTMLButtonElement> implements INotifyPropertyChanged {
+    // eslint-disable-next-line
     private removeRippleEffect: Function;
 
     /**
@@ -37,6 +38,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
      * The possible values are:
      * * Left: The icon will be positioned to the left of the text content.
      * * Right: The icon will be positioned to the right of the text content.
+     *
      * @default "left"
      */
     @Property('Left')
@@ -45,6 +47,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
     /**
      * Defines class/multiple classes separated by a space for the Button that is used to include an icon.
      * Buttons can also include font icon and sprite image.
+     *
      * @default ""
      */
     @Property('')
@@ -52,6 +55,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
 
     /**
      * Specifies a value that indicates whether the Button is `disabled` or not.
+     *
      * @default false.
      */
     @Property(false)
@@ -59,6 +63,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
 
     /**
      * Allows the appearance of the Button to be enhanced and visually appealing when set to `true`.
+     *
      * @default false
      */
     @Property(false)
@@ -69,6 +74,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
      * size can be defined by using
      * [`this`](http://ej2.syncfusion.com/documentation/button/howto.html?lang=typescript#create-a-block-button).
      * {% codeBlock src='button/cssClass/index.md' %}{% endcodeBlock %}
+     *
      * @default ""
      */
     @Property('')
@@ -77,6 +83,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
     /**
      * Defines the text `content` of the Button element.
      * {% codeBlock src='button/content/index.md' %}{% endcodeBlock %}
+     *
      * @default ""
      */
     @Property('')
@@ -84,6 +91,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
 
     /**
      * Makes the Button toggle, when set to `true`. When you click it, the state changes from normal to active.
+     *
      * @default false
      */
     @Property(false)
@@ -91,6 +99,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
 
     /**
      * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
+     *
      * @private
      */
     @Property()
@@ -98,6 +107,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
 
     /**
      * Defines whether to allow the cross-scripting site or not.
+     *
      * @default false
      */
     @Property(false)
@@ -105,15 +115,17 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
 
     /**
      * Triggers once the component rendering is completed.
-     * @event
+     *
+     * @event created
      */
     @Event()
     public created: EmitType<Event>;
 
     /**
      * Constructor for creating the widget
-     * @param  {ButtonModel} options?
-     * @param  {string|HTMLButtonElement} element?
+     *
+     * @param  {ButtonModel} options - Specifies the button model
+     * @param  {string|HTMLButtonElement} element - Specifies the target element
      */
     constructor(options?: ButtonModel, element?: string | HTMLButtonElement) {
         super(options, <string | HTMLButtonElement>element);
@@ -125,7 +137,8 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
 
     /**
      * Initialize the control rendering
-     * @returns void
+     *
+     * @returns {void}
      * @private
      */
     public render(): void {
@@ -143,7 +156,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
         }
         if (!isBlazor() || (isBlazor() && this.getModuleName() !== 'progress-btn')) {
             if (this.content) {
-                let tempContent: string = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(this.content) : this.content;
+                const tempContent: string = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(this.content) : this.content;
                 this.element.innerHTML = tempContent;
             }
             this.setIconCss();
@@ -164,7 +177,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
 
     private setIconCss(): void {
         if (this.iconCss) {
-            let span: HTMLElement = this.createElement('span', { className: 'e-btn-icon ' + this.iconCss });
+            const span: HTMLElement = this.createElement('span', { className: 'e-btn-icon ' + this.iconCss });
             if (!this.element.textContent.trim()) {
                 this.element.classList.add(cssClassName.ICONBTN);
             } else {
@@ -173,7 +186,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
                     this.element.classList.add('e-' + this.iconPosition.toLowerCase() + '-icon-btn');
                 }
             }
-            let node: Node = this.element.childNodes[0];
+            const node: Node = this.element.childNodes[0];
             if (node && (this.iconPosition === 'Left' || this.iconPosition === 'Top')) {
                 this.element.insertBefore(span, node);
             } else {
@@ -205,10 +218,10 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
 
     /**
      * Destroys the widget.
-     * @returns void
+     *
+     * @returns {void}
      */
     public destroy(): void {
-        let span: Element;
         let classList: string[] = [cssClassName.PRIMARY, cssClassName.RTL, cssClassName.ICONBTN, 'e-success', 'e-info', 'e-danger',
             'e-warning', 'e-flat', 'e-outline', 'e-small', 'e-bigger', 'e-active', 'e-round',
             'e-top-icon-btn', 'e-bottom-icon-btn'];
@@ -226,7 +239,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
         if (this.content) {
             this.element.innerHTML = this.element.innerHTML.replace(this.content, '');
         }
-        span = this.element.querySelector('span.e-btn-icon');
+        const span: Element = this.element.querySelector('span.e-btn-icon');
         if (span) {
             detach(span);
         }
@@ -238,7 +251,8 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
 
     /**
      * Get component name.
-     * @returns string
+     *
+     * @returns {string} - Module name
      * @private
      */
     public getModuleName(): string {
@@ -247,7 +261,8 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
 
     /**
      * Get the properties to be maintained in the persisted state.
-     * @returns string
+     *
+     * @returns {string} - Persist Data
      * @private
      */
     public getPersistData(): string {
@@ -256,7 +271,9 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
 
     /**
      * Dynamically injects the required modules to the component.
+     *
      * @private
+     * @returns {void}
      */
     public static Inject(): void {
         // Inject code snippets
@@ -264,87 +281,90 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
 
     /**
      * Called internally if any of the property value changed.
-     * @param  {ButtonModel} newProp
-     * @param  {ButtonModel} oldProp
-     * @returns void
+     *
+     * @param  {ButtonModel} newProp - Specifies new properties
+     * @param  {ButtonModel} oldProp - Specifies old properties
+     * @returns {void}
      * @private
      */
     public onPropertyChanged(newProp: ButtonModel, oldProp: ButtonModel): void {
-        for (let prop of Object.keys(newProp)) {
+        let span: Element = this.element.querySelector('span.e-btn-icon');
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'isPrimary':
-                    if (newProp.isPrimary) {
-                        this.element.classList.add(cssClassName.PRIMARY);
-                    } else {
-                        this.element.classList.remove(cssClassName.PRIMARY);
-                    }
-                    break;
-                case 'disabled':
-                    this.controlStatus(newProp.disabled);
-                    break;
-                case 'iconCss':
-                    let span: Element = this.element.querySelector('span.e-btn-icon');
-                    if (span) {
-                        if (newProp.iconCss) {
-                            span.className = 'e-btn-icon ' + newProp.iconCss;
-                            if (this.element.textContent.trim()) {
-                                if (this.iconPosition === 'Left') {
-                                    span.classList.add('e-icon-left');
-                                } else {
-                                    span.classList.add('e-icon-right');
-                                }
+            case 'isPrimary':
+                if (newProp.isPrimary) {
+                    this.element.classList.add(cssClassName.PRIMARY);
+                } else {
+                    this.element.classList.remove(cssClassName.PRIMARY);
+                }
+                break;
+            case 'disabled':
+                this.controlStatus(newProp.disabled);
+                break;
+            case 'iconCss': {
+                if (span) {
+                    if (newProp.iconCss) {
+                        span.className = 'e-btn-icon ' + newProp.iconCss;
+                        if (this.element.textContent.trim()) {
+                            if (this.iconPosition === 'Left') {
+                                span.classList.add('e-icon-left');
+                            } else {
+                                span.classList.add('e-icon-right');
                             }
-                        } else {
-                            detach(span);
                         }
                     } else {
-                        this.setIconCss();
-                    }
-                    break;
-                case 'iconPosition':
-                    removeClass([this.element], ['e-top-icon-btn', 'e-bottom-icon-btn']);
-                    span = this.element.querySelector('span.e-btn-icon');
-                    if (span) {
                         detach(span);
                     }
+                } else {
                     this.setIconCss();
-                    break;
-                case 'cssClass':
-                    if (oldProp.cssClass) {
-                        removeClass([this.element], oldProp.cssClass.split(' '));
+                }
+                break;
+            }
+            case 'iconPosition':
+                removeClass([this.element], ['e-top-icon-btn', 'e-bottom-icon-btn']);
+                span = this.element.querySelector('span.e-btn-icon');
+                if (span) {
+                    detach(span);
+                }
+                this.setIconCss();
+                break;
+            case 'cssClass':
+                if (oldProp.cssClass) {
+                    removeClass([this.element], oldProp.cssClass.split(' '));
+                }
+                if (newProp.cssClass) {
+                    addClass([this.element], newProp.cssClass.split(' '));
+                }
+                break;
+            case 'enableRtl':
+                if (newProp.enableRtl) {
+                    this.element.classList.add(cssClassName.RTL);
+                } else {
+                    this.element.classList.remove(cssClassName.RTL);
+                }
+                break;
+            case 'content': {
+                const node: Node = getTextNode(this.element);
+                if (!node) {
+                    this.element.classList.remove(cssClassName.ICONBTN);
+                }
+                if (!isBlazor() || (isBlazor() && !this.isServerRendered && this.getModuleName() !== 'progress-btn')) {
+                    if (this.enableHtmlSanitizer) {
+                        newProp.content = SanitizeHtmlHelper.sanitize(newProp.content);
                     }
-                    if (newProp.cssClass) {
-                        addClass([this.element], newProp.cssClass.split(' '));
-                    }
-                    break;
-                case 'enableRtl':
-                    if (newProp.enableRtl) {
-                        this.element.classList.add(cssClassName.RTL);
-                    } else {
-                        this.element.classList.remove(cssClassName.RTL);
-                    }
-                    break;
-                case 'content':
-                    let node: Node = getTextNode(this.element);
-                    if (!node) {
-                        this.element.classList.remove(cssClassName.ICONBTN);
-                    }
-                    if (!isBlazor() || (isBlazor() && !this.isServerRendered && this.getModuleName() !== 'progress-btn')) {
-                        if (this.enableHtmlSanitizer) {
-                            newProp.content = SanitizeHtmlHelper.sanitize(newProp.content);
-                        }
-                        this.element.innerHTML = newProp.content;
-                        this.setIconCss();
-                    }
-                    break;
-                case 'isToggle':
-                    if (newProp.isToggle) {
-                        EventHandler.add(this.element, 'click', this.btnClickHandler, this);
-                    } else {
-                        EventHandler.remove(this.element, 'click', this.btnClickHandler);
-                        removeClass([this.element], ['e-active']);
-                    }
-                    break;
+                    this.element.innerHTML = newProp.content;
+                    this.setIconCss();
+                }
+                break;
+            }
+            case 'isToggle':
+                if (newProp.isToggle) {
+                    EventHandler.add(this.element, 'click', this.btnClickHandler, this);
+                } else {
+                    EventHandler.remove(this.element, 'click', this.btnClickHandler);
+                    removeClass([this.element], ['e-active']);
+                }
+                break;
             }
         }
     }
@@ -352,20 +372,24 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
     /**
      * Click the button element
      * its native method
+     *
      * @public
+     * @returns {void}
      */
     public click(): void {
-         this.element.click();
+        this.element.click();
     }
 
     /**
      * Sets the focus to Button
      * its native method
+     *
      * @public
+     * @returns {void}
      */
     public focusIn(): void {
         this.element.focus();
-   }
+    }
 }
 
 interface CssClassNameT {

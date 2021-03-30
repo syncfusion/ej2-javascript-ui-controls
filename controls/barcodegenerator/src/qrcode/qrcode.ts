@@ -16,8 +16,12 @@ import { ValidateEvent } from '../barcode';
  */
 export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPropertyChanged {
 
+
     /**
-     * Constructor for creating the widget
+     *  Constructor for creating the widget
+     *
+     * @param {QRCodeGeneratorModel} options - Provide the instance.
+     * @param {HTMLElement} element - Provide the element .
      */
     constructor(options?: QRCodeGeneratorModel, element?: HTMLElement | string) {
         super(options, <HTMLElement | string>element);
@@ -25,12 +29,14 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
     /**
      * Defines the height of the QR code model.
+     *
      * @default '100%'
      */
     @Property('100%')
     public height: string | number;
     /**
      * Defines the width of the QR code model.
+     *
      * @default '100%'
      */
     @Property('100%')
@@ -38,8 +44,10 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
     /**
      * Defines the QR code rendering mode.
+     *
      * * SVG - Renders the bar-code objects as SVG elements
      * * Canvas - Renders the bar-code in a canvas
+     *
      * @default 'SVG'
      */
     @Property('SVG')
@@ -47,15 +55,17 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
     /**
      * Defines the xDimension of the QR code model.
+     *
      */
     @Property(1)
     public xDimension: number;
 
     /**
      * Defines the error correction level of the QR code.
+     *
      * @blazorDefaultValueIgnore
      * @aspDefaultValueIgnore
-     * @aspNumberEnum 
+     * @aspNumberEnum
      * @blazorNumberEnum
      * @default undefined
      */
@@ -64,6 +74,7 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
     /**
      * Defines the margin properties for the QR code.
+     *
      * @default ''
      */
     @Complex<MarginModel>({}, Margin)
@@ -72,6 +83,7 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
     /**
      * Defines the background color of the QR code.
+     *
      * @default 'white'
      */
     @Property('white')
@@ -84,8 +96,10 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
     @Event()
     public invalid: EmitType<Object>;
 
+
     /**
      * Defines the forecolor of the QR code.
+     *
      * @default 'black'
      */
     @Property('black')
@@ -93,6 +107,7 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
     /**
      * Defines the text properties for the QR code.
+     *
      * @default ''
      */
     @Complex<DisplayTextModel>({}, DisplayText)
@@ -100,10 +115,11 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
     /**
      * * Defines the version of the QR code.
+     *
      * @aspDefaultValueIgnore
      * @blazorNumberEnum
      * @blazorDefaultValueIgnore
-     * @aspNumberEnum 
+     * @aspNumberEnum
      * @default undefined
      */
     @Property()
@@ -122,6 +138,7 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
     /**
      * Defines the type of barcode to be rendered.
+     *
      * @default undefined
      */
     @Property(undefined)
@@ -130,6 +147,7 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
     /** @private */
     public localeObj: L10n;
     /** @private */
+    // eslint-disable-next-line
     private defaultLocale: Object;
 
 
@@ -137,7 +155,9 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
 
     /**
-     * Renders the barcode control with nodes and connectors
+     * Renders the barcode control .
+     *
+     * @returns {void}
      */
     public render(): void {
 
@@ -153,7 +173,7 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
     }
 
     private triggerEvent(eventName: BarcodeEvent, message: string): void {
-        let arg: ValidateEvent = {
+        const arg: ValidateEvent = {
             message: message
         };
         this.trigger(BarcodeEvent[eventName], arg);
@@ -161,15 +181,15 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
 
     private renderElements(): void {
-        let barCode: QRCode = new QRCode();
+        const barCode: QRCode = new QRCode();
         barCode.text = this.value;
         barCode.XDimension = this.xDimension;
         barCode.mIsUserMentionedErrorCorrectionLevel = (this.errorCorrectionLevel !== undefined) ? true : false;
         barCode.mErrorCorrectionLevel = (this.errorCorrectionLevel !== undefined) ? this.errorCorrectionLevel : ErrorCorrectionLevel.Medium;
         barCode.version = (this.version !== undefined) ? this.version : undefined;
         barCode.mIsUserMentionedVersion = (this.version !== undefined) ? true : false;
-        let mode: boolean = (this.mode === 'SVG') ? true : false;
-        let validInput: boolean = barCode.draw(
+        const mode: boolean = (this.mode === 'SVG') ? true : false;
+        const validInput: boolean = barCode.draw(
             this.value, this.barcodeCanvas, this.element.offsetHeight as number,
             this.element.offsetWidth as number, this.margin, this.displayText, mode, this.foreColor);
         if (this.mode === 'Canvas') {
@@ -177,7 +197,7 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
             (this.barcodeCanvas as HTMLCanvasElement).getContext('2d').scale(1.5, 1.5);
         }
         if (!validInput) {
-            let encoding: String = 'Invalid Input';
+            const encoding: string = 'Invalid Input';
             this.triggerEvent(BarcodeEvent.invalid, encoding as string);
         }
         if (this.mode === 'Canvas') {
@@ -190,9 +210,9 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
     }
 
-
+    // eslint-disable-next-line
     private getElementSize(real: string | number, rulerSize?: number): string {
-        //this method will return the size of the qrcode 
+        //this method will return the size of the qrcode
         let value: string;
         if (real.toString().indexOf('px') > 0 || real.toString().indexOf('%') > 0) {
             value = real.toString();
@@ -229,16 +249,19 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
     /**
      * Get the properties to be maintained in the persisted state.
-     * @return {string}
+     *
+     * @returns {string} Get the properties to be maintained in the persisted state.
      */
     public getPersistData(): string {
-        let keyEntity: string[] = ['loaded'];
+        const keyEntity: string[] = ['loaded'];
         return this.addOnPersist(keyEntity);
     }
 
 
     /**
      * Returns the module name of the barcode
+     *
+     * @returns {string}  Returns the module name of the barcode
      */
     public getModuleName(): string {
         return 'QRCodeGenerator';
@@ -246,7 +269,10 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
 
     /**
-     * Destroys the barcode control
+     * It is used to destroy the Barcode component.
+     *
+     * @function destroy
+     * @returns {void}
      */
     public destroy(): void {
         this.notify('destroy', {});
@@ -260,23 +286,28 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
     }
 
     /**
-     * Export the qrcode as an image in the specified image type and downloads it in the browser.
-     *  @param {string} fileName - Specifies the filename of the qrcode image to be download. 
-     *  @param {BarcodeExportType} barcodeExportType - Defines the format of the qrcode to be exported
+     * Export the barcode as an image in the specified image type and downloads it in the browser.
+     *
+     * @returns {void} Export the barcode as an image in the specified image type and downloads it in the browser.
+     *  @param {string} filename - Specifies the filename of the barcode image to be download.
+     *  @param {BarcodeExportType} barcodeExportType - Defines the format of the barcode to be exported
      */
     public exportImage(filename: string, barcodeExportType: BarcodeExportType ): void {
         exportAsImage(barcodeExportType, filename, this.element, false, this);
     }
 
     /**
-     * Export the qrcode as an image in the specified image type and returns it as base64 string.
-     *  @param {BarcodeExportType} barcodeExportType - Defines the format of the qrcode to be exported
+     * Export the barcode as an image in the specified image type and returns it as base64 string.
+     *
+     * @returns {string} Export the barcode as an image in the specified image type and returns it as base64 string.
+     *  @param {BarcodeExportType} barcodeExportType - Defines the format of the barcode to be exported
      */
     public exportAsBase64Image(barcodeExportType: BarcodeExportType): Promise<string> {
-        let returnValue: Promise<string> = exportAsImage(barcodeExportType, '', this.element, true, this);
+        const returnValue: Promise<string> = exportAsImage(barcodeExportType, '', this.element, true, this);
         return returnValue;
     }
 
+    // eslint-disable-next-line
     public onPropertyChanged(newProp: QRCodeGeneratorModel, oldProp: QRCodeGeneratorModel): void {
         let width: number | string;
         let height: number | string;
@@ -299,21 +330,21 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
             height = (this.mode === 'Canvas' && newProp.mode !== 'Canvas') ? (((newProp.height as number) * 1.5)) : newProp.height;
             this.barcodeCanvas.setAttribute('height', String(height));
         }
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'width':
-                    this.element.style.width = this.getElementSize(width);
-                    this.barcodeCanvas.setAttribute('width', String(this.element.offsetWidth));
-                    break;
-                case 'height':
-                    this.element.style.height = this.getElementSize(height);
-                    this.barcodeCanvas.setAttribute('height', String(this.element.offsetHeight));
-                    break;
-                case 'backgroundColor':
-                    this.barcodeCanvas.setAttribute('style', 'background:' + newProp.backgroundColor);
-                    break;
-                case 'mode':
-                    this.initialize();
+            case 'width':
+                this.element.style.width = this.getElementSize(width);
+                this.barcodeCanvas.setAttribute('width', String(this.element.offsetWidth));
+                break;
+            case 'height':
+                this.element.style.height = this.getElementSize(height);
+                this.barcodeCanvas.setAttribute('height', String(this.element.offsetHeight));
+                break;
+            case 'backgroundColor':
+                this.barcodeCanvas.setAttribute('style', 'background:' + newProp.backgroundColor);
+                break;
+            case 'mode':
+                this.initialize();
             }
 
         }

@@ -4,6 +4,14 @@ import { HScroll } from './h-scroll';
 
 /**
  * Used to add scroll in menu.
+ *
+ * @param {createElementType} createElement - Specifies the create element model
+ * @param {HTMLElement} container - Specifies the element container
+ * @param {HTMLElement} content - Specifies the content element
+ * @param {string} scrollType - Specifies the scroll type
+ * @param {boolean} enableRtl - Specifies the enable RTL property
+ * @param {boolean} offset - Specifies the offset value
+ * @returns {HTMLElement} - Element
  * @hidden
  */
 export function addScrolling(
@@ -16,7 +24,7 @@ export function addScrolling(
         containerOffset = container.getBoundingClientRect().width; contentOffset = content.getBoundingClientRect().width;
     }
     if (containerOffset < contentOffset) {
-        let scrollEle: HTMLElement = createElement('div', { className: 'e-menu-' + scrollType });
+        const scrollEle: HTMLElement = createElement('div', { className: 'e-menu-' + scrollType });
         container.appendChild(scrollEle);
         scrollEle.appendChild(content);
         if (offset) {
@@ -42,11 +50,16 @@ export function addScrolling(
 
 /**
  * Used to destroy the scroll option.
+ *
+ * @param {VScroll | HScroll} scrollObj - Specifies the scroller object
+ * @param {Element} element - Specifies the element
+ * @param {HTMLElement} skipEle - Specifies the skip  element
+ * @returns {void}
  * @hidden
  */
 export function destroyScroll(scrollObj: VScroll | HScroll, element: Element, skipEle?: HTMLElement): void {
     if (scrollObj) {
-        let menu: Element = select('.e-menu-parent', element);
+        const menu: Element = select('.e-menu-parent', element);
         if (menu) {
             if (!skipEle || skipEle === menu) {
                 scrollObj.destroy();

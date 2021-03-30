@@ -15,6 +15,7 @@ export class Border extends ChildProperty<Border> {
 
     /**
      * Gets and sets the width of the border in circular gauge.
+     *
      * @default 1
      */
     @Property(1)
@@ -30,6 +31,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Gets and sets the font size of the text in annotation, label, and tooltip, etc. The default of the size is '16px'.
+     *
      * @default '16px'
      */
     @Property('16px')
@@ -43,6 +45,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Gets and sets the font family for the given text in annotation, tooltip etc.
+     *
      * @default 'segoe UI'
      */
     @Property('segoe UI')
@@ -50,6 +53,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Gets and sets the font weight for the text in annotation, tooltip etc.
+     *
      * @default 'Normal'
      */
     @Property('Normal')
@@ -57,6 +61,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Gets and sets the style of the font, which is in in annotation, tooltip etc.
+     *
      * @default 'Normal'
      */
     @Property('Normal')
@@ -64,6 +69,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Sets and gets the opacity for the annotation or tooltip text.
+     *
      * @default 1
      */
     @Property(1)
@@ -77,6 +83,7 @@ export class Font extends ChildProperty<Font> {
 export class RangeTooltip extends ChildProperty<RangeTooltip> {
     /**
      * Gets and sets the fill color of the range tooltip. This property accepts value in hex code, rgba string as a valid CSS color string.
+     *
      * @default null
      */
 
@@ -92,6 +99,7 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
 
     /**
      * Sets and gets the format of the range tooltip in circular gauge.
+     *
      * @default null
      */
     @Property(null)
@@ -100,6 +108,7 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
     /**
      * Sets and gets the custom template to format the tooltip content. Use ${x} and ${y}
      * as a placeholder text to display the corresponding data point.
+     *
      * @default null
      */
     @Property(null)
@@ -107,6 +116,7 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
 
     /**
      * Enables and disables the animation for the range tooltip. The animation is set as true by default.
+     *
      * @default true
      */
     @Property(true)
@@ -120,6 +130,7 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
 
     /**
      * Enables and disables the range tooltip to be shown at mouse position. By default, it set as false.
+     *
      * @default false
      */
     @Property(false)
@@ -134,6 +145,7 @@ export class AnnotationTooltip extends ChildProperty<AnnotationTooltip> {
     /**
      * Sets and gets the fill color of the annotation tooltip. This property accepts value in hex code,
      * rgba string as a valid CSS color string.
+     *
      * @default null
      */
     @Property(null)
@@ -147,6 +159,7 @@ export class AnnotationTooltip extends ChildProperty<AnnotationTooltip> {
 
     /**
      * Sets and gets the format of annotation in tooltip.
+     *
      * @default null
      */
 
@@ -156,6 +169,7 @@ export class AnnotationTooltip extends ChildProperty<AnnotationTooltip> {
     /**
      * Sets and gets the custom template to format the tooltip content. Use ${x} and ${y}
      * as a placeholder text to display the corresponding data point.
+     *
      * @default null
      */
 
@@ -164,6 +178,7 @@ export class AnnotationTooltip extends ChildProperty<AnnotationTooltip> {
 
     /**
      * Enables and disables the animation of the annotation tooltip. By default, the animation is set as true.
+     *
      * @default true
      */
     @Property(true)
@@ -184,6 +199,7 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * Gets and sets the left margin value of the gauge.
+     *
      * @default 10
      */
     @Property(10)
@@ -191,6 +207,7 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * Gets and sets the right margin value of the gauge.
+     *
      * @default 10
      */
     @Property(10)
@@ -198,6 +215,7 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * Gets and sets the top margin value of the gauge.
+     *
      * @default 10
      */
     @Property(10)
@@ -205,6 +223,7 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * Gets and sets the bottom margin value of the gauge.
+     *
      * @default 10
      */
     @Property(10)
@@ -218,6 +237,7 @@ export class Margin extends ChildProperty<Margin> {
 export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
      * Enables or Disables the visibility of tooltip.
+     *
      * @default false
      */
 
@@ -226,6 +246,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * Sets and gets the fill color of the tooltip. This property accepts value in hex code, rgba string as a valid CSS color string.
+     *
      * @default null
      */
 
@@ -250,11 +271,12 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
      * Gets and sets the tooltip settings for the annotation in circular gauge.
      */
 
-     @Complex<AnnotationTooltipModel>({}, AnnotationTooltip)
-     public annotationSettings: AnnotationTooltipModel;
+    @Complex<AnnotationTooltipModel>({}, AnnotationTooltip)
+    public annotationSettings: AnnotationTooltipModel;
 
     /**
      * Sets and gets the format for the tooltip content in circular gauge.
+     *
      * @default null
      */
 
@@ -264,6 +286,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
      * Sets and gets the custom template to format the tooltip content. Use ${x} and ${y}
      * as a placeholder text to display the corresponding data point.
+     *
      * @default null
      */
 
@@ -272,6 +295,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * Enables and disables the animation to take place in circular gauge.
+     *
      * @default true
      */
     @Property(true)
@@ -285,6 +309,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * Enables and disables the tooltip of the circular gauge at mouse position. By default, it set as false.
+     *
      * @default false
      */
     @Property(false)
@@ -292,6 +317,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * Sets and gets the options to select the type of tooltip for range, annotation and pointer.
+     *
      * @default Pointer
      */
     @Property('Pointer')

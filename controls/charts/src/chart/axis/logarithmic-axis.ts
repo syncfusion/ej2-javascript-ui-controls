@@ -1,3 +1,7 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { Axis } from '../axis/axis';
 import { Double } from '../axis/double-axis';
 import { getActualDesiredIntervalsCount, triggerLabelRender } from '../../common/utils/helper';
@@ -16,6 +20,7 @@ export class Logarithmic extends Double {
 
     /**
      * Constructor for the logerithmic module.
+     *
      * @private
      */
     constructor(chart: Chart) {
@@ -24,12 +29,13 @@ export class Logarithmic extends Double {
 
     /**
      * The method to calculate the range and labels for the axis.
-     * @return {void}
+     *
+     * @returns {void}
      */
 
     public calculateRangeAndInterval(size: Size, axis: Axis): void {
 
-        this.calculateRange(axis, size);
+        this.calculateRange(axis);
 
         this.getActualRange(axis, size);
 
@@ -39,6 +45,7 @@ export class Logarithmic extends Double {
     }
     /**
      * Calculates actual range for the axis.
+     *
      * @private
      */
 
@@ -59,6 +66,7 @@ export class Logarithmic extends Double {
     }
     /**
      * Calculates visible range for the axis.
+     *
      * @private
      */
     protected calculateVisibleRange(size: Size, axis: Axis): void {
@@ -66,7 +74,7 @@ export class Logarithmic extends Double {
             interval: axis.actualRange.interval, max: axis.actualRange.max,
             min: axis.actualRange.min, delta: axis.actualRange.delta
         };
-        let isLazyLoad : boolean = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
+        const isLazyLoad : boolean = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
         if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
             axis.calculateVisibleRangeOnZooming(this.chart);
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
@@ -78,14 +86,15 @@ export class Logarithmic extends Double {
     }
     /**
      * Calculates log iInteval for the axis.
+     *
      * @private
      */
     protected calculateLogNiceInterval(delta: number, size: Size, axis: Axis): number {
-        let actualDesiredIntervalsCount: number = getActualDesiredIntervalsCount(size, axis);
+        const actualDesiredIntervalsCount: number = getActualDesiredIntervalsCount(size, axis);
         let niceInterval: number = delta;
-        let minInterval: number = Math.pow(axis.logBase, Math.floor(logBase(niceInterval, 10)));
+        const minInterval: number = Math.pow(axis.logBase, Math.floor(logBase(niceInterval, 10)));
         for (let j: number = 0, len: number = axis.intervalDivs.length; j < len; j++) {
-            let currentInterval: number = minInterval * axis.intervalDivs[j];
+            const currentInterval: number = minInterval * axis.intervalDivs[j];
             if (actualDesiredIntervalsCount < (delta / currentInterval)) {
                 break;
             }
@@ -96,6 +105,7 @@ export class Logarithmic extends Double {
 
     /**
      * Calculates labels for the axis.
+     *
      * @private
      */
     public calculateVisibleLabels(axis: Axis, chart: Chart | RangeNavigator): void {
@@ -106,8 +116,8 @@ export class Logarithmic extends Double {
         if (axis.zoomFactor < 1 || axis.zoomPosition > 0) {
             tempInterval = axis.visibleRange.min - (axis.visibleRange.min % axis.visibleRange.interval);
         }
-        let axisFormat: string = this.getFormat(axis);
-        let isCustomFormat: boolean = axisFormat.match('{value}') !== null;
+        const axisFormat: string = this.getFormat(axis);
+        const isCustomFormat: boolean = axisFormat.match('{value}') !== null;
         axis.format = chart.intl.getNumberFormat({
             format: isCustomFormat ? '' : axisFormat,
             useGrouping: chart.useGroupingSeparator
@@ -143,11 +153,12 @@ export class Logarithmic extends Double {
 
     /**
      * To destroy the category axis.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method performed here
          */

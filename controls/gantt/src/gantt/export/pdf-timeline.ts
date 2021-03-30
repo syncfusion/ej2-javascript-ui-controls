@@ -12,7 +12,6 @@ import { Gantt } from '../base/gantt';
 import { PdfPaddings } from './pdf-base';
 
 /**
- * 
  */
 export class PdfTimeline {
     public parent: Gantt;
@@ -45,9 +44,10 @@ export class PdfTimeline {
     }
     /**
      * @private
-     * @param page 
-     * @param startPoint 
-     * @param detail 
+     * @param {PdfPage} page .
+     * @param {PointF} startPoint .
+     * @param {TimelineDetails} detail .
+     * @returns {void}
      */
     public drawTimeline(page: PdfPage, startPoint: PointF, detail: TimelineDetails): void {
         let remainWidth: number = Math.floor(detail.totalWidth);
@@ -57,7 +57,7 @@ export class PdfTimeline {
         this.prevTopTierIndex = this.topTierIndex;
         this.prevBottomTierIndex = this.bottomTierIndex;
         while (remainWidth > 0) {
-            let pHeader: TimelineFormat = this.topTier[this.topTierIndex];
+            const pHeader: TimelineFormat = this.topTier[this.topTierIndex];
             if (this.topTier.length > this.topTierIndex) {
                 let isCompleted: boolean = false;
                 if (!this.topTier[this.topTierIndex].isFinished) {
@@ -75,7 +75,7 @@ export class PdfTimeline {
                     }
                 }
                 //Primary header Event Arguments
-                /* tslint:disable-next-line */
+                /* eslint-disable-next-line */
                 this.triggerQueryTimelinecell(page, this.topTierPoint.x, this.topTierPoint.y, this.topTierHeight, renderWidth, pHeader.value, true);
                 this.topTierPoint.x += pixelToPoint(renderWidth);
                 remainWidth -= renderWidth;
@@ -87,10 +87,10 @@ export class PdfTimeline {
             }
         }
         remainWidth = Math.floor(detail.totalWidth);
-        let height: number = this.parent.timelineModule.isSingleTier ? 0 : this.topTierHeight;
+        const height: number = this.parent.timelineModule.isSingleTier ? 0 : this.topTierHeight;
         this.bottomTierPoint = new PointF(startPoint.x, pixelToPoint(startPoint.y + height));
         while (remainWidth > 0) {
-            let secondHeader: TimelineFormat = this.bottomTier[this.bottomTierIndex];
+            const secondHeader: TimelineFormat = this.bottomTier[this.bottomTierIndex];
             if (this.bottomTier.length > this.bottomTierIndex) {
                 let isCompleted: boolean = true;
                 let width: number = secondHeader.width;
@@ -100,7 +100,7 @@ export class PdfTimeline {
                     secondHeader.completedWidth = width;
                 }
                 //Secondary header Event Arguments
-                /* tslint:disable-next-line */
+                /* eslint-disable-next-line */
                 this.triggerQueryTimelinecell(page, this.bottomTierPoint.x, this.bottomTierPoint.y, this.bottomTierHeight, width, secondHeader.value, false);
                 this.bottomTierPoint.x = this.bottomTierPoint.x + pixelToPoint(width);
                 remainWidth -= width;
@@ -115,17 +115,23 @@ export class PdfTimeline {
     }
 
     /**
+     *
+     * @param {PdfPage} page .
+     * @param {PointF} startPoint .
+     * @param {TimelineDetails}  detail .
+     * @returns {void} .
      * Draw the specific gantt chart side header when the taskbar exceeds the page
      * @private
      */
+    /* eslint-disable-next-line */
     public drawPageTimeline(page: PdfPage, startPoint: PointF, detail: TimelineDetails): void {
         this.topTierPoint = extend({}, {}, startPoint, true) as PointF;
         for (let index: number = this.prevTopTierIndex; index <= this.topTierIndex; index++) {
             if (this.topTier.length > index) {
-                let pHeader: TimelineFormat = this.topTier[index];
+                const pHeader: TimelineFormat = this.topTier[index];
                 if (pHeader.completedWidth > 0) {
                     //Primary header Event Arguments
-                    /* tslint:disable-next-line */
+                    /* eslint-disable-next-line */
                     this.triggerQueryTimelinecell(page, this.topTierPoint.x, this.topTierPoint.y, this.topTierHeight, pHeader.completedWidth, pHeader.value, true);
                     this.topTierPoint.x += pixelToPoint(pHeader.completedWidth);
                 }
@@ -135,10 +141,10 @@ export class PdfTimeline {
         this.bottomTierPoint.y = pixelToPoint(startPoint.y + this.topTierHeight);
         for (let index: number = this.prevBottomTierIndex; index <= this.bottomTierIndex; index++) {
             if (this.bottomTier.length > index) {
-                let secondHeader: TimelineFormat = this.bottomTier[index];
+                const secondHeader: TimelineFormat = this.bottomTier[index];
                 if (secondHeader.completedWidth > 0) {
                     //Secondary header Event Arguments
-                    /* tslint:disable-next-line */
+                    /* eslint-disable-next-line */
                     this.triggerQueryTimelinecell(page, this.bottomTierPoint.x, this.bottomTierPoint.y, this.bottomTierHeight, secondHeader.width, secondHeader.value, false);
                     this.bottomTierPoint.x = this.bottomTierPoint.x + pixelToPoint(secondHeader.width);
                 }
@@ -148,11 +154,11 @@ export class PdfTimeline {
     /**
      * Method to trigger pdf query timelinecell event
      */
-    /* tslint:disable-next-line */
+    /* eslint-disable-next-line */
     private triggerQueryTimelinecell(page: PdfPage, x: number, y: number, height: number, width: number, value: string, isTopTier: boolean): void {
-        let graphics: PdfGraphics = page.graphics;
-        let timelineStyle: PdfGanttCellStyle = {};
-        let ganttStyle: IGanttStyle = this.gantt.ganttStyle;
+        const graphics: PdfGraphics = page.graphics;
+        const timelineStyle: PdfGanttCellStyle = {};
+        const ganttStyle: IGanttStyle = this.gantt.ganttStyle;
         timelineStyle.borderColor = new PdfColor(ganttStyle.timeline.borderColor);
         timelineStyle.fontColor = new PdfColor(ganttStyle.timeline.fontColor);
         timelineStyle.fontSize = ganttStyle.timeline.fontSize;
@@ -175,22 +181,22 @@ export class PdfTimeline {
             format = ganttStyle.timeline.format;
         }
         timelineStyle.format = format;
-        let eventArgs: PdfQueryTimelineCellInfoEventArgs = {
+        const eventArgs: PdfQueryTimelineCellInfoEventArgs = {
             timelineCell: timelineStyle,
-            value: value,
+            value: value
         };
         if (this.parent.pdfQueryTimelineCellInfo) {
             this.parent.trigger('pdfQueryTimelineCellInfo', eventArgs);
         }
-        let e: PdfGanttCellStyle = eventArgs.timelineCell;
-        let rectPen: PdfPen = new PdfPen(eventArgs.timelineCell.borderColor);
-        let rectBrush: PdfBrush = new PdfSolidBrush(eventArgs.timelineCell.backgroundColor);
+        const e: PdfGanttCellStyle = eventArgs.timelineCell;
+        const rectPen: PdfPen = new PdfPen(eventArgs.timelineCell.borderColor);
+        const rectBrush: PdfBrush = new PdfSolidBrush(eventArgs.timelineCell.backgroundColor);
         graphics.drawRectangle(rectPen, rectBrush, x, y, pixelToPoint(width), pixelToPoint(height));
-        let font: PdfTrueTypeFont | PdfStandardFont = new PdfStandardFont(ganttStyle.fontFamily, e.fontSize, e.fontStyle);
-        let textBrush: PdfBrush = new PdfSolidBrush(eventArgs.timelineCell.fontColor);
-        let pLeft: PdfPaddings | number = ganttStyle.timeline.padding ? eventArgs.timelineCell.padding.left : 0;
-        let pTop: PdfPaddings | number = ganttStyle.timeline.padding ? eventArgs.timelineCell.padding.top : 0;
-        /* tslint:disable-next-line */
+        const font: PdfTrueTypeFont | PdfStandardFont = new PdfStandardFont(ganttStyle.fontFamily, e.fontSize, e.fontStyle);
+        const textBrush: PdfBrush = new PdfSolidBrush(eventArgs.timelineCell.fontColor);
+        const pLeft: PdfPaddings | number = ganttStyle.timeline.padding ? eventArgs.timelineCell.padding.left : 0;
+        const pTop: PdfPaddings | number = ganttStyle.timeline.padding ? eventArgs.timelineCell.padding.top : 0;
+        /* eslint-disable-next-line */
         graphics.drawString(eventArgs.value, font, null, textBrush, x + pLeft, y + pTop, pixelToPoint(width), pixelToPoint(height), e.format);
     }
 }

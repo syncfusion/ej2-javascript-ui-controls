@@ -1,20 +1,20 @@
-import { detach, EventHandler, Browser, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { detach, EventHandler, Browser, extend, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/index';
-import { SheetModel, getRangeIndexes, getCell, setCell, getSheet, CellModel, getSwapRange, inRange } from '../../workbook/index';
+import { SheetModel, getRangeIndexes, getCell, setCell, getSheet, CellModel, getSwapRange, inRange, isHiddenRow } from '../../workbook/index';
 import { CellStyleModel, getRangeAddress, workbookEditOperation, getSheetIndexFromId, getSheetName } from '../../workbook/index';
-import { RowModel, getFormattedCellObject, workbookFormulaOperation, checkIsFormula, Sheet } from '../../workbook/index';
+import { RowModel, getFormattedCellObject, workbookFormulaOperation, checkIsFormula, Sheet, mergedRange } from '../../workbook/index';
 import { ExtendedSheet, Cell, pasteMerge, setMerge, MergeArgs, getCellIndexes, getCellAddress, ChartModel } from '../../workbook/index';
-import { ribbonClick, ICellRenderer, cut, copy, paste, PasteSpecialType, initiateFilterUI, focus } from '../common/index';
+import { ribbonClick, ICellRenderer, cut, copy, paste, PasteSpecialType, initiateFilterUI, focus, setPosition } from '../common/index';
 import { BeforePasteEventArgs, hasTemplate, createImageElement } from '../common/index';
 import { enableToolbarItems, rowHeightChanged, completeAction, beginAction, DialogBeforeOpenEventArgs } from '../common/index';
-import { clearCopy, locateElem, selectRange, dialog, contentLoaded, tabSwitch, cMenuBeforeOpen, locale } from '../common/index';
+import { clearCopy, selectRange, dialog, contentLoaded, tabSwitch, cMenuBeforeOpen, locale } from '../common/index';
 import { getMaxHgt, setMaxHgt, setRowEleHeight, deleteImage, getRowIdxFromClientY, getColIdxFromClientX } from '../common/index';
 import { Dialog } from '../services/index';
 import { Deferred } from '@syncfusion/ej2-data';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { refreshRibbonIcons, isCellReference, getColumn, isLocked as isCellLocked, FilterCollectionModel } from '../../workbook/index';
-import { getFilteredCollection, setChart, parseIntValue } from '../../workbook/index';
+import { getFilteredCollection, setChart, parseIntValue, isSingleCell, activeCellMergedRange } from '../../workbook/index';
 
 /**
  * Represents clipboard support for Spreadsheet.
@@ -43,7 +43,7 @@ export class Clipboard {
     }
 
     private addEventListener(): void {
-        let ele: Element = this.getClipboardEle();
+        const ele: Element = this.getClipboardEle();
         this.parent.on(cut, this.cut, this);
         this.parent.on(copy, this.copy, this);
         this.parent.on(paste, this.paste, this);
@@ -59,7 +59,7 @@ export class Clipboard {
     }
 
     private removeEventListener(): void {
-        let ele: Element = this.getClipboardEle();
+        const ele: Element = this.getClipboardEle();
         if (!this.parent.isDestroyed) {
             this.parent.off(cut, this.cut);
             this.parent.off(copy, this.copy);
@@ -77,14 +77,14 @@ export class Clipboard {
     }
 
     private ribbonClickHandler(args: ClickEventArgs): void {
-        let parentId: string = this.parent.element.id;
+        const parentId: string = this.parent.element.id;
         switch (args.item.id) {
-            case parentId + '_cut':
-                this.cut({ isAction: true } as CopyArgs & ClipboardEvent);
-                break;
-            case parentId + '_copy':
-                this.copy({ isAction: true } as CopyArgs & ClipboardEvent);
-                break;
+        case parentId + '_cut':
+            this.cut({ isAction: true } as CopyArgs & ClipboardEvent);
+            break;
+        case parentId + '_copy':
+            this.copy({ isAction: true } as CopyArgs & ClipboardEvent);
+            break;
         }
         focus(this.parent.element);
     }
@@ -94,14 +94,14 @@ export class Clipboard {
     }
 
     private cMenuBeforeOpenHandler(e: { target: string }): void {
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
         let delRowItems: string[] = []; let hideRowItems: string[] = [];
         let delColItems: string[] = []; let hideColItems: string[] = [];
-        let actCell: string = sheet.activeCell;
-        let actCellIndex: number[] = getCellIndexes(actCell);
-        let cellObj: CellModel = getCell(actCellIndex[0], actCellIndex[1], sheet);
-        let isLocked: boolean = sheet.isProtected && isCellLocked(cellObj, getColumn(sheet, actCellIndex[1]));
+        const actCell: string = sheet.activeCell;
+        const actCellIndex: number[] = getCellIndexes(actCell);
+        const cellObj: CellModel = getCell(actCellIndex[0], actCellIndex[1], sheet);
+        const isLocked: boolean = sheet.isProtected && isCellLocked(cellObj, getColumn(sheet, actCellIndex[1]));
         if (e.target === 'Content' || e.target === 'RowHeader' || e.target === 'ColumnHeader') {
             this.parent.enableContextMenuItems(
                 [l10n.getConstant('Paste'), l10n.getConstant('PasteSpecial')], (this.copiedInfo ||
@@ -117,15 +117,15 @@ export class Clipboard {
         }
         if (e.target === 'ColumnHeader' && sheet.isProtected) {
             delColItems = [l10n.getConstant('DeleteColumn'), l10n.getConstant('DeleteColumns'),
-            l10n.getConstant('InsertColumn'), l10n.getConstant('InsertColumns')];
+                l10n.getConstant('InsertColumn'), l10n.getConstant('InsertColumns')];
             hideColItems = [l10n.getConstant('HideColumn'), l10n.getConstant('HideColumns'),
-            l10n.getConstant('UnHideColumns')];
+                l10n.getConstant('UnHideColumns')];
             this.parent.enableContextMenuItems(delColItems, false);
             this.parent.enableContextMenuItems(hideColItems, (sheet.protectSettings.formatColumns) ? true : false);
         }
         if (e.target === 'RowHeader' && sheet.isProtected) {
             delRowItems = [l10n.getConstant('DeleteRow'), l10n.getConstant('DeleteRows'),
-            l10n.getConstant('InsertRow'), l10n.getConstant('InsertRows')];
+                l10n.getConstant('InsertRow'), l10n.getConstant('InsertRows')];
             hideRowItems = [l10n.getConstant('HideRow'), l10n.getConstant('HideRows'), l10n.getConstant('UnHideRows')];
             this.parent.enableContextMenuItems(delRowItems, false);
             this.parent.enableContextMenuItems(hideRowItems, (sheet.protectSettings.formatRows) ? true : false);
@@ -134,7 +134,7 @@ export class Clipboard {
 
     private rowHeightChanged(args: { rowIdx: number, threshold: number }): void {
         if (this.copiedInfo && this.copiedInfo.range[0] > args.rowIdx) {
-            let ele: HTMLElement = this.parent.element.getElementsByClassName('e-copy-indicator')[0] as HTMLElement;
+            const ele: HTMLElement = this.parent.element.getElementsByClassName('e-copy-indicator')[0] as HTMLElement;
             if (ele) {
                 ele.style.top = `${parseInt(ele.style.top, 10) + args.threshold}px`;
             }
@@ -154,21 +154,20 @@ export class Clipboard {
         range: number[], sIdx: number, type: PasteSpecialType, isClick?: boolean,
         isAction?: boolean, isInternal?: boolean
     } & ClipboardEvent): void {
-        if (this.parent.isEdit) {
+        if (this.parent.isEdit || document.getElementsByClassName('e-dialog').length > 0) {
             return;
         }
         let rfshRange: number[];
         args.isAction = true;
-        /* tslint:disable-next-line */
         let isExternal: DataTransfer | boolean = ((args && args.clipboardData) || window['clipboardData']);
-        let copiedIdx: number = this.getCopiedIdx();
+        const copiedIdx: number = this.getCopiedIdx();
         let isCut: boolean;
-        let copyInfo: { range: number[], sId: number, isCut: boolean } = Object.assign({}, this.copiedInfo);
+        const copyInfo: { range: number[], sId: number, isCut: boolean } = Object.assign({}, this.copiedInfo);
         if (isExternal || this.copiedShapeInfo || (args.isInternal && this.copiedInfo)) {
-            let cSIdx: number = (args && args.sIdx > -1) ? args.sIdx : this.parent.activeSheetIndex;
-            let curSheet: SheetModel = getSheet(this.parent, cSIdx);
+            const cSIdx: number = (args && args.sIdx > -1) ? args.sIdx : this.parent.activeSheetIndex;
+            const curSheet: SheetModel = getSheet(this.parent, cSIdx);
             let selIdx: number[] = getSwapRange(args && args.range || getRangeIndexes(curSheet.selectedRange));
-            let rows: RowModel[] | { internal: boolean } = isExternal && this.getExternalCells(args);
+            const rows: RowModel[] | { internal: boolean } = isExternal && this.getExternalCells(args);
             if (!args.isInternal && (rows as { internal: boolean }) && (rows as { internal: boolean }).internal) {
                 isExternal = false;
                 if (!this.copiedInfo) { return; }
@@ -189,7 +188,7 @@ export class Clipboard {
                 && (selIdx[3] - selIdx[1] + 1) % (cIdx[3] - cIdx[1] + 1) === 0;
             rfshRange = isRepeative ? selIdx : [selIdx[0], selIdx[1]]
                 .concat([selIdx[0] + cIdx[2] - cIdx[0], selIdx[1] + cIdx[3] - cIdx[1] || selIdx[1]]);
-            let beginEventArgs: BeforePasteEventArgs = {
+            const beginEventArgs: BeforePasteEventArgs = {
                 requestType: 'paste',
                 copiedInfo: this.copiedInfo,
                 copiedRange: getRangeAddress(cIdx),
@@ -204,21 +203,22 @@ export class Clipboard {
                 return;
             }
             let cell: CellModel;
-            let isExtend: boolean; let prevCell: CellModel; let mergeCollection: MergeArgs[] = [];
-            let prevSheet: SheetModel = getSheet(this.parent, isExternal ? cSIdx : copiedIdx);
+            let isExtend: boolean; let prevCell: CellModel; const mergeCollection: MergeArgs[] = [];
+            const prevSheet: SheetModel = getSheet(this.parent, isExternal ? cSIdx : copiedIdx);
+            const notRemoveMerge: boolean = isSingleCell(cIdx) && this.isRangeMerged(selIdx, curSheet);
             selIdx = getRangeIndexes(beginEventArgs.pastedRange);
             rowIdx = selIdx[0]; cIdx = isExternal
                 ? [0, 0, (rows as RowModel[]).length - 1, cellLength - 1] : getSwapRange(this.copiedShapeInfo ?
                     getRangeIndexes(curSheet.selectedRange) : this.copiedInfo.range);
             isRepeative = (selIdx[2] - selIdx[0] + 1) % (cIdx[2] - cIdx[0] + 1) === 0 && (selIdx[3] - selIdx[1] + 1) %
-                (cIdx[3] - cIdx[1] + 1) === 0;
+                (cIdx[3] - cIdx[1] + 1) === 0 && !notRemoveMerge;
             let mergeArgs: { range: number[], prevSheet?: SheetModel, cancel?: boolean } = {
                 range: cIdx, prevSheet: prevSheet, cancel: false
             };
             rfshRange = isRepeative ? selIdx : [selIdx[0], selIdx[1]]
                 .concat([selIdx[0] + cIdx[2] - cIdx[0], selIdx[1] + cIdx[3] - cIdx[1] || selIdx[1]]);
             if (this.copiedShapeInfo && !this.copiedInfo) {
-                let pictureElem: HTMLElement = this.copiedShapeInfo.pictureElem as HTMLElement;
+                const pictureElem: HTMLElement = this.copiedShapeInfo.pictureElem as HTMLElement;
                 if (pictureElem.classList.contains('e-datavisualization-chart')) {
                     this.copiedShapeInfo.chartInfo.top = null;
                     this.copiedShapeInfo.chartInfo.left = null;
@@ -229,18 +229,18 @@ export class Clipboard {
                     });
                 } else {
                     this.parent.notify(createImageElement, {
-                    options: {
-                        src: pictureElem.style.backgroundImage.replace(/url\((['"])?(.*?)\1\)/gi, '$2'),
-                        height: this.copiedShapeInfo.height, width: this.copiedShapeInfo.width,
-                        imageId: this.copiedShapeInfo.isCut ? pictureElem.id : ''
-                    },
-                    range: getRangeAddress([rowIdx, selIdx[1], rowIdx, selIdx[1]]), isPublic: false, isUndoRedo: true
-                });
+                        options: {
+                            src: pictureElem.style.backgroundImage.replace(/url\((['"])?(.*?)\1\)/gi, '$2'),
+                            height: this.copiedShapeInfo.height, width: this.copiedShapeInfo.width,
+                            imageId: this.copiedShapeInfo.isCut ? pictureElem.id : ''
+                        },
+                        range: getRangeAddress([rowIdx, selIdx[1], rowIdx, selIdx[1]]), isPublic: false, isUndoRedo: true
+                    });
                 }
-                let pastedCell: CellModel = getCell(rowIdx, selIdx[1], curSheet);
+                const pastedCell: CellModel = getCell(rowIdx, selIdx[1], curSheet);
                 if (pastedCell && !isNullOrUndefined(pastedCell.image)) {
-                    let imgLen: number = pastedCell.image ? pastedCell.image.length - 1 : 0;
-                    let eventArgs: Object = {
+                    const imgLen: number = pastedCell.image ? pastedCell.image.length - 1 : 0;
+                    const eventArgs: Object = {
                         requestType: 'imagePaste',
                         copiedShapeInfo: this.copiedShapeInfo,
                         pasteSheetIndex: this.parent.activeSheetIndex,
@@ -252,95 +252,117 @@ export class Clipboard {
             } else {
                 this.parent.notify(pasteMerge, mergeArgs);
                 if (mergeArgs.cancel) { return; }
-                let pasteType: string = beginEventArgs.type ? beginEventArgs.type : args.type;
-                let cRows: RowModel[] = [];
-                let inRange: boolean = this.isInRange(cIdx, selIdx);
+                const pasteType: string = beginEventArgs.type ? beginEventArgs.type : args.type;
+                const cRows: RowModel[] = [];
+                const isInRange: boolean = this.isInRange(cIdx, selIdx, copiedIdx);
                 for (let i: number = cIdx[0], l: number = 0;  i <= cIdx[2]; i++, l++) {
-                    if (inRange) {
+                    if (isInRange) {
                         cRows[selIdx[0] + l] = { cells: [] };
                     }
-                    for (let j: number = cIdx[1], k: number = 0; j <= cIdx[3]; j++, k++) {
-                        if (inRange) {
-                            cRows[selIdx[0] + l].cells[selIdx[1] + k] = getCell(selIdx[0] + l, selIdx[1] + k, prevSheet);
-                        }
-                        cell = isExternal ? rows[i].cells[j] : Object.assign({}, (inRange && cRows[i] && cRows[i].cells[j])
-                            ? cRows[i].cells[j] : getCell(i, j, prevSheet));
-                        this.copiedCell = [i, j];
-                        if (cell && args && args.type || pasteType) {
-                            switch (pasteType) {
+                    if (!isHiddenRow(this.parent.getActiveSheet(), i)) {
+                        for (let j: number = cIdx[1], k: number = 0; j <= cIdx[3]; j++, k++) {
+                            if (isInRange) {
+                                cRows[selIdx[0] + l].cells[selIdx[1] + k] = getCell(selIdx[0] + l, selIdx[1] + k, prevSheet);
+                            }
+                            cell = isExternal ? rows[i].cells[j] : Object.assign({}, (isInRange && cRows[i] && cRows[i].cells[j])
+                                ? cRows[i].cells[j] : getCell(i, j, prevSheet));
+                            this.copiedCell = [i, j];
+                            if (cell && args && args.type || pasteType) {
+                                switch (pasteType) {
                                 case 'Formats':
                                     cell = { format: cell.format, style: cell.style };
                                     break;
                                 case 'Values':
                                     cell = { value: cell.value };
                                     if (cell.value && cell.value.toString().indexOf('\n') > -1) {
-                                        let ele: Element = this.parent.getCell(selIdx[0], selIdx[1]);
+                                        const ele: Element = this.parent.getCell(selIdx[0], selIdx[1]);
                                         ele.classList.add('e-alt-unwrap');
                                     }
                                     break;
+                                }
+                                isExtend = ['Formats', 'Values'].indexOf(args.type) > -1;
                             }
-                            isExtend = ['Formats', 'Values'].indexOf(args.type) > -1;
-                        }
-                        if ((!this.parent.scrollSettings.isFinite && (cIdx[2] - cIdx[0] > (1048575 - selIdx[0])
-                            || cIdx[3] - cIdx[1] > (16383 - selIdx[1])))
-                            || (this.parent.scrollSettings.isFinite && (cIdx[2] - cIdx[0] > (curSheet.rowCount - 1 - selIdx[0])
-                                || cIdx[3] - cIdx[1] > (curSheet.colCount - 1 - selIdx[1])))) {
-                            this.showDialog();
-                            return;
-                        }
-                        if (isRepeative) {
-                            for (let x: number = selIdx[0]; x <= selIdx[2]; x += (cIdx[2] - cIdx[0]) + 1) {
-                                for (let y: number = selIdx[1]; y <= selIdx[3]; y += (cIdx[3] - cIdx[1] + 1)) {
-                                    prevCell = getCell(x + l, y + k, curSheet) || {};
-                                    if (!this.externalMerge && prevCell.colSpan !== undefined || prevCell.rowSpan !== undefined) {
-                                        mergeArgs = { range: [x + l, y + k, x + l, y + k] };
-                                        let merge: MergeArgs = { range: mergeArgs.range, merge: false, isAction: false, type: 'All' };
-                                        mergeCollection.push(merge);
-                                        if (this.parent.activeSheetIndex === curSheet.index) {
-                                            this.parent.notify(setMerge, merge);
+                            if ((!this.parent.scrollSettings.isFinite && (cIdx[2] - cIdx[0] > (1048575 - selIdx[0])
+                                || cIdx[3] - cIdx[1] > (16383 - selIdx[1])))
+                                || (this.parent.scrollSettings.isFinite && (cIdx[2] - cIdx[0] > (curSheet.rowCount - 1 - selIdx[0])
+                                    || cIdx[3] - cIdx[1] > (curSheet.colCount - 1 - selIdx[1])))) {
+                                this.showDialog();
+                                return;
+                            }
+                            if (isRepeative) {
+                                for (let x: number = selIdx[0]; x <= selIdx[2]; x += (cIdx[2] - cIdx[0]) + 1) {
+                                    for (let y: number = selIdx[1]; y <= selIdx[3]; y += (cIdx[3] - cIdx[1] + 1)) {
+                                        prevCell = getCell(x + l, y + k, curSheet) || {};
+                                        if (!this.externalMerge && prevCell.colSpan !== undefined || prevCell.rowSpan !== undefined) {
+                                            mergeArgs = { range: [x + l, y + k, x + l, y + k] };
+                                            const merge: MergeArgs = { range: mergeArgs.range, merge: false, isAction: false, type: 'All' };
+                                            mergeCollection.push(merge);
+                                            if (this.parent.activeSheetIndex === curSheet.index) {
+                                                this.parent.notify(setMerge, merge);
+                                            }
                                         }
+                                        let colInd: number = y + k;
+                                        if (this.externalMerge && this.externalMergeRow === x + l) {
+                                            colInd = colInd + 1;
+                                        } else {
+                                            this.externalMerge = false;
+                                        }
+                                        const newFormula: string = this.isFormula([x + l, colInd]);
+                                        if (!isNullOrUndefined(newFormula)) {
+                                            cell.formula = newFormula;
+                                        }
+                                        let toSkip: boolean = false;
+                                        if (this.parent.filteredRows && this.parent.filteredRows.rowIdxColl && this.parent.filteredRows.sheetIdxColl) {
+                                            for (let i: number = 0, len : number = this.parent.filteredRows.sheetIdxColl.length; i < len; i++) {
+                                                if (this.parent.filteredRows.sheetIdxColl[i] === this.parent.activeSheetIndex &&
+                                                    this.parent.filteredRows.rowIdxColl[i] === x + l) {
+                                                    toSkip = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        if (!toSkip) {
+                                            this.setCell(x + l, colInd, curSheet, cell, isExtend, false, y === selIdx[3]);
+                                        }
+                                        const sId: number = this.parent.activeSheetIndex;
+                                        const cellElem: HTMLTableCellElement = this.parent.getCell(x + l, colInd) as HTMLTableCellElement;
+                                        const address: string = getCellAddress(x + l, colInd);
+                                        const cellArgs: Object = {
+                                            address: this.parent.sheets[sId].name + '!' + address,
+                                            requestType: 'paste',
+                                            value : getCell(x + l, colInd, curSheet ) ? getCell(x + l, colInd, curSheet ).value : '',
+                                            oldValue:  prevCell.value,
+                                            element: cellElem,
+                                            displayText: this.parent.getDisplayText(cell)
+                                        };
+                                        this.parent.trigger('cellSave', cellArgs);
                                     }
-                                    let colInd: number = y + k;
-                                    if (this.externalMerge && this.externalMergeRow === x + l) {
-                                        colInd = colInd + 1;
+                                }
+                            } else {
+                                if (isExternal || !hasTemplate(this.parent, i, j, copiedIdx)) {
+                                    if (notRemoveMerge) {
+                                        this.setCell(rowIdx, selIdx[1] + k, curSheet, { value: cell.value }, true, false, j === cIdx[3]);
                                     } else {
-                                        this.externalMerge = false;
+                                        this.setCell(rowIdx, selIdx[1] + k, curSheet, cell, isExtend, false, j === cIdx[3]);
                                     }
-                                    let newFormula: string = this.isFormula([x + l, colInd]);
-                                    if (!isNullOrUndefined(newFormula)) {
-                                        cell.formula = newFormula;
-                                    }
-                                    this.setCell(x + l, colInd, curSheet, cell, isExtend, false, y === selIdx[3]);
-                                    let sId : number = this.parent.activeSheetIndex;
-                                    let cellElem: HTMLTableCellElement = this.parent.getCell(x + l, colInd) as HTMLTableCellElement;
-                                    let address: string = getCellAddress(x + l, colInd);
-                                    let cellArgs: Object = {
-                                        address: this.parent.sheets[sId].name + '!' + address,
-                                        requestType: 'paste',
-                                        value : getCell(x + l, colInd, curSheet ) ? getCell(x + l, colInd, curSheet ).value : '',
-                                        oldValue:  prevCell.value,
-                                        element: cellElem,
-                                        displayText: this.parent.getDisplayText(cell)
-                                    };
-                                    this.parent.trigger('cellSave', cellArgs);
                                 }
                             }
-                        } else {
-                            if (!hasTemplate(this.parent, i, j, copiedIdx)) {
-                                this.setCell(rowIdx, selIdx[1] + k, curSheet, cell, isExtend, false, j === cIdx[3]);
+                            if (!isExternal && this.copiedInfo.isCut && !(inRange(selIdx, i, j) && copiedIdx === this.parent.activeSheetIndex)) {
+                                this.setCell(i, j, prevSheet, null, false, true, j === cIdx[3]);
                             }
                         }
-                        if (!isExternal && this.copiedInfo.isCut) {
-                            this.setCell(i, j, prevSheet, null, false, true, j === cIdx[3]);
-                        }
+                        rowIdx++;
+                    } 
+                    else {
+                        selIdx[2] = selIdx[2] - 1;
+                        l = l -1;
                     }
-                    rowIdx++;
                 }
                 this.parent.notify(refreshRibbonIcons, null);
                 this.parent.setUsedRange(rfshRange[2] + 1, rfshRange[3]);
                 if (cSIdx === this.parent.activeSheetIndex) {
                     this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(rfshRange);
-                    this.parent.notify(selectRange, { indexes: rfshRange });
+                    this.parent.notify(selectRange, { address: getRangeAddress(rfshRange) });
                 }
                 if (!isExternal && this.copiedInfo.isCut) {
                     isCut = this.copiedInfo.isCut;
@@ -350,16 +372,16 @@ export class Clipboard {
                     this.clearCopiedInfo();
                     this.cutInfo = isCut;
                 }
-                if ((isExternal || inRange) && this.copiedInfo) {
+                if ((isExternal || isInRange) && this.copiedInfo) {
                     this.clearCopiedInfo();
                 }
                 if (isExternal || (args && args.isAction)) {
                     focus(this.parent.element);
                 }
                 if (args.isAction) {
-                    let sheetIndex: number = copyInfo && copyInfo.sId ? getSheetIndexFromId(this.parent, copyInfo.sId) :
+                    const sheetIndex: number = copyInfo && copyInfo.sId ? getSheetIndexFromId(this.parent, copyInfo.sId) :
                         this.parent.activeSheetIndex;
-                    let eventArgs: Object = {
+                    const eventArgs: Object = {
                         requestType: 'paste',
                         copiedInfo: copyInfo,
                         mergeCollection: mergeCollection,
@@ -373,9 +395,19 @@ export class Clipboard {
                 }
                 if (isCut) {
                     this.updateFilter(copyInfo, rfshRange);
-                    setMaxHgt(prevSheet, cIdx[0], cIdx[1], 20);
-                    let hgt: number = getMaxHgt(prevSheet, cIdx[0]);
+                    setMaxHgt(prevSheet, cIdx[0], cIdx[1], this.parent.getCell(cIdx[0], cIdx[1]).offsetHeight);
+                    const hgt: number = getMaxHgt(prevSheet, cIdx[0]);
                     setRowEleHeight(this.parent, prevSheet, hgt, cIdx[0]);
+                }
+                const copySheet: SheetModel = getSheet(this.parent, copiedIdx);
+                if (!isExternal && cIdx[0] === cIdx[2] && (cIdx[3] - cIdx[1]) === copySheet.colCount - 1) {
+                    let hgt: number = copySheet.rows[cIdx[0]].height;
+                    for (let i: number = selIdx[0]; i <= selIdx[2]; i++) {
+                        setRowEleHeight(this.parent, this.parent.getActiveSheet(), hgt, i);
+                    }
+                    if (isCut) {
+                        setRowEleHeight(this.parent, copySheet, 20, cIdx[0]);
+                    }
                 }
             }
         } else {
@@ -383,40 +415,50 @@ export class Clipboard {
         }
     }
 
+    private isRangeMerged(range: number[], sheet: SheetModel): boolean {
+        const cell: CellModel = getCell(range[0], range[1], sheet);
+        if (cell && (cell.colSpan > 1 || cell.rowSpan > 1)) {
+            const args: { range: number[] } = { range: range.slice(2, 4).concat(range.slice(2, 4)) };
+            this.parent.notify(activeCellMergedRange, args);
+            return args.range[0] === range[0] && args.range[1] === range[1] && args.range[2] === range[2] && args.range[3] === range[3];
+        }
+        return false;
+    }
+
     private updateFilter(copyInfo: { range: number[], sId: number, isCut: boolean }, pastedRange: number[]): void {
         let isFilterCut: boolean; let diff: number[];
         this.parent.notify(getFilteredCollection, null);
         for (let i: number = 0; i < this.parent.sheets.length; i++) {
             if (this.parent.filterCollection && this.parent.filterCollection[i] &&
-                this.parent.filterCollection[i].sheetIdx === getSheetIndexFromId(this.parent, copyInfo.sId)) {
+                this.parent.filterCollection[i].sheetIndex === getSheetIndexFromId(this.parent, copyInfo.sId)) {
                 let range: number[] = copyInfo.range;
-                let fRange: number[] = getRangeIndexes(this.parent.filterCollection[i].filterRange);
+                const fRange: number[] = getRangeIndexes(this.parent.filterCollection[i].filterRange);
                 range = getSwapRange(range);
-                if ((fRange[0] >= range[0] && fRange[2] <= range[2])) {
+                if (fRange[0] === range[0] && fRange[2] === range[2] && fRange[1] === range[1]&& fRange[3] === range[3]) {
                     isFilterCut = true;
                     diff = [Math.abs(range[0] - fRange[0]), Math.abs(range[1] - fRange[1]),
-                    Math.abs(range[2] - fRange[2]), Math.abs(range[3] - fRange[3])];
+                        Math.abs(range[2] - fRange[2]), Math.abs(range[3] - fRange[3])];
                 }
             }
         }
         let cell: HTMLElement = this.parent.getCell(copyInfo.range[0], copyInfo.range[1]);
-        cell = cell.querySelector('.e-filter-icon') ? cell : this.parent.getCell(copyInfo.range[2], copyInfo.range[3]);
-        let asc: HTMLElement = cell.querySelector('.e-sortasc-filter');
-        let desc: HTMLElement = cell.querySelector('.e-sortdesc-filter');
+        cell = cell ? (cell.querySelector('.e-filter-icon') ? cell : this.parent.getCell(copyInfo.range[2], copyInfo.range[3])) : cell;
+        const asc: HTMLElement = cell ? cell.querySelector('.e-sortasc-filter') : cell;
+        const desc: HTMLElement = cell ? cell.querySelector('.e-sortdesc-filter') : cell;
         if (isFilterCut) {
             for (let n: number = 0; n < this.parent.filterCollection.length; n++) {
-                let filterCol: FilterCollectionModel = this.parent.filterCollection[n];
-                let sheetIndex: number = copyInfo && copyInfo.sId ? getSheetIndexFromId(this.parent, copyInfo.sId) :
+                const filterCol: FilterCollectionModel = this.parent.filterCollection[n];
+                const sheetIndex: number = copyInfo && copyInfo.sId ? getSheetIndexFromId(this.parent, copyInfo.sId) :
                     this.parent.activeSheetIndex;
-                if (filterCol.sheetIdx === sheetIndex) {
+                if (filterCol.sheetIndex === sheetIndex) {
                     this.parent.notify(initiateFilterUI, { predicates: null, range: filterCol.filterRange, sIdx: sheetIndex, isCut: true });
                 }
-                if (filterCol.sheetIdx === sheetIndex && sheetIndex === this.parent.activeSheetIndex) {
+                if (filterCol.sheetIndex === sheetIndex && sheetIndex === this.parent.activeSheetIndex) {
                     diff = [pastedRange[0] + diff[0], pastedRange[1] + diff[1],
-                    Math.abs(pastedRange[2] - diff[2]), Math.abs(pastedRange[3] - diff[3])];
+                        Math.abs(pastedRange[2] - diff[2]), Math.abs(pastedRange[3] - diff[3])];
                     this.parent.notify(initiateFilterUI, { predicates: null, range: getRangeAddress(diff), sIdx: null, isCut: true });
                     if (copyInfo.range[3] === copyInfo.range[1]) { // To update sorted icon after pasting.
-                        let filteredCell: HTMLElement = this.parent.getCell(pastedRange[0], pastedRange[1]);
+                        const filteredCell: HTMLElement = this.parent.getCell(pastedRange[0], pastedRange[1]);
                         if (asc && filteredCell) {
                             filteredCell.querySelector('.e-filter-icon').classList.add('e-sortasc-filter');
                         }
@@ -429,8 +471,10 @@ export class Clipboard {
         }
     }
 
-    private isInRange(cRng: number[], pRng: number[]): boolean {
-        return inRange(cRng, pRng[0], pRng[1]) || inRange(cRng, pRng[2], pRng[3]);
+    private isInRange(cRng: number[], pRng: number[], sIdx: number): boolean {
+        let activeSheetIndex: number = this.parent.activeSheetIndex;
+        return (inRange(cRng, pRng[0], pRng[1]) && sIdx === activeSheetIndex) ||
+            (inRange(cRng, pRng[2], pRng[3]) && sIdx === activeSheetIndex);
     }
 
     private isFormula(selIdx: number[]): string {
@@ -446,13 +490,13 @@ export class Clipboard {
             if (cIdxValue.indexOf('=') === 0) {
                 cIdxValue = cIdxValue.slice(1);
             }
-            let start : number = cIdxValue.indexOf('(');
-            let end: number =  cIdxValue.indexOf(')');
+            const start : number = cIdxValue.indexOf('(');
+            const end: number =  cIdxValue.indexOf(')');
             if (start > -1 && end > -1) {
                 cIdxValue = cIdxValue.slice(start + 1, end);
             }
-            let difIndex: number[] = [];
-            let formulaOperators: string[] = ['+', '-', '*', '/']; let splitArray: string[];
+            const difIndex: number[] = [];
+            const formulaOperators: string[] = ['+', '-', '*', '/']; let splitArray: string[];
             let value: string = cIdxValue;
             for (let i: number = 0; i < formulaOperators.length; i++) {
                 splitArray = value.split(formulaOperators[i]);
@@ -461,21 +505,21 @@ export class Clipboard {
             splitArray = value.split(',');
             for (let j: number = 0; j < splitArray.length; j++) {
                 if (isCellReference(splitArray[j])) {
-                    let range: number[] = getCellIndexes(splitArray[j]);
-                    let diff: number[] = [this.copiedCell[0] - range[0], this.copiedCell[1] - range[1]];
+                    const range: number[] = getCellIndexes(splitArray[j]);
+                    const diff: number[] = [this.copiedCell[0] - range[0], this.copiedCell[1] - range[1]];
                     difIndex.push(diff[0]);
                     difIndex.push(diff[1]);
                 }
             }
-            let newAddress: string[] = [];
+            const newAddress: string[] = [];
             for (let j: number = 0; j < difIndex.length; j++) {
-                let address: string = getCellAddress(selIdx[0] - difIndex[0 + j], selIdx[1] - difIndex[1 + j]);
+                const address: string = getCellAddress(selIdx[0] - difIndex[0 + j], selIdx[1] - difIndex[1 + j]);
                 newAddress.push(address);
                 j++;
             }
             for (let a: number = 0; a < newAddress.length; a++) {
                 if (isCellReference(newAddress[a])) {
-                    let range: number[] = getRangeIndexes(newAddress[a]);
+                    const range: number[] = getRangeIndexes(newAddress[a]);
                     if (range[0] < 0 || range[1] < 0) {
                         newAddress[a] = '#REF!';
                     }
@@ -533,28 +577,35 @@ export class Clipboard {
         if (this.parent.isEdit) {
             return;
         }
-        let deferred: Deferred = new Deferred();
+        const deferred: Deferred = new Deferred();
         args.promise = deferred.promise;
-        let sheet: ExtendedSheet = this.parent.getActiveSheet() as Sheet;
-        let range: number[] = (args && args.range) || getRangeIndexes(sheet.selectedRange);
-        let option: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell> } = {
+        const sheet: ExtendedSheet = this.parent.getActiveSheet() as Sheet;
+        let range: number[];
+        if (args && args.range) {
+            const mergeArgs: MergeArgs = { range: args.range };
+            this.parent.notify(mergedRange, mergeArgs);
+            range = mergeArgs.range as number[];
+        } else {
+            range = getRangeIndexes(sheet.selectedRange);
+        }
+        const option: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell> } = {
             sheet: sheet, indexes: [0, 0, sheet.rowCount - 1, sheet.colCount - 1], promise:
                 new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); })
         };
-        let pictureElements: HTMLCollection = document.getElementsByClassName('e-ss-overlay-active');
-        let pictureLen: number = pictureElements.length;
+        const pictureElements: HTMLCollection = document.getElementsByClassName('e-ss-overlay-active');
+        const pictureLen: number = pictureElements.length;
         if (sheet.isLocalData && !(args && args.clipboardData) && range[0] === 0 && range[2] === (sheet.rowCount - 1)) {
             this.parent.showSpinner();
             this.parent.notify('updateSheetFromDataSource', option);
         }
         option.promise.then(() => {
             if (pictureLen > 0) {
-                let imgRowIdx: { clientY: number, isImage: Boolean } = {
+                const imgRowIdx: { clientY: number, isImage: Boolean } = {
                     clientY: (pictureElements[0] as HTMLElement).offsetTop,
                     isImage: true
                 };
                 this.parent.notify(getRowIdxFromClientY, imgRowIdx);
-                let imgColIdx: { clientX: number, isImage: Boolean } = {
+                const imgColIdx: { clientX: number, isImage: Boolean } = {
                     clientX: (pictureElements[0] as HTMLElement).offsetLeft,
                     isImage: true
                 };
@@ -563,23 +614,25 @@ export class Clipboard {
                     sId: (args && args.sId) ? args.sId : sheet.id, sheetIdx: sheet.index, isCut: isCut, pictureElem:
                         pictureElements[0] as HTMLElement, copiedRange: getRangeAddress([imgRowIdx.clientY, imgColIdx.clientX,
                         imgRowIdx.clientY, imgColIdx.clientX]), height: (pictureElements[0] as HTMLElement).offsetHeight,
-                        width: (pictureElements[0] as HTMLElement).offsetWidth,
-                         chartInfo: this.getChartElemInfo(pictureElements[0] as HTMLElement, isCut)
+                    width: (pictureElements[0] as HTMLElement).offsetWidth,
+                    chartInfo: this.getChartElemInfo(pictureElements[0] as HTMLElement, isCut)
                 };
                 this.hidePaste(true);
                 if (isCut) {
                     if (pictureElements[0].classList.contains('e-datavisualization-chart')) {
                         this.parent.deleteChart(this.copiedShapeInfo.chartInfo.id);
                     } else {
-                    this.parent.notify(deleteImage, {
-                        id: this.copiedShapeInfo.pictureElem.id, sheetIdx: this.copiedShapeInfo.sId, range: this.copiedShapeInfo.copiedRange
-                    });
-                }
+                        this.parent.notify(deleteImage, {
+                            id: this.copiedShapeInfo.pictureElem.id, sheetIdx: this.copiedShapeInfo.sId,
+                                range: this.copiedShapeInfo.copiedRange
+                        });
+                    }
                 }
             } else if (!(args && args.clipboardData)) {
                 if (this.copiedInfo) {
                     this.clearCopiedInfo();
                 }
+
                 this.copiedInfo = {
                     range: range, sId: (args && args.sId) ? args.sId : sheet.id, isCut: isCut
                 };
@@ -605,12 +658,12 @@ export class Clipboard {
     }
 
     private getChartElemInfo(overlayEle: HTMLElement, isCut: boolean): ChartModel {
-        let chartColl: ChartModel[] = this.parent.chartColl;
+        const chartColl: ChartModel[] = this.parent.chartColl;
         if (overlayEle.classList.contains('e-datavisualization-chart')) {
-            let chartId: string = overlayEle.getElementsByClassName('e-control')[0].id;
+            const chartId: string = overlayEle.getElementsByClassName('e-control')[0].id;
             for (let idx: number = 0; idx < chartColl.length; idx++) {
                 if (chartColl[idx].id === chartId) {
-                    let chart: ChartModel = chartColl[idx];
+                    const chart: ChartModel = chartColl[idx];
                     return chart;
                 }
             }
@@ -621,7 +674,8 @@ export class Clipboard {
     private clearCopiedInfo(): void {
         if (this.copiedInfo) {
             if (this.parent.getActiveSheet().id === this.copiedInfo.sId) {
-                detach(this.parent.getMainContent().getElementsByClassName('e-copy-indicator')[0]);
+                this.removeIndicator(this.parent.getSelectAllContent()); this.removeIndicator(this.parent.getColumnHeaderContent());
+                this.removeIndicator(this.parent.getRowHeaderContent()); this.removeIndicator(this.parent.getMainContent());
             }
             this.copiedInfo = null;
             this.hidePaste();
@@ -632,15 +686,21 @@ export class Clipboard {
         }
     }
 
+    private removeIndicator(ele: Element): void {
+        if (ele) {
+            const indicator: Element = ele.querySelector('.e-copy-indicator');
+            if (indicator) { detach(indicator); }
+        }
+    }
+
     private initCopyIndicator(): void {
         if (this.copiedInfo && this.parent.getActiveSheet().id === this.copiedInfo.sId) {
-            let copyIndicator: HTMLElement = this.parent.createElement('div', { className: 'e-copy-indicator' });
+            const copyIndicator: HTMLElement = this.parent.createElement('div', { className: 'e-copy-indicator' });
             copyIndicator.appendChild(this.parent.createElement('div', { className: 'e-top' }));
             copyIndicator.appendChild(this.parent.createElement('div', { className: 'e-bottom' }));
             copyIndicator.appendChild(this.parent.createElement('div', { className: 'e-left' }));
             copyIndicator.appendChild(this.parent.createElement('div', { className: 'e-right' }));
-            locateElem(copyIndicator, this.copiedInfo.range, this.parent.getActiveSheet(), false);
-            this.parent.getMainContent().appendChild(copyIndicator);
+            setPosition(this.parent, copyIndicator, this.copiedInfo.range, 'e-copy-indicator');
         }
     }
 
@@ -651,7 +711,7 @@ export class Clipboard {
             height: 205, width: 340, isModal: true, showCloseIcon: true,
             content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('PasteAlert'),
             beforeOpen: (args: BeforeOpenEventArgs): void => {
-                let dlgArgs: DialogBeforeOpenEventArgs = {
+                const dlgArgs: DialogBeforeOpenEventArgs = {
                     dialogName: 'PasteDialog',
                     element: args.element, target: args.target, cancel: args.cancel
                 };
@@ -673,8 +733,8 @@ export class Clipboard {
     private setExternalCells(args: ClipboardEvent): void {
         let cell: CellModel;
         let text: string = '';
-        let range: number[] = this.copiedInfo.range;
-        let sheet: SheetModel = this.parent.getActiveSheet();
+        const range: number[] = this.copiedInfo.range;
+        const sheet: SheetModel = this.parent.getActiveSheet();
         let data: string = '<html><body><table class="e-spreadsheet" xmlns="http://www.w3.org/1999/xhtml"><tbody>';
         for (let i: number = range[0]; i <= range[2]; i++) {
             data += '<tr>';
@@ -683,15 +743,15 @@ export class Clipboard {
                 data += '<td style="white-space:' + ((cell && cell.wrap) ? 'normal' : 'nowrap') + ';vertical-align:bottom;';
                 if (cell && cell.style) {
                     Object.keys(cell.style).forEach((style: string) => {
-                        let regex: RegExpMatchArray = style.match(/[A-Z]/);
+                        const regex: RegExpMatchArray = style.match(/[A-Z]/);
                         data += (style === 'backgroundColor' ? 'background' : (regex ? style.replace(regex[0], '-'
                             + regex[0].toLowerCase()) : style)) + ':' + ((style === 'backgroundColor' || style === 'color')
-                                ? cell.style[style].slice(0, 7) : cell.style[style]) + ';';
+                            ? cell.style[style].slice(0, 7) : cell.style[style]) + ';';
                     });
                 }
                 data += '">';
                 if (cell && cell.value) {
-                    let eventArgs: { [key: string]: string | number | boolean } = {
+                    const eventArgs: { [key: string]: string | number | boolean } = {
                         formattedText: cell.value,
                         value: cell.value,
                         format: cell.format,
@@ -711,7 +771,6 @@ export class Clipboard {
         }
         data += '</tbody></table></body></html>';
         if (Browser.isIE) {
-            /* tslint:disable-next-line */
             window['clipboardData'].setData('text', text);
         } else {
             args.clipboardData.setData('text/html', data);
@@ -726,9 +785,8 @@ export class Clipboard {
         let rows: RowModel[] | { internal: boolean } = [];
         let cells: CellModel[] = [];
         let cellStyle: CellStyleModel;
-        let ele: Element = this.parent.createElement('span');
+        const ele: Element = this.parent.createElement('span');
         if (Browser.isIE) {
-            /* tslint:disable-next-line */
             text = window['clipboardData'].getData('text');
         } else {
             html = args.clipboardData.getData('text/html');
@@ -736,15 +794,15 @@ export class Clipboard {
             ele.innerHTML = html;
         }
         if (ele.querySelector('table')) {
-            if (ele.querySelector('.e-spreadsheet')) {
+            if (ele.querySelector('.e-spreadsheet') && this.copiedInfo) {
                 rows = { internal: true };
             } else {
                 ele.querySelectorAll('tr').forEach((tr: Element) => {
                     tr.querySelectorAll('td').forEach((td: Element, j: number) => {
                         cellStyle = this.getStyle(td, ele);
                         td.textContent = td.textContent.replace(/(\r\n|\n|\r)/gm, '');
-                        let cSpan: number = isNaN(parseInt(td.getAttribute('colspan'), 10)) ? 1 : parseInt(td.getAttribute('colspan'), 10);
-                        let rSpan: number = isNaN(parseInt(td.getAttribute('rowspan'), 10)) ? 1 : parseInt(td.getAttribute('rowspan'), 10);
+                        const cSpan: number = isNaN(parseInt(td.getAttribute('colspan'), 10)) ? 1 : parseInt(td.getAttribute('colspan'), 10);
+                        const rSpan: number = isNaN(parseInt(td.getAttribute('rowspan'), 10)) ? 1 : parseInt(td.getAttribute('rowspan'), 10);
                         cells[j] = {
                             value: td.textContent ? <string>parseIntValue(td.textContent.trim()) : null, style: cellStyle, colSpan: cSpan,
                             rowSpan: rSpan
@@ -788,11 +846,11 @@ export class Clipboard {
     }
 
     private getStyle(td: Element, ele: Element): CellStyleModel {
-        let styles: string[] = [];
-        let cellStyle: CellStyleModel = {};
-        let keys: string[] = Object.keys(this.parent.commonCellStyle);
+        const styles: string[] = [];
+        const cellStyle: CellStyleModel = {};
+        const keys: string[] = Object.keys(this.parent.commonCellStyle);
         if (td.classList.length || td.getAttribute('style') || keys.length) {
-            if (td.classList.length) {
+            if (ele.querySelector('style') && td.classList.length) {
                 if (ele.querySelector('style').innerHTML.indexOf(td.classList[0]) > -1) {
                     styles.push(ele.querySelector('style').innerHTML.split(td.classList[0])[1].split('{')[1].split('}')[0]);
                 }
@@ -802,10 +860,10 @@ export class Clipboard {
             }
             if (keys.length) {
                 if (ele.querySelector('style')) {
-                    let tdStyle: string = ele.querySelector('style').innerHTML.split('td')[1].split('{')[1].split('}')[0];
+                    const tdStyle: string = ele.querySelector('style').innerHTML.split('td')[1].split('{')[1].split('}')[0];
                     for (let i: number = 0; i < keys.length; i++) {
                         let key: string = keys[i];
-                        let regex: RegExpMatchArray = key.match(/[A-Z]/);
+                        const regex: RegExpMatchArray = key.match(/[A-Z]/);
                         if (regex) {
                             key = key.replace(regex[0], '-' + regex[0].toLowerCase());
                         }
@@ -822,8 +880,8 @@ export class Clipboard {
                         'font-size', 'text-decoration', 'border-bottom', 'border-top', 'border-right', 'border-left',
                         'border', 'white-space'].indexOf(char) > -1) {
                         char = char === 'background' ? 'backgroundColor' : char;
-                        let regex: RegExpMatchArray = char.match(/-[a-z]/);
-                        let value: string = style.split(':')[1];
+                        const regex: RegExpMatchArray = char.match(/-[a-z]/);
+                        const value: string = style.split(':')[1];
                         cellStyle[regex ? char.replace(regex[0], regex[0].charAt(1).toUpperCase()) : char]
                             = (char === 'font-weight' && ['bold', 'normal'].indexOf(value) === -1)
                                 ? (value > '599' ? 'bold' : 'normal') : value;
@@ -834,7 +892,28 @@ export class Clipboard {
         if (td.innerHTML.indexOf('<s>') > -1) {
             cellStyle.textDecoration = 'line-through';
         }
-        return cellStyle;
+        return this.defaultCellStyle(cellStyle);
+    }
+
+    private defaultCellStyle(style: CellStyleModel): CellStyleModel { // for external clipboard
+        const textDecoration: string[] = ['underline', 'line-through', 'underline line-through', 'none'];
+        const textAlign: string[] = ['left', 'center', 'right'];
+        const verticalAlign: string[] = ['bottom', 'middle', 'top'];
+        let fontSize: string = style.fontSize ? style.fontSize.trim() : null;
+        if (style.textDecoration && textDecoration.indexOf(style.textDecoration.trim()) < 0) {
+            style.textDecoration = 'none';
+        };
+        if (style.textAlign && textAlign.indexOf(style.textAlign.trim()) < 0) {
+            style.textAlign = 'left';
+        }
+        if (style.verticalAlign && verticalAlign.indexOf(style.verticalAlign.trim()) < 0) {
+            style.verticalAlign = 'bottom';
+        }
+        if (fontSize) {
+            fontSize = (fontSize.indexOf('px') > - 1) ? (parseFloat(fontSize) * 0.75) + 'pt' : fontSize;
+            style.fontSize = Math.round(parseFloat(fontSize)) + 'pt';
+        }
+        return style;
     }
 
     private getClipboardEle(): HTMLInputElement {
@@ -847,7 +926,7 @@ export class Clipboard {
 
     public destroy(): void {
         this.removeEventListener();
-        let ele: HTMLInputElement = this.getClipboardEle();
+        const ele: HTMLInputElement = this.getClipboardEle();
         detach(ele);
         this.parent = null;
     }

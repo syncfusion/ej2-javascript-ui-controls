@@ -1,6 +1,6 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { destroy } from './treegridutil.spec';
-import { stateChangeData, childdata1 } from './datasource.spec';
+import { stateChangeData, childdata1 , customTotalData} from './datasource.spec';
 import { createElement, EmitType } from '@syncfusion/ej2-base';
 import { select } from '@syncfusion/ej2-base';
 
@@ -141,5 +141,112 @@ describe('Custom Binding', () => {
       jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
       destroy(gridObj);
       jasmine.Ajax.uninstall();
+    });
+  });
+
+  describe('Custom Binding with loadChildOnDemand enabled', () => {
+    let gridObj: TreeGrid;
+    let elem: HTMLElement = createElement('div', { id: 'Grid' });    
+    beforeAll((done: Function) => {
+      document.body.appendChild(elem);
+      gridObj = new TreeGrid(
+        {
+          dataSource: { result: customTotalData, count: 2 },
+          hasChildMapping: 'isParent',
+          idMapping: 'TaskID',
+          loadChildOnDemand: true,
+          parentIdMapping: 'parentID',
+          allowPaging: true,
+          treeColumnIndex: 1,
+          allowSorting: true,
+          toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+          editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Row' },
+          pageSettings: { pageSize: 1, pageSizeMode: 'Root' },
+          columns: ['TaskID', 'TaskName', 'StartDate', 'Duration']
+        }
+      );
+      gridObj.appendTo('#Grid');
+      done();
+    });
+    it('Expand Testing', (done: Function) => {
+        expect(gridObj.getRows()[0].getElementsByClassName('e-treegridexpand').length === 1).toBe(true); 
+      done();
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('Custom Binding with loadChildOnDemand disabled', () => {
+    let gridObj: TreeGrid;
+    let elem: HTMLElement = createElement('div', { id: 'Grid' });    
+    beforeAll((done: Function) => {
+      document.body.appendChild(elem);
+      gridObj = new TreeGrid(
+        {
+          dataSource: { result: customTotalData, count: 2 },
+          hasChildMapping: 'isParent',
+          idMapping: 'TaskID',
+          loadChildOnDemand: false,
+          parentIdMapping: 'parentID',
+          allowPaging: true,
+          treeColumnIndex: 1,
+          allowSorting: true,
+          toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+          editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Row' },
+          pageSettings: { pageSize: 1, pageSizeMode: 'Root' },
+          columns: ['TaskID', 'TaskName', 'StartDate', 'Duration']
+        }
+      );
+      gridObj.appendTo('#Grid');
+      done();
+    });
+    it('Expand Testing', (done: Function) => {
+        expect(gridObj.getRows()[0].getElementsByClassName('e-treegridcollapse').length === 1).toBe(true); 
+      done();
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('Refresh method for custom binding', () => {
+    let gridObj: TreeGrid;
+    let elem: HTMLElement = createElement('div', { id: 'Grid' });    
+    let dataStateChange: (args: any) => void;
+    beforeAll((done: Function) => {
+      document.body.appendChild(elem);
+      gridObj = new TreeGrid(
+        {
+          dataSource: { result: customTotalData, count: 2 },
+          hasChildMapping: 'isParent',
+          idMapping: 'TaskID',
+          parentIdMapping: 'parentID',
+          allowPaging: true,
+          treeColumnIndex: 1,
+          allowSorting: true,
+          pageSettings: { pageSize: 1, pageSizeMode: 'Root' },
+          columns: ['TaskID', 'TaskName', 'StartDate', 'Duration']
+        }
+      );
+      gridObj.appendTo('#Grid');
+      done();
+    });
+    it('custom binding', (done: Function) => {
+      dataStateChange = (args: any) => {
+        if (args.requestType === 'refresh') {
+          expect(args.requestType === 'refresh').toBe(true);
+          (this as any).dataSource = {
+            result:  (this as any).dataSource.result,
+            count:  (this as any).dataSource.count
+          };
+        }        
+      };
+      gridObj.dataStateChange = dataStateChange;
+      gridObj.refresh();
+      done();
+    });
+    afterAll(() => {
+      destroy(gridObj);
     });
   });

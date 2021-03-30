@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable jsdoc/require-param */
 import { PathOption } from '@syncfusion/ej2-svg-base';
 import { remove, createElement } from '@syncfusion/ej2-base';
 /**
@@ -80,28 +85,27 @@ export function convertToHexCode(value: ColorValue): string {
 
 /** @private */
 export function componentToHex(value: number): string {
-    let hex: string = value.toString(16);
+    const hex: string = value.toString(16);
     return hex.length === 1 ? '0' + hex : hex;
 }
 
 /** @private */
 export function convertHexToColor(hex: string): ColorValue {
-    let result: RegExpExecArray = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    const result: RegExpExecArray = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? new ColorValue(parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)) :
         new ColorValue(255, 255, 255);
 }
 
 /** @private */
 export function colorNameToHex(color: string): string {
-    let element: HTMLElement;
     color = color === 'transparent' ? 'white' : color;
     document.body.appendChild(createElement('text', { id: 'chartmeasuretext' }));
-    element = document.getElementById('chartmeasuretext');
+    const element: HTMLElement = document.getElementById('chartmeasuretext');
     element.style.color = color;
     color = window.getComputedStyle(element).color;
     remove(element);
-    let exp: RegExp = /^(rgb|hsl)(a?)[(]\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*(?:,\s*([\d.]+)\s*)?[)]$/;
-    let isRGBValue: RegExpExecArray = exp.exec(color);
+    const exp: RegExp = /^(rgb|hsl)(a?)[(]\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*(?:,\s*([\d.]+)\s*)?[)]$/;
+    const isRGBValue: RegExpExecArray = exp.exec(color);
     return convertToHexCode(
         new ColorValue(parseInt(isRGBValue[3], 10), parseInt(isRGBValue[4], 10), parseInt(isRGBValue[5], 10))
     );
@@ -139,7 +143,7 @@ export class TextOption {
 }
 /** calculate the start and end point of circle */
 export function degreeToLocation(centerX: number, centerY: number, radius: number, angleInDegrees: number): Pos {
-    let angleInRadians: number = (angleInDegrees - 90) * (Math.PI / 180);
+    const angleInRadians: number = (angleInDegrees - 90) * (Math.PI / 180);
 
     return {
         x: centerX + (radius * Math.cos(angleInRadians)),
@@ -151,10 +155,10 @@ export function getPathArc(
     x: number, y: number, radius: number, startAngle: number, endAngle: number,
     enableRtl: boolean, pieView?: boolean
 ): string {
-    let start: Pos = degreeToLocation(x, y, radius, startAngle);
-    let end: Pos = degreeToLocation(x, y, radius, endAngle);
+    const start: Pos = degreeToLocation(x, y, radius, startAngle);
+    const end: Pos = degreeToLocation(x, y, radius, endAngle);
     let largeArcFlag: string = '0';
-    let sweepFlag: string = (enableRtl) ? '0' : '1';
+    const sweepFlag: string = (enableRtl) ? '0' : '1';
     if (!enableRtl) {
         largeArcFlag = ((endAngle >= startAngle) ? endAngle : endAngle + 360) - startAngle <= 180 ? '0' : '1';
     } else {
@@ -178,9 +182,8 @@ export function stringToNumber(value: string, containerSize: number): number {
     return null;
 }
 /** @private */
-// tslint:disable-next-line
 export function setAttributes(options: any, element: Element): Element {
-    let keys: string[] = Object.keys(options);
+    const keys: string[] = Object.keys(options);
     for (let i: number = 0; i < keys.length; i++) {
         element.setAttribute(keys[i], options[keys[i]]);
     }
@@ -188,11 +191,12 @@ export function setAttributes(options: any, element: Element): Element {
 }
 /**
  * Animation Effect Calculation
+ *
  * @private
  */
 export function effect(currentTime: number, startValue: number, endValue: number, duration: number, enableRtl: boolean): number {
-    let start: number = (enableRtl) ? endValue : -endValue;
-    let end: number = startValue + ((enableRtl) ? -endValue : endValue);
+    const start: number = (enableRtl) ? endValue : -endValue;
+    const end: number = startValue + ((enableRtl) ? -endValue : endValue);
     return start * Math.cos(currentTime / duration * (Math.PI / 2)) + end;
 }
 /**
@@ -212,7 +216,7 @@ export function removeElement(id: string | Element): void {
     if (!id) {
         return null;
     }
-    let element: Element = typeof id === 'string' ? getElement(id) : id;
+    const element: Element = typeof id === 'string' ? getElement(id) : id;
     if (element) {
         remove(element);
     }

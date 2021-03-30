@@ -6,7 +6,8 @@ import { HeatMap } from '../heatmap';import { isNullOrUndefined, DateFormatOptio
 export interface DataModel {
 
     /**
-     * Specifies the provided datasource is an JSON data. 
+     * Specifies the provided datasource is an JSON data.
+     *
      * @default false
      */
 
@@ -14,33 +15,37 @@ export interface DataModel {
 
     /**
      * specifies Adaptor type
+     *
      * @default None
      */
     adaptorType?: AdaptorType;
 
     /**
-     * Specifies xAxis mapping. 
+     * Specifies xAxis mapping.
+     *
      * @default ''
      */
 
     xDataMapping?: string;
 
     /**
-     * Specifies yAxis mapping. 
+     * Specifies yAxis mapping.
+     *
      * @default ''
      */
 
     yDataMapping?: string;
 
     /**
-     * Specifies value mapping. 
+     * Specifies value mapping.
+     *
      * @default ''
      */
 
     valueMapping?: string;
 
     /**
-     * Specifies data mapping for size and color bubble type. 
+     * Specifies data mapping for size and color bubble type.
      */
     bubbleDataMapping?: BubbleDataModel;
 

@@ -7,7 +7,7 @@ import { WShading } from './shading';
 import { TableWidget } from '../viewer/page';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
-/** 
+/**
  * @private
  */
 export class WTableFormat {
@@ -18,100 +18,101 @@ export class WTableFormat {
     public shading: WShading = new WShading(this);
     public ownerBase: TableWidget = undefined;
 
-    get allowAutoFit(): boolean {
+    public get allowAutoFit(): boolean {
         return this.getPropertyValue('allowAutoFit') as boolean;
     }
-    set allowAutoFit(value: boolean) {
+    public set allowAutoFit(value: boolean) {
         this.setPropertyValue('allowAutoFit', value);
     }
-    get cellSpacing(): number {
+    public get cellSpacing(): number {
         return this.getPropertyValue('cellSpacing') as number;
     }
-    set cellSpacing(value: number) {
+    public set cellSpacing(value: number) {
         if (value < 0 || value > 264.6) {
             throw new RangeError('The measurement must be between 0 px and 264.6 px.');
         }
         this.setPropertyValue('cellSpacing', value);
     }
-    get leftMargin(): number {
-        return this.getPropertyValue('leftMargin') as number;
-    }
-    set leftMargin(value: number) {
-        this.setPropertyValue('leftMargin', value);
-    }
-    get topMargin(): number {
-        return this.getPropertyValue('topMargin') as number;
-    }
-    set topMargin(value: number) {
-        this.setPropertyValue('topMargin', value);
-    }
-    get rightMargin(): number {
-        return this.getPropertyValue('rightMargin') as number;
-    }
-    set rightMargin(value: number) {
-        this.setPropertyValue('rightMargin', value);
-    }
-    get bottomMargin(): number {
-        return this.getPropertyValue('bottomMargin') as number;
-    }
-    set bottomMargin(value: number) {
+    public set bottomMargin(value: number) {
         this.setPropertyValue('bottomMargin', value);
     }
-    get leftIndent(): number {
+    public get tableAlignment(): TableAlignment {
+        return this.getPropertyValue('tableAlignment') as TableAlignment;
+    }
+    public get leftMargin(): number {
+        return this.getPropertyValue('leftMargin') as number;
+    }
+    public set leftMargin(value: number) {
+        this.setPropertyValue('leftMargin', value);
+    }
+    public get topMargin(): number {
+        return this.getPropertyValue('topMargin') as number;
+    }
+    public set topMargin(value: number) {
+        this.setPropertyValue('topMargin', value);
+    }
+    public get rightMargin(): number {
+        return this.getPropertyValue('rightMargin') as number;
+    }
+    public set rightMargin(value: number) {
+        this.setPropertyValue('rightMargin', value);
+    }
+    public get bottomMargin(): number {
+        return this.getPropertyValue('bottomMargin') as number;
+    }
+    public set tableAlignment(value: TableAlignment) {
+        this.setPropertyValue('tableAlignment', value);
+    }
+    public get leftIndent(): number {
         return this.getPropertyValue('leftIndent') as number;
     }
-    set leftIndent(value: number) {
+    public set leftIndent(value: number) {
         if (value < -1440 || value > 1440) {
             throw new RangeError('The measurement must be between -1440 px and 1440 px.');
         }
         this.setPropertyValue('leftIndent', value);
     }
-    get tableAlignment(): TableAlignment {
-        return this.getPropertyValue('tableAlignment') as TableAlignment;
-    }
-    set tableAlignment(value: TableAlignment) {
-        this.setPropertyValue('tableAlignment', value);
-    }
-    get preferredWidth(): number {
+    public get preferredWidth(): number {
         return this.getPropertyValue('preferredWidth') as number;
     }
-    set preferredWidth(value: number) {
+    public set preferredWidth(value: number) {
         this.setPropertyValue('preferredWidth', value);
     }
-    get preferredWidthType(): WidthType {
+    public get preferredWidthType(): WidthType {
         return this.getPropertyValue('preferredWidthType') as WidthType;
     }
-    set preferredWidthType(value: WidthType) {
+    public set preferredWidthType(value: WidthType) {
         this.setPropertyValue('preferredWidthType', value);
     }
 
-    get bidi(): boolean {
+    public get bidi(): boolean {
         return this.getPropertyValue('bidi') as boolean;
     }
 
-    set bidi(value: boolean) {
+    public set bidi(value: boolean) {
         this.setPropertyValue('bidi', value);
     }
-    get horizontalPositionAbs(): HorizontalAlignment {
+    public get horizontalPositionAbs(): HorizontalAlignment {
         return this.getPropertyValue('horizontalPositionAbs') as HorizontalAlignment;
     }
-    set horizontalPositionAbs(value: HorizontalAlignment) {
+    public set horizontalPositionAbs(value: HorizontalAlignment) {
         this.setPropertyValue('horizontalPositionAbs', value);
     }
-    get horizontalPosition(): number {
+    public get horizontalPosition(): number {
         return this.getPropertyValue('horizontalPosition') as number;
     }
-    set horizontalPosition(value: number) {
+    public set horizontalPosition(value: number) {
         this.setPropertyValue('horizontalPosition', value);
     }
-    constructor(owner?: TableWidget) {
+    public constructor(owner?: TableWidget) {
         this.ownerBase = owner;
         this.assignTableMarginValue(5.4, 0, 5.4, 0);
     }
+    /* eslint-disable */
     public getPropertyValue(property: string): Object {
-        let hasValue: boolean = this.hasValue(property);
+        const hasValue: boolean = this.hasValue(property);
         if (hasValue) {
-            let propertyType: number = WUniqueFormat.getPropertyType(WTableFormat.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(WTableFormat.uniqueFormatType, property);
             if (!isNullOrUndefined(this.uniqueTableFormat) && this.uniqueTableFormat.propertiesHash.containsKey(propertyType)) {
                 return this.uniqueTableFormat.propertiesHash.get(propertyType);
             }
@@ -125,7 +126,7 @@ export class WTableFormat {
         if (isNullOrUndefined(this.uniqueTableFormat)) {
             this.initializeUniqueTableFormat(property, value);
         } else {
-            let propertyType: number = WUniqueFormat.getPropertyType(this.uniqueTableFormat.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(this.uniqueTableFormat.uniqueFormatType, property);
             if (this.uniqueTableFormat.propertiesHash.containsKey(propertyType) &&
                 this.uniqueTableFormat.propertiesHash.get(propertyType) === value) {
                 //Do nothing, since no change in property value and return
@@ -135,7 +136,7 @@ export class WTableFormat {
         }
     }
     private initializeUniqueTableFormat(property: string, propValue: Object): void {
-        let uniqueTableFormatTemp: Dictionary<number, object> = new Dictionary<number, object>();
+        const uniqueTableFormatTemp: Dictionary<number, object> = new Dictionary<number, object>();
         this.addUniqueTableFormat('allowAutoFit', property, propValue, uniqueTableFormatTemp);
         this.addUniqueTableFormat('cellSpacing', property, propValue, uniqueTableFormatTemp);
         this.addUniqueTableFormat('leftMargin', property, propValue, uniqueTableFormatTemp);
@@ -151,7 +152,7 @@ export class WTableFormat {
         this.addUniqueTableFormat('horizontalPosition', property, propValue, uniqueTableFormatTemp);
         this.uniqueTableFormat = WTableFormat.uniqueTableFormats.addUniqueFormat(uniqueTableFormatTemp, WTableFormat.uniqueFormatType);
     }
-    // tslint:disable-next-line:max-line-length
+
     private addUniqueTableFormat(property: string, modifiedProperty: string, propValue: Object, uniqueTableFormatTemp: Dictionary<number, object>): void {
         let propertyType: number;
         propertyType = WUniqueFormat.getPropertyType(WTableFormat.uniqueFormatType, property);
@@ -162,45 +163,45 @@ export class WTableFormat {
     private static getPropertyDefaultValue(property: string): Object {
         let value: Object = undefined;
         switch (property) {
-            case 'allowAutoFit':
-                value = false;
-                break;
-            case 'cellSpacing':
-                value = 0;
-                break;
-            case 'leftMargin':
-                value = 5.4;
-                break;
-            case 'topMargin':
-                value = 0;
-                break;
-            case 'bottomMargin':
-                value = 0;
-                break;
-            case 'rightMargin':
-                value = 5.4;
-                break;
-            case 'leftIndent':
-                value = 0;
-                break;
-            case 'tableAlignment':
-                value = 'Left';
-                break;
-            case 'preferredWidth':
-                value = 0;
-                break;
-            case 'preferredWidthType':
-                value = 'Point';
-                break;
-            case 'bidi':
-                value = false;
-                break;
-            case 'horizontalPositionAbs':
-                value = null;
-                break;
-            case 'horizontalPosition':
-                value = 0;
-                break;
+        case 'allowAutoFit':
+            value = false;
+            break;
+        case 'cellSpacing':
+            value = 0;
+            break;
+        case 'leftMargin':
+            value = 5.4;
+            break;
+        case 'topMargin':
+            value = 0;
+            break;
+        case 'bottomMargin':
+            value = 0;
+            break;
+        case 'rightMargin':
+            value = 5.4;
+            break;
+        case 'leftIndent':
+            value = 0;
+            break;
+        case 'tableAlignment':
+            value = 'Left';
+            break;
+        case 'preferredWidth':
+            value = 0;
+            break;
+        case 'preferredWidthType':
+            value = 'Point';
+            break;
+        case 'bidi':
+            value = false;
+            break;
+        case 'horizontalPositionAbs':
+            value = null;
+            break;
+        case 'horizontalPosition':
+            value = 0;
+            break;
         }
         return value;
     }
@@ -240,7 +241,7 @@ export class WTableFormat {
         this.shading = undefined;
     }
     public cloneFormat(): WTableFormat {
-        let tableFormat: WTableFormat = new WTableFormat(undefined);
+        const tableFormat: WTableFormat = new WTableFormat(undefined);
         tableFormat.leftIndent = this.leftIndent;
         tableFormat.tableAlignment = this.tableAlignment;
         tableFormat.cellSpacing = this.cellSpacing;
@@ -260,7 +261,7 @@ export class WTableFormat {
     }
     public hasValue(property: string): boolean {
         if (!isNullOrUndefined(this.uniqueTableFormat)) {
-            let propertyType: number = WUniqueFormat.getPropertyType(this.uniqueTableFormat.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(this.uniqueTableFormat.uniqueFormatType, property);
             return this.uniqueTableFormat.propertiesHash.containsKey(propertyType);
         }
         return false;

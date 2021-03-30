@@ -2,21 +2,20 @@
 
 ## [Unreleased]
 
-## 18.4.48 (2021-03-16)
+## 19.1.54 (2021-03-30)
 
 ### Spreadsheet
 
-#### Bug Fixes
+#### New Features
 
-`#I316931` - Selection misalignment issue when applying border on wrap text has been resolved.
-
-## 18.4.46 (2021-03-02)
-
-### Spreadsheet
+- **Freeze pane:** Allows users to keep the specified rows and columns always visible at the top and left side of the sheet while scrolling through the sheet.
+- **PDF Export:** Allows users to save the spreadsheet data as a PDF document.
+- **Password protection:** Allows users to protect the workbook with a password.
 
 #### Bug Fixes
 
 - Copy / paste the merge cells not working properly issue resolved.
+`#I316931` - Selection misalignment issue when applying border on wrap text has been resolved.
 
 ## 18.4.44 (2021-02-23)
 

@@ -679,7 +679,7 @@ describe('Range navigator', () => {
         it('checking with label change in event', () => {
             axisLabel = document.getElementById('container_AxisLabel_0');
             expect(axisLabel.textContent).toEqual('firstLabel');
-            EventHandler.remove(<HTMLElement & Window>window, 'resize', range.resized);
+            EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', range.resized);
         });
         it('checking with hide', (done: Function) => {
             range.loaded = (args: Object) => {

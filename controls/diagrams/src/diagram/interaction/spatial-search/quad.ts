@@ -27,7 +27,16 @@ export class Quad {
     public parent: Quad;
     private spatialSearch: SpatialSearch;
 
-    /** @private */
+    /**
+     *  Constructor for creating the Quad class
+     *
+     * @param {number} left The symbol palette model.
+     * @param {number} top The symbol palette element.
+     * @param {number} width The symbol palette element.
+     * @param {number} height The symbol palette element.
+     * @param {SpatialSearch} spatialSearching The symbol palette element.
+     * @private
+     */
     constructor(left: number, top: number, width: number, height: number, spatialSearching: SpatialSearch) {
         this.objects = [];
         this.left = left;
@@ -36,7 +45,15 @@ export class Quad {
         this.height = height;
         this.spatialSearch = spatialSearching;
     }
-    /** @private */
+
+    /**
+     * findQuads method\
+     *
+     * @returns {  void}    findQuads method .\
+     * @param {Rect} currentViewPort - provide the options value.
+     * @param {Quad[]} quads - provide the options value.
+     * @private
+     */
     public findQuads(currentViewPort: Rect, quads: Quad[]): void {
         if (this.first != null && this.first.isIntersect(currentViewPort)) {
             this.first.findQuads(currentViewPort, quads);
@@ -63,9 +80,16 @@ export class Quad {
         }
         return true;
     }
-    /** @private */
+
+    /**
+     * selectQuad method\
+     *
+     * @returns {  Quad }    selectQuad method .\
+     * @private
+     */
     public selectQuad(): Quad {
         let target: Quad = null;
+        // eslint-disable-next-line
         let current: Quad = this;
         let quadSet: QuadSet;
         while (current != null) {
@@ -78,16 +102,16 @@ export class Quad {
 
     private getQuad(target: Quad): QuadSet {
         target = null;
-        let halfWidth: number = this.width / 2;
-        let halfHeight: number = this.height / 2;
+        const halfWidth: number = this.width / 2;
+        const halfHeight: number = this.height / 2;
         if (halfWidth >= 1000 && halfHeight >= 1000) {
-            let xCenter: number = this.left + halfWidth;
-            let yCenter: number = this.top + halfHeight;
+            const xCenter: number = this.left + halfWidth;
+            const yCenter: number = this.top + halfHeight;
 
             if (this.spatialSearch.childRight <= xCenter) {
                 if (this.spatialSearch.childBottom <= yCenter) {
                     if (!this.first) {
-                        let newQuad: Quad = new Quad(this.left, this.top, halfWidth, halfHeight, this.spatialSearch);
+                        const newQuad: Quad = new Quad(this.left, this.top, halfWidth, halfHeight, this.spatialSearch);
                         newQuad.parent = this;
                         this.first = newQuad;
                     }
@@ -96,7 +120,7 @@ export class Quad {
                 }
                 if (this.spatialSearch.childTop >= yCenter) {
                     if (!this.third) {
-                        let newQuad: Quad = new Quad(this.left, yCenter, halfWidth, halfHeight, this.spatialSearch);
+                        const newQuad: Quad = new Quad(this.left, yCenter, halfWidth, halfHeight, this.spatialSearch);
                         newQuad.parent = this;
                         this.third = newQuad;
                     }
@@ -105,7 +129,7 @@ export class Quad {
             } else if (this.spatialSearch.childLeft >= xCenter) {
                 if (this.spatialSearch.childBottom <= yCenter) {
                     if (!this.second) {
-                        let newQuad: Quad = new Quad(xCenter, this.top, halfWidth, halfHeight, this.spatialSearch);
+                        const newQuad: Quad = new Quad(xCenter, this.top, halfWidth, halfHeight, this.spatialSearch);
                         newQuad.parent = this;
                         this.second = newQuad;
                     }
@@ -113,7 +137,7 @@ export class Quad {
                 }
                 if (this.spatialSearch.childTop >= yCenter) {
                     if (!this.fourth) {
-                        let newQuad: Quad = new Quad(xCenter, yCenter, halfWidth, halfHeight, this.spatialSearch);
+                        const newQuad: Quad = new Quad(xCenter, yCenter, halfWidth, halfHeight, this.spatialSearch);
                         newQuad.parent = this;
                         this.fourth = newQuad;
                     }
@@ -125,7 +149,12 @@ export class Quad {
         this.objects.push(this.spatialSearch.childNode);
         return { target: this };
     }
-    /** @private */
+    /**
+     * isContained method\
+     *
+     * @returns {  boolean }    isContained method .\
+     * @private
+     */
     public isContained(): boolean {
         if (this.spatialSearch.childLeft >= this.left && this.spatialSearch.childRight <= this.left + this.width &&
             this.spatialSearch.childTop >= this.top && this.spatialSearch.childBottom <= this.top + this.height) {
@@ -133,7 +162,13 @@ export class Quad {
         }
         return false;
     }
-    /** @private */
+    /**
+     * addIntoAQuad method\
+     *
+     * @returns {  Quad }    addIntoAQuad method .\
+     * @param {IGroupable} node - provide the options value.
+     * @private
+     */
     public addIntoAQuad(node: IGroupable): Quad {
         let quadAddition: QuadAddition = {};
         this.spatialSearch.setCurrentNode(node);
@@ -152,10 +187,10 @@ export class Quad {
             return { isAdded: true, quad: quad };
         } else {
             let newParent: Quad;
-            let isempty: boolean = this.objects.length === 0 && !this.first && !this.second && !this.third &&
+            const isempty: boolean = this.objects.length === 0 && !this.first && !this.second && !this.third &&
                 !this.fourth;
-            let newWidth: number = this.width * 2;
-            let newHeight: number = this.height * 2;
+            const newWidth: number = this.width * 2;
+            const newHeight: number = this.height * 2;
             if (this.spatialSearch.childLeft < this.left) {
                 if (this.spatialSearch.childTop < this.top) {
                     newParent = new Quad(this.left - this.width, this.top - this.height, newWidth, newHeight, this.spatialSearch);

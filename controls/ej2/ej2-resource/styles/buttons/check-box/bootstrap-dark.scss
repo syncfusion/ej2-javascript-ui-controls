@@ -1,0 +1,585 @@
+
+//default 
+$cbox-bgcolor: $grey-base !default;
+$cbox-bigger-check-fontsize: 14px !default;
+$cbox-bigger-font-size: 15px !default;
+$cbox-bigger-height: 22px !default;
+$cbox-bigger-indeterminate-fontsize: 14px !default;
+$cbox-bigger-indeterminate-lineheight: 20px !default;
+$cbox-bigger-lineheight: 20px !default;
+$cbox-bigger-margin: 10px !default;
+$cbox-bigger-small-check-fontsize: 10px !default;
+$cbox-bigger-small-font-size: 15px !default;
+$cbox-bigger-small-height: 18px !default;
+$cbox-bigger-small-indeterminate-fontsize: 12px !default;
+$cbox-bigger-small-indeterminate-lineheight: 16px !default;
+$cbox-bigger-small-lineheight: 16px !default;
+$cbox-bigger-small-width: 18px !default;
+$cbox-bigger-width: 22px !default;
+$cbox-border: 1px solid !default;
+$cbox-border-color: $grey-dark-font !default;
+$cbox-border-radius: 3px !default;
+$cbox-check-fontsize: 12px !default;
+$cbox-checkmark-bgcolor: $grey-base !default;
+$cbox-checkmark-border-color: $grey-dark-font !default;
+$cbox-checkmark-color: $grey-dark-font !default;
+$cbox-checked-ripple-bgcolo: transparent !default;
+$cbox-checkmark-disabled-bgcolor: rgba($cbox-checkmark-bgcolor, .35) !default;
+$cbox-checkmark-disabled-border-color: rgba($cbox-checkmark-border-color, .35) !default;
+$cbox-checkmark-disabled-color: rgba($grey-dark-font, .35) !default;
+$cbox-checkmark-hover-bgcolor: $grey !default;
+$cbox-checkmark-hover-border-color: $grey-light-font !default;
+$cbox-checkmark-hover-color: $grey-light-font !default;
+$cbox-color: $grey-dark-font !default;
+$cbox-disabled-bgcolor: rgba($grey-white, .35) !default;
+$cbox-disabled-border-color: rgba($cbox-border-color, .35) !default;
+$cbox-disabled-color: rgba($grey-dark-font, .35) !default;
+$cbox-focus-outline: $cbox-bgcolor 0 solid !default;
+$cbox-focus-outline-offset: 0 !default;
+$cbox-focussed-box-shadow: 0 0 10px 0 rgba($brand-primary-lighten-10, .99) !default;
+$cbox-font-size: 14px !default;
+$cbox-height: 20px !default;
+$cbox-hover-bgcolor: $grey !default;
+$cbox-hover-border-color: $grey-cc !default;
+$cbox-hover-color: $grey-light-font !default;
+$cbox-indeterminate-bgcolor: $grey-base !default;
+$cbox-indeterminate-border-color: $grey-dark-font !default;
+$cbox-indeterminate-color: $grey-dark-font !default;
+$cbox-indeterminate-content: '\e99f' !default;
+$cbox-indeterminate-disabled-bgcolor: rgba($grey-base, .35) !default;
+$cbox-indeterminate-disabled-border-color: rgba($grey-dark-font, .35) !default;
+$cbox-indeterminate-disabled-color: rgba($grey-dark-font, .35) !default;
+$cbox-indeterminate-fontsize: 12px !default;
+$cbox-indeterminate-hover-color: $grey-dark-font !default;
+$cbox-indeterminate-lineheight: 18px !default;
+$cbox-key-focussed-bgcolor: transparent !default;
+$cbox-lineheight: 18px !default;
+$cbox-margin: 8px !default;
+$cbox-padding: 0 !default;
+$cbox-ripple-bgcolor: transparent !default;
+$cbox-ripple-size: -9px !default;
+$cbox-ripple-height: 36px !default;
+$cbox-ripple-width: 36px !default;
+$cbox-ripple-small-size: -13px !default;
+$cbox-ripple-small-height: 30px !default;
+$cbox-ripple-small-width: 30px !default;
+$cbox-ripple-bigger-size: -15px !default;
+$cbox-ripple-bigger-height: 38px !default;
+$cbox-ripple-bigger-width: 38px !default;
+$cbox-ripple-bigger-small-size: -16px !default;
+$cbox-ripple-bigger-small-height: 38px !default;
+$cbox-ripple-bigger-small-width: 38px !default;
+$cbox-small-check-fontsize: 8px !default;
+$cbox-small-font-size: 14px !default;
+$cbox-small-height: 14px !default;
+$cbox-small-indeterminate-fontsize: 6px !default;
+$cbox-small-indeterminate-lineheight: 12px !default;
+$cbox-small-lineheight: 12px !default;
+$cbox-small-width: 14px !default;
+$cbox-width: 20px !default;
+$cbox-focussed-bgcolor: $cbox-hover-bgcolor !default;
+$cbox-focussed-border-color: $cbox-hover-border-color !default;
+$cbox-focussed-checkmark-bgcolor: $cbox-checkmark-hover-bgcolor !default;
+$cbox-focussed-checkmark-border-color: $cbox-checkmark-hover-border-color !default;
+$cbox-focussed-checkmark-color: $cbox-checkmark-hover-color !default;
+$cbox-border-style: solid !default;
+//enddefault
+@include export-module('check-box-bootstrap-dark-icons') {
+  .e-checkbox-wrapper,
+  .e-css.e-checkbox-wrapper {
+    @at-root {
+      & .e-check {
+        &::before {
+          content: '\e21d';
+      }
+    }
+
+      & .e-stop {
+        &::before {
+          content: '\e99f';
+        }
+      }
+    }
+  }
+}
+
+@include export-module('checkbox-layout') {
+  /*! checkbox layout */
+  .e-checkbox-wrapper,
+  .e-css.e-checkbox-wrapper {
+    cursor: pointer;
+    display: inline-block;
+    line-height: 1;
+    outline: none;
+    user-select: none;
+    @at-root {
+
+      & label {
+        cursor: pointer;
+        display: inline-block;
+        line-height: 0;
+        margin: 0;
+        position: relative;
+        white-space: nowrap;
+      }
+
+      &:focus {
+        & .e-frame {
+          box-shadow: $cbox-focussed-box-shadow;
+        }
+      }
+
+      & .e-ripple-container {
+        border-radius: 50%;
+        bottom: $cbox-ripple-size;
+        height: $cbox-ripple-height;
+        left:  $cbox-ripple-size;
+        pointer-events: none;
+        position: absolute;
+        right:  $cbox-ripple-size;
+        top:  $cbox-ripple-size;
+        width: $cbox-ripple-width;
+        z-index: 1;
+      }
+
+      & .e-label {
+        cursor: pointer;
+        display: inline-block;
+        font-family: $font-family;
+        font-size: $cbox-font-size;
+        font-weight: normal;
+        line-height: $cbox-height;
+        user-select: none;
+        vertical-align: middle;
+        white-space: normal;
+      }
+
+      & .e-checkbox {
+        height: 1px;
+        opacity: 0;
+        position: absolute;
+        width: 1px;
+
+        +.e-label {
+          margin-right: $cbox-margin;
+        }
+      }
+
+      & .e-frame {
+        border: $cbox-border;
+        border-radius: $cbox-border-radius;
+        box-sizing: border-box;
+        cursor: pointer;
+        display: inline-block;
+        font-family: 'e-icons';
+        height: $cbox-height;
+        line-height: $cbox-lineheight;
+        padding: $cbox-padding;
+        text-align: center;
+        vertical-align: middle;
+        width: $cbox-width;
+
+        +.e-label {
+          margin-left: $cbox-margin;
+        }
+
+        +.e-ripple-container {
+          left: auto;
+        }
+      }
+
+      & .e-check {
+        font-size: $cbox-check-fontsize;
+      }
+
+      & .e-stop {
+        font-size: $cbox-indeterminate-fontsize;
+        line-height: $cbox-indeterminate-lineheight;
+      }
+
+      &.e-checkbox-disabled {
+        cursor: default;
+        pointer-events: none;
+
+        & .e-frame {
+          cursor: default;
+        }
+
+        & .e-label {
+          cursor: default;
+        }
+      }
+
+      &.e-rtl {
+
+        .e-ripple-container {
+          right: $cbox-ripple-size;
+        }
+
+        & .e-frame {
+          margin: 0;
+
+          + .e-ripple-container {
+            left: $cbox-ripple-size;
+            right: auto;
+          }
+        }
+
+        & .e-label {
+          margin-left: 0;
+          margin-right: $cbox-margin;
+
+          +.e-frame {
+            margin: 0;
+          }
+        }
+
+        & .e-checkbox {
+          +.e-label {
+            margin-left: $cbox-margin;
+            margin-right: 0;
+          }
+        }
+      }
+
+      &.e-small {
+        & .e-frame {
+          height: $cbox-small-height;
+          line-height: $cbox-small-lineheight;
+          width: $cbox-small-width;
+        }
+
+        & .e-check {
+          font-size: $cbox-small-check-fontsize;
+        }
+
+        & .e-stop {
+          font-size: $cbox-small-indeterminate-fontsize;
+          line-height: $cbox-small-indeterminate-lineheight;
+        }
+
+        & .e-label {
+          font-size: $cbox-small-font-size;
+          line-height: $cbox-small-height;
+        }
+
+        & .e-ripple-container {
+          bottom: $cbox-ripple-small-size;
+          height: $cbox-ripple-small-height;
+          left: $cbox-ripple-small-size;
+          right: $cbox-ripple-small-size;
+          top: $cbox-ripple-small-size;
+          width: $cbox-ripple-small-width;
+        }
+      }
+   }
+}
+
+  .e-small .e-checkbox-wrapper,
+  .e-small.e-checkbox-wrapper,
+  .e-small .e-css.e-checkbox-wrapper,
+  .e-small.e-css.e-checkbox-wrapper {
+    & .e-frame {
+      height: $cbox-small-height;
+      line-height: $cbox-small-lineheight;
+      width: $cbox-small-width;
+    }
+
+    & .e-check {
+      font-size: $cbox-small-check-fontsize;
+    }
+
+    & .e-stop {
+      font-size: $cbox-small-indeterminate-fontsize;
+      line-height: $cbox-small-indeterminate-lineheight;
+    }
+
+    & .e-label {
+      font-size: $cbox-small-font-size;
+      line-height: $cbox-small-height;
+    }
+
+    & .e-ripple-container {
+      bottom: $cbox-ripple-small-size;
+      height: $cbox-ripple-small-height;
+      left: $cbox-ripple-small-size;
+      right: $cbox-ripple-small-size;
+      top: $cbox-ripple-small-size;
+      width: $cbox-ripple-small-width;
+    }
+}
+
+  .e-bigger.e-small .e-checkbox-wrapper,
+  .e-bigger.e-small.e-checkbox-wrapper,
+  .e-bigger.e-small .e-css.e-checkbox-wrapper,
+  .e-bigger.e-small.e-css.e-checkbox-wrapper {
+    & .e-frame {
+      height: $cbox-bigger-small-height;
+      line-height: $cbox-bigger-small-lineheight;
+      width: $cbox-bigger-small-width;
+    }
+
+    & .e-check {
+      font-size: $cbox-bigger-small-check-fontsize;
+    }
+
+    & .e-stop {
+      font-size: $cbox-bigger-small-indeterminate-fontsize;
+      line-height: $cbox-bigger-small-indeterminate-lineheight;
+    }
+
+    & .e-label {
+      font-size: $cbox-bigger-small-font-size;
+      line-height: $cbox-bigger-small-height;
+    }
+
+    & .e-ripple-container {
+      bottom: $cbox-ripple-bigger-small-size;
+      height: $cbox-ripple-bigger-small-height;
+      left: $cbox-ripple-bigger-small-size;
+      right: $cbox-ripple-bigger-small-size;
+      top: $cbox-ripple-bigger-small-size;
+      width: $cbox-ripple-bigger-small-width;
+    }
+  }
+
+  .e-bigger .e-checkbox-wrapper,
+  .e-bigger.e-checkbox-wrapper,
+  .e-bigger .e-css.e-checkbox-wrapper,
+  .e-bigger.e-css.e-checkbox-wrapper {
+    & .e-frame {
+      height: $cbox-bigger-height;
+      line-height: $cbox-bigger-lineheight;
+      width: $cbox-bigger-width;
+
+      +.e-label {
+        font-size: $cbox-bigger-font-size;
+        line-height: $cbox-bigger-height;
+        margin-left: $cbox-bigger-margin;
+      }
+    }
+
+    & .e-check {
+      font-size: $cbox-bigger-check-fontsize;
+    }
+
+    & .e-stop {
+      font-size: $cbox-bigger-indeterminate-fontsize;
+      line-height: $cbox-bigger-indeterminate-lineheight;
+    }
+
+    & .e-label {
+      font-size: $cbox-bigger-font-size;
+    }
+
+    & .e-ripple-container {
+      bottom: $cbox-ripple-bigger-size;
+      height: $cbox-ripple-bigger-height;
+      left: $cbox-ripple-bigger-size;
+      right: $cbox-ripple-bigger-size;
+      top: $cbox-ripple-bigger-size;
+      width: $cbox-ripple-bigger-width;
+    }
+
+    &.e-rtl {
+      & .e-frame {
+        margin: 0;
+
+        +.e-label {
+          margin-left: 0;
+          margin-right: $cbox-bigger-margin;
+        }
+
+        +.e-ripple-container {
+          right: auto;
+        }
+      }
+    }
+
+    &.e-small {
+      & .e-frame {
+        height: $cbox-bigger-small-height;
+        line-height: $cbox-bigger-small-lineheight;
+        width: $cbox-bigger-small-width;
+      }
+
+      & .e-check {
+        font-size: $cbox-bigger-small-check-fontsize;
+      }
+
+      & .e-stop {
+        font-size: $cbox-bigger-small-indeterminate-fontsize;
+        line-height: $cbox-bigger-small-indeterminate-lineheight;
+      }
+
+      & .e-label {
+        font-size: $cbox-bigger-small-font-size;
+        line-height: $cbox-bigger-small-height;
+      }
+
+      & .e-ripple-container {
+        bottom: $cbox-ripple-bigger-small-size;
+        height: $cbox-ripple-bigger-small-height;
+        left: $cbox-ripple-bigger-small-size;
+        right: $cbox-ripple-bigger-small-size;
+        top: $cbox-ripple-bigger-small-size;
+        width: $cbox-ripple-bigger-small-width;
+      }
+    }
+  }
+}
+@include export-module('checkbox-theme') {
+  /*! checkbox theme */
+  .e-checkbox-wrapper,
+  .e-css.e-checkbox-wrapper {
+    // sass-lint:disable no-vendor-prefixes
+    -webkit-tap-highlight-color: transparent;
+    @at-root {
+      & .e-frame {
+        background-color: $cbox-bgcolor;
+        border-color: $cbox-border-color;
+
+        &.e-check {
+          background-color: $cbox-checkmark-bgcolor;
+          border-color: $cbox-checkmark-border-color;
+          color: $cbox-checkmark-color;
+        }
+
+        &.e-stop {
+          background-color: $cbox-indeterminate-bgcolor;
+          border-color: $cbox-indeterminate-border-color;
+          color: $cbox-indeterminate-color;
+        }
+      }
+
+      & .e-ripple-element {
+        background: $cbox-checked-ripple-bgcolo;
+      }
+
+      & .e-ripple-check {
+        & .e-ripple-element {
+          background: $cbox-ripple-bgcolor;
+        }
+      }
+
+      &:active {
+        & .e-ripple-element {
+          background: $cbox-ripple-bgcolor;
+        }
+
+        & .e-ripple-check {
+          & .e-ripple-element {
+            background: $cbox-checked-ripple-bgcolo;
+          }
+        }
+      }
+
+      & .e-label {
+        color: $cbox-color;
+      }
+
+      & .e-checkbox {
+        &:focus {
+          +.e-frame {
+            background-color: $cbox-focussed-bgcolor;
+            border-color: $cbox-focussed-border-color;
+            box-shadow: $cbox-focussed-box-shadow;
+
+            &.e-check {
+              background-color: $cbox-focussed-checkmark-bgcolor;
+              border-color: $cbox-focussed-checkmark-border-color;
+              box-shadow: $cbox-focussed-box-shadow;
+              color: $cbox-focussed-checkmark-color;
+            }
+
+            &.e-stop {
+              box-shadow: $cbox-focussed-box-shadow;
+              color: $cbox-indeterminate-hover-color;
+            }
+          }
+        }
+      }
+
+      &:hover {
+        & .e-frame {
+          background-color: $cbox-hover-bgcolor;
+          border-color: $cbox-hover-border-color;
+
+          &.e-check {
+            background-color: $cbox-checkmark-hover-bgcolor;
+            border-color: $cbox-checkmark-hover-border-color;
+            color: $cbox-checkmark-hover-color;
+          }
+
+          &.e-stop {
+            @if $skin-name == 'bootstrap4' {
+              background-color: $cbox-checkmark-hover-bgcolor;
+              border-color: $cbox-checkmark-hover-border-color;
+            }
+            @else {
+              color: $cbox-indeterminate-hover-color;
+            }
+          }
+        }
+
+        & .e-label {
+          color: $cbox-hover-color;
+        }
+      }
+
+      &.e-checkbox-disabled {
+        & .e-frame {
+          background-color: $cbox-disabled-bgcolor;
+          border-color: $cbox-disabled-border-color;
+          color: $cbox-disabled-color;
+
+          &.e-check {
+            background-color: $cbox-checkmark-disabled-bgcolor;
+            @if $skin-name == 'bootstrap4' {
+              border-color: transparent;
+            }
+            @else {
+              border-color: $cbox-checkmark-disabled-border-color;
+            }
+            color: $cbox-checkmark-disabled-color;
+          }
+
+          &.e-stop {
+            background-color: $cbox-indeterminate-disabled-bgcolor;
+            @if $skin-name == 'bootstrap4' {
+              border-color: transparent;
+            }
+            @else {
+              border-color: $cbox-indeterminate-disabled-border-color;
+            }
+            color: $cbox-indeterminate-disabled-color;
+          }
+        }
+
+        & .e-label {
+          color: $cbox-disabled-color;
+        }
+      }
+
+      &.e-focus {
+        & .e-ripple-container {
+          background-color: $cbox-key-focussed-bgcolor;
+
+          &.e-ripple-check {
+            background-color: $cbox-checked-ripple-bgcolo;
+          }
+        }
+
+        & .e-frame {
+          outline: $cbox-focus-outline;
+          outline-offset: $cbox-focus-outline-offset;
+
+          &.e-check {
+            outline: $cbox-focus-outline;
+            outline-offset: $cbox-focus-outline-offset;
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base/index';
 import { keyDown, cut, paste, copy, clearCopy, performUndoRedo, initiateHyperlink, editHyperlink } from '../common/index';
 import { findDlg, gotoDlg } from '../common/index';
-import { setCellFormat, textDecorationUpdate, FontWeight, getCellIndexes, FontStyle } from '../../workbook/common/index';
+import { setCellFormat, textDecorationUpdate, FontWeight, getCellIndexes, FontStyle, ribbonFind } from '../../workbook/common/index';
 import { CellModel, SheetModel, getColumn, isLocked as isCellLocked } from '../../workbook/index';
 import { setCell, getCell } from '../../workbook/base/cell';
 import { RowModel } from '../../workbook/base/row-model';
@@ -15,6 +15,8 @@ export class KeyboardShortcut {
 
     /**
      * Constructor for the Spreadsheet Keyboard Shortcut module.
+     *
+     * @param {Spreadsheet} parent - Specify the spreadsheet.
      * @private
      */
     constructor(parent: Spreadsheet) {
@@ -46,8 +48,8 @@ export class KeyboardShortcut {
             } else if (e.keyCode === 67) {
                 this.parent.notify(copy, { promise: Promise });
             } else if (e.keyCode === 75) {
-                let sheet: SheetModel = this.parent.getActiveSheet(); let indexes: number[] = getCellIndexes(sheet.activeCell);
-                let row: RowModel = this.parent.sheets[this.parent.getActiveSheet().id - 1].rows[indexes[0]];
+                const sheet: SheetModel = this.parent.getActiveSheet(); const indexes: number[] = getCellIndexes(sheet.activeCell);
+                const row: RowModel = this.parent.sheets[this.parent.getActiveSheet().id - 1].rows[indexes[0]];
                 let cell: CellModel; e.preventDefault();
                 if (!isNullOrUndefined(row)) {
                     cell = row.cells[indexes[1]];
@@ -69,19 +71,20 @@ export class KeyboardShortcut {
                     e.preventDefault(); this.parent.notify(performUndoRedo, { isUndo: false });
                 }
             }
-            let actSheet: SheetModel = this.parent.sheets[this.parent.getActiveSheet().id - 1];
-            let actCell: string = actSheet.activeCell;
-            let actCellIndex: number[] = getCellIndexes(actCell);
-            let cellObj: CellModel = getCell(actCellIndex[0], actCellIndex[1], actSheet);
-            let isLocked: boolean = actSheet.isProtected && isCellLocked(cellObj, getColumn(actSheet, actCellIndex[1]));
-            if (!isLocked || !actSheet.isProtected) {
-                if (e.keyCode === 70) {
-                    e.preventDefault();
-                    let toolBarElem: HTMLElement = document.querySelector('.e-spreadsheet-find-ddb') as HTMLElement;
-                    if (!isNullOrUndefined(toolBarElem)) {
-                        toolBarElem.click();
-                    }
-                } else if (e.keyCode === 71) {
+            const actSheet: SheetModel = this.parent.sheets[this.parent.getActiveSheet().id - 1];
+            let isLocked: boolean;
+            if (actSheet) {
+                const actCell: string = actSheet.activeCell;
+                const actCellIndex: number[] = getCellIndexes(actCell);
+                const cellObj: CellModel = getCell(actCellIndex[0], actCellIndex[1], actSheet);
+                isLocked = actSheet.isProtected && isCellLocked(cellObj, getColumn(actSheet, actCellIndex[1]));
+            }
+            if (e.keyCode === 70) {
+                e.preventDefault();
+                this.parent.notify(ribbonFind, null);
+            }
+            if ((!isLocked || !actSheet.isProtected) && e.keyCode !== 70) {
+                 if (e.keyCode === 71) {
                     e.preventDefault(); this.parent.notify(gotoDlg, null);
                 } else if (e.keyCode === 72) {
                     e.preventDefault(); this.parent.notify(findDlg, null);

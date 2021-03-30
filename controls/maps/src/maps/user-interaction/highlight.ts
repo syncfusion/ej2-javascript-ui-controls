@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/dot-notation */
 import { Maps } from '../../index';
 import { HighlightSettingsModel, ISelectionEventArgs, itemHighlight } from '../index';
 import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -6,16 +7,19 @@ import { BorderModel } from '../model/base-model';
 /**
  * Highlight module class
  */
-/* tslint:disable:no-string-literal */
+
 export class Highlight {
     private maps: Maps;
     private highlightSettings: HighlightSettingsModel;
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(maps: Maps) {
         this.maps = maps;
         this.addEventListener();
     }
     /**
      * To bind events for highlight module
+     *
+     * @returns {void}
      */
     private addEventListener(): void {
         if (this.maps.isDestroyed) {
@@ -26,6 +30,8 @@ export class Highlight {
     }
     /**
      * To unbind events for highlight module
+     *
+     * @returns {void}
      */
     private removeEventListener(): void {
         if (this.maps.isDestroyed) {
@@ -34,11 +40,12 @@ export class Highlight {
         this.maps.off(Browser.touchMoveEvent, this.mouseMove);
         this.maps.off(Browser.touchStartEvent, this.mouseMove);
     }
+    // eslint-disable-next-line valid-jsdoc
     /**
      * Public method for highlight module
      */
     public addHighlight(layerIndex: number, name: string, enable: boolean): void {
-        let targetEle: Element = getTargetElement(layerIndex, name, enable, this.maps);
+        const targetEle: Element = getTargetElement(layerIndex, name, enable, this.maps);
         if (enable) {
             this.mapHighlight(targetEle, null, null);
         } else {
@@ -48,15 +55,17 @@ export class Highlight {
     private mouseMove(e: PointerEvent): void {
         let targetEle: Element = <Element>e.target;
         let layerIndex: number;
-        let isTouch: boolean = e.pointerType === 'touch' || e.pointerType === '2' || (e.type.indexOf('touch') > -1);
+        const isTouch: boolean = e.pointerType === 'touch' || e.pointerType === '2' || (e.type.indexOf('touch') > -1);
         if ((targetEle.id.indexOf('LayerIndex') !== -1 || targetEle.id.indexOf('NavigationIndex') > -1) &&
             targetEle.getAttribute('class') !== 'ShapeselectionMapStyle' && !isTouch &&
             targetEle.getAttribute('class') !== 'MarkerselectionMapStyle' &&
             targetEle.getAttribute('class') !== 'BubbleselectionMapStyle' &&
             targetEle.getAttribute('class') !== 'navigationlineselectionMapStyle') {
             layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
-            let shapeData: object;
-            let data: object;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let shapeData: any;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let data: any;
             let shapeIn: number;
             let dataIndex: number;
             if (targetEle.id.indexOf('shapeIndex') > -1) {
@@ -67,17 +76,17 @@ export class Highlight {
                 data = isNullOrUndefined(dataIndex) ? null : this.maps.layers[layerIndex].dataSource[dataIndex];
                 this.highlightSettings = this.maps.layers[layerIndex].highlightSettings;
             } else if (targetEle.id.indexOf('BubbleIndex') > -1) {
-                let bubble: number = parseInt(targetEle.id.split('_BubbleIndex_')[1].split('_')[0], 10);
+                const bubble: number = parseInt(targetEle.id.split('_BubbleIndex_')[1].split('_')[0], 10);
                 dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
                 data = this.maps.layers[layerIndex].bubbleSettings[bubble].dataSource[dataIndex];
                 this.highlightSettings = this.maps.layers[layerIndex].bubbleSettings[bubble].highlightSettings;
             } else if (targetEle.id.indexOf('MarkerIndex') > -1) {
-                let marker: number = parseInt(targetEle.id.split('_MarkerIndex_')[1].split('_')[0], 10);
+                const marker: number = parseInt(targetEle.id.split('_MarkerIndex_')[1].split('_')[0], 10);
                 dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
                 data = this.maps.layers[layerIndex].markerSettings[marker].dataSource[dataIndex];
                 this.highlightSettings = this.maps.layers[layerIndex].markerSettings[marker].highlightSettings;
             } else {
-                let index: number = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
+                const index: number = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
                 layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
                 shapeData = null;
                 data = {
@@ -91,18 +100,18 @@ export class Highlight {
                     this.maps.legendModule.shapeHighLightAndSelection(
                         targetEle, data, this.highlightSettings, 'highlight', layerIndex);
                 }
-                let selectHighLight: boolean = targetEle.id.indexOf('shapeIndex') > -1 && this.maps.legendSettings.visible ?
-                                               this.maps.legendModule.shapeToggled : true;
+                const selectHighLight: boolean = targetEle.id.indexOf('shapeIndex') > -1 && this.maps.legendSettings.visible ?
+                    this.maps.legendModule.shapeToggled : true;
                 if (selectHighLight) {
                     this.mapHighlight(targetEle, shapeData, data);
                 }
             } else {
-                let element: Element = document.getElementsByClassName('highlightMapStyle')[0];
+                const element: Element = document.getElementsByClassName('highlightMapStyle')[0];
                 if (!isNullOrUndefined(element)) {
                     removeClass(element);
                     if (element.id.indexOf('NavigationIndex') > -1) {
-                        let index: number = parseInt(element.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                        let layerIndex: number = parseInt(element.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
+                        const index: number = parseInt(element.id.split('_NavigationIndex_')[1].split('_')[0], 10);
+                        const layerIndex: number = parseInt(element.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
                         element.setAttribute(
                             'stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
                         element.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
@@ -112,7 +121,7 @@ export class Highlight {
         } else if (getElementsByClassName('highlightMapStyle').length > 0) {
             targetEle = <Element>getElementsByClassName('highlightMapStyle')[0];
             if (targetEle.id.indexOf('NavigationIndex') > -1) {
-                let index: number = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
+                const index: number = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
                 layerIndex = parseInt(targetEle.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
                 targetEle.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
                 targetEle.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
@@ -131,14 +140,15 @@ export class Highlight {
             }
         }
     }
-    private mapHighlight(targetEle: Element, shapeData: object, data: object): void {
-        let layerIndex: number = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private mapHighlight(targetEle: Element, shapeData: any, data: any): void {
+        const layerIndex: number = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
         let isMarkerSelect: boolean = false;
         if (targetEle.id.indexOf('MarkerIndex') > -1) {
-            let marker: number = parseInt(targetEle.id.split('_MarkerIndex_')[1].split('_')[0], 10);
+            const marker: number = parseInt(targetEle.id.split('_MarkerIndex_')[1].split('_')[0], 10);
             isMarkerSelect = this.maps.layers[layerIndex].markerSettings[marker].highlightSettings.enable;
         }
-        let border: BorderModel = {
+        const border: BorderModel = {
             color: this.highlightSettings.border.color,
             width: this.highlightSettings.border.width / (isMarkerSelect ? 1 : this.maps.scale)
         };
@@ -169,11 +179,11 @@ export class Highlight {
             return;
         } else {
             if (getElementsByClassName('highlightMapStyle').length > 0) {
-                let elem: Element = <Element>getElementsByClassName('highlightMapStyle')[0];
+                const elem: Element = <Element>getElementsByClassName('highlightMapStyle')[0];
                 removeClass(elem);
                 if (elem.id.indexOf('NavigationIndex') > -1) {
-                    let index: number = parseInt(elem.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                    let layerIndex: number = parseInt(elem.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
+                    const index: number = parseInt(elem.id.split('_NavigationIndex_')[1].split('_')[0], 10);
+                    const layerIndex: number = parseInt(elem.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
                     elem.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
                     elem.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
                 }
@@ -188,6 +198,8 @@ export class Highlight {
     }
     /**
      * Get module name.
+     *
+     * @returns {string} - Specifies the module name
      */
     protected getModuleName(): string {
         return 'Highlight';
@@ -195,7 +207,9 @@ export class Highlight {
 
     /**
      * To destroy the highlight.
-     * @return {void}
+     *
+     * @param {Maps} maps - Specifies the maps instance
+     * @returns {void}
      * @private
      */
     public destroy(maps: Maps): void {

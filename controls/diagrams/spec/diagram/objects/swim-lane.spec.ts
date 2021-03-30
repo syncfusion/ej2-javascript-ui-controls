@@ -941,8 +941,7 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, bounds.left + diagram.element.offsetLeft + 80, bounds.top + diagram.element.offsetTop + 70);
                 mouseEvents.mouseUpEvent(diagramCanvas, bounds.left + diagram.element.offsetLeft + 50, bounds.top + diagram.element.offsetTop + 50);
                 let swimlane = diagram.nameTable["swimlane"];
-                expect((swimlane.offsetX == 402.5||swimlane.offsetX == 397.5||swimlane.offsetX == 395) && (swimlane.offsetY == 330||swimlane.offsetY == 335) 
-                && (swimlane.shape.phases[0].offset == 265||swimlane.shape.phases[0].offset == 255||swimlane.shape.phases[0].offset == 260)).toBe(true);
+                expect((swimlane.offsetX == 402.5 || swimlane.offsetX == 397.5|| swimlane.offsetX == 395) && (swimlane.offsetY == 330||swimlane.offsetY == 335) && (swimlane.shape.phases[0].offset == 265 || swimlane.shape.phases[0].offset == 260)).toBe(true);
                 done();
             }, 1000);
         });
@@ -3725,6 +3724,7 @@ describe('Diagram Control', () => {
                     done();
                 }, 10);
             });
+            
             it('undo, redo action after add swimlane', (done: Function) => {
                 expect(diagram.nodes.length > 0).toBe(true);
                 diagram.undo();
@@ -7354,7 +7354,6 @@ describe('Swimlane - Enable Line Routing', () => {
             expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 455 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 245 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 430 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 245 && (diagram.connectors[2] as Connector).intermediatePoints[2].x == 430 && (diagram.connectors[2] as Connector).intermediatePoints[2].y == 345 && (diagram.connectors[2] as Connector).intermediatePoints[3].x == 395 && (diagram.connectors[2] as Connector).intermediatePoints[3].y == 345).toBe(true);
             expect((diagram.connectors[3] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[3] as Connector).intermediatePoints[0].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[1].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[1].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[2].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[2].y ==360&&(diagram.connectors[3] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[3] as Connector).intermediatePoints[3].y ==360).toBe(true);
             expect((diagram.connectors[4] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[4] as Connector).intermediatePoints[0].y ==360&&(diagram.connectors[4] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[1].y ==360&&(diagram.connectors[4] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[2].y ==410&&(diagram.connectors[4] as Connector).intermediatePoints[3].x ==345&&(diagram.connectors[4] as Connector).intermediatePoints[3].y ==410&&(diagram.connectors[4] as Connector).intermediatePoints[4].x ==345&&(diagram.connectors[4] as Connector).intermediatePoints[4].y ==425).toBe(true);
-
             expect((diagram.connectors[5] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[5] as Connector).intermediatePoints[0].y == 445 && (diagram.connectors[5] as Connector).intermediatePoints[1].x == 455 && (diagram.connectors[5] as Connector).intermediatePoints[1].y == 445).toBe(true);
             expect((diagram.connectors[6] as Connector).intermediatePoints[0].x == 555 && (diagram.connectors[6] as Connector).intermediatePoints[0].y == 445 && (diagram.connectors[6] as Connector).intermediatePoints[1].x == 605.52 && (diagram.connectors[6] as Connector).intermediatePoints[1].y == 445).toBe(true);
 
@@ -7395,7 +7394,8 @@ describe('Swimlane - Enable Line Routing', () => {
             && (diagram.connectors[4] as Connector).intermediatePoints[3].y == 410 
             && (diagram.connectors[4] as Connector).intermediatePoints[4].x == 345 
             && (diagram.connectors[4] as Connector).intermediatePoints[4].y == 425).toBe(true);
-
+            
+            
             expect((diagram.connectors[5] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[5] as Connector).intermediatePoints[0].y == 445 && (diagram.connectors[5] as Connector).intermediatePoints[1].x == 455 && (diagram.connectors[5] as Connector).intermediatePoints[1].y == 445).toBe(true);
             expect((diagram.connectors[6] as Connector).intermediatePoints[0].x == 555 && (diagram.connectors[6] as Connector).intermediatePoints[0].y == 445 && (diagram.connectors[6] as Connector).intermediatePoints[1].x == 605.52 && (diagram.connectors[6] as Connector).intermediatePoints[1].y == 445).toBe(true);
 
@@ -7421,7 +7421,7 @@ describe('Swimlane - Enable Line Routing', () => {
 
             // Connector Segments - Line Routing
             for (var i = 0; i < diagram.connectors.length; i++) { console.log(getIntermediatePoints((diagram.connectors[i] as Connector).intermediatePoints, '(diagram.connectors[' + i + '] as Connector)')); }
-
+            
             expect((diagram.connectors[0] as Connector).intermediatePoints[0].x ==205&&(diagram.connectors[0] as Connector).intermediatePoints[0].y ==165&&(diagram.connectors[0] as Connector).intermediatePoints[1].x ==205&&(diagram.connectors[0] as Connector).intermediatePoints[1].y ==240).toBe(true);
             expect((diagram.connectors[1] as Connector).intermediatePoints[0].x ==255&&(diagram.connectors[1] as Connector).intermediatePoints[0].y ==260&&(diagram.connectors[1] as Connector).intermediatePoints[1].x ==270&&(diagram.connectors[1] as Connector).intermediatePoints[1].y ==260&&(diagram.connectors[1] as Connector).intermediatePoints[2].x ==270&&(diagram.connectors[1] as Connector).intermediatePoints[2].y ==160&&(diagram.connectors[1] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[1] as Connector).intermediatePoints[3].y ==160).toBe(true);
             expect((diagram.connectors[2] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[2] as Connector).intermediatePoints[0].y ==160&&(diagram.connectors[2] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[2] as Connector).intermediatePoints[1].y ==160&&(diagram.connectors[2] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[2] as Connector).intermediatePoints[2].y ==345&&(diagram.connectors[2] as Connector).intermediatePoints[3].x ==395&&(diagram.connectors[2] as Connector).intermediatePoints[3].y ==345).toBe(true);
@@ -7429,7 +7429,6 @@ describe('Swimlane - Enable Line Routing', () => {
             expect((diagram.connectors[4] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[4] as Connector).intermediatePoints[0].y ==360&&(diagram.connectors[4] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[1].y ==360&&(diagram.connectors[4] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[2].y ==410&&(diagram.connectors[4] as Connector).intermediatePoints[3].x ==345&&(diagram.connectors[4] as Connector).intermediatePoints[3].y ==410&&(diagram.connectors[4] as Connector).intermediatePoints[4].x ==345&&(diagram.connectors[4] as Connector).intermediatePoints[4].y ==425).toBe(true);
             expect((diagram.connectors[5] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[5] as Connector).intermediatePoints[0].y ==445&&(diagram.connectors[5] as Connector).intermediatePoints[1].x ==455&&(diagram.connectors[5] as Connector).intermediatePoints[1].y ==445).toBe(true);
             expect((diagram.connectors[6] as Connector).intermediatePoints[0].x ==555&&(diagram.connectors[6] as Connector).intermediatePoints[0].y ==445&&(diagram.connectors[6] as Connector).intermediatePoints[1].x ==605.52&&(diagram.connectors[6] as Connector).intermediatePoints[1].y ==445).toBe(true);
-
             done();
         });
         it('deliveryonthataddress node from swimlane to outside', function (done) {
@@ -7454,7 +7453,6 @@ describe('Swimlane - Enable Line Routing', () => {
                 expect((diagram.connectors[4] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[4] as Connector).intermediatePoints[0].y ==360&&(diagram.connectors[4] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[1].y ==360&&(diagram.connectors[4] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[2].y ==410&&(diagram.connectors[4] as Connector).intermediatePoints[3].x ==345&&(diagram.connectors[4] as Connector).intermediatePoints[3].y ==410&&(diagram.connectors[4] as Connector).intermediatePoints[4].x ==345&&(diagram.connectors[4] as Connector).intermediatePoints[4].y ==425).toBe(true);
                 expect((diagram.connectors[5] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[5] as Connector).intermediatePoints[0].y ==445&&(diagram.connectors[5] as Connector).intermediatePoints[1].x ==410&&(diagram.connectors[5] as Connector).intermediatePoints[1].y ==445&&(diagram.connectors[5] as Connector).intermediatePoints[2].x ==410&&(diagram.connectors[5] as Connector).intermediatePoints[2].y ==280&&(diagram.connectors[5] as Connector).intermediatePoints[3].x ==720&&(diagram.connectors[5] as Connector).intermediatePoints[3].y ==280).toBe(true);
                 expect((diagram.connectors[6] as Connector).intermediatePoints[0].x ==720&&(diagram.connectors[6] as Connector).intermediatePoints[0].y ==280&&(diagram.connectors[6] as Connector).intermediatePoints[1].x ==710&&(diagram.connectors[6] as Connector).intermediatePoints[1].y ==280&&(diagram.connectors[6] as Connector).intermediatePoints[2].x ==710&&(diagram.connectors[6] as Connector).intermediatePoints[2].y ==410&&(diagram.connectors[6] as Connector).intermediatePoints[3].x ==655&&(diagram.connectors[6] as Connector).intermediatePoints[3].y ==410&&(diagram.connectors[6] as Connector).intermediatePoints[4].x ==655&&(diagram.connectors[6] as Connector).intermediatePoints[4].y ==425).toBe(true);
-
                 done();
             }, 300);
         });
@@ -7483,12 +7481,13 @@ describe('Swimlane - Enable Line Routing', () => {
             expect((diagram.connectors[3] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[3] as Connector).intermediatePoints[0].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[1].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[1].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[2].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[2].y ==360&&(diagram.connectors[3] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[3] as Connector).intermediatePoints[3].y ==360).toBe(true);
             expect((diagram.connectors[5] as Connector).intermediatePoints[0].x ==295&&(diagram.connectors[5] as Connector).intermediatePoints[0].y ==445&&(diagram.connectors[5] as Connector).intermediatePoints[1].x ==270&&(diagram.connectors[5] as Connector).intermediatePoints[1].y ==445&&(diagram.connectors[5] as Connector).intermediatePoints[2].x ==270&&(diagram.connectors[5] as Connector).intermediatePoints[2].y ==360&&(diagram.connectors[5] as Connector).intermediatePoints[3].x ==255&&(diagram.connectors[5] as Connector).intermediatePoints[3].y ==360).toBe(true);
             expect((diagram.connectors[6] as Connector).intermediatePoints[0].x ==205&&(diagram.connectors[6] as Connector).intermediatePoints[0].y ==380&&(diagram.connectors[6] as Connector).intermediatePoints[1].x ==205&&(diagram.connectors[6] as Connector).intermediatePoints[1].y ==410&&(diagram.connectors[6] as Connector).intermediatePoints[2].x ==655&&(diagram.connectors[6] as Connector).intermediatePoints[2].y ==410&&(diagram.connectors[6] as Connector).intermediatePoints[3].x ==655&&(diagram.connectors[6] as Connector).intermediatePoints[3].y ==425).toBe(true);
-
             done();
         });
 
         it('Lane Interchange', function (done) {
             setTimeout(function () {
+                debugger
+                console.log("test case flure")
                 var node = diagram.nameTable["swimlanestackCanvas40"];
                 var target = diagram.nameTable["swimlanestackCanvas10"];
                 mouseEvents.clickEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
@@ -7509,7 +7508,6 @@ describe('Swimlane - Enable Line Routing', () => {
                 expect((diagram.connectors[4] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[4] as Connector).intermediatePoints[0].y ==460&&(diagram.connectors[4] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[1].y ==460&&(diagram.connectors[4] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[2].y ==145&&(diagram.connectors[4] as Connector).intermediatePoints[3].x ==395&&(diagram.connectors[4] as Connector).intermediatePoints[3].y ==145).toBe(true);
                 expect((diagram.connectors[5] as Connector).intermediatePoints[0].x ==295&&(diagram.connectors[5] as Connector).intermediatePoints[0].y ==145&&(diagram.connectors[5] as Connector).intermediatePoints[1].x ==270&&(diagram.connectors[5] as Connector).intermediatePoints[1].y ==145&&(diagram.connectors[5] as Connector).intermediatePoints[2].x ==270&&(diagram.connectors[5] as Connector).intermediatePoints[2].y ==460&&(diagram.connectors[5] as Connector).intermediatePoints[3].x ==255&&(diagram.connectors[5] as Connector).intermediatePoints[3].y ==460).toBe(true);
                 expect((diagram.connectors[6] as Connector).intermediatePoints[0].x ==255&&(diagram.connectors[6] as Connector).intermediatePoints[0].y ==460&&(diagram.connectors[6] as Connector).intermediatePoints[1].x ==270&&(diagram.connectors[6] as Connector).intermediatePoints[1].y ==460&&(diagram.connectors[6] as Connector).intermediatePoints[2].x ==270&&(diagram.connectors[6] as Connector).intermediatePoints[2].y ==190&&(diagram.connectors[6] as Connector).intermediatePoints[3].x ==655&&(diagram.connectors[6] as Connector).intermediatePoints[3].y ==190&&(diagram.connectors[6] as Connector).intermediatePoints[4].x ==655&&(diagram.connectors[6] as Connector).intermediatePoints[4].y ==165).toBe(true);
-
                 done();
             }, 300);
         });
@@ -10295,6 +10293,7 @@ describe('Swimlane - Enable Line Routing', () => {
 
         it('Swim lane zindex update issue and line routing issue', (done: Function) => {
             debugger
+            console.log("Test case failure  ")
             diagram.add(nodes[0] as any)
             diagram.select([diagram.nodes[0],diagram.nodes[1],diagram.connectors[0]]);
             var mouseEvents = new MouseEvents();
@@ -10320,30 +10319,30 @@ describe('Swimlane - Enable Line Routing', () => {
                     1000);
         });
         it('Snapping issue test cases', function (done) {
-            console.log("Snapping issue test cases")
-            var mouseEvents = new MouseEvents();
-            var diagramCanvas = document.getElementById('diagramSwimlane1' + 'content');
-            var node = diagram.nameTable["Order"];
-            var targetNode = diagram.nameTable["selectItemaddcart"];
-            var sourcePointX = node.wrapper.offsetX + diagram.element.offsetLeft;
-            var sourcePointY = node.wrapper.offsetY + diagram.element.offsetTop;
-            var targetPointX = targetNode.wrapper.offsetX + diagram.element.offsetLeft;
-            var targetPointY = targetNode.wrapper.offsetY + diagram.element.offsetTop;
-            mouseEvents.mouseDownEvent(diagramCanvas, sourcePointX, sourcePointY);
-            mouseEvents.mouseMoveEvent(diagramCanvas, sourcePointX, sourcePointY + 20);
-            mouseEvents.mouseMoveEvent(diagramCanvas, sourcePointX, sourcePointY + 40);
-            mouseEvents.mouseMoveEvent(diagramCanvas, targetPointX - 150, targetPointY - 20);
-            mouseEvents.mouseMoveEvent(diagramCanvas, targetPointX - 150, targetPointY);
-            var snappingLineObject = document.getElementById("_SnappingLines");
-            mouseEvents.mouseUpEvent(diagramCanvas, targetPointX - 150, targetPointY);
-            expect(snappingLineObject.children[0].getAttribute("fill") === "#07EDE1"
-                && snappingLineObject.children[0].getAttribute("x1") === "440"
-                && snappingLineObject.children[0].getAttribute("y1") === "242.5"
-                && snappingLineObject.children[0].getAttribute("x2") === "695"
-                && snappingLineObject.children[0].getAttribute("y2") === "242.5").toBe(true);
-                done();
-           
-        });
- 
+           console.log("Snapping issue test cases")
+           var mouseEvents = new MouseEvents();
+           var diagramCanvas = document.getElementById('diagramSwimlane1' + 'content');
+           var node = diagram.nameTable["Order"];
+           var targetNode = diagram.nameTable["selectItemaddcart"];
+           var sourcePointX = node.wrapper.offsetX + diagram.element.offsetLeft;
+           var sourcePointY = node.wrapper.offsetY + diagram.element.offsetTop;
+           var targetPointX = targetNode.wrapper.offsetX + diagram.element.offsetLeft;
+           var targetPointY = targetNode.wrapper.offsetY + diagram.element.offsetTop;
+           mouseEvents.mouseDownEvent(diagramCanvas, sourcePointX, sourcePointY);
+           mouseEvents.mouseMoveEvent(diagramCanvas, sourcePointX, sourcePointY + 20);
+           mouseEvents.mouseMoveEvent(diagramCanvas, sourcePointX, sourcePointY + 40);
+           mouseEvents.mouseMoveEvent(diagramCanvas, targetPointX - 150, targetPointY - 20);
+           mouseEvents.mouseMoveEvent(diagramCanvas, targetPointX - 150, targetPointY);
+           var snappingLineObject = document.getElementById("_SnappingLines");
+           mouseEvents.mouseUpEvent(diagramCanvas, targetPointX - 150, targetPointY);
+           expect(snappingLineObject.children[0].getAttribute("fill") === "#07EDE1"
+               && snappingLineObject.children[0].getAttribute("x1") === "440"
+               && snappingLineObject.children[0].getAttribute("y1") === "242.5"
+               && snappingLineObject.children[0].getAttribute("x2") === "695"
+               && snappingLineObject.children[0].getAttribute("y2") === "242.5").toBe(true);
+               done();
+          
+       });
     });
+    
 });

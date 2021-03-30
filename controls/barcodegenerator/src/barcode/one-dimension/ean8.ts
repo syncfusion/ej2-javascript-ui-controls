@@ -7,17 +7,22 @@ export class Ean8 extends OneDimension {
 
 
     /**
-     * Validate the given input to check whether the input is valid one or not
+     * Validate the given input.
+     *
+     * @returns {string} Validate the given input.
+     * @param {string} value - provide the input values .
+     * @private
      */
-    /** @private */
-     public validateInput(value: string): string {
+    public validateInput(value: string): string {
         if (value.search(/^[0-9]{8}$/) !== -1 && Number(value[7]) === this.checkSumData(value)) {
             return undefined;
         } else {
             return 'Accepts 8 numeric characters.';
         }
     }
+    // eslint-disable-next-line
     private getCodeValueRight(right: boolean): object {
+        // eslint-disable-next-line
         let codes: object;
         if (right) {
             codes = {
@@ -30,7 +35,7 @@ export class Ean8 extends OneDimension {
                 '6': '0101111',
                 '7': '0111011',
                 '8': '0110111',
-                '9': '0001011',
+                '9': '0001011'
             };
         } else {
             codes = {
@@ -53,28 +58,34 @@ export class Ean8 extends OneDimension {
 
     private checkSumData(value: string): number {
         for (let i: number = 0; i < value.length; i++) {
-            let sum1: number = Number(value[1]) + Number(value[3]) + Number(value[5]);
-            let sum2: number = 3 * (Number(value[0]) + Number(value[2]) + Number(value[4]) + Number(value[6]));
-            let checkSumValue: number = sum1 + sum2;
+            const sum1: number = Number(value[1]) + Number(value[3]) + Number(value[5]);
+            const sum2: number = 3 * (Number(value[0]) + Number(value[2]) + Number(value[4]) + Number(value[6]));
+            const checkSumValue: number = sum1 + sum2;
             let checkSumDigit: number = 10 - (checkSumValue % 10);
             return checkSumDigit === 0 ? checkSumDigit = 0 : checkSumDigit;
         }
         return 0;
     }
 
-    /** @private */
+    /**
+     * Draw the barcode SVG.\
+     *
+     * @returns {void} Draw the barcode SVG .
+     * @param {HTMLElement} canvas - Provide the canvas element .
+     * @private
+     */
     public draw(canvas: HTMLElement): void {
-            let endBars: string = '101';
-            let middleBar: string = '01010';
-            let codes: string[] = this.getCodeValueRight(true) as string[];
-            let code: string[] = [];
-            code.push(endBars);
-            code.push(this.leftValue(codes, true));
-            code.push(middleBar);
-            codes = this.getCodeValueRight(false) as string[];
-            code.push(this.leftValue(codes, false));
-            code.push(endBars);
-            this.calculateBarCodeAttributes(code, canvas);
+        const endBars: string = '101';
+        const middleBar: string = '01010';
+        let codes: string[] = this.getCodeValueRight(true) as string[];
+        const code: string[] = [];
+        code.push(endBars);
+        code.push(this.leftValue(codes, true));
+        code.push(middleBar);
+        codes = this.getCodeValueRight(false) as string[];
+        code.push(this.leftValue(codes, false));
+        code.push(endBars);
+        this.calculateBarCodeAttributes(code, canvas);
     }
 
     private leftValue(codes: string[], isLeft: boolean): string {
@@ -88,6 +99,4 @@ export class Ean8 extends OneDimension {
         }
         return code;
     }
-
-
 }

@@ -1,3 +1,7 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable @typescript-eslint/ban-types */
 import { withInRange, getPoint, drawSymbol, getElement } from '../../common/utils/helper';
 import { markerAnimate, TransformToVisible, ChartLocation, appendChildElement } from '../../common/utils/helper';
 import { PathOption, Rect, Size } from '@syncfusion/ej2-svg-base';
@@ -17,20 +21,21 @@ export class ScatterSeries {
 
     /**
      * Render the scatter series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
     public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
-		// Scatter series DataLabel is not rendered after selecting StackingColumn
+        // Scatter series DataLabel is not rendered after selecting StackingColumn
         series.isRectSeries = false;
-        let marker: MarkerSettingsModel = series.marker;
-        let visiblePoints: Points[] = this.enableComplexProperty(series);
+        const marker: MarkerSettingsModel = series.marker;
+        const visiblePoints: Points[] = this.enableComplexProperty(series);
         let argsData: IPointRenderEventArgs;
-        let getCoordinate: Function = series.chart.chartAreaType === 'PolarRadar' ? TransformToVisible : getPoint;
+        const getCoordinate: Function = series.chart.chartAreaType === 'PolarRadar' ? TransformToVisible : getPoint;
         let startLocation: ChartLocation;
-        let redraw: boolean = series.chart.redraw;
-        for (let point of visiblePoints) {
+        const redraw: boolean = series.chart.redraw;
+        for (const point of visiblePoints) {
             startLocation = (redraw && point.symbolLocations) ? point.symbolLocations[0] : null;
             point.symbolLocations = []; point.regions = [];
             if (point.visible && withInRange(visiblePoints[point.index - 1], point, visiblePoints[point.index + 1], series)) {
@@ -56,24 +61,25 @@ export class ScatterSeries {
 
     /**
      * To improve the chart performance.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
     public enableComplexProperty(series: Series): Points[] {
-        let tempPoints2: Points[] = [];
-        let tempPoints: Points[] = [];
-        let yVisibleRange: VisibleRangeModel = series.yAxis.visibleRange;
-        let xVisibleRange: VisibleRangeModel = series.xAxis.visibleRange;
-        let areaBounds: Rect = series.clipRect;
-        let seriesPoints: Points[] = <Points[]>series.points;
-        let yTolerance: number = Math.abs(yVisibleRange.delta / areaBounds.height);
-        let xTolerance: number = Math.abs(xVisibleRange.delta / areaBounds.width);
+        const tempPoints2: Points[] = [];
+        const tempPoints: Points[] = [];
+        const yVisibleRange: VisibleRangeModel = series.yAxis.visibleRange;
+        const xVisibleRange: VisibleRangeModel = series.xAxis.visibleRange;
+        const areaBounds: Rect = series.clipRect;
+        const seriesPoints: Points[] = <Points[]>series.points;
+        const yTolerance: number = Math.abs(yVisibleRange.delta / areaBounds.height);
+        const xTolerance: number = Math.abs(xVisibleRange.delta / areaBounds.width);
         let prevYValue: number = (seriesPoints[0] && seriesPoints[0].y > yTolerance) ? 0 : yTolerance;
         let prevXValue: number = (seriesPoints[0] && seriesPoints[0].x > xTolerance) ? 0 : xTolerance;
         let yVal: number = 0;
         let xVal: number = 0;
-        for (let currentPoint of seriesPoints) {
+        for (const currentPoint of seriesPoints) {
             currentPoint.symbolLocations = [];
             yVal = currentPoint.yValue ? currentPoint.yValue : yVisibleRange.min;
             xVal = currentPoint.xValue ? currentPoint.xValue : xVisibleRange.min;
@@ -96,17 +102,19 @@ export class ScatterSeries {
     }
     /**
      * To append scatter element
-     * @param series
-     * @param point
-     * @param argsData
-     * @param startLocation
+     *
+     * @param {Series} series series
+     * @param {Points} point point
+     * @param {IPointRenderEventArgs} argsData argsData
+     * @param {ChartLocation} startLocation startLocation
+     * @returns {void}
      */
     private refresh(series: Series, point: Points, argsData: IPointRenderEventArgs, startLocation: ChartLocation): void {
-        let chart: Chart = series.chart;
+        const chart: Chart = series.chart;
         let circlePath: String;
         let previousPath: string;
-        let marker: MarkerSettingsModel = series.marker;
-        let shapeOption: PathOption = new PathOption(
+        const marker: MarkerSettingsModel = series.marker;
+        const shapeOption: PathOption = new PathOption(
             chart.element.id + '_Series_' + series.index + '_Point_' + point.index, argsData.fill,
             argsData.border.width, argsData.border.color, series.opacity, null
         );
@@ -135,15 +143,16 @@ export class ScatterSeries {
     }
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
     public doAnimation(series: Series): void {
-        let duration: number = series.animation.duration;
-        let delay: number = series.animation.delay;
-        let rectElements: NodeList = series.seriesElement.childNodes;
+        const duration: number = series.animation.duration;
+        const delay: number = series.animation.delay;
+        const rectElements: NodeList = series.seriesElement.childNodes;
         let count: number = 1;
-        for (let point of series.points) {
+        for (const point of series.points) {
             if (!point.symbolLocations.length || !rectElements[count]) {
                 continue;
             }
@@ -166,10 +175,11 @@ export class ScatterSeries {
 
     /**
      * To destroy the scatter.
-     * @return {void}
+     *
+     * @returns {void}
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method calling here
          */

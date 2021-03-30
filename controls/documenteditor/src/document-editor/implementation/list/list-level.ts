@@ -8,7 +8,7 @@ import { WAbstractList } from './abstract-list';
 import { WLevelOverride } from './level-override';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
-/** 
+/**
  * @private
  */
 export class WListLevel {
@@ -24,38 +24,38 @@ export class WListLevel {
     public paragraphFormat: WParagraphFormat = undefined;
     public characterFormat: WCharacterFormat = undefined;
     public ownerBase: WAbstractList | WLevelOverride;
-    get listLevelPattern(): ListLevelPattern {
+    public get listLevelPattern(): ListLevelPattern {
         return this.getPropertyValue('listLevelPattern') as ListLevelPattern;
     }
-    set listLevelPattern(listLevelPattern: ListLevelPattern) {
+    public set listLevelPattern(listLevelPattern: ListLevelPattern) {
         this.setPropertyValue('listLevelPattern', listLevelPattern);
     }
-    get followCharacter(): FollowCharacterType {
+    public get followCharacter(): FollowCharacterType {
         return this.getPropertyValue('followCharacter') as FollowCharacterType;
     }
-    set followCharacter(followCharacter: FollowCharacterType) {
+    public set followCharacter(followCharacter: FollowCharacterType) {
         this.setPropertyValue('followCharacter', followCharacter);
     }
-    get startAt(): number {
+    public get startAt(): number {
         return this.getPropertyValue('startAt') as number;
     }
-    set startAt(startAt: number) {
+    public set startAt(startAt: number) {
         this.setPropertyValue('startAt', startAt);
     }
-    get numberFormat(): string {
+    public get numberFormat(): string {
         return this.getPropertyValue('numberFormat') as string;
     }
-    set numberFormat(numberFormat: string) {
+    public set numberFormat(numberFormat: string) {
         this.setPropertyValue('numberFormat', numberFormat);
     }
-    get restartLevel(): number {
+    public get restartLevel(): number {
         return this.getPropertyValue('restartLevel') as number;
     }
-    set restartLevel(restartLevel: number) {
+    public set restartLevel(restartLevel: number) {
         this.setPropertyValue('restartLevel', restartLevel);
     }
 
-    constructor(node: WAbstractList | WLevelOverride) {
+    public constructor(node: WAbstractList | WLevelOverride) {
         if (node instanceof WAbstractList) {
             this.ownerBase = node as WAbstractList;
         } else {
@@ -64,8 +64,9 @@ export class WListLevel {
         this.characterFormat = new WCharacterFormat(undefined);
         this.paragraphFormat = new WParagraphFormat(undefined);
     }
+    /* eslint-disable */
     public getPropertyValue(property: string): Object {
-        let propertyType: number = WUniqueFormat.getPropertyType(WListLevel.uniqueFormatType, property);
+        const propertyType: number = WUniqueFormat.getPropertyType(WListLevel.uniqueFormatType, property);
         if (!isNullOrUndefined(this.uniqueListLevel) && this.uniqueListLevel.propertiesHash.containsKey(propertyType)) {
             return this.uniqueListLevel.propertiesHash.get(propertyType);
         }
@@ -78,27 +79,24 @@ export class WListLevel {
         if (isNullOrUndefined(this.uniqueListLevel)) {
             this.initializeUniqueWListLevel(property, value);
         } else {
-            let propertyType: number = WUniqueFormat.getPropertyType(this.uniqueListLevel.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(this.uniqueListLevel.uniqueFormatType, property);
             if (this.uniqueListLevel.propertiesHash.containsKey(propertyType) &&
-                // tslint:disable-next-line:max-line-length
                 this.uniqueListLevel.propertiesHash.get(propertyType) === value) {  //Do nothing, since no change in property value and return
                 return;
             }
-            // tslint:disable-next-line:max-line-length
             this.uniqueListLevel = WListLevel.uniqueListLevels.updateUniqueFormat(this.uniqueListLevel, property, value);
         }
     }
     public initializeUniqueWListLevel(property: string, propValue: object): void {
-        let uniqueListLevelTemp: Dictionary<number, object> = new Dictionary<number, object>();
+        const uniqueListLevelTemp: Dictionary<number, object> = new Dictionary<number, object>();
         this.addUniqueWListLevel('listLevelPattern', property, propValue, uniqueListLevelTemp);
         this.addUniqueWListLevel('startAt', property, propValue, uniqueListLevelTemp);
         this.addUniqueWListLevel('followCharacter', property, propValue, uniqueListLevelTemp);
         this.addUniqueWListLevel('numberFormat', property, propValue, uniqueListLevelTemp);
         this.addUniqueWListLevel('restartLevel', property, propValue, uniqueListLevelTemp);
-        // tslint:disable-next-line:max-line-length    
         this.uniqueListLevel = WListLevel.uniqueListLevels.addUniqueFormat(uniqueListLevelTemp, WListLevel.uniqueFormatType);
     }
-    // tslint:disable-next-line:max-line-length
+
     public addUniqueWListLevel(property: string, modifiedProperty: string, propValue: object, uniqueCharFormatTemp: Dictionary<number, object>): void {
         let propertyType: number;
         propertyType = WUniqueFormat.getPropertyType(WListLevel.uniqueFormatType, property);
@@ -109,25 +107,27 @@ export class WListLevel {
         }
     }
     public static getPropertyDefaultValue(property: string): Object {
-        let value: Object = undefined;
+        /* eslint-disable */
+        let value: any = undefined;
         switch (property) {
-            case 'listLevelPattern':
-                value = 'Arabic';
-                break;
-            case 'startAt':
-                value = 0;
-                break;
-            case 'followCharacter':
-                value = 'Tab';
-                break;
-            case 'numberFormat':
-                value = '';
-                break;
-            case 'restartLevel':
-                value = 0;
-                break;
+        case 'listLevelPattern':
+            value = 'Arabic';
+            break;
+        case 'startAt':
+            value = 0;
+            break;
+        case 'followCharacter':
+            value = 'Tab';
+            break;
+        case 'numberFormat':
+            value = '';
+            break;
+        case 'restartLevel':
+            value = 0;
+            break;
         }
         return value;
+        /* eslint-enable */
     }
     public destroy(): void {
         if (!isNullOrUndefined(this.characterFormat)) {
@@ -147,7 +147,7 @@ export class WListLevel {
         this.uniqueListLevels.clear();
     }
     public clone(node: WAbstractList | WLevelOverride): WListLevel {
-        let listLevel: WListLevel = new WListLevel(node);
+        const listLevel: WListLevel = new WListLevel(node);
         listLevel.paragraphFormat = this.paragraphFormat.cloneFormat();
         listLevel.characterFormat = this.characterFormat.cloneFormat();
         if (this.uniqueListLevel) {

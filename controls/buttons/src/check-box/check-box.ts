@@ -8,7 +8,7 @@ import { wrapperInitialize, rippleMouseHandler, ChangeEventArgs, setHiddenInput 
  */
 export type LabelPosition = 'After' | 'Before';
 
-const CHECK: string = 'e-check';
+const CHECK: string  = 'e-check';
 const DISABLED: string = 'e-checkbox-disabled';
 const FRAME: string = 'e-frame';
 const INDETERMINATE: string = 'e-stop';
@@ -43,14 +43,16 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     /**
      * Triggers when the CheckBox state has been changed by user interaction.
-     * @event
+     *
+     * @event change
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
 
     /**
      * Triggers once the component rendering is completed.
-     * @event
+     *
+     * @event created
      */
     @Event()
     public created: EmitType<Event>;
@@ -58,6 +60,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     /**
      * Specifies a value that indicates whether the CheckBox is `checked` or not.
      * When set to `true`, the CheckBox will be in `checked` state.
+     *
      * @default false
      */
     @Property(false)
@@ -66,6 +69,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     /**
      * Defines class/multiple classes separated by a space in the CheckBox element.
      * You can add custom styles to the CheckBox by using this property.
+     *
      * @default ''
      */
     @Property('')
@@ -74,6 +78,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     /**
      * Specifies a value that indicates whether the CheckBox is `disabled` or not.
      * When set to `true`, the CheckBox will be in `disabled` state.
+     *
      * @default false
      */
     @Property(false)
@@ -82,6 +87,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     /**
      * Specifies a value that indicates whether the CheckBox is in `indeterminate` state or not.
      * When set to `true`, the CheckBox will be in `indeterminate` state.
+     *
      * @default false
      */
     @Property(false)
@@ -89,6 +95,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     /**
      * Defines the caption for the CheckBox, that describes the purpose of the CheckBox.
+     *
      * @default ''
      */
     @Property('')
@@ -99,6 +106,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
      * The possible values are:
      * * Before - The label is positioned to left of the CheckBox.
      * * After - The label is positioned to right of the CheckBox.
+     *
      * @default 'After'
      */
     @Property('After')
@@ -107,6 +115,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     /**
      * Defines `name` attribute for the CheckBox.
      * It is used to reference form data (CheckBox value) after a form is submitted.
+     *
      * @default ''
      */
     @Property('')
@@ -115,6 +124,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     /**
      * Defines `value` attribute for the CheckBox.
      * It is a form data passed to the server when submitting the form.
+     *
      * @default ''
      */
     @Property('')
@@ -122,6 +132,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     /**
      * Defines whether to allow the cross-scripting site or not.
+     *
      * @default false
      */
     @Property(false)
@@ -130,6 +141,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
+     *
      * @default {}
      */
     @Property({})
@@ -137,7 +149,10 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     /**
      * Constructor for creating the widget
+     *
      * @private
+     * @param {CheckBoxModel} options - Specifies checkbox model
+     * @param {string | HTMLInputElement} element - Specifies target element
      */
     constructor(options?: CheckBoxModel, element?: string | HTMLInputElement) {
         super(options, <string | HTMLInputElement>element);
@@ -146,7 +161,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     private changeState(state?: string): void {
         let ariaState: string;
         let rippleSpan: Element;
-        let frameSpan: Element = this.getWrapper().getElementsByClassName(FRAME)[0];
+        const frameSpan: Element = this.getWrapper().getElementsByClassName(FRAME)[0];
         if (isRippleEnabled) {
             rippleSpan = this.getWrapper().getElementsByClassName(RIPPLE)[0];
         }
@@ -195,14 +210,15 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
             this.changeState('check');
             this.checked = true;
         }
-        let changeEventArgs: ChangeEventArgs = { checked: this.updateVueArrayModel(false), event: event };
+        const changeEventArgs: ChangeEventArgs = { checked: this.updateVueArrayModel(false), event: event };
         this.trigger('change', changeEventArgs);
         event.stopPropagation();
     }
 
     /**
      * Destroys the widget.
-     * @returns void
+     *
+     * @returns {void}
      */
     public destroy(): void {
         let wrapper: Element = this.getWrapper();
@@ -224,7 +240,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                 ['name', 'value', 'disabled'].forEach((key: string) => {
                     this.element.removeAttribute(key);
                 });
-                } else {
+            } else {
                 ['role', 'aria-checked', 'class'].forEach((key: string) => {
                     wrapper.removeAttribute(key);
                 });
@@ -238,7 +254,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private focusOutHandler(): void {
-        let wrapper: Element = this.getWrapper();
+        const wrapper: Element = this.getWrapper();
         if (wrapper) {
             wrapper.classList.remove('e-focus');
         }
@@ -247,7 +263,9 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     /**
      * Gets the module name.
+     *
      * @private
+     * @returns {string} - Module Name
      */
     protected getModuleName(): string {
         return 'checkbox';
@@ -255,7 +273,9 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     /**
      * Gets the properties to be maintained in the persistence state.
+     *
      * @private
+     * @returns {string} - Persist Data
      */
     public getPersistData(): string {
         return this.addOnPersist(['checked', 'indeterminate']);
@@ -301,8 +321,8 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
             });
             this.element.parentNode.insertBefore(wrapper, this.element);
         }
-        let label: Element = this.createElement('label', { attrs: { for: this.element.id } });
-        let frameSpan: Element = this.createElement('span', { className: 'e-icons ' + FRAME });
+        const label: Element = this.createElement('label', { attrs: { for: this.element.id } });
+        const frameSpan: Element = this.createElement('span', { className: 'e-icons ' + FRAME });
         wrapper.classList.add('e-wrapper');
         if (this.enableRtl) {
             wrapper.classList.add(RTL);
@@ -315,7 +335,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         setHiddenInput(this, label);
         label.appendChild(frameSpan);
         if (isRippleEnabled) {
-            let rippleSpan: HTMLElement = this.createElement('span', { className: RIPPLE });
+            const rippleSpan: HTMLElement = this.createElement('span', { className: RIPPLE });
             if (this.labelPosition === 'Before') {
                 label.appendChild(rippleSpan);
             } else {
@@ -334,91 +354,110 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         }
     }
 
-    private labelMouseHandler(e: MouseEvent): void {
+    private labelMouseDownHandler(e: MouseEvent): void {
         this.isMouseClick = true;
-        let rippleSpan: Element = this.getWrapper().getElementsByClassName(RIPPLE)[0];
+        const rippleSpan: Element = this.getWrapper().getElementsByClassName(RIPPLE)[0];
         rippleMouseHandler(e, rippleSpan);
+    }
+
+    private labelMouseUpHandler(e: MouseEvent): void {
+        this.isMouseClick = true;
+        const rippleSpan: Element = this.getWrapper().getElementsByClassName(RIPPLE)[0];
+        if (rippleSpan) {
+            const rippleElem: NodeListOf<Element> = rippleSpan.querySelectorAll('.e-ripple-element');
+            for (let i: number = 0; i < rippleElem.length - 1; i++) {
+                rippleSpan.removeChild(rippleSpan.childNodes[i]);
+            }
+            rippleMouseHandler(e, rippleSpan);
+        }
     }
 
     /**
      * Called internally if any of the property value changes.
+     *
      * @private
+     * @param {CheckBoxModel} newProp - Specifies new Properties
+     * @param {CheckBoxModel} oldProp - Specifies old Properties
+     *
+     * @returns {void}
      */
     public onPropertyChanged(newProp: CheckBoxModel, oldProp: CheckBoxModel): void {
-        let wrapper: Element = this.getWrapper();
-        for (let prop of Object.keys(newProp)) {
+        const wrapper: Element = this.getWrapper();
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'checked':
-                    this.indeterminate = false;
+            case 'checked':
+                this.indeterminate = false;
+                this.element.indeterminate = false;
+                this.changeState(newProp.checked ? 'check' : 'uncheck');
+                break;
+            case 'indeterminate':
+                if (newProp.indeterminate) {
+                    this.changeState();
+                } else {
                     this.element.indeterminate = false;
-                    this.changeState(newProp.checked ? 'check' : 'uncheck');
-                    break;
-                case 'indeterminate':
-                    if (newProp.indeterminate) {
-                        this.changeState();
-                    } else {
-                        this.element.indeterminate = false;
-                        this.changeState(this.checked ? 'check' : 'uncheck');
-                    }
-                    break;
-                case 'disabled':
-                    if (newProp.disabled) {
-                        this.setDisabled();
-                        this.wrapper = this.getWrapper();
-                        this.unWireEvents();
-                    } else {
-                        this.element.disabled = false;
-                        wrapper.classList.remove(DISABLED);
-                        wrapper.setAttribute('aria-disabled', 'false');
-                        this.wireEvents();
-                    }
-                    break;
-                case 'cssClass':
-                    if (oldProp.cssClass) {
-                        removeClass([wrapper], oldProp.cssClass.split(' '));
-                    }
-                    if (newProp.cssClass) {
-                        addClass([wrapper], newProp.cssClass.split(' '));
-                    }
-                    break;
-                case 'enableRtl':
-                    if (newProp.enableRtl) {
-                        wrapper.classList.add(RTL);
-                    } else {
-                        wrapper.classList.remove(RTL);
-                    }
-                    break;
-                case 'label':
-                    this.setText(newProp.label);
-                    break;
-                case 'labelPosition':
-                    let label: Element = wrapper.getElementsByClassName(LABEL)[0];
-                    let labelWrap: Element = wrapper.getElementsByTagName('label')[0];
-                    detach(label);
-                    if (newProp.labelPosition === 'After') {
-                        labelWrap.appendChild(label);
-                    } else {
-                        labelWrap.insertBefore(label, wrapper.getElementsByClassName(FRAME)[0]);
-                    }
-                    break;
-                case 'name':
-                    this.element.setAttribute('name', newProp.name);
-                    break;
-                case 'value':
-                    if (this.isVue && typeof newProp.value === 'object') { break; }
-                    this.element.setAttribute('value', newProp.value);
-                    break;
-                case 'htmlAttributes':
-                    this.updateHtmlAttributeToWrapper();
-                    break;
-
+                    this.changeState(this.checked ? 'check' : 'uncheck');
+                }
+                break;
+            case 'disabled':
+                if (newProp.disabled) {
+                    this.setDisabled();
+                    this.wrapper = this.getWrapper();
+                    this.unWireEvents();
+                } else {
+                    this.element.disabled = false;
+                    wrapper.classList.remove(DISABLED);
+                    wrapper.setAttribute('aria-disabled', 'false');
+                    this.wireEvents();
+                }
+                break;
+            case 'cssClass':
+                if (oldProp.cssClass) {
+                    removeClass([wrapper], oldProp.cssClass.split(' '));
+                }
+                if (newProp.cssClass) {
+                    addClass([wrapper], newProp.cssClass.split(' '));
+                }
+                break;
+            case 'enableRtl':
+                if (newProp.enableRtl) {
+                    wrapper.classList.add(RTL);
+                } else {
+                    wrapper.classList.remove(RTL);
+                }
+                break;
+            case 'label':
+                this.setText(newProp.label);
+                break;
+            case 'labelPosition': {
+                const label: Element = wrapper.getElementsByClassName(LABEL)[0];
+                const labelWrap: Element = wrapper.getElementsByTagName('label')[0];
+                detach(label);
+                if (newProp.labelPosition === 'After') {
+                    labelWrap.appendChild(label);
+                } else {
+                    labelWrap.insertBefore(label, wrapper.getElementsByClassName(FRAME)[0]);
+                }
+                break;
+            }
+            case 'name':
+                this.element.setAttribute('name', newProp.name);
+                break;
+            case 'value':
+                if (this.isVue && typeof newProp.value === 'object') { break; }
+                this.element.setAttribute('value', newProp.value);
+                break;
+            case 'htmlAttributes':
+                this.updateHtmlAttributeToWrapper();
+                break;
             }
         }
     }
 
     /**
      * Initialize Angular, React and Unique ID support.
+     *
      * @private
+     * @returns {void}
      */
     protected preRender(): void {
         let element: HTMLInputElement = this.element;
@@ -436,7 +475,9 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     /**
      * Initialize the control rendering.
+     *
      * @private
+     * @returns {void}
      */
     protected render(): void {
         this.initWrapper();
@@ -451,14 +492,14 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private setDisabled(): void {
-        let wrapper: Element = this.getWrapper();
+        const wrapper: Element = this.getWrapper();
         this.element.disabled = true;
         wrapper.classList.add(DISABLED);
         wrapper.setAttribute('aria-disabled', 'true');
     }
 
     private setText(text: string): void {
-        let wrapper: Element = this.getWrapper();
+        const wrapper: Element = this.getWrapper();
         if (!wrapper) {
             return;
         }
@@ -468,7 +509,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         } else {
             text = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(text) : text;
             label = this.createElement('span', { className: LABEL, innerHTML: text });
-            let labelWrap: Element = wrapper.getElementsByTagName('label')[0];
+            const labelWrap: Element = wrapper.getElementsByTagName('label')[0];
             if (this.labelPosition === 'Before') {
                 labelWrap.insertBefore(label, wrapper.getElementsByClassName(FRAME)[0]);
             } else {
@@ -487,14 +528,14 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     }
 
     protected unWireEvents(): void {
-        let wrapper: Element = this.wrapper;
+        const wrapper: Element = this.wrapper;
         EventHandler.remove(this.element, 'click', this.clickHandler);
         EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
-        let label: Element = wrapper.getElementsByTagName('label')[0];
-        EventHandler.remove(label, 'mousedown', this.labelMouseHandler);
-        EventHandler.remove(label, 'mouseup', this.labelMouseHandler);
+        const label: Element = wrapper.getElementsByTagName('label')[0];
+        EventHandler.remove(label, 'mousedown', this.labelMouseDownHandler);
+        EventHandler.remove(label, 'mouseup', this.labelMouseUpHandler);
         if (this.formElement) {
             EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
         }
@@ -505,14 +546,14 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     }
 
     protected wireEvents(): void {
-        let wrapper: Element = this.getWrapper();
+        const wrapper: Element = this.getWrapper();
         EventHandler.add(this.element, 'click', this.clickHandler, this);
         EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
-        let label: Element = wrapper.getElementsByTagName('label')[0];
-        EventHandler.add(label, 'mousedown', this.labelMouseHandler, this);
-        EventHandler.add(label, 'mouseup', this.labelMouseHandler, this);
+        const label: Element = wrapper.getElementsByTagName('label')[0];
+        EventHandler.add(label, 'mousedown', this.labelMouseDownHandler, this);
+        EventHandler.add(label, 'mouseup', this.labelMouseUpHandler, this);
         if (this.formElement) {
             EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
         }
@@ -523,7 +564,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     private updateVueArrayModel(init: boolean): boolean {
         if (this.isVue && typeof this.value === 'object') {
-            let value: string = this.element.value;
+            const value: string = this.element.value;
             if (value && this.value) {
                 if (init) {
                     for (let i: number = 0; i < (this.value as string[]).length; i++) {
@@ -532,7 +573,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                         }
                     }
                 } else {
-                    let index: number = (this.value as string[]).indexOf(value);
+                    const index: number = (this.value as string[]).indexOf(value);
                     if (this.checked) {
                         if (index < 0) {
                             (this.value as string[]).push(value);
@@ -542,7 +583,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                             (this.value as string[]).splice(index, 1);
                         }
                     }
-                    // tslint:disable-next-line:no-any
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     return this.value as any;
                 }
             }
@@ -552,15 +593,15 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     protected updateHtmlAttributeToWrapper(): void {
         if (!isNullOrUndefined(this.htmlAttributes)) {
-            for (let key of Object.keys(this.htmlAttributes)) {
+            for (const key of Object.keys(this.htmlAttributes)) {
                 if (containerAttr.indexOf(key) > -1) {
-                    let wrapper: Element = this.getWrapper();
+                    const wrapper: Element = this.getWrapper();
                     if (key === 'class') {
                         addClass([wrapper], this.htmlAttributes[key].split(' '));
                     } else if (key === 'title') {
                         wrapper.setAttribute(key, this.htmlAttributes[key]);
                     } else if (key === 'style') {
-                        let frameSpan: Element = this.getWrapper().getElementsByClassName(FRAME)[0];
+                        const frameSpan: Element = this.getWrapper().getElementsByClassName(FRAME)[0];
                         frameSpan.setAttribute(key, this.htmlAttributes[key]);
                     } else {
                         this.element.setAttribute(key, this.htmlAttributes[key]);
@@ -573,18 +614,22 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     /**
      * Click the CheckBox element
      * its native method
+     *
      * @public
+     * @returns {void}
      */
     public click(): void {
         this.element.click();
-   }
+    }
 
-   /**
-    * Sets the focus to CheckBox
-    * its native method
-    * @public
-    */
-   public focusIn(): void {
-       this.element.focus();
-  }
+    /**
+     * Sets the focus to CheckBox
+     * its native method
+     *
+     * @public
+     * @returns {void}
+     */
+    public focusIn(): void {
+        this.element.focus();
+    }
 }

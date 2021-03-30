@@ -7,12 +7,14 @@ export interface StackedHeadersModel {
 
     /**
      * Defines the column header text
+     *
      * @default null
      */
     text?: string;
 
     /**
      * Defines the multiple columns keyField
+     *
      * @default null
      */
     keyFields?: string;

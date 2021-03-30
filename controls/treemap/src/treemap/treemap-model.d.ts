@@ -1,4 +1,4 @@
-import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, extend, Ajax, isBlazor } from '@syncfusion/ej2-base';import { Complex, Collection, ModuleDeclaration, resetBlazorTemplate } from '@syncfusion/ej2-base';import { Event, EmitType, Internationalization } from '@syncfusion/ej2-base';import { SvgRenderer } from '@syncfusion/ej2-svg-base';import { isNullOrUndefined, createElement, EventHandler, Browser, remove } from '@syncfusion/ej2-base';import { BorderModel, TitleSettingsModel, MarginModel, LevelSettingsModel, FontModel, } from './model/base-model';import { LeafItemSettingsModel, TooltipSettingsModel, LegendSettingsModel, InitialDrillSettingsModel } from './model/base-model';import { HighlightSettingsModel, SelectionSettingsModel } from './model/base-model';import { Border, Margin, TitleSettings, LegendSettings, InitialDrillSettings } from './model/base';import { SelectionSettings, TooltipSettings, LevelSettings, LeafItemSettings, HighlightSettings, } from './model/base';import { LayoutMode, TreeMapTheme, RenderingMode } from './utils/enum';import { ILoadEventArgs, ILoadedEventArgs, IPrintEventArgs } from '../treemap/model/interface';import { ILegendItemRenderingEventArgs, ILegendRenderingEventArgs, IItemDataEventArgs } from '../treemap/model/interface';import { IItemRenderingEventArgs, IResizeEventArgs, IDoubleClickEventArgs, IRightClickEventArgs } from '../treemap/model/interface';import { IItemClickEventArgs, IItemMoveEventArgs, IClickEventArgs, IMouseMoveEventArgs } from '../treemap/model/interface';import { IDrillStartEventArgs, IItemSelectedEventArgs, ITreeMapTooltipRenderEventArgs } from '../treemap/model/interface';import { IItemHighlightEventArgs, IDrillEndEventArgs, IThemeStyle } from '../treemap/model/interface';import { Size, stringToNumber, RectOption, Rect, textTrim, measureText, findChildren, removeElement } from '../treemap/utils/helper';import { removeClassNames, removeShape, textFormatter } from '../treemap/utils/helper';import { findPosition, Location, TextOption, renderTextElement, isContainsData, TreeMapAjax } from '../treemap/utils/helper';import { load, loaded, itemSelected, drillStart, drillEnd } from '../treemap/model/constants';import { itemClick, itemMove, click, mouseMove, resize, doubleClick, rightClick } from '../treemap/model/constants';import { LayoutPanel } from './layout/render-panel';import { TreeMapTooltip } from './user-interaction/tooltip';import { ExportType } from '../treemap/utils/enum';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';import { TreeMapHighlight, TreeMapSelection } from './user-interaction/highlight-selection';import { TreeMapLegend } from './layout/legend';import { DataManager, Query } from '@syncfusion/ej2-data';import { getThemeStyle } from './model/theme';import { Print } from './model/print';import { ImageExport } from './model/image-export';import { PdfExport } from './model/pdf-export';
+import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, extend, Ajax, isBlazor } from '@syncfusion/ej2-base';import { Complex, Collection, ModuleDeclaration, resetBlazorTemplate } from '@syncfusion/ej2-base';import { Event, EmitType, Internationalization } from '@syncfusion/ej2-base';import { SvgRenderer } from '@syncfusion/ej2-svg-base';import { isNullOrUndefined, createElement, EventHandler, Browser, remove } from '@syncfusion/ej2-base';import { BorderModel, TitleSettingsModel, MarginModel, LevelSettingsModel, FontModel } from './model/base-model';import { LeafItemSettingsModel, TooltipSettingsModel, LegendSettingsModel, InitialDrillSettingsModel } from './model/base-model';import { HighlightSettingsModel, SelectionSettingsModel } from './model/base-model';import { Border, Margin, TitleSettings, LegendSettings, InitialDrillSettings } from './model/base';import { SelectionSettings, TooltipSettings, LevelSettings, LeafItemSettings, HighlightSettings } from './model/base';import { LayoutMode, TreeMapTheme, RenderingMode } from './utils/enum';import { ILoadEventArgs, ILoadedEventArgs, IPrintEventArgs } from '../treemap/model/interface';import { ILegendItemRenderingEventArgs, ILegendRenderingEventArgs, IItemDataEventArgs } from '../treemap/model/interface';import { IItemRenderingEventArgs, IResizeEventArgs, IDoubleClickEventArgs, IRightClickEventArgs } from '../treemap/model/interface';import { IItemClickEventArgs, IItemMoveEventArgs, IClickEventArgs, IMouseMoveEventArgs } from '../treemap/model/interface';import { IDrillStartEventArgs, IItemSelectedEventArgs, ITreeMapTooltipRenderEventArgs } from '../treemap/model/interface';import { IItemHighlightEventArgs, IDrillEndEventArgs, IThemeStyle } from '../treemap/model/interface';import { Size, stringToNumber, RectOption, Rect, textTrim, measureText, findChildren, removeElement } from '../treemap/utils/helper';import { removeClassNames, removeShape, textFormatter } from '../treemap/utils/helper';import { findPosition, Location, TextOption, renderTextElement, isContainsData, TreeMapAjax } from '../treemap/utils/helper';import { load, loaded, itemSelected, drillStart, drillEnd } from '../treemap/model/constants';import { itemClick, itemMove, click, mouseMove, resize, doubleClick, rightClick } from '../treemap/model/constants';import { LayoutPanel } from './layout/render-panel';import { TreeMapTooltip } from './user-interaction/tooltip';import { ExportType } from '../treemap/utils/enum';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';import { TreeMapHighlight, TreeMapSelection } from './user-interaction/highlight-selection';import { TreeMapLegend } from './layout/legend';import { DataManager, Query } from '@syncfusion/ej2-data';import { getThemeStyle } from './model/theme';import { Print } from './model/print';import { ImageExport } from './model/image-export';import { PdfExport } from './model/pdf-export';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -8,30 +8,35 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Enables and disables the print functionality in treemap.
+     *
      * @default false
      */
     allowPrint?: boolean;
 
     /**
      * Enables and disables the export to image functionality in treemap.
+     *
      * @default false
      */
     allowImageExport?: boolean;
 
     /**
      * Enables and disables the export to pdf functionality in treemap.
+     *
      * @default false
      */
     allowPdfExport?: boolean;
 
     /**
      * Sets and gets the width of the treemap component.
+     *
      * @default null
      */
     width?: string;
 
     /**
      * Sets and gets the height of the treemap component.
+     *
      * @default null
      */
     height?: string;
@@ -68,6 +73,7 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Sets and gets the data source for the treemap component.
+     *
      * @isGenericType true
      * @isObservable true
      * @default null
@@ -77,6 +83,7 @@ export interface TreeMapModel extends ComponentModel{
     /**
      * Sets and gets the query to select particular data from the shape data.
      * This property is applicable only when the data source is created by data manager.
+     *
      * @default null
      */
     query?: Query;
@@ -108,6 +115,7 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Specifies the rendering direction of layout of the treemap items.
+     *
      * @default TopLeftBottomRight
      */
     renderDirection?: RenderingMode;
@@ -169,36 +177,42 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Enables or disables the visibility state of the separator for grouping.
+     *
      * @default false
      */
     useGroupingSeparator?: boolean;
 
     /**
      * Sets and gets the description for treemap.
+     *
      * @default null
      */
     description?: string;
 
     /**
      * Sets and gets the tab index value for treemap.
+     *
      * @default 1
      */
     tabIndex?: number;
 
     /**
      * Sets and gets format for the texts in the treemap.
+     *
      * @default null
      */
     format?: string;
 
     /**
      * Triggers when the treemap is on load.
+     *
      * @event
      */
     load?: EmitType<ILoadEventArgs>;
 
     /**
      * Triggers before the prints gets started.
+     *
      * @event
      * @blazorProperty 'OnPrint'
      */
@@ -206,6 +220,7 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Triggers after treemap is rendered.
+     *
      * @event
      * @blazorProperty 'Loaded'
      */
@@ -213,6 +228,7 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Triggers before item rendering in the treemap component.
+     *
      * @event
      * @blazorProperty 'ItemRendering'
      */
@@ -220,6 +236,7 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Triggers on performing drill down functionality in the treemap.
+     *
      * @event
      * @blazorProperty 'OnDrillStart'
      */
@@ -227,6 +244,7 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Triggers after drill down functionality gets completed in the treemap.
+     *
      * @event
      * @blazorProperty 'DrillCompleted'
      */
@@ -234,6 +252,7 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Triggers after selecting a treemap item.
+     *
      * @event
      * @blazorProperty 'ItemSelected'
      */
@@ -241,6 +260,7 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Triggers after highlighting on the treemap item.
+     *
      * @event
      * @blazorProperty 'ItemHighlighted'
      */
@@ -248,6 +268,7 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Triggers on rendering of the tooltip in the treemap component.
+     *
      * @event
      * @blazorProperty 'TooltipRendering'
      * @blazorType ITreeMapTooltipArgs
@@ -256,6 +277,7 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Triggers after clicking an item in the treemap.
+     *
      * @event
      * @blazorProperty 'OnItemClick'
      */
@@ -263,6 +285,7 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Triggers after mouse hover on the treemap item.
+     *
      * @event
      * @blazorProperty 'OnItemMove'
      */
@@ -270,6 +293,7 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Triggers after clicking on the treemap.
+     *
      * @event
      * @blazorProperty 'OnClick'
      */
@@ -277,6 +301,7 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Triggers after double clicking on the treemap.
+     *
      * @event
      * @blazorProperty 'OnDoubleClick'
      */
@@ -284,6 +309,7 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Triggers after right clicking on the treemap.
+     *
      * @event
      * @blazorProperty 'OnRightClick'
      */
@@ -291,6 +317,7 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Triggers after mouse hover on the treemap.
+     *
      * @event
      * @blazorProperty 'OnMouseMove'
      */
@@ -298,6 +325,7 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Triggers after resizing the treemap component.
+     *
      * @event
      * @blazorProperty 'Resizing'
      */
@@ -305,6 +333,7 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Triggers before rendering each legend item in the treemap.
+     *
      * @event
      * @blazorProperty 'LegendItemRendering'
      */
@@ -312,6 +341,7 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Triggers before rendering the legend items in the treemap.
+     *
      * @event
      * @deprecated
      * @blazorProperty 'LegendRendering'

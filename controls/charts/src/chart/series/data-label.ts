@@ -1,3 +1,7 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { ChartLocation, ColorValue, RectOption, isCollide, isOverlap, LabelLocation } from '../../common/utils/helper';
 import { markerAnimate, appendChildElement, getVisiblePoints } from '../../common/utils/helper';
 import { getLabelText, convertHexToColor, calculateRect, textElement, colorNameToHex } from '../../common/utils/helper';
@@ -39,6 +43,7 @@ export class DataLabel {
 
     /**
      * Constructor for the data label module.
+     *
      * @private
      */
 
@@ -49,8 +54,8 @@ export class DataLabel {
     private initPrivateVariables(series: Series, marker: MarkerSettingsModel): void {
         let transform: string = '';
         let clipPath: string = '';
-        let render: SvgRenderer | CanvasRenderer = series.chart.renderer;
-        let index: number | string = (series.index === undefined) ? series.category : series.index;
+        const render: SvgRenderer | CanvasRenderer = series.chart.renderer;
+        const index: number | string = (series.index === undefined) ? series.category : series.index;
         if (series.chart.chartAreaType === 'Cartesian') {
             transform = 'translate(' + series.clipRect.x + ',' + (series.clipRect.y) + ')';
             clipPath = 'url(#' + this.chart.element.id + '_ChartSeriesClipRect_' + index + ')';
@@ -78,9 +83,9 @@ export class DataLabel {
         if (!series.errorBar.visible) {
             return null;
         } else if (series.errorBar.visible && this.chart.chartAreaType !== 'PolarRadar') {
-            let direction: ErrorBarDirection = series.errorBar.direction;
-            let positiveHeight: number = this.chart.errorBarModule.positiveHeight;
-            let negativeHeight: number = this.chart.errorBarModule.negativeHeight;
+            const direction: ErrorBarDirection = series.errorBar.direction;
+            const positiveHeight: number = this.chart.errorBarModule.positiveHeight;
+            const negativeHeight: number = this.chart.errorBarModule.negativeHeight;
             if (this.isRectSeries(series)) {
                 if (position === 'Top' || position === 'Auto') {
                     if (direction === 'Both' || direction === 'Minus') {
@@ -123,9 +128,9 @@ export class DataLabel {
 
     /**
      * Render the data label for series.
-     * @return {void}
+     *
+     * @returns {void}
      */
-    // tslint:disable-next-line:max-func-body-length
     public render(series: Series, chart: Chart, dataLabel: DataLabelSettingsModel): void {
         // initialize the private variable
         this.initPrivateVariables(series, series.marker);
@@ -140,22 +145,22 @@ export class DataLabel {
         let degree: number;
         this.inverted = chart.requireInvertedAxis;
         this.yAxisInversed = series.yAxis.isInversed;
-        let redraw: boolean = chart.redraw;
+        const redraw: boolean = chart.redraw;
         let isDataLabelOverlap: boolean = false;
         let coordinatesAfterRotation: ChartLocation[] = [];
-        let templateId: string = chart.element.id + '_Series_' +
+        const templateId: string = chart.element.id + '_Series_' +
             (series.index === undefined ? series.category : series.index) + '_DataLabelCollections';
-        let element: HTMLElement = createElement('div', {
+        const element: HTMLElement = createElement('div', {
             id: templateId
         });
-        let visiblePoints: Points[] = getVisiblePoints(series);
+        const visiblePoints: Points[] = getVisiblePoints(series);
         let point: Points;
         let rectCenterX: number; let rectCenterY: number;
         // Data label point iteration started
         for (let i: number = 0; i < visiblePoints.length; i++) {
             point = visiblePoints[i];
             if (!dataLabel.showZero && ((point.y !== 0) || (point.y === 0 && series.emptyPointSettings.mode === 'Zero'))) {
-                  return null;
+                return null;
             }
             this.margin = dataLabel.margin;
             let labelText: string[] = [];
@@ -165,12 +170,12 @@ export class DataLabel {
             let xValue: number;
             let yValue: number;
             let isRender: boolean = true;
-            let clip: Rect = series.clipRect;
+            const clip: Rect = series.clipRect;
             let shapeRect: HTMLElement;
             isDataLabelOverlap = false;
             angle = degree = dataLabel.angle;
             border = { width: dataLabel.border.width, color: dataLabel.border.color };
-            let argsFont: FontModel = <FontModel>(extend({}, getValue('properties', dataLabel.font), null, true));
+            const argsFont: FontModel = <FontModel>(extend({}, getValue('properties', dataLabel.font), null, true));
             if (
                 (point.symbolLocations.length && point.symbolLocations[0]) ||
                 (series.type === 'BoxAndWhisker' && point.regions.length)
@@ -196,24 +201,24 @@ export class DataLabel {
                             rect = this.calculateTextPosition(point, series, textSize, dataLabel, i);
                             // To check whether the polar radar chart datalabel intersects the axis label or not
                             if (chart.chartAreaType === 'PolarRadar') {
-                                for (let rectRegion of (<PolarRadarPanel>chart.chartAxisLayoutPanel).visibleAxisLabelRect) {
+                                for (const rectRegion of (<PolarRadarPanel>chart.chartAxisLayoutPanel).visibleAxisLabelRect) {
                                     if (isOverlap(new Rect(rect.x, rect.y, rect.width, rect.height), rectRegion)) {
                                         isRender = false;
                                         break;
                                     }
                                 }
                             }
-                            let actualRect: Rect = new Rect(rect.x + clip.x, rect.y + clip.y, rect.width, rect.height);
+                            const actualRect: Rect = new Rect(rect.x + clip.x, rect.y + clip.y, rect.width, rect.height);
                             //let notOverlapping: boolean;
                             if (dataLabel.enableRotation) {
-                                let rectCoordinates: ChartLocation[] = this.getRectanglePoints(rect);
+                                const rectCoordinates: ChartLocation[] = this.getRectanglePoints(rect);
                                 rectCenterX = rect.x + (rect.width / 2);
                                 rectCenterY = (rect.y + (rect.height / 2));
                                 coordinatesAfterRotation = getRotatedRectangleCoordinates(rectCoordinates, rectCenterX, rectCenterY, angle);
                                 isDataLabelOverlap = this.isDataLabelOverlapWithChartBound(coordinatesAfterRotation, chart, clip);
                                 if (!isDataLabelOverlap) {
                                     this.chart.rotatedDataLabelCollections.push(coordinatesAfterRotation);
-                                    let currentPointIndex: number = this.chart.rotatedDataLabelCollections.length - 1;
+                                    const currentPointIndex: number = this.chart.rotatedDataLabelCollections.length - 1;
                                     for (let index: number = currentPointIndex; index >= 0; index--) {
                                         if (this.chart.rotatedDataLabelCollections[currentPointIndex] &&
                                             this.chart.rotatedDataLabelCollections[index - 1] &&
@@ -249,7 +254,7 @@ export class DataLabel {
                                 contrast = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
                                 xPos = (rect.x + this.margin.left + textSize.width / 2) + labelLocation.x;
                                 yPos = (rect.y + this.margin.top + textSize.height * 3 / 4) + labelLocation.y;
-                                labelLocation = { x: 0, y: 0};
+                                labelLocation = { x: 0, y: 0 };
                                 if (angle !== 0 && dataLabel.enableRotation) {
                                     // xValue = xPos - (dataLabel.margin.left) / 2 + (dataLabel.margin.right / 2);
                                     xValue = rectCenterX;
@@ -270,7 +275,7 @@ export class DataLabel {
                                         'middle', argsData.text, 'rotate(' + degree + ',' + (xValue) + ',' + (yValue) + ')', 'auto', degree
                                     ),
                                     argsData.font, argsData.font.color ||
-                                    ((contrast >= 128 || series.type === 'Hilo') ? 'black' : 'white'),
+                                ((contrast >= 128 || series.type === 'Hilo') ? 'black' : 'white'),
                                     series.textElement, false, redraw, true, false, series.chart.duration, series.clipRect
                                 );
                             }
@@ -282,7 +287,7 @@ export class DataLabel {
         if (element.childElementCount) {
             if (!chart.enableCanvas) {
                 appendChildElement(chart.enableCanvas, getElement(chart.element.id + '_Secondary_Element'), element, chart.redraw,
-                // tslint:disable-next-line:align
+                // eslint-disable-next-line @typescript-eslint/indent
                 false, 'x', 'y', null, '', false, false, null, chart.duration);
             } else {
                 getElement(chart.element.id + '_Secondary_Element').appendChild(element);
@@ -293,10 +298,10 @@ export class DataLabel {
      * Get rect coordinates
      */
     private getRectanglePoints(rect: Rect): ChartLocation[] {
-        let loc1: ChartLocation = new ChartLocation(rect.x, rect.y);
-        let loc2: ChartLocation = new ChartLocation(rect.x + rect.width, rect.y);
-        let loc3: ChartLocation = new ChartLocation(rect.x + rect.width, rect.y + rect.height);
-        let loc4: ChartLocation = new ChartLocation(rect.x, rect.y + rect.height);
+        const loc1: ChartLocation = new ChartLocation(rect.x, rect.y);
+        const loc2: ChartLocation = new ChartLocation(rect.x + rect.width, rect.y);
+        const loc3: ChartLocation = new ChartLocation(rect.x + rect.width, rect.y + rect.height);
+        const loc4: ChartLocation = new ChartLocation(rect.x, rect.y + rect.height);
         return [loc1, loc2, loc3, loc4];
     }
 
@@ -311,7 +316,8 @@ export class DataLabel {
 
     /**
      * Render the data label template.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     private createDataLabelTemplate(
@@ -320,8 +326,8 @@ export class DataLabel {
         redraw: boolean
     ): void {
         this.margin = { left: 0, right: 0, bottom: 0, top: 0 };
-        let clip: Rect = series.clipRect;
-        let childElement: HTMLElement = createTemplate(
+        const clip: Rect = series.clipRect;
+        const childElement: HTMLElement = createTemplate(
             createElement('div', {
                 id: this.chart.element.id + '_Series_' + (series.index === undefined ? series.category : series.index) + '_DataLabel_'
                     + point.index + (labelIndex ? ('_' + labelIndex) : ''),
@@ -335,8 +341,8 @@ export class DataLabel {
         parentElement: HTMLElement, childElement: HTMLElement, point: Points, series: Series, dataLabel: DataLabelSettingsModel,
         labelIndex: number, clip: Rect, redraw: boolean, isReactCallback?: boolean
         ): void {
-        let elementRect: ClientRect = measureElementRect(childElement, redraw);
-        let rect: Rect = this.calculateTextPosition(
+        const elementRect: ClientRect = measureElementRect(childElement, redraw);
+        const rect: Rect = this.calculateTextPosition(
             point, series, { width: elementRect.width, height: elementRect.height },
             dataLabel, labelIndex
         );
@@ -349,9 +355,9 @@ export class DataLabel {
         }
         childElement.style.left = ((this.chart.chartAreaType === 'PolarRadar' ? 0 : series.clipRect.x) + rect.x - clipWidth) + 'px';
         childElement.style.top = ((this.chart.chartAreaType === 'PolarRadar' ? 0 : series.clipRect.y) + rect.y + clipHeight) + 'px';
-        let rgbValue: ColorValue = convertHexToColor(colorNameToHex(this.fontBackground));
-        let vAxis: Axis = series.chart.requireInvertedAxis ? series.xAxis : series.yAxis;
-        let hAxis: Axis = series.chart.requireInvertedAxis ? series.yAxis : series.xAxis;
+        const rgbValue: ColorValue = convertHexToColor(colorNameToHex(this.fontBackground));
+        const vAxis: Axis = series.chart.requireInvertedAxis ? series.xAxis : series.yAxis;
+        const hAxis: Axis = series.chart.requireInvertedAxis ? series.yAxis : series.xAxis;
         childElement.style.color = dataLabel.font.color ||
             ((Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000)) >= 128 ? 'black' : 'white');
         if (childElement.childElementCount && (!isCollide(rect, this.chart.dataLabelCollections, clip) ||
@@ -384,13 +390,12 @@ export class DataLabel {
         }
         let location: ChartLocation;
         location = this.getLabelLocation(point, series, textSize, labelIndex);
-        let padding: number = 5;
-        let clipRect: Rect = series.clipRect;
-        let rect: Rect;
+        const padding: number = 5;
+        const clipRect: Rect = series.clipRect;
         // calculating alignment
         if (!this.chart.requireInvertedAxis || !this.isRectSeries(series) || series.type === 'BoxAndWhisker') {
             this.locationX = location.x;
-            let alignmentValue: number = textSize.height + (this.borderWidth * 2) + this.markerHeight +
+            const alignmentValue: number = textSize.height + (this.borderWidth * 2) + this.markerHeight +
                 this.margin.bottom + this.margin.top + padding;
             location.y = (dataLabel.position === 'Auto') ? location.y :
                 this.calculateAlignment(
@@ -412,7 +417,7 @@ export class DataLabel {
             }
         } else {
             this.locationY = location.y;
-            let alignmentValue: number = textSize.width + this.borderWidth + this.margin.left + this.margin.right - padding;
+            const alignmentValue: number = textSize.width + this.borderWidth + this.margin.left + this.margin.right - padding;
             location.x = dataLabel.position === 'Auto' ? location.x :
                 this.calculateAlignment(alignmentValue, location.x, dataLabel.alignment, point.yValue < 0);
             location.x = this.calculateRectPosition(
@@ -420,11 +425,11 @@ export class DataLabel {
                 dataLabel.position, series, textSize, labelIndex, point
             );
         }
-        rect = calculateRect(location, textSize, this.margin);
+        const rect: Rect = calculateRect(location, textSize, this.margin);
         // Checking the condition whether data Label has been exist the clip rect
-        if (!(dataLabel.enableRotation ===  true && dataLabel.angle !== 0 ) &&
-        !((rect.y > (clipRect.y + clipRect.height)) || (rect.x > (clipRect.x + clipRect.width)) ||
-            (rect.x + rect.width < 0) || (rect.y + rect.height < 0))) {
+        if (!(dataLabel.enableRotation === true && dataLabel.angle !== 0) &&
+            !((rect.y > (clipRect.y + clipRect.height)) || (rect.x > (clipRect.x + clipRect.width)) ||
+                (rect.x + rect.width < 0) || (rect.y + rect.height < 0))) {
             rect.x = rect.x < 0 ? padding : rect.x;
             rect.y = (rect.y < 0) && !(dataLabel.labelIntersectAction === 'None') ? padding : rect.y;
             rect.x -= (rect.x + rect.width) > (clipRect.x + clipRect.width) ? (rect.x + rect.width)
@@ -442,11 +447,11 @@ export class DataLabel {
         location: ChartLocation, position: LabelPosition, series: Series,
         point: Points, size: Size, labelIndex: number, alignment: Alignment, alignmentValue: number
     ): ChartLocation {
-        let padding: number = 5;
+        const padding: number = 5;
         let columnRadius: number;
-        let chartWidth: number = this.chart.availableSize.width;
-        let alignmentSign: number = (alignment === 'Center') ? 0 : (alignment === 'Far' ? 1 : -1);
-        let angle: number = (point.regionData.startAngle - 0.5 * Math.PI) + (point.regionData.endAngle - point.regionData.startAngle) / 2;
+        const chartWidth: number = this.chart.availableSize.width;
+        const alignmentSign: number = (alignment === 'Center') ? 0 : (alignment === 'Far' ? 1 : -1);
+        const angle: number = (point.regionData.startAngle - 0.5 * Math.PI) + (point.regionData.endAngle - point.regionData.startAngle) / 2;
         if (labelIndex === 0) {
             columnRadius = point.regionData.radius < point.regionData.innerRadius ? point.regionData.innerRadius
                 : point.regionData.radius;
@@ -507,22 +512,22 @@ export class DataLabel {
         if (series.type === 'HiloOpenClose') {
             labelRegion = (labelIndex === 2) ? point.regions[1] : point.regions[2];
         }
-        let xAxis: Axis = series.xAxis;
-        let yAxis: Axis = series.yAxis;
-        let isInverted: boolean = series.chart.requireInvertedAxis;
+        const xAxis: Axis = series.xAxis;
+        const yAxis: Axis = series.yAxis;
+        const isInverted: boolean = series.chart.requireInvertedAxis;
         if (series.type === 'BoxAndWhisker') {
             this.markerHeight = 0;
             switch (labelIndex) {
-                case 0: location = getPoint(point.xValue, point.median, xAxis, yAxis, isInverted); break;
-                case 1: location = getPoint(point.xValue, point.maximum, xAxis, yAxis, isInverted); break;
-                case 2: location = getPoint(point.xValue, point.minimum, xAxis, yAxis, isInverted); break;
-                case 3: location = getPoint(point.xValue, point.upperQuartile, xAxis, yAxis, isInverted); break;
-                case 4: location = getPoint(point.xValue, point.lowerQuartile, xAxis, yAxis, isInverted); break;
-                default: {
-                    location = getPoint(point.xValue, point.outliers[labelIndex - 5], xAxis, yAxis, isInverted);
-                    this.markerHeight = series.marker.height / 2;
-                    break;
-                }
+            case 0: location = getPoint(point.xValue, point.median, xAxis, yAxis, isInverted); break;
+            case 1: location = getPoint(point.xValue, point.maximum, xAxis, yAxis, isInverted); break;
+            case 2: location = getPoint(point.xValue, point.minimum, xAxis, yAxis, isInverted); break;
+            case 3: location = getPoint(point.xValue, point.upperQuartile, xAxis, yAxis, isInverted); break;
+            case 4: location = getPoint(point.xValue, point.lowerQuartile, xAxis, yAxis, isInverted); break;
+            default: {
+                location = getPoint(point.xValue, point.outliers[labelIndex - 5], xAxis, yAxis, isInverted);
+                this.markerHeight = series.marker.height / 2;
+                break;
+            }
             }
             if (isInverted) {
                 location.y = point.regions[0].y + (point.regions[0].height / 2);
@@ -542,10 +547,10 @@ export class DataLabel {
         //Aligning the label at the beginning of the tick, when tick size is less than text size
         if (labelIndex > 1 && series.type === 'HiloOpenClose') {
             if (series.chart.requireInvertedAxis) {
-                let height: number = labelRegion.height;
+                const height: number = labelRegion.height;
                 location.y = labelRegion.y + height / 2 + 2 * (labelIndex === 2 ? 1 : -1);
             } else {
-                let width: number = labelRegion.width;
+                const width: number = labelRegion.width;
                 location.x = labelRegion.x + width / 2 + 2 * (labelIndex === 2 ? 1 : -1);
             }
         }
@@ -559,12 +564,12 @@ export class DataLabel {
         if (series.chart.chartAreaType === 'PolarRadar') {
             return null;
         }
-        let padding: number = 5;
-        let margin: MarginModel = this.margin;
-        let textLength: number = !this.inverted ? textSize.height : textSize.width;
+        const padding: number = 5;
+        const margin: MarginModel = this.margin;
+        const textLength: number = !this.inverted ? textSize.height : textSize.width;
         let extraSpace: number = this.borderWidth + textLength / 2 + padding;
         if (series.type === 'StackingColumn100' || series.type === 'StackingBar100') {
-          position = (position === 'Outer') ? 'Top' : position;
+            position = (position === 'Outer') ? 'Top' : position;
         } else if (series.type.indexOf('Range') > -1) {
             position = (position === 'Outer' || position === 'Top') ? position : 'Auto';
         } else if (series.type === 'Waterfall') {
@@ -572,33 +577,33 @@ export class DataLabel {
         }
 
         switch (position) {
-            case 'Bottom':
-                labelLocation = !this.inverted ?
-                    isMinus ? (labelLocation - rect.height + extraSpace + margin.top) :
-                        (labelLocation + rect.height - extraSpace - margin.bottom) :
-                    isMinus ? (labelLocation + rect.width - extraSpace - margin.left) :
-                        (labelLocation - rect.width + extraSpace + margin.right);
-                break;
-            case 'Middle':
-                labelLocation = labelLocation = !this.inverted ?
-                    (isMinus ? labelLocation - (rect.height / 2) : labelLocation + (rect.height / 2)) :
-                    (isMinus ? labelLocation + (rect.width / 2) : labelLocation - (rect.width / 2));
-                break;
-            case 'Auto':
-                labelLocation = this.calculateRectActualPosition(labelLocation, rect, isMinus, series, textSize, labelIndex, point);
-                break;
-            default:
-                extraSpace += this.errorHeight;
-                labelLocation = this.calculateTopAndOuterPosition(labelLocation, rect, position, series, labelIndex, extraSpace, isMinus);
+        case 'Bottom':
+            labelLocation = !this.inverted ?
+                isMinus ? (labelLocation - rect.height + extraSpace + margin.top) :
+                    (labelLocation + rect.height - extraSpace - margin.bottom) :
+                isMinus ? (labelLocation + rect.width - extraSpace - margin.left) :
+                    (labelLocation - rect.width + extraSpace + margin.right);
+            break;
+        case 'Middle':
+            labelLocation = labelLocation = !this.inverted ?
+                (isMinus ? labelLocation - (rect.height / 2) : labelLocation + (rect.height / 2)) :
+                (isMinus ? labelLocation + (rect.width / 2) : labelLocation - (rect.width / 2));
+            break;
+        case 'Auto':
+            labelLocation = this.calculateRectActualPosition(labelLocation, rect, isMinus, series, textSize, labelIndex, point);
+            break;
+        default:
+            extraSpace += this.errorHeight;
+            labelLocation = this.calculateTopAndOuterPosition(labelLocation, rect, position, series, labelIndex, extraSpace, isMinus);
 
-                break;
+            break;
         }
-        let check: boolean = !this.inverted ? (labelLocation < rect.y || labelLocation > rect.y + rect.height) :
+        const check: boolean = !this.inverted ? (labelLocation < rect.y || labelLocation > rect.y + rect.height) :
             (labelLocation < rect.x || labelLocation > rect.x + rect.width);
         this.fontBackground = check ?
             (this.fontBackground === 'transparent' ? this.chartBackground : this.fontBackground)
             : this.fontBackground === 'transparent' ? (point.color || series.interior) : this.fontBackground;
-        let seriesLength: number = series.chart.series.length;
+        const seriesLength: number = series.chart.series.length;
         if (position === 'Outer' && (series.type.indexOf('Stacking') > -1) && ((seriesLength - 1) > series.index)) {
             let nextSeries: Series;
             let nextSeriesPoint: Points;
@@ -620,27 +625,27 @@ export class DataLabel {
         labelLocation: number, position: LabelPosition, series: Series,
         point: Points, size: Size, labelIndex: number
     ): number {
-        let padding: number = 5;
+        const padding: number = 5;
         if ((series.type.indexOf('Area') > -1 && series.type !== 'RangeArea')
             && this.yAxisInversed && series.marker.dataLabel.position !== 'Auto') {
             position = position === 'Top' ? 'Bottom' : position === 'Bottom' ? 'Top' : position;
         }
         this.fontBackground = this.fontBackground === 'transparent' ? this.chartBackground : this.fontBackground;
         switch (position) {
-            case 'Top':
-            case 'Outer':
-                labelLocation = labelLocation - this.markerHeight - this.borderWidth - size.height / 2 - this.margin.bottom - padding -
+        case 'Top':
+        case 'Outer':
+            labelLocation = labelLocation - this.markerHeight - this.borderWidth - size.height / 2 - this.margin.bottom - padding -
                     this.errorHeight;
-                break;
-            case 'Bottom':
-                labelLocation = labelLocation + this.markerHeight + this.borderWidth + size.height / 2 + this.margin.top + padding +
+            break;
+        case 'Bottom':
+            labelLocation = labelLocation + this.markerHeight + this.borderWidth + size.height / 2 + this.margin.top + padding +
                     this.errorHeight;
-                break;
-            case 'Auto':
-                labelLocation = this.calculatePathActualPosition(
-                    labelLocation, this.markerHeight, series, point, size, labelIndex
-                );
-                break;
+            break;
+        case 'Auto':
+            labelLocation = this.calculatePathActualPosition(
+                labelLocation, this.markerHeight, series, point, size, labelIndex
+            );
+            break;
         }
         return labelLocation;
     }
@@ -661,8 +666,8 @@ export class DataLabel {
         let labelRect: Rect;
         let isOverLap: boolean = true;
         let position: number = 0;
-        let collection: Rect[] = this.chart.dataLabelCollections;
-        let finalPosition: number = series.type.indexOf('Range') !== -1 || series.type === 'Hilo' ? 2 : 4;
+        const collection: Rect[] = this.chart.dataLabelCollections;
+        const finalPosition: number = series.type.indexOf('Range') !== -1 || series.type === 'Hilo' ? 2 : 4;
         while (isOverLap && position < finalPosition) {
             let actualPosition: LabelPosition = this.getPosition(position);
             if (series.type.indexOf('Stacking') > -1 && actualPosition === 'Outer') {
@@ -688,11 +693,12 @@ export class DataLabel {
     // alignment calculation assigned here
     private calculateAlignment(value: number, labelLocation: number, alignment: Alignment, isMinus: boolean): number {
         switch (alignment) {
-            case 'Far': labelLocation = !this.inverted ? (isMinus ? labelLocation + value : labelLocation - value) :
-                (isMinus ? labelLocation - value : labelLocation + value); break;
-            case 'Near': labelLocation = !this.inverted ? (isMinus ? labelLocation - value : labelLocation + value) :
-                (isMinus ? labelLocation + value : labelLocation - value); break;
-            case 'Center': labelLocation = labelLocation; break;
+        case 'Far': labelLocation = !this.inverted ? (isMinus ? labelLocation + value : labelLocation - value) :
+            (isMinus ? labelLocation - value : labelLocation + value); break;
+        case 'Near': labelLocation = !this.inverted ? (isMinus ? labelLocation - value : labelLocation + value) :
+            (isMinus ? labelLocation + value : labelLocation - value); break;
+        // eslint-disable-next-line no-self-assign
+        case 'Center': labelLocation = labelLocation; break;
         }
         return labelLocation;
     }
@@ -701,42 +707,42 @@ export class DataLabel {
         location: number, rect: Rect, position: LabelPosition, series: Series, index: number,
         extraSpace: number, isMinus: boolean
     ): number {
-        let margin: MarginModel = this.margin;
+        const margin: MarginModel = this.margin;
         let top: boolean;
         switch (series.type) {
-            case 'RangeColumn':
-            case 'RangeArea':
-            case 'Hilo':
-                top = (index === 0 && !this.yAxisInversed) || (index === 1 && this.yAxisInversed);
-                location = this.updateLabelLocation(position, location, extraSpace, margin, rect, top);
-                break;
-            case 'Candle':
-                top = (index === 0 || index === 2) && !this.yAxisInversed
+        case 'RangeColumn':
+        case 'RangeArea':
+        case 'Hilo':
+            top = (index === 0 && !this.yAxisInversed) || (index === 1 && this.yAxisInversed);
+            location = this.updateLabelLocation(position, location, extraSpace, margin, rect, top);
+            break;
+        case 'Candle':
+            top = (index === 0 || index === 2) && !this.yAxisInversed
                     || (index === 1 || index === 3) && this.yAxisInversed;
 
-                location = this.updateLabelLocation(position, location, extraSpace, margin, rect, top, index > 1);
-                break;
-            case 'HiloOpenClose':
-                if (index <= 1) {
-                    top = (index === 0 && !this.yAxisInversed) || (index === 1 && this.yAxisInversed);
-                    location = this.updateLabelLocation(position, location, extraSpace, margin, rect, top);
+            location = this.updateLabelLocation(position, location, extraSpace, margin, rect, top, index > 1);
+            break;
+        case 'HiloOpenClose':
+            if (index <= 1) {
+                top = (index === 0 && !this.yAxisInversed) || (index === 1 && this.yAxisInversed);
+                location = this.updateLabelLocation(position, location, extraSpace, margin, rect, top);
+            } else {
+                if (this.yAxisInversed) {
+                    location = !this.inverted ? location + extraSpace + margin.top : location - extraSpace - margin.right;
                 } else {
-                    if (this.yAxisInversed) {
-                        location = !this.inverted ? location + extraSpace + margin.top : location - extraSpace - margin.right;
-                    } else {
-                        location = !this.inverted ? location - extraSpace - margin.bottom : location + extraSpace + margin.left;
-                    }
+                    location = !this.inverted ? location - extraSpace - margin.bottom : location + extraSpace + margin.left;
                 }
-                break;
-            default:
-                if ((isMinus && position === 'Top') || (!isMinus && position === 'Outer')) {
-                    location = !this.inverted ? location - extraSpace - margin.bottom - this.markerHeight :
-                        location + extraSpace + margin.left + this.markerHeight;
-                } else {
-                    location = !this.inverted ? location + extraSpace + margin.top + this.markerHeight :
-                        location - extraSpace - margin.right - this.markerHeight;
-                }
-                break;
+            }
+            break;
+        default:
+            if ((isMinus && position === 'Top') || (!isMinus && position === 'Outer')) {
+                location = !this.inverted ? location - extraSpace - margin.bottom - this.markerHeight :
+                    location + extraSpace + margin.left + this.markerHeight;
+            } else {
+                location = !this.inverted ? location + extraSpace + margin.top + this.markerHeight :
+                    location - extraSpace - margin.right - this.markerHeight;
+            }
+            break;
         }
         return location;
     }
@@ -772,18 +778,18 @@ export class DataLabel {
         y: number, markerSize: number, series: Series,
         point: Points, size: Size, labelIndex: number
     ): number {
-        let points: Points[] = series.points;
-        let index: number = point.index;
-        let yValue: number = points[index].yValue;
+        const points: Points[] = series.points;
+        const index: number = point.index;
+        const yValue: number = points[index].yValue;
         let position: LabelPosition;
-        let nextPoint: Points = points.length - 1 > index ? points[index + 1] : null;
-        let previousPoint: Points = index > 0 ? points[index - 1] : null;
+        const nextPoint: Points = points.length - 1 > index ? points[index + 1] : null;
+        const previousPoint: Points = index > 0 ? points[index - 1] : null;
         let yLocation: number;
         let isOverLap: boolean = true;
         let labelRect: Rect;
         let isBottom: boolean;
         let positionIndex: number;
-        let collection: Rect[] = this.chart.dataLabelCollections;
+        const collection: Rect[] = this.chart.dataLabelCollections;
         if (series.type === 'Bubble') {
             position = 'Top';
         } else if (series.type.indexOf('Step') > -1) {
@@ -816,8 +822,8 @@ export class DataLabel {
                     position = (nextPoint.yValue > yValue || (previousPoint && previousPoint.yValue > yValue)) ?
                         'Bottom' : 'Top';
                 } else {
-                    let slope: number = (nextPoint.yValue - previousPoint.yValue) / 2;
-                    let intersectY: number = (slope * index) + (nextPoint.yValue - (slope * (index + 1)));
+                    const slope: number = (nextPoint.yValue - previousPoint.yValue) / 2;
+                    const intersectY: number = (slope * index) + (nextPoint.yValue - (slope * (index + 1)));
                     position = !this.yAxisInversed ? intersectY < yValue ? 'Top' : 'Bottom' :
                         intersectY < yValue ? 'Bottom' : 'Top';
                 }
@@ -837,16 +843,17 @@ export class DataLabel {
     }
     /**
      * Animates the data label.
+     *
      * @param  {Series} series - Data label of the series gets animated.
-     * @return {void}
+     * @returns {void}
      */
     public doDataLabelAnimation(series: Series, element?: Element): void {
-        let shapeElements: NodeList = series.shapeElement.childNodes;
-        let textNode: NodeList = series.textElement.childNodes;
-        let delay: number = series.animation.delay + series.animation.duration;
-        let duration: number = series.chart.animated ? series.chart.duration : 200;
+        const shapeElements: NodeList = series.shapeElement.childNodes;
+        const textNode: NodeList = series.textElement.childNodes;
+        const delay: number = series.animation.delay + series.animation.duration;
+        const duration: number = series.chart.animated ? series.chart.duration : 200;
         let location: ChartLocation;
-        let length: number = element ? 1 : textNode.length;
+        const length: number = element ? 1 : textNode.length;
         let tempElement: HTMLElement;
         for (let i: number = 0; i < length; i++) {
             tempElement = textNode[i] as HTMLElement;
@@ -883,11 +890,12 @@ export class DataLabel {
     }
     /**
      * To destroy the dataLabel for series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         // Destroy method performed here
     }
 

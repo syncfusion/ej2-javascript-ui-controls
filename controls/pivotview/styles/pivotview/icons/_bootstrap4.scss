@@ -24,9 +24,7 @@
 
     .e-pv-filtered::before {
       content: '\e775';
-      @if ($pivotgrid-skin != 'bootstrap4') {
-        color: $pivotgrid-active-color;
-      }
+      color: $pivotgrid-active-color;
     }
 
     .e-remove::before {

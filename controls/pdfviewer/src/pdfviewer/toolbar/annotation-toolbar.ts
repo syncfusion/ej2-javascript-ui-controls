@@ -1,10 +1,11 @@
+/* eslint-disable */
 import { createElement, Browser, isBlazor } from '@syncfusion/ej2-base';
 import {
     Toolbar as Tool, ClickEventArgs, MenuItemModel, Menu, MenuModel,
     BeforeOpenCloseMenuEventArgs as Menuopen, MenuEventArgs
 } from '@syncfusion/ej2-navigations';
 import { PdfViewer, PdfViewerBase, Toolbar, MeasureAnnotation } from '../index';
-// tslint:disable-next-line:max-line-length
+// eslint-disable-next-line max-len
 import { DropDownButton, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs, ItemModel, DropDownButtonModel } from '@syncfusion/ej2-splitbuttons';
 import { ColorPicker, Slider, ChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { PdfAnnotationBaseModel, PdfFontModel } from '../drawing/pdf-annotation-model';
@@ -69,11 +70,11 @@ export class AnnotationToolbar {
     private closeItem: HTMLElement;
     private opacityIndicator: HTMLElement;
     private thicknessIndicator: HTMLElement;
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private HighlightElement: any;
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private UnderlineElement: any;
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private StrikethroughElement: any
     /**
      * @private
@@ -119,7 +120,7 @@ export class AnnotationToolbar {
     private isCalibrateBtnVisible: boolean = false;
     private isStrokeColorToolVisible: boolean = false;
     private isThicknessToolVisible: boolean = false;
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private menuItems: any;
     private fontSize: ComboBox;
     private fontFamily: ComboBox;
@@ -163,7 +164,7 @@ export class AnnotationToolbar {
      * @private
      */
     public initializeAnnotationToolbar(): void {
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.toolbarElement = createElement('div', { id: this.pdfViewer.element.id + '_annotation_toolbar', className: 'e-pv-annotation-toolbar' });
         this.pdfViewerBase.viewerMainContainer.appendChild(this.toolbarElement);
         this.toolbar = new Tool({
@@ -189,7 +190,7 @@ export class AnnotationToolbar {
         if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             if (this.toolbarElement == null && isEnable) {
                 this.isMobileAnnotEnabled = true;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 this.toolbarElement = createElement('div', { id: this.pdfViewer.element.id + '_annotation_toolbar', className: 'e-pv-annotation-toolbar' });
                 this.pdfViewerBase.viewerMainContainer.insertBefore(this.toolbarElement, this.pdfViewerBase.viewerContainer);
                 this.toolbar = new Tool({
@@ -229,20 +230,20 @@ export class AnnotationToolbar {
             this.toolbarElement.style.display = 'none';
         }
     }
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private createMobileToolbarItems(isPath: boolean): any[] {
-        let colorTemplate: string = this.getTemplate('span', '_annotation_color', 'e-pv-annotation-color-container');
-        let opacityTemplate: string = this.getTemplate('span', '_annotation_opacity', 'e-pv-annotation-opacity-container');
-        // tslint:disable-next-line
+        const colorTemplate: string = this.getTemplate('span', '_annotation_color', 'e-pv-annotation-color-container');
+        const opacityTemplate: string = this.getTemplate('span', '_annotation_opacity', 'e-pv-annotation-opacity-container');
+        // eslint-disable-next-line
         let items: any[] = [];
         items.push({ prefixIcon: 'e-pv-backward-icon e-pv-icon', tooltipText: this.pdfViewer.localeObj.getConstant('Go Back'), id: this.pdfViewer.element.id + '_backward', click: this.goBackToToolbar.bind(this) });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         if (!isPath) {
             items.push({ template: colorTemplate, align: 'right' });
             items.push({ template: opacityTemplate, align: 'right' });
             items.push({ type: 'Separator', align: 'right' });
         }
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-annotation-delete-icon e-pv-icon', className: 'e-pv-annotation-delete-container', id: this.pdfViewer.element.id + '_annotation_delete', align: 'right' });
         return items;
     }
@@ -250,48 +251,48 @@ export class AnnotationToolbar {
         this.isMobileAnnotEnabled = false;
         this.hideMobileAnnotationToolbar();
         this.pdfViewer.toolbarModule.showToolbar(true);
-        let page: number = this.pdfViewerBase.getSelectTextMarkupCurrentPage();
+        const page: number = this.pdfViewerBase.getSelectTextMarkupCurrentPage();
         if (page) {
             this.pdfViewer.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage = null;
             this.pdfViewer.annotationModule.textMarkupAnnotationModule.clearAnnotationSelection(page);
         }
     }
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private createToolbarItems(): any[] {
-        let colorTemplate: string = this.getTemplate('span', '_annotation_color', 'e-pv-annotation-color-container');
-        let strokeTemplate: string = this.getTemplate('span', '_annotation_stroke', 'e-pv-annotation-stroke-container');
-        let thicknessTemplate: string = this.getTemplate('span', '_annotation_thickness', 'e-pv-annotation-thickness-container');
-        let opacityTemplate: string = this.getTemplate('span', '_annotation_opacity', 'e-pv-annotation-opacity-container');
-        let shapesTemplate: string = this.getTemplate('span', '_annotation_shapes', 'e-pv-annotation-shapes-container');
-        let calibrateTemplate: string = this.getTemplate('span', '_annotation_calibrate', 'e-pv-annotation-calibrate-container');
-        let stampTemplate: string = this.getTemplate('span', '_annotation_stamp', 'e-pv-annotation-stamp-container');
-        let fontFamilyTemplate: string = this.getTemplate('input', '_annotation_fontname', 'e-pv-annotation-fontname-container');
-        let fontSizeTemplate: string = this.getTemplate('input', '_annotation_fontsize', 'e-pv-annotation-fontsize-container');
-        let textColorTemplate: string = this.getTemplate('span', '_annotation_textcolor', 'e-pv-annotation-textcolor-container');
-        let alignmentTemplate: string = this.getTemplate('span', '_annotation_textalign', 'e-pv-annotation-textalign-container');
-        let textPropertiesTemplate: string = this.getTemplate('span', '_annotation_textproperties', 'e-pv-annotation-textprop-container');
-        let signTemplate: string = this.getTemplate('span', '_annotation_signature', 'e-pv-annotation-handwritten-container');
-        // tslint:disable-next-line
+        const colorTemplate: string = this.getTemplate('span', '_annotation_color', 'e-pv-annotation-color-container');
+        const strokeTemplate: string = this.getTemplate('span', '_annotation_stroke', 'e-pv-annotation-stroke-container');
+        const thicknessTemplate: string = this.getTemplate('span', '_annotation_thickness', 'e-pv-annotation-thickness-container');
+        const opacityTemplate: string = this.getTemplate('span', '_annotation_opacity', 'e-pv-annotation-opacity-container');
+        const shapesTemplate: string = this.getTemplate('span', '_annotation_shapes', 'e-pv-annotation-shapes-container');
+        const calibrateTemplate: string = this.getTemplate('span', '_annotation_calibrate', 'e-pv-annotation-calibrate-container');
+        const stampTemplate: string = this.getTemplate('span', '_annotation_stamp', 'e-pv-annotation-stamp-container');
+        const fontFamilyTemplate: string = this.getTemplate('input', '_annotation_fontname', 'e-pv-annotation-fontname-container');
+        const fontSizeTemplate: string = this.getTemplate('input', '_annotation_fontsize', 'e-pv-annotation-fontsize-container');
+        const textColorTemplate: string = this.getTemplate('span', '_annotation_textcolor', 'e-pv-annotation-textcolor-container');
+        const alignmentTemplate: string = this.getTemplate('span', '_annotation_textalign', 'e-pv-annotation-textalign-container');
+        const textPropertiesTemplate: string = this.getTemplate('span', '_annotation_textproperties', 'e-pv-annotation-textprop-container');
+        const signTemplate: string = this.getTemplate('span', '_annotation_signature', 'e-pv-annotation-handwritten-container');
+        // eslint-disable-next-line
         let items: any[] = [];
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-highlight-icon e-pv-icon', className: 'e-pv-highlight-container', id: this.pdfViewer.element.id + '_highlight', align: 'Left' });
         items.push({ prefixIcon: 'e-pv-underline-icon e-pv-icon', className: 'e-pv-underline-container', id: this.pdfViewer.element.id + '_underline', align: 'Left' });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-strikethrough-icon e-pv-icon', className: 'e-pv-strikethrough-container', id: this.pdfViewer.element.id + '_strikethrough', align: 'Left' });
         items.push({ type: 'Separator', align: 'Left' });
         items.push({ template: shapesTemplate, align: 'Left' });
         items.push({ type: 'Separator', align: 'Left' });
         items.push({ template: calibrateTemplate, align: 'Left' });
         items.push({ type: 'Separator', align: 'Left' });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-freetext-icon e-pv-icon', className: 'e-pv-annotation-freetextedit-container', id: this.pdfViewer.element.id + '_annotation_freeTextEdit', align: 'Left' });
         items.push({ type: 'Separator', align: 'Left' });
         items.push({ template: stampTemplate, align: 'Left' });
         items.push({ type: 'Separator', align: 'Left' });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ template: signTemplate, align: 'Left' });
         items.push({ type: 'Separator', align: 'Left' });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-inkannotation-icon e-pv-icon', className: 'e-pv-annotation-ink-container', id: this.pdfViewer.element.id + '_annotation_ink', align: 'Left' });
         items.push({ type: 'Separator', align: 'Left' });
         items.push({ template: fontFamilyTemplate, align: 'Left', cssClass: 'e-pv-fontfamily-container' });
@@ -305,28 +306,28 @@ export class AnnotationToolbar {
         items.push({ template: thicknessTemplate, align: 'Left' });
         items.push({ template: opacityTemplate, align: 'Left' });
         items.push({ type: 'Separator', align: 'Left' });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-annotation-delete-icon e-pv-icon', className: 'e-pv-annotation-delete-container', id: this.pdfViewer.element.id + '_annotation_delete', align: 'Left' });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-comment-panel-icon e-pv-icon', className: 'e-pv-comment-panel-icon-container', id: this.pdfViewer.element.id + '_annotation_commentPanel', align: 'Right' });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-annotation-tools-close-icon e-pv-icon', className: 'e-pv-annotation-tools-close-container', id: this.pdfViewer.element.id + '_annotation_close', align: 'Right' });
         return items;
     }
     private createSignContainer(): void {
         this.handWrittenSignatureItem = this.pdfViewerBase.getElement('_annotation_signature');
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.primaryToolbar.createTooltip(this.pdfViewerBase.getElement('_annotation_signature'), this.pdfViewer.localeObj.getConstant('Draw Signature'));
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let proxy: any = this;
-        let items: ItemModel[] = [
+        const items: ItemModel[] = [
             {
                 separator: true
             },
             {
                 text: 'ADD SIGNATURE'
             }];
-        let saveOptions: DropDownButtonModel = {
+        const saveOptions: DropDownButtonModel = {
             items: items,
             iconCss: 'e-pv-handwritten-icon e-pv-icon',
             cssClass: 'e-pv-handwritten-popup',
@@ -341,15 +342,15 @@ export class AnnotationToolbar {
             },
             beforeItemRender: (args: MenuEventArgs): void => {
                 if (args.item.text === '') {
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     for (let collection: number = 0; collection < this.pdfViewerBase.signatureModule.signaturecollection.length; collection++) {
                         args.element.style.display = 'block';
-                        // tslint:disable-next-line
+                        // eslint-disable-next-line
                         let signatureCollection: any = this.pdfViewerBase.signatureModule.signaturecollection[collection];
-                        // tslint:disable-next-line
+                        // eslint-disable-next-line
                         let collectionKey: any = signatureCollection["sign_" + collection];
                         if (collectionKey !== '') {
-                            // tslint:disable-next-line:max-line-length
+                            // eslint-disable-next-line max-len
                             args.element.innerHTML += '<div id="s' + collection + '"><span class="e-pv-align-border" id="sign_border' + collection + '"><img id="sign_' + collection + '" src="' + collectionKey + '" width="50" height="50" style="display: block;margin-left: auto;margin-right: auto;"/></span><span class="e-pv-delete e-pv-align" id="delete' + collection + '"> </span><br></br></div>';
                             args.element.style.pointerEvents = 'auto';
                             args.element.style.background = 'none';
@@ -360,7 +361,7 @@ export class AnnotationToolbar {
                 if (args.item.text === 'ADD SIGNATURE') {
                     args.element.innerHTML = '<span class="e-pv-add-signature">ADD SIGNATURE</span>';
                     args.element.style.width = '240';
-                    let span: Element = args.element.children[0];
+                    const span: Element = args.element.children[0];
                     span.setAttribute('class', 'e-pv-align-sign');
                 }
             },
@@ -370,16 +371,16 @@ export class AnnotationToolbar {
                 }
             }
         };
-        let drpDownBtn: DropDownButton = new DropDownButton(saveOptions);
+        const drpDownBtn: DropDownButton = new DropDownButton(saveOptions);
         drpDownBtn.appendTo(this.handWrittenSignatureItem);
     }
     private updateSignatureCount(): void {
         let count: number = 0;
         this.openSignaturePopup = false;
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let signatureCollection: any = this.pdfViewerBase.signatureModule.signaturecollection;
         for (let collection: number = 0; collection < signatureCollection.length; collection++) {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let colletionList: any = signatureCollection[collection];
             if (colletionList['sign_' + collection] === '') {
                 count++;
@@ -392,12 +393,12 @@ export class AnnotationToolbar {
     }
     private openSignature(): void {
         for (let collection: number = 0; collection < this.pdfViewerBase.signatureModule.signaturecollection.length; collection++) {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let signatureCollection: any = this.pdfViewerBase.signatureModule.signaturecollection[collection];
             if (signatureCollection['sign_' + collection] !== '') {
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let addedSignature: any = document.getElementById('sign_border' + collection + '');
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let deleteSignature: any = document.getElementById('delete' + collection + '');
                 deleteSignature.style.backgroundClip = 'content-box';
                 addedSignature.addEventListener('click', this.renderAddedSignature.bind(this));
@@ -410,11 +411,11 @@ export class AnnotationToolbar {
         }
     }
     private hoverSignatureDelete(): void {
-        let eventTarget: HTMLElement = event.target as HTMLElement;
+        const eventTarget: HTMLElement = event.target as HTMLElement;
         eventTarget.classList.add('e-pv-signaturehover');
     }
     private leaveSignatureDelete(): void {
-        let eventTarget: HTMLElement = event.target as HTMLElement;
+        const eventTarget: HTMLElement = event.target as HTMLElement;
         eventTarget.classList.remove('e-pv-signaturehover');
         if (eventTarget.children[0] && eventTarget.children[0].tagName === 'IMG') {
             eventTarget.children[0].classList.remove('e-pv-signaturehover');
@@ -429,14 +430,14 @@ export class AnnotationToolbar {
         this.pdfViewerBase.isAddedSignClicked = true;
         this.pdfViewerBase.signatureModule.RenderSavedSignature();
     }
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public deleteSavedSign(event: any): void {
         event.stopPropagation();
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let signaturecollection: any = this.pdfViewerBase.signatureModule.signaturecollection;
         for (let collection: number = 0; collection < signaturecollection.length; collection++) {
             if (event.target.parentElement.children[0].children[0].id === 'sign_' + collection) {
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let RemoveSignature: any = signaturecollection[collection];
                 RemoveSignature['sign_' + collection] = '';
                 break;
@@ -445,75 +446,75 @@ export class AnnotationToolbar {
         event.target.parentElement.remove();
     }
     private getTemplate(elementName: string, id: string, className: string): string {
-        let element: HTMLElement = createElement(elementName, { id: this.pdfViewer.element.id + id });
+        const element: HTMLElement = createElement(elementName, { id: this.pdfViewer.element.id + id });
         if (className) {
             element.className = className;
         }
         return element.outerHTML;
     }
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private createStampContainer(): any {
         this.stampElement = this.pdfViewerBase.getElement('_annotation_stamp');
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.primaryToolbar.createTooltip(this.pdfViewerBase.getElement('_annotation_stamp'), this.pdfViewer.localeObj.getConstant('Add Stamp'));
-        let contextMenuElement: HTMLElement = createElement('ul', { id: 'contextMenuElement' });
+        const contextMenuElement: HTMLElement = createElement('ul', { id: 'contextMenuElement' });
         this.pdfViewerBase.getElement('_annotation_stamp').appendChild(contextMenuElement);
-        let items: Object[] = [];
+        const items: Object[] = [];
 
         if (this.pdfViewer.stampSettings.dynamicStamps && this.pdfViewer.stampSettings.dynamicStamps.length > 0) {
-            let dynamicStamps: Object[] = [];
+            const dynamicStamps: Object[] = [];
             items.push({ text: this.pdfViewer.localeObj.getConstant('Dynamic'), items: dynamicStamps });
             this.pdfViewer.stampSettings.dynamicStamps.forEach((stampItem: DynamicStampItem, index: number) => {
                 let name: string = DynamicStampItem[stampItem];
                 switch (name) {
-                    case 'NotApproved':
-                        name = 'Not Approved';
-                        break;
+                case 'NotApproved':
+                    name = 'Not Approved';
+                    break;
                 }
                 dynamicStamps.push({ text: name });
             });
         }
 
         if (this.pdfViewer.stampSettings.signStamps && this.pdfViewer.stampSettings.signStamps.length > 0) {
-            let signStamps: Object[] = [];
+            const signStamps: Object[] = [];
             items.push({ text: this.pdfViewer.localeObj.getConstant('Sign Here'), items: signStamps });
             this.pdfViewer.stampSettings.signStamps.forEach((stampItem: SignStampItem, index: number) => {
                 let name: string = SignStampItem[stampItem];
                 switch (name) {
-                    case 'InitialHere':
-                        name = 'Initial Here';
-                        break;
-                    case 'SignHere':
-                        name = 'Sign Here';
-                        break;
+                case 'InitialHere':
+                    name = 'Initial Here';
+                    break;
+                case 'SignHere':
+                    name = 'Sign Here';
+                    break;
                 }
                 signStamps.push({ text: name });
             });
         }
         if (this.pdfViewer.stampSettings.standardBusinessStamps && this.pdfViewer.stampSettings.standardBusinessStamps.length > 0) {
-            let standardsBusinessStamps: Object[] = [];
+            const standardsBusinessStamps: Object[] = [];
             items.push({ text: this.pdfViewer.localeObj.getConstant('Standard Business'), items: standardsBusinessStamps });
             this.pdfViewer.stampSettings.standardBusinessStamps.forEach((stampItem: StandardBusinessStampItem, index: number) => {
                 let name: string = StandardBusinessStampItem[stampItem];
                 switch (name) {
-                    case 'NotApproved':
-                        name = 'Not Approved';
-                        break;
-                    case 'ForPublicRelease':
-                        name = 'For Public Release';
-                        break;
-                    case 'NotForPublicRelease':
-                        name = 'Not For Public Release';
-                        break;
-                    case 'ForComment':
-                        name = 'For Comment';
-                        break;
-                    case 'PreliminaryResults':
-                        name = 'Preliminary Results';
-                        break;
-                    case 'InformationOnly':
-                        name = 'Information Only';
-                        break;
+                case 'NotApproved':
+                    name = 'Not Approved';
+                    break;
+                case 'ForPublicRelease':
+                    name = 'For Public Release';
+                    break;
+                case 'NotForPublicRelease':
+                    name = 'Not For Public Release';
+                    break;
+                case 'ForComment':
+                    name = 'For Comment';
+                    break;
+                case 'PreliminaryResults':
+                    name = 'Preliminary Results';
+                    break;
+                case 'InformationOnly':
+                    name = 'Information Only';
+                    break;
                 }
                 standardsBusinessStamps.push({ text: name });
             });
@@ -527,10 +528,10 @@ export class AnnotationToolbar {
         this.stampMenu = [
             {
                 iconCss: 'e-pv-stamp-icon e-pv-icon',
-                items: items,
-            },
+                items: items
+            }
         ];
-        let menuOptions: MenuModel = {
+        const menuOptions: MenuModel = {
             items: this.stampMenu,
             cssClass: 'e-custom-scroll',
             showItemOnClick: true,
@@ -538,7 +539,7 @@ export class AnnotationToolbar {
             beforeOpen: (args: Menuopen): void => {
                 this.resetFreeTextAnnot();
                 if (args.parentItem.text === '' && this.pdfViewer.customStampSettings.isAddToMenu && args.items.length > 0) {
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line
                     let currentElements: any = null;
                     for (let i: number = 0; i < args.items.length; i++) {
                         if (args.items[i].text === this.pdfViewer.localeObj.getConstant('Custom Stamp')) {
@@ -547,13 +548,13 @@ export class AnnotationToolbar {
                             break;
                         }
                     }
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line
                     let elements: any = this.pdfViewerBase.customStampCollection;
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line
                     let stampElements: any = this.pdfViewer.customStampSettings.customStamps;
                     if (elements.length === 0 && stampElements && stampElements.length > 0) {
                         for (let n: number = 0; n < stampElements.length; n++) {
-                            // tslint:disable-next-line:max-line-length
+                            // eslint-disable-next-line max-len
                             elements.push({ customStampName: stampElements[n].customStampName, customStampImageSource: stampElements[n].customStampImageSource });
                         }
                     }
@@ -567,7 +568,7 @@ export class AnnotationToolbar {
                 this.menuItems.showItemOnClick = false;
             },
             beforeClose: (args: Menuopen) => {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 if ((args.parentItem && args.parentItem.text !== this.pdfViewer.localeObj.getConstant('Custom Stamp') && args.parentItem.text !== 'Standard Business' && args.parentItem.text !== 'Dynamic' && args.parentItem.text !== 'Sign Here') || !args.parentItem) {
                     this.menuItems.showItemOnClick = true;
                 }
@@ -578,7 +579,7 @@ export class AnnotationToolbar {
                     this.updateInteractionTools();
                     this.checkStampAnnotations();
                     this.pdfViewer.annotation.stampAnnotationModule.isStampAddMode = true;
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line
                     let stampImage: any = createElement('input', { id: this.pdfViewer.element.id + '_stampElement', attrs: { 'type': 'file' } });
                     stampImage.setAttribute('accept', '.jpg,.jpeg');
                     stampImage.style.position = 'absolute';
@@ -589,9 +590,9 @@ export class AnnotationToolbar {
                     stampImage.click();
                     stampImage.addEventListener('change', this.addStampImage);
                     document.body.removeChild(stampImage);
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                 } else if (this.stampParentID === this.pdfViewer.localeObj.getConstant('Custom Stamp') && args.item.text !== '') {
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line
                     let elements: any = this.pdfViewerBase.customStampCollection;
                     for (let n: number = 0; n < elements.length; n++) {
                         if (elements[n].customStampName === args.item.text) {
@@ -600,12 +601,12 @@ export class AnnotationToolbar {
                             this.pdfViewer.annotationModule.stampAnnotationModule.isStampAnnotSelected = true;
                             this.pdfViewerBase.stampAdded = true;
                             this.pdfViewerBase.isAlreadyAdded = true;
-                            // tslint:disable-next-line:max-line-length
+                            // eslint-disable-next-line max-len
                             this.pdfViewer.annotationModule.stampAnnotationModule.createCustomStampAnnotation(elements[n].customStampImageSource);
                             this.pdfViewerBase.stampAdded = false;
                         }
                     }
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                 } else if (args.item.text !== this.pdfViewer.localeObj.getConstant('Dynamic') && args.item.text !== '' && args.item.text !== 'Standard Business' && (this.stampParentID === 'Sign Here' || args.item.text !== 'Sign Here')) {
                     this.updateInteractionTools();
                     this.checkStampAnnotations();
@@ -620,25 +621,25 @@ export class AnnotationToolbar {
                         this.pdfViewer.annotationModule.stampAnnotationModule.retrievestampAnnotation(args.item.text);
                     }
                 }
-            },
+            }
         };
         this.menuItems = new Menu(menuOptions, '#contextMenuElement');
         contextMenuElement.parentElement.classList.add('e-pv-stamp');
         return contextMenuElement;
     }
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public addStampImage = (args: any): void => {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let proxy: any = this;
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let upoadedFiles: any = args.target.files;
         if (args.target.files[0] !== null) {
-            let uploadedFile: File = upoadedFiles[0];
+            const uploadedFile: File = upoadedFiles[0];
             if (uploadedFile.type.split('/')[0] === 'image') {
-                let reader: FileReader = new FileReader();
-                // tslint:disable-next-line
+                const reader: FileReader = new FileReader();
+                // eslint-disable-next-line
                 reader.onload = (e: any): void => {
-                    let uploadedFileUrl: string = e.currentTarget.result;
+                    const uploadedFileUrl: string = e.currentTarget.result;
                     proxy.pdfViewer.annotation.stampAnnotationModule.isStampAddMode = true;
                     proxy.pdfViewer.annotationModule.stampAnnotationModule.isStampAnnotSelected = true;
                     proxy.pdfViewerBase.stampAdded = true;
@@ -648,14 +649,14 @@ export class AnnotationToolbar {
                 reader.readAsDataURL(uploadedFile);
             }
         }
-    }
+    };
     public checkStampAnnotations(): void {
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         if (this.pdfViewer.annotation.stampAnnotationModule.isStampAddMode && this.pdfViewer.selectedItems && this.pdfViewer.selectedItems.annotations) {
             for (let i: number = 0; i < this.pdfViewer.selectedItems.annotations.length; i++) {
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let annotation: any = this.pdfViewer.selectedItems.annotations[i];
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 if (annotation && !annotation.annotName && !annotation.author && (annotation.shapeAnnotationType !== 'Shape' || annotation.shapeAnnotationType !== 'Image')) {
                     this.pdfViewer.remove(annotation);
                     this.pdfViewer.annotation.renderAnnotations(annotation.pageIndex, null, null, null);
@@ -667,19 +668,19 @@ export class AnnotationToolbar {
     private createDropDowns(isPath?: boolean): void {
         if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.shapeElement = this.pdfViewerBase.getElement('_annotation_shapes');
-            let shapeToolbar: Tool = this.createShapeOptions(this.shapeElement.id, true);
-            // tslint:disable-next-line:max-line-length
+            const shapeToolbar: Tool = this.createShapeOptions(this.shapeElement.id, true);
+            // eslint-disable-next-line max-len
             this.shapeDropDown = this.createDropDownButton(this.shapeElement, 'e-pv-annotation-shape-icon', shapeToolbar.element, this.pdfViewer.localeObj.getConstant('Add Shapes'));
             this.calibrateElement = this.pdfViewerBase.getElement('_annotation_calibrate');
-            let calibrateToolbar: Tool = this.createShapeOptions(this.calibrateElement.id, false);
-            // tslint:disable-next-line:max-line-length
+            const calibrateToolbar: Tool = this.createShapeOptions(this.calibrateElement.id, false);
+            // eslint-disable-next-line max-len
             this.calibrateDropDown = this.createDropDownButton(this.calibrateElement, 'e-pv-annotation-calibrate-icon', calibrateToolbar.element, this.pdfViewer.localeObj.getConstant('Calibrate'));
         }
         if (!isPath) {
             this.colorDropDownElement = this.pdfViewerBase.getElement('_annotation_color');
             this.colorPalette = this.createColorPicker(this.colorDropDownElement.id);
             this.colorPalette.change = this.onColorPickerChange.bind(this);
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             this.colorDropDown = this.createDropDownButton(this.colorDropDownElement, 'e-pv-annotation-color-icon', this.colorPalette.element.parentElement, this.pdfViewer.localeObj.getConstant('Color edit'));
             this.colorDropDown.beforeOpen = this.colorDropDownBeforeOpen.bind(this);
             this.colorDropDown.open = this.colorDropDownOpen.bind(this);
@@ -689,14 +690,14 @@ export class AnnotationToolbar {
             this.strokeDropDownElement = this.pdfViewerBase.getElement('_annotation_stroke');
             this.strokeColorPicker = this.createColorPicker(this.strokeDropDownElement.id);
             this.strokeColorPicker.change = this.onStrokePickerChange.bind(this);
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             this.strokeDropDown = this.createDropDownButton(this.strokeDropDownElement, 'e-pv-annotation-stroke-icon', this.strokeColorPicker.element.parentElement, this.pdfViewer.localeObj.getConstant('Stroke edit'));
             this.strokeDropDown.beforeOpen = this.strokeDropDownBeforeOpen.bind(this);
             this.strokeDropDown.open = this.strokeDropDownOpen.bind(this);
             this.pdfViewerBase.getElement('_annotation_stroke-popup').addEventListener('click', this.onStrokePickerCancelClick.bind(this));
             this.thicknessElement = this.pdfViewerBase.getElement('_annotation_thickness');
-            let thicknessContainer: HTMLElement = this.createThicknessSlider(this.thicknessElement.id);
-            // tslint:disable-next-line:max-line-length
+            const thicknessContainer: HTMLElement = this.createThicknessSlider(this.thicknessElement.id);
+            // eslint-disable-next-line max-len
             this.thicknessDropDown = this.createDropDownButton(this.thicknessElement, 'e-pv-annotation-thickness-icon', thicknessContainer, this.pdfViewer.localeObj.getConstant('Change thickness'));
             this.thicknessDropDown.beforeOpen = this.thicknessDropDownBeforeOpen.bind(this);
             this.thicknessSlider.change = this.thicknessChange.bind(this);
@@ -705,8 +706,8 @@ export class AnnotationToolbar {
         }
         if (!isPath) {
             this.opacityDropDownElement = this.pdfViewerBase.getElement('_annotation_opacity');
-            let sliderContainer: HTMLElement = this.createSlider(this.opacityDropDownElement.id);
-            // tslint:disable-next-line:max-line-length
+            const sliderContainer: HTMLElement = this.createSlider(this.opacityDropDownElement.id);
+            // eslint-disable-next-line max-len
             this.opacityDropDown = this.createDropDownButton(this.opacityDropDownElement, 'e-pv-annotation-opacity-icon', sliderContainer, this.pdfViewer.localeObj.getConstant('Opacity edit'));
             this.opacityDropDown.beforeOpen = this.opacityDropDownBeforeOpen.bind(this);
             this.opacitySlider.change = this.opacityChange.bind(this);
@@ -717,22 +718,24 @@ export class AnnotationToolbar {
             this.fontFamilyElement = this.pdfViewerBase.getElement('_annotation_fontname');
             this.createDropDownListForFamily(this.fontFamilyElement);
             this.fontFamilyElement.style.textAlign = 'left';
-            this.fontFamilyElement.addEventListener('change', (): void => { this.onFontFamilyChange.bind(this); });
+            this.fontFamilyElement.addEventListener('change', (): void => {
+                this.onFontFamilyChange.bind(this);
+            });
             this.fontSizeElement = this.pdfViewerBase.getElement('_annotation_fontsize');
             this.createDropDownListForSize(this.fontSizeElement);
             this.fontColorElement = this.pdfViewerBase.getElement('_annotation_textcolor');
             this.fontColorPalette = this.createColorPicker(this.fontColorElement.id);
             this.fontColorPalette.change = this.onFontColorChange.bind(this);
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             this.fontColorDropDown = this.createDropDownButton(this.fontColorElement, 'e-pv-annotation-textcolor-icon', this.fontColorPalette.element.parentElement, this.pdfViewer.localeObj.getConstant('Font color'));
             this.textAlignElement = this.pdfViewerBase.getElement('_annotation_textalign');
             this.alignmentToolbar = this.createShapeOptions(this.textAlignElement.id, undefined, true);
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             this.textAlignDropDown = this.createDropDownButton(this.textAlignElement, 'e-pv-annotation-textalign-icon', this.alignmentToolbar.element, this.pdfViewer.localeObj.getConstant('Text Align'));
             this.textAlignDropDown.beforeOpen = this.textAlignDropDownBeforeOpen.bind(this);
             this.textPropElement = this.pdfViewerBase.getElement('_annotation_textproperties');
             this.propertiesToolbar = this.createShapeOptions(this.textPropElement.id, undefined, false, true);
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             this.textPropertiesDropDown = this.createPropDropDownButton(this.textPropElement, 'e-pv-annotation-textprop-icon', this.propertiesToolbar.element, this.pdfViewer.localeObj.getConstant('Text Properties'));
             this.textPropertiesDropDown.beforeOpen = this.textPropertiesDropDownBeforeOpen.bind(this);
         }
@@ -740,8 +743,8 @@ export class AnnotationToolbar {
 
     private opacityDropDownOpen(args: OpenCloseMenuEventArgs): void {
         if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
-            // tslint:disable-next-line:max-line-length
-            let opacityElement: HTMLElement = this.pdfViewerBase.getElement('_annotation_opacity-popup');
+            // eslint-disable-next-line max-len
+            const opacityElement: HTMLElement = this.pdfViewerBase.getElement('_annotation_opacity-popup');
             opacityElement.style.left = '0px';
         } else {
             this.calculateToolbarPosition(args);
@@ -786,42 +789,42 @@ export class AnnotationToolbar {
         if (!isBlazor()) {
             if (this.pdfViewer.annotationModule.textMarkupAnnotationModule) {
                 switch (this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAddMode) {
-                    case 'Highlight':
-                        // tslint:disable-next-line:max-line-length
-                        this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.textMarkupAnnotationModule.highlightColor);
-                        break;
-                    case 'Underline':
-                        // tslint:disable-next-line:max-line-length
-                        this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.textMarkupAnnotationModule.underlineColor);
-                        break;
-                    case 'Strikethrough':
-                        // tslint:disable-next-line:max-line-length
-                        this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughColor);
-                        break;
+                case 'Highlight':
+                    // eslint-disable-next-line max-len
+                    this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.textMarkupAnnotationModule.highlightColor);
+                    break;
+                case 'Underline':
+                    // eslint-disable-next-line max-len
+                    this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.textMarkupAnnotationModule.underlineColor);
+                    break;
+                case 'Strikethrough':
+                    // eslint-disable-next-line max-len
+                    this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughColor);
+                    break;
                 }
             }
             if (this.pdfViewer.annotation.shapeAnnotationModule) {
                 switch (this.pdfViewer.annotationModule.shapeAnnotationModule.currentAnnotationMode) {
-                    case 'Line':
-                        // tslint:disable-next-line:max-line-length
-                        this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.shapeAnnotationModule.lineFillColor);
-                        break;
-                    case 'Arrow':
-                        // tslint:disable-next-line:max-line-length
-                        this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.shapeAnnotationModule.arrowFillColor);
-                        break;
-                    case 'Rectangle':
-                        // tslint:disable-next-line:max-line-length
-                        this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.shapeAnnotationModule.rectangleFillColor);
-                        break;
-                    case 'Circle':
-                        // tslint:disable-next-line:max-line-length
-                        this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.shapeAnnotationModule.circleFillColor);
-                        break;
-                    case 'Polygon':
-                        // tslint:disable-next-line:max-line-length
-                        this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.shapeAnnotationModule.polygonFillColor);
-                        break;
+                case 'Line':
+                    // eslint-disable-next-line max-len
+                    this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.shapeAnnotationModule.lineFillColor);
+                    break;
+                case 'Arrow':
+                    // eslint-disable-next-line max-len
+                    this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.shapeAnnotationModule.arrowFillColor);
+                    break;
+                case 'Rectangle':
+                    // eslint-disable-next-line max-len
+                    this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.shapeAnnotationModule.rectangleFillColor);
+                    break;
+                case 'Circle':
+                    // eslint-disable-next-line max-len
+                    this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.shapeAnnotationModule.circleFillColor);
+                    break;
+                case 'Polygon':
+                    // eslint-disable-next-line max-len
+                    this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.shapeAnnotationModule.polygonFillColor);
+                    break;
                 }
             }
             this.updateColorInIcon(this.colorDropDownElement, this.colorPalette.value);
@@ -830,7 +833,7 @@ export class AnnotationToolbar {
 
     private colorDropDownOpen(): void {
         if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             this.pdfViewerBase.getElement('_annotation_color-popup').style.left = '0px';
         }
         this.colorPalette.refresh();
@@ -851,26 +854,26 @@ export class AnnotationToolbar {
         if (!isBlazor()) {
             if (this.pdfViewer.annotation.shapeAnnotationModule) {
                 switch (this.pdfViewer.annotationModule.shapeAnnotationModule.currentAnnotationMode) {
-                    case 'Line':
-                        // tslint:disable-next-line:max-line-length
-                        this.setColorInPicker(this.strokeColorPicker, this.pdfViewer.annotationModule.shapeAnnotationModule.lineStrokeColor);
-                        break;
-                    case 'Arrow':
-                        // tslint:disable-next-line:max-line-length
-                        this.setColorInPicker(this.strokeColorPicker, this.pdfViewer.annotationModule.shapeAnnotationModule.arrowStrokeColor);
-                        break;
-                    case 'Rectangle':
-                        // tslint:disable-next-line:max-line-length
-                        this.setColorInPicker(this.strokeColorPicker, this.pdfViewer.annotationModule.shapeAnnotationModule.rectangleStrokeColor);
-                        break;
-                    case 'Circle':
-                        // tslint:disable-next-line:max-line-length
-                        this.setColorInPicker(this.strokeColorPicker, this.pdfViewer.annotationModule.shapeAnnotationModule.circleStrokeColor);
-                        break;
-                    case 'Polygon':
-                        // tslint:disable-next-line:max-line-length
-                        this.setColorInPicker(this.strokeColorPicker, this.pdfViewer.annotationModule.shapeAnnotationModule.polygonStrokeColor);
-                        break;
+                case 'Line':
+                    // eslint-disable-next-line max-len
+                    this.setColorInPicker(this.strokeColorPicker, this.pdfViewer.annotationModule.shapeAnnotationModule.lineStrokeColor);
+                    break;
+                case 'Arrow':
+                    // eslint-disable-next-line max-len
+                    this.setColorInPicker(this.strokeColorPicker, this.pdfViewer.annotationModule.shapeAnnotationModule.arrowStrokeColor);
+                    break;
+                case 'Rectangle':
+                    // eslint-disable-next-line max-len
+                    this.setColorInPicker(this.strokeColorPicker, this.pdfViewer.annotationModule.shapeAnnotationModule.rectangleStrokeColor);
+                    break;
+                case 'Circle':
+                    // eslint-disable-next-line max-len
+                    this.setColorInPicker(this.strokeColorPicker, this.pdfViewer.annotationModule.shapeAnnotationModule.circleStrokeColor);
+                    break;
+                case 'Polygon':
+                    // eslint-disable-next-line max-len
+                    this.setColorInPicker(this.strokeColorPicker, this.pdfViewer.annotationModule.shapeAnnotationModule.polygonStrokeColor);
+                    break;
                 }
             }
         }
@@ -880,9 +883,9 @@ export class AnnotationToolbar {
         this.strokeColorPicker.refresh();
     }
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private onFontColorChange(args: any): void {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let currentColor: any;
         if (!isBlazor()) {
             currentColor = (args.currentValue.hex === '') ? '#ffffff00' : args.currentValue.hex;
@@ -904,7 +907,7 @@ export class AnnotationToolbar {
         }
     }
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private onFontFamilyChange(args: any): void {
         let currentValue: string;
         if (!isBlazor()) {
@@ -920,7 +923,7 @@ export class AnnotationToolbar {
         }
     }
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private onFontSizeChange(args: any): void {
         let currentValue: string;
         if (!isBlazor()) {
@@ -928,7 +931,7 @@ export class AnnotationToolbar {
         } else {
             currentValue = args;
         }
-        let fontSize: number = parseFloat(currentValue);
+        const fontSize: number = parseFloat(currentValue);
         if (this.pdfViewer.selectedItems.annotations.length === 1 && currentValue) {
             this.pdfViewer.annotation.modifyFontSize(fontSize);
         } else {
@@ -940,26 +943,26 @@ export class AnnotationToolbar {
     private textAlignDropDownBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
         if (this.pdfViewer.selectedItems.annotations.length === 1) {
             if (args.element.getElementsByTagName('button') && args.element.getElementsByTagName('button').length > 0) {
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let dropDownOptions: any = args.element.getElementsByTagName('button');
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let selectedAnnotation: any = this.pdfViewer.selectedItems.annotations[0];
                 for (let n: number = 0; n < dropDownOptions.length; n++) {
                     if (dropDownOptions[n]) {
                         dropDownOptions[n].classList.remove('textprop-option-active');
-                        // tslint:disable-next-line:max-line-length
+                        // eslint-disable-next-line max-len
                         if (dropDownOptions[n].id === (this.pdfViewer.element.id + '_left_align') && selectedAnnotation.textAlign === 'Left') {
                             dropDownOptions[n].classList.add('textprop-option-active');
                         }
-                        // tslint:disable-next-line:max-line-length
+                        // eslint-disable-next-line max-len
                         if (dropDownOptions[n].id === (this.pdfViewer.element.id + '_right_align') && selectedAnnotation.textAlign === 'Right') {
                             dropDownOptions[n].classList.add('textprop-option-active');
                         }
-                        // tslint:disable-next-line:max-line-length
+                        // eslint-disable-next-line max-len
                         if (dropDownOptions[n].id === (this.pdfViewer.element.id + '_center_align') && selectedAnnotation.textAlign === 'Center') {
                             dropDownOptions[n].classList.add('textprop-option-active');
                         }
-                        // tslint:disable-next-line:max-line-length
+                        // eslint-disable-next-line max-len
                         if (dropDownOptions[n].id === (this.pdfViewer.element.id + '_justify_align') && selectedAnnotation.textAlign === 'Justify') {
                             dropDownOptions[n].classList.add('textprop-option-active');
                         }
@@ -972,9 +975,9 @@ export class AnnotationToolbar {
     private textPropertiesDropDownBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
         if (this.pdfViewer.selectedItems.annotations.length === 1) {
             if (args.element.getElementsByTagName('button') && args.element.getElementsByTagName('button').length > 0) {
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let dropDownOptions: any = args.element.getElementsByTagName('button');
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let selectedAnnotation: any = this.pdfViewer.selectedItems.annotations[0];
                 for (let n: number = 0; n < dropDownOptions.length; n++) {
                     if (dropDownOptions[n]) {
@@ -988,7 +991,7 @@ export class AnnotationToolbar {
                         if (dropDownOptions[n].id === (this.pdfViewer.element.id + '_strikeout') && selectedAnnotation.font.isStrikeout) {
                             dropDownOptions[n].classList.add('textprop-option-active');
                         }
-                        // tslint:disable-next-line:max-line-length
+                        // eslint-disable-next-line max-len
                         if (dropDownOptions[n].id === (this.pdfViewer.element.id + '_underline_textinput') && selectedAnnotation.font.isUnderline) {
                             dropDownOptions[n].classList.add('textprop-option-active');
                         }
@@ -998,7 +1001,7 @@ export class AnnotationToolbar {
         }
     }
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private onClickTextAlignment(args: any): void {
         let currentValue: string;
         if (isBlazor()) {
@@ -1015,7 +1018,7 @@ export class AnnotationToolbar {
         this.updateTextAlignInIcon(currentValue);
     }
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private onClickTextProperties(args: any): void {
         let currentValue: string;
         if (isBlazor()) {
@@ -1024,7 +1027,7 @@ export class AnnotationToolbar {
             currentValue = (args && args.item && args.item.value) ? args.item.value : '';
         }
         if (this.pdfViewer.selectedItems.annotations.length === 1 && currentValue) {
-            let fontInfo: PdfFontModel = { isBold: undefined, isItalic: undefined, isStrikeout: undefined, isUnderline: undefined };
+            const fontInfo: PdfFontModel = { isBold: undefined, isItalic: undefined, isStrikeout: undefined, isUnderline: undefined };
             if (currentValue === 'bold') {
                 fontInfo.isBold = !(this.pdfViewer.selectedItems.annotations[0].font.isBold);
             } else if (currentValue === 'italic') {
@@ -1071,7 +1074,7 @@ export class AnnotationToolbar {
         this.updateTextPropertySelection(currentValue);
     }
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private opacityChange(args: any): void {
         let opacityValue: number = 1;
         if (args && args.length === 1) {
@@ -1092,31 +1095,31 @@ export class AnnotationToolbar {
                 }
             } else {
                 switch (this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAddMode) {
-                    case 'Highlight':
-                        this.pdfViewer.annotationModule.textMarkupAnnotationModule.highlightOpacity = opacityValue / 100;
-                        break;
-                    case 'Underline':
-                        this.pdfViewer.annotationModule.textMarkupAnnotationModule.underlineOpacity = opacityValue / 100;
-                        break;
-                    case 'Strikethrough':
-                        this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughOpacity = opacityValue / 100;
-                        break;
+                case 'Highlight':
+                    this.pdfViewer.annotationModule.textMarkupAnnotationModule.highlightOpacity = opacityValue / 100;
+                    break;
+                case 'Underline':
+                    this.pdfViewer.annotationModule.textMarkupAnnotationModule.underlineOpacity = opacityValue / 100;
+                    break;
+                case 'Strikethrough':
+                    this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughOpacity = opacityValue / 100;
+                    break;
                 }
             }
         }
         if (this.pdfViewer.selectedItems.annotations.length === 1) {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let currentAnnotations: any = this.pdfViewer.selectedItems.annotations[0];
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             if (currentAnnotations != null && (currentAnnotations.shapeAnnotationType === 'Stamp' || currentAnnotations.shapeAnnotationType === 'Image')) {
-                let clonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotations);
-                let redoClonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotations);
+                const clonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotations);
+                const redoClonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotations);
                 redoClonedObject.opacity = opacityValue / 100;
                 this.pdfViewer.nodePropertyChange(currentAnnotations, { opacity: opacityValue / 100 });
                 this.pdfViewer.annotation.triggerAnnotationPropChange(currentAnnotations, false, false, false, true);
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 this.pdfViewer.annotation.addAction(this.pdfViewer.selectedItems.annotations[0].pageIndex, null, this.pdfViewer.selectedItems.annotations[0], 'stampOpacity', '', clonedObject, redoClonedObject);
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 this.pdfViewer.annotation.stampAnnotationModule.updateSessionStorage(this.pdfViewer.selectedItems.annotations[0], null, 'opacity');
             } else {
                 if (isBlazor()) {
@@ -1132,24 +1135,24 @@ export class AnnotationToolbar {
         } else {
             if (this.pdfViewer.annotation.shapeAnnotationModule) {
                 switch (this.pdfViewer.annotation.shapeAnnotationModule.currentAnnotationMode) {
-                    case 'Line':
-                        this.pdfViewer.annotation.shapeAnnotationModule.lineOpacity = opacityValue / 100;
-                        break;
-                    case 'Arrow':
-                        this.pdfViewer.annotation.shapeAnnotationModule.arrowOpacity = opacityValue / 100;
-                        break;
-                    case 'Rectangle':
-                        this.pdfViewer.annotation.shapeAnnotationModule.rectangleOpacity = opacityValue / 100;
-                        break;
-                    case 'Circle':
-                        this.pdfViewer.annotation.shapeAnnotationModule.circleOpacity = opacityValue / 100;
-                        break;
-                    case 'Polygon':
-                        this.pdfViewer.annotation.shapeAnnotationModule.polygonOpacity = opacityValue / 100;
-                        break;
+                case 'Line':
+                    this.pdfViewer.annotation.shapeAnnotationModule.lineOpacity = opacityValue / 100;
+                    break;
+                case 'Arrow':
+                    this.pdfViewer.annotation.shapeAnnotationModule.arrowOpacity = opacityValue / 100;
+                    break;
+                case 'Rectangle':
+                    this.pdfViewer.annotation.shapeAnnotationModule.rectangleOpacity = opacityValue / 100;
+                    break;
+                case 'Circle':
+                    this.pdfViewer.annotation.shapeAnnotationModule.circleOpacity = opacityValue / 100;
+                    break;
+                case 'Polygon':
+                    this.pdfViewer.annotation.shapeAnnotationModule.polygonOpacity = opacityValue / 100;
+                    break;
                 }
             }
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let annotationModule: any = this.pdfViewer.annotation;
             if (annotationModule && annotationModule.inkAnnotationModule) {
                 this.pdfViewer.inkAnnotationSettings.opacity = opacityValue / 100;
@@ -1171,19 +1174,19 @@ export class AnnotationToolbar {
         if (this.pdfViewer.annotationModule.textMarkupAnnotationModule) {
             if (this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
                 this.isCurrentAnnotationOpacitySet = true;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 this.opacitySlider.value = this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation.opacity * 100;
             } else {
                 switch (this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAddMode) {
-                    case 'Highlight':
-                        this.opacitySlider.value = this.pdfViewer.annotationModule.textMarkupAnnotationModule.highlightOpacity * 100;
-                        break;
-                    case 'Underline':
-                        this.opacitySlider.value = this.pdfViewer.annotationModule.textMarkupAnnotationModule.underlineOpacity * 100;
-                        break;
-                    case 'Strikethrough':
-                        this.opacitySlider.value = this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughOpacity * 100;
-                        break;
+                case 'Highlight':
+                    this.opacitySlider.value = this.pdfViewer.annotationModule.textMarkupAnnotationModule.highlightOpacity * 100;
+                    break;
+                case 'Underline':
+                    this.opacitySlider.value = this.pdfViewer.annotationModule.textMarkupAnnotationModule.underlineOpacity * 100;
+                    break;
+                case 'Strikethrough':
+                    this.opacitySlider.value = this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughOpacity * 100;
+                    break;
                 }
             }
         }
@@ -1192,21 +1195,21 @@ export class AnnotationToolbar {
         } else {
             if (this.pdfViewer.annotation.shapeAnnotationModule) {
                 switch (this.pdfViewer.annotation.shapeAnnotationModule.currentAnnotationMode) {
-                    case 'Line':
-                        this.opacitySlider.value = this.pdfViewer.annotation.shapeAnnotationModule.lineOpacity * 100;
-                        break;
-                    case 'Arrow':
-                        this.opacitySlider.value = this.pdfViewer.annotation.shapeAnnotationModule.arrowOpacity * 100;
-                        break;
-                    case 'Rectangle':
-                        this.opacitySlider.value = this.pdfViewer.annotation.shapeAnnotationModule.rectangleOpacity * 100;
-                        break;
-                    case 'Circle':
-                        this.opacitySlider.value = this.pdfViewer.annotation.shapeAnnotationModule.circleOpacity * 100;
-                        break;
-                    case 'Polygon':
-                        this.opacitySlider.value = this.pdfViewer.annotation.shapeAnnotationModule.polygonOpacity * 100;
-                        break;
+                case 'Line':
+                    this.opacitySlider.value = this.pdfViewer.annotation.shapeAnnotationModule.lineOpacity * 100;
+                    break;
+                case 'Arrow':
+                    this.opacitySlider.value = this.pdfViewer.annotation.shapeAnnotationModule.arrowOpacity * 100;
+                    break;
+                case 'Rectangle':
+                    this.opacitySlider.value = this.pdfViewer.annotation.shapeAnnotationModule.rectangleOpacity * 100;
+                    break;
+                case 'Circle':
+                    this.opacitySlider.value = this.pdfViewer.annotation.shapeAnnotationModule.circleOpacity * 100;
+                    break;
+                case 'Polygon':
+                    this.opacitySlider.value = this.pdfViewer.annotation.shapeAnnotationModule.polygonOpacity * 100;
+                    break;
                 }
             }
         }
@@ -1220,21 +1223,21 @@ export class AnnotationToolbar {
         } else {
             if (this.pdfViewer.annotation.shapeAnnotationModule) {
                 switch (this.pdfViewer.annotation.shapeAnnotationModule.currentAnnotationMode) {
-                    case 'Line':
-                        this.thicknessSlider.value = this.pdfViewer.annotation.shapeAnnotationModule.lineThickness;
-                        break;
-                    case 'Arrow':
-                        this.thicknessSlider.value = this.pdfViewer.annotation.shapeAnnotationModule.arrowThickness;
-                        break;
-                    case 'Rectangle':
-                        this.thicknessSlider.value = this.pdfViewer.annotation.shapeAnnotationModule.rectangleThickness;
-                        break;
-                    case 'Circle':
-                        this.thicknessSlider.value = this.pdfViewer.annotation.shapeAnnotationModule.circleThickness;
-                        break;
-                    case 'Polygon':
-                        this.thicknessSlider.value = this.pdfViewer.annotation.shapeAnnotationModule.polygonThickness;
-                        break;
+                case 'Line':
+                    this.thicknessSlider.value = this.pdfViewer.annotation.shapeAnnotationModule.lineThickness;
+                    break;
+                case 'Arrow':
+                    this.thicknessSlider.value = this.pdfViewer.annotation.shapeAnnotationModule.arrowThickness;
+                    break;
+                case 'Rectangle':
+                    this.thicknessSlider.value = this.pdfViewer.annotation.shapeAnnotationModule.rectangleThickness;
+                    break;
+                case 'Circle':
+                    this.thicknessSlider.value = this.pdfViewer.annotation.shapeAnnotationModule.circleThickness;
+                    break;
+                case 'Polygon':
+                    this.thicknessSlider.value = this.pdfViewer.annotation.shapeAnnotationModule.polygonThickness;
+                    break;
                 }
             }
         }
@@ -1242,7 +1245,7 @@ export class AnnotationToolbar {
         this.updateInkannotationItems();
     }
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private thicknessDropDownOpen(args: OpenCloseMenuEventArgs): void {
         if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.calculateToolbarPosition(args);
@@ -1250,14 +1253,14 @@ export class AnnotationToolbar {
     }
     private calculateToolbarPosition(args: OpenCloseMenuEventArgs): void {
         if (args.element && args.element.parentElement) {
-            let leftValue: number = parseFloat(args.element.parentElement.style.left);
-            let width: number = args.element.parentElement.offsetWidth;
+            const leftValue: number = parseFloat(args.element.parentElement.style.left);
+            const width: number = args.element.parentElement.offsetWidth;
             if ((leftValue + width) < (this.pdfViewer.element.offsetWidth + 10)) {
                 args.element.parentElement.style.left = (leftValue - width) + 'px';
             }
         }
     }
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private thicknessChangeInBlazor(args: any) {
         if (this.pdfViewer.selectedItems.annotations.length === 1) {
             this.pdfViewer.annotation.modifyThickness(args[0] as number);
@@ -1277,27 +1280,27 @@ export class AnnotationToolbar {
             this.ShapeThickness(args.value);
         }
     }
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private ShapeThickness(args: any) {
         if (this.pdfViewer.annotation.shapeAnnotationModule) {
             switch (this.pdfViewer.annotation.shapeAnnotationModule.currentAnnotationMode) {
-                case 'Line':
-                    this.pdfViewer.annotation.shapeAnnotationModule.lineThickness = args;
-                    break;
-                case 'Arrow':
-                    this.pdfViewer.annotation.shapeAnnotationModule.arrowThickness = args;
-                    break;
-                case 'Rectangle':
-                    this.pdfViewer.annotation.shapeAnnotationModule.rectangleThickness = args;
-                    break;
-                case 'Circle':
-                    this.pdfViewer.annotation.shapeAnnotationModule.circleThickness = args;
-                    break;
-                case 'Polygon':
-                    this.pdfViewer.annotation.shapeAnnotationModule.polygonThickness = args;
-                    break;
+            case 'Line':
+                this.pdfViewer.annotation.shapeAnnotationModule.lineThickness = args;
+                break;
+            case 'Arrow':
+                this.pdfViewer.annotation.shapeAnnotationModule.arrowThickness = args;
+                break;
+            case 'Rectangle':
+                this.pdfViewer.annotation.shapeAnnotationModule.rectangleThickness = args;
+                break;
+            case 'Circle':
+                this.pdfViewer.annotation.shapeAnnotationModule.circleThickness = args;
+                break;
+            case 'Polygon':
+                this.pdfViewer.annotation.shapeAnnotationModule.polygonThickness = args;
+                break;
             }
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let annotationModule: any = this.pdfViewer.annotation;
             if (annotationModule && annotationModule.inkAnnotationModule) {
                 this.pdfViewer.inkAnnotationSettings.thickness = args.value;
@@ -1310,7 +1313,7 @@ export class AnnotationToolbar {
                 this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
             }
         }
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let annotationModule: any = this.pdfViewer.annotation;
         if (annotationModule && annotationModule.inkAnnotationModule) {
             this.pdfViewer.inkAnnotationSettings.thickness = args;
@@ -1328,8 +1331,8 @@ export class AnnotationToolbar {
     }
 
     private createDropDownButton(element: HTMLElement, iconClass: string, target: HTMLElement, tooltipText: string): DropDownButton {
-        // tslint:disable-next-line:max-line-length
-        let dropDownButton: DropDownButton = new DropDownButton({ iconCss: iconClass + ' e-pv-icon', target: target });
+        // eslint-disable-next-line max-len
+        const dropDownButton: DropDownButton = new DropDownButton({ iconCss: iconClass + ' e-pv-icon', target: target });
         if (this.pdfViewer.enableRtl) {
             dropDownButton.enableRtl = true;
         }
@@ -1339,7 +1342,7 @@ export class AnnotationToolbar {
     }
 
     private createShapeOptions(idString: string, isShape: boolean, isAlign?: boolean, isTextProp?: boolean): Tool {
-        let toolbarElement: HTMLElement = createElement('div', { id: idString + '_target', className: 'e-pv-shapes-toolbar' });
+        const toolbarElement: HTMLElement = createElement('div', { id: idString + '_target', className: 'e-pv-shapes-toolbar' });
         document.body.appendChild(toolbarElement);
         let toolbar: Tool;
         if (isAlign) {
@@ -1352,12 +1355,12 @@ export class AnnotationToolbar {
             this.afterPropertiesToolbarCreation();
         } else {
             if (isShape) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 toolbar = new Tool({ items: this.createShapeToolbarItems(), overflowMode: 'MultiRow', clicked: this.onShapeToolbarClicked.bind(this) }, toolbarElement);
                 toolbar.isStringTemplate = true;
                 this.afterShapeToolbarCreation();
             } else {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 toolbar = new Tool({ items: this.createCalibrateToolbarItems(), overflowMode: 'MultiRow', clicked: this.onCalibrateToolbarClicked.bind(this) }, toolbarElement);
                 toolbar.isStringTemplate = true;
                 this.afterCalibrateToolbarCreation();
@@ -1366,8 +1369,8 @@ export class AnnotationToolbar {
         return toolbar;
     }
     private createPropDropDownButton(element: HTMLElement, iconClass: string, target: HTMLElement, tooltipText: string): DropDownButton {
-        // tslint:disable-next-line:max-line-length
-        let dropDownButton: DropDownButton = new DropDownButton({ iconCss: iconClass + ' e-pv-icon', target: target, cssClass: 'e-caret-hide' });
+        // eslint-disable-next-line max-len
+        const dropDownButton: DropDownButton = new DropDownButton({ iconCss: iconClass + ' e-pv-icon', target: target, cssClass: 'e-caret-hide' });
         if (this.pdfViewer.enableRtl) {
             dropDownButton.enableRtl = true;
         }
@@ -1375,60 +1378,62 @@ export class AnnotationToolbar {
         this.primaryToolbar.createTooltip(element, tooltipText);
         return dropDownButton;
     }
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private textAlignmentToolbarItems(): any[] {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let items: any[] = [];
         items.push({ prefixIcon: 'e-pv-left-align-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_left_align', align: 'Left', value: 'Left', click: this.onClickTextAlignment.bind(this) });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-right-align-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_right_align', align: 'Left', value: 'Right', click: this.onClickTextAlignment.bind(this) });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-center-align-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_center_align', align: 'Left', value: 'Center', click: this.onClickTextAlignment.bind(this) });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-justfiy-align-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_justify_align', align: 'Left', value: 'Justify', click: this.onClickTextAlignment.bind(this) });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         return items;
     }
 
     private afterAlignmentToolbarCreation(): void {
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.primaryToolbar.addClassToolbarItem('_left_align', 'e-pv-left-align', this.pdfViewer.localeObj.getConstant('Align left'));
         this.primaryToolbar.addClassToolbarItem('_right_align', 'e-pv-right-align', this.pdfViewer.localeObj.getConstant('Align right'));
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.primaryToolbar.addClassToolbarItem('_center_align', 'e-pv-center-align', this.pdfViewer.localeObj.getConstant('Center'));
         this.primaryToolbar.addClassToolbarItem('_justify_align', 'e-pv-justfiy-align', this.pdfViewer.localeObj.getConstant('Justify'));
     }
 
     private afterPropertiesToolbarCreation(): void {
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.primaryToolbar.addClassToolbarItem('_bold', 'e-pv-bold', this.pdfViewer.localeObj.getConstant('Bold'));
         this.primaryToolbar.addClassToolbarItem('_italic', 'e-pv-italic', this.pdfViewer.localeObj.getConstant('Italic'));
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.primaryToolbar.addClassToolbarItem('_strikeout', 'e-pv-strikeout', this.pdfViewer.localeObj.getConstant('Strikethroughs'));
         this.primaryToolbar.addClassToolbarItem('_underline_textinput', 'e-pv-underlinetext', this.pdfViewer.localeObj.getConstant('Underlines'));
     }
     private createDropDownListForSize(fontSelectElement: HTMLElement): void {
-        // tslint:disable-next-line:max-line-length
-        let fontSize: string[] = ['8px', '9px', '10px', '11px', '12px', '14px', '16px', '18px', '20px', '22px', '24px', '26px', '28px', '36px', '48px', '72px', '96px'];
+        // eslint-disable-next-line max-len
+        const fontSize: string[] = ['8px', '9px', '10px', '11px', '12px', '14px', '16px', '18px', '20px', '22px', '24px', '26px', '28px', '36px', '48px', '72px', '96px'];
         this.fontSize = new ComboBox({
             dataSource: fontSize,
             cssClass: 'e-pv-prop-dropdown',
             allowCustom: true,
             showClearButton: false,
-            width: '80px',
+            width: '80px'
         });
         this.fontSize.value = '16px';
         this.fontSize.appendTo(fontSelectElement);
         this.primaryToolbar.createTooltip(fontSelectElement, this.pdfViewer.localeObj.getConstant('Font size'));
-        this.fontSize.addEventListener('change', (): void => { this.onFontSizeChange(this); });
+        this.fontSize.addEventListener('change', (): void => {
+            this.onFontSizeChange(this);
+        });
     }
 
     private createDropDownListForFamily(fontSelectElement: HTMLElement): void {
-        let fontStyle: { [key: string]: Object }[] = [{ FontName: 'Algerian' }, { FontName: 'Arial' },
-        { FontName: 'Calibri' }, { FontName: 'Cambria' }, { FontName: 'Cambria Math' }, { FontName: 'Candara' },
-        { FontName: 'Courier New' }, { FontName: 'Georgia' }, { FontName: 'Impact' }, { FontName: 'Segoe Print' },
-        { FontName: 'Segoe Script' }, { FontName: 'Segoe UI' }, { FontName: 'Symbol' },
-        { FontName: 'Times New Roman' }, { FontName: 'Verdana' }, { FontName: 'Windings' }, { FontName: 'Helvetica' }
+        const fontStyle: { [key: string]: Object }[] = [{ FontName: 'Algerian' }, { FontName: 'Arial' },
+            { FontName: 'Calibri' }, { FontName: 'Cambria' }, { FontName: 'Cambria Math' }, { FontName: 'Candara' },
+            { FontName: 'Courier New' }, { FontName: 'Georgia' }, { FontName: 'Impact' }, { FontName: 'Segoe Print' },
+            { FontName: 'Segoe Script' }, { FontName: 'Segoe UI' }, { FontName: 'Symbol' },
+            { FontName: 'Times New Roman' }, { FontName: 'Verdana' }, { FontName: 'Windings' }, { FontName: 'Helvetica' }
         ];
         this.fontFamily = new ComboBox({
             dataSource: fontStyle,
@@ -1438,150 +1443,152 @@ export class AnnotationToolbar {
             itemTemplate: '<span style="font-family: ${FontName};">${FontName}</span>',
             allowCustom: true,
             showClearButton: false,
-            width: '100px',
+            width: '100px'
         });
         this.fontFamily.isStringTemplate = true;
         this.fontFamily.value = 'Helvetica';
         this.fontFamily.appendTo(fontSelectElement);
         this.primaryToolbar.createTooltip(fontSelectElement, this.pdfViewer.localeObj.getConstant('Font family'));
-        this.fontFamily.addEventListener('change', (): void => { this.onFontFamilyChange(this); });
+        this.fontFamily.addEventListener('change', (): void => {
+            this.onFontFamilyChange(this);
+        });
     }
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private textPropertiesToolbarItems(): any[] {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let items: any[] = [];
         items.push({ prefixIcon: 'e-pv-bold-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_bold', align: 'Left', value: 'bold', click: this.onClickTextProperties.bind(this) });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-italic-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_italic', align: 'Left', value: 'italic', click: this.onClickTextProperties.bind(this) });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-strikeout-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_strikeout', align: 'Left', value: 'strikeout', click: this.onClickTextProperties.bind(this) });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-underlinetext-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_underline_textinput', align: 'Left', value: 'underline', click: this.onClickTextProperties.bind(this) });
         return items;
     }
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private createShapeToolbarItems(): any[] {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let items: any[] = [];
         items.push({ prefixIcon: 'e-pv-shape-line-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_shape_line', text: this.pdfViewer.localeObj.getConstant('Line Shape'), align: 'Left' });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-shape-arrow-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_shape_arrow', text: this.pdfViewer.localeObj.getConstant('Arrow Shape'), align: 'Left' });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-shape-rectangle-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_shape_rectangle', text: this.pdfViewer.localeObj.getConstant('Rectangle Shape'), align: 'Left' });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-shape-circle-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_shape_circle', text: this.pdfViewer.localeObj.getConstant('Circle Shape'), align: 'Left' });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-shape-pentagon-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_shape_pentagon', text: this.pdfViewer.localeObj.getConstant('Pentagon Shape'), align: 'Left' });
         return items;
     }
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private createCalibrateToolbarItems(): any[] {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let items: any[] = [];
         items.push({ prefixIcon: 'e-pv-calibrate-distance-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_calibrate_distance', text: this.pdfViewer.localeObj.getConstant(''), align: 'Left' });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-calibrate-perimeter-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_calibrate_perimeter', text: this.pdfViewer.localeObj.getConstant(''), align: 'Left' });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-calibrate-area-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_calibrate_area', text: this.pdfViewer.localeObj.getConstant(''), align: 'Left' });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-calibrate-radius-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_calibrate_radius', text: this.pdfViewer.localeObj.getConstant(''), align: 'Left' });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-calibrate-volume-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_calibrate_volume', text: this.pdfViewer.localeObj.getConstant(''), align: 'Left' });
         return items;
     }
 
     private onShapeToolbarClicked = (args: ClickEventArgs): void => {
-        let elementId: string = this.pdfViewer.element.id;
-        let shapeAnnotationModule: ShapeAnnotation = this.pdfViewer.annotation.shapeAnnotationModule;
+        const elementId: string = this.pdfViewer.element.id;
+        const shapeAnnotationModule: ShapeAnnotation = this.pdfViewer.annotation.shapeAnnotationModule;
         this.deselectAllItems();
         this.resetFreeTextAnnot();
         switch ((args.originalEvent.target as HTMLElement).id) {
-            case elementId + '_shape_line':
-            case elementId + '_shape_lineIcon':
-                shapeAnnotationModule.setAnnotationType('Line');
-                this.onShapeDrawSelection(true);
-                this.updateColorInIcon(this.colorDropDownElement, shapeAnnotationModule.lineFillColor);
-                this.updateColorInIcon(this.strokeDropDownElement, shapeAnnotationModule.lineStrokeColor);
-                break;
-            case elementId + '_shape_arrow':
-            case elementId + '_shape_arrowIcon':
-                shapeAnnotationModule.setAnnotationType('Arrow');
-                this.onShapeDrawSelection(true);
-                this.updateColorInIcon(this.colorDropDownElement, shapeAnnotationModule.arrowFillColor);
-                this.updateColorInIcon(this.strokeDropDownElement, shapeAnnotationModule.arrowStrokeColor);
-                break;
-            case elementId + '_shape_rectangle':
-            case elementId + '_shape_rectangleIcon':
-                shapeAnnotationModule.setAnnotationType('Rectangle');
-                this.onShapeDrawSelection(true);
-                this.updateColorInIcon(this.colorDropDownElement, shapeAnnotationModule.rectangleFillColor);
-                this.updateColorInIcon(this.strokeDropDownElement, shapeAnnotationModule.rectangleStrokeColor);
-                break;
-            case elementId + '_shape_circle':
-            case elementId + '_shape_circleIcon':
-                shapeAnnotationModule.setAnnotationType('Circle');
-                this.onShapeDrawSelection(true);
-                this.updateColorInIcon(this.colorDropDownElement, shapeAnnotationModule.circleFillColor);
-                this.updateColorInIcon(this.strokeDropDownElement, shapeAnnotationModule.circleStrokeColor);
-                break;
-            case elementId + '_shape_pentagon':
-            case elementId + '_shape_pentagonIcon':
-                shapeAnnotationModule.setAnnotationType('Polygon');
-                this.onShapeDrawSelection(true);
-                this.updateColorInIcon(this.colorDropDownElement, shapeAnnotationModule.polygonFillColor);
-                this.updateColorInIcon(this.strokeDropDownElement, shapeAnnotationModule.polygonStrokeColor);
-                break;
+        case elementId + '_shape_line':
+        case elementId + '_shape_lineIcon':
+            shapeAnnotationModule.setAnnotationType('Line');
+            this.onShapeDrawSelection(true);
+            this.updateColorInIcon(this.colorDropDownElement, shapeAnnotationModule.lineFillColor);
+            this.updateColorInIcon(this.strokeDropDownElement, shapeAnnotationModule.lineStrokeColor);
+            break;
+        case elementId + '_shape_arrow':
+        case elementId + '_shape_arrowIcon':
+            shapeAnnotationModule.setAnnotationType('Arrow');
+            this.onShapeDrawSelection(true);
+            this.updateColorInIcon(this.colorDropDownElement, shapeAnnotationModule.arrowFillColor);
+            this.updateColorInIcon(this.strokeDropDownElement, shapeAnnotationModule.arrowStrokeColor);
+            break;
+        case elementId + '_shape_rectangle':
+        case elementId + '_shape_rectangleIcon':
+            shapeAnnotationModule.setAnnotationType('Rectangle');
+            this.onShapeDrawSelection(true);
+            this.updateColorInIcon(this.colorDropDownElement, shapeAnnotationModule.rectangleFillColor);
+            this.updateColorInIcon(this.strokeDropDownElement, shapeAnnotationModule.rectangleStrokeColor);
+            break;
+        case elementId + '_shape_circle':
+        case elementId + '_shape_circleIcon':
+            shapeAnnotationModule.setAnnotationType('Circle');
+            this.onShapeDrawSelection(true);
+            this.updateColorInIcon(this.colorDropDownElement, shapeAnnotationModule.circleFillColor);
+            this.updateColorInIcon(this.strokeDropDownElement, shapeAnnotationModule.circleStrokeColor);
+            break;
+        case elementId + '_shape_pentagon':
+        case elementId + '_shape_pentagonIcon':
+            shapeAnnotationModule.setAnnotationType('Polygon');
+            this.onShapeDrawSelection(true);
+            this.updateColorInIcon(this.colorDropDownElement, shapeAnnotationModule.polygonFillColor);
+            this.updateColorInIcon(this.strokeDropDownElement, shapeAnnotationModule.polygonStrokeColor);
+            break;
         }
         // this.pdfViewer.clearSelection();
-    }
+    };
 
     private onCalibrateToolbarClicked(args: ClickEventArgs): void {
-        let elementId: string = this.pdfViewer.element.id;
-        let measureModule: MeasureAnnotation = this.pdfViewer.annotation.measureAnnotationModule;
+        const elementId: string = this.pdfViewer.element.id;
+        const measureModule: MeasureAnnotation = this.pdfViewer.annotation.measureAnnotationModule;
         this.deselectAllItems();
         this.resetFreeTextAnnot();
         switch ((args.originalEvent.target as HTMLElement).id) {
-            case elementId + '_calibrate_distance':
-            case elementId + '_calibrate_distanceIcon':
-                measureModule.setAnnotationType('Distance');
-                this.onShapeDrawSelection(false);
-                this.updateColorInIcon(this.colorDropDownElement, measureModule.distanceFillColor);
-                this.updateColorInIcon(this.strokeDropDownElement, measureModule.distanceStrokeColor);
-                break;
-            case elementId + '_calibrate_perimeter':
-            case elementId + '_calibrate_perimeterIcon':
-                measureModule.setAnnotationType('Perimeter');
-                this.onShapeDrawSelection(false);
-                this.updateColorInIcon(this.colorDropDownElement, measureModule.perimeterFillColor);
-                this.updateColorInIcon(this.strokeDropDownElement, measureModule.perimeterStrokeColor);
-                break;
-            case elementId + '_calibrate_area':
-            case elementId + '_calibrate_areaIcon':
-                measureModule.setAnnotationType('Area');
-                this.onShapeDrawSelection(false);
-                this.updateColorInIcon(this.colorDropDownElement, measureModule.areaFillColor);
-                this.updateColorInIcon(this.strokeDropDownElement, measureModule.areaStrokeColor);
-                break;
-            case elementId + '_calibrate_radius':
-            case elementId + '_calibrate_radiusIcon':
-                measureModule.setAnnotationType('Radius');
-                this.onShapeDrawSelection(false);
-                this.updateColorInIcon(this.colorDropDownElement, measureModule.radiusFillColor);
-                this.updateColorInIcon(this.strokeDropDownElement, measureModule.radiusStrokeColor);
-                break;
-            case elementId + '_calibrate_volume':
-            case elementId + '_calibrate_volumeIcon':
-                measureModule.setAnnotationType('Volume');
-                this.onShapeDrawSelection(false);
-                this.updateColorInIcon(this.colorDropDownElement, measureModule.volumeFillColor);
-                this.updateColorInIcon(this.strokeDropDownElement, measureModule.volumeStrokeColor);
-                break;
+        case elementId + '_calibrate_distance':
+        case elementId + '_calibrate_distanceIcon':
+            measureModule.setAnnotationType('Distance');
+            this.onShapeDrawSelection(false);
+            this.updateColorInIcon(this.colorDropDownElement, measureModule.distanceFillColor);
+            this.updateColorInIcon(this.strokeDropDownElement, measureModule.distanceStrokeColor);
+            break;
+        case elementId + '_calibrate_perimeter':
+        case elementId + '_calibrate_perimeterIcon':
+            measureModule.setAnnotationType('Perimeter');
+            this.onShapeDrawSelection(false);
+            this.updateColorInIcon(this.colorDropDownElement, measureModule.perimeterFillColor);
+            this.updateColorInIcon(this.strokeDropDownElement, measureModule.perimeterStrokeColor);
+            break;
+        case elementId + '_calibrate_area':
+        case elementId + '_calibrate_areaIcon':
+            measureModule.setAnnotationType('Area');
+            this.onShapeDrawSelection(false);
+            this.updateColorInIcon(this.colorDropDownElement, measureModule.areaFillColor);
+            this.updateColorInIcon(this.strokeDropDownElement, measureModule.areaStrokeColor);
+            break;
+        case elementId + '_calibrate_radius':
+        case elementId + '_calibrate_radiusIcon':
+            measureModule.setAnnotationType('Radius');
+            this.onShapeDrawSelection(false);
+            this.updateColorInIcon(this.colorDropDownElement, measureModule.radiusFillColor);
+            this.updateColorInIcon(this.strokeDropDownElement, measureModule.radiusStrokeColor);
+            break;
+        case elementId + '_calibrate_volume':
+        case elementId + '_calibrate_volumeIcon':
+            measureModule.setAnnotationType('Volume');
+            this.onShapeDrawSelection(false);
+            this.updateColorInIcon(this.colorDropDownElement, measureModule.volumeFillColor);
+            this.updateColorInIcon(this.strokeDropDownElement, measureModule.volumeStrokeColor);
+            break;
         }
     }
 
     private onShapeDrawSelection(isShape: boolean): void {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let annotation: any = this.pdfViewer.selectedItems.annotations[0];
         this.updateInteractionTools();
         this.enableAnnotationPropertiesTools(true);
@@ -1599,28 +1606,28 @@ export class AnnotationToolbar {
     private afterShapeToolbarCreation(): void {
         this.primaryToolbar.addClassToolbarItem('_shape_line', 'e-pv-shape-line', this.pdfViewer.localeObj.getConstant('Add line'));
         this.primaryToolbar.addClassToolbarItem('_shape_arrow', 'e-pv-shape-arrow', this.pdfViewer.localeObj.getConstant('Add arrow'));
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.primaryToolbar.addClassToolbarItem('_shape_rectangle', 'e-pv-shape-rectangle', this.pdfViewer.localeObj.getConstant('Add rectangle'));
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.primaryToolbar.addClassToolbarItem('_shape_circle', 'e-pv-shape-circle', this.pdfViewer.localeObj.getConstant('Add circle'));
         this.primaryToolbar.addClassToolbarItem('_shape_pentagon', 'e-pv-shape-pentagon', this.pdfViewer.localeObj.getConstant('Add polygon'));
     }
 
     private afterCalibrateToolbarCreation(): void {
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.primaryToolbar.addClassToolbarItem('_calibrate_distance', 'e-pv-calibrate-distance', this.pdfViewer.localeObj.getConstant('Calibrate Distance'));
         this.primaryToolbar.addClassToolbarItem('_calibrate_perimeter', 'e-pv-calibrate-perimeter', this.pdfViewer.localeObj.getConstant('Calibrate Perimeter'));
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.primaryToolbar.addClassToolbarItem('_calibrate_area', 'e-pv-calibrate-area', this.pdfViewer.localeObj.getConstant('Calibrate Area'));
         this.primaryToolbar.addClassToolbarItem('_calibrate_radius', 'e-pv-calibrate-radius', this.pdfViewer.localeObj.getConstant('Calibrate Radius'));
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.primaryToolbar.addClassToolbarItem('_calibrate_volume', 'e-pv-calibrate-volume', this.pdfViewer.localeObj.getConstant('Calibrate Volume'));
     }
 
     private createColorPicker(idString: string): ColorPicker {
-        let inputElement: HTMLElement = createElement('input', { id: idString + '_target' });
+        const inputElement: HTMLElement = createElement('input', { id: idString + '_target' });
         document.body.appendChild(inputElement);
-        let colorPicker: ColorPicker = new ColorPicker({
+        const colorPicker: ColorPicker = new ColorPicker({
             inline: true, mode: 'Palette', cssClass: 'e-show-value', enableOpacity: false,
             value: '#000000', showButtons: false, modeSwitcher: false
         });
@@ -1631,9 +1638,9 @@ export class AnnotationToolbar {
         return colorPicker;
     }
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private onColorPickerChange(args: any): void {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let currentColor: any;
         if (!isBlazor()) {
             currentColor = (args.currentValue.hex === '') ? '#ffffff00' : args.currentValue.hex;
@@ -1645,15 +1652,15 @@ export class AnnotationToolbar {
                 this.pdfViewer.annotationModule.textMarkupAnnotationModule.modifyColorProperty(currentColor);
             } else {
                 switch (this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAddMode) {
-                    case 'Highlight':
-                        this.pdfViewer.annotationModule.textMarkupAnnotationModule.highlightColor = currentColor;
-                        break;
-                    case 'Underline':
-                        this.pdfViewer.annotationModule.textMarkupAnnotationModule.underlineColor = currentColor;
-                        break;
-                    case 'Strikethrough':
-                        this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughColor = currentColor;
-                        break;
+                case 'Highlight':
+                    this.pdfViewer.annotationModule.textMarkupAnnotationModule.highlightColor = currentColor;
+                    break;
+                case 'Underline':
+                    this.pdfViewer.annotationModule.textMarkupAnnotationModule.underlineColor = currentColor;
+                    break;
+                case 'Strikethrough':
+                    this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughColor = currentColor;
+                    break;
                 }
             }
         }
@@ -1670,21 +1677,21 @@ export class AnnotationToolbar {
         } else {
             if (this.pdfViewer.annotation.shapeAnnotationModule) {
                 switch (this.pdfViewer.annotation.shapeAnnotationModule.currentAnnotationMode) {
-                    case 'Line':
-                        this.pdfViewer.annotation.shapeAnnotationModule.lineFillColor = currentColor;
-                        break;
-                    case 'Arrow':
-                        this.pdfViewer.annotation.shapeAnnotationModule.arrowFillColor = currentColor;
-                        break;
-                    case 'Rectangle':
-                        this.pdfViewer.annotation.shapeAnnotationModule.rectangleFillColor = currentColor;
-                        break;
-                    case 'Circle':
-                        this.pdfViewer.annotation.shapeAnnotationModule.circleFillColor = currentColor;
-                        break;
-                    case 'Polygon':
-                        this.pdfViewer.annotation.shapeAnnotationModule.polygonFillColor = currentColor;
-                        break;
+                case 'Line':
+                    this.pdfViewer.annotation.shapeAnnotationModule.lineFillColor = currentColor;
+                    break;
+                case 'Arrow':
+                    this.pdfViewer.annotation.shapeAnnotationModule.arrowFillColor = currentColor;
+                    break;
+                case 'Rectangle':
+                    this.pdfViewer.annotation.shapeAnnotationModule.rectangleFillColor = currentColor;
+                    break;
+                case 'Circle':
+                    this.pdfViewer.annotation.shapeAnnotationModule.circleFillColor = currentColor;
+                    break;
+                case 'Polygon':
+                    this.pdfViewer.annotation.shapeAnnotationModule.polygonFillColor = currentColor;
+                    break;
                 }
             }
             if (this.pdfViewer.drawingObject) {
@@ -1704,9 +1711,9 @@ export class AnnotationToolbar {
         }
     }
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private onStrokePickerChange(args: any): void {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let currentColor: any;
         if (!isBlazor()) {
             currentColor = (args.currentValue.hex === '') ? '#ffffff00' : args.currentValue.hex;
@@ -1726,24 +1733,24 @@ export class AnnotationToolbar {
         } else {
             if (this.pdfViewer.annotation.shapeAnnotationModule) {
                 switch (this.pdfViewer.annotation.shapeAnnotationModule.currentAnnotationMode) {
-                    case 'Line':
-                        this.pdfViewer.annotation.shapeAnnotationModule.lineStrokeColor = currentColor;
-                        break;
-                    case 'Arrow':
-                        this.pdfViewer.annotation.shapeAnnotationModule.arrowStrokeColor = currentColor;
-                        break;
-                    case 'Rectangle':
-                        this.pdfViewer.annotation.shapeAnnotationModule.rectangleStrokeColor = currentColor;
-                        break;
-                    case 'Circle':
-                        this.pdfViewer.annotation.shapeAnnotationModule.circleStrokeColor = currentColor;
-                        break;
-                    case 'Polygon':
-                        this.pdfViewer.annotation.shapeAnnotationModule.polygonStrokeColor = currentColor;
-                        break;
+                case 'Line':
+                    this.pdfViewer.annotation.shapeAnnotationModule.lineStrokeColor = currentColor;
+                    break;
+                case 'Arrow':
+                    this.pdfViewer.annotation.shapeAnnotationModule.arrowStrokeColor = currentColor;
+                    break;
+                case 'Rectangle':
+                    this.pdfViewer.annotation.shapeAnnotationModule.rectangleStrokeColor = currentColor;
+                    break;
+                case 'Circle':
+                    this.pdfViewer.annotation.shapeAnnotationModule.circleStrokeColor = currentColor;
+                    break;
+                case 'Polygon':
+                    this.pdfViewer.annotation.shapeAnnotationModule.polygonStrokeColor = currentColor;
+                    break;
                 }
             }
-             // tslint:disable-next-line
+            // eslint-disable-next-line
             let annotationModule: any = this.pdfViewer.annotation;
             if (annotationModule && annotationModule.inkAnnotationModule) {
                 this.pdfViewer.inkAnnotationSettings.strokeColor = currentColor;
@@ -1765,6 +1772,10 @@ export class AnnotationToolbar {
         }
     }
     /**
+     * @param element
+     * @param color
+     * @param element
+     * @param color
      * @private
      */
     public updateColorInIcon(element: HTMLElement, color: string): void {
@@ -1778,6 +1789,7 @@ export class AnnotationToolbar {
     }
 
     /**
+     * @param currentOption
      * @private
      */
     public updateTextPropertySelection(currentOption: string): void {
@@ -1795,6 +1807,7 @@ export class AnnotationToolbar {
     }
 
     /**
+     * @param family
      * @private
      */
     public updateFontFamilyInIcon(family: string): void {
@@ -1802,15 +1815,16 @@ export class AnnotationToolbar {
     }
 
     /**
+     * @param align
      * @private
      */
     public updateTextAlignInIcon(align: string): void {
         let className: string = 'e-btn-icon e-pv-left-align-icon e-pv-icon';
-        let leftAlign: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_left_align');
-        let rightAlign: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_right_align');
-        let centerAlign: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_center_align');
-        let justifyAlign: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_justify_align');
-        if (!isBlazor) {
+        const leftAlign: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_left_align');
+        const rightAlign: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_right_align');
+        const centerAlign: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_center_align');
+        const justifyAlign: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_justify_align');
+        if (!isBlazor()) {
             leftAlign.classList.remove('textprop-option-active');
             rightAlign.classList.remove('textprop-option-active');
             centerAlign.classList.remove('textprop-option-active');
@@ -1832,6 +1846,7 @@ export class AnnotationToolbar {
     }
 
     /**
+     * @param size
      * @private
      */
     public updateFontSizeInIcon(size: number): void {
@@ -1839,7 +1854,7 @@ export class AnnotationToolbar {
     }
 
     private updateOpacityIndicator(): void {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         this.opacityIndicator.textContent = parseInt(Math.round(this.opacitySlider.value as number).toString()) + '%';
     }
 
@@ -1848,13 +1863,13 @@ export class AnnotationToolbar {
     }
 
     private createSlider(idString: string): HTMLElement {
-        let outerContainer: HTMLElement = createElement('div', { className: 'e-pv-annotation-opacity-popup-container' });
+        const outerContainer: HTMLElement = createElement('div', { className: 'e-pv-annotation-opacity-popup-container' });
         document.body.appendChild(outerContainer);
-        let label: HTMLElement = createElement('span', { id: idString + '_label', className: 'e-pv-annotation-opacity-label' });
+        const label: HTMLElement = createElement('span', { id: idString + '_label', className: 'e-pv-annotation-opacity-label' });
         label.textContent = this.pdfViewer.localeObj.getConstant('Opacity');
-        let sliderElement: HTMLElement = createElement('div', { id: idString + '_slider' });
+        const sliderElement: HTMLElement = createElement('div', { id: idString + '_slider' });
         this.opacitySlider = new Slider({ type: 'MinRange', cssClass: 'e-pv-annotation-opacity-slider', max: 100, min: 0 });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.opacityIndicator = createElement('div', { id: idString + '_opacity_indicator', className: 'e-pv-annotation-opacity-indicator' });
         this.opacityIndicator.textContent = '100%';
         if (!this.pdfViewer.enableRtl) {
@@ -1875,13 +1890,13 @@ export class AnnotationToolbar {
     }
 
     private createThicknessSlider(idString: string): HTMLElement {
-        let outerContainer: HTMLElement = createElement('div', { className: 'e-pv-annotation-thickness-popup-container' });
+        const outerContainer: HTMLElement = createElement('div', { className: 'e-pv-annotation-thickness-popup-container' });
         document.body.appendChild(outerContainer);
-        let label: HTMLElement = createElement('span', { id: idString + '_label', className: 'e-pv-annotation-thickness-label' });
+        const label: HTMLElement = createElement('span', { id: idString + '_label', className: 'e-pv-annotation-thickness-label' });
         label.textContent = this.pdfViewer.localeObj.getConstant('Line Thickness');
-        let sliderElement: HTMLElement = createElement('div', { id: idString + '_slider' });
+        const sliderElement: HTMLElement = createElement('div', { id: idString + '_slider' });
         this.thicknessSlider = new Slider({ type: 'MinRange', cssClass: 'e-pv-annotation-thickness-slider', max: 12, min: 0 });
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.thicknessIndicator = createElement('div', { id: idString + '_thickness_indicator', className: 'e-pv-annotation-thickness-indicator' });
         this.thicknessIndicator.textContent = '0 pt';
         if (!this.pdfViewer.enableRtl) {
@@ -1901,17 +1916,17 @@ export class AnnotationToolbar {
     }
 
     private afterToolbarCreation(): void {
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.highlightItem = this.primaryToolbar.addClassToolbarItem('_highlight', 'e-pv-highlight', this.pdfViewer.localeObj.getConstant('Highlight'));
         this.underlineItem = this.primaryToolbar.addClassToolbarItem('_underline', 'e-pv-underline', this.pdfViewer.localeObj.getConstant('Underline'));
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.strikethroughItem = this.primaryToolbar.addClassToolbarItem('_strikethrough', 'e-pv-strikethrough', this.pdfViewer.localeObj.getConstant('Strikethrough'));
         this.deleteItem = this.primaryToolbar.addClassToolbarItem('_annotation_delete', 'e-pv-annotation-delete', this.pdfViewer.localeObj.getConstant('Delete'));
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.freeTextEditItem = this.primaryToolbar.addClassToolbarItem('_annotation_freeTextEdit', 'e-pv-annotation-freeTextEdit', this.pdfViewer.localeObj.getConstant('Free Text'));
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.inkAnnotationItem = this.primaryToolbar.addClassToolbarItem('_annotation_ink', 'e-pv-annotation-ink', this.pdfViewer.localeObj.getConstant('Draw Ink'));
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.commentItem = this.primaryToolbar.addClassToolbarItem('_annotation_commentPanel', 'e-pv-annotation-comment-panel', this.pdfViewer.localeObj.getConstant('Comment Panel'));
         this.closeItem = this.primaryToolbar.addClassToolbarItem('_annotation_close', 'e-pv-annotation-tools-close', null);
         this.selectAnnotationDeleteItem(false);
@@ -1920,95 +1935,95 @@ export class AnnotationToolbar {
     }
 
     private onToolbarClicked(args: ClickEventArgs): void {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let annotation: any = this.pdfViewer.selectedItems.annotations[0];
         switch ((args.originalEvent.target as HTMLElement).id) {
-            case this.pdfViewer.element.id + '_highlight':
-            case this.pdfViewer.element.id + '_highlightIcon':
-                this.pdfViewer.tool = '';
-                this.resetFreeTextAnnot();
-                this.handleHighlight();
-                break;
-            case this.pdfViewer.element.id + '_underline':
-            case this.pdfViewer.element.id + '_underlineIcon':
-                this.pdfViewer.tool = '';
-                this.resetFreeTextAnnot();
-                this.handleUnderline();
-                break;
-            case this.pdfViewer.element.id + '_strikethrough':
-            case this.pdfViewer.element.id + '_strikethroughIcon':
-                this.pdfViewer.tool = '';
-                this.resetFreeTextAnnot();
-                this.handleStrikethrough();
-                break;
-            case this.pdfViewer.element.id + '_annotation_delete':
-            case this.pdfViewer.element.id + '_annotation_deleteIcon':
-                this.pdfViewer.annotationModule.deleteAnnotation();
-                this.resetFreeTextAnnot();
-                break;
-            case this.pdfViewer.element.id + '_annotation_commentPanel':
-            case this.pdfViewer.element.id + '_annotation_commentPanelIcon':
-                this.inkAnnotationSelected = false;
-                let commentPanel: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
-                if (this.pdfViewer.annotation && this.pdfViewer.annotation.textMarkupAnnotationModule) {
-                    this.pdfViewer.annotation.textMarkupAnnotationModule.showHideDropletDiv(true);
-                }
-                if (commentPanel.style.display === 'block') {
-                    this.pdfViewerBase.navigationPane.closeCommentPanelContainer();
-                } else {
-                    this.pdfViewer.annotationModule.showCommentsPanel();
-                }
-                break;
-            case this.pdfViewer.element.id + '_annotation_close':
-            case this.pdfViewer.element.id + '_annotation_closeIcon':
-                this.inkAnnotationSelected = false;
-                let commentsPanel: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
-                if (commentsPanel.style.display === 'block') {
-                    this.pdfViewerBase.navigationPane.closeCommentPanelContainer();
-                }
-                this.showAnnotationToolbar(this.primaryToolbar.annotationItem);
-                break;
-            case this.pdfViewer.element.id + '_annotation_freeTextEdit':
-            case this.pdfViewer.element.id + '_annotation_freeTextEditIcon':
-                this.resetFreeTextAnnot();
-                this.handleFreeTextEditor();
-                break;
-            case this.pdfViewer.element.id + '_annotation_signature':
-            case this.pdfViewer.element.id + '_annotation_signatureIcon':
-                this.inkAnnotationSelected = false;
-                this.updateSignatureCount();
-                break;
-            case this.pdfViewer.element.id + '_annotation_ink':
-            case this.pdfViewer.element.id + '_annotation_inkIcon':
-                if (annotation) {
-                    this.pdfViewer.fireAnnotationUnSelect(annotation.annotName, annotation.pageIndex, annotation);
-                }
-                this.pdfViewer.clearSelection(this.pdfViewer.currentPageNumber - 1);
-                if (this.pdfViewer.annotationModule.inkAnnotationModule) {
-                    // tslint:disable-next-line
+        case this.pdfViewer.element.id + '_highlight':
+        case this.pdfViewer.element.id + '_highlightIcon':
+            this.pdfViewer.tool = '';
+            this.resetFreeTextAnnot();
+            this.handleHighlight();
+            break;
+        case this.pdfViewer.element.id + '_underline':
+        case this.pdfViewer.element.id + '_underlineIcon':
+            this.pdfViewer.tool = '';
+            this.resetFreeTextAnnot();
+            this.handleUnderline();
+            break;
+        case this.pdfViewer.element.id + '_strikethrough':
+        case this.pdfViewer.element.id + '_strikethroughIcon':
+            this.pdfViewer.tool = '';
+            this.resetFreeTextAnnot();
+            this.handleStrikethrough();
+            break;
+        case this.pdfViewer.element.id + '_annotation_delete':
+        case this.pdfViewer.element.id + '_annotation_deleteIcon':
+            this.pdfViewer.annotationModule.deleteAnnotation();
+            this.resetFreeTextAnnot();
+            break;
+        case this.pdfViewer.element.id + '_annotation_commentPanel':
+        case this.pdfViewer.element.id + '_annotation_commentPanelIcon':
+            this.inkAnnotationSelected = false;
+            const commentPanel: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
+            if (this.pdfViewer.annotation && this.pdfViewer.annotation.textMarkupAnnotationModule) {
+                this.pdfViewer.annotation.textMarkupAnnotationModule.showHideDropletDiv(true);
+            }
+            if (commentPanel.style.display === 'block') {
+                this.pdfViewerBase.navigationPane.closeCommentPanelContainer();
+            } else {
+                this.pdfViewer.annotationModule.showCommentsPanel();
+            }
+            break;
+        case this.pdfViewer.element.id + '_annotation_close':
+        case this.pdfViewer.element.id + '_annotation_closeIcon':
+            this.inkAnnotationSelected = false;
+            const commentsPanel: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
+            if (commentsPanel.style.display === 'block') {
+                this.pdfViewerBase.navigationPane.closeCommentPanelContainer();
+            }
+            this.showAnnotationToolbar(this.primaryToolbar.annotationItem);
+            break;
+        case this.pdfViewer.element.id + '_annotation_freeTextEdit':
+        case this.pdfViewer.element.id + '_annotation_freeTextEditIcon':
+            this.resetFreeTextAnnot();
+            this.handleFreeTextEditor();
+            break;
+        case this.pdfViewer.element.id + '_annotation_signature':
+        case this.pdfViewer.element.id + '_annotation_signatureIcon':
+            this.inkAnnotationSelected = false;
+            this.updateSignatureCount();
+            break;
+        case this.pdfViewer.element.id + '_annotation_ink':
+        case this.pdfViewer.element.id + '_annotation_inkIcon':
+            if (annotation) {
+                this.pdfViewer.fireAnnotationUnSelect(annotation.annotName, annotation.pageIndex, annotation);
+            }
+            this.pdfViewer.clearSelection(this.pdfViewer.currentPageNumber - 1);
+            if (this.pdfViewer.annotationModule.inkAnnotationModule) {
+                // eslint-disable-next-line
                     let currentPageNumber: any = this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber;
-                    if (currentPageNumber && currentPageNumber !== '') {
-                         // tslint:disable-next-line
+                if (currentPageNumber && currentPageNumber !== '') {
+                    // eslint-disable-next-line
                         this.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(parseInt(currentPageNumber));
-                        this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
-                    }
+                    this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
                 }
-                if (!this.inkAnnotationSelected) {
-                    this.deselectAllItems();
-                    this.drawInkAnnotation();
-                } else {
-                    this.inkAnnotationSelected = false;
-                }
-                break;
+            }
+            if (!this.inkAnnotationSelected) {
+                this.deselectAllItems();
+                this.drawInkAnnotation();
+            } else {
+                this.inkAnnotationSelected = false;
+            }
+            break;
         }
     }
     private addInkAnnotation(): void {
         this.pdfViewer.clearSelection(this.pdfViewer.currentPageNumber - 1);
         if (this.pdfViewer.annotationModule.inkAnnotationModule) {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let currentPageNumber: any = this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber;
             if (currentPageNumber && currentPageNumber !== '') {
-                 // tslint:disable-next-line
+                // eslint-disable-next-line
                 this.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(parseInt(currentPageNumber));
                 if (!isBlazor()) {
                     this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
@@ -2048,10 +2063,10 @@ export class AnnotationToolbar {
                 this.enableFreeTextAnnotationPropertiesTools(false);
             }
         }
-        if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.inkAnnotationModule) {            // tslint:disable-next-line
+        if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.inkAnnotationModule) {            // eslint-disable-next-line
             let currentPageNumber: any = this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber;
             if (currentPageNumber && currentPageNumber !== '') {
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 this.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(parseInt(currentPageNumber));
                 if (!isBlazor()) {
                     this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
@@ -2062,10 +2077,10 @@ export class AnnotationToolbar {
     }
     private updateInkannotationItems(): void {
         if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.inkAnnotationModule && this.inkAnnotationSelected) {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let currentPageNumber: any = this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber;
             if (currentPageNumber && currentPageNumber !== '') {
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 this.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(parseInt(currentPageNumber));
                 this.pdfViewerBase.isToolbarInkClicked = true;
                 this.pdfViewer.tool = 'Ink';
@@ -2079,7 +2094,7 @@ export class AnnotationToolbar {
         this.pdfViewerBase.signatureModule.showSignatureDialog(true);
     }
     private handleFreeTextEditor(): void {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let annotation: any = this.pdfViewer.selectedItems.annotations[0];
         this.enableFreeTextAnnotationPropertiesTools(true);
         if (annotation) {
@@ -2092,7 +2107,7 @@ export class AnnotationToolbar {
         this.isStrikethroughEnabled = false;
         this.isHighlightEnabled = false;
         this.isUnderlineEnabled = false;
-        let freeTextAnnotationModule: FreeTextAnnotation = this.pdfViewer.annotation.freeTextAnnotationModule;
+        const freeTextAnnotationModule: FreeTextAnnotation = this.pdfViewer.annotation.freeTextAnnotationModule;
         freeTextAnnotationModule.setAnnotationType('FreeText');
         freeTextAnnotationModule.isNewFreeTextAnnot = true;
         freeTextAnnotationModule.isNewAddedAnnot = true;
@@ -2111,9 +2126,9 @@ export class AnnotationToolbar {
     }
 
     private updateFontFamily(): void {
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.pdfViewer.annotationModule.freeTextAnnotationModule.isBold ? this.updateFontFamilyIcon('_bold', true) : this.updateFontFamilyIcon('_bold', false);
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.pdfViewer.annotationModule.freeTextAnnotationModule.isItalic ? this.updateFontFamilyIcon('_italic', true) : this.updateFontFamilyIcon('_italic', false);
         if (this.pdfViewer.annotationModule.freeTextAnnotationModule.isUnderline) {
             this.updateFontFamilyIcon('_underline_textinput', true);
@@ -2130,16 +2145,20 @@ export class AnnotationToolbar {
     }
 
     private updateFontFamilyIcon(fontFamily: string, isActive: boolean): void {
-        let fontFamilyElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + fontFamily);
+        const fontFamilyElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + fontFamily);
         isActive ? fontFamilyElement.classList.add('textprop-option-active') : fontFamilyElement.classList.remove('textprop-option-active');
     }
 
     /**
+     * @param element
+     * @param isInitialLoading
+     * @param element
+     * @param isInitialLoading
      * @private
      */
     public showAnnotationToolbar(element?: HTMLElement, isInitialLoading?: boolean): void {
         if (!this.isToolbarHidden) {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let annotationModule: any = this.pdfViewer.annotationModule;
             if (element) {
                 this.primaryToolbar.deSelectItem(element);
@@ -2149,7 +2168,7 @@ export class AnnotationToolbar {
                 }
             }
             this.adjustViewer(false);
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             if (annotationModule && annotationModule.textMarkupAnnotationModule && annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
                 this.enablePropertiesTool(annotationModule);
             } else {
@@ -2165,7 +2184,7 @@ export class AnnotationToolbar {
                 this.primaryToolbar.updateInteractionTools(true);
             }
         } else {
-            let toolBarInitialStatus: string = this.toolbarElement.style.display;
+            const toolBarInitialStatus: string = this.toolbarElement.style.display;
             this.toolbarElement.style.display = 'block';
             if (!isInitialLoading) {
                 this.pdfViewer.isAnnotationToolbarVisible = true;
@@ -2181,14 +2200,14 @@ export class AnnotationToolbar {
                 this.adjustViewer(true);
             }
         }
-        // tslint:disable-next-line:max-line-length           
+        // eslint-disable-next-line max-len
         if (this.pdfViewer.magnification && this.pdfViewer.magnification.fitType === 'fitToPage') {
             this.pdfViewer.magnification.fitToPage();
         }
         this.enableAnnotationAddTools(true);
         this.isToolbarHidden = !this.isToolbarHidden;
     }
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private enablePropertiesTool(annotationModule: any): void {
         this.isHighlightEnabled = false;
         this.isUnderlineEnabled = false;
@@ -2200,7 +2219,7 @@ export class AnnotationToolbar {
         this.primaryToolbar.deSelectItem(this.underlineItem);
         this.primaryToolbar.deSelectItem(this.strikethroughItem);
         this.enableTextMarkupAnnotationPropertiesTools(true);
-        // tslint:disable-next-line:max-line-length  
+        // eslint-disable-next-line max-len
         this.updateColorInIcon(this.colorDropDownElement, annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation.color);
         this.selectAnnotationDeleteItem(true);
     }
@@ -2336,11 +2355,11 @@ export class AnnotationToolbar {
         if (!this.isInkBtnVisible) {
             this.applyHideToToolbar(false, 15, 15);
         }
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         if (!this.isFontFamilyToolVisible && !this.isFontSizeToolVisible && !this.isFontColorToolVisible && !this.isFontAlignToolVisible && !this.isFontStylesToolVisible) {
             this.applyHideToToolbar(false, 21, 21);
         }
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         if ((!this.isColorToolVisible && !this.isStrokeColorToolVisible && !this.isThicknessToolVisible && !this.isOpacityToolVisible) || !this.isDeleteAnnotationToolVisible) {
             this.applyHideToToolbar(false, 26, 26);
         }
@@ -2438,13 +2457,14 @@ export class AnnotationToolbar {
     }
 
     private applyHideToToolbar(show: boolean, startIndex: number, endIndex: number): void {
-        let isHide: boolean = !show;
+        const isHide: boolean = !show;
         for (let index: number = startIndex; index <= endIndex; index++) {
             this.toolbar.hideItem(index, isHide);
         }
     }
 
     /**
+     * @param isAdjust
      * @private
      */
     public adjustViewer(isAdjust: boolean): void {
@@ -2454,7 +2474,7 @@ export class AnnotationToolbar {
         if (isBlazor()) {
             splitterElement = this.pdfViewer.element.querySelector('.e-pv-sidebar-toolbar-splitter');
             toolbarContainer = this.pdfViewer.element.querySelector('.e-pv-toolbar');
-            let annotationToolbarContainer: HTMLElement = this.pdfViewer.element.querySelector('.e-pv-annotation-toolbar');
+            const annotationToolbarContainer: HTMLElement = this.pdfViewer.element.querySelector('.e-pv-annotation-toolbar');
             annotationToolbarHeight = this.getToolbarHeight(annotationToolbarContainer);
         } else {
             splitterElement = this.pdfViewerBase.getElement('_sideBarToolbarSplitter');
@@ -2462,10 +2482,10 @@ export class AnnotationToolbar {
             annotationToolbarHeight = this.getToolbarHeight(this.toolbarElement);
         }
         let toolbarHeight: number = this.getToolbarHeight(toolbarContainer);
-        let sideBarToolbar: HTMLElement = this.pdfViewerBase.navigationPane.sideBarToolbar;
-        let sideBarContentContainer: HTMLElement = this.pdfViewerBase.navigationPane.sideBarContentContainer;
-        let commentsContainer: HTMLElement = this.pdfViewerBase.navigationPane.commentPanelContainer;
-        let commentPanelResizer: HTMLElement = this.pdfViewerBase.navigationPane.commentPanelResizer;
+        const sideBarToolbar: HTMLElement = this.pdfViewerBase.navigationPane.sideBarToolbar;
+        const sideBarContentContainer: HTMLElement = this.pdfViewerBase.navigationPane.sideBarContentContainer;
+        const commentsContainer: HTMLElement = this.pdfViewerBase.navigationPane.commentPanelContainer;
+        const commentPanelResizer: HTMLElement = this.pdfViewerBase.navigationPane.commentPanelResizer;
         if (isAdjust) {
             if (this.pdfViewer.enableToolbar) {
                 sideBarToolbar.style.top = (toolbarHeight + annotationToolbarHeight) + 'px';
@@ -2483,13 +2503,13 @@ export class AnnotationToolbar {
             if (!this.pdfViewer.enableToolbar) {
                 toolbarHeight = 0;
             }
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             this.pdfViewerBase.viewerContainer.style.height = this.updateViewerHeight(this.getElementHeight(this.pdfViewerBase.viewerContainer), (annotationToolbarHeight + toolbarHeight)) + 'px';
             sideBarToolbar.style.height = this.getNavigationToolbarHeight(annotationToolbarHeight + toolbarHeight) + 'px';
             splitterElement.style.height = this.getNavigationToolbarHeight(annotationToolbarHeight + toolbarHeight) + 'px';
         } else {
             if (this.pdfViewer.enableToolbar) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 sideBarToolbar.style.top = toolbarHeight + 'px';
                 sideBarContentContainer.style.top = toolbarHeight + 'px';
                 splitterElement.style.top = toolbarHeight + 'px';
@@ -2510,12 +2530,12 @@ export class AnnotationToolbar {
             if (!this.pdfViewer.enableToolbar) {
                 toolbarHeight = 0;
             }
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             this.pdfViewerBase.viewerContainer.style.height = this.resetViewerHeight(this.getElementHeight(this.pdfViewerBase.viewerContainer), annotationToolbarHeight) + 'px';
             sideBarToolbar.style.height = this.getNavigationToolbarHeight(toolbarHeight);
             splitterElement.style.height = this.getNavigationToolbarHeight(toolbarHeight);
             if (this.pdfViewerBase.viewerContainer.style.height === '0px') {
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 this.pdfViewerBase.viewerContainer.style.height = (parseInt(this.pdfViewer.element.style.height) - parseInt(sideBarToolbar.style.top)) + 'px';
             }
         }
@@ -2529,18 +2549,18 @@ export class AnnotationToolbar {
     private updateContentContainerHeight(isAdjust: boolean, isBlazor?: boolean): void {
         let annotationToolbarHeight: number;
         if (isBlazor) {
-            let annotationToolbarContainer: HTMLElement = this.pdfViewer.element.querySelector('.e-pv-annotation-toolbar');
+            const annotationToolbarContainer: HTMLElement = this.pdfViewer.element.querySelector('.e-pv-annotation-toolbar');
             annotationToolbarHeight = this.getToolbarHeight(annotationToolbarContainer);
         } else {
             annotationToolbarHeight = this.getToolbarHeight(this.toolbarElement);
         }
-        let sideBarClientRect: ClientRect = this.pdfViewerBase.navigationPane.sideBarContentContainer.getBoundingClientRect();
+        const sideBarClientRect: ClientRect = this.pdfViewerBase.navigationPane.sideBarContentContainer.getBoundingClientRect();
         if (sideBarClientRect.height !== 0) {
             if (isAdjust) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 this.pdfViewerBase.navigationPane.sideBarContentContainer.style.height = sideBarClientRect.height - annotationToolbarHeight + 'px';
             } else {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 this.pdfViewerBase.navigationPane.sideBarContentContainer.style.height = sideBarClientRect.height + annotationToolbarHeight + 'px';
             }
         }
@@ -2550,14 +2570,14 @@ export class AnnotationToolbar {
         let toolbarHeight: number = element.getBoundingClientRect().height;
         if (toolbarHeight === 0 && element === this.pdfViewerBase.getElement('_toolbarContainer')) {
             // getComputedStyle gets the value from style and toolbar border height is added to it.
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             toolbarHeight = parseFloat(window.getComputedStyle(element)['height']) + this.toolbarBorderHeight;
         }
         return toolbarHeight;
     }
 
     private getNavigationToolbarHeight(toolbarHeight: number): string {
-        let height: number = this.pdfViewer.element.getBoundingClientRect().height;
+        const height: number = this.pdfViewer.element.getBoundingClientRect().height;
         return (height !== 0) ? height - toolbarHeight + 'px' : '';
     }
 
@@ -2618,7 +2638,7 @@ export class AnnotationToolbar {
             this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
             this.enableTextMarkupAnnotationPropertiesTools(true);
             this.setCurrentColorInPicker();
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             this.updateColorInIcon(this.colorDropDownElement, this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughColor);
             this.isStrikethroughEnabled = true;
             this.isHighlightEnabled = false;
@@ -2670,16 +2690,17 @@ export class AnnotationToolbar {
     }
 
     /**
+     * @param isEnable
      * @private
      */
     public selectAnnotationDeleteItem(isEnable: boolean): void {
         if (!isBlazor()) {
             if (this.toolbar) {
                 if (isEnable) {
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line
                     let annotation: any = this.pdfViewer.annotationModule.findCurrentAnnotation();
                     if (annotation) {
-                        // tslint:disable-next-line
+                        // eslint-disable-next-line
                         if (annotation.annotationSettings && annotation.annotationSettings.isLock) {
                             if (this.pdfViewer.annotationModule.checkAllowedInteractions('Delete', annotation)) {
                                 this.toolbar.enableItems(this.deleteItem.parentElement, isEnable);
@@ -2698,6 +2719,7 @@ export class AnnotationToolbar {
     }
 
     /**
+     * @param isEnable
      * @private
      */
     public enableTextMarkupAnnotationPropertiesTools(isEnable: boolean): void {
@@ -2720,10 +2742,10 @@ export class AnnotationToolbar {
     }
 
     private checkAnnotationPropertiesChange(): boolean {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let annotation: any = this.pdfViewer.selectedItems.annotations[0];
         if (annotation && annotation.annotationSettings) {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let isLock: boolean = annotation.annotationSettings.isLock;
             if (isLock) {
                 if (this.pdfViewer.annotationModule.checkAllowedInteractions('PropertyChange', annotation)) {
@@ -2737,6 +2759,7 @@ export class AnnotationToolbar {
     }
 
     /**
+     * @param isEnable
      * @private
      */
     public enableAnnotationPropertiesTools(isEnable: boolean): void {
@@ -2746,7 +2769,7 @@ export class AnnotationToolbar {
         }
         if (!isBlazor()) {
             if (isPropertiesChanges) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 if (this.pdfViewer.selectedItems.annotations[0] && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Line')) {
                     this.toolbar.enableItems(this.colorDropDownElement.parentElement, false);
                 } else {
@@ -2770,6 +2793,7 @@ export class AnnotationToolbar {
     }
 
     /**
+     * @param isEnable
      * @private
      */
     public enableSignaturePropertiesTools(isEnable: boolean): void {
@@ -2798,6 +2822,7 @@ export class AnnotationToolbar {
 
 
     /**
+     * @param isEnable
      * @private
      */
     public enableStampAnnotationPropertiesTools(isEnable: boolean): void {
@@ -2824,6 +2849,7 @@ export class AnnotationToolbar {
     }
 
     /**
+     * @param isEnable
      * @private
      */
     public enableFreeTextAnnotationPropertiesTools(isEnable: boolean): void {
@@ -2850,6 +2876,7 @@ export class AnnotationToolbar {
     }
 
     /**
+     * @param isEnable
      * @private
      */
     public enableAnnotationAddTools(isEnable: boolean): void {
@@ -2892,6 +2919,7 @@ export class AnnotationToolbar {
     }
 
     /**
+     * @param isEnable
      * @private
      */
     public enableCommentPanelTool(isEnable: boolean): void {
@@ -2925,14 +2953,14 @@ export class AnnotationToolbar {
     public updateAnnnotationPropertyItems(): void {
         if (!isBlazor()) {
             if (this.pdfViewer.selectedItems.annotations.length === 1) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 this.pdfViewer.toolbar.annotationToolbarModule.updateColorInIcon(this.colorDropDownElement, this.getColorHexValue(this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.fill, 'fillColor'));
                 this.pdfViewer.toolbar.annotationToolbarModule.updateColorInIcon(this.strokeDropDownElement, this.getColorHexValue(this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.strokeColor, 'strokeColor'));
                 if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line
                     this.pdfViewer.toolbar.annotationToolbarModule.updateColorInIcon(this.fontColorElement, this.getColorHexValue(this.pdfViewer.selectedItems.annotations[0].fontColor, 'fontColor'));
                     this.pdfViewer.toolbar.annotationToolbarModule.updateFontFamilyInIcon(this.pdfViewer.selectedItems.annotations[0].fontFamily);
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     this.pdfViewer.toolbar.annotationToolbarModule.updateFontSizeInIcon(this.pdfViewer.selectedItems.annotations[0].fontSize);
                     this.pdfViewer.toolbar.annotationToolbarModule.updateTextAlignInIcon(this.pdfViewer.selectedItems.annotations[0].textAlign);
                 }
@@ -2946,14 +2974,14 @@ export class AnnotationToolbar {
             this.strokeDropDownElementInBlazor = this.pdfViewer.element.querySelector('.e-pv-annotation-stroke-container');
             this.fontColorElementInBlazor = this.pdfViewer.element.querySelector('.e-pv-annotation-textcolor-container');
             if (this.pdfViewer.selectedItems.annotations.length === 1) {
-                // tslint:disable-next-line:max-line-length
-                 this.pdfViewer.toolbar.annotationToolbarModule.updateColorInIcon(this.colorDropDownElementInBlazor, this.getColorHexValue(this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.fill, 'fillColor'));
-                 this.pdfViewer.toolbar.annotationToolbarModule.updateColorInIcon(this.strokeDropDownElementInBlazor, this.getColorHexValue(this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.strokeColor, 'strokeColor'));
+                // eslint-disable-next-line max-len
+                this.pdfViewer.toolbar.annotationToolbarModule.updateColorInIcon(this.colorDropDownElementInBlazor, this.getColorHexValue(this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.fill, 'fillColor'));
+                this.pdfViewer.toolbar.annotationToolbarModule.updateColorInIcon(this.strokeDropDownElementInBlazor, this.getColorHexValue(this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.strokeColor, 'strokeColor'));
                 if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line
                     this.pdfViewer.toolbar.annotationToolbarModule.updateColorInIcon(this.fontColorElementInBlazor, this.getColorHexValue(this.pdfViewer.selectedItems.annotations[0].fontColor, 'fontColor'));                   
                     //this.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateFontFamilyInIcon', this.pdfViewer.selectedItems.annotations[0].fontFamily);
-                     // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     this.pdfViewerBase.blazorUIAdaptor.updateFontFamilyInIcon(this.pdfViewer.selectedItems.annotations[0].fontFamily);
                     // this.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateFontSizeInIcon', this.pdfViewer.selectedItems.annotations[0].fontSize);
                     this.pdfViewerBase.blazorUIAdaptor.updateFontSizeInIcon(this.pdfViewer.selectedItems.annotations[0].fontSize);
@@ -2999,7 +3027,7 @@ export class AnnotationToolbar {
     public resetToolbar(): void {
         this.adjustViewer(false);
         this.updateToolbarItems();
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         if ((this.pdfViewer.isAnnotationToolbarOpen || this.pdfViewer.isAnnotationToolbarVisible) && this.pdfViewer.enableAnnotationToolbar) {
             this.toolbarElement.style.display = '';
             this.isToolbarHidden = false;
@@ -3089,12 +3117,12 @@ export class AnnotationToolbar {
         this.UnderlineElement = this.addClassToToolbarInBlazor(this.UnderlineElement, 'e-pv-underline', '_underline');
         this.StrikethroughElement = this.addClassToToolbarInBlazor(this.StrikethroughElement, 'e-pv-strikethrough', '_strikethrough');
     }
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private addClassToToolbarInBlazor(element: any, className: string, idString: string): void {  
         element.classList.add(className);
         element.classList.add('e-pv-tbar-btn');
         if (element.childNodes.length > 0) {
-            let spanElement: HTMLElement = element.childNodes[0] as HTMLElement;
+            const spanElement: HTMLElement = element.childNodes[0] as HTMLElement;
             if (spanElement && spanElement.classList) {
                 spanElement.id = this.pdfViewer.element.id + idString + 'Icon';
                 spanElement.classList.remove('e-icons');

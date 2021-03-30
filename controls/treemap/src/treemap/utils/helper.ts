@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/explicit-member-accessibility */
+/* eslint-disable @typescript-eslint/dot-notation */
+/* eslint-disable max-len */
 import { BorderModel, FontModel, ColorMappingModel, LeafItemSettingsModel } from '../model/base-model';
 import { createElement, compile, merge, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
@@ -9,12 +12,12 @@ import { ExportType } from '../utils/enum';
  * Create the class for size
  */
 export class Size {
-    /** 
+    /**
      * height of the size
      */
     public height: number;
-    /** 
-     * width of the size 
+    /**
+     * width of the size
      */
     public width: number;
     constructor(width: number, height: number) {
@@ -32,6 +35,7 @@ export function stringToNumber(value: string, containerSize: number): number {
 
 /**
  * Internal use of type rect
+ *
  * @private
  */
 export class Rect {
@@ -49,6 +53,7 @@ export class Rect {
 
 /**
  * Internal use of rectangle options
+ *
  * @private
  */
 export class RectOption {
@@ -102,10 +107,11 @@ export class PathOption {
 
 /**
  * Function to measure the height and width of the text.
- * @param  {string} text
- * @param  {FontModel} font
- * @param  {string} id
- * @returns no
+ *
+ * @param  {string} text - Specifies the text.
+ * @param  {FontModel} font - Specifies the font.
+ * @param  {string} id - Specifies the id.
+ * @returns {Size} - Returns the size.
  * @private
  */
 export function measureText(text: string, font: FontModel): Size {
@@ -131,6 +137,7 @@ export function measureText(text: string, font: FontModel): Size {
 
 /**
  * Internal use of text options
+ *
  * @private
  */
 export class TextOption {
@@ -159,14 +166,19 @@ export class TextOption {
 
 
 /**
- * @private
  * Trim the title text
+ *
+ * @param {number} maxWidth - Specifies the maximum width
+ * @param {string} text - Specifies the text
+ * @param {FontModel} font - Specifies the font
+ * @returns {string} - Returns the string
+ * @private
  */
 export function textTrim(maxWidth: number, text: string, font: FontModel): string {
     let label: string = text;
     let size: number = measureText(text, font).width;
     if (size > maxWidth) {
-        let textLength: number = text.length;
+        const textLength: number = text.length;
         for (let i: number = textLength - 1; i >= 0; --i) {
             label = text.substring(0, i) + '...';
             size = measureText(label, font).width;
@@ -205,29 +217,29 @@ export class Location {
  */
 
 export function findPosition(location: Rect, alignment: Alignment, textSize: Size, type: string): Location {
-    let x: number; let y: number;
+    let x: number;
     switch (alignment) {
-        case 'Near':
-            x = location.x;
-            break;
-        case 'Center':
-            x = (type === 'title') ? (location.width / 2 - textSize.width / 2) :
-                ((location.x + (location.width / 2)) - textSize.width / 2);
-            break;
-        case 'Far':
-            x = (type === 'title') ? (location.width - location.y - textSize.width) :
-                ((location.x + location.width) - textSize.width);
-            break;
+    case 'Near':
+        x = location.x;
+        break;
+    case 'Center':
+        x = (type === 'title') ? (location.width / 2 - textSize.width / 2) :
+            ((location.x + (location.width / 2)) - textSize.width / 2);
+        break;
+    case 'Far':
+        x = (type === 'title') ? (location.width - location.y - textSize.width) :
+            ((location.x + location.width) - textSize.width);
+        break;
     }
-    y = (type === 'title') ? location.y + (textSize.height / 2) : ((location.y + location.height / 2) + textSize.height / 2);
+    const y: number = (type === 'title') ? location.y + (textSize.height / 2) : ((location.y + location.height / 2) + textSize.height / 2);
     return new Location(x, y);
 }
 
 export function createTextStyle(
-    renderer: SvgRenderer, renderOptions: Object, text: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    renderer: SvgRenderer, renderOptions: any, text: string
 ): HTMLElement {
-    let htmlObject: HTMLElement;
-    htmlObject = <HTMLElement>renderer.createText(renderOptions, text);
+    const htmlObject: HTMLElement = <HTMLElement>renderer.createText(renderOptions, text);
     htmlObject.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
     htmlObject.style['user-select'] = 'none';
     htmlObject.style['-moz-user-select'] = 'none';
@@ -241,13 +253,20 @@ export function createTextStyle(
 
 /**
  * Internal rendering of text
+ *
+ * @param {TextOption} options - Specifies the text option
+ * @param {FontModel} font - Specifies the font model
+ * @param {string} color - Specifies the color
+ * @param {HTMLElement | Element} parent - Specifes the html element
+ * @param {boolean} isMinus - Specifies the boolean value
+ * @returns {Element} - Returns the element
  * @private
  */
-/* tslint:disable:no-string-literal */
 export function renderTextElement(
     options: TextOption, font: FontModel, color: string, parent: HTMLElement | Element, isMinus: boolean = false
 ): Element {
-    let renderOptions: Object = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const renderOptions: any = {
         'font-size': font.size,
         'font-style': font.fontStyle,
         'font-family': font.fontFamily,
@@ -261,26 +280,26 @@ export function renderTextElement(
         'y': options.y,
         'fill': color
     };
-    let text: string = typeof options.text === 'string' ? options.text : isMinus ? options.text[options.text.length - 1] : options.text[0];
+    const text: string = typeof options.text === 'string' ? options.text : isMinus ? options.text[options.text.length - 1] : options.text[0];
     let tspanElement: Element;
-    let renderer: SvgRenderer = new SvgRenderer('');
+    const renderer: SvgRenderer = new SvgRenderer('');
     let height: number; let htmlObject: HTMLElement;
-    let breadCrumbText: boolean = !isNullOrUndefined(text) && !isNullOrUndefined(options.connectorText) ?
+    const breadCrumbText: boolean = !isNullOrUndefined(text) && !isNullOrUndefined(options.connectorText) ?
         (text.search(options.connectorText[1]) >= 0) : false;
     if (breadCrumbText) {
-        let drilledLabel: string = text;
-        let drillLevelText: string[]; let spacing: number = 5;
-        drillLevelText = drilledLabel.split('#');
+        const drilledLabel: string = text;
+        const spacing: number = 5;
+        const drillLevelText: string[] = drilledLabel.split('#');
         for (let z: number = 0; z < drillLevelText.length; z++) {
             let drillText: string = (drillLevelText[z].search(options.connectorText) !== -1 && !isNullOrUndefined(options.connectorText)) ?
                 options.connectorText : drillLevelText[z];
             renderOptions['id'] = options.id + '_' + z;
             htmlObject = createTextStyle(renderer, renderOptions, drillText);
             if (z % 2 === 0 && z !== 0) {
-                let re: RegExp = /\s+/g;
+                const re: RegExp = /\s+/g;
                 drillText = drillText.replace(re, '&nbsp');
             }
-            let size: Size = measureText(drillText, font);
+            const size: Size = measureText(drillText, font);
             renderOptions['x'] = z !== 0 ? renderOptions['x'] + size.width : renderOptions['x'] + size.width + spacing;
             parent.appendChild(htmlObject);
         }
@@ -307,15 +326,16 @@ export function renderTextElement(
 export function getElement(id: string): Element {
     return document.getElementById(id);
 }
-/* tslint:disable:no-string-literal */
-export function itemsToOrder(a: Object, b: Object): number {
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function itemsToOrder(a: any, b: any): number {
     return a['weight'] === b['weight'] ? 0 : a['weight'] < b['weight'] ? 1 : -1;
 }
 
-
-export function isContainsData(source: string[], pathName: string, processData: Object, treemap: TreeMap): boolean {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isContainsData(source: string[], pathName: string, processData: any, treemap: TreeMap): boolean {
     let isExist: boolean = false; let name: string = ''; let path: string;
-    let leaf: LeafItemSettingsModel = treemap.leafItemSettings; for (let i: number = 0; i < source.length; i++) {
+    const leaf: LeafItemSettingsModel = treemap.leafItemSettings; for (let i: number = 0; i < source.length; i++) {
         path = treemap.levels[i] ? treemap.levels[i].groupPath : leaf.labelPath ? leaf.labelPath : treemap.weightValuePath;
         if (source[i] === processData[path]) {
             name += (processData[path]) + (i === source.length - 1 ? '' : '#');
@@ -328,11 +348,13 @@ export function isContainsData(source: string[], pathName: string, processData: 
     return isExist;
 }
 
-export function findChildren(data: Object): Object {
-    let children: Object;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function findChildren(data: any): any {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let children: any;
     if (data) {
-        let keys: string[] = Object.keys(data);
-        children = new Object();
+        const keys: string[] = Object.keys(data);
+        children = {};
         for (let i: number = 0; i < keys.length; i++) {
             if (data[keys[i]] instanceof Array) {
                 children['values'] = data[keys[i]];
@@ -344,10 +366,12 @@ export function findChildren(data: Object): Object {
     return children;
 }
 
-export function findHightLightItems(data: Object, items: string[], mode: string, treeMap: TreeMap): string[] {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function findHightLightItems(data: any, items: string[], mode: string, treeMap: TreeMap): string[] {
     if (mode === 'Child') {
         items.push(data['levelOrderName']);
-        let children: Object[] = findChildren(data)['values'];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const children: any[] = findChildren(data)['values'];
         if (children && children.length > 0) {
             for (let i: number = 0; i < children.length; i++) {
                 if (items.indexOf(children[i]['levelOrderName']) === -1) {
@@ -364,8 +388,9 @@ export function findHightLightItems(data: Object, items: string[], mode: string,
             findHightLightItems(data['parent'], items, mode, treeMap);
         }
     } else if (mode === 'All') {
-        let parentName: string = (data['levelOrderName'] as string).split('#')[0];
-        let currentItem: Object;
+        const parentName: string = (data['levelOrderName'] as string).split('#')[0];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let currentItem: any;
         for (let i: number = 0; i < treeMap.layout.renderItems.length; i++) {
             currentItem = treeMap.layout.renderItems[i];
             if ((currentItem['levelOrderName']).indexOf(parentName) > -1 && items.indexOf(currentItem['levelOrderName']) === -1) {
@@ -380,12 +405,17 @@ export function findHightLightItems(data: Object, items: string[], mode: string,
 
 /**
  * Function to compile the template function for maps.
- * @returns Function
+ *
+ * @param {string} template - Specifies the template
+ * @returns {Function} - Returns the template function
  * @private
  */
-export function getTemplateFunction(template: string): Function {
-    let templateFn: Function = null;
-    let e: Object;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getTemplateFunction(template: string): any {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let templateFn: any = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let e: any;
     try {
         if (document.querySelectorAll(template).length) {
             templateFn = compile(document.querySelector(template).innerHTML.trim());
@@ -398,9 +428,14 @@ export function getTemplateFunction(template: string): Function {
 
 /**
  * @private
+ * @param {HTMLCollection} element - Specifies the element
+ * @param {string} labelId - Specifies the label id
+ * @param {Object} data - Specifies the data
+ * @returns {HTMLElement} - Returns the element
  */
-export function convertElement(element: HTMLCollection, labelId: string, data: Object): HTMLElement {
-    let childElement: HTMLElement = createElement('div', {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function convertElement(element: HTMLCollection, labelId: string, data: any): HTMLElement {
+    const childElement: HTMLElement = createElement('div', {
         id: labelId,
         styles: 'position: absolute;pointer-events: auto;'
     });
@@ -410,21 +445,22 @@ export function convertElement(element: HTMLCollection, labelId: string, data: O
         elementLength--;
     }
     let templateHtml: string = childElement.innerHTML;
-    let keys: Object[] = Object.keys(data);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const keys: any[] = Object.keys(data);
     for (let i: number = 0; i < keys.length; i++) {
-        templateHtml = templateHtml.replace(new RegExp('{{:' + <String>keys[i] + '}}', 'g'), data[keys[i].toString()]);
+        templateHtml = templateHtml.replace(new RegExp('{{:' + <string>keys[i] + '}}', 'g'), data[keys[i].toString()]);
     }
     childElement.innerHTML = templateHtml;
     return childElement;
 }
 
 export function findLabelLocation(rect: Rect, position: LabelPosition, labelSize: Size, type: string, treemap: TreeMap): Location {
-    let location: Location = new Location(0, 0);
-    let padding: number = 5;
-    let paddings: number = 2;
-    let elementRect: ClientRect = treemap.element.getBoundingClientRect();
-    let x: number = (type === 'Template') ? treemap.areaRect.x : 0;
-    let y: number = (type === 'Template') ? treemap.areaRect.y : 0;
+    const location: Location = new Location(0, 0);
+    const padding: number = 5;
+    const paddings: number = 2;
+    const elementRect: ClientRect = treemap.element.getBoundingClientRect();
+    const x: number = (type === 'Template') ? treemap.areaRect.x : 0;
+    const y: number = (type === 'Template') ? treemap.areaRect.y : 0;
     location.x = (Math.abs(x - ((position.indexOf('Left') > -1) ? rect.x + padding : !(position.indexOf('Right') > -1) ?
         rect.x + ((rect.width / 2) - (labelSize.width / 2)) : (rect.x + rect.width) - labelSize.width))) - paddings;
     if (treemap.enableDrillDown && (treemap.renderDirection === 'BottomLeftTopRight'
@@ -440,11 +476,11 @@ export function findLabelLocation(rect: Rect, position: LabelPosition, labelSize
 }
 
 export function measureElement(element: HTMLElement, parentElement: HTMLElement): Size {
-    let size: Size = new Size(0, 0);
+    const size: Size = new Size(0, 0);
     parentElement.appendChild(element);
     size.height = element.offsetHeight;
     size.width = element.offsetWidth;
-    let measureElementId: HTMLElement = document.getElementById(element.id);
+    const measureElementId: HTMLElement = document.getElementById(element.id);
     measureElementId.parentNode.removeChild(measureElementId);
     return size;
 }
@@ -454,18 +490,18 @@ export function getArea(rect: Rect): number {
 }
 
 export function getShortestEdge(input: Rect): number {
-    let container: Rect = convertToContainer(input);
-    let width: number = container.width;
-    let height: number = container.height;
-    let result: number = Math.min(width, height);
+    const container: Rect = convertToContainer(input);
+    const width: number = container.width;
+    const height: number = container.height;
+    const result: number = Math.min(width, height);
     return result;
 }
 
 export function convertToContainer(rect: Rect): Rect {
-    let x: number = rect.x;
-    let y: number = rect.y;
-    let width: number = rect.width;
-    let height: number = rect.height;
+    const x: number = rect.x;
+    const y: number = rect.y;
+    const width: number = rect.width;
+    const height: number = rect.height;
     return {
         x: x,
         y: y,
@@ -475,37 +511,38 @@ export function convertToContainer(rect: Rect): Rect {
 }
 
 export function convertToRect(container: Rect): Rect {
-    let xOffset: number = container.x;
-    let yOffset: number = container.y;
-    let width: number = container.width;
-    let height: number = container.height;
+    const xOffset: number = container.x;
+    const yOffset: number = container.y;
+    const width: number = container.width;
+    const height: number = container.height;
     return {
         x: xOffset,
         y: yOffset,
         width: xOffset + width,
-        height: yOffset + height,
+        height: yOffset + height
     };
 }
 
 export function getMousePosition(pageX: number, pageY: number, element: Element): Location {
-    let elementRect: ClientRect = element.getBoundingClientRect();
-    let pageXOffset: number = element.ownerDocument.defaultView.pageXOffset;
-    let pageYOffset: number = element.ownerDocument.defaultView.pageYOffset;
-    let clientTop: number = element.ownerDocument.documentElement.clientTop;
-    let clientLeft: number = element.ownerDocument.documentElement.clientLeft;
-    let positionX: number = elementRect.left + pageXOffset - clientLeft;
-    let positionY: number = elementRect.top + pageYOffset - clientTop;
+    const elementRect: ClientRect = element.getBoundingClientRect();
+    const pageXOffset: number = element.ownerDocument.defaultView.pageXOffset;
+    const pageYOffset: number = element.ownerDocument.defaultView.pageYOffset;
+    const clientTop: number = element.ownerDocument.documentElement.clientTop;
+    const clientLeft: number = element.ownerDocument.documentElement.clientLeft;
+    const positionX: number = elementRect.left + pageXOffset - clientLeft;
+    const positionY: number = elementRect.top + pageYOffset - clientTop;
     return new Location((pageX - positionX), (pageY - positionY));
 }
 export function colorMap(
     colorMapping: ColorMappingModel[], equalValue: string,
-    value: number | string, weightValuePath: number): object {
-    let fill: string; let paths: string[] = []; let opacity: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    value: number | string, weightValuePath: number): any {
+    let fill: string; const paths: string[] = []; let opacity: string;
     if (isNullOrUndefined(equalValue) && (isNullOrUndefined(value) && isNaN(<number>value))) {
         return null;
     }
     for (let i: number = 0; i < colorMapping.length; i++) {
-        let isEqualColor: boolean = false; let dataValue: number = <number>value;
+        let isEqualColor: boolean = false; const dataValue: number = <number>value;
         if (!isNullOrUndefined(colorMapping[i].from) && !isNullOrUndefined(colorMapping[i].to)
             && !isNullOrUndefined(colorMapping[i].value)) {
             if ((value >= colorMapping[i].from && colorMapping[i].to >= value) && (colorMapping[i].value === equalValue)) {
@@ -555,14 +592,14 @@ export function deSaturationColor(
     weightValuePath: number, colorMapping: ColorMappingModel, color: string, rangeValue: number): string {
     let opacity: number = 1;
     if ((rangeValue >= colorMapping.from && rangeValue <= colorMapping.to)) {
-        let ratio: number = (rangeValue - colorMapping.from) / (colorMapping.to - colorMapping.from);
+        const ratio: number = (rangeValue - colorMapping.from) / (colorMapping.to - colorMapping.from);
         opacity = (ratio * (colorMapping.maxOpacity - colorMapping.minOpacity)) + colorMapping.minOpacity;
     }
     return opacity.toString();
 }
 
 export function colorCollections(colorMap: ColorMappingModel, value: number): string {
-    let gradientFill: string = getColorByValue(colorMap, value);
+    const gradientFill: string = getColorByValue(colorMap, value);
     return gradientFill;
 }
 
@@ -584,12 +621,11 @@ export function getColorByValue(colorMap: ColorMappingModel, value: number): str
     return color;
 }
 
-/* tslint:disable-next-line:max-func-body-length */
 export function getGradientColor(value: number, colorMap: ColorMappingModel): ColorValue {
-    let previousOffset: number = colorMap.from;
-    let nextOffset: number = colorMap.to;
+    const previousOffset: number = colorMap.from;
+    const nextOffset: number = colorMap.to;
     let percent: number = 0; let prev1: string;
-    let full: number = nextOffset - previousOffset; let midColor: string; let midreturn: ColorValue;
+    const full: number = nextOffset - previousOffset; let midColor: string; let midreturn: ColorValue;
     percent = (value - previousOffset) / full; let previousColor: string; let nextColor: string;
     if (colorMap.color.length <= 2) {
         previousColor = colorMap.color[0].charAt(0) === '#' ? colorMap.color[0] : colorNameToHex(colorMap.color[0]);
@@ -599,10 +635,11 @@ export function getGradientColor(value: number, colorMap: ColorMappingModel): Co
         previousColor = colorMap.color[0].charAt(0) === '#' ? colorMap.color[0] : colorNameToHex(colorMap.color[0]);
         nextColor = colorMap.color[colorMap.color.length - 1].charAt(0) === '#' ?
             colorMap.color[colorMap.color.length - 1] : colorNameToHex(colorMap.color[colorMap.color.length - 1]);
-        let a: number = full / (colorMap.color.length - 1); let b: number; let c: number;
+        const a: number = full / (colorMap.color.length - 1); let b: number; let c: number;
 
-        let length: number = colorMap.color.length - 1;
-        let splitColorValueOffset: Object[] = []; let splitColor: Object = {};
+        const length: number = colorMap.color.length - 1;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const splitColorValueOffset: any[] = []; let splitColor: any = {};
         for (let j: number = 1; j < length; j++) {
             c = j * a;
             b = previousOffset + c;
@@ -639,23 +676,23 @@ export function getGradientColor(value: number, colorMap: ColorMappingModel): Co
 }
 
 export function getPercentageColor(percent: number, previous: string, next: string): ColorValue {
-    let nextColor: string = next.split('#')[1];
-    let prevColor: string = previous.split('#')[1];
-    let r: number = getPercentage(percent, parseInt(prevColor.substr(0, 2), 16), parseInt(nextColor.substr(0, 2), 16));
-    let g: number = getPercentage(percent, parseInt(prevColor.substr(2, 2), 16), parseInt(nextColor.substr(2, 2), 16));
-    let b: number = getPercentage(percent, parseInt(prevColor.substr(4, 2), 16), parseInt(nextColor.substr(4, 2), 16));
+    const nextColor: string = next.split('#')[1];
+    const prevColor: string = previous.split('#')[1];
+    const r: number = getPercentage(percent, parseInt(prevColor.substr(0, 2), 16), parseInt(nextColor.substr(0, 2), 16));
+    const g: number = getPercentage(percent, parseInt(prevColor.substr(2, 2), 16), parseInt(nextColor.substr(2, 2), 16));
+    const b: number = getPercentage(percent, parseInt(prevColor.substr(4, 2), 16), parseInt(nextColor.substr(4, 2), 16));
     return new ColorValue(r, g, b);
 }
 
 export function getPercentage(percent: number, previous: number, next: number): number {
-    let full: number = next - previous;
+    const full: number = next - previous;
     return Math.round((previous + (full * percent)));
 }
 
 export function wordWrap(maximumWidth: number, dataLabel: string, font: FontModel): string[] {
-    let textCollection: string[] = dataLabel.split(' ');
+    const textCollection: string[] = dataLabel.split(' ');
     let label: string = '';
-    let labelCollection: string[] = [];
+    const labelCollection: string[] = [];
     let text: string;
     for (let i: number = 0, len: number = textCollection.length; i < len; i++) {
         text = textCollection[i];
@@ -677,17 +714,17 @@ export function wordWrap(maximumWidth: number, dataLabel: string, font: FontMode
     return labelCollection;
 }
 export function textWrap(maxWidth: number, label: string, font: FontModel): string[] {
-    let text: string = label;
-    let resultText: string[] = [];
+    const text: string = label;
+    const resultText: string[] = [];
     let currentLength: number = 0;
     let totalWidth: number = measureText(label, font).width;
-    let totalLength: number = label.length;
+    const totalLength: number = label.length;
     if (maxWidth >= totalWidth) {
         resultText.push(label);
         return resultText;
     } else {
         for (let i: number = label.length; i > currentLength; i--) {
-            let sliceString: string = label.slice(currentLength, i);
+            const sliceString: string = label.slice(currentLength, i);
             totalWidth = measureText(sliceString, font).width;
             if (totalWidth <= maxWidth) {
                 resultText.push(sliceString);
@@ -703,10 +740,16 @@ export function textWrap(maxWidth: number, label: string, font: FontModel): stri
 }
 /**
  * hide function
+ *
+ * @param {number} maxWidth - Specifies the maximum width
+ * @param {number} maxHeight - Specifies the maximum height
+ * @param {string} text - Specifies the text
+ * @param {FontModel} font - Specifies the font
+ * @returns {string} - Returns the hideText
  */
 export function hide(maxWidth: number, maxHeight: number, text: string, font: FontModel): string {
     let hideText: string = text;
-    let textSize: Size = measureText(text, font);
+    const textSize: Size = measureText(text, font);
     hideText = (textSize.width > maxWidth || textSize.height > maxHeight) ? ' ' : text;
     return hideText;
 }
@@ -721,7 +764,7 @@ export function orderByArea(a: number, b: number): number {
 }
 
 export function maintainSelection(treemap: TreeMap, element: Element, className: string): void {
-    let elementId: string[] = treemap.levelSelection;
+    const elementId: string[] = treemap.levelSelection;
     if (elementId) {
         for (let index: number = 0; index < elementId.length; index++) {
             if (element.getAttribute('id') === elementId[index]) {
@@ -737,22 +780,22 @@ export function maintainSelection(treemap: TreeMap, element: Element, className:
                 }
             } else {
                 element.setAttribute('class', '');
-                }
+            }
         }
     }
 }
 
 export function legendMaintain(treemap: TreeMap, legendGroup: Element): void {
-    let elementId: string[] = treemap.legendId;
+    const elementId: string[] = treemap.legendId;
     if (elementId) {
         for (let i: number = 0; i < elementId.length; i++) {
             for (let j: number = 0; j < legendGroup.childElementCount; j++) {
                 if (legendGroup.childNodes[j]['id'] === elementId[i]) {
-                    (legendGroup.childNodes[j] as SVGRectElement ).setAttribute('fill', treemap.selectionSettings.fill);
-                    (legendGroup.childNodes[j] as SVGRectElement ).setAttribute('stroke', treemap.selectionSettings.border.color);
-                    (legendGroup.childNodes[j] as SVGRectElement ).setAttribute('stroke-width',
-                                                                                (treemap.selectionSettings.border.width).toString());
-                    (legendGroup.childNodes[j] as SVGRectElement ).setAttribute('opacity', treemap.selectionSettings.opacity);
+                    (legendGroup.childNodes[j] as SVGRectElement).setAttribute('fill', treemap.selectionSettings.fill);
+                    (legendGroup.childNodes[j] as SVGRectElement).setAttribute('stroke', treemap.selectionSettings.border.color);
+                    (legendGroup.childNodes[j] as SVGRectElement).setAttribute('stroke-width',
+                                                                               (treemap.selectionSettings.border.width).toString());
+                    (legendGroup.childNodes[j] as SVGRectElement).setAttribute('opacity', treemap.selectionSettings.opacity);
                 }
             }
         }
@@ -760,12 +803,13 @@ export function legendMaintain(treemap: TreeMap, legendGroup: Element): void {
 }
 
 export function removeClassNames(elements: HTMLCollection, type: string, treemap: TreeMap): void {
-    let opacity: string; let process: boolean = true; let element: SVGPathElement;
+    let opacity: string; const process: boolean = true; let element: SVGPathElement;
     let stroke: string; let strokeWidth: string; let fill: string;
-    let options: Object = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let options: any = {};
     for (let j: number = 0; j < elements.length; j++) {
         element = isNullOrUndefined(elements[j].childNodes[0] as SVGPathElement) ? elements[j] as SVGPathElement :
-        elements[j].childNodes[0] as SVGPathElement;
+            elements[j].childNodes[0] as SVGPathElement;
         options = treemap.layout.renderItems[element.id.split('_')[6]]['options'];
         applyOptions(element, options);
         elements[j].classList.remove(type);
@@ -773,7 +817,8 @@ export function removeClassNames(elements: HTMLCollection, type: string, treemap
     }
 }
 
-export function applyOptions(element: SVGPathElement, options: Object): void {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function applyOptions(element: SVGPathElement, options: any): void {
     element.setAttribute('opacity', options['opacity']);
     if (!isNullOrUndefined(options['fill'])) {
         element.setAttribute('fill', options['fill']);
@@ -782,19 +827,21 @@ export function applyOptions(element: SVGPathElement, options: Object): void {
     element.setAttribute('stroke-width', options['border']['width']);
 }
 
-export function textFormatter(format: string, data: object, treemap: TreeMap): string {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function textFormatter(format: string, data: any, treemap: TreeMap): string {
     if (isNullOrUndefined(format)) {
         return null;
     }
-    let keys: string[] = Object.keys(data);
-    for (let key of keys) {
+    const keys: string[] = Object.keys(data);
+    for (const key of keys) {
         format = format.split('${' + key + '}').join(formatValue(data[key], treemap).toString());
     }
     return format;
 }
 
 export function formatValue(value: number, treemap: TreeMap): string | number {
-    let formatValue: string | number; let formatFunction: Function;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let formatValue: string | number; let formatFunction: any;
     if (treemap.format && !isNaN(Number(value))) {
         formatFunction = treemap.intl.getNumberFormat(
             { format: treemap.format, useGrouping: treemap.useGroupingSeparator });
@@ -805,7 +852,9 @@ export function formatValue(value: number, treemap: TreeMap): string | number {
     return formatValue ? formatValue : '';
 }
 
-/** @private */
+/**
+ * @private
+ */
 export class ColorValue {
     public r: number;
     public g: number;
@@ -817,136 +866,171 @@ export class ColorValue {
     }
 }
 
-/** @private */
+/**
+ * @param {ColorValue} value - Specfies the color value
+ * @returns {string} - Returns the string
+ * @private
+ */
 export function convertToHexCode(value: ColorValue): string {
     return '#' + componentToHex(value.r) + componentToHex(value.g) + componentToHex(value.b);
 }
 
-/** @private */
+/**
+ * @param {number} value - Specifes the value
+ * @returns {string} - Returns the string
+ * @private */
 export function componentToHex(value: number): string {
-    let hex: string = value.toString(16);
+    const hex: string = value.toString(16);
     return hex.length === 1 ? '0' + hex : hex;
 }
 
-/** @private */
+/**
+ * @param {string} hex - Specifies the hex value
+ * @returns {ColorValue} - Returns the color value
+ * @private
+ */
 export function convertHexToColor(hex: string): ColorValue {
-    let result: RegExpExecArray = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    const result: RegExpExecArray = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? new ColorValue(parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)) :
         new ColorValue(255, 255, 255);
 }
 
-/** @private */
+/**
+ * @param {string} color - Specifies the color
+ * @returns {string} - Returns the string
+ * @private
+ */
 export function colorNameToHex(color: string): string {
-    let element: HTMLElement;
     color = color === 'transparent' ? 'white' : color;
-    element = document.getElementById('treeMapMeasureText');
+    const element: HTMLElement = document.getElementById('treeMapMeasureText');
     element.style.color = color;
     color = window.getComputedStyle(element).color;
-    let exp: RegExp = /^(rgb|hsl)(a?)[(]\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*(?:,\s*([\d.]+)\s*)?[)]$/;
-    let isRGBValue: RegExpExecArray = exp.exec(color);
+    const exp: RegExp = /^(rgb|hsl)(a?)[(]\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*(?:,\s*([\d.]+)\s*)?[)]$/;
+    const isRGBValue: RegExpExecArray = exp.exec(color);
     return convertToHexCode(
         new ColorValue(parseInt(isRGBValue[3], 10), parseInt(isRGBValue[4], 10), parseInt(isRGBValue[5], 10))
     );
 }
 
-/** @private */
+/**
+ * @param {Location} location - Specifies the location
+ * @param {string} shape - Specifies the shape
+ * @param {Size} size - Specifies the size
+ * @param {string} url - Specifies the url
+ * @param {PathOption} options - Specifies the options
+ * @param {string} label - Specifies the label
+ * @returns {Element} - Returns the element
+ * @private
+ */
 export function drawSymbol(location: Location, shape: string, size: Size, url: string, options: PathOption, label: string): Element {
-    let functionName: string = 'Path';
-    let svgRenderer: SvgRenderer = new SvgRenderer('');
-    let temp: IShapes = renderLegendShape(location, size, shape, options, url);
-    let htmlElement: Element = svgRenderer['draw' + temp.functionName](temp.renderOption);
+    const functionName: string = 'Path';
+    const svgRenderer: SvgRenderer = new SvgRenderer('');
+    const temp: IShapes = renderLegendShape(location, size, shape, options, url);
+    const htmlElement: Element = svgRenderer['draw' + temp.functionName](temp.renderOption);
     htmlElement.setAttribute('aria-label', label);
     return htmlElement;
 }
-/** @private */
+/**
+ * @param {Location} location - Specifies the location
+ * @param {Size} size - Specifies the size
+ * @param {string} shape - Specifies the shape
+ * @param {PathOption} options - Specifies the path option
+ * @param {string} url - Specifies the string
+ * @returns {IShapes} - Returns the shapes
+ * @private
+ */
 export function renderLegendShape(location: Location, size: Size, shape: string, options: PathOption, url: string): IShapes {
     let renderPath: string;
     let functionName: string = 'Path';
-    let shapeWidth: number = size.width;
-    let shapeHeight: number = size.height;
-    let shapeX: number = location.x;
-    let shapeY: number = location.y;
-    let x: number = location.x + (-shapeWidth / 2);
-    let y: number = location.y + (-shapeHeight / 2);
+    const shapeWidth: number = size.width;
+    const shapeHeight: number = size.height;
+    const shapeX: number = location.x;
+    const shapeY: number = location.y;
+    const x: number = location.x + (-shapeWidth / 2);
+    const y: number = location.y + (-shapeHeight / 2);
     switch (shape) {
-        case 'Circle':
-        case 'Bubble':
-            functionName = 'Ellipse';
-            merge(options, { 'rx': shapeWidth / 2, 'ry': shapeHeight / 2, 'cx': shapeX, 'cy': shapeY });
-            break;
-        case 'VerticalLine':
-            renderPath = 'M' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' + 'L' + ' ' + shapeX + ' '
-                + (shapeY + (-shapeHeight / 2));
-            merge(options, { 'd': renderPath });
-            break;
-        case 'Diamond':
-            renderPath = 'M' + ' ' + x + ' ' + shapeY + ' ' +
-                'L' + ' ' + shapeX + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
-                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + shapeY + ' ' +
-                'L' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + shapeY + ' z';
-            merge(options, { 'd': renderPath });
-            break;
-        case 'Rectangle':
-            renderPath = 'M' + ' ' + x + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
-                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
-                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (shapeY + (-shapeHeight / 2)) + ' z';
-            merge(options, { 'd': renderPath });
-            break;
-        case 'Triangle':
-            renderPath = 'M' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + shapeX + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
-                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' z';
-            merge(options, { 'd': renderPath });
-            break;
-        case 'InvertedTriangle':
-            renderPath = 'M' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + (shapeX - (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' z';
-            merge(options, { 'd': renderPath });
-            break;
-        case 'Pentagon':
-            let eq: number = 72;
-            let xValue: number;
-            let yValue: number;
-            for (let i: number = 0; i <= 5; i++) {
-                xValue = (shapeWidth / 2) * Math.cos((Math.PI / 180) * (i * eq));
-                yValue = (shapeWidth / 2) * Math.sin((Math.PI / 180) * (i * eq));
-                if (i === 0) {
-                    renderPath = 'M' + ' ' + (shapeX + xValue) + ' ' + (shapeY + yValue) + ' ';
-                } else {
-                    renderPath = renderPath.concat('L' + ' ' + (shapeX + xValue) + ' ' + (shapeY + yValue) + ' ');
-                }
+    case 'Circle':
+    case 'Bubble':
+        functionName = 'Ellipse';
+        merge(options, { 'rx': shapeWidth / 2, 'ry': shapeHeight / 2, 'cx': shapeX, 'cy': shapeY });
+        break;
+    case 'VerticalLine':
+        renderPath = 'M' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' + 'L' + ' ' + shapeX + ' '
+            + (shapeY + (-shapeHeight / 2));
+        merge(options, { 'd': renderPath });
+        break;
+    case 'Diamond':
+        renderPath = 'M' + ' ' + x + ' ' + shapeY + ' ' +
+            'L' + ' ' + shapeX + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
+            'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + shapeY + ' ' +
+            'L' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + x + ' ' + shapeY + ' z';
+        merge(options, { 'd': renderPath });
+        break;
+    case 'Rectangle':
+        renderPath = 'M' + ' ' + x + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
+            'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
+            'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + x + ' ' + (shapeY + (-shapeHeight / 2)) + ' z';
+        merge(options, { 'd': renderPath });
+        break;
+    case 'Triangle':
+        renderPath = 'M' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + shapeX + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
+            'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' z';
+        merge(options, { 'd': renderPath });
+        break;
+    case 'InvertedTriangle':
+        renderPath = 'M' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + (shapeX - (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' z';
+        merge(options, { 'd': renderPath });
+        break;
+    case 'Pentagon':
+        // eslint-disable-next-line no-case-declarations
+        const eq: number = 72;
+        // eslint-disable-next-line no-case-declarations
+        let xValue: number;
+        // eslint-disable-next-line no-case-declarations
+        let yValue: number;
+        for (let i: number = 0; i <= 5; i++) {
+            xValue = (shapeWidth / 2) * Math.cos((Math.PI / 180) * (i * eq));
+            yValue = (shapeWidth / 2) * Math.sin((Math.PI / 180) * (i * eq));
+            if (i === 0) {
+                renderPath = 'M' + ' ' + (shapeX + xValue) + ' ' + (shapeY + yValue) + ' ';
+            } else {
+                renderPath = renderPath.concat('L' + ' ' + (shapeX + xValue) + ' ' + (shapeY + yValue) + ' ');
             }
-            renderPath = renderPath.concat('Z');
-            merge(options, { 'd': renderPath });
-            break;
-        case 'Star':
-            renderPath = 'M ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + (location.x - size.width / 2)
-                + ' ' + (location.y + size.height / 6) + ' L ' + (location.x + size.width / 2) + ' ' + (location.y + size.height / 6)
-                + ' L ' + (location.x - size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + location.x + ' ' +
-                (location.y + size.height / 2) + ' L ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' Z';
-            merge(options, { 'd': renderPath });
-            break;
-        case 'Cross':
-            renderPath = 'M' + ' ' + x + ' ' + shapeY + ' ' + 'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + shapeY + ' ' +
-                'M' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' + 'L' + ' ' + shapeX + ' ' +
-                (shapeY + (-shapeHeight / 2));
-            merge(options, { 'd': renderPath });
-            break;
-        case 'Image':
-            functionName = 'Image';
-            merge(options, { 'href': url, 'height': shapeHeight, 'width': shapeWidth, x: x, y: y });
-            break;
+        }
+        renderPath = renderPath.concat('Z');
+        merge(options, { 'd': renderPath });
+        break;
+    case 'Star':
+        renderPath = 'M ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + (location.x - size.width / 2)
+            + ' ' + (location.y + size.height / 6) + ' L ' + (location.x + size.width / 2) + ' ' + (location.y + size.height / 6)
+            + ' L ' + (location.x - size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + location.x + ' ' +
+            (location.y + size.height / 2) + ' L ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' Z';
+        merge(options, { 'd': renderPath });
+        break;
+    case 'Cross':
+        renderPath = 'M' + ' ' + x + ' ' + shapeY + ' ' + 'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + shapeY + ' ' +
+            'M' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' + 'L' + ' ' + shapeX + ' ' +
+            (shapeY + (-shapeHeight / 2));
+        merge(options, { 'd': renderPath });
+        break;
+    case 'Image':
+        functionName = 'Image';
+        merge(options, { 'href': url, 'height': shapeHeight, 'width': shapeWidth, x: x, y: y });
+        break;
     }
     return { renderOption: options, functionName: functionName };
 }
 
-export function isParentItem(data: Object[], item: Object): boolean {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isParentItem(data: any[], item: any): boolean {
     let isParentItem: boolean = false;
     for (let j: number = 0; j < data.length; j++) {
         if (item['levelOrderName'] === data[j]['levelOrderName']) {
@@ -961,7 +1045,8 @@ export function isParentItem(data: Object[], item: Object): boolean {
  */
 export class TreeMapAjax {
     /** options for data */
-    public dataOptions: string | Object;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public dataOptions: string | any;
     /** type of data */
     public type: string;
     /** async value */
@@ -969,8 +1054,10 @@ export class TreeMapAjax {
     /** type of the content */
     public contentType: string;
     /** sending data */
-    public sendData: string | Object;
-    constructor(options: string | Object, type?: string, async?: boolean, contentType?: string, sendData?: string | Object) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public sendData: string | any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    constructor(options: string | any, type?: string, async?: boolean, contentType?: string, sendData?: string | any) {
         this.dataOptions = options;
         this.type = type || 'GET';
         this.async = async || true;
@@ -979,21 +1066,25 @@ export class TreeMapAjax {
     }
 }
 
-export function removeShape(collection: object[], value: string): void {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function removeShape(collection: any[], value: string): void {
     if (collection.length > 0) {
         for (let i: number = 0; i < collection.length; i++) {
-            let item: object = collection[i];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const item: any = collection[i];
             setColor(item['legendEle'], item['oldFill'], item['oldOpacity'], item['oldBorderColor'], item['oldBorderWidth']);
         }
     }
 }
 
-export function removeLegend(collection: object[], value: string): void {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function removeLegend(collection: any[], value: string): void {
     if (collection.length > 0) {
         for (let j: number = 0; j < collection.length; j++) {
-            let item: object = collection[j];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const item: any = collection[j];
             setColor(item['legendEle'], item['oldFill'], item['oldOpacity'], item['oldBorderColor'], item['oldBorderWidth']);
-            let dataCount: number = item['ShapeCollection']['Elements'].length;
+            const dataCount: number = item['ShapeCollection']['Elements'].length;
             for (let k: number = 0; k < dataCount; k++) {
                 setColor(
                     item['ShapeCollection']['Elements'][k], item['shapeOldFill'], item['shapeOldOpacity'],
@@ -1010,16 +1101,18 @@ export function setColor(element: Element, fill: string, opacity: string, border
     element.setAttribute('stroke-width', borderWidth);
 }
 
-export function removeSelectionWithHighlight(collection: object[], element: object[], treemap: TreeMap): void {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function removeSelectionWithHighlight(collection: any[], element: any[], treemap: TreeMap): void {
     removeShape(collection, 'highlight');
     element = [];
     removeClassNames(document.getElementsByClassName('treeMapHighLight'), 'treeMapHighLight', treemap);
 }
 
-export function getLegendIndex(length: number, item: object, treemap: TreeMap): number {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getLegendIndex(length: number, item: any, treemap: TreeMap): number {
     let index: number;
     for (let i: number = 0; i < length; i++) {
-        let dataLength: number = treemap.treeMapLegendModule.legendCollections[i]['legendData'].length;
+        const dataLength: number = treemap.treeMapLegendModule.legendCollections[i]['legendData'].length;
         for (let j: number = 0; j < dataLength; j++) {
             if (treemap.treeMapLegendModule.legendCollections[i]['legendData'][j]['levelOrderName'] === item['levelOrderName']) {
                 index = i;
@@ -1031,8 +1124,10 @@ export function getLegendIndex(length: number, item: object, treemap: TreeMap): 
 }
 
 export function pushCollection(
-    collection: object[], index: number, number: number, legendElement: Element, shapeElement: Element,
-    renderItems: object[], legendCollection: object[]): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    collection: any[], index: number, number: number, legendElement: Element, shapeElement: Element,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    renderItems: any[], legendCollection: any[]): void {
     collection.push({
         legendEle: legendElement, oldFill: legendCollection[index]['legendFill'],
         oldOpacity: legendCollection[index]['opacity'], oldBorderColor: legendCollection[index]['borderColor'],
@@ -1046,24 +1141,27 @@ export function pushCollection(
 
 /**
  * To trigger the download element
- * @param fileName 
- * @param type 
- * @param url 
+ *
+ * @param {string} fileName - Specifies the file name
+ * @param {ExportType} type - Specifies the type
+ * @param {string} url - Specifies the url
+ * @param {boolean} isDownload - Specifies the boolean value
+ * @returns {void}
  */
 export function triggerDownload(fileName: string, type: ExportType, url: string, isDownload: boolean): void {
-        createElement('a', {
-            attrs: {
-                'download': fileName + '.' + (type as string).toLocaleLowerCase(),
-                'href': url
-            }
-        }).dispatchEvent(new MouseEvent(isDownload ? 'click' : 'move', {
-            view: window,
-            bubbles: false,
-            cancelable: true
-        }));
-    }
+    createElement('a', {
+        attrs: {
+            'download': fileName + '.' + (type as string).toLocaleLowerCase(),
+            'href': url
+        }
+    }).dispatchEvent(new MouseEvent(isDownload ? 'click' : 'move', {
+        view: window,
+        bubbles: false,
+        cancelable: true
+    }));
+}
 
-    export function removeElement(id: string): void {
-        let element: Element = document.getElementById(id);
-        return element ? remove(element) : null;
-    }
+export function removeElement(id: string): void {
+    const element: Element = document.getElementById(id);
+    return element ? remove(element) : null;
+}

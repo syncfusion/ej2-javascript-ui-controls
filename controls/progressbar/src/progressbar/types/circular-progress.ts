@@ -1,3 +1,6 @@
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable valid-jsdoc */
 import { ProgressBar } from '../../progressbar';
 import { ProgressAnimation } from '../utils/progress-animation';
 import { PathOption, getElement, Size, measureText } from '@syncfusion/ej2-svg-base';
@@ -27,18 +30,11 @@ export class Circular {
     }
     /** To render the circular track */
     public renderCircularTrack(): void {
-        let progress: ProgressBar = this.progress;
-        let circularTrackGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_CircularTrackGroup' });
+        const progress: ProgressBar = this.progress;
+        const circularTrackGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_CircularTrackGroup' });
         let radius: number;
-        let startAngle: number;
         let endAngle: number;
-        let circularTrack: Element;
-        let circularPath: string;
-        let option: PathOption;
-        let fill: string;
-        let strokeWidth: number;
-        let stroke: string;
-        startAngle = progress.startAngle;
+        const startAngle: number = progress.startAngle;
         progress.totalAngle = (progress.endAngle - progress.startAngle) % 360;
         progress.totalAngle = (progress.totalAngle <= 0 ? (360 + progress.totalAngle) : progress.totalAngle);
         progress.totalAngle -= (progress.totalAngle === 360) ? 0.01 : 0;
@@ -51,16 +47,18 @@ export class Circular {
         this.availableSize = (Math.min(progress.progressRect.height, progress.progressRect.width) / 2) - this.maxThickness / 2;
         radius = stringToNumber(progress.radius, this.availableSize);
         radius = (radius === null) ? 0 : radius;
-        stroke = (progress.argsData.trackColor || progress.themeStyle.circularTrackColor);
-        fill = (progress.enablePieProgress) ? (progress.argsData.trackColor || progress.themeStyle.circularTrackColor) : 'none';
-        strokeWidth = (progress.enablePieProgress) ? 0 : (progress.trackThickness || progress.themeStyle.circularTrackThickness);
-        circularPath = getPathArc(this.centerX, this.centerY, radius, startAngle, endAngle, progress.enableRtl, progress.enablePieProgress);
+        const stroke: string = (progress.argsData.trackColor || progress.themeStyle.circularTrackColor);
+        const fill: string = (progress.enablePieProgress) ? (progress.argsData.trackColor || progress.themeStyle.circularTrackColor) : 'none';
+        const strokeWidth: number = (progress.enablePieProgress) ? 0 :
+            (progress.trackThickness || progress.themeStyle.circularTrackThickness);
+        const circularPath: string = getPathArc(
+            this.centerX, this.centerY, radius, startAngle, endAngle, progress.enableRtl, progress.enablePieProgress);
         this.isRange = (this.progress.rangeColors[0].color !== '' || this.progress.rangeColors[0].start !== null ||
             this.progress.rangeColors[0].end !== null);
-        option = new PathOption(
+        const option: PathOption = new PathOption(
             progress.element.id + '_Circulartrack', fill, strokeWidth, stroke, progress.themeStyle.trackOpacity, '0', circularPath
         );
-        circularTrack = progress.renderer.drawPath(option);
+        const circularTrack: Element = progress.renderer.drawPath(option);
         progress.trackWidth = (<SVGPathElement>circularTrack).getTotalLength();
         if (progress.segmentCount > 1 && !progress.enableProgressSegments && !progress.enablePieProgress && !this.isRange) {
             progress.segmentSize = progress.calculateSegmentSize(progress.trackWidth, strokeWidth);
@@ -75,16 +73,15 @@ export class Circular {
 
     /** To render the circular progress */
     public renderCircularProgress(previousEnd?: number, previousTotalEnd?: number, refresh?: boolean): void {
-        let progress: ProgressBar = this.progress;
-        let startAngle: number = progress.startAngle;
+        const progress: ProgressBar = this.progress;
+        const startAngle: number = progress.startAngle;
         let endAngle: number; let totalAngle: number;
         let radius: number; let previousPath: string;
-        let progressTotalAngle: number; let circularPath: string;
+        let progressTotalAngle: number;
         let progressEnd: number; let circularProgress: Element;
-        let option: PathOption; let linearClipPath: Element;
-        let stroke: string; let circularProgressGroup: Element;
-        let fill: string; let strokeWidth: number;
-        let segmentWidth: number; let progressEndAngle: number; let thickness: number;
+        let linearClipPath: Element;
+        let circularProgressGroup: Element;
+        let segmentWidth: number;
         if (!refresh) {
             circularProgressGroup = progress.renderer.createGroup({ 'id': progress.element.id + '_CircularProgressGroup' });
         } else {
@@ -93,19 +90,20 @@ export class Circular {
         radius = stringToNumber(progress.innerRadius, this.availableSize);
         radius = (radius === null) ? 0 : radius;
         progress.previousTotalEnd = progressEnd = progress.calculateProgressRange(progress.argsData.value);
-        progressEndAngle = (progress.startAngle + ((progress.enableRtl) ? -progressEnd : progressEnd)) % 360;
+        const progressEndAngle: number = (progress.startAngle + ((progress.enableRtl) ? -progressEnd : progressEnd)) % 360;
         progress.previousEndAngle = endAngle = ((progress.isIndeterminate && !progress.enableProgressSegments) ? (progress.startAngle + (
             (progress.enableRtl) ? -progress.totalAngle : progress.totalAngle)) % 360 : progressEndAngle
         );
         progressTotalAngle = (progressEnd - progress.startAngle) % 360;
         progressTotalAngle = (progressTotalAngle <= 0 ? (360 + progressTotalAngle) : progressTotalAngle);
         progressTotalAngle -= (progressTotalAngle === 360) ? 0.01 : 0;
-        circularPath = getPathArc(this.centerX, this.centerY, radius, startAngle, endAngle, progress.enableRtl, progress.enablePieProgress);
-        stroke = this.checkingCircularProgressColor();
-        fill = (progress.enablePieProgress) ? stroke : 'none';
-        thickness = (progress.progressThickness || progress.themeStyle.circularProgressThickness);
-        strokeWidth = (progress.enablePieProgress) ? 0 : thickness;
-        option = new PathOption(
+        const circularPath: string = getPathArc(
+            this.centerX, this.centerY, radius, startAngle, endAngle, progress.enableRtl, progress.enablePieProgress);
+        const stroke: string = this.checkingCircularProgressColor();
+        const fill: string = (progress.enablePieProgress) ? stroke : 'none';
+        const thickness: number = (progress.progressThickness || progress.themeStyle.circularProgressThickness);
+        const strokeWidth: number = (progress.enablePieProgress) ? 0 : thickness;
+        const option: PathOption = new PathOption(
             progress.element.id + '_Circularprogress', fill, strokeWidth, stroke, progress.themeStyle.progressOpacity, '0', circularPath
         );
         progress.progressWidth = (<SVGPathElement>progress.renderer.drawPath(option)).getTotalLength();
@@ -142,7 +140,7 @@ export class Circular {
             circularProgressGroup.appendChild(circularProgress);
             if (progress.isActive && !progress.isIndeterminate && !progress.enablePieProgress) {
                 this.renderActiveState(
-                    circularProgressGroup, radius, strokeWidth, circularPath, progressEndAngle, progressEnd, refresh,
+                    circularProgressGroup, radius, strokeWidth, circularPath, progressEndAngle, progressEnd, refresh
                 );
             }
             if (progress.animation.enable || progress.isIndeterminate) {
@@ -177,27 +175,20 @@ export class Circular {
     /** To render the circular buffer */
     private renderCircularBuffer(progress: ProgressBar, radius: number, progressTotalAngle: number): void {
         let bufferClipPath: Element;
-        let bufferEnd: number;
         let circularBuffer: Element;
-        let circularBufferGroup: Element;
-        let circularPath: string;
-        let option: PathOption;
-        let fill: string;
-        let strokeWidth: number;
         let segmentWidth: number;
         let totalAngle: number;
-        let endAngle: number;
-        let stroke: string;
-        circularBufferGroup = progress.renderer.createGroup({ 'id': progress.element.id + '_ CircularBufferGroup' });
-        bufferEnd = progress.calculateProgressRange(progress.secondaryProgress);
-        endAngle = (progress.startAngle + ((progress.enableRtl) ? -bufferEnd : bufferEnd)) % 360;
-        circularPath = getPathArc(
+        const circularBufferGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_ CircularBufferGroup' });
+        const bufferEnd: number = progress.calculateProgressRange(progress.secondaryProgress);
+        const endAngle: number = (progress.startAngle + ((progress.enableRtl) ? -bufferEnd : bufferEnd)) % 360;
+        const circularPath: string = getPathArc(
             this.centerX, this.centerY, radius, progress.startAngle, endAngle, progress.enableRtl, progress.enablePieProgress
         );
-        stroke = this.checkingCircularProgressColor();
-        fill = (progress.enablePieProgress) ? stroke : 'none';
-        strokeWidth = (progress.enablePieProgress) ? 0 : (progress.progressThickness || progress.themeStyle.circularProgressThickness);
-        option = new PathOption(
+        const stroke: string = this.checkingCircularProgressColor();
+        const fill: string = (progress.enablePieProgress) ? stroke : 'none';
+        const strokeWidth: number = (progress.enablePieProgress) ? 0 :
+            (progress.progressThickness || progress.themeStyle.circularProgressThickness);
+        const option: PathOption = new PathOption(
             progress.element.id + '_Circularbuffer', fill, strokeWidth, stroke,
             progress.themeStyle.bufferOpacity, '0', circularPath
         );
@@ -234,23 +225,19 @@ export class Circular {
     public renderCircularLabel(): void {
         let end: number;
         let circularLabel: Element;
-        let circularValue: number;
         let centerY: number;
-        let argsData: ITextRenderEventArgs;
         let textSize: Size;
-        let labelValue: number;
         let option: TextOption;
-        let circularLabelGroup: Element;
-        let percentage: number = 100;
-        let progress: ProgressBar = this.progress;
-        let labelText: string = progress.labelStyle.text;
-        circularLabelGroup = progress.renderer.createGroup({ 'id': progress.element.id + '_CircularLabelGroup' });
+        const percentage: number = 100;
+        const progress: ProgressBar = this.progress;
+        const labelText: string = progress.labelStyle.text;
+        const circularLabelGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_CircularLabelGroup' });
         if (document.getElementById(circularLabelGroup.id)) {
             document.getElementById(circularLabelGroup.id).remove();
         }
-        labelValue = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
-        circularValue = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : Math.round(labelValue);
-        argsData = {
+        const labelValue: number = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
+        const circularValue: number = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : Math.round(labelValue);
+        const argsData: ITextRenderEventArgs = {
             cancel: false, text: labelText ? labelText : String(circularValue) + '%', color: progress.labelStyle.color
         };
         progress.trigger('textRender', argsData);
@@ -281,10 +268,9 @@ export class Circular {
         endAngle: number, totalEnd: number, refresh: boolean
     ): void {
         let circularActive: Element;
-        let activeClip: Element;
         let option: PathOption;
-        let progress: ProgressBar = this.progress;
-        let thickness: number = strokeWidth + 1;
+        const progress: ProgressBar = this.progress;
+        const thickness: number = strokeWidth + 1;
         if (!refresh) {
             option = new PathOption(
                 progress.element.id + '_CircularActiveProgress', 'none', thickness, '#ffffff', 0.5, '0', circularPath
@@ -300,7 +286,7 @@ export class Circular {
         if (progress.cornerRadius === 'Round') {
             circularActive.setAttribute('stroke-linecap', 'round');
         }
-        activeClip = progress.createClipPath(progress.clipPath, null, '', refresh);
+        const activeClip: Element = progress.createClipPath(progress.clipPath, null, '', refresh);
         circularActive.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
         progressGroup.appendChild(circularActive);
         progressGroup.appendChild(progress.clipPath);
@@ -313,9 +299,8 @@ export class Circular {
     /** Checking the segment size */
     private validateSegmentSize(progress: ProgressBar, thickness: number): string {
         let validSegment: string;
-        let rDiff: number;
         let progressSegment: number;
-        rDiff = parseInt(progress.radius, 10) - parseInt(progress.innerRadius, 10);
+        const rDiff: number = parseInt(progress.radius, 10) - parseInt(progress.innerRadius, 10);
         if (rDiff !== 0 && !progress.enableProgressSegments) {
             progressSegment = progress.trackWidth + (
                 (rDiff < 0) ? (progress.trackWidth * Math.abs(rDiff)) / parseInt(progress.radius, 10) :
@@ -333,25 +318,24 @@ export class Circular {
     /** checking progress color */
     private checkingCircularProgressColor(): string {
         let circularColor: string;
-        let progress: ProgressBar = this.progress;
-        let role: ModeType = progress.role;
+        const progress: ProgressBar = this.progress;
+        const role: ModeType = progress.role;
         switch (role) {
-            case 'Success':
+        case 'Success':
             circularColor = progress.themeStyle.success;
-                break;
-            case 'Info':
+            break;
+        case 'Info':
             circularColor = progress.themeStyle.info;
-                break;
-            case 'Warning':
+            break;
+        case 'Warning':
             circularColor = progress.themeStyle.warning;
-                break;
-            case 'Danger':
+            break;
+        case 'Danger':
             circularColor = progress.themeStyle.danger;
-                break;
-            default:
+            break;
+        default:
             circularColor = (progress.argsData.progressColor || progress.themeStyle.circularProgressColor);
         }
         return circularColor;
     }
-
 }

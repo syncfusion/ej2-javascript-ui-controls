@@ -1,4 +1,6 @@
-//tslint:disable
+/* eslint-disable valid-jsdoc */
+/* eslint-disable @typescript-eslint/dot-notation */
+/* eslint-disable max-len */
 import { Maps } from '../../index';
 import {
     findMidPointOfPolygon, Rect, filter, getTemplateFunction, getZoomTranslate,
@@ -17,21 +19,27 @@ export class DataLabel {
     private dataLabelObject: Element;
     /**
      * Datalabel collections
+     *
      * @private
      */
-    public dataLabelCollections: Object[];
-    private value: object = { rightWidth: 0, leftWidth: 0, heightTop: 0, heightBottom: 0 };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public dataLabelCollections: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private value: any = { rightWidth: 0, leftWidth: 0, heightTop: 0, heightBottom: 0 };
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(maps: Maps) {
         this.maps = maps;
         this.dataLabelCollections = [];
     }
-    //tslint:disable:max-func-body-length
-    private getDataLabel(dataSource: object[], labelPath: string, shapeName: string, shapeDataPath: string): object {
-        let text: object; let shapeNameValue : string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private getDataLabel(dataSource: any[], labelPath: string, shapeName: string, shapeDataPath: string): any {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let text: any; let shapeNameValue : string;
         for (let i: number = 0; i < dataSource.length; i++) {
-            let data: object = dataSource[i]; let dataShapePathValue : string;
-            dataShapePathValue = !isNullOrUndefined(data[shapeDataPath]) && isNaN(data[shapeDataPath]) ?
-            data[shapeDataPath].toLowerCase() : data[shapeDataPath];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const data: any = dataSource[i];
+            const dataShapePathValue : string = !isNullOrUndefined(data[shapeDataPath]) && isNaN(data[shapeDataPath]) ?
+                data[shapeDataPath].toLowerCase() : data[shapeDataPath];
             shapeName = !isNullOrUndefined(shapeName) ? shapeName.toString() : shapeName;
             shapeNameValue = !isNullOrUndefined(shapeName) ? shapeName.toLowerCase() : shapeName;
             if ((dataShapePathValue) === shapeNameValue) {
@@ -43,81 +51,98 @@ export class DataLabel {
     }
     /**
      * To render label for maps
-     * @param layer 
-     * @param layerIndex 
-     * @param shape 
-     * @param layerData 
-     * @param group 
-     * @param labelTemplateElement 
-     * @param index 
+     *
+     * @param layer
+     * @param layerIndex
+     * @param shape
+     * @param layerData
+     * @param group
+     * @param labelTemplateElement
+     * @param index
+     * @param intersect
      */
     public renderLabel(
-        layer: LayerSettings, layerIndex: number, shape: object,
-        layerData: object[], group: Element, labelTemplateElement: HTMLElement, index: number, intersect: object[]
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        layer: LayerSettings, layerIndex: number, shape: any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        layerData: any[], group: Element, labelTemplateElement: HTMLElement, index: number, intersect: any[]
     ): void {
-        let dataLabel: DataLabelSettingsModel = layer.dataLabelSettings;
-        let style: FontModel = layer.dataLabelSettings.textStyle;
+        const dataLabel: DataLabelSettingsModel = layer.dataLabelSettings;
+        const style: FontModel = layer.dataLabelSettings.textStyle;
         let markerEle: Element;
-        let templateFn: Function;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let templateFn: any;
         let options: TextOption;
-        let dataLabelSettings: DataLabelSettingsModel = layer.dataLabelSettings;
-        let labelpath: string = layer.dataLabelSettings.labelPath;
+        const dataLabelSettings: DataLabelSettingsModel = layer.dataLabelSettings;
+        const labelpath: string = layer.dataLabelSettings.labelPath;
         let shapePoint: [MapLocation[]] = [[]];
         let midIndex: number = 0;
         let pointsLength: number = 0;
-        let shapeData: object = shape;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const shapeData: any = shape;
         let element: Element;
-        let data: object;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let data: any;
         let text: string = '';
-        let datasrcObj: object;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let datasrcObj: any;
         let currentLength: number = 0; let oldIndex : number;
-        let location: object; let sublayerIndexLabel : Boolean = false;
-        let shapeProperties: object = shape['properties'];
-        let labelId: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + index + '_LabelIndex_' + index;
-        let textLocation: Point = new Point(0, 0);
-        /* tslint:disable:no-string-literal */
-        let shapes: object = layerData[index]; let locationX: object; let locationY: object;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let location: any;
+        let sublayerIndexLabel : boolean = false;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const shapeProperties: any = shape['properties'];
+        const labelId: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + index + '_LabelIndex_' + index;
+        const textLocation: Point = new Point(0, 0);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const shapes: any = layerData[index]; let locationX: any; let locationY: any;
         style.fontFamily = this.maps.theme.toLowerCase() !== 'material' ? this.maps.themeStyle.labelFontFamily : style.fontFamily;
         shape = shapes['property'];
-        let properties: string[] = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
+        const properties: string[] = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
             layer.shapePropertyPath : [layer.shapePropertyPath]) as string[];
         let propertyPath: string; let isPoint : boolean = false;
-        let animate: boolean = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-        let translate: Object = (this.maps.isTileMap) ? new Object() : ((this.maps.zoomSettings.zoomFactor > 1 &&
+        const animate: boolean = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const translate: any = (this.maps.isTileMap) ? new Object() : ((this.maps.zoomSettings.zoomFactor > 1 &&
             !isNullOrUndefined(this.maps.zoomModule)) ? getZoomTranslate(this.maps, layer, animate) :
             getTranslate(this.maps, layer, animate));
-        let scale: number = (this.maps.isTileMap) ? this.maps.scale : translate['scale'];
-        let transPoint: Point = (this.maps.isTileMap) ? this.maps.translatePoint : translate['location'] as Point;
-        let zoomTransPoint : Point = this.maps.zoomTranslatePoint; let shapeWidth: number;
-        let scaleZoomValue : number = !isNullOrUndefined(this.maps.scale)  ? Math.floor(this.maps.scale) : 1;
-        let zoomLabelsPosition : Boolean = this.maps.zoomSettings.enable ? !isNullOrUndefined(this.maps.zoomShapeCollection) &&
+        const scale: number = (this.maps.isTileMap) ? this.maps.scale : translate['scale'];
+        const transPoint: Point = (this.maps.isTileMap) ? this.maps.translatePoint : translate['location'] as Point;
+        const zoomTransPoint : Point = this.maps.zoomTranslatePoint; let shapeWidth: number;
+        const scaleZoomValue : number = !isNullOrUndefined(this.maps.scale)  ? Math.floor(this.maps.scale) : 1;
+        const zoomLabelsPosition : boolean = this.maps.zoomSettings.enable ? !isNullOrUndefined(this.maps.zoomShapeCollection) &&
         this.maps.zoomShapeCollection.length > 0 : this.maps.zoomSettings.enable; this.maps.translateType = 'labels';
         for (let j: number = 0; j < properties.length; j++) {
             if (shapeProperties[properties[j]]) {
                 propertyPath = properties[j];
                 datasrcObj = this.getDataLabel(
-                    layer.dataSource as object[], layer.shapeDataPath, shapeData['properties'][propertyPath], layer.shapeDataPath);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    layer.dataSource as any[], layer.shapeDataPath, shapeData['properties'][propertyPath], layer.shapeDataPath);
                 if (datasrcObj) {
                     break;
                 }
             }
         }
         datasrcObj = this.getDataLabel(
-            layer.dataSource as object[], layer.shapeDataPath, shapeData['properties'][propertyPath], layer.shapeDataPath);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            layer.dataSource as any[], layer.shapeDataPath, shapeData['properties'][propertyPath], layer.shapeDataPath);
         if (!isNullOrUndefined(shapes['property'])) {
             shapePoint = [[]];
             if (!layerData[index]['_isMultiPolygon'] && layerData[index]['type'] !== 'Point') {
-                shapePoint.push(this.getPoint(layerData[index] as object[], []));
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                shapePoint.push(this.getPoint(layerData[index] as any[], []));
                 currentLength = shapePoint[shapePoint.length - 1].length;
                 if (pointsLength < currentLength) {
                     pointsLength = currentLength;
                     midIndex = shapePoint.length - 1;
                 }
             } else {
-                let layer: Object[] = <Object[]>layerData[index];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const layer: any[] = <any[]>layerData[index];
                 if (layer['type'] === 'Point') {
                     isPoint = true;
-                    let layerPoints: Object[] = [];
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const layerPoints: any[] = [];
                     layerPoints.push(this.getPoint(layerData, []));
                     shapePoint = <[MapLocation[]]>layerPoints;
                     currentLength = shapePoint[shapePoint.length - 1].length;
@@ -127,7 +152,8 @@ export class DataLabel {
                     }
                 }
                 for (let j: number = 0; j < layer.length; j++) {
-                    shapePoint.push(this.getPoint(layer[j] as Object[], []));
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    shapePoint.push(this.getPoint(layer[j] as any[], []));
                     currentLength = shapePoint[shapePoint.length - 1].length;
                     if (pointsLength < currentLength) {
                         pointsLength = currentLength;
@@ -140,18 +166,18 @@ export class DataLabel {
             datasrcObj[layer.shapeDataPath].toString() : datasrcObj[layer.shapeDataPath] : shapeData['properties'][labelpath];
         if ((Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]') &&
             (isNullOrUndefined(text) && layer.dataSource['length'] === 0)) {
-          for(var l = 0; l < layer.shapePropertyPath.length; l++) {
-              if (shapeData['properties'][layer.shapePropertyPath[l]]) {
-                  text = shapeData['properties'][layer.shapePropertyPath[l]];
-                  break;
-              }
-          }
+            for (let l: number = 0; l < layer.shapePropertyPath.length; l++) {
+                if (shapeData['properties'][layer.shapePropertyPath[l]]) {
+                    text = shapeData['properties'][layer.shapePropertyPath[l]];
+                    break;
+                }
+            }
         }
-        if (isNullOrUndefined(text) && (layer.dataLabelSettings.template !=="" && layer.dataSource['length'] === 0)) {
+        if (isNullOrUndefined(text) && (layer.dataLabelSettings.template !== '' && layer.dataSource['length'] === 0)) {
             text = shapeData['properties'][layer.shapePropertyPath as string];
         }
-        let dataLabelText : string = text;
-        let projectionType : string = this.maps.projectionType;
+        const dataLabelText : string = text;
+        const projectionType : string = this.maps.projectionType;
         if (isPoint) {
             location = {
                 x: shapePoint[midIndex][index]['x'], y: shapePoint[midIndex][index]['y'],
@@ -161,13 +187,14 @@ export class DataLabel {
             };
         } else {
             location = findMidPointOfPolygon(shapePoint[midIndex], projectionType);
-        }   
-        let firstLevelMapLocation : object = location;
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const firstLevelMapLocation : any = location;
         if (!isNullOrUndefined(text) && !isNullOrUndefined(location)) {
-            if(zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied && dataLabel.template === '') {
-                if(layerIndex > 0){
-                    for(let k : number =0;k<this.maps.zoomLabelPositions.length;k++){
-                        if(this.maps.zoomLabelPositions[k]['dataLabelText'] === text) {
+            if (zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied && dataLabel.template === '') {
+                if (layerIndex > 0){
+                    for (let k : number = 0; k < this.maps.zoomLabelPositions.length; k++){
+                        if (this.maps.zoomLabelPositions[k]['dataLabelText'] === text) {
                             oldIndex = index;
                             index = k;
                             sublayerIndexLabel = true;
@@ -202,48 +229,50 @@ export class DataLabel {
                 if (eventargs.cancel) {
                     return;
                 }
-                let border: Object = { color: 'yellow' };
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const border: any = { color: 'yellow' };
                 let position: MapLocation[] = [];
                 let width: number = zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied
                     && this.maps.zoomShapeCollection.length > index ? this.maps.zoomShapeCollection[index]['width'] :
                     (location['rightMax']['x'] - location['leftMax']['x']) * scale;
-                if(!isNullOrUndefined(this.maps.dataLabelShape)){
+                if (!isNullOrUndefined(this.maps.dataLabelShape)){
                     shapeWidth = firstLevelMapLocation['rightMax']['x'] - firstLevelMapLocation['leftMax']['x'];
                     this.maps.dataLabelShape.push(shapeWidth);
                 }
-                if(eventargs.text !== text && !eventargs.cancel){
+                if (eventargs.text !== text && !eventargs.cancel){
                     text = eventargs.text;
                 }
-                let textSize: Size = measureText(text, style);
+                const textSize: Size = measureText(text, style);
                 let trimmedLable: string = text;
                 let elementSize: Size = textSize;
-                let startY: number = location['y'] - textSize['height'] / 4;
-                let endY: number = location['y'] + textSize['height'] / 4;
-                let start: number = ((location['y'] + transPoint['y']) * scale) - textSize['height'] / 4;
-                let end: number = ((location['y'] + transPoint['y']) * scale) + textSize['height'] / 4;
+                const startY: number = location['y'] - textSize['height'] / 4;
+                const endY: number = location['y'] + textSize['height'] / 4;
+                const start: number = ((location['y'] + transPoint['y']) * scale) - textSize['height'] / 4;
+                const end: number = ((location['y'] + transPoint['y']) * scale) + textSize['height'] / 4;
                 position = filter(shapePoint[midIndex], startY, endY);
                 if (!isPoint && position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
                     (shapeData['type'] !== 'MultiPolygon')) {
-                    let location1: object = findMidPointOfPolygon(position, projectionType);
-                    if(zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied && eventargs.template === '') {
-                            location1['x'] = ((this.maps.zoomLabelPositions[index]['location']['x'] + zoomTransPoint['x']) * scale);
-                            location1['y'] = ((this.maps.zoomLabelPositions[index]['location']['y'] + zoomTransPoint['y']) * scale);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const location1: any = findMidPointOfPolygon(position, projectionType);
+                    if (zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied && eventargs.template === '') {
+                        location1['x'] = ((this.maps.zoomLabelPositions[index]['location']['x'] + zoomTransPoint['x']) * scale);
+                        location1['y'] = ((this.maps.zoomLabelPositions[index]['location']['y'] + zoomTransPoint['y']) * scale);
                     }
                     locationX = location1['x'];
                     location['x'] = location1['x'];
                     width = zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied
                         && this.maps.zoomShapeCollection.length > index ? this.maps.zoomShapeCollection[index]['width'] :
-                    (location1['rightMax']['x'] - location1['leftMax']['x']) * scale;
+                        (location1['rightMax']['x'] - location1['leftMax']['x']) * scale;
                 }
-                let xpositionEnds: number = ((location['x'] + transPoint['x']) * scale) + textSize['width'] / 2;
-                let xpositionStart: number = ((location['x'] + transPoint['x']) * scale) - textSize['width'] / 2;
+                const xpositionEnds: number = ((location['x'] + transPoint['x']) * scale) + textSize['width'] / 2;
+                const xpositionStart: number = ((location['x'] + transPoint['x']) * scale) - textSize['width'] / 2;
                 this.value[index] = { rightWidth: xpositionEnds, leftWidth: xpositionStart, heightTop: start, heightBottom: end };
                 let labelElement: HTMLElement;
                 if (eventargs.template !== '') {
                     templateFn = getTemplateFunction(eventargs.template);
-                    let templateElement: Element = templateFn ? templateFn(!isNullOrUndefined(datasrcObj) ?
+                    const templateElement: Element = templateFn ? templateFn(!isNullOrUndefined(datasrcObj) ?
                         datasrcObj : shapeData['properties'], this.maps, eventargs.template, this.maps.element.id + '_LabelTemplate', false) : document.createElement('div');
-                    templateElement.innerHTML =  !templateFn ? eventargs.template : ''; 
+                    templateElement.innerHTML =  !templateFn ? eventargs.template : '';
                     labelElement = <HTMLElement>convertElementFromLabel(
                         templateElement, labelId, !isNullOrUndefined(datasrcObj) ? datasrcObj : shapeData['properties'], index, this.maps);
                     labelElement.style.left = ((Math.abs(this.maps.baseMapRectBounds['min']['x'] - location['x'])) * scale) + 'px';
@@ -266,12 +295,10 @@ export class DataLabel {
                     if (dataLabelSettings.intersectionAction === 'Hide') {
                         for (let i: number = 0; i < intersect.length; i++) {
                             if (!isNullOrUndefined(intersect[i])) {
-                                if (this.value[index]['leftWidth'] > intersect[i]['rightWidth']
+                                if (!(this.value[index]['leftWidth'] > intersect[i]['rightWidth']
                                     || this.value[index]['rightWidth'] < intersect[i]['leftWidth']
                                     || this.value[index]['heightTop'] > intersect[i]['heightBottom']
-                                    || this.value[index]['heightBottom'] < intersect[i]['heightTop']) {
-                                    text = text;
-                                } else {
+                                    || this.value[index]['heightBottom'] < intersect[i]['heightTop'])) {
                                     text = '';
                                     break;
                                 }
@@ -314,34 +341,35 @@ export class DataLabel {
                         options = new TextOption(labelId, (textLocation.x), (textLocation.y), 'middle', text, '', '');
                     }
                     if (trimmedLable.length > 1) {
-                        let border: object = eventargs.border;
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const border: any = eventargs.border;
                         if (border['width'] > 1) {
-                            let fill: string = eventargs.fill;
-                            let opacity: number = dataLabelSettings.opacity;
-                            let rx: number = dataLabelSettings.rx;
-                            let ry: number = dataLabelSettings.ry;
-                            let x : number ; let y : number; let padding : number = 5;
+                            const fill: string = eventargs.fill;
+                            const opacity: number = dataLabelSettings.opacity;
+                            const rx: number = dataLabelSettings.rx;
+                            const ry: number = dataLabelSettings.ry;
+                            let x : number ; let y : number; const padding : number = 5;
                             if (zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied) {
                                 x = ((location['x'] ) ) - textSize['width'] / 2;
                                 y = ((location['y'] ) ) - textSize['height'] / 2 - padding;
                             } else {
                                 x = ((location['x'] + transPoint['x']) * scale) - textSize['width'] / 2;
-                                y = ((location['y'] + transPoint['y'] )* scale)- textSize['height'] / 2;
-                            } 
-                            let rectOptions: RectOption = new RectOption(
+                                y = ((location['y'] + transPoint['y'] ) * scale) - textSize['height'] / 2;
+                            }
+                            const rectOptions: RectOption = new RectOption(
                                 this.maps.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + index + '_rectIndex_' + index,
                                 fill, border, opacity, new Rect(x, y, textSize['width'], textSize['height']), rx, ry
                             );
-                            let rect: Element = this.maps.renderer.drawRectangle(rectOptions) as SVGRectElement;
+                            const rect: Element = this.maps.renderer.drawRectangle(rectOptions) as SVGRectElement;
                             group.appendChild(rect);
                         }
                     }
                     element = renderTextElement(options, style, style.color || this.maps.themeStyle.dataLabelFontColor, group);
-                    if(zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied){
-                      element.setAttribute('transform', 'translate( ' + ((location['x'] ) ) + ' '
+                    if (zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied){
+                        element.setAttribute('transform', 'translate( ' + ((location['x'] ) ) + ' '
                       + (((location['y'] ) )  ) + ' )');
-                            location['x'] = locationX;
-                            location['y'] = locationY;
+                        location['x'] = locationX;
+                        location['y'] = locationY;
                     } else {
                         element.setAttribute('transform', 'translate( ' + ((location['x'] + transPoint.x) * scale) + ' '
                         + (((location['y'] + transPoint.y) * scale) + (elementSize.height / 4)) + ' )');
@@ -358,27 +386,34 @@ export class DataLabel {
                 });
                 if (labelTemplateElement.childElementCount > 0 && !this.maps.element.contains(labelTemplateElement)) {
                     document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(labelTemplateElement);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (this.maps as any).renderReactTemplates();
                 }
             });
         }
     }
-    private getPoint(shapes: object[], points: MapLocation[]): MapLocation[] {
-        shapes.map((current: object, index: number) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private getPoint(shapes: any[], points: MapLocation[]): MapLocation[] {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        shapes.map((current: any, index: number) => {
             points.push(new Point(current['point']['x'], current['point']['y']));
         });
         return points;
     }
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         return 'DataLabel';
     }
 
     /**
-     * To destroy the layers. 
-     * @return {void}
+     * To destroy the layers.
+     *
+     * @param {Maps} maps - Specifies the instance of the maps.
+     * @returns {void}
      * @private
      */
     public destroy(maps: Maps): void {

@@ -7,9 +7,12 @@ export class Code128A extends Code128 {
 
 
     /**
-     * Validate the given input to check whether the input is valid one or not
+     * Validate the given input.
+     *
+     * @returns {string} Validate the given input.
+     * @param {string} char - provide the input values .
+     * @private
      */
-    /** @private */
     public validateInput(char: string): string {
         if ((new RegExp(`^${'[\x00-\x5F\xC8-\xCF]'}+$`)).test(char)) {
             return undefined;
@@ -18,8 +21,14 @@ export class Code128A extends Code128 {
         }
     }
 
-    /** @private */
+    /**
+     * Draw the barcode SVG.\
+     *
+     * @returns {void} Draw the barcode SVG .
+     * @param {HTMLElement} canvas - Provide the canvas element .
+     * @private
+     */
     public draw(canvas: HTMLElement): void {
-            this.code128(canvas);
+        this.code128(canvas);
     }
 }

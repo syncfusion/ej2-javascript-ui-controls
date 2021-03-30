@@ -53,7 +53,7 @@ export class PdfTrueTypeFont extends PdfFont {
     }
     public getLineWidth(line : string, format : PdfStringFormat) : number {
         let width : number = 0;
-        if (format !== null && format.textDirection !== PdfTextDirection.None) {
+        if (format !== null && typeof format !== 'undefined' && format.textDirection !== PdfTextDirection.None) {
             let returnValue : {success : boolean , width : number } = this.getUnicodeLineWidth(line, /*out*/ width, format);
             width = returnValue.width;
         } else {

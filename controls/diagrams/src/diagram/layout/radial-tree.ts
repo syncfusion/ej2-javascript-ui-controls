@@ -1,3 +1,4 @@
+/* eslint-disable valid-jsdoc */
 import { INode, Layout, Bounds } from './layout-base';
 import { PointModel } from '../primitives/point-model';
 import { HorizontalAlignment, VerticalAlignment } from '../enum/enum';
@@ -6,13 +7,14 @@ import { MarginModel } from '../core/appearance-model';
 
 
 /**
- * Radial Tree 
+ * Radial Tree
  */
 
 export class RadialTree {
 
     /**
      * Constructor for the organizational chart module.
+     *
      * @private
      */
 
@@ -22,7 +24,8 @@ export class RadialTree {
 
     /**
      * To destroy the organizational chart
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
@@ -44,9 +47,15 @@ export class RadialTree {
     }
 
 
-    /**   @private  */
+    /**
+     * @param nodes
+     * @param nameTable
+     * @param layoutProp
+     * @param viewport
+     * @private
+     */
     public updateLayout(nodes: INode[], nameTable: Object, layoutProp: Layout, viewport: PointModel): void {
-        let layout: IRadialLayout = {
+        const layout: IRadialLayout = {
             type: layoutProp.type,
             nameTable: nameTable, anchorX: 0, anchorY: 0,
             firstLevelNodes: [], centerNode: null, levels: [], maxLevel: 0, graphNodes: {}, layoutNodes: [],
@@ -87,13 +96,13 @@ export class RadialTree {
     }
 
     private updateEdges(layout: IRadialLayout, node: INode, depth: number, nameTable: Object): void {
-        let nodeInfo: ILayoutInfo = layout.graphNodes[node.id];
+        const nodeInfo: ILayoutInfo = layout.graphNodes[node.id];
         layout.layoutNodes.push(nodeInfo);
         nodeInfo.level = depth;
         nodeInfo.visited = true;
         layout.maxLevel = Math.max(layout.maxLevel, depth);
         for (let j: number = 0; j < node.outEdges.length; j++) {
-            let edge: INode = nameTable[nameTable[node.outEdges[j]].targetID];
+            const edge: INode = nameTable[nameTable[node.outEdges[j]].targetID];
             if (!edge.excludeFromLayout && !edge.visited) {
                 nodeInfo.children.push(edge);
                 this.updateEdges(layout, edge, depth + 1, nameTable);
@@ -103,7 +112,7 @@ export class RadialTree {
 
     private depthFirstAllignment(layout: IRadialLayout, node: INode, x: number, y: number): PointModel {
         let newValue: PointModel;
-        let nodeInfo: INodeInfo = layout.graphNodes[node.id];
+        const nodeInfo: INodeInfo = layout.graphNodes[node.id];
         if (nodeInfo.children.length) {
             y += 300;
             for (let i: number = 0; i < nodeInfo.children.length; i++) {
@@ -113,7 +122,7 @@ export class RadialTree {
             nodeInfo.children = nodeInfo.children.sort((obj1: INode, obj2: INode) => {
                 return layout.graphNodes[obj1.id].x - layout.graphNodes[obj2.id].x;
             });
-            let min: number = layout.graphNodes[nodeInfo.children[0].id].min;
+            const min: number = layout.graphNodes[nodeInfo.children[0].id].min;
             let max: number = layout.graphNodes[nodeInfo.children[nodeInfo.children.length - 1].id].max;
             nodeInfo.x = min + (max - min) / 2;
             x = max + layout.horizontalSpacing;
@@ -148,11 +157,13 @@ export class RadialTree {
 
     private populateLevels(layout: IRadialLayout): void {
         let stages: IStage[] = [];
-        let min: number = Math.min.apply(Math, layout.layoutNodes.map((nodeInfo: INodeInfo) => { return nodeInfo.x; }));
-        let max: number = Math.max.apply(Math, layout.layoutNodes.map((nodeInfo: INodeInfo) => {
+        // eslint-disable-next-line prefer-spread
+        const min: number = Math.min.apply(Math, layout.layoutNodes.map((nodeInfo: INodeInfo) => { return nodeInfo.x; }));
+        // eslint-disable-next-line prefer-spread
+        const max: number = Math.max.apply(Math, layout.layoutNodes.map((nodeInfo: INodeInfo) => {
             return nodeInfo.x + nodeInfo.width + layout.horizontalSpacing;
         }));
-        let full: number = max - min;
+        const full: number = max - min;
         layout.levels = [];
         for (let i: number = 0; i <= layout.maxLevel; i++) {
             stages = layout.layoutNodes.filter((nodeInfo: INodeInfo) => {
@@ -162,7 +173,7 @@ export class RadialTree {
                     return null;
                 }
             });
-            let newlevel: INodeInfo = {};
+            const newlevel: INodeInfo = {};
             stages = stages.sort((nodeInfo1: INodeInfo, nodeInfo2: INodeInfo) => { return nodeInfo1.x - nodeInfo2.x; });
             newlevel.min = stages[0].x;
             newlevel.max = stages[stages.length - 1].x + stages[stages.length - 1].width + layout.horizontalSpacing;
@@ -193,12 +204,12 @@ export class RadialTree {
     }
 
     private transformToCircleLayout(layout: IRadialLayout): void {
-        let root: INodeInfo = layout.graphNodes[layout.centerNode.id];
+        const root: INodeInfo = layout.graphNodes[layout.centerNode.id];
         root.x = 0;
         root.y = 0;
         for (let i: number = 1; i < layout.levels.length; i++) {
             for (let j: number = 0; j < layout.levels[i].nodes.length; j++) {
-                let nodeInfo: ILayoutInfo = layout.levels[i].nodes[j];
+                const nodeInfo: ILayoutInfo = layout.levels[i].nodes[j];
                 nodeInfo.x = Math.cos(nodeInfo.ratio * 360 * Math.PI / 180) * (layout.levels[i].radius + layout.verticalSpacing * i);
                 nodeInfo.y = Math.sin(nodeInfo.ratio * 360 * Math.PI / 180) * (layout.levels[i].radius + layout.verticalSpacing * i);
                 layout.anchorX = Math.min(layout.anchorX, nodeInfo.x);
@@ -213,19 +224,19 @@ export class RadialTree {
     }
 
     private updateNodes(layout: IRadialLayout, node: INode, nameTable: Object): void {
-        let nodeInfo: INodeInfo = layout.graphNodes[node.id];
-        let offsetX: number = nodeInfo.x + layout.anchorX;
-        let offsetY: number = nodeInfo.y + layout.anchorY;
+        const nodeInfo: INodeInfo = layout.graphNodes[node.id];
+        const offsetX: number = nodeInfo.x + layout.anchorX;
+        const offsetY: number = nodeInfo.y + layout.anchorY;
         node.offsetX += offsetX;
         node.offsetY += offsetY;
         for (let i: number = 0; i < nodeInfo.children.length; i++) {
-            let childInfo: INode = nodeInfo.children[i];
+            const childInfo: INode = nodeInfo.children[i];
             this.updateNodes(layout, nameTable[childInfo.id], nameTable);
         }
     }
 
     private setUpLayoutInfo(layout: IRadialLayout, item: INode): ILayoutInfo {
-        let info: ILayoutInfo = {};
+        const info: ILayoutInfo = {};
         info.name = item.id;
         info.x = 0;
         info.y = 0;
@@ -243,6 +254,7 @@ export class RadialTree {
 
 /**
  * Defines the properties of layout
+ *
  * @private
  */
 export interface IRadialLayout {
@@ -297,6 +309,7 @@ interface IStage {
 
 /**
  * Defines the node arrangement in radial manner
+ *
  * @private
  */
 export interface INodeInfo {

@@ -74,7 +74,8 @@ export class TaskbarEdit extends DateProcessor {
 
     /**
      * To initialize the public property.
-     * @return {void}
+     *
+     * @returns {void} .
      * @private
      */
     private initPublicProp(): void {
@@ -102,8 +103,8 @@ export class TaskbarEdit extends DateProcessor {
         if (this.parent.editSettings.allowTaskbarEditing && !this.parent.readOnly) {
             this.canDrag = false;
             if (this.parent.isAdaptive && this.taskBarEditElement) {
-                let targetElement: Element = this.getElementByPosition(e);
-                let element: Element = parentsUntil(targetElement, cls.taskBarMainContainer);
+                const targetElement: Element = this.getElementByPosition(e);
+                const element: Element = parentsUntil(targetElement, cls.taskBarMainContainer);
                 if (element && element.innerHTML === this.taskBarEditElement.innerHTML &&
                     !(targetElement.classList.contains(cls.connectorPointLeft) ||
                         targetElement.classList.contains(cls.connectorPointRight)) &&
@@ -119,8 +120,8 @@ export class TaskbarEdit extends DateProcessor {
     }
 
     private mouseClickHandler(e: PointerEvent): void {
-        let targetElement: Element = this.getElementByPosition(e);
-        let element: Element = parentsUntil(targetElement, cls.taskBarMainContainer);
+        const targetElement: Element = this.getElementByPosition(e);
+        const element: Element = parentsUntil(targetElement, cls.taskBarMainContainer);
         if (this.parent.selectionModule && this.parent.selectionModule.enableSelectMultiTouch) {
             if (this.tapPointOnFocus) {
                 this.updateTaskBarEditElement(e);
@@ -156,18 +157,18 @@ export class TaskbarEdit extends DateProcessor {
     }
 
     private showHideActivePredecessors(show: boolean): void {
-        let ganttProp: ITaskData = this.taskBarEditRecord.ganttProperties;
-        let predecessors: IPredecessor[] = ganttProp.predecessor;
-        let id: string = this.parent.viewType === 'ResourceView' ? ganttProp.taskId : ganttProp.rowUniqueID;
+        const ganttProp: ITaskData = this.taskBarEditRecord.ganttProperties;
+        const predecessors: IPredecessor[] = ganttProp.predecessor;
+        const id: string = this.parent.viewType === 'ResourceView' ? ganttProp.taskId : ganttProp.rowUniqueID;
         if (predecessors) {
             for (let i: number = 0; i < predecessors.length; i++) {
-                let predecessor: IPredecessor = predecessors[i];
+                const predecessor: IPredecessor = predecessors[i];
                 if (id.toString() === predecessor.from || id.toString() === predecessor.to) {
                     this.applyActiveColor(predecessor.from, predecessor.to, show);
                 }
             }
         }
-        let chartContent: Element = this.parent.ganttChartModule.chartBodyContainer;
+        const chartContent: Element = this.parent.ganttChartModule.chartBodyContainer;
         if (show) {
             addClass([this.taskBarEditElement], [cls.activeChildTask]);
             addClass([chartContent], [cls.touchMode]);
@@ -181,14 +182,14 @@ export class TaskbarEdit extends DateProcessor {
         }
     }
     private applyActiveColor(from: string, to: string, enable?: boolean): void {
-        let taskId: string = this.parent.viewType === 'ProjectView' ? this.taskBarEditRecord.ganttProperties.taskId.toString() :
+        const taskId: string = this.parent.viewType === 'ProjectView' ? this.taskBarEditRecord.ganttProperties.taskId.toString() :
             this.taskBarEditRecord.ganttProperties.rowUniqueID.toString();
-        let ganttRecord: IGanttData = (taskId === from) ? this.parent.connectorLineModule.getRecordByID(to) :
+        const ganttRecord: IGanttData = (taskId === from) ? this.parent.connectorLineModule.getRecordByID(to) :
             this.parent.connectorLineModule.getRecordByID(from);
-        let $tr: Element = this.parent.ganttChartModule.getChartRows()[this.parent.currentViewData.indexOf(ganttRecord)];
+        const $tr: Element = this.parent.ganttChartModule.getChartRows()[this.parent.currentViewData.indexOf(ganttRecord)];
         if (!isNullOrUndefined($tr)) {
-            let $taskbar: Element = $tr.querySelector('.' + cls.taskBarMainContainer);
-            let $connectorElement: Element = this.parent.element.querySelector('#ConnectorLineparent' + from + 'child' + to);
+            const $taskbar: Element = $tr.querySelector('.' + cls.taskBarMainContainer);
+            const $connectorElement: Element = this.parent.element.querySelector('#ConnectorLineparent' + from + 'child' + to);
             if (enable) {
                 addClass([$taskbar], [cls.activeConnectedTask]);
                 if ($connectorElement) {
@@ -204,16 +205,16 @@ export class TaskbarEdit extends DateProcessor {
     }
 
     private validateConnectorPoint(): boolean {
-        let parentRecord: ITaskData = this.taskBarEditRecord.ganttProperties;
-        let childRecord: ITaskData = this.connectorSecondRecord.ganttProperties;
+        const parentRecord: ITaskData = this.taskBarEditRecord.ganttProperties;
+        const childRecord: ITaskData = this.connectorSecondRecord.ganttProperties;
         let isValid: boolean = true;
-        let parentId: string = this.parent.viewType === 'ResourceView' ? parentRecord.taskId : parentRecord.rowUniqueID;
-        let childId: string = this.parent.viewType === 'ResourceView' ? childRecord.taskId : childRecord.rowUniqueID;
+        const parentId: string = this.parent.viewType === 'ResourceView' ? parentRecord.taskId : parentRecord.rowUniqueID;
+        const childId: string = this.parent.viewType === 'ResourceView' ? childRecord.taskId : childRecord.rowUniqueID;
         if (this.connectorSecondRecord.hasChildRecords) {
             isValid = false;
         } else if (childRecord.predecessor) {
             for (let i: number = 0; i < childRecord.predecessor.length; i++) {
-                let predecessor: IPredecessor = childRecord.predecessor[i];
+                const predecessor: IPredecessor = childRecord.predecessor[i];
                 if (predecessor.from === parentId.toString() &&
                     predecessor.to === childId.toString()) {
                     this.parent.connectorLineEditModule.childRecord = this.connectorSecondRecord;
@@ -233,18 +234,20 @@ export class TaskbarEdit extends DateProcessor {
         }
         return isValid;
     }
-
+    // eslint-disable-next-line
     private mouseLeaveHandler(e: PointerEvent): void {
         this.dragMouseLeave = true;
     }
 
     /**
      * To update taskbar edited elements on mouse down action.
-     * @return {void}
+     *
+     * @param {PointerEvent} e .
+     * @returns {void} .
      * @private
      */
     public updateTaskBarEditElement(e: PointerEvent): void {
-        let target: Element = this.getElementByPosition(e);
+        const target: Element = this.getElementByPosition(e);
         let element: Element;
         if (target.classList.contains(cls.manualParentRightResizer) || target.classList.contains(cls.manualParentMainContainer)
             || target.classList.contains(cls.manualParentTaskBar)) {
@@ -256,7 +259,7 @@ export class TaskbarEdit extends DateProcessor {
             element = parentsUntil(target, cls.taskBarMainContainer);
             if (!isNullOrUndefined(element) && !target.classList.contains('e-connectorpoint-left') &&
                 !target.classList.contains('e-connectorpoint-right')) {
-                let currentRecord: IGanttData = this.parent.ganttChartModule.getRecordByTaskBar(element);
+                const currentRecord: IGanttData = this.parent.ganttChartModule.getRecordByTaskBar(element);
                 if (!isNullOrUndefined(currentRecord.ganttProperties.segments) && currentRecord.ganttProperties.segments.length > 0) {
                     element = parentsUntil(target, cls.childTaskBarInnerDiv);
                 }
@@ -266,7 +269,7 @@ export class TaskbarEdit extends DateProcessor {
             this.showHideTaskBarEditingElements(element, this.taskBarEditElement);
             this.editElement = element;
             this.taskBarEditElement = element as HTMLElement;
-            let index: string = this.taskBarEditElement.getAttribute('data-segment-index');
+            const index: string = this.taskBarEditElement.getAttribute('data-segment-index');
             if (!isNullOrUndefined(index)) {
                 this.segmentIndex = Number(index);
             } else {
@@ -285,7 +288,7 @@ export class TaskbarEdit extends DateProcessor {
                     if (this.taskBarEditRecord.level === 0) {
                         return;
                     } else if (this.parent.enableMultiTaskbar) {
-                        let parentRecord: IGanttData = this.parent.getTaskByUniqueID(this.taskBarEditRecord.parentItem.uniqueID);
+                        const parentRecord: IGanttData = this.parent.getTaskByUniqueID(this.taskBarEditRecord.parentItem.uniqueID);
                         if (!isNullOrUndefined(parentRecord) && !parentRecord.expanded) {
                             this.prevZIndex = (this.taskBarEditElement).style.zIndex;
                             (this.taskBarEditElement).style.zIndex = '1000';
@@ -308,7 +311,11 @@ export class TaskbarEdit extends DateProcessor {
 
     /**
      * To show/hide taskbar editing elements.
-     * @return {void}
+     *
+     * @param {Element} element .
+     * @param {Element} secondElement .
+     * @param {boolean} fadeConnectorLine .
+     * @returns {void} .
      * @private
      */
     public showHideTaskBarEditingElements(element: Element, secondElement: Element, fadeConnectorLine?: boolean): void {
@@ -318,8 +325,8 @@ export class TaskbarEdit extends DateProcessor {
             return;
         }
         if (this.parent.viewType === 'ResourceView' && this.parent.enableMultiTaskbar && element) {
-            let record: IGanttData = this.parent.ganttChartModule.getRecordByTaskBar(element);
-            let parentRecord: IGanttData = this.parent.getParentTask(record.parentItem);
+            const record: IGanttData = this.parent.ganttChartModule.getRecordByTaskBar(element);
+            const parentRecord: IGanttData = this.parent.getParentTask(record.parentItem);
             if (!isNullOrUndefined(parentRecord)) {
                 if (!parentRecord.expanded) {
                     isShowProgressResizer = false;
@@ -331,19 +338,18 @@ export class TaskbarEdit extends DateProcessor {
                 addClass([element.querySelector('.' + cls.taskBarLeftResizer)], [cls.leftResizeGripper]);
                 addClass([element.querySelector('.' + cls.taskBarRightResizer)], [cls.rightResizeGripper]);
                 if (isShowProgressResizer) {
-                    let progresElement: boolean = !isNullOrUndefined(element.querySelector('.' + cls.childProgressResizer)) ? true : false;
+                    const progresElement: boolean = !isNullOrUndefined(element.querySelector('.' + cls.childProgressResizer)) ? true : false;
                     if (progresElement) {
                         addClass([element.querySelector('.' + cls.childProgressResizer)], [cls.progressResizeGripper]);
                     }
                 }
             } else if (this.parent.isAdaptive && isShowProgressResizer) {
-                let record: IGanttData = this.parent.ganttChartModule.getRecordByTaskBar(element);
+                const record: IGanttData = this.parent.ganttChartModule.getRecordByTaskBar(element);
                 if (record.hasChildRecords) {
                     addClass([element], [cls.activeParentTask]);
                 }
             }
             if (isShowProgressResizer) {
-                /* tslint:disable-next-line */
                 addClass(
                     this.parent.ganttChartModule.scrollElement.querySelectorAll('.' + cls.connectorLineContainer), [cls.connectorLineZIndex]);
             }
@@ -351,7 +357,7 @@ export class TaskbarEdit extends DateProcessor {
                 && (element.querySelector('.' + cls.connectorPointLeft)
                     || element.parentElement.querySelector('.' + cls.connectorPointLeft))
                 && isShowProgressResizer) {
-                let connectorElement: Element = !isNullOrUndefined(element.querySelector('.' + cls.connectorPointLeft)) ?
+                const connectorElement: Element = !isNullOrUndefined(element.querySelector('.' + cls.connectorPointLeft)) ?
                     element : element.parentElement;
 
                 addClass(
@@ -374,14 +380,14 @@ export class TaskbarEdit extends DateProcessor {
             if (!isNullOrUndefined(this.parent.taskFields.dependency)
                 && (secondElement.querySelector('.' + cls.connectorPointLeft)
                     || secondElement.parentElement.querySelector('.' + cls.connectorPointLeft))) {
-                let connectorElement: Element = !isNullOrUndefined(secondElement.querySelector('.' + cls.connectorPointLeft)) ?
+                const connectorElement: Element = !isNullOrUndefined(secondElement.querySelector('.' + cls.connectorPointLeft)) ?
                     secondElement : secondElement.parentElement;
                 removeClass(
                     [connectorElement.querySelector('.' + cls.connectorPointLeft)], [cls.connectorPointLeftHover]);
                 removeClass(
                     [connectorElement.querySelector('.' + cls.connectorPointRight)], [cls.connectorPointRightHover]);
             } else if (this.parent.isAdaptive) {
-                let record: IGanttData = this.parent.ganttChartModule.getRecordByTaskBar(secondElement);
+                const record: IGanttData = this.parent.ganttChartModule.getRecordByTaskBar(secondElement);
                 if (record && record.hasChildRecords) {
                     removeClass([secondElement], [cls.activeParentTask]);
                 }
@@ -392,12 +398,14 @@ export class TaskbarEdit extends DateProcessor {
 
     /**
      * To get taskbar edit actions.
-     * @return {string}
+     *
+     * @param {PointerEvent} e .
+     * @returns {string} .
      * @private
      */
     private getTaskBarAction(e: PointerEvent): string {
-        let mouseDownElement: Element = this.getElementByPosition(e);
-        let data: IGanttData = this.taskBarEditRecord;
+        const mouseDownElement: Element = this.getElementByPosition(e);
+        const data: IGanttData = this.taskBarEditRecord;
         let action: string = '';
         if (mouseDownElement.classList.contains(cls.taskBarLeftResizer)) {
             action = 'LeftResizing';
@@ -429,13 +437,15 @@ export class TaskbarEdit extends DateProcessor {
 
     /**
      * To update property while perform mouse down.
-     * @return {void}
+     *
+     * @param {PointerEvent} event .
+     * @returns {void} .
      * @private
      */
     private updateMouseDownProperties(event: PointerEvent): void {
-        let e: MousePoint = this.getCoordinate(event);
+        const e: MousePoint = this.getCoordinate(event);
         if (e.pageX || e.pageY) {
-            let containerPosition: { top: number, left: number } =
+            const containerPosition: { top: number, left: number } =
                 this.parent.getOffsetRect(this.parent.ganttChartModule.chartBodyContainer);
             this.mouseDownX = (e.pageX - containerPosition.left) +
                 this.parent.ganttChartModule.scrollObject.previousScroll.left;
@@ -458,7 +468,7 @@ export class TaskbarEdit extends DateProcessor {
             ((this.mouseDownY + 3) < this.mouseMoveY || (this.mouseDownY - 3) > this.mouseMoveY))) {
             this.isMouseDragged = true;
             this.parent.initiateEditAction(true);
-            let item: ITaskData = this.taskBarEditRecord.ganttProperties;
+            const item: ITaskData = this.taskBarEditRecord.ganttProperties;
             this.previousItem = this.parent.timelineModule.extendFunction(item, this.previousItemProperty) as ITaskData;
             if (this.taskBarEditAction !== 'ConnectorPointLeftDrag' &&
                 this.taskBarEditAction !== 'ConnectorPointRightDrag') {
@@ -469,7 +479,9 @@ export class TaskbarEdit extends DateProcessor {
     }
     /**
      * To handle mouse move action in chart
-     * @param e 
+     *
+     * @param {PointerEvent} event .
+     * @returns {void} .
      * @private
      */
     public mouseMoveAction(event: PointerEvent): void {
@@ -480,9 +492,9 @@ export class TaskbarEdit extends DateProcessor {
                 this.multipleSelectionEnabled();
             }
         }
-        let containerPosition: { top: number, left: number } =
+        const containerPosition: { top: number, left: number } =
             this.parent.getOffsetRect(this.parent.ganttChartModule.chartBodyContainer);
-        let e: MousePoint = this.getCoordinate(event);
+        const e: MousePoint = this.getCoordinate(event);
         this.mouseMoveX = e.pageX - containerPosition.left +
             this.parent.ganttChartModule.scrollObject.previousScroll.left;
         this.mouseMoveY = e.pageY - containerPosition.top +
@@ -497,12 +509,15 @@ export class TaskbarEdit extends DateProcessor {
     }
     /**
      * Method to update taskbar editing action on mous move.
-     * @return {Boolean}
+     *
+     * @param {PointerEvent} e .
+     * @param {boolean} isMouseClick .
+     * @returns {void} .
      * @private
      */
     public taskBarEditingAction(e: PointerEvent, isMouseClick: boolean): void {
-        let args: ITaskbarEditedEventArgs = {} as ITaskbarEditedEventArgs;
-        let recordIndex: number = this.parent.ganttChartModule.getIndexByTaskBar(this.taskBarEditElement);
+        const args: ITaskbarEditedEventArgs = {} as ITaskbarEditedEventArgs;
+        const recordIndex: number = this.parent.ganttChartModule.getIndexByTaskBar(this.taskBarEditElement);
         if (this.taskBarEditRecord !== null) {
             args.editingFields = this.taskBarEditRecord.ganttProperties;
             args.data = this.taskBarEditRecord;
@@ -552,13 +567,15 @@ export class TaskbarEdit extends DateProcessor {
 
     /**
      * To update property while perform mouse move.
-     * @return {void}
+     *
+     * @param {PointerEvent} event .
+     * @returns {void} .
      * @private
      */
     private updateMouseMoveProperties(event: PointerEvent): void {
-        let containerPosition: { top: number, left: number } =
+        const containerPosition: { top: number, left: number } =
             this.parent.getOffsetRect(this.parent.ganttChartModule.chartBodyContainer);
-        let e: MousePoint = this.getCoordinate(event);
+        const e: MousePoint = this.getCoordinate(event);
         if (e.pageX || e.pageY) {
             this.mouseMoveX = e.pageX - containerPosition.left +
                 this.parent.ganttChartModule.scrollObject.previousScroll.left;
@@ -566,15 +583,15 @@ export class TaskbarEdit extends DateProcessor {
             this.mouseMoveY = e.pageY - containerPosition.top +
                 this.parent.ganttChartModule.scrollObject.previousScroll.top;
         }
-        let isConnectorLineEdit: boolean = (this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
+        const isConnectorLineEdit: boolean = (this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
             this.taskBarEditAction === 'ConnectorPointRightDrag') ?
             true : false;
         if ((this.taskBarEditRecord.ganttProperties.width > 3 && !(this.taskBarEditAction === 'ProgressResizing' &&
             (this.taskBarEditRecord.ganttProperties.progress === 0 || this.taskBarEditRecord.ganttProperties.progress === 100))) ||
             isConnectorLineEdit) {
-            let mouseX: number = this.mouseMoveX - this.parent.ganttChartModule.scrollObject.previousScroll.left +
+            const mouseX: number = this.mouseMoveX - this.parent.ganttChartModule.scrollObject.previousScroll.left +
                 containerPosition.left;
-            let mouseY: number = this.mouseMoveY - this.parent.ganttChartModule.scrollObject.previousScroll.top +
+            const mouseY: number = this.mouseMoveY - this.parent.ganttChartModule.scrollObject.previousScroll.top +
                 containerPosition.top;
             if ((mouseX + 20) >
                 containerPosition.left + this.parent.ganttChartModule.chartBodyContainer.offsetWidth) {
@@ -600,7 +617,9 @@ export class TaskbarEdit extends DateProcessor {
 
     /**
      * To start the scroll timer.
-     * @return {void}
+     *
+     * @param {string} direction .
+     * @returns {void} .
      * @private
      */
     public startScrollTimer(direction: string): void {
@@ -628,7 +647,8 @@ export class TaskbarEdit extends DateProcessor {
 
     /**
      * To stop the scroll timer.
-     * @return {void}
+     *
+     * @returns {void} .
      * @private
      */
     public stopScrollTimer(): void {
@@ -638,16 +658,19 @@ export class TaskbarEdit extends DateProcessor {
 
     /**
      * To update left and width while perform taskbar drag operation.
-     * @return {void}
+     *
+     * @param {PointerEvent} e .
+     * @returns {void} .
      * @private
      */
+    // eslint-disable-next-line
     private enableDragging(e: PointerEvent): void {
-        let item: ITaskData = this.taskBarEditRecord.ganttProperties;
+        const item: ITaskData = this.taskBarEditRecord.ganttProperties;
         let differenceWidth: number = 0;
         if (this.taskBarEditElement.classList.contains('e-segmented-taskbar') &&
             !this.taskBarEditElement.classList.contains('e-segment-first')) {
-            let segments: ITaskSegment[] = this.taskBarEditRecord.ganttProperties.segments.map((e: ITaskSegment) => ({ ...e }));
-            let segment: ITaskSegment = segments[this.segmentIndex];
+            const segments: ITaskSegment[] = this.taskBarEditRecord.ganttProperties.segments.map((e: ITaskSegment) => ({ ...e }));
+            const segment: ITaskSegment = segments[this.segmentIndex];
             if (this.mouseDownX > this.mouseMoveX) {
                 differenceWidth = isNullOrUndefined(this.previousMouseMove) ?
                     (this.mouseDownX - this.mouseMoveX) : (this.previousMouseMove - this.mouseMoveX);
@@ -659,8 +682,8 @@ export class TaskbarEdit extends DateProcessor {
                 this.previousMouseMove = this.mouseMoveX;
                 segment.left = segment.left + differenceWidth;
             }
-            let previousSegment: ITaskSegment = segments[this.segmentIndex - 1];
-            let nextSegment: ITaskSegment = segments[this.segmentIndex + 1];
+            const previousSegment: ITaskSegment = segments[this.segmentIndex - 1];
+            const nextSegment: ITaskSegment = segments[this.segmentIndex + 1];
             let left: number;
             if (this.taskBarEditElement.classList.contains('e-segment-inprogress')) {
                 left = segment.left < (previousSegment.left + previousSegment.width) ? (previousSegment.left + previousSegment.width) :
@@ -683,7 +706,7 @@ export class TaskbarEdit extends DateProcessor {
                 differenceWidth = this.mouseMoveX - this.mouseDownX;
                 this.parent.setRecordValue('left', this.previousItem.left + differenceWidth, item, true);
             }
-            let left: number = item.left < 0 ? 0 : (item.left + item.width) >= this.parent.timelineModule.totalTimelineWidth ?
+            const left: number = item.left < 0 ? 0 : (item.left + item.width) >= this.parent.timelineModule.totalTimelineWidth ?
                 (this.parent.timelineModule.totalTimelineWidth - item.width) : item.left;
             this.parent.setRecordValue('left', left, item, true);
         }
@@ -691,11 +714,14 @@ export class TaskbarEdit extends DateProcessor {
 
     /**
      * To update left and width while perform progress resize operation.
-     * @return {void}
+     *
+     * @param {PointerEvent} e .
+     * @returns {void} .
      * @private
      */
+    // eslint-disable-next-line
     private performProgressResize(e: PointerEvent): void {
-        let item: ITaskData = this.taskBarEditRecord.ganttProperties;
+        const item: ITaskData = this.taskBarEditRecord.ganttProperties;
         let diffrenceWidth: number = 0;
         if (this.mouseDownX > this.mouseMoveX) {
             if (this.mouseMoveX > item.left &&
@@ -726,7 +752,7 @@ export class TaskbarEdit extends DateProcessor {
             item.width : item.progressWidth;
         widthValue = item.progressWidth < 0 ? 0 : item.progressWidth;
         this.parent.setRecordValue('progressWidth', widthValue, item, true);
-        let diff: number = item.width - item.progressWidth;
+        const diff: number = item.width - item.progressWidth;
         if (diff <= 4) {
             this.progressBorderRadius = 4 - diff;
         } else {
@@ -736,11 +762,13 @@ export class TaskbarEdit extends DateProcessor {
 
     /**
      * To update left and width while perform taskbar left resize operation.
-     * @return {void}
+     *
+     * @param {PointerEvent} e .
+     * @returns {void} .
      * @private
      */
     private enableLeftResizing(e: PointerEvent): void {
-        let item: ITaskData = this.taskBarEditRecord.ganttProperties;
+        const item: ITaskData = this.taskBarEditRecord.ganttProperties;
         let differenceWidth: number = 0;
         if (this.taskBarEditElement.classList.contains('e-segmented-taskbar')) {
             this.enableSplitTaskLeftResize(item);
@@ -779,8 +807,8 @@ export class TaskbarEdit extends DateProcessor {
         }
     }
     private enableSplitTaskLeftResize(item: ITaskData): void {
-        let segments: ITaskSegment[] = this.taskBarEditRecord.ganttProperties.segments.map((e: ITaskSegment) => ({ ...e }));
-        let segment: ITaskSegment = segments[this.segmentIndex];
+        const segments: ITaskSegment[] = this.taskBarEditRecord.ganttProperties.segments.map((e: ITaskSegment) => ({ ...e }));
+        const segment: ITaskSegment = segments[this.segmentIndex];
         let differenceWidth: number = 0;
         //when decrease the left and increase the width
         if (this.mouseDownX > this.mouseMoveX) {
@@ -793,10 +821,9 @@ export class TaskbarEdit extends DateProcessor {
                     segment.left = segment.left - differenceWidth;
                     segment.width = segment.width + differenceWidth;
                     if (this.segmentIndex !== 0) {
-                        let previousSegment: ITaskSegment = segments[this.segmentIndex - 1];
+                        const previousSegment: ITaskSegment = segments[this.segmentIndex - 1];
                         if ((item.left + segment.left) < (item.left + previousSegment.left + previousSegment.width)) {
-                            let left: number = item.left + previousSegment.left + previousSegment.width;
-                            let difference: number =
+                            const difference: number =
                                 (item.left + previousSegment.left + previousSegment.width) - (item.left + segment.left);
                             segment.width -= difference;
                             segment.left = segment.left + difference;
@@ -807,7 +834,7 @@ export class TaskbarEdit extends DateProcessor {
                     this.parent.setRecordValue('width', item.width + differenceWidth, item, true);
                     segment.width = segment.width + differenceWidth;
                     for (let i: number = 1; i < item.segments.length; i++) {
-                        let segment: ITaskSegment = segments[i];
+                        const segment: ITaskSegment = segments[i];
                         segment.left = segment.left + differenceWidth;
                     }
                 }
@@ -832,7 +859,7 @@ export class TaskbarEdit extends DateProcessor {
                     this.parent.setRecordValue('width', item.width - differenceWidth, item, true);
                     segment.width = segment.width - differenceWidth;
                     for (let i: number = 1; i < item.segments.length; i++) {
-                        let segment: ITaskSegment = segments[i];
+                        const segment: ITaskSegment = segments[i];
                         segment.left = segment.left - differenceWidth;
                     }
                     // when decrease remaining segments
@@ -848,7 +875,7 @@ export class TaskbarEdit extends DateProcessor {
                         differenceWidth = isNullOrUndefined(this.previousMouseMove) ?
                             (this.mouseMoveX - this.mouseDownX) : (this.mouseMoveX - this.previousMouseMove);
                         this.previousMouseMove = this.mouseMoveX;
-                        let singleDayDifference: number = (segment.width - differenceWidth) < this.parent.perDayWidth ?
+                        const singleDayDifference: number = (segment.width - differenceWidth) < this.parent.perDayWidth ?
                             this.parent.perDayWidth > segment.width ?
                                 this.parent.perDayWidth - segment.width : segment.width - this.parent.perDayWidth : 0;
                         differenceWidth -= singleDayDifference;
@@ -856,7 +883,7 @@ export class TaskbarEdit extends DateProcessor {
                             this.parent.setRecordValue('width', item.width - differenceWidth, item, true);
                             this.parent.setRecordValue('left', item.left + differenceWidth, item, true);
                             for (let i: number = 1; i < item.segments.length; i++) {
-                                let segment: ITaskSegment = segments[i];
+                                const segment: ITaskSegment = segments[i];
                                 segment.left = segment.left - differenceWidth;
                             }
                         } else {
@@ -872,8 +899,10 @@ export class TaskbarEdit extends DateProcessor {
     }
     /**
      * Update mouse position and edited item value
-     * @param e 
-     * @param item 
+     *
+     * @param {PointerEvent} e .
+     * @param {ITaskData} item .
+     * @returns {void} .
      */
     private updateEditPosition(e: PointerEvent, item: ITaskData): void {
         this.updateIsMilestone(item);
@@ -882,7 +911,9 @@ export class TaskbarEdit extends DateProcessor {
     }
     /**
      *  To update milestone property.
-     * @return {void}
+     *
+     * @param {ITaskData} item .
+     * @returns {void} .
      * @private
      */
     private updateIsMilestone(item: ITaskData): void {
@@ -897,15 +928,17 @@ export class TaskbarEdit extends DateProcessor {
 
     /**
      * To update left and width while perform taskbar right resize operation.
-     * @return {void}
+     *
+     * @param {PointerEvent} e .
+     * @returns {void} .
      * @private
      */
     private enableRightResizing(e: PointerEvent): void {
-        let item: ITaskData = this.taskBarEditRecord.ganttProperties;
+        const item: ITaskData = this.taskBarEditRecord.ganttProperties;
         let differenceWidth: number = 0;
         if (this.taskBarEditElement.classList.contains('e-segmented-taskbar')) {
-            let segments: ITaskSegment[] = this.taskBarEditRecord.ganttProperties.segments.map((e: ITaskSegment) => ({ ...e }));
-            let segment: ITaskSegment = segments[this.segmentIndex];
+            const segments: ITaskSegment[] = this.taskBarEditRecord.ganttProperties.segments.map((e: ITaskSegment) => ({ ...e }));
+            const segment: ITaskSegment = segments[this.segmentIndex];
             if (this.mouseDownX > this.mouseMoveX) {
                 if (this.mouseMoveX > (item.left + segment.left) && (this.mouseDownX - this.mouseMoveX) > 3) {
                     differenceWidth = isNullOrUndefined(this.previousMouseMove) ?
@@ -926,7 +959,7 @@ export class TaskbarEdit extends DateProcessor {
                 }
             }
             let width: number;
-            let nextSegment: ITaskSegment = this.segmentIndex !== segments.length - 1 ? segments[this.segmentIndex + 1] : null;
+            const nextSegment: ITaskSegment = this.segmentIndex !== segments.length - 1 ? segments[this.segmentIndex + 1] : null;
             if (!isNullOrUndefined(nextSegment)) {
                 if (!this.taskBarEditElement.classList.contains('e-segment-last')) {
                     width = (segment.left + segment.width) > nextSegment.left ? (nextSegment.left - segment.left) : segment.width;
@@ -962,85 +995,83 @@ export class TaskbarEdit extends DateProcessor {
 
     /**
      * To updated startDate and endDate while perform taskbar edit operation.
-     * @return {void}
+     *
+     * @returns {void} .
      * @private
      */
     private updateEditedItem(): void {
-        let item: ITaskData = this.taskBarEditRecord.ganttProperties;
+        const item: ITaskData = this.taskBarEditRecord.ganttProperties;
         let left: number;
         let projectStartDate: Date;
         let endDate: Date;
         let startDate: Date;
         switch (this.taskBarEditAction) {
-            case 'ProgressResizing':
-                this.parent.setRecordValue(
-                    'progress',
-                    this.getProgressPercent(item.width, item.progressWidth),
-                    item,
-                    true);
-                break;
-            case 'LeftResizing':
-                if (this.segmentIndex === -1) {
-                    left = this.getRoundOffStartLeft(item, this.roundOffDuration);
-                    projectStartDate = this.getDateByLeft(left);
-                    if (isNullOrUndefined(item.endDate)) {
-                        endDate = this.parent.dateValidationModule.getValidEndDate(item);
-                        this.parent.setRecordValue('endDate', endDate, item, true);
-                    }
-                    startDate = this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null);
-                    this.parent.setRecordValue('startDate', new Date(startDate.getTime()), item, true);
-                    if (this.parent.dateValidationModule.compareDates(item.startDate, item.endDate) === 0
-                        && isNullOrUndefined(item.isMilestone) && item.isMilestone === false && item.duration === 0) {
-                        this.parent.setRecordValue('duration', 1, item, true);
-                    }
-                    if (item.isMilestone) {
-                        this.parent.setRecordValue('endDate', new Date(startDate.getTime()), item, true);
-                    }
-                    this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
-                    this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
-                } else {
-                    this.updateSplitLeftResize(item);
+        case 'ProgressResizing':
+            this.parent.setRecordValue(
+                'progress',
+                this.getProgressPercent(item.width, item.progressWidth),
+                item,
+                true);
+            break;
+        case 'LeftResizing':
+            if (this.segmentIndex === -1) {
+                left = this.getRoundOffStartLeft(item, this.roundOffDuration);
+                projectStartDate = this.getDateByLeft(left);
+                if (isNullOrUndefined(item.endDate)) {
+                    endDate = this.parent.dateValidationModule.getValidEndDate(item);
+                    this.parent.setRecordValue('endDate', endDate, item, true);
                 }
+                startDate = this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null);
+                this.parent.setRecordValue('startDate', new Date(startDate.getTime()), item, true);
+                if (this.parent.dateValidationModule.compareDates(item.startDate, item.endDate) === 0
+                    && isNullOrUndefined(item.isMilestone) && item.isMilestone === false && item.duration === 0) {
+                    this.parent.setRecordValue('duration', 1, item, true);
+                }
+                if (item.isMilestone) {
+                    this.parent.setRecordValue('endDate', new Date(startDate.getTime()), item, true);
+                }
+                this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
+                this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
+            } else {
+                this.updateSplitLeftResize(item);
+            }
 
-                break;
-            case 'RightResizing':
-            case 'ParentResizing':
-                if (this.segmentIndex === -1) {
-                    left = this.getRoundOffEndLeft(item, this.roundOffDuration);
-                    let tempEndDate: Date = this.getDateByLeft(left);
-                    if (isNullOrUndefined(item.startDate)) {
-                        startDate = this.parent.dateValidationModule.getValidStartDate(item);
-                        this.parent.setRecordValue('startDate', startDate, item, true);
-                    }
-                    let tempdate: Date = isNullOrUndefined(item.startDate) ? startDate : item.startDate;
-                    endDate = item.isMilestone ? tempdate :
-                        this.parent.dateValidationModule.checkEndDate(tempEndDate, this.taskBarEditRecord.ganttProperties);
-                    this.parent.setRecordValue('endDate', new Date(endDate.getTime()), item, true);
-                    this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
-                    this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
-                } else {
-                    this.updateSplitRightResizing(item);
+            break;
+        case 'RightResizing':
+        case 'ParentResizing':
+            if (this.segmentIndex === -1) {
+                left = this.getRoundOffEndLeft(item, this.roundOffDuration);
+                const tempEndDate: Date = this.getDateByLeft(left);
+                if (isNullOrUndefined(item.startDate)) {
+                    startDate = this.parent.dateValidationModule.getValidStartDate(item);
+                    this.parent.setRecordValue('startDate', startDate, item, true);
                 }
-                break;
-            case 'ParentDrag':
-            case 'ChildDrag':
-            case 'MilestoneDrag':
-            case 'ManualParentDrag':
-                if (this.segmentIndex === -1 || this.segmentIndex === 0) {
-                    this.updateChildDrag(item);
-                } else {
-                    this.setSplitTaskDrag(item);
-                }
-                break;
+                const tempdate: Date = isNullOrUndefined(item.startDate) ? startDate : item.startDate;
+                endDate = item.isMilestone ? tempdate :
+                    this.parent.dateValidationModule.checkEndDate(tempEndDate, this.taskBarEditRecord.ganttProperties);
+                this.parent.setRecordValue('endDate', new Date(endDate.getTime()), item, true);
+                this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
+                this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
+            } else {
+                this.updateSplitRightResizing(item);
+            }
+            break;
+        case 'ParentDrag':
+        case 'ChildDrag':
+        case 'MilestoneDrag':
+        case 'ManualParentDrag':
+            if (this.segmentIndex === -1 || this.segmentIndex === 0) {
+                this.updateChildDrag(item);
+            } else {
+                this.setSplitTaskDrag(item);
+            }
+            break;
         }
     }
     private updateChildDrag(item: ITaskData): void {
-        let left: number;
-        let projectStartDate: Date;
+        const left: number = this.getRoundOffStartLeft(item, this.roundOffDuration);
+        const projectStartDate: Date = this.getDateByLeft(left);
         let endDate: Date;
-        let startDate: Date;
-        left = this.getRoundOffStartLeft(item, this.roundOffDuration);
-        projectStartDate = this.getDateByLeft(left);
         if (this.segmentIndex === 0) {
             this.parent.setRecordValue(
                 'startDate',
@@ -1076,13 +1107,13 @@ export class TaskbarEdit extends DateProcessor {
         }
     }
     private updateSplitLeftResize(item: ITaskData): void {
-        let segment: ITaskSegment = item.segments[this.segmentIndex];
-        let left: number = this.segmentIndex === 0 ? this.getRoundOffStartLeft(item, this.roundOffDuration) :
+        const segment: ITaskSegment = item.segments[this.segmentIndex];
+        const left: number = this.segmentIndex === 0 ? this.getRoundOffStartLeft(item, this.roundOffDuration) :
             this.getRoundOffStartLeft(segment, this.roundOffDuration);
-        let projectStartDate: Date = this.segmentIndex === 0 ? this.getDateByLeft(left) : this.getDateByLeft(item.left + left);
+        const projectStartDate: Date = this.segmentIndex === 0 ? this.getDateByLeft(left) : this.getDateByLeft(item.left + left);
 
-        let startDate: Date = this.parent.dataOperation.checkStartDate(projectStartDate, item, false);
-        let duration: number = this.parent.dataOperation.getDuration(
+        const startDate: Date = this.parent.dataOperation.checkStartDate(projectStartDate, item, false);
+        const duration: number = this.parent.dataOperation.getDuration(
             startDate, segment.endDate, item.durationUnit,
             item.isAutoSchedule, item.isMilestone);
 
@@ -1095,7 +1126,7 @@ export class TaskbarEdit extends DateProcessor {
         this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
 
         if (!isNullOrUndefined(item.segments[this.segmentIndex - 1])) {
-            let segmentOffsetDuration: number = this.parent.dataOperation.getDuration(
+            const segmentOffsetDuration: number = this.parent.dataOperation.getDuration(
                 item.segments[this.segmentIndex - 1].endDate, item.segments[this.segmentIndex].startDate, item.durationUnit,
                 item.isAutoSchedule, item.isMilestone);
             segment.offsetDuration = segmentOffsetDuration;
@@ -1104,19 +1135,19 @@ export class TaskbarEdit extends DateProcessor {
         this.parent.dataOperation.updateMappingData(this.taskBarEditRecord, 'segments');
     }
     private updateSplitRightResizing(item: ITaskData): void {
-        let segment: ITaskSegment = item.segments[this.segmentIndex];
-        let left: number = this.getRoundOffEndLeft(item, this.roundOffDuration);
-        let tempEndDate: Date = this.getDateByLeft(left);
-        let endDate: Date = this.parent.dataOperation.checkEndDate(tempEndDate, item, false);
-        let duration: number = this.parent.dataOperation.getDuration(
+        const segment: ITaskSegment = item.segments[this.segmentIndex];
+        const left: number = this.getRoundOffEndLeft(item, this.roundOffDuration);
+        const tempEndDate: Date = this.getDateByLeft(left);
+        const endDate: Date = this.parent.dataOperation.checkEndDate(tempEndDate, item, false);
+        const duration: number = this.parent.dataOperation.getDuration(
             segment.startDate, endDate, item.durationUnit,
             item.isAutoSchedule, item.isMilestone);
         segment.endDate = new Date(endDate.getTime());
         segment.duration = duration;
         // update next segment offset duration
         if (!isNullOrUndefined(item.segments[this.segmentIndex + 1])) {
-            let nextSegment: ITaskSegment = item.segments[this.segmentIndex + 1];
-            let segmentOffset: number = this.parent.dataOperation.getDuration(
+            const nextSegment: ITaskSegment = item.segments[this.segmentIndex + 1];
+            const segmentOffset: number = this.parent.dataOperation.getDuration(
                 item.segments[this.segmentIndex].endDate, nextSegment.startDate, item.durationUnit,
                 item.isAutoSchedule, item.isMilestone);
             segment.offsetDuration = segmentOffset;
@@ -1134,15 +1165,15 @@ export class TaskbarEdit extends DateProcessor {
     public sumOfDuration(segments: ITaskSegment[]): number {
         let duration: number = 0;
         for (let i: number = 0; i < segments.length; i++) {
-            let segment: ITaskSegment = segments[i];
+            const segment: ITaskSegment = segments[i];
             duration += segment.duration;
         }
         return duration;
     }
 
     private setSplitTaskDrag(item: ITaskData): void {
-        let segment: ITaskSegment = item.segments[this.segmentIndex];
-        let left: number = this.getRoundOffStartLeft(segment, this.roundOffDuration);
+        const segment: ITaskSegment = item.segments[this.segmentIndex];
+        const left: number = this.getRoundOffStartLeft(segment, this.roundOffDuration);
         let projectStartDate: Date = this.getDateByLeft(item.left + left);
         projectStartDate = this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null);
         segment.startDate = projectStartDate;
@@ -1174,7 +1205,7 @@ export class TaskbarEdit extends DateProcessor {
         }
         //set next record  offset if present
         if (!isNullOrUndefined(item.segments[this.segmentIndex + 1])) {
-            let nextSegment: ITaskSegment = item.segments[this.segmentIndex + 1];
+            const nextSegment: ITaskSegment = item.segments[this.segmentIndex + 1];
             let offsetDuration: number = this.parent.dataOperation.getDuration(
                 item.segments[this.segmentIndex].endDate, nextSegment.startDate, item.durationUnit,
                 item.isAutoSchedule, item.isMilestone);
@@ -1188,21 +1219,24 @@ export class TaskbarEdit extends DateProcessor {
     }
     /**
      * To get roundoff enddate.
-     * @return {number}
+     *
+     * @param {ITaskData} ganttRecord .
+     * @param {boolean} isRoundOff .
+     * @returns {number} .
      * @private
      */
     private getRoundOffEndLeft(ganttRecord: ITaskData, isRoundOff: boolean): number {
-        let tierMode: string = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.bottomTier :
+        const tierMode: string = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.bottomTier :
             this.parent.timelineModule.topTier;
         let totalLeft: number = ganttRecord.width + ganttRecord.left;
         if (this.segmentIndex !== -1) {
-            let segment: ITaskSegment = ganttRecord.segments[this.segmentIndex];
+            const segment: ITaskSegment = ganttRecord.segments[this.segmentIndex];
             totalLeft = totalLeft - ganttRecord.width + segment.width + segment.left;
         }
         let remainingContribution: number =
             (1 / (this.parent.timelineModule.getIncrement(this.getDateByLeft(totalLeft), 1, 'Day') / (1000 * 60 * 60 * 24)));
         let remainingLeft: number = this.parent.perDayWidth - (this.parent.perDayWidth / remainingContribution);
-        let positionValue: number = remainingLeft / this.parent.perDayWidth;
+        const positionValue: number = remainingLeft / this.parent.perDayWidth;
         if (isRoundOff === undefined) {
             isRoundOff = false;
         }
@@ -1217,7 +1251,7 @@ export class TaskbarEdit extends DateProcessor {
             }
         } else if (isRoundOff) {
             if (tierMode === 'Hour') {
-                let inHour: number = (this.parent.perDayWidth / 24);
+                const inHour: number = (this.parent.perDayWidth / 24);
                 remainingContribution =
                     (1 / (this.parent.timelineModule.getIncrement(this.getDateByLeft(totalLeft), 1, 'Hour') / (1000 * 60 * 60)));
                 remainingLeft = (this.parent.perDayWidth / 24) - ((this.parent.perDayWidth / 24) / remainingContribution);
@@ -1225,7 +1259,7 @@ export class TaskbarEdit extends DateProcessor {
                     totalLeft = (totalLeft - remainingLeft) + inHour;
                 }
             } else if (tierMode === 'Minutes') {
-                let inMinutes: number = (this.parent.perDayWidth / (24 * 60));
+                const inMinutes: number = (this.parent.perDayWidth / (24 * 60));
                 remainingContribution =
                     (1 / (this.parent.timelineModule.getIncrement(this.getDateByLeft(totalLeft), 1, 'Minutes') / (1000 * 60)));
                 remainingLeft = (this.parent.perDayWidth / (24 * 60)) - ((this.parent.perDayWidth / (24 * 60)) / remainingContribution);
@@ -1243,18 +1277,21 @@ export class TaskbarEdit extends DateProcessor {
 
     /**
      * To get roundoff startdate.
-     * @return {number}
+     *
+     * @param {ITaskData | ITaskSegment} ganttRecord .
+     * @param {boolean} isRoundOff .
+     * @returns {number} .
      * @private
      */
-    public getRoundOffStartLeft(ganttRecord: ITaskData | ITaskSegment, isRoundOff: Boolean): number {
+    public getRoundOffStartLeft(ganttRecord: ITaskData | ITaskSegment, isRoundOff: boolean): number {
         let left: number = isNullOrUndefined(ganttRecord as ITaskData) ? (ganttRecord as ITaskSegment).left
             : (ganttRecord as ITaskData).left;
-        let tierMode: string = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.bottomTier :
+        const tierMode: string = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.bottomTier :
             this.parent.timelineModule.topTier;
         let remainingContribution: number =
             (1 / (this.parent.timelineModule.getIncrement(this.getDateByLeft(left), 1, 'Day') / (1000 * 60 * 60 * 24)));
         let remainDays: number = this.parent.perDayWidth - (this.parent.perDayWidth / remainingContribution);
-        let remainDaysInDecimal: number = remainDays / this.parent.perDayWidth;
+        const remainDaysInDecimal: number = remainDays / this.parent.perDayWidth;
         if (isRoundOff === undefined) {
             isRoundOff = false;
         }
@@ -1287,14 +1324,16 @@ export class TaskbarEdit extends DateProcessor {
 
     /**
      * To get date by left value.
-     * @return {Date}
+     *
+     * @param {number} left .
+     * @returns {Date} .
      * @private
      */
     public getDateByLeft(left: number): Date {
-        let pStartDate: Date = new Date(this.parent.timelineModule.timelineStartDate.toString());
-        let milliSecondsPerPixel: number = (24 * 60 * 60 * 1000) / this.parent.perDayWidth;
+        const pStartDate: Date = new Date(this.parent.timelineModule.timelineStartDate.toString());
+        const milliSecondsPerPixel: number = (24 * 60 * 60 * 1000) / this.parent.perDayWidth;
         pStartDate.setTime(pStartDate.getTime() + (left * milliSecondsPerPixel));
-        let tierMode: string = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.topTier :
+        const tierMode: string = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.topTier :
             this.parent.timelineModule.bottomTier;
         if (tierMode !== 'Hour' && tierMode !== 'Minutes') {
             if (this.isInDst(new Date(this.parent.timelineModule.timelineStartDate.toString())) && !this.isInDst(pStartDate)) {
@@ -1308,18 +1347,21 @@ export class TaskbarEdit extends DateProcessor {
 
     /**
      * To get timezone offset.
-     * @return {number}
+     *
+     * @returns {number} .
      * @private
      */
     private getDefaultTZOffset(): number {
-        let janMonth: Date = new Date(new Date().getFullYear(), 0, 1);
-        let julMonth: Date = new Date(new Date().getFullYear(), 6, 1); //Because there is no reagions DST inbetwwen this range
+        const janMonth: Date = new Date(new Date().getFullYear(), 0, 1);
+        const julMonth: Date = new Date(new Date().getFullYear(), 6, 1); //Because there is no reagions DST inbetwwen this range
         return Math.max(janMonth.getTimezoneOffset(), julMonth.getTimezoneOffset());
     }
 
     /**
      * To check whether the date is in DST.
-     * @return {boolean}
+     *
+     * @param {Date} date .
+     * @returns {boolean} .
      * @private
      */
     private isInDst(date: Date): boolean {
@@ -1328,45 +1370,45 @@ export class TaskbarEdit extends DateProcessor {
 
     /**
      * To set item position.
-     * @return {void}
+     *
+     * @returns {void} .
      * @private
      */
     private setItemPosition(): void {
-        let item: ITaskData = this.taskBarEditRecord.ganttProperties;
-        let segment: ITaskSegment = !isNullOrUndefined(item.segments) ? item.segments[this.segmentIndex] : null;
-        let width: number = this.taskBarEditAction === 'MilestoneDrag' || item.isMilestone ?
+        const item: ITaskData = this.taskBarEditRecord.ganttProperties;
+        const segment: ITaskSegment = !isNullOrUndefined(item.segments) ? item.segments[this.segmentIndex] : null;
+        const width: number = this.taskBarEditAction === 'MilestoneDrag' || item.isMilestone ?
             this.parent.chartRowsModule.milestoneHeight : item.width;
         let rightResizer: number = this.parent.isAdaptive ? (width - 2) : (width - 10);
         if (!isNullOrUndefined(segment)) {
             rightResizer = this.parent.isAdaptive ? (segment.width - 2) : (segment.width - 10);
         }
-        /* tslint:disable-next-line */
-        let taskBarMainContainer: HTMLElement = (!this.taskBarEditElement.classList.contains(cls.taskBarMainContainer)) ? closest(this.taskBarEditElement, 'tr.' + cls.chartRow)
+        const taskBarMainContainer: HTMLElement = (!this.taskBarEditElement.classList.contains(cls.taskBarMainContainer)) ? closest(this.taskBarEditElement, 'tr.' + cls.chartRow)
             .querySelector('.' + cls.taskBarMainContainer) : this.taskBarEditElement;
-        let segmentedTaskBarContainer: boolean = this.taskBarEditElement.classList.contains('e-segmented-taskbar');
-        let leftLabelContainer: HTMLElement = closest(this.taskBarEditElement, 'tr.' + cls.chartRow)
+        const segmentedTaskBarContainer: boolean = this.taskBarEditElement.classList.contains('e-segmented-taskbar');
+        const leftLabelContainer: HTMLElement = closest(this.taskBarEditElement, 'tr.' + cls.chartRow)
             .querySelector('.' + cls.leftLabelContainer);
-        let rightLabelContainer: HTMLElement = closest(this.taskBarEditElement, 'tr.' + cls.chartRow)
+        const rightLabelContainer: HTMLElement = closest(this.taskBarEditElement, 'tr.' + cls.chartRow)
             .querySelector('.' + cls.rightLabelContainer);
-        let traceChildProgressBar: HTMLElement =
+        const traceChildProgressBar: HTMLElement =
             this.taskBarEditElement.querySelector('.' + cls.traceChildProgressBar);
-        let traceChildTaskBar: HTMLElement =
+        const traceChildTaskBar: HTMLElement =
             this.taskBarEditElement.querySelector('.' + cls.traceChildTaskBar);
-        let childProgressResizer: HTMLElement =
+        const childProgressResizer: HTMLElement =
             this.taskBarEditElement.querySelector('.' + cls.childProgressResizer);
-        let taskBarRightResizer: HTMLElement =
+        const taskBarRightResizer: HTMLElement =
             this.taskBarEditElement.querySelector('.' + cls.taskBarRightResizer);
-        let traceParentTaskBar: HTMLElement =
+        const traceParentTaskBar: HTMLElement =
             this.taskBarEditElement.querySelector('.' + cls.traceParentTaskBar);
-        let traceParentProgressBar: HTMLElement =
+        const traceParentProgressBar: HTMLElement =
             this.taskBarEditElement.querySelector('.' + cls.traceParentProgressBar);
-        let traceConnectorPointRight: HTMLElement =
+        const traceConnectorPointRight: HTMLElement =
             this.taskBarEditElement.querySelector('.' + cls.rightConnectorPointOuterDiv);
-        let manualParentTaskbar: HTMLElement = this.taskBarEditElement;
-        let manualTaskbar: HTMLElement = this.taskBarEditElement.querySelector('.' + cls.manualParentTaskBar);
-        let manualParentRight: HTMLElement =
+        const manualParentTaskbar: HTMLElement = this.taskBarEditElement;
+        const manualTaskbar: HTMLElement = this.taskBarEditElement.querySelector('.' + cls.manualParentTaskBar);
+        const manualParentRight: HTMLElement =
             this.taskBarEditElement.querySelector('.' + cls.manualParentRightResizer);
-        let manualParentLeft: HTMLElement =
+        const manualParentLeft: HTMLElement =
             this.taskBarEditElement.querySelector('.' + cls.manualParentLeftResizer);
         if (this.taskBarEditAction !== 'ConnectorPointRightDrag' &&
             this.taskBarEditAction !== 'ConnectorPointLeftDrag') {
@@ -1381,12 +1423,12 @@ export class TaskbarEdit extends DateProcessor {
                 taskBarMainContainer.style.left = (item.left) + 'px';
                 leftLabelContainer.style.width = (item.left) + 'px';
                 if (this.taskBarEditAction === 'LeftResizing' && this.segmentIndex === 0) {
-                    let parent: HTMLElement = this.taskBarEditElement.parentElement;
-                    let segmentedTasks: HTMLCollectionOf<HTMLElement> =
+                    const parent: HTMLElement = this.taskBarEditElement.parentElement;
+                    const segmentedTasks: HTMLCollectionOf<HTMLElement> =
                         parent.getElementsByClassName('e-segmented-taskbar') as HTMLCollectionOf<HTMLElement>;
                     for (let i: number = 0; i < item.segments.length; i++) {
-                        let segment: ITaskSegment = item.segments[i];
-                        let segmentElement: HTMLElement = segmentedTasks[i] as HTMLElement;
+                        const segment: ITaskSegment = item.segments[i];
+                        const segmentElement: HTMLElement = segmentedTasks[i] as HTMLElement;
                         (segmentElement as HTMLElement).style.width = (segment.width) + 'px';
                         (segmentElement as HTMLElement).style.left = (segment.left) + 'px';
                     }
@@ -1460,11 +1502,13 @@ export class TaskbarEdit extends DateProcessor {
 
     /**
      * To handle mouse up event in chart
-     * @param e 
+     *
+     * @param {PointerEvent} e .
+     * @returns {void} .
      * @private
      */
     public mouseUpHandler(e: PointerEvent): void {
-        let mouseDragged: boolean = this.isMouseDragged;
+        const mouseDragged: boolean = this.isMouseDragged;
         this.previousMouseMove = null;
         this.editTooltip.showHideTaskbarEditTooltip(false, this.segmentIndex);
         if (this.taskBarEditAction && this.isMouseDragged) {
@@ -1491,21 +1535,20 @@ export class TaskbarEdit extends DateProcessor {
     }
     /**
      * To perform taskbar edit operation.
-     * @return {void}
+     *
+     * @param {PointerEvent} event .
+     * @returns {void} .
      * @private
      */
     public taskBarEditedAction(event: PointerEvent): void {
-        let args: ITaskbarEditedEventArgs = {} as ITaskbarEditedEventArgs;
-        let x1: number = this.mouseDownX;
-        let y1: number = this.mouseDownY;
-        let row: Element;
-        let item: IGanttData = this.taskBarEditRecord;
-        let recordIndex: number = this.parent.ganttChartModule.getIndexByTaskBar(this.taskBarEditElement);
-        let x2: number;
-        let resMouseY: number;
-        let e: MousePoint = this.getCoordinate(event);
-        x2 = this.mouseMoveX;
-        resMouseY = e.pageY - this.parent.ganttChartModule.chartBodyContainer.offsetTop;
+        const args: ITaskbarEditedEventArgs = {} as ITaskbarEditedEventArgs;
+        const x1: number = this.mouseDownX;
+        const y1: number = this.mouseDownY;
+        const item: IGanttData = this.taskBarEditRecord;
+        const recordIndex: number = this.parent.ganttChartModule.getIndexByTaskBar(this.taskBarEditElement);
+        const x2: number = this.mouseMoveX;
+        const e: MousePoint = this.getCoordinate(event);
+        const resMouseY: number = e.pageY - this.parent.ganttChartModule.chartBodyContainer.offsetTop;
         if ((this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
             this.taskBarEditAction === 'ConnectorPointRightDrag') && !this.drawPredecessor) {
             this.dependencyCancel = true;
@@ -1533,7 +1576,8 @@ export class TaskbarEdit extends DateProcessor {
 
     /**
      * To cancel the taskbar edt action.
-     * @return {void}
+     *
+     * @returns {void} .
      * @private
      */
     public cancelTaskbarEditActionInMouseLeave(): void {
@@ -1541,12 +1585,12 @@ export class TaskbarEdit extends DateProcessor {
     }
 
     public updateSegmentProgress(taskData: ITaskData): void {
-        let segments: ITaskSegment[] = taskData.segments;
+        const segments: ITaskSegment[] = taskData.segments;
         let fixedWidth: boolean = true;
-        let totalTaskWidth: number = this.splitTasksDuration(segments) * this.parent.perDayWidth;
+        const totalTaskWidth: number = this.splitTasksDuration(segments) * this.parent.perDayWidth;
         let totalProgressWidth: number = this.parent.dataOperation.getProgressWidth(totalTaskWidth, taskData.progress);
         for (let i: number = 0; i < segments.length; i++) {
-            let segment: ITaskSegment = segments[i];
+            const segment: ITaskSegment = segments[i];
             delete segment.progressWidth;
             if (totalProgressWidth > 0 && totalProgressWidth > segment.width) {
                 totalProgressWidth = totalProgressWidth - segment.width;
@@ -1563,13 +1607,15 @@ export class TaskbarEdit extends DateProcessor {
 
     /**
      * To trigger taskbar edited event.
-     * @return {void}
+     *
+     * @param {ITaskbarEditedEventArgs} arg .
+     * @returns {void} .
      * @private
      */
     public taskbarEdited(arg: ITaskbarEditedEventArgs): void {
-        let args: ITaskbarEditedEventArgs = extend({}, arg);
-        let ganttRecord: IGanttData = args.data;
-        let taskData: ITaskData = ganttRecord.ganttProperties;
+        const args: ITaskbarEditedEventArgs = extend({}, arg);
+        const ganttRecord: IGanttData = args.data;
+        const taskData: ITaskData = ganttRecord.ganttProperties;
         if (args.taskBarEditAction === 'ProgressResizing') {
             if (args.previousData.progress !== taskData.progress) {
                 this.parent.setRecordValue(
@@ -1585,46 +1631,44 @@ export class TaskbarEdit extends DateProcessor {
                 }
             }
         } else {
-            let segments: ITaskSegment[] = args.data.ganttProperties.segments;
+            const segments: ITaskSegment[] = args.data.ganttProperties.segments;
             if (!isNullOrUndefined(segments) && segments.length > 0
                 && ((this.taskBarEditAction === 'LeftResizing' && this.segmentIndex !== 0)
                     || (this.taskBarEditAction === 'ChildDrag' && this.segmentIndex !== 0)
                     || (this.taskBarEditAction === 'RightResizing'))) {
-                let segment: ITaskSegment = segments[this.segmentIndex];
-                let ganttProp: ITaskData = this.taskBarEditRecord.ganttProperties;
-                let length: number = segments.length;
-                let previousSegment: ITaskSegment = this.segmentIndex === 0 ? null
+                const segment: ITaskSegment = segments[this.segmentIndex];
+                const ganttProp: ITaskData = this.taskBarEditRecord.ganttProperties;
+                const previousSegment: ITaskSegment = this.segmentIndex === 0 ? null
                     : segments[this.segmentIndex - 1];
-                let nextSegment: ITaskSegment = this.segmentIndex === segments.length - 1 ? null
+                const nextSegment: ITaskSegment = this.segmentIndex === segments.length - 1 ? null
                     : segments[this.segmentIndex + 1];
-                let sDate: Date = !isNullOrUndefined(nextSegment) ?
+                const sDate: Date = !isNullOrUndefined(nextSegment) ?
                     new Date(nextSegment.startDate.getTime()) : this.parent.cloneProjectEndDate;
-                let eDate: Date = !isNullOrUndefined(previousSegment) ?
+                const eDate: Date = !isNullOrUndefined(previousSegment) ?
                     new Date(previousSegment.endDate.getTime()) : this.parent.cloneProjectStartDate;
                 sDate.setHours(0, 0, 0, 0); eDate.setHours(0, 0, 0, 0);
-                let cStartDate: Date = new Date(segment.startDate.getTime());
-                let cEndDate: Date = new Date(segment.endDate.getTime());
+                const cStartDate: Date = new Date(segment.startDate.getTime());
+                const cEndDate: Date = new Date(segment.endDate.getTime());
                 cStartDate.setDate(cStartDate.getDate() - 1); cEndDate.setDate(cEndDate.getDate() + 1);
                 cStartDate.setHours(0, 0, 0, 0); cEndDate.setHours(0, 0, 0, 0);
                 if (cStartDate.getTime() <= eDate.getTime()) {
-                    let segmentIndexes: { firstSegmentIndex: number, secondSegmentIndex: number }[] = [
+                    const segmentIndexes: { firstSegmentIndex: number, secondSegmentIndex: number }[] = [
                         { 'firstSegmentIndex': previousSegment.segmentIndex, 'secondSegmentIndex': segment.segmentIndex }
                     ];
-                    this.parent.chartRowsModule.mergeTask
-                        (ganttProp.taskId, segmentIndexes);
+                    this.parent.chartRowsModule.mergeTask(ganttProp.taskId, segmentIndexes);
                 } else if (cEndDate.getTime() >= sDate.getTime() && this.segmentIndex !== segments.length - 1) {
-                    let segmentIndexes: { firstSegmentIndex: number, secondSegmentIndex: number }[] = [
+                    const segmentIndexes: { firstSegmentIndex: number, secondSegmentIndex: number }[] = [
                         { 'firstSegmentIndex': segment.segmentIndex, 'secondSegmentIndex': nextSegment.segmentIndex }
                     ];
-                    this.parent.chartRowsModule.mergeTask
-                        (ganttProp.taskId, segmentIndexes);
+                    this.parent.chartRowsModule.mergeTask(ganttProp.taskId, segmentIndexes);
                 } else if (cEndDate.getTime() >= sDate.getTime()) {
                     segment.endDate.setDate(this.parent.cloneProjectEndDate.getDate() - 1);
                     segment.startDate = this.parent.dataOperation.getStartDate(
                         segment.endDate, segment.duration, ganttProp.durationUnit, ganttProp);
+                    // eslint-disable-next-line
                     for (let i: number = segments.length - 2; i >= 0; i++) {
-                        let segment: ITaskSegment = segments[i];
-                        let eDate: Date = segment.endDate;
+                        const segment: ITaskSegment = segments[i];
+                        const eDate: Date = segment.endDate;
                         eDate.setDate(eDate.getDate() - segment.offsetDuration);
                         segment.endDate = eDate;
                         segment.startDate = this.parent.dataOperation.getStartDate(
@@ -1640,7 +1684,10 @@ export class TaskbarEdit extends DateProcessor {
 
     /**
      * To get progress in percentage.
-     * @return {number}
+     *
+     * @param {number} parentwidth .
+     * @param {number} progresswidth .
+     * @returns {number} .
      * @private
      */
     private getProgressPercent(parentwidth: number, progresswidth: number): number {
@@ -1649,20 +1696,20 @@ export class TaskbarEdit extends DateProcessor {
 
     /**
      * false line implementation.
-     * @return {void}
+     *
+     * @returns {void} .
      * @private
      */
     private drawFalseLine(): void {
 
-        let x1: number = this.mouseDownX;
-        let y1: number = this.mouseDownY;
-        let x2: number = this.mouseMoveX;
-        let y2: number = this.mouseMoveY;
-        let length: number = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
-        let angle: number = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
-        let transform: string = 'rotate(' + angle + 'deg)';
+        const x1: number = this.mouseDownX;
+        const y1: number = this.mouseDownY;
+        const x2: number = this.mouseMoveX;
+        const y2: number = this.mouseMoveY;
+        const length: number = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+        const angle: number = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+        const transform: string = 'rotate(' + angle + 'deg)';
         let left: number;
-        let top: number;
         if (this.taskBarEditAction === 'ConnectorPointLeftDrag') {
             left = (this.elementOffsetLeft - (this.parent.chartRowsModule.connectorPointWidth / 2)) -
                 this.parent.ganttChartModule.scrollObject.previousScroll.left;
@@ -1671,7 +1718,7 @@ export class TaskbarEdit extends DateProcessor {
             left = (this.elementOffsetLeft + this.elementOffsetWidth) +
                 (this.parent.chartRowsModule.connectorPointWidth / 2) - this.parent.ganttChartModule.scrollObject.previousScroll.left;
         }
-        top = ((this.elementOffsetTop) + (this.elementOffsetHeight / 2) +
+        const top: number = ((this.elementOffsetTop) + (this.elementOffsetHeight / 2) +
             this.parent.ganttChartModule.chartBodyContainer.offsetTop) - this.parent.ganttChartModule.scrollObject.previousScroll.top;
 
         this.removeFalseLine(false);
@@ -1688,8 +1735,9 @@ export class TaskbarEdit extends DateProcessor {
 
     }
     /**
-     * 
-     * @param isRemoveConnectorPointDisplay 
+     *
+     * @param {boolean} isRemoveConnectorPointDisplay .
+     * @returns {void} .
      * @private
      */
     public removeFalseLine(isRemoveConnectorPointDisplay: boolean): void {
@@ -1709,13 +1757,14 @@ export class TaskbarEdit extends DateProcessor {
         }
     }
     /**
-     * 
-     * @param e 
+     *
+     * @param {PointerEvent} e .
+     * @returns {void} .
      * @private
      */
     public updateConnectorLineSecondProperties(e: PointerEvent): void {
-        let target: Element = this.getElementByPosition(e);
-        let element: Element = parentsUntil(target, cls.taskBarMainContainer);
+        const target: Element = this.getElementByPosition(e);
+        const element: Element = parentsUntil(target, cls.taskBarMainContainer);
         this.connectorSecondAction = null;
         let scrollTop: number = 0;
         if (parentsUntil(target, cls.connectorPointLeft)) {
@@ -1730,7 +1779,7 @@ export class TaskbarEdit extends DateProcessor {
         }
         if (this.taskBarEditElement !== element && this.taskBarEditElement !== this.highlightedSecondElement) {
             if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
-                let top: number = this.parent.virtualScrollModule.getTopPosition();
+                const top: number = this.parent.virtualScrollModule.getTopPosition();
                 scrollTop = top;
             }
             if ((this.parent.virtualScrollModule && this.parent.enableVirtualization &&
@@ -1752,15 +1801,15 @@ export class TaskbarEdit extends DateProcessor {
         this.connectorSecondRecord = isNullOrUndefined(this.connectorSecondElement) ?
             null : this.parent.ganttChartModule.getRecordByTaskBar(this.connectorSecondElement);
     }
-
+    // eslint-disable-next-line
     private triggerDependencyEvent(e: PointerEvent, mouseUp?: boolean): void {
-        let fromItem: ITaskData = this.taskBarEditRecord.ganttProperties;
-        let toItem: ITaskData = this.connectorSecondRecord ? this.connectorSecondRecord.ganttProperties : null;
+        const fromItem: ITaskData = this.taskBarEditRecord.ganttProperties;
+        const toItem: ITaskData = this.connectorSecondRecord ? this.connectorSecondRecord.ganttProperties : null;
         let predecessor: string;
         let currentTarget: string;
-        let target: Element = this.getElementByPosition(e);
-        let element: HTMLElement = target as HTMLElement;
-        let uniqueId: string = this.parent.viewType === 'ResourceView' ? fromItem.taskId : fromItem.rowUniqueID;
+        const target: Element = this.getElementByPosition(e);
+        const element: HTMLElement = target as HTMLElement;
+        const uniqueId: string = this.parent.viewType === 'ResourceView' ? fromItem.taskId : fromItem.rowUniqueID;
 
         if (this.taskBarEditAction === 'ConnectorPointLeftDrag') {
             predecessor = uniqueId + 'S';
@@ -1787,10 +1836,11 @@ export class TaskbarEdit extends DateProcessor {
         } else {
             this.finalPredecessor = predecessor;
         }
-        let isValidLink: boolean =
+        const isValidLink: boolean =
             this.parent.connectorLineEditModule.validatePredecessorRelation(this.connectorSecondRecord, this.finalPredecessor);
-        let predecessorArray: IPredecessor[] = this.parent.predecessorModule.calculatePredecessor(predecessor, this.connectorSecondRecord);
-        let args: IDependencyEventArgs = {} as IDependencyEventArgs;
+        // eslint-disable-next-line
+        const predecessorArray: IPredecessor[] = this.parent.predecessorModule.calculatePredecessor(predecessor, this.connectorSecondRecord);
+        const args: IDependencyEventArgs = {} as IDependencyEventArgs;
         args.fromItem = fromItem;
         args.toItem = toItem;
         args.newPredecessorString = this.finalPredecessor;
@@ -1808,10 +1858,10 @@ export class TaskbarEdit extends DateProcessor {
                     this.parent.editModule.taskbarEditModule.taskBarEditRecord.ganttProperties.taskName,
                     this.parent.editModule.taskbarEditModule.fromPredecessorText, '', ''
                 );
-                let table: NodeList = this.parent.connectorLineModule.tooltipTable.querySelector('#toPredecessor').querySelectorAll('td');
+                const table: NodeList = this.parent.connectorLineModule.tooltipTable.querySelector('#toPredecessor').querySelectorAll('td');
                 (table[1] as HTMLElement).innerText = toItem.taskName;
                 (table[2] as HTMLElement).innerText = this.parent.localeObj.getConstant(currentTarget);
-                let tooltipElement: HTMLElement = this.parent.connectorLineModule.tooltipTable.parentElement.parentElement;
+                const tooltipElement: HTMLElement = this.parent.connectorLineModule.tooltipTable.parentElement.parentElement;
                 if (tooltipElement.offsetTop + tooltipElement.offsetHeight > e.pageY) {
                     tooltipElement.style.top = (e.pageY - tooltipElement.offsetHeight - 20) + 'px';
                 }
@@ -1832,15 +1882,15 @@ export class TaskbarEdit extends DateProcessor {
 
     // Get XY coordinates for touch and non-touch device
     private getCoordinate(event: TouchEvent | PointerEvent): MousePoint {
-        let coordinates: MousePoint = {};
+        const coordinates: MousePoint = {};
         if (this.parent.isAdaptive && event && event.type !== 'click') {
-            let e: TouchEvent = event as TouchEvent;
+            const e: TouchEvent = event as TouchEvent;
             if (e.type === 'touchmove' || e.type === 'touchstart' || e.type === 'touchend') {
                 coordinates.pageX = e.changedTouches[0].pageX;
                 coordinates.pageY = e.changedTouches[0].pageY;
             }
         } else if (event) {
-            let e: PointerEvent = event as PointerEvent;
+            const e: PointerEvent = event as PointerEvent;
             coordinates.pageX = e.pageX;
             coordinates.pageY = e.pageY;
         }
@@ -1853,7 +1903,7 @@ export class TaskbarEdit extends DateProcessor {
         if (!this.parent.isAdaptive) {
             return event.target as Element;
         } else {
-            let e: MousePoint = this.getCoordinate(event);
+            const e: MousePoint = this.getCoordinate(event);
             return document.elementFromPoint((e.pageX - window.pageXOffset), (e.pageY - window.pageYOffset));
         }
 
@@ -1878,6 +1928,7 @@ export class TaskbarEdit extends DateProcessor {
         this.parent.off('chartMouseClick', this.mouseClickHandler);
     }
     /**
+     * @returns {void} .
      * @private
      */
     public destroy(): void {

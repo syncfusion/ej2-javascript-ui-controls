@@ -1,4 +1,3 @@
-// tslint:disable-next-line:max-line-length
 import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, ModuleDeclaration, L10n, isBlazor, Complex, isNullOrUndefined, formatUnit } from '@syncfusion/ej2-base';
 import { Event, EmitType } from '@syncfusion/ej2-base';
 import { Toolbar } from './tool-bar/tool-bar';
@@ -10,10 +9,8 @@ import { ImageProperties } from './properties-pane/image-properties-pane';
 import { TocProperties } from './properties-pane/table-of-content-pane';
 import { TableProperties } from './properties-pane/table-properties-pane';
 import { StatusBar } from './properties-pane/status-bar';
-// tslint:disable-next-line:max-line-length
 import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs, ServiceFailureArgs, CommentActionEventArgs } from '../document-editor/base';
 import { createSpinner } from '@syncfusion/ej2-popups';
-// tslint:disable-next-line:max-line-length
 import { ContainerServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';
 import { ToolbarItem } from '../document-editor/base/types';
@@ -27,66 +24,77 @@ import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 export class DocumentEditorContainer extends Component<HTMLElement> implements INotifyPropertyChanged {
     /**
      * Show or hide properties pane.
+     *
      * @default true
      */
     @Property(true)
     public showPropertiesPane: boolean;
     /**
      * Enable or disable toolbar in document editor container.
+     *
      * @default true
      */
     @Property(true)
     public enableToolbar: boolean;
     /**
      * Restrict editing operation.
+     *
      * @default false
      */
     @Property(false)
     public restrictEditing: boolean;
     /**
      * Enable or disable spell checker in document editor container.
+     *
      * @default false
      */
     @Property(false)
     public enableSpellCheck: boolean;
     /**
      * Enable or disable track changes in document editor container.
+     *
      * @default false
      */
     @Property(false)
     public enableTrackChanges: boolean;
     /**
      * Layout Type
+     *
      * @default Pages
      */
     @Property('Pages')
     public layoutType: LayoutType;
     /**
      * Current User
+     *
      * @default ''
      */
     @Property('')
     public currentUser: string;
     /**
      * User Selection Highlight Color
+     *
      * @default '#FFFF00'
      */
     @Property('#FFFF00')
     public userColor: string;
     /**
      * Enable local paste
+     *
      * @default false
      */
     @Property(false)
     public enableLocalPaste: boolean;
     /**
      * Sfdt service URL.
+     *
      * @default ''
      */
     @Property()
     public serviceUrl: string;
     /**
      * Specifies the z-order for rendering that determines whether the dialog is displayed in front or behind of another component.
+     *
      * @default 2000
      * @aspType int
      */
@@ -99,31 +107,37 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public enableCsp: boolean;
     /**
      * Gets or set a value indicating whether comment is enabled or not
+     *
      * @default true
      */
     @Property(true)
     public enableComment: boolean;
     /**
-     * Defines the width of the DocumentEditorContainer component 
+     * Defines the width of the DocumentEditorContainer component
+     *
      * @default '100%'
      */
     @Property('100%')
     public width: string;
 
     /**
-     * Defines the height of the DocumentEditorContainer component 
+     * Defines the height of the DocumentEditorContainer component
+     *
      * @default '320px'
      */
     @Property('320px')
     public height: string;
     /**
      * Enable partial lock and edit module.
+     *
      * @default false
      */
     @Property(false)
     public enableLockAndEdit: boolean;
+    /* eslint-disable */
     /**
      * Triggers when the component is created
+     *
      * @event
      * @blazorproperty 'Created'
      */
@@ -131,14 +145,17 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public created: EmitType<Object>;
     /**
      * Triggers when the component is destroyed.
+     *
      * @event
      * @blazorproperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
+    /* eslint-enable */
 
     /**
      * Triggers whenever the content changes in the document editor container.
+     *
      * @event
      * @blazorproperty 'ContentChanged'
      */
@@ -146,6 +163,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public contentChange: EmitType<ContainerContentChangeEventArgs>;
     /**
      * Triggers whenever selection changes in the document editor container.
+     *
      * @event
      * @blazorproperty 'SelectionChanged'
      */
@@ -153,13 +171,15 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public selectionChange: EmitType<ContainerSelectionChangeEventArgs>;
     /**
      * Triggers whenever document changes in the document editor container.
+     *
      * @event
      * @blazorproperty 'DocumentChanged'
      */
     @Event()
     public documentChange: EmitType<ContainerDocumentChangeEventArgs>;
-    /**      
+    /**
      * Triggers when toolbar item is clicked.
+     *
      * @event
      * @blazorproperty 'OnToolbarClick'
      * @blazorType Syncfusion.Blazor.Navigations.ClickEventArgs
@@ -168,6 +188,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public toolbarClick: EmitType<ClickEventArgs>;
     /**
      * Triggers while selecting the custom context-menu option.
+     *
      * @event
      * @blazorproperty 'ContextMenuItemSelected'
      */
@@ -175,6 +196,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public customContextMenuSelect: EmitType<CustomContentMenuEventArgs>;
     /**
      * Triggers before opening the custom context-menu option.
+     *
      * @event
      * @blazorproperty 'OnContextMenuOpen'
      */
@@ -182,6 +204,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public customContextMenuBeforeOpen: EmitType<BeforeOpenCloseCustomContentMenuEventArgs>;
     /**
      * Trigger before switching panes in DocumentEditor.
+     *
      * @event
      * @blazorproperty 'BeforePaneSwitch'
      */
@@ -189,6 +212,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public beforePaneSwitch: EmitType<BeforePaneSwitchEventArgs>;
     /**
      * Triggers on deleting a comment.
+     *
      * @blazorproperty 'OnCommentDelete'
      * @event
      */
@@ -196,12 +220,14 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public commentDelete: EmitType<CommentDeleteEventArgs>;
     /**
      * Triggers on comment actions(Post, edit, reply, resolve, reopen).
+     *
      * @event
      */
     @Event()
     public beforeCommentAction: EmitType<CommentActionEventArgs>;
     /**
      * Triggers when the server action fails.
+     *
      * @event
      */
     @Event()
@@ -209,19 +235,24 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
 
     /**
      * Triggers Keyboard shortcut of TrackChanges.
+     *
      * @blazorproperty 'OnEnableTrackChanges'
      * @event
      */
     @Event()
     public trackChange: EmitType<TrackChangeEventArgs>;
+    /* eslint-disable */
     /**
      * Triggers when user interaction prevented in content control.
+     *
      * @event
      */
     @Event()
     public contentControl: EmitType<Object>;
+     /* eslint-enable */
     /**
      * Document editor container's toolbar module
+     *
      * @private
      */
     public toolbarModule: Toolbar;
@@ -251,16 +282,19 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public statusBarElement: HTMLElement;
     /**
      * Text Properties
+     *
      * @private
      */
     public textProperties: TextProperties;
     /**
      * Header footer Properties
+     *
      * @private
      */
     public headerFooterProperties: HeaderFooterProperties;
     /**
      * Image Properties Pane
+     *
      * @private
      */
     public imageProperties: ImageProperties;
@@ -303,57 +337,69 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
 
     /**
      * Defines the settings for DocumentEditor customization.
+     *
      * @default {}
      */
-    // tslint:disable-next-line:max-line-length
     @Complex<DocumentEditorSettingsModel>({}, DocumentEditorSettings)
     public documentEditorSettings: DocumentEditorSettingsModel;
     /**
      * Defines the settings of the DocumentEditorContainer service.
      */
-    // tslint:disable-next-line:max-line-length
     @Property({ import: 'Import', systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing', canLock: 'CanLock', getPendingActions: 'GetPendingActions' })
     public serverActionSettings: ContainerServerActionSettingsModel;
 
-    //tslint:disable:max-line-length
-    /**    
+    /**
      * Defines toolbar items for DocumentEditorContainer.
+     *
      * @default ['New','Open','Separator','Undo','Redo','Separator','Image','Table','Hyperlink','Bookmark','TableOfContents','Separator','Header','Footer','PageSetup','PageNumber','Break','InsertFootnote','InsertEndnote','Separator','Find','Separator','Comments','TrackChanges','LocalClipboard','RestrictEditing','Separator','FormFields','UpdateFields']
      */
     @Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'InsertFootnote', 'InsertEndnote', 'Separator', 'Find', 'Separator', 'Comments', 'TrackChanges', 'Separator', 'LocalClipboard', 'RestrictEditing', 'Separator', 'FormFields', 'UpdateFields'])
     public toolbarItems: (CustomToolbarItemModel | ToolbarItem)[];
-    //tslint:enable:max-line-length
+    /* eslint-enable max-len */
+    /* eslint-disable */
     /**
      * Add custom headers to XMLHttpRequest.
+     *
      * @default []
      */
     @Property([])
     public headers: object[];
+     /* eslint-enable */
     /**
      * Gets DocumentEditor instance.
+     *
      * @aspType DocumentEditor
      * @blazorType DocumentEditor
+     * @returns {DocumentEditor} - Returns the DocumentEditor instance.
      */
     public get documentEditor(): DocumentEditor {
         return this.documentEditorInternal;
     }
     /**
      * Gets toolbar instance.
+     *
      * @blazorType Toolbar
+     * @returns {Toolbar} - Returns toolbar module.
      */
     public get toolbar(): Toolbar {
         return this.toolbarModule;
     }
-    /** 
+    /**
      * Initialize the constructor of DocumentEditorContainer
+     *
+     * @param { DocumentEditorContainerModel } options - Specified DocumentEditorContainer model as options.
+     * @param { string | HTMLElement }element - Specifies the element that is rendered as a DocumentEditorContainer.
      */
-    constructor(options?: DocumentEditorContainerModel, element?: string | HTMLElement) {
+    public constructor(options?: DocumentEditorContainerModel, element?: string | HTMLElement) {
         super(options, element);
     }
+    /* eslint-disable @typescript-eslint/naming-convention */
     /**
      * default locale
+     *
      * @private
      */
+    // eslint-disable-next-line
     public defaultLocale: Object = {
         'New': 'New',
         'Insert Footnote': 'Insert Footnote',
@@ -436,7 +482,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Align top': 'Align top',
         'Align bottom': 'Align bottom',
         'Align center': 'Align center',
-        // tslint:disable-next-line:max-line-length
         'Number of heading or outline levels to be shown in table of contents': 'Number of heading or outline levels to be shown in table of contents.',
         'Show page numbers': 'Show page numbers',
         'Show page numbers in table of contents': 'Show page numbers in table of contents.',
@@ -482,10 +527,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Redo Tooltip': 'Redo the last operation (Ctrl+Y).',
         'Insert inline picture from a file': 'Insert inline picture from a file.',
         'Insert a table into the document': 'Insert a table into the document',
-        // tslint:disable-next-line:max-line-length
         'Create Hyperlink': 'Create a link in your document for quick access to web pages and files (Ctrl+K).',
         'Insert a bookmark in a specific place in this document': 'Insert a bookmark in a specific place in this document.',
-        // tslint:disable-next-line:max-line-length
         'Provide an overview of your document by adding a table of contents': 'Provide an overview of your document by adding a table of contents.',
         'Add or edit the header': 'Add or edit the header.',
         'Add or edit the footer': 'Add or edit the footer.',
@@ -496,7 +539,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             'Access to system clipboard through script is denied due to browsers security policy. Instead, </br>' +
             ' 1. You can enable internal clipboard to cut, copy and paste within the component.</br>' +
             ' 2. You can use the keyboard shortcuts (Ctrl+X, Ctrl+C and Ctrl+V) to cut, copy and paste with system clipboard.',
-        // tslint:disable-next-line:max-line-length
         'Current Page Number': 'The current page number in the document. Click or tap to navigate specific page.',
         'Read only': 'Read only',
         'Protections': 'Protections',
@@ -515,12 +557,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Update cross reference fields': 'Update cross reference fields',
         'Track Changes': 'Keep track of the changes made in the document',
         'TrackChanges': 'Track Changes',
-        'AllCaps': 'AllCaps'
+        'AllCaps': 'AllCaps',
+        'Change case Tooltip': 'Change case'
     };
+    /* eslint-enable @typescript-eslint/naming-convention */
 
-    /**
-     * @private
-     */
     public getModuleName(): string {
         return 'DocumentEditorContainer';
     }
@@ -528,7 +569,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * @private
      */
-    // tslint:disable:max-func-body-length
+    /* eslint-disable  */
     public onPropertyChanged(newModel: DocumentEditorContainerModel, oldModel: DocumentEditorContainerModel): void {
         for (let prop of Object.keys(newModel)) {
             switch (prop) {
@@ -750,7 +791,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             this.documentEditor.documentEditorSettings.fontFamilies = this.documentEditorSettings.fontFamilies;
         }
         if (this.documentEditorSettings.collaborativeEditingSettings) {
-            // tslint:disable-next-line:max-line-length
             this.documentEditor.documentEditorSettings.collaborativeEditingSettings = this.documentEditorSettings.collaborativeEditingSettings;
         }
     }
@@ -761,7 +801,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         return 'documenteditor-container';
     }
 
-    //tslint:disable: max-func-body-length
+    /* eslint-disable  */
     protected requiredModules(): ModuleDeclaration[] {
         let modules: ModuleDeclaration[] = [];
         if (this.enableToolbar) {
@@ -795,7 +835,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     }
     private createToolbarContainer(isRtl: boolean, isCustom?: boolean): void {
         if (isNullOrUndefined((this.editorContainer))) {
-            // tslint:disable-next-line:max-line-length
             this.editorContainer = this.createElement('div', { className: 'e-de-tool-ctnr-properties-pane' + (isRtl ? ' e-de-ctnr-rtl' : '') });
         }
         if (this.enableToolbar) {
@@ -1070,7 +1109,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
         this.previousContext = this.documentEditor.selection.contextType;
         if (this.toolbarModule && this.toolbarModule.toolbar) {
-            // tslint:disable-next-line:max-line-length
             this.toolbarModule.enableDisableInsertComment(!this.documentEditor.enableHeaderAndFooter && this.enableComment && !this.documentEditor.isReadOnlyMode);
         }
     }

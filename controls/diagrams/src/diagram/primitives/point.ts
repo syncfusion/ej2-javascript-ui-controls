@@ -21,7 +21,15 @@ export class Point extends ChildProperty<Point> {
     @Property(0)
     public y: number;
 
-    /**   @private  */
+    /**
+     * equals method \
+     *
+     * @returns { boolean } equals method .\
+     * @param {PointModel} point1 - provide the point1 value.
+     * @param {PointModel} point2 - provide the point1 value.
+     *
+     * @private
+     */
     public static equals(point1: PointModel, point2: PointModel): boolean {
         if (point1 === point2) { return true; }
         if (!point1 || !point2) { return false; }
@@ -29,7 +37,12 @@ export class Point extends ChildProperty<Point> {
     }
 
     /**
-     * check whether the points are given 
+     * isEmptyPoint method \
+     *
+     * @returns { boolean } isEmptyPoint method .\
+     * @param {PointModel} point - provide the points value.
+     *
+     * @private
      */
     public static isEmptyPoint(point: PointModel): boolean {
         if (point.x && point.y) {
@@ -70,21 +83,46 @@ export class Point extends ChildProperty<Point> {
     // public distance(point2: PointModel): number {
     //     return Math.sqrt(Math.pow(this.x - point2.x, 2) + Math.pow(this.y - point2.y, 2));
     // }
-    /**   @private  */
+    /**
+     * transform method \
+     *
+     * @returns { PointModel } transform method .\
+     * @param {PointModel} point - provide the points value.
+     * @param {number} angle - provide the points value.
+     * @param {number} length - provide the points value.
+     *
+     * @private
+     */
     public static transform(point: PointModel, angle: number, length: number): PointModel {
-        let pt: PointModel = { x: 0, y: 0 };
+        const pt: PointModel = { x: 0, y: 0 };
         pt.x = Math.round((point.x + length * Math.cos(angle * Math.PI / 180)) * 100) / 100;
         pt.y = Math.round((point.y + length * Math.sin(angle * Math.PI / 180)) * 100) / 100;
         return pt as Point;
     }
 
-    /**   @private  */
+    /**
+     * findLength method \
+     *
+     * @returns { number } findLength method .\
+     * @param {PointModel} s - provide the points value.
+     * @param {PointModel} e - provide the points value.
+     *
+     * @private
+     */
     public static findLength(s: PointModel, e: PointModel): number {
-        let length: number = Math.sqrt(Math.pow((s.x - e.x), 2) + Math.pow((s.y - e.y), 2));
+        const length: number = Math.sqrt(Math.pow((s.x - e.x), 2) + Math.pow((s.y - e.y), 2));
         return length;
     }
 
-    /**   @private  */
+    /**
+     * findAngle method \
+     *
+     * @returns { number } findAngle method .\
+     * @param {PointModel} point1 - provide the points value.
+     * @param {PointModel} point2 - provide the points value.
+     *
+     * @private
+     */
     public static findAngle(point1: PointModel, point2: PointModel): number {
         let angle: number = Math.atan2(point2.y - point1.y, point2.x - point1.x);
         angle = (180 * angle / Math.PI);
@@ -95,13 +133,28 @@ export class Point extends ChildProperty<Point> {
         return angle;
     }
 
-    /**   @private  */
+    /**
+     * distancePoints method \
+     *
+     * @returns { number } distancePoints method .\
+     * @param {PointModel} pt1 - provide the points value.
+     * @param {PointModel} pt2 - provide the points value.
+     *
+     * @private
+     */
     public static distancePoints(pt1: PointModel, pt2: PointModel): number {
         return Math.sqrt(Math.pow(pt2.x - pt1.x, 2) + Math.pow(pt2.y - pt1.y, 2));
     }
 
 
-    /**   @private  */
+    /**
+     * getLengthFromListOfPoints method \
+     *
+     * @returns { number } getLengthFromListOfPoints method .\
+     * @param {PointModel[]} points - provide the points value.
+     *
+     * @private
+     */
     public static getLengthFromListOfPoints(points: PointModel[]): number {
         let length: number = 0;
         for (let j: number = 0; j < points.length - 1; j++) {
@@ -110,7 +163,17 @@ export class Point extends ChildProperty<Point> {
         return length;
     }
 
-    /**   @private  */
+    /**
+     * adjustPoint method \
+     *
+     * @returns { PointModel } adjustPoint method .\
+     * @param {PointModel} source - provide the points value.
+     * @param {PointModel} target - provide the points value.
+     * @param {boolean} isStart - provide the isStart value.
+     * @param {number} length - provide the length value.
+     *
+     * @private
+     */
     public static adjustPoint(source: PointModel, target: PointModel, isStart: boolean, length: number): PointModel {
         let pt: PointModel = isStart ? { x: source.x, y: source.y } : { x: target.x, y: target.y };
         let angle: number;
@@ -139,7 +202,15 @@ export class Point extends ChildProperty<Point> {
         return pt;
     }
 
-    /**   @private  */
+    /**
+     * direction method \
+     *
+     * @returns { string } direction method .\
+     * @param {PointModel} pt1 - provide the points value.
+     * @param {PointModel} pt2 - provide the points value.
+     *
+     * @private
+     */
     public static direction(pt1: PointModel, pt2: PointModel): string {
         if (Math.abs(pt2.x - pt1.x) > Math.abs(pt2.y - pt1.y)) {
             return pt1.x < pt2.x ? 'Right' : 'Left';
@@ -167,8 +238,11 @@ export class Point extends ChildProperty<Point> {
     // }
 
     /**
+     * getClassName method \
+     *
+     * @returns { string } getClassName method .\
+     *
      * @private
-     * Returns the name of class Point
      */
     public getClassName(): string {
         return 'Point';

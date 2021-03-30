@@ -1,3 +1,4 @@
+/* eslint-disable no-inner-declarations */
 import { extend, merge, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { attributes, prepend, isVisible, append, addClass } from '@syncfusion/ej2-base';
 import { compile } from '@syncfusion/ej2-base';
@@ -59,12 +60,14 @@ export type SortOrder = 'None' | 'Ascending' | 'Descending';
 /**
  * Base List Generator
  */
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace ListBase {
 
     /**
+     *
      * Default mapped fields.
      */
-    export let defaultMappedFields: FieldsMapping = {
+    export const defaultMappedFields: FieldsMapping = {
         id: 'id',
         text: 'text',
         url: 'url',
@@ -85,7 +88,7 @@ export namespace ListBase {
         groupBy: null
     };
 
-    let defaultAriaAttributes: AriaAttributesMapping = {
+    const defaultAriaAttributes: AriaAttributesMapping = {
         level: 1,
         listRole: 'presentation',
         itemRole: 'presentation',
@@ -94,7 +97,7 @@ export namespace ListBase {
         wrapperRole: 'presentation'
     };
 
-    let defaultListBaseOptions: ListBaseOptions = {
+    const defaultListBaseOptions: ListBaseOptions = {
         showCheckBox: false,
         showIcon: false,
         enableHtmlSanitizer: false,
@@ -116,59 +119,92 @@ export namespace ListBase {
 
     /**
      * Function helps to created and return the UL Li element based on your data.
-     * @param  {{[key:string]:Object}[]|string[]} dataSource - Specifies an array of JSON or String data.
+     *
+     * @param  {createElementParams} createElement - Specifies an array of JSON data.
+     *
+     * @param  {{Object}[]} dataSource - Specifies an array of JSON data.
+     *
      * @param  {ListBaseOptions} options? - Specifies the list options that need to provide.
+     *
+     * @param  {boolean} isSingleLevel? - Specifies the list options that need to provide.
+     *
+     * @param  {any} componentInstance? - Specifies the list options that need to provide.
+     *
+     * @returns  {createElement} createListFromJson - Specifies the list options that need to provide.
      */
 
     export function createList(
         createElement: createElementParams, dataSource: { [key: string]: Object }[] | string[] | number[],
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         options?: ListBaseOptions, isSingleLevel?: boolean, componentInstance?: any):
         HTMLElement {
-        let curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
-        let ariaAttributes: AriaAttributesMapping = extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
-        let type: string = typeofData(dataSource).typeof as string;
+        const curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
+        const ariaAttributes: AriaAttributesMapping = extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
+        const type: string = typeofData(dataSource).typeof as string;
         if (type === 'string' || type === 'number') {
             return createListFromArray(createElement, <string[] | number[]>dataSource, isSingleLevel, options, componentInstance);
         } else {
-            // tslint:disable-next-line
             return createListFromJson(createElement, <{ [key: string]: Object }[]>dataSource, options,
-                // tslint:disable-next-line
-                 ariaAttributes.level, isSingleLevel, componentInstance);
+                                      ariaAttributes.level, isSingleLevel, componentInstance);
         }
     }
 
     /**
      * Function helps to created an element list based on string array input .
-     * @param  {string[]} dataSource - Specifies an array of string data
+     *
+     * @param  {createElementParams} createElement - Specifies an array of JSON data.
+     *
+     * @param  {{Object}[]} dataSource - Specifies an array of JSON data.
+     *
+     * @param  {ListBaseOptions} options? - Specifies the list options that need to provide.
+     *
+     * @param  {boolean} isSingleLevel? - Specifies the list options that need to provide.
+     *
+     * @param  {any} componentInstance? - Specifies the list options that need to provide.
+     *
+     * @returns  {createElement} generateUL - returns the list options that need to provide.
      */
+
     export function createListFromArray(
         createElement: createElementParams, dataSource: string[] | number[],
         // tslint:disable-next-line
+        // eslint-disable-next-line
         isSingleLevel?: boolean, options?: ListBaseOptions, componentInstance?: any): HTMLElement {
-        let subChild: HTMLElement[] = createListItemFromArray(createElement, dataSource, isSingleLevel, options, componentInstance);
+        const subChild: HTMLElement[] = createListItemFromArray(createElement, dataSource, isSingleLevel, options, componentInstance);
         return generateUL(createElement, subChild, null, options);
     }
-
     /**
      * Function helps to created an element list based on string array input .
-     * @param  {string[]} dataSource - Specifies an array of string data
+     *
+     * @param  {createElementParams} createElement - Specifies an array of JSON data.
+     *
+     * @param  {{Object}[]} dataSource - Specifies an array of JSON data.
+     *
+     * @param  {ListBaseOptions} options? - Specifies the list options that need to provide.
+     *
+     * @param  {boolean} isSingleLevel? - Specifies the list options that need to provide.
+     *
+     * @param  {any} componentInstance? - Specifies the list options that need to provide.
+     *
+     * @returns  {HTMLElement[]} subChild - returns the list options that need to provide.
      */
+
+
     export function createListItemFromArray(
         createElement: createElementParams, dataSource: string[] | number[],
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         isSingleLevel?: boolean, options?: ListBaseOptions, componentInstance?: any): HTMLElement[] {
-        let subChild: HTMLElement[] = [];
-        let curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
+        const subChild: HTMLElement[] = [];
+        const curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
         cssClass = getModuleClass(curOpt.moduleName);
-        let id: string = generateId(); // generate id for drop-down-list option.
+        const id: string = generateId(); // generate id for drop-down-list option.
         for (let i: number = 0; i < dataSource.length; i++) {
             if (isNullOrUndefined(dataSource[i])) {
                 continue;
             }
             let li: HTMLElement;
             if (curOpt.itemCreating && typeof curOpt.itemCreating === 'function') {
-                let curData: object = {
+                const curData: object = {
                     dataSource: dataSource,
                     curData: dataSource[i],
                     text: dataSource[i],
@@ -183,7 +219,7 @@ export namespace ListBase {
                 li = generateLI(createElement, dataSource[i], undefined, null, null, options, componentInstance);
             }
             if (curOpt.itemCreated && typeof curOpt.itemCreated === 'function') {
-                let curData: Object = {
+                const curData: Object = {
                     dataSource: dataSource,
                     curData: dataSource[i],
                     text: dataSource[i],
@@ -201,28 +237,41 @@ export namespace ListBase {
 
     /**
      * Function helps to created an element list based on array of JSON input .
-     * @param  {{[key:string]:Object}[]} dataSource - Specifies an array of JSON data.
+     *
+     * @param  {createElementParams} createElement - Specifies an array of JSON data.
+     *
+     * @param  {{Object}[]} dataSource - Specifies an array of JSON data.
+     *
      * @param  {ListBaseOptions} options? - Specifies the list options that need to provide.
+     *
+     * @param  {boolean} isSingleLevel? - Specifies the list options that need to provide.
+     *
+     * @param  {number} level? - Specifies the list options that need to provide.
+     *
+     * @param  {any} componentInstance? - Specifies the list options that need to provide.
+     *
+     * @returns  {HTMLElement[]} child - returns the list options that need to provide.
      */
-    // tslint:disable-next-line:max-func-body-length
-    // tslint:disable-next-line
+
+
     export function createListItemFromJson(
         createElement: createElementParams, dataSource: { [key: string]: Object }[],
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         options?: ListBaseOptions, level?: number, isSingleLevel?: boolean, componentInstance?: any): HTMLElement[] {
-        let curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
+        const curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
         cssClass = getModuleClass(curOpt.moduleName);
-        let fields: FieldsMapping = extend({}, defaultMappedFields, curOpt.fields);
-        let ariaAttributes: AriaAttributesMapping = extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
+        const fields: FieldsMapping = extend({}, defaultMappedFields, curOpt.fields);
+        const ariaAttributes: AriaAttributesMapping = extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
         let id: string;
         let checkboxElement: HTMLElement[] = [];
         if (level) {
             ariaAttributes.level = level;
         }
-        let child: HTMLElement[] = [];
+        const child: HTMLElement[] = [];
         let li: HTMLElement;
         let anchorElement: HTMLElement;
         if (dataSource && dataSource.length && !isNullOrUndefined(typeofData(dataSource).item) &&
+            // eslint-disable-next-line no-prototype-builtins
             !typeofData(dataSource).item.hasOwnProperty(fields.id)) {
             id = generateId(); // generate id for drop-down-list option.
         }
@@ -230,7 +279,7 @@ export namespace ListBase {
             let fieldData: { [key: string]: Object } = <{ [key: string]: Object }>getFieldValues(dataSource[i], fields);
             if (isNullOrUndefined(dataSource[i])) { continue; }
             if (curOpt.itemCreating && typeof curOpt.itemCreating === 'function') {
-                let curData: { [key: string]: object | string } = {
+                const curData: { [key: string]: object | string } = {
                     dataSource: dataSource,
                     curData: dataSource[i],
                     text: fieldData[fields.text],
@@ -239,14 +288,15 @@ export namespace ListBase {
                 };
                 curOpt.itemCreating(curData);
             }
-            let curItem: { [key: string]: Object } = dataSource[i];
+            const curItem: { [key: string]: Object } = dataSource[i];
             if (curOpt.itemCreating && typeof curOpt.itemCreating === 'function') {
                 fieldData = <{ [key: string]: Object }>getFieldValues(dataSource[i], fields);
             }
+            // eslint-disable-next-line no-prototype-builtins
             if (fieldData.hasOwnProperty(fields.id) && !isNullOrUndefined(fieldData[fields.id])) {
                 id = <string>fieldData[fields.id];
             }
-            let innerEle: HTMLElement[] = [];
+            const innerEle: HTMLElement[] = [];
             if (curOpt.showCheckBox) {
                 if (curOpt.itemNavigable && (fieldData[fields.url] || fieldData[fields.urlAttributes])) {
                     checkboxElement.push(createElement('input', { className: cssClass.check, attrs: { type: 'checkbox' } }));
@@ -255,6 +305,7 @@ export namespace ListBase {
                 }
             }
             if (isSingleLevel === true) {
+                // eslint-disable-next-line no-prototype-builtins
                 if (curOpt.showIcon && fieldData.hasOwnProperty(fields.iconCss) && !isNullOrUndefined(fieldData[fields.iconCss])) {
                     innerEle.push(createElement('span', { className: cssClass.icon + ' ' + <string>fieldData[fields.iconCss] }));
                 }
@@ -265,6 +316,7 @@ export namespace ListBase {
                     fields,
                     curOpt.itemClass,
                     innerEle,
+                    // eslint-disable-next-line no-prototype-builtins
                     (curItem.hasOwnProperty('isHeader') &&
                         (curItem as { isHeader: Object } & { [key: string]: Object }).isHeader) ? true : false,
                     id,
@@ -278,33 +330,38 @@ export namespace ListBase {
                 li.classList.add(cssClass.level + '-' + ariaAttributes.level);
                 li.setAttribute('aria-level', ariaAttributes.level.toString());
                 anchorElement = li.querySelector('.' + cssClass.anchorWrap);
+                // eslint-disable-next-line no-prototype-builtins
                 if (fieldData.hasOwnProperty(fields.tooltip)) {
                     li.setAttribute('title', <string>fieldData[fields.tooltip]);
                 }
+                // eslint-disable-next-line no-prototype-builtins
                 if (fieldData.hasOwnProperty(fields.htmlAttributes) && fieldData[fields.htmlAttributes]) {
                     setAttribute(li, <{ [key: string]: string }>fieldData[fields.htmlAttributes]);
                 }
+                // eslint-disable-next-line no-prototype-builtins
                 if (fieldData.hasOwnProperty(fields.enabled) && fieldData[fields.enabled] === false) {
                     li.classList.add(cssClass.disabled);
                 }
+                // eslint-disable-next-line no-prototype-builtins
                 if (fieldData.hasOwnProperty(fields.isVisible) && fieldData[fields.isVisible] === false) {
                     li.style.display = 'none';
                 }
+                // eslint-disable-next-line no-prototype-builtins
                 if (fieldData.hasOwnProperty(fields.imageUrl) && !isNullOrUndefined(fieldData[fields.imageUrl])
                     && !curOpt.template) {
-                    let attr: { [key: string]: string } = { src: <string>fieldData[fields.imageUrl] };
+                    const attr: { [key: string]: string } = { src: <string>fieldData[fields.imageUrl] };
                     merge(attr, fieldData[fields.imageAttributes]);
-                    let imageElemnt: HTMLElement = createElement('img', { className: cssClass.image, attrs: attr });
+                    const imageElemnt: HTMLElement = createElement('img', { className: cssClass.image, attrs: attr });
                     if (anchorElement) {
                         anchorElement.insertAdjacentElement('afterbegin', imageElemnt);
                     } else {
                         prepend([imageElemnt], li.firstElementChild);
                     }
                 }
+                // eslint-disable-next-line no-prototype-builtins
                 if (curOpt.showIcon && fieldData.hasOwnProperty(fields.iconCss) &&
                     !isNullOrUndefined(fieldData[fields.iconCss]) && !curOpt.template) {
-                    let iconElement: HTMLElement;
-                    iconElement = createElement('div', { className: cssClass.icon + ' ' + <string>fieldData[fields.iconCss] });
+                    const iconElement: HTMLElement = createElement('div', { className: cssClass.icon + ' ' + <string>fieldData[fields.iconCss] });
                     if (anchorElement) {
                         anchorElement.insertAdjacentElement('afterbegin', iconElement);
                     } else {
@@ -323,7 +380,7 @@ export namespace ListBase {
                 addClass([li], [cssClass.navigable]);
             }
             if (curOpt.itemCreated && typeof curOpt.itemCreated === 'function') {
-                let curData: { [key: string]: object | string } = {
+                const curData: { [key: string]: object | string } = {
                     dataSource: dataSource,
                     curData: dataSource[i],
                     text: fieldData[fields.text],
@@ -341,31 +398,47 @@ export namespace ListBase {
 
     /**
      * Function helps to created an element list based on array of JSON input .
-     * @param  {{[key:string]:Object}[]} dataSource - Specifies an array of JSON data.
+     *
+     * @param  {createElementParams} createElement - Specifies an array of JSON data.
+     *
+     * @param  {{Object}[]} dataSource - Specifies an array of JSON data.
+     *
      * @param  {ListBaseOptions} options? - Specifies the list options that need to provide.
+     *
+     * @param  {number} level? - Specifies the list options that need to provide.
+     *
+     * @param  {boolean} isSingleLevel? - Specifies the list options that need to provide.
+     *
+     * @param  {any} componentInstance? - Specifies the list options that need to provide.
+     *
+     * @returns  {createElement} generateUL - Specifies the list options that need to provide.
      */
+
     export function createListFromJson(
         createElement: createElementParams, dataSource: { [key: string]: Object }[],
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         options?: ListBaseOptions, level?: number, isSingleLevel?: boolean, componentInstance?: any): HTMLElement {
-        let curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
-        let li: HTMLElement[] = createListItemFromJson(createElement, dataSource, options, level, isSingleLevel, componentInstance);
+        const curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
+        const li: HTMLElement[] = createListItemFromJson(createElement, dataSource, options, level, isSingleLevel, componentInstance);
         return generateUL(createElement, li, curOpt.listClass, options);
     }
 
+
     /**
      * Return the next or previous visible element.
+     *
      * @param  {Element[]|NodeList} elementArray - An element array to find next or previous element.
      * @param  {Element} li - An element to find next or previous after this element.
      * @param  {boolean} isPrevious? - Specify when the need get previous element from array.
      */
+
     export function getSiblingLI(elementArray: Element[] | NodeList, element: Element, isPrevious?: boolean): Element {
 
         cssClass = getModuleClass(defaultListBaseOptions.moduleName);
         if (!elementArray || !elementArray.length) { return void 0; }
         let siblingLI: Element;
         let liIndex: number;
-        let liCollections: Element[] = Array.prototype.slice.call(elementArray);
+        const liCollections: Element[] = Array.prototype.slice.call(elementArray);
         if (element) {
             liIndex = indexOf(element, liCollections);
         } else {
@@ -381,9 +454,11 @@ export namespace ListBase {
 
     /**
      * Return the index of the li element
+     *
      * @param  {Element} item - An element to find next or previous after this element.
-     * @param  {Element[]|NodeList} elementArray - An element array to find index of given li.
+     * @param  {Element[]} elementArray - An element array to find index of given li.
      */
+
     export function indexOf(item: Element, elementArray: Element[] | NodeList): number {
         if (!elementArray || !item) { return void 0; } else {
             let liCollections: Element[] = <Element[]>elementArray;
@@ -392,29 +467,33 @@ export namespace ListBase {
         }
     }
 
+
     /**
      * Returns the grouped data from given dataSource.
-     * @param  {{[key:string]:Object}[]} dataSource - The JSON data which is necessary to process.
+     *
+     * @param  {{Object}[]} dataSource - The JSON data which is necessary to process.
      * @param  {FieldsMapping} fields - Fields that are mapped from the data source.
-     * @param  {SortOrder='None'} sortOrder- Specifies final result sort order.
+     * @param  {SortOrder} sortOrder- Specifies final result sort order.
      */
+
     export function groupDataSource(
         dataSource: { [key: string]: Object }[],
         fields: FieldsMapping,
         sortOrder: SortOrder = 'None'): { [key: string]: Object }[] {
-        let curFields: FieldsMapping = extend({}, defaultMappedFields, fields);
+        const curFields: FieldsMapping = extend({}, defaultMappedFields, fields);
         let cusQuery: Query = new Query().group(curFields.groupBy);
 
         // need to remove once sorting issues fixed in DataManager
         cusQuery = addSorting(sortOrder, 'key', cusQuery);
 
-        let ds: { [key: string]: Object }[] = getDataSource(dataSource, cusQuery);
+        const ds: { [key: string]: Object }[] = getDataSource(dataSource, cusQuery);
         dataSource = [];
 
         for (let j: number = 0; j < ds.length; j++) {
-            let itemObj: { [key: string]: Object }[] = (ds[j] as { items: { [key: string]: Object }[] } & { [key: string]: Object }).items;
-            let grpItem: { [key: string]: Object } = {};
-            let hdr: string = 'isHeader';
+            const itemObj: { [key: string]: Object }[]
+            = (ds[j] as { items: { [key: string]: Object }[] } & { [key: string]: Object }).items;
+            const grpItem: { [key: string]: Object } = {};
+            const hdr: string = 'isHeader';
             grpItem[curFields.text] = (ds[j] as { key: string } & { [key: string]: Object }).key;
             grpItem[hdr] = true;
             let newtext: string = curFields.text;
@@ -435,10 +514,12 @@ export namespace ListBase {
 
     /**
      * Returns a sorted query object.
+     *
      * @param  {SortOrder} sortOrder - Specifies that sort order.
      * @param  {string} sortBy - Specifies sortBy fields.
-     * @param  {Query=new Query()} query - Pass if any existing query.
+     * @param  {Query} query - Pass if any existing query.
      */
+
     export function addSorting(sortOrder: SortOrder, sortBy: string, query: Query = new Query()): Query {
         if (sortOrder === 'Ascending') {
             query.sortBy(sortBy, 'ascending', true);
@@ -457,38 +538,46 @@ export namespace ListBase {
 
     /**
      * Return an array of JSON Data that processed based on queries.
-     * @param  {{[key:string]:Object}[]} dataSource - Specifies local JSON data source.
+     *
+     * @param  {{Object}[]} dataSource - Specifies local JSON data source.
+     *
      * @param  {Query} query - Specifies query that need to process.
      */
+
+
     export function getDataSource(dataSource: { [key: string]: Object }[], query: Query): { [key: string]: Object }[] {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         return <{ [key: string]: Object }[]>new DataManager(<any[]>dataSource)
             .executeLocal(query);
     }
     /**
      * Created JSON data based the UL and LI element
+     *
      * @param  {HTMLElement|Element} element - UL element that need to convert as a JSON
      * @param  {ListBaseOptions} options? - Specifies listbase option for fields.
      */
+
     export function createJsonFromElement(
         element: HTMLElement | Element, options?: ListBaseOptions): { [key: string]: Object }[] {
 
-        let curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
-        let fields: FieldsMapping = extend({}, defaultMappedFields, curOpt.fields);
-        let curEle: HTMLElement = <HTMLElement>element.cloneNode(true);
-        let jsonAr: { [key: string]: {} }[] = [];
+        const curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
+        const fields: FieldsMapping = extend({}, defaultMappedFields, curOpt.fields);
+        const curEle: HTMLElement = <HTMLElement>element.cloneNode(true);
+        // eslint-disable-next-line
+        const jsonAr: { [key: string]: {} }[] = [];
 
         curEle.classList.add('json-parent');
-        let childs: HTMLElement[] = <HTMLElement[] & NodeListOf<HTMLElement>>curEle.querySelectorAll('.json-parent>li');
+        const childs: HTMLElement[] = <HTMLElement[] & NodeListOf<HTMLElement>>curEle.querySelectorAll('.json-parent>li');
         curEle.classList.remove('json-parent');
 
         for (let i: number = 0; i < childs.length; i++) {
-            let li: HTMLElement = childs[i];
-            let anchor: HTMLElement = li.querySelector('a');
-            let ul: Element = li.querySelector('ul');
-            let json: { [key: string]: {} } = {};
-            let childNodes: NodeList = anchor ? anchor.childNodes : li.childNodes;
-            let keys: string[] = Object.keys(childNodes);
+            const li: HTMLElement = childs[i];
+            const anchor: HTMLElement = li.querySelector('a');
+            const ul: Element = li.querySelector('ul');
+            // eslint-disable-next-line
+            const json: { [key: string]: {} } = {};
+            const childNodes: NodeList = anchor ? anchor.childNodes : li.childNodes;
+            const keys: string[] = Object.keys(childNodes);
             for (let i: number = 0; i < childNodes.length; i++) {
                 if (!(childNodes[Number(keys[i])]).hasChildNodes()) {
                     json[fields.text] = childNodes[Number(keys[i])].textContent;
@@ -531,7 +620,7 @@ export namespace ListBase {
     }
 
     function setAttribute(element: HTMLElement, elementAttributes: { [key: string]: string }): void {
-        let attr: { [key: string]: string } = {};
+        const attr: { [key: string]: string } = {};
         merge(attr, elementAttributes);
         if (attr.class) {
             addClass([element], attr.class.split(' '));
@@ -541,43 +630,47 @@ export namespace ListBase {
     }
 
     function getAllAttributes(element: HTMLElement): { [key: string]: string } {
-        let attributes: { [key: string]: string } = {};
-        let attr: NamedNodeMap = element.attributes;
+        const attributes: { [key: string]: string } = {};
+        const attr: NamedNodeMap = element.attributes;
         for (let index: number = 0; index < attr.length; index++) {
             attributes[attr[index].nodeName] = attr[index].nodeValue;
         }
         return attributes;
     }
 
+
     /**
      * Created UL element from content template.
+     *
      * @param  {string} template - that need to convert and generate li element.
-     * @param  {{[key:string]:Object}[]} dataSource - Specifies local JSON data source.
+     * @param  {{Object}[]} dataSource - Specifies local JSON data source.
      * @param  {ListBaseOptions} options? - Specifies listbase option for fields.
      */
+
     export function renderContentTemplate(
         createElement: createElementParams, template: string, dataSource: { [key: string]: Object }[] | string[] | number[],
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         fields?: FieldsMapping, options?: ListBaseOptions, componentInstance?: any): HTMLElement {
         cssClass = getModuleClass(defaultListBaseOptions.moduleName);
-        let ulElement: HTMLElement = createElement('ul', { className: cssClass.ul, attrs: { role: 'presentation' } });
-        let curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
-        let curFields: FieldsMapping = extend({}, defaultMappedFields, fields);
-        let compiledString: Function = compile(template);
-        let liCollection: HTMLElement[] = [];
+        const ulElement: HTMLElement = createElement('ul', { className: cssClass.ul, attrs: { role: 'presentation' } });
+        const curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
+        const curFields: FieldsMapping = extend({}, defaultMappedFields, fields);
+        // eslint-disable-next-line
+        const compiledString: Function = compile(template);
+        const liCollection: HTMLElement[] = [];
         let value: string;
-        let id: string = generateId(); // generate id for drop-down-list option.
+        const id: string = generateId(); // generate id for drop-down-list option.
         for (let i: number = 0; i < dataSource.length; i++) {
             let fieldData: { [key: string]: Object } = <{ [key: string]: Object }>getFieldValues(dataSource[i], curFields);
-            let curItem: { [key: string]: Object } | string | number = dataSource[i];
-            let isHeader: Object = (curItem as { isHeader: Object } & { [key: string]: Object }).isHeader;
+            const curItem: { [key: string]: Object } | string | number = dataSource[i];
+            const isHeader: Object = (curItem as { isHeader: Object } & { [key: string]: Object }).isHeader;
             if (typeof dataSource[i] === 'string' || typeof dataSource[i] === 'number') {
                 value = curItem as string;
             } else {
                 value = fieldData[curFields.value] as string;
             }
             if (curOpt.itemCreating && typeof curOpt.itemCreating === 'function') {
-                let curData: object = {
+                const curData: object = {
                     dataSource: dataSource,
                     curData: curItem,
                     text: value,
@@ -594,7 +687,7 @@ export namespace ListBase {
                     value = fieldData[curFields.value] as string;
                 }
             }
-            let li: HTMLElement = createElement('li', {
+            const li: HTMLElement = createElement('li', {
                 id: id + '-' + i,
                 className: isHeader ? cssClass.group : cssClass.li, attrs: { role: 'presentation' }
             });
@@ -602,7 +695,7 @@ export namespace ListBase {
                 if (typeof dataSource[i] === 'string' || typeof dataSource[i] === 'number') {
                     li.innerText = curItem as string;
                 } else {
-                   li.innerText = fieldData[curFields.text] as string;
+                    li.innerText = fieldData[curFields.text] as string;
                 }
             } else {
                 const currentID: string = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
@@ -615,7 +708,7 @@ export namespace ListBase {
                 li.setAttribute('role', 'option');
             }
             if (curOpt.itemCreated && typeof curOpt.itemCreated === 'function') {
-                let curData: Object = {
+                const curData: Object = {
                     dataSource: dataSource,
                     curData: curItem,
                     text: value,
@@ -632,24 +725,30 @@ export namespace ListBase {
     }
     /**
      * Created header items from group template.
+     *
      * @param  {string} template - that need to convert and generate li element.
-     * @param  {{[key:string]:Object}[]} dataSource - Specifies local JSON data source.
+     *
+     * @param  {{Object}[]} dataSource - Specifies local JSON data source.
+     *
      * @param  {FieldsMapping} fields - Specifies fields for mapping the dataSource.
+     *
      * @param  {Element[]} headerItems? - Specifies listbase header items.
      */
+
     // tslint:disable-next-line
     export function renderGroupTemplate(
         groupTemplate: string,
         groupDataSource: { [key: string]: Object }[],
         fields: FieldsMapping,
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         headerItems: Element[], options?: ListBaseOptions, componentInstance?: any): Element[] {
-        let compiledString: Function = compile(groupTemplate);
-        let curFields: FieldsMapping = extend({}, defaultMappedFields, fields);
-        let curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
-        let category: string = curFields.groupBy;
-        for (let header of headerItems) {
-            let headerData: { [key: string]: string; } = {};
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        const compiledString: Function = compile(groupTemplate);
+        const curFields: FieldsMapping = extend({}, defaultMappedFields, fields);
+        const curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
+        const category: string = curFields.groupBy;
+        for (const header of headerItems) {
+            const headerData: { [key: string]: string; } = {};
             headerData[category] = header.textContent;
             header.innerHTML = '';
             append(
@@ -674,14 +773,14 @@ export namespace ListBase {
         createElement: createElementParams, fieldData: { [key: string]: Object }, fields: FieldsMapping, ds: { [key: string]: Object }[],
         options: ListBaseOptions, element: HTMLElement, level: number): void {
         // Get SubList
-        let subDS: { [key: string]: Object }[] = <{ [key: string]: Object }[]>fieldData[fields.child] || [];
+        const subDS: { [key: string]: Object }[] = <{ [key: string]: Object }[]>fieldData[fields.child] || [];
         let hasChildren: boolean = <boolean>fieldData[fields.hasChildren];
         //Create Sub child
         if (subDS.length) {
             hasChildren = true;
             element.classList.add(cssClass.hasChild);
             if (options.processSubChild) {
-                let subLi: HTMLElement = <HTMLElement>createListFromJson(createElement, subDS, options, ++level);
+                const subLi: HTMLElement = <HTMLElement>createListFromJson(createElement, subDS, options, ++level);
                 element.appendChild(subLi);
             }
         }
@@ -689,7 +788,8 @@ export namespace ListBase {
         // Create expand and collapse node
         if (!!options.expandCollapse && hasChildren && !options.template) {
             element.firstElementChild.classList.add(cssClass.iconWrapper);
-            let expandElement: Function = options.expandIconPosition === 'Left' ? prepend : append;
+            // eslint-disable-next-line @typescript-eslint/ban-types
+            const expandElement: Function = options.expandIconPosition === 'Left' ? prepend : append;
             expandElement(
                 [createElement('div', { className: 'e-icons ' + options.expandIconClass })],
                 element.querySelector('.' + cssClass.textContent));
@@ -701,8 +801,8 @@ export namespace ListBase {
         fieldData: { [key: string]: Object }, fields?: FieldsMapping, className?: string, innerElements?: HTMLElement[],
         grpLI?: boolean, id?: string, index?: number, options?: ListBaseOptions):
         HTMLElement {
-        let curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
-        let ariaAttributes: AriaAttributesMapping = extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
+        const curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
+        const ariaAttributes: AriaAttributesMapping = extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
         let text: string = <string>item;
         let value: string = <string>item;
         let dataSource: { [key: string]: string } | { [key: string]: object };
@@ -719,11 +819,12 @@ export namespace ListBase {
         } else {
             elementID = id + '-' + index;
         }
-        let li: HTMLElement = createElement('li', {
+        const li: HTMLElement = createElement('li', {
             className: (grpLI === true ? cssClass.group : cssClass.li) + ' ' + (isNullOrUndefined(className) ? '' : className),
             id: elementID, attrs: (ariaAttributes.groupItemRole !== '' && ariaAttributes.itemRole !== '' ?
                 { role: (grpLI === true ? ariaAttributes.groupItemRole : ariaAttributes.itemRole) } : {})
         });
+        // eslint-disable-next-line no-prototype-builtins
         if (dataSource && fieldData.hasOwnProperty(fields.enabled) && fieldData[fields.enabled].toString() === 'false') {
             li.classList.add(cssClass.disabled);
         }
@@ -733,7 +834,7 @@ export namespace ListBase {
             li.setAttribute('data-value', isNullOrUndefined(value) ? 'null' : value);
 
             li.setAttribute('role', 'option');
-
+            // eslint-disable-next-line no-prototype-builtins
             if (dataSource && fieldData.hasOwnProperty(fields.htmlAttributes) && fieldData[fields.htmlAttributes]) {
                 setAttribute(li, <{ [key: string]: string }>fieldData[fields.htmlAttributes]);
             }
@@ -753,6 +854,7 @@ export namespace ListBase {
 
     function getModuleClass(moduleName: string): ClassList {
         let moduleClass: ClassList;
+        // eslint-disable-next-line
         return moduleClass = {
             li: `e-${moduleName}-item`,
             ul: `e-${moduleName}-parent e-ul`,
@@ -772,15 +874,16 @@ export namespace ListBase {
             image: `e-${moduleName}-img`,
             iconWrapper: 'e-icon-wrapper',
             anchorWrap: 'e-anchor-wrap',
-            navigable: 'e-navigable',
+            navigable: 'e-navigable'
         };
     }
 
     function anchorTag(
         createElement: createElementParams, dataSource: { [key: string]: object } | { [key: string]: string },
         fields: FieldsMapping, text: string, innerElements: HTMLElement[], isFullNavigation: boolean): HTMLElement {
-        let fieldData: { [key: string]: Object } = <{ [key: string]: Object }>getFieldValues(dataSource, fields);
-        let attr: { [key: string]: string } = { href: <string>fieldData[fields.url] };
+        const fieldData: { [key: string]: Object } = <{ [key: string]: Object }>getFieldValues(dataSource, fields);
+        const attr: { [key: string]: string } = { href: <string>fieldData[fields.url] };
+        // eslint-disable-next-line no-prototype-builtins
         if (fieldData.hasOwnProperty(fields.urlAttributes) && fieldData[fields.urlAttributes]) {
             merge(attr, fieldData[fields.urlAttributes]);
             attr.href = <string>fieldData[fields.url] ? <string>fieldData[fields.url] :
@@ -791,7 +894,7 @@ export namespace ListBase {
             anchorTag = createElement('a', { className: cssClass.text + ' ' + cssClass.url, innerHTML: text });
         } else {
             anchorTag = createElement('a', { className: cssClass.text + ' ' + cssClass.url });
-            let anchorWrapper: HTMLElement = createElement('div', { className: cssClass.anchorWrap });
+            const anchorWrapper: HTMLElement = createElement('div', { className: cssClass.anchorWrap });
             if (innerElements && innerElements.length) {
                 append(innerElements, anchorWrapper);
             }
@@ -805,10 +908,10 @@ export namespace ListBase {
     /* tslint:disable:align */
     function generateLI(
         createElement: createElementParams, item: string | { [key: string]: Object } | number, fieldData: { [key: string]: Object },
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         fields: FieldsMapping, className?: string, options?: ListBaseOptions, componentInstance?: any): HTMLElement {
-        let curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
-        let ariaAttributes: AriaAttributesMapping = extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
+        const curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
+        const ariaAttributes: AriaAttributesMapping = extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
         let text: string = <string>item;
         let uID: string;
         let grpLI: boolean;
@@ -818,33 +921,45 @@ export namespace ListBase {
             text = <string>fieldData[fields.text] || '';
             // tslint:disable-next-line
             uID = (isNullOrUndefined(<string>fieldData['_id'])) ? <string>fieldData[fields.id] : <string>fieldData['_id'];
+            // eslint-disable-next-line no-prototype-builtins
             grpLI = (item.hasOwnProperty('isHeader') && (item as { isHeader: Object } & { [key: string]: Object }).isHeader)
                 ? true : false;
         }
         if (options && options.enableHtmlSanitizer) {
+            // eslint-disable-next-line no-self-assign
             text = text;
         }
-        let li: HTMLElement = createElement('li', {
+        const li: HTMLElement = createElement('li', {
             className: (grpLI === true ? cssClass.group : cssClass.li) + ' ' + (isNullOrUndefined(className) ? '' : className),
             attrs: (ariaAttributes.groupItemRole !== '' && ariaAttributes.itemRole !== '' ?
                 { role: (grpLI === true ? ariaAttributes.groupItemRole : ariaAttributes.itemRole) } : {})
         });
 
-        !isNullOrUndefined(uID) ? li.setAttribute('data-uid', uID) : li.setAttribute('data-uid', generateId());
+        if ( !isNullOrUndefined(uID) === true)
+        {
+            li.setAttribute('data-uid', uID);
+        }
+        else
+        {
+            li.setAttribute('data-uid', generateId());
+        }
         const blazId: string = 'BlazId';
         if (options && !!options.removeBlazorID
             && typeof item === 'object'
+            // eslint-disable-next-line no-prototype-builtins
             && (item as Object).hasOwnProperty(blazId)) {
             delete item[blazId];
         }
         if (grpLI && options && options.groupTemplate) {
-            let compiledString: Function = compile(options.groupTemplate);
+            // eslint-disable-next-line @typescript-eslint/ban-types
+            const compiledString: Function = compile(options.groupTemplate);
             append(compiledString(item, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
         } else if (!grpLI && options && options.template) {
-            let compiledString: Function = compile(options.template);
+            // eslint-disable-next-line @typescript-eslint/ban-types
+            const compiledString: Function = compile(options.template);
             append(compiledString(item, componentInstance, 'template', curOpt.templateID, !!curOpt.isStringTemplate), li);
         } else {
-            let innerDiv: HTMLElement = createElement('div', {
+            const innerDiv: HTMLElement = createElement('div', {
                 className: cssClass.textContent,
                 attrs: (ariaAttributes.wrapperRole !== '' ? { role: ariaAttributes.wrapperRole } : {})
             });
@@ -852,7 +967,7 @@ export namespace ListBase {
                 (fieldData[fields.urlAttributes] as { [key: string]: Object }).href))) {
                 innerDiv.appendChild(anchorTag(createElement, dataSource, fields, text, null, curOpt.itemNavigable));
             } else {
-                let element: HTMLElement = createElement('span', {
+                const element: HTMLElement = createElement('span', {
                     className: cssClass.text,
                     attrs: (ariaAttributes.itemText !== '' ? { role: ariaAttributes.itemText } : {})
                 });
@@ -870,16 +985,20 @@ export namespace ListBase {
 
     /**
      * Returns UL element based on the given LI element.
+     *
      * @param  {HTMLElement[]} liElement - Specifies array of LI element.
+     *
      * @param  {string} className? - Specifies class name that need to be added in UL element.
+     *
      * @param  {ListBaseOptions} options? - Specifies ListBase options.
      */
+
     export function generateUL(
         createElement: createElementParams, liElement: HTMLElement[], className?: string, options?: ListBaseOptions): HTMLElement {
-        let curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
-        let ariaAttributes: AriaAttributesMapping = extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
+        const curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
+        const ariaAttributes: AriaAttributesMapping = extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
         cssClass = getModuleClass(curOpt.moduleName);
-        let ulElement: HTMLElement = createElement('ul', {
+        const ulElement: HTMLElement = createElement('ul', {
             className: cssClass.ul + ' ' + (isNullOrUndefined(className) ? '' : className),
             attrs: (ariaAttributes.listRole !== '' ? { role: ariaAttributes.listRole } : {})
         });
@@ -891,15 +1010,20 @@ export namespace ListBase {
 
     /**
      * Returns LI element with additional DIV tag based on the given LI element.
+     *
      * @param  {liElement} liElement - Specifies LI element.
+     *
      * @param  {string} className? - Specifies class name that need to be added in created DIV element.
+     *
      * @param  {ListBaseOptions} options? - Specifies ListBase options.
      */
+
     export function generateIcon(
         createElement: createElementParams, liElement: HTMLElement, className?: string, options?: ListBaseOptions): HTMLElement {
-        let curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
+        const curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
         cssClass = getModuleClass(curOpt.moduleName);
-        let expandElement: Function = curOpt.expandIconPosition === 'Left' ? prepend : append;
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        const expandElement: Function = curOpt.expandIconPosition === 'Left' ? prepend : append;
         expandElement(
             [createElement('div', {
                 className: 'e-icons ' + curOpt.expandIconClass + ' ' +
@@ -933,22 +1057,22 @@ export interface FieldsMapping {
     selected?: string;
     iconCss?: string;
     /**
-     * @blazortype object
+     * @blazorType object
      */
     child?: string;
     tooltip?: string;
     hasChildren?: string;
     /**
-     * @blazortype object
+     * @blazorType object
      */
     htmlAttributes?: string;
     /**
-     * @blazortype object
+     * @blazorType object
      */
     urlAttributes?: string;
     imageUrl?: string;
     /**
-     * @blazortype object
+     * @blazorType object
      */
     imageAttributes?: string;
 }
@@ -1025,10 +1149,12 @@ export interface ListBaseOptions {
     /**
      * Specifies the callback function that triggered before each list creation
      */
+    // eslint-disable-next-line @typescript-eslint/ban-types
     itemCreating?: Function;
     /**
      * Specifies the callback function that triggered after each list creation
      */
+    // eslint-disable-next-line @typescript-eslint/ban-types
     itemCreated?: Function;
     /**
      * Specifies the customizable expand icon class
@@ -1070,19 +1196,22 @@ export interface ListBaseOptions {
 
 /**
  * Used to get dataSource item from complex data using fields.
- * @param {{[key:string]:Object}|string[]|string} dataSource - Specifies an  JSON or String data.
+ *
+ * @param {Object} dataSource - Specifies an  JSON or String data.
+ *
  * @param {FieldsMapping} fields - Fields that are mapped from the dataSource.
  */
+
 export function getFieldValues(dataItem: { [key: string]: Object } | string | number, fields: FieldsMapping)
     : { [key: string]: Object } | string | number {
-    let fieldData: { [key: string]: Object } = {};
+    const fieldData: { [key: string]: Object } = {};
     if (isNullOrUndefined(dataItem) || typeof (dataItem) === 'string' || typeof (dataItem) === 'number'
         || !isNullOrUndefined((<{ [key: string]: Object }>dataItem).isHeader)) {
         return dataItem;
     } else {
-        for (let field of Object.keys(fields)) {
-            let dataField: string = (<{ [key: string]: Object }>fields)[field] as string;
-            let value: { [key: string]: Object } = !isNullOrUndefined(dataField) &&
+        for (const field of Object.keys(fields)) {
+            const dataField: string = (<{ [key: string]: Object }>fields)[field] as string;
+            const value: { [key: string]: Object } = !isNullOrUndefined(dataField) &&
                 typeof (dataField) === 'string' ? getValue(dataField, dataItem) : undefined;
             if (!isNullOrUndefined(value)) {
                 fieldData[dataField] = value;

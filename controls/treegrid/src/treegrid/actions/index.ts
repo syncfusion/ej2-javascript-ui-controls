@@ -21,3 +21,4 @@ export * from './virtual-scroll';
 export * from './freeze-column';
 export * from './column-chooser';
 export * from './logger';
+export * from './infinite-scroll';

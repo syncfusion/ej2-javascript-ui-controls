@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 18.4.49 (2021-03-23)
+## 19.1.54 (2021-03-30)
+
+### DataManager
+
+#### New Features
+
+- Provided CustomDataAdaptor support.
+
+## 18.4.46 (2021-03-02)
 
 ### DataManager
 

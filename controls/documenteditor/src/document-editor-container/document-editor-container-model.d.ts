@@ -8,66 +8,77 @@ export interface DocumentEditorContainerModel extends ComponentModel{
 
     /**
      * Show or hide properties pane.
+     *
      * @default true
      */
     showPropertiesPane?: boolean;
 
     /**
      * Enable or disable toolbar in document editor container.
+     *
      * @default true
      */
     enableToolbar?: boolean;
 
     /**
      * Restrict editing operation.
+     *
      * @default false
      */
     restrictEditing?: boolean;
 
     /**
      * Enable or disable spell checker in document editor container.
+     *
      * @default false
      */
     enableSpellCheck?: boolean;
 
     /**
      * Enable or disable track changes in document editor container.
+     *
      * @default false
      */
     enableTrackChanges?: boolean;
 
     /**
      * Layout Type
+     *
      * @default Pages
      */
     layoutType?: LayoutType;
 
     /**
      * Current User
+     *
      * @default ''
      */
     currentUser?: string;
 
     /**
      * User Selection Highlight Color
+     *
      * @default '#FFFF00'
      */
     userColor?: string;
 
     /**
      * Enable local paste
+     *
      * @default false
      */
     enableLocalPaste?: boolean;
 
     /**
      * Sfdt service URL.
+     *
      * @default ''
      */
     serviceUrl?: string;
 
     /**
      * Specifies the z-order for rendering that determines whether the dialog is displayed in front or behind of another component.
+     *
      * @default 2000
      * @aspType int
      */
@@ -80,30 +91,35 @@ export interface DocumentEditorContainerModel extends ComponentModel{
 
     /**
      * Gets or set a value indicating whether comment is enabled or not
+     *
      * @default true
      */
     enableComment?: boolean;
 
     /**
-     * Defines the width of the DocumentEditorContainer component 
+     * Defines the width of the DocumentEditorContainer component
+     *
      * @default '100%'
      */
     width?: string;
 
     /**
-     * Defines the height of the DocumentEditorContainer component 
+     * Defines the height of the DocumentEditorContainer component
+     *
      * @default '320px'
      */
     height?: string;
 
     /**
      * Enable partial lock and edit module.
+     *
      * @default false
      */
     enableLockAndEdit?: boolean;
 
     /**
      * Triggers when the component is created
+     *
      * @event
      * @blazorproperty 'Created'
      */
@@ -111,6 +127,7 @@ export interface DocumentEditorContainerModel extends ComponentModel{
 
     /**
      * Triggers when the component is destroyed.
+     *
      * @event
      * @blazorproperty 'Destroyed'
      */
@@ -118,6 +135,7 @@ export interface DocumentEditorContainerModel extends ComponentModel{
 
     /**
      * Triggers whenever the content changes in the document editor container.
+     *
      * @event
      * @blazorproperty 'ContentChanged'
      */
@@ -125,6 +143,7 @@ export interface DocumentEditorContainerModel extends ComponentModel{
 
     /**
      * Triggers whenever selection changes in the document editor container.
+     *
      * @event
      * @blazorproperty 'SelectionChanged'
      */
@@ -132,6 +151,7 @@ export interface DocumentEditorContainerModel extends ComponentModel{
 
     /**
      * Triggers whenever document changes in the document editor container.
+     *
      * @event
      * @blazorproperty 'DocumentChanged'
      */
@@ -139,6 +159,7 @@ export interface DocumentEditorContainerModel extends ComponentModel{
 
     /**
      * Triggers when toolbar item is clicked.
+     *
      * @event
      * @blazorproperty 'OnToolbarClick'
      * @blazorType Syncfusion.Blazor.Navigations.ClickEventArgs
@@ -147,6 +168,7 @@ export interface DocumentEditorContainerModel extends ComponentModel{
 
     /**
      * Triggers while selecting the custom context-menu option.
+     *
      * @event
      * @blazorproperty 'ContextMenuItemSelected'
      */
@@ -154,6 +176,7 @@ export interface DocumentEditorContainerModel extends ComponentModel{
 
     /**
      * Triggers before opening the custom context-menu option.
+     *
      * @event
      * @blazorproperty 'OnContextMenuOpen'
      */
@@ -161,6 +184,7 @@ export interface DocumentEditorContainerModel extends ComponentModel{
 
     /**
      * Trigger before switching panes in DocumentEditor.
+     *
      * @event
      * @blazorproperty 'BeforePaneSwitch'
      */
@@ -168,6 +192,7 @@ export interface DocumentEditorContainerModel extends ComponentModel{
 
     /**
      * Triggers on deleting a comment.
+     *
      * @blazorproperty 'OnCommentDelete'
      * @event
      */
@@ -175,18 +200,21 @@ export interface DocumentEditorContainerModel extends ComponentModel{
 
     /**
      * Triggers on comment actions(Post, edit, reply, resolve, reopen).
+     *
      * @event
      */
     beforeCommentAction?: EmitType<CommentActionEventArgs>;
 
     /**
      * Triggers when the server action fails.
+     *
      * @event
      */
     serviceFailure?: EmitType<ServiceFailureArgs>;
 
     /**
      * Triggers Keyboard shortcut of TrackChanges.
+     *
      * @blazorproperty 'OnEnableTrackChanges'
      * @event
      */
@@ -194,31 +222,33 @@ export interface DocumentEditorContainerModel extends ComponentModel{
 
     /**
      * Triggers when user interaction prevented in content control.
+     *
      * @event
      */
     contentControl?: EmitType<Object>;
 
     /**
      * Defines the settings for DocumentEditor customization.
+     *
      * @default {}
      */
-    // tslint:disable-next-line:max-line-length
     documentEditorSettings?: DocumentEditorSettingsModel;
 
     /**
      * Defines the settings of the DocumentEditorContainer service.
      */
-    // tslint:disable-next-line:max-line-length
     serverActionSettings?: ContainerServerActionSettingsModel;
 
     /**
      * Defines toolbar items for DocumentEditorContainer.
+     *
      * @default ['New','Open','Separator','Undo','Redo','Separator','Image','Table','Hyperlink','Bookmark','TableOfContents','Separator','Header','Footer','PageSetup','PageNumber','Break','InsertFootnote','InsertEndnote','Separator','Find','Separator','Comments','TrackChanges','LocalClipboard','RestrictEditing','Separator','FormFields','UpdateFields']
      */
     toolbarItems?: (CustomToolbarItemModel | ToolbarItem)[];
 
     /**
      * Add custom headers to XMLHttpRequest.
+     *
      * @default []
      */
     headers?: object[];

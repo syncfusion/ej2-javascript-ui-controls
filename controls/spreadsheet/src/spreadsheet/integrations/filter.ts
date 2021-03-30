@@ -1,9 +1,9 @@
 import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, initiateFilterUI, FilterInfoArgs } from '../index';
 import { reapplyFilter, filterCellKeyDown, DialogBeforeOpenEventArgs } from '../index';
 import { getFilteredColumn, cMenuBeforeOpen, filterByCellValue, clearFilter, getFilterRange, applySort, getCellPosition } from '../index';
-import { filterRangeAlert, filterComplete, beforeFilter, clearAllFilter, getFilteredCollection } from '../../workbook/common/event';
+import { filterRangeAlert, filterComplete, beforeFilter, clearAllFilter, getFilteredCollection, sortImport } from '../../workbook/common/event';
 import { FilterCollectionModel, getRangeIndexes } from '../../workbook/index';
-import { getIndexesFromAddress, getSwapRange, SheetModel, getColumnHeaderText, CellModel} from '../../workbook/index';
+import { getIndexesFromAddress, getSwapRange, SheetModel, getColumnHeaderText, CellModel } from '../../workbook/index';
 import { getData, getTypeFromFormat, getCell, getCellIndexes, getRangeAddress, getSheet } from '../../workbook/index';
 import { FilterOptions, BeforeFilterEventArgs, FilterEventArgs } from '../../workbook/common/interface';
 import { L10n, getComponent } from '@syncfusion/ej2-base';
@@ -27,6 +27,8 @@ export class Filter {
 
     /**
      * Constructor for filter module.
+     *
+     * @param {Spreadsheet} parent - Specifies the Spreadsheet.
      */
     constructor(parent: Spreadsheet) {
         this.parent = parent;
@@ -38,7 +40,8 @@ export class Filter {
 
     /**
      * To destroy the filter module.
-     * @return {void}
+     *
+     * @returns {void} - To destroy the filter module.
      */
     protected destroy(): void {
         this.removeEventListener();
@@ -90,7 +93,8 @@ export class Filter {
 
     /**
      * Gets the module name.
-     * @returns string
+     *
+     * @returns {string} - Gets the module name.
      */
     protected getModuleName(): string {
         return 'filter';
@@ -98,24 +102,30 @@ export class Filter {
 
     /**
      * Validates the range and returns false when invalid.
+     *
+     * @param {SheetModel} sheet - Specify the sheet.
+     * @param {string} range - Specify the range.
+     * @returns {void} - Validates the range and returns false when invalid.
      */
     private isInValidFilterRange(sheet: SheetModel, range?: string): boolean {
-        let selectedRange: number[] = range ? getSwapRange(getIndexesFromAddress(range)) :
-        getSwapRange(getIndexesFromAddress(sheet.selectedRange));
+        const selectedRange: number[] = range ? getSwapRange(getIndexesFromAddress(range)) :
+            getSwapRange(getIndexesFromAddress(sheet.selectedRange));
         return selectedRange[0] > sheet.usedRange.rowIndex || selectedRange[1] > sheet.usedRange.colIndex;
     }
 
     /**
      * Shows the range error alert dialog.
-     * @param error - range error string.
+     *
+     * @param {string} args.error - range error string.
+     * @returns {void} - Shows the range error alert dialog.
      */
     private filterRangeAlertHandler(args: { error: string }): void {
-        let dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+        const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
         dialogInst.show({
             content: args.error, isModal: true,
             height: 180, width: 400, showCloseIcon: true,
             beforeOpen: (args: BeforeOpenEventArgs): void => {
-                let dlgArgs: DialogBeforeOpenEventArgs = {
+                const dlgArgs: DialogBeforeOpenEventArgs = {
                     dialogName: 'FilterRangeDialog',
                     element: args.element, target: args.target, cancel: args.cancel
                 };
@@ -123,18 +133,21 @@ export class Filter {
                 if (dlgArgs.cancel) {
                     args.cancel = true;
                 }
-            },
+            }
         });
         this.parent.hideSpinner();
     }
 
     /**
      * Triggers before filter context menu opened and used to add sorting items.
+     *
+     * @param {HTMLElement} args.element - Specify the element
+     * @returns {void} - Triggers before filter context menu opened and used to add sorting items.
      */
     private beforeFilterMenuOpenHandler(args: { element: HTMLElement }): void {
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
         args.element.classList.add('e-spreadsheet-contextmenu'); // to show sort icons
-        let ul: Element = args.element.querySelector('ul');
+        const ul: Element = args.element.querySelector('ul');
         this.addMenuItem(ul, l10n.getConstant('SortDescending'), 'e-filter-sortdesc', 'e-sort-desc');
         this.addMenuItem(ul, l10n.getConstant('SortAscending'), 'e-filter-sortasc', 'e-sort-asc');
         args.element.appendChild(ul);
@@ -142,9 +155,15 @@ export class Filter {
 
     /**
      * Creates new menu item element
+     *
+     * @param {Element} ul - Specify the element.
+     * @param {string} text - Specify the text.
+     * @param {string} className - Specify the className
+     * @param {string} iconCss - Specify the iconCss
+     * @returns {void} - Creates new menu item element
      */
     private addMenuItem(ul: Element, text: string, className?: string, iconCss?: string): void {
-        let li: Element = this.parent.createElement('li', { className: className + ' e-menu-item' });
+        const li: Element = this.parent.createElement('li', { className: className + ' e-menu-item' });
         li.innerHTML = text;
         li.insertBefore(this.parent.createElement('span', { className: 'e-menu-icon e-icons ' + iconCss }), li.firstChild);
         ul.insertBefore(li, ul.firstChild);
@@ -152,33 +171,39 @@ export class Filter {
 
     /**
      * Initiates the filter UI for the selected range.
+     *
+     * @param {PredicateModel[]} args.predicates - Specify the predicates.
+     * @param {number} args.range - Specify the range.
+     * @param {number} args.sIdx - Specify the sIdx
+     * @param {boolean} args.isCut - Specify the bool value
+     * @returns {void} - Initiates the filter UI for the selected range.
      */
     private initiateFilterUIHandler(args: {
         predicates?: PredicateModel[], range?: string,
         sIdx?: number, isCut?: boolean
     }): void {
-        let predicates: PredicateModel[] = args ? args.predicates : null;
+        const predicates: PredicateModel[] = args ? args.predicates : null;
         let sheetIdx: number = args.sIdx;
         if (!sheetIdx && sheetIdx !== 0) { sheetIdx = this.parent.activeSheetIndex; }
         if (this.filterRange.size > 0 && this.filterRange.has(sheetIdx)) { //disable filter
             this.removeFilter(sheetIdx);
             if (!predicates) { return; }
         }
-        let sheet: SheetModel = getSheet(this.parent, sheetIdx);
+        const sheet: SheetModel = getSheet(this.parent, sheetIdx);
         if (this.isInValidFilterRange(sheet, args.range)) {
-            let l10n: L10n = this.parent.serviceLocator.getService(locale);
+            const l10n: L10n = this.parent.serviceLocator.getService(locale);
             this.filterRangeAlertHandler({ error: l10n.getConstant('FilterOutOfRangeError') });
             return;
         }
         let selectedRange: string = sheet.selectedRange;
-        let rangeIdx: number[] = getRangeIndexes(selectedRange);
+        const rangeIdx: number[] = getRangeIndexes(selectedRange);
         if (rangeIdx[0] === rangeIdx[2] && rangeIdx[1] === rangeIdx[3]) {
-            rangeIdx[0] = 0; rangeIdx[1] = 1;
+            rangeIdx[0] = 0; rangeIdx[1] = 0;
             rangeIdx[2] = sheet.usedRange.rowIndex;
             rangeIdx[3] = sheet.usedRange.colIndex;
             selectedRange = getRangeAddress(rangeIdx);
         }
-        let eventArgs: BeforeFilterEventArgs = {
+        const eventArgs: BeforeFilterEventArgs = {
             range: args.range ? args.range : selectedRange,
             filterOptions: { predicates: args.predicates as Predicate[] }, cancel: false
         };
@@ -188,15 +213,15 @@ export class Filter {
         this.processRange(sheet, sheetIdx, args ? args.range : null);
 
         if (predicates) {
-            let range: number[] = this.filterRange.get(sheetIdx).slice();
+            const range: number[] = this.filterRange.get(sheetIdx).slice();
             range[0] = range[0] + 1; // to skip first row.
             range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
             getData(this.parent, `${sheet.name}!${getRangeAddress(range)}`, true, true).then((jsonData: { [key: string]: CellModel }[]) => {
                 this.filterSuccessHandler(
                     new DataManager(jsonData), {
-                    action: 'filtering',
-                    filterCollection: predicates, field: predicates[0].field, sIdx: args.sIdx
-                });
+                        action: 'filtering',
+                        filterCollection: predicates, field:  predicates[0] ? predicates[0].field : null, sIdx: args.sIdx
+                    });
                 predicates.forEach((predicate: PredicateModel) => {
                     if (this.filterClassList.get(sheetIdx)[predicate.field] &&
                         this.filterClassList.get(sheetIdx)[predicate.field].indexOf(' e-filtered') < 0) {
@@ -213,10 +238,15 @@ export class Filter {
 
     /**
      * Processes the range if no filter applied.
+     *
+     * @param {SheetModel} sheet - Specify the sheet.
+     * @param {number} sheetIdx - Specify the sheet index.
+     * @param {number} filterRange - Specify the filterRange
+     * @returns {void} - Processes the range if no filter applied.
      */
     private processRange(sheet: SheetModel, sheetIdx: number, filterRange?: string): void {
-        let range: number[] = getSwapRange(getIndexesFromAddress(filterRange || sheet.selectedRange));
-        if (range[0] === range[2] && range[1] === range[3]) { //if selected range is a single cell 
+        const range: number[] = getSwapRange(getIndexesFromAddress(filterRange || sheet.selectedRange));
+        if (range[0] === range[2] && range[1] === range[3]) { //if selected range is a single cell
             range[0] = 0; range[1] = 0; range[2] = sheet.usedRange.rowIndex; range[3] = sheet.usedRange.colIndex;
         }
         this.filterRange.set(sheetIdx, range);
@@ -227,12 +257,15 @@ export class Filter {
 
     /**
      * Removes all the filter related collections for the active sheet.
+     *
+     * @param {number} sheetIdx - Specify the sheet index.
+     * @returns {void} - Removes all the filter related collections for the active sheet.
      */
     private removeFilter(sheetIdx: number): void {
         if (this.filterCollection.get(sheetIdx).length) {
             this.parent.clearFilter();
         }
-        let range: number[] = this.filterRange.get(sheetIdx).slice();
+        const range: number[] = this.filterRange.get(sheetIdx).slice();
         this.filterRange.delete(sheetIdx);
         this.filterCollection.delete(sheetIdx);
         this.filterClassList.delete(sheetIdx);
@@ -240,26 +273,28 @@ export class Filter {
     }
     /**
      * Handles filtering cell value based on context menu.
+     *
+     * @returns {void} - Handles filtering cell value based on context menu.
      */
     private filterByCellValueHandler(): void {
-        let sheetIdx: number = this.parent.activeSheetIndex;
-        let sheet: SheetModel = this.parent.getActiveSheet();
+        const sheetIdx: number = this.parent.activeSheetIndex;
+        const sheet: SheetModel = this.parent.getActiveSheet();
         if (this.isInValidFilterRange(sheet)) {
-            let l10n: L10n = this.parent.serviceLocator.getService(locale);
+            const l10n: L10n = this.parent.serviceLocator.getService(locale);
             this.filterRangeAlertHandler({ error: l10n.getConstant('FilterOutOfRangeError') });
             return;
         }
-        let cell: number[] = getCellIndexes(sheet.activeCell);
+        const cell: number[] = getCellIndexes(sheet.activeCell);
         if (!this.isFilterRange(sheetIdx, cell[0], cell[1])) {
             this.processRange(sheet, sheetIdx);
         }
 
-        let range: number[] = this.filterRange.get(sheetIdx).slice();
+        const range: number[] = this.filterRange.get(sheetIdx).slice();
         range[0] = range[0] + 1; // to skip first row.
         range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
-        let field: string = getColumnHeaderText(cell[1] + 1);
-        let type: string = this.getColumnType(sheet, cell[1] + 1, range);
-        let predicates: PredicateModel[] = [{
+        const field: string = getColumnHeaderText(cell[1] + 1);
+        const type: string = this.getColumnType(sheet, cell[1] + 1, range);
+        const predicates: PredicateModel[] = [{
             field: field,
             operator: type === 'date' || type === 'datetime' || type === 'boolean' ? 'equal' : 'contains',
             value: getCell(cell[0], cell[1], sheet).value, matchCase: false, type: type
@@ -272,86 +307,121 @@ export class Filter {
 
     /**
      * Creates filter buttons and renders the filter applied cells.
+     *
+     * @param { HTMLElement} args.td - specify the element
+     * @param { number} args.rowIndex - specify the rowIndex
+     * @param { number} args.colIndex - specify the colIndex
+     * @param { number} args.sIdx - specify the sIdx
+     * @returns {void} - Creates filter buttons and renders the filter applied cells.
+     *
      */
-    private renderFilterCellHandler(args: { td: HTMLElement, rowIndex: number, colIndex: number , sIdx?: number}): void {
-        let sheetIdx: number = args.sIdx | this.parent.activeSheetIndex;
+    private renderFilterCellHandler(args: { td: HTMLElement, rowIndex: number, colIndex: number, sIdx?: number }): void {
+        let sheetIdx: number = args.sIdx;
+        if (!sheetIdx && sheetIdx !== 0) { sheetIdx = this.parent.activeSheetIndex; }
         if (this.filterRange.has(sheetIdx) && this.isFilterCell(sheetIdx, args.rowIndex, args.colIndex)) {
             if (!args.td) { return; }
-            let field: string = getColumnHeaderText(args.colIndex + 1);
+            const field: string = getColumnHeaderText(args.colIndex + 1);
             if (this.filterClassList.has(sheetIdx) && !this.filterClassList.get(sheetIdx)[field]) {
                 this.filterClassList.get(sheetIdx)[field] = '';
             }
             if (args.td.querySelector('.e-filter-btn')) {
-                let element: HTMLElement = args.td.querySelector('.e-filter-iconbtn');
-                let filterBtnObj: Button = getComponent(element, 'btn');
+                const element: HTMLElement = args.td.querySelector('.e-filter-iconbtn');
+                const filterBtnObj: Button = getComponent(element, 'btn');
                 filterBtnObj.iconCss = 'e-icons e-filter-icon' + this.filterClassList.get(sheetIdx)[field];
             } else {
-                let filterButton: HTMLElement = this.parent.createElement('div', { className: 'e-filter-btn' });
-                let filterBtnObj: Button = new Button(
+                const filterButton: HTMLElement = this.parent.createElement('div', { className: 'e-filter-btn' });
+                const filterBtnObj: Button = new Button(
                     { iconCss: 'e-icons e-filter-icon' + this.filterClassList.get(sheetIdx)[field], cssClass: 'e-filter-iconbtn' });
                 args.td.insertBefore(filterButton, args.td.firstChild);
                 filterBtnObj.createElement = this.parent.createElement;
                 filterBtnObj.appendTo(filterButton);
             }
         }
+        if (this.parent.sortCollection) {
+            this.parent.notify(sortImport, {sheetIdx : sheetIdx});
+        }
     }
 
     /**
      * Refreshes the filter header range.
+     *
+     * @param {number[]} filterRange - Specify the filterRange.
+     * @param {boolean} remove - Specify the bool value
+     * @param {number} sIdx - Specify the index.
+     * @returns {void} - Refreshes the filter header range.
      */
     private refreshFilterRange(filterRange?: number[], remove?: boolean, sIdx?: number): void {
         let sheetIdx: number = sIdx;
         if (!sheetIdx && sheetIdx !== 0) { sheetIdx = this.parent.activeSheetIndex; }
-        let range: number[] = filterRange || this.filterRange.get(sheetIdx).slice();
+        const range: number[] = filterRange || this.filterRange.get(sheetIdx).slice();
         for (let index: number = range[1]; index <= range[3]; index++) {
-            let cell: HTMLElement = this.parent.getCell(range[0], index);
+            const cell: HTMLElement = this.parent.getCell(range[0], index);
             if (remove) {
                 if (cell && cell.hasChildNodes()) {
-                    let element: Element = cell.querySelector('.e-filter-btn');
+                    const element: Element = cell.querySelector('.e-filter-btn');
                     if (element) { cell.removeChild(element); }
                 }
             } else {
-                this.renderFilterCellHandler({ td: cell, rowIndex: range[0], colIndex: index , sIdx : sheetIdx});
+                this.renderFilterCellHandler({ td: cell, rowIndex: range[0], colIndex: index, sIdx: sheetIdx });
             }
+        }
+        if (this.parent.sortCollection) {
+            this.parent.notify(sortImport, null);
         }
     }
 
     /**
      * Checks whether the provided cell is a filter cell.
+     *
+     * @param {number} sheetIdx - Specify the sheet index.
+     * @param {number} rowIndex - Specify the row index
+     * @param {number} colIndex - Specify the col index.
+     * @returns {boolean} - Checks whether the provided cell is a filter cell.
      */
     private isFilterCell(sheetIdx: number, rowIndex: number, colIndex: number): boolean {
-        let range: number[] = this.filterRange.get(sheetIdx);
+        const range: number[] = this.filterRange.get(sheetIdx);
         return (range && range[0] === rowIndex && range[1] <= colIndex && range[3] >= colIndex);
     }
 
     /**
      * Checks whether the provided cell is in a filter range
+     *
+     * @param {number} sheetIdx - Specify the sheet index.
+     * @param {number} rowIndex - Specify the row index
+     * @param {number} colIndex - Specify the col index.
+     * @returns {boolean} - Checks whether the provided cell is in a filter range
      */
     private isFilterRange(sheetIdx: number, rowIndex: number, colIndex: number): boolean {
-        let range: number[] = this.filterRange.get(sheetIdx);
+        const range: number[] = this.filterRange.get(sheetIdx);
         return (range && range[0] <= rowIndex && range[2] >= rowIndex && range[1] <= colIndex && range[3] >= colIndex);
     }
 
     /**
      * Gets the filter information from active cell
+     *
+     * @param {string} args.field - Specify the field
+     * @param {string} args.clearFilterText - Specify the clearFilterText
+     * @param {boolean} args.isFiltered - Specify the isFiltered
+     * @param {boolean} args.isClearAll - Specify the isClearAll
+     * @returns {void} - Triggers before context menu created to enable or disable items.
      */
     private getFilteredColumnHandler(args: { field?: string, clearFilterText?: string, isFiltered?: boolean, isClearAll?: boolean }): void {
-        let sheetIdx: number = this.parent.activeSheetIndex;
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const sheetIdx: number = this.parent.activeSheetIndex;
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
         args.clearFilterText = l10n.getConstant('ClearFilter');
         if (this.filterRange.has(sheetIdx)) {
-            let filterCollection: PredicateModel[] = this.filterCollection.get(sheetIdx);
+            const filterCollection: PredicateModel[] = this.filterCollection.get(sheetIdx);
             if (args.isClearAll) {
                 args.isFiltered = filterCollection && filterCollection.length > 0;
                 return;
             }
-            let range: number[] = this.filterRange.get(sheetIdx).slice();
-            let sheet: SheetModel = this.parent.getActiveSheet();
-            let cell: number[] = getCellIndexes(sheet.activeCell);
+            const range: number[] = this.filterRange.get(sheetIdx).slice();
+            const sheet: SheetModel = this.parent.getActiveSheet();
+            const cell: number[] = getCellIndexes(sheet.activeCell);
             if (this.isFilterRange(sheetIdx, cell[0], cell[1])) {
                 args.field = getColumnHeaderText(cell[1] + 1);
-                let headerCell: CellModel = getCell(range[0], cell[1], sheet);
-                let cellValue: string = this.parent.getDisplayText(headerCell);
+                const headerCell: CellModel = getCell(range[0], cell[1], sheet);
+                const cellValue: string = this.parent.getDisplayText(headerCell);
                 args.clearFilterText = l10n.getConstant('ClearFilterFrom') + '\"'
                     + (cellValue ? cellValue.toString() : 'Column ' + args.field) + '\"';
                 filterCollection.some((value: PredicateModel) => {
@@ -364,11 +434,17 @@ export class Filter {
 
     /**
      * Triggers before context menu created to enable or disable items.
+     *
+     * @param {HTMLElement} e.element - Specify the element
+     * @param {MenuItemModel[]} e.items - Specify the items
+     * @param {MenuItemModel} e.parentItem - Specify the parentItem
+     * @param {string} e.target - Specify the target
+     * @returns {void} - Triggers before context menu created to enable or disable items.
      */
     private cMenuBeforeOpenHandler(e: { element: HTMLElement, items: MenuItemModel[], parentItem: MenuItemModel, target: string }): void {
-        let id: string = this.parent.element.id + '_cmenu';
+        const id: string = this.parent.element.id + '_cmenu';
         if (e.parentItem && e.parentItem.id === id + '_filter' && e.target === '') {
-            let args: { [key: string]: boolean } = { isFiltered: false };
+            const args: { [key: string]: boolean } = { isFiltered: false };
             this.getFilteredColumnHandler(args);
             this.parent.enableContextMenuItems([id + '_clearfilter', id + '_reapplyfilter'], !!args.isFiltered, true);
         }
@@ -376,29 +452,35 @@ export class Filter {
 
     /**
      * Closes the filter popup.
+     *
+     * @returns {void} - Closes the filter popup.
      */
     private closeDialog(): void {
-        let filterPopup: HTMLElement = this.parent.element.querySelector('.e-filter-popup');
-        let excelFilter: Dialog = getComponent(filterPopup, 'dialog');
-        if (excelFilter) { excelFilter.hide(); }
+        const filterPopup: HTMLElement = this.parent.element.querySelector('.e-filter-popup');
+        if (filterPopup) {
+            const excelFilter: Dialog = getComponent(filterPopup, 'dialog');
+            if (excelFilter) { excelFilter.hide(); }
+        }
     }
 
     /**
      * Returns true if the filter popup is opened.
+     *
+     * @returns {boolean} - Returns true if the filter popup is opened.
      */
     private isPopupOpened(): boolean {
-        let filterPopup: HTMLElement = this.parent.element.querySelector('.e-filter-popup');
+        const filterPopup: HTMLElement = this.parent.element.querySelector('.e-filter-popup');
         return filterPopup && filterPopup.style.display !== 'none';
     }
 
     private filterCellKeyDownHandler(args: { e: KeyboardEvent, isFilterCell: boolean }): void {
-        let sheetIdx: number = this.parent.activeSheetIndex;
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let indexes: number[] = getCellIndexes(sheet.activeCell);
+        const sheetIdx: number = this.parent.activeSheetIndex;
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const indexes: number[] = getCellIndexes(sheet.activeCell);
         if (this.isFilterCell(sheetIdx, indexes[0], indexes[1])) {
             args.isFilterCell = true;
-            let pos: { top: number, left: number } = getCellPosition(sheet, indexes);
-            let target: HTMLElement = this.parent.getCell(indexes[0], indexes[1]);
+            const pos: { top: number, left: number } = getCellPosition(sheet, indexes);
+            const target: HTMLElement = this.parent.getCell(indexes[0], indexes[1]);
             if (this.isPopupOpened()) {
                 this.closeDialog();
             }
@@ -408,9 +490,12 @@ export class Filter {
 
     /**
      * Opens the filter popup dialog on filter button click.
+     *
+     * @param {MouseEvent | TouchEvent} e - Specidy the event
+     * @returns {void} - Opens the filter popup dialog on filter button click.
      */
     private filterMouseDownHandler(e: MouseEvent & TouchEvent): void {
-        let target: HTMLElement = e.target as HTMLElement;
+        const target: HTMLElement = e.target as HTMLElement;
         if (target.classList.contains('e-filter-icon')) {
             if (this.isPopupOpened()) {
                 this.closeDialog();
@@ -429,36 +514,42 @@ export class Filter {
 
     /**
      * Opens the excel filter dialog based on target.
+     *
+     * @param {HTMLElement} target - Specify the target
+     * @param {number} xPos - Specify the xPos
+     * @param {number} yPos - Specify the yPos
+     * @returns {void} - Opens the excel filter dialog based on target.
      */
     private openDialog(target: HTMLElement, xPos: number, yPos: number): void {
-        let cell: HTMLElement = parentsUntil(target, 'e-cell') as HTMLElement;
-        let colIndex: number = parseInt(cell.getAttribute('aria-colindex'), 10);
-        let field: string = getColumnHeaderText(colIndex);
+        const cell: HTMLElement = parentsUntil(target, 'e-cell') as HTMLElement;
+        const colIndex: number = parseInt(cell.getAttribute('aria-colindex'), 10);
+        const field: string = getColumnHeaderText(colIndex);
         //Update datasource dynamically
         this.parent.showSpinner();
-        let sheetIdx: number = this.parent.activeSheetIndex;
-        let range: number[] = this.filterRange.get(sheetIdx).slice();
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let filterCell: CellModel = getCell(range[0], colIndex - 1, sheet);
-        let displayName: string = this.parent.getDisplayText(filterCell);
+        const sheetIdx: number = this.parent.activeSheetIndex;
+        const range: number[] = this.filterRange.get(sheetIdx).slice();
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const filterCell: CellModel = getCell(range[0], colIndex - 1, sheet);
+        const displayName: string = this.parent.getDisplayText(filterCell);
         range[0] = range[0] + 1; // to skip first row.
         range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
-        getData(this.parent, `${sheet.name}!${getRangeAddress(range)}`, true, true).then((jsonData: { [key: string]: CellModel }[]) => {
-            //to avoid undefined array data
-            let checkBoxData: DataManager;
+        getData(this.parent, `${sheet.name}!${getRangeAddress(range)}`, true,
+            true, null, true).then((jsonData: { [key: string]: CellModel }[]) => {
+                //to avoid undefined array data
+                let checkBoxData: DataManager;
             jsonData.some((value: { [key: string]: CellModel }, index: number) => {
                 if (value) { checkBoxData = new DataManager(jsonData.slice(index)); }
                 return !!value;
             });
 
-            let options: IFilterArgs = {
+            const options: IFilterArgs = {
                 type: this.getColumnType(sheet, colIndex, range), field: field, displayName: displayName || 'Column ' + field,
                 dataSource: checkBoxData, height: this.parent.element.classList.contains('e-bigger') ? 800 : 500, columns: [],
                 hideSearchbox: false, filteredColumns: this.filterCollection.get(sheetIdx), column: { 'field': field, 'filter': {} },
                 handler: this.filterSuccessHandler.bind(this, new DataManager(jsonData)), target: target,
                 position: { X: xPos, Y: yPos }, localeObj: this.parent.serviceLocator.getService(locale)
             };
-            let excelFilter: ExcelFilterBase = new ExcelFilterBase(this.parent, this.getLocalizedCustomOperators());
+            const excelFilter: ExcelFilterBase = new ExcelFilterBase(this.parent, this.getLocalizedCustomOperators());
             excelFilter.openDialog(options);
             this.parent.hideSpinner();
         });
@@ -466,16 +557,21 @@ export class Filter {
 
     /**
      * Formats cell value for listing it in filter popup.
+     *
+     * @param {string | number} args.value - Specify the value
+     * @param {object} args.column - Specify the column
+     * @param {object} args.data - Specify the data
+     * @returns {void} - Formats cell value for listing it in filter popup.
      */
     private filterCboxValueHandler(args: { value: string | number, column: object, data: object }): void {
         if (args.column && args.data) {
-            let fieldKey: string = 'field';
-            let field: string = args.column[fieldKey] as string;
-            let dataKey: string = 'dataObj';
-            let rowKey: string = '__rowIndex';
+            const fieldKey: string = 'field';
+            const field: string = args.column[fieldKey] as string;
+            const dataKey: string = 'dataObj';
+            const rowKey: string = '__rowIndex';
             if (args.value) {
-                let indexes: number[] = getCellIndexes(field + args.data[dataKey][rowKey]);
-                let cell: CellModel = getCell(indexes[0], indexes[1], this.parent.getActiveSheet());
+                const indexes: number[] = getCellIndexes(field + args.data[dataKey][rowKey]);
+                const cell: CellModel = getCell(indexes[0], indexes[1], this.parent.getActiveSheet());
                 if (cell && cell.format) {
                     args.value = this.parent.getDisplayText(cell);
                 }
@@ -485,21 +581,24 @@ export class Filter {
 
     /**
      * Triggers when sorting items are chosen on context menu of filter popup.
+     *
+     * @param {HTMLElement} target - Specify the element.
+     * @returns {void} - Triggers when sorting items are chosen on context menu of filter popup.
      */
     private selectSortItemHandler(target: HTMLElement): void {
-        let sortOrder: SortOrder = target.classList.contains('e-filter-sortasc') ? 'Ascending'
+        const sortOrder: SortOrder = target.classList.contains('e-filter-sortasc') ? 'Ascending'
             : target.classList.contains('e-filter-sortdesc') ? 'Descending' : null;
         if (!sortOrder) { return; }
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let sheetIdx: number = this.parent.activeSheetIndex;
-        let range: number[] = this.filterRange.get(sheetIdx).slice();
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const sheetIdx: number = this.parent.activeSheetIndex;
+        const range: number[] = this.filterRange.get(sheetIdx).slice();
         range[0] = range[0] + 1; // to skip first row.
         range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
         this.parent.notify(applySort, { sortOptions: { sortDescriptors: { order: sortOrder } }, range: getRangeAddress(range) });
 
-        let cell: number[] = getIndexesFromAddress(sheet.activeCell);
-        let field: string = getColumnHeaderText(cell[1] + 1);
-        for (let key of Object.keys(this.filterClassList.get(sheetIdx))) {
+        const cell: number[] = getIndexesFromAddress(sheet.activeCell);
+        const field: string = getColumnHeaderText(cell[1] + 1);
+        for (const key of Object.keys(this.filterClassList.get(sheetIdx))) {
             let className: string = this.filterClassList.get(sheetIdx)[key].replace(/\se-sortasc-filter|\se-sortdesc-filter/gi, '');
             if (key === field) {
                 className += sortOrder === 'Ascending' ? ' e-sortasc-filter' : ' e-sortdesc-filter';
@@ -507,12 +606,28 @@ export class Filter {
             this.filterClassList.get(sheetIdx)[key] = className;
         }
         this.refreshFilterRange();
-
+        this.parent.sortCollection = this.parent.sortCollection ? this.parent.sortCollection : [];
+        for (let i: number = 0; i < this.parent.sortCollection.length; i++) {
+            if (this.parent.sortCollection[i] && this.parent.sortCollection[i].sheetIndex === sheetIdx) {
+                this.parent.sortCollection.splice(i, 1);
+            }
+        }
+        this.parent.sortCollection.push({
+            sortRange: getRangeAddress(range), columnIndex: cell[1], order: sortOrder,
+            sheetIndex: sheetIdx
+        });
         this.closeDialog();
     }
 
     /**
      * Triggers when OK button or clear filter item is selected
+     *
+     * @param {DataManager} dataSource - Specify the data source
+     * @param {string} args.action - Specify the action
+     * @param {PredicateModel[]} args.filterCollection - Specify the filter collection.
+     * @param {string} args.field - Specify the field.
+     * @param {number} args.sIdx - Specify the index.
+     * @returns {void} - Triggers when OK button or clear filter item is selected
      */
     private filterSuccessHandler(dataSource: DataManager, args: {
         action: string, filterCollection: PredicateModel[], field: string, sIdx?: number
@@ -520,9 +635,9 @@ export class Filter {
         let sheetIdx: number = args.sIdx;
         if (!sheetIdx && sheetIdx !== 0) { sheetIdx = this.parent.activeSheetIndex; }
         let predicates: PredicateModel[] = this.filterCollection.get(sheetIdx);
-        let dataManager: DataManager = new DataManager(predicates as JSON[]);
-        let query: Query = new Query();
-        let fields: { field: string }[] = dataManager.executeLocal(query.where('field', 'equal', args.field)) as { field: string }[];
+        const dataManager: DataManager = new DataManager(predicates as JSON[]);
+        const query: Query = new Query();
+        const fields: { field: string }[] = dataManager.executeLocal(query.where('field', 'equal', args.field)) as { field: string }[];
         for (let index: number = 0; index < fields.length; index++) {
             let sameIndex: number = -1;
             for (let filterIndex: number = 0; filterIndex < predicates.length; filterIndex++) {
@@ -537,16 +652,21 @@ export class Filter {
         }
         if (args.action === 'filtering') {
             predicates = predicates.concat(args.filterCollection);
-            if (predicates.length && this.filterClassList.get(sheetIdx)[args.field].indexOf(' e-filtered') < 0) {
-                this.filterClassList.get(sheetIdx)[args.field] += ' e-filtered';
+            if (predicates.length) {
+                for (let i: number = 0; i < predicates.length; i++) {
+                    args.field = predicates[i].field;
+                    if (predicates.length && this.filterClassList.get(sheetIdx)[args.field].indexOf(' e-filtered') < 0) {
+                        this.filterClassList.get(sheetIdx)[args.field] += ' e-filtered';
+                    }
+                }
             }
         } else {
             this.filterClassList.get(sheetIdx)[args.field] = this.filterClassList.get(sheetIdx)[args.field].replace(' e-filtered', '');
         }
         this.filterCollection.set(sheetIdx, predicates);
-        let filterOptions: FilterOptions = {
+        const filterOptions: FilterOptions = {
             datasource: dataSource,
-            predicates: this.getPredicates(sheetIdx),
+            predicates: this.getPredicates(sheetIdx)
         };
         this.filterRange.get(sheetIdx)[2] = getSheet(this.parent, sheetIdx).usedRange.rowIndex; //extend the range if filtered
         this.applyFilter(filterOptions, getRangeAddress(this.filterRange.get(sheetIdx)));
@@ -554,9 +674,13 @@ export class Filter {
 
     /**
      * Triggers events for filtering and applies filter.
+     *
+     * @param {FilterOptions} filterOptions - Specify the filteroptions.
+     * @param {string} range - Specify the range.
+     * @returns {void} - Triggers events for filtering and applies filter.
      */
     private applyFilter(filterOptions: FilterOptions, range: string): void {
-        let args: BeforeFilterEventArgs = { range: range, filterOptions: filterOptions, cancel: false };
+        const args: BeforeFilterEventArgs = { range: range, filterOptions: filterOptions, cancel: false };
         this.parent.trigger(beforeFilter, args);
         if (args.cancel) { return; }
         this.parent.showSpinner();
@@ -573,11 +697,14 @@ export class Filter {
 
     /**
      * Gets the predicates for the sheet
+     *
+     * @param {number} sheetIdx - Specify the sheetindex
+     * @returns {Predicate[]} - Gets the predicates for the sheet
      */
     private getPredicates(sheetIdx: number): Predicate[] {
-        let predicateList: Predicate[] = [];
-        let excelPredicate: Predicate = CheckBoxFilterBase.getPredicate(this.filterCollection.get(sheetIdx));
-        for (let prop of Object.keys(excelPredicate)) {
+        const predicateList: Predicate[] = [];
+        const excelPredicate: Predicate = CheckBoxFilterBase.getPredicate(this.filterCollection.get(sheetIdx));
+        for (const prop of Object.keys(excelPredicate)) {
             predicateList.push(<Predicate>excelPredicate[prop]);
         }
         return predicateList;
@@ -585,31 +712,36 @@ export class Filter {
 
     /**
      * Gets the column type to pass it into the excel filter options.
+     *
+     * @param {SheetModel} sheet - Specify the sheet.
+     * @param {number} colIndex - Specify the colindex
+     * @param {number[]} range - Specify the range.
+     * @returns {string} - Gets the column type to pass it into the excel filter options.
      */
     private getColumnType(sheet: SheetModel, colIndex: number, range: number[]): string {
-        let num: number = 0; let str: number = 0; let date: number = 0; let time: number = 0;
+        let num: number = 0; let str: number = 0; let date: number = 0; const time: number = 0;
         for (let i: number = range[0]; i <= sheet.usedRange.rowIndex; i++) {
-            let cell: CellModel = getCell(i, colIndex - 1, sheet);
+            const cell: CellModel = getCell(i, colIndex - 1, sheet);
             if (cell) {
                 if (cell.format) {
-                    let type: string = getTypeFromFormat(cell.format).toLowerCase();
+                    const type: string = getTypeFromFormat(cell.format).toLowerCase();
                     switch (type) {
-                        case 'number':
-                        case 'currency':
-                        case 'accounting':
-                        case 'percentage':
-                            num++;
-                            break;
-                        case 'shortdate':
-                        case 'longdate':
-                            date++;
-                            break;
-                        case 'time':
-                            num++;
-                            break;
-                        default:
-                            str++;
-                            break;
+                    case 'number':
+                    case 'currency':
+                    case 'accounting':
+                    case 'percentage':
+                        num++;
+                        break;
+                    case 'shortdate':
+                    case 'longdate':
+                        date++;
+                        break;
+                    case 'time':
+                        num++;
+                        break;
+                    default:
+                        str++;
+                        break;
                     }
                 } else {
                     if (typeof cell.value === 'string') {
@@ -626,6 +758,8 @@ export class Filter {
 
     /**
      * Triggers before the custom filter dialog opened.
+     *
+     * @returns {void} - Triggers before the custom filter dialog opened.
      */
     private beforeCustomFilterOpenHandler(): void {
         this.closeDialog();
@@ -633,11 +767,13 @@ export class Filter {
 
     /**
      * Clears all the filtered columns in the active sheet.
+     *
+     * @returns {void} - Clears all the filtered columns in the active sheet.
      */
     private clearAllFilterHandler(): void {
         if (this.filterRange.has(this.parent.activeSheetIndex)) {
             this.filterCollection.set(this.parent.activeSheetIndex, []);
-            for (let key of Object.keys(this.filterClassList.get(this.parent.activeSheetIndex))) {
+            for (const key of Object.keys(this.filterClassList.get(this.parent.activeSheetIndex))) {
                 this.filterClassList.get(this.parent.activeSheetIndex)[key] = '';
             }
             this.refreshFilterRange();
@@ -646,6 +782,9 @@ export class Filter {
 
     /**
      * Clear filter from the field.
+     *
+     * @param {{ field: string }} args.field - Specify the args
+     * @returns {void} - Clear filter from the field.
      */
     private clearFilterHandler(args: { field: string }): void {
         this.filterSuccessHandler(null, { action: 'clear-filter', filterCollection: [], field: args.field });
@@ -653,9 +792,11 @@ export class Filter {
 
     /**
      * Reapplies the filter.
+     *
+     * @returns {void} - Reapplies the filter.
      */
     private reapplyFilterHandler(): void {
-        let sheetIdx: number = this.parent.activeSheetIndex;
+        const sheetIdx: number = this.parent.activeSheetIndex;
         if (this.filterRange.has(sheetIdx)) {
             this.applyFilter({ predicates: this.getPredicates(sheetIdx) }, getRangeAddress(this.filterRange.get(sheetIdx)));
         }
@@ -663,9 +804,12 @@ export class Filter {
 
     /**
      * Gets the filter information of the sheet.
+     *
+     * @param {FilterInfoArgs} args - Specify the args
+     * @returns {void} - Gets the filter information of the sheet.
      */
     private getFilterRangeHandler(args: FilterInfoArgs): void {
-        let sheetIdx: number = args.sheetIdx;
+        const sheetIdx: number = args.sheetIdx;
         if (this.filterRange && this.filterRange.has(sheetIdx)) {
             args.hasFilter = true;
             args.filterRange = this.filterRange.get(sheetIdx);
@@ -677,10 +821,12 @@ export class Filter {
 
     /**
      * Returns the custom operators for filter items.
+     *
+     * @returns {Object} - Returns the custom operators for filter items.
      */
     private getLocalizedCustomOperators(): Object {
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let numOptr: Object[] = [
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const numOptr: Object[] = [
             { value: 'equal', text: l10n.getConstant('Equal') },
             { value: 'greaterthan', text: l10n.getConstant('GreaterThan') },
             { value: 'greaterthanorequal', text: l10n.getConstant('GreaterThanOrEqual') },
@@ -688,7 +834,7 @@ export class Filter {
             { value: 'lessthanorequal', text: l10n.getConstant('LessThanOrEqual') },
             { value: 'notequal', text: l10n.getConstant('NotEqual') }
         ];
-        let customOperators: Object = {
+        const customOperators: Object = {
             stringOperator: [
                 { value: 'startswith', text: l10n.getConstant('StartsWith') },
                 { value: 'endswith', text: l10n.getConstant('EndsWith') },
@@ -708,32 +854,35 @@ export class Filter {
 
     /**
      * To get filtered range and predicates collections
+     *
+     * @returns {void} - To get filtered range and predicates collections
      */
     private getFilteredCollection(): void {
-        let sheetLen: number = this.parent.sheets.length;
-        let col: FilterCollectionModel[] = []; let fil: FilterCollectionModel;
+        const sheetLen: number = this.parent.sheets.length;
+        const col: FilterCollectionModel[] = []; let fil: FilterCollectionModel;
         for (let i: number = 0; i < sheetLen; i++) {
             let range: number[]; let hasFilter: boolean;
-            let args: FilterInfoArgs = { sheetIdx: i, filterRange: range, hasFilter: hasFilter };
+            const args: FilterInfoArgs = { sheetIdx: i, filterRange: range, hasFilter: hasFilter };
             this.getFilterRangeHandler(args);
             if (args.hasFilter) {
-                let colCollection: number[] = []; let condition: string[] = [];
-                let value: (string | number | boolean | Date)[] = []; let type: string[] = [];
-                let predicate: PredicateModel[] = this.filterCollection.get(args.sheetIdx);
+                const colCollection: number[] = []; const condition: string[] = [];
+                const value: (string | number | boolean | Date)[] = []; const type: string[] = []; const predi: string[] = [];
+                const predicate: PredicateModel[] = this.filterCollection.get(args.sheetIdx);
                 for (let i: number = 0; i < predicate.length; i++) {
                     if (predicate[i].field && predicate[i].operator) {
-                        let colIdx: number = getCellIndexes(predicate[i].field + '1')[1];
+                        const colIdx: number = getCellIndexes(predicate[i].field + '1')[1];
                         colCollection.push(colIdx);
                         condition.push(predicate[i].operator);
                         value.push(predicate[i].value);
                         type.push(predicate[i].type);
+                        predi.push(predicate[i].predicate);
                     }
                 }
-                let address: string  = getRangeAddress(args.filterRange);
+                const address: string  = getRangeAddress(args.filterRange);
                 fil = {
-                        sheetIdx: args.sheetIdx, filterRange: address, hasFilter: args.hasFilter, column: colCollection,
-                        criteria: condition, value: value, dataType: type
-                    };
+                    sheetIndex: args.sheetIdx, filterRange: address, hasFilter: args.hasFilter, column: colCollection,
+                    criteria: condition, value: value, dataType: type
+                };
                 col.push(fil);
             }
         }

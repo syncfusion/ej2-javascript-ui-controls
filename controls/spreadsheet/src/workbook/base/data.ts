@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-types */
+
 import { Workbook, Cell, getSheetNameFromAddress, getSheetIndex, getSheet } from '../base/index';
 import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheetFromDataSource, checkDateFormat } from '../common/index';
 import { queryCellInfo, CellInfoEventArgs, CellStyleModel, cFDelete } from '../common/index';
@@ -7,37 +9,47 @@ import { setCell } from './cell';
 
 /**
  * Update data source to Sheet and returns Sheet
+ *
+ * @param {Workbook} context - Specifies the context.
+ * @param {string} address - Specifies the address.
+ * @param {boolean} columnWiseData - Specifies the bool value.
+ * @param {boolean} valueOnly - Specifies the valueOnly.
+ * @param {number[]} frozenIndexes - Specifies the freeze row and column start indexes, if it is scrolled.
+ * @returns {{[key: string]: CellModel }} - To get the data
  * @hidden
  */
 export function getData(
-    context: Workbook, address: string,
-    columnWiseData?: boolean, valueOnly?: boolean): Promise<Map<string, CellModel> | { [key: string]: CellModel }[]> {
+    context: Workbook, address: string, columnWiseData?: boolean,
+    valueOnly?: boolean, frozenIndexes?: number[],
+    filterDialog?: boolean): Promise<Map<string, CellModel> | { [key: string]: CellModel }[]> {
     return new Promise((resolve: Function, reject: Function) => {
         resolve((() => {
-            let i: number; let cell: CellModel;
+            let i: number;
             let row: RowModel;
             let data: Map<string, CellModel> | { [key: string]: CellModel }[] = new Map();
-            let sheetIdx: number = address.indexOf('!') > -1 ? getSheetIndex(context, getSheetNameFromAddress(address))
+            const sheetIdx: number = address.indexOf('!') > -1 ? getSheetIndex(context, getSheetNameFromAddress(address))
                 : context.activeSheetIndex;
-            let sheet: SheetModel = getSheet(context, sheetIdx);
-            let indexes: number[] = getIndexesFromAddress(address);
+            const sheet: SheetModel = getSheet(context, sheetIdx);
+            const indexes: number[] = getIndexesFromAddress(address);
             let sRow: number = indexes[0];
             let index: number = 0;
-            let args: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell> } = {
+            const args: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell> } = {
                 sheet: sheet, indexes: indexes, promise:
                     new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); })
             };
             context.notify(updateSheetFromDataSource, args);
             return args.promise.then(() => {
+                let frozenRow: number = context.frozenRowCount(sheet); let frozenCol: number = context.frozenColCount(sheet);
                 while (sRow <= indexes[2]) {
-                    let cells: { [key: string]: CellModel | string | Date } = {};
+                    const cells: { [key: string]: CellModel | string | Date } = {};
                     row = getRow(sheet, sRow);
                     i = indexes[1];
                     while (i <= indexes[3]) {
                         if (columnWiseData) {
+                            if (isHiddenRow(sheet, sRow) && !filterDialog) { sRow++; continue; }
                             if (data instanceof Map) { data = []; }
-                            let key: string = getColumnHeaderText(i + 1);
-                            let rowKey: string = '__rowIndex';
+                            const key: string = getColumnHeaderText(i + 1);
+                            const rowKey: string = '__rowIndex';
                             if (valueOnly) {
                                 cells[key] = row ? getValueFromFormat(context, sRow, i, sheetIdx, sheet) : '';
                             } else {
@@ -46,7 +58,7 @@ export function getData(
                             if (indexes[3] < i + 1) { cells[rowKey] = (sRow + 1).toString(); }
                             data[index.toString()] = cells;
                         } else {
-                            let cellObj: CellModel = {}; Object.assign(cellObj, row ? getCell(sRow, i, sheet) : null);
+                            const cellObj: CellModel = {}; Object.assign(cellObj, row ? getCell(sRow, i, sheet) : null);
                             if (cellObj.colSpan > 1 && cellObj.rowSpan > 1) {
                                 let cell: CellModel;
                                 for (let j: number = sRow, len: number = sRow + cellObj.rowSpan; j < len; j++) {
@@ -78,10 +90,14 @@ export function getData(
                             }
                             if (!valueOnly && isHiddenRow(sheet, sRow)) { sRow++; continue; }
                             if (!valueOnly && isHiddenCol(sheet, i)) { i++; continue; }
-                            if (cellObj.style) {
-                                let style: CellStyleModel = {}; Object.assign(style, cellObj.style); cellObj.style = style;
+                            if (!valueOnly && frozenIndexes && frozenIndexes.length) {
+                                if (sRow >= frozenRow && sRow < frozenIndexes[0]) { sRow++; continue; }
+                                if (i >= frozenCol && i < frozenIndexes[1]) { i++; continue; }
                             }
-                            let eventArgs: CellInfoEventArgs = { cell: cellObj, address: getCellAddress(sRow, i) };
+                            if (cellObj.style) {
+                                const style: CellStyleModel = {}; Object.assign(style, cellObj.style); cellObj.style = style;
+                            }
+                            const eventArgs: CellInfoEventArgs = { cell: cellObj, address: getCellAddress(sRow, i) };
                             context.trigger(queryCellInfo, eventArgs);
                             (data as Map<string, CellModel>).set(eventArgs.address, eventArgs.cell);
                         }
@@ -95,11 +111,20 @@ export function getData(
     });
 }
 
+/**
+ * @hidden
+ * @param {Workbook} context - Specifies the context.
+ * @param {number} rowIndex - Specifies the rowIndex.
+ * @param {number} colIndex - Specifies the colIndex.
+ * @param {number} sheetIdx - Specifies the sheetIdx.
+ * @param {SheetModel} sheet - Specifies the sheet.
+ * @returns {string | Date} - To get the value format.
+ */
 function getValueFromFormat(context: Workbook, rowIndex: number, colIndex: number, sheetIdx: number, sheet: SheetModel): string | Date {
-    let cell: CellModel = getCell(rowIndex, colIndex, sheet);
+    const cell: CellModel = getCell(rowIndex, colIndex, sheet);
     if (cell) {
         if (cell.format) {
-            let args: { [key: string]: string | number | boolean | Date } = {
+            const args: { [key: string]: string | number | boolean | Date } = {
                 value: context.getDisplayText(cell), rowIndex: rowIndex, colIndex: colIndex,
                 sheetIndex: sheetIdx, dateObj: '', isDate: false, isTime: false
             };
@@ -113,6 +138,9 @@ function getValueFromFormat(context: Workbook, rowIndex: number, colIndex: numbe
 
 /**
  * @hidden
+ * @param {SheetModel | RowModel | CellModel} model - Specifies the sheet model.
+ * @param {number} idx - Specifies the index value.
+ * @returns {SheetModel | RowModel | CellModel} - To process the index
  */
 export function getModel(model: (SheetModel | RowModel | CellModel)[], idx: number): SheetModel | RowModel | CellModel {
     let diff: number;
@@ -151,6 +179,10 @@ export function getModel(model: (SheetModel | RowModel | CellModel)[], idx: numb
 
 /**
  * @hidden
+ * @param {SheetModel | RowModel | CellModel} model - Specifies the sheet model.
+ * @param {boolean} isSheet - Specifies the bool value.
+ * @param {Workbook} context - Specifies the Workbook.
+ * @returns {void} - To process the index
  */
 export function processIdx(model: (SheetModel | RowModel | CellModel)[], isSheet?: true, context?: Workbook): void {
     let j: number;
@@ -199,24 +231,32 @@ export function processIdx(model: (SheetModel | RowModel | CellModel)[], isSheet
 
 /**
  * @hidden
+ * @param {Workbook} context - Specifies the context.
+ * @param {string} address - Specifies the address.
+ * @param {number} sheetIdx - Specifies the sheetIdx.
+ * @param {boolean} valueOnly - Specifies the bool value.
+ * @returns {void} - To clear the range.
  */
 export function clearRange(context: Workbook, address: string, sheetIdx: number, valueOnly: boolean): void {
-    let sheet: SheetModel = getSheet(context, sheetIdx);
-    let range: number[] = getIndexesFromAddress(address);
+    const sheet: SheetModel = getSheet(context, sheetIdx);
+    const range: number[] = getIndexesFromAddress(address);
     let sRIdx: number = range[0];
-    let eRIdx: number = range[2];
+    const eRIdx: number = range[2];
     let sCIdx: number;
     let eCIdx: number;
     for (sRIdx; sRIdx <= eRIdx; sRIdx++) {
         sCIdx = range[1];
         eCIdx = range[3];
         for (sCIdx; sCIdx <= eCIdx; sCIdx++) {
-            let cell: CellModel = getCell(sRIdx, sCIdx, sheet);
+            const cell: CellModel = getCell(sRIdx, sCIdx, sheet);
             context.notify( cFDelete, { rowIdx: sRIdx, colIdx: sCIdx } );
             if (!isNullOrUndefined(cell) && valueOnly) {
                 delete cell.value;
                 if (!isNullOrUndefined(cell.formula)) {
                     delete cell.formula;
+                }
+                if (!isNullOrUndefined(cell.hyperlink)) {
+                    delete cell.hyperlink;
                 }
             }
         }

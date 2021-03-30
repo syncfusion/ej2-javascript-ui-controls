@@ -8,7 +8,6 @@ import { NumericTextBox } from '@syncfusion/ej2-inputs';
 /**
  * Form field checkbox dialog is used to modify the value in checkbox form field.
  */
-/* tslint:disable:no-any */
 export class CheckBoxFormFieldDialog {
     private target: HTMLElement;
     private owner: DocumentEditor;
@@ -22,25 +21,28 @@ export class CheckBoxFormFieldDialog {
     private exactlyNumber: NumericTextBox;
     private exactNumberDiv: HTMLElement;
     private fieldBegin: FieldElementBox;
-
-    constructor(owner: DocumentEditor) {
-        this.owner = owner;
-    }
     /**
+     * @param {DocumentHelper} owner - Specifies the document helper.
      * @private
      */
-    get documentHelper(): DocumentHelper {
+    public constructor(owner: DocumentEditor) {
+        this.owner = owner;
+    }
+
+    private get documentHelper(): DocumentHelper {
         return this.owner.documentHelper;
     }
 
-
-    /**
-     * @private
-     */
-    public getModuleName(): string {
+    private getModuleName(): string {
         return 'CheckBoxFormFieldDialog';
     }
-    // tslint:disable:max-func-body-length
+    /* eslint-disable */
+    /**
+     * @private
+     * @param {L10n} locale - Specifies the locale.
+     * @param {boolean} isRtl - Specifies is rtl.
+     * @returns {void}
+     */
     private initCheckBoxDialog(localValue: L10n, isRtl?: boolean): void {
         this.target = createElement('div');
         let dialogDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
@@ -156,6 +158,7 @@ export class CheckBoxFormFieldDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public show(): void {
         let localObj: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
@@ -182,6 +185,7 @@ export class CheckBoxFormFieldDialog {
 
     /**
      * @private
+     * @returns {void}
      */
     public loadCheckBoxDialog(): void {
         let inline: ElementBox = this.owner.selection.getCurrentFormField();
@@ -232,6 +236,8 @@ export class CheckBoxFormFieldDialog {
 
     /**
      * @private
+     * @param {ChangeArgs} event - Specifies the event args.
+     * @returns {void}
      */
     public changeBidirectional = (event: ChangeArgs): void => {
         if (event.value === 'exact') {
@@ -244,6 +250,8 @@ export class CheckBoxFormFieldDialog {
     }
     /**
      * @private
+     * @param {ChangeArgs} event - Specifies the event args.
+     * @returns {void}
      */
     public changeBidirect = (event: ChangeArgs): void => {
         if (event.value === 'check') {
@@ -255,6 +263,7 @@ export class CheckBoxFormFieldDialog {
 
     /**
      * @private
+     * @returns {void}
      */
     public onCancelButtonClick = (): void => {
         this.documentHelper.dialog.hide();
@@ -262,6 +271,7 @@ export class CheckBoxFormFieldDialog {
 
     /**
      * @private
+     * @returns {void}
      */
     public insertCheckBoxField = (): void => {
         this.closeCheckBoxField();
@@ -280,12 +290,18 @@ export class CheckBoxFormFieldDialog {
         }
         this.owner.editor.editFormField('CheckBox', checkBoxField);
     }
-
+    /**
+     * @private
+     * @returns {void}
+     */
     private closeCheckBoxField = (): void => {
         this.documentHelper.dialog.hide();
         this.documentHelper.dialog.element.style.pointerEvents = '';
     }
-
+    /**
+     * @private
+     * @returns {void}
+     */
     private destroy(): void {
         let checkBoxDialogTarget: HTMLElement = this.target;
         if (checkBoxDialogTarget) {

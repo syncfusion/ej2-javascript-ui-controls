@@ -85,9 +85,9 @@ describe('Range navigator', () => {
         it('checking with left slider', (done: Function) => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_LeftSlider');
-                // tslint:disable-next-line:chai-vague-errors
+                // eslint-disable-next-line 
                 expect(element.childNodes.length === 4).toBe(true);
-                // tslint:disable-next-line:chai-vague-errors
+                // eslint-disable-next-line 
                 expect(element.getAttribute('d') !== '').toBe(true);
                 done();
             };
@@ -101,7 +101,7 @@ describe('Range navigator', () => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_RightSlider');
                 expect(element.childNodes.length).toEqual(4);
-                // tslint:disable-next-line:chai-vague-errors
+                // eslint-disable-next-line 
                 expect(element.getAttribute('d') !== '').toBe(true);
                 done();
             };
@@ -114,7 +114,7 @@ describe('Range navigator', () => {
         it('checking with rtl slider mouse event', (done: Function) => {
             range.loaded = (args: Object): void => {
                 let targetElement: Element = document.getElementById('container_RightSlider_ThumpSymbol');
-                // tslint:disable-next-line:align
+                // eslint-disable-next-line @typescript-eslint/indent
                 range.rangeOnMouseDown(<PointerEvent>trigger.onTouchStart(targetElement, 608, 189, null, null, 504, 289));
                 range.mouseMove(<PointerEvent>trigger.onTouchMove(targetElement, 728, 389, null, null, 404, 189));
                 range.mouseEnd(<PointerEvent>trigger.onTouchEnd(targetElement, 728, 389, null, null, 404, 189));
@@ -126,7 +126,7 @@ describe('Range navigator', () => {
                 done();
             };
             range.enableRtl = true;
-            // tslint:disable-next-line:align
+            // eslint-disable-next-line @typescript-eslint/indent
             range.refresh();
         });
     });
@@ -155,7 +155,7 @@ describe('Range navigator', () => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_AxisLabel_3');
                 expect(element.firstChild.textContent === 'Quarter1' || element.firstChild.textContent === 'Q1 2001').toBe(true);
-                // tslint:disable-next-line:chai-vague-errors
+                // eslint-disable-next-line
                 expect(element.getAttribute('opacity') === '1').toBe(true);
                 done();
             };
@@ -204,7 +204,7 @@ describe('Range navigator', () => {
                 done();
             };
              range.series[0].dataSource = dateTime;
-            // tslint:disable-next-line:align
+            // eslint-disable-next-line @typescript-eslint/indent
             range.navigatorStyleSettings.selectedRegionColor = 'blue';
             range.enableGrouping = true;
             range.refresh();
@@ -218,7 +218,7 @@ describe('Range navigator', () => {
                 expect(element.getAttribute('x') < element1.getAttribute('x')).toBe(true);
                 done();
             };
-            // tslint:disable-next-line:align
+            // eslint-disable-next-line @typescript-eslint/indent
             range.series[0].dataSource = dateTime;
             range.navigatorStyleSettings.selectedRegionColor = 'blue';
             range.enableGrouping = true;

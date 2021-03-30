@@ -1,7 +1,7 @@
 import { Property, ChildProperty } from '@syncfusion/ej2-base';
 import { TemplateType } from '../base/type';
 
-/**  
+/**
  * A class that defines the template options available to customize the quick popup of scheduler.
  */
 export class QuickInfoTemplates extends ChildProperty<QuickInfoTemplates> {
@@ -11,12 +11,15 @@ export class QuickInfoTemplates extends ChildProperty<QuickInfoTemplates> {
      * * Both
      * * Cell
      * * Event
+     *
      *  @default 'Both'
      */
     @Property('Both')
     public templateType: TemplateType;
+
     /**
      * Template option to customize the header section of quick popup.
+     *
      *  @default null
      */
     @Property()
@@ -24,6 +27,7 @@ export class QuickInfoTemplates extends ChildProperty<QuickInfoTemplates> {
 
     /**
      * Template option to customize the content area of the quick popup.
+     *
      *  @default null
      */
     @Property()
@@ -31,8 +35,10 @@ export class QuickInfoTemplates extends ChildProperty<QuickInfoTemplates> {
 
     /**
      * Template option to customize the footer section of quick popup.
+     *
      *  @default null
      */
     @Property()
     public footer: string;
+
 }

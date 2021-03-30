@@ -1563,7 +1563,7 @@ console.log('TextInput internal validation');
         let spy = jasmine.createSpy('Spy');
         (editor.documentHelper as any).onTextInputInternal = spy;
         documentHelper.editableDiv.innerHTML = 'S';
-        (editor.documentHelper as any).onTextInputInternal({} as any);
+        (editor.documentHelper as any).onTextInputInternal();
         expect(spy).toHaveBeenCalled();
     });
     it('Paste on read only mode', () => {

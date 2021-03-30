@@ -11,6 +11,8 @@ export class WorkbookHyperlink {
     private parent: Workbook;
     /**
      * Constructor for WorkbookSort module.
+     *
+     * @param {Workbook} parent - Specifies the workbook.
      */
     constructor(parent: Workbook) {
         this.parent = parent;
@@ -18,7 +20,9 @@ export class WorkbookHyperlink {
     }
 
     /**
-     * To destroy the sort module. 
+     * To destroy the sort module.
+     *
+     * @returns {void} - To destroy the sort module.
      */
     protected destroy(): void {
         this.removeEventListener();
@@ -40,12 +44,11 @@ export class WorkbookHyperlink {
         let cellAddr: string = args.cell;
         let range: string[];
         let sheetIdx: number;
-        let cellIdx: number[];
         let sheet: SheetModel = this.parent.getActiveSheet();
         let address: string;
         if (cellAddr && cellAddr.indexOf('!') !== -1) {
             range = cellAddr.split('!');
-            let sheets: SheetModel[] = this.parent.sheets;
+            const sheets: SheetModel[] = this.parent.sheets;
             for (let idx: number = 0; idx < sheets.length; idx++) {
                 if (sheets[idx].name === range[0]) {
                     sheetIdx = idx;
@@ -55,11 +58,11 @@ export class WorkbookHyperlink {
             cellAddr = range[1];
         }
         cellAddr = cellAddr ? cellAddr : this.parent.getActiveSheet().activeCell;
-        cellIdx = getRangeIndexes(cellAddr);
-        let rowIdx: number = cellIdx[0];
-        let colIdx: number = cellIdx[1];
+        const cellIdx: number[] = getRangeIndexes(cellAddr);
+        const rowIdx: number = cellIdx[0];
+        const colIdx: number = cellIdx[1];
         if (!sheet) {
-           return;
+            return;
         }
         if (isNullOrUndefined(sheet.rows[rowIdx])) {
             sheet.rows[rowIdx] = {};
@@ -69,6 +72,12 @@ export class WorkbookHyperlink {
         }
         if (isNullOrUndefined(sheet.rows[rowIdx].cells[colIdx])) {
             sheet.rows[rowIdx].cells[colIdx] = {};
+        }
+        if (sheet.rows[rowIdx].cells[colIdx].style) {
+            sheet.rows[rowIdx].cells[colIdx].style.textDecoration = 'underline';
+            sheet.rows[rowIdx].cells[colIdx].style.color = '#00e';
+        } else {
+            sheet.rows[rowIdx].cells[colIdx].style = { textDecoration: 'underline', color: '#00e' };
         }
         if (typeof (hyperlink) === 'string') {
             if (hyperlink.indexOf('http://') !== 0 && hyperlink.indexOf('https://') !== 0 && hyperlink.indexOf('ftp://') !== 0) {
@@ -82,7 +91,7 @@ export class WorkbookHyperlink {
                 address = address.toLowerCase().indexOf('www.') === 0 ? 'http://' + address : address;
             }
             sheet.rows[rowIdx].cells[colIdx].hyperlink = {
-                address: address,
+                address: address
             };
         }
 
@@ -90,7 +99,8 @@ export class WorkbookHyperlink {
 
     /**
      * Gets the module name.
-     * @returns string
+     *
+     *@returns {string} - returns the module name.
      */
     protected getModuleName(): string {
         return 'workbookHyperlink';

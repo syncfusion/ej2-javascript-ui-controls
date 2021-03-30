@@ -1,4 +1,3 @@
-import { LayoutViewer } from '../index';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
@@ -49,56 +48,58 @@ export class TableOptionsDialog {
      */
     public tableFormatIn: WTableFormat;
     /**
+     * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
      */
-    constructor(documentHelper: DocumentHelper) {
+    public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
     }
-    /*
+    /**
      * @private
+     * @returns {WTableFormat} - Returns table format.
      */
-    get tableFormat(): WTableFormat {
+    public get tableFormat(): WTableFormat {
         if (isNullOrUndefined(this.tableFormatIn)) {
             return this.tableFormatIn = new WTableFormat();
         }
         return this.tableFormatIn;
     }
-    /**
-     * @private
-     */
-    public getModuleName(): string {
+
+    private getModuleName(): string {
         return 'TableOptionsDialog';
     }
     /**
      * @private
+     * @param {L10n} localValue - Specifies the locale value
+     * @param {boolean} isRtl - Specifies the is rtl
+     * @returns {void}
      */
     public initTableOptionsDialog(localValue: L10n, isRtl?: boolean): void {
-        let instance: LayoutViewer = this.documentHelper.owner.viewer;
         this.target = createElement('div', {
             id: this.documentHelper.owner.containerId + '_insertCellMarginsDialog', className: 'e-de-table-options-dlg'
         });
-        let innerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        const innerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
             className: 'e-de-table-options-dlg-div'
         });
-        let innerDivLabel: HTMLElement = createElement('Label', {
+        const innerDivLabel: HTMLElement = createElement('Label', {
             id: this.target.id + '_innerDivLabel', className: 'e-de-cell-dia-options-label',
             innerHTML: localValue.getConstant('Default cell margins')
         });
         innerDiv.appendChild(innerDivLabel);
         CellOptionsDialog.getCellMarginDialogElements(this, innerDiv, localValue);
-        let div: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width: 475px; position: relative;' });
-        let cellSpaceLabel: HTMLElement = createElement('Label', {
+        const div: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width: 475px; position: relative;' });
+        const cellSpaceLabel: HTMLElement = createElement('Label', {
             className: 'e-de-cell-dia-options-label',
             id: this.target.id + '_cellSpaceLabel'
         });
         cellSpaceLabel.innerHTML = localValue.getConstant('Default cell spacing');
         div.appendChild(cellSpaceLabel);
-        let table2: HTMLTableElement = <HTMLTableElement>createElement('TABLE', {
+        const table2: HTMLTableElement = <HTMLTableElement>createElement('TABLE', {
             styles: 'height: 30px;'
         });
-        let tr3: HTMLTableRowElement = <HTMLTableRowElement>createElement('tr');
-        let td5: HTMLTableCellElement = <HTMLTableCellElement>createElement('td');
-        let allowSpaceCheckBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        const tr3: HTMLTableRowElement = <HTMLTableRowElement>createElement('tr');
+        const td5: HTMLTableCellElement = <HTMLTableCellElement>createElement('td');
+        const allowSpaceCheckBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'checkbox' }, id: this.target.id + '_cellcheck'
         });
         let td6Padding: string;
@@ -107,7 +108,7 @@ export class TableOptionsDialog {
         } else {
             td6Padding = 'padding-left:14px;';
         }
-        let td6: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { styles: td6Padding, });
+        const td6: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { styles: td6Padding });
         this.cellspacingTextBox = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'text' }, id: this.target.id + '_cellspacing'
         });
@@ -115,7 +116,7 @@ export class TableOptionsDialog {
         td6.appendChild(this.cellspacingTextBox); tr3.appendChild(td5); tr3.appendChild(td6);
         table2.appendChild(tr3);
         div.appendChild(table2);
-        let divBtn: HTMLDivElement = document.createElement('div');
+        const divBtn: HTMLDivElement = document.createElement('div');
         this.target.appendChild(div);
         this.target.appendChild(divBtn);
         this.cellSpaceTextBox = new NumericTextBox({
@@ -127,15 +128,16 @@ export class TableOptionsDialog {
             label: localValue.getConstant('Allow spacing between cells'),
             change: this.changeAllowSpaceCheckBox,
             enableRtl: isRtl,
-            cssClass: 'e-de-tbl-margin-sub-header',
+            cssClass: 'e-de-tbl-margin-sub-header'
         });
         this.allowSpaceCheckBox.appendTo(allowSpaceCheckBox);
     }
     /**
      * @private
+     * @returns {void}
      */
     public loadCellMarginsDialog(): void {
-        let tableFormat: SelectionTableFormat = this.documentHelper.selection.tableFormat;
+        const tableFormat: SelectionTableFormat = this.documentHelper.selection.tableFormat;
         this.cellSpaceTextBox.value = tableFormat.cellSpacing;
         this.bottomMarginBox.value = tableFormat.bottomMargin;
         this.topMarginBox.value = tableFormat.topMargin;
@@ -151,9 +153,10 @@ export class TableOptionsDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public applyTableCellProperties = (): void => {
-        let tableFormat: SelectionTableFormat = this.documentHelper.selection.tableFormat;
+        const tableFormat: SelectionTableFormat = this.documentHelper.selection.tableFormat;
         if (!isNullOrUndefined(this.bottomMarginBox.value || this.leftMarginBox.value
             || this.rightMarginBox.value || this.topMarginBox.value || this.cellSpaceTextBox.value)
             && (tableFormat.bottomMargin !== this.bottomMarginBox.value
@@ -166,9 +169,12 @@ export class TableOptionsDialog {
             this.documentHelper.owner.tablePropertiesDialogModule.applyTableSubProperties();
         }
         this.closeCellMarginsDialog();
-    }
+    };
+
     /**
      * @private
+     * @param {WTableFormat} tableFormat Specifies table format.
+     * @returns {void}
      */
     public applySubTableOptions(tableFormat: WTableFormat): void {
         this.documentHelper.owner.editorHistory.initComplexHistory(this.documentHelper.selection, 'TableMarginsSelection');
@@ -179,24 +185,22 @@ export class TableOptionsDialog {
     }
     /**
      * @private
+     * @param {WTableFormat} tableFormat Specifies table format.
+     * @returns {void}
      */
     public applyTableOptionsHelper(tableFormat: WTableFormat): void {
         this.applySubTableOptionsHelper(tableFormat);
     }
-    /**
-     * @private
-     */
-    public applyTableOptionsHistory(tableFormat: WTableFormat): void {
+
+    private applyTableOptionsHistory(tableFormat: WTableFormat): void {
         this.documentHelper.owner.editorModule.initHistory('TableOptions');
         this.applySubTableOptionsHelper(tableFormat);
     }
-    /**
-     * @private
-     */
-    public applySubTableOptionsHelper(tableFormat: WTableFormat): void {
+
+    private applySubTableOptionsHelper(tableFormat: WTableFormat): void {
         let ownerTable: TableWidget = this.documentHelper.selection.start.currentWidget.paragraph.associatedCell.ownerTable;
         ownerTable = ownerTable.combineWidget(this.documentHelper.owner.viewer) as TableWidget;
-        let currentTableFormat: WTableFormat = ownerTable.tableFormat;
+        const currentTableFormat: WTableFormat = ownerTable.tableFormat;
         if (!isNullOrUndefined(this.documentHelper.owner.editorHistory.currentBaseHistoryInfo)) {
             this.documentHelper.owner.editorHistory.currentBaseHistoryInfo.addModifiedTableOptions(currentTableFormat);
         }
@@ -207,8 +211,10 @@ export class TableOptionsDialog {
         currentTableFormat.bottomMargin = tableFormat.bottomMargin;
         this.documentHelper.owner.tablePropertiesDialogModule.calculateGridValue(ownerTable);
     }
+
     /**
      * @private
+     * @param {WTableFormat} tableFormat Specifies the table format
      */
     public applyTableOptions(tableFormat: WTableFormat): void {
         tableFormat.leftMargin = this.leftMarginBox.value;
@@ -221,17 +227,19 @@ export class TableOptionsDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public closeCellMarginsDialog = (): void => {
         this.documentHelper.dialog.hide();
         this.documentHelper.dialog.element.style.pointerEvents = '';
         this.documentHelper.updateFocus();
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public show(): void {
-        let documentLocale: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        const documentLocale: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         documentLocale.setLocale(this.documentHelper.owner.locale);
         if (!this.target) {
             this.initTableOptionsDialog(documentLocale, this.documentHelper.owner.enableRtl);
@@ -240,6 +248,7 @@ export class TableOptionsDialog {
         this.documentHelper.dialog.header = documentLocale.getConstant('Table Options');
         this.documentHelper.dialog.content = this.target;
         this.documentHelper.dialog.beforeOpen = undefined;
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         this.documentHelper.dialog.position = { X: 'center', Y: 'center' };
         //  this.documentHelper.dialog.cssClass = 'e-de-table-margin-size';
         this.documentHelper.dialog.height = 'auto';
@@ -260,6 +269,7 @@ export class TableOptionsDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public changeAllowSpaceCheckBox = (): void => {
         if (this.allowSpaceCheckBox.checked) {
@@ -267,16 +277,18 @@ export class TableOptionsDialog {
         } else {
             this.cellSpaceTextBox.enabled = false;
         }
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public removeEvents = (): void => {
         this.documentHelper.dialog2.element.style.pointerEvents = '';
         this.documentHelper.updateFocus();
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         if (!isNullOrUndefined(this.target)) {

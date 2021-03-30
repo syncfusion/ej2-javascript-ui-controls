@@ -25,9 +25,12 @@ export class ContextMenu {
     private currentItems: MenuItemModel[] = [];
     private currentElement: HTMLElement = null;
     private disabledItems: string[] = [];
+    // eslint-disable-next-line
     public menuItemData: object;
     /**
      * Constructor for the ContextMenu module
+     *
+     * @param {IFileManager} parent - Specifies the parent element.
      * @hidden
      */
     constructor(parent?: IFileManager) {
@@ -59,14 +62,14 @@ export class ContextMenu {
     /* istanbul ignore next */
     public onBeforeItemRender(args: MenuEventArgs): void {
         if (args.item.id === this.getMenuId('largeiconsview')) {
-            let iconSpan: HTMLElement = createElement('span');
-            let element: HTMLElement = args.element;
+            const iconSpan: HTMLElement = createElement('span');
+            const element: HTMLElement = args.element;
             element.insertBefore(iconSpan, this.parent.view === 'LargeIcons' ? element.childNodes[1] : element.childNodes[0]);
             iconSpan.setAttribute('class', CLS.ICON_LARGE + ' ' + CLS.MENU_ICON);
         }
         if (args.item.id === this.getMenuId('detailsview')) {
-            let iconSpan: HTMLElement = createElement('span');
-            let element: HTMLElement = args.element;
+            const iconSpan: HTMLElement = createElement('span');
+            const element: HTMLElement = args.element;
             element.insertBefore(iconSpan, this.parent.view === 'Details' ? element.childNodes[1] : element.childNodes[0]);
             iconSpan.setAttribute('class', CLS.ICON_GRID + ' ' + CLS.MENU_ICON);
         }
@@ -81,7 +84,7 @@ export class ContextMenu {
         this.disabledItems = [];
         let selected: boolean = false;
         let uid: string;
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let data: { [key: string]: Object };
         let treeFolder: boolean = false;
         let target: Element = args.event.target as Element;
@@ -95,38 +98,40 @@ export class ContextMenu {
             this.parent.selectedItems.length = 0;
         }
         this.targetElement = this.parent.view === 'Details' ? closest(target, 'tr') as HTMLElement : target as HTMLElement;
-        let view: string = this.getTargetView(target);
+        const view: string = this.getTargetView(target);
         this.updateActiveModule();
         /* istanbul ignore next */
         if (target.classList.contains(CLS.TREE_VIEW) || closest(target, 'th') ||
             (closest(target, '#' + this.parent.element.id + CLS.BREADCRUMBBAR_ID)) ||
             (closest(target, '#' + this.parent.element.id + CLS.TOOLBAR_ID))) {
             args.cancel = true;
-            // tslint:disable-next-line
+            // eslint:disable-next-line
         } else if (!(this.parent.view === 'LargeIcons') && this.targetElement &&
             this.targetElement.classList.contains('e-emptyrow')) {
             this.setLayoutItem(target);
             /* istanbul ignore next */
         } else if (closest(target, '.' + CLS.EMPTY)) {
             this.setLayoutItem(target);
-            // tslint:disable-next-line
-        } else if (!target.classList.contains(CLS.MENU_ITEM) && !target.classList.contains(CLS.MENU_ICON) && !target.classList.contains(CLS.SUBMENU_ICON)) {
+            // eslint:disable-next-line
+        } else if (!target.classList.contains(CLS.MENU_ITEM) &&
+         !target.classList.contains(CLS.MENU_ICON) && !target.classList.contains(CLS.SUBMENU_ICON)) {
             /* istanbul ignore next */
-            // tslint:disable-next-line
+            // eslint:disable-next-line
             if (this.parent.view === 'LargeIcons' && !isNOU(closest(target, 'li')) && !closest(target, '#' + this.parent.element.id + CLS.TREE_ID)) {
-                let eveArgs: KeyboardEventArgs = { ctrlKey: true, shiftKey: true } as KeyboardEventArgs;
+                const eveArgs: KeyboardEventArgs = { ctrlKey: true, shiftKey: true } as KeyboardEventArgs;
                 if (!closest(target, 'li').classList.contains('e-active')) {
                     this.parent.largeiconsviewModule.doSelection(target, eveArgs);
                 }
+                // eslint-disable-next-line
                 data = this.parent.visitedData as { [key: string]: Object };
                 selected = true;
             } else if (!isNOU(closest(target, 'tr'))) {
                 uid = this.targetElement.getAttribute('data-uid');
+                // eslint-disable-next-line
                 data = this.parent.detailsviewModule.gridObj.getRowObjectFromUID(uid).data as { [key: string]: Object };
                 if (isNOU(this.targetElement.getAttribute('aria-selected'))) {
                     /* istanbul ignore next */
-                    // tslint:disable-next-line
-                    this.parent.detailsviewModule.gridObj.selectRows([parseInt(this.targetElement.getAttribute('aria-rowindex'), 10)])
+                    this.parent.detailsviewModule.gridObj.selectRows([parseInt(this.targetElement.getAttribute('aria-rowindex'), 10)]);
                 }
                 selected = true;
                 /* istanbul ignore next */
@@ -148,7 +153,7 @@ export class ContextMenu {
                     this.disabledItems.push('Delete', 'Rename', 'Cut', 'Copy');
                 }
                 /* istanbul ignore next */
-                // tslint:disable-next-line
+                // eslint:disable-next-line
             } else if (view === 'TreeView' || view === 'GridView' || view === 'LargeIcon') {
                 this.setLayoutItem(target);
                 /* istanbul ignore next */
@@ -156,7 +161,7 @@ export class ContextMenu {
                 args.cancel = true;
             }
         }
-        let pasteEle: Element = select('#' + this.getMenuId('Paste'), this.contextMenu.element);
+        const pasteEle: Element = select('#' + this.getMenuId('Paste'), this.contextMenu.element);
         if (!args.cancel && !this.parent.enablePaste &&
             pasteEle && !pasteEle.classList.contains('e-disabled')) {
             this.disabledItems.push('Paste');
@@ -172,7 +177,7 @@ export class ContextMenu {
             isSubMenu = true;
         }
         this.menuItemData = isSubMenu ? this.menuItemData : this.getMenuItemData();
-        let eventArgs: MenuOpenEventArgs = {
+        const eventArgs: MenuOpenEventArgs = {
             fileDetails: [this.menuItemData],
             element: args.element,
             target: target,
@@ -209,7 +214,12 @@ export class ContextMenu {
     }
 
     /* istanbul ignore next */
-    /** @hidden */
+    /**
+     *
+     * @param {Element} target - specifies the target element.
+     * @returns {string} -returns the target view.
+     * @hidden
+     */
     public getTargetView(target: Element): string {
         return target.classList.contains(CLS.TREE_VIEW) ?
             'TreeView' : target.classList.contains(CLS.GRID_VIEW) ?
@@ -219,7 +229,7 @@ export class ContextMenu {
     }
 
     public getItemIndex(item: string): number {
-        let itemId: string = this.getMenuId(item);
+        const itemId: string = this.getMenuId(item);
         for (let i: number = 0; i < this.currentItems.length; i++) {
             if ((this.currentItems[i].id === itemId) || (this.currentItems[i].id === item)) {
                 return i;
@@ -290,11 +300,13 @@ export class ContextMenu {
         }
     }
 
+    // eslint-disable-next-line
     private getMenuItemData(): object {
         if (this.menuType === 'layout') {
             return getPathObject(this.parent);
         } else {
-            let args: { [key: string]: Object; } = { target: this.menuTarget };
+            // eslint-disable-next-line
+            const args: { [key: string]: Object; } = { target: this.menuTarget };
             this.parent.notify(events.menuItemData, args);
             return this.parent.itemData[0];
         }
@@ -303,7 +315,8 @@ export class ContextMenu {
     /* istanbul ignore next */
     private onSelect(args: MenuEventArgs): void {
         if (isNOU(args.item) || !args.item.id) { return; }
-        let itemText: string = args.item.id.substr((this.parent.element.id + '_cm_').length);
+        const itemText: string = args.item.id.substr((this.parent.element.id + '_cm_').length);
+        // eslint-disable-next-line
         let details: Object[];
         if (itemText === 'refresh' || itemText === 'newfolder' || itemText === 'upload') {
             details = [getPathObject(this.parent)];
@@ -312,119 +325,124 @@ export class ContextMenu {
             this.parent.notify(events.selectedData, {});
             details = this.parent.itemData;
         }
-        let eventArgs: MenuClickEventArgs = {
+        const eventArgs: MenuClickEventArgs = {
             cancel: false,
             element: args.element,
             fileDetails: details,
             item: args.item
         };
         this.parent.trigger('menuClick', eventArgs, (menuClickArgs: MenuClickEventArgs) => {
+            let sItems: string[];
             if (!menuClickArgs.cancel) {
-                // tslint:disable-next-line
+                // eslint:disable-next-line
                 switch (itemText) {
-                    case 'cut':
-                        cutFiles(this.parent);
-                        break;
-                    case 'copy':
-                        copyFiles(this.parent);
-                        break;
-                    case 'paste':
-                        if (this.menuType === 'folder') {
-                            if ((this.parent.activeModule === 'largeiconsview') || (this.parent.activeModule === 'detailsview')) {
-                                this.parent.folderPath = getFullPath(this.parent, this.menuItemData, this.parent.path);
-                            } else {
-                                this.parent.folderPath = '';
-                            }
+                case 'cut':
+                    cutFiles(this.parent);
+                    break;
+                case 'copy':
+                    copyFiles(this.parent);
+                    break;
+                case 'paste':
+                    if (this.menuType === 'folder') {
+                        if ((this.parent.activeModule === 'largeiconsview') || (this.parent.activeModule === 'detailsview')) {
+                            this.parent.folderPath = getFullPath(this.parent, this.menuItemData, this.parent.path);
                         } else {
                             this.parent.folderPath = '';
                         }
-                        pasteHandler(this.parent);
-                        break;
-                    case 'delete':
-                        for (let j: number = 0; j < details.length; j++) {
-                            if (!hasEditAccess(details[j])) {
-                                createDeniedDialog(this.parent, details[j], events.permissionEdit);
-                                return;
-                            }
+                    } else {
+                        this.parent.folderPath = '';
+                    }
+                    pasteHandler(this.parent);
+                    break;
+                case 'delete':
+                    for (let j: number = 0; j < details.length; j++) {
+                        if (!hasEditAccess(details[j])) {
+                            createDeniedDialog(this.parent, details[j], events.permissionEdit);
+                            return;
                         }
-                        createDialog(this.parent, 'Delete');
-                        break;
+                    }
+                    createDialog(this.parent, 'Delete');
+                    break;
                     /* istanbul ignore next */
-                    case 'download':
-                        for (let i: number = 0; i < details.length; i++) {
-                            if (!hasDownloadAccess(details[i])) {
-                                createDeniedDialog(this.parent, details[i], events.permissionDownload);
-                                return;
-                            }
+                case 'download':
+                    for (let i: number = 0; i < details.length; i++) {
+                        if (!hasDownloadAccess(details[i])) {
+                            createDeniedDialog(this.parent, details[i], events.permissionDownload);
+                            return;
                         }
-                        if (this.parent.activeModule === 'navigationpane') {
-                            this.parent.notify(events.downloadInit, {});
-                        } else if (this.parent.selectedItems.length > 0) {
-                            Download(this.parent, this.parent.path, this.parent.selectedItems);
-                        }
-                        break;
-                    case 'rename':
-                        if (!hasEditAccess(details[0])) {
-                            createDeniedDialog(this.parent, details[0], events.permissionEdit);
-                        } else {
-                            this.parent.notify(events.renameInit, {});
-                            createDialog(this.parent, 'Rename');
-                        }
-                        break;
-                    case 'selectall':
-                        /* istanbul ignore next */
-                        this.parent.notify(events.selectAllInit, {});
-                        break;
-                    case 'refresh':
-                        refresh(this.parent);
-                        break;
-                    case 'open':
-                        if (this.parent.visitedItem) {
-                            this.parent.notify(events.openInit, { target: this.parent.visitedItem });
-                        }
-                        break;
-                    case 'details':
-                        this.parent.notify(events.detailsInit, {});
-                        let sItems: string[] = this.parent.selectedItems;
-                        if (this.parent.activeModule === 'navigationpane') {
-                            sItems = [];
-                        }
-                        GetDetails(this.parent, sItems, this.parent.path, 'details');
-                        break;
-                    case 'newfolder':
-                        createNewFolder(this.parent);
-                        break;
-                    case 'upload':
-                        uploadItem(this.parent);
-                        break;
+                    }
+                    if (this.parent.activeModule === 'navigationpane') {
+                        this.parent.notify(events.downloadInit, {});
+                    } else if (this.parent.selectedItems.length > 0) {
+                        Download(this.parent, this.parent.path, this.parent.selectedItems);
+                    }
+                    break;
+                case 'rename':
+                    if (!hasEditAccess(details[0])) {
+                        createDeniedDialog(this.parent, details[0], events.permissionEdit);
+                    } else {
+                        this.parent.notify(events.renameInit, {});
+                        createDialog(this.parent, 'Rename');
+                    }
+                    break;
+                case 'selectall':
                     /* istanbul ignore next */
-                    case 'name':
-                    /* istanbul ignore next */
-                    case 'size':
-                    /* istanbul ignore next */
-                    case 'date':
-                    /* istanbul ignore next */
-                    case 'ascending':
-                    /* istanbul ignore next */
-                    case 'descending':
-                        /* istanbul ignore next */
-                        sortbyClickHandler(this.parent, args);
-                        break;
+                    this.parent.notify(events.selectAllInit, {});
+                    break;
+                case 'refresh':
+                    refresh(this.parent);
+                    break;
+                case 'open':
+                    if (this.parent.visitedItem) {
+                        this.parent.notify(events.openInit, { target: this.parent.visitedItem });
+                    }
+                    break;
+                case 'details':
+                    this.parent.notify(events.detailsInit, {});
+                    sItems = this.parent.selectedItems;
+                    if (this.parent.activeModule === 'navigationpane') {
+                        sItems = [];
+                    }
+                    GetDetails(this.parent, sItems, this.parent.path, 'details');
+                    break;
+                case 'newfolder':
+                    createNewFolder(this.parent);
+                    break;
+                case 'upload':
+                    uploadItem(this.parent);
+                    break;
                 /* istanbul ignore next */
-                    case 'none':
-                        /* istanbul ignore next */
-                        sortbyClickHandler(this.parent, args);
-                        break;
-                    // tslint:disable-next-line
+                case 'name':
+                /* istanbul ignore next */
+                // eslint-disable-next-line no-fallthrough
+                case 'size':
+                /* istanbul ignore next */
+                // eslint-disable-next-line no-fallthrough
+                case 'date':
+                /* istanbul ignore next */
+                // eslint-disable-next-line no-fallthrough
+                case 'ascending':
+                /* istanbul ignore next */
+                // eslint-disable-next-line no-fallthrough
+                case 'descending':
+                /* istanbul ignore next */
+                    sortbyClickHandler(this.parent, args);
+                    break;
+                /* istanbul ignore next */
+                case 'none':
+                /* istanbul ignore next */
+                    sortbyClickHandler(this.parent, args);
+                    break;
+                /* istanbul ignore next */
+                // eslint:disable-next-line
+                case 'largeiconsview':
+                    updateLayout(this.parent, 'LargeIcons');
+                    break;
                     /* istanbul ignore next */
-                    case 'largeiconsview':
-                        updateLayout(this.parent, 'LargeIcons');
-                        break;
-                    // tslint:disable-next-line
-                    /* istanbul ignore next */
-                    case 'detailsview':
-                        updateLayout(this.parent, 'Details');
-                        break;
+                    // eslint:disable-next-line
+                case 'detailsview':
+                    updateLayout(this.parent, 'Details');
+                    break;
                 }
             }
         });
@@ -435,11 +453,11 @@ export class ContextMenu {
             /* istanbul ignore next */
             return;
         }
-        for (let prop of Object.keys(e.newProp)) {
+        for (const prop of Object.keys(e.newProp)) {
             switch (prop) {
-                case 'cssClass':
-                    this.contextMenu.cssClass = getCssClass(this.parent, CLS.ROOT_POPUP);
-                    break;
+            case 'cssClass':
+                this.contextMenu.cssClass = getCssClass(this.parent, CLS.ROOT_POPUP);
+                break;
             }
         }
     }
@@ -452,7 +470,7 @@ export class ContextMenu {
             {
                 keyAction: this.keyActionHandler.bind(this),
                 keyConfigs: this.keyConfigs,
-                eventName: 'keydown',
+                eventName: 'keydown'
             }
         );
     }
@@ -464,14 +482,16 @@ export class ContextMenu {
     }
     private keyActionHandler(e: KeyboardEventArgs): void {
         switch (e.action) {
-            case 'uparrow':
-            case 'downarrow':
-                e.preventDefault();
+        case 'uparrow':
+        case 'downarrow':
+            e.preventDefault();
         }
     }
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} - returns the module name.
      * @private
      */
     private getModuleName(): string {
@@ -485,100 +505,100 @@ export class ContextMenu {
     }
     /* istanbul ignore next */
     private getItemData(data: string[]): MenuItemModel[] {
-        let items: MenuItemModel[] = [];
+        const items: MenuItemModel[] = [];
         for (let i: number = 0; i < data.length; i++) {
             let item: MenuItemModel;
-            let itemId: string = this.getMenuId(data[i]);
-            let itemText: string = getLocaleText(this.parent, data[i]);
+            const itemId: string = this.getMenuId(data[i]);
+            const itemText: string = getLocaleText(this.parent, data[i]);
             switch (data[i]) {
-                case '|':
-                    item = { separator: true };
-                    break;
-                case 'Open':
-                    item = { id: itemId, text: itemText, iconCss: CLS.ICON_OPEN };
-                    break;
-                case 'Upload':
-                    item = { id: itemId, text: itemText, iconCss: CLS.ICON_UPLOAD };
-                    break;
-                case 'Cut':
-                    item = { id: itemId, text: itemText, iconCss: CLS.ICON_CUT };
-                    break;
-                case 'Copy':
-                    item = { id: itemId, text: itemText, iconCss: CLS.ICON_COPY };
-                    break;
-                case 'Paste':
-                    item = { id: itemId, text: itemText, iconCss: CLS.ICON_PASTE };
-                    break;
-                case 'Delete':
-                    item = { id: itemId, text: itemText, iconCss: CLS.ICON_DELETE }; break;
-                case 'Rename':
-                    item = { id: itemId, text: itemText, iconCss: CLS.ICON_RENAME }; break;
-                case 'NewFolder':
-                    item = { id: itemId, text: itemText, iconCss: CLS.ICON_NEWFOLDER }; break;
-                case 'Details':
-                    item = { id: itemId, text: itemText, iconCss: CLS.ICON_DETAILS }; break;
-                case 'SortBy':
-                    item = {
-                        id: itemId, text: itemText, iconCss: CLS.ICON_SHORTBY,
-                        items: [
-                            {
-                                id: this.getMenuId('Name'), text: getLocaleText(this.parent, 'Name'),
-                                iconCss: this.parent.sortBy === 'name' ? CLS.TB_OPTION_DOT : null
-                            },
-                            {
-                                id: this.getMenuId('Size'), text: getLocaleText(this.parent, 'Size'),
-                                iconCss: this.parent.sortBy === 'size' ? CLS.TB_OPTION_DOT : null
-                            },
-                            {
-                                id: this.getMenuId('Date'), text: getLocaleText(this.parent, 'DateModified'),
-                                iconCss: this.parent.sortBy === '_fm_modified' ? CLS.TB_OPTION_DOT : null
-                            },
-                            { separator: true },
-                            {
-                                id: this.getMenuId('Ascending'), text: getLocaleText(this.parent, 'Ascending'),
-                                iconCss: this.parent.sortOrder === 'Ascending' ? CLS.TB_OPTION_TICK : null
-                            },
-                            {
-                                id: this.getMenuId('Descending'), text: getLocaleText(this.parent, 'Descending'),
-                                iconCss: this.parent.sortOrder === 'Descending' ? CLS.TB_OPTION_TICK : null
-                            },
-                            {
-                                id: this.getMenuId('None'), text: getLocaleText(this.parent, 'None'),
-                                iconCss: this.parent.sortOrder === 'None' ? CLS.TB_OPTION_TICK : null
-                            }
-                        ]
-                    };
-                    break;
+            case '|':
+                item = { separator: true };
+                break;
+            case 'Open':
+                item = { id: itemId, text: itemText, iconCss: CLS.ICON_OPEN };
+                break;
+            case 'Upload':
+                item = { id: itemId, text: itemText, iconCss: CLS.ICON_UPLOAD };
+                break;
+            case 'Cut':
+                item = { id: itemId, text: itemText, iconCss: CLS.ICON_CUT };
+                break;
+            case 'Copy':
+                item = { id: itemId, text: itemText, iconCss: CLS.ICON_COPY };
+                break;
+            case 'Paste':
+                item = { id: itemId, text: itemText, iconCss: CLS.ICON_PASTE };
+                break;
+            case 'Delete':
+                item = { id: itemId, text: itemText, iconCss: CLS.ICON_DELETE }; break;
+            case 'Rename':
+                item = { id: itemId, text: itemText, iconCss: CLS.ICON_RENAME }; break;
+            case 'NewFolder':
+                item = { id: itemId, text: itemText, iconCss: CLS.ICON_NEWFOLDER }; break;
+            case 'Details':
+                item = { id: itemId, text: itemText, iconCss: CLS.ICON_DETAILS }; break;
+            case 'SortBy':
+                item = {
+                    id: itemId, text: itemText, iconCss: CLS.ICON_SHORTBY,
+                    items: [
+                        {
+                            id: this.getMenuId('Name'), text: getLocaleText(this.parent, 'Name'),
+                            iconCss: this.parent.sortBy === 'name' ? CLS.TB_OPTION_DOT : null
+                        },
+                        {
+                            id: this.getMenuId('Size'), text: getLocaleText(this.parent, 'Size'),
+                            iconCss: this.parent.sortBy === 'size' ? CLS.TB_OPTION_DOT : null
+                        },
+                        {
+                            id: this.getMenuId('Date'), text: getLocaleText(this.parent, 'DateModified'),
+                            iconCss: this.parent.sortBy === '_fm_modified' ? CLS.TB_OPTION_DOT : null
+                        },
+                        { separator: true },
+                        {
+                            id: this.getMenuId('Ascending'), text: getLocaleText(this.parent, 'Ascending'),
+                            iconCss: this.parent.sortOrder === 'Ascending' ? CLS.TB_OPTION_TICK : null
+                        },
+                        {
+                            id: this.getMenuId('Descending'), text: getLocaleText(this.parent, 'Descending'),
+                            iconCss: this.parent.sortOrder === 'Descending' ? CLS.TB_OPTION_TICK : null
+                        },
+                        {
+                            id: this.getMenuId('None'), text: getLocaleText(this.parent, 'None'),
+                            iconCss: this.parent.sortOrder === 'None' ? CLS.TB_OPTION_TICK : null
+                        }
+                    ]
+                };
+                break;
                 /* istanbul ignore next */
-                case 'View':
-                    item = {
-                        id: itemId, text: itemText, iconCss: this.parent.view === 'Details' ? CLS.ICON_GRID : CLS.ICON_LARGE,
-                        items: [
-                            {
-                                id: this.getMenuId('largeiconsview'), text: getLocaleText(this.parent, 'View-LargeIcons'),
-                                iconCss: this.parent.view === 'Details' ? null : CLS.TB_OPTION_TICK
-                            },
-                            {
-                                id: this.getMenuId('detailsview'), text: getLocaleText(this.parent, 'View-Details'),
-                                iconCss: this.parent.view === 'Details' ? CLS.TB_OPTION_TICK : null
-                            }
-                        ]
-                    };
-                    break;
-                case 'Refresh':
-                    item = { id: itemId, text: itemText, iconCss: CLS.ICON_REFRESH };
-                    break;
-                case 'SelectAll':
-                    item = { id: itemId, text: itemText, iconCss: CLS.ICON_SELECTALL };
-                    break;
+            case 'View':
+                item = {
+                    id: itemId, text: itemText, iconCss: this.parent.view === 'Details' ? CLS.ICON_GRID : CLS.ICON_LARGE,
+                    items: [
+                        {
+                            id: this.getMenuId('largeiconsview'), text: getLocaleText(this.parent, 'View-LargeIcons'),
+                            iconCss: this.parent.view === 'Details' ? null : CLS.TB_OPTION_TICK
+                        },
+                        {
+                            id: this.getMenuId('detailsview'), text: getLocaleText(this.parent, 'View-Details'),
+                            iconCss: this.parent.view === 'Details' ? CLS.TB_OPTION_TICK : null
+                        }
+                    ]
+                };
+                break;
+            case 'Refresh':
+                item = { id: itemId, text: itemText, iconCss: CLS.ICON_REFRESH };
+                break;
+            case 'SelectAll':
+                item = { id: itemId, text: itemText, iconCss: CLS.ICON_SELECTALL };
+                break;
                 /* istanbul ignore next */
-                case 'Download':
-                    item = { id: itemId, text: itemText, iconCss: CLS.ICON_DOWNLOAD };
-                    break;
+            case 'Download':
+                item = { id: itemId, text: itemText, iconCss: CLS.ICON_DOWNLOAD };
+                break;
                 /* istanbul ignore next */
-                default:
-                    item = { id: itemId, text: itemText };
-                    break;
+            default:
+                item = { id: itemId, text: itemText };
+                break;
             }
             items.push(item);
         }

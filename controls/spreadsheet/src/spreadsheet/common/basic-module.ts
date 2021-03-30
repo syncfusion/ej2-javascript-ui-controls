@@ -9,11 +9,13 @@ import { ConditionalFormatting } from '../actions/conditional-formatting';
 
 /**
  * Spreadsheet basic module.
+ *
  * @private
  */
 export class BasicModule {
     /**
      * Constructor for Spreadsheet basic module.
+     *
      * @private
      */
     constructor() {
@@ -26,6 +28,8 @@ export class BasicModule {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} - Get the module name.
      * @private
      */
     protected getModuleName(): string {
@@ -34,7 +38,8 @@ export class BasicModule {
 
     /**
      * Destroys the Spreadsheet basic module.
-     * @return {void}
+     *
+     * @return {void} - Destroys the Spreadsheet basic module.
      */
     public destroy(): void {
         /* code snippet */

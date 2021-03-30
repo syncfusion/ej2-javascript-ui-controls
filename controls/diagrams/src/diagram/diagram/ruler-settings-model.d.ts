@@ -7,36 +7,42 @@ export interface DiagramRulerModel {
 
     /**
      * Defines the number of intervals to be present on each segment of the ruler.
+     *
      * @default 5
      */
     interval?: number;
 
     /**
      * Defines the textual description of the ruler segment, and the appearance of the ruler ticks of the ruler.
+     *
      * @default 100
      */
     segmentWidth?: number;
 
     /**
      * Defines the orientation of the ruler
+     *
      * @default 'Horizontal'
      */
     orientation?: RulerOrientation;
 
     /**
      * Defines and sets the tick alignment of the ruler scale.
+     *
      * @default 'RightOrBottom'
      */
     tickAlignment?: TickAlignment;
 
     /**
      * Defines the color of the ruler marker brush.
+     *
      * @default 'red'
      */
     markerColor?: string;
 
     /**
      * Defines the height of the ruler.
+     *
      * @default 25
      */
     thickness?: number;

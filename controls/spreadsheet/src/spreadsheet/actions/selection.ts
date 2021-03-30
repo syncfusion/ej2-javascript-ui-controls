@@ -1,28 +1,27 @@
 import { Spreadsheet } from '../base/index';
 import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset, focusBorder } from '../common/index';
-import { showAggregate, refreshImgElem, getRowIdxFromClientY, getColIdxFromClientX, clearChartBorder } from '../common/index';
+import { showAggregate, refreshImgElem, getRowIdxFromClientY, getColIdxFromClientX, clearChartBorder, IScrollArgs } from '../common/index';
 import { SheetModel, getColumnsWidth, updateSelectedRange, getColumnWidth, mergedRange, activeCellMergedRange } from '../../workbook/index';
 import { getRowHeight, isSingleCell, activeCellChanged, CellModel, MergeArgs, checkIsFormula, getSheetIndex } from '../../workbook/index';
-import { EventHandler, addClass, removeClass, isNullOrUndefined, Browser, closest } from '@syncfusion/ej2-base';
-import { BeforeSelectEventArgs, selectionComplete, getMoveEvent, getEndEvent, isTouchStart, locateElem } from '../common/index';
+import { EventHandler, addClass, removeClass, isNullOrUndefined, Browser, closest, remove, detach } from '@syncfusion/ej2-base';
+import { BeforeSelectEventArgs, selectionComplete, getMoveEvent, getEndEvent, isTouchStart, isMouseUp } from '../common/index';
 import { isTouchEnd, isTouchMove, getClientX, getClientY, mouseUpAfterSelection, selectRange, rowHeightChanged } from '../common/index';
 import { colWidthChanged, protectSelection, editOperation, initiateFormulaReference, initiateCur, clearCellRef } from '../common/index';
 import { getRangeIndexes, getCellAddress, getRangeAddress, getCellIndexes, getSwapRange } from '../../workbook/common/address';
-import { addressHandle } from '../common/index';
-import { isCellReference } from '../../workbook/index';
+import { addressHandle, removeDesignChart, isMouseDown, isMouseMove, selectionStatus, setPosition, removeRangeEle } from '../common/index';
+import { isCellReference, getSheetNameFromAddress } from '../../workbook/index';
 import { getIndexesFromAddress } from '../../workbook/common/address';
 
 
 /**
  * Represents selection support for Spreadsheet.
  */
-
 export class Selection {
     private parent: Spreadsheet;
     private startCell: number[];
     private isRowSelected: boolean;
     private isColSelected: boolean;
-    /* tslint:disable-next-line:no-any */
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     private scrollInterval: any;
     private touchEvt: TouchEvent & MouseEvent;
     private mouseMoveEvt: EventListener;
@@ -45,9 +44,12 @@ export class Selection {
     private tableRangesFormula: object = {};
     private dStartCell: { rowIndex: number, colIndex: number };
     private dEndCell: { rowIndex: number, colIndex: number };
+    private touchSelectionStarted: boolean;
 
     /**
      * Constructor for the Spreadsheet selection module.
+     *
+     * @param {Spreadsheet} parent - Constructor for the Spreadsheet selection module.
      * @private
      */
     constructor(parent: Spreadsheet) {
@@ -70,6 +72,7 @@ export class Selection {
         this.parent.on(getRowIdxFromClientY, this.getRowIdxFromClientY, this);
         this.parent.on(getColIdxFromClientX, this.getColIdxFromClientX, this);
         this.parent.on(focusBorder, this.chartBorderHandler, this);
+        this.parent.on(selectionStatus, this.isTouchSelectionStarted, this);
     }
 
     private removeEventListener(): void {
@@ -87,22 +90,42 @@ export class Selection {
             this.parent.off(getRowIdxFromClientY, this.getRowIdxFromClientY);
             this.parent.off(getColIdxFromClientX, this.getColIdxFromClientX);
             this.parent.off(focusBorder, this.chartBorderHandler);
+            this.parent.off(selectionStatus, this.isTouchSelectionStarted);
         }
+    }
+
+    private isTouchSelectionStarted(args: { touchSelectionStarted: boolean }): void {
+        args.touchSelectionStarted = this.touchSelectionStarted;
     }
 
     private rowHeightChanged(args: { threshold: number, rowIdx: number }): void {
         getUpdateUsingRaf((): void => {
             let ele: HTMLElement = this.getActiveCell();
-            let cellIndex: number = getCellIndexes(this.parent.getActiveSheet().activeCell)[0];
-            if (cellIndex === args.rowIdx && ele) {
-                ele.style.height = `${parseInt(ele.style.height, 10) + args.threshold}px`;
-            } else if (cellIndex > args.rowIdx && ele) {
-                ele.style.top = `${parseInt(ele.style.top, 10) + args.threshold}px`;
+            const sheet: SheetModel = this.parent.getActiveSheet();
+            if (ele) {
+                const cellIndex: number[] = getCellIndexes(sheet.activeCell);
+                if (sheet.frozenRows || sheet.frozenColumns) {
+                    const e: MergeArgs = { range: [cellIndex[0], cellIndex[1], cellIndex[0], cellIndex[1]] };
+                    this.parent.notify(activeCellMergedRange, e);
+                    setPosition(this.parent, ele, e.range as number[], 'e-active-cell');
+                } else {
+                    if (cellIndex[0] === args.rowIdx) {
+                        ele.style.height = `${parseInt(ele.style.height, 10) + args.threshold}px`;
+                    } else if (cellIndex[0] > args.rowIdx) {
+                        ele.style.top = `${parseInt(ele.style.top, 10) + args.threshold}px`;
+                    }
+                }
             }
             ele = this.getSelectionElement();
             if (ele) {
-                let selectedRange: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+                let selectedRange: number[] = getRangeIndexes(sheet.selectedRange);
                 let sRange: number[] = getSwapRange(selectedRange);
+                const mergeArgs: MergeArgs = { range: sRange, isActiveCell: false, skipChecking: true };
+                this.parent.notify(mergedRange, mergeArgs);
+                if (mergeArgs.isActiveCell || (sRange[0] === sRange[2] && sRange[1] === sRange[3])) { return; }
+                if (sheet.frozenRows || sheet.frozenColumns) {
+                    setPosition(this.parent, ele, selectedRange); return;
+                }
                 let rowStart: number = sRange[0];
                 let rowEnd: number = sRange[2];
                 if (rowStart <= args.rowIdx && rowEnd >= args.rowIdx && ele) {
@@ -116,18 +139,30 @@ export class Selection {
 
     private colWidthChanged(args: { threshold: number, colIdx: number }): void {
         getUpdateUsingRaf((): void => {
+            const sheet: SheetModel = this.parent.getActiveSheet();
             let ele: HTMLElement = this.getActiveCell();
-            let cellIndex: number = getCellIndexes(this.parent.getActiveSheet().activeCell)[1];
-            if (cellIndex === args.colIdx && ele) {
-                ele.style.width = `${parseInt(ele.style.width, 10) + args.threshold}px`;
-            } else if (cellIndex > args.colIdx && ele) {
-                ele.style.left = `${parseInt(ele.style.left, 10) + args.threshold}px`;
+            if (ele) {
+                const cellIndex: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
+                if (sheet.frozenRows || sheet.frozenColumns) {
+                    const mergeArgs: MergeArgs = { range: [cellIndex[0], cellIndex[1], cellIndex[0], cellIndex[1]] };
+                    this.parent.notify(activeCellMergedRange, mergeArgs);
+                    setPosition(this.parent, ele, mergeArgs.range as number[], 'e-active-cell');
+                } else {
+                    if (cellIndex[1] === args.colIdx) {
+                        ele.style.width = `${parseInt(ele.style.width, 10) + args.threshold}px`;
+                    } else if (cellIndex[1] > args.colIdx) {
+                        ele.style.left = `${parseInt(ele.style.left, 10) + args.threshold}px`;
+                    }
+                }
             }
             ele = this.getSelectionElement();
-            let selectedRange: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
-            let sRange: number[] = getSwapRange(selectedRange);
-            let colStart: number = sRange[1];
-            let colEnd: number = sRange[3];
+            const selectedRange: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+            const sRange: number[] = getSwapRange(selectedRange);
+            const e: MergeArgs = { range: sRange, isActiveCell: false, skipChecking: true };
+            this.parent.notify(mergedRange, e);
+            if (e.isActiveCell || (sRange[0] === sRange[2] && sRange[1] === sRange[3])) { return; }
+            if (sheet.frozenRows || sheet.frozenColumns) { setPosition(this.parent, ele, selectedRange); return; }
+            const colStart: number = sRange[1]; const colEnd: number = sRange[3];
             if (colStart <= args.colIdx && colEnd >= args.colIdx && ele) {
                 ele.style.width = `${parseInt(ele.style.width, 10) + args.threshold}px`;
             } else if (colStart > args.colIdx && ele) {
@@ -136,62 +171,96 @@ export class Selection {
         });
     }
 
-    private selectRange(args: { indexes: number[], skipChecking?: boolean }): void {
-        this.selectRangeByIdx(
-            this.parent.selectionSettings.mode === 'Single' ? args.indexes.slice(0, 2).concat(args.indexes.slice(0, 2)) : args.indexes,
-            null, null, null, null, args.skipChecking);
+    private selectRange(args: { address: string, skipChecking?: boolean }): void {
+        args.address = this.parent.selectionSettings.mode === 'Single' ? getRangeAddress(getCellIndexes(args.address)) : args.address;
+        this.selectMultiRange(args.address, null, null, args.skipChecking);
     }
 
     private init(): void {
-        let isInit: boolean = true;
+        this.createSelectionElement();
         let sheet: SheetModel = this.parent.getActiveSheet();
-        let range: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
-        let sRange: number[] = getSwapRange(range);
-        let actRange: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
+        let sRange: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
+        let actRange: number[] = getCellIndexes(sheet.activeCell);
         let inRange: boolean = sRange[0] <= actRange[0] && sRange[2] >= actRange[0] && sRange[1] <= actRange[1]
             && sRange[3] >= actRange[1];
-        this.createSelectionElement();
-        this.selectRangeByIdx(range, null, null, inRange, isInit);
+        this.selectMultiRange(sheet.selectedRange, true, inRange);
+    }
+
+    private selectMultiRange(address: string, isInit?: boolean, inRange?: boolean, skipChecking?: boolean): void {
+        let sheetIdx: number = this.parent.activeSheetIndex;
+        if (address.indexOf('!') > -1) {
+            sheetIdx = getSheetIndex(this.parent, getSheetNameFromAddress(address));
+            address = address.split('!')[1];
+        }
+        if (this.parent.activeSheetIndex === sheetIdx) {
+            address.split(' ').forEach((rng: string, idx: number) => {
+                this.selectRangeByIdx(
+                    getRangeIndexes(rng), { type: 'mousedown', ctrlKey: idx === 0 ? false : true } as MouseEvent, null, inRange, isInit,
+                    skipChecking);
+            });
+        } else {
+            updateSelectedRange(this.parent, address, this.parent.sheets[sheetIdx]);
+        }
     }
 
     private createSelectionElement(): void {
-        let cont: Element = this.parent.getMainContent();
+        const content: Element = this.parent.getMainContent();
         let ele: Element = this.parent.createElement('div', { className: 'e-selection' });
-        let activeCell: Element = this.parent.createElement('div', { className: 'e-active-cell' });
-        cont.appendChild(ele);
-        cont.appendChild(activeCell);
+        content.appendChild(ele);
+        ele = this.parent.createElement('div', { className: 'e-active-cell' });
+        content.appendChild(ele);
     }
 
     private mouseDownHandler(e: MouseEvent & TouchEvent): void {
-        let eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
+        if (closest(e.target as Element, '.e-scrollbar') || (e.target as Element).classList.contains('e-main-panel') ||
+            (e.target as Element).classList.contains('e-sheet')) { return; }
+        const eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
-        let isFormulaEdit: boolean = (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0) ||
+        const isFormulaEdit: boolean = (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0) ||
         checkIsFormula(eventArgs.editedValue);
         if (!this.parent.isEdit || isFormulaEdit) {
-            let overlayElem: HTMLElement = document.getElementById(this.parent.element.id + '_overlay');
+            const overlayElem: HTMLElement = document.getElementById(this.parent.element.id + '_overlay');
             if (typeof((e.target as HTMLElement).className) === 'string' ) {
-            if ((e.target as HTMLElement).className.indexOf('e-ss-overlay') > -1) {
-                return;
-            }
+                if ((e.target as HTMLElement).className.indexOf('e-ss-overlay') > -1) { return; }
             } else if (overlayElem) {
                 overlayElem.classList.remove('e-ss-overlay-active');
             }
-            if (closest(e.target as Element, '.e-datavisualization-chart')) {
-                return;
-            }
+            if (closest(e.target as Element, '.e-datavisualization-chart')) { return; }
             if (this.parent.getActiveSheet().isProtected && !this.parent.getActiveSheet().protectSettings.selectCells) {
                 return;
             }
             if (!closest(e.target as Element, '.e-findtool-dlg')) {
                 if (this.getSheetElement().contains(e.target as Node) && !(e.target as HTMLElement).classList.contains('e-colresize')
                     && !(e.target as HTMLElement).classList.contains('e-rowresize')) {
-                    let sheet: SheetModel = this.parent.getActiveSheet();
-                    let mode: string = this.parent.selectionSettings.mode;
-                    let rowIdx: number = this.getRowIdxFromClientY({ clientY: getClientY(e) });
-                    let colIdx: number = this.getColIdxFromClientX({ clientX: getClientX(e) });
-                    let activeIdx: number[] = getCellIndexes(sheet.activeCell);
-                    let isRowSelected: boolean = sheet.showHeaders && this.parent.getRowHeaderContent().contains(e.target as Node);
-                    let isColSelected: boolean = sheet.showHeaders && this.parent.getColumnHeaderContent().contains(e.target as Node);
+                    const sheet: SheetModel = this.parent.getActiveSheet(); const mode: string = this.parent.selectionSettings.mode;
+                    const rowIdx: number = this.getRowIdxFromClientY({ clientY: getClientY(e), target: e.target as Element });
+                    const colIdx: number = this.getColIdxFromClientX({ clientX: getClientX(e), target: e.target as Element });
+                    const activeIdx: number[] = getCellIndexes(sheet.activeCell);
+                    let isRowSelected: boolean; let isColSelected: boolean;
+                    if (sheet.showHeaders) {
+                        const trgt: Element = e.target as Element;
+                        if (sheet.frozenColumns || sheet.frozenRows) {
+                            let headerEle: HTMLElement = this.parent.getSelectAllContent().querySelector('thead');
+                            if (headerEle) {
+                                isColSelected = (this.parent.getColumnHeaderContent().contains(trgt) || headerEle.contains(trgt)) &&
+                                    trgt.classList.contains('e-header-cell');
+                            } else {
+                                isColSelected = this.parent.getColumnHeaderContent().contains(trgt) &&
+                                    trgt.classList.contains('e-header-cell');
+                            }
+                            headerEle = this.parent.getSelectAllContent().querySelector('tbody');
+                            if (headerEle) {
+                                isRowSelected = (this.parent.getRowHeaderContent().contains(trgt) || headerEle.contains(trgt)) &&
+                                    trgt.classList.contains('e-header-cell');
+                            } else {
+                                isRowSelected = this.parent.getRowHeaderContent().contains(trgt) &&
+                                    trgt.classList.contains('e-header-cell');
+                            }
+                        } else {
+                            isRowSelected = this.parent.getRowHeaderContent().contains(e.target as Node);
+                            isColSelected = this.parent.getColumnHeaderContent().contains(e.target as Node);
+                        }
+                    }
                     if (e.which === 3 && this.isSelected(rowIdx, colIdx)) {
                         return;
                     }
@@ -201,6 +270,9 @@ export class Selection {
                         if (!Browser.isPointer) {
                             document.addEventListener(getMoveEvent().split(' ')[1], this.mouseMoveEvt, { passive: false });
                         }
+                        this.touchSelectionStarted = true;
+                    } else {
+                        this.touchSelectionStarted = false;
                     }
                     if (!isTouchEnd(e)) {
                         EventHandler.add(document, getEndEvent(), this.mouseUpHandler, this);
@@ -209,20 +281,21 @@ export class Selection {
                         this.touchEvt = e;
                         return;
                     }
+                    const topLeftIdx: number[] = getRangeIndexes(sheet.topLeftCell);
                     if (isRowSelected) {
                         this.isRowSelected = true;
                         if (!e.shiftKey || mode === 'Single') {
                             this.startCell = [rowIdx, 0];
                         }
-                        this.selectRangeByIdx([this.startCell[0], 0, rowIdx, sheet.colCount - 1], e);
+                        this.selectRangeByIdx([this.startCell[0], sheet.frozenColumns ? topLeftIdx[1] : 0, rowIdx, sheet.colCount - 1], e);
                     } else if (isColSelected) {
                         this.isColSelected = true;
                         if (!e.shiftKey || mode === 'Single') {
                             this.startCell = [0, colIdx];
                         }
-                        this.selectRangeByIdx([0, this.startCell[1], sheet.rowCount - 1, colIdx], e);
+                        this.selectRangeByIdx([sheet.frozenRows ? topLeftIdx[0] : 0, this.startCell[1], sheet.rowCount - 1, colIdx], e);
                     } else if ((e.target as Element).classList.contains('e-selectall')) {
-                        this.startCell = [0, 0];
+                        this.startCell = [sheet.frozenRows ? topLeftIdx[0] : 0, sheet.frozenColumns ? topLeftIdx[1] : 0];
                         this.selectRangeByIdx([].concat(this.startCell, [sheet.rowCount - 1, sheet.colCount - 1]), e);
                     } else if (!(e.target as Element).classList.contains('e-sheet-content')) {
                         if (!e.shiftKey || mode === 'Single') {
@@ -247,69 +320,83 @@ export class Selection {
     }
 
     private mouseMoveHandler(e: MouseEvent & TouchEvent): void {
-        let sheet: SheetModel = this.parent.getActiveSheet();
+        const sheet: SheetModel = this.parent.getActiveSheet();
         if (isTouchMove(e)) {
             e.preventDefault();
         }
-        let eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
+        const eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
-        let isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue) ||
+        const isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue) ||
             (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0);
-        let cont: Element = this.getScrollContent();
-        let clientRect: ClientRect = cont.getBoundingClientRect();
-        let clientX: number = getClientX(e); let clientY: number = getClientY(e);
+        const verticalContent: Element = this.parent.getMainContent().parentElement;
+        const horizontalContent: Element = this.parent.element.getElementsByClassName('e-scroller')[0];
+        const clientRect: ClientRect = verticalContent.getBoundingClientRect(); const frozenCol: number = this.parent.frozenColCount(sheet);
+        const left: number = clientRect.left + this.parent.sheetModule.getRowHeaderWidth(sheet);
+        const top: number = clientRect.top; const right: number = clientRect.right; const bottom: number = clientRect.bottom;
+        const clientX: number = getClientX(e); let clientY: number = getClientY(e);
         // remove math.min or handle top and left auto scroll
         let colIdx: number = this.isRowSelected ? sheet.colCount - 1 :
-            this.getColIdxFromClientX({ clientX: Math.min(clientX, clientRect.right) });
+            this.getColIdxFromClientX({ clientX: Math.min(clientX, right), target: e.target as Element });
         let rowIdx: number = this.isColSelected ? sheet.rowCount - 1 :
-            this.getRowIdxFromClientY({ clientY: Math.min(clientY, clientRect.bottom) });
+            this.getRowIdxFromClientY({ clientY: Math.min(clientY, bottom), target: e.target as Element });
         let prevIndex: number[] = getRangeIndexes(sheet.selectedRange);
-        let mergeArgs: MergeArgs = { range: [rowIdx, colIdx, rowIdx, colIdx] };
+        const mergeArgs: MergeArgs = { range: [rowIdx, colIdx, rowIdx, colIdx] };
         this.parent.notify(activeCellMergedRange, mergeArgs);
         if (mergeArgs.range[2] === prevIndex[2] && mergeArgs.range[3] === prevIndex[3]) { return; }
-        let isScrollDown: boolean = clientY > clientRect.bottom && rowIdx < sheet.rowCount;
-        let isScrollUp: boolean = clientY < clientRect.top && rowIdx >= 0 && !this.isColSelected;
-        let isScrollRight: boolean = clientX > clientRect.right && colIdx < sheet.colCount;
-        let isScrollLeft: boolean = clientX < clientRect.left && colIdx >= 0 && !this.isRowSelected;
-        this.clearInterval();
+        const frozenRow: number = this.parent.frozenRowCount(sheet);
+        const isScrollDown: boolean = clientY > bottom && rowIdx < sheet.rowCount;
+        const isScrollUp: boolean = clientY < top && rowIdx >= 0 && !this.isColSelected && !!verticalContent.scrollTop;
+        const isScrollRight: boolean = clientX > right && colIdx < sheet.colCount;
+        const isScrollLeft: boolean = clientX < left && colIdx >= 0 && !this.isRowSelected && !!horizontalContent.scrollLeft;
+        this.clearInterval(); let scrollUpRowIdx: number; let scrollUpColIdx: number;
         if (!isFormulaEdit && !this.isColSelected && !this.isRowSelected) { prevIndex = getCellIndexes(sheet.activeCell); }
         if (isScrollDown || isScrollUp || isScrollRight || isScrollLeft) {
+            if (isScrollUp || isScrollLeft) { scrollUpRowIdx = rowIdx; scrollUpColIdx = colIdx; }
             this.scrollInterval = setInterval(() => {
                 if ((isScrollDown || isScrollUp) && !this.isColSelected) {
-                    rowIdx = this.getRowIdxFromClientY({ clientY: isScrollDown ? clientRect.bottom : clientRect.top });
+                    rowIdx = this.getRowIdxFromClientY({ clientY: isScrollDown ? bottom : top });
                     if (rowIdx >= sheet.rowCount) { // clear interval when scroll up
-                        this.clearInterval();
-                        return;
+                        this.clearInterval(); return;
                     }
-                    cont.scrollTop += (isScrollDown ? 1 : -1) * getRowHeight(sheet, rowIdx);
+                    verticalContent.scrollTop += (isScrollDown ? 1 : -1) * getRowHeight(sheet, rowIdx);
                 }
                 if ((isScrollRight || isScrollLeft) && !this.isRowSelected) {
-                    colIdx = this.getColIdxFromClientX({ clientX: isScrollRight ? clientRect.right : clientRect.left });
+                    colIdx = this.getColIdxFromClientX({ clientX: isScrollRight ? right : left });
                     if (colIdx >= sheet.colCount) { // clear interval when scroll left
                         this.clearInterval();
                         return;
                     }
-                    cont.scrollLeft += (isScrollRight ? 1 : -1) * getColumnWidth(sheet, colIdx);
+                    horizontalContent.scrollLeft += (isScrollRight ? 1 : -1) * getColumnWidth(sheet, colIdx);
+                }
+                if ((isScrollUp && !verticalContent.scrollTop) || (isScrollLeft && !horizontalContent.scrollLeft)) {
+                    this.selectRangeByIdx([].concat(prevIndex[0], prevIndex[1], [scrollUpRowIdx, scrollUpColIdx]), e);
+                    this.clearInterval(); return;
                 }
                 this.selectRangeByIdx([].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]), e);
-                // tslint:disable-next-line
             }, 100);
         } else {
-            this.selectRangeByIdx([].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]), e);
+            let indexes: number[] = [].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]);
+            if (frozenRow && indexes[0] < frozenRow && indexes[2] >= frozenRow && verticalContent.scrollTop) {
+                verticalContent.scrollTop = 0; indexes[2] = frozenRow;
+            }
+            if (frozenCol && indexes[1] < frozenCol && indexes[3] >= frozenCol && horizontalContent.scrollLeft) {
+                horizontalContent.scrollLeft = 0; indexes[3] = frozenCol;
+            }
+            this.selectRangeByIdx(indexes, e);
         }
         if (isFormulaEdit && this.parent.isEdit) {
-            let range: string = this.parent.getActiveSheet().selectedRange;
+            const range: string = this.parent.getActiveSheet().selectedRange;
             this.parent.notify(addressHandle, { range: range, isSelect: false });
         }
     }
 
     private mouseUpHandler(e: MouseEvent & TouchEvent): void {
-        let rowIdx: number = this.getRowIdxFromClientY({ clientY: getClientY(e) });
-        let colIdx: number = this.getColIdxFromClientX({ clientX: getClientX(e) });
+        const rowIdx: number = this.getRowIdxFromClientY({ clientY: getClientY(e), target: e.target as Element });
+        const colIdx: number = this.getColIdxFromClientX({ clientX: getClientX(e), target: e.target as Element });
         this.clearInterval();
         if (isTouchEnd(e) && !(this.isColSelected || this.isRowSelected) &&
-            (this.getRowIdxFromClientY({ clientY: getClientY(this.touchEvt) }) === rowIdx &&
-                this.getColIdxFromClientX({ clientX: getClientX(this.touchEvt) }) === colIdx)) {
+            (this.getRowIdxFromClientY({ clientY: getClientY(this.touchEvt), target: e.target as Element }) === rowIdx &&
+                this.getColIdxFromClientX({ clientX: getClientX(this.touchEvt), target: e.target as Element }) === colIdx)) {
             this.mouseDownHandler(e);
         }
         this.parent.trigger('select', { range: this.parent.getActiveSheet().selectedRange });
@@ -319,9 +406,9 @@ export class Selection {
         }
         EventHandler.remove(document, getEndEvent(), this.mouseUpHandler);
         this.parent.notify(mouseUpAfterSelection, e);
-        let eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
+        const eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
-        let isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue) ||
+        const isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue) ||
             (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0);
         if (isFormulaEdit && this.parent.isEdit && !(e.target as HTMLElement).classList.contains('e-spreadsheet-edit')) {
             this.parent.notify(initiateCur, {});
@@ -329,24 +416,33 @@ export class Selection {
     }
 
     private isSelected(rowIdx: number, colIdx: number): boolean {
-        let indexes: number[] = getSwapRange(getRangeIndexes(this.parent.getActiveSheet().selectedRange));
+        const indexes: number[] = getSwapRange(getRangeIndexes(this.parent.getActiveSheet().selectedRange));
         return indexes[0] <= rowIdx && rowIdx <= indexes[2] && indexes[1] <= colIdx && colIdx <= indexes[3];
     }
 
-    private virtualContentLoadedHandler(): void { // do only for scroll down
-        let sheet: SheetModel = this.parent.getActiveSheet();
+    private virtualContentLoadedHandler(args: { prevRowColCnt: SheetModel }): void { // do only for scroll down
+        const sheet: SheetModel = this.parent.getActiveSheet();
         let indexes: number[] = getRangeIndexes(sheet.selectedRange);
-        if (this.isColSelected && this.isRowSelected) {
-            this.selectRangeByIdx([0, 0, sheet.rowCount - 1, sheet.colCount - 1], null, true);
-        } else if (this.isColSelected) {
-            this.selectRangeByIdx([0, indexes[1], sheet.rowCount - 1, indexes[3]], null, true);
-        } else if (this.isRowSelected) {
-            this.selectRangeByIdx([indexes[0], 0, indexes[2], sheet.colCount - 1], null, true);
-        } else {
-            this.highlightHdr(
-                indexes, indexes[0] >= this.parent.viewport.topIndex || indexes[2] >= this.parent.viewport.topIndex,
-                indexes[1] >= this.parent.viewport.leftIndex || indexes[3] >= this.parent.viewport.leftIndex);
-        }
+        let isColSelected: boolean; let isRowSelected: boolean;
+        sheet.selectedRange.split(' ').forEach((rng: string, idx: number) => {
+            indexes = getRangeIndexes(rng);
+            isRowSelected = (indexes[1] === 0 && indexes[3] === args.prevRowColCnt.colCount - 1);
+            isColSelected = (indexes[0] === 0 && indexes[2] === args.prevRowColCnt.rowCount - 1);
+            if (isColSelected && isRowSelected) {
+                this.selectRangeByIdx([0, 0, sheet.rowCount - 1, sheet.colCount - 1], null, true, null, null, null, idx);
+            } else if (isColSelected) {
+                this.selectRangeByIdx([0, indexes[1], sheet.rowCount - 1, indexes[3]], null, true, null, null, null, idx);
+            } else if (isRowSelected) {
+                this.selectRangeByIdx([indexes[0], 0, indexes[2], sheet.colCount - 1], null, true, null, null, null, idx);
+            } else {
+                indexes = getRangeIndexes(rng);
+                this.highlightHdr(
+                    indexes, idx === 0 ? false : true,
+                    indexes[0] >= this.parent.viewport.topIndex || indexes[2] >= this.parent.viewport.topIndex,
+                    indexes[1] >= this.parent.viewport.leftIndex || indexes[3] >= this.parent.viewport.leftIndex
+                );
+            }
+        });
     }
 
     private clearInterval(): void {
@@ -354,47 +450,64 @@ export class Selection {
         this.scrollInterval = null;
     }
 
-    private getScrollContent(): Element {
-        return this.parent.getMainContent();
-    }
-
     private getScrollLeft(): number {
         return this.parent.scrollModule ? this.parent.scrollModule.prevScroll.scrollLeft : 0;
     }
 
     private cellNavigateHandler(args: { range: number[] }): void {
-        let sheet: SheetModel = this.parent.getActiveSheet();
+        const sheet: SheetModel = this.parent.getActiveSheet();
         if (sheet.isProtected && !sheet.protectSettings.selectCells) {
             return;
         }
         this.selectRangeByIdx(args.range.concat(args.range));
     }
 
-    private getColIdxFromClientX(args: { clientX: number, isImage?: boolean }): number {
+    private getColIdxFromClientX(e: { clientX: number, isImage?: boolean, target?: Element, size?: number }): number {
         let width: number = 0;
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let cliRect: ClientRect = this.parent.getMainContent().getBoundingClientRect();
+        const sheet: SheetModel = this.parent.getActiveSheet();
         let left: number = 0;
-        left = (args.isImage) ? args.clientX : (this.parent.enableRtl ? (cliRect.right - args.clientX) :
-            (args.clientX - cliRect.left)) + this.getScrollLeft();
+        if (e.isImage) {
+            left = e.clientX;
+        } else {
+            const cliRect: ClientRect = document.getElementById(this.parent.element.id + '_sheet').getBoundingClientRect();
+            if (this.parent.enableRtl) {
+                left = (cliRect.right - this.parent.sheetModule.getRowHeaderWidth(sheet, true) - 1) - e.clientX;
+            } else {
+                left = e.clientX - (cliRect.left + this.parent.sheetModule.getRowHeaderWidth(sheet, true) + 1);
+            }
+            left += this.parent.viewport.beforeFreezeWidth;
+            if (!e.target || (e.target && !closest(e.target, '.e-row-header') && !closest(e.target, '.e-selectall-container'))) {
+                left += this.getScrollLeft();
+            }
+        }
         for (let i: number = 0; ; i++) {
             width += getColumnsWidth(sheet, i);
             if (left < width) {
-                args.clientX = i;
+                if (!e.isImage) { e.size = left; }
+                e.clientX = i;
                 return i;
             }
         }
     }
 
-    private getRowIdxFromClientY(args: { clientY: number, isImage?: boolean }): number {
+    private getRowIdxFromClientY(args: { clientY: number, isImage?: boolean, target?: Element, size?: number }): number {
         let height: number = 0;
-        let sheet: SheetModel = this.parent.getActiveSheet();
+        const sheet: SheetModel = this.parent.getActiveSheet();
         let top: number = 0;
-        top = args.isImage ? args.clientY : (args.clientY - this.parent.getMainContent().getBoundingClientRect().top)
-            + this.parent.getMainContent().scrollTop;
+        if (args.isImage) {
+            top = args.clientY;
+        } else {
+            const sheetEle: HTMLElement = document.getElementById(this.parent.element.id + '_sheet');
+            top = args.clientY + this.parent.viewport.beforeFreezeHeight -
+                (sheetEle.getBoundingClientRect().top + (sheet.showHeaders ? 31 : 0));
+            if (!args.target || (args.target && !closest(args.target, '.e-header-panel'))) {
+                top += this.parent.getMainContent().parentElement.scrollTop;
+            }
+        }
         for (let i: number = 0; ; i++) {
             height += getRowHeight(sheet, i);
             if (top < height) {
+                if (!args.isImage) { args.size = top; }
                 args.clientY = i;
                 return i;
             }
@@ -403,52 +516,61 @@ export class Selection {
 
     private initFormulaReferenceIndicator( range: number[]): void {
         if (this.parent.isEdit) {
-            let forRefIndicator: HTMLElement = this.parent.createElement('div', { className: 'e-formularef-indicator' });
+            const forRefIndicator: HTMLElement = this.parent.createElement('div', { className: 'e-formularef-indicator' });
             forRefIndicator.appendChild(this.parent.createElement('div', { className: 'e-top' }));
             forRefIndicator.appendChild(this.parent.createElement('div', { className: 'e-bottom' }));
             forRefIndicator.appendChild(this.parent.createElement('div', { className: 'e-left' }));
             forRefIndicator.appendChild(this.parent.createElement('div', { className: 'e-right' }));
-            locateElem(forRefIndicator, range, this.parent.getActiveSheet(), false);
             this.parent.getMainContent().appendChild(forRefIndicator);
+            setPosition(this.parent, forRefIndicator, range, 'e-formularef-indicator');
         }
     }
 
     private selectRangeByIdx(
         range: number[], e?: MouseEvent, isScrollRefresh?: boolean,
-        isActCellChanged?: boolean, isInit?: boolean, skipChecking?: boolean): void {
-        let eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
+        isActCellChanged?: boolean, isInit?: boolean, skipChecking?: boolean, selectedRowColIdx?: number): void {
+        const eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
-        let isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue) ||
+        const isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue) ||
             (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0);
-        let ele: HTMLElement = this.getSelectionElement();
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let formulaRefIndicator: HTMLElement = this.parent.element.querySelector('.e-formularef-indicator');
-        let mergeArgs: MergeArgs = { range: [].slice.call(range), isActiveCell: false, skipChecking: skipChecking };
+        let isMultiRange: boolean = e && e.ctrlKey && isMouseDown(e);
+        const ele: HTMLElement = this.getSelectionElement(e, selectedRowColIdx);
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const formulaRefIndicator: HTMLElement = this.parent.element.querySelector('.e-formularef-indicator');
+        const mergeArgs: MergeArgs = { range: [].slice.call(range), isActiveCell: false, skipChecking: skipChecking };
         let isMergeRange: boolean;
+        const overlayEle: HTMLElement = document.querySelector('.e-datavisualization-chart.e-ss-overlay-active') as HTMLElement;
         if (!this.isColSelected && !this.isRowSelected) { this.parent.notify(mergedRange, mergeArgs); }
         if (range !== mergeArgs.range) {
             isMergeRange = true;
         }
         range = mergeArgs.range as number[];
-        let args: BeforeSelectEventArgs = { range: getRangeAddress(range), cancel: false };
+        const args: BeforeSelectEventArgs = { range: getRangeAddress(range), cancel: false };
         this.parent.trigger('beforeSelect', args);
-        if (args.cancel === true) {
-            return;
-        }
+        if (args.cancel) { return; }
         if (isFormulaEdit && formulaRefIndicator) {
             formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
         }
-        if (isSingleCell(range) || mergeArgs.isActiveCell) {
+        if ((isSingleCell(range) || mergeArgs.isActiveCell) && !isMultiRange) {
             if (ele) {
-                ele.classList.add('e-hide');
+                if (!ele.classList.contains('e-multi-range')) {
+                    ele.classList.add('e-hide');
+                }
+                if (sheet.frozenRows || sheet.frozenColumns) {
+                    removeRangeEle(this.parent.getSelectAllContent(), null, false);
+                    removeRangeEle(this.parent.getColumnHeaderContent(), null, false);
+                    removeRangeEle(this.parent.getRowHeaderContent(), null, false);
+                }
             }
-            if (isFormulaEdit && e && !(e.target as HTMLElement).classList.contains('e-spreadsheet-edit') && this.parent.isEdit) {
+            if (!sheet.frozenColumns && !sheet.frozenRows && ele) { setPosition(this.parent, ele, range); }
+            if (isFormulaEdit && e && e.target && !(e.target as HTMLElement).classList.contains('e-spreadsheet-edit')
+                && this.parent.isEdit) {
                 this.parent.notify(addressHandle, { range: getRangeAddress(range).split(':')[0], isSelect: true });
                 this.initFormulaReferenceIndicator(range);
             }
         } else {
             if (isFormulaEdit && this.parent.isEdit) {
-                if (e && !(e.target as HTMLElement).classList.contains('e-spreadsheet-edit') && this.parent.isEdit) {
+                if (e && e.target && !(e.target as HTMLElement).classList.contains('e-spreadsheet-edit') && this.parent.isEdit) {
                     this.parent.notify(addressHandle, { range: getRangeAddress(range), isSelect: true });
                     this.initFormulaReferenceIndicator(range);
                 }
@@ -456,23 +578,31 @@ export class Selection {
                 if (ele) {
                     ele.classList.remove('e-hide');
                 }
-                let offset: { left: IOffset, top: IOffset } = (this.isColSelected && this.isRowSelected) ? undefined
+                const offset: { left: IOffset, top: IOffset } = (this.isColSelected && this.isRowSelected) ? undefined
                     : this.getOffset(range[2], range[3]);
                 if (isMergeRange && offset) { // Need to handle half hidden merge cell in better way
                     offset.left = { idx: 0, size: 0 };
                 }
-                locateElem(ele, range, sheet, this.parent.enableRtl);
+                setPosition(this.parent, ele, range);
             }
         }
-        let eArgs: { action: string, sheetIndex: number } = { action: 'getCurrentEditSheetIdx', sheetIndex: null };
+        const eArgs: { action: string, sheetIndex: number } = { action: 'getCurrentEditSheetIdx', sheetIndex: null };
         this.parent.notify(editOperation, eArgs);
+        let selRange: string = getRangeAddress(range);
+        if (e && e.ctrlKey && (isMouseMove(e) || isMouseUp(e))) {
+            selRange = sheet.selectedRange.slice(0, sheet.selectedRange.lastIndexOf(' ')) + ' ' + selRange;
+        } else if (selectedRowColIdx > -1) {
+            let selRanges: string[] = sheet.selectedRange.split(' ');
+            selRanges[selectedRowColIdx] = selRange;
+            selRange = selRanges.join(' ');
+        }
         if (!isFormulaEdit) {
-            updateSelectedRange(this.parent, getRangeAddress(range), sheet);
+            updateSelectedRange(this.parent, selRange, sheet, isMultiRange);
         } else if (!isInit) {
-            updateSelectedRange(this.parent, getRangeAddress(range), sheet);
+            updateSelectedRange(this.parent, selRange, sheet, isMultiRange);
         }
         this.UpdateRowColSelected(range);
-        this.highlightHdr(range);
+        this.highlightHdr(range, e && e.ctrlKey);
         if (!isScrollRefresh && !(e && (e.type === 'mousemove' || isTouchMove(e)))) {
             if (!isFormulaEdit) {
                 this.updateActiveCell(isActCellChanged ? getRangeIndexes(sheet.activeCell) : range, isInit);
@@ -491,18 +621,21 @@ export class Selection {
         }
         this.parent.notify(showAggregate, {});
         this.parent.notify(refreshImgElem, {});
+        if (overlayEle) {
+            this.parent.notify(removeDesignChart, {});
+        }
         this.parent.notify(clearChartBorder, {});
     }
 
     private UpdateRowColSelected(indexes: number[]): void {
-        let sheet: SheetModel = this.parent.getActiveSheet();
+        const sheet: SheetModel = this.parent.getActiveSheet();
         this.isRowSelected = (indexes[1] === 0 && indexes[3] === sheet.colCount - 1);
         this.isColSelected = (indexes[0] === 0 && indexes[2] === sheet.rowCount - 1);
     }
 
     private updateActiveCell(range: number[], isInit?: boolean): void {
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let topLeftIdx: number[] = getRangeIndexes(sheet.topLeftCell); let rowIdx: number; let colIdx: number; let cell: CellModel;
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const topLeftIdx: number[] = getRangeIndexes(sheet.topLeftCell); let rowIdx: number; let colIdx: number;
         let isMergeRange: boolean;
         if (this.isColSelected) {
             rowIdx = topLeftIdx[0]; colIdx = range[1];
@@ -511,7 +644,7 @@ export class Selection {
             rowIdx = range[0]; colIdx = range[1];
             if (this.isRowSelected) { colIdx = topLeftIdx[1]; }
         }
-        let mergeArgs: MergeArgs = { range: [rowIdx, colIdx, ...[rowIdx, colIdx]] };
+        const mergeArgs: MergeArgs = { range: [rowIdx, colIdx, ...[rowIdx, colIdx]] };
         this.parent.notify(activeCellMergedRange, mergeArgs);
         if (range !== mergeArgs.range) {
             isMergeRange = true;
@@ -520,20 +653,20 @@ export class Selection {
         if (sheet.activeCell !== getCellAddress(range[0], range[1]) || isInit) {
             this.parent.setSheetPropertyOnMute(sheet, 'activeCell', getCellAddress(range[0], range[1]));
             if (this.getActiveCell()) {
-                let offset: { left: IOffset, top: IOffset } = this.getOffset(range[2], range[3]);
+                const offset: { left: IOffset, top: IOffset } = this.getOffset(range[2], range[3]);
                 if (isMergeRange) {
                     offset.left = { idx: 0, size: 0 };
                 }
-                locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl);
+                setPosition(this.parent, this.getActiveCell(), range, 'e-active-cell');
             }
             this.parent.notify(activeCellChanged, null);
         } else {
-            locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl);
+            setPosition(this.parent, this.getActiveCell(), range, 'e-active-cell');
         }
     }
 
     private getOffset(rowIdx: number, colIdx: number): { left: IOffset, top: IOffset } {
-        let offset: { left: IOffset, top: IOffset } = { left: { idx: 0, size: 0 }, top: { idx: 0, size: 0 } };
+        const offset: { left: IOffset, top: IOffset } = { left: { idx: 0, size: 0 }, top: { idx: 0, size: 0 } };
         if (this.parent.scrollModule) {
             if (colIdx >= this.parent.scrollModule.offset.left.idx) { offset.left = this.parent.scrollModule.offset.left; }
             if (rowIdx >= this.parent.scrollModule.offset.top.idx) { offset.top = this.parent.scrollModule.offset.top; }
@@ -541,8 +674,26 @@ export class Selection {
         return offset;
     }
 
-    private getSelectionElement(): HTMLElement {
-        return this.parent.element.getElementsByClassName('e-selection')[0] as HTMLElement;
+    private getSelectionElement(e?: MouseEvent, selectedRowColIdx?: number): HTMLElement {
+        if (e && e.ctrlKey) {
+            if (isMouseUp(e) || isMouseMove(e)) {
+                return this.parent.getMainContent().querySelector('.e-selection:last-child');
+            } else {
+                let selElem: Element = this.parent.element.getElementsByClassName('e-selection')[0];
+                selElem.classList.remove('e-hide');
+                let ele: HTMLElement = selElem.cloneNode() as HTMLElement;
+                ele.classList.add('e-multi-range');
+                return this.parent.getMainContent().appendChild(ele);
+            }
+        } else if (selectedRowColIdx > -1) {
+            return this.parent.getMainContent().getElementsByClassName('e-selection')[selectedRowColIdx] as HTMLElement;
+        } else {
+            let elems: NodeListOf<Element> = [].slice.call(this.parent.element.getElementsByClassName('e-multi-range'));
+            elems.forEach((ele: Element) => {
+                remove(ele);
+            });
+            return this.parent.getMainContent().getElementsByClassName('e-selection')[0] as HTMLElement;
+        }
     }
 
     private getActiveCell(): HTMLElement {
@@ -553,23 +704,51 @@ export class Selection {
         return document.getElementById(this.parent.element.id + '_sheet');
     }
 
-    private highlightHdr(range: number[], isRowRefresh: boolean = true, isColRefresh: boolean = true): void {
+    private highlightHdr(range: number[], isMultiRange?: boolean, isRowRefresh: boolean = true, isColRefresh: boolean = true): void {
         if (this.parent.getActiveSheet().showHeaders) {
-            let sheet: SheetModel = this.parent.getActiveSheet();
-            let rowHdr: Element[] = []; let colHdr: Element[] = [];
+            const sheet: SheetModel = this.parent.getActiveSheet();
+            const rowHdr: Element[] = []; const colHdr: Element[] = [];
             let swapRange: number[] = getSwapRange(range);
             swapRange = this.getHdrIndexes(swapRange);
-            let selectAll: Element = this.parent.element.getElementsByClassName('e-select-all-cell')[0];
-            removeClass(this.getSheetElement().querySelectorAll('.e-highlight'), 'e-highlight');
-            removeClass(this.getSheetElement().querySelectorAll('.e-prev-highlight'), 'e-prev-highlight');
+            const selectAll: Element = this.parent.element.getElementsByClassName('e-select-all-cell')[0];
+            if (!isMultiRange) {
+                removeClass(this.getSheetElement().querySelectorAll('.e-highlight'), 'e-highlight');
+                removeClass(this.getSheetElement().querySelectorAll('.e-prev-highlight'), 'e-prev-highlight');
+            }
             if (selectAll) {
-            removeClass([selectAll], ['e-prev-highlight-right', 'e-prev-highlight-bottom']);
+                removeClass([selectAll], ['e-prev-highlight-right', 'e-prev-highlight-bottom']);
             }
             if (isRowRefresh) {
-                rowHdr = [].slice.call(this.parent.getRowHeaderContent().querySelectorAll('td')).slice(swapRange[0], swapRange[2] + 1);
+                const frozenRow: number = this.parent.frozenRowCount(sheet);
+                let selectAll: Element[]; let td: Element;
+                const selectAllHdr: Element = this.parent.getSelectAllContent().querySelector('tbody');
+                if (selectAllHdr) { selectAll = [].slice.call(selectAllHdr.querySelectorAll('.e-header-cell')); }
+                const header: Element[] = [].slice.call(this.parent.getRowHeaderContent().querySelectorAll('.e-header-cell'));
+                const topIndex: number = getCellIndexes(sheet.topLeftCell)[0];
+                for (let i: number = swapRange[0]; i < swapRange[2] + 1; i++) {
+                    if (i < frozenRow) {
+                        td = selectAll[i - topIndex];
+                    } else {
+                        td = header[i - frozenRow];
+                    }
+                    if (td) { rowHdr.push(td); }
+                }
             }
             if (isColRefresh) {
-                colHdr = [].slice.call(this.parent.getColumnHeaderContent().querySelectorAll('th')).slice(swapRange[1], swapRange[3] + 1);
+                const frozenCol: number = this.parent.frozenColCount(sheet);
+                let selectAll: Element[]; let td: Element;
+                const selectAllHdr: Element = this.parent.getSelectAllContent().querySelector('thead');
+                if (selectAllHdr) { selectAll = [].slice.call(selectAllHdr.querySelectorAll('.e-header-cell')); }
+                const header: Element[] = [].slice.call(this.parent.getColumnHeaderContent().querySelectorAll('th'));
+                const leftIndex: number = getCellIndexes(sheet.topLeftCell)[1];
+                for (let i: number = swapRange[1]; i < swapRange[3] + 1; i++) {
+                    if (i < frozenCol) {
+                        td = selectAll[i - leftIndex];
+                    } else {
+                        td = header[i - frozenCol];
+                    }
+                    if (td) { colHdr.push(td); }
+                }
             }
             if (sheet.isProtected && !sheet.protectSettings.selectCells) {
                 removeClass([].concat(rowHdr, colHdr), 'e-highlight');
@@ -590,30 +769,30 @@ export class Selection {
                 }
             }
             if (selectAll) {
-            if (swapRange[0] === 0) {
-                selectAll.classList.add('e-prev-highlight-bottom');
+                if (swapRange[0] === 0) {
+                    selectAll.classList.add('e-prev-highlight-bottom');
+                }
+                if (swapRange[1] === 0) {
+                    selectAll.classList.add('e-prev-highlight-right');
+                }
             }
-            if (swapRange[1] === 0) {
-                selectAll.classList.add('e-prev-highlight-right');
-            }
-        }
         }
     }
 
     private protectHandler(): void {
-        let range: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
-        let swapRange: number[] = getSwapRange(range);
-        let actRange: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
-        let inRange: boolean = swapRange[0] <= actRange[0] && swapRange[2] >= actRange[0] && swapRange[1] <= actRange[1]
+        const range: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+        const swapRange: number[] = getSwapRange(range);
+        const actRange: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
+        const inRange: boolean = swapRange[0] <= actRange[0] && swapRange[2] >= actRange[0] && swapRange[1] <= actRange[1]
             && swapRange[3] >= actRange[1];
         this.selectRangeByIdx(range, null, null, inRange);
     }
 
     private getHdrIndexes(range: number[]): number[] {
         if (this.parent.scrollSettings.enableVirtualization) {
-            let indexes: number[] = [];
-            let hiddenRowCount: number = this.parent.hiddenCount(this.parent.viewport.topIndex, range[0]);
-            let hiddenColCount: number = this.parent.hiddenCount(this.parent.viewport.leftIndex, range[1], 'columns');
+            const indexes: number[] = [];
+            const hiddenRowCount: number = this.parent.hiddenCount(this.parent.viewport.topIndex, range[0]);
+            const hiddenColCount: number = this.parent.hiddenCount(this.parent.viewport.leftIndex, range[1], 'columns');
             indexes[0] = this.isColSelected ? range[0] : (range[0] - this.parent.viewport.topIndex) < 0
                 ? 0 : ((range[0] - hiddenRowCount) - this.parent.viewport.topIndex);
             indexes[1] = this.isRowSelected ? range[1] : (range[1] - this.parent.viewport.leftIndex) < 0
@@ -633,18 +812,16 @@ export class Selection {
 
     private processFormulaEditRange(val: string, formulaStartSheetIdx: number): void {
         let str: string;
-        let actSheetIdx: number;
         let formulaSheetIdx: number = formulaStartSheetIdx;
-        let lastChar: string;
         let i: number = 0;
-        let parsedVal: string[] = this.parseFormula(val);
-        let len: number = parsedVal.length;
+        const parsedVal: string[] = this.parseFormula(val);
+        const len: number = parsedVal.length;
         let ctrlKeyCount: number = 0;
-        let formulaBorder: string[][] = [['e-vborderright', 'e-vborderbottom'], ['e-pborderright', 'e-pborderbottom'],
-        ['e-cborderright', 'e-cborderbottom'], ['e-gborderright', 'e-gborderbottom'], ['e-oborderright', 'e-oborderbottom'],
-        ['e-bborderright', 'e-bborderbottom']];
+        const formulaBorder: string[][] = [['e-vborderright', 'e-vborderbottom'], ['e-pborderright', 'e-pborderbottom'],
+            ['e-cborderright', 'e-cborderbottom'], ['e-gborderright', 'e-gborderbottom'], ['e-oborderright', 'e-oborderbottom'],
+            ['e-bborderright', 'e-bborderbottom']];
         this.clearBorder();
-        actSheetIdx = this.parent.getActiveSheet().id - 1;
+        const actSheetIdx: number = this.parent.getActiveSheet().id - 1;
         while (i < len) {
             str = parsedVal[i];
             if (this.invalidOperators.indexOf(str) > -1) {
@@ -654,7 +831,7 @@ export class Selection {
                 str = str.replace(/\$/g, '');
                 if (i > 0) {
                     if (parsedVal[i - 1].indexOf('!') === parsedVal[i - 1].length - 1) {
-                        let splitStr: string[] = parsedVal[i - 1].split('!');
+                        const splitStr: string[] = parsedVal[i - 1].split('!');
                         formulaSheetIdx = getSheetIndex(this.parent, splitStr[0].substring(1, splitStr[0].length - 1));
                     }
                 }
@@ -676,7 +853,7 @@ export class Selection {
     }
 
     private updateFormulaEditRange(str: string, i: number, formulaBorder: String[][]): void {
-        let indices: number[] = getRangeIndexes(str);
+        const indices: number[] = getRangeIndexes(str);
         this.formulaRange[i] = str;
         this.dStartCell = { rowIndex: indices[0], colIndex: indices[1] };
         this.dEndCell = { rowIndex: indices[2], colIndex: indices[3] };
@@ -694,8 +871,19 @@ export class Selection {
         startcell: { rowIndex: number, colIndex: number }, endcell: { rowIndex: number, colIndex: number },
         classes: string[], isChart?: boolean): void {
         isChart = isNullOrUndefined(isChart) ? false : isChart;
-        let range: number[] = getSwapRange([startcell.rowIndex, startcell.colIndex, endcell.rowIndex, endcell.colIndex]);
-        let minr: number = range[0]; let minc: number = range[1]; let maxr: number = range[2]; let maxc: number = range[3];
+        const range: number[] = getSwapRange([startcell.rowIndex, startcell.colIndex, endcell.rowIndex, endcell.colIndex]);
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        if (sheet.frozenRows || sheet.frozenColumns) {
+            const rangeReference: HTMLElement = this.parent.createElement('div', {
+                className: isChart ? 'e-range-indicator e-chart-range' : 'e-range-indicator e-formuala-range' });
+            rangeReference.appendChild(this.parent.createElement('div', { className: 'e-top' }));
+            rangeReference.appendChild(this.parent.createElement('div', { className: 'e-bottom' }));
+            rangeReference.appendChild(this.parent.createElement('div', { className: 'e-left' }));
+            rangeReference.appendChild(this.parent.createElement('div', { className: 'e-right' }));
+            setPosition(this.parent, rangeReference, range, 'e-range-indicator');
+            return;
+        }
+        const minr: number = range[0]; const minc: number = range[1]; const maxr: number = range[2]; const maxc: number = range[3];
         if (minr) {
             (this.getEleFromRange([minr - 1, minc, minr - 1, maxc])).forEach((td: HTMLElement): void => {
                 if (td) {
@@ -704,7 +892,7 @@ export class Selection {
                         td.classList.add('e-formularef-selection');
                     }
                 }
-            }); // top                            
+            }); // top                     
         }
         (this.getEleFromRange([minr, maxc, maxr, maxc])).forEach((td: HTMLElement): void => {
             if (td) {
@@ -736,14 +924,13 @@ export class Selection {
 
     private getEleFromRange(range: number[], sheetIdx?: number): HTMLElement[] {
         sheetIdx = this.parent.getActiveSheet().index;
-        let sheet: SheetModel = this.parent.getActiveSheet();
         let startRIndex: number = range[0]; let startCIndex: number = range[1];
         let endRIndex: number = range[2]; let endCIndex: number = range[3];
         let i: number; let rowIdx: number;
-        let temp: number; let len: number;
+        let temp: number;
         let tempCells: Element[] = [];
         let rowCells: HTMLCollectionOf<Element>;
-        let cells: HTMLElement[] = [];
+        const cells: HTMLElement[] = [];
         if (startRIndex > endRIndex) {
             temp = startRIndex;
             startRIndex = endRIndex;
@@ -758,7 +945,7 @@ export class Selection {
             for (i = startRIndex; i <= endRIndex; i++) {
                 rowIdx = i;
                 if (rowIdx > -1) {
-                    let row: Element = this.parent.getRow(rowIdx);
+                    const row: Element = this.parent.getRow(rowIdx, null, );
                     if (row) {
                         rowCells = row.getElementsByClassName('e-cell') as HTMLCollectionOf<Element>;
                         tempCells = (endCIndex === startCIndex) ?
@@ -772,7 +959,7 @@ export class Selection {
     }
 
     private getRowCells(rowCells: HTMLCollectionOf<Element>, startCIndex: number, endCIndex: number): HTMLElement[] {
-        let tdCol: HTMLElement[] = [];
+        const tdCol: HTMLElement[] = [];
         for (startCIndex; startCIndex < endCIndex; startCIndex++) {
             if (rowCells[startCIndex]) {
                 tdCol.push(rowCells[startCIndex] as HTMLElement);
@@ -786,15 +973,21 @@ export class Selection {
             return;
         }
         Array.prototype.push.apply(first, second);
-    };
+    }
 
 
     private clearBorder(): void {
-        let borderEleColl: HTMLCollectionOf<Element> =
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        if (sheet.frozenColumns || sheet.frozenRows) {
+            const formualIndicator: Element[] = [].slice.call(this.parent.element.getElementsByClassName('e-formuala-range'));
+            formualIndicator.forEach((indicator: Element): void => { detach(indicator); });
+            return;
+        }
+        const borderEleColl: HTMLCollectionOf<Element> =
             this.parent.element.getElementsByClassName('e-formularef-selection') as HTMLCollectionOf<Element>;
         for (let idx: number = 0; idx < borderEleColl.length; idx++) {
-            let td: HTMLElement = borderEleColl[idx] as HTMLElement;
-            let classArr: string[] = ['e-vborderright', 'e-vborderbottom', 'e-pborderright', 'e-pborderbottom',
+            const td: HTMLElement = borderEleColl[idx] as HTMLElement;
+            const classArr: string[] = ['e-vborderright', 'e-vborderbottom', 'e-pborderright', 'e-pborderbottom',
                 'e-cborderright', 'e-cborderbottom', 'e-gborderright', 'e-gborderbottom', 'e-oborderright',
                 'e-oborderbottom', 'e-bborderright', 'e-bborderbottom'];
             for (let idx: number = 0; idx < classArr.length; idx++) {
@@ -802,19 +995,18 @@ export class Selection {
             }
         }
         for (let idx: number = 0; idx < borderEleColl.length; idx++) {
-            let td: HTMLElement = borderEleColl[idx] as HTMLElement;
+            const td: HTMLElement = borderEleColl[idx] as HTMLElement;
         }
     }
 
     private parseFormula(formulaStr: string): string[] {
         let tempStr: string;
         let str: string;
-        let len: number;
         let i: number = 0;
-        let arr: string[] = [];
+        const arr: string[] = [];
         formulaStr = this.markSpecialChar(formulaStr.replace('=', ''));
-        let formula: string[] = formulaStr.split(/\(|\)|=|\^|>|<|,|:|\+|-|\*|\/|%|&/g);
-        len = formula.length;
+        const formula: string[] = formulaStr.split(/\(|\)|=|\^|>|<|,|:|\+|-|\*|\/|%|&/g);
+        const len: number = formula.length;
         while (i < len) {
             tempStr = formula[i];
             if (!tempStr) {
@@ -830,7 +1022,7 @@ export class Selection {
                         arr.push(this.getUniqueCharVal(str));
                         tempStr = tempStr.substr(1);
                     }
-                    let strVal: number = tempStr.indexOf('!') + 1;
+                    const strVal: number = tempStr.indexOf('!') + 1;
                     arr.push(tempStr.substr(0, strVal));
                     arr.push(tempStr.substr(strVal));
                 } else if (this.isUniqueChar(str)) {
@@ -846,40 +1038,40 @@ export class Selection {
     }
 
     private isUniqueChar(str: string): boolean {
-        let code: number = str.charCodeAt(str.charAt[0]);
+        const code: number = str.charCodeAt(str.charAt[0]);
         return code >= 129 && code <= 142;
     }
 
     private getUniqueCharVal(tempStr: string): string {
         switch (tempStr) {
-            case this.uniqueOBracket:
-                return '(';
-            case this.uniqueCBracket:
-                return ')';
-            case this.uniqueCOperator:
-                return ':';
-            case this.uniqueSOperator:
-                return '-';
-            case this.uniquePOperator:
-                return '+';
-            case this.uniqueMOperator:
-                return '*';
-            case this.uniqueDOperator:
-                return '/';
-            case this.uniqueModOperator:
-                return '%';
-            case this.uniqueCSeparator:
-                return ',';
-            case this.uniqueConcateOperator:
-                return '&';
-            case this.uniqueEqualOperator:
-                return '=';
-            case this.uniqueExpOperator:
-                return '^';
-            case this.uniqueLTOperator:
-                return '<';
-            case this.uniqueGTOperator:
-                return '>';
+        case this.uniqueOBracket:
+            return '(';
+        case this.uniqueCBracket:
+            return ')';
+        case this.uniqueCOperator:
+            return ':';
+        case this.uniqueSOperator:
+            return '-';
+        case this.uniquePOperator:
+            return '+';
+        case this.uniqueMOperator:
+            return '*';
+        case this.uniqueDOperator:
+            return '/';
+        case this.uniqueModOperator:
+            return '%';
+        case this.uniqueCSeparator:
+            return ',';
+        case this.uniqueConcateOperator:
+            return '&';
+        case this.uniqueEqualOperator:
+            return '=';
+        case this.uniqueExpOperator:
+            return '^';
+        case this.uniqueLTOperator:
+            return '<';
+        case this.uniqueGTOperator:
+            return '>';
         }
         return '';
     }
@@ -898,7 +1090,9 @@ export class Selection {
 
     /**
      * For internal use only - Get the module name.
+     *
      * @private
+     * @returns {string} - Get the module name.
      */
     protected getModuleName(): string {
         return 'selection';

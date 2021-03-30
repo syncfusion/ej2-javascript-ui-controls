@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable prefer-const */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable max-len */
 import { PointModel } from '../primitives/point-model';
 import { Node, DiagramShape } from '../objects/node';
 import { Connector, BezierSegment, StraightSegment } from '../objects/connector';
@@ -44,7 +49,9 @@ import { NodeFixedUserHandleModel, ConnectorFixedUserHandleModel } from '../obje
 export class ToolBase {
     /**
      * Initializes the tool
+     *
      * @param {CommandHandler} command Command that is corresponding to the current action
+     * @param protectChange
      */
     constructor(command: CommandHandler, protectChange: boolean = false) {
         this.commandHandler = command;
@@ -113,7 +120,10 @@ export class ToolBase {
         this.inAction = true;
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseDown(args: MouseEventArgs): void {
         if (isBlazor()) {
             this.commandHandler.enableCloneObject(true);
@@ -134,7 +144,10 @@ export class ToolBase {
         }
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseMove(args: MouseEventArgs): boolean {
         this.currentPosition = args.position;
         if (this.inAction) {
@@ -148,7 +161,10 @@ export class ToolBase {
 
 
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseUp(args: MouseEventArgs): void {
         this.checkPropertyValue();
         this.currentPosition = args.position;
@@ -176,12 +192,18 @@ export class ToolBase {
         this.blocked = false;
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseWheel(args: MouseEventArgs): void {
         this.currentPosition = args.position;
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseLeave(args: MouseEventArgs): void {
         this.mouseUp(args);
     }
@@ -189,114 +211,114 @@ export class ToolBase {
         shape: SelectorModel | NodeModel, startPoint: PointModel,
         endPoint: PointModel, corner: string, initialBounds: Rect, angle?: number): Rect {
         shape = this.commandHandler.renderContainerHelper(shape) as NodeModel || shape;
-        let horizontalsnap: Snap = { snapped: false, offset: 0, left: false, right: false };
-        let verticalsnap: Snap = { snapped: false, offset: 0, top: false, bottom: false };
+        const horizontalsnap: Snap = { snapped: false, offset: 0, left: false, right: false };
+        const verticalsnap: Snap = { snapped: false, offset: 0, top: false, bottom: false };
         let difx: number = this.currentPosition.x - this.startPosition.x;
         let dify: number = this.currentPosition.y - this.startPosition.y;
-        let snapEnabled: boolean = (!(shape instanceof TextElement)) && this.commandHandler.snappingModule
+        const snapEnabled: boolean = (!(shape instanceof TextElement)) && this.commandHandler.snappingModule
             && this.commandHandler.snappingModule.canSnap();
-        let snapLine: SVGElement = snapEnabled ? this.commandHandler.snappingModule.getLayer() : null;
-        let rotateAngle: number = (shape instanceof TextElement) ? angle : shape.rotateAngle;
+        const snapLine: SVGElement = snapEnabled ? this.commandHandler.snappingModule.getLayer() : null;
+        const rotateAngle: number = (shape instanceof TextElement) ? angle : shape.rotateAngle;
         let matrix: Matrix;
         matrix = identityMatrix();
         rotateMatrix(matrix, -rotateAngle, 0, 0);
         let x: number = shape.offsetX; let y: number = shape.offsetY;
-        let w: number = shape.width; let h: number = shape.height;
+        const w: number = shape.width; const h: number = shape.height;
         x = x - w * shape.pivot.x; y = y - h * shape.pivot.y;
         let deltaWidth: number = 0; let deltaHeight: number = 0;
         let diff: PointModel;
-        let width: number = (shape instanceof TextElement) ? shape.actualSize.width : shape.width;
-        let height: number = (shape instanceof TextElement) ? shape.actualSize.height : shape.height;
+        const width: number = (shape instanceof TextElement) ? shape.actualSize.width : shape.width;
+        const height: number = (shape instanceof TextElement) ? shape.actualSize.height : shape.height;
         switch (corner) {
-            case 'ResizeWest':
-                diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
-                deltaHeight = 1;
-                difx = snapEnabled ? this.commandHandler.snappingModule.snapLeft(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
-                    difx;
-                dify = 0; deltaWidth = (initialBounds.width - difx) / width; break;
-            case 'ResizeEast':
-                diff = transformPointByMatrix(matrix, ({ x: difx, y: dify }));
-                difx = diff.x;
-                dify = diff.y;
-                difx = snapEnabled ? this.commandHandler.snappingModule.snapRight(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
-                    difx;
-                dify = 0;
-                deltaWidth = (initialBounds.width + difx) / width;
-                deltaHeight = 1;
-                break;
-            case 'ResizeNorth':
-                deltaWidth = 1;
-                diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
-                dify = snapEnabled ? this.commandHandler.snappingModule.snapTop(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
-                    dify;
-                deltaHeight = (initialBounds.height - dify) / height; break;
-            case 'ResizeSouth':
-                deltaWidth = 1;
-                diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
-                dify = snapEnabled ? this.commandHandler.snappingModule.snapBottom(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
-                    dify;
-                deltaHeight = (initialBounds.height + dify) / height; break;
-            case 'ResizeNorthEast':
-                diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
-                difx = snapEnabled ? this.commandHandler.snappingModule.snapRight(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
-                    difx;
-                dify = snapEnabled ? this.commandHandler.snappingModule.snapTop(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
-                    dify;
-                deltaWidth = (initialBounds.width + difx) / width; deltaHeight = (initialBounds.height - dify) / height;
-                break;
-            case 'ResizeNorthWest':
-                diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
-                dify = !snapEnabled ? dify : this.commandHandler.snappingModule.snapTop(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds);
-                difx = !snapEnabled ? difx : this.commandHandler.snappingModule.snapLeft(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds);
-                deltaWidth = (initialBounds.width - difx) / width; deltaHeight = (initialBounds.height - dify) / height;
-                break;
-            case 'ResizeSouthEast':
-                diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
-                dify = !snapEnabled ? dify : this.commandHandler.snappingModule.snapBottom(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds);
-                difx = !snapEnabled ? difx : this.commandHandler.snappingModule.snapRight(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds);
-                deltaHeight = (initialBounds.height + dify) / height; deltaWidth = (initialBounds.width + difx) / width;
-                break;
-            case 'ResizeSouthWest':
-                diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
-                dify = snapEnabled ? this.commandHandler.snappingModule.snapBottom(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel,
-                    endPoint === startPoint, initialBounds) : dify;
-                difx = snapEnabled ? this.commandHandler.snappingModule.snapLeft(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel,
-                    endPoint === startPoint, initialBounds) : difx;
-                deltaWidth = (initialBounds.width - difx) / width; deltaHeight = (initialBounds.height + dify) / height; break;
+        case 'ResizeWest':
+            diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
+            deltaHeight = 1;
+            difx = snapEnabled ? this.commandHandler.snappingModule.snapLeft(
+                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
+                difx;
+            dify = 0; deltaWidth = (initialBounds.width - difx) / width; break;
+        case 'ResizeEast':
+            diff = transformPointByMatrix(matrix, ({ x: difx, y: dify }));
+            difx = diff.x;
+            dify = diff.y;
+            difx = snapEnabled ? this.commandHandler.snappingModule.snapRight(
+                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
+                difx;
+            dify = 0;
+            deltaWidth = (initialBounds.width + difx) / width;
+            deltaHeight = 1;
+            break;
+        case 'ResizeNorth':
+            deltaWidth = 1;
+            diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
+            dify = snapEnabled ? this.commandHandler.snappingModule.snapTop(
+                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
+                dify;
+            deltaHeight = (initialBounds.height - dify) / height; break;
+        case 'ResizeSouth':
+            deltaWidth = 1;
+            diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
+            dify = snapEnabled ? this.commandHandler.snappingModule.snapBottom(
+                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
+                dify;
+            deltaHeight = (initialBounds.height + dify) / height; break;
+        case 'ResizeNorthEast':
+            diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
+            difx = snapEnabled ? this.commandHandler.snappingModule.snapRight(
+                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
+                difx;
+            dify = snapEnabled ? this.commandHandler.snappingModule.snapTop(
+                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
+                dify;
+            deltaWidth = (initialBounds.width + difx) / width; deltaHeight = (initialBounds.height - dify) / height;
+            break;
+        case 'ResizeNorthWest':
+            diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
+            dify = !snapEnabled ? dify : this.commandHandler.snappingModule.snapTop(
+                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds);
+            difx = !snapEnabled ? difx : this.commandHandler.snappingModule.snapLeft(
+                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds);
+            deltaWidth = (initialBounds.width - difx) / width; deltaHeight = (initialBounds.height - dify) / height;
+            break;
+        case 'ResizeSouthEast':
+            diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
+            dify = !snapEnabled ? dify : this.commandHandler.snappingModule.snapBottom(
+                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds);
+            difx = !snapEnabled ? difx : this.commandHandler.snappingModule.snapRight(
+                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds);
+            deltaHeight = (initialBounds.height + dify) / height; deltaWidth = (initialBounds.width + difx) / width;
+            break;
+        case 'ResizeSouthWest':
+            diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
+            dify = snapEnabled ? this.commandHandler.snappingModule.snapBottom(
+                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel,
+                endPoint === startPoint, initialBounds) : dify;
+            difx = snapEnabled ? this.commandHandler.snappingModule.snapLeft(
+                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel,
+                endPoint === startPoint, initialBounds) : difx;
+            deltaWidth = (initialBounds.width - difx) / width; deltaHeight = (initialBounds.height + dify) / height; break;
         }
         return { width: deltaWidth, height: deltaHeight } as Rect;
     }
 
     protected getPivot(corner: string): PointModel {
         switch (corner) {
-            case 'ResizeWest':
-                return { x: 1, y: 0.5 };
-            case 'ResizeEast':
-                return { x: 0, y: 0.5 };
-            case 'ResizeNorth':
-                return { x: 0.5, y: 1 };
-            case 'ResizeSouth':
-                return { x: 0.5, y: 0 };
-            case 'ResizeNorthEast':
-                return { x: 0, y: 1 };
-            case 'ResizeNorthWest':
-                return { x: 1, y: 1 };
-            case 'ResizeSouthEast':
-                return { x: 0, y: 0 };
-            case 'ResizeSouthWest':
-                return { x: 1, y: 0 };
+        case 'ResizeWest':
+            return { x: 1, y: 0.5 };
+        case 'ResizeEast':
+            return { x: 0, y: 0.5 };
+        case 'ResizeNorth':
+            return { x: 0.5, y: 1 };
+        case 'ResizeSouth':
+            return { x: 0.5, y: 0 };
+        case 'ResizeNorthEast':
+            return { x: 0, y: 1 };
+        case 'ResizeNorthWest':
+            return { x: 1, y: 1 };
+        case 'ResizeSouthEast':
+            return { x: 0, y: 0 };
+        case 'ResizeSouthWest':
+            return { x: 1, y: 0 };
         }
         return { x: 0.5, y: 0.5 };
     }
@@ -311,18 +333,24 @@ export class SelectTool extends ToolBase {
         super(commandHandler, true);
         this.action = action;
     }
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseDown(args: MouseEventArgs): void {
         this.inAction = true;
         super.mouseDown(args);
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         //draw selected region
         if (this.inAction && Point.equals(this.currentPosition, this.prevPosition) === false) {
-            let rect: Rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
+            const rect: Rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
             // Bug fix - EJ2-44495 -Node does not gets selected on slight movement of mouse when drag constraints disabled for node
             if (this.mouseDownElement && !canMove(this.mouseDownElement)) {
                 this.commandHandler.clearObjectSelection(this.mouseDownElement);
@@ -335,17 +363,20 @@ export class SelectTool extends ToolBase {
     }
 
 
-/**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseUp(args: MouseEventArgs): void {
         this.checkPropertyValue();
         //rubber band selection
         if (!this.commandHandler.isUserHandle(this.currentPosition)) {
             if (Point.equals(this.currentPosition, this.prevPosition) === false && this.inAction) {
-                let region: Rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
+                const region: Rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
                 this.commandHandler.doRubberBandSelection(region);
             } else {
                 //single selection
-                let arrayNodes: (NodeModel | ConnectorModel)[] = this.commandHandler.getSelectedObject();
+                const arrayNodes: (NodeModel | ConnectorModel)[] = this.commandHandler.getSelectedObject();
                 if (!this.commandHandler.hasSelection() || !args.info || !args.info.ctrlKey) {
                     this.commandHandler.clearSelection(args.source === null ? true : false);
                     if (this.action === 'LabelSelect') {
@@ -372,7 +403,10 @@ export class SelectTool extends ToolBase {
         super.mouseUp(args);
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseLeave(args: MouseEventArgs): void {
         if (this.inAction) {
             this.mouseUp(args);
@@ -381,13 +415,16 @@ export class SelectTool extends ToolBase {
 }
 
 export class FixedUserHandleTool extends ToolBase {
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseUp(args: MouseEventArgs): void {
         this.checkPropertyValue();
         this.inAction = false;
-        let val: NodeModel | ConnectorModel = args.source;
+        const val: NodeModel | ConnectorModel = args.source;
         let fixedUserHandle: NodeFixedUserHandleModel | ConnectorFixedUserHandleModel;
-        let iconId: string = args.sourceWrapper.id;
+        const iconId: string = args.sourceWrapper.id;
         for (let i: number = 0; i < val.fixedUserHandles.length; i++) {
             if (iconId.indexOf(val.fixedUserHandles[i].id) > -1) {
                 fixedUserHandle = val.fixedUserHandles[i];
@@ -395,25 +432,25 @@ export class FixedUserHandleTool extends ToolBase {
         }
 
         if (isBlazor()) {
-            let element: DiagramEventObject = getObjectType(args.source) === Connector ? { connector: args.source }
+            const element: DiagramEventObject = getObjectType(args.source) === Connector ? { connector: args.source }
                 : { node: args.source };
-            let fixedUserHandles: DiagramFixedUserHandle = getObjectType(args.source) === Connector ?
+            const fixedUserHandles: DiagramFixedUserHandle = getObjectType(args.source) === Connector ?
                 { connectorFixedUserHandle: fixedUserHandle } as DiagramFixedUserHandle
                 : { nodeFixedUserHandle: fixedUserHandle } as DiagramFixedUserHandle;
-            let arg: BlazorFixedUserHandleClickEventArgs = {
+            const arg: BlazorFixedUserHandleClickEventArgs = {
                 fixedUserHandle: fixedUserHandles,
                 element: element
             };
-            let trigger: DiagramEvent = DiagramEvent.fixedUserHandleClick;
+            const trigger: DiagramEvent = DiagramEvent.fixedUserHandleClick;
             this.commandHandler.triggerEvent(trigger, arg);
             super.mouseUp(args);
 
         } else {
-            let arg: FixedUserHandleClickEventArgs = {
+            const arg: FixedUserHandleClickEventArgs = {
                 fixedUserHandle: fixedUserHandle,
                 element: args.source
             };
-            let trigger: DiagramEvent = DiagramEvent.fixedUserHandleClick;
+            const trigger: DiagramEvent = DiagramEvent.fixedUserHandleClick;
             this.commandHandler.triggerEvent(trigger, arg);
             super.mouseUp(args);
         }
@@ -446,16 +483,19 @@ export class ConnectTool extends ToolBase {
         this.endPoint = endPoint;
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public async mouseDown(args: MouseEventArgs): Promise<void> {
         if (isBlazor() && args && args.source) {
             this.commandHandler.insertSelectedObjects();
             this.commandHandler.insertBlazorConnector(args.source as Selector);
-            let selectorModel: SelectorModel = args.source as SelectorModel;
+            const selectorModel: SelectorModel = args.source as SelectorModel;
             if (selectorModel.connectors) {
-                let connector: Connector = selectorModel.connectors[0] as Connector;
+                const connector: Connector = selectorModel.connectors[0] as Connector;
                 this.oldConnector = cloneObject(connector);
-                let arg: IBlazorConnectionChangeEventArgs = {
+                const arg: IBlazorConnectionChangeEventArgs = {
                     connector: cloneBlazorObject(connector),
                     oldValue: { connectorTargetValue: { portId: undefined, nodeId: undefined } },
                     newValue: { connectorTargetValue: { portId: undefined, nodeId: undefined } },
@@ -477,12 +517,12 @@ export class ConnectTool extends ToolBase {
             connectors = (args.source as SelectorModel).connectors[0];
             this.oldConnector = cloneObject(connectors);
         }
-        // Sets the selected segment 
+        // Sets the selected segment
         if (this.endPoint === 'BezierSourceThumb' || this.endPoint === 'BezierTargetThumb') {
             for (let i: number = 0; i < connectors.segments.length; i++) {
-                let segment: BezierSegment = connectors.segments[i] as BezierSegment;
-                let segmentpoint1: PointModel = !Point.isEmptyPoint(segment.point1) ? segment.point1 : segment.bezierPoint1;
-                let segmentpoint2: PointModel = !Point.isEmptyPoint(segment.point2) ? segment.point2 : segment.bezierPoint2;
+                const segment: BezierSegment = connectors.segments[i] as BezierSegment;
+                const segmentpoint1: PointModel = !Point.isEmptyPoint(segment.point1) ? segment.point1 : segment.bezierPoint1;
+                const segmentpoint2: PointModel = !Point.isEmptyPoint(segment.point2) ? segment.point2 : segment.bezierPoint2;
                 if (contains(this.currentPosition, segmentpoint1, connectors.hitPadding) ||
                     contains(this.currentPosition, segmentpoint2, connectors.hitPadding)) {
                     this.selectedSegment = segment;
@@ -492,16 +532,19 @@ export class ConnectTool extends ToolBase {
         this.currentPosition = args.position;
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public async mouseUp(args: MouseEventArgs): Promise<void> {
         if (isBlazor()) {
-            let trigger: DiagramEvent = DiagramEvent.connectionChange;
+            const trigger: DiagramEvent = DiagramEvent.connectionChange;
             let temparg: IBlazorConnectionChangeEventArgs;
             if (this.tempArgs && this.oldConnector) {
                 this.commandHandler.updatePropertiesToBlazor(args, false);
                 this.tempArgs.state = 'Changed';
-                let nodeEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
-                let portEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
+                const nodeEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
+                const portEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
                 this.tempArgs.oldValue = this.endPoint === 'ConnectorSourceEnd' ?
                     { connectorSourceValue: { nodeId: this.oldConnector[nodeEndId], portId: this.oldConnector[portEndId] } } :
                     { connectorTargetValue: { nodeId: this.oldConnector[nodeEndId], portId: this.oldConnector[portEndId] } };
@@ -509,9 +552,9 @@ export class ConnectTool extends ToolBase {
                     state: this.tempArgs.state, oldValue: this.tempArgs.oldValue,
                     newValue: this.tempArgs.newValue, cancel: this.tempArgs.cancel, connectorEnd: this.tempArgs.connectorEnd
                 };
-                let diagram: string = 'diagram'; let blazorInterop: string = 'sfBlazor'; let blazor: string = 'Blazor';
+                const diagram: string = 'diagram'; const blazorInterop: string = 'sfBlazor'; const blazor: string = 'Blazor';
                 if (window && window[blazor] && this.commandHandler[diagram].connectionChange) {
-                    let eventObj: object = { 'EventName': 'connectionChange', args: JSON.stringify(this.tempArgs) };
+                    const eventObj: object = { 'EventName': 'connectionChange', args: JSON.stringify(this.tempArgs) };
                     temparg = await window[blazorInterop].updateBlazorDiagramEvents(eventObj, this.commandHandler[diagram]);
                 }
                 if (temparg) {
@@ -520,10 +563,10 @@ export class ConnectTool extends ToolBase {
             }
         }
         if (!isBlazor() && this.isConnected && (args.source as SelectorModel).connectors) {
-            let connector: ConnectorModel = (args.source as SelectorModel).connectors[0];
-            let nodeEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
-            let portEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
-            let arg: IConnectionChangeEventArgs | IBlazorConnectionChangeEventArgs = {
+            const connector: ConnectorModel = (args.source as SelectorModel).connectors[0];
+            const nodeEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
+            const portEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
+            const arg: IConnectionChangeEventArgs | IBlazorConnectionChangeEventArgs = {
                 connector: cloneBlazorObject(connector),
                 oldValue: { nodeId: this.oldConnector[nodeEndId], portId: this.oldConnector[portEndId] },
                 newValue: { nodeId: connector[nodeEndId], portId: connector[portEndId] }, cancel: false,
@@ -553,8 +596,9 @@ export class ConnectTool extends ToolBase {
             }
             let targetPortName: string; let targetNodeNode: string;
             if (args.target) {
-                let target: NodeModel | PointPortModel = this.commandHandler.findTarget(
+                const target: NodeModel | PointPortModel = this.commandHandler.findTarget(
                     args.targetWrapper, args.target, this.endPoint === 'ConnectorSourceEnd', true) as NodeModel | PointPortModel;
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 (target instanceof PointPort) ? targetPortName = target.id : targetNodeNode = target.id;
             }
             let arg: IEndChangeEventArgs = {
@@ -567,12 +611,13 @@ export class ConnectTool extends ToolBase {
                     oldValue: cloneBlazorObject(oldValues), newValue: oldValues, cancel: arg.cancel, targetPort: targetPortName
                 };
             }
-            let trigger: number = this.endPoint === 'ConnectorSourceEnd' ? DiagramEvent.sourcePointChange : DiagramEvent.targetPointChange;
+            const trigger: number = this.endPoint === 'ConnectorSourceEnd' ? DiagramEvent.sourcePointChange : DiagramEvent.targetPointChange;
             this.commandHandler.triggerEvent(trigger, arg);
             this.commandHandler.removeTerminalSegment(connector as Connector, true);
             if (this.undoElement && args.source) {
+                // eslint-disable-next-line prefer-const
                 let obj: SelectorModel; obj = cloneObject(args.source);
-                let entry: HistoryEntry = {
+                const entry: HistoryEntry = {
                     type: 'ConnectionChanged', redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement),
                     category: 'Internal'
                 };
@@ -581,8 +626,8 @@ export class ConnectTool extends ToolBase {
         } else if (!(this instanceof ConnectorDrawingTool) &&
             (this.endPoint === 'BezierTargetThumb' || this.endPoint === 'BezierSourceThumb')) {
             if (this.undoElement && args.source) {
-                let obj: SelectorModel; obj = cloneObject(args.source);
-                let entry: HistoryEntry = {
+                const obj: SelectorModel = cloneObject(args.source);
+                const entry: HistoryEntry = {
                     type: 'SegmentChanged', redoObject: obj, undoObject: this.undoElement, category: 'Internal'
                 };
                 this.commandHandler.addHistoryEntry(entry);
@@ -594,7 +639,10 @@ export class ConnectTool extends ToolBase {
     }
 
     /* tslint:disable */
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         let tempArgs: IBlazorConnectionChangeEventArgs;
@@ -610,8 +658,9 @@ export class ConnectTool extends ToolBase {
             let targetPort: string; let targetNode: string;
             if (args.target) {
                 targetNode = (args.target as NodeModel).id;
-                let target: NodeModel | PointPortModel = this.commandHandler.findTarget(
+                const target: NodeModel | PointPortModel = this.commandHandler.findTarget(
                     args.targetWrapper, args.target, this.endPoint === 'ConnectorSourceEnd', true) as NodeModel | PointPortModel;
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 (target instanceof PointPort || target instanceof BpmnSubEvent) ? targetPort = target.id : targetNode = target.id;
             }
             let arg: IEndChangeEventArgs = {
@@ -624,25 +673,26 @@ export class ConnectTool extends ToolBase {
                     oldValue: oldValue, newValue: oldValue, cancel: arg.cancel, targetPort: targetPort
                 };
             }
-            let trigger: number = this.endPoint === 'ConnectorSourceEnd' ?
+            const trigger: number = this.endPoint === 'ConnectorSourceEnd' ?
                 DiagramEvent.sourcePointChange : DiagramEvent.targetPointChange;
             this.commandHandler.triggerEvent(trigger, arg);
         }
         this.currentPosition = args.position;
         if (this.currentPosition && this.prevPosition) {
-            let diffX: number = this.currentPosition.x - this.prevPosition.x;
-            let diffY: number = this.currentPosition.y - this.prevPosition.y;
+            const diffX: number = this.currentPosition.x - this.prevPosition.x;
+            const diffY: number = this.currentPosition.y - this.prevPosition.y;
             let newValue: PointModel; let oldValue: PointModel; let inPort: PointPortModel; let outPort: PointPortModel;
             this.currentPosition = this.commandHandler.snapConnectorEnd(this.currentPosition); let connector: ConnectorModel;
             if (args.source && (args.source as SelectorModel).connectors) {
-                newValue = { x: this.currentPosition.x, y: this.currentPosition.y, };
+                newValue = { x: this.currentPosition.x, y: this.currentPosition.y };
                 oldValue = { x: this.prevPosition.x, y: this.prevPosition.y };
                 connector = (args.source as SelectorModel).connectors[0];
             }
             let targetPortId: string; let targetNodeId: string;
             if (args.target) {
-                let target: NodeModel | PointPortModel = this.commandHandler.findTarget(
+                const target: NodeModel | PointPortModel = this.commandHandler.findTarget(
                     args.targetWrapper, args.target, this.endPoint === 'ConnectorSourceEnd', true) as NodeModel | PointPortModel;
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 (target instanceof PointPort) ? targetPortId = target.id : targetNodeId = target.id;
             }
             let arg: IEndChangeEventArgs = {
@@ -656,7 +706,7 @@ export class ConnectTool extends ToolBase {
                 };
             }
             if (!(this instanceof ConnectorDrawingTool)) {
-                let trigger: number = this.endPoint === 'ConnectorSourceEnd' ?
+                const trigger: number = this.endPoint === 'ConnectorSourceEnd' ?
                     DiagramEvent.sourcePointChange : DiagramEvent.targetPointChange;
                 this.commandHandler.triggerEvent(trigger, arg);
             }
@@ -674,7 +724,7 @@ export class ConnectTool extends ToolBase {
                             args.source, this.endPoint, this.canCancel) as IBlazorConnectionChangeEventArgs;
                         this.isConnected = true;
                     }
-                    let target: NodeModel | PointPortModel = this.commandHandler.findTarget(
+                    const target: NodeModel | PointPortModel = this.commandHandler.findTarget(
                         args.targetWrapper, args.target, this.endPoint === 'ConnectorSourceEnd', true) as (NodeModel | PointPortModel);
                     if (target instanceof Node) {
                         if ((canInConnect(target) && this.endPoint === 'ConnectorTargetEnd')
@@ -685,7 +735,7 @@ export class ConnectTool extends ToolBase {
                             this.isConnected = true;
                         }
                     } else {
-                        let isConnect: boolean = this.checkConnect(target as PointPortModel);
+                        const isConnect: boolean = this.checkConnect(target as PointPortModel);
                         if (isConnect) {
                             this.isConnected = true;
                             tempArgs = this.commandHandler.connect(this.endPoint, args, this.canCancel) as IBlazorConnectionChangeEventArgs;
@@ -699,7 +749,7 @@ export class ConnectTool extends ToolBase {
                 }
             }
             if (this.commandHandler.canEnableDefaultTooltip()) {
-                let content: string = this.getTooltipContent(args.position);
+                const content: string = this.getTooltipContent(args.position);
                 this.commandHandler.showTooltip(args.source, args.position, content, 'ConnectTool', this.isTooltipVisible);
                 this.isTooltipVisible = false;
             }
@@ -710,7 +760,10 @@ export class ConnectTool extends ToolBase {
         this.prevPosition = this.currentPosition;
         return !this.blocked;
     }
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseLeave(args: MouseEventArgs): void {
         this.mouseUp(args);
     }
@@ -765,12 +818,15 @@ export class MoveTool extends ToolBase {
         this.objectType = objType;
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseDown(args: MouseEventArgs): void {
         if (args.source instanceof Node || args.source instanceof Connector) {
-            let arrayNodes: (NodeModel | ConnectorModel)[] = this.commandHandler.getSelectedObject();
+            const arrayNodes: (NodeModel | ConnectorModel)[] = this.commandHandler.getSelectedObject();
             this.commandHandler.selectObjects([args.source], args.info && args.info.ctrlKey, arrayNodes);
-            let selectedObject: SelectorModel = { nodes: [], connectors: [] };
+            const selectedObject: SelectorModel = { nodes: [], connectors: [] };
             if (args.source instanceof Node) {
                 selectedObject.nodes.push(cloneObject(args.source) as Node);
             } else {
@@ -795,7 +851,7 @@ export class MoveTool extends ToolBase {
             if (args.source) {
                 oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
             }
-            let arg: IDraggingEventArgs | IBlazorDraggingEventArgs = {
+            const arg: IDraggingEventArgs | IBlazorDraggingEventArgs = {
                 source: cloneObject(args.source), state: 'Start', oldValue: oldValues, newValue: {},
                 target: cloneObject(args.target), targetPosition: args.position, allowDrop: true, cancel: false
             };
@@ -808,7 +864,13 @@ export class MoveTool extends ToolBase {
     }
 
     /* tslint:disable */
-    /**   @private  */
+    /**
+     * @param args
+     * @param isPreventHistory
+     * @param args
+     * @param isPreventHistory
+     * @private
+     */
     public async mouseUp(args: MouseEventArgs, isPreventHistory?: boolean): Promise<void> {
         let oldValues: SelectorModel; let newValues: SelectorModel;
 
@@ -818,29 +880,29 @@ export class MoveTool extends ToolBase {
                 newValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
                 oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
             }
-            let arg: IBlazorDraggingEventArgs = {
+            const arg: IBlazorDraggingEventArgs = {
                 state: 'Completed',
                 oldValue: cloneBlazorObject(this.tempArgs.oldValue), newValue: cloneBlazorObject(newValues),
                 target: cloneBlazorObject(this.currentTarget), targetPosition: cloneBlazorObject(this.currentPosition),
                 allowDrop: true, cancel: false
             };
             let blazorArgs: void | object;
-            let diagram: string = 'diagram'; let blazorInterop: string = 'sfBlazor'; let blazor: string = 'Blazor';
+            const diagram: string = 'diagram'; const blazorInterop: string = 'sfBlazor'; const blazor: string = 'Blazor';
             if (window && window[blazor] && this.commandHandler[diagram].positionChange) {
-                let eventObj: object = { 'EventName': 'positionChange', args: JSON.stringify(arg) }
+                const eventObj: object = { 'EventName': 'positionChange', args: JSON.stringify(arg) };
                 blazorArgs = await window[blazorInterop].updateBlazorDiagramEvents(eventObj, this.commandHandler[diagram]);
             }
             if (blazorArgs && (blazorArgs as IDraggingEventArgs).cancel) { this.commandHandler.enableCloneObject(true); this.commandHandler.ismouseEvents(true); this.canCancel = true; }
             if (this.canCancel) {
                 this.commandHandler.insertBlazorObject(args.source);
-                let tx: number = this.tempArgs.oldValue.offsetX - (args.source as NodeModel).wrapper.offsetX;
-                let ty: number = this.tempArgs.oldValue.offsetY - (args.source as NodeModel).wrapper.offsetY;
+                const tx: number = this.tempArgs.oldValue.offsetX - (args.source as NodeModel).wrapper.offsetX;
+                const ty: number = this.tempArgs.oldValue.offsetY - (args.source as NodeModel).wrapper.offsetY;
                 this.commandHandler.dragSelectedObjects(tx, ty);
             }
         }
         this.checkPropertyValue();
         let obj: SelectorModel; let historyAdded: boolean = false; let object: NodeModel | ConnectorModel | SelectorModel;
-        let redoObject: SelectorModel = { nodes: [], connectors: [] };
+        const redoObject: SelectorModel = { nodes: [], connectors: [] };
         if (this.objectType !== 'Port') {
             if (args.source instanceof Node || args.source instanceof Connector) {
                 if (args.source instanceof Node) {
@@ -848,7 +910,7 @@ export class MoveTool extends ToolBase {
                 } else {
                     redoObject.connectors.push(cloneObject(args.source) as Connector);
                 }
-                obj = cloneObject(redoObject); let wrapper: Container = args.source.wrapper;
+                obj = cloneObject(redoObject); const wrapper: Container = args.source.wrapper;
                 obj.offsetX = wrapper.offsetX; obj.offsetY = wrapper.offsetY;
             } else {
                 obj = cloneObject(args.source);
@@ -856,8 +918,9 @@ export class MoveTool extends ToolBase {
             object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Selector || (this.commandHandler.renderContainerHelper(args.source as ConnectorModel) as Connector);
             if (((object as Node).id === 'helper' && !(obj.nodes[0] as Node).isLane && !(obj.nodes[0] as Node).isPhase)
                 || ((object as Node).id !== 'helper')) {
-                if ((((object instanceof Selector && object.width == this.undoElement.width && object.height == this.undoElement.height) || !(object instanceof Selector)) && ((object as NodeModel).offsetX !== this.undoElement.offsetX || (object as NodeModel).offsetY !== this.undoElement.offsetY ||
+                if ((((object instanceof Selector && object.width === this.undoElement.width && object.height === this.undoElement.height) || !(object instanceof Selector)) && ((object as NodeModel).offsetX !== this.undoElement.offsetX || (object as NodeModel).offsetY !== this.undoElement.offsetY ||
                     (object as ConnectorModel).sourcePoint !== (this.undoElement as any).sourcePoint
+                    // eslint-disable-next-line max-len
                     || (object as ConnectorModel).targetPoint !== (this.undoElement as any).targetPoint)) || this.isSelectionHasConnector(object)) {
                     if (args.source) {
                         newValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
@@ -881,12 +944,12 @@ export class MoveTool extends ToolBase {
                     }
                     if (!isPreventHistory) {
                         this.commandHandler.startGroupAction(); historyAdded = true;
-                        let entry: HistoryEntry = {
+                        const entry: HistoryEntry = {
                             type: 'PositionChanged',
                             redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal'
                         };
                         if ((obj.nodes[0] as Node) && (obj.nodes[0] as Node).processId) {
-                            let entry: HistoryEntry = {
+                            const entry: HistoryEntry = {
                                 type: 'SizeChanged', category: 'Internal',
                                 undoObject: this.undoParentElement, redoObject: this.commandHandler.getSubProcess(args.source)
                             };
@@ -896,7 +959,7 @@ export class MoveTool extends ToolBase {
                     }
                 }
             }
-            let snappedPoint: PointModel = this.commandHandler.snapPoint(this.prevPosition, this.currentPosition, 0, 0);
+            const snappedPoint: PointModel = this.commandHandler.snapPoint(this.prevPosition, this.currentPosition, 0, 0);
             this.commandHandler.removeSnap(); this.commandHandler.removeHighlighter();
             if (args.source && this.currentTarget && canAllowDrop(this.currentTarget) &&
                 this.commandHandler.isDroppable(args.source, this.currentTarget)) {
@@ -911,7 +974,7 @@ export class MoveTool extends ToolBase {
                     this.commandHandler.triggerEvent(DiagramEvent.drop, arg);
                 }
                 if (!arg.cancel && args.source && this.commandHandler.isParentAsContainer(this.currentTarget)) {
-                    let nodes: NodeModel[] = (args.source instanceof Selector) ? args.source.nodes : [args.source as NodeModel];
+                    const nodes: NodeModel[] = (args.source instanceof Selector) ? args.source.nodes : [args.source as NodeModel];
                     let isEndGroup: boolean = false;
                     for (let i: number = 0; i < nodes.length; i++) {
                         if (!nodes[i].container) {
@@ -936,7 +999,7 @@ export class MoveTool extends ToolBase {
             redoObject.nodes.push(cloneObject(args.source) as Node);
             args.portId = this.portId;
             obj = cloneObject(redoObject);
-            let entry: HistoryEntry = {
+            const entry: HistoryEntry = {
                 type: 'PortPositionChanged', objectId: this.portId,
                 redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal'
             };
@@ -965,7 +1028,10 @@ export class MoveTool extends ToolBase {
     }
 
     /* tslint:disable */
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args); let isSame: boolean = false; let object: NodeModel | ConnectorModel | SelectorModel;
         object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) ||
@@ -998,14 +1064,14 @@ export class MoveTool extends ToolBase {
         if (isSame && !isBlazor()) { this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg); }
         this.currentPosition = args.position;
         if (this.objectType !== 'Port') {
-            let x: number = this.currentPosition.x - this.prevPosition.x; let y: number = this.currentPosition.y - this.prevPosition.y;
-            let diffX: number = this.initialOffset.x + (this.currentPosition.x - this.prevPosition.x);
-            let diffY: number = this.initialOffset.y + (this.currentPosition.y - this.prevPosition.y);
+            const x: number = this.currentPosition.x - this.prevPosition.x; const y: number = this.currentPosition.y - this.prevPosition.y;
+            const diffX: number = this.initialOffset.x + (this.currentPosition.x - this.prevPosition.x);
+            const diffY: number = this.initialOffset.y + (this.currentPosition.y - this.prevPosition.y);
             this.commandHandler.dragOverElement(args, this.currentPosition);
             this.commandHandler.disConnect(args.source);
             this.commandHandler.removeSnap();
             let oldValues: SelectorModel; let newValues: SelectorModel;
-            let snappedPoint: PointModel = this.commandHandler.snapPoint(
+            const snappedPoint: PointModel = this.commandHandler.snapPoint(
                 this.prevPosition, this.currentPosition, diffX, diffY);
             this.initialOffset.x = diffX - snappedPoint.x;
             this.initialOffset.y = diffY - snappedPoint.y;
@@ -1032,14 +1098,14 @@ export class MoveTool extends ToolBase {
             }
             if (!arg.cancel && !this.canCancel) {
                 this.blocked = !this.commandHandler.dragSelectedObjects(snappedPoint.x, snappedPoint.y);
-                let blocked: boolean = !(this.commandHandler.mouseOver(this.currentElement, this.currentTarget, this.currentPosition));
+                const blocked: boolean = !(this.commandHandler.mouseOver(this.currentElement, this.currentTarget, this.currentPosition));
                 this.blocked = this.blocked || blocked;
             }
             this.commandHandler.removeStackHighlighter();
             this.commandHandler.renderStackHighlighter(args);
             if (this.currentTarget && (args.source !== this.currentTarget) &&
                 this.commandHandler.isDroppable(args.source, this.currentTarget) && (args.source as Node).id !== 'helper') {
-                let object: NodeModel = (args.source instanceof Selector) ? args.source.nodes[0] : args.source;
+                const object: NodeModel = (args.source instanceof Selector) ? args.source.nodes[0] : args.source;
                 if ((!this.commandHandler.isParentAsContainer(object, true))
                     && (object.shape.type !== 'SwimLane' && !(object.shape as SwimLaneModel).isPhase)) {
                     if ((this.currentTarget as Node).isLane) {
@@ -1052,15 +1118,15 @@ export class MoveTool extends ToolBase {
                 this.commandHandler.removeHighlighter();
             }
             if (this.commandHandler.canEnableDefaultTooltip()) {
-                let content: string = this.getTooltipContent(args.source as SelectorModel);
+                const content: string = this.getTooltipContent(args.source as SelectorModel);
                 this.commandHandler.showTooltip(args.source, args.position, content, 'MoveTool', this.isTooltipVisible);
                 this.isTooltipVisible = false;
             }
         } else {
-            let matrix: Matrix = identityMatrix(); let node: NodeModel = args.source as Node;
+            const matrix: Matrix = identityMatrix(); const node: NodeModel = args.source as Node;
             rotateMatrix(matrix, -node.rotateAngle, node.offsetX, node.offsetY);
-            let prevPosition: PointModel = transformPointByMatrix(matrix, { x: this.prevPosition.x, y: this.prevPosition.y });
-            let position: PointModel = transformPointByMatrix(matrix, { x: args.position.x, y: args.position.y });
+            const prevPosition: PointModel = transformPointByMatrix(matrix, { x: this.prevPosition.x, y: this.prevPosition.y });
+            const position: PointModel = transformPointByMatrix(matrix, { x: args.position.x, y: args.position.y });
             this.commandHandler.portDrag(args.source, args.sourceWrapper, position.x - prevPosition.x, position.y - prevPosition.y);
         }
         this.prevPosition = this.currentPosition;
@@ -1072,7 +1138,10 @@ export class MoveTool extends ToolBase {
         return 'X:' + Math.round(node.wrapper.bounds.x) + ' ' + 'Y:' + Math.round(node.wrapper.bounds.y);
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseLeave(args: MouseEventArgs): void {
         this.mouseUp(args);
     }
@@ -1100,16 +1169,19 @@ export class RotateTool extends ToolBase {
         super(commandHandler, true);
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseDown(args: MouseEventArgs): void {
         if (isBlazor()) {
             let object: NodeModel | ConnectorModel | SelectorModel;
             object = (this.commandHandler.renderContainerHelper(args.source) as Node) || args.source as Node | Selector;
-            let oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
-            let arg: IRotationEventArgs = {
+            const oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
+            const arg: IRotationEventArgs = {
                 source: cloneBlazorObject(args.source), state: 'Start', oldValue: oldValue, newValue: undefined, cancel: false
             };
-            let temparg: IRotationEventArgs = arg;
+            const temparg: IRotationEventArgs = arg;
             this.tempArgs = temparg;
             if (this.tempArgs && this.tempArgs.cancel) {
                 this.canCancel = true;
@@ -1118,10 +1190,10 @@ export class RotateTool extends ToolBase {
         this.undoElement = cloneObject(args.source);
 
         if (this.undoElement.nodes[0] && this.undoElement.nodes[0].children) {
-            let objects: (NodeModel | ConnectorModel)[] = [];
-            let nodes: (NodeModel | ConnectorModel)[] = this.commandHandler.getAllDescendants(this.undoElement.nodes[0], objects);
+            const objects: (NodeModel | ConnectorModel)[] = [];
+            const nodes: (NodeModel | ConnectorModel)[] = this.commandHandler.getAllDescendants(this.undoElement.nodes[0], objects);
             for (let i: number = 0; i < nodes.length; i++) {
-                let node: NodeModel = this.commandHandler.cloneChild(nodes[i].id);
+                const node: NodeModel = this.commandHandler.cloneChild(nodes[i].id);
                 this.childTable[nodes[i].id] = cloneObject(node);
             }
         }
@@ -1130,22 +1202,25 @@ export class RotateTool extends ToolBase {
         super.mouseDown(args);
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public async mouseUp(args: MouseEventArgs): Promise<void> {
         this.checkPropertyValue();
         if (isBlazor()) {
-            let diagram: string = 'diagram'; let blazorInterop: string = 'sfBlazor'; let blazor: string = 'Blazor';
+            const diagram: string = 'diagram'; const blazorInterop: string = 'sfBlazor'; const blazor: string = 'Blazor';
             this.commandHandler.updatePropertiesToBlazor(args, false);
             let object: NodeModel | ConnectorModel | SelectorModel;
             object = (this.commandHandler.renderContainerHelper(args.source) as Node) || args.source as Node | Selector;
-            let oldValue: SelectorModel = { rotateAngle: this.tempArgs.oldValue.rotateAngle };
-            let newValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
-            let arg: IRotationEventArgs = {
+            const oldValue: SelectorModel = { rotateAngle: this.tempArgs.oldValue.rotateAngle };
+            const newValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
+            const arg: IRotationEventArgs = {
                 state: 'Completed', oldValue: oldValue, newValue: newValue, cancel: false
             };
             let blazorArgs: void | object;
             if (window && window[blazor] && this.commandHandler[diagram].rotateChange) {
-                let eventObj: object = { 'EventName': 'rotateChange', args: JSON.stringify(arg) }
+                const eventObj: object = { 'EventName': 'rotateChange', args: JSON.stringify(arg) };
                 blazorArgs = await window[blazorInterop].updateBlazorDiagramEvents(eventObj, this.commandHandler[diagram]);
             }
             if (blazorArgs && (blazorArgs as IRotationEventArgs).cancel) {
@@ -1154,22 +1229,22 @@ export class RotateTool extends ToolBase {
             }
             if (this.canCancel) {
                 this.commandHandler.insertBlazorObject(args.source);
-                this.commandHandler.rotatePropertyChnage(this.tempArgs.oldValue.rotateAngle)
+                this.commandHandler.rotatePropertyChnage(this.tempArgs.oldValue.rotateAngle);
             }
         }
         let object: NodeModel | ConnectorModel | SelectorModel;
         object = (this.commandHandler.renderContainerHelper(args.source) as Node) || args.source as Node | Selector;
         if (this.undoElement.rotateAngle !== object.wrapper.rotateAngle) {
-            let oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
-            let arg: IRotationEventArgs = {
+            const oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
+            const arg: IRotationEventArgs = {
                 source: args.source, state: 'Completed', oldValue: oldValue,
                 newValue: oldValue, cancel: false
             };
             if (!isBlazor())
-                this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg);
+            {this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg);}
             let obj: SelectorModel;
             obj = cloneObject(args.source);
-            let entry: HistoryEntry = {
+            const entry: HistoryEntry = {
                 type: 'RotationChanged', redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal',
                 childTable: this.childTable
             };
@@ -1182,15 +1257,18 @@ export class RotateTool extends ToolBase {
         super.mouseUp(args);
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         let object: NodeModel | ConnectorModel | SelectorModel;
         object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Node | Selector;
         if (this.undoElement.rotateAngle === object.wrapper.rotateAngle) {
-            let oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
+            const oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
 
-            let arg: IRotationEventArgs = {
+            const arg: IRotationEventArgs = {
                 source: args.source, state: 'Start', oldValue: oldValue, newValue: oldValue, cancel: false
             };
             if (!isBlazor()) {
@@ -1199,18 +1277,18 @@ export class RotateTool extends ToolBase {
         }
 
         this.currentPosition = args.position;
-        let refPoint: PointModel = { x: object.wrapper.offsetX, y: object.wrapper.offsetY };
+        const refPoint: PointModel = { x: object.wrapper.offsetX, y: object.wrapper.offsetY };
         let angle: number = Point.findAngle(refPoint, this.currentPosition) + 90;
-        let snapAngle: number = this.commandHandler.snapAngle(angle);
+        const snapAngle: number = this.commandHandler.snapAngle(angle);
         angle = snapAngle !== 0 ? snapAngle : angle;
         angle = (angle + 360) % 360;
-        let oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
-        let newValue: SelectorModel = { rotateAngle: angle };
-        let arg: IRotationEventArgs = {
+        const oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
+        const newValue: SelectorModel = { rotateAngle: angle };
+        const arg: IRotationEventArgs = {
             source: args.source, state: 'Progress', oldValue: oldValue,
             newValue: newValue, cancel: false
         };
-        let arg1: IRotationEventArgs = {
+        const arg1: IRotationEventArgs = {
             source: cloneBlazorObject(args.source), state: 'Progress', oldValue: cloneBlazorObject(oldValue),
             newValue: cloneBlazorObject(newValue), cancel: arg.cancel
         };
@@ -1221,7 +1299,7 @@ export class RotateTool extends ToolBase {
             this.blocked = !(this.commandHandler.rotateSelectedItems(angle - object.wrapper.rotateAngle));
         }
         if (this.commandHandler.canEnableDefaultTooltip()) {
-            let content: string = this.getTooltipContent(args.source as SelectorModel);
+            const content: string = this.getTooltipContent(args.source as SelectorModel);
             this.commandHandler.showTooltip(args.source, args.position, content, 'RotateTool', this.isTooltipVisible);
             this.isTooltipVisible = false;
         }
@@ -1233,7 +1311,10 @@ export class RotateTool extends ToolBase {
         return Math.round((node.rotateAngle % 360)).toString() + '\xB0';
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseLeave(args: MouseEventArgs): void {
         this.mouseUp(args);
     }
@@ -1269,7 +1350,10 @@ export class ResizeTool extends ToolBase {
         this.corner = corner;
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseDown(args: MouseEventArgs): void {
         let oldValues: SelectorModel;
         if (isBlazor()) {
@@ -1286,7 +1370,7 @@ export class ResizeTool extends ToolBase {
                     width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height
                 };
             }
-            let arg: ISizeChangeEventArgs = {
+            const arg: ISizeChangeEventArgs = {
                 source: cloneBlazorObject(args.source), state: 'Start', oldValue: oldValues, newValue: cloneBlazorObject(this.currentElement), cancel: false
             };
             this.tempArgs = arg;
@@ -1295,10 +1379,10 @@ export class ResizeTool extends ToolBase {
         this.undoParentElement = this.commandHandler.getSubProcess(args.source);
         super.mouseDown(args);
         if (this.undoElement.nodes[0] && this.undoElement.nodes[0].children) {
-            let elements: (NodeModel | ConnectorModel)[] = [];
-            let nodes: (NodeModel | ConnectorModel)[] = this.commandHandler.getAllDescendants(this.undoElement.nodes[0], elements);
+            const elements: (NodeModel | ConnectorModel)[] = [];
+            const nodes: (NodeModel | ConnectorModel)[] = this.commandHandler.getAllDescendants(this.undoElement.nodes[0], elements);
             for (let i: number = 0; i < nodes.length; i++) {
-                let node: NodeModel = this.commandHandler.cloneChild(nodes[i].id);
+                const node: NodeModel = this.commandHandler.cloneChild(nodes[i].id);
                 this.childTable[nodes[i].id] = cloneObject(node);
             }
         }
@@ -1311,31 +1395,37 @@ export class ResizeTool extends ToolBase {
 
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @param isPreventHistory
+     * @param args
+     * @param isPreventHistory
+     * @private
+     */
     public async mouseUp(args: MouseEventArgs, isPreventHistory?: boolean): Promise<boolean> {
         if (isBlazor()) {
-            let diagram: string = 'diagram'; let blazorInterop: string = 'sfBlazor'; let blazor: string = 'Blazor';
+            const diagram: string = 'diagram'; const blazorInterop: string = 'sfBlazor'; const blazor: string = 'Blazor';
             this.commandHandler.updatePropertiesToBlazor(args, false);
-            let obj: SelectorModel = cloneObject(args.source);
-            let oldValues: SelectorModel = {
+            const obj: SelectorModel = cloneObject(args.source);
+            const oldValues: SelectorModel = {
                 width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height,
                 offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY
             };
-            let arg: ISizeChangeEventArgs = {
+            const arg: ISizeChangeEventArgs = {
                 oldValue: this.tempArgs.oldValue, newValue: oldValues, cancel: false,
                 state: 'Completed'
             };
             if (!this.canCancel) {
                 let blazorArgs: void | object;
                 if (window && window[blazor] && this.commandHandler[diagram].sizeChange) {
-                    let eventObj: object = { 'EventName': 'sizeChange', args: JSON.stringify(arg) }
+                    const eventObj: object = { 'EventName': 'sizeChange', args: JSON.stringify(arg) };
                     blazorArgs = await window[blazorInterop].updateBlazorDiagramEvents(eventObj, this.commandHandler[diagram]);
                 }
                 if (blazorArgs && (blazorArgs as ISizeChangeEventArgs).cancel) {
                     this.commandHandler.enableCloneObject(true); this.commandHandler.ismouseEvents(true);
                     this.commandHandler.insertBlazorObject(args.source);
-                    let scaleWidth: number = this.tempArgs.oldValue.width / obj.wrapper.actualSize.width;
-                    let scaleHeight: number = this.tempArgs.oldValue.height / obj.wrapper.actualSize.height;
+                    const scaleWidth: number = this.tempArgs.oldValue.width / obj.wrapper.actualSize.width;
+                    const scaleHeight: number = this.tempArgs.oldValue.height / obj.wrapper.actualSize.height;
                     this.commandHandler.scaleSelectedItems(scaleWidth, scaleHeight, this.getPivot(this.corner));
                 }
             }
@@ -1350,21 +1440,21 @@ export class ResizeTool extends ToolBase {
         if ((this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY ||
             this.undoElement.width !== object.wrapper.bounds.width || this.undoElement.height !== object.wrapper.bounds.height)) {
             if (!isBlazor()) {
-                let deltaValues: Rect = this.updateSize(args.source, this.currentPosition, this.prevPosition, this.corner, this.initialBounds);
+                const deltaValues: Rect = this.updateSize(args.source, this.currentPosition, this.prevPosition, this.corner, this.initialBounds);
                 this.blocked = this.scaleObjects(
                     deltaValues.width, deltaValues.height, this.corner, this.currentPosition, this.prevPosition, object);
-                let oldValue: SelectorModel = {
+                const oldValue: SelectorModel = {
                     offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY,
                     width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height
                 };
-                let arg: ISizeChangeEventArgs = {
+                const arg: ISizeChangeEventArgs = {
                     source: cloneBlazorObject(args.source), state: 'Completed',
                     oldValue: oldValue, newValue: oldValue, cancel: false
                 };
                 this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg);
             }
-            let obj: SelectorModel = cloneObject(args.source);
-            let entry: HistoryEntry = {
+            const obj: SelectorModel = cloneObject(args.source);
+            const entry: HistoryEntry = {
                 type: 'SizeChanged', redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal',
                 childTable: this.childTable
             };
@@ -1372,7 +1462,7 @@ export class ResizeTool extends ToolBase {
                 this.commandHandler.startGroupAction();
                 this.commandHandler.addHistoryEntry(entry);
                 if ((obj.nodes[0] as Node) && (obj.nodes[0] as Node).processId) {
-                    let entry: HistoryEntry = {
+                    const entry: HistoryEntry = {
                         type: 'SizeChanged', redoObject: this.commandHandler.getSubProcess(args.source),
                         undoObject: this.undoParentElement, category: 'Internal'
                     };
@@ -1386,18 +1476,21 @@ export class ResizeTool extends ToolBase {
         return !this.blocked;
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         let object: NodeModel | ConnectorModel | SelectorModel;
         object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Node | Selector;
         if (this.undoElement.offsetX === object.wrapper.offsetX && this.undoElement.offsetY === object.wrapper.offsetY) {
-            let oldValue: SelectorModel = {
+            const oldValue: SelectorModel = {
                 offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY,
                 width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height
             };
 
-            let arg: ISizeChangeEventArgs = {
+            const arg: ISizeChangeEventArgs = {
                 source: args.source, state: 'Start', oldValue: oldValue, newValue: this.currentElement, cancel: false
             };
             if (!isBlazor()) {
@@ -1405,26 +1498,29 @@ export class ResizeTool extends ToolBase {
             }
         }
         this.currentPosition = args.position;
-        let x: number = this.currentPosition.x - this.startPosition.x;
-        let y: number = this.currentPosition.y - this.startPosition.y;
+        const x: number = this.currentPosition.x - this.startPosition.x;
+        const y: number = this.currentPosition.y - this.startPosition.y;
         let changes: PointModel = { x: x, y: y };
         changes = rotatePoint(-this.currentElement.wrapper.rotateAngle, undefined, undefined, changes);
-        let sx: number = (this.currentElement.wrapper.actualSize.width + changes.x) / this.currentElement.wrapper.actualSize.width;
-        let sy: number = (this.currentElement.wrapper.actualSize.height + changes.y) / this.currentElement.wrapper.actualSize.height;
+        const sx: number = (this.currentElement.wrapper.actualSize.width + changes.x) / this.currentElement.wrapper.actualSize.width;
+        const sy: number = (this.currentElement.wrapper.actualSize.height + changes.y) / this.currentElement.wrapper.actualSize.height;
         changes = this.getChanges(changes);
         this.commandHandler.removeSnap();
-        let deltaValues: Rect = this.updateSize(args.source, this.startPosition, this.currentPosition, this.corner, this.initialBounds);
+        const deltaValues: Rect = this.updateSize(args.source, this.startPosition, this.currentPosition, this.corner, this.initialBounds);
         this.blocked = !(this.scaleObjects(
             deltaValues.width, deltaValues.height, this.corner, this.startPosition, this.currentPosition, object));
         if (this.commandHandler.canEnableDefaultTooltip()) {
-            let content: string = this.getTooltipContent(args.source as SelectorModel);
+            const content: string = this.getTooltipContent(args.source as SelectorModel);
             this.commandHandler.showTooltip(args.source, args.position, content, 'ResizeTool', this.isTooltipVisible);
             this.isTooltipVisible = false;
         }
         this.prevPosition = this.currentPosition;
         return !this.blocked;
     }
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseLeave(args: MouseEventArgs): void {
         this.mouseUp(args);
     }
@@ -1434,22 +1530,22 @@ export class ResizeTool extends ToolBase {
 
     private getChanges(change: PointModel): PointModel {
         switch (this.corner) {
-            case 'ResizeEast':
-                return { x: change.x, y: 0 };
-            case 'ResizeSouthEast':
-                return change;
-            case 'ResizeSouth':
-                return { x: 0, y: change.y };
-            case 'ResizeNorth':
-                return { x: 0, y: -change.y };
-            case 'ResizeNorthEast':
-                return { x: change.x, y: -change.y };
-            case 'ResizeNorthWest':
-                return { x: -change.x, y: -change.y };
-            case 'ResizeWest':
-                return { x: - change.x, y: 0 };
-            case 'ResizeSouthWest':
-                return { x: - change.x, y: change.y };
+        case 'ResizeEast':
+            return { x: change.x, y: 0 };
+        case 'ResizeSouthEast':
+            return change;
+        case 'ResizeSouth':
+            return { x: 0, y: change.y };
+        case 'ResizeNorth':
+            return { x: 0, y: -change.y };
+        case 'ResizeNorthEast':
+            return { x: change.x, y: -change.y };
+        case 'ResizeNorthWest':
+            return { x: -change.x, y: -change.y };
+        case 'ResizeWest':
+            return { x: - change.x, y: 0 };
+        case 'ResizeSouthWest':
+            return { x: - change.x, y: change.y };
         }
         return change;
     }
@@ -1459,6 +1555,43 @@ export class ResizeTool extends ToolBase {
 
     /**
      * Aspect ratio used to resize the width or height based on resizing the height or width
+     *
+     * @param deltaWidth
+     * @param deltaHeight
+     * @param corner
+     * @param startPoint
+     * @param endPoint
+     * @param source
+     * @param deltaWidth
+     * @param deltaHeight
+     * @param corner
+     * @param startPoint
+     * @param endPoint
+     * @param source
+     * @param deltaWidth
+     * @param deltaHeight
+     * @param corner
+     * @param startPoint
+     * @param endPoint
+     * @param source
+     * @param deltaWidth
+     * @param deltaHeight
+     * @param corner
+     * @param startPoint
+     * @param endPoint
+     * @param source
+     * @param deltaWidth
+     * @param deltaHeight
+     * @param corner
+     * @param startPoint
+     * @param endPoint
+     * @param source
+     * @param deltaWidth
+     * @param deltaHeight
+     * @param corner
+     * @param startPoint
+     * @param endPoint
+     * @param source
      */
     private scaleObjects(
         deltaWidth: number, deltaHeight: number, corner: string, startPoint: PointModel, endPoint: PointModel,
@@ -1475,12 +1608,12 @@ export class ResizeTool extends ToolBase {
                 deltaHeight = deltaWidth = 0;
             }
         }
-        let oldValue: SelectorModel = {
+        const oldValue: SelectorModel = {
             offsetX: source.offsetX, offsetY: source.offsetY,
             width: source.width, height: source.height
         };
         this.blocked = this.commandHandler.scaleSelectedItems(deltaWidth, deltaHeight, this.getPivot(this.corner));
-        let newValue: SelectorModel = {
+        const newValue: SelectorModel = {
             offsetX: source.offsetX, offsetY: source.offsetY,
             width: source.width, height: source.height
         };
@@ -1517,18 +1650,24 @@ export class NodeDrawingTool extends ToolBase {
         this.sourceObject = sourceObject;
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseDown(args: MouseEventArgs): void {
         super.mouseDown(args);
         this.inAction = true;
         this.commandHandler.setFocus();
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         let checkBoundaryConstraints: boolean;
-        let node: NodeModel = {
+        const node: NodeModel = {
             offsetX: this.currentPosition.x, width: 3, height: 3,
             offsetY: this.currentPosition.y
         };
@@ -1536,7 +1675,7 @@ export class NodeDrawingTool extends ToolBase {
             this.drawingObject = this.commandHandler.drawObject(node as Node);
         }
         if (this.inAction && Point.equals(this.currentPosition, this.prevPosition) === false) {
-            let rect: Rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
+            const rect: Rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
             checkBoundaryConstraints = this.commandHandler.checkBoundaryConstraints(undefined, undefined, rect);
             if (checkBoundaryConstraints) {
                 this.commandHandler.updateNodeDimension(this.drawingObject, rect);
@@ -1545,11 +1684,14 @@ export class NodeDrawingTool extends ToolBase {
         return checkBoundaryConstraints;
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseUp(args: MouseEventArgs): void {
         this.checkPropertyValue();
         let checkBoundaryConstraints: boolean;
-        let rect: Rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
+        const rect: Rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
         checkBoundaryConstraints = this.commandHandler.checkBoundaryConstraints(undefined, undefined, rect);
         if (this.drawingObject && this.drawingObject instanceof Node) {
             this.commandHandler.addObjectToDiagram(this.drawingObject);
@@ -1565,7 +1707,10 @@ export class NodeDrawingTool extends ToolBase {
         super.endAction();
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseLeave(args: MouseEventArgs): void {
         if (this.inAction) {
             this.mouseUp(args);
@@ -1587,19 +1732,25 @@ export class ConnectorDrawingTool extends ConnectTool {
         this.sourceObject = sourceObject;
     }
 
-    /** @private */
+    /**
+     * @param args
+     * @private
+     */
     public async mouseDown(args: MouseEventArgs): Promise<void> {
         super.mouseDown(args);
         this.inAction = true;
         this.commandHandler.setFocus();
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseMove(args: MouseEventArgs): boolean {
         this.commandHandler.enableServerDataBinding(false);
         if (this.inAction) {
-            let connector: ConnectorModel = {
-                sourcePoint: this.currentPosition, targetPoint: this.currentPosition,
+            const connector: ConnectorModel = {
+                sourcePoint: this.currentPosition, targetPoint: this.currentPosition
             };
             if (!this.drawingObject) {
                 this.drawingObject = this.commandHandler.drawObject(connector as Connector);
@@ -1623,7 +1774,10 @@ export class ConnectorDrawingTool extends ConnectTool {
 
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public async mouseUp(args: MouseEventArgs): Promise<void> {
         this.commandHandler.enableServerDataBinding(false);
         this.checkPropertyValue();
@@ -1642,7 +1796,10 @@ export class ConnectorDrawingTool extends ConnectTool {
         super.endAction();
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseLeave(args: MouseEventArgs): void {
         if (this.inAction) {
             this.mouseUp(args);
@@ -1660,11 +1817,14 @@ export class TextDrawingTool extends ToolBase {
     constructor(commandHandler: CommandHandler) {
         super(commandHandler, true);
     }
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseDown(args: MouseEventArgs): void {
         super.mouseDown(args);
         this.commandHandler.clearSelection();
-        let node: NodeModel = {
+        const node: NodeModel = {
             shape: { type: 'Text' },
             offsetX: this.currentPosition.x,
             offsetY: this.currentPosition.y
@@ -1674,11 +1834,14 @@ export class TextDrawingTool extends ToolBase {
         }
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         if (!this.drawingNode) {
-            let node: NodeModel = {
+            const node: NodeModel = {
                 shape: { type: 'Text' }, offsetX: this.currentPosition.x, width: 30, height: 30,
                 // EJ2-42640-Text size is different if Text Node is created over another diagram commited by sivakumar sekar
                 // commanded style property and added it after the object is drawn
@@ -1694,13 +1857,16 @@ export class TextDrawingTool extends ToolBase {
             this.drawingNode.style.fill = 'transparent';
         }
         if (this.inAction && Point.equals(this.currentPosition, this.prevPosition) === false) {
-            let rect: Rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
+            const rect: Rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
             this.commandHandler.updateNodeDimension(this.drawingNode, rect);
         }
         return !this.blocked;
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseUp(args: MouseEventArgs): void {
         this.checkPropertyValue();
         if (this.drawingNode) {
@@ -1734,28 +1900,34 @@ export class ZoomPanTool extends ToolBase {
         this.zooming = zoom;
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseDown(args: MouseEventArgs): void {
         super.mouseDown(args);
         this.inAction = true;
         this.commandHandler.setBlazorDiagramProps(true);
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         if (this.inAction) {
             if (!this.zooming && Point.equals(this.currentPosition, this.prevPosition) === false) {
-                let difX: number = this.currentPosition.x - this.prevPosition.x;
-                let difY: number = this.currentPosition.y - this.prevPosition.y;
+                const difX: number = this.currentPosition.x - this.prevPosition.x;
+                const difY: number = this.currentPosition.y - this.prevPosition.y;
                 this.commandHandler.scroll(difX, difY, this.currentPosition);
             } else if (args.moveTouches && args.moveTouches.length && args.moveTouches.length >= 2) {
-                let startTouch0: ITouches = args.startTouches[0];
-                let startTouch1: ITouches = args.startTouches[1];
-                let moveTouch0: ITouches = args.moveTouches[0];
-                let moveTouch1: ITouches = args.moveTouches[1];
-                let scale: number = this.getDistance(moveTouch0, moveTouch1) / this.getDistance(startTouch0, startTouch1);
-                let focusPoint: PointModel = args.position;
+                const startTouch0: ITouches = args.startTouches[0];
+                const startTouch1: ITouches = args.startTouches[1];
+                const moveTouch0: ITouches = args.moveTouches[0];
+                const moveTouch1: ITouches = args.moveTouches[1];
+                const scale: number = this.getDistance(moveTouch0, moveTouch1) / this.getDistance(startTouch0, startTouch1);
+                const focusPoint: PointModel = args.position;
                 this.commandHandler.zoom(scale, 0, 0, focusPoint);
                 this.updateTouch(startTouch0, moveTouch0);
                 this.updateTouch(startTouch1, moveTouch1);
@@ -1765,7 +1937,10 @@ export class ZoomPanTool extends ToolBase {
         return !this.blocked;
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseUp(args: MouseEventArgs): void {
         this.commandHandler.setBlazorDiagramProps(false);
         this.checkPropertyValue();
@@ -1780,8 +1955,8 @@ export class ZoomPanTool extends ToolBase {
     }
 
     private getDistance(touch1: ITouches, touch2: ITouches): number {
-        let x: number = touch2.pageX - touch1.pageX;
-        let y: number = touch2.pageY - touch1.pageY;
+        const x: number = touch2.pageX - touch1.pageX;
+        const y: number = touch2.pageY - touch1.pageY;
         return Math.sqrt((x * x) + (y * y));
     }
 
@@ -1799,7 +1974,10 @@ export class ExpandTool extends ToolBase {
         super(commandHandler, true);
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseUp(args: MouseEventArgs): void {
         this.checkPropertyValue();
         this.commandHandler.initExpand(args);
@@ -1816,10 +1994,13 @@ export class LabelTool extends ToolBase {
         super(commandHandler, true);
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseUp(args: MouseEventArgs): void {
         this.checkPropertyValue();
-        let win: Window = window.open((args.sourceWrapper as TextElement).hyperlink.link, '_blank');
+        const win: Window = window.open((args.sourceWrapper as TextElement).hyperlink.link, '_blank');
         win.focus();
         super.mouseUp(args);
     }
@@ -1835,13 +2016,16 @@ export class PolygonDrawingTool extends ToolBase {
     constructor(commandHandler: CommandHandler) {
         super(commandHandler, true);
     }
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseDown(args: MouseEventArgs): void {
         super.mouseDown(args);
         this.inAction = true;
         if (!this.drawingObject) {
             this.startPoint = { x: this.startPosition.x, y: this.startPosition.y };
-            let node: NodeModel = {
+            const node: NodeModel = {
                 offsetX: this.currentPosition.x,
                 offsetY: this.currentPosition.y,
                 width: 5, height: 5,
@@ -1857,25 +2041,28 @@ export class PolygonDrawingTool extends ToolBase {
             this.drawingObject = this.commandHandler.drawObject(node as Node);
         } else {
             let pt: PointModel;
-            let obj: BasicShapeModel = (this.drawingObject.shape as BasicShapeModel);
+            const obj: BasicShapeModel = (this.drawingObject.shape as BasicShapeModel);
             pt = obj.points[obj.points.length - 1];
             pt = { x: pt.x, y: pt.y };
             (this.drawingObject.shape as BasicShapeModel).points.push(pt);
         }
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         if (this.inAction) {
-            let obj: BasicShapeModel = (this.drawingObject.shape as BasicShapeModel);
+            const obj: BasicShapeModel = (this.drawingObject.shape as BasicShapeModel);
             if (this.drawingObject && this.currentPosition) {
                 obj.points[obj.points.length - 1].x = this.currentPosition.x;
                 obj.points[obj.points.length - 1].y = this.currentPosition.y;
                 (this.drawingObject.wrapper.children[0] as PathElement).data = getPolygonPath(
                     (this.drawingObject.shape as BasicShapeModel).points);
                 if (this.inAction && Point.equals(this.currentPosition, this.prevPosition) === false) {
-                    let region: Rect = Rect.toBounds((this.drawingObject.shape as BasicShapeModel).points);
+                    const region: Rect = Rect.toBounds((this.drawingObject.shape as BasicShapeModel).points);
                     this.commandHandler.updateNodeDimension(this.drawingObject, region);
                 }
             }
@@ -1883,7 +2070,13 @@ export class PolygonDrawingTool extends ToolBase {
         return true;
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @param dblClickArgs
+     * @param args
+     * @param dblClickArgs
+     * @private
+     */
     public mouseUp(args: MouseEventArgs, dblClickArgs?: IDoubleClickEventArgs | IClickEventArgs): void {
         this.checkPropertyValue();
         super.mouseMove(args);
@@ -1896,7 +2089,10 @@ export class PolygonDrawingTool extends ToolBase {
         this.endAction();
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseWheel(args: MouseEventArgs): void {
         super.mouseWheel(args);
         this.mouseMove(args as MouseEventArgs);
@@ -1917,22 +2113,28 @@ export class PolyLineDrawingTool extends ToolBase {
     constructor(commandHandler: CommandHandler) {
         super(commandHandler, true);
     }
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         if (this.inAction) {
-            let obj: Connector = (this.drawingObject as Connector);
+            const obj: Connector = (this.drawingObject as Connector);
             obj.targetPoint = this.currentPosition;
             this.commandHandler.updateConnectorPoints(obj);
         }
         return true;
     }
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseDown(args: MouseEventArgs): void {
         super.mouseDown(args);
         this.inAction = true;
         if (!this.drawingObject) {
-            let connector: ConnectorModel = {
+            const connector: ConnectorModel = {
                 id: 'Connector',
                 type: 'Straight',
                 sourcePoint: this.currentPosition,
@@ -1940,24 +2142,30 @@ export class PolyLineDrawingTool extends ToolBase {
             };
             this.drawingObject = this.commandHandler.drawObject(connector as Connector);
         } else {
-            let drawObject: Connector = this.drawingObject as Connector;
+            const drawObject: Connector = this.drawingObject as Connector;
             let segment: StraightSegmentModel;
             segment = new StraightSegment(drawObject, 'segments', { type: 'Straight' }, true);
             segment.point = this.currentPosition;
             drawObject.segments[drawObject.segments.length - 1] = segment;
         }
     }
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseWheel(args: MouseEventArgs): void {
         super.mouseWheel(args); this.mouseMove(args as MouseEventArgs);
     }
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseUp(args: MouseEventArgs): void {
         this.checkPropertyValue();
         super.mouseMove(args);
         if (this.inAction) {
             if (this.drawingObject) {
-                let drawObject: ConnectorModel = this.drawingObject as ConnectorModel;
+                const drawObject: ConnectorModel = this.drawingObject as ConnectorModel;
                 (drawObject.segments[drawObject.segments.length - 1] as StraightSegment).point = { x: 0, y: 0 };
                 this.commandHandler.addObjectToDiagram(this.drawingObject);
             }
@@ -1976,23 +2184,29 @@ export class LabelDragTool extends ToolBase {
     constructor(commandHandler: CommandHandler) {
         super(commandHandler, true);
     }
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseDown(args: MouseEventArgs): void {
         this.inAction = true;
         this.undoElement = cloneObject(args.source);
         this.annotationId = args.sourceWrapper.id;
         super.mouseDown(args);
     }
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         let difx: number = this.currentPosition.x - this.prevPosition.x;
         let dify: number = this.currentPosition.y - this.prevPosition.y;
-        let node: NodeModel = args.source;
+        const node: NodeModel = args.source;
         if (node instanceof Node) {
-            let matrix: Matrix = identityMatrix();
+            const matrix: Matrix = identityMatrix();
             rotateMatrix(matrix, -node.rotateAngle, 0, 0);
-            let diff: PointModel = transformPointByMatrix(matrix, { x: difx, y: dify });
+            const diff: PointModel = transformPointByMatrix(matrix, { x: difx, y: dify });
             difx = diff.x; dify = diff.y;
         }
         if (this.inAction) {
@@ -2002,12 +2216,15 @@ export class LabelDragTool extends ToolBase {
         this.prevPosition = this.currentPosition;
         return !this.blocked;
     }
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseUp(args: MouseEventArgs): void {
         this.checkPropertyValue();
-        let redoValue: NodeModel | ConnectorModel = args.source;
+        const redoValue: NodeModel | ConnectorModel = args.source;
         this.inAction = false;
-        let entryValue: HistoryEntry = {
+        const entryValue: HistoryEntry = {
             type: 'AnnotationPropertyChanged',
             objectId: this.annotationId, undoObject: cloneObject(this.undoElement),
             category: 'Internal', redoObject: cloneObject(redoValue)
@@ -2015,7 +2232,10 @@ export class LabelDragTool extends ToolBase {
         this.commandHandler.addHistoryEntry(entryValue);
         super.mouseUp(args);
     }
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseLeave(args: MouseEventArgs): void {
         this.mouseUp(args);
     }
@@ -2028,14 +2248,17 @@ export class LabelResizeTool extends ToolBase {
         super(commandHandler, true);
         this.corner = corner;
     }
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseDown(args: MouseEventArgs): void {
         this.inAction = true;
-        let object: NodeModel | ConnectorModel = ((args.source as Selector).nodes.length) ?
+        const object: NodeModel | ConnectorModel = ((args.source as Selector).nodes.length) ?
             (args.source as Selector).nodes[0] : (args.source as Selector).connectors[0];
         this.annotationId = args.source.wrapper.children[0].id;
         this.undoElement = cloneObject(object);
-        let annotation: DiagramElement = args.source.wrapper.children[0];
+        const annotation: DiagramElement = args.source.wrapper.children[0];
         this.initialBounds = {
             x: annotation.offsetX,
             y: annotation.offsetY,
@@ -2044,7 +2267,10 @@ export class LabelResizeTool extends ToolBase {
         } as Rect;
         super.mouseDown(args);
     }
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         if (this.inAction) {
@@ -2052,41 +2278,50 @@ export class LabelResizeTool extends ToolBase {
         }
         return !this.blocked;
     }
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseUp(args: MouseEventArgs): void {
         this.checkPropertyValue();
-        let redoObject: NodeModel | ConnectorModel = ((args.source as Selector).nodes.length) ?
+        const redoObject: NodeModel | ConnectorModel = ((args.source as Selector).nodes.length) ?
             (args.source as Selector).nodes[0] : (args.source as Selector).connectors[0];
         this.inAction = false;
-        let entry: HistoryEntry = {
+        const entry: HistoryEntry = {
             type: 'AnnotationPropertyChanged', objectId: this.annotationId,
             redoObject: cloneObject(redoObject), undoObject: cloneObject(this.undoElement), category: 'Internal'
         };
         this.commandHandler.addHistoryEntry(entry);
         super.mouseUp(args);
     }
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseLeave(args: MouseEventArgs): void {
         this.mouseUp(args);
     }
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public resizeObject(args: MouseEventArgs): void {
         let object: NodeModel | ConnectorModel;
         object = ((args.source as Selector).nodes.length) ? (args.source as Selector).nodes[0] : (args.source as Selector).connectors[0];
-        let textElement: DiagramElement = args.source.wrapper.children[0];
+        const textElement: DiagramElement = args.source.wrapper.children[0];
         let deltaWidth: number; let deltaHeight: number;
-        let center: PointModel = { x: textElement.offsetX, y: textElement.offsetY };
+        const center: PointModel = { x: textElement.offsetX, y: textElement.offsetY };
         let rotateAngle: number = textElement.rotateAngle;
         rotateAngle += (object instanceof Node) ? object.rotateAngle : 0; rotateAngle = (rotateAngle + 360) % 360;
-        let trans: Matrix = identityMatrix();
+        const trans: Matrix = identityMatrix();
         rotateMatrix(trans, rotateAngle, center.x, center.y);
-        let corner: string = (this.corner as string).slice(5);
-        let pivot: Rect = this.updateSize(textElement, this.startPosition, this.currentPosition, corner, this.initialBounds, rotateAngle);
-        let x: number = textElement.offsetX - textElement.actualSize.width * textElement.pivot.x;
-        let y: number = textElement.offsetY - textElement.actualSize.height * textElement.pivot.y;
+        const corner: string = (this.corner as string).slice(5);
+        const pivot: Rect = this.updateSize(textElement, this.startPosition, this.currentPosition, corner, this.initialBounds, rotateAngle);
+        const x: number = textElement.offsetX - textElement.actualSize.width * textElement.pivot.x;
+        const y: number = textElement.offsetY - textElement.actualSize.height * textElement.pivot.y;
         let pivotPoint: PointModel = this.getPivot(corner);
         pivotPoint = { x: x + textElement.actualSize.width * pivotPoint.x, y: y + textElement.actualSize.height * pivotPoint.y };
-        let point: PointModel = transformPointByMatrix(trans, pivotPoint);
+        const point: PointModel = transformPointByMatrix(trans, pivotPoint);
         pivot.x = point.x; pivot.y = point.y;
         deltaWidth = pivot.width; deltaHeight = pivot.height;
         deltaWidth = (deltaWidth < 0) ? 1 : deltaWidth;
@@ -2101,21 +2336,27 @@ export class LabelRotateTool extends ToolBase {
     constructor(commandHandler: CommandHandler) {
         super(commandHandler, true);
     }
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseDown(args: MouseEventArgs): void {
         this.inAction = true;
         this.annotationId = args.source.wrapper.children[0].id;
-        let object: NodeModel | ConnectorModel = ((args.source as Selector).nodes.length) ?
+        const object: NodeModel | ConnectorModel = ((args.source as Selector).nodes.length) ?
             (args.source as Selector).nodes[0] : (args.source as Selector).connectors[0];
         this.undoElement = cloneObject(object);
         super.mouseDown(args);
     }
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         if (args.source) {
             if (this.inAction) {
-                let object: NodeModel | ConnectorModel = (args.source as Selector).nodes[0] ? (args.source as Selector).nodes[0] :
+                const object: NodeModel | ConnectorModel = (args.source as Selector).nodes[0] ? (args.source as Selector).nodes[0] :
                     (args.source as Selector).connectors[0];
                 let annotation: ShapeAnnotation | PathAnnotation;
                 annotation = ((args.source as Selector).annotation) as ShapeAnnotation | PathAnnotation;
@@ -2128,13 +2369,16 @@ export class LabelRotateTool extends ToolBase {
         return !this.blocked;
     }
 
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseUp(args: MouseEventArgs): void {
         this.checkPropertyValue();
         this.inAction = false;
-        let redoEntry: NodeModel | ConnectorModel = ((args.source as Selector).nodes.length) ?
+        const redoEntry: NodeModel | ConnectorModel = ((args.source as Selector).nodes.length) ?
             (args.source as Selector).nodes[0] : (args.source as Selector).connectors[0];
-        let entryObject: HistoryEntry = {
+        const entryObject: HistoryEntry = {
             type: 'AnnotationPropertyChanged', objectId: this.annotationId,
             redoObject: cloneObject(redoEntry),
             undoObject: cloneObject(this.undoElement), category: 'Internal'
@@ -2142,7 +2386,10 @@ export class LabelRotateTool extends ToolBase {
         this.commandHandler.addHistoryEntry(entryObject);
         super.mouseUp(args);
     }
-    /**   @private  */
+    /**
+     * @param args
+     * @private
+     */
     public mouseLeave(args: MouseEventArgs): void {
         this.mouseUp(args);
     }

@@ -12,13 +12,15 @@ export class Resize {
     protected touchMoveEvent: string;
     protected touchEndEvent: string;
 
-    constructor(parent?: IRichTextEditor) {
+    private constructor(parent?: IRichTextEditor) {
         this.parent = parent;
         this.addEventListener();
     }
 
     private addEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.on(events.initialEnd, this.renderResizable, this);
         this.parent.on(events.destroy, this.destroy, this);
     }
@@ -41,7 +43,7 @@ export class Resize {
         }
         this.wireResizeEvents();
         this.parent.notify(events.resizeInitialized, {});
-        let args: ResizeArgs = isBlazor() ? { requestType: 'editor' } : { event: e, requestType: 'editor' };
+        const args: ResizeArgs = isBlazor() ? { requestType: 'editor' } : { event: e, requestType: 'editor' };
         this.parent.trigger(events.resizeStart, args, (resizeStartArgs: ResizeArgs) => {
             if (resizeStartArgs.cancel) {
                 this.unwireResizeEvents();
@@ -50,13 +52,13 @@ export class Resize {
     }
 
     private performResize(e?: MouseEvent | TouchEvent | PointerEvent): void {
-        let args: ResizeArgs = isBlazor() ? { requestType: 'editor' } : { event: e, requestType: 'editor' };
+        const args: ResizeArgs = isBlazor() ? { requestType: 'editor' } : { event: e, requestType: 'editor' };
         this.parent.trigger(events.onResize, args, (resizingArgs: ResizeArgs) => {
             if (resizingArgs.cancel) {
                 this.unwireResizeEvents();
             }
         });
-        let boundRect: ClientRect = this.parent.element.getBoundingClientRect();
+        const boundRect: ClientRect = this.parent.element.getBoundingClientRect();
         if (this.isMouseEvent(e)) {
             this.parent.element.style.height = (<MouseEvent>e).clientY - boundRect.top + 'px';
             this.parent.element.style.width = (<MouseEvent>e).clientX - boundRect.left + 'px';
@@ -74,7 +76,7 @@ export class Resize {
     private stopResize(e?: MouseEvent | TouchEvent | PointerEvent): void {
         this.parent.refreshUI();
         this.unwireResizeEvents();
-        let args: ResizeArgs = isBlazor() ? { requestType: 'editor' } : { event: e, requestType: 'editor' };
+        const args: ResizeArgs = isBlazor() ? { requestType: 'editor' } : { event: e, requestType: 'editor' };
         this.parent.trigger(events.resizeStop, args);
     }
 
@@ -112,7 +114,9 @@ export class Resize {
     }
 
     private removeEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.off(events.initialEnd, this.renderResizable);
         this.parent.element.classList.remove(classes.CLS_RTE_RES_CNT);
         EventHandler.remove(this.resizer, 'mousedown', this.resizeStart);
@@ -125,6 +129,9 @@ export class Resize {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {void}
+     * @hidden
      */
     private getModuleName(): string {
         return 'resize';

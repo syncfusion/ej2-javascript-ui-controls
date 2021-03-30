@@ -3,6 +3,7 @@
  * * line
  * * column
  * * area
+ *
  * @private
  */
 export type RangeNavigatorType =
@@ -16,6 +17,7 @@ export type RangeNavigatorType =
  * It defines type of thump in the range navigator.
  * * circle
  * * rectangle
+ *
  * @private
  */
 export type ThumbType =
@@ -27,6 +29,7 @@ export type ThumbType =
  * It defines display mode for the range navigator tooltip.
  * * always
  * * OnDemand
+ *
  * @private
  */
 export type TooltipDisplayMode =
@@ -40,6 +43,7 @@ export type TooltipDisplayMode =
  * * category
  * * dateTime
  * * logarithmic
+ *
  * @private
  */
 export type RangeValueType =
@@ -55,6 +59,7 @@ export type RangeValueType =
  * *Near
  * *Middle
  * *Far
+ *
  * @private
  */
 export type LabelAlignment =
@@ -65,11 +70,11 @@ export type LabelAlignment =
     /** Far Alignment */
     'Far';
 
-/** 
+/**
  * Defines the intersect action. They are
  * * none - Shows all the labels.
  * * hide - Hide the label when it intersect.
- * * 
+ * *
  */
 export type RangeLabelIntersectAction =
     /** Shows all the labels. */

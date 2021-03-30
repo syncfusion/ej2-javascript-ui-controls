@@ -21,7 +21,6 @@ export class PdfGanttTheme {
             return this.ganttStyle;
         }
     }
-    /* tslint:disable-next-line:max-func-body-length */
     private setTheme(ganttStyle: IGanttStyle, theme: PdfTheme): void {
         this.initStyles(ganttStyle);
         ganttStyle.columnHeader.fontSize = 9.5;
@@ -50,72 +49,72 @@ export class PdfGanttTheme {
         ganttStyle.chartGridLineColor = new PdfColor(206, 206, 206);
         ganttStyle.timeline.borderColor = new PdfColor(206, 206, 206);
         switch (theme) {
-            case 'Bootstrap':
-                //chart side theme
-                ganttStyle.taskbar.taskColor = new PdfColor(49, 122, 185);
-                ganttStyle.taskbar.progressColor = new PdfColor(33, 82, 125);
-                ganttStyle.taskbar.parentTaskColor = new PdfColor(119, 119, 119);
-                ganttStyle.taskbar.parentProgressColor = new PdfColor(85, 85, 85);
-                ganttStyle.taskbar.taskBorderColor = new PdfColor(33, 82, 125);
-                ganttStyle.taskbar.parentTaskBorderColor = new PdfColor(85, 85, 85);
-                ganttStyle.taskbar.milestoneColor = new PdfColor(85, 85, 85);
-                ganttStyle.footer.fontColor = new PdfColor(0, 0, 0);
-                ganttStyle.footer.fontColor.gray = 0.2;
-                ganttStyle.connectorLineColor = new PdfColor(33, 82, 125);
-                ganttStyle.footer.backgroundColor = new PdfColor(255, 255, 255);
-                ganttStyle.taskbar.progressFontColor = new PdfColor(255, 255, 255);
-                ganttStyle.label.fontColor = new PdfColor(0, 0, 0);
-                break;
-            case 'Bootstrap 4':
-                //chart side theme
-                ganttStyle.taskbar.taskColor = new PdfColor(0, 123, 255);
-                ganttStyle.taskbar.progressColor = new PdfColor(0, 86, 179);
-                ganttStyle.taskbar.parentTaskColor = new PdfColor(108, 117, 125);
-                ganttStyle.taskbar.parentProgressColor = new PdfColor(73, 80, 87);
-                ganttStyle.taskbar.taskBorderColor = new PdfColor(0, 86, 179);
-                ganttStyle.taskbar.parentTaskBorderColor = new PdfColor(73, 80, 87);
-                ganttStyle.taskbar.milestoneColor = new PdfColor(73, 80, 87);
-                ganttStyle.footer.fontColor = new PdfColor(0, 0, 0);
-                ganttStyle.footer.fontColor.gray = 0.2;
-                ganttStyle.connectorLineColor = new PdfColor(0, 86, 179);
-                ganttStyle.footer.backgroundColor = new PdfColor(255, 255, 255);
-                ganttStyle.taskbar.progressFontColor = new PdfColor(255, 255, 255);
-                ganttStyle.label.fontColor = new PdfColor(33, 37, 41);
-                break;
-            case 'Fabric':
-                ganttStyle.columnHeader.fontColor = new PdfColor(102, 102, 102);
-                ganttStyle.cell.fontColor = new PdfColor(51, 51, 51);
-                //chart side theme
-                ganttStyle.taskbar.taskColor = new PdfColor(0, 120, 214);
-                ganttStyle.taskbar.progressColor = new PdfColor(0, 91, 163);
-                ganttStyle.taskbar.parentTaskColor = new PdfColor(118, 118, 118);
-                ganttStyle.taskbar.parentProgressColor = new PdfColor(80, 80, 80);
-                ganttStyle.taskbar.taskBorderColor = new PdfColor(0, 91, 163);
-                ganttStyle.taskbar.parentTaskBorderColor = new PdfColor(80, 80, 80);
-                ganttStyle.taskbar.milestoneColor = new PdfColor(80, 80, 80);
-                ganttStyle.footer.fontColor = new PdfColor(51, 51, 51);
-                ganttStyle.footer.fontColor.gray = 0.2;
-                ganttStyle.connectorLineColor = new PdfColor(0, 69, 122);
-                ganttStyle.footer.backgroundColor = new PdfColor(255, 255, 255);
-                ganttStyle.taskbar.progressFontColor = new PdfColor(255, 255, 255);
-                ganttStyle.label.fontColor = new PdfColor(51, 51, 51);
-                break;
-            default:
-                //chart side theme
-                ganttStyle.taskbar.taskColor = new PdfColor(88, 105, 197);
-                ganttStyle.taskbar.progressColor = new PdfColor(63, 81, 181);
-                ganttStyle.taskbar.parentTaskColor = new PdfColor(132, 132, 132);
-                ganttStyle.taskbar.parentProgressColor = new PdfColor(97, 97, 97);
-                ganttStyle.taskbar.taskBorderColor = new PdfColor(63, 81, 181);
-                ganttStyle.taskbar.parentTaskBorderColor = new PdfColor(51, 51, 51);
-                ganttStyle.taskbar.milestoneColor = new PdfColor(97, 97, 97);
-                ganttStyle.footer.fontColor = new PdfColor(0, 0, 0);
-                ganttStyle.footer.fontColor.gray = 0.2;
-                ganttStyle.connectorLineColor = new PdfColor(63, 81, 181);
-                ganttStyle.footer.backgroundColor = new PdfColor(255, 255, 255);
-                ganttStyle.taskbar.progressFontColor = new PdfColor(255, 255, 255);
-                ganttStyle.label.fontColor = new PdfColor(51, 51, 51);
-                break;
+        case 'Bootstrap':
+            //chart side theme
+            ganttStyle.taskbar.taskColor = new PdfColor(49, 122, 185);
+            ganttStyle.taskbar.progressColor = new PdfColor(33, 82, 125);
+            ganttStyle.taskbar.parentTaskColor = new PdfColor(119, 119, 119);
+            ganttStyle.taskbar.parentProgressColor = new PdfColor(85, 85, 85);
+            ganttStyle.taskbar.taskBorderColor = new PdfColor(33, 82, 125);
+            ganttStyle.taskbar.parentTaskBorderColor = new PdfColor(85, 85, 85);
+            ganttStyle.taskbar.milestoneColor = new PdfColor(85, 85, 85);
+            ganttStyle.footer.fontColor = new PdfColor(0, 0, 0);
+            ganttStyle.footer.fontColor.gray = 0.2;
+            ganttStyle.connectorLineColor = new PdfColor(33, 82, 125);
+            ganttStyle.footer.backgroundColor = new PdfColor(255, 255, 255);
+            ganttStyle.taskbar.progressFontColor = new PdfColor(255, 255, 255);
+            ganttStyle.label.fontColor = new PdfColor(0, 0, 0);
+            break;
+        case 'Bootstrap 4':
+            //chart side theme
+            ganttStyle.taskbar.taskColor = new PdfColor(0, 123, 255);
+            ganttStyle.taskbar.progressColor = new PdfColor(0, 86, 179);
+            ganttStyle.taskbar.parentTaskColor = new PdfColor(108, 117, 125);
+            ganttStyle.taskbar.parentProgressColor = new PdfColor(73, 80, 87);
+            ganttStyle.taskbar.taskBorderColor = new PdfColor(0, 86, 179);
+            ganttStyle.taskbar.parentTaskBorderColor = new PdfColor(73, 80, 87);
+            ganttStyle.taskbar.milestoneColor = new PdfColor(73, 80, 87);
+            ganttStyle.footer.fontColor = new PdfColor(0, 0, 0);
+            ganttStyle.footer.fontColor.gray = 0.2;
+            ganttStyle.connectorLineColor = new PdfColor(0, 86, 179);
+            ganttStyle.footer.backgroundColor = new PdfColor(255, 255, 255);
+            ganttStyle.taskbar.progressFontColor = new PdfColor(255, 255, 255);
+            ganttStyle.label.fontColor = new PdfColor(33, 37, 41);
+            break;
+        case 'Fabric':
+            ganttStyle.columnHeader.fontColor = new PdfColor(102, 102, 102);
+            ganttStyle.cell.fontColor = new PdfColor(51, 51, 51);
+            //chart side theme
+            ganttStyle.taskbar.taskColor = new PdfColor(0, 120, 214);
+            ganttStyle.taskbar.progressColor = new PdfColor(0, 91, 163);
+            ganttStyle.taskbar.parentTaskColor = new PdfColor(118, 118, 118);
+            ganttStyle.taskbar.parentProgressColor = new PdfColor(80, 80, 80);
+            ganttStyle.taskbar.taskBorderColor = new PdfColor(0, 91, 163);
+            ganttStyle.taskbar.parentTaskBorderColor = new PdfColor(80, 80, 80);
+            ganttStyle.taskbar.milestoneColor = new PdfColor(80, 80, 80);
+            ganttStyle.footer.fontColor = new PdfColor(51, 51, 51);
+            ganttStyle.footer.fontColor.gray = 0.2;
+            ganttStyle.connectorLineColor = new PdfColor(0, 69, 122);
+            ganttStyle.footer.backgroundColor = new PdfColor(255, 255, 255);
+            ganttStyle.taskbar.progressFontColor = new PdfColor(255, 255, 255);
+            ganttStyle.label.fontColor = new PdfColor(51, 51, 51);
+            break;
+        default:
+            //chart side theme
+            ganttStyle.taskbar.taskColor = new PdfColor(88, 105, 197);
+            ganttStyle.taskbar.progressColor = new PdfColor(63, 81, 181);
+            ganttStyle.taskbar.parentTaskColor = new PdfColor(132, 132, 132);
+            ganttStyle.taskbar.parentProgressColor = new PdfColor(97, 97, 97);
+            ganttStyle.taskbar.taskBorderColor = new PdfColor(63, 81, 181);
+            ganttStyle.taskbar.parentTaskBorderColor = new PdfColor(51, 51, 51);
+            ganttStyle.taskbar.milestoneColor = new PdfColor(97, 97, 97);
+            ganttStyle.footer.fontColor = new PdfColor(0, 0, 0);
+            ganttStyle.footer.fontColor.gray = 0.2;
+            ganttStyle.connectorLineColor = new PdfColor(63, 81, 181);
+            ganttStyle.footer.backgroundColor = new PdfColor(255, 255, 255);
+            ganttStyle.taskbar.progressFontColor = new PdfColor(255, 255, 255);
+            ganttStyle.label.fontColor = new PdfColor(51, 51, 51);
+            break;
         }
     }
     private initStyles(ganttStyle: IGanttStyle): void {

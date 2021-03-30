@@ -1,0 +1,256 @@
+
+//default 
+$skin-name: 'bootstrap';
+$theme: 'Bootstrap';
+$spin-overlay-background: rgba($grey-white, .2);
+$spin-overlay-stroke-color: $grey-base;
+$spin-overlay-font-color: $grey-light-font;
+$spin-material-stroke-color: $grey-base;
+$spin-boot4-stroke-color: $grey-base;
+$spin-boot4-stroke-width: 4;
+$spin-fabric-stroke-color: $grey-base;
+$spin-fabric-stroke-width: 1.5;
+$spin-fabric-arc-color: $grey-base;
+$spin-label-font-family: 'Helvetica Neue', 'Segoe UI';
+$spin-bootstrap-stroke-color: $grey-light-font;
+$spin-label-font-size: 14px;
+$spin-label-margin-top: 10px;
+$spin-label-color: $grey-light-font;
+$spin-padding: 10px;
+
+@mixin mat-spinner-rotate {
+  animation: material-spinner-rotate 1568.63ms linear infinite;
+}
+
+@mixin fb-spinner-rotate {
+  animation: fabric-spinner-rotate 1.3s infinite cubic-bezier(.53, .21, .29, .67);
+}
+
+@mixin boot4-spinner-rotate {
+  animation: material-spinner-rotate .75s linear infinite;
+}
+
+// sass-lint:disable no-vendor-prefixes
+@keyframes material-spinner-rotate {
+  0% {
+    -webkit-transform: rotate(0);
+    transform: rotate(0);
+  }
+
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+// sass-lint:disable no-vendor-prefixes
+@keyframes fabric-spinner-rotate {
+  0% {
+    -webkit-transform: rotate(0);
+    transform: rotate(0);
+  }
+
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+//enddefault
+
+
+@include export-module('spinner-layout') {
+  .e-spinner-pane {
+    align-items: center;
+    display: inline-flex;
+    height: 100%;
+    justify-content: center;
+    left: 0;
+    position: absolute;
+    text-align: center;
+    top: 0;
+    user-select: none;
+    vertical-align: middle;
+    width: 100%;
+    z-index: 1000;
+
+    &::after {
+      content: $theme;
+      display: none;
+    }
+
+    &.e-spin-left {
+      // sass-lint:disable no-vendor-prefixes
+      .e-spinner-inner {
+        -webkit-transform: translateX(0%) translateY(-50%);
+        left: 0;
+        padding-left: $spin-padding;
+        transform: translateX(0%) translateY(-50%);
+      }
+    }
+
+    &.e-spin-right {
+      // sass-lint:disable no-vendor-prefixes
+      .e-spinner-inner {
+        -webkit-transform: translateX(-100%) translateY(-50%);
+        left: 100%;
+        padding-right: $spin-padding;
+        transform: translateX(-100%) translateY(-50%);
+      }
+    }
+
+    &.e-spin-center {
+      // sass-lint:disable no-vendor-prefixes
+      .e-spinner-inner {
+        -webkit-transform: translateX(-50%) translateY(-50%);
+        left: 50%;
+        transform: translateX(-50%) translateY(-50%);
+      }
+    }
+
+    &.e-spin-hide {
+      display: none;
+    }
+
+    &.e-spin-show {
+      display: inline-flex;
+    }
+
+    // sass-lint:disable no-vendor-prefixes
+    .e-spinner-inner {
+      -webkit-transform: translateX(-50%) translateY(-50%);
+      left: 50%;
+      margin: 0;
+      position: absolute;
+      text-align: center;
+      top: 50%;
+      transform: translateX(-50%) translateY(-50%);
+      z-index: 1000;
+
+      .e-spin-label {
+        font-family: $spin-label-font-family;
+        font-size: $spin-label-font-size;
+        margin-top: $spin-label-margin-top;
+        text-align: center;
+      }
+
+      .e-spin-material {
+        @include mat-spinner-rotate;
+        display: block;
+        margin: 0 auto;
+
+        .e-path-circle {
+          fill: none;
+          stroke-linecap: square;
+        }
+      }
+
+      .e-spin-bootstrap4 {
+        @include boot4-spinner-rotate;
+        border-radius: 50%;
+        display: block;
+        margin: 0 auto;
+
+        .e-path-circle {
+          fill: none;
+          stroke-linecap: square;
+          stroke-width: $spin-boot4-stroke-width;
+        }
+      }
+
+      .e-spin-fabric {
+        @include fb-spinner-rotate;
+        display: block;
+        margin: 0 auto;
+        overflow: visible;
+
+        .e-path-arc,
+        .e-path-circle {
+          fill: none;
+          stroke-width: $spin-fabric-stroke-width;
+        }
+      }
+
+      .e-spin-bootstrap {
+        display: block;
+        margin: 0 auto;
+      }
+
+      .e-spin-high-contrast {
+        @include fb-spinner-rotate;
+        display: block;
+        margin: 0 auto;
+        overflow: visible;
+
+        .e-path-arc,
+        .e-path-circle {
+          fill: none;
+          stroke-width: $spin-fabric-stroke-width;
+        }
+      }
+    }
+  }
+}
+@include export-module('spinner-theme') {
+  .e-spinner-pane {
+    background-color: transparent;
+
+    &.e-spin-overlay {
+      background-color: $spin-overlay-background;
+
+      .e-spinner-inner {
+
+        .e-spin-label {
+          color: $spin-overlay-font-color;
+        }
+
+        .e-spin-bootstrap {
+          fill: $spin-overlay-stroke-color;
+          stroke: $spin-overlay-stroke-color;
+        }
+
+      }
+    }
+
+    .e-spinner-inner {
+
+      .e-spin-label {
+        color: $spin-label-color;
+      }
+
+      .e-spin-fabric {
+
+        .e-path-circle {
+          stroke: $spin-fabric-stroke-color;
+        }
+
+        .e-path-arc {
+          stroke: $spin-fabric-arc-color;
+        }
+      }
+
+      .e-spin-high-contrast {
+
+        .e-path-circle {
+          stroke: $spin-fabric-stroke-color;
+        }
+
+        .e-path-arc {
+          stroke: $spin-fabric-arc-color;
+        }
+      }
+
+      .e-spin-material {
+        stroke: $spin-material-stroke-color;
+      }
+
+      .e-spin-bootstrap4 {
+        stroke: $spin-boot4-stroke-color;
+      }
+
+      .e-spin-bootstrap {
+        fill: $spin-bootstrap-stroke-color;
+        stroke: $spin-bootstrap-stroke-color;
+      }
+    }
+  }
+}

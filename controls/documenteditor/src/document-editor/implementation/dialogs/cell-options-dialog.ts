@@ -6,7 +6,7 @@ import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { WCellFormat } from '../index';
 import { isNullOrUndefined, L10n, createElement } from '@syncfusion/ej2-base';
 import { SelectionTableFormat, SelectionCellFormat } from '../index';
-import { TableWidget, TableRowWidget, TableCellWidget } from '../viewer/page';
+import { TableRowWidget, TableCellWidget } from '../viewer/page';
 import { TextPosition } from '../selection/selection-helper';
 import { DocumentHelper } from '../viewer';
 
@@ -53,54 +53,56 @@ export class CellOptionsDialog {
      */
     public cellFormatIn: WCellFormat;
     /**
+     * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
      */
-    constructor(documentHelper: DocumentHelper) {
+    public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
     }
-    /**
+     /**
      * @private
+     * @returns {WCellFormat} - Returns cell format.
      */
-    get cellFormat(): WCellFormat {
+    public get cellFormat(): WCellFormat {
         if (isNullOrUndefined(this.cellFormatIn)) {
             return this.cellFormatIn = new WCellFormat();
         }
         return this.cellFormatIn;
     }
-    /**
-     * @private
-     */
-    public getModuleName(): string {
+
+    private getModuleName(): string {
         return 'CellOptionsDialog';
     }
     /**
      * @private
+     * @param {L10n} localValue - Specifies the locale.
+     * @param {boolean} isRtl - Specifies is rtl.
+     * @returns {void}
      */
     public initCellMarginsDialog(localValue: L10n, isRtl?: boolean): void {
         this.owner = this.documentHelper.owner.viewer;
-        let instance: LayoutViewer = this.owner;
         this.target = createElement('div', {
             id: this.documentHelper.owner.containerId + '_tableCellMarginsDialog', className: 'e-de-table-cell-margin-dlg'
         });
-        let innerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width: 504px;position: relative;height: auto;' });
-        let innerDivLabel: HTMLElement = createElement('Label', {
+        const innerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width: 504px;position: relative;height: auto;' });
+        const innerDivLabel: HTMLElement = createElement('Label', {
             className: 'e-de-cell-dia-options-label', id: this.target.id + '_innerDivLabel'
         });
         innerDivLabel.innerHTML = localValue.getConstant('Cell margins');
         innerDiv.appendChild(innerDivLabel);
-        let table: HTMLTableElement = <HTMLTableElement>createElement('TABLE', {
+        const table: HTMLTableElement = <HTMLTableElement>createElement('TABLE', {
             styles: 'padding-bottom: 8px;padding-top: 8px;', className: 'e-de-cell-margin-top'
         });
-        let tr: HTMLTableRowElement = <HTMLTableRowElement>createElement('tr');
-        let td: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { className: 'e-de-tbl-btn-separator' });
-        let sameAsTableCheckBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        const tr: HTMLTableRowElement = <HTMLTableRowElement>createElement('tr');
+        const td: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { className: 'e-de-tbl-btn-separator' });
+        const sameAsTableCheckBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'checkbox' }, id: this.target.id + '_sameAsCheckBox'
         });
         td.appendChild(sameAsTableCheckBox);
         tr.appendChild(td); table.appendChild(tr);
         innerDiv.appendChild(table);
         CellOptionsDialog.getCellMarginDialogElements(this, innerDiv, localValue);
-        let divBtn: HTMLDivElement = document.createElement('div');
+        const divBtn: HTMLDivElement = document.createElement('div');
         this.target.appendChild(divBtn);
         this.sameAsTableCheckBox = new CheckBox({
             label: localValue.getConstant('Same as the whole table'),
@@ -112,15 +114,17 @@ export class CellOptionsDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public show(): void {
-        let localizeValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        const localizeValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         localizeValue.setLocale(this.documentHelper.owner.locale);
         if (!this.target) {
             this.initCellMarginsDialog(localizeValue, this.documentHelper.owner.enableRtl);
         }
         this.loadCellMarginsDialog();
         this.documentHelper.dialog.header = localizeValue.getConstant('Cell Options');
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         this.documentHelper.dialog.position = { X: 'center', Y: 'top' };
         this.documentHelper.dialog.height = 'auto';
         this.documentHelper.dialog.width = 'auto';
@@ -140,13 +144,15 @@ export class CellOptionsDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public removeEvents = (): void => {
         this.documentHelper.dialog2.element.style.pointerEvents = '';
         this.documentHelper.updateFocus();
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public changeSameAsTable = (): void => {
         if (this.sameAsTableCheckBox.checked) {
@@ -160,16 +166,17 @@ export class CellOptionsDialog {
             this.bottomMarginBox.enabled = true;
             this.topMarginBox.enabled = true;
         }
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public loadCellMarginsDialog(): void {
-        let cellFormat: SelectionCellFormat = this.documentHelper.selection.cellFormat;
+        const cellFormat: SelectionCellFormat = this.documentHelper.selection.cellFormat;
         this.sameAsTable = isNullOrUndefined(cellFormat.leftMargin || cellFormat.topMargin
             || cellFormat.rightMargin || cellFormat.bottomMargin);
         if (this.sameAsTable) {
-            let tableFormat: SelectionTableFormat = this.documentHelper.selection.tableFormat;
+            const tableFormat: SelectionTableFormat = this.documentHelper.selection.tableFormat;
             this.loadCellProperties(tableFormat, false, true);
         } else {
             this.loadCellProperties(cellFormat, true, false);
@@ -188,9 +195,10 @@ export class CellOptionsDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public applyTableCellProperties = (): void => {
-        let cellFormat: SelectionCellFormat = this.documentHelper.selection.cellFormat;
+        const cellFormat: SelectionCellFormat = this.documentHelper.selection.cellFormat;
         if (!isNullOrUndefined(this.bottomMarginBox.value || this.leftMarginBox.value
             || this.rightMarginBox.value || this.topMarginBox.value) &&
             (cellFormat.bottomMargin !== this.bottomMarginBox.value || cellFormat.leftMargin !== this.leftMarginBox.value
@@ -200,74 +208,65 @@ export class CellOptionsDialog {
             this.documentHelper.owner.tablePropertiesDialogModule.applyTableSubProperties();
         }
         this.closeCellMarginsDialog();
-    }
+    };
     /**
      * @private
+     * @param {WCellFormat} cellFormat Specifies cell format.
+     * @returns {void}
      */
     public applySubCellOptions(cellFormat: WCellFormat): void {
         this.documentHelper.owner.editorHistory.initComplexHistory(this.documentHelper.selection, 'CellMarginsSelection');
         this.documentHelper.owner.editorModule.initHistory('CellOptions');
-        /* tslint:disable:max-line-length */
-        let startTable: TableWidget = this.documentHelper.selection.start.paragraph.associatedCell.ownerTable;
-        startTable = startTable.combineWidget(this.owner) as TableWidget;
-        this.applyCellmarginsValue(this.documentHelper.selection.start.paragraph.associatedCell.ownerRow.combineWidget(this.owner) as TableRowWidget, this.documentHelper.selection.start, this.documentHelper.selection.end, cellFormat);
+        /* eslint-disable max-len */
+        this.documentHelper.selection.start.paragraph.associatedCell.ownerTable.combineWidget(this.owner);
+        this.applyCellMarginValue(this.documentHelper.selection.start.paragraph.associatedCell.ownerRow.combineWidget(this.owner) as TableRowWidget, this.documentHelper.selection.start, this.documentHelper.selection.end, cellFormat);
         this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection, false);
         if (!isNullOrUndefined(this.documentHelper.owner.editorHistory.currentHistoryInfo)) {
             this.documentHelper.owner.editorHistory.updateComplexHistory();
         }
     }
-    /**
-     * @private
-     */
-    public applyCellmarginsValue(row: TableRowWidget, start: TextPosition, end: TextPosition, cellFormat: WCellFormat): void {
+
+    public applyCellMarginValue(row: TableRowWidget, start: TextPosition, end: TextPosition, cellFormat: WCellFormat): void {
         this.applyCellMarginsInternal(row, cellFormat);
         if (end.paragraph.associatedCell.ownerRow === row) {
             return;
         }
-        let newRow: TableRowWidget = row.nextWidget as TableRowWidget;
+        const newRow: TableRowWidget = row.nextWidget as TableRowWidget;
         if (!isNullOrUndefined(newRow)) {
-            this.applyCellmarginsValue(newRow, start, end, cellFormat);
+            this.applyCellMarginValue(newRow, start, end, cellFormat);
         }
     }
     private applyCellMarginsInternal(row: TableRowWidget, cellFormat: WCellFormat): void {
         if (!isNullOrUndefined(this.documentHelper.owner.editorHistory.currentBaseHistoryInfo)) {
-            let currentFormat: WCellFormat = (row.childWidgets[0] as TableCellWidget).cellFormat;
-            /* tslint:disable:max-line-length */
+            const currentFormat: WCellFormat = (row.childWidgets[0] as TableCellWidget).cellFormat;
+            /* eslint-disable max-len */
             cellFormat = this.documentHelper.owner.editorHistory.currentBaseHistoryInfo.addModifiedCellOptions(currentFormat, cellFormat, row.ownerTable);
         }
         if (!isNullOrUndefined(cellFormat)) {
             this.applyCellMarginsForCells(row, cellFormat);
         }
     }
-    /**
-     * @private
-     */
-    public applyCellMarginsForCells(row: TableRowWidget, cellFormat: WCellFormat): void {
-        let rowCells: TableCellWidget[] = row.childWidgets as TableCellWidget[];
+
+    private applyCellMarginsForCells(row: TableRowWidget, cellFormat: WCellFormat): void {
+        const rowCells: TableCellWidget[] = row.childWidgets as TableCellWidget[];
         this.iterateCells(rowCells, cellFormat);
     }
-    /**
-     * @private
-     */
-    public iterateCells(cells: TableCellWidget[], cellFormat: WCellFormat): void {
+
+    private iterateCells(cells: TableCellWidget[], cellFormat: WCellFormat): void {
         for (let i: number = 0; i < cells.length; i++) {
             this.applySubCellMargins(cells[i].cellFormat, cellFormat);
         }
         this.documentHelper.owner.tablePropertiesDialogModule.calculateGridValue(cells[0].ownerTable);
     }
-    /**
-     * @private
-     */
-    public applySubCellMargins(sourceFormat: WCellFormat, cellFormat: WCellFormat): void {
+
+    private applySubCellMargins(sourceFormat: WCellFormat, cellFormat: WCellFormat): void {
         sourceFormat.leftMargin = cellFormat.leftMargin;
         sourceFormat.topMargin = cellFormat.topMargin;
         sourceFormat.rightMargin = cellFormat.rightMargin;
         sourceFormat.bottomMargin = cellFormat.bottomMargin;
     }
-    /**
-     * @private
-     */
-    public applyTableOptions(cellFormat: WCellFormat): void {
+
+    private applyTableOptions(cellFormat: WCellFormat): void {
         if (!this.sameAsTableCheckBox.checked) {
             cellFormat.leftMargin = this.leftMarginBox.value;
             cellFormat.topMargin = this.topMarginBox.value;
@@ -277,13 +276,15 @@ export class CellOptionsDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public closeCellMarginsDialog = (): void => {
         this.documentHelper.dialog.hide();
         this.documentHelper.dialog.element.style.pointerEvents = '';
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         if (!isNullOrUndefined(this.target)) {
@@ -303,48 +304,52 @@ export class CellOptionsDialog {
     }
     /**
      * @private
+     * @param {CellOptionsDialog | TableOptionsDialog} dialog - Specifies cell options dialog.
+     * @param {HTMLDivElement} div - Specifies the html element.
+     * @param {L10n} locale - Specifies the locale
+     * @returns {void}
      */
     public static getCellMarginDialogElements(dialog: CellOptionsDialog | TableOptionsDialog, div: HTMLDivElement, locale: L10n): void {
         if (!isNullOrUndefined(dialog)) {
-            let table: HTMLTableElement = <HTMLTableElement>createElement('TABLE', { className: 'e-de-cell-margin-top' });
-            let tr1: HTMLTableRowElement = <HTMLTableRowElement>createElement('tr', { styles: 'height: 50px;' });
-            let td1: HTMLTableCellElement = <HTMLTableCellElement>createElement('td');
-            let topLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+            const table: HTMLTableElement = <HTMLTableElement>createElement('TABLE', { className: 'e-de-cell-margin-top' });
+            const tr1: HTMLTableRowElement = <HTMLTableRowElement>createElement('tr', { styles: 'height: 50px;' });
+            const td1: HTMLTableCellElement = <HTMLTableCellElement>createElement('td');
+            const topLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
                 innerHTML: locale.getConstant('Top'), className: 'e-de-cell-dia-label-common',
                 id: dialog.target.id + '_TopLabel'
             });
-            let topTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
+            const topTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
                 attrs: { 'type': 'text' }, styles: 'width:100%', id: dialog.target.id + '_Top'
             });
             td1.appendChild(topLabel); td1.appendChild(topTextBox);
-            let td2: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { className: 'e-de-tbl-btn-separator' });
-            let leftLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+            const td2: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { className: 'e-de-tbl-btn-separator' });
+            const leftLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
                 innerHTML: locale.getConstant('Left'), className: 'e-de-cell-dia-label-common',
                 id: dialog.target.id + '_leftLabel'
             });
-            let leftTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
+            const leftTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
                 attrs: { 'type': 'text' },
                 styles: 'width:100%', id: dialog.target.id + '_left'
             });
             td2.appendChild(leftLabel); td2.appendChild(leftTextBox);
             tr1.appendChild(td1); tr1.appendChild(td2);
-            let tr2: HTMLTableRowElement = <HTMLTableRowElement>createElement('tr', { styles: 'height: 50px;' });
-            let td3: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { styles: 'width:40%;' });
-            let bottomLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+            const tr2: HTMLTableRowElement = <HTMLTableRowElement>createElement('tr', { styles: 'height: 50px;' });
+            const td3: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { styles: 'width:40%;' });
+            const bottomLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
                 innerHTML: locale.getConstant('Bottom'),
                 className: 'e-de-cell-dia-label-common', id: dialog.target.id + '_bottomLabel'
             });
-            let bottomTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
+            const bottomTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
                 attrs: { 'type': 'text' },
                 styles: 'width:100%', id: dialog.target.id + '_bottom'
             });
             td3.appendChild(bottomLabel); td3.appendChild(bottomTextBox);
-            let td4: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { styles: 'width:40%;' });
-            let rightLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+            const td4: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { styles: 'width:40%;' });
+            const rightLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
                 innerHTML: locale.getConstant('Right'), id: dialog.target.id + '_rightLabel',
                 className: 'e-de-cell-dia-label-common'
             });
-            let rightTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
+            const rightTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
                 attrs: { 'type': 'text' },
                 styles: 'width:100%', id: dialog.target.id + '_right'
             });

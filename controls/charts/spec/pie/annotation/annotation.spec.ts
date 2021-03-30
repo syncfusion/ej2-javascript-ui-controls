@@ -54,7 +54,7 @@ describe('Accumumation Control', () => {
         });
 
         afterAll((): void => {
-            chartObj.annotationModule.destroy(chartObj);
+            chartObj.annotationModule.destroy();
             chartObj.destroy();
             chartElement.remove();
             remove(document.getElementById('template'));

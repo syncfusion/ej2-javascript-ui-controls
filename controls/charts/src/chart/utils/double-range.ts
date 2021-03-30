@@ -1,7 +1,7 @@
-
-
+/* eslint-disable jsdoc/require-returns */
 /**
  * Numeric Range.
+ *
  * @private
  */
 export class DoubleRange {

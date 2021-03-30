@@ -2,6 +2,7 @@
  * Defines Orientation of axis. They are
  * * horizontal
  * * vertical
+ *
  * @private
  */
 export type Orientation =
@@ -15,6 +16,7 @@ export type Orientation =
  * * none
  * * cartesianAxes
  * * polarAxes
+ *
  * @private
  */
 export type ChartAreaType =
@@ -27,6 +29,7 @@ export type ChartAreaType =
  * Defines series type of chart. They are
  * * xy
  * * highLow
+ *
  * @private
  */
 export type SeriesValueType =
@@ -69,7 +72,7 @@ export type Segment =
     /** Segment calculation rendered based on verticalal axis */
     'Y';
 
-/** 
+/**
  * Defines the unit of Strip line Size. They are
  * * auto
  * * pixel
@@ -456,12 +459,12 @@ export type LegendShape =
     'Diamond' |
     /** Render a Cross. */
     'Cross' |
-     /** Render a Cross. */
-     'Multiply' |
-     /** Render a actual bar. */
-     'ActualRect' |
-     /** Render a target bar. */
-     'TargetRect' |
+    /** Render a Cross. */
+    'Multiply' |
+    /** Render a actual bar. */
+    'ActualRect' |
+    /** Render a target bar. */
+    'TargetRect' |
     /** Render a HorizontalLine. */
     'HorizontalLine' |
     /** Render a VerticalLine. */
@@ -812,13 +815,13 @@ export type BorderType =
     /** CurlyBrace */
     'CurlyBrace';
 
- /**
-  * Defines the SelectionMode, They are.
-  * * none - Disable the selection.
-  * * series - To select a series.
-  * * point - To select a point.
-  * * cluster - To select a cluster of point.
-  */
+/**
+ * Defines the SelectionMode, They are.
+ * * none - Disable the selection.
+ * * series - To select a series.
+ * * point - To select a point.
+ * * cluster - To select a cluster of point.
+ */
 export type HighlightMode =
     /** Disable the selection. */
     'None' |
@@ -828,3 +831,13 @@ export type HighlightMode =
     'Point' |
     /** To select a cluster of point. */
     'Cluster';
+
+export type LegendMode =
+    /** Render legend items based on visible series */
+    'Series' |
+    /** Render legend items based on points  */
+    'Point' |
+    /** Render legend item based on range color mapping conditions */
+    'Range' |
+    /** Render legend items based on range color mapping conditions */
+    'Gradient';

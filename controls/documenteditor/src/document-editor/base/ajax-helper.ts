@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * @private
  */
@@ -5,7 +6,8 @@ export class XmlHttpRequestHandler {
 
     /**
      * Specifies the URL to which request to be sent.
-     * @default null	
+     *
+     * @default null
      */
     public url: string;
     /**
@@ -14,11 +16,13 @@ export class XmlHttpRequestHandler {
     public contentType: string;
     /**
      * Specifies the responseType to which request response.
+     *
      * @default null
      */
     public responseType: XMLHttpRequestResponseType;
-    /**		 
+    /**
      * A boolean value indicating whether the request should be sent asynchronous or not.
+     *
      * @default true
      */
     public mode: boolean = true;
@@ -31,14 +35,21 @@ export class XmlHttpRequestHandler {
 
     /**
      * Send the request to server
+     *
      * @param  {object} jsonObject - To send to service
      */
     public send(jsonObject: object): void {
         this.xmlHttpRequest = new XMLHttpRequest();
-        this.xmlHttpRequest.onreadystatechange = () => { this.stateChange(this); };
-        this.xmlHttpRequest.onerror = () => { this.error(this); };
+        this.xmlHttpRequest.onreadystatechange = () => {
+            this.stateChange(this);
+        };
+        this.xmlHttpRequest.onerror = () => {
+            this.error(this);
+        };
         if (!this.mode) {
-            setTimeout(() => { this.sendRequest(jsonObject); });
+            setTimeout(() => {
+                this.sendRequest(jsonObject);
+            });
         } else {
             this.sendRequest(jsonObject);
         }
@@ -53,20 +64,18 @@ export class XmlHttpRequestHandler {
         if (this.responseType) {
             this.xmlHttpRequest.responseType = this.responseType;
         }
-        let data: FormData | string = jsonObj instanceof FormData ? jsonObj : JSON.stringify(jsonObj);
+        const data: FormData | string = jsonObj instanceof FormData ? jsonObj : JSON.stringify(jsonObj);
         this.xmlHttpRequest.send(data); // jshint ignore:line
     }
 
     private stateChange(proxyReq: XmlHttpRequestHandler): void {
         if (proxyReq.xmlHttpRequest.readyState === 4 && proxyReq.xmlHttpRequest.status === 200) {
-            // tslint:disable-next-line
             let data: any;
             if (this.responseType) {
                 data = proxyReq.xmlHttpRequest.response;
             } else {
                 data = proxyReq.xmlHttpRequest.responseText;
             }
-            // tslint:disable-next-line
             let result: any = {
                 name: 'onSuccess',
                 data: data,
@@ -75,7 +84,6 @@ export class XmlHttpRequestHandler {
             };
             proxyReq.successHandler(result);
         } else if (proxyReq.xmlHttpRequest.readyState === 4 && !(proxyReq.xmlHttpRequest.status === 200)) { // jshint ignore:line)
-            // tslint:disable-next-line
             let result: any = {
                 name: 'onFailure',
                 status: proxyReq.xmlHttpRequest.status,
@@ -87,7 +95,6 @@ export class XmlHttpRequestHandler {
     }
 
     private error(proxyReq: XmlHttpRequestHandler): void {
-        // tslint:disable-next-line
         let result: any = {
             name: 'onError',
             status: this.xmlHttpRequest.status,
@@ -97,25 +104,27 @@ export class XmlHttpRequestHandler {
     }
 
     /**
-     * Specifies callback function to be triggered after XmlHttpRequest is succeeded. 
+     * Specifies callback function to be triggered after XmlHttpRequest is succeeded.
      * The callback will contain server response as the parameter.
+     *
      * @event
      */
     public onSuccess: Function;
     /**
-     * Specifies callback function to be triggered after XmlHttpRequest is got failed. 
+     * Specifies callback function to be triggered after XmlHttpRequest is got failed.
      * The callback will contain server response as the parameter.
+     *
      * @event
      */
     public onFailure: Function;
     /**
-     * Specifies callback function to be triggered after XmlHttpRequest is got error. 
+     * Specifies callback function to be triggered after XmlHttpRequest is got error.
      * The callback will contain server response as the parameter.
+     *
      * @event
      */
     public onError: Function;
 
-    // tslint:disable-next-line
     private successHandler(response: any) {
         if (this.onSuccess) {
             this.onSuccess(response);
@@ -123,7 +132,6 @@ export class XmlHttpRequestHandler {
         return response;
     }
 
-    // tslint:disable-next-line
     private failureHandler(response: any) {
         if (this.onFailure) {
             this.onFailure(response);
@@ -131,7 +139,6 @@ export class XmlHttpRequestHandler {
         return response;
     }
 
-    // tslint:disable-next-line
     private errorHandler(response: any) {
         if (this.onError) {
             this.onError(response);
@@ -141,8 +148,8 @@ export class XmlHttpRequestHandler {
 
     private setCustomAjaxHeaders(): void {
         for (let i: number = 0; i < this.customHeaders.length; i++) {
-            let header: Object = this.customHeaders[i];
-            for (let key of Object.keys(header)) {
+            const header: Object = this.customHeaders[i];
+            for (const key of Object.keys(header)) {
                 this.xmlHttpRequest.setRequestHeader(key, header[key]);
             }
         }

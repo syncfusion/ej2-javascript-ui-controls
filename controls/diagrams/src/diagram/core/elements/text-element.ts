@@ -46,15 +46,26 @@ export class TextElement extends DiagramElement {
     /** @private */
     public doWrap: boolean = true;
 
+
     /**
-     * gets the content for the text element
+     *   gets the content for the text element \
+     *
+     * @returns { string | SVGElement }  gets the content for the text element.\
+     *
+     * @private
      */
     public get content(): string {
         return this.textContent;
     }
 
+
     /**
-     * sets the content for the text element
+     *   sets the content for the text element \
+     *
+     * @returns { void }  sets the content for the text element.\
+     * @param {string} value - provide the id value.
+     *
+     * @private
      */
     public set content(value: string) {
         if (this.textContent !== value) {
@@ -66,41 +77,69 @@ export class TextElement extends DiagramElement {
 
     private textNodes: SubTextElement[] = [];
 
+
     /**
-     * sets the content for the text element
+     *   gets the content for the text element \
+     *
+     * @returns { string | SVGElement }  gets the content for the text element.\
+     *
+     * @private
      */
     public get childNodes(): SubTextElement[] {
         return this.textNodes;
     }
 
+
     /**
-     * gets the content for the text element
+     *   sets the content for the text element \
+     *
+     * @returns { void }  sets the content for the text element.\
+     * @param {SubTextElement[]} value - provide the id value.
+     *
+     * @private
      */
     public set childNodes(value: SubTextElement[]) {
         this.textNodes = value;
     }
 
     private textWrapBounds: TextBounds;
+
     /**
-     * gets the wrapBounds for the text
+     *   gets the wrapBounds for the text \
+     *
+     * @returns { string | SVGElement }  gets the wrapBounds for the text.\
+     *
+     * @private
      */
     public get wrapBounds(): TextBounds {
         return this.textWrapBounds;
     }
+
     /**
-     * sets the wrapBounds for the text
+     *    sets the wrapBounds for the text \
+     *
+     * @returns { void }   sets the wrapBounds for the text.\
+     * @param {TextBounds} value - provide the id value.
+     *
+     * @private
      */
     public set wrapBounds(value: TextBounds) {
         this.textWrapBounds = value;
     }
 
-    /** @private */
+    /**
+     *    sets the wrapBounds for the text \
+     *
+     * @returns { void }   sets the wrapBounds for the text.\
+     *
+     * @private
+     */
     public refreshTextElement(): void {
         this.isDirt = true;
     }
 
     /**
-     * Defines the appearance of the text element 
+     * Defines the appearance of the text element
      */
     public style: TextStyleModel = {
         color: 'black', fill: 'transparent', strokeColor: 'black',
@@ -110,9 +149,14 @@ export class TextElement extends DiagramElement {
         textOverflow: 'Wrap'
     };
 
+
     /**
-     * Measures the minimum size that is required for the text element
-     * @param {Size} availableSize
+     *Measures the minimum size that is required for the text element\
+     *
+     * @returns { Size }  Measures the minimum size that is required for the text element.\
+     * @param {Size} availableSize - provide the id value.
+     *
+     * @private
      */
     public measure(availableSize: Size): Size {
         let size: Size;
@@ -131,9 +175,14 @@ export class TextElement extends DiagramElement {
         return this.desiredSize;
     }
 
+
     /**
-     * Arranges the text element
-     * @param {Size} desiredSize 
+     * Arranges the text element\
+     *
+     * @returns { Size }   Arranges the text element.\
+     * @param {Size} desiredSize - provide the id value.
+     *
+     * @private
      */
     public arrange(desiredSize: Size): Size {
         if (desiredSize.width !== this.actualSize.width || desiredSize.height !== this.actualSize.height || this.isDirt) {

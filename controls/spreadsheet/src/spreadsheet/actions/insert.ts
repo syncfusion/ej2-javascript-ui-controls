@@ -10,6 +10,8 @@ export class Insert {
     private parent: Spreadsheet;
     /**
      * Constructor for the Spreadsheet insert module.
+     *
+     * @param {Spreadsheet} parent - Specify the spreadsheet instance.
      * @private
      */
     constructor(parent: Spreadsheet) {
@@ -21,58 +23,60 @@ export class Insert {
         if (args.isAction) { isAction = true; delete args.isAction; }
         if (isAction) { this.parent.notify(beginAction, { eventArgs: args, action: 'insert' }); }
         switch (args.modelType) {
-            case 'Sheet':
-                this.parent.notify(
-                    insertSheetTab, { startIdx: args.index, endIdx: args.index + (args.model.length - 1), preventUpdate: !isAction });
-                this.parent.renderModule.refreshSheet();
-                focus(this.parent.element);
-                break;
-            case 'Row':
-                if (!this.parent.scrollSettings.enableVirtualization || args.index <= this.parent.viewport.bottomIndex) {
-                    if (this.parent.scrollSettings.enableVirtualization) {
-                        if (args.index < this.parent.viewport.topIndex) {
-                            this.parent.viewport.topIndex += args.model.length;
-                        }
-                        this.parent.renderModule.refreshUI({
-                            skipUpdateOnFirst: this.parent.viewport.topIndex === skipHiddenIdx(
-                                this.parent.getActiveSheet(), 0, true), rowIndex: this.parent.viewport.topIndex, colIndex:
-                                this.parent.viewport.leftIndex, refresh: 'Row'
-                        });
-                    } else {
-                        this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, rowIndex: args.index, colIndex: 0, refresh: 'Row' });
+        case 'Sheet':
+            this.parent.notify(
+                insertSheetTab, { startIdx: args.index, endIdx: args.index + (args.model.length - 1), preventUpdate: !isAction });
+            this.parent.renderModule.refreshSheet();
+            focus(this.parent.element);
+            break;
+        case 'Row':
+            if (!this.parent.scrollSettings.enableVirtualization || args.index <= this.parent.viewport.bottomIndex) {
+                if (this.parent.scrollSettings.enableVirtualization) {
+                    if (args.freezePane) { this.parent.renderModule.refreshSheet(); break; }
+                    if (args.index < this.parent.viewport.topIndex) {
+                        this.parent.viewport.topIndex += args.model.length;
                     }
-                    this.parent.notify(dataChanged, args);
-                    this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
+                    this.parent.renderModule.refreshUI({
+                        skipUpdateOnFirst: this.parent.viewport.topIndex === skipHiddenIdx(
+                            this.parent.getActiveSheet(), 0, true), rowIndex: this.parent.viewport.topIndex, colIndex:
+                            this.parent.viewport.leftIndex, refresh: 'Row'
+                    });
+                } else {
+                    this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, rowIndex: args.index, colIndex: 0, refresh: 'Row' });
                 }
-                break;
-            case 'Column':
-                if (!this.parent.scrollSettings.enableVirtualization || args.index <= this.parent.viewport.rightIndex) {
-                    if (this.parent.scrollSettings.enableVirtualization) {
-                        if (args.index < this.parent.viewport.leftIndex) {
-                            this.parent.viewport.leftIndex += args.model.length;
-                        }
-                        this.parent.renderModule.refreshUI({
-                            skipUpdateOnFirst: this.parent.viewport.leftIndex === skipHiddenIdx(
-                                this.parent.getActiveSheet(), 0, true, 'columns'), rowIndex: this.parent.viewport.topIndex, colIndex:
-                                this.parent.viewport.leftIndex, refresh: 'Column'
-                        });
-                    } else {
-                        this.parent.renderModule.refreshUI({
-                            skipUpdateOnFirst: true, rowIndex: 0, colIndex: args.index, refresh:
-                                'Column'
-                        });
+                this.parent.notify(dataChanged, args);
+                this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
+            }
+            break;
+        case 'Column':
+            if (!this.parent.scrollSettings.enableVirtualization || args.index <= this.parent.viewport.rightIndex) {
+                if (args.freezePane) { this.parent.renderModule.refreshSheet(); break; }
+                if (this.parent.scrollSettings.enableVirtualization) {
+                    if (args.index < this.parent.viewport.leftIndex) {
+                        this.parent.viewport.leftIndex += args.model.length;
                     }
-                    this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
+                    this.parent.renderModule.refreshUI({
+                        skipUpdateOnFirst: this.parent.viewport.leftIndex === skipHiddenIdx(
+                            this.parent.getActiveSheet(), 0, true, 'columns'), rowIndex: this.parent.viewport.topIndex, colIndex:
+                            this.parent.viewport.leftIndex, refresh: 'Column'
+                    });
+                } else {
+                    this.parent.renderModule.refreshUI({
+                        skipUpdateOnFirst: true, rowIndex: 0, colIndex: args.index, refresh:
+                            'Column'
+                    });
                 }
-                break;
+                this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
+            }
+            break;
         }
         this.refreshImgElement(args.model.length, this.parent.activeSheetIndex, args.modelType, args.index);
         if (isAction) { this.parent.notify(completeAction, { eventArgs: args, action: 'insert' }); }
     }
     private refreshImgElement(count: number, sheetIdx: number, modelType: string, index: number): void {
-        let sheet: SheetModel = this.parent.sheets[sheetIdx];
+        const sheet: SheetModel = this.parent.sheets[sheetIdx];
         let cellObj: CellModel;
-        let indexes: number[] = [0, 0, sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
+        const indexes: number[] = [0, 0, sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
         for (let i: number = 0; i <= indexes[2]; i++) {
             for (let j: number = indexes[1]; j <= indexes[3]; j++) {
                 cellObj = getCell(i, j, sheet);
@@ -91,6 +95,8 @@ export class Insert {
     }
     /**
      * Destroy insert module.
+     *
+     * @returns {void} - Destroy insert module.
      */
     public destroy(): void {
         this.removeEventListener();
@@ -103,6 +109,8 @@ export class Insert {
     }
     /**
      * Get the insert module name.
+     *
+     * @returns {string} - Get the insert module name.
      */
     public getModuleName(): string {
         return 'insert';

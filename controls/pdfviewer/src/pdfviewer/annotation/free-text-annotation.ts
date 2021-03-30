@@ -1,5 +1,6 @@
+/* eslint-disable */
 import {
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     PdfViewer, PdfViewerBase, IPageAnnotations, IPoint, AnnotationType as AnnotType, ICommentsCollection, IReviewCollection, AllowedInteraction
 } from '../..';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -13,39 +14,39 @@ import { AnnotationSelectorSettingsModel } from '../pdfviewer-model';
  * @hidden
  */
 export interface IFreeTextAnnotation {
-    shapeAnnotationType: string;
-    author: string;
-    modifiedDate: string;
-    subject: string;
-    note: string;
-    opacity: number;
-    // tslint:disable-next-line
+    shapeAnnotationType: string
+    author: string
+    modifiedDate: string
+    subject: string
+    note: string
+    opacity: number
+    // eslint-disable-next-line
     bounds: any;
-    thickness: number;
-    borderStyle: string;
-    borderDashArray: number;
-    rotateAngle: string;
-    isLocked: boolean;
-    id: string;
-    annotName: string;
-    position?: string;
-    fillColor: string;
-    strokeColor: string;
-    dynamicText: string;
-    fontColor: string;
-    fontSize: number;
-    fontFamily: string;
-    textAlign: string;
-    // tslint:disable-next-line
+    thickness: number
+    borderStyle: string
+    borderDashArray: number
+    rotateAngle: string
+    isLocked: boolean
+    id: string
+    annotName: string
+    position?: string
+    fillColor: string
+    strokeColor: string
+    dynamicText: string
+    fontColor: string
+    fontSize: number
+    fontFamily: string
+    textAlign: string
+    // eslint-disable-next-line
     font: any;
-    comments: ICommentsCollection[];
-    review: IReviewCollection;
-    annotationSelectorSettings: AnnotationSelectorSettingsModel;
-    // tslint:disable-next-line
+    comments: ICommentsCollection[]
+    review: IReviewCollection
+    annotationSelectorSettings: AnnotationSelectorSettingsModel
+    // eslint-disable-next-line
     annotationSettings?: any;
-    allowedInteractions?: AllowedInteraction;
-    isCommentLock: boolean;
-    isReadonly: boolean;
+    allowedInteractions?: AllowedInteraction
+    isCommentLock: boolean
+    isReadonly: boolean
 }
 
 /**
@@ -81,7 +82,7 @@ export class FreeTextAnnotation {
     /**
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public inputBoxElement: any;
     /**
      * @private
@@ -142,7 +143,7 @@ export class FreeTextAnnotation {
     /**
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public freeTextPageNumbers: any = [];
     /**
      * @private
@@ -203,7 +204,7 @@ export class FreeTextAnnotation {
         this.inputBoxElement.style.borderRadius = '2px';
         this.inputBoxElement.style.fontFamily = this.fontFamily;
         this.inputBoxElement.style.color = this.pdfViewer.freeTextSettings.fontColor ?
-        this.pdfViewer.freeTextSettings.fontColor : '#000';
+            this.pdfViewer.freeTextSettings.fontColor : '#000';
         this.inputBoxElement.style.overflow = 'hidden';
         this.inputBoxElement.style.wordBreak = 'break-all';
         this.inputBoxElement.readOnly = this.isReadonly;
@@ -226,13 +227,13 @@ export class FreeTextAnnotation {
         this.fontSize = this.pdfViewer.freeTextSettings.fontSize ? this.pdfViewer.freeTextSettings.fontSize : 16;
         this.opacity = this.pdfViewer.freeTextSettings.opacity ? this.pdfViewer.freeTextSettings.opacity : 1;
         this.fontColor = this.pdfViewer.freeTextSettings.fontColor ? this.pdfViewer.freeTextSettings.fontColor : '#000';
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.author = (this.pdfViewer.freeTextSettings.author !== 'Guest') ? this.pdfViewer.freeTextSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
         this.fontFamily = this.pdfViewer.freeTextSettings.fontFamily ? this.pdfViewer.freeTextSettings.fontFamily : 'Helvetica';
         this.textAlign = this.pdfViewer.freeTextSettings.textAlignment ? this.pdfViewer.freeTextSettings.textAlignment : 'Left';
         this.defaultText = this.pdfViewer.freeTextSettings.defaultText ? this.pdfViewer.freeTextSettings.defaultText : 'Type here';
         this.isReadonly = false;
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         if (this.pdfViewer.freeTextSettings.isLock || this.pdfViewer.annotationSettings.isLock || this.pdfViewer.freeTextSettings.isReadonly) {
             this.isReadonly = true;
         }
@@ -265,20 +266,18 @@ export class FreeTextAnnotation {
             this.isBold = true;
             this.isUnderline = true;
             this.isStrikethrough = true;
-        } else if (15 === this.pdfViewer.freeTextSettings.fontStyle) {
-            this.isBold = true;
-            this.isItalic = true;
-            this.isUnderline = true;
-            this.isStrikethrough = true;
         } else if (6 === this.pdfViewer.freeTextSettings.fontStyle) {
             this.isUnderline = true;
             this.isItalic = true;
         }
     }
     /**
+     * @param shapeAnnotations
+     * @param pageNumber
+     * @param isImportAction
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public renderFreeTextAnnotations(shapeAnnotations: any, pageNumber: number, isImportAction?: boolean): void {
         let isFreeTextAdded: boolean = false;
         if (!isImportAction) {
@@ -293,7 +292,7 @@ export class FreeTextAnnotation {
             if (shapeAnnotations.length >= 1) {
                 this.freeTextPageNumbers.push(pageNumber);
                 for (let i: number = 0; i < shapeAnnotations.length; i++) {
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line
                     let annotation: any = shapeAnnotations[i];
                     annotation.annotationAddMode = this.pdfViewer.annotationModule.findAnnotationMode(annotation, pageNumber, annotation.AnnotType);
                     if (annotation.AnnotType) {
@@ -301,52 +300,60 @@ export class FreeTextAnnotation {
                         if (annotation.VertexPoints) {
                             vertexPoints = [];
                             for (let j: number = 0; j < annotation.VertexPoints.length; j++) {
-                                let point: IPoint = { x: annotation.VertexPoints[j].X, y: annotation.VertexPoints[j].Y };
+                                const point: IPoint = { x: annotation.VertexPoints[j].X, y: annotation.VertexPoints[j].Y };
                                 vertexPoints.push(point);
                             }
                         }
-                        // tslint:disable-next-line:max-line-length
+                        // eslint-disable-next-line max-len
                         annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
                         let annot: PdfAnnotationBaseModel;
-                        // tslint:disable-next-line
+                        // eslint-disable-next-line
                         let rotateAngle: any = Math.abs(annotation.Rotate);
-                        let width: number = annotation.Bounds.Width;
-                        let height: number = annotation.Bounds.Height;
+                        let annotationBoundsX: number = annotation.Bounds.X ? annotation.Bounds.X : annotation.Bounds.x;
+                        let annotationBoundsY: number = annotation.Bounds.Y ? annotation.Bounds.Y : annotation.Bounds.y;
+                        let width: number = annotation.Bounds.Width ? annotation.Bounds.Width : annotation.Bounds.width;
+                        let height: number = annotation.Bounds.Height ? annotation.Bounds.Height : annotation.Bounds.height;
                         if (rotateAngle === 90 || rotateAngle === 270) {
-                            annotation.Bounds.Width = annotation.Bounds.Height;
+                            annotation.Bounds.Width = height;
                             annotation.Bounds.Height = width;
-                            annotation.Bounds.X = (annotation.Bounds.X + annotation.Bounds.Height) - height / 2;
-                            annotation.Bounds.Y = (annotation.Bounds.Y + annotation.Bounds.Width) - height / 2;
+                            annotationBoundsX = (annotationBoundsX + height) - height / 2;
+                            annotationBoundsY = (annotationBoundsX + width) - height / 2;
                         }
-                        // tslint:disable-next-line
+                        let isPrint: boolean = true;
+                        if (annotation.annotationAddMode === 'Imported Annotation') {
+                            isPrint = annotation.IsPrint;
+                        } else {
+                            isPrint = annotation.AnnotationSettings.isPrint;
+                        }
+                        // eslint-disable-next-line
                         annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
-                        // tslint:disable-next-line
+                        // eslint-disable-next-line
                         annot = {
                             author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, id: 'freetext' + this.inputBoxCount,
                             rotateAngle: annotation.Rotate, dynamicText: annotation.MarkupText, strokeColor: annotation.StrokeColor,
                             thickness: annotation.Thickness, fillColor: annotation.FillColor,
                             bounds: {
-                                x: annotation.Bounds.X, y: annotation.Bounds.Y, left: annotation.Bounds.X, top: annotation.Bounds.Y,
-                                width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right,
+                                x: annotationBoundsX, y: annotationBoundsY, left: annotationBoundsX, top: annotationBoundsY,
+                                width: width, height: height, right: annotation.Bounds.Right,
                                 bottom: annotation.Bounds.Bottom
                             }, annotName: annotation.AnnotName, shapeAnnotationType: 'FreeText',
-                            // tslint:disable-next-line
+                            // eslint-disable-next-line
                             pageIndex: pageNumber, opacity: annotation.Opacity, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
                             fontFamily: annotation.FontFamily, notes: annotation.MarkupText, textAlign: annotation.TextAlign,
-                            // tslint:disable-next-line
+                            // eslint-disable-next-line
                             comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author),
                             review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
-                            // tslint:disable-next-line:max-line-length
+                            // eslint-disable-next-line max-len
                             font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline },
                             annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings,
-                            // tslint:disable-next-line
+                            // eslint-disable-next-line
                             customData: this.pdfViewer.annotation.getCustomData(annotation), annotationAddMode: annotation.annotationAddMode, allowedInteractions: annotation.allowedInteractions,
-                            isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock, isReadonly: annotation.IsReadonly
+                            isPrint: isPrint, isCommentLock: annotation.IsCommentLock, isReadonly: annotation.IsReadonly
                         };
                         if (isImportAction) {
                             annot.id = annotation.AnnotName;
                         }
-                        let addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
+                        const addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annot, '_annotations_freetext');
                         this.inputBoxCount += 1;
                         this.pdfViewer.annotation.freeTextAnnotationModule.isFreeTextValueChange = true;
@@ -358,9 +365,10 @@ export class FreeTextAnnotation {
         }
     }
     /**
+     * @param annotation
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public getSettings(annotation : any) : any {
         let selector: AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
         if (annotation.AnnotationSelectorSettings) {
@@ -371,43 +379,60 @@ export class FreeTextAnnotation {
         return selector;
     }
     /**
+     * @param type
      * @private
      */
     public setAnnotationType(type: AnnotType): void {
         this.pdfViewerBase.disableTextSelectionMode();
         switch (type) {
-            case 'FreeText':
-                this.currentAnnotationMode = 'FreeText';
-                this.updateTextProperties();
-                // tslint:disable-next-line:max-line-length
-                let modifiedDateRect: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
-                this.pdfViewer.drawingObject = {
-                    shapeAnnotationType: 'FreeText', strokeColor: this.borderColor,
-                    fillColor: this.fillColor, opacity: this.opacity, notes: '', isCommentLock: false,
-                    thickness: this.borderWidth, borderDashArray: '0', modifiedDate: modifiedDateRect,
-                    // tslint:disable-next-line:max-line-length
-                    author: this.pdfViewer.freeTextSettings.author, subject: 'Text Box', font: { isBold: this.isBold, isItalic: this.isItalic, isStrikeout: this.isStrikethrough, isUnderline: this.isUnderline }, textAlign: this.textAlign
-                };
-                this.pdfViewer.tool = 'Select';
-                break;
+        case 'FreeText':
+            this.currentAnnotationMode = 'FreeText';
+            this.updateTextProperties();
+            // eslint-disable-next-line max-len
+            const modifiedDateRect: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+            this.pdfViewer.drawingObject = {
+                shapeAnnotationType: 'FreeText', strokeColor: this.borderColor,
+                fillColor: this.fillColor, opacity: this.opacity, notes: '', isCommentLock: false,
+                thickness: this.borderWidth, borderDashArray: '0', modifiedDate: modifiedDateRect,
+                // eslint-disable-next-line max-len
+                author: this.pdfViewer.freeTextSettings.author, subject: 'Text Box', font: { isBold: this.isBold, isItalic: this.isItalic, isStrikeout: this.isStrikethrough, isUnderline: this.isUnderline }, textAlign: this.textAlign
+            };
+            this.pdfViewer.tool = 'Select';
+            break;
         }
     }
 
     /**
+     * @param property
+     * @param pageNumber
+     * @param annotationBase
+     * @param isNewAdded
+     * @param property
+     * @param pageNumber
+     * @param annotationBase
+     * @param isNewAdded
+     * @param property
+     * @param pageNumber
+     * @param annotationBase
+     * @param isNewAdded
+     * @param property
+     * @param pageNumber
+     * @param annotationBase
+     * @param isNewAdded
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public modifyInCollection(property: string, pageNumber: number, annotationBase: any, isNewAdded?: boolean): IFreeTextAnnotation {
         if (!isNewAdded) {
             this.pdfViewer.isDocumentEdited = true;
         }
         let currentAnnotObject: IFreeTextAnnotation = null;
-        let pageAnnotations: IFreeTextAnnotation[] = this.getAnnotations(pageNumber, null);
+        const pageAnnotations: IFreeTextAnnotation[] = this.getAnnotations(pageNumber, null);
         if (pageAnnotations != null && annotationBase) {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
                 if (annotationBase.id === pageAnnotations[i].id) {
                     if (property === 'bounds') {
-                        // tslint:disable-next-line:max-line-length
+                        // eslint-disable-next-line max-len
                         pageAnnotations[i].bounds = { left: annotationBase.bounds.x, top: annotationBase.bounds.y, width: annotationBase.bounds.width, height: annotationBase.bounds.height, right: annotationBase.bounds.right, bottom: annotationBase.bounds.bottom };
                     } else if (property === 'fill') {
                         pageAnnotations[i].fillColor = annotationBase.wrapper.children[0].style.fill;
@@ -431,12 +456,12 @@ export class FreeTextAnnotation {
                     } else if (property === 'fontFamily') {
                         pageAnnotations[i].fontFamily = annotationBase.fontFamily;
                     } else if (property === 'textPropertiesChange') {
-                        // tslint:disable-next-line:max-line-length
+                        // eslint-disable-next-line max-len
                         pageAnnotations[i].font = { isBold: annotationBase.font.isBold, isItalic: annotationBase.font.isItalic, isStrikeout: annotationBase.font.isStrikeout, isUnderline: annotationBase.font.isUnderline };
                     } else if (property === 'textAlign') {
                         pageAnnotations[i].textAlign = annotationBase.textAlign;
                     }
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     pageAnnotations[i].modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                     this.pdfViewer.annotationModule.storeAnnotationCollections(pageAnnotations[i], pageNumber);
                 }
@@ -447,11 +472,13 @@ export class FreeTextAnnotation {
     }
 
     /**
+     * @param pageNumber
+     * @param annotationBase
      * @private
      */
     public addInCollection(pageNumber: number, annotationBase: IFreeTextAnnotation): void {
         if (annotationBase) {
-            let pageAnnotations: IFreeTextAnnotation[] = this.getAnnotations(pageNumber, null);
+            const pageAnnotations: IFreeTextAnnotation[] = this.getAnnotations(pageNumber, null);
             if (pageAnnotations) {
                 pageAnnotations.push(annotationBase);
             }
@@ -463,36 +490,36 @@ export class FreeTextAnnotation {
      * @private
      */
     public saveFreeTextAnnotations(): string {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_freetext');
         if (this.pdfViewerBase.isStorageExceed) {
             storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_freetext'];
         }
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let annotations: Array<any> = new Array();
         for (let j: number = 0; j < this.pdfViewerBase.pageCount; j++) {
             annotations[j] = [];
         }
         if (storeObject && !this.pdfViewer.annotationSettings.skipDownload) {
-            let annotationCollection: IPageAnnotations[] = JSON.parse(storeObject);
+            const annotationCollection: IPageAnnotations[] = JSON.parse(storeObject);
             for (let i: number = 0; i < annotationCollection.length; i++) {
                 let newArray: IFreeTextAnnotation[] = [];
-                let pageAnnotationObject: IPageAnnotations = annotationCollection[i];
+                const pageAnnotationObject: IPageAnnotations = annotationCollection[i];
                 if (pageAnnotationObject) {
                     for (let z: number = 0; pageAnnotationObject.annotations.length > z; z++) {
                         this.pdfViewer.annotationModule.updateModifiedDate(pageAnnotationObject.annotations[z]);
-                        // tslint:disable-next-line:max-line-length
+                        // eslint-disable-next-line max-len
                         pageAnnotationObject.annotations[z].bounds = JSON.stringify(this.pdfViewer.annotation.getBounds(pageAnnotationObject.annotations[z].bounds, pageAnnotationObject.pageIndex));
-                        let strokeColorString: string = pageAnnotationObject.annotations[z].strokeColor;
+                        const strokeColorString: string = pageAnnotationObject.annotations[z].strokeColor;
                         pageAnnotationObject.annotations[z].strokeColor = JSON.stringify(this.getRgbCode(strokeColorString));
-                        let fillColorString: string = pageAnnotationObject.annotations[z].fillColor;
+                        const fillColorString: string = pageAnnotationObject.annotations[z].fillColor;
                         pageAnnotationObject.annotations[z].fillColor = JSON.stringify(this.getRgbCode(fillColorString));
-                        let fontColorString: string = pageAnnotationObject.annotations[z].fontColor;
+                        const fontColorString: string = pageAnnotationObject.annotations[z].fontColor;
                         pageAnnotationObject.annotations[z].fontColor = JSON.stringify(this.getRgbCode(fontColorString));
-                        // tslint:disable-next-line:max-line-length
+                        // eslint-disable-next-line max-len
                         pageAnnotationObject.annotations[z].vertexPoints = JSON.stringify(pageAnnotationObject.annotations[z].vertexPoints);
                         if (pageAnnotationObject.annotations[z].rectangleDifference !== null) {
-                            // tslint:disable-next-line:max-line-length
+                            // eslint-disable-next-line max-len
                             pageAnnotationObject.annotations[z].rectangleDifference = JSON.stringify(pageAnnotationObject.annotations[z].rectangleDifference);
                         }
                     }
@@ -505,21 +532,21 @@ export class FreeTextAnnotation {
     }
 
     private manageAnnotations(pageAnnotations: IFreeTextAnnotation[], pageNumber: number): void {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_freetext');
         if (this.pdfViewerBase.isStorageExceed) {
             storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_freetext'];
         }
         if (storeObject) {
-            let annotObject: IPageAnnotations[] = JSON.parse(storeObject);
+            const annotObject: IPageAnnotations[] = JSON.parse(storeObject);
             if (!this.pdfViewerBase.isStorageExceed) {
                 window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_annotations_freetext');
             }
-            let index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageNumber);
+            const index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageNumber);
             if (annotObject[index]) {
                 annotObject[index].annotations = pageAnnotations;
             }
-            let annotationStringified: string = JSON.stringify(annotObject);
+            const annotationStringified: string = JSON.stringify(annotObject);
             if (this.pdfViewerBase.isStorageExceed) {
                 this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_freetext'] = annotationStringified;
             } else {
@@ -528,18 +555,18 @@ export class FreeTextAnnotation {
         }
     }
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private getAnnotations(pageIndex: number, shapeAnnotations: any[]): any[] {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let annotationCollection: any[];
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_freetext');
         if (this.pdfViewerBase.isStorageExceed) {
             storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_freetext'];
         }
         if (storeObject) {
-            let annotObject: IPageAnnotations[] = JSON.parse(storeObject);
-            let index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageIndex);
+            const annotObject: IPageAnnotations[] = JSON.parse(storeObject);
+            const index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageIndex);
             if (annotObject[index]) {
                 annotationCollection = annotObject[index].annotations;
             } else {
@@ -551,7 +578,7 @@ export class FreeTextAnnotation {
         return annotationCollection;
     }
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private getRgbCode(colorString: string): any {
         if (!colorString.match(/#([a-z0-9]+)/gi) && !colorString.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/)) {
             colorString = this.pdfViewer.annotationModule.nameToHash(colorString);
@@ -561,78 +588,78 @@ export class FreeTextAnnotation {
             colorString = this.pdfViewer.annotationModule.getValue(colorString, 'rgba');
             stringArray = colorString.split(',');
         }
-        // tslint:disable-next-line:radix
-        let r: number = parseInt(stringArray[0].split('(')[1]);
-        // tslint:disable-next-line:radix
-        let g: number = parseInt(stringArray[1]);
-        // tslint:disable-next-line:radix
-        let b: number = parseInt(stringArray[2]);
-        // tslint:disable-next-line:radix
-        let a: number = parseInt(stringArray[3]);
+        // eslint-disable-next-line radix
+        const r: number = parseInt(stringArray[0].split('(')[1]);
+        // eslint-disable-next-line radix
+        const g: number = parseInt(stringArray[1]);
+        // eslint-disable-next-line radix
+        const b: number = parseInt(stringArray[2]);
+        // eslint-disable-next-line radix
+        const a: number = parseInt(stringArray[3]);
         return { r: r, g: g, b: b, a: a };
     }
     /**
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public onFocusOutInputBox(): void {
         if (!this.pdfViewerBase.isFreeTextContextMenu) {
             this.pdfViewer.fireBeforeAddFreeTextAnnotation(this.inputBoxElement.value);
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let pageIndex: number = parseInt(this.inputBoxElement.id.split('_')[2]);
             if (isNullOrUndefined(pageIndex)) {
                 pageIndex = this.pdfViewerBase.currentPageNumber - 1;
             }
-            let pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (pageIndex));
+            const pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (pageIndex));
             let inputEleHeight: number = parseFloat(this.inputBoxElement.style.height);
             let inputEleWidth: number = parseFloat(this.inputBoxElement.style.width);
-            let inputEleLeft: number = parseFloat(this.inputBoxElement.style.left);
+            const inputEleLeft: number = parseFloat(this.inputBoxElement.style.left);
             if (this.pdfViewerBase.isMixedSizeDocument) {
-                let canvas: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
+                const canvas: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
                 this.inputBoxElement.style.left = inputEleLeft - canvas.offsetLeft;
             }
-            let inputEleTop: number = parseFloat(this.inputBoxElement.style.top);
-            let zoomFactor: number = this.pdfViewerBase.getZoomFactor();
+            const inputEleTop: number = parseFloat(this.inputBoxElement.style.top);
+            const zoomFactor: number = this.pdfViewerBase.getZoomFactor();
             if (this.pdfViewer.isValidFreeText) {
                 this.inputBoxElement.value = 'Type Here';
                 this.pdfViewer.isValidFreeText = false;
             }
-            let inputValue: string = this.inputBoxElement.value;
+            const inputValue: string = this.inputBoxElement.value;
             let isNewlyAdded: boolean = false;
             if (this.isNewFreeTextAnnot === true) {
-                // tslint:disable-next-line:max-line-length
-                let currentDateString: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
-                let annotationName: string = this.pdfViewer.annotation.createGUID();
+                // eslint-disable-next-line max-len
+                const currentDateString: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+                const annotationName: string = this.pdfViewer.annotation.createGUID();
                 this.isNewFreeTextAnnot = false;
                 isNewlyAdded = true;
                 let annot: PdfAnnotationBaseModel;
-                let commentsDivid: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.addComments('freeText', pageIndex + 1);
+                const commentsDivid: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.addComments('freeText', pageIndex + 1);
                 if (commentsDivid) {
                     document.getElementById(commentsDivid).id = annotationName;
                 }
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let annotationSelectorSettings: any = this.pdfViewer.freeTextSettings.annotationSelectorSettings ? this.pdfViewer.freeTextSettings.annotationSelectorSettings: this.pdfViewer.annotationSelectorSettings;
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let annotationSettings: any =  this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 this.author = this.author? this.author : this.pdfViewer.freeTextSettings.author ? this.pdfViewer.freeTextSettings.author : 'Guest';
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let allowedInteractions: any = this.pdfViewer.freeTextSettings.allowedInteractions ? this.pdfViewer.freeTextSettings.allowedInteractions: this.pdfViewer.annotationSettings.allowedInteractions;
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 annot = {
                     author: this.author, modifiedDate: currentDateString, subject: 'Text Box', id: 'free_text' + this.inputBoxCount,
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     rotateAngle: 0, dynamicText: inputValue, strokeColor: this.borderColor, thickness: this.borderWidth, fillColor: this.fillColor,
                     bounds: {
                         left: inputEleLeft / zoomFactor, top: inputEleTop / zoomFactor, x: inputEleLeft / zoomFactor,
-                        y: inputEleTop / zoomFactor, width: inputEleWidth, height: inputEleHeight,
+                        y: inputEleTop / zoomFactor, width: inputEleWidth, height: inputEleHeight
                     }, annotName: annotationName,
                     shapeAnnotationType: 'FreeText', pageIndex: pageIndex, fontColor: this.fontColor, fontSize: this.fontSize,
                     fontFamily: this.fontFamily, opacity: this.opacity, comments: [], textAlign: this.textAlign,
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     font: { isBold: this.isBold, isItalic: this.isItalic, isStrikeout: this.isStrikethrough, isUnderline: this.isUnderline },
                     review: { state: 'Unmarked', stateModel: 'None', modifiedDate: currentDateString, author: this.author },
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     annotationSelectorSettings: annotationSelectorSettings, annotationSettings: annotationSettings,
                     customData: this.pdfViewer.annotationModule.getData('FreeText'), isPrint: this.pdfViewer.freeTextSettings.isPrint,
                     allowedInteractions: allowedInteractions, isReadonly: this.isReadonly
@@ -640,18 +667,18 @@ export class FreeTextAnnotation {
                 if (this.pdfViewer.enableRtl) {
                     annot.textAlign = 'Right';
                 }
-                let annotation: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
-                // tslint:disable-next-line
+                const annotation: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
+                // eslint-disable-next-line
                 let bounds: any = { left: annot.bounds.x, top: annot.bounds.y, width: annot.bounds.width, height: annot.bounds.height };
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let settings: any = {
                     opacity: annot.opacity, borderColor: annot.strokeColor, borderWidth: annot.thickness, author: annotation.author, subject: annotation.subject, modifiedDate: annotation.modifiedDate,
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line
                     fillColor: annot.fillColor, fontSize: annot.fontSize, width: annot.bounds.width, height: annot.bounds.height, fontColor: annot.fontColor, fontFamily: annot.fontFamily, defaultText: annot.dynamicText, fontStyle: annot.font, textAlignment: annot.textAlign
                 };
                 this.pdfViewer.annotation.storeAnnotations(pageIndex, annot, '_annotations_freetext');
                 this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'FreeText', bounds, settings);
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 this.pdfViewer.annotation.addAction(pageIndex, null, annot as PdfAnnotationBase, 'Addition', '', annot as PdfAnnotationBase, annot);
                 this.pdfViewer.renderSelector((annot as PdfAnnotationBaseModel).pageIndex);
                 this.pdfViewer.clearSelection(annot.pageIndex);
@@ -659,11 +686,11 @@ export class FreeTextAnnotation {
                 this.selectedAnnotation = annotation;
             }
             this.isInuptBoxInFocus = false;
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             if (this.selectedAnnotation && this.pdfViewer.selectedItems.annotations) {
                 inputEleWidth = ((inputEleWidth - 1) / zoomFactor);
                 inputEleHeight = ((inputEleHeight - 1) / zoomFactor);
-                let heightDiff: number = (inputEleHeight - this.selectedAnnotation.bounds.height);
+                const heightDiff: number = (inputEleHeight - this.selectedAnnotation.bounds.height);
                 let y: number = undefined;
                 if (heightDiff > 0) {
                     y = this.selectedAnnotation.wrapper.offsetY + (heightDiff / 2);
@@ -674,9 +701,9 @@ export class FreeTextAnnotation {
                 this.pdfViewer.annotation.modifyDynamicTextValue(inputValue, this.selectedAnnotation.annotName);
                 this.selectedAnnotation.dynamicText = inputValue;
                 this.modifyInCollection('dynamicText', pageIndex, this.selectedAnnotation, isNewlyAdded);
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 this.pdfViewer.nodePropertyChange(this.selectedAnnotation, { bounds: { width: this.selectedAnnotation.bounds.width, height: this.selectedAnnotation.bounds.height, y: y } });
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let commentsDiv: any = document.getElementById(this.selectedAnnotation.annotName);
                 if (commentsDiv && commentsDiv.childNodes) {
                     if (commentsDiv.childNodes[0].ej2_instances) {
@@ -695,12 +722,12 @@ export class FreeTextAnnotation {
                     this.inputBoxElement.parentElement.removeChild(this.inputBoxElement);
                 }
             }
-            let canvass: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
-            // tslint:disable-next-line
+            const canvass: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
+            // eslint-disable-next-line
             this.pdfViewer.renderDrawing(canvass as any, pageIndex);
             this.inputBoxCount += 1;
             if (!isNewlyAdded && this.previousText !== inputValue) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 this.pdfViewer.annotationModule.triggerAnnotationPropChange(this.selectedAnnotation, false, false, false, false, false, false, false, true, this.previousText, inputValue);
             }
         } else {
@@ -712,33 +739,34 @@ export class FreeTextAnnotation {
     }
 
     /**
+     * @param event
      * @private
      */
     public onKeyDownInputBox(event: KeyboardEvent): void {
         this.selectedAnnotation = this.pdfViewer.selectedItems.annotations ? this.pdfViewer.selectedItems.annotations[0]
             : this.selectedAnnotation;
-        let inuptEleObj: FreeTextAnnotation = this;
+        const inuptEleObj: FreeTextAnnotation = this;
         if (event.which === 9) {
             event.preventDefault();
         }
         setTimeout(() => {
             if (inuptEleObj.defaultHeight < inuptEleObj.inputBoxElement.scrollHeight
-                // tslint:disable-next-line:radix
+                // eslint-disable-next-line radix
                 && parseInt(inuptEleObj.inputBoxElement.style.height) < inuptEleObj.inputBoxElement.scrollHeight) {
                 inuptEleObj.updateFreeTextAnnotationSize(true);
             } else {
                 inuptEleObj.updateFreeTextAnnotationSize(false);
             }
-            // tslint:disable-next-line
+            // eslint-disable-next-line
         }, 0);
     }
 
     private updateFreeTextAnnotationSize(isSize : boolean): void {
-        let inuptEleObj: FreeTextAnnotation = this;
+        const inuptEleObj: FreeTextAnnotation = this;
         if (!isSize && !inuptEleObj.inputBoxElement.readOnly) {
             inuptEleObj.inputBoxElement.style.height = 'auto';
         }
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         inuptEleObj.inputBoxElement.style.height = inuptEleObj.inputBoxElement.readOnly ? inuptEleObj.inputBoxElement.style.height : inuptEleObj.inputBoxElement.scrollHeight + 5 + 'px';
         let inputEleHeight: number = parseFloat(this.inputBoxElement.style.height);
         let inputEleWidth: number = parseFloat(this.inputBoxElement.style.width);
@@ -755,17 +783,18 @@ export class FreeTextAnnotation {
             }
             inuptEleObj.selectedAnnotation.bounds.width = inputEleWidth;
             inuptEleObj.selectedAnnotation.bounds.height = inputEleHeight;
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             inuptEleObj.pdfViewer.nodePropertyChange(inuptEleObj.selectedAnnotation, { bounds: { width: inuptEleObj.selectedAnnotation.bounds.width, height: inuptEleObj.selectedAnnotation.bounds.height, y: y } });
             inuptEleObj.pdfViewer.renderSelector(inuptEleObj.selectedAnnotation.pageIndex,  this.selectedAnnotation.annotationSelectorSettings);
         }
     }
 
     /**
+     * @param event
      * @private
      */
     public onMouseUpInputBox(event: MouseEvent): void {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let target: any = event.target;
         this.selectionStart = 0;
         this.selectionEnd = 0;
@@ -782,6 +811,9 @@ export class FreeTextAnnotation {
     }
 
     /**
+     * @param currentPosition
+     * @param annotation
+     * @param pageIndex
      * @private
      */
     public addInuptElemet(currentPosition: PointModel, annotation: PdfAnnotationBaseModel = null, pageIndex?: number): void {
@@ -792,9 +824,9 @@ export class FreeTextAnnotation {
             pageIndex = annotation.pageIndex;
         }
         this.inputBoxElement.id = this.pdfViewer.element.id + '_freeText_' + pageIndex + '_' + this.inputBoxCount;
-        let pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (pageIndex));
-        let canvass: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
-        let zoomFactor: number = this.pdfViewerBase.getZoomFactor();
+        const pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (pageIndex));
+        const canvass: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
+        const zoomFactor: number = this.pdfViewerBase.getZoomFactor();
         this.inputBoxElement.value = (annotation && annotation.dynamicText) ? annotation.dynamicText : this.defaultText;
         this.inputBoxElement.style.boxSizing = 'border-box';
         this.inputBoxElement.style.left = ((currentPosition.x)) + 'px';
@@ -844,9 +876,9 @@ export class FreeTextAnnotation {
             if (annotation.wrapper.bounds.top) {
                 this.inputBoxElement.style.top = ((annotation.wrapper.bounds.top) * zoomFactor) + 'px';
             }
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             this.inputBoxElement.style.height = annotation.wrapper.bounds.height ? (annotation.wrapper.bounds.height * zoomFactor) + 1 + 'px' : (this.defaultHeight * zoomFactor) + 'px';
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             this.inputBoxElement.style.width = annotation.wrapper.bounds.width ? (annotation.wrapper.bounds.width * zoomFactor) + 1 + 'px' : (this.defautWidth * zoomFactor) + 'px';
             this.selectedAnnotation = annotation;
             this.previousText = this.selectedAnnotation.dynamicText;
@@ -881,7 +913,7 @@ export class FreeTextAnnotation {
         }
         this.pdfViewer.annotation.freeTextAnnotationModule.isFreeTextValueChange = false;
         pageDiv.appendChild(this.inputBoxElement);
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         if (this.defaultHeight < this.inputBoxElement.scrollHeight && parseInt(this.inputBoxElement.style.height) < this.inputBoxElement.scrollHeight) {
             this.inputBoxElement.style.height = this.inputBoxElement.scrollHeight + 5 + 'px';
         }
@@ -904,7 +936,7 @@ export class FreeTextAnnotation {
     public copySelectedText(): void {
         if (window.getSelection() !== null) {
             this.selectedText = window.getSelection().toString();
-            let textArea: HTMLElement = document.createElement('textarea');
+            const textArea: HTMLElement = document.createElement('textarea');
             textArea.contentEditable = 'true';
             textArea.textContent = this.selectedText;
             textArea.style.position = 'fixed';
@@ -923,31 +955,33 @@ export class FreeTextAnnotation {
     }
 
     /**
+     * @param target
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public pasteSelectedText(target: any): void {
         if (this.selectedText !== '' && target) {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let text: any = target.value;
             target.value = text.slice(0, this.selectionStart) + this.selectedText + text.slice(this.selectionEnd, text.length);
         }
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let events: any = event;
         this.onKeyDownInputBox(events);
     }
 
     /**
+     * @param target
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public cutSelectedText(target: any): void {
         if (window.getSelection() !== null) {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let text: any = target.value;
             this.selectedText = window.getSelection().toString();
             target.value = text.slice(0, target.selectionStart) + text.slice(target.selectionEnd);
-            let textArea: HTMLElement = document.createElement('textarea');
+            const textArea: HTMLElement = document.createElement('textarea');
             textArea.contentEditable = 'true';
             textArea.textContent = this.selectedText;
             textArea.style.position = 'fixed';
@@ -966,44 +1000,50 @@ export class FreeTextAnnotation {
     }
 
     /**
+     * @param shapeAnnotations
+     * @param pageNumber
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public saveImportedFreeTextAnnotations(shapeAnnotations: any, pageNumber: number): void {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let annotation: any = shapeAnnotations;
         if (annotation.AnnotType) {
             let vertexPoints: IPoint[] = null;
             if (annotation.VertexPoints) {
                 vertexPoints = [];
                 for (let j: number = 0; j < annotation.VertexPoints.length; j++) {
-                    let point: IPoint = { x: annotation.VertexPoints[j].X, y: annotation.VertexPoints[j].Y };
+                    const point: IPoint = { x: annotation.VertexPoints[j].X, y: annotation.VertexPoints[j].Y };
                     vertexPoints.push(point);
                 }
             }
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
             let annot: PdfAnnotationBaseModel;
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             annotation.allowedInteractions = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
-            // tslint:disable-next-line
+            let annotationBoundsX: number = annotation.Bounds.X ? annotation.Bounds.X : annotation.Bounds.x;
+            let annotationBoundsY: number = annotation.Bounds.Y ? annotation.Bounds.Y : annotation.Bounds.y;
+            let annotationBoundsWidth: number = annotation.Bounds.Width ? annotation.Bounds.Width : annotation.Bounds.width;
+            let annotationBoundsHeight: number = annotation.Bounds.Height ? annotation.Bounds.Height : annotation.Bounds.height;
+            // eslint-disable-next-line
             annot = {
                 author: annotation.Author, allowedInteractions: annotation.allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, id: 'freetext',
                 rotateAngle: annotation.Rotate, dynamicText: annotation.MarkupText, strokeColor: annotation.StrokeColor,
                 thickness: annotation.Thickness, fillColor: annotation.FillColor,
                 bounds: {
-                    x: annotation.Bounds.X, y: annotation.Bounds.Y, left: annotation.Bounds.X, top: annotation.Bounds.Y,
-                    width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right,
+                    x: annotationBoundsX, y: annotationBoundsY, left: annotationBoundsX, top: annotationBoundsY,
+                    width: annotationBoundsWidth, height: annotationBoundsHeight, right: annotation.Bounds.Right,
                     bottom: annotation.Bounds.Bottom
                 }, annotName: annotation.AnnotName, shapeAnnotationType: 'FreeText',
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 pageIndex: pageNumber, opacity: annotation.Opacity, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
                 fontFamily: annotation.FontFamily, notes: annotation.MarkupText, textAlign: annotation.TextAlign,
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
                 font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline },
                 annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings,
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock, isReadonly: annotation.IsReadonly
             };
             this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annot, '_annotations_freetext');
@@ -1011,41 +1051,47 @@ export class FreeTextAnnotation {
     }
 
     /**
+     * @param shapeAnnotations
+     * @param pageNumber
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public updateFreeTextAnnotationCollections(shapeAnnotations: any, pageNumber: number): void {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let annotation: any = shapeAnnotations;
         if (annotation.AnnotType) {
             let vertexPoints: IPoint[] = null;
             if (annotation.VertexPoints) {
                 vertexPoints = [];
                 for (let j: number = 0; j < annotation.VertexPoints.length; j++) {
-                    let point: IPoint = { x: annotation.VertexPoints[j].X, y: annotation.VertexPoints[j].Y };
+                    const point: IPoint = { x: annotation.VertexPoints[j].X, y: annotation.VertexPoints[j].Y };
                     vertexPoints.push(point);
                 }
             }
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             annotation.allowedInteractions = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
-            // tslint:disable-next-line
+            let annotationBoundsX: number = annotation.Bounds.X ? annotation.Bounds.X : annotation.Bounds.x;
+            let annotationBoundsY: number = annotation.Bounds.Y ? annotation.Bounds.Y : annotation.Bounds.y;
+            let width: number = annotation.Bounds.Width ? annotation.Bounds.Width : annotation.Bounds.width;
+            let height: number = annotation.Bounds.Height ? annotation.Bounds.Height : annotation.Bounds.height;
+            // eslint-disable-next-line
             let annot: any;
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             annot = {
                 author: annotation.Author, allowedInteractions: annotation.allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, id: 'freetext',
                 rotateAngle: annotation.Rotate, dynamicText: annotation.MarkupText, strokeColor: annotation.StrokeColor,
                 thickness: annotation.Thickness, fillColor: annotation.FillColor,
                 bounds: {
-                    x: annotation.Bounds.X, y: annotation.Bounds.Y, left: annotation.Bounds.X, top: annotation.Bounds.Y,
-                    width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right,
+                    x: annotationBoundsX, y: annotationBoundsY, left: annotationBoundsX, top: annotationBoundsY,
+                    width: width, height: height, right: annotation.Bounds.Right,
                     bottom: annotation.Bounds.Bottom
                 }, annotationId: annotation.AnnotName, shapeAnnotationType: 'FreeText',
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 pageIndex: pageNumber, opacity: annotation.Opacity, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
                 fontFamily: annotation.FontFamily, notes: annotation.MarkupText,
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
                 font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline }, pageNumber: pageNumber, annotationSettings: annotation.AnnotationSettings, isCommentLock: annotation.IsCommentLock
             };

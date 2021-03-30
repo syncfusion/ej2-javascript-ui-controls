@@ -10,6 +10,8 @@ export class WorkbookDelete {
     private parent: Workbook;
     /**
      * Constructor for the workbook delete module.
+     *
+     * @param {Workbook} - Specify the workbook
      * @private
      */
     constructor(parent: Workbook) {
@@ -18,17 +20,17 @@ export class WorkbookDelete {
     }
     // tslint:disable-next-line
     private deleteModel(args: InsertDeleteModelArgs): void {
-        let sheetLength: number = this.parent.sheets.length;
+        const sheetLength: number = this.parent.sheets.length;
         if (args.modelType === 'Sheet' && sheetLength === 1) {
             return;
         }
-        let modelName: string = `${args.modelType.toLowerCase()}s`;
+        const modelName: string = `${args.modelType.toLowerCase()}s`;
         args.start = <number>args.start;
         if (args.start > args.end) {
-            let temp: number = args.start; args.start = args.end; args.end = temp;
+            const temp: number = args.start; args.start = args.end; args.end = temp;
         }
-        let deletedCells: RowModel[]; let mergeArgsCollection: MergeArgs[] = []; let count: number = (args.end - args.start) + 1;
-        let range: number[]; let prevCell: CellModel;
+        let deletedCells: RowModel[]; const mergeArgsCollection: MergeArgs[] = []; const count: number = (args.end - args.start) + 1;
+        let prevCell: CellModel; let freezePane: boolean;
         if (args.modelType === 'Row') {
             args.model = <SheetModel>args.model;
             if (args.start > args.model.usedRange.rowIndex) { return; }
@@ -38,7 +40,13 @@ export class WorkbookDelete {
             if (args.model !== this.parent.getActiveSheet()) {
                 this.parent.notify(updateUsedRange, { index: args.model.usedRange.rowIndex, update: 'row' });
             }
-            let curIdx: number = args.end + 1; let cell: CellModel; let mergeArgs: MergeArgs;
+            let frozenRow: number = this.parent.frozenRowCount(args.model);
+            if (args.start < frozenRow) {
+                frozenRow = args.end < frozenRow ? (args.end - args.start) + 1 : frozenRow - args.start;
+                frozenRow = args.model.frozenRows - frozenRow;
+                this.parent.setSheetPropertyOnMute(args.model, 'frozenRows', frozenRow); freezePane = true;
+            }
+            const curIdx: number = args.end + 1; let cell: CellModel; let mergeArgs: MergeArgs;
             if (args.model.rows[args.start] && args.model.rows[args.start].cells) {
                 for (let i: number = 0; i <= args.model.usedRange.colIndex; i++) {
                     if (args.model.rows[args.start].cells[i] && args.model.rows[args.start].cells[i].rowSpan !== undefined &&
@@ -68,7 +76,7 @@ export class WorkbookDelete {
                         cell = new Object(); mergeArgs.range = mergeArgs.range as number[];
                         Object.assign(cell, getCell(mergeArgs.range[0], mergeArgs.range[1], args.model));
                         if (cell && cell.rowSpan && (cell.rowSpan > 1 || cell.colSpan > 1)) {
-                            let indexes: number[] = [];
+                            const indexes: number[] = [];
                             indexes[1] = i; indexes[3] = cell.colSpan > 1 ? i + (cell.colSpan - 1) : i;
                             mergeArgs.range = mergeArgs.range as number[];
                             if (mergeArgs.range[0] < args.start) {
@@ -99,7 +107,13 @@ export class WorkbookDelete {
             if (args.model !== this.parent.getActiveSheet()) {
                 this.parent.notify(updateUsedRange, { index: args.model.usedRange.colIndex, update: 'col' });
             }
-            deletedCells = []; let curIdx: number = args.end + 1; let cell: CellModel; let mergeArgs: MergeArgs;
+            let frozenCol: number = this.parent.frozenColCount(args.model);
+            if (args.start < frozenCol) {
+                frozenCol = args.end < frozenCol ? (args.end - args.start) + 1 : frozenCol - args.start;
+                frozenCol = args.model.frozenColumns - frozenCol;
+                this.parent.setSheetPropertyOnMute(args.model, 'frozenColumns', frozenCol); freezePane = true;
+            }
+            deletedCells = []; const curIdx: number = args.end + 1; let cell: CellModel; let mergeArgs: MergeArgs;
             for (let i: number = 0; i <= args.model.usedRange.rowIndex; i++) {
                 deletedCells.push({});
                 if (args.model.rows[i] && args.model.rows[i].cells) {
@@ -108,7 +122,7 @@ export class WorkbookDelete {
                         mergeArgs = { range: [i, args.start, i, args.start] };
                         this.parent.notify(activeCellMergedRange, mergeArgs); mergeArgs.range = mergeArgs.range as number[];
                         if (mergeArgs.range[3] <= args.end) {
-                            let prevCell: CellModel = getCell(i, mergeArgs.range[1], args.model);
+                            const prevCell: CellModel = getCell(i, mergeArgs.range[1], args.model);
                             if (prevCell && prevCell.colSpan > 1) {
                                 if (prevCell.colSpan - ((mergeArgs.range[3] - args.start) + 1) > 1) {
                                     setCell(
@@ -130,7 +144,7 @@ export class WorkbookDelete {
                         cell = new Object(); mergeArgs.range = mergeArgs.range as number[];
                         Object.assign(cell, getCell(mergeArgs.range[0], mergeArgs.range[1], args.model));
                         if (cell && cell.colSpan && (cell.colSpan > 1 || cell.rowSpan > 1)) {
-                            let indexes: number[] = [];
+                            const indexes: number[] = [];
                             indexes[0] = i; indexes[2] = cell.rowSpan > 1 ? i + (cell.rowSpan - 1) : i;
                             mergeArgs.range = mergeArgs.range as number[];
                             if (mergeArgs.range[1] < args.start) {
@@ -155,7 +169,7 @@ export class WorkbookDelete {
         } else {
             if (args.end - args.start === this.parent.sheets.length - 1) { return; }
         }
-        let deletedModel: RowModel[] = [];
+        const deletedModel: RowModel[] = [];
         for (let i: number = args.start; i <= args.end; i++) {
             if (args.model[modelName][args.start]) {
                 deletedModel.push(args.model[modelName][args.start]);
@@ -167,14 +181,14 @@ export class WorkbookDelete {
 
         }
         mergeArgsCollection.forEach((merge: MergeArgs): void => { this.parent.notify(setMerge, merge); });
-        let insertArgs: { action: string, insertArgs: InsertDeleteEventArgs } = {
+        const insertArgs: { action: string, insertArgs: InsertDeleteEventArgs } = {
             action: 'refreshNamedRange', insertArgs: {
                 startIndex: args.start, endIndex: args.end, modelType: args.modelType,
                 isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells,
                 activeSheetIndex: this.parent.activeSheetIndex, name: 'delete'
             }
         };
-        let eventArgs: { [key: string]: Object } = {
+        const eventArgs: { [key: string]: Object } = {
             action: 'refreshInsDelFormula', insertArgs: {
                 model: deletedModel, startIndex: args.start, endIndex: args.end, modelType: args.modelType,
                 name: 'delete', activeSheetIndex:
@@ -187,11 +201,11 @@ export class WorkbookDelete {
         this.parent.notify(deleteAction, {
             startIndex: args.start, endIndex: args.end, modelType: args.modelType,
             isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells,
-            activeSheetIndex: this.parent.activeSheetIndex
+            activeSheetIndex: this.parent.activeSheetIndex, freezePane: freezePane
         });
     }
     private setDeleteInfo(startIndex: number, endIndex: number, totalKey: string, modelType: string = 'Row'): void {
-        let total: number = (endIndex - startIndex) + 1; let newRange: number[] = []; let insertRange: number[];
+        const total: number = (endIndex - startIndex) + 1; const newRange: number[] = [];
         this.parent.getActiveSheet().ranges.forEach((range: ExtendedRange): void => {
             if (range.info && startIndex < range.info[totalKey]) {
                 if (range.info[`delete${modelType}Range`]) {
@@ -211,6 +225,8 @@ export class WorkbookDelete {
     }
     /**
      * Destroy workbook delete module.
+     *
+     * @returns {void}
      */
     public destroy(): void {
         this.removeEventListener();
@@ -223,6 +239,8 @@ export class WorkbookDelete {
     }
     /**
      * Get the workbook delete module name.
+     *
+     * @returns {string} - returns the module name.
      */
     public getModuleName(): string {
         return 'workbookdelete';

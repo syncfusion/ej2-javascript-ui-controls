@@ -5,6 +5,7 @@ import { RenderType } from '../base/enum';
 
 /**
  * RendererFactory
+ * 
  * @hidden
  * @deprecated
  */
@@ -14,11 +15,15 @@ export class RendererFactory {
 
     /**
      * addRenderer method
+     *
+     * @param {RenderType} name - specifies the render type
+     * @param {IRenderer} type - specifies the renderer.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public addRenderer(name: RenderType, type: IRenderer): void {
-        let rName: string = <string>getEnumValue(RenderType, <RenderType>name);
+        const rName: string = <string>getEnumValue(RenderType, <RenderType>name);
 
         if (isNullOrUndefined(this.rendererMap[rName])) {
             this.rendererMap[rName] = type;
@@ -27,13 +32,17 @@ export class RendererFactory {
 
     /**
      * getRenderer method
+     *
+     * @param {RenderType} name - specifies the render type
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public getRenderer(name: RenderType): IRenderer {
-        let rName: string = <string>getEnumValue(RenderType, <RenderType>name);
+        const rName: string = <string>getEnumValue(RenderType, <RenderType>name);
 
         if (isNullOrUndefined(this.rendererMap[rName])) {
+            // eslint-disable-next-line
             throw `The renderer ${rName} is not found`;
         } else {
             return this.rendererMap[rName];

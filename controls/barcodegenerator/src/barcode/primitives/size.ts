@@ -5,12 +5,14 @@ export class Size {
 
     /**
      * Sets the height of an object
+     *
      * @default 0
      */
     public height: number;
 
     /**
      * Sets the width of an object
+     *
      * @default 0
      */
     public width: number;

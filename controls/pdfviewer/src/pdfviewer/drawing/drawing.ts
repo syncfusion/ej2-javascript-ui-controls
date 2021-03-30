@@ -1,7 +1,8 @@
+/* eslint-disable */
 import { PdfViewer } from '../index';
 import { PdfAnnotationBaseModel } from './pdf-annotation-model';
 import { ZOrderPageTable, PdfAnnotationBase } from './pdf-annotation';
-// tslint:disable-next-line:max-line-length
+// eslint-disable-next-line max-len
 import { Container, Rect, PointModel, Point, Matrix, identityMatrix, rotateMatrix, getDiagramElement, ThumbsConstraints, BaseAttributes, RectAttributes, CircleAttributes, IElement, scaleMatrix, cornersPointsBeforeRotation, Corners, SelectorConstraints, LineAttributes, ImageElement } from '@syncfusion/ej2-drawings';
 import { DrawingElement } from '@syncfusion/ej2-drawings';
 import { PathElement } from '@syncfusion/ej2-drawings';
@@ -14,13 +15,15 @@ import { Selector } from './selector';
 import { SvgRenderer } from '@syncfusion/ej2-drawings';
 import { SelectorModel } from './selector-model';
 import { isLineShapes, setElementStype, findPointsLength, getBaseShapeAttributes, isLeader, Leader, cloneObject } from './drawing-util';
-// tslint:disable-next-line:max-line-length
+// eslint-disable-next-line max-len
 import { getConnectorPoints, updateSegmentElement, getSegmentElement, updateDecoratorElement, getDecoratorElement, clipDecorators, initDistanceLabel, initLeaders, initLeader, getPolygonPath, initPerimeterLabel } from './connector-util';
 import { isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { AnnotationResizerLocation, AnnotationSelectorSettingsModel } from '../index';
 
+/* eslint-disable */
 /**
  * Renderer module is used to render basic diagram elements
+ *
  * @hidden
  */
 export class Drawing {
@@ -35,26 +38,28 @@ export class Drawing {
         this.svgRenderer = new SvgRenderer();
     }
     /**
+     * @param viewer
      * @private
      */
     public renderLabels(viewer: PdfViewer): void {
-        let annotations: PdfAnnotationBaseModel[] = viewer.annotations;
+        const annotations: PdfAnnotationBaseModel[] = viewer.annotations;
         if (annotations) {
             for (let i: number = 0; i < annotations.length; i++) {
-                let annotation: PdfAnnotationBaseModel = annotations[i];
+                const annotation: PdfAnnotationBaseModel = annotations[i];
                 this.initObject(annotation);
             }
         }
     }
 
     private createNewZindexTable(pageId: number): ZOrderPageTable {
-        let zIndexTable: ZOrderPageTable = new ZOrderPageTable();
+        const zIndexTable: ZOrderPageTable = new ZOrderPageTable();
         this.pdfViewer.zIndex++;
         zIndexTable.pageId = this.pdfViewer.zIndex;
         this.pdfViewer.zIndexTable.push(zIndexTable);
         return zIndexTable;
     }
     /**
+     * @param pageId
      * @private
      */
     public getPageTable(pageId: number): ZOrderPageTable {
@@ -78,17 +83,19 @@ export class Drawing {
         return zIndexTable;
     }
     /**
+     * @param index
+     * @param obj
      * @private
      */
     public setZIndex(index: number, obj: PdfAnnotationBaseModel): void {
         if (obj.pageIndex !== undefined) {
-            let pageTable: ZOrderPageTable = this.getPageTable(obj.pageIndex);
+            const pageTable: ZOrderPageTable = this.getPageTable(obj.pageIndex);
             if (obj.zIndex === -1) {
                 pageTable.zIndex++;
                 obj.zIndex = pageTable.zIndex;
                 pageTable.objects.push(obj);
             } else {
-                let index: number = obj.zIndex;
+                const index: number = obj.zIndex;
                 let tabelLength: number = pageTable.objects.length;
                 obj.zIndex = tabelLength++;
                 pageTable.objects.push(obj);
@@ -97,6 +104,7 @@ export class Drawing {
     }
 
     /**
+     * @param obj
      * @private
      */
     public initObject(obj: PdfAnnotationBaseModel): PdfAnnotationBaseModel {
@@ -114,16 +122,18 @@ export class Drawing {
         if ((obj as PdfAnnotationBaseModel).wrapper === null) {
             //Init default wrapper
         }
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (this.pdfViewer.nameTable as any)[(obj as PdfAnnotationBaseModel).id] = obj;
         //Add some methodologies to add the children of group to name table
         return obj;
     }
 
     private initNode(obj: PdfAnnotationBaseModel): void {
-        let canvas: Container = this.initContainer(obj);
+        const canvas: Container = this.initContainer(obj);
         let content: DrawingElement;
-        if (!canvas.children) { canvas.children = []; }
+        if (!canvas.children) {
+            canvas.children = [];
+        }
         if (!content) {
             content = this.init(obj, canvas);
         }
@@ -143,7 +153,7 @@ export class Drawing {
     /**
      * @private
      */
-    /* tslint:disable */
+    /* eslint-disable */
     public init(obj: PdfAnnotationBaseModel, canvas: Container): DrawingElement {
         let content: DrawingElement;
         content = new DrawingElement();
@@ -154,7 +164,7 @@ export class Drawing {
         let pathContent: PathElement;
         let basicElement: DrawingElement;
         let isStamp: boolean = false;
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let annotationSettings: any = this.pdfViewer.annotationModule.findAnnotationSettings(obj);
         let annotationMaxHeight: number = 0;
         let annotationMaxWidth: number  = 0;
@@ -241,7 +251,7 @@ export class Drawing {
                     textele.setOffsetWithRespectToBounds(0, 0.57, null);
                     textele.relativeMode = 'Point';
                     canvas.children.push(textele);
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line
                     let pathContent1: any = new PathElement();
                     pathContent1.id = randomId() + '_stamp';
                     pathContent1.data = obj.data;
@@ -263,7 +273,7 @@ export class Drawing {
                     pathContent1.relativeMode = 'Point';
 
                     pathContent1.setOffsetWithRespectToBounds(0, 0.1, null);
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line
                     let content1: any = pathContent1;
                     pathContent1.style.fill = obj.fillColor;
                     pathContent1.style.strokeColor = obj.strokeColor;
@@ -280,7 +290,7 @@ export class Drawing {
                     content.style.fill = obj.stampFillColor;
                     content.style.strokeColor = obj.stampStrokeColor;
                     canvas.children.push(content);
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line
                     let pathContent1: any = new PathElement();
                     pathContent1.id = randomId() + '_stamp';
                     pathContent1.data = obj.data;
@@ -296,7 +306,7 @@ export class Drawing {
                     }
                     pathContent1.minWidth = pathContent1.width / 2;
                     pathContent1.minHeight = pathContent1.height / 2;
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line
                     let content1: any = pathContent1;
                     pathContent1.style.fill = obj.fillColor;
                     pathContent1.style.strokeColor = obj.strokeColor;
@@ -313,7 +323,7 @@ export class Drawing {
                 break;
             case 'Image':
             case 'SignatureImage':
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let pathContent11: any = new ImageElement();
                 pathContent11.source = obj.data;
                 content = pathContent11;
@@ -391,14 +401,14 @@ export class Drawing {
                 if (!this.pdfViewer.enableImportAnnotationMeasurement && obj.notes && obj.notes !== '') {
                     textele.content = obj.notes;
                 } else {
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     textele.content = this.pdfViewer.annotation.measureAnnotationModule.setConversion((length / 2) * this.pdfViewer.annotation.measureAnnotationModule.pixelToPointFactor, obj);
                 }
                 textele.rotateValue = { y: -10, x: obj.bounds.width / 4, angle: obj.rotateAngle };
                 canvas.children.push(textele);
                 break;
             case 'StickyNotes':
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let pathContent2: any = new ImageElement();
                 pathContent2.source = obj.data;
                 pathContent2.width = obj.bounds.width;
@@ -409,11 +419,11 @@ export class Drawing {
                 canvas.children.push(content);
                 break;
             case 'SignatureText':
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let rectElements: any = new DrawingElement();
                 content = rectElements;
                 canvas.children.push(content);
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let signatureText: any = this.textElement(obj);
                 signatureText.style.fontFamily = obj.fontFamily;
                 signatureText.style.fontSize = obj.fontSize;
@@ -425,7 +435,7 @@ export class Drawing {
                 canvas.children.push(signatureText);
                 break;
             case 'FreeText':
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let rectElement: any = new DrawingElement();
                 content = rectElement;
                 canvas.children.push(content);
@@ -513,7 +523,7 @@ export class Drawing {
             obj.offsetX = node.bounds.x + node.bounds.width / 2;
             obj.offsetY = node.bounds.y + node.bounds.height / 2;
         } else if (node.shapeAnnotationType === 'Radius') {
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             let trasPoint: PointModel = { x: node.bounds.x + (node.bounds.width / 2) + (node.bounds.width / 4), y: node.bounds.y + (node.bounds.height / 2) };
             let center: PointModel = { x: (node.bounds.x + (node.bounds.width / 2)), y: (node.bounds.y + (node.bounds.height / 2)) };
             let matrix: Matrix = identityMatrix();
@@ -525,8 +535,9 @@ export class Drawing {
             obj.width = node.bounds.width / 2;
         }
     }
-    /* tslint:enable */
+    /* eslint-disable */
     /**
+     * @param obj
      * @private
      */
     public initContainer(obj: PdfAnnotationBaseModel): Container {
@@ -549,15 +560,16 @@ export class Drawing {
 
 
     /**
+     * @param obj
      * @private
      */
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public initLine(obj: PdfAnnotationBaseModel): Canvas {
         if (!obj.id) {
             obj.id = randomId();
         }
         let bpmnElement: PathElement;
-        let container: Canvas = new Canvas();
+        const container: Canvas = new Canvas();
         let segment: PathElement = new PathElement();
         segment.id = obj.id + '_path';
         let srcDecorator: PathElement = new PathElement();
@@ -587,7 +599,7 @@ export class Drawing {
         }
         if (obj.enableShapeLabel === true && !(obj.shapeAnnotationType === 'Distance') && !(obj.measureType === 'Perimeter')) {
             let textele: TextElement;
-            let angle: number = Point.findAngle(points[0], points[1]);
+            const angle: number = Point.findAngle(points[0], points[1]);
             textele = this.textElement(obj);
             textele.id = randomId();
             if (!this.pdfViewer.enableImportAnnotationMeasurement && obj.notes && obj.notes !== '') {
@@ -610,16 +622,16 @@ export class Drawing {
         container.height = bounds.height;
         container.offsetX = bounds.x + container.pivot.x * bounds.width;
         container.offsetY = bounds.y + container.pivot.y * bounds.height;
-        let anglePoints: PointModel[] = obj.vertexPoints as PointModel[];
-        let accessContent: string = 'getDescription';
-        // tslint:disable-next-line:max-line-length
+        const anglePoints: PointModel[] = obj.vertexPoints as PointModel[];
+        const accessContent: string = 'getDescription';
+        // eslint-disable-next-line max-len
         if (obj.shapeAnnotationType === 'Line' || obj.shapeAnnotationType === 'LineWidthArrowHead' || obj.shapeAnnotationType === 'Distance') {
             srcDecorator = getDecoratorElement(obj, points[0], anglePoints[1], true);
             targetDecorator = getDecoratorElement(obj, points[points.length - 1], anglePoints[anglePoints.length - 2], false);
         }
         srcDecorator.id = obj.id + '_srcDec';
         targetDecorator.id = obj.id + '_tarDec';
-        /* tslint:disable:no-string-literal */
+        /* eslint-disable @typescript-eslint/dot-notation */
         segment.style['fill'] = 'transparent';
         container.style.strokeColor = 'transparent';
         container.style.fill = 'transparent';
@@ -649,6 +661,7 @@ export class Drawing {
         return container;
     }
     /**
+     * @param obj
      * @private
      */
     public add(obj: PdfAnnotationBaseModel): PdfAnnotationBaseModel {
@@ -658,15 +671,16 @@ export class Drawing {
         return obj;
     }
     /**
+     * @param obj
      * @private
      */
     public remove(obj: PdfAnnotationBaseModel): void {
-        let index: number = obj.pageIndex;
+        const index: number = obj.pageIndex;
         for (let i: number = 0; i < this.pdfViewer.annotations.length; i++) {
-            let annotation: PdfAnnotationBaseModel = this.pdfViewer.annotations[i];
+            const annotation: PdfAnnotationBaseModel = this.pdfViewer.annotations[i];
             if (annotation.id === obj.id || annotation.wrapper.id === obj.id) {
                 this.pdfViewer.annotations.splice(i, 1);
-                let objects: (PdfAnnotationBaseModel)[] = this.getPageObjects(obj.pageIndex);
+                const objects: (PdfAnnotationBaseModel)[] = this.getPageObjects(obj.pageIndex);
                 for (let j: number = 0; j < objects.length; j++) {
                     if (objects[j].id === obj.id) {
                         objects.splice(j, 1);
@@ -678,13 +692,16 @@ export class Drawing {
         this.pdfViewer.renderDrawing(undefined, index);
     }
     /**
+     * @param pageIndex
      * @private
      */
     public getPageObjects(pageIndex: number): (PdfAnnotationBaseModel)[] {
-        let pageTable: ZOrderPageTable = this.getPageTable(pageIndex);
+        const pageTable: ZOrderPageTable = this.getPageTable(pageIndex);
         return pageTable.objects;
     }
     /**
+     * @param diagramLayer
+     * @param pageIndex
      * @private
      */
     public refreshCanvasDiagramLayer(diagramLayer?: HTMLCanvasElement, pageIndex?: number): void {
@@ -692,25 +709,25 @@ export class Drawing {
             diagramLayer = (document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex) as HTMLCanvasElement);
         }
         if (diagramLayer) {
-            let width: number = diagramLayer.width / this.pdfViewer.viewerBase.getZoomFactor();
-            let height: number = diagramLayer.height / this.pdfViewer.viewerBase.getZoomFactor();
-            let zoom: number = this.pdfViewer.viewerBase.getZoomFactor();
-            let ctx: CanvasRenderingContext2D = diagramLayer.getContext('2d');
+            const width: number = diagramLayer.width / this.pdfViewer.viewerBase.getZoomFactor();
+            const height: number = diagramLayer.height / this.pdfViewer.viewerBase.getZoomFactor();
+            const zoom: number = this.pdfViewer.viewerBase.getZoomFactor();
+            const ctx: CanvasRenderingContext2D = diagramLayer.getContext('2d');
             ctx.setTransform(zoom, 0, 0, zoom, 0, 0);
             ctx.clearRect(0, 0, width, height);
 
-            let objects: (PdfAnnotationBaseModel)[] = this.getPageObjects(pageIndex);
+            const objects: (PdfAnnotationBaseModel)[] = this.getPageObjects(pageIndex);
             for (let i: number = 0; i < objects.length; i++) {
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let renderElement: DrawingElement;
                 if (diagramLayer.id === this.pdfViewer.element.id + '_print_annotation_layer_' + pageIndex) {
                     if (objects[i].isPrint) {
-                        // tslint:disable-next-line:no-any
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         renderElement = (this.pdfViewer.nameTable as any)[objects[i].id].wrapper;
                         refreshDiagramElements(diagramLayer, [renderElement], this.renderer);
                     }
                 } else {
-                    // tslint:disable-next-line:no-any
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     renderElement = (this.pdfViewer.nameTable as any)[objects[i].id].wrapper;
                     refreshDiagramElements(diagramLayer, [renderElement], this.renderer);
                 }
@@ -719,12 +736,13 @@ export class Drawing {
     }
 
     /**
+     * @param index
      * @private
      */
     public clearHighlighter(index?: number): void {
-        let adornerSvg: SVGElement = this.getAdornerLayerSvg(this.pdfViewer.element.id + index + '_diagramAdornerLayer', index);
+        const adornerSvg: SVGElement = this.getAdornerLayerSvg(this.pdfViewer.element.id + index + '_diagramAdornerLayer', index);
         if (adornerSvg) {
-            let highlighter: SVGElement =
+            const highlighter: SVGElement =
                 (adornerSvg as SVGSVGElement).getElementById(adornerSvg.id + '_highlighter') as SVGElement;
             if (highlighter) {
                 highlighter.parentNode.removeChild(highlighter);
@@ -732,11 +750,13 @@ export class Drawing {
         }
     }
     /**
+     * @param diagramId
+     * @param index
      * @private
      */
     public getSelectorElement(diagramId: string, index?: number): SVGElement {
         let adornerLayer: SVGElement = null;
-        let adornerSvg: SVGSVGElement = this.getAdornerLayerSvg(diagramId, index);
+        const adornerSvg: SVGSVGElement = this.getAdornerLayerSvg(diagramId, index);
         if (adornerSvg) {
             adornerLayer = adornerSvg.getElementById(diagramId + '_SelectorElement') as SVGElement;
         }
@@ -745,12 +765,15 @@ export class Drawing {
 
 
     /**
+     * @param diagramId
+     * @param index
+     * @param diagramId
+     * @param index
      * @private
      */
     public getAdornerLayerSvg(diagramId: string, index?: number): SVGSVGElement {
         let adornerLayerSvg: SVGSVGElement = null;
-        let diagramElement: HTMLElement = getDiagramElement(diagramId + index + '_diagramAdornerLayer');
-        // tslint:disable-next-line
+        const diagramElement: HTMLElement = getDiagramElement(diagramId + index + '_diagramAdornerLayer');
         let elementcoll: any;
         if (diagramElement) {
             elementcoll = diagramElement.getElementsByClassName('e-adorner-layer' + index);
@@ -759,18 +782,19 @@ export class Drawing {
         return adornerLayerSvg;
     }
     /**
+     * @param index
      * @private
      */
     public clearSelectorLayer(index?: number): void {
-        let adornerSvg: SVGElement = this.getAdornerLayerSvg(this.pdfViewer.element.id, index);
+        const adornerSvg: SVGElement = this.getAdornerLayerSvg(this.pdfViewer.element.id, index);
         if (adornerSvg) {
-            let selectionRect: SVGElement =
+            const selectionRect: SVGElement =
                 (adornerSvg as SVGSVGElement).getElementById(this.pdfViewer.adornerSvgLayer.id + '_selected_region') as SVGElement;
             if (selectionRect) {
                 selectionRect.parentNode.removeChild(selectionRect);
             }
             this.clearHighlighter(index);
-            let childNodes: NodeList = this.getSelectorElement(this.pdfViewer.element.id, index).childNodes;
+            const childNodes: NodeList = this.getSelectorElement(this.pdfViewer.element.id, index).childNodes;
             let child: SVGElement;
             for (let i: number = childNodes.length; i > 0; i--) {
                 child = childNodes[i - 1] as SVGElement;
@@ -780,17 +804,21 @@ export class Drawing {
     }
 
     /**
+     * @param select
+     * @param currentSelector
+     * @param helper
+     * @param isSelect
      * @private
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     public renderSelector(select?: number, currentSelector?: AnnotationSelectorSettingsModel, helper?: PdfAnnotationBaseModel, isSelect?: boolean): void {
         if (!helper || isSelect) {
-            let size: Size = new Size();
-            let selectorModel: Selector = this.pdfViewer.selectedItems as Selector;
+            const size: Size = new Size();
+            const selectorModel: Selector = this.pdfViewer.selectedItems as Selector;
             this.clearSelectorLayer(select);
             if (selectorModel.wrapper) {
                 selectorModel.wrapper.measure(size);
-                let zoom: number = this.pdfViewer.viewerBase.getZoomFactor();
+                const zoom: number = this.pdfViewer.viewerBase.getZoomFactor();
                 selectorModel.wrapper.arrange(selectorModel.wrapper.desiredSize);
                 selectorModel.width = selectorModel.wrapper.actualSize.width;
                 selectorModel.height = selectorModel.wrapper.actualSize.height;
@@ -801,14 +829,14 @@ export class Drawing {
                     selectorModel.wrapper.rotateAngle = selectorModel.annotations[0].rotateAngle;
                     //selectorModel.pivot = selectorModel.annotations[0].pivot;
                 }
-                let bounds: Rect = selectorModel.wrapper.bounds;
-                // tslint:disable-next-line
+                const bounds: Rect = selectorModel.wrapper.bounds;
+                // eslint-disable-next-line
                 let selectorElement: (any);
                 if (selectorModel.annotations.length) {
                     for (let j: number = 0; j < selectorModel.annotations.length; j++) {
-                        let node: PdfAnnotationBaseModel = selectorModel.annotations[j];
+                        const node: PdfAnnotationBaseModel = selectorModel.annotations[j];
                         selectorElement = this.getSelectorElement(this.pdfViewer.element.id, select);
-                        let constraints: boolean = true;
+                        const constraints: boolean = true;
                         if (selectorElement && node.pageIndex === select) {
                             if (node.shapeAnnotationType === 'Distance' || node.shapeAnnotationType === 'Line' ||
                                 node.shapeAnnotationType === 'LineWidthArrowHead' || node.shapeAnnotationType === 'Polygon') {
@@ -824,12 +852,12 @@ export class Drawing {
                                         undefined, undefined, undefined, false, true, null, null, currentSelector);
                                 } else {
                                     if (this.pdfViewer.tool !== 'Stamp') {
-                                        // tslint:disable-next-line:max-line-length
-                                        // tslint:disable-next-line
+                                        // eslint-disable-next-line max-len
+                                        // eslint-disable-next-line
                                         let isSignature: any = node.shapeAnnotationType === 'Path' || node.shapeAnnotationType === 'SignatureImage' || node.shapeAnnotationType === 'SignatureText';
                                         this.renderResizeHandle(
                                             node.wrapper.children[0], selectorElement, selectorModel.thumbsConstraints, zoom,
-                                            // tslint:disable-next-line:max-line-length
+                                            // eslint-disable-next-line max-len
                                             undefined, undefined, undefined, node.shapeAnnotationType === 'Stamp', false, isSignature, (node.shapeAnnotationType === 'FreeText' || node.shapeAnnotationType === 'HandWrittenSignature' || node.shapeAnnotationType === 'Image'), currentSelector);
                                     }
                                 }
@@ -839,7 +867,7 @@ export class Drawing {
                             }
                             if (node.annotName !== '') {
                                 if (helper && (node === helper)) {
-                                    // tslint:disable-next-line:max-line-length
+                                    // eslint-disable-next-line max-len
                                     if (!this.pdfViewer.viewerBase.isAddComment && !this.pdfViewer.viewerBase.isAnnotationSelect && !this.pdfViewer.viewerBase.isAnnotationMouseDown && !this.pdfViewer.viewerBase.isAnnotationMouseMove && !this.pdfViewer.viewerBase.isInkAdded) {
                                         this.pdfViewer.viewerBase.isAnnotationSelect = true;
                                         this.pdfViewer.annotationModule.annotationSelect(node.annotName, node.pageIndex, node);
@@ -855,14 +883,27 @@ export class Drawing {
 
     /**
      * Rotates the given nodes/connectors by the given angle
+     *
      * @param obj Defines the objects to be rotated
      * @param angle Defines the angle by which the objects have to be rotated
      * @param pivot Defines the reference point with reference to which the objects have to be rotated
      */
     /**
+     * @param obj
+     * @param angle
+     * @param pivot
+     * @param currentSelector
+     * @param obj
+     * @param angle
+     * @param pivot
+     * @param currentSelector
+     * @param obj
+     * @param angle
+     * @param pivot
+     * @param currentSelector
      * @private
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     public rotate(obj: PdfAnnotationBaseModel | SelectorModel, angle: number, pivot?: PointModel, currentSelector?: AnnotationSelectorSettingsModel): boolean {
         let checkBoundaryConstraints: boolean;
         if (obj) {
@@ -882,20 +923,50 @@ export class Drawing {
 
 
     /**
+     * @param parent
+     * @param objects
+     * @param angle
+     * @param pivot
+     * @param includeParent
+     * @param currentSelector
+     * @param parent
+     * @param objects
+     * @param angle
+     * @param pivot
+     * @param includeParent
+     * @param currentSelector
+     * @param parent
+     * @param objects
+     * @param angle
+     * @param pivot
+     * @param includeParent
+     * @param currentSelector
+     * @param parent
+     * @param objects
+     * @param angle
+     * @param pivot
+     * @param includeParent
+     * @param currentSelector
+     * @param parent
+     * @param objects
+     * @param angle
+     * @param pivot
+     * @param includeParent
+     * @param currentSelector
      * @private
      */
     public rotateObjects(
         parent: PdfAnnotationBaseModel | SelectorModel, objects: PdfAnnotationBaseModel[], angle: number, pivot?: PointModel,
         includeParent?: boolean, currentSelector?: AnnotationSelectorSettingsModel): void {
         pivot = pivot || {};
-        let matrix: Matrix = identityMatrix();
+        const matrix: Matrix = identityMatrix();
         rotateMatrix(matrix, angle, pivot.x, pivot.y);
-        for (let obj of objects) {
+        for (const obj of objects) {
             if (obj instanceof PdfAnnotationBase) {
                 if (includeParent !== false || parent !== obj) {
                     obj.rotateAngle += angle;
                     obj.rotateAngle = (obj.rotateAngle + 360) % 360;
-                    let newOffset: PointModel = transformPointByMatrix(matrix, { x: obj.wrapper.offsetX, y: obj.wrapper.offsetY });
+                    const newOffset: PointModel = transformPointByMatrix(matrix, { x: obj.wrapper.offsetX, y: obj.wrapper.offsetY });
                     obj.wrapper.offsetX = newOffset.x;
                     obj.wrapper.offsetY = newOffset.y;
                     this.nodePropertyChange(obj, { rotateAngle: obj.rotateAngle });
@@ -916,15 +987,39 @@ export class Drawing {
     }
 
     /**
+     * @param selector
+     * @param canvas
+     * @param currentSelector
+     * @param transform
+     * @param enableNode
+     * @param isBorderTickness
+     * @param isSwimlane
+     * @param isSticky
+     * @param selector
+     * @param canvas
+     * @param currentSelector
+     * @param transform
+     * @param enableNode
+     * @param isBorderTickness
+     * @param isSwimlane
+     * @param isSticky
+     * @param selector
+     * @param canvas
+     * @param currentSelector
+     * @param transform
+     * @param enableNode
+     * @param isBorderTickness
+     * @param isSwimlane
+     * @param isSticky
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public renderBorder(selector: DrawingElement, canvas: HTMLCanvasElement | SVGElement, currentSelector?: any,transform?: Transforms,
                         enableNode?: number, isBorderTickness?: boolean, isSwimlane?: boolean, isSticky?: boolean)
-                        :
-                        void {
-        let wrapper: DrawingElement = selector;
-        let options: BaseAttributes = getBaseShapeAttributes(wrapper, transform);
+        :
+        void {
+        const wrapper: DrawingElement = selector;
+        const options: BaseAttributes = getBaseShapeAttributes(wrapper, transform);
         transform = transform || { scale: 1, tx: 0, ty: 0 };
         if (!isSticky) {
             options.x *= transform.scale;
@@ -935,12 +1030,12 @@ export class Drawing {
             let shapeType : PdfAnnotationBaseModel ;
             shapeType = this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType as PdfAnnotationBaseModel;
             if (currentSelector && (typeof (currentSelector) !== 'object') && currentSelector !== '') {
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let annotationSelector: any = JSON.parse(currentSelector);
-                // tslint:disable-next-line:max-line-length
-                let borderColor: string = annotationSelector.selectionBorderColor === '' ? 'black' : annotationSelector.selectionBorderColor;
+                // eslint-disable-next-line max-len
+                const borderColor: string = annotationSelector.selectionBorderColor === '' ? 'black' : annotationSelector.selectionBorderColor;
                 options.stroke = borderColor;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.strokeWidth = currentSelector.selectionBorderThickness === 1 ? 1 : annotationSelector.selectionBorderThickness;
                 let lineDash: number[] = annotationSelector.selectorLineDashArray.length === 0 ? [6, 3] : annotationSelector.selectorLineDashArray;
                 if (lineDash.length > 2) {
@@ -955,7 +1050,9 @@ export class Drawing {
                 }
             }
             options.class = 'e-pv-diagram-border';
-            if (isSwimlane) { options.class += ' e-diagram-lane'; }
+            if (isSwimlane) {
+                options.class += ' e-diagram-lane';
+            }
             options.id = 'borderRect';
             options.id = 'borderRect';
             if (!enableNode) {
@@ -973,11 +1070,11 @@ export class Drawing {
             let shapeType: PdfAnnotationBaseModel ;
             shapeType = this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType as PdfAnnotationBaseModel;
             if (currentSelector && (typeof (currentSelector) !== 'object') && currentSelector !== '') {
-                let annotationSelector: AnnotationSelectorSettingsModel = JSON.parse(currentSelector);
-                // tslint:disable-next-line:max-line-length
-                let borderColor: string = annotationSelector.selectionBorderColor === '' ? 'black' : annotationSelector.selectionBorderColor;
+                const annotationSelector: AnnotationSelectorSettingsModel = JSON.parse(currentSelector);
+                // eslint-disable-next-line max-len
+                const borderColor: string = annotationSelector.selectionBorderColor === '' ? 'black' : annotationSelector.selectionBorderColor;
                 options.stroke = borderColor;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.strokeWidth = currentSelector.selectionBorderThickness === 1 ? 1 : annotationSelector.selectionBorderThickness;
                 let lineDash: number[] = annotationSelector.selectorLineDashArray.length === 0 ? [6, 3] : annotationSelector.selectorLineDashArray;
                 if (lineDash.length > 2) {
@@ -988,24 +1085,26 @@ export class Drawing {
                 this.getBorderSelector(shapeType, options);
             }
         }
-        let parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector') as SVGSVGElement;
-        // tslint:disable-next-line:max-line-length
+        const parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector') as SVGSVGElement;
+        // eslint-disable-next-line max-len
         this.svgRenderer.drawRectangle(canvas as SVGElement, options as RectAttributes, this.pdfViewer.element.id, undefined, true, parentSvg);
     }
     /**
+     * @param type
+     * @param options
      * @private
      */
     public getSignBorder( type: PdfAnnotationBaseModel, options: BaseAttributes) : void {
         if (type === 'HandWrittenSignature' && this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings) {
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             let borderColor: string;
             borderColor = isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.selectionBorderColor === '' ? '#0000ff' : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.selectionBorderColor;
             options.stroke = borderColor;
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             let thickness: number;
             thickness = isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.selectionBorderThickness;
             options.strokeWidth = thickness;
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             let lineDash: number[];
             lineDash = isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.selectorLineDashArray) || this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.selectorLineDashArray;
             if (lineDash.length > 2) {
@@ -1013,15 +1112,15 @@ export class Drawing {
             }
             options.dashArray = lineDash.toString();
         } else if (type === 'Ink' && this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings) {
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             let borderColor: string;
             borderColor = isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.selectionBorderColor === '' ? '#0000ff' : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.selectionBorderColor;
             options.stroke = borderColor;
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             let thickness: number;
             thickness = isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.selectionBorderThickness;
             options.strokeWidth = thickness;
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             let lineDash: number[];
             lineDash = isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.selectorLineDashArray) || this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.selectorLineDashArray;
             if (lineDash.length > 2) {
@@ -1029,11 +1128,11 @@ export class Drawing {
             }
             options.dashArray = lineDash.toString();
         } else {
-            let annotationSelector:  AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
-            // tslint:disable-next-line:max-line-length
-            let borderColor: string = annotationSelector.selectionBorderColor === '' ? 'black' : annotationSelector.selectionBorderColor;
+            const annotationSelector:  AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
+            // eslint-disable-next-line max-len
+            const borderColor: string = annotationSelector.selectionBorderColor === '' ? 'black' : annotationSelector.selectionBorderColor;
             options.stroke = borderColor;
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             options.strokeWidth = annotationSelector.selectionBorderThickness === 1 ? 1 : annotationSelector.selectionBorderThickness;
             let lineDash: number[] = annotationSelector.selectorLineDashArray.length === 0 ? [6, 3] : annotationSelector.selectorLineDashArray;
             if (lineDash.length > 2) {
@@ -1043,14 +1142,16 @@ export class Drawing {
         }
     }
     /**
+     * @param type
+     * @param options
      * @private
      */
     public getBorderSelector(type : PdfAnnotationBaseModel, options : BaseAttributes) : void {
-        let annotationSelector:  AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
-        // tslint:disable-next-line:max-line-length
-        let borderColor: string = isNullOrUndefined(annotationSelector.selectionBorderColor) || annotationSelector.selectionBorderColor === '' ? 'black' : annotationSelector.selectionBorderColor;
+        const annotationSelector:  AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
+        // eslint-disable-next-line max-len
+        const borderColor: string = isNullOrUndefined(annotationSelector.selectionBorderColor) || annotationSelector.selectionBorderColor === '' ? 'black' : annotationSelector.selectionBorderColor;
         options.stroke = borderColor;
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         options.strokeWidth = isNullOrUndefined(annotationSelector.selectionBorderThickness) || annotationSelector.selectionBorderThickness === 1 ? 1 : annotationSelector.selectionBorderThickness;
         let lineDash: number[] = isNullOrUndefined(annotationSelector.selectorLineDashArray) || annotationSelector.selectorLineDashArray.length === 0 ? [6, 3] : annotationSelector.selectorLineDashArray;
         if (lineDash.length > 2) {
@@ -1058,86 +1159,114 @@ export class Drawing {
         }
         options.dashArray = lineDash.toString();
         if (type === 'Rectangle' && this.pdfViewer.rectangleSettings.annotationSelectorSettings) {
-           // tslint:disable-next-line:max-line-length
-           let borderColor: string = isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectionBorderColor === '' ? 'black' : this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectionBorderColor;
-           options.stroke = borderColor;
-           // tslint:disable-next-line:max-line-length
-           let thickness: number = isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectionBorderThickness;
-           options.strokeWidth = thickness;
-           // tslint:disable-next-line:max-line-length
-           let lineDash: number[] = isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectorLineDashArray) || this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectorLineDashArray;
-           if (lineDash.length > 2) {
-               lineDash = [lineDash[0], lineDash[1]];
-           }
-           options.dashArray = lineDash.toString();
-        } else if (type === 'Ellipse' && this.pdfViewer.circleSettings.annotationSelectorSettings) {
-            // tslint:disable-next-line:max-line-length
-           let borderColor: string = isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.circleSettings.annotationSelectorSettings.selectionBorderColor === '' ? 'black' : this.pdfViewer.circleSettings.annotationSelectorSettings.selectionBorderColor;
-           options.stroke = borderColor;
-           // tslint:disable-next-line:max-line-length
-           let thickness: number = isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.circleSettings.annotationSelectorSettings.selectionBorderThickness;
-           options.strokeWidth = thickness;
-           // tslint:disable-next-line:max-line-length
-           let lineDash: number[] = isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.selectorLineDashArray) || this.pdfViewer.circleSettings.annotationSelectorSettings.selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.circleSettings.annotationSelectorSettings.selectorLineDashArray;
-           if (lineDash.length > 2) {
-               lineDash = [lineDash[0], lineDash[1]];
-           }
-           options.dashArray = lineDash.toString();
-        } else if (type === 'Radius' && this.pdfViewer.radiusSettings.annotationSelectorSettings) {
-            // tslint:disable-next-line:max-line-length
-            let borderColor: string = isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.radiusSettings.annotationSelectorSettings.selectionBorderColor === '' ? 'black' : this.pdfViewer.radiusSettings.annotationSelectorSettings.selectionBorderColor;
+            // eslint-disable-next-line max-len
+            const borderColor: string = isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectionBorderColor === '' ? 'black' : this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectionBorderColor;
             options.stroke = borderColor;
-            // tslint:disable-next-line:max-line-length
-            let thickness: number = isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.radiusSettings.annotationSelectorSettings.selectionBorderThickness;
+            // eslint-disable-next-line max-len
+            const thickness: number = isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectionBorderThickness;
             options.strokeWidth = thickness;
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
+            let lineDash: number[] = isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectorLineDashArray) || this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectorLineDashArray;
+            if (lineDash.length > 2) {
+                lineDash = [lineDash[0], lineDash[1]];
+            }
+            options.dashArray = lineDash.toString();
+        } else if (type === 'Ellipse' && this.pdfViewer.circleSettings.annotationSelectorSettings) {
+            // eslint-disable-next-line max-len
+            const borderColor: string = isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.circleSettings.annotationSelectorSettings.selectionBorderColor === '' ? 'black' : this.pdfViewer.circleSettings.annotationSelectorSettings.selectionBorderColor;
+            options.stroke = borderColor;
+            // eslint-disable-next-line max-len
+            const thickness: number = isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.circleSettings.annotationSelectorSettings.selectionBorderThickness;
+            options.strokeWidth = thickness;
+            // eslint-disable-next-line max-len
+            let lineDash: number[] = isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.selectorLineDashArray) || this.pdfViewer.circleSettings.annotationSelectorSettings.selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.circleSettings.annotationSelectorSettings.selectorLineDashArray;
+            if (lineDash.length > 2) {
+                lineDash = [lineDash[0], lineDash[1]];
+            }
+            options.dashArray = lineDash.toString();
+        } else if (type === 'Radius' && this.pdfViewer.radiusSettings.annotationSelectorSettings) {
+            // eslint-disable-next-line max-len
+            const borderColor: string = isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.radiusSettings.annotationSelectorSettings.selectionBorderColor === '' ? 'black' : this.pdfViewer.radiusSettings.annotationSelectorSettings.selectionBorderColor;
+            options.stroke = borderColor;
+            // eslint-disable-next-line max-len
+            const thickness: number = isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.radiusSettings.annotationSelectorSettings.selectionBorderThickness;
+            options.strokeWidth = thickness;
+            // eslint-disable-next-line max-len
             let lineDash: number[] = isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.selectorLineDashArray) || this.pdfViewer.radiusSettings.annotationSelectorSettings.selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.radiusSettings.annotationSelectorSettings.selectorLineDashArray;
             if (lineDash.length > 2) {
-               lineDash = [lineDash[0], lineDash[1]];
+                lineDash = [lineDash[0], lineDash[1]];
             }
             options.dashArray = lineDash.toString();
         } else if (type === 'FreeText' && this.pdfViewer.freeTextSettings.annotationSelectorSettings) {
-            // tslint:disable-next-line:max-line-length
-            let borderColor: string = isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.freeTextSettings.annotationSelectorSettings.selectionBorderColor === '' ? 'black' : this.pdfViewer.freeTextSettings.annotationSelectorSettings.selectionBorderColor;
+            // eslint-disable-next-line max-len
+            const borderColor: string = isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.freeTextSettings.annotationSelectorSettings.selectionBorderColor === '' ? 'black' : this.pdfViewer.freeTextSettings.annotationSelectorSettings.selectionBorderColor;
             options.stroke = borderColor;
-            // tslint:disable-next-line:max-line-length
-            let thickness: number = isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.freeTextSettings.annotationSelectorSettings.selectionBorderThickness;
+            // eslint-disable-next-line max-len
+            const thickness: number = isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.freeTextSettings.annotationSelectorSettings.selectionBorderThickness;
             options.strokeWidth = thickness;
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             let lineDash: number[] = isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.selectorLineDashArray) || this.pdfViewer.freeTextSettings.annotationSelectorSettings.selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.freeTextSettings.annotationSelectorSettings.selectorLineDashArray;
             if (lineDash.length > 2) {
-               lineDash = [lineDash[0], lineDash[1]];
+                lineDash = [lineDash[0], lineDash[1]];
             }
             options.dashArray = lineDash.toString();
         } else if (type === 'StickyNotes' && this.pdfViewer.stickyNotesSettings.annotationSelectorSettings) {
-           // tslint:disable-next-line:max-line-length
-           let borderColor: string = isNullOrUndefined(this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectionBorderColor === '' ? 'black' : this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectionBorderColor;
-           options.stroke = borderColor;
-           // tslint:disable-next-line:max-line-length
-           let thickness: number = isNullOrUndefined(this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectionBorderThickness;
-           options.strokeWidth = thickness;
-           // tslint:disable-next-line:max-line-length
-           let lineDash: number[] = isNullOrUndefined(this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectorLineDashArray) || this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectorLineDashArray.length === 0 ? [6, 3] : this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectorLineDashArray;
-           if (lineDash.length > 2) {
-               lineDash = [lineDash[0], lineDash[1]];
+            // eslint-disable-next-line max-len
+            const borderColor: string = isNullOrUndefined(this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectionBorderColor === '' ? 'black' : this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectionBorderColor;
+            options.stroke = borderColor;
+            // eslint-disable-next-line max-len
+            const thickness: number = isNullOrUndefined(this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectionBorderThickness;
+            options.strokeWidth = thickness;
+            // eslint-disable-next-line max-len
+            let lineDash: number[] = isNullOrUndefined(this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectorLineDashArray) || this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectorLineDashArray.length === 0 ? [6, 3] : this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectorLineDashArray;
+            if (lineDash.length > 2) {
+                lineDash = [lineDash[0], lineDash[1]];
             }
-           options.dashArray = lineDash.toString();
+            options.dashArray = lineDash.toString();
         } else if (type === 'Stamp' && this.pdfViewer.stampSettings.annotationSelectorSettings) {
-           // tslint:disable-next-line:max-line-length
-           let borderColor: string = isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.stampSettings.annotationSelectorSettings.selectionBorderColor === '' ? '#0000ff' : this.pdfViewer.stampSettings.annotationSelectorSettings.selectionBorderColor;
-           options.stroke = borderColor;
-           // tslint:disable-next-line:max-line-length
-           let thickness: number = isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.stampSettings.annotationSelectorSettings.selectionBorderThickness;
-           options.strokeWidth = thickness;
-           // tslint:disable-next-line:max-line-length
-           let lineDash: number[] = isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.selectorLineDashArray) || this.pdfViewer.stampSettings.annotationSelectorSettings.selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.stampSettings.annotationSelectorSettings.selectorLineDashArray;
-           if (lineDash.length > 2) {
-               lineDash = [lineDash[0], lineDash[1]];
+            // eslint-disable-next-line max-len
+            const borderColor: string = isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.stampSettings.annotationSelectorSettings.selectionBorderColor === '' ? '#0000ff' : this.pdfViewer.stampSettings.annotationSelectorSettings.selectionBorderColor;
+            options.stroke = borderColor;
+            // eslint-disable-next-line max-len
+            const thickness: number = isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.stampSettings.annotationSelectorSettings.selectionBorderThickness;
+            options.strokeWidth = thickness;
+            // eslint-disable-next-line max-len
+            let lineDash: number[] = isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.selectorLineDashArray) || this.pdfViewer.stampSettings.annotationSelectorSettings.selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.stampSettings.annotationSelectorSettings.selectorLineDashArray;
+            if (lineDash.length > 2) {
+                lineDash = [lineDash[0], lineDash[1]];
             }
-           options.dashArray = lineDash.toString();
+            options.dashArray = lineDash.toString();
         }
     }
     /**
+     * @param id
+     * @param selector
+     * @param cx
+     * @param cy
+     * @param canvas
+     * @param visible
+     * @param enableSelector
+     * @param t
+     * @param connected
+     * @param canMask
+     * @param ariaLabel
+     * @param count
+     * @param className
+     * @param currentSelector
+     * @param id
+     * @param selector
+     * @param cx
+     * @param cy
+     * @param canvas
+     * @param visible
+     * @param enableSelector
+     * @param t
+     * @param connected
+     * @param canMask
+     * @param ariaLabel
+     * @param count
+     * @param className
+     * @param currentSelector
      * @private
      */
     public renderCircularHandle(
@@ -1146,18 +1275,18 @@ export class Drawing {
         ariaLabel?: Object, count?: number, className?: string, currentSelector?: AnnotationSelectorSettingsModel)
         :
         void {
-        let wrapper: DrawingElement = selector;
+        const wrapper: DrawingElement = selector;
         let radius: number = 7;
         let newPoint: PointModel = { x: cx, y: cy };
 
         t = t || { scale: 1, tx: 0, ty: 0 };
         if (wrapper.rotateAngle !== 0 || wrapper.parentTransform !== 0) {
-            let matrix: Matrix = identityMatrix();
+            const matrix: Matrix = identityMatrix();
             rotateMatrix(matrix, wrapper.rotateAngle + wrapper.parentTransform, wrapper.offsetX, wrapper.offsetY);
             newPoint = transformPointByMatrix(matrix, newPoint);
         }
 
-        let options: CircleAttributes = getBaseShapeAttributes(wrapper) as CircleAttributes;
+        const options: CircleAttributes = getBaseShapeAttributes(wrapper) as CircleAttributes;
         let shapeType : PdfAnnotationBaseModel;
         if (this.pdfViewer.selectedItems.annotations[0].measureType) {
             shapeType = this.pdfViewer.selectedItems.annotations[0].measureType as PdfAnnotationBaseModel;
@@ -1186,306 +1315,333 @@ export class Drawing {
         }
         options.x = (newPoint.x * t.scale) - (options.width / 2);
         options.y = (newPoint.y * t.scale) - (options.height / 2);
-        let parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector') as SVGSVGElement;
+        const parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector') as SVGSVGElement;
         if (this.getShape(shapeType, currentSelector) === 'Square') {
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             this.svgRenderer.drawRectangle(canvas as SVGElement, options as RectAttributes, id, undefined, true, parentSvg);
         } else if (this.getShape(shapeType, currentSelector) === 'Circle') {
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             this.svgRenderer.drawCircle(canvas as SVGElement, options as CircleAttributes, 1);
         }
     }
     /**
+     * @param type
+     * @param options
+     * @param currentSelector
+     * @param t
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public getShapeSize(type: PdfAnnotationBaseModel, options: CircleAttributes, currentSelector: any, t?: Transforms): void {
         if (currentSelector && typeof (currentSelector) !== 'object' && currentSelector !== '') {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let annotationSelector: any = JSON.parse(currentSelector);
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             options.radius = (isNullOrUndefined(annotationSelector.resizerSize) || annotationSelector.resizerSize === 8 ? 8 : annotationSelector.resizerSize) / 2;
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             options.width = (isNullOrUndefined(annotationSelector.resizerSize) || annotationSelector.resizerSize === 8 ? 8 : annotationSelector.resizerSize) * t.scale;
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             options.height = (isNullOrUndefined(annotationSelector.resizerSize) || annotationSelector.resizerSize === 8 ? 8 : annotationSelector.resizerSize) * t.scale;
         } else {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let annotationSelector: any = this.pdfViewer.annotationSelectorSettings
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             options.radius = (isNullOrUndefined(annotationSelector.resizerSize) || annotationSelector.resizerSize === 8 ? 8 : annotationSelector.resizerSize) / 2;
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             options.width = (isNullOrUndefined(annotationSelector.resizerSize) || annotationSelector.resizerSize === 8 ? 8 : annotationSelector.resizerSize) * t.scale;
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             options.height = (isNullOrUndefined(annotationSelector.resizerSize) || annotationSelector.resizerSize === 8 ? 8 : annotationSelector.resizerSize) * t.scale;
             if (type === 'Line' && this.pdfViewer.lineSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.radius = (isNullOrUndefined(this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize) / 2;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.width = (isNullOrUndefined(this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.height = (isNullOrUndefined(this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize) * t.scale;
             } else if (type === 'LineWidthArrowHead' && this.pdfViewer.arrowSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.radius = (isNullOrUndefined(this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize) / 2;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.width = (isNullOrUndefined(this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.height = (isNullOrUndefined(this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize) * t.scale;
             } else if (type === 'Rectangle' && this.pdfViewer.rectangleSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.radius = (isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize) / 2;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.width = (isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.height = (isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize) * t.scale;
             } else if (type === 'Ellipse' && this.pdfViewer.circleSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.radius = (isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize) / 2;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.width = (isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.height = (isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize) * t.scale;
             } else if (type === 'Distance' && this.pdfViewer.distanceSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.radius = (isNullOrUndefined(this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize) / 2;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.width = (isNullOrUndefined(this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.height = (isNullOrUndefined(this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize) * t.scale;
             } else if (type === 'Polygon' && this.pdfViewer.polygonSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.radius = (isNullOrUndefined(this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize) / 2;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.width = (isNullOrUndefined(this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.height = (isNullOrUndefined(this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize) * t.scale;
             } else if (type === 'Radius' && this.pdfViewer.radiusSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.radius = (isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize) / 2;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.width = (isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.height = (isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize) * t.scale;
             } else if (type === 'Stamp' && this.pdfViewer.stampSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.radius = (isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize) / 2;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.width = (isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.height = (isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize) * t.scale;
             } else if (type === 'FreeText' && this.pdfViewer.freeTextSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.radius = (isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize) / 2;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.width = (isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.height = (isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize) * t.scale;
             } else if (type === 'HandWrittenSignature' && this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.radius = (isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) / 2;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.width = (isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.height = (isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) * t.scale;
             }   else if (type === 'Perimeter' && this.pdfViewer.perimeterSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.radius = (isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) / 2;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.width = (isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.height = (isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                } else if (type === 'Area' && this.pdfViewer.areaSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+            } else if (type === 'Area' && this.pdfViewer.areaSettings.annotationSelectorSettings) {
+                // eslint-disable-next-line max-len
                 options.radius = (isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize) / 2;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.width = (isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.height = (isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                } else if (type === 'Volume' && this.pdfViewer.volumeSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+            } else if (type === 'Volume' && this.pdfViewer.volumeSettings.annotationSelectorSettings) {
+                // eslint-disable-next-line max-len
                 options.radius = (isNullOrUndefined(this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize) / 2;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.width = (isNullOrUndefined(this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.height = (isNullOrUndefined(this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                } else if (type === 'Ink' && this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings) {
-                     // tslint:disable-next-line:max-line-length
+            } else if (type === 'Ink' && this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings) {
+                // eslint-disable-next-line max-len
                 options.radius = (isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize) / 2;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.width = (isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.height = (isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                }
+            }
         }
     }
     /**
+     * @param type
+     * @param currentSelector
+     * @param type
+     * @param currentSelector
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public getShape(type: PdfAnnotationBaseModel, currentSelector?: any): AnnotationSelectorSettingsModel {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let shapeType: any;
         {
             if (currentSelector && typeof (currentSelector) !== 'object' && currentSelector !== '') {
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let annotationSelector: any = JSON.parse(currentSelector);
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 shapeType = isNullOrUndefined(annotationSelector.resizerShape) || annotationSelector.resizerShape === 'Square' ? 'Square' : annotationSelector.resizerShape;
             } else {
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let annotationSelector: any = this.pdfViewer.annotationSelectorSettings;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 shapeType = isNullOrUndefined(annotationSelector.resizerShape) || annotationSelector.resizerShape === 'Square' ? 'Square' : annotationSelector.resizerShape;
                 if (type === 'Line' && this.pdfViewer.lineSettings.annotationSelectorSettings) {
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     shapeType = isNullOrUndefined(this.pdfViewer.lineSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.lineSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.lineSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'LineWidthArrowHead' && this.pdfViewer.arrowSettings.annotationSelectorSettings) {
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     shapeType = isNullOrUndefined(this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'Rectangle' && this.pdfViewer.rectangleSettings.annotationSelectorSettings) {
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     shapeType = isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'Ellipse' && this.pdfViewer.circleSettings.annotationSelectorSettings) {
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     shapeType = isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.circleSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.circleSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'Polygon' && this.pdfViewer.polygonSettings.annotationSelectorSettings) {
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     shapeType = isNullOrUndefined(this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'Distance' && this.pdfViewer.distanceSettings.annotationSelectorSettings) {
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     shapeType = isNullOrUndefined(this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'Radius' && this.pdfViewer.radiusSettings.annotationSelectorSettings) {
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     shapeType = isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'Stamp' && this.pdfViewer.stampSettings.annotationSelectorSettings) {
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     shapeType = isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.stampSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.stampSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'FreeText' && this.pdfViewer.freeTextSettings.annotationSelectorSettings) {
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     shapeType = isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'HandWrittenSignature' && this.pdfViewer.handWrittenSignatureSettings && this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings) {
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     shapeType = isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'Perimeter' &&  this.pdfViewer.perimeterSettings.annotationSelectorSettings) {
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     shapeType = isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'Area' &&  this.pdfViewer.areaSettings.annotationSelectorSettings) {
-                     // tslint:disable-next-line:max-line-length
-                     shapeType = isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.areaSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerShape;
+                    // eslint-disable-next-line max-len
+                    shapeType = isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.areaSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'Volume' &&  this.pdfViewer.volumeSettings.annotationSelectorSettings) {
-                     // tslint:disable-next-line:max-line-length
-                     shapeType = isNullOrUndefined(this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerShape;
+                    // eslint-disable-next-line max-len
+                    shapeType = isNullOrUndefined(this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'Ink' && this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings) {
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     shapeType = isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerShape;
                 }
-         }
+            }
             return shapeType;
         }
     }
     /**
+     * @param type
+     * @param options
+     * @param currentSelector
+     * @param t
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public getResizerColors(type: PdfAnnotationBaseModel, options: CircleAttributes, currentSelector?: any, t?: Transforms): void {
         if (currentSelector && typeof (currentSelector) !== 'object' && currentSelector !== '') {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let annotationSelector: any = JSON.parse(currentSelector);
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             options.stroke = isNullOrUndefined(annotationSelector.resizerBorderColor) || annotationSelector.resizerBorderColor === 'black' ? 'black' : annotationSelector.resizerBorderColor;
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             options.fill = isNullOrUndefined(annotationSelector.resizerFillColor) || annotationSelector.resizerFillColor === '#FF4081' ? '#FF4081' : annotationSelector.resizerFillColor;
         } else {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let annotationSelector: any = this.pdfViewer.annotationSelectorSettings;
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             options.stroke = isNullOrUndefined(annotationSelector.resizerBorderColor) || annotationSelector.resizerBorderColor === 'black' ? 'black' : annotationSelector.resizerBorderColor;
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             options.fill = isNullOrUndefined(annotationSelector.resizerFillColor) || annotationSelector.resizerFillColor === '#FF4081' ? '#FF4081' : annotationSelector.resizerFillColor;
             if (type === 'Line' && this.pdfViewer.lineSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.stroke = isNullOrUndefined(this.pdfViewer.lineSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.lineSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.lineSettings.annotationSelectorSettings.resizerBorderColor;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.fill = isNullOrUndefined(this.pdfViewer.lineSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.lineSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.lineSettings.annotationSelectorSettings.resizerFillColor;
             } else if (type === 'LineWidthArrowHead' && this.pdfViewer.arrowSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.stroke = isNullOrUndefined(this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerBorderColor;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.fill = isNullOrUndefined(this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerFillColor;
             } else if (type === 'Rectangle' && this.pdfViewer.rectangleSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.stroke = isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerBorderColor;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.fill = isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerFillColor;
             } else if (type === 'Ellipse' && this.pdfViewer.circleSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.stroke = isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.circleSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.circleSettings.annotationSelectorSettings.resizerBorderColor;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.fill = isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.circleSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.circleSettings.annotationSelectorSettings.resizerFillColor;
             } else if (type === 'Distance' && this.pdfViewer.distanceSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.stroke = isNullOrUndefined(this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerBorderColor;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.fill = isNullOrUndefined(this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerFillColor;
             } else if (type === 'Polygon' && this.pdfViewer.polygonSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.stroke = isNullOrUndefined(this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerBorderColor;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.fill = isNullOrUndefined(this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerFillColor;
             } else if (type === 'Radius' && this.pdfViewer.radiusSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.stroke = isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerBorderColor;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.fill = isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerFillColor;
             } else if (type === 'Stamp' && this.pdfViewer.stampSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.stroke = isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.stampSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.stampSettings.annotationSelectorSettings.resizerBorderColor;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.fill = isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.stampSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.stampSettings.annotationSelectorSettings.resizerFillColor;
             } else if (type === 'FreeText' && this.pdfViewer.freeTextSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.stroke = isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerBorderColor;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.fill = isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerFillColor;
             } else if (type === 'HandWrittenSignature' && this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.stroke = isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerBorderColor;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.fill = isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerFillColor;
             } else if (type === 'Perimeter' && this.pdfViewer.perimeterSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.stroke = isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerBorderColor;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.fill = isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerFillColor;
-                } else if (type === 'Area' && this.pdfViewer.areaSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+            } else if (type === 'Area' && this.pdfViewer.areaSettings.annotationSelectorSettings) {
+                // eslint-disable-next-line max-len
                 options.stroke = isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.areaSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerBorderColor;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.fill = isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.areaSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerFillColor;
-                } else if (type === 'Volume' && this.pdfViewer.volumeSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
+            } else if (type === 'Volume' && this.pdfViewer.volumeSettings.annotationSelectorSettings) {
+                // eslint-disable-next-line max-len
                 options.stroke = isNullOrUndefined(this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerBorderColor;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.fill = isNullOrUndefined(this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerFillColor;
-                } else if (type === 'Ink' && this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings) {
-                     // tslint:disable-next-line:max-line-length
+            } else if (type === 'Ink' && this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings) {
+                // eslint-disable-next-line max-len
                 options.stroke = isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerBorderColor;
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 options.fill = isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerFillColor;
-                }
+            }
         }
     }
     /**
+     * @param wrapper
+     * @param canvas
+     * @param transform
+     * @param selectorConstraints
+     * @param canMask
+     * @param wrapper
+     * @param canvas
+     * @param transform
+     * @param selectorConstraints
+     * @param canMask
+     * @param wrapper
+     * @param canvas
+     * @param transform
+     * @param selectorConstraints
+     * @param canMask
      * @private
      */
     public renderRotateThumb(
         wrapper: DrawingElement, canvas: HTMLCanvasElement | SVGElement, transform?: Transforms,
         selectorConstraints?: SelectorConstraints, canMask?: boolean): void {
-        let element: PathElement = new PathElement();
+        const element: PathElement = new PathElement();
         let newPoint: PointModel;
-        let top: number = wrapper.offsetY - wrapper.actualSize.height * wrapper.pivot.y;
-        let left: number = wrapper.offsetX - wrapper.actualSize.width * wrapper.pivot.x;
+        const top: number = wrapper.offsetY - wrapper.actualSize.height * wrapper.pivot.y;
+        const left: number = wrapper.offsetX - wrapper.actualSize.width * wrapper.pivot.x;
         let pivotX: number = left + wrapper.pivot.x * wrapper.actualSize.width;
         let pivotY: number = top;
         pivotX = (pivotX + transform.tx) * transform.scale;
@@ -1493,13 +1649,13 @@ export class Drawing {
         newPoint = { x: pivotX, y: pivotY - 25 };
 
         if (wrapper.rotateAngle !== 0 || wrapper.parentTransform !== 0) {
-            let matrix: Matrix = identityMatrix();
+            const matrix: Matrix = identityMatrix();
             rotateMatrix(
                 matrix, wrapper.rotateAngle + wrapper.parentTransform,
                 (transform.tx + wrapper.offsetX) * transform.scale, (transform.ty + wrapper.offsetY) * transform.scale);
             newPoint = transformPointByMatrix(matrix, newPoint);
         }
-        let options: CircleAttributes = getBaseShapeAttributes(wrapper) as CircleAttributes;
+        const options: CircleAttributes = getBaseShapeAttributes(wrapper) as CircleAttributes;
         options.stroke = 'black';
         options.strokeWidth = 1;
         options.opacity = 1;
@@ -1511,10 +1667,22 @@ export class Drawing {
         options.visible = true;
         options.class = 'e-diagram-rotate-handle';
         options.id = 'rotateThumb';
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.svgRenderer.drawCircle(canvas as SVGElement, options, ThumbsConstraints.Rotate, { 'aria-label': 'Thumb to rotate the selected object' });
     }
     /**
+     * @param element
+     * @param canvas
+     * @param constraints
+     * @param currentZoom
+     * @param canMask
+     * @param enableNode
+     * @param nodeConstraints
+     * @param isStamp
+     * @param isSticky
+     * @param isPath
+     * @param isFreeText
+     * @param currentSelector
      * @private
      */
     public renderResizeHandle(
@@ -1524,11 +1692,11 @@ export class Drawing {
         currentSelector?: AnnotationSelectorSettingsModel)
         :
         void {
-        let left: number = element.offsetX - element.actualSize.width * element.pivot.x;
-        let top: number = element.offsetY - element.actualSize.height * element.pivot.y;
-        let height: number = element.actualSize.height;
-        let width: number = element.actualSize.width;
-        let transform: Transforms = { scale: currentZoom, tx: 0, ty: 0 } as Transforms;
+        const left: number = element.offsetX - element.actualSize.width * element.pivot.x;
+        const top: number = element.offsetY - element.actualSize.height * element.pivot.y;
+        const height: number = element.actualSize.height;
+        const width: number = element.actualSize.width;
+        const transform: Transforms = { scale: currentZoom, tx: 0, ty: 0 } as Transforms;
         if (isStamp) {
             this.renderPivotLine(element, canvas, transform);
             this.renderRotateThumb(element, canvas, transform);
@@ -1538,14 +1706,14 @@ export class Drawing {
         }
         this.renderBorder(
             element, canvas, currentSelector, transform, enableNode, nodeConstraints, true, isSticky);
-        let nodeWidth: number = element.actualSize.width * currentZoom;
-        let nodeHeight: number = element.actualSize.height * currentZoom;
-        let shapeType: PdfAnnotationBaseModel = this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType as PdfAnnotationBaseModel;
-        // tslint:disable-next-line
+        const nodeWidth: number = element.actualSize.width * currentZoom;
+        const nodeHeight: number = element.actualSize.height * currentZoom;
+        const shapeType: PdfAnnotationBaseModel = this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType as PdfAnnotationBaseModel;
+        // eslint-disable-next-line
         let annotation: any = this.pdfViewer.selectedItems.annotations[0];
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let allowedInteraction: any = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
-        let isLock: boolean = this.pdfViewer.annotationModule.checkIsLockSettings(annotation);
+        const isLock: boolean = this.pdfViewer.annotationModule.checkIsLockSettings(annotation);
         let allowPermission: boolean = false;
         if ((isLock || annotation.annotationSettings.isLock) &&  this.getAllowedInteractions(allowedInteraction)) {
             allowPermission = true;
@@ -1555,12 +1723,12 @@ export class Drawing {
             resizerLocation = 3;
         }
         let isNodeShape: boolean = false;
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         if (this.pdfViewer.selectedItems.annotations[0] && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ellipse' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Radius' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Rectangle' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ink')) {
             isNodeShape = true;
         }
         if (!nodeConstraints && !isSticky && !isPath && !allowPermission) {
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             if ( isStamp || (isNodeShape && (nodeWidth >= 40 && nodeHeight >= 40) && (resizerLocation === 1 || resizerLocation === 3))) {
                 //Hide corners when the size is less than 40
                 this.renderCircularHandle(
@@ -1590,7 +1758,7 @@ export class Drawing {
                     'e-pv-diagram-resize-handle e-southeast', currentSelector);
 
             }
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             if ( (!isStamp && !isNodeShape) || (isNodeShape && (resizerLocation === 2 || resizerLocation === 3 || (!(nodeWidth >= 40 && nodeHeight >= 40) && resizerLocation === 1)))) {
                 this.renderCircularHandle(
                     'resizeNorth', element, left + width / 2, top, canvas,
@@ -1619,7 +1787,7 @@ export class Drawing {
         }
     }
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private getAllowedInteractions (allowedInteraction: any): boolean {
         if (allowedInteraction && allowedInteraction.length > 0) {
             for (let i: number = 0; i < allowedInteraction.length; i++) {
@@ -1632,92 +1800,125 @@ export class Drawing {
     }
 
     /**
+     * @param type
+     * @param currentSelector
+     * @param type
+     * @param currentSelector
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public getResizerLocation(type: PdfAnnotationBaseModel, currentSelector?: any) : AnnotationResizerLocation {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let resizerLocation : any;
         {
             if (currentSelector && typeof(currentSelector) !== 'object' && currentSelector !== '') {
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let annotationSelector: any = JSON.parse(currentSelector);
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 resizerLocation = isNullOrUndefined(annotationSelector.resizerLocation) || annotationSelector.resizerLocation === 3 ? 3 : annotationSelector.resizerLocation;
             } else {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let annotationSelector: any = this.pdfViewer.annotationSelectorSettings;
-            // tslint:disable-next-line:max-line-length
-            resizerLocation = isNullOrUndefined(annotationSelector.resizerLocation) || annotationSelector.resizerLocation === 3 ? 3 : annotationSelector.resizerLocation;
-            if (type === 'Line' && this.pdfViewer.lineSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
-                resizerLocation = isNullOrUndefined(this.pdfViewer.lineSettings.annotationSelectorSettings.resizerLocation) || this.pdfViewer.lineSettings.annotationSelectorSettings.resizerLocation === 3 ? 3 : this.pdfViewer.lineSettings.annotationSelectorSettings.resizerLocation;
-            } else if (type === 'LineWidthArrowHead' && this.pdfViewer.arrowSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
-                resizerLocation = isNullOrUndefined(this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerLocation) || this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerLocation === 3 ? 3 : this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerLocation;
-            } else if (type === 'Rectangle' && this.pdfViewer.rectangleSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
-                resizerLocation = isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerLocation) || this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerLocation === 3 ? 3 : this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerLocation;
-            } else if (type === 'Ellipse' && this.pdfViewer.circleSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
-                resizerLocation = isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.resizerLocation) || this.pdfViewer.circleSettings.annotationSelectorSettings.resizerLocation === 3 ? 3 : this.pdfViewer.circleSettings.annotationSelectorSettings.resizerLocation;
-            } else if (type === 'Polygon' && this.pdfViewer.polygonSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
-                resizerLocation = isNullOrUndefined(this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerLocation) || this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerLocation === 3 ? 3 : this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerLocation;
-            } else if (type === 'Distance') {
-                // tslint:disable-next-line:max-line-length
-                resizerLocation = isNullOrUndefined(this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerLocation) || this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerLocation === 3 ? 3 : this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerLocation;
-            } else if (type === 'Radius' && this.pdfViewer.radiusSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
-                resizerLocation = isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerLocation) || this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerLocation === 3 ? 3 : this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerLocation;
-            } else if (type === 'Stamp' && this.pdfViewer.stampSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
-                resizerLocation = isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.resizerLocation) || this.pdfViewer.stampSettings.annotationSelectorSettings.resizerLocation === 3 ? 3 : this.pdfViewer.stampSettings.annotationSelectorSettings.resizerLocation;
-            } else if (type === 'FreeText' && this.pdfViewer.freeTextSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
-                resizerLocation = isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerLocation) || this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerLocation === 3 ? 3 : this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerLocation;
-            } else if (type === 'HandWrittenSignature' && this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
-            resizerLocation = isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerLocation) || this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerLocation === 3 ? 3 : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerLocation;
-            } else if (type === 'Ink' && this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings) {
-                // tslint:disable-next-line:max-line-length
-            resizerLocation = isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerLocation) || this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerLocation === 3 ? 3 : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerLocation;
+                // eslint-disable-next-line max-len
+                resizerLocation = isNullOrUndefined(annotationSelector.resizerLocation) || annotationSelector.resizerLocation === 3 ? 3 : annotationSelector.resizerLocation;
+                if (type === 'Line' && this.pdfViewer.lineSettings.annotationSelectorSettings) {
+                // eslint-disable-next-line max-len
+                    resizerLocation = isNullOrUndefined(this.pdfViewer.lineSettings.annotationSelectorSettings.resizerLocation) || this.pdfViewer.lineSettings.annotationSelectorSettings.resizerLocation === 3 ? 3 : this.pdfViewer.lineSettings.annotationSelectorSettings.resizerLocation;
+                } else if (type === 'LineWidthArrowHead' && this.pdfViewer.arrowSettings.annotationSelectorSettings) {
+                // eslint-disable-next-line max-len
+                    resizerLocation = isNullOrUndefined(this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerLocation) || this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerLocation === 3 ? 3 : this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerLocation;
+                } else if (type === 'Rectangle' && this.pdfViewer.rectangleSettings.annotationSelectorSettings) {
+                // eslint-disable-next-line max-len
+                    resizerLocation = isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerLocation) || this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerLocation === 3 ? 3 : this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerLocation;
+                } else if (type === 'Ellipse' && this.pdfViewer.circleSettings.annotationSelectorSettings) {
+                // eslint-disable-next-line max-len
+                    resizerLocation = isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.resizerLocation) || this.pdfViewer.circleSettings.annotationSelectorSettings.resizerLocation === 3 ? 3 : this.pdfViewer.circleSettings.annotationSelectorSettings.resizerLocation;
+                } else if (type === 'Polygon' && this.pdfViewer.polygonSettings.annotationSelectorSettings) {
+                // eslint-disable-next-line max-len
+                    resizerLocation = isNullOrUndefined(this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerLocation) || this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerLocation === 3 ? 3 : this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerLocation;
+                } else if (type === 'Distance') {
+                // eslint-disable-next-line max-len
+                    resizerLocation = isNullOrUndefined(this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerLocation) || this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerLocation === 3 ? 3 : this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerLocation;
+                } else if (type === 'Radius' && this.pdfViewer.radiusSettings.annotationSelectorSettings) {
+                // eslint-disable-next-line max-len
+                    resizerLocation = isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerLocation) || this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerLocation === 3 ? 3 : this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerLocation;
+                } else if (type === 'Stamp' && this.pdfViewer.stampSettings.annotationSelectorSettings) {
+                // eslint-disable-next-line max-len
+                    resizerLocation = isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.resizerLocation) || this.pdfViewer.stampSettings.annotationSelectorSettings.resizerLocation === 3 ? 3 : this.pdfViewer.stampSettings.annotationSelectorSettings.resizerLocation;
+                } else if (type === 'FreeText' && this.pdfViewer.freeTextSettings.annotationSelectorSettings) {
+                // eslint-disable-next-line max-len
+                    resizerLocation = isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerLocation) || this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerLocation === 3 ? 3 : this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerLocation;
+                } else if (type === 'HandWrittenSignature' && this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings) {
+                // eslint-disable-next-line max-len
+                    resizerLocation = isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerLocation) || this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerLocation === 3 ? 3 : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerLocation;
+                } else if (type === 'Ink' && this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings) {
+                // eslint-disable-next-line max-len
+                    resizerLocation = isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerLocation) || this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerLocation === 3 ? 3 : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerLocation;
+                }
             }
-          }
             return resizerLocation;
         }
     }
 
     /**
+     * @param element
+     * @param canvas
+     * @param transform
+     * @param selectorConstraints
+     * @param canMask
      * @private
      */
     public renderPivotLine(
         element: DrawingElement, canvas: HTMLCanvasElement | SVGElement, transform?: Transforms,
         selectorConstraints?: SelectorConstraints, canMask?: boolean): void {
-        let wrapper: DrawingElement = element;
-        let dashArray: string = '2,3';
+        const wrapper: DrawingElement = element;
+        const dashArray: string = '2,3';
         let visible: boolean = true;
         if (canMask) {
             visible = false;
         }
-        let options: BaseAttributes = getBaseShapeAttributes(wrapper, transform);
+        const options: BaseAttributes = getBaseShapeAttributes(wrapper, transform);
         options.fill = 'None'; options.stroke = 'black'; options.strokeWidth = 1;
         options.dashArray = dashArray; options.visible = visible;
-        let scale: number = transform.scale;
+        const scale: number = transform.scale;
         options.x *= scale;
         options.y *= scale;
         options.width *= scale;
         options.height *= scale;
         options.id = 'pivotLine';
         options.class = 'e-diagram-pivot-line';
-        let startPoint: PointModel = { x: wrapper.actualSize.width * wrapper.pivot.x * scale, y: -20 };
-        let endPoint: PointModel = { x: wrapper.actualSize.width * wrapper.pivot.x * scale, y: 0 };
+        const startPoint: PointModel = { x: wrapper.actualSize.width * wrapper.pivot.x * scale, y: -20 };
+        const endPoint: PointModel = { x: wrapper.actualSize.width * wrapper.pivot.x * scale, y: 0 };
         (options as LineAttributes).startPoint = startPoint;
         (options as LineAttributes).endPoint = endPoint;
         this.svgRenderer.drawLine(canvas as SVGElement, options as LineAttributes);
     }
 
     /**
+     * @param selector
+     * @param canvas
+     * @param constraints
+     * @param transform
+     * @param connectedSource
+     * @param connectedTarget
+     * @param isSegmentEditing
+     * @param currentSelector
+     * @param selector
+     * @param canvas
+     * @param constraints
+     * @param transform
+     * @param connectedSource
+     * @param connectedTarget
+     * @param isSegmentEditing
+     * @param currentSelector
+     * @param selector
+     * @param canvas
+     * @param constraints
+     * @param transform
+     * @param connectedSource
+     * @param connectedTarget
+     * @param isSegmentEditing
+     * @param currentSelector
      * @private
      */
     public renderEndPointHandle(
@@ -1725,11 +1926,11 @@ export class Drawing {
         transform: Transforms, connectedSource: boolean,
         connectedTarget?: boolean, isSegmentEditing?: boolean, currentSelector?: AnnotationSelectorSettingsModel): void {
         transform = transform || { tx: 0, ty: 0, scale: 1 };
-        let sourcePoint: PointModel = selector.sourcePoint;
-        let targetPoint: PointModel = selector.targetPoint;
-        let wrapper: DrawingElement = selector.wrapper; let i: number;
+        const sourcePoint: PointModel = selector.sourcePoint;
+        const targetPoint: PointModel = selector.targetPoint;
+        const wrapper: DrawingElement = selector.wrapper; let i: number;
         for (i = 0; i < selector.vertexPoints.length; i++) {
-            let segment: PointModel = selector.vertexPoints[i];
+            const segment: PointModel = selector.vertexPoints[i];
             this.renderCircularHandle(
                 ('segementThumb_' + (i + 1)), wrapper, segment.x, segment.y, canvas, true,
                 constraints & ThumbsConstraints.ConnectorSource, transform, connectedSource, null, null, i, null, currentSelector);
@@ -1737,9 +1938,9 @@ export class Drawing {
         let leaderCount: number = 0;
         if (selector.shapeAnnotationType === 'Distance') {
             for (i = 0; i < selector.wrapper.children.length; i++) {
-                let segment: DrawingElement = selector.wrapper.children[i];
+                const segment: DrawingElement = selector.wrapper.children[i];
                 let newPoint1: PointModel;
-                let angle: number = Point.findAngle(selector.sourcePoint, selector.targetPoint);
+                const angle: number = Point.findAngle(selector.sourcePoint, selector.targetPoint);
                 if (segment.id.indexOf('leader') > -1) {
                     let center: PointModel = selector.wrapper.children[0].bounds.center;
                     if (leaderCount === 0) {
@@ -1750,10 +1951,10 @@ export class Drawing {
                         center = targetPoint;
 
                     }
-                    let matrix: Matrix = identityMatrix();
+                    const matrix: Matrix = identityMatrix();
                     rotateMatrix(matrix, angle, center.x, center.y);
-                    let rotatedPoint: PointModel = transformPointByMatrix(matrix, { x: newPoint1.x, y: newPoint1.y });
-                    // tslint:disable-next-line:max-line-length
+                    const rotatedPoint: PointModel = transformPointByMatrix(matrix, { x: newPoint1.x, y: newPoint1.y });
+                    // eslint-disable-next-line max-len
                     this.renderCircularHandle(('leaderThumb_' + (i + 1)), wrapper, rotatedPoint.x, rotatedPoint.y, canvas, true, constraints & ThumbsConstraints.ConnectorSource, transform, connectedSource, null, null, i, null, currentSelector);
                     leaderCount++;
                 }
@@ -1764,22 +1965,26 @@ export class Drawing {
      * @private
      */
     public initSelectorWrapper(): void {
-        let selectorModel: SelectorModel = this.pdfViewer.selectedItems;
+        const selectorModel: SelectorModel = this.pdfViewer.selectedItems;
         (selectorModel as Selector).init(this);
     }
 
     /**
+     * @param objArray
+     * @param currentSelector
+     * @param multipleSelection
+     * @param preventUpdate
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public select(objArray: string[], currentSelector?: any, multipleSelection?: boolean, preventUpdate?: boolean): void {
-        let selectorModel: SelectorModel = this.pdfViewer.selectedItems;
+        const selectorModel: SelectorModel = this.pdfViewer.selectedItems;
         for (let i: number = 0; i < objArray.length; i++) {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let obj: any = (this.pdfViewer.nameTable as any)[objArray[i]];
             if (obj) {
                 if (!(obj instanceof Selector) && obj.wrapper.visible) {
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line
                     let annotationSettings : any;
                     if (obj.annotationSettings) {
                         annotationSettings = obj.annotationSettings;
@@ -1806,23 +2011,43 @@ export class Drawing {
         }
     }
     /**
+     * @param tx
+     * @param ty
+     * @param pageIndex
+     * @param currentSelector
+     * @param helper
+     * @param tx
+     * @param ty
+     * @param pageIndex
+     * @param currentSelector
+     * @param helper
+     * @param tx
+     * @param ty
+     * @param pageIndex
+     * @param currentSelector
+     * @param helper
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public dragSelectedObjects(tx: number, ty: number, pageIndex: number, currentSelector: any,helper: PdfAnnotationBaseModel): boolean {
-        let obj: SelectorModel | PdfAnnotationBaseModel = this.pdfViewer.selectedItems;
+        const obj: SelectorModel | PdfAnnotationBaseModel = this.pdfViewer.selectedItems;
 
         this.drag(obj, tx, ty, currentSelector, helper);
         return true;
     }
     /**
+     * @param obj
+     * @param tx
+     * @param ty
+     * @param currentSelector
+     * @param helper
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public drag(obj: PdfAnnotationBaseModel | SelectorModel, tx: number, ty: number, currentSelector: any, helper: PdfAnnotationBaseModel): void {
         if (obj instanceof Selector) {
             if (obj.annotations.length) {
-                for (let node of obj.annotations) {
+                for (const node of obj.annotations) {
                     this.drag(node, tx, ty, currentSelector, helper);
                     this.renderSelector(node.pageIndex, currentSelector, helper);
                 }
@@ -1834,18 +2059,27 @@ export class Drawing {
     }
 
     /**
+     * @param obj
+     * @param tx
+     * @param ty
+     * @param obj
+     * @param tx
+     * @param ty
+     * @param obj
+     * @param tx
+     * @param ty
      * @private
      */
     public dragAnnotation(obj: PdfAnnotationBaseModel, tx: number, ty: number): void {
         let tempNode: PdfAnnotationBaseModel;
-        let elements: PdfAnnotationBaseModel[] = [];
-        // tslint:disable-next-line
+        const elements: PdfAnnotationBaseModel[] = [];
+        // eslint-disable-next-line
         let oldValues: any = { x: obj.wrapper.offsetX, y: obj.wrapper.offsetY };
         obj.wrapper.offsetX += tx;
         obj.wrapper.offsetY += ty;
         if (isLineShapes(obj) || obj.shapeAnnotationType === 'Polygon') {
             if (obj.wrapper.children.length) {
-                let nodes: DrawingElement[] = obj.wrapper.children;
+                const nodes: DrawingElement[] = obj.wrapper.children;
                 for (let i: number = 0; i < nodes.length; i++) {
                     nodes[i].offsetX += tx;
                     nodes[i].offsetY += ty;
@@ -1856,17 +2090,32 @@ export class Drawing {
 
         this.nodePropertyChange(obj, { bounds: { x: obj.wrapper.offsetX, y: obj.wrapper.offsetY } } as PdfAnnotationBaseModel);
         obj.wrapper.measureChildren = false;
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let canvas: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + (obj as any).pageIndex);
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         this.pdfViewer.renderDrawing(canvas as HTMLCanvasElement, (obj as any).pageIndex);
 
     }
     /**
+     * @param obj
+     * @param tx
+     * @param ty
+     * @param preventUpdate
+     * @param segmentNumber
+     * @param obj
+     * @param tx
+     * @param ty
+     * @param preventUpdate
+     * @param segmentNumber
+     * @param obj
+     * @param tx
+     * @param ty
+     * @param preventUpdate
+     * @param segmentNumber
      * @private
      */
     public dragControlPoint(obj: PdfAnnotationBaseModel, tx: number, ty: number, preventUpdate?: boolean, segmentNumber?: number): boolean {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let connector: PdfAnnotationBaseModel = (this.pdfViewer.nameTable as any)[obj.id];
         for (let i: number = 0; i < connector.vertexPoints.length; i++) {
             (connector.vertexPoints[i]).x += tx;
@@ -1878,6 +2127,7 @@ export class Drawing {
         return true;
     }
     /**
+     * @param connector
      * @private
      */
     public updateEndPoint(connector: PdfAnnotationBaseModel): void {
@@ -1887,7 +2137,7 @@ export class Drawing {
     /**
      * @private
      */
-    /* tslint:disable */
+    /* eslint-disable */
     public nodePropertyChange(
         actualObject: PdfAnnotationBaseModel, node: PdfAnnotationBaseModel): void {
         let existingBounds: Rect = actualObject.wrapper.outerBounds;
@@ -2360,7 +2610,7 @@ export class Drawing {
             }
         }
     }
-    /* tslint:disable */
+    /* eslint-disable */
     private setLineDistance(actualObject: any, points: any, segment: any, leader: boolean): void {
         let node1: PathElement;
         if (leader) {
@@ -2505,7 +2755,7 @@ export class Drawing {
         return false;
     }
     private RestrictStamp(source: any): boolean {
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         if (source && source.pageIndex !== undefined && this.pdfViewer.viewerBase.activeElements && source.pageIndex !== this.pdfViewer.viewerBase.activeElements.activePageID) {
             return true;
         }
@@ -2610,7 +2860,7 @@ export class Drawing {
     /**
      * @private
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     public dragConnectorEnds(
         endPoint: string, obj: IElement, point: PointModel, segment: PointModel, target?: IElement, targetPortId?: string, currentSelector?: any):
         boolean {
@@ -2824,14 +3074,14 @@ export class Drawing {
                         newNode.id += randomId();
                         if (this.pdfViewer.annotationModule) {
                             newNode.annotName = newNode.id;
-                            // tslint:disable-next-line:max-line-length
+                            // eslint-disable-next-line max-len
                             this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAnnotationCollection(newNode, copiedItems[0], false);
                         }
-                        // tslint:disable-next-line:max-line-length
+                        // eslint-disable-next-line max-len
                         this.pdfViewer.annotation.addAction(newNode.pageIndex, null, newNode as PdfAnnotationBase, 'Addition', '', newNode as PdfAnnotationBase, newNode);
                     } else {
                         if (this.pdfViewer.annotationModule) {
-                            // tslint:disable-next-line:max-line-length
+                            // eslint-disable-next-line max-len
                             this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAnnotationCollection(newNode, copiedItems[0], true);
                         }
                     }

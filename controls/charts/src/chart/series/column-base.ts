@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable jsdoc/require-param */
 import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DoubleRange } from '../utils/double-range';
 import { appendChildElement, redrawElement, pathAnimation, valueToCoefficient, getVisiblePoints } from '../../common/utils/helper';
@@ -19,7 +24,8 @@ export class ColumnBase {
 
     /**
      * To get the position of the column series.
-     * @return {DoubleRange}
+     *
+     * @returns {DoubleRange} doubleRange
      * @private
      */
     protected getSideBySideInfo(series: Series): DoubleRange {
@@ -27,17 +33,17 @@ export class ColumnBase {
         if (series.chart.enableSideBySidePlacement && !series.position) {
             this.getSideBySidePositions(series);
         }
-        let position: number = !series.chart.enableSideBySidePlacement ? 0 : series.position;
-        let rectCount: number = !series.chart.enableSideBySidePlacement ? 1 : series.rectCount;
+        const position: number = !series.chart.enableSideBySidePlacement ? 0 : series.position;
+        const rectCount: number = !series.chart.enableSideBySidePlacement ? 1 : series.rectCount;
         series.isRectSeries = true;
-        let visibleSeries: Series[] = series.chart.visibleSeries;
-        let seriesSpacing: number = series.chart.enableSideBySidePlacement ? series.columnSpacing : 0; // Column Spacing
-        let pointSpacing: number = (series.columnWidth === null || isNaN(+series.columnWidth)) ? ((series.type === 'Histogram') ? 1 : 0.7) :
+        const visibleSeries: Series[] = series.chart.visibleSeries;
+        const seriesSpacing: number = series.chart.enableSideBySidePlacement ? series.columnSpacing : 0; // Column Spacing
+        const pointSpacing: number = (series.columnWidth === null || isNaN(+series.columnWidth)) ? ((series.type === 'Histogram') ? 1 : 0.7) :
             series.columnWidth; // Column width
-        let minimumPointDelta: number = getMinPointsDelta(series.xAxis, visibleSeries);
-        let width: number = minimumPointDelta * pointSpacing;
+        const minimumPointDelta: number = getMinPointsDelta(series.xAxis, visibleSeries);
+        const width: number = minimumPointDelta * pointSpacing;
         let radius: number;
-        let location: number = (position) / rectCount - 0.5;
+        const location: number = (position) / rectCount - 0.5;
         let doubleRange: DoubleRange = new DoubleRange(location, location + (1 / rectCount));
         if (!(isNaN(doubleRange.start) || isNaN(doubleRange.end))) {
             doubleRange = new DoubleRange(doubleRange.start * width, doubleRange.end * width);
@@ -48,12 +54,13 @@ export class ColumnBase {
     }
     /**
      * To get the rect values.
-     * @return {Rect}
+     *
+     * @returns {Rect} rect region values
      * @private
      */
     protected getRectangle(x1: number, y1: number, x2: number, y2: number, series: Series): Rect {
-        let point1: ChartLocation = getPoint(x1, y1, series.xAxis, series.yAxis, series.chart.requireInvertedAxis);
-        let point2: ChartLocation = getPoint(x2, y2, series.xAxis, series.yAxis, series.chart.requireInvertedAxis);
+        const point1: ChartLocation = getPoint(x1, y1, series.xAxis, series.yAxis, series.chart.requireInvertedAxis);
+        const point2: ChartLocation = getPoint(x2, y2, series.xAxis, series.yAxis, series.chart.requireInvertedAxis);
         return new Rect(
             Math.min(point1.x, point2.x), Math.min(point1.y, point2.y),
             Math.abs(point2.x - point1.x), Math.abs(point2.y - point1.y)
@@ -62,23 +69,23 @@ export class ColumnBase {
 
     /**
      * To get the position of each series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     private getSideBySidePositions(series: Series): void {
-        let chart: Chart = series.chart;
-        for (let columnItem of chart.columns) {
-            for (let item of chart.rows) {
+        const chart: Chart = series.chart;
+        for (const columnItem of chart.columns) {
+            for (const item of chart.rows) {
                 this.findRectPosition(series.findSeriesCollection(<Column>columnItem, <Row>item, false));
             }
         }
     }
     private findRectPosition(seriesCollection: Series[]): void {
-        let stackingGroup: string[] = [];
-        let vSeries: RectPosition = { rectCount: 0, position: null };
+        const stackingGroup: string[] = [];
+        const vSeries: RectPosition = { rectCount: 0, position: null };
         for (let i: number = 0; i < seriesCollection.length; i++) {
-            let value: Series = seriesCollection[i];
-            // tslint:disable-next-line:align
+            const value: Series = seriesCollection[i];
             if (value.type.indexOf('Stacking') !== -1) {
                 if (value.stackingGroup) {
                     if (stackingGroup[value.stackingGroup] === undefined) {
@@ -99,16 +106,16 @@ export class ColumnBase {
                 value.position = vSeries.rectCount++;
             }
         }
-        // tslint:disable-next-line:align
         for (let i: number = 0; i < seriesCollection.length; i++) {
-            let value: Series = seriesCollection[i];
+            const value: Series = seriesCollection[i];
             value.rectCount = vSeries.rectCount;
         }
     }
 
     /**
      * Updates the symbollocation for points
-     * @return void
+     *
+     * @returns {void}
      * @private
      */
     protected updateSymbolLocation(point: Points, rect: Rect, series: Series): void {
@@ -125,7 +132,8 @@ export class ColumnBase {
 
     /**
      * Update the region for the point.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     protected updateXRegion(point: Points, rect: Rect, series: Series): void {
@@ -144,7 +152,8 @@ export class ColumnBase {
     }
     /**
      * Update the region for the point in bar series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     protected updateYRegion(point: Points, rect: Rect, series: Series): void {
@@ -162,8 +171,9 @@ export class ColumnBase {
         }
     }
     /**
-     * To render the marker for the series. 
-     * @return {void}
+     * To render the marker for the series.
+     *
+     * @returns {void}
      * @private
      */
     public renderMarker(series: Series): void {
@@ -173,13 +183,15 @@ export class ColumnBase {
     }
     /**
      * To get the marker region when Y value is 0
-     * @param point
-     * @param series
+     *
+     * @param {Points} point point
+     * @param {rect} rect rect
+     * @param {Series} series series
      */
     private getRegion(point: Points, rect: Rect, series: Series): void {
         if (point.y === 0) {
-            let markerWidth: number = (series.marker && series.marker.width) ? series.marker.width : 0;
-            let markerHeight: number = (series.marker && series.marker.height) ? series.marker.height : 0;
+            const markerWidth: number = (series.marker && series.marker.width) ? series.marker.width : 0;
+            const markerHeight: number = (series.marker && series.marker.height) ? series.marker.height : 0;
             point.regions.push(new Rect(
                 point.symbolLocations[0].x - markerWidth,
                 point.symbolLocations[0].y - markerHeight,
@@ -192,11 +204,12 @@ export class ColumnBase {
     }
     /**
      * To trigger the point rendering event.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     protected triggerEvent(series: Series, point: Points, fill: string, border: BorderModel): IPointRenderEventArgs {
-        let argsData: IPointRenderEventArgs = {
+        const argsData: IPointRenderEventArgs = {
             cancel: false, name: pointRender, series: series, point: point,
             fill: series.setPointColor(point, fill),
             border: series.setBorderColor(point, border)
@@ -208,14 +221,15 @@ export class ColumnBase {
 
     /**
      * To draw the rectangle for points.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     protected drawRectangle(
         series: Series, point: Points, rect: Rect, argsData: IPointRenderEventArgs
     ): void {
-        let chart: Chart = series.chart;
-        let check: number = chart.requireInvertedAxis ? rect.height : rect.width;
+        const chart: Chart = series.chart;
+        const check: number = chart.requireInvertedAxis ? rect.height : rect.width;
         if (check <= 0) {
             return null;
         }
@@ -228,20 +242,22 @@ export class ColumnBase {
                 rect, series.cornerRadius.topLeft, series.cornerRadius.topRight, series.cornerRadius.bottomLeft,
                 series.cornerRadius.bottomRight);
         }
-        let name: string = series.category === 'Indicator' ? chart.element.id + '_Indicator_' + series.index + '_' + series.name +
+        const name: string = series.category === 'Indicator' ? chart.element.id + '_Indicator_' + series.index + '_' + series.name +
             '_Point_' + point.index : chart.element.id + '_Series_' + series.index + '_Point_' + point.index;
-        let previousElement: Element = redrawElement(chart.redraw, name);
-        let previousDirection: string = previousElement ? previousElement.getAttribute('d') : '';
-        let options: PathOption = new PathOption(
+        const previousElement: Element = redrawElement(chart.redraw, name);
+        const previousDirection: string = previousElement ? previousElement.getAttribute('d') : '';
+        const options: PathOption = new PathOption(
             name, argsData.fill, argsData.border.width, argsData.border.color, series.opacity, series.dashArray, direction);
-        let element: HTMLElement = chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y])) as HTMLElement;
+        const element: HTMLElement = chart.renderer.drawPath(
+            options, new Int32Array([series.clipRect.x, series.clipRect.y])
+        ) as HTMLElement;
         switch (series.seriesType) {
-            case 'XY':
-                element.setAttribute('aria-label', point.x.toString() + ':' + point.yValue.toString());
-                break;
-            case 'HighLow':
-                element.setAttribute('aria-label', point.x.toString() + ':' + point.high.toString() + ':' + point.low.toString());
-                break;
+        case 'XY':
+            element.setAttribute('aria-label', point.x.toString() + ':' + point.yValue.toString());
+            break;
+        case 'HighLow':
+            element.setAttribute('aria-label', point.x.toString() + ':' + point.high.toString() + ':' + point.low.toString());
+            break;
         }
         appendChildElement(series.chart.enableCanvas, series.seriesElement, element, chart.redraw);
         if (!series.chart.enableCanvas) {
@@ -250,14 +266,15 @@ export class ColumnBase {
     }
     /**
      * To animate the series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public animate(series: Series): void {
-        let rectElements: NodeList = series.seriesElement.childNodes;
+        const rectElements: NodeList = series.seriesElement.childNodes;
         let count: number = series.category === 'Indicator' ? 0 : 1;
-        let visiblePoints: Points[] = getVisiblePoints(series);
-        for (let point of visiblePoints) {
+        const visiblePoints: Points[] = getVisiblePoints(series);
+        for (const point of visiblePoints) {
             if (!point.symbolLocations.length && !(series.type === 'BoxAndWhisker' && point.regions.length)) {
                 continue;
             }
@@ -267,14 +284,15 @@ export class ColumnBase {
     }
     /**
      * To animate the series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     private animateRect(element: HTMLElement, series: Series, point: Points): void {
-        let option: AnimationModel = series.animation;
-        let duration: number = series.chart.animated ? series.chart.duration : option.duration;
-        let effect: Function = getAnimationFunction('Linear');
-        let isPlot: boolean = point.yValue < 0;
+        const option: AnimationModel = series.animation;
+        const duration: number = series.chart.animated ? series.chart.duration : option.duration;
+        const effect: Function = getAnimationFunction('Linear');
+        const isPlot: boolean = point.yValue < 0;
         let x: number;
         let y: number;
         let elementHeight: number = +point.regions[0].height;
@@ -329,14 +347,14 @@ export class ColumnBase {
                         }
                     }
                 },
-                end: (model: AnimationOptions) => {
+                end: () => {
                     element.setAttribute('transform', 'translate(0,0)');
-                    let seriesElement: Element = series.seriesElement;
+                    const seriesElement: Element = series.seriesElement;
                     if (element === seriesElement.lastElementChild || point.index === series.points.length - 1 ||
                         (series.type === 'Waterfall' && element === seriesElement.children[seriesElement.childElementCount - 2])) {
                         series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
                         if (series.type === 'Waterfall') {
-                            let rectElements: NodeList = seriesElement.childNodes;
+                            const rectElements: NodeList = seriesElement.childNodes;
                             for (let i: number = 0; i < rectElements.length; i++) {
                                 if ((rectElements[i] as HTMLElement).id.indexOf('Connector') !== -1) {
                                     (rectElements[i] as HTMLElement).style.visibility = 'visible';

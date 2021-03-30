@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/dot-notation */
+/* eslint-disable brace-style */
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable max-len */
 import { TreeMap } from '../treemap';
 import {
     Rect, itemsToOrder, TextOption, Size, measureText, textTrim, hide, wordWrap, textWrap,
@@ -23,15 +27,18 @@ export class LayoutPanel {
     private currentRect: Rect;
     public layoutGroup: Element;
     private renderer: SvgRenderer;
-    public renderItems: Object[];
-    private parentData: Object[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public renderItems: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private parentData: any[];
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(treemap: TreeMap) {
         this.treemap = treemap;
     }
 
-    /* tslint:disable:no-string-literal */
     public processLayoutPanel(): void {
-        let data: Object[] | Object; let totalRect: Rect;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let data: any[] | any; let totalRect: Rect;
         if (LevelsData.levelsData && LevelsData.levelsData.length > 0) {
             data = (!isNullOrUndefined(this.treemap.initialDrillDown.groupIndex) &&
                 !isNullOrUndefined(this.treemap.initialDrillDown.groupName)) &&
@@ -47,9 +54,11 @@ export class LayoutPanel {
             if (!isNullOrUndefined(this.treemap.currentLevel) &&
                 (isNullOrUndefined(this.treemap.drilledItems) ? !isNullOrUndefined(this.treemap.drilledItems)
                     : this.treemap.drilledItems.length !== 0)) {
-                let count: number = this.treemap.drilledItems.length - 1;
-                let x: Object = this.treemap.drilledItems[count]['data'];
-                let y: Object = new Object();
+                const count: number = this.treemap.drilledItems.length - 1;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const x: any = this.treemap.drilledItems[count]['data'];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const y: any = {};
                 y[this.treemap.drilledItems[count]['data']['groupName']] = [x];
                 if (!isNullOrUndefined(this.treemap.initialDrillDown.groupIndex) && !this.treemap.enableBreadcrumb) {
                     this.treemap.currentLevel = this.treemap.drilledItems[count]['data']['groupIndex'];
@@ -68,9 +77,12 @@ export class LayoutPanel {
         }
     }
 
-    private getDrilldownData(data: Object, drillData: object[]): Object {
-        let treemap: TreeMap = this.treemap; let newData: Object = {};
-        let child: Object[] = findChildren(data)['values'];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private getDrilldownData(data: any, drillData: any[]): any {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const treemap: TreeMap = this.treemap; const newData: any = {};
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const child: any[] = findChildren(data)['values'];
         if (child && child.length > 0 && drillData.length === 0) {
             for (let i: number = 0; i < child.length; i++) {
                 if (child[i]['groupIndex'] === treemap.initialDrillDown.groupIndex &&
@@ -87,7 +99,8 @@ export class LayoutPanel {
         return drillData;
     }
 
-    public calculateLayoutItems(data: Object, rect: Rect): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public calculateLayoutItems(data: any, rect: Rect): void {
         this.renderItems = [];
         this.parentData = [];
         if (!isNullOrUndefined(this.treemap.weightValuePath)) {
@@ -101,11 +114,13 @@ export class LayoutPanel {
         }
     }
 
-    private computeSliceAndDiceDimensional(data: Object, coords: Rect): Object {
-        let leafItem: LeafItemSettings = this.treemap.leafItemSettings as LeafItemSettings;
-        let rect: Rect; let groups: LevelSettings[] = this.treemap.levels as LevelSettings[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private computeSliceAndDiceDimensional(data: any, coords: Rect): any {
+        const leafItem: LeafItemSettings = this.treemap.leafItemSettings as LeafItemSettings;
+        let rect: Rect; const groups: LevelSettings[] = this.treemap.levels as LevelSettings[];
         let groupIndex: number; let isLeafItem: boolean = false;
-        let children: Object[] = findChildren(data)['values'];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const children: any[] = findChildren(data)['values'];
         let gap: number; let headerHeight: number;
         if (children && children.length > 0) {
             this.sliceAndDiceProcess(children, coords);
@@ -127,19 +142,23 @@ export class LayoutPanel {
         return data;
     }
 
-    private sliceAndDiceProcess(processData: Object[], rect: Rect): void {
-        let parentArea: number = rect.height * rect.width;
-        let levels: LevelSettingsModel[] = this.treemap.levels;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private sliceAndDiceProcess(processData: any[], rect: Rect): void {
+        const parentArea: number = rect.height * rect.width;
+        const levels: LevelSettingsModel[] = this.treemap.levels;
         let childValue: number; let alottedValue: number = 0; let totalWeight: number = 0;
-        processData.forEach((data: Object) => { totalWeight += data['weight']; });
-        processData.forEach((child: Object) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        processData.forEach((data: any) => { totalWeight += data['weight']; });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        processData.forEach((child: any) => {
             child['weightArea'] = parentArea * (child['weight'] as number) / totalWeight;
         });
-        let isHorizontal: boolean = (this.treemap.layoutType === 'SliceAndDiceAuto') ? (rect.width > rect.height) :
+        const isHorizontal: boolean = (this.treemap.layoutType === 'SliceAndDiceAuto') ? (rect.width > rect.height) :
             (this.treemap.layoutType === 'SliceAndDiceHorizontal');
         processData.sort(itemsToOrder);
         for (let i: number = 0; i < processData.length; i++) {
-            let item: Object = processData[i];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const item: any = processData[i];
             item['isLeafItem'] = (levels.length === 0) || ((this.treemap.isHierarchicalData ||
                 isNullOrUndefined(this.treemap.leafItemSettings.labelPath)) ?
                 item['groupIndex'] === levels.length - 1 : item['groupIndex'] === this.treemap.levels.length);
@@ -159,11 +178,14 @@ export class LayoutPanel {
         }
     }
 
-    private computeSquarifyDimensional(data: Object, coords: Rect): void {
-        let leaf: LeafItemSettings = this.treemap.leafItemSettings as LeafItemSettings;
-        let rect: Rect; let levels: LevelSettings[] = this.treemap.levels as LevelSettings[];
-        let groupIndex: number; let isLeafItem: boolean = false; let item: object;
-        let child: Object[] = findChildren(data)['values']; let index: number; let gap: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private computeSquarifyDimensional(data: any, coords: Rect): void {
+        const leaf: LeafItemSettings = this.treemap.leafItemSettings as LeafItemSettings;
+        let rect: Rect; const levels: LevelSettings[] = this.treemap.levels as LevelSettings[];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const groupIndex: number = 0; const isLeafItem: boolean = false; let item: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const child: any[] = findChildren(data)['values']; let index: number;
         let padding: number; let headerHeight: number;
         if (child && child.length > 0) {
             if (this.parentData.length === 0) {
@@ -176,11 +198,10 @@ export class LayoutPanel {
                     item = child[i];
                     index = item['groupIndex'];
                     rect = item['rect'];
-                    gap = (item['isLeafItem'] ? leaf.gap : levels[index].groupGap) / 2;
                     padding = (item['isLeafItem'] ? leaf.padding : levels[index].groupPadding) / 2;
                     headerHeight = this.treemap.isHierarchicalData ? index === 0 && item['isLeafItem'] ? 0 : levels[index] ?
                         levels[index].showHeader ? levels[index].headerHeight : 0 : 0 : (levels.length === 0) ? 0 : levels[index] ?
-                            levels[index].showHeader ? levels[index].headerHeight : 0 : 0;
+                        levels[index].showHeader ? levels[index].headerHeight : 0 : 0;
                     rect = new Rect(
                         rect.x + padding, rect.y + (headerHeight + padding),
                         rect.width - padding, rect.height - padding
@@ -193,56 +214,68 @@ export class LayoutPanel {
         }
     }
 
-    private calculateChildrenLayout(parent: Object, children: Object[], coords: Rect): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private calculateChildrenLayout(parent: any, children: any[], coords: Rect): void {
         this.computeTotalArea(children, getArea(coords));
         children.sort(orderByArea);
         this.performRowsLayout(children, [], coords, []);
     }
 
-    private performRowsLayout(data: Object[], currentRow: Object[], rect: Rect, stack: Object[]): Object[] {
-        let dataLength: number = data.length;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private performRowsLayout(data: any[], currentRow: any[], rect: Rect, stack: any[]): any[] {
+        const dataLength: number = data.length;
         if (dataLength === 0) {
-            let newCoordinates: Object[] = this.getCoordinates(currentRow, rect);
-            let newStack: Object[] = stack.concat(newCoordinates);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const newCoordinates: any[] = this.getCoordinates(currentRow, rect);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const newStack: any[] = stack.concat(newCoordinates);
             return newStack;
         }
-        let width: number = getShortestEdge(rect);
-        let nextDatum: Object = data[0];
-        let restData: Object[] = data.slice(1, dataLength);
+        const width: number = getShortestEdge(rect);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const nextDatum: any = data[0];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const restData: any[] = data.slice(1, dataLength);
         if (this.aspectRatio(currentRow, nextDatum, width)) {
-            let newRow: Object[] = currentRow.concat(nextDatum);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const newRow: any[] = currentRow.concat(nextDatum);
             return this.performRowsLayout(restData, newRow, rect, stack);
         } else {
-            let currentRowLength: number = currentRow.length;
+            const currentRowLength: number = currentRow.length;
             let valueSum: number = 0;
             for (let i: number = 0; i < currentRowLength; i += 1) {
                 valueSum += currentRow[i]['itemArea'];
             }
-            let newContainer: Rect = this.cutArea(rect, valueSum);
-            let newCoordinates: Object[] = this.getCoordinates(currentRow, rect);
-            let newStack: Object[] = stack.concat(newCoordinates);
+            const newContainer: Rect = this.cutArea(rect, valueSum);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const newCoordinates: any[] = this.getCoordinates(currentRow, rect);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const newStack: any[] = stack.concat(newCoordinates);
             return this.performRowsLayout(data, [], newContainer, newStack);
         }
     }
 
-    private aspectRatio(currentRow: Object[], nextDatum: Object, length: number): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private aspectRatio(currentRow: any[], nextDatum: any, length: number): boolean {
         if (currentRow.length === 0) {
             return true;
         } else {
-            let newRow: Object[] = currentRow.concat(nextDatum);
-            let currentMaxAspectRatio: number = this.findMaxAspectRatio(currentRow, length);
-            let newMaxAspectRatio: number = this.findMaxAspectRatio(newRow, length);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const newRow: any[] = currentRow.concat(nextDatum);
+            const currentMaxAspectRatio: number = this.findMaxAspectRatio(currentRow, length);
+            const newMaxAspectRatio: number = this.findMaxAspectRatio(newRow, length);
             return (currentMaxAspectRatio >= newMaxAspectRatio);
         }
     }
 
-    private findMaxAspectRatio(row: Object[], length: number): number {
-        let rowLength: number = row.length;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private findMaxAspectRatio(row: any[], length: number): number {
+        const rowLength: number = row.length;
         let minArea: number = Infinity;
         let maxArea: number = -Infinity;
         let sumArea: number = 0;
         for (let i: number = 0; i < rowLength; i += 1) {
-            let area: number = row[i]['itemArea'];
+            const area: number = row[i]['itemArea'];
             if (area < minArea) {
                 minArea = area;
             }
@@ -251,78 +284,82 @@ export class LayoutPanel {
             }
             sumArea += area;
         }
-        let result: number = Math.max((Math.pow(length, 2)) * maxArea / (Math.pow(sumArea, 2)), (Math.pow(sumArea, 2)) /
+        const result: number = Math.max((Math.pow(length, 2)) * maxArea / (Math.pow(sumArea, 2)), (Math.pow(sumArea, 2)) /
             ((Math.pow(length, 2)) * minArea));
         return result;
     }
 
 
     private cutArea(rect: Rect, area: number): Rect {
-        let newContainer: Rect = convertToContainer(rect);
-        let width: number = newContainer.width;
-        let height: number = newContainer.height;
-        let xOffset: number = newContainer.x;
-        let yOffset: number = newContainer.y;
+        const newContainer: Rect = convertToContainer(rect);
+        const width: number = newContainer.width;
+        const height: number = newContainer.height;
+        const xOffset: number = newContainer.x;
+        const yOffset: number = newContainer.y;
         if (width >= height) {
-            let areaWidth: number = area / height;
-            let newWidth: number = width - areaWidth;
-            let container: Rect = {
+            const areaWidth: number = area / height;
+            const newWidth: number = width - areaWidth;
+            const container: Rect = {
                 x: xOffset + areaWidth,
                 y: yOffset,
                 width: newWidth,
-                height: height,
+                height: height
             };
             return convertToRect(container);
         } else {
-            let areaHeight: number = area / width;
-            let newHeight: number = height - areaHeight;
-            let container: Rect = {
+            const areaHeight: number = area / width;
+            const newHeight: number = height - areaHeight;
+            const container: Rect = {
                 x: xOffset,
                 y: yOffset + areaHeight,
                 width: width,
-                height: newHeight,
+                height: newHeight
             };
             return convertToRect(container);
         }
     }
 
-    private getCoordinates(row: Object[], rect: Rect): Object[] {
-        let container: Rect = convertToContainer(rect); let headerHeight: number;
-        let width: number = container.width; let height: number = container.height;
-        let xOffset: number = container.x; let yOffset: number = container.y;
-        let rowLength: number = row.length; let levels: LevelSettingsModel[] = this.treemap.levels;
-        let leaf: LeafItemSettingsModel = this.treemap.leafItemSettings; let index: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private getCoordinates(row: any[], rect: Rect): any[] {
+        const container: Rect = convertToContainer(rect); let headerHeight: number;
+        const width: number = container.width; const height: number = container.height;
+        const xOffset: number = container.x; const yOffset: number = container.y;
+        const rowLength: number = row.length; const levels: LevelSettingsModel[] = this.treemap.levels;
+        const leaf: LeafItemSettingsModel = this.treemap.leafItemSettings; let index: number;
         let valueSum: number = 0;
         for (let i: number = 0; i < rowLength; i += 1) {
             valueSum += row[i]['itemArea'];
         }
-        let areaWidth: number = valueSum / height; let areaHeight: number = valueSum / width;
+        const areaWidth: number = valueSum / height; const areaHeight: number = valueSum / width;
         let subXOffset: number = xOffset; let subYOffset: number = yOffset; let padding: number;
-        let coordinates: Object[] = []; let isParent: boolean; let gap: number; let parentRect: Rect;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const coordinates: any[] = []; let isParent: boolean; let gap: number; let parentRect: Rect;
         for (let i: number = 0; i < rowLength; i += 1) {
-            let item: Object = row[i];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const item: any = row[i];
             index = item['groupIndex'];
             item['isLeafItem'] = (levels.length === 0) || (this.treemap.isHierarchicalData ? index === levels.length :
                 isNullOrUndefined(leaf.labelPath) ? false : index === levels.length);
-            isParent = isParentItem(this.parentData[0] as Object[], item);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            isParent = isParentItem(this.parentData[0] as any[], item);
             parentRect = isParent ? this.treemap.areaRect : item['parent'].rect;
             padding = item['isLeafItem'] ? leaf.padding : levels[index].groupPadding;
             if (width >= height) {
-                let y1: number = subYOffset + item['itemArea'] / areaWidth;
+                const y1: number = subYOffset + item['itemArea'] / areaWidth;
                 item['rect'] = {
                     x: subXOffset,
                     y: subYOffset,
                     width: subXOffset + areaWidth,
-                    height: y1,
+                    height: y1
                 };
                 subYOffset = y1;
             } else {
-                let x1: number = subXOffset + item['itemArea'] / areaHeight;
+                const x1: number = subXOffset + item['itemArea'] / areaHeight;
                 item['rect'] = {
                     x: subXOffset,
                     y: subYOffset,
                     width: x1,
-                    height: subYOffset + areaHeight,
+                    height: subYOffset + areaHeight
                 };
                 subXOffset = x1;
             }
@@ -336,17 +373,20 @@ export class LayoutPanel {
         return coordinates;
     }
 
-    private computeTotalArea(data: Object[], area: number): Object[] {
-        let dataLength: number = data.length;
-        let dataSum: number = 0; let result: Object[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private computeTotalArea(data: any[], area: number): any[] {
+        const dataLength: number = data.length;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const dataSum: number = 0; const result: any[] = [];
         for (let i: number = 0; i < dataLength; i += 1) {
-            let dataLength: number = data.length;
+            const dataLength: number = data.length;
             let dataSum: number = 0;
             for (let i: number = 0; i < dataLength; i += 1) {
                 dataSum += data[i]['weight'];
             }
-            let multiplier: number = area / dataSum;
-            let datum: Object;
+            const multiplier: number = area / dataSum;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let datum: any;
             for (let j: number = 0; j < dataLength; j++) {
                 datum = data[j];
                 datum['itemArea'] = datum['weight'] * multiplier;
@@ -356,11 +396,14 @@ export class LayoutPanel {
         return result;
     }
 
-    public onDemandProcess(childItems: Object): void {
-        let parentItem: Object = new Object(); let totalRect: Rect;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public onDemandProcess(childItems: any): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let parentItem: any = {}; let totalRect: Rect;
         parentItem = childItems[0]['parent'];
         this.treemap.currentLevel = parentItem['isDrilled'] ? parentItem['groupIndex'] : null;
-        let parentItemGroupname: object = new Object();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let parentItemGroupname: any = {};
         if (isNullOrUndefined(parentItem['groupName'])) {
             parentItemGroupname = parentItem;
         } else {
@@ -370,9 +413,9 @@ export class LayoutPanel {
         if (!isNullOrUndefined(this.treemap.treeMapLegendModule) && !isNullOrUndefined(this.treemap.totalRect)) {
             totalRect = this.treemap.totalRect;
         }
-        let count: number = this.treemap.levels.length;
+        const count: number = this.treemap.levels.length;
         for (let i: number = 0; i < count; i++) {
-            let levelCount: number = childItems[0]['groupIndex'];
+            const levelCount: number = childItems[0]['groupIndex'];
             if (count === levelCount) {
                 this.treemap.levels[count] = this.treemap.levels[i];
             } else {
@@ -383,24 +426,27 @@ export class LayoutPanel {
         this.renderLayoutItems(parentItemGroupname);
     }
 
-    /* tslint:disable-next-line:max-func-body-length */
-    public renderLayoutItems(renderData: Object): void {
-        let textCollection: string[] = []; let position: string;
-        let treeMap: TreeMap = this.treemap; let colorMapping: ColorMappingModel[];
-        let txtVisible: boolean; let getItemColor: Object; let eventArgs: IItemRenderingEventArgs;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public renderLayoutItems(renderData: any): void {
+        const textCollection: string[] = []; let position: string;
+        const treeMap: TreeMap = this.treemap; let colorMapping: ColorMappingModel[];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let txtVisible: boolean; let getItemColor: any; let eventArgs: IItemRenderingEventArgs;
         this.renderer = treeMap.renderer; let trimHeader: string | string[];
-        let textLocation: Location = new Location(0, 0); let pathOptions: PathOption;
-        let elementID: string = treeMap.element.id; let index: number; let templatePosition: LabelPosition;
-        let mode: string = treeMap.layoutType; let rect: Rect; let format: string;
-        let interSectAction: LabelAlignment = this.treemap.leafItemSettings.interSectAction;
-        let textSize: Size; let fill: string; let item: Object; let renderText: string;
-        let opacity: number; let padding: number = 5; let rectPath: string = ''; let isRender: boolean;
-        let secondaryEle: HTMLElement = document.getElementById(treeMap.element.id + '_Secondary_Element');
+        const textLocation: Location = new Location(0, 0); let pathOptions: PathOption;
+        const elementID: string = treeMap.element.id; let index: number; let templatePosition: LabelPosition;
+        const mode: string = treeMap.layoutType; let rect: Rect; let format: string;
+        const interSectAction: LabelAlignment = this.treemap.leafItemSettings.interSectAction;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let textSize: Size; let fill: string; let item: any; let renderText: string;
+        let opacity: number; const padding: number = 5; let rectPath: string = ''; let isRender: boolean;
+        const secondaryEle: HTMLElement = document.getElementById(treeMap.element.id + '_Secondary_Element');
         let groupId: string; let textOptions: TextOption; let templateEle: HTMLElement; let gap: number;
-        let textStyle: Font; let levels: LevelSettings[] = treeMap.levels as LevelSettings[];
+        let textStyle: Font; const levels: LevelSettings[] = treeMap.levels as LevelSettings[];
         this.layoutGroup = this.renderer.createGroup({ id: elementID + '_TreeMap_' + mode + '_Layout' });
         let itemGroup: Element; let level: LevelSettings; let template: string; let border: BorderModel;
-        let templateGroup: HTMLElement = createElement('div', {
+        const templateGroup: HTMLElement = createElement('div', {
             id: treeMap.element.id + '_Label_Template_Group',
             className: 'template',
             styles: 'overflow: hidden; position: absolute;pointer-events: none;' +
@@ -409,8 +455,9 @@ export class LayoutPanel {
                 'height:' + treeMap.areaRect.height + 'px;' +
                 'width:' + treeMap.areaRect.width + 'px;'
         });
-        let isLeafItem: boolean = false; let leaf: LeafItemSettings = treeMap.leafItemSettings as LeafItemSettings;
-        let childItems: Object[]; let connectorText: string;
+        let isLeafItem: boolean = false; const leaf: LeafItemSettings = treeMap.leafItemSettings as LeafItemSettings;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let childItems: any[]; let connectorText: string;
         for (let i: number = 0; i < this.renderItems.length; i++) {
             item = this.renderItems[i];
             index = item['groupIndex'];
@@ -424,7 +471,7 @@ export class LayoutPanel {
             groupId = elementID + '_Level_Index_' + index + '_Item_Index_' + i;
             itemGroup = this.renderer.createGroup({ id: groupId + '_Group' });
             gap = (isLeafItem ? leaf.gap : levels[index].groupGap) / 2;
-            let treemapItemRect: Rect = this.treemap.totalRect ? convertToContainer(this.treemap.totalRect) : this.treemap.areaRect;
+            const treemapItemRect: Rect = this.treemap.totalRect ? convertToContainer(this.treemap.totalRect) : this.treemap.areaRect;
             if (treeMap.layoutType === 'Squarified') {
                 rect.width = Math.abs(rect.x - rect.width) - gap;
                 rect.height = Math.abs(rect.y - rect.height) - gap;
@@ -446,7 +493,7 @@ export class LayoutPanel {
             txtVisible = isLeafItem ? leaf.showLabels : (levels[index]).showHeader;
             if (index === this.treemap.currentLevel) {
                 if (this.treemap.enableBreadcrumb) {
-                    let re: RegExp = /#/gi;
+                    const re: RegExp = /#/gi;
                     connectorText = '#' + this.treemap.breadcrumbConnector + '#';
                     levelName = item['levelOrderName'].replace(re, connectorText);
                     levelName = index !== 0 ? '#' + levelName : levelName;
@@ -485,7 +532,7 @@ export class LayoutPanel {
                     rectPath = ' M ' + rect.x + ' ' + rect.y + ' L ' + (rect.x + rect.width) + ' ' + rect.y +
                         ' L ' + (rect.x + rect.width) + ' ' + (rect.y + rect.height) + ' L ' + rect.x + ' ' + (rect.y + rect.height) + 'z';
                     pathOptions = new PathOption(groupId + '_RectPath', fill, border.width, border.color, opacity, null, rectPath);
-                    let path: Element = this.renderer.drawPath(pathOptions);
+                    const path: Element = this.renderer.drawPath(pathOptions);
                     itemGroup.appendChild(path);
                     if (txtVisible) {
                         if (eventArgs.text !== renderText) {
@@ -499,7 +546,7 @@ export class LayoutPanel {
                     if (template) {
                         templateEle = this.renderTemplate(secondaryEle, groupId, rect, templatePosition, template, item, isLeafItem);
                         templateGroup.appendChild(templateEle);
-                        /* tslint:disable */
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         (this.treemap as any).renderReactTemplates();
                     }
                     itemGroup.setAttribute('aria-label', item['name']);
@@ -521,31 +568,31 @@ export class LayoutPanel {
         text: string, parentElement: Element, textStyle: FontModel, rect: Rect, interSectAction: LabelAlignment,
         groupId: string, fill: string, position: LabelPosition, connectorText: string
     ): void {
-        let level: LevelSettings; let textOptions: TextOption; let headerPosition: string;
-        let secondaryEle: HTMLElement = document.getElementById(this.treemap.element.id + '_Secondary_Element');
-        let leaf: LeafItemSettings = this.treemap.leafItemSettings as LeafItemSettings;
-        let padding: number = 5; let textSize: Size; let textLocation: Location;
+        let level: LevelSettings; let headerPosition: string;
+        const secondaryEle: HTMLElement = document.getElementById(this.treemap.element.id + '_Secondary_Element');
+        const leaf: LeafItemSettings = this.treemap.leafItemSettings as LeafItemSettings;
+        const padding: number = 5; let textSize: Size;
         let textCollection: string[] = []; let customText: string | string[]; let templateEle: HTMLElement;
-        let tspanText: string[] = []; let height: number = 0; let textName: string;
+        const tspanText: string[] = []; let height: number = 0; let textName: string;
         textCollection = ((text.indexOf('<br>')) !== -1) ? text.split('<br>') : null;
         customText = this.labelInterSectAction(rect, text, textStyle, interSectAction);
         textSize = measureText(textCollection && textCollection[0] || customText[0], textStyle);
         if (this.treemap.enableRtl) {
-            let labelSize: Size = measureText(text, textStyle);
-            let drillSymbolCount: number = text.search('[+]') || text.search('[-]');
+            const labelSize: Size = measureText(text, textStyle);
+            const drillSymbolCount: number = text.search('[+]') || text.search('[-]');
             if (rect.width < labelSize.width && drillSymbolCount > 0) {
-                let label: string = text.substring(drillSymbolCount - 1, text.length);
-                let drillSymbol: string = '[+]';
-                let drillSymbolSize: Size = measureText(drillSymbol, textStyle);
+                const label: string = text.substring(drillSymbolCount - 1, text.length);
+                const drillSymbol: string = '[+]';
+                const drillSymbolSize: Size = measureText(drillSymbol, textStyle);
                 customText['0'] = textTrim(rect.width - drillSymbolSize.width - padding, customText[0], textStyle) + label;
             }
 
         }
-        textLocation = findLabelLocation(rect, position, textSize, 'Text', this.treemap);
+        const textLocation: Location = findLabelLocation(rect, position, textSize, 'Text', this.treemap);
         if (!isNullOrUndefined(textCollection)) {
-            let collection: string[] = [];
+            const collection: string[] = [];
             let texts: string = null;
-            let maxNumber: number[] = [];
+            const maxNumber: number[] = [];
             for (let i: number = 0; i < textCollection.length; i++) {
                 texts = textTrim((rect.width - 5), textCollection[i], textStyle);
                 textSize = measureText(texts, textStyle);
@@ -566,7 +613,7 @@ export class LayoutPanel {
                 }
             }
             if (interSectAction === 'Wrap' && customText.length !== tspanText.length && tspanText.length) {
-                let collectionLength: number = tspanText.length - 1;
+                const collectionLength: number = tspanText.length - 1;
                 let stringText: string = tspanText[collectionLength];
                 stringText = stringText.substring(0, (stringText.length - 1)) + '...';
                 tspanText.splice(collectionLength);
@@ -578,14 +625,15 @@ export class LayoutPanel {
             textName = customText as string;
             tspanText.push(textName);
         }
-        textOptions = new TextOption(
+        const textOptions: TextOption = new TextOption(
             groupId + '_Text', textLocation.x, textLocation.y, 'start', tspanText, '', '', connectorText
         );
         renderTextElement(textOptions, textStyle, textStyle.color || this.getSaturatedColor(fill), parentElement);
     }
 
-    private getItemColor(isLeafItem: boolean, item: Object): Object {
-        let treemap: TreeMap = this.treemap;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private getItemColor(isLeafItem: boolean, item: any): any {
+        const treemap: TreeMap = this.treemap;
         let itemFill: string = isLeafItem ? treemap.leafItemSettings.fill : treemap.levels[item['groupIndex']].fill;
         let itemOpacity: number = isLeafItem ? treemap.leafItemSettings.opacity : treemap.levels[item['groupIndex']].opacity;
         if (!isNullOrUndefined(LevelsData.defaultLevelsData)) {
@@ -593,11 +641,13 @@ export class LayoutPanel {
                 LevelsData.levelsData = LevelsData.defaultLevelsData;
             }
         }
-        let parentData: Object[] = findChildren(LevelsData.levelsData[0])['values'];
-        let colorMapping: ColorMappingModel[] = isLeafItem ? treemap.leafItemSettings.colorMapping :
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const parentData: any[] = findChildren(LevelsData.levelsData[0])['values'];
+        const colorMapping: ColorMappingModel[] = isLeafItem ? treemap.leafItemSettings.colorMapping :
             treemap.levels[item['groupIndex']].colorMapping;
         if (colorMapping.length > 0) {
-            let option: object = colorMap(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const option: any = colorMap(
                 colorMapping, item['data'][this.treemap.equalColorValuePath],
                 item['data'][this.treemap.rangeColorValuePath], item['data'][this.treemap.weightValuePath]);
             itemFill = !isNullOrUndefined(option['fill']) ? option['fill'] : treemap.leafItemSettings.fill;
@@ -616,53 +666,57 @@ export class LayoutPanel {
 
     /**
      * To find saturated color for datalabel
+     *
+     * @param {string} color - Specifies the color
+     * @returns {string} - Returns the color
      */
     private getSaturatedColor(color: string): string {
         let saturatedColor: string = color;
         saturatedColor = (saturatedColor === 'transparent') ? window.getComputedStyle(document.body, null).backgroundColor : saturatedColor;
-        let rgbValue: ColorValue = convertHexToColor(colorNameToHex(saturatedColor));
-        let contrast: number = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
+        const rgbValue: ColorValue = convertHexToColor(colorNameToHex(saturatedColor));
+        const contrast: number = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
         return contrast >= 128 ? 'black' : 'white';
     }
 
     private renderTemplate(
-        secondaryEle: HTMLElement, groupId: string, rect: Rect, position: LabelPosition, template: string, item: Object, isLeafItem: boolean
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        secondaryEle: HTMLElement, groupId: string, rect: Rect, position: LabelPosition, template: string, item: any, isLeafItem: boolean
     ): HTMLElement {
-        let templateElement: HTMLCollection; let labelEle: HTMLElement;
-        let templateSize: Size; let templateFn: Function;
-        let templateLocation: Location;
-        let templateId: string = isLeafItem ? groupId + '_LabelTemplate' : groupId + '_HeaderTemplate';
-        let baseTemplateId: string = isLeafItem ? '_LabelTemplate' : '_HeaderTemplate';
+        const templateId: string = isLeafItem ? groupId + '_LabelTemplate' : groupId + '_HeaderTemplate';
+        const baseTemplateId: string = isLeafItem ? '_LabelTemplate' : '_HeaderTemplate';
         if (isNullOrUndefined(template['prototype'])) {
-            let keys: Object[] = Object.keys(item['data']);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const keys: any[] = Object.keys(item['data']);
             for (let i: number = 0; i < keys.length; i++) {
-                template = template.replace(new RegExp('{{:' + <String>keys[i] + '}}', 'g'), item['data'][keys[i].toString()]);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                template = template.replace(new RegExp('{{:' + <string>keys[i] + '}}', 'g'), item['data'][keys[i].toString()]);
             }
         }
-        templateFn = getTemplateFunction(template);
-        templateElement = templateFn(item['data'], this.treemap, template, this.treemap.element.id + baseTemplateId, false);
-        labelEle = convertElement(templateElement, templateId, item['data']);
-        templateSize = measureElement(labelEle, secondaryEle);
-        templateLocation = findLabelLocation(rect, position, templateSize, 'Template', this.treemap);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const templateFn: any = getTemplateFunction(template);
+        const templateElement: HTMLCollection = templateFn(item['data'], this.treemap, template, this.treemap.element.id + baseTemplateId, false);
+        const labelEle: HTMLElement = convertElement(templateElement, templateId, item['data']);
+        const templateSize: Size = measureElement(labelEle, secondaryEle);
+        const templateLocation: Location = findLabelLocation(rect, position, templateSize, 'Template', this.treemap);
         labelEle.style.left = templateLocation.x + 'px';
         labelEle.style.top = templateLocation.y + 'px';
         return labelEle;
     }
     private labelInterSectAction(rect: Rect, text: string, textStyle: FontModel, alignment: LabelAlignment): string | string[] {
-        let textValue: string | string[]; let maxWidth: number = rect.width - 10;
+        let textValue: string | string[]; const maxWidth: number = rect.width - 10;
         switch (alignment) {
-            case 'Hide':
-                textValue = [hide(maxWidth, rect.height, text, textStyle)];
-                break;
-            case 'Trim':
-                textValue = [textTrim((maxWidth + 3), text, textStyle)];
-                break;
-            case 'WrapByWord':
-                textValue = wordWrap(maxWidth, text, textStyle);
-                break;
-            case 'Wrap':
-                textValue = textWrap(maxWidth, text, textStyle);
-                break;
+        case 'Hide':
+            textValue = [hide(maxWidth, rect.height, text, textStyle)];
+            break;
+        case 'Trim':
+            textValue = [textTrim((maxWidth + 3), text, textStyle)];
+            break;
+        case 'WrapByWord':
+            textValue = wordWrap(maxWidth, text, textStyle);
+            break;
+        case 'Wrap':
+            textValue = textWrap(maxWidth, text, textStyle);
+            break;
         }
         return textValue;
     }

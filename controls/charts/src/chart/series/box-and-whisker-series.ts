@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { withInRange, sum } from '../../common/utils/helper';
 import { getSaturationColor, ChartLocation, getPoint } from '../../common/utils/helper';
 import { Size, PathOption, Rect } from '@syncfusion/ej2-svg-base';
-import { Chart } from '../chart';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DoubleRange } from '../utils/double-range';
 import { Series, Points } from './chart-series';
@@ -19,13 +21,14 @@ export class BoxAndWhiskerSeries extends ColumnBase {
 
     /**
      * Render BoxAndWhisker series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
-        let sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
+        const sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
         let argsData: IPointRenderEventArgs;
-        for (let point of series.points) {
+        for (const point of series.points) {
             point.symbolLocations = []; point.regions = [];
             let centerRegion: Rect;
             if (point.visible && withInRange(series.points[point.index - 1], point, series.points[point.index + 1], series)) {
@@ -48,7 +51,7 @@ export class BoxAndWhiskerSeries extends ColumnBase {
                 );
                 if (!argsData.cancel) {
                     this.renderBoxAndWhisker(
-                        series, point, centerRegion, argsData,
+                        series, point, argsData,
                         this.getPathString(
                             point, series,
                             getPoint(point.xValue, point.median, xAxis, yAxis, isInverted),
@@ -65,12 +68,14 @@ export class BoxAndWhiskerSeries extends ColumnBase {
     }
     /**
      * update the tip region fo box plot
-     * @param series 
-     * @param point 
-     * @param sideBySideInfo 
+     *
+     * @param {Series} series series
+     * @param {Points} point point
+     * @param {DoubleRange} sideBySideInfo sideBySideInfo
+     * @returns {void}
      */
     private updateTipRegion(series: Series, point: Points, sideBySideInfo: DoubleRange): void {
-        let tipRegion: Rect = this.getRectangle(
+        const tipRegion: Rect = this.getRectangle(
             (point.xValue + sideBySideInfo.median),
             point.maximum, (point.xValue + sideBySideInfo.median),
             point.minimum, series
@@ -80,13 +85,15 @@ export class BoxAndWhiskerSeries extends ColumnBase {
 
     /**
      * Update tip size to tip regions
-     * @param series 
-     * @param point 
-     * @param region 
-     * @param isInverted 
+     *
+     * @param {Series} series Series
+     * @param {Points} point Points
+     * @param {Rect} region rect region
+     * @param {boolean} isInverted isInverted
+     * @returns {void}
      */
     private updateTipSize(series: Series, point: Points, region: Rect, isInverted: boolean): void {
-        let borderWidth: number = series.border.width || 1;
+        const borderWidth: number = series.border.width || 1;
         if (!isInverted) {
             region.x -= borderWidth / 2;
             region.width = region.width || borderWidth;
@@ -99,22 +106,23 @@ export class BoxAndWhiskerSeries extends ColumnBase {
 
     /**
      * Calculation for path direction performed here
-     * @param point 
-     * @param series 
-     * @param median 
-     * @param average 
+     *
+     * @param {Points} point point
+     * @param {Series} series series
+     * @param {ChartLocation} median median
+     * @param {ChartLocation} average average
+     * @returns {string} direction
      */
     public getPathString(point: Points, series: Series, median: ChartLocation, average: ChartLocation): string {
-        let topRect: Rect = point.regions[0];
-        let midRect: Rect = point.regions[1];
+        const topRect: Rect = point.regions[0];
+        const midRect: Rect = point.regions[1];
         let direction: string = '';
-        let width: number = series.chart.requireInvertedAxis ? topRect.height : topRect.width;
-        let center: number = series.chart.requireInvertedAxis ? topRect.y + topRect.height / 2 :
+        const center: number = series.chart.requireInvertedAxis ? topRect.y + topRect.height / 2 :
             topRect.x + topRect.width / 2;
-        let midWidth: number = midRect.x + midRect.width;
-        let midHeight: number = midRect.y + midRect.height;
-        let topWidth: number = topRect.x + topRect.width;
-        let topHeight: number = topRect.y + topRect.height;
+        const midWidth: number = midRect.x + midRect.width;
+        const midHeight: number = midRect.y + midRect.height;
+        const topWidth: number = topRect.x + topRect.width;
+        const topHeight: number = topRect.y + topRect.height;
         if (!series.chart.requireInvertedAxis) {
             this.updateTipSize(series, point, { x: midRect.x, y: topRect.y, width: midWidth - midRect.x, height: 0 }, true);
             this.updateTipSize(series, point, { x: midRect.x, y: topHeight, width: midWidth - midRect.x, height: 0 }, true);
@@ -148,20 +156,22 @@ export class BoxAndWhiskerSeries extends ColumnBase {
 
     /**
      * Rendering for box and whisker append here.
-     * @param series
-     * @param point 
-     * @param rect 
-     * @param argsData 
-     * @param direction 
+     *
+     * @param {Series} series series
+     * @param {Points} point point
+     * @param {IPointRenderEventArgs} argsData argsData
+     * @param {string} direction path direction
+     * @param {number} median median
+     * @returns {void}
      */
     public renderBoxAndWhisker(
-        series: Series, point: Points, rect: Rect, argsData: IPointRenderEventArgs,
+        series: Series, point: Points, argsData: IPointRenderEventArgs,
         direction: string, median: number
     ): void {
         let location: ChartLocation;
         let size: Size;
-        let symbolId: string = series.chart.element.id + '_Series_' + series.index + '_Point_' + point.index;
-        let element: HTMLElement = series.chart.renderer.drawPath(
+        const symbolId: string = series.chart.element.id + '_Series_' + series.index + '_Point_' + point.index;
+        const element: HTMLElement = series.chart.renderer.drawPath(
             new PathOption(
                 symbolId + '_BoxPath',
                 argsData.fill, argsData.border.width,
@@ -170,7 +180,7 @@ export class BoxAndWhiskerSeries extends ColumnBase {
         ) as HTMLElement;
         element.setAttribute('aria-label', point.x.toString() + ':' + point.maximum.toString()
             + ':' + point.minimum.toString() + ':' + point.lowerQuartile.toString() + ':' + point.upperQuartile.toString());
-        let parentElement: Element = series.chart.renderer.createGroup({
+        const parentElement: Element = series.chart.renderer.createGroup({
             'id': symbolId
         });
         parentElement.appendChild(element);
@@ -193,13 +203,15 @@ export class BoxAndWhiskerSeries extends ColumnBase {
     }
     /**
      * To find the box plot values
-     * @param yValues 
-     * @param point 
-     * @param mode 
+     *
+     * @param {number[]} yValues yValues
+     * @param {Points} point point
+     * @param {BoxPlotMode} mode mode
+     * @returns {void}
      */
     public findBoxPlotValues(yValues: number[], point: Points, mode: BoxPlotMode): void {
-        let yCount: number = yValues.length;
-        let quartile: IBoxPlotQuartile = {
+        const yCount: number = yValues.length;
+        const quartile: IBoxPlotQuartile = {
             average: sum(yValues) / yCount,
             lowerQuartile: 0, upperQuartile: 0,
             maximum: 0, minimum: 0,
@@ -228,9 +240,11 @@ export class BoxAndWhiskerSeries extends ColumnBase {
     }
     /**
      * to find the exclusive quartile values
-     * @param yValues 
-     * @param count 
-     * @param percentile 
+     *
+     * @param {number[]} yValues yValues
+     * @param {number} count count
+     * @param {number} percentile percentile
+     * @returns {number} exclusive quartile value
      */
     private getExclusiveQuartileValue(yValues: number[], count: number, percentile: number): number {
         if (count === 0) {
@@ -239,9 +253,9 @@ export class BoxAndWhiskerSeries extends ColumnBase {
             return yValues[0];
         }
         let value: number = 0;
-        let rank: number = percentile * (count + 1);
-        let integerRank: number = Math.floor(Math.abs(rank));
-        let fractionRank: number = rank - integerRank;
+        const rank: number = percentile * (count + 1);
+        const integerRank: number = Math.floor(Math.abs(rank));
+        const fractionRank: number = rank - integerRank;
         if (integerRank === 0) {
             value = yValues[0];
         } else if (integerRank > count - 1) {
@@ -253,9 +267,11 @@ export class BoxAndWhiskerSeries extends ColumnBase {
     }
     /**
      * to find the inclusive quartile values
-     * @param yValues 
-     * @param count 
-     * @param percentile 
+     *
+     * @param {number[]} yValues yValues
+     * @param {number} count count
+     * @param {number} percentile percentile
+     * @returns {number} inclusive quartile value
      */
     private getInclusiveQuartileValue(yValues: number[], count: number, percentile: number): number {
         if (count === 0) {
@@ -264,18 +280,19 @@ export class BoxAndWhiskerSeries extends ColumnBase {
             return yValues[0];
         }
         let value: number = 0;
-        let rank: number = percentile * (count - 1);
-        let integerRank: number = Math.floor(Math.abs(rank));
-        let fractionRank: number = rank - integerRank;
+        const rank: number = percentile * (count - 1);
+        const integerRank: number = Math.floor(Math.abs(rank));
+        const fractionRank: number = rank - integerRank;
         value = fractionRank * (yValues[integerRank + 1] - yValues[integerRank]) + yValues[integerRank];
         return value;
     }
     /**
      * To find the quartile values
-     * @param yValues 
-     * @param count 
-     * @param lowerQuartile 
-     * @param upperQuartile 
+     *
+     * @param {number[]} yValues yValues
+     * @param {number} count count
+     * @param {IBoxPlotQuartile} quartile quartile
+     * @returns {void}
      */
     private getQuartileValues(yValues: number[], count: number, quartile: IBoxPlotQuartile): void {
         if (count === 1) {
@@ -283,27 +300,26 @@ export class BoxAndWhiskerSeries extends ColumnBase {
             quartile.upperQuartile = yValues[0];
             return null;
         }
-        let isEvenList: boolean = count % 2 === 0;
-        let halfLength: number = count / 2;
-        let lowerQuartileArray: number[] = yValues.slice(0, halfLength);
-        let upperQuartileArray: number[] = yValues.slice(isEvenList ? halfLength : halfLength + 1, count);
+        const isEvenList: boolean = count % 2 === 0;
+        const halfLength: number = count / 2;
+        const lowerQuartileArray: number[] = yValues.slice(0, halfLength);
+        const upperQuartileArray: number[] = yValues.slice(isEvenList ? halfLength : halfLength + 1, count);
         quartile.lowerQuartile = getMedian(lowerQuartileArray);
         quartile.upperQuartile = getMedian(upperQuartileArray);
     }
     /**
      * To find the min, max and outlier values
-     * @param yValues 
-     * @param lowerQuartile 
-     * @param upperQuartile 
-     * @param minimum 
-     * @param maximum 
-     * @param outliers 
+     *
+     * @param {number[]} yValues yValues
+     * @param {number} count count
+     * @param {IBoxPlotQuartile} quartile quartile
+     * @returns {void}
      */
     private getMinMaxOutlier(
         yValues: number[], count: number, quartile: IBoxPlotQuartile
     ): void {
-        let interquartile: number = quartile.upperQuartile - quartile.lowerQuartile;
-        let rangeIQR: number = 1.5 * interquartile;
+        const interquartile: number = quartile.upperQuartile - quartile.lowerQuartile;
+        const rangeIQR: number = 1.5 * interquartile;
         for (let i: number = 0; i < count; i++) {
             if (yValues[i] < quartile.lowerQuartile - rangeIQR) {
                 quartile.outliers.push(yValues[i]);
@@ -323,8 +339,9 @@ export class BoxAndWhiskerSeries extends ColumnBase {
     }
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
     public doAnimation(series: Series): void {
         this.animate(series);
@@ -332,6 +349,8 @@ export class BoxAndWhiskerSeries extends ColumnBase {
 
     /**
      * Get module name.
+     *
+     * @returns {string} module name
      */
     protected getModuleName(): string {
         return 'BoxAndWhiskerSeries';
@@ -341,12 +360,13 @@ export class BoxAndWhiskerSeries extends ColumnBase {
     }
 
     /**
-     * To destroy the candle series. 
-     * @return {void}
+     * To destroy the candle series.
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroys the candle series.
          */

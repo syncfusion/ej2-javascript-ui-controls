@@ -1,6 +1,9 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { withInRange, getPoint, ChartLocation, TransformToVisible } from '../../common/utils/helper';
 import { PathOption } from '@syncfusion/ej2-svg-base';
-import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
 import { LineBase } from './line-base';
 import { AnimationModel } from '../../common/model/base-model';
@@ -12,7 +15,8 @@ import { Axis } from '../../chart/axis/axis';
 export class LineSeries extends LineBase {
     /**
      * Render Line Series.
-     * @return {void}.
+     *
+     * @returns {void}
      * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
@@ -21,12 +25,11 @@ export class LineSeries extends LineBase {
         let direction: string = '';
         let prevPoint: Points = null;
         let startPoint: string = 'M';
-        let options: PathOption;
-        let isPolar: boolean = (series.chart && series.chart.chartAreaType === 'PolarRadar');
-        let isDrop: boolean = (series.emptyPointSettings && series.emptyPointSettings.mode === 'Drop');
-        let getCoordinate: Function = isPolar ? TransformToVisible : getPoint;
-        let visiblePoints: Points[] = series.category === 'TrendLine' ? series.points : this.enableComplexProperty(series);
-        for (let point of visiblePoints) {
+        const isPolar: boolean = (series.chart && series.chart.chartAreaType === 'PolarRadar');
+        const isDrop: boolean = (series.emptyPointSettings && series.emptyPointSettings.mode === 'Drop');
+        const getCoordinate: Function = isPolar ? TransformToVisible : getPoint;
+        const visiblePoints: Points[] = series.category === 'TrendLine' ? series.points : this.enableComplexProperty(series);
+        for (const point of visiblePoints) {
             point.regions = [];
             point.symbolLocations = [];
             if (point.visible && withInRange(visiblePoints[point.index - 1], point, visiblePoints[point.index + 1], series)) {
@@ -41,7 +44,7 @@ export class LineSeries extends LineBase {
         }
         if (isPolar) {
             if (series.isClosed) {
-                let points: {first: Points, last: Points} = this.getFirstLastVisiblePoint(visiblePoints);
+                const points: {first: Points, last: Points} = this.getFirstLastVisiblePoint(visiblePoints);
                 point2 = getCoordinate(
                     points.last.xValue, points.last.yValue,
                     xAxis, yAxis, isInverted, series
@@ -50,10 +53,10 @@ export class LineSeries extends LineBase {
                 direction = direction.concat(startPoint + ' ' + point2.x + ' ' + point2.y + ' ' + 'L' + ' ' + point1.x + ' ' + point1.y);
             }
         }
-        let name: string = series.category === 'Indicator' ? series.chart.element.id + '_Indicator_' + series.index + '_' + series.name :
+        const name: string = series.category === 'Indicator' ? series.chart.element.id + '_Indicator_' + series.index + '_' + series.name :
             series.category === 'TrendLine' ? series.chart.element.id + '_Series_' + series.sourceIndex + '_TrendLine_' + series.index :
                 series.chart.element.id + '_Series_' + (series.index === undefined ? series.category : series.index);
-        options = new PathOption(
+        const options: PathOption = new PathOption(
             name, 'none', series.width, series.interior,
             series.opacity, series.dashArray, direction
         );
@@ -63,11 +66,12 @@ export class LineSeries extends LineBase {
 
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
     public doAnimation(series: Series): void {
-        let option: AnimationModel = series.animation;
+        const option: AnimationModel = series.animation;
         this.doProgressiveAnimation(series, option);
     }
 
@@ -84,11 +88,12 @@ export class LineSeries extends LineBase {
 
     /**
      * To destroy the line series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method performed here
          */

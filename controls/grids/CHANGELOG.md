@@ -2,24 +2,18 @@
 
 ## [Unreleased]
 
-## 18.4.49 (2021-03-23)
+## 19.1.54 (2021-03-30)
 
 ### Grid
 
-#### Bug Fixes
+#### New Features
 
-- `#317578` - Throws script error while updating the template column in Batch edit mode issue has been fixed.
-- `#316684, #319594` - Script error when drag rows from grid to other components issue has been fixed.
-- `#317534` - Custom filtering not working when using filter template, has been fixed.
-
-## 18.4.48 (2021-03-16)
-
-### Grid
-
-#### Bug Fixes
-
-- `#315782` - Virtualization with grouping issue has been fixed.
-- `#19156` - Scroll is prevented with infinite scroll's cache mode issue has been fixed.
+- `#266164`, `#298390`, `#298305`, `#317536`, `#197245` - Provided mobile view support for responsive Grid.
+- `#243700`, `#255673`, `#145292`, `#312122`, `#316185`, `#162746`, `#162824` - Provided exporting image and hyper link to Excel and PDF file formats.
+- `#297861` - Provided option for rendering checkbox items in menu filter dialog.
+- `#308524` - Provided autofilter support in Grid to Excel export.
+- `#297263` - Provided complex column filtering and sorting support with IQueryable.
+- `#307522` - Provided the target indicator support for drag and drop with different Grid.
 
 ## 18.4.47 (2021-03-09)
 

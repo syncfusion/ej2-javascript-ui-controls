@@ -27,6 +27,7 @@ export interface TooltipModel extends ComponentModel{
     /**
      * It is used to set the width of Tooltip component which accepts both string and number values.
      * When set to auto, the Tooltip width gets auto adjusted to display its content within the viewable screen.
+     *
      * @default 'auto'
      */
     width?: string | number;
@@ -36,6 +37,7 @@ export interface TooltipModel extends ComponentModel{
      * When Tooltip content gets overflow due to height value then the scroll mode will be enabled.
      * Refer the documentation [here](https://ej2.syncfusion.com/documentation/tooltip/setting-dimension/)
      *  to know more about this property with demo.
+     *
      * @default 'auto'
      */
     height?: string | number;
@@ -46,6 +48,7 @@ export interface TooltipModel extends ComponentModel{
      *  to know more about this property with demo.
      *
      * {% codeBlock src="tooltip/content-api/index.ts" %}{% endcodeBlock %}
+     *
      * @blazorType object
      */
     content?: string | HTMLElement;
@@ -62,6 +65,7 @@ export interface TooltipModel extends ComponentModel{
      * It is used to set the position of Tooltip element, with respect to Target element.
      *
      * {% codeBlock src="tooltip/position-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default 'TopCenter'
      */
     position?: Position;
@@ -71,6 +75,7 @@ export interface TooltipModel extends ComponentModel{
      *
      * {% codeBlock src="tooltip/offsetX-api/index.ts" %}{% endcodeBlock %}
      * {% codeBlock src="tooltip/offsetx/index.md" %}{% endcodeBlock %}
+     *
      * @default 0
      */
     offsetX?: number;
@@ -80,6 +85,7 @@ export interface TooltipModel extends ComponentModel{
      *
      * {% codeBlock src="tooltip/offsetX-api/index.ts" %}{% endcodeBlock %}
      * {% codeBlock src="tooltip/offsety/index.md" %}{% endcodeBlock %}
+     *
      * @default 0
      */
     offsetY?: number;
@@ -89,6 +95,7 @@ export interface TooltipModel extends ComponentModel{
      *
      * {% codeBlock src="tooltip/offsetX-api/index.ts" %}{% endcodeBlock %}
      * {% codeBlock src="tooltip/showtippointer/index.md" %}{% endcodeBlock %}
+     *
      * @default true
      */
     showTipPointer?: boolean;
@@ -118,6 +125,7 @@ export interface TooltipModel extends ComponentModel{
      *  [here](https://ej2.syncfusion.com/documentation/tooltip/position.html?lang=typescript#tip-pointer-positioning)
      *  to know more about this property with demo.
      * {% codeBlock src="tooltip/tippointerposition/index.md" %}{% endcodeBlock %}
+     *
      * @default 'Auto'
      */
     tipPointerPosition?: TipPointerPosition;
@@ -128,6 +136,7 @@ export interface TooltipModel extends ComponentModel{
      * If it is in touch device, it will show the Tooltip content when tap and holding on the target element.
      * {% codeBlock src="tooltip/openson/index.md" %}{% endcodeBlock %}
      * {% codeBlock src="tooltip/opensOn-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default 'Auto'
      */
     opensOn?: string;
@@ -138,6 +147,7 @@ export interface TooltipModel extends ComponentModel{
      *  to know more about this property with demo.
      * {% codeBlock src="tooltip/mousetrail/index.md" %}{% endcodeBlock %}
      * {% codeBlock src="tooltip/offsetX-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default false
      */
     mouseTrail?: boolean;
@@ -147,6 +157,7 @@ export interface TooltipModel extends ComponentModel{
      * Refer the documentation [here](https://ej2.syncfusion.com/documentation/tooltip/open-mode/#sticky-mode)
      *  to know more about this property with demo.
      * {% codeBlock src="tooltip/issticky/index.md" %}{% endcodeBlock %}
+     *
      * @default false
      */
     isSticky?: boolean;
@@ -157,18 +168,21 @@ export interface TooltipModel extends ComponentModel{
      *  to know more about this property with demo.
      * {% codeBlock src="tooltip/animation/index.md" %}{% endcodeBlock %}
      * {% codeBlock src="tooltip/animation-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default { open: { effect: 'FadeIn', duration: 150, delay: 0 }, close: { effect: 'FadeOut', duration: 150, delay: 0 } }
      */
     animation?: AnimationModel;
 
     /**
      * It is used to open the Tooltip after the specified delay in milliseconds.
+     *
      * @default 0
      */
     openDelay?: number;
 
     /**
      * It is used to close the Tooltip after a specified delay in milliseconds.
+     *
      * @default 0
      */
     closeDelay?: number;
@@ -176,12 +190,14 @@ export interface TooltipModel extends ComponentModel{
     /**
      * It is used to customize the Tooltip which accepts custom CSS class names that
      *  defines specific user-defined styles and themes to be applied on the Tooltip element.
+     *
      * @default null
      */
     cssClass?: string;
 
     /**
      * Defines whether to allow the cross-scripting site or not.
+     *
      * @default false
      */
     enableHtmlSanitizer?: boolean;
@@ -194,6 +210,7 @@ export interface TooltipModel extends ComponentModel{
      * Refer the documentation
      *  [here](https://ej2.syncfusion.com/documentation/tooltip/content/#dynamic-content-via-ajax)
      *  to know more about this property with demo.
+     *
      * @event
      * @blazorProperty 'OnRender'
      */
@@ -205,6 +222,7 @@ export interface TooltipModel extends ComponentModel{
      * This event is mainly used for the purpose of refreshing the Tooltip positions dynamically or to
      *  set customized styles in it and so on.
      * {% codeBlock src="tooltip/beforeOpen/index.md" %}{% endcodeBlock %}
+     *
      * @event
      * @blazorProperty 'OnOpen'
      */
@@ -213,6 +231,7 @@ export interface TooltipModel extends ComponentModel{
     /**
      * We can trigger `afterOpen` event after the Tooltip Component gets opened.
      * {% codeBlock src="tooltip/afterOpen/index.md" %}{% endcodeBlock %}
+     *
      * @event
      * @blazorProperty 'Opened'
      */
@@ -221,6 +240,7 @@ export interface TooltipModel extends ComponentModel{
     /**
      * We can trigger `beforeClose` event before the Tooltip hides from the screen. If returned false, then the Tooltip is no more hidden.
      * {% codeBlock src="tooltip/beforeClose/index.md" %}{% endcodeBlock %}
+     *
      * @event
      * @blazorProperty 'OnClose'
      */
@@ -229,6 +249,7 @@ export interface TooltipModel extends ComponentModel{
     /**
      * We can trigger `afterClose` event when the Tooltip Component gets closed.
      * {% codeBlock src="tooltip/afterClose/index.md" %}{% endcodeBlock %}
+     *
      * @event
      * @blazorProperty 'Closed'
      */
@@ -237,6 +258,7 @@ export interface TooltipModel extends ComponentModel{
     /**
      * We can trigger `beforeCollision` event for every collision fit calculation.
      * {% codeBlock src="tooltip/beforeCollision/index.md" %}{% endcodeBlock %}
+     *
      * @event
      * @blazorProperty 'OnCollision'
      */
@@ -244,16 +266,20 @@ export interface TooltipModel extends ComponentModel{
 
     /**
      * We can trigger `created` event after the Tooltip component is created.
+     *
      * @event
      * @blazorProperty 'Created'
      */
+    /* eslint-disable */
     created?: EmitType<Object>;
 
     /**
      * We can trigger `destroyed` event when the Tooltip component is destroyed.
+     *
      * @event
      * @blazorProperty 'Destroyed'
      */
+    /* eslint-disable */
     destroyed?: EmitType<Object>;
 
 }

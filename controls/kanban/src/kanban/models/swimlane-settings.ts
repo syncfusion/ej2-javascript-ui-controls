@@ -1,13 +1,15 @@
 import { Property, ChildProperty } from '@syncfusion/ej2-base';
+import { SortComparerFunction } from '../base/interface';
 import { SortDirection } from '../base/type';
 
-/**  
+/**
  * Holds the configuration of swimlane settings in kanban board.
  */
 export class SwimlaneSettings extends ChildProperty<SwimlaneSettings> {
 
     /**
      * Defines the swimlane key field
+     *
      * @default null
      */
     @Property()
@@ -15,6 +17,7 @@ export class SwimlaneSettings extends ChildProperty<SwimlaneSettings> {
 
     /**
      * Defines the swimlane header text field
+     *
      * @default null
      */
     @Property()
@@ -22,6 +25,7 @@ export class SwimlaneSettings extends ChildProperty<SwimlaneSettings> {
 
     /**
      * Enable or disable empty swimlane
+     *
      * @default false
      */
     @Property(false)
@@ -29,6 +33,7 @@ export class SwimlaneSettings extends ChildProperty<SwimlaneSettings> {
 
     /**
      * Enable or disable items count
+     *
      * @default true
      */
     @Property(true)
@@ -36,6 +41,7 @@ export class SwimlaneSettings extends ChildProperty<SwimlaneSettings> {
 
     /**
      * Enable or disable the card drag and drop actions
+     *
      * @default false
      */
     @Property(false)
@@ -43,6 +49,7 @@ export class SwimlaneSettings extends ChildProperty<SwimlaneSettings> {
 
     /**
      * Defines the swimlane row template
+     *
      * @default null
      */
     @Property()
@@ -52,6 +59,7 @@ export class SwimlaneSettings extends ChildProperty<SwimlaneSettings> {
      * Sort the swimlane resources. The possible values are:
      * * Ascending
      * * Descending
+     *
      * @default 'Ascending'
      */
     @Property('Ascending')
@@ -59,14 +67,17 @@ export class SwimlaneSettings extends ChildProperty<SwimlaneSettings> {
 
     /**
      * Defines the custom sort comparer function.
-     * The sort comparer function has the same functionality like 
+     * The sort comparer function has the same functionality like
      * [`Array.sort`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) sort comparer.
+     *
+     * @default null
      */
     @Property()
-    public sortComparer: Function;
+    public sortComparer: SortComparerFunction;
 
     /**
      * Enable or disable unassigned swimlane group
+     *
      * @default true
      */
     @Property(true)

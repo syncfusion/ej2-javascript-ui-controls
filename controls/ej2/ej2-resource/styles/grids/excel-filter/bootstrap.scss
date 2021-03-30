@@ -1,0 +1,514 @@
+
+$grid-checkbox-wrapper-height: 20px !default;
+$grid-checkbox-wrapper-line-height: 20px !default;
+$grid-rtl-headercelldiv-fltricon-padding: 0 1.6em 0 10px !default;
+$grid-sortnumber-filtericon-rightalign-margin: 8px 2px 0 5px !default;
+$grid-xl-match-margin-left: 6px !default;
+$grid-bigger-xl-match-margin-left: 8px !default;
+$grid-rows-bg-color: $content-bg-color !default;
+$grid-resize-border-width: 1px !default;
+$grid-xl-rtl-radio-padding-left: 0 !default;
+$grid-xl-rtl-radio-padding-right: 25px !default;
+$grid-xlfl-fieldset-padding: 9px !default;
+$grid-xlfltd-padding: 11.25px !default;
+$grid-xlfltable-border-spacing: 0 !default;
+$grid-xlfl-dropdown-padding-right: 11.25px !default;
+$grid-xlfl-min-height: 318px !default;
+$grid-xlfl-li-left-padding: 25px !default;
+$grid-xlfl-li-icon-margin-right: 10px !default;
+$grid-xlfl-dlg-padding-bottom: 5px !default;
+$grid-xlfltd-radio-mtcase-padding: 12px !default;
+$grid-xlfl-fieldset-font-size: 13px !default;
+$grid-xlfl-dlgfields-font-size: 15px !default;
+$grid-xlfl-li-height: 36px !default;
+$grid-xl-radio-padding-left: 25px !default;
+$grid-xlfl-radiodiv-width: 120px !default;
+$grid-bigger-xlfl-li-height: 40px !default;
+$grid-bigger-xlfl-fieldset-font-size: 14px !default;
+$grid-bigger-xlfl-dlgfields-font-size: 16px !default;
+$grid-bigger-xlfltd-radio-mtcase-padding: 5px !default;
+$grid-bigger-xlfl-dlg-padding-bottom: 10px !default;
+$grid-bigger-xlfl-li-icon-margin-right: 13px !default;
+$grid-bigger-xlfl-li-left-padding: 26px !default;
+$grid-bigger-xlfl-min-height: 362px !default;
+$grid-bigger-xlfl-fieldset-padding: 12px !default;
+$grid-bigger-xlfltable-border-spacing: 0 !default;
+$grid-bigger-xlfltd-padding: 15px !default;
+$grid-bigger-xlfl-radio-margin-left: 18px !default;
+$grid-bigger-xlfl-dropdown-padding-right: 15px !default;
+$grid-bigger-xlfl-radiodiv-width: 141px !default;
+$grid-excelmenu-filter-icon: 'e249' !default;
+$grid-excelmenu-clear-filter-icon: 'e246' !default;
+$grid-selection-font-weight: normal !default;
+$grid-xlfl-radio-margin-left: 2px !default;
+$grid-xl-radio-padding-right: 9px !default;
+$grid-bigger-xl-radio-padding-left: 27px !default;
+$grid-bigger-xl-radio-padding-right: 6px !default;
+$grid-checkbox-padding-topbottom: 8px !default;
+$grid-checkbox-content-padding-left: 7px !default;
+$grid-rtl-checkbox-content-padding-left: 15px !default;
+$grid-bigger-checkbox-content-padding-left: 9.75px !default;
+$grid-rtl-bigger-checkbox-content-padding-left: 18.75px !default;
+$grid-bigger-checkbox-padding-topbottom: 9px !default;
+$grid-column-chooser-footdiv: 2px 0 0 !default;
+$grid-column-chosser-searchdiv-opactiy: .6 !default;
+$grid-column-chosser-searchdiv-fopactiy: 1 !default;
+$grid-columnchooser-footer-border-color: rgba($grey-e6, .12) !default;
+$grid-columnchooser-footer-border-opacity: 1 !default;
+$grid-autofill-color: $brand-primary !default;
+$grid-checkboxfiltertext-width: 150px !default;
+$grid-filtered-color: $brand-primary !default;
+$sfgrid-xlfl-dlg-padding: 15px !default;
+$grid-excel-filter-separator: 0 !default;
+@include export-module('excel-filter-bootstrap-icons') {
+  /*! component icons */
+
+  .e-icon-check::before {
+    content: '\e7ff';
+  }
+
+  #{&}.e-excelfilter {
+    .e-excl-filter-icon::before {
+      content: '\e249';
+    }
+
+    .e-excl-filter-icon.e-filtered::before {
+      content: '\e246';
+    }
+
+    .e-icon-filter::before {
+      content: '\e946';
+    }
+
+    .e-search-icon::before {
+      content: '\e961';
+    }
+
+    .e-chkcancel-icon::before {
+      content: '\e7a7';
+    }
+
+    .e-sortascending::before {
+      content: '\e734';
+    }
+
+    .e-sortdescending::before {
+      content: '\e733';
+    }
+  }
+}
+
+@include export-module('excel-filter-layout') {
+  /*! Excel-Filter layout */
+  .sf-grid .e-excelfilter {
+    .e-dlg-content {
+      overflow: visible;
+      padding: 0;
+    }
+
+    .e-searchcontainer {
+      padding: $sfgrid-xlfl-dlg-padding;
+      padding-top: 4px;
+    }
+
+    .e-contextmenu-container.e-sfcontextmenu .e-ul .e-menu-item:not(.e-separator) {
+      height: 26px;
+      line-height: 26px;
+    }
+
+    .e-searchbox {
+      padding-left: 0;
+    }
+
+    .e-contextmenu-container.e-sfcontextmenu .e-ul .e-separator {
+      height: auto;
+    }
+
+    .e-contextmenu-container.e-sfcontextmenu .e-ul {
+      position: absolute;
+    }
+
+    .e-contextmenu-container.e-sfcontextmenu {
+      display: inline-block;
+      position: relative;
+      width: 100%;
+    }
+
+  }
+
+  .sf-grid-dlg.e-xlflmenu .e-xlfl-radiodiv {
+    width: unset;
+  }
+
+  #{&}.e-xlflmenu {
+    min-height: $grid-xlfl-min-height;
+
+    .e-xlfl-dlgfields {
+      font-size: $grid-xlfl-dlgfields-font-size;
+    }
+
+    .e-xlfl-fieldset {
+      font-size: $grid-xlfl-fieldset-font-size;
+      padding-top: $grid-xlfl-fieldset-padding;
+    }
+
+    .e-xlfl-optr,
+    .e-xlfl-value {
+      padding-top: $grid-xlfltd-padding;
+    }
+
+    .e-xlfl-radio,
+    .e-xlfl-mtcase {
+      padding-top: $grid-xlfltd-radio-mtcase-padding;
+    }
+
+    .e-xlfl-optr:first-child {
+      padding-right: $grid-xlfl-dropdown-padding-right;
+    }
+
+    .e-xlfl-table {
+      border-spacing: $grid-xlfltable-border-spacing;
+      table-layout: fixed;
+      width: 100%;
+    }
+
+    .e-radio + label .e-label {
+      padding-left: $grid-xl-radio-padding-left;
+      padding-right: $grid-xl-radio-padding-right;
+    }
+
+    .e-checkbox-wrapper {
+      .e-frame + .e-label {
+        margin-left: $grid-xl-match-margin-left;
+      }
+    }
+
+    .e-dlg-content {
+      padding-bottom: $grid-xlfl-dlg-padding-bottom;
+    }
+
+    .e-xlfl-radiodiv {
+      width: $grid-xlfl-radiodiv-width;
+    }
+
+    .e-xlfl-matchcasediv {
+      margin-left: 0;
+      margin-right: 13px;
+    }
+  }
+
+  .e-xlfl-radio-or,
+  .e-xlfl-matchcasediv {
+    margin-left: $grid-xlfl-radio-margin-left;
+  }
+
+  .e-emptyicon {
+    opacity: 0;
+  }
+
+  #{&}.e-xlflmenu.e-rtl {
+    .e-xlfl-optr :first-child {
+      padding-left: $grid-xlfl-dropdown-padding-right;
+    }
+
+    .e-radio + label .e-label {
+      padding-left: $grid-xl-rtl-radio-padding-left;
+      padding-right: $grid-xl-rtl-radio-padding-right;
+    }
+
+    .e-xlfl-radio-or {
+      margin-left: 0;
+      margin-right: 13px;
+    }
+  }
+
+  .e-bigger #{&}.e-xlflmenu {
+    min-height: $grid-bigger-xlfl-min-height;
+
+    .e-xlfl-table {
+      border-spacing: $grid-bigger-xlfltable-border-spacing;
+      width: 100%;
+    }
+
+    .e-dlg-content {
+      padding-bottom: $grid-bigger-xlfl-dlg-padding-bottom;
+    }
+
+    .e-radio + label .e-label {
+      padding-left: $grid-bigger-xl-radio-padding-left;
+      padding-right: $grid-bigger-xl-radio-padding-right;
+    }
+
+    .e-checkbox-wrapper .e-frame + .e-label {
+      margin-left: $grid-bigger-xl-match-margin-left;
+    }
+
+    .e-xlfl-radiodiv {
+      width: $grid-bigger-xlfl-radiodiv-width;
+    }
+
+    .e-xlfl-radio-or,
+    .e-xlfl-matchcasediv {
+      margin-left: $grid-bigger-xlfl-radio-margin-left;
+    }
+
+    .e-xlfl-optr:first-child {
+      padding-right: $grid-bigger-xlfl-dropdown-padding-right;
+    }
+
+    .e-xlfl-dlgfields {
+      font-size: $grid-bigger-xlfl-dlgfields-font-size;
+    }
+
+    .e-xlfl-fieldset {
+      font-size: $grid-bigger-xlfl-fieldset-font-size;
+      padding-top: $grid-bigger-xlfl-fieldset-padding;
+    }
+
+    .e-xlfl-optr,
+    .e-xlfl-value {
+      padding-top: $grid-bigger-xlfltd-padding;
+    }
+
+    .e-xlfl-radio,
+    .e-xlfl-mtcase {
+      padding-top: $grid-bigger-xlfltd-radio-mtcase-padding;
+    }
+  }
+
+  .e-bigger #{&}.e-excelfilter,
+  #{&}.e-excelfilter.e-bigger {
+    .e-xlflmenu {
+      min-height: $grid-bigger-xlfl-min-height;
+    }
+
+    .e-ftrchk {
+      padding-bottom: $grid-bigger-checkbox-padding-topbottom;
+      padding-top: $grid-bigger-checkbox-padding-topbottom;
+    }
+
+    .e-contextmenu-wrapper ul li,
+    .e-contextmenu-container ul li {
+      height: $grid-bigger-xlfl-li-height;
+      line-height: $grid-bigger-xlfl-li-height;
+    }
+
+    .e-contextmenu-wrapper ul li .e-menu-icon,
+    .e-contextmenu-container ul li .e-menu-icon {
+      height: $grid-bigger-xlfl-li-height;
+      line-height: $grid-bigger-xlfl-li-height;
+      margin-right: $grid-bigger-xlfl-li-icon-margin-right;
+    }
+
+    .e-contextmenu-wrapper ul .e-menu-item .e-caret {
+      height: $grid-bigger-xlfl-li-height;
+      line-height: $grid-bigger-xlfl-li-height;
+    }
+
+    .e-dlg-content {
+      padding-left: $grid-bigger-checkbox-content-padding-left;
+      }
+
+    .e-ftrchk,
+    .e-searchbox {
+      padding-left: $grid-bigger-checkbox-padding-topbottom;
+      }
+
+    &.e-rtl {
+      .e-dlg-content {
+        padding-left: $grid-rtl-bigger-checkbox-content-padding-left;
+        padding-right: $grid-bigger-checkbox-content-padding-left;
+          }
+
+      .e-ftrchk,
+      .e-searchbox {
+        padding-left: 0;
+        padding-right: $grid-bigger-checkbox-padding-topbottom;
+              }
+          }
+  }
+
+  #{&}.e-excelfilter {
+    .e-checkboxlist {
+      height: 200px;
+      margin-top: 5px;
+      min-height: 160px;
+      overflow-y: auto;
+    }
+
+    .e-checkboxfiltertext {
+      width: $grid-checkboxfiltertext-width;
+      word-break: normal;
+    }
+
+    .e-chk-hidden {
+      -moz-appearance: none; // sass-lint:disable-line no-vendor-prefixes
+      height: 1px;
+      opacity: 0;
+      width: 1px;
+    }
+
+    .e-contextmenu-wrapper,
+    .e-contextmenu-wrapper ul {
+      display: block;
+    }
+
+    .e-contextmenu-wrapper ul {
+      padding-bottom: 4px;
+      position: static;
+    }
+
+    .e-contextmenu-wrapper ul li,
+    .e-contextmenu-container ul li {
+      height: $grid-xlfl-li-height;
+      line-height: $grid-xlfl-li-height;
+    }
+
+    .e-contextmenu-wrapper ul li .e-menu-icon,
+    .e-contextmenu-container ul li .e-menu-icon {
+      height: $grid-xlfl-li-height;
+      line-height: $grid-xlfl-li-height;
+      margin-right: $grid-xlfl-li-icon-margin-right;
+    }
+
+    &.e-rtl .e-contextmenu-wrapper ul li .e-menu-icon {
+      margin-right: 0;
+    }
+
+    .e-contextmenu-wrapper ul .e-menu-item .e-caret {
+      height: $grid-xlfl-li-height;
+      line-height: $grid-xlfl-li-height;
+    }
+
+    .e-contextmenu-wrapper ul,
+    .e-contextmenu-container ul:not(.e-ul) {
+      border: 0;
+      box-shadow: none;
+      max-width: 300px;
+      padding-bottom: 4px;
+      position: static;
+    }
+
+    .e-footer-content {
+      border-style: solid;
+      border-width: $grid-column-chooser-footdiv;
+    }
+
+    .e-excel-menu {
+      z-index: 1000;
+    }
+
+    .e-dlg-content {
+      padding-top: 0;
+    }
+
+    .e-contextmenu-wrapper,
+    .e-contextmenu-wrapper ul {
+      display: block;
+    }
+
+    .e-contextmenu-wrapper ul {
+      padding-bottom: 4px;
+      position: static;
+    }
+
+    .e-contextmenu-wrapper ul li
+    .e-contextmenu-container ul li {
+      height: $grid-xlfl-li-height;
+      line-height: $grid-xlfl-li-height;
+    }
+
+    .e-contextmenu-wrapper ul li .e-menu-icon,
+    .e-contextmenu-container ul li .e-menu-icon {
+      height: $grid-xlfl-li-height;
+      line-height: $grid-xlfl-li-height;
+      margin-right: $grid-xlfl-li-icon-margin-right;
+    }
+
+    &.e-rtl .e-contextmenu-wrapper ul li .e-menu-icon {
+      margin-right: 0;
+    }
+
+    .e-contextmenu-wrapper ul .e-menu-item .e-caret {
+      height: $grid-xlfl-li-height;
+      line-height: $grid-xlfl-li-height;
+    }
+
+    .e-footer-content {
+      border-style: solid;
+      border-width: $grid-column-chooser-footdiv;
+    }
+
+    .e-excel-menu {
+      z-index: 1000;
+    }
+
+    .e-dlg-content {
+      padding-top: 0;
+    }
+
+    .e-xlsel {
+      border: 0 solid;
+      position: absolute;
+      user-select: none;
+    }
+
+    .e-dlg-content {
+      padding-left: $grid-checkbox-content-padding-left;
+      }
+
+    .e-ftrchk,
+    .e-searchbox {
+      padding-left: $grid-checkbox-padding-topbottom;
+      }
+
+    &.e-rtl {
+      .e-dlg-content {
+        padding-left: $grid-rtl-checkbox-content-padding-left;
+        padding-right: $grid-checkbox-content-padding-left;
+      }
+
+      .e-ftrchk,
+      .e-searchbox {
+        padding-left: 0;
+        padding-right: $grid-checkbox-padding-topbottom;
+          }
+      }
+
+    .e-searchbox {
+      display: block;
+      }
+  }
+
+  .e-ftrchk {
+    padding-bottom: $grid-checkbox-padding-topbottom;
+    padding-top: $grid-checkbox-padding-topbottom;
+  }
+}
+@include export-module('excel-filter-theme') {
+  /*! Excel-Filter theme */
+  #{&}.e-excelfilter {
+    .e-footer-content {
+      border-color: $grid-columnchooser-footer-border-color;
+      opacity: $grid-columnchooser-footer-border-opacity;
+    }
+
+    .e-filtered::before {
+      color: $grid-filtered-color;
+    }
+
+    .e-dlg-content {
+      padding-bottom: 0;
+     }
+    }
+
+  li.e-separator.e-menu-item.e-excel-separator {
+    margin-bottom: $grid-excel-filter-separator;
+    margin-top: $grid-excel-filter-separator;
+ }
+
+  .e-xlsel {
+    background-color: $grid-autofill-color;
+    border-color: $grid-autofill-color;
+  }
+}

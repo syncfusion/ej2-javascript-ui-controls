@@ -4,21 +4,24 @@ import { TextElementBox, ListTextElementBox, ParagraphWidget } from './page';
 import { DocumentHelper } from './viewer';
 import { HelperMethods, RtlInfo } from '../editor/editor-helper';
 import { BaselineAlignment, BiDirectionalOverride } from '../../index';
-/** 
+/**
  * @private
  */
 export interface TextSizeInfo {
-    Height?: number;
-    BaselineOffset?: number;
-    Width?: number;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    Height?: number
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    BaselineOffset?: number
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    Width?: number
 }
-/** 
+/**
  * @private
  */
 export interface TextHeightInfo {
-    [key: string]: TextSizeInfo;
+    [key: string]: TextSizeInfo
 }
-/** 
+/**
  * @private
  */
 export class TextHelper {
@@ -31,15 +34,9 @@ export class TextHelper {
     private get lineBreakMark(): string {
         return '↲';
     }
-    /**
-     * @private
-     */
     public getEnSpaceCharacter(): string {
         return String.fromCharCode(8194);
     }
-    /**
-     * @private
-     */
     public repeatChar(char: string, count: number): string {
         let text: string = '';
         for (let i: number = 0; i < count; i++) {
@@ -47,50 +44,39 @@ export class TextHelper {
         }
         return text;
     }
-    /**
-     * documentHelper definition
-     */
-    constructor(documentHelper: DocumentHelper) {
+    public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
         if (!isNullOrUndefined(documentHelper)) {
             this.context = documentHelper.containerContext;
         }
     }
-    /**
-     * @private
-     */
     public getParagraphMarkWidth(characterFormat: WCharacterFormat): number {
         return this.getParagraphMarkSize(characterFormat).Width;
     }
-    /**
-     * @private
-     */
     public getParagraphMarkSize(characterFormat: WCharacterFormat): TextSizeInfo {
-        let format: string = this.getFormatText(characterFormat);
+        const format: string = this.getFormatText(characterFormat);
         if (this.paragraphMarkInfo[format]) {
             return this.paragraphMarkInfo[format];
         }
         // Gets the text element's width;
-        let width: number = this.getWidth(this.paragraphMark, characterFormat);
+        const width: number = this.getWidth(this.paragraphMark, characterFormat);
         // Calculate the text element's height and baseline offset.
-        let textHelper: TextSizeInfo = this.getHeight(characterFormat);
-        let textSizeInfo: TextSizeInfo = {
+        const textHelper: TextSizeInfo = this.getHeight(characterFormat);
+        const textSizeInfo: TextSizeInfo = {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             'Width': width, 'Height': textHelper.Height, 'BaselineOffset': textHelper.BaselineOffset
         };
         return this.paragraphMarkInfo[format] = textSizeInfo;
     }
-    /**
-     * @private
-     */
     public getTextSize(elementBox: TextElementBox, characterFormat: WCharacterFormat): number {
         // Gets the text element's width;
         let textTrimEndWidth: number = 0;
-        let isRTL: boolean = characterFormat.bidi || this.isRTLText(elementBox.text);
-        let text: string = this.setText(elementBox.text, isRTL, characterFormat.bdo);
+        const isRTL: boolean = characterFormat.bidi || this.isRTLText(elementBox.text);
+        const text: string = this.setText(elementBox.text, isRTL, characterFormat.bdo);
         textTrimEndWidth = this.getWidth(text, characterFormat);
         elementBox.width = textTrimEndWidth;
         // Calculate the text element's height and baseline offset.
-        let textHelper: TextSizeInfo = this.getHeight(characterFormat);
+        const textHelper: TextSizeInfo = this.getHeight(characterFormat);
         elementBox.height = textHelper.Height;
         elementBox.baselineOffset = textHelper.BaselineOffset;
         if (elementBox.text[elementBox.text.length - 1] === ' ') {
@@ -99,23 +85,17 @@ export class TextHelper {
         elementBox.trimEndWidth = textTrimEndWidth;
         return textTrimEndWidth;
     }
-    /**
-     * @private
-     */
     public getHeight(characterFormat: WCharacterFormat): TextSizeInfo {
         // Get character format property as  below predefined structure to make it easy to check and retrieve
-        // Predefined static structure `[FontName];[FontSize];bold;italic` to maintain as key in the collection 
-        let key: string = this.getFormatText(characterFormat);
+        // Predefined static structure `[FontName];[FontSize];bold;italic` to maintain as key in the collection
+        const key: string = this.getFormatText(characterFormat);
         if (!isNullOrUndefined(this.documentHelper.heightInfoCollection[key])) {
             return this.documentHelper.heightInfoCollection[key];
         }
-        let sizeInfo: TextSizeInfo = this.getHeightInternal(characterFormat);
+        const sizeInfo: TextSizeInfo = this.getHeightInternal(characterFormat);
         this.documentHelper.heightInfoCollection[key] = sizeInfo;
         return sizeInfo;
     }
-    /**
-     * @private
-     */
     public getFormatText(characterFormat: WCharacterFormat): string {
         let formatText: string = characterFormat.fontFamily.toLocaleLowerCase();
         formatText += ';' + characterFormat.fontSize;
@@ -127,18 +107,15 @@ export class TextHelper {
         }
         return formatText;
     }
-    /**
-     * @private
-     */
     public getHeightInternal(characterFormat: WCharacterFormat): TextSizeInfo {
         let textHeight: number = 0;
         let baselineOffset: number = 0;
-        let spanElement: HTMLSpanElement = document.createElement('span');
+        const spanElement: HTMLSpanElement = document.createElement('span');
         spanElement.innerText = 'm';
         this.applyStyle(spanElement, characterFormat);
-        let parentDiv: HTMLDivElement = document.createElement('div');
+        const parentDiv: HTMLDivElement = document.createElement('div');
         parentDiv.setAttribute('style', 'display:inline-block;position:absolute;');
-        let tempDiv: HTMLDivElement = document.createElement('div');
+        const tempDiv: HTMLDivElement = document.createElement('div');
         tempDiv.setAttribute('style', 'display:inline-block;width: 1px; height: 0px;vertical-align: baseline;');
         parentDiv.appendChild(spanElement);
         parentDiv.appendChild(tempDiv);
@@ -146,25 +123,20 @@ export class TextHelper {
         // Sets the text element's height.
         textHeight = spanElement.offsetHeight;
         // Calculate the text element's baseline offset.
-        let textTopVal: number = spanElement.offsetTop;
-        let tempDivTopVal: number = tempDiv.offsetTop;
+        const textTopVal: number = spanElement.offsetTop;
+        const tempDivTopVal: number = tempDiv.offsetTop;
         // let width: number = (parentDiv.offsetWidth - spanElement.offsetWidth);
         // if ((textTopVal - width) === 1) {
         //     tempDivTopVal += width;
         // }
         baselineOffset = tempDivTopVal - textTopVal;
         document.body.removeChild(parentDiv);
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         return { 'Height': textHeight, 'BaselineOffset': baselineOffset };
     }
-    /**
-     * @private
-     */
     public measureTextExcludingSpaceAtEnd(text: string, characterFormat: WCharacterFormat): number {
         return this.getWidth(HelperMethods.trimEnd(text), characterFormat);
     }
-    /**
-     * @private
-     */
     public getWidth(text: string, characterFormat: WCharacterFormat): number {
         if (text.match('\v')) {
             text.replace('\v', this.lineBreakMark);
@@ -191,18 +163,15 @@ export class TextHelper {
         if (textToRender.length === 0) {
             return '';
         }
-        let isRtlText: boolean = isBidi;
+        const isRtlText: boolean = isBidi;
         if ((!isRtlText && (bdo === 'RTL')) || (isRtlText && (bdo === 'LTR'))) {
-            textToRender = HelperMethods.ReverseString(textToRender);
+            textToRender = HelperMethods.reverseString(textToRender);
         } else if (isRender && isRtlText && HelperMethods.endsWith(textToRender)) {
-            let spaceCount: number = textToRender.length - HelperMethods.trimEnd(textToRender).length;
+            const spaceCount: number = textToRender.length - HelperMethods.trimEnd(textToRender).length;
             textToRender = HelperMethods.addSpace(spaceCount) + HelperMethods.trimEnd(textToRender);
         }
         return textToRender;
     }
-    /**
-     * @private
-     */
     public applyStyle(spanElement: HTMLSpanElement, characterFormat: WCharacterFormat): void {
         if (!isNullOrUndefined(spanElement) && !isNullOrUndefined(characterFormat)) {
             let style: string = 'white-space:nowrap;';
@@ -223,33 +192,26 @@ export class TextHelper {
             spanElement.setAttribute('style', style);
         }
     }
-    /**
-     * @private
-     */
     public measureText(text: string, characterFormat: WCharacterFormat): TextSizeInfo {
         // Gets the text element's width;
-        let width: number = this.getWidth(text, characterFormat);
-        let height: number = 0;
-        let baselineOffset: number = 0;
+        const width: number = this.getWidth(text, characterFormat);
         // Calculate the text element's height and baseline offset.
-        let textHelper: TextSizeInfo = this.getHeight(characterFormat);
+        const textHelper: TextSizeInfo = this.getHeight(characterFormat);
         return {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             'Width': width, 'Height': textHelper.Height, 'BaselineOffset': textHelper.BaselineOffset
         };
     }
-    /**
-     * @private
-     */
     public updateTextSize(elementBox: ListTextElementBox, paragraph: ParagraphWidget): void {
-        let format: WCharacterFormat = new WCharacterFormat(undefined);
-        let listCharacterFormat: WCharacterFormat = elementBox.listLevel.characterFormat;
-        let breakCharacterFormat: WCharacterFormat = paragraph.characterFormat;
+        const format: WCharacterFormat = new WCharacterFormat(undefined);
+        const listCharacterFormat: WCharacterFormat = elementBox.listLevel.characterFormat;
+        const breakCharacterFormat: WCharacterFormat = paragraph.characterFormat;
         format.fontSize = listCharacterFormat.fontSize === 11 ? breakCharacterFormat.fontSize : listCharacterFormat.fontSize;
         format.fontFamily = listCharacterFormat.fontFamily === 'Verdana' ? breakCharacterFormat.fontFamily
             : listCharacterFormat.fontFamily;
         let bold: string = '';
         let italic: string = '';
-        let baselineAlignment: BaselineAlignment = listCharacterFormat.baselineAlignment === 'Normal' ?
+        const baselineAlignment: BaselineAlignment = listCharacterFormat.baselineAlignment === 'Normal' ?
             breakCharacterFormat.baselineAlignment : listCharacterFormat.baselineAlignment;
         bold = listCharacterFormat.hasValue('bold') ? listCharacterFormat.bold ? 'bold' : '' : breakCharacterFormat.bold ? 'bold' : '';
         italic = listCharacterFormat.hasValue('italic') ? listCharacterFormat.italic ? 'italic' : ''
@@ -261,20 +223,16 @@ export class TextHelper {
         if (italic) {
             format.italic = true;
         }
-        let isRTL: boolean = format.bidi || this.isRTLText(elementBox.text);
-        let text: string = this.setText(elementBox.text, isRTL, format.bdo);
+        const isRTL: boolean = format.bidi || this.isRTLText(elementBox.text);
+        const text: string = this.setText(elementBox.text, isRTL, format.bdo);
         elementBox.width = this.getWidth(text, format);
         // Calculate the text element's height and baseline offset.
-        let textHelper: TextSizeInfo = this.getHeight(format);
+        const textHelper: TextSizeInfo = this.getHeight(format);
         elementBox.height = textHelper.Height;
         elementBox.baselineOffset = textHelper.BaselineOffset;
     }
-    /**
-     * @private
-     * @param text 
-     */
     public containsSpecialCharAlone(text: string): boolean {
-        // tslint:disable
+        /* eslint-disable */
         let specialChars: string = '*|.\:[]{}-`\;()@&$#%!~?' + ' ' + "'";
         for (let i: number = 0; i < text.length; i++) {
             if (specialChars.indexOf(text.charAt(i)) === -1) {
@@ -283,12 +241,8 @@ export class TextHelper {
         }
         return true;
     }
-    /**
-     * @private
-     * @param text 
-     */
     public containsNumberAlone(text: string): boolean {
-        // tslint:disable
+        /* eslint-disable */
         let number: string = '0123456789';
         if (text === '') {
             return false;
@@ -301,10 +255,6 @@ export class TextHelper {
         return true;
     }
 
-    /**
-     * @private
-     * @param ch 
-     */
     public inverseCharacter(ch: string): string {
         switch (ch) {
             //Specify the '('
@@ -352,10 +302,6 @@ export class TextHelper {
         }
     }
 
-    /**
-     * @private
-     * @param text 
-     */
     public containsSpecialChar(text: string): boolean {
         let specialChars: string = '*|.\:[]{}-`\;()@&$#%!~?' + ' ';
         for (let i: number = 0; i < text.length; i++) {
@@ -365,10 +311,10 @@ export class TextHelper {
         }
         return false;
     }
-
-
     /**
      * @private
+     * @param {string} text - Specifies the text
+     * @returns {boolean} - Returns true if given text it right to left.
      */
     public isRTLText(text: string): boolean {
         let isRTL: boolean = false;
@@ -397,7 +343,9 @@ export class TextHelper {
         return isRTL;
     }
     /**
-     * @private     
+     * @private
+     * @param {string} text - Specifies the text
+     * @returns {RtlInfo} - Returns the text info.
      */
     public getRtlLanguage(text: string): RtlInfo {
         if (isNullOrUndefined(text) || text === '') {

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable max-len */
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
 import { getRecurrenceStringFromDate, generate } from '../../recurrence-editor/date-generator';
@@ -21,24 +23,24 @@ export class Crud {
     }
 
     private getQuery(): Query {
-        let start: Date = this.parent.activeView.startDate();
-        let end: Date = this.parent.activeView.endDate();
+        const start: Date = this.parent.activeView.startDate();
+        const end: Date = this.parent.activeView.endDate();
         return this.parent.dataModule.generateQuery(start, end);
     }
 
     private getTable(): string {
         if (this.parent.eventSettings.query) {
-            let query: Query = this.parent.eventSettings.query.clone();
+            const query: Query = this.parent.eventSettings.query.clone();
             return query.fromTable;
         }
         return null;
     }
 
     private refreshData(args: CrudArgs): void {
-        let actionArgs: ActionEventArgs = {
+        const actionArgs: ActionEventArgs = {
             requestType: args.requestType, cancel: false, data: args.data,
-            addedRecords: args.editParms.addedRecords, changedRecords: args.editParms.changedRecords,
-            deletedRecords: args.editParms.deletedRecords
+            addedRecords: args.editParams.addedRecords, changedRecords: args.editParams.changedRecords,
+            deletedRecords: args.editParams.deletedRecords
         };
         if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj && this.parent.dragAndDropModule.actionObj.element) {
             this.parent.dragAndDropModule.actionObj.element.style.display = 'none';
@@ -51,14 +53,14 @@ export class Crud {
             if (args.requestType === 'eventCreated' || args.requestType === 'eventRemoved') {
                 this.crudObj.isCrudAction = true;
                 this.crudObj.sourceEvent = [];
-                const crudData: { [key: string]: Object }[] = args.data instanceof Array ? (args.data.length === 0 &&
-                    // tslint:disable:no-any
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const crudData: Record<string, any>[] = args.data instanceof Array ? (args.data.length === 0 &&
                     args.requestType === 'eventRemoved' ? (args.promise as any).deletedRecords : args.data) :
                     ((typeof args.data === 'string' || typeof args.data === 'number') && args.requestType === 'eventRemoved') ?
-                        args.editParms.deletedRecords : [args.data];
-                for (let data of crudData) {
+                        args.editParams.deletedRecords : [args.data];
+                for (const data of crudData) {
                     this.crudObj.isCrudAction = !(args.requestType === 'eventRemoved' && !isNullOrUndefined(data.parent));
-                    let groupIndex: number = this.parent.eventBase.getGroupIndexFromEvent(data);
+                    const groupIndex: number = this.parent.eventBase.getGroupIndexFromEvent(data);
                     if (this.parent.crudModule.crudObj.sourceEvent.filter((tdData: TdData) => tdData.groupIndex === groupIndex).length === 0
                         && this.crudObj.isCrudAction) {
                         this.crudObj.sourceEvent.push(this.parent.resourceBase.lastResourceLevel[groupIndex]);
@@ -74,6 +76,7 @@ export class Crud {
                 }
             });
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             args.promise.then((e: ReturnType) => {
                 if (this.parent.isDestroyed) { return; }
                 this.parent.trigger(events.actionComplete, actionArgs, (onlineArgs: ActionEventArgs) => {
@@ -83,44 +86,39 @@ export class Crud {
                 });
             }).catch((e: ReturnType) => {
                 if (this.parent.isDestroyed) { return; }
-                // tslint:disable:no-any
                 this.parent.trigger(events.actionFailure, { error: e });
-                // tslint:disable:no-any
             });
         }
     }
 
-    public addEvent(eventData: Object | Object[]): void {
+    public addEvent(eventData: Record<string, any> | Record<string, any>[]): void {
         if (this.parent.eventSettings.allowAdding) {
-            if (!this.isBlockEvent(eventData as { [key: string]: Object } | { [key: string]: Object }[]) &&
-                this.parent.eventBase.isBlockRange(eventData)) {
-                this.parent.quickPopup.openValidationError('blockAlert', (eventData instanceof Array) ? [eventData] : eventData);
+            if (!this.isBlockEvent(eventData) && this.parent.eventBase.isBlockRange(eventData)) {
+                this.parent.quickPopup.openValidationError('blockAlert', eventData);
                 return;
             }
-            let addEvents: Object[] = (eventData instanceof Array) ? eventData : [eventData];
-            let args: ActionEventArgs = {
-                requestType: 'eventCreate', cancel: false,
+            const addEvents: Record<string, any>[] = (eventData instanceof Array) ? eventData : [eventData];
+            const args: ActionEventArgs = {
+                requestType: 'eventCreate', cancel: false, data: addEvents,
                 addedRecords: addEvents, changedRecords: [], deletedRecords: []
             };
-            args.data = addEvents;
             this.parent.trigger(events.actionBegin, args, (addArgs: ActionEventArgs) => {
                 if (!addArgs.cancel) {
-                    let fields: EventFieldsMapping = this.parent.eventFields;
-                    let editParms: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
-                    let promise: Promise<Object>;
+                    const fields: EventFieldsMapping = this.parent.eventFields;
+                    const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
+                    let promise: Promise<any>;
                     if (addArgs.addedRecords instanceof Array) {
-                        for (let event of addArgs.addedRecords as { [key: string]: Object }[]) {
-                            editParms.addedRecords.push(this.parent.eventBase.processTimezone(event, true));
+                        for (const event of addArgs.addedRecords) {
+                            editParams.addedRecords.push(this.parent.eventBase.processTimezone(event, true));
                         }
-                        // tslint:disable-next-line:max-line-length
-                        promise = this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery()) as Promise<Object>;
+                        promise = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
                     } else {
-                        let event: Object = this.parent.eventBase.processTimezone(addArgs.addedRecords as { [key: string]: Object }, true);
-                        editParms.addedRecords.push(event);
-                        promise = this.parent.dataModule.dataManager.insert(event, this.getTable(), this.getQuery()) as Promise<Object>;
+                        const event: Record<string, any> = this.parent.eventBase.processTimezone(addArgs.addedRecords, true);
+                        editParams.addedRecords.push(event);
+                        promise = this.parent.dataModule.dataManager.insert(event, this.getTable(), this.getQuery()) as Promise<any>;
                     }
-                    let crudArgs: CrudArgs = {
-                        requestType: 'eventCreated', cancel: false, data: addArgs.addedRecords, promise: promise, editParms: editParms
+                    const crudArgs: CrudArgs = {
+                        requestType: 'eventCreated', cancel: false, data: addArgs.addedRecords, promise: promise, editParams: editParams
                     };
                     this.refreshData(crudArgs);
                 }
@@ -128,53 +126,54 @@ export class Crud {
         }
     }
 
-    public saveEvent(eventData: { [key: string]: Object } | { [key: string]: Object }[], action: CurrentAction): void {
+    public saveEvent(eventData: Record<string, any> | Record<string, any>[], action: CurrentAction): void {
         if (this.parent.eventSettings.allowEditing) {
             if (this.parent.currentAction !== 'EditFollowingEvents' && !this.isBlockEvent(eventData)
                 && this.parent.eventBase.isBlockRange(eventData)) {
-                this.parent.quickPopup.openValidationError('blockAlert', (eventData instanceof Array) ? [eventData] : eventData);
+                this.parent.quickPopup.openValidationError('blockAlert', eventData);
                 return;
             }
             this.parent.currentAction = action;
             if (action) {
                 switch (action) {
-                    case 'EditOccurrence':
-                        this.processOccurrences(eventData, action);
-                        break;
-                    case 'EditFollowingEvents':
-                        this.processFollowSeries(eventData, action);
-                        break;
-                    case 'EditSeries':
-                        this.processEntireSeries(eventData, action);
-                        break;
+                case 'Save':
+                    this.processSave(eventData);
+                    break;
+                case 'EditOccurrence':
+                    this.processOccurrences(eventData, action);
+                    break;
+                case 'EditFollowingEvents':
+                    this.processFollowSeries(eventData, action);
+                    break;
+                case 'EditSeries':
+                    this.processEntireSeries(eventData, action);
+                    break;
                 }
             } else {
-                let updateEvents: Object[] = (eventData instanceof Array) ? eventData : [eventData];
-                let args: ActionEventArgs = {
-                    requestType: 'eventChange', cancel: false,
+                const updateEvents: Record<string, any>[] = (eventData instanceof Array) ? eventData : [eventData];
+                const args: ActionEventArgs = {
+                    requestType: 'eventChange', cancel: false, data: eventData,
                     addedRecords: [], changedRecords: updateEvents, deletedRecords: []
                 };
-                args.data = eventData;
                 this.parent.trigger(events.actionBegin, args, (saveArgs: ActionEventArgs) => {
                     if (!saveArgs.cancel) {
-                        let promise: Promise<Object>;
-                        let fields: EventFieldsMapping = this.parent.eventFields;
-                        let editParms: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
+                        let promise: Promise<any>;
+                        const fields: EventFieldsMapping = this.parent.eventFields;
+                        const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                         if (saveArgs.changedRecords instanceof Array) {
-                            for (let event of saveArgs.changedRecords as { [key: string]: Object }[]) {
-                                editParms.changedRecords.push(this.parent.eventBase.processTimezone(event, true));
+                            for (const event of saveArgs.changedRecords) {
+                                const eventData: Record<string, any> = this.parent.eventBase.processTimezone(event, true);
+                                editParams.changedRecords.push(eventData);
                             }
-                            // tslint:disable-next-line:max-line-length
-                            promise = this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery()) as Promise<Object>;
+                            promise = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
                         } else {
-                            let event: { [key: string]: Object } = this.parent.eventBase.processTimezone(saveArgs.changedRecords, true);
-                            editParms.changedRecords.push(event);
-                            // tslint:disable-next-line:max-line-length
-                            promise = this.parent.dataModule.dataManager.update(fields.id, event, this.getTable(), this.getQuery()) as Promise<Object>;
+                            const event: Record<string, any> = this.parent.eventBase.processTimezone(saveArgs.changedRecords, true);
+                            editParams.changedRecords.push(event);
+                            promise = this.parent.dataModule.dataManager.update(fields.id, event, this.getTable(), this.getQuery()) as Promise<any>;
                         }
-                        let crudArgs: CrudArgs = {
+                        const crudArgs: CrudArgs = {
                             requestType: 'eventChanged', cancel: false,
-                            data: saveArgs.changedRecords, promise: promise, editParms: editParms
+                            data: saveArgs.changedRecords, promise: promise, editParams: editParams
                         };
                         this.refreshData(crudArgs);
                     }
@@ -183,55 +182,52 @@ export class Crud {
         }
     }
 
-    public deleteEvent(eventData: string | number | Object | Object[], action: CurrentAction): void {
+    public deleteEvent(eventData: string | number | Record<string, any> | Record<string, any>[], action: CurrentAction): void {
         if (this.parent.eventSettings.allowDeleting) {
             this.parent.currentAction = action;
-            let deleteEvents: { [key: string]: Object }[] = [];
+            let deleteEvents: Record<string, any>[] = [];
             if (typeof eventData === 'string' || typeof eventData === 'number') {
-                deleteEvents = this.parent.eventsData.filter((eventObj: { [key: string]: Object }) =>
-                    eventObj[this.parent.eventFields.id] === eventData) as { [key: string]: Object }[];
+                deleteEvents = this.parent.eventsData.filter((eventObj: Record<string, any>) =>
+                    eventObj[this.parent.eventFields.id] === eventData) as Record<string, any>[];
             } else {
-                deleteEvents = (eventData instanceof Array ? eventData : [eventData]) as { [key: string]: Object }[];
+                deleteEvents = (eventData instanceof Array ? eventData : [eventData]) as Record<string, any>[];
             }
             if (action) {
                 switch (action) {
-                    case 'Delete':
-                        this.processEventDelete(deleteEvents);
-                        break;
-                    case 'DeleteOccurrence':
-                        this.processOccurrences(deleteEvents, action);
-                        break;
-                    case 'DeleteFollowingEvents':
-                        this.processFollowSeries(deleteEvents, action);
-                        break;
-                    case 'DeleteSeries':
-                        this.processEntireSeries(deleteEvents, action);
-                        break;
+                case 'Delete':
+                    this.processDelete(deleteEvents);
+                    break;
+                case 'DeleteOccurrence':
+                    this.processOccurrences(deleteEvents, action);
+                    break;
+                case 'DeleteFollowingEvents':
+                    this.processFollowSeries(deleteEvents, action);
+                    break;
+                case 'DeleteSeries':
+                    this.processEntireSeries(deleteEvents, action);
+                    break;
                 }
             } else {
-                let args: ActionEventArgs = {
-                    requestType: 'eventRemove', cancel: false,
+                const args: ActionEventArgs = {
+                    requestType: 'eventRemove', cancel: false, data: eventData as Record<string, any>,
                     addedRecords: [], changedRecords: [], deletedRecords: deleteEvents
                 };
-                args.data = eventData;
                 this.parent.trigger(events.actionBegin, args, (deleteArgs: ActionEventArgs) => {
                     if (!deleteArgs.cancel) {
-                        let promise: Promise<Object>;
-                        let fields: EventFieldsMapping = this.parent.eventFields;
-                        let editParms: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
+                        let promise: Promise<any>;
+                        const fields: EventFieldsMapping = this.parent.eventFields;
+                        const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                         if (deleteArgs.deletedRecords.length > 1) {
-                            editParms.deletedRecords = editParms.deletedRecords.concat(deleteArgs.deletedRecords);
-                            // tslint:disable-next-line:max-line-length
-                            promise = this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery()) as Promise<Object>;
+                            editParams.deletedRecords = editParams.deletedRecords.concat(deleteArgs.deletedRecords);
+                            promise = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
                         } else {
-                            editParms.deletedRecords.push(deleteArgs.deletedRecords[0]);
-                            // tslint:disable-next-line:max-line-length
-                            promise = this.parent.dataModule.dataManager.remove(fields.id, deleteArgs.deletedRecords[0], this.getTable(), this.getQuery()) as Promise<Object>;
+                            editParams.deletedRecords.push(deleteArgs.deletedRecords[0]);
+                            promise = this.parent.dataModule.dataManager.remove(fields.id, deleteArgs.deletedRecords[0], this.getTable(), this.getQuery()) as Promise<any>;
                         }
                         this.parent.eventBase.selectWorkCellByTime(deleteArgs.deletedRecords);
-                        let crudArgs: CrudArgs = {
+                        const crudArgs: CrudArgs = {
                             requestType: 'eventRemoved', cancel: false,
-                            data: deleteArgs.deletedRecords, promise: promise, editParms: editParms
+                            data: deleteArgs.deletedRecords, promise: promise, editParams: editParams
                         };
                         this.refreshData(crudArgs);
                     }
@@ -240,243 +236,235 @@ export class Crud {
         }
     }
 
-    private processOccurrences(eventData: { [key: string]: Object } | { [key: string]: Object }[], action: CurrentAction): void {
-        let occurenceData: { [key: string]: Object } | { [key: string]: Object }[] = [];
+    private processOccurrences(eventData: Record<string, any> | Record<string, any>[], action: CurrentAction): void {
+        let occurrenceData: Record<string, any> | Record<string, any>[] = [];
         let isDeletedRecords: boolean = false;
         if (eventData instanceof Array) {
-            for (let event of eventData) {
-                occurenceData.push({ occurrence: event, parent: this.getParentEvent(event) });
+            for (const event of eventData) {
+                occurrenceData.push({ occurrence: event, parent: this.getParentEvent(event) });
             }
         } else {
-            occurenceData = { occurrence: eventData, parent: this.getParentEvent(eventData) };
+            occurrenceData = { occurrence: eventData, parent: this.getParentEvent(eventData) };
         }
-        let updateEvents: Object[] = (eventData instanceof Array) ? eventData : [eventData];
-        let args: ActionEventArgs = {
+        const updateEvents: Record<string, any>[] = (eventData instanceof Array) ? eventData : [eventData];
+        const args: ActionEventArgs = {
             requestType: action === 'EditOccurrence' ? 'eventChange' : 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: updateEvents, deletedRecords: []
         };
-        args.data = occurenceData;
-        this.parent.trigger(events.actionBegin, args, (occurenceArgs: ActionEventArgs) => {
-            if (!occurenceArgs.cancel) {
-                let fields: EventFieldsMapping = this.parent.eventFields;
-                let editParms: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
-                let occurrenceEvents: { [key: string]: Object }[] = (occurenceData instanceof Array ? occurenceData : [occurenceData]) as
-                    { [key: string]: Object }[];
-                for (let a: number = 0, count: number = occurenceArgs.changedRecords.length; a < count; a++) {
-                    let childEvent: { [key: string]: Object } = occurenceArgs.changedRecords[a] as { [key: string]: Object };
-                    let parentEvent: { [key: string]: Object } = occurrenceEvents[a].parent as { [key: string]: Object };
-                    let parentException: string = parentEvent[fields.recurrenceException] as string;
+        args.data = occurrenceData;
+        this.parent.trigger(events.actionBegin, args, (occurrenceArgs: ActionEventArgs) => {
+            if (!occurrenceArgs.cancel) {
+                const fields: EventFieldsMapping = this.parent.eventFields;
+                const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
+                const occurrenceEvents: Record<string, any>[] = (occurrenceData instanceof Array ? occurrenceData : [occurrenceData]);
+                for (let a: number = 0, count: number = occurrenceArgs.changedRecords.length; a < count; a++) {
+                    const childEvent: Record<string, any> = occurrenceArgs.changedRecords[a];
+                    const parentEvent: Record<string, any> = occurrenceEvents[a].parent as Record<string, any>;
+                    const parentException: string = parentEvent[fields.recurrenceException] as string;
+                    let editedData: Record<string, Date>;
+                    let exceptionDate: string;
                     switch (action) {
-                        case 'EditOccurrence':
-                            let editedData: { [key: string]: Date } = this.parent.eventsProcessed.filter(
-                                (event: { [key: string]: Object }) => event.Guid === childEvent.Guid)[0] as { [key: string]: Date };
-                            let exceptionDate: string = this.excludeDateCheck(editedData[fields.startTime], parentException);
-                            if (exceptionDate !== parentEvent[fields.recurrenceException]) {
-                                parentEvent[fields.recurrenceException] = exceptionDate;
-                                childEvent[fields.recurrenceException] = getRecurrenceStringFromDate(editedData[fields.startTime] as Date);
-                                childEvent[fields.recurrenceID] = parentEvent[fields.id];
-                                childEvent[fields.followingID] = null;
-                                editParms.changedRecords.push(this.parent.eventBase.processTimezone(parentEvent, true));
-                                editParms.addedRecords.push(this.parent.eventBase.processTimezone(childEvent, true));
-                            } else {
-                                editParms.changedRecords.push(this.parent.eventBase.processTimezone(childEvent, true));
-                            }
-                            break;
-                        case 'DeleteOccurrence':
-                            if (!childEvent[fields.recurrenceException]) {
-                                parentEvent[fields.recurrenceException] =
-                                    this.excludeDateCheck(<Date>childEvent[fields.startTime], parentException);
-                                editParms.changedRecords.push(this.parent.eventBase.processTimezone(parentEvent, true));
-                            }
-                            if (childEvent[fields.id] !== parentEvent[fields.id]) {
-                                editParms.deletedRecords.push(childEvent);
-                                isDeletedRecords = true;
-                            }
-                            break;
+                    case 'EditOccurrence':
+                        editedData = this.parent.eventsProcessed.filter((event: Record<string, any>) => event.Guid === childEvent.Guid)[0] as Record<string, Date>;
+                        exceptionDate = this.excludeDateCheck(editedData[fields.startTime], parentException);
+                        if (exceptionDate !== parentEvent[fields.recurrenceException]) {
+                            parentEvent[fields.recurrenceException] = exceptionDate;
+                            childEvent[fields.recurrenceException] = getRecurrenceStringFromDate(editedData[fields.startTime] as Date);
+                            childEvent[fields.recurrenceID] = parentEvent[fields.id];
+                            childEvent[fields.followingID] = null;
+                            editParams.changedRecords.push(this.parent.eventBase.processTimezone(parentEvent, true));
+                            editParams.addedRecords.push(this.parent.eventBase.processTimezone(childEvent, true));
+                        } else {
+                            editParams.changedRecords.push(this.parent.eventBase.processTimezone(childEvent, true));
+                        }
+                        break;
+                    case 'DeleteOccurrence':
+                        if (!childEvent[fields.recurrenceException]) {
+                            parentEvent[fields.recurrenceException] =
+                                this.excludeDateCheck(<Date>childEvent[fields.startTime], parentException);
+                            editParams.changedRecords.push(this.parent.eventBase.processTimezone(parentEvent, true));
+                        }
+                        if (childEvent[fields.id] !== parentEvent[fields.id]) {
+                            editParams.deletedRecords.push(childEvent);
+                            isDeletedRecords = true;
+                        }
+                        break;
                     }
                 }
-                // tslint:disable-next-line:max-line-length
-                let promise: Promise<Object> = this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery()) as Promise<Object>;
-                this.parent.eventBase.selectWorkCellByTime(occurenceArgs.changedRecords);
-                let crudArgs: CrudArgs = {
+                const promise: Promise<any> = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
+                this.parent.eventBase.selectWorkCellByTime(occurrenceArgs.changedRecords);
+                const crudArgs: CrudArgs = {
                     requestType: action === 'EditOccurrence' ? 'eventChanged' : 'eventRemoved',
-                    cancel: false, data: isDeletedRecords ? occurenceArgs.deletedRecords : occurenceArgs.changedRecords,
-                    promise: promise, editParms: editParms
+                    cancel: false, data: isDeletedRecords ? occurrenceArgs.deletedRecords : occurrenceArgs.changedRecords,
+                    promise: promise, editParams: editParams
                 };
                 this.refreshData(crudArgs);
             }
         });
     }
 
-    private processFollowSeries(eventData: { [key: string]: Object } | { [key: string]: Object }[], action: CurrentAction): void {
-        let followData: { [key: string]: Object } | { [key: string]: Object }[] = [];
+    private processFollowSeries(eventData: Record<string, any> | Record<string, any>[], action: CurrentAction): void {
+        let followData: Record<string, any> | Record<string, any>[] = [];
         if (eventData instanceof Array) {
-            for (let event of eventData) {
+            for (const event of eventData) {
                 followData.push({ occurrence: event, parent: this.getParentEvent(event) });
             }
         } else {
             followData = { occurrence: eventData, parent: this.getParentEvent(eventData) };
         }
-        let updateFollowEvents: Object[] = (eventData instanceof Array) ? eventData : [eventData];
-        let args: ActionEventArgs = {
+        const updateFollowEvents: Record<string, any>[] = (eventData instanceof Array) ? eventData : [eventData];
+        const args: ActionEventArgs = {
             requestType: action === 'EditFollowingEvents' ? 'eventChange' : 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: updateFollowEvents, deletedRecords: []
         };
         args.data = followData;
         this.parent.trigger(events.actionBegin, args, (followArgs: ActionEventArgs) => {
             if (!followArgs.cancel) {
-                let fields: EventFieldsMapping = this.parent.eventFields;
-                let editParms: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
-                let followEvents: { [key: string]: Object }[] = (followData instanceof Array ? followData : [followData]) as
-                    { [key: string]: Object }[];
+                const fields: EventFieldsMapping = this.parent.eventFields;
+                const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
+                const followEvents: Record<string, any>[] = followData instanceof Array ? followData : [followData];
                 for (let a: number = 0, count: number = followArgs.changedRecords.length; a < count; a++) {
-                    let childEvent: { [key: string]: Object } = followArgs.changedRecords[a] as { [key: string]: Object };
-                    let parentEvent: { [key: string]: Object } = followEvents[a].parent as { [key: string]: Object };
-                    let followData: { [key: string]: Object[] } = this.parent.eventBase.getEventCollections(parentEvent, childEvent);
+                    const childEvent: Record<string, any> = followArgs.changedRecords[a];
+                    const parentEvent: Record<string, any> = followEvents[a].parent as Record<string, any>;
+                    const followData: { [key: string]: Record<string, any>[] } = this.parent.eventBase.getEventCollections(parentEvent, childEvent) as { [key: string]: Record<string, any>[] };
+                    let isSpanned: boolean;
                     switch (action) {
-                        case 'EditFollowingEvents':
-                            this.processRecurrenceRule(parentEvent, childEvent);
-                            let isSplitted: boolean = !this.parent.eventBase.isFollowingEvent(parentEvent, childEvent);
-                            childEvent[fields.followingID] = isSplitted ? null : parentEvent[fields.id];
-                            childEvent[fields.recurrenceID] = null;
-                            editParms.addedRecords.push(this.parent.eventBase.processTimezone(childEvent, true));
-                            editParms.changedRecords.push(this.parent.eventBase.processTimezone(parentEvent, true));
-                            if (!this.parent.uiStateValues.isIgnoreOccurrence) {
-                                childEvent[fields.recurrenceException] = null;
-                                if (followData.occurrence.length > 0) {
-                                    let rule: string =
-                                        (<{ [key: string]: Object }>followData.occurrence.slice(-1)[0])[fields.recurrenceRule] as string;
-                                    if (rule.indexOf('COUNT') === -1) {
-                                        childEvent[fields.recurrenceRule] = rule;
-                                    }
+                    case 'EditFollowingEvents':
+                        this.processRecurrenceRule(parentEvent, childEvent);
+                        isSpanned = !this.parent.eventBase.isFollowingEvent(parentEvent, childEvent);
+                        childEvent[fields.followingID] = isSpanned ? null : parentEvent[fields.id];
+                        childEvent[fields.recurrenceID] = null;
+                        editParams.addedRecords.push(this.parent.eventBase.processTimezone(childEvent, true));
+                        editParams.changedRecords.push(this.parent.eventBase.processTimezone(parentEvent, true));
+                        if (!this.parent.uiStateValues.isIgnoreOccurrence) {
+                            childEvent[fields.recurrenceException] = null;
+                            if (followData.occurrence.length > 0) {
+                                const rule: string = followData.occurrence.slice(-1)[0][fields.recurrenceRule] as string;
+                                if (rule.indexOf('COUNT') === -1) {
+                                    childEvent[fields.recurrenceRule] = rule;
                                 }
-                                if (followData.follow.length > 0) {
-                                    childEvent[fields.recurrenceRule] =
-                                        (<{ [key: string]: Object }>followData.follow.slice(-1)[0])[fields.recurrenceRule];
-                                    editParms.deletedRecords = editParms.deletedRecords.concat(followData.follow);
-                                }
-                                if (isSplitted) {
-                                    followData.occurrence = followData.occurrence.filter((eventObj: { [key: string]: Object }) =>
-                                        eventObj[fields.recurrenceID] === childEvent[fields.id]);
-                                }
-                                editParms.deletedRecords = editParms.deletedRecords.concat(followData.occurrence);
                             }
-                            break;
-                        case 'DeleteFollowingEvents':
-                            this.processRecurrenceRule(parentEvent, childEvent[fields.startTime] as Date);
-                            editParms.changedRecords.push(this.parent.eventBase.processTimezone(parentEvent, true));
-                            editParms.deletedRecords = editParms.deletedRecords.concat(followData.occurrence).concat(followData.follow);
-                            break;
+                            if (followData.follow.length > 0) {
+                                childEvent[fields.recurrenceRule] = followData.follow.slice(-1)[0][fields.recurrenceRule];
+                                editParams.deletedRecords = editParams.deletedRecords.concat(followData.follow);
+                            }
+                            if (isSpanned) {
+                                followData.occurrence = followData.occurrence.filter((eventObj: Record<string, any>) =>
+                                    eventObj[fields.recurrenceID] === childEvent[fields.id]);
+                            }
+                            editParams.deletedRecords = editParams.deletedRecords.concat(followData.occurrence);
+                        }
+                        break;
+                    case 'DeleteFollowingEvents':
+                        this.processRecurrenceRule(parentEvent, childEvent[fields.startTime] as Date);
+                        editParams.changedRecords.push(this.parent.eventBase.processTimezone(parentEvent, true));
+                        editParams.deletedRecords = editParams.deletedRecords.concat(followData.occurrence).concat(followData.follow);
+                        break;
                     }
                 }
-                // tslint:disable-next-line:max-line-length
-                let promise: Promise<Object> = this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery()) as Promise<Object>;
+                const promise: Promise<any> = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
                 this.parent.eventBase.selectWorkCellByTime(followArgs.changedRecords);
-                let crudArgs: CrudArgs = {
+                const crudArgs: CrudArgs = {
                     requestType: action === 'EditFollowingEvents' ? 'eventChanged' : 'eventRemoved',
-                    cancel: false, data: followArgs.changedRecords, promise: promise, editParms: editParms
+                    cancel: false, data: followArgs.changedRecords, promise: promise, editParams: editParams
                 };
                 this.refreshData(crudArgs);
             }
         });
     }
 
-    private processEntireSeries(eventData: { [key: string]: Object } | { [key: string]: Object }[], action: CurrentAction): void {
-        let seriesData: { [key: string]: Object } | { [key: string]: Object }[] = [];
+    private processEntireSeries(eventData: Record<string, any> | Record<string, any>[], action: CurrentAction): void {
+        let seriesData: Record<string, any> | Record<string, any>[] = [];
         let isDeletedRecords: boolean = false;
         if (eventData instanceof Array) {
-            for (let event of eventData) {
+            for (const event of eventData) {
                 seriesData.push(this.getParentEvent(event, true));
             }
         } else {
             seriesData = this.getParentEvent(eventData, true);
         }
-        let updateSeriesEvents: Object[] = (eventData instanceof Array) ? eventData : [eventData];
-        let args: ActionEventArgs = {
+        const updateSeriesEvents: Record<string, any>[] = (eventData instanceof Array) ? eventData : [eventData];
+        const args: ActionEventArgs = {
             requestType: action === 'EditSeries' ? 'eventChange' : 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: updateSeriesEvents, deletedRecords: []
         };
         args.data = seriesData;
         this.parent.trigger(events.actionBegin, args, (seriesArgs: ActionEventArgs) => {
             if (!seriesArgs.cancel) {
-                let fields: EventFieldsMapping = this.parent.eventFields;
-                let editParms: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
-                let seriesEvents: { [key: string]: Object }[] = (seriesData instanceof Array ? seriesData : [seriesData]) as
-                    { [key: string]: Object }[];
+                const fields: EventFieldsMapping = this.parent.eventFields;
+                const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
+                const seriesEvents: Record<string, any>[] = seriesData instanceof Array ? seriesData : [seriesData];
                 for (let a: number = 0, count: number = seriesArgs.changedRecords.length; a < count; a++) {
-                    let childEvent: { [key: string]: Object } = seriesArgs.changedRecords[a] as { [key: string]: Object };
-                    let parentEvent: { [key: string]: Object } = seriesEvents[a] as { [key: string]: Object };
-                    let eventCollections: { [key: string]: Object[]; } = this.parent.eventBase.getEventCollections(parentEvent);
-                    let deletedEvents: Object[] = eventCollections.follow.concat(eventCollections.occurrence);
+                    const childEvent: Record<string, any> = seriesArgs.changedRecords[a];
+                    const parentEvent: Record<string, any> = seriesEvents[a];
+                    const eventCollections: { [key: string]: Record<string, any>[] } = this.parent.eventBase.getEventCollections(parentEvent);
+                    const deletedEvents: Record<string, any>[] = eventCollections.follow.concat(eventCollections.occurrence);
                     switch (action) {
-                        case 'EditSeries':
-                            if ((childEvent[fields.startTime] > parentEvent[fields.startTime]) && childEvent[fields.recurrenceRule]) {
-                                this.processRecurrenceRule(parentEvent, childEvent);
+                    case 'EditSeries':
+                        if ((childEvent[fields.startTime] > parentEvent[fields.startTime]) && childEvent[fields.recurrenceRule]) {
+                            this.processRecurrenceRule(parentEvent, childEvent);
+                        }
+                        childEvent[fields.id] = parentEvent[fields.id];
+                        childEvent[fields.recurrenceID] = null;
+                        childEvent[fields.followingID] = null;
+                        if (this.parent.uiStateValues.isIgnoreOccurrence && childEvent[fields.recurrenceException]) {
+                            const originalParent: Record<string, any>[] = this.parent.eventsData.filter((eventObj: Record<string, any>) =>
+                                eventObj[fields.id] === childEvent[fields.id]) as Record<string, any>[];
+                            if (originalParent.length > 0) {
+                                childEvent[fields.recurrenceRule] = originalParent[0][fields.recurrenceRule];
                             }
-                            childEvent[fields.id] = parentEvent[fields.id];
-                            childEvent[fields.recurrenceID] = null;
-                            childEvent[fields.followingID] = null;
-                            if (this.parent.uiStateValues.isIgnoreOccurrence && childEvent[fields.recurrenceException]) {
-                                let originalParent: { [key: string]: Object }[] =
-                                    this.parent.eventsData.filter((eventObj: { [key: string]: Object }) =>
-                                        eventObj[fields.id] === childEvent[fields.id]) as { [key: string]: Object }[];
-                                if (originalParent.length > 0) {
-                                    childEvent[fields.recurrenceRule] = originalParent[0][fields.recurrenceRule];
-                                }
-                            } else {
-                                childEvent[fields.recurrenceException] = null;
-                                editParms.deletedRecords = editParms.deletedRecords.concat(deletedEvents);
-                            }
-                            editParms.changedRecords.push(this.parent.eventBase.processTimezone(childEvent, true));
-                            this.parent.uiStateValues.isIgnoreOccurrence = false;
-                            break;
-                        case 'DeleteSeries':
-                            editParms.deletedRecords = editParms.deletedRecords.concat(deletedEvents.concat(parentEvent));
-                            isDeletedRecords = true;
-                            break;
+                        } else {
+                            childEvent[fields.recurrenceException] = null;
+                            editParams.deletedRecords = editParams.deletedRecords.concat(deletedEvents);
+                        }
+                        editParams.changedRecords.push(this.parent.eventBase.processTimezone(childEvent, true));
+                        this.parent.uiStateValues.isIgnoreOccurrence = false;
+                        break;
+                    case 'DeleteSeries':
+                        editParams.deletedRecords = editParams.deletedRecords.concat(deletedEvents.concat(parentEvent));
+                        isDeletedRecords = true;
+                        break;
                     }
                 }
-                // tslint:disable-next-line:max-line-length
-                let promise: Promise<Object> = this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery()) as Promise<Object>;
+                const promise: Promise<any> = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
                 this.parent.eventBase.selectWorkCellByTime(seriesArgs.changedRecords);
-                let crudArgs: CrudArgs = {
+                const crudArgs: CrudArgs = {
                     requestType: action === 'EditSeries' ? 'eventChanged' : 'eventRemoved',
                     cancel: false, data: isDeletedRecords ? seriesArgs.deletedRecords : seriesArgs.changedRecords,
-                    promise: promise, editParms: editParms
+                    promise: promise, editParams: editParams
                 };
                 this.refreshData(crudArgs);
             }
         });
     }
 
-    private processEventDelete(eventData: { [key: string]: Object }[]): void {
-        let deleteData: { [key: string]: Object }[] = [];
-        for (let eventObj of eventData) {
+    private processDelete(eventData: Record<string, any>[]): void {
+        const deleteData: Record<string, any>[] = [];
+        for (const eventObj of eventData) {
             if (eventObj[this.parent.eventFields.recurrenceRule]) {
                 deleteData.push({ occurrence: eventObj, parent: this.getParentEvent(eventObj) });
             } else {
                 deleteData.push(eventObj);
             }
         }
-        let args: ActionEventArgs = {
+        const args: ActionEventArgs = {
             requestType: 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: [], deletedRecords: eventData
         };
         args.data = deleteData;
         this.parent.trigger(events.actionBegin, args, (deleteArgs: ActionEventArgs) => {
             if (!deleteArgs.cancel) {
-                let fields: EventFieldsMapping = this.parent.eventFields;
-                let editParms: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
+                const fields: EventFieldsMapping = this.parent.eventFields;
+                const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                 for (let a: number = 0, count: number = deleteArgs.deletedRecords.length; a < count; a++) {
-                    let isDelete: boolean = isNullOrUndefined(
-                        (deleteArgs.deletedRecords as { [key: string]: Object }[])[a][this.parent.eventFields.recurrenceRule]);
+                    let isDelete: boolean = isNullOrUndefined(deleteArgs.deletedRecords[a][this.parent.eventFields.recurrenceRule]);
                     if (!isDelete) {
-                        let parentEvent: { [key: string]: Object } = deleteData[a].parent as { [key: string]: Object };
-                        let isEdited: { [key: string]: Object }[] = editParms.changedRecords.filter((obj: { [key: string]: Object }) =>
-                            obj[fields.id] === parentEvent[fields.id]) as { [key: string]: Object }[];
-                        let editedDate: Date = (deleteArgs.deletedRecords as { [key: string]: Object }[])[a][fields.startTime] as Date;
+                        const parentEvent: Record<string, any> = deleteData[a].parent as Record<string, any>;
+                        const isEdited: Record<string, any>[] = editParams.changedRecords.filter((obj: Record<string, any>) =>
+                            obj[fields.id] === parentEvent[fields.id]) as Record<string, any>[];
+                        const editedDate: Date = deleteArgs.deletedRecords[a][fields.startTime] as Date;
                         if (isEdited.length > 0) {
-                            let editedData: { [key: string]: Object } = isEdited[0];
+                            const editedData: Record<string, any> = isEdited[0];
                             editedData[fields.recurrenceException] =
                                 this.excludeDateCheck(editedDate, <string>editedData[fields.recurrenceException]);
                         } else {
@@ -484,26 +472,62 @@ export class Crud {
                                 this.excludeDateCheck(editedDate, <string>parentEvent[fields.recurrenceException]);
                         }
                         if (isEdited.length === 0) {
-                            editParms.changedRecords.push(this.parent.eventBase.processTimezone(parentEvent, true));
+                            editParams.changedRecords.push(this.parent.eventBase.processTimezone(parentEvent, true));
                         }
-                        isDelete = ((deleteArgs.deletedRecords as { [key: string]: Object }[])[a][fields.id] !== parentEvent[fields.id]);
+                        isDelete = deleteArgs.deletedRecords[a][fields.id] !== parentEvent[fields.id];
                     }
                     if (isDelete) {
-                        editParms.deletedRecords.push((deleteArgs.deletedRecords as { [key: string]: Object }[])[a]);
+                        editParams.deletedRecords.push(deleteArgs.deletedRecords[a]);
                     }
                 }
-                // tslint:disable-next-line:max-line-length
-                let promise: Promise<Object> = this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery()) as Promise<Object>;
-                let crudArgs: CrudArgs = {
-                    requestType: 'eventRemoved', cancel: false, data: deleteArgs.deletedRecords, promise: promise, editParms: editParms
+                const promise: Promise<any> = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
+                const crudArgs: CrudArgs = {
+                    requestType: 'eventRemoved', cancel: false, data: deleteArgs.deletedRecords, promise: promise, editParams: editParams
                 };
                 this.refreshData(crudArgs);
             }
         });
     }
 
-    private getParentEvent(event: { [key: string]: Object }, isParent: boolean = false): { [key: string]: Object } {
-        let parentEvent: { [key: string]: Object } = this.parent.eventBase.getParentEvent(event, isParent) || event;
+    private processSave(data: Record<string, any> | Record<string, any>[]): void {
+        const eventData: Record<string, any>[] = (data instanceof Array) ? data : [data];
+        const editData: Record<string, any>[] = [];
+        for (const eventObj of eventData) {
+            if (eventObj[this.parent.eventFields.recurrenceRule]) {
+                editData.push({ occurrence: eventObj, parent: this.getParentEvent(eventObj) });
+            } else {
+                editData.push(eventObj);
+            }
+        }
+        const args: ActionEventArgs = { requestType: 'eventChange', cancel: false, addedRecords: [], changedRecords: eventData, deletedRecords: [] };
+        args.data = editData;
+        this.parent.trigger(events.actionBegin, args, (editArgs: ActionEventArgs) => {
+            if (!editArgs.cancel) {
+                const fields: EventFieldsMapping = this.parent.eventFields;
+                const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
+                for (const record of editArgs.changedRecords) {
+                    if (!isNullOrUndefined(record[fields.recurrenceRule]) && isNullOrUndefined(record[fields.recurrenceException])) {
+                        let exceptionString: string = getRecurrenceStringFromDate(record[fields.startTime]);
+                        let parentEle: Record<string, any> = this.getParentEvent(record);
+                        parentEle[fields.recurrenceException] = isNullOrUndefined(parentEle[fields.recurrenceException]) ?
+                            exceptionString : parentEle[fields.recurrenceException].concat("," + exceptionString);
+                        record[fields.id] = this.parent.getEventMaxID();
+                        record[fields.recurrenceException] = exceptionString;
+                        editParams.addedRecords.push(this.parent.eventBase.processTimezone(record, true));
+                        editParams.changedRecords.push(this.parent.eventBase.processTimezone(parentEle, true));
+                    } else {
+                        editParams.changedRecords.push(this.parent.eventBase.processTimezone(record, true));
+                    }
+                }
+                const promise: Promise<any> = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
+                const crudArgs: CrudArgs = { requestType: 'eventChanged', cancel: false, data: editArgs.changedRecords, promise: promise, editParams: editParams };
+                this.refreshData(crudArgs);
+            }
+        });
+    }
+
+    private getParentEvent(event: Record<string, any>, isParent: boolean = false): Record<string, any> {
+        const parentEvent: Record<string, any> = this.parent.eventBase.getParentEvent(event, isParent) || event;
         if (parentEvent[this.parent.eventFields.startTimezone] || parentEvent[this.parent.eventFields.endTimezone]) {
             this.parent.eventBase.timezoneConvert(parentEvent);
         }
@@ -511,7 +535,7 @@ export class Crud {
     }
 
     private excludeDateCheck(eventStartTime: Date, exceptionDateList: string): string {
-        let exDate: string = getRecurrenceStringFromDate(eventStartTime);
+        const exDate: string = getRecurrenceStringFromDate(eventStartTime);
         if (!isNullOrUndefined(exceptionDateList)) {
             if (exceptionDateList.indexOf(exDate) === -1) {
                 exceptionDateList = !(isNullOrUndefined(exceptionDateList)) ? exceptionDateList + ',' + exDate : exDate;
@@ -522,35 +546,32 @@ export class Crud {
         return exceptionDateList;
     }
 
-    private processRecurrenceRule(parentEvent: { [key: string]: Object }, followEvent?: { [key: string]: Object } | Date): void {
-        let fields: EventFieldsMapping = this.parent.eventFields;
-        let recurrenceRule: string = parentEvent[fields.recurrenceRule] as string;
+    private processRecurrenceRule(parentEvent: Record<string, any>, followEvent?: Record<string, any> | Date): void {
+        const fields: EventFieldsMapping = this.parent.eventFields;
+        const recurrenceRule: string = parentEvent[fields.recurrenceRule] as string;
         let endDate: Date;
         if (followEvent instanceof Date) {
             endDate = new Date(+followEvent);
         } else {
             endDate = new Date(+followEvent[fields.startTime]);
-            let newRecurrenceRule: string = followEvent[fields.recurrenceRule] as string;
-            let startDate: Date = parentEvent[fields.startTime] as Date;
-            let ruleException: string =
-                (this.parent.currentAction === 'DeleteFollowingEvents') ? followEvent[fields.recurrenceException] as string : null;
-            let dateCollection: number[] =
-                generate(startDate, newRecurrenceRule, ruleException, this.parent.activeViewOptions.firstDayOfWeek);
-            let untilDate: Date = new Date(dateCollection.slice(-1)[0]);
+            const newRecurrenceRule: string = followEvent[fields.recurrenceRule] as string;
+            const startDate: Date = parentEvent[fields.startTime] as Date;
+            const ruleException: string = (this.parent.currentAction === 'DeleteFollowingEvents') ? followEvent[fields.recurrenceException] as string : null;
+            const dateCollection: number[] = generate(startDate, newRecurrenceRule, ruleException, this.parent.activeViewOptions.firstDayOfWeek);
+            const untilDate: Date = new Date(dateCollection.slice(-1)[0]);
             untilDate.setHours(endDate.getHours(), endDate.getMinutes(), endDate.getSeconds());
             endDate.setHours(startDate.getHours(), startDate.getMinutes(), startDate.getSeconds());
             followEvent[fields.recurrenceRule] = this.getUpdatedRecurrenceRule(newRecurrenceRule, new Date(+untilDate), false);
         }
-        parentEvent[fields.recurrenceRule] =
-            this.getUpdatedRecurrenceRule(recurrenceRule, util.addDays(new Date(endDate.getTime()), -1), true);
+        parentEvent[fields.recurrenceRule] = this.getUpdatedRecurrenceRule(recurrenceRule, util.addDays(new Date(endDate.getTime()), -1), true);
     }
 
     private getUpdatedRecurrenceRule(recurrenceRule: string, untilDate: Date, isParent: boolean): string {
-        let splitRule: string[] = recurrenceRule.split(';');
+        const splitRule: string[] = recurrenceRule.split(';');
         let updatedRule: string = '';
         for (let rule of splitRule) {
             if (rule !== '') {
-                let ruleKey: string = rule.split('=')[0];
+                const ruleKey: string = rule.split('=')[0];
                 let ruleValue: string = rule.split('=')[1];
                 if (ruleKey === 'COUNT' || ruleKey === 'UNTIL') {
                     ruleValue = getRecurrenceStringFromDate(untilDate);
@@ -565,10 +586,10 @@ export class Crud {
         return updatedRule;
     }
 
-    private isBlockEvent(eventData: { [key: string]: Object } | { [key: string]: Object }[]): boolean {
-        let eventCollection: { [key: string]: Object }[] = (eventData instanceof Array) ? eventData : [eventData];
+    private isBlockEvent(eventData: Record<string, any> | Record<string, any>[]): boolean {
+        const eventCollection: Record<string, any>[] = (eventData instanceof Array) ? eventData : [eventData];
         let value: boolean = false;
-        for (let event of eventCollection) {
+        for (const event of eventCollection) {
             value = event[this.parent.eventFields.isBlock] as boolean || false;
         }
         return value;

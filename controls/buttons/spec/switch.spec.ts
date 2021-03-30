@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Switch } from './../src/switch/switch';
 import { createElement, attributes } from '@syncfusion/ej2-base';
 import { profile , inMB, getMemoryProfile } from './common.spec';
 
-/* tslint:disable */
+/* eslint-disable */
 function copyObject(source: any, destination: any): Object {
     for (let prop in source) {
         destination[prop] = source[prop];
@@ -24,13 +26,14 @@ export function getEventObject(eventType: string, eventName: string): Object {
     returnObject.preventDefault = () => { return true; };
     return returnObject;
 }
-/* tslint:enable */
+/* eslint-enable */
 
 /**
  * Switch Spec document.
  */
 describe('Switch', () => {
     beforeAll(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const isDef: any = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log('Unsupported environment, window.performance.memory is unavailable');
@@ -39,12 +42,13 @@ describe('Switch', () => {
         }
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let specSwitch: any;
-    let element: HTMLFormElement = createElement('input', {id: 'specSwitch'}) as HTMLFormElement;
+    const element: HTMLFormElement = createElement('input', {id: 'specSwitch'}) as HTMLFormElement;
     element.setAttribute('type', 'checkbox');
     document.body.appendChild(element);
     describe('DOM', () => {
-        let i: number = 0;
+        let i = 0;
         function changeFn(): void {
             i = 1;
         }
@@ -123,30 +127,30 @@ describe('Switch', () => {
         });
         it('Wrapper touch', () => {
             specSwitch = new Switch({}, '#specSwitch');
-            let start: MouseEvent = document.createEvent('MouseEvent');
+            const start: MouseEvent = document.createEvent('MouseEvent');
             start.initEvent('touchstart', true, true);
             element.parentElement.dispatchEvent(start);
-            let move: MouseEvent = document.createEvent('MouseEvent');
+            const move: MouseEvent = document.createEvent('MouseEvent');
             move.initEvent('touchmove', true, true);
             element.parentElement.dispatchEvent(move);
-            let end: MouseEvent = document.createEvent('MouseEvent');
+            const end: MouseEvent = document.createEvent('MouseEvent');
             end.initEvent('touchend', true, true);
             element.parentElement.dispatchEvent(end);
             expect(element.parentElement.children[1].classList.contains('e-switch-active')).toEqual(true);
-            let up: MouseEvent = document.createEvent('MouseEvent');
+            const up: MouseEvent = document.createEvent('MouseEvent');
             up.initEvent('mouseup', true, true);
             element.parentElement.parentElement.dispatchEvent(up);
         });
         it('Wrapper Mouse', () => {
             specSwitch = new Switch({}, '#specSwitch');
-            let event: MouseEvent = document.createEvent('MouseEvent');
+            const event: MouseEvent = document.createEvent('MouseEvent');
             event.initEvent('mousedown', true, true);
             element.parentElement.dispatchEvent(event);
             expect(specSwitch.isFocused).toEqual(false);
-            let up: MouseEvent = document.createEvent('MouseEvent');
+            const up: MouseEvent = document.createEvent('MouseEvent');
             up.initEvent('mouseup', true, true);
             element.parentElement.dispatchEvent(up);
-            let events: MouseEvent = document.createEvent('MouseEvent');
+            const events: MouseEvent = document.createEvent('MouseEvent');
             events.initEvent('mousedown', true, true);
             document.dispatchEvent(events);
         });
@@ -164,9 +168,8 @@ describe('Switch', () => {
 
 
     describe('property', () => {
-        let i: number = 0;
         function changeFn(): void {
-            i = 1;
+            console.log("changed");
         }
         afterEach(() => {
             specSwitch.destroy();
@@ -421,10 +424,12 @@ describe('Switch', () => {
 
     it('memory leak', () => {
         profile.sample();
-        let average: any = inMB(profile.averageChange);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const average: any = inMB(profile.averageChange);
         // check average change in memory samples to not be over 10MB
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const memory: any = inMB(getMemoryProfile());
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });

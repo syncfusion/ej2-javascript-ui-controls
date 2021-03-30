@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Component, ModuleDeclaration, NotifyPropertyChanges, Property, Complex, Collection, detach } from '@syncfusion/ej2-base';
 import { addClass, classList, removeClass, compile, formatUnit, L10n, Browser, Event, EmitType } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
@@ -42,7 +43,7 @@ import * as cls from './css-constant';
 
 @NotifyPropertyChanges
 export class Kanban extends Component<HTMLElement> {
-    public isAdaptive: Boolean;
+    public isAdaptive: boolean;
     public crudModule: Crud;
     public dataModule: Data;
     public layoutModule: LayoutRender;
@@ -52,18 +53,21 @@ export class Kanban extends Component<HTMLElement> {
     public keyboardModule: Keyboard;
     public tooltipModule: KanbanTooltip;
     public touchModule: KanbanTouch;
-    public kanbanData: Object[];
+    public kanbanData: Record<string, any>[];
     public activeCardData: CardClickEventArgs;
     public localeObj: L10n;
     public swimlaneToggleArray: string[];
     public scrollPosition: ScrollPosition;
     public isInitialRender: boolean;
+    public externalDropObj: Kanban;
+    public isExternalKanbanDrop: boolean;
 
     // Kanban Options
 
     /**
      * It is used to customize the Kanban, which accepts custom CSS class names that defines specific user-defined
-     *  styles and themes to be applied on the Kanban element.
+     * styles and themes to be applied on the Kanban element.
+     *
      * @default null
      */
     @Property()
@@ -73,6 +77,7 @@ export class Kanban extends Component<HTMLElement> {
      * Sets the `width` of the Kanban component, accepting both string and number values.
      * The string value can be either pixel or percentage format.
      * When set to `auto`, the Kanban width gets auto-adjusted and display its content related to the viewable screen size.
+     *
      * @default 'auto'
      */
     @Property('auto')
@@ -83,6 +88,7 @@ export class Kanban extends Component<HTMLElement> {
      * The string type includes either pixel or percentage values.
      * When `height` is set with specific pixel value, then the Kanban will be rendered to that specified space.
      * In case, if `auto` value is set, then the height of the Kanban gets auto-adjusted within the given container.
+     *
      * @default 'auto'
      */
     @Property('auto')
@@ -95,15 +101,17 @@ export class Kanban extends Component<HTMLElement> {
      * in case of processing remote data and can be assigned to the `dataSource` property.
      * With the remote data assigned to dataSource, check the available
      *  [adaptors](http://ej2.syncfusion.com/documentation/data/adaptors.html) to customize the data processing.
+     *
      * @default []
      * @isGenericType true
      */
     @Property([])
-    public dataSource: Object[] | DataManager;
+    public dataSource: Record<string, any>[] | DataManager;
 
     /**
      * Defines the external [`query`](http://ej2.syncfusion.com/documentation/data/api-query.html)
      * that will be executed along with the data processing.
+     *
      * @default null
      */
     @Property()
@@ -111,6 +119,7 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Defines the key field of Kanban board. The Kanban renders its layout based on this key field.
+     *
      * @default null
      */
     @Property()
@@ -120,14 +129,24 @@ export class Kanban extends Component<HTMLElement> {
      * Defines the constraint type used to apply validation based on column or swimlane. The possible values are:
      * * Column
      * * Swimlane
+     *
      * @default column
      */
     @Property('Column')
     public constraintType: ConstraintType;
 
     /**
+     * Defines the ID of drop component on which drop should occur.
+     *
+     * @default []
+     */
+    @Property([])
+    public externalDropId: string[];
+
+    /**
      * Defines the Kanban board columns and their properties such as header text, key field, template, allow toggle,
      * expand or collapse state, min or max count, and show or hide item count.
+     *
      * @default []
      */
     @Collection<ColumnsModel>([], Columns)
@@ -135,6 +154,7 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * When this property is set to true, it allows the keyboard interaction in Kanban.
+     *
      * @default true
      */
     @Property(true)
@@ -142,22 +162,25 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Defines the stacked header for Kanban columns with text and key fields.
+     *
      * @default []
      */
     @Collection<StackedHeadersModel>([], StackedHeaders)
     public stackedHeaders: StackedHeadersModel[];
 
     /**
-     * Defines the swimlane settings to Kanban board such as key field, text field, template, allow drag-and-drop, 
+     * Defines the swimlane settings to Kanban board such as key field, text field, template, allow drag-and-drop,
      * show or hide empty row, show or hide items count, and more.
+     *
      * @default {}
      */
     @Complex<SwimlaneSettingsModel>({}, SwimlaneSettings)
     public swimlaneSettings: SwimlaneSettingsModel;
 
     /**
-     * Defines the Kanban board related settings such as header field, content field, template, 
+     * Defines the Kanban board related settings such as header field, content field, template,
      * show or hide header, and single or multiple selection.
+     *
      * @default {}
      */
     @Complex<CardSettingsModel>({}, CardSettings)
@@ -165,6 +188,7 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Defines the sort settings such as field and direction.
+     *
      * @default {}
      */
     @Complex<SortSettingsModel>({}, SortSettings)
@@ -172,6 +196,7 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Defines the dialog settings such as template and fields.
+     *
      * @default {}
      */
     @Complex<DialogSettingsModel>({}, DialogSettings)
@@ -179,6 +204,7 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Enables or disables the drag and drop actions in Kanban.
+     *
      * @default true
      */
     @Property(true)
@@ -186,6 +212,7 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Enables or disables the tooltip in Kanban board. The property relates to the tooltipTemplate property.
+     *
      * @default false
      */
     @Property(false)
@@ -193,20 +220,24 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Enable or disable the columns when empty dataSource.
+     *
      * @default false
      */
     @Property(false)
     public showEmptyColumn: boolean;
 
     /**
-     * Enables or disables the persisting component's state between page reloads. 
+     * Enables or disables the persisting component's state between page reloads.
      * If enabled, columns, dataSource properties will be persisted in kanban.
+     *
+     * @default false
      */
     @Property(false)
     public enablePersistence: boolean;
 
     /**
      * Defines the template content to card’s tooltip. The property works by enabling the ‘enableTooltip’ property.
+     *
      * @default null
      */
     @Property()
@@ -214,98 +245,115 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Triggers on beginning of every Kanban action.
-     * @event
+     *
+     * @event 'actionBegin'
      */
     @Event()
     public actionBegin: EmitType<ActionEventArgs>;
     /**
      * Triggers on successful completion of the Kanban actions.
-     * @event
+     *
+     * @event 'actionComplete'
      */
     @Event()
     public actionComplete: EmitType<ActionEventArgs>;
     /**
      * Triggers when a Kanban action gets failed or interrupted and an error information will be returned.
-     * @event
+     *
+     * @event 'actionFailure'
      */
     @Event()
     public actionFailure: EmitType<ActionEventArgs>;
     /**
      * Triggers after the kanban component is created.
-     * @event
+     *
+     * @event 'created'
      */
     @Event()
-    public created: EmitType<Object>;
+    public created: EmitType<Record<string, any>>;
     /**
      * Triggers before the data binds to the Kanban.
-     * @event
+     *
+     * @event 'dataBinding'
      */
     @Event()
     public dataBinding: EmitType<ReturnType>;
     /**
      * Triggers once the event data is bound to the Kanban.
-     * @event
+     *
+     * @event 'dataBound'
      */
     @Event()
     public dataBound: EmitType<ReturnType>;
     /**
      * Triggers on single-clicking the Kanban cards.
-     * @event
+     *
+     * @event 'cardClick'
      */
     @Event()
     public cardClick: EmitType<CardClickEventArgs>;
     /**
      * Triggers on double-clicking the Kanban cards.
-     * @event
+     *
+     * @event 'cardDoubleClick'
      */
     @Event()
     public cardDoubleClick: EmitType<CardClickEventArgs>;
     /**
      * Triggers before each column of the Kanban rendering on the page.
-     * @event
+     *
+     * @event 'queryCellInfo'
      */
     @Event()
     public queryCellInfo: EmitType<QueryCellInfoEventArgs>;
     /**
      * Triggers before each card of the Kanban rendering on the page.
-     * @event
+     *
+     * @event 'cardRendered'
      */
     @Event()
     public cardRendered: EmitType<CardRenderedEventArgs>;
     /**
      * Triggers when the card drag actions starts.
-     * @event
+     *
+     * @event 'dragStart'
      */
     @Event()
     public dragStart: EmitType<DragEventArgs>;
     /**
      * Triggers when the card is dragging to other stage or other swimlane.
-     * @event
+     *
+     * @event 'drag'
      */
     @Event()
     public drag: EmitType<DragEventArgs>;
     /**
      * Triggers when the card drag actions stops.
-     * @event
+     *
+     * @event 'dragStop'
      */
     @Event()
     public dragStop: EmitType<DragEventArgs>;
     /**
      * Triggers before the dialog opens.
-     * @event
+     *
+     * @event 'dialogOpen'
      */
     @Event()
     public dialogOpen: EmitType<DialogEventArgs>;
     /**
      * Triggers before the dialog closes.
-     * @event
+     *
+     * @event 'dialogClose'
      */
     @Event()
     public dialogClose: EmitType<DialogEventArgs>;
 
     /**
      * Constructor for creating the Kanban widget
-     * @hidden
+     *
+     * @param {KanbanModel} options Accepts the kanban properties to render the component.
+     * @param {string | HTMLElement} element Accepts the DOM element reference as either selector or element to render the component.
      */
     constructor(options?: KanbanModel, element?: string | HTMLElement) {
         super(options, element);
@@ -313,16 +361,18 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Initializes the values of private members.
+     *
+     * @returns {void}
      * @private
      */
     protected preRender(): void {
-        this.isAdaptive = Browser.isDevice;
+        this.isAdaptive = Browser.isDevice as boolean;
         this.kanbanData = [];
         if (!this.enablePersistence || !this.swimlaneToggleArray) {
             this.swimlaneToggleArray = [];
         }
         this.activeCardData = { data: null, element: null };
-        let defaultLocale: Object = {
+        const defaultLocale: Record<string, string> = {
             items: 'items',
             min: 'Min',
             max: 'Max',
@@ -346,16 +396,19 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * To provide the array of modules needed for control rendering
-     * @return {ModuleDeclaration[]}
-     * @hidden
+     *
+     * @returns {ModuleDeclaration[]} Returns the declared modules.
+     * @private
      */
     public requiredModules(): ModuleDeclaration[] {
-        let modules: ModuleDeclaration[] = [];
+        const modules: ModuleDeclaration[] = [];
         return modules;
     }
 
     /**
      * Returns the properties to be maintained in the persisted state.
+     *
+     * @returns {string} Returns the presistance state.
      * @private
      */
     protected getPersistData(): string {
@@ -364,6 +417,8 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Core method to return the component name.
+     *
+     * @returns {string} Returns the module name.
      * @private
      */
     public getModuleName(): string {
@@ -372,11 +427,13 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Core method that initializes the control rendering.
+     *
+     * @returns {void}
      * @private
      */
     public render(): void {
-        let addClasses: string[] = [cls.ROOT_CLASS];
-        let removeClasses: string[] = [];
+        const addClasses: string[] = [cls.ROOT_CLASS];
+        const removeClasses: string[] = [];
         if (this.enableRtl) {
             addClasses.push(cls.RTL_CLASS);
         } else {
@@ -401,120 +458,127 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Called internally, if any of the property value changed.
+     *
+     * @param {KanbanModel} newProp Gets the updated values
+     * @param {KanbanModel} oldProp Gets the previous values
+     * @returns {void}
      * @private
      */
     public onPropertyChanged(newProp: KanbanModel, oldProp: KanbanModel): void {
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'cssClass':
-                    if (oldProp.cssClass) { removeClass([this.element], oldProp.cssClass); }
-                    if (newProp.cssClass) { addClass([this.element], newProp.cssClass); }
-                    break;
-                case 'enableRtl':
-                case 'locale':
-                    this.refresh();
-                    break;
-                case 'width':
-                    this.element.style.width = formatUnit(newProp.width);
-                    (this.element.querySelector('.' + cls.HEADER_CLASS).firstElementChild as HTMLElement).style.width = 'auto';
-                    this.notify(events.contentReady, {});
-                    break;
-                case 'height':
-                    this.element.style.height = formatUnit(newProp.height);
-                    (this.element.querySelector('.' + cls.CONTENT_CLASS) as HTMLElement).style.height = 'auto';
-                    this.notify(events.contentReady, {});
-                    break;
-                case 'dataSource':
-                case 'query':
-                    this.dataModule = new Data(this);
-                    break;
-                case 'columns':
-                case 'constraintType':
-                    this.notify(events.dataReady, { processedData: this.kanbanData });
-                    break;
-                case 'swimlaneSettings':
-                    this.onSwimlaneSettingsPropertyChanged(newProp.swimlaneSettings, oldProp.swimlaneSettings);
-                    break;
-                case 'cardSettings':
-                    this.onCardSettingsPropertyChanged(newProp.cardSettings, oldProp.cardSettings);
-                    break;
-                case 'allowDragAndDrop':
-                    if (newProp.allowDragAndDrop) {
-                        this.layoutModule.wireDragEvent();
-                    } else {
-                        this.layoutModule.unWireDragEvent();
-                    }
-                    break;
-                case 'enableTooltip':
-                    if (this.tooltipModule) {
-                        this.tooltipModule.destroy();
-                        this.tooltipModule = null;
-                    }
-                    if (newProp.enableTooltip) {
-                        this.tooltipModule = new KanbanTooltip(this);
-                        this.layoutModule.refreshCards();
-                    }
-                    break;
-                case 'dialogSettings':
-                    if (newProp.dialogSettings) {
-                        this.dialogModule = new KanbanDialog(this);
-                    }
-                    break;
-                case 'allowKeyboard':
-                    if (this.keyboardModule) {
-                        this.keyboardModule.destroy();
-                        this.keyboardModule = null;
-                    }
-                    if (newProp.allowKeyboard) {
-                        this.keyboardModule = new Keyboard(this);
-                    }
-                    break;
-                case 'stackedHeaders':
-                    this.layoutModule.refreshHeaders();
-                    break;
-                case 'sortSettings':
-                    this.notify(events.dataReady, { processedData: this.kanbanData });
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-
-    private onSwimlaneSettingsPropertyChanged(newProp: SwimlaneSettingsModel, oldProp: SwimlaneSettingsModel): void {
-        for (let prop of Object.keys(newProp)) {
-            switch (prop) {
-                case 'keyField':
-                case 'textField':
-                case 'showEmptyRow':
-                case 'showItemCount':
-                case 'template':
-                case 'sortDirection':
-                    this.notify(events.dataReady, { processedData: this.kanbanData });
-                    break;
-            }
-        }
-    }
-
-    private onCardSettingsPropertyChanged(newProp: CardSettingsModel, oldProp: CardSettingsModel): void {
-        for (let prop of Object.keys(newProp)) {
-            switch (prop) {
-                case 'showHeader':
-                case 'headerField':
-                case 'contentField':
-                case 'template':
-                case 'tagsField':
-                case 'grabberField':
-                case 'footerCssField':
+            case 'cssClass':
+                if (oldProp.cssClass) { removeClass([this.element], oldProp.cssClass); }
+                if (newProp.cssClass) { addClass([this.element], newProp.cssClass); }
+                break;
+            case 'enableRtl':
+            case 'locale':
+                this.refresh();
+                break;
+            case 'width':
+                this.element.style.width = formatUnit(newProp.width);
+                (this.element.querySelector('.' + cls.HEADER_CLASS).firstElementChild as HTMLElement).style.width = 'auto';
+                this.notify(events.contentReady, {});
+                break;
+            case 'height':
+                this.element.style.height = formatUnit(newProp.height);
+                (this.element.querySelector('.' + cls.CONTENT_CLASS) as HTMLElement).style.height = 'auto';
+                this.notify(events.contentReady, {});
+                break;
+            case 'dataSource':
+            case 'query':
+                this.dataModule = new Data(this);
+                break;
+            case 'columns':
+            case 'constraintType':
+                this.notify(events.dataReady, { processedData: this.kanbanData });
+                break;
+            case 'swimlaneSettings':
+                this.onSwimlaneSettingsPropertyChanged(newProp.swimlaneSettings, oldProp.swimlaneSettings);
+                break;
+            case 'cardSettings':
+                this.onCardSettingsPropertyChanged(newProp.cardSettings, oldProp.cardSettings);
+                break;
+            case 'allowDragAndDrop':
+                if (newProp.allowDragAndDrop) {
+                    this.layoutModule.wireDragEvent();
+                } else {
+                    this.layoutModule.unWireDragEvent();
+                }
+                break;
+            case 'enableTooltip':
+                if (this.tooltipModule) {
+                    this.tooltipModule.destroy();
+                    this.tooltipModule = null;
+                }
+                if (newProp.enableTooltip) {
+                    this.tooltipModule = new KanbanTooltip(this);
                     this.layoutModule.refreshCards();
-                    break;
-                case 'selectionType':
-                    let cards: HTMLElement[] = this.getSelectedCards();
-                    if (cards.length > 0) {
-                        removeClass(cards, cls.CARD_SELECTION_CLASS);
-                        this.layoutModule.disableAttributeSelection(cards);
-                    }
-                    break;
+                }
+                break;
+            case 'dialogSettings':
+                if (newProp.dialogSettings) {
+                    this.dialogModule = new KanbanDialog(this);
+                }
+                break;
+            case 'allowKeyboard':
+                if (this.keyboardModule) {
+                    this.keyboardModule.destroy();
+                    this.keyboardModule = null;
+                }
+                if (newProp.allowKeyboard) {
+                    this.keyboardModule = new Keyboard(this);
+                }
+                break;
+            case 'stackedHeaders':
+                this.layoutModule.refreshHeaders();
+                break;
+            case 'sortSettings':
+                this.notify(events.dataReady, { processedData: this.kanbanData });
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private onSwimlaneSettingsPropertyChanged(newProp: SwimlaneSettingsModel, _oldProp: SwimlaneSettingsModel): void {
+        for (const prop of Object.keys(newProp)) {
+            switch (prop) {
+            case 'keyField':
+            case 'textField':
+            case 'showEmptyRow':
+            case 'showItemCount':
+            case 'template':
+            case 'sortDirection':
+                this.notify(events.dataReady, { processedData: this.kanbanData });
+                break;
+            }
+        }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private onCardSettingsPropertyChanged(newProp: CardSettingsModel, _oldProp: CardSettingsModel): void {
+        let cards: HTMLElement[] = [];
+        for (const prop of Object.keys(newProp)) {
+            switch (prop) {
+            case 'showHeader':
+            case 'headerField':
+            case 'contentField':
+            case 'template':
+            case 'tagsField':
+            case 'grabberField':
+            case 'footerCssField':
+                this.layoutModule.refreshCards();
+                break;
+            case 'selectionType':
+                cards = this.getSelectedCards();
+                if (cards.length > 0) {
+                    removeClass(cards, cls.CARD_SELECTION_CLASS);
+                    this.layoutModule.disableAttributeSelection(cards);
+                }
+                break;
             }
         }
     }
@@ -537,17 +601,13 @@ export class Kanban extends Component<HTMLElement> {
         }
     }
 
-    /** @hidden */
     public renderTemplates(): void {
-        // tslint:disable-next-line:no-any
         if ((this as any).isReact) {
             this.renderReactTemplates();
         }
     }
 
-    /** @hidden */
     public resetTemplates(templates?: string[]): void {
-        // tslint:disable-next-line:no-any
         if ((this as any).isReact) {
             this.clearTemplate(templates);
         }
@@ -573,8 +633,7 @@ export class Kanban extends Component<HTMLElement> {
         this.dragAndDropModule = null;
     }
 
-    /** @private */
-    public templateParser(template: string): Function {
+    public templateParser(template: string): any {
         if (template) {
             try {
                 if (document.querySelectorAll(template).length) {
@@ -589,42 +648,47 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Returns the card details based on card ID from the board.
-     * @method getCardDetails
+     *
+     * @function getCardDetails
      * @param {Element} target Accepts the card element to get the details.
-     * @returns {{[key: string]: Object}}
+     * @returns {Object} Returns the card details based on given target.
      */
-    public getCardDetails(target: Element): { [key: string]: Object } | Object {
-        let isNumeric: boolean = typeof (this.kanbanData[0] as { [key: string]: Object })[this.cardSettings.headerField] === 'number';
-        let targetId: string | number = isNumeric ? parseInt(target.getAttribute('data-id'), 10) : target.getAttribute('data-id');
-        let cardObj: { [key: string]: Object } | Object = this.kanbanData.filter((data: { [key: string]: Object }) =>
-            data[this.cardSettings.headerField] === targetId)[0] as { [key: string]: Object };
+    public getCardDetails(target: Element): Record<string, any> {
+        const isNumeric: boolean = typeof (this.kanbanData[0])[this.cardSettings.headerField] === 'number';
+        const targetId: string | number = isNumeric ? parseInt(target.getAttribute('data-id'), 10) : target.getAttribute('data-id');
+        const cardObj: Record<string, any> = this.kanbanData.filter((data: Record<string, any>) =>
+            data[this.cardSettings.headerField] === targetId)[0] as Record<string, any>;
         return cardObj;
     }
 
     /**
      * Returns the column data based on column key input.
-     * @method getColumnData
+     *
+     * @function getColumnData
      * @param {string} columnKey Accepts the column key to get the objects.
-     * @returns {Object[]}
+     * @param {Object[]} dataSource Accepts the collection of objects to get the results based on given columnKey.
+     * @returns {Object[]} Returns the collection of card objects based on given inputs.
      */
-    public getColumnData(columnKey: string, dataSource?: Object[]): Object[] {
-        return this.layoutModule.getColumnCards(dataSource)[columnKey] || [];
+    public getColumnData(columnKey: string, dataSource?: Record<string, any>[]): Record<string, any>[] {
+        return this.layoutModule.getColumnCards(dataSource)[columnKey] as Record<string, any>[] || [];
     }
 
     /**
      * Returns the swimlane column data based on swimlane keyField input.
-     * @method getSwimlaneData
+     *
+     * @function getSwimlaneData
      * @param {string} keyField Accepts the swimlane keyField to get the objects.
-     * @returns {Object[]}
+     * @returns {Object[]} Returns the collection of card objects based on given inputs.
      */
-    public getSwimlaneData(keyField: string): Object[] {
-        return this.layoutModule.getSwimlaneCards()[keyField] || [];
+    public getSwimlaneData(keyField: string): Record<string, any>[] {
+        return this.layoutModule.getSwimlaneCards()[keyField] as Record<string, any>[] || [];
     }
 
     /**
      * Gets the list of selected cards from the board.
-     * @method getSelectedCards
-     * @returns {HTMLElement[]}
+     *
+     * @function getSelectedCards
+     * @returns {HTMLElement[]} Returns the card elements based on selection.
      */
     public getSelectedCards(): HTMLElement[] {
         return [].slice.call(this.element.querySelectorAll('.' + cls.CARD_CLASS + '.' + cls.CARD_SELECTION_CLASS));
@@ -632,7 +696,8 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Allows you to show the spinner on Kanban at the required scenarios.
-     * @method showSpinner
+     *
+     * @function showSpinner
      * @returns {void}
      */
     public showSpinner(): void {
@@ -641,7 +706,8 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * When the spinner is shown manually using the showSpinner method, it can be hidden using this `hideSpinner` method.
-     * @method hideSpinner
+     *
+     * @function hideSpinner
      * @returns {void}
      */
     public hideSpinner(): void {
@@ -650,19 +716,21 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * To manually open the dialog.
-     * @method openDialog
-     * @param {CurrentAction} action Defines the action for which the dialog needs to be opened such as either for new card creation or
+     *
+     * @function openDialog
+     * @param {CurrentAction} action Accepts the action for which the dialog needs to be opened such as either for new card creation or
      *  editing of existing cards. The applicable action names are `Add` and `Edit`.
      * @param {Object} data It can be card data.
      * @returns {void}
      */
-    public openDialog(action: CurrentAction, data?: Object): void {
-        this.dialogModule.openDialog(action, data as { [key: string]: Object });
+    public openDialog(action: CurrentAction, data?: Record<string, any>): void {
+        this.dialogModule.openDialog(action, data as Record<string, any>);
     }
 
     /**
      * To manually close the dialog.
-     * @method closeDialog
+     *
+     * @function closeDialog
      * @returns {void}
      */
     public closeDialog(): void {
@@ -671,44 +739,46 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Adds the new card to the data source of Kanban and layout.
-     * @method addCard
-     * @param {Object | {[key: string]: Object}} cardData Single card objects to be added into Kanban.
-     * @param {Object[] | {[key: string]: Object}[]} cardData Collection of card objects to be added into Kanban.
+     *
+     * @function addCard
+     * @param {Object | Object[]} cardData Accepts Single card object or Collection of card objects to be added into Kanban.
+     * @param {number} index Accepts the index to insert the card in column.
      * @returns {void}
      */
-    public addCard(cardData: Object | Object[] | { [key: string]: Object } | { [key: string]: Object }[]): void {
-        this.crudModule.addCard(cardData as { [key: string]: Object } | { [key: string]: Object }[]);
+    public addCard(cardData: Record<string, any> | Record<string, any>[], index?: number): void {
+        this.crudModule.addCard(cardData, index);
     }
 
     /**
      * Updates the changes made in the card object by passing it as a parameter to the data source.
-     * @method updateCard
-     * @param {{[key: string]: Object} | Object} cardData Single card object to be updated into Kanban.
-     * @param {{[key: string]: Object}[] | Object[]} cardData Collection of card objects to be updated into Kanban.
+     *
+     * @function updateCard
+     * @param {Object | Object[]} cardData Accepts Single card object or Collection of card objects to be updated into Kanban.
+     * @param {number} index Accepts the index to update the card in column.
      * @returns {void}
      */
-    public updateCard(cardData: Object | Object[] | { [key: string]: Object } | { [key: string]: Object }[], index?: number): void {
-        this.crudModule.updateCard(cardData as { [key: string]: Object } | { [key: string]: Object }[], index);
+    public updateCard(cardData: Record<string, any> | Record<string, any>[], index?: number): void {
+        this.crudModule.updateCard(cardData, index);
     }
 
     /**
      * Deletes the card based on the provided ID or card collection in the argument list.
-     * @method deleteCard
-     * @param {{[key: string]: Object} | Object} id Single card to be removed from the Kanban.
-     * @param {{[key: string]: Object }[] | Object[]} id Collection of cards to be removed from the Kanban.
-     * @param {number} id Accepts the ID of the card in integer type which needs to be removed from the Kanban.
-     * @param {string} id Accepts the ID of the card in string type which needs to be removed from the Kanban.
+     *
+     * @function deleteCard
+     * @param {string | number | Object | Object[]} cardData Accepts the ID of the remove card in string or number type or
+     * Single card object or Collection of card objects to be removed from Kanban
      * @returns {void}
      */
-    public deleteCard(cardData: string | number | Object | Object[] | { [key: string]: Object } | { [key: string]: Object }[]): void {
-        this.crudModule.deleteCard(cardData as string | number | { [key: string]: Object } | { [key: string]: Object }[]);
+    public deleteCard(cardData: string | number | Record<string, any> | Record<string, any>[]): void {
+        this.crudModule.deleteCard(cardData);
     }
 
     /**
      * Add the column to Kanban board dynamically based on the provided column options and index in the argument list.
-     * @method addColumn
-     * @param {ColumnsModel} columnOptions Defines the properties to new column that are going to be added in the board.
-     * @param {number} index Defines the index of column to add the new column.
+     *
+     * @function addColumn
+     * @param {ColumnsModel} columnOptions Accepts the properties to new column that are going to be added in the board.
+     * @param {number} index Accepts the index of column to add the new column.
      * @returns {void}
      */
     public addColumn(columnOptions: ColumnsModel, index: number): void {
@@ -717,8 +787,9 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Deletes the column based on the provided index value.
-     * @method deleteColumn
-     * @param {number} index Defines the index of column to delete the existing column from Kanban board.
+     *
+     * @function deleteColumn
+     * @param {number} index Accepts the index of column to delete the existing column from Kanban board.
      * @returns {void}
      */
     public deleteColumn(index: number): void {
@@ -727,7 +798,8 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Shows the column from hidden based on the provided key in the columns.
-     * @method showColumn
+     *
+     * @function showColumn
      * @param {string} key Accepts the hidden column key name to be shown from the hidden state in board.
      * @returns {void}
      */
@@ -737,7 +809,8 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Hides the column from Kanban board based on the provided key in the columns.
-     * @method hideColumn
+     *
+     * @function hideColumn
      * @param {string} key Accepts the visible column key name to be hidden from the board.
      * @returns {void}
      */
@@ -746,9 +819,24 @@ export class Kanban extends Component<HTMLElement> {
     }
 
     /**
+     * Method to refresh the column header.
+     *
+     * @method refreshHeader
+     * @returns {void}
+     */
+    public refreshHeader(): void {
+        this.resetTemplates(['columnTemplate']);
+        if (this.layoutModule) {
+            this.layoutModule.refreshHeaders();
+        }
+        this.renderTemplates();
+    }
+
+    /**
      * Removes the control from the DOM and detaches all its related event handlers. Also, it removes the attributes and classes.
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void}
      */
     public destroy(): void {
         this.destroyModules();
@@ -760,18 +848,4 @@ export class Kanban extends Component<HTMLElement> {
         removeClass([this.element], removeClasses);
         super.destroy();
     }
-
-    /**
-     * Method to refresh the column header.
-     * @method refreshHeader
-     * @return {void}
-     */
-    public refreshHeader(): void {
-        this.resetTemplates(['columnTemplate']);
-        if (this.layoutModule) {
-            this.layoutModule.refreshHeaders();
-        }
-        this.renderTemplates();
-    }
-
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 /**
  * Render range navigator for financial chart
  */
@@ -21,7 +22,7 @@ export class RangeSelector {
     }
 
     public initializeRangeNavigator(): void {
-        let stockChart: StockChart = this.stockChart;
+        const stockChart: StockChart = this.stockChart;
         if (!stockChart.selectorObject) {
             stockChart.selectorObject = stockChart.renderer.createGroup({
                 id: stockChart.element.id + '_stockChart_rangeSelector',
@@ -29,7 +30,7 @@ export class RangeSelector {
             });
             stockChart.mainObject.appendChild(stockChart.selectorObject);
         } else {
-            let chartElement: Element = document.getElementById(stockChart.selectorObject.id);
+            const chartElement: Element = document.getElementById(stockChart.selectorObject.id);
             while (chartElement.firstChild) {
                 chartElement.removeChild(chartElement.firstChild);
             }
@@ -47,11 +48,11 @@ export class RangeSelector {
             series: this.findSeriesCollection(stockChart.series),
             height: this.calculateChartSize().height.toString(),
             value: [new Date(stockChart.startValue), new Date(stockChart.endValue)],
-            margin : this.findMargin(stockChart),
+            margin : this.findMargin(),
             tooltip: { enable: stockChart.tooltip.enable, displayMode: 'Always' },
             dataSource: stockChart.dataSource,
             changed: (args: IChangedEventArgs) => {
-                let arg: IRangeChangeEventArgs = {
+                const arg: IRangeChangeEventArgs = {
                     name: 'rangeChange',
                     end : args.end,
                     selectedData : args.selectedData,
@@ -63,8 +64,7 @@ export class RangeSelector {
                 this.stockChart.trigger('rangeChange', arg );
                 this.stockChart.startValue = args.start  as number; this.stockChart.endValue = args.end as number;
                 if (!this.stockChart.zoomChange) {
-                    this.stockChart.cartesianChart.cartesianChartRefresh(this.stockChart, args.start as number,
-                                                                         args.end as number, arg.data);
+                    this.stockChart.cartesianChart.cartesianChartRefresh(this.stockChart, arg.data);
                 }
                 if (stockChart.periodSelector && stockChart.periodSelector.datePicker) {
                     stockChart.periodSelector.datePicker.startDate = new Date(args.start as number);
@@ -77,8 +77,8 @@ export class RangeSelector {
         stockChart.rangeNavigator.appendTo(stockChart.selectorObject as HTMLElement);
     }
 
-    private findMargin(stockChart: StockChart) : MarginModel {
-        let margin : MarginModel = {};
+    private findMargin() : MarginModel {
+        const margin : MarginModel = {};
         margin.top = 5;
         margin.left = 0;
         margin.right = 0;
@@ -87,7 +87,7 @@ export class RangeSelector {
     }
 
     private findSeriesCollection(series : StockSeriesModel[]) : RangeNavigatorSeriesModel[] {
-        let chartSeries : RangeNavigatorSeriesModel[] = [];
+        const chartSeries : RangeNavigatorSeriesModel[] = [];
         for (let i: number = 0, len: number = series.length; i < len; i++) {
             chartSeries.push(<RangeNavigatorSeriesModel>series[i]);
             chartSeries[i].xName = series[i].xName;
@@ -97,7 +97,7 @@ export class RangeSelector {
     }
 
     private calculateChartSize(): Size {
-        let stockChart: StockChart = this.stockChart;
+        const stockChart: StockChart = this.stockChart;
         return (
             new Size(stockChart.availableSize.width, (stockChart.enableSelector) ? 80 : 0)
         );
@@ -105,8 +105,10 @@ export class RangeSelector {
 
     /**
      * Performs slider change
-     * @param start 
-     * @param end 
+     *
+     * @param {number} start slider start value
+     * @param {number} end slider end value
+     * @returns {void}
      */
     public sliderChange(start: number, end: number): void {
         this.stockChart.rangeNavigator.rangeSlider.performAnimation(start, end, this.stockChart.rangeNavigator, 0);

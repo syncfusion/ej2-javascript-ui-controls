@@ -1,3 +1,5 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-returns */
 import { INode, IConnector, Bounds, TreeInfo } from './layout-base';
 import { Layout, ILayout, LevelBounds } from './layout-base';
 import { SubTreeAlignments, Direction, DiagramAction } from '../enum/enum';
@@ -10,13 +12,14 @@ import { Point } from '../primitives/point';
 import { updateLayoutValue } from '../utility/diagram-util';
 
 /**
- * Hierarchical Tree and Organizational Chart 
+ * Hierarchical Tree and Organizational Chart
  */
 
 export class HierarchicalTree {
 
     /**
      * Constructor for the organizational chart module.
+     *
      * @private
      */
 
@@ -26,7 +29,8 @@ export class HierarchicalTree {
 
     /**
      * To destroy the organizational chart
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
@@ -38,7 +42,7 @@ export class HierarchicalTree {
 
     /**
      * Defines the layout animation
-     * 
+     *
      */
     public isAnimation: boolean = false;
 
@@ -53,10 +57,18 @@ export class HierarchicalTree {
         return 'OrganizationalChart';
     }
 
-    /**   @private  */
+    /**
+     * @param nodes
+     * @param nameTable
+     * @param layoutProp
+     * @param viewport
+     * @param uniqueId
+     * @param action
+     * @private
+     */
     public updateLayout(
         nodes: INode[], nameTable: Object, layoutProp: Layout, viewport: PointModel, uniqueId: string, action?: DiagramAction): ILayout {
-        let layout: ILayout = {
+        const layout: ILayout = {
             type: layoutProp.type,
             nameTable: nameTable, anchorX: 0, anchorY: 0,
             firstLevelNodes: [], centerNode: null, levels: [], maxLevel: 0, graphNodes: {},
@@ -76,7 +88,7 @@ export class HierarchicalTree {
         let i: number;
         let layoutInfo: LayoutInfo = {};
         let shape: INode;
-        let rootNodes: INode[] = [];
+        const rootNodes: INode[] = [];
         if (layout.nameTable[layout.root]) {
             layout.firstLevelNodes.push(layout.nameTable[layout.root]);
         }
@@ -87,8 +99,8 @@ export class HierarchicalTree {
                 layoutInfo.tree.hasSubTree = false;
                 if (!layout.nameTable[layout.root]) {
                     if (!node.inEdges || !node.inEdges.length) {
-                        let parentId: string = 'parentId';
-                        let processId: string = 'processId';
+                        const parentId: string = 'parentId';
+                        const processId: string = 'processId';
                         if (!node[parentId] && !node[processId]) {
                             rootNodes.push(node as INode);
                         }
@@ -104,7 +116,7 @@ export class HierarchicalTree {
         //Update relationship(parent and children)
         for (i = 0; i < layout.firstLevelNodes.length; i++) {
             node = layout.firstLevelNodes[i];
-            let check: boolean;
+            //let check: boolean;
             this.updateEdges(layout, node, 1, action, nodes);
         }
         if (layout.firstLevelNodes.length > 0) {
@@ -116,13 +128,13 @@ export class HierarchicalTree {
             let maxY: number;
             let maxX: number;
             let minY: number;
-            let j: number;
+            //let j: number;
             let bounds: Bounds;
 
             for (i = 0; i < layout.firstLevelNodes.length; i++) {
                 bounds = this.updateTree(layout, x, y, layout.firstLevelNodes[i], 0, layout.firstLevelNodes[i - 1]);
 
-                let rootInfo: LayoutInfo = layout.graphNodes[layout.firstLevelNodes[i].id];
+                const rootInfo: LayoutInfo = layout.graphNodes[layout.firstLevelNodes[i].id];
                 bounds.y = Math.min(bounds.y, rootInfo.y);
                 bounds.x = Math.min(bounds.x, rootInfo.x);
                 if (layout.orientation.indexOf('Left') !== -1) {
@@ -150,24 +162,24 @@ export class HierarchicalTree {
     }
 
     private getBounds(node: INode): Rect {
-        let x: number = node.offsetX - node.actualSize.width * node.pivot.x;
-        let y: number = node.offsetY - node.actualSize.height * node.pivot.y;
+        const x: number = node.offsetX - node.actualSize.width * node.pivot.x;
+        const y: number = node.offsetY - node.actualSize.height * node.pivot.y;
         return new Rect(x, y, node.actualSize.width, node.actualSize.height);
     }
 
     private updateTree(layout: ILayout, x: number, y: number, shape: INode, level?: number, prev?: INode, dontupdate?: boolean): Bounds {
-        let dimensions: Dimensions;
+        //let dimensions: Dimensions;
         let info: LayoutInfo = {};
         let lev: number;
         let obj: AsstInfo;
-        let hasChild: number;
-        dimensions = this.getDimensions(layout, shape, x, y, level);
+        //let hasChild: number;
+        const dimensions: Dimensions = this.getDimensions(layout, shape, x, y, level);
         info = layout.graphNodes[shape.id];
         let firstChild: FirstChild;
         //Set maximum level of layout
         layout.maxLevel = Math.max(layout.maxLevel, level);
         lev = level;
-        hasChild = this.hasChild(layout, shape);
+        const hasChild: number = this.hasChild(layout, shape);
         if (!hasChild && !info.tree.assistants.length) {
             //update leaf nodes
             shape.treeBounds = this.updateLeafNode(layout, shape, prev, dimensions, level, dontupdate);
@@ -222,7 +234,7 @@ export class HierarchicalTree {
             {
                 shapeBounds = { x: x, y: dimensions.y, right: x + dimensions.width, bottom: dimensions.y + dimensions.height };
             }
-            let translateInfo: TranslateInfo = {
+            const translateInfo: TranslateInfo = {
                 layout: layout, shape: shape, shapeBounds: shapeBounds, treeBounds: treeBounds,
                 dim: dimensions, level: level
             };
@@ -236,16 +248,17 @@ export class HierarchicalTree {
     }
 
     private updateLeafNode(layout: ILayout, shape: INode, prev: INode, dimensions: Dimensions, level: number, dontupdate: boolean): Bounds {
-        let bounds: Bounds;
-        let info: LayoutInfo = layout.graphNodes[shape.id];
+        //let bounds: Bounds;
+        const info: LayoutInfo = layout.graphNodes[shape.id];
         info.x = dimensions.x;
         if (!(info.y && info.y > dimensions.y)) {
             info.y = dimensions.y;
             info.maxLevel = Math.max(level, info.maxLevel || 0);
         }
-        bounds = { x: dimensions.x, y: dimensions.y, right: dimensions.x + dimensions.width, bottom: dimensions.y + dimensions.height };
+        // eslint-disable-next-line max-len
+        const bounds: Bounds = { x: dimensions.x, y: dimensions.y, right: dimensions.x + dimensions.width, bottom: dimensions.y + dimensions.height };
         info.maxLevel = Math.max(info.maxLevel || 0, level);
-        let translateInfo: TranslateInfo = {
+        const translateInfo: TranslateInfo = {
             layout: layout, shape: shape, shapeBounds: bounds, treeBounds: bounds,
             dim: dimensions, level: level
         };
@@ -254,7 +267,7 @@ export class HierarchicalTree {
     }
 
     private setUpLayoutInfo(layout: ILayout, item: INode): LayoutInfo {
-        let info: LayoutInfo = {};
+        const info: LayoutInfo = {};
         info.subTreeTranslation = 0;
         if (layout.type === 'OrganizationalChart') {
             info.tree = { orientation: 'Vertical', type: 'Alternate', offset: 20, enableRouting: true };
@@ -269,20 +282,20 @@ export class HierarchicalTree {
     }
 
     private translateSubTree(translateInfo: TranslateInfo, asstDif: number, translate: boolean, dontupdate: boolean): void {
-        let layout: ILayout = translateInfo.layout;
-        let shape: INode = translateInfo.shape;
+        const layout: ILayout = translateInfo.layout;
+        const shape: INode = translateInfo.shape;
         let shapeBounds: Bounds = translateInfo.shapeBounds;
-        let treeBounds: Bounds = translateInfo.treeBounds;
-        let level: number = translateInfo.level;
-        let dim: Dimensions = translateInfo.dim;
-        let info: LayoutInfo = layout.graphNodes[shape.id];
-        let firstChild: FirstChildInfo = layout.nameTable[info.firstChild ? info.firstChild.child : info.tree.children[0]];
-        let firstChildInfo: LayoutInfo = firstChild ? layout.graphNodes[firstChild.id] : null;
-        let hasChild: number = this.hasChild(layout, shape);
-        let intersect: number[] = this.findIntersectingLevels(layout, shapeBounds, level, info.actualLevel);
-        let treeIntersect: number[] = this.findIntersectingLevels(layout, treeBounds, level, info.actualLevel);
-        let levelBounds: LevelBounds[] = [];
-        let diff: number;
+        const treeBounds: Bounds = translateInfo.treeBounds;
+        const level: number = translateInfo.level;
+        const dim: Dimensions = translateInfo.dim;
+        const info: LayoutInfo = layout.graphNodes[shape.id];
+        const firstChild: FirstChildInfo = layout.nameTable[info.firstChild ? info.firstChild.child : info.tree.children[0]];
+        const firstChildInfo: LayoutInfo = firstChild ? layout.graphNodes[firstChild.id] : null;
+        const hasChild: number = this.hasChild(layout, shape);
+        const intersect: number[] = this.findIntersectingLevels(layout, shapeBounds, level, info.actualLevel);
+        const treeIntersect: number[] = this.findIntersectingLevels(layout, treeBounds, level, info.actualLevel);
+        const levelBounds: LevelBounds[] = [];
+        //const diff: number;
         if (intersect.length && info.translate) {
             info.intersect = intersect;
             this.spaceLeftFromPrevSubTree(layout, shape, shapeBounds);
@@ -331,19 +344,19 @@ export class HierarchicalTree {
     private updateRearBounds(layout: ILayout, shape: INode, levelBounds: LevelBounds[], level: number, intersect?: number[]): void {
         let bnds: Bounds;
         let index: number;
-        let isLastLeaf: Boolean = true;
+        let isLastLeaf: boolean = true;
         let i: number;
         let info: LayoutInfo = {};
-        let firstLevel: Bounds;
-        let lastLevel: Bounds;
+        //let firstLevel: Bounds;
+        //let lastLevel: Bounds;
         let bottom: number;
         if (shape) {
             info = layout.graphNodes[shape.id];
             intersect = info.intersect;
             isLastLeaf = !info.tree.children.length && !info.tree.assistants.length;
         }
-        firstLevel = levelBounds[0].rBounds;
-        lastLevel = levelBounds[levelBounds.length - 1].rBounds;
+        const firstLevel: Bounds = levelBounds[0].rBounds;
+        const lastLevel: Bounds = levelBounds[levelBounds.length - 1].rBounds;
         if (intersect && intersect.length) {
             bnds = layout.levels[intersect[0]].rBounds;
             bottom = bnds.bottom;
@@ -389,7 +402,7 @@ export class HierarchicalTree {
 
     private setDepthSpaceForAssitants(
         layout: ILayout, shape: INode, bottom: number, height: number, lev: number, vSpace: number): AsstInfo {
-        let info: LayoutInfo = layout.graphNodes[shape.id];
+        const info: LayoutInfo = layout.graphNodes[shape.id];
         let asst: LayoutInfo = {};
         let asstHeight: number;
         let i: number;
@@ -422,12 +435,12 @@ export class HierarchicalTree {
         layout: ILayout, shape: INode, dim: Dimensions, space: number, bottom: number, level: number): Bounds {
         let asst: LayoutInfo = {};
         let asstWidth: number;
-        let prevBounds: number;
+        //let prevBounds: number;
         let bounds: Bounds;
         let asstElement: INode;
         let i: number;
-        let info: LayoutInfo = layout.graphNodes[shape.id];
-        let max: number = bottom;
+        const info: LayoutInfo = layout.graphNodes[shape.id];
+        //let max: number = bottom;
         let lev: number = level;
         let left: number;
         let diff: number;
@@ -483,8 +496,8 @@ export class HierarchicalTree {
         height = shape.actualSize.height;
         if (layout.orientation.indexOf('Left') !== -1) {
             if (!level) {
-                let temp: number;
-                temp = x;
+                //let temp: number;
+                const temp: number = x;
                 x = y;
                 y = temp;
             }
@@ -495,42 +508,42 @@ export class HierarchicalTree {
     }
 
     private hasChild(layout: ILayout, shape: INode): number {
-        //Check whether the node has children            
-        let shape1: LayoutInfo = layout.graphNodes[shape.id];
+        //Check whether the node has children
+        const shape1: LayoutInfo = layout.graphNodes[shape.id];
         return shape1 ? shape1.tree.children && shape1.tree.children.length : 0;
     }
 
     private updateHorizontalTree(layout: ILayout, shape: INode, prev: INode, x: number, y: number, level: number): Bounds {
-        //Get dimensions with respect to layout orientations  
-        let dimensions: Dimensions;
-        dimensions = this.getDimensions(layout, shape, x, y, level);
+        //Get dimensions with respect to layout orientations
+        //let dimensions: Dimensions;
+        const dimensions: Dimensions = this.getDimensions(layout, shape, x, y, level);
         let info: LayoutInfo = {};
         info = layout.graphNodes[shape.id];
-        let side: SubTreeAlignments = info.tree.type;
-        let lev: number;
-        lev = level;
+        const side: SubTreeAlignments = info.tree.type;
+        //let lev: number;
+        const lev: number = level;
         let right: number = 0;
         right = x;
-        let bottom: number; bottom = y;
+        const bottom: number = y;
         let width: number; let height: number;
         let child: INode;
         let childBounds: Bounds; let childWidth: number; let childHeight: number;
-        let prevBounds: Bounds;
+        //let prevBounds: Bounds;
         let bounds: Bounds;
         let actBounds: Bounds;
         let maxLevel: number; let translateSibilingsBy: number; let canMoveBy: number; let oldActBounds: Bounds;
-        let i: number; let childInfo: LayoutInfo; let prevLayoutLevels: LevelBounds[]; let firstChildInfo: LayoutInfo;
-        prevLayoutLevels = layout.levels.slice(0, layout.levels.length);
+        let i: number; let childInfo: LayoutInfo;  let firstChildInfo: LayoutInfo;
+        const prevLayoutLevels: LevelBounds[] = layout.levels.slice(0, layout.levels.length);
         if (this.hasChild(layout, shape)) {
-            let h: boolean;
-            h = layout.orientation.indexOf('Left') !== -1 ? true : false;
+            //let h: boolean;
+            const h: boolean = layout.orientation.indexOf('Left') !== -1 ? true : false;
             for (i = 0; i < info.tree.children.length; i++) {
                 child = layout.nameTable[info.tree.children[i]];
                 width = child.actualSize.width;
                 height = child.actualSize.height;
                 childWidth = h ? height : width;
                 childHeight = h ? width : height;
-                prevBounds = layout.levels[lev + 1] ? layout.levels[lev + 1].rBounds : null;
+                const prevBounds: Bounds = layout.levels[lev + 1] ? layout.levels[lev + 1].rBounds : null;
                 //Update sub tree
                 childBounds = this.updateTree(layout, right, bottom, child, lev + 1, layout.nameTable[info.tree.children[i - 1]]);
                 childInfo = layout.graphNodes[child.id];
@@ -569,7 +582,7 @@ export class HierarchicalTree {
                             layout.graphNodes[info.firstChild.child].canMoveBy = canMoveBy;
                             info.firstChild.canMoveBy = canMoveBy;
                         }
-                        let canMoveValue: number = canMoveBy !== undefined ? canMoveBy : childInfo.canMoveBy;
+                        const canMoveValue: number = canMoveBy !== undefined ? canMoveBy : childInfo.canMoveBy;
                         info.firstChild = { x: childInfo.firstChild.x, canMoveBy: canMoveValue, child: child.id };
                     } else if (childInfo.firstChild && childInfo.translated && info.firstChild.canMoveBy > childInfo.canMoveBy) {
                         info.firstChild.canMoveBy = layout.graphNodes[info.firstChild.child].canMoveBy = childInfo.canMoveBy;
@@ -594,7 +607,7 @@ export class HierarchicalTree {
         }
         return bounds;
     }
-
+/* eslint-disable */
     private updateHorizontalTreeWithMultipleRows(layout: ILayout, shape: INode, prev: INode, x: number, y: number, level: number): Bounds {
         //declarations
         let child: INode; let childInfo: LayoutInfo; let childBounds: Bounds;
@@ -690,27 +703,28 @@ export class HierarchicalTree {
         }
         return bounds;
     }
+    /* eslint-enable */
 
     private updateLeftTree(layout: ILayout, treeInfo: MultipleRowInfo, shape: INode, x: number, bottom: number, lev: number): number {
-        let leftTree: string[][] = treeInfo.leftTree;
-        let info: LayoutInfo = layout.graphNodes[shape.id];
+        const leftTree: string[][] = treeInfo.leftTree;
+        const info: LayoutInfo = layout.graphNodes[shape.id];
         let right: number;
-        let leftBounds: Bounds[] = [];
+        const leftBounds: Bounds[] = [];
         let minTranslation: number;
         let rightMost: number;
         let childBounds: Bounds;
         let bounds: Bounds;
-        let h: boolean = layout.orientation.indexOf('Left') !== -1 ? true : false;
+        const h: boolean = layout.orientation.indexOf('Left') !== -1 ? true : false;
         //Arrange left side
         for (let i: number = 0; i < leftTree.length && leftTree[i].length; i++) {
             right = x;
             if (leftBounds[i - 1]) { bottom = leftBounds[i - 1].bottom + layout.verticalSpacing; }
             for (let j: number = 0; j < leftTree[i].length; j++) {
-                let child: INode = layout.nameTable[leftTree[i][j]];
-                let childWidth: number = h ? child.actualSize.height : child.actualSize.width;
-                let childHeight: number = h ? child.actualSize.width : child.actualSize.height;
+                const child: INode = layout.nameTable[leftTree[i][j]];
+                const childWidth: number = h ? child.actualSize.height : child.actualSize.width;
+                const childHeight: number = h ? child.actualSize.width : child.actualSize.height;
                 //Update sub tree
-                let childInfo: LayoutInfo = layout.graphNodes[child.id];
+                const childInfo: LayoutInfo = layout.graphNodes[child.id];
                 childInfo.actualLevel = lev + 1 + i;
                 childBounds = this.updateTree(layout, right, bottom, child, lev + 1, layout.nameTable[leftTree[i][j - 1]]);
                 if (j === 0) {
@@ -737,10 +751,10 @@ export class HierarchicalTree {
         //Translate to same positions
         for (let i: number = 0; i < leftTree.length && leftTree[i].length; i++) {
             if (rightMost !== leftBounds[i].right) {
-                let diff: number = rightMost - leftBounds[i].right;
+                const diff: number = rightMost - leftBounds[i].right;
                 for (let j: number = 0; j < leftTree[i].length; j++) {
-                    let element: INode = layout.nameTable[leftTree[i][j]];
-                    let elementInfo: LayoutInfo = layout.graphNodes[leftTree[i][j]];
+                    const element: INode = layout.nameTable[leftTree[i][j]];
+                    const elementInfo: LayoutInfo = layout.graphNodes[leftTree[i][j]];
                     elementInfo.x += diff;
                 }
                 //leftBounds[i].x += diff;
@@ -758,28 +772,28 @@ export class HierarchicalTree {
         let max: number;
         let centered: string;
         let diff: number;
-        let info: LayoutInfo = layout.graphNodes[shape.id];
-        let rows: string[][] = treeInfo.rows;
-        let rightTree: string[][] = treeInfo.rightTree;
-        let leftCenter: number = treeInfo.leftCenter;
-        let rightCenter: number = treeInfo.rightCenter;
+        const info: LayoutInfo = layout.graphNodes[shape.id];
+        const rows: string[][] = treeInfo.rows;
+        const rightTree: string[][] = treeInfo.rightTree;
+        const leftCenter: number = treeInfo.leftCenter;
+        const rightCenter: number = treeInfo.rightCenter;
         let align: boolean = treeInfo.align;
-        let rightBounds: Bounds[] = treeInfo.rightBounds;
-        let dimensions: Dimensions = treeInfo.dimensions;
-        let lev: number = treeInfo.level;
-        let unique: boolean = info.tree.children.length === 5 && rows[0].length === 3;
+        const rightBounds: Bounds[] = treeInfo.rightBounds;
+        const dimensions: Dimensions = treeInfo.dimensions;
+        const lev: number = treeInfo.level;
+        const unique: boolean = info.tree.children.length === 5 && rows[0].length === 3;
         if (unique && i === 1) {
             max = (rightBounds[0].right - rightBounds[0].x) >= (rightBounds[1].right - rightBounds[1].x) ? 0 : 1;
         }
         if (i === rows.length - 1) {
             if (rows[i].length % 2 === 1 || unique && i === 1) {
                 centered = rightTree[i][Math.floor(rightTree[i].length / 2)];
-                let centerObjct: INode;
-                centerObjct = layout.nameTable[centered];
-                let childDimension: Dimensions;
-                let centeredX: number = layout.graphNodes[centered].x;
-                let centeredY: number = layout.graphNodes[centered].y;
-                childDimension = this.getDimensions(layout, centerObjct, centeredX, centeredY, lev + 1);
+                //let centerObjct: INode;
+                const centerObjct: INode = layout.nameTable[centered];
+                //let childDimension: Dimensions;
+                const centeredX: number = layout.graphNodes[centered].x;
+                const centeredY: number = layout.graphNodes[centered].y;
+                const childDimension: Dimensions = this.getDimensions(layout, centerObjct, centeredX, centeredY, lev + 1);
                 diff = undefined;
                 if (!align && unique) {
                     if (max === 1) { i = 0; }
@@ -804,17 +818,17 @@ export class HierarchicalTree {
 
     private updateRearBoundsOfTree(layout: ILayout, rightTree: string[], diff: number, dimensions: Dimensions): void {
         for (let j: number = 0; j < rightTree.length; j++) {
-            let childInfo: LayoutInfo = layout.graphNodes[rightTree[j]];
-            let child: INode = layout.nameTable[rightTree[j]];
+            const childInfo: LayoutInfo = layout.graphNodes[rightTree[j]];
+            //let child: INode = layout.nameTable[rightTree[j]];
             childInfo.x += diff;
             childInfo.canMoveBy += diff;
             if (j === rightTree.length - 1) {
                 //removed child dimensions call calculation, since that is not used
-                let childBnds: Bounds = {
+                const childBnds: Bounds = {
                     x: childInfo.x, y: childInfo.y, right: childInfo.x +
                         dimensions.width, bottom: childInfo.y + dimensions.height
                 };
-                let intersect: number[] = this.findIntersectingLevels(layout, childBnds, childInfo.actualLevel);
+                const intersect: number[] = this.findIntersectingLevels(layout, childBnds, childInfo.actualLevel);
                 this.updateRearBounds(layout, null, [{ rBounds: childBnds }], childInfo.actualLevel, intersect);
             }
         }
@@ -843,15 +857,15 @@ export class HierarchicalTree {
         let child: INode; let childInfo: LayoutInfo; let childBounds: Bounds; let childWidth: number; let childHeight: number;
         let prevBounds: Bounds; let bounds: Bounds; let actBounds: Bounds; let oddBounds: Bounds; let evenBounds: Bounds;
 
-        let dimensions: Dimensions = this.getDimensions(layout, shape, x, y, level);
-        let info: LayoutInfo = layout.graphNodes[shape.id];
-        let firstChild: INode = layout.nameTable[info.tree.children[0]];
-        let h: Boolean = layout.orientation.indexOf('Left') !== -1 ? true : false;
+        //let dimensions: Dimensions = this.getDimensions(layout, shape, x, y, level);
+        const info: LayoutInfo = layout.graphNodes[shape.id];
+        const firstChild: INode = layout.nameTable[info.tree.children[0]];
+        const h: boolean = layout.orientation.indexOf('Left') !== -1 ? true : false;
         let factor: number = info.tree.type === 'Left' ? -1 : 0;
         let right: number = x; let bottom: number = y;
-        let lev: number; lev = level; let i: number; let intersect: number[];
+        const lev: number = level; let i: number; let intersect: number[];
         let type: SubTreeAlignments; let levels: LevelBounds[] = [];
-        let oddLevels: LevelBounds[] = []; let canMoveBy: number; let diff: number;
+        let oddLevels: LevelBounds[] = []; let canMoveBy: number; //let diff: number;
         for (i = 0; i < info.tree.children.length; i++) {
             if (info.tree.type === 'Alternate') {
                 //arrange at both left and right
@@ -904,7 +918,7 @@ export class HierarchicalTree {
             if (this.hasChild(layout, child)) {
                 if (!info.firstChild || info.firstChild.x >= childInfo.firstChild.x) {
                     if (childInfo.firstChild && info.firstChild.canMoveBy < childInfo.canMoveBy) {
-                        let canMoveBy: number = info.firstChild.canMoveBy;
+                        const canMoveBy: number = info.firstChild.canMoveBy;
                         childInfo.canMoveBy = canMoveBy;
                         layout.graphNodes[info.firstChild.child].canMoveBy = canMoveBy;
                         info.firstChild.canMoveBy = canMoveBy;
@@ -941,19 +955,19 @@ export class HierarchicalTree {
     }
 
     private splitChildrenInRows(layout: ILayout, shape: INode): string[][] {
-        let info: LayoutInfo;
-        info = layout.graphNodes[shape.id];
+        //let info: LayoutInfo;
+        const info: LayoutInfo = layout.graphNodes[shape.id];
         let column: number;
         column = 4;
-        let rows: string[][] = [];
+        const rows: string[][] = [];
         let childNodes: number;
         childNodes = info.tree.children.length;
-        let children: string[] = this.extend(info.tree.children);
+        const children: string[] = this.extend(info.tree.children);
         if (info.tree.rows) {
-            let count: number;
-            count = info.tree.children.length;
-            let columns: number;
-            columns = info.tree.rows;
+            //let count: number;
+            const count: number = info.tree.children.length;
+            //let columns: number;
+            const columns: number = info.tree.rows;
             if (columns % 2 === 0) {
                 column = columns;
             } else {
@@ -983,7 +997,7 @@ export class HierarchicalTree {
 
     private extend(temp: string[]): string[] {
         let i: number;
-        let dummy: string[] = [];
+        const dummy: string[] = [];
         for (i = 0; i < temp.length; i++) {
             dummy[i] = temp[i];
         }
@@ -992,20 +1006,20 @@ export class HierarchicalTree {
 
     private findOffset(layout: ILayout, shape: INode, info: LayoutInfo, type: SubTreeAlignments): number {
         let offset: number = 0;
-        let space: number = (layout.orientation.indexOf('Left') !== -1) ? shape.actualSize.height :
+        const space: number = (layout.orientation.indexOf('Left') !== -1) ? shape.actualSize.height :
             shape.actualSize.width;
-        let treeType: SubTreeAlignments = type ? type : info.tree.type;
+        const treeType: SubTreeAlignments = type ? type : info.tree.type;
         offset = info.tree.offset || 20;
         if (info.tree.type === 'Alternate') {
             if (offset >= layout.horizontalSpacing) { offset = layout.horizontalSpacing / 2; }
         }
         switch (treeType) {
-            case 'Left':
-                offset = space / 2 - offset;
-                break;
-            case 'Right':
-                offset = offset + space / 2;
-                break;
+        case 'Left':
+            offset = space / 2 - offset;
+            break;
+        case 'Right':
+            offset = offset + space / 2;
+            break;
         }
         return offset;
     }
@@ -1018,13 +1032,13 @@ export class HierarchicalTree {
     }
 
     private spaceLeftFromPrevSubTree(layout: ILayout, shape: INode, bounds: Bounds): void {
-        let info: LayoutInfo;
-        info = layout.graphNodes[shape.id];
-        let dif: number; let prevBounds: Bounds; let intersect: number[]; let k: number;
-        let space: number;
-        space = layout.horizontalSpacing;
+        //let info: LayoutInfo;
+        const info: LayoutInfo = layout.graphNodes[shape.id];
+        let dif: number; let prevBounds: Bounds; //let intersect: number[]; let k: number;
+        //let space: number;
+        const space: number = layout.horizontalSpacing;
         //Find the minimum distance to move towards previous sub tree
-        for (k = 0; k < info.intersect.length; k++) {
+        for (let k: number = 0; k < info.intersect.length; k++) {
             prevBounds = layout.levels[info.intersect[k]].rBounds;
             dif = bounds.x - (prevBounds.right + space);
             if (info.diff === undefined || dif < info.diff) {
@@ -1036,12 +1050,12 @@ export class HierarchicalTree {
 
     private findIntersectingLevels(layout: ILayout, bounds: Bounds, level: number, actualLevel?: number): number[] {
         //intersecting with exact Level
-        let bnds: Bounds;
-        bnds = { x: bounds.x, y: bounds.y, right: bounds.right, bottom: bounds.bottom };
+        //let bnds: Bounds;
+        const bnds: Bounds = { x: bounds.x, y: bounds.y, right: bounds.right, bottom: bounds.bottom };
         bnds.y -= layout.verticalSpacing / 2;
         bnds.bottom += layout.verticalSpacing / 2;
-        let intersectingLevels: number[];
-        intersectingLevels = [];
+        //let intersectingLevels: number[];
+        const intersectingLevels: number[] = [];
         let rBounds: Bounds;
         let l: number;
         l = actualLevel !== undefined ? actualLevel : level;
@@ -1052,7 +1066,7 @@ export class HierarchicalTree {
                 || (bnds.y < rBounds.bottom && rBounds.bottom < bnds.bottom) ||
                 bnds.y >= rBounds.y &&
                 bnds.bottom <= rBounds.bottom || bnds.y < rBounds.y && bnds.bottom > rBounds.bottom)) {
-                let index: number = 0;
+                const index: number = 0;
                 intersectingLevels.splice(index, 0, l);
             } else if (rBounds && rBounds.bottom < bnds.y) {
                 break;
@@ -1077,8 +1091,8 @@ export class HierarchicalTree {
     }
 
     private findLevel(layout: ILayout, bounds: Bounds, level: number): number {
-        let bnds: Bounds;
-        bnds = bounds;
+        //let bnds: Bounds;
+        const bnds: Bounds = bounds;
         let l: number; l = 0;
         let rBounds: Bounds;
         rBounds = layout.levels[l] ? layout.levels[l].rBounds : null;
@@ -1098,13 +1112,13 @@ export class HierarchicalTree {
         return layout.nameTable[layout.nameTable[node.inEdges[0]].sourceID];
     }
     private updateEdges(layout: ILayout, node: INode, depth: number, action?: DiagramAction, nodes?: INode[]): void {
-        let layoutInfo: LayoutInfo;
-        layoutInfo = layout.graphNodes[node.id];
+        //let layoutInfo: LayoutInfo;
+        const layoutInfo: LayoutInfo = layout.graphNodes[node.id];
         let j: number;
         if (node.outEdges && node.outEdges.length && (node.isExpanded || (action === DiagramAction.Render))) {
             for (j = 0; j < node.outEdges.length; j++) {
-                let edge: INode;
-                edge = layout.nameTable[layout.nameTable[node.outEdges[j]].targetID];
+                //let edge: INode;
+                const edge: INode = layout.nameTable[layout.nameTable[node.outEdges[j]].targetID];
                 if (edge && !edge.excludeFromLayout) {
                     if (layoutInfo.tree.children.indexOf(edge.id) === -1) {
                         layoutInfo.tree.children.push(edge.id);
@@ -1126,6 +1140,7 @@ export class HierarchicalTree {
         //Customizing assistants and children collection
         //Performance-Instead of reading the method everytime, we can set once and can reuse that
         if ((layout.getLayoutInfo || layout.layoutInfo) && layout.type === 'OrganizationalChart') {
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             layout.getLayoutInfo ?
                 layout.getLayoutInfo(node, layoutInfo.tree) : updateLayoutValue(layoutInfo.tree, layout.layoutInfo, nodes, node);
             if (layoutInfo.tree.type === 'Balanced' && layoutInfo.tree.hasSubTree) {
@@ -1136,14 +1151,14 @@ export class HierarchicalTree {
             layoutInfo.tree.hasSubTree = false;
         }
     }
-
+/* eslint-disable */
     private updateAnchor(layout: ILayout, bounds: Bounds, viewPort: PointModel): void {
         let node: INode; let fixedNode: INode;
         let width: number = 0; let height: number = 0; let mod: number = 0;
         let yValue: number = 0;
-        let viewPortBounds: Rect = new Rect(0, 0, viewPort.x, viewPort.y); let layoutBounds: Rect;
-        layoutBounds = layout.bounds ? layout.bounds : viewPortBounds;
-        let orientation: string = layout.orientation;
+        const viewPortBounds: Rect = new Rect(0, 0, viewPort.x, viewPort.y); //let layoutBounds: Rect;
+        const layoutBounds:Rect = layout.bounds ? layout.bounds : viewPortBounds;
+        const orientation: string = layout.orientation;
         //Anchor based on fixed nodes
         if (layout.fixedNode) {
             fixedNode = layout.nameTable[layout.fixedNode];
@@ -1151,7 +1166,7 @@ export class HierarchicalTree {
             height = fixedNode.actualSize.height;
             layout.anchorX = fixedNode.offsetX;
             layout.anchorY = fixedNode.offsetY;
-            let pivot: PointModel = fixedNode.pivot;
+            const pivot: PointModel = fixedNode.pivot;
             layout.anchorX += layout.orientation === 'RightToLeft' ? width * pivot.x : -width * pivot.x;
             layout.anchorY += layout.orientation === 'BottomToTop' ? height * pivot.y : -height * pivot.y;
             node = fixedNode;
@@ -1162,63 +1177,65 @@ export class HierarchicalTree {
             }
             if (layout.orientation.indexOf('Left') !== -1) {
                 yValue = layout.graphNodes[fixedNode.id].y;
+                // eslint-disable-next-line
                 orientation === 'LeftToRight' ? layout.anchorX -= yValue : layout.anchorX += yValue;
                 layout.anchorY -= layout.graphNodes[fixedNode.id].x + mod;
             } else {
                 yValue = layout.graphNodes[fixedNode.id].y;
+                // eslint-disable-next-line
                 layout.anchorX -= layout.graphNodes[fixedNode.id].x + mod;
                 orientation === 'TopToBottom' ? layout.anchorY -= yValue : layout.anchorY += yValue;
             }
         } else {
             if (orientation === 'TopToBottom' || orientation === 'BottomToTop') {
-                switch (layout.horizontalAlignment) {
-                    case 'Left':
-                        layout.anchorX = (layoutBounds.x - bounds.x) + layout.margin.left;
-                        break;
-                    case 'Right':
-                        layout.anchorX = layoutBounds.x + layoutBounds.width - layout.margin.right - bounds.right;
-                        break;
-                    case 'Auto':
-                    case 'Center':
-                        layout.anchorX = layoutBounds.x + layoutBounds.width / 2 - (bounds.x + bounds.right) / 2;
-                        break;
+            switch (layout.horizontalAlignment) {
+                case 'Left':
+                    layout.anchorX = (layoutBounds.x - bounds.x) + layout.margin.left;
+                    break;
+                case 'Right':
+                    layout.anchorX = layoutBounds.x + layoutBounds.width - layout.margin.right - bounds.right;
+                    break;
+                case 'Auto':
+                case 'Center':
+                    layout.anchorX = layoutBounds.x + layoutBounds.width / 2 - (bounds.x + bounds.right) / 2;
+                    break;
                 }
-                switch (layout.verticalAlignment) {
-                    case 'Auto':
-                    case 'Top':
-                        let top: number;
-                        top = layoutBounds.y + layout.margin.top;
-                        layout.anchorY = orientation === 'TopToBottom' ? top : bounds.bottom + top;
-                        break;
-                    case 'Bottom':
-                        let bottom: number;
-                        bottom = layoutBounds.y + layoutBounds.height - layout.margin.bottom;
-                        layout.anchorY = orientation === 'TopToBottom' ? bottom - bounds.bottom : bottom;
-                        break;
-                    case 'Center':
-                        let center: number;
-                        center = layoutBounds.y + layoutBounds.height / 2;
-                        layout.anchorY = layout.orientation === 'TopToBottom' ?
-                            center - (bounds.y + bounds.bottom) / 2 : center + (bounds.y + bounds.bottom) / 2;
-                        break;
+            switch (layout.verticalAlignment) {
+                case 'Auto':
+                case 'Top':
+                    let top: number;
+                    top = layoutBounds.y + layout.margin.top;
+                    layout.anchorY = orientation === 'TopToBottom' ? top : bounds.bottom + top;
+                    break;
+                case 'Bottom':
+                    let bottom: number;
+                    bottom = layoutBounds.y + layoutBounds.height - layout.margin.bottom;
+                    layout.anchorY = orientation === 'TopToBottom' ? bottom - bounds.bottom : bottom;
+                    break;
+                case 'Center':
+                    let center: number;
+                    center = layoutBounds.y + layoutBounds.height / 2;
+                    layout.anchorY = layout.orientation === 'TopToBottom' ?
+                        center - (bounds.y + bounds.bottom) / 2 : center + (bounds.y + bounds.bottom) / 2;
+                    break;
                 }
             } else {
-                switch (layout.horizontalAlignment) {
-                    case 'Auto':
-                    case 'Left':
-                        let left: number;
-                        left = layoutBounds.x + layout.margin.left;
-                        layout.anchorX = orientation === 'LeftToRight' ? left : bounds.bottom + left;
-                        break;
-                    case 'Right':
-                        let right: number;
-                        right = layoutBounds.x + layoutBounds.width - layout.margin.right;
-                        layout.anchorX = orientation === 'LeftToRight' ? right - bounds.bottom : right;
-                        break;
-                    case 'Center':
-                        let center: number;
-                        center = layoutBounds.width / 2 + layoutBounds.x;
-                        layout.anchorX = layout.orientation === 'LeftToRight' ?
+            switch (layout.horizontalAlignment) {
+                case 'Auto':
+                case 'Left':
+                    let left: number;
+                    left = layoutBounds.x + layout.margin.left;
+                    layout.anchorX = orientation === 'LeftToRight' ? left : bounds.bottom + left;
+                    break;
+                case 'Right':
+                    let right: number;
+                    right = layoutBounds.x + layoutBounds.width - layout.margin.right;
+                    layout.anchorX = orientation === 'LeftToRight' ? right - bounds.bottom : right;
+                    break;
+                case 'Center':
+                    let center: number;
+                    center = layoutBounds.width / 2 + layoutBounds.x;
+                    layout.anchorX = layout.orientation === 'LeftToRight' ?
                             center - (bounds.y + bounds.bottom) / 2 : center + (bounds.y + bounds.bottom) / 2;
                         break;
                 }
@@ -1237,20 +1254,17 @@ export class HierarchicalTree {
             }
         }
     }
-
+    /* eslint-enable */
     private updateConnectors(layout: ILayout, node: INode, level: number): void {
         let i: number;
-        let info: LayoutInfo;
-        let nodeWidth: number; let nodeHeight: number; let targetWidth: number; let targetHeight: number;
-        let length: number; let offsetLen: number; let points: PointModel[]; let segments: ConnSegments;
+        //let info: LayoutInfo;
+        //let nodeWidth: number; let nodeHeight: number; let targetWidth: number; let targetHeight: number;
+        //let length: number; let offsetLen: number; let points: PointModel[];
+        //let segments: ConnSegments;
         let target: INode;
         let conn: IConnector;
-        let relative: string;
-        let center: number;
-        let layoutProp: Layout;
-
         //Route out edges
-        info = layout.graphNodes[node.id];
+        const info: LayoutInfo = layout.graphNodes[node.id];
         let direction: string;
         if (node.outEdges.length) {
             for (i = 0; i < node.outEdges.length; i++) {
@@ -1260,7 +1274,7 @@ export class HierarchicalTree {
                 if (conn.visible) {
                     conn.visited = true;
                     if (layout.getConnectorSegments) {
-                        segments = layout.getConnectorSegments(conn);
+                        const segments: ConnSegments = layout.getConnectorSegments(conn);
                     } else {
                         if (info && info.tree.children.indexOf(conn.targetID) !== -1) {
                             conn.segments = [];
@@ -1289,7 +1303,7 @@ export class HierarchicalTree {
     }
 
     private updateSegments(layout: ILayout, conn: IConnector, node: INode, target: INode, i: number): void {
-        let info: LayoutInfo = layout.graphNodes[node.id];
+        const info: LayoutInfo = layout.graphNodes[node.id];
         //Connector routing - Horizontal layout orientation
         if (info.tree.assistants.length) {
             //Route in-edge of child node, if the parent has assistant
@@ -1313,7 +1327,7 @@ export class HierarchicalTree {
     }
 
     private updateSegmentsForBalancedTree(layout: ILayout, connector: IConnector, node: INode, target: INode, i: number): void {
-        let info: LayoutInfo = layout.graphNodes[node.id];
+        const info: LayoutInfo = layout.graphNodes[node.id];
         let center: number;
         let relative: string;
         if (info.tree.children.length === 5 && i > 2) {
@@ -1321,12 +1335,12 @@ export class HierarchicalTree {
             if (isNaN(layout.graphNodes[relative].treeWidth)) {
                 layout.graphNodes[relative].treeWidth = layout.nameTable[relative].actualSize.width;
             }
-            let factor: number = i !== 3 ? 1 : -1;
+            const factor: number = i !== 3 ? 1 : -1;
             if (layout.orientation.indexOf('Left') !== -1) {
                 center = layout.nameTable[relative].offsetY - layout.graphNodes[relative].treeWidth / 2 -
                     (layout.verticalSpacing * factor / 2);
             } else {
-                center = layout.nameTable[relative].offsetX +
+                const center: number = layout.nameTable[relative].offsetX +
                     layout.graphNodes[relative].treeWidth / 2 + (layout.horizontalSpacing * factor) / 2;
             }
             this.getSegmentsForMultipleRows(layout, node, target, connector);
@@ -1350,20 +1364,20 @@ export class HierarchicalTree {
     }
 
     private get3Points(layout: ILayout, node: INode, target: INode, connector: IConnector): void {
-        let points: PointModel[] = [];
-        let nodeBounds: Rect = this.getBounds(node);
-        let targetBounds: Rect = this.getBounds(target);
+        const points: PointModel[] = [];
+        const nodeBounds: Rect = this.getBounds(node);
+        const targetBounds: Rect = this.getBounds(target);
         if (layout.orientation.indexOf('Top') !== -1) {
-            let startingPoint: PointModel = layout.orientation.indexOf('Top') === 0 ? nodeBounds.bottomCenter :
+            const startingPoint: PointModel = layout.orientation.indexOf('Top') === 0 ? nodeBounds.bottomCenter :
                 nodeBounds.topCenter;
-            let endPoint: PointModel = node.offsetX > target.offsetX ? targetBounds.middleRight : targetBounds.middleLeft;
+            const endPoint: PointModel = node.offsetX > target.offsetX ? targetBounds.middleRight : targetBounds.middleLeft;
             points.push(
                 startingPoint, { x: nodeBounds.bottomCenter.x, y: endPoint.y },
                 endPoint);
         } else {
-            let startingPoint: PointModel = layout.orientation.indexOf('Left') === 0 ? nodeBounds.middleRight :
+            const startingPoint: PointModel = layout.orientation.indexOf('Left') === 0 ? nodeBounds.middleRight :
                 nodeBounds.middleLeft;
-            let endPoint: PointModel = node.offsetY > target.offsetY ? targetBounds.bottomCenter : targetBounds.topCenter;
+            const endPoint: PointModel = node.offsetY > target.offsetY ? targetBounds.bottomCenter : targetBounds.topCenter;
             points.push(
                 startingPoint, { x: targetBounds.bottomCenter.x, y: nodeBounds.middleRight.y },
                 endPoint);
@@ -1372,11 +1386,11 @@ export class HierarchicalTree {
     }
 
     private get5Points(layout: ILayout, node: INode, target: INode, connector: IConnector): void {
-        let points: PointModel[] = [];
-        let layoutprop: Layout;
-        let nodeBounds: Rect = this.getBounds(node);
-        let targetBounds: Rect = this.getBounds(target);
-        let info: LayoutInfo = layout.graphNodes[node.id];
+        const points: PointModel[] = [];
+        //let layoutprop: Layout;
+        const nodeBounds: Rect = this.getBounds(node);
+        const targetBounds: Rect = this.getBounds(target);
+        //let info: LayoutInfo = layout.graphNodes[node.id];
         let startingPoint: PointModel; let endPoint: PointModel;
         let horizontalSpacing: number; let verticalSpacing: number;
         if (layout.orientation.indexOf('Top') !== -1) {
@@ -1403,7 +1417,7 @@ export class HierarchicalTree {
     }
 
     private getSegmentsFromPoints(points: PointModel[], connector: IConnector): void {
-        let segments: OrthogonalSegment[] = [];
+        const segments: OrthogonalSegment[] = [];
         let segment: OrthogonalSegment;
         for (let i: number = 0; i < points.length - 2; i++) {
             segment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
@@ -1415,106 +1429,106 @@ export class HierarchicalTree {
     }
 
     private getSegmentsForMultipleRows(layout: ILayout, node: INode, target: INode, connector: IConnector): void {
-        let points: PointModel[] = [];
-        let segments: OrthogonalSegmentModel[] = []; let point: PointModel; let segment: OrthogonalSegmentModel;
-        let targetBounds: Rect = this.getBounds(target);
-        let nodeBounds: Rect = this.getBounds(node);
+        //let points: PointModel[] = [];
+        const segments: OrthogonalSegmentModel[] = []; let point: PointModel; let segment: OrthogonalSegmentModel;
+        const targetBounds: Rect = this.getBounds(target);
+        const nodeBounds: Rect = this.getBounds(node);
         switch (layout.orientation) {
-            case 'TopToBottom':
-                point = { x: nodeBounds.bottomCenter.x, y: (nodeBounds.bottomCenter.y + layout.verticalSpacing / 4) };
+        case 'TopToBottom':
+            point = { x: nodeBounds.bottomCenter.x, y: (nodeBounds.bottomCenter.y + layout.verticalSpacing / 4) };
+            segment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
+            segment.direction = Point.direction(nodeBounds.bottomCenter, point) as Direction;
+            segment.length = Point.distancePoints(nodeBounds.bottomCenter, point);
+            segments.push(segment);
+            break;
+        case 'BottomToTop':
+            point = { x: nodeBounds.bottomCenter.x, y: (nodeBounds.topCenter.y - layout.verticalSpacing / 4) };
+            segment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
+            segment.direction = Point.direction(nodeBounds.topCenter, point) as Direction;
+            segment.length = Point.distancePoints(nodeBounds.topCenter, point);
+            segments.push(segment);
+            break;
+        case 'LeftToRight':
+            point = { x: (nodeBounds.middleRight.x + layout.verticalSpacing / 4), y: nodeBounds.middleRight.y };
+            segment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
+            segment.direction = Point.direction(nodeBounds.middleRight, point) as Direction;
+            segment.length = Point.distancePoints(nodeBounds.middleRight, point);
+            segments.push(segment);
+            if (targetBounds.center.y !== nodeBounds.center.y) {
+                const point3: PointModel = { x: (nodeBounds.middleRight.x + layout.verticalSpacing / 4), y: targetBounds.middleLeft.y };
                 segment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
-                segment.direction = Point.direction(nodeBounds.bottomCenter, point) as Direction;
-                segment.length = Point.distancePoints(nodeBounds.bottomCenter, point);
+                segment.direction = Point.direction(point, point3) as Direction;
+                segment.length = Point.distancePoints(point, point3);
                 segments.push(segment);
-                break;
-            case 'BottomToTop':
-                point = { x: nodeBounds.bottomCenter.x, y: (nodeBounds.topCenter.y - layout.verticalSpacing / 4) };
+            }
+            break;
+        case 'RightToLeft':
+            point = { x: (nodeBounds.middleLeft.x - layout.verticalSpacing / 4), y: nodeBounds.middleRight.y };
+            segment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
+            segment.direction = Point.direction(nodeBounds.middleLeft, point) as Direction;
+            segment.length = Point.distancePoints(nodeBounds.middleLeft, point);
+            segments.push(segment);
+            if (targetBounds.center.y !== nodeBounds.center.y) {
+                const point: PointModel = { x: (nodeBounds.middleLeft.x - layout.verticalSpacing / 4), y: targetBounds.middleLeft.y };
                 segment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
-                segment.direction = Point.direction(nodeBounds.topCenter, point) as Direction;
-                segment.length = Point.distancePoints(nodeBounds.topCenter, point);
+                segment.direction = Point.direction(point, point) as Direction;
+                segment.length = Point.distancePoints(point, point);
                 segments.push(segment);
-                break;
-            case 'LeftToRight':
-                point = { x: (nodeBounds.middleRight.x + layout.verticalSpacing / 4), y: nodeBounds.middleRight.y, };
-                segment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
-                segment.direction = Point.direction(nodeBounds.middleRight, point) as Direction;
-                segment.length = Point.distancePoints(nodeBounds.middleRight, point);
-                segments.push(segment);
-                if (targetBounds.center.y !== nodeBounds.center.y) {
-                    let point3: PointModel = { x: (nodeBounds.middleRight.x + layout.verticalSpacing / 4), y: targetBounds.middleLeft.y };
-                    segment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
-                    segment.direction = Point.direction(point, point3) as Direction;
-                    segment.length = Point.distancePoints(point, point3);
-                    segments.push(segment);
-                }
-                break;
-            case 'RightToLeft':
-                point = { x: (nodeBounds.middleLeft.x - layout.verticalSpacing / 4), y: nodeBounds.middleRight.y };
-                segment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
-                segment.direction = Point.direction(nodeBounds.middleLeft, point) as Direction;
-                segment.length = Point.distancePoints(nodeBounds.middleLeft, point);
-                segments.push(segment);
-                if (targetBounds.center.y !== nodeBounds.center.y) {
-                    let point: PointModel = { x: (nodeBounds.middleLeft.x - layout.verticalSpacing / 4), y: targetBounds.middleLeft.y };
-                    segment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
-                    segment.direction = Point.direction(point, point) as Direction;
-                    segment.length = Point.distancePoints(point, point);
-                    segments.push(segment);
-                }
-                break;
+            }
+            break;
         }
         connector.segments = segments;
     }
 
     private updateSegmentsForHorizontalOrientation(layout: ILayout, node: INode, target: INode, connector: IConnector): PointModel[] {
-        let points: PointModel[] = []; let point2: PointModel;
+        const points: PointModel[] = []; let point2: PointModel;
         let segment: OrthogonalSegmentModel;
-        let segments: OrthogonalSegmentModel[] = [];
-        let nodeBounds: Rect = this.getBounds(node);
-        let targetBounds: Rect = this.getBounds(target);
+        const segments: OrthogonalSegmentModel[] = [];
+        const nodeBounds: Rect = this.getBounds(node);
+        const targetBounds: Rect = this.getBounds(target);
         switch (layout.orientation) {
-            case 'TopToBottom':
-                point2 = { x: nodeBounds.bottomCenter.x, y: (targetBounds.topCenter.y - layout.verticalSpacing / 2) };
+        case 'TopToBottom':
+            point2 = { x: nodeBounds.bottomCenter.x, y: (targetBounds.topCenter.y - layout.verticalSpacing / 2) };
+            segment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
+            segment.direction = Point.direction(nodeBounds.bottomCenter, point2) as Direction;
+            segment.length = Point.distancePoints(nodeBounds.bottomCenter, point2);
+            segments.push(segment);
+            break;
+        case 'BottomToTop':
+            point2 = { x: nodeBounds.topCenter.x, y: (targetBounds.bottomCenter.y + layout.verticalSpacing / 2) };
+            segment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
+            segment.direction = Point.direction(nodeBounds.topCenter, point2) as Direction;
+            segment.length = Point.distancePoints(nodeBounds.topCenter, point2);
+            segments.push(segment);
+            break;
+        case 'LeftToRight':
+            point2 = { x: (targetBounds.middleLeft.x - layout.verticalSpacing / 2), y: nodeBounds.middleRight.y };
+            segment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
+            segment.direction = Point.direction(nodeBounds.middleRight, point2) as Direction;
+            segment.length = Point.distancePoints(nodeBounds.middleRight, point2);
+            segments.push(segment);
+            if (targetBounds.center.y !== nodeBounds.center.y) {
+                const point3: PointModel = { x: (targetBounds.middleLeft.x - layout.verticalSpacing / 2), y: targetBounds.middleLeft.y };
                 segment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
-                segment.direction = Point.direction(nodeBounds.bottomCenter, point2) as Direction;
-                segment.length = Point.distancePoints(nodeBounds.bottomCenter, point2);
+                segment.direction = Point.direction(point2, point3) as Direction;
+                segment.length = Point.distancePoints(point2, point3);
                 segments.push(segment);
-                break;
-            case 'BottomToTop':
-                point2 = { x: nodeBounds.topCenter.x, y: (targetBounds.bottomCenter.y + layout.verticalSpacing / 2) };
+            }
+            break;
+        case 'RightToLeft':
+            point2 = { x: (targetBounds.middleRight.x + layout.verticalSpacing / 2), y: nodeBounds.middleRight.y };
+            segment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
+            segment.direction = Point.direction(nodeBounds.middleLeft, point2) as Direction;
+            segment.length = Point.distancePoints(nodeBounds.middleLeft, point2);
+            segments.push(segment);
+            if (targetBounds.center.y !== nodeBounds.center.y) {
+                const point: PointModel = { x: (targetBounds.middleRight.x + layout.verticalSpacing / 2), y: targetBounds.middleLeft.y };
                 segment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
-                segment.direction = Point.direction(nodeBounds.topCenter, point2) as Direction;
-                segment.length = Point.distancePoints(nodeBounds.topCenter, point2);
+                segment.direction = Point.direction(point2, point) as Direction;
+                segment.length = Point.distancePoints(point2, point);
                 segments.push(segment);
-                break;
-            case 'LeftToRight':
-                point2 = { x: (targetBounds.middleLeft.x - layout.verticalSpacing / 2), y: nodeBounds.middleRight.y };
-                segment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
-                segment.direction = Point.direction(nodeBounds.middleRight, point2) as Direction;
-                segment.length = Point.distancePoints(nodeBounds.middleRight, point2);
-                segments.push(segment);
-                if (targetBounds.center.y !== nodeBounds.center.y) {
-                    let point3: PointModel = { x: (targetBounds.middleLeft.x - layout.verticalSpacing / 2), y: targetBounds.middleLeft.y };
-                    segment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
-                    segment.direction = Point.direction(point2, point3) as Direction;
-                    segment.length = Point.distancePoints(point2, point3);
-                    segments.push(segment);
-                }
-                break;
-            case 'RightToLeft':
-                point2 = { x: (targetBounds.middleRight.x + layout.verticalSpacing / 2), y: nodeBounds.middleRight.y };
-                segment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
-                segment.direction = Point.direction(nodeBounds.middleLeft, point2) as Direction;
-                segment.length = Point.distancePoints(nodeBounds.middleLeft, point2);
-                segments.push(segment);
-                if (targetBounds.center.y !== nodeBounds.center.y) {
-                    let point: PointModel = { x: (targetBounds.middleRight.x + layout.verticalSpacing / 2), y: targetBounds.middleLeft.y };
-                    segment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
-                    segment.direction = Point.direction(point2, point) as Direction;
-                    segment.length = Point.distancePoints(point2, point);
-                    segments.push(segment);
-                }
-                break;
+            }
+            break;
         }
         connector.segments = segments;
         return points;
@@ -1556,9 +1570,9 @@ export class HierarchicalTree {
                     node.offsetY = offsetY;
                 }
             }
-            let objects: INode = { id: node.id, differenceX: offsetX - node.offsetX, differenceY: offsetY - node.offsetY } as INode;
+            const objects: INode = { id: node.id, differenceX: offsetX - node.offsetX, differenceY: offsetY - node.offsetY } as INode;
             layout.objects.push(objects);
-            let list: INode[]; list = [];
+            const list: INode[] = [];
             if (this.hasChild(layout, node)) {
                 for (i = 0; i < layout.graphNodes[node.id].tree.children.length; i++) {
                     child = layout.nameTable[layout.graphNodes[node.id].tree.children[i]];

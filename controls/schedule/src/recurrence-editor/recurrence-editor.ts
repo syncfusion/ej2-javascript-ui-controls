@@ -99,14 +99,14 @@ const FIRST: string = 'first';
 const SECOND: string = 'second';
 const THIRD: string = 'third';
 const FOURTH: string = 'fourth';
-let contentType: { [key: string]: string } = {
+const contentType: { [key: string]: string } = {
     none: '',
     daily: 'days',
     weekly: 'weeks',
     monthly: 'months',
     yearly: 'years'
 };
-let valueData: { [key: string]: string } = {
+const valueData: { [key: string]: string } = {
     'sun': RULESUNDAY,
     'mon': RULEMONDAY,
     'tue': RULETUESDAY,
@@ -115,15 +115,14 @@ let valueData: { [key: string]: string } = {
     'fri': RULEFRIDAY,
     'sat': RULESATURDAY
 };
-
-let neverClassList: string[] = [DAYWRAPPER, WEEKWRAPPER, ENDON, INTERVALCLASS, YEAREXPANDERWRAPPER, MONETHEXPANDERWRAPPER];
-let weekClassList: string[] = [WEEKWRAPPER];
-let monthClassList: string[] = [DAYWRAPPER, YEAREXPANDERWRAPPER];
-let yearClassList: string[] = [DAYWRAPPER];
-let dailyClassList: string[] = [DAYWRAPPER, WEEKWRAPPER, YEAREXPANDERWRAPPER, MONETHEXPANDERWRAPPER];
-let noEndClassList: string[] = [ENDONDATE, ENDONCOUNTWRAPPER];
-let endOnCountClassList: string[] = [ENDONDATE];
-let endOnDateClassList: string[] = [ENDONCOUNTWRAPPER];
+const neverClassList: string[] = [DAYWRAPPER, WEEKWRAPPER, ENDON, INTERVALCLASS, YEAREXPANDERWRAPPER, MONETHEXPANDERWRAPPER];
+const weekClassList: string[] = [WEEKWRAPPER];
+const monthClassList: string[] = [DAYWRAPPER, YEAREXPANDERWRAPPER];
+const yearClassList: string[] = [DAYWRAPPER];
+const dailyClassList: string[] = [DAYWRAPPER, WEEKWRAPPER, YEAREXPANDERWRAPPER, MONETHEXPANDERWRAPPER];
+const noEndClassList: string[] = [ENDONDATE, ENDONCOUNTWRAPPER];
+const endOnCountClassList: string[] = [ENDONDATE];
+const endOnDateClassList: string[] = [ENDONCOUNTWRAPPER];
 
 /**
  * Represents the RecurrenceEditor component.
@@ -142,87 +141,109 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     // RecurrenceEditor Options
     /**
      * Sets the recurrence pattern on the editor.
+     *
      * @default ['none', 'daily', 'weekly', 'monthly', 'yearly']
      */
     @Property(['none', 'daily', 'weekly', 'monthly', 'yearly'])
     public frequencies: RepeatType[];
+
     /**
      * Sets the first day of the week.
+     *
      * @default 0
      */
     @Property(0)
     public firstDayOfWeek: number;
+
     /**
      * Sets the start date on recurrence editor.
+     *
      * @default new Date()
      * @aspDefaultValue DateTime.Now
-     * @blazorDefaultValue DateTime.Now
      */
     @Property(new Date())
     public startDate: Date;
+
     /**
      * Sets the user specific date format on recurrence editor.
+     *
      * @default null
      */
     @Property()
     public dateFormat: string;
+
     /**
      * Sets the specific calendar type to be applied on recurrence editor.
+     *
      * @default 'Gregorian'
-     * @deprecated
      */
     @Property('Gregorian')
     public calendarMode: CalendarType;
+
     /**
      * Allows styling with custom class names.
+     *
      * @default null
      */
     @Property()
     public cssClass: string;
+
     /**
      * Sets the recurrence rule as its output values.
+     *
      * @default null
      */
     @Property()
-    public value: String;
+    public value: string;
+
     /**
      * Sets the minimum date on recurrence editor.
+     *
      * @default new Date(1900, 0, 1)
      * @aspDefaultValue new DateTime(1900, 1, 1)
-     * @blazorDefaultValue new DateTime(1900, 1, 1)
      */
     @Property(new Date(1900, 0, 1))
     public minDate: Date;
+
     /**
      * Sets the maximum date on recurrence editor.
+     *
      * @default new Date(2099, 11, 31)
      * @aspDefaultValue new DateTime(2099, 12, 31)
-     * @blazorDefaultValue new DateTime(2099, 12, 31)
      */
     @Property(new Date(2099, 11, 31))
     public maxDate: Date;
+
     /**
      * Sets the current repeat type to be set on the recurrence editor.
+     *
      * @default 0
+     * @aspType int
      */
     @Property(0)
-    public selectedType: Number;
+    public selectedType: number;
+
     /**
      * Triggers for value changes on every sub-controls rendered within the recurrence editor.
-     * @event
-     * @blazorproperty 'OnChange'
+     *
+     * @event 'change'
      */
     @Event()
     public change: EmitType<RecurrenceEditorChangeEventArgs>;
+
     /**
      * Constructor for creating the widget
-     * @param  {object} options?
+     *
+     * @param {RecurrenceEditorModel} options Accepts the recurrence editor model properties to initiate the rendering
+     * @param {string | HTMLElement} element Accepts the DOM element reference
      */
     constructor(options?: RecurrenceEditorModel, element?: string | HTMLElement) {
         super(options, <string | HTMLElement>element);
     }
+
     public localeObj: L10n;
-    private defaultLocale: Object = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private defaultLocale: Record<string, any> = {
         none: 'None',
         daily: 'Daily',
         weekly: 'Weekly',
@@ -276,7 +297,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     private onWeekDay: RadioButton;
     private dayButtons: Button[] = [];
     private monthButtons: RadioButton[] = [];
-    private calendarUtil: CalendarUtil = getCalendarUtil(this.calendarMode);
+    private calendarUtil: CalendarUtil;
     private startState(freq: string, endOn: string, startDate: Date): void {
         this.showFormElement();
         this.updateForm(freq);
@@ -288,7 +309,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     }
     protected preRender(): void {
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
-        // pre render code snippets
+        this.calendarUtil = getCalendarUtil(this.calendarMode);
     }
     private applyCustomClass(cssClass: string): void {
         if (cssClass) {
@@ -313,19 +334,19 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     }
     private triggerChangeEvent(): void {
         if (this.renderStatus) {
-            let value: string = this.getRecurrenceRule();
+            const value: string = this.getRecurrenceRule();
             this.trigger('change', { value: value }, (args: { [key: string]: string }) => this.setProperties({ value: args.value }, false));
         }
     }
     private resetDayButton(): void {
-        let elements: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + DAYWRAPPER + ' button'));
+        const elements: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + DAYWRAPPER + ' button'));
         elements.forEach((element: HTMLElement) => removeClass([element], [ACTIVE, PRIMARY]));
     }
     private daySelection(dayIndex: number): void {
         this.resetDayButton();
-        let days: number[] = [0, 1, 2, 3, 4, 5, 6];
+        const days: number[] = [0, 1, 2, 3, 4, 5, 6];
         this.rotateArray(days, this.firstDayOfWeek);
-        let element: Element = this.element.querySelector('.' + DAYWRAPPER + ' button[data-index="' + days.indexOf(dayIndex) + '"]');
+        const element: Element = this.element.querySelector('.' + DAYWRAPPER + ' button[data-index="' + days.indexOf(dayIndex) + '"]');
         if (element) {
             addClass([element], [ACTIVE, PRIMARY]);
         }
@@ -338,12 +359,12 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         }
     }
     private updateUntilDate(date: Date): void {
-        let tempDate: Date = new Date(date.getTime());
+        const tempDate: Date = new Date(date.getTime());
         tempDate.setDate(tempDate.getDate() + 60);
         this.untilDateObj.setProperties({ value: tempDate });
     }
     private selectMonthDay(date: Date): void {
-        let weekday: string[] = [KEYSUNDAY, KEYMONDAY, KEYTUESDAY, KEYWEDNESDAY, KEYTHURSDAY, KEYFRIDAY, KEYSATURDAY];
+        const weekday: string[] = [KEYSUNDAY, KEYMONDAY, KEYTUESDAY, KEYWEDNESDAY, KEYTHURSDAY, KEYFRIDAY, KEYSATURDAY];
         this.monthDate.setProperties({ value: this.calendarUtil.getDate(date) });
         this.monthWeekDays.setProperties({ value: valueData[weekday[date.getDay()]] });
         this.monthValue.setProperties({ value: '' + this.calendarUtil.getMonth(date) });
@@ -352,48 +373,48 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     }
     private updateForm(state: string): void {
         this.repeatType.setProperties({ value: state });
-        let end: Element = this.element.querySelector('.' + ENDON);
+        const end: Element = this.element.querySelector('.' + ENDON);
         if (state === DAILY) {
             classList(end, [FORMLEFT], [FORMRIGHT]);
         } else {
             classList(end, [FORMRIGHT], [FORMLEFT]);
         }
         switch (state) {
-            case NONE:
-                neverClassList.forEach((className: string) => addClass([this.element.querySelector('.' + className)], HIDEWRAPPER));
-                break;
-            case WEEKLY:
-                weekClassList.forEach((className: string) => addClass([this.element.querySelector('.' + className)], HIDEWRAPPER));
-                break;
-            case MONTHLY:
-                monthClassList.forEach((className: string) => addClass([this.element.querySelector('.' + className)], HIDEWRAPPER));
-                break;
-            case YEARLY:
-                yearClassList.forEach((className: string) => addClass([this.element.querySelector('.' + className)], HIDEWRAPPER));
-                break;
-            case DAILY:
-                dailyClassList.forEach((className: string) => addClass([this.element.querySelector('.' + className)], HIDEWRAPPER));
-                break;
+        case NONE:
+            neverClassList.forEach((className: string) => addClass([this.element.querySelector('.' + className)], HIDEWRAPPER));
+            break;
+        case WEEKLY:
+            weekClassList.forEach((className: string) => addClass([this.element.querySelector('.' + className)], HIDEWRAPPER));
+            break;
+        case MONTHLY:
+            monthClassList.forEach((className: string) => addClass([this.element.querySelector('.' + className)], HIDEWRAPPER));
+            break;
+        case YEARLY:
+            yearClassList.forEach((className: string) => addClass([this.element.querySelector('.' + className)], HIDEWRAPPER));
+            break;
+        case DAILY:
+            dailyClassList.forEach((className: string) => addClass([this.element.querySelector('.' + className)], HIDEWRAPPER));
+            break;
 
         }
     }
     private updateEndOnForm(state: string): void {
         this.endType.setProperties({ value: state });
         switch (state) {
-            case NEVER:
-                noEndClassList.forEach((className: string) => addClass([this.element.querySelector('.' + className)], HIDEWRAPPER));
-                break;
-            case UNTIL:
-                endOnDateClassList.forEach((className: string) => addClass([this.element.querySelector('.' + className)], HIDEWRAPPER));
-                break;
-            case COUNT:
-                endOnCountClassList.forEach((className: string) => addClass([this.element.querySelector('.' + className)], HIDEWRAPPER));
-                break;
+        case NEVER:
+            noEndClassList.forEach((className: string) => addClass([this.element.querySelector('.' + className)], HIDEWRAPPER));
+            break;
+        case UNTIL:
+            endOnDateClassList.forEach((className: string) => addClass([this.element.querySelector('.' + className)], HIDEWRAPPER));
+            break;
+        case COUNT:
+            endOnCountClassList.forEach((className: string) => addClass([this.element.querySelector('.' + className)], HIDEWRAPPER));
+            break;
         }
     }
     private freshOnEndForm(): void {
         noEndClassList.forEach((className: string) => {
-            let element: Element = this.element.querySelector('.' + className);
+            const element: Element = this.element.querySelector('.' + className);
             if (element) {
                 removeClass([element], HIDEWRAPPER);
             }
@@ -401,14 +422,15 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     }
     private showFormElement(): void {
         neverClassList.forEach((className: string) => {
-            let hideElement: HTMLElement = this.element.querySelector('.' + className);
+            const hideElement: HTMLElement = this.element.querySelector('.' + className);
             if (hideElement) {
                 removeClass([hideElement], HIDEWRAPPER);
             }
         });
     }
     private renderDropdowns(): void {
-        let self: RecurrenceEditor = this;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self: RecurrenceEditor = this;
         this.repeatType = new DropDownList({
             //set the data to dataSource property
             dataSource: this.getRepeatData(),
@@ -452,7 +474,8 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         });
         this.endType.appendTo(<HTMLElement>this.element.querySelector('.' + ENDONELEMENT));
 
-        let renderDropDownList: Function = (dropDownData: [{ [key: string]: string | number }]) => {
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        const renderDropDownList: Function = (dropDownData: [{ [key: string]: string | number }]) => {
             return new DropDownList({
                 dataSource: dropDownData,
                 popupWidth: this.getPopupWidth(),
@@ -462,6 +485,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
                     value: VALUEFIELD
                 },
                 index: 1,
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 change: (args: ChangeEventArgs) => {
                     self.onWeekDay.setProperties({ checked: true });
                     self.resetFormValues();
@@ -485,6 +509,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             floatLabelType: 'Always',
             enableRtl: this.enableRtl,
             index: 7,
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             change: (args: ChangeEventArgs) => {
                 self.resetFormValues();
                 self.triggerChangeEvent();
@@ -494,9 +519,9 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     }
 
     private setDefaultValue(): void {
-        let formelement: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.e-control .e-numerictextbox'));
-        for (let element of formelement) {
-            let instance: NumericTextBox = ((element as EJ2Instance).ej2_instances[0] as NumericTextBox);
+        const formelement: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.e-control .e-numerictextbox'));
+        for (const element of formelement) {
+            const instance: NumericTextBox = ((element as EJ2Instance).ej2_instances[0] as NumericTextBox);
             if (instance.element.classList.contains(REPEATINTERVAL)) {
                 instance.value = 1;
                 instance.dataBind();
@@ -508,12 +533,13 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     }
 
     private resetFormValues(): void {
-        let recurreneElement: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.e-control [type="text"]'));
-        for (let element of recurreneElement) {
+        const recurreneElement: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.e-control [type="text"]'));
+        for (const element of recurreneElement) {
             let instance: DatePicker | DropDownList | NumericTextBox;
             if (element.classList.contains('e-datepicker')) {
-                instance = (element as EJ2Instance).ej2_instances[0] as DatePicker;
+                instance = (element as EJ2Instance).ej2_instances[0] as DropDownList;
                 if (instance.value) {
+                    // eslint-disable-next-line no-self-assign
                     instance.value = instance.value;
                     instance.dataBind();
                 } else {
@@ -543,15 +569,15 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         return Browser.isDevice ? '100%' : 'auto';
     }
     private renderDatePickers(): void {
-        let self: RecurrenceEditor = this;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self: RecurrenceEditor = this;
         this.untilDateObj = new DatePicker({
             firstDayOfWeek: this.firstDayOfWeek,
             enableRtl: this.enableRtl,
             locale: this.locale,
             min: this.minDate,
             max: this.maxDate,
-            format: (isNullOrUndefined(this.dateFormat) ?
-                this.getFormat('dateFormats') : this.dateFormat),
+            format: (isNullOrUndefined(this.dateFormat) ? this.getFormat('dateFormats') : this.dateFormat),
             change: (args: ChangedEventArgs) => {
                 if (args.value) {
                     self.triggerChangeEvent();
@@ -565,22 +591,20 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         if (this.locale === 'en' || this.locale === 'en-US') {
             format = getValue(formatType + '.short', getDefaultDateObject(this.getCalendarMode()));
         } else {
-            format = getValue(
-                // tslint:disable-next-line:max-line-length
-                'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.' + formatType + '.short', cldrData
-            );
+            format = getValue('main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.' + formatType + '.short', cldrData);
         }
         return format;
     }
     private dayButtonRender(): void {
-        let btns: HTMLButtonElement[] = [].slice.call(this.element.querySelectorAll('.' + DAYWRAPPER + ' button'));
-        let self: RecurrenceEditor = this;
-        for (let btn of btns) {
-            let button: Button = new Button({ isToggle: true, enableRtl: this.enableRtl }, btn);
+        const btns: HTMLButtonElement[] = [].slice.call(this.element.querySelectorAll('.' + DAYWRAPPER + ' button'));
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self: RecurrenceEditor = this;
+        for (const btn of btns) {
+            const button: Button = new Button({ isToggle: true, enableRtl: this.enableRtl }, btn);
             this.dayButtons.push(button);
             EventHandler.add(btn, 'click', (args: MouseEventArgs) => {
-                let btns: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + DAYWRAPPER + ' button.' + PRIMARY));
-                let element: HTMLElement = <HTMLElement>args.target;
+                const btns: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + DAYWRAPPER + ' button.' + PRIMARY));
+                const element: HTMLElement = <HTMLElement>args.target;
                 if (!element.classList.contains(PRIMARY)) {
                     addClass([element], PRIMARY);
                     self.triggerChangeEvent();
@@ -592,13 +616,14 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         }
     }
     private radioButtonRender(): void {
-        let self: RecurrenceEditor = this;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self: RecurrenceEditor = this;
         this.onMonthDay = new RadioButton({
             label: this.localeObj.getConstant(RADIOLABEL),
             enableRtl: this.enableRtl,
             name: 'monthType',
             value: 'day',
-            change: (args: object) => {
+            change: () => {
                 self.resetFormValues();
                 self.triggerChangeEvent();
             }
@@ -610,7 +635,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             name: 'monthType',
             enableRtl: this.enableRtl,
             value: 'daypos',
-            change: (args: object) => {
+            change: () => {
                 self.resetFormValues();
                 self.triggerChangeEvent();
             }
@@ -619,7 +644,8 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         this.monthButtons.push(this.onWeekDay);
     }
     private numericTextboxRender(): void {
-        let self: RecurrenceEditor = this;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self: RecurrenceEditor = this;
         this.recurrenceCount = new NumericTextBox({
             value: 10,
             format: '#',
@@ -627,7 +653,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             floatLabelType: 'Always',
             min: 1,
             max: 999,
-            change: (args: object) => {
+            change: () => {
                 self.triggerChangeEvent();
             }
         });
@@ -639,7 +665,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             enableRtl: this.enableRtl,
             min: 1,
             max: 31,
-            change: (args: object) => {
+            change: () => {
                 self.onMonthDay.setProperties({ checked: true });
                 self.triggerChangeEvent();
             }
@@ -653,7 +679,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             enableRtl: this.enableRtl,
             floatLabelType: 'Always',
             placeholder: this.localeObj.getConstant(REPEATEVERY),
-            change: (args: object) => {
+            change: () => {
                 self.triggerChangeEvent();
             }
         });
@@ -675,9 +701,10 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         }
     }
     private getEndData(): { [key: string]: string }[] {
-        let endData: string[] = [NEVER, UNTIL, COUNT];
-        let self: RecurrenceEditor = this;
-        let dataSource: { [key: string]: string }[] = [];
+        const endData: string[] = [NEVER, UNTIL, COUNT];
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self: RecurrenceEditor = this;
+        const dataSource: { [key: string]: string }[] = [];
         endData.forEach((data: string) => {
             dataSource.push({ text: self.localeObj.getConstant(data), value: data });
         });
@@ -686,8 +713,8 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     private getDayPosition(date: Date): number {
         let temp: Date = new Date(date.getTime());
         let endDate: Date = new Date(date.getTime());
-        let day: number = date.getDay();
-        let positionCollection: number[] = [];
+        const day: number = date.getDay();
+        const positionCollection: number[] = [];
         temp = this.calendarUtil.getMonthStartDate(temp);
         endDate = this.calendarUtil.getMonthEndDate(endDate);
         while (temp < endDate) {
@@ -702,61 +729,63 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         return (positionCollection.indexOf(date.getTime()) + 1);
     }
     private getRepeatData(): { [key: string]: string }[] {
-        let data: { [key: string]: string }[] = [];
-        let self: RecurrenceEditor = this;
+        const data: { [key: string]: string }[] = [];
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self: RecurrenceEditor = this;
         this.frequencies.forEach((element: string) => {
-            let textValue: string = (element === NONE) ? NEVER : element;
+            const textValue: string = (element === NONE) ? NEVER : element;
             data.push({ text: self.localeObj.getConstant(textValue), value: element });
         });
         return data;
     }
     private getMonthPosData(): { [key: string]: string | number }[] {
-        let monthpos: string[] = [FIRST, SECOND, THIRD, FOURTH, LAST];
-        let monthposValue: { [key: string]: number } = {
+        const monthpos: string[] = [FIRST, SECOND, THIRD, FOURTH, LAST];
+        const monthposValue: { [key: string]: number } = {
             first: 1,
             second: 2,
             third: 3,
             fourth: 4,
             last: -1
         };
-        let self: RecurrenceEditor = this;
-        let dataSource: { [key: string]: string | number }[] = [];
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self: RecurrenceEditor = this;
+        const dataSource: { [key: string]: string | number }[] = [];
         monthpos.forEach((data: string) => {
             dataSource.push({ text: self.localeObj.getConstant(data), value: monthposValue[data] });
         });
         return dataSource;
     }
     private getDayData(format: DayFormateType): { [key: string]: string }[] {
-        let weekday: string[] = [KEYSUNDAY, KEYMONDAY, KEYTUESDAY, KEYWEDNESDAY, KEYTHURSDAY, KEYFRIDAY, KEYSATURDAY];
-        let dayData: { [key: string]: string }[] = [];
+        const weekday: string[] = [KEYSUNDAY, KEYMONDAY, KEYTUESDAY, KEYWEDNESDAY, KEYTHURSDAY, KEYFRIDAY, KEYSATURDAY];
+        const dayData: { [key: string]: string }[] = [];
         let cldrObj: string[];
         this.rotateArray(weekday, this.firstDayOfWeek);
         if (this.locale === 'en' || this.locale === 'en-US') {
-            let nameSpaceString: string = 'days.stand-alone.';
+            const nameSpaceString: string = 'days.stand-alone.';
             cldrObj = <string[]>(getValue(nameSpaceString + format, getDefaultDateObject(this.getCalendarMode())));
         } else {
-            let nameSpaceString: string =
+            const nameSpaceString: string =
                 'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.stand-alone.' + format;
             cldrObj = <string[]>(getValue(nameSpaceString, cldrData));
         }
-        for (let obj of weekday) {
-            let day: string = getValue(obj, cldrObj);
+        for (const obj of weekday) {
+            const day: string = getValue(obj, cldrObj);
             dayData.push({ text: format === 'narrow' ? day : capitalizeFirstWord(day, 'single'), value: valueData[obj] });
         }
         return dayData;
     }
     private getMonthData(): { [key: string]: string }[] {
-        let monthData: { [key: string]: string }[] = [];
+        const monthData: { [key: string]: string }[] = [];
         let cldrObj: string[];
         if (this.locale === 'en' || this.locale === 'en-US') {
-            let nameSpaceString: string = 'months.stand-alone.wide';
+            const nameSpaceString: string = 'months.stand-alone.wide';
             cldrObj = <string[]>(getValue(nameSpaceString, getDefaultDateObject(this.getCalendarMode())));
         } else {
-            let nameSpaceString: string =
+            const nameSpaceString: string =
                 'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.months.stand-alone.wide';
             cldrObj = <string[]>(getValue(nameSpaceString, cldrData));
         }
-        for (let obj of Object.keys(cldrObj)) {
+        for (const obj of Object.keys(cldrObj)) {
             monthData.push({
                 text: capitalizeFirstWord(<string>getValue(obj, cldrObj), 'single'),
                 value: obj
@@ -765,8 +794,8 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         return monthData;
     }
     private setTemplate(): void {
-        let dayData: { [key: string]: string }[] = this.getDayData('narrow');
-        let fullDay: { [key: string]: string }[] = this.getDayData('wide');
+        const dayData: { [key: string]: string }[] = this.getDayData('narrow');
+        const fullDay: { [key: string]: string }[] = this.getDayData('wide');
         this.element.innerHTML = '<div class="' + HEADER + '">' +
             '<div class="' + INPUTWARAPPER + ' ' + FORMLEFT + '">' +
             '<input type="text" tabindex="0" class="' + REPEATELEMENT +
@@ -826,8 +855,8 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     }
     private getSelectedDaysData(): string {
         let ruleData: string = RULEBYDAY + EQUAL;
-        let elements: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + DAYWRAPPER + ' button.' + PRIMARY));
-        let weekday: string[] = [RULESUNDAY, RULEMONDAY, RULETUESDAY, RULEWEDNESDAY, RULETHURSDAY, RULEFRIDAY, RULESATURDAY];
+        const elements: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + DAYWRAPPER + ' button.' + PRIMARY));
+        const weekday: string[] = [RULESUNDAY, RULEMONDAY, RULETUESDAY, RULEWEDNESDAY, RULETHURSDAY, RULEFRIDAY, RULESATURDAY];
         this.rotateArray(weekday, this.firstDayOfWeek);
         for (let index: number = 0; index < elements.length; index++) {
             ruleData += weekday[parseInt(elements[index].getAttribute('data-index'), 10)] + (index === (elements.length - 1) ? '' : COMMA);
@@ -854,10 +883,10 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         return RULEBYMONTH + EQUAL + this.monthValue.value + SEMICOLON;
     }
     private updateWeekButton(keys: string[]): void {
-        let weekday: string[] = [RULESUNDAY, RULEMONDAY, RULETUESDAY, RULEWEDNESDAY, RULETHURSDAY, RULEFRIDAY, RULESATURDAY];
+        const weekday: string[] = [RULESUNDAY, RULEMONDAY, RULETUESDAY, RULEWEDNESDAY, RULETHURSDAY, RULEFRIDAY, RULESATURDAY];
         this.rotateArray(weekday, this.firstDayOfWeek);
-        for (let obj of this.dayButtons) {
-            let index: number = parseInt(obj.element.getAttribute('data-index'), 10);
+        for (const obj of this.dayButtons) {
+            const index: number = parseInt(obj.element.getAttribute('data-index'), 10);
             if (keys.indexOf(weekday[index]) !== -1) {
                 obj.setProperties({ isPrimary: true });
             } else {
@@ -872,7 +901,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         } else {
             this.onWeekDay.setProperties({ checked: true });
             this.monthWeekPos.setProperties({ value: this.ruleObject.setPosition });
-            for (let key of Object.keys(valueData)) {
+            for (const key of Object.keys(valueData)) {
                 if (valueData[key] === this.ruleObject.day[0]) {
                     this.monthWeekDays.setProperties({ value: this.ruleObject.day[0] });
                     break;
@@ -883,31 +912,31 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     private updateUI(repeat: string, state: string): void {
         this.repeatInterval.setProperties({ value: this.ruleObject.interval });
         switch (state) {
-            case UNTIL:
-                this.untilDateObj.setProperties({ value: this.ruleObject.until });
-                break;
-            case COUNT:
-                this.recurrenceCount.setProperties({ value: this.ruleObject.count });
-                break;
+        case UNTIL:
+            this.untilDateObj.setProperties({ value: this.ruleObject.until });
+            break;
+        case COUNT:
+            this.recurrenceCount.setProperties({ value: this.ruleObject.count });
+            break;
         }
         switch (repeat) {
-            case WEEKLY:
-                this.updateWeekButton(this.ruleObject.day);
-                break;
-            case YEARLY:
-                this.monthValue.setProperties({ index: (this.ruleObject.month[0] - 1) });
-                this.updateMonthUI();
-                break;
-            case MONTHLY:
-                this.updateMonthUI();
-                break;
+        case WEEKLY:
+            this.updateWeekButton(this.ruleObject.day);
+            break;
+        case YEARLY:
+            this.monthValue.setProperties({ index: (this.ruleObject.month[0] - 1) });
+            this.updateMonthUI();
+            break;
+        case MONTHLY:
+            this.updateMonthUI();
+            break;
         }
     }
     private getUntilData(): string {
         if (!this.untilDateObj.value) {
             return '';
         }
-        let tempStr: string = getRecurrenceStringFromDate(this.untilDateObj.value);
+        const tempStr: string = getRecurrenceStringFromDate(this.untilDateObj.value);
         return RULEUNTIL + EQUAL + tempStr + SEMICOLON;
     }
     private destroyComponents(): void {
@@ -951,15 +980,14 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         });
         this.monthButtons = [];
     }
-    /** @hidden */
     public resetFields(): void {
         this.startState(NONE, NEVER, this.startDate);
         this.setDefaultValue();
     }
     public updateRuleUntilDate(startDate: Date): void {
         if (this.untilDateObj.value && startDate) {
-            let untilDate: Date = this.untilDateObj.value;
-            let newUntilDate: Date = new Date(
+            const untilDate: Date = this.untilDateObj.value;
+            const newUntilDate: Date = new Date(
                 untilDate.getFullYear(), untilDate.getMonth(), untilDate.getDate(), startDate.getHours(),
                 startDate.getMinutes(), startDate.getMilliseconds());
             this.untilDateObj.setProperties({ value: newUntilDate });
@@ -978,29 +1006,29 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     public getRecurrenceRule(): string {
         let ruleData: string = RULEFREQ + EQUAL;
         switch (this.repeatType.value) {
-            case DAILY:
-                ruleData += RULEDAILY + SEMICOLON;
-                break;
-            case WEEKLY:
-                ruleData += RULEWEEKLY + SEMICOLON + this.getSelectedDaysData();
-                break;
-            case MONTHLY:
-                ruleData += RULEMONTHLY + SEMICOLON + this.getSelectedMonthData();
-                break;
-            case YEARLY:
-                ruleData += RULEYEARLY + SEMICOLON + this.getSelectedMonthData() + this.getYearMonthRuleData();
-                break;
-            case NONE:
-                return '';
+        case DAILY:
+            ruleData += RULEDAILY + SEMICOLON;
+            break;
+        case WEEKLY:
+            ruleData += RULEWEEKLY + SEMICOLON + this.getSelectedDaysData();
+            break;
+        case MONTHLY:
+            ruleData += RULEMONTHLY + SEMICOLON + this.getSelectedMonthData();
+            break;
+        case YEARLY:
+            ruleData += RULEYEARLY + SEMICOLON + this.getSelectedMonthData() + this.getYearMonthRuleData();
+            break;
+        case NONE:
+            return '';
         }
         ruleData += this.getIntervalData();
         switch (this.endType.value) {
-            case UNTIL:
-                ruleData += this.getUntilData();
-                break;
-            case COUNT:
-                ruleData += this.getEndOnCount();
-                break;
+        case UNTIL:
+            ruleData += this.getUntilData();
+            break;
+        case COUNT:
+            ruleData += this.getEndOnCount();
+            break;
         }
         return ruleData;
     }
@@ -1011,31 +1039,32 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         }
         this.renderStatus = false;
         this.ruleObject = extractObjectFromRule(rule);
-        let endon: string = this.ruleObject.count ? COUNT : (this.ruleObject.until ? UNTIL : NEVER);
+        const endon: string = this.ruleObject.count ? COUNT : (this.ruleObject.until ? UNTIL : NEVER);
         switch (this.ruleObject.freq) {
-            case RULEDAILY:
-                this.startState(DAILY, endon, startDate);
-                this.updateUI(DAILY, endon);
-                break;
-            case RULEWEEKLY:
-                this.startState(WEEKLY, endon, startDate);
-                this.updateUI(WEEKLY, endon);
-                break;
-            case RULEMONTHLY:
-                this.startState(MONTHLY, endon, startDate);
-                this.updateUI(MONTHLY, endon);
-                break;
-            case RULEYEARLY:
-                this.startState(YEARLY, endon, startDate);
-                this.updateUI(YEARLY, endon);
-                break;
+        case RULEDAILY:
+            this.startState(DAILY, endon, startDate);
+            this.updateUI(DAILY, endon);
+            break;
+        case RULEWEEKLY:
+            this.startState(WEEKLY, endon, startDate);
+            this.updateUI(WEEKLY, endon);
+            break;
+        case RULEMONTHLY:
+            this.startState(MONTHLY, endon, startDate);
+            this.updateUI(MONTHLY, endon);
+            break;
+        case RULEYEARLY:
+            this.startState(YEARLY, endon, startDate);
+            this.updateUI(YEARLY, endon);
+            break;
         }
         this.renderStatus = true;
         this.triggerChangeEvent();
     }
     /**
      * Destroys the widget.
-     * @returns void
+     *
+     * @returns {void}
      */
     public destroy(): void {
         this.destroyComponents();
@@ -1052,7 +1081,8 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
 
     /**
      * Get component name.
-     * @returns string
+     *
+     * @returns {string} Returns the module name
      * @private
      */
     public getModuleName(): string {
@@ -1061,14 +1091,17 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
 
     /**
      * Get the properties to be maintained in the persisted state.
-     * @returns string
+     *
+     * @returns {string} Returns the persisted state
      */
     public getPersistData(): string {
         return this.addOnPersist([]);
     }
+
     /**
      * Initialize the control rendering
-     * @returns void
+     *
+     * @returns {void}
      * @private
      */
     public render(): void {
@@ -1077,51 +1110,56 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         this.renderStatus = true;
         this.renderComplete();
     }
+
     /**
      * Called internally, if any of the property value changed.
+     *
+     * @param {RecurrenceEditorModel} newProp Accepts the changed properties new values
+     * @param {RecurrenceEditorModel} oldProp Accepts the changed properties old values
+     * @returns {void}
      * @private
      */
     public onPropertyChanged(newProp: RecurrenceEditorModel, oldProp: RecurrenceEditorModel): void {
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'startDate':
-                    this.selectMonthDay(newProp.startDate);
-                    this.updateUntilDate(newProp.startDate);
-                    this.endType.setProperties({ index: 0 });
-                    break;
-                case 'enableRtl':
-                    this.rtlClass(newProp.enableRtl);
-                    break;
-                case 'cssClass':
-                    if (oldProp.cssClass) { removeClass([this.element], oldProp.cssClass.split(' ')); }
-                    if (newProp.cssClass) { addClass([this.element], newProp.cssClass.split(' ')); }
-                    break;
-                case 'selectedType':
-                    this.repeatType.setProperties({ index: this.selectedType });
-                    break;
-                case 'minDate':
-                    this.untilDateObj.setProperties({ minDate: this.minDate });
-                    break;
-                case 'maxDate':
-                    this.untilDateObj.setProperties({ maxDate: this.maxDate });
-                    break;
-                case 'value':
-                    if (this.getRecurrenceRule() !== this.value) {
-                        this.setRecurrenceRule(this.value as string);
-                    }
-                    break;
-                case 'calendarMode':
-                    this.calendarMode = newProp.calendarMode;
-                    this.calendarUtil = getCalendarUtil(newProp.calendarMode);
-                    break;
-                case 'locale':
-                case 'frequencies':
-                case 'firstDayOfWeek':
-                    this.refresh();
-                    break;
-                case 'dateFormat':
-                    this.untilDateObj.setProperties({ format: newProp.dateFormat });
-                    break;
+            case 'startDate':
+                this.selectMonthDay(newProp.startDate);
+                this.updateUntilDate(newProp.startDate);
+                this.endType.setProperties({ index: 0 });
+                break;
+            case 'enableRtl':
+                this.rtlClass(newProp.enableRtl);
+                break;
+            case 'cssClass':
+                if (oldProp.cssClass) { removeClass([this.element], oldProp.cssClass.split(' ')); }
+                if (newProp.cssClass) { addClass([this.element], newProp.cssClass.split(' ')); }
+                break;
+            case 'selectedType':
+                this.repeatType.setProperties({ index: this.selectedType });
+                break;
+            case 'minDate':
+                this.untilDateObj.setProperties({ minDate: this.minDate });
+                break;
+            case 'maxDate':
+                this.untilDateObj.setProperties({ maxDate: this.maxDate });
+                break;
+            case 'value':
+                if (this.getRecurrenceRule() !== this.value) {
+                    this.setRecurrenceRule(this.value as string);
+                }
+                break;
+            case 'calendarMode':
+                this.calendarMode = newProp.calendarMode;
+                this.calendarUtil = getCalendarUtil(newProp.calendarMode);
+                break;
+            case 'locale':
+            case 'frequencies':
+            case 'firstDayOfWeek':
+                this.refresh();
+                break;
+            case 'dateFormat':
+                this.untilDateObj.setProperties({ format: newProp.dateFormat });
+                break;
             }
         }
     }

@@ -1,3 +1,8 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable @typescript-eslint/ban-types */
 import { Component, INotifyPropertyChanged, Property, Complex, Collection, Internationalization } from '@syncfusion/ej2-base';
 import { Browser, EmitType, remove, Event, EventHandler } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
@@ -43,6 +48,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * The width of the stockChart as a string accepts input as both like '100px' or '100%'.
      * If specified as '100%, stockChart renders to the full width of its parent element.
+     *
      * @default null
      */
 
@@ -52,6 +58,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * The height of the stockChart as a string accepts input both as '100px' or '100%'.
      * If specified as '100%, stockChart renders to the full height of its parent element.
+     *
      * @default null
      */
 
@@ -80,6 +87,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * });
      * financial.appendTo('#financial');
      * ```
+     *
      * @default ''
      */
 
@@ -104,6 +112,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * The background color of the stockChart that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default null
      */
     @Property(null)
@@ -111,6 +120,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Specifies the theme for the stockChart.
+     *
      * @default 'Material'
      */
 
@@ -133,6 +143,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Options to configure the vertical axis.
+     *
      * @complex {opposedPosition=true, labelPosition=AxisPosition.Outside}
      */
 
@@ -172,6 +183,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * It specifies whether the stockChart should be render in transposed manner or not.
+     *
      * @default false
      */
     @Property(false)
@@ -179,6 +191,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Title of the chart
+     *
      * @default ''
      */
 
@@ -189,7 +202,6 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * Options for customizing the title of the Chart.
      */
 
-    // tslint:disable-next-line:max-line-length
     @Complex<StockChartFontModel>({ size: '15px', fontWeight: '500', color: null, fontStyle: 'Normal', fontFamily: 'Segoe UI' }, StockChartFont)
     public titleStyle: StockChartFontModel;
     /**
@@ -219,6 +231,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * It specifies whether the periodSelector to be rendered in financial chart
+     *
      * @default true
      */
     @Property(true)
@@ -226,6 +239,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Custom Range
+     *
      * @default true
      */
     @Property(true)
@@ -233,6 +247,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * If set true, enables the animation in chart.
+     *
      * @default false
      */
     @Property(false)
@@ -240,6 +255,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * It specifies whether the range navigator to be rendered in financial chart
+     *
      * @default true
      */
     @Property(true)
@@ -260,7 +276,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers before render the selector
-     * @event
+     *
+     * @event selectorRender
      * @deprecated
      */
     @Event()
@@ -268,7 +285,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers on hovering the stock chart.
-     * @event
+     *
+     * @event stockChartMouseMove
      * @blazorProperty 'OnStockChartMouseMove'
      */
 
@@ -277,7 +295,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers when cursor leaves the chart.
-     * @event
+     *
+     * @event stockChartMouseLeave
      * @blazorProperty 'OnStockChartMouseLeave'
      */
 
@@ -286,7 +305,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers on mouse down.
-     * @event
+     *
+     * @event stockChartMouseDown
      * @blazorProperty 'OnStockChartMouseDown'
      */
 
@@ -295,7 +315,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers on mouse up.
-     * @event
+     *
+     * @event stockChartMouseUp
      * @blazorProperty 'OnStockChartMouseUp'
      */
 
@@ -304,7 +325,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers on clicking the stock chart.
-     * @event
+     *
+     * @event stockChartMouseClick
      * @blazorProperty 'OnStockChartMouseClick'
      */
 
@@ -313,7 +335,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers on point click.
-     * @event
+     *
+     * @event pointClick
      * @blazorProperty 'OnPointClick'
      */
 
@@ -322,7 +345,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers on point move.
-     * @event
+     *
+     * @event pointMove
      * @blazorProperty 'PointMoved'
      */
 
@@ -331,7 +355,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers after the zoom selection is completed.
-     * @event
+     *
+     * @event onZooming
      */
     @Event()
     public onZooming: EmitType<IZoomingEventArgs>;
@@ -346,6 +371,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * * dragXY: selects points by dragging with respect to both horizontal and vertical axes
      * * dragX: selects points by dragging with respect to horizontal axis.
      * * dragY: selects points by dragging with respect to vertical axis.
+     *
      * @default None
      */
     @Property('None')
@@ -353,6 +379,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * If set true, enables the multi selection in chart. It requires `selectionMode` to be `Point` | `Series` | or `Cluster`.
+     *
      * @default false
      */
     @Property(false)
@@ -360,14 +387,16 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers before the range navigator rendering
-     * @event
+     *
+     * @event load
      */
     @Event()
     public load: EmitType<IStockChartEventArgs>;
 
     /**
      * Triggers after the range navigator rendering
-     * @event
+     *
+     * @event loaded
      * @blazorProperty 'Loaded'
      */
     @Event()
@@ -375,7 +404,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers if the range is changed
-     * @event
+     *
+     * @event rangeChange
      * @blazorProperty 'RangeChange'
      */
     @Event()
@@ -383,7 +413,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers before each axis label is rendered.
-     * @event
+     *
+     * @event axisLabelRender
      * @deprecated
      */
     @Event()
@@ -391,7 +422,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers before the tooltip for series is rendered.
-     * @event
+     *
+     * @event tooltipRender
      * @deprecated
      */
 
@@ -400,7 +432,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers before the series is rendered.
-     * @event
+     *
+     * @event seriesRender
      * @deprecated
      */
 
@@ -409,7 +442,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Triggers before the series is rendered.
-     * @event
+     *
+     * @event stockEventRender
      * @deprecated
      */
     @Event()
@@ -432,6 +466,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * });
      * chart.appendTo('#Chart');
      * ```
+     *
      * @default []
      */
     @Collection<StockChartIndexesModel>([], StockChartIndexes)
@@ -559,7 +594,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /** @private */
     public periodSelectorHeight: number;
     /** @private */
-    public toolbarHeight: number = this.enablePeriodSelector ? (Browser.isDevice ? 56 : 42) : 0;
+    public toolbarHeight: number;
     /** @private */
     public stockChartTheme: IThemeStyle;
     /** @private */
@@ -573,24 +608,27 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Constructor for creating the widget
+     *
      * @hidden
      */
     constructor(options?: StockChartModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
+        this.toolbarHeight = this.enablePeriodSelector ? (Browser.isDevice ? 56 : 42) : 0;
     }
 
     /**
      * Called internally if any of the property value changed.
+     *
      * @private
      */
-    // tslint:disable-next-line:max-func-body-length
+    // eslint-disable-next-line
     public onPropertyChanged(newProp: StockChartModel, oldProp: StockChartModel): void {
         // on property changes
-        for (let property of Object.keys(newProp)) {
+        for (const property of Object.keys(newProp)) {
             switch (property) {
-                case 'series':
-                    this.render();
-                    break;
+            case 'series':
+                this.render();
+                break;
             }
         }
     }
@@ -599,7 +637,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      */
     public rangeChanged(updatedStart: number, updatedEnd: number): void {
         // manage chart refresh
-        let chartElement: Element = document.getElementById(this.chartObject.id);
+        const chartElement: Element = document.getElementById(this.chartObject.id);
         if (chartElement) {
             while (chartElement.firstChild) {
                 chartElement.removeChild(chartElement.firstChild);
@@ -615,7 +653,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * Pre render for financial Chart
      */
     protected preRender(): void {
-        let blazor: string = 'Blazor';
+        const blazor: string = 'Blazor';
         this.isBlazor = window[blazor];
         this.unWireEvents();
         this.initPrivateVariable();
@@ -630,10 +668,10 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      */
     private unWireEvents(): void {
         /*! Find the Events type */
-        let startEvent: string = Browser.touchStartEvent;
-        let moveEvent: string = Browser.touchMoveEvent;
-        let stopEvent: string = Browser.touchEndEvent;
-        let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        const startEvent: string = Browser.touchStartEvent;
+        const moveEvent: string = Browser.touchMoveEvent;
+        const stopEvent: string = Browser.touchEndEvent;
+        const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         /*! UnBind the Event handler */
 
         EventHandler.remove(this.element, startEvent, this.stockChartOnMouseDown);
@@ -654,7 +692,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     private wireEvents(): void {
         /*! Find the Events type */
 
-        let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
 
         /*! Bind the Event handler */
         EventHandler.add(this.element, Browser.touchStartEvent, this.stockChartOnMouseDown, this);
@@ -673,7 +711,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     private initPrivateVariable(): void {
         if (this.element.id === '') {
-            let collection: number = document.getElementsByClassName('e-stockChart').length;
+            const collection: number = document.getElementsByClassName('e-stockChart').length;
             this.element.id = 'stockChart_' + this.chartid + '_' + collection;
         }
         this.seriesXMax = null;
@@ -692,7 +730,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     private storeDataSource(): void {
         for (let i: number = 0; i < this.series.length; i++) {
-            let series: StockSeries = this.series[i] as StockSeries;
+            const series: StockSeries = this.series[i] as StockSeries;
             this.tempSeriesType.push(series.type);
             series.localData = undefined;
         }
@@ -710,7 +748,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      */
 
     protected render(): void {
-        let loadEventData: IStockChartEventArgs = { name: 'load', stockChart: this.isBlazor ? {} as StockChart : this, theme: this.theme };
+        const loadEventData: IStockChartEventArgs = { name: 'load', stockChart: this.isBlazor ? {} as StockChart : this, theme: this.theme };
         this.trigger('load', loadEventData, () => {
             this.theme = this.isBlazor ? loadEventData.theme : this.theme;
             this.stockChartTheme = getThemeColor(this.theme);
@@ -742,11 +780,12 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * To set styles to resolve mvc width issue.
-     * @param element
+     *
+     * @param {HTMLElement} element html element
      */
     private setStyle(element: HTMLElement): void {
-        let zooming: ZoomSettingsModel = this.zoomSettings;
-        let disableScroll: boolean = zooming.enableSelectionZooming || zooming.enablePinchZooming ||
+        const zooming: ZoomSettingsModel = this.zoomSettings;
+        const disableScroll: boolean = zooming.enableSelectionZooming || zooming.enablePinchZooming ||
             this.selectionMode !== 'None' || this.crosshair.enable;
         element.style.msTouchAction = disableScroll ? 'none' : 'element';
         element.style.touchAction = disableScroll ? 'none' : 'element';
@@ -774,7 +813,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     }
 
     private createSecondaryElements(): void {
-        let tooltipDiv: Element = redrawElement(false, this.element.id + '_Secondary_Element') ||
+        const tooltipDiv: Element = redrawElement(false, this.element.id + '_Secondary_Element') ||
             this.createElement('div');
         tooltipDiv.id = this.element.id + '_Secondary_Element';
         if (this.title) {
@@ -783,7 +822,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         } else {
             this.titleSize = { height: null, width: null };
         }
-        let height: number = (this.enablePeriodSelector ? this.toolbarHeight : 0) + this.titleSize.height;
+        const height: number = (this.enablePeriodSelector ? this.toolbarHeight : 0) + this.titleSize.height;
         tooltipDiv.setAttribute('style', 'position: relative; height:' + height + 'px');
         appendChildElement(false, this.element, tooltipDiv, false);
     }
@@ -792,12 +831,12 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         let tempData: Object;
         if (totalData && this.startValue && this.endValue) {
             tempData = (totalData as Object[])
-            .filter((data: Object) => {
-                return (
-                    new Date(Date.parse(data[xName])).getTime() >= this.startValue &&
+                .filter((data: Object) => {
+                    return (
+                        new Date(Date.parse(data[xName])).getTime() >= this.startValue &&
                     new Date(Date.parse(data[xName])).getTime() <= this.endValue
                     );
-            });
+                });
         }
         return tempData;
     }
@@ -810,7 +849,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             this.toolbarSelector.initializePeriodSelector();
             this.periodSelector.toolbar.refreshOverflow();   //to avoid overlapping toolbar elements
             if (!this.enableSelector) {
-                this.cartesianChart.cartesianChartRefresh(this, this.startValue, this.endValue);
+                this.cartesianChart.cartesianChartRefresh(this);
             }
         }
     }
@@ -840,6 +879,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Get the properties to be maintained in the persisted state.
+     *
      * @private
      */
     public getPersistData(): string {
@@ -848,14 +888,15 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * To Remove the SVG.
-     * @return {boolean}
+     *
+     * @returns {void}
      * @private
      */
     public removeSvg(): void {
         if (document.getElementById(this.element.id + '_Secondary_Element')) {
             remove(document.getElementById(this.element.id + '_Secondary_Element'));
         }
-        let removeLength: number = 0;
+        const removeLength: number = 0;
         if (this.mainObject) {
             while (this.mainObject.childNodes.length > removeLength) {
                 this.mainObject.removeChild(this.mainObject.firstChild);
@@ -873,7 +914,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     public chartModuleInjection(): void {
         let moduleName: string;
-        for (let modules of this.getInjectedModules()) {
+        for (const modules of this.getInjectedModules()) {
             moduleName = modules.prototype.getModuleName().toLowerCase();
             if (moduleName.indexOf('rangetooltip') === -1) {
                 Chart.Inject(modules);
@@ -891,7 +932,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      */
     private findRange(): void {
         this.seriesXMin = Infinity; this.seriesXMax = -Infinity;
-        for (let value of this.chart.series as Series[]) {
+        for (const value of this.chart.series as Series[]) {
             if (value.visible) {
                 this.seriesXMin = Math.min(this.seriesXMin, value.xMin);
                 this.seriesXMax = Math.max(this.seriesXMax, value.xMax);
@@ -902,7 +943,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             this.toolbarSelector = new ToolBarSelector(this);
             this.periodSelector = new PeriodSelector(this);
             this.tempPeriods = this.periods.length ? this.periods : this.toolbarSelector.calculateAutoPeriods();
-            this.tempPeriods.map((period: PeriodsModel, index: number) => {
+            this.tempPeriods.map((period: PeriodsModel) => {
                 if (period.selected && period.text.toLowerCase() === 'ytd') {
                     this.startValue = new Date(new Date(this.currentEnd).getFullYear().toString()).getTime();
                 } else if (period.selected && period.text.toLowerCase() === 'all') {
@@ -921,10 +962,11 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Handles the chart resize.
-     * @return {boolean}
+     *
+     * @returns {boolean} false
      * @private
      */
-    public stockChartResize(e: Event): boolean {
+    public stockChartResize(): boolean {
         // To avoid resize console error
         if (!document.getElementById(this.element.id)) {
             return false;
@@ -933,12 +975,12 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
         }
-        this.resizeTo = setTimeout(
+        this.resizeTo = +setTimeout(
             (): void => {
                 calculateSize(this);
                 this.renderBorder();
                 this.renderTitle();
-                this.cartesianChart.cartesianChartRefresh(this, this.startValue, this.endValue);
+                this.cartesianChart.cartesianChartRefresh(this);
                 this.mainObject.setAttribute('width', this.availableSize.width.toString());
                 if (this.enablePeriodSelector) {
                     this.renderPeriodSelector();
@@ -951,7 +993,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Handles the mouse down on chart.
-     * @return {boolean}
+     *
+     * @returns {boolean} false
      * @private
      */
     public stockChartOnMouseDown(e: PointerEvent): boolean {
@@ -959,9 +1002,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         let pageY: number;
         let target: Element;
         let touchArg: TouchEvent;
-        let offset: number = Browser.isDevice ? 20 : 30;
-        let rect: ClientRect = this.chart.element.getBoundingClientRect();
-        let element: Element = <Element>e.target;
+        const rect: ClientRect = this.chart.element.getBoundingClientRect();
+        const element: Element = <Element>e.target;
         this.trigger('stockChartMouseDown', { target: element.id, x: this.mouseX, y: this.mouseY });
         if (e.type === 'touchstart') {
             this.isTouch = true;
@@ -975,7 +1017,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             target = <Element>e.target;
         }
         if (target.id.indexOf(this.element.id + '_stockChart_chart') > -1) {
-            let svgRect: ClientRect = getElement(this.element.id + '_stockChart_chart').getBoundingClientRect();
+            const svgRect: ClientRect = getElement(this.element.id + '_stockChart_chart').getBoundingClientRect();
 
             this.mouseDownY = this.previousMouseMoveY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
             this.mouseDownX = this.previousMouseMoveX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
@@ -991,7 +1033,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     }
     /**
      * Handles the mouse up.
-     * @return {boolean}
+     *
+     * @returns {boolean} false
      * @private
      */
     public stockChartMouseEnd(e: PointerEvent): boolean {
@@ -1015,12 +1058,13 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Handles the mouse up.
-     * @return {boolean}
+     *
+     * @returns {boolean} false
      * @private
      */
 
     public stockChartOnMouseUp(e: PointerEvent | TouchEvent): boolean {
-        let element: Element = <Element>e.target;
+        const element: Element = <Element>e.target;
         this.trigger('stockChartMouseUp', { target: element.id, x: this.mouseX, y: this.mouseY });
         this.isChartDrag = false;
         this.allowPan = false;
@@ -1038,10 +1082,10 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * To find mouse x, y for aligned chart element svg position
      */
     private setMouseXY(pageX: number, pageY: number): void {
-        let svgRectElement: Element = getElement(this.element.id + '_stockChart_chart');
+        const svgRectElement: Element = getElement(this.element.id + '_stockChart_chart');
         if (this.element && svgRectElement) {
-            let stockRect: ClientRect = this.element.getBoundingClientRect();
-            let svgRect: ClientRect = svgRectElement.getBoundingClientRect();
+            const stockRect: ClientRect = this.element.getBoundingClientRect();
+            const svgRect: ClientRect = svgRectElement.getBoundingClientRect();
             this.mouseX = (pageX - stockRect.left) - Math.max(svgRect.left - stockRect.left, 0);
             this.mouseY = (pageY - stockRect.top) - Math.max(svgRect.top - stockRect.top, 0);
         }
@@ -1049,7 +1093,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Handles the mouse move.
-     * @return {boolean}
+     *
+     * @returns {boolean} false
      * @private
      */
     public stockChartOnMouseMove(e: PointerEvent): boolean {
@@ -1073,7 +1118,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Handles the mouse move on chart.
-     * @return {boolean}
+     *
+     * @returns {boolean} false
      * @private
      */
     public chartOnMouseMove(e: PointerEvent | TouchEvent): boolean {
@@ -1082,14 +1128,13 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             getElement(this.element.id + '_stockChart_chart').setAttribute('cursor', 'pointer');
             this.mouseUpXPoint = getRangeValueXByPoint(this.mouseX - this.referenceXAxis.rect.x, this.referenceXAxis.rect.width,
                                                        this.referenceXAxis.visibleRange, this.referenceXAxis.isInversed);
-            let diff: number = Math.abs(this.mouseUpXPoint - this.mouseDownXPoint);
+            const diff: number = Math.abs(this.mouseUpXPoint - this.mouseDownXPoint);
 
             if (this.mouseDownXPoint < this.mouseUpXPoint) {
                 if (this.seriesXMin <= this.referenceXAxis.visibleRange.min - diff) {
                     this.startValue = this.referenceXAxis.visibleRange.min - diff;
                     this.endValue = this.referenceXAxis.visibleRange.max - diff;
-                    this.cartesianChart.cartesianChartRefresh(this, this.referenceXAxis.visibleRange.min - diff,
-                                                              this.referenceXAxis.visibleRange.max - diff);
+                    this.cartesianChart.cartesianChartRefresh(this);
                     this.rangeSelector.sliderChange(this.referenceXAxis.visibleRange.min - diff,
                                                     this.referenceXAxis.visibleRange.max - diff);
                 }
@@ -1097,8 +1142,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
                 if (this.seriesXMax >= this.referenceXAxis.visibleRange.max + diff) {
                     this.startValue = this.referenceXAxis.visibleRange.min + diff;
                     this.endValue = this.referenceXAxis.visibleRange.max + diff;
-                    this.cartesianChart.cartesianChartRefresh(this, this.referenceXAxis.visibleRange.min + diff,
-                                                              this.referenceXAxis.visibleRange.max + diff);
+                    this.cartesianChart.cartesianChartRefresh(this);
                     this.rangeSelector.sliderChange(this.referenceXAxis.visibleRange.min + diff,
                                                     this.referenceXAxis.visibleRange.max + diff);
                 }
@@ -1134,11 +1178,12 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Handles the mouse click on chart.
-     * @return {boolean}
+     *
+     * @returns {boolean} false
      * @private
      */
     public stockChartOnMouseClick(e: PointerEvent | TouchEvent): boolean {
-        let element: Element = <Element>e.target;
+        const element: Element = <Element>e.target;
         this.trigger('stockChartMouseClick', { target: element.id, x: this.mouseX, y: this.mouseY });
         this.notify('click', e);
         return false;
@@ -1156,7 +1201,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Handles the mouse leave.
-     * @return {boolean}
+     *
+     * @returns {boolean} false
      * @private
      */
     public stockChartOnMouseLeave(e: PointerEvent): boolean {
@@ -1176,12 +1222,12 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Handles the mouse leave on chart.
-     * @return {boolean}
+     *
+     * @returns {boolean} false
      * @private
      */
     public stockChartOnMouseLeaveEvent(e: PointerEvent | TouchEvent): boolean {
-        let element: Element = <Element>e.target;
-        let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         //this.trigger(chartMouseLeave, { target: element.id, x: this.mouseX, y: this.mouseY });
         this.isChartDrag = false;
         this.notify(cancelEvent, e);
@@ -1200,7 +1246,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     private renderBorder(): void {
         if (this.border.width) {
-            let border: HTMLElement = this.createElement('div');
+            const border: HTMLElement = this.createElement('div');
             border.id = this.element.id + '_stock_border';
             border.style.width = (this.availableSize.width) + 'px';
             border.style.height = (this.availableSize.height) + 'px';
@@ -1226,18 +1272,18 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
                     fill: this.background || this.stockChartTheme.background
                 }),
                 false);
-            let alignment: Alignment = this.titleStyle.textAlignment;
-            let getAnchor: string = alignment === 'Near' ? 'start' : alignment === 'Far' ? 'end' : 'middle';
+            const alignment: Alignment = this.titleStyle.textAlignment;
+            const getAnchor: string = alignment === 'Near' ? 'start' : alignment === 'Far' ? 'end' : 'middle';
             rect = new Rect(
                 0, 0, this.availableSize.width, 0
             );
-            let options: TextOption = new TextOption(
+            const options: TextOption = new TextOption(
                 this.element.id + '_ChartTitle',
                 titlePositionX(rect, this.titleStyle),
                 ((this.titleSize.height - 10)),
                 getAnchor, this.title, '', 'auto'
             );
-            let element: Element = textElement(
+            textElement(
                 this.renderer as unknown as SvgRenderer,
                 options, this.titleStyle, this.titleStyle.color || this.findTitleColor(),
                 getElement(this.element.id + '_stockChart_Title'), false, false

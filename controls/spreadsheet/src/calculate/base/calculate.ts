@@ -1,4 +1,3 @@
-/* tslint:disable-next-line:max-line-length */
 import { getValue, INotifyPropertyChanged, EmitType, Event, ModuleDeclaration, NotifyPropertyChanges, Base, Property, isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 import { BasicFormulas } from './../formulas/index';
 import { CalculateModel } from './calculate-model';
@@ -13,17 +12,19 @@ import { Parser } from './parser';
 @NotifyPropertyChanges
 export class Calculate extends Base<HTMLElement> implements INotifyPropertyChanged {
     private lFormulas: Map<string, IFormulaColl> = new Map<string, IFormulaColl>();
-    /* tslint:disable-next-line:no-any */
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     get libraryFormulas(): any {
         return this.lFormulas;
     }
-    /* tslint:disable-next-line:no-any */
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     set libraryFormulas(formulaColl: any) {
-        this.lFormulas.set
-            (formulaColl.fName, { handler: formulaColl.handler, category: formulaColl.category, description: formulaColl.description });
+        this.lFormulas.set(
+            formulaColl.fName, { handler: formulaColl.handler, category: formulaColl.category, description: formulaColl.description });
     }
     /** @hidden */
     public storedData: Map<string, FormulaInfo> = new Map<string, FormulaInfo>();
+    /** @hidden */
+    public actCell: string;
     private keyToRowsMap: Map<string, number> = new Map<string, number>();
     private rowsToKeyMap: Map<number, string> = new Map<number, string>();
     /** @hidden */
@@ -41,8 +42,6 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     /** @hidden */
     public parentObject: Object | Calculate;
     /** @hidden */
-    public spreadSheetUsedRange: number[];
-    /** @hidden */
     public tic: string = '\"';
     /** @hidden */
     public singleTic: string = '\'';
@@ -51,6 +50,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     /** @hidden */
     public falseValue: string = 'FALSE';
     private parseDecimalSeparator: string = '.';
+    /** @hidden */
+    public spreadSheetUsedRange: number[];
     /** @hidden */
     public arithMarker: string = String.fromCharCode(180);
     /** @hidden */
@@ -135,6 +136,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Specifies a value that indicates whether the basic formulas need to be included.
+     *
      * @default true
      */
     @Property(true)
@@ -142,17 +144,20 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Triggers when the calculation caught any errors.
-     * @event 
+     *
+     * @event anEvent
      */
     @Event()
     public onFailure: EmitType<FailureEventArgs>;
 
     /**
      * Base constructor for creating Calculate library.
+     *
+     * @param {Object} parent - specify the parent
      */
     constructor(parent?: Object) {
         super(null, null);
-        let moduleLoader: ModuleLoader = new ModuleLoader(this);
+        const moduleLoader: ModuleLoader = new ModuleLoader(this);
         if (this.includeBasicFormulas) {
             Calculate.Inject(BasicFormulas);
         }
@@ -166,10 +171,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To get the argument separator to split the formula arguments.
-     * @returns string
+     *
+     * @returns {string} - To get the argument separator to split the formula arguments.
      */
     public getParseArgumentSeparator(): string {
-        let seperator: string = ',';
+        const seperator: string = ',';
         if (!this.isArgumentSeparatorChanged && seperator !== this.parseArgumentSeparator) {
             this.parseArgumentSeparator = seperator;
         }
@@ -178,8 +184,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To set the argument separator to split the formula arguments.
-     * @param {string} value - Argument separator based on the culture. 
-     * @returns void
+     *
+     * @param {string} value - Argument separator based on the culture.
+     * @returns {void} - To set the argument separator to split the formula arguments.
      */
     public setParseArgumentSeparator(value: string): void {
         this.parseArgumentSeparator = value;
@@ -188,7 +195,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To get the date separator to split the date value.
-     * @returns string
+     *
+     * @returns {string} - To get the date separator to split the date value.
      */
     public getParseDateTimeSeparator(): string {
         return this.parseDateTimeSeparator;
@@ -196,8 +204,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To set whether the empty string is treated as zero or not.
-     * @param {boolean} value
-     * @returns boolean
+     *
+     * @param {boolean} value - specify the boolean.
+     * @returns {void} - To set whether the empty string is treated as zero or not.
      */
     public setTreatEmptyStringAsZero(value: boolean): void {
         this.treatEmptyStringAsZero = value;
@@ -205,7 +214,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To get whether the empty string is treated as zero or not.
-     * @returns boolean
+     *
+     * @returns {boolean} - To get whether the empty string is treated as zero or not.
      */
     public getTreatEmptyStringAsZero(): boolean {
         return this.treatEmptyStringAsZero;
@@ -213,8 +223,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To set the date separator to split the date value.
-     * @param {string} value - Argument separator based on the culture. 
-     * @returns void
+     *
+     * @param {string} value - Argument separator based on the culture.
+     * @returns {void} - To set the date separator to split the date value.
      */
     public setParseDateTimeSeparator(value: string): void {
         this.parseDateTimeSeparator = value;
@@ -222,7 +233,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To provide the array of modules needed.
+     *
      * @hidden
+     * @returns {ModuleDeclaration[]} - To provide the array of modules needed.
      */
     public requiredModules(): ModuleDeclaration[] {
         return getModules(this);
@@ -230,7 +243,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Dynamically injects the required modules to the library.
+     *
      * @hidden
+     * @param {Function[]} moduleList - Specify the module list
+     * @returns {void} - Dynamically injects the required modules to the library.
      */
     public static Inject(...moduleList: Function[]): void {
         if (!this.prototype.injectedModules) {
@@ -245,7 +261,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Get injected modules
+     *
      * @hidden
+     * @returns {Function[]} - get Injected Modules
      */
     public getInjectedModules(): Function[] {
         return this.injectedModules;
@@ -259,14 +277,21 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return 'calculate';
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @returns {string} - get Formula Character.
+     */
     public getFormulaCharacter(): string {
         return '=';
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} text - specify the text
+     * @returns {boolean} - Returns boolean value.
+     */
     public isUpperChar(text: string): boolean {
-        let charCode: number = text.charCodeAt(0);
+        const charCode: number = text.charCodeAt(0);
         return ((charCode > 64) && (charCode < 91));
     }
 
@@ -278,13 +303,15 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * @hidden
+     * @param {string} cellRef -  specify the cell reference
+     * @returns {void} - update Dependent Cell
      */
     public updateDependentCell(cellRef: string): void {
-        let family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
+        const family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
         let cell: string = this.cell;
         if (cell !== this.emptyString) {
             if (family.sheetNameToParentObject !== null) {
-                let token: string = family.parentObjectToToken.get(this.grid);
+                const token: string = family.parentObjectToToken.get(this.grid);
                 if (cell.indexOf(this.sheetToken) === -1) {
                     cell = token + cell;
                 }
@@ -294,7 +321,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             }
 
             if (this.getDependentCells().has(cellRef)) {
-                let formulaCells: string[] = this.getDependentCells().get(cellRef);
+                const formulaCells: string[] = this.getDependentCells().get(cellRef);
                 if (formulaCells.indexOf(cell) < 0) {
                     formulaCells.push(cell);
                 }
@@ -307,9 +334,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     private addToFormulaDependentCells(cellRef: string): void {
         let cell1: string = this.cell;
-        let family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
+        const family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
         if (family.sheetNameToParentObject != null && cell1.indexOf(this.sheetToken) === -1) {
-            let token: string = family.parentObjectToToken.get(this.grid);
+            const token: string = family.parentObjectToToken.get(this.grid);
             cell1 = token + cell1;
         }
         if (!this.getDependentFormulaCells().has(cell1)) {
@@ -322,10 +349,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * @hidden
+     * @returns {Map<string, string[]>} - get Dependent Cells
      */
     public getDependentCells(): Map<string, string[]> {
         if (this.isSheetMember()) {
-            let family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
+            const family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
             if (family.sheetDependentCells == null) {
                 family.sheetDependentCells = new Map<string, string[]>();
             }
@@ -340,10 +368,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * @hidden
+     * @returns {Map<string, Map<string, string>>} - get Dependent Formula Cells
      */
     public getDependentFormulaCells(): Map<string, Map<string, string>> {
         if (this.isSheetMember()) {
-            let family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
+            const family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
             if (family.sheetDependentFormulaCells == null) {
                 family.sheetDependentFormulaCells = new Map<string, Map<string, string>>();
             }
@@ -358,7 +387,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To get library formulas collection.
-     * @returns Map<string, Function>
+     *
+     * @returns {Map<string, Function>} - To get library formulas collection.
      */
     public getLibraryFormulas(): Map<string, IFormulaColl> {
         return this.lFormulas;
@@ -366,8 +396,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To get library function.
+     *
      * @param {string} libFormula - Library formula to get a corresponding function.
-     * @returns Function
+     * @returns {Function} - To get library function.
      */
     public getFunction(libFormula: string): Function {
         if (this.getLibraryFormulas().has(libFormula.toUpperCase())) {
@@ -377,7 +408,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} val - specify the value.
+     * @returns {Date} - convert integer to date.
+     */
     public intToDate(val: string): Date {
         let dateVal: number = Number(val);
         dateVal = (dateVal > 0 && dateVal < 1) ? (1 + dateVal) : (dateVal === 0) ? 1 : dateVal;
@@ -390,7 +425,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     public getFormulaInfoTable(): Map<string, FormulaInfo> {
         if (this.isSheetMember()) {
-            let family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
+            const family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
             if (family.sheetFormulaInfotable === null) {
                 family.sheetFormulaInfotable = new Map<string, FormulaInfo>();
             }
@@ -405,7 +440,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To get the formula text.
+     *
      * @private
+     * @param {string} key - specify the key.
+     * @returns {string} - To get the formula text.
      */
     private getFormula(key: string): string {
         key = key.toUpperCase();
@@ -417,10 +455,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To get the formula text.
-     * @returns void
+     *
+     * @returns {void} - To get the formula text.
      */
     public getParseDecimalSeparator(): string {
-        let seperator: string = '.';
+        const seperator: string = '.';
         if (!this.isParseDecimalSeparatorChanged && seperator !== this.parseDecimalSeparator) {
             this.parseDecimalSeparator = seperator;
         }
@@ -429,15 +468,20 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To get the formula text.
+     *
      * @param {string} value - Specifies the decimal separator value.
-     * @returns void
+     * @returns {void} - To get the formula text.
      */
     public setParseDecimalSeparator(value: string): void {
         this.parseDecimalSeparator = value;
         this.isParseDecimalSeparatorChanged = true;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} cellRef -  specify the cell reference
+     * @returns {string} - get sheet token.
+     */
     public getSheetToken(cellRef: string): string {
         let i: number = 0;
         let temp: string = this.emptyString;
@@ -454,33 +498,43 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         throw this.formulaErrorStrings[FormulasErrorsStrings.bad_index];
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {Object} grd - specify the id
+     * @returns {number} - get sheet id.
+     */
     public getSheetID(grd: Object): number {
-        let family: CalcSheetFamilyItem = this.getSheetFamilyItem(grd);
+        const family: CalcSheetFamilyItem = this.getSheetFamilyItem(grd);
         if (family.sheetNameToParentObject != null && family.sheetNameToParentObject.size > 0) {
             let token: string = family.parentObjectToToken.get(grd);
-            token = token.split(this.sheetToken).join(this.emptyString);
-            let id: number = this.parseFloat(token);
-            if (!this.isNaN(id)) {
-                return id;
+            if (token) {
+                token = token.split(this.sheetToken).join(this.emptyString);
+                const id: number = this.parseFloat(token);
+                if (!this.isNaN(id)) {
+                    return id;
+                }
             }
         }
         return -1;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string | number} value - specify the value.
+     * @returns {number} - parse float
+     */
     public parseFloat(value: string | number): number {
         return Number(value);
     }
 
     /**
      * To get the row index of the given cell.
+     *
      * @param {string} cell - Cell address for getting row index.
-     * @returns number
+     * @returns {number} - To get the row index of the given cell.
      */
     public rowIndex(cell: string): number {
         let i: number = 0;
-        let result: number;
         let isLetter: boolean = false;
         if (i < cell.length && cell[i] === this.sheetToken) {
             i++;
@@ -493,7 +547,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             isLetter = true;
             i++;
         }
-        result = parseInt(cell.substring(i), 10);
+        const result: number = parseInt(cell.substring(i), 10);
         if (i < cell.length && !this.isNaN(result)) {
             return result;
         }
@@ -505,8 +559,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To get the column index of the given cell.
+     *
      * @param {string} cell - Cell address for getting column index.
-     * @returns number
+     * @returns {number} - To get the column index of the given cell.
      */
     public colIndex(cell: string): number {
         let j: number = 0;
@@ -520,7 +575,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             j++;
         }
         while (j < cell.length && this.isChar(cell[j])) {
-            let charCode: number = cell[j].charCodeAt(0);
+            const charCode: number = cell[j].charCodeAt(0);
             k = k * 26 + charCode - 64;
             j++;
         }
@@ -532,7 +587,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To get the valid error strings.
+     *
      * @hidden
+     * @returns {string[]} - to get error strings.
      */
     public getErrorStrings(): string[] {
         if (this.errorStrings === null) {
@@ -541,12 +598,22 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return this.errorStrings;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} text - specify the text
+     * @param {number} startIndex - specify the start index
+     * @param {number} length - specify the length
+     * @returns {string} - Returns sub string
+     */
     public substring(text: string, startIndex: number, length?: number): string {
         return text.substring(startIndex, length + startIndex);
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} c - specify the characer of the string
+     * @returns {boolean} - Return the boolean type
+     */
     public isChar(c: string): boolean {
         if ((c.charCodeAt(0) >= 65 && c.charCodeAt(0) <= 90) || (c.charCodeAt(0) >= 97 && c.charCodeAt(0) <= 122)) {
             return true;
@@ -554,7 +621,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return false;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {Object} model - specify the model
+     * @returns {CalcSheetFamilyItem} - get Sheet Family Item.
+     */
     public getSheetFamilyItem(model: Object): CalcSheetFamilyItem {
         if (this.sheetFamilyID === 0) {
             if (this.defaultFamilyItem == null) {
@@ -565,7 +636,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         if (this.sheetFamiliesList == null) {
             this.sheetFamiliesList = new Map<number, CalcSheetFamilyItem>();
         }
-        let i: number = this.modelToSheetID.get(model);
+        const i: number = this.modelToSheetID.get(model);
         if (!this.sheetFamiliesList.has(i)) {
             this.sheetFamiliesList.set(i, new CalcSheetFamilyItem());
         }
@@ -574,22 +645,23 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Register a key value pair for formula.
+     *
      * @param {string} key - Key for formula reference .
      * @param {string | number} value - Value for the corresponding key.
-     * @returns void
+     * @returns {void} - Register a key value pair for formula.
      */
     public setKeyValue(key: string, value: string | number): void {
         key = key.toUpperCase();
-        let str: string = value.toString().trim();
+        const str: string = value.toString().trim();
         if (!this.storedData.get(key) || str.indexOf(this.leftBrace) === 0) {
             this.storedData.set(key, new FormulaInfo());
             this.keyToRowsMap.set(key, this.keyToRowsMap.size + 1);
             this.rowsToKeyMap.set(this.rowsToKeyMap.size + 1, key);
         }
-        let fInfo: FormulaInfo = this.storedData.get(key);
+        const fInfo: FormulaInfo = this.storedData.get(key);
         if (fInfo.getFormulaText() != null && fInfo.getFormulaText().length > 0 && fInfo.getFormulaText() !== str) {
-            let s1: string = this.cellPrefix + this.keyToRowsMap.get(key).toString();
-            let formulaDependent: Map<string, string> = this.getDependentFormulaCells().get(s1);
+            const s1: string = this.cellPrefix + this.keyToRowsMap.get(key).toString();
+            const formulaDependent: Map<string, string> = this.getDependentFormulaCells().get(s1);
             if (formulaDependent != null) {
                 this.clearFormulaDependentCells(s1);
             }
@@ -605,13 +677,15 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * @hidden
+     * @param {string} cell - specify the cell
+     * @returns {void} - clears the  Formula Dependent Cells.
      */
     public clearFormulaDependentCells(cell: string): void {
-        let dependentFormula: Map<string, string> = this.getDependentFormulaCells().get(cell);
+        const dependentFormula: Map<string, string> = this.getDependentFormulaCells().get(cell);
         if (dependentFormula != null) {
             dependentFormula.forEach((value: string, key: string) => {
-                let s: string = key;
-                let dependent: string[] = this.getDependentCells().get(s);
+                const s: string = key;
+                const dependent: string[] = this.getDependentCells().get(s);
                 this.arrayRemove(dependent, cell);
                 if (dependent.length === 0) {
                     this.getDependentCells().delete(s);
@@ -622,7 +696,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     }
 
     private arrayRemove(array: string[], value: string): string[] {
-        let index: number = array.indexOf(value);
+        const index: number = array.indexOf(value);
         if (index !== -1) {
             array.splice(index, 1);
         }
@@ -631,13 +705,14 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Register a key value pair for formula.
+     *
      * @param {string} key - Key for getting the corresponding value.
-     * @returns string | number
+     * @returns {string | number} - to get key value.
      */
     public getKeyValue(key: string): string | number {
         key = key.toUpperCase();
         if (this.storedData.has(key) !== null) {
-            let fInfo: FormulaInfo = this.storedData.get(key);
+            const fInfo: FormulaInfo = this.storedData.get(key);
             let fText: string = fInfo.getFormulaText();
             if (fText.length > 0 && fText[0] === this.getFormulaCharacter()) {
                 this.cell = this.cellPrefix + this.keyToRowsMap.get(key).toString();
@@ -645,7 +720,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 try {
                     fInfo.setParsedFormula(this.parser.parseFormula(fText, key));
                 } catch (ex) {
-                    let args: FailureEventArgs = {
+                    const args: FailureEventArgs = {
                         message: ex.message, exception: ex, isForceCalculable: false,
                         computeForceCalculate: false
                     };
@@ -656,12 +731,12 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 try {
                     fInfo.setFormulaValue(this.computeFormula(fInfo.getParsedFormula()));
                 } catch (ex) {
-                    let args: FailureEventArgs = {
+                    const args: FailureEventArgs = {
                         message: ex.message, exception: ex, isForceCalculable: false,
                         computeForceCalculate: false
                     };
                     this.trigger('onFailure', args);
-                    let errorMessage: string = (typeof args.exception === 'string') ? args.exception : args.message;
+                    const errorMessage: string = (typeof args.exception === 'string') ? args.exception : args.message;
                     return (isNullOrUndefined(this.getErrorLine(ex)) ? '' : '#' + this.getErrorLine(ex) + ': ') + errorMessage;
                 }
             }
@@ -677,15 +752,15 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Adds a named range to the NamedRanges collection.
+     *
      * @param {string} name - Name of the named range.
      * @param {string} range - Range for the specified name.
-     * @param {number} sheetIndex - Defined scope for the specified name. Default - Workbook scope.
-     * @returns boolean
+     * @returns {boolean} - Adds a named range to the NamedRanges collection.
      */
     public addNamedRange(name: string, range: string): boolean {
-        let sheetScopeName: string[] = name.split(this.sheetToken);
+        const sheetScopeName: string[] = name.split(this.sheetToken);
         if (sheetScopeName.length > 1) {
-            let family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
+            const family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
             if (!family.parentObjectToToken.get(sheetScopeName[0])) {
                 return false;
             }
@@ -699,8 +774,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Remove the specified named range form the named range collection.
+     *
      * @param {string} name - Name of the specified named range.
-     * @returns boolean
+     * @returns {boolean} - Remove the specified named range form the named range collection.
      */
     public removeNamedRange(name: string): boolean {
         name = name.toUpperCase();
@@ -711,26 +787,34 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return false;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {number} col - specify the column
+     * @returns {string} - to convert the alpha.
+     */
     public convertAlpha(col: number): string {
-        let arrCol: string[] = [];
+        const arrCol: string[] = [];
         let n: number = 0;
-        let charText: string = 'A';
+        const charText: string = 'A';
         while (col > 0) {
             col--;
-            let aCharValue: number = charText.charCodeAt(0);
+            const aCharValue: number = charText.charCodeAt(0);
             arrCol[n] = String.fromCharCode(col % 26 + aCharValue);
             col = parseInt((col / 26).toString(), 10);
             n++;
         }
-        let arr: string[] = [];
+        const arr: string[] = [];
         for (let i: number = 0; i < n; i++) {
             arr[n - i - 1] = arrCol[i];
         }
         return arr.join('');
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} cellRange - specify the cell range.
+     * @returns {string} - to get cell collection.
+     */
     public getCellCollection(cellRange: string): string[] | string {
         if (cellRange.indexOf(':') < 0) {
             if (!this.isCellReference(cellRange)) {
@@ -740,9 +824,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             }
         }
         let token: string = this.emptyString;
-        let sheetTokenIndex: number = cellRange.indexOf(this.sheetToken);
+        const sheetTokenIndex: number = cellRange.indexOf(this.sheetToken);
         if (sheetTokenIndex > -1) {
-            let index: number = sheetTokenIndex;
+            const index: number = sheetTokenIndex;
             let s: number = index + 1;
             while (s < cellRange.length) {
                 if (cellRange[s] === this.sheetToken) {
@@ -778,7 +862,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             col2 = col1;
             col1 = i;
         }
-        let cells: string[] = [];
+        const cells: string[] = [];
         let j: number;
         let c: number = 0;
         for (i = row1; i <= row2; i++) {
@@ -792,8 +876,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Compute the given formula.
+     *
      * @param {string} formulaText - Specifies to compute the given formula.
-     * @returns string | number
+     * @returns {string | number} - compute the given formula
      */
     public computeFormula(formulaText: string): string | number {
         let parsedText: string;
@@ -822,13 +907,13 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         i++;
                         continue;
                     }
-                    let sFormula: string = parsedText.substring(lastIndexOfq, i + 1);
-                    let libFormula: string = sFormula.split(this.leftBracket)[0].split('q').join(this.emptyString);
+                    const sFormula: string = parsedText.substring(lastIndexOfq, i + 1);
+                    const libFormula: string = sFormula.split(this.leftBracket)[0].split('q').join(this.emptyString);
                     let args: string[] = sFormula.substring(sFormula.indexOf(this.leftBracket) + 1, sFormula.indexOf(this.rightBracket))
                         .split(this.getParseArgumentSeparator());
                     if (this.getLibraryFormulas().get(libFormula.toUpperCase()).isCustom) {
                         let j: number = 0;
-                        let customArgs: string[] = [];
+                        const customArgs: string[] = [];
                         for (j = 0; j < args.length; j++) {
                             customArgs.push(this.getValueFromArg(args[j]));
                         }
@@ -838,7 +923,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         this.getFunction(libFormula)(...args);
                     if (nestedFormula) {
                         fNested = this.processNestedFormula(parsedText, sFormula, formulatResult);
-                        let q: number = this.findLastIndexOfq(fNested);
+                        const q: number = this.findLastIndexOfq(fNested);
                         if (q === 0) {
                             nestedFormula = false;
                         }
@@ -857,31 +942,35 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 formulatResult = this.computeValue(parsedText);
             }
         } catch (ex) {
-            let args: FailureEventArgs = { message: ex.message, exception: ex, isForceCalculable: false, computeForceCalculate: false };
+            const args: FailureEventArgs = { message: ex.message, exception: ex, isForceCalculable: false, computeForceCalculate: false };
             this.trigger('onFailure', args);
-            let errorMessage: string = (typeof args.exception === 'string') ? args.exception : args.message;
+            const errorMessage: string = (typeof args.exception === 'string') ? args.exception : args.message;
             formulatResult = (isNullOrUndefined(this.getErrorLine(ex)) ? '' : '#' + this.getErrorLine(ex) + ': ') + errorMessage;
         }
         return formulatResult;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} range - specify the range
+     * @returns {number[] | string} - to compute if and average if.
+     */
     public computeSumIfAndAvgIf(range: string[]): number[] | string {
         if (isNullOrUndefined(range) || range[0] === this.emptyString || range.length === 0) {
             return this.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
-        let argArr: string[] = range;
+        const argArr: string[] = range;
         for (let i: number = 0; i < argArr.length; i++) {
             if (this.isCellReference(argArr[i]) && isNullOrUndefined(argArr[i].match(/[0-9]/)) && argArr[i].indexOf('!') < 0) {
-                let splitArray: string[] = argArr[i].split(':');
+                const splitArray: string[] = argArr[i].split(':');
                 argArr[i] = splitArray[0] + '1' + ':' + splitArray[1] + this.spreadSheetUsedRange[0];
             }
         }
-        let argCount: number = argArr.length;
+        const argCount: number = argArr.length;
         if (argCount !== 2 && argCount !== 3 && argCount === 0) {
             return this.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
-        let rangevalue: string = argArr[0];
+        const rangevalue: string = argArr[0];
         let criteria: string = argArr[1].trim();
         criteria = criteria.split(this.tic).join(this.emptyString);
         if (criteria.length > 255) {
@@ -908,137 +997,142 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             opt = this.parser.tokenEqual;
             criteria = criteria.substring(1);
         }
-        let checkCriteria: number = this.parseFloat(criteria);
-        let criteriaRangeArray: string = argArr[0];
-        let sumRange: string[] | string = this.getCellCollection(argCount > 2 ? argArr[2] : rangevalue);
-        let criteriaRange: string[] | string = this.getCellCollection(criteriaRangeArray);
-        let result: number[] = this.getComputeSumIfValue(criteriaRange, sumRange, criteria, checkCriteria, opt);
+        const checkCriteria: number = this.parseFloat(criteria);
+        const criteriaRangeArray: string = argArr[0];
+        const sumRange: string[] | string = this.getCellCollection(argCount > 2 ? argArr[2] : rangevalue);
+        const criteriaRange: string[] | string = this.getCellCollection(criteriaRangeArray);
+        const result: number[] = this.getComputeSumIfValue(criteriaRange, sumRange, criteria, checkCriteria, opt);
         return [result[0], result[1]];
     }
 
-    /** @hidden */
-    public computeLookup(range: string[]): string {
-        if (range.length === 0) {
-            return this.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
-        }
-        let checkCrte: string[] = [];
-        let findMaxVal: string[] | string = [];
-        let argArr: string[] = range;
-        let argCount: number = argArr.length;
-        let criterias: string = argArr[0].split(this.tic).join(this.emptyString);
-        let rangevalue: string = argArr[1];
-        let lookupRangeArray: string = argCount === 2 ? rangevalue : argArr[2];
-        let criteriaRange: string[] | string = this.getCellCollection(argArr[1]);
-        let lookupRange: string[] | string = this.getCellCollection(lookupRangeArray);
-        for (let i: number = 0; i < criteriaRange.length; i++) {
-            findMaxVal[i] = this.getValueFromArg(criteriaRange[i]).split(this.tic).join('');
-        }
-        let s: string[] = findMaxVal.toString().split(this.getParseArgumentSeparator());
-        let maxVal: number = this.parseFloat(s[s.sort().length - 1]);
-        let minVal: number = this.parseFloat(s[0]);
-        for (let j: number = 0; j < criteriaRange.length; j++) {
-            checkCrte[j] = this.getValueFromArg(criteriaRange[j]).split(this.tic).join('');
-            if (criterias === checkCrte[j]) {
-                return this.getValueFromArg(lookupRange[j]).split(this.tic).join('');
-            } else if (this.parseFloat(criterias) === this.parseFloat(checkCrte[j])) {
-                return this.getValueFromArg(lookupRange[j]).split(this.tic).join('');
-            } else if (this.parseFloat(criterias) < minVal) {
-                return this.getErrorStrings()[CommonErrors.na];
-            } else if (this.parseFloat(criterias) > maxVal) {
-                let index: number = findMaxVal.indexOf(maxVal.toString());
-                return this.getValueFromArg(lookupRange[index]).split(this.tic).join('');
-            }
-        }
-        if (findMaxVal.indexOf(criterias) < 0) {
-            let temp: string[] = [];
-            for (let n: number = 0; n < s.length; n++) {
-                if (this.parseFloat(criterias) > this.parseFloat(s[n])) {
-                    temp.push(s[n]);
-                }
-            }
-            let index: number = findMaxVal.indexOf(temp[temp.length - 1]);
-            return this.getValueFromArg(lookupRange[index]).split(this.tic).join('');
-        }
-        return this.getErrorStrings()[CommonErrors.na];
-    }
+    // Commented unused method
+    // /**
+    //  * @hidden
+    //  * @param {string[]} range - specify the range
+    //  * @returns {string} - to compute lookup
+    //  */
+    // public computeLookup(range: string[]): string {
+    //     if (range.length === 0) {
+    //         return this.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+    //     }
+    //     const checkCrte: string[] = [];
+    //     const findMaxVal: string[] | string = [];
+    //     const argArr: string[] = range;
+    //     const argCount: number = argArr.length;
+    //     const criterias: string = argArr[0].split(this.tic).join(this.emptyString);
+    //     const rangevalue: string = argArr[1];
+    //     const lookupRangeArray: string = argCount === 2 ? rangevalue : argArr[2];
+    //     const criteriaRange: string[] | string = this.getCellCollection(argArr[1]);
+    //     const lookupRange: string[] | string = this.getCellCollection(lookupRangeArray);
+    //     for (let i: number = 0; i < criteriaRange.length; i++) {
+    //         findMaxVal[i] = this.getValueFromArg(criteriaRange[i]).split(this.tic).join('');
+    //     }
+    //     const s: string[] = findMaxVal.toString().split(this.getParseArgumentSeparator());
+    //     const maxVal: number = this.parseFloat(s[s.sort().length - 1]);
+    //     const minVal: number = this.parseFloat(s[0]);
+    //     for (let j: number = 0; j < criteriaRange.length; j++) {
+    //         checkCrte[j] = this.getValueFromArg(criteriaRange[j]).split(this.tic).join('');
+    //         if (criterias === checkCrte[j]) {
+    //             return this.getValueFromArg(lookupRange[j]).split(this.tic).join('');
+    //         } else if (this.parseFloat(criterias) === this.parseFloat(checkCrte[j])) {
+    //             return this.getValueFromArg(lookupRange[j]).split(this.tic).join('');
+    //         } else if (this.parseFloat(criterias) < minVal) {
+    //             return this.getErrorStrings()[CommonErrors.na];
+    //         } else if (this.parseFloat(criterias) > maxVal) {
+    //             const index: number = findMaxVal.indexOf(maxVal.toString());
+    //             return this.getValueFromArg(lookupRange[index]).split(this.tic).join('');
+    //         }
+    //     }
+    //     if (findMaxVal.indexOf(criterias) < 0) {
+    //         const temp: string[] = [];
+    //         for (let n: number = 0; n < s.length; n++) {
+    //             if (this.parseFloat(criterias) > this.parseFloat(s[n])) {
+    //                 temp.push(s[n]);
+    //             }
+    //         }
+    //         const index: number = findMaxVal.indexOf(temp[temp.length - 1]);
+    //         return this.getValueFromArg(lookupRange[index]).split(this.tic).join('');
+    //     }
+    //     return this.getErrorStrings()[CommonErrors.na];
+    // }
 
-    public computeVLookup(range: string[]): string {
-        let argArr: string[] = range;
-        let findMaxValue: string[] | string = [];
-        let lookupValue: string = argArr[0].split(this.tic).join('');
-        if (lookupValue.indexOf(':') > - 1) {
-            return this.getErrorStrings()[CommonErrors.value];
-        }
-        if (this.isCellReference(lookupValue)) {
-            lookupValue = this.getValueFromArg(lookupValue);
-        }
-        if (argArr[1].indexOf(':') < - 1) {
-            return this.getErrorStrings()[CommonErrors.na];
-        }
-        let lookupRange: string[] | string = [];
-        let firstCol: string = '';
-        let secCol: string = '';
-        if (this.isCellReference(argArr[1])) {
-            lookupRange = this.getCellCollection(argArr[1]);
-            if (argArr[1].indexOf(':') > - 1) {
-                let index: number = argArr[1].indexOf(':');
-                for (let i: number = 0; i < index; i++) {
-                    let tempCell: string = this.isChar(argArr[1][i]) ? argArr[1][i] : '';
-                    firstCol = firstCol + tempCell;
-                }
-                for (let j: number = index; j < argArr[1].length; j++) {
-                    let tempCell2: string = this.isChar(argArr[1][j]) ? argArr[1][j] : '';
-                    secCol = secCol + tempCell2;
-                }
-            }
-        }
-        let lookupCol: number = this.colIndex(firstCol) + this.parseFloat(argArr[2]);
-        if (lookupCol > this.colIndex(secCol)) {
-            return this.getErrorStrings()[CommonErrors.na];
-        }
-        if (lookupCol === this.colIndex(firstCol)) {
-            return this.getErrorStrings()[CommonErrors.na];
-        }
-        let lookupCell: string = this.convertAlpha(lookupCol);
-        argArr[3] = isNullOrUndefined(argArr[3]) ? this.trueValue : argArr[3].split(this.tic).join('');
-        let cellValue: string = '';
-        for (let i: number = 0; i < lookupRange.length; i++) {
-            findMaxValue[i] = this.getValueFromArg(lookupRange[i]).split(this.tic).join('');
-        }
-        let s: string[] = findMaxValue.toString().split(this.getParseArgumentSeparator());
-        let maxValue: number = this.parseFloat(s[s.sort().length - 1]);
-        let minValue: number = this.parseFloat(s[0]);
-        for (let j: number = 0; j < lookupRange.length; j++) {
-            cellValue = this.getValueFromArg(lookupRange[j]);
-            if (argArr[3].toUpperCase() === this.trueValue) {
-                if (lookupValue === cellValue) {
-                    return this.getValueFromArg(lookupCell + j).split(this.tic).join('');
-                } else if (this.parseFloat(lookupValue) === this.parseFloat(cellValue)) {
-                    return this.getValueFromArg(lookupCell + j).split(this.tic).join('');
-                } else if (this.parseFloat(lookupValue) < minValue) {
-                    return this.getErrorStrings()[CommonErrors.na];
-                } else if (this.parseFloat(lookupValue) > maxValue) {
-                    let index: number = findMaxValue.indexOf(maxValue.toString());
-                    return this.getValueFromArg(lookupCell + index).split(this.tic).join('');
-                }
-            }
-            if (argArr[3] === this.falseValue) {
-                if (lookupValue === cellValue) {
-                    return this.getValueFromArg(lookupCell + j);
-                }
-            }
-        }
-        return this.getErrorStrings()[CommonErrors.na];
-    }
+    // public computeVLookup(range: string[]): string {
+    //     const argArr: string[] = range;
+    //     const findMaxValue: string[] | string = [];
+    //     let lookupValue: string = argArr[0].split(this.tic).join('');
+    //     if (lookupValue.indexOf(':') > - 1) {
+    //         return this.getErrorStrings()[CommonErrors.value];
+    //     }
+    //     if (this.isCellReference(lookupValue)) {
+    //         lookupValue = this.getValueFromArg(lookupValue);
+    //     }
+    //     if (argArr[1].indexOf(':') < - 1) {
+    //         return this.getErrorStrings()[CommonErrors.na];
+    //     }
+    //     let lookupRange: string[] | string = [];
+    //     let firstCol: string = '';
+    //     let secCol: string = '';
+    //     if (this.isCellReference(argArr[1])) {
+    //         lookupRange = this.getCellCollection(argArr[1]);
+    //         if (argArr[1].indexOf(':') > - 1) {
+    //             const index: number = argArr[1].indexOf(':');
+    //             for (let i: number = 0; i < index; i++) {
+    //                 const tempCell: string = this.isChar(argArr[1][i]) ? argArr[1][i] : '';
+    //                 firstCol = firstCol + tempCell;
+    //             }
+    //             for (let j: number = index; j < argArr[1].length; j++) {
+    //                 const tempCell2: string = this.isChar(argArr[1][j]) ? argArr[1][j] : '';
+    //                 secCol = secCol + tempCell2;
+    //             }
+    //         }
+    //     }
+    //     const lookupCol: number = this.colIndex(firstCol) + this.parseFloat(argArr[2]);
+    //     if (lookupCol > this.colIndex(secCol)) {
+    //         return this.getErrorStrings()[CommonErrors.na];
+    //     }
+    //     if (lookupCol === this.colIndex(firstCol)) {
+    //         return this.getErrorStrings()[CommonErrors.na];
+    //     }
+    //     const lookupCell: string = this.convertAlpha(lookupCol);
+    //     argArr[3] = isNullOrUndefined(argArr[3]) ? this.trueValue : argArr[3].split(this.tic).join('');
+    //     let cellValue: string = '';
+    //     for (let i: number = 0; i < lookupRange.length; i++) {
+    //         findMaxValue[i] = this.getValueFromArg(lookupRange[i]).split(this.tic).join('');
+    //     }
+    //     const s: string[] = findMaxValue.toString().split(this.getParseArgumentSeparator());
+    //     const maxValue: number = this.parseFloat(s[s.sort().length - 1]);
+    //     const minValue: number = this.parseFloat(s[0]);
+    //     for (let j: number = 0; j < lookupRange.length; j++) {
+    //         cellValue = this.getValueFromArg(lookupRange[j]);
+    //         if (argArr[3].toUpperCase() === this.trueValue) {
+    //             if (lookupValue === cellValue) {
+    //                 return this.getValueFromArg(lookupCell + j).split(this.tic).join('');
+    //             } else if (this.parseFloat(lookupValue) === this.parseFloat(cellValue)) {
+    //                 return this.getValueFromArg(lookupCell + j).split(this.tic).join('');
+    //             } else if (this.parseFloat(lookupValue) < minValue) {
+    //                 return this.getErrorStrings()[CommonErrors.na];
+    //             } else if (this.parseFloat(lookupValue) > maxValue) {
+    //                 const index: number = findMaxValue.indexOf(maxValue.toString());
+    //                 return this.getValueFromArg(lookupCell + index).split(this.tic).join('');
+    //             }
+    //         }
+    //         if (argArr[3] === this.falseValue) {
+    //             if (lookupValue === cellValue) {
+    //                 return this.getValueFromArg(lookupCell + j);
+    //             }
+    //         }
+    //     }
+    //     return this.getErrorStrings()[CommonErrors.na];
+    // }
 
     public findWildCardValue(lookVal: string, cellValue: string): string {
         let finalText: string = '';
         if (lookVal.indexOf('?') > -1) {
-            let index: number = lookVal.indexOf('?');
-            let checStr1: string = lookVal[index - 1];
-            let checStr2: string = lookVal[index + 1];
+            const index: number = lookVal.indexOf('?');
+            const checStr1: string = lookVal[index - 1];
+            const checStr2: string = lookVal[index + 1];
             if (cellValue.indexOf(checStr1) > -1 && cellValue.indexOf(checStr2) > -1) {
-                let newIndex: number = cellValue.indexOf(checStr1);
+                const newIndex: number = cellValue.indexOf(checStr1);
                 if (cellValue[newIndex] === checStr1 && cellValue[newIndex + 2] === checStr2) {
                     finalText = lookVal;
                 } else {
@@ -1049,7 +1143,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 finalText = cellValue;
             }
         } else if (lookVal.indexOf('*') > -1) {
-            let index: number = lookVal.indexOf('*');
+            const index: number = lookVal.indexOf('*');
             let left: string = '';
             let right: string = '';
             let compRight: string = this.falseValue;
@@ -1062,8 +1156,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 right = right + lookVal[i];
                 compRight = this.trueValue;
             }
-            let leftVal: number = left === '' ? -1 : cellValue.indexOf(left.split('').reverse().join(''));
-            let rightVal: number = right === '' ? -1 : cellValue.indexOf(right);
+            const leftVal: number = left === '' ? -1 : cellValue.indexOf(left.split('').reverse().join(''));
+            const rightVal: number = right === '' ? -1 : cellValue.indexOf(right);
             if (leftVal > -1 || rightVal > -1) {
                 if (compLeft === this.trueValue) {
                     finalText = (left.split('').reverse().join('') === cellValue.substr(0, left.length)) ? lookVal : cellValue;
@@ -1078,99 +1172,105 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     }
 
     /** @hidden */
-    /* tslint:disable-next-line */
+    /* eslint-disable-next-line */
     public getComputeSumIfValue(criteriaRange: string[] | string, sumRange: string[] | string, criteria: string, checkCriteria: number, op: string): number[] {
         let sum: number = 0;
         let count: number = 0;
         switch (op) {
-            case this.parser.tokenEqual: {
-                for (let i: number = 0; i < criteriaRange.length; i++) {
-                    let value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
-                    let val: number = this.parseFloat(value);
-                    if (value === criteria && val === checkCriteria) {
-                        let value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
-                        let val1: number = this.parseFloat(value1);
-                        sum = sum + val1;
-                        count = count + 1;
-                    } else if (value === criteria) {
-                        let sumRangeVal: string | number = sumRange[i];
-                        sumRangeVal = this.getValueFromArg(sumRangeVal);
-                        sum = this.parseFloat(sumRangeVal.toString());
-                        count = count + 1;
-                    }
+        case this.parser.tokenEqual: {
+            for (let i: number = 0; i < criteriaRange.length; i++) {
+                const value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
+                const val: number = this.parseFloat(value);
+                if (value === criteria && val === checkCriteria) {
+                    const value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
+                    const val1: number = this.parseFloat(value1);
+                    sum = sum + val1;
+                    count = count + 1;
+                } else if (value === criteria) {
+                    let sumRangeVal: string | number = sumRange[i];
+                    sumRangeVal = this.getValueFromArg(sumRangeVal);
+                    const val1: number = this.parseFloat(sumRangeVal.toString());
+                    sum = sum + val1;
+                    count = count + 1;
                 }
             }
-                break;
-            case this.parser.tokenLess: {
-                for (let i: number = 0; i < criteriaRange.length; i++) {
-                    let value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
-                    let val: number = this.parseFloat(value);
-                    if (val < checkCriteria) {
-                        let value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
-                        let val1: number = this.parseFloat(value1);
-                        sum = sum + val1;
-                        count = count + 1;
-                    }
+        }
+            break;
+        case this.parser.tokenLess: {
+            for (let i: number = 0; i < criteriaRange.length; i++) {
+                const value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
+                const val: number = this.parseFloat(value);
+                if (val < checkCriteria) {
+                    const value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
+                    const val1: number = this.parseFloat(value1);
+                    sum = sum + val1;
+                    count = count + 1;
                 }
             }
-                break;
-            case this.parser.tokenGreater: {
-                for (let i: number = 0; i < criteriaRange.length; i++) {
-                    let value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
-                    let val: number = this.parseFloat(value);
-                    if (val > checkCriteria) {
-                        let value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
-                        let val1: number = this.parseFloat(value1);
-                        sum = sum + val1;
-                        count = count + 1;
-                    }
+        }
+            break;
+        case this.parser.tokenGreater: {
+            for (let i: number = 0; i < criteriaRange.length; i++) {
+                const value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
+                const val: number = this.parseFloat(value);
+                if (val > checkCriteria) {
+                    const value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
+                    const val1: number = this.parseFloat(value1);
+                    sum = sum + val1;
+                    count = count + 1;
                 }
             }
-                break;
-            case this.parser.tokenLessEq: {
-                for (let i: number = 0; i < criteriaRange.length; i++) {
-                    let value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
-                    let val: number = this.parseFloat(value);
-                    if (val <= checkCriteria) {
-                        let value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
-                        let val1: number = this.parseFloat(value1);
-                        sum = sum + val1;
-                        count = count + 1;
-                    }
+        }
+            break;
+        case this.parser.tokenLessEq: {
+            for (let i: number = 0; i < criteriaRange.length; i++) {
+                const value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
+                const val: number = this.parseFloat(value);
+                if (val <= checkCriteria) {
+                    const value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
+                    const val1: number = this.parseFloat(value1);
+                    sum = sum + val1;
+                    count = count + 1;
                 }
             }
-                break;
-            case this.parser.tokenGreaterEq: {
-                for (let i: number = 0; i < criteriaRange.length; i++) {
-                    let value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
-                    let val: number = this.parseFloat(value);
-                    if (val >= checkCriteria) {
-                        let value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
-                        let val1: number = this.parseFloat(value1);
-                        sum = sum + val1;
-                        count = count + 1;
-                    }
+        }
+            break;
+        case this.parser.tokenGreaterEq: {
+            for (let i: number = 0; i < criteriaRange.length; i++) {
+                const value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
+                const val: number = this.parseFloat(value);
+                if (val >= checkCriteria) {
+                    const value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
+                    const val1: number = this.parseFloat(value1);
+                    sum = sum + val1;
+                    count = count + 1;
                 }
             }
-                break;
-            case this.parser.tokenNotEqual: {
-                for (let i: number = 0; i < criteriaRange.length; i++) {
-                    let value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
-                    let val: number = this.parseFloat(value);
-                    if (value !== criteria && val !== checkCriteria) {
-                        let value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
-                        let val1: number = this.parseFloat(value1);
-                        sum = sum + val1;
-                        count = count + 1;
-                    }
+        }
+            break;
+        case this.parser.tokenNotEqual: {
+            for (let i: number = 0; i < criteriaRange.length; i++) {
+                const value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
+                const val: number = this.parseFloat(value);
+                if (value !== criteria && val !== checkCriteria) {
+                    const value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
+                    const val1: number = this.parseFloat(value1);
+                    sum = sum + val1;
+                    count = count + 1;
                 }
             }
-                break;
+        }
+            break;
         }
         return [sum, count];
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - specifies the args
+     * @param {string} op - specify the operator.
+     * @returns {string} - Compute and or.
+     */
     public computeAndOr(args: string[], op: string): string {
         let result: boolean = op === 'and' ? true : false;
         let value: string;
@@ -1183,13 +1283,13 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 return this.getErrorStrings()[CommonErrors.value];
             }
         }
-        let ranges: string[] = args;
+        const ranges: string[] = args;
         for (let i: number = 0; i < ranges.length; i++) {
             if (ranges[i] === (this.tic)) {
                 return this.getErrorStrings()[CommonErrors.value];
             }
             if (ranges[i].indexOf(':') > -1 && this.isCellReference(ranges[i])) {
-                let cells: string[] | string = this.getCellCollection(ranges[i]);
+                const cells: string[] | string = this.getCellCollection(ranges[i]);
                 for (let j: number = 0; j < cells.length; j++) {
                     if (this.getErrorStrings().indexOf(cells[j]) > -1) {
                         return cells[j];
@@ -1210,7 +1310,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 if (this.getErrorStrings().indexOf(value) > -1) {
                     return value;
                 }
-                let tempdate: number = Date.parse(value.split(this.tic).join(''));
+                const tempdate: number = Date.parse(value.split(this.tic).join(''));
                 if (!isNaN(tempdate)) {
                     result = true;
                 } else if (!(value === this.trueValue || value === this.falseValue)) {
@@ -1224,7 +1324,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return result ? this.trueValue : this.falseValue;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} text - specify the text
+     * @returns {string} - to strip out the tic from the formula arguments.
+     */
     // To strip out the tic from the formula arguments.
     public removeTics(text: string): string {
         if (text.length > 1 && text[0] === this.tic[0] && text[text.length - 1] === this.tic[0]) {
@@ -1233,25 +1337,29 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return text;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} range - specify the range
+     * @returns {string} - to get cell from the range.
+     */
     public getCellFrom(range: string): string {
         let cellRange: string = '';
-        let cells: string[] = range.indexOf(':') > -1 ? range.split(':') : [range];
+        const cells: string[] = range.indexOf(':') > -1 ? range.split(':') : [range];
         //this.getCellsFromArgs(range);
-        let last: number = cells.length - 1;
-        let r1: number = this.rowIndex(cells[0]);
+        const last: number = cells.length - 1;
+        const r1: number = this.rowIndex(cells[0]);
         let x: number;
         if (r1 === this.rowIndex(cells[last])) {
-            let c1: number = this.colIndex(cells[0]);
-            let c2: number = this.colIndex(cells[last]);
-            let c: number = this.colIndex(this.cell);
+            const c1: number = this.colIndex(cells[0]);
+            const c2: number = this.colIndex(cells[last]);
+            const c: number = this.colIndex(this.cell);
             if (c >= c1 && c <= c2) {
                 cellRange = getAlphalabel(c).toString() + r1.toString();
             }
         } else if (this.colIndex(cells[0]) === this.colIndex(cells[last])) {
             x = this.colIndex(cells[0]);
-            let r2: number = this.rowIndex(cells[last]);
-            let r: number = this.rowIndex(this.cell);
+            const r2: number = this.rowIndex(cells[last]);
+            const r: number = this.rowIndex(this.cell);
             if (r >= r1 && r <= r2) {
                 cellRange = getAlphalabel(x).toString() + r.toString();
             }
@@ -1259,10 +1367,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return cellRange;
     }
 
-    /* tslint:disable-next-line:max-func-body-length */
     private computeValue(pFormula: string): string {
         try {
-            let stack: string[] = [];
+            const stack: string[] = [];
             let i: number = 0;
             let sheet: string = '';
             stack.length = 0;
@@ -1278,6 +1385,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         i = i + 1;
                     }
                     stack.push(s);
+                    if (!pFormula[i]) {
+                        return stack.toString();
+                    }
                 }
                 if (pFormula[i] === this.sheetToken) {
                     sheet = pFormula[i];
@@ -1294,12 +1404,12 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     let s: string = this.emptyString;
                     let textName: string = '';
                     while ( i < pFormula.length && this.isUpperChar(pFormula[i])) {
-                        let char: string = pFormula[i];
+                        const char: string = pFormula[i];
                         s = s + char;
                         i = i + 1;
                     }
                     while ( i < pFormula.length && this.isDigit(pFormula[i])) {
-                        let digit: string = pFormula[i];
+                        const digit: string = pFormula[i];
                         s = s + digit;
                         i = i + 1;
                     }
@@ -1315,12 +1425,12 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                             }
                         }
                         while (i < pFormula.length && this.isUpperChar(pFormula[i])) {
-                                s = s + pFormula[i];
-                                i = i + 1;
+                            s = s + pFormula[i];
+                            i = i + 1;
                         }
                         while (i < pFormula.length && this.isDigit(pFormula[i])) {
-                                s = s + pFormula[i];
-                                i = i + 1;
+                            s = s + pFormula[i];
+                            i = i + 1;
                         }
                         s = sheet + this.getCellFrom(s);
                     } else {
@@ -1332,8 +1442,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     }
                     stack.push(textName);
                 } else if (pFormula[i] === 'q') {
-                    let leftIdx: number = pFormula.substring(i + 1).indexOf(this.leftBracket);
-                    let j: number = pFormula.substring(i + leftIdx + 1).indexOf(this.rightBracket);
+                    const leftIdx: number = pFormula.substring(i + 1).indexOf(this.leftBracket);
+                    const j: number = pFormula.substring(i + leftIdx + 1).indexOf(this.rightBracket);
                     pFormula = this.substring(pFormula, i + leftIdx + 2, j - 1);
                 } else if (pFormula[i] === this.tic[0]) {
                     let s: string = pFormula[i].toString();
@@ -1345,8 +1455,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     stack.push(s.split(this.tic).join(this.emptyString));
                     i = i + 1;
                 } else if (pFormula[i] === '%' && stack.length > 0) {
-                    let stackValue: string = stack[0];
-                    let value: number = this.parseFloat(stackValue);
+                    const stackValue: string = stack[0];
+                    const value: number = this.parseFloat(stackValue);
                     if (!this.isNaN(value)) {
                         stack.pop();
                         stack.push((value / 100).toString());
@@ -1369,139 +1479,139 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     i += 1;
                 } else {
                     switch (pFormula[i]) {
-                        case '#':
-                            {
-                                let errIndex: number = 0;
-                                if (this.getErrorStrings().indexOf(pFormula.substring(i)) > -1) {
-                                    if (pFormula.indexOf('!') === -1 || pFormula.substring(i).indexOf('!') === -1) {
-                                        errIndex = pFormula.indexOf('#N/A') > -1 ?
-                                            (pFormula.indexOf('#N/A') + 4 + i) : pFormula.indexOf('?') + 1 + i;
-                                    } else {
-                                        errIndex = pFormula.indexOf('!') + 1 + i;
-                                    }
-                                    stack.push(this.substring(pFormula, i, errIndex - i));
+                    case '#':
+                        {
+                            let errIndex: number = 0;
+                            if (this.getErrorStrings().indexOf(pFormula.substring(i)) > -1) {
+                                if (pFormula.indexOf('!') === -1 || pFormula.substring(i).indexOf('!') === -1) {
+                                    errIndex = pFormula.indexOf('#N/A') > -1 ?
+                                        (pFormula.indexOf('#N/A') + 4 + i) : pFormula.indexOf('?') + 1 + i;
                                 } else {
-                                    errIndex = i + 1;
-                                    stack.push(this.substring(pFormula, i, errIndex - i));
+                                    errIndex = pFormula.indexOf('!') + 1 + i;
                                 }
-                                i = errIndex;
+                                stack.push(this.substring(pFormula, i, errIndex - i));
+                            } else {
+                                errIndex = i + 1;
+                                stack.push(this.substring(pFormula, i, errIndex - i));
                             }
-                            break;
-                        case 'n':
-                            {
-                                i = i + 1;
-                                let s: string = '';
-                                if (pFormula.substring(i).indexOf('Infinity') === 0) {
-                                    s = 'Infinity';
-                                    i += s.length;
-                                } else {
-                                    if (pFormula[i] === 'u' || uFound) {
-                                        s = '-';
-                                        if (!uFound) {
-                                            i = i + 1;
-                                        } else {
-                                            uFound = false;
-                                        }
-                                    }
-                                    while (i < pFormula.length && (this.isDigit(pFormula[i]))
-                                        || pFormula[i] === this.getParseDecimalSeparator()) {
-                                        s = s + pFormula[i];
-                                        i = i + 1;
-                                    }
-                                    if (i < pFormula.length && pFormula[i] === '%') {
-                                        i = i + 1;
-                                        if (s === '') {
-                                            if (stack.length > 0) {
-                                                let stackValue: string = stack[0];
-                                                let value: number = this.parseFloat(stackValue);
-                                                if (!this.isNaN(value)) {
-                                                    stack.pop();
-                                                    stack.push((value / 100).toString());
-                                                }
-                                            }
-                                        } else {
-                                            s = (this.parseFloat(s) / 100).toString();
-                                        }
-                                    }
-                                }
-                                stack.push(s);
-                            }
-                            break;
-                        case this.parser.tokenAdd:
-                            {
-                                this.getValArithmetic(stack, 'add');
-                                i = i + 1;
-                            }
-                            break;
-                        case this.parser.tokenSubtract:
-                            {
-                                this.getValArithmetic(stack, 'sub');
-                                i = i + 1;
-                            }
-                            break;
-                        case this.parser.tokenMultiply:
-                            {
-                                this.getValArithmetic(stack, 'mul');
-                                i = i + 1;
-                            }
-                            break;
-                        case this.parser.tokenDivide:
-                            {
-                                this.getValArithmetic(stack, 'div');
-                                i = i + 1;
-                            }
-                            break;
-                        case this.parser.tokenLess:
-                            {
-                                this.processLogical(stack, 'less');
-                                i = i + 1;
-                            }
-                            break;
-                        case this.parser.tokenGreater:
-                            {
-                                this.processLogical(stack, 'greater');
-                                i = i + 1;
-                            }
-                            break;
-                        case this.parser.tokenGreaterEq:
-                            {
-                                this.processLogical(stack, 'greaterEq');
-                                i = i + 1;
-                            }
-                            break;
-                        case this.parser.tokenLessEq:
-                            {
-                                this.processLogical(stack, 'lessEq');
-                                i = i + 1;
-                            }
-                            break;
-                        case this.parser.tokenNotEqual:
-                            {
-                                this.processLogical(stack, 'notEq');
-                                i = i + 1;
-                            }
-                            break;
-                        case this.parser.tokenOr:
-                            {
-                                this.processLogical(stack, 'or');
-                                i = i + 1;
-                            }
-                            break;
-                        case this.parser.tokenAnd:
-                            {
-                                this.processLogical(stack, 'and');
-                                i = i + 1;
-                            }
-                            break;
-                        case this.parser.tokenEqual:
-                            {
-                                this.processLogical(stack, 'equal');
-                                i = i + 1;
-                            }
-                            break;
-                        default: {
-                            return this.getErrorStrings()[CommonErrors.value];
+                            i = errIndex;
                         }
+                        break;
+                    case 'n':
+                        {
+                            i = i + 1;
+                            let s: string = '';
+                            if (pFormula.substring(i).indexOf('Infinity') === 0) {
+                                s = 'Infinity';
+                                i += s.length;
+                            } else {
+                                if (pFormula[i] === 'u' || uFound) {
+                                    s = '-';
+                                    if (!uFound) {
+                                        i = i + 1;
+                                    } else {
+                                        uFound = false;
+                                    }
+                                }
+                                while (i < pFormula.length && (this.isDigit(pFormula[i]))
+                                    || pFormula[i] === this.getParseDecimalSeparator()) {
+                                    s = s + pFormula[i];
+                                    i = i + 1;
+                                }
+                                if (i < pFormula.length && pFormula[i] === '%') {
+                                    i = i + 1;
+                                    if (s === '') {
+                                        if (stack.length > 0) {
+                                            const stackValue: string = stack[0];
+                                            const value: number = this.parseFloat(stackValue);
+                                            if (!this.isNaN(value)) {
+                                                stack.pop();
+                                                stack.push((value / 100).toString());
+                                            }
+                                        }
+                                    } else {
+                                        s = (this.parseFloat(s) / 100).toString();
+                                    }
+                                }
+                            }
+                            stack.push(s);
+                        }
+                        break;
+                    case this.parser.tokenAdd:
+                        {
+                            this.getValArithmetic(stack, 'add');
+                            i = i + 1;
+                        }
+                        break;
+                    case this.parser.tokenSubtract:
+                        {
+                            this.getValArithmetic(stack, 'sub');
+                            i = i + 1;
+                        }
+                        break;
+                    case this.parser.tokenMultiply:
+                        {
+                            this.getValArithmetic(stack, 'mul');
+                            i = i + 1;
+                        }
+                        break;
+                    case this.parser.tokenDivide:
+                        {
+                            this.getValArithmetic(stack, 'div');
+                            i = i + 1;
+                        }
+                        break;
+                    case this.parser.tokenLess:
+                        {
+                            this.processLogical(stack, 'less');
+                            i = i + 1;
+                        }
+                        break;
+                    case this.parser.tokenGreater:
+                        {
+                            this.processLogical(stack, 'greater');
+                            i = i + 1;
+                        }
+                        break;
+                    case this.parser.tokenGreaterEq:
+                        {
+                            this.processLogical(stack, 'greaterEq');
+                            i = i + 1;
+                        }
+                        break;
+                    case this.parser.tokenLessEq:
+                        {
+                            this.processLogical(stack, 'lessEq');
+                            i = i + 1;
+                        }
+                        break;
+                    case this.parser.tokenNotEqual:
+                        {
+                            this.processLogical(stack, 'notEq');
+                            i = i + 1;
+                        }
+                        break;
+                    case this.parser.tokenOr:
+                        {
+                            this.processLogical(stack, 'or');
+                            i = i + 1;
+                        }
+                        break;
+                    case this.parser.tokenAnd:
+                        {
+                            this.processLogical(stack, 'and');
+                            i = i + 1;
+                        }
+                        break;
+                    case this.parser.tokenEqual:
+                        {
+                            this.processLogical(stack, 'equal');
+                            i = i + 1;
+                        }
+                        break;
+                    default: {
+                        return this.getErrorStrings()[CommonErrors.value];
+                    }
                     }
                 }
             }
@@ -1569,7 +1679,12 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} stack - specify the stack
+     * @param {string} operator - specify the operator.
+     * @returns {string} - To process the logical.
+     */
     public processLogical(stack: string[], operator: string): string {
         let val1: string;
         let val2: string;
@@ -1641,20 +1756,24 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return result;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {StoredCellInfo} sCell - specified the cell information
+     * @returns {string[]} - compute stored cells
+     */
     public computeStoreCells(sCell: StoredCellInfo): string[] {
-        let cellValue: string | string[] = sCell.cellValue;
-        let cellRanges: string[] = sCell.cellRange;
-        let criterias: string[] = sCell.criteria;
-        let argArr: string[] = sCell.argArray;
+        const cellValue: string | string[] = sCell.cellValue;
+        const cellRanges: string[] = sCell.cellRange;
+        const criterias: string[] = sCell.criteria;
+        const argArr: string[] = sCell.argArray;
         let isCriteria: string = sCell.isCriteria;
         let storeCell: string[] = sCell.storedCells;
-        let isCountIfs: string = sCell.isCountIfS;
-        let i: number = sCell.countVal;
-        let rangeLength: string[] | string = isCriteria === this.trueValue ? storeCell : cellValue;
+        const isCountIfs: string = sCell.isCountIfS;
+        const i: number = sCell.countVal;
+        const rangeLength: string[] | string = isCriteria === this.trueValue ? storeCell : cellValue;
         let tempStoredCell: string[] = [];
         for (let j: number = 0; j < rangeLength.length; j++) {
-            let stack: string[] = [];
+            const stack: string[] = [];
             let cellVal: string = this.getValueFromArg(cellValue[j]);
             let criteria: string;
             let newCell: string = '';
@@ -1672,14 +1791,14 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     count = count + 1;
                 }
                 if (this.isCellReference(cellRanges[i]) && cellRanges[i].indexOf(':') > -1) {
-                    let k: number = cellRanges[i].indexOf(':');
+                    const k: number = cellRanges[i].indexOf(':');
                     newCell = this.substring(cellRanges[i], k);
                     while (!this.isDigit(newCell[newCount])) {
                         newCount = newCount + 1;
                     }
                 }
-                let cellAlpha: string = this.substring(cell, count);
-                let newCellAlpha: string = this.substring(newCell, newCount);
+                const cellAlpha: string = this.substring(cell, count);
+                const newCellAlpha: string = this.substring(newCell, newCount);
                 newCell = storeCell[j].split(cellAlpha).join(newCellAlpha);
                 cellVal = this.getValueFromArg(newCell);
                 criteria = isCountIfs === this.trueValue ? criterias[i].split(this.tic).join(this.emptyString) :
@@ -1726,13 +1845,13 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         if (isNullOrUndefined(range) || range[0] === '' || range.length === 0) {
             return this.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
-        let argArr: string[] = range;
-        let argCount: number = argArr.length;
+        const argArr: string[] = range;
+        const argCount: number = argArr.length;
         if (argCount < 2 || argCount > 127) {
             return this.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
         let cellRanges: string[] | string = [];
-        let criterias: string[] | string = [];
+        const criterias: string[] | string = [];
         let storedCell: string[] | string = [];
         let storedCellLength: number = 0;
         let sum: number = 0;
@@ -1745,7 +1864,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
         cellRanges = cellRanges.toString().split(',,').join(',');
         cellRanges = cellRanges.split(this.getParseArgumentSeparator());
-        let len: number[] = [];
+        const len: number[] = [];
         for (let i: number = 0; i < cellRanges.length; i++) {
             len.push(this.getCellCollection(cellRanges[i]).length);
         }
@@ -1759,7 +1878,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         if (isCountIfs === this.falseValue) {
             isCriteria = this.falseValue;
             cellvalue = this.getCellCollection(cellRanges[1]);
-            let sCell: StoredCellInfo = {
+            const sCell: StoredCellInfo = {
                 cellValue: cellvalue, cellRange: cellRanges, criteria: criterias,
                 argArray: argArr, isCriteria: isCriteria, storedCells: storedCell, isCountIfS: isCountIfs
             };
@@ -1770,13 +1889,12 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             }
         }
         // Compare criteria and convert the new cell ranges.
-        let startRange: number;
-        startRange = isCountIfs === this.trueValue ? 0 : 2;
+        const startRange: number = isCountIfs === this.trueValue ? 0 : 2;
         for (let i: number = startRange; i < cellRanges.length; i++) {
             isCriteria = this.trueValue;
             isCriteria = isCountIfs === this.trueValue && i === 0 ? this.falseValue : this.trueValue;
             cellvalue = this.getCellCollection(cellRanges[i]);
-            let sCell: StoredCellInfo = {
+            const sCell: StoredCellInfo = {
                 cellValue: cellvalue, cellRange: cellRanges, criteria: criterias,
                 argArray: argArr, isCriteria: isCriteria, storedCells: storedCell, isCountIfS: isCountIfs, countVal: i
             };
@@ -1797,19 +1915,19 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 count = count + 1;
             }
             if (this.isCellReference(cellRanges[0]) && cellRanges[0].indexOf(':') > -1) {
-                let k: number = cellRanges[0].indexOf(':');
+                const k: number = cellRanges[0].indexOf(':');
                 newCell = this.substring(cellRanges[0], k);
                 while (!this.isDigit(newCell[newCount])) {
                     newCount = newCount + 1;
                 }
             }
-            let cellAlpha: string = this.substring(cell, count);
-            let newCellAlpha: string = this.substring(newCell, newCount);
+            const cellAlpha: string = this.substring(cell, count);
+            const newCellAlpha: string = this.substring(newCell, newCount);
             cellvalue = storedCell[j].split(cellAlpha).join(newCellAlpha);
             if (isCountIfs === this.trueValue) {
                 sum = sum + 1;
             } else {
-                let argValue: string = this.getValueFromArg(cellvalue);
+                const argValue: string = this.getValueFromArg(cellvalue);
                 sum = sum + parseFloat(argValue === '' ? '0' : argValue);
             }
         }
@@ -1819,12 +1937,15 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return sum;
     }
     private processNestedFormula(pText: string, sFormula: string, fResult: string | number): string {
-        let lastIndexq: number = this.findLastIndexOfq(pText);
-        let interiorCalcFString: string = pText.split(sFormula).join('n' + fResult);
+        const interiorCalcFString: string = pText.split(sFormula).join('n' + fResult);
         return interiorCalcFString;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string | number} value - Specify the value
+     * @returns {boolean} -  Returns boolean value
+     */
     public isNaN(value: string | number): boolean {
         if (value.toString() === 'NaN' || typeof value === 'string') {
             return true;
@@ -1832,14 +1953,24 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return false;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {number} doubleNumber - To specify the double number
+     * @returns {Date} - Returns date.
+     */
     public fromOADate(doubleNumber: number): Date {
-        let result: Date = new Date();
+        const result: Date = new Date();
         result.setTime((doubleNumber * this.millisecondsOfaDay) + Date.parse(this.oaDate.toString()));
         return result;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {number} year - Specify the year.
+     * @param {number} month - Specify the month.
+     * @param {number} day - Specify the day.
+     * @returns {number} -  to get serial date from date.
+     */
     public getSerialDateFromDate(year: number, month: number, day: number): number {
         let days: number = 0;
         if (year < 1900) {
@@ -1865,7 +1996,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 day = tempDay - day;
             }
         }
-        let dateTime: number = Date.parse(year.toString() + this.getParseDateTimeSeparator() + month.toString() +
+        const dateTime: number = Date.parse(year.toString() + this.getParseDateTimeSeparator() + month.toString() +
             this.getParseDateTimeSeparator() + day.toString());
         if (!this.isNaN(dateTime)) {
             days = this.toOADate(new Date(dateTime));
@@ -1873,25 +2004,41 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return days;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {Date} dateTime - Specify the date Time
+     * @returns {number} -  returns to date.
+     */
     public toOADate(dateTime: Date): number {
-        let result: number = (dateTime.getTime() - Date.parse(this.oaDate.toString())) / this.millisecondsOfaDay;
+        const result: number = (dateTime.getTime() - Date.parse(this.oaDate.toString())) / this.millisecondsOfaDay;
         return result;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} date - Specify the date
+     * @returns {string} -  returns calculate Date
+     */
     public calculateDate(date: string): string {
         return (this.parseFloat(date) < 10) ? '0' + date : date;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} s - Specify the s
+     * @returns {boolean} -  returns boolean value.
+     */
     public isTextEmpty(s: string): boolean {
         return s === null || s === '';
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} text - Specify the text
+     * @returns {boolean} -  returns boolean value.
+     */
     public isDigit(text: string): boolean {
-        let charCode: number = text.charCodeAt(0);
+        const charCode: number = text.charCodeAt(0);
         if ((charCode > 47) && (charCode < 58)) {
             return true;
         }
@@ -1904,8 +2051,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To get the exact value from argument.
+     *
      * @param {string} arg - Formula argument for getting a exact value.
-     * @returns string
+     * @returns {string} - To get the exact value from argument.
      */
     public getValueFromArg(arg: string): string {
         arg = arg.trim();
@@ -1923,7 +2071,6 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             return arg;
         } else {
             arg = arg.split('u').join('-');
-            /* tslint:disable:max-line-length */
             if (!this.isUpperChar(s[0]) && (this.isDigit(s[0]) || s[0] === this.getParseDecimalSeparator() || s[0] === '-' || s[0] === 'n')) {
                 if (s[0] === 'n') {
                     s = s.substring(1);
@@ -1934,17 +2081,17 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 return s;
             }
         }
-        let symbolArray: string[] = ['+', '-', '/', '*', ')', ')', '{'];
+        const symbolArray: string[] = ['+', '-', '/', '*', ')', ')', '{'];
         if ((this.parser.indexOfAny(s, symbolArray) === -1 && this.isUpperChar(s[0])) || s[0] === this.sheetToken) {
             if (s !== this.trueValue && s !== this.falseValue && this.isCellReference(s)) {
-                let f: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
+                const f: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
                 if (f.sheetNameToParentObject !== null && f.sheetNameToParentObject.size > 0 && s.indexOf(this.sheetToken) === -1) {
-                    let token: string = f.parentObjectToToken.get(this.grid);
+                    const token: string = f.parentObjectToToken.get(this.grid);
                     s = token + s;
                 }
             }
             if (s === this.cell) {
-                let dependent: string[] = this.getDependentCells().get(s);
+                const dependent: string[] = this.getDependentCells().get(s);
                 if (dependent != null && dependent.indexOf(s) > -1) {
                     this.arrayRemove(dependent, s);
                 }
@@ -1963,10 +2110,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return this.computeValue(pObjCVal.toString());
     }
 
-    /* tslint:disable-next-line */
+    /* eslint-disable-next-line */
     public isDate(date: any): Date {
         if (typeof date === 'object' || Date.parse(date) !== null) {
-            let dateval: Date = new Date(Date.parse(date));
+            const dateval: Date = new Date(Date.parse(date));
             if (dateval >= this.dateTime1900) {
                 return dateval;
             } else {
@@ -1978,10 +2125,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     }
 
     private isValidCellReference(text: string): boolean {
-        let start: number = 0;
+        const start: number = 0;
         let end: number = 0;
         let j: number = 0;
-        let numArr: number[] = [89, 71, 69];
+        const numArr: number[] = [89, 71, 69];
         let cellTxt: string = this.emptyString;
         if (this.namedRanges.has(text)) {
             return false;
@@ -2003,7 +2150,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     return false;
                 }
             }
-            let cellNum: number = this.parseFloat(text.substring(end, text.length));
+            const cellNum: number = this.parseFloat(text.substring(end, text.length));
             if (cellNum < 1048576) { // Maximum number of rows in excel.
                 return true;
             }
@@ -2012,13 +2159,13 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     }
 
     /** @hidden */
-    /* tslint:disable-next-line */
+    /* eslint-disable-next-line */
     public parseDate(date: any): any {
         if (!this.isNaN(date)) {
             if (date instanceof Date) {
                 return new Date(date);
             }
-            let d: number = parseInt(date, 10);
+            const d: number = parseInt(date, 10);
             if (d < 0) {
                 return this.getErrorStrings()[CommonErrors.num];
             }
@@ -2036,14 +2183,18 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return this.getErrorStrings()[CommonErrors.value];
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} args - Specify the args
+     * @returns {boolean} - Returns boolean value.
+     */
     public isCellReference(args: string): boolean {
         if (args === this.emptyString) {
             return false;
         }
         args = args.trim();
         args = this.setTokensForSheets(args);
-        let sheetToken1: string = this.getSheetToken(args);
+        const sheetToken1: string = this.getSheetToken(args);
         let containsBoth: boolean = false;
         if (sheetToken1 !== '') {
             args = args.split(sheetToken1).join(this.emptyString);
@@ -2053,7 +2204,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         if (args.indexOf(':') !== args.lastIndexOf(':')) {
             return false;
         }
-        let charArray: string[] = (args.split('').join(this.getParseArgumentSeparator())).split(this.getParseArgumentSeparator());
+        const charArray: string[] = (args.split('').join(this.getParseArgumentSeparator())).split(this.getParseArgumentSeparator());
         for (let c: number = 0; c < charArray.length; c++) {
             if (this.isChar(charArray[c])) {
                 isAlpha = true;
@@ -2084,10 +2235,14 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return false;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} text - Specify the text.
+     * @returns {string} - set Tokens For Sheets.
+     */
     public setTokensForSheets(text: string): string {
-        let family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
-        let sortedSheetNamesCollection: string[] = this.getSortedSheetNames();
+        const family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
+        const sortedSheetNamesCollection: string[] = this.getSortedSheetNames();
         if (sortedSheetNamesCollection != null) {
             for (let n: number = 0; n < sortedSheetNamesCollection.length; n++) {
                 let token: string = family.sheetNameToToken.get(sortedSheetNamesCollection[n]);
@@ -2104,7 +2259,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         text = text.split(this.tempSheetPlaceHolder).join(this.sheetToken);
         if (text.indexOf('!!') > -1) {
             text = text.replace('!!', '!');
-            let textSplit: string[] = text.split('');
+            const textSplit: string[] = text.split('');
             textSplit[1] = (parseInt(textSplit[1], 10) + 1).toString();
             text = textSplit.join('');
         }
@@ -2115,11 +2270,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         if (val === this.trueValue || val === this.falseValue) {
             return val;
         }
-        let i: number = val.lastIndexOf(this.sheetToken);
+        const i: number = val.lastIndexOf(this.sheetToken);
         let row: number = 0;
         let col: number = 0;
-        let grid: Object = this.grid;
-        let family: CalcSheetFamilyItem = this.getSheetFamilyItem(grid);
+        const grid: Object = this.grid;
+        const family: CalcSheetFamilyItem = this.getSheetFamilyItem(grid);
         if (i > -1 && family.tokenToParentObject !== null) {
             this.grid = family.tokenToParentObject.get(val.substring(0, i + 1));
             row = this.rowIndex(val);
@@ -2140,26 +2295,25 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 }
             }
         }
-        let saveCell: string = (this.cell === '' || this.cell === null) ? '' : this.cell;
+        const saveCell: string = (this.cell === '' || this.cell === null) ? '' : this.cell;
         this.cell = val;
         if (saveCell === this.cell) {
             throw this.formulaErrorStrings[FormulasErrorsStrings.circular_reference];
         }
-        let cValue: string | number = this.getParentCellValue(row, col, this.grid);
+        const cValue: string | number = this.getParentCellValue(row, col, this.grid);
         this.grid = grid;
         this.cell = saveCell;
         return cValue;
     }
 
     private getParentCellValue(row: number, col: number, grd: Object): number | string {
-        let alreadyComputed: boolean = false;
         // formulainfotable
         let cValue: number | string;
-        /* tslint:disable-next-line */
+        /* eslint-disable-next-line */
         if ((this.parentObject as any).getValueRowCol === undefined) {
             cValue = this.getValueRowCol(this.getSheetID(grd), row, col);
         } else {
-            /* tslint:disable-next-line */
+            /* eslint-disable-next-line */
             cValue = (this.parentObject as any).getValueRowCol(this.getSheetID(grd), row, col);
             return isNullOrUndefined(cValue) ? this.emptyString : cValue.toString();
         }
@@ -2174,16 +2328,17 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Getting the formula result.
+     *
      * @param {Object} grid - Specifies the parent object.
      * @param {number} row - Row index of the parent object or key.
      * @param {number} col - Column index of the parent object.
-     * @returns string
+     * @returns {string} - Getting the formula result.
      */
     public getValueRowCol(grid: Object, row: number, col: number): string {
-        let key: string = this.rowsToKeyMap.get(row).toString();
+        const key: string = this.rowsToKeyMap.get(row).toString();
         let result: string = this.getKeyValue(key).toString();
         if (result != null && result[result.length - 1] === ('%') && result.length > 1) {
-            let d: number = this.parseFloat(result.substring(0, result.length - 1));
+            const d: number = this.parseFloat(result.substring(0, result.length - 1));
             if (this.isNaN(d)) {
                 result = (Number(d) / 100).toString();
             }
@@ -2193,9 +2348,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To add custom library formula.
+     *
      * @param {string} formulaName - Custom Formula name.
      * @param {string} functionName - Custom function name.
-     * @returns void
+     * @returns {void} - To add custom library formula.
      */
     public defineFunction(formulaName: string, functionName: string | Function): void {
         if (typeof functionName === 'string') {
@@ -2207,22 +2363,26 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Specifies when changing the value.
+     *
      * @param {string} grid - Parent object reference name.
      * @param {ValueChangedArgs} changeArgs - Value changed arguments.
      * @param {boolean} isCalculate - Value that allow to calculate.
+     * @param {number[]} usedRangeCol - Specify the used range collection.
+     * @returns {void} - Specifies when changing the value.
      */
     public valueChanged(grid: string, changeArgs: ValueChangedArgs, isCalculate?: boolean, usedRangeCol?: number[]): void {
-        let pgrid: string = grid; this.spreadSheetUsedRange = usedRangeCol;
+        const pgrid: string = grid; this.spreadSheetUsedRange = usedRangeCol;
         this.grid = grid;
         let isComputedValueChanged: boolean = true;
         let isCompute: boolean = true;
-        let calcFamily: CalcSheetFamilyItem = this.getSheetFamilyItem(pgrid);
+        const calcFamily: CalcSheetFamilyItem = this.getSheetFamilyItem(pgrid);
         let cellTxt: string = getAlphalabel(changeArgs.getColIndex()) + changeArgs.getRowIndex().toString();
+        this.actCell = cellTxt;
         if (calcFamily.sheetNameToParentObject !== null && calcFamily.sheetNameToParentObject.size > 0) {
-            let token: string = calcFamily.parentObjectToToken.get(pgrid);
+            const token: string = calcFamily.parentObjectToToken.get(pgrid);
             cellTxt = token + cellTxt;
         }
-        let argVal: string = changeArgs.getValue().toUpperCase();
+        const argVal: string = changeArgs.getValue().toUpperCase();
         if (argVal.indexOf('=RAND()') > - 1 || argVal.indexOf('RAND()') > - 1 || argVal.indexOf('=RANDBETWEEN(') > - 1 ||
             argVal.indexOf('RANDBETWEEN(') > - 1 || this.randomValues.has(cellTxt)) {
             let randStrVal: string = this.randCollection.toString();
@@ -2269,7 +2429,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 }
                 if (isCompute) {
                     this.parser.isFormulaParsed = true;
-                    let cValue: string | number = this.computeFormula(formula.getParsedFormula());
+                    const cValue: string | number = this.computeFormula(formula.getParsedFormula());
                     isComputedValueChanged = (cValue !== formula.getFormulaValue());
                     formula.setFormulaValue(cValue);
                 }
@@ -2295,13 +2455,13 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 }
             }
             if (isCompute) {
-                /* tslint:disable */
+                /* eslint-disable */
                 if ((this.parentObject as any).setValueRowCol === undefined) {
                     this.setValueRowCol(this.getSheetID(pgrid) + 1, formula.getFormulaValue(), changeArgs.getRowIndex(), changeArgs.getColIndex());
                 } else {
                     (this.parentObject as any).setValueRowCol(this.getSheetID(pgrid) + 1, formula.getFormulaValue(), changeArgs.getRowIndex(), changeArgs.getColIndex());
                 }
-                /* tslint:enable */
+                /* eslint-enable */
             }
         } else if (this.getFormulaInfoTable().has(cellTxt)) {
             this.getFormulaInfoTable().delete(cellTxt);
@@ -2316,7 +2476,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @returns {Map<string, string | number>} - To get computed value.
+     */
     public getComputedValue(): Map<string, string | number> {
         if (this.computedValues === null) {
             this.computedValues = new Map<string, string | number>();
@@ -2325,16 +2488,21 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * @hidden 
+     * @hidden
+     * @param {number} value - specify the value
+     * @param {string | number} formulaValue -  specify the formula value.
+     * @param {number} row - specify the row
+     * @param {number} col - specify the col.
+     * @returns {void} - to set value row and column.
      */
     public setValueRowCol(value: number, formulaValue: string | number, row: number, col: number): void {
         /* No Implementation */
     }
 
     private getSortedSheetNames(): string[] {
-        let family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
+        const family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
         if (family != null && family.sheetNameToToken != null) {
-            let arr: string[] = [];
+            const arr: string[] = [];
             family.sheetNameToToken.forEach((value: string, key: string) => {
                 arr.push(key);
                 arr.sort();
@@ -2345,14 +2513,20 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return this.sortedSheetNames;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} error -  specify the string
+     * @returns {string} - to get error line.
+     */
     public getErrorLine(error: string): string {
-        /* tslint:disable-next-line */
+        /* eslint-disable-next-line */
         let errorStack: string[] = (error as any).stack ? (error as any).stack.split('\n')[1].split(':') : null;
         return errorStack ? errorStack[errorStack.length - 2] : null; // Getting row number of the error file.
     }
 
-    /** @hidden */
+    /** @hidden
+     * @returns {number} - to return the sheet id
+     */
     public createSheetFamilyID(): number {
         if (this.sheetFamilyID === Number.MAX_SAFE_INTEGER) {
             this.sheetFamilyID = Number.MIN_SAFE_INTEGER;
@@ -2360,7 +2534,12 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return this.sheetFamilyID++;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - Specify the args.
+     * @param {string} operation - Specify the operation.
+     * @returns {string} - To compute min max.
+     */
     public computeMinMax(args: string[], operation: string): string {
         let result: number;
         let argVal: string;
@@ -2374,19 +2553,19 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             }
         }
         result = (operation === 'max') ? this.minValue : this.maxValue;
-        let argArr: string[] = args;
+        const argArr: string[] = args;
         if (argArr.length > 255) {
             return this.getErrorStrings()[CommonErrors.value];
         }
         for (let i: number = 0; i < argArr.length; i++) {
             if (argArr[i].indexOf(':') > -1 && this.isCellReference(argArr[i])) {
-                let cellValue: string[] | string = this.getCellCollection(argArr[i]);
+                const cellValue: string[] | string = this.getCellCollection(argArr[i]);
                 for (let j: number = 0; j < cellValue.length; j++) {
                     argVal = this.getValueFromArg(cellValue[j]);
                     if (this.getErrorStrings().indexOf(argVal) > -1) {
                         return argVal;
                     }
-                    let cellVal: number = this.parseFloat(argVal);
+                    const cellVal: number = this.parseFloat(argVal);
                     if (argVal === '' || this.isNaN(this.parseFloat(cellVal))) {
                         countStrVal = countStrVal + 1;
                         if (countStrVal === cellValue.length) {
@@ -2398,12 +2577,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     }
                 }
             } else {
-                let val: string;
-                val = this.getValueFromArg(argArr[i]);
+                const val: string = this.getValueFromArg(argArr[i]);
                 if (this.getErrorStrings().indexOf(val) > -1) {
                     return val;
                 }
-                let cellVal: number = this.parseFloat(val);
+                const cellVal: number = this.parseFloat(val);
                 if (val === '' || this.isNaN(this.parseFloat(cellVal))) {
                     countStrVal = countStrVal + 1;
                     if (countStrVal === argVal.length) {
@@ -2418,21 +2596,25 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return result.toString();
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string[]} args - Specify the args.
+     * @returns {string} - to calculate average.
+     */
     public calculateAvg(args: string[]): string {
         let sumCell: number = 0;
-        let argArr: string[] = args;
+        const argArr: string[] = args;
         let cellVal: string[] | string = [];
         let avgVal: number = 0;
         let countNum: number = 0;
-        let countNum1: number = 0;
+        const countNum1: number = 0;
         for (let k: number = 0; k < argArr.length; k++) {
             if (argArr[k].indexOf(':') > -1 && this.isCellReference(argArr[k])) {
                 countNum = 0;
                 cellVal = this.getCellCollection(argArr[k]);
                 avgVal = 0;
                 for (let i: number = 0; i < cellVal.length; i++) {
-                    let value: string = this.getValueFromArg(cellVal[i]);
+                    const value: string = this.getValueFromArg(cellVal[i]);
                     if (isNullOrUndefined(value) || isNaN(this.parseFloat(value))) {
                         continue;
                     }
@@ -2453,7 +2635,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 if (argArr[k].length === 0) {
                     argArr[k] = '1';
                 }
-                let value: string = this.getValueFromArg(argArr[k].split(this.tic).join(''));
+                const value: string = this.getValueFromArg(argArr[k].split(this.tic).join(''));
                 if (isNullOrUndefined(value) || isNaN(this.parseFloat(value))) {
                     return this.getErrorStrings()[CommonErrors.name];
                 }
@@ -2465,6 +2647,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * @hidden
+     * @param {string} refName - specify the reference name.
+     * @param {Object | string } model - model - Specify the model.model
+     * @param {number} sheetFamilyID - specify the sheet family id.
+     * @returns {string} - register Grid As Sheet.
      */
     public registerGridAsSheet(refName: string, model: Object | string, sheetFamilyID: number): string {
         if (isNullOrUndefined(this.modelToSheetID)) {
@@ -2473,9 +2659,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         if (isNullOrUndefined(this.modelToSheetID.get(model))) {
             this.modelToSheetID.set(model, sheetFamilyID);
         }
-        let family: CalcSheetFamilyItem = this.getSheetFamilyItem(model);
+        const family: CalcSheetFamilyItem = this.getSheetFamilyItem(model);
         family.isSheetMember = true;
-        let tempRef: string = refName.toUpperCase();
+        const tempRef: string = refName.toUpperCase();
         if (family.parentObjectToToken.size === 0) {
             family.parentObjectToToken = new Map<Object, string>();
         }
@@ -2490,11 +2676,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
 
         if (!isUndefined(family.sheetNameToParentObject.get(tempRef))) {
-            let token: string = family.sheetNameToToken.get(tempRef);
+            const token: string = family.sheetNameToToken.get(tempRef);
             family.tokenToParentObject.set(token, model);
             family.parentObjectToToken.set(model, token);
         } else {
-            let token: string = this.sheetToken + this.tokenCount.toString() + this.sheetToken;
+            const token: string = this.sheetToken + this.tokenCount.toString() + this.sheetToken;
             this.tokenCount++;
             family.tokenToParentObject.set(token, model);
             family.parentObjectToToken.set(model, token);
@@ -2506,36 +2692,42 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * @hidden
+     * @param {string} refName - Specify the reference name
+     * @param {string | Object} model - Specify the model
+     * @returns {void} - To un register grid sheet.
      */
     public unregisterGridAsSheet(refName: string, model: string | Object): void {
-        let family: CalcSheetFamilyItem = this.getSheetFamilyItem(model);
-        let refName1: string = refName.toUpperCase();
+        const family: CalcSheetFamilyItem = this.getSheetFamilyItem(model);
+        const refName1: string = refName.toUpperCase();
         if (family.sheetNameToParentObject != null && family.sheetNameToParentObject.has(refName1)) {
             family.sheetNameToParentObject.delete(refName1);
-            let token: string = family.sheetNameToToken.get(refName1);
+            const token: string = family.sheetNameToToken.get(refName1);
             family.sheetNameToToken.delete(refName1);
             family.tokenToParentObject.delete(token);
             family.parentObjectToToken.delete(model);
         }
-    };
+    }
 
     /**
      * @hidden
+     * @param {string} formula - Specify the formula
+     * @returns {string | number} - To compute the expression.
      */
     public computeExpression(formula: string): string| number {
-        let parsedFormula: string = this.parser.parseFormula(formula);
-        let calcValue: string | number = this.computeFormula(parsedFormula);
+        const parsedFormula: string = this.parser.parseFormula(formula);
+        const calcValue: string | number = this.computeFormula(parsedFormula);
         return calcValue;
-    };
+    }
 
     private isSheetMember(): CalcSheetFamilyItem | boolean {
-        let family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
+        const family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
         return isNullOrUndefined(family) ? false : family.isSheetMember;
     }
 
     /**
      * To dispose the calculate engine.
-     * @returns void
+     *
+     * @returns {void} - To dispose the calculate engine.
      */
     public dispose(): void {
         this.resetKeys();
@@ -2586,22 +2778,22 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             this.refreshedCells.clear();
         }
         if (this.getDependentCells().has(cellRef) && this.getDependentCells().get(cellRef) !== null) {
-            let family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
+            const family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
             this.dependencyLevel = this.dependencyLevel + 1;
             try {
-                let dependentCells: string[] = this.getDependentCells().get(cellRef);
+                const dependentCells: string[] = this.getDependentCells().get(cellRef);
                 let i: number;
                 for (i = 0; i < dependentCells.length; i++) {
-                    let dCell: string = dependentCells[i];
-                    let token: string = this.getSheetToken(dCell);
+                    const dCell: string = dependentCells[i];
+                    const token: string = this.getSheetToken(dCell);
 
                     if (token.length) {
                         this.grid = family.tokenToParentObject.get(token);
                     }
                     try {
-                        let rowIdx: number = this.rowIndex(dCell);
-                        let colIdx: number = this.colIndex(dCell);
-                        let formulaInfo: FormulaInfo = this.getFormulaInfoTable().get(dCell);
+                        const rowIdx: number = this.rowIndex(dCell);
+                        const colIdx: number = this.colIndex(dCell);
+                        const formulaInfo: FormulaInfo = this.getFormulaInfoTable().get(dCell);
                         let result: string | number;
                         if (formulaInfo) {
                             this.cell = dCell;
@@ -2668,36 +2860,45 @@ export class FormulaInfo {
     private calcID1: number = Number.MIN_VALUE + 1;
     /**
      * @hidden
+     * @returns {void} - To get Formula Text
      */
     public getFormulaText(): string {
         return this.formulaText;
     }
     /**
      * @hidden
+     * @param {string} value - Specify the value
+     * @returns {void} - To set Formula Text
      */
     public setFormulaText(value: string): void {
         this.formulaText = value;
     }
     /**
      * @hidden
+     * @returns {string} - To get Formula Value
      */
     public getFormulaValue(): string | number {
         return this.formulaValue;
     }
     /**
      * @hidden
+     * @param {string | number} value - Specify the value
+     * @returns {void} - To set Parsed Formula
      */
     public setFormulaValue(value: string | number): void {
         this.formulaValue = value;
     }
     /**
      * @hidden
+     * @returns {string} - To get Parsed Formula
      */
     public getParsedFormula(): string {
         return this.parsedFormula;
     }
     /**
      * @hidden
+     * @param {string} value - Specify the value
+     * @returns {void} - To set Parsed Formula
      */
     public setParsedFormula(value: string): void {
         this.parsedFormula = value;
@@ -2742,20 +2943,22 @@ export class CalcSheetFamilyItem {
 
 /**
  * @hidden
+ * @param {number} col - Specify the column
+ * @returns {string} - To returns get Alphalabel.
  */
 
 export function getAlphalabel(col: number): string {
-    let cols: string[] = [];
+    const cols: string[] = [];
     let n: number = 0;
-    let charText: string = 'A';
+    const charText: string = 'A';
     while (col > 0 && n < 9) {
         col--;
-        let aCharNo: number = charText.charCodeAt(0);
+        const aCharNo: number = charText.charCodeAt(0);
         cols[n] = String.fromCharCode(col % 26 + aCharNo);
         col = parseInt((col / 26).toString(), 10);
         n++;
     }
-    let chs: string[] = [];
+    const chs: string[] = [];
     for (let i: number = 0; i < n; i++) {
         chs[n - i - 1] = cols[i];
     }

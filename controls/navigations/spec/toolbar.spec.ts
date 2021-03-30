@@ -440,8 +440,8 @@ describe('Toolbar Control', () => {
             });
             toolbar.appendTo('#ej2Toolbar');
             let element: HTMLElement = document.getElementById('ej2Toolbar');
-            let innerelement: NodeList = element.getElementsByClassName('e-toolbar-items');
-            setStyleAttribute(<HTMLElement>innerelement[0], { display: 'inline-block' });
+            let innerelement: HTMLElement = element.querySelector('.e-toolbar-items');
+            setStyleAttribute(<HTMLElement>innerelement, { display: 'inline-block' });
             setStyleAttribute(<HTMLElement>element.getElementsByClassName('e-toolbar-item')[0], { display: 'inline-block' });
             toolbar.items = [{
                 type: 'Button', text: 'Bold',

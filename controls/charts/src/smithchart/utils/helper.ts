@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable @typescript-eslint/ban-types */
 import { createElement, compile as templateComplier, remove } from '@syncfusion/ej2-base';
 import { Smithchart } from '../../smithchart/smithchart';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
@@ -6,7 +8,12 @@ import { Animation, AnimationOptions, Effect } from '@syncfusion/ej2-base';
 import { SmithchartSize, SmithchartRect } from '../../smithchart/utils/utils';
 
 
-
+/**
+ * To create the svg element.
+ *
+ * @param {Smithchart} smithchart smithchart instance
+ * @returns {void}
+ */
 export function createSvg(smithchart: Smithchart): void {
     smithchart.renderer = new SvgRenderer(smithchart.element.id);
     calculateSize(smithchart);
@@ -17,22 +24,32 @@ export function createSvg(smithchart: Smithchart): void {
     });
 }
 
+/**
+ * To get the html element from DOM.
+ *
+ * @param {string} id id of the html element
+ * @returns {Element} html element.
+ */
 export function getElement(id: string): Element {
     return document.getElementById(id);
 }
 /**
- * @private
- * Trim the title text
+ * To trim the text by given width.
+ *
+ * @param {number} maximumWidth max width of the text
+ * @param {string} text text
+ * @param {SmithchartFontModel} font text style
+ * @returns {string} It returns trimmed text
  */
-export function textTrim(maxwidth: number, text: string, font: SmithchartFontModel): string {
+export function textTrim(maximumWidth: number, text: string, font: SmithchartFontModel): string {
     let label: string = text;
     let size: number = measureText(text, font).width;
-    if (size > maxwidth) {
-        let textLength: number = text.length;
+    if (size > maximumWidth) {
+        const textLength: number = text.length;
         for (let i: number = textLength - 1; i >= 0; --i) {
             label = text.substring(0, i) + '...';
             size = measureText(label, font).width;
-            if (size <= maxwidth || label.length < 4) {
+            if (size <= maximumWidth || label.length < 4) {
                 if (label.length < 4) {
                     label = ' ';
                 }
@@ -43,13 +60,14 @@ export function textTrim(maxwidth: number, text: string, font: SmithchartFontMod
     return label;
 }
 /**
- * Function     to compile the template function for maps.
- * @returns Function
+ * Function to compile the template function for maps.
+ *
+ * @param {string} templateString template with string format
+ * @returns {Function} return template function
  * @private
  */
 export function getTemplateFunction(templateString: string): Function {
     let templateFn: Function = null;
-    let e: Object;
     try {
         if (document.querySelectorAll(templateString).length) {
             templateFn = templateComplier(document.querySelector(templateString).innerHTML.trim());
@@ -60,11 +78,19 @@ export function getTemplateFunction(templateString: string): Function {
     return templateFn;
 }
 
+/**
+ * Get element from label
+ *
+ * @param {Element} element element
+ * @param {string} labelId label id
+ * @param {object} data chart data
+ * @returns {HTMLElement} html element
+ */
 export function convertElementFromLabel(
-    element: Element, labelId: string, data: object, index: number, smithchart: Smithchart): HTMLElement {
-    let labelEle: Element = element[0];
+    element: Element, labelId: string, data: object): HTMLElement {
+    const labelEle: Element = element[0];
     let templateHtml: string = labelEle.outerHTML;
-    let properties: Object[] = Object.keys(data);
+    const properties: Object[] = Object.keys(data);
     for (let i: number = 0; i < properties.length; i++) {
         templateHtml = templateHtml.replace(new RegExp('{{:' + <String>properties[i] + '}}', 'g'), data[properties[i].toString()]);
     }
@@ -75,6 +101,11 @@ export function convertElementFromLabel(
     });
 }
 
+/**
+ * Get epsilon value
+ *
+ * @returns {number} return epsilon value
+ */
 export function _getEpsilonValue(): number {
     let e: number = 1.0;
     while ((1.0 + 0.5 * e) !== 1.0) {
@@ -86,10 +117,13 @@ export function _getEpsilonValue(): number {
 
 /**
  * Method to calculate the width and height of the smithchart
+ *
+ * @param {Smithchart} smithchart smithchart instance
+ * @returns {void}
  */
 export function calculateSize(smithchart: Smithchart): void {
-    let containerWidth: number = smithchart.element.clientWidth;
-    let containerHeight: number = smithchart.element.clientHeight;
+    const containerWidth: number = smithchart.element.clientWidth;
+    const containerHeight: number = smithchart.element.clientHeight;
 
     smithchart.availableSize = new SmithchartSize(
         stringToNumber(smithchart.width, containerWidth) || containerWidth || 600,
@@ -97,14 +131,20 @@ export function calculateSize(smithchart: Smithchart): void {
 
     );
 }
-/**
- * Animation for template
- * @private
- */
 
+/**
+ * Method for template animation
+ *
+ * @param {Smithchart} smithchart smithchart
+ * @param {Element} element html element
+ * @param {number} delay animation delay
+ * @param {number} duration animation duration
+ * @param {Effect} name animation name
+ * @returns {void}
+ */
 export function templateAnimate(smithchart: Smithchart, element: Element, delay: number, duration: number, name: Effect
 ): void {
-    let opacity: number = 0;
+    const opacity: number = 0;
     let delta: number;
     let value: number;
     new Animation({}).animate(<HTMLElement>element, {
@@ -117,14 +157,20 @@ export function templateAnimate(smithchart: Smithchart, element: Element, delay:
             args.element.style.opacity = value.toString();
         },
         end: (args: AnimationOptions): void => {
-            let opacity: number = 1;
+            const opacity: number = 1;
             args.element.style.opacity = opacity.toString();
             smithchart.trigger('animationComplete', event);
-        },
+        }
     });
 }
 
-/** @private */
+/**
+ * Convert string to number
+ *
+ * @param {string} value string type value
+ * @param {number} containerSize size of the container
+ * @returns {number} returns converted number
+ */
 export function stringToNumber(value: string, containerSize: number): number {
     if (value !== null && value !== undefined) {
         return value.indexOf('%') !== -1 ? (containerSize / 100) * parseInt(value, 10) : parseInt(value, 10);
@@ -135,6 +181,7 @@ export function stringToNumber(value: string, containerSize: number): number {
 
 /**
  * Internal use of path options
+ *
  * @private
  */
 export class PathOption {
@@ -161,6 +208,7 @@ export class PathOption {
 
 /**
  * Internal use of rectangle options
+ *
  * @private
  */
 export class RectOption extends PathOption {
@@ -185,6 +233,7 @@ export class RectOption extends PathOption {
 
 /**
  * Internal use of circle options
+ *
  * @private
  */
 export class CircleOption extends PathOption {
@@ -202,6 +251,13 @@ export class CircleOption extends PathOption {
     }
 }
 
+/**
+ * Method for calculate width and height of given string.
+ *
+ * @param {string} text text value
+ * @param {SmithchartFontModel} font text font style
+ * @returns {SmithchartSize} size of the text
+ */
 export function measureText(text: string, font: SmithchartFontModel): SmithchartSize {
     let htmlObject: HTMLElement = document.getElementById('smithchartmeasuretext');
 
@@ -227,6 +283,7 @@ export function measureText(text: string, font: SmithchartFontModel): Smithchart
 
 /**
  * Internal use of text options
+ *
  * @private
  */
 export class TextOption {
@@ -246,53 +303,77 @@ export class TextOption {
 }
 
 /**
- * To remove element by id
+ * Remove html element from DOM
+ *
+ * @param {string} id element id
+ * @returns {void}
  */
 export function removeElement(id: string): void {
-    let element: Element = document.getElementById(id);
+    const element: Element = document.getElementById(id);
     return element ? remove(element) : null;
 }
 
 /**
  * Animation Effect Calculation Started Here
- * @param currentTime
- * @param startValue
- * @param endValue
- * @param duration
+ *
+ * @param {number} currentTime current time
+ * @param {number} startValue start value of the animation
+ * @param {number} endValue end value of the animation
+ * @param {number} duration animation duration
+ * @returns {number} number
  * @private
  */
-
-
 export function linear(currentTime: number, startValue: number, endValue: number, duration: number): number {
     return -endValue * Math.cos(currentTime / duration * (Math.PI / 2)) + endValue + startValue;
 }
 
+/**
+ * Reverse linear calculation
+ *
+ * @param {number} currentTime current time
+ * @param {number} startValue start value of the animation
+ * @param {number} endValue end value of the animation
+ * @param {number} duration animation duration
+ * @returns {number} number
+ */
 export function reverselinear(currentTime: number, startValue: number, endValue: number, duration: number): number {
     return -startValue * Math.sin(currentTime / duration * (Math.PI / 2)) + endValue + startValue;
 }
 
-/** @private */
+/**
+ * Get animation function name
+ *
+ * @param {string} effect animation effect name
+ * @returns {Function} animation function
+ * @private
+ */
 export function getAnimationFunction(effect: string): Function {
     let functionName: Function;
     switch (effect) {
-        case 'Linear':
-            functionName = linear;
-            break;
-        case 'Reverse':
-            functionName = reverselinear;
-            break;
+    case 'Linear':
+        functionName = linear;
+        break;
+    case 'Reverse':
+        functionName = reverselinear;
+        break;
     }
     return functionName;
 }
 
 /**
  * Internal rendering of text
+ *
+ * @param {TextOption} options text element options
+ * @param {SmithchartFontModel} font text font style
+ * @param {string} color color of the text
+ * @param {HTMLElement} parent parent element of the text
+ * @returns {Element} text element
  * @private
  */
 export function renderTextElement(
     options: TextOption, font: SmithchartFontModel, color: string, parent: HTMLElement | Element
 ): Element {
-    let renderOptions: Object = {
+    const renderOptions: Object = {
         'id': options.id,
         'x': options.x,
         'y': options.y,
@@ -304,10 +385,9 @@ export function renderTextElement(
         'text-anchor': options.anchor,
         'opacity': font.opacity
     };
-    let text: string = options.text;
-    let renderer: SvgRenderer = new SvgRenderer('');
-    let height: number;
-    let htmlObject: Element = renderer.createText(renderOptions, text);
+    const text: string = options.text;
+    const renderer: SvgRenderer = new SvgRenderer('');
+    const htmlObject: Element = renderer.createText(renderOptions, text);
     parent.appendChild(htmlObject);
     return htmlObject;
 }

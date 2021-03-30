@@ -357,6 +357,35 @@ describe('Barcode Control ', () => {
         });
     });
 
+    describe('upcA character rendering issue ', () => {
+        
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'codabar3' });
+            document.body.appendChild(ele);
+            barcode = new BarcodeGenerator({
+                width: '300px', height: '150px',
+                type: 'UpcA',
+                value: '024100106851',
+                displayText: {
+                    
+                },
+            });
+            barcode.appendTo('#codabar3');
+        });
+
+        afterAll((): void => {
+            barcode.destroy();
+            ele.remove();
+        });
+
+        it('upcA character rendering issue', (done: Function) => {
+            var barcode = document.getElementById("codabar3");
+            var value = barcode.children[0].children[0].getAttribute("style")
+            expect(value==="font-size: 20px; font-family: monospace;").toBe(true);
+            done();
+        });
+    });
+
     describe('upcE bar testing for all lines check  upcE barcode', () => {
         //let barcode: BarcodeGenerator;
         //let ele: HTMLElement;
@@ -413,8 +442,7 @@ describe('Barcode Control ', () => {
     });
 
     describe('upcE bar testing for all lines check  upcE barcode disable checksum', () => {
-        //let barcode: BarcodeGenerator;
-        //let ele: HTMLElement;
+        
         beforeAll((): void => {
             ele = createElement('div', { id: 'codabar4' });
             document.body.appendChild(ele);

@@ -2,34 +2,7 @@
 
 ## [Unreleased]
 
-## 18.4.49 (2021-03-23)
-
-### Document Editor
-
-#### Bug Fixes
-
-- `#317061` - The merged cell table border rendering issue is resolved.
-- `#318283` - Resolved script error while editing the last section header.
-- `#310874` - The table with the merged cell is exporting properly.
-- `#162017` - Restart page numbering is now preserved properly on exporting.
-- `#316810` - Spell check script error is now resolved for layout type change.
-- `#163236` - Strike through and underline content are now copy-pasted properly.
-
-## 18.4.48 (2021-03-16)
-
-### Document Editor
-
-#### Bug Fixes
-
-- `#163116`, `#317496`, `#315005` - Implemented the line spacing Hanging similar to MS word.
-- `#317691` - Resolve the Number formatting after applying bullet formats.
-- `#317524` - Replace all with empty string is now working.
-- `#317605` - Shape with line format value null was now preserved properly.
-- `#317150` - Can press 'p' key in Firefox after control + a and then backspace.
-- Resolve hanging issue while opening document.
-- `#315656` - Resolve script error when importing document.
-
-## 18.4.47 (2021-03-09)
+## 19.1.54 (2021-03-30)
 
 ### Document Editor
 
@@ -75,8 +48,6 @@
 - `#162017` - Page number was now updated properly based on page index.
 - `#313821` - Table column were now layout properly.
 - `#311371` - While deleting the bookmark extra spaces between the text were now removed properly.
-- `#312082` - Resolved script error on updating TOC.
-- `#312306` - Hyperlink label was not added while editing the link address now.
 
 ## 18.4.43 (2021-02-16)
 

@@ -4,6 +4,7 @@ import * as CONSTANT from './../base/constant';
 import { IMarkdownSubCommands } from './../base/interface';
 /**
  * Link internal component
+ * 
  * @hidden
  * @deprecated
  */
@@ -13,10 +14,12 @@ export class ClearFormat {
 
     /**
      * Constructor for creating the clear format plugin
+     *
+     * @param {MarkdownParser} parent - specifies the parent element
      * @hidden
      * @deprecated
      */
-    constructor(parent: MarkdownParser) {
+    public constructor(parent: MarkdownParser) {
         this.parent = parent;
         this.selection = this.parent.markdownSelection;
         this.addEventListener();
@@ -26,34 +29,37 @@ export class ClearFormat {
     }
 
     private replaceRegex(data: string): string {
+        /* eslint-disable */
         return data.replace(/\*/ig, '\\*').replace(/\&/ig, '\\&')
-        .replace(/\-/ig, '\\-').replace(/\^/ig, '\\^')
-        .replace(/\$/ig, '\\$').replace(/\./ig, '\\.')
-        .replace(/\|/ig, '\\|').replace(/\?/ig, '\\?')
-        .replace(/\+/ig, '\\+').replace(/\-/ig, '\\-')
-        .replace(/\&/ig, '\\&');
+            .replace(/\-/ig, '\\-').replace(/\^/ig, '\\^')
+            .replace(/\$/ig, '\\$').replace(/\./ig, '\\.')
+            .replace(/\|/ig, '\\|').replace(/\?/ig, '\\?')
+            .replace(/\+/ig, '\\+').replace(/\-/ig, '\\-')
+            .replace(/\&/ig, '\\&'); 
+            /* eslint-enable */   
     }
 
     private clearSelectionTags(text: string): string {
-        let data: { [key: string]: string } = this.parent.selectionTags;
-        let keys: string[] = Object.keys(data);
+        const data: { [key: string]: string } = this.parent.selectionTags;
+        const keys: string[] = Object.keys(data);
         for (let num: number = 0; num < keys.length; num++ ) {
-            let key: string = keys[num];
+            const key: string = keys[num];
+            // eslint-disable-next-line
             if (data.hasOwnProperty(key) && data[key] !== '') {
-                let expString: string = this.replaceRegex(data[key]);
+                const expString: string = this.replaceRegex(data[key]);
                 let regExp: RegExp;
-                let startExp: number;
-                let endExp: number;
+                const startExp: number = data[key].length;
+                const endExp: number = (data[key] === '<sup>' || data[key] === '<sub>') ? data[key].length + 1 : data[key].length;
                 if (data[key] === '<sup>') {
+                    // eslint-disable-next-line
                     regExp = new RegExp('<sup>(.*?)<\/sup>', 'ig');
                 } else if (data[key] === '<sub>') {
+                    // eslint-disable-next-line
                     regExp = new RegExp('<sub>(.*?)<\/sub>', 'ig');
                 } else {
                     regExp = new RegExp(expString + '(.*?)' + expString, 'ig');
                 }
-                startExp = data[key].length;
-                endExp = (data[key] === '<sup>' || data[key] === '<sub>') ? data[key].length + 1 : data[key].length;
-                let val: RegExpMatchArray = text.match(regExp);
+                const val: RegExpMatchArray = text.match(regExp);
                 for (let index: number = 0; val && index < val.length && val[index] !== ''; index++) {
                     text = text.replace(val[index], val[index].substr(startExp, val[index].length - endExp - startExp ));
                 }
@@ -63,19 +69,20 @@ export class ClearFormat {
     }
 
     private clearFormatTags(text: string): string {
-        let lines: string[] = text.split('\n');
+        const lines: string[] = text.split('\n');
         return this.clearFormatLines(lines);
     }
 
     private clearFormatLines(lines: string[]): string {
-        let tags: { [key: string]: string }[] = [this.parent.formatTags, this.parent.listTags];
+        const tags: { [key: string]: string }[] = [this.parent.formatTags, this.parent.listTags];
         let str: string = '';
         for (let len: number = 0; len < lines.length; len++) {
             for (let num: number = 0; num < tags.length; num++) {
-                let data: { [key: string]: string } =  tags[num];
-                let keys: string[] = Object.keys(data);
+                const data: { [key: string]: string } =  tags[num];
+                const keys: string[] = Object.keys(data);
                 for (let index: number = 0; index < keys.length; index++ ) {
-                    let key: string = keys[index];
+                    const key: string = keys[index];
+                    // eslint-disable-next-line
                     if (data.hasOwnProperty(key) && data[key] !== '') {
                         if (lines[len].indexOf(data[key]) === 0) {
                             lines[len] = lines[len].replace(data[key], '');
@@ -90,10 +97,10 @@ export class ClearFormat {
     }
 
     private clear(e: IMarkdownSubCommands): void {
-        let textArea: HTMLTextAreaElement = this.parent.element as HTMLTextAreaElement;
+        const textArea: HTMLTextAreaElement = this.parent.element as HTMLTextAreaElement;
         textArea.focus();
-        let start: number = textArea.selectionStart;
-        let end: number = textArea.selectionEnd;
+        const start: number = textArea.selectionStart;
+        const end: number = textArea.selectionEnd;
         let text: string = this.selection.getSelectedText(textArea);
         text = this.clearSelectionTags(text);
         text =  this.clearFormatTags(text);

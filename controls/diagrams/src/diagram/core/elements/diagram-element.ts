@@ -3,7 +3,7 @@ import { MarginModel, ShapeStyleModel, ShadowModel } from '../appearance-model';
 import { Size } from '../../primitives/size';
 import { PointModel } from '../../primitives/point-model';
 import { Rect } from '../../primitives/rect';
-import { getBounds, randomId } from '../../utility/base-util';
+import { getBounds } from '../../utility/base-util';
 
 /**
  * DiagramElement module defines the basic unit of diagram
@@ -248,20 +248,30 @@ export class DiagramElement {
     // public constructor() {
     //     this.id = randomId();
     // }
+
     /**
-     * Sets the offset of the element with respect to its parent
-     * @param {number} x 
-     * @param {number} y 
-     * @param {UnitMode} mode 
+     * Sets the offset of the element with respect to its parent \
+     *
+     * @returns { void }Sets the offset of the element with respect to its parent\
+     * @param {number} x - provide the x value.
+     * @param {number} y - provide the y value.
+     * @param {UnitMode} mode - provide the id value.
+     *
+     * @private
      */
     public setOffsetWithRespectToBounds(x: number, y: number, mode: UnitMode): void {
         this.unitMode = mode;
         this.position = { x: x, y: y };
     }
 
+
     /**
-     * Gets the position of the element with respect to its parent
-     * @param {Size} size 
+     * Gets the position of the element with respect to its parent \
+     *
+     * @returns { PointModel } Gets the position of the element with respect to its parent\
+     * @param {Size} size - provide the x value.
+     *
+     * @private
      */
     public getAbsolutePosition(size: Size): PointModel {
         if (this.position !== undefined) {
@@ -285,8 +295,14 @@ export class DiagramElement {
         return this.floatingBounds || this.bounds;
     }
 
+
+
     /**
-     * used to set the outer bounds value
+     * used to set the outer bounds value \
+     *
+     * @returns { void } used to set the outer bounds value.\
+     * @param {Rect} bounds - provide the id value.
+     *
      * @private
      */
     public set outerBounds(bounds: Rect) {
@@ -295,12 +311,20 @@ export class DiagramElement {
 
     private floatingBounds: Rect = undefined;
 
+
     /**
-     * Measures the minimum space that the element requires
-     * @param {Size} availableSize 
+     * Measures the minimum space that the element requires \
+     *
+     * @returns { void } Measures the minimum space that the element requires.\
+     * @param {Size} availableSize - provide the id value.
+     * @param {Object} obj - provide the id value.
+     * @param {Function} callback - provide the id value.
+     *
+     * @private
      */
+    // eslint-disable-next-line @typescript-eslint/ban-types
     public measure(availableSize: Size, obj?: Object, callback?: Function): Size {
-        let width: number = this.width !== undefined ? this.width : (availableSize.width || 0) - this.margin.left - this.margin.right;
+        const width: number = this.width !== undefined ? this.width : (availableSize.width || 0) - this.margin.left - this.margin.right;
         let height: number = this.height !== undefined ? this.height : (availableSize.height || 0) - this.margin.top - this.margin.bottom;
         if (this.id) {
             if (height === 0 && (this.elementActions & ElementAction.HorizontalLaneHeader)) {
@@ -314,9 +338,14 @@ export class DiagramElement {
         return this.desiredSize;
     }
 
+
     /**
-     * Arranges the element
-     * @param {Size} desiredSize 
+     * Arranges the element \
+     *
+     * @returns { PointModel } Arranges the element\
+     * @param {Size} desiredSize - provide the x value.
+     *
+     * @private
      */
     public arrange(desiredSize: Size): Size {
         this.actualSize = desiredSize;
@@ -324,17 +353,27 @@ export class DiagramElement {
         return this.actualSize;
     }
 
+
     /**
-     * Updates the bounds of the element
+     * Updates the bounds of the element \
+     *
+     * @returns { void } Updates the bounds of the element\
+     *
+     * @private
      */
     public updateBounds(): void {
         this.bounds = getBounds(this);
     }
 
+
     /**
-     * Validates the size of the element with respect to its minimum and maximum size
-     * @param {Size} desiredSize 
-     * @param {Size} availableSize 
+     * Validates the size of the element with respect to its minimum and maximum size \
+     *
+     * @returns { Size } Validates the size of the element with respect to its minimum and maximum size.\
+     * @param {Size} desiredSize - provide the id value.
+     * @param {Size} availableSize - provide the id value.
+     *
+     * @private
      */
     protected validateDesiredSize(desiredSize: Size, availableSize: Size): Size {
         //Empty canvas

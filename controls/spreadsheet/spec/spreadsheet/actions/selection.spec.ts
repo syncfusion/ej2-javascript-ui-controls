@@ -1,17 +1,15 @@
-import { Spreadsheet } from "../../../src/index";
-import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
+import { Spreadsheet } from '../../../src/index';
+import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 
-
+export function checkPosition(ele: HTMLElement, pos: string[], isRtl?: boolean) {
+    expect(ele.style.top).toBe(pos[0]);
+    expect(isRtl ? ele.style.right : ele.style.left).toBe(pos[1]);
+    expect(ele.style.height).toBe(pos[2]);
+    expect(ele.style.width).toBe(pos[3]);
+}
 
 describe('Selection ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
-
-    function checkPosition(ele: HTMLElement, pos: string[], isRtl?: boolean) {
-        expect(ele.style.top).toBe(pos[0]);
-        expect(isRtl ? ele.style.right : ele.style.left).toBe(pos[1]);
-        expect(ele.style.height).toBe(pos[2]);
-        expect(ele.style.width).toBe(pos[3]);
-    }
 
     describe('public method ->', () => {
         beforeAll((done: Function) => {
@@ -52,13 +50,92 @@ describe('Selection ->', () => {
                     //checkPosition(actEle, ['159px', '383px', '21px', '65px']);
                     checkPosition(selEle, ['39px', '127px', '141px', '321px']);
                     done();
-                }, 0);
-            }, 0);
+                });
+            });
+        });
+
+        it('Multi range', (done: Function) => {
+            let actEle: HTMLElement = helper.getElementFromSpreadsheet('.e-active-cell');
+            let selEle: HTMLElement = helper.getElementFromSpreadsheet('.e-selection');
+
+            helper.invoke('selectRange', ['C3 G5:L10 O2:P3']);
+            expect(helper.getInstance().sheets[0].activeCell).toBe('O2');
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('C3:C3 G5:L10 O2:P3');
+
+            setTimeout(() => { 
+                checkPosition(actEle, ['19px', '895px', '21px', '65px']);
+                checkPosition(selEle, ['39px', '127px', '21px', '65px']);
+                let multiSelElems: HTMLElement[] = helper.getElements('.e-multi-range');
+                checkPosition(multiSelElems[0], ['79px', '383px', '121px', '385px']);
+                checkPosition(multiSelElems[1], ['19px', '895px', '41px', '129px']);
+                let hdrTds: HTMLElement[] = helper.getRowHeaderElement().querySelectorAll('.e-highlight') as any;
+                expect(hdrTds[0].textContent).toBe('2');
+                expect(hdrTds[2].textContent).toBe('5');
+                expect(hdrTds.length).toBe(8);
+                hdrTds = helper.getColHeaderElement().querySelectorAll('.e-highlight') as any;
+                expect(hdrTds[0].textContent).toBe('C');
+                expect(hdrTds[2].textContent).toBe('H');
+                expect(hdrTds.length).toBe(9);
+
+                // Check header highlight removes correctly or not and duplicate selection element removes or not
+                helper.invoke('selectRange', ['D1']);
+                expect(helper.getElements('.e-multi-range').length).toBe(0);
+                expect(helper.getRowHeaderElement().querySelectorAll('.e-highlight').length).toBe(1);
+                expect(helper.getColHeaderElement().querySelectorAll('.e-highlight').length).toBe(1);
+                done();
+            });
         });
     });
 
     describe('UI Interaction ->', () => {
+        // beforeAll((done: Function) => {
+        //     helper.initializeSpreadsheet({}, done);
+        // });
+        // afterAll(() => {
+        //     helper.invoke('destroy');
+        // });
 
+        // it('Multi selection', (done: Function) => {
+        //     let td: HTMLElement = helper.invoke('getCell', [3, 5]);
+        //     let coords: ClientRect = td.getBoundingClientRect();
+        //     helper.triggerMouseAction('mousedown', { x: coords.left, y: coords.top }, null, td, true);
+        //     expect(helper.getInstance().sheets[0].selectedRange).toBe('A1:A1 F4:F4');
+        //     setTimeout(() => {
+        //         checkPosition(helper.getElementFromSpreadsheet('.e-active-cell'), ['59px', '319px', '21px', '65px']);
+        //         td = helper.invoke('getCell', [7, 8]);
+        //         coords = td.getBoundingClientRect();
+        //         helper.triggerMouseAction('mousemove', { x: coords.left, y: coords.top }, document, td, true, true);
+        //         helper.triggerMouseAction('mouseup', { x: coords.left, y: coords.top }, document, td, true);
+        //         setTimeout(() => {
+        //             checkPosition(helper.getElementFromSpreadsheet('.e-active-cell'), ['59px', '319px', '21px', '65px']);
+        //             checkPosition(helper.getElementFromSpreadsheet('.e-selection'), ['0px', '0px', '20px', '64px']);
+        //             let multiSelElems: HTMLElement[] = helper.getElements('.e-multi-range');
+        //             checkPosition(multiSelElems[0], ['59px', '319px', '101px', '257px']);
+        //             let hdrTds: HTMLElement[] = helper.getRowHeaderElement().querySelectorAll('.e-highlight') as any;
+        //             expect(hdrTds[0].textContent).toBe('1');
+        //             expect(hdrTds[1].textContent).toBe('4');
+        //             expect(hdrTds.length).toBe(6);
+        //             hdrTds = helper.getColHeaderElement().querySelectorAll('.e-highlight') as any;
+        //             expect(hdrTds[0].textContent).toBe('A');
+        //             expect(hdrTds[1].textContent).toBe('F');
+        //             expect(hdrTds.length).toBe(5);
+
+        //             // Check header highlight removes correctly or not and duplicate selection element removes or not
+        //             td = helper.invoke('getCell', [1, 10]);
+        //             coords = td.getBoundingClientRect();
+        //             helper.triggerMouseAction('mousedown', { x: coords.left, y: coords.top }, null, td);
+        //             setTimeout(() => {
+        //                 helper.triggerMouseAction('mouseup', { x: coords.left, y: coords.top }, document, td);
+        //                 setTimeout(() => {
+        //                     expect(helper.getElements('.e-multi-range').length).toBe(0);
+        //                     expect(helper.getRowHeaderElement().querySelectorAll('.e-highlight').length).toBe(1);
+        //                     expect(helper.getColHeaderElement().querySelectorAll('.e-highlight').length).toBe(1);
+        //                     done();
+        //                 });
+        //             });
+        //         }, 10); // 10 milli seconds for test case failure in headless chrome
+        //     });
+        // });
     });
 
     describe('RTL ->', () => {
@@ -82,7 +159,7 @@ describe('Selection ->', () => {
                 checkPosition(helper.getElementFromSpreadsheet('.e-active-cell'), ['39px', '127px', '21px', '65px'], true);
                 checkPosition(helper.getElementFromSpreadsheet('.e-selection'), ['39px', '127px', '141px', '321px'], true);
                 done();
-            }, 0);
+            });
         });
         
         // Commented since facing issue
@@ -101,25 +178,23 @@ describe('Selection ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({ sheets: [{ rows: [{ index: 2, cells: [{ value: 'Welcome to Spreadsheet!!!', wrap: true }] }], selectedRange: 'D4' }] }, done);
-        });
-
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
-
-        describe('I316931 ->', () => {
+        describe('I316931, I31444 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ rows: [{ index: 2, cells: [{ value: 'Welcome to Spreadsheet!!!', wrap: true }] }], selectedRange: 'D4' }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
             it('Selected cells misaligned from grid lines', (done: Function) => {
                 const selectAl: HTMLElement = helper.getElement('#' + helper.id + '_select_all');
                 const activeCell: HTMLElement = helper.getElement().querySelector('.e-active-cell');
                 expect(activeCell.style.height).toEqual('21px');
                 expect(activeCell.style.top).toEqual('113px');
                 helper.triggerMouseAction(
-                    'mousedown', { x: selectAl.getBoundingClientRect().top + 1, y: selectAl.getBoundingClientRect().left + 1 }, null,
+                    'mousedown', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, null,
                     selectAl);
                 helper.triggerMouseAction(
-                    'mouseup', { x: selectAl.getBoundingClientRect().top + 1, y: selectAl.getBoundingClientRect().left + 1 }, document,
+                    'mouseup', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, document,
                     selectAl);
                 setTimeout(() => {
                     const inst: Spreadsheet = helper.getInstance();
@@ -129,20 +204,20 @@ describe('Selection ->', () => {
                     expect(helper.invoke('getRow', [2]).style.height).toEqual('74px');
                     helper.getElement('#' + helper.id + '_borders').click();
                     helper.getElement('#' + helper.id + '_borders-popup').querySelectorAll('.e-menu-item')[4].click();
-                    expect(inst.sheets[0].rows[0].height).toBe(22);
-                    expect(helper.invoke('getRow', [0]).style.height).toEqual('22px');
-                    expect(inst.sheets[0].rows[2].height).toBe(75);
-                    expect(helper.invoke('getRow', [2]).style.height).toEqual('75px');
+                    expect(inst.sheets[0].rows[0].height).toBe(21);
+                    expect(helper.invoke('getRow', [0]).style.height).toEqual('21px');
+                    expect(inst.sheets[0].rows[2].height).toBe(74);
+                    expect(helper.invoke('getRow', [2]).style.height).toEqual('74px');
                     helper.invoke('selectRange', ['H10']);
                     setTimeout(() => {
-                        expect(activeCell.style.top).toEqual('243px');
+                        expect(activeCell.style.top).toEqual('234px');
                         helper.invoke('selectRange', ['D4']);
                         setTimeout(() => {
-                            expect(activeCell.style.height).toEqual('22px');
-                            expect(activeCell.style.top).toEqual('117px');
+                            expect(activeCell.style.height).toEqual('21px');
+                            expect(activeCell.style.top).toEqual('114px');
                             done();
-                        });
-                    });
+                        }, 10);
+                    }, 10);
                 });
             });
         });

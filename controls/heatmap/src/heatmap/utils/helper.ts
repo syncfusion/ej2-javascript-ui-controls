@@ -4,12 +4,16 @@ import { FontModel, BorderModel, PaletteCollectionModel } from '../model/base-mo
 import { HeatMap } from '../heatmap';
 import { RgbColor } from '../utils/colorMapping';
 import { BubbleTooltipData } from '../model/base';
+import { Save } from '@syncfusion/ej2-file-utils';
 
 /**
- * Helper method for heatmap
+ * Function to check whether target object implement specific interface
+ *
+ * @param  {string} value - specifies the value
+ * @param  {number} containerSize - specifies the containerSize
+ * @returns {number} returns the number
+ * @hidden
  */
-
-/** @private */
 export function stringToNumber(value: string, containerSize: number): number {
     if (value !== null && value !== undefined) {
         return value.indexOf('%') !== -1 ? (containerSize / 100) * parseInt(value, 10) : parseInt(value, 10);
@@ -19,8 +23,12 @@ export function stringToNumber(value: string, containerSize: number): number {
 
 
 /**
- * Function to measure the height and width of the text.
- * @private
+ * Function to check whether target object implement specific interface
+ *
+ * @param  {string} text - specifies the text
+ * @param  {FontModel} font - specifies the font
+ * @returns {Size} returns the number
+ * @hidden
  */
 export function measureText(text: string, font: FontModel): Size {
     let htmlObject: HTMLElement = document.getElementById('heatmapmeasuretext');
@@ -61,6 +69,16 @@ export class TextElement {
     }
 }
 
+/**
+ * Function to check whether target object implement specific interface
+ *
+ * @param  {number} width - specifies the text
+ * @param  {number} leftPadding - specifies the font
+ * @param  {number} rightPadding - specifies the font
+ * @param  {FontModel} titleStyle - specifies the font
+ * @returns {number} returns the number
+ * @hidden
+ */
 export function titlePositionX(width: number, leftPadding: number, rightPadding: number, titleStyle: FontModel): number {
     let positionX: number;
     if (titleStyle.textAlignment === 'Near') {
@@ -75,6 +93,7 @@ export function titlePositionX(width: number, leftPadding: number, rightPadding:
 
 /**
  * Internal class size for height and width
+ *
  * @private
  */
 export class Size {
@@ -123,6 +142,7 @@ export class PathOption extends CustomizeOption {
 
 /**
  * Class to define currentRect private property.
+ *
  * @private
  */
 export class CurrentRect {
@@ -166,6 +186,7 @@ export class CurrentRect {
 
 /**
  * Class to define the details of selected cell.
+ *
  * @private
  */
 export class SelectedCellDetails {
@@ -209,6 +230,7 @@ export class SelectedCellDetails {
 
 /**
  * Class to define property to draw rectangle.
+ *
  * @private
  */
 export class RectOption extends PathOption {
@@ -238,6 +260,7 @@ export class RectOption extends PathOption {
 
 /**
  * Class to define property to draw circle.
+ *
  * @private
  */
 export class CircleOption extends PathOption {
@@ -259,6 +282,7 @@ export class CircleOption extends PathOption {
 
 /**
  * Helper Class to define property to draw rectangle.
+ *
  * @private
  */
 export class Rect {
@@ -278,6 +302,7 @@ export class Rect {
 
 /**
  * Class to define property to draw text.
+ *
  * @private
  */
 export class TextOption extends TextElement {
@@ -310,6 +335,7 @@ export class TextOption extends TextElement {
 
 /**
  * Helper Class to define property to draw text.
+ *
  * @private
  */
 export class TextBasic {
@@ -341,6 +367,7 @@ export class TextBasic {
 
 /**
  * Class to define property to draw line.
+ *
  * @private
  */
 export class Line {
@@ -360,6 +387,7 @@ export class Line {
 
 /**
  * Class to define property to draw line.
+ *
  * @private
  */
 export class LineOption extends PathOption {
@@ -378,6 +406,7 @@ export class LineOption extends PathOption {
 
 /**
  * Properties required to render path.
+ *
  * @private
  */
 export class PathAttributes extends PathOption {
@@ -396,6 +425,7 @@ export class PathAttributes extends PathOption {
 
 /**
  * Helper Class to define property to path.
+ *
  * @private
  */
 export class Path {
@@ -432,16 +462,31 @@ export class Path {
     }
 }
 
-/** @private */
+/**
+ * Function to check whether target object implement specific interface
+ *
+ * @param  {number} values - specifies the values
+ * @returns {number} returns the number
+ * @hidden
+ */
 export function sum(values: number[]): number {
     let sum: number = 0;
-    for (let value of values) {
+    for (const value of values) {
         sum += value;
     }
     return sum;
 }
 
-/** @private */
+/**
+ * Function to check whether target object implement specific interface
+ *
+ * @param { Size } heatmapSize - Specifies the heatmapsize
+ * @param { number } topPadding - Specifies the topPadding
+ * @param { number }  bottomPadding - Specifies the bottomPadding
+ * @param { FontModel } titleStyle - Specifies the titleStyle
+ * @returns {number} returns the number
+ * @private
+ */
 export function titlePositionY(heatmapSize: Size, topPadding: number, bottomPadding: number, titleStyle: FontModel): number {
     let positionY: number;
     if (titleStyle.textAlignment === 'Near') {
@@ -454,15 +499,20 @@ export function titlePositionY(heatmapSize: Size, topPadding: number, bottomPadd
     return positionY;
 }
 
-/** @private */
+/**
+ * Function to check whether target object implement specific interface
+ *
+ * @param { FontModel } font - Specifies the heatmapsize
+ * @param { string } text - Specifies the topPadding
+ * @param { number }  angle - Specifies the bottomPadding
+ * @returns {Size} returns the size
+ * @private
+ */
 export function rotateTextSize(font: FontModel, text: string, angle: number): Size {
 
-    let renderer: SvgRenderer = new SvgRenderer('heatmapMeasureRotateText');
-    let svgObject: Element = renderer.createSvg({ id: 'heatmapMeasureRotateText_svg', width: 100, height: 100 });
-    let box: ClientRect;
-    let options: Object;
-    let htmlObject: HTMLElement;
-    options = {
+    const renderer: SvgRenderer = new SvgRenderer('heatmapMeasureRotateText');
+    const svgObject: Element = renderer.createSvg({ id: 'heatmapMeasureRotateText_svg', width: 100, height: 100 });
+    const options : Object = {
         'font-size': font.size,
         'font-style': font.fontStyle.toLowerCase(),
         'font-family': font.fontFamily,
@@ -470,16 +520,17 @@ export function rotateTextSize(font: FontModel, text: string, angle: number): Si
         'transform': 'rotate(' + angle + ', 0, 0)',
         'text-anchor': 'middle'
     };
-    htmlObject = renderer.createText(options, text) as HTMLElement;
+    const htmlObject : HTMLElement = renderer.createText(options, text) as HTMLElement;
     svgObject.appendChild(htmlObject);
     document.body.appendChild(svgObject);
-    box = htmlObject.getBoundingClientRect();
+    const box : ClientRect = htmlObject.getBoundingClientRect();
     remove(svgObject);
     return new Size((box.right - box.left), (box.bottom - box.top));
 }
 
 /**
  * Class to draw SVG and Canvas Rectangle & Text.
+ *
  * @private
  */
 export class DrawSvgCanvas {
@@ -488,7 +539,7 @@ export class DrawSvgCanvas {
         this.heatMap = heatmap;
     }
     //Svg & Canvas Rectangle Part
-    public drawRectangle(properties: RectOption, parentElement: Element, isFromSeries?: Boolean): void {
+    public drawRectangle(properties: RectOption, parentElement: Element, isFromSeries?: boolean): void {
         if (!this.heatMap.enableCanvasRendering) {
             delete properties.d;
             parentElement.appendChild(this.heatMap.renderer.drawRectangle(properties));
@@ -524,12 +575,7 @@ export class DrawSvgCanvas {
             delete properties.labelRotation;
             delete properties.baseline;
             delete properties.text;
-            let element: HTMLElement = <HTMLElement>this.heatMap.renderer.createText(properties, <string>text);
-            element.style.fontFamily = properties['font-family'];
-            element.style.fontSize = properties['font-size'];
-            element.style.fontStyle = properties['font-style'];
-            element.style.fontWeight = properties['font-weight'];
-            parentElement.appendChild(element);
+            parentElement.appendChild(this.heatMap.renderer.createText(properties, <string>text));
             properties.text = text;
         } else {
             this.canvasDrawText(properties, <string>text);
@@ -541,7 +587,6 @@ export class DrawSvgCanvas {
         let renderOptions: Object = {};
         let htmlObject: Element;
         let tspanElement: Element;
-        let text: string;
         let height: number;
         renderOptions = {
             'id': options.id,
@@ -556,7 +601,7 @@ export class DrawSvgCanvas {
             'transform': options.transform,
             'dominant-baseline': options['dominant-baseline']
         };
-        text = options.text[0];
+        const text : string = options.text[0];
         if (!this.heatMap.enableCanvasRendering) {
             htmlObject = this.heatMap.renderer.createText(renderOptions, text);
         } else {
@@ -597,7 +642,7 @@ export class DrawSvgCanvas {
 
     //Canvas Text Part
     public canvasDrawText(options: TextOption, label: string, translateX?: number, translateY?: number): void {
-        let ctx: CanvasRenderingContext2D = this.heatMap.canvasRenderer.ctx;
+        const ctx: CanvasRenderingContext2D = this.heatMap.canvasRenderer.ctx;
         if (!translateX) {
             translateX = options.x;
         }
@@ -608,20 +653,20 @@ export class DrawSvgCanvas {
         if (!isNullOrUndefined(fontWeight) && fontWeight.toLowerCase() === 'regular') {
             fontWeight = 'normal';
         }
-        let fontFamily: string = this.getOptionValue<string>(options, 'font-family');
-        let fontSize: string = (options['font-size'].toString()).indexOf('px') === -1 ? options['font-size'] + 'px' : options['font-size'];
+        const fontFamily: string = this.getOptionValue<string>(options, 'font-family');
+        const fontSize: string = (options['font-size'].toString()).indexOf('px') === -1 ? options['font-size'] + 'px' : options['font-size'];
         let anchor: string = this.getOptionValue<string>(options, 'text-anchor');
-        let fontStyle: string = this.getOptionValue<string>(options, 'font-style').toLowerCase();
-        let font: string = (fontStyle + ' ' + fontWeight + ' ' + fontSize + ' ' + fontFamily);
+        const fontStyle: string = this.getOptionValue<string>(options, 'font-style').toLowerCase();
+        const font: string = (fontStyle + ' ' + fontWeight + ' ' + fontSize + ' ' + fontFamily);
         if (anchor === 'middle') {
             anchor = 'center';
         }
         ctx.save();
         ctx.fillStyle = options.fill;
         ctx.font = font;
-        ctx.textAlign = anchor;
+        ctx.textAlign = anchor as CanvasTextAlign;
         if (options.baseline) {
-            ctx.textBaseline = options.baseline;
+            ctx.textBaseline = options.baseline as CanvasTextBaseline;
         }
         ctx.translate(translateX, translateY);
         ctx.rotate(options.labelRotation * Math.PI / 180);
@@ -630,41 +675,41 @@ export class DrawSvgCanvas {
     }
     // method to get the attributes value
     /* tslint:disable */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private getOptionValue<T>(options: any, key: string): T {
         return options[key] as T;
     }
 
     private setAttributes(canvas: CanvasRenderer, options: RectOption | CircleOption | PathAttributes) {
         canvas.ctx.lineWidth = options['stroke-width'];
-        let dashArray = options['stroke-dasharray'];
+        const dashArray = options['stroke-dasharray'];
         if (!isNullOrUndefined(dashArray)) {
-            let dashArrayString = dashArray.split(',');
+            const dashArrayString = dashArray.split(',');
             canvas.ctx.setLineDash([parseInt(dashArrayString[0], 10), parseInt(dashArrayString[1], 10)]);
         }
         canvas.ctx.strokeStyle = options['stroke'];
-    };
+    }
 
-    public drawCanvasRectangle(canvas: CanvasRenderer, options: RectOption, isFromSeries?: Boolean) {
-        let canvasCtx = canvas.ctx;
-        let cornerRadius = options.rx;
+    private  drawCanvasRectangle(canvas: CanvasRenderer, options: RectOption, isFromSeries?: boolean) {
+        const canvasCtx = canvas.ctx;
         canvas.ctx.save();
         canvas.ctx.beginPath();
         canvas.ctx.globalAlpha = options['opacity'];
         this.setAttributes(canvas, options);
         this.drawCornerRadius(canvas, options);
-        if ((options['stroke-width'] && options['stroke-width'] != 0) || isFromSeries) {
+        if ((options['stroke-width'] && options['stroke-width'] !== 0) || isFromSeries) {
             canvas.ctx.stroke();
         }
         canvas.ctx.restore();
         canvas.ctx = canvasCtx;
-    };
+    }
     // To draw the corner of a rectangle
     private drawCornerRadius(canvas: CanvasRenderer, options: RectOption) {
         let cornerRadius = options.rx;
-        let x = options.x;
-        let y = options.y;
-        let width = options.width;
-        let height = options.height;
+        const x = options.x;
+        const y = options.y;
+        const width = options.width;
+        const height = options.height;
         if (options.fill === 'none') {
             options.fill = 'transparent';
         }
@@ -683,9 +728,10 @@ export class DrawSvgCanvas {
         canvas.ctx.arcTo(x, y, x + width, y, cornerRadius);
         canvas.ctx.closePath();
         canvas.ctx.fill();
-    };
+    }
 
-    public drawCanvasCircle(canvas: CanvasRenderer, options: CircleOption) {
+
+    private drawCanvasCircle(canvas: CanvasRenderer, options: CircleOption) {
         canvas.ctx.save();
         canvas.ctx.beginPath();
         canvas.ctx.arc(options.cx, options.cy, options.r, 0, 2 * Math.PI);
@@ -697,35 +743,34 @@ export class DrawSvgCanvas {
             canvas.ctx.stroke();
         }
         canvas.ctx.restore();
-    };
+    }
 
-    public drawCanvasPath(canvas: CanvasRenderer, properties: PathAttributes, options: Path) {
-        let path: string = properties.d;
-        let dataSplit: string[] = path.split(' ');
-        let borderWidth: number = this.getOptionValue<number>(options, 'stroke-width');
+    private drawCanvasPath(canvas: CanvasRenderer, properties: PathAttributes, options: Path) {
+        const path: string = properties.d;
+        const dataSplit: string[] = path.split(' ');
         canvas.ctx.save();
         canvas.ctx.beginPath();
         canvas.ctx.globalAlpha = properties.opacity;
         canvas.ctx.fillStyle = properties.fill;
         this.setAttributes(canvas, properties);
         for (let i: number = 0; i < dataSplit.length; i = i + 3) {
-            let x1: number = parseFloat(dataSplit[i + 1]);
-            let y1: number = parseFloat(dataSplit[i + 2]);
+            const x1: number = parseFloat(dataSplit[i + 1]);
+            const y1: number = parseFloat(dataSplit[i + 2]);
             switch (dataSplit[i]) {
-                case 'M':
-                    canvas.ctx.moveTo(x1, y1);
-                    break;
-                case 'L':
-                    canvas.ctx.lineTo(x1, y1);
-                    break;
-                case 'A':
-                case 'a':
-                    canvas.ctx.arc(options.x, options.y, options.radius, (options.start * 0.0174533), (options.end * 0.0174533), false);
-                    i = dataSplit[i] === 'a' ? i + 13 : i + 5;
-                    break;
-                case 'Z':
-                    canvas.ctx.closePath();
-                    break;
+            case 'M':
+                canvas.ctx.moveTo(x1, y1);
+                break;
+            case 'L':
+                canvas.ctx.lineTo(x1, y1);
+                break;
+            case 'A':
+            case 'a':
+                canvas.ctx.arc(options.x, options.y, options.radius, (options.start * 0.0174533), (options.end * 0.0174533), false);
+                i = dataSplit[i] === 'a' ? i + 13 : i + 5;
+                break;
+            case 'Z':
+                canvas.ctx.closePath();
+                break;
             }
         }
         canvas.ctx.fill();
@@ -733,29 +778,45 @@ export class DrawSvgCanvas {
             canvas.ctx.stroke();
         }
         canvas.ctx.restore();
-    };
+    }
 }
-
+/**
+ * Function to check whether target object implement specific interface
+ *
+ * @param { string } title - Specifies the heatmapsize
+ * @param { FontModel } style - Specifies the topPadding
+ * @param { number }  width - Specifies the bottomPadding
+ * @returns {string} returns the size
+ * @private
+ */
 export function getTitle(title: string, style: FontModel, width: number): string[] {
     let titleCollection: string[] = [];
     switch (style.textOverflow) {
-        case 'Wrap':
-            titleCollection = textWrap(title, width, style);
-            break;
-        case 'Trim':
-            titleCollection.push(textTrim(width, title, style));
-            break;
-        default:
-            titleCollection.push(textNone(width, title, style));
-            break;
+    case 'Wrap':
+        titleCollection = textWrap(title, width, style);
+        break;
+    case 'Trim':
+        titleCollection.push(textTrim(width, title, style));
+        break;
+    default:
+        titleCollection.push(textNone(width, title, style));
+        break;
     }
     return titleCollection;
 }
-
+/**
+ * Function to check whether target object implement specific interface
+ *
+ * @param { string } currentLabel - Specifies the heatmapsize
+ * @param { number } maximumWidth - Specifies the topPadding
+ * @param { FontModel }  font - Specifies the bottomPadding
+ * @returns {string} returns the size
+ * @private
+ */
 export function textWrap(currentLabel: string, maximumWidth: number, font: FontModel): string[] {
-    let textCollection: string[] = currentLabel.split(' ');
+    const textCollection: string[] = currentLabel.split(' ');
     let label: string = '';
-    let labelCollection: string[] = [];
+    const labelCollection: string[] = [];
     let text: string;
     for (let i: number = 0, len: number = textCollection.length; i < len; i++) {
         text = textCollection[i];
@@ -777,12 +838,20 @@ export function textWrap(currentLabel: string, maximumWidth: number, font: FontM
     return labelCollection;
 }
 
-/** @private */
+/**
+ * Function to check whether target object implement specific interface
+ *
+ * @param { number } maxWidth - Specifies the heatmapsize
+ * @param { string } text - Specifies the topPadding
+ * @param { FontModel }  font - Specifies the bottomPadding
+ * @returns {string} returns the size
+ * @private
+ */
 export function textTrim(maxWidth: number, text: string, font: FontModel): string {
     let label: string = text;
     let size: number = measureText(text, font).width;
     if (size > maxWidth) {
-        let textLength: number = text.length;
+        const textLength: number = text.length;
         for (let index: number = textLength - 1; index >= 0; --index) {
             label = text.substring(0, index) + '...';
             size = measureText(label, font).width;
@@ -794,12 +863,20 @@ export function textTrim(maxWidth: number, text: string, font: FontModel): strin
     return label;
 }
 
-/** @private */
+/**
+ * Function to check whether target object implement specific interface
+ *
+ * @param { number } maxWidth - Specifies the heatmapsize
+ * @param { string } text - Specifies the topPadding
+ * @param { FontModel }  font - Specifies the bottomPadding
+ * @returns {string} returns the size
+ * @private
+ */
 export function textNone(maxWidth: number, text: string, font: FontModel): string {
     let label: string = text;
     let size: number = measureText(text, font).width;
     if (size > maxWidth) {
-        let textLength: number = text.length;
+        const textLength: number = text.length;
         for (let i: number = textLength - 1; i >= 0; --i) {
             label = text.substring(0, i);
             size = measureText(label, font).width;
@@ -836,18 +913,30 @@ export class GradientColor {
     }
 }
 
-/** @private */
+/**
+ * Function to check whether target object implement specific interface
+ *
+ * @param { string } text - Specifies the heatmapsize
+ * @param { number } x - Specifies the topPadding
+ * @param { number }  y - Specifies the bottomPadding
+ * @param { number }  areaWidth - Specifies the bottomPadding
+ * @param { string }  id - Specifies the bottomPadding
+ * @param { Element }  element - Specifies the bottomPadding
+ * @param { boolean }  isTouch - Specifies the bottomPadding
+ * @param { HeatMap }  heatmap - Specifies the bottomPadding
+ * @returns {void} returns the size
+ * @private
+ */
 export function showTooltip(
     text: string, x: number, y: number, areaWidth: number, id: string, element: Element,
     isTouch?: boolean, heatmap?: HeatMap
 ): void {
     let tooltip: HTMLElement = document.getElementById(id);
-    let initialClip: Rect = heatmap.initialClipRect;
-    let size: Size = measureText(text, {
+    const size: Size = measureText(text, {
         fontFamily: 'Segoe UI', size: '12px',
         fontStyle: 'Normal', fontWeight: 'Regular'
     });
-    let width: number = size.width + 5;
+    const width: number = size.width + 5;
     x = (x + width > areaWidth) ? x - width : x;
     x = x < 0 ? 5 : x;
     if (!tooltip) {
@@ -879,41 +968,62 @@ export function showTooltip(
     }
 }
 
-/** @private */
+/**
+ * Function to check whether target object implement specific interface
+ *
+ * @param { string }  id - Specifies the bottomPadding
+ * @returns {void} returns the size
+ * @private
+ */
 export function removeElement(id: string): void {
-    let element: Element = getElement(id);
+    const element: Element = getElement(id);
     if (element) {
         remove(element);
     }
 }
 
-/** @private */
+/**
+ * Function to check whether target object implement specific interface
+ *
+ * @param { string }  id - Specifies the bottomPadding
+ * @returns {Element} returns the size
+ * @private
+ */
 export function getElement(id: string): Element {
     return document.getElementById(id);
 }
 
-/** @private */
+/**
+ * Function to check whether target object implement specific interface
+ *
+ * @param { number } value - Specifies the topPadding
+ * @param { number }  interval - Specifies the bottomPadding
+ * @param { string } intervalType - Specifies the heatmapsize
+ * @param { number }  increment - Specifies the bottomPadding
+ * @returns {Date} returns the size
+ * @private
+ */
 export function increaseDateTimeInterval(value: number, interval: number, intervalType: string, increment: number): Date {
-    let result: Date = new Date(value);
+    const result: Date = new Date(value);
     interval = Math.ceil(interval * increment);
     switch (intervalType) {
-        case 'Years':
-            result.setFullYear(result.getFullYear() + interval);
-            break;
+    case 'Years':
+        result.setFullYear(result.getFullYear() + interval);
+        break;
 
-        case 'Months':
-            result.setMonth(result.getMonth() + interval);
-            break;
+    case 'Months':
+        result.setMonth(result.getMonth() + interval);
+        break;
 
-        case 'Days':
-            result.setDate(result.getDate() + interval);
-            break;
-        case 'Hours':
-            result.setHours(result.getHours() + interval);
-            break;
-        case 'Minutes':
-            result.setMinutes(result.getMinutes() + interval);
-            break;
+    case 'Days':
+        result.setDate(result.getDate() + interval);
+        break;
+    case 'Hours':
+        result.setHours(result.getHours() + interval);
+        break;
+    case 'Minutes':
+        result.setMinutes(result.getMinutes() + interval);
+        break;
     }
     return result;
 }
@@ -928,17 +1038,26 @@ export class CanvasTooltip {
     }
 }
 
-/* private*/
-/* Method to get the tool tip text in canvas based on region. */
+/**
+ * Function to check whether target object implement specific interface
+ *
+ * @param { CanvasTooltip } tooltipCollection - Specifies the topPadding
+ * @param { number }  xPosition - Specifies the bottomPadding
+ * @param { number } yPosition - Specifies the heatmapsize
+ * @returns {string} returns the size
+ * @private
+ */
 export function getTooltipText(tooltipCollection: CanvasTooltip[], xPosition: number, yPosition: number): string {
-    let length: number = tooltipCollection.length;
+    const length: number = tooltipCollection.length;
     let tooltip: CanvasTooltip;
     let region: Rect;
     let text: string;
     for (let i: number = 0; i < length; i++) {
         tooltip = tooltipCollection[i];
         region = tooltip.region;
-        if (xPosition >= region.x && xPosition <= (region.x + region.width) && yPosition >= region.y && yPosition <= (region.y + region.height)) {
+        if (xPosition >= region.x && xPosition <= (region.x + region.width) && yPosition >= region.y
+         && yPosition <= (region.y + region.height))
+        {
             text = tooltip.text;
             break;
         }
@@ -976,6 +1095,7 @@ export class GradientPointer {
 
 /**
  * Class to define currentRect private property.
+ *
  * @private
  */
 export class CurrentLegendRect {
@@ -1028,39 +1148,72 @@ export class ToggleVisibility {
     }
 }
 
-/** @private */
+/**
+ * Function to check whether target object implement specific interface
+ *
+ * @param { string } color - Specifies the topPadding
+ * @returns {string} returns the size
+ * @private
+ */
 export function colorNameToHex(color: string): string {
-    let element: HTMLElement;
     color = color === 'transparent' ? 'white' : color;
-    element = document.getElementById('heatmapmeasuretext');
+    const element : HTMLElement = document.getElementById('heatmapmeasuretext');
     element.style.color = color;
     color = window.getComputedStyle(element).color;
-    let exp: RegExp = /^(rgb|hsl)(a?)[(]\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*(?:,\s*([\d.]+)\s*)?[)]$/;
-    let isRGBValue: RegExpExecArray = exp.exec(color);
+    const exp: RegExp = /^(rgb|hsl)(a?)[(]\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*(?:,\s*([\d.]+)\s*)?[)]$/;
+    const isRGBValue: RegExpExecArray = exp.exec(color);
     return convertToHexCode(
         new RgbColor(parseInt(isRGBValue[3], 10), parseInt(isRGBValue[4], 10), parseInt(isRGBValue[5], 10))
     );
 }
 
-/** @private */
+/**
+ * Function to check whether target object implement specific interface
+ *
+ * @param { RgbColor } value - Specifies the topPadding
+ * @returns {string} returns the size
+ * @private
+ */
 export function convertToHexCode(value: RgbColor): string {
     return '#' + componentToHex(value.R) + componentToHex(value.G) + componentToHex(value.B);
 }
 
-/** @private */
+/**
+ * Function to check whether target object implement specific interface
+ *
+ * @param { number }  value - Specifies the bottomPadding
+ * @returns {string} returns the size
+ * @private
+ */
 export function componentToHex(value: number): string {
-    let hex: string = value.toString(16);
+    const hex: string = value.toString(16);
     return hex.length === 1 ? '0' + hex : hex;
 }
 
-/** @private */
+/**
+ * Function to check whether target object implement specific interface
+ *
+ * @param { string }  hex - Specifies the bottomPadding
+ * @returns {RgbColor} returns the size
+ * @private
+ */
 export function convertHexToColor(hex: string): RgbColor {
-    let result: RegExpExecArray = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    const result: RegExpExecArray = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? new RgbColor(parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)) :
         new RgbColor(255, 255, 255);
 }
 
-/** @private */
+/**
+ * Function to check whether target object implement specific interface
+ *
+ * @param { boolean }  isCustom - Specifies the bottomPadding
+ * @param { string }  format - Specifies the bottomPadding
+ * @param { number }  tempInterval - Specifies the bottomPadding
+ * @param { Function }  formatFun - Specifies the bottomPadding
+ * @returns {string} returns the size
+ * @private
+ */
+// eslint-disable-next-line @typescript-eslint/ban-types
 export function formatValue(isCustom: boolean, format: string, tempInterval: number, formatFun: Function): string {
     return isCustom ? format.replace('{value}', formatFun(tempInterval))
         : formatFun(tempInterval);

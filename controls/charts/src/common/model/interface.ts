@@ -24,6 +24,7 @@ export interface IFontMapping {
 
 /** @private */
 export interface IShapes {
+    // eslint-disable-next-line @typescript-eslint/ban-types
     renderOption?: Object;
     functionName?: string;
 }
@@ -50,8 +51,10 @@ export interface ILegendRegions {
 
 /**
  * Period selector component interface
+ *
  * @private
  */
+
 export interface IPeriodSelectorControl {
     /**
      * Element for the control
@@ -93,8 +96,10 @@ export interface IPeriodSelectorControl {
 
 /**
  * Header Footer Content
+ *
  * @private
  */
+
 export interface IPDFArgs {
     /**
      * Content of the header

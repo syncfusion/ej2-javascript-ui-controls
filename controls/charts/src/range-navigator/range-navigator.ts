@@ -1,3 +1,8 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable @typescript-eslint/ban-types */
 import { Component, Property, NotifyPropertyChanges, Complex, Collection, Browser } from '@syncfusion/ej2-base';
 import { EventHandler, remove, ModuleDeclaration, Internationalization } from '@syncfusion/ej2-base';
 import { Event, EmitType } from '@syncfusion/ej2-base';
@@ -89,6 +94,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     /**
      * The width of the range navigator as a string accepts input as both like '100px' or '100%'.
      * If specified as '100%, range navigator renders to the full width of its parent element.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -99,6 +105,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     /**
      * The height of the chart as a string accepts input both as '100px' or '100%'.
      * If specified as '100%, range navigator renders to the full height of its parent element.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -108,6 +115,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * It defines the data source for a range navigator.
+     *
      * @default null
      */
     @Property(null)
@@ -115,6 +123,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * It defines the xName for the range navigator.
+     *
      * @default null
      */
     @Property(null)
@@ -122,6 +131,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * It defines the yName for the range navigator.
+     *
      * @default null
      */
     @Property(null)
@@ -129,6 +139,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * It defines the query for the data source.
+     *
      * @default null
      */
     @Property()
@@ -149,6 +160,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Minimum value for the axis
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -157,6 +169,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Maximum value for the axis
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -165,6 +178,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * interval value for the axis
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -173,6 +187,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * IntervalType for the dateTime axis
+     *
      * @default 'Auto'
      */
     @Property('Auto')
@@ -182,6 +197,7 @@ export class RangeNavigator extends Component<HTMLElement> {
      * Specifies, when the axis labels intersect with each other.They are,
      * * None: Shows all the labels.
      * * Hide: Hides the label when it intersects.
+     *
      * @default Hide
      */
 
@@ -190,6 +206,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * base value for log axis
+     *
      * @default 10
      */
     @Property(10)
@@ -197,6 +214,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * ValueType for the axis
+     *
      * @default 'Double'
      */
     @Property('Double')
@@ -204,6 +222,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Label positions for the axis
+     *
      * @default 'Outside'
      */
     @Property('Outside')
@@ -211,6 +230,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Duration of the animation
+     *
      * @default 500
      */
     @Property(500)
@@ -218,6 +238,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Enable grouping for the labels
+     *
      * @default false
      */
     @Property(false)
@@ -225,6 +246,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Enable deferred update for the range navigator
+     *
      * @default false
      */
     @Property(false)
@@ -232,6 +254,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * To render the period selector with out range navigator.
+     *
      * @default false
      */
     @Property(false)
@@ -239,6 +262,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Enable snapping for range navigator sliders
+     *
      * @default false
      */
     @Property(false)
@@ -252,6 +276,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Specifies whether a grouping separator should be used for a number.
+     *
      * @default false
      */
     @Property(false)
@@ -259,6 +284,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * GroupBy property for the axis
+     *
      * @default `Auto`
      */
     @Property()
@@ -266,6 +292,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Tick Position for the axis
+     *
      * @default 'Outside'
      */
     @Property('Outside')
@@ -307,6 +334,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Specifies the theme for the range navigator.
+     *
      * @default 'Material'
      */
     @Property('Material')
@@ -314,6 +342,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Selected range for range navigator.
+     *
      * @default []
      */
     @Property([])
@@ -322,6 +351,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     /**
      * Used to format the axis label that accepts any global string format like 'C', 'n1', 'P' etc.
      * It also accepts placeholder like '{value}°C' in which value represent the axis label, e.g, 20°C.
+     *
      * @default ''
      */
 
@@ -330,6 +360,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Specifies the skeleton format in which the dateTime format will process.
+     *
      * @default ''
      */
 
@@ -338,6 +369,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * It specifies the type of format to be used in dateTime format process.
+     *
      * @default 'DateTime'
      */
 
@@ -346,6 +378,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * It specifies the label alignment for secondary axis labels
+     *
      * @default 'Middle'
      */
 
@@ -354,6 +387,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Margin for the range navigator
+     *
      * @default
      */
     @Complex<MarginModel>({ top: 5, bottom: 5, right: 5, left: 5 }, Margin)
@@ -364,14 +398,16 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Triggers before the range navigator rendering
-     * @event
+     *
+     * @event load
      */
     @Event()
     public load: EmitType<IRangeLoadedEventArgs>;
 
     /**
      * Triggers after the range navigator rendering
-     * @event
+     *
+     * @event loaded
      * @blazorProperty 'Loaded'
      */
     @Event()
@@ -379,7 +415,8 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Triggers after the range navigator resized
-     * @event
+     *
+     * @event resized
      * @blazorProperty 'Resized'
      */
     @Event()
@@ -387,21 +424,24 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Triggers before the label rendering
-     * @event
+     *
+     * @event labelRender
      * @deprecated
      */
     @Event()
     public labelRender: EmitType<ILabelRenderEventsArgs>;
     /**
      * Triggers after change the slider.
-     * @event
+     *
+     * @event changed
      * @blazorProperty 'Changed'
      */
     @Event()
     public changed: EmitType<IChangedEventArgs>;
     /**
      * Triggers before the tooltip for series is rendered.
-     * @event
+     *
+     * @event tooltipRender
      * @deprecated
      */
 
@@ -410,7 +450,8 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Triggers before the range navigator selector rendering
-     * @event
+     *
+     * @event selectorRender
      * @deprecated
      */
     @Event()
@@ -418,7 +459,8 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Triggers before the prints gets started.
-     * @event
+     *
+     * @event beforePrint
      * @blazorProperty 'OnPrint'
      */
 
@@ -466,6 +508,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     public isBlazor: boolean;
     /**
      * Constructor for creating the widget
+     *
      * @hidden
      */
     constructor(options?: RangeNavigatorModel, element?: string | HTMLElement) {
@@ -476,14 +519,14 @@ export class RangeNavigator extends Component<HTMLElement> {
      * Starting point of the control initialization
      */
     public preRender(): void {
-        let blazor: string = 'Blazor';
+        const blazor: string = 'Blazor';
         this.isBlazor = window[blazor];
         this.unWireEvents();
         this.setCulture();
         this.allowServerDataBinding = false;
         if (this.element.id === '') {
-           let collection : number = document.getElementsByClassName('e-rangenavigator').length;
-           this.element.id = 'rangenavigator_' + this.chartid + '_' + collection;
+            const collection : number = document.getElementsByClassName('e-rangenavigator').length;
+            this.element.id = 'rangenavigator_' + this.chartid + '_' + collection;
         }
         this.wireEvents();
     }
@@ -511,8 +554,8 @@ export class RangeNavigator extends Component<HTMLElement> {
      * to initialize the slider
      */
     private setSliderValue(): void {
-        let isDateTime: boolean = this.valueType === 'DateTime';
-        let range: VisibleRangeModel = this.chartSeries.xAxis.actualRange;
+        const isDateTime: boolean = this.valueType === 'DateTime';
+        const range: VisibleRangeModel = this.chartSeries.xAxis.actualRange;
         this.startValue = this.startValue ? this.startValue : (!this.value[0] ? range.min :
             (isDateTime ? (new Date(this.value[0].toString())).getTime() : +this.value[0]));
         this.endValue = this.endValue ? this.endValue : (!this.value[1] ? range.max :
@@ -523,7 +566,7 @@ export class RangeNavigator extends Component<HTMLElement> {
      * To render the range navigator
      */
     public render(): void {
-        let loadEventData: IRangeLoadedEventArgs = {
+        const loadEventData: IRangeLoadedEventArgs = {
             name: 'load', rangeNavigator: this.isBlazor ? {} as RangeNavigator : this,
             theme: this.theme
         };
@@ -563,17 +606,17 @@ export class RangeNavigator extends Component<HTMLElement> {
      * Bounds calculation for widget performed.
      */
     private calculateBounds(): void {
-        let labelPadding: number = this.enableGrouping ? 15 : 8;
-        let thumb: ThumbSettingsModel = this.navigatorStyleSettings.thumb;
-        let labelSize: number = measureText('tempString', this.labelStyle).height;
-        let margin: MarginModel = this.margin;
-        let isLeightWeight: boolean = !this.series.length;
-        let tooltipSpace: number = (!this.disableRangeSelector) &&
+        const labelPadding: number = this.enableGrouping ? 15 : 8;
+        const thumb: ThumbSettingsModel = this.navigatorStyleSettings.thumb;
+        const labelSize: number = measureText('tempString', this.labelStyle).height;
+        const margin: MarginModel = this.margin;
+        const isLeightWeight: boolean = !this.series.length;
+        const tooltipSpace: number = (!this.disableRangeSelector) &&
             isLeightWeight && this.tooltip.enable ? 35 : 0;
         if (this.isBlazor && !this.periodSelectorModule && this.periodSelectorSettings.periods.length && !this.stockChart) {
             this.periodSelectorModule = new PeriodSelector(this);
         }
-        let selector: PeriodSelector = this.periodSelectorModule;
+        const selector: PeriodSelector = this.periodSelectorModule;
         if (this.periodSelectorModule && this.periodSelectorSettings.periods.length > 0) {
             selector.periodSelectorSize = { x: 0, y: 0, height: 0, width: 0 };
             selector.periodSelectorSize.width = this.availableSize.width;
@@ -581,7 +624,7 @@ export class RangeNavigator extends Component<HTMLElement> {
             selector.periodSelectorSize.y = this.periodSelectorSettings.position === 'Bottom' ?
                 this.availableSize.height - selector.periodSelectorSize.height : 0;
         }
-        let periodSelectorY: number = this.periodSelectorSettings.position === 'Top' && selector ?
+        const periodSelectorY: number = this.periodSelectorSettings.position === 'Top' && selector ?
             selector.periodSelectorSize.y + selector.periodSelectorSize.height : 0;
         this.bounds = new Rect(
             (this.themeStyle.thumbWidth / 2 + thumb.border.width + margin.left),
@@ -589,12 +632,12 @@ export class RangeNavigator extends Component<HTMLElement> {
             this.availableSize.width - this.themeStyle.thumbWidth - (thumb.border.width * 2) - margin.left - margin.right,
             this.availableSize.height - margin.top - margin.bottom - tooltipSpace - (selector ? selector.periodSelectorSize.height : 0)
         );
-        let deductHeight: number = ((this.labelPosition === 'Outside' || isLeightWeight) ?
+        const deductHeight: number = ((this.labelPosition === 'Outside' || isLeightWeight) ?
             (labelSize + labelPadding) : 0) + ((this.tickPosition === 'Outside' || isLeightWeight) ?
-                (this.majorTickLines.height) : 0);
+            (this.majorTickLines.height) : 0);
         this.bounds.height -= deductHeight;
         if (isLeightWeight) {
-            let height: number = this.enableGrouping ? this.bounds.height - ((labelSize) + labelPadding) : this.bounds.height;
+            const height: number = this.enableGrouping ? this.bounds.height - ((labelSize) + labelPadding) : this.bounds.height;
             this.bounds.y += (this.themeStyle.thumbHeight > height ? (this.themeStyle.thumbHeight - height) / 2 : 0);
         }
         if (this.disableRangeSelector) {
@@ -618,7 +661,6 @@ export class RangeNavigator extends Component<HTMLElement> {
         if (!this.stockChart) {
             this.element.appendChild(this.svgObject);
         }
-        let blazor: string = 'Blazor';
         this.trigger('loaded', { rangeNavigator: this.isBlazor ? {} : this });
         this.rangeSlider.setSlider(
             this.startValue, this.endValue, false,
@@ -640,7 +682,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     public createSecondaryElement(): void {
         // For userInteraction
         if (this.tooltip.enable) {
-            let tooltipDiv: Element = this.createElement('div');
+            const tooltipDiv: Element = this.createElement('div');
             tooltipDiv.id = this.element.id + '_Secondary_Element';
             tooltipDiv.setAttribute('style', 'position: relative');
             this.element.appendChild(tooltipDiv);
@@ -659,16 +701,17 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * To Remove the SVG.
-     * @return {boolean}
+     *
+     * @returns {void}
      * @private
      */
     public removeSvg(): void {
         if (getElement(this.element.id + '_Secondary_Element')) {
             remove(getElement(this.element.id + '_Secondary_Element'));
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((this as any).isReact) { this.clearTemplate(); }
         }
-        let removeLength: number = 0;
+        const removeLength: number = 0;
         if (this.svgObject) {
             while (this.svgObject.childNodes.length > removeLength) {
                 this.svgObject.removeChild(this.svgObject.firstChild);
@@ -686,10 +729,10 @@ export class RangeNavigator extends Component<HTMLElement> {
      */
     private unWireEvents(): void {
         /*! Find the Events type */
-        let startEvent: string = Browser.touchStartEvent;
-        let moveEvent: string = Browser.touchMoveEvent;
-        let stopEvent: string = Browser.touchEndEvent;
-        let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        const startEvent: string = Browser.touchStartEvent;
+        const moveEvent: string = Browser.touchMoveEvent;
+        const stopEvent: string = Browser.touchEndEvent;
+        const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         /*! UnBind the Event handler */
 
         EventHandler.remove(this.element, startEvent, this.rangeOnMouseDown);
@@ -708,7 +751,7 @@ export class RangeNavigator extends Component<HTMLElement> {
      */
     private wireEvents(): void {
         /*! Find the Events type */
-        let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
 
         /*! Bind the Event handler */
         EventHandler.add(this.element, Browser.touchStartEvent, this.rangeOnMouseDown, this);
@@ -721,7 +764,7 @@ export class RangeNavigator extends Component<HTMLElement> {
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
             this.rangeResize.bind(this)
         );
-        let element: HTMLElement = <HTMLElement>this.element;
+        const element: HTMLElement = <HTMLElement>this.element;
         element.style.touchAction = 'none';
         element.style.msTouchAction = 'none';
         element.style.msContentZooming = 'none';
@@ -733,10 +776,10 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Handles the widget resize.
-     * @return {boolean}
+     *
      * @private
      */
-    public rangeResize(e: Event): boolean {
+    public rangeResize(): boolean {
         // To avoid resize console error
         if (!document.getElementById(this.element.id)) {
             return false;
@@ -746,16 +789,16 @@ export class RangeNavigator extends Component<HTMLElement> {
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
         }
-        let arg: IResizeRangeNavigatorEventArgs = {
+        const arg: IResizeRangeNavigatorEventArgs = {
             rangeNavigator: this,
             name: 'resized',
             currentSize: new Size(0, 0),
             previousSize: new Size(
                 this.availableSize.width,
                 this.availableSize.height
-            ),
+            )
         };
-        this.resizeTo = setTimeout(
+        this.resizeTo = +setTimeout(
             (): void => {
                 if (this.isDestroyed) {
                     clearTimeout(this.resizeTo);
@@ -790,7 +833,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Handles the mouse move.
-     * @return {boolean}
+     *
      * @private
      */
     public mouseMove(e: PointerEvent): boolean {
@@ -802,22 +845,22 @@ export class RangeNavigator extends Component<HTMLElement> {
     }
     /**
      * Handles the mouse leave.
-     * @return {boolean}
+     *
      * @private
      */
     public mouseLeave(e: PointerEvent): boolean {
-        let rangeSlider: RangeSlider = this.rangeSlider;
+        const rangeSlider: RangeSlider = this.rangeSlider;
         if (rangeSlider.isDrag) {
             rangeSlider.triggerEvent(this.chartSeries.xAxis.actualRange);
         }
-        let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         this.mouseX = this.setMouseX(e);
         this.notify(cancelEvent, e);
         return false;
     }
     /**
      * Handles the mouse click on range navigator.
-     * @return {boolean}
+     *
      * @private
      */
     public rangeOnMouseClick(e: PointerEvent | TouchEvent): boolean {
@@ -833,8 +876,6 @@ export class RangeNavigator extends Component<HTMLElement> {
     }
     /**
      * Handles the export method for range navigator control.
-     * @param type
-     * @param fileName
      */
     public export(
         type: ExportType, fileName: string, orientation?: PdfPageOrientation,
@@ -849,7 +890,7 @@ export class RangeNavigator extends Component<HTMLElement> {
      * Creating a background element to the svg object
      */
     private renderChartBackground(): void {
-        let rect: RectOption = new RectOption(
+        const rect: RectOption = new RectOption(
             this.element.id + '_ChartBorder', this.themeStyle.background, { width: 0, color: 'transparent' }, 1,
             new Rect(0, 0, this.availableSize.width, this.availableSize.height));
         this.svgObject.appendChild(this.renderer.drawRectangle(rect) as HTMLElement);
@@ -857,7 +898,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Handles the mouse down on range navigator.
-     * @return {boolean}
+     *
      * @private
      */
     public rangeOnMouseDown(e: PointerEvent): boolean {
@@ -867,7 +908,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     }
     /**
      * Handles the mouse up.
-     * @return {boolean}
+     *
      * @private
      */
     public mouseEnd(e: PointerEvent): boolean {
@@ -889,11 +930,11 @@ export class RangeNavigator extends Component<HTMLElement> {
      * To find mouse x, y for aligned range navigator element svg position
      */
     private setMouseX(e: PointerEvent): number {
-        let pageX: number = e.type.indexOf('touch') > -1 ?
+        const pageX: number = e.type.indexOf('touch') > -1 ?
             (<TouchEvent & PointerEvent>e).changedTouches[0].clientX : e.clientX;
-        let rect: ClientRect = this.element.getBoundingClientRect();
-        let svgRect: ClientRect = !this.stockChart ? getElement(this.element.id + '_svg').getBoundingClientRect() :
-                                    getElement(this.element.id).getBoundingClientRect();
+        const rect: ClientRect = this.element.getBoundingClientRect();
+        const svgRect: ClientRect = !this.stockChart ? getElement(this.element.id + '_svg').getBoundingClientRect() :
+            getElement(this.element.id).getBoundingClientRect();
         return (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
     }
 
@@ -901,66 +942,69 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Get the properties to be maintained in the persisted state.
+     *
      * @private
      */
     public getPersistData(): string {
-        let keyEntity: string[] = ['loaded'];
+        const keyEntity: string[] = ['loaded'];
         return this.addOnPersist(keyEntity);
     }
     /**
      * OnProperty change method calling here
-     * @param newProp
-     * @param oldProp
+     *
+     * @param {RangeNavigatorModel} newProp new RangeNavigatorModel
+     * @param {RangeNavigatorModel} oldProp old RangeNavigatorModel
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public onPropertyChanged(newProp: RangeNavigatorModel, oldProp: RangeNavigatorModel): void {
         let renderer: boolean = false;
         let refreshBounds: boolean = false;
         let refreshRange: boolean = false;
         this.animateSeries = false;
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'width':
-                case 'height':
-                case 'navigatorBorder':
-                case 'enableGrouping':
-                case 'labelPosition':
-                case 'tickPosition':
-                case 'labelStyle':
-                    refreshBounds = true;
-                    break;
-                case 'enableRtl':
-                case 'xName':
-                case 'yName':
-                case 'query':
-                case 'minimum':
-                case 'maximum':
-                case 'interval':
-                case 'intervalType':
-                case 'logBase':
-                case 'valueType':
-                case 'majorGridLines':
-                case 'minorGridLines':
-                case 'navigatorStyleSettings':
-                case 'labelFormat':
-                case 'skeleton':
-                case 'skeletonType':
-                case 'secondaryLabelAlignment':
-                    renderer = true;
-                    break;
-                case 'dataSource':
-                case 'series':
-                    renderer = true;
-                    refreshBounds = true;
-                    break;
-                case 'theme':
-                    this.animateSeries = true;
-                    break;
-                case 'locale':
-                    super.refresh(); break;
-                case 'value':
-                    this.startValue = null; this.endValue = null;
-                    refreshRange = true;
-                    break;
+            case 'width':
+            case 'height':
+            case 'navigatorBorder':
+            case 'enableGrouping':
+            case 'labelPosition':
+            case 'tickPosition':
+            case 'labelStyle':
+                refreshBounds = true;
+                break;
+            case 'enableRtl':
+            case 'xName':
+            case 'yName':
+            case 'query':
+            case 'minimum':
+            case 'maximum':
+            case 'interval':
+            case 'intervalType':
+            case 'logBase':
+            case 'valueType':
+            case 'majorGridLines':
+            case 'minorGridLines':
+            case 'navigatorStyleSettings':
+            case 'labelFormat':
+            case 'skeleton':
+            case 'skeletonType':
+            case 'secondaryLabelAlignment':
+                renderer = true;
+                break;
+            case 'dataSource':
+            case 'series':
+                renderer = true;
+                refreshBounds = true;
+                break;
+            case 'theme':
+                this.animateSeries = true;
+                break;
+            case 'locale':
+                super.refresh(); break;
+            case 'value':
+                this.startValue = null; this.endValue = null;
+                refreshRange = true;
+                break;
             }
         }
         if (!refreshBounds && renderer) {
@@ -992,11 +1036,12 @@ export class RangeNavigator extends Component<HTMLElement> {
     }
     /**
      * To provide the array of modules needed for control rendering
-     * @return {ModuleDeclaration[]}
+     *
+     * @returns {ModuleDeclaration[]} requiredModules
      * @private
      */
     public requiredModules(): ModuleDeclaration[] {
-        let modules: ModuleDeclaration[] = [];
+        const modules: ModuleDeclaration[] = [];
         this.series.map((series: RangeNavigatorSeries) => {
             modules.push({
                 member: series.type + 'Series',
@@ -1032,14 +1077,15 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * To destroy the widget
-     * @method destroy
-     * @return {void}.
+     *
+     * @function destroy
+     * @returns {void}.
      * @member of rangeNavigator
      */
 
     public destroy(): void {
         this.unWireEvents();
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact) { this.clearTemplate(); }
         this.rangeSlider.destroy();
         super.destroy();

@@ -628,6 +628,8 @@
       border-bottom: 1px solid;
       border-bottom-color: $grid-header-border-color;
       & .e-toolbar-items {
+          min-height: initial;
+
           & .e-icons {
             color: $grid-responsive-toolbar-icon-color;
           }
@@ -667,7 +669,7 @@
               & .e-input-group {
                 border: 0;
                 opacity: 1;
-                padding: $tbar-btn-bgr-padding;
+                padding: $grid-responsive-tbar-btn-bgr-padding;
                 padding-right: $grid-responsive-search-icon-right;
                 width: 100%;
 
@@ -3155,6 +3157,11 @@
 
 .e-bigger .e-grid.e-row-responsive,
 .e-bigger.e-grid.e-row-responsive {
+
+  & .e-responsive-header {
+    border-top: 1px solid;
+    border-top-color: $grid-header-border-color;
+  }
 
   & .e-gridcontent,
   & .e-summarycontent {

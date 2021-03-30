@@ -8,6 +8,7 @@ export interface VScrollModel extends ComponentModel{
 
     /**
      * Specifies the up or down scrolling distance of the vertical scrollbar moving.
+     *
      * @default null
      */
     scrollStep?: number;

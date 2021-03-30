@@ -1,6 +1,4 @@
-/**
- * 
- */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { Smithchart } from '../../smithchart';
 import { measureText, TextOption, renderTextElement, CircleOption, PathOption, RectOption } from '../../smithchart/utils/helper';
 import { SmithchartFontModel } from '../../smithchart/utils/utils-model';
@@ -9,7 +7,6 @@ import { SmithchartRect, SmithchartSize, LegendSeries, Point } from '../../smith
 import { ISmithchartLegendRenderEventArgs } from '../../smithchart/model/interface';
 import { legendRender } from '../model/constant';
 
-/* tslint:disable:no-string-literal */
 export class SmithchartLegend {
     public legendActualBounds: SmithchartRect;
     public legendSeries: LegendSeries[] = [];
@@ -26,34 +23,31 @@ export class SmithchartLegend {
     }
 
     private calculateLegendBounds(smithchart: Smithchart): void {
-        let legendSeries: LegendSeries = new LegendSeries();
         this.legendSeries = [];
-        let padding: number = 10;
-        let legend: SmithchartLegendSettingsModel = smithchart.legendSettings;
-        let legendSizeHeight: number = legend.height;
-        let legendSizeWidth: number = legend.width;
-        let itemPadding: number = legend.itemPadding > 0 ? legend.itemPadding : 0;
-        let position: string = legend.position.toLowerCase();
-        let font: SmithchartFontModel = legend.title.textStyle;
+        const padding: number = 10;
+        const legend: SmithchartLegendSettingsModel = smithchart.legendSettings;
+        const legendSizeHeight: number = legend.height;
+        const legendSizeWidth: number = legend.width;
+        const itemPadding: number = legend.itemPadding > 0 ? legend.itemPadding : 0;
+        const position: string = legend.position.toLowerCase();
+        const font: SmithchartFontModel = legend.title.textStyle;
         let width: number = 0;
         let height: number = 0;
         let legendItemWidth: number = 0;
         let legendItemHeight: number = 0;
         let legendHeight: number = 0;
-        let svgObjectWidth: number = smithchart.availableSize.width - ((smithchart.elementSpacing * 4) - (legend.border.width * 2)
-            + (smithchart.border.width * 2));
-        let svgObjectHeight: number = smithchart.availableSize.height - ((smithchart.elementSpacing * 4) - (legend.border.width * 2)
+        const svgObjectWidth: number = smithchart.availableSize.width - ((smithchart.elementSpacing * 4) - (legend.border.width * 2)
             + (smithchart.border.width * 2));
         let rowCount: number = legend.rowCount;
         let columnCount: number = legend.columnCount;
-        let titleSize: SmithchartSize = measureText(smithchart.legendSettings['title']['text'], font);
+        const titleSize: SmithchartSize = measureText(smithchart.legendSettings['title']['text'], font);
         let maxRowWidth: number = 0;
         let totalRowHeight: number = 0;
         let curRowWidth: number = 0;
         let curRowHeight: number = 0;
         let allowItems: number;
         let itemsCountRow: number = 0;
-        let length: number = smithchart.series.length;
+        const length: number = smithchart.series.length;
         let legendBounds: SmithchartRect;
         if (smithchart.legendSettings.visible && length !== 0) {
             if (position === 'bottom' || position === 'top' || position === 'custom') {
@@ -87,7 +81,7 @@ export class SmithchartLegend {
                     fill: smithchart.series[i].fill || smithchart.seriesColors[i % smithchart.seriesColors.length],
                     bounds: null
                 });
-                let legendsize: SmithchartSize = this._getLegendSize(smithchart, this.legendSeries[i]);
+                const legendsize: SmithchartSize = this._getLegendSize(smithchart, this.legendSeries[i]);
                 legendItemWidth = Math.max(legendsize['width'], legendItemWidth);
                 legendItemHeight = Math.max(legendsize['height'], legendItemHeight);
                 this.legendSeries[i]['bounds'] = { width: legendItemWidth, height: legendItemHeight };
@@ -126,16 +120,16 @@ export class SmithchartLegend {
     }
 
     private _getLegendSize(smithchart: Smithchart, series: LegendSeries): SmithchartSize {
-        let legend: SmithchartLegendSettingsModel = smithchart.legendSettings;
-        let symbolWidth: number = legend.itemStyle.width;
-        let symbolHeight: number = legend.itemStyle.height;
-        let textSize: SmithchartSize = measureText(series.text, legend.textStyle);
-        let width: number = symbolWidth + textSize.width + legend.shapePadding;
-        let height: number = Math.max(symbolHeight, textSize.height);
+        const legend: SmithchartLegendSettingsModel = smithchart.legendSettings;
+        const symbolWidth: number = legend.itemStyle.width;
+        const symbolHeight: number = legend.itemStyle.height;
+        const textSize: SmithchartSize = measureText(series.text, legend.textStyle);
+        const width: number = symbolWidth + textSize.width + legend.shapePadding;
+        const height: number = Math.max(symbolHeight, textSize.height);
 
         return { width: width, height: height };
     }
-    // tslint:disable:max-func-body-length
+    /* eslint-disable  */
     private _drawLegend(smithchart: Smithchart): void {
         let legend: SmithchartLegendSettingsModel = smithchart.legendSettings;
         let legendPosition: string = legend.position.toLowerCase();

@@ -11,7 +11,7 @@ export class TimePicker implements IComponent {
     protected parent: InPlaceEditor;
     public compObj: EJ2TimePicker = undefined;
 
-    constructor(parent?: InPlaceEditor) {
+    public constructor(parent?: InPlaceEditor) {
         this.parent = parent;
         this.parent.timeModule = this;
         this.base = new Base(this.parent, this);
@@ -32,21 +32,23 @@ export class TimePicker implements IComponent {
             this.parent.extendModelValue(this.compObj.value);
         }
     }
+    /**
+     * For internal use only - Get the module name.
+     *
+     * @returns {string} - returns the string
+     */
+    private getModuleName(): string {
+        return 'time-picker';
+    }
 
     /**
      * Destroys the module.
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
         this.base.destroy();
-    }
-
-    /**
-     * For internal use only - Get the module name.
-     */
-    private getModuleName(): string {
-        return 'time-picker';
     }
 }

@@ -4,6 +4,7 @@ import { ScrollArgs } from '../base/interface';
 
 /**
  * To handle scroll event on chart and from TreeGrid
+ *
  * @hidden
  */
 export class ChartScroll {
@@ -13,6 +14,8 @@ export class ChartScroll {
     public previousScroll: { top: number, left: number } = { top: 0, left: 0 };
     /**
      * Constructor for the scrolling.
+     *
+     * @param {Gantt} parent .
      * @hidden
      */
     constructor(parent: Gantt) {
@@ -22,6 +25,8 @@ export class ChartScroll {
     }
     /**
      * Bind event
+     *
+     * @returns {void} .
      */
     private addEventListeners(): void {
         this.parent.on('grid-scroll', this.gridScrollHandler, this);
@@ -29,36 +34,42 @@ export class ChartScroll {
     }
     /**
      * Unbind events
+     *
+     * @returns {void} .
      */
     private removeEventListeners(): void {
         EventHandler.remove(this.element, 'scroll', this.onScroll);
         this.parent.off('grid-scroll', this.gridScrollHandler);
     }
     /**
-     * 
-     * @param args 
+     *
+     * @param {object} args .
+     * @returns {void} .
      */
-    private gridScrollHandler(args: object): void {
+    // eslint-disable-next-line
+    private gridScrollHandler(args: object ): void {
         this.element.scrollTop = getValue('top', args);
         this.isFromTreeGrid = true;
     }
     /**
      * Method to update vertical grid line, holiday, event markers and weekend container's top position on scroll action
+     *
+     * @returns {void} .
      */
     public updateTopPosition(): void {
-        let content: HTMLElement = this.parent.treeGrid.element.querySelector('.e-content');
-        let contentScrollTop: number = content.scrollTop;
+        const content: HTMLElement = this.parent.treeGrid.element.querySelector('.e-content');
+        const contentScrollTop: number = content.scrollTop;
         let scrollTop: number;
         if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
-            let top: number = this.parent.virtualScrollModule.getTopPosition();
+            const top: number = this.parent.virtualScrollModule.getTopPosition();
             scrollTop = contentScrollTop - top;
         } else {
             scrollTop = contentScrollTop;
         }
         if (!isNullOrUndefined(this.parent.dayMarkersModule)) {
-            let holidayContainer: HTMLElement = getValue('nonworkingDayRender.holidayContainer', this.parent.dayMarkersModule);
-            let weekendContainer: HTMLElement = getValue('nonworkingDayRender.weekendContainer', this.parent.dayMarkersModule);
-            let eventMarkersContainer: HTMLElement = getValue('eventMarkerRender.eventMarkersContainer', this.parent.dayMarkersModule);
+            const holidayContainer: HTMLElement = getValue('nonworkingDayRender.holidayContainer', this.parent.dayMarkersModule);
+            const weekendContainer: HTMLElement = getValue('nonworkingDayRender.weekendContainer', this.parent.dayMarkersModule);
+            const eventMarkersContainer: HTMLElement = getValue('eventMarkerRender.eventMarkersContainer', this.parent.dayMarkersModule);
             if (holidayContainer) {
                 holidayContainer.style.top = formatUnit(scrollTop);
             }
@@ -75,10 +86,13 @@ export class ChartScroll {
     }
     /**
      * Scroll event handler
+     *
+     * @returns {void} .
      */
     private onScroll(): void {
-        let scrollArgs: ScrollArgs = {};
+        const scrollArgs: ScrollArgs = {};
         if (this.element.scrollTop !== this.previousScroll.top) {
+            // eslint-disable-next-line
             !this.isFromTreeGrid ? this.parent.notify('chartScroll', { top: this.element.scrollTop }) : (this.isFromTreeGrid = false);
             scrollArgs.previousScrollTop = this.previousScroll.top;
             this.previousScroll.top = this.element.scrollTop;
@@ -100,7 +114,9 @@ export class ChartScroll {
     }
     /**
      * To set height for chart scroll container
-     * @param height - To set height for scroll container in chart side
+     *
+     * @param {string | number} height - To set height for scroll container in chart side
+     * @returns {void} .
      * @private
      */
     public setHeight(height: string | number): void {
@@ -108,7 +124,9 @@ export class ChartScroll {
     }
     /**
      * To set width for chart scroll container
-     * @param width - To set width to scroll container
+     *
+     * @param {string | number} width - To set width to scroll container
+     * @returns {void} .
      * @private
      */
     public setWidth(width: string | number): void {
@@ -116,7 +134,9 @@ export class ChartScroll {
     }
     /**
      * To set scroll top for chart scroll container
-     * @param scrollTop - To set scroll top for scroll container
+     *
+     * @param {number} scrollTop - To set scroll top for scroll container
+     * @returns {void} .
      * @private
      */
     public setScrollTop(scrollTop: number): void {
@@ -124,7 +144,9 @@ export class ChartScroll {
     }
     /**
      * To set scroll left for chart scroll container
-     * @param scrollLeft  - To set scroll left for scroll container
+     *
+     * @param {number} scrollLeft  - To set scroll left for scroll container
+     * @returns {void} .
      */
     public setScrollLeft(scrollLeft: number): void {
         this.element.scrollLeft = scrollLeft;
@@ -134,6 +156,8 @@ export class ChartScroll {
 
     /**
      * Destroy scroll related elements and unbind the events
+     *
+     * @returns {void} .
      * @private
      */
     public destroy(): void {

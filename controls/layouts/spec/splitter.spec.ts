@@ -4712,7 +4712,7 @@ describe('Splitter Control', () => {
             splitterObj.allBars[0].firstElementChild.click();
             splitterObj.allBars[1].firstElementChild.click();
             splitterObj.allBars[0].lastElementChild.click();
-            expect(splitterObj.allPanes[0].style.flexGrow).toBe('1');
+            expect(splitterObj.allPanes[0].style.flexGrow).toBe('');
             expect(splitterObj.allPanes[1].style.flexGrow).toBe('0');
             expect(splitterObj.allPanes[2].style.flexGrow).toBe('');
             expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toBe(false);

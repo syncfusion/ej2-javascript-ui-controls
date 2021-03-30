@@ -5,7 +5,8 @@ import { IPrintEventArgs } from '../model/interface';
 import { beforePrint } from '../model/constants';
 
 /**
- * Print module handles the print functionality for treemap. 
+ * Print module handles the print functionality for treemap.
+ *
  * @hidden
  */
 export class Print {
@@ -14,22 +15,26 @@ export class Print {
 
     /**
      * Constructor for Maps
-     * @param control 
+     *
+     * @param {TreeMap} control - Specifies the treemap instance.
      */
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(control: TreeMap) {
         this.control = control;
     }
 
     /**
      * This method is used to perform the print functionality in treemap.
-     * @param elements 
+     *
+     * @param { string[] | string | Element} elements - Specifies the element.
+     * @returns {void}
      * @private
      */
     public print(elements?: string[] | string | Element): void {
         this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
         this.printWindow.moveTo(0, 0);
         this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
-        let argsData: IPrintEventArgs = {
+        const argsData: IPrintEventArgs = {
             cancel: false, htmlContent: this.getHTMLContent(elements), name: beforePrint
         };
         this.control.trigger(beforePrint, argsData, () => {
@@ -40,12 +45,14 @@ export class Print {
     }
 
     /**
-     * To get the html string of the Maps 
-     * @param elements 
+     * To get the html string of the Maps
+     *
+     * @param {string[] | string | Element} elements - Specifies the element
+     * @returns {Element} - Returns the element
      * @private
      */
     public getHTMLContent(elements?: string[] | string | Element): Element {
-        let div: Element = createElement('div');
+        const div: Element = createElement('div');
         if (elements) {
             if (elements instanceof Array) {
                 elements.forEach((value: string) => {
@@ -64,19 +71,23 @@ export class Print {
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         // Returns te module name
-            return 'Print';
+        return 'Print';
     }
     /**
-     * To destroy the legend. 
-     * @return {void}
+     * To destroy the legend.
+     *
+     * @param {TreeMap} treemap - Specifies the treemap instance
+     * @returns {void}
      * @private
      */
     public destroy(treemap: TreeMap): void {
-            /**
-             * Destroy method performed here
-             */
+        /**
+         * Destroy method performed here
+         */
     }
 }

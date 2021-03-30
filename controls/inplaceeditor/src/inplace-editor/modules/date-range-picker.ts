@@ -11,7 +11,7 @@ export class DateRangePicker implements IComponent {
     public compObj: EJ2DateRangePicker = undefined;
     protected parent: InPlaceEditor;
 
-    constructor(parent?: InPlaceEditor) {
+    public constructor(parent?: InPlaceEditor) {
         this.parent = parent;
         this.parent.dateRangeModule = this;
         this.base = new Base(this.parent, this);
@@ -26,6 +26,15 @@ export class DateRangePicker implements IComponent {
         this.compObj.element.focus();
     }
 
+    /**
+     * For internal use only - Get the module name.
+     * 
+     * @returns {string} - returns the string
+     */
+    private getModuleName(): string {
+        return 'date-range-picker';
+    }
+
     public updateValue(e: NotifyParams): void {
         if (this.compObj && e.type === 'DateRange') {
             this.parent.setProperties({ value: this.compObj.value }, true);
@@ -35,18 +44,12 @@ export class DateRangePicker implements IComponent {
 
     /**
      * Destroys the module.
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
         this.base.destroy();
-    }
-
-    /**
-     * For internal use only - Get the module name.
-     */
-    private getModuleName(): string {
-        return 'date-range-picker';
     }
 }

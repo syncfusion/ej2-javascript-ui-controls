@@ -1,6 +1,7 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-returns */
 import { withInRange } from '../../common/utils/helper';
 import { Rect } from '@syncfusion/ej2-svg-base';
-import { Chart } from '../chart';
 import { DoubleRange } from '../utils/double-range';
 import { Series } from './chart-series';
 import { ColumnBase } from './column-base';
@@ -12,16 +13,17 @@ export class RangeColumnSeries extends ColumnBase {
 
     /**
      * Render Range Column series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
     public render(series: Series): void {
         let rect: Rect;
-        let sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
+        const sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
         //let origin: number = Math.max(<number>series.yAxis.visibleRange.min, 0);
         let argsData: IPointRenderEventArgs;
-        for (let rangePoint of series.points) {
+        for (const rangePoint of series.points) {
             rangePoint.symbolLocations = []; rangePoint.regions = [];
             if (rangePoint.visible && withInRange(series.points[rangePoint.index - 1], rangePoint, series.points[rangePoint.index + 1],
                                                   series)) {
@@ -51,8 +53,9 @@ export class RangeColumnSeries extends ColumnBase {
 
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
 
     public doAnimation(series: Series): void {
@@ -64,11 +67,12 @@ export class RangeColumnSeries extends ColumnBase {
 
     /**
      * To destroy the range column series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method performed here
          */

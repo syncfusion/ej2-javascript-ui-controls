@@ -7,7 +7,6 @@ import * as cls from '../base/css-constant';
 
 /**
  * Kanban touch module
- * @hidden
  */
 export class KanbanTouch {
     public mobilePopup: Popup;
@@ -18,6 +17,8 @@ export class KanbanTouch {
 
     /**
      * Constructor for touch module
+     *
+     * @param {Kanban} parent Accepts the kanban instance
      * @private
      */
     constructor(parent: Kanban) {
@@ -32,7 +33,7 @@ export class KanbanTouch {
 
     private tapHoldHandler(e: TapEventArgs): void {
         this.tabHold = true;
-        let target: Element = closest((e.originalEvent.target as Element), '.' + cls.CARD_CLASS);
+        const target: Element = closest((e.originalEvent.target as Element), '.' + cls.CARD_CLASS);
         if (target && this.parent.cardSettings.selectionType === 'Multiple') {
             this.parent.actionModule.cardSelection(target, true, false);
             if (!this.mobilePopup) {
@@ -45,7 +46,7 @@ export class KanbanTouch {
 
     private renderMobilePopup(): void {
         if (this.parent.cardSettings.selectionType === 'Multiple') {
-            let mobilePopupWrapper: HTMLElement = createElement('div', {
+            const mobilePopupWrapper: HTMLElement = createElement('div', {
                 className: cls.POPUP_WRAPPER_CLASS + ' e-popup-close',
                 innerHTML: `<div class="${cls.POPUP_HEADER_CLASS}"><button class="${cls.CLOSE_CLASS}"></button></div>` +
                     `<div class="${cls.POPUP_CONTENT_CLASS}"></div>`
@@ -63,8 +64,8 @@ export class KanbanTouch {
                 zIndex: 1004,
                 close: this.popupClose.bind(this)
             });
-            let closeIcon: HTMLButtonElement = this.mobilePopup.element.querySelector('.' + cls.CLOSE_CLASS) as HTMLButtonElement;
-            let buttonObj: Button = new Button({
+            const closeIcon: HTMLButtonElement = this.mobilePopup.element.querySelector('.' + cls.CLOSE_CLASS) as HTMLButtonElement;
+            const buttonObj: Button = new Button({
                 cssClass: 'e-flat e-round e-small',
                 enableRtl: this.parent.enableRtl,
                 iconCss: cls.ICON_CLASS + ' ' + cls.CLOSE_ICON_CLASS
@@ -77,19 +78,18 @@ export class KanbanTouch {
 
     private getPopupContent(): string {
         let popupContent: string;
-        let selectedCards: HTMLElement[] = this.parent.getSelectedCards();
+        const selectedCards: HTMLElement[] = this.parent.getSelectedCards();
         if (selectedCards.length > 1) {
             popupContent = '(' + selectedCards.length + ') ' + this.parent.localeObj.getConstant('cardsSelected');
         } else if (selectedCards.length === 1) {
-            popupContent = ' ' +
-                (this.parent.getCardDetails(selectedCards[0]) as { [key: string]: Object })[this.parent.cardSettings.headerField];
+            popupContent = ' ' + this.parent.getCardDetails(selectedCards[0])[this.parent.cardSettings.headerField];
         }
         return popupContent;
     }
 
     public updatePopupContent(): void {
         if (!this.mobilePopup) { return; }
-        let popupContent: string = this.getPopupContent();
+        const popupContent: string = this.getPopupContent();
         if (popupContent) {
             this.mobilePopup.element.querySelector('.' + cls.POPUP_CONTENT_CLASS).textContent = popupContent;
         } else {
@@ -107,7 +107,7 @@ export class KanbanTouch {
 
     private popupDestroy(): void {
         if (this.mobilePopup && this.mobilePopup.element) {
-            let instance: Button = (this.mobilePopup.element.querySelector('.e-control.e-btn') as EJ2Instance).ej2_instances[0] as Button;
+            const instance: Button = (this.mobilePopup.element.querySelector('.e-control.e-btn') as EJ2Instance).ej2_instances[0] as Button;
             if (instance) {
                 instance.destroy();
             }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { createElement, isNullOrUndefined, Browser, remove } from '@syncfusion/ej2-base';
 import { Toolbar, ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { DateRangePicker, RangeEventArgs } from '@syncfusion/ej2-calendars';
@@ -32,8 +33,11 @@ export class PeriodSelector {
     }
     /**
      * To set the control values
+     *
      * @param control
+     * @returns {void}
      */
+
     public setControlValues(control: RangeNavigator | StockChart): void {
         if (control.getModuleName() === 'rangeNavigator') {
             this.control.periods = (this.rootControl as RangeNavigator).periodSelectorSettings.periods;
@@ -56,16 +60,28 @@ export class PeriodSelector {
         this.control.disableRangeSelector = (control as RangeNavigator).disableRangeSelector;
     }
     /**
-     *  To initialize the period selector properties
+     * To initialize the period selector properties
+     *
+     * @param options
+     * @param x
+     * @param options
+     * @param x
      */
-    public appendSelector(options: ISelectorRenderArgs, x : number = 0): void {
+
+    public appendSelector(options: ISelectorRenderArgs, x: number  = 0): void {
         this.renderSelectorElement(null, options, x);
         this.renderSelector();
     }
     /**
      * renderSelector div
+     *
      * @param control
+     * @param options
+     * @param x
+     * @param options
+     * @param x
      */
+
     public renderSelectorElement(control?: RangeNavigator, options?: ISelectorRenderArgs, x? : number): void {
         //render border
         this.periodSelectorSize = control ? this.periodSelectorSize : new Rect(x, (this.rootControl as StockChart).titleSize.height,
@@ -94,43 +110,47 @@ export class PeriodSelector {
 
     /**
      * renderSelector elements
+     *
+     * @returns {void}
      */
-    // tslint:disable-next-line:max-func-body-length
+
     public renderSelector(): void {
         this.setControlValues(this.rootControl);
         let enableCustom: boolean = true;
-        let controlId: string = this.control.element.id;
-        let selectorElement: Element = createElement('div', { id: controlId + '_selector' });
-        this.periodSelectorDiv.appendChild(selectorElement); let buttons: PeriodsModel[] = this.control.periods;
-        let selector: ItemModel[] = this.updateCustomElement();
-        let buttonStyles: string = 'text-transform: none; text-overflow: unset';
+        const controlId: string = this.control.element.id;
+        const selectorElement: Element = createElement('div', { id: controlId + '_selector' });
+        const buttons: PeriodsModel[] = this.control.periods;
+        const selector: ItemModel[] = this.updateCustomElement();
+        const buttonStyles: string = 'text-transform: none; text-overflow: unset';
+        const isStringTemplate: string = 'isStringTemplate';
+        const dateRangeId: string = controlId + 'customRange';
+        this.periodSelectorDiv.appendChild(selectorElement);
         for (let i: number = 0; i < buttons.length; i++) {
             selector.push({ align: 'Left', text: buttons[i].text });
         }
         if (this.rootControl.getModuleName() === 'stockChart') {
             enableCustom = (<StockChart>this.rootControl).enableCustomRange;
         }
-        let selctorArgs: IRangeSelectorRenderEventArgs;
         if (enableCustom) {
             this.calendarId = controlId + '_calendar';
             selector.push({ template: '<button id=' + this.calendarId + '></button>', align: 'Right' });
         }
-        selctorArgs = {
+        const selctorArgs: IRangeSelectorRenderEventArgs = {
             selector: selector, name: 'RangeSelector', cancel: false, enableCustomFormat: true, content: 'Date Range'
         };
         if (this.rootControl.getModuleName() === 'stockChart') {
             selector.push({ template: createElement('button', { id: controlId + '_reset', innerHTML: 'Reset',
-                                        styles: buttonStyles, className: 'e-dropdown-btn e-btn' }),
-                            align: 'Right'});
+                styles: buttonStyles, className: 'e-dropdown-btn e-btn' }),
+            align: 'Right'});
             if ((<StockChart>this.rootControl).exportType.indexOf('Print') > -1) {
                 selector.push({ template: createElement('button', { id: controlId + '_print', innerHTML: 'Print', styles: buttonStyles,
-                                 className: 'e-dropdown-btn e-btn' }),
-                            align: 'Right'});
+                    className: 'e-dropdown-btn e-btn' }),
+                align: 'Right'});
             }
             if ((<StockChart>this.rootControl).exportType.length) {
                 selector.push({ template: createElement('button', { id: controlId + '_export', innerHTML: 'Export', styles: buttonStyles,
-                                    className: 'e-dropdown-btn e-btn' }),
-                                align: 'Right'});
+                    className: 'e-dropdown-btn e-btn' }),
+                align: 'Right'});
             }
         }
         this.rootControl.trigger('selectorRender', selctorArgs);
@@ -153,97 +173,100 @@ export class PeriodSelector {
                 this.setSelectedStyle(this.selectedIndex);
             }
         });
-        let isStringTemplate: string = 'isStringTemplate';
-        let dateRangeId: string = controlId + 'customRange';
         this.toolbar[isStringTemplate] = true;
         this.toolbar.appendTo(selectorElement as HTMLElement);
         this.triggerChange = true;
         if (enableCustom) {
-        this.datePicker = new DateRangePicker({
-            min: new Date(this.control.seriesXMin),
-            max: new Date(this.control.seriesXMax),
-            format: 'dd\'\/\'MM\'\/\'yyyy', placeholder: 'Select a range',
-            showClearButton: false, startDate: new Date(this.control.startValue),
-            endDate: new Date(this.control.endValue),
-            created: (args: RangeEventArgs) => {
-                if (selctorArgs.enableCustomFormat) {
-                    let datePicker: HTMLCollection = <HTMLCollection>document.getElementsByClassName('e-date-range-wrapper');
-                    let datePickerElement: HTMLElement;
-                    for (let i: number = 0; i < datePicker.length; i++) {
-                        if (datePicker[i].children[0].id.indexOf(controlId) !== -1) {
-                            datePickerElement = <HTMLElement>datePicker[i];
+            this.datePicker = new DateRangePicker({
+                min: new Date(this.control.seriesXMin),
+                max: new Date(this.control.seriesXMax),
+                // eslint-disable-next-line no-useless-escape
+                format: 'dd\'\/\'MM\'\/\'yyyy', placeholder: 'Select a range',
+                showClearButton: false, startDate: new Date(this.control.startValue),
+                endDate: new Date(this.control.endValue),
+                created: () => {
+                    if (selctorArgs.enableCustomFormat) {
+                        const datePicker: HTMLCollection = <HTMLCollection>document.getElementsByClassName('e-date-range-wrapper');
+                        let datePickerElement: HTMLElement;
+                        for (let i: number = 0; i < datePicker.length; i++) {
+                            if (datePicker[i].children[0].id.indexOf(controlId) !== -1) {
+                                datePickerElement = <HTMLElement>datePicker[i];
+                            }
                         }
+                        datePickerElement.style.display = 'none';
+                        datePickerElement.insertAdjacentElement('afterend', createElement('div', {
+                            id: dateRangeId,
+                            innerHTML: selctorArgs.content, className: 'e-btn e-dropdown-btn',
+                            styles: 'font-family: "Segoe UI"; font-size: 14px; font-weight: 500; text-transform: none '
+                        }));
+                        getElement(dateRangeId).insertAdjacentElement('afterbegin', (createElement('span', {
+                            id: controlId + 'dateIcon', className: 'e-input-group-icon e-range-icon e-btn-icon e-icons',
+                            styles: 'font-size: 16px; min-height: 0px; margin: -3px 0 0 0; outline: none; min-width: 30px'
+                            // fix for date range icon alignment issue.
+                        })));
+                        document.getElementById(dateRangeId).onclick = () => {
+                            this.datePicker.show(<HTMLElement>getElement(dateRangeId));
+                        };
                     }
-                    datePickerElement.style.display = 'none';
-                    datePickerElement.insertAdjacentElement('afterend', createElement('div', {
-                        id: dateRangeId,
-                        innerHTML: selctorArgs.content, className: 'e-btn e-dropdown-btn',
-                        styles: 'font-family: "Segoe UI"; font-size: 14px; font-weight: 500; text-transform: none '
-                    }));
-                    getElement(dateRangeId).insertAdjacentElement('afterbegin', (createElement('span', {
-                        id: controlId + 'dateIcon', className: 'e-input-group-icon e-range-icon e-btn-icon e-icons',
-                        styles: 'font-size: 16px; min-height: 0px; margin: -3px 0 0 0; outline: none; min-width: 30px'
-						// fix for date range icon alignment issue.
-                    })));
-                    document.getElementById(dateRangeId).onclick = () => {
-                        this.datePicker.show(<HTMLElement>getElement(dateRangeId));
-                    };
-                }
-            },
-            change: (args: RangeEventArgs) => {
-                if (this.triggerChange) {
-                    if (this.control.rangeSlider && args.event) {
-                        this.control.rangeSlider.performAnimation(
-                            (args.startDate as Date).getTime(), (args.endDate as Date).getTime(), this.control.rangeNavigatorControl
-                        );
-                    } else if (args.event) {
-                        (this.rootControl as StockChart).rangeChanged((args.startDate as Date).getTime(),
-                                                                      (args.endDate as Date).getTime());
-                    }
-                    this.nodes = this.toolbar.element.querySelectorAll('.e-toolbar-left')[0];
-                    if (!(this.rootControl as StockChart).resizeTo && this.control.rangeSlider && this.control.rangeSlider.isDrag) {
+                },
+                change: (args: RangeEventArgs) => {
+                    if (this.triggerChange) {
+                        if (this.control.rangeSlider && args.event) {
+                            this.control.rangeSlider.performAnimation(
+                                (args.startDate as Date).getTime(), (args.endDate as Date).getTime(), this.control.rangeNavigatorControl
+                            );
+                        } else if (args.event) {
+                            (this.rootControl as StockChart).rangeChanged((args.startDate as Date).getTime(),
+                                                                          (args.endDate as Date).getTime());
+                        }
+                        this.nodes = this.toolbar.element.querySelectorAll('.e-toolbar-left')[0];
+                        if (!(this.rootControl as StockChart).resizeTo && this.control.rangeSlider && this.control.rangeSlider.isDrag) {
                         /**
                          * Issue: While disabling range navigator console error throws
                          * Fix:Check with rangeSlider present or not. Then checked with isDrag.
                          */
-                        for (let i: number = 0, length: number = this.nodes.childNodes.length; i < length; i++) {
-                            (this.nodes.childNodes[i].childNodes[0] as Element).classList.remove('e-active');
-                            (this.nodes.childNodes[i].childNodes[0] as Element).classList.remove('e-active');
+                            for (let i: number = 0, length: number = this.nodes.childNodes.length; i < length; i++) {
+                                (this.nodes.childNodes[i].childNodes[0] as Element).classList.remove('e-active');
+                                (this.nodes.childNodes[i].childNodes[0] as Element).classList.remove('e-active');
+                            }
                         }
                     }
                 }
-            }
-        });
-        this.datePicker.appendTo('#' + this.calendarId);
+            });
+            this.datePicker.appendTo('#' + this.calendarId);
+        }
     }
-}
     private updateCustomElement(): ItemModel[] {
-        let selector: ItemModel[] = [];
-        let controlId: string = this.rootControl.element.id;
-        let buttonStyles: string = 'text-transform: none; text-overflow: unset';
+        const selector: ItemModel[] = [];
+        const controlId: string = this.rootControl.element.id;
+        const buttonStyles: string = 'text-transform: none; text-overflow: unset';
         if (this.rootControl.getModuleName() === 'stockChart') {
             if ((<StockChart>this.rootControl).seriesType.length) {
                 selector.push({ template: createElement('button', { id: controlId + '_seriesType', innerHTML: 'Series',
-                                                                    styles: buttonStyles }),
-                            align: 'Left'});
+                    styles: buttonStyles }),
+                align: 'Left'});
             }
             if ((<StockChart>this.rootControl).indicatorType.length) {
                 selector.push({ template: createElement('button', { id: controlId + '_indicatorType', innerHTML: 'Indicators',
-                                                                    styles: buttonStyles }),
-                            align: 'Left'});
+                    styles: buttonStyles }),
+                align: 'Left'});
             }
             if ((<StockChart>this.rootControl).trendlineType.length) {
                 selector.push({ template: createElement('button', { id: controlId + '_trendType', innerHTML: 'Trendline',
-                                                                    styles: buttonStyles }),
-                            align: 'Left'});
+                    styles: buttonStyles }),
+                align: 'Left'});
             }
         }
         return selector;
     }
     /**
      * To set and deselect the acrive style
+     *
      * @param buttons
+     * @param selectedIndex
+     * @returns {void}
      */
+
     private setSelectedStyle(selectedIndex: number): void {
         if (this.control.disableRangeSelector || this.rootControl.getModuleName() === 'stockChart') {
             for (let i: number = 0, length: number = this.nodes.childNodes.length; i < length; i++) {
@@ -257,15 +280,20 @@ export class PeriodSelector {
 
     /**
      * Button click handling
+     *
+     * @param args
+     * @param control
+     * @param args
+     * @param control
      */
+
     private buttonClick(args: ClickEventArgs, control: IPeriodSelectorControl): void {
-        let toolBarItems: ItemModel[] = this.toolbar.items;
-        let clickedEle: ItemModel = args.item;
-        let slider: RangeSlider = this.control.rangeSlider;
+        const clickedEle: ItemModel = args.item;
+        const slider: RangeSlider = this.control.rangeSlider;
+        const buttons: PeriodsModel[] = this.control.periods;
+        const button: PeriodsModel = <PeriodsModel>buttons.filter((btn: PeriodsModel) => (btn.text === clickedEle.text));
         let updatedStart: number;
         let updatedEnd: number;
-        let buttons: PeriodsModel[] = this.control.periods;
-        let button: PeriodsModel = <PeriodsModel>buttons.filter((btn: PeriodsModel) => (btn.text === clickedEle.text));
         buttons.map((period: PeriodsModel, index: number) => {
             if (period.text === args.item.text) {
                 this.selectedIndex = (this.nodes.childNodes.length - buttons.length) + index;
@@ -310,59 +338,66 @@ export class PeriodSelector {
         }
 
         if (getElement(this.calendarId + '_popup') && !Browser.isDevice) {
-            let element: HTMLElement = getElement(this.calendarId + '_popup') as HTMLElement;
+            const element: HTMLElement = getElement(this.calendarId + '_popup') as HTMLElement;
             (element.querySelectorAll('.e-range-header')[0] as HTMLElement).style.display = 'none';
         }
     }
+
     /**
      *
      * @param type updatedRange for selector
      * @param end
      * @param interval
      */
+
     public changedRange(type: RangeIntervalType, end: number, interval: number): Date {
-        let result: Date = new Date(end);
+        const result: Date = new Date(end);
         switch (type) {
-            case 'Quarter':
-                result.setMonth(result.getMonth() - (3 * interval));
-                break;
-            case 'Months':
-                result.setMonth(result.getMonth() - interval);
-                break;
-            case 'Weeks':
-                result.setDate(result.getDate() - (interval * 7));
-                break;
-            case 'Days':
-                result.setDate(result.getDate() - interval);
-                break;
-            case 'Hours':
-                result.setHours(result.getHours() - interval);
-                break;
-            case 'Minutes':
-                result.setMinutes(result.getMinutes() - interval);
-                break;
-            case 'Seconds':
-                result.setSeconds(result.getSeconds() - interval);
-                break;
-            default:
-                result.setFullYear(result.getFullYear() - interval);
-                break;
+        case 'Quarter':
+            result.setMonth(result.getMonth() - (3 * interval));
+            break;
+        case 'Months':
+            result.setMonth(result.getMonth() - interval);
+            break;
+        case 'Weeks':
+            result.setDate(result.getDate() - (interval * 7));
+            break;
+        case 'Days':
+            result.setDate(result.getDate() - interval);
+            break;
+        case 'Hours':
+            result.setHours(result.getHours() - interval);
+            break;
+        case 'Minutes':
+            result.setMinutes(result.getMinutes() - interval);
+            break;
+        case 'Seconds':
+            result.setSeconds(result.getSeconds() - interval);
+            break;
+        default:
+            result.setFullYear(result.getFullYear() - interval);
+            break;
         }
         return result;
-    };
+    }
 
     /**
      * Get module name
+     *
+     * @returns {string}
      */
+
     protected getModuleName(): string {
         return 'PeriodSelector';
     }
 
     /**
      * To destroy the period selector.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
+
     public destroy(): void {
         /**
          * destroy method

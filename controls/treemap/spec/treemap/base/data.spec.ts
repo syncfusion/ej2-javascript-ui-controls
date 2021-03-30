@@ -1,7 +1,7 @@
 /**
  * Sports data
  */
-/* tslint:disable */
+/* eslint-disable */
 export let Metals: Object[] = [
     { valuePath: "Swimming" ,legendVisibility: true, fill: "#DEB887", Sport: "Swimming", Gold: 16, GameImage: 'Swimming.svg', ItemHeight: "180px", ItemWidth: '180px' },
     { valuePath: "Swimming" ,legendVisibility: false, fill: "#5F9EA0", Sport: "Athletics", Gold: 13, GameImage: 'Athletics.svg', ItemHeight: "70px", ItemWidth: '70px' },
@@ -304,7 +304,7 @@ export let hierarchicalData: Object[] = [
 /**
  * Metals Data 
  */
-//tslint:disable
+/* eslint-disable */
 export let Country_Population = [
     { Country: "China", Population: 1388232693 },
 
@@ -759,7 +759,7 @@ export let Airport_Count: Object[] = [
 /**
  * drill down sample
  */
-//tslint:disable
+/* eslint-disable */
 export let DrillDown: Object[] = [
     { Continent:[
        { Name: "Africa",Population: 1216130000, States: [

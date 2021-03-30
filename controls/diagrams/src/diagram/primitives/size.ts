@@ -5,12 +5,14 @@ export class Size {
 
     /**
      * Sets the height of an object
+     *
      * @default 0
      */
     public height: number;
 
     /**
      * Sets the width of an object
+     *
      * @default 0
      */
     public width: number;
@@ -20,7 +22,15 @@ export class Size {
         this.height = height;
     }
 
-    /**   @private  */
+
+
+    /**
+     * isEmpty method \
+     *
+     * @returns { boolean } isEmpty method .\
+     *
+     * @private
+     */
     public isEmpty(): boolean {
         return this.height === 0 && this.width === 0;
     }
@@ -42,7 +52,16 @@ export class Size {
     //     size.height = Math.max(size.height, this.height);
     // }
 
-    /**   @private  */
+
+
+
+    /**
+     * clone method \
+     *
+     * @returns { Size } clone method .\
+     *
+     * @private
+     */
     public clone(): Size {
         return new Size(this.width, this.height);
     }

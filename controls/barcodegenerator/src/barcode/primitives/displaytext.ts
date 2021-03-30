@@ -9,6 +9,7 @@ import { Alignment, TextPosition } from '../enum/enum';
 export class DisplayText extends ChildProperty<DisplayText> {
     /**
      * Sets the textual description of the barcode.
+     *
      * @default ''
      */
     @Property('')
@@ -16,6 +17,7 @@ export class DisplayText extends ChildProperty<DisplayText> {
 
     /**
      * Defines the visibility of the text.
+     *
      * @default true
      */
     @Property(true)
@@ -23,6 +25,7 @@ export class DisplayText extends ChildProperty<DisplayText> {
 
     /**
      * Defines the font style of the text
+     *
      * @default 'monospace'
      */
     @Property('monospace')
@@ -30,6 +33,7 @@ export class DisplayText extends ChildProperty<DisplayText> {
 
     /**
      * Defines the size of the text.
+     *
      * @default 20
      */
     @Property(20)
@@ -37,6 +41,7 @@ export class DisplayText extends ChildProperty<DisplayText> {
 
     /**
      * Sets the space to be left between the text and its barcode.
+     *
      * @default ''
      */
     @Complex<MarginModel>({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
@@ -47,6 +52,7 @@ export class DisplayText extends ChildProperty<DisplayText> {
      * * Left - Aligns the text at the left
      * * Right - Aligns the text at the Right
      * * Center - Aligns the text at the Center
+     *
      * @default 'Center'
      */
     @Property('Center')
@@ -56,6 +62,7 @@ export class DisplayText extends ChildProperty<DisplayText> {
      * Defines the position of the text.
      * * Bottom - Position the text at the Bottom
      * * Top - Position the text at the Top
+     *
      * @default 'Bottom'
      */
     @Property('Bottom')

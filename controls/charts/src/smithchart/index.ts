@@ -1,6 +1,3 @@
-/**
- * 
- */
 export * from './smithchart';
 export * from './smithchart-model';
 export * from './axis/axis';

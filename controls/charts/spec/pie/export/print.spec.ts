@@ -12,7 +12,7 @@ import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { Export } from '../../../src/chart/print-export/export';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 AccumulationChart.Inject(AccumulationAnnotation, AccumulationDataLabel, AccumulationLegend, Export);
-//tslint:disable
+/* eslint-disable */
 describe('Chart Control', () => {
     beforeAll(() => {
         const isDef = (o: any) => o !== undefined && o !== null;

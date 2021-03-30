@@ -5,9 +5,9 @@ import { IHtmlSubCommands } from './../base/interface';
 import { IHtmlKeyboardEvent } from './../../editor-manager/base/interface';
 import { KeyboardEventArgs } from '@syncfusion/ej2-base';
 import * as EVENTS from './../../common/constant';
-
 /**
  * Clear Format EXEC internal component
+ * 
  * @hidden
  * @deprecated
  */
@@ -15,10 +15,13 @@ export class ClearFormatExec {
     private parent: EditorManager;
     /**
      * Constructor for creating the Formats plugin
+     *
+     * @param {EditorManager} parent - specifies the parent element.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
-    constructor(parent: EditorManager) {
+    public constructor(parent: EditorManager) {
         this.parent = parent;
         this.addEventListener();
     }
@@ -28,10 +31,10 @@ export class ClearFormatExec {
     }
     private onKeyDown(e: IHtmlKeyboardEvent): void {
         switch ((e.event as KeyboardEventArgs).action) {
-            case 'clear-format':
-                this.applyClear({ subCommand: 'ClearFormat', callBack: e.callBack });
-                e.event.preventDefault();
-                break;
+        case 'clear-format':
+            this.applyClear({ subCommand: 'ClearFormat', callBack: e.callBack });
+            e.event.preventDefault();
+            break;
         }
     }
     private applyClear(e: IHtmlSubCommands): void {

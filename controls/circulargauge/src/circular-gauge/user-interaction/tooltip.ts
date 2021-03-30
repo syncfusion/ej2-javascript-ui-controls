@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { CircularGauge } from '../circular-gauge';
 import { Axis, Pointer, Range, Annotation } from '../axes/axis';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
@@ -34,8 +35,11 @@ export class GaugeTooltip {
     private annotationTargetElement: HTMLElement;
     /**
      * Constructor for Tooltip module.
+     *
+     * @param {CircularGauge} gauge - Specifies the instance of the gauge.
      * @private.
      */
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(gauge: CircularGauge) {
         this.gauge = gauge;
         this.tooltipId = this.gauge.element.id + '_CircularGauge_Tooltip';
@@ -45,12 +49,10 @@ export class GaugeTooltip {
         this.addEventListener();
     }
 
+    // eslint-disable-next-line valid-jsdoc
     /**
      * Method to render the tooltip for circular gauge.
      */
-    /* tslint:disable:no-string-literal */
-    /* tslint:disable:max-func-body-length */
-    /* tslint:disable */
     public renderTooltip(e: PointerEvent): void {
         this.gaugeId = this.gauge.element.getAttribute('id');
         let pageX: number; let pageY: number; let target: Element; let touchArg: TouchEvent;
@@ -71,32 +73,33 @@ export class GaugeTooltip {
             if (this.pointerEle !== null) {
                 samePointerEle = (this.pointerEle === target);
             }
-            let svgRect: ClientRect = this.gauge.svgObject.getBoundingClientRect();
-            let elementRect: ClientRect = this.gauge.element.getBoundingClientRect();
-            let axisRect: ClientRect = document.getElementById(this.gauge.element.id + '_AxesCollection').getBoundingClientRect();
-            let rect: Rect = new Rect(
+            const svgRect: ClientRect = this.gauge.svgObject.getBoundingClientRect();
+            const elementRect: ClientRect = this.gauge.element.getBoundingClientRect();
+            const axisRect: ClientRect = document.getElementById(this.gauge.element.id + '_AxesCollection').getBoundingClientRect();
+            const rect: Rect = new Rect(
                 Math.abs(elementRect.left - svgRect.left),
                 Math.abs(elementRect.top - svgRect.top),
                 svgRect.width, svgRect.height
             );
-            let currentPointer: IVisiblePointer = getPointer(target.id, this.gauge);
+            const currentPointer: IVisiblePointer = getPointer(target.id, this.gauge);
             this.currentAxis = <Axis>this.gauge.axes[currentPointer.axisIndex];
             this.currentPointer = <Pointer>(this.currentAxis.pointers)[currentPointer.pointerIndex];
-            let angle: number = getAngleFromValue(
+            const angle: number = getAngleFromValue(
                 this.currentPointer.currentValue, this.currentAxis.visibleRange.max, this.currentAxis.visibleRange.min,
                 this.currentAxis.startAngle, this.currentAxis.endAngle, this.currentAxis.direction === 'ClockWise'
             ) % 360;
-            let tooltipFormat: string = this.gauge.tooltip.format || this.currentAxis.labelStyle.format;
-            let customLabelFormat: boolean = tooltipFormat && tooltipFormat.match('{value}') !== null;
-            let format: Function = this.gauge.intl.getNumberFormat({
+            const tooltipFormat: string = this.gauge.tooltip.format || this.currentAxis.labelStyle.format;
+            const customLabelFormat: boolean = tooltipFormat && tooltipFormat.match('{value}') !== null;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const format: any = this.gauge.intl.getNumberFormat({
                 format: getLabelFormat(tooltipFormat), useGrouping: this.gauge.useGroupingSeparator
             });
             this.tooltipElement();
             if (this.tooltipEle.childElementCount !== 0 && !this.gauge.enablePointerDrag && !this.gauge.tooltip.showAtMousePosition) {
                 return null;
             }
-            let roundValue: number = this.roundedValue(this.currentPointer.currentValue);
-            let pointerContent: string = customLabelFormat ?
+            const roundValue: number = this.roundedValue(this.currentPointer.currentValue);
+            const pointerContent: string = customLabelFormat ?
                 tooltipFormat.replace(new RegExp('{value}', 'g'), format(roundValue)) :
                 format(roundValue);
             location = getLocationFromAngle(angle, this.currentAxis.currentRadius, this.gauge.midPoint);
@@ -111,14 +114,15 @@ export class GaugeTooltip {
                     tooltipArgs;
                 tooltipArgs = { name, cancel, content, location, tooltip, event, appendInBodyTag, type };
             }
-            let pointerTooltip: Function = (tooltipArgs: ITooltipRenderEventArgs) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const pointerTooltip: any = (tooltipArgs: ITooltipRenderEventArgs) => {
                 let template: string = tooltipArgs.tooltip.template;
                 if (template !== null && template.length === 1) {
                     template = template[template[0]];
                 }
                 if (!tooltipArgs.tooltip.showAtMousePosition) {
                     if (template) {
-                        let elementSize: Size = getElementSize(template, this.gauge, this.tooltipEle);
+                        const elementSize: Size = getElementSize(template, this.gauge, this.tooltipEle);
                         this.tooltipRect = Math.abs(axisRect.left - svgRect.left) > elementSize.width ?
                             this.findPosition(rect, angle, pointerContent, tooltipArgs.location) : rect;
                     } else {
@@ -144,39 +148,41 @@ export class GaugeTooltip {
                 }
             };
             this.gauge.trigger(tooltipRender, tooltipArgs, pointerTooltip);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.gauge as any).renderReactTemplates();
         } else if ((this.tooltip.type.indexOf('Range') > -1) && (target.id.indexOf('_Range_') >= 0) && (!this.gauge.isDrag) &&
                    (target.id.indexOf(this.gaugeId) >= 0)) {
-            let rangeSvgRect: ClientRect = this.gauge.svgObject.getBoundingClientRect();
-            let rangeElementRect: ClientRect = this.gauge.element.getBoundingClientRect();
-            let rangeAxisRect: ClientRect = document.getElementById(this.gauge.element.id + '_AxesCollection').getBoundingClientRect();
-            let rect: Rect = new Rect(
+            const rangeSvgRect: ClientRect = this.gauge.svgObject.getBoundingClientRect();
+            const rangeElementRect: ClientRect = this.gauge.element.getBoundingClientRect();
+            const rangeAxisRect: ClientRect = document.getElementById(this.gauge.element.id + '_AxesCollection').getBoundingClientRect();
+            const rect: Rect = new Rect(
                 Math.abs(rangeElementRect.left - rangeSvgRect.left),
                 Math.abs(rangeElementRect.top - rangeSvgRect.top),
                 rangeSvgRect.width, rangeSvgRect.height
             );
-            let currentRange: IVisiblePointer = getPointer(target.id, this.gauge);
+            const currentRange: IVisiblePointer = getPointer(target.id, this.gauge);
             this.currentAxis = <Axis>this.gauge.axes[currentRange.axisIndex];
             this.currentRange = <Range>(this.currentAxis.ranges)[currentRange.pointerIndex];
-            let rangeAngle: number = getAngleFromValue(
+            const rangeAngle: number = getAngleFromValue(
                 (this.currentRange.end - Math.abs((this.currentRange.end - this.currentRange.start) / 2 ) ),
                 this.currentAxis.visibleRange.max, this.currentAxis.visibleRange.min,
                 this.currentAxis.startAngle, this.currentAxis.endAngle, this.currentAxis.direction === 'ClockWise'
             ) % 360;
-            let rangeTooltipFormat: string = this.gauge.tooltip.rangeSettings.format || this.currentAxis.labelStyle.format;
-            let customLabelFormat: boolean = rangeTooltipFormat && ( rangeTooltipFormat.match('{end}') !== null ||
+            const rangeTooltipFormat: string = this.gauge.tooltip.rangeSettings.format || this.currentAxis.labelStyle.format;
+            const customLabelFormat: boolean = rangeTooltipFormat && ( rangeTooltipFormat.match('{end}') !== null ||
             rangeTooltipFormat.match('{start}') !== null );
-            let rangeFormat: Function = this.gauge.intl.getNumberFormat({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const rangeFormat: any = this.gauge.intl.getNumberFormat({
                 format: getLabelFormat(rangeTooltipFormat), useGrouping: this.gauge.useGroupingSeparator
             });
             this.tooltipElement();
-            let roundStartValue: number = this.roundedValue(this.currentRange.start);
-            let roundEndValue: number = this.roundedValue(this.currentRange.end);
-            let startData: string = (this.currentRange.start).toString();
-            let endData: string = (this.currentRange.end).toString();
-            let rangeContent: string = customLabelFormat ?
-            rangeTooltipFormat.replace(/{start}/g, startData).replace(/{end}/g, endData) :
-            'Start : ' + rangeFormat(roundStartValue) + '<br>' + 'End : ' + rangeFormat(roundEndValue);
+            const roundStartValue: number = this.roundedValue(this.currentRange.start);
+            const roundEndValue: number = this.roundedValue(this.currentRange.end);
+            const startData: string = (this.currentRange.start).toString();
+            const endData: string = (this.currentRange.end).toString();
+            const rangeContent: string = customLabelFormat ?
+                rangeTooltipFormat.replace(/{start}/g, startData).replace(/{end}/g, endData) :
+                'Start : ' + rangeFormat(roundStartValue) + '<br>' + 'End : ' + rangeFormat(roundEndValue);
             location = getLocationFromAngle(
                 rangeAngle, this.currentRange.currentRadius, this.gauge.midPoint
             );
@@ -192,7 +198,8 @@ export class GaugeTooltip {
                     rangeTooltipArgs;
                 rangeTooltipArgs = { name, cancel, content, location, tooltip, event, appendInBodyTag, type };
             }
-            let rangeTooltip: Function = (rangeTooltipArgs: ITooltipRenderEventArgs) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const rangeTooltip: any = (rangeTooltipArgs: ITooltipRenderEventArgs) => {
                 let rangeTemplate: string = rangeTooltipArgs.tooltip.rangeSettings.template;
                 if (rangeTemplate !== null && rangeTemplate.length === 1) {
                     rangeTemplate = rangeTemplate[rangeTemplate[0]];
@@ -203,7 +210,7 @@ export class GaugeTooltip {
                 }
                 if (!this.tooltip.rangeSettings.showAtMousePosition) {
                     if (rangeTemplate) {
-                        let elementSize: Size = getElementSize(rangeTemplate, this.gauge, this.tooltipEle);
+                        const elementSize: Size = getElementSize(rangeTemplate, this.gauge, this.tooltipEle);
                         this.tooltipRect = Math.abs(rangeAxisRect.left - rangeSvgRect.left) > elementSize.width ?
                             this.findPosition(rect, rangeAngle, rangeContent, rangeTooltipArgs.location) : rect;
                     } else {
@@ -220,10 +227,10 @@ export class GaugeTooltip {
                     rangeTooltipArgs.tooltip.rangeSettings.textStyle.fontFamily;
                     rangeTooltipArgs.tooltip.rangeSettings.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity ||
                     rangeTooltipArgs.tooltip.rangeSettings.textStyle.opacity;
-                    this.svgTooltip = this.svgTooltipCreate
-                    (this.svgTooltip, rangeTooltipArgs, rangeTemplate, this.arrowInverted, this.tooltipRect, this.gauge,
-                     rangeTooltipArgs.tooltip.rangeSettings.fill, rangeTooltipArgs.tooltip.rangeSettings.textStyle,
-                     rangeTooltipArgs.tooltip.rangeSettings.border);
+                    this.svgTooltip = this.svgTooltipCreate (this.svgTooltip, rangeTooltipArgs, rangeTemplate, this.arrowInverted,
+                                                             this.tooltipRect, this.gauge, rangeTooltipArgs.tooltip.rangeSettings.fill,
+                                                             rangeTooltipArgs.tooltip.rangeSettings.textStyle,
+                                                             rangeTooltipArgs.tooltip.rangeSettings.border);
                     this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                     this.svgTooltip.appendTo(this.tooltipEle);
                     if (rangeTemplate && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
@@ -232,31 +239,32 @@ export class GaugeTooltip {
                 }
             };
             this.gauge.trigger(tooltipRender, rangeTooltipArgs, rangeTooltip);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.gauge as any).renderReactTemplates();
         } else if ((this.tooltip.type.indexOf('Annotation') > -1) && this.checkParentAnnotationId(target) && ((!this.gauge.isDrag)) &&
                    (this.annotationTargetElement.id.indexOf(this.gaugeId) >= 0)) {
-            let annotationSvgRect: ClientRect = this.gauge.svgObject.getBoundingClientRect();
-            let annotationElementRect: ClientRect = this.gauge.element.getBoundingClientRect();
-            let annotationAxisRect: ClientRect = document.getElementById(this.gauge.element.id + '_AxesCollection').getBoundingClientRect();
-            let rect: Rect = new Rect(
+            const annotationSvgRect: ClientRect = this.gauge.svgObject.getBoundingClientRect();
+            const annotationElementRect: ClientRect = this.gauge.element.getBoundingClientRect();
+            const annotationAxisRect: ClientRect = document.getElementById(this.gauge.element.id + '_AxesCollection').getBoundingClientRect();
+            const rect: Rect = new Rect(
                 Math.abs(annotationElementRect.left - annotationSvgRect.left),
                 Math.abs(annotationElementRect.top - annotationSvgRect.top),
                 annotationSvgRect.width, annotationSvgRect.height
             );
-            let currentAnnotation: IVisiblePointer = getPointer(this.annotationTargetElement.id, this.gauge);
+            const currentAnnotation: IVisiblePointer = getPointer(this.annotationTargetElement.id, this.gauge);
             this.currentAxis = <Axis>this.gauge.axes[currentAnnotation.axisIndex];
             this.currentAnnotation = <Annotation>(this.currentAxis.annotations)[currentAnnotation.pointerIndex];
-            let annotationAngle: number = (this.currentAnnotation.angle - 90);
+            const annotationAngle: number = (this.currentAnnotation.angle - 90);
             this.tooltipElement();
             document.getElementById(this.gauge.element.id + '_Secondary_Element').appendChild(this.tooltipEle);
-            let annotationContent: string = (this.gauge.tooltip.annotationSettings.format !== null) ?
-                                             this.gauge.tooltip.annotationSettings.format : '' ;
+            const annotationContent: string = (this.gauge.tooltip.annotationSettings.format !== null) ?
+                this.gauge.tooltip.annotationSettings.format : '' ;
             location = getLocationFromAngle(
                 annotationAngle, stringToNumber(this.currentAnnotation.radius, this.currentAxis.currentRadius), this.gauge.midPoint
             );
             location.x = (this.tooltip.annotationSettings.template && ((annotationAngle >= 150 && annotationAngle <= 250) ||
             (annotationAngle >= 330 && annotationAngle <= 360) || (annotationAngle >= 0 && annotationAngle <= 45))) ?
-            (location.x + 10) : location.x;
+                (location.x + 10) : location.x;
             let annotationTooltipArgs: ITooltipRenderEventArgs = {
                 name: tooltipRender, cancel: false, content: annotationContent, location: location, axis: this.currentAxis,
                 tooltip: this.tooltip, annotation: this.currentAnnotation, event: e, gauge: this.gauge, appendInBodyTag: false,
@@ -267,12 +275,13 @@ export class GaugeTooltip {
                     annotationTooltipArgs;
                 annotationTooltipArgs = { name, cancel, content, location, tooltip, event, appendInBodyTag, type };
             }
-            let annotationTooltip: Function = (annotationTooltipArgs: ITooltipRenderEventArgs) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const annotationTooltip: any = (annotationTooltipArgs: ITooltipRenderEventArgs) => {
                 let annotationTemplate: string = annotationTooltipArgs.tooltip.annotationSettings.template;
                 if (annotationTemplate !== null && annotationTemplate.length === 1) {
                     annotationTemplate = annotationTemplate[annotationTemplate[0]];
                 }
-                let elementSizeAn: ClientRect = this.annotationTargetElement.getBoundingClientRect();
+                const elementSizeAn: ClientRect = this.annotationTargetElement.getBoundingClientRect();
                 this.tooltipPosition = 'RightTop';
                 this.arrowInverted = true;
                 annotationTooltipArgs.location.x = annotationTooltipArgs.location.x + (elementSizeAn.width / 2);
@@ -285,11 +294,11 @@ export class GaugeTooltip {
                     annotationTooltipArgs.tooltip.textStyle.fontFamily;
                     annotationTooltipArgs.tooltip.annotationSettings.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity ||
                     annotationTooltipArgs.tooltip.textStyle.opacity;
-                    this.svgTooltip = this.svgTooltipCreate
-                                    (this.svgTooltip, annotationTooltipArgs, annotationTemplate, this.arrowInverted, this.tooltipRect,
-                                     this.gauge, annotationTooltipArgs.tooltip.annotationSettings.fill,
-                                     annotationTooltipArgs.tooltip.annotationSettings.textStyle,
-                                     annotationTooltipArgs.tooltip.annotationSettings.border);
+                    this.svgTooltip = this.svgTooltipCreate(this.svgTooltip, annotationTooltipArgs,
+                                                            annotationTemplate, this.arrowInverted, this.tooltipRect,
+                                                            this.gauge, annotationTooltipArgs.tooltip.annotationSettings.fill,
+                                                            annotationTooltipArgs.tooltip.annotationSettings.textStyle,
+                                                            annotationTooltipArgs.tooltip.annotationSettings.border);
                     this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                     this.svgTooltip.appendTo(this.tooltipEle);
                     if (annotationTemplate && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
@@ -298,15 +307,28 @@ export class GaugeTooltip {
                 }
             };
             this.gauge.trigger(tooltipRender, annotationTooltipArgs, annotationTooltip);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.gauge as any).renderReactTemplates();
-        } else { 
-            this.removeTooltip(); 
+        } else {
+            this.removeTooltip();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.gauge as any).clearTemplate();
         }
-    };
+    }
 
     /**
      * Method to create tooltip svg element.
+     *
+     * @param {Tooltip} svgTooltip - Specifies the tooltip element.
+     * @param {ITooltipRenderEventArgs} tooltipArg - Specifies the tooltip arguments.
+     * @param {string} template - Specifies the tooltip template.
+     * @param {boolean} arrowInverted - Specifies the boolean value.
+     * @param {Rect} tooltipRect - Specifies the rect element.
+     * @param {CircularGauge} gauge - Specifies the gauge instance.
+     * @param {string} fill - Spcifies the fill color of the tooltip.
+     * @param {FontModel} textStyle - Spcifies the text style of the tooltip.
+     * @param {BorderModel} border - Specifies the border of the tooltip.
+     * @returns {Tooltip} - Returns the tooltip.
      */
     private svgTooltipCreate(svgTooltip: Tooltip, tooltipArg: ITooltipRenderEventArgs, template: string, arrowInverted: boolean,
                              tooltipRect: Rect, gauge: CircularGauge, fill: string, textStyle: FontModel, border: BorderModel ): Tooltip {
@@ -330,6 +352,8 @@ export class GaugeTooltip {
 
     /**
      * Method to create or modify tolltip element.
+     *
+     * @returns {void}
      */
     private tooltipElement(): void {
         if (document.getElementById(this.tooltipId)) {
@@ -342,10 +366,13 @@ export class GaugeTooltip {
             });
             document.getElementById(this.gauge.element.id + '_Secondary_Element').appendChild(this.tooltipEle);
         }
-    };
+    }
 
     /**
      * Method to get parent annotation element.
+     *
+     * @param {Element} child - Specifies the annotation element.
+     * @returns {boolean} - Returns the boolean value.
      */
     private checkParentAnnotationId(child: Element ): boolean {
         this.annotationTargetElement = child.parentElement;
@@ -357,77 +384,85 @@ export class GaugeTooltip {
             this.annotationTargetElement =  this.annotationTargetElement.parentElement;
         }
         return false;
-   }
+    }
 
     /**
      * Method to apply label rounding places.
+     *
+     * @param {number} currentValue - Specifies the current value.
+     * @returns {number} - Returns the round number.
      */
     private roundedValue(currentValue: number): number {
-        let roundNumber: number;
-        roundNumber = this.currentAxis.roundingPlaces ?
-        parseFloat(currentValue.toFixed(this.currentAxis.roundingPlaces)) :
-        currentValue;
+        const roundNumber: number = this.currentAxis.roundingPlaces ?
+            parseFloat(currentValue.toFixed(this.currentAxis.roundingPlaces)) :
+            currentValue;
         return roundNumber;
     }
 
     /**
      * Method to find the position of the tooltip anchor for circular gauge.
+     *
+     * @param {Rect} rect - Specifies the rect element.
+     * @param {number} angle - Specifies the angle.
+     * @param {string} text - Specifies the text.
+     * @param {GaugeLocation} location - Specifies the location.
+     * @returns {Rect} - Returns the rect element.
      */
     private findPosition(rect: Rect, angle: number, text: string, location: GaugeLocation): Rect {
         let addLeft: number; let addTop: number; let addHeight: number; let addWidth: number;
         switch (true) {
-            case (angle >= 0 && angle < 45):
-                this.arrowInverted = true;
-                addLeft = (angle >= 15 && angle <= 30) ? location.y : 0;
-                this.tooltipRect = new Rect(rect.x, rect.y + addTop, rect.width, rect.height);
-                this.tooltipPosition = 'RightBottom';
-                break;
-            case (angle >= 45 && angle < 90):
-                this.arrowInverted = false;
-                this.tooltipRect = new Rect(rect.x, rect.y + location.y, rect.width, rect.height);
-                this.tooltipPosition = 'BottomRight';
-                break;
-            case (angle >= 90 && angle < 135):
-                this.arrowInverted = false;
-                this.tooltipRect = new Rect(rect.x, rect.y + location.y, rect.width, rect.height);
-                this.tooltipPosition = 'BottomLeft';
-                break;
-            case (angle >= 135 && angle < 180):
-                this.arrowInverted = true;
-                addTop = (angle >= 150 && angle <= 160) ? location.y : 0;
-                this.tooltipRect = new Rect(rect.x - rect.width, rect.y + addTop, rect.width, rect.height);
-                this.tooltipPosition = 'LeftBottom';
-                break;
-            case (angle >= 180 && angle < 225):
-                this.arrowInverted = true;
-                addHeight = (angle >= 200 && angle <= 225) ? Math.abs(rect.y - location.y) : rect.height;
-                this.tooltipRect = new Rect(rect.x - rect.width, rect.y, rect.width, addHeight);
-                this.tooltipPosition = 'LeftTop';
-                break;
-            case (angle >= 225 && angle < 270):
-                this.arrowInverted = false;
-                addWidth = (angle >= 250 && angle <= 290) ? rect.width : Math.abs(rect.x - location.x);
-                this.tooltipRect = new Rect(rect.x, rect.y, addWidth, rect.height);
-                this.tooltipPosition = 'TopLeft';
-                break;
-            case (angle >= 270 && angle < 315):
-                this.arrowInverted = false;
-                addLeft = (angle >= 270 && angle > 290) ? location.x : 0;
-                this.tooltipRect = new Rect(rect.x + addLeft, rect.y, rect.width, rect.height);
-                this.tooltipPosition = 'TopRight';
-                break;
-            case (angle >= 315 && angle <= 360):
-                this.arrowInverted = true;
-                addHeight = (angle >= 315 && angle <= 340) ? Math.abs(rect.y - location.y) : rect.height;
-                this.tooltipRect = new Rect(rect.x, rect.y, rect.width, addHeight);
-                this.tooltipPosition = 'RightTop';
-                break;
+        case (angle >= 0 && angle < 45):
+            this.arrowInverted = true;
+            addLeft = (angle >= 15 && angle <= 30) ? location.y : 0;
+            this.tooltipRect = new Rect(rect.x, rect.y + addTop, rect.width, rect.height);
+            this.tooltipPosition = 'RightBottom';
+            break;
+        case (angle >= 45 && angle < 90):
+            this.arrowInverted = false;
+            this.tooltipRect = new Rect(rect.x, rect.y + location.y, rect.width, rect.height);
+            this.tooltipPosition = 'BottomRight';
+            break;
+        case (angle >= 90 && angle < 135):
+            this.arrowInverted = false;
+            this.tooltipRect = new Rect(rect.x, rect.y + location.y, rect.width, rect.height);
+            this.tooltipPosition = 'BottomLeft';
+            break;
+        case (angle >= 135 && angle < 180):
+            this.arrowInverted = true;
+            addTop = (angle >= 150 && angle <= 160) ? location.y : 0;
+            this.tooltipRect = new Rect(rect.x - rect.width, rect.y + addTop, rect.width, rect.height);
+            this.tooltipPosition = 'LeftBottom';
+            break;
+        case (angle >= 180 && angle < 225):
+            this.arrowInverted = true;
+            addHeight = (angle >= 200 && angle <= 225) ? Math.abs(rect.y - location.y) : rect.height;
+            this.tooltipRect = new Rect(rect.x - rect.width, rect.y, rect.width, addHeight);
+            this.tooltipPosition = 'LeftTop';
+            break;
+        case (angle >= 225 && angle < 270):
+            this.arrowInverted = false;
+            addWidth = (angle >= 250 && angle <= 290) ? rect.width : Math.abs(rect.x - location.x);
+            this.tooltipRect = new Rect(rect.x, rect.y, addWidth, rect.height);
+            this.tooltipPosition = 'TopLeft';
+            break;
+        case (angle >= 270 && angle < 315):
+            this.arrowInverted = false;
+            addLeft = (angle >= 270 && angle > 290) ? location.x : 0;
+            this.tooltipRect = new Rect(rect.x + addLeft, rect.y, rect.width, rect.height);
+            this.tooltipPosition = 'TopRight';
+            break;
+        case (angle >= 315 && angle <= 360):
+            this.arrowInverted = true;
+            addHeight = (angle >= 315 && angle <= 340) ? Math.abs(rect.y - location.y) : rect.height;
+            this.tooltipRect = new Rect(rect.x, rect.y, rect.width, addHeight);
+            this.tooltipPosition = 'RightTop';
+            break;
         }
         return this.tooltipRect;
     }
     public removeTooltip(): void {
         if (document.getElementsByClassName('EJ2-CircularGauge-Tooltip').length > 0) {
-            let tooltip: Element = document.getElementsByClassName('EJ2-CircularGauge-Tooltip')[0];
+            const tooltip: Element = document.getElementsByClassName('EJ2-CircularGauge-Tooltip')[0];
             if (tooltip) {
                 remove(tooltip);
             }
@@ -441,6 +476,7 @@ export class GaugeTooltip {
         this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);
     }
 
+    // eslint-disable-next-line valid-jsdoc
     /**
      * To bind events for tooltip module
      */
@@ -453,6 +489,7 @@ export class GaugeTooltip {
         this.gauge.element.addEventListener('contextmenu', this.removeTooltip);
     }
 
+    // eslint-disable-next-line valid-jsdoc
     /**
      * To unbind events for tooltip module
      */
@@ -466,6 +503,8 @@ export class GaugeTooltip {
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name
      */
     protected getModuleName(): string {
         // Returns te module name
@@ -473,7 +512,9 @@ export class GaugeTooltip {
     }
     /**
      * To destroy the tooltip.
-     * @return {void}
+     *
+     * @param {CircularGauge} gauge - Specifies the instance of the gauge.
+     * @returns {void}
      * @private
      */
     public destroy(gauge: CircularGauge): void {

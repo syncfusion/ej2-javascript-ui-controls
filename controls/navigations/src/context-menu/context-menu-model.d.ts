@@ -8,18 +8,21 @@ export interface ContextMenuModel extends MenuBaseModel{
 
     /**
      * Specifies target element selector in which the ContextMenu should be opened.
-     * @default ''  
+     *
+     * @default ''
      */
     target?: string;
 
     /**
      * Specifies the filter selector for elements inside the target in that the context menu will be opened.
-     * @default ''    
+     *
+     * @default ''
      */
     filter?: string;
 
     /**
      * Specifies menu items with its properties which will be rendered as ContextMenu.
+     *
      * @default []
      * @aspType object
      * @blazorType object

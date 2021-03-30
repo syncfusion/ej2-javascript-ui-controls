@@ -1,4 +1,4 @@
-[![npm](http://ej2.syncfusion.com/github-badges?package=@syncfusion/ej2-grids)](https://www.npmjs.com/package/@syncfusion/ej2-grids)&nbsp;&nbsp;[![coverage](http://ej2.syncfusion.com/badges/ej2-grids/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-grids)
+[![coverage](http://ej2.syncfusion.com/badges/ej2-grids/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-grids)
 
 # ej2-grids
 

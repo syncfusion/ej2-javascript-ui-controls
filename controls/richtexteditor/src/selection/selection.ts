@@ -1,3 +1,4 @@
+
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
@@ -33,16 +34,19 @@ export class NodeSelection {
     }
 
     public getRange(docElement: Document): Range {
-        let select: Selection = this.get(docElement);
-        let range: Range = select && select.rangeCount > 0 ? select.getRangeAt(select.rangeCount - 1) : docElement.createRange();
+        const select: Selection = this.get(docElement);
+        const range: Range = select && select.rangeCount > 0 ? select.getRangeAt(select.rangeCount - 1) : docElement.createRange();
         return (range.startContainer !== docElement || range.endContainer !== docElement
             || range.startOffset || range.endOffset || (range.setStart(docElement.body, 0),
-                range.collapse(!0)),
-            range);
+        range.collapse(!0)),
+        range);
     }
 
     /**
      * get method
+     *
+     * @param {Document} docElement - specifies the get function
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -52,6 +56,10 @@ export class NodeSelection {
 
     /**
      * save method
+     *
+     * @param {Range} range - range value.
+     * @param {Document} docElement - specifies the document.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -62,6 +70,9 @@ export class NodeSelection {
 
     /**
      * getIndex method
+     *
+     * @param {Node} node - specifies the node value.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -73,6 +84,7 @@ export class NodeSelection {
             for (let type: number = node.nodeType; node; null) {
                 index = node.nodeType;
                 num++;
+                //eslint-disable-next-line
                 type = index;
                 node = node.previousSibling;
             }
@@ -111,6 +123,9 @@ export class NodeSelection {
 
     /**
      * getNodeCollection method
+     *
+     * @param {Range} range -specifies the range.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -118,7 +133,7 @@ export class NodeSelection {
 
         let startNode: Node = range.startContainer.childNodes[range.startOffset]
             || range.startContainer;
-        let endNode: Node = range.endContainer.childNodes[
+        const endNode: Node = range.endContainer.childNodes[
             (range.endOffset > 0) ? (range.endOffset - 1) : range.endOffset]
             || range.endContainer;
         if (startNode === endNode && startNode.childNodes.length === 0) {
@@ -127,7 +142,7 @@ export class NodeSelection {
         if (range.startOffset === range.endOffset && range.startOffset !== 0 && range.startContainer.nodeName === 'PRE') {
             return [startNode.nodeName === 'BR' || startNode.nodeName === '#text' ? startNode : startNode.childNodes[0]];
         }
-        let nodeCollection: Node[] = [];
+        const nodeCollection: Node[] = [];
         do {
             if (nodeCollection.indexOf(startNode) === -1) {
                 nodeCollection.push(startNode);
@@ -140,6 +155,9 @@ export class NodeSelection {
 
     /**
      * getParentNodeCollection method
+     *
+     * @param {Range} range - specifies the range value.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -149,6 +167,10 @@ export class NodeSelection {
 
     /**
      * getParentNodes method
+     *
+     * @param {Node[]} nodeCollection - specifies the collection of nodes.
+     * @param {Range} range - specifies the range values.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -170,6 +192,9 @@ export class NodeSelection {
 
     /**
      * getSelectionNodeCollection method
+     *
+     * @param {Range} range - specifies the range value.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -179,6 +204,9 @@ export class NodeSelection {
 
     /**
      * getSelectionNodeCollection along with BR node method
+     *
+     * @param {Range} range - specifies the range value.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -188,12 +216,15 @@ export class NodeSelection {
 
     /**
      * getParentNodes method
+     *
+     * @param {Node[]} nodeCollection - specifies the collection of nodes.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public getSelectionNodes(nodeCollection: Node[]): Node[] {
         nodeCollection = nodeCollection.reverse();
-        let regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
+        const regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
         for (let index: number = 0; index < nodeCollection.length; index++) {
             if (nodeCollection[index].nodeType !== 3 || (nodeCollection[index].textContent.trim() === '' ||
             (nodeCollection[index].textContent.length === 1 && nodeCollection[index].textContent.match(regEx)))) {
@@ -206,12 +237,15 @@ export class NodeSelection {
 
     /**
      * Get selection text nodes with br method.
+     *
+     * @param {Node[]} nodeCollection - specifies the collection of nodes.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public getSelectionNodesBr(nodeCollection: Node[]): Node[] {
         nodeCollection = nodeCollection.reverse();
-        let regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
+        const regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
         for (let index: number = 0; index < nodeCollection.length; index++) {
             if (nodeCollection[index].nodeName !== 'BR' &&
             (nodeCollection[index].nodeType !== 3 || (nodeCollection[index].textContent.trim() === '' ||
@@ -225,6 +259,9 @@ export class NodeSelection {
 
     /**
      * getInsertNodeCollection method
+     *
+     * @param {Range} range - specifies the range value.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -234,6 +271,9 @@ export class NodeSelection {
 
     /**
      * getInsertNodes method
+     *
+     * @param {Node[]} nodeCollection - specifies the collection of nodes.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -253,14 +293,23 @@ export class NodeSelection {
 
     /**
      * getNodeArray method
+     *
+     * @param {Node} node - specifies the node content.
+     * @param {boolean} isStart - specifies the boolean value.
+     * @param {Document} root - specifies the root document.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public getNodeArray(node: Node, isStart: boolean, root?: Document): number[] {
-        let array: number[] = [];
+        const array: number[] = [];
+        // eslint-disable-next-line
         ((isStart) ? (this.startNodeName = []) : (this.endNodeName = []));
         for (; node !== (root ? root : this.rootNode); null) {
-            if (isNullOrUndefined(node)) { break; }
+            if (isNullOrUndefined(node)) {
+                break;
+            }
+            // eslint-disable-next-line
             (isStart) ? this.startNodeName.push(node.nodeName.toLowerCase()) : this.endNodeName.push(node.nodeName.toLowerCase());
             array.push(this.getIndex(node));
             node = node.parentNode;
@@ -271,7 +320,7 @@ export class NodeSelection {
     private setRangePoint(range: Range, isvalid: boolean, num: number[], size: number): Range {
         let node: Node = this.rootNode;
         let index: number = num.length;
-        let constant: number = size;
+        const constant: number = size;
         for (; index--; null) {
             node = node && node.childNodes[num[index]];
         }
@@ -283,6 +332,8 @@ export class NodeSelection {
 
     /**
      * restore method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -301,23 +352,34 @@ export class NodeSelection {
 
     /**
      * setRange method
+     *
+     * @param {Document} docElement - specifies the document.
+     * @param {Range} range - specifies the range.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public setRange(docElement: Document, range: Range): void {
-        let selection: Selection = this.get(docElement);
+        const selection: Selection = this.get(docElement);
         selection.removeAllRanges();
         selection.addRange(range);
     }
 
     /**
      * setSelectionText method
+     *
+     * @param {Document} docElement - specifies the documrent
+     * @param {Node} startNode - specifies the starting node.
+     * @param {Node} endNode - specifies the the end node.
+     * @param {number} startIndex - specifies the starting index.
+     * @param {number} endIndex - specifies the end index.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public setSelectionText(docElement: Document, startNode: Node, endNode: Node, startIndex: number, endIndex: number
     ): void {
-        let range: Range = docElement.createRange();
+        const range: Range = docElement.createRange();
         range.setStart(startNode, startIndex);
         range.setEnd(endNode, endIndex);
         this.setRange(docElement, range);
@@ -325,28 +387,39 @@ export class NodeSelection {
 
     /**
      * setSelectionContents method
+     *
+     * @param {Document} docElement - specifies the document.
+     * @param {Node} element - specifies the node.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public setSelectionContents(docElement: Document, element: Node): void {
-        let range: Range = docElement.createRange();
+        const range: Range = docElement.createRange();
         range.selectNode(element);
         this.setRange(docElement, range);
     }
 
     /**
      * setSelectionNode method
+     *
+     * @param {Document} docElement - specifies the document.
+     * @param {Node} element - specifies the node.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public setSelectionNode(docElement: Document, element: Node): void {
-        let range: Range = docElement.createRange();
+        const range: Range = docElement.createRange();
         range.selectNodeContents(element);
         this.setRange(docElement, range);
     }
 
     /**
      * getSelectedNodes method
+     *
+     * @param {Document} docElement - specifies the document.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -356,6 +429,9 @@ export class NodeSelection {
 
     /**
      * Clear method
+     *
+     * @param {Document} docElement - specifies the document.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -365,6 +441,11 @@ export class NodeSelection {
 
     /**
      * insertParentNode method
+     *
+     * @param {Document} docElement - specifies the document.
+     * @param {Node} newNode - specicfies the new node.
+     * @param {Range} range - specifies the range.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -375,12 +456,17 @@ export class NodeSelection {
 
     /**
      * setCursorPoint method
+     *
+     * @param {Document} docElement - specifies the document.
+     * @param {Element} element - specifies the element.
+     * @param {number} point - specifies the point.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public setCursorPoint(docElement: Document, element: Element, point: number): void {
-        let range: Range = docElement.createRange();
-        let selection: Selection = docElement.defaultView.getSelection();
+        const range: Range = docElement.createRange();
+        const selection: Selection = docElement.defaultView.getSelection();
         range.setStart(element, point);
         range.collapse(true);
         selection.removeAllRanges();

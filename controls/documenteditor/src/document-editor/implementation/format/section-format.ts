@@ -4,8 +4,8 @@ import { WUniqueFormat } from '../../base/unique-format';
 import { WUniqueFormats } from '../../base/unique-formats';
 import { EditorHistory } from '../editor-history/editor-history';
 import { FootEndNoteNumberFormat, FootnoteRestartIndex } from '../../base/types';
-
-/** 
+/* eslint-disable */
+/**
  * @private
  */
 export class WSectionFormat {
@@ -14,121 +14,121 @@ export class WSectionFormat {
     private static uniqueFormatType: number = 10;
     public ownerBase: Object;
 
-    get headerDistance(): number {
+    public get headerDistance(): number {
         return this.getPropertyValue('headerDistance') as number;
     }
-    set headerDistance(value: number) {
+    public set headerDistance(value: number) {
         this.setPropertyValue('headerDistance', value);
     }
-    get footerDistance(): number {
+    public get footerDistance(): number {
         return this.getPropertyValue('footerDistance') as number;
     }
-    set footerDistance(value: number) {
+    public set footerDistance(value: number) {
         this.setPropertyValue('footerDistance', value);
     }
-    get differentFirstPage(): boolean {
+    public get differentFirstPage(): boolean {
         return this.getPropertyValue('differentFirstPage') as boolean;
     }
-    set differentFirstPage(value: boolean) {
+    public set differentFirstPage(value: boolean) {
         this.setPropertyValue('differentFirstPage', value);
     }
-    get differentOddAndEvenPages(): boolean {
+    public get differentOddAndEvenPages(): boolean {
         return this.getPropertyValue('differentOddAndEvenPages') as boolean;
     }
-    set differentOddAndEvenPages(value: boolean) {
+    public set differentOddAndEvenPages(value: boolean) {
         this.setPropertyValue('differentOddAndEvenPages', value);
     }
-    get pageHeight(): number {
+    public get pageHeight(): number {
         return this.getPropertyValue('pageHeight') as number;
     }
-    set pageHeight(value: number) {
+    public set pageHeight(value: number) {
         this.setPropertyValue('pageHeight', value);
     }
-    get rightMargin(): number {
+    public get rightMargin(): number {
         return this.getPropertyValue('rightMargin') as number;
     }
-    set rightMargin(value: number) {
+    public set rightMargin(value: number) {
         this.setPropertyValue('rightMargin', value);
     }
-    get pageWidth(): number {
+    public get pageWidth(): number {
         return this.getPropertyValue('pageWidth') as number;
     }
-    set pageWidth(value: number) {
+    public set pageWidth(value: number) {
         this.setPropertyValue('pageWidth', value);
     }
-    get leftMargin(): number {
+    public get leftMargin(): number {
         return this.getPropertyValue('leftMargin') as number;
     }
-    set leftMargin(value: number) {
+    public set leftMargin(value: number) {
         this.setPropertyValue('leftMargin', value);
     }
-    get bottomMargin(): number {
+    public get bottomMargin(): number {
         return this.getPropertyValue('bottomMargin') as number;
     }
-    set bottomMargin(value: number) {
+    public set bottomMargin(value: number) {
         this.setPropertyValue('bottomMargin', value);
     }
-    get topMargin(): number {
+    public get topMargin(): number {
         return this.getPropertyValue('topMargin') as number;
     }
-    set topMargin(value: number) {
+    public set topMargin(value: number) {
         this.setPropertyValue('topMargin', value);
     }
-    get bidi(): boolean {
+    public get bidi(): boolean {
         return this.getPropertyValue('bidi') as boolean;
     }
-    set bidi(value: boolean) {
+    public set bidi(value: boolean) {
         this.setPropertyValue('bidi', value);
     }
-    get restartPageNumbering(): boolean {
+    public get restartPageNumbering(): boolean {
         return this.getPropertyValue('restartPageNumbering') as boolean;
     }
-    set restartPageNumbering(value: boolean) {
+    public set restartPageNumbering(value: boolean) {
         this.setPropertyValue('restartPageNumbering', value);
     }
-    get pageStartingNumber(): number {
+    public get pageStartingNumber(): number {
         return this.getPropertyValue('pageStartingNumber') as number;
     }
-    set pageStartingNumber(value: number) {
+    public set pageStartingNumber(value: number) {
         this.setPropertyValue('pageStartingNumber', value);
     }
-    get endnoteNumberFormat(): FootEndNoteNumberFormat {
+    public get endnoteNumberFormat(): FootEndNoteNumberFormat {
         return this.getPropertyValue('endnoteNumberFormat') as FootEndNoteNumberFormat;
     }
-    set endnoteNumberFormat(value: FootEndNoteNumberFormat) {
+    public set endnoteNumberFormat(value: FootEndNoteNumberFormat) {
         this.setPropertyValue('endnoteNumberFormat', value);
     }
-    get restartIndexForEndnotes(): FootnoteRestartIndex {
+    public get restartIndexForEndnotes(): FootnoteRestartIndex {
         return this.getPropertyValue('restartIndexForEndnotes') as FootnoteRestartIndex;
     }
-    set restartIndexForEndnotes(value: FootnoteRestartIndex) {
+    public set restartIndexForEndnotes(value: FootnoteRestartIndex) {
         this.setPropertyValue('restartIndexForEndnotes', value);
     }
-    get restartIndexForFootnotes(): FootnoteRestartIndex {
+    public get restartIndexForFootnotes(): FootnoteRestartIndex {
         return this.getPropertyValue('restartIndexForFootnotes') as FootnoteRestartIndex;
     }
-    set restartIndexForFootnotes(value: FootnoteRestartIndex) {
+    public set restartIndexForFootnotes(value: FootnoteRestartIndex) {
         this.setPropertyValue('restartIndexForFootnotes', value);
     }
-    get footNoteNumberFormat(): FootEndNoteNumberFormat {
+    public get footNoteNumberFormat(): FootEndNoteNumberFormat {
         return this.getPropertyValue('footNoteNumberFormat') as FootEndNoteNumberFormat;
     }
-    set footNoteNumberFormat(value: FootEndNoteNumberFormat) {
+    public set footNoteNumberFormat(value: FootEndNoteNumberFormat) {
         this.setPropertyValue('footNoteNumberFormat', value);
     }
-    get initialFootNoteNumber(): number {
+    public get initialFootNoteNumber(): number {
         return this.getPropertyValue('initialFootNoteNumber') as number;
     }
-    set initialFootNoteNumber(value: number) {
+    public set initialFootNoteNumber(value: number) {
         this.setPropertyValue('initialFootNoteNumber', value);
     }
-    get initialEndNoteNumber(): number {
+    public get initialEndNoteNumber(): number {
         return this.getPropertyValue('initialEndNoteNumber') as number;
     }
-    set initialEndNoteNumber(value: number) {
+    public set initialEndNoteNumber(value: number) {
         this.setPropertyValue('initialEndNoteNumber', value);
     }
-    constructor(node?: Object) {
+    public constructor(node?: Object) {
         this.ownerBase = node;
     }
     public destroy(): void {
@@ -139,7 +139,7 @@ export class WSectionFormat {
     }
     private hasValue(property: string): boolean {
         if (!isNullOrUndefined(this.uniqueSectionFormat)) {
-            let propertyType: number = WUniqueFormat.getPropertyType(this.uniqueSectionFormat.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(this.uniqueSectionFormat.uniqueFormatType, property);
             return this.uniqueSectionFormat.propertiesHash.containsKey(propertyType);
         }
         return false;
@@ -216,9 +216,9 @@ export class WSectionFormat {
         return value;
     }
     public getPropertyValue(property: string): Object {
-        let hasValue: boolean = this.hasValue(property);
+        const hasValue: boolean = this.hasValue(property);
         if (hasValue) {
-            let propertyType: number = WUniqueFormat.getPropertyType(WSectionFormat.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(WSectionFormat.uniqueFormatType, property);
             if (!isNullOrUndefined(this.uniqueSectionFormat) && this.uniqueSectionFormat.propertiesHash.containsKey(propertyType)) {
                 return this.uniqueSectionFormat.propertiesHash.get(propertyType);
             }
@@ -232,18 +232,17 @@ export class WSectionFormat {
         if (isNullOrUndefined(this.uniqueSectionFormat)) {
             this.initializeUniqueSectionFormat(property, value);
         } else {
-            let propertyType: number = WUniqueFormat.getPropertyType(this.uniqueSectionFormat.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(this.uniqueSectionFormat.uniqueFormatType, property);
             if (this.uniqueSectionFormat.propertiesHash.containsKey(propertyType) &&
                 this.uniqueSectionFormat.propertiesHash.get(propertyType) === value) {
                 //Do nothing, since no change in property value and return
                 return;
             }
-            // tslint:disable-next-line:max-line-length
             this.uniqueSectionFormat = WSectionFormat.uniqueSectionFormats.updateUniqueFormat(this.uniqueSectionFormat, property, value);
         }
     }
     private initializeUniqueSectionFormat(property: string, propValue: Object): void {
-        let uniqueSectionFormatTemp: Dictionary<number, object> = new Dictionary<number, object>();
+        const uniqueSectionFormatTemp: Dictionary<number, object> = new Dictionary<number, object>();
         this.addUniqueSectionFormat('headerDistance', property, propValue, uniqueSectionFormatTemp);
         this.addUniqueSectionFormat('footerDistance', property, propValue, uniqueSectionFormatTemp);
         this.addUniqueSectionFormat('differentFirstPage', property, propValue, uniqueSectionFormatTemp);
@@ -265,13 +264,12 @@ export class WSectionFormat {
         this.addUniqueSectionFormat('restartIndexForFootnotes', property, propValue, uniqueSectionFormatTemp);
         this.addUniqueSectionFormat('initialFootNoteNumber', property, propValue, uniqueSectionFormatTemp);
         this.addUniqueSectionFormat('initialEndNoteNumber', property, propValue, uniqueSectionFormatTemp);
-        // tslint:disable-next-line:max-line-length
+
         this.uniqueSectionFormat = WSectionFormat.uniqueSectionFormats.addUniqueFormat(uniqueSectionFormatTemp, WSectionFormat.uniqueFormatType);
     }
-    // tslint:disable-next-line:max-line-length
+
     private addUniqueSectionFormat(property: string, modifiedProperty: string, propValue: Object, uniqueSectionFormatTemp: Dictionary<number, object>): void {
-        let propertyType: number;
-        propertyType = WUniqueFormat.getPropertyType(WSectionFormat.uniqueFormatType, property);
+        const propertyType: number = WUniqueFormat.getPropertyType(WSectionFormat.uniqueFormatType, property);
         if (property === modifiedProperty) {
             uniqueSectionFormatTemp.add(propertyType, propValue);
         } else {
@@ -306,7 +304,7 @@ export class WSectionFormat {
         this.uniqueSectionFormat = WSectionFormat.uniqueSectionFormats.addUniqueFormat(hash, WSectionFormat.uniqueFormatType);
     }
     public cloneFormat(): WSectionFormat {
-        let format: WSectionFormat = new WSectionFormat();
+        const format: WSectionFormat = new WSectionFormat();
         format.uniqueSectionFormat = this.uniqueSectionFormat;
         return format;
     }

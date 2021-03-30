@@ -2,6 +2,7 @@ import { Search } from './search';
 import { TextSearchResultInfo, ParagraphInfo } from '../editor/editor-helper';
 import { TextSearchResult } from './text-search-result';
 import { TextPosition } from '../selection/selection-helper';
+import { TextSearchResults } from './text-search-results';
 /**
  * Search Result info
  */
@@ -9,22 +10,28 @@ export class SearchResults {
     private searchModule: Search;
     /**
      * Gets the length of search results.
+     *
      * @aspType int
      * @blazorType int
+     * @returns {number} - Returns search results length.
      */
     public get length(): number {
         return this.searchModule.textSearchResults.length;
     }
     /**
      * Gets the index of current search result.
+     *
      * @aspType int
      * @blazorType int
+     * @returns {number} - Returns current search result index.
      */
     public get index(): number {
         return this.searchModule.textSearchResults.currentIndex;
     }
     /**
      * Set the index of current search result.
+     *
+     * @param {number} value - Specifies the search result index.
      * @aspType int
      * @blazorType int
      */
@@ -33,19 +40,19 @@ export class SearchResults {
             return;
         }
         this.searchModule.textSearchResults.currentIndex = value;
-        this.navigate(value);
+        this.navigate();
     }
-    /**
-     * @private
-     */
-    constructor(search: Search) {
+
+    public constructor(search: Search) {
         this.searchModule = search;
     }
     /**
      * Get start and end offset of searched text results.
+     *
+     * @returns {TextSearchResults[]} - Returns the text search results.
      */
     public getTextSearchResultsOffset(): TextSearchResultInfo[] {
-        let index: TextSearchResultInfo[] = [];
+        const index: TextSearchResultInfo[] = [];
         let searchIndex: TextSearchResultInfo;
         for (let i: number = 0; i < this.searchModule.textSearchResults.innerList.length; i++) {
             searchIndex = this.getOffset(this.searchModule.textSearchResults.innerList[i]);
@@ -54,27 +61,27 @@ export class SearchResults {
         return index;
     }
     private getOffset(innerList: TextSearchResult): TextSearchResultInfo {
-        let start: TextPosition = innerList.start;
-        let end: TextPosition = innerList.end;
+        const start: TextPosition = innerList.start;
+        const end: TextPosition = innerList.end;
         let blockInfo: ParagraphInfo = this.searchModule.documentHelper.owner.selection.getParagraphInfo(start);
-        // tslint:disable-next-line:max-line-length
-        let startIndex: string = this.searchModule.documentHelper.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        // eslint-disable-next-line max-len
+        const startIndex: string = this.searchModule.documentHelper.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         blockInfo = this.searchModule.documentHelper.owner.selection.getParagraphInfo(end);
-        // tslint:disable-next-line:max-line-length
-        let endIndex: string = this.searchModule.documentHelper.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        // eslint-disable-next-line max-len
+        const endIndex: string = this.searchModule.documentHelper.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         return { 'startOffset': startIndex, 'endOffset': endIndex };
     }
 
-    /**
-     * Get the module name.
-     */
+
     private getModuleName(): string {
         return 'SearchResults';
     }
     /**
      * Replace text in current search result.
-     * @param textToReplace text to replace 
+     *
      * @private
+     * @param {string} textToReplace - text to replace
+     * @returns {void}
      */
     public replace(textToReplace: string): void {
         if (this.index === -1) {
@@ -84,7 +91,9 @@ export class SearchResults {
     }
     /**
      * Replace all the instance of search result.
-     * @param textToReplace text to replace 
+     *
+     * @param {string} textToReplace text to replace
+     * @returns {void}
      */
     public replaceAll(textToReplace: string): void {
         if (this.index === -1) {
@@ -94,13 +103,16 @@ export class SearchResults {
     }
     /**
      * @private
+     * @returns {void}
      */
-    public navigate(index: number): void {
+    public navigate(): void {
         this.searchModule.navigate(this.searchModule.textSearchResults.currentSearchResult);
         this.searchModule.highlight(this.searchModule.textSearchResults);
     }
     /**
      * Clears all the instance of search result.
+     *
+     * @returns {void}
      */
     public clear(): void {
         this.searchModule.textSearchResults.clearResults();

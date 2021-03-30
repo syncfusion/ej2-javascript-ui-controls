@@ -220,8 +220,7 @@ export class RowDD {
                     this.removeBorder(trElement);
                 }
             }
-            if (target && target.classList.contains('e-content') && !this.isDropGrid.element.querySelector('.e-emptyrow')
-                && this.istargetGrid) {
+            if (target && target.classList.contains('e-content') && !this.isDropGrid.element.querySelector('.e-emptyrow') && this.istargetGrid) {
                 this.removeBorder(trElement);
                 let rowIndex: number = this.isDropGrid.getCurrentViewRecords().length - 1;
                 let selector: string = '.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse';

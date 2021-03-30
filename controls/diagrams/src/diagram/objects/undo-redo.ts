@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { Diagram } from '../diagram';
 import { DiagramModel } from '../diagram-model';
-import { HistoryEntry, History, } from '../diagram/history';
+import { HistoryEntry, History } from '../diagram/history';
 import { SelectorModel } from '../objects/node-model';
 import { NodeModel, PhaseModel, LaneModel } from '../objects/node-model';
 import { SwimLane, Selector } from '../objects/node';
@@ -38,7 +39,14 @@ export class UndoRedo {
 
     private groupCount: number = 0;
 
-    /** @private */
+    /**
+     * initHistory method \
+     *
+     * @returns { void } initHistory method .\
+     * @param {Diagram} diagram - provide the points value.
+     *
+     * @private
+     */
     public initHistory(diagram: Diagram): void {
         diagram.historyManager = {
             canRedo: false, canUndo: false, currentEntry: null,
@@ -48,12 +56,20 @@ export class UndoRedo {
         };
     }
 
-    /** @private */
+    /**
+     * addHistoryEntry method \
+     *
+     * @returns { void } addHistoryEntry method .\
+     * @param {HistoryEntry} entry - provide the points value.
+     * @param {Diagram} diagram - provide the points value.
+     *
+     * @private
+     */
     public addHistoryEntry(entry: HistoryEntry, diagram: Diagram): void {
         let entryObject: HistoryEntry = null;
         let nextEntry: HistoryEntry = null;
         if (diagram.historyManager.canLog) {
-            let hEntry: HistoryEntry = diagram.historyManager.canLog(entry);
+            const hEntry: HistoryEntry = diagram.historyManager.canLog(entry);
             if (hEntry.cancel === true) {
                 return;
             }
@@ -75,7 +91,7 @@ export class UndoRedo {
         diagram.historyManager.currentEntry = entry;
         if (diagram.historyManager.stackLimit) {
             if (entry.type === 'StartGroup' || entry.type === 'EndGroup') {
-                let value: boolean = entry.type === 'EndGroup' ? true : false;
+                const value: boolean = entry.type === 'EndGroup' ? true : false;
                 this.setEntryLimit(value);
             }
             if (!this.hasGroup && this.groupCount === 0) {
@@ -91,11 +107,21 @@ export class UndoRedo {
         diagram.historyManager.canRedo = false;
     }
 
-    /** @private */
+    /**
+     * applyLimit method \
+     *
+     * @returns { void } applyLimit method .\
+     * @param {HistoryEntry} list - provide the list value.
+     * @param {number} stackLimit - provide the list value.
+     * @param {Diagram} diagram - provide the list value.
+     * @param {boolean} limitHistory - provide the list value.
+     *
+     * @private
+     */
     public applyLimit(list: HistoryEntry, stackLimit: number, diagram: Diagram, limitHistory?: boolean): void {
         if (list && list.previous) {
             if (list.type === 'StartGroup' || list.type === 'EndGroup') {
-                let value: boolean = list.type === 'StartGroup' ? true : false;
+                const value: boolean = list.type === 'StartGroup' ? true : false;
                 this.setEntryLimit(value);
             }
             if (!this.hasGroup && this.groupCount === 0) {
@@ -116,9 +142,16 @@ export class UndoRedo {
         this.groupCount = 0;
     }
 
-    /** @private */
+    /**
+     * clearHistory method \
+     *
+     * @returns { void } clearHistory method .\
+     * @param {Diagram} diagram - provide the points value.
+     *
+     * @private
+     */
     public clearHistory(diagram: Diagram): void {
-        let hList: History = diagram.historyManager;
+        const hList: History = diagram.historyManager;
         hList.currentEntry = undefined;
         hList.canUndo = false;
         hList.canRedo = false;
@@ -129,7 +162,9 @@ export class UndoRedo {
     }
 
     private setEntryLimit(value: boolean): void {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         value ? this.groupCount-- : this.groupCount++;
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         value ? this.hasGroup = !value : this.hasGroup = value;
     }
 
@@ -151,9 +186,16 @@ export class UndoRedo {
             }
         }
     }
-    /** @private */
+    /**
+     * undo method \
+     *
+     * @returns { void } undo method .\
+     * @param {Diagram} diagram - provide the diagram value.
+     *
+     * @private
+     */
     public undo(diagram: Diagram): void {
-        let entry: HistoryEntry = this.getUndoEntry(diagram);
+        const entry: HistoryEntry = this.getUndoEntry(diagram);
         let endGroupActionCount: number = 0;
         if (entry) {
             if (entry.category === 'Internal') {
@@ -190,38 +232,38 @@ export class UndoRedo {
         object: NodeModel | ConnectorModel | SelectorModel | DiagramModel | ShapeAnnotation | PathAnnotation | PointPortModel,
         prop: HistoryEntryType):
         HistoryChangeEventObject {
-        let value: HistoryChangeEventObject = {};
+        const value: HistoryChangeEventObject = {};
         switch (prop) {
-            case 'Node':
-                value.node = object as Node;
-                break;
-            case 'Connector':
-                value.connector = object as Connector;
-                break;
-            case 'Selector':
-                value.selector = object as Selector;
-                break;
-            case 'Diagram':
-                value.diagram = object as Diagram;
-                break;
-            case 'ShapeAnnotation':
-                value.shapeAnnotation = object as ShapeAnnotation;
-                break;
-            case 'PathAnnotation':
-                value.pathAnnotation = object as PathAnnotation;
-                break;
-            case 'PortObject':
-                value.pointPortModel = object as PortModel;
-                break;
-            case 'Object':
-                value.object = object;
+        case 'Node':
+            value.node = object as Node;
+            break;
+        case 'Connector':
+            value.connector = object as Connector;
+            break;
+        case 'Selector':
+            value.selector = object as Selector;
+            break;
+        case 'Diagram':
+            value.diagram = object as Diagram;
+            break;
+        case 'ShapeAnnotation':
+            value.shapeAnnotation = object as ShapeAnnotation;
+            break;
+        case 'PathAnnotation':
+            value.pathAnnotation = object as PathAnnotation;
+            break;
+        case 'PortObject':
+            value.pointPortModel = object as PortModel;
+            break;
+        case 'Object':
+            value.object = object;
         }
         return value;
     }
 
     private getHistoryList(diagram: Diagram): void {
-        let undoStack: HistoryEntry[] = [];
-        let redoStack: HistoryEntry[] = [];
+        const undoStack: HistoryEntry[] = [];
+        const redoStack: HistoryEntry[] = [];
         let currEntry: HistoryEntry = diagram.historyManager.currentEntry;
         let undoObj: HistoryEntry;
         let redoObj: HistoryEntry;
@@ -281,7 +323,7 @@ export class UndoRedo {
         }
         if (entry.type !== 'StartGroup' && entry.type !== 'EndGroup') {
             if (diagram.historyManager.undoStack.length > 0) {
-                let addObject: HistoryEntry[] = diagram.historyManager.undoStack.splice(0, 1);
+                const addObject: HistoryEntry[] = diagram.historyManager.undoStack.splice(0, 1);
                 diagram.historyManager.redoStack.splice(0, 0, addObject[0]);
                 nodeObject = (entry.undoObject) as SelectorModel;
             }
@@ -291,81 +333,81 @@ export class UndoRedo {
             diagram.blazorActions &= ~BlazorAction.GroupingInProgress;
         }
         switch (entry.type) {
-            case 'PositionChanged':
-            case 'Align':
-            case 'Distribute':
-                this.recordPositionChanged(obj, diagram);
-                break;
-            case 'SizeChanged':
-            case 'Sizing':
-                this.recordSizeChanged(obj, diagram, entry); break;
-            case 'RotationChanged':
-                this.recordRotationChanged(obj, diagram, entry); break;
-            case 'ConnectionChanged':
-                this.recordConnectionChanged(obj, diagram); break;
-            case 'PropertyChanged':
-                this.recordPropertyChanged(entry, diagram, false); break;
-            case 'CollectionChanged':
-                if (entry && entry.next && entry.next.type === 'AddChildToGroupNode' && entry.next.changeType === 'Insert') {
-                    let group: NodeModel = diagram.getObject((entry.next.undoObject as NodeModel).id);
-                    diagram.insertValue(cloneObject(group), true);
-                }
-                entry.isUndo = true; this.recordCollectionChanged(entry, diagram); entry.isUndo = false;
-                if (entry && entry.next && entry.next.type === 'AddChildToGroupNode' && entry.next.changeType === 'Insert') {
-                    let group: NodeModel = diagram.getObject((entry.next.undoObject as NodeModel).id);
-                    group.wrapper.measure(new Size()); group.wrapper.arrange(group.wrapper.desiredSize);
-                    diagram.updateDiagramObject(group);
-                }
-                break;
-            case 'LabelCollectionChanged':
-                entry.isUndo = true; this.recordLabelCollectionChanged(entry, diagram); entry.isUndo = false; break;
-            case 'PortCollectionChanged':
-                entry.isUndo = true; this.recordPortCollectionChanged(entry, diagram); entry.isUndo = false; break;
-            case 'Group':
-                this.unGroup(entry, diagram); break;
-            case 'UnGroup':
-                this.group(entry, diagram); break;
-            case 'SegmentChanged':
-                this.recordSegmentChanged(obj, diagram); break;
-            case 'PortPositionChanged':
-                this.recordPortChanged(entry, diagram, false); break;
-            case 'AnnotationPropertyChanged':
-                this.recordAnnotationChanged(entry, diagram, false); break;
-            case 'ChildCollectionChanged':
-                this.recordChildCollectionChanged(entry, diagram, false); break;
-            case 'StackChildPositionChanged':
-                this.recordStackPositionChanged(entry, diagram, false); break;
-            case 'RowHeightChanged':
-                this.recordGridSizeChanged(entry, diagram, false, true);
-                break;
-            case 'ColumnWidthChanged':
-                this.recordGridSizeChanged(entry, diagram, false, false);
-                break;
-            case 'LanePositionChanged':
-                this.recordLanePositionChanged(entry, diagram, false);
-                break;
-            case 'LaneCollectionChanged':
-            case 'PhaseCollectionChanged':
-                entry.isUndo = true;
-                this.recordLaneOrPhaseCollectionChanged(entry, diagram, false);
-                entry.isUndo = false;
-                break;
-            case 'SendToBack':
-            case 'SendForward':
-            case 'SendBackward':
-            case 'BringToFront':
-                this.recordOrderCommandChanged(entry, diagram, false);
-                break;
-            case 'AddChildToGroupNode':
-                this.recordAddChildToGroupNode(entry, diagram, false);
-                break;
+        case 'PositionChanged':
+        case 'Align':
+        case 'Distribute':
+            this.recordPositionChanged(obj, diagram);
+            break;
+        case 'SizeChanged':
+        case 'Sizing':
+            this.recordSizeChanged(obj, diagram, entry); break;
+        case 'RotationChanged':
+            this.recordRotationChanged(obj, diagram, entry); break;
+        case 'ConnectionChanged':
+            this.recordConnectionChanged(obj, diagram); break;
+        case 'PropertyChanged':
+            this.recordPropertyChanged(entry, diagram, false); break;
+        case 'CollectionChanged':
+            if (entry && entry.next && entry.next.type === 'AddChildToGroupNode' && entry.next.changeType === 'Insert') {
+                const group: NodeModel = diagram.getObject((entry.next.undoObject as NodeModel).id);
+                diagram.insertValue(cloneObject(group), true);
+            }
+            entry.isUndo = true; this.recordCollectionChanged(entry, diagram); entry.isUndo = false;
+            if (entry && entry.next && entry.next.type === 'AddChildToGroupNode' && entry.next.changeType === 'Insert') {
+                const group: NodeModel = diagram.getObject((entry.next.undoObject as NodeModel).id);
+                group.wrapper.measure(new Size()); group.wrapper.arrange(group.wrapper.desiredSize);
+                diagram.updateDiagramObject(group);
+            }
+            break;
+        case 'LabelCollectionChanged':
+            entry.isUndo = true; this.recordLabelCollectionChanged(entry, diagram); entry.isUndo = false; break;
+        case 'PortCollectionChanged':
+            entry.isUndo = true; this.recordPortCollectionChanged(entry, diagram); entry.isUndo = false; break;
+        case 'Group':
+            this.unGroup(entry, diagram); break;
+        case 'UnGroup':
+            this.group(entry, diagram); break;
+        case 'SegmentChanged':
+            this.recordSegmentChanged(obj, diagram); break;
+        case 'PortPositionChanged':
+            this.recordPortChanged(entry, diagram, false); break;
+        case 'AnnotationPropertyChanged':
+            this.recordAnnotationChanged(entry, diagram, false); break;
+        case 'ChildCollectionChanged':
+            this.recordChildCollectionChanged(entry, diagram, false); break;
+        case 'StackChildPositionChanged':
+            this.recordStackPositionChanged(entry, diagram, false); break;
+        case 'RowHeightChanged':
+            this.recordGridSizeChanged(entry, diagram, false, true);
+            break;
+        case 'ColumnWidthChanged':
+            this.recordGridSizeChanged(entry, diagram, false, false);
+            break;
+        case 'LanePositionChanged':
+            this.recordLanePositionChanged(entry, diagram, false);
+            break;
+        case 'LaneCollectionChanged':
+        case 'PhaseCollectionChanged':
+            entry.isUndo = true;
+            this.recordLaneOrPhaseCollectionChanged(entry, diagram, false);
+            entry.isUndo = false;
+            break;
+        case 'SendToBack':
+        case 'SendForward':
+        case 'SendBackward':
+        case 'BringToFront':
+            this.recordOrderCommandChanged(entry, diagram, false);
+            break;
+        case 'AddChildToGroupNode':
+            this.recordAddChildToGroupNode(entry, diagram, false);
+            break;
         }
         diagram.diagramActions &= ~DiagramAction.UndoRedo;
         diagram.protectPropertyChange(false); diagram.historyChangeTrigger(entry, 'Undo');
         if (nodeObject) {
-            let object: NodeModel | ConnectorModel = this.checkNodeObject(nodeObject, diagram);
+            const object: NodeModel | ConnectorModel = this.checkNodeObject(nodeObject, diagram);
             if (object) {
-                let getnodeDefaults: Function = getFunction(diagram.updateSelection);
+                const getnodeDefaults: Function = getFunction(diagram.updateSelection);
                 if (getnodeDefaults) { getnodeDefaults(object, diagram); }
             }
         }
@@ -376,17 +418,17 @@ export class UndoRedo {
         if (!(value as Node).id) {
             if (((value as SelectorModel).nodes && (value as SelectorModel).nodes.length > 0) ||
                 ((value as SelectorModel).connectors && (value as SelectorModel).connectors.length > 0)) {
-                let undoNode: NodeModel[] | ConnectorModel[] = (value as SelectorModel).nodes.length > 0 ?
+                const undoNode: NodeModel[] | ConnectorModel[] = (value as SelectorModel).nodes.length > 0 ?
                     (value as SelectorModel).nodes : (value as SelectorModel).connectors;
                 for (object of undoNode) {
                     object = diagram.nameTable[object.id];
                 }
             } else {
-                let knownNode: NodeModel[] | ConnectorModel[] = (value as SelectorModel).nodes ?
+                const knownNode: NodeModel[] | ConnectorModel[] = (value as SelectorModel).nodes ?
                     (value as SelectorModel).nodes : (value as SelectorModel).connectors;
                 if (knownNode) {
-                    for (let key of Object.keys(knownNode)) {
-                        let index: number = Number(key);
+                    for (const key of Object.keys(knownNode)) {
+                        const index: number = Number(key);
                         object = (value as SelectorModel).nodes ? diagram.nodes[index] as Node : diagram.connectors[index];
                     }
                 }
@@ -402,9 +444,9 @@ export class UndoRedo {
     }
 
     private unGroup(entry: HistoryEntry, diagram: Diagram): void {
-        let i: number = 0;
+        //const i: number = 0;
         entry.redoObject = cloneObject(entry.undoObject);
-        let node: NodeModel = entry.undoObject as Node;
+        const node: NodeModel = entry.undoObject as Node;
         diagram.commandHandler.unGroup(node);
     }
 
@@ -416,7 +458,7 @@ export class UndoRedo {
     }
 
     private getProperty(collection: Object, property: Object): void {
-        for (let key of Object.keys(property)) {
+        for (const key of Object.keys(property)) {
             if (!this.ignoreProperty(key)) {
                 if (property[key] instanceof Object) {
                     this.getProperty(collection[key] as Object, property[key] as Object);
@@ -427,9 +469,10 @@ export class UndoRedo {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private recordLaneOrPhaseCollectionChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
-        let node: NodeModel = entry.redoObject as NodeModel;
-        let obj: LaneModel | PhaseModel = entry.undoObject as LaneModel | PhaseModel;
+        const node: NodeModel = entry.redoObject as NodeModel;
+        const obj: LaneModel | PhaseModel = entry.undoObject as LaneModel | PhaseModel;
         let changeType: string;
         if (entry.isUndo) {
             if (entry.changeType === 'Insert') {
@@ -444,11 +487,11 @@ export class UndoRedo {
             diagram.remove(node);
         } else {
             if ((node as Node).isPhase) {
-                let swimlane: NodeModel = diagram.nameTable[(node as Node).parentId];
+                const swimlane: NodeModel = diagram.nameTable[(node as Node).parentId];
                 diagram.addPhases(swimlane, [obj]);
             } else {
-                let swimlane: NodeModel = diagram.nameTable[(node as Node).parentId];
-                let laneIndex: number = findLaneIndex(swimlane, node);
+                const swimlane: NodeModel = diagram.nameTable[(node as Node).parentId];
+                const laneIndex: number = findLaneIndex(swimlane, node);
                 diagram.addLanes(swimlane, [obj], laneIndex);
             }
         }
@@ -456,16 +499,16 @@ export class UndoRedo {
     }
 
     private recordAnnotationChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
-        let entryObject: NodeModel | ConnectorModel = ((isRedo) ? entry.redoObject : entry.undoObject) as NodeModel | ConnectorModel;
+        const entryObject: NodeModel | ConnectorModel = ((isRedo) ? entry.redoObject : entry.undoObject) as NodeModel | ConnectorModel;
         if (diagram.canEnableBlazorObject) {
-            let node: object = cloneObject(diagram.nameTable[entryObject.id]);
+            const node: object = cloneObject(diagram.nameTable[entryObject.id]);
             diagram.insertValue(node, node instanceof Node ? true : false);
         }
-        let oldElement: ShapeAnnotation | PathAnnotation = findAnnotation(
+        const oldElement: ShapeAnnotation | PathAnnotation = findAnnotation(
             entryObject, entry.objectId) as ShapeAnnotation | PathAnnotation;
-        let undoChanges: Object = diagram.commandHandler.getAnnotationChanges(diagram.nameTable[entryObject.id], oldElement);
-        let currentObject: NodeModel | ConnectorModel = diagram.nameTable[entryObject.id];
-        let currentElement: ShapeAnnotation | PathAnnotation = findAnnotation(
+        const undoChanges: Object = diagram.commandHandler.getAnnotationChanges(diagram.nameTable[entryObject.id], oldElement);
+        const currentObject: NodeModel | ConnectorModel = diagram.nameTable[entryObject.id];
+        const currentElement: ShapeAnnotation | PathAnnotation = findAnnotation(
             currentObject, entry.objectId) as ShapeAnnotation | PathAnnotation;
         currentElement.offset = oldElement.offset; currentElement.margin = oldElement.margin;
         currentElement.width = oldElement.width;
@@ -479,9 +522,9 @@ export class UndoRedo {
     }
 
     private recordChildCollectionChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
-        let entryObject: NodeModel | ConnectorModel = ((isRedo) ? entry.redoObject : entry.undoObject) as NodeModel | ConnectorModel;
+        const entryObject: NodeModel | ConnectorModel = ((isRedo) ? entry.redoObject : entry.undoObject) as NodeModel | ConnectorModel;
         let parentNode: NodeModel = diagram.nameTable[(entryObject as Node).parentId];
-        let actualObject: Node = diagram.nameTable[(entryObject as Node).id];
+        const actualObject: Node = diagram.nameTable[(entryObject as Node).id];
         if (parentNode) {
             addChildToContainer(diagram, parentNode, actualObject, !isRedo, entry.historyAction === 'AddNodeToLane');
         } else {
@@ -502,9 +545,9 @@ export class UndoRedo {
     }
 
     private recordStackPositionChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
-        let entryObject: StackEntryObject = ((isRedo) ? entry.redoObject : entry.undoObject) as StackEntryObject;
+        const entryObject: StackEntryObject = ((isRedo) ? entry.redoObject : entry.undoObject) as StackEntryObject;
         if (entryObject.source) {
-            let parent: Node = diagram.nameTable[(entryObject.source as Node).parentId];
+            const parent: Node = diagram.nameTable[(entryObject.source as Node).parentId];
             if (parent) {
                 if (entryObject.target) {
                     parent.wrapper.children.splice(entryObject.targetIndex, 1);
@@ -534,16 +577,16 @@ export class UndoRedo {
     }
 
     private recordGridSizeChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean, isRow: boolean): void {
-        let obj: Node = (isRedo) ? entry.redoObject as Node : entry.undoObject as Node;
-        let node: Node = (!isRedo) ? entry.redoObject as Node : entry.undoObject as Node;
+        const obj: Node = (isRedo) ? entry.redoObject as Node : entry.undoObject as Node;
+        const node: Node = (!isRedo) ? entry.redoObject as Node : entry.undoObject as Node;
         if (obj.parentId) {
-            let swimlane: NodeModel = diagram.nameTable[obj.parentId];
-            let actualObject: NodeModel = diagram.nameTable[obj.id];
-            let x: number = swimlane.wrapper.bounds.x;
-            let y: number = swimlane.wrapper.bounds.y;
+            const swimlane: NodeModel = diagram.nameTable[obj.parentId];
+            const actualObject: NodeModel = diagram.nameTable[obj.id];
+            const x: number = swimlane.wrapper.bounds.x;
+            const y: number = swimlane.wrapper.bounds.y;
             if (swimlane.shape.type === 'SwimLane') {
-                let grid: GridPanel = swimlane.wrapper.children[0] as GridPanel;
-                let padding: number = (swimlane.shape as SwimLane).padding;
+                const grid: GridPanel = swimlane.wrapper.children[0] as GridPanel;
+                const padding: number = (swimlane.shape as SwimLane).padding;
                 updateSwimLaneObject(diagram, node, swimlane, obj);
                 if (isRow) {
                     grid.updateRowHeight(obj.rowIndex, obj.wrapper.actualSize.height, true, padding);
@@ -556,8 +599,8 @@ export class UndoRedo {
                     }
                 }
                 swimLaneMeasureAndArrange(swimlane);
-                let tx: number = x - swimlane.wrapper.bounds.x;
-                let ty: number = y - swimlane.wrapper.bounds.y;
+                const tx: number = x - swimlane.wrapper.bounds.x;
+                const ty: number = y - swimlane.wrapper.bounds.y;
                 diagram.drag(swimlane, tx, ty);
                 diagram.clearSelection();
                 diagram.updateDiagramObject(swimlane);
@@ -567,9 +610,9 @@ export class UndoRedo {
     }
 
     private recordLanePositionChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
-        let entryObject: StackEntryObject = ((isRedo) ? entry.redoObject : entry.undoObject) as StackEntryObject;
+        const entryObject: StackEntryObject = ((isRedo) ? entry.redoObject : entry.undoObject) as StackEntryObject;
         if (entryObject.source) {
-            let parent: Node = diagram.nameTable[(entryObject.source as Node).parentId];
+            const parent: Node = diagram.nameTable[(entryObject.source as Node).parentId];
             if (parent && parent.shape.type === 'SwimLane') {
                 laneInterChanged(diagram, entryObject.target, entryObject.source);
                 diagram.clearSelection();
@@ -579,16 +622,16 @@ export class UndoRedo {
 
     private recordPortChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
 
-        let entryObject: NodeModel = ((isRedo) ? (entry.redoObject as SelectorModel).nodes[0] :
+        const entryObject: NodeModel = ((isRedo) ? (entry.redoObject as SelectorModel).nodes[0] :
             (entry.undoObject as SelectorModel).nodes[0]);
         if (diagram.canEnableBlazorObject) {
-            let node: object = cloneObject(diagram.nameTable[entryObject.id]);
+            const node: object = cloneObject(diagram.nameTable[entryObject.id]);
             diagram.insertValue(node, true);
         }
-        let oldElement: PointPort = findPort(entryObject, entry.objectId) as PointPort;
-        let undoChanges: Object = diagram.commandHandler.getPortChanges(diagram.nameTable[entryObject.id], oldElement);
-        let currentObject: NodeModel | ConnectorModel = diagram.nameTable[entryObject.id];
-        let currentElement: PointPort = findPort(currentObject, entry.objectId) as PointPort;
+        const oldElement: PointPort = findPort(entryObject, entry.objectId) as PointPort;
+        const undoChanges: Object = diagram.commandHandler.getPortChanges(diagram.nameTable[entryObject.id], oldElement);
+        const currentObject: NodeModel | ConnectorModel = diagram.nameTable[entryObject.id];
+        const currentElement: PointPort = findPort(currentObject, entry.objectId) as PointPort;
         currentElement.offset = oldElement.offset;
         diagram.nodePropertyChange(currentObject as Node, {} as Node, undoChanges as Node);
         if ((currentObject as Node).parentId) {
@@ -597,51 +640,52 @@ export class UndoRedo {
     }
 
     private recordPropertyChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
-        let redoObject: DiagramModel = entry.redoObject as DiagramModel;
-        let undoObject: DiagramModel = entry.undoObject as DiagramModel;
+        const redoObject: DiagramModel = entry.redoObject as DiagramModel;
+        const undoObject: DiagramModel = entry.undoObject as DiagramModel;
         if (isBlazor()) {
-            for (let prop of Object.keys(undoObject)) {
+            for (const prop of Object.keys(undoObject)) {
                 let obj: object;
                 switch (prop) {
-                    case 'nodes':
-                        for (let key of Object.keys(undoObject.nodes)) {
-                            if (diagram.canEnableBlazorObject) {
-                                obj = cloneObject(diagram.nodes[Number(key)]);
-                                diagram.insertValue(obj, true);
-                            }
+                case 'nodes':
+                    for (const key of Object.keys(undoObject.nodes)) {
+                        if (diagram.canEnableBlazorObject) {
+                            obj = cloneObject(diagram.nodes[Number(key)]);
+                            diagram.insertValue(obj, true);
                         }
-                        break;
-                    case 'connectors':
-                        for (let key of Object.keys(undoObject.connectors)) {
-                            if (diagram.canEnableBlazorObject) {
-                                obj = cloneObject(diagram.connectors[Number(key)]);
-                                diagram.insertValue(obj, false);
-                            }
+                    }
+                    break;
+                case 'connectors':
+                    for (const key of Object.keys(undoObject.connectors)) {
+                        if (diagram.canEnableBlazorObject) {
+                            obj = cloneObject(diagram.connectors[Number(key)]);
+                            diagram.insertValue(obj, false);
                         }
-                        break;
+                    }
+                    break;
                 }
             }
         }
         this.getProperty(diagram as Object, (isRedo ? redoObject : undoObject) as Object);
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         isRedo ? diagram.onPropertyChanged(redoObject, undoObject) : diagram.onPropertyChanged(undoObject, redoObject);
         diagram.diagramActions = diagram.diagramActions | DiagramAction.UndoRedo;
     }
     private recordOrderCommandChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
-        let redoObject: Selector = entry.redoObject as Selector;
-        let undoObject: Selector = entry.undoObject as Selector;
+        const redoObject: Selector = entry.redoObject as Selector;
+        const undoObject: Selector = entry.undoObject as Selector;
         diagram.commandHandler.orderCommands(isRedo, (isRedo ? redoObject : undoObject), entry.type);
         diagram.diagramActions = diagram.diagramActions | DiagramAction.UndoRedo;
     }
     private recordAddChildToGroupNode(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
-        let group: Node = diagram.nameTable[(entry.undoObject as NodeModel).id];
-        let child: Node = diagram.nameTable[entry.objectId];
+        const group: Node = diagram.nameTable[(entry.undoObject as NodeModel).id];
+        const child: Node = diagram.nameTable[entry.objectId];
         if (isRedo && entry.changeType === 'Insert') {
             diagram.addChildToGroup(group, child.id);
         }
     }
     private recordSegmentChanged(obj: SelectorModel, diagram: Diagram): void {
         let i: number = 0;
-        let node: NodeModel;
+        //let node: NodeModel;
         let connector: ConnectorModel;
 
         if (obj.connectors && obj.connectors.length > 0) {
@@ -652,7 +696,7 @@ export class UndoRedo {
         }
     }
     private segmentChanged(connector: ConnectorModel, diagram: Diagram): void {
-        let conn: ConnectorModel = diagram.nameTable[connector.id];
+        const conn: ConnectorModel = diagram.nameTable[connector.id];
         conn.segments = connector.segments;
         diagram.commandHandler.updateEndPoint(conn as Connector);
     }
@@ -676,7 +720,7 @@ export class UndoRedo {
     }
 
     private positionChanged(obj: NodeModel, diagram: Diagram): void {
-        let node: NodeModel = diagram.nameTable[obj.id];
+        const node: NodeModel = diagram.nameTable[obj.id];
         if ((obj as Node).processId && !(node as Node).processId) {
             diagram.addProcess(obj as Node, (obj as Node).processId);
         }
@@ -684,19 +728,19 @@ export class UndoRedo {
             diagram.removeProcess(obj.id);
         }
         if ((node as Node).processId) {
-            let tx: number = (obj as NodeModel).margin.left - node.margin.left;
-            let ty: number = (obj as NodeModel).margin.top - node.margin.top;
+            const tx: number = (obj as NodeModel).margin.left - node.margin.left;
+            const ty: number = (obj as NodeModel).margin.top - node.margin.top;
             diagram.drag(node, tx, ty);
         } else {
             if ((node as Node).parentId) {
-                let parent: Node = diagram.nameTable[(node as Node).parentId];
+                const parent: Node = diagram.nameTable[(node as Node).parentId];
                 if (parent.isLane) {
                     obj.wrapper.offsetX = (obj.width / 2) + (parent.wrapper.bounds.x + obj.margin.left);
                     obj.wrapper.offsetY = (obj.height / 2) + (parent.wrapper.bounds.y + obj.margin.top);
                 }
             }
-            let tx: number = (obj as NodeModel).wrapper.offsetX - node.offsetX;
-            let ty: number = (obj as NodeModel).wrapper.offsetY - node.offsetY;
+            const tx: number = (obj as NodeModel).wrapper.offsetX - node.offsetX;
+            const ty: number = (obj as NodeModel).wrapper.offsetY - node.offsetY;
             diagram.drag(node, tx, ty);
         }
         if (diagram.bpmnModule) {
@@ -712,10 +756,10 @@ export class UndoRedo {
             for (i = 0; i < obj.nodes.length; i++) {
                 node = obj.nodes[i];
                 if (node.children && !node.container) {
-                    let elements: (NodeModel | ConnectorModel)[] = [];
-                    let nodes: (NodeModel | ConnectorModel)[] = diagram.commandHandler.getAllDescendants(node, elements);
+                    const elements: (NodeModel | ConnectorModel)[] = [];
+                    const nodes: (NodeModel | ConnectorModel)[] = diagram.commandHandler.getAllDescendants(node, elements);
                     for (let i: number = 0; i < nodes.length; i++) {
-                        let tempNode: NodeModel | ConnectorModel = entry.childTable[nodes[i].id];
+                        const tempNode: NodeModel | ConnectorModel = entry.childTable[nodes[i].id];
                         if ((getObjectType(tempNode) === Node)) {
                             this.sizeChanged(tempNode, diagram, entry);
                             this.positionChanged(tempNode as NodeModel, diagram);
@@ -730,7 +774,7 @@ export class UndoRedo {
             }
         }
         if (obj && obj.connectors && obj.connectors.length > 0) {
-            let connectors: ConnectorModel[] = obj.connectors;
+            const connectors: ConnectorModel[] = obj.connectors;
             for (i = 0; i < connectors.length; i++) {
                 connector = connectors[i];
                 this.connectionChanged(connector, diagram);
@@ -739,9 +783,9 @@ export class UndoRedo {
     }
 
     private sizeChanged(obj: NodeModel | ConnectorModel, diagram: Diagram, entry?: HistoryEntry): void {
-        let node: NodeModel | ConnectorModel = diagram.nameTable[obj.id];
-        let scaleWidth: number = obj.wrapper.actualSize.width / node.wrapper.actualSize.width;
-        let scaleHeight: number = obj.wrapper.actualSize.height / node.wrapper.actualSize.height;
+        const node: NodeModel | ConnectorModel = diagram.nameTable[obj.id];
+        const scaleWidth: number = obj.wrapper.actualSize.width / node.wrapper.actualSize.width;
+        const scaleHeight: number = obj.wrapper.actualSize.height / node.wrapper.actualSize.height;
         if (entry && entry.childTable) {
             entry.childTable[obj.id] = cloneObject(node);
         }
@@ -751,11 +795,12 @@ export class UndoRedo {
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private recordRotationChanged(obj: SelectorModel, diagram: Diagram, entry: HistoryEntry): void {
         let i: number = 0;
         let node: NodeModel;
         let connector: ConnectorModel;
-        let selectorObj: SelectorModel = diagram.selectedItems;
+        const selectorObj: SelectorModel = diagram.selectedItems;
         selectorObj.rotateAngle = obj.rotateAngle;
         if (selectorObj && selectorObj.wrapper) {
             selectorObj.wrapper.rotateAngle = obj.rotateAngle;
@@ -776,13 +821,13 @@ export class UndoRedo {
     }
 
     private rotationChanged(obj: NodeModel, diagram: Diagram): void {
-        let node: NodeModel = diagram.nameTable[obj.id];
+        const node: NodeModel = diagram.nameTable[obj.id];
         diagram.rotate(node, obj.rotateAngle - node.rotateAngle);
     }
 
     private recordConnectionChanged(obj: SelectorModel, diagram: Diagram):
-        void {
-        let connector: ConnectorModel = (obj as SelectorModel).connectors[0];
+    void {
+        const connector: ConnectorModel = (obj as SelectorModel).connectors[0];
         if (connector.sourceID && diagram.nameTable[connector.sourceID]) {
             diagram.insertValue(diagram.nameTable[connector.sourceID], true);
         }
@@ -793,7 +838,7 @@ export class UndoRedo {
     }
 
     private connectionChanged(obj: ConnectorModel, diagram: Diagram, entry?: HistoryEntry): void {
-        let connector: ConnectorModel = diagram.nameTable[obj.id];
+        const connector: ConnectorModel = diagram.nameTable[obj.id];
         let node: Node;
         if (obj.sourcePortID !== connector.sourcePortID) {
             diagram.removePortEdges(diagram.nameTable[connector.sourceID], connector.sourcePortID, connector.id, false);
@@ -832,13 +877,13 @@ export class UndoRedo {
         if (entry && entry.childTable) {
             entry.childTable[obj.id] = cloneObject(connector);
         }
-        let sx: number = obj.sourcePoint.x - connector.sourcePoint.x;
-        let sy: number = obj.sourcePoint.y - connector.sourcePoint.y;
+        const sx: number = obj.sourcePoint.x - connector.sourcePoint.x;
+        const sy: number = obj.sourcePoint.y - connector.sourcePoint.y;
         if (sx !== 0 || sy !== 0) {
             diagram.dragSourceEnd(connector, sx, sy);
         }
-        let tx: number = obj.targetPoint.x - connector.targetPoint.x;
-        let ty: number = obj.targetPoint.y - connector.targetPoint.y;
+        const tx: number = obj.targetPoint.x - connector.targetPoint.x;
+        const ty: number = obj.targetPoint.y - connector.targetPoint.y;
         if (tx !== 0 || ty !== 0) {
             diagram.dragTargetEnd(connector, tx, ty);
         }
@@ -849,7 +894,7 @@ export class UndoRedo {
     }
 
     private recordCollectionChanged(entry: HistoryEntry, diagram: Diagram): void {
-        let obj: NodeModel | ConnectorModel = entry.undoObject as NodeModel | ConnectorModel;
+        const obj: NodeModel | ConnectorModel = entry.undoObject as NodeModel | ConnectorModel;
         if (entry && entry.changeType) {
             let changeType: string;
             if (entry.isUndo) {
@@ -871,7 +916,7 @@ export class UndoRedo {
             } else {
                 diagram.clearSelectorLayer();
                 if ((obj as Node | Connector).parentId) {
-                    let parentNode: NodeModel = diagram.nameTable[(obj as Node | Connector).parentId];
+                    const parentNode: NodeModel = diagram.nameTable[(obj as Node | Connector).parentId];
                     if (parentNode) {
                         diagram.addChild(parentNode, obj);
                     } else {
@@ -901,9 +946,9 @@ export class UndoRedo {
 
 
     private recordLabelCollectionChanged(entry: HistoryEntry, diagram: Diagram): void {
-        let label: ShapeAnnotationModel | PathAnnotationModel = entry.undoObject as ShapeAnnotationModel | PathAnnotationModel;
-        let obj: Node | Connector = entry.redoObject as Node | Connector;
-        let node: Node | Connector = diagram.nameTable[obj.id];
+        const label: ShapeAnnotationModel | PathAnnotationModel = entry.undoObject as ShapeAnnotationModel | PathAnnotationModel;
+        const obj: Node | Connector = entry.redoObject as Node | Connector;
+        const node: Node | Connector = diagram.nameTable[obj.id];
         if (entry && entry.changeType) {
             let changeType: string;
             if (entry.isUndo) {
@@ -925,9 +970,9 @@ export class UndoRedo {
     }
 
     private recordPortCollectionChanged(entry: HistoryEntry, diagram: Diagram): void {
-        let port: PointPortModel = entry.undoObject as PointPortModel;
-        let obj: Node | Connector = entry.redoObject as Node | Connector;
-        let node: NodeModel = diagram.nameTable[obj.id];
+        const port: PointPortModel = entry.undoObject as PointPortModel;
+        const obj: Node | Connector = entry.redoObject as Node | Connector;
+        const node: NodeModel = diagram.nameTable[obj.id];
         if (entry && entry.changeType) {
             let changeType: string;
             if (entry.isUndo) {
@@ -947,9 +992,16 @@ export class UndoRedo {
             }
         }
     }
-    /** @private */
+    /**
+     * redo method \
+     *
+     * @returns { void } redo method .\
+     * @param {Diagram} diagram - provide the diagram value.
+     *
+     * @private
+     */
     public redo(diagram: Diagram): void {
-        let entry: HistoryEntry = this.getRedoEntry(diagram);
+        const entry: HistoryEntry = this.getRedoEntry(diagram);
         let startGroupActionCount: number = 0;
         if (entry) {
             if (entry.category === 'Internal') {
@@ -1004,7 +1056,7 @@ export class UndoRedo {
         diagram.diagramActions |= DiagramAction.UndoRedo;
         if (historyEntry.type !== 'StartGroup' && historyEntry.type !== 'EndGroup') {
             if (diagram.historyManager.redoStack.length > 0) {
-                let addObject: HistoryEntry[] = diagram.historyManager.redoStack.splice(0, 1);
+                const addObject: HistoryEntry[] = diagram.historyManager.redoStack.splice(0, 1);
                 diagram.historyManager.undoStack.splice(0, 0, addObject[0]);
                 redovalue = (historyEntry.redoObject) as SelectorModel;
             }
@@ -1014,81 +1066,81 @@ export class UndoRedo {
             diagram.blazorActions &= ~BlazorAction.GroupingInProgress;
         }
         switch (historyEntry.type) {
-            case 'PositionChanged':
-            case 'Align':
-            case 'Distribute':
-                this.recordPositionChanged(redoObject, diagram);
-                break;
-            case 'SizeChanged':
-            case 'Sizing':
-                this.recordSizeChanged(redoObject, diagram, historyEntry);
-                break;
-            case 'RotationChanged':
-                this.recordRotationChanged(redoObject, diagram, historyEntry);
-                break;
-            case 'ConnectionChanged':
-                this.recordConnectionChanged(redoObject, diagram);
-                break;
-            case 'PropertyChanged':
-                this.recordPropertyChanged(historyEntry, diagram, true);
-                break;
-            case 'CollectionChanged':
-                this.recordCollectionChanged(historyEntry, diagram);
-                break;
-            case 'LabelCollectionChanged':
-                this.recordLabelCollectionChanged(historyEntry, diagram);
-                break;
-            case 'PortCollectionChanged':
-                this.recordPortCollectionChanged(historyEntry, diagram);
-                break;
-            case 'Group':
-                this.group(historyEntry, diagram);
-                break;
-            case 'UnGroup':
-                this.unGroup(historyEntry, diagram);
-                break;
-            case 'SegmentChanged':
-                this.recordSegmentChanged(redoObject, diagram);
-                break;
-            case 'PortPositionChanged':
-                this.recordPortChanged(historyEntry, diagram, true);
-                break;
-            case 'AnnotationPropertyChanged':
-                this.recordAnnotationChanged(historyEntry, diagram, true);
-                break;
-            case 'ChildCollectionChanged':
-                this.recordChildCollectionChanged(historyEntry, diagram, true);
-                break;
-            case 'StackChildPositionChanged':
-                this.recordStackPositionChanged(historyEntry, diagram, true);
-                break;
-            case 'RowHeightChanged':
-                this.recordGridSizeChanged(historyEntry, diagram, true, true);
-                break;
-            case 'ColumnWidthChanged':
-                this.recordGridSizeChanged(historyEntry, diagram, true, false);
-                break;
-            case 'LanePositionChanged':
-                this.recordLanePositionChanged(historyEntry, diagram, true);
-                break;
-            case 'LaneCollectionChanged':
-            case 'PhaseCollectionChanged':
-                this.recordLaneOrPhaseCollectionChanged(historyEntry, diagram, true); break;
-            case 'SendToBack':
-            case 'SendForward':
-            case 'SendBackward':
-            case 'BringToFront':
-                this.recordOrderCommandChanged(historyEntry, diagram, true); break;
-            case 'AddChildToGroupNode':
-                this.recordAddChildToGroupNode(historyEntry, diagram, true); break;
+        case 'PositionChanged':
+        case 'Align':
+        case 'Distribute':
+            this.recordPositionChanged(redoObject, diagram);
+            break;
+        case 'SizeChanged':
+        case 'Sizing':
+            this.recordSizeChanged(redoObject, diagram, historyEntry);
+            break;
+        case 'RotationChanged':
+            this.recordRotationChanged(redoObject, diagram, historyEntry);
+            break;
+        case 'ConnectionChanged':
+            this.recordConnectionChanged(redoObject, diagram);
+            break;
+        case 'PropertyChanged':
+            this.recordPropertyChanged(historyEntry, diagram, true);
+            break;
+        case 'CollectionChanged':
+            this.recordCollectionChanged(historyEntry, diagram);
+            break;
+        case 'LabelCollectionChanged':
+            this.recordLabelCollectionChanged(historyEntry, diagram);
+            break;
+        case 'PortCollectionChanged':
+            this.recordPortCollectionChanged(historyEntry, diagram);
+            break;
+        case 'Group':
+            this.group(historyEntry, diagram);
+            break;
+        case 'UnGroup':
+            this.unGroup(historyEntry, diagram);
+            break;
+        case 'SegmentChanged':
+            this.recordSegmentChanged(redoObject, diagram);
+            break;
+        case 'PortPositionChanged':
+            this.recordPortChanged(historyEntry, diagram, true);
+            break;
+        case 'AnnotationPropertyChanged':
+            this.recordAnnotationChanged(historyEntry, diagram, true);
+            break;
+        case 'ChildCollectionChanged':
+            this.recordChildCollectionChanged(historyEntry, diagram, true);
+            break;
+        case 'StackChildPositionChanged':
+            this.recordStackPositionChanged(historyEntry, diagram, true);
+            break;
+        case 'RowHeightChanged':
+            this.recordGridSizeChanged(historyEntry, diagram, true, true);
+            break;
+        case 'ColumnWidthChanged':
+            this.recordGridSizeChanged(historyEntry, diagram, true, false);
+            break;
+        case 'LanePositionChanged':
+            this.recordLanePositionChanged(historyEntry, diagram, true);
+            break;
+        case 'LaneCollectionChanged':
+        case 'PhaseCollectionChanged':
+            this.recordLaneOrPhaseCollectionChanged(historyEntry, diagram, true); break;
+        case 'SendToBack':
+        case 'SendForward':
+        case 'SendBackward':
+        case 'BringToFront':
+            this.recordOrderCommandChanged(historyEntry, diagram, true); break;
+        case 'AddChildToGroupNode':
+            this.recordAddChildToGroupNode(historyEntry, diagram, true); break;
         }
         diagram.protectPropertyChange(false);
         diagram.diagramActions &= ~DiagramAction.UndoRedo;
         diagram.historyChangeTrigger(historyEntry, 'Redo');
         if (redovalue) {
-            let value: NodeModel | ConnectorModel = this.checkNodeObject(redovalue, diagram);
+            const value: NodeModel | ConnectorModel = this.checkNodeObject(redovalue, diagram);
             if (value) {
-                let getnodeDefaults: Function = getFunction(diagram.updateSelection);
+                const getnodeDefaults: Function = getFunction(diagram.updateSelection);
                 if (getnodeDefaults) {
                     getnodeDefaults(value, diagram);
                 }
@@ -1099,7 +1151,7 @@ export class UndoRedo {
     private getUndoEntry(diagram: Diagram): HistoryEntry {
         let undoEntry: HistoryEntry = null;
         let currentObject: HistoryEntry;
-        let hList: History = diagram.historyManager;
+        const hList: History = diagram.historyManager;
         if (hList.canUndo) {
             undoEntry = hList.currentEntry;
             currentObject = hList.currentEntry.previous;
@@ -1119,7 +1171,7 @@ export class UndoRedo {
     private getRedoEntry(diagram: Diagram): HistoryEntry {
         let redoEntry: HistoryEntry = null;
         let entryCurrent: HistoryEntry;
-        let hList: History = diagram.historyManager;
+        const hList: History = diagram.historyManager;
         if (hList.canRedo) {
             if (!hList.currentEntry.previous && !hList.canUndo) {
                 entryCurrent = hList.currentEntry;
@@ -1143,6 +1195,7 @@ export class UndoRedo {
 
     /**
      * Constructor for the undo redo module
+     *
      * @private
      */
 
@@ -1152,7 +1205,8 @@ export class UndoRedo {
 
     /**
      * To destroy the undo redo module
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
@@ -1163,7 +1217,8 @@ export class UndoRedo {
     }
 
     /**
-     * Get module name.
+     * @returns { string } toBounds method .\
+     * Get getModuleName name.
      */
     protected getModuleName(): string {
         /**

@@ -9,6 +9,7 @@ export interface RangeNavigatorModel extends ComponentModel{
     /**
      * The width of the range navigator as a string accepts input as both like '100px' or '100%'.
      * If specified as '100%, range navigator renders to the full width of its parent element.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -18,6 +19,7 @@ export interface RangeNavigatorModel extends ComponentModel{
     /**
      * The height of the chart as a string accepts input both as '100px' or '100%'.
      * If specified as '100%, range navigator renders to the full height of its parent element.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -26,24 +28,28 @@ export interface RangeNavigatorModel extends ComponentModel{
 
     /**
      * It defines the data source for a range navigator.
+     *
      * @default null
      */
     dataSource?: Object | DataManager;
 
     /**
      * It defines the xName for the range navigator.
+     *
      * @default null
      */
     xName?: string;
 
     /**
      * It defines the yName for the range navigator.
+     *
      * @default null
      */
     yName?: string;
 
     /**
      * It defines the query for the data source.
+     *
      * @default null
      */
     query?: Query;
@@ -61,6 +67,7 @@ export interface RangeNavigatorModel extends ComponentModel{
 
     /**
      * Minimum value for the axis
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -68,6 +75,7 @@ export interface RangeNavigatorModel extends ComponentModel{
 
     /**
      * Maximum value for the axis
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -75,6 +83,7 @@ export interface RangeNavigatorModel extends ComponentModel{
 
     /**
      * interval value for the axis
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -82,6 +91,7 @@ export interface RangeNavigatorModel extends ComponentModel{
 
     /**
      * IntervalType for the dateTime axis
+     *
      * @default 'Auto'
      */
     intervalType?: RangeIntervalType;
@@ -90,6 +100,7 @@ export interface RangeNavigatorModel extends ComponentModel{
      * Specifies, when the axis labels intersect with each other.They are,
      * * None: Shows all the labels.
      * * Hide: Hides the label when it intersects.
+     *
      * @default Hide
      */
 
@@ -97,48 +108,56 @@ export interface RangeNavigatorModel extends ComponentModel{
 
     /**
      * base value for log axis
+     *
      * @default 10
      */
     logBase?: number;
 
     /**
      * ValueType for the axis
+     *
      * @default 'Double'
      */
     valueType?: RangeValueType;
 
     /**
      * Label positions for the axis
+     *
      * @default 'Outside'
      */
     labelPosition?: AxisPosition;
 
     /**
      * Duration of the animation
+     *
      * @default 500
      */
     animationDuration?: number;
 
     /**
      * Enable grouping for the labels
+     *
      * @default false
      */
     enableGrouping?: boolean;
 
     /**
      * Enable deferred update for the range navigator
+     *
      * @default false
      */
     enableDeferredUpdate?: boolean;
 
     /**
      * To render the period selector with out range navigator.
+     *
      * @default false
      */
     disableRangeSelector?: boolean;
 
     /**
      * Enable snapping for range navigator sliders
+     *
      * @default false
      */
     allowSnapping?: boolean;
@@ -150,18 +169,21 @@ export interface RangeNavigatorModel extends ComponentModel{
 
     /**
      * Specifies whether a grouping separator should be used for a number.
+     *
      * @default false
      */
     useGroupingSeparator?: boolean;
 
     /**
      * GroupBy property for the axis
+     *
      * @default `Auto`
      */
     groupBy?: RangeIntervalType;
 
     /**
      * Tick Position for the axis
+     *
      * @default 'Outside'
      */
     tickPosition?: AxisPosition;
@@ -198,12 +220,14 @@ export interface RangeNavigatorModel extends ComponentModel{
 
     /**
      * Specifies the theme for the range navigator.
+     *
      * @default 'Material'
      */
     theme?: ChartTheme;
 
     /**
      * Selected range for range navigator.
+     *
      * @default []
      */
     value?: number[] | Date[];
@@ -211,6 +235,7 @@ export interface RangeNavigatorModel extends ComponentModel{
     /**
      * Used to format the axis label that accepts any global string format like 'C', 'n1', 'P' etc.
      * It also accepts placeholder like '{value}°C' in which value represent the axis label, e.g, 20°C.
+     *
      * @default ''
      */
 
@@ -218,6 +243,7 @@ export interface RangeNavigatorModel extends ComponentModel{
 
     /**
      * Specifies the skeleton format in which the dateTime format will process.
+     *
      * @default ''
      */
 
@@ -225,6 +251,7 @@ export interface RangeNavigatorModel extends ComponentModel{
 
     /**
      * It specifies the type of format to be used in dateTime format process.
+     *
      * @default 'DateTime'
      */
 
@@ -232,6 +259,7 @@ export interface RangeNavigatorModel extends ComponentModel{
 
     /**
      * It specifies the label alignment for secondary axis labels
+     *
      * @default 'Middle'
      */
 
@@ -239,47 +267,54 @@ export interface RangeNavigatorModel extends ComponentModel{
 
     /**
      * Margin for the range navigator
+     *
      * @default
      */
     margin?: MarginModel;
 
     /**
      * Triggers before the range navigator rendering
-     * @event
+     *
+     * @event load
      */
     load?: EmitType<IRangeLoadedEventArgs>;
 
     /**
      * Triggers after the range navigator rendering
-     * @event
+     *
+     * @event loaded
      * @blazorProperty 'Loaded'
      */
     loaded?: EmitType<IRangeLoadedEventArgs>;
 
     /**
      * Triggers after the range navigator resized
-     * @event
+     *
+     * @event resized
      * @blazorProperty 'Resized'
      */
     resized?: EmitType<IResizeRangeNavigatorEventArgs>;
 
     /**
      * Triggers before the label rendering
-     * @event
+     *
+     * @event labelRender
      * @deprecated
      */
     labelRender?: EmitType<ILabelRenderEventsArgs>;
 
     /**
      * Triggers after change the slider.
-     * @event
+     *
+     * @event changed
      * @blazorProperty 'Changed'
      */
     changed?: EmitType<IChangedEventArgs>;
 
     /**
      * Triggers before the tooltip for series is rendered.
-     * @event
+     *
+     * @event tooltipRender
      * @deprecated
      */
 
@@ -287,14 +322,16 @@ export interface RangeNavigatorModel extends ComponentModel{
 
     /**
      * Triggers before the range navigator selector rendering
-     * @event
+     *
+     * @event selectorRender
      * @deprecated
      */
     selectorRender?: EmitType<IRangeSelectorRenderEventArgs>;
 
     /**
      * Triggers before the prints gets started.
-     * @event
+     *
+     * @event beforePrint
      * @blazorProperty 'OnPrint'
      */
 

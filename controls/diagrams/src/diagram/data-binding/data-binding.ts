@@ -26,7 +26,8 @@ export class DataBinding {
 
     /**
      * To destroy the data binding module
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
@@ -37,7 +38,10 @@ export class DataBinding {
     }
 
     /**
-     * Get module name.
+     * Core method to return the component name.
+     *
+     * @returns {string}  Core method to return the component name.
+     * @private
      */
     protected getModuleName(): string {
         /**
@@ -51,17 +55,18 @@ export class DataBinding {
     public dataTable: Object = {};
 
     /**
-     * Initialize nodes and connectors when we have a data as JSON 
-     * @param {DataSourceModel} data 
-     * @param {Diagram} diagram 
+     * Initialize nodes and connectors when we have a data as JSON
+     *
+     * @param {DataSourceModel} data
+     * @param {Diagram} diagram
      * @private
      */
 
     public initData(data: DataSourceModel, diagram: Diagram): void {
         let dataSource: Object[] | JSON;
-        let dataProp: string = 'data';
-        let jsonProp: string = 'json';
-        let dataManager: DataManager = data.dataManager || data.dataSource || {} as DataManager;
+        const dataProp: string = 'data';
+        const jsonProp: string = 'json';
+        const dataManager: DataManager = data.dataManager || data.dataSource || {} as DataManager;
         dataSource = dataManager[dataProp] || dataManager[jsonProp] ||
             (dataManager.dataSource ? dataManager.dataSource.json : undefined);
         if (dataSource && (dataSource as Object[]).length === 0 && dataManager.dataSource.data) {
@@ -75,20 +80,21 @@ export class DataBinding {
 
     /**
      * Initialize nodes and connector when we have a data as remote url
-     * @param {DataSourceModel} data 
-     * @param {Diagram} diagram 
+     *
+     * @param {DataSourceModel} data
+     * @param {Diagram} diagram
      * @private
      */
 
     public initSource(data: DataSourceModel, diagram: Diagram): void {
-        let dataSource: DataSourceModel = data; let result: Object[];
-        let mapper: DataSourceModel = data; let node: Node;
+        const dataSource: DataSourceModel = data; let result: Object[];
+        const mapper: DataSourceModel = data;
         if (dataSource.dataManager instanceof DataManager || dataSource.dataSource instanceof DataManager) {
-            let tempObj: DataManager = mapper.dataManager || mapper.dataSource;
-            let query: Query = tempObj.defaultQuery || new Query();
-            let dataManager: DataManager = data.dataManager || data.dataSource;
+            const tempObj: DataManager = mapper.dataManager || mapper.dataSource;
+            const query: Query = tempObj.defaultQuery || new Query();
+            const dataManager: DataManager = data.dataManager || data.dataSource;
             dataManager.executeQuery(query).then((e: Object) => {
-                let prop: string = 'result';
+                const prop: string = 'result';
                 result = e[prop];
                 if (!diagram.isDestroyed) {
                     diagram.protectPropertyChange(true);
@@ -103,9 +109,9 @@ export class DataBinding {
 
     private applyDataSource(mapper: DataSourceModel, data: Object[], diagram: Diagram): void {
         this.dataTable = {};
-        let obj: Object; let firstNode: Object; let node: Node; let nodes: Node;
+        let obj: Object; let firstNode: Object; let node: Node;
         let rootNodes: Object[] = [];
-        let firstLevel: Object[] = []; let item: Object;
+        const firstLevel: Object[] = []; let item: Object;
         let nextLevel: Object;
         if (data !== undefined) {
             for (let r: number = 0; r < data.length; r++) {
@@ -128,7 +134,7 @@ export class DataBinding {
             if (firstNode) {
                 firstLevel.push(firstNode);
             } else {
-                for (let n of Object.keys(rootNodes)) {
+                for (const n of Object.keys(rootNodes)) {
                     if (!n || n === 'undefined' || n === '\'\'' || n === 'null') {
                         firstLevel.push(rootNodes[n]);
                     }
@@ -152,14 +158,15 @@ export class DataBinding {
 
     /**
      * updateMultipleRootNodes method is used  to update the multiple Root Nodes
-     * @param {Object} object 
-     * @param {Object[]} rootnodes 
-     * @param {DataSourceModel} mapper 
-     * @param {Object[]} data 
+     *
+     * @param {Object} object
+     * @param {Object[]} rootnodes
+     * @param {DataSourceModel} mapper
+     * @param {Object[]} data
      */
 
     private updateMultipleRootNodes(obj: Object, rootNodes: Object[], mapper: DataSourceModel, data: Object[]): Object[] {
-        let parents: string[] = obj[mapper.parentId]; let parent: string;
+        const parents: string[] = obj[mapper.parentId]; let parent: string;
         for (let i: number = 0; i < parents.length; i++) {
             parent = parents[i];
             if (rootNodes[parent]) {
@@ -171,22 +178,28 @@ export class DataBinding {
         return rootNodes;
     }
 
+
     /**
-     * Get the node values 
-     * @param {DataSourceModel} mapper 
-     * @param {Object} item 
-     * @param {Diagram} diagram 
+     *  Get the node values\
+     *
+     * @returns { Node }    Get the node values.\
+     * @param {DataSourceModel} mapper - provide the id value.
+     * @param {Object} item - provide the id value.
+     * @param {Diagram} diagram - provide the id value.
+     *
+     * @private
      */
     private applyNodeTemplate(mapper: DataSourceModel, item: Object, diagram: Diagram): Node {
-        let root: Object = item;
-        let id: string = randomId();
-        let blazor: string = 'Blazor';
-        let nodeModel: NodeModel = { id: id, data: item };
-        let doBinding: Function = getFunction(mapper.doBinding);
+        //const root: Object = item;
+        const id: string = randomId();
+        //const blazor: string = 'Blazor';
+        const nodeModel: NodeModel = { id: id, data: item };
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        const doBinding: Function = getFunction(mapper.doBinding);
         if (doBinding) {
             doBinding(nodeModel, item, diagram);
         }
-        let obj: Node = new Node(diagram, 'nodes', nodeModel, true);
+        const obj: Node = new Node(diagram, 'nodes', nodeModel, true);
         updateDefaultValues(obj, nodeModel, diagram.nodeDefaults);
         if (mapper.dataMapSettings) {
             let index: number;
@@ -206,7 +219,7 @@ export class DataBinding {
                             obj[arrayProperty[0]][innerProperty[0].charAt(index + 1)][innerProperty[1]][innerProperty[2]] =
                                 item[mapper.dataMapSettings[i].field];
                         } else {
-                            let value: string = item[mapper.dataMapSettings[i].field];
+                            const value: string = item[mapper.dataMapSettings[i].field];
                             obj[arrayProperty[0]][innerProperty[0].charAt(index + 1)][innerProperty[1]] = value;
                         }
                     } else {
@@ -244,7 +257,7 @@ export class DataBinding {
 
     private renderChildNodes(
         mapper: DataSourceModel, parent: Object, value: string, rtNodes: Object[], diagram: Diagram): void {
-        let child: Object; let nextLevel: Object; let node: Node; let returnNode: Node;
+        let child: Object; let nextLevel: Object; let node: Node;
         for (let j: number = 0; j < (parent as DataItems).items.length; j++) {
             child = (parent as DataItems).items[j];
             node = this.applyNodeTemplate(mapper, child, diagram);
@@ -270,7 +283,7 @@ export class DataBinding {
     private containsConnector(diagram: Diagram, sourceNode: string, targetNode: string): boolean {
         if (sourceNode !== '' && targetNode !== '') {
             for (let i: number = 0; i < diagram.connectors.length; i++) {
-                let connector: Connector = diagram.connectors[i] as Connector;
+                const connector: Connector = diagram.connectors[i] as Connector;
                 if (connector !== undefined && (connector.sourceID === sourceNode && connector.targetID === targetNode)) {
                     return true;
                 }
@@ -281,14 +294,15 @@ export class DataBinding {
 
     /**
      *  collectionContains method is used to  check wthear the node is already present in collection or not
+     *
      * @param {Node} node
-     * @param {Diagram} diagram 
-     * @param {string} id 
-     * @param {string} parentId 
+     * @param {Diagram} diagram
+     * @param {string} id
+     * @param {string} parentId
      */
 
     private collectionContains(node: Node, diagram: Diagram, id: string, parentId: string): boolean {
-        let obj: Node = this.dataTable[node.data[id]] as Node;
+        const obj: Node = this.dataTable[node.data[id]] as Node;
         if (obj !== undefined && obj.data[id] === node.data[id] && obj.data[parentId] === node.data[parentId]) {
             return true;
         } else {
@@ -300,16 +314,17 @@ export class DataBinding {
 
     /**
      * Get the Connector values
+     *
      * @param {string} sNode
-     * @param {string} tNode 
-     * @param {Diagram} diagram 
+     * @param {string} tNode
+     * @param {Diagram} diagram
      */
 
     private applyConnectorTemplate(sNode: string, tNode: string, diagram: Diagram): Connector {
-        let connModel: ConnectorModel = {
+        const connModel: ConnectorModel = {
             id: randomId(), sourceID: sNode, targetID: tNode
         };
-        let obj: Connector = new Connector(diagram, 'connectors', connModel, true);
+        const obj: Connector = new Connector(diagram, 'connectors', connModel, true);
         updateDefaultValues(obj, connModel, diagram.connectorDefaults);
         return obj;
     }

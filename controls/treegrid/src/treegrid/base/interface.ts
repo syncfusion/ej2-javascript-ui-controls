@@ -3,6 +3,7 @@ import { SaveEventArgs, DataStateChangeEventArgs as GridDataStateChangeEventArgs
 import { PdfExportProperties } from '@syncfusion/ej2-grids';
 /**
  * Specifies FlatData interfaces.
+ *
  * @hidden
  */
 export interface ITreeData {
@@ -14,10 +15,10 @@ export interface ITreeData {
      * Specifies whether the record contains child records
      */
     hasChildRecords?: boolean;
-   /**
-    * Specifies whether the record contains filtered child records
-    */
-   hasFilteredChildRecords?: boolean;
+    /**
+     * Specifies whether the record contains filtered child records
+     */
+    hasFilteredChildRecords?: boolean;
     /**
      * Specifies whether the child records are expanded
      */
@@ -114,6 +115,7 @@ export interface ITreeGridCellFormatter {
 export interface RowExpandedEventArgs {
     /**
      * Defines the parent row data.
+     *
      * @isGenericType true
      */
     data?: Object;
@@ -123,6 +125,7 @@ export interface RowExpandedEventArgs {
 export interface RowExpandingEventArgs {
     /**
      * Defines the parent row data.
+     *
      * @isGenericType true
      */
     data?: Object;
@@ -134,6 +137,7 @@ export interface RowExpandingEventArgs {
 export interface RowCollapsedEventArgs {
     /**
      * Defines the parent row data.
+     *
      * @isGenericType true
      */
     data?: Object;
@@ -143,6 +147,7 @@ export interface RowCollapsedEventArgs {
 export interface RowCollapsingEventArgs {
     /**
      * Defines the parent row data.
+     *
      * @isGenericType true
      */
     data?: Object;
@@ -160,6 +165,7 @@ export interface DataStateChangeEventArgs extends GridDataStateChangeEventArgs {
     childData? : ITreeData[];
     /**
      * Defines the parent row data.
+     *
      * @isGenericType true
      */
     data?: Object;

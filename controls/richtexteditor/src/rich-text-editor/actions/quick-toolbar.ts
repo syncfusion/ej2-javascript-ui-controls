@@ -30,7 +30,7 @@ export class QuickToolbar {
     public inlineQTBar: BaseQuickToolbar;
     private renderFactory: RendererFactory;
 
-    constructor(parent?: IRichTextEditor, locator?: ServiceLocator) {
+    public constructor(parent?: IRichTextEditor, locator?: ServiceLocator) {
         this.parent = parent;
         this.locator = locator;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
@@ -39,22 +39,22 @@ export class QuickToolbar {
     }
 
     private formatItems(items: (string | IToolbarItems)[]): (string | IToolbarItems)[] {
-        let formattedItems: (string | IToolbarItems)[] = [];
+        const formattedItems: (string | IToolbarItems)[] = [];
         items.forEach((item: string | IToolbarItems) => {
             if (typeof item === 'string') {
                 switch (item.toLocaleLowerCase()) {
-                    case 'open':
-                        formattedItems.push('openLink');
-                        break;
-                    case 'edit':
-                        formattedItems.push('editLink');
-                        break;
-                    case 'unlink':
-                        formattedItems.push('removeLink');
-                        break;
-                    default:
-                        formattedItems.push(item);
-                        break;
+                case 'open':
+                    formattedItems.push('openLink');
+                    break;
+                case 'edit':
+                    formattedItems.push('editLink');
+                    break;
+                case 'unlink':
+                    formattedItems.push('removeLink');
+                    break;
+                default:
+                    formattedItems.push(item);
+                    break;
                 }
             } else {
                 formattedItems.push(item);
@@ -74,12 +74,20 @@ export class QuickToolbar {
 
     /**
      * createQTBar method
+     *
+     * @param {string} popupType - specifies the string value
+     * @param {string} mode - specifies the string value.
+     * @param {string} items - specifies the string.
+     * @param {RenderType} type - specifies the render type.
+     * @returns {BaseQuickToolbar} - specifies the quick toolbar
      * @hidden
      * @deprecated
      */
     public createQTBar(popupType: string, mode: string, items: (string | IToolbarItems)[], type: RenderType): BaseQuickToolbar {
-        if (items.length < 1) { return null; }
-        let qTBar: BaseQuickToolbar = new BaseQuickToolbar(this.parent, this.locator);
+        if (items.length < 1) {
+            return null;
+        }
+        const qTBar: BaseQuickToolbar = new BaseQuickToolbar(this.parent, this.locator);
         qTBar.render(this.getQTBarOptions(popupType, mode, this.formatItems(items), type));
         return qTBar;
     }
@@ -92,13 +100,16 @@ export class QuickToolbar {
         }
     }
 
+    // eslint-disable-next-line
     private onMouseDown(e: MouseEvent): void {
         this.parent.isBlur = false;
         this.parent.isRTE = true;
     }
 
     private renderQuickToolbars(): void {
-        if (this.linkQTBar || this.imageQTBar || this.textQTBar || this.tableQTBar) { return; }
+        if (this.linkQTBar || this.imageQTBar || this.textQTBar || this.tableQTBar) {
+            return;
+        }
         this.linkQTBar = this.createQTBar('Link', 'Scrollable', this.parent.quickToolbarSettings.link, RenderType.LinkToolbar);
         this.renderFactory.addRenderer(RenderType.LinkToolbar, this.linkQTBar);
         this.textQTBar = this.createQTBar('Text', 'Scrollable', this.parent.quickToolbarSettings.text, RenderType.TextToolbar);
@@ -107,10 +118,18 @@ export class QuickToolbar {
         this.renderFactory.addRenderer(RenderType.ImageToolbar, this.imageQTBar);
         this.tableQTBar = this.createQTBar('Table', 'MultiRow', this.parent.quickToolbarSettings.table, RenderType.TableToolbar);
         this.renderFactory.addRenderer(RenderType.TableToolbar, this.tableQTBar);
-        if (this.linkQTBar) { EventHandler.add(this.linkQTBar.element, 'mousedown', this.onMouseDown, this); }
-        if (this.imageQTBar) { EventHandler.add(this.imageQTBar.element, 'mousedown', this.onMouseDown, this); }
-        if (this.textQTBar) { EventHandler.add(this.textQTBar.element, 'mousedown', this.onMouseDown, this); }
-        if (this.tableQTBar) { EventHandler.add(this.tableQTBar.element, 'mousedown', this.onMouseDown, this); }
+        if (this.linkQTBar) {
+            EventHandler.add(this.linkQTBar.element, 'mousedown', this.onMouseDown, this);
+        }
+        if (this.imageQTBar) {
+            EventHandler.add(this.imageQTBar.element, 'mousedown', this.onMouseDown, this);
+        }
+        if (this.textQTBar) {
+            EventHandler.add(this.textQTBar.element, 'mousedown', this.onMouseDown, this);
+        }
+        if (this.tableQTBar) {
+            EventHandler.add(this.tableQTBar.element, 'mousedown', this.onMouseDown, this);
+        }
     }
 
     private renderInlineQuickToolbar(): void {
@@ -124,6 +143,11 @@ export class QuickToolbar {
 
     /**
      * Method for showing the inline quick toolbar
+     *
+     * @param {number} x -specifies the value of x.
+     * @param {number} y - specifies the y valu.
+     * @param {HTMLElement} target - specifies the target element.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -136,15 +160,21 @@ export class QuickToolbar {
 
     /**
      * Method for hidding the inline quick toolbar
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public hideInlineQTBar(): void {
-        if (this.inlineQTBar && !hasClass(this.inlineQTBar.element, 'e-popup-close')) { this.inlineQTBar.hidePopup(); }
+        if (this.inlineQTBar && !hasClass(this.inlineQTBar.element, 'e-popup-close')) {
+            this.inlineQTBar.hidePopup();
+        }
     }
 
     /**
      * Method for hidding the quick toolbar
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -168,28 +198,34 @@ export class QuickToolbar {
 
     private deBounce(x: number, y: number, target: HTMLElement): void {
         clearTimeout(this.deBouncer);
-        this.deBouncer = window.setTimeout(() => { this.showInlineQTBar(x, y, target); }, 1000);
+        this.deBouncer = window.setTimeout(() => {
+            this.showInlineQTBar(x, y, target);
+        }, 1000);
     }
 
     private mouseUpHandler(e: NotifyArgs): void {
         if (this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
-            let coordinates: Touch | MouseEvent;
-            coordinates = (e.args as TouchEvent).touches ? (e.args as TouchEvent).changedTouches[0] : e.args as MouseEvent;
-            let range: Range = this.parent.getRange();
+            const coordinates: Touch | MouseEvent = (e.args as TouchEvent).touches ?
+                (e.args as TouchEvent).changedTouches[0] : e.args as MouseEvent;
+            const range: Range = this.parent.getRange();
             let target: HTMLElement = (e.args as MouseEvent).target as HTMLElement;
             if (isNullOrUndefined(select('.' + CLS_INLINE_POP, document.body))) {
                 if (isIDevice() && e.touchData && e.touchData.prevClientX !== e.touchData.clientX
-                    && e.touchData.prevClientY !== e.touchData.clientY) { return; }
+                    && e.touchData.prevClientY !== e.touchData.clientY) {
+                    return;
+                }
                 this.hideInlineQTBar();
                 this.offsetX = coordinates.pageX;
                 this.offsetY = pageYOffset(coordinates, this.parent.element, this.parent.iframeSettings.enable);
                 if (target.nodeName === 'TEXTAREA') {
                     this.showInlineQTBar(this.offsetX, this.offsetY, target);
                 } else {
-                    let closestAnchor: HTMLElement = closest(target, 'a') as HTMLElement;
+                    const closestAnchor: HTMLElement = closest(target, 'a') as HTMLElement;
                     target = closestAnchor ? closestAnchor : target;
                     if (target.tagName !== 'IMG' && target.tagName !== 'A' && (!closest(target, 'td,th') || !range.collapsed)) {
-                        if (this.parent.inlineMode.onSelection && range.collapsed) { return; }
+                        if (this.parent.inlineMode.onSelection && range.collapsed) {
+                            return;
+                        }
                         this.target = target;
                         this.showInlineQTBar(this.offsetX, this.offsetY, target);
                     }
@@ -214,7 +250,9 @@ export class QuickToolbar {
 
     private keyUpHandler(e: NotifyArgs): void {
         if (this.parent.inlineMode.enable && !Browser.isDevice) {
-            if (this.parent.inlineMode.onSelection) { return; }
+            if (this.parent.inlineMode.onSelection) {
+                return;
+            }
             let args: KeyboardEvent = e.args as KeyboardEvent;
             this.deBounce(this.offsetX, this.offsetY, args.target as HTMLElement);
         }
@@ -222,17 +260,25 @@ export class QuickToolbar {
 
     private selectionChangeHandler(e: Event): void {
         clearTimeout(this.deBouncer);
-        this.deBouncer = window.setTimeout(() => { this.onSelectionChange(e); }, 1000);
+        this.deBouncer = window.setTimeout(() => {
+            this.onSelectionChange(e);
+        }, 1000);
     }
 
     private onSelectionChange(e: Event): void {
-        if (!isNullOrUndefined(select('.' + CLS_INLINE_POP, document.body))) { return; }
-        let selection: Selection = this.contentRenderer.getDocument().getSelection();
-        if (!selection.isCollapsed) { this.mouseUpHandler({ args: e as MouseEvent }); }
+        if (!isNullOrUndefined(select('.' + CLS_INLINE_POP, document.body))) {
+            return;
+        }
+        const selection: Selection = this.contentRenderer.getDocument().getSelection();
+        if (!selection.isCollapsed) {
+            this.mouseUpHandler({ args: e as MouseEvent });
+        }
     }
 
     /**
      * getInlineBaseToolbar method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -242,8 +288,9 @@ export class QuickToolbar {
 
     /**
      * Destroys the ToolBar.
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -291,13 +338,22 @@ export class QuickToolbar {
         this.parent.off(events.sourceCodeMouseDown, this.mouseUpHandler);
         this.parent.off(events.renderInlineToolbar, this.renderInlineQuickToolbar);
     }
+    // eslint-disable-next-line
     private toolbarUpdated(args: NotifyArgs): void {
-        if (this.linkQTBar && !hasClass(this.linkQTBar.element, 'e-popup-close')) { this.linkQTBar.hidePopup(); }
-        if (this.imageQTBar && !hasClass(this.imageQTBar.element, 'e-popup-close')) { this.imageQTBar.hidePopup(); }
-        if (this.tableQTBar && !hasClass(this.tableQTBar.element, 'e-popup-close')) { this.tableQTBar.hidePopup(); }
+        if (this.linkQTBar && !hasClass(this.linkQTBar.element, 'e-popup-close')) {
+            this.linkQTBar.hidePopup();
+        }
+        if (this.imageQTBar && !hasClass(this.imageQTBar.element, 'e-popup-close')) {
+            this.imageQTBar.hidePopup();
+        }
+        if (this.tableQTBar && !hasClass(this.tableQTBar.element, 'e-popup-close')) {
+            this.tableQTBar.hidePopup();
+        }
     }
     /**
      * addEventListener
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -321,9 +377,11 @@ export class QuickToolbar {
     }
 
     private onKeyDown(e: NotifyArgs): void {
-        let args: KeyboardEvent = e.args as KeyboardEvent;
+        const args: KeyboardEvent = e.args as KeyboardEvent;
         if (args.which === 8 || args.which === 46) {
-            if (this.imageQTBar && !hasClass(this.imageQTBar.element, 'e-popup-close')) { this.imageQTBar.hidePopup(); }
+            if (this.imageQTBar && !hasClass(this.imageQTBar.element, 'e-popup-close')) {
+                this.imageQTBar.hidePopup();
+            }
         }
     }
 
@@ -331,6 +389,7 @@ export class QuickToolbar {
         this.hideQuickToolbars();
         this.hideInlineQTBar();
     }
+    // eslint-disable-next-line
     private setRtl(args: { [key: string]: Object }): void {
         if (this.inlineQTBar) {
             this.inlineQTBar.quickTBarObj.toolbarObj.setProperties({ enableRtl: args.enableRtl });
@@ -344,11 +403,15 @@ export class QuickToolbar {
     }
     /**
      * removeEventListener
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public removeEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.off(events.initialEnd, this.initializeQuickToolbars);
         this.parent.off(events.mouseDown, this.renderQuickToolbars);
         this.parent.off(events.toolbarUpdated, this.toolbarUpdated);
@@ -368,26 +431,31 @@ export class QuickToolbar {
 
     /**
      * Called internally if any of the property value changed.
+     *
+     * @param {RichTextEditorModel} e - specifies the element.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     protected onPropertyChanged(e: { [key: string]: RichTextEditorModel }): void {
         if (!isNullOrUndefined(e.newProp.quickToolbarSettings)) {
-            for (let prop of Object.keys(e.newProp.quickToolbarSettings)) {
+            for (const prop of Object.keys(e.newProp.quickToolbarSettings)) {
                 switch (prop) {
-                    case 'actionOnScroll':
-                        if (e.newProp.quickToolbarSettings.actionOnScroll === 'none') {
-                            this.parent.off(events.scroll, this.hideQuickToolbars);
-                            this.parent.off(events.contentscroll, this.hideQuickToolbars);
-                        } else {
-                            this.parent.on(events.scroll, this.hideQuickToolbars, this);
-                            this.parent.on(events.contentscroll, this.hideQuickToolbars, this);
-                        }
-                        break;
+                case 'actionOnScroll':
+                    if (e.newProp.quickToolbarSettings.actionOnScroll === 'none') {
+                        this.parent.off(events.scroll, this.hideQuickToolbars);
+                        this.parent.off(events.contentscroll, this.hideQuickToolbars);
+                    } else {
+                        this.parent.on(events.scroll, this.hideQuickToolbars, this);
+                        this.parent.on(events.contentscroll, this.hideQuickToolbars, this);
+                    }
+                    break;
                 }
             }
         }
-        if (e.module !== this.getModuleName()) { return; }
+        if (e.module !== this.getModuleName()) {
+            return;
+        }
         if (this.inlineQTBar) {
             removeClass([this.parent.element], [CLS_INLINE]);
             this.unWireInlineQTBarEvents();
@@ -401,6 +469,9 @@ export class QuickToolbar {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {void}
+     * @hidden
      */
     private getModuleName(): string {
         return 'quickToolbar';

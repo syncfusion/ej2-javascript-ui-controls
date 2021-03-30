@@ -1,3 +1,4 @@
+/* eslint-disable valid-jsdoc */
 import { SvgRenderer, LinearGradient as Linear, RadialGradient as Radial, GradientColor } from '@syncfusion/ej2-svg-base';
 import { Pointer, Range } from '../axes/axis';
 import { LinearGauge } from '../../linear-gauge';
@@ -9,24 +10,28 @@ import { ColorStopModel, GradientPositionModel} from '../axes/gradient-model';
 export class ColorStop extends ChildProperty<ColorStop> {
     /**
      * Specifies the color of the gradient.
+     *
      * @default "#000000"
      */
     @Property('#000000')
     public color : string;
     /**
      * Specifies the opacity of the gradient.
+     *
      * @default 1
      */
     @Property(1)
     public opacity ?: number;
     /**
      * Specifies the offset of the gradient.
+     *
      * @default "0%"
      */
     @Property('0%')
     public offset : string;
     /**
      * Specifies the style of the gradient.
+     *
      * @default ""
      */
     @Property('')
@@ -39,12 +44,14 @@ export class ColorStop extends ChildProperty<ColorStop> {
 export class GradientPosition extends ChildProperty<GradientPosition> {
     /**
      * Specifies the horizontal position of the gradient.
+     *
      * @default "0%"
      */
     @Property('0%')
     public x : string;
     /**
      * Specifies the vertical position of the gradient.
+     *
      * @default "0%"
      */
     @Property('0%')
@@ -57,12 +64,14 @@ export class GradientPosition extends ChildProperty<GradientPosition> {
 export class LinearGradient extends ChildProperty<LinearGradient> {
     /**
      * Specifies the start value of the linear gradient.
+     *
      * @default "0%"
      */
     @Property('0%')
     public startValue: string;
     /**
      * Specifies the end value of the linear gradient.
+     *
      * @default "100%"
      */
     @Property('100%')
@@ -80,6 +89,7 @@ export class LinearGradient extends ChildProperty<LinearGradient> {
 export class RadialGradient extends ChildProperty<RadialGradient> {
     /**
      * Specifies the radius of the radial gradient.
+     *
      * @default "0%"
      */
     @Property('0%')
@@ -104,26 +114,28 @@ export class RadialGradient extends ChildProperty<RadialGradient> {
 
 /**
  * To get the gradient support for pointers and ranges in the linear gauge.
+ *
  * @hidden
  */
 export class Gradient {
 
     private gauge: LinearGauge;
-
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(control: LinearGauge) {
         this.gauge = control;
     }
 
     /**
      * To get the linear gradient string.
+     *
      * @private
      */
     private getLinearGradientColor(element: Range | Pointer): string {
-        let render: SvgRenderer = new SvgRenderer('');
-        let colorStop: ColorStopModel[] = element.linearGradient.colorStop;
-        let colors: GradientColor[] = this.getGradientColor(colorStop);
-        let name: string = '_' + this.gauge.svgObject.id + '_' + this.gauge.gradientCount + '_' + 'linearGradient';
-        let gradientPosition: Linear = {
+        const render: SvgRenderer = new SvgRenderer('');
+        const colorStop: ColorStopModel[] = element.linearGradient.colorStop;
+        const colors: GradientColor[] = this.getGradientColor(colorStop);
+        const name: string = '_' + this.gauge.svgObject.id + '_' + this.gauge.gradientCount + '_' + 'linearGradient';
+        const gradientPosition: Linear = {
             id: name,
             x1: (element.linearGradient.startValue.indexOf('%') === -1 ?
                 element.linearGradient.startValue :
@@ -134,21 +146,22 @@ export class Gradient {
             y1: '0' + '%',
             y2: '0' + '%'
         };
-        let def: Element = render.drawGradient('linearGradient', gradientPosition, colors);
+        const def: Element = render.drawGradient('linearGradient', gradientPosition, colors);
         this.gauge.svgObject.appendChild(def);
         return 'url(#' + name + ')';
     }
 
     /**
      * To get the radial gradient string.
+     *
      * @private
      */
     private getRadialGradientColor(element: Range | Pointer): string {
-        let render: SvgRenderer = new SvgRenderer('');
-        let colorStop: ColorStopModel[] = element.radialGradient.colorStop;
-        let colors: GradientColor[] = this.getGradientColor(colorStop);
-        let name: string = '_' + this.gauge.svgObject.id + '_' + this.gauge.gradientCount + '_' + 'radialGradient';
-        let gradientPosition: Radial = {
+        const render: SvgRenderer = new SvgRenderer('');
+        const colorStop: ColorStopModel[] = element.radialGradient.colorStop;
+        const colors: GradientColor[] = this.getGradientColor(colorStop);
+        const name: string = '_' + this.gauge.svgObject.id + '_' + this.gauge.gradientCount + '_' + 'radialGradient';
+        const gradientPosition: Radial = {
             id: name,
             r: (element.radialGradient.radius.indexOf('%') === -1 ?
                 element.radialGradient.radius :
@@ -164,22 +177,23 @@ export class Gradient {
                 parseFloat(element.radialGradient.innerPosition.x).toString()) + '%',
             fy: (element.radialGradient.innerPosition.y.indexOf('%') === -1 ?
                 element.radialGradient.innerPosition.y :
-                parseFloat(element.radialGradient.innerPosition.y).toString()) + '%',
+                parseFloat(element.radialGradient.innerPosition.y).toString()) + '%'
         };
-        let def: Element = render.drawGradient('radialGradient', gradientPosition, colors);
+        const def: Element = render.drawGradient('radialGradient', gradientPosition, colors);
         this.gauge.svgObject.appendChild(def);
         return 'url(#' + name + ')';
     }
 
     /**
      * To get the color, offset, opacity and style.
+     *
      * @private
      */
     private getGradientColor(colorStop: ColorStopModel[]): GradientColor[] {
-        let colors: GradientColor[] = [];
-        let length: number = colorStop.length;
+        const colors: GradientColor[] = [];
+        const length: number = colorStop.length;
         for (let j: number = 0; j < length; j++) {
-            let color: GradientColor = {
+            const color: GradientColor = {
                 color: colorStop[j].color,
                 colorStop: colorStop[j].offset,
                 opacity: (colorStop[j].opacity) ? (colorStop[j].opacity).toString() : '1',
@@ -192,6 +206,7 @@ export class Gradient {
 
     /**
      * To get the gradient color string.
+     *
      * @private
      */
     public getGradientColorString(element: Pointer | Range): string {
@@ -218,6 +233,7 @@ export class Gradient {
 
     /**
      * To destroy the gradient.
+     *
      * @return {void}
      * @private
      */

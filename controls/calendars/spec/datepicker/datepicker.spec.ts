@@ -2732,7 +2732,7 @@ describe('Datepicker', () => {
             datePicker.appendTo('#date');
             (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
             keyEventArgs.action = 'escape';
-            datePicker.CalendarKeyActionHandle(keyEventArgs);
+            datePicker.calendarKeyActionHandle(keyEventArgs);
         });
         it('enter key test case', function () {
             datePicker = new DatePicker({
@@ -2740,15 +2740,15 @@ describe('Datepicker', () => {
             datePicker.appendTo('#date');
             (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
             keyEventArgs.action = 'escape';
-            datePicker.CalendarKeyActionHandle(keyEventArgs);
+            datePicker.calendarKeyActionHandle(keyEventArgs);
             setTimeout(function () {
                 expect(isNullOrUndefined(datePicker.popupWrapper)).toBe(true), 1000
             })
             keyEventArgs.action = 'enter';
-            datePicker.CalendarKeyActionHandle(keyEventArgs);
+            datePicker.calendarKeyActionHandle(keyEventArgs);
             keyEventArgs.action = 'escape';
             datePicker.popupWrapper = datePicker.popupObj = null
-            datePicker.CalendarKeyActionHandle(keyEventArgs);
+            datePicker.calendarKeyActionHandle(keyEventArgs);
             expect(document.activeElement).toBe(document.querySelector('.e-input'));
         });
         it('tab key when popup open test case', function () {
@@ -2757,7 +2757,7 @@ describe('Datepicker', () => {
             datePicker.appendTo('#date');
             (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
             keyEventArgs.action = 'tab';
-            datePicker.CalendarKeyActionHandle(keyEventArgs);
+            datePicker.calendarKeyActionHandle(keyEventArgs);
             setTimeout(function () {
                 expect(isNullOrUndefined(datePicker.popupWrapper)).toBe(true), 1000
             })

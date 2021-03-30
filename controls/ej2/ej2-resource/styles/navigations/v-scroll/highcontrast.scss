@@ -1,0 +1,374 @@
+
+/*! component's theme wise override definitions and variables */
+$vscroll-skin: 'highcontrast' !default;
+$vscroll-dash-border: 2px solid #fff;
+$vscroll-nav-nrml-height: 40px !default;
+$vscroll-hover-font: $hover-font-color  !default;
+$vscroll-active-font-color: $active-font-color  !default;
+$vscroll-border-size: $border-size !default;
+$vscroll-border-type: solid !default;
+
+$vscroll-default-bg: $bg-base-0 !default;
+$vscroll-press-bg: $selection-bg !default;
+$vscroll-active-bg: $selection-bg !default;
+$vscroll-nav-nrml-minheight: 40px !default;
+$vscroll-nav-bgr-minheight: 50px !default;
+$vscroll-nav-nrml-width: 40px !default;
+$vscroll-nav-bgr-width: 50px !default;
+$vscroll-nrml-padding: 0 $vscroll-nav-nrml-width !default;
+$vscroll-bgr-padding: $vscroll-nav-bgr-width 0 !default;
+$vscroll-border-size: 1px !default;
+$vscroll-default-border: $border-fg !default;
+$vscroll-box-shadow: none !default;
+$vscroll-hover-bg: $hover-bg !default;
+$vscroll-hover-border-color: transparent !default;
+$vscroll-focus-border: 0 !default;
+$vscroll-active-border: 0 !default;
+$vscroll-hover-border: 0 !default;
+$vscroll-active-box-shadow: none !default;
+$vscroll-default-icon-color: $selection-bg !default;
+$vscroll-overlay-opacity: .5 !default;
+$vscroll-overlay-bg: $bg-base-10 !default;
+$vscroll-overlay-start: rgba($vscroll-overlay-bg, 0) !default;
+$vscroll-overlay-end: rgba($vscroll-overlay-bg, 1) !default;
+$vscroll-right-bg: linear-gradient(-270deg, $vscroll-overlay-start 0%, $vscroll-overlay-end 100%) !default;
+$vscroll-left-bg:  linear-gradient(-270deg, $vscroll-overlay-end 0%, $vscroll-overlay-start 100%) !default;
+
+$vscroll-device-arrow-box-shadow: -4px 0 8px 0 rgba($shadow , .06) !default;
+$vscroll-device-arrow-rtl-box-shadow: 4px 0 8px 0 rgba($shadow , .06) !default;
+$vscroll-device-arrow-bg: $bg-base-15 !default;
+$vscroll-device-arrow-border-size: 1px !default;
+$vscroll-device-arrow-border-color: $border-fg !default;
+$vscroll-device-arrow-color: $selection-bg !default;
+$vscroll-device-arrow-size: 14px !default;
+$vscroll-device-arrow-width: 52px !default;
+
+@mixin vscroll-btn-animation {
+  content: '';
+}
+
+@mixin vscroll-btn-animation-after {
+  content: '';
+}
+@include export-module('vscroll-highcontrast-icons') {
+  /*! vscroll icons */
+  #{&}.e-vscroll {
+
+    &.e-scroll-device {
+
+      .e-nav-up-arrow::before {
+        content: '\e85e';
+      }
+
+      .e-nav-down-arrow::before {
+        content: '\e84f';
+      }
+    }
+
+    .e-nav-up-arrow::before {
+      content: '\e910';
+      line-height: normal;
+    }
+
+    .e-nav-down-arrow::before {
+      content: '\e916';
+      line-height: normal;
+    }
+  }
+}
+
+@include export-module('v-scroll') {
+  /*! v-scroll layout */
+
+  .e-bigger #{&}.e-vscroll,
+  #{&}.e-vscroll.e-bigger {
+
+    &:not(.e-scroll-device) {
+      padding: $vscroll-bgr-padding;
+    }
+
+    .e-icons {
+      font-size: 18px;
+     }
+
+    &.e-rtl .e-scroll-overlay.e-scroll-down-overlay {
+      left: $vscroll-nav-bgr-width;
+    }
+
+    .e-scroll-overlay {
+
+      &.e-scroll-down-overlay {
+        right: $vscroll-nav-bgr-width;
+      }
+    }
+
+    .e-scroll-nav {
+      height: $vscroll-nav-bgr-width;
+    }
+  }
+
+  #{&}.e-vscroll {
+    display: block;
+    position: relative;
+    width: inherit;
+
+    &.e-rtl {
+
+      &.e-scroll-device {
+
+        .e-scroll-nav {
+          transform: skewX(-16deg) translateX(-6px);
+        }
+
+        .e-scroll-overlay {
+
+          &.e-scroll-down-overlay {
+            left: $vscroll-device-arrow-width;
+            right: auto;
+            transform: skewX(-16deg) translateX(-6px);
+          }
+
+          &.e-scroll-up-overlay {
+            left: auto;
+            right: 0;
+          }
+        }
+      }
+   }
+
+    &:not(.e-scroll-device) {
+      padding: $vscroll-nrml-padding;
+    }
+
+    &.e-scroll-device {
+
+      .e-scroll-nav {
+        transform: skewX(-16deg) translateX(6px);
+        width: $vscroll-device-arrow-width;
+        z-index: 1001;
+
+        .e-nav-arrow {
+          font-size: $vscroll-device-arrow-size;
+          transform: skewX(16deg);
+        }
+      }
+
+      .e-scroll-overlay {
+        opacity: $vscroll-overlay-opacity;
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        z-index: 100;
+
+        &.e-scroll-down-overlay {
+          left: auto;
+          right: $vscroll-device-arrow-width;
+          transform: skewX(-16deg) translateX(6px);
+        }
+
+        &.e-scroll-up-overlay {
+          left: 0;
+          right: auto;
+        }
+      }
+    }
+
+    > * {
+      height: inherit;
+    }
+
+    .e-vscroll-content {
+      display: inline-block;
+      height: auto;
+      position: relative;
+      touch-action: none;
+      width: 100%;
+
+      > * {
+        pointer-events: auto;
+      }
+    }
+
+    &.e-rtl {
+
+      .e-scroll-nav  {
+
+        &.e-scroll-up-nav {
+          left: auto;
+          right: 0;
+        }
+
+        &.e-scroll-down-nav {
+          left: 0;
+          right: auto;
+        }
+      }
+    }
+
+    .e-scroll-nav  {
+      align-items: center;
+      cursor: pointer;
+      display: flex;
+      height: $vscroll-nav-nrml-height;
+      overflow: hidden;
+      position: absolute;
+      width: 100%;
+
+      &.e-scroll-up-nav {
+        top: 0;
+      }
+
+      &.e-scroll-down-nav {
+        bottom: 0;
+      }
+
+      &.e-ie-align {
+        display: table;
+      }
+    }
+
+    .e-nav-arrow {
+      position: relative;
+    }
+
+    .e-nav-arrow.e-icons {
+      display: table-cell;
+      text-align: center;
+      vertical-align: middle;
+      width: 100%;
+    }
+  }
+}
+@include export-module('v-scroll-theme') {
+  /*! v-scroll theme */
+  #{&}.e-vscroll {
+
+    .e-icons {
+      color: $vscroll-default-icon-color;
+    }
+
+    &.e-rtl {
+
+      &.e-scroll-device {
+
+        .e-scroll-nav.e-scroll-right-nav {
+          border-color: $vscroll-device-arrow-border-color;
+          box-shadow: $vscroll-device-arrow-rtl-box-shadow;
+        }
+      }
+    }
+
+    &.e-scroll-device {
+
+      .e-scroll-nav.e-scroll-right-nav {
+        background-color: $vscroll-device-arrow-bg;
+        border-color: $vscroll-device-arrow-border-color;
+        border-width: $vscroll-device-arrow-border-size;
+        box-shadow: $vscroll-device-arrow-box-shadow;
+
+        .e-nav-arrow {
+          color: $vscroll-device-arrow-color;
+        }
+      }
+    }
+
+    .e-scroll-overlay {
+      background-color: transparent;
+      background-repeat: repeat-x;
+
+      &.e-scroll-up-overlay {
+        background-image: $vscroll-left-bg;
+      }
+
+      &.e-scroll-down-overlay {
+        background-image: $vscroll-right-bg;
+      }
+    }
+
+    &.e-rtl {
+
+      .e-scroll-nav  {
+        background: $vscroll-default-bg;
+
+        &:hover {
+          background: $vscroll-hover-bg;
+          border: $vscroll-hover-border;
+          border-color: $vscroll-hover-border-color;
+          color: $vscroll-hover-font;
+
+          @if $vscroll-skin == 'highcontrast' {
+
+            &:active {
+              background: $vscroll-press-bg;
+            }
+          }
+        }
+      }
+    }
+
+    &:not(.e-scroll-device) {
+
+      .e-scroll-nav  {
+
+        &:hover {
+          background: $vscroll-hover-bg;
+          border: $vscroll-hover-border;
+          color: $vscroll-hover-font;
+
+          @if $vscroll-skin == 'highcontrast' {
+            border: 1px solid $hover-border;
+
+            &:active {
+              border: 0;
+            }
+          }
+        }
+
+        &:focus {
+          background: $vscroll-hover-bg;
+          border: $vscroll-focus-border;
+          border-color: $vscroll-hover-border-color;
+          color: $vscroll-hover-font;
+
+          @if $vscroll-skin == 'highcontrast' {
+            background: inherit;
+            border: $vscroll-dash-border;
+          }
+        }
+
+        &:active {
+          background: $vscroll-press-bg;
+          border: $vscroll-active-border;
+          box-shadow: $vscroll-active-box-shadow;
+          color: $vscroll-active-font-color;
+
+          @if $vscroll-skin == 'highcontrast' {
+            .e-icons {
+              color: $selection-font;
+            }
+          }
+        }
+      }
+    }
+
+    .e-scroll-nav  {
+      background: $vscroll-default-bg;
+
+      &.e-scroll-up-nav {
+        border-bottom: $vscroll-border-size $vscroll-border-type $vscroll-default-border;
+      }
+
+      &.e-scroll-down-nav {
+        border-top: $vscroll-border-size $vscroll-border-type $vscroll-default-border;
+      }
+
+      &::after {
+        @include vscroll-btn-animation;
+      }
+
+      &:active::after {
+        @include vscroll-btn-animation-after;
+      }
+    }
+  }
+}

@@ -823,7 +823,7 @@ describe('Chart Control', () => {
                         lineBreakAlignment: 'Left',
                         labelIntersectAction: 'Trim'
                     },
-                    primaryYAxis: { },
+                    primaryYAxis: {},
 
                     chartArea: {
                         border: {
@@ -937,7 +937,7 @@ describe('Chart Control', () => {
                 label = document.getElementById('container0_AxisLabel_0');
                 anchor = label.getAttribute('text-anchor');
                 expect(anchor === 'start').toBe(true);
-                angle = +(label.getAttribute("transform").slice(7,9));
+                angle = +(label.getAttribute("transform").slice(7, 9));
                 expect(angle === 45);
                 label = document.getElementById('container0_AxisLabel_9');
                 anchor = label.getAttribute('text-anchor');
@@ -1044,7 +1044,7 @@ describe('Chart Control', () => {
                 label = document.getElementById('container0_AxisLabel_0');
                 anchor = label.getAttribute('text-anchor');
                 expect(anchor === 'middle').toBe(true);
-                expect(label.innerHTML.slice(0,7) === 'January');
+                expect(label.innerHTML.slice(0, 7) === 'January');
                 label = document.getElementById('container0_AxisLabel_9');
                 anchor = label.getAttribute('text-anchor');
                 expect(anchor === 'middle').toBe(true);
@@ -1310,7 +1310,6 @@ describe('Chart Control', () => {
             chart.refresh();
         });
     });
-
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

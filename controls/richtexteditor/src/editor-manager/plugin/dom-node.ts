@@ -10,6 +10,7 @@ export const markerClassName: { [key: string]: string } = {
 };
 /**
  * DOMNode internal plugin
+ * 
  * @hidden
  * @deprecated
  */
@@ -19,10 +20,13 @@ export class DOMNode {
     private nodeSelection: NodeSelection;
     /**
      * Constructor for creating the DOMNode plugin
+     *
+     * @param {Element} parent - specifies the parent element
+     * @param {Document} currentDocument - specifies the current document.
      * @hidden
      * @deprecated
      */
-    constructor(parent: Element, currentDocument: Document) {
+    public constructor(parent: Element, currentDocument: Document) {
         this.parent = parent;
         this.nodeSelection = new NodeSelection();
         this.currentDocument = currentDocument;
@@ -30,6 +34,9 @@ export class DOMNode {
 
     /**
      * contents method
+     *
+     * @param {Element} element - specifies the element.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -39,6 +46,9 @@ export class DOMNode {
 
     /**
      * isBlockNode method
+     *
+     * @param {Element} element - specifies the node element.
+     * @returns {boolean} - sepcifies the boolean value
      * @hidden
      * @deprecated
      */
@@ -48,6 +58,9 @@ export class DOMNode {
 
     /**
      * isLink method
+     *
+     * @param {Element} element - specifies the element
+     * @returns {boolean} -  specifies the boolean value
      * @hidden
      * @deprecated
      */
@@ -57,6 +70,9 @@ export class DOMNode {
 
     /**
      * blockParentNode method
+     *
+     * @param {Element} element - specifies the element
+     * @returns {Element} - returns the element value
      * @hidden
      * @deprecated
      */
@@ -73,15 +89,18 @@ export class DOMNode {
 
     /**
      * rawAttributes method
+     *
+     * @param {Element} element - specifies the element
+     * @returns {string} - returns the string value
      * @hidden
      * @deprecated
      */
     public rawAttributes(element: Element): { [key: string]: string } {
-        let rawAttr: { [key: string]: string; } = {};
-        let attributes: NamedNodeMap = element.attributes;
+        const rawAttr: { [key: string]: string } = {};
+        const attributes: NamedNodeMap = element.attributes;
         if (attributes.length > 0) {
             for (let d: number = 0; d < attributes.length; d++) {
-                let e: Attr = attributes[d];
+                const e: Attr = attributes[d];
                 rawAttr[e.nodeName] = e.value;
             }
         }
@@ -90,22 +109,27 @@ export class DOMNode {
 
     /**
      * attributes method
+     *
+     * @param {Element} element - sepcifies the element.
+     * @returns {string} - returns the string value.
      * @hidden
      * @deprecated
      */
     public attributes(element?: Element): string {
-        if (!element) { return ''; }
+        if (!element) {
+            return '';
+        }
         let attr: string = '';
-        let rawAttr: { [key: string]: string } = this.rawAttributes(element);
-        let orderRawAttr: string[] = Object.keys(rawAttr).sort();
+        const rawAttr: { [key: string]: string } = this.rawAttributes(element);
+        const orderRawAttr: string[] = Object.keys(rawAttr).sort();
         for (let e: number = 0; e < orderRawAttr.length; e++) {
-            let attrKey: string = orderRawAttr[e];
+            const attrKey: string = orderRawAttr[e];
             let attrValue: string = rawAttr[attrKey];
-            /* tslint:disable */
+            /* eslint-disable */
             if (attrValue.indexOf("'") < 0 && attrValue.indexOf('"') >= 0) {
                 attr += ' ' + attrKey + "='" + attrValue + "'";
             } else if (attrValue.indexOf('"') >= 0 && attrValue.indexOf("'") >= 0) {
-                /* tslint:enable */
+                /* eslint-enable */
                 attrValue = attrValue.replace(/"/g, '&quot;');
                 attr += ' ' + attrKey + '="' + attrValue + '"';
             } else {
@@ -117,18 +141,24 @@ export class DOMNode {
 
     /**
      * clearAttributes method
+     *
+     * @param {Element} element - specifies the element
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public clearAttributes(element: Element): void {
         for (let attr: NamedNodeMap = element.attributes, c: number = attr.length - 1; c >= 0; c--) {
-            let key: Attr = attr[c];
+            const key: Attr = attr[c];
             element.removeAttribute(key.nodeName);
         }
     }
 
     /**
      * openTagString method
+     *
+     * @param {Element} element - specifies the element.
+     * @returns {string} - returns the string
      * @hidden
      * @deprecated
      */
@@ -138,6 +168,9 @@ export class DOMNode {
 
     /**
      * closeTagString method
+     *
+     * @param {Element} element - specifies the element
+     * @returns {string} - returns the string value
      * @hidden
      * @deprecated
      */
@@ -147,6 +180,11 @@ export class DOMNode {
 
     /**
      * createTagString method
+     *
+     * @param {string} tagName - specifies the tag name
+     * @param {Element} relativeElement - specifies the relative element
+     * @param {string} innerHTML - specifies the string value
+     * @returns {string} - returns the string value.
      * @hidden
      * @deprecated
      */
@@ -156,6 +194,9 @@ export class DOMNode {
 
     /**
      * isList method
+     *
+     * @param {Element} element - specifes the element.
+     * @returns {boolean} - returns the boolean value
      * @hidden
      * @deprecated
      */
@@ -165,6 +206,9 @@ export class DOMNode {
 
     /**
      * isElement method
+     *
+     * @param {Element} element - specifes the element.
+     * @returns {boolean} - returns the boolean value
      * @hidden
      * @deprecated
      */
@@ -174,6 +218,9 @@ export class DOMNode {
 
     /**
      * isEditable method
+     *
+     * @param {Element} element - specifes the element.
+     * @returns {boolean} - returns the boolean value
      * @hidden
      * @deprecated
      */
@@ -184,6 +231,10 @@ export class DOMNode {
 
     /**
      * hasClass method
+     *
+     * @param {Element} element - specifes the element.
+     * @param {string} className - specifies the class name value
+     * @returns {boolean} - returns the boolean value
      * @hidden
      * @deprecated
      */
@@ -193,22 +244,29 @@ export class DOMNode {
 
     /**
      * replaceWith method
+     *
+     * @param {Element} element - specifes the element.
+     * @param {string} value - specifies the string value
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public replaceWith(element: Element, value: string): void {
-        let parentNode: Element = element.parentNode as Element;
+        const parentNode: Element = element.parentNode as Element;
         parentNode.insertBefore(this.parseHTMLFragment(value), element);
         detach(element);
     }
 
     /**
      * parseHTMLFragment method
+     *
+     * @param {string} value - specifies the string value
+     * @returns {Element} - returns the element
      * @hidden
      * @deprecated
      */
     public parseHTMLFragment(value: string): Element {
-        /* tslint:disable */
+        /* eslint-disable */
         let temp: HTMLTemplateElement = <HTMLTemplateElement>createElement('template');
         temp.innerHTML = value;
         if (temp.content instanceof DocumentFragment) {
@@ -216,11 +274,15 @@ export class DOMNode {
         } else {
             return document.createRange().createContextualFragment(value) as any;
         }
-        /* tslint:enable */
+        /* eslint-enable */
     }
 
     /**
      * wrap method
+     *
+     * @param {Element} element - specifies the element
+     * @param {Element} wrapper - specifies the element.
+     * @returns {Element} - returns the element
      * @hidden
      * @deprecated
      */
@@ -233,6 +295,10 @@ export class DOMNode {
 
     /**
      * insertAfter method
+     *
+     * @param {Element} newNode - specifies the new node element
+     * @param {Element} referenceNode - specifies the referenece node
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -242,6 +308,10 @@ export class DOMNode {
 
     /**
      * wrapInner method
+     *
+     * @param {Element} parent - specifies the parent element.
+     * @param {Element} wrapper - specifies the wrapper element.
+     * @returns {Element} - returns the element
      * @hidden
      * @deprecated
      */
@@ -249,7 +319,9 @@ export class DOMNode {
         parent.appendChild(wrapper);
         wrapper = parent.querySelector('.e-rte-wrap-inner');
         wrapper.classList.remove('e-rte-wrap-inner');
-        if (wrapper.classList.length === 0) { wrapper.removeAttribute('class'); }
+        if (wrapper.classList.length === 0) {
+            wrapper.removeAttribute('class');
+        }
         while (parent.firstChild !== wrapper) {
             wrapper.appendChild(parent.firstChild);
         }
@@ -258,11 +330,14 @@ export class DOMNode {
 
     /**
      * unWrap method
+     *
+     * @param {Element} element - specifies the element.
+     * @returns {Element} - returns the element.
      * @hidden
      * @deprecated
      */
     public unWrap(element: Element): Element[] {
-        let parent: Element = element.parentNode as Element;
+        const parent: Element = element.parentNode as Element;
         let unWrapNode: Element[] = [];
         while (element.firstChild) {
             unWrapNode.push(element.firstChild as Element);
@@ -275,6 +350,10 @@ export class DOMNode {
 
     /**
      * getSelectedNode method
+     *
+     * @param {Element} element - specifies the element
+     * @param {number} index - specifies the index value.
+     * @returns {Element} - returns the element
      * @hidden
      * @deprecated
      */
@@ -295,11 +374,15 @@ export class DOMNode {
 
     /**
      * nodeFinds method
+     *
+     * @param {Element} element - specifies the element.
+     * @param {Element[]} elements - specifies the array of elements
+     * @returns {Element[]} - returnts the array elements
      * @hidden
      * @deprecated
      */
     public nodeFinds(element: Element, elements: Element[]): Element[] {
-        let existNodes: Element[] = [];
+        const existNodes: Element[] = [];
         for (let i: number = 0; i < elements.length; i++) {
             if (element.contains(elements[i]) && element !== elements[i]) {
                 existNodes.push(elements[i]);
@@ -310,11 +393,13 @@ export class DOMNode {
 
     /**
      * isEditorArea method
+     *
+     * @returns {boolean} - returns the boolean value
      * @hidden
      * @deprecated
      */
     public isEditorArea(): boolean {
-        let range: Range = <Range>this.getRangePoint(0);
+        const range: Range = <Range>this.getRangePoint(0);
         let element: Element;
         for (element = range.commonAncestorContainer as Element; element && !this.isElement(element); null) {
             element = element.parentNode as Element;
@@ -324,11 +409,14 @@ export class DOMNode {
 
     /**
      * getRangePoint method
+     *
+     * @param {number} point - specifies the number value.
+     * @returns {Range} - returns the range.
      * @hidden
      * @deprecated
      */
     public getRangePoint(point?: number): Range | Range[] {
-        let selection: Selection = this.getSelection();
+        const selection: Selection = this.getSelection();
         let ranges: Range[] = [];
         if (selection && selection.getRangeAt && selection.rangeCount) {
             ranges = [];
@@ -347,6 +435,9 @@ export class DOMNode {
 
     /**
      * getPreviousNode method
+     *
+     * @param {Element} element - specifies the element
+     * @returns {Element} - returns the element
      * @hidden
      * @deprecated
      */
@@ -360,17 +451,25 @@ export class DOMNode {
 
     /**
      * encode method
+     *
+     * @param {string} value - specifies the string value
+     * @returns {string} - specifies the string value
      * @hidden
      * @deprecated
      */
     public encode(value: string): string {
-        let divNode: HTMLDivElement = document.createElement('div');
+        const divNode: HTMLDivElement = document.createElement('div');
         divNode.innerText = value;
+        // eslint-disable-next-line
         return divNode.innerHTML.replace(/<br\s*[\/]?>/gi, '\n');
     }
 
     /**
      * saveMarker method
+     *
+     * @param {NodeSelection} save - specifies the node selection,
+     * @param {string} action - specifies the action  value.
+     * @returns {NodeSelection} - returns the value
      * @hidden
      * @deprecated
      */
@@ -387,7 +486,7 @@ export class DOMNode {
             }
         }
         if (this.hasClass(start, markerClassName.startSelection) && start.classList.length > 1) {
-            let replace: string = this.createTagString(CONSTANT.DEFAULT_TAG, start, this.encode(start.textContent));
+            const replace: string = this.createTagString(CONSTANT.DEFAULT_TAG, start, this.encode(start.textContent));
             this.replaceWith(start, replace);
             start = this.parent.querySelector('.' + markerClassName.startSelection);
             start.classList.remove(markerClassName.startSelection);
@@ -396,7 +495,7 @@ export class DOMNode {
             startTextNode = this.unWrap(start)[0];
         }
         if (this.hasClass(end, markerClassName.endSelection) && end.classList.length > 1) {
-            let replace: string = this.createTagString(CONSTANT.DEFAULT_TAG, end, this.encode(end.textContent));
+            const replace: string = this.createTagString(CONSTANT.DEFAULT_TAG, end, this.encode(end.textContent));
             this.replaceWith(end, replace);
             end = this.parent.querySelector('.' + markerClassName.endSelection);
             end.classList.remove(markerClassName.endSelection);
@@ -415,23 +514,26 @@ export class DOMNode {
 
     /**
      * setMarker method
+     *
+     * @param {NodeSelection} save - specifies the node selection.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public setMarker(save: NodeSelection): void {
-        let range: Range = save.range;
-        let startChildNodes: NodeListOf<Node> = range.startContainer.childNodes;
-        let isTableStart: boolean = startChildNodes.length > 1 && startChildNodes[0].nodeName === 'TABLE';
+        const range: Range = save.range;
+        const startChildNodes: NodeListOf<Node> = range.startContainer.childNodes;
+        const isTableStart: boolean = startChildNodes.length > 1 && startChildNodes[0].nodeName === 'TABLE';
         let start: Element = <Element>((isTableStart ? getLastTextNode(startChildNodes[range.startOffset + 1]) :
             startChildNodes[range.startOffset]) || range.startContainer);
         let end: Element = <Element>(range.endContainer.childNodes[(range.endOffset > 0) ? (range.endOffset - 1) : range.endOffset]
             || range.endContainer);
         if ((start.nodeType === Node.ELEMENT_NODE && end.nodeType === Node.ELEMENT_NODE) && (start.contains(end) || end.contains(start))) {
-            let existNode: Element = start.contains(end) ? start : end;
-            let isElement: boolean = existNode.nodeType !== Node.TEXT_NODE;
+            const existNode: Element = start.contains(end) ? start : end;
+            const isElement: boolean = existNode.nodeType !== Node.TEXT_NODE;
             if (isElement) {
-                let nodes: Element[] = [];
-                let textNodes: Element[] = [];
+                const nodes: Element[] = [];
+                const textNodes: Element[] = [];
                 for (let node: Element = existNode; existNode.contains(node); null) {
                     if (nodes.indexOf(node) < 0 && node.childNodes && node.childNodes.length) {
                         nodes.push(node);
@@ -459,7 +561,7 @@ export class DOMNode {
                 CONSTANT.IGNORE_BLOCK_TAGS.indexOf((start.parentNode as Element).tagName.toLocaleLowerCase()) >= 0) ||
                 start.tagName === 'IMG')) {
                 this.replaceWith(start, this.marker(markerClassName.startSelection, this.encode(start.textContent)));
-                let markerStart: Element = (range.startContainer as HTMLElement).querySelector('.' + markerClassName.startSelection);
+                const markerStart: Element = (range.startContainer as HTMLElement).querySelector('.' + markerClassName.startSelection);
                 markerStart.appendChild(start);
             } else {
                 this.replaceWith(start, this.marker(markerClassName.startSelection, this.encode(start.textContent)));
@@ -467,7 +569,7 @@ export class DOMNode {
             if (end.nodeType !== Node.TEXT_NODE && end.tagName === 'BR' &&
                 CONSTANT.IGNORE_BLOCK_TAGS.indexOf((end.parentNode as Element).tagName.toLocaleLowerCase()) >= 0) {
                 this.replaceWith(end, this.marker(markerClassName.endSelection, this.encode(end.textContent)));
-                let markerEnd: Element = (range.endContainer as HTMLElement).querySelector('.' + markerClassName.endSelection);
+                const markerEnd: Element = (range.endContainer as HTMLElement).querySelector('.' + markerClassName.endSelection);
                 markerEnd.appendChild(end);
             } else {
                 this.ensureSelfClosingTag(end, markerClassName.endSelection, range);
@@ -479,6 +581,11 @@ export class DOMNode {
 
     /**
      * ensureSelfClosingTag method
+     *
+     * @param {Element} start - specifies the element.
+     * @param {string} className - specifes the class name string value
+     * @param {Range} range - specifies the range value
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -488,11 +595,11 @@ export class DOMNode {
             this.replaceWith(start, this.marker(className, this.encode(start.textContent)));
         } else if (start.tagName === 'BR') {
             this.replaceWith(start, this.marker(markerClassName.startSelection, this.encode(start.textContent)));
-            let markerStart: Element = (range.startContainer as HTMLElement).querySelector('.' + markerClassName.startSelection);
+            const markerStart: Element = (range.startContainer as HTMLElement).querySelector('.' + markerClassName.startSelection);
             markerStart.appendChild(start);
         } else {
             if (start.tagName === 'IMG') {
-                let parNode: HTMLParagraphElement = document.createElement('p');
+                const parNode: HTMLParagraphElement = document.createElement('p');
                 start.parentElement.insertBefore(parNode, start);
                 parNode.appendChild(start);
                 start = parNode.children[0];
@@ -500,7 +607,7 @@ export class DOMNode {
             if (start.tagName === 'TABLE') {
                 isTable = true;
                 if (start.textContent === '') {
-                    let tdNode: NodeListOf<HTMLElement> = start.querySelectorAll('td');
+                    const tdNode: NodeListOf<HTMLElement> = start.querySelectorAll('td');
                     start = tdNode[tdNode.length - 1];
                     start = !isNullOrUndefined(start.childNodes[0]) ? start.childNodes[0] as Element : start;
                 } else {
@@ -519,10 +626,10 @@ export class DOMNode {
                 this.replaceWith(start, this.marker(className, this.encode(start.textContent)));
             } else if (start.nodeName === 'BR') {
                 this.replaceWith(start, this.marker(markerClassName.endSelection, this.encode(start.textContent)));
-                let markerEnd: Element = (range.endContainer as HTMLElement).querySelector('.' + markerClassName.endSelection);
+                const markerEnd: Element = (range.endContainer as HTMLElement).querySelector('.' + markerClassName.endSelection);
                 markerEnd.appendChild(start);
             } else {
-                let marker: string = this.marker(className, '');
+                const marker: string = this.marker(className, '');
                 append([this.parseHTMLFragment(marker)], start);
             }
         }
@@ -530,14 +637,17 @@ export class DOMNode {
 
     /**
      * createTempNode method
+     *
+     * @param {Element} element - specifies the element.
+     * @returns {Element} - returns the element
      * @hidden
      * @deprecated
      */
     public createTempNode(element: Element): Element {
-        let textContent: string = element.textContent;
+        const textContent: string = element.textContent;
         if (element.tagName === 'BR') {
-            let wrapper: string = '<' + CONSTANT.DEFAULT_TAG + '></' + CONSTANT.DEFAULT_TAG + '>';
-            let node: Element = (element.parentNode as Element);
+            const wrapper: string = '<' + CONSTANT.DEFAULT_TAG + '></' + CONSTANT.DEFAULT_TAG + '>';
+            const node: Element = (element.parentNode as Element);
             if (CONSTANT.IGNORE_BLOCK_TAGS.indexOf(node.tagName.toLocaleLowerCase()) >= 0) {
                 element = this.wrap(element, this.parseHTMLFragment(wrapper));
             }
@@ -546,10 +656,10 @@ export class DOMNode {
                 element.classList.contains(markerClassName.endSelection))) ||
             textContent.replace(/\n/g, '').replace(/(^ *)|( *$)/g, '').length > 0 ||
             textContent.length && textContent.indexOf('\n') < 0)) {
-            let wrapper: string = '<' + CONSTANT.DEFAULT_TAG + '></' + CONSTANT.DEFAULT_TAG + '>';
-            let target: Element = element;
+            const wrapper: string = '<' + CONSTANT.DEFAULT_TAG + '></' + CONSTANT.DEFAULT_TAG + '>';
+            const target: Element = element;
             element = this.wrap(element, this.parseHTMLFragment(wrapper));
-            let ignoreBr: boolean = target.nodeType === Node.ELEMENT_NODE && target.firstChild && target.firstChild.nodeName === 'BR'
+            const ignoreBr: boolean = target.nodeType === Node.ELEMENT_NODE && target.firstChild && target.firstChild.nodeName === 'BR'
                 && (target.classList.contains(markerClassName.startSelection) ||
                     target.classList.contains(markerClassName.endSelection));
             if (!ignoreBr && element.nextElementSibling && element.nextElementSibling.tagName === 'BR') {
@@ -560,11 +670,13 @@ export class DOMNode {
     }
     /**
      * getImageTagInSelection method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public getImageTagInSelection(): NodeListOf<HTMLImageElement> {
-        let selection: Selection = this.getSelection();
+        const selection: Selection = this.getSelection();
         if (this.isEditorArea() && selection.rangeCount) {
             return (selection.focusNode as HTMLElement).querySelectorAll('img');
         }
@@ -572,19 +684,21 @@ export class DOMNode {
     }
     /**
      * blockNodes method
+     *
+     * @returns {Node[]} - returns the node array values
      * @hidden
      * @deprecated
      */
     public blockNodes(): Node[] {
-        let collectionNodes: Element[] = [];
-        let selection: Selection = this.getSelection();
+        const collectionNodes: Element[] = [];
+        const selection: Selection = this.getSelection();
         if (this.isEditorArea() && selection.rangeCount) {
-            let ranges: Range[] = <Range[]>this.getRangePoint();
+            const ranges: Range[] = <Range[]>this.getRangePoint();
             for (let j: number = 0; j < ranges.length; j++) {
                 let parentNode: Element;
-                let range: Range = ranges[j] as Range;
-                let startNode: Element = this.getSelectedNode(range.startContainer as Element, range.startOffset);
-                let endNode: Element = this.getSelectedNode(range.endContainer as Element, range.endOffset);
+                const range: Range = ranges[j] as Range;
+                const startNode: Element = this.getSelectedNode(range.startContainer as Element, range.startOffset);
+                const endNode: Element = this.getSelectedNode(range.endContainer as Element, range.endOffset);
                 if (this.isBlockNode(startNode) && collectionNodes.indexOf(startNode) < 0) {
                     collectionNodes.push(startNode);
                 }
@@ -594,7 +708,7 @@ export class DOMNode {
                         startNode.nodeType === Node.TEXT_NODE ||
                         startNode.classList.contains(markerClassName.startSelection) ||
                         startNode.classList.contains(markerClassName.endSelection))) {
-                        let tempNode: Element = startNode.previousSibling &&
+                        const tempNode: Element = startNode.previousSibling &&
                             (startNode.previousSibling as Element).nodeType === Node.TEXT_NODE ?
                             startNode.previousSibling as Element : startNode;
                         if (!startNode.nextSibling && !startNode.previousSibling && startNode.tagName === 'BR') {
@@ -606,7 +720,7 @@ export class DOMNode {
                         collectionNodes.push(parentNode);
                     }
                 }
-                let nodes: Element[] = [];
+                const nodes: Element[] = [];
                 for (let node: Element = startNode; node !== endNode && node !== this.parent; null) {
                     if (nodes.indexOf(node) < 0 && node.childNodes && node.childNodes.length) {
                         nodes.push(node);
@@ -652,9 +766,9 @@ export class DOMNode {
             }
         }
         for (let i: number = collectionNodes.length - 1; i > 0; i--) {
-            let nodes: Element[] = this.nodeFinds(collectionNodes[i], collectionNodes);
+            const nodes: Element[] = this.nodeFinds(collectionNodes[i], collectionNodes);
             if (nodes.length) {
-                let listNodes: Element[] = <NodeListOf<Element> & Element[]>collectionNodes[i].querySelectorAll('ul, ol');
+                const listNodes: Element[] = <NodeListOf<Element> & Element[]>collectionNodes[i].querySelectorAll('ul, ol');
                 if (collectionNodes[i].tagName === 'LI' && listNodes.length > 0) {
                     continue;
                 } else {

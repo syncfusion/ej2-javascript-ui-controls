@@ -1,7 +1,7 @@
 /**
  * drill down sample
  */
-//tslint:disable
+/* eslint-disable */
 export let DrillDown: Object[] = [
     { Continent:[
        { Name: "Africa",Population: 1216130000, States: [

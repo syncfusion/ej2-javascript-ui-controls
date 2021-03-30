@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { extend } from '@syncfusion/ej2-base';
 import { EventFieldsMapping } from '../base/interface';
 import { getDateFromRecurrenceDateString, getRecurrenceStringFromDate } from '../../recurrence-editor/date-generator';
@@ -13,36 +14,36 @@ export class ICalendarExport {
         this.parent = parent;
     }
 
-    public initializeCalendarExport(fileName: string, customData: Object[]): void {
-        let eventsData: Object[] = (customData) ? customData : <Object[]>extend([], this.parent.eventsData, null, true);
+    public initializeCalendarExport(fileName: string, customData: Record<string, any>[]): void {
+        let eventsData: Record<string, any>[] = (customData) ? customData :
+            extend([], this.parent.eventsData, null, true) as Record<string, any>[];
         eventsData = this.parent.eventBase.sortByTime(eventsData);
         const SEPARATOR: string = (navigator.appVersion.indexOf('Win') !== -1) ? '\r\n' : '\n';
-        let iCalendarEvents: string[] = [];
-        let filterCollection: { [key: string]: Object }[] = [];
-        let timeZone: string = this.parent.timezone || this.parent.tzModule.getLocalTimezoneName();
-        let fields: EventFieldsMapping = this.parent.eventFields;
-        eventsData.forEach((eventObj: { [key: string]: Object }) => {
+        const iCalendarEvents: string[] = [];
+        const filterCollection: Record<string, any>[] = [];
+        const timeZone: string = this.parent.timezone || this.parent.tzModule.getLocalTimezoneName();
+        const fields: EventFieldsMapping = this.parent.eventFields;
+        eventsData.forEach((eventObj: Record<string, any>) => {
             let uId: string = this.parent.eventBase.generateGuid();
-            let editedExDate: string[] = [];
+            const editedExDate: string[] = [];
             if (eventObj[fields.recurrenceID]) {
-                let filter: { [key: string]: Object }[] =
+                const filter: Record<string, any>[] =
                     this.filterEvents(filterCollection, fields.id, eventObj[fields.recurrenceID] as number);
-                uId = (filter[0] as { [key: string]: Object }).UID as string;
+                uId = filter[0].UID as string;
             }
             if (!eventObj[fields.recurrenceID] && eventObj[fields.recurrenceRule] && eventObj[fields.recurrenceException]) {
-                let exceptionDateList: string[];
-                let exDate: string[] = ((eventObj[fields.recurrenceException]) as string).split(',');
-                let editedObj: { [key: string]: Object }[] =
+                const exDate: string[] = ((eventObj[fields.recurrenceException]) as string).split(',');
+                const editedObj: Record<string, any>[] =
                     this.filterEvents(eventsData, fields.recurrenceID, eventObj[fields.id] as number);
-                editedObj.forEach((edited: { [key: string]: Object }) => {
+                editedObj.forEach((edited: Record<string, any>) => {
                     editedExDate.push(getRecurrenceStringFromDate(edited[fields.startTime] as Date));
                 });
-                exceptionDateList = exDate.filter((value: string) => (editedExDate.indexOf(value) === -1));
+                const exceptionDateList: string[] = exDate.filter((value: string) => editedExDate.indexOf(value) === -1);
                 eventObj[fields.recurrenceException] = (exceptionDateList.length > 0) ? (exceptionDateList.join(',') + ',') : '';
             }
-            let startZone: string = (eventObj[fields.startTimezone] || timeZone) as string;
-            let endZone: string = (eventObj[fields.endTimezone] || timeZone) as string;
-            let calendarEvent: string[] = [
+            const startZone: string = (eventObj[fields.startTimezone] || timeZone) as string;
+            const endZone: string = (eventObj[fields.endTimezone] || timeZone) as string;
+            const calendarEvent: string[] = [
                 'BEGIN:VEVENT',
                 'LOCATION:' + (eventObj[fields.location] || ''),
                 'SUMMARY:' + (eventObj[fields.subject] || ''),
@@ -65,7 +66,7 @@ export class ICalendarExport {
                 calendarEvent.splice(4, 0, 'RRULE:' + eventObj[fields.recurrenceRule]);
             }
             if (eventObj[fields.recurrenceException]) {
-                let exDate: string[] = (eventObj[fields.recurrenceException] as string).split(',');
+                const exDate: string[] = (eventObj[fields.recurrenceException] as string).split(',');
                 for (let i: number = 0; i < exDate.length - 1; i++) {
                     calendarEvent.splice(5, 0, 'EXDATE:' +
                         this.convertDateToString(getDateFromRecurrenceDateString(exDate[i]), eventObj[fields.isAllDay] as boolean));
@@ -75,57 +76,57 @@ export class ICalendarExport {
                 calendarEvent.splice(4, 0, 'RECURRENCE-ID;TZID="' + startZone + '":'
                     + this.convertDateToString(eventObj[fields.startTime] as Date, eventObj[fields.isAllDay] as boolean));
             }
-            let customFields: string[] = this.customFieldFilter(eventObj, fields);
+            const customFields: string[] = this.customFieldFilter(eventObj, fields);
             if (customFields.length > 0) {
                 customFields.forEach((customField: string) =>
                     calendarEvent.splice(4, 0, customField + ':' + (eventObj[customField] || ''))
                 );
             }
-            let app: { [key: string]: Object } = <{ [key: string]: Object }>extend({}, eventObj);
+            const app: Record<string, any> = <Record<string, any>>extend({}, eventObj);
             app.UID = uId;
             filterCollection.push(app);
             iCalendarEvents.push(calendarEvent.join(SEPARATOR));
         });
-        let iCalendar: string = [
+        const iCalendar: string = [
             'BEGIN:VCALENDAR',
             'PRODID:-//Syncfusion Inc//Scheduler//EN',
             'VERSION:2.0',
             'CALSCALE:GREGORIAN',
             'METHOD:PUBLISH',
             'X-WR-CALNAME:' + (fileName || 'Calendar'),
-            'X-WR-TIMEZONE:' + timeZone,
+            'X-WR-TIMEZONE:' + timeZone
         ].join(SEPARATOR);
-        let icsString: string = iCalendar + SEPARATOR + iCalendarEvents.join(SEPARATOR) + SEPARATOR + 'END:VCALENDAR';
+        const icsString: string = iCalendar + SEPARATOR + iCalendarEvents.join(SEPARATOR) + SEPARATOR + 'END:VCALENDAR';
         this.download(icsString, fileName);
     }
 
-    private customFieldFilter(eventObj: object, fields: EventFieldsMapping): string[] {
-        let defaultFields: string[] = Object.keys(fields).map((key: string) => (fields as { [key: string]: Object })[key]) as string[];
-        let eventFields: string[] = Object.keys(eventObj);
+    private customFieldFilter(eventObj: Record<string, any>, fields: EventFieldsMapping): string[] {
+        const defaultFields: string[] = Object.keys(fields).map((key: string) => (fields as Record<string, any>)[key]) as string[];
+        const eventFields: string[] = Object.keys(eventObj);
         return eventFields.filter((value: string) => (defaultFields.indexOf(value) === -1) && (value !== 'Guid'));
     }
 
     private convertDateToString(eventDate: Date, allDay?: boolean): string {
-        let year: string = ('0000' + (eventDate.getFullYear().toString())).slice(-4);
-        let month: string = ('00' + ((eventDate.getMonth() + 1).toString())).slice(-2);
-        let date: string = ('00' + ((eventDate.getDate()).toString())).slice(-2);
-        let hours: string = ('00' + (eventDate.getHours().toString())).slice(-2);
-        let minutes: string = ('00' + (eventDate.getMinutes().toString())).slice(-2);
-        let seconds: string = ('00' + (eventDate.getSeconds().toString())).slice(-2);
-        let timeString: string = (allDay) ? year + month + date : year + month + date + 'T' + hours + minutes + seconds;
+        const year: string = ('0000' + (eventDate.getFullYear().toString())).slice(-4);
+        const month: string = ('00' + ((eventDate.getMonth() + 1).toString())).slice(-2);
+        const date: string = ('00' + ((eventDate.getDate()).toString())).slice(-2);
+        const hours: string = ('00' + (eventDate.getHours().toString())).slice(-2);
+        const minutes: string = ('00' + (eventDate.getMinutes().toString())).slice(-2);
+        const seconds: string = ('00' + (eventDate.getSeconds().toString())).slice(-2);
+        const timeString: string = (allDay) ? year + month + date : year + month + date + 'T' + hours + minutes + seconds;
         return timeString;
     }
 
     private download(icsString: string, fileName: string): void {
-        let buffer: Blob = new Blob([icsString], { type: 'data:text/calendar;charset=utf8' });
+        const buffer: Blob = new Blob([icsString], { type: 'data:text/calendar;charset=utf8' });
         fileName = (fileName || 'Calendar') + '.ics';
-        if (!(!navigator.msSaveBlob)) {
+        if (navigator.msSaveBlob) {
             navigator.msSaveBlob(buffer, fileName);
         } else {
-            let downloadLink: HTMLAnchorElement = document.createElementNS('http://www.w3.org/1999/xhtml', 'a') as HTMLAnchorElement;
+            const downloadLink: HTMLAnchorElement = document.createElementNS('http://www.w3.org/1999/xhtml', 'a') as HTMLAnchorElement;
             downloadLink.download = fileName;
             downloadLink.href = URL.createObjectURL(buffer);
-            let event: MouseEvent = document.createEvent('MouseEvent');
+            const event: MouseEvent = document.createEvent('MouseEvent');
             event.initEvent('click', true, true);
             downloadLink.dispatchEvent(event);
             setTimeout((): void => {
@@ -135,24 +136,17 @@ export class ICalendarExport {
         }
     }
 
-    private filterEvents(data: object[], field: string, value: number): { [key: string]: Object }[] {
-        return data.filter((e: { [key: string]: Object }) => e[field] === value) as { [key: string]: Object }[];
+    private filterEvents(data: Record<string, any>[], field: string, value: number): Record<string, any>[] {
+        return data.filter((e: Record<string, any>) => e[field] === value);
     }
 
-    /**
-     * Get module name.
-     */
     protected getModuleName(): string {
         return 'iCalendarExport';
     }
 
-    /**
-     * To destroy the ICalendarExport. 
-     * @return {void}
-     * @private
-     */
     public destroy(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent = null;
     }
+
 }

@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * Schedule keyboard interaction spec 
+ * Schedule keyboard interaction spec
  */
 import { createElement } from '@syncfusion/ej2-base';
 import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda } from '../../../src/schedule/index';
@@ -11,10 +12,9 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
 describe('Keyboard interaction', () => {
     beforeAll(() => {
-        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
             (this as any).skip(); //Skips test (in Chai)
             return;
@@ -23,7 +23,6 @@ describe('Keyboard interaction', () => {
 
     describe('allowKeyboardInteraction', () => {
         let schObj: Schedule;
-        // tslint:disable-next-line:no-any
         let keyModule: any;
         beforeEach(() => {
             document.body.appendChild(createElement('div', { id: 'Schedule' }));
@@ -64,11 +63,10 @@ describe('Keyboard interaction', () => {
 
     describe('vertical view', () => {
         let schObj: Schedule;
-        // tslint:disable-next-line:no-any
         let keyModule: any;
-        beforeAll((done: Function) => {
-            let elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
-            let schOptions: ScheduleModel = { selectedDate: new Date(2017, 9, 4) };
+        beforeAll((done: DoneFn) => {
+            const elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
+            const schOptions: ScheduleModel = { selectedDate: new Date(2017, 9, 4) };
             schObj = util.createSchedule(schOptions, [], done, elem);
             keyModule = schObj.keyboardInteractionModule;
         });
@@ -79,7 +77,7 @@ describe('Keyboard interaction', () => {
             expect(keyModule.getModuleName()).toEqual('keyboard');
         });
         it('home key', () => {
-            let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.classList).not.toContain('e-selected-cell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             keyModule.keyActionHandler({ action: 'home' });
@@ -152,11 +150,10 @@ describe('Keyboard interaction', () => {
 
     describe('vertical view with appointments', () => {
         let schObj: Schedule;
-        // tslint:disable-next-line:no-any
         let keyModule: any;
-        beforeAll((done: Function) => {
-            let elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
-            let schOptions: ScheduleModel = { selectedDate: new Date(2017, 10, 2) };
+        beforeAll((done: DoneFn) => {
+            const elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
+            const schOptions: ScheduleModel = { selectedDate: new Date(2017, 10, 2) };
             schObj = util.createSchedule(schOptions, defaultData, done, elem);
             keyModule = schObj.keyboardInteractionModule;
         });
@@ -164,8 +161,8 @@ describe('Keyboard interaction', () => {
             util.destroy(schObj);
         });
         it('Tab key work cell to appointment selection', () => {
-            let allDayRowCells: HTMLElement[] = [].slice.call(schObj.element.querySelector('.e-all-day-row').children);
-            let workCell: HTMLElement = allDayRowCells[0] as HTMLElement;
+            const allDayRowCells: HTMLElement[] = [].slice.call(schObj.element.querySelector('.e-all-day-row').children);
+            const workCell: HTMLElement = allDayRowCells[0] as HTMLElement;
             workCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'tab', target: workCell, shiftKey: false, preventDefault: (): void => { /** Null */ } });
@@ -185,11 +182,11 @@ describe('Keyboard interaction', () => {
         });
         it('Escape key', () => {
             (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
-            let firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
+            const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             expect(firstWorkCell[0].classList).toContain('e-appointment-border');
             expect(firstWorkCell[0].getAttribute('aria-selected')).toEqual('true');
             keyModule.keyActionHandler({ action: 'enter', target: firstWorkCell[0] });
-            let popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            const popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(popup.classList.contains('e-popup-open')).toEqual(true);
             keyModule.keyActionHandler({ action: 'escape' });
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
@@ -197,11 +194,11 @@ describe('Keyboard interaction', () => {
         it('Enter key', () => {
             util.triggerMouseEvent(schObj.element.querySelector('.e-appointment'), 'click');
             keyModule.keyActionHandler({ action: 'escape' });
-            let firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
+            const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             expect(firstWorkCell[0].classList).toContain('e-appointment-border');
             expect(firstWorkCell[0].getAttribute('aria-selected')).toEqual('true');
             keyModule.keyActionHandler({ action: 'enter', target: firstWorkCell[0] });
-            let popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            const popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(popup.classList).toContain('e-popup-open');
             keyModule.keyActionHandler({ action: 'escape' });
             expect(popup.classList).toContain('e-popup-close');
@@ -211,7 +208,7 @@ describe('Keyboard interaction', () => {
             expect(popup.classList).toContain('e-popup-close');
         });
         it('Enter key for edit option', () => {
-            let appointments: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const appointments: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             appointments[0].click();
             let popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(popup).toBeTruthy();
@@ -219,7 +216,7 @@ describe('Keyboard interaction', () => {
                 action: 'enter', target: popup.querySelector('.e-event-edit'),
                 shiftKey: false, preventDefault: (): void => { /** Null */ }
             });
-            let cancelButton: HTMLElement = schObj.eventWindow.dialogObject.element.querySelector('.e-event-cancel') as HTMLElement;
+            const cancelButton: HTMLElement = schObj.eventWindow.dialogObject.element.querySelector('.e-event-cancel') as HTMLElement;
             cancelButton.click();
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
             appointments[0].click();
@@ -234,7 +231,7 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
         });
         it('Enter key to work cell for create option', () => {
-            let firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(firstWorkCell[firstWorkCell.length - 10].classList).not.toContain('e-selected-cell');
             expect(firstWorkCell[firstWorkCell.length - 10].getAttribute('aria-selected')).toEqual('false');
             firstWorkCell[firstWorkCell.length - 10].click();
@@ -244,7 +241,7 @@ describe('Keyboard interaction', () => {
                 action: 'enter', target: popup.querySelector('.e-event-details'),
                 shiftKey: false, preventDefault: (): void => { /** Null */ }
             });
-            let cancelButton: HTMLElement = schObj.eventWindow.dialogObject.element.querySelector('.e-event-cancel') as HTMLElement;
+            const cancelButton: HTMLElement = schObj.eventWindow.dialogObject.element.querySelector('.e-event-cancel') as HTMLElement;
             cancelButton.click();
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             firstWorkCell[firstWorkCell.length - 10].click();
@@ -265,9 +262,8 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
         });
         it('ShiftTab key work cell to appoitnment selection', () => {
-            let allDayRowCells: HTMLElement[] = [].slice.call(schObj.element.
-                querySelector('.e-all-day-row').children);
-            let workCell: HTMLElement = allDayRowCells[allDayRowCells.length - 1] as HTMLElement;
+            const allDayRowCells: HTMLElement[] = [].slice.call(schObj.element.querySelector('.e-all-day-row').children);
+            const workCell: HTMLElement = allDayRowCells[allDayRowCells.length - 1] as HTMLElement;
             workCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({
@@ -277,7 +273,7 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
         });
         it('multiple event selection via ctrl plus click', () => {
-            let firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             firstWorkCell[0].click();
             util.triggerMouseEvent(firstWorkCell[1], 'click', 0, 0, false, true);
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(2);
@@ -288,7 +284,7 @@ describe('Keyboard interaction', () => {
         it('Delete key', () => {
             (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
-            let selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
+            const selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             expect(selectedElement[0].classList).toContain('e-appointment-border');
             expect(selectedElement[0].getAttribute('aria-selected')).toEqual('true');
             keyModule.keyActionHandler({ action: 'delete', target: selectedElement[0] });
@@ -298,7 +294,7 @@ describe('Keyboard interaction', () => {
         it('Right arrow key with appointment selection', () => {
             (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
-            let selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
+            const selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'rightArrow', target: selectedElement[0] });
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(0);
@@ -307,7 +303,7 @@ describe('Keyboard interaction', () => {
         it('Left arrow key with appointment selection', () => {
             (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
-            let selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
+            const selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'leftArrow', target: selectedElement[0] });
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(0);
@@ -315,7 +311,7 @@ describe('Keyboard interaction', () => {
         });
         it('Tab/shift key for event edit option', () => {
             (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
-            let popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            const popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(popup).toBeTruthy();
             keyModule.keyActionHandler({
                 action: 'tab', target: popup.querySelector('.e-event-edit'),
@@ -333,11 +329,11 @@ describe('Keyboard interaction', () => {
             });
         });
         it('Tab/shift key to work cell for create option', () => {
-            let firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(firstWorkCell[0].classList).not.toContain('e-selected-cell');
             expect(firstWorkCell[0].getAttribute('aria-selected')).toEqual('false');
             firstWorkCell[0].click();
-            let popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            const popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(popup).toBeTruthy();
             keyModule.keyActionHandler({
                 action: 'tab', target: popup.querySelector('.e-event-create'),
@@ -379,11 +375,11 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'escape' });
         });
         it('Negative case for Tab key work cell selection', () => {
-            let allDayRowCells: HTMLElement[] = [].slice.call(schObj.element.querySelector('.e-all-day-row').children);
+            const allDayRowCells: HTMLElement[] = [].slice.call(schObj.element.querySelector('.e-all-day-row').children);
             expect(allDayRowCells.length).toEqual(7);
-            let workCell: HTMLElement = allDayRowCells[0] as HTMLElement;
+            const workCell: HTMLElement = allDayRowCells[0] as HTMLElement;
             workCell.click();
-            let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            const cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
             expect(cellPopup.children[0].classList).toContain('e-cell-popup');
             keyModule.keyActionHandler({ action: 'escape' });
@@ -394,11 +390,10 @@ describe('Keyboard interaction', () => {
     });
     describe('vertical view with appointments-month view', () => {
         let schObj: Schedule;
-        // tslint:disable-next-line:no-any
         let keyModule: any;
-        beforeAll((done: Function) => {
-            let elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
-            let schOptions: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 10, 2) };
+        beforeAll((done: DoneFn) => {
+            const elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
+            const schOptions: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 10, 2) };
             schObj = util.createSchedule(schOptions, defaultData, done, elem);
             keyModule = schObj.keyboardInteractionModule;
         });
@@ -406,9 +401,9 @@ describe('Keyboard interaction', () => {
             util.destroy(schObj);
         });
         it('Escape key', () => {
-            let moreIndicator: HTMLElement = schObj.element.querySelector('.e-more-indicator') as HTMLElement;
+            const moreIndicator: HTMLElement = schObj.element.querySelector('.e-more-indicator') as HTMLElement;
             moreIndicator.click();
-            let popup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            const popup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             expect(popup).toBeTruthy();
             expect(popup.classList.contains('e-popup-open')).toBe(true);
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(0);
@@ -423,9 +418,9 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
         });
         it('Enter key to close more event list', () => {
-            let moreIndicator: HTMLElement = schObj.element.querySelector('.e-more-indicator') as HTMLElement;
+            const moreIndicator: HTMLElement = schObj.element.querySelector('.e-more-indicator') as HTMLElement;
             moreIndicator.click();
-            let popup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            const popup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             expect(popup).toBeTruthy();
             expect(popup.classList.contains('e-popup-open')).toBe(true);
             keyModule.keyActionHandler({ action: 'enter', target: popup.querySelector('.e-more-event-close') });
@@ -433,11 +428,11 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
         });
         it('Tab key for more event list', () => {
-            let moreIndicator: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicator: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             moreIndicator[1].click();
-            let popup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            const popup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             expect(popup.classList.contains('e-popup-open')).toBe(true);
-            let apps: HTMLElement[] = [].slice.call(popup.querySelectorAll('.e-appointment'));
+            const apps: HTMLElement[] = [].slice.call(popup.querySelectorAll('.e-appointment'));
             apps[apps.length - 1].focus();
             keyModule.keyActionHandler({
                 action: 'tab', target: apps[apps.length - 1],
@@ -448,9 +443,9 @@ describe('Keyboard interaction', () => {
             expect(popup.classList.contains('e-popup-open')).toBe(false);
         });
         it('Shift Tab key for more event list', () => {
-            let moreIndicator: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicator: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             moreIndicator[1].click();
-            let popup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            const popup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             expect(popup.classList.contains('e-popup-open')).toBe(true);
             (popup.querySelector('.e-more-event-close') as HTMLElement).focus();
             keyModule.keyActionHandler({
@@ -468,9 +463,9 @@ describe('Keyboard interaction', () => {
             expect(popup.classList.contains('e-popup-open')).toBe(false);
         });
         it('Enter key to change current view', () => {
-            let moreIndicator: HTMLElement = schObj.element.querySelector('.e-more-indicator') as HTMLElement;
+            const moreIndicator: HTMLElement = schObj.element.querySelector('.e-more-indicator') as HTMLElement;
             moreIndicator.click();
-            let popup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            const popup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             expect(popup).toBeTruthy();
             expect(popup.classList.contains('e-popup-open')).toBe(true);
             keyModule.keyActionHandler({ action: 'enter', target: popup.querySelector('.e-header-date') });
@@ -481,11 +476,10 @@ describe('Keyboard interaction', () => {
 
     describe('vertical view with appointments for agenda view', () => {
         let schObj: Schedule;
-        // tslint:disable-next-line:no-any
         let keyModule: any;
-        beforeAll((done: Function) => {
-            let elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
-            let schOptions: ScheduleModel = { width: '100%', height: '500px', currentView: 'Agenda', selectedDate: new Date(2017, 10, 2) };
+        beforeAll((done: DoneFn) => {
+            const elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
+            const schOptions: ScheduleModel = { width: '100%', height: '500px', currentView: 'Agenda', selectedDate: new Date(2017, 10, 2) };
             schObj = util.createSchedule(schOptions, defaultData, done, elem);
             keyModule = schObj.keyboardInteractionModule;
         });
@@ -497,7 +491,7 @@ describe('Keyboard interaction', () => {
         });
         it('Down key press', () => {
             schObj.element.focus();
-            let firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(firstWorkCell[0].classList).not.toContain('e-appointment-border');
             keyModule.keyActionHandler({ action: 'downArrow', target: schObj.element });
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
@@ -507,7 +501,7 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
         });
         it('Up key press', () => {
-            let firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
+            const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             expect(firstWorkCell[0].classList).toContain('e-appointment-border');
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
             keyModule.keyActionHandler({ action: 'upArrow', target: schObj.element });
@@ -516,7 +510,7 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
         });
         it('Right arrow key with appointment selection', () => {
-            let selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
+            const selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             expect(schObj.element.querySelectorAll('.e-active-appointment-agenda').length).toEqual(1);
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
             keyModule.keyActionHandler({ action: 'rightArrow', target: selectedElement[0] });
@@ -525,10 +519,9 @@ describe('Keyboard interaction', () => {
 
     describe('vertical arrow keys', () => {
         let schObj: Schedule;
-        // tslint:disable-next-line:no-any
         let keyModule: any;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = { selectedDate: new Date(2017, 9, 4) };
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = { selectedDate: new Date(2017, 9, 4) };
             schObj = util.createSchedule(schOptions, [], done);
             keyModule = schObj.keyboardInteractionModule;
         });
@@ -536,10 +529,10 @@ describe('Keyboard interaction', () => {
             util.destroy(schObj);
         });
         it('multiple cell selection via shift plus click', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             keyModule.initialTarget = workCells[2];
             util.triggerMouseEvent(workCells[17], 'click', 0, 0, true);
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(53);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -549,11 +542,11 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
         });
         it('multiple work cells selection via mouse', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             util.triggerMouseEvent(workCells[2], 'mousedown');
             util.triggerMouseEvent(workCells[17], 'mousemove');
             util.triggerMouseEvent(workCells[17], 'mouseup');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(53);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -563,11 +556,11 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
         });
         it('multiple allday cells selection via mouse', () => {
-            let alldayCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-container .e-all-day-cells'));
+            const alldayCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-container .e-all-day-cells'));
             util.triggerMouseEvent(alldayCells[2], 'mousedown');
             util.triggerMouseEvent(alldayCells[4], 'mousemove');
             util.triggerMouseEvent(alldayCells[4], 'mouseup');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
@@ -577,12 +570,12 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
         });
         it('mouse move out of schedule while selection via mouse', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             util.triggerMouseEvent(workCells[2], 'mousedown');
             util.triggerMouseEvent(schObj.element.querySelector('.e-time-cells') as HTMLElement, 'mousemove');
             util.triggerMouseEvent(workCells[29], 'mousemove');
             util.triggerMouseEvent(workCells[29], 'mouseup');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(45);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -594,9 +587,9 @@ describe('Keyboard interaction', () => {
         });
         it('down arrow', () => {
             keyModule.keyActionHandler({ action: 'home' });
-            let targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             keyModule.keyActionHandler({ action: 'downArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
@@ -604,11 +597,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
         it('down arrow - last row cell', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'downArrow', target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
@@ -616,11 +609,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(47);
         });
         it('down arrow - all day row cell', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-all-day-cells')[3] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-all-day-cells')[3] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'downArrow', target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
@@ -629,11 +622,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
         it('up arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'upArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -642,11 +635,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
         it('up arrow first row cell', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[1] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[1] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'upArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -655,11 +648,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('up arrow - last row cell', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'upArrow', target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -668,11 +661,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(46);
         });
         it('up arrow - all day row cell', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-all-day-cells')[3] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-all-day-cells')[3] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'upArrow', target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
@@ -681,11 +674,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
         it('right arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'rightArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -694,11 +687,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(2);
         });
         it('right arrow first row cell', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[1] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[1] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'rightArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -707,13 +700,13 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('right arrow - last work cell next navigation', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
             keyModule.keyActionHandler({ action: 'rightArrow', target: target });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 08 - 14, 2017');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -722,13 +715,13 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(47);
         });
         it('right arrow - last allday cell next navigation', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-date-header-container .e-all-day-cells')[6] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-date-header-container .e-all-day-cells')[6] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 08 - 14, 2017');
             keyModule.keyActionHandler({ action: 'rightArrow', target: target });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 15 - 21, 2017');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
@@ -737,11 +730,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
         it('right arrow - all day row cell', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-all-day-cells')[3] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-all-day-cells')[3] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'rightArrow', target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
@@ -750,11 +743,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
         it('left arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'leftArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -763,13 +756,13 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(2);
         });
         it('left arrow first work cell previous navigation', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 15 - 21, 2017');
             keyModule.keyActionHandler({ action: 'leftArrow', target: targetCell });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 08 - 14, 2017');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -778,13 +771,13 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('left arrow first allday cell previous navigation', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-date-header-container .e-all-day-cells')[0] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-date-header-container .e-all-day-cells')[0] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 08 - 14, 2017');
             keyModule.keyActionHandler({ action: 'leftArrow', target: targetCell });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
@@ -793,11 +786,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
         it('left arrow - last row cell', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'leftArrow', target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -806,11 +799,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(47);
         });
         it('left arrow - all day row cell', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-all-day-cells')[3] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-all-day-cells')[3] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'leftArrow', target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
@@ -819,12 +812,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
         it('shiftDown arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftDownArrow', shiftKey: true, target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
@@ -834,12 +827,12 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
         });
         it('shiftDown arrow - last row cell', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = target;
             keyModule.keyActionHandler({ action: 'shiftDownArrow', shiftKey: true, target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
@@ -847,12 +840,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(47);
         });
         it('shiftDown arrow - all day row cell', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-all-day-cells')[3] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-all-day-cells')[3] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = target;
             keyModule.keyActionHandler({ action: 'shiftDownArrow', shiftKey: true, target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
@@ -861,12 +854,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
         it('shiftUp arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftUpArrow', shiftKey: true, target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -875,12 +868,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
         it('shiftUp arrow first row cell', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[1] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[1] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftUpArrow', shiftKey: true, target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -889,12 +882,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('shiftUp arrow - last row cell', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = target;
             keyModule.keyActionHandler({ action: 'shiftUpArrow', shiftKey: true, target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -903,12 +896,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(46);
         });
         it('shiftUp arrow - all day row cell', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-all-day-cells')[3] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-all-day-cells')[3] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = target;
             keyModule.keyActionHandler({ action: 'shiftUpArrow', shiftKey: true, target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
@@ -917,12 +910,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
         it('shiftRight arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(51);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -933,14 +926,14 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(100);
         });
         it('shiftRight arrow - prevent last work cell next navigation', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = target;
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: target });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -949,14 +942,14 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(47);
         });
         it('shiftRight arrow - last allday cell next navigation', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-date-header-container .e-all-day-cells')[6] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-date-header-container .e-all-day-cells')[6] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = target;
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: target });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
@@ -965,12 +958,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
         it('shiftRight arrow - all day row cell', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-all-day-cells')[3] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-all-day-cells')[3] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = target;
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
@@ -979,12 +972,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
         it('shiftLeft arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(51);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -995,14 +988,14 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(100);
         });
         it('shiftLeft arrow first work cell prevent previous navigation', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: targetCell });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -1011,14 +1004,14 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('shiftLeft arrow first allday cell prevent previous navigation', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-date-header-container .e-all-day-cells')[0] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-date-header-container .e-all-day-cells')[0] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: targetCell });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
@@ -1027,12 +1020,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
         it('shiftLeft arrow - last row cell', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = target;
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(51);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -1041,12 +1034,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(47);
         });
         it('shiftLeft arrow - all day row cell', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-all-day-cells')[3] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-all-day-cells')[3] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = target;
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
@@ -1058,10 +1051,9 @@ describe('Keyboard interaction', () => {
 
     describe('vertical month view arrow keys', () => {
         let schObj: Schedule;
-        // tslint:disable-next-line:no-any
         let keyModule: any;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = { selectedDate: new Date(2017, 9, 4), currentView: 'Month' };
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = { selectedDate: new Date(2017, 9, 4), currentView: 'Month' };
             schObj = util.createSchedule(schOptions, [], done);
             keyModule = schObj.keyboardInteractionModule;
         });
@@ -1069,11 +1061,11 @@ describe('Keyboard interaction', () => {
             util.destroy(schObj);
         });
         it('multiple cell selection via shift plus click', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             keyModule.initialTarget = workCells[2];
             util.triggerMouseEvent(workCells[12], 'mousedown', 0, 0, true);
             util.triggerMouseEvent(workCells[12], 'click', 0, 0, true);
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(11);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -1084,11 +1076,11 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'escape' });
         });
         it('multiple work cells selection via mouse', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             util.triggerMouseEvent(workCells[3], 'mousedown');
             util.triggerMouseEvent(workCells[18], 'mousemove');
             util.triggerMouseEvent(workCells[18], 'mouseup');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(16);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -1098,11 +1090,11 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
         });
         it('down arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'downArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
@@ -1110,12 +1102,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
         it('down arrow - last row cell', () => {
-            let workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            let target: HTMLElement = workCell[workCell.length - 2];
+            const workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const target: HTMLElement = workCell[workCell.length - 2];
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'downArrow', target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
@@ -1124,11 +1116,11 @@ describe('Keyboard interaction', () => {
                 toEqual((target.parentNode as HTMLTableRowElement).sectionRowIndex);
         });
         it('up arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'upArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -1137,12 +1129,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('up arrow - last row cell', () => {
-            let workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            let target: HTMLElement = workCell[workCell.length - 2];
+            const workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const target: HTMLElement = workCell[workCell.length - 2];
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'upArrow', target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -1152,11 +1144,11 @@ describe('Keyboard interaction', () => {
                 toEqual((target.parentNode as HTMLTableRowElement).sectionRowIndex - 1);
         });
         it('right arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'rightArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -1166,11 +1158,11 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'rightArrow', target: schObj.element.querySelector('.e-header-cells') });
         });
         it('right arrow first row last cell', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[6] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[6] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'rightArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -1179,14 +1171,14 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
         it('right arrow - last work cell next navigation', () => {
-            let workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            let target: HTMLElement = workCell[workCell.length - 1];
+            const workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const target: HTMLElement = workCell[workCell.length - 1];
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 2017');
             keyModule.keyActionHandler({ action: 'rightArrow', target: target });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('November 2017');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -1195,11 +1187,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('left arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[5] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[5] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'leftArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -1209,11 +1201,11 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'leftArrow', target: schObj.element.querySelector('.e-header-cells') });
         });
         it('left arrow second row first cell', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[7] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[7] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'leftArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -1222,13 +1214,13 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('left arrow first work cell previous navigation', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('November 2017');
             keyModule.keyActionHandler({ action: 'leftArrow', target: targetCell });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 2017');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -1237,12 +1229,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(4);
         });
         it('shiftDown arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftDownArrow', shiftKey: true, target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(8);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
@@ -1250,12 +1242,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
         it('shiftUp arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftUpArrow', shiftKey: true, target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(8);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -1264,12 +1256,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
         it('shiftRight arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[4] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[4] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -1280,15 +1272,15 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
         });
         it('shiftRight arrow - prevent last work cell next navigation', () => {
-            let workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            let target: HTMLElement = workCell[workCell.length - 1];
+            const workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const target: HTMLElement = workCell[workCell.length - 1];
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = target;
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 2017');
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: target });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 2017');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -1297,12 +1289,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(4);
         });
         it('shiftLeft arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[4] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[4] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -1313,14 +1305,14 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
         });
         it('shiftLeft arrow first work cell prevent previous navigation', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 2017');
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: targetCell });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 2017');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -1332,10 +1324,9 @@ describe('Keyboard interaction', () => {
 
     describe('Cell selection with Resource', () => {
         let schObj: Schedule;
-        // tslint:disable-next-line:no-any
         let keyModule: any;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
                 width: '100%',
                 height: '550px',
                 currentView: 'Month',
@@ -1368,44 +1359,44 @@ describe('Keyboard interaction', () => {
             util.destroy(schObj);
         });
         it('shiftRight arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[6] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[6] as HTMLElement;
             targetCell.click();
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: targetCell });
             expect(targetCell.getAttribute('data-group-index')).toEqual('0');
-            let lastCell: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const lastCell: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(lastCell.getAttribute('data-group-index')).toEqual('0');
             schObj.removeSelectedClass();
         });
         it('shiftLeft arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[28] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[28] as HTMLElement;
             targetCell.click();
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: targetCell });
             expect(targetCell.getAttribute('data-group-index')).toEqual('1');
-            let lastCell: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const lastCell: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(lastCell.getAttribute('data-group-index')).toEqual('1');
             schObj.removeSelectedClass();
         });
         it('multiple work cells right selection via mouse', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             util.triggerMouseEvent(workCells[6], 'mousedown');
             util.triggerMouseEvent(workCells[28], 'mousemove');
             util.triggerMouseEvent(workCells[28], 'mouseup');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(8);
             expect(workCells[6].getAttribute('data-group-index')).toEqual('0');
-            let lastCell: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const lastCell: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(lastCell.getAttribute('data-group-index')).toEqual('0');
             schObj.removeSelectedClass();
         });
         it('multiple work cells left selection via mouse', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             util.triggerMouseEvent(workCells[28], 'mousedown');
             util.triggerMouseEvent(workCells[6], 'mousemove');
             util.triggerMouseEvent(workCells[6], 'mouseup');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(8);
             expect(workCells[28].getAttribute('data-group-index')).toEqual('1');
-            let lastCell: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const lastCell: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(lastCell.getAttribute('data-group-index')).toEqual('1');
             schObj.removeSelectedClass();
         });
@@ -1413,10 +1404,9 @@ describe('Keyboard interaction', () => {
 
     describe('month agenda with multiple delete event', () => {
         let schObj: Schedule;
-        // tslint:disable-next-line:no-any
         let keyModule: any;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
                 width: '100%', height: '500px', currentView: 'MonthAgenda',
                 selectedDate: new Date(2017, 10, 5), views: ['MonthAgenda']
             };
@@ -1427,19 +1417,19 @@ describe('Keyboard interaction', () => {
             util.destroy(schObj);
         });
         it('work cell click', () => {
-            let workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[4] as HTMLElement;
+            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[4] as HTMLElement;
             workCell.click();
             expect(workCell.classList).toContain('e-selected-cell');
             expect(workCell.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
         });
         it('multiple event selection via ctrl plus click', () => {
-            let appointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const appointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             util.triggerMouseEvent(appointment[0], 'click', 0, 0, false, true);
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
             util.triggerMouseEvent(appointment[1], 'click', 0, 0, false, true);
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(2);
-            let selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
+            const selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             expect(selectedElement[0].classList).toContain('e-appointment-border');
             expect(selectedElement[0].getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(2);
@@ -1453,10 +1443,9 @@ describe('Keyboard interaction', () => {
 
     describe('View navigation', () => {
         let schObj: Schedule;
-        // tslint:disable-next-line:no-any
         let keyModule: any;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
                 width: '100%',
                 height: '550px',
                 views: ['Day', 'Week', 'Agenda'],
@@ -1494,10 +1483,9 @@ describe('Keyboard interaction', () => {
     });
     describe('Auto Scroll on moving via mouse', () => {
         let schObj: Schedule;
-        // tslint:disable-next-line:no-any
         let keyModule: any;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '600px',
                 height: '550px',
                 views: ['Day', 'Week'],
@@ -1511,11 +1499,11 @@ describe('Keyboard interaction', () => {
             util.destroy(schObj);
         });
         it('mouse up', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             util.triggerMouseEvent(workCells[17], 'mousedown');
             util.triggerMouseEvent(workCells[2], 'mousemove', 280, 137);
             util.triggerMouseEvent(workCells[2], 'mouseup');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
@@ -1526,42 +1514,41 @@ describe('Keyboard interaction', () => {
     });
     describe('Delete action', () => {
         let schObj: Schedule;
-        // tslint:disable-next-line:no-any
         let keyModule: any;
-        let eventDatas: Object[] = [{
+        const eventDatas: Record<string, any>[] = [{
             Id: 10,
             Subject: 'rec_appointment',
             StartTime: new Date(2017, 9, 2, 9, 0),
             EndTime: new Date(2017, 9, 2, 10, 0),
             AllDay: false,
-            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=2',
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=2'
         }, {
             Id: 16,
             Subject: 'normal_appointment',
             StartTime: new Date(2017, 9, 3, 10, 30),
             EndTime: new Date(2017, 9, 3, 11, 0),
-            IsAllDay: false,
+            IsAllDay: false
         }];
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = { width: '100%', height: '550px', selectedDate: new Date(2017, 9, 2) };
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = { width: '100%', height: '550px', selectedDate: new Date(2017, 9, 2) };
             schObj = util.createSchedule(schOptions, eventDatas, done);
             keyModule = schObj.keyboardInteractionModule;
         });
         afterAll(() => {
             util.destroy(schObj);
         });
-        it('deleting normal and recurrence appointment simultaneously', (done: Function) => {
-            schObj.dataBound = (args: Object) => {
-                let appointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+        it('deleting normal and recurrence appointment simultaneously', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const appointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(appointment.length).toEqual(0);
                 done();
             };
-            let appointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const appointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             util.triggerMouseEvent(appointment[0], 'click', 0, 0, false, true);
             util.triggerMouseEvent(appointment[1], 'click', 0, 0, false, true);
             util.triggerMouseEvent(appointment[2], 'click', 0, 0, false, true);
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(3);
-            let selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
+            const selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             keyModule.keyActionHandler({ action: 'delete', target: selectedElement[0] });
             expect(schObj.quickPopup.quickDialog.element.classList.contains('e-quick-dialog')).toEqual(true);
             expect(schObj.quickPopup.quickDialog.element.querySelector('#ScheduleQuickDialog_title').innerHTML)
@@ -1572,10 +1559,9 @@ describe('Keyboard interaction', () => {
     });
     describe('Timeline view', () => {
         let schObj: Schedule;
-        // tslint:disable-next-line:no-any
         let keyModule: any;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 currentView: 'TimelineWeek',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth', 'Agenda'],
                 selectedDate: new Date(2018, 4, 1)
@@ -1590,7 +1576,7 @@ describe('Keyboard interaction', () => {
             expect(keyModule.getModuleName()).toEqual('keyboard');
         });
         it('home key', () => {
-            let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.classList).not.toContain('e-selected-cell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             keyModule.keyActionHandler({ action: 'home' });
@@ -1663,10 +1649,9 @@ describe('Keyboard interaction', () => {
 
     describe('View changes', () => {
         let schObj: Schedule;
-        // tslint:disable-next-line:no-any
         let keyModule: any;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 currentView: 'TimelineWeek',
                 views: ['Day', 'Week', 'WorkWeek', 'Month', 'Agenda', 'TimelineDay', 'TimelineWeek',
                     'TimelineWorkWeek', 'TimelineMonth'],
@@ -1702,10 +1687,9 @@ describe('Keyboard interaction', () => {
 
     describe('Timeline view with appointments', () => {
         let schObj: Schedule;
-        // tslint:disable-next-line:no-any
         let keyModule: any;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 currentView: 'TimelineWeek',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth', 'Agenda'],
                 selectedDate: new Date(2018, 4, 1)
@@ -1717,11 +1701,11 @@ describe('Keyboard interaction', () => {
             util.destroy(schObj);
         });
         it('Tab key work cell to appointment selection', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            let workCell: HTMLElement = workCells[0] as HTMLElement;
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCell: HTMLElement = workCells[0] as HTMLElement;
             workCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
-            let eventCell: HTMLElement = schObj.element.querySelector('.e-event-table');
+            const eventCell: HTMLElement = schObj.element.querySelector('.e-event-table');
             keyModule.keyActionHandler({ action: 'tab', target: eventCell, shiftKey: false, preventDefault: (): void => { /** Null */ } });
             let target: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             expect(target.length).toEqual(1);
@@ -1739,11 +1723,11 @@ describe('Keyboard interaction', () => {
         });
         it('Escape key', () => {
             (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
-            let firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
+            const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             expect(firstWorkCell[0].classList).toContain('e-appointment-border');
             expect(firstWorkCell[0].getAttribute('aria-selected')).toEqual('true');
             keyModule.keyActionHandler({ action: 'enter', target: firstWorkCell[0] });
-            let popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            const popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(popup.classList.contains('e-popup-open')).toEqual(true);
             keyModule.keyActionHandler({ action: 'escape' });
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
@@ -1751,11 +1735,11 @@ describe('Keyboard interaction', () => {
         it('Enter key', () => {
             util.triggerMouseEvent(schObj.element.querySelector('.e-appointment'), 'click');
             keyModule.keyActionHandler({ action: 'escape' });
-            let firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
+            const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             expect(firstWorkCell[0].classList).toContain('e-appointment-border');
             expect(firstWorkCell[0].getAttribute('aria-selected')).toEqual('true');
             keyModule.keyActionHandler({ action: 'enter', target: firstWorkCell[0] });
-            let popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            const popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(popup.classList).toContain('e-popup-open');
             keyModule.keyActionHandler({ action: 'escape' });
             expect(popup.classList).toContain('e-popup-close');
@@ -1765,7 +1749,7 @@ describe('Keyboard interaction', () => {
             expect(popup.classList).toContain('e-popup-close');
         });
         it('Enter key for edit option', () => {
-            let appointments: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const appointments: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             appointments[0].click();
             let popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(popup).toBeTruthy();
@@ -1773,7 +1757,7 @@ describe('Keyboard interaction', () => {
                 action: 'enter', target: popup.querySelector('.e-event-edit'),
                 shiftKey: false, preventDefault: (): void => { /** Null */ }
             });
-            let cancelButton: HTMLElement = schObj.eventWindow.dialogObject.element.querySelector('.e-event-cancel') as HTMLElement;
+            const cancelButton: HTMLElement = schObj.eventWindow.dialogObject.element.querySelector('.e-event-cancel') as HTMLElement;
             cancelButton.click();
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
             appointments[0].click();
@@ -1788,7 +1772,7 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
         });
         it('Enter key to work cell for create option', () => {
-            let firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(firstWorkCell[firstWorkCell.length - 10].classList).not.toContain('e-selected-cell');
             expect(firstWorkCell[firstWorkCell.length - 10].getAttribute('aria-selected')).toEqual('false');
             firstWorkCell[firstWorkCell.length - 10].click();
@@ -1798,7 +1782,7 @@ describe('Keyboard interaction', () => {
                 action: 'enter', target: popup.querySelector('.e-event-details'),
                 shiftKey: false, preventDefault: (): void => { /** Null */ }
             });
-            let cancelButton: HTMLElement = schObj.eventWindow.dialogObject.element.querySelector('.e-event-cancel') as HTMLElement;
+            const cancelButton: HTMLElement = schObj.eventWindow.dialogObject.element.querySelector('.e-event-cancel') as HTMLElement;
             cancelButton.click();
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             firstWorkCell[firstWorkCell.length - 10].click();
@@ -1819,7 +1803,7 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
         });
         it('ShiftTab key work cell to appoitnment selection', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-wrapper'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-wrapper'));
             (workCells[0].children[0] as HTMLElement).click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({
@@ -1829,7 +1813,7 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
         });
         it('multiple event selection via ctrl plus click', () => {
-            let firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             firstWorkCell[0].click();
             util.triggerMouseEvent(firstWorkCell[1], 'click', 0, 0, false, true);
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(2);
@@ -1840,7 +1824,7 @@ describe('Keyboard interaction', () => {
         it('Delete key', () => {
             (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
-            let selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
+            const selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             expect(selectedElement[0].classList).toContain('e-appointment-border');
             expect(selectedElement[0].getAttribute('aria-selected')).toEqual('true');
             keyModule.keyActionHandler({ action: 'delete', target: selectedElement[0] });
@@ -1850,7 +1834,7 @@ describe('Keyboard interaction', () => {
         it('Right arrow key with appointment selection', () => {
             (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
-            let selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
+            const selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'rightArrow', target: selectedElement[0] });
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(0);
@@ -1858,14 +1842,14 @@ describe('Keyboard interaction', () => {
         it('Left arrow key with appointment selection', () => {
             (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
-            let selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
+            const selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'leftArrow', target: selectedElement[0] });
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(0);
         });
         it('Tab/shift key for event edit option', () => {
             (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
-            let popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            const popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(popup).toBeTruthy();
             keyModule.keyActionHandler({
                 action: 'tab', target: popup.querySelector('.e-event-edit'),
@@ -1883,11 +1867,11 @@ describe('Keyboard interaction', () => {
             });
         });
         it('Tab/shift key to work cell for create option', () => {
-            let firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(firstWorkCell[0].classList).not.toContain('e-selected-cell');
             expect(firstWorkCell[0].getAttribute('aria-selected')).toEqual('false');
             firstWorkCell[0].click();
-            let popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            const popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(popup).toBeTruthy();
             keyModule.keyActionHandler({
                 action: 'tab', target: popup.querySelector('.e-event-create'),
@@ -1929,11 +1913,11 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'escape' });
         });
         it('Negative case for Tab key work cell selection', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelector('.e-content-wrap table tr').children);
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelector('.e-content-wrap table tr').children);
             expect(workCells.length).toEqual(336);
-            let workCell: HTMLElement = workCells[0] as HTMLElement;
+            const workCell: HTMLElement = workCells[0] as HTMLElement;
             workCell.click();
-            let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            const cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
             expect(cellPopup.children[0].classList).toContain('e-cell-popup');
             keyModule.keyActionHandler({ action: 'escape' });
@@ -1944,10 +1928,9 @@ describe('Keyboard interaction', () => {
     });
     describe('Timeline view with appointments-month view', () => {
         let schObj: Schedule;
-        // tslint:disable-next-line:no-any
         let keyModule: any;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 currentView: 'TimelineMonth',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth', 'Agenda'],
                 selectedDate: new Date(2018, 4, 1)
@@ -1959,9 +1942,9 @@ describe('Keyboard interaction', () => {
             util.destroy(schObj);
         });
         it('Escape key', () => {
-            let moreIndicator: HTMLElement = schObj.element.querySelector('.e-more-indicator') as HTMLElement;
+            const moreIndicator: HTMLElement = schObj.element.querySelector('.e-more-indicator') as HTMLElement;
             moreIndicator.click();
-            let popup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            const popup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             expect(popup).toBeTruthy();
             expect(popup.classList.contains('e-popup-open')).toBe(true);
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(0);
@@ -1975,20 +1958,20 @@ describe('Keyboard interaction', () => {
             expect(popup.classList.contains('e-popup-close')).toBe(true);
         });
         it('Enter key to close more event list', () => {
-            let moreIndicator: HTMLElement = schObj.element.querySelector('.e-more-indicator') as HTMLElement;
+            const moreIndicator: HTMLElement = schObj.element.querySelector('.e-more-indicator') as HTMLElement;
             moreIndicator.click();
-            let popup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            const popup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             expect(popup).toBeTruthy();
             expect(popup.classList.contains('e-popup-open')).toBe(true);
             keyModule.keyActionHandler({ action: 'enter', target: popup.querySelector('.e-more-event-close') });
             expect(popup).toBeTruthy();
         });
         it('Tab key for more event list', () => {
-            let moreIndicator: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicator: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             moreIndicator[0].click();
-            let popup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            const popup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             expect(popup.classList.contains('e-popup-open')).toBe(true);
-            let apps: HTMLElement[] = [].slice.call(popup.querySelectorAll('.e-appointment'));
+            const apps: HTMLElement[] = [].slice.call(popup.querySelectorAll('.e-appointment'));
             apps[apps.length - 1].focus();
             keyModule.keyActionHandler({
                 action: 'tab', target: apps[apps.length - 1],
@@ -1999,9 +1982,9 @@ describe('Keyboard interaction', () => {
             expect(popup.classList.contains('e-popup-open')).toBe(false);
         });
         it('Shift Tab key for more event list', () => {
-            let moreIndicator: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicator: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             moreIndicator[0].click();
-            let popup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            const popup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             expect(popup.classList.contains('e-popup-open')).toBe(true);
             (popup.querySelector('.e-more-event-close') as HTMLElement).focus();
             keyModule.keyActionHandler({
@@ -2019,9 +2002,9 @@ describe('Keyboard interaction', () => {
             expect(popup.classList.contains('e-popup-open')).toBe(false);
         });
         it('Enter key to change current view', () => {
-            let moreIndicator: HTMLElement = schObj.element.querySelector('.e-more-indicator') as HTMLElement;
+            const moreIndicator: HTMLElement = schObj.element.querySelector('.e-more-indicator') as HTMLElement;
             moreIndicator.click();
-            let popup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            const popup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             expect(popup).toBeTruthy();
             expect(popup.classList.contains('e-popup-open')).toBe(true);
             keyModule.keyActionHandler({ action: 'enter', target: popup.querySelector('.e-header-date') });
@@ -2031,10 +2014,9 @@ describe('Keyboard interaction', () => {
     });
     describe('Timeline view arrow keys', () => {
         let schObj: Schedule;
-        // tslint:disable-next-line:no-any
         let keyModule: any;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 currentView: 'TimelineWeek',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth', 'Agenda'],
                 selectedDate: new Date(2018, 4, 1)
@@ -2046,10 +2028,10 @@ describe('Keyboard interaction', () => {
             util.destroy(schObj);
         });
         it('multiple cell selection via shift plus click', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             keyModule.initialTarget = workCells[2];
             util.triggerMouseEvent(workCells[17], 'click', 0, 0, true);
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(16);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2059,11 +2041,11 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
         });
         it('multiple work cells selection via mouse', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             util.triggerMouseEvent(workCells[2], 'mousedown');
             util.triggerMouseEvent(workCells[17], 'mousemove');
             util.triggerMouseEvent(workCells[17], 'mouseup');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(16);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2073,12 +2055,12 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
         });
         it('mouse move out of schedule while selection via mouse', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             util.triggerMouseEvent(workCells[2], 'mousedown');
             util.triggerMouseEvent(schObj.element.querySelector('.e-time-cells') as HTMLElement, 'mousemove');
             util.triggerMouseEvent(workCells[29], 'mousemove');
             util.triggerMouseEvent(workCells[29], 'mouseup');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(28);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2090,9 +2072,9 @@ describe('Keyboard interaction', () => {
         });
         it('down arrow', () => {
             keyModule.keyActionHandler({ action: 'home' });
-            let targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             keyModule.keyActionHandler({ action: 'downArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
@@ -2100,11 +2082,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('down arrow - last row cell', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'downArrow', target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
@@ -2112,11 +2094,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('up arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'upArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2125,11 +2107,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('up arrow first row cell', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[1] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[1] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'upArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2138,11 +2120,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('up arrow - last row cell', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'upArrow', target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2151,11 +2133,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('right arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'rightArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2164,11 +2146,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('right arrow first row cell', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[1] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[1] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'rightArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2177,13 +2159,13 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('right arrow - last work cell next navigation', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Apr 29 - May 05, 2018');
             keyModule.keyActionHandler({ action: 'rightArrow', target: target });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 06 - 12, 2018');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2192,11 +2174,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('left arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'leftArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2205,13 +2187,13 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('left arrow first work cell previous navigation', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 06 - 12, 2018');
             keyModule.keyActionHandler({ action: 'leftArrow', target: targetCell });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Apr 29 - May 05, 2018');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2220,11 +2202,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('left arrow - last row cell', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'leftArrow', target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2233,12 +2215,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('shiftDown arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftDownArrow', shiftKey: true, target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
@@ -2248,12 +2230,12 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
         });
         it('shiftDown arrow - last row cell', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = target;
             keyModule.keyActionHandler({ action: 'shiftDownArrow', shiftKey: true, target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
@@ -2261,12 +2243,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('shiftUp arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftUpArrow', shiftKey: true, target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2275,12 +2257,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('shiftUp arrow first row cell', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[1] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[1] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftUpArrow', shiftKey: true, target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2289,12 +2271,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('shiftUp arrow - last row cell', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = target;
             keyModule.keyActionHandler({ action: 'shiftUpArrow', shiftKey: true, target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2303,12 +2285,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('shiftRight arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2319,14 +2301,14 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
         });
         it('shiftRight arrow - prevent last work cell next navigation', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = target;
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Apr 29 - May 05, 2018');
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: target });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Apr 29 - May 05, 2018');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2335,12 +2317,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('shiftLeft arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2351,14 +2333,14 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
         });
         it('shiftLeft arrow first work cell prevent previous navigation', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Apr 29 - May 05, 2018');
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: targetCell });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Apr 29 - May 05, 2018');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2367,12 +2349,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('shiftLeft arrow - last row cell', () => {
-            let target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
+            const target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = target;
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2383,10 +2365,9 @@ describe('Keyboard interaction', () => {
     });
     describe('Timeline month view arrow keys', () => {
         let schObj: Schedule;
-        // tslint:disable-next-line:no-any
         let keyModule: any;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 currentView: 'TimelineMonth',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth', 'Agenda'],
                 selectedDate: new Date(2018, 4, 1)
@@ -2398,11 +2379,11 @@ describe('Keyboard interaction', () => {
             util.destroy(schObj);
         });
         it('multiple cell selection via shift plus click', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             keyModule.initialTarget = workCells[2];
             util.triggerMouseEvent(workCells[12], 'mousedown', 0, 0, true);
             util.triggerMouseEvent(workCells[12], 'click', 0, 0, true);
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(11);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2413,11 +2394,11 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'escape' });
         });
         it('multiple work cells selection via mouse', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             util.triggerMouseEvent(workCells[3], 'mousedown');
             util.triggerMouseEvent(workCells[18], 'mousemove');
             util.triggerMouseEvent(workCells[18], 'mouseup');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(16);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2427,11 +2408,11 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
         });
         it('down arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'downArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
@@ -2439,12 +2420,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('down arrow - last row cell', () => {
-            let workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            let target: HTMLElement = workCell[workCell.length - 2];
+            const workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const target: HTMLElement = workCell[workCell.length - 2];
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'downArrow', target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
@@ -2453,11 +2434,11 @@ describe('Keyboard interaction', () => {
                 toEqual((target.parentNode as HTMLTableRowElement).sectionRowIndex);
         });
         it('up arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'upArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2466,12 +2447,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('up arrow - last row cell', () => {
-            let workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            let target: HTMLElement = workCell[workCell.length - 2];
+            const workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const target: HTMLElement = workCell[workCell.length - 2];
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'upArrow', target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2481,11 +2462,11 @@ describe('Keyboard interaction', () => {
                 toEqual((target.parentNode as HTMLTableRowElement).sectionRowIndex);
         });
         it('right arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'rightArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2495,11 +2476,11 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'rightArrow', target: schObj.element.querySelector('.e-header-cells') });
         });
         it('right arrow first row last cell', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[6] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[6] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'rightArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2508,14 +2489,14 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('right arrow - last work cell next navigation', () => {
-            let workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            let target: HTMLElement = workCell[workCell.length - 1];
+            const workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const target: HTMLElement = workCell[workCell.length - 1];
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 2018');
             keyModule.keyActionHandler({ action: 'rightArrow', target: target });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('June 2018');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2524,11 +2505,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('left arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[5] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[5] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'leftArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2538,11 +2519,11 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'leftArrow', target: schObj.element.querySelector('.e-header-cells') });
         });
         it('left arrow second row first cell', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[7] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[7] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'leftArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2551,13 +2532,13 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('left arrow first work cell previous navigation', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('June 2018');
             keyModule.keyActionHandler({ action: 'leftArrow', target: targetCell });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 2018');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2566,12 +2547,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('shiftDown arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftDownArrow', shiftKey: true, target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
@@ -2579,12 +2560,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('shiftUp arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[18] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftUpArrow', shiftKey: true, target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2593,12 +2574,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('shiftRight arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[4] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[4] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2609,15 +2590,15 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
         });
         it('shiftRight arrow - prevent last work cell next navigation', () => {
-            let workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            let target: HTMLElement = workCell[workCell.length - 1];
+            const workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const target: HTMLElement = workCell[workCell.length - 1];
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = target;
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 2018');
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: target });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 2018');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2626,12 +2607,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('shiftLeft arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[4] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[4] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2642,14 +2623,14 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
         });
         it('shiftLeft arrow first work cell prevent previous navigation', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 2018');
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: targetCell });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 2018');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2660,10 +2641,9 @@ describe('Keyboard interaction', () => {
     });
     describe('Cell selection with Resource', () => {
         let schObj: Schedule;
-        // tslint:disable-next-line:no-any
         let keyModule: any;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
                 height: '580px',
                 currentView: 'TimelineMonth',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth', 'Agenda'],
@@ -2673,7 +2653,7 @@ describe('Keyboard interaction', () => {
                     field: 'FId', title: 'Floor', name: 'Floors', allowMultiple: false,
                     dataSource: [
                         { FloorText: 'Floor 1', Id: 1, FloorColor: '#cb6bb2', Expand: false },
-                        { FloorText: 'Floor 2', Id: 2, FloorColor: '#cb6bb2' },
+                        { FloorText: 'Floor 2', Id: 2, FloorColor: '#cb6bb2' }
                     ],
                     textField: 'FloorText', idField: 'Id', colorField: 'FloorColor', expandedField: 'Expand'
                 }, {
@@ -2717,14 +2697,14 @@ describe('Keyboard interaction', () => {
             util.destroy(schObj);
         });
         it('home key', () => {
-            let firstWorkCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[403] as HTMLElement;
+            const firstWorkCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[403] as HTMLElement;
             expect(firstWorkCell.classList).not.toContain('e-selected-cell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             keyModule.keyActionHandler({ action: 'home' });
             expect(firstWorkCell.classList).toContain('e-selected-cell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2735,11 +2715,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(13);
         });
         it('multiple cell selection via shift plus click', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             keyModule.initialTarget = workCells[403];
             util.triggerMouseEvent(workCells[420], 'mousedown', 0, 0, true);
             util.triggerMouseEvent(workCells[420], 'click', 0, 0, true);
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(18);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2752,11 +2732,11 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'escape' });
         });
         it('multiple work cells selection via mouse', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             util.triggerMouseEvent(workCells[403], 'mousedown');
             util.triggerMouseEvent(workCells[420], 'mousemove');
             util.triggerMouseEvent(workCells[420], 'mouseup');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(18);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2768,11 +2748,11 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
         });
         it('down arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[403] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[403] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'downArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2783,12 +2763,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(14);
         });
         it('down arrow - last row cell', () => {
-            let workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            let target: HTMLElement = workCell[workCell.length - 2];
+            const workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const target: HTMLElement = workCell[workCell.length - 2];
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'downArrow', target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2799,11 +2779,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(15);
         });
         it('up arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[435] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[435] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'upArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2814,12 +2794,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(13);
         });
         it('up arrow - last row cell', () => {
-            let workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            let target: HTMLElement = workCell[workCell.length - 2];
+            const workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const target: HTMLElement = workCell[workCell.length - 2];
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'upArrow', target: target });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2830,11 +2810,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(14);
         });
         it('right arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[403] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[403] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'rightArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2846,11 +2826,11 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'rightArrow', target: schObj.element.querySelector('.e-header-cells') });
         });
         it('right arrow first row last cell', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[450] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[450] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'rightArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2861,14 +2841,14 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(14);
         });
         it('right arrow - last work cell next navigation', () => {
-            let workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            let target: HTMLElement = workCell[workCell.length - 1];
+            const workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const target: HTMLElement = workCell[workCell.length - 1];
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 2018');
             keyModule.keyActionHandler({ action: 'rightArrow', target: target });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('June 2018');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2879,11 +2859,11 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(15);
         });
         it('left arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[404] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[404] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({ action: 'leftArrow', target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2895,13 +2875,13 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'leftArrow', target: schObj.element.querySelector('.e-header-cells') });
         });
         it('left arrow first work cell previous navigation', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[403] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[403] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('June 2018');
             keyModule.keyActionHandler({ action: 'leftArrow', target: targetCell });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('June 2018');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2912,12 +2892,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(13);
         });
         it('shiftDown arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[410] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[410] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftDownArrow', shiftKey: true, target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-child-node');
@@ -2927,12 +2907,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(13);
         });
         it('shiftUp arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[404] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[404] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftUpArrow', shiftKey: true, target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2943,12 +2923,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(13);
         });
         it('shiftRight arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[403] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[403] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2961,15 +2941,15 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
         });
         it('shiftRight arrow - prevent last work cell next navigation', () => {
-            let workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            let target: HTMLElement = workCell[workCell.length - 1];
+            const workCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const target: HTMLElement = workCell[workCell.length - 1];
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = target;
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('June 2018');
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: target });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('June 2018');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2980,12 +2960,12 @@ describe('Keyboard interaction', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(15);
         });
         it('shiftLeft arrow', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[410] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[410] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: targetCell });
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -2998,14 +2978,14 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
         });
         it('shiftLeft arrow first work cell prevent previous navigation', () => {
-            let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[403] as HTMLElement;
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[403] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('June 2018');
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: targetCell });
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('June 2018');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -3019,13 +2999,9 @@ describe('Keyboard interaction', () => {
 
     it('memory leak', () => {
         profile.sample();
-        // tslint:disable:no-any
-        let average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
+        const average: number = inMB(profile.averageChange);
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        const memory: number = inMB(getMemoryProfile());
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        // tslint:enable:no-any
     });
 });

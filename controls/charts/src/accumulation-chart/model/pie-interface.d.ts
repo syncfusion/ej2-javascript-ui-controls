@@ -64,6 +64,15 @@ export interface IAccAnimationCompleteEventArgs extends IChartEventArgs {
     chart: AccumulationChart;
 }
 /**
+ * Accumulation Chart Before Resize event arguments.
+ */
+export interface IAccBeforeResizeEventArgs {
+    /** Defines the name of the Event */
+    name: string;
+    /** It is  used to cancel the resized event */
+    cancelResizedEvent: boolean;
+}
+/**
  * Accumulation Chart Resize event arguments.
  */
 export interface IAccResizeEventArgs {
@@ -77,15 +86,6 @@ export interface IAccResizeEventArgs {
     accumulation: AccumulationChart;
     /** Defines the accumulation chart instance */
     chart: AccumulationChart;
-}
-/**
- * Accumulation Chart Before Resize event arguments.
- */
-export interface IAccBeforeResizeEventArgs {
-    /** Defines the name of the Event */
-    name: string;
-    /** It is  used to cancel the resized event */
-    cancelResizedEvent: boolean;
 }
 /**
  * Accumulation Chart PointRender event arguments.

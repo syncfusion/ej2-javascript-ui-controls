@@ -1,4 +1,4 @@
-﻿import { Base, Event, getUniqueID, NotifyPropertyChanges, INotifyPropertyChanged, Property  } from '@syncfusion/ej2-base';import { closest, Draggable, DragPosition, MouseEventArgs, remove, compareElementParent } from '@syncfusion/ej2-base';import { addClass, isNullOrUndefined, getComponent, isBlazor, BlazorDragEventArgs } from '@syncfusion/ej2-base';
+import { Base, Event, getUniqueID, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';import { closest, Draggable, DragPosition, MouseEventArgs, remove, compareElementParent } from '@syncfusion/ej2-base';import { addClass, isNullOrUndefined, getComponent, isBlazor, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 
 /**
  * Interface for a class Sortable
@@ -7,12 +7,15 @@ export interface SortableModel {
 
     /**
      * It is used to enable or disable the built-in animations. The default value is `false`
+     *
      * @default false
      */
+
     enableAnimation?: boolean;
 
     /**
      * Specifies the sortable item class.
+     *
      * @default null
      */
     itemClass?: string;
@@ -26,41 +29,50 @@ export interface SortableModel {
     /**
      * Defines the callback function for customizing the cloned element.
      */
-    helper?: Function;
+    helper?: (Element: object) => HTMLElement;
 
     /**
      * Defines the callback function for customizing the placeHolder element.
      */
-    placeHolder?: Function;
+    placeHolder?: (Element: object) => HTMLElement;
 
     /**
      * Specifies the callback function for drag event.
-     * @event
+     *
+     * @event 'object'
      */
-    drag?: Function;
+
+ 
+    drag?: (e: any) => void;
 
     /**
      * Specifies the callback function for beforeDragStart event.
-     * @event
+     *
+     *  @event 'object'
      */
-    beforeDragStart?: Function;
+ 
+    beforeDragStart?: (e: any) => void;
 
     /**
      * Specifies the callback function for dragStart event.
-     * @event
+     *
+     *  @event 'object'
      */
-    dragStart?: Function;
+    dragStart?: (e: any) => void;
 
     /**
      * Specifies the callback function for beforeDrop event.
-     * @event
+     *
+     *  @event 'object'
      */
-    beforeDrop?: Function;
+    beforeDrop?: (e: any) => void;
 
     /**
      * Specifies the callback function for drop event.
-     * @event
+     *
+     *  @event 'object'
      */
-    drop?: Function;
+
+    drop?: (e: any) => void;
 
 }

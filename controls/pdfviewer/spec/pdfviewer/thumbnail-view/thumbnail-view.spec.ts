@@ -127,7 +127,7 @@
 // //             shiftKey: true,
 // //         };
 // //         viewer.thumbnailViewModule.thumbnailClick(event);
-// //         // tslint:disable-next-line:max-line-length
+// eslint-disable-next-line 
 // //         expect(viewer.thumbnailViewModule.thumbnailView.children[0].children[0].children[0].className).toContain("e-pv-thumbnail-selection");
 // //         done();
 // //     });
@@ -229,7 +229,7 @@
 // //             shiftKey: true,
 // //         };
 // //         viewer.thumbnailViewModule.thumbnailClick(clickEvent);
-// //         // tslint:disable-next-line:max-line-length
+// eslint-disable-next-line 
 // //         expect(viewer.thumbnailViewModule.thumbnailView.children[0].children[0].children[0].className).toContain("e-pv-thumbnail-selection");
 // //         let event: any = {
 // //             srcElement: viewer.thumbnailViewModule.thumbnailView.children[0].children[0].children[0],
@@ -272,7 +272,7 @@
 // //             shiftKey: true,
 // //         };
 // //         viewer.thumbnailViewModule.thumbnailClick(clickEvent);
-// //         // tslint:disable-next-line:max-line-length
+// eslint-disable-next-line 
 // //         expect(viewer.thumbnailViewModule.thumbnailView.children[0].children[0].children[0].className).toContain("e-pv-thumbnail-selection");
 // //         let event: any = {
 // //             srcElement: viewer.thumbnailViewModule.thumbnailView.children[0].children[0].children[0],
@@ -281,7 +281,7 @@
 // //             shiftKey: true,
 // //         };
 // //         viewer.thumbnailViewModule.thumbnailMouseOver(event);
-// //         // tslint:disable-next-line:max-line-length
+// eslint-disable-next-line 
 // //         expect(viewer.thumbnailViewModule.thumbnailView.children[0].children[0].children[0].className).toContain("e-pv-thumbnail-selection");
 // //         done();
 // //     });
@@ -316,7 +316,7 @@
 // //             shiftKey: true,
 // //         };
 // //         viewer.thumbnailViewModule.thumbnailClick(clickEvent);
-// //         // tslint:disable-next-line:max-line-length
+// eslint-disable-next-line
 // //         expect(viewer.thumbnailViewModule.thumbnailView.children[0].children[0].children[0].className).toContain("e-pv-thumbnail-selection");
 // //         viewer.thumbnailViewModule.gotoThumbnailImage(0);
 // //         expect(viewer.thumbnailViewModule.thumbnailView.children[0].children[0].children[0].className).toContain("e-pv-thumbnail-focus");

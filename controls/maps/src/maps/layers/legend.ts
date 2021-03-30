@@ -1,3 +1,8 @@
+/* eslint-disable brace-style */
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable max-len */
+/* eslint-disable @typescript-eslint/explicit-member-accessibility */
+/* eslint-disable @typescript-eslint/dot-notation */
 import { Maps } from '../../index';
 import {
     LayerSettings, ColorMappingSettings, BorderModel, LegendPosition, FontModel, LegendSettingsModel,
@@ -18,16 +23,18 @@ import { ShapeSettings } from '../model/base';
  * Legend module is used to render legend for the maps
  */
 export class Legend {
-    /* tslint:disable:no-string-literal */
-    public legendCollection: Object[];
-    public legendRenderingCollections: Object[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public legendCollection: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public legendRenderingCollections: any[];
     private translate: Point;
     public legendBorderRect: Rect = new Rect(0, 0, 0, 0);
     private maps: Maps;
     /**
      * @private
      */
-    public totalPages: Object[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public totalPages: any[] = [];
     private page: number = 0;
     /**
      * @private
@@ -38,10 +45,13 @@ export class Legend {
     private widthIncrement: number = 0;
     private textMaxWidth: number = 0;
     private legendGroup: Element;
-    private shapeHighlightCollection: object[] = [];
-    public legendHighlightCollection: object[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private shapeHighlightCollection: any[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public legendHighlightCollection: any[] = [];
     public shapePreviousColor: string[] = [];
-    public selectedNonLegendShapes: object[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public selectedNonLegendShapes: any[] = [];
     public shapeToggled: boolean = true;
     private legendLinearGradient: Element;
     private currentLayer: LayerSettings;
@@ -54,6 +64,8 @@ export class Legend {
     }
     /**
      * To calculate legend bounds and draw the legend shape and text.
+     *
+     * @returns {void}
      */
     public renderLegend(): void {
         this.legendRenderingCollections = [];
@@ -67,20 +79,21 @@ export class Legend {
         this.drawLegend();
     }
 
-    /* tslint:disable-next-line:max-func-body-length */
     public calculateLegendBounds(): void {
-        let map: Maps = this.maps;
-        let legend: LegendSettingsModel = <LegendSettingsModel>map.legendSettings;
+        const map: Maps = this.maps;
+        const legend: LegendSettingsModel = <LegendSettingsModel>map.legendSettings;
         this.legendCollection = [];
-        let spacing: number = 10;
-        let leftPadding: number = 10; let topPadding: number = map.mapAreaRect.y;
+        const spacing: number = 10;
+        const leftPadding: number = 10; const topPadding: number = map.mapAreaRect.y;
         this.legendRenderingCollections = [];
         Array.prototype.forEach.call(map.layersCollection, (layer: LayerSettings, layerIndex: number) => {
             if (!isNullOrUndefined(layer.shapeData)) {
-                let layerData: Object[] = layer.shapeData['features'];
-                let dataPath: string = layer.shapeDataPath;
-                let propertyPath: string | string[] = layer.shapePropertyPath;
-                let dataSource: Object[] = layer.dataSource as Object[];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const layerData: any[] = layer.shapeData['features'];
+                const dataPath: string = layer.shapeDataPath;
+                const propertyPath: string | string[] = layer.shapePropertyPath;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                let dataSource: any[] = layer.dataSource as any[];
                 let colorValuePath: string;
                 let colorMapping: ColorMappingSettings[];
                 if (legend.type === 'Layers' && layer.visible) {
@@ -88,11 +101,12 @@ export class Legend {
                     colorMapping = <ColorMappingSettings[]>layer.shapeSettings.colorMapping;
                     this.getLegends(layerIndex, layerData, colorMapping, dataSource, dataPath, colorValuePath, propertyPath);
                 } else if (legend.type === 'Bubbles') {
-                    for (let bubble of layer.bubbleSettings) {
+                    for (const bubble of layer.bubbleSettings) {
                         if (bubble.visible) {
                             colorValuePath = bubble.colorValuePath;
                             colorMapping = <ColorMappingSettings[]>bubble.colorMapping;
-                            dataSource = bubble.dataSource as Object[];
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            dataSource = bubble.dataSource as any[];
                             this.getLegends(layerIndex, layerData, colorMapping, dataSource, dataPath, colorValuePath, propertyPath);
                         }
                     }
@@ -103,8 +117,9 @@ export class Legend {
         });
         if (this.legendCollection.length > 0) {
             for (let i: number = 0; i < this.legendCollection.length; i++) {
-                let legendItem: Object = this.legendCollection[i];
-                let eventArgs: ILegendRenderingEventArgs = {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const legendItem: any = this.legendCollection[i];
+                const eventArgs: ILegendRenderingEventArgs = {
                     name: legendRendering, cancel: false, fill: legendItem['fill'], shape: legend.shape,
                     shapeBorder: legend.shapeBorder,
                     text: typeof legendItem['text'] === 'number' ? legendItem['text'].toString() : legendItem['text']
@@ -120,22 +135,22 @@ export class Legend {
                 }
             }
         }
-        let defaultSize: number = 25;
-        let legendTitle: string = map.legendSettings.title.text;
-        let titleTextStyle: FontModel = map.legendSettings.titleStyle;
+        const defaultSize: number = 25;
+        const legendTitle: string = map.legendSettings.title.text;
+        const titleTextStyle: FontModel = map.legendSettings.titleStyle;
         if (this.legendCollection.length > 0) {
-            let legendMode: LegendMode = legend.mode;
+            const legendMode: LegendMode = legend.mode;
             let shapeX: number = 0; let shapeY: number = 0;
             let textX: number = 0; let textY: number = 0;
-            let shapePadding: number = legend.shapePadding;
-            let textPadding: number = 10;
-            let shapeHeight: number = legend.shapeHeight; let shapeWidth: number = legend.shapeWidth;
+            const shapePadding: number = legend.shapePadding;
+            const textPadding: number = 10;
+            const shapeHeight: number = legend.shapeHeight; const shapeWidth: number = legend.shapeWidth;
             let shapeLocation: Point[] = []; let textLocation: Rect[] = [];
             let legendRectCollection: Rect[] = [];
             let location: Point;
-            let position: LegendPosition = legend.position;
-            let labelAction: LabelIntersectAction = legend.labelDisplayMode;
-            let arrangement: LegendArrangement = (legend.orientation === 'None') ? ((position === 'Top' || position === 'Bottom')
+            const position: LegendPosition = legend.position;
+            const labelAction: LabelIntersectAction = legend.labelDisplayMode;
+            const arrangement: LegendArrangement = (legend.orientation === 'None') ? ((position === 'Top' || position === 'Bottom')
                 ? 'Horizontal' : 'Vertical') : legend.orientation;
             let legendWidth: number = (legend.width.length > 1) ? (legend.width.indexOf('%') > -1) ? (map.availableSize.width / 100)
                 * parseInt(legend.width, 10) : parseInt(legend.width, 10) : null;
@@ -143,18 +158,17 @@ export class Legend {
                 parseInt(legend.height, 10) : parseInt(legend.height, 10) : null;
             let legendItemStartX: number; let legendItemStartY: number;
             let startX: number = 0; let startY: number = 0;
-            let legendtitleSize: Size = measureText(legendTitle, titleTextStyle);
+            const legendtitleSize: Size = measureText(legendTitle, titleTextStyle);
             if (legendMode === 'Interactive') {
-                let itemTextStyle: FontModel = legend.textStyle;
-                let rectWidth: number; let rectHeight: number;
-                let legendLength: number = this.legendCollection.length;
-                rectWidth = (arrangement === 'Horizontal') ? (isNullOrUndefined(legendWidth)) ? (map.mapAreaRect.width / legendLength) :
+                const itemTextStyle: FontModel = legend.textStyle;
+                const legendLength: number = this.legendCollection.length;
+                const rectWidth: number = (arrangement === 'Horizontal') ? (isNullOrUndefined(legendWidth)) ? (map.mapAreaRect.width / legendLength) :
                     (legendWidth / legendLength) : (isNullOrUndefined(legendWidth)) ? defaultSize : legendWidth;
-                rectHeight = (arrangement === 'Horizontal') ? (isNullOrUndefined(legendHeight)) ? defaultSize : legendHeight :
+                const rectHeight: number = (arrangement === 'Horizontal') ? (isNullOrUndefined(legendHeight)) ? defaultSize : legendHeight :
                     (isNullOrUndefined(legendHeight)) ? (map.mapAreaRect.height / legendLength) : (legendHeight / legendLength);
                 startX = 0; startY = legendtitleSize.height + spacing;
-                let position: LabelPosition = legend.labelPosition;
-                let textX: number = 0; let textY: number = 0; let textPadding: number = 10;
+                const position: LabelPosition = legend.labelPosition;
+                let textX: number = 0; let textY: number = 0; const textPadding: number = 10;
                 let itemStartX: number = 0; let itemStartY: number = 0;
                 let maxTextHeight: number = 0; let maxTextWidth: number = 0;
                 for (let i: number = 0; i < this.legendCollection.length; i++) {
@@ -219,22 +233,23 @@ export class Legend {
                 let j: number = 0;
                 this.page = 0;
                 for (let i: number = 0; i < this.legendCollection.length; i++) {
-                    let legendItem: Object = this.legendCollection[i];
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const legendItem: any = this.legendCollection[i];
                     if (isNullOrUndefined(this.totalPages[this.page])) {
                         this.totalPages[this.page] = { Page: (this.page + 1), Collection: [] };
                     }
-                    let legendTextSize: Size = measureText(legendItem['text'], legend.textStyle);
+                    const legendTextSize: Size = measureText(legendItem['text'], legend.textStyle);
                     this.textMaxWidth = Math.max(this.textMaxWidth, legendTextSize.width);
                     if (i === 0) {
                         startX = shapeX = (leftPadding + (shapeWidth / 2));
                         startY = shapeY = topPadding + legendtitleSize.height + (shapeHeight > legendTextSize.height ? shapeHeight / 2
                             : (legendTextSize.height / 4));
                     } else {
-                        let maxSize: number = (legendTextSize.height > shapeHeight) ? legendTextSize.height : shapeHeight;
+                        const maxSize: number = (legendTextSize.height > shapeHeight) ? legendTextSize.height : shapeHeight;
                         if (arrangement === 'Horizontal') {
-                            let prvePositionX: number = (textLocation[j - 1].x + textLocation[j - 1].width) + textPadding + shapeWidth;
+                            const prvePositionX: number = (textLocation[j - 1].x + textLocation[j - 1].width) + textPadding + shapeWidth;
                             if ((prvePositionX + shapePadding + legendTextSize.width) > legendWidth) {
-                                let nextPositionY: number = (textLocation[j - 1].y > (shapeLocation[j - 1].y + (shapeHeight / 2)) ?
+                                const nextPositionY: number = (textLocation[j - 1].y > (shapeLocation[j - 1].y + (shapeHeight / 2)) ?
                                     textLocation[j - 1].y : (shapeLocation[j - 1].y + (shapeHeight / 2))) + topPadding;
                                 if ((nextPositionY + maxSize) > legendHeight) {
                                     this.getPageChanged();
@@ -253,10 +268,10 @@ export class Legend {
                                 shapeY = (shapeLocation[j - 1]).y;
                             }
                         } else {
-                            let prevPositionY: number = textLocation[j - 1].y > shapeLocation[j - 1].y + (shapeHeight / 2) ?
+                            const prevPositionY: number = textLocation[j - 1].y > shapeLocation[j - 1].y + (shapeHeight / 2) ?
                                 textLocation[j - 1].y : shapeLocation[j - 1].y + (shapeHeight / 2);
                             if ((prevPositionY + topPadding + maxSize) > legendHeight) {
-                                let nextPositionX: number = (textLocation[j - 1].x + this.textMaxWidth + textPadding);
+                                const nextPositionX: number = (textLocation[j - 1].x + this.textMaxWidth + textPadding);
                                 if ((nextPositionX + shapePadding + legendTextSize.width) > legendWidth) {
                                     shapeX = startX;
                                     shapeY = startY;
@@ -279,7 +294,8 @@ export class Legend {
                     textY = shapeY + (legendTextSize.height / 4);
                     shapeLocation.push({ x: shapeX, y: shapeY });
                     textLocation.push({ x: textX, y: textY, width: legendTextSize.width, height: (legendTextSize.height / 2) });
-                    (<Object[]>this.totalPages[this.page]['Collection']).push({
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (<any[]>this.totalPages[this.page]['Collection']).push({
                         DisplayText: legendItem['text'],
                         ImageSrc: legendItem['imageSrc'],
                         Shape: { x: shapeX, y: shapeY },
@@ -298,9 +314,11 @@ export class Legend {
                     });
                     j++;
                 }
-                let collection: Object[] = (<Object[]>this.totalPages[0]['Collection']);
-                Array.prototype.forEach.call(collection, (legendObj: Object, index: number) => {
-                    let legendRect: Rect = new Rect(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const collection: any[] = (<any[]>this.totalPages[0]['Collection']);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                Array.prototype.forEach.call(collection, (legendObj: any, index: number) => {
+                    const legendRect: Rect = new Rect(
                         legendObj['Rect']['x'], legendObj['Rect']['y'],
                         legendObj['Rect']['width'], legendObj['Rect']['height']
                     );
@@ -321,10 +339,20 @@ export class Legend {
         }
     }
     /**
-     * 
+     * Get the legend collections
+     *
+     * @param {number} layerIndex - Specifies the layer index
+     * @param {object[]} layerData - Specifies the layer data
+     * @param {ColorMappingSettings[]} colorMapping - Specifies the color mapping
+     * @param {object[]} dataSource - Specifies the data source
+     * @param {string} dataPath - Specifies the data path
+     * @param {string} colorValuePath - Specifies the color value path
+     * @param {string | string[]} propertyPath - Specifies the property path
+     * @returns {void}
      */
     private getLegends(
-        layerIndex: number, layerData: object[], colorMapping: ColorMappingSettings[], dataSource: object[],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        layerIndex: number, layerData: any[], colorMapping: ColorMappingSettings[], dataSource: any[],
         dataPath: string, colorValuePath: string, propertyPath: string | string[]
     ): void {
         this.getRangeLegendCollection(layerIndex, layerData, colorMapping, dataSource, dataPath, colorValuePath, propertyPath);
@@ -341,13 +369,13 @@ export class Legend {
     private legendTextTrim(maxWidth: number, text: string, font: FontModel, legendRectSize: number): string {
         let label: string = text;
         let size: number = measureText(text, font).width;
-        let legendWithoutTextSize : number = legendRectSize - size;
+        const legendWithoutTextSize : number = legendRectSize - size;
         if (legendRectSize > maxWidth) {
-            let textLength: number = text.length;
+            const textLength: number = text.length;
             for (let i: number = textLength - 1; i >= 0; --i) {
                 label = text.substring(0, i) + '...';
                 size = measureText(label, font).width;
-                let totalSize : number = legendWithoutTextSize + size;
+                const totalSize : number = legendWithoutTextSize + size;
                 if (totalSize <= maxWidth || label.length < 4) {
                     if (label.length < 4) {
                         label = ' ';
@@ -359,28 +387,30 @@ export class Legend {
         return label;
     }
 
+    // eslint-disable-next-line valid-jsdoc
     /**
      * To draw the legend shape and text.
      */
     public drawLegend(): void {
-        let map: Maps = this.maps;
-        let legend: LegendSettingsModel = <LegendSettingsModel>map.legendSettings;
-        let render: SvgRenderer = map.renderer;
+        const map: Maps = this.maps;
+        const legend: LegendSettingsModel = <LegendSettingsModel>map.legendSettings;
+        const render: SvgRenderer = map.renderer;
         let textOptions: TextOption;
-        let textFont: FontModel = legend.textStyle;
+        const textFont: FontModel = legend.textStyle;
         this.legendGroup = render.createGroup({ id: map.element.id + '_Legend_Group' });
         if (legend.mode === 'Interactive') {
             for (let i: number = 0; i < this.legendRenderingCollections.length; i++) {
-                let itemId: string = map.element.id + '_Legend_Index_' + i;
-                let textId: string = map.element.id + '_Legend_Index_' + i + '_Text';
-                let item: Object = this.legendRenderingCollections[i];
-                let bounds: Rect = new Rect(item['x'], item['y'], item['width'], item['height']);
+                const itemId: string = map.element.id + '_Legend_Index_' + i;
+                const textId: string = map.element.id + '_Legend_Index_' + i + '_Text';
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const item: any = this.legendRenderingCollections[i];
+                const bounds: Rect = new Rect(item['x'], item['y'], item['width'], item['height']);
                 if (i === 0) {
                     this.renderLegendBorder();
                 }
-                let textLocation: Point = new Point(item['textX'], item['textY']);
+                const textLocation: Point = new Point(item['textX'], item['textY']);
                 textFont.color = (textFont.color !== null) ? textFont.color : this.maps.themeStyle.legendTextColor;
-                let rectOptions: RectOption = new RectOption(itemId, item['fill'], item['shapeBorder'], legend.opacity, bounds);
+                const rectOptions: RectOption = new RectOption(itemId, item['fill'], item['shapeBorder'], legend.opacity, bounds);
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
                 textFont.fontFamily = map.themeStyle.fontFamily || textFont.fontFamily;
                 textFont.size = map.themeStyle.legendFontSize || textFont.size;
@@ -393,35 +423,36 @@ export class Legend {
         }
     }
 
-    // tslint:disable-next-line:max-func-body-length
     private drawLegendItem(page: number): void {
-        let map: Maps = this.maps;
-        let legend: LegendSettingsModel = <LegendSettingsModel>map.legendSettings; let spacing: number = 10;
-        let shapeSize: Size = new Size(legend.shapeWidth, legend.shapeHeight);
+        const map: Maps = this.maps;
+        const legend: LegendSettingsModel = <LegendSettingsModel>map.legendSettings; const spacing: number = 10;
+        const shapeSize: Size = new Size(legend.shapeWidth, legend.shapeHeight);
         let textOptions: TextOption; let renderOptions: CircleOption | PathOption | RectOption;
-        let render: SvgRenderer = map.renderer;
+        const render: SvgRenderer = map.renderer;
         if (page >= 0 && page < this.totalPages.length) {
             if (querySelector(this.legendGroup.id, this.maps.element.id)) {
                 remove(querySelector(this.legendGroup.id, this.maps.element.id));
             }
-            for (let i: number = 0; i < (<Object[]>this.totalPages[page]['Collection']).length; i++) {
-                let collection: Object = <Object[]>this.totalPages[page]['Collection'][i];
-                let shapeBorder: BorderModel = collection['shapeBorder'];
-                let legendElement: Element = render.createGroup({ id: map.element.id + '_Legend_Index_' + collection['idIndex'] });
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            for (let i: number = 0; i < (<any[]>this.totalPages[page]['Collection']).length; i++) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const collection: any = <any[]>this.totalPages[page]['Collection'][i];
+                const shapeBorder: BorderModel = collection['shapeBorder'];
+                const legendElement: Element = render.createGroup({ id: map.element.id + '_Legend_Index_' + collection['idIndex'] });
                 let legendText: string = collection['DisplayText'];
-                let shape: LegendShape = <LegendShape>((legend.type === 'Markers') ? ((isNullOrUndefined(collection['ImageSrc'])) ?
+                const shape: LegendShape = <LegendShape>((legend.type === 'Markers') ? ((isNullOrUndefined(collection['ImageSrc'])) ?
                     legend.shape : 'Image') : collection['legendShape']);
-                let strokeColor: string = (legend.shape === 'HorizontalLine' || legend.shape === 'VerticalLine'
+                const strokeColor: string = (legend.shape === 'HorizontalLine' || legend.shape === 'VerticalLine'
                     || legend.shape === 'Cross') ? isNullOrUndefined(legend.fill) ? '#000000' : legend.fill : shapeBorder.color;
-                let strokeWidth: number = (legend.shape === 'HorizontalLine' || legend.shape === 'VerticalLine'
+                const strokeWidth: number = (legend.shape === 'HorizontalLine' || legend.shape === 'VerticalLine'
                     || legend.shape === 'Cross') ? (shapeBorder.width === 0) ?
                         1 : shapeBorder.width : shapeBorder.width;
-                let shapeId: string = map.element.id + '_Legend_Shape_Index_' + collection['idIndex'];
-                let textId: string = map.element.id + '_Legend_Text_Index_' + collection['idIndex'];
-                let shapeLocation: Point = collection['Shape'];
-                let textLocation: Point = collection['Text'];
-                let imageUrl: string = ((isNullOrUndefined(collection['ImageSrc'])) ? legend.shape : collection['ImageSrc']);
-                let renderOptions: PathOption = new PathOption(
+                const shapeId: string = map.element.id + '_Legend_Shape_Index_' + collection['idIndex'];
+                const textId: string = map.element.id + '_Legend_Text_Index_' + collection['idIndex'];
+                const shapeLocation: Point = collection['Shape'];
+                const textLocation: Point = collection['Text'];
+                const imageUrl: string = ((isNullOrUndefined(collection['ImageSrc'])) ? legend.shape : collection['ImageSrc']);
+                const renderOptions: PathOption = new PathOption(
                     shapeId, collection['Fill'], strokeWidth, strokeColor, legend.opacity, ''
                 );
                 legend.textStyle.color = (legend.textStyle.color !== null) ? legend.textStyle.color :
@@ -432,48 +463,49 @@ export class Legend {
                     this.renderLegendBorder();
                 }
                 legendElement.appendChild(drawSymbol(shapeLocation, shape, shapeSize, collection['ImageSrc'], renderOptions));
-                let legendRectSize : number = collection['Rect']['x'] + collection['Rect']['width'];
+                const legendRectSize : number = collection['Rect']['x'] + collection['Rect']['width'];
                 if (legendRectSize > this.legendBorderRect.width) {
-                    let trimmedText : string = this.legendTextTrim(this.legendBorderRect.width, legendText,
-                                                                   legend.textStyle, legendRectSize);
+                    const trimmedText : string = this.legendTextTrim(this.legendBorderRect.width, legendText,
+                                                                     legend.textStyle, legendRectSize);
                     legendText = trimmedText;
                 }
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
                 renderTextElement(textOptions, legend.textStyle, legend.textStyle.color, legendElement);
                 this.legendGroup.appendChild(legendElement);
-                if (i === ((<Object[]>this.totalPages[page]['Collection']).length - 1)) {
-                    let pagingGroup: Element; let width: number = spacing; let height: number = (spacing / 2);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                if (i === ((<any[]>this.totalPages[page]['Collection']).length - 1)) {
+                    let pagingGroup: Element; const width: number = spacing; const height: number = (spacing / 2);
                     if (this.page !== 0) {
-                        let pagingText: string = (page + 1) + '/' + this.totalPages.length;
-                        let pagingFont: FontModel = legend.textStyle;
-                        let pagingTextSize: Size = measureText(pagingText, pagingFont);
-                        let leftPageX: number = (this.legendItemRect.x + this.legendItemRect.width) - pagingTextSize.width -
+                        const pagingText: string = (page + 1) + '/' + this.totalPages.length;
+                        const pagingFont: FontModel = legend.textStyle;
+                        const pagingTextSize: Size = measureText(pagingText, pagingFont);
+                        const leftPageX: number = (this.legendItemRect.x + this.legendItemRect.width) - pagingTextSize.width -
                             (width * 2) - spacing;
-                        let rightPageX: number = (this.legendItemRect.x + this.legendItemRect.width);
-                        let locY: number = (this.legendItemRect.y + this.legendItemRect.height) + (height / 2) + spacing;
-                        let pageTextX: number = rightPageX - width - (pagingTextSize.width / 2) - (spacing / 2);
+                        const rightPageX: number = (this.legendItemRect.x + this.legendItemRect.width);
+                        const locY: number = (this.legendItemRect.y + this.legendItemRect.height) + (height / 2) + spacing;
+                        const pageTextX: number = rightPageX - width - (pagingTextSize.width / 2) - (spacing / 2);
                         pagingGroup = render.createGroup({ id: map.element.id + '_Legend_Paging_Group' });
-                        let leftPageElement: Element = render.createGroup({ id: map.element.id + '_Legend_Left_Paging_Group' });
-                        let rightPageElement: Element = render.createGroup({ id: map.element.id + '_Legend_Right_Paging_Group' });
-                        let rightPath: string = ' M ' + rightPageX + ' ' + locY + ' L ' + (rightPageX - width) + ' ' + (locY - height) +
+                        const leftPageElement: Element = render.createGroup({ id: map.element.id + '_Legend_Left_Paging_Group' });
+                        const rightPageElement: Element = render.createGroup({ id: map.element.id + '_Legend_Right_Paging_Group' });
+                        const rightPath: string = ' M ' + rightPageX + ' ' + locY + ' L ' + (rightPageX - width) + ' ' + (locY - height) +
                             ' L ' + (rightPageX - width) + ' ' + (locY + height) + ' z ';
-                        let leftPath: string = ' M ' + leftPageX + ' ' + locY + ' L ' + (leftPageX + width) + ' ' + (locY - height) +
+                        const leftPath: string = ' M ' + leftPageX + ' ' + locY + ' L ' + (leftPageX + width) + ' ' + (locY - height) +
                             ' L ' + (leftPageX + width) + ' ' + (locY + height) + ' z ';
-                        let leftPageOptions: PathOption = new PathOption(
+                        const leftPageOptions: PathOption = new PathOption(
                             map.element.id + '_Left_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', leftPath
                         );
                         leftPageElement.appendChild(render.drawPath(leftPageOptions));
-                        let leftRectPageOptions: RectOption = new RectOption(
+                        const leftRectPageOptions: RectOption = new RectOption(
                             map.element.id + '_Left_Page_Rect', 'transparent', {}, 1,
                             new Rect(leftPageX - (width / 2), (locY - (height * 2)), width * 2, spacing * 2), null, null, '', ''
                         );
                         leftPageElement.appendChild(render.drawRectangle(leftRectPageOptions));
                         this.wireEvents(leftPageElement);
-                        let rightPageOptions: PathOption = new PathOption(
+                        const rightPageOptions: PathOption = new PathOption(
                             map.element.id + '_Right_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', rightPath
                         );
                         rightPageElement.appendChild(render.drawPath(rightPageOptions));
-                        let rightRectPageOptions: RectOption = new RectOption(
+                        const rightRectPageOptions: RectOption = new RectOption(
                             map.element.id + '_Right_Page_Rect', 'transparent', {}, 1,
                             new Rect((rightPageX - width), (locY - height), width, spacing), null, null, '', ''
                         );
@@ -481,7 +513,8 @@ export class Legend {
                         this.wireEvents(rightPageElement);
                         pagingGroup.appendChild(leftPageElement);
                         pagingGroup.appendChild(rightPageElement);
-                        let pageTextOptions: Object = {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const pageTextOptions: any = {
                             'id': map.element.id + '_Paging_Text',
                             'x': pageTextX,
                             'y': locY + (pagingTextSize.height / 4),
@@ -504,25 +537,24 @@ export class Legend {
         }
     }
 
-    // tslint:disable-next-line:max-func-body-length
     public legendHighLightAndSelection(targetElement: Element, value: string): void {
         let shapeIndex: number;
         let layerIndex: number;
         let dataIndex: number;
-        let textEle: Element;
-        let legend: LegendSettingsModel = this.maps.legendSettings;
-        textEle = legend.mode === 'Default' ? document.getElementById(targetElement.id.replace('Shape', 'Text')) :
+        const legend: LegendSettingsModel = this.maps.legendSettings;
+        const textEle: Element = legend.mode === 'Default' ? document.getElementById(targetElement.id.replace('Shape', 'Text')) :
             document.getElementById(targetElement.id + '_Text');
-        let collection: object[] = this.maps.legendModule.legendCollection;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const collection: any[] = this.maps.legendModule.legendCollection;
         let length: number;
-        let multiSelectEnable: boolean = this.maps.layers[collection[0]['data'][0]['layerIndex']].selectionSettings.enableMultiSelect;
+        const multiSelectEnable: boolean = this.maps.layers[collection[0]['data'][0]['layerIndex']].selectionSettings.enableMultiSelect;
         let selectLength: number = 0;
         let interactProcess: boolean = true;
-        let idIndex: number = parseFloat(targetElement.id.charAt(targetElement.id.length - 1));
+        const idIndex: number = parseFloat(targetElement.id.charAt(targetElement.id.length - 1));
         this.updateLegendElement();
-        let toggleLegendCheck: number = this.maps.toggledLegendId.indexOf(idIndex);
+        const toggleLegendCheck: number = this.maps.toggledLegendId.indexOf(idIndex);
         if (this.maps.legendSettings.toggleLegendSettings.enable && value === 'highlight' && toggleLegendCheck !== -1) {
-            let collectionIndex: number = this.getIndexofLegend(this.legendHighlightCollection, targetElement);
+            const collectionIndex: number = this.getIndexofLegend(this.legendHighlightCollection, targetElement);
             if (collectionIndex !== -1) {
                 this.legendHighlightCollection.splice(collectionIndex, 1);
             }
@@ -575,14 +607,15 @@ export class Legend {
         }
         if (interactProcess) {
             for (let i: number = 0; i < collection.length; i++) {
-                let idIndex: number = this.maps.legendSettings.mode === 'Interactive' ?
+                const idIndex: number = this.maps.legendSettings.mode === 'Interactive' ?
                     parseFloat(targetElement.id.split('_Legend_Index_')[1]) :
                     parseFloat(targetElement.id.split('_Legend_Shape_Index_')[1]);
                 if (textEle.textContent === collection[i]['text'] && collection[i]['data'].length > 0
                 && idIndex === i) {
-                    let layer: LayerSettingsModel = this.maps.layers[collection[i]['data'][0]['layerIndex']];
+                    const layer: LayerSettingsModel = this.maps.layers[collection[i]['data'][0]['layerIndex']];
                     let enable: boolean; let module: HighlightSettingsModel | SelectionSettingsModel;
-                    let data: object[];
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    let data: any[];
                     if (!isNullOrUndefined(layer)) {
                         enable = (value === 'selection') ? layer.selectionSettings.enable : layer.highlightSettings.enable;
                         module = void 0;
@@ -595,7 +628,7 @@ export class Legend {
                             shapeIndex = data[j]['shapeIndex'];
                             layerIndex = data[j]['layerIndex'];
                             dataIndex = data[j]['dataIndex'];
-                            let shapeEle: Element = document.getElementById(this.maps.element.id + '_LayerIndex_' +
+                            const shapeEle: Element = document.getElementById(this.maps.element.id + '_LayerIndex_' +
                                 layerIndex + '_shapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
                             if (shapeEle !== null) {
                                 let shapeMatch: boolean = true;
@@ -615,14 +648,12 @@ export class Legend {
                                             layer.shapeSettings as ShapeSettings);
                                     }
                                     length = this.legendHighlightCollection.length;
-                                    let legendHighlightColor: string = this.legendHighlightCollection[length - 1]['legendOldFill'];
+                                    const legendHighlightColor: string = this.legendHighlightCollection[length - 1]['legendOldFill'];
                                     this.legendHighlightCollection[length - 1]['MapShapeCollection']['Elements'].push(shapeEle);
-                                    let shapeItemCount: number = this.legendHighlightCollection[length - 1]
-                                    ['MapShapeCollection']['Elements'].length - 1;
-                                    let shapeOldFillColor: string = shapeEle.getAttribute('fill');
+                                    const shapeItemCount: number = this.legendHighlightCollection[length - 1]['MapShapeCollection']['Elements'].length - 1;
+                                    const shapeOldFillColor: string = shapeEle.getAttribute('fill');
                                     this.legendHighlightCollection[length - 1]['shapeOldFillColor'].push(shapeOldFillColor);
-                                    let shapeOldColor: string = this.legendHighlightCollection[length - 1]
-                                    ['shapeOldFillColor'][shapeItemCount];
+                                    const shapeOldColor: string = this.legendHighlightCollection[length - 1]['shapeOldFillColor'][shapeItemCount];
                                     this.shapePreviousColor = this.legendHighlightCollection[length - 1]['shapeOldFillColor'];
                                     this.setColor(
                                         shapeEle, !isNullOrUndefined(module.fill) ? module.fill : shapeOldColor,
@@ -649,8 +680,7 @@ export class Legend {
                                         }
                                     }
                                     selectLength = this.maps.legendSelectionCollection.length;
-                                    let legendSelectionColor: string;
-                                    legendSelectionColor = this.maps.legendSelectionCollection[selectLength - 1]['legendOldFill'];
+                                    const legendSelectionColor: string = this.maps.legendSelectionCollection[selectLength - 1]['legendOldFill'];
                                     this.maps.legendSelectionCollection[selectLength - 1]['MapShapeCollection']['Elements'].push(shapeEle);
                                     this.maps.legendSelectionCollection[selectLength - 1]['shapeOldFillColor'] = this.shapePreviousColor;
                                     this.setColor(
@@ -687,27 +717,30 @@ export class Legend {
         }
     }
 
-    public pushCollection(targetElement: Element, collection: object[], oldElement: object, shapeSettings: ShapeSettings): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public pushCollection(targetElement: Element, collection: any[], oldElement: any, shapeSettings: ShapeSettings): void {
         collection.push({
             legendElement: targetElement, legendOldFill: oldElement['fill'], legendOldOpacity: oldElement['opacity'],
             legendOldBorderColor: oldElement['borderColor'], legendOldBorderWidth: oldElement['borderWidth'],
             shapeOpacity: shapeSettings.opacity, shapeOldBorderColor: shapeSettings.border.color,
             shapeOldBorderWidth: shapeSettings.border.width
         });
-        length = collection.length;
+        const length: number = collection.length;
         collection[length - 1]['MapShapeCollection'] = { Elements: [] };
         collection[length - 1]['shapeOldFillColor'] = [];
     }
 
-    private removeLegend(collection: object[]): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private removeLegend(collection: any[]): void {
         for (let i: number = 0; i < collection.length; i++) {
-            let item: object = collection[i];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const item: any = collection[i];
             this.setColor(
                 item['legendElement'], item['legendOldFill'], item['legendOldOpacity'],
                 item['legendOldBorderColor'], item['legendOldBorderWidth'], 'highlight');
-            let dataCount: number = item['MapShapeCollection']['Elements'].length;
+            const dataCount: number = item['MapShapeCollection']['Elements'].length;
             for (let j: number = 0; j < dataCount; j++) {
-                let shapeFillColor: string = item['legendOldFill'].indexOf('url') !== -1
+                const shapeFillColor: string = item['legendOldFill'].indexOf('url') !== -1
                     ? item['shapeOldFillColor'][j] : item['legendOldFill'];
                 this.setColor(
                     item['MapShapeCollection']['Elements'][j], shapeFillColor, item['shapeOpacity'],
@@ -726,14 +759,13 @@ export class Legend {
     public removeLegendSelectionCollection(targetElement: Element): void {
         if (this.maps.legendSelectionCollection.length > 0) {
             removeClass(targetElement);
-            let shapeElements: string[] = this.shapesOfLegend(targetElement);
-            let dataCount: number = shapeElements.length;
+            const shapeElements: string[] = this.shapesOfLegend(targetElement);
+            const dataCount: number = shapeElements.length;
             for (let j: number = 0; j < dataCount; j++) {
-                let shapeElement: Element = getElement(shapeElements[j]);
+                const shapeElement: Element = getElement(shapeElements[j]);
                 if (shapeElement.getAttribute('class') === 'ShapeselectionMapStyle') {
                     removeClass(shapeElement);
-                    let selectedElementIdIndex: number;
-                    selectedElementIdIndex = this.maps.selectedElementId.indexOf(shapeElement.id);
+                    const selectedElementIdIndex: number = this.maps.selectedElementId.indexOf(shapeElement.id);
                     if (selectedElementIdIndex !== - 1) {
                         this.maps.selectedElementId.splice(selectedElementIdIndex, 1);
                     }
@@ -745,7 +777,8 @@ export class Legend {
     public removeShapeHighlightCollection(): void {
         if (this.shapeHighlightCollection.length > 0) {
             for (let i: number = 0; i < this.shapeHighlightCollection.length; i++) {
-                let item: object = this.shapeHighlightCollection[i];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const item: any = this.shapeHighlightCollection[i];
                 let removeFill: boolean = true;
                 for (let j: number = 0; j < this.maps.legendSelectionCollection.length; j++) {
                     if (this.maps.legendSelectionCollection[j]['legendElement'] === item['legendElement']) {
@@ -761,21 +794,24 @@ export class Legend {
         }
     }
 
-    // tslint:disable-next-line:max-func-body-length
     public shapeHighLightAndSelection(
-        targetElement: Element, data: object, module: SelectionSettingsModel | HighlightSettingsModel,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        targetElement: Element, data: any, module: SelectionSettingsModel | HighlightSettingsModel,
         getValue: string, layerIndex: number): void {
         if (data !== undefined) {
             this.updateLegendElement();
             this.shapeToggled = true;
-            let collection: object[] = this.maps.legendModule.legendCollection;
-            let indexes: object = this.legendIndexOnShape(data, layerIndex);
-            let shapeElement: object = this.shapeDataOnLegend(targetElement);
-            let toggleLegendCheck: number = this.maps.toggledLegendId.indexOf(indexes['actualIndex']);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const collection: any[] = this.maps.legendModule.legendCollection;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const indexes: any = this.legendIndexOnShape(data, layerIndex);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const shapeElement: any = this.shapeDataOnLegend(targetElement);
+            const toggleLegendCheck: number = this.maps.toggledLegendId.indexOf(indexes['actualIndex']);
             if (this.maps.legendSettings.toggleLegendSettings.enable && toggleLegendCheck !== -1) {
                 this.shapeToggled = false;
                 this.legendHighlightCollection = [];
-                let collectionIndex: number = this.getIndexofLegend(this.shapeHighlightCollection, shapeElement['LegendEle']);
+                const collectionIndex: number = this.getIndexofLegend(this.shapeHighlightCollection, shapeElement['LegendEle']);
                 if (collectionIndex !== -1) {
                     this.shapeHighlightCollection.splice(collectionIndex, 1);
                 }
@@ -804,7 +840,7 @@ export class Legend {
                             checkSelection++;
                         }
                     }
-                    let selectionIndex: number = this.maps.selectedLegendElementId.indexOf(indexes['actualIndex']);
+                    const selectionIndex: number = this.maps.selectedLegendElementId.indexOf(indexes['actualIndex']);
                     if (selectionIndex === -1) {
                         this.maps.selectedLegendElementId.push(indexes['actualIndex']);
                         this.maps.legendSelectionClass = <SelectionSettingsModel>module;
@@ -823,7 +859,7 @@ export class Legend {
                 this.removeShapeHighlightCollection();
                 return null;
             }
-            let text: string = collection[indexes['actualIndex']]['text'];
+            const text: string = collection[indexes['actualIndex']]['text'];
             let content: string; let legendShape: Element;
 
             if (this.maps.legendSettings.mode === 'Default') {
@@ -837,7 +873,7 @@ export class Legend {
                 legendShape = document.getElementById(this.maps.element.id + '_Legend_Index_' + indexes['actualIndex']);
             }
             this.oldShapeElement = shapeElement['LegendEle'];
-            let length: number = this.maps.legendSelectionCollection.length;
+            const length: number = this.maps.legendSelectionCollection.length;
             if (text === content) {
                 let shapeMatched: boolean = true;
                 if (this.maps.legendSelectionCollection) {
@@ -849,7 +885,8 @@ export class Legend {
                     }
                 }
                 if (getValue === 'highlight' && shapeMatched) {
-                    let selectionEle: object = this.isTargetSelected(shapeElement, this.shapeHighlightCollection);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const selectionEle: any = this.isTargetSelected(shapeElement, this.shapeHighlightCollection);
                     if (selectionEle === undefined || (selectionEle && !selectionEle['IsSelected'])) {
                         this.pushCollection(
                             legendShape, this.shapeHighlightCollection, collection[indexes['actualIndex']],
@@ -881,14 +918,16 @@ export class Legend {
                             module.opacity.toString(), module.border.color, module.border.width.toString(), 'highlight');
                     }
                 } else if (getValue === 'selection') {
-                    let selectionEle: object = this.isTargetSelected(shapeElement, this.maps.legendSelectionCollection);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const selectionEle: any = this.isTargetSelected(shapeElement, this.maps.legendSelectionCollection);
                     if (length > 0) {
                         let j: number = 0;
                         while (j < this.maps.legendSelectionCollection.length) {
                             if (shapeElement['LegendEle'] !== this.maps.legendSelectionCollection[j]['legendElement'] &&
                                 !(<SelectionSettingsModel>module).enableMultiSelect) {
-                                let element: object = this.maps.legendSelectionCollection[j];
-                                let selectedLegendIndex: number = this.maps.selectedLegendElementId.indexOf(indexes['actualIndex']);
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                const element: any = this.maps.legendSelectionCollection[j];
+                                const selectedLegendIndex: number = this.maps.selectedLegendElementId.indexOf(indexes['actualIndex']);
                                 this.maps.selectedLegendElementId.splice(selectedLegendIndex, 1);
                                 this.maps.legendSelectionCollection.splice(j, 1);
                                 removeClass(element['legendElement']);
@@ -899,7 +938,8 @@ export class Legend {
                     }
                     if (selectionEle && (
                         selectionEle['IsSelected'] && targetElement.getAttribute('class') === 'ShapeselectionMapStyle')) {
-                        let element: object = this.maps.legendSelectionCollection[selectionEle['SelectionIndex']];
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const element: any = this.maps.legendSelectionCollection[selectionEle['SelectionIndex']];
                         let multiSelection: number = 0;
                         if ((<SelectionSettingsModel>module).enableMultiSelect) {
                             for (let i: number = 0; i < shapeElement['Elements'].length; i++) {
@@ -920,7 +960,7 @@ export class Legend {
                     } else {
                         if ((selectionEle === undefined || (selectionEle && !selectionEle['IsSelected'])) &&
                             !isNullOrUndefined(legendShape)) {
-                            let legendSelectionIndex: number = this.getIndexofLegend(this.maps.legendSelectionCollection, legendShape);
+                            const legendSelectionIndex: number = this.getIndexofLegend(this.maps.legendSelectionCollection, legendShape);
                             if (legendSelectionIndex === -1) {
                                 this.pushCollection(
                                     legendShape, this.maps.legendSelectionCollection, collection[indexes['actualIndex']],
@@ -943,7 +983,7 @@ export class Legend {
                             this.setColor(
                                 legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'),
                                 module.opacity.toString(), module.border.color, module.border.width.toString(), 'selection');
-                            let legendSelectionIndex: number = this.getIndexofLegend(this.maps.legendSelectionCollection, legendShape);
+                            const legendSelectionIndex: number = this.getIndexofLegend(this.maps.legendSelectionCollection, legendShape);
                             this.maps.legendSelectionCollection[legendSelectionIndex]['MapShapeCollection']['Elements'].push(targetElement);
                         }
                         this.maps.shapeSelections = false;
@@ -958,8 +998,10 @@ export class Legend {
         }
     }
 
-    private isTargetSelected(target: object, collection: object[]): object {
-        let selectEle: object;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private isTargetSelected(target: any, collection: any[]): any {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let selectEle: any;
         for (let i: number = 0; i < collection.length; i++) {
             if (!isNullOrUndefined(target['LegendEle'].getAttribute('id')) &&
                 (target['LegendEle'].getAttribute('id') === collection[i]['legendElement'].getAttribute('id'))) {
@@ -978,21 +1020,23 @@ export class Legend {
         }
     }
 
-    private getIndexofLegend(targetCollection: object[], targetElement: Element): number {
-        let legendIndex: number = targetCollection.map((e: object) => { return e['legendElement']; }).indexOf(targetElement);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private getIndexofLegend(targetCollection: any[], targetElement: Element): number {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const legendIndex: number = targetCollection.map((e: any) => { return e['legendElement']; }).indexOf(targetElement);
         return legendIndex;
     }
 
     private removeAllSelections(): void {
         for (let i: number = 0; i < this.maps.selectedElementId.length; i++) {
-            let selectedElement: Element = document.getElementById(this.maps.selectedElementId[i]);
+            const selectedElement: Element = document.getElementById(this.maps.selectedElementId[i]);
             removeClass(selectedElement);
         }
         for (let j: number = 0; j < this.maps.selectedLegendElementId.length; j++) {
-            let idIndex: string = this.maps.legendSettings.mode === 'Interactive' ?
+            const idIndex: string = this.maps.legendSettings.mode === 'Interactive' ?
                 'container_Legend_Index_' : 'container_Legend_Shape_Index_';
-            let selectedElement: string = idIndex + this.maps.selectedLegendElementId[j];
-            let legendElement: Element = document.getElementById(selectedElement);
+            const selectedElement: string = idIndex + this.maps.selectedLegendElementId[j];
+            const legendElement: Element = document.getElementById(selectedElement);
             if (!isNullOrUndefined(legendElement)) {
                 removeClass(document.getElementById(selectedElement));
             }
@@ -1002,20 +1046,25 @@ export class Legend {
         this.maps.selectedElementId = [];
     }
 
-    public legendIndexOnShape(data: object, index: number): object {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public legendIndexOnShape(data: any, index: number): any {
         let legendIndex: number;
         let actualIndex: number;
-        let path: string = this.maps.layers[index].shapeDataPath;
-        let value: object = data[path];
-        let legendType: string = this.maps.legendSettings.mode;
-        let collection: object[] = this.maps.legendModule.legendCollection;
-        let currentCollection: object[];
+        const path: string = this.maps.layers[index].shapeDataPath;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const value: any = data[path];
+        const legendType: string = this.maps.legendSettings.mode;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const collection: any[] = this.maps.legendModule.legendCollection;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let currentCollection: any[];
         if (legendType === 'Default' && !isNullOrUndefined(this.maps.legendModule.totalPages)) {
             currentCollection = this.maps.legendModule.totalPages[this.maps.legendModule.currentPage]['Collection'];
         }
-        let currentCollectionLength: number = legendType === 'Default' ? currentCollection['length'] : 1;
+        const currentCollectionLength: number = legendType === 'Default' ? currentCollection['length'] : 1;
         for (let i: number = 0; i < collection.length; i++) {
-            let dataValue: object[] = collection[i]['data'];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const dataValue: any[] = collection[i]['data'];
             for (let k: number = 0; k < currentCollectionLength; k++) {
                 if (legendType !== 'Default' || collection[i]['text'] === currentCollection[k]['DisplayText']) {
                     for (let j: number = 0; j < dataValue.length; j++) {
@@ -1035,22 +1084,27 @@ export class Legend {
         return { currentIndex: legendIndex, actualIndex: actualIndex };
     }
 
-    private shapeDataOnLegend(targetElement: Element): object {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private shapeDataOnLegend(targetElement: Element): any {
         let shapeIndex: number;
         let layerIndex: number;
         let dataIndex: number;
-        let collection: object[] = this.maps.legendModule.legendCollection;
-        let legend: LegendSettingsModel = this.maps.legendSettings;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const collection: any[] = this.maps.legendModule.legendCollection;
+        const legend: LegendSettingsModel = this.maps.legendSettings;
         for (let i: number = 0; i < collection.length; i++) {
-            let data: object[] = collection[i]['data'];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const data: any[] = collection[i]['data'];
             let process: boolean = false;
-            let elements: object[] = [];
-            let currentElement: object = { Elements: [] };
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const elements: any[] = [];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const currentElement: any = { Elements: [] };
             for (let j: number = 0; j < data.length; j++) {
                 shapeIndex = data[j]['shapeIndex'];
                 layerIndex = data[j]['layerIndex'];
                 dataIndex = data[j]['dataIndex'];
-                let shapeEle: Element = document.getElementById(this.maps.element.id + '_LayerIndex_' +
+                const shapeEle: Element = document.getElementById(this.maps.element.id + '_LayerIndex_' +
                     layerIndex + '_shapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
                 if (targetElement === shapeEle) {
                     process = true;
@@ -1074,14 +1128,15 @@ export class Legend {
         let shapeIndex: number;
         let layerIndex: number;
         let dataIndex: number;
-        let idIndex: number = parseFloat(targetElement.id.charAt(targetElement.id.length - 1));
-        let data: object[] = this.maps.legendModule.legendCollection[idIndex]['data'];
-        let legendShapeElements: string[] = [];
+        const idIndex: number = parseFloat(targetElement.id.charAt(targetElement.id.length - 1));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const data: any[] = this.maps.legendModule.legendCollection[idIndex]['data'];
+        const legendShapeElements: string[] = [];
         for (let i: number = 0; i < data.length; i++) {
             shapeIndex = data[i]['shapeIndex'];
             layerIndex = data[i]['layerIndex'];
             dataIndex = data[i]['dataIndex'];
-            let shapeElement: Element = document.getElementById(this.maps.element.id + '_LayerIndex_' +
+            const shapeElement: Element = document.getElementById(this.maps.element.id + '_LayerIndex_' +
                 layerIndex + '_shapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
             if (!isNullOrUndefined(shapeElement)) {
                 legendShapeElements.push(shapeElement.id);
@@ -1090,17 +1145,16 @@ export class Legend {
         return legendShapeElements;
     }
 
-    //tslint:disable
     private legendToggle(): void {
-        let map: Maps = this.maps;
-        let legend: LegendSettingsModel = <LegendSettingsModel>map.legendSettings;
+        const map: Maps = this.maps;
+        const legend: LegendSettingsModel = <LegendSettingsModel>map.legendSettings;
         if (this.maps.selectedLegendElementId) {
             // To maintain the state of legend selection during page resize.
             for (let j: number = 0; j < this.maps.selectedLegendElementId.length; j++) {
-                let idIndex: string = legend.mode === 'Interactive' ? this.maps.element.id + '_Legend_Index_' : this.maps.element.id + '_Legend_Shape_Index_';
-                let selectedElement: Element = map.svgObject.querySelector('#' + idIndex + this.maps.selectedLegendElementId[j]);
+                const idIndex: string = legend.mode === 'Interactive' ? this.maps.element.id + '_Legend_Index_' : this.maps.element.id + '_Legend_Shape_Index_';
+                const selectedElement: Element = map.svgObject.querySelector('#' + idIndex + this.maps.selectedLegendElementId[j]);
                 if (!isNullOrUndefined(selectedElement)) {
-                    let fill: string = !isNullOrUndefined(this.maps.legendSelectionClass.fill) ?
+                    const fill: string = !isNullOrUndefined(this.maps.legendSelectionClass.fill) ?
                         this.maps.legendSelectionClass.fill : selectedElement.getAttribute('fill');
                     this.setColor(
                         selectedElement, fill, this.maps.legendSelectionClass.opacity.toString(),
@@ -1110,43 +1164,43 @@ export class Legend {
                             this.maps.legendSelectionCollection[i]['legendElement'] = selectedElement;
                         }
                     }
-                    let legendSelectionIndex: number = this.getIndexofLegend(this.maps.legendSelectionCollection, selectedElement);
+                    const legendSelectionIndex: number = this.getIndexofLegend(this.maps.legendSelectionCollection, selectedElement);
                     if (legendSelectionIndex === -1) {
-                        let layerIndex: number = this.maps.legendModule.legendCollection[this.maps.selectedLegendElementId[j]]['data'][j]['layerIndex']
+                        const layerIndex: number = this.maps.legendModule.legendCollection[this.maps.selectedLegendElementId[j]]['data'][j]['layerIndex'];
                         this.pushCollection(
+                            // eslint-disable-next-line max-len
                             selectedElement, this.maps.legendSelectionCollection, this.maps.legendModule.legendCollection[this.maps.selectedLegendElementId[j]],
                             this.maps.layers[layerIndex].shapeSettings as ShapeSettings
                         );
                     }
                 }
-            };
+            }
         }
         if (this.maps.toggledLegendId) {
             for (let j: number = 0; j < this.maps.toggledLegendId.length; j++) {
-                let legendTextId: string = legend.mode === 'Interactive' ? ('#' + this.maps.element.id + '_Legend_Index_' + this.maps.toggledLegendId[j] + '_Text') : ('#' + this.maps.element.id + '_Legend_Text_Index_' + this.maps.toggledLegendId[j]);
-                let textElement: Element = map.svgObject.querySelector(legendTextId);
+                const legendTextId: string = legend.mode === 'Interactive' ? ('#' + this.maps.element.id + '_Legend_Index_' + this.maps.toggledLegendId[j] + '_Text') : ('#' + this.maps.element.id + '_Legend_Text_Index_' + this.maps.toggledLegendId[j]);
+                const textElement: Element = map.svgObject.querySelector(legendTextId);
                 if (!isNullOrUndefined(textElement)) {
-                    textElement.setAttribute("fill", "#E5E5E5");
+                    textElement.setAttribute('fill', '#E5E5E5');
                 }
-                let legendShapeId: string = legend.mode === 'Interactive' ? ('#' + this.maps.element.id + '_Legend_Index_' + this.maps.toggledLegendId[j]) : ('#' + this.maps.element.id + '_Legend_Shape_Index_' + this.maps.toggledLegendId[j]);
-                let legendElement: Element = map.svgObject.querySelector(legendShapeId);
+                const legendShapeId: string = legend.mode === 'Interactive' ? ('#' + this.maps.element.id + '_Legend_Index_' + this.maps.toggledLegendId[j]) : ('#' + this.maps.element.id + '_Legend_Shape_Index_' + this.maps.toggledLegendId[j]);
+                const legendElement: Element = map.svgObject.querySelector(legendShapeId);
                 if (!isNullOrUndefined(legendElement)) {
-                    legendElement.setAttribute("fill", "#E5E5E5");
+                    legendElement.setAttribute('fill', '#E5E5E5');
                 }
             }
         }
     }
 
-    //tslint:disable
     private renderLegendBorder(): void {
-        let map: Maps = this.maps;
-        let legend: LegendSettingsModel = <LegendSettingsModel>map.legendSettings;
-        let legendTitle: string = legend.title.text;
-        let textStyle: FontModel = legend.titleStyle;
+        const map: Maps = this.maps;
+        const legend: LegendSettingsModel = <LegendSettingsModel>map.legendSettings;
+        const legendTitle: string = legend.title.text;
+        const textStyle: FontModel = legend.titleStyle;
         let textOptions: TextOption;
-        let spacing: number = 10;
-        let trimTitle: string = textTrim((this.legendItemRect.width + (spacing * 2)), legendTitle, textStyle);
-        let textSize: Size = measureText(trimTitle, textStyle);
+        const spacing: number = 10;
+        const trimTitle: string = textTrim((this.legendItemRect.width + (spacing * 2)), legendTitle, textStyle);
+        const textSize: Size = measureText(trimTitle, textStyle);
         this.legendBorderRect = new Rect(
             (this.legendItemRect.x - spacing),
             (this.legendItemRect.y - spacing - textSize.height),
@@ -1154,7 +1208,7 @@ export class Legend {
             (this.legendItemRect.height) + (spacing * 2) + textSize.height +
             (legend.mode === 'Interactive' ? 0 : (this.page !== 0) ? spacing : 0)
         );
-        let renderOptions: RectOption = new RectOption(
+        const renderOptions: RectOption = new RectOption(
             map.element.id + '_Legend_Border', legend.background, legend.border, 1, this.legendBorderRect, null, null, '', ''
         );
         this.legendGroup.appendChild(map.renderer.drawRectangle(renderOptions));
@@ -1171,7 +1225,6 @@ export class Legend {
                 'middle', trimTitle, '');
             renderTextElement(textOptions, textStyle, textStyle.color, this.legendGroup);
         }
-        
     }
 
     public changeNextPage(e: PointerEvent): void {
@@ -1186,53 +1239,55 @@ export class Legend {
 
     private getLegendAlignment(map: Maps, width: number, height: number, legend: LegendSettingsModel): void {
         let x: number; let y: number;
-        let spacing: number = 10; let totalRect: Rect;
+        const spacing: number = 10;
+        let totalRect: Rect;
+        // eslint-disable-next-line prefer-const
         totalRect = extend({}, map.mapAreaRect, totalRect, true) as Rect;
-        let areaX: number = totalRect.x;
-        let areaY: number = totalRect.y;
-        let areaHeight: number = totalRect.height;
-        let areaWidth: number = totalRect.width;
-        let totalWidth: number = map.availableSize.width;
-        let totalHeight: number = map.availableSize.height;
+        const areaX: number = totalRect.x;
+        const areaY: number = totalRect.y;
+        const areaHeight: number = totalRect.height;
+        const areaWidth: number = totalRect.width;
+        const totalWidth: number = map.availableSize.width;
+        const totalHeight: number = map.availableSize.height;
         if (legend.position === 'Float') {
             this.translate = legend.location;
         } else {
             switch (legend.position) {
-                case 'Top':
-                case 'Bottom':
-                    totalRect.height = (areaHeight - height);
-                    x = (totalWidth / 2) - (width / 2);
-                    y = (legend.position === 'Top') ? areaY : (areaY + totalRect.height);
-                    totalRect.y = (legend.position === 'Top') ? areaY + height + spacing : areaY;
-                    break;
-                case 'Left':
-                case 'Right':
-                    totalRect.width = (areaWidth - width);
-                    x = (legend.position === 'Left') ? areaX : (areaX + totalRect.width) - spacing;
-                    y = (totalHeight / 2) - (height / 2);
-                    totalRect.x = (legend.position === 'Left') ? areaX + width : areaX;
-                    break;
+            case 'Top':
+            case 'Bottom':
+                totalRect.height = (areaHeight - height);
+                x = (totalWidth / 2) - (width / 2);
+                y = (legend.position === 'Top') ? areaY : (areaY + totalRect.height);
+                totalRect.y = (legend.position === 'Top') ? areaY + height + spacing : areaY;
+                break;
+            case 'Left':
+            case 'Right':
+                totalRect.width = (areaWidth - width);
+                x = (legend.position === 'Left') ? areaX : (areaX + totalRect.width) - spacing;
+                y = (totalHeight / 2) - (height / 2);
+                totalRect.x = (legend.position === 'Left') ? areaX + width : areaX;
+                break;
             }
             switch (legend.alignment) {
-                case 'Near':
-                    if (legend.position === 'Top' || legend.position === 'Bottom') {
-                        x = totalRect.x;
-                    } else {
-                        y = totalRect.y;
-                    }
-                    break;
-                case 'Far':
-                    if (legend.position === 'Top' || legend.position === 'Bottom') {
-                        x = (totalWidth - width) - spacing;
-                    } else {
-                        y = totalHeight - height;
-                    }
-                    break;
+            case 'Near':
+                if (legend.position === 'Top' || legend.position === 'Bottom') {
+                    x = totalRect.x;
+                } else {
+                    y = totalRect.y;
+                }
+                break;
+            case 'Far':
+                if (legend.position === 'Top' || legend.position === 'Bottom') {
+                    x = (totalWidth - width) - spacing;
+                } else {
+                    y = totalHeight - height;
+                }
+                break;
             }
             if ((legend.height || legend.width) && legend.mode !== 'Interactive') {
                 map.totalRect = totalRect;
             } else {
-                if((legend.height || legend.width) && legend.mode === 'Interactive')
+                if ((legend.height || legend.width) && legend.mode === 'Interactive')
                 {
                     map.totalRect = totalRect;
                 }
@@ -1244,23 +1299,26 @@ export class Legend {
 
     private getMarkersLegendCollections(layerIndex: number, markers: MarkerSettingsModel[]): void {
         Array.prototype.forEach.call(markers, (marker: MarkerSettings, markerIndex: number) => {
-            let dataSource: Object[] = marker.dataSource as Object[];
-            let field: string = marker.legendText;
-            let templateFn: Function;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const dataSource: any[] = marker.dataSource as any[];
+            const field: string = marker.legendText;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let templateFn: any;
             let isDuplicate: boolean;
-            Array.prototype.forEach.call(dataSource, (data: Object, dataIndex: number) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            Array.prototype.forEach.call(dataSource, (data: any, dataIndex: number) => {
                 let imageSrc: string = null;
-                let showLegend: boolean = isNullOrUndefined(data[this.maps.legendSettings.showLegendPath]) ? true :
+                const showLegend: boolean = isNullOrUndefined(data[this.maps.legendSettings.showLegendPath]) ? true :
                     data[this.maps.legendSettings.showLegendPath];
                 if (marker.visible && showLegend && (!isNullOrUndefined(data['latitude'])) && (!isNullOrUndefined(data['longitude']))) {
                     if (marker.template) {
                         templateFn = getTemplateFunction(marker.template);
-                        let templateElement: Element = templateFn(this.maps);
-                        let markerEle: Element = isNullOrUndefined(templateElement.childElementCount) ? templateElement[0] :
+                        const templateElement: Element = templateFn(this.maps);
+                        const markerEle: Element = isNullOrUndefined(templateElement.childElementCount) ? templateElement[0] :
                             templateElement;
                         imageSrc = markerEle.querySelector('img').src;
                     }
-                    let text: string = isNullOrUndefined(data[field]) ? '' : data[field];
+                    const text: string = isNullOrUndefined(data[field]) ? '' : data[field];
                     isDuplicate = this.maps.legendSettings.removeDuplicateLegend ?
                         this.removeDuplicates(this.legendCollection, text) : false;
                     if (!isDuplicate) {
@@ -1270,24 +1328,27 @@ export class Legend {
                         });
                     }
                 }
-            });            
+            });
         });
     }
 
     private getRangeLegendCollection(
-        layerIndex: number, layerData: Object[], colorMapping: ColorMappingSettings[], dataSource: Object[],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        layerIndex: number, layerData: any[], colorMapping: ColorMappingSettings[], dataSource: any[],
         dataPath: string, colorValuePath: string, propertyPath: string | string[]
     ): void {
         let legendText: string; let legendIndex: number = 0;
-        let fill: string = this.maps.legendSettings.fill; let rangeData: Object[] = [];
-        for (let colorMap of colorMapping) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const fill: string = this.maps.legendSettings.fill; let rangeData: any[] = [];
+        for (const colorMap of colorMapping) {
             if (!isNullOrUndefined(colorMap.from) && !isNullOrUndefined(colorMap.to)) {
                 legendText = !isNullOrUndefined(colorMap.label) ? colorMap.label : colorMap.from + ' - ' + colorMap.to;
                 rangeData = [];
                 let colorMapProcess: boolean = false;
-                Array.prototype.forEach.call(dataSource, (data: Object, dataIndex: number) => {
-                    let colorValue: number = (colorValuePath.indexOf(".") > -1) ? Number(getValueFromObject(data, colorValuePath)) :
-                    parseFloat(data[colorValuePath]);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                Array.prototype.forEach.call(dataSource, (data: any, dataIndex: number) => {
+                    const colorValue: number = (colorValuePath.indexOf('.') > -1) ? Number(getValueFromObject(data, colorValuePath)) :
+                        parseFloat(data[colorValuePath]);
                     if (colorValue >= colorMap.from && colorValue <= colorMap.to) {
                         colorMapProcess = true;
                         rangeData.push(this.getLegendData(layerIndex, dataIndex, data, dataPath, layerData, propertyPath, colorValue));
@@ -1299,7 +1360,7 @@ export class Legend {
                         name: null, value: null
                     });
                 }
-                let legendFill: string = (isNullOrUndefined(fill)) ? Object.prototype.toString.call(colorMap.color) === '[object Array]' ?
+                const legendFill: string = (isNullOrUndefined(fill)) ? Object.prototype.toString.call(colorMap.color) === '[object Array]' ?
                     !isNullOrUndefined(colorMap.value) ? colorMap.color[0] : this.legendGradientColor(colorMap, legendIndex) :
                     <string>colorMap.color : fill;
                 legendIndex++;
@@ -1308,12 +1369,15 @@ export class Legend {
         }
     }
 
-    private getOverallLegendItemsCollection(legendText: string, legendFill: string, legendData: Object[], showLegend: boolean): void {
-        let newColllection: Object[] = [];
-        let legend: LegendSettingsModel = this.maps.legendSettings;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private getOverallLegendItemsCollection(legendText: string, legendFill: string, legendData: any[], showLegend: boolean): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const newColllection: any[] = [];
+        const legend: LegendSettingsModel = this.maps.legendSettings;
         if (legendData.length > 0 && showLegend) {
             for (let i: number = 0; i < legendData.length; i++) {
-                let collection: Object[] = <Object[]>legendData[i];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const collection: any[] = <any[]>legendData[i];
                 if (collection.length > 0) {
                     for (let j: number = 0; j < collection.length; j++) {
                         newColllection.push(collection[j]);
@@ -1323,7 +1387,7 @@ export class Legend {
                 }
                 newColllection['_isVisible'] = true;
             }
-            let isDuplicate: boolean = this.maps.legendSettings.removeDuplicateLegend ?
+            const isDuplicate: boolean = this.maps.legendSettings.removeDuplicateLegend ?
                 this.removeDuplicates(this.legendCollection, legendText) : false;
             if (!isDuplicate) {
                 this.legendCollection.push({
@@ -1334,7 +1398,8 @@ export class Legend {
         }
     }
 
-    private removeDuplicates(legendCollection: Object[], text: string): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private removeDuplicates(legendCollection: any[], text: string): boolean {
         let isDuplicate: boolean = false;
         for (let i: number = 0; i < legendCollection.length; i++) {
             if (legendCollection[i]['text'] === text) {
@@ -1348,20 +1413,25 @@ export class Legend {
     }
 
     private getEqualLegendCollection(
-        layerIndex: number, layerData: Object[], colorMapping: ColorMappingSettings[], dataSource: Object[],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        layerIndex: number, layerData: any[], colorMapping: ColorMappingSettings[], dataSource: any[],
         dataPath: string, colorValuePath: string, propertyPath: string | string[]
     ): void {
-        let fill: string = this.maps.legendSettings.fill; let equalValues: Object[] = [];
-        let legendText: string; let legendIndex: number = 0; let equalData: Object[] = [];
-        let outOfRangeValues: Object[] = []; let outOfRange: Object[] = [];
-        for (let colorMap of colorMapping) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const fill: string = this.maps.legendSettings.fill; const equalValues: any[] = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let legendText: string; let legendIndex: number = 0; let equalData: any[] = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const outOfRangeValues: any[] = []; const outOfRange: any[] = [];
+        for (const colorMap of colorMapping) {
             if (!isNullOrUndefined(colorMap.value)) {
                 legendText = !isNullOrUndefined(colorMap.label) ? colorMap.label : colorMap.value;
                 equalData = [];
                 let eqaulColorProcess: boolean = false;
-                Array.prototype.forEach.call(dataSource, (data: Object, dataIndex: number) => {
-                    let equalValue: string = ((colorValuePath.indexOf(".") > -1) ? (getValueFromObject(data, colorValuePath)) :
-                                              (data[colorValuePath]));
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                Array.prototype.forEach.call(dataSource, (data: any, dataIndex: number) => {
+                    const equalValue: string = ((colorValuePath.indexOf('.') > -1) ? (getValueFromObject(data, colorValuePath)) :
+                        (data[colorValuePath]));
                     if (equalValue === colorMap.value) {
                         eqaulColorProcess = true;
                         if (equalValues.indexOf(equalValue) === -1) {
@@ -1377,7 +1447,7 @@ export class Legend {
                 for (let x: number = 0; x < equalValues.length; x++) {
                     for (let y: number = 0; y < outOfRangeValues.length; y++) {
                         if (equalValues[x] === outOfRangeValues[y]) {
-                            let equalIndex: number = outOfRangeValues.indexOf(equalValues[x]);
+                            const equalIndex: number = outOfRangeValues.indexOf(equalValues[x]);
                             outOfRangeValues.splice(equalIndex, 1);
                         }
                     }
@@ -1388,27 +1458,31 @@ export class Legend {
                         name: null, value: null
                     });
                 }
-                let legendFill: string = (isNullOrUndefined(fill)) ? Object.prototype.toString.call(colorMap.color) === '[object Array]'
+                const legendFill: string = (isNullOrUndefined(fill)) ? Object.prototype.toString.call(colorMap.color) === '[object Array]'
                     ? colorMap.color[0] : <string>colorMap.color : fill;
                 legendIndex++;
                 this.getOverallLegendItemsCollection(legendText, legendFill, equalData, colorMap.showLegend);
             } else if (isNullOrUndefined(colorMap.minOpacity) && isNullOrUndefined(colorMap.maxOpacity) && isNullOrUndefined(colorMap.value)
                 && isNullOrUndefined(colorMap.from) && isNullOrUndefined(colorMap.to) && !isNullOrUndefined(colorMap.color)) {
-                    Array.prototype.forEach.call(dataSource, (data: Object, dataIndex: number) => {
-                        let equalValue: string = ((colorValuePath.indexOf(".") > -1) ? (getValueFromObject(data, colorValuePath)) :
-                                                  (data[colorValuePath]));
-                        for (let k: number = 0; k < outOfRangeValues.length; k++) {
-                            if (equalValue === outOfRangeValues[k]) {
-                                outOfRange.push(
-                                    this.getLegendData(layerIndex, dataIndex, data, dataPath, layerData, propertyPath, equalValue));
-                            }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                Array.prototype.forEach.call(dataSource, (data: any, dataIndex: number) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const equalValue: string = ((colorValuePath.indexOf('.') > -1) ? (getValueFromObject(data, colorValuePath)) :
+                        (data[colorValuePath]));
+                    for (let k: number = 0; k < outOfRangeValues.length; k++) {
+                        if (equalValue === outOfRangeValues[k]) {
+                            outOfRange.push(
+                                this.getLegendData(layerIndex, dataIndex, data, dataPath, layerData, propertyPath, equalValue));
                         }
-                    });
+                    }
+                });
                 if (outOfRangeValues.length === 0) {
-                    let range: boolean = false; let outRange: Object[] = [];
-                    Array.prototype.forEach.call(dataSource, (data: Object, dataIndex: number) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    let range: boolean = false; const outRange: any[] = [];
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    Array.prototype.forEach.call(dataSource, (data: any, dataIndex: number) => {
                         range = false;
-                        let rangeValue: number = data[colorValuePath];
+                        const rangeValue: number = data[colorValuePath];
                         for (let z: number = 0; z < colorMapping.length; z++) {
                             if (!isNullOrUndefined(rangeValue) && !isNaN(rangeValue)) {
                                 if (rangeValue >= colorMapping[z].from && rangeValue <= colorMapping[z].to) {
@@ -1424,9 +1498,9 @@ export class Legend {
                     });
                 }
                 legendText = !isNullOrUndefined(colorMap.label) ? colorMap.label : 'Others';
-                let outfill: string = ((Object.prototype.toString.call(colorMap.color) === '[object Array]'))
+                const outfill: string = ((Object.prototype.toString.call(colorMap.color) === '[object Array]'))
                     ? colorMap.color[0] : <string>colorMap.color;
-                let legendOutFill: string = outfill;
+                const legendOutFill: string = outfill;
                 legendIndex++;
                 this.getOverallLegendItemsCollection(legendText, legendOutFill, outOfRange, colorMap.showLegend);
             }
@@ -1434,25 +1508,28 @@ export class Legend {
     }
 
     private getDataLegendCollection(
-        layerIndex: number, layerData: Object[], colorMapping: ColorMappingSettings[], dataSource: Object[],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        layerIndex: number, layerData: any[], colorMapping: ColorMappingSettings[], dataSource: any[],
         dataPath: string, colorValuePath: string, propertyPath: string | string[]
     ): void {
         let legendText: string;
-        let fill: string = this.maps.legendSettings.fill;
-        let valuePath: string = this.maps.legendSettings.valuePath;
+        const fill: string = this.maps.legendSettings.fill;
+        const valuePath: string = this.maps.legendSettings.valuePath;
         if (!isNullOrUndefined(colorValuePath) && !isNullOrUndefined(dataSource)) {
-            Array.prototype.forEach.call(dataSource, (data: Object, dataIndex: number) => {
-                let showLegend: boolean = isNullOrUndefined(this.maps.legendSettings.showLegendPath) ?
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            Array.prototype.forEach.call(dataSource, (data: any, dataIndex: number) => {
+                const showLegend: boolean = isNullOrUndefined(this.maps.legendSettings.showLegendPath) ?
                     true : isNullOrUndefined(data[this.maps.legendSettings.showLegendPath]) ?
                         false : data[this.maps.legendSettings.showLegendPath];
-                let dataValue: string = ((colorValuePath.indexOf(".") > -1) ? (getValueFromObject(data, colorValuePath)) :
-                                         (data[colorValuePath]));
-                let newData: Object[] = [];
-                let legendFill: string = (isNullOrUndefined(fill)) ? dataValue : fill;
+                const dataValue: string = ((colorValuePath.indexOf('.') > -1) ? (getValueFromObject(data, colorValuePath)) :
+                    (data[colorValuePath]));
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const newData: any[] = [];
+                const legendFill: string = (isNullOrUndefined(fill)) ? dataValue : fill;
                 if (!isNullOrUndefined(dataValue) && colorMapping.length === 0) {
-                    legendText = !isNullOrUndefined(data[valuePath]) ? ((valuePath.indexOf(".") > -1) ?
-                    getValueFromObject(data, valuePath) : data[valuePath]) : ((dataPath.indexOf(".") > -1) ?
-                    getValueFromObject(data, dataPath) : data[dataPath])
+                    legendText = !isNullOrUndefined(data[valuePath]) ? ((valuePath.indexOf('.') > -1) ?
+                        getValueFromObject(data, valuePath) : data[valuePath]) : ((dataPath.indexOf('.') > -1) ?
+                        getValueFromObject(data, dataPath) : data[dataPath]);
                     newData.push(this.getLegendData(layerIndex, dataIndex, data, dataPath, layerData, propertyPath, dataValue));
                 }
                 this.getOverallLegendItemsCollection(legendText, legendFill, newData, showLegend);
@@ -1461,31 +1538,32 @@ export class Legend {
     }
 
     public interactiveHandler(e: PointerEvent): void {
-        let target: Element = <Element>e.target;
-        let legend: LegendSettingsModel = <LegendSettingsModel>this.maps.legendSettings;
-        let id: string = this.maps.element.id + '_Interactive_Legend';
-        let hoverId: string = legend.type === 'Layers' ? '_shapeIndex_' : (legend.type === 'Markers') ? '_MarkerIndex_' :
+        const target: Element = <Element>e.target;
+        const legend: LegendSettingsModel = <LegendSettingsModel>this.maps.legendSettings;
+        const id: string = this.maps.element.id + '_Interactive_Legend';
+        const hoverId: string = legend.type === 'Layers' ? '_shapeIndex_' : (legend.type === 'Markers') ? '_MarkerIndex_' :
             '_BubbleIndex_';
         if (target.id.indexOf(hoverId) > 1) {
-            let layerIndex: number = parseFloat(target.id.split('_LayerIndex_')[1].split('_')[0]);
-            let dataIndex: number = parseFloat(target.id.split(/_dataIndex_/i)[1].split('_')[0]);
+            const layerIndex: number = parseFloat(target.id.split('_LayerIndex_')[1].split('_')[0]);
+            const dataIndex: number = parseFloat(target.id.split(/_dataIndex_/i)[1].split('_')[0]);
             let fill: string; let stroke: string; let strokeWidth: number;
             if (!(isNullOrUndefined(querySelector(id, this.maps.element.id)))) {
                 remove(querySelector(id, this.maps.element.id));
             }
-            let layer: LayerSettings = (<LayerSettings>this.maps.layersCollection[layerIndex]);
-            let markerVisible: boolean = (legend.type === 'Layers' ? layer.visible :
+            const layer: LayerSettings = (<LayerSettings>this.maps.layersCollection[layerIndex]);
+            const markerVisible: boolean = (legend.type === 'Layers' ? layer.visible :
                 legend.type === 'Markers' ? layer.markerSettings[parseFloat(target.id.split('_MarkerIndex_')[1].split('_')[0])].visible :
                     (this.maps.getBubbleVisible(<LayerSettings>this.maps.layersCollection[layerIndex])));
             if (legend.visible && this.legendRenderingCollections.length > 0
                 && legend.mode === 'Interactive' && markerVisible
             ) {
-                let svgRect: ClientRect = this.maps.svgObject.getBoundingClientRect();
+                const svgRect: ClientRect = this.maps.svgObject.getBoundingClientRect();
                 for (let i: number = 0; i < this.legendCollection.length; i++) {
-                    let currentData: Object = this.legendCollection[i];
-                    let legendElement: Element = querySelector(this.maps.element.id + '_Legend_Index_' + i, this.maps.element.id);
-                    let legendRect: ClientRect = <ClientRect>legendElement.getBoundingClientRect();
-                    let rect: Rect = new Rect(
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const currentData: any = this.legendCollection[i];
+                    const legendElement: Element = querySelector(this.maps.element.id + '_Legend_Index_' + i, this.maps.element.id);
+                    const legendRect: ClientRect = <ClientRect>legendElement.getBoundingClientRect();
+                    const rect: Rect = new Rect(
                         Math.abs(legendRect.left - svgRect.left), Math.abs(legendRect.top - svgRect.top),
                         legendRect.width, legendRect.height
                     );
@@ -1493,7 +1571,8 @@ export class Legend {
                     stroke = legend.shapeBorder.color;
                     strokeWidth = legend.shapeBorder.width;
                     if (!isNullOrUndefined(currentData['data'])) {
-                        let data: Object[] = <Object[]>currentData['data'];
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const data: any[] = <any[]>currentData['data'];
                         for (let j: number = 0; j < data.length; j++) {
                             if (dataIndex === data[j]['dataIndex'] && layerIndex === data[j]['layerIndex']) {
                                 this.renderInteractivePointer(legend, fill, stroke, id, strokeWidth, rect);
@@ -1514,10 +1593,10 @@ export class Legend {
 
         legend: LegendSettingsModel, fill: string, stroke: string, id: string, strokeWidth: number, rect: Rect
     ): void {
-        let path: string; let pathOptions: PathOption;
+        let path: string;
         let locX: number; let locY: number;
-        let height: number = 10; let width: number = 10;
-        let direction: string = (legend.orientation === 'None') ? (legend.position === 'Top' || legend.position === 'Bottom')
+        const height: number = 10; const width: number = 10;
+        const direction: string = (legend.orientation === 'None') ? (legend.position === 'Top' || legend.position === 'Bottom')
             ? 'Horizontal' : 'Vertical' : legend.orientation;
         if (direction === 'Horizontal') {
             if (!legend.invertedPointer) {
@@ -1544,7 +1623,7 @@ export class Legend {
                     ' L ' + (locX - width) + ' ' + (locY + height) + ' z ';
             }
         }
-        pathOptions = new PathOption(id, fill, strokeWidth, stroke, 1, '', path);
+        const pathOptions: PathOption = new PathOption(id, fill, strokeWidth, stroke, 1, '', path);
         this.maps.svgObject.appendChild(this.maps.renderer.drawPath(pathOptions) as SVGPathElement);
     }
 
@@ -1565,17 +1644,19 @@ export class Legend {
         let legendShapeId: Element;
         let legendTextId: Element;
         let legendTextColor: string;
-        let legendToggleFill: string = this.maps.legendSettings.toggleLegendSettings.fill;
-        let legendToggleOpacity: number = this.maps.legendSettings.toggleLegendSettings.opacity;
-        let legendToggleBorderColor: string = this.maps.legendSettings.toggleLegendSettings.border.color;
-        let legendToggleBorderWidth: number = this.maps.legendSettings.toggleLegendSettings.border.width; 
+        const legendToggleFill: string = this.maps.legendSettings.toggleLegendSettings.fill;
+        const legendToggleOpacity: number = this.maps.legendSettings.toggleLegendSettings.opacity;
+        const legendToggleBorderColor: string = this.maps.legendSettings.toggleLegendSettings.border.color;
+        const legendToggleBorderWidth: number = this.maps.legendSettings.toggleLegendSettings.border.width;
         if (targetEle.parentNode['id'].indexOf(this.maps.element.id + '_Legend_Index_') > -1) {
             let mapElement: Element;
-            let legendIndex: number = parseFloat(targetEle.parentElement.id.substr((this.maps.element.id + '_Legend_Index_').length));
-            let selectedItem: object[] = this.legendCollection[legendIndex]['data'];
+            const legendIndex: number = parseFloat(targetEle.parentElement.id.substr((this.maps.element.id + '_Legend_Index_').length));
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const selectedItem: any[] = this.legendCollection[legendIndex]['data'];
             let isVisible: boolean = selectedItem['_isVisible'];
-            let shape: object;
-            if (this.maps.legendSettings.toggleLegendSettings.enable && this.maps.legendSettings.type === "Bubbles") {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let shape: any;
+            if (this.maps.legendSettings.toggleLegendSettings.enable && this.maps.legendSettings.type === 'Bubbles') {
                 for (let k: number = 0; k < this.maps.layers.length; k++) {
                     for (let j: number = 0; j < this.maps.layers[k].bubbleSettings.length; j++) {
                         for (let i: number = 0; i < selectedItem.length; i++) {
@@ -1589,16 +1670,16 @@ export class Legend {
                                     mapElement.setAttribute('opacity', (this.maps.layers[k].shapeSettings.opacity).toString());
                                     mapElement.setAttribute('stroke-width', (this.maps.layers[k].shapeSettings.border.width).toString());
                                 } else {
-                                    mapElement.setAttribute("fill", legendToggleFill);
-                                    mapElement.setAttribute("opacity", (legendToggleOpacity).toString());
+                                    mapElement.setAttribute('fill', legendToggleFill);
+                                    mapElement.setAttribute('opacity', (legendToggleOpacity).toString());
                                     mapElement.setAttribute('stroke', legendToggleBorderColor);
                                     mapElement.setAttribute('stroke-width', (legendToggleBorderWidth).toString());
                                 }
                                 if (targetEle !== null) {
                                     legendShapeId = querySelector(this.maps.element.id + '_Legend_Shape_Index_' + legendIndex, this.maps.element.id);
-                                    legendShapeId.setAttribute("fill", "#E5E5E5");
+                                    legendShapeId.setAttribute('fill', '#E5E5E5');
                                     legendTextId = querySelector(this.maps.element.id + '_Legend_Text_Index_' + legendIndex, this.maps.element.id);
-                                    legendTextId.setAttribute("fill", "#E5E5E5");
+                                    legendTextId.setAttribute('fill', '#E5E5E5');
                                 }
                             } else {
                                 mapElement.setAttribute('fill', this.legendCollection[legendIndex]['fill']);
@@ -1607,9 +1688,9 @@ export class Legend {
                                 mapElement.setAttribute('stroke-width', (this.maps.layers[k].bubbleSettings[j].border.width).toString());
                                 if (targetEle !== null) {
                                     legendShapeId = querySelector(this.maps.element.id + '_Legend_Shape_Index_' + legendIndex, this.maps.element.id);
-                                    legendShapeId.setAttribute("fill", this.legendCollection[legendIndex]['fill']);
+                                    legendShapeId.setAttribute('fill', this.legendCollection[legendIndex]['fill']);
                                     legendTextId = querySelector(this.maps.element.id + '_Legend_Text_Index_' + legendIndex, this.maps.element.id);
-                                    legendTextId.setAttribute("fill", "#757575");
+                                    legendTextId.setAttribute('fill', '#757575');
                                 }
                             }
                         }
@@ -1617,18 +1698,18 @@ export class Legend {
                     }
                 }
             }
-            if (this.maps.legendSettings.type === "Layers" && this.maps.legendSettings.toggleLegendSettings.enable) {
+            if (this.maps.legendSettings.type === 'Layers' && this.maps.legendSettings.toggleLegendSettings.enable) {
                 let layerElement: Element;
                 this.removeCollections(targetEle, legendIndex);
-                let toggledLegendIdIndex: number = this.maps.toggledLegendId.indexOf(legendIndex);
-                if (toggledLegendIdIndex !== -1) { isVisible = false };
+                const toggledLegendIdIndex: number = this.maps.toggledLegendId.indexOf(legendIndex);
+                if (toggledLegendIdIndex !== -1) { isVisible = false; }
                 for (let j: number = 0; j < this.maps.layers.length; j++) {
                     for (let i: number = 0; i < selectedItem.length; i++) {
                         shape = this.legendCollection[legendIndex]['data'][i];
                         layerElement = querySelector(this.maps.element.id + '_LayerIndex_' + shape['layerIndex'] +
                             '_shapeIndex_' + shape['shapeIndex'] + '_dataIndex_' + shape['dataIndex'], this.maps.element.id);
                         if (layerElement !== null) {
-                            let toggledShapeIdIndex: number = this.maps.toggledShapeElementId.indexOf(layerElement.id);
+                            const toggledShapeIdIndex: number = this.maps.toggledShapeElementId.indexOf(layerElement.id);
                             if (isVisible) {
                                 if (i === 0) {
                                     this.maps.toggledLegendId.push(legendIndex);
@@ -1642,16 +1723,16 @@ export class Legend {
                                     layerElement.setAttribute('stroke', this.maps.layers[j].shapeSettings.border.color);
                                     layerElement.setAttribute('stroke-width', (this.maps.layers[j].shapeSettings.border.width).toString());
                                 } else {
-                                    layerElement.setAttribute("fill", legendToggleFill);
-                                    layerElement.setAttribute("opacity", (legendToggleOpacity).toString());
+                                    layerElement.setAttribute('fill', legendToggleFill);
+                                    layerElement.setAttribute('opacity', (legendToggleOpacity).toString());
                                     layerElement.setAttribute('stroke', legendToggleBorderColor);
                                     layerElement.setAttribute('stroke-width', (legendToggleBorderWidth).toString());
                                 }
                                 if (targetEle !== null) {
                                     legendTextId = querySelector(this.maps.element.id + '_Legend_Text_Index_' + legendIndex, this.maps.element.id);
-                                    legendTextId.setAttribute("fill", "#E5E5E5");
+                                    legendTextId.setAttribute('fill', '#E5E5E5');
                                     legendShapeId = querySelector(this.maps.element.id + '_Legend_Shape_Index_' + legendIndex, this.maps.element.id);
-                                    legendShapeId.setAttribute("fill", "#E5E5E5");
+                                    legendShapeId.setAttribute('fill', '#E5E5E5');
                                 }
                             } else {
                                 if (toggledLegendIdIndex !== -1 && i === 0) {
@@ -1666,9 +1747,9 @@ export class Legend {
                                 layerElement.setAttribute('stroke-width', (this.maps.layers[j].shapeSettings.border.width).toString());
                                 if (targetEle !== null) {
                                     legendTextId = querySelector(this.maps.element.id + '_Legend_Text_Index_' + legendIndex, this.maps.element.id);
-                                    legendTextId.setAttribute("fill", "#757575");
+                                    legendTextId.setAttribute('fill', '#757575');
                                     legendShapeId = querySelector(this.maps.element.id + '_Legend_Shape_Index_' + legendIndex, this.maps.element.id);
-                                    legendShapeId.setAttribute("fill", this.legendCollection[legendIndex]['fill']);
+                                    legendShapeId.setAttribute('fill', this.legendCollection[legendIndex]['fill']);
                                 }
                             }
                         }
@@ -1680,11 +1761,13 @@ export class Legend {
             targetEle.id.indexOf(this.maps.element.id + '_Legend_Index') !== -1) && this.maps.legendSettings.visible &&
             targetEle.id.indexOf('_Text') === -1) {
             let LegendInteractive: Element;
-            let legendIndex: number = parseFloat(targetEle.id.substr((this.maps.element.id + '_Legend_Index_').length));
-            let mapdata: object;
-            let selectedItem: object[] = this.legendCollection[legendIndex]['data'];
+            const legendIndex: number = parseFloat(targetEle.id.substr((this.maps.element.id + '_Legend_Index_').length));
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let mapdata: any;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const selectedItem: any[] = this.legendCollection[legendIndex]['data'];
             let isVisible: boolean = selectedItem['_isVisible'];
-            if (this.maps.legendSettings.type === "Bubbles" && this.maps.legendSettings.toggleLegendSettings.enable) {
+            if (this.maps.legendSettings.type === 'Bubbles' && this.maps.legendSettings.toggleLegendSettings.enable) {
                 for (let k: number = 0; k < this.maps.layers.length; k++) {
                     for (let j: number = 0; j < this.maps.layers[k].bubbleSettings.length; j++) {
                         for (let i: number = 0; i < selectedItem.length; i++) {
@@ -1699,16 +1782,16 @@ export class Legend {
                                     LegendInteractive.setAttribute('stroke-width', (this.maps.layers[k].shapeSettings.border.width).toString());
                                     LegendInteractive.setAttribute('opacity', (this.maps.layers[k].shapeSettings.opacity).toString());
                                 } else {
-                                    LegendInteractive.setAttribute("fill", legendToggleFill);
-                                    LegendInteractive.setAttribute("opacity", (legendToggleOpacity).toString());
+                                    LegendInteractive.setAttribute('fill', legendToggleFill);
+                                    LegendInteractive.setAttribute('opacity', (legendToggleOpacity).toString());
                                     LegendInteractive.setAttribute('stroke', legendToggleBorderColor);
                                     LegendInteractive.setAttribute('stroke-width', (legendToggleBorderWidth).toString());
                                 }
                                 if (targetEle !== null) {
                                     legendTextId = querySelector(this.maps.element.id + '_Legend_Index_' + legendIndex + '_Text', this.maps.element.id);
-                                    legendTextId.setAttribute("fill", "#E5E5E5");
+                                    legendTextId.setAttribute('fill', '#E5E5E5');
                                     legendShapeId = querySelector(this.maps.element.id + '_Legend_Index_' + legendIndex, this.maps.element.id);
-                                    legendShapeId.setAttribute("fill", "#E5E5E5");
+                                    legendShapeId.setAttribute('fill', '#E5E5E5');
                                 }
                             } else {
 
@@ -1718,9 +1801,9 @@ export class Legend {
                                 LegendInteractive.setAttribute('opacity', (this.maps.layers[k].bubbleSettings[j].opacity).toString());
                                 if (targetEle !== null) {
                                     legendShapeId = querySelector(this.maps.element.id + '_Legend_Index_' + legendIndex, this.maps.element.id);
-                                    legendShapeId.setAttribute("fill", this.legendCollection[legendIndex]['fill']);
+                                    legendShapeId.setAttribute('fill', this.legendCollection[legendIndex]['fill']);
                                     legendTextId = querySelector(this.maps.element.id + '_Legend_Index_' + legendIndex + '_Text', this.maps.element.id);
-                                    legendTextId.setAttribute("fill", "#757575");
+                                    legendTextId.setAttribute('fill', '#757575');
                                 }
                             }
                         }
@@ -1728,18 +1811,18 @@ export class Legend {
                     }
                 }
             }
-            if (this.maps.legendSettings.type === "Layers" && this.maps.legendSettings.toggleLegendSettings.enable) {
+            if (this.maps.legendSettings.type === 'Layers' && this.maps.legendSettings.toggleLegendSettings.enable) {
                 let mapLegendElement: Element;
                 this.removeCollections(targetEle, legendIndex);
-                let toggleLegendIdIndex: number = this.maps.toggledLegendId.indexOf(legendIndex);
-                if (toggleLegendIdIndex !== -1) { isVisible = false };
+                const toggleLegendIdIndex: number = this.maps.toggledLegendId.indexOf(legendIndex);
+                if (toggleLegendIdIndex !== -1) { isVisible = false; }
                 for (let k: number = 0; k < this.maps.layers.length; k++) {
                     for (let i: number = 0; i < selectedItem.length; i++) {
                         mapdata = this.legendCollection[legendIndex]['data'][i];
                         mapLegendElement = querySelector(this.maps.element.id + '_LayerIndex_' + mapdata['layerIndex'] +
                             '_shapeIndex_' + mapdata['shapeIndex'] + '_dataIndex_' + mapdata['dataIndex'], this.maps.element.id);
                         if (mapLegendElement !== null) {
-                            let toggledShapeIdIndex: number = this.maps.toggledShapeElementId.indexOf(mapLegendElement.id);
+                            const toggledShapeIdIndex: number = this.maps.toggledShapeElementId.indexOf(mapLegendElement.id);
                             if (isVisible) {
                                 if (i === 0) {
                                     this.maps.toggledLegendId.push(legendIndex);
@@ -1753,16 +1836,16 @@ export class Legend {
                                     mapLegendElement.setAttribute('opacity', (this.maps.layers[k].shapeSettings.opacity).toString());
                                     mapLegendElement.setAttribute('stroke-width', (this.maps.layers[k].shapeSettings.border.width).toString());
                                 } else {
-                                    mapLegendElement.setAttribute("fill", legendToggleFill);
-                                    mapLegendElement.setAttribute("opacity", (legendToggleOpacity).toString());
+                                    mapLegendElement.setAttribute('fill', legendToggleFill);
+                                    mapLegendElement.setAttribute('opacity', (legendToggleOpacity).toString());
                                     mapLegendElement.setAttribute('stroke', legendToggleBorderColor);
                                     mapLegendElement.setAttribute('stroke-width', (legendToggleBorderWidth).toString());
                                 }
                                 if (targetEle !== null) {
                                     legendShapeId = querySelector(this.maps.element.id + '_Legend_Index_' + legendIndex, this.maps.element.id);
-                                    legendShapeId.setAttribute("fill", "#E5E5E5");
+                                    legendShapeId.setAttribute('fill', '#E5E5E5');
                                     legendTextId = querySelector(this.maps.element.id + '_Legend_Index_' + legendIndex + '_Text', this.maps.element.id);
-                                    legendTextId.setAttribute("fill", "#E5E5E5");
+                                    legendTextId.setAttribute('fill', '#E5E5E5');
                                 }
                             } else {
                                 if (toggleLegendIdIndex !== -1 && i === 0) {
@@ -1777,9 +1860,9 @@ export class Legend {
                                 mapLegendElement.setAttribute('stroke-width', (this.maps.layers[k].shapeSettings.border.width).toString());
                                 if (targetEle !== null) {
                                     legendTextId = querySelector(this.maps.element.id + '_Legend_Index_' + legendIndex + '_Text', this.maps.element.id);
-                                    legendTextId.setAttribute("fill", "#757575");
+                                    legendTextId.setAttribute('fill', '#757575');
                                     legendShapeId = querySelector(this.maps.element.id + '_Legend_Index_' + legendIndex, this.maps.element.id);
-                                    legendShapeId.setAttribute("fill", this.legendCollection[legendIndex]['fill']);
+                                    legendShapeId.setAttribute('fill', this.legendCollection[legendIndex]['fill']);
                                 }
                             }
                         }
@@ -1790,21 +1873,21 @@ export class Legend {
         }
     }
 
-    private removeCollections(targetEle: Element, legendIndex: number) {
+    private removeCollections(targetEle: Element, legendIndex: number): void {
         this.removeLegendSelectionCollection(targetEle);
-        let legendSelectionIndex: number = this.getIndexofLegend(this.maps.legendSelectionCollection, targetEle);
+        const legendSelectionIndex: number = this.getIndexofLegend(this.maps.legendSelectionCollection, targetEle);
         if (legendSelectionIndex !== -1) {
             this.maps.legendSelectionCollection.splice(legendSelectionIndex, 1);
         }
-        let legendHighlightIndex: number = this.getIndexofLegend(this.legendHighlightCollection, targetEle);
+        const legendHighlightIndex: number = this.getIndexofLegend(this.legendHighlightCollection, targetEle);
         if (legendHighlightIndex !== -1) {
             this.legendHighlightCollection.splice(legendSelectionIndex, 1);
         }
-        let shapeHighlightIndex: number = this.getIndexofLegend(this.shapeHighlightCollection, targetEle);
+        const shapeHighlightIndex: number = this.getIndexofLegend(this.shapeHighlightCollection, targetEle);
         if (shapeHighlightIndex !== -1) {
             this.shapeHighlightCollection.splice(shapeHighlightIndex, 1);
         }
-        let selectedIndex: number = this.maps.selectedLegendElementId.indexOf(legendIndex);
+        const selectedIndex: number = this.maps.selectedLegendElementId.indexOf(legendIndex);
         if (selectedIndex !== -1) { this.maps.selectedLegendElementId.splice(selectedIndex, 1); }
     }
 
@@ -1818,18 +1901,23 @@ export class Legend {
     }
 
     private getLegendData(
-        layerIndex: number, dataIndex: number, data: Object, dataPath: string,
-        layerData: Object[], shapePropertyPath: string | string[], value: string | number
-    ): Object[] {
-        let legendData: Object[] = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        layerIndex: number, dataIndex: number, data: any, dataPath: string,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        layerData: any[], shapePropertyPath: string | string[], value: string | number
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ): any[] {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const legendData: any[] = [];
         if (Object.prototype.toString.call(layerData) === '[object Array]') {
             for (let i: number = 0; i < layerData.length; i++) {
-                let shapeData: Object = layerData[i];
-                let dataPathValue: string = (dataPath.indexOf(".") > -1 ) ? getValueFromObject(data, dataPath) : data[dataPath];
-                let shapePath: string = checkPropertyPath(data[dataPath], shapePropertyPath, shapeData['properties']);
-                let dataPathValueCase : string | number = !isNullOrUndefined(dataPathValue)
-                ? dataPathValue.toLowerCase() : dataPathValue;
-                let shapeDataValueCase : string = !isNullOrUndefined(shapeData['properties'][shapePath])
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const shapeData: any = layerData[i];
+                const dataPathValue: string = (dataPath.indexOf('.') > -1 ) ? getValueFromObject(data, dataPath) : data[dataPath];
+                const shapePath: string = checkPropertyPath(data[dataPath], shapePropertyPath, shapeData['properties']);
+                const dataPathValueCase : string | number = !isNullOrUndefined(dataPathValue)
+                    ? dataPathValue.toLowerCase() : dataPathValue;
+                const shapeDataValueCase : string = !isNullOrUndefined(shapeData['properties'][shapePath])
                 && isNaN(shapeData['properties'][shapePath]) ? shapeData['properties'][shapePath].toLowerCase() : shapeData['properties'][shapePath];
                 if (shapeDataValueCase === dataPathValueCase) {
                     legendData.push({
@@ -1844,28 +1932,27 @@ export class Legend {
 
     public legendGradientColor(colorMap: ColorMappingSettings, legendIndex: number): string {
         let legendFillColor: string;
-        let xmlns: string = 'http://www.w3.org/2000/svg';
+        const xmlns: string = 'http://www.w3.org/2000/svg';
         if (!isNullOrUndefined(colorMap.color) && typeof (colorMap.color) === 'object') {
-            let linerGradientEle: Element = document.createElementNS(xmlns, 'linearGradient');
-            let opacity: number = 1; let position: LegendPosition = this.maps.legendSettings.position;
-            let x2: string; let y2: string;
-            x2 = position === 'Top' || position === 'Bottom' ? '100' : '0';
-            y2 = position === 'Top' || position === 'Bottom' ? '0' : '100';
+            const linerGradientEle: Element = document.createElementNS(xmlns, 'linearGradient');
+            const opacity: number = 1; const position: LegendPosition = this.maps.legendSettings.position;
+            const x2: string = position === 'Top' || position === 'Bottom' ? '100' : '0';
+            const y2: string = position === 'Top' || position === 'Bottom' ? '0' : '100';
             linerGradientEle.setAttribute('id', 'linear_' + legendIndex + '_' + this.maps.element.id);
             linerGradientEle.setAttribute('x1', 0 + '%');
             linerGradientEle.setAttribute('y1', 0 + '%');
             linerGradientEle.setAttribute('x2', x2 + '%');
             linerGradientEle.setAttribute('y2', y2 + '%');
             for (let b: number = 0; b < colorMap.color.length; b++) {
-                let offsetColor: number = 100 / (colorMap.color.length - 1);
-                let stopEle: Element = document.createElementNS(xmlns, 'stop');
+                const offsetColor: number = 100 / (colorMap.color.length - 1);
+                const stopEle: Element = document.createElementNS(xmlns, 'stop');
                 stopEle.setAttribute('offset', b * offsetColor + '%');
                 stopEle.setAttribute('stop-color', colorMap.color[b]);
                 stopEle.setAttribute('stop-opacity', opacity.toString());
                 linerGradientEle.appendChild(stopEle);
             }
             this.legendLinearGradient = linerGradientEle;
-            let color: string = 'url(' + '#linear_' + legendIndex + '_' + this.maps.element.id + ')';
+            const color: string = 'url(' + '#linear_' + legendIndex + '_' + this.maps.element.id + ')';
             this.defsElement.appendChild(linerGradientEle);
             legendFillColor = color;
         }
@@ -1875,6 +1962,8 @@ export class Legend {
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name
      */
     protected getModuleName(): string {
         return 'Legend';
@@ -1882,7 +1971,9 @@ export class Legend {
 
     /**
      * To destroy the legend.
-     * @return {void}
+     *
+     * @param {Maps} maps - Specifies the instance of the maps
+     * @returns {void}
      * @private
      */
     public destroy(maps: Maps): void {

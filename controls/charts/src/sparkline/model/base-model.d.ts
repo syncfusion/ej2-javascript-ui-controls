@@ -49,6 +49,7 @@ export interface SparklineFontModel {
 
     /**
      * Opacity for the text.
+     *
      * @default 1
      */
     opacity?: number;
@@ -62,6 +63,7 @@ export interface TrackLineSettingsModel {
 
     /**
      * Toggle the tracker line visibility.
+     *
      * @default false
      */
     visible?: boolean;
@@ -73,6 +75,7 @@ export interface TrackLineSettingsModel {
 
     /**
      * To config the tracker line width.
+     *
      * @default 1
      */
     width?: number;
@@ -86,6 +89,7 @@ export interface SparklineTooltipSettingsModel {
 
     /**
      * Toggle the tooltip visibility.
+     *
      * @default false
      */
     visible?: boolean;
@@ -113,7 +117,6 @@ export interface SparklineTooltipSettingsModel {
     /**
      * To configure tooltip text styles.
      */
-    // tslint:disable-next-line
     textStyle?: SparklineFontModel;
 
     /**
@@ -130,6 +133,7 @@ export interface ContainerAreaModel {
 
     /**
      * To configure Sparkline background color.
+     *
      * @default 'transparent'
      */
     background?: string;
@@ -148,6 +152,7 @@ export interface LineSettingsModel {
 
     /**
      * To toggle the axis line visibility.
+     *
      * @default `false`
      */
     visible?: boolean;
@@ -159,18 +164,21 @@ export interface LineSettingsModel {
 
     /**
      * To configure the sparkline axis line dashArray.
+     *
      * @default ''
      */
     dashArray?: string;
 
     /**
      * To configure the sparkline axis line width.
+     *
      * @default 1.
      */
     width?: number;
 
     /**
      * To configure the sparkline axis line opacity.
+     *
      * @default 1.
      */
     opacity?: number;
@@ -184,13 +192,15 @@ export interface RangeBandSettingsModel {
 
     /**
      * To configure sparkline start range
-     * @aspDefaultValueIgnore 
+     *
+     * @aspDefaultValueIgnore
      */
     startRange?: number;
 
     /**
      * To configure sparkline end range
-     * @aspDefaultValueIgnore 
+     *
+     * @aspDefaultValueIgnore
      */
     endRange?: number;
 
@@ -201,6 +211,7 @@ export interface RangeBandSettingsModel {
 
     /**
      * To configure sparkline rangeband opacity
+     *
      * @default 1
      */
     opacity?: number;
@@ -214,6 +225,7 @@ export interface AxisSettingsModel {
 
     /**
      * To configure Sparkline x axis min value.
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValue null
      */
@@ -221,6 +233,7 @@ export interface AxisSettingsModel {
 
     /**
      * To configure Sparkline x axis max value.
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValue null
      */
@@ -228,6 +241,7 @@ export interface AxisSettingsModel {
 
     /**
      * To configure Sparkline y axis min value.
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValue null
      */
@@ -235,6 +249,7 @@ export interface AxisSettingsModel {
 
     /**
      * To configure Sparkline y axis max value.
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValue null
      */
@@ -242,6 +257,7 @@ export interface AxisSettingsModel {
 
     /**
      * To configure Sparkline horizontal axis line position.
+     *
      * @default 0
      * @blazorDefaultValue 0
      */
@@ -261,24 +277,28 @@ export interface PaddingModel {
 
     /**
      * To configure Sparkline left padding.
+     *
      * @default 5
      */
     left?: number;
 
     /**
      * To configure Sparkline right padding.
+     *
      * @default 5
      */
     right?: number;
 
     /**
      * To configure Sparkline bottom padding.
+     *
      * @default 5
      */
     bottom?: number;
 
     /**
      * To configure Sparkline top padding.
+     *
      * @default 5
      */
     top?: number;
@@ -292,24 +312,28 @@ export interface SparklineMarkerSettingsModel {
 
     /**
      * To toggle the marker visibility.
+     *
      * @default `[]`.
      */
     visible?: VisibleType[];
 
     /**
      * To configure the marker opacity.
+     *
      * @default 1
      */
     opacity?: number;
 
     /**
      * To configure the marker size.
+     *
      * @default 5
      */
     size?: number;
 
     /**
      * To configure the marker fill color.
+     *
      * @default '#00bdae'
      */
     fill?: string;
@@ -345,24 +369,28 @@ export interface SparklineDataLabelSettingsModel {
 
     /**
      * To toggle the dataLabel visibility.
+     *
      * @default `[]`.
      */
     visible?: VisibleType[];
 
     /**
      * To configure the dataLabel opacity.
+     *
      * @default 1
      */
     opacity?: number;
 
     /**
      * To configure the dataLabel fill color.
+     *
      * @default 'transparent'
      */
     fill?: string;
 
     /**
      * To configure the dataLabel format the value.
+     *
      * @default ''
      */
     format?: string;
@@ -375,7 +403,6 @@ export interface SparklineDataLabelSettingsModel {
     /**
      * To configure Sparkline dataLabel text styles.
      */
-    // tslint:disable-next-line
     textStyle?: SparklineFontModel;
 
     /**
@@ -385,6 +412,7 @@ export interface SparklineDataLabelSettingsModel {
 
     /**
      * To change the edge dataLabel placement.
+     *
      * @default 'None'.
      */
     edgeLabelMode?: EdgeLabelMode;

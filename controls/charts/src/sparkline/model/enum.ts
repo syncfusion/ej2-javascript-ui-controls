@@ -2,11 +2,11 @@
  * Sparkline Enum
  */
 
- /**
-  * Specifies the sparkline types.
-  * `Line`, `Column`, `WinLoss`, `Pie` and `Area`.
-  */
- export type SparklineType =
+/**
+ * Specifies the sparkline types.
+ * `Line`, `Column`, `WinLoss`, `Pie` and `Area`.
+ */
+export type SparklineType =
  /** Define the Sparkline Line type series. */
  'Line' |
  /** Define the Sparkline Column type series. */
@@ -18,11 +18,11 @@
  /** Define the Sparkline Area type series. */
  'Area';
 
- /**
-  * Defines the range padding of series
-  * `None`, `Normal`, `Additional`, `Additional`
-  */
- export type SparklineRangePadding =
+/**
+ * Defines the range padding of series
+ * `None`, `Normal`, `Additional`, `Additional`
+ */
+export type SparklineRangePadding =
  /** Define the Sparkline Line type series. */
  'None' |
  /** Define the Sparkline Column type series. */
@@ -34,7 +34,7 @@
  * Specifies the sparkline data value types.
  * `Numeric`, `Category` and `DateTime`.
  */
- export type SparklineValueType =
+export type SparklineValueType =
  /** Define the Sparkline Numeric value type series. */
  'Numeric' |
  /** Define the Sparkline Category value type series. */
@@ -42,11 +42,11 @@
  /** Define the Sparkline DateTime value type series. */
  'DateTime';
 
- /**
-  * Specifies the sparkline marker | datalabel visible types.
-  * `All`,  `High`,  `Low`,  `Start`,  `End`,  `Negative` and `None`.
-  */
- export type VisibleType =
+/**
+ * Specifies the sparkline marker | datalabel visible types.
+ * `All`,  `High`,  `Low`,  `Start`,  `End`,  `Negative` and `None`.
+ */
+export type VisibleType =
  /** Define the Sparkline marker | datalabel  Visbile All type */
  'All' |
  /** Define the Sparkline marker | datalabel Visbile High type */
@@ -59,8 +59,8 @@
  'End' |
  /** Define the Sparkline marker | datalabel Visbile Negative type */
  'Negative' |
-  /** Define the Sparkline marker | datalabel Visbile None type */
-  'None';
+ /** Define the Sparkline marker | datalabel Visbile None type */
+ 'None';
 /**
  * Defines Theme of the sparkline. They are
  * * Material - Render a sparkline with Material theme.

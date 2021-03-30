@@ -6,6 +6,7 @@ import { TextAlignmentType } from '../utils/enum';
 export class Margin extends ChildProperty<Margin> {
     /**
      * To customize top margin value
+     *
      * @default 10
      */
 
@@ -14,6 +15,7 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * To customize top bottom value
+     *
      * @default 10
      */
 
@@ -22,6 +24,7 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * To customize top left value
+     *
      * @default 10
      */
 
@@ -30,6 +33,7 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * To customize top right value
+     *
      * @default 10
      */
 
@@ -44,6 +48,7 @@ export class Margin extends ChildProperty<Margin> {
 export class Font extends ChildProperty<Font> {
     /**
      * FontStyle for the text.
+     *
      * @default 'Normal'
      */
     @Property('Normal')
@@ -51,6 +56,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Font size for the text.
+     *
      * @default '16px'
      */
     @Property('16px')
@@ -58,6 +64,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * FontWeight for the text.
+     *
      * @default 'Normal'
      */
     @Property('Normal')
@@ -65,6 +72,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Color for the text.
+     *
      * @default ''
      */
     @Property('')
@@ -78,6 +86,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Opacity for the text.
+     *
      * @default 1
      */
     @Property(1)
@@ -85,6 +94,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * text alignment for label
+     *
      * @default Far
      */
     @Property('Far')
@@ -92,6 +102,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * label text
+     *
      * @default ''
      */
     @Property('')
@@ -104,18 +115,21 @@ export class Font extends ChildProperty<Font> {
 export class Animation extends ChildProperty<Animation> {
     /**
      * enable
+     *
      * @default false
      */
     @Property(false)
     public enable: boolean;
     /**
      * duration
+     *
      * @default 2000
      */
     @Property(2000)
     public duration: number;
     /**
      * delay
+     *
      * @default 0
      */
     @Property(0)
@@ -127,18 +141,21 @@ export class Animation extends ChildProperty<Animation> {
 export class ProgressAnnotationSettings extends ChildProperty<ProgressAnnotationSettings> {
     /**
      * Content of the annotation, which accepts the id of the custom element.
+     *
      * @default null
      */
     @Property(null)
     public content: string;
     /**
-     * to move annotation 
+     * to move annotation
+     *
      * @default 0
      */
     @Property(0)
     public annotationAngle: number;
     /**
-     * to move annotation 
+     * to move annotation
+     *
      * @default '0%'
      */
     @Property('0%')
@@ -150,18 +167,21 @@ export class ProgressAnnotationSettings extends ChildProperty<ProgressAnnotation
 export class RangeColor extends ChildProperty<RangeColor> {
     /**
      * color
+     *
      * @default null
      */
     @Property('')
     public color: string;
     /**
      * start
+     *
      * @default null
      */
     @Property(null)
     public start: number;
     /**
      * end
+     *
      * @default null
      */
     @Property(null)

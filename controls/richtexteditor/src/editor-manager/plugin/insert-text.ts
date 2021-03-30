@@ -1,11 +1,10 @@
 import * as CONSTANT from '../base/constant';
-
 import { EditorManager } from '../base/editor-manager';
 import { IHtmlSubCommands } from '../base/interface';
 import { InsertHtml } from './inserthtml';
-
 /**
  * Insert a Text Node or Text
+ * 
  * @hidden
  * @deprecated
  */
@@ -13,10 +12,12 @@ export class InsertTextExec {
     private parent: EditorManager;
     /**
      * Constructor for creating the InsertText plugin
+     *
+     * @param {EditorManager} parent - specifies the parent element
      * @hidden
      * @deprecated
      */
-    constructor(parent: EditorManager) {
+    public constructor(parent: EditorManager) {
         this.parent = parent;
         this.addEventListener();
     }
@@ -24,7 +25,7 @@ export class InsertTextExec {
         this.parent.observer.on(CONSTANT.INSERT_TEXT_TYPE, this.insertText, this);
     }
     private insertText(e: IHtmlSubCommands): void {
-        let node: Node =  document.createTextNode(e.value as string);
+        const node: Node =  document.createTextNode(e.value as string);
         InsertHtml.Insert(this.parent.currentDocument, node as Node);
         if (e.callBack) {
             e.callBack({

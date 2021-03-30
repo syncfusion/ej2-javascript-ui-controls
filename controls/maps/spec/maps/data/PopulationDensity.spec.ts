@@ -1,7 +1,7 @@
 /**
  * Population Density
  */
-//tslint:disable
+/* eslint-disable */
 export let Population_Density : any = [
 	{
 		'code': 'AF',

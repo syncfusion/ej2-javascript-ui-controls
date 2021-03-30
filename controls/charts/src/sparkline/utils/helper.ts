@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable jsdoc/require-returns */
 import { Sparkline } from '../sparkline';
 import { IThemes } from '../model/interface';
 import { SparklineTheme } from '../model/enum';
@@ -26,57 +31,60 @@ export class Size {
 }
 /**
  * To find the default colors based on theme.
+ *
  * @private
  */
 export function getThemeColor(theme: SparklineTheme): IThemes {
     let themeColors: IThemes;
     switch (theme.toLowerCase()) {
-        case 'bootstrapdark':
-        case 'fabricdark':
-        case 'materialdark':
-        case 'highcontrast':
-            themeColors = {
-                axisLineColor: '#ffffff',
-                dataLabelColor: '#ffffff',
-                rangeBandColor: '#ffffff',
-                tooltipFill: '#ffffff',
-                background: '#000000',
-                tooltipFontColor: '#363F4C',
-                trackerLineColor: '#ffffff'
-            };
-            break;
-        case 'bootstrap4':
-            themeColors = {
-                axisLineColor: '#6C757D',
-                dataLabelColor: '#212529',
-                rangeBandColor: '#212529',
-                tooltipFill: '#000000',
-                background: '#FFFFFF',
-                tooltipFontColor: '#FFFFFF',
-                trackerLineColor: '#212529',
-                fontFamily: 'HelveticaNeue-Medium',
-                tooltipFillOpacity: 1,
-                tooltipTextOpacity: 0.9,
-                labelFontFamily: 'HelveticaNeue'
-            };
-            break;
-        default: {
-            themeColors = {
-                axisLineColor: '#000000',
-                dataLabelColor: '#424242',
-                rangeBandColor: '#000000',
-                background: '#FFFFFF',
-                tooltipFill: '#363F4C',
-                tooltipFontColor: '#ffffff',
-                trackerLineColor: '#000000'
-            };
-            break;
-        }
+    case 'bootstrapdark':
+    case 'fabricdark':
+    case 'materialdark':
+    case 'highcontrast':
+        themeColors = {
+            axisLineColor: '#ffffff',
+            dataLabelColor: '#ffffff',
+            rangeBandColor: '#ffffff',
+            tooltipFill: '#ffffff',
+            background: '#000000',
+            tooltipFontColor: '#363F4C',
+            trackerLineColor: '#ffffff'
+        };
+        break;
+    case 'bootstrap4':
+        themeColors = {
+            axisLineColor: '#6C757D',
+            dataLabelColor: '#212529',
+            rangeBandColor: '#212529',
+            tooltipFill: '#000000',
+            background: '#FFFFFF',
+            tooltipFontColor: '#FFFFFF',
+            trackerLineColor: '#212529',
+            fontFamily: 'HelveticaNeue-Medium',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 0.9,
+            labelFontFamily: 'HelveticaNeue'
+        };
+        break;
+    default: {
+        themeColors = {
+            axisLineColor: '#000000',
+            dataLabelColor: '#424242',
+            rangeBandColor: '#000000',
+            background: '#FFFFFF',
+            tooltipFill: '#363F4C',
+            tooltipFontColor: '#ffffff',
+            trackerLineColor: '#000000'
+        };
+        break;
+    }
     }
     return themeColors;
 }
+
 /**
  * To find number from string
+ *
  * @private
  */
 export function stringToNumber(value: string, containerSize: number): number {
@@ -85,15 +93,14 @@ export function stringToNumber(value: string, containerSize: number): number {
     }
     return null;
 }
+
 /**
  * Method to calculate the width and height of the sparkline
  */
 export function calculateSize(sparkline: Sparkline): void {
-    let containerWidth: number;
-    let containerHeight: number;
-    containerWidth = !sparkline.element.clientWidth ? (!sparkline.element.parentElement ? 100 :
+    const containerWidth: number = !sparkline.element.clientWidth ? (!sparkline.element.parentElement ? 100 :
         sparkline.element.parentElement.clientWidth) : sparkline.element.clientWidth;
-    containerHeight = !sparkline.element.clientHeight ? (!sparkline.element.parentElement ? 50 :
+    const containerHeight: number = !sparkline.element.clientHeight ? (!sparkline.element.parentElement ? 50 :
         sparkline.element.parentElement.clientHeight) : sparkline.element.clientHeight;
     sparkline.availableSize = new Size(
         stringToNumber(sparkline.width, containerWidth) || containerWidth,
@@ -101,6 +108,7 @@ export function calculateSize(sparkline: Sparkline): void {
             Math.min(window.innerWidth, window.innerHeight) : containerHeight)
     );
 }
+
 /**
  * Method to create svg for sparkline.
  */
@@ -116,6 +124,7 @@ export function createSvg(sparkline: Sparkline): void {
 
 /**
  * Internal use of type rect
+ *
  * @private
  */
 export class Rect {
@@ -132,8 +141,10 @@ export class Rect {
         this.height = height;
     }
 }
+
 /**
  * Internal use of path options
+ *
  * @private
  */
 export class PathOption {
@@ -157,8 +168,10 @@ export class PathOption {
         this['stroke-dasharray'] = dashArray;
     }
 }
+
 /**
  * Sparkline internal rendering options
+ *
  * @private
  */
 export interface SparkValues {
@@ -173,8 +186,10 @@ export interface SparkValues {
     xVal?: number;
     yVal?: number;
 }
+
 /**
  * Internal use of rectangle options
+ *
  * @private
  */
 export class RectOption extends PathOption {
@@ -198,6 +213,7 @@ export class RectOption extends PathOption {
 }
 /**
  * Internal use of circle options
+ *
  * @private
  */
 export class CircleOption extends PathOption {
@@ -217,19 +233,23 @@ export class CircleOption extends PathOption {
 
 /**
  * Internal use of append shape element
+ *
  * @private
  */
 export function appendShape(shape: Element, element: Element): Element {
     if (element) { element.appendChild(shape); }
     return shape;
 }
+
 /**
  * Internal rendering of Circle
+ *
  * @private
  */
 export function drawCircle(sparkline: Sparkline, options: CircleOption, element?: Element): Element {
     return appendShape(sparkline.renderer.drawCircle(options), element);
 }
+
 /**
  * To get rounded rect path direction
  */
@@ -250,14 +270,17 @@ export function calculateRoundedRectPath(
 }
 /**
  * Internal rendering of Rectangle
+ *
  * @private
  */
 export function drawRectangle(sparkline: Sparkline, options: RectOption, element?: Element): Element {
     options.d = calculateRoundedRectPath(options.rect, options.topLeft, options.topRight, options.bottomLeft, options.bottomRight);
     return appendShape(sparkline.renderer.drawPath(options), element);
 }
+
 /**
  * Internal rendering of Path
+ *
  * @private
  */
 export function drawPath(sparkline: Sparkline, options: PathOption, element?: Element): Element {
@@ -266,10 +289,7 @@ export function drawPath(sparkline: Sparkline, options: PathOption, element?: El
 
 /**
  * Function to measure the height and width of the text.
- * @param  {string} text
- * @param  {SparklineFontModel} font
- * @param  {string} id
- * @returns no
+ *
  * @private
  */
 export function measureText(text: string, font: SparklineFontModel): Size {
@@ -297,6 +317,7 @@ export function measureText(text: string, font: SparklineFontModel): Size {
 
 /**
  * Internal use of text options
+ *
  * @private
  */
 export class TextOption {
@@ -320,10 +341,11 @@ export class TextOption {
 }
 /**
  * Internal rendering of text
+ *
  * @private
  */
 export function renderTextElement(options: TextOption, font: SparklineFontModel, color: string, parent: HTMLElement | Element): Element {
-    let textOptions: Object = {
+    const textOptions: Object = {
         'id': options.id,
         'x': options.x,
         'y': options.y,
@@ -337,8 +359,8 @@ export function renderTextElement(options: TextOption, font: SparklineFontModel,
         'text-anchor': options.anchor,
         'dominant-baseline': options.baseLine
     };
-    let renderer: SvgRenderer = new SvgRenderer('');
-    let htmlObject: HTMLElement = <HTMLElement>renderer.createText(textOptions, options.text);
+    const renderer: SvgRenderer = new SvgRenderer('');
+    const htmlObject: HTMLElement = <HTMLElement>renderer.createText(textOptions, options.text);
     htmlObject.style['user-select'] = 'none';
     htmlObject.style['-moz-user-select'] = 'none';
     htmlObject.style['-webkit-touch-callout'] = 'none';
@@ -353,7 +375,7 @@ export function renderTextElement(options: TextOption, font: SparklineFontModel,
  * To remove element by id
  */
 export function removeElement(id: string): void {
-    let element: Element = document.getElementById(id);
+    const element: Element = document.getElementById(id);
     return element ? remove(element) : null;
 }
 /**

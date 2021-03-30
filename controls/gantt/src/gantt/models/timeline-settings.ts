@@ -9,6 +9,7 @@ import { ITimelineFormatter } from '../base/interface';
 export class TimelineTierSettings extends ChildProperty<TimelineTierSettings> {
     /**
      * Defines timeline cell format.
+     *
      * @default ''
      */
     @Property('')
@@ -23,6 +24,7 @@ export class TimelineTierSettings extends ChildProperty<TimelineTierSettings> {
      * * `Month` - Define the month mode header.
      * * `Year` - Define the year mode header.
      * * `Minutes` - Define the minutes mode header.
+     *
      * @default 'None'
      */
     @Property('None')
@@ -30,6 +32,7 @@ export class TimelineTierSettings extends ChildProperty<TimelineTierSettings> {
 
     /**
      * Defines number of timeline units combined for single cell.
+     *
      * @default 1
      */
     @Property(1)
@@ -37,6 +40,7 @@ export class TimelineTierSettings extends ChildProperty<TimelineTierSettings> {
 
     /**
      * Defines method to get custom formatted values of timeline cells.
+     *
      * @default null
      */
     @Property(null)
@@ -55,6 +59,7 @@ export class TimelineSettings extends ChildProperty<TimelineSettings> {
      * * `Month` - Define the month mode header.
      * * `Year` - Define the year mode header.
      * * `Minutes` - Define the minutes mode header.
+     *
      * @default 'None'
      */
     @Property('Week')
@@ -69,32 +74,37 @@ export class TimelineSettings extends ChildProperty<TimelineSettings> {
      */
     @Complex<TimelineTierSettingsModel>({}, TimelineTierSettings)
     public bottomTier: TimelineTierSettingsModel;
-    /** 
+    /**
      * Defines width of timeline cell.
+     *
      * @default 33
      */
     @Property(33)
     public timelineUnitSize: number;
     /**
      * Defines week start day in timeline.
-     * @default 0     
+     *
+     * @default 0
      */
     @Property(0)
     public weekStartDay: number;
-    /** 
+    /**
      * Defines background color of weekend cell in week - day timeline mode.
-     * @default null      
+     *
+     * @default null
      */
     @Property(null)
     public weekendBackground: string;
     /**
      * Enables or disables tooltip for timeline cells.
+     *
      * @default true
      */
     @Property(true)
     public showTooltip: boolean;
     /**
      * Enables or disables timeline auto update on editing action.
+     *
      * @default true
      */
     @Property(true)

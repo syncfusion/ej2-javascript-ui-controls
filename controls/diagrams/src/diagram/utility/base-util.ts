@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/ban-types */
 import { DiagramElement, Corners } from '../core/elements/diagram-element';
 import { compile as baseTemplateComplier } from '@syncfusion/ej2-base';
 import { Rect } from '../primitives/rect';
@@ -19,16 +21,23 @@ import { Connector, Decorator } from '../objects/connector';
 /**
  * Implements the basic functionalities
  */
-/** @private */
+
+/**
+ * Used to generate the random id \
+ *
+ * @returns { boolean }    Used to generate the random id .\
+ *
+ * @private
+ */
 export function randomId(): string {
-    let chars: string = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz';
+    const chars: string = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz';
     let id: string = '';
     let num: number;
     for (let i: number = 0; i < 5; i++) {
         if ('crypto' in window && 'getRandomValues' in crypto) {
-            let count: Uint16Array = new Uint16Array(1);
+            const count: Uint16Array = new Uint16Array(1);
             // tslint:disable-next-line:no-any
-            let intCrypto: any = (window as any).msCrypto || window.crypto;
+            const intCrypto: any = (window as any).msCrypto || window.crypto;
             num = intCrypto.getRandomValues(count)[0] % (chars.length - 1);
         } else {
             num = Math.floor(Math.random() * chars.length);
@@ -39,6 +48,15 @@ export function randomId(): string {
     return id;
 }
 
+/**
+ * Used to get the index value \
+ *
+ * @returns { boolean }    Used to get the index value .\
+ * @param {Diagram} comp - provide the Diagram value.
+ * @param {string} id - provide the id value.
+ *
+ * @private
+ */
 export function getIndex(comp: Diagram, id: string): number {
     if (comp.nodes && comp.nodes.length > 0) {
         for (let i: number = 0; i < comp.nodes.length; i++) {
@@ -57,9 +75,17 @@ export function getIndex(comp: Diagram, id: string): number {
     return null;
 }
 
-/** @private */
+/**
+ * templateCompiler method\
+ *
+ * @returns { Function }    templateCompiler method .\
+ * @param {string} template - provide the template value.
+ *
+ * @private
+ */
 export function templateCompiler(template: string): Function {
     if (template) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         let e: Object;
         try {
             if (document.querySelectorAll(template).length) {
@@ -73,31 +99,45 @@ export function templateCompiler(template: string): Function {
 }
 
 
-/** @private */
+/**
+ * cornersPointsBeforeRotation method\
+ *
+ * @returns { Rect }    templateCompiler method .\
+ * @param {DiagramElement} ele - provide the template value.
+ *
+ * @private
+ */
 export function cornersPointsBeforeRotation(ele: DiagramElement): Rect {
     let bounds: Rect = new Rect();
-    let top: number = ele.offsetY - ele.actualSize.height * ele.pivot.y;
-    let bottom: number = ele.offsetY + ele.actualSize.height * (1 - ele.pivot.y);
-    let left: number = ele.offsetX - ele.actualSize.width * ele.pivot.x;
-    let right: number = ele.offsetX + ele.actualSize.width * (1 - ele.pivot.x);
-    let topLeft: PointModel = { x: left, y: top };
-    let topCenter: PointModel = { x: (left + right) / 2, y: top };
-    let topRight: PointModel = { x: right, y: top };
-    let middleLeft: PointModel = { x: left, y: (top + bottom) / 2 };
-    let middleRight: PointModel = { x: right, y: (top + bottom) / 2 };
-    let bottomLeft: PointModel = { x: left, y: bottom };
-    let bottomCenter: PointModel = { x: (left + right) / 2, y: bottom };
-    let bottomRight: PointModel = { x: right, y: bottom };
+    const top: number = ele.offsetY - ele.actualSize.height * ele.pivot.y;
+    const bottom: number = ele.offsetY + ele.actualSize.height * (1 - ele.pivot.y);
+    const left: number = ele.offsetX - ele.actualSize.width * ele.pivot.x;
+    const right: number = ele.offsetX + ele.actualSize.width * (1 - ele.pivot.x);
+    const topLeft: PointModel = { x: left, y: top };
+    //const topCenter: PointModel = { x: (left + right) / 2, y: top };
+    const topRight: PointModel = { x: right, y: top };
+    //const middleLeft: PointModel = { x: left, y: (top + bottom) / 2 };
+    //const middleRight: PointModel = { x: right, y: (top + bottom) / 2 };
+    const bottomLeft: PointModel = { x: left, y: bottom };
+    //const bottomCenter: PointModel = { x: (left + right) / 2, y: bottom };
+    const bottomRight: PointModel = { x: right, y: bottom };
     bounds = Rect.toBounds([topLeft, topRight, bottomLeft, bottomRight]);
     return bounds;
 }
 
 
-/** @private */
+/**
+ * getBounds method\
+ *
+ * @returns { Rect }    getBounds method .\
+ * @param {DiagramElement} element - provide the template value.
+ *
+ * @private
+ */
 export function getBounds(element: DiagramElement): Rect {
     let bounds: Rect = new Rect();
-    let corners: Rect;
-    corners = cornersPointsBeforeRotation(element);
+    //let corners: Rect;
+    const corners: Rect = cornersPointsBeforeRotation(element);
     let middleLeft: PointModel = corners.middleLeft;
     let topCenter: PointModel = corners.topCenter;
     let bottomCenter: PointModel = corners.bottomCenter;
@@ -112,7 +152,7 @@ export function getBounds(element: DiagramElement): Rect {
     } as Corners;
 
     if (element.rotateAngle !== 0 || element.parentTransform !== 0) {
-        let matrix: Matrix = identityMatrix();
+        const matrix: Matrix = identityMatrix();
         rotateMatrix(matrix, element.rotateAngle + element.parentTransform, element.offsetX, element.offsetY);
         element.corners.topLeft = topLeft = transformPointByMatrix(matrix, topLeft);
         element.corners.topCenter = topCenter = transformPointByMatrix(matrix, topCenter);
@@ -134,6 +174,15 @@ export function getBounds(element: DiagramElement): Rect {
     element.corners.height = bounds.height;
     return bounds;
 }
+/**
+ * updateCloneProp method\
+ *
+ * @returns { Rect }    updateCloneProp method .\
+ * @param {DiagramElement} properties - provide the template value.
+ * @param {DiagramElement} obj - provide the template value.
+ *
+ * @private
+ */
 function updateCloneProp(properties: string[], obj: Object): string[] {
     let prop: string[] = [];
     if (obj instanceof Node) {
@@ -207,20 +256,30 @@ function updateCloneProp(properties: string[], obj: Object): string[] {
     return properties;
 }
 
-/** @private */
+/**
+ * cloneObject method\
+ *
+ * @returns { Rect }    cloneObject method .\
+ * @param {DiagramElement} obj - provide the obj value.
+ * @param {DiagramElement} additionalProp - provide the additionalProp value.
+ * @param {DiagramElement} key - provide the key value.
+ * @param {DiagramElement} cloneBlazorProp - provide the cloneBlazorProp value.
+ *
+ * @private
+ */
 export function cloneObject(obj: Object, additionalProp?: Function | string, key?: string, cloneBlazorProp?: boolean): Object {
-    let newObject: Object = {};
-    let keys: string = 'properties';
-    let prop: string = 'propName';
+    const newObject: Object = {};
+    const keys: string = 'properties';
+    const prop: string = 'propName';
     if (obj) {
         key = obj[prop];
-        let sourceObject: Object = obj[keys] || obj;
+        const sourceObject: Object = obj[keys] || obj;
         let properties: string[] = [];
         properties = properties.concat(Object.keys(sourceObject));
         let customProperties: string[] = [];
         properties.push('version');
         if (key) {
-            let propAdditional: Function = getFunction(additionalProp);
+            const propAdditional: Function = getFunction(additionalProp);
             if (propAdditional) {
                 customProperties = propAdditional(key);
             } else {
@@ -228,17 +287,18 @@ export function cloneObject(obj: Object, additionalProp?: Function | string, key
             }
             properties = properties.concat(customProperties);
         }
-        let internalProp: string[] = getInternalProperties(key);
+        const internalProp: string[] = getInternalProperties(key);
         properties = properties.concat(internalProp);
         if (cloneBlazorProp) {
             properties = updateCloneProp(properties, obj);
         }
-        for (let property of properties) {
+        for (const property of properties) {
             if (property !== 'historyManager') {
                 if (property !== 'wrapper') {
-                    let constructorId: string = 'constructor';
-                    let name: string = 'name';
-                    let isEventEmmitter: boolean = obj[property] && obj.hasOwnProperty('observers') ? true : false;
+                    //const constructorId: string = 'constructor';
+                    //const name: string = 'name';
+                    // eslint-disable-next-line no-prototype-builtins
+                    const isEventEmmitter: boolean = obj[property] && obj.hasOwnProperty('observers') ? true : false;
                     if (!isEventEmmitter) {
                         if (obj[property] instanceof Array) {
                             newObject[property] = cloneArray(
@@ -268,26 +328,43 @@ export function cloneObject(obj: Object, additionalProp?: Function | string, key
     }
     return newObject;
 }
-/** @private */
+/**
+ * getInternalProperties method\
+ *
+ * @returns { string[] }    getInternalProperties method .\
+ * @param {string} propName - provide the propName value.
+ *
+ * @private
+ */
 export function getInternalProperties(propName: string): string[] {
     switch (propName) {
-        case 'nodes':
-        case 'children':
-            return ['inEdges', 'outEdges', 'parentId', 'processId', 'nodeId', 'umlIndex', 'isPhase', 'isLane'];
-        case 'connectors':
-            return ['parentId'];
-        case 'annotation':
-            return ['nodeId'];
-        case 'annotations':
-            return ['nodeId'];
-        case 'shape':
-            return ['hasHeader'];
-        case 'layers':
-            return ['objectZIndex'];
+    case 'nodes':
+    case 'children':
+        return ['inEdges', 'outEdges', 'parentId', 'processId', 'nodeId', 'umlIndex', 'isPhase', 'isLane'];
+    case 'connectors':
+        return ['parentId'];
+    case 'annotation':
+        return ['nodeId'];
+    case 'annotations':
+        return ['nodeId'];
+    case 'shape':
+        return ['hasHeader'];
+    case 'layers':
+        return ['objectZIndex'];
     }
     return [];
 }
-/** @private */
+/**
+ * cloneArray method\
+ *
+ * @returns {  Object[] }    getInternalProperties method .\
+ * @param {string} sourceArray - provide the sourceArray value.
+ * @param {string} additionalProp - provide the additionalProp value.
+ * @param {string} key - provide the key value.
+ * @param {string} cloneBlazorProp - provide the cloneBlazorProp value.
+ *
+ * @private
+ */
 export function cloneArray(sourceArray: Object[], additionalProp?: Function | string, key?: string, cloneBlazorProp?: boolean): Object[] {
     let clonedArray: Object[];
     if (sourceArray) {
@@ -305,25 +382,33 @@ export function cloneArray(sourceArray: Object[], additionalProp?: Function | st
     return clonedArray;
 }
 
-/** @private */
+/**
+ * extendObject method\
+ *
+ * @returns {  Object}    getInternalProperties method .\
+ * @param {string} options - provide the options value.
+ * @param {string} childObject - provide the childObject value.
+ *
+ * @private
+ */
 export function extendObject(options: Object, childObject: Object): Object {
-    let properties: string = 'properties';
+    const properties: string = 'properties';
 
     if (options) {
         if (!childObject) {
             childObject = { properties: {} };
         }
-        let target: Object = childObject;
-        for (let property of Object.keys(options)) {
+        //const target: Object = childObject;
+        for (const property of Object.keys(options)) {
             if (options[property] instanceof Array) {
-                let extendeArray: Object[] = extendArray(options[property], childObject[properties][property]);
+                const extendeArray: Object[] = extendArray(options[property], childObject[properties][property]);
                 if (!childObject[properties][property] || !childObject[properties][property].length) {
                     childObject[property] = extendeArray;
                 }
             } else if (options[property] instanceof Array === false && options[property] instanceof HTMLElement) {
                 childObject[property] = options[property].cloneNode(true).innerHtml;
             } else if (options[property] instanceof Array === false && options[property] instanceof Object) {
-                let extendedObject: Object = extendObject(options[property], childObject[properties][property]);
+                const extendedObject: Object = extendObject(options[property], childObject[properties][property]);
                 if (extendedObject[properties] && !Object.keys(extendedObject[properties]).length) {
                     delete extendedObject[properties];
                 }
@@ -337,9 +422,17 @@ export function extendObject(options: Object, childObject: Object): Object {
     return childObject;
 }
 
-/** @private */
+/**
+ * extendObject method\
+ *
+ * @returns {  Object}    getInternalProperties method .\
+ * @param {string} sourceArray - provide the sourceArray value.
+ * @param {string} childArray - provide the childArray value.
+ *
+ * @private
+ */
 export function extendArray(sourceArray: Object[], childArray: Object[]): Object[] {
-    let clonedArray: Object[] = [];
+    const clonedArray: Object[] = [];
     let reset: boolean = false;
     if (!childArray) { childArray = []; }
     if (!childArray.length) {
@@ -347,12 +440,13 @@ export function extendArray(sourceArray: Object[], childArray: Object[]): Object
     }
     for (let i: number = 0; i < sourceArray.length; i++) {
         if (sourceArray[i] instanceof Array) {
-            let extendedArray: Object[] = extendArray(sourceArray[i] as Object[], childArray[i] as Object[]);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const extendedArray: Object[] = extendArray(sourceArray[i] as Object[], childArray[i] as Object[]);
             if (reset) {
                 clonedArray.push(extendArray);
             }
         } else if (sourceArray[i] instanceof Object) {
-            let extendedObject: Object = extendObject(sourceArray[i], childArray[i]);
+            const extendedObject: Object = extendObject(sourceArray[i], childArray[i]);
             if (reset) {
                 clonedArray.push(extendedObject);
             }
@@ -363,62 +457,101 @@ export function extendArray(sourceArray: Object[], childArray: Object[]): Object
     return clonedArray;
 }
 
-/** @private */
+/**
+ * textAlignToString method\
+ *
+ * @returns {  Object}    textAlignToString method .\
+ * @param {string} value - provide the sourceArray value.
+ *
+ * @private
+ */
 export function textAlignToString(value: TextAlign): string {
     let state: string = '';
     switch (value) {
-        case 'Center':
-            state = 'center';
-            break;
-        case 'Left':
-            state = 'left';
-            break;
-        case 'Right':
-            state = 'right';
-            break;
+    case 'Center':
+        state = 'center';
+        break;
+    case 'Left':
+        state = 'left';
+        break;
+    case 'Right':
+        state = 'right';
+        break;
     }
     return state;
 }
-/** @private */
+/**
+ * wordBreakToString method\
+ *
+ * @returns {  string }    wordBreakToString method .\
+ * @param {TextWrap | TextDecoration} value - provide the value value.
+ *
+ * @private
+ */
 export function wordBreakToString(value: TextWrap | TextDecoration): string {
     let state: string = '';
     switch (value) {
-        case 'Wrap':
-            state = 'breakall';
-            break;
-        case 'NoWrap':
-            state = 'keepall';
-            break;
-        case 'WrapWithOverflow':
-            state = 'normal';
-            break;
-        case 'LineThrough':
-            state = 'line-through';
-            break;
+    case 'Wrap':
+        state = 'breakall';
+        break;
+    case 'NoWrap':
+        state = 'keepall';
+        break;
+    case 'WrapWithOverflow':
+        state = 'normal';
+        break;
+    case 'LineThrough':
+        state = 'line-through';
+        break;
 
     }
     return state;
 }
 
+/**
+ * bBoxText method\
+ *
+ * @returns { number }    bBoxText method .\
+ * @param {string} textContent - provide the textContent value.
+ * @param {string} options - provide the options value.
+ *
+ * @private
+ */
 export function bBoxText(textContent: string, options: TextAttributes): number {
-    let measureWindowElement: string = 'measureElement';
+    const measureWindowElement: string = 'measureElement';
     window[measureWindowElement].style.visibility = 'visible';
-    let svg: SVGElement = window[measureWindowElement].children[2];
-    let text: SVGTextElement = getChildNode(svg)[1] as SVGTextElement;
+    const svg: SVGElement = window[measureWindowElement].children[2];
+    const text: SVGTextElement = getChildNode(svg)[1] as SVGTextElement;
     text.textContent = textContent;
     applyStyleAgainstCsp(text, 'font-size:' + options.fontSize + 'px; font-family:'
         + options.fontFamily + ';font-weight:' + (options.bold ? 'bold' : 'normal'));
-    let bBox: number = text.getBBox().width;
+    const bBox: number = text.getBBox().width;
     window[measureWindowElement].style.visibility = 'hidden';
     return bBox;
 }
-/** @private */
+/**
+ * middleElement method\
+ *
+ * @returns {  number}    middleElement method .\
+ * @param {number} i - provide the textContent value.
+ * @param {number} j - provide the options value.
+ *
+ * @private
+ */
 export function middleElement(i: number, j: number): number {
     let m: number = 0;
     m = (i + j) / 2;
     return m;
 }
-/** @private */
+/**
+ * overFlow method\
+ *
+ * @returns {  number}    overFlow method .\
+ * @param {number} text - provide the text value.
+ * @param {number} options - provide the options value.
+ *
+ * @private
+ */
 export function overFlow(text: string, options: TextAttributes): string {
     let i: number = 0;
     let j: number = 0;
@@ -453,54 +586,86 @@ export function overFlow(text: string, options: TextAttributes): string {
     return text;
 }
 
-/** @private */
+/**
+ * whiteSpaceToString method\
+ *
+ * @returns {  number}    whiteSpaceToString method .\
+ * @param {number} value - provide the value value.
+ * @param {number} wrap - provide the wrap value.
+ *
+ * @private
+ */
 export function whiteSpaceToString(value: WhiteSpace, wrap: TextWrap): string {
     if (wrap === 'NoWrap' && value === 'PreserveAll') {
         return 'pre';
     }
     let state: string = '';
     switch (value) {
-        case 'CollapseAll':
-            state = 'nowrap';
-            break;
-        case 'CollapseSpace':
-            state = 'pre-line';
-            break;
-        case 'PreserveAll':
-            state = 'pre-wrap';
-            break;
+    case 'CollapseAll':
+        state = 'nowrap';
+        break;
+    case 'CollapseSpace':
+        state = 'pre-line';
+        break;
+    case 'PreserveAll':
+        state = 'pre-wrap';
+        break;
     }
     return state;
 }
 
-/** @private */
+/**
+ * rotateSize method\
+ *
+ * @returns {  number}    rotateSize method .\
+ * @param {number} size - provide the size value.
+ * @param {number} angle - provide the angle value.
+ *
+ * @private
+ */
 export function rotateSize(size: Size, angle: number): Size {
-    let matrix: Matrix = identityMatrix();
+    const matrix: Matrix = identityMatrix();
     rotateMatrix(matrix, angle, 0, 0);
-    let topLeft: PointModel = transformPointByMatrix(matrix, { x: 0, y: 0 });
-    let topRight: PointModel = transformPointByMatrix(matrix, { x: size.width, y: 0 });
-    let bottomLeft: PointModel = transformPointByMatrix(matrix, { x: 0, y: size.height });
-    let bottomRight: PointModel = transformPointByMatrix(matrix, { x: size.width, y: size.height });
-    let minX: number = Math.min(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x);
-    let minY: number = Math.min(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
-    let maxX: number = Math.max(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x);
-    let maxY: number = Math.max(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
+    const topLeft: PointModel = transformPointByMatrix(matrix, { x: 0, y: 0 });
+    const topRight: PointModel = transformPointByMatrix(matrix, { x: size.width, y: 0 });
+    const bottomLeft: PointModel = transformPointByMatrix(matrix, { x: 0, y: size.height });
+    const bottomRight: PointModel = transformPointByMatrix(matrix, { x: size.width, y: size.height });
+    const minX: number = Math.min(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x);
+    const minY: number = Math.min(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
+    const maxX: number = Math.max(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x);
+    const maxY: number = Math.max(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
     return new Size(maxX - minX, maxY - minY);
 }
-/** @private */
+/**
+ * rotatePoint method\
+ *
+ * @returns {  number}    rotateSize method .\
+ * @param {number} angle - provide the angle value.
+ * @param {number} pivotX - provide the pivotX value.
+ * @param {number} pivotY - provide the pivotY value.
+ * @param {PointModel} point - provide the point value.
+ * @private
+ */
 export function rotatePoint(angle: number, pivotX: number, pivotY: number, point: PointModel): PointModel {
     if (angle !== 0) {
-        let matrix: Matrix = identityMatrix();
+        const matrix: Matrix = identityMatrix();
         rotateMatrix(matrix, angle, pivotX, pivotY);
         return transformPointByMatrix(matrix, point);
     }
     return point;
 }
 
-/** @private */
+/**
+ * getOffset method\
+ *
+ * @returns {  number}    getOffset method .\
+ * @param {PointModel} topLeft - provide the angle value.
+ * @param {DiagramElement} obj - provide the pivotX value.
+ * @private
+ */
 export function getOffset(topLeft: PointModel, obj: DiagramElement): PointModel {
-    let offX: number = topLeft.x + obj.desiredSize.width * obj.pivot.x;
-    let offY: number = topLeft.y + obj.desiredSize.height * obj.pivot.y;
+    const offX: number = topLeft.x + obj.desiredSize.width * obj.pivot.x;
+    const offY: number = topLeft.y + obj.desiredSize.height * obj.pivot.y;
     return {
         x: offX, y: offY
     };
@@ -508,7 +673,11 @@ export function getOffset(topLeft: PointModel, obj: DiagramElement): PointModel 
 
 
 /**
- * Get function
+ * getFunction method\
+ *
+ * @returns {  Function }    getFunction method .\
+ * @param {PointModel} value - provide the angle value.
+ * @private
  */
 export function getFunction(value: Function | string): Function {
     if (value !== undefined) {

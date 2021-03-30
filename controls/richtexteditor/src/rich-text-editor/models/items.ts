@@ -1,11 +1,11 @@
-// tslint:disable
+/* eslint-disable */
 /**
  * Export items model
  */
 
 import { IToolsItems, IDropDownItemModel, IRichTextEditor } from '../base/interface';
 
-export let templateItems: string[] = ['alignments', 'formats', 'fontname', 'fontsize', 'fontcolor', 'backgroundcolor', 'align', 'display', 'tablerows', 'tablecolumns', 'tablecellhorizontalalign', 'tablecellverticalalign', 'styles'];
+export let templateItems: string[] = ['alignments', 'formats', 'fontname', 'fontsize', 'fontcolor', 'backgroundcolor', 'align', 'display', 'tablerows', 'tablecolumns', 'tablecell', 'tablecellhorizontalalign', 'tablecellverticalalign', 'styles'];
 
 
 export let tools: { [key: string]: IToolsItems } = {
@@ -431,6 +431,13 @@ export let tools: { [key: string]: IToolsItems } = {
         'command': 'Table',
         'subCommand': 'TableColumns'
     },
+    'tablecell': {
+        'id': 'TableCell',
+        'icon': 'e-table-cell',
+        'tooltip': 'Table Cell',
+        'command': 'Table',
+        'subCommand': 'TableCell'
+    },
     'tablecellbackground': {
         'id': 'TableCellBackground',
         'icon': 'e-table-cell-background',
@@ -494,6 +501,12 @@ let displayLocale: { [ket: string]: string }[] = [
 export let imageDisplayItems: IDropDownItemModel[] = [
     { text: 'Inline', cssClass: 'e-inline', command: 'Images', subCommand: 'Inline' },
     { text: 'Break', cssClass: 'e-break', command: 'Images', subCommand: 'Break' },
+];
+
+export let tableCellItems: IDropDownItemModel[] = [
+    { iconCss: 'e-icons e-cell-merge', text: 'Merge cells', command: 'Table', subCommand: 'Merge' },
+    { iconCss: 'e-icons e-cell-horizontal-split', text: 'Horizontal split', command: 'Table', subCommand: 'HorizontalSplit' },
+    { iconCss: 'e-icons e-cell-vertical-split', text: 'Vertical split', command: 'Table', subCommand: 'VerticalSplit' },
 ];
 
 let tableRowLocale: { [ket: string]: string }[] = [

@@ -8,11 +8,15 @@ export class Code128 extends OneDimension {
 
 
     /**
-     * Validate the given input to check whether the input is valid one or not
+     * Validate the given input.
+     *
+     * @returns {string} Validate the given input.
+     *  @param {string} char - provide the input values .
+     * @private
      */
-    /** @private */
     public validateInput(char: string): string {
         //if (char.search('/[a-zA-Z0-9]*/') === -1) {
+        // eslint-disable-next-line
         if (char.search(/^[0-9A-Za-z\-\.\ \@\$\/\+\%\!\@\#\$\%\&\*\^\(\)\_\+\=\<\>\?\{\}\[\]\~\-\Ê]+$/) === -1) {
             return 'Supports only 128 characters of ASCII.';
         } else {
@@ -20,7 +24,7 @@ export class Code128 extends OneDimension {
         }
     }
     private getCodeValue(): number[] {
-        let codes: number[] = [11011001100, 11001101100, 11001100110, 10010011000, 10010001100,
+        const codes: number[] = [11011001100, 11001101100, 11001100110, 10010011000, 10010001100,
             10001001100, 10011001000, 10011000100, 10001100100, 11001001000,
             11001000100, 11000100100, 10110011100, 10011011100, 10011001110,
             10111001100, 10011101100, 10011100110, 11001110010, 11001011100,
@@ -45,7 +49,7 @@ export class Code128 extends OneDimension {
         return codes;
     }
     private getBytes(givenWord: string): number[] {
-        let bytes: number[] = [];
+        const bytes: number[] = [];
         for (let i: number = 0; i < givenWord.length; i++) {
             bytes.push(givenWord[i].charCodeAt(0));
         }
@@ -74,12 +78,13 @@ export class Code128 extends OneDimension {
     }
 
     private clipAB(value: string, code128A: boolean): string {
-        let ranges: string = code128A ? '[\x00-\x5F\xC8-\xCF]' : '[\x20-\x7F\xC8-\xCF]';
-        let untilC: object = value.match(new RegExp('^(' + ranges + '+?)(([0-9]{2}){2,})([^0-9]|$)'));
+        const ranges: string = code128A ? '[\x00-\x5F\xC8-\xCF]' : '[\x20-\x7F\xC8-\xCF]';
+        // eslint-disable-next-line
+        const untilC: object = value.match(new RegExp('^(' + ranges + '+?)(([0-9]{2}){2,})([^0-9]|$)'));
         if (untilC) {
             return untilC[1] + String.fromCharCode(204) + this.clipC(value.substring(untilC[1].length));
         }
-        let chars: string = value.match(new RegExp('^' + ranges + '+'))[0];
+        const chars: string = value.match(new RegExp('^' + ranges + '+'))[0];
 
         if (chars.length === value.length) {
             return value;
@@ -89,38 +94,50 @@ export class Code128 extends OneDimension {
 
     private code128Clip(): string {
         let newString: string;
-        let check128C: number = this.check128C(this.value).length;
+        const check128C: number = this.check128C(this.value).length;
         if (check128C >= 2) {
             return newString = String.fromCharCode(210) + this.clipC(this.value);
         } else {
-            let code128A: boolean = this.check128A(this.value) > this.check128B(this.value);
+            const code128A: boolean = this.check128A(this.value) > this.check128B(this.value);
+            // eslint-disable-next-line
             return newString = (code128A ? String.fromCharCode(208) : String.fromCharCode(209)) + this.clipAB(this.value, code128A);
         }
     }
 
     private clipC(string: string): string {
-        let cMatch: string = this.check128C(string);
-        let length: number = cMatch.length;
+        const cMatch: string = this.check128C(string);
+        const length: number = cMatch.length;
         if (length === string.length) {
             return string;
         }
         string = string.substring(length);
-        let code128A: boolean = this.check128A(string) >= this.check128B(string);
+        const code128A: boolean = this.check128A(string) >= this.check128B(string);
         return cMatch + String.fromCharCode(code128A ? 206 : 205) + this.clipAB(string, code128A);
     }
 
-    /** @private */
+    /**
+     * Draw the barcode SVG.\
+     *
+     * @returns {void} Draw the barcode SVG .
+     *  @param {HTMLElement} canvas - Provide the canvas element .
+     * @private
+     */
     public draw(canvas: HTMLElement): void {
-            this.code128(canvas);
+        this.code128(canvas);
     }
 
-    /** @private */
+    /**
+     * Draw the barcode SVG.\
+     *
+     * @returns {void} Draw the barcode SVG .
+     *  @param {HTMLElement} canvas - Provide the canvas element .
+     * @private
+     */
     public code128(canvas: HTMLElement): void {
         let givenCharacter: string = this.value;
         givenCharacter = this.type !== 'Code128' ? this.appendStartStopCharacters(givenCharacter) : this.code128Clip() as string;
-        let bytes: number[];
-        bytes = this.getBytes(givenCharacter);
-        let startCharacterValue: number = bytes.shift() - 105;
+        const bytes: number[] = this.getBytes(givenCharacter);
+        const startCharacterValue: number = bytes.shift() - 105;
         let set: string;
         if (startCharacterValue === 103) {
             set = '0';
@@ -129,9 +146,9 @@ export class Code128 extends OneDimension {
         } else {
             set = '2';
         }
-        let encodingResult: EncodingResult = this.encodeData(bytes, 1, set);
-        let encodedData: string = this.encode(startCharacterValue, encodingResult);
-        let code: string[] = [];
+        const encodingResult: EncodingResult = this.encodeData(bytes, 1, set);
+        const encodedData: string = this.encode(startCharacterValue, encodingResult);
+        const code: string[] = [];
         code.push(encodedData);
         this.calculateBarCodeAttributes(code, canvas);
     }
@@ -145,7 +162,7 @@ export class Code128 extends OneDimension {
         let index: number;
         if (byteValue[0] >= 200) {
             index = byteValue.shift() - 105;
-            let nextSet: string = this.swap(index);
+            const nextSet: string = this.swap(index);
             if (nextSet !== undefined) {
                 nextCode = this.encodeData(byteValue, textPosition + 1, nextSet);
             }
@@ -153,8 +170,8 @@ export class Code128 extends OneDimension {
             index = this.correctIndex(byteValue, set);
             nextCode = this.encodeData(byteValue, textPosition + 1, set);
         }
-        let encodingValues: string = this.getCodes(index);
-        let weight: number = index * textPosition;
+        const encodingValues: string = this.getCodes(index);
+        const weight: number = index * textPosition;
         return {
             result: encodingValues + nextCode.result,
             checksum: weight + nextCode.checksum
@@ -173,8 +190,8 @@ export class Code128 extends OneDimension {
     }
 
     private encode(startIndex: number, encodingResult: EncodingResult): string {
-        let moduloValue: number = 103;
-        let stopvalue: number = 106;
+        const moduloValue: number = 103;
+        const stopvalue: number = 106;
         let encodeValue: string = this.getCodes(startIndex) + encodingResult.result;
         if (this.enableCheckSum) {
             encodeValue += this.getCodes((encodingResult.checksum + startIndex) % moduloValue);
@@ -186,7 +203,7 @@ export class Code128 extends OneDimension {
     // Correct an index by a set and shift it from the bytes array
     private correctIndex(bytes: number[], set?: string): number {
         if (set === '0') {
-            let charCode: number = bytes.shift();
+            const charCode: number = bytes.shift();
             return charCode < 32 ? charCode + 64 : charCode - 32;
         } else if (set === '1') {
             return bytes.shift() - 32;
@@ -197,7 +214,7 @@ export class Code128 extends OneDimension {
 
     // Get a bar symbol by index
     private getCodes(index: number): string {
-        let codes: number[] = this.getCodeValue();
+        const codes: number[] = this.getCodeValue();
         return codes[index] ? codes[index].toString() : '';
     }
 

@@ -7,11 +7,14 @@ import * as util from '../base/util';
  */
 export class WorkWeek extends VerticalView {
     public viewClass: string = 'e-work-week-view';
+
     /**
      * Constructor for work week view
+     *
+     * @param {Schedule} parent Accepts the schedule instance
      */
-    constructor(par: Schedule) {
-        super(par);
+    constructor(parent: Schedule) {
+        super(parent);
     }
 
     public startDate(): Date {
@@ -32,8 +35,11 @@ export class WorkWeek extends VerticalView {
 
     /**
      * Get module name.
+     *
+     * @returns {string} Returns the module name.
      */
     protected getModuleName(): string {
         return 'workWeek';
     }
+
 }

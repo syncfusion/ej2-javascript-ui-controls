@@ -6,6 +6,7 @@ import { isBlazor } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
 /**
  * `Popup renderer` module is used to render popup in RichTextEditor.
+ * 
  * @hidden
  * @deprecated
  */
@@ -16,20 +17,25 @@ export class PopupRenderer implements IRenderer {
 
     /**
      * Constructor for popup renderer module
+     *
+     * @param {IRichTextEditor} parent - specifies the parent.
      */
-    constructor(parent?: IRichTextEditor) {
+    public constructor(parent?: IRichTextEditor) {
         this.parent = parent;
     }
 
     private quickToolbarOpen(): void {
-        let args: QuickToolbarEventArgs | Popup = isBlazor() ? { element: this.popupObj.element } : this.popupObj;
+        const args: QuickToolbarEventArgs | Popup = isBlazor() ? { element: this.popupObj.element } : this.popupObj;
         this.parent.trigger(events.quickToolbarOpen, args);
     }
 
     /**
      * renderPopup method
+     *
+     * @param {BaseQuickToolbar} args - specifies  the arguments.
+     * @returns {void}
      * @hidden
-     * @deprecated  
+     * @deprecated
      */
     public renderPopup(args: BaseQuickToolbar): void {
         this.setPanel(args.element);
@@ -45,6 +51,8 @@ export class PopupRenderer implements IRenderer {
 
     /**
      * The function is used to add popup class in Quick Toolbar
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -54,7 +62,8 @@ export class PopupRenderer implements IRenderer {
 
     /**
      * Get the popup element of RichTextEditor
-     * @return {Element}
+     *
+     * @returns {Element} - specifies the element
      * @hidden
      * @deprecated
      */
@@ -64,7 +73,9 @@ export class PopupRenderer implements IRenderer {
 
     /**
      * Set the popup element of RichTextEditor
-     * @param  {Element} panel
+     *
+     * @returns {void}
+     * @param  {Element} panel - specifies the element
      * @hidden
      * @deprecated
      */

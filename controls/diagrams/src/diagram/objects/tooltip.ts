@@ -6,13 +6,14 @@ import { Diagram } from '../diagram';
 import { NodeModel } from './node-model';
 import { ConnectorModel } from './connector-model';
 import { DiagramTooltipModel } from './tooltip-model';
-/** 
+/**
  * Defines the tooltip that should be shown when the mouse hovers over node.
  * An object that defines the description, appearance and alignments of tooltip
  */
 export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
     /**
      * Defines the content of the Tooltip
+     *
      * @default ''
      */
     @Property('')
@@ -20,6 +21,7 @@ export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
 
     /**
      * Defines the position of the Tooltip
+     *
      * @default 'TopLeft'
      * @aspDefaultValueIgnore
      * @blazorType Syncfusion.Blazor.Popups.Position
@@ -33,6 +35,7 @@ export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
      * Defines the relative mode of the Tooltip
      * * Object - sets the tooltip position relative to the node
      * * Mouse - sets the tooltip position relative to the mouse
+     *
      * @default 'Mouse'
      */
     @Property('Mouse')
@@ -40,6 +43,7 @@ export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
 
     /**
      * Defines if the Tooltip has tip pointer or not
+     *
      * @default true
      */
     @Property(true)
@@ -47,6 +51,7 @@ export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
 
     /**
      * Sets the width of the Tooltip
+     *
      * @default 'auto'
      */
     @Property('auto')
@@ -54,6 +59,7 @@ export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
 
     /**
      * Sets the height of the Tooltip
+     *
      * @default 'auto'
      */
     @Property('auto')
@@ -61,6 +67,7 @@ export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
 
     /**
      * Sets how to open the Tooltip
+     *
      * @default 'Auto'
      */
     @Property('Auto')
@@ -85,6 +92,7 @@ export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
      * ...
      * }
      * ```
+     *
      * @aspDefaultValueIgnore
      * @blazorType Syncfusion.Blazor.Popups.AnimationModel
      * @default { open: { effect: 'FadeIn', duration: 150, delay: 0 }, close: { effect: 'FadeOut', duration: 150, delay: 0 } }
@@ -94,9 +102,12 @@ export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
 }
 
 /**
+ * initTooltip method \
+ *
+ * @returns { Tooltip | BlazorTooltip } initTooltip method .\
+ * @param {Diagram} diagram - provide the points value.
+ *
  * @private
- * defines the Tooltip.
- * @param {Diagram} diagram
  */
 export function initTooltip(diagram: Diagram): Tooltip | BlazorTooltip {
     let tooltip: Tooltip | BlazorTooltip;
@@ -117,12 +128,28 @@ export function initTooltip(diagram: Diagram): Tooltip | BlazorTooltip {
     return tooltip ;
 }
 
+/**
+ * beforeOpen method \
+ *
+ * @returns { void } beforeOpen method .\
+ * @param {TooltipEventArgs} args - provide the points value.
+ *
+ * @private
+ */
 function beforeOpen(args: TooltipEventArgs): void {
     if ((this.content === '' || this.content === undefined)) {
         args.element.style.display = 'none';
     }
 }
 
+/**
+ * beforeCollision method \
+ *
+ * @returns { void } beforeCollision method .\
+ * @param {TooltipEventArgs} args - provide the points value.
+ *
+ * @private
+ */
 function beforeCollision(args: TooltipEventArgs): void {
     if ((args.collidedPosition && args.collidedPosition !== this.position)) {
         args.element.style.display = 'none';
@@ -130,19 +157,31 @@ function beforeCollision(args: TooltipEventArgs): void {
 }
 
 /**
+ * updateTooltip method \
+ *
+ * @returns { Tooltip } updateTooltip method .\
+ * @param {Diagram} diagram - provide the points value.
+ * @param {NodeModel | ConnectorModel} node - provide the points value.
+ *
  * @private
- * updates the contents of the tooltip.
- * @param {Diagram} diagram
- * @param {NodeModel | ConnectorModel} node
  */
 export function updateTooltip(diagram: Diagram, node?: NodeModel | ConnectorModel): Tooltip {
-    let tooltip: DiagramTooltipModel;
-    let tooltipObject: Tooltip = diagram.tooltipObject as Tooltip;
-    tooltip = node ? node.tooltip : diagram.tooltip;
+    //let tooltip: DiagramTooltipModel;
+    const tooltipObject: Tooltip = diagram.tooltipObject as Tooltip;
+    const tooltip: DiagramTooltipModel = node ? node.tooltip : diagram.tooltip;
     updateTooltipContent(tooltip, tooltipObject);
     return tooltipObject;
 }
 
+/**
+ * updateTooltipContent method \
+ *
+ * @returns { Tooltip | BlazorTooltip } updateTooltipContent method .\
+ * @param {DiagramTooltipModel} tooltip - provide the points value.
+ * @param {Tooltip | BlazorTooltip} tooltipObject - provide the points value.
+ *
+ * @private
+ */
 function updateTooltipContent(tooltip: DiagramTooltipModel, tooltipObject: Tooltip | BlazorTooltip): Tooltip | BlazorTooltip {
     if (tooltip.content) {
         tooltipObject.content = tooltip.content;

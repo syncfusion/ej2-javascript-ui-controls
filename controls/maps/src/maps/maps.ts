@@ -1,3 +1,9 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/member-delimiter-style */
+/* eslint-disable max-len */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable @typescript-eslint/dot-notation */
+/* eslint-disable brace-style */
 /**
  * Maps Component file
  */
@@ -6,7 +12,6 @@ import { EventHandler, Browser, EmitType, isNullOrUndefined, createElement, setV
 import { Event, remove, L10n, Collection, Internationalization, Complex, isBlazor } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
-// tslint:disable-next-line
 import { Size, createSvg, Point, removeElement, triggerShapeEvent, showTooltip, checkShapeDataFields, MapLocation, getMousePosition } from './utils/helper';
 import { getElement, removeClass, getTranslate, triggerItemSelectionEvent, mergeSeparateCluster, customizeStyle } from './utils/helper';
 import { createStyle } from './utils/helper';
@@ -105,16 +110,19 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public annotationsModule: Annotations;
     /**
      * This module enables the print functionality in Maps control.
+     *
      * @private
      */
     public printModule: Print;
     /**
      * This module enables the export to PDF functionality in Maps control.
+     *
      * @private
      */
     public pdfExportModule: PdfExport;
     /**
      * This module enables the export to image functionality in Maps control.
+     *
      * @private
      */
     public imageExportModule: ImageExport;
@@ -124,30 +132,35 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Sets and gets the background color of the maps container.
+     *
      * @default null
      */
     @Property(null)
     public background: string;
     /**
      * Enables or disables the visibility state of the separator for grouping.
+     *
      * @default false
      */
     @Property(false)
     public useGroupingSeparator: boolean;
     /**
      * Sets and gets the format in which the text in the maps are to be rendered.
+     *
      * @default null
      */
     @Property(null)
     public format: string;
     /**
      * Sets and gets the width in which the maps is to be rendered.
+     *
      * @default null
      */
     @Property(null)
     public width: string;
     /**
      * Sets and gets the height in which the maps is to be rendered.
+     *
      * @default null
      */
     @Property(null)
@@ -156,24 +169,28 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Sets and gets the mode in which the tooltip is to be displayed.
      * The tooltip can be rendered on mouse move, click or double clicking on the
      * element on the map.
+     *
      * @default 'MouseMove'
      */
     @Property('MouseMove')
     public tooltipDisplayMode: TooltipGesture;
     /**
      * Enables or disables the print functionality in map.
+     *
      * @default false
      */
     @Property(false)
     public allowPrint: boolean;
     /**
      * Enables or disables the export to image functionality in map.
+     *
      * @default false
      */
     @Property(false)
     public allowImageExport: boolean;
     /**
      * Enables or disables the export to PDF functionality in map.
+     *
      * @default false
      */
     @Property(false)
@@ -199,13 +216,13 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     @Collection<LayerSettingsModel>([], LayerSettings)
     public layers: LayerSettingsModel[];
     /**
-     *  Sets and gets the options for customizing the annotation of maps.
+     * Sets and gets the options for customizing the annotation of maps.
      */
     @Collection<AnnotationModel>([], Annotation)
     public annotations: AnnotationModel[];
 
     /**
-     *  Sets and gets the options to customize the margins of the maps.
+     * Sets and gets the options to customize the margins of the maps.
      */
     @Complex<MarginModel>({}, Margin)
     public margin: MarginModel;
@@ -218,18 +235,21 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Set and gets the theme supported for the maps.
+     *
      * @default Material
      */
     @Property('Material')
     public theme: MapsTheme;
     /**
      * Sets and gets the projection type for the maps.
+     *
      * @default Mercator
      */
     @Property('Mercator')
     public projectionType: ProjectionType;
     /**
      * Sets and gets the base map index of maps. It provides the option to select which layer to be visible in the maps.
+     *
      * @default 0
      */
     @Property(0)
@@ -237,6 +257,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Sets and gets the description for maps.
+     *
      * @default null
      */
     @Property(null)
@@ -244,6 +265,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Sets and gets the tab index value for the maps.
+     *
      * @default 1
      */
     @Property(1)
@@ -260,6 +282,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public mapsArea: MapsAreaSettingsModel;
     /**
      * Triggers when the map is on load.
+     *
      * @event
      * @blazorProperty 'OnLoad'
      */
@@ -267,6 +290,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public load: EmitType<ILoadEventArgs>;
     /**
      * Triggers before the print gets started.
+     *
      * @event
      * @blazorProperty 'OnPrint'
      */
@@ -274,6 +298,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public beforePrint: EmitType<IPrintEventArgs>;
     /**
      * Triggers after the maps gets rendered.
+     *
      * @event
      * @blazorProperty 'Loaded'
      */
@@ -281,6 +306,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public loaded: EmitType<ILoadedEventArgs>;
     /**
      * Triggers when clicking an element in maps.
+     *
      * @event
      * @blazorProperty 'OnClick'
      */
@@ -288,6 +314,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public click: EmitType<IMouseEventArgs>;
     /**
      * Triggers when performing the double click operation on an element in maps.
+     *
      * @event
      * @blazorProperty 'OnDoubleClick'
      */
@@ -295,6 +322,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public doubleClick: EmitType<IMouseEventArgs>;
     /**
      * Triggers when performing the right click operation on an element in maps.
+     *
      * @event
      * @blazorProperty 'OnRightClick'
      */
@@ -302,6 +330,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public rightClick: EmitType<IMouseEventArgs>;
     /**
      * Triggers when resizing the maps.
+     *
      * @event
      * @blazorProperty 'Resizing'
      */
@@ -309,6 +338,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public resize: EmitType<IResizeEventArgs>;
     /**
      * Triggers before the maps tooltip gets rendered.
+     *
      * @event
      * @blazorProperty 'TooltipRendering'
      */
@@ -316,6 +346,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public tooltipRender: EmitType<ITooltipRenderEventArgs>;
     /**
      * Triggers before the legend gets rendered.
+     *
      * @event
      * @deprecated
      * @blazorProperty 'LegendRendering'
@@ -324,6 +355,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public legendRendering: EmitType<ILegendRenderingEventArgs>;
     /**
      * Triggers after the maps tooltip gets rendered.
+     *
      * @deprecated
      * @event
      * @blazorProperty 'TooltipRenderComplete'
@@ -332,6 +364,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public tooltipRenderComplete: EmitType<ITooltipRenderCompleteEventArgs>;
     /**
      * Triggers when clicking a shape in maps.
+     *
      * @event
      * @blazorProperty 'ShapeSelected'
      */
@@ -339,6 +372,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public shapeSelected: EmitType<IShapeSelectedEventArgs>;
     /**
      * Triggers when clicking the shape on maps and before the selection is applied.
+     *
      * @event
      * @blazorProperty 'OnItemSelect'
      */
@@ -346,6 +380,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public itemSelection: EmitType<ISelectionEventArgs>;
     /**
      * Trigger when mouse move on the shape in maps and before the shape gets highlighted.
+     *
      * @event
      * @blazorProperty 'OnItemHighlight'
      */
@@ -353,6 +388,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public itemHighlight: EmitType<ISelectionEventArgs>;
     /**
      * Triggers when mouse move on the shape in maps and before the shape gets highlighted.
+     *
      * @event
      * @blazorProperty 'ShapeHighlighted'
      */
@@ -360,6 +396,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public shapeHighlight: EmitType<IShapeSelectedEventArgs>;
     /**
      * Triggers before the maps layer gets rendered.
+     *
      * @event
      * @blazorProperty 'LayerRendering'
      */
@@ -368,6 +405,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Triggers before the maps shape gets rendered.
+     *
      * @event
      * @blazorProperty 'ShapeRendering'
      */
@@ -376,6 +414,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Triggers before the maps marker gets rendered.
+     *
      * @event
      * @blazorProperty 'MarkerRendering'
      */
@@ -383,6 +422,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public markerRendering: EmitType<IMarkerRenderingEventArgs>;
     /**
      * Triggers before the maps marker cluster gets rendered.
+     *
      * @event
      */
     @Event()
@@ -390,6 +430,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Triggers when clicking on the maps marker element.
+     *
      * @event
      * @blazorProperty 'OnMarkerClick'
      */
@@ -398,6 +439,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Triggers when clicking the marker cluster in maps.
+     *
      * @event
      */
     @Event()
@@ -405,6 +447,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Triggers when moving the mouse over the marker cluster element in maps.
+     *
      * @event
      */
     @Event()
@@ -412,6 +455,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Triggers when moving the mouse over the marker element in maps.
+     *
      * @event
      * @blazorProperty 'OnMarkerMouseMove'
      */
@@ -420,6 +464,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Triggers before the data-label gets rendered.
+     *
      * @event
      * @blazorProperty 'DataLabelRendering'
      */
@@ -428,6 +473,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Triggers before the bubble element gets rendered on the map.
+     *
      * @event
      * @blazorProperty 'BubbleRendering'
      */
@@ -436,6 +482,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Triggers when performing the click operation on the bubble element in maps.
+     *
      * @event
      * @blazorProperty 'OnBubbleClick'
      */
@@ -444,6 +491,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Triggers when hovering the mouse on the bubble element in maps.
+     *
      * @event
      * @blazorProperty 'OnBubbleMouseMove'
      */
@@ -452,6 +500,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Triggers after the animation completed in the maps component.
+     *
      * @event
      * @blazorProperty 'AnimationCompleted'
      */
@@ -460,6 +509,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Triggers before rendering the annotation in maps.
+     *
      * @event
      * @blazorProperty 'AnnotationRendering'
      */
@@ -468,6 +518,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Triggers before the zoom operations in the maps such as zoom in and zoom out.
+     *
      * @event
      * @blazorProperty 'OnZoom'
      */
@@ -476,6 +527,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Triggers before performing the panning operation.
+     *
      * @event
      * @blazorProperty 'OnPan'
      */
@@ -485,16 +537,20 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     // Internal properties declaration area.
     /**
      * Specifies the function to format the text contents in the maps.
+     *
      * @private
      */
-    public formatFunction: Function;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public formatFunction: any;
     /**
      * Specifies the svg renderer object.
+     *
      * @private
      */
     public renderer: SvgRenderer;
     /**
      * Specifies the svg element's object of maps.
+     *
      * @private
      */
     public svgObject: Element;
@@ -502,28 +558,33 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public mapScaleValue: number;
     /**
      * Specifies the available height and width of maps.
+     *
      * @private
      */
     public availableSize: Size;
 
     /**
      * Specifies the localization object.
+     *
      * @private
      */
     public localeObject: L10n;
     /**
      * Specifies the default values of localization values.
      */
-    private defaultLocalConstants: Object;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private defaultLocalConstants: any;
 
     /**
      * Internal use of internationalization instance.
+     *
      * @private
      */
     public intl: Internationalization;
 
     /**
      * Check layer whether is geometry or tile
+     *
      * @private
      */
     public isTileMap: boolean = false;
@@ -577,11 +638,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public totalRect: Rect;
     /**
-     * Specifies whether the shape is selected in the maps or not..
+     * Specifies whether the shape is selected in the maps or not.
      */
     public get isShapeSelected(): boolean {
         return this.mapSelect;
-    };
+    }
     public dataLabel: DataLabel;
     /** @private */
     public isTouch: boolean;
@@ -596,7 +657,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /** @private */
     public baseMapBounds: GeoLocation;
     /** @private */
-    public baseMapRectBounds: Object;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public baseMapRectBounds: any;
     /** @public */
     public translatePoint: Point = new Point(0, 0);
     /** @private */
@@ -636,6 +698,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /** @private */
     public translateType: string;
     /** @public */
+    // eslint-disable-next-line @typescript-eslint/ban-types
     public previousProjection: String;
     /** @private */
     public currentShapeDataLength: number;
@@ -644,6 +707,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /** @private */
     public baseTileTranslatePoint: Point = new Point(0, 0);
     /** @private */
+    // eslint-disable-next-line @typescript-eslint/ban-types
     public isDevice: Boolean = false;
     /** @private */
     public tileZoomLevel: number;
@@ -652,7 +716,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /** @private */
     public staticMapZoom: number = this.zoomSettings.enable ? this.zoomSettings.zoomFactor : 0;
     /** @private */
-    public serverProcess: Object;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public serverProcess: any;
     /** @private */
     public previousScale: number;
     /** @private */
@@ -675,9 +740,13 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public zoomNotApplied: boolean = false;
     /** @public */
     public dataLabelShape: number[] = [];
+    // eslint-disable-next-line @typescript-eslint/ban-types
     public zoomShapeCollection: object[] = [];
+    // eslint-disable-next-line @typescript-eslint/ban-types
     public zoomLabelPositions: object[] = [];
+    // eslint-disable-next-line @typescript-eslint/ban-types
     public mouseDownEvent: Object = { x: null, y: null };
+    // eslint-disable-next-line @typescript-eslint/ban-types
     public mouseClickEvent: Object = { x: null, y: null };
     /** @private */
     public isBlazor: boolean;
@@ -702,7 +771,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /** @private */
     public selectedLegendElementId: number[] = [];
     /** @private */
-    public legendSelectionCollection: object[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public legendSelectionCollection: any[] = [];
     /** @private */
     public shapeSelections: boolean = true;
     /** @private */
@@ -732,21 +802,28 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /** @private */
     public applyZoomReset: boolean = false;
     /** @private */
-  public markerClusterExpandCheck: boolean = false;
-  /** @private */
-  public markerClusterExpand: boolean = false;
-  /** @private */
-  public shapeSelectionItem: object[] = [];
+    public markerClusterExpandCheck: boolean = false;
+    /** @private */
+    public markerClusterExpand: boolean = false;
+    /** @private */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public shapeSelectionItem: any[] = [];
 
     /**
      * Constructor for creating the widget
+     *
+     * @param {MapsModel} options Specifies the options
+     * @param {string | HTMLElement} element Specifies the element
      */
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(options?: MapsModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
         setValue('mergePersistData', this.mergePersistMapsData, this);
     }
     /**
      * To manage persist maps data
+     *
+     * @returns {void}
      */
     private mergePersistMapsData(): void {
         let data: string;
@@ -754,10 +831,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             data = window.localStorage.getItem(this.getModuleName() + this.element.id);
         }
         if (!(isNullOrUndefined(data) || (data === ''))) {
-            let dataObj: Maps = JSON.parse(data);
-            let keys: string[] = Object.keys(dataObj);
+            const dataObj: Maps = JSON.parse(data);
+            const keys: string[] = Object.keys(dataObj);
             this.isProtectedOnChange = true;
-            for (let key of keys) {
+            for (const key of keys) {
                 if ((typeof this[key] === 'object') && !isNullOrUndefined(this[key])) {
                     extend(this[key], dataObj[key]);
                 } else {
@@ -770,14 +847,17 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /**
      * Gets the localized label by locale keyword.
+     *
      * @param  {string} key
-     * @return {string}
+     * @returns {string}
      */
     public getLocalizedLabel(key: string): string {
         return this.localeObject.getConstant(key);
     }
     /**
      * Initializing pre-required values.
+     *
+     * @returns {void}
      */
     protected preRender(): void {
 
@@ -792,6 +872,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To Initialize the control rendering.
+     *
+     * @returns {void}
      */
     protected render(): void {
         this.trigger(load, this.isBlazor ? {} : { maps: this });
@@ -807,9 +889,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         this.renderComplete();
     }
 
-    /* tslint:disable:no-string-literal */
     protected processRequestJsonData(): void {
-        let length: number = this.layersCollection.length - 1;
+        const length: number = this.layersCollection.length - 1;
         this.serverProcess = { request: 0, response: 0 }; let queryModule: Query;
         let localAjax: MapAjax; let ajaxModule: Ajax; let dataModule: DataManager;
         Array.prototype.forEach.call(this.layersCollection, (layer: LayerSettings, layerIndex: number) => {
@@ -817,52 +898,63 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 this.serverProcess['request']++;
                 dataModule = layer.shapeData;
                 queryModule = layer.query instanceof Query ? layer.query : this.isBlazor ? (new Query().requiresCount()) : new Query();
-                let dataManager: Promise<Object> = dataModule.executeQuery(queryModule);
-                dataManager.then((e: object) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const dataManager: Promise<any> = dataModule.executeQuery(queryModule);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                dataManager.then((e: any) => {
                     this.processResponseJsonData('DataManager', e, layer, 'ShapeData');
                 });
             } else if (layer.shapeData instanceof MapAjax || layer.shapeData) {
                 if (!isNullOrUndefined(layer.shapeData['dataOptions'])) {
                     this.processAjaxRequest(layer, layer.shapeData, 'ShapeData');
                 }
-              }
+            }
             if (layer.dataSource instanceof DataManager) {
                 this.serverProcess['request']++;
                 dataModule = layer.dataSource as DataManager;
                 queryModule = layer.query instanceof Query ? layer.query : this.isBlazor ? (new Query().requiresCount()) : new Query();
-                let dataManager: Promise<Object> = dataModule.executeQuery(queryModule);
-                dataManager.then((e: object) => {
-                  layer.dataSource = processResult(e) as Object[];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const dataManager: Promise<any> = dataModule.executeQuery(queryModule);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                dataManager.then((e: any) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    layer.dataSource = processResult(e) as any[];
                 });
             }
             if (layer.markerSettings.length > 0) {
                 for (let i: number = 0; i < layer.markerSettings.length; i++) {
-                  if (layer.markerSettings[i].dataSource instanceof DataManager) {
-                    this.serverProcess['request']++;
-                    dataModule = layer.markerSettings[i].dataSource as DataManager;
-                    queryModule = layer.markerSettings[i].query instanceof Query ? layer.markerSettings[i].query : this.isBlazor ?
-                    (new Query().requiresCount()) : new Query();
-                    let dataManager: Promise<Object> = dataModule.executeQuery(queryModule);
-                    dataManager.then((e: object) => {
-                      layer.markerSettings[i].dataSource = processResult(e) as Object[];
-                    });
-                  }
+                    if (layer.markerSettings[i].dataSource instanceof DataManager) {
+                        this.serverProcess['request']++;
+                        dataModule = layer.markerSettings[i].dataSource as DataManager;
+                        queryModule = layer.markerSettings[i].query instanceof Query ? layer.markerSettings[i].query : this.isBlazor ?
+                            (new Query().requiresCount()) : new Query();
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const dataManager: Promise<any> = dataModule.executeQuery(queryModule);
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        dataManager.then((e: any) => {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            layer.markerSettings[i].dataSource = processResult(e) as any[];
+                        });
+                    }
                 }
-              }
+            }
             if (layer.bubbleSettings.length > 0) {
                 for (let i: number = 0; i < layer.bubbleSettings.length; i++) {
-                  if (layer.bubbleSettings[i].dataSource instanceof DataManager) {
-                    this.serverProcess['request']++;
-                    dataModule = layer.bubbleSettings[i].dataSource as DataManager;
-                    queryModule = layer.bubbleSettings[i].query instanceof Query ? layer.bubbleSettings[i].query : this.isBlazor ?
-                    (new Query().requiresCount()) : new Query();
-                    let dataManager: Promise<Object> = dataModule.executeQuery(queryModule);
-                    dataManager.then((e: object) => {
-                      layer.bubbleSettings[i].dataSource = processResult(e) as Object[];
-                    });
-                  }
+                    if (layer.bubbleSettings[i].dataSource instanceof DataManager) {
+                        this.serverProcess['request']++;
+                        dataModule = layer.bubbleSettings[i].dataSource as DataManager;
+                        queryModule = layer.bubbleSettings[i].query instanceof Query ? layer.bubbleSettings[i].query : this.isBlazor ?
+                            (new Query().requiresCount()) : new Query();
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const dataManager: Promise<any> = dataModule.executeQuery(queryModule);
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        dataManager.then((e: any) => {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            layer.bubbleSettings[i].dataSource = processResult(e) as any[];
+                        });
+                    }
                 }
-              }
+            }
             if (layer.dataSource instanceof MapAjax || !isNullOrUndefined(layer.dataSource['dataOptions'])) {
                 this.processAjaxRequest(layer, layer.dataSource, 'DataSource');
             }
@@ -871,11 +963,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             }
         });
     }
-    // tslint:disable:no-any
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     private processAjaxRequest(layer: LayerSettings, localAjax: MapAjax | any, type: string): void {
-        let ajaxModule: Ajax;
         this.serverProcess['request']++;
-        ajaxModule = new Ajax(localAjax.dataOptions, localAjax.type, localAjax.async, localAjax.contentType);
+        const ajaxModule: Ajax = new Ajax(localAjax.dataOptions, localAjax.type, localAjax.async, localAjax.contentType);
         ajaxModule.onSuccess = (args: string) => {
             this.processResponseJsonData('Ajax', args, layer, type);
         };
@@ -883,23 +974,26 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /**
      * This method is used to process the JSON data to render the maps.
+     *
      * @param processType - Specifies the process type in maps.
      * @param data - Specifies the data for maps.
      * @param layer - Specifies the layer for the maps.
      * @param dataType - Specifies the data type for maps.
      */
-    /* tslint:disable:no-eval */
-    public processResponseJsonData(processType: string, data?: object | string, layer?: LayerSettings, dataType?: string): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public processResponseJsonData(processType: string, data?: any | string, layer?: LayerSettings, dataType?: string): void {
         this.serverProcess['response']++;
         if (processType) {
             if (dataType === 'ShapeData') {
-                layer.shapeData = (processType === 'DataManager') ? processResult((data as object)) : JSON.parse(data as string);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                layer.shapeData = (processType === 'DataManager') ? processResult((data as any)) : JSON.parse(data as string);
             } else {
-                layer.dataSource = (processType === 'DataManager') ? processResult((data as object)) : JSON.parse('[' + data + ']')[0];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                layer.dataSource = (processType === 'DataManager') ? processResult((data as any)) : JSON.parse('[' + data + ']')[0];
             }
         }
         if (!isNullOrUndefined(processType) && this.serverProcess['request'] === this.serverProcess['response']) {
-            let collection: LayerSettings[] = this.layersCollection;
+            const collection: LayerSettings[] = this.layersCollection;
             this.layersCollection = [];
             for (let i: number = 0; i < collection.length; i++) {
                 if (collection[i].isBaseLayer) {
@@ -917,13 +1011,12 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
 
-    /* tslint:disable:max-func-body-length */
     private renderMap(): void {
         if (this.legendModule && this.legendSettings.visible) {
             if (!this.isTileMap) {
                 this.legendModule.renderLegend();
             } else {
-                let layerCount: number = this.layersCollection.length - 1;
+                const layerCount: number = this.layersCollection.length - 1;
                 if (!this.layersCollection[layerCount].isBaseLayer) {
                     this.isTileMapSubLayer = true;
                     this.legendModule.renderLegend();
@@ -943,9 +1036,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         for (let i: number = 0; i < this.layers.length; i++) {
             if (this.layers[i].selectionSettings && this.layers[i].selectionSettings.enable &&
                 this.layers[i].initialShapeSelection.length > 0 && this.checkInitialRender) {
-                let checkSelection: boolean = this.layers[i].selectionSettings.enableMultiSelect;
+                const checkSelection: boolean = this.layers[i].selectionSettings.enableMultiSelect;
                 this.layers[i].selectionSettings.enableMultiSelect = checkSelection ? checkSelection : true;
-                let shapeSelection: InitialShapeSelectionSettingsModel[] = this.layers[i].initialShapeSelection;
+                const shapeSelection: InitialShapeSelectionSettingsModel[] = this.layers[i].initialShapeSelection;
                 for (let j: number = 0; j < this.layers[i].initialShapeSelection.length; j++) {
                     this.shapeSelection(i, shapeSelection[j].shapePath, shapeSelection[j].shapeValue, true);
                 }
@@ -955,28 +1048,28 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             for (let k : number = 0; k < this.layers[i].markerSettings.length; k++) {
                 if (this.layers[i].markerSettings[k].selectionSettings && this.layers[i].markerSettings[k].selectionSettings.enable
                     && this.layers[i].markerSettings[k].initialMarkerSelection.length > 0) {
-                        let markerSelectionValues : InitialMarkerSelectionSettingsModel[] =
+                    const markerSelectionValues : InitialMarkerSelectionSettingsModel[] =
                         this.layers[i].markerSettings[k].initialMarkerSelection;
-                        for (let j : number = 0; j < markerSelectionValues.length; j++) {
-                            this.markerInitialSelection(i, k, this.layers[i].markerSettings[k], markerSelectionValues[j].latitude,
-                                                        markerSelectionValues[j].longitude);
-                        }
+                    for (let j : number = 0; j < markerSelectionValues.length; j++) {
+                        this.markerInitialSelection(i, k, this.layers[i].markerSettings[k], markerSelectionValues[j].latitude,
+                                                    markerSelectionValues[j].longitude);
                     }
+                }
             }
         }
         if (!isNullOrUndefined(document.getElementById(this.element.id + '_tile_parent'))) {
-            let svg: ClientRect = this.svgObject.getBoundingClientRect();
-            let element: HTMLElement = document.getElementById(this.element.id);
-            let tileElement: HTMLElement = document.getElementById(this.element.id + '_tile_parent');
-            let tileElement1: HTMLElement = document.getElementById(this.element.id + '_tiles');
-            let tile: ClientRect = tileElement.getBoundingClientRect();
+            const svg: ClientRect = this.svgObject.getBoundingClientRect();
+            const element: HTMLElement = document.getElementById(this.element.id);
+            const tileElement: HTMLElement = document.getElementById(this.element.id + '_tile_parent');
+            const tileElement1: HTMLElement = document.getElementById(this.element.id + '_tiles');
+            const tile: ClientRect = tileElement.getBoundingClientRect();
             let bottom: number; let top: number; let left: number;
             left = parseFloat(tileElement.style.left) + element.offsetLeft;
-            let titleTextSize: Size = measureText(
+            const titleTextSize: Size = measureText(
                 this.titleSettings.text,
                 this.titleSettings.textStyle
             );
-            let subTitleTextSize: Size = measureText(
+            const subTitleTextSize: Size = measureText(
                 this.titleSettings.subtitleSettings.text,
                 this.titleSettings.subtitleSettings.textStyle
             );
@@ -1011,7 +1104,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
         this.arrangeTemplate();
 
-        let blazor: void = this.isBlazor ? this.blazorTemplates() : null;
+        const blazor: void = this.isBlazor ? this.blazorTemplates() : null;
 
         if (this.annotationsModule) {
             if (this.width !== '0px' && this.height !== '0px' && this.width !== '0%' && this.height !== '0%') {
@@ -1030,18 +1123,26 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * @private
      * To apply color to the initial selected marker
+     *
+     * @param {SelectionSettingsModel} selectionSettings - Specifies the selection settings
+     * @param {Maps} map - Specifies the instance of the maps
+     * @param {Element} targetElement - Specifies the target element
+     * @param {any} data - Specifies the data
+     * @returns {void}
+     * @private
      */
     public markerSelection(
         selectionSettings : SelectionSettingsModel, map : Maps, targetElement : Element,
-        data : object
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data : any
     ) : void {
-        let border : BorderModel = {
+        const border : BorderModel = {
             color: selectionSettings.border.color,
             width: selectionSettings.border.width / map.scale
         };
-        let markerSelectionProperties : object = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const markerSelectionProperties : any = {
             opacity: selectionSettings.opacity,
             fill: selectionSettings.fill,
             border: border,
@@ -1065,20 +1166,27 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
     /**
-     * @private
      * initial selection of marker
      *
+     * @param {number} layerIndex - Specifies the layer index
+     * @param {number} markerIndex - Specifies the marker index
+     * @param {MarkerSettingsModel} markerSettings - Specifies the marker settings
+     * @param {number} latitude - Specifies hte latitude
+     * @param {number} longitude - Specifies the longitude
+     * @returns {void}
+     * @private
      */
     public markerInitialSelection(
         layerIndex : number, markerIndex : number, markerSettings : MarkerSettingsModel,
         latitude : number, longitude : number
     ): void {
-        let selectionSettings : SelectionSettingsModel = markerSettings.selectionSettings;
+        const selectionSettings : SelectionSettingsModel = markerSettings.selectionSettings;
         if (selectionSettings.enable) {
             for (let i : number = 0; i < markerSettings.dataSource['length']; i++) {
-                let data: Object = markerSettings.dataSource[i];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const data: any = markerSettings.dataSource[i];
                 if (data['latitude'] === latitude && data['longitude'] === longitude) {
-                    let targetId : string = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex +
+                    const targetId : string = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex +
                     '_dataIndex_' + i;
                     this.markerSelection(selectionSettings, this, getElement(targetId), data);
                 }
@@ -1088,22 +1196,25 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To append blazor templates
+     *
+     * @returns {void}
      * @private
      */
     public blazorTemplates(): void {
         for (let i: number = 0; i < this.layers.length; i++) {
-            let markerLength: number = this.layers[i].markerSettings.length - 1;
+            const markerLength: number = this.layers[i].markerSettings.length - 1;
             if (markerLength >= 0) {
                 if (this.layers[i].dataLabelSettings.visible || this.layers[i].markerSettings[markerLength].template) {
                     updateBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate', this.layers[i].dataLabelSettings);
                     for (let j: number = 0; j < this.layers[i].markerSettings.length; j++) {
-                        let markerRendered: Function = () => {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const markerRendered: any = () => {
                             for (let x: number = 0; x < this.layers.length; x++) {
-                                let markerTemplateEle: HTMLElement =
+                                const markerTemplateEle: HTMLElement =
                                     document.getElementById(this.element.id + '_LayerIndex_' + x + '_Markers_Template_Group');
                                 if (!isNullOrUndefined(markerTemplateEle)) {
                                     for (let z : number = 0; z < markerTemplateEle.childElementCount; z++) {
-                                        let markerTemplate: Element = <Element>markerTemplateEle.childNodes[z];
+                                        const markerTemplate: Element = <Element>markerTemplateEle.childNodes[z];
                                         markerTemplate['style']['transform'] = 'translate(-50%, -50%)';
                                     }
                                 }
@@ -1119,12 +1230,14 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Render the map area border
+     *
+     * @returns {void}
      */
     private renderArea(): void {
-        let width: number = this.mapsArea.border.width;
-        let background: string = this.mapsArea.background;
+        const width: number = this.mapsArea.border.width;
+        const background: string = this.mapsArea.background;
         if (width > 0 || (background || this.themeStyle.areaBackgroundColor)) {
-            let rect: RectOption = new RectOption(
+            const rect: RectOption = new RectOption(
                 this.element.id + '_MapAreaBorder', background || this.themeStyle.areaBackgroundColor,
                 this.mapsArea.border, 1, this.mapAreaRect
             );
@@ -1133,6 +1246,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /**
      * To add tab index for map element
+     *
+     * @returns {void}
      */
     private addTabIndex(): void {
         this.element.setAttribute('aria-label', this.description || 'Maps Element');
@@ -1155,16 +1270,16 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             this.zoomModule.layerCollectionEle = getElementByID(this.element.id + '_Layer_Collections');
         }
         if (this.isTileMap && getElementByID(this.element.id + '_Tile_SVG') && getElementByID(this.element.id + '_tile_parent')) {
-            let tileRect: ClientRect = getElementByID(this.element.id + '_tile_parent').getBoundingClientRect();
-            let tileSvgRect: ClientRect = getElementByID(this.element.id + '_Tile_SVG').getBoundingClientRect();
+            const tileRect: ClientRect = getElementByID(this.element.id + '_tile_parent').getBoundingClientRect();
+            const tileSvgRect: ClientRect = getElementByID(this.element.id + '_Tile_SVG').getBoundingClientRect();
             left = (tileRect.left - tileSvgRect.left);
             top = (tileRect.top - tileSvgRect.top);
             (getElementByID(this.element.id + '_Tile_SVG_Parent') as HTMLElement).style.left = left + 'px';
             (getElementByID(this.element.id + '_Tile_SVG_Parent') as HTMLElement).style.top = top + 'px';
-            let markerTemplateElements: HTMLCollectionOf<Element> = document.getElementsByClassName('template');
+            const markerTemplateElements: HTMLCollectionOf<Element> = document.getElementsByClassName('template');
             if (!isNullOrUndefined(markerTemplateElements) && markerTemplateElements.length > 0) {
                 for (let i: number = 0; i < markerTemplateElements.length; i++) {
-                    let templateGroupEle: HTMLElement = markerTemplateElements[i] as HTMLElement;
+                    const templateGroupEle: HTMLElement = markerTemplateElements[i] as HTMLElement;
                     templateGroupEle.style.left = left + 'px';
                     templateGroupEle.style.top = top + 'px';
                 }
@@ -1174,14 +1289,14 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             if (this.zoomModule && this.zoomModule.toolBarGroup && this.zoomSettings.enable) {
                 this.zoomModule.alignToolBar();
             }
-            let elements: Element = document.getElementById(this.element.id + '_Layer_Collections');
+            const elements: Element = document.getElementById(this.element.id + '_Layer_Collections');
             if (!isNullOrUndefined(elements) && elements.childElementCount > 0) {
                 for (let i: number = 0; i < elements.childNodes.length; i++) {
-                    let childElement: SVGAElement = elements.childNodes[i] as SVGAElement;
+                    const childElement: SVGAElement = elements.childNodes[i] as SVGAElement;
                     if (childElement.tagName === 'g') {
-                        let layerIndex: number = parseFloat(childElement.id.split('_LayerIndex_')[1].split('_')[0]);
+                        const layerIndex: number = parseFloat(childElement.id.split('_LayerIndex_')[1].split('_')[0]);
                         for (let j: number = 0; j < childElement.childNodes.length; j++) {
-                            let childNode: Element = <Element>childElement.childNodes[j];
+                            const childNode: Element = <Element>childElement.childNodes[j];
                             if (!(childNode.id.indexOf('_Markers_Group') > -1) &&
                                 (!(childNode.id.indexOf('_bubble_Group') > -1)) &&
                                 (!(childNode.id.indexOf('_dataLableIndex_Group') > -1))) {
@@ -1199,7 +1314,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     private createSecondaryElement(): void {
         if (isNullOrUndefined(document.getElementById(this.element.id + '_Secondary_Element'))) {
-            let secondaryElement: Element = createElement('div', {
+            const secondaryElement: Element = createElement('div', {
                 id: this.element.id + '_Secondary_Element',
                 styles: 'position: absolute;z-index:2;'
             });
@@ -1208,26 +1323,27 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
+     * @returns {void}
      * @private
      */
     public arrangeTemplate(): void {
         if (document.getElementById(this.element.id + '_Legend_Border')) {
             document.getElementById(this.element.id + '_Legend_Border').style.pointerEvents = 'none';
         }
-        let templateElements: HTMLCollectionOf<Element> = document.getElementsByClassName(this.element.id + '_template');
+        const templateElements: HTMLCollectionOf<Element> = document.getElementsByClassName(this.element.id + '_template');
         if (!isNullOrUndefined(templateElements) && templateElements.length > 0 &&
             getElementByID(this.element.id + '_Layer_Collections') && this.layers[this.layers.length - 1].layerType !== 'OSM') {
             for (let i: number = 0; i < templateElements.length; i++) {
-                let templateGroupEle: Element = templateElements[i] as Element;
+                const templateGroupEle: Element = templateElements[i] as Element;
                 if (!isNullOrUndefined(templateGroupEle) && templateGroupEle.childElementCount > 0) {
-                    let layerOffset: ClientRect = getElementByID(this.element.id + '_Layer_Collections').getBoundingClientRect();
-                    let elementOffset: ClientRect = getElementByID(templateGroupEle.id).getBoundingClientRect();
-                    let offSetLetValue: number = this.isTileMap ? 0 : (layerOffset.left < elementOffset.left) ?
+                    const layerOffset: ClientRect = getElementByID(this.element.id + '_Layer_Collections').getBoundingClientRect();
+                    const elementOffset: ClientRect = getElementByID(templateGroupEle.id).getBoundingClientRect();
+                    const offSetLetValue: number = this.isTileMap ? 0 : (layerOffset.left < elementOffset.left) ?
                         -(Math.abs(elementOffset.left - layerOffset.left)) : (Math.abs(elementOffset.left - layerOffset.left));
-                    let offSetTopValue: number = this.isTileMap ? 0 : (layerOffset.top < elementOffset.top) ?
+                    const offSetTopValue: number = this.isTileMap ? 0 : (layerOffset.top < elementOffset.top) ?
                         - (Math.abs(elementOffset.top - layerOffset.top)) : Math.abs(elementOffset.top - layerOffset.top);
                     for (let j: number = 0; j < templateGroupEle.childElementCount; j++) {
-                        let currentTemplate: HTMLElement = <HTMLElement>templateGroupEle.childNodes[j];
+                        const currentTemplate: HTMLElement = <HTMLElement>templateGroupEle.childNodes[j];
                         currentTemplate.style.left = parseFloat(currentTemplate.style.left) + offSetLetValue + 'px';
                         currentTemplate.style.top = parseFloat(currentTemplate.style.top) + offSetTopValue + 'px';
                         currentTemplate.style.transform = 'translate(-50%, -50%)';
@@ -1238,8 +1354,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     private createTile(): void {
-        let mainLayer: LayerSettings = this.layersCollection[0];
-        let padding: number = 0;
+        const mainLayer: LayerSettings = this.layersCollection[0];
+        const padding: number = 0;
         if (mainLayer.isBaseLayer && (mainLayer.layerType === 'OSM' || mainLayer.layerType === 'Bing' ||
             mainLayer.layerType === 'GoogleStaticMap' || mainLayer.layerType === 'Google')) {
             if (mainLayer.layerType === 'Google') {
@@ -1248,14 +1364,14 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             removeElement(this.element.id + '_tile_parent');
             removeElement(this.element.id + '_tiles');
             removeElement('animated_tiles');
-            let ele: Element = createElement('div', {
+            const ele: Element = createElement('div', {
                 id: this.element.id + '_tile_parent', styles: 'position: absolute; left: ' +
                     (this.mapAreaRect.x) + 'px; right: ' + (this.margin.right) + 'px; top: '
                     + (this.mapAreaRect.y + padding) + 'px; height: ' +
                     (this.mapAreaRect.height) + 'px; width: '
                     + (this.mapAreaRect.width) + 'px; overflow: hidden;'
             });
-            let ele1: Element = createElement('div', {
+            const ele1: Element = createElement('div', {
                 id: this.element.id + '_tiles', styles: 'position: absolute; left: ' +
                     (this.mapAreaRect.x) + 'px;  right: ' + (this.margin.right) + 'px; top: '
                     + (this.mapAreaRect.y + padding) + 'px; height: ' + (this.mapAreaRect.height) + 'px; width: '
@@ -1269,10 +1385,12 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To initilize the private varibales of maps.
+     *
+     * @returns {void}
      */
     private initPrivateVariable(): void {
         if (this.element.id === '') {
-            let collection: number = document.getElementsByClassName('e-maps').length;
+            const collection: number = document.getElementsByClassName('e-maps').length;
             this.element.id = 'maps_control_' + collection;
         }
         this.renderer = new SvgRenderer(this.element.id);
@@ -1280,14 +1398,16 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     private findBaseAndSubLayers(): void {
-        let baseIndex: number = this.baseLayerIndex;
-        let mainLayers: Object[] = []; let subLayers: Object[] = [];
+        const baseIndex: number = this.baseLayerIndex;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mainLayers: any[] = []; const subLayers: any[] = [];
         this.layersCollection = [];
         Array.prototype.forEach.call(this.layers, (layer: LayerSettingsModel) => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             (layer.type === 'Layer') ? mainLayers.push(layer) : subLayers.push(layer);
         });
         for (let i: number = 0; i < mainLayers.length; i++) {
-            let baseLayer: LayerSettings = <LayerSettings>mainLayers[i];
+            const baseLayer: LayerSettings = <LayerSettings>mainLayers[i];
             if (baseLayer.visible && baseIndex === i) {
                 baseLayer.isBaseLayer = true;
                 this.isTileMap = (baseLayer.layerType === 'Geometry') ? false : true;
@@ -1306,14 +1426,16 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * @private
      * Render the map border
+     *
+     * @private
+     * @returns {void}
      */
     private renderBorder(): void {
-        let width: number = this.border.width;
-        let borderElement: Element = this.svgObject.querySelector('#' + this.element.id + '_MapBorder');
+        const width: number = this.border.width;
+        const borderElement: Element = this.svgObject.querySelector('#' + this.element.id + '_MapBorder');
         if ((width > 0 || (this.background || this.themeStyle.backgroundColor)) && isNullOrUndefined(borderElement)) {
-            let borderRect: RectOption = new RectOption(
+            const borderRect: RectOption = new RectOption(
                 this.element.id + '_MapBorder', this.background || this.themeStyle.backgroundColor, this.border, 1,
                 new Rect(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width));
             this.svgObject.appendChild(this.renderer.drawRectangle(borderRect) as SVGRectElement);
@@ -1323,29 +1445,35 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * @private
      * Render the title and subtitle
+     *
+     * @param {TitleSettingsModel} title - Specifies the title
+     * @param {string} type - Specifies the type
+     * @param {Rect} bounds - Specifies the bounds
+     * @param {Element} groupEle - Specifies the group element
+     * @returns {void}
+     * @private
      */
     private renderTitle(title: TitleSettingsModel, type: string, bounds: Rect, groupEle: Element): void {
-        let style: FontModel = title.textStyle;
+        const style: FontModel = title.textStyle;
         let height: number;
-        let width: number = Math.abs((this.margin.left + this.margin.right) - this.availableSize.width);
+        const width: number = Math.abs((this.margin.left + this.margin.right) - this.availableSize.width);
         style.fontFamily = this.themeStyle.fontFamily || style.fontFamily;
         style.size = this.themeStyle.titleFontSize || style.size;
         if (title.text) {
             if (isNullOrUndefined(groupEle)) {
                 groupEle = this.renderer.createGroup({ id: this.element.id + '_Title_Group' });
             }
-            let trimmedTitle: string = textTrim(width, title.text, style);
-            let elementSize: Size = measureText(trimmedTitle, style);
-            let rect: Rect = (isNullOrUndefined(bounds)) ? new Rect(
+            const trimmedTitle: string = textTrim(width, title.text, style);
+            const elementSize: Size = measureText(trimmedTitle, style);
+            const rect: Rect = (isNullOrUndefined(bounds)) ? new Rect(
                 this.margin.left, this.margin.top, this.availableSize.width, this.availableSize.height) : bounds;
-            let location: Point = findPosition(rect, title.alignment, elementSize, type);
-            let options: TextOption = new TextOption(
+            const location: Point = findPosition(rect, title.alignment, elementSize, type);
+            const options: TextOption = new TextOption(
                 this.element.id + '_Map_' + type, location.x, location.y, 'start', trimmedTitle
             );
-            let titleBounds: Rect = new Rect(location.x, location.y, elementSize.width, elementSize.height);
-            let element: Element = renderTextElement(
+            const titleBounds: Rect = new Rect(location.x, location.y, elementSize.width, elementSize.height);
+            const element: Element = renderTextElement(
                 options, style, style.color || (type === 'title' ? this.themeStyle.titleFontColor : this.themeStyle.subTitleFontColor),
                 groupEle
             );
@@ -1368,6 +1496,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To create svg element for maps
+     *
+     * @returns {void}
      */
     private createSVG(): void {
         resetBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate');
@@ -1381,6 +1511,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /**
      * To Remove the SVG
+     *
+     * @returns {void}
      */
     private removeSvg(): void {
         for (let i: number = 0; i < this.annotations.length; i++) {
@@ -1401,6 +1533,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /**
      * To bind event handlers for maps.
+     *
+     * @returns {void}
      */
     private wireEVents(): void {
         //let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
@@ -1421,6 +1555,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To unbind event handlers from maps.
+     *
+     * @returns {void}
      */
     private unWireEVents(): void {
         //let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
@@ -1439,6 +1575,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /**
      * This method is used to perform operations when mouse pointer leave from maps.
+     *
      * @param e - Specifies the pointer event on maps.
      */
     public mouseLeaveOnMap(e: PointerEvent): void {
@@ -1450,8 +1587,12 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Gets the selected element to be maintained or not.
+     *
+     * @param {Element} targetEle - Specifies the target element
+     * @returns {boolean} - Returns the boolean value
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public SelectedElement(targetEle : Element) : boolean {
         let isSelect : boolean = false;
         if (targetEle.getAttribute('class') === 'ShapeselectionMapStyle') {
@@ -1461,15 +1602,16 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /**
      * This method is used to perform the operations when a click operation is performed on maps.
+     *
      * @param e - Specifies the pointer event on maps.
      * @blazorProperty 'PerformClick'
      */
-    /* tslint:disable:no-string-literal */
     public mapsOnClick(e: PointerEvent): void {
-        let targetEle: Element = <Element>e.target;
-        let targetId: string = targetEle.id;
+        const targetEle: Element = <Element>e.target;
+        const targetId: string = targetEle.id;
         let layerIndex: number = 0;
-        let latLongValue: Object;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let latLongValue: any;
         let latitude: number = null; let longitude: number = null;
         this.mouseClickEvent = { x: e.x, y: e.y };
         if (targetEle.id.indexOf('_ToolBar') === -1) {
@@ -1478,9 +1620,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 layerIndex = parseFloat(targetId.split('_LayerIndex_')[1].split('_')[0]);
                 if (this.layers[layerIndex].geometryType === 'Normal') {
                     if (targetId.indexOf('_shapeIndex_') > -1) {
-                        let location: MapLocation = getMousePosition(e.pageX, e.pageY, (e.target as any).parentElement);
-                        let minLongitude: number = Math.abs((-this.baseMapBounds.longitude.min) * this.mapLayerPanel.currentFactor);
-                        let minLatitude: number = Math.abs(this.baseMapBounds.latitude.max * this.mapLayerPanel.currentFactor);
+                        const location: MapLocation = getMousePosition(e.pageX, e.pageY, (e.target as any).parentElement);
+                        const minLongitude: number = Math.abs((-this.baseMapBounds.longitude.min) * this.mapLayerPanel.currentFactor);
+                        const minLatitude: number = Math.abs(this.baseMapBounds.latitude.max * this.mapLayerPanel.currentFactor);
                         latLongValue = {
                             latitude: Math.abs(this.baseMapBounds.latitude.max - (location.y / this.mapLayerPanel.currentFactor)),
                             longitude: Math.abs((location.x / this.mapLayerPanel.currentFactor) + this.baseMapBounds.longitude.min)
@@ -1492,10 +1634,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                             (latLongValue as any).latitude = - (latLongValue as any).latitude;
                         }
                     } else if (targetId.indexOf('_MarkerIndex_') > -1 && this.markerModule) {
-                        let markerIndex: number = parseInt(targetId.split('_MarkerIndex_')[1].split('_')[0], 10);
-                        let dataIndex: number = parseInt(targetId.split('_dataIndex_')[1].split('_')[0], 10);
+                        const markerIndex: number = parseInt(targetId.split('_MarkerIndex_')[1].split('_')[0], 10);
+                        const dataIndex: number = parseInt(targetId.split('_dataIndex_')[1].split('_')[0], 10);
                         if (!isNaN(markerIndex) && !isNaN(dataIndex)) {
-                            let dataObject: any = this.layers[layerIndex].markerSettings[markerIndex].dataSource[dataIndex];
+                            const dataObject: any = this.layers[layerIndex].markerSettings[markerIndex].dataSource[dataIndex];
                             latLongValue = { latitude: dataObject['latitude'], longitude: dataObject.longitude };
                         } else {
                             latLongValue = { latitude: null, longitude: null };
@@ -1510,7 +1652,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 latLongValue = this.getTileGeoLocation(e);
                 latitude = latLongValue['latitude']; longitude = latLongValue['longitude'];
             }
-            let eventArgs: IMouseEventArgs = {
+            const eventArgs: IMouseEventArgs = {
                 cancel: false, name: click, target: targetId, x: e.clientX, y: e.clientY,
                 latitude: latitude, longitude: longitude, isShapeSelected : this.SelectedElement(targetEle)
             };
@@ -1537,9 +1679,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     this.notify(click, targetEle);
                 }
                 if (!eventArgs.cancel && targetEle.id.indexOf('shapeIndex') !== -1) {
-                    let layerIndex: number = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
-                    let shapeSelectedEventArgs : IShapeSelectedEventArgs = triggerShapeEvent
-                    (
+                    const layerIndex: number = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
+                    const shapeSelectedEventArgs : IShapeSelectedEventArgs = triggerShapeEvent(
                         targetId, this.layers[layerIndex].selectionSettings, this, shapeSelected
                     );
                     if (!shapeSelectedEventArgs.cancel && this.selectionModule && !isNullOrUndefined(this.shapeSelected)) {
@@ -1557,17 +1698,18 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * This method is used to perform operations when mouse click on maps.
+     *
      * @param e - Specifies the pointer event on maps.
      */
     public mouseEndOnMap(e: PointerEvent): boolean {
-        let targetEle: Element = <Element>e.target;
-        let targetId: string = targetEle.id;
+        const targetEle: Element = <Element>e.target;
+        const targetId: string = targetEle.id;
         let pageX: number;
         let pageY: number;
         let target: Element;
         let touchArg: TouchEvent;
-        let rect: ClientRect = this.element.getBoundingClientRect();
-        let element: Element = <Element>e.target;
+        const rect: ClientRect = this.element.getBoundingClientRect();
+        const element: Element = <Element>e.target;
         if (e.type.indexOf('touch') !== - 1) {
             this.isTouch = true;
             touchArg = <TouchEvent & PointerEvent>e;
@@ -1592,7 +1734,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /**
      * This method is used to perform operations when mouse is clicked down on maps.
-     * @param e - Specifies the pointer event on maps.
+     *
+     * @param e
      */
     public mouseDownOnMap(e: PointerEvent): void {
         let pageX: number;
@@ -1600,10 +1743,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let target: Element;
         let touchArg: TouchEvent;
         this.mouseDownEvent = { x: e.x, y: e.y };
-        let rect: ClientRect = this.element.getBoundingClientRect();
-        let element: Element = <Element>e.target;
+        const rect: ClientRect = this.element.getBoundingClientRect();
+        const element: Element = <Element>e.target;
         if (element.id.indexOf('_ToolBar') === -1) {
-            let markerModule: Marker = this.markerModule;
+            const markerModule: Marker = this.markerModule;
             if (element.id.indexOf('shapeIndex') > -1 || element.id.indexOf('Tile') > -1) {
                 if (markerModule && (markerModule.sameMarkerData.length > 0) &&
                     (this.zoomModule ? this.zoomModule.isSingleClick : true)) {
@@ -1624,30 +1767,32 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * This method is used to perform operations when performing the double click operation on maps.
+     *
      * @param e - Specifies the pointer event.
      * @blazorProperty 'PerformDoubleClick'
      */
     public mapsOnDoubleClick(e: PointerEvent): void {
         this.notify('dblclick', e);
-        let targetElement: Element = <Element>e.target;
-        let targetId: string = targetElement.id;
+        const targetElement: Element = <Element>e.target;
+        const targetId: string = targetElement.id;
         let layerIndex: number = 0;
-        let latLongValue: Object;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let latLongValue: any;
         let latitude: number = null; let longitude: number = null;
         if (targetElement.id.indexOf('_ToolBar') === -1) {
             if (targetElement.id.indexOf('_LayerIndex_') !== -1 && !this.isTileMap && (this.mouseDownEvent['x'] === e.clientX)
                     && (this.mouseDownEvent['y'] === e.clientY)) {
-                    layerIndex = parseFloat(targetElement.id.split('_LayerIndex_')[1].split('_')[0]);
-                    latLongValue = this.getGeoLocation(layerIndex, e);
-                    latitude = latLongValue['latitude']; longitude = latLongValue['longitude'];
+                layerIndex = parseFloat(targetElement.id.split('_LayerIndex_')[1].split('_')[0]);
+                latLongValue = this.getGeoLocation(layerIndex, e);
+                latitude = latLongValue['latitude']; longitude = latLongValue['longitude'];
             } else if (this.isTileMap && (this.mouseDownEvent['x'] === e.clientX)
                     && (this.mouseDownEvent['y'] === e.clientY)) {
-                    latLongValue = this.getTileGeoLocation(e);
-                    latitude = latLongValue['latitude']; longitude = latLongValue['longitude'];
+                latLongValue = this.getTileGeoLocation(e);
+                latitude = latLongValue['latitude']; longitude = latLongValue['longitude'];
             }
-            let doubleClickArgs: IMouseEventArgs = { cancel: false, name: doubleClick,  x: e.clientX, y: e.clientY,
-            target : targetId, latitude: latitude, longitude: longitude, isShapeSelected : null };
-            let doubleClickBlazorArgs: IMouseEventArgs = { cancel: false, name: doubleClick,  x: e.clientX, y: e.clientY,
+            const doubleClickArgs: IMouseEventArgs = { cancel: false, name: doubleClick,  x: e.clientX, y: e.clientY,
+                target : targetId, latitude: latitude, longitude: longitude, isShapeSelected : null };
+            const doubleClickBlazorArgs: IMouseEventArgs = { cancel: false, name: doubleClick,  x: e.clientX, y: e.clientY,
                 target : targetId, latitude: latitude, longitude: longitude, isShapeSelected : null };
             this.trigger('doubleClick', this.isBlazor ? doubleClickBlazorArgs : doubleClickArgs);
         }
@@ -1655,15 +1800,15 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * This method is used to perform operations while performing mouse over on maps.
+     *
      * @param e - Specifies the pointer event on maps.
      */
-    /* tslint:disable:no-string-literal */
     public mouseMoveOnMap(e: PointerEvent): void {
         let pageX: number;
         let pageY: number;
         let touchArg: TouchEvent;
         let target: Element;
-        let touches: TouchList = null;
+        const touches: TouchList = null;
         target = (e.type === 'touchmove') ? <Element>(<TouchEvent & PointerEvent>e).target :
             target = <Element>e.target;
         // if (target.id.indexOf('shapeIndex') !== -1 && !this.highlightSettings.enable) {
@@ -1681,10 +1826,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /**
      * This method is used to perform operations when mouse move event is performed on maps.
+     *
      * @param e - Specifies the pointer event on maps.
      */
     public onMouseMove(e: PointerEvent): boolean {
-        let element: Element = <Element>e.target;
+        const element: Element = <Element>e.target;
         let pageX: number;
         let pageY: number;
         let target: Element;
@@ -1702,12 +1848,13 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let targetId: string = (<HTMLElement>event.target).id;
         let legendText : string; let page : number = this.legendModule.currentPage;
         let legendIndex : string = (<HTMLElement>event.target).id.split('_Index_')[1];
-        let collection : Object;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let collection : any;
         page = this.legendModule.totalPages.length <= this.legendModule.currentPage
             ? this.legendModule.totalPages.length - 1 : this.legendModule.currentPage < 0 ?
-            0 : this.legendModule.currentPage;
-        let count : number = this.legendModule.totalPages.length !== 0 ?
-        this.legendModule.totalPages[page]['Collection'].length : this.legendModule.totalPages.length;
+                0 : this.legendModule.currentPage;
+        const count : number = this.legendModule.totalPages.length !== 0 ?
+            this.legendModule.totalPages[page]['Collection'].length : this.legendModule.totalPages.length;
         for (let i : number = 0; i < count; i++) {
             collection = this.legendModule.totalPages[page]['Collection'][i];
             legendText = collection['DisplayText'];
@@ -1715,10 +1862,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             legendIndex = event.target['id'].split('_Index_')[1];
             if ((targetId === (this.element.id + '_Legend_Text_Index_' + legendIndex)) &&
         ((<HTMLElement>event.target).textContent.indexOf('...') > -1) && collection['idIndex'] === parseInt(legendIndex, 10)) {
-            showTooltip(
-                legendText, this.legendSettings.textStyle.size, x, y, this.element.offsetWidth, this.element.offsetHeight,
-                this.element.id + '_EJ2_Legend_Text_Tooltip', getElement(this.element.id + '_Secondary_Element'), isTouch
-            );
+                showTooltip(
+                    legendText, this.legendSettings.textStyle.size, x, y, this.element.offsetWidth, this.element.offsetHeight,
+                    this.element.id + '_EJ2_Legend_Text_Tooltip', getElement(this.element.id + '_Secondary_Element'), isTouch
+                );
             }
         }
         if ((targetId !== (this.element.id + '_Legend_Text_Index_' + legendIndex))) {
@@ -1727,7 +1874,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     private titleTooltip(event: Event, x: number, y: number, isTouch?: boolean): void {
-        let targetId: string = (<HTMLElement>event.target).id;
+        const targetId: string = (<HTMLElement>event.target).id;
         if (targetId === (this.element.id + '_LegendTitle') && ((<HTMLElement>event.target).textContent.indexOf('...') === -1)) {
             showTooltip(
                 this.legendSettings.title.text, this.legendSettings.titleStyle.size, x, y, this.element.offsetWidth,
@@ -1750,11 +1897,12 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * This method is used to perform operations while resizing the window.
+     *
      * @param e - Specifies the arguments of window resize event.
      */
     public mapsOnResize(e: Event): boolean {
         this.isResize = true;
-        let args: IResizeEventArgs = {
+        const args: IResizeEventArgs = {
             name: resize,
             previousSize: this.availableSize,
             currentSize: new Size(0, 0),
@@ -1764,7 +1912,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
         }
-        if (this.element.classList.contains('e-maps')) {
+        if (!isNullOrUndefined(this.element) && this.element.classList.contains('e-maps')) {
             this.resizeTo = setTimeout(
                 (): void => {
                     this.unWireEVents();
@@ -1782,22 +1930,24 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * This method is used to zoom the map by specifying the center position.
+     *
      * @param centerPosition - Specifies the center position for maps.
      * @param zoomFactor - Specifies the zoom factor for maps.
      */
     public zoomByPosition(centerPosition: { latitude: number, longitude: number }, zoomFactor: number): void {
-        let factor: number = this.mapLayerPanel.calculateFactor(this.layersCollection[0]);
-        let position: Point; let size: Rect = this.mapAreaRect;
+        const factor: number = this.mapLayerPanel.calculateFactor(this.layersCollection[0]);
+        let position: Point;
+        const size: Rect = this.mapAreaRect;
         if (!this.isTileMap && this.zoomModule) {
             if (!isNullOrUndefined(centerPosition)) {
                 position = convertGeoToPoint(
                     centerPosition.latitude, centerPosition.longitude, factor, this.layersCollection[0], this);
-                let mapRect: ClientRect = document.getElementById(this.element.id + '_Layer_Collections').getBoundingClientRect();
-                let svgRect: ClientRect = this.svgObject.getBoundingClientRect();
-                let xDiff: number = Math.abs(mapRect.left - svgRect.left) / this.scale;
-                let yDiff: number = Math.abs(mapRect.top - svgRect.top) / this.scale;
-                let x: number = this.translatePoint.x + xDiff;
-                let y: number = this.translatePoint.y + yDiff;
+                const mapRect: ClientRect = document.getElementById(this.element.id + '_Layer_Collections').getBoundingClientRect();
+                const svgRect: ClientRect = this.svgObject.getBoundingClientRect();
+                const xDiff: number = Math.abs(mapRect.left - svgRect.left) / this.scale;
+                const yDiff: number = Math.abs(mapRect.top - svgRect.top) / this.scale;
+                const x: number = this.translatePoint.x + xDiff;
+                const y: number = this.translatePoint.y + yDiff;
                 this.scale = zoomFactor;
                 this.translatePoint.x = ((mapRect.left < svgRect.left ? x : 0) + (size.width / 2) - (position.x * zoomFactor)) / zoomFactor;
                 this.translatePoint.y = ((mapRect.top < svgRect.top ? y : 0) + (size.height / 2) - (position.y * zoomFactor)) / zoomFactor;
@@ -1818,24 +1968,25 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * This method is used to perform panning by specifying the direction.
+     *
      * @param direction - Specifies the direction in which the panning is performed.
      * @param mouseLocation - Specifies the location of the mouse pointer in maps.
      */
     public panByDirection(direction: PanDirection, mouseLocation?: PointerEvent | TouchEvent): void {
         let xDiff: number = 0; let yDiff: number = 0;
         switch (direction) {
-            case 'Left':
-                xDiff = -(this.mapAreaRect.width / 7);
-                break;
-            case 'Right':
-                xDiff = (this.mapAreaRect.width / 7);
-                break;
-            case 'Top':
-                yDiff = -(this.mapAreaRect.height / 7);
-                break;
-            case 'Bottom':
-                yDiff = (this.mapAreaRect.height / 7);
-                break;
+        case 'Left':
+            xDiff = -(this.mapAreaRect.width / 7);
+            break;
+        case 'Right':
+            xDiff = (this.mapAreaRect.width / 7);
+            break;
+        case 'Top':
+            yDiff = -(this.mapAreaRect.height / 7);
+            break;
+        case 'Bottom':
+            yDiff = (this.mapAreaRect.height / 7);
+            break;
         }
         if (this.zoomModule) {
             this.zoomModule.panning(direction, xDiff, yDiff, mouseLocation);
@@ -1844,14 +1995,17 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * This method is used to add the layers dynamically to the maps.
+     *
      * @param layer - Specifies the layer for the maps.
      */
+    // eslint-disable-next-line @typescript-eslint/ban-types
     public addLayer(layer: Object): void {
         this.layers.push(new LayerSettings(this.layers[0] as LayerSettings, 'layers', layer));
         this.refresh();
     }
     /**
      * This method is used to remove a layer from map.
+     *
      * @param index - Specifies the index number of the layer to be removed.
      */
     public removeLayer(index: number): void {
@@ -1862,22 +2016,24 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * This method is used to add markers dynamically in the maps.
      * If we provide the index value of the layer in which the marker to be added and the coordinates
      * of the marker as parameters, the marker will be added in the location.
+     *
      * @param layerIndex - Specifies the index number of the layer.
      * @param marker - Specifes the settings of the marker to be added.
      */
     public addMarker(layerIndex: number, markerCollection: MarkerSettingsModel[]): void {
-        let layerEle: Element = document.getElementById(this.element.id + '_LayerIndex_' + layerIndex);
+        const layerEle: Element = document.getElementById(this.element.id + '_LayerIndex_' + layerIndex);
         if (markerCollection.length > 0 && layerEle) {
-            for (let newMarker of markerCollection) {
+            for (const newMarker of markerCollection) {
                 this.layersCollection[layerIndex].markerSettings.push(new MarkerSettings(this, 'markerSettings', newMarker));
             }
-            let markerModule: Marker = new Marker(this);
+            const markerModule: Marker = new Marker(this);
             markerModule.markerRender(layerEle, layerIndex, this.mapLayerPanel['currentFactor'], 'AddMarker');
             this.arrangeTemplate();
         }
     }
     /**
      * This method is used to select the geometric shape element in the maps component.
+     *
      * @param layerIndex - Specifies the index of the layer in maps.
      * @param propertyName - Specifies the property name from the data source.
      * @param name - Specifies the name of the shape that is selected.
@@ -1885,34 +2041,56 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public shapeSelection(layerIndex: number, propertyName: string | string[], name: string, enable?: boolean): void {
         let targetEle: Element;
-        let popertyNameArray: string[] = Array.isArray(propertyName) ? propertyName : Array(propertyName);
+        let subLayerIndex: number;
+        const popertyNameArray: string[] = Array.isArray(propertyName) ? propertyName : Array(propertyName);
         if (isNullOrUndefined(enable)) {
             enable = true;
         }
-        let selectionsettings: SelectionSettingsModel = this.layers[layerIndex].selectionSettings;
+        const selectionsettings: SelectionSettingsModel = this.layers[layerIndex].selectionSettings;
         if (!selectionsettings.enableMultiSelect && this.legendSelection && enable) {
             this.removeShapeSelection();
+        }
+        if (this.layers[layerIndex].type === 'SubLayer') {
+            for (let i: number = 0; i < this.layersCollection.length; i++) {
+                if ((this.layersCollection[i].shapeData === this.layers[layerIndex].shapeData)) {
+                    subLayerIndex = i;
+                    break;
+                }
+            }
         }
         if (selectionsettings.enable) {
             let targetId: string;
             let dataIndex: number;
             let shapeIndex: number;
-            let shapeDataValue: object;
-            let data: object;
-            let shapeData: Object[] = <Object[]>this.layers[layerIndex].shapeData['features'];
+            let indexValue: number;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let shapeDataValue: any;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let data: any;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const shapeData: any[] = <any[]>this.layers[layerIndex].shapeData['features'];
             for (let i: number = 0; i < shapeData.length; i++) {
                 for (let j: number = 0; j < (<string[]>popertyNameArray).length; j++) {
-                    let propertyName : string = !isNullOrUndefined(shapeData[i]['properties'][popertyNameArray[j]])
+                    const propertyName : string = !isNullOrUndefined(shapeData[i]['properties'][popertyNameArray[j]])
                     && isNaN(shapeData[i]['properties'][popertyNameArray[j]]) ?
-                    shapeData[i]['properties'][popertyNameArray[j]].toLowerCase() : shapeData[i]['properties'][popertyNameArray[j]];
-                    let shapeName : string = !isNullOrUndefined(name) ? name.toLowerCase() : name;
+                        shapeData[i]['properties'][popertyNameArray[j]].toLowerCase() : shapeData[i]['properties'][popertyNameArray[j]];
+                    const shapeName : string = !isNullOrUndefined(name) ? name.toLowerCase() : name;
+                    let k: number;
                     if (propertyName === shapeName) {
-                        let k: number = checkShapeDataFields(
-                            <Object[]>this.layers[layerIndex].dataSource, shapeData[i]['properties'],
-                            this.layers[layerIndex].shapeDataPath, this.layers[layerIndex].shapePropertyPath,
-                            this.layers[layerIndex]);
-                        targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' +
-                            (!isNullOrUndefined(k) ? k.toString() : 'undefined');
+                        if (!isNullOrUndefined(this.layers[layerIndex].shapeSettings.colorValuePath)) {
+                            k = checkShapeDataFields(
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                <any[]>this.layers[layerIndex].dataSource, shapeData[i]['properties'],
+                                this.layers[layerIndex].shapeDataPath, this.layers[layerIndex].shapePropertyPath,
+                                this.layers[layerIndex]);
+                        }
+                        const baseLayer: LayerSettings = <LayerSettings>this.layers[layerIndex];
+                        if (this.baseLayerIndex >= 0 && baseLayer.isBaseLayer) {
+                            indexValue = 0;
+                        } else if (this.layers[layerIndex].type === 'SubLayer') {
+                            indexValue = subLayerIndex;
+                        }
+                        targetId = this.element.id + '_' + 'LayerIndex_' + indexValue + '_shapeIndex_' + i + '_dataIndex_' + k;
                         targetEle = getElement(targetId);
                         if (isNullOrUndefined(k) && isNullOrUndefined(targetEle)) {
                             targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_null';
@@ -1930,7 +2108,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                                 this.legendModule.shapeHighLightAndSelection(
                                     targetEle, data, selectionsettings, 'selection', layerIndex);
                             }
-                            let shapeToggled: boolean = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
+                            const shapeToggled: boolean = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
                             if (shapeToggled) {
                                 targetEle.setAttribute('class', 'ShapeselectionMapStyle');
                                 if (this.selectedElementId.indexOf(targetEle.getAttribute('id')) === -1) {
@@ -1946,10 +2124,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                                 this.legendModule.shapeHighLightAndSelection(
                                     targetEle, data, selectionsettings, 'selection', layerIndex);
                             }
-                            let shapeToggled: boolean = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
+                            const shapeToggled: boolean = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
                             if (shapeToggled) {
                                 removeClass(targetEle);
-                                let selectedElementIdIndex: number = this.selectedElementId.indexOf(targetEle.getAttribute('id'));
+                                const selectedElementIdIndex: number = this.selectedElementId.indexOf(targetEle.getAttribute('id'));
                                 if (selectedElementIdIndex !== -1) {
                                     this.selectedElementId.splice(selectedElementIdIndex, 1);
                                     if (!selectionsettings.enableMultiSelect && this.legendSelection && this.selectedElementId.length > 0) {
@@ -1966,6 +2144,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * This method is used to zoom the maps component based on the provided coordinates.
+     *
      * @param minLatitude - Specifies the minimum latitude to be zoomed.
      * @param minLongitude - Specifies the minimum latitude to be zoomed.
      * @param maxLatitude - Specifies the maximum latitude to be zoomed.
@@ -2005,13 +2184,12 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         this.zoomNotApplied = true;
         this.scaleOfGivenLocation = calculateZoomLevel(minLatitude, maxLatitude, minLongitude, maxLongitude,
                                                        this.mapAreaRect.width, this.mapAreaRect.height, this);
-        let zoomArgs: IMapZoomEventArgs;
-        zoomArgs = {
+        const zoomArgs: IMapZoomEventArgs = {
             cancel: false, name: 'zoom', type: zoomIn, maps: !this.isBlazor ? this : null,
             tileTranslatePoint: {}, translatePoint: {},
             tileZoomLevel: this.isTileMap ? { previous: this.tileZoomLevel, current: this.scaleOfGivenLocation } : {},
             scale: !this.isTileMap ? { previous: this.scale, current: this.scaleOfGivenLocation } :
-            { previous: this.tileZoomLevel, current: this.scaleOfGivenLocation}
+                { previous: this.tileZoomLevel, current: this.scaleOfGivenLocation}
         };
         this.trigger('zoom', zoomArgs);
         this.refresh();
@@ -2019,19 +2197,21 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * This method is used to remove multiple selected shapes in the maps.
+     *
+     * @returns {void}
      */
     private removeShapeSelection(): void {
-        let selectedElements: number = this.selectedElementId.length;
+        const selectedElements: number = this.selectedElementId.length;
         for (let i: number = 0; i < selectedElements; i++) {
             removeClass(getElementByID(this.selectedElementId[0]));
             this.selectedElementId.splice(0, 1);
         }
         if (this.legendSettings.visible) {
-          let legendSelectedElements: number = this.legendSelectionCollection.length;
-          for (let i: number = 0; i < legendSelectedElements; i++) {
-              removeClass(getElementByID(this.legendSelectionCollection[i]['legendElement']['id']));
-              this.selectedLegendElementId.splice(0, 1);
-          }
+            const legendSelectedElements: number = this.legendSelectionCollection.length;
+            for (let i: number = 0; i < legendSelectedElements; i++) {
+                removeClass(getElementByID(this.legendSelectionCollection[i]['legendElement']['id']));
+                this.selectedLegendElementId.splice(0, 1);
+            }
         }
         this.shapeSelectionItem = [];
         this.legendSelectionCollection = [];
@@ -2040,6 +2220,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * This method is used to set culture for maps component.
+     *
+     * @returns {void}
      */
     private setCulture(): void {
         this.intl = new Internationalization();
@@ -2049,6 +2231,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * This method to set locale constants to the maps component.
+     *
+     * @returns {void}
      */
     private setLocaleConstants(): void {
         // Need to modify after the api confirm
@@ -2057,7 +2241,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             Zoom: 'Zoom',
             ZoomOut: 'Zoom out',
             Pan: 'Pan',
-            Reset: 'Reset',
+            Reset: 'Reset'
         };
     }
 
@@ -2065,30 +2249,32 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * This method disposes the maps component.
      */
     public destroy(): void {
-      this.unWireEVents();
-      this.shapeSelectionItem = [];
-      this.toggledShapeElementId = [];
-      this.toggledLegendId = [];
-      this.legendSelectionCollection = [];
-      this.selectedLegendElementId = [];
-      this.selectedNavigationElementId = [];
-      this.selectedBubbleElementId = [];
-      this.selectedMarkerElementId = [];
-      this.selectedElementId = [];
-      this.dataLabelShape = [];
-      this.zoomShapeCollection = [];
-      this.zoomLabelPositions = [];
-      this.mouseDownEvent = { x: null, y: null };
-      this.mouseClickEvent = { x: null, y: null };
-      if (document.getElementById('mapsmeasuretext')) {
-        document.getElementById('mapsmeasuretext').remove();
-      }
-      this.removeSvg();
-      super.destroy();
+        this.unWireEVents();
+        this.shapeSelectionItem = [];
+        this.toggledShapeElementId = [];
+        this.toggledLegendId = [];
+        this.legendSelectionCollection = [];
+        this.selectedLegendElementId = [];
+        this.selectedNavigationElementId = [];
+        this.selectedBubbleElementId = [];
+        this.selectedMarkerElementId = [];
+        this.selectedElementId = [];
+        this.dataLabelShape = [];
+        this.zoomShapeCollection = [];
+        this.zoomLabelPositions = [];
+        this.mouseDownEvent = { x: null, y: null };
+        this.mouseClickEvent = { x: null, y: null };
+        if (document.getElementById('mapsmeasuretext')) {
+            document.getElementById('mapsmeasuretext').remove();
+        }
+        this.removeSvg();
+        super.destroy();
     }
 
+    // eslint-disable-next-line valid-jsdoc
     /**
      * Gets component name
+     *
      */
     public getModuleName(): string {
         return 'maps';
@@ -2096,10 +2282,12 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Gets the properties to be maintained in the persisted state.
+     *
+     * @returns {string} - Returns the string value
      * @private
      */
     public getPersistData(): string {
-        let keyEntity: string[] = ['translatePoint', 'zoomSettings', 'mapScaleValue', 'tileTranslatePoint', 'baseTranslatePoint',
+        const keyEntity: string[] = ['translatePoint', 'zoomSettings', 'mapScaleValue', 'tileTranslatePoint', 'baseTranslatePoint',
             'scale', 'zoomPersistence', 'defaultState', 'markerZoomedState', 'initialCheck', 'initialZoomLevel', 'initialTileTranslate',
             'applyZoomReset', 'markerZoomFactor'];
         return this.addOnPersist(keyEntity);
@@ -2107,6 +2295,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Called internally if any of the property value changed.
+     *
+     * @param {MapsModel} newProp - Specifies the new property
+     * @param {MapsModel} oldProp - Specifies the old property
+     * @returns {void}
      * @private
      */
     public onPropertyChanged(newProp: MapsModel, oldProp: MapsModel): void {
@@ -2114,54 +2306,54 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let isStaticMapType: boolean = false;
         let layerEle: Element;
         if (newProp['layers']) {
-            let newLayerLength: number = Object.keys(newProp['layers']).length;
+            const newLayerLength: number = Object.keys(newProp['layers']).length;
             layerEle = document.getElementById(this.element.id + '_LayerIndex_' + (newLayerLength - 1));
         }
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'background':
-                    this.renderBorder();
-                    break;
-                case 'height':
-                case 'width':
-                case 'layers':
-                case 'projectionType':
-                case 'centerPosition':
-                case 'legendSettings':
-                case 'baseLayerIndex':
-                    if (prop === 'layers') {
-                        let layerPropLength: number = Object.keys(newProp.layers).length;
-                        for (let x: number = 0; x < layerPropLength; x++) {
-                            if (!isNullOrUndefined(newProp.layers[x])) {
-                                let collection: string[] = Object.keys(newProp.layers[x]);
-                                for (let collectionProp of collection) {
-                                    if (collectionProp === 'markerSettings') {
-                                        isMarker = true;
-                                    } else if (collectionProp === 'staticMapType') {
-                                        isStaticMapType = true;
-                                    }
+            case 'background':
+                this.renderBorder();
+                break;
+            case 'height':
+            case 'width':
+            case 'layers':
+            case 'projectionType':
+            case 'centerPosition':
+            case 'legendSettings':
+            case 'baseLayerIndex':
+                if (prop === 'layers') {
+                    const layerPropLength: number = Object.keys(newProp.layers).length;
+                    for (let x: number = 0; x < layerPropLength; x++) {
+                        if (!isNullOrUndefined(newProp.layers[x])) {
+                            const collection: string[] = Object.keys(newProp.layers[x]);
+                            for (const collectionProp of collection) {
+                                if (collectionProp === 'markerSettings') {
+                                    isMarker = true;
+                                } else if (collectionProp === 'staticMapType') {
+                                    isStaticMapType = true;
                                 }
                             }
                         }
                     }
+                }
+                render = true;
+                break;
+            case 'zoomSettings':
+                if (newProp.zoomSettings.zoomFactor !== oldProp.zoomSettings.zoomFactor) {
+                    render = false;
+                } else if (newProp.zoomSettings.shouldZoomInitially !== oldProp.zoomSettings.shouldZoomInitially) {
+                    this.zoomSettings.zoomFactor = 1;
                     render = true;
-                    break;
-                case 'zoomSettings':
-                    if (newProp.zoomSettings.zoomFactor !== oldProp.zoomSettings.zoomFactor) {
-                        render = false;
-                    } else if (newProp.zoomSettings.shouldZoomInitially !== oldProp.zoomSettings.shouldZoomInitially) {
-                        this.zoomSettings.zoomFactor = 1;
-                        render = true;
-                    } else if (newProp.zoomSettings.enable !== oldProp.zoomSettings.enable) {
-                        this.zoomSettings.zoomFactor = 1;
-                        render = true;
-                    } else {
-                        render = true;
-                    }
-                    break;
-                case 'locale':
-                case 'currencyCode':
-                    super.refresh(); break;
+                } else if (newProp.zoomSettings.enable !== oldProp.zoomSettings.enable) {
+                    this.zoomSettings.zoomFactor = 1;
+                    render = true;
+                } else {
+                    render = true;
+                }
+                break;
+            case 'locale':
+            case 'currencyCode':
+                super.refresh(); break;
             }
         }
         if (render) {
@@ -2169,7 +2361,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 removeElement(this.element.id + '_Markers_Group');
                 if (this.isTileMap) {
                     if (this.isBlazor) {
-                       this.render();
+                        this.render();
                     } else {
                         this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (this.layers.length - 1));
                     }
@@ -2186,12 +2378,13 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /**
      * To provide the array of modules needed for maps rendering
-     * @return {ModuleDeclaration[]}
+     *
+     * @returns {ModuleDeclaration[]} - Returns the modules
      * @private
      */
     public requiredModules(): ModuleDeclaration[] {
-        let modules: ModuleDeclaration[] = [];
-        let isVisible: { layer: boolean, bubble: boolean, tooltip: boolean, selection: boolean, highlight: boolean } =
+        const modules: ModuleDeclaration[] = [];
+        const isVisible: { layer: boolean, bubble: boolean, tooltip: boolean, selection: boolean, highlight: boolean } =
             this.findVisibleLayers(this.layers);
         let annotationEnable: boolean = false;
         this.annotations.map((annotation: Annotation, index: number) => {
@@ -2340,7 +2533,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     private isBubbleVisible(): boolean {
         let isVisible: boolean = false;
-        for (let layer of this.layers) {
+        for (const layer of this.layers) {
             if (this.getBubbleVisible(layer)) {
                 isVisible = true;
                 break;
@@ -2350,11 +2543,14 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /**
      * To find the bubble visibility from layer
+     *
+     * @param {LayerSettingsModel} layer - Spcifies the layer settings model
+     * @returns {boolean} - Returns the boolean value
      * @private
      */
     public getBubbleVisible(layer: LayerSettingsModel): boolean {
         let isVisible: boolean = false;
-        for (let bubble of layer.bubbleSettings) {
+        for (const bubble of layer.bubbleSettings) {
             if (bubble.visible) {
                 isVisible = true;
                 break;
@@ -2364,15 +2560,17 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /**
      * This method handles the printing functionality for the maps component.
+     *
      * @param id - Specifies the element to be printed.
      */
     public print(id?: string[] | string | Element): void {
         if ((this.allowPrint) && (this.printModule)) {
-        this.printModule.print(id);
-       }
+            this.printModule.print(id);
+        }
     }
     /**
      * This method handles the export functionality for the maps component.
+     *
      * @param type - Specifies the type of the exported file.
      * @param fileName - Specifies the name of the file with which the rendered maps need to be exported.
      * @param orientation - Specifies the orientation of the pdf document in exporting.
@@ -2383,18 +2581,28 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             allowDownload = true;
         }
         if ((type !== 'PDF') && (this.allowImageExport) && (this.imageExportModule)) {
-            return new Promise((resolve: Function, reject: Function) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return new Promise((resolve: any, reject: any) => {
                 resolve(this.imageExportModule.export(type, fileName, allowDownload));
             });
-    } else if ((this.allowPdfExport) && (this.pdfExportModule)) {
-        return new Promise((resolve: Function, reject: Function) => {
+        } else if ((this.allowPdfExport) && (this.pdfExportModule)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return new Promise((resolve: any, reject: any) => {
                 resolve(this.pdfExportModule.export(type, fileName, allowDownload, orientation));
             });
-    }
+        }
         return null;
     }
     /**
      * To find visibility of layers and markers for required modules load.
+     *
+     * @param {LayerSettingsModel[]} layers - Specifies the layers.
+     * @param {boolean} isLayerVisible - Specifies whether the layer is visible or not.
+     * @param {boolean} isBubblevisible - Specifies whether the bubble is visible or not.
+     * @param {boolean} istooltipVisible - Specifies whether the tooltip is visible or not.
+     * @param {boolean} isSelection - Specifies whether the shape is selectd or not.
+     * @param {boolean} isHighlight - Specfies whether the shape is highlighted or not.
+     * @returns {boolean} - Returns the boolean value
      */
     private findVisibleLayers(
         layers: LayerSettingsModel[], isLayerVisible: boolean = false,
@@ -2404,19 +2612,19 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let bubbles: BubbleSettingsModel[];
         let markers: MarkerSettingsModel[];
         let navigationLine: NavigationLineSettingsModel[];
-        for (let layer of layers) {
+        for (const layer of layers) {
             isLayerVisible = layer.visible || isLayerVisible;
             if (layer.visible) {
                 bubbles = layer.bubbleSettings;
                 markers = layer.markerSettings;
                 navigationLine = layer.navigationLineSettings;
-                for (let navigation of navigationLine) {
+                for (const navigation of navigationLine) {
                     if (navigation.visible) {
                         isSelection = navigation.highlightSettings.enable || isSelection;
                         isHighlight = navigation.selectionSettings.enable || isHighlight;
                     }
                 }
-                for (let marker of markers) {
+                for (const marker of markers) {
                     if (marker.visible) {
                         istooltipVisible = marker.tooltipSettings.visible || istooltipVisible;
                         isSelection = marker.selectionSettings.enable || isSelection;
@@ -2424,7 +2632,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     }
                     if (istooltipVisible) { break; }
                 }
-                for (let bubble of bubbles) {
+                for (const bubble of bubbles) {
                     if (bubble.visible) {
                         istooltipVisible = bubble.tooltipSettings.visible || istooltipVisible;
                         isSelection = bubble.selectionSettings.enable || isSelection;
@@ -2445,25 +2653,27 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /**
      * This method is used to get the geo location points.
+     *
      * @param {number} layerIndex - Specifies the index number of the layer of the map.
      * @param {PointerEvent} location - Specifies the location in point format.
      * @return GeoPosition
      */
     public getGeoLocation(layerIndex: number, location: PointerEvent): GeoPosition {
-        let container: HTMLElement = document.getElementById(this.element.id);
-        let pageX: number = location['layerX'] - container.offsetLeft;
-        let pageY: number = location['layerY'] - container.offsetTop;
-        let currentLayer: LayerSettings = <LayerSettings>this.layersCollection[layerIndex];
-        let translate: Object = getTranslate(this, currentLayer, false);
-        let translatePoint: Point = translate['location'] as Point;
-        let translatePointX: number = translatePoint.x * this.scale;
-        let translatePointY: number = translatePoint.y * this.scale;
-        let mapSize: number = (Math.min(this.mapAreaRect.height, this.mapAreaRect.width)
+        const container: HTMLElement = document.getElementById(this.element.id);
+        const pageX: number = location['layerX'] - container.offsetLeft;
+        const pageY: number = location['layerY'] - container.offsetTop;
+        const currentLayer: LayerSettings = <LayerSettings>this.layersCollection[layerIndex];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const translate: any = getTranslate(this, currentLayer, false);
+        const translatePoint: Point = translate['location'] as Point;
+        const translatePointX: number = translatePoint.x * this.scale;
+        const translatePointY: number = translatePoint.y * this.scale;
+        const mapSize: number = (Math.min(this.mapAreaRect.height, this.mapAreaRect.width)
             * this.mapLayerPanel['currentFactor']) * this.scale;
-        let xx: number = (this.clip(pageX - translatePointX, 0, mapSize - 1) / mapSize) - 0.5;
-        let yy: number = 0.5 - (this.clip(pageY - translatePointY, 0, mapSize - 1) / mapSize);
-        let lat: number = 90 - 360 * Math.atan(Math.exp(-yy * 2 * Math.PI)) / Math.PI;
-        let long: number = 360 * xx;
+        const xx: number = (this.clip(pageX - translatePointX, 0, mapSize - 1) / mapSize) - 0.5;
+        const yy: number = 0.5 - (this.clip(pageY - translatePointY, 0, mapSize - 1) / mapSize);
+        const lat: number = 90 - 360 * Math.atan(Math.exp(-yy * 2 * Math.PI)) / Math.PI;
+        const long: number = 360 * xx;
         return { latitude: lat, longitude: long };
     }
 
@@ -2473,31 +2683,34 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * This method is used to get the geo location points when tile maps is rendered in the maps component.
+     *
      * @param {PointerEvent} - Specifies the location in point format.
      * @return GeoPosition
      */
     public getTileGeoLocation(location: PointerEvent): GeoPosition {
-        let container: HTMLElement = document.getElementById(this.element.id);
-        let latLong: Object;
-        let ele: HTMLElement = document.getElementById(this.element.id + '_tile_parent');
-        latLong = this.pointToLatLong(
+        const container: HTMLElement = document.getElementById(this.element.id);
+        const ele: HTMLElement = document.getElementById(this.element.id + '_tile_parent');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const latLong: any = this.pointToLatLong(
             location['layerX'] + this.mapAreaRect.x - (ele.offsetLeft - container.offsetLeft),
             location['layerY'] + this.mapAreaRect.y - (ele.offsetTop - container.offsetTop));
         return { latitude: latLong['latitude'], longitude: latLong['longitude'] };
     }
     /**
      * This method is used to convert the point to latitude and longitude in maps.
+     *
      * @param pageX - Specifies the x value for the page.
      * @param pageY - Specifies the y value for the page.
      */
+    // eslint-disable-next-line @typescript-eslint/ban-types
     public pointToLatLong(pageX: number, pageY: number): Object {
-        let padding: number = this.layers[this.layers.length - 1].layerType === 'GoogleStaticMap' ? 0 : 10;
+        const padding: number = this.layers[this.layers.length - 1].layerType === 'GoogleStaticMap' ? 0 : 10;
         pageY = (this.zoomSettings.enable) ? pageY + padding : pageY;
-        let mapSize: number = 256 * Math.pow(2, this.tileZoomLevel);
-        let x1: number = (this.clip(pageX - (this.translatePoint.x * this.scale), 0, mapSize - 1) / mapSize) - 0.5;
-        let y1: number = 0.5 - (this.clip(pageY - (this.translatePoint.y * this.scale), 0, mapSize - 1) / mapSize);
-        let lat: number = 90 - 360 * Math.atan(Math.exp(-y1 * 2 * Math.PI)) / Math.PI;
-        let long: number = 360 * x1;
+        const mapSize: number = 256 * Math.pow(2, this.tileZoomLevel);
+        const x1: number = (this.clip(pageX - (this.translatePoint.x * this.scale), 0, mapSize - 1) / mapSize) - 0.5;
+        const y1: number = 0.5 - (this.clip(pageY - (this.translatePoint.y * this.scale), 0, mapSize - 1) / mapSize);
+        const lat: number = 90 - 360 * Math.atan(Math.exp(-y1 * 2 * Math.PI)) / Math.PI;
+        const long: number = 360 * x1;
         return { latitude: lat, longitude: long };
     }
 }

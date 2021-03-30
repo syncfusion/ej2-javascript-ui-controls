@@ -1,3 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable no-self-assign */
 import { PointModel } from '../primitives/point-model';
 import { NodeModel } from './node-model';
 import { Rect } from '../primitives/rect';
@@ -6,7 +12,7 @@ import { DiagramElement } from '../core/elements/diagram-element';
 import { PathElement } from '../core/elements/path-element';
 import { SnapConstraints } from '../enum/enum';
 import { Connector } from './connector';
-import { Selector, Node } from '../objects/node';
+import { Node, Selector } from '../objects/node';
 import { SelectorModel } from '../objects/node-model';
 import { Gridlines } from '../diagram/grid-lines';
 import { SnapSettingsModel } from '../diagram/grid-lines-model';
@@ -40,7 +46,6 @@ export class Snapping {
         return (this.diagram.snapSettings.constraints
             & (SnapConstraints.SnapToObject | SnapConstraints.SnapToLines)) !== 0;
     }
-    /* tslint:disable */
     private getWrapperObject(selectedObject: SelectorModel, nameTable: {}): Container {
         if (selectedObject.nodes && selectedObject.nodes.length > 0
             && (this.diagram.snapSettings.constraints & SnapConstraints.SnapToLines || this.diagram.snapSettings.constraints
@@ -58,25 +63,25 @@ export class Snapping {
         }
         return selectedObject.wrapper;
     };
-    /* tslint:enable */
     /**
      * Snap to object
+     *
      * @private
      */
     public snapPoint(
         diagram: Diagram, selectedObject: SelectorModel, towardsLeft: boolean, towardsTop: boolean, delta: PointModel,
         startPoint: PointModel, endPoint: PointModel): PointModel {
-        let snapSettings: SnapSettingsModel = this.diagram.snapSettings;
-        let zoomFactor: number = this.diagram.scroller.currentZoom;
-        let offset: PointModel = { x: 0, y: 0 };
+        const snapSettings: SnapSettingsModel = this.diagram.snapSettings;
+        const zoomFactor: number = this.diagram.scroller.currentZoom;
+        const offset: PointModel = { x: 0, y: 0 };
         let wrapper: Container;
         wrapper = this.getWrapperObject(selectedObject, diagram.nameTable);
-        let bounds: Rect = getBounds(wrapper);
-        let horizontallysnapped: Snap = { snapped: false, offset: 0 };
-        let verticallysnapped: Snap = { snapped: false, offset: 0 };
+        const bounds: Rect = getBounds(wrapper);
+        const horizontallysnapped: Snap = { snapped: false, offset: 0 };
+        const verticallysnapped: Snap = { snapped: false, offset: 0 };
         if (this.diagram.snapSettings.constraints & SnapConstraints.SnapToObject) {
-            let snapLine: SVGElement;
-            snapLine = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            //let snapLine: SVGElement;
+            const snapLine: SVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'g');
             snapLine.setAttribute('id', '_SnappingLines');
             snapLine.setAttribute('shapeRendering', 'crispEdges');
             this.getAdornerLayerSvg().appendChild(snapLine);
@@ -84,21 +89,21 @@ export class Snapping {
                 diagram, selectedObject, snapLine, horizontallysnapped, verticallysnapped, delta, startPoint === endPoint);
         }
         //original position
-        let left: number = bounds.x + delta.x;
-        let top: number = bounds.y + delta.y;
-        let right: number = bounds.x + bounds.width + delta.x;
-        let bottom: number = bounds.y + bounds.height + delta.y;
+        const left: number = bounds.x + delta.x;
+        const top: number = bounds.y + delta.y;
+        const right: number = bounds.x + bounds.width + delta.x;
+        const bottom: number = bounds.y + bounds.height + delta.y;
         let scaledIntervals: number[] = (snapSettings.verticalGridlines as Gridlines).scaledIntervals;
         //snapped positions
-        let roundedRight: number = this.round(right, scaledIntervals, zoomFactor);
-        let roundedLeft: number = this.round(left, scaledIntervals, zoomFactor);
+        const roundedRight: number = this.round(right, scaledIntervals, zoomFactor);
+        const roundedLeft: number = this.round(left, scaledIntervals, zoomFactor);
 
         scaledIntervals = (snapSettings.horizontalGridlines as Gridlines).scaledIntervals;
-        let roundedTop: number = this.round(top, scaledIntervals, zoomFactor);
-        let roundedBottom: number = this.round(bottom, scaledIntervals, zoomFactor);
+        const roundedTop: number = this.round(top, scaledIntervals, zoomFactor);
+        const roundedBottom: number = this.round(bottom, scaledIntervals, zoomFactor);
         //currentposition
-        let currentright: number = bounds.x + bounds.width;
-        let currentbottom: number = bounds.y + bounds.height;
+        const currentright: number = bounds.x + bounds.width;
+        const currentbottom: number = bounds.y + bounds.height;
         if (!horizontallysnapped.snapped) {
             if (this.diagram.snapSettings.constraints & SnapConstraints.SnapToVerticalLines) {
                 if (Math.abs(delta.x) >= 1) {
@@ -166,7 +171,7 @@ export class Snapping {
             cutoff += snapIntervals[i];
         }
         cutoff /= scale;
-        let quotient: number = Math.floor(Math.abs(value) / cutoff);
+        const quotient: number = Math.floor(Math.abs(value) / cutoff);
         let bal: number = value % cutoff;
         let prev: number = quotient * cutoff;
         if (prev !== value) {
@@ -193,32 +198,30 @@ export class Snapping {
         }
         return value;
     }
-    /**
-     * Snap to Object 
-     */
-    /* tslint:disable */
+
+    //Snap to Object
     private snapObject(
         diagram: Diagram, selectedObject: SelectorModel, g: SVGElement, horizontalSnap: Snap, verticalSnap: Snap,
         delta: PointModel, ended: boolean): void {
         let lengthX: number = null; let lengthY: number;
-        let hTarget: SnapObject; let vTarget: SnapObject; let scroller: DiagramScroller = this.diagram.scroller;
-        let snapSettings: SnapSettingsModel = this.diagram.snapSettings;
-        let objectsAtLeft: Objects[] = []; let objectsAtRight: Objects[] = []; let objectsAtTop: Objects[] = [];
-        let objectsAtBottom: Objects[] = [];
+        let hTarget: SnapObject; let vTarget: SnapObject; const scroller: DiagramScroller = this.diagram.scroller;
+        const snapSettings: SnapSettingsModel = this.diagram.snapSettings;
+        const objectsAtLeft: Objects[] = []; const objectsAtRight: Objects[] = []; const objectsAtTop: Objects[] = [];
+        const objectsAtBottom: Objects[] = [];
         let wrapper: Container;
         wrapper = this.getWrapperObject(selectedObject, diagram.nameTable);
-        let bounds: Rect = getBounds(wrapper); let scale: number = diagram.scroller.currentZoom;
-        let hoffset: number = -scroller.horizontalOffset; let voffset: number = -scroller.verticalOffset;
-        let snapObjDistance: number = snapSettings.snapObjectDistance / scale;
+        const bounds: Rect = getBounds(wrapper); const scale: number = diagram.scroller.currentZoom;
+        const hoffset: number = -scroller.horizontalOffset; const voffset: number = -scroller.verticalOffset;
+        const snapObjDistance: number = snapSettings.snapObjectDistance / scale;
         let viewPort: Rect = new Rect(0, 0, scroller.viewPortWidth, scroller.viewPortHeight);
-        let hIntersectRect: Rect = new Rect(
+        const hIntersectRect: Rect = new Rect(
             hoffset / scale, (bounds.y - snapObjDistance - 5), viewPort.width / scale, (bounds.height + 2 * snapObjDistance + 10));
-        let vIntersectRect: Rect = new Rect(
+        const vIntersectRect: Rect = new Rect(
             (bounds.x - snapObjDistance - 5), voffset / scale, (bounds.width + 2 * snapObjDistance + 10), viewPort.height / scale);
         viewPort = new Rect(
             hoffset / scale, voffset / scale, viewPort.width / scale, viewPort.height / scale);
         let nodes: DiagramElement[] = this.findNodes(diagram.spatialSearch, selectedObject, vIntersectRect, viewPort);
-        let i: number; let target: DiagramElement; let targetBounds: Rect; let nameTable: NodeModel = diagram.nameTable;
+        let i: number; let target: DiagramElement; let targetBounds: Rect; const nameTable: NodeModel = diagram.nameTable;
         for (i = 0; i < nodes.length; i++) {
             target = nodes[i];
             if (this.canBeTarget(diagram, target)) {
@@ -302,13 +305,12 @@ export class Snapping {
                 diagram, g, selectedObject, objectsAtTop, objectsAtBottom, horizontalSnap, verticalSnap, ended, delta, snapObjDistance);
         }
     }
-    /* tslint:enable */
     /**
      * @private
      */
     public snapConnectorEnd(point: PointModel): PointModel {
-        let snapSettings: SnapSettingsModel = this.diagram.snapSettings;
-        let zoomFactor: number = this.diagram.scroller.currentZoom;
+        const snapSettings: SnapSettingsModel = this.diagram.snapSettings;
+        const zoomFactor: number = this.diagram.scroller.currentZoom;
         if (snapSettings.constraints & SnapConstraints.SnapToLines) {
             point.x = this.round(point.x, (snapSettings.verticalGridlines as Gridlines).scaledIntervals, zoomFactor);
             point.y = this.round(point.y, (snapSettings.horizontalGridlines as Gridlines).scaledIntervals, zoomFactor);
@@ -326,22 +328,22 @@ export class Snapping {
         diagram: Diagram, horizontalSnap: Snap, verticalSnap: Snap, snapLine: SVGElement, deltaX: number, deltaY: number,
         selectedObject: SelectorModel, ended: boolean): void {
         let lengthX: number; let lengthY: number;
-        let snapSettings: SnapSettingsModel = this.diagram.snapSettings;
-        let scroller: DiagramScroller = this.diagram.scroller;
+        const snapSettings: SnapSettingsModel = this.diagram.snapSettings;
+        const scroller: DiagramScroller = this.diagram.scroller;
         let hTarget: SnapObject; let vTarget: SnapObject;
-        let bounds: Rect = getBounds(selectedObject.wrapper);
-        let nameTable: NodeModel = diagram.nameTable;
-        let sameWidth: SnapSize[] = []; let sameHeight: SnapSize[] = []; let scale: number = diagram.scroller.currentZoom;
-        let hoffset: number = -scroller.horizontalOffset; let voffset: number = -scroller.verticalOffset;
-        let snapObjDistance: number = snapSettings.snapObjectDistance / scale;
+        const bounds: Rect = getBounds(selectedObject.wrapper);
+        const nameTable: NodeModel = diagram.nameTable;
+        const sameWidth: SnapSize[] = []; const sameHeight: SnapSize[] = []; const scale: number = diagram.scroller.currentZoom;
+        const hoffset: number = -scroller.horizontalOffset; const voffset: number = -scroller.verticalOffset;
+        const snapObjDistance: number = snapSettings.snapObjectDistance / scale;
         let viewPort: Rect = new Rect(0, 0, scroller.viewPortWidth, scroller.viewPortHeight);
-        let hintersectedrect: Rect = new Rect(
+        const hintersectedrect: Rect = new Rect(
             hoffset / scale, (bounds.y - 5) / scale, viewPort.width / scale, (bounds.height + 10) / scale);
-        let vintersectedrect: Rect = new Rect(
+        const vintersectedrect: Rect = new Rect(
             (bounds.x - 5) / scale, voffset / scale, (bounds.width + 10) / scale, viewPort.height / scale);
         viewPort = new Rect(
             hoffset / scale, voffset / scale, viewPort.width / scale, viewPort.height / scale);
-        let nodesInView: DiagramElement[] = [];
+        const nodesInView: DiagramElement[] = [];
         let nodes: DiagramElement[] = this.findNodes(diagram.spatialSearch, selectedObject, vintersectedrect, viewPort, nodesInView);
         let i: number; let target: DiagramElement; let targetBounds: Rect;
         for (i = 0; i < nodes.length; i++) {
@@ -371,9 +373,9 @@ export class Snapping {
         }
         nodes = this.findNodes(diagram.spatialSearch, selectedObject, hintersectedrect, viewPort);
         for (let i: number = 0; i < nodes.length; i++) {
-            let target: DiagramElement = nodes[i];
+            const target: DiagramElement = nodes[i];
             if (this.canConsider(nameTable, selectedObject, target) && !(this.diagram.nameTable[target.id] instanceof Connector)) {
-                let targetBounds: Rect = target.bounds;
+                const targetBounds: Rect = target.bounds;
                 if (lengthY == null || lengthY > Math.abs(targetBounds.x - bounds.x)) {
                     if (verticalSnap.top) {
                         if (Math.abs(bounds.y + deltaY - targetBounds.y) <= snapObjDistance) {
@@ -398,16 +400,16 @@ export class Snapping {
         for (i = 0; i < nodesInView.length; i++) {
             target = nodesInView[i];
             if (this.canConsider(nameTable, selectedObject, target)) {
-                let targetBounds: Rect = target.bounds;
+                const targetBounds: Rect = target.bounds;
                 let delta: number = horizontalSnap.left ? -deltaX : deltaX;
-                let difference: number = Math.abs(bounds.width + delta - targetBounds.width);
+                const difference: number = Math.abs(bounds.width + delta - targetBounds.width);
                 let actualDiff: number;
                 if (difference <= snapObjDistance) {
                     actualDiff = horizontalSnap.left ? -targetBounds.width + bounds.width : targetBounds.width - bounds.width;
                     sameWidth[sameWidth.length] = { source: target, difference: difference, offset: actualDiff };
                 }
                 delta = verticalSnap.top ? -deltaY : deltaY;
-                let dify: number = Math.abs(bounds.height + delta - targetBounds.height);
+                const dify: number = Math.abs(bounds.height + delta - targetBounds.height);
                 if (dify <= snapObjDistance) {
                     actualDiff = verticalSnap.top ? -targetBounds.height + bounds.height : targetBounds.height - bounds.height;
                     sameHeight[sameHeight.length] = { source: target, difference: dify, offset: actualDiff };
@@ -416,7 +418,7 @@ export class Snapping {
         }
         let g: SVGElement;
         if (!diagram.getTool) {
-            let g: SVGElement = this.createGuidelines(diagram, hTarget, vTarget, snapLine, horizontalSnap, verticalSnap, ended);
+            const g: SVGElement = this.createGuidelines(diagram, hTarget, vTarget, snapLine, horizontalSnap, verticalSnap, ended);
         }
         if (!horizontalSnap.snapped && sameWidth.length > 0 && (horizontalSnap.left || horizontalSnap.right)) {
             this.addSameWidthLines(diagram, snapLine, sameWidth, horizontalSnap, ended, selectedObject);
@@ -427,6 +429,7 @@ export class Snapping {
     }
     /**
      * Snap to object on top
+     *
      * @private
      */
     public snapTop(
@@ -436,7 +439,7 @@ export class Snapping {
         verticalSnap.top = true;
         let y: number;
         horizontalSnap.left = horizontalSnap.right = false;
-        let zoomFactor: number = this.diagram.scroller.currentZoom;
+        const zoomFactor: number = this.diagram.scroller.currentZoom;
         //let initialBoundsT: Rect = new Rect(shape.offsetX, shape.offsetY, shape.width, shape.height);
         if (this.diagram.snapSettings.constraints & SnapConstraints.SnapToObject && !shape.rotateAngle) {
             //(!this.selectedObject.isLane && !this.selectedObject.isSwimlane)) {
@@ -445,9 +448,9 @@ export class Snapping {
         }
         if (!verticalSnap.snapped) {
             if (this.diagram.snapSettings.constraints & SnapConstraints.SnapToHorizontalLines) {
-                let top: number = initialBoundsT.y - initialBoundsT.height * shape.pivot.y;
-                let actualTop: number = top + deltaY;
-                let roundedTop: number = this.round(
+                const top: number = initialBoundsT.y - initialBoundsT.height * shape.pivot.y;
+                const actualTop: number = top + deltaY;
+                const roundedTop: number = this.round(
                     actualTop, (this.diagram.snapSettings.horizontalGridlines as Gridlines).scaledIntervals, zoomFactor);
                 dify = roundedTop - top;
             }
@@ -458,6 +461,7 @@ export class Snapping {
     }
     /**
      * Snap to object on right
+     *
      * @private
      */
     public snapRight(
@@ -467,7 +471,7 @@ export class Snapping {
         let x: number;
         horizontalSnap.right = true;
         verticalSnap.top = verticalSnap.bottom = false;
-        let zoomFactor: number = this.diagram.scroller.currentZoom;
+        const zoomFactor: number = this.diagram.scroller.currentZoom;
         //let initialBound: Rect = new Rect(shape.offsetX, shape.offsetY, shape.width, shape.height);
         if (this.diagram.snapSettings.constraints & SnapConstraints.SnapToObject && !shape.rotateAngle) {
             //(!this.selectedObject.isLane && !this.selectedObject.isSwimlane)) {
@@ -476,9 +480,9 @@ export class Snapping {
         }
         if (!horizontalSnap.snapped) {
             if (this.diagram.snapSettings.constraints & SnapConstraints.SnapToVerticalLines) {
-                let right: number = initialBound.x + initialBound.width * (1 - shape.pivot.x);
-                let actualRight: number = right + deltaX;
-                let roundedRight: number = this.round(
+                const right: number = initialBound.x + initialBound.width * (1 - shape.pivot.x);
+                const actualRight: number = right + deltaX;
+                const roundedRight: number = this.round(
                     actualRight, (this.diagram.snapSettings.verticalGridlines as Gridlines).scaledIntervals, zoomFactor);
                 difx = roundedRight - right;
             }
@@ -489,6 +493,7 @@ export class Snapping {
     }
     /**
      * Snap to object on left
+     *
      * @private
      */
     public snapLeft(
@@ -498,7 +503,7 @@ export class Snapping {
         let x: number = 0;
         horizontalSnap.left = true;
         verticalSnap.top = verticalSnap.bottom = false;
-        let zoomFactor: number = this.diagram.scroller.currentZoom;
+        const zoomFactor: number = this.diagram.scroller.currentZoom;
         //let initialBoundsB: Rect = new Rect(shape.offsetX, shape.offsetY, shape.width, shape.height);
         if (this.diagram.snapSettings.constraints & SnapConstraints.SnapToObject && !shape.rotateAngle) {
             //(!this.selectedObject.isLane && !this.selectedObject.isSwimlane)) {
@@ -507,9 +512,9 @@ export class Snapping {
         }
         if (!horizontalSnap.snapped) {
             if (this.diagram.snapSettings.constraints & SnapConstraints.SnapToVerticalLines) {
-                let left: number = initialBoundsB.x - initialBoundsB.width * shape.pivot.x;
-                let actualLeft: number = left + deltaX;
-                let roundedLeft: number = this.round(
+                const left: number = initialBoundsB.x - initialBoundsB.width * shape.pivot.x;
+                const actualLeft: number = left + deltaX;
+                const roundedLeft: number = this.round(
                     actualLeft, (this.diagram.snapSettings.horizontalGridlines as Gridlines).scaledIntervals, zoomFactor);
                 difx = roundedLeft - left;
             }
@@ -520,6 +525,7 @@ export class Snapping {
     }
     /**
      * Snap to object on bottom
+     *
      * @private
      */
     public snapBottom(
@@ -528,7 +534,7 @@ export class Snapping {
         let dify: number = deltaY;
         verticalSnap.bottom = true;
         horizontalSnap.left = horizontalSnap.right = false;
-        let zoomFactor: number = this.diagram.scroller.currentZoom;
+        const zoomFactor: number = this.diagram.scroller.currentZoom;
         let y: number = 0;
         //let initialRect: Rect = new Rect(shape.offsetX, shape.offsetY, shape.width, shape.height);
         if (this.diagram.snapSettings.constraints & SnapConstraints.SnapToObject && !shape.rotateAngle) {
@@ -536,14 +542,14 @@ export class Snapping {
             y = initialRect.y + initialRect.height * (1 - shape.pivot.y) + deltaY - (shape.offsetY + shape.height * (1 - shape.pivot.y));
             this.snapSize(this.diagram, horizontalSnap, verticalSnap, snapLine, deltaX, y, this.diagram.selectedItems, ended);
         }
-        let bounds: Rect;
-        bounds = ((shape instanceof TextElement) || (shape instanceof DiagramHtmlElement)) ? getBounds(shape as DiagramElement) :
+        // eslint-disable-next-line max-len
+        const bounds: Rect = ((shape instanceof TextElement) || (shape instanceof DiagramHtmlElement)) ? getBounds(shape as DiagramElement) :
             getBounds((shape as SelectorModel).wrapper);
         if (!verticalSnap.snapped) {
             if (this.diagram.snapSettings.constraints & SnapConstraints.SnapToHorizontalLines) {
-                let bottom: number = initialRect.y + initialRect.height * (1 - shape.pivot.y);
-                let actualBottom: number = bottom + deltaY;
-                let roundedBottom: number = this.round(
+                const bottom: number = initialRect.y + initialRect.height * (1 - shape.pivot.y);
+                const actualBottom: number = bottom + deltaY;
+                const roundedBottom: number = this.round(
                     actualBottom, (this.diagram.snapSettings.horizontalGridlines as Gridlines).scaledIntervals, zoomFactor);
                 dify = roundedBottom - bottom;
             }
@@ -552,9 +558,8 @@ export class Snapping {
         }
         return dify;
     }
-    /**
-     * To create the same width and same size lines
-     */
+
+    //To create the same width and same size lines
     private createGuidelines(
         diagram: Diagram, hTarget: SnapObject, vTarget: SnapObject, snapLine: SVGElement,
         horizontalSnap: Snap, verticalSnap: Snap, ended: boolean): SVGElement {
@@ -582,9 +587,7 @@ export class Snapping {
         }
         return snapLine;
     }
-    /**
-     * To create the alignment lines
-     */
+    //To create the alignment lines
     private renderAlignmentLines(
         start: PointModel, end: PointModel, svg: SVGElement, transform: TransformFactor): void {
         start = {
@@ -595,7 +598,7 @@ export class Snapping {
             x: (end.x + transform.tx) * transform.scale,
             y: (end.y + transform.ty) * transform.scale
         };
-        let line1: LineAttributes = {
+        const line1: LineAttributes = {
             stroke: '#07EDE1', strokeWidth: 1, startPoint: { x: start.x, y: start.y },
             endPoint: { x: end.x, y: end.y }, fill: '#07EDE1', dashArray: '', width: 1,
             x: 0, y: 0, height: 0, angle: 0, pivotX: 0,
@@ -607,9 +610,8 @@ export class Snapping {
             this.diagram.diagramRenderer.drawLine(svg, this.line.pop());
         }
     }
-    /**
-     * To create Horizontal spacing lines
-     */
+
+    //To create Horizontal spacing lines
     private createHSpacingLines(
         diagram: Diagram, g: SVGElement, shape: SelectorModel, objectsAtLeft: Objects[], objectsAtRight: Objects[],
         horizontalSnap: Snap, verticalSnap: Snap, ended: boolean, delta: PointModel,
@@ -617,8 +619,8 @@ export class Snapping {
         let top: number = 0;
         this.sortByDistance(objectsAtLeft, 'distance', true);
         this.sortByDistance(objectsAtRight, 'distance', true);
-        let equallySpaced: Objects[] = [];
-        let bounds: Rect = getBounds(shape.wrapper);
+        const equallySpaced: Objects[] = [];
+        const bounds: Rect = getBounds(shape.wrapper);
         let nearestleft: Rect; let nearestright: Rect;
         let targetBounds: Rect;
         let equaldistance: number;
@@ -652,7 +654,7 @@ export class Snapping {
             }
             if (objectsAtLeft.length > 0) {
                 if (Math.abs(objectsAtRight[0].distance - objectsAtLeft[0].distance) <= snapObjDistance) {
-                    let adjustablevalue: number = Math.abs(objectsAtRight[0].distance - objectsAtLeft[0].distance) / 2;
+                    const adjustablevalue: number = Math.abs(objectsAtRight[0].distance - objectsAtLeft[0].distance) / 2;
                     (objectsAtRight[0].distance < objectsAtLeft[0].distance) ?
                         equaldistance -= adjustablevalue : equaldistance += adjustablevalue;
                     equallySpaced[equallySpaced.length] = objectsAtRight[0];
@@ -686,9 +688,7 @@ export class Snapping {
             horizontalSnap.snapped = true;
         }
     }
-    /**
-     * To create vertical spacing lines
-     */
+    //To create vertical spacing lines
     private createVSpacingLines(
         diagram: Diagram, g: SVGElement, shape: SelectorModel, objectsAtTop: Objects[], objectsAtBottom: Objects[],
         horizontalSnap: Snap, verticalSnap: Snap, ended: boolean, delta: PointModel,
@@ -696,8 +696,8 @@ export class Snapping {
         let right: number = 0;
         this.sortByDistance(objectsAtTop, 'distance', true);
         this.sortByDistance(objectsAtBottom, 'distance', true);
-        let equallySpaced: Objects[] = [];
-        let bounds: Rect = getBounds(shape.wrapper);
+        const equallySpaced: Objects[] = [];
+        const bounds: Rect = getBounds(shape.wrapper);
         let nearesttop: Rect; let nearestbottom: Rect;
         let targetBounds: Rect;
         let equaldistance: number;
@@ -731,7 +731,7 @@ export class Snapping {
 
             if (objectsAtTop.length > 0) {
                 if (Math.abs(objectsAtBottom[0].distance - objectsAtTop[0].distance) <= snapObjDistance) {
-                    let adjustablevalue: number = Math.abs(objectsAtBottom[0].distance - objectsAtTop[0].distance) / 2;
+                    const adjustablevalue: number = Math.abs(objectsAtBottom[0].distance - objectsAtTop[0].distance) / 2;
                     (objectsAtBottom[0].distance < objectsAtTop[0].distance) ?
                         equaldistance -= adjustablevalue : equaldistance += adjustablevalue;
                     equallySpaced[equallySpaced.length] = objectsAtBottom[0];
@@ -764,18 +764,16 @@ export class Snapping {
             verticalSnap.snapped = true;
         }
     }
-    /**
-     * Add the Horizontal spacing lines
-     */
+    //Add the Horizontal spacing lines
     private addHSpacingLines(diagram: Diagram, g: SVGElement, equallySpaced: Objects[], ended: boolean, top: number): void {
         let i: number;
         let start: PointModel;
         let end: PointModel;
         if (!ended) {
             for (i = 0; i < equallySpaced.length - 1; i++) {
-                let crnt: Rect = equallySpaced[i].obj instanceof Selector ?
+                const crnt: Rect = equallySpaced[i].obj instanceof Selector ?
                     getBounds(((equallySpaced[i].obj) as SelectorModel).wrapper) : ((equallySpaced[i].obj).bounds);
-                let next: Rect = equallySpaced[i + 1].obj instanceof Selector ?
+                const next: Rect = equallySpaced[i + 1].obj instanceof Selector ?
                     getBounds(((equallySpaced[i + 1].obj) as SelectorModel).wrapper) : ((equallySpaced[i + 1].obj).bounds);
                 start = { x: crnt.x + crnt.width, y: top - 15 };
                 end = { x: next.x, y: top - 15 };
@@ -784,17 +782,15 @@ export class Snapping {
             }
         }
     }
-    /**
-     * Add the vertical spacing lines
-     */
+    //Add the vertical spacing lines
     private addVSpacingLines(diagram: Diagram, g: SVGElement, equallySpacedObjects: Objects[], ended: boolean, right: number): void {
         let start: PointModel;
         let end: PointModel;
         if (!ended) {
             for (let i: number = 0; i < equallySpacedObjects.length - 1; i++) {
-                let crnt: Rect = equallySpacedObjects[i].obj instanceof Selector ?
+                const crnt: Rect = equallySpacedObjects[i].obj instanceof Selector ?
                     getBounds(((equallySpacedObjects[i].obj) as SelectorModel).wrapper) : ((equallySpacedObjects[i].obj).bounds);
-                let next: Rect = equallySpacedObjects[i + 1].obj instanceof Selector ?
+                const next: Rect = equallySpacedObjects[i + 1].obj instanceof Selector ?
                     getBounds(((equallySpacedObjects[i + 1].obj) as SelectorModel).wrapper) :
                     ((equallySpacedObjects[i + 1].obj).bounds);
                 start = { x: right + 15, y: crnt.y + crnt.height };
@@ -804,19 +800,17 @@ export class Snapping {
             }
         }
     }
-    /**
-     * To add same width lines
-     */
+    //To add same width lines
     private addSameWidthLines(
         diagram: Diagram, snapLine: SVGElement, sameWidths: SnapSize[], horizontalSnap: Snap, ended: boolean,
         shape: SelectorModel): void {
         this.sortByDistance(sameWidths, 'offset');
         let bounds: Rect = getBounds(shape.wrapper);
-        let target: SnapSize = sameWidths[0];
+        const target: SnapSize = sameWidths[0];
         let startPt: PointModel;
         let endPt: PointModel;
-        let targetBounds: Rect = ((target.source) as DiagramElement).bounds;
-        let sameSizes: SnapSize[] = [];
+        const targetBounds: Rect = ((target.source) as DiagramElement).bounds;
+        const sameSizes: SnapSize[] = [];
         sameSizes.push(sameWidths[0]);
         let i: number; let crntbounds: Rect;
         for (i = 1; i < sameWidths.length; i++) {
@@ -842,19 +836,17 @@ export class Snapping {
         horizontalSnap.snapped = true;
 
     }
-    /**
-     * To add same height lines
-     */
+    //To add same height lines
     private addSameHeightLines(
         diagram: Diagram, snapLine: SVGElement, sameHeights: SnapSize[], verticalSnap: Snap, ended: boolean,
         shape: SelectorModel): void {
         this.sortByDistance(sameHeights, 'offset');
         let bounds: Rect = getBounds(shape.wrapper);
-        let target: SnapSize = sameHeights[0];
-        let targetBounds: Rect = ((target.source) as DiagramElement).bounds;
+        const target: SnapSize = sameHeights[0];
+        const targetBounds: Rect = ((target.source) as DiagramElement).bounds;
         let start: PointModel;
         let end: PointModel;
-        let sameSizes: SnapSize[] = [];
+        const sameSizes: SnapSize[] = [];
         sameSizes.push(sameHeights[0]);
         let i: number;
         let crntbounds: Rect;
@@ -880,17 +872,16 @@ export class Snapping {
         verticalSnap.offset = target.offset;
         verticalSnap.snapped = true;
     }
-    /**
-     * Render spacing lines
-     */
+
+    //Render spacing lines
     private renderSpacingLines(
         start: PointModel, end: PointModel, snapLine: SVGElement, svg: HTMLCanvasElement | SVGElement,
         transform: TransformFactor): void {
         let d: string;
         let d1: string;
         let line1: LineAttributes;
-        let element: PathElement = new PathElement();
-        let options: PathAttributes = {} as PathAttributes;
+        const element: PathElement = new PathElement();
+        const options: PathAttributes = {} as PathAttributes;
         start = {
             x: (start.x + transform.tx) * transform.scale,
             y: (start.y + transform.ty) * transform.scale
@@ -979,149 +970,158 @@ export class Snapping {
         this.line.push(line1);
         this.diagram.diagramRenderer.drawLine(snapLine, this.line.pop());
     }
+
     /**
-     * To Create Snap object with position, initial bounds, and final bounds
+     * To Create Snap object with position, initial bounds, and final bounds \
+     *
+     * @returns {  void }  To Create Snap object with position, initial bounds, and final bounds .\
+     * @param {Diagram} targetBounds - provide the targetBounds value.
+     * @param {Rect} bounds - provide the angle value.
+     * @param {string} snap - provide the angle value.
      * @private
      */
     public createSnapObject(targetBounds: Rect, bounds: Rect, snap: string): SnapObject {
         let snapObject: SnapObject;
         switch (snap) {
-            case 'left':
-                snapObject = {
-                    start: { x: (targetBounds.x), y: Math.min(targetBounds.y, bounds.y) },
-                    end: { x: (targetBounds.x), y: Math.max(targetBounds.y + targetBounds.height, bounds.y + bounds.height) },
-                    offsetX: targetBounds.x - bounds.x, offsetY: 0, type: 'sideAlign'
-                };
-                break;
-            case 'right':
-                snapObject = {
-                    type: 'sideAlign',
-                    start: { x: (targetBounds.x + targetBounds.width), y: Math.min(targetBounds.y, bounds.y) },
-                    offsetX: targetBounds.x + targetBounds.width - bounds.x - bounds.width,
-                    offsetY: 0,
-                    end: {
-                        x: (targetBounds.x + targetBounds.width),
-                        y: Math.max(targetBounds.y + targetBounds.height, bounds.y + bounds.height)
-                    },
-                };
-                break;
-            case 'top':
-                snapObject = {
-                    offsetY: targetBounds.y - bounds.y, offsetX: 0, type: 'sideAlign',
-                    start: { x: (Math.min(targetBounds.x, bounds.x)), y: targetBounds.y },
-                    end: { x: (Math.max(targetBounds.x + targetBounds.width, bounds.x + bounds.width)), y: targetBounds.y },
-                };
-                break;
-            case 'bottom':
-                snapObject = {
-                    type: 'sideAlign', offsetY: targetBounds.y + targetBounds.height - bounds.y - bounds.height, offsetX: 0,
-                    end: {
-                        x: (Math.max(targetBounds.x + targetBounds.width, bounds.x + bounds.width)),
-                        y: targetBounds.y + targetBounds.height
-                    },
-                    start: { x: (Math.min(targetBounds.x, bounds.x)), y: targetBounds.y + targetBounds.height },
-                };
-                break;
-            case 'topBottom':
-                snapObject = {
-                    start: { x: (Math.min(targetBounds.x, bounds.x)), y: targetBounds.y + targetBounds.height },
-                    end: {
-                        x: (Math.max(targetBounds.x + targetBounds.width, bounds.x + bounds.width)),
-                        y: targetBounds.y + targetBounds.height
-                    },
-                    offsetY: targetBounds.y + targetBounds.height - bounds.y, offsetX: 0, type: 'sideAlign'
-                };
-                break;
-            case 'bottomTop':
-                snapObject = {
-                    start: { x: (Math.min(targetBounds.x, bounds.x)), y: targetBounds.y },
-                    end: { x: (Math.max(targetBounds.x + targetBounds.width, bounds.x + bounds.width)), y: targetBounds.y },
-                    offsetY: targetBounds.y - bounds.y - bounds.height, offsetX: 0, type: 'sideAlign'
-                };
-                break;
-            case 'leftRight':
-                snapObject = {
-                    start: { x: (targetBounds.x + targetBounds.width), y: Math.min(targetBounds.y, bounds.y) },
-                    end: {
-                        x: (targetBounds.x + targetBounds.width),
-                        y: Math.max(targetBounds.y + targetBounds.height, bounds.y + bounds.height)
-                    },
-                    offsetX: targetBounds.x + targetBounds.width - bounds.x, offsetY: 0, type: 'sideAlign'
-                };
-                break;
-            case 'rightLeft':
-                snapObject = {
-                    start: { x: (targetBounds.x), y: (Math.min(targetBounds.y, bounds.y)) },
-                    end: { x: (targetBounds.x), y: Math.max(targetBounds.y + targetBounds.height, bounds.y + bounds.height) },
-                    offsetX: targetBounds.x - bounds.x - bounds.width, offsetY: 0, type: 'sideAlign'
-                };
-                break;
-            case 'centerX':
-                snapObject = {
-                    start: { x: (targetBounds.x + targetBounds.width / 2), y: (Math.min(targetBounds.y, bounds.y)) },
-                    end: {
-                        x: (targetBounds.x + targetBounds.width / 2),
-                        y: Math.max(targetBounds.y + targetBounds.height, bounds.y + bounds.height)
-                    },
-                    offsetX: targetBounds.x + targetBounds.width / 2 - (bounds.x + bounds.width / 2), offsetY: 0, type: 'centerAlign'
-                };
-                break;
-            case 'centerY':
-                snapObject = {
-                    start: { x: (Math.min(targetBounds.x, bounds.x)), y: targetBounds.y + targetBounds.height / 2 },
-                    end: {
-                        x: (Math.max(targetBounds.x + targetBounds.width, bounds.x + bounds.width)),
-                        y: targetBounds.y + targetBounds.height / 2
-                    },
-                    offsetY: targetBounds.y + targetBounds.height / 2 - (bounds.y + bounds.height / 2), offsetX: 0, type: 'centerAlign'
-                };
-                break;
+        case 'left':
+            snapObject = {
+                start: { x: (targetBounds.x), y: Math.min(targetBounds.y, bounds.y) },
+                end: { x: (targetBounds.x), y: Math.max(targetBounds.y + targetBounds.height, bounds.y + bounds.height) },
+                offsetX: targetBounds.x - bounds.x, offsetY: 0, type: 'sideAlign'
+            };
+            break;
+        case 'right':
+            snapObject = {
+                type: 'sideAlign',
+                start: { x: (targetBounds.x + targetBounds.width), y: Math.min(targetBounds.y, bounds.y) },
+                offsetX: targetBounds.x + targetBounds.width - bounds.x - bounds.width,
+                offsetY: 0,
+                end: {
+                    x: (targetBounds.x + targetBounds.width),
+                    y: Math.max(targetBounds.y + targetBounds.height, bounds.y + bounds.height)
+                }
+            };
+            break;
+        case 'top':
+            snapObject = {
+                offsetY: targetBounds.y - bounds.y, offsetX: 0, type: 'sideAlign',
+                start: { x: (Math.min(targetBounds.x, bounds.x)), y: targetBounds.y },
+                end: { x: (Math.max(targetBounds.x + targetBounds.width, bounds.x + bounds.width)), y: targetBounds.y }
+            };
+            break;
+        case 'bottom':
+            snapObject = {
+                type: 'sideAlign', offsetY: targetBounds.y + targetBounds.height - bounds.y - bounds.height, offsetX: 0,
+                end: {
+                    x: (Math.max(targetBounds.x + targetBounds.width, bounds.x + bounds.width)),
+                    y: targetBounds.y + targetBounds.height
+                },
+                start: { x: (Math.min(targetBounds.x, bounds.x)), y: targetBounds.y + targetBounds.height }
+            };
+            break;
+        case 'topBottom':
+            snapObject = {
+                start: { x: (Math.min(targetBounds.x, bounds.x)), y: targetBounds.y + targetBounds.height },
+                end: {
+                    x: (Math.max(targetBounds.x + targetBounds.width, bounds.x + bounds.width)),
+                    y: targetBounds.y + targetBounds.height
+                },
+                offsetY: targetBounds.y + targetBounds.height - bounds.y, offsetX: 0, type: 'sideAlign'
+            };
+            break;
+        case 'bottomTop':
+            snapObject = {
+                start: { x: (Math.min(targetBounds.x, bounds.x)), y: targetBounds.y },
+                end: { x: (Math.max(targetBounds.x + targetBounds.width, bounds.x + bounds.width)), y: targetBounds.y },
+                offsetY: targetBounds.y - bounds.y - bounds.height, offsetX: 0, type: 'sideAlign'
+            };
+            break;
+        case 'leftRight':
+            snapObject = {
+                start: { x: (targetBounds.x + targetBounds.width), y: Math.min(targetBounds.y, bounds.y) },
+                end: {
+                    x: (targetBounds.x + targetBounds.width),
+                    y: Math.max(targetBounds.y + targetBounds.height, bounds.y + bounds.height)
+                },
+                offsetX: targetBounds.x + targetBounds.width - bounds.x, offsetY: 0, type: 'sideAlign'
+            };
+            break;
+        case 'rightLeft':
+            snapObject = {
+                start: { x: (targetBounds.x), y: (Math.min(targetBounds.y, bounds.y)) },
+                end: { x: (targetBounds.x), y: Math.max(targetBounds.y + targetBounds.height, bounds.y + bounds.height) },
+                offsetX: targetBounds.x - bounds.x - bounds.width, offsetY: 0, type: 'sideAlign'
+            };
+            break;
+        case 'centerX':
+            snapObject = {
+                start: { x: (targetBounds.x + targetBounds.width / 2), y: (Math.min(targetBounds.y, bounds.y)) },
+                end: {
+                    x: (targetBounds.x + targetBounds.width / 2),
+                    y: Math.max(targetBounds.y + targetBounds.height, bounds.y + bounds.height)
+                },
+                offsetX: targetBounds.x + targetBounds.width / 2 - (bounds.x + bounds.width / 2), offsetY: 0, type: 'centerAlign'
+            };
+            break;
+        case 'centerY':
+            snapObject = {
+                start: { x: (Math.min(targetBounds.x, bounds.x)), y: targetBounds.y + targetBounds.height / 2 },
+                end: {
+                    x: (Math.max(targetBounds.x + targetBounds.width, bounds.x + bounds.width)),
+                    y: targetBounds.y + targetBounds.height / 2
+                },
+                offsetY: targetBounds.y + targetBounds.height / 2 - (bounds.y + bounds.height / 2), offsetX: 0, type: 'centerAlign'
+            };
+            break;
         }
         return snapObject;
     }
-    /** 
-     * Calculate the snap angle
+
+    /**
+     *  Calculate the snap angle \
+     *
+     * @returns {  void }  Calculate the snap angle .\
+     * @param {Diagram} diagram - provide the diagram value.
+     * @param {number} angle - provide the angle value.
      * @private
      */
     public snapAngle(diagram: Diagram, angle: number): number {
-        let snapSettings: SnapSettingsModel = this.diagram.snapSettings;
-        let snapAngle: number = snapSettings.snapAngle;
-        let width: number = angle % (snapAngle || 0);
+        const snapSettings: SnapSettingsModel = this.diagram.snapSettings;
+        const snapAngle: number = snapSettings.snapAngle;
+        const width: number = angle % (snapAngle || 0);
         if (width >= (snapAngle / 2)) {
             return angle + snapAngle - width;
         } else {
             return angle - width;
         }
     }
-    /**
-     * Check whether the node to be snapped or not.
-     */
+
+    //Check whether the node to be snapped or not.
     private canConsider(nameTable: NodeModel, selectedObject: SelectorModel, target: DiagramElement): boolean {
-        let consider: boolean = false;
+        const consider: boolean = false;
         if (this.diagram.selectedItems.nodes.length && this.diagram.selectedItems.nodes[0].id === (target as NodeModel).id) {
             return false;
         } else {
             return true;
         }
     }
-    /**
-     * Find the total number of nodes in diagram using SpatialSearch
-     */
+
+    //Find the total number of nodes in diagram using SpatialSearch
     private findNodes(
         spatialSearch: SpatialSearch, node: SelectorModel, child: Rect, viewPort?: Rect,
         nodesInView?: DiagramElement[]): DiagramElement[] {
-        let nodes: DiagramElement[] = [];
+        const nodes: DiagramElement[] = [];
         let nd: DiagramElement;
         let bounds: Rect;
-        let quads: Quad[] = spatialSearch.findQuads(nodesInView ? viewPort : child);
+        const quads: Quad[] = spatialSearch.findQuads(nodesInView ? viewPort : child);
         for (let i: number = 0; i < quads.length; i++) {
-            let quad: Quad = quads[i];
+            const quad: Quad = quads[i];
             if (quad.objects.length > 0) {
                 for (let j: number = 0; j < quad.objects.length; j++) {
                     nd = quad.objects[j] as DiagramElement;
                     if (!(this.diagram.nameTable[nd.id] instanceof Connector) && nd.visible
                         && !(this.diagram.nameTable[nd.id].shape.type === 'SwimLane') && !(this.diagram.nameTable[nd.id].isLane) &&
-                        !(this.diagram.nameTable[nd.id].isPhase) && !(this.diagram.nameTable[nd.id].isHeader) && nd.id !== 'helper') {
+                        !(this.diagram.nameTable[nd.id].isPhase) && !(this.diagram.nameTable[nd.id].isHeader) && nd.id != 'helper') {
                         bounds = getBounds(nd);
                         if (nodes.indexOf(nd) === -1 && this.intersectsRect(child, bounds)) {
                             nodes.push(nd);
@@ -1142,14 +1142,18 @@ export class Snapping {
     private getAdornerLayerSvg(): SVGSVGElement {
         return this.diagram.diagramRenderer.adornerSvgLayer;
     }
+
     /**
-     * To remove grid lines on mouse move and mouse up
+     *  To remove grid lines on mouse move and mouse up \
+     *
+     * @returns {  void }  To remove grid lines on mouse move and mouse up .\
+     * @param {Diagram} diagram - provide the source value.
      * @private
      */
     public removeGuidelines(diagram: Diagram): void {
-        let selectionRect: SVGElement =
+        const selectionRect: SVGElement =
             (this.getAdornerLayerSvg() as SVGSVGElement).getElementById('_SnappingLines') as SVGElement;
-        let line: SVGElement =
+        const line: SVGElement =
             (this.getAdornerLayerSvg() as SVGSVGElement).getElementById('pivotLine') as SVGElement;
         if (selectionRect) {
             selectionRect.parentNode.removeChild(selectionRect);
@@ -1158,9 +1162,8 @@ export class Snapping {
             line.parentNode.removeChild(line);
         }
     }
-    /**
-     * Sort the objects by its distance
-     */
+
+    //Sort the objects by its distance
     private sortByDistance(obj: (Objects | SnapSize)[], value: string, ascending?: boolean): void {
         let i: number;
         let j: number;
@@ -1187,9 +1190,8 @@ export class Snapping {
             }
         }
     }
-    /**
-     * To find nodes that are equally placed at left of the selected node
-     */
+
+    //To find nodes that are equally placed at left of the selected node
     private findEquallySpacedNodesAtLeft(objectsAtLeft: Objects[], equalDistance: number, top: number, equallySpaced: Objects[]): number {
         let prevBounds: Rect;
         let targetBounds: Rect;
@@ -1210,13 +1212,12 @@ export class Snapping {
         }
         return top;
     }
-    /**
-     * To find nodes that are equally placed at right of the selected node
-     */
+
+    //To find nodes that are equally placed at right of the selected node
     private findEquallySpacedNodesAtRight(
         objectsAtRight: Objects[], equalDistance: number, top: number, equallySpaced: Objects[],
         snapObjDistance: number): number {
-        let actualDistance: number = objectsAtRight[0].distance;
+        const actualDistance: number = objectsAtRight[0].distance;
         let target: DiagramElement;
         let targetBounds: Rect;
         let prevBounds: Rect;
@@ -1259,13 +1260,11 @@ export class Snapping {
         }
         return right;
     }
-    /**
-     * To find nodes that are equally placed at bottom of the selected node
-     */
+    //To find nodes that are equally placed at bottom of the selected node
     private findEquallySpacedNodesAtBottom(
         objectsAtBottom: Objects[], equalDistance: number, right: number,
         equallySpaced: Objects[], snapObjDistance: number): number {
-        let actualDistance: number = objectsAtBottom[0].distance;
+        const actualDistance: number = objectsAtBottom[0].distance;
         let target: DiagramElement;
         let targetBounds: Rect;
         let prevBounds: Rect;
@@ -1291,6 +1290,7 @@ export class Snapping {
     }
     /**
      * To get Adoner layer to draw snapLine
+     *
      * @private
      */
     public getLayer(): SVGElement {
@@ -1306,6 +1306,7 @@ export class Snapping {
 
     /**
      * Constructor for the snapping module
+     *
      * @private
      */
 
@@ -1314,9 +1315,9 @@ export class Snapping {
     // }
 
     /**
-     * To destroy the snapping module
-     * @return {void}
-     * @private
+     *To destroy the ruler
+     *
+     * @returns {void} To destroy the ruler
      */
 
     public destroy(): void {
@@ -1326,7 +1327,10 @@ export class Snapping {
     }
 
     /**
-     * Get module name.
+     * Core method to return the component name.
+     *
+     * @returns {string}  Core method to return the component name.
+     * @private
      */
     protected getModuleName(): string {
         /**

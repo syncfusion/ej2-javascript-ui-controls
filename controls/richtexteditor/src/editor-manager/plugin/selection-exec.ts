@@ -6,6 +6,7 @@ import { IHtmlKeyboardEvent } from './../../editor-manager/base/interface';
 import * as EVENTS from './../../common/constant';
 /**
  * Selection EXEC internal component
+ * 
  * @hidden
  * @deprecated
  */
@@ -13,10 +14,12 @@ export class SelectionBasedExec {
     private parent: EditorManager;
     /**
      * Constructor for creating the Formats plugin
+     *
+     * @param {EditorManager} parent - specifies the parent element
      * @hidden
      * @deprecated
      */
-    constructor(parent: EditorManager) {
+    public constructor(parent: EditorManager) {
         this.parent = parent;
         this.addEventListener();
     }
@@ -25,7 +28,7 @@ export class SelectionBasedExec {
         this.parent.observer.on(EVENTS.KEY_DOWN_HANDLER, this.keyDownHandler, this);
     }
     private keyDownHandler(e: IHtmlKeyboardEvent): void {
-        let validFormats: string[] = ['bold', 'italic', 'underline', 'strikethrough', 'superscript',
+        const validFormats: string[] = ['bold', 'italic', 'underline', 'strikethrough', 'superscript',
             'subscript', 'uppercase', 'lowercase'];
         if (e.event.ctrlKey && validFormats.indexOf(e.event.action) > -1) {
             e.event.preventDefault();

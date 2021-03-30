@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 /**
  * AccumulationChart DataLabel module file
  */
@@ -40,7 +43,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         super(accumulation);
         this.id = accumulation.element.id + '_datalabel_Series_';
         if (accumulation.title) {
-            let titleSize: Size = measureText(accumulation.title, accumulation.titleStyle);
+            const titleSize: Size = measureText(accumulation.title, accumulation.titleStyle);
             this.titleRect = new Rect(
                 accumulation.availableSize.width / 2 - titleSize.width / 2,
                 accumulation.margin.top,
@@ -50,13 +53,13 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
     /**
      * Method to get datalabel text location.
+     *
      * @private
      */
-
     public getDataLabelPosition(
         point: AccPoints, dataLabel: AccumulationDataLabelSettingsModel, textSize: Size,
-        points: AccPoints[], parent: Element, id: string): void {
-        let radius: number = this.isCircular() ? (!this.isVariousRadius() ? this.accumulation.pieSeriesModule.labelRadius :
+        points: AccPoints[]): void {
+        const radius: number = this.isCircular() ? (!this.isVariousRadius() ? this.accumulation.pieSeriesModule.labelRadius :
             this.accumulation.pieSeriesModule.getLabelRadius(this.accumulation.visibleSeries[0], point)) :
             this.getLabelDistance(point, dataLabel);
 
@@ -66,7 +69,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         point.labelAngle = point.midAngle;
         point.labelPosition = dataLabel.position;
         if (this.accumulation.enableSmartLabels) {
-            this.getSmartLabel(point, dataLabel, textSize, points, parent, id);
+            this.getSmartLabel(point, dataLabel, textSize, points);
         }
     }
     /**
@@ -76,10 +79,10 @@ export class AccumulationDataLabel extends AccumulationBase {
     private getLabelRegion(
         point: AccPoints, position: AccumulationLabelPosition, textSize: Size,
         labelRadius: number, margin: number, endAngle: number = 0): void {
-        let labelAngle: number = endAngle || point.midAngle;
-        let space: number = 10;
+        const labelAngle: number = endAngle || point.midAngle;
+        const space: number = 10;
 
-        let location: ChartLocation = degreeToLocation(labelAngle, labelRadius, this.isCircular() ? this.center :
+        const location: ChartLocation = degreeToLocation(labelAngle, labelRadius, this.isCircular() ? this.center :
             this.getLabelLocation(point, position));
 
         location.y = (position === 'Inside') ? (location.y - textSize.height / 2) : location.y;
@@ -103,13 +106,13 @@ export class AccumulationDataLabel extends AccumulationBase {
      */
     private getSmartLabel(
         point: AccPoints, dataLabel: AccumulationDataLabelSettingsModel, textSize: Size,
-        points: AccPoints[], parent: Element, id: string): void {
+        points: AccPoints[]): void {
 
-        let circular: boolean = this.isCircular();
+        const circular: boolean = this.isCircular();
 
         let labelRadius: number = circular ? this.radius : this.getLabelDistance(point, dataLabel);
 
-        let connectorLength: string = circular ? (dataLabel.connectorStyle.length || '4%') :
+        const connectorLength: string = circular ? (dataLabel.connectorStyle.length || '4%') :
             '0px';
 
         labelRadius += stringToNumber(connectorLength, labelRadius);
@@ -137,16 +140,16 @@ export class AccumulationDataLabel extends AccumulationBase {
             }
         }
         if (this.isOverlapping(point, points) && (this.accumulation.type === 'Pyramid' || this.accumulation.type === 'Funnel')) {
-            let position : string = 'OutsideLeft';
-            let space : number = 10;
-            let labelAngle: number = point.midAngle || 0 ;
-            let labelRadius: number = circular ? this.radius : this.getLabelDistance(point, dataLabel);
-            let location: ChartLocation = degreeToLocation(labelAngle, -labelRadius, this.isCircular() ? this.center :
-            this.getLabelLocation(point, position));
+            const position: string = 'OutsideLeft';
+            const space: number = 10;
+            const labelAngle: number = point.midAngle || 0;
+            const labelRadius: number = circular ? this.radius : this.getLabelDistance(point, dataLabel);
+            const location: ChartLocation = degreeToLocation(labelAngle, -labelRadius, this.isCircular() ? this.center :
+                this.getLabelLocation(point, position));
             point.labelRegion = new Rect(
-            location.x, location.y, textSize.width + (this.marginValue * 2), textSize.height + (this.marginValue * 2));
+                location.x, location.y, textSize.width + (this.marginValue * 2), textSize.height + (this.marginValue * 2));
             point.labelRegion.y -= point.labelRegion.height / 2;
-            point.labelRegion.x = point.labelRegion.x - space - point.labelRegion.width ;
+            point.labelRegion.x = point.labelRegion.x - space - point.labelRegion.width;
             if (previousPoint && previousPoint.labelRegion && (isOverlap(point.labelRegion, previousPoint.labelRegion)
                 || this.isOverlapping(point, points) || this.isConnectorLineOverlapping(point, previousPoint))) {
                 this.setOuterSmartLabel(previousPoint, point, dataLabel.border.width, labelRadius, textSize, this.marginValue);
@@ -156,24 +159,25 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     /**
      * To find trimmed datalabel tooltip needed.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public move(e: Event, x: number, y: number, isTouch?: boolean): void {
         if ((<HTMLElement>e.target).textContent.indexOf('...') > -1) {
-            let targetId: string[] = (<HTMLElement>e.target).id.split(this.id);
+            const targetId: string[] = (<HTMLElement>e.target).id.split(this.id);
             if (targetId.length === 2) {
-                let seriesIndex: number = parseInt(targetId[1].split('_text_')[0], 10);
-                let pointIndex: number = parseInt(targetId[1].split('_text_')[1], 10);
+                const seriesIndex: number = parseInt(targetId[1].split('_text_')[0], 10);
+                const pointIndex: number = parseInt(targetId[1].split('_text_')[1], 10);
                 if (!isNaN(seriesIndex) && !isNaN(pointIndex)) {
                     if (isTouch) {
                         removeElement(this.accumulation.element.id + '_EJ2_Datalabel_Tooltip');
                     }
-                    let point: AccPoints = getSeriesFromIndex(seriesIndex, (this.accumulation).visibleSeries).points[pointIndex];
+                    const point: AccPoints = getSeriesFromIndex(seriesIndex, (this.accumulation).visibleSeries).points[pointIndex];
                     showTooltip(
                         point.text || point.y.toString(), x, y, this.areaRect.width,
                         this.accumulation.element.id + '_EJ2_Datalabel_Tooltip',
-                        getElement(this.accumulation.element.id + '_Secondary_Element'),
+                        getElement(this.accumulation.element.id + '_Secondary_Element')
                     );
                 }
             }
@@ -187,6 +191,8 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
     /**
      * To find previous valid label point
+     *
+     * @returns {AccPoints} Find the previous value of accumulation point.
      */
     private findPreviousPoint(points: AccPoints[], index: number, position: AccumulationLabelPosition): AccPoints {
         let point: AccPoints = points[0];
@@ -200,6 +206,8 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
     /**
      * To find current point datalabel is overlapping with other points
+     *
+     * @returns {boolean} It returns boolean value of overlapping.
      */
     private isOverlapping(currentPoint: AccPoints, points: AccPoints[]): boolean {
         for (let i: number = currentPoint.index - 1; i >= 0; i--) {
@@ -265,7 +273,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         previousPoint: AccPoints, point: AccPoints, border: number, labelRadius: number,
         textsize: Size, margin: number): void {
         if (!this.isCircular()) {
-            this.setSmartLabelForSegments(point, previousPoint, labelRadius, textsize, margin);
+            this.setSmartLabelForSegments(point, previousPoint);
         } else {
             let labelAngle: number = this.getOverlappedAngle(previousPoint.labelRegion, point.labelRegion, point.midAngle, border * 2);
             this.getLabelRegion(point, 'Outside', textsize, labelRadius, margin, labelAngle);
@@ -289,12 +297,14 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     /**
      * Sets smart label positions for funnel and pyramid series
+     *
+     * @returns {void} setSmartLabelForSegments.
      */
     private setSmartLabelForSegments(
-        point: AccPoints, prevPoint: AccPoints, distance: number, textSize: Size, margin: number): void {
-        let textRegion: Rect = point.labelRegion;
+        point: AccPoints, prevPoint: AccPoints): void {
+        const textRegion: Rect = point.labelRegion;
         //let overlapWidth: number = prevPoint.labelRegion.x + prevPoint.labelRegion.width - textRegion.x;
-        let overlapHeight: number = this.accumulation.type === 'Funnel' ?
+        const overlapHeight: number = this.accumulation.type === 'Funnel' ?
             prevPoint.labelRegion.y - (textRegion.y + textRegion.height) :
             point.labelRegion.y - (prevPoint.labelRegion.y + prevPoint.labelRegion.height);
         if (overlapHeight < 0) {
@@ -304,18 +314,20 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     /**
      * To find connector line overlapping.
+     *
+     * @returns {boolean} To find connector line overlapping or not.
      */
     private isConnectorLineOverlapping(point: AccPoints, previous: AccPoints): boolean {
-        let position: string ;
+        let position: string;
         if (!this.isCircular() && point.labelRegion.x < point.region.x) {
             position = 'outsideLeft';
         }
-        let start: ChartLocation = this.getLabelLocation(point, position );
-        let end: ChartLocation = new ChartLocation(0, 0);
+        const start: ChartLocation = this.getLabelLocation(point, position);
+        const end: ChartLocation = new ChartLocation(0, 0);
         this.getEdgeOfLabel(point.labelRegion, point.labelAngle, end, 0, point);
 
-        let previousstart: ChartLocation = this.getLabelLocation(previous);
-        let previousend: ChartLocation = new ChartLocation(0, 0);
+        const previousstart: ChartLocation = this.getLabelLocation(previous);
+        const previousend: ChartLocation = new ChartLocation(0, 0);
         this.getEdgeOfLabel(previous.labelRegion, previous.labelAngle, previousend, 0, point);
         return this.isLineRectangleIntersect(start, end, point.labelRegion) ||
             this.isLineRectangleIntersect(start, end, previous.labelRegion) ||
@@ -323,9 +335,11 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
     /**
      * To find two rectangle intersect
+     *
+     * @returns {boolean} To find line rectangle intersect value.
      */
     private isLineRectangleIntersect(line1: ChartLocation, line2: ChartLocation, rect: Rect): boolean {
-        let rectPoints: ChartLocation[] = [
+        const rectPoints: ChartLocation[] = [
             new ChartLocation(Math.round(rect.x), Math.round(rect.y)),
             new ChartLocation(Math.round((rect.x + rect.width)), Math.round(rect.y)),
             new ChartLocation(Math.round((rect.x + rect.width)), Math.round((rect.y + rect.height))),
@@ -344,18 +358,20 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
     /**
      * To find two line intersect
+     *
+     * @returns {boolean} To find line intersect or not.
      */
     private isLinesIntersect(point1: ChartLocation, point2: ChartLocation, point11: ChartLocation, point12: ChartLocation): boolean {
-        let a1: number = point2.y - point1.y;
-        let b1: number = point1.x - point2.x;
-        let c1: number = a1 * point1.x + b1 * point1.y;
-        let a2: number = point12.y - point11.y;
-        let b2: number = point11.x - point12.x;
-        let c2: number = a2 * point11.x + b2 * point11.y;
-        let delta: number = a1 * b2 - a2 * b1;
+        const a1: number = point2.y - point1.y;
+        const b1: number = point1.x - point2.x;
+        const c1: number = a1 * point1.x + b1 * point1.y;
+        const a2: number = point12.y - point11.y;
+        const b2: number = point11.x - point12.x;
+        const c2: number = a2 * point11.x + b2 * point11.y;
+        const delta: number = a1 * b2 - a2 * b1;
         if (delta !== 0) {
-            let x: number = (b2 * c1 - b1 * c2) / delta;
-            let y: number = (a1 * c2 - a2 * c1) / delta;
+            const x: number = (b2 * c1 - b1 * c2) / delta;
+            const y: number = (a1 * c2 - a2 * c1) / delta;
             let lies: boolean = Math.min(point1.x, point2.x) <= x && x <= Math.max(point1.x, point2.x);
             lies = lies && Math.min(point1.y, point2.y) <= y && y <= Math.max(point1.y, point2.y);
             lies = lies && Math.min(point11.x, point12.x) <= x && x <= Math.max(point11.x, point12.x);
@@ -366,6 +382,8 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
     /**
      * To get two rectangle overlapping angles.
+     *
+     * @returns {number} Get overlapped angle.
      */
     private getOverlappedAngle(first: Rect, second: Rect, angle: number, padding: number): number {
         let x: number = first.x;
@@ -380,26 +398,28 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     /**
      * To get connector line path
+     *
+     * @returns {string} Get connector line path.
      */
     private getConnectorPath(label: Rect, point: AccPoints, dataLabel: AccumulationDataLabelSettingsModel, end: number = 0): string {
-        let connector: ConnectorModel = dataLabel.connectorStyle;
+        const connector: ConnectorModel = dataLabel.connectorStyle;
 
-        let labelRadius: number = this.isCircular() ? (!this.isVariousRadius() ? this.labelRadius :
+        const labelRadius: number = this.isCircular() ? (!this.isVariousRadius() ? this.labelRadius :
             this.accumulation.pieSeriesModule.getLabelRadius(this.accumulation.visibleSeries[0], point)) :
             this.getLabelDistance(point, dataLabel);
         //let labelRadius: number = this.isCircular() ? this.labelRadius : this.getLabelDistance(point, dataLabel);
 
-        let start: ChartLocation = this.getConnectorStartPoint(point, connector);
+        const start: ChartLocation = this.getConnectorStartPoint(point, connector);
 
-        let labelAngle: number = this.accumulation.enableSmartLabels ? point.midAngle :  end || point.midAngle;
+        const labelAngle: number = this.accumulation.enableSmartLabels ? point.midAngle : end || point.midAngle;
 
         let middle: ChartLocation = new ChartLocation(0, 0);
 
-        let endPoint: ChartLocation = this.getEdgeOfLabel(label, labelAngle, middle, connector.width, point);
+        const endPoint: ChartLocation = this.getEdgeOfLabel(label, labelAngle, middle, connector.width, point);
 
         if (connector.type === 'Curve') {
             if (this.isCircular()) {
-                let r: number = labelRadius - (
+                const r: number = labelRadius - (
                     this.isVariousRadius() ? stringToNumber(point.sliceRadius, this.accumulation.pieSeriesModule.seriesRadius) :
                         this.radius);
                 //let r: number = labelRadius - this.radius;
@@ -422,16 +442,18 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     /**
      * Finds the curved path for funnel/pyramid data label connectors
+     *
+     * @returns {string} Get poly line path.
      */
     private getPolyLinePath(start: ChartLocation, end: ChartLocation): string {
-        let controlPoints: ChartLocation[] = [start, end];
+        const controlPoints: ChartLocation[] = [start, end];
         if (start.y === end.y) {
             return 'M ' + start.x + ' ' + start.y + ' L ' + end.x + ' ' + end.y;
         }
         let path: string = 'M';
         for (let i: number = 0; i <= 16; i++) {
-            let t: number = i / 16;
-            let points: ChartLocation = this.getBezierPoint(t, controlPoints, 0, 2);
+            const t: number = i / 16;
+            const points: ChartLocation = this.getBezierPoint(t, controlPoints, 0, 2);
             path += points.x + ',' + points.y;
             if (i !== 16) {
                 path += ' L';
@@ -442,19 +464,21 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     /**
      * Finds the bezier point for funnel/pyramid data label connectors
+     *
+     * @returns {ChartLocation} Get bazier point.
      */
     private getBezierPoint(t: number, controlPoints: ChartLocation[], index: number, count: number): ChartLocation {
         if (count === 1) {
             return controlPoints[index];
         }
-        let p0: ChartLocation = this.getBezierPoint(t, controlPoints, index, count - 1);
-        let p1: ChartLocation = this.getBezierPoint(t, controlPoints, index + 1, count - 1);
-        let x: number = (p0.x) ? p0.x : p0.x;
-        let y: number = (p0.y) ? p0.y : p0.y;
-        let x1: number = (p1.x) ? p1.x : p1.x;
-        let y1: number = (p1.y) ? p1.y : p1.y;
-        let x2: number = (1 - t) * x + t * x1;
-        let y2: number = (1 - t) * y + t * y1;
+        const p0: ChartLocation = this.getBezierPoint(t, controlPoints, index, count - 1);
+        const p1: ChartLocation = this.getBezierPoint(t, controlPoints, index + 1, count - 1);
+        const x: number = (p0.x) ? p0.x : p0.x;
+        const y: number = (p0.y) ? p0.y : p0.y;
+        const x1: number = (p1.x) ? p1.x : p1.x;
+        const y1: number = (p1.y) ? p1.y : p1.y;
+        const x2: number = (1 - t) * x + t * x1;
+        const y2: number = (1 - t) * y + t * y1;
         if (p0.x) {
             return { x: x2, y: y2 };
         } else {
@@ -464,15 +488,17 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     /**
      * To get label edges based on the center and label rect position.
+     *
+     * @returns {ChartLocation} Get label edge value.
      */
-    private getEdgeOfLabel(labelshape: Rect, angle: number, middle: ChartLocation,  border: number = 1, point ?: AccPoints): ChartLocation {
-        let edge: ChartLocation = new ChartLocation(labelshape.x, labelshape.y);
+    private getEdgeOfLabel(labelshape: Rect, angle: number, middle: ChartLocation, border: number = 1, point?: AccPoints): ChartLocation {
+        const edge: ChartLocation = new ChartLocation(labelshape.x, labelshape.y);
         if (angle >= 90 && angle <= 270) {
             edge.x += labelshape.width + border / 2;
             edge.y += labelshape.height / 2;
             middle.x = edge.x + 10;
             middle.y = edge.y;
-        } else if (point && point.region && point.region.x > point.labelRegion.x ) {
+        } else if (point && point.region && point.region.x > point.labelRegion.x) {
             edge.x += border * 2 + labelshape.width;
             edge.y += labelshape.height / 2;
             middle.x = edge.x + 10;
@@ -488,49 +514,52 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     /**
      * Finds the distance between the label position and the edge/center of the funnel/pyramid
+     *
+     * @returns {number} Get label distance.
      */
     private getLabelDistance(point: AccPoints, dataLabel: AccumulationDataLabelSettingsModel): number {
         if (point.labelPosition && dataLabel.position !== point.labelPosition || dataLabel.connectorStyle.length) {
-            let length: number = stringToNumber(dataLabel.connectorStyle.length || '70px', this.accumulation.initialClipRect.width);
+            const length: number = stringToNumber(dataLabel.connectorStyle.length || '70px', this.accumulation.initialClipRect.width);
             if (length < this.accumulation.initialClipRect.width) {
                 return length;
             }
         }
 
-        let position: AccumulationLabelPosition = point.labelPosition || dataLabel.position;
-        let series: AccumulationSeries = this.accumulation.visibleSeries[0];
-        let extraSpace: number = (this.accumulation.initialClipRect.width - series.triangleSize.width) / 2;
+        const position: AccumulationLabelPosition = point.labelPosition || dataLabel.position;
+        const series: AccumulationSeries = this.accumulation.visibleSeries[0];
+        const extraSpace: number = (this.accumulation.initialClipRect.width - series.triangleSize.width) / 2;
 
         let labelLocation: number;
         switch (position) {
-            case 'Inside':
-                return 0;
-            case 'Outside':
-                labelLocation = point.symbolLocation.x + point.labelOffset.x;
-                return this.accumulation.initialClipRect.width - labelLocation - extraSpace;
+        case 'Inside':
+            return 0;
+        case 'Outside':
+            labelLocation = point.symbolLocation.x + point.labelOffset.x;
+            return this.accumulation.initialClipRect.width - labelLocation - extraSpace;
         }
     }
 
     /**
      * Finds the label position / beginning of the connector(ouside funnel labels)
+     *
+     * @returns {ChartLocation} Get label location.
      */
     private getLabelLocation(point: AccPoints, position: AccumulationLabelPosition | string = 'Outside'): ChartLocation {
         if (this.accumulation.type !== 'Pie') {
-            position = position === 'OutsideLeft' ? 'OutsideLeft' :   point.labelPosition || position;
-            let location: ChartLocation = {
+            position = position === 'OutsideLeft' ? 'OutsideLeft' : point.labelPosition || position;
+            const location: ChartLocation = {
                 x: point.symbolLocation.x,
                 y: point.symbolLocation.y - point.labelOffset.y
             };
             switch (position) {
-                case 'Inside':
-                    location.y = point.region.y + point.region.height / 2;
-                    break;
-                case 'Outside':
-                    location.x += point.labelOffset.x;
-                    break;
-                case 'OutsideLeft':
-                     location.x -= point.labelOffset.x;
-
+            case 'Inside':
+                location.y = point.region.y + point.region.height / 2;
+                break;
+            case 'Outside':
+                location.x += point.labelOffset.x;
+                break;
+            case 'OutsideLeft':
+                location.x -= point.labelOffset.x;
             }
             return location;
         } else {
@@ -547,13 +576,15 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     /**
      * Finds the beginning of connector line
+     *
+     * @returns {ChartLocation} Staring point of connector line.
      */
     private getConnectorStartPoint(point: AccPoints, connector: ConnectorModel): ChartLocation {
         // return this.isCircular() ? degreeToLocation(point.midAngle, this.radius - connector.width, this.center) :
         //     this.getLabelLocation(point);
-        let position : string;
-        if (!this.isCircular() && point.region.x > point.labelRegion.x ) {
-            position  = 'OutsideLeft';
+        let position: string;
+        if (!this.isCircular() && point.region.x > point.labelRegion.x) {
+            position = 'OutsideLeft';
         }
         return this.isCircular() ? degreeToLocation(
             point.midAngle,
@@ -566,11 +597,12 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     /**
      * To find area rect based on margin, available size.
+     *
      * @private
      */
     public findAreaRect(): void {
         this.areaRect = new Rect(0, 0, this.accumulation.availableSize.width, this.accumulation.availableSize.height);
-        let margin: MarginModel = this.accumulation.margin;
+        const margin: MarginModel = this.accumulation.margin;
         subtractThickness(this.areaRect, new Thickness(margin.left, margin.right, margin.top, margin.bottom));
     }
     /**
@@ -581,25 +613,26 @@ export class AccumulationDataLabel extends AccumulationBase {
         points: AccPoints[], series: number, templateElement?: HTMLElement,
         redraw?: boolean
     ): void {
-        let id: string = this.accumulation.element.id + '_datalabel_Series_' + series + '_';
-        let datalabelGroup: Element = this.accumulation.renderer.createGroup({ id: id + 'g_' + point.index });
+        const id: string = this.accumulation.element.id + '_datalabel_Series_' + series + '_';
+        const datalabelGroup: Element = this.accumulation.renderer.createGroup({ id: id + 'g_' + point.index });
         point.label = point.originalText || point.y.toString();
-        let border: BorderModel = { width: dataLabel.border.width, color: dataLabel.border.color };
-        let argsFont: FontModel = <FontModel>(extend({}, getValue('properties', dataLabel.font), null, true));
-        let argsData: IAccTextRenderEventArgs = {
+        const border: BorderModel = { width: dataLabel.border.width, color: dataLabel.border.color };
+        const argsFont: FontModel = <FontModel>(extend({}, getValue('properties', dataLabel.font), null, true));
+        const argsData: IAccTextRenderEventArgs = {
             cancel: false, name: textRender, series: this.accumulation.visibleSeries[0], point: point,
             text: point.label, border: border, color: dataLabel.fill, template: dataLabel.template, font: argsFont
         };
         this.accumulation.trigger(textRender, argsData);
         point.argsData = argsData;
-        let isTemplate: boolean = argsData.template !== null;
+        const isTemplate: boolean = argsData.template !== null;
         point.labelVisible = !argsData.cancel; point.text = point.label = argsData.text;
         if (Number(point.label)) {
             point.label = this.accumulation.intl.formatNumber(+point.label, {
-                useGrouping: this.accumulation.useGroupingSeparator});
-            }
+                useGrouping: this.accumulation.useGroupingSeparator
+            });
+        }
         this.marginValue = argsData.border.width ? (5 + argsData.border.width) : 1;
-        let childElement: HTMLElement = createElement('div', {
+        const childElement: HTMLElement = createElement('div', {
             id: this.accumulation.element.id + '_Series_' + 0 + '_DataLabel_' + point.index,
             styles: 'position: absolute;background-color:' + argsData.color + ';' +
                 getFontStyle(dataLabel.font) + ';border:' + argsData.border.width + 'px solid ' + argsData.border.color + ';'
@@ -615,14 +648,14 @@ export class AccumulationDataLabel extends AccumulationBase {
         argsData: IAccTextRenderEventArgs, datalabelGroup: Element, id: string,
         dataLabel: AccumulationDataLabelSettingsModel, redraw?: boolean, clientRect?: ClientRect, isReactCallback?: boolean
         ): void {
-        let textSize: Size = isTemplate ? (isReactCallback ? { width: clientRect.width, height: clientRect.height } : this.getTemplateSize(
+        const textSize: Size = isTemplate ? (isReactCallback ? { width: clientRect.width, height: clientRect.height } : this.getTemplateSize(
             childElement, point, argsData, redraw, isTemplate, points, datalabelGroup, id, dataLabel
             )) : measureText(point.label, dataLabel.font);
         textSize.height += 4; // 4 for calculation with padding for smart label shape
         textSize.width += 4;
         point.textSize = textSize;
         point.templateElement = childElement;
-        this.getDataLabelPosition(point, dataLabel, textSize, points, datalabelGroup, id);
+        this.getDataLabelPosition(point, dataLabel, textSize, points);
         if (point.labelRegion) {
             this.correctLabelRegion(point.labelRegion, point.textSize);
         }
@@ -631,20 +664,19 @@ export class AccumulationDataLabel extends AccumulationBase {
     /**
      * @private
      */
-    // tslint:disable-next-line:max-func-body-length
     public drawDataLabels(series: AccumulationSeries, dataLabel: AccumulationDataLabelSettingsModel, parent: HTMLElement,
                           templateElement?: HTMLElement, redraw?: boolean): void {
         let angle: number; let degree: number;
-        let modifiedPoints: AccPoints[] = series.leftSidePoints.concat(series.rightSidePoints);
+        const modifiedPoints: AccPoints[] = series.leftSidePoints.concat(series.rightSidePoints);
         modifiedPoints.sort((a: AccPoints, b: AccPoints) => a.index - b.index);
         if (series.type === 'Pie' && this.accumulation.enableSmartLabels) {
             this.extendedLabelsCalculation();
         }
-        for (let point of modifiedPoints) {
+        for (const point of modifiedPoints) {
             if (!isNullOrUndefined(point.argsData) && !isNullOrUndefined(point.y)) {
                 this.finalizeDatalabels(point, modifiedPoints, dataLabel);
-                let id: string = this.accumulation.element.id + '_datalabel_Series_' + 0 + '_';
-                let datalabelGroup: Element = this.accumulation.renderer.createGroup({ id: id + 'g_' + point.index });
+                const id: string = this.accumulation.element.id + '_datalabel_Series_' + 0 + '_';
+                const datalabelGroup: Element = this.accumulation.renderer.createGroup({ id: id + 'g_' + point.index });
                 let dataLabelElement: Element; let location: ChartLocation;
                 let element: Element;
                 if (point.visible && point.labelVisible) {
@@ -654,10 +686,10 @@ export class AccumulationDataLabel extends AccumulationBase {
                             point.templateElement, point, templateElement, dataLabel.font.color, point.color, redraw);
                     } else {
                         location = new ChartLocation(
-                            // tslint:disable-next-line:max-line-length
-                            point.labelRegion.x + this.marginValue, point.labelRegion.y + (point.textSize.height * 3 / 4) + this.marginValue);
+                            point.labelRegion.x + this.marginValue, point.labelRegion.y
+                            + (point.textSize.height * 3 / 4) + this.marginValue);
                         element = getElement(id + 'shape_' + point.index);
-                        let startLocation: ChartLocation = element ? new ChartLocation(
+                        const startLocation: ChartLocation = element ? new ChartLocation(
                             +element.getAttribute('x'), +element.getAttribute('y')
                         ) : null;
                         dataLabelElement = this.accumulation.renderer.drawRectangle(new RectOption(
@@ -665,8 +697,8 @@ export class AccumulationDataLabel extends AccumulationBase {
                             point.labelRegion, dataLabel.rx, dataLabel.ry));
                         appendChildElement(false, datalabelGroup, dataLabelElement, redraw, true, 'x', 'y', startLocation, null,
                                            false, false, null, this.accumulation.duration);
-                        let textWidth: number = point.textSize.width;
-                        let textHeight: number = point.textSize.height;
+                        const textWidth: number = point.textSize.width;
+                        const textHeight: number = point.textSize.height;
                         let rotate: string;
                         if (angle !== 0 && dataLabel.enableRotation) {
                             if (point.labelPosition === 'Outside') {
@@ -676,8 +708,8 @@ export class AccumulationDataLabel extends AccumulationBase {
                                     degree = point.midAngle + 180;
                                 } else { degree = point.midAngle; }
                             }
-                            // tslint:disable-next-line:max-line-length
-                            rotate = 'rotate(' + degree + ',' + (location.x + (textWidth / 2)) + ',' + (location.y - (textHeight / 4)) + ')';
+                            rotate = 'rotate(' + degree + ',' + (location.x + (textWidth / 2)) + ','
+                            + (location.y - (textHeight / 4)) + ')';
                         } else {
                             if (angle) {
                                 degree = (angle > 360) ? angle - 360 : (angle < -360) ? angle + 360 : angle;
@@ -696,14 +728,14 @@ export class AccumulationDataLabel extends AccumulationBase {
                         );
                         element = null;
                     }
-                    // tslint:disable-next-line:max-line-length
-                    if (this.accumulation.accumulationLegendModule && (dataLabel.position === 'Outside' || this.accumulation.enableSmartLabels)) {
+                    if (this.accumulation.accumulationLegendModule && (dataLabel.position === 'Outside'
+                        || this.accumulation.enableSmartLabels)) {
                         this.accumulation.visibleSeries[0].findMaxBounds(this.accumulation.visibleSeries[0].labelBound, point.labelRegion);
                     }
                     if (point.labelPosition === 'Outside') {
-                        let element: Element = getElement(id + 'connector_' + point.index);
-                        let previousDirection: string = element ? element.getAttribute('d') : '';
-                        let pathElement: Element = this.accumulation.renderer.drawPath(new PathOption(
+                        const element: Element = getElement(id + 'connector_' + point.index);
+                        const previousDirection: string = element ? element.getAttribute('d') : '';
+                        const pathElement: Element = this.accumulation.renderer.drawPath(new PathOption(
                             id + 'connector_' + point.index, 'transparent', dataLabel.connectorStyle.width,
                             dataLabel.connectorStyle.color || point.color, 1, dataLabel.connectorStyle.dashArray,
                             this.getConnectorPath(
@@ -722,9 +754,10 @@ export class AccumulationDataLabel extends AccumulationBase {
     /**
      * In this method datalabels region checked with legebdBounds and areaBounds.
      * Trimming of datalabel and point's visibility again changed here.
-     * @param point current point in which trimming and visibility to be checked
-     * @param points finalized points
-     * @param dataLabel datalabel model
+     *
+     * @param {AccPoints} point current point in which trimming and visibility to be checked
+     * @param {AccPoints[]} points finalized points
+     * @param {AccumulationDataLabelSettingsModel} dataLabel datalabel model
      */
     private finalizeDatalabels(point: AccPoints, points: AccPoints[], dataLabel: AccumulationDataLabelSettingsModel): void {
         if (this.isOverlapping(point, points) ||
@@ -735,14 +768,14 @@ export class AccumulationDataLabel extends AccumulationBase {
         }
 
         if (this.accumulation.accumulationLegendModule && point.labelVisible && point.labelRegion) {
-            let rect: Rect = this.accumulation.accumulationLegendModule.legendBounds;
-            let padding: number = this.accumulation.legendSettings.border.width / 2;
+            const rect: Rect = this.accumulation.accumulationLegendModule.legendBounds;
+            const padding: number = this.accumulation.legendSettings.border.width / 2;
             this.textTrimming(
                 point, new Rect(rect.x - padding, rect.y - padding, rect.width + (2 * padding), rect.height + (2 * padding)),
                 dataLabel.font, this.accumulation.accumulationLegendModule.position);
         }
         if (point.labelVisible && point.labelRegion) {
-            let position: string = this.isCircular() ? (point.labelRegion.x >= this.center.x) ? 'InsideRight' : 'InsideLeft' :
+            const position: string = this.isCircular() ? (point.labelRegion.x >= this.center.x) ? 'InsideRight' : 'InsideLeft' :
                 (point.labelRegion.x >= point.region.x) ? 'InsideRight' : 'InsideLeft';
 
             this.textTrimming(point, this.areaRect, dataLabel.font, position);
@@ -756,31 +789,35 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     /**
      * To find the template element size
-     * @param element
-     * @param point
-     * @param argsData
+     *
+     * @param {HTMLElement} element To get a template element.
+     * @param {AccPoints} point Template of accumulation points.
+     * @param {IAccTextRenderEventArgs} argsData Arguments of accumulation points.
+     * @param {boolean} redraw redraw value.
+     * @returns {Size} Size of a template.
      */
     private getTemplateSize(
         element: HTMLElement, point: AccPoints, argsData: IAccTextRenderEventArgs, redraw: boolean,
         isTemplate: boolean, points: AccPoints[], datalabelGroup: Element,
         id: string, dataLabel: AccumulationDataLabelSettingsModel
     ): Size {
-        let clientRect: ClientRect;
         element = createTemplate(
             element, point.index, argsData.template, this.accumulation,
             point, this.accumulation.visibleSeries[0], this.accumulation.element.id + '_DataLabel',
             0, argsData, isTemplate, points, datalabelGroup, id, dataLabel, redraw
         );
-        clientRect = measureElementRect(element, redraw);
+        const clientRect: ClientRect = measureElementRect(element, redraw);
         return { width: clientRect.width, height: clientRect.height };
     }
+
     /**
      * To set the template element style
-     * @param childElement
-     * @param point
-     * @param parent
-     * @param labelColor
-     * @param fill
+     *
+     * @param {HTMLElement} childElement Set a child element of template.
+     * @param {AccPoints} point Template point.
+     * @param {parent} parent Parent element of template.
+     * @param {labelColor} labelColor Template label color.
+     * @param {string} fill Fill color of template.
      */
     private setTemplateStyle(
         childElement: HTMLElement, point: AccPoints, parent: Element,
@@ -791,7 +828,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         childElement.style.color = labelColor ||
             this.getSaturatedColor(point, fill);
         if (this.accumulation.isBlazor) {
-            let position: string = this.isCircular() ? (point.labelRegion.x >= this.center.x) ? 'InsideRight' : 'InsideLeft' :
+            const position: string = this.isCircular() ? (point.labelRegion.x >= this.center.x) ? 'InsideRight' : 'InsideLeft' :
                 (point.labelRegion.x >= point.region.x) ? 'InsideRight' : 'InsideLeft';
             if (position === 'InsideRight') {
                 childElement.style.transform = 'translate(0%, -50%)';
@@ -806,6 +843,8 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
     /**
      * To find saturated color for datalabel
+     *
+     * @returns {string} Get a saturated color.
      */
     private getSaturatedColor(point: AccPoints, color: string): string {
         let saturatedColor: string;
@@ -815,19 +854,20 @@ export class AccumulationDataLabel extends AccumulationBase {
             saturatedColor = this.getLabelBackground(point);
         }
         saturatedColor = (saturatedColor === 'transparent') ? window.getComputedStyle(document.body, null).backgroundColor : saturatedColor;
-        let rgbValue: ColorValue = convertHexToColor(colorNameToHex(saturatedColor));
-        let contrast: number = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
+        const rgbValue: ColorValue = convertHexToColor(colorNameToHex(saturatedColor));
+        const contrast: number = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
         return contrast >= 128 ? 'black' : 'white';
     }
 
     /**
      * Animates the data label template.
-     * @return {void}.
+     *
+     * @returns {void}
      * @private
      */
     public doTemplateAnimation(accumulation: AccumulationChart, element: Element): void {
-        let series: AccumulationSeries = accumulation.visibleSeries[0];
-        let delay: number = series.animation.delay + series.animation.duration;
+        const series: AccumulationSeries = accumulation.visibleSeries[0];
+        const delay: number = series.animation.delay + series.animation.duration;
         if (series.animation.enable && accumulation.animateSeries) {
             (<HTMLElement>element).style.visibility = 'hidden';
             templateAnimate(element, delay, 200, 'ZoomIn');
@@ -835,6 +875,8 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
     /**
      * To find background color for the datalabel
+     *
+     * @returns {string} AccPoints
      */
     private getLabelBackground(point: AccPoints): string {
         return point.labelPosition === 'Outside' ?
@@ -853,6 +895,8 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
     /**
      * To get the dataLabel module name
+     *
+     * @returns {string} module name
      */
     protected getModuleName(): string {
         return 'AccumulationDataLabel';
@@ -860,11 +904,12 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     /**
      * To destroy the data label.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(accumulation: AccumulationChart): void {
+    public destroy(): void {
         /**
          * Destroy method performed here
          */
@@ -872,7 +917,7 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     //calculation for placing labels smartly
     private extendedLabelsCalculation(): void {
-        let series: AccumulationSeries = <AccumulationSeries>this.accumulation.series[0];
+        const series: AccumulationSeries = <AccumulationSeries>this.accumulation.series[0];
         series.rightSidePoints.forEach((point: AccPoints, index: number, halfSidePoints: AccPoints[]) => {
             point.initialLabelRegion = point.labelRegion;
             point.isLabelUpdated = 0;
@@ -890,17 +935,18 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     /**
      * Rightside points alignments calculation
-     * @param series
+     *
+     * @param {AccumulationSeries} series To get a proper series.
      */
     private arrangeRightSidePoints(series: AccumulationSeries): void {
         let startFresh: boolean;
         let angleChanged: boolean;
-        let rightSideRenderPoints: AccPoints[] = series.rightSidePoints.filter(
+        const rightSideRenderPoints: AccPoints[] = series.rightSidePoints.filter(
             (point: AccPoints) => (point.labelVisible && point.labelPosition === 'Outside'));
         this.rightSideRenderingPoints = rightSideRenderPoints;
         let checkAngle: number;
         let currentPoint: AccPoints;
-        let lastPoint: AccPoints = rightSideRenderPoints[rightSideRenderPoints.length - 1];
+        const lastPoint: AccPoints = rightSideRenderPoints[rightSideRenderPoints.length - 1];
         let nextPoint: AccPoints;
         if (lastPoint) {
             if (lastPoint.labelAngle > 90 && lastPoint.labelAngle < 270) {
@@ -950,10 +996,11 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     /**
      * Leftside points alignments calculation
-     * @param series
+     *
+     * @param {AccumulationSeries} series To get a proper series.
      */
     private arrangeLeftSidePoints(series: AccumulationSeries): void {
-        let leftSideRenderPoints: AccPoints[] = series.leftSidePoints.filter(
+        const leftSideRenderPoints: AccPoints[] = series.leftSidePoints.filter(
             (point: AccPoints) => (point.labelVisible && point.labelPosition === 'Outside'));
         this.leftSideRenderingPoints = leftSideRenderPoints;
         let previousPoint: AccPoints;
@@ -1085,18 +1132,18 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
 
     private changeLabelAngle(currentPoint: AccPoints, newAngle: number): void {
-        let dataLabel: AccumulationDataLabelSettingsModel = this.accumulation.series[0].dataLabel;
+        const dataLabel: AccumulationDataLabelSettingsModel = this.accumulation.series[0].dataLabel;
         let variableR: number;
         if (!this.isVariousRadius()) {
             variableR = this.accumulation.pieSeriesModule.getLabelRadius(this.accumulation.visibleSeries[0], currentPoint);
         }
 
         //padding 10px is added to label radius for increasing the angle and avoid congestion.
-        let labelRadius: number = (currentPoint.labelPosition === 'Outside' && this.accumulation.enableSmartLabels &&
+        const labelRadius: number = (currentPoint.labelPosition === 'Outside' && this.accumulation.enableSmartLabels &&
             dataLabel.position === 'Inside') ?
             this.radius + stringToNumber(dataLabel.connectorStyle.length || '4%', this.accumulation.pieSeriesModule.size / 2) :
             (!this.isVariousRadius() ? this.accumulation.pieSeriesModule.labelRadius + 10 : variableR);
-        let radius: number = (!this.isVariousRadius() ? labelRadius : variableR);
+        const radius: number = (!this.isVariousRadius() ? labelRadius : variableR);
         this.getLabelRegion(currentPoint, 'Outside', currentPoint.textSize, radius, this.marginValue, newAngle);
         currentPoint.isLabelUpdated = 1;
         currentPoint.labelAngle = newAngle;
@@ -1127,19 +1174,19 @@ export class AccumulationDataLabel extends AccumulationBase {
     private skipPoints(currentPoint: AccPoints, halfsidePoints: AccPoints[], pointIndex: number): void {
         if (pointIndex > 0 && ((currentPoint.midAngle < 285 && currentPoint.midAngle > 255) ||
             (currentPoint.midAngle < 105 && currentPoint.midAngle > 75))) {
-            let previousPoint: AccPoints = halfsidePoints[pointIndex - 1];
-            let angleDiff: number = currentPoint.endAngle % 360 - currentPoint.startAngle % 360;
-            let prevAngleDiff: number = previousPoint.endAngle % 360 - previousPoint.startAngle % 360;
+            const previousPoint: AccPoints = halfsidePoints[pointIndex - 1];
+            const angleDiff: number = currentPoint.endAngle % 360 - currentPoint.startAngle % 360;
+            const prevAngleDiff: number = previousPoint.endAngle % 360 - previousPoint.startAngle % 360;
             if (prevAngleDiff <= angleDiff && angleDiff < 5 && previousPoint.labelVisible) {
                 this.setPointVisibleTrue(currentPoint);
             }
         } else if (pointIndex > 1 && ((currentPoint.midAngle < 300 && currentPoint.midAngle > 240) ||
             (currentPoint.midAngle < 120 && currentPoint.midAngle > 60))) {
-            let prevPoint: AccPoints = halfsidePoints[pointIndex - 1];
-            let secondPrevPoint: AccPoints = halfsidePoints[pointIndex - 2];
-            let angleDiff: number = currentPoint.endAngle % 360 - currentPoint.startAngle % 360;
-            let prevAngleDiff: number = prevPoint.endAngle % 360 - prevPoint.startAngle % 360;
-            let thirdAngleDiff: number = secondPrevPoint.endAngle % 360 - secondPrevPoint.startAngle % 360;
+            const prevPoint: AccPoints = halfsidePoints[pointIndex - 1];
+            const secondPrevPoint: AccPoints = halfsidePoints[pointIndex - 2];
+            const angleDiff: number = currentPoint.endAngle % 360 - currentPoint.startAngle % 360;
+            const prevAngleDiff: number = prevPoint.endAngle % 360 - prevPoint.startAngle % 360;
+            const thirdAngleDiff: number = secondPrevPoint.endAngle % 360 - secondPrevPoint.startAngle % 360;
             if (angleDiff < 3 && prevAngleDiff < 3 && thirdAngleDiff < 3 && prevPoint.labelVisible && currentPoint.labelVisible) {
                 this.setPointVisibleTrue(currentPoint);
             }
@@ -1148,8 +1195,8 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     private getPerpendicularDistance(startPoint: ChartLocation, point: AccPoints): ChartLocation {
         let increasedLocation: ChartLocation;
-        let add: number = 10;
-        let height: number = add + 10 * Math.sin(point.midAngle * Math.PI / 360);
+        const add: number = 10;
+        const height: number = add + 10 * Math.sin(point.midAngle * Math.PI / 360);
         if (point.midAngle > 270 && point.midAngle < 360) {
             increasedLocation = new ChartLocation(startPoint.x + height * (Math.cos((360 - point.midAngle) * Math.PI / 180)),
                                                   startPoint.y - height * (Math.sin((360 - point.midAngle) * Math.PI / 180)));

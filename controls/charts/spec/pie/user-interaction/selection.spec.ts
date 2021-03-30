@@ -74,7 +74,7 @@ describe('Accumulation Chart Control', () => {
         });
 
         afterAll((): void => {
-            accumulation.accumulationSelectionModule.destroy(accumulation);
+            accumulation.accumulationSelectionModule.destroy();
             accumulation.destroy();
             removeElement(id);
         });

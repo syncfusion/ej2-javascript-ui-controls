@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { Component, Property, ChildProperty, NotifyPropertyChanges, INotifyPropertyChanged, AnimationModel } from '@syncfusion/ej2-base';
 import { Event, EventHandler, EmitType, BaseEventArgs, KeyboardEvents, KeyboardEventArgs, Touch, TapEventArgs } from '@syncfusion/ej2-base';
-import { attributes, Animation, AnimationOptions, TouchEventArgs, MouseEventArgs } from '@syncfusion/ej2-base';
+import { Animation, AnimationOptions, TouchEventArgs, MouseEventArgs } from '@syncfusion/ej2-base';
 import { Browser, Collection, setValue, getValue, getUniqueID, getInstance, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { select, selectAll, closest, detach, append, rippleEffect, isVisible, Complex, addClass, removeClass } from '@syncfusion/ej2-base';
 import { ListBase, ListBaseOptions } from '@syncfusion/ej2-lists';
-import { getZindexPartial, calculatePosition, OffsetPosition, isCollide, flip, fit, Popup } from '@syncfusion/ej2-popups';
+import { getZindexPartial, calculatePosition, OffsetPosition, isCollide, fit, Popup } from '@syncfusion/ej2-popups';
 import { updateBlazorTemplate, resetBlazorTemplate, blazorTemplates, extend, SanitizeHtmlHelper, isBlazor } from '@syncfusion/ej2-base';
 import { getScrollableParent } from '@syncfusion/ej2-popups';
 import { MenuItemModel, MenuBaseModel, FieldSettingsModel, MenuAnimationSettingsModel } from './menu-base-model';
@@ -54,18 +55,25 @@ const RTL: string = 'e-rtl';
 const POPUP: string = 'e-menu-popup';
 
 const TEMPLATE_PROPERTY: string = 'Template';
+
+/**
+ * Sub menu open type
+ */
+export type MenuOpenType = 'Auto' | 'Click' | 'Hover';
+
 /**
  * Menu animation effects
  */
 export type MenuEffect = 'None' | 'SlideDown' | 'ZoomIn' | 'FadeIn';
 
-/**   
+/**
  * Configures the field options of the Menu.
  */
 export class FieldSettings extends ChildProperty<FieldSettings> {
 
     /**
      * Specifies the itemId field for Menu item.
+     *
      * @default 'id'
      */
     @Property('id')
@@ -73,6 +81,7 @@ export class FieldSettings extends ChildProperty<FieldSettings> {
 
     /**
      * Specifies the parentId field for Menu item.
+     *
      * @default 'parentId'
      */
     @Property('parentId')
@@ -80,6 +89,7 @@ export class FieldSettings extends ChildProperty<FieldSettings> {
 
     /**
      * Specifies the text field for Menu item.
+     *
      * @default 'text'
      */
     @Property('text')
@@ -87,27 +97,31 @@ export class FieldSettings extends ChildProperty<FieldSettings> {
 
     /**
      * Specifies the css icon field for Menu item.
+     *
      * @default 'iconCss'
      */
     @Property('iconCss')
     public iconCss: string | string[];
 
-    /**     
+    /**
      * Specifies the Url field for Menu item.
+     *
      * @default 'url'
      */
     @Property('url')
     public url: string | string[];
 
-    /**     
+    /**
      * Specifies the separator field for Menu item.
+     *
      * @default 'separator'
      */
     @Property('separator')
     public separator: string | string[];
 
     /**
-     * Specifies the children field for Menu item. 
+     * Specifies the children field for Menu item.
+     *
      * @default 'items'
      */
     @Property('items')
@@ -121,6 +135,7 @@ export class MenuItem extends ChildProperty<MenuItem> {
     /**
      * Defines class/multiple classes separated by a space for the menu Item that is used to include an icon.
      * Menu Item can include font icon and sprite image.
+     *
      * @default null
      */
     @Property(null)
@@ -128,6 +143,7 @@ export class MenuItem extends ChildProperty<MenuItem> {
 
     /**
      * Specifies the id for menu item.
+     *
      * @default ''
      */
     @Property('')
@@ -135,6 +151,7 @@ export class MenuItem extends ChildProperty<MenuItem> {
 
     /**
      * Specifies separator between the menu items. Separator are either horizontal or vertical lines used to group menu items.
+     *
      * @default false
      */
     @Property(false)
@@ -142,6 +159,7 @@ export class MenuItem extends ChildProperty<MenuItem> {
 
     /**
      * Specifies the sub menu items that is the array of MenuItem model.
+     *
      * @default []
      */
     @Collection<MenuItemModel>([], MenuItem)
@@ -149,6 +167,7 @@ export class MenuItem extends ChildProperty<MenuItem> {
 
     /**
      * Specifies text for menu item.
+     *
      * @default ''
      */
     @Property('')
@@ -156,6 +175,7 @@ export class MenuItem extends ChildProperty<MenuItem> {
 
     /**
      * Specifies url for menu item that creates the anchor link to navigate to the url provided.
+     *
      * @default ''
      */
     @Property('')
@@ -173,6 +193,7 @@ export class MenuAnimationSettings extends ChildProperty<MenuAnimationSettings> 
      * * SlideDown: Specifies the sub menu transform with slide down effect.
      * * ZoomIn: Specifies the sub menu transform with zoom in effect.
      * * FadeIn: Specifies the sub menu transform with fade in effect.
+     *
      * @default 'SlideDown'
      * @aspType Syncfusion.EJ2.Navigations.MenuEffect
      * @blazorType Syncfusion.EJ2.Navigations.MenuEffect
@@ -182,12 +203,14 @@ export class MenuAnimationSettings extends ChildProperty<MenuAnimationSettings> 
     public effect: MenuEffect;
     /**
      * Specifies the time duration to transform object.
+     *
      * @default 400
      */
     @Property(400)
     public duration: number;
     /**
      * Specifies the easing effect applied while transform.
+     *
      * @default 'ease'
      */
     @Property('ease')
@@ -231,57 +254,66 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private pageX: number;
     private pageY: number;
     private tempItem: objColl = [];
+    private showSubMenuOn: MenuOpenType = 'Auto';
+    private defaultOption: boolean;
     /**
-     * Triggers while rendering each menu item.
-     * @event
+     * Triggers while rendering each menu item.
+     *
+     * @event beforeItemRender
      * @blazorProperty 'OnItemRender'
-     */
+     */
     @Event()
     public beforeItemRender: EmitType<MenuEventArgs>;
 
     /**
-     * Triggers before opening the menu item.
-     * @event
+     * Triggers before opening the menu item.
+     *
+     * @event beforeOpen
      * @blazorProperty 'OnOpen'
-     */
+     */
     @Event()
     public beforeOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
-     * Triggers while opening the menu item.
-     * @event
+     * Triggers while opening the menu item.
+     *
+     * @event onOpen
      * @blazorProperty 'Opened'
-     */
+     */
     @Event()
     public onOpen: EmitType<OpenCloseMenuEventArgs>;
 
     /**
-     * Triggers before closing the menu.
-     * @event
+     * Triggers before closing the menu.
+     *
+     * @event beforeClose
      * @blazorProperty 'OnClose'
-     */
+     */
     @Event()
     public beforeClose: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
-     * Triggers while closing the menu.
-     * @event
+     * Triggers while closing the menu.
+     *
+     * @event onClose
      * @blazorProperty 'Closed'
-     */
+     */
     @Event()
     public onClose: EmitType<OpenCloseMenuEventArgs>;
 
     /**
-     * Triggers while selecting menu item.
-     * @event
+     * Triggers while selecting menu item.
+     *
+     * @event select
      * @blazorProperty 'ItemSelected'
-     */
+     */
     @Event()
     public select: EmitType<MenuEventArgs>;
 
     /**
      * Triggers once the component rendering is completed.
-     * @event
+     *
+     * @event created
      * @blazorProperty 'Created'
      */
     @Event()
@@ -289,6 +321,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     /**
      * Defines class/multiple classes separated by a space in the Menu wrapper.
+     *
      * @default ''
      */
     @Property('')
@@ -297,6 +330,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Specifies whether to show the sub menu or not on click.
      * When set to true, the sub menu will open only on mouse click.
+     *
      * @default false
      */
     @Property(false)
@@ -305,6 +339,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Specifies target element selector in which the ContextMenu should be opened.
      * Specifies target element to open/close Menu while click in Hamburger mode.
+     *
      * @default ''
      * @private
      */
@@ -314,6 +349,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Specifies the filter selector for elements inside the target in that the context menu will be opened.
      * Not applicable to Menu component.
+     *
      * @default ''
      * @private
      */
@@ -323,6 +359,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Specifies the template for Menu item.
      * Not applicable to ContextMenu component.
+     *
      * @default null
      * @private
      */
@@ -332,6 +369,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Specifies whether to enable / disable the scrollable option in Menu.
      * Not applicable to ContextMenu component.
+     *
      * @default false
      * @private
      */
@@ -340,6 +378,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     /**
      * Defines whether to allow the cross-scripting site or not.
+     *
      * @default false
      */
     @Property(false)
@@ -348,16 +387,18 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Specifies mapping fields from the dataSource.
      * Not applicable to ContextMenu component.
+     *
      * @default { itemId: "id", text: "text", parentId: "parentId", iconCss: "iconCss", url: "url", separator: "separator",
      * children: "items" }
      * @private
      */
-	// tslint:disable-next-line
-    @Complex<FieldSettingsModel>({ itemId: "id", text: "text", parentId: "parentId", iconCss: "iconCss", url: "url", separator: "separator", children: "items" }, FieldSettings)
+    // tslint:disable-next-line
+    @Complex<FieldSettingsModel>({ itemId: 'id', text: 'text', parentId: 'parentId', iconCss: 'iconCss', url: 'url', separator: 'separator', children: 'items' }, FieldSettings)
     public fields: FieldSettingsModel;
 
     /**
      * Specifies menu items with its properties which will be rendered as Menu.
+     *
      * @default []
      */
     @Collection<MenuItemModel>([], MenuItem)
@@ -365,6 +406,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     /**
      * Specifies the animation settings for the sub menu open.
+     *
      * @default { duration: 400, easing: 'ease', effect: 'SlideDown' }
      */
     @Complex<MenuAnimationSettingsModel>({ duration: 400, easing: 'ease', effect: 'SlideDown' }, MenuAnimationSettings)
@@ -372,7 +414,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     /**
      * Constructor for creating the widget.
+     *
      * @private
+     * @param {MenuBaseModel} options - Specifies the menu base model
+     * @param {string | HTMLUListElement} element - Specifies the element
      */
     constructor(options?: MenuBaseModel, element?: string | HTMLUListElement) {
         super(options, <HTMLUListElement | string>element);
@@ -380,7 +425,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     /**
      * Initialized third party configuration settings.
+     *
      * @private
+     * @returns {void}
      */
     protected preRender(): void {
         if (!this.isMenu) {
@@ -388,24 +435,28 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             if (this.element.tagName === 'EJS-CONTEXTMENU') {
                 ul = this.createElement('ul', {
                     id: getUniqueID(this.getModuleName()), className: 'e-control e-lib e-' + this.getModuleName() }) as HTMLUListElement;
-                let ejInst: Object = getValue('ej2_instances', this.element);
+                const ejInst: Object = getValue('ej2_instances', this.element);
                 removeClass([this.element], ['e-control', 'e-lib', 'e-' + this.getModuleName()]);
                 this.clonedElement = this.element; this.element = ul;
                 setValue('ej2_instances', ejInst, this.element);
             } else {
                 ul = this.createElement('ul', { id: getUniqueID(this.getModuleName()) }) as HTMLUListElement;
                 append([].slice.call((this.element.cloneNode(true) as Element).children), ul);
-                let refEle: Element = this.element.nextElementSibling;
-                refEle ? this.element.parentElement.insertBefore(ul, refEle) : this.element.parentElement.appendChild(ul);
+                const refEle: Element = this.element.nextElementSibling;
+                if (refEle) {
+                    this.element.parentElement.insertBefore(ul, refEle);
+                } else {
+                    this.element.parentElement.appendChild(ul);
+                }
                 this.clonedElement = ul;
             }
             this.clonedElement.style.display = 'none';
         }
         if (this.element.tagName === 'EJS-MENU') {
             let ele: Element = this.element;
-            let ejInstance: Object = getValue('ej2_instances', ele);
-            let ul: Element = this.createElement('ul');
-            let wrapper: HTMLElement = this.createElement('EJS-MENU', { className: 'e-' + this.getModuleName() + '-wrapper' });
+            const ejInstance: Object = getValue('ej2_instances', ele);
+            const ul: Element = this.createElement('ul');
+            const wrapper: HTMLElement = this.createElement('EJS-MENU', { className: 'e-' + this.getModuleName() + '-wrapper' });
             for (let idx: number = 0, len: number = ele.attributes.length; idx < len; idx++) {
                 ul.setAttribute(ele.attributes[idx].nodeName, ele.attributes[idx].nodeValue);
             }
@@ -422,15 +473,17 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         }
     }
 
-    /**    
-     * Initialize the control rendering
+    /**
+     * Initialize the control rendering.
+     *
      * @private
+     * @returns {void}
      */
     protected render(): void {
         this.initialize();
         this.renderItems();
         if (this.isMenu && this.template && isBlazor()) {
-            let menuTemplateId: string = this.element.id + TEMPLATE_PROPERTY;
+            const menuTemplateId: string = this.element.id + TEMPLATE_PROPERTY;
             resetBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY);
             if (Object.keys(blazorTemplates).length) {
                 extend(this.tempItem, (<{ [key: string]: Object }>blazorTemplates)[menuTemplateId], [], true);
@@ -463,11 +516,12 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 this.createHeaderContainer(wrapper);
             }
         }
+        this.defaultOption = this.showItemOnClick;
     }
 
     private renderItems(): void {
         if (!(this.items as objColl).length) {
-            let items: { [key: string]: Object; }[] = ListBase.createJsonFromElement(this.element, { fields: { child: 'items' } });
+            const items: { [key: string]: Object; }[] = ListBase.createJsonFromElement(this.element, { fields: { child: 'items' } });
             this.setProperties({ items: items }, true);
             if (isBlazor()) {
                 this.element = this.removeChildElement(this.element);
@@ -475,25 +529,27 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 this.element.innerHTML = '';
             }
         }
-        let ul: Element = this.createItems(this.items as objColl);
+        const ul: Element = this.createItems(this.items as objColl);
         append(Array.prototype.slice.call(ul.children), this.element);
         this.element.classList.add('e-menu-parent');
         if (this.isMenu) {
             if (!this.hamburgerMode && this.element.classList.contains('e-vertical')) { this.setBlankIconStyle(this.element); }
             if (this.enableScrolling) {
-                let wrapper: HTMLElement = this.getWrapper() as HTMLElement;
-                this.element.classList.contains('e-vertical') ?
-                    addScrolling(this.createElement, wrapper, this.element, 'vscroll', this.enableRtl)
-                    : addScrolling(this.createElement, wrapper, this.element, 'hscroll', this.enableRtl);
+                const wrapper: HTMLElement = this.getWrapper() as HTMLElement;
+                if (this.element.classList.contains('e-vertical')){
+                    addScrolling(this.createElement, wrapper, this.element, 'vscroll', this.enableRtl);
+                } else {
+                    addScrolling(this.createElement, wrapper, this.element, 'hscroll', this.enableRtl);
+                }
             }
         }
     }
 
     protected wireEvents(): void {
-        let wrapper: HTMLElement = this.getWrapper() as HTMLElement;
+        const wrapper: HTMLElement = this.getWrapper() as HTMLElement;
         if (this.target) {
             let target: HTMLElement;
-            let targetElems: HTMLElement[] = selectAll(this.target);
+            const targetElems: HTMLElement[] = selectAll(this.target);
             for (let i: number = 0, len: number = targetElems.length; i < len; i++) {
                 target = targetElems[i];
                 if (this.isMenu) {
@@ -509,7 +565,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             this.targetElement = target;
             if (!this.isMenu) {
                 EventHandler.add(this.targetElement, 'scroll', this.scrollHandler, this);
-                for (let parent of getScrollableParent(this.targetElement)) {
+                for (const parent of getScrollableParent(this.targetElement)) {
                     EventHandler.add(parent, 'scroll', this.scrollHandler, this);
                 }
             }
@@ -527,7 +583,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private wireKeyboardEvent(element: HTMLElement): void {
-        let keyConfigs: { [key: string]: string; } = {
+        const keyConfigs: { [key: string]: string; } = {
             downarrow: DOWNARROW,
             uparrow: UPARROW,
             enter: ENTER,
@@ -554,7 +610,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private keyBoardHandler(e: KeyboardEventArgs): void {
         let actionName: string = '';
-        let trgt: Element = e.target as Element;
+        const trgt: Element = e.target as Element;
         let actionNeeded: boolean = this.isMenu && !this.hamburgerMode && !this.element.classList.contains('e-vertical')
             && this.navIdx.length < 1;
         e.preventDefault();
@@ -563,60 +619,60 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         }
         if (actionNeeded) {
             switch (e.action) {
-                case RIGHTARROW:
-                    actionName = RIGHTARROW;
-                    e.action = DOWNARROW;
-                    break;
-                case LEFTARROW:
-                    actionName = LEFTARROW;
-                    e.action = UPARROW;
-                    break;
-                case DOWNARROW:
-                    actionName = DOWNARROW;
-                    e.action = RIGHTARROW;
-                    break;
-                case UPARROW:
-                    actionName = UPARROW;
-                    e.action = '';
-                    break;
+            case RIGHTARROW:
+                actionName = RIGHTARROW;
+                e.action = DOWNARROW;
+                break;
+            case LEFTARROW:
+                actionName = LEFTARROW;
+                e.action = UPARROW;
+                break;
+            case DOWNARROW:
+                actionName = DOWNARROW;
+                e.action = RIGHTARROW;
+                break;
+            case UPARROW:
+                actionName = UPARROW;
+                e.action = '';
+                break;
             }
         } else if (this.enableRtl) {
             switch (e.action) {
-                case LEFTARROW:
-                    actionNeeded = true;
-                    actionName = LEFTARROW;
-                    e.action = RIGHTARROW;
-                    break;
-                case RIGHTARROW:
-                    actionNeeded = true;
-                    actionName = RIGHTARROW;
-                    e.action = LEFTARROW;
-                    break;
+            case LEFTARROW:
+                actionNeeded = true;
+                actionName = LEFTARROW;
+                e.action = RIGHTARROW;
+                break;
+            case RIGHTARROW:
+                actionNeeded = true;
+                actionName = RIGHTARROW;
+                e.action = LEFTARROW;
+                break;
             }
         }
         switch (e.action) {
-            case DOWNARROW:
-            case UPARROW:
-            case END:
-            case HOME:
-                this.upDownKeyHandler(e);
-                break;
-            case RIGHTARROW:
+        case DOWNARROW:
+        case UPARROW:
+        case END:
+        case HOME:
+            this.upDownKeyHandler(e);
+            break;
+        case RIGHTARROW:
+            this.rightEnterKeyHandler(e);
+            break;
+        case LEFTARROW:
+            this.leftEscKeyHandler(e);
+            break;
+        case ENTER:
+            if (this.hamburgerMode && trgt.tagName === 'SPAN' && trgt.classList.contains('e-menu-icon')) {
+                this.menuHeaderClickHandler(e);
+            } else {
                 this.rightEnterKeyHandler(e);
-                break;
-            case LEFTARROW:
-                this.leftEscKeyHandler(e);
-                break;
-            case ENTER:
-                if (this.hamburgerMode && trgt.tagName === 'SPAN' && trgt.classList.contains('e-menu-icon')) {
-                    this.menuHeaderClickHandler(e);
-                } else {
-                    this.rightEnterKeyHandler(e);
-                }
-                break;
-            case ESCAPE:
-                this.leftEscKeyHandler(e);
-                break;
+            }
+            break;
+        case ESCAPE:
+            this.leftEscKeyHandler(e);
+            break;
         }
         if (actionNeeded) {
             e.action = actionName;
@@ -624,33 +680,40 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private upDownKeyHandler(e: KeyboardEventArgs): void {
-        let cul: Element = this.getUlByNavIdx();
-        let defaultIdx: number = (e.action === DOWNARROW || e.action === HOME) ? 0 : cul.childElementCount - 1;
+        const cul: Element = this.getUlByNavIdx();
+        const defaultIdx: number = (e.action === DOWNARROW || e.action === HOME) ? 0 : cul.childElementCount - 1;
         let fliIdx: number = defaultIdx;
-        let fli: Element = this.getLIByClass(cul, FOCUSED);
+        const fli: Element = this.getLIByClass(cul, FOCUSED);
         if (fli) {
             if (e.action !== END && e.action !== HOME) {
                 fliIdx = this.getIdx(cul, fli);
             }
             fli.classList.remove(FOCUSED);
             if (e.action !== END && e.action !== HOME) {
-                e.action === DOWNARROW ? fliIdx++ : fliIdx--;
+                if (e.action === DOWNARROW){
+                    fliIdx++;
+                } else {
+                    fliIdx--;
+                }
                 if (fliIdx === (e.action === DOWNARROW ? cul.childElementCount : -1)) {
                     fliIdx = defaultIdx;
                 }
             }
         }
-        let cli: Element = cul.children[fliIdx];
+        const cli: Element = cul.children[fliIdx];
         fliIdx = this.isValidLI(cli, fliIdx, e.action);
         cul.children[fliIdx].classList.add(FOCUSED);
         (cul.children[fliIdx] as HTMLElement).focus();
     }
 
     private isValidLI(cli: Element, index: number, action: string): number {
-        let wrapper: Element = this.getWrapper();
-        let cul: Element = this.getUlByNavIdx();
+        const cul: Element = this.getUlByNavIdx();
         if (cli.classList.contains(SEPARATOR) || cli.classList.contains(DISABLED) || cli.classList.contains(HIDE)) {
-            ((action === DOWNARROW) || (action === RIGHTARROW)) ? index++ : index--;
+            if ((action === DOWNARROW) || (action === RIGHTARROW)) {
+                index++;
+            } else {
+                index--;
+            }
         }
         cli = cul.children[index];
         if (cli.classList.contains(SEPARATOR) || cli.classList.contains(DISABLED) || cli.classList.contains(HIDE)) {
@@ -661,7 +724,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private getUlByNavIdx(navIdxLen: number = this.navIdx.length): HTMLElement {
         if (this.isMenu) {
-            let popup: Element = [this.getWrapper()].concat([].slice.call(selectAll('.' + POPUP)))[navIdxLen];
+            const popup: Element = [this.getWrapper()].concat([].slice.call(selectAll('.' + POPUP)))[navIdxLen];
             return isNullOrUndefined(popup) ? null : select('.e-menu-parent', popup) as HTMLElement;
         } else {
             return this.getWrapper().children[navIdxLen] as HTMLElement;
@@ -670,13 +733,12 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private rightEnterKeyHandler(e: KeyboardEventArgs): void {
         let eventArgs: MenuEventArgs;
-        let cul: Element = this.getUlByNavIdx();
-        let fli: Element = this.getLIByClass(cul, FOCUSED);
+        const cul: Element = this.getUlByNavIdx();
+        const fli: Element = this.getLIByClass(cul, FOCUSED);
         if (fli) {
-            let fliIdx: number = this.getIdx(cul, fli);
-            let navIdx: number[] = this.navIdx.concat(fliIdx);
-            let index: number;
-            let item: MenuItemModel = this.getItem(navIdx);
+            const fliIdx: number = this.getIdx(cul, fli);
+            const navIdx: number[] = this.navIdx.concat(fliIdx);
+            const item: MenuItemModel = this.getItem(navIdx);
             if (item.items.length) {
                 this.navIdx.push(fliIdx);
                 this.keyType = 'right';
@@ -735,10 +797,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     // tslint:disable-next-line:max-func-body-length
     protected closeMenu(ulIndex: number = 0, e: MouseEvent | KeyboardEvent = null, isIterated?: boolean): void {
         if (this.isMenuVisible()) {
-            let sli: Element; let ul: HTMLElement; let item: MenuItemModel; let wrapper: Element = this.getWrapper();
-            let beforeCloseArgs: BeforeOpenCloseMenuEventArgs; let items: MenuItemModel[]; let popups: Element[] = this.getPopups();
-            let isClose: boolean = false; let cnt: number = this.isMenu ? popups.length + 1 : wrapper.childElementCount;
-            ul = this.isMenu && cnt !== 1 ? select('.e-ul', popups[cnt - 2]) as HTMLElement
+            let sli: Element; let item: MenuItemModel; const wrapper: Element = this.getWrapper();
+            let beforeCloseArgs: BeforeOpenCloseMenuEventArgs; let items: MenuItemModel[]; const popups: Element[] = this.getPopups();
+            let isClose: boolean = false; const cnt: number = this.isMenu ? popups.length + 1 : wrapper.childElementCount;
+            const ul: HTMLElement = this.isMenu && cnt !== 1 ? select('.e-ul', popups[cnt - 2]) as HTMLElement
                 : selectAll('.e-menu-parent', wrapper)[cnt - 1] as HTMLElement;
             if (this.isMenu && ul.classList.contains('e-menu')) {
                 sli = this.getLIByClass(ul, SELECTED);
@@ -748,13 +810,13 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 isClose = true;
             }
             if (!isClose) {
-                let liElem: Element = e && e.target && this.getLI(e.target as Element);
+                const liElem: Element = e && e.target && this.getLI(e.target as Element);
                 item = this.navIdx.length ? this.getItem(this.navIdx) : null; items = item ? item.items : this.items as objColl;
                 beforeCloseArgs = { element: ul, parentItem: this.isMenu && isBlazor() ? this.getMenuItemModel(<obj>item, ulIndex) : item,
                     items: items, event: e, cancel: false , isFocused: true };
                 this.trigger('beforeClose', beforeCloseArgs, (observedCloseArgs: BeforeOpenCloseMenuEventArgs) => {
                     let popupEle: HTMLElement; let closeArgs: OpenCloseMenuEventArgs; let popupId: string = '';
-                    let popupObj: Popup; let isOpen: boolean = !observedCloseArgs.cancel;
+                    let popupObj: Popup; const isOpen: boolean = !observedCloseArgs.cancel;
                     if (isOpen || this.isCMenu) {
                         if (this.isMenu) {
                             popupEle = closest(ul, '.' + POPUP) as HTMLElement;
@@ -774,7 +836,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         this.trigger('onClose', closeArgs); this.navIdx.pop();
                     }
                     this.updateReactTemplate(); let trgtliId: string; let closedLi: Element; let trgtLi: Element;
-                    let trgtpopUp: HTMLElement = this.getWrapper() && this.getUlByNavIdx();
+                    const trgtpopUp: HTMLElement = this.getWrapper() && this.getUlByNavIdx();
                     if (this.isCMenu) {
                         if (this.canOpen(e.target as Element)) {
                             this.openMenu(null, null, this.pageY, this.pageX, e);
@@ -786,7 +848,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         closedLi = trgtpopUp.querySelector('[id="' + trgtliId + '"]');
                         trgtLi = (liElem && trgtpopUp.querySelector('[id="' + liElem.id + '"]'));
                     }
-                    let submenus: NodeListOf<Element> = liElem && liElem.querySelectorAll('.e-menu-item');
+                    const submenus: NodeListOf<Element> = liElem && liElem.querySelectorAll('.e-menu-item');
                     if (isOpen && this.hamburgerMode && ulIndex && !(submenus.length)) {
                         this.afterCloseMenu(e as MouseEvent);
                     } else if (isOpen && !this.hamburgerMode && this.navIdx.length && closedLi && !trgtLi) {
@@ -815,7 +877,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         if (isOpen && (this.keyType === 'right' || this.keyType === 'click')) {
                             this.afterCloseMenu(e as MouseEvent);
                         } else {
-                            let cul: Element = this.getUlByNavIdx(); let sli: Element = this.getLIByClass(cul, SELECTED);
+                            const cul: Element = this.getUlByNavIdx(); const sli: Element = this.getLIByClass(cul, SELECTED);
                             if (sli) {
                                 sli.setAttribute('aria-expanded', 'false'); sli.classList.remove(SELECTED);
                                 if (observedCloseArgs.isFocused  && liElem) {
@@ -829,8 +891,13 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                                 } else {
                                     this.navIdx.pop();
                                 }
-                                this.navIdx.push(this.cliIdx); let item: MenuItemModel = this.getItem(this.navIdx);
+                                this.navIdx.push(this.cliIdx); const item: MenuItemModel = this.getItem(this.navIdx);
                                 liElem.setAttribute('aria-expanded', 'true'); this.openMenu(liElem, item, -1, -1, e);
+                            }
+                        }
+                        if (this.navIdx.length < 1) {
+                            if (this.showSubMenuOn === 'Hover' || this.showSubMenuOn === 'Click') {
+                                this.showItemOnClick = this.defaultOption; this.showSubMenuOn = 'Auto';
                             }
                         }
                     }
@@ -840,25 +907,28 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         }
     }
     private updateReactTemplate(): void {
-        // tslint:disable
+        // eslint:disable
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact && this.template && this.navIdx.length === 0) {
             // tslint:disable
-            let portals: any = (this as any).portals.splice(0, this.items.length); 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const portals: any = (this as any).portals.splice(0, this.items.length);
             this.clearTemplate(['template']);
             // tslint:disable
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this as any).portals = portals; this.renderReactTemplates();
         }
     }
     private getMenuItemModel(item: obj, level: number): MenuItemModel {
         if (isNullOrUndefined(item)) { return null; }
         if (isNullOrUndefined(level)) { level = 0; }
-        let fields: FieldsMap = this.getFields(level);
+        const fields: FieldsMap = this.getFields(level);
         return <MenuItemModel>{ text: item[fields.text], id: item[fields.id], items: item[fields.child], separator: item[fields.separator],
             iconCss: item[fields.iconCss], url: item[fields.url] };
     }
 
     private getPopups(): Element[] {
-        let popups: Element[] = [];
+        const popups: Element[] = [];
         [].slice.call(document.querySelectorAll('.' + POPUP)).forEach((elem: Element) => {
             if (this.getIndex(elem.querySelector('.' + ITEM).id, true).length) {
                 popups.push(elem);
@@ -872,11 +942,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private canOpen(target: Element): boolean {
-        let canOpen: boolean = true;
+        let canOpen = true;
         if (this.filter) {
             canOpen = false;
-            let filter: string[] = this.filter.split(' ');
-            for (let i: number = 0, len: number = filter.length; i < len; i++) {
+            const filter: string[] = this.filter.split(' ');
+            for (let i = 0, len: number = filter.length; i < len; i++) {
                 if (closest(target, '.' + filter[i])) {
                     canOpen = true;
                     break;
@@ -887,10 +957,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     protected openMenu(
-        li: Element, item: MenuItemModel | { [key: string]: Object }, top: number = 0, left: number = 0,
+        li: Element, item: MenuItemModel | { [key: string]: Object }, top = 0, left = 0,
         e: MouseEvent | KeyboardEvent = null, target: HTMLElement = this.targetElement): void {
-        let eventArgs: BeforeOpenCloseMenuEventArgs; let wrapper: Element = this.getWrapper();
-        this.lItem = li; let elemId: string = this.element.id !== '' ? this.element.id : 'menu';
+        const wrapper: Element = this.getWrapper();
+        this.lItem = li; const elemId: string = this.element.id !== '' ? this.element.id : 'menu';
         this.isMenusClosed = false;
         if (isNullOrUndefined(top)) {
             top = -1;
@@ -902,11 +972,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             this.uList = this.createItems((<obj>item)[this.getField('children', this.navIdx.length - 1)] as objColl);
             if (!this.isMenu && Browser.isDevice) {
                 (wrapper.lastChild as HTMLElement).style.display = 'none';
-                let data: { [key: string]: string } = {
+                const data: { [key: string]: string } = {
                     text: (<obj>item)[this.getField('text')].toString(), iconCss: ICONS + ' e-previous'
                 };
-                let hdata: MenuItem = new MenuItem(this.items[0] as MenuItem, 'items', data, true);
-                let hli: Element = this.createItems([hdata] as MenuItemModel[]).children[0];
+                const hdata: MenuItem = new MenuItem(this.items[0] as MenuItem, 'items', data, true);
+                const hli: Element = this.createItems([hdata] as MenuItemModel[]).children[0];
                 hli.classList.add(HEADER); this.uList.insertBefore(hli, this.uList.children[0]);
             }
             if (this.isMenu) {
@@ -937,9 +1007,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             this.triggerBeforeOpen(li, this.uList, item, e, top, left, 'none');
         }
         if (this.isMenu && this.template && isBlazor()) {
-            let menuTemplateId: string = this.element.id + TEMPLATE_PROPERTY;
+            const menuTemplateId: string = this.element.id + TEMPLATE_PROPERTY;
             if (Object.keys(blazorTemplates).length) {
-                let itemFromBlazorTemplate: objColl = (<obj>blazorTemplates)[menuTemplateId] as objColl;
+                const itemFromBlazorTemplate: objColl = (<obj>blazorTemplates)[menuTemplateId] as objColl;
                 this.tempItem = this.tempItem.concat(itemFromBlazorTemplate);
                 (<{ [key: string]: Object }>blazorTemplates)[menuTemplateId] = this.tempItem;
             }
@@ -948,7 +1018,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private calculateIndentSize(ul: HTMLElement, li: Element): void {
-        let liStyle: CSSStyleDeclaration = getComputedStyle(li);
+        const liStyle: CSSStyleDeclaration = getComputedStyle(li);
         let liIndent: number = parseInt(liStyle.textIndent, 10);
         if (this.navIdx.length < 2 && !li.classList.contains('e-blankicon')) {
             liIndent *= 2;
@@ -956,12 +1026,12 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             liIndent += (liIndent / 4);
         }
         ul.style.textIndent = liIndent + 'px';
-        let blankIconElem: NodeList = ul.querySelectorAll('.e-blankicon');
+        const blankIconElem: NodeList = ul.querySelectorAll('.e-blankicon');
         if (blankIconElem && blankIconElem.length) {
-            let menuIconElem: HTMLElement = ul.querySelector('.e-menu-icon');
-            let menuIconElemStyle: CSSStyleDeclaration = getComputedStyle(menuIconElem);
-            let blankIconIndent: number = (parseInt(menuIconElemStyle.marginRight, 10) + menuIconElem.offsetWidth + liIndent);
-            for (let i: number = 0; i < blankIconElem.length; i++) {
+            const menuIconElem: HTMLElement = ul.querySelector('.e-menu-icon');
+            const menuIconElemStyle: CSSStyleDeclaration = getComputedStyle(menuIconElem);
+            const blankIconIndent: number = (parseInt(menuIconElemStyle.marginRight, 10) + menuIconElem.offsetWidth + liIndent);
+            for (let i = 0; i < blankIconElem.length; i++) {
                 (blankIconElem[i] as HTMLElement).style.textIndent = blankIconIndent + 'px';
             }
         }
@@ -969,7 +1039,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private generatePopup(
         popupWrapper: HTMLElement, ul: HTMLElement, li: HTMLElement, isNestedOrVertical: boolean): Popup {
-        let popupObj: Popup = new Popup(popupWrapper, {
+        const popupObj: Popup = new Popup(popupWrapper, {
             actionOnScroll: this.hamburgerMode ? 'none' : 'reposition',
             relateTo: li,
             collision: this.hamburgerMode ? { X: 'none', Y: 'none' } : { X: isNestedOrVertical ||
@@ -979,27 +1049,27 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             enableRtl: this.enableRtl,
             content: ul,
             open: (): void => {
-                    let scrollEle: HTMLElement = select('.e-menu-vscroll', popupObj.element) as HTMLElement;
-                    if (scrollEle) {
-                        scrollEle.style.height = 'inherit';
-                        scrollEle.style.maxHeight = '';
-                    }
-                    let ul: HTMLElement = select('.e-ul', popupObj.element) as HTMLElement;
-                    popupObj.element.style.maxHeight = '';
-                    ul.focus();
-                    this.triggerOpen(ul);
+                const scrollEle: HTMLElement = select('.e-menu-vscroll', popupObj.element) as HTMLElement;
+                if (scrollEle) {
+                    scrollEle.style.height = 'inherit';
+                    scrollEle.style.maxHeight = '';
                 }
+                const ul: HTMLElement = select('.e-ul', popupObj.element) as HTMLElement;
+                popupObj.element.style.maxHeight = '';
+                ul.focus();
+                this.triggerOpen(ul);
+            }
         });
         return popupObj;
     }
 
     protected createHeaderContainer(wrapper?: Element): void {
         wrapper = wrapper || this.getWrapper();
-        let spanElem: HTMLElement = this.createElement('span', { className: 'e-' + this.getModuleName() + '-header' });
-        let tempTitle: string = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(this.title) : this.title;
-        let spanTitle: HTMLElement = this.createElement('span', {
+        const spanElem: HTMLElement = this.createElement('span', { className: 'e-' + this.getModuleName() + '-header' });
+        const tempTitle: string = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(this.title) : this.title;
+        const spanTitle: HTMLElement = this.createElement('span', {
             className: 'e-' + this.getModuleName() + '-title', innerHTML: tempTitle });
-        let spanIcon: HTMLElement = this.createElement('span', {
+        const spanIcon: HTMLElement = this.createElement('span', {
             className: 'e-icons e-' + this.getModuleName() + '-icon', attrs: { 'tabindex': '0' } });
         spanElem.appendChild(spanTitle);
         spanElem.appendChild(spanIcon);
@@ -1008,15 +1078,14 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     protected openHamburgerMenu(e?: MouseEvent | KeyboardEvent) : void {
         if (this.hamburgerMode) {
-            let eventArgs: BeforeOpenCloseMenuEventArgs;
             this.triggerBeforeOpen(null, this.element, null, e, 0, 0, 'hamburger');
         }
     }
 
     protected closeHamburgerMenu(e?: MouseEvent | KeyboardEvent) : void {
         if (this.hamburgerMode) {
-            let beforeCloseArgs: BeforeOpenCloseMenuEventArgs;
-            beforeCloseArgs = { element: this.element, parentItem: null, event: e, items: this.items, cancel: false };
+            const beforeCloseArgs: BeforeOpenCloseMenuEventArgs = { element: this.element, parentItem: null, event: e,
+                items: this.items, cancel: false };
             this.trigger('beforeClose', beforeCloseArgs, (observedHamburgerCloseArgs: BeforeOpenCloseMenuEventArgs) => {
                 if (!observedHamburgerCloseArgs.cancel) {
                     this.closeMenu(null, e);
@@ -1034,63 +1103,65 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private triggerBeforeOpen(
         li: Element, ul: HTMLElement, item: MenuItemModel, e: MouseEvent | KeyboardEvent,
         top: number, left: number, type: string): void {
-        let navIdx: number[] = this.getIndex(li ? li.id : null, true);
-        let items: MenuItemModel[] = li ? (<obj>item)[this.getField('children', this.navIdx.length - 1)] as objColl : this.items as objColl;
-        let eventArgs: BeforeOpenCloseMenuEventArgs = {
+        const items: MenuItemModel[] = li ? (<obj>item)[this.getField('children', this.navIdx.length - 1)] as objColl : this.items as objColl;
+        const eventArgs: BeforeOpenCloseMenuEventArgs = {
             element: ul, items: items, parentItem: this.isMenu && isBlazor() ? this.getMenuItemModel(<obj>item, this.navIdx.length - 1) :
-            item, event: e, cancel: false, top: top, left: left
+                item, event: e, cancel: false, top: top, left: left, showSubMenuOn: 'Auto'
         };
-        let menuType: string = type; let collide: string[];
+        const menuType: string = type; let collide: string[];
         this.trigger('beforeOpen', eventArgs, (observedOpenArgs: BeforeOpenCloseMenuEventArgs) => {
             switch (menuType) {
-                case 'menu':
-                    if (!this.hamburgerMode) {
-                        this.top = observedOpenArgs.top; this.left = observedOpenArgs.left;
+            case 'menu':
+                if (!this.hamburgerMode) {
+                    if (observedOpenArgs.showSubMenuOn !== 'Auto') {
+                        this.showItemOnClick = !this.defaultOption; this.showSubMenuOn = observedOpenArgs.showSubMenuOn;
                     }
-                    this.popupWrapper.style.display = 'block';
-                    if (!this.hamburgerMode) {
-                        this.popupWrapper.style.maxHeight = this.popupWrapper.getBoundingClientRect().height + 'px';
-                        if (this.enableScrolling) {
-                            addScrolling(this.createElement, this.popupWrapper, this.uList, 'vscroll', this.enableRtl);
-                        }
-                        this.checkScrollOffset(e);
-                    }
-                    if (!this.hamburgerMode && !this.left && !this.top) {
-                        this.popupObj.refreshPosition(this.lItem as HTMLElement, true);
-                        this.left = parseInt(this.popupWrapper.style.left, 10); this.top = parseInt(this.popupWrapper.style.top, 10);
-                        if (this.enableRtl) {
-                            this.left =
-                            this.isNestedOrVertical ? this.left - this.popupWrapper.offsetWidth - this.lItem.parentElement.offsetWidth + 2
-                                : this.left - this.popupWrapper.offsetWidth + (this.lItem as HTMLElement).offsetWidth;
-                        }
-                        collide = isCollide(this.popupWrapper, null, this.left, this.top);
-                        if ((this.isNestedOrVertical || this.enableRtl) && (collide.indexOf('right') > -1
-                        || collide.indexOf('left') > -1)) {
-                            this.popupObj.collision.X = 'none';
-                            let offWidth: number =
-                            (closest(this.lItem, '.e-' + this.getModuleName() + '-wrapper') as HTMLElement).offsetWidth;
-                            this.left =
-                            this.enableRtl ? calculatePosition(this.lItem, this.isNestedOrVertical ? 'right' : 'left', 'top').left
-                            : this.left - this.popupWrapper.offsetWidth - offWidth + 2;
-                        }
-                        collide = isCollide(this.popupWrapper, null, this.left, this.top);
-                        if (collide.indexOf('left') > -1 || collide.indexOf('right') > -1) {
-                            this.left = this.callFit(this.popupWrapper, true, false, this.top, this.left).left;
-                        }
-                        this.popupWrapper.style.left = this.left + 'px';
-                    } else {
-                        this.popupObj.collision = { X: 'none', Y: 'none' };
-                    }
-                    this.popupWrapper.style.display = '';
-                    break;
-                case 'none':
                     this.top = observedOpenArgs.top; this.left = observedOpenArgs.left;
-                    break;
-                case 'hamburger':
-                    if (!observedOpenArgs.cancel) {
-                        this.element.classList.remove('e-hide-menu'); this.triggerOpen(this.element);
+                }
+                this.popupWrapper.style.display = 'block';
+                if (!this.hamburgerMode) {
+                    this.popupWrapper.style.maxHeight = this.popupWrapper.getBoundingClientRect().height + 'px';
+                    if (this.enableScrolling) {
+                        addScrolling(this.createElement, this.popupWrapper, this.uList, 'vscroll', this.enableRtl);
                     }
-                    break;
+                    this.checkScrollOffset(e);
+                }
+                if (!this.hamburgerMode && !this.left && !this.top) {
+                    this.popupObj.refreshPosition(this.lItem as HTMLElement, true);
+                    this.left = parseInt(this.popupWrapper.style.left, 10); this.top = parseInt(this.popupWrapper.style.top, 10);
+                    if (this.enableRtl) {
+                        this.left =
+                        this.isNestedOrVertical ? this.left - this.popupWrapper.offsetWidth - this.lItem.parentElement.offsetWidth + 2
+                            : this.left - this.popupWrapper.offsetWidth + (this.lItem as HTMLElement).offsetWidth;
+                    }
+                    collide = isCollide(this.popupWrapper, null, this.left, this.top);
+                    if ((this.isNestedOrVertical || this.enableRtl) && (collide.indexOf('right') > -1
+                    || collide.indexOf('left') > -1)) {
+                        this.popupObj.collision.X = 'none';
+                        const offWidth: number =
+                        (closest(this.lItem, '.e-' + this.getModuleName() + '-wrapper') as HTMLElement).offsetWidth;
+                        this.left =
+                        this.enableRtl ? calculatePosition(this.lItem, this.isNestedOrVertical ? 'right' : 'left', 'top').left
+                            : this.left - this.popupWrapper.offsetWidth - offWidth + 2;
+                    }
+                    collide = isCollide(this.popupWrapper, null, this.left, this.top);
+                    if (collide.indexOf('left') > -1 || collide.indexOf('right') > -1) {
+                        this.left = this.callFit(this.popupWrapper, true, false, this.top, this.left).left;
+                    }
+                    this.popupWrapper.style.left = this.left + 'px';
+                } else {
+                    this.popupObj.collision = { X: 'none', Y: 'none' };
+                }
+                this.popupWrapper.style.display = '';
+                break;
+            case 'none':
+                this.top = observedOpenArgs.top; this.left = observedOpenArgs.left;
+                break;
+            case 'hamburger':
+                if (!observedOpenArgs.cancel) {
+                    this.element.classList.remove('e-hide-menu'); this.triggerOpen(this.element);
+                }
+                break;
             }
             if (menuType !== 'hamburger') {
                 if (observedOpenArgs.cancel) {
@@ -1107,7 +1178,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                             this.setBlankIconStyle(this.popupWrapper);
                             this.wireKeyboardEvent(this.popupWrapper); rippleEffect(this.popupWrapper, { selector: '.' + ITEM });
                             this.popupWrapper.style.left = this.left + 'px'; this.popupWrapper.style.top = this.top + 'px';
-                            let animationOptions: AnimationModel = this.animationSettings.effect !== 'None' ? {
+                            const animationOptions: AnimationModel = this.animationSettings.effect !== 'None' ? {
                                 name: this.animationSettings.effect, duration: this.animationSettings.duration,
                                 timingFunction: this.animationSettings.easing
                             } : null;
@@ -1120,54 +1191,56 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 }
             }
             if (this.keyType === 'right') {
-                let cul: Element = this.getUlByNavIdx(); li.classList.remove(FOCUSED); let index: number;
+                let cul: Element = this.getUlByNavIdx(); li.classList.remove(FOCUSED);
                 if (this.isMenu && this.navIdx.length === 1) {
                     this.removeLIStateByClass([SELECTED], [this.getWrapper()]);
                 }
                 li.classList.add(SELECTED);
                 if (this.action === ENTER) {
-                    let eventArgs: MenuEventArgs = { element: li as HTMLElement, item: item, event: e };
+                    const eventArgs: MenuEventArgs = { element: li as HTMLElement, item: item, event: e };
                     this.trigger('select', eventArgs);
                 }
-                (li as HTMLElement).focus(); cul = this.getUlByNavIdx(); index = this.isValidLI(cul.children[0], 0, this.action);
+                (li as HTMLElement).focus(); cul = this.getUlByNavIdx();
+                const index: number = this.isValidLI(cul.children[0], 0, this.action);
                 cul.children[index].classList.add(FOCUSED); (cul.children[index] as HTMLElement).focus();
             }
         });
     }
 
     protected setBlankIconStyle(menu: HTMLElement): void {
-        let blankIconList: HTMLElement[] = [].slice.call(menu.getElementsByClassName('e-blankicon'));
+        const blankIconList: HTMLElement[] = [].slice.call(menu.getElementsByClassName('e-blankicon'));
         if (!blankIconList.length) { return; }
-        let iconLi: HTMLElement = menu.querySelector('.e-menu-item:not(.e-blankicon):not(.e-separator)') as HTMLElement;
-        let icon: HTMLElement = iconLi.querySelector('.e-menu-icon') as HTMLElement;
+        const iconLi: HTMLElement = menu.querySelector('.e-menu-item:not(.e-blankicon):not(.e-separator)') as HTMLElement;
+        const icon: HTMLElement = iconLi.querySelector('.e-menu-icon') as HTMLElement;
         if (!icon) { return; }
-        let cssProp: { padding: string, margin: string } =  this.enableRtl ? { padding: 'paddingRight', margin: 'marginLeft' } :
+        const cssProp: { padding: string, margin: string } =  this.enableRtl ? { padding: 'paddingRight', margin: 'marginLeft' } :
             { padding: 'paddingLeft', margin: 'marginRight' };
-        let iconCssProps: CSSStyleDeclaration = getComputedStyle(icon);
+        const iconCssProps: CSSStyleDeclaration = getComputedStyle(icon);
         let iconSize: number = parseInt(iconCssProps.fontSize, 10);
         if (!!parseInt(iconCssProps.width, 10) && parseInt(iconCssProps.width, 10) > iconSize) {
             iconSize = parseInt(iconCssProps.width, 10);
         }
-        // tslint:disable
-        let size: string = `${iconSize + parseInt(
+        // eslint:disable
+        const size = `${iconSize + parseInt(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (iconCssProps as any)[cssProp.margin], 10) + parseInt((getComputedStyle(iconLi) as any)[cssProp.padding], 10)}px`;
         blankIconList.forEach((li: HTMLElement): void => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (li.style as any)[cssProp.padding] = size;
         });
         // tslint:enable
     }
 
     private checkScrollOffset(e: MouseEvent | KeyboardEvent): void {
-        let wrapper: Element = this.getWrapper();
+        const wrapper: Element = this.getWrapper();
         if (wrapper.children[0].classList.contains('e-menu-hscroll') && this.navIdx.length === 1) {
-            let trgt: HTMLElement = isNullOrUndefined(e) ? this.element : closest(e.target as Element, '.' + ITEM) as HTMLElement;
-            let offsetEle: HTMLElement = (select('.e-hscroll-bar', wrapper) as HTMLElement);
-            let offsetLeft: number; let offsetRight: number;
+            const trgt: HTMLElement = isNullOrUndefined(e) ? this.element : closest(e.target as Element, '.' + ITEM) as HTMLElement;
+            const offsetEle: HTMLElement = (select('.e-hscroll-bar', wrapper) as HTMLElement);
             if (offsetEle.scrollLeft > trgt.offsetLeft) {
                 offsetEle.scrollLeft -= (offsetEle.scrollLeft - trgt.offsetLeft);
             }
-            offsetLeft = offsetEle.scrollLeft + offsetEle.offsetWidth;
-            offsetRight = trgt.offsetLeft + trgt.offsetWidth;
+            const offsetLeft: number = offsetEle.scrollLeft + offsetEle.offsetWidth;
+            const offsetRight: number = trgt.offsetLeft + trgt.offsetWidth;
             if (offsetLeft < offsetRight) {
                 offsetEle.scrollLeft += (offsetRight - offsetLeft);
             }
@@ -1175,7 +1248,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private setPosition(li: Element, ul: HTMLElement, top: number, left: number): void {
-        let px: string = 'px';
+        const px: string = 'px';
         this.toggleVisiblity(ul);
         if (ul === this.element || (left > -1 && top > -1)) {
             let collide: string[] = isCollide(ul, null, left, top);
@@ -1183,16 +1256,16 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 left = left - ul.offsetWidth;
             }
             if (collide.indexOf('bottom') > -1) {
-                let offset: OffsetPosition = this.callFit(ul, false, true, top, left);
+                const offset: OffsetPosition = this.callFit(ul, false, true, top, left);
                 top = offset.top - 20;
                 if (top < 0) {
-                    let newTop: number = (pageYOffset + document.documentElement.clientHeight) - ul.getBoundingClientRect().height;
+                    const newTop: number = (pageYOffset + document.documentElement.clientHeight) - ul.getBoundingClientRect().height;
                     if (newTop > -1) { top = newTop; }
                 }
             }
             collide = isCollide(ul, null, left, top);
             if (collide.indexOf('left') > -1) {
-                let offset: OffsetPosition = this.callFit(ul, true, false, top, left);
+                const offset: OffsetPosition = this.callFit(ul, true, false, top, left);
                 left = offset.left;
             }
         } else {
@@ -1200,12 +1273,12 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 top = Number(this.element.style.top.replace(px, ''));
                 left = Number(this.element.style.left.replace(px, ''));
             } else {
-                let x: string = this.enableRtl ? 'left' : 'right';
+                const x: string = this.enableRtl ? 'left' : 'right';
                 let offset: OffsetPosition = calculatePosition(li, x, 'top');
                 top = offset.top;
                 left = offset.left;
-                let collide: string[] = isCollide(ul, null, this.enableRtl ? left - ul.offsetWidth : left, top);
-                let xCollision: boolean = collide.indexOf('left') > -1 || collide.indexOf('right') > -1;
+                const collide: string[] = isCollide(ul, null, this.enableRtl ? left - ul.offsetWidth : left, top);
+                const xCollision: boolean = collide.indexOf('left') > -1 || collide.indexOf('right') > -1;
                 if (xCollision) {
                     offset = calculatePosition(li, this.enableRtl ? 'right' : 'left', 'top');
                     left = offset.left;
@@ -1230,11 +1303,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private createItems(items: MenuItemModel[] | objColl): HTMLElement {
-        let level: number = this.navIdx ? this.navIdx.length : 0;
-        let fields: FieldsMap = this.getFields(level);
-        // tslint:disable-next-line:no-any
+        const level: number = this.navIdx ? this.navIdx.length : 0;
+        const fields: FieldsMap = this.getFields(level);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (isBlazor() && this.template && items.length && (items[0] as any).properties) {
-            let itemsObj: objColl = [];
+            const itemsObj: objColl = [];
             (<objColl>items).forEach((item: obj, index: number): void => {
                 itemsObj.push({});
                 (itemsObj[index] as obj)[fields.text] = item[fields.text];
@@ -1249,8 +1322,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             });
             items = itemsObj;
         }
-        let showIcon: boolean = this.hasField(items, this.getField('iconCss', level));
-        let listBaseOptions: ListBaseOptions = {
+        const showIcon: boolean = this.hasField(items, this.getField('iconCss', level));
+        const listBaseOptions: ListBaseOptions = {
             showIcon: showIcon,
             moduleName: 'menu',
             fields: fields,
@@ -1282,7 +1355,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 }
                 if ((<obj>args.curData)[args.fields.child as string]
                     && (<objColl>(<obj>args.curData)[args.fields.child as string]).length) {
-                    let span: Element = this.createElement('span', { className: ICONS + ' ' + CARET });
+                    const span: Element = this.createElement('span', { className: ICONS + ' ' + CARET });
                     args.item.appendChild(span);
                     args.item.setAttribute('aria-haspopup', 'true');
                     args.item.setAttribute('aria-expanded', 'false');
@@ -1297,7 +1370,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     if (args.item.classList.contains('e-level-1')) { args.item.classList.remove('e-level-1'); }
                     if (args.item.classList.contains('e-has-child')) { args.item.classList.remove('e-has-child'); }
                 }
-                let eventArgs: MenuEventArgs = { item: args.curData, element: args.item as HTMLElement };
+                const eventArgs: MenuEventArgs = { item: args.curData, element: args.item as HTMLElement };
                 this.trigger('beforeItemRender', eventArgs);
             }
         };
@@ -1306,7 +1379,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             listBaseOptions.templateID = this.element.id + TEMPLATE_PROPERTY;
         }
 
-        let ul: HTMLElement = ListBase.createList(
+        const ul: HTMLElement = ListBase.createList(
             this.createElement, items as objColl, listBaseOptions, !this.template, this);
         ul.setAttribute('tabindex', '0');
         if (this.isMenu) {
@@ -1316,11 +1389,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private moverHandler(e: MouseEvent): void {
-        let trgt: Element = e.target as Element;
+        const trgt: Element = e.target as Element;
         this.liTrgt = trgt;
-        let cli: Element = this.getLI(trgt);
-        let wrapper: Element = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : this.getWrapper();
-        let hdrWrapper: Element = this.getWrapper(); let regex: RegExp = new RegExp('-ej2menu-(.*)-popup'); let ulId: string;
+        const cli: Element = this.getLI(trgt);
+        const wrapper: Element = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : this.getWrapper();
+        const hdrWrapper: Element = this.getWrapper(); const regex: RegExp = new RegExp('-ej2menu-(.*)-popup'); let ulId: string;
         let isDifferentElem: boolean = false;
         if (!wrapper) {
             return;
@@ -1350,7 +1423,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         }
         if (this.isMenu) {
             if (!this.showItemOnClick && (trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup'))
-                && (!cli || (cli && !this.getIndex(cli.id, true).length))) {
+                && (!cli || (cli && !this.getIndex(cli.id, true).length)) && this.showSubMenuOn !== 'Hover') {
                 this.removeLIStateByClass([FOCUSED], [wrapper]);
                 if (this.navIdx.length) {
                     this.isClosed = true;
@@ -1370,7 +1443,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
     private removeStateWrapper(): void {
         if (this.liTrgt) {
-            let wrapper: Element = closest(this.liTrgt, '.e-menu-vscroll');
+            const wrapper: Element = closest(this.liTrgt, '.e-menu-vscroll');
             if (this.liTrgt.tagName === 'DIV' && wrapper) {
                 this.removeLIStateByClass([FOCUSED, SELECTED], [wrapper]);
             }
@@ -1390,7 +1463,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     protected getField(propName: string, level: number = 0): string {
-        let fieldName: object = (<obj>this.fields)[propName];
+        const fieldName: object = (<obj>this.fields)[propName];
         return typeof fieldName === 'string' ? fieldName :
             (!(<obj>fieldName)[level] ? (fieldName as obj)[(<objColl>fieldName).length - 1].toString()
                 : (<obj>fieldName)[level].toString());
@@ -1420,35 +1493,39 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         if (closest(e.target as Element, '.e-menu-wrapper').querySelector('ul.e-menu-parent').id !== this.element.id) {
             return;
         }
-        this.element.classList.contains('e-hide-menu') ? this.openHamburgerMenu(e) : this.closeHamburgerMenu(e);
+        if (this.element.classList.contains('e-hide-menu')) {
+            this.openHamburgerMenu(e);
+        } else {
+            this.closeHamburgerMenu(e);
+        }
     }
 
     private clickHandler(e: MouseEvent): void {
         if (this.isTapHold) {
             this.isTapHold = false;
         } else {
-            let wrapper: Element = this.getWrapper();
-            let trgt: Element = e.target as Element;
-            let cli: Element = this.cli = this.getLI(trgt);
-            let regex: RegExp = new RegExp('-ej2menu-(.*)-popup');
-            let cliWrapper: Element = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : null;
-            let isInstLI: boolean = cli && cliWrapper && (this.isMenu ? this.getIndex(cli.id, true).length > 0
+            const wrapper: Element = this.getWrapper();
+            const trgt: Element = e.target as Element;
+            const cli: Element = this.cli = this.getLI(trgt);
+            const regex: RegExp = new RegExp('-ej2menu-(.*)-popup');
+            const cliWrapper: Element = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : null;
+            const isInstLI: boolean = cli && cliWrapper && (this.isMenu ? this.getIndex(cli.id, true).length > 0
                 : wrapper.firstElementChild.id === cliWrapper.firstElementChild.id);
             if (Browser.isDevice && this.isMenu) {
                 this.removeLIStateByClass([FOCUSED], [wrapper].concat(this.getPopups()));
                 this.mouseDownHandler(e);
             }
             if (cli && cliWrapper && this.isMenu) {
-                let cliWrapperId: string = cliWrapper.id ? regex.exec(cliWrapper.id)[1] : cliWrapper.querySelector('.e-menu-parent').id;
+                const cliWrapperId: string = cliWrapper.id ? regex.exec(cliWrapper.id)[1] : cliWrapper.querySelector('.e-menu-parent').id;
                 if (this.element.id !== cliWrapperId) {
                     return;
                 }
             }
             if (isInstLI && e.type === 'click' && !cli.classList.contains(HEADER)) {
                 this.setLISelected(cli);
-                let navIdx: number[] = this.getIndex(cli.id, true);
-                let item: MenuItemModel = this.getItem(navIdx);
-                let eventArgs: MenuEventArgs = { element: cli as HTMLElement, item: item, event: e };
+                const navIdx: number[] = this.getIndex(cli.id, true);
+                const item: MenuItemModel = this.getItem(navIdx);
+                const eventArgs: MenuEventArgs = { element: cli as HTMLElement, item: item, event: e };
                 this.trigger('select', eventArgs);
             }
             if (isInstLI && (e.type === 'mouseover' || Browser.isDevice || this.showItemOnClick)) {
@@ -1456,7 +1533,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 if (cli.classList.contains(HEADER)) {
                     ul = wrapper.children[this.navIdx.length - 1] as HTMLElement;
                     this.toggleAnimation(ul);
-                    let sli: Element = this.getLIByClass(ul, SELECTED);
+                    const sli: Element = this.getLIByClass(ul, SELECTED);
                     if (sli) {
                         sli.classList.remove(SELECTED);
                     }
@@ -1465,17 +1542,17 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 } else {
                     if (!cli.classList.contains(SEPARATOR)) {
                         this.showSubMenu = true;
-                        let cul: Element = cli.parentNode as Element;
+                        const cul: Element = cli.parentNode as Element;
                         this.cliIdx = this.getIdx(cul, cli);
                         if (this.isMenu || !Browser.isDevice) {
-                            let culIdx: number = this.isMenu ? Array.prototype.indexOf.call(
+                            const culIdx: number = this.isMenu ? Array.prototype.indexOf.call(
                                 [wrapper].concat(this.getPopups()), closest(cul, '.' + 'e-' + this.getModuleName() + '-wrapper'))
                                 : this.getIdx(wrapper, cul);
                             if (this.navIdx[culIdx] === this.cliIdx) {
                                 this.showSubMenu = false;
                             }
                             if (culIdx !== this.navIdx.length && (e.type !== 'mouseover' || this.showSubMenu)) {
-                                let sli: Element = this.getLIByClass(cul, SELECTED);
+                                const sli: Element = this.getLIByClass(cul, SELECTED);
                                 if (sli) {
                                     sli.classList.remove(SELECTED);
                                 }
@@ -1494,8 +1571,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 }
             } else {
                 if (this.isMenu && trgt.tagName === 'DIV' && this.navIdx.length && closest(trgt, '.e-menu-vscroll')) {
-                    let popupEle: Element = closest(trgt, '.' + POPUP);
-                    let cIdx: number = Array.prototype.indexOf.call(this.getPopups(), popupEle) + 1;
+                    const popupEle: Element = closest(trgt, '.' + POPUP);
+                    const cIdx: number = Array.prototype.indexOf.call(this.getPopups(), popupEle) + 1;
                     if (cIdx < this.navIdx.length) {
                         this.closeMenu(cIdx + 1, e);
                         if (popupEle) { this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]); }
@@ -1525,8 +1602,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             } else {
                 isHeader = closest(this.element, '.e-menu-parent.e-control');
             }
-            let idx: number[] = this.navIdx.concat(this.cliIdx);
-            let item: MenuItemModel = this.getItem(idx);
+            const idx: number[] = this.navIdx.concat(this.cliIdx);
+            const item: MenuItemModel = this.getItem(idx);
             if (item && (<objColl>(<obj>item)[this.getField('children', idx.length - 1)]) &&
                 (<objColl>(<obj>item)[this.getField('children', idx.length - 1)]).length) {
                 if (e.type === 'mouseover' || (Browser.isDevice && this.isMenu)) {
@@ -1543,8 +1620,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 }
             }
             if (!isHeader) {
-                let cul: Element = this.getUlByNavIdx();
-                let sli: Element = this.getLIByClass(cul, SELECTED);
+                const cul: Element = this.getUlByNavIdx();
+                const sli: Element = this.getLIByClass(cul, SELECTED);
                 if (sli) {
                     sli.setAttribute('aria-expanded', 'false');
                     sli.classList.remove(SELECTED);
@@ -1554,7 +1631,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         this.keyType = '';
     }
     private setLISelected(li: Element): void {
-        let sli: Element = this.getLIByClass(li.parentElement, SELECTED);
+        const sli: Element = this.getLIByClass(li.parentElement, SELECTED);
         if (sli) {
             sli.classList.remove(SELECTED);
         }
@@ -1575,9 +1652,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     /**
      * This method is used to get the index of the menu item in the Menu based on the argument.
-     * @param item - item be passed to get the index | id to be passed to get the item index.
-     * @param isUniqueId - Set `true` if it is a unique id.
-     * @returns void
+     *
+     * @param {MenuItem | string} item - item be passed to get the index | id to be passed to get the item index.
+     * @param {boolean} isUniqueId - Set `true` if it is a unique id.
+     * @returns {void}
      */
     public getItemIndex(item: MenuItem | string, isUniqueId?: boolean): number[] {
         let idx: string;
@@ -1586,23 +1664,24 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         } else {
             idx = item.id;
         }
-        let isText: boolean = (isUniqueId === false) ? false : true;
-        let navIdx: number[] = this.getIndex(idx, isText);
+        const isText: boolean = (isUniqueId === false) ? false : true;
+        const navIdx: number[] = this.getIndex(idx, isText);
         return navIdx;
     }
 
     /**
      * This method is used to set the menu item in the Menu based on the argument.
-     * @param item - item need to be updated.
-     * @param id - id to be passed to update the item.
-     * @param isUniqueId - Set `true` if it is a unique id.
-     * @returns void
+     *
+     * @param {MenuItem} item - item need to be updated.
+     * @param {string} id - id to be passed to update the item.
+     * @param {boolean} isUniqueId - Set `true` if it is a unique id.
+     * @returns {void}
      */
     public setItem(item: MenuItem, id?: string, isUniqueId?: boolean): void {
-        let idx: string = id ? id : item.id;
-        let isText: boolean = (isUniqueId === false) ? false : true;
-        let navIdx: number[] = this.getIndex(idx, isText);
-        let newItem: MenuItemModel = this.getItem(navIdx);
+        const idx: string = id ? id : item.id;
+        const isText: boolean = (isUniqueId === false) ? false : true;
+        const navIdx: number[] = this.getIndex(idx, isText);
+        const newItem: MenuItemModel = this.getItem(navIdx);
         newItem.iconCss = item.iconCss;
         newItem.id = item.id;
         newItem.text = item.text;
@@ -1613,8 +1692,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private getItem(navIdx: number[]): MenuItemModel {
         navIdx = navIdx.slice();
-        let idx: number = navIdx.pop();
-        let items: MenuItemModel[] = this.getItems(navIdx);
+        const idx: number = navIdx.pop();
+        const items: MenuItemModel[] = this.getItems(navIdx);
         return items[idx];
     }
 
@@ -1627,7 +1706,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private setItems(newItems: objColl, navIdx: number[]): void {
-        let items: objColl = this.getItems(navIdx);
+        const items: objColl = this.getItems(navIdx);
         items.splice(0, items.length);
         for (let i: number = 0; i < newItems.length; i++) {
             items.splice(i, 0, newItems[i]);
@@ -1660,7 +1739,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             items = items[index].items;
             if (!items) { break; }
             count++;
-            let ul: HTMLUListElement = <HTMLUListElement>this.getUlByNavIdx(count);
+            const ul: HTMLUListElement = <HTMLUListElement>this.getUlByNavIdx(count);
             if (!ul) { break; }
             this.updateItem(ul, items);
         }
@@ -1669,88 +1748,95 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private removeChildElement(elem: HTMLUListElement): HTMLUListElement {
         while (elem.firstElementChild) {
             elem.removeChild(elem.firstElementChild);
-          }
+        }
         return elem;
     }
     /**
-     * Called internally if any of the property value changed
+     * Called internally if any of the property value changed.
+     *
      * @private
-     * @param {MenuBaseModel} newProp
-     * @param {MenuBaseModel} oldProp
-     * @returns void
+     * @param {MenuBaseModel} newProp - Specifies the new properties
+     * @param {MenuBaseModel} oldProp - Specifies the old properties
+     * @returns {void}
      */
     public onPropertyChanged(newProp: MenuBaseModel, oldProp: MenuBaseModel): void {
-        let wrapper: HTMLElement = this.getWrapper() as HTMLElement;
-        for (let prop of Object.keys(newProp)) {
+        const wrapper: HTMLElement = this.getWrapper() as HTMLElement;
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'cssClass':
-                    if (oldProp.cssClass) {
-                        removeClass([wrapper], oldProp.cssClass.split(' '));
-                    }
-                    if (newProp.cssClass) {
-                        addClass([wrapper], newProp.cssClass.split(' '));
-                    }
-                    break;
-                case 'enableRtl':
-                    wrapper.classList.toggle(RTL);
-                    break;
-                case 'showItemOnClick':
-                    this.unWireEvents();
-                    this.showItemOnClick = newProp.showItemOnClick;
-                    this.wireEvents();
-                    break;
-                case 'enableScrolling':
-                    if (newProp.enableScrolling) {
-                        let ul: HTMLElement;
-                        this.element.classList.contains('e-vertical') ?
-                            addScrolling(this.createElement, wrapper, this.element, 'vscroll', this.enableRtl)
-                            : addScrolling(this.createElement, wrapper, this.element, 'hscroll', this.enableRtl);
-                        (this.getPopups() as HTMLElement[]).forEach((wrapper: HTMLElement) => {
-                            ul = select('.e-ul', wrapper) as HTMLElement;
-                            addScrolling(this.createElement, wrapper, ul, 'vscroll', this.enableRtl);
-                        });
+            case 'cssClass':
+                if (oldProp.cssClass) {
+                    removeClass([wrapper], oldProp.cssClass.split(' '));
+                }
+                if (newProp.cssClass) {
+                    addClass([wrapper], newProp.cssClass.split(' '));
+                }
+                break;
+            case 'enableRtl':
+                wrapper.classList.toggle(RTL);
+                break;
+            case 'showItemOnClick':
+                this.unWireEvents();
+                this.showItemOnClick = newProp.showItemOnClick;
+                this.wireEvents();
+                break;
+            case 'enableScrolling':
+                if (newProp.enableScrolling) {
+                    let ul: HTMLElement;
+                    if (this.element.classList.contains('e-vertical')) {
+                        addScrolling(this.createElement, wrapper, this.element, 'vscroll', this.enableRtl);
                     } else {
-                        let ul: HTMLElement = wrapper.children[0] as HTMLElement;
-                        this.element.classList.contains('e-vertical') ? destroyScroll(getInstance(ul, VScroll) as VScroll, ul)
-                            : destroyScroll(getInstance(ul, HScroll) as HScroll, ul);
+                        addScrolling(this.createElement, wrapper, this.element, 'hscroll', this.enableRtl);
+                    }
+                    (this.getPopups() as HTMLElement[]).forEach((wrapper: HTMLElement) => {
+                        ul = select('.e-ul', wrapper) as HTMLElement;
+                        addScrolling(this.createElement, wrapper, ul, 'vscroll', this.enableRtl);
+                    });
+                } else {
+                    let ul: HTMLElement = wrapper.children[0] as HTMLElement;
+                    if (this.element.classList.contains('e-vertical')) {
+                        destroyScroll(getInstance(ul, VScroll) as VScroll, ul);
+                    } else {
+                        destroyScroll(getInstance(ul, HScroll) as HScroll, ul);
+                    }
+                    wrapper.style.overflow = '';
+                    wrapper.appendChild(this.element);
+                    (this.getPopups() as HTMLElement[]).forEach((wrapper: HTMLElement) => {
+                        ul = wrapper.children[0] as HTMLElement;
+                        destroyScroll(getInstance(ul, VScroll) as VScroll, ul);
                         wrapper.style.overflow = '';
-                        wrapper.appendChild(this.element);
-                        (this.getPopups() as HTMLElement[]).forEach((wrapper: HTMLElement) => {
-                            ul = wrapper.children[0] as HTMLElement;
-                            destroyScroll(getInstance(ul, VScroll) as VScroll, ul);
-                            wrapper.style.overflow = '';
-                        });
+                    });
+                }
+                break;
+            case 'items': {
+                let idx: number;
+                let navIdx: number[];
+                let item: MenuItemModel[];
+                if (!Object.keys(oldProp.items).length) {
+                    this.updateItem(this.element, this.items);
+                    for (let i: number = 1, count: number = wrapper.childElementCount; i < count; i++) {
+                        detach(wrapper.lastElementChild);
                     }
-                    break;
-                case 'items':
-                    let idx: number;
-                    let navIdx: number[];
-                    let item: MenuItemModel[];
-                    if (!Object.keys(oldProp.items).length) {
-                        this.updateItem(this.element, this.items);
-                        for (let i: number = 1, count: number = wrapper.childElementCount; i < count; i++) {
-                            detach(wrapper.lastElementChild);
-                        }
-                        if (this.isMenu && isBlazor()) {
-                            this.updateItemsByNavIdx();
-                        } else {
-                            this.navIdx = [];
-                        }
+                    if (this.isMenu && isBlazor()) {
+                        this.updateItemsByNavIdx();
                     } else {
-                        let keys: string[] = Object.keys(newProp.items);
-                        for (let i: number = 0; i < keys.length; i++) {
-                            navIdx = this.getChangedItemIndex(newProp, [], Number(keys[i]));
-                            if (navIdx.length <= this.getWrapper().children.length) {
-                                idx = navIdx.pop();
-                                item = this.getItems(navIdx);
-                                this.insertAfter([item[idx]], item[idx].text);
-                                this.removeItem(item, navIdx, idx);
-                                this.setItems(item as objColl, navIdx);
-                            }
-                            navIdx.length = 0;
-                        }
+                        this.navIdx = [];
                     }
-                    break;
+                } else {
+                    const keys: string[] = Object.keys(newProp.items);
+                    for (let i: number = 0; i < keys.length; i++) {
+                        navIdx = this.getChangedItemIndex(newProp, [], Number(keys[i]));
+                        if (navIdx.length <= this.getWrapper().children.length) {
+                            idx = navIdx.pop();
+                            item = this.getItems(navIdx);
+                            this.insertAfter([item[idx]], item[idx].text);
+                            this.removeItem(item, navIdx, idx);
+                            this.setItems(item as objColl, navIdx);
+                        }
+                        navIdx.length = 0;
+                    }
+                }
+                break;
+            }
             }
         }
     }
@@ -1761,7 +1847,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         } else {
             ul.innerHTML = '';
         }
-        let lis: HTMLElement[] = [].slice.call(this.createItems(items).children);
+        const lis: HTMLElement[] = [].slice.call(this.createItems(items).children);
         lis.forEach((li: HTMLElement): void => {
             ul.appendChild(li);
         });
@@ -1769,10 +1855,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private getChangedItemIndex(newProp: MenuBaseModel, index: number[], idx: number): number[] {
         index.push(idx);
-        let key: string = Object.keys((<objColl>newProp.items)[idx]).pop();
+        const key: string = Object.keys((<objColl>newProp.items)[idx]).pop();
         if (key === 'items') {
-            let item: MenuItemModel = (<objColl>newProp.items)[idx];
-            let popStr: string = Object.keys(item.items).pop();
+            const item: MenuItemModel = (<objColl>newProp.items)[idx];
+            const popStr: string = Object.keys(item.items).pop();
             if (popStr) {
                 this.getChangedItemIndex(item, index, Number(popStr));
             }
@@ -1786,7 +1872,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private removeItem(item: MenuItemModel[], navIdx: number[], idx: number): void {
         item.splice(idx, 1);
-        let uls: HTMLCollection = this.getWrapper().children;
+        const uls: HTMLCollection = this.getWrapper().children;
         if (navIdx.length < uls.length) {
             detach(uls[navIdx.length].children[idx]);
         }
@@ -1794,14 +1880,17 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     /**
      * Used to unwire the bind events.
+     *
      * @private
+     * @param {string} targetSelctor - Specifies the target selector
+     * @returns {void}
      */
     protected unWireEvents(targetSelctor: string = this.target): void {
-        let wrapper: HTMLElement = this.getWrapper() as HTMLElement;
+        const wrapper: HTMLElement = this.getWrapper() as HTMLElement;
         if (targetSelctor) {
             let target: HTMLElement;
             let touchModule: Touch;
-            let targetElems: HTMLElement[] = selectAll(targetSelctor);
+            const targetElems: HTMLElement[] = selectAll(targetSelctor);
             for (let i: number = 0, len: number = targetElems.length; i < len; i++) {
                 target = targetElems[i];
                 if (this.isMenu) {
@@ -1819,7 +1908,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
             if (!this.isMenu) {
                 EventHandler.remove(this.targetElement, 'scroll', this.scrollHandler);
-                for (let parent of getScrollableParent(this.targetElement)) {
+                for (const parent of getScrollableParent(this.targetElement)) {
                     EventHandler.remove(parent, 'scroll', this.scrollHandler);
                 }
             }
@@ -1834,7 +1923,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private unWireKeyboardEvent(element: HTMLElement): void {
-        let keyboardModule: KeyboardEvents = getInstance(element, KeyboardEvents) as KeyboardEvents;
+        const keyboardModule: KeyboardEvents = getInstance(element, KeyboardEvents) as KeyboardEvents;
         if (keyboardModule) {
             keyboardModule.destroy();
         }
@@ -1884,8 +1973,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private triggerOpen(ul: HTMLElement): void {
-        let item: MenuItemModel = this.navIdx.length ? this.getItem(this.navIdx) : null;
-        let eventArgs: OpenCloseMenuEventArgs = {
+        const item: MenuItemModel = this.navIdx.length ? this.getItem(this.navIdx) : null;
+        const eventArgs: OpenCloseMenuEventArgs = {
             element: ul, parentItem: item, items: item ? item.items : this.items as objColl
         };
         this.trigger('onOpen', eventArgs);
@@ -1899,8 +1988,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             if (ul.querySelector('.' + FOCUSED)) {
                 (ul.querySelector('.' + FOCUSED) as HTMLElement).focus();
             } else {
-                let ele: HTMLElement;
-                ele = this.getWrapper().children[this.getIdx(this.getWrapper(), ul) - 1] as HTMLElement;
+                const ele: HTMLElement = this.getWrapper().children[this.getIdx(this.getWrapper(), ul) - 1] as HTMLElement;
                 if (ele) {
                     (ele.querySelector('.' + SELECTED) as HTMLElement).focus();
                 } else {
@@ -1909,11 +1997,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
         } else {
             if (ul === this.element) {
-                let fli: Element = this.getLIByClass(this.element, FOCUSED);
+                const fli: Element = this.getLIByClass(this.element, FOCUSED);
                 if (fli) {
                     fli.classList.remove(FOCUSED);
                 }
-                let sli: Element = this.getLIByClass(this.element, SELECTED);
+                const sli: Element = this.getLIByClass(this.element, SELECTED);
                 if (sli) {
                     sli.classList.remove(SELECTED);
                 }
@@ -1926,7 +2014,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     /**
      * Get the properties to be maintained in the persisted state.
-     * @returns string
+     *
+     * @returns {string} - Persist data
      */
     protected getPersistData(): string {
         return '';
@@ -1934,7 +2023,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     /**
      * Get wrapper element.
-     * @returns Element
+     *
+     * @returns {Element} - Wrapper element
      * @private
      */
     private getWrapper(): Element {
@@ -1973,16 +2063,17 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     /**
      * This method is used to enable or disable the menu items in the Menu based on the items and enable argument.
-     * @param items Text items that needs to be enabled/disabled.
-     * @param enable Set `true`/`false` to enable/disable the list items.
-     * @param isUniqueId - Set `true` if it is a unique id. 
-     * @returns void
+     *
+     * @param {string[]} items - Text items that needs to be enabled/disabled.
+     * @param {boolean} enable - Set `true`/`false` to enable/disable the list items.
+     * @param {boolean} isUniqueId - Set `true` if it is a unique id.
+     * @returns {void}
      */
     public enableItems(items: string[], enable: boolean = true, isUniqueId?: boolean): void {
         let ul: Element;
         let idx: number;
         let navIdx: number[];
-        let disabled: string = DISABLED; let skipItem: boolean;
+        const disabled: string = DISABLED; let skipItem: boolean;
         for (let i: number = 0; i < items.length; i++) {
             navIdx = this.getIndex(items[i], isUniqueId);
             if (this.navIdx.length) {
@@ -2030,9 +2121,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     /**
      * This method is used to show the menu items in the Menu based on the items text.
-     * @param items Text items that needs to be shown.
-     * @param isUniqueId - Set `true` if it is a unique id.
-     * @returns void
+     *
+     * @param {string[]} items - Text items that needs to be shown.
+     * @param {boolean} isUniqueId - Set `true` if it is a unique id.
+     * @returns {void}
      */
     public showItems(items: string[], isUniqueId?: boolean): void {
         this.showHideItems(items, false, isUniqueId);
@@ -2040,8 +2132,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     /**
      * This method is used to hide the menu items in the Menu based on the items text.
-     * @param items Text items that needs to be hidden.
-     * @returns void
+     *
+     * @param {string[]} items - Text items that needs to be hidden.
+     * @param {boolean} isUniqueId - Set `true` if it is a unique id.
+     * @returns {void}
      */
     public hideItems(items: string[], isUniqueId?: boolean): void {
         this.showHideItems(items, true, isUniqueId);
@@ -2075,8 +2169,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     /**
      * It is used to remove the menu items from the Menu based on the items text.
-     * @param items Text items that needs to be removed.
-     * @returns void
+     *
+     * @param {string[]} items Text items that needs to be removed.
+     * @param {boolean} isUniqueId - Set `true` if it is a unique id.
+     * @returns {void}
      */
     public removeItems(items: string[], isUniqueId?: boolean): void {
         let idx: number;
@@ -2092,9 +2188,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     /**
      * It is used to insert the menu items after the specified menu item text.
-     * @param items Items that needs to be inserted.
-     * @param text Text item after that the element to be inserted.
-     * @returns void
+     *
+     * @param {MenuItemModel[]} items - Items that needs to be inserted.
+     * @param {string} text - Text item after that the element to be inserted.
+     * @param {boolean} isUniqueId - Set `true` if it is a unique id.
+     * @returns {void}
      */
     public insertAfter(items: MenuItemModel[], text: string, isUniqueId?: boolean): void {
         this.insertItems(items, text, isUniqueId);
@@ -2102,10 +2200,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     /**
      * It is used to insert the menu items before the specified menu item text.
-     * @param items Items that needs to be inserted.
-     * @param text Text item before that the element to be inserted.
-     * @param isUniqueId - Set `true` if it is a unique id.
-     * @returns void
+     *
+     * @param {MenuItemModel[]} items - Items that needs to be inserted.
+     * @param {string} text - Text item before that the element to be inserted.
+     * @param  {boolean} isUniqueId - Set `true` if it is a unique id.
+     * @returns {void}
      */
     public insertBefore(items: MenuItemModel[], text: string, isUniqueId?: boolean): void {
         this.insertItems(items, text, isUniqueId, false);
@@ -2117,19 +2216,17 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         let navIdx: number[];
         let iitems: MenuItemModel[];
         let menuitem: MenuItem;
-        let showIcon: boolean;
         for (let i: number = 0; i < items.length; i++) {
             navIdx = this.getIndex(text, isUniqueId);
             idx = navIdx.pop();
             iitems = this.getItems(navIdx);
             menuitem = new MenuItem(iitems[0] as MenuItem, 'items', items[i], true);
             iitems.splice(isAfter ? idx + 1 : idx, 0, menuitem);
-            let uls: Element[] = this.isMenu ? [this.getWrapper()].concat(this.getPopups()) : [].slice.call(this.getWrapper().children);
+            const uls: Element[] = this.isMenu ? [this.getWrapper()].concat(this.getPopups()) : [].slice.call(this.getWrapper().children);
             if (navIdx.length < uls.length) {
                 idx = isAfter ? idx + 1 : idx;
-                showIcon = this.hasField(iitems, this.getField('iconCss', navIdx.length - 1));
                 li = this.createItems(iitems).children[idx];
-                let ul: Element = this.isMenu ? select('.e-menu-parent', uls[navIdx.length]) : uls[navIdx.length];
+                const ul: Element = this.isMenu ? select('.e-menu-parent', uls[navIdx.length]) : uls[navIdx.length];
                 ul.insertBefore(li, ul.children[idx]);
             }
         }
@@ -2154,11 +2251,12 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     /**
      * Destroys the widget.
-     * @returns void
+     *
+     * @returns {void}
      */
 
     public destroy(): void {
-        let wrapper: Element = this.getWrapper();
+        const wrapper: Element = this.getWrapper();
         if (wrapper) {
             this.unWireEvents();
             if (!this.isMenu) {
@@ -2171,9 +2269,12 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         this.setProperties({ 'items': [] }, true);
                     }
                     if (document.getElementById(this.clonedElement.id)) {
-                        let refEle: Element = this.clonedElement.nextElementSibling;
-                        refEle && refEle !== wrapper ? this.clonedElement.parentElement.insertBefore(this.element, refEle) :
-                        this.clonedElement.parentElement.appendChild(this.element);
+                        const refEle: Element = this.clonedElement.nextElementSibling;
+                        if (refEle && refEle !== wrapper) {
+                            this.clonedElement.parentElement.insertBefore(this.element, refEle);
+                        } else {
+                            this.clonedElement.parentElement.appendChild(this.element);
+                        }
                         if (isBlazor()) {
                             this.element = this.removeChildElement(this.element);
                         } else {
@@ -2239,6 +2340,7 @@ export interface BeforeOpenCloseMenuEventArgs extends BaseEventArgs {
     top?: number;
     left?: number;
     isFocused?: boolean;
+    showSubMenuOn?: MenuOpenType;
 }
 
 /**

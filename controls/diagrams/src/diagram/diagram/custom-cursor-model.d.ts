@@ -6,13 +6,15 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';import { Actions 
 export interface CustomCursorActionModel {
 
     /**
-     * Defines the property of a Data Map Items 
+     * Defines the property of a Data Map Items
+     *
      * @blazorDefaultValueIgnore
      */
     action?: Actions;
 
     /**
-     * Defines the Fields for the Data Map Items 
+     * Defines the Fields for the Data Map Items
+     *
      * @default ''
      */
     cursor?: string;

@@ -7,7 +7,7 @@ import { Axis } from '../axis/axis';
 
 export class TwoDimensional {
     private heatMap: HeatMap;
-    // tslint:disable-next-line:no-any 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private completeDataSource: any[];
     private tempSizeArray: number[];
     private tempColorArray: number[];
@@ -17,14 +17,16 @@ export class TwoDimensional {
 
     /**
      * To reconstruct proper two dimensional dataSource depends on min and max values.
+     *
      *  @private
      */
+
     public processDataSource(dataSource: Object): void {
-        // tslint:disable-next-line:no-any
-        let tempCloneData: any = <Object[][] | Object[][][]>extend([], dataSource, null, true);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const tempCloneData: any = <Object[][] | Object[][][]>extend([], dataSource, null, true);
         this.heatMap.clonedDataSource = [];
         this.completeDataSource = [];
-        let axis: Axis[] = this.heatMap.axisCollections;
+        const axis: Axis[] = this.heatMap.axisCollections;
         let dataLength: number = axis[0].maxLength + 1;
         let labelLength: number = axis[0].axisLabelSize + (axis[0].min > 0 ? axis[0].min : 0);
         let xLength: number = dataLength > labelLength ? dataLength : labelLength;
@@ -32,11 +34,11 @@ export class TwoDimensional {
         let maxVal: number;
         dataLength = axis[1].maxLength + 1;
         labelLength = axis[1].axisLabelSize + (axis[1].min > 0 ? axis[1].min : 0);
-        let yLength: number = dataLength > labelLength ? dataLength : labelLength;
-        // tslint:disable-next-line:no-any 
+        const yLength: number = dataLength > labelLength ? dataLength : labelLength;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let tempVariable: any;
         let cloneDataIndex: number = 0;
-        let minMaxDatasource: Object[] = [];
+        const minMaxDatasource: Object[] = [];
         this.tempSizeArray = [];
         this.tempColorArray = [];
         this.heatMap.minColorValue = null;
@@ -67,7 +69,7 @@ export class TwoDimensional {
                 tempVariable = <number[]>extend([], this.completeDataSource[cloneDataIndex], null, true);
 
             }
-            let minMaxVal: number[] = this.getMinMaxValue(minVal, maxVal, tempVariable);
+            const minMaxVal: number[] = this.getMinMaxValue(minVal, maxVal, tempVariable);
             if ((this.heatMap.paletteSettings.colorGradientMode === 'Column' ||
                 this.heatMap.paletteSettings.colorGradientMode === 'Row') && this.heatMap.paletteSettings.type === 'Gradient') {
                 this.heatMap.dataMax[z] = minMaxVal[1];
@@ -109,15 +111,17 @@ export class TwoDimensional {
 
     /**
      * To process and create a proper data array.
+     *
      *  @private
      */
-    // tslint:disable-next-line:no-any
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private processDataArray(tempCloneData: any, tempIndex: number, z: number, cloneDataIndex: number): void {
         if (this.heatMap.bubbleSizeWithColor) {
             if (tempCloneData[tempIndex] && !isNullOrUndefined(tempCloneData[tempIndex][z])
                 && typeof (tempCloneData[tempIndex][z]) === 'object') {
-                // tslint:disable-next-line:no-any 
-                let internalArray: any[] = tempCloneData[tempIndex][z];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const internalArray: any[] = tempCloneData[tempIndex][z];
                 for (let tempx: number = 0; tempx < internalArray.length; tempx++) {
                     if (isNullOrUndefined(internalArray[tempx])  || isNaN(internalArray[tempx])) {
                         internalArray[tempx] = '';
@@ -161,10 +165,12 @@ export class TwoDimensional {
 
     /**
      * To get minimum and maximum value
+     *
      *  @private
      */
+
     private getMinMaxValue(minVal: number, maxVal: number, tempVariable: number[]): number[] {
-        let minMaxValue: number[] = [];
+        const minMaxValue: number[] = [];
         if (this.heatMap.bubbleSizeWithColor) {
             if (this.heatMap.paletteSettings.colorGradientMode === 'Column' && this.heatMap.paletteSettings.type === 'Gradient') {
                 this.tempSizeArray = tempVariable;
@@ -182,8 +188,10 @@ export class TwoDimensional {
 
     /**
      * To get minimum value
+     *
      *  @private
      */
+
     private getMinValue(minVal: number, tempVariable: number[]): number {
         if (isNullOrUndefined(minVal)) {
             minVal = this.performSort(tempVariable);
@@ -198,8 +206,10 @@ export class TwoDimensional {
 
     /**
      * To get maximum value
+     *
      *  @private
      */
+
     private getMaxValue(maxVal: number, tempVariable: number[]): number {
         if (isNullOrUndefined(maxVal) && tempVariable.length > 0) {
             maxVal = Math.max(...tempVariable);
@@ -214,17 +224,21 @@ export class TwoDimensional {
 
     /**
      * To perform sort operation.
+     *
      *  @private
      */
-    // tslint:disable-next-line:no-any
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private performSort(tempVariable: any): number {
         return tempVariable.sort((a: number, b: number) => a - b).filter(this.checkmin)[0];
     }
 
     /**
      * To get minimum value
+     *
      *  @private
      */
+
     private checkmin(val: Object): boolean {
         return !isNullOrUndefined(val) && val.toString() !== '';
     }

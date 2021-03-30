@@ -281,7 +281,7 @@
     }
 
     .e-contextmenu-wrapper ul,
-    .e-contextmenu-container ul {
+    .e-contextmenu-container ul:not(.e-ul) {
       border: 0;
       box-shadow: none;
       max-width: 300px;

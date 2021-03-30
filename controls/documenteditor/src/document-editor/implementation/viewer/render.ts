@@ -12,7 +12,6 @@ import {
 import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader, CollaborativeEditingSettingsModel } from '../../index';
 import { Layout } from './layout';
 import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, DocumentHelper } from './viewer';
-// tslint:disable-next-line:max-line-length
 import { HelperMethods, ErrorInfo, Point, SpecialCharacterInfo, SpaceCharacterInfo, WordSpellInfo, RevisionInfo, BorderInfo } from '../editor/editor-helper';
 import { SearchWidgetInfo } from '../index';
 import { SelectionWidgetInfo } from '../selection';
@@ -20,7 +19,7 @@ import { SpellChecker } from '../spell-check/spell-checker';
 import { Revision } from '../track-changes/track-changes';
 import { WSectionFormat } from '../format';
 
-/** 
+/**
  * @private
  */
 export class Renderer {
@@ -34,11 +33,7 @@ export class Renderer {
     private leftPosition: number = 0;
     private topPosition: number = 0;
     private height: number = 0;
-    /**
-     * Gets page canvas.
-     * @private    
-     */
-    get pageCanvas(): HTMLCanvasElement {
+    public get pageCanvas(): HTMLCanvasElement {
         if (this.isPrinting) {
             if (isNullOrUndefined(this.pageCanvasIn)) {
                 this.pageCanvasIn = document.createElement('canvas');
@@ -48,47 +43,25 @@ export class Renderer {
         }
         return isNullOrUndefined(this.viewer) ? undefined : this.documentHelper.containerCanvas;
     }
-    /**
-     * Gets the spell checker
-     * @private
-     */
-    get spellChecker(): SpellChecker {
+    public get spellChecker(): SpellChecker {
         return this.documentHelper.owner.spellChecker;
     }
-    /**
-     * Gets selection canvas.
-     */
     private get selectionCanvas(): HTMLCanvasElement {
         return isNullOrUndefined(this.viewer) ? undefined : this.documentHelper.selectionCanvas;
     }
-    /**
-     * Gets page context.
-     */
     private get pageContext(): CanvasRenderingContext2D {
         return this.pageCanvas.getContext('2d');
     }
-    /**
-     * Gets selection context.
-     */
     private get selectionContext(): CanvasRenderingContext2D {
         return this.selectionCanvas.getContext('2d');
     }
 
-    constructor(documentHelper: DocumentHelper) {
+    public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
     }
-    get viewer(): LayoutViewer {
+    private get viewer(): LayoutViewer {
         return this.documentHelper.owner.viewer;
     }
-    /**
-     * Renders widgets.
-     * @param {Page} page 
-     * @param {number} left 
-     * @param {number} top 
-     * @param {number} width 
-     * @param {number} height 
-     * @private
-     */
     public renderWidgets(page: Page, left: number, top: number, width: number, height: number): void {
         if (isNullOrUndefined(this.pageCanvas) || isNullOrUndefined(page)) {
             return;
@@ -101,7 +74,7 @@ export class Renderer {
             if (page.index === 0) {
                 marginTop = top - this.viewer.padding.top;
             }
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             this.pageContext.fillRect(left - this.viewer.padding.left, marginTop, width + this.viewer.padding.left, height + this.viewer.padding.top);
         } else {
             this.pageContext.fillRect(left, top, width, height);
@@ -146,19 +119,15 @@ export class Renderer {
         this.pageTop = 0;
         this.pageContext.restore();
     }
-    /**
-     * Sets page size.
-     * @param {Page} page 
-     */
     private setPageSize(page: Page): void {
         this.pageContext.clearRect(0, 0, this.pageCanvas.width, this.pageCanvas.height);
         this.selectionContext.clearRect(0, 0, this.selectionCanvas.width, this.selectionCanvas.height);
 
         this.pageContext.restore();
         this.selectionContext.restore();
-        let width: number = page.boundingRectangle.width;
-        let height: number = page.boundingRectangle.height;
-        let dpr: number = Math.max(1, window.devicePixelRatio || 1);
+        const width: number = page.boundingRectangle.width;
+        const height: number = page.boundingRectangle.height;
+        const dpr: number = Math.max(1, window.devicePixelRatio || 1);
         if (this.pageCanvas.width !== width * dpr || this.pageCanvas.height !== height * dpr) {
             this.pageCanvas.height = height * dpr;
             this.pageCanvas.width = width * dpr;
@@ -168,11 +137,6 @@ export class Renderer {
             this.pageContext.scale(dpr, dpr);
         }
     }
-    /**
-     * Renders header footer widget.
-     * @param {Page} page 
-     * @param {HeaderFooterWidget} headFootWidget 
-     */
     private renderHFWidgets(page: Page, widget: HeaderFooterWidget, width: number, isHeader: boolean): void {
         if (!this.isPrinting) {
             this.pageContext.globalAlpha = this.documentHelper.owner.enableHeaderAndFooter ? 1 : 0.65;
@@ -180,10 +144,10 @@ export class Renderer {
         let cliped: boolean = false;
         let height: number = 0;
         let pageHt: number = 0;
-        let headerFooterHeight: number = page.boundingRectangle.height / 100 * 40;
+        const headerFooterHeight: number = page.boundingRectangle.height / 100 * 40;
         if (isHeader) {
-            let topMargin: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin);
-            let widgetHeight: number = Math.max((widget.y + widget.height), topMargin);
+            const topMargin: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin);
+            const widgetHeight: number = Math.max((widget.y + widget.height), topMargin);
             if (widgetHeight > headerFooterHeight) {
                 cliped = true;
                 this.pageContext.beginPath();
@@ -192,15 +156,16 @@ export class Renderer {
                 this.pageContext.clip();
             }
         } else {
-            let footerDistance: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.footerDistance);
-            // tslint:disable-next-line:max-line-length
-            let footerHeight: number = page.boundingRectangle.height -
+            const footerDistance: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.footerDistance);
+
+            const footerHeight: number = page.boundingRectangle.height -
+                // eslint-disable-next-line max-len
                 Math.max(page.footerWidget.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidget.sectionFormat.bottomMargin));
             height = Math.max(page.boundingRectangle.height - headerFooterHeight, footerHeight);
             pageHt = page.boundingRectangle.height - footerDistance;
         }
         for (let i: number = 0; i < widget.childWidgets.length; i++) {
-            let block: BlockWidget = widget.childWidgets[i] as BlockWidget;
+            const block: BlockWidget = widget.childWidgets[i] as BlockWidget;
             if (!isHeader) {
                 height += block.height;
             }
@@ -218,14 +183,14 @@ export class Renderer {
     }
     private renderHeaderSeparator(page: Page, left: number, top: number, widget: HeaderFooterWidget): void {
         //Header Widget
-        let topMargin: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin);
+        const topMargin: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin);
         let y: number = this.getScaledValue(Math.max((widget.y + widget.height), topMargin));
-        let pageWidth: number = this.getScaledValue(page.boundingRectangle.width);
-        let ctx: CanvasRenderingContext2D = this.pageContext;
+        const pageWidth: number = this.getScaledValue(page.boundingRectangle.width);
+        const ctx: CanvasRenderingContext2D = this.pageContext;
         ctx.save();
         ctx.globalAlpha = 0.65;
-        let headerFooterHeight: number = (this.getScaledValue(page.boundingRectangle.height) / 100) * 40;
-        //Maximum header height limit       
+        const headerFooterHeight: number = (this.getScaledValue(page.boundingRectangle.height) / 100) * 40;
+        //Maximum header height limit
         y = Math.min(y, headerFooterHeight);
         //Dash line Separator
         this.renderDashLine(ctx, left, top + y, pageWidth, '#000000', false);
@@ -236,11 +201,12 @@ export class Renderer {
         this.renderHeaderFooterMarkText(ctx, type, left + 10, y + top + 15);
         if (page.footerWidget) {
             //Footer Widget
-            let footerDistance: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.footerDistance);
-            // tslint:disable-next-line:max-line-length
+            const footerDistance: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.footerDistance);
+
             let footerHeight: number = this.getScaledValue(page.boundingRectangle.height) -
+                // eslint-disable-next-line max-len
                 this.getScaledValue(Math.max(page.footerWidget.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidget.sectionFormat.bottomMargin)));
-            //Maximum footer height limit     
+            //Maximum footer height limit
             footerHeight = Math.max((this.getScaledValue(page.boundingRectangle.height) - headerFooterHeight), footerHeight);
             this.renderDashLine(ctx, left, top + footerHeight, pageWidth, '#000000', false);
             type = this.getHeaderFooterType(page, false);
@@ -265,37 +231,32 @@ export class Renderer {
         }
         return type;
     }
-    /**
-     * @private
-     */
-    // tslint:disable-next-line:max-line-length
-    public renderDashLine(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, fillStyle: string, isSmallDash: boolean): void {
-        ctx.beginPath();
-        ctx.strokeStyle = fillStyle;
-        ctx.lineWidth = 1;
+
+    // eslint-disable-next-line max-len
+    public renderDashLine(context: CanvasRenderingContext2D, x: number, y: number, width: number, fillStyle: string, isSmallDash: boolean): void {
+        context.beginPath();
+        context.strokeStyle = fillStyle;
+        context.lineWidth = 1;
         if (isSmallDash) {
-            ctx.setLineDash([3, 2]);
+            context.setLineDash([3, 2]);
         } else {
-            ctx.setLineDash([6, 4]);
+            context.setLineDash([6, 4]);
         }
-        ctx.moveTo(x, y);
-        ctx.lineTo(x + width, y);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.closePath();
+        context.moveTo(x, y);
+        context.lineTo(x + width, y);
+        context.stroke();
+        context.setLineDash([]);
+        context.closePath();
     }
-    /**
-     * @private
-     */
-    // tslint:disable-next-line:max-line-length
-    public renderSolidLine(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, fillStyle: string): void {
-        ctx.beginPath();
-        ctx.strokeStyle = fillStyle;
-        ctx.lineWidth = 0.5;
-        ctx.moveTo(x, y);
-        ctx.lineTo(x + width, y);
-        ctx.stroke();
-        ctx.closePath();
+
+    public renderSolidLine(context: CanvasRenderingContext2D, x: number, y: number, width: number, fillStyle: string): void {
+        context.beginPath();
+        context.strokeStyle = fillStyle;
+        context.lineWidth = 0.5;
+        context.moveTo(x, y);
+        context.lineTo(x + width, y);
+        context.stroke();
+        context.closePath();
     }
     private renderHeaderFooterMark(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number): void {
         ctx.beginPath();
@@ -312,18 +273,13 @@ export class Renderer {
         ctx.fillText(content, x, y);
         ctx.closePath();
     }
-    /**
-     * Renders body widget.
-     * @param {Page} page
-     * @param {BodyWidget} bodyWidget
-     */
     private render(page: Page, bodyWidget: BodyWidget): void {
         for (let i: number = 0; i < bodyWidget.childWidgets.length; i++) {
-            let widget: Widget = bodyWidget.childWidgets[i] as ParagraphWidget;
+            const widget: Widget = bodyWidget.childWidgets[i] as ParagraphWidget;
             if (i === 0 && bodyWidget.childWidgets[0] instanceof TableWidget &&
                 (((bodyWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).rowFormat.isHeader ||
                     page.repeatHeaderRowTableWidget)) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 this.renderHeader(page, widget as TableWidget, this.documentHelper.layout.getHeader(bodyWidget.childWidgets[0] as TableWidget));
             }
             this.renderWidget(page, widget);
@@ -333,7 +289,7 @@ export class Renderer {
 
     private renderFloatingItems(page: Page, floatingElements: ShapeElementBox[]): void {
         if (!isNullOrUndefined(floatingElements) && floatingElements.length > 0) {
-            /* tslint:disable */
+            /* eslint-disable */
             floatingElements.sort(function (a, b) { return a.zOrderPosition - b.zOrderPosition });
             for (let i: number = 0; i < floatingElements.length; i++) {
                 let shape: ShapeElementBox = floatingElements[i];
@@ -341,26 +297,23 @@ export class Renderer {
                 let shapeLeft: number = this.getScaledValue(shape.x, 1);
                 let shapeTop: number = this.getScaledValue(shape.y, 2);
                 this.pageContext.beginPath();
-                if (!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.fillFormat && shape.fillFormat.fill) {
+                if (shape.fillFormat && shape.fillFormat.fill) {
                     this.pageContext.fillStyle = shape.fillFormat.color;
                     this.pageContext.fillRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
                 }
                 if (shape.lineFormat.lineFormatType !== 'None') {
                     this.pageContext.strokeStyle = HelperMethods.getColor(shape.lineFormat.color);
-                    this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));   
+                    this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
                 }
                 this.pageContext.closePath();
+                this.clipRect(shape.x, shape.y, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
                 for (let i: number = 0; i < blocks.length; i++) {
                     this.renderWidget(page, blocks[i]);
                 }
+                this.pageContext.restore();
             }
         }
     }
-    /**
-     * Renders block widget.
-     * @param {Page} page 
-     * @param {Widget} widget 
-     */
     private renderWidget(page: Page, widget: Widget): void {
         if (this.documentHelper.owner.enableLockAndEdit) {
             this.renderLockRegionBorder(page, widget);
@@ -380,13 +333,13 @@ export class Renderer {
             let pageWidth: number = sectionFormat.pageWidth - sectionFormat.leftMargin - sectionFormat.rightMargin;
             pageWidth = HelperMethods.convertPointToPixel(pageWidth) + 10;
             if (this.viewer instanceof WebLayoutViewer) {
-                // tslint:disable-next-line:max-line-length
+
                 leftPosition = widget.x - 5
                 pageWidth = (this.documentHelper.visibleBounds.width - (this.viewer.padding.right * 5)) / this.documentHelper.zoomFactor;
             }
             let previousWidget: BlockWidget = widget.previousRenderedWidget as BlockWidget;
             let nextWidget: BlockWidget = widget.nextRenderedWidget as BlockWidget;
-            // tslint:disable-next-line:max-line-length
+
             let color: string = widget.lockedBy === this.documentHelper.owner.currentUser ? settinsModel.editableRegionColor : settinsModel.lockedRegionColor;
             let topPosition: number = widget.y
             let height: number = widget.y + widget.height;
@@ -404,14 +357,7 @@ export class Renderer {
             }
         }
     }
-    /**
-     * Renders header.
-     * @param {Page} page 
-     * @param {TableWidget} widget 
-     * @param {WRow} header 
-     * @private
-     */
-    public renderHeader(page: Page, widget: TableWidget, header: TableRowWidget): void {
+    private renderHeader(page: Page, widget: TableWidget, header: TableRowWidget): void {
         if (isNullOrUndefined(header)) {
             return;
         }
@@ -426,7 +372,7 @@ export class Renderer {
             let row: TableRowWidget = (parentTable.childWidgets[i] as TableRowWidget);
             let headerWidget: TableRowWidget = row.clone();
             headerWidget.containerWidget = row.containerWidget;
-            // tslint:disable-next-line:max-line-length
+
             page.viewer.updateClientAreaLocation(headerWidget, new Rect(page.viewer.clientArea.x, top, headerWidget.width, headerWidget.height));
             page.documentHelper.layout.updateChildLocationForRow(top, headerWidget);
             let cell: TableCellWidget = undefined;
@@ -443,39 +389,30 @@ export class Renderer {
         }
     }
 
-    /**
-     * Renders paragraph widget.
-     * @param {Page} page
-     * @param {ParagraphWidget} paraWidget
-     */
     private renderParagraphWidget(page: Page, paraWidget: ParagraphWidget): void {
         let top: number = paraWidget.y;
         let left: number = paraWidget.x;
         for (let i: number = 0; i < paraWidget.childWidgets.length; i++) {
             let widget: LineWidget = paraWidget.childWidgets[i] as LineWidget;
+            top += widget.marginTop;
             this.renderLine(widget, page, left, top);
             top += widget.height;
         }
     }
-    /**
-    * Renders paragraph widget.
-    * @param {Page} page
-    * @param {FootNoteWidget} paraWidget
-    */
     private renderfootNoteWidget(page: Page, paraWidget: FootNoteWidget): void {
         for (let i: number = 0; i < paraWidget.childWidgets.length; i++) {
             let widget: BlockWidget = paraWidget.childWidgets[i] as BlockWidget;
             if (i === 0) {
                 let ctx: CanvasRenderingContext2D = this.pageContext;
-                // tslint:disable-next-line:max-line-length
+
                 this.renderSolidLine(ctx, this.getScaledValue(widget.x, 1), this.getScaledValue(widget.y + widget.height / 2, 2), 300 * this.documentHelper.zoomFactor, '#000000');
                 continue;
             }
-            // tslint:disable-next-line:max-line-length
+
             if (!isNullOrUndefined(widget.footNoteReference) && (widget.childWidgets[0] as LineWidget).children[0] instanceof TextElementBox) {
-                // tslint:disable-next-line:max-line-length
+
                 if (i < 2 || (i > 1 && widget.footNoteReference !== (paraWidget.childWidgets[i - 1] as BlockWidget).footNoteReference)) {
-                    // tslint:disable-next-line:max-line-length
+
                     ((widget.childWidgets[0] as LineWidget).children[0] as TextElementBox).text = ((widget.childWidgets[0] as LineWidget).children[0] as TextElementBox).text.replace(((widget.childWidgets[0] as LineWidget).children[0] as TextElementBox).text, widget.footNoteReference.text);
                 }
             }
@@ -483,11 +420,6 @@ export class Renderer {
         }
 
     }
-    /**
-     * Renders table widget.
-     * @param {Page} page 
-     * @param {TableWidget} tableWidget 
-     */
     private renderTableWidget(page: Page, tableWidget: TableWidget): void {
         if (this.isFieldCode) {
             return;
@@ -501,22 +433,12 @@ export class Renderer {
             }
         }
     }
-    /**
-     * Renders table row widget.
-     * @param {Page} page 
-     * @param {Widget} rowWidget 
-     */
     private renderTableRowWidget(page: Page, rowWidget: Widget): void {
         for (let i: number = 0; i < rowWidget.childWidgets.length; i++) {
             let widget: TableCellWidget = rowWidget.childWidgets[i] as TableCellWidget;
             this.renderTableCellWidget(page, widget);
         }
     }
-    /**
-     * Renders table cell widget.
-     * @param {Page} page 
-     * @param {TableCellWidget} cellWidget 
-     */
     private renderTableCellWidget(page: Page, cellWidget: TableCellWidget): void {
         if (!this.isPrinting) {
             if (this.getScaledValue(cellWidget.y, 2) + cellWidget.height * this.documentHelper.zoomFactor < 0 ||
@@ -535,22 +457,15 @@ export class Renderer {
             // So, we need to add right margin value while cliping the content
             let width: number = (cellWidget.width + cellWidget.margin.left + cellWidget.margin.right) - cellWidget.leftBorderWidth;
             if (!this.isPrinting) {
-                // tslint:disable-next-line:max-line-length
+
                 this.clipRect(cellWidget.x - cellWidget.margin.left, cellWidget.y, this.getScaledValue(width), this.getScaledValue(this.height));
             }
             this.renderWidget(page, widget);
             this.pageContext.restore();
         }
     }
-    /**
-     * Renders line widget.
-     * @param {LineWidget} lineWidget
-     * @param {Page} page 
-     * @param {number} left 
-     * @param {number} top 
-     */
     private renderLine(lineWidget: LineWidget, page: Page, left: number, top: number): void {
-        // tslint:disable-next-line:max-line-length
+
         if (!this.isPrinting && page.documentHelper.owner.selection && !this.documentHelper.isScrollToSpellCheck && page.documentHelper.owner.selection.selectedWidgets.length > 0) {
             page.documentHelper.owner.selection.addSelectionHighlight(this.selectionContext, lineWidget, top);
         }
@@ -569,21 +484,21 @@ export class Renderer {
                     let height: number = lineWidget.height;
                     let isLastLine: boolean = lineWidget.isLastLine();
                     if (isLastLine) {
-                        // tslint:disable-next-line:max-line-length
+
                         height = height - HelperMethods.convertPointToPixel(this.documentHelper.layout.getAfterSpacing(lineWidget.paragraph))
                     }
-                    // tslint:disable-next-line:max-line-length
+
                     this.pageContext.fillRect(this.getScaledValue(widgetInfo[i].left, 1), this.getScaledValue(top, 2), this.getScaledValue(widgetInfo[i].width), this.getScaledValue(height));
                 }
             }
         }
         if (this.documentHelper.owner.searchModule) {
-            // tslint:disable-next-line:max-line-length
+
             if (!isNullOrUndefined(page.documentHelper.owner.searchModule.searchHighlighters) && page.documentHelper.owner.searchModule.searchHighlighters.containsKey(lineWidget)) {
                 let widgetInfo: SearchWidgetInfo[] = page.documentHelper.owner.searchModule.searchHighlighters.get(lineWidget);
                 for (let i: number = 0; i < widgetInfo.length; i++) {
                     this.pageContext.fillStyle = this.viewer.owner.documentEditorSettings.searchHighlightColor;
-                    // tslint:disable-next-line:max-line-length
+
                     this.pageContext.fillRect(this.getScaledValue(widgetInfo[i].left, 1), this.getScaledValue(top, 2), this.getScaledValue(widgetInfo[i].width), this.getScaledValue(lineWidget.height));
                 }
             }
@@ -594,7 +509,7 @@ export class Renderer {
             let widgetInfo: SelectionWidgetInfo[] = page.documentHelper.selection.editRegionHighlighters.get(lineWidget);
             for (let i: number = 0; i < widgetInfo.length; i++) {
                 this.pageContext.fillStyle = widgetInfo[i].color !== '' ? widgetInfo[i].color : '#add8e6';
-                // tslint:disable-next-line:max-line-length
+
                 this.pageContext.fillRect(this.getScaledValue(widgetInfo[i].left, 1), this.getScaledValue(top, 2), this.getScaledValue(widgetInfo[i].width), this.getScaledValue(lineWidget.height));
             }
         }
@@ -617,7 +532,7 @@ export class Renderer {
                         let l10n: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
                         l10n.setLocale(this.documentHelper.owner.locale);
                         elementBox.renderLockMark(this.documentHelper.owner.currentUser, l10n);
-                        // tslint:disable-next-line:max-line-length
+
                         let settings: CollaborativeEditingSettingsModel = this.documentHelper.owner.documentEditorSettings.collaborativeEditingSettings;
                         let color: string = elementBox.user === this.documentHelper.owner.currentUser ? settings.editableRegionColor : settings.lockedRegionColor;
                         style += `color:${color};`;
@@ -640,10 +555,10 @@ export class Renderer {
                         elementBox.renderCommentMark();
                         let rightMargin: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.rightMargin);
                         let pageWidth: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.pageWidth);
-                        // tslint:disable-next-line:max-line-length
+
                         let leftPosition: string = page.boundingRectangle.x + this.getScaledValue((pageWidth - rightMargin) + (rightMargin / 4)) + 'px;';
                         if (this.viewer instanceof WebLayoutViewer) {
-                            // tslint:disable-next-line:max-line-length
+
                             leftPosition = (page.boundingRectangle.width - (this.viewer.padding.right * 2) - (this.viewer.padding.left * 2)) + 'px;';
                         }
                         style = style + 'left:' + leftPosition + 'top:' + topPosition;
@@ -704,11 +619,6 @@ export class Renderer {
             }
         }
     }
-    /**
-     * Gets underline y position.
-     * @param {LineWidget} lineWidget
-     * @private 
-     */
     public getUnderlineYPosition(lineWidget: LineWidget): number {
         let height: number = 0;
         let lineHeight: number = 0;
@@ -728,13 +638,6 @@ export class Renderer {
         }
         return height - 2 * lineHeight;
     }
-    /**
-     * Renders list element box
-     * @param {ListTextElementBox} elementBox 
-     * @param {number} left 
-     * @param {number} top 
-     * @param {number} underlineY 
-     */
     private renderListTextElementBox(elementBox: ListTextElementBox, left: number, top: number, underlineY: number): void {
         let topMargin: number = elementBox.margin.top;
         let leftMargin: number = elementBox.margin.left;
@@ -749,7 +652,7 @@ export class Renderer {
             fontFamily = '';
         }
         let fontSize: number = format.fontSize === 11 ? breakCharacterFormat.fontSize : format.fontSize;
-        // tslint:disable-next-line:max-line-length
+
         let baselineAlignment: BaselineAlignment = format.baselineAlignment === 'Normal' ? breakCharacterFormat.baselineAlignment : format.baselineAlignment;
         bold = format.hasValue('bold') ? format.bold ? 'bold' : '' : breakCharacterFormat.bold ? 'bold' : '';
         italic = format.hasValue('italic') ? format.italic ? 'italic' : '' : breakCharacterFormat.italic ? 'italic' : '';
@@ -764,7 +667,7 @@ export class Renderer {
             } else {
                 this.pageContext.fillStyle = HelperMethods.getColor(highlightColor);
             }
-            // tslint:disable-next-line:max-line-length
+
             this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
         }
         this.pageContext.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + fontFamily;
@@ -785,7 +688,7 @@ export class Renderer {
         } else {
             this.pageContext.fillStyle = HelperMethods.getColor(color);
         }
-        // tslint:disable-next-line:max-line-length
+
         this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width));
 
         if (format.underline !== 'None' && !isNullOrUndefined(format.underline)) {
@@ -803,14 +706,7 @@ export class Renderer {
             return "#000000";
         }
     }
-    /**
-     * Renders text element box.
-     * @param {TextElementBox} elementBox 
-     * @param {number} left 
-     * @param {number} top 
-     * @param {number} underlineY 
-     */
-    // tslint:disable-next-line:max-line-length
+
     private renderTextElementBox(elementBox: TextElementBox, left: number, top: number, underlineY: number): void {
         let isHeightType: boolean = false;
         let containerWidget: Widget = elementBox.line.paragraph.containerWidget;
@@ -820,7 +716,7 @@ export class Renderer {
         let topMargin: number = elementBox.margin.top;
         let leftMargin: number = elementBox.margin.left;
         if (isHeightType) {
-            // tslint:disable-next-line:max-line-length
+
             this.clipRect(containerWidget.x, containerWidget.y, this.getScaledValue(containerWidget.width), this.getScaledValue(containerWidget.height));
         }
         let format: WCharacterFormat = elementBox.characterFormat;
@@ -830,11 +726,11 @@ export class Renderer {
             } else {
                 this.pageContext.fillStyle = HelperMethods.getColor(format.highlightColor);
             }
-            // tslint:disable-next-line:max-line-length
+
             this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
         }
         let revisionInfo: RevisionInfo[] = this.checkRevisionType(elementBox);
-        // tslint:disable-next-line:max-line-length
+
         let color: string = revisionInfo.length > 0 ? this.getRevisionColor(revisionInfo) : format.fontColor;
         this.pageContext.textBaseline = 'alphabetic';
         let bold: string = '';
@@ -873,9 +769,9 @@ export class Renderer {
         if (format.allCaps) {
             text = text.toUpperCase();
         }
-        // tslint:disable-next-line:max-line-length
+
         this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), scaledWidth);
-        // tslint:disable-next-line:max-line-length
+
         if ((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && !this.documentHelper.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox))) {
             elementBox.canTrigger = true;
             this.leftPosition = this.pageLeft;
@@ -885,12 +781,12 @@ export class Renderer {
                 color = '#FF0000';
                 for (let i: number = 0; i < errorDetails.elements.length; i++) {
                     let currentElement: ErrorTextElementBox = errorDetails.elements[i];
-                    // tslint:disable-next-line:max-line-length
+
                     if (elementBox.ignoreOnceItems.indexOf(this.spellChecker.manageSpecialCharacters(currentElement.text, undefined, true)) === -1) {
-                        // tslint:disable-next-line:max-line-length
+
                         let backgroundColor: string = (containerWidget instanceof TableCellWidget) ? (containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
-                        // tslint:disable-next-line:max-line-length
-                        this.renderWavyline(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, (isNullOrUndefined(currentElement.start)) ? top : currentElement.start.location.y - elementBox.margin.top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
+
+                        this.renderWavyLine(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, (isNullOrUndefined(currentElement.start)) ? top : currentElement.start.location.y - elementBox.margin.top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
                     }
                 }
             } else if (elementBox.ischangeDetected || this.documentHelper.triggerElementsOnLoading) {
@@ -899,15 +795,15 @@ export class Renderer {
             }
         }
         let currentInfo: RevisionInfo = this.getRevisionType(revisionInfo, true);
-        // tslint:disable-next-line:max-line-length
+
         if (format.underline !== 'None' && !isNullOrUndefined(format.underline) || (!isNullOrUndefined(currentInfo) && (currentInfo.type === 'Insertion' || currentInfo.type === 'MoveTo'))) {
-            // tslint:disable-next-line:max-line-length
+
             this.renderUnderline(elementBox, left, top, underlineY, color, format.underline, format.baselineAlignment, currentInfo);
         }
         currentInfo = this.getRevisionType(revisionInfo, false);
-        // tslint:disable-next-line:max-line-length
+
         if (format.strikethrough !== 'None' && !isNullOrUndefined(format.strikethrough) || (!isNullOrUndefined(currentInfo) && (currentInfo.type === 'Deletion' || currentInfo.type === 'MoveFrom'))) {
-            // tslint:disable-next-line:max-line-length
+
             this.renderStrikeThrough(elementBox, left, top, format.strikethrough, color, format.baselineAlignment, currentInfo);
         }
         if (isHeightType) {
@@ -915,15 +811,7 @@ export class Renderer {
         }
     }
 
-    /**
-     * Method to handle spell check for modified or newly added elements
-     * @param {TextElementBox} elementBox 
-     * @param {number} underlineY 
-     * @param {number} left 
-     * @param {number} top 
-     * @param {number} baselineAlignment 
-     */
-    // tslint:disable-next-line:max-line-length
+
     private handleChangeDetectedElements(elementBox: TextElementBox, underlineY: number, left: number, top: number, baselineAlignment: BaselineAlignment): void {
         let checkText: string = elementBox.text.trim();
         let beforeIndex: number = this.pageIndex;
@@ -931,7 +819,7 @@ export class Renderer {
             return;
         }
         if (!this.spellChecker.checkElementCanBeCombined(elementBox, underlineY, beforeIndex, true)) {
-            /* tslint:disable:no-any */
+            /* eslint-disable @typescript-eslint/no-explicit-any */
             let splittedText: any[] = checkText.split(/[\s]+/);
             let markindex: number = elementBox.line.getOffset(elementBox, 0);
             let spaceValue: number = 1;
@@ -939,33 +827,33 @@ export class Renderer {
                 for (let i: number = 0; i < splittedText.length; i++) {
                     let currentText: string = splittedText[i];
                     let retrievedText: string = this.spellChecker.manageSpecialCharacters(currentText, undefined, true);
-                    // tslint:disable-next-line:max-line-length
+
                     if (this.spellChecker.ignoreAllItems.indexOf(retrievedText) === -1 && elementBox.ignoreOnceItems.indexOf(retrievedText) === -1) {
-                        this.handleUnorderdElements(retrievedText, elementBox, underlineY, i, markindex, i === splittedText.length - 1, beforeIndex);
+                        this.handleUnorderedElements(retrievedText, elementBox, underlineY, i, markindex, i === splittedText.length - 1, beforeIndex);
                         markindex += currentText.length + spaceValue;
                     }
                 }
             } else {
                 let retrievedText: string = this.spellChecker.manageSpecialCharacters(checkText, undefined, true);
                 if (checkText.length > 0) {
-                    // tslint:disable-next-line:max-line-length
+
                     if (this.spellChecker.ignoreAllItems.indexOf(retrievedText) === -1 && elementBox.ignoreOnceItems.indexOf(retrievedText) === -1) {
                         let indexInLine: number = elementBox.indexInOwner;
                         let indexinParagraph: number = elementBox.line.paragraph.indexInOwner;
                         let spellInfo: WordSpellInfo = this.spellChecker.checkSpellingInPageInfo(retrievedText);
                         if (spellInfo.isElementPresent && this.spellChecker.enableOptimizedSpellCheck) {
                             let jsonObject: any = JSON.parse('{\"HasSpellingError\":' + spellInfo.hasSpellError + '}');
-                            // tslint:disable-next-line:max-line-length
+
                             this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, true);
                         } else {
-                            /* tslint:disable:no-any */
-                            // tslint:disable-next-line:max-line-length
-                            this.spellChecker.CallSpellChecker(this.spellChecker.languageID, checkText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
-                                /* tslint:disable:no-any */
+                            /* eslint-disable @typescript-eslint/no-explicit-any */
+
+                            this.spellChecker.callSpellChecker(this.spellChecker.languageID, checkText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
+                                /* eslint-disable @typescript-eslint/no-explicit-any */
                                 let jsonObject: any = JSON.parse(data);
-                                // tslint:disable-next-line:max-line-length
+
                                 let canUpdate: boolean = (beforeIndex === this.pageIndex || elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
-                                // tslint:disable-next-line:max-line-length
+
                                 this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, canUpdate);
                             });
                         }
@@ -975,52 +863,33 @@ export class Renderer {
         }
     }
 
-    /**
-     * Method to handle spell check combine and splitted text elements
-     * @param {string} currentText 
-     * @param {TextElementBox} elementBox 
-     * @param {number} underlineY 
-     * @param {number} iteration 
-     * @private
-     */
-    // tslint:disable-next-line:max-line-length
-    public handleUnorderdElements(currentText: string, elementBox: TextElementBox, underlineY: number, iteration: number, markindex: number, isLastItem?: boolean, beforeIndex?: number): void {
+
+    public handleUnorderedElements(currentText: string, elementBox: TextElementBox, underlineY: number, iteration: number, markIndex: number, isLastItem?: boolean, beforeIndex?: number): void {
         let indexInLine: number = elementBox.indexInOwner;
         let indexinParagraph: number = elementBox.line.paragraph.indexInOwner;
         if (currentText.length > 0) {
             let spellInfo: WordSpellInfo = this.spellChecker.checkSpellingInPageInfo(currentText);
             if (spellInfo.isElementPresent && this.spellChecker.enableOptimizedSpellCheck) {
                 let jsonObject: any = JSON.parse('{\"HasSpellingError\":' + spellInfo.hasSpellError + '}');
-                // tslint:disable-next-line:max-line-length
-                this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, true, underlineY, iteration, markindex, isLastItem);
+
+                this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, true, underlineY, iteration, markIndex, isLastItem);
             } else {
-                /* tslint:disable:no-any */
-                // tslint:disable-next-line:max-line-length
-                this.spellChecker.CallSpellChecker(this.spellChecker.languageID, currentText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
-                    /* tslint:disable:no-any */
+                /* eslint-disable @typescript-eslint/no-explicit-any */
+
+                this.spellChecker.callSpellChecker(this.spellChecker.languageID, currentText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
+                    /* eslint-disable @typescript-eslint/no-explicit-any */
                     let jsonObject: any = JSON.parse(data);
-                    // tslint:disable-next-line:max-line-length
+
                     let canUpdate: boolean = (elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
-                    // tslint:disable-next-line:max-line-length
-                    this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markindex, isLastItem);
+
+                    this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markIndex, isLastItem);
                 });
             }
         }
     }
 
-    /** 
-     * Render Wavy Line
-     * @param {ElementBox} elementBox 
-     * @param {number} left 
-     * @param {number} top 
-     * @param {number} underlineY 
-     * @param {string} color 
-     * @param {Underline} underline 
-     * @param {BaselineAlignment} baselineAlignment 
-     * @private
-     */
-    // tslint:disable-next-line:max-line-length
-    public renderWavyline(elementBox: TextElementBox, left: number, top: number, underlineY: number, color: string, underline: Underline, baselineAlignment: BaselineAlignment, backgroundColor?: string): void {
+
+    public renderWavyLine(elementBox: TextElementBox, left: number, top: number, underlineY: number, color: string, underline: Underline, baselineAlignment: BaselineAlignment, backgroundColor?: string): void {
         if (elementBox.text.length > 1) {
             let renderedHeight: number = elementBox.height / (baselineAlignment === 'Normal' ? 1 : 1.5);
             let topMargin: number = elementBox.margin.top;
@@ -1036,35 +905,24 @@ export class Renderer {
             } else {
                 y = underlineY + top;
             }
-            // tslint:disable-next-line:max-line-length
+
             let specialCharacter: SpecialCharacterInfo = this.spellChecker.getSpecialCharactersInfo(elementBox.text, elementBox.characterFormat);
-            // tslint:disable-next-line:max-line-length
+
             let whiteSpaceData: SpaceCharacterInfo = this.spellChecker.getWhiteSpaceCharacterInfo(elementBox.text, elementBox.characterFormat);
-            // tslint:disable-next-line:max-line-length
+
             let x: number = left + specialCharacter.beginningWidth + ((whiteSpaceData.isBeginning) ? whiteSpaceData.width : 0) + elementBox.margin.left;
             let x1: number = x * this.documentHelper.zoomFactor + this.leftPosition;
             let y1: number = y * this.documentHelper.zoomFactor + this.topPosition;
-            // tslint:disable-next-line:max-line-length
+
             let x2: number = x1 + this.getScaledValue(elementBox.width - (specialCharacter.beginningWidth + specialCharacter.endWidth) - whiteSpaceData.width);
             let startingPoint: Point = new Point(x1, y1);
             let endingPoint: Point = new Point(x2, y1);
-            // tslint:disable-next-line:max-line-length
+
             this.drawWavy(startingPoint, endingPoint, (x2 - x1) * frequencyRange, amplitudeRange, stepToCover, color, elementBox.height, backgroundColor);
         }
     }
 
-    /**
-     * Draw wavy line
-     * @param {Point} from
-     * @param {Point} to 
-     * @param {Number} frequency 
-     * @param {Number} amplitude 
-     * @param {Number} step 
-     * @param {string} color 
-     * @param {Number} negative 
-     * @private
-     */
-    // tslint:disable-next-line:max-line-length
+
     public drawWavy(from: Point, to: Point, frequency: number, amplitude: number, step: number, color: string, height: number, backColor: string, negative?: number): void {
         this.pageContext.save();
         this.pageContext.fillStyle = (!isNullOrUndefined(backColor) ? backColor : this.documentHelper.backgroundColor);
@@ -1098,9 +956,6 @@ export class Renderer {
         this.pageContext.restore();
     }
 
-    /**
-     * Returns tab leader
-     */
     private getTabLeader(elementBox: TabElementBox): string {
         let textWidth: number = 0;
         let tabString: string = this.getTabLeaderString(elementBox.tabLeader);
@@ -1112,10 +967,6 @@ export class Renderer {
         }
         return tabText.slice(0, -1);
     }
-
-    /**
-     * Returns tab leader string.
-     */
     private getTabLeaderString(tabLeader: TabLeader): string {
         let tabString: string = '';
         switch (tabLeader) {
@@ -1131,30 +982,13 @@ export class Renderer {
         }
         return tabString;
     }
-    /**
-     * Clips the rectangle with specified position.
-     * @param {number} xPos 
-     * @param {number} yPos 
-     * @param {number} width 
-     * @param {number} height 
-     */
     private clipRect(xPos: number, yPos: number, width: number, height: number): void {
         this.pageContext.beginPath();
         this.pageContext.save();
         this.pageContext.rect(this.getScaledValue(xPos, 1), this.getScaledValue(yPos, 2), width, height);
         this.pageContext.clip();
     }
-    /**
-     * Renders underline.
-     * @param {ElementBox} elementBox 
-     * @param {number} left 
-     * @param {number} top 
-     * @param {number} underlineY 
-     * @param {string} color 
-     * @param {Underline} underline 
-     * @param {BaselineAlignment} baselineAlignment 
-     */
-    // tslint:disable-next-line:max-line-length
+
     private renderUnderline(elementBox: ElementBox, left: number, top: number, underlineY: number, color: string, underline: Underline, baselineAlignment: BaselineAlignment, revisionInfo?: RevisionInfo): void {
         let renderedHeight: number = elementBox.height / (baselineAlignment === 'Normal' ? 1 : 1.5);
         let topMargin: number = elementBox.margin.top;
@@ -1180,21 +1014,12 @@ export class Renderer {
         }
         while (lineCount < (underline === 'Double' ? 2 : 1)) {
             lineCount++;
-            // tslint:disable-next-line:max-line-length
+
             this.pageContext.fillRect(this.getScaledValue(left + elementBox.margin.left, 1), this.getScaledValue(y, 2), this.getScaledValue(elementBox.width), this.getScaledValue(underlineHeight));
             y += 2 * lineHeight;
         }
     }
-    /**
-     * Renders strike through.
-     * @param {ElementBox} elementBox 
-     * @param {number} left 
-     * @param {number} top 
-     * @param {Strikethrough} strikethrough 
-     * @param {string} color 
-     * @param {BaselineAlignment} baselineAlignment 
-     */
-    // tslint:disable-next-line:max-line-length
+
     private renderStrikeThrough(elementBox: ElementBox, left: number, top: number, strikethrough: Strikethrough, color: string, baselineAlignment: BaselineAlignment, revisionInfo?: RevisionInfo): void {
         let renderedHeight: number = elementBox.height / (baselineAlignment === 'Normal' ? 1 : 1.5);
         let topMargin: number = elementBox.margin.top;
@@ -1216,19 +1041,12 @@ export class Renderer {
         }
         while (lineCount < (strikethrough === 'DoubleStrike' ? 2 : 1)) {
             lineCount++;
-            // tslint:disable-next-line:max-line-length
+
             this.pageContext.fillRect(this.getScaledValue(left + elementBox.margin.left, 1), this.getScaledValue(y + top, 2), this.getScaledValue(elementBox.width), this.getScaledValue(lineHeight));
             y += 2 * lineHeight;
         }
     }
-    /**
-     * Renders image element box.
-     * @param {ImageElementBox} elementBox 
-     * @param {number} left 
-     * @param {number} top 
-     * @param {number} underlineY 
-     */
-    // tslint:disable-next-line:max-line-length
+
     private renderImageElementBox(elementBox: ImageElementBox, left: number, top: number, underlineY: number): void {
         let topMargin: number = elementBox.margin.top;
         let leftMargin: number = elementBox.margin.left;
@@ -1255,47 +1073,46 @@ export class Renderer {
                 }
                 widgetWidth = containerWid.width + containerWid.margin.left - containerWid.leftBorderWidth - leftIndent;
                 isClipped = true;
-                // tslint:disable-next-line:max-line-length
+
                 this.clipRect(left + leftMargin, top + topMargin, this.getScaledValue(widgetWidth), this.getScaledValue(containerWid.height));
             }
         } else if (isHeightType) {
             let width: number = containerWid.width + containerWid.margin.left - (containerWid as TableCellWidget).leftBorderWidth;
             isClipped = true;
-            // tslint:disable-next-line:max-line-length
+
             this.clipRect(containerWid.x, containerWid.y, this.getScaledValue(width), this.getScaledValue(containerWid.height));
         }
         if (elementBox.isMetaFile && !isNullOrUndefined(elementBox.metaFileImageString)) {
-            /* tslint:disable:no-empty */
             this.pageContext.drawImage(elementBox.element, this.getScaledValue(left + leftMargin, 1),
                 this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width),
                 this.getScaledValue(elementBox.height));
         } else {
             try {
                 if (!elementBox.isCrop) {
-                    // tslint:disable-next-line:max-line-length
+
                     this.pageContext.drawImage(elementBox.element, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
                 } else {
-                    // tslint:disable-next-line:max-line-length
+
                     this.pageContext.drawImage(elementBox.element, this.getScaledValue(elementBox.x), this.getScaledValue(elementBox.y),
                         elementBox.cropWidth, elementBox.cropHeight, this.getScaledValue(left + leftMargin, 1),
                         this.getScaledValue(top + topMargin, 2), elementBox.width, elementBox.height);
                 }
             } catch (e) {
-                // tslint:disable-next-line:max-line-length
+
                 elementBox.imageString = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAgVBMVEX///8AAADgAADY2Njl5eVcXFxjY2NZWVl/f3+wsLCmpqb4+PiioqKpqam7u7vV1dX2uLj2wsLhFRXzpKT3vb30sbHhCwv74+P40dH+9vbkIyO2trbBwcHLy8tsbGycnJz529v4zMzrbGzlLS3qZmblNzfrdXXoRkbvi4vvgYHlHh7CZsBOAAADpUlEQVR4nO3da1faQBSF4ekAUQlUEFs14AXxVv7/D6yaQiZx5mSEYXF2ut+PNKzyyK5diYDmR9czx34AB49C/CjE759w3jvvWr15Tdgz3atXE54f++EcIArxoxA/CvGjED8K8aMQPwrxoxA/CvGLEeZ9jPJdhfk4GyCUjb3ECGE/Q6m/q3DwfudjP0ERZYN9hKdn2hvd3+0jHJz5/kBVuTk96bbQUEjhYR9ckiikUH8UUqg/CinUH4UU6o9CCvVHIYX6o5BC/VFIof4opFB/FFKoPwop1B+FFOqPQgrjyxfjVC38Lxk9tnAxGqZqdKtSOE4GHA5/fuNJpDCtcNHbv4VqYYqPLjgfUViPQgrjozA2CptRSGF8/59w+Wrt+rr1btNna1cPzg0wwuXavncxabnX7PfHYYXzlYARvlobQZyUR9mXm+1NMEK7SSLONgcVV9vb8IQXv4J3KSeKKlxXxNCzONkeYp8AV3p9UT1+P3FWHVAsq5thhGZSEb1DrSZq7dS5HUdoLiuBZ6jORG3tCwAkNJfCUJ2Jrqe1P0ESCkMNTdSACYNDDU7UoAkDQw1P1MAJvUMVJmrwhJ6hShM1gMIvQxUnahCFjaHKEzWQQneoxR95ogZTWBuqPFEDKnSHKk/UoArdoYoTNbDC5lBDEzW4QjMpYiZqgIXG/S76JhwHK5zVVipcnkIVuv/RW/HyFKhwYhuFr6NiCmdNoDBUSGFjovJQEYXuRN9ahwoorJ8uSZenPsMTNk+X2q6jwgm/ntHL11HhhL4zenmoYEL/Gb04VCxh6KKTNFQoYfiikzBUJKF00Sk8VCChfF00OFQcYdt10dBQYYRT5xn0n9G7Q0X8GfCzNNEyZ6iPgD/HlydaVg11DfhajJaJlm2HugIUrlomWrYZKuJKHz6vHhbSM/hROdRnxNe1meuXYvW0DB6+aflYrB7dlzDiCM3N1dVN6GDhMCDhjlHYjEIK46MwNgqbUUhhfJ/vA07wO8N1vw94ONo/3e/lTpVOYfc/UyG//ZmqW52fi/FuTNW3/lZ+eguF+qOQQv1RSKH+KKRQfxRSqD8KKdQfhRTqj0IK9UchhfqjkEL9UUih/iikUH8UUqg/CmXh6Hsv3jlK+wnvD/vgkrSHMMuyu1P9ZdmuwnycDQYn+svG3n9KEUKT9zHyf6+IEWJHIX4U4kchfhTiRyF+FOJHIX4U4kchfnVhijeZa6sunCf4ZdPamteEHY5C/CjEr/vCv0ec0g+AtS1QAAAAAElFTkSuQmCC';
-                // tslint:disable-next-line:max-line-length
+
                 this.pageContext.drawImage(elementBox.element, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
             }
         }
         this.pageContext.fillStyle = HelperMethods.getColor(color);
         let currentRevision: RevisionInfo = this.getRevisionType(revisionInfo, false);
-        // tslint:disable-next-line:max-line-length
+
         if (!isNullOrUndefined(currentRevision) && (currentRevision.type === 'Deletion' || currentRevision.type === 'MoveFrom')) {
-            // tslint:disable-next-line:max-line-length
+
             this.renderStrikeThrough(elementBox, left, top, 'SingleStrike', color, 'Normal', currentRevision);
         }
         currentRevision = this.getRevisionType(revisionInfo, true);
-        // tslint:disable-next-line:max-line-length
+
         if (!isNullOrUndefined(currentRevision) && (currentRevision.type === 'Insertion' || currentRevision.type === 'MoveTo')) {
             let y: number = this.getUnderlineYPosition(elementBox.line);
             this.renderUnderline(elementBox, left, top, y, color, 'Single', 'Normal');
@@ -1304,10 +1121,7 @@ export class Renderer {
             this.pageContext.restore();
         }
     }
-    /**
-     * Renders table outline.
-     * @param {TableWidget} tableWidget 
-     */
+
     private renderTableOutline(tableWidget: TableWidget): void {
         let layout: Layout = new Layout(this.documentHelper);
         let table: TableWidget = tableWidget;
@@ -1319,7 +1133,7 @@ export class Renderer {
         //ToDo: Need to draw the borders based on the line style.
         // if (!isNullOrUndefined(border )) {
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-        // tslint:disable-next-line:max-line-length
+
         this.renderSingleBorder(border.color, tableWidget.x - tableWidget.margin.left - lineWidth / 2, tableWidget.y, tableWidget.x - tableWidget.margin.left - lineWidth / 2, tableWidget.y + tableWidget.height, lineWidth);
         // }
 
@@ -1327,7 +1141,7 @@ export class Renderer {
         lineWidth = 0;
         // if (!isNullOrUndefined(border )) {
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-        // tslint:disable-next-line:max-line-length
+
         this.renderSingleBorder(border.color, tableWidget.x - tableWidget.margin.left - lineWidth, tableWidget.y - lineWidth / 2, tableWidget.x + tableWidget.width + lineWidth + tableWidget.margin.right, tableWidget.y - lineWidth / 2, lineWidth);
         // }
         border = !table.isBidiTable ? layout.getTableRightBorder(table.tableFormat.borders)
@@ -1335,23 +1149,18 @@ export class Renderer {
         lineWidth = 0;
         // if (!isNullOrUndefined(border )) {
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-        // tslint:disable-next-line:max-line-length
+
         this.renderSingleBorder(border.color, tableWidget.x + tableWidget.width + tableWidget.margin.right + lineWidth / 2, tableWidget.y, tableWidget.x + tableWidget.width + tableWidget.margin.right + lineWidth / 2, tableWidget.y + tableWidget.height, lineWidth);
         // }
         border = layout.getTableBottomBorder(table.tableFormat.borders);
         lineWidth = 0;
         // if (!isNullOrUndefined(border )) {
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-        // tslint:disable-next-line:max-line-length
+
         this.renderSingleBorder(border.color, tableWidget.x - tableWidget.margin.left - lineWidth, tableWidget.y + tableWidget.height - lineWidth / 2, tableWidget.x + tableWidget.width + lineWidth + tableWidget.margin.right, tableWidget.y + tableWidget.height - lineWidth / 2, lineWidth);
         // }
     }
-    /**
-     * Renders table cell outline.
-     * @param {LayoutViewer} viewer 
-     * @param {TableCellWidget} cellWidget 
-     */
-    // tslint:disable: max-func-body-length
+    /* eslint-disable  */
     private renderTableCellOutline(documentHelper: DocumentHelper, cellWidget: TableCellWidget): void {
         let layout: Layout = documentHelper.layout;
         let borders: WBorders = undefined;
@@ -1373,7 +1182,7 @@ export class Renderer {
             height = HelperMethods.convertPointToPixel(tableCell.ownerRow.rowFormat.height) + cellTopMargin + cellBottomMargin;
         } else {
             if (!isNullOrUndefined(tableCell.ownerRow) && [tableCell.ownerRow].length <= 1) {
-                // tslint:disable-next-line:max-line-length
+
                 height = Math.max(HelperMethods.convertPointToPixel(tableCell.ownerRow.rowFormat.height), cellWidget.height) + cellTopMargin + cellBottomMargin;
             } else {
                 height = cellWidget.height + cellTopMargin + cellBottomMargin;
@@ -1385,25 +1194,25 @@ export class Renderer {
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth()); //Renders the cell left border.
         this.renderCellBackground(height, cellWidget, cellLeftMargin, lineWidth);
         let leftBorderWidth: number = lineWidth;
-        // tslint:disable-next-line:max-line-length 
+
         if (tableCell.index === 0 || tableCell.cellFormat.rowSpan === 1 || (tableCell.cellFormat.rowSpan > 1 && tableCell.columnIndex === 0)) {
             this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
         } else {
             for (let i: number = 0; i < tableCell.ownerTable.childWidgets.length; i++) {
-                // tslint:disable-next-line:max-line-length 
+
                 let cell: TableCellWidget = (tableCell.ownerTable.childWidgets[i] as TableRowWidget).childWidgets[tableCell.columnIndex - 1] as TableCellWidget;
                 if (cell && cell.columnIndex === tableCell.columnIndex - 1) {
                     let borderColor: string = cell.cellFormat.borders.right.color;
                     if (cell.y + cell.height < tableCell.y) {
                         continue;
                     } else if (cell.y < tableCell.y && cell.y + cell.height > tableCell.y) {
-                        // tslint:disable-next-line:max-line-length 
+
                         this.renderSingleBorder(borderColor, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cell.y + cell.height + cell.margin.bottom, lineWidth);
                     } else if ((cell.y === tableCell.y) || (cell.y > tableCell.y && cell.y + cell.height < tableCell.y + cell.height)) {
-                        // tslint:disable-next-line:max-line-length 
+
                         this.renderSingleBorder(borderColor, tableCell.x - tableCell.margin.left - lineWidth, cell.y - cell.margin.top, tableCell.x - tableCell.margin.left - lineWidth, cell.y + cell.height + cell.margin.bottom, lineWidth);
                     } else if (cell.y < tableCell.y + cell.height && cell.y + cell.height < tableCell.y + tableCell.height) {
-                        // tslint:disable-next-line:max-line-length 
+
                         this.renderSingleBorder(borderColor, cell.x - cell.margin.left - lineWidth, cell.y - cell.margin.top, cell.x - cell.margin.left - lineWidth, cell.y + cellWidget.height + cellBottomMargin, lineWidth);
                     } else if (cell.y > tableCell.x + tableCell.height) {
                         break;
@@ -1428,7 +1237,7 @@ export class Renderer {
             border = TableCellWidget.getCellTopBorder(tableCell);
             // if (!isNullOrUndefined(border )) { //Renders the cell top border.        
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-            // tslint:disable-next-line:max-line-length
+
             this.renderSingleBorder(border.color, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth);
             // }
         }
@@ -1442,7 +1251,7 @@ export class Renderer {
             border = isBidiTable ? TableCellWidget.getCellLeftBorder(tableCell) : TableCellWidget.getCellRightBorder(tableCell);
             // if (!isNullOrUndefined(border )) { //Renders the cell right border.           
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-            // tslint:disable-next-line:max-line-length
+
             this.renderSingleBorder(border.color, cellWidget.x + cellWidget.width + cellWidget.margin.right - lineWidth / 2, cellWidget.y - cellTopMargin, cellWidget.x + cellWidget.width + cellWidget.margin.right - lineWidth / 2, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
             // }
         }
@@ -1461,7 +1270,7 @@ export class Renderer {
             nextRowWidget = nextRow as TableRowWidget;
             // }
             if (nextRowWidget instanceof TableRowWidget) {
-                // tslint:disable-next-line:max-line-length
+
                 if (cellWidget.containerWidget instanceof TableRowWidget && cellWidget.containerWidget.containerWidget instanceof TableWidget) {
                     nextRowIsInCurrentTableWidget = (cellWidget.containerWidget.containerWidget as TableWidget).childWidgets.indexOf(nextRowWidget) !== -1;
                 }
@@ -1472,20 +1281,14 @@ export class Renderer {
                 && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan >= tableCell.ownerTable.childWidgets.length) ||
             !nextRowIsInCurrentTableWidget || previousCellIndex && nextRow.childWidgets.length < tableCell.ownerRow.childWidgets.length
             && previousCellIndex < tableCell.columnIndex + tableCell.cellFormat.columnSpan) {
-            // tslint:disable-next-line:max-line-length
             border = (tableCell.cellFormat.rowSpan > 1 && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan === tableCell.ownerTable.childWidgets.length) ?
                 //true part for vertically merged cells specifically.
-                // tslint:disable-next-line:max-line-length
                 tableCell.getBorderBasedOnPriority(tableCell.getBorderBasedOnPriority(tableCell.cellFormat.borders.bottom, tableCell.ownerRow.rowFormat.borders.bottom), tableCell.ownerTable.tableFormat.borders.bottom)
                 //false part for remaining cases that has been handled inside method. 
                 : TableCellWidget.getCellBottomBorder(tableCell);
             // if (!isNullOrUndefined(border )) {
             //Renders the cell bottom border.
-            if (border.lineStyle === 'None' && tableCell.previousWidget && tableCell.previousWidget instanceof TableCellWidget) {
-                border = (tableCell.previousWidget as TableCellWidget).cellFormat.borders.bottom;
-            }
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-            // tslint:disable-next-line:max-line-length
             this.renderSingleBorder(border.color, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth);
             // }
         }
@@ -1494,7 +1297,6 @@ export class Renderer {
         //Renders the cell diagonal up border.
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
         if (lineWidth > 0) {
-            // tslint:disable-next-line:max-line-length
             this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin, cellWidget.y + cellWidget.height + cellBottomMargin, cellWidget.x + cellWidget.width + cellRightMargin, cellWidget.y - cellTopMargin, lineWidth);
             // }
         }
@@ -1503,16 +1305,10 @@ export class Renderer {
         //Renders the cell diagonal down border.
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
         if (lineWidth > 0) {
-            // tslint:disable-next-line:max-line-length
             this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin, cellWidget.y - cellTopMargin, cellWidget.x + cellWidget.width + cellRightMargin, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
         }
         // }
     }
-    /**
-     * Renders cell background.
-     * @param {number} height 
-     * @param {TableCellWidget} cellWidget 
-     */
     private renderCellBackground(height: number, cellWidget: TableCellWidget, leftMargin: number, lineWidth: number): void {
         let cellFormat: WCellFormat = cellWidget.cellFormat;
         let bgColor: string = cellFormat.shading.backgroundColor === '#ffffff' ?
@@ -1528,7 +1324,6 @@ export class Renderer {
         this.pageContext.beginPath();
         if (bgColor !== 'empty') {
             this.pageContext.fillStyle = HelperMethods.getColor(bgColor);
-            // tslint:disable-next-line:max-line-length
             this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width), this.getScaledValue(height));
             this.pageContext.closePath();
         }
@@ -1537,23 +1332,12 @@ export class Renderer {
             this.pageContext.beginPath();
             if (cellFormat.shading.foregroundColor !== 'empty') {
                 this.pageContext.fillStyle = HelperMethods.getColor(cellFormat.shading.foregroundColor);
-                // tslint:disable-next-line:max-line-length
                 this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width), this.getScaledValue(height));
                 this.pageContext.closePath();
             }
         }
 
     }
-    /**
-     * Renders single border.
-     * @param {WBorder} border 
-     * @param {number} startX 
-     * @param {number} startY 
-     * @param {number} endX 
-     * @param {number} endY 
-     * @param {number} lineWidth 
-     */
-    // tslint:disable-next-line:max-line-length
     private renderSingleBorder(color: string, startX: number, startY: number, endX: number, endY: number, lineWidth: number): void {
         this.pageContext.beginPath();
         this.pageContext.moveTo(this.getScaledValue(startX, 1), this.getScaledValue(startY, 2));
@@ -1566,12 +1350,6 @@ export class Renderer {
         }
         this.pageContext.closePath();
     }
-    /**
-     * Gets scaled value.
-     * @param {number} value 
-     * @param {number} type 
-     * @private
-     */
     public getScaledValue(value: number, type?: number): number {
         if (this.isPrinting) {
             return value;
@@ -1628,6 +1406,8 @@ export class Renderer {
     }
     /**
      * Destroys the internal objects which is maintained.
+     * 
+     * @returns {void}
      */
     public destroy(): void {
         this.documentHelper = undefined;

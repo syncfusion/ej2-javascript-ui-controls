@@ -60,7 +60,7 @@ describe('Legend checking for the pie series', () => {
     });
 
     afterAll((): void => {
-        accumulation.accumulationLegendModule.destroy(accumulation);
+        accumulation.accumulationLegendModule.destroy();
         accumulation.destroy();
         accumulation.loaded = null;
         removeElement(id);

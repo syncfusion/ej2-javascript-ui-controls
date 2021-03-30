@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * Schedule hijri calendar spec 
+ * Schedule hijri calendar spec
  */
 import { createElement, HijriParser } from '@syncfusion/ej2-base';
 import { Islamic, Calendar, DateTimePicker } from '@syncfusion/ej2-calendars';
@@ -18,10 +19,9 @@ Calendar.Inject(Islamic);
 
 describe('Schedule Islamic Calendar', () => {
     beforeAll(() => {
-        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
             (this as any).skip(); //Skips test (in Chai)
             return;
@@ -31,7 +31,7 @@ describe('Schedule Islamic Calendar', () => {
     describe('Islamic in Day view', () => {
         let schObj: Schedule;
         beforeAll(() => {
-            let schOptions: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2018, 12, 9), calendarMode: 'Islamic' };
+            const schOptions: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2018, 12, 9), calendarMode: 'Islamic' };
             schObj = util.createSchedule(schOptions, []);
         });
         afterAll(() => {
@@ -44,27 +44,27 @@ describe('Schedule Islamic Calendar', () => {
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Jumada I 3, 1440 AH');
         });
         it('hijri date checking', () => {
-            let date: Date = new Date(parseInt(schObj.element.querySelector('.e-work-cells').getAttribute('data-date'), 10));
+            const date: Date = new Date(parseInt(schObj.element.querySelector('.e-work-cells').getAttribute('data-date'), 10));
             expect(date).toEqual(schObj.dayModule.renderDates[0]);
-            let hijriObject: { [key: string]: Object } = HijriParser.getHijriDate(date) as { [key: string]: Object };
+            const hijriObject: Record<string, any> = HijriParser.getHijriDate(date) as Record<string, any>;
             expect(hijriObject.date).toEqual(3);
             expect(hijriObject.month).toEqual(5);
             expect(hijriObject.year).toEqual(1440);
         });
         it('navigate next date', () => {
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
-            let date: Date = new Date(parseInt(schObj.element.querySelector('.e-work-cells').getAttribute('data-date'), 10));
+            const date: Date = new Date(parseInt(schObj.element.querySelector('.e-work-cells').getAttribute('data-date'), 10));
             expect(date).toEqual(schObj.dayModule.renderDates[0]);
-            let hijriObject: { [key: string]: Object } = HijriParser.getHijriDate(date) as { [key: string]: Object };
+            const hijriObject: Record<string, any> = HijriParser.getHijriDate(date) as Record<string, any>;
             expect(hijriObject.date).toEqual(4);
             expect(hijriObject.month).toEqual(5);
             expect(hijriObject.year).toEqual(1440);
         });
         it('navigate previous date', () => {
             (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
-            let date: Date = new Date(parseInt(schObj.element.querySelector('.e-work-cells').getAttribute('data-date'), 10));
+            const date: Date = new Date(parseInt(schObj.element.querySelector('.e-work-cells').getAttribute('data-date'), 10));
             expect(date).toEqual(schObj.dayModule.renderDates[0]);
-            let hijriObject: { [key: string]: Object } = HijriParser.getHijriDate(date) as { [key: string]: Object };
+            const hijriObject: Record<string, any> = HijriParser.getHijriDate(date) as Record<string, any>;
             expect(hijriObject.date).toEqual(3);
             expect(hijriObject.month).toEqual(5);
             expect(hijriObject.year).toEqual(1440);
@@ -80,7 +80,7 @@ describe('Schedule Islamic Calendar', () => {
     describe('Islamic in Week view', () => {
         let schObj: Schedule;
         beforeAll(() => {
-            let schOptions: ScheduleModel = { selectedDate: new Date(2018, 12, 9), calendarMode: 'Islamic', views: [{ option: 'Week' }] };
+            const schOptions: ScheduleModel = { selectedDate: new Date(2018, 12, 9), calendarMode: 'Islamic', views: [{ option: 'Week' }] };
             schObj = util.createSchedule(schOptions, []);
         });
         afterAll(() => {
@@ -90,15 +90,15 @@ describe('Schedule Islamic Calendar', () => {
             expect(schObj.element.querySelector('.e-week-view')).toBeTruthy();
         });
         it('hijri date checking', () => {
-            let date: Date = new Date(parseInt(schObj.element.querySelector('.e-work-cells').getAttribute('data-date'), 10));
+            const date: Date = new Date(parseInt(schObj.element.querySelector('.e-work-cells').getAttribute('data-date'), 10));
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Rabiʻ II 30 - 06, 1440');
-            let hijriObject: { [key: string]: Object } = HijriParser.getHijriDate(date) as { [key: string]: Object };
+            let hijriObject: Record<string, any> = HijriParser.getHijriDate(date) as Record<string, any>;
             expect(hijriObject.date).toEqual(30);
             expect(hijriObject.month).toEqual(4);
             expect(hijriObject.year).toEqual(1440);
-            let lastDate: Date = new Date(
+            const lastDate: Date = new Date(
                 parseInt(schObj.element.querySelector('.e-date-header-wrap table tr td:nth-child(7)').getAttribute('data-date'), 10));
-            hijriObject = HijriParser.getHijriDate(lastDate) as { [key: string]: Object };
+            hijriObject = HijriParser.getHijriDate(lastDate) as Record<string, any>;
             expect(hijriObject.date).toEqual(6);
             expect(hijriObject.month).toEqual(5);
             expect(hijriObject.year).toEqual(1440);
@@ -106,14 +106,14 @@ describe('Schedule Islamic Calendar', () => {
         it('navigate next date', () => {
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Jumada I 07 - 13, 1440');
-            let date: Date = new Date(parseInt(schObj.element.querySelector('.e-work-cells').getAttribute('data-date'), 10));
-            let hijriObject: { [key: string]: Object } = HijriParser.getHijriDate(date) as { [key: string]: Object };
+            const date: Date = new Date(parseInt(schObj.element.querySelector('.e-work-cells').getAttribute('data-date'), 10));
+            let hijriObject: Record<string, any> = HijriParser.getHijriDate(date) as Record<string, any>;
             expect(hijriObject.date).toEqual(7);
             expect(hijriObject.month).toEqual(5);
             expect(hijriObject.year).toEqual(1440);
-            let lastDate: Date = new Date(
+            const lastDate: Date = new Date(
                 parseInt(schObj.element.querySelector('.e-date-header-wrap table tr td:nth-child(7)').getAttribute('data-date'), 10));
-            hijriObject = HijriParser.getHijriDate(lastDate) as { [key: string]: Object };
+            hijriObject = HijriParser.getHijriDate(lastDate) as Record<string, any>;
             expect(hijriObject.date).toEqual(13);
             expect(hijriObject.month).toEqual(5);
             expect(hijriObject.year).toEqual(1440);
@@ -121,14 +121,14 @@ describe('Schedule Islamic Calendar', () => {
         it('navigate previous date', () => {
             (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Rabiʻ II 30 - 06, 1440');
-            let date: Date = new Date(parseInt(schObj.element.querySelector('.e-work-cells').getAttribute('data-date'), 10));
-            let hijriObject: { [key: string]: Object } = HijriParser.getHijriDate(date) as { [key: string]: Object };
+            const date: Date = new Date(parseInt(schObj.element.querySelector('.e-work-cells').getAttribute('data-date'), 10));
+            let hijriObject: Record<string, any> = HijriParser.getHijriDate(date) as Record<string, any>;
             expect(hijriObject.date).toEqual(30);
             expect(hijriObject.month).toEqual(4);
             expect(hijriObject.year).toEqual(1440);
-            let lastDate: Date = new Date(
+            const lastDate: Date = new Date(
                 parseInt(schObj.element.querySelector('.e-date-header-wrap table tr td:nth-child(7)').getAttribute('data-date'), 10));
-            hijriObject = HijriParser.getHijriDate(lastDate) as { [key: string]: Object };
+            hijriObject = HijriParser.getHijriDate(lastDate) as Record<string, any>;
             expect(hijriObject.date).toEqual(6);
             expect(hijriObject.month).toEqual(5);
             expect(hijriObject.year).toEqual(1440);
@@ -146,7 +146,7 @@ describe('Schedule Islamic Calendar', () => {
     describe('Islamic in Work Week view', () => {
         let schObj: Schedule;
         beforeAll(() => {
-            let model: ScheduleModel = { selectedDate: new Date(2018, 12, 9), calendarMode: 'Islamic', views: [{ option: 'WorkWeek' }] };
+            const model: ScheduleModel = { selectedDate: new Date(2018, 12, 9), calendarMode: 'Islamic', views: [{ option: 'WorkWeek' }] };
             schObj = util.createSchedule(model, []);
         });
         afterAll(() => {
@@ -156,15 +156,15 @@ describe('Schedule Islamic Calendar', () => {
             expect(schObj.element.querySelector('.e-work-week-view')).toBeTruthy();
         });
         it('hijri date checking', () => {
-            let date: Date = new Date(parseInt(schObj.element.querySelector('.e-work-cells').getAttribute('data-date'), 10));
+            const date: Date = new Date(parseInt(schObj.element.querySelector('.e-work-cells').getAttribute('data-date'), 10));
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Jumada I 01 - 05, 1440');
-            let hijriObject: { [key: string]: Object } = HijriParser.getHijriDate(date) as { [key: string]: Object };
+            let hijriObject: Record<string, any> = HijriParser.getHijriDate(date) as Record<string, any>;
             expect(hijriObject.date).toEqual(1);
             expect(hijriObject.month).toEqual(5);
             expect(hijriObject.year).toEqual(1440);
-            let lastDate: Date = new Date(
+            const lastDate: Date = new Date(
                 parseInt(schObj.element.querySelector('.e-date-header-wrap table tr td:nth-child(5)').getAttribute('data-date'), 10));
-            hijriObject = HijriParser.getHijriDate(lastDate) as { [key: string]: Object };
+            hijriObject = HijriParser.getHijriDate(lastDate) as Record<string, any>;
             expect(hijriObject.date).toEqual(5);
             expect(hijriObject.month).toEqual(5);
             expect(hijriObject.year).toEqual(1440);
@@ -172,14 +172,14 @@ describe('Schedule Islamic Calendar', () => {
         it('navigate next date', () => {
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Jumada I 08 - 12, 1440');
-            let date: Date = new Date(parseInt(schObj.element.querySelector('.e-work-cells').getAttribute('data-date'), 10));
-            let hijriObject: { [key: string]: Object } = HijriParser.getHijriDate(date) as { [key: string]: Object };
+            const date: Date = new Date(parseInt(schObj.element.querySelector('.e-work-cells').getAttribute('data-date'), 10));
+            let hijriObject: Record<string, any> = HijriParser.getHijriDate(date) as Record<string, any>;
             expect(hijriObject.date).toEqual(8);
             expect(hijriObject.month).toEqual(5);
             expect(hijriObject.year).toEqual(1440);
-            let lastDate: Date = new Date(
+            const lastDate: Date = new Date(
                 parseInt(schObj.element.querySelector('.e-date-header-wrap table tr td:nth-child(5)').getAttribute('data-date'), 10));
-            hijriObject = HijriParser.getHijriDate(lastDate) as { [key: string]: Object };
+            hijriObject = HijriParser.getHijriDate(lastDate) as Record<string, any>;
             expect(hijriObject.date).toEqual(12);
             expect(hijriObject.month).toEqual(5);
             expect(hijriObject.year).toEqual(1440);
@@ -187,14 +187,14 @@ describe('Schedule Islamic Calendar', () => {
         it('navigate previous date', () => {
             (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Jumada I 01 - 05, 1440');
-            let date: Date = new Date(parseInt(schObj.element.querySelector('.e-work-cells').getAttribute('data-date'), 10));
-            let hijriObject: { [key: string]: Object } = HijriParser.getHijriDate(date) as { [key: string]: Object };
+            const date: Date = new Date(parseInt(schObj.element.querySelector('.e-work-cells').getAttribute('data-date'), 10));
+            let hijriObject: Record<string, any> = HijriParser.getHijriDate(date) as Record<string, any>;
             expect(hijriObject.date).toEqual(1);
             expect(hijriObject.month).toEqual(5);
             expect(hijriObject.year).toEqual(1440);
-            let lastDate: Date = new Date(
+            const lastDate: Date = new Date(
                 parseInt(schObj.element.querySelector('.e-date-header-wrap table tr td:nth-child(5)').getAttribute('data-date'), 10));
-            hijriObject = HijriParser.getHijriDate(lastDate) as { [key: string]: Object };
+            hijriObject = HijriParser.getHijriDate(lastDate) as Record<string, any>;
             expect(hijriObject.date).toEqual(5);
             expect(hijriObject.month).toEqual(5);
             expect(hijriObject.year).toEqual(1440);
@@ -212,7 +212,7 @@ describe('Schedule Islamic Calendar', () => {
     describe('Islamic in Month view', () => {
         let schObj: Schedule;
         beforeAll(() => {
-            let model: ScheduleModel = { selectedDate: new Date('9/12/2018'), calendarMode: 'Islamic', currentView: 'Month' };
+            const model: ScheduleModel = { selectedDate: new Date('9/12/2018'), calendarMode: 'Islamic', currentView: 'Month' };
             schObj = util.createSchedule(model, []);
         });
         afterAll(() => {
@@ -305,7 +305,7 @@ describe('Schedule Islamic Calendar', () => {
     describe('Islamic in Timeline Month view', () => {
         let schObj: Schedule;
         beforeAll(() => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 selectedDate: new Date('9/12/2018'),
                 calendarMode: 'Islamic',
                 views: [{ option: 'TimelineMonth' }]
@@ -405,7 +405,7 @@ describe('Schedule Islamic Calendar', () => {
     describe('Check locale objects in default culture', () => {
         let schObj: Schedule;
         beforeAll(() => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'Week',
                 selectedDate: new Date(2017, 10, 6),
                 calendarMode: 'Islamic'
@@ -431,29 +431,29 @@ describe('Schedule Islamic Calendar', () => {
         it('Checking locale object in recurrence editor window', () => {
             triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
             triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
-            let dialogElement: HTMLElement = schObj.eventWindow.dialogObject.element as HTMLElement;
-            let repeatElement: DropDownList =
+            const dialogElement: HTMLElement = schObj.eventWindow.dialogObject.element as HTMLElement;
+            const repeatElement: DropDownList =
                 (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
             repeatElement.index = 4; repeatElement.dataBind();
-            let startDate: DateTimePicker =
+            const startDate: DateTimePicker =
                 (dialogElement.querySelector('.e-start.e-datetimepicker') as EJ2Instance).ej2_instances[0] as DateTimePicker;
             expect(startDate.format).toEqual('M/d/y GGGGG h:mm a');
-            let endDate: DateTimePicker =
+            const endDate: DateTimePicker =
                 (dialogElement.querySelector('.e-end.e-datetimepicker') as EJ2Instance).ej2_instances[0] as DateTimePicker;
             expect(endDate.format).toEqual('M/d/y GGGGG h:mm a');
-            let mDate: NumericTextBox =
+            const mDate: NumericTextBox =
                 (dialogElement.querySelector('.e-month-day') as EJ2Instance).ej2_instances[0] as NumericTextBox;
             expect(mDate.value).toEqual(16);
-            let weekPos: DropDownList =
+            const weekPos: DropDownList =
                 (dialogElement.querySelector('.e-month-pos') as EJ2Instance).ej2_instances[0] as DropDownList;
             expect(weekPos.text).toEqual('Third');
-            let monthWeek: DropDownList =
+            const monthWeek: DropDownList =
                 (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
             expect(monthWeek.text).toEqual('Sunday');
-            let month: DropDownList =
+            const month: DropDownList =
                 (dialogElement.querySelector('.e-year-expander-element') as EJ2Instance).ej2_instances[0] as DropDownList;
             expect(month.text).toEqual('Safar');
-            let cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
+            const cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
             cancelButton.click();
         });
     });
@@ -478,13 +478,9 @@ describe('Schedule Islamic Calendar', () => {
 
     it('memory leak', () => {
         profile.sample();
-        // tslint:disable:no-any
-        let average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
+        const average: number = inMB(profile.averageChange);
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        const memory: number = inMB(getMemoryProfile());
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        // tslint:enable:no-any
     });
 });

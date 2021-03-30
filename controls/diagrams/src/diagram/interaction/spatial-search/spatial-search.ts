@@ -28,7 +28,12 @@ export class SpatialSearch {
     public childBottom: number;
     /** @private */
     public childNode: IGroupable;
-    /** @private */
+    /**
+     *  Constructor for creating the spatial search
+     *
+     * @param {number} objectTable The objectTable.
+     * @private
+     */
     constructor(objectTable: Object) {
         this.objectTable = objectTable;
         this.parentQuad = new Quad(0, 0, this.quadSize * 2, this.quadSize * 2, this);
@@ -38,11 +43,17 @@ export class SpatialSearch {
         this.pageBottom = -Number.MAX_VALUE;
         this.quadTable = {};
     }
-    /** @private */
+    /**
+     * removeFromAQuad method\
+     *
+     * @returns {void}    removeFromAQuad method .\
+     * @param {IGroupable} node - provide the options value.
+     * @private
+     */
     public removeFromAQuad(node: IGroupable): void {
         if (this.quadTable[node.id]) {
-            let quad: Quad = this.quadTable[node.id];
-            let index: number = this.objectIndex(quad.objects, node);
+            const quad: Quad = this.quadTable[node.id];
+            const index: number = this.objectIndex(quad.objects, node);
             if (index !== -1) {
                 quad.objects.splice(index, 1);
                 this.update(quad);
@@ -53,7 +64,7 @@ export class SpatialSearch {
 
     private update(quad: Quad): void {
         if (quad.parent && quad.objects.length === 0 && quad.first && quad.second && quad.third && quad.fourth) {
-            let parent: Quad = quad.parent;
+            const parent: Quad = quad.parent;
             if (parent.first === quad) {
                 parent.first = null;
             } else if (parent.second === quad) {
@@ -76,11 +87,11 @@ export class SpatialSearch {
     }
 
     private addIntoAQuad(node: IGroupable): void {
-        let quad: Quad = this.parentQuad.addIntoAQuad(node);
+        const quad: Quad = this.parentQuad.addIntoAQuad(node);
         this.quadTable[node.id] = quad;
     }
 
-    /** @private */
+
     private objectIndex(objects: IGroupable[], node: IGroupable): number {
         for (let i: number = 0; i < objects.length; i++) {
             if ((objects[i]).id === node.id) {
@@ -90,17 +101,17 @@ export class SpatialSearch {
         return -1;
     }
 
-    /** @private */
+
     public updateQuad(node: IGroupable): boolean {
         this.setCurrentNode(node);
-        let nodBounds: Rect = node.outerBounds;
+        const nodBounds: Rect = node.outerBounds;
         if (!(!isNaN(nodBounds.x) && !isNaN(nodBounds.y) &&
             !isNaN(nodBounds.width) && !isNaN(nodBounds.height))) {
             return false;
         }
         //nodBounds = new Rect(nodBounds.X.Valid(), nodBounds.Y.Valid(), nodBounds.Width.Valid(), nodBounds.Height.Valid());
         if (this.quadTable[node.id]) {
-            let quad: Quad = this.quadTable[node.id];
+            const quad: Quad = this.quadTable[node.id];
             if (!quad.isContained()) {
                 this.removeFromAQuad(node);
                 this.addIntoAQuad(node);
@@ -179,18 +190,31 @@ export class SpatialSearch {
             return false;
         }
     }
-    /** @private */
+
+    /**
+     * findQuads method\
+     *
+     * @returns {  Quad[] }    findQuads method .\
+     * @param {Rect} region - provide the options value.
+     * @private
+     */
     public findQuads(region: Rect): Quad[] {
-        let quads: Quad[] = [];
+        const quads: Quad[] = [];
         this.parentQuad.findQuads(region, quads);
         return quads;
     }
-    /** @private */
+    /**
+     * findObjects method\
+     *
+     * @returns {  IGroupable[] }    findObjects method .\
+     * @param {Rect} region - provide the options value.
+     * @private
+     */
     public findObjects(region: Rect): IGroupable[] {
-        let quads: Quad[] = this.findQuads(region);
-        let objects: IGroupable[] = [];
-        for (let quad of quads) {
-            for (let obj of quad.objects) {
+        const quads: Quad[] = this.findQuads(region);
+        const objects: IGroupable[] = [];
+        for (const quad of quads) {
+            for (const obj of quad.objects) {
                 if (obj.outerBounds.intersects(region)) {
                     objects.push(this.objectTable[obj.id]);
                 }
@@ -198,7 +222,13 @@ export class SpatialSearch {
         }
         return objects;
     }
-    /** @private */
+    /**
+     * updateBounds method\
+     *
+     * @returns { boolean }    updateBounds method .\
+     * @param {IGroupable} node - provide the options value.
+     * @private
+     */
     public updateBounds(node: IGroupable): boolean {
         let modified: boolean = false;
         if (node === this.topElement) {
@@ -248,7 +278,7 @@ export class SpatialSearch {
                 }
             }
         }
-        for (let node of quad.objects) {
+        for (const node of quad.objects) {
             if (this.pageBottom <= node.outerBounds.bottom) {
                 this.pageBottom = node.outerBounds.bottom;
                 this.bottomElement = node;
@@ -280,7 +310,7 @@ export class SpatialSearch {
             }
         }
 
-        for (let node of quad.objects) {
+        for (const node of quad.objects) {
             if (this.pageRight <= node.outerBounds.right) {
                 this.pageRight = node.outerBounds.right;
                 this.rightElement = node;
@@ -307,7 +337,7 @@ export class SpatialSearch {
                 }
             }
         }
-        for (let node of quad.objects) {
+        for (const node of quad.objects) {
             if (this.pageLeft >= node.outerBounds.left) {
                 this.pageLeft = node.outerBounds.left;
                 this.leftElement = node;
@@ -334,7 +364,7 @@ export class SpatialSearch {
                 }
             }
         }
-        for (let node of quad.objects) {
+        for (const node of quad.objects) {
             if (this.pageTop >= node.outerBounds.top) {
                 this.pageTop = node.outerBounds.top;
                 this.topElement = node;
@@ -342,11 +372,17 @@ export class SpatialSearch {
         }
     }
 
-    /** @private */
+    /**
+     * setCurrentNode method\
+     *
+     * @returns { void }    setCurrentNode method .\
+     * @param {IGroupable} node - provide the options value.
+     * @private
+     */
     public setCurrentNode(node: IGroupable): void {
         this.childNode = node;
         if (node) {
-            let r: Rect = node.outerBounds;
+            const r: Rect = node.outerBounds;
             this.childLeft = Number(r.left);
             this.childTop = Number(r.top);
             this.childRight = Number(r.right);
@@ -358,15 +394,28 @@ export class SpatialSearch {
             this.childBottom = -Number.MAX_VALUE;
         }
     }
-    /** @private */
+    /**
+     * getPageBounds method\
+     *
+     * @returns { Rect }    getPageBounds method .\
+     * @param {number} originX - provide the options value.
+     * @param {number} originY - provide the options value.
+     * @private
+     */
     public getPageBounds(originX?: number, originY?: number): Rect {
         if (this.pageLeft === Number.MAX_VALUE) { return new Rect(0, 0, 0, 0); }
-        let left: number = originX !== undefined ? Math.min(this.pageLeft, 0) : this.pageLeft;
-        let top: number = originY !== undefined ? Math.min(this.pageTop, 0) : this.pageTop;
+        const left: number = originX !== undefined ? Math.min(this.pageLeft, 0) : this.pageLeft;
+        const top: number = originY !== undefined ? Math.min(this.pageTop, 0) : this.pageTop;
         return new Rect(
             Math.round(left), Math.round(top), Math.round(this.pageRight - left), Math.round(this.pageBottom - top));
     }
-    /** @private */
+    /**
+     * getQuad method\
+     *
+     * @returns { Quad }    getQuad method .\
+     * @param {IGroupable} node - provide the options value.
+     * @private
+     */
     public getQuad(node: IGroupable): Quad {
         return this.quadTable[node.id];
     }

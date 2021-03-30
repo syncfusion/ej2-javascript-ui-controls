@@ -1,0 +1,386 @@
+
+$ribbon-border-color: $bg-base-100 !default;
+$ribbon-border: 1px solid $ribbon-border-color !default;
+$ribbon-header-bg-color: $bg-base-0 !default;
+$file-menu-wrap-padding: 0 !default;
+$drop-icon-margin: 12.5px 4px !default;
+$bigger-drop-icon-margin: 14.5px 5px !default;
+$expand-icon-color: $content-font !default;
+@include export-module('ribbon-highcontrast-icons') {
+  .e-ribbon {
+    & .e-drop-icon {
+      &::before {
+        content: '\e966';
+      }
+    }
+  }
+}
+
+
+@mixin tab-header-layout {
+  height: 35px;
+  min-height: 35px;
+
+  & .e-toolbar-item:not(.e-separator) {
+    height: 35px;
+    min-height: 35px;
+
+    & .e-tab-wrap {
+      height: 35px;
+    }
+
+    @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+      &.e-active .e-text-wrap,
+      & .e-text-wrap {
+        height: 33px;
+      }
+    }
+    @else {
+      & .e-text-wrap {
+        height: 35px;
+      }
+    }
+  }
+
+  & .e-toolbar-items {
+    height: 35px;
+    min-height: 35px;
+
+    & .e-scroll-nav {
+      height: 35px;
+      min-height: 35px;
+    }
+  }
+}
+
+@mixin bigger-tab-header-layout {
+  & .e-tab .e-tab-header {
+    height: 41px;
+    min-height: 41px;
+
+    & .e-toolbar-item:not(.e-separator) {
+      height: 41px;
+      min-height: 41px;
+
+      & .e-tab-wrap {
+        height: 41px;
+      }
+
+      @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+        &.e-active .e-text-wrap,
+        & .e-text-wrap {
+          height: 39px;
+        }
+      }
+      @else {
+        & .e-text-wrap {
+          height: 41px;
+        }
+      }
+    }
+
+    & .e-toolbar-items {
+      height: 41px;
+      min-height: 41px;
+
+      & .e-scroll-nav {
+        height: 41px;
+        min-height: 41px;
+      }
+    }
+  }
+}
+
+@mixin default-props {
+  & .e-tab {
+    & .e-tab-header .e-toolbar-item {
+      user-select: none;
+
+      & .e-tab-text {
+        text-transform: none;
+      }
+    }
+
+    &.e-sheet-tab .e-tab-header .e-tab-text {
+      white-space: pre;
+    }
+  }
+}
+@include export-module('ribbon-layout') {
+  .e-ribbon {
+    border: $ribbon-border;
+    position: relative;
+
+    & .e-tab {
+      @if $skin-name == 'highcontrast' {
+        border-width: 0;
+      }
+
+      & .e-content .e-toolbar {
+        @if $skin-name == 'material' {
+          border: 0;
+        }
+        @else {
+          border-left-width: 0;
+          border-right-width: 0;
+        }
+      }
+
+      & .e-tab-header {
+        @if $skin-name != 'bootstrap4' {
+          @include tab-header-layout;
+        }
+
+        & .e-hscroll {
+          display: inline-block !important; // sass-lint:disable-line no-important
+          width: calc(100% - 28px);
+        }
+
+        & .e-toolbar-items .e-toolbar-item:nth-child(2) {
+          @if $skin-name == 'bootstrap' {
+            border-width: 0;
+          }
+
+          @if $skin-name == 'fabric' {
+            margin-right: 0;
+          }
+
+          & .e-tab-wrap {
+            padding: $file-menu-wrap-padding;
+
+            @if $skin-name == 'bootstrap4' {
+              border-width: 0;
+            }
+          }
+
+          & .e-text-wrap {
+            vertical-align: top;
+          }
+        }
+
+        & .e-indicator {
+          z-index: 1;
+        }
+
+        @if $skin-name == 'material' {
+          & .e-toolbar-item .e-tab-wrap {
+            padding: 0 12px;
+          }
+        }
+
+        & .e-toolbar-items .e-toolbar-item.e-hide {
+          display: none;
+        }
+      }
+
+      @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+        & .e-tab-header {
+          margin-top: 10px;
+        }
+
+        & .e-content .e-toolbar {
+          border-radius: 0;
+        }
+      }
+    }
+
+    @include default-props;
+
+    & .e-drop-icon {
+      cursor: pointer;
+      font-family: 'e-icons';
+      margin: $drop-icon-margin;
+      position: absolute;
+      right: 0;
+      text-align: center;
+      top: 0;
+      transform: rotate(180deg);
+      transition: transform 300ms ease;
+      width: 18px;
+
+      @if $skin-name != 'bootstrap4' {
+        font-size: 10px;
+      }
+
+      &.e-disabled {
+        cursor: default;
+        pointer-events: none;
+      }
+    }
+
+    &.e-collapsed {
+      & .e-content,
+      & .e-indicator,
+      & .e-tab-header .e-toolbar-item.e-active .e-text-wrap::before {
+        display: none;
+      }
+
+
+
+      @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+        & .e-tab .e-tab-header:not(.e-vertical) {
+          &::before {
+            border-width: 0;
+          }
+        }
+      }
+
+      & .e-drop-icon {
+        transform: rotate(0deg);
+      }
+    }
+
+    @if $skin-name == 'fabric' {
+      & .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator {
+        min-height: 24px;
+      }
+    }
+
+    @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+      .e-tab-header .e-menu-wrapper.e-file-menu ul.e-menu {
+        font-size: 14px;
+      }
+    }
+
+    & .e-content .e-toolbar {
+      @if $skin-name == 'highcontrast' {
+        border-color: transparent;
+
+        & .e-toolbar-items .e-toolbar-item.e-overlay {
+          opacity: .5;
+        }
+      }
+
+      &.e-overlay .e-toolbar-items .e-toolbar-item.e-overlay {
+        opacity: 1;
+      }
+    }
+
+    & .e-menu-wrapper {
+      border-width: 0;
+
+      & ul {
+        &.e-menu {
+          padding: 0;
+        }
+
+        @if $skin-name != 'bootstrap4' {
+          & .e-menu-item.e-menu-caret-icon {
+            height: 35px;
+            line-height: 35px;
+
+            & .e-caret {
+              line-height: 35px;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-ribbon,
+  .e-bigger.e-ribbon {
+    & .e-menu-wrapper.e-file-menu ul.e-menu {
+      padding: 0;
+
+      & .e-menu-item.e-menu-caret-icon {
+        height: 41px;
+        line-height: 41px;
+
+        & .e-caret {
+          line-height: 41px;
+        }
+      }
+
+      @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+        font-size: 15px;
+      }
+    }
+
+    & .e-drop-icon {
+      font-size: 12px;
+      margin: $bigger-drop-icon-margin;
+    }
+
+    @if $skin-name == 'material' {
+      & .e-tab .e-tab-header .e-toolbar-item .e-tab-wrap {
+        padding: 0 16px;
+      }
+    }
+
+    @include bigger-tab-header-layout;
+  }
+}
+@include export-module('ribbon-theme') {
+  .e-ribbon {
+    background-color: $ribbon-header-bg-color;
+
+    & .e-tab {
+      & .e-tab-header {
+        background-color: inherit;
+
+        @if $skin-name == 'bootstrap' {
+          &::before {
+            border-bottom-color: $ribbon-border-color;
+          }
+
+          & .e-toolbar-item.e-active {
+            border-bottom-color: $ribbon-content-bg-color;
+            border-left-color: $ribbon-border-color;
+            border-right-color: $ribbon-border-color;
+            border-top-color: $ribbon-border-color;
+          }
+        }
+      }
+
+      @if $skin-name == 'material' {
+        & .e-content .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator {
+          border-color: $separator-border-color;
+        }
+
+        & .e-tab-header:not(.e-vertical) .e-toolbar-item.e-active {
+          border: 0;
+        }
+      }
+    }
+
+    & .e-drop-icon {
+      color: $expand-icon-color;
+    }
+
+    & .e-tab .e-content .e-toolbar {
+      border-bottom-color: transparent;
+      border-top-color: transparent;
+    }
+
+    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+      & .e-tab {
+        & .e-tab-header .e-toolbar-item {
+          &.e-active {
+            background: $ribbon-content-bg-color;
+          }
+        }
+
+        & .e-content .e-toolbar {
+          background: $ribbon-content-bg-color;
+
+          & .e-toolbar-items,
+          & .e-toolbar-item .e-btn.e-tbar-btn:not(:hover):not(:focus),
+          & .e-toolbar-item.e-overlay {
+            background: transparent;
+          }
+        }
+      }
+    }
+
+    & .e-menu-wrapper {
+      background-color: transparent;
+
+      @if $skin-name == 'bootstrap4' {
+        & ul {
+          background-color: transparent;
+        }
+      }
+    }
+  }
+}

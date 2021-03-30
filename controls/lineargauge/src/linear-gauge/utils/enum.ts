@@ -1,6 +1,7 @@
 
 /**
  * Defines the position of ticks, labels, pointers, and ranges.
+ *
  * @private
  */
 export type Position =
@@ -15,6 +16,7 @@ export type Position =
 
 /**
  * Defines type of pointer in linear gauge.
+ *
  * @private
  */
 
@@ -26,6 +28,7 @@ export type Point =
 
 /**
  * Defines theme supported for the linear gauge.
+ *
  * @private
  */
 export type LinearGaugeTheme =
@@ -50,6 +53,7 @@ export type LinearGaugeTheme =
 
 /**
  * Defines the type of marker.
+ *
  * @private
  */
 
@@ -90,6 +94,7 @@ export type MarkerType =
 
 /**
  * Defines the place of the pointer.
+ *
  * @private
  */
 
@@ -113,6 +118,7 @@ export type Placement =
 
 /**
  * Defines the type of gauge orientation.
+ *
  * @private
  */
 export type Orientation =
@@ -127,6 +133,7 @@ export type Orientation =
 
 /**
  * Defines the placement of the label in linear gauge.
+ *
  * @private
  */
 export type LabelPlacement =

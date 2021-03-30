@@ -1,7 +1,7 @@
 import { Spreadsheet, ICellRenderer, initiateCustomSort, locale, dialog, getFilterRange, DialogBeforeOpenEventArgs } from '../index';
 import { applySort, completeAction, beginAction, focus } from '../index';
-import { sortComplete, beforeSort, getFormattedCellObject } from '../../workbook/common/event';
-import { getIndexesFromAddress, getSwapRange, SheetModel, getCell, inRange } from '../../workbook/index';
+import { sortComplete, beforeSort, getFormattedCellObject, sortImport } from '../../workbook/common/event';
+import { getIndexesFromAddress, getSwapRange, SheetModel, getCell, inRange, SortCollectionModel } from '../../workbook/index';
 import { getColumnHeaderText, CellModel, getRangeAddress } from '../../workbook/index';
 import { SortEventArgs, BeforeSortEventArgs, SortOptions } from '../../workbook/common/interface';
 import { L10n, getUniqueID, getComponent, enableRipple } from '@syncfusion/ej2-base';
@@ -19,6 +19,8 @@ export class Sort {
 
     /**
      * Constructor for sort module.
+     *
+     * @param {Spreadsheet} parent - Specifies the Spreadsheet instance.
      */
     constructor(parent: Spreadsheet) {
         this.parent = parent;
@@ -27,7 +29,8 @@ export class Sort {
 
     /**
      * To destroy the sort module.
-     * @return {void}
+     *
+     * @returns {void}
      */
     protected destroy(): void {
         this.removeEventListener();
@@ -38,6 +41,7 @@ export class Sort {
         this.parent.on(applySort, this.applySortHandler, this);
         this.parent.on(sortComplete, this.sortCompleteHandler, this);
         this.parent.on(initiateCustomSort, this.initiateCustomSortHandler, this);
+        this.parent.on(sortImport, this.sortImport, this);
     }
 
     private removeEventListener(): void {
@@ -45,12 +49,14 @@ export class Sort {
             this.parent.off(applySort, this.applySortHandler);
             this.parent.off(sortComplete, this.sortCompleteHandler);
             this.parent.off(initiateCustomSort, this.initiateCustomSortHandler);
+            this.parent.off(sortImport, this.sortImport);
         }
     }
 
     /**
      * Gets the module name.
-     * @returns string
+     *
+     * @returns {string} - Gets the module name.
      */
     protected getModuleName(): string {
         return 'sort';
@@ -58,10 +64,12 @@ export class Sort {
 
     /**
      * Validates the range and returns false when invalid.
+     *
+     * @returns {boolean} - Validates the range and returns false when invalid.
      */
     private isValidSortRange(): boolean {
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let range: number[] = getSwapRange(getIndexesFromAddress(sheet.selectedRange));
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const range: number[] = getSwapRange(getIndexesFromAddress(sheet.selectedRange));
         if (range[0] > sheet.usedRange.rowIndex || range[1] > sheet.usedRange.colIndex) {
             return false;
         }
@@ -69,16 +77,49 @@ export class Sort {
     }
 
     /**
+     * sort while importing.
+     *
+     * @returns {void}
+     */
+    private sortImport(args ?: { sheetIdx: number}): void {
+        let sort: SortCollectionModel[] = this.parent.sortCollection; let cell: HTMLElement;
+        let rowId: number = this.parent.getActiveSheet().usedRange.rowIndex - 1;
+        let sheetIdx: number = args ? args.sheetIdx : this.parent.activeSheetIndex;
+        for (let j : number = 0; j < sort.length; j++) {
+            if (sort[j].sheetIndex === sheetIdx) {
+                for (let i: number = 0; i < rowId; i++) {
+                    cell = this.parent.getCell(i, sort[j].columnIndex);
+                    if (cell && cell.querySelector('.e-filter-icon')) {
+                        if (sort[j].order === 'Ascending' || sort[j].order === 'OnTop') {
+                            if (!cell.querySelector('.e-filter-icon').classList.contains('e-sortasc-filter')) {
+                                cell.querySelector('.e-filter-icon').classList.add('e-sortasc-filter');
+                            }
+                        } else {
+                            if (!cell.querySelector('.e-filter-icon').classList.contains('e-sortdesc-filter')) {
+                                cell.querySelector('.e-filter-icon').classList.add('e-sortdesc-filter');
+                            }
+                        }
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Shows the range error alert dialog.
-     * @param error - range error string.
+     *
+     * @param {object} args - specify the args
+     * @param {string} args.error - range error string.
+     * @returns {void}
      */
     private sortRangeAlertHandler(args: { error: string }): void {
-        let dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+        const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
         dialogInst.show({
             height: 180, width: 400, isModal: true, showCloseIcon: true,
             content: args.error,
             beforeOpen: (args: BeforeOpenEventArgs): void => {
-                let dlgArgs: DialogBeforeOpenEventArgs = {
+                const dlgArgs: DialogBeforeOpenEventArgs = {
                     dialogName: 'SortRangeDialog',
                     element: args.element, target: args.target, cancel: args.cancel
                 };
@@ -86,26 +127,28 @@ export class Sort {
                 if (dlgArgs.cancel) {
                     args.cancel = true;
                 }
-            },
+            }
         });
         this.parent.hideSpinner();
     }
 
     /**
      * Initiates the custom sort dialog.
+     *
+     * @returns {void}
      */
     private initiateCustomSortHandler(): void {
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
         if (!this.isValidSortRange()) {
             this.sortRangeAlertHandler({ error: l10n.getConstant('SortOutOfRangeError') });
             return;
         }
-        let dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+        const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
         dialogInst.show({
             height: 400, width: 560, isModal: true, showCloseIcon: true, cssClass: 'e-customsort-dlg',
             header: l10n.getConstant('CustomSort'),
             beforeOpen: (args: BeforeOpenEventArgs): void => {
-                let dlgArgs: DialogBeforeOpenEventArgs = {
+                const dlgArgs: DialogBeforeOpenEventArgs = {
                     dialogName: 'CustomSortDialog',
                     element: args.element, target: args.target, cancel: args.cancel
                 };
@@ -121,20 +164,20 @@ export class Sort {
                     content: l10n.getConstant('Ok'), isPrimary: true
                 },
                 click: (): void => {
-                    let element: HTMLElement = dialogInst.dialogInstance.content as HTMLElement;
-                    let list: HTMLElement = element.getElementsByClassName('e-list-sort e-listview e-lib')[0] as HTMLElement;
-                    let listview: ListView = getComponent(list, 'listview') as ListView;
-                    let data: { [key: string]: string }[] = listview.dataSource as { [key: string]: string }[];
+                    const element: HTMLElement = dialogInst.dialogInstance.content as HTMLElement;
+                    const list: HTMLElement = element.getElementsByClassName('e-list-sort e-listview e-lib')[0] as HTMLElement;
+                    const listview: ListView = getComponent(list, 'listview') as ListView;
+                    const data: { [key: string]: string }[] = listview.dataSource as { [key: string]: string }[];
                     this.clearError();
-                    let errorElem: HTMLElement = element.getElementsByClassName('e-sort-error')[0] as HTMLElement;
+                    const errorElem: HTMLElement = element.getElementsByClassName('e-sort-error')[0] as HTMLElement;
                     errorElem.style.display = 'block';
                     if (!this.validateError(data, element, errorElem)) {
                         dialogInst.hide();
-                        let headercheck: HTMLElement = element.getElementsByClassName('e-sort-checkheader')[0] as HTMLElement;
-                        let headerCheckbox: CheckBox = getComponent(headercheck, 'checkbox') as CheckBox;
-                        let caseCheckbox: CheckBox = getComponent(
+                        const headercheck: HTMLElement = element.getElementsByClassName('e-sort-checkheader')[0] as HTMLElement;
+                        const headerCheckbox: CheckBox = getComponent(headercheck, 'checkbox') as CheckBox;
+                        const caseCheckbox: CheckBox = getComponent(
                             element.getElementsByClassName('e-sort-checkcase')[0] as HTMLElement, 'checkbox') as CheckBox;
-                        let hasHeader: boolean = headerCheckbox.checked;
+                        const hasHeader: boolean = headerCheckbox.checked;
                         this.applySortHandler(
                             { sortOptions: { sortDescriptors: data, containsHeader: hasHeader, caseSensitive: caseCheckbox.checked } });
                     }
@@ -145,16 +188,18 @@ export class Sort {
 
     /**
      * Validates the errors of the sort criteria and displays the error.
-     * @param json - listview datasource.
-     * @param dialogElem - dialog content element.
-     * @param errorElem - element to display error.
+     *
+     * @param {{[key: string]: string }} json - listview datasource.
+     * @param {HTMLElement} dialogElem - dialog content element.
+     * @param {HTMLElement} errorElem - element to display error.
+     * @returns {boolean} - Return boolean value.
      */
     private validateError(json: { [key: string]: string }[], dialogElem: HTMLElement, errorElem: HTMLElement): boolean {
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let hasEmpty: boolean = json.some((element: { [key: string]: string }) => element.field.toString() === '');
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const hasEmpty: boolean = json.some((element: { [key: string]: string }) => element.field.toString() === '');
         if (hasEmpty) {
             Array.prototype.some.call(dialogElem.getElementsByClassName('e-sort-field'), (dropDown: HTMLElement) => {
-                let hasError: boolean = !(<DropDownList>getComponent(dropDown, 'dropdownlist')).value;
+                const hasError: boolean = !(<DropDownList>getComponent(dropDown, 'dropdownlist')).value;
                 if (hasError) {
                     dropDown.parentElement.classList.add('e-error');
                 }
@@ -163,9 +208,9 @@ export class Sort {
             errorElem.innerText = l10n.getConstant('SortEmptyFieldError');
             return true;
         }
-        let temp: Set<string> = new Set();
+        const temp: Set<string> = new Set();
         let duplicateField: string = '';
-        let hasDuplicate: boolean = json.some((element: { [key: string]: string }) => {
+        const hasDuplicate: boolean = json.some((element: { [key: string]: string }) => {
             duplicateField = element.field.toString();
             return temp.size === temp.add(element.field).size;
         });
@@ -173,7 +218,7 @@ export class Sort {
         if (hasDuplicate) {
             let count: number = 0;
             Array.prototype.some.call(dialogElem.getElementsByClassName('e-sort-field'), (dropDown: HTMLElement) => {
-                let dropDownList: DropDownList = <DropDownList>getComponent(dropDown, 'dropdownlist');
+                const dropDownList: DropDownList = <DropDownList>getComponent(dropDown, 'dropdownlist');
                 if (dropDownList.value === duplicateField) {
                     dropDown.parentElement.classList.add('e-error');
                     errorField = dropDownList.text;
@@ -189,27 +234,28 @@ export class Sort {
 
     /**
      * Creates all the elements and generates the dialog content element.
+     *
+     * @returns {HTMLElement} - Returns the dialog element.
      */
     private customSortContent(): HTMLElement {
-        let dialogElem: HTMLElement = this.parent.createElement('div', { className: 'e-sort-dialog' });
-
-        let fields: { [key: string]: string }[] = this.getFields();
-        let listId: string = getUniqueID('customSort');
-        let listviewObj: ListView = this.getCustomListview(listId);
+        const dialogElem: HTMLElement = this.parent.createElement('div', { className: 'e-sort-dialog' });
+        const fields: { [key: string]: string }[] = this.getFields();
+        const listId: string = getUniqueID('customSort');
+        const listviewObj: ListView = this.getCustomListview(listId);
         this.setHeaderTab(dialogElem, listviewObj, fields);
-        let contentElem: HTMLElement = this.parent.createElement('div', {
+        const contentElem: HTMLElement = this.parent.createElement('div', {
             className: 'e-sort-listsection',
             styles: ''
         });
         dialogElem.appendChild(contentElem);
 
-        let listview: HTMLElement = this.parent.createElement('div', { className: 'e-list-sort', styles: '' });
+        const listview: HTMLElement = this.parent.createElement('div', { className: 'e-list-sort', styles: '' });
         contentElem.appendChild(listview);
         listviewObj.createElement = this.parent.createElement;
         listviewObj.appendTo(listview);
         this.renderListItem(listId, listviewObj, true, fields);
 
-        let errorElem: HTMLElement = this.parent.createElement('div', { className: 'e-sort-error' });
+        const errorElem: HTMLElement = this.parent.createElement('div', { className: 'e-sort-error' });
         dialogElem.appendChild(errorElem);
 
         return dialogElem;
@@ -217,25 +263,27 @@ export class Sort {
 
     /**
      * Gets the fields data from the selected range.
+     *
+     * @returns {{[key: string]: string}} - Gets the fields data from the selected range.
      */
     private getFields(): { [key: string]: string }[] {
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let range: number[] = getSwapRange(getIndexesFromAddress(sheet.selectedRange));
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const range: number[] = getSwapRange(getIndexesFromAddress(sheet.selectedRange));
 
         if (range[0] === range[2] && (range[2] - range[0]) === 0) { //for entire range
             range[0] = 0; range[1] = 0; range[3] = sheet.usedRange.colIndex;
-            let args: { [key: string]: number[] | boolean } = { filterRange: [], hasFilter: false };
+            const args: { [key: string]: number[] | boolean } = { filterRange: [], hasFilter: false };
             this.parent.notify(getFilterRange, args);
             if (args.hasFilter && args.filterRange) {
                 range[0] = args.filterRange[0];
             }
         }
-        let fields: { [key: string]: string }[] = [];
+        const fields: { [key: string]: string }[] = [];
         let fieldName: string;
         for (range[1]; range[1] <= range[3]; range[1]++) {
-            let cell: CellModel = getCell(range[0], range[1], sheet);
+            const cell: CellModel = getCell(range[0], range[1], sheet);
             if (cell && cell.value) {
-                let eventArgs: { [key: string]: string | number | boolean } = {
+                const eventArgs: { [key: string]: string | number | boolean } = {
                     formattedText: cell.value,
                     value: cell.value,
                     format: cell.format,
@@ -255,40 +303,42 @@ export class Sort {
 
     /**
      * Creates the header tab for the custom sort dialog.
-     * @param dialogElem - dialog content element.
-     * @param listviewObj - listview instance.
-     * @param fields - fields data.
+     *
+     * @param {HTMLElement} dialogElem - dialog content element.
+     * @param {ListView} listviewObj - listview instance.
+     * @param {{[key: string]: string}} fields - fields data.
+     * @returns {void}
      */
     private setHeaderTab(dialogElem: HTMLElement, listviewObj: ListView, fields: { [key: string]: string }[]): void {
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let headerTabElement: HTMLElement = this.parent.createElement('div', {
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const headerTabElement: HTMLElement = this.parent.createElement('div', {
             className: 'e-sort-header',
             styles: '',
             innerHTML: ''
         });
         dialogElem.appendChild(headerTabElement);
-        let addButton: HTMLElement = this.parent.createElement('button', {
+        const addButton: HTMLElement = this.parent.createElement('button', {
             className: 'e-btn e-sort-addbtn e-flat',
             innerHTML: l10n.getConstant('AddColumn')
         });
-        let footer: Element = this.parent.element.querySelector('.e-customsort-dlg .e-footer-content');
+        const footer: Element = this.parent.element.querySelector('.e-customsort-dlg .e-footer-content');
         footer.insertBefore(addButton, footer.firstElementChild);
         addButton.addEventListener('click', () => {
             if (listviewObj) {
-                let listId: string = getUniqueID('customSort');
+                const listId: string = getUniqueID('customSort');
                 listviewObj.addItem([{ id: listId, text: l10n.getConstant('ThenBy'), field: '', order: 'ascending' }]);
                 this.renderListItem(listId, listviewObj, checkHeaderObj.checked, fields, true);
             }
         });
-        let checkHeaderObj: CheckBox = new CheckBox({
+        const checkHeaderObj: CheckBox = new CheckBox({
             label: l10n.getConstant('ContainsHeader'),
             checked: true,
             change: (args: CheckBoxChangeEventArgs) => {
-                let fieldsMap: FieldSettingsModel = args.checked ? { text: 'text', value: 'value' } : { text: 'value' };
+                const fieldsMap: FieldSettingsModel = args.checked ? { text: 'text', value: 'value' } : { text: 'value' };
                 Array.prototype.forEach.call(
                     dialogElem.getElementsByClassName('e-sort-field e-dropdownlist e-lib'),
                     (dropDown: HTMLElement) => {
-                        let dropDownListObj: DropDownList = getComponent(dropDown, 'dropdownlist') as DropDownList;
+                        const dropDownListObj: DropDownList = getComponent(dropDown, 'dropdownlist') as DropDownList;
                         dropDownListObj.dataSource = null; //reset datasource.
                         dropDownListObj.dataSource = fields;
                         dropDownListObj.fields = fieldsMap;
@@ -297,19 +347,19 @@ export class Sort {
             },
             cssClass: 'e-sort-headercheckbox'
         });
-        let headerCheckbox: HTMLElement = this.parent.createElement('input', {
+        const headerCheckbox: HTMLElement = this.parent.createElement('input', {
             className: 'e-sort-checkheader', attrs: { type: 'checkbox' }
         });
         headerTabElement.appendChild(headerCheckbox);
         checkHeaderObj.createElement = this.parent.createElement;
         checkHeaderObj.appendTo(headerCheckbox);
 
-        let checkCaseObj: CheckBox = new CheckBox({
+        const checkCaseObj: CheckBox = new CheckBox({
             label: l10n.getConstant('CaseSensitive'),
             checked: false,
             cssClass: 'e-sort-casecheckbox'
         });
-        let caseCheckbox: HTMLElement = this.parent.createElement('input', {
+        const caseCheckbox: HTMLElement = this.parent.createElement('input', {
             className: 'e-sort-checkcase', attrs: { type: 'checkbox' }
         });
         headerTabElement.appendChild(caseCheckbox);
@@ -319,13 +369,15 @@ export class Sort {
 
     /**
      * Creates a listview instance.
-     * @param listId - unique id of the list item.
+     *
+     * @param {string} listId - unique id of the list item.
+     * @returns {void}
      */
     private getCustomListview(listId: string): ListView {
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let data: { [key: string]: string; }[] = [{ id: listId, text: l10n.getConstant('SortBy'), field: '', order: 'ascending' }];
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const data: { [key: string]: string; }[] = [{ id: listId, text: l10n.getConstant('SortBy'), field: '', order: 'ascending' }];
         enableRipple(false);
-        let listviewObj: ListView = new ListView({
+        const listviewObj: ListView = new ListView({
             dataSource: data,
             fields: { id: 'id' },
             height: '100%',
@@ -335,18 +387,20 @@ export class Sort {
                 '<div class="e-sort-order">' +
                 '<span class="e-sort-ordertxt" style="display:none;">${order}</span></div>' +
                 '<span class="e-icons e-sort-delete"></span></div>',
-            cssClass: 'e-sort-template',
+            cssClass: 'e-sort-template'
         });
         return listviewObj;
     }
 
     /**
      * Triggers the click event for delete icon.
-     * @param element - current list item element.
-     * @param listviewObj - listview instance.
+     *
+     * @param {Element} element - current list item element.
+     * @param {ListView} listviewObj - listview instance.
+     * @returns {void}
      */
     private deleteHandler(element: Element, listviewObj: ListView): void {
-        let iconEle: Element = element.getElementsByClassName('e-sort-delete')[0];
+        const iconEle: Element = element.getElementsByClassName('e-sort-delete')[0];
         //Event handler to bind the click event for delete icon
         iconEle.addEventListener('click', (): void => {
             if (element) {
@@ -357,17 +411,20 @@ export class Sort {
 
     /**
      * Renders the dropdown and radio button components inside list item.
-     * @param id - unique id of the list item.
-     * @param listviewObj - listview instance.
-     * @param containsHeader - data contains header.
-     * @param fields - fields data.
+     *
+     * @param {string} id - unique id of the list item.
+     * @param {ListView} lvObj - listview instance.
+     * @param {boolean} containsHeader - data contains header.
+     * @param {string} fields - fields data.
+     * @param {boolean} btn - boolean value.
+     * @returns {void}
      */
     private renderListItem(id: string, lvObj: ListView, containsHeader: boolean, fields: { [key: string]: string }[], btn?: boolean): void {
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let element: Element = lvObj.element.querySelector('li[data-uid=' + id + ']');
-        let fieldsMap: FieldSettingsModel = containsHeader ? { text: 'text', value: 'value' } : { text: 'value' };
-        let dropDown: Element = element.getElementsByClassName('e-sort-field')[0];
-        let dropDownListObj: DropDownList = new DropDownList({
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const element: Element = lvObj.element.querySelector('li[data-uid=' + id + ']');
+        const fieldsMap: FieldSettingsModel = containsHeader ? { text: 'text', value: 'value' } : { text: 'value' };
+        const dropDown: Element = element.getElementsByClassName('e-sort-field')[0];
+        const dropDownListObj: DropDownList = new DropDownList({
             dataSource: fields,
             width: 'auto',
             cssClass: 'e-sort-field-ddl',
@@ -391,27 +448,27 @@ export class Sort {
         }
 
         /* sort ascending radio button */
-        let orderRadio: Element = element.getElementsByClassName('e-sort-order')[0];
-        let ordertxtElem: HTMLElement = orderRadio.getElementsByClassName('e-sort-ordertxt')[0] as HTMLElement;
-        let isAscending: boolean = ordertxtElem.innerText.toLocaleLowerCase() === 'ascending';
-        let radiobutton: RadioButton = new RadioButton({
+        const orderRadio: Element = element.getElementsByClassName('e-sort-order')[0];
+        const ordertxtElem: HTMLElement = orderRadio.getElementsByClassName('e-sort-ordertxt')[0] as HTMLElement;
+        const isAscending: boolean = ordertxtElem.innerText.toLocaleLowerCase() === 'ascending';
+        const radiobutton: RadioButton = new RadioButton({
             label: l10n.getConstant('SortAscending'),
             name: 'sortAZ_' + id, value: 'ascending', checked: isAscending, cssClass: 'e-sort-radiobutton',
             change: (args: ChangeArgs) => { this.setRadioBtnValue(lvObj, id, args.value); }
         });
-        let radio: HTMLElement = this.parent.createElement('input', {
+        const radio: HTMLElement = this.parent.createElement('input', {
             id: 'orderAsc_' + id, className: 'e-sort-radioasc', styles: '', attrs: { type: 'radio' }
         });
         orderRadio.appendChild(radio);
         radiobutton.createElement = this.parent.createElement;
         radiobutton.appendTo(radio);
         /* sort descending radio button */
-        let radiobutton2: RadioButton = new RadioButton({
+        const radiobutton2: RadioButton = new RadioButton({
             label: l10n.getConstant('SortDescending'),
             name: 'sortAZ_' + id, value: 'descending', checked: !isAscending, cssClass: 'e-sort-radiobutton',
             change: (args: ChangeArgs) => { this.setRadioBtnValue(lvObj, id, args.value); }
         });
-        let radio2: HTMLElement = this.parent.createElement('input', {
+        const radio2: HTMLElement = this.parent.createElement('input', {
             id: 'orderDesc_' + id, className: 'e-sort-radiodesc', styles: '', attrs: { type: 'radio' }
         });
         orderRadio.appendChild(radio2);
@@ -423,9 +480,11 @@ export class Sort {
 
     /**
      * Sets the new value of the radio button.
-     * @param listviewObj - listview instance.
-     * @param id - unique id of the list item.
-     * @param value - new value.
+     *
+     * @param {ListView} listviewObj - listview instance.
+     * @param {string} id - unique id of the list item.
+     * @param {string} value - new value.
+     * @returns {void}
      */
     private setRadioBtnValue(listviewObj: ListView, id: string, value: string): void {
         if (!value) { return; }
@@ -438,12 +497,14 @@ export class Sort {
     }
 
     /**
+     *
      * Clears the error from the dialog.
-     * @param dialogElem - dialog content element.
+     *
+     * @returns {void}
      */
     private clearError(): void {
-        let dialogElem: HTMLElement = document.getElementsByClassName('e-sort-dialog')[0] as HTMLElement;
-        let errorElem: HTMLElement = dialogElem.getElementsByClassName('e-sort-error')[0] as HTMLElement;
+        const dialogElem: HTMLElement = document.getElementsByClassName('e-sort-dialog')[0] as HTMLElement;
+        const errorElem: HTMLElement = dialogElem.getElementsByClassName('e-sort-error')[0] as HTMLElement;
         if (errorElem.style.display !== 'none' && errorElem.innerHTML !== '') {
             errorElem.style.display = 'none';
             Array.prototype.forEach.call(dialogElem.getElementsByClassName('e-error'), (element: HTMLElement) => {
@@ -454,18 +515,23 @@ export class Sort {
 
     /**
      * Triggers sort events and applies sorting.
+     *
+     * @param {Object} args - Specifies the args.
+     * @param {SortOptions} args.sortOptions - Specifies the sort options.
+     * @param {string} args.range - Specifies the range.
+     * @returns {void}
      */
     private applySortHandler(args: { sortOptions?: SortOptions, range?: string }): void {
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let address: string = args && args.range || sheet.selectedRange;
-        let sortOptions: SortOptions = args && args.sortOptions || { sortDescriptors: {} };
-        let beforeArgs: BeforeSortEventArgs = { range: address, sortOptions: sortOptions, cancel: false };
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const address: string = args && args.range || sheet.selectedRange;
+        const sortOptions: SortOptions = args && args.sortOptions || { sortDescriptors: {} };
+        const beforeArgs: BeforeSortEventArgs = { range: address, sortOptions: sortOptions, cancel: false };
         this.parent.trigger(beforeSort, beforeArgs);
         if (beforeArgs.cancel) { return; }
         this.parent.notify(beginAction, { eventArgs: beforeArgs, action: 'beforeSort' });
         this.parent.showSpinner();
-        let range: number[] = getSwapRange(getIndexesFromAddress(beforeArgs.range));
-        let eventArgs: { [key: string]: number[] | boolean } = { filterRange: [], hasFilter: false };
+        const range: number[] = getSwapRange(getIndexesFromAddress(beforeArgs.range));
+        const eventArgs: { [key: string]: number[] | boolean } = { filterRange: [], hasFilter: false };
         if (range[0] === range[2] && (range[2] - range[0]) === 0) { //check for filter range
             this.parent.notify(getFilterRange, eventArgs);
             if (eventArgs.hasFilter && inRange(<number[]>eventArgs.filterRange, range[0], range[1])) {
@@ -485,10 +551,14 @@ export class Sort {
     }
 
     /**
+     *
      * Invoked when the sort action is completed.
+     *
+     * @param {SortEventArgs} args - Specifies the range and sort options.
+     * @returns {void}
      */
     private sortCompleteHandler(args: SortEventArgs): void {
-        let range: number[] = getIndexesFromAddress(args.range);
+        const range: number[] = getIndexesFromAddress(args.range);
         this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(range);
         this.parent.hideSpinner();
     }

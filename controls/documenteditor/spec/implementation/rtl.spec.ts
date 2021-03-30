@@ -2,7 +2,7 @@ import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
 import { TestHelper } from '../../spec/test-helper.spec';
 
-// tslint:disable-next-line:max-line-length
+// eslint-disable-next-line max-len
 import { LayoutViewer, StyleDialog, StylesDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, TableOfContentsDialog, CellOptionsDialog, ListDialog, PageSetupDialog, BookmarkDialog, DocumentHelper } from '../../src/index';
 import { Editor, EditorHistory } from '../../src/index';
 import { Selection, PageLayoutViewer } from '../../src/index';
@@ -16,7 +16,7 @@ describe('Table Dialog testing', () => {
     beforeAll((done) => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, BordersAndShadingDialog, EditorHistory, TableOptionsDialog, CellOptionsDialog);
         editor = new DocumentEditor({ enableRtl: true, enableSelection: true, enableEditor: true, isReadOnly: false, enableTablePropertiesDialog: true, enableBordersAndShadingDialog: true, enableEditorHistory: true, enableTableOptionsDialog: true });
         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
@@ -56,7 +56,7 @@ describe('List Dialog testing', () => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, ListDialog);
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         editor = new DocumentEditor({ enableRtl: true, enableSelection: true, enableEditor: true, isReadOnly: false, enableListDialog: true });
         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
@@ -92,7 +92,7 @@ describe('Style dialog validation', () => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, StyleDialog, StylesDialog, FontDialog, EditorHistory);
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         editor = new DocumentEditor({
             enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableContextMenu: true, enableStyleDialog: true, enableRtl: true, enableFontDialog: true, enableParagraphDialog: true
         });
@@ -170,7 +170,7 @@ describe('PageSetup Dialog Test Case Validation', () => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(PageSetupDialog, Selection, Editor, EditorHistory);
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableRtl: true, enableSelection: true, isReadOnly: false });
         editor.enableEditorHistory = true;
         editor.enablePageSetupDialog = true;
@@ -206,7 +206,7 @@ describe('BookMark add validation', () => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, BookmarkDialog, EditorHistory);
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         editor = new DocumentEditor({ enableEditorHistory: true, enableRtl: true, enableEditor: true, enableSelection: true, enableBookmarkDialog: true, isReadOnly: false, enableContextMenu: true, enableFontDialog: true });
         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;

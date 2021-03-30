@@ -8,16 +8,31 @@ import { BaseAttributes } from './canvas-interface';
 
 /** @private */
 export class BarcodeSVGRenderering implements IBarcodeRenderer {
-    /**   @private  */
+    /**
+     * Draw the root element for the barcode.\
+     *
+     * @returns {HTMLElement} Draw the barcode SVG .
+     * @param {Object} attribute - Provide the canvas element .
+     * @param {string} backGroundColor - Provide the canvas element .
+     * @private
+     */
+    // eslint-disable-next-line
     public renderRootElement(attribute: Object, backGroundColor: string, ): HTMLElement {
-        let canvasObj: HTMLElement = createSvgElement('svg', attribute) as HTMLElement;
+        const canvasObj: HTMLElement = createSvgElement('svg', attribute) as HTMLElement;
         canvasObj.setAttribute('style', 'background:' + backGroundColor);
         return canvasObj;
     }
 
-    /**   @private  */
+    /**
+     * Draw the rect for the barcode.\
+     *
+     * @returns {HTMLElement} Draw the barcode SVG .
+     *  @param {Object} svg - Provide the canvas element .
+     *  @param {Object} attribute - Provide the canvas element .
+     * @private
+     */
     public renderRect(svg: HTMLElement, attribute: BaseAttributes): HTMLElement {
-        let rect: SVGRectElement = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        const rect: SVGRectElement = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         rect.setAttribute('x', attribute.x.toString());
         rect.setAttribute('y', attribute.y.toString());
         rect.setAttribute('width', attribute.width.toString());
@@ -28,9 +43,16 @@ export class BarcodeSVGRenderering implements IBarcodeRenderer {
         return svg;
     }
 
-    /**   @private  */
+    /**
+     * Draw the text for the barcode.\
+     *
+     * @returns {HTMLElement} Draw the barcode SVG .
+     *  @param {Object} svg - Provide the canvas element .
+     *  @param {Object} attribute - Provide the canvas element .
+     * @private
+     */
     public renderText(svg: HTMLElement, attribute: BaseAttributes): HTMLElement {
-        let text: SVGTextElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        const text: SVGTextElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         text.setAttribute('x', attribute.x.toString());
         text.setAttribute('y', attribute.y.toString());
         text.setAttribute('fill', attribute.color);

@@ -1204,8 +1204,7 @@ export class ContentRender implements IRenderer {
         }
     }
 
-    /** @hidden */
-    public objectEqualityChecker(old: Object, next: Object): boolean {
+    private objectEqualityChecker(old: Object, next: Object): boolean {
         let keys: string[] = Object.keys(old);
         let isEqual: boolean = true;
         for (let i: number = 0; i < keys.length; i++) {

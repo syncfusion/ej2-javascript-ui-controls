@@ -1,0 +1,355 @@
+
+//default 
+$timepicker-default-text-indent: 16px !default;
+$timepicker-list-bigger-line-height: 48px !default;
+$timepicker-list-normal-line-height: 36px !default;
+$timepicker-list-normal-font-size: 13px !default;
+$timepicker-list-bigger-font-size: 14px !default;
+$timepicker-list-normal-text-indent: $timepicker-default-text-indent !default;
+$timepicker-list-bigger-text-indent: 16px !default;
+$timepicker-popup-border-radius: 2px !default;
+$timepicker-list-font-weight: normal !default;
+$timepicker-popup-shadow: 0 5px 5px -3px rgba($grey-light-font, .2), 0 8px 10px 1px rgba($grey-light-font, .14), 0 3px 14px 2px rgba($grey-light-font, .12) !default;
+$timepicker-list-default-font-color: $grey-dark-font !default;
+$timepicker-list-default-border-style: none !default;
+$timepicker-list-border-color: none !default;
+$timepicker-list-hover-border-color: none !default;
+$timepicker-list-bg-color: $grey-800 !default;
+$timepicker-list-active-bg-color: rgba($grey-white, .1) !default;
+$timepicker-list-active-font-color: $accent !default;
+$timepicker-list-active-icon-color: $accent !default;
+$timepicker-list-hover-bg-color: rgba($grey-white, .1) !default;
+$timepicker-list-hover-font-color: $grey-dark-font !default;
+$timepicker-list-popup-icon-active-color: $accent !default;
+$timepicker-list-active-hover-bg-color: rgba($grey-white, .1) !default;
+$timepicker-list-active-hover-font-color: $accent !default;
+$timepicker-list-normal-padding: 0 !default;
+$timepicker-list-bigger-padding: 0 !default;
+$timepicker-font-icon: '\e20c' !default;
+$timepicker-icon-normal-font-size: 16px !default;
+$timepicker-icon-bigger-font-size: 20px !default;
+$timepicker-normal-input-min-height: 20px !default;
+$timepicker-normal-input-min-width: 20px !default;
+$timepicker-bigger-input-min-height: 22px !default;
+$timepicker-bigger-input-min-width: 22px !default;
+$timepicker-disable-text: rgba($grey-dark-font, .3) !default;
+$timepicker-disable-opacity: 1 !default;
+$timepicker-default-overlay: rgba($grey-black, .6) !default;
+// mouse small
+$timepicker-list-small-font-size: 12px !default;
+$timepicker-list-small-line-height: 26px !default;
+$timepicker-list-small-text-indent: 12px !default;
+$timepicker-list-small-font-color: $grey-light-font !default;
+// icon small
+$timepicker-icon-small-font-size: 14px !default;
+// Touch small
+$timepicker-list-bigger-small-font-size: 13px !default;
+$timepicker-list-bigger-small-line-height: 40px !default;
+$timepicker-list-bigger-small-text-indent: 16px !default;
+// Touch small icon
+$timepicker-icon-bigger-small-font-size: 18px !default;
+//enddefault
+@include export-module('timepicker-material-icons') {
+  /*! component icons */
+
+  .e-time-wrapper,
+  #{if(&, '&', '*')}.e-control-wrapper.e-time-wrapper {
+
+    #{if(&, '&', '*')} .e-time-icon.e-icons::before {
+      content: '\e20c';
+    }
+
+  }
+
+  .e-time-wrapper.e-outline .e-input-group-icon.e-time-icon,
+  .e-time-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-time-icon {
+    min-height: $zero-value;
+    min-width: 20px;
+  }
+
+  .e-bigger .e-time-wrapper.e-outline .e-input-group-icon.e-time-icon,
+  .e-time-wrapper.e-control-wrapper.e-bigger.e-outline .e-input-group-icon.e-time-icon,
+  .e-bigger .e-time-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-time-icon {
+    min-height: $zero-value;
+    min-width: 24px;
+  }
+
+  .e-small .e-time-wrapper.e-outline .e-input-group-icon.e-time-icon,
+  .e-time-wrapper.e-control-wrapper.e-small.e-outline .e-input-group-icon.e-time-icon,
+  .e-small .e-time-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-time-icon {
+    min-height: $zero-value;
+    min-width: 18px;
+  }
+
+  .e-bigger.e-small .e-outline.e-time-wrapper .e-input-group-icon.e-time-icon,
+  .e-bigger.e-small.e-outline.e-time-wrapper .e-input-group-icon.e-time-icon,
+  .e-time-wrapper.e-control-wrapper.e-bigger.e-small.e-outline .e-input-group-icon.e-time-icon,
+  .e-bigger.e-small .e-time-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-time-icon {
+    min-height: $zero-value;
+    min-width: 20px;
+  }
+}
+
+@include export-module('timepicker-layout') {
+  //   timepicker layout
+  .e-input-group.e-control-wrapper.e-time-wrapper.e-non-edit.e-input-focus .e-input:focus ~ .e-clear-icon,
+  .e-float-input.e-control-wrapper.e-input-group.e-time-wrapper.e-non-edit.e-input-focus input:focus ~ .e-clear-icon {
+    display: flex;
+  }
+
+  .e-time-wrapper,
+  #{if(&, '&', '*')}.e-control-wrapper.e-time-wrapper {
+    // sass-lint:disable no-vendor-prefixes
+    -webkit-tap-highlight-color: transparent;
+
+    #{if(&, '&', '*')} .e-time-icon.e-icons {
+      font-size: $timepicker-icon-normal-font-size;
+      @if $skin-name == 'material' or $skin-name == 'material-dark' {
+        min-height: $timepicker-normal-input-min-height;
+        min-width: $timepicker-normal-input-min-width;
+      }
+
+    }
+
+    #{if(&, '&', '*')} .e-time-icon.e-icons.e-disabled {
+      pointer-events: none;
+    }
+
+    #{if(&, '&', '*')} span {
+      cursor: pointer;
+    }
+  }
+
+  #{&}.e-timepicker.e-time-modal {
+    background-color: $timepicker-default-overlay;
+    height: 100%;
+    left: 0;
+    opacity: .5;
+    pointer-events: auto;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 999;
+	}
+
+  #{&}.e-timepicker.e-popup {
+    border-style: solid;
+    border-width: 1px;
+    overflow: auto;
+
+    #{if(&, '&', '*')} .e-content {
+      position: relative;
+    }
+
+    #{if(&, '&', '*')} .e-list-parent.e-ul {
+      margin: 0;
+      padding: $timepicker-list-normal-padding 0;
+
+      #{if(&, '&', '*')} .e-list-item {
+        cursor: default;
+        font-size: $timepicker-list-normal-font-size;
+        overflow: hidden;
+        position: relative;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+        white-space: nowrap;
+        width: 100%;
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-hover {
+        cursor: pointer;
+      }
+    }
+  }
+
+  //normal styles
+
+  #{&}.e-timepicker.e-popup {
+    #{if(&, '&', '*')} .e-list-parent.e-ul .e-list-item {
+      line-height: $timepicker-list-normal-line-height;
+      text-indent: $timepicker-list-normal-text-indent;
+    }
+  }
+
+  //bigger styles
+  .e-bigger .e-time-wrapper,
+  #{if(&, '&', '*')}.e-bigger.e-time-wrapper,
+  #{if(&, '&', '*')}.e-bigger .e-control-wrapper .e-time-wrapper,
+  #{if(&, '&', '*')}.e-control-wrapper.e-bigger.e-time-wrapper {
+
+    #{if(&, '&', '*')} .e-time-icon.e-icons {
+      font-size: $timepicker-icon-bigger-font-size;
+      @if $skin-name == 'material' or $skin-name == 'material-dark' {
+        min-height: $timepicker-bigger-input-min-height;
+        min-width: $timepicker-bigger-input-min-width;
+      }
+    }
+  }
+
+  .e-bigger #{&}.e-timepicker.e-popup,
+  #{if(&, '&', '*')}.e-bigger#{&}.e-timepicker.e-popup {
+
+    #{if(&, '&', '*')} .e-list-parent.e-ul {
+      padding: $timepicker-list-bigger-padding 0;
+
+      #{if(&, '&', '*')} .e-list-item {
+        font-size: $timepicker-list-bigger-font-size;
+        line-height: $timepicker-list-bigger-line-height;
+        text-indent: $timepicker-list-bigger-text-indent;
+      }
+    }
+  }
+
+  //mouse small size
+  .e-small #{&}.e-timepicker.e-popup,
+  #{if(&, '&', '*')}.e-small#{&}.e-timepicker.e-popup {
+
+    #{if(&, '&', '*')} .e-list-parent.e-ul {
+      #{if(&, '&', '*')} .e-list-item {
+        font-size: $timepicker-list-small-font-size;
+        line-height: $timepicker-list-small-line-height;
+        text-indent: $timepicker-list-small-text-indent;
+      }
+    }
+  }
+
+  .e-small .e-time-wrapper,
+  #{if(&, '&', '*')}.e-small.e-time-wrapper,
+  #{if(&, '&', '*')}.e-small .e-control-wrapper.e-time-wrapper,
+  #{if(&, '&', '*')}.e-control-wrapper.e-small.e-time-wrapper {
+
+    #{if(&, '&', '*')} .e-time-icon.e-icons {
+      font-size: $timepicker-icon-small-font-size;
+    }
+  }
+
+  //mouse small size
+  .e-small.e-bigger #{&}.e-timepicker.e-popup,
+  #{if(&, '&', '*')}.e-small.e-bigger#{&}.e-timepicker.e-popup {
+
+    #{if(&, '&', '*')} .e-list-parent.e-ul {
+      #{if(&, '&', '*')} .e-list-item {
+        font-size: $timepicker-list-bigger-small-font-size;
+        line-height: $timepicker-list-bigger-small-line-height;
+        text-indent: $timepicker-list-bigger-small-text-indent;
+      }
+    }
+  }
+
+  .e-small.e-bigger .e-time-wrapper,
+  #{if(&, '&', '*')}.e-small.e-bigger.e-time-wrapper,
+  #{if(&, '&', '*')}.e-small.bigger .e-control-wrapper.e-time-wrapper,
+  #{if(&, '&', '*')}.e-control-wrapper.e-small.bigger.e-time-wrapper {
+
+    #{if(&, '&', '*')} .e-time-icon.e-icons {
+      font-size: $timepicker-icon-bigger-small-font-size;
+    }
+  }
+
+  .e-content-placeholder.e-timepicker.e-placeholder-timepicker {
+    background-size: 250px 33px;
+    min-height: 33px;
+  }
+
+  .e-bigger .e-content-placeholder.e-timepicker.e-placeholder-timepicker,
+  .e-bigger.e-content-placeholder.e-timepicker.e-placeholder-timepicker {
+    background-size: 250px 40px;
+    min-height: 40px;
+  }
+}
+
+// sass-lint:disable-all
+
+.e-time-overflow {
+  overflow: hidden;
+}
+
+.e-timepicker-mob-popup-wrap {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  left: 0;
+  max-height: 100%;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1002;
+
+  .e-timepicker.e-popup.e-lib.e-control.e-popup-open {
+    left: 0 !important;
+    position: relative;
+    top: 0 !important;
+  }
+}
+
+// sass-lint:enable-all
+@include export-module('timepicker-theme') {
+  /*! timepicker theme */
+  .e-time-wrapper {
+    #{if(&, '&', '*')} .e-input-group-icon.e-icons.e-active {
+      @if $skin-name == 'bootstrap4' {
+        background: $timepicker-icon-active-bg-color;
+        border-color: $timepicker-active-border-color;
+      }
+      color: $timepicker-list-active-icon-color;
+    }
+
+    #{if(&, '&', '*')}.e-input-group:not(.e-disabled) .e-input-group-icon.e-active:active {
+      color: $timepicker-list-popup-icon-active-color;
+    }
+  }
+
+  #{&}.e-timepicker.e-popup {
+    border: $timepicker-list-border-color;
+    border-radius: $timepicker-popup-border-radius;
+    box-shadow: $timepicker-popup-shadow;
+
+    #{if(&, '&', '*')} .e-list-parent.e-ul {
+      background-color: $timepicker-list-bg-color;
+
+      #{if(&, '&', '*')} li.e-list-item {
+        border: $timepicker-list-default-border-style;
+        color: $timepicker-list-default-font-color;
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-disabled {
+        color: $timepicker-disable-text;
+        opacity: $timepicker-disable-opacity;
+        pointer-events: none;
+        touch-action: none;
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-hover,
+      #{if(&, '&', '*')} .e-list-item.e-navigation,
+      #{if(&, '&', '*')} .e-list-item:focus {
+        background-color: $timepicker-list-hover-bg-color;
+        border: $timepicker-list-hover-border-color;
+        color: $timepicker-list-hover-font-color;
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-active {
+        background-color: $timepicker-list-active-bg-color;
+        color: $timepicker-list-active-font-color;
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-active.e-hover {
+        background-color: $timepicker-list-active-hover-bg-color;
+        color: $timepicker-list-active-hover-font-color;
+      }
+    }
+  }
+
+  .e-small #{&}.e-timepicker.e-popup,
+  #{if(&, '&', '*')}.e-small#{&}.e-timepicker.e-popup,
+  .e-bigger.e-small #{&}.e-timepicker.e-popup,
+  #{if(&, '&', '*')}.e-bigger.e-small#{&}.e-timepicker.e-popup {
+
+    #{if(&, '&', '*')} .e-list-parent.e-ul {
+      #{if(&, '&', '*')} .e-list-item {
+        color: $timepicker-list-small-font-color;
+      }
+    }
+  }
+}

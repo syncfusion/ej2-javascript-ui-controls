@@ -135,7 +135,8 @@ export class DialogRenderer {
         });
         if (this.parent.allowDeferLayoutUpdate) {
             let checkBoxLayout: HTMLElement = createElement('div', {
-                className: cls.CHECKBOX_LAYOUT
+                className: cls.CHECKBOX_LAYOUT,
+                attrs: { 'title': this.parent.localeObj.getConstant('deferLayoutUpdate') }
             });
             let deferUpdateCheckBox: HTMLElement = createElement('input', {
                 id: this.parent.element.id + 'DeferUpdateCheckBox'
@@ -148,12 +149,12 @@ export class DialogRenderer {
         });
         if (this.parent.allowDeferLayoutUpdate) {
             let deferUpdateButton1: HTMLElement = createElement('button', {
-                id: this.parent.element.id + '_DeferUpdateButton1', attrs: { 'type': 'button' }
+                id: this.parent.element.id + '_DeferUpdateButton1', attrs: { 'type': 'button', 'title': this.parent.localeObj.getConstant('apply') }
             });
             buttonLayout.appendChild(deferUpdateButton1);
         }
         let deferUpdateButton2: HTMLElement = createElement('button', {
-            id: this.parent.element.id + '_DeferUpdateButton2', attrs: { 'type': 'button' }
+            id: this.parent.element.id + '_DeferUpdateButton2', attrs: { 'type': 'button', 'title': this.parent.localeObj.getConstant('cancel') }
         });
         buttonLayout.appendChild(deferUpdateButton2);
         layoutFooter.appendChild(buttonLayout);

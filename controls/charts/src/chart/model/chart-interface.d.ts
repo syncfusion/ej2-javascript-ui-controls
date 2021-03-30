@@ -191,6 +191,8 @@ export interface ILegendClickEventArgs extends IChartEventArgs {
     legendShape: LegendShape;
     /** Defines the current series */
     series: Series;
+    /** Defines the list of points mapped to a legend */
+    points: Points[];
     /** Defines the current legend text */
     legendText: string;
 }

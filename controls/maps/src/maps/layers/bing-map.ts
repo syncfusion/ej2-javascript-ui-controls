@@ -12,17 +12,17 @@ export class BingMap {
     public subDomains: string[];
     public imageUrl: string;
     public maxZoom: string;
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(maps: Maps) {
         this.maps = maps;
     }
 
     public getBingMap(tile: Tile, key: string, type: BingMapType, language: string, imageUrl: string, subDomains: string[]): string {
         let quadKey: string = '';
-        let subDomain: string;
-        let maxZoom: number = Math.min(this.maps.tileZoomLevel, parseInt(this.maxZoom, 10));
+        const maxZoom: number = Math.min(this.maps.tileZoomLevel, parseInt(this.maxZoom, 10));
         for (let i: number = maxZoom; i > 0; i--) {
             let digit: number = 0;
-            let mask: number = 1 << (i - 1);
+            const mask: number = 1 << (i - 1);
             if ((tile.x & mask) !== 0) {
                 digit++;
             }
@@ -31,7 +31,7 @@ export class BingMap {
             }
             quadKey = quadKey + '' + digit;
         }
-        subDomain = subDomains[Math.min(parseInt(quadKey.substr(quadKey.length - 1, 1), 10), subDomains.length)];
+        const subDomain: string = subDomains[Math.min(parseInt(quadKey.substr(quadKey.length - 1, 1), 10), subDomains.length)];
         imageUrl = imageUrl.replace('{quadkey}', quadKey).replace('{subdomain}', subDomain);
         return imageUrl += '&mkt=' + language + '&ur=IN&Key=' + key;
     }

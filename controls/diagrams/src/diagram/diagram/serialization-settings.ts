@@ -1,7 +1,7 @@
 import { ChildProperty, Property } from '@syncfusion/ej2-base';
 
 
-/** 
+/**
  * Defines the serialization settings of diagram
  * ```html
  * <div id='diagram'></div>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createCheckBox } from './../src/common/common';
 import { CheckBox } from './../src/check-box/check-box';
 import { createElement, EventHandler, attributes } from '@syncfusion/ej2-base';
@@ -6,14 +7,14 @@ import { profile , inMB, getMemoryProfile } from './common.spec';
 /**
  * CheckBox Spec document
  */
-function copyObject(source: any, destination: any): Object {
-    for (let prop in source) {
+function copyObject(source: any, destination: any): any {
+    for (const prop in source) {
         destination[prop] = source[prop];
     }
     return destination;
 }
 
-function setMouseCoordinates(eventarg: any, x: number, y: number, target: Element): Object {
+function setMouseCoordinates(eventarg: any, x: number, y: number, target: Element): any {
     eventarg.pageX = x;
     eventarg.pageY = y;
     eventarg.clientX = x;
@@ -22,10 +23,10 @@ function setMouseCoordinates(eventarg: any, x: number, y: number, target: Elemen
     return eventarg;
 }
 
-function getEventObject(eventType: string, eventName: string): Object {
-    let tempEvent: any = document.createEvent(eventType);
+function getEventObject(eventType: string, eventName: string): any {
+    const tempEvent: any = document.createEvent(eventType);
     tempEvent.initEvent(eventName, true, true);
-    let returnObject: any = copyObject(tempEvent, {});
+    const returnObject: any = copyObject(tempEvent, {});
     returnObject.preventDefault = () => { return true; };
     return returnObject;
 }
@@ -41,12 +42,12 @@ describe('CheckBox', () => {
     });
 
     let checkbox: any;
-    let element: HTMLFormElement = createElement('input', { id: 'checkbox' }) as HTMLFormElement;
+    const element: HTMLFormElement = createElement('input', { id: 'checkbox' }) as HTMLFormElement;
     element.setAttribute('type', 'checkbox');
     document.body.appendChild(element);
 
     describe('DOM', () => {
-        let i: number = 0;
+        let i = 0;
         function changeFn(): void {
             i = 1;
         }
@@ -66,7 +67,8 @@ describe('CheckBox', () => {
             checkbox = new CheckBox({ label: 'checkbox' }, '#checkbox');
             expect(element.parentElement.children[2].classList.contains('e-label')).toEqual(true);
             expect(element.parentElement.children[2].textContent).toEqual('checkbox');
-            checkbox.labelMouseHandler({ type: 'mousedown' });
+            checkbox.labelMouseDownHandler({ type: 'mousedown' });
+            checkbox.labelMouseUpHandler({ type: 'mouseup' });
         });
 
         it('CheckBox with checked state', () => {
@@ -159,21 +161,20 @@ describe('CheckBox', () => {
 
         it('Enable Html Sanitizer testing', () => {
             checkbox = new CheckBox({ label: '<style>body{background:rgb(0, 0, 255)}</style>', enableHtmlSanitizer: true, }, '#checkbox');
-            let htmlele: Element = document.body;
+            const htmlele: Element = document.body;
             expect(window.getComputedStyle(htmlele).backgroundColor).not.toBe('rgb(0, 0, 255)');
         });
 
         it('Enable Html Sanitizer disabled testing', () => {
             checkbox = new CheckBox({ label: 'Banking<style>body{background:rgb(0, 0, 255)}</style>' }, '#checkbox');
-            let htmlele: Element = document.body;
+            const htmlele: Element = document.body;
             expect(window.getComputedStyle(htmlele).backgroundColor).toBe('rgb(0, 0, 255)');
         });
     });
 
     describe('Property', () => {
-        let i: number = 0;
         function changeFn(): void {
-            i = 1;
+           console.log("changed");
         }
         afterEach(() => {
             checkbox.destroy();
@@ -357,8 +358,8 @@ describe('CheckBox', () => {
             checkbox.keyUpHandler();
             expect(element.parentElement.parentElement.classList.contains('e-focus')).toEqual(true);
             checkbox.focusHandler();
-            let wrapper: Element = checkbox.element.parentElement.parentElement;
-            let label: Element =  wrapper.getElementsByTagName('label')[0];
+            const wrapper: Element = checkbox.element.parentElement.parentElement;
+            const label: Element =  wrapper.getElementsByTagName('label')[0];
             let cbox: any = getEventObject('MouseEvents', 'mouseup');
             cbox = setMouseCoordinates(checkbox, 5, 5, label);
             EventHandler.trigger(label as HTMLElement, 'mouseup', cbox);
@@ -390,30 +391,30 @@ describe('CheckBox', () => {
 
     describe('creation by util function', () => {
         it('', () => {
-            let checkboxElem: Element = createCheckBox(createElement);
+            const checkboxElem: Element = createCheckBox(createElement);
             expect(checkboxElem.classList.contains('e-checkbox-wrapper')).toBe(true);
             expect(checkboxElem.querySelector('.e-frame')).not.toBeNull();
         });
 
         it('with ripple effect', () => {
-            let checkboxElem: Element = createCheckBox(createElement, true);
+            const checkboxElem: Element = createCheckBox(createElement, true);
             expect(checkboxElem.querySelector('.e-ripple-container')).not.toBeNull();
         });
 
         it('with checked', () => {
-            let checkboxElem: Element = createCheckBox(createElement, false, { checked: true, cssClass: 'e-small' });
+            const checkboxElem: Element = createCheckBox(createElement, false, { checked: true, cssClass: 'e-small' });
             expect(checkboxElem.querySelector('.e-check')).not.toBeNull();
             expect(checkboxElem.classList.contains('e-small')).toBe(true);
         });
 
         it('with label and without rtl', () => {
-            let checkboxElem: Element = createCheckBox(createElement, true, { label: 'checkbox' });
+            const checkboxElem: Element = createCheckBox(createElement, true, { label: 'checkbox' });
             expect(checkboxElem.querySelector('.e-label')).not.toBeNull();
             expect(checkboxElem.classList.contains('e-rtl')).toBe(false);
         });
 
         it('with label and rtl', () => {
-            let checkboxElem: Element = createCheckBox(createElement, true, { label: 'checkbox', enableRtl: true });
+            const checkboxElem: Element = createCheckBox(createElement, true, { label: 'checkbox', enableRtl: true });
             expect(checkboxElem.classList.contains('e-rtl')).toBe(true);
         });
     });
@@ -531,10 +532,10 @@ describe('CheckBox', () => {
 
     it('memory leak', () => {
         profile.sample();
-        let average: any = inMB(profile.averageChange);
+        const average: any = inMB(profile.averageChange);
         // check average change in memory samples to not be over 10MB
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
+        const memory: any = inMB(getMemoryProfile());
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });

@@ -321,12 +321,12 @@ describe('Handle Key down', () => {
 console.log('Mouse down on image resizer area');
         editor.openBlank();
         documentHelper.editableDiv.innerHTML = 'S';
-        editor.editorModule.onTextInputInternal({} as any);
+        editor.editorModule.onTextInputInternal();
         editor.selection.selectAll();
         expect(editor.selectionModule.text).toBe('S\r');
         editor.editorModule.onBackSpace();
         documentHelper.editableDiv.innerHTML = String.fromCharCode(160);
-        editor.editorModule.onTextInputInternal({} as any);
+        editor.editorModule.onTextInputInternal();
         editor.selection.selectAll();
         expect(editor.selectionModule.text).not.toBe(String.fromCharCode(160) + '\r');
         expect(editor.selectionModule.text).toBe(' \r');

@@ -1,59 +1,67 @@
-import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';
+/* eslint-disable @typescript-eslint/ban-types */
+import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';
 
-import { SeriesMarkerModel, SeriesMarkerBorderModel} from '../series/series-model';
-import { SeriesMarkerDataLabelModel, SeriesMarkerDataLabelBorderModel} from '../series/series-model';
-import {SeriesMarkerDataLabelConnectorLineModel} from '../series/series-model';
-import {SeriesTooltipBorderModel, SeriesTooltipModel} from '../series/series-model';
+import { SeriesMarkerModel, SeriesMarkerBorderModel } from '../series/series-model';
+import { SeriesMarkerDataLabelModel, SeriesMarkerDataLabelBorderModel } from '../series/series-model';
+import { SeriesMarkerDataLabelConnectorLineModel } from '../series/series-model';
+import { SeriesTooltipBorderModel, SeriesTooltipModel } from '../series/series-model';
 
-import { SmithchartFont} from '../utils/utils';
-import { SmithchartFontModel} from '../utils/utils-model';
+import { SmithchartFont } from '../utils/utils';
+import { SmithchartFontModel } from '../utils/utils-model';
 import { Theme } from '../model/theme';
 import { ISmithChartPoint } from '../model/interface';
 
 export class SeriesTooltipBorder extends ChildProperty<SeriesTooltipBorder> {
 
-/**
- * border width  for tooltip.
- * @default 1
- */
-  @Property(1)
-public width: number;
+    /**
+     * border width  for tooltip.
+     *
+     * @default 1
+     */
+    @Property(1)
+    public width: number;
 
-/**
- * border color for tooltip
- * @default null
- */
-@Property(null)
-public color: string;
+    /**
+     * border color for tooltip
+     *
+     * @default null
+     */
+    @Property(null)
+    public color: string;
 
 }
 export class SeriesTooltip extends ChildProperty<SeriesTooltip> {
 
 
-/**
- * visibility of tooltip.
- * @default false
- */
-@Property(false)
-public visible: boolean;
+    /**
+     * visibility of tooltip.
+     *
+     * @default false
+     */
+    @Property(false)
+    public visible: boolean;
 
-/**
- * color for tooltip .
- * @default null
- */
- @Property(null)
+    /**
+     * color for tooltip
+     *
+     * @default null
+     */
+    @Property(null)
     public fill: string;
-/**
- * opacity for tooltip.
- * @default 0.95
- */
-     @Property(0.95)
+
+    /**
+     * opacity for tooltip.
+     *
+     * @default 0.95
+     */
+    @Property(0.95)
     public opacity: number;
 
- /**
-  * template for tooltip
-  * @default ''
-  */
+    /**
+     * template for tooltip
+     *
+     * @default ''
+     */
     @Property('')
     public template: string;
 
@@ -66,146 +74,162 @@ public visible: boolean;
 
 }
 export class SeriesMarkerBorder extends ChildProperty<SeriesMarkerBorder> {
-/**
- * border width for marker border.
- * @default 3
- */
-  @Property(3)
-public width: number;
+    /**
+     * border width for marker border.
+     *
+     * @default 3
+     */
+    @Property(3)
+    public width: number;
 
-/**
- * border color for marker border.
- * @default 'white'
- */
-@Property('white')
-public color: string;
-
-}
-
-export class SeriesMarkerDataLabelBorder extends ChildProperty <SeriesMarkerDataLabelBorder> {
-
-/**
- * border width for data label border.
- * @default 0.1
- */
- @Property(0.1)
-public width: number;
-/**
- * border color for data label color.
- * @default 'white'
- */
-@Property('white')
-public color: string;
+    /**
+     * border color for marker border.
+     *
+     * @default 'white'
+     */
+    @Property('white')
+    public color: string;
 
 }
-export class SeriesMarkerDataLabelConnectorLine extends ChildProperty <SeriesMarkerDataLabelConnectorLine> {
-/**
- * border width for data label connector line.
- * @default 1
- */
- @Property(1)
-public width: number;
-/**
- * border color for data label connector line.
- * @default null
- */
-@Property(null)
-public color: string;
+
+export class SeriesMarkerDataLabelBorder extends ChildProperty<SeriesMarkerDataLabelBorder> {
+
+    /**
+     * border width for data label border.
+     *
+     * @default 0.1
+     */
+    @Property(0.1)
+    public width: number;
+    /**
+     * border color for data label color.
+     *
+     * @default 'white'
+     */
+    @Property('white')
+    public color: string;
+
+}
+export class SeriesMarkerDataLabelConnectorLine extends ChildProperty<SeriesMarkerDataLabelConnectorLine> {
+    /**
+     * border width for data label connector line.
+     *
+     * @default 1
+     */
+    @Property(1)
+    public width: number;
+    /**
+     * border color for data label connector line.
+     *
+     * @default null
+     */
+    @Property(null)
+    public color: string;
 
 }
 
 export class SeriesMarkerDataLabel extends ChildProperty<SeriesMarkerDataLabel> {
-/**
- * visibility for data label.
- * @default false
- */
-@Property(false)
-public visible: boolean;
+    /**
+     * visibility for data label.
+     *
+     * @default false
+     */
+    @Property(false)
+    public visible: boolean;
 
-/**
- * showing template for data label template
- * @default ''
- */
-@Property('')
-public template: string;
-/**
- * color for data label.
- * @default null
- */
- @Property(null)
+    /**
+     * showing template for data label template
+     *
+     * @default ''
+     */
+    @Property('')
+    public template: string;
+    /**
+     * color for data label.
+     *
+     * @default null
+     */
+    @Property(null)
     public fill: string;
-/**
- * opacity for data label.
- * @default 1
- */
-     @Property(1)
+    /**
+     * opacity for data label.
+     *
+     * @default 1
+     */
+    @Property(1)
     public opacity: number;
-/**
- *  options for customizing data label border
- */
+    /**
+     * options for customizing data label border
+     *
+     */
     @Complex<SeriesMarkerDataLabelBorderModel>({}, SeriesMarkerDataLabelBorder)
     public border: SeriesMarkerDataLabelBorderModel;
-/**
- *  options for customizing data label connector line
- */
-     @Complex<SeriesMarkerDataLabelConnectorLineModel>({}, SeriesMarkerDataLabelConnectorLine)
+    /**
+     * options for customizing data label connector line
+     */
+    @Complex<SeriesMarkerDataLabelConnectorLineModel>({}, SeriesMarkerDataLabelConnectorLine)
     public connectorLine: SeriesMarkerDataLabelConnectorLineModel;
-/**
- *  options for customizing font
- */
-
-
-   @Complex<SmithchartFontModel>(Theme.dataLabelFont, SmithchartFont)
-   public textStyle: SmithchartFontModel;
+    /**
+     * options for customizing font
+     */
+    @Complex<SmithchartFontModel>(Theme.dataLabelFont, SmithchartFont)
+    public textStyle: SmithchartFontModel;
 
 }
 export class SeriesMarker extends ChildProperty<SeriesMarker> {
 
-/**
- * visibility for marker.
- * @default false
- */
-@Property(false)
-public visible: boolean;
+    /**
+     * visibility for marker.
+     *
+     * @default false
+     */
+    @Property(false)
+    public visible: boolean;
 
-/**
- * shape for marker.
- * @default 'circle'
- */
-@Property('circle')
+    /**
+     * shape for marker.
+     *
+     * @default 'circle'
+     */
+    @Property('circle')
     public shape: string;
 
-/**
- * width for marker.
- * @default 6
- */
-@Property(6)
-public width: number;
+    /**
+     * width for marker.
+     *
+     * @default 6
+     */
+    @Property(6)
+    public width: number;
 
-/**
- * height for marker.
- * @default 6
- */
-@Property(6)
-public height: number;
-/**
- * Url for the image that is to be displayed as marker
- * @default ''
- */
+    /**
+     * height for marker.
+     *
+     * @default 6
+     */
+    @Property(6)
+    public height: number;
+    /**
+     * Url for the image that is to be displayed as marker
+     *
+     * @default ''
+     */
 
     @Property('')
     public imageUrl: string;
-/**
- * color for marker.
- * @default ''
- */
+    /**
+     * color for marker.
+     *
+     * @default ''
+     */
     @Property('')
     public fill: string;
-/**
- * opacity for marker.
- * @default 1
- */
-     @Property(1)
+    /**
+     * opacity for marker.
+     *
+     * @default 1
+     */
+    @Property(1)
     public opacity: number;
 
 
@@ -213,117 +237,130 @@ public height: number;
      *  options for customizing marker border
      */
 
- @Complex<SeriesMarkerBorderModel>({}, SeriesMarkerBorder)
+    @Complex<SeriesMarkerBorderModel>({}, SeriesMarkerBorder)
     public border: SeriesMarkerBorderModel;
-/**
- *  options for customizing marker data label 
- */
-@Complex<SeriesMarkerDataLabelModel>({}, SeriesMarkerDataLabel)
+    /**
+     * options for customizing marker data label
+     */
+    @Complex<SeriesMarkerDataLabelModel>({}, SeriesMarkerDataLabel)
     public dataLabel: SeriesMarkerDataLabelModel;
 
 }
 export class SmithchartSeries extends ChildProperty<SmithchartSeries> {
-/**
- * visibility for series.
- * @default 'visible'
- */
- @Property('visible')
+    /**
+     * visibility for series.
+     *
+     * @default 'visible'
+     */
+    @Property('visible')
     public visibility: string;
-/**
- * points for series.
- * @default []
- */
-@Property([])
-public points: ISmithChartPoint[];
+    /**
+     * points for series.
+     *
+     * @default []
+     */
+    @Property([])
+    public points: ISmithChartPoint[];
 
-/**
- * resistance name for dataSource
- * @default ''
- */
+    /**
+     * resistance name for dataSource
+     *
+     * @default ''
+     */
 
-@Property('')
-public resistance: string;
+    @Property('')
+    public resistance: string;
 
-/**
- * reactance name for dataSource
- * @default ''
- */
+    /**
+     * reactance name for dataSource
+     *
+     * @default ''
+     */
 
-@Property('')
-public reactance: string;
+    @Property('')
+    public reactance: string;
 
-/**
- * tooltip mapping name for the series
- * @default ''
- */
+    /**
+     * tooltip mapping name for the series
+     *
+     * @default ''
+     */
 
-@Property('')
-public tooltipMappingName: string;
-/**
- *  Specifies the dataSource
- * @default null
- * @isdatamanager false
- */
+    @Property('')
+    public tooltipMappingName: string;
+    /**
+     * Specifies the dataSource
+     *
+     * @default null
+     * @isdatamanager false
+     */
 
-@Property(null)
-public dataSource: Object;
+    @Property(null)
+    public dataSource: Object;
 
-/**
- * The name of the series visible in legend.
- * @default ''
- */
+    /**
+     * The name of the series visible in legend.
+     *
+     * @default ''
+     */
 
     @Property('')
     public name: string;
-/**
- * color for series.
- * @default null
- */
-@Property(null)
+    /**
+     * color for series.
+     *
+     * @default null
+     */
+    @Property(null)
     public fill: string;
 
-/**
- * enable or disable the animation of series.
- * @default false
- */
+    /**
+     * enable or disable the animation of series.
+     *
+     * @default false
+     */
     @Property(false)
     public enableAnimation: boolean;
 
-/**
- * perform animation of series based on animation duration.
- * @default '2000ms'
- */
+    /**
+     * perform animation of series based on animation duration.
+     *
+     * @default '2000ms'
+     */
     @Property('2000ms')
     public animationDuration: string;
-/**
- * avoid the overlap of dataLabels.
- * @default false
- */
+    /**
+     * avoid the overlap of dataLabels.
+     *
+     * @default false
+     */
     @Property(false)
     public enableSmartLabels: boolean;
-/**
- * width for series.
- * @default 1
- */
-     @Property(1)
+    /**
+     * width for series.
+     *
+     * @default 1
+     */
+    @Property(1)
     public width: number;
-/**
- * opacity for series.
- * @default 1
- */
-     @Property(1)
+    /**
+     * opacity for series.
+     *
+     * @default 1
+     */
+    @Property(1)
     public opacity: number;
 
-/**
- *  options for customizing marker
- */
-     @Complex<SeriesMarkerModel>({}, SeriesMarker)
+    /**
+     * options for customizing marker
+     */
+    @Complex<SeriesMarkerModel>({}, SeriesMarker)
     public marker: SeriesMarkerModel;
 
-/**
- *  options for customizing tooltip
- */
-   @Complex<SeriesTooltipModel>({}, SeriesTooltip)
+    /**
+     * options for customizing tooltip
+     */
+    @Complex<SeriesTooltipModel>({}, SeriesTooltip)
     public tooltip: SeriesTooltipModel;
 
 }

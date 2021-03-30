@@ -11,11 +11,18 @@ import { isNullOrUndefined as isNOU, Browser, closest, detach } from '@syncfusio
 export class SelectionCommands {
     /**
      * applyFormat method
+     *
+     * @param {Document} docElement - specifies the document
+     * @param {string} format - specifies the string value
+     * @param {Node} endNode - specifies the end node
+     * @param {string} value - specifies the string value
+     * @param {string} selector - specifies the string
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public static applyFormat(docElement: Document, format: string, endNode: Node, value?: string, selector?: string): void {
-        let validFormats: string[] = ['bold', 'italic', 'underline', 'strikethrough', 'superscript',
+        const validFormats: string[] = ['bold', 'italic', 'underline', 'strikethrough', 'superscript',
             'subscript', 'uppercase', 'lowercase', 'fontcolor', 'fontname', 'fontsize', 'backgroundcolor'];
         if (validFormats.indexOf(format) > -1) {
             if (format === 'backgroundcolor' && value === '') {
@@ -23,16 +30,16 @@ export class SelectionCommands {
             }
             let preventRestore: boolean = false;
             let domSelection: NodeSelection = new NodeSelection();
-            let nodeCutter: NodeCutter = new NodeCutter();
-            let isFormatted: IsFormatted = new IsFormatted();
+            const nodeCutter: NodeCutter = new NodeCutter();
+            const isFormatted: IsFormatted = new IsFormatted();
             let range: Range = domSelection.getRange(docElement);
-            let save: NodeSelection = domSelection.save(range, docElement);
-            let nodes: Node[] = range.collapsed ? domSelection.getSelectionNodeCollection(range) :
-            domSelection.getSelectionNodeCollectionBr(range);
+            const save: NodeSelection = domSelection.save(range, docElement);
+            const nodes: Node[] = range.collapsed ? domSelection.getSelectionNodeCollection(range) :
+                domSelection.getSelectionNodeCollectionBr(range);
             let isCollapsed: boolean = false;
             let isFormat: boolean = false;
             let isCursor: boolean = false;
-            let isFontStyle: boolean = (['fontcolor', 'fontname', 'fontsize', 'backgroundcolor'].indexOf(format) > -1);
+            const isFontStyle: boolean = (['fontcolor', 'fontname', 'fontsize', 'backgroundcolor'].indexOf(format) > -1);
             if (range.collapsed) {
                 if (nodes.length > 0) {
                     isCollapsed = true;
@@ -43,7 +50,7 @@ export class SelectionCommands {
                     range = nodeCutter.GetCursorRange(docElement, range, range.startContainer);
                     nodes.push(range.startContainer);
                 } else if (range.startContainer.nodeName.toLowerCase() !== 'td') {
-                    let cursorNode: Node = this.insertCursorNode(
+                    const cursorNode: Node = this.insertCursorNode(
                         docElement, domSelection, range, isFormatted, nodeCutter, format, value, endNode);
                     domSelection.endContainer = domSelection.startContainer = domSelection.getNodeArray(cursorNode, true);
                     const childNodes: NodeListOf<Node> = cursorNode.nodeName === 'BR' && cursorNode.parentNode.childNodes;
@@ -100,7 +107,9 @@ export class SelectionCommands {
                 }
                 domSelection = this.applySelection(nodes, domSelection, nodeCutter, index, isCollapsed);
             }
-            if (isIDevice()) { setEditFrameFocus(endNode as Element, selector); }
+            if (isIDevice()) {
+                setEditFrameFocus(endNode as Element, selector);
+            }
             if (!preventRestore) { save.restore(); }
             if (isSubSup) {
                 this.applyFormat(docElement, format, endNode);
@@ -117,8 +126,8 @@ export class SelectionCommands {
         format: string,
         value: string,
         endNode: Node): Node {
-        let cursorNodes: Node[] = domSelection.getNodeCollection(range);
-        let cursorFormat: Node = (cursorNodes.length > 0) ?
+        const cursorNodes: Node[] = domSelection.getNodeCollection(range);
+        const cursorFormat: Node = (cursorNodes.length > 0) ?
         (cursorNodes.length > 1 && range.startContainer === range.endContainer) ?
         this.getCursorFormat(isFormatted, cursorNodes, format, endNode) :
         isFormatted.getFormattedNode(cursorNodes[0], format, endNode) : null;
@@ -160,7 +169,7 @@ export class SelectionCommands {
         let splitNode: HTMLElement = null;
         if (!(range.startContainer === range.endContainer && range.startOffset === 0
             && range.endOffset === (range.startContainer as Text).length)) {
-            let nodeIndex: number[] = [];
+            const nodeIndex: number[] = [];
             let cloneNode: Node = nodes[index];
             do {
                 nodeIndex.push(domSelection.getIndex(cloneNode));
@@ -168,8 +177,8 @@ export class SelectionCommands {
             } while (cloneNode && (cloneNode !== formatNode));
             if (nodes[index].nodeName !== 'BR') {
                 cloneNode = splitNode = (isCursor && (formatNode.textContent.length - 1) === range.startOffset) ?
-                nodeCutter.SplitNode(range, formatNode as HTMLElement, true) as HTMLElement
-                : nodeCutter.GetSpliceNode(range, formatNode as HTMLElement) as HTMLElement;
+                    nodeCutter.SplitNode(range, formatNode as HTMLElement, true) as HTMLElement
+                    : nodeCutter.GetSpliceNode(range, formatNode as HTMLElement) as HTMLElement;
             }
             if (!isCursor) {
                 while (cloneNode && cloneNode.childNodes.length > 0 && ((nodeIndex.length - 1) >= 0)
@@ -177,12 +186,11 @@ export class SelectionCommands {
                     cloneNode = cloneNode.childNodes[nodeIndex[nodeIndex.length - 1]];
                     nodeIndex.pop();
                 }
-
                 if (nodes[index].nodeName !== 'BR') {
                     if (cloneNode.nodeType === 3 && !(isCursor && cloneNode.nodeValue === '')) {
                         nodes[index] = cloneNode;
                     } else {
-                        let divNode: HTMLDivElement = document.createElement('div');
+                        const divNode: HTMLDivElement = document.createElement('div');
                         divNode.innerHTML = '&#8203;';
                         if (cloneNode.nodeType !== 3) {
                             cloneNode.insertBefore(divNode.firstChild, cloneNode.firstChild);
@@ -209,21 +217,27 @@ export class SelectionCommands {
         }
         let bgStyle: string;
         if (format === 'fontsize') {
-            let bg: Element = closest(nodes[index].parentElement, 'span[style*=' + 'background-color' + ']');
+            const bg: Element = closest(nodes[index].parentElement, 'span[style*=' + 'background-color' + ']');
             if (!isNOU(bg)) {
                 bgStyle = (bg as HTMLElement).style.backgroundColor;
             }
         }
-        let formatNodeStyles: string = (formatNode as HTMLElement).getAttribute('style');
-        let formatNodeTagName: string = (formatNode as HTMLElement).tagName;
-        let child: Node[] = InsertMethods.unwrap(formatNode);
+        const formatNodeStyles: string = (formatNode as HTMLElement).getAttribute('style');
+        const formatNodeTagName: string = (formatNode as HTMLElement).tagName;
+        const child: Node[] = InsertMethods.unwrap(formatNode);
         if (child.length > 0 && isFontStyle) {
             for (let num: number = 0; num < child.length; num++) {
                 child[num] = InsertMethods.Wrap(
                     child[num] as HTMLElement,
                     this.GetFormatNode(format, value, formatNodeTagName, formatNodeStyles));
+                if (num === 0) {
+                    range.setStartBefore(child[num]);
+                }
+                else if (num === child.length - 1) {
+                    range.setEndAfter(child[num]);
+                }
             }
-            let currentNodeElem: HTMLElement = nodes[index].parentElement;
+            const currentNodeElem: HTMLElement = nodes[index].parentElement;
             if (!isNOU(fontStyle) && fontStyle !== '') {
                 currentNodeElem.style.fontSize = fontStyle;
             }
@@ -232,7 +246,7 @@ export class SelectionCommands {
             }
             if ((format === 'backgroundcolor' && !isNOU(fontStyle) && fontStyle !== '') &&
             currentNodeElem.parentElement.innerHTML === currentNodeElem.outerHTML) {
-                let curParentElem: HTMLElement = currentNodeElem.parentElement;
+                const curParentElem: HTMLElement = currentNodeElem.parentElement;
                 curParentElem.parentElement.insertBefore(currentNodeElem, curParentElem);
                 detach(curParentElem);
             }
@@ -274,7 +288,7 @@ export class SelectionCommands {
                     nodes[index].textContent = (format === 'uppercase') ? nodes[index].textContent.toLocaleUpperCase()
                         : nodes[index].textContent.toLocaleLowerCase();
                 } else if (!(isFontStyle === true && value === '')) {
-                    let element: HTMLElement = this.GetFormatNode(format, value);
+                    const element: HTMLElement = this.GetFormatNode(format, value);
                     if (format === 'fontsize') {
                         let liElement: HTMLElement = nodes[index].parentElement;
                         let parentElement: HTMLElement = nodes[index].parentElement;
@@ -287,7 +301,7 @@ export class SelectionCommands {
                             liElement.style.fontSize = value;
                         }
                         nodes[index] = this.applyStyles(nodes, index, element);
-                        let bg: Element = closest(nodes[index].parentElement, 'span[style*=' + 'background-color' + ']');
+                        const bg: Element = closest(nodes[index].parentElement, 'span[style*=' + 'background-color' + ']');
                         if (!isNOU(bg)) {
                             nodes[index].parentElement.style.backgroundColor = (bg as HTMLElement).style.backgroundColor;
                         }
@@ -300,7 +314,7 @@ export class SelectionCommands {
             }
         } else {
             if (format !== 'uppercase' && format !== 'lowercase') {
-                let element: HTMLElement = this.getInsertNode(docElement, range, format, value);
+                const element: HTMLElement = this.getInsertNode(docElement, range, format, value);
                 nodes[index] = element.firstChild;
                 nodeCutter.position = 1;
             } else {
@@ -311,17 +325,17 @@ export class SelectionCommands {
     }
     private static applyStyles(nodes: Node[], index: number, element: HTMLElement): Node {
         nodes[index] = (index === (nodes.length - 1)) || nodes[index].nodeName === 'BR' ?
-        InsertMethods.Wrap(nodes[index] as HTMLElement, element)
-        : InsertMethods.WrapBefore(nodes[index] as Text, element, true);
+            InsertMethods.Wrap(nodes[index] as HTMLElement, element)
+            : InsertMethods.WrapBefore(nodes[index] as Text, element, true);
         nodes[index] = this.getChildNode(nodes[index], element);
         return nodes[index];
     }
 
     private static getInsertNode(docElement: Document, range: Range, format: string, value: string): HTMLElement {
-        let element: HTMLElement = this.GetFormatNode(format, value);
+        const element: HTMLElement = this.GetFormatNode(format, value);
         element.innerHTML = '&#8203;';
         if (Browser.isIE) {
-            let frag: DocumentFragment = docElement.createDocumentFragment();
+            const frag: DocumentFragment = docElement.createDocumentFragment();
             frag.appendChild(element);
             range.insertNode(frag);
         } else {
@@ -375,45 +389,45 @@ export class SelectionCommands {
     private static GetFormatNode(format: string, value?: string, tagName?: string, styles?: string): HTMLElement {
         let node: HTMLElement;
         switch (format) {
-            case 'bold':
-                return document.createElement('strong');
-            case 'italic':
-                return document.createElement('em');
-            case 'underline':
-                node = document.createElement('span');
-                this.updateStyles(node, tagName, styles);
-                node.style.textDecoration = 'underline';
-                return node;
-            case 'strikethrough':
-                node = document.createElement('span');
-                this.updateStyles(node, tagName, styles);
-                node.style.textDecoration = 'line-through';
-                return node;
-            case 'superscript':
-                return document.createElement('sup');
-            case 'subscript':
-                return document.createElement('sub');
-            case 'fontcolor':
-                node = document.createElement('span');
-                this.updateStyles(node, tagName, styles);
-                node.style.color = value;
-                node.style.textDecoration = 'inherit';
-                return node;
-            case 'fontname':
-                node = document.createElement('span');
-                this.updateStyles(node, tagName, styles);
-                node.style.fontFamily = value;
-                return node;
-            case 'fontsize':
-                node = document.createElement('span');
-                this.updateStyles(node, tagName, styles);
-                node.style.fontSize = value;
-                return node;
-            default:
-                node = document.createElement('span');
-                this.updateStyles(node, tagName, styles);
-                node.style.backgroundColor = value;
-                return node;
+        case 'bold':
+            return document.createElement('strong');
+        case 'italic':
+            return document.createElement('em');
+        case 'underline':
+            node = document.createElement('span');
+            this.updateStyles(node, tagName, styles);
+            node.style.textDecoration = 'underline';
+            return node;
+        case 'strikethrough':
+            node = document.createElement('span');
+            this.updateStyles(node, tagName, styles);
+            node.style.textDecoration = 'line-through';
+            return node;
+        case 'superscript':
+            return document.createElement('sup');
+        case 'subscript':
+            return document.createElement('sub');
+        case 'fontcolor':
+            node = document.createElement('span');
+            this.updateStyles(node, tagName, styles);
+            node.style.color = value;
+            node.style.textDecoration = 'inherit';
+            return node;
+        case 'fontname':
+            node = document.createElement('span');
+            this.updateStyles(node, tagName, styles);
+            node.style.fontFamily = value;
+            return node;
+        case 'fontsize':
+            node = document.createElement('span');
+            this.updateStyles(node, tagName, styles);
+            node.style.fontSize = value;
+            return node;
+        default:
+            node = document.createElement('span');
+            this.updateStyles(node, tagName, styles);
+            node.style.backgroundColor = value;
+            return node;
         }
     }
 

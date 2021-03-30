@@ -1,0 +1,988 @@
+
+//default 
+$switch-wrapper-width: 34px !default;
+$switch-wrapper-height: 12px !default;
+$switch-font-family: '' !default;
+$switch-font-size: small !default;
+$switch-off-opacity: .42 !default;
+$switch-inner-width: 100% !default;
+$switch-handle-position: 18px !default;
+$switch-active-on-opacity: .54 !default;
+$switch-active-on-position-left: 0 !default;
+$switch-transition: transform 90ms cubic-bezier(.4, 0, .2, 1) !default;
+$switch-label-text-indent: -9999px !default;
+$switch-handle-radius: 50% !default;
+$switch-border-radius: 20px !default;
+$switch-handle-active: 100% !default;
+$switch-handle-margin-left: -18px !default;
+$switch-handle-margin-left-rtl: 18px !default;
+$switch-handle-height: 18px !default;
+$switch-handle-width: 18px !default;
+$switch-handle-top: 0 !default;
+$switch-handle-bottom: 0 !default;
+$switch-handle-left: 0 !default;
+$switch-inner-height: 100% !default;
+$switch-inner-top: 0 !default;
+$switch-inner-left: 0 !default;
+$switch-handle-transition: all .08s linear !default;
+$switch-inner-transition: all .08s linear !default;
+$switch-on-position-left: -100% !default;
+$switch-off-position-left: 0 !default;
+$switch-transition-delay: .05s !default;
+$switch-inner-border-style: none !default;
+$switch-line-height: 0 !default;
+$switch-handle-margin: auto 0 !default;
+$switch-inner-active: $accent !default;
+$switch-off-active-left: 100% !default;
+$switch-off-text-indent: -9999px !default;
+$switch-on-text-indent: -9999px !default;
+$switch-on-off-disabled-bg-color-opacity: .12 !default;
+$switch-focus-inner-box-shadow: none !default;
+$switch-focused-outline: none !default;
+$switch-focused-outline-active: none !default;
+$switch-focused-outline-offset: initial !default;
+$switch-focus-border-color-active: transparent !default;
+$switch-on-off-hover-bg-color: rgba($accent, .54) !default;
+$switch-inner-focus-off-bg: transparent !default;
+$switch-inner-focus-bg-color: transparent !default;
+$switch-checked-ripple-bg-color: rgba($grey-white, .12) !default;
+$switch-inner-bg: initial !default;
+$switch-hover-bg-color: transparent !default;
+$switch-ripple-bg-color: rgba($accent, .12) !default;
+$switch-active-background: $accent !default;
+$switch-on-bg-color: $accent !default;
+$switch-active-handle-bg: $accent !default;
+$switch-inner-hover-on-font-color: #fff !default;
+$switch-inner-active-border-color: transparent !default;
+$switch-disabled-font-color: transparent !default;
+$switch-border-disabled-bg-color: transparent !default;
+$switch-inner-hover-bg-color: transparent !default;
+$switch-inner-hover-border-color: transparent !default;
+$switch-hover-border: inherit !default;
+$switch-inner-focus-border: transparent !default;
+$switch-handle-off-hover-bg-color: $grey-500 !default;
+
+$switch-handle-bg-color: $grey-500 !default;
+$switch-handle-shadow-disabled: none !default;
+$switch-off-bg-color: rgba($grey-white, .42) !default;
+$switch-inner-active-bg: transparent !default;
+$switch-inner-on-font-color: #fff !default;
+$switch-inner-off-font-color: #fff !default;
+$switch-handle-disabled-bg-color: $grey-700 !default;
+$switch-handle-on-disabled-bg-color: $switch-handle-disabled-bg-color !default;
+$switch-on-off-disabled-bg-color: $grey-white !default;
+$switch-on-disabled-bg-color: $switch-on-off-disabled-bg-color !default;
+$switch-on-disabled-bg-color: $grey-white !default;
+$switch-handle-hover-bg-color: $accent !default;
+$switch-on-hover-bg-color: $accent !default;
+$switch-on-position-left-rtl: 0 !default;
+$switch-off-position-left-rtl: -100% !default;
+$switch-on-rtl: 100% !default;
+$switch-off-rtl: 0 !default;
+$switch-small-wrapper-height: 10px !default;
+$switch-small-wrapper-width: 26px !default;
+$switch-small-handle-width: 16px !default;
+$switch-small-handle-height: 16px !default;
+$switch-small-ripple-height: 36px !default;
+$switch-small-ripple-left: -10px !default;
+$switch-small-ripple-width: 36px !default;
+$switch-small-ripple-top: -10px !default;
+$switch-small-handle-active-left: 100% !default;
+$switch-small-handle-margin-left: -16px !default;
+$switch-small-handle-active-left-rtl: 16px !default;
+$switch-small-off-position-left-rtl: -100% !default;
+$switch-small-font-size: 9px !default;
+$switch-small-line-height: 14px !default;
+$switch-small-on-rtl: 100% !default;
+$switch-small-off-rtl: 0 !default;
+$switch-small-on-position-left-rtl: 0 !default;
+$switch-small-off-position-left-rtl: -100% !default;
+$switch-small-on-text-indent: -9999px !default;
+$switch-small-off-text-indent: -9999px !default;
+
+$switch-bigger-wrapper-height: 14px !default;
+$switch-bigger-wrapper-width: 36px !default;
+$switch-bigger-handle-width: 20px !default;
+$switch-bigger-handle-left: 0 !default;
+$switch-bigger-handle-height: 20px !default;
+$switch-bigger-handle-active-left: 100% !default;
+$switch-bigger-handle-margin-left: -20px !default;
+$switch-bigger-handle-margin-left-rtl: 20px !default;
+$switch-bigger-handle-active-left-rtl: 20px !default;
+$switch-bigger-font-size: 0 !default;
+$switch-bigger-line-height: 0 !default;
+$switch-bigger-on-text-indent: -9999px !default;
+$switch-bigger-off-text-indent: -9999px !default;
+$switch-bigger-on-rtl: 100% !default;
+$switch-bigger-off-rtl: 0 !default;
+$switch-bigger-on-position-left-rtl: 0 !default;
+$switch-bigger-off-position-left-rtl: -100% !default;
+$switch-bigger-handle-top: 0 !default;
+$switch-small-disabled-rtl-active-bg-color: $grey-white !default;
+$switch-bigger-ripple-height: 52px !default;
+$switch-bigger-ripple-left: -16px !default;
+$switch-bigger-ripple-top: -16px !default;
+$switch-bigger-ripple-width: 52px !default;
+
+$switch-bigger-small-wrapper-height: 12px !default;
+$switch-bigger-small-wrapper-width: 34px !default;
+$switch-bigger-small-handle-width: 18px !default;
+$switch-bigger-small-handle-height: 18px !default;
+$switch-bigger-small-ripple-height: 50px !default;
+$switch-bigger-small-ripple-left: -16px !default;
+$switch-bigger-small-ripple-width: 50px !default;
+$switch-bigger-small-ripple-top: -16px !default;
+$switch-bigger-small-handle-active-left: 100% !default;
+$switch-bigger-small-handle-margin-left: -18px !default;
+$switch-bigger-small-handle-margin-left-rtl: 18px !default;
+$switch-bigger-small-handle-active-left-rtl: 18px !default;
+$switch-bigger-small-off-position-left-rtl: -100% !default;
+$switch-bigger-small-font-size: 9px !default;
+$switch-bigger-small-line-height: 14px !default;
+$switch-bigger-small-on-rtl: 100% !default;
+$switch-bigger-small-off-rtl: 0 !default;
+$switch-bigger-small-on-position-left-rtl: 0 !default;
+$switch-bigger-small-handle-to: 0 !default;
+$switch-bigger-small-handle-left: 0 !default;
+$switch-bigger-small-on-text-indent: -9999px !default;
+$switch-bigger-small-off-text-indent: -9999px !default;
+//enddefault
+//dimensions
+$switch-handle-shadow: 0 3px 1px -2px rgba(0, 0, 0, .2),
+0 2px 2px 0 rgba(0, 0, 0, .14),
+0 1px 5px 0 rgba(0, 0, 0, .12);
+
+@include export-module('switch-layout') {
+  /*! switch layout */
+  .e-switch-wrapper,
+  .e-css.e-switch-wrapper {
+    cursor: pointer;
+    display: inline-block;
+    height: $switch-wrapper-height;
+    position: relative;
+    user-select: none;
+    width: $switch-wrapper-width;
+    @at-root {
+      & .e-switch {
+        // sass-lint:disable no-vendor-prefixes
+        -moz-appearance: none;
+        height: 1px;
+        opacity: 0;
+        position: absolute;
+        width: 1px;
+      }
+
+      & .e-switch-inner {
+        // sass-lint:disable no-vendor-prefixes
+        -ms-transition: $switch-inner-transition;
+        -webkit-transition: $switch-inner-transition;
+        border: $switch-inner-border-style;
+        border-radius: $switch-border-radius;
+        box-sizing: border-box;
+        height: $switch-inner-height;
+        left: $switch-inner-left;
+        overflow: hidden;
+        position: absolute;
+        top: $switch-inner-top;
+        transition: $switch-inner-transition;
+        width: $switch-inner-width;
+      }
+
+      & .e-switch-on,
+      & .e-switch-off {
+        // sass-lint:disable no-vendor-prefixes
+        -ms-transition: $switch-transition;
+        -webkit-transition: $switch-transition;
+        align-items: center;
+        border-radius: inherit;
+        display: flex;
+        font-family: $switch-font-family;
+        font-size: $switch-font-size;
+        height: $switch-inner-height;
+        justify-content: center;
+        left: $switch-inner-left;
+        position: absolute;
+        transition: $switch-transition;
+        width: $switch-inner-width;
+      }
+
+      & .e-switch-on {
+        left: $switch-on-position-left;
+        text-indent: $switch-on-text-indent;
+      }
+
+      & .e-switch-off {
+        left: $switch-off-position-left;
+        opacity: $switch-off-opacity;
+        text-indent: $switch-off-text-indent;
+      }
+
+      & .e-switch-handle {
+        // sass-lint:disable no-vendor-prefixes
+        -ms-transition: $switch-handle-transition;
+        -webkit-transition: $switch-handle-transition;
+        border-radius: $switch-handle-radius;
+        bottom: $switch-handle-bottom;
+        height: $switch-handle-height;
+        left: $switch-handle-left;
+        margin: $switch-handle-margin;
+        position: absolute;
+        top: $switch-handle-top;
+        transition: $switch-handle-transition;
+        width: $switch-handle-width;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-on {
+        left: $switch-active-on-position-left;
+        opacity: $switch-active-on-opacity;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-off {
+        left: $switch-off-active-left;
+      }
+
+      & .e-switch-handle.e-switch-active {
+        left: $switch-handle-active;
+        margin-left: $switch-handle-margin-left;
+      }
+
+      &.e-switch-disabled {
+        cursor: default;
+      }
+
+      & .e-ripple-container {
+        border-radius: 50%;
+        bottom: -9px;
+        height: 52px;
+        left: -17px;
+        pointer-events: none;
+        position: absolute;
+        top: -17px;
+        width: 52px;
+        z-index: 1;
+      }
+
+      &.e-rtl {
+        & .e-switch-handle {
+          left: $switch-handle-active;
+          margin-left: $switch-handle-margin-left;
+        }
+
+        & .e-switch-inner.e-switch-active .e-switch-on {
+          left: $switch-on-position-left-rtl;
+        }
+
+        & .e-switch-inner.e-switch-active .e-switch-off {
+          left: $switch-off-position-left-rtl;
+        }
+
+        & .e-switch-on {
+          left: $switch-on-rtl;
+        }
+
+        & .e-switch-off {
+          left: $switch-off-rtl;
+        }
+
+        & .e-switch-handle.e-switch-active {
+          border-radius: $switch-handle-radius;
+          height: $switch-handle-height;
+          left: $switch-handle-left;
+          margin: $switch-handle-margin;
+          position: absolute;
+          top: $switch-handle-top;
+          transition: $switch-handle-transition;
+          width: $switch-handle-width;
+        }
+    }
+
+      &.e-small {
+        height: $switch-small-wrapper-height;
+        width: $switch-small-wrapper-width;
+
+        & .e-switch-handle {
+          height: $switch-small-handle-height;
+          width: $switch-small-handle-width;
+        }
+
+        & .e-ripple-container {
+          border-radius: 50%;
+          height: $switch-small-ripple-height;
+          left: $switch-small-ripple-left;
+          pointer-events: none;
+          position: absolute;
+          top: $switch-small-ripple-top;
+          width: $switch-small-ripple-width;
+          z-index: 1;
+        }
+
+        & .e-switch-handle.e-switch-active {
+          left: $switch-small-handle-active-left;
+          margin-left: $switch-small-handle-margin-left;
+        }
+
+        & .e-switch-on,
+        & .e-switch-off {
+          font-size: $switch-small-font-size;
+        }
+
+        & .e-switch-on {
+          text-indent: $switch-small-on-text-indent;
+        }
+
+        & .e-switch-off {
+          text-indent: $switch-small-off-text-indent;
+        }
+
+        &.e-rtl {
+          & .e-switch-handle {
+            left: $switch-small-handle-active-left;
+            margin-left: $switch-small-handle-margin-left;
+          }
+
+          & .e-switch-handle {
+            height: $switch-small-handle-height;
+            width: $switch-small-handle-width;
+          }
+
+          & .e-switch-on {
+            left: $switch-small-on-rtl;
+            opacity: $switch-active-on-opacity;
+          }
+
+          & .e-switch-off {
+            left: $switch-small-off-rtl;
+          }
+
+          & .e-switch-inner.e-switch-active .e-switch-on {
+            left: $switch-small-on-position-left-rtl;
+          }
+
+          & .e-switch-inner.e-switch-active .e-switch-off {
+            left: $switch-small-off-position-left-rtl;
+          }
+
+          & .e-switch-handle.e-switch-active {
+            left: $switch-small-handle-active-left-rtl;
+           }
+        }
+    }
+  }
+}
+
+  #{if(&, '&', '*')}.e-small .e-switch-wrapper,
+  #{if(&, '&', '*')}.e-small.e-switch-wrapper,
+  #{if(&, '&', '*')}.e-small .e-css.e-switch-wrapper,
+  #{if(&, '&', '*')}.e-small.e-css.e-switch-wrapper {
+    height: $switch-small-wrapper-height;
+    width: $switch-small-wrapper-width;
+
+    & .e-switch-handle {
+      height: $switch-small-handle-height;
+      width: $switch-small-handle-width;
+    }
+
+    & .e-ripple-container {
+      border-radius: 50%;
+      height: $switch-small-ripple-height;
+      left: $switch-small-ripple-left;
+      pointer-events: none;
+      position: absolute;
+      top: $switch-small-ripple-top;
+      width: $switch-small-ripple-width;
+      z-index: 1;
+    }
+
+    & .e-switch-handle.e-switch-active {
+      left: $switch-small-handle-active-left;
+      margin-left: $switch-small-handle-margin-left;
+    }
+
+    & .e-switch-on,
+    & .e-switch-off {
+      font-size: $switch-small-font-size;
+    }
+
+    & .e-switch-on {
+      text-indent: $switch-small-on-text-indent;
+    }
+
+    & .e-switch-off {
+      text-indent: $switch-small-off-text-indent;
+    }
+
+    &.e-rtl {
+      & .e-switch-handle {
+        left: $switch-small-handle-active-left;
+        margin-left: $switch-small-handle-margin-left;
+      }
+
+      & .e-switch-handle {
+        height: $switch-small-handle-height;
+        width: $switch-small-handle-width;
+      }
+
+      & .e-switch-on {
+        left: $switch-small-on-rtl;
+        opacity: $switch-active-on-opacity;
+      }
+
+      & .e-switch-off {
+        left: $switch-small-off-rtl;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-on {
+        left: $switch-small-on-position-left-rtl;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-off {
+        left: $switch-small-off-position-left-rtl;
+      }
+
+      & .e-switch-handle.e-switch-active {
+        left: $switch-small-handle-active-left-rtl;
+       }
+    }
+}
+
+  #{if(&, '&', '*')}.e-bigger.e-small .e-switch-wrapper,
+  #{if(&, '&', '*')}.e-bigger.e-small.e-switch-wrapper,
+  #{if(&, '&', '*')}.e-bigger.e-small .e-css.e-switch-wrapper,
+  #{if(&, '&', '*')}.e-bigger.e-small.e-css.e-switch-wrapper {
+    height: $switch-bigger-small-wrapper-height;
+    width: $switch-bigger-small-wrapper-width;
+
+    & .e-switch-handle {
+      height: $switch-bigger-small-handle-height;
+      left: $switch-bigger-small-handle-left;
+      top: $switch-bigger-small-handle-to;
+      width: $switch-bigger-small-handle-width;
+    }
+
+    & .e-ripple-container {
+      border-radius: 50%;
+      height: $switch-bigger-small-ripple-height;
+      left: $switch-bigger-small-ripple-left;
+      pointer-events: none;
+      position: absolute;
+      top: $switch-bigger-small-ripple-top;
+      width: $switch-bigger-small-ripple-width;
+      z-index: 1;
+    }
+
+    & .e-switch-handle.e-switch-active {
+      left: $switch-bigger-small-handle-active-left;
+      margin-left: $switch-bigger-small-handle-margin-left;
+    }
+
+    & .e-switch-on,
+    & .e-switch-off {
+      font-size: $switch-bigger-small-font-size;
+    }
+
+    & .e-switch-on {
+      text-indent: $switch-bigger-small-on-text-indent;
+    }
+
+    & .e-switch-off {
+      text-indent: $switch-bigger-small-off-text-indent;
+    }
+
+    &.e-rtl {
+      & .e-switch-handle {
+        left: $switch-bigger-small-handle-active-left;
+        margin-left: $switch-bigger-small-handle-margin-left;
+        }
+
+      & .e-switch-handle {
+        height: $switch-bigger-small-handle-height;
+        width: $switch-bigger-small-handle-width;
+        }
+
+      & .e-switch-on {
+        left: $switch-bigger-small-on-rtl;
+        opacity: $switch-active-on-opacity;
+       }
+
+      & .e-switch-off {
+        left: $switch-bigger-small-off-rtl;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-on {
+        left: $switch-bigger-small-on-position-left-rtl;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-off {
+        left: $switch-bigger-small-off-position-left-rtl;
+      }
+
+      & .e-switch-handle.e-switch-active {
+        left: $switch-bigger-small-handle-active-left-rtl;
+        }
+      }
+    }
+
+  #{if(&, '&', '*')}.e-bigger .e-switch-wrapper,
+  #{if(&, '&', '*')}.e-bigger.e-switch-wrapper,
+  #{if(&, '&', '*')}.e-bigger .e-css.e-switch-wrapper,
+  #{if(&, '&', '*')}.e-bigger.e-css.e-switch-wrapper {
+    height: $switch-bigger-wrapper-height;
+    width: $switch-bigger-wrapper-width;
+
+    & .e-switch-handle {
+      height: $switch-bigger-handle-height;
+      left: $switch-bigger-handle-left;
+      top: $switch-bigger-handle-top;
+      width: $switch-bigger-handle-width;
+    }
+
+    & .e-switch-handle.e-switch-active {
+      left: $switch-bigger-handle-active-left;
+      margin-left: $switch-bigger-handle-margin-left;
+    }
+
+    & .e-switch-on,
+    & .e-switch-off {
+      font-size: $switch-bigger-font-size;
+    }
+
+    & .e-switch-on {
+      text-indent: $switch-bigger-on-text-indent;
+    }
+
+    & .e-switch-off {
+      text-indent: $switch-bigger-off-text-indent;
+    }
+
+    & .e-ripple-container {
+      height: $switch-bigger-ripple-height;
+      left: $switch-bigger-ripple-left;
+      top: $switch-bigger-ripple-top;
+      width: $switch-bigger-ripple-width;
+    }
+
+    &.e-rtl {
+      & .e-switch-handle {
+        height: $switch-bigger-handle-height;
+        left: $switch-bigger-handle-active-left;
+        margin-left: $switch-bigger-handle-margin-left;
+        top: $switch-bigger-handle-top;
+        width: $switch-bigger-handle-width;
+        }
+
+      & .e-switch-on {
+        left: $switch-bigger-on-rtl;
+        opacity: $switch-active-on-opacity;
+        }
+
+      & .e-switch-off {
+        left: $switch-bigger-off-rtl;
+        }
+
+      & .e-switch-inner.e-switch-active .e-switch-on {
+        left: $switch-bigger-on-position-left-rtl;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-off {
+        left: $switch-bigger-off-position-left-rtl;
+      }
+
+      & .e-switch-handle.e-switch-active {
+        left: $switch-bigger-handle-active-left-rtl;
+      }
+    }
+
+    &.e-small {
+      height: $switch-bigger-small-wrapper-height;
+      width: $switch-bigger-small-wrapper-width;
+
+      & .e-switch-handle {
+        height: $switch-bigger-small-handle-height;
+        left: $switch-bigger-small-handle-left;
+        top: $switch-bigger-small-handle-to;
+        width: $switch-bigger-small-handle-width;
+      }
+
+      & .e-ripple-container {
+        border-radius: 50%;
+        height: $switch-bigger-small-ripple-height;
+        left: $switch-bigger-small-ripple-left;
+        pointer-events: none;
+        position: absolute;
+        top: $switch-bigger-small-ripple-top;
+        width: $switch-bigger-small-ripple-width;
+        z-index: 1;
+      }
+
+      & .e-switch-handle.e-switch-active {
+        left: $switch-bigger-small-handle-active-left;
+        margin-left: $switch-bigger-small-handle-margin-left;
+      }
+
+      & .e-switch-on,
+      & .e-switch-off {
+        font-size: $switch-bigger-small-font-size;
+      }
+
+      & .e-switch-on {
+        text-indent: $switch-bigger-small-on-text-indent;
+      }
+
+      & .e-switch-off {
+        text-indent: $switch-bigger-small-off-text-indent;
+      }
+
+      &.e-rtl {
+        & .e-switch-handle {
+          left: $switch-bigger-small-handle-active-left;
+          margin-left: $switch-bigger-small-handle-margin-left;
+          }
+
+        & .e-switch-handle {
+          height: $switch-bigger-small-handle-height;
+          width: $switch-bigger-small-handle-width;
+          }
+
+        & .e-switch-on {
+          left: $switch-bigger-small-on-rtl;
+          opacity: $switch-active-on-opacity;
+         }
+
+        & .e-switch-off {
+          left: $switch-bigger-small-off-rtl;
+        }
+
+        & .e-switch-inner.e-switch-active .e-switch-on {
+          left: $switch-bigger-small-on-position-left-rtl;
+        }
+
+        & .e-switch-inner.e-switch-active .e-switch-off {
+          left: $switch-bigger-small-off-position-left-rtl;
+        }
+
+        & .e-switch-handle.e-switch-active {
+          left: $switch-bigger-small-handle-active-left-rtl;
+          }
+        }
+      }
+    }
+}
+@include export-module('switch-theme') {
+  /*! switch theme */
+  .e-switch-wrapper,
+  .e-css.e-switch-wrapper {
+    // sass-lint:disable no-vendor-prefixes
+    -webkit-tap-highlight-color: transparent;
+
+    & .e-switch-off {
+      background-color: $switch-off-bg-color;
+      color: $switch-inner-off-font-color;
+    }
+
+    & .e-switch-handle {
+      background-color: $switch-handle-bg-color;
+      box-shadow: $switch-handle-shadow;
+    }
+
+    & .e-switch-on {
+      background-color: $switch-on-bg-color;
+      color: $switch-inner-on-font-color;
+    }
+
+    & .e-switch-handle.e-switch-active {
+      background-color: $switch-active-handle-bg;
+    }
+
+    & .e-switch-inner.e-switch-active {
+      background-color: $switch-inner-active-bg;
+      border-color: $switch-inner-active-border-color;
+    }
+
+    & .e-switch-inner {
+      background-color: $switch-inner-bg;
+    }
+
+    & .e-ripple-element {
+      background-color: $switch-checked-ripple-bg-color;
+    }
+
+    & .e-ripple-check .e-ripple-element {
+      background-color: $switch-ripple-bg-color;
+    }
+
+    &.e-switch-disabled {
+      & .e-switch-handle.e-switch-active {
+        box-shadow: $switch-handle-shadow-disabled;
+        @if $skin-name == 'bootstrap4' {
+          background-color: $switch-inner-hover-bg-color;
+        }
+      }
+
+      & .e-switch-handle {
+        background-color: $switch-handle-disabled-bg-color;
+        box-shadow: $switch-handle-shadow-disabled;
+      }
+
+      & .e-switch-inner .e-switch-off {
+        background-color: $switch-on-off-disabled-bg-color;
+        border-color: $switch-handle-disabled-bg-color;
+        color: $switch-disabled-font-color;
+        opacity: $switch-on-off-disabled-bg-color-opacity;
+      }
+
+      & .e-switch-inner .e-switch-on {
+        background-color: $switch-on-disabled-bg-color;
+        color: $switch-disabled-font-color;
+        opacity: $switch-on-off-disabled-bg-color-opacity;
+      }
+
+      & .e-switch-inner {
+        background-color: $switch-on-off-disabled-bg-color;
+        border-color: $switch-border-disabled-bg-color;
+        opacity: $switch-on-off-disabled-bg-color-opacity;
+      }
+
+      &:hover {
+        & .e-switch-inner.e-switch-active {
+          background-color: $switch-on-off-disabled-bg-color;
+          border-color: $switch-border-disabled-bg-color;
+        }
+
+        & .e-switch-inner {
+          border-color: $switch-border-disabled-bg-color;
+          color: $switch-disabled-font-color;
+        }
+
+        & .e-switch-inner.e-switch-active .e-switch-on {
+          background-color: $switch-on-disabled-bg-color;
+          color: $switch-disabled-font-color;
+        }
+
+        & .e-switch-handle {
+          background-color: $switch-handle-disabled-bg-color;
+        }
+
+        & .e-switch-handle.e-switch-active {
+          @if $skin-name == 'bootstrap4' {
+            background-color: $switch-inner-hover-bg-color;
+          }
+          @else {
+            background-color: $switch-handle-disabled-bg-color;
+          }
+        }
+    }
+    }
+
+    &:hover {
+      & .e-switch-inner.e-switch-active {
+        background-color: $switch-inner-hover-bg-color;
+        border-color: $switch-inner-hover-border-color;
+      }
+
+      & .e-switch-inner {
+        background-color: $switch-hover-bg-color;
+        border-color: $switch-hover-border;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-on {
+        background-color: $switch-on-hover-bg-color;
+        color: $switch-inner-hover-on-font-color;
+      }
+
+      & .e-switch-handle.e-switch-active {
+        background-color: $switch-handle-hover-bg-color;
+      }
+      }
+
+    &:not(.e-switch-disabled):hover {
+      & .e-switch-handle:not(.e-switch-active) {
+        background-color: $switch-handle-off-hover-bg-color;
+      }
+    }
+
+    &.e-focus {
+      & .e-switch-inner {
+        background-color: $switch-inner-focus-off-bg;
+        border-color: $switch-inner-focus-border;
+        box-shadow: $switch-focus-inner-box-shadow;
+        outline: $switch-focused-outline;
+        outline-offset: $switch-focused-outline-offset;
+      }
+
+      & .e-switch-inner.e-switch-active {
+        background-color: $switch-inner-focus-bg-color;
+        border-color: $switch-focus-border-color-active;
+        outline: $switch-focused-outline-active;
+      }
+
+      & .e-ripple-container {
+        background-color: $switch-checked-ripple-bg-color;
+      }
+
+      & .e-ripple-check.e-ripple-container {
+        background-color: $switch-ripple-bg-color;
+      }
+      }
+
+    &.e-rtl {
+      &.e-focus {
+
+        & .e-switch-on {
+          @if $skin-name == 'bootstrap4' {
+            background-color: $switch-on-hover-bg-color;
+          }
+          @else {
+            background-color: $switch-on-off-hover-bg-color;
+          }
+        }
+
+        & .e-switch-off {
+          @if $skin-name == 'bootstrap4' {
+            background-color: $switch-off-bg-color;
+          }
+          @else {
+            background-color: $switch-on-off-hover-bg-color;
+          }
+        }
+
+        & .e-switch-inner.e-switch-active {
+          background-color: $switch-inner-focus-bg-color;
+          border-color: $switch-focus-border-color-active;
+          outline: $switch-focused-outline-active;
+        }
+      }
+
+      & .e-switch-on {
+        background-color: $switch-inner-active;
+      }
+
+      & .e-switch-handle {
+        background-color: $switch-handle-bg-color;
+        box-shadow: $switch-handle-shadow;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-off {
+        background-color: $switch-off-bg-color;
+      }
+
+      & .e-switch-handle.e-switch-active {
+        background-color: $switch-active-handle-bg;
+      }
+
+      & .e-switch-inner.e-switch-active {
+        background-color: $switch-inner-active-bg;
+        border-color: $switch-inner-active-border-color;
+      }
+
+      &:hover {
+        & .e-switch-inner.e-switch-active {
+          @if $skin-name == 'bootstrap4' {
+            background-color: $switch-on-hover-bg-color;
+          }
+          @else {
+            background-color: $switch-inner-hover-bg-color;
+          }
+          border-color: $switch-inner-hover-border-color;
+        }
+
+        & .e-switch-inner {
+          border-color: $switch-hover-border;
+        }
+
+        & .e-switch-inner.e-switch-active .e-switch-on {
+          background-color: $switch-on-hover-bg-color;
+        }
+
+        & .e-switch-handle.e-switch-active {
+          @if $skin-name == 'bootstrap4' {
+            background-color: $switch-inner-hover-bg-color;
+          }
+          @else {
+            background-color: $switch-handle-hover-bg-color;
+          }
+        }
+    }
+
+      &.e-switch-disabled {
+        & .e-switch-inner .e-switch-on {
+          background-color: $switch-on-disabled-bg-color;
+          color: $switch-disabled-font-color;
+          opacity: $switch-on-off-disabled-bg-color-opacity;
+        }
+
+        & .e-switch-inner .e-switch-off {
+          background-color: $switch-on-off-disabled-bg-color;
+          color: $switch-disabled-font-color;
+          opacity: $switch-on-off-disabled-bg-color-opacity;
+        }
+
+        & .e-switch-handle {
+          background-color: $switch-handle-disabled-bg-color;
+          box-shadow: $switch-handle-shadow-disabled;
+        }
+
+        & .e-switch-handle.e-switch-active {
+          @if $skin-name == 'bootstrap4' {
+            background-color: $switch-inner-hover-bg-color;
+          }
+          @else {
+            background-color: $switch-handle-on-disabled-bg-color;
+          }
+          box-shadow: $switch-handle-shadow-disabled;
+        }
+
+        & .e-switch-inner {
+          background-color: $switch-on-off-disabled-bg-color;
+          border-color: $switch-border-disabled-bg-color;
+          opacity: $switch-on-off-disabled-bg-color-opacity;
+        }
+
+        &:hover {
+          & .e-switch-inner.e-switch-active .e-switch-on {
+            background-color: $switch-on-disabled-bg-color;
+            color: $switch-disabled-font-color;
+          }
+
+          & .e-switch-inner.e-switch-active {
+            background-color: $switch-on-off-disabled-bg-color;
+            border-color: $switch-border-disabled-bg-color;
+          }
+
+          & .e-switch-inner {
+            border-color: $switch-border-disabled-bg-color;
+            color: $switch-disabled-font-color;
+          }
+
+          & .e-switch-handle.e-switch-active {
+            @if $skin-name == 'bootstrap4' {
+              background-color: $switch-inner-hover-bg-color;
+            }
+            @else {
+              background-color: $switch-handle-disabled-bg-color;
+            }
+          }
+
+          & .e-switch-handle {
+            background-color: $switch-handle-disabled-bg-color;
+          }
+        }
+        }
+    }
+
+    & .e-switch {
+      &:focus {
+        box-shadow: $switch-focus-inner-box-shadow;
+      }
+    }
+
+    &.e-small {
+      &.e-rtl.e-switch-disabled {
+        &:hover {
+          & .e-switch-inner.e-switch-active {
+            background-color: $switch-small-disabled-rtl-active-bg-color;
+          }
+         }
+        }
+    }
+}
+}

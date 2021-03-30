@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/dot-notation */
 import { Maps, ITooltipRenderEventArgs, tooltipRender, MapsTooltipOption, ITooltipRenderCompleteEventArgs } from '../index';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
 import { createElement, Browser, isNullOrUndefined, extend, remove } from '@syncfusion/ej2-base';
@@ -20,14 +21,13 @@ export class MapsTooltip {
     private currentTime: number;
     private clearTimeout: number;
     public tooltipTargetID: string;
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(maps: Maps) {
         this.maps = maps;
         this.tooltipId = this.maps.element.id + '_mapsTooltip';
         this.addEventListener();
     }
-    /* tslint:disable:no-string-literal */
-    //tslint:disable:max-func-body-length
-    //tslint:disable
+
     public renderTooltip(e: PointerEvent): void {
         let pageX: number; let pageY: number;
         let target: Element; let touchArg: TouchEvent;
@@ -46,38 +46,42 @@ export class MapsTooltip {
         }
         let option: TooltipSettingsModel;
         let currentData: string = '';
-        let targetId: string = target.id; let item: Object = {};
-        let tooltipEle: HTMLElement; let location: MapLocation;
-        let templateData: object = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const targetId: string = target.id; const item: any = {};
+        let tooltipEle: HTMLElement;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let templateData: any = [];
         let keyString: string;
         let index: number = targetId.indexOf('_LayerIndex_') > -1 && parseFloat(targetId.split('_LayerIndex_')[1].split('_')[0]);
-        let layer: LayerSettings = <LayerSettings>this.maps.layersCollection[index];
-        let tooltipContent: string[] = []; let markerFill: string;
-        location = getMousePosition(pageX, pageY, this.maps.svgObject);
+        const layer: LayerSettings = <LayerSettings>this.maps.layersCollection[index];
+        const tooltipContent: string[] = []; let markerFill: string;
+        const location: MapLocation = getMousePosition(pageX, pageY, this.maps.svgObject);
         this.tooltipTargetID = targetId;
-        let istooltipRender: boolean = (targetId.indexOf('_shapeIndex_') > -1)
+        const istooltipRender: boolean = (targetId.indexOf('_shapeIndex_') > -1)
             || (targetId.indexOf('_MarkerIndex_') > -1) || (targetId.indexOf('_BubbleIndex_') > -1);
         if (istooltipRender) {
             if (targetId.indexOf('_shapeIndex_') > -1) {
                 option = layer.tooltipSettings;
                 option.textStyle.fontFamily = this.maps.themeStyle.fontFamily || option.textStyle.fontFamily;
                 option.textStyle.opacity = this.maps.themeStyle.tooltipTextOpacity || option.textStyle.opacity;
-                let shape: number = parseInt(targetId.split('_shapeIndex_')[1].split('_')[0], 10);
+                const shape: number = parseInt(targetId.split('_shapeIndex_')[1].split('_')[0], 10);
                 if (isNullOrUndefined(layer.layerData) || isNullOrUndefined(layer.layerData[shape])) {
                     return;
                 }
-                let value: object = layer.layerData[shape]['property']; let isShape: boolean = false;
-                let properties: string[] = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const value: any = layer.layerData[shape]['property']; let isShape: boolean = false;
+                const properties: string[] = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
                     layer.shapePropertyPath : [layer.shapePropertyPath]) as string[];
                 if (!isNullOrUndefined(properties)) {
                     for (let k: number = 0; k < properties.length; k++) {
                         for (let i: number = 0; i < layer['dataSource']['length']; i++) {
-                            let data: Object[] = layer.dataSource[i];
-                            let dataPath: string = (layer.shapeDataPath.indexOf('.') > -1 ) ?
-                            (getValueFromObject(data, layer.shapeDataPath)) : data[layer.shapeDataPath];
-                            let dataPathValue: string = !isNullOrUndefined(dataPath) && isNaN(data[layer.shapeDataPath])
-                            ? dataPath.toLowerCase() : dataPath;
-                            let propertyValue: string = !isNullOrUndefined(value[properties[k]])
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const data: any[] = layer.dataSource[i];
+                            const dataPath: string = (layer.shapeDataPath.indexOf('.') > -1 ) ?
+                                (getValueFromObject(data, layer.shapeDataPath)) : data[layer.shapeDataPath];
+                            const dataPathValue: string = !isNullOrUndefined(dataPath) && isNaN(data[layer.shapeDataPath])
+                                ? dataPath.toLowerCase() : dataPath;
+                            const propertyValue: string = !isNullOrUndefined(value[properties[k]])
                                 && isNaN(value[properties[k]]) ? value[properties[k]].toLowerCase() :
                                 value[properties[k]];
                             if (dataPathValue === propertyValue) {
@@ -90,7 +94,9 @@ export class MapsTooltip {
                     index = isShape ? index : null;
                     if (!isNullOrUndefined(layer.dataSource[index])) {
                         templateData = JSON.parse(JSON.stringify(layer.dataSource[index]));
+                        // eslint-disable-next-line no-restricted-syntax
                         for (keyString in value) {
+                            // eslint-disable-next-line no-prototype-builtins
                             if (!templateData.hasOwnProperty(keyString)) {
                                 templateData[keyString] = value[keyString];
                             }
@@ -101,24 +107,24 @@ export class MapsTooltip {
                     if (layer.tooltipSettings.format) {
                         currentData = this.formatter(layer.tooltipSettings.format, templateData);
                     } else {
-                        let shapePath: string = checkPropertyPath(layer.shapeDataPath, layer.shapePropertyPath, value);
+                        const shapePath: string = checkPropertyPath(layer.shapeDataPath, layer.shapePropertyPath, value);
                         currentData = (!isNullOrUndefined(layer.dataSource) && !isNullOrUndefined(index)) ?
-                                      formatValue(((option.valuePath.indexOf('.') > -1) ?
-                                                    (getValueFromObject(layer.dataSource[index], option.valuePath)) :
-                                                   layer.dataSource[index][option.valuePath]),
-                                                  this.maps) : value[shapePath];
+                            formatValue(((option.valuePath.indexOf('.') > -1) ?
+                                (getValueFromObject(layer.dataSource[index], option.valuePath)) :
+                                layer.dataSource[index][option.valuePath]),
+                                        this.maps) : value[shapePath];
                         if (isNullOrUndefined(currentData)) {
                             currentData = (option.valuePath.indexOf('.') > -1) ?
-                            (getValueFromObject(value, option.valuePath)) : value[option.valuePath];
+                                (getValueFromObject(value, option.valuePath)) : value[option.valuePath];
                         }
                     }
                 }
                 //location.y = this.template(option, location);
 
             } else if (targetId.indexOf('_MarkerIndex_') > -1) {
-                let markerIdex: number = parseInt(targetId.split('_MarkerIndex_')[1].split('_')[0], 10);
-                let dataIndex: number = parseInt(targetId.split('_MarkerIndex_')[1].split('_')[2], 10);
-                let marker: MarkerSettingsModel = layer.markerSettings[markerIdex];
+                const markerIdex: number = parseInt(targetId.split('_MarkerIndex_')[1].split('_')[0], 10);
+                const dataIndex: number = parseInt(targetId.split('_MarkerIndex_')[1].split('_')[2], 10);
+                const marker: MarkerSettingsModel = layer.markerSettings[markerIdex];
                 option = marker.tooltipSettings;
                 templateData = marker.dataSource[dataIndex];
                 if (option.visible && !isNaN(markerIdex)) {
@@ -130,18 +136,18 @@ export class MapsTooltip {
                         } else {
                             currentData =
                             formatValue(((marker.tooltipSettings.valuePath. indexOf('.') > -1) ?
-                                         (getValueFromObject(marker.dataSource[dataIndex], marker.tooltipSettings.valuePath)) :
-                                         marker.dataSource[dataIndex][marker.tooltipSettings.valuePath]),
+                                (getValueFromObject(marker.dataSource[dataIndex], marker.tooltipSettings.valuePath)) :
+                                marker.dataSource[dataIndex][marker.tooltipSettings.valuePath]),
                                         this.maps
-                                        ) as string;
+                            ) as string;
                         }
                     }
                 }
                 //location.y = this.template(option, location);
             } else if (targetId.indexOf('_BubbleIndex_') > -1) {
-                let bubbleIndex: number = parseInt(targetId.split('_BubbleIndex_')[1].split('_')[0], 10);
-                let dataIndex: number = parseInt(targetId.split('_BubbleIndex_')[1].split('_')[2], 10);
-                let bubble: BubbleSettingsModel = layer.bubbleSettings[bubbleIndex];
+                const bubbleIndex: number = parseInt(targetId.split('_BubbleIndex_')[1].split('_')[0], 10);
+                const dataIndex: number = parseInt(targetId.split('_BubbleIndex_')[1].split('_')[2], 10);
+                const bubble: BubbleSettingsModel = layer.bubbleSettings[bubbleIndex];
                 option = bubble.tooltipSettings;
                 templateData = bubble.dataSource[dataIndex];
                 if (option.visible && !isNaN(dataIndex)) {
@@ -150,10 +156,10 @@ export class MapsTooltip {
                     } else {
                         currentData =
                         formatValue(((bubble.tooltipSettings.valuePath.indexOf('.') > -1) ?
-                                     (getValueFromObject(bubble.dataSource[dataIndex], bubble.tooltipSettings.valuePath)) :
-                                    bubble.dataSource[dataIndex][bubble.tooltipSettings.valuePath]),
+                            (getValueFromObject(bubble.dataSource[dataIndex], bubble.tooltipSettings.valuePath)) :
+                            bubble.dataSource[dataIndex][bubble.tooltipSettings.valuePath]),
                                     this.maps
-                                    ) as string;
+                        ) as string;
                     }
                 }
                 //location.y = this.template(option, location);
@@ -172,7 +178,7 @@ export class MapsTooltip {
                 option.template = option.template[Object.keys(option.template)[0]];
             }
             templateData = this.setTooltipContent(option, templateData);
-            let tooltipOption : MapsTooltipOption = {
+            const tooltipOption : MapsTooltipOption = {
                 location: location, text: tooltipContent, data: templateData,
                 textStyle: option.textStyle,
                 template: option.template
@@ -185,17 +191,17 @@ export class MapsTooltip {
                 element: target, eventArgs: e
             };
             if (this.maps.isBlazor) {
-                let tootipOption : MapsTooltipOption = {
+                const tootipOption : MapsTooltipOption = {
                     location: location
                 };
                 const blazorArgs: ITooltipRenderEventArgs = {
-                   name: tooltipRender,
-                   cancel: false,
-                   options: tootipOption,
-                   data: templateData,
-                   textStyle: tooltipArgs.options['textStyle'],
-                   fill: tooltipArgs.fill,
-                   element: target, eventArgs: e
+                    name: tooltipRender,
+                    cancel: false,
+                    options: tootipOption,
+                    data: templateData,
+                    textStyle: tooltipArgs.options['textStyle'],
+                    fill: tooltipArgs.fill,
+                    element: target, eventArgs: e
                 };
                 this.maps.trigger(tooltipRender, blazorArgs, (args: ITooltipRenderEventArgs) => {
                     if (!blazorArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
@@ -220,7 +226,7 @@ export class MapsTooltip {
                                 areaBounds: this.maps.mapAreaRect,
                                 textStyle: tooltipArgs.options['textStyle'],
                                 availableSize: this.maps.availableSize,
-                                fill: tooltipArgs.fill,
+                                fill: tooltipArgs.fill
                             });
                         } else {
                             this.svgTooltip = new Tooltip({
@@ -236,12 +242,14 @@ export class MapsTooltip {
                                 fill: blazorArgs.fill
                             });
                         }
-                        let tooltipElement: HTMLElement = tooltipEle;
+                        const tooltipElement: HTMLElement = tooltipEle;
                         this.svgTooltip.opacity = this.maps.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                         this.svgTooltip.appendTo(tooltipElement);
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         (this.maps as any).renderReactTemplates();
                     } else {
                         this.removeTooltip();
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         (this.maps as any).clearTemplate();
                     }
                 });
@@ -250,8 +258,8 @@ export class MapsTooltip {
                     if (!tooltipArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
                         (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1)) {
                         this.maps['isProtectedOnChange'] = true;
-                        tooltipArgs.options['textStyle']['color'] = this.maps.themeStyle.tooltipFontColor
-                            || tooltipArgs.options['textStyle']['color'];
+                        tooltipArgs.options['textStyle']['color'] = tooltipArgs.options['textStyle']['color']
+                            || this.maps.themeStyle.tooltipFontColor;
                         if (tooltipArgs.cancel) {
                             this.svgTooltip = new Tooltip({
                                 enable: true,
@@ -265,7 +273,7 @@ export class MapsTooltip {
                                 areaBounds: this.maps.mapAreaRect,
                                 textStyle: option['textStyle'],
                                 availableSize: this.maps.availableSize,
-                                fill: option.fill || this.maps.themeStyle.tooltipFillColor,
+                                fill: option.fill || this.maps.themeStyle.tooltipFillColor
                             });
                         } else {
                             this.svgTooltip = new Tooltip({
@@ -280,11 +288,12 @@ export class MapsTooltip {
                                 areaBounds: this.maps.mapAreaRect,
                                 textStyle: tooltipArgs.options['textStyle'],
                                 availableSize: this.maps.availableSize,
-                                fill: tooltipArgs.fill || this.maps.themeStyle.tooltipFillColor,
+                                fill: tooltipArgs.fill || this.maps.themeStyle.tooltipFillColor
                             });
                         }
                         this.svgTooltip.opacity = this.maps.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                         this.svgTooltip.appendTo(tooltipEle);
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         (this.maps as any).renderReactTemplates();
                         tooltipTemplateElement = document.getElementById(this.maps.element.id + '_mapsTooltip');
                         if (tooltipTemplateElement !== null && tooltipTemplateElement.innerHTML.indexOf('href') !== -1
@@ -295,14 +304,15 @@ export class MapsTooltip {
                         }
                     } else {
                         this.removeTooltip();
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         (this.maps as any).clearTemplate();
                     }
-               });
+                });
             }
             if (this.svgTooltip) {
                 this.maps.trigger('tooltipRenderComplete', {
                     cancel: false, name: 'tooltipRenderComplete', maps: this.maps, options: tooltipOption,
-                        element: this.svgTooltip.element
+                    element: this.svgTooltip.element
                 } as ITooltipRenderCompleteEventArgs);
             }
             if (this.svgTooltip) {
@@ -311,6 +321,7 @@ export class MapsTooltip {
                 } as ITooltipRenderCompleteEventArgs);
             } else {
                 this.removeTooltip();
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (this.maps as any).clearTemplate();
             }
         } else {
@@ -320,6 +331,7 @@ export class MapsTooltip {
                 this.maps.notify(click, this);
             } else {
                 this.removeTooltip();
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (this.maps as any).clearTemplate();
             }
         }
@@ -327,9 +339,15 @@ export class MapsTooltip {
 
     /**
      * To get content for the current toolitp
+     *
+     * @param {TooltipSettingsModel} options - Specifies the options for rendering tooltip
+     * @param {any} templateData - Specifies the template data
+     * @returns {any} - Returns the local data
      */
-    private setTooltipContent(options: TooltipSettingsModel, templateData: object): object {
-        let localData: object = extend({}, templateData, null, true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private setTooltipContent(options: TooltipSettingsModel, templateData: any): any {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let localData: any = extend({}, templateData, null, true);
         if (this.maps.format && !isNaN(Number(localData[options.valuePath]))) {
             localData[options.valuePath] = Internalize(this.maps, Number(localData[options.valuePath]));
         } else {
@@ -342,11 +360,12 @@ export class MapsTooltip {
         location.y = (tooltip.template) ? location.y + 10 : location.y;
         return location.y;
     }*/
-    private formatter(format: string, data: object = {}): string {
-        let keys: string[] = Object.keys(data);
-        for (let key of keys) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private formatter(format: string, data: any = {}): string {
+        const keys: string[] = Object.keys(data);
+        for (const key of keys) {
             format = (typeof data[key] === 'object') ? convertStringToValue('', format, data, this.maps) :
-             format.split('${' + key + '}').join(formatValue(data[key], this.maps));
+                format.split('${' + key + '}').join(formatValue(data[key], this.maps));
         }
         return format;
     }
@@ -363,6 +382,7 @@ export class MapsTooltip {
             remove(document.getElementsByClassName('EJ2-maps-Tooltip')[0]);
         }
     }
+    // eslint-disable-next-line valid-jsdoc
     /**
      * To bind events for tooltip module
      */
@@ -395,13 +415,17 @@ export class MapsTooltip {
     }
     /**
      * Get module name.
+     *
+     * @returns {string} Returns the module name
      */
     protected getModuleName(): string {
         return 'MapsTooltip';
     }
     /**
      * To destroy the tooltip.
-     * @return {void}
+     *
+     * @param {Maps} maps Specifies the maps instance
+     * @returns {void}
      * @private
      */
     public destroy(maps: Maps): void {

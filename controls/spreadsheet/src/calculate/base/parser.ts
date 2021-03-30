@@ -70,7 +70,12 @@ export class Parser {
     private specialSym: string[] = ['~', '@', '#', '?'];
     private isFailureTriggered: boolean = false;
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} text - specify the text
+     * @param {string} fkey - specify the formula key
+     * @returns {string} - returns parse.
+     */
     public parse(text: string, fkey?: string): string {
         if (this.parent.isTextEmpty(text)) {
             return text;
@@ -84,7 +89,7 @@ export class Parser {
         }
         text = text.split('-+').join('-'); text = text.split('--').join('+'); text = text.split('+-').join('-');
         text = text.split('-' + '(' + '-').join('(');
-        let formulaString: Map<string, string> = this.storeStrings(text);
+        const formulaString: Map<string, string> = this.storeStrings(text);
         text = this.storedStringText;
         let i: number = 0;
         if (isNullOrUndefined(formulaString)) {
@@ -96,13 +101,13 @@ export class Parser {
             text = text.toUpperCase();
         }
         if (text.indexOf(this.sheetToken) > -1) {
-            let family: CalcSheetFamilyItem = this.parent.getSheetFamilyItem(this.parent.grid);
+            const family: CalcSheetFamilyItem = this.parent.getSheetFamilyItem(this.parent.grid);
             if (family.sheetNameToParentObject != null && family.sheetNameToParentObject.size > 0) {
                 if (text[0] !== this.sheetToken.toString()) {
                     text = this.parent.setTokensForSheets(text);
                 }
-                let sheetToken: string = this.parent.getSheetToken(text.split(this.parent.tic).join(this.emptyStr));
-                let scopedRange: string = this.checkScopedRange(text.split('"').join(this.emptyStr).split(this.sheetToken).join(''));
+                const sheetToken: string = this.parent.getSheetToken(text.split(this.parent.tic).join(this.emptyStr));
+                const scopedRange: string = this.checkScopedRange(text.split('"').join(this.emptyStr).split(this.sheetToken).join(''));
                 if (isNullOrUndefined(sheetToken) && sheetToken !== '' && this.parent.namedRanges.size > 0 && scopedRange !== '') {
                     text = scopedRange;
                 }
@@ -112,7 +117,7 @@ export class Parser {
         try {
             text = this.formulaAutoCorrection(text);
         } catch (ex) {
-            let args: FailureEventArgs = {
+            const args: FailureEventArgs = {
                 message: ex.message, exception: ex, isForceCalculable: ex.formulaCorrection,
                 computeForceCalculate: false
             };
@@ -133,7 +138,7 @@ export class Parser {
         if (!this.ignoreBracet) {
             i = text.indexOf(')');
             while (i > -1) {
-                let k: number = text.substring(0, i).lastIndexOf('(');
+                const k: number = text.substring(0, i).lastIndexOf('(');
                 if (k === -1) {
                     throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.mismatched_parentheses]);
                 }
@@ -149,12 +154,12 @@ export class Parser {
                 try {
                     text = text.substring(0, k) + this.parseSimple(s) + text.substring(i + 1);
                 } catch (ex) {
-                    let args: FailureEventArgs = this.exceptionArgs(ex);
+                    const args: FailureEventArgs = this.exceptionArgs(ex);
                     if (!this.isFailureTriggered) {
                         this.parent.trigger('onFailure', args);
                         this.isFailureTriggered = true;
                     }
-                    let errorMessage: string = (typeof args.exception === 'string') ? args.exception : args.message;
+                    const errorMessage: string = (typeof args.exception === 'string') ? args.exception : args.message;
                     return (this.parent.getErrorLine(ex) ? '' : '#' + this.parent.getErrorLine(ex) + ': ') + errorMessage;
                 }
                 i = text.indexOf(')');
@@ -170,7 +175,7 @@ export class Parser {
         return text;
     }
 
-    /* tslint:disable-next-line:no-any */
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     private exceptionArgs(ex: any): FailureEventArgs {
         return {
             message: ex.message, exception: ex, isForceCalculable: ex.formulaCorrection,
@@ -179,8 +184,8 @@ export class Parser {
     }
 
     private formulaAutoCorrection(formula: string, args?: FailureEventArgs): string {
-        let arithemeticArr: string[] = ['*', '+', '-', '/', '^', '&'];
-        let logicalSym: string[] = ['>', '=', '<'];
+        const arithemeticArr: string[] = ['*', '+', '-', '/', '^', '&'];
+        const logicalSym: string[] = ['>', '=', '<'];
         let i: number = 0;
         let form: string = '';
         let op: string = '';
@@ -241,13 +246,13 @@ export class Parser {
                     } else {
                         throw this.parent.formulaErrorStrings[FormulasErrorsStrings.improper_formula];
                     }
-                    /* tslint:disable-next-line */
+                    /* eslint-disable-next-line */
                 } else if ((this.parent.isDigit(formula[i]) || formula[i] === this.parent.rightBracket || this.parent.storedData.has(formula[i].toUpperCase())) && (isNullOrUndefined(formula[i + 1]) || this.indexOfAny(formula[i + 1], arithemeticArr)) > -1) {
                     op = isNullOrUndefined(formula[i + 1]) ? this.emptyStr : formula[i + 1];
                     op = op === '&' ? '' : op;
                     form = formula[i - 1] === '-' ? form + formula[i - 1] + formula[i] + op : form + formula[i] + op;
                     i = i + 2;
-                    /* tslint:disable-next-line */
+                    /* eslint-disable-next-line */
                 } else if (this.indexOfAny(formula[i], logicalSym) > -1 && !isNullOrUndefined(formula[i - 1]) && !isNullOrUndefined(formula[i + 1])) {
                     form = form + formula[i];
                     i = i + 1;
@@ -256,11 +261,9 @@ export class Parser {
                         form = form + formula[i];
                         i = i + 1;
                     }
-                    /* tslint:disable-next-line */
                 } else if (formula[i] === this.parent.leftBracket || formula[i] === this.parent.rightBracket || formula[i] === '{' || formula[i] === '}' || formula[i] === '(' || formula[i] === ')') {
                     form = form + formula[i];
                     i = i + 1;
-                    /* tslint:disable-next-line */
                 } else if (this.parent.isUpperChar(formula[i]) || formula[i].indexOf(':') > -1 || formula[i] === this.parent.getParseArgumentSeparator() || ((formula[i] === '%') && (this.parent.isDigit(formula[i - 1])))) {
                     form = form + formula[i];
                     i = i + 1;
@@ -295,16 +298,16 @@ export class Parser {
         let scopedRange: string = this.emptyStr;
         let b: string = 'NaN';
         let id: number = this.parent.getSheetID(this.parent.grid);
-        let sheet: CalcSheetFamilyItem = this.parent.getSheetFamilyItem(this.parent.grid);
+        const sheet: CalcSheetFamilyItem = this.parent.getSheetFamilyItem(this.parent.grid);
         if (text[0] === this.sheetToken.toString()) {
-            let i: number = text.indexOf(this.sheetToken, 1);
-            let v: number = parseInt(text.substr(1, i - 1), 10);
+            const i: number = text.indexOf(this.sheetToken, 1);
+            const v: number = parseInt(text.substr(1, i - 1), 10);
             if (i > 1 && !this.parent.isNaN(v)) {
                 text = text.substring(i + 1);
                 id = v;
             }
         }
-        let token: string = '!' + id.toString() + '!';
+        const token: string = '!' + id.toString() + '!';
         if (sheet === null || sheet.sheetNameToToken == null) {
             return b;
         }
@@ -312,9 +315,9 @@ export class Parser {
             if (sheet.sheetNameToToken.get(key).toString() === token) {
                 let s: string = this.emptyStr;
                 this.parent.namedRanges.forEach((value: string, key: string) => {
-                    /* tslint:disable-next-line:no-any */
+                    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                     if (!isNullOrUndefined(this.parent.parentObject as any)) {
-                        /* tslint:disable-next-line:no-any */
+                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                         s = ((this.parent.parentObject as any).getActiveSheet().name + this.sheetToken + text).toUpperCase();
                     } else {
                         s = sheet.sheetNameToToken.get(key).toUpperCase();
@@ -336,7 +339,7 @@ export class Parser {
         let key: string = '';
         let storedString: Map<string, string> = null;
         let condition: string;
-        let ticLoc: number = tempString.indexOf(this.parent.tic);
+        const ticLoc: number = tempString.indexOf(this.parent.tic);
         if (ticLoc > -1) {
             i = tempString.indexOf(this.parent.tic);
             while (i > -1 && tempString.length > 0) {
@@ -371,7 +374,11 @@ export class Parser {
         return text;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} formulaText - specify the formula text
+     * @returns {string} - parse simple.
+     */
     public parseSimple(formulaText: string): string {
         let needToContinue: boolean = true;
         let text: string = formulaText;
@@ -397,20 +404,20 @@ export class Parser {
         text = text.split(this.stringOr).join(this.charOr);
         text = text.split(this.fixedReference).join(this.emptyStr);
         needToContinue = true;
-        let expTokenArray: string[] = [this.tokenEp, this.tokenEm];
-        let mulTokenArray: string[] = [this.tokenMultiply, this.tokenDivide];
-        let addTokenArray: string[] = [this.tokenAdd, this.tokenSubtract];
-        let mulCharArray: string[] = [this.charMultiply, this.charDivide];
-        let addCharArray: string[] = [this.charAdd, this.charSubtract];
-        let compareTokenArray: string[] = [this.tokenLess, this.tokenGreater, this.tokenEqual, this.tokenLessEq,
-        this.tokenGreaterEq, this.tokenNotEqual];
-        let compareCharArray: string[] = [this.charLess, this.charGreater, this.charEqual, this.charLessEq,
-        this.charGreaterEq, this.charNoEqual];
-        let expCharArray: string[] = [this.charEp, this.charEm];
-        let andTokenArray: string[] = [this.tokenAnd];
-        let andCharArray: string[] = [this.charAnd];
-        let orCharArray: string[] = [this.charOr];
-        let orTokenArray: string[] = [this.tokenOr];
+        const expTokenArray: string[] = [this.tokenEp, this.tokenEm];
+        const mulTokenArray: string[] = [this.tokenMultiply, this.tokenDivide];
+        const addTokenArray: string[] = [this.tokenAdd, this.tokenSubtract];
+        const mulCharArray: string[] = [this.charMultiply, this.charDivide];
+        const addCharArray: string[] = [this.charAdd, this.charSubtract];
+        const compareTokenArray: string[] = [this.tokenLess, this.tokenGreater, this.tokenEqual, this.tokenLessEq,
+            this.tokenGreaterEq, this.tokenNotEqual];
+        const compareCharArray: string[] = [this.charLess, this.charGreater, this.charEqual, this.charLessEq,
+            this.charGreaterEq, this.charNoEqual];
+        const expCharArray: string[] = [this.charEp, this.charEm];
+        const andTokenArray: string[] = [this.tokenAnd];
+        const andCharArray: string[] = [this.charAnd];
+        const orCharArray: string[] = [this.charOr];
+        const orTokenArray: string[] = [this.tokenOr];
         text = this.parseSimpleOperators(text, expTokenArray, expCharArray);
         text = this.parseSimpleOperators(text, orTokenArray, orCharArray);
         if (needToContinue) {
@@ -428,8 +435,13 @@ export class Parser {
         return text;
     }
 
-    /** @hidden */
-    // tslint:disable-next-line:max-func-body-length
+    /**
+     * @hidden
+     * @param {string} formulaText - specify the formula text
+     * @param {string[]} markers -  specify the markers
+     * @param {string[]} operators - specify the operators
+     * @returns {string} - parse Simple Operators
+     */
     public parseSimpleOperators(formulaText: string, markers: string[], operators: string[]): string {
         if (this.parent.getErrorStrings().indexOf(formulaText) > -1) {
             return formulaText;
@@ -440,10 +452,10 @@ export class Parser {
         for (let c: number = 0; c < operators.length; c++) {
             op = op + operators[c];
         }
-        /* tslint:disable */
+        /* eslint-disable */
         text = text.split("---").join("-").split("--").join("+").split(this.parent.getParseArgumentSeparator() + "-").join(this.parent.getParseArgumentSeparator() + "u").split(this.parent.leftBracket + "-").join(this.parent.leftBracket + "u").split("=-").join("=u");
         text = text.split(',+').join(',').split(this.parent.leftBracket + '+').join(this.parent.leftBracket).split('=+').join('=').split('>+').join('>').split('<+').join('<').split('/+').join('/').split('*+').join('*').split('++').join('+').split("*-").join("*u").toString();;
-        /* tslint:enable */
+        /* eslint-enable */
         if (text.length > 0 && text[0] === '-') {
             text = text.substring(1).split('-').join(this.tokenOr);
             text = '0-' + text;
@@ -462,12 +474,12 @@ export class Parser {
                     let right: string = '';
                     let leftIndex: number = 0;
                     let rightIndex: number = 0;
-                    let isNotOperator: boolean = text[i] === this.charNOTop;
+                    const isNotOperator: boolean = text[i] === this.charNOTop;
                     let j: number = 0;
                     if (!isNotOperator) {
                         j = i - 1;
                         if (text[j] === this.parent.arithMarker) {
-                            let k: number = this.findLeftMarker(text.substring(0, j - 1));
+                            const k: number = this.findLeftMarker(text.substring(0, j - 1));
                             if (k < 0) {
                                 throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.cannot_parse]);
                             }
@@ -491,7 +503,7 @@ export class Parser {
                             left = this.parent.substring(text, k, j - k + 1);
                             leftIndex = k;
                         } else if (text[j] === this.parent.tic[0]) {
-                            let l: number = text.substring(0, j - 1).lastIndexOf(this.parent.tic);
+                            const l: number = text.substring(0, j - 1).lastIndexOf(this.parent.tic);
                             if (l < 0) {
                                 throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.cannot_parse]);
                             }
@@ -507,7 +519,7 @@ export class Parser {
                                 j = j - 1;
                             }
                             if (j > -1 && period && text[j] === this.parent.getParseDecimalSeparator()) {
-                                /* tslint:disable-next-line */
+                                /* eslint-disable-next-line */
                                 throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.number_contains_2_decimal_points]);
                             }
                             j = j + 1;
@@ -555,8 +567,8 @@ export class Parser {
                                     left = this.parent.substring(text, j, i - j);
                                     left = this.parent.getCellFrom(left);
                                 } else {
-                                j = j + 1;
-                                left = this.parent.substring(text, j, i - j);
+                                    j = j + 1;
+                                    left = this.parent.substring(text, j, i - j);
                                 }
                                 this.parent.updateDependentCell(left);
                                 leftIndex = j;
@@ -570,7 +582,7 @@ export class Parser {
                         leftIndex = i;
                     }
                     if (i === text.length - 1) {
-                        /* tslint:disable-next-line */
+                        /* eslint-disable-next-line */
                         throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.expression_cannot_end_with_an_operator]);
                     } else {
                         j = i + 1;
@@ -579,14 +591,14 @@ export class Parser {
                             j = j + 1;
                         }
                         if (text[j] === this.parent.tic[0]) {
-                            let k: number = text.substring(j + 1).indexOf(this.parent.tic);
+                            const k: number = text.substring(j + 1).indexOf(this.parent.tic);
                             if (k < 0) {
                                 throw this.parent.formulaErrorStrings[FormulasErrorsStrings.cannot_parse];
                             }
                             right = this.parent.substring(text, j, k + 2);
                             rightIndex = k + j + 2;
                         } else if (text[j] === this.parent.arithMarker) {
-                            let k: number = this.findRightMarker(text.substring(j + 1));
+                            const k: number = this.findRightMarker(text.substring(j + 1));
                             if (k < 0) {
                                 throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.cannot_parse]);
                             }
@@ -611,11 +623,10 @@ export class Parser {
                                 right = 'u' + right;
                             }
                             rightIndex = k + 1;
-                            /* tslint:disable-next-line */
                         } else if (this.parent.isDigit(text[j]) || text[j] === this.parent.getParseDecimalSeparator()) {
                             let period: boolean = (text[j] === this.parent.getParseDecimalSeparator());
                             j = j + 1;
-                            /* tslint:disable-next-line */
+                            /* eslint-disable-next-line */
                             while (j < text.length && (this.parent.isDigit(text[j]) || (!period && text[j] === this.parent.getParseDecimalSeparator()))) {
                                 if (text[j] === this.parent.getParseDecimalSeparator()) {
                                     period = true;
@@ -704,7 +715,7 @@ export class Parser {
                             rightIndex = j + 1;
                         }
                     }
-                    let p: number = op.indexOf(text[i]);
+                    const p: number = op.indexOf(text[i]);
                     let s: string = this.parent.arithMarker + left + right + markers[p] + this.parent.arithMarker;
                     if (leftIndex > 0) {
                         s = text.substring(0, leftIndex) + s;
@@ -721,7 +732,7 @@ export class Parser {
                     let isCharacter: boolean = true;
                     let checkLetter: boolean = true;
                     let oneTokenFound: boolean = false;
-                    let textLen: number = text.length;
+                    const textLen: number = text.length;
                     for (let k: number = 0; k < textLen; ++k) {
                         if (text[k] === this.sheetToken) {
                             if (k > 0 && !oneTokenFound) {
@@ -760,7 +771,12 @@ export class Parser {
         }
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} text - specify the text
+     * @param {string[]} operators - specify the operators
+     * @returns {number} - returns index.
+     */
     public indexOfAny(text: string, operators: string[]): number {
         for (let i: number = 0; i < text.length; i++) {
             if (operators.indexOf(text[i]) > -1) {
@@ -770,7 +786,11 @@ export class Parser {
         return -1;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} text - specify the text
+     * @returns {number} - find Left Marker.
+     */
     public findLeftMarker(text: string): number {
         let ret: number = -1;
         if (text.indexOf(this.parent.arithMarker) > -1) {
@@ -789,7 +809,11 @@ export class Parser {
         return ret;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} text - specify the text.
+     * @returns {number} - find Right Marker.
+     */
     public findRightMarker(text: string): number {
         let ret: number = -1;
         if (text.indexOf(this.parent.arithMarker) > -1) {
@@ -808,7 +832,12 @@ export class Parser {
         return ret;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} formula - specify the formula
+     * @param {string} fKey - specify the formula key.
+     * @returns {string} - parse formula.
+     */
     public parseFormula(formula: string, fKey?: string): string {
         if (formula.length > 0 && formula[0] === this.parent.getFormulaCharacter()) {
             formula = formula.substring(1);
@@ -825,19 +854,23 @@ export class Parser {
             formula = this.parse(formula.trim(), fKey);
             this.isFormulaParsed = true;
         } catch (ex) {
-            let args: FailureEventArgs = this.exceptionArgs(ex);
+            const args: FailureEventArgs = this.exceptionArgs(ex);
             if (!this.isFailureTriggered) {
                 this.parent.trigger('onFailure', args);
                 this.isFailureTriggered = true;
             }
-            let errorMessage: string = (typeof args.exception === 'string') ? args.exception : args.message;
+            const errorMessage: string = (typeof args.exception === 'string') ? args.exception : args.message;
             formula = (isNullOrUndefined(this.parent.getErrorLine(ex)) ? '' : '#' + this.parent.getErrorLine(ex) + ': ') + errorMessage;
             this.isError = true;
         }
         return formula;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} formula - specify the formula
+     * @returns {string} - mark library formulas.
+     */
     public markLibraryFormulas(formula: string): string {
         let bracCount: number = 0;
         let rightParens: number = formula.indexOf(')');
@@ -862,8 +895,8 @@ export class Parser {
                 while (i > -1 && (this.parent.isChar(formula[i]))) {
                     i--;
                 }
-                let len: number = leftParens - i - 1;
-                let libFormula: string = this.parent.substring(formula, i + 1, len);
+                const len: number = leftParens - i - 1;
+                const libFormula: string = this.parent.substring(formula, i + 1, len);
                 if (len > 0 && !isNullOrUndefined(this.parent.getFunction(libFormula))) {
                     if (this.parent.substring(formula, i + 1, len) === 'AREAS') {
                         this.ignoreBracet = true;
@@ -876,7 +909,7 @@ export class Parser {
                         substr = substr.split('(').join('').split(')').join('');
                         substr = '(' + this.formulaAutoCorrection(substr, args) + ')';
                     } catch (ex) {
-                        let args: FailureEventArgs = {
+                        const args: FailureEventArgs = {
                             message: ex.message, exception: ex,
                             isForceCalculable: ex.formulaCorrection, computeForceCalculate: false
                         };
@@ -903,8 +936,7 @@ export class Parser {
                     substr = this.markNamedRanges(substr);
                     substr = this.swapInnerParens(substr);
                     substr = this.addParensToArgs(substr);
-                    let id: number = substr.lastIndexOf(this.parent.getParseArgumentSeparator());
-                    let k: number = 0;
+                    const id: number = substr.lastIndexOf(this.parent.getParseArgumentSeparator());
                     if (id === -1) {
                         if (substr.length > 2 && substr[0] === '(' && substr[substr.length - 1] === ')') {
                             if (substr[1] !== '{' && substr[1] !== '(') {
@@ -937,21 +969,28 @@ export class Parser {
         return formula;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} fSubstr - specify the string
+     * @returns {string} - swap inner parens.
+     */
     public swapInnerParens(fSubstr: string): string {
         if (fSubstr.length > 2) {
-            /* tslint:disable-next-line */
             fSubstr = fSubstr[0] + fSubstr.substr(1, fSubstr.length - 2).split('(').join('{').split(')').join('}') + fSubstr[fSubstr.length - 1];
         }
         return fSubstr;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} fSubstr - specify the string
+     * @returns {string} - add parens to args.
+     */
     public addParensToArgs(fSubstr: string): string {
         if (fSubstr.length === 0) {
             return this.emptyStr;
         }
-        let rightSides: string[] = [];
+        const rightSides: string[] = [];
         rightSides.push(this.parent.getParseArgumentSeparator());
         rightSides.push(this.parent.rightBracket);
         let id: number = fSubstr.lastIndexOf(this.parent.getParseArgumentSeparator());
@@ -962,7 +1001,7 @@ export class Parser {
                     fSubstr = fSubstr.substring(0, fSubstr.length - 1) + '}' + fSubstr.substring(fSubstr.length - 1);
                     fSubstr = fSubstr[0] + '{' + fSubstr.substring(1);
                 } else {
-                    let marker: string[] = ['+', '-', '*', '/'];
+                    const marker: string[] = ['+', '-', '*', '/'];
                     id = this.lastIndexOfAny(fSubstr, marker);
                     if (k === 0 && fSubstr[fSubstr.length - 1] === ')') {
                         k = fSubstr.length - 1;
@@ -1001,7 +1040,12 @@ export class Parser {
         return fSubstr;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} text - specify the text
+     * @param {string[]} operators - specify the operators
+     * @returns {number} - returns last Index Of Any.
+     */
     private lastIndexOfAny(text: string, operators: string[]): number {
         for (let i: number = text.length - 1; i > -1; i--) {
             if (operators.indexOf(text[i]) > -1) {
@@ -1011,9 +1055,13 @@ export class Parser {
         return -1;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} formula - specify the formula
+     * @returns {string} - mark Named Ranges.
+     */
     public markNamedRanges(formula: string): string {
-        let markers: string[] = [')', this.parent.getParseArgumentSeparator(), '}', '+', '-', '*', '/', '<', '>', '=', '&'];
+        const markers: string[] = [')', this.parent.getParseArgumentSeparator(), '}', '+', '-', '*', '/', '<', '>', '=', '&'];
         let i: number = (formula.length > 0 && (formula[0] === '(' || formula[0] === '{')) ? 1 : 0;
         if (formula.indexOf('#N/A') > -1) {
             formula = formula.split('#N/A').join('#N~A');
@@ -1037,7 +1085,7 @@ export class Parser {
                     this.findNamedRange = true;
                     s = scopedRange;
                 } else if (this.parent.substring(formula, i, end).startsWith(this.sheetToken.toString())) {
-                    let formulaStr: number = this.parent.substring(formula, i, end).indexOf(this.sheetToken, 1);
+                    //let formulaStr: number = this.parent.substring(formula, i, end).indexOf(this.sheetToken, 1);
                     // if (formulaStr > 1) {
                     //     s = this.parent.namedRanges.get(this.parent.substring
                     // (formula.substring(i), formulaStr + 1, end - formulaStr - 1));
@@ -1088,7 +1136,7 @@ export class Parser {
                 if (!isNullOrUndefined(s) && s !== this.emptyStr) {
                     s = s.toUpperCase(); s = this.parent.setTokensForSheets(s); s = this.markLibraryFormulas(s);
                     if (s != null) {
-                        let val: string = formula.substring(i);
+                        const val: string = formula.substring(i);
                         if (val[val.length - 1] === ')') {
                             formula = formula.substring(0, i) + s + ')';
                         } else {
@@ -1109,11 +1157,15 @@ export class Parser {
         return formula;
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} text - specify the text.
+     * @returns {string} - check For Named Range And Key Value
+     */
     public checkForNamedRangeAndKeyValue(text: string): string {
         let scopedRange: string = this.emptyStr;
         if (text.indexOf('[') > -1) {
-            let namerangeValue: string = this.getTableRange(text);
+            const namerangeValue: string = this.getTableRange(text);
             if (!isNullOrUndefined(namerangeValue)) {
                 this.findNamedRange = true;
                 text = namerangeValue;
@@ -1125,12 +1177,11 @@ export class Parser {
             text = scopedRange;
         } else {
             if (text.indexOf(this.sheetToken) > -1) {
-                let sheet: CalcSheetFamilyItem = this.parent.getSheetFamilyItem(this.parent.grid);
-                /* tslint:disable-next-line */
+                const sheet: CalcSheetFamilyItem = this.parent.getSheetFamilyItem(this.parent.grid);
                 let value: string = text.split('"').join(this.emptyStr);
                 value = value.substr(0, value.indexOf(this.sheetToken));
                 if (sheet.sheetNameToToken.has(value.toUpperCase())) {
-                    /* tslint:disable */
+                    /* eslint-disable */
                     let sheetIndex: number = parseInt(sheet.sheetNameToToken.get(value.toUpperCase()).split(this.sheetToken).join(this.emptyStr));
                     // if (!ej.isNullOrUndefined(this.parentObject) && this.parentObject.pluginName == "ejSpreadsheet") {
                     //     var name = text.replace(value, this.parentObject.model.sheets[(sheetIndex + 1)].sheetInfo.text.toUpperCase()).split("'").join(this._string_empty);
@@ -1145,7 +1196,6 @@ export class Parser {
                 text = 'A' + this.parent.colIndex(text);
             }
             if (this.parent.namedRanges.size > 0 && this.parent.namedRanges.has(text.toUpperCase())) {
-                /* tslint:disable-next-line:no-any */
                 if (!isNullOrUndefined(this.parent.parentObject as any)) {
                     text = this.parse(this.parent.namedRanges.get(text.toUpperCase()));
                 }

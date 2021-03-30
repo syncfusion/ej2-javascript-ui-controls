@@ -23,7 +23,7 @@ import {
 } from '../editor/editor-helper';
 import { TextHelper, TextHeightInfo } from './text-helper';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { Selection, CommentReviewPane, } from '../index';
+import { Selection, CommentReviewPane } from '../index';
 import { TextPosition } from '../selection/selection-helper';
 import { Zoom } from './zooming';
 import { Dialog, createSpinner } from '@syncfusion/ej2-popups';
@@ -40,7 +40,7 @@ import { FormFieldPopUp } from '../dialogs/form-field-popup';
 import { Revision } from '../track-changes/track-changes';
 import { TrackChangesPane } from '../track-changes/track-changes-pane';
 
-/** 
+/**
  * @private
  */
 export class DocumentHelper {
@@ -161,13 +161,13 @@ export class DocumentHelper {
      * @private
      */
     public zoomModule: Zoom;
-    // Event 
+    // Event
     /**
      * @private
      */
     public isMouseDown: boolean = false;
     private isMouseEntered: boolean = false;
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private scrollMoveTimer: any = 0;
     /**
      * @private
@@ -364,7 +364,7 @@ export class DocumentHelper {
      * @private
      */
     public isPageField: boolean = false;
-    /** 
+    /**
      * @private
      */
     public mouseDownOffset: Point = new Point(0, 0);
@@ -381,6 +381,7 @@ export class DocumentHelper {
     /**
      * If movecaretposition is 1, Home key is pressed
      * If moveCaretPosition is 2, End key is pressed
+     *
      * @private
      */
     public moveCaretPosition: number = 0;
@@ -417,21 +418,25 @@ export class DocumentHelper {
     //Document Protection Properties Starts
     /**
      * preserve the format
+     *
      * @private
      */
     public restrictFormatting: boolean = false;
     /**
      * preserve the document protection type either readonly or no protection
+     *
      * @private
      */
     public protectionType: ProtectionType = 'NoProtection';
     /**
      * Preserve the password protection is enforced or not
+     *
      * @private
      */
     public isDocumentProtected: boolean = false;
     /**
      * preserve the hash value of password
+     *
      * @private
      */
     public hashValue: string = '';
@@ -533,9 +538,11 @@ export class DocumentHelper {
     public isFootnoteWidget: boolean = false;
     /**
      * Gets visible bounds.
+     *
      * @private
+     * @returns {Rect} - Returns visible bounds.
      */
-    get visibleBounds(): Rect {
+    public get visibleBounds(): Rect {
         return this.visibleBoundsIn;
     }
     //Document Protection Properties Ends
@@ -543,9 +550,11 @@ export class DocumentHelper {
     //#region Properties
     /**
      * Gets container canvas.
+     *
      * @private
+     * @returns {HTMLCanvasElement} - Returns page canvas.
      */
-    get containerCanvas(): HTMLCanvasElement {
+    public get containerCanvas(): HTMLCanvasElement {
         if (isNullOrUndefined(this.containerCanvasIn)) {
             this.containerCanvasIn = document.createElement('canvas');
             this.containerCanvasIn.getContext('2d').save();
@@ -558,9 +567,11 @@ export class DocumentHelper {
     }
     /**
      * Gets selection canvas.
+     *
      * @private
+     * @returns {HTMLCanvasElement} - Returns selection canvas.
      */
-    get selectionCanvas(): HTMLCanvasElement {
+    public get selectionCanvas(): HTMLCanvasElement {
         if (isNullOrUndefined(this.selectionCanvasIn)) {
             this.selectionCanvasIn = document.createElement('canvas');
             this.selectionCanvas.getContext('2d').save();
@@ -573,23 +584,29 @@ export class DocumentHelper {
     }
     /**
      * Gets container context.
+     *
      * @private
+     * @returns {CanvasRenderingContext2D} - Returns page canvas context.
      */
-    get containerContext(): CanvasRenderingContext2D {
+    public get containerContext(): CanvasRenderingContext2D {
         return this.containerCanvas.getContext('2d');
     }
     /**
      * Gets selection context.
+     *
      * @private
+     * @returns {CanvasRenderingContext2D} - Returns selection canvas context.
      */
-    get selectionContext(): CanvasRenderingContext2D {
+    public get selectionContext(): CanvasRenderingContext2D {
         return this.selectionCanvas.getContext('2d');
     }
 
     /**
      * Gets the current rendering page.
+     *
+     * @returns {Page} - Returns current rendering page.
      */
-    get currentRenderingPage(): Page {
+    public get currentRenderingPage(): Page {
         if (this.pages.length === 0) {
             return undefined;
         }
@@ -597,51 +614,61 @@ export class DocumentHelper {
     }
     /**
      * Gets or sets zoom factor.
+     *
      * @private
+     * @returns {number} - Returns zoom factor value.
      */
-    get zoomFactor(): number {
+    public get zoomFactor(): number {
         return this.zoomFactorInternal;
     }
-    set zoomFactor(value: number) {
+    public set zoomFactor(value: number) {
         if (this.zoomFactorInternal !== value) {
             this.preZoomFactor = this.zoomFactor;
             this.zoomFactorInternal = value;
-            this.zoomModule.setZoomFactor(value);
+            this.zoomModule.setZoomFactor();
             this.owner.zoomFactor = value;
         }
     }
     /**
      * Gets the selection.
+     *
      * @private
+     * @returns {Selection} - Returns selection module.
      */
-    get selection(): Selection {
+    public get selection(): Selection {
         return this.owner.selection;
     }
     /**
      * Gets or sets selection start page.
+     *
      * @private
+     * @returns {Page} - Return selection start page.
      */
-    get selectionStartPage(): Page {
+    public get selectionStartPage(): Page {
         return this.selectionStartPageIn;
     }
-    set selectionStartPage(value: Page) {
+    public set selectionStartPage(value: Page) {
         this.selectionStartPageIn = value;
     }
     /**
      * Gets or sets selection end page.
+     *
      * @private
+     * @returns {Page} - Return selection end page.
      */
-    get selectionEndPage(): Page {
+    public get selectionEndPage(): Page {
         return this.selectionEndPageIn;
     }
-    set selectionEndPage(value: Page) {
+    public set selectionEndPage(value: Page) {
         this.selectionEndPageIn = value;
     }
     /**
      * Gets the initialized default dialog.
+     *
      * @private
+     * @returns {Dialog} - Returns dialog instance.
      */
-    get dialog(): Dialog {
+    public get dialog(): Dialog {
         if (!this.dialogInternal) {
             this.initDialog(this.owner.enableRtl);
         }
@@ -649,9 +676,11 @@ export class DocumentHelper {
     }
     /**
      * Gets the initialized default dialog.
+     *
      * @private
+     * @returns {Dialog} - Returns dialog instance.
      */
-    get dialog2(): Dialog {
+    public get dialog2(): Dialog {
         if (!this.dialogInternal2) {
             this.initDialog2(this.owner.enableRtl);
         }
@@ -660,9 +689,11 @@ export class DocumentHelper {
 
     /**
      * Gets the initialized default dialog.
+     *
      * @private
+     * @returns {Dialog} - Returns dialog instance.
      */
-    get dialog3(): Dialog {
+    public get dialog3(): Dialog {
         if (!this.dialogInternal3) {
             this.initDialog3(this.owner.enableRtl);
         }
@@ -670,14 +701,13 @@ export class DocumentHelper {
     }
     /**
      * @private
+     * @returns {void}
      */
-    get currentSelectedComment(): CommentElementBox {
+    public get currentSelectedComment(): CommentElementBox {
         return this.currentSelectedCommentInternal;
     }
-    /**
-     * @private
-     */
-    set currentSelectedComment(value: CommentElementBox) {
+
+    public set currentSelectedComment(value: CommentElementBox) {
         if (this.owner && this.owner.commentReviewPane) {
             this.owner.commentReviewPane.previousSelectedComment = this.currentSelectedCommentInternal;
         }
@@ -685,14 +715,13 @@ export class DocumentHelper {
     }
     /**
      * @private
+     * @returns {void}
      */
-    get currentSelectedRevision(): Revision {
+    public get currentSelectedRevision(): Revision {
         return this.currentSelectedRevisionInternal;
     }
-    /**
-     * @private
-     */
-    set currentSelectedRevision(value: Revision) {
+
+    public set currentSelectedRevision(value: Revision) {
         // if (this.owner && this.owner.commentReviewPane) {
         //     this.owner.commentReviewPane.previousSelectedComment = this.currentSelectedCommentInternal;
         // }
@@ -700,19 +729,21 @@ export class DocumentHelper {
     }
     /**
      * @private
+     * @returns {void}
      */
-    get isInlineFormFillProtectedMode(): boolean {
+    public get isInlineFormFillProtectedMode(): boolean {
         return this.isFormFillProtectedMode && this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline';
     }
     /**
      * @private
+     * @returns {void}
      */
-    get isFormFillProtectedMode(): boolean {
+    public get isFormFillProtectedMode(): boolean {
         return this.isDocumentProtected && this.protectionType === 'FormFieldsOnly';
     }
     //#endregion
 
-    constructor(owner: DocumentEditor) {
+    public constructor(owner: DocumentEditor) {
         this.owner = owner;
         this.pages = [];
         this.lists = [];
@@ -737,57 +768,34 @@ export class DocumentHelper {
         this.endnoteCollection = [];
     }
     private initalizeStyles(): void {
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Normal', '{"type":"Paragraph","name":"Normal","next":"Normal"}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Heading 1', '{"type":"Paragraph","name":"Heading 1","basedOn":"Normal","next":"Normal","link":"Heading 1 Char","characterFormat":{"fontSize":16.0,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"paragraphFormat":{"leftIndent":0.0,"rightIndent":0.0,"firstLineIndent":0.0,"beforeSpacing":12.0,"afterSpacing":0.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left","outlineLevel":"Level1"}}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Heading 2', '{"type":"Paragraph","name":"Heading 2","basedOn":"Normal","next":"Normal","link":"Heading 2 Char","characterFormat":{"fontSize":13.0,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"paragraphFormat":{"leftIndent":0.0,"rightIndent":0.0,"firstLineIndent":0.0,"beforeSpacing":2.0,"afterSpacing":0.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left","outlineLevel":"Level2"}}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Heading 3', '{"type":"Paragraph","name":"Heading 3","basedOn":"Normal","next":"Normal","link":"Heading 3 Char","characterFormat":{"fontSize":12.0,"fontFamily":"Calibri Light","fontColor":"#1F3763"},"paragraphFormat":{"leftIndent":0.0,"rightIndent":0.0,"firstLineIndent":0.0,"beforeSpacing":2.0,"afterSpacing":0.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left","outlineLevel":"Level3"}}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Heading 4', '{"type":"Paragraph","name":"Heading 4","basedOn":"Normal","next":"Normal","link":"Heading 4 Char","characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"paragraphFormat":{"leftIndent":0.0,"rightIndent":0.0,"firstLineIndent":0.0,"beforeSpacing":2.0,"afterSpacing":0.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left","outlineLevel":"Level4"}}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Heading 5', '{"type":"Paragraph","name":"Heading 5","basedOn":"Normal","next":"Normal","link":"Heading 5 Char","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#2F5496"},"paragraphFormat":{"leftIndent":0.0,"rightIndent":0.0,"firstLineIndent":0.0,"beforeSpacing":2.0,"afterSpacing":0.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left","outlineLevel":"Level5"}}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Heading 6', '{"type":"Paragraph","name":"Heading 6","basedOn":"Normal","next":"Normal","link":"Heading 6 Char","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#1F3763"},"paragraphFormat":{"leftIndent":0.0,"rightIndent":0.0,"firstLineIndent":0.0,"beforeSpacing":2.0,"afterSpacing":0.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left","outlineLevel":"Level6"}}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Default Paragraph Font', '{"type":"Character","name":"Default Paragraph Font"}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Heading 1 Char', '{"type":"Character","name":"Heading 1 Char","basedOn":"Default Paragraph Font","characterFormat":{"fontSize":16.0,"fontFamily":"Calibri Light","fontColor":"#2F5496"}}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Heading 2 Char', '{"type":"Character","name":"Heading 2 Char","basedOn":"Default Paragraph Font","characterFormat":{"fontSize":13.0,"fontFamily":"Calibri Light","fontColor":"#2F5496"}}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Heading 3 Char', '{"type":"Character","name":"Heading 3 Char","basedOn":"Default Paragraph Font","characterFormat":{"fontSize":12.0,"fontFamily":"Calibri Light","fontColor": "#1F3763"}}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Heading 4 Char', '{"type":"Character","name":"Heading 4 Char","basedOn":"Default Paragraph Font","characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#2F5496"}}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Heading 5 Char', '{"type":"Character","name":"Heading 5 Char","basedOn":"Default Paragraph Font","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#2F5496"}}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Heading 6 Char', '{"type":"Character","name":"Heading 6 Char","basedOn":"Default Paragraph Font","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#1F3763"}}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Hyperlink', '{"type":"Character","name":"Hyperlink","basedOn":"Default Paragraph Font","next":"Normal","characterFormat":{"fontColor":"#0563C1","underline": "Single"}}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Toc1', '{"type":"Paragraph","name":"Toc1","basedOn":"Normal","next":"Normal","paragraphFormat":{"afterSpacing":5.0}}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Toc2', '{"type":"Paragraph","name":"Toc2","basedOn":"Normal","next":"Normal","paragraphFormat":{"leftIndent" :11.0,"afterSpacing":5.0}}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Toc3', '{"type":"Paragraph","name":"Toc3","basedOn":"Normal","next":"Normal","paragraphFormat":{"leftIndent" :22.0,"afterSpacing":5.0}}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Toc4', '{"type":"Paragraph","name":"Toc4","basedOn":"Normal","next":"Normal","paragraphFormat":{"leftIndent" :33.0,"afterSpacing":5.0}}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Toc5', '{"type":"Paragraph","name":"Toc5","basedOn":"Normal","next":"Normal","paragraphFormat":{"leftIndent" :44.0,"afterSpacing":5.0}}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Toc6', '{"type":"Paragraph","name":"Toc6","basedOn":"Normal","next":"Normal","paragraphFormat":{"leftIndent" :55.0,"afterSpacing":5.0}}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Toc7', '{"type":"Paragraph","name":"Toc7","basedOn":"Normal","next":"Normal","paragraphFormat":{"leftIndent" :66.0,"afterSpacing":5.0}}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Toc8', '{"type":"Paragraph","name":"Toc8","basedOn":"Normal","next":"Normal","paragraphFormat":{"leftIndent" :77.0,"afterSpacing":5.0}}');
-        /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Toc9', '{"type":"Paragraph","name":"Toc9","basedOn":"Normal","next":"Normal","paragraphFormat":{"leftIndent" :88.0,"afterSpacing":5.0}}');
     }
     /**
      * @private
+     * @returns {void}
      */
     public clearDocumentItems(): void {
         this.editRanges.clear();
@@ -797,7 +805,7 @@ export class DocumentHelper {
         this.currentSelectedComment = undefined;
         this.currentSelectedRevision = undefined;
         for (let i: number = 0; i < this.comments.length; i++) {
-            let commentStart: CommentCharacterElementBox = this.comments[i].commentStart;
+            const commentStart: CommentCharacterElementBox = this.comments[i].commentStart;
             if (commentStart) {
                 commentStart.destroy();
             }
@@ -838,6 +846,7 @@ export class DocumentHelper {
     }
     /**
      * @private
+     * @returns {void}
      */
     public setDefaultDocumentFormat(): void {
         this.owner.parser.parseCharacterFormat(this.owner.characterFormat, this.characterFormat);
@@ -871,13 +880,15 @@ export class DocumentHelper {
     }
     /**
      * @private
+     * @param {number} id - Specfies abstract list id.
+     * @returns {WAbstractList} - Returns abstract list.
      */
     public getAbstractListById(id: number): WAbstractList {
         if (isNullOrUndefined(this.abstractLists)) {
             return undefined;
         }
         for (let i: number = 0; i < this.abstractLists.length; i++) {
-            let abstractList: WAbstractList = this.abstractLists[i];
+            const abstractList: WAbstractList = this.abstractLists[i];
             if (abstractList instanceof WAbstractList && (abstractList as WAbstractList).abstractListId === id) {
                 return abstractList;
             }
@@ -886,6 +897,8 @@ export class DocumentHelper {
     }
     /**
      * @private
+     * @param {number} id - Specfies list id.
+     * @returns {WAbstractList} - Returns list.
      */
     public getListById(id: number): WList {
         if (isNullOrUndefined(this.lists)) {
@@ -900,6 +913,8 @@ export class DocumentHelper {
     }
     /**
      * @private
+     * @param {WListLevel} listLevel - Specfies list level.
+     * @returns {number} - Returns list level number.
      */
     public static getListLevelNumber(listLevel: WListLevel): number {
         if (listLevel.ownerBase instanceof WLevelOverride) {
@@ -912,21 +927,21 @@ export class DocumentHelper {
     }
     /**
      * Gets the bookmarks.
+     *
      * @private
+     * @param {boolean} includeHidden - Include hidden bookmark.
+     * @returns {string[]} - Returns bookmars present in current document.
      */
     public getBookmarks(includeHidden?: boolean): string[] {
-        let bookmarks: string[] = [];
+        const bookmarks: string[] = [];
         for (let i: number = 0; i < this.bookmarks.keys.length; i++) {
-            let bookmark: string = this.bookmarks.keys[i];
+            const bookmark: string = this.bookmarks.keys[i];
             if (includeHidden || bookmark.indexOf('_') !== 0) {
                 bookmarks.push(bookmark);
             }
         }
         return bookmarks;
     }
-    /**
-     * @private
-     */
     public selectComment(comment: CommentElementBox): void {
         if (this.owner.selection && this.owner.commentReviewPane) {
             this.owner.showComments = true;
@@ -937,25 +952,19 @@ export class DocumentHelper {
             });
         }
     }
-    /**
-     * @private
-     */
     public showComments(show: boolean): void {
         if (this.owner && show && this.owner.enableComment) {
-            let eventArgs: BeforePaneSwitchEventArgs = { type: 'Comment' };
+            const eventArgs: BeforePaneSwitchEventArgs = { type: 'Comment' };
             this.owner.trigger('beforePaneSwitch', eventArgs);
         }
         this.owner.commentReviewPane.reviewTab.hideTab(0, false);
         this.owner.commentReviewPane.reviewTab.hideTab(1, false);
         this.owner.commentReviewPane.showHidePane(show && this.owner.enableComment, 'Comments');
     }
-    /**
-     * @private
-     */
     public showRevisions(show: boolean): void {
         let isCommentTabVisible: boolean = false;
         if (this.owner && show) {
-            let eventArgs: BeforePaneSwitchEventArgs = { type: 'comment' };
+            const eventArgs: BeforePaneSwitchEventArgs = { type: 'comment' };
             this.owner.trigger('beforePaneSwitch', eventArgs);
         }
         if (!show && this.owner.showComments) {
@@ -975,10 +984,12 @@ export class DocumentHelper {
     }
     /**
      * Initializes components.
+     *
      * @private
+     * @returns {void}
      */
     public initializeComponents(): void {
-        let element: HTMLElement = this.owner.element;
+        const element: HTMLElement = this.owner.element;
         if (isNullOrUndefined(element)) {
             return;
         }
@@ -987,7 +998,7 @@ export class DocumentHelper {
             className: 'e-documenteditor-optionspane'
         }) as HTMLDivElement;
         element.appendChild(this.optionsPaneContainer);
-        let isRtl: boolean = this.owner.enableRtl;
+        const isRtl: boolean = this.owner.enableRtl;
         let viewerContainerStyle: string;
         if (isRtl) {
             viewerContainerStyle = 'direction:ltr;';
@@ -1024,17 +1035,14 @@ export class DocumentHelper {
         createSpinner({ target: this.owner.element, cssClass: 'e-spin-overlay' });
     }
     private measureScrollbarWidth(element: HTMLElement): void {
-        let parentDiv: HTMLElement = document.createElement('div');
+        const parentDiv: HTMLElement = document.createElement('div');
         parentDiv.setAttribute('style', 'visibility:hidden;overflow:scroll');
         element.appendChild(parentDiv);
-        let childDiv: HTMLElement = document.createElement('div');
+        const childDiv: HTMLElement = document.createElement('div');
         parentDiv.appendChild(childDiv);
         this.scrollbarWidth = (parentDiv.getBoundingClientRect().width - childDiv.getBoundingClientRect().width);
         parentDiv.parentNode.removeChild(parentDiv);
     }
-    /**
-     * @private
-     */
     private createEditableDiv(element: HTMLElement): void {
         this.editableDiv = document.createElement('div');
         this.editableDiv.contentEditable = 'true';
@@ -1045,14 +1053,10 @@ export class DocumentHelper {
         this.editableDiv.id = element.id + '_editableDiv';
         document.body.appendChild(this.editableDiv);
     }
-    /**
-     * @private
-     */
     private createEditableIFrame(): void {
         this.iframe = createElement('iframe', {
             attrs: {
                 'scrolling': 'no',
-                // tslint:disable-next-line:max-line-length
                 'style': 'pointer-events:none;position:absolute;left:0px;top:0px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden'
             },
             className: 'e-de-text-target'
@@ -1062,8 +1066,8 @@ export class DocumentHelper {
         this.initIframeContent();
     }
     private initIframeContent(): void {
-        let style: string = 'background-color:transparent;width:100%;height:100%;padding: 0px; margin: 0px;';
-        let innerHtml: string = '<!DOCTYPE html>'
+        const style: string = 'background-color:transparent;width:100%;height:100%;padding: 0px; margin: 0px;';
+        const innerHtml: string = '<!DOCTYPE html>'
             + '<html><head></head>'
             + '<body spellcheck="false" style=' + style + ' >'
             + '<div contenteditable="true" style=' + style + '></div>'
@@ -1076,6 +1080,8 @@ export class DocumentHelper {
     }
     /**
      * Wires events and methods.
+     *
+     * @returns {void}
      */
     private wireEvent(): void {
         if (!isNullOrUndefined(this.selection)) {
@@ -1083,7 +1089,7 @@ export class DocumentHelper {
         }
         this.wireInputEvents();
         if (!isNullOrUndefined(this.iframe)) {
-            this.iframe.addEventListener('load', this.onIframeLoad);
+            this.iframe.addEventListener('load', this.onIframeLoad.bind(this));
         }
         this.viewerContainer.addEventListener('scroll', this.scrollHandler);
         this.viewerContainer.addEventListener('mousedown', this.onMouseDownInternal);
@@ -1096,15 +1102,15 @@ export class DocumentHelper {
         this.viewerContainer.addEventListener('mouseup', this.onMouseUpInternal);
         window.addEventListener('resize', this.onWindowResize);
         window.addEventListener('keyup', this.onKeyUpInternal);
-        window.addEventListener('mouseup', this.onImageResizer);
-        window.addEventListener('touchend', this.onImageResizer);
+        window.addEventListener('mouseup', this.onImageResizer.bind(this));
+        window.addEventListener('touchend', this.onImageResizer.bind(this));
         this.viewerContainer.addEventListener('touchstart', this.onTouchStartInternal);
         this.viewerContainer.addEventListener('touchmove', this.onTouchMoveInternal);
         this.viewerContainer.addEventListener('touchend', this.onTouchUpInternal);
         if (navigator.userAgent.match('Firefox')) {
-            this.viewerContainer.addEventListener('DOMMouseScroll', this.zoomModule.onMouseWheelInternal);
+            this.viewerContainer.addEventListener('DOMMouseScroll', this.zoomModule.onMouseWheelInternal.bind(this));
         }
-        this.viewerContainer.addEventListener('mousewheel', this.zoomModule.onMouseWheelInternal);
+        this.viewerContainer.addEventListener('mousewheel', this.zoomModule.onMouseWheelInternal.bind(this));
     }
     private wireInputEvents(): void {
         if (isNullOrUndefined(this.editableDiv)) {
@@ -1125,7 +1131,7 @@ export class DocumentHelper {
         this.editableDiv.addEventListener('compositionupdate', this.compositionUpdated);
         this.editableDiv.addEventListener('compositionend', this.compositionEnd);
     }
-    private onIframeLoad = (): void => {
+    private onIframeLoad(): void {
         if (!isNullOrUndefined(this.iframe) && this.iframe.contentDocument.body.children.length === 0) {
             this.initIframeContent();
             this.wireInputEvents();
@@ -1133,20 +1139,24 @@ export class DocumentHelper {
     }
     /**
      * @private
+     * @param {TextEvent} event - Specifies text event.
+     * @returns {void}
      */
     private onTextInput = (event: TextEvent): void => {
         if (!this.isComposingIME) {
             event.preventDefault();
-            let text: string = event.data;
+            const text: string = event.data;
             this.owner.editor.handleTextInput(text);
         }
-    }
+    };
     //#region Composition Event
     /**
      * Fires when composition starts.
+     *
      * @private
+     * @returns {void}
      */
-    private compositionStart = (event: CompositionEvent): void => {
+    private compositionStart = (): void => {
         if (!Browser.isDevice && !this.owner.isReadOnlyMode) {
             this.isComposingIME = true;
             this.positionEditableTarget();
@@ -1155,39 +1165,41 @@ export class DocumentHelper {
             }
         }
         this.isCompositionStart = true;
-    }
+    };
     /**
      * Fires on every input during composition.
+     *
      * @private
+     * @returns {void}
      */
-    private compositionUpdated = (event: CompositionEvent): void => {
+    private compositionUpdated = (): void => {
         if (this.isComposingIME && !this.owner.isReadOnlyMode) {
-            /* tslint:disable:align */
             setTimeout(() => {
                 this.owner.editor.insertIMEText(this.getEditableDivTextContent(), true);
             }, 0);
         }
         this.isCompositionUpdated = true;
-    }
+    };
     /**
      * Fires when user selects a character/word and finalizes the input.
+     *
      * @private
+     * @param {CompositionEvent} event - Specifies text compisition event.
+     * @returns {void}
      */
     private compositionEnd = (event: CompositionEvent): void => {
         if (this.isComposingIME && !this.owner.isReadOnlyMode) {
-            let text: string = this.getEditableDivTextContent();
+            const text: string = this.getEditableDivTextContent();
             if (text !== '') {
                 this.owner.editor.insertIMEText(text, false);
             }
             this.isComposingIME = false;
             this.lastComposedText = '';
-            // tslint:disable-next-line:max-line-length
             this.iframe.setAttribute('style', 'pointer-events:none;position:absolute;left:' + this.owner.viewer.containerLeft + 'px;top:' + this.owner.viewer.containerTop + 'px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden');
             this.editableDiv.innerHTML = '';
             if (this.owner.editorHistory) {
                 this.owner.editorHistory.updateComplexHistory();
                 if (text === '') {
-                    // tslint:disable-next-line:max-line-length
                     //When the composition in live. The Undo operation will terminate the composition and empty text will be return from text box.
                     //At that time the the history should be updated. Undo the operation and clear the redo stack. This undo operation will not be saved for redo operation.
                     this.owner.editorHistory.undo();
@@ -1198,22 +1210,16 @@ export class DocumentHelper {
         event.preventDefault();
         this.isCompositionUpdated = false;
         this.isCompositionEnd = true;
-    }
+    };
     private getEditableDivTextContent(): string {
         return this.editableDiv.textContent;
     }
-    /**
-     * @private
-     */
     public updateAuthorIdentity(): void {
-        let revisions: Revision[] = this.owner.revisions.changes;
+        const revisions: Revision[] = this.owner.revisions.changes;
         for (let i: number = 0; i < revisions.length; i++) {
             this.getAuthorColor(revisions[i].author);
         }
     }
-    /**
-     * @private
-     */
     public getAvatar(userInfo: HTMLElement, userName: HTMLElement, comment: CommentElementBox, revision: Revision): void {
         let author: string;
         let userinitial: string;
@@ -1224,11 +1230,11 @@ export class DocumentHelper {
             author = revision.author;
         }
         if (!isNullOrUndefined(author)) {
-            let avatarDiv: HTMLElement = createElement('div', { className: 'e-de-cmt-avatar' });
-            let avatar: HTMLElement = createElement('div', { className: 'e-de-ff-cmt-avatar' });
+            const avatarDiv: HTMLElement = createElement('div', { className: 'e-de-cmt-avatar' });
+            const avatar: HTMLElement = createElement('div', { className: 'e-de-ff-cmt-avatar' });
             avatar.style.backgroundColor = this.owner.documentHelper.getAuthorColor(author);
             if (userinitial === '' || isNullOrUndefined(userinitial)) {
-                let authorName: string[] = author.split(' ');
+                const authorName: string[] = author.split(' ');
                 let initial: string = authorName[0].charAt(0);
                 if (authorName.length > 1) {
                     initial += authorName[authorName.length - 1][0];
@@ -1246,10 +1252,10 @@ export class DocumentHelper {
             userInfo.appendChild(avatarDiv);
         }
     }
-
-
     /**
      * @private
+     * @param {string} author - Specifies author name.
+     * @returns {string} - Return autor color.
      */
     public getAuthorColor(author: string): string {
         if (this.authors.containsKey(author)) {
@@ -1266,11 +1272,9 @@ export class DocumentHelper {
         this.authors.add(author, color);
         return color;
     }
-    /**
-     * @private
-     */
+
     public generateRandomColor(): string {
-        let userColors: string[] = ['#b5082e',  //dark red
+        const userColors: string[] = ['#b5082e',  //dark red
             '#2e97d3',                          //sky blue
             '#bb00ff',                          //purple
             '#f37e43',                          //dark orange
@@ -1282,15 +1286,16 @@ export class DocumentHelper {
     }
     /**
      * @private
+     * @returns {void}
      */
     public positionEditableTarget(): void {
-        let point: Point = this.selection.getRect(this.selection.start);
-        let page: Page = this.selection.getSelectionPage(this.selection.start);
-        let caretInfo: CaretHeightInfo = this.selection.updateCaretSize(this.owner.selection.start);
-        let sectionFormat: WSectionFormat = page.bodyWidgets[0].sectionFormat;
-        let left: number = page.boundingRectangle.x + (HelperMethods.convertPointToPixel(sectionFormat.leftMargin) * this.zoomFactor);
-        let top: number = point.y;
-        let pageWidth: number = sectionFormat.pageWidth - sectionFormat.leftMargin - sectionFormat.rightMargin;
+        const point: Point = this.selection.getRect(this.selection.start);
+        const page: Page = this.selection.getSelectionPage(this.selection.start);
+        // const caretInfo: CaretHeightInfo = this.selection.updateCaretSize(this.owner.selection.start);
+        const sectionFormat: WSectionFormat = page.bodyWidgets[0].sectionFormat;
+        const left: number = page.boundingRectangle.x + (HelperMethods.convertPointToPixel(sectionFormat.leftMargin) * this.zoomFactor);
+        const top: number = point.y;
+        const pageWidth: number = sectionFormat.pageWidth - sectionFormat.leftMargin - sectionFormat.rightMargin;
 
         let iframeStyle: string = 'left:' + left + 'px;';
         iframeStyle += 'top:' + top + 'px;';
@@ -1306,9 +1311,9 @@ export class DocumentHelper {
         style += 'overflow:hidden;text-decoration:none;white-space:normal;';
         this.editableDiv.setAttribute('style', style);
     }
-    // tslint:disable:no-any 
-    private onImageResizer = (args: any): void => {
-        if (!isNullOrUndefined(this.owner.imageResizerModule) && this.owner.imageResizerModule.isImageResizerVisible
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    private onImageResizer(args: any): void {
+        if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.imageResizerModule) && this.owner.imageResizerModule.isImageResizerVisible
             && this.owner.imageResizerModule.isImageResizing) {
             if (args instanceof MouseEvent) {
                 this.onMouseUpInternal(args);
@@ -1322,34 +1327,31 @@ export class DocumentHelper {
         }
 
     }
+    /* eslint-enable @typescript-eslint/no-explicit-any */
     /**
      * @private
+     * @param {KeyboardEvent} event - Specifies keyboard event
+     * @returns {void}
      */
-    // tslint:enable:no-any 
     public onKeyPressInternal = (event: KeyboardEvent): void => {
-        let key: number = event.which || event.keyCode;
+        const key: number = event.which || event.keyCode;
         this.triggerElementsOnLoading = false;
         let ctrl: boolean = (event.ctrlKey || event.metaKey) ? true : ((key === 17) ? true : false); // ctrl detection
-        let alt: boolean = event.altKey ? event.altKey : ((key === 18) ? true : false); // alt key detection
+        const alt: boolean = event.altKey ? event.altKey : ((key === 18) ? true : false); // alt key detection
         if (Browser.isIE && alt && ctrl) {
             ctrl = false;
         }
-        // tslint:disable-next-line:max-line-length
-        if (ctrl && event.key === 'v' || ctrl && event.key === 'a' || (ctrl || (this.isControlPressed && Browser.isIE)) && event.key === 'p') {
-            if (Browser.isIE) {
-                this.isControlPressed = false;
-            }
+        if (ctrl && event.key === 'v' || ctrl && event.key === 'a' || (ctrl || this.isControlPressed) && event.key === 'p') {
             return;
         }
         if (!this.owner.isReadOnlyMode) {
-            let key: number = event.keyCode || event.charCode;
+            const key: number = event.keyCode || event.charCode;
             let char: string = '';
             if (key) {
                 char = String.fromCharCode(key);
             } else if (event.key) {
                 char = event.key;
             }
-            // tslint:disable-next-line:max-line-length
             if (char !== ' ' && char !== '\r' && char !== '\b' && char !== '\u001B' && !this.owner.isReadOnlyMode && !ctrl) {
                 this.owner.editorModule.handleTextInput(char);
             } else if (char === ' ') {
@@ -1359,19 +1361,26 @@ export class DocumentHelper {
             }
             event.preventDefault();
         }
-    }
+    };
+    /**
+     * @private
+     * @param {KeyboardEvent} event - Specifies keyboard event
+     * @returns {void}
+     */
     private onTextInputInternal = (event: KeyboardEvent): void => {
         if (!this.owner.isReadOnlyMode) {
-            this.owner.editorModule.onTextInputInternal(event);
+            this.owner.editorModule.onTextInputInternal();
         } else {
             this.editableDiv.innerText = '';
         }
-    }
+    };
 
     /**
      * Fired on paste.
-     * @param {ClipboardEvent} event
+     *
      * @private
+     * @param {ClipboardEvent} event - Specifies clipboard event.
+     * @returns {void}
      */
     public onPaste = (event: ClipboardEvent): void => {
         if ((!this.owner.isReadOnlyMode && this.owner.editor.canEditContentControl) || this.selection.isInlineFormFillMode()) {
@@ -1379,10 +1388,8 @@ export class DocumentHelper {
         }
         this.editableDiv.innerText = '';
         event.preventDefault();
-    }
-    /**
-     * Initializes dialog template.
-     */
+    };
+
     private initDialog(isRtl?: boolean): void {
         if (!this.dialogInternal) {
             this.dialogTarget1 = createElement('div', { className: 'e-de-dlg-target' });
@@ -1393,6 +1400,7 @@ export class DocumentHelper {
             this.dialogInternal = new Dialog({
                 target: document.body, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: this.owner.zIndex + 20,
                 animationSettings: { effect: 'None' }
             });
@@ -1402,9 +1410,6 @@ export class DocumentHelper {
             this.dialogInternal.appendTo(this.dialogTarget1);
         }
     }
-    /**
-     * Initializes dialog template.
-     */
     private initDialog3(isRtl?: boolean): void {
         if (!this.dialogInternal3) {
             this.dialogTarget3 = createElement('div', { className: 'e-de-dlg-target' });
@@ -1415,6 +1420,7 @@ export class DocumentHelper {
             this.dialogInternal3 = new Dialog({
                 target: document.body, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: this.owner.zIndex,
                 animationSettings: { effect: 'None' }
             });
@@ -1424,16 +1430,12 @@ export class DocumentHelper {
             this.dialogInternal3.appendTo(this.dialogTarget3);
         }
     }
-    /**
-     * @private
-     */
+
     public hideDialog(): void {
         this.dialog.hide();
         this.updateFocus();
     }
-    /**
-     * Initializes dialog template.
-     */
+
     private initDialog2(isRtl?: boolean): void {
         if (!this.dialogInternal2) {
             this.dialogTarget2 = createElement('div', { className: 'e-de-dlg-target' });
@@ -1444,6 +1446,7 @@ export class DocumentHelper {
             this.dialogInternal2 = new Dialog({
                 target: document.body, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 width: '1px', isModal: true, position: { X: 'center', Y: 'Top' }, zIndex: this.owner.zIndex + 10
             });
             this.dialogInternal2.isStringTemplate = true;
@@ -1452,7 +1455,9 @@ export class DocumentHelper {
     }
     /**
      * Fires when editable div loses focus.
+     *
      * @private
+     * @returns {void}
      */
     public onFocusOut = (): void => {
         if (!isNullOrUndefined(this.selection)) {
@@ -1462,10 +1467,12 @@ export class DocumentHelper {
             }
             this.selection.hideCaret();
         }
-    }
+    };
     /**
      * Updates focus to editor area.
+     *
      * @private
+     * @returns {void}
      */
     public updateFocus = (): void => {
         if (this.selection && !(this.isMobileDevice && this.owner.isReadOnly)) {
@@ -1475,25 +1482,27 @@ export class DocumentHelper {
             this.editableDiv.focus();
             this.selection.showCaret();
         }
-    }
+    };
 
 
     /**
      * Clears the context.
+     *
      * @private
+     * @returns {void}
      */
     public clearContent(): void {
         this.containerContext.clearRect(0, 0, this.containerCanvas.width, this.containerCanvas.height);
         this.selectionContext.clearRect(0, 0, this.selectionCanvas.width, this.selectionCanvas.height);
         // Hide comment mark
         if (this.pageContainer) {
-            let commentMarkElement: NodeListOf<Element> = this.pageContainer.getElementsByClassName('e-de-cmt-mark');
+            const commentMarkElement: HTMLCollectionOf<Element> = this.pageContainer.getElementsByClassName('e-de-cmt-mark');
             for (let i: number = 0; i < commentMarkElement.length; i++) {
                 (commentMarkElement[i] as HTMLElement).style.display = 'none';
             }
         }
         if (this.pageContainer) {
-            let editRangeStart: NodeListOf<Element> = this.pageContainer.getElementsByClassName('e-de-lock-mark');
+            const editRangeStart: HTMLCollectionOf<Element> = this.pageContainer.getElementsByClassName('e-de-lock-mark');
             for (let i: number = 0; i < editRangeStart.length; i++) {
                 (editRangeStart[i] as HTMLElement).style.display = 'none';
             }
@@ -1501,7 +1510,10 @@ export class DocumentHelper {
     }
     /**
      * Fired when the document gets changed.
-     * @param {WordDocument} document
+     *
+     * @private
+     * @param {BodyWidget[]} sections - Specified document content.
+     * @returns {void}
      */
     public onDocumentChanged(sections: BodyWidget[]): void {
         this.clearContent();
@@ -1553,6 +1565,8 @@ export class DocumentHelper {
     }
     /**
      * Fires on scrolling.
+     *
+     * @returns {void}
      */
     private scrollHandler = (): void => {
         if (this.scrollTimer) {
@@ -1565,8 +1579,8 @@ export class DocumentHelper {
             this.iframe.style.left = this.owner.viewer.containerLeft + 'px';
         }
         this.owner.viewer.updateScrollBars();
-        // tslint:disable-next-line:max-line-length
-        let vtHeight: number = this.owner.viewer.containerTop + this.visibleBounds.height - (this.owner.viewer.padding.top + this.owner.viewer.padding.bottom);
+        // eslint-disable-next-line max-len
+        const vtHeight: number = this.owner.viewer.containerTop + this.visibleBounds.height - (this.owner.viewer.padding.top + this.owner.viewer.padding.bottom);
         if (vtHeight > this.pageContainer.offsetHeight) {
             this.viewerContainer.scrollTop = this.owner.viewer.containerTop - (vtHeight - this.pageContainer.offsetHeight);
         }
@@ -1580,16 +1594,17 @@ export class DocumentHelper {
                 this.owner.viewer.updateScrollBars();
             }
         }, 200);
-    }
+    };
     /**
      * Fires when the window gets resized.
+     *
      * @private
+     * @returns {void}
      */
     public onWindowResize = (): void => {
         if (this.resizeTimer) {
             clearTimeout(this.resizeTimer);
         }
-        /* tslint:disable:align */
         this.resizeTimer = setTimeout((): void => {
             if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.element)) {
                 this.updateViewerSize();
@@ -1607,9 +1622,11 @@ export class DocumentHelper {
                 }
             }
         }, 200);
-    }
+    };
     /**
      * @private
+     * @param {MouseEvent} event - Specified mouse event.
+     * @returns {void}
      */
     public onContextMenu = (event: MouseEvent): void => {
         if (this.owner.contextMenuModule) {
@@ -1618,19 +1635,20 @@ export class DocumentHelper {
             }
             this.owner.contextMenuModule.onContextMenuInternal(event);
         }
-    }
+    };
     /**
      * Initialize touch ellipse.
+     *
+     * @returns {void}
      */
     private initTouchEllipse(): void {
-        let style: string = 'height: 30px;width: 30px;position: absolute;background-color: transparent;margin: 0px;padding: 0px;z-index:5';
-        // tslint:disable-next-line:max-line-length
-        let ellipse: string = ' height: 12px;width: 12px;border-radius: 50%;background-color: white;position: absolute;margin: 0px 6px 0px 6px;border-width: 2px;border-style: solid;border-color: #000000;box-sizing: unset;';
+        const style: string = 'height: 30px;width: 30px;position: absolute;background-color: transparent;margin: 0px;padding: 0px;z-index:5';
+        const ellipse: string = ' height: 12px;width: 12px;border-radius: 50%;background-color: white;position: absolute;margin: 0px 6px 0px 6px;border-width: 2px;border-style: solid;border-color: #000000;box-sizing: unset;';
         this.touchStart = createElement('div', { className: 'e-touch-ellipse', styles: style });
-        let start: HTMLElement = createElement('div', { styles: ellipse });
+        const start: HTMLElement = createElement('div', { styles: ellipse });
         this.touchEnd = createElement('div', { className: 'e-touch-ellipse', styles: style });
         this.touchStart.style.display = 'none';
-        let end: HTMLElement = createElement('div', { styles: ellipse });
+        const end: HTMLElement = createElement('div', { styles: ellipse });
         this.touchStart.appendChild(start);
         this.touchEnd.appendChild(end);
         this.touchEnd.style.display = 'none';
@@ -1639,7 +1657,9 @@ export class DocumentHelper {
     }
     /**
      * Updates touch mark position.
+     *
      * @private
+     * @returns {void}
      */
     public updateTouchMarkPosition(): void {
         if (this.touchStart.style.display !== 'none' && !isNullOrUndefined(this.selection)) {
@@ -1647,16 +1667,14 @@ export class DocumentHelper {
                 this.viewer = this.owner.viewer;
                 let y: number = this.selection.getCaretBottom(this.selection.start, false);
                 let page: Page = this.selection.getPage(this.selection.start.paragraph);
-                // tslint:disable-next-line:max-line-length
-                let pageTop: number = (page.boundingRectangle.y - (this.owner.viewer.pageGap * (this.pages.indexOf(page) + 1)) * this.zoomFactor + (this.owner.viewer as PageLayoutViewer).pageGap * (this.pages.indexOf(page) + 1));
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
+                const pageTop: number = (page.boundingRectangle.y - (this.owner.viewer.pageGap * (this.pages.indexOf(page) + 1)) * this.zoomFactor + (this.owner.viewer as PageLayoutViewer).pageGap * (this.pages.indexOf(page) + 1));
                 this.touchStart.style.left = page.boundingRectangle.x + (Math.round(this.selection.start.location.x) * this.zoomFactor - 14) + 'px';
                 this.touchStart.style.top = pageTop + ((y) * this.zoomFactor) + 'px';
                 if (!this.selection.isEmpty) {
                     y = this.selection.getCaretBottom(this.selection.end, false);
                     page = this.selection.getPage(this.selection.end.paragraph);
                 }
-                // tslint:disable-next-line:max-line-length
                 this.touchEnd.style.left = page.boundingRectangle.x + (Math.round(this.selection.end.location.x) * this.zoomFactor - 14) + 'px';
                 this.touchEnd.style.top = pageTop + (y * this.zoomFactor) + 'px';
             } else {
@@ -1665,12 +1683,14 @@ export class DocumentHelper {
         }
     }
     /**
-     * Called on mouse down. 
-     * @param {MouseEvent} event
+     * Called on mouse down.
+     *
      * @private
+     * @param {MouseEvent} event - Specifies mouse event.
+     * @returns {void}
      */
     public onMouseDownInternal = (event: MouseEvent): void => {
-        let target: HTMLElement = event.target as HTMLElement;
+        const target: HTMLElement = event.target as HTMLElement;
         if ((!isNullOrUndefined(target) && target !== this.viewerContainer) || this.isTouchInput ||
             event.offsetX > (this.visibleBounds.width - (this.visibleBounds.width - this.viewerContainer.clientWidth))
             || event.offsetY > (this.visibleBounds.height - (this.visibleBounds.height - this.viewerContainer.clientHeight))) {
@@ -1682,11 +1702,11 @@ export class DocumentHelper {
             if (this.formFillPopup) {
                 this.formFillPopup.hidePopup();
             }
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             if (this.isLeftButtonPressed(event) && !this.owner.isReadOnlyMode && this.owner.enableImageResizerMode && !isNullOrUndefined(this.owner.imageResizerModule.selectedResizeElement)) {
                 if (this.selection.isInShape) {
-                    let textFram: TextFrame = this.owner.selection.getCurrentTextFrame();
-                    let shape: ShapeElementBox = textFram.containerShape as ShapeElementBox;
+                    const textFram: TextFrame = this.owner.selection.getCurrentTextFrame();
+                    const shape: ShapeElementBox = textFram.containerShape as ShapeElementBox;
                     this.selection.selectShape(shape);
                 }
                 this.owner.imageResizerModule.isImageResizing = true;
@@ -1695,11 +1715,11 @@ export class DocumentHelper {
             if (!this.isTouchInput) {
                 this.selection.hideCaret();
             }
-            let cursorPoint: Point = new Point(event.offsetX, event.offsetY);
-            let touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, true);
+            const cursorPoint: Point = new Point(event.offsetX, event.offsetY);
+            const touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, true);
             this.mouseDownOffset.x = touchPoint.x;
             this.mouseDownOffset.y = touchPoint.y;
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             this.isMouseDownInFooterRegion = this.selection.isCursorInsidePageRect(cursorPoint, this.currentPage) && this.selection.isCursorInFooterRegion(cursorPoint, this.currentPage);
             this.isSelectionChangedOnMouseMoved = false;
             if (!this.owner.isReadOnlyMode && (this.owner.editorModule.tableResize.isInCellResizerArea(touchPoint) ||
@@ -1728,7 +1748,7 @@ export class DocumentHelper {
             this.isTouchInput = false;
             this.isMouseDown = true;
             this.updateFocus();
-            /* tslint:disable:align */
+            /* eslint-disable @typescript-eslint/indent */
             this.timer = setTimeout((): void => {
                 this.tapCount++;
                 if (this.tapCount > 1) {
@@ -1736,12 +1756,14 @@ export class DocumentHelper {
                 }
             }, 100);
         }
-    }
+    };
 
     /**
      * Called on mouse move.
-     * @param {MouseEvent} event
+     *
      * @private
+     * @param {MouseEvent} event - Specified mouse event.
+     * @returns {void}
      */
     public onMouseMoveInternal = (event: MouseEvent): void => {
         if (!isNullOrUndefined(event.target) && event.target !== this.viewerContainer) {
@@ -1757,17 +1779,18 @@ export class DocumentHelper {
                 }
                 return;
             }
-            let cursorPoint: Point = new Point(event.offsetX, event.offsetY);
-            let touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, !this.owner.enableHeaderAndFooter);
+            const cursorPoint: Point = new Point(event.offsetX, event.offsetY);
+            const touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, !this.owner.enableHeaderAndFooter);
             if (this.isMouseDown) {
                 if (!isNullOrUndefined(this.currentPage)) {
-                    let xPosition: number = touchPoint.x;
-                    let yPosition: number = touchPoint.y;
+                    const xPosition: number = touchPoint.x;
+                    const yPosition: number = touchPoint.y;
                     if (!this.owner.isReadOnlyMode && this.isRowOrCellResizing) {
-                        let table: TableWidget = this.owner.editorModule.tableResize.currentResizingTable;
-                        let startPosition: TextPosition = this.selection.setPositionForBlock(table, true);
-                        let endPosition: TextPosition = this.selection.setPositionForBlock(table, false);
-                        // tslint:disable-next-line:max-line-length
+                        const table: TableWidget = this.owner.editorModule.tableResize.currentResizingTable;
+                        const startPosition: TextPosition = this.selection.setPositionForBlock(table, true);
+                        const endPosition: TextPosition = this.selection.setPositionForBlock(table, false);
+
+                        // eslint-disable-next-line max-len
                         if (!(this.owner.documentHelper.isDocumentProtected) || this.selection.checkSelectionIsAtEditRegion(startPosition, endPosition)) {
                             this.owner.editorModule.tableResize.handleResizing(touchPoint);
                         }
@@ -1777,9 +1800,9 @@ export class DocumentHelper {
                         }
                         if (this.isLeftButtonPressed(event)) {
                             event.preventDefault();
-                            let touchY: number = yPosition;
-                            let textPosition: TextPosition = this.owner.selection.end;
-                            let touchPoint: Point = new Point(xPosition, touchY);
+                            const touchY: number = yPosition;
+                            const textPosition: TextPosition = this.owner.selection.end;
+                            const touchPoint: Point = new Point(xPosition, touchY);
                             if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible
                                 || this.owner.imageResizerModule.isShapeResize) {
                                 this.owner.selection.moveTextPosition(touchPoint, textPosition);
@@ -1797,27 +1820,35 @@ export class DocumentHelper {
                 this.selection.hideCaret();
             }
         }
-    }
+    };
     /**
      * @private
+     * @param {MouseEvent} event - Specifies mouse event
+     * @returns {void}
      */
     public onMouseLeaveInternal = (event: MouseEvent): void => {
         event.preventDefault();
         if (this.isMouseDown) {
-            let viewerTop: number = this.viewerContainer.scrollTop;
+            const viewerTop: number = this.viewerContainer.scrollTop;
             if (event.offsetY + viewerTop > viewerTop) {
-                this.scrollMoveTimer = setInterval((): void => { this.scrollForwardOnSelection(); }, 500);
+                this.scrollMoveTimer = setInterval((): void => {
+                    this.scrollForwardOnSelection();
+                }, 500);
             } else {
-                this.scrollMoveTimer = setInterval((): void => { this.scrollBackwardOnSelection(); }, 500);
+                this.scrollMoveTimer = setInterval((): void => {
+                    this.scrollBackwardOnSelection();
+                }, 500);
             }
             if (this.isMouseEntered) {
                 this.isMouseEntered = false;
             }
         }
 
-    }
+    };
     private scrollForwardOnSelection(): void {
-        this.viewerContainer.scrollTop = this.viewerContainer.scrollTop + 200;
+        if (this.viewerContainer) {
+            this.viewerContainer.scrollTop = this.viewerContainer.scrollTop + 200;
+        }
     }
 
     private scrollBackwardOnSelection(): void {
@@ -1825,6 +1856,7 @@ export class DocumentHelper {
     }
     /**
      * @private
+     * @returns {void}
      */
     public onMouseEnterInternal = (): void => {
         if (!this.isMouseEntered) {
@@ -1834,14 +1866,16 @@ export class DocumentHelper {
         if (this.scrollMoveTimer) {
             clearInterval(this.scrollMoveTimer);
         }
-    }
+    };
 
 
 
     /**
      * Fired on double tap.
-     * @param {MouseEvent} event
+     *
      * @private
+     * @param {MouseEvent} event - Specifies mouse event.
+     * @returns {void}
      */
     public onDoubleTap = (event: MouseEvent): void => {
         if (!isNullOrUndefined(event.target) && event.target !== this.viewerContainer) {
@@ -1849,18 +1883,18 @@ export class DocumentHelper {
         }
         if (!isNullOrUndefined(this.selection)) {
             this.isTouchInput = false;
-            let cursorPoint: Point = new Point(event.offsetX, event.offsetY);
-            let touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, true);
+            const cursorPoint: Point = new Point(event.offsetX, event.offsetY);
+            const touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, true);
             if (this.selection.checkAndEnableHeaderFooter(cursorPoint, this.owner.viewer.findFocusedPage(cursorPoint, true))) {
                 return;
             }
-            let widget: LineWidget = this.getLineWidget(touchPoint);
+            const widget: LineWidget = this.getLineWidget(touchPoint);
             let formField: FieldElementBox = this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint, true);
             if (isNullOrUndefined(formField)) {
                 formField = this.selection.getCurrentFormField();
             }
             if (!this.isDocumentProtected && this.owner.enableFormField) {
-                let formatType: FormFieldType = this.selection.getFormFieldType(formField);
+                const formatType: FormFieldType = this.selection.getFormFieldType(formField);
                 if (formatType) {
                     if (formatType.toString() !== '') {
                         this.selection.selectField(formField);
@@ -1884,16 +1918,16 @@ export class DocumentHelper {
                 this.tapCount = 2;
                 return;
             }
-            let startPosition: TextPosition = this.selection.start.clone();
-            let endPosition: TextPosition = this.selection.end.clone();
-            let inlineObj: ElementInfo = startPosition.currentWidget.getInline(startPosition.offset, 0);
-            let inline: ElementBox = inlineObj.element;
+            const startPosition: TextPosition = this.selection.start.clone();
+            const endPosition: TextPosition = this.selection.end.clone();
+            const inlineObj: ElementInfo = startPosition.currentWidget.getInline(startPosition.offset, 0);
+            const inline: ElementBox = inlineObj.element;
             if (inline instanceof FootnoteElementBox) {
                 if (inline.footnoteType === 'Footnote') {
-                    let footnotes: FootNoteWidget = this.currentPage.footnoteWidget;
+                    const footnotes: FootNoteWidget = this.currentPage.footnoteWidget;
                     let i: number;
                     for (i = 1; i <= footnotes.childWidgets.length; i++) {
-                        let footnoteText: FootnoteElementBox = (footnotes.childWidgets[i] as BlockWidget).footNoteReference;
+                        const footnoteText: FootnoteElementBox = (footnotes.childWidgets[i] as BlockWidget).footNoteReference;
                         if (inline.text === footnoteText.text) {
                             break;
                         }
@@ -1902,16 +1936,16 @@ export class DocumentHelper {
                     endPosition.setPositionParagraph((footnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
                     this.selection.selectRange(startPosition, endPosition);
                 } else {
-                    let endnotes: FootNoteWidget = this.pages[this.pages.length - 1].endnoteWidget;
+                    const endnotes: FootNoteWidget = this.pages[this.pages.length - 1].endnoteWidget;
                     let i: number;
                     if (!isNullOrUndefined(endnotes)) {
-                    for (i = 1; i <= endnotes.childWidgets.length; i++) {
-                        let endnoteText: FootnoteElementBox = (endnotes.childWidgets[i] as BlockWidget).footNoteReference;
-                        if (inline.text === endnoteText.text) {
-                            break;
+                        for (i = 1; i <= endnotes.childWidgets.length; i++) {
+                            const endnoteText: FootnoteElementBox = (endnotes.childWidgets[i] as BlockWidget).footNoteReference;
+                            if (inline.text === endnoteText.text) {
+                                break;
+                            }
                         }
                     }
-                }
                     startPosition.setPositionParagraph((endnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
                     endPosition.setPositionParagraph((endnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
                     this.selection.selectRange(startPosition, endPosition);
@@ -1921,20 +1955,21 @@ export class DocumentHelper {
                     this.selection.footnoteReferenceElement(startPosition, endPosition, inline);
                 }
             }
-            // tslint:disable-next-line:max-line-length
             if (this.selection.isEmpty && !isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selection.start)) {
                 this.owner.selection.selectCurrentWord();
                 this.selection.checkForCursorVisibility();
                 this.tapCount = 2;
             }
         }
-    }
+    };
     /**
      * Called on mouse up.
-     * @param {MouseEvent} event
+     *
      * @private
+     * @param {MouseEvent} event - Specifies mouse event.
+     * @return {void}
      */
-    // tslint:disable:max-func-body-length
+    /* eslint-disable  */
     public onMouseUpInternal = (event: MouseEvent): void => {
         if (!isNullOrUndefined(event.target) && event.target !== this.viewerContainer) {
             return;
@@ -1984,7 +2019,6 @@ export class DocumentHelper {
                 if (isNullOrUndefined(formField)) {
                     formField = this.selection.getCurrentFormField(true);
                 }
-                // tslint:disable-next-line:max-line-length
                 if (formField && formField.formFieldData && formField.formFieldData.enabled && !this.selection.isInlineFormFillMode(formField)) {
                     let data: FormFieldFillEventArgs = { 'fieldName': formField.formFieldData.name };
                     if (formField.formFieldData instanceof TextFormField) {
@@ -1995,11 +2029,10 @@ export class DocumentHelper {
                         data.value = (formField.formFieldData as DropDownFormField).selectedIndex;
                     }
                     this.owner.trigger('beforeFormFieldFill', data);
-                    // tslint:disable-next-line:max-line-length
                     if (this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Popup' && !(formField.formFieldData instanceof CheckBoxFormField)
                         || (formField.formFieldData instanceof TextFormField && !(formField.formFieldData.type === 'Text'))
                         || formField.formFieldData instanceof DropDownFormField) {
-                        this.formFillPopup.showPopUp(formField, touchPoint);
+                        this.formFillPopup.showPopUp(formField);
                     } else {
                         this.owner.editor.toggleCheckBoxFormField(formField);
                         data.value = (formField.formFieldData as CheckBoxFormField).checked;
@@ -2015,7 +2048,6 @@ export class DocumentHelper {
                     let formField: FieldElementBox = this.selection.getCurrentFormField(true);
                     if (formField && formField.formFieldData instanceof TextFormField) {
                         this.selection.selectField();
-                        // tslint:disable-next-line:max-line-length
                     } else if (this.isLeftButtonPressed(event) && formField && formField.formFieldData instanceof DropDownFormField) {
                         let offset: number = formField.line.getOffset(formField, 0);
                         let point: Point = this.selection.getPhysicalPositionInternal(formField.line, offset, false);
@@ -2026,13 +2058,11 @@ export class DocumentHelper {
             if (!this.owner.isReadOnlyMode && this.isSelectionInListText(touchPoint)) {
                 this.selection.selectListText();
             }
-            // tslint:disable-next-line:max-line-length
             if (!this.owner.isReadOnlyMode && this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizing) {
                 this.owner.imageResizerModule.mouseUpInternal();
                 this.scrollToPosition(this.owner.selection.start, this.owner.selection.end);
                 this.owner.imageResizerModule.isImageResizing = false;
             }
-            // tslint:disable-next-line:max-line-length
             if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizerVisible && !isNullOrUndefined(this.selection.caret)) {
                 this.selection.caret.style.display = 'none';
             }
@@ -2069,19 +2099,14 @@ export class DocumentHelper {
         }
         return false;
     }
-    /**
-     * @private
-     */
     public isInShapeBorder(floatElement: ShapeElementBox, cursorPoint: Point): boolean {
         if (!isNullOrUndefined(floatElement) && floatElement instanceof ShapeElementBox) {
             let width: number = floatElement.width;
             let height: number = floatElement.height;
             let lineWidth: number = floatElement.lineFormat.weight;
-            // tslint:disable-next-line:max-line-length
             if (this.isInsideRect(floatElement.x - floatElement.margin.left, floatElement.y - floatElement.margin.top, width, height, cursorPoint)) {
                 // this.selectionLineWidget = this.getLineWidget(cursorPoint);
                 if (!(this.isInsideRect(floatElement.x + lineWidth, floatElement.y + lineWidth + floatElement.textFrame.marginTop,
-                    // tslint:disable-next-line:max-line-length
                     width - (lineWidth * 2), height - ((lineWidth * 2) + floatElement.textFrame.marginTop + floatElement.textFrame.marginBottom), cursorPoint))) {
                     return true;
                 }
@@ -2091,12 +2116,14 @@ export class DocumentHelper {
     }
     /**
      * Check whether touch point is inside the rectangle or not.
-     * @param x 
-     * @param y 
-     * @param width 
-     * @param height 
-     * @param touchPoint 
+     * 
      * @private
+     * @param {number} x - Specifies left position.
+     * @param {number} y - Specifies top position.
+     * @param {number} width - Specifies width.
+     * @param {number} height - Specifies height
+     * @param {Point} touchPoint - Specifies the point to check.
+     * @returns {boolean} - Return true if points intersect.
      */
     public isInsideRect(x: number, y: number, width: number, height: number, touchPoint: Point): boolean {
         if ((touchPoint.x > x && touchPoint.x <= x + width) && (touchPoint.y > y && touchPoint.y <= y + height)) {
@@ -2104,9 +2131,6 @@ export class DocumentHelper {
         }
         return false;
     }
-    /**
-     * @private
-     */
     public getLeftValue(widget: LineWidget): number {
         let left: number = widget.paragraph.x;
         let paragraphFormat: WParagraphFormat = (widget.paragraph as ParagraphWidget).paragraphFormat;
@@ -2126,6 +2150,9 @@ export class DocumentHelper {
     }
     /**
      * Checks whether left mouse button is pressed or not.
+     * 
+     * @param {MouseEvent} event - Specifies mouse event.
+     * @returns {boolean} - Returns true if left mouse button is clicked.
      */
     private isLeftButtonPressed(event: MouseEvent): boolean {
         this.isTouchInput = false;
@@ -2134,8 +2161,10 @@ export class DocumentHelper {
     }
     /**
      * Fired on touch start.
-     * @param {TouchEvent} event
+     * 
      * @private
+     * @param {TouchEvent} event - Specifies touch event.
+     * @returns {void}
      */
     public onTouchStartInternal = (event: Event): void => {
         if (this.selection) {
@@ -2173,7 +2202,6 @@ export class DocumentHelper {
                     let resizeObj: ImagePointInfo = this.owner.imageResizerModule.getImagePointOnTouch(point);
                     this.owner.imageResizerModule.selectedResizeElement = resizeObj.selectedElement;
                 }
-                // tslint:disable-next-line:max-line-length
                 if (this.owner.enableImageResizerMode && !isNullOrUndefined(this.owner.imageResizerModule.selectedResizeElement)) {
                     this.owner.imageResizerModule.isImageResizing = true;
                 }
@@ -2204,8 +2232,10 @@ export class DocumentHelper {
     }
     /**
      * Fired on long touch
-     * @param {TouchEvent} event
+     * 
      * @private
+     * @param {TouchEvent} event - Specifies touch event.
+     * @returns {void}
      */
     public onLongTouch = (event: TouchEvent): void => {
         if (isNullOrUndefined(this.owner) || isNullOrUndefined(this.viewerContainer) || this.isTouchMoved || event.touches.length !== 1) {
@@ -2244,16 +2274,16 @@ export class DocumentHelper {
         }
     }
     /**
-     * Fired on touch move.
-     * @param {TouchEvent} event
+     * 
      * @private
+     * @param {TouchEvent} event - Specifies touch event.
+     * @returns {void}
      */
     public onTouchMoveInternal = (event: TouchEvent): void => {
         this.isTouchMoved = true;
         let touch: TouchList = (event as TouchEvent).touches;
         let cursorPoint: Point;
         if (!isNullOrUndefined(this.selection)) {
-            // tslint:disable-next-line:max-line-length
             if (this.owner.editorModule && this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizing) {
                 event.preventDefault();
                 if (!this.owner.imageResizerModule.isImageMoveToNextPage) {
@@ -2289,7 +2319,6 @@ export class DocumentHelper {
             this.isMouseDown = false;
             this.zoomX = (touch[0].clientX + touch[1].clientX) / 2;
             this.zoomY = (touch[0].clientY + touch[1].clientY) / 2;
-            // tslint:disable-next-line:max-line-length
             let currentDiff: number = Math.sqrt(Math.pow((touch[0].clientX - touch[1].clientX), 2) + Math.pow((touch[0].clientY - touch[1].clientY), 2));
             if (this.preDifference > -1) {
                 if (currentDiff > this.preDifference) {
@@ -2319,8 +2348,10 @@ export class DocumentHelper {
     }
     /**
      * Fired on touch up.
-     * @param {TouchEvent} event
+     * 
      * @private
+     * @param {TouchEvent} event - Specifies touch event.
+     * @returns {void}
      */
     public onTouchUpInternal = (event: TouchEvent): void => {
         if (!isNullOrUndefined(this.selection)) {
@@ -2347,7 +2378,7 @@ export class DocumentHelper {
                 this.owner.imageResizerModule.isImageMoveToNextPage = false;
                 this.scrollToPosition(this.owner.selection.start, this.owner.selection.end);
             }
-            // tslint:disable-next-line:max-line-length
+
             if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizerVisible && this.isTouchInput) {
                 this.touchStart.style.display = 'none';
                 this.touchEnd.style.display = 'none';
@@ -2370,15 +2401,10 @@ export class DocumentHelper {
             this.selection.hideCaret();
         }
     }
-    /**
-     * Updates selection for touch position.
-     * @param point 
-     * @param touchPoint 
-     */
+
     private updateSelectionOnTouch(point: Point, touchPoint: Point): void {
         this.zoomX = undefined;
         this.zoomY = undefined;
-        // tslint:disable-next-line:max-line-length
         if (this.isMouseDown && !this.isSelectionChangedOnMouseMoved && !isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selection.start)) {
             if (this.touchDownOnSelectionMark === 0) {
                 this.updateTextPositionForSelection(new Point(touchPoint.x, touchPoint.y), this.tapCount);
@@ -2398,7 +2424,10 @@ export class DocumentHelper {
     }
     /**
      * Gets touch offset value.
+     * 
      * @private
+     * @param {TouchEvent} event - Specifies touch event
+     * @returns {Point}  - Returns modified touch offset
      */
     public getTouchOffsetValue(event: TouchEvent): Point {
         let targetElement: HTMLElement = this.viewerContainer as HTMLElement;
@@ -2413,8 +2442,10 @@ export class DocumentHelper {
     }
     /**
      * Fired on pinch zoom in.
-     * @param {TouchEvent} event
+     * 
      * @private
+     * @param {TouchEvent} event - Specifies touch event
+     * @returns {void}
      */
     public onPinchInInternal(event: TouchEvent): void {
         this.preZoomFactor = this.zoomFactor;
@@ -2427,10 +2458,7 @@ export class DocumentHelper {
         }
         this.zoomFactor = updatedZoomFactor;
     }
-    /**
-     * Fired on pinch zoom out.
-     * @param {TouchEvent} event
-     */
+
     private onPinchOutInternal(event: TouchEvent): void {
         this.preZoomFactor = this.zoomFactor;
         let updatedZoomFactor: number = this.zoomFactor + 0.01;
@@ -2442,10 +2470,6 @@ export class DocumentHelper {
         }
         this.zoomFactor = updatedZoomFactor;
     }
-    /**
-     * Gets page width.
-     * @private
-     */
     public getPageWidth(page: Page): number {
         let width: number = page.boundingRectangle.width;
         return width;
@@ -2455,6 +2479,8 @@ export class DocumentHelper {
     /**
      * Removes specified page.
      * @private
+     * @param {Page} page - Specifies page to remove
+     * @returns {void}
      */
     public removePage(page: Page): void {
         if (this.currentPage === page) {
@@ -2487,7 +2513,6 @@ export class DocumentHelper {
             for (let i: number = index; i < this.pages.length; i++) {
                 //Update bounding rectangle of next pages in collection.
                 page = this.pages[i];
-                // tslint:disable-next-line:max-line-length
                 page.boundingRectangle = new Rect(page.boundingRectangle.x, top, page.boundingRectangle.width, page.boundingRectangle.height);
                 top = page.boundingRectangle.bottom + 20;
                 page.repeatHeaderRowTableWidget = false;
@@ -2502,7 +2527,9 @@ export class DocumentHelper {
 
     /**
      * Updates viewer size on window resize.
+     * 
      * @private
+     * @returns {void}
      */
     public updateViewerSize(): void {
         let element: HTMLElement = this.owner.getDocumentEditorElement();
@@ -2512,23 +2539,25 @@ export class DocumentHelper {
             if (this.resizerTimer) {
                 clearTimeout(this.resizerTimer);
             }
-            /* tslint:disable:align */
+            /* eslint-disable @typescript-eslint/indent */
             this.resizerTimer = setTimeout((): void => {
-                let currentVisibleWidth: number;
-                if (!isNullOrUndefined(this.visibleBounds)) {
-                    currentVisibleWidth = this.visibleBounds.width;
-                } else {
-                    currentVisibleWidth = 0;
-                }
-                if (isNullOrUndefined(this.owner.viewer.preVisibleWidth)) {
-                    this.owner.viewer.preVisibleWidth = 0;
-                }
-                if ((!isNullOrUndefined(this.visibleBounds) && (currentVisibleWidth !== this.owner.viewer.preVisibleWidth))) {
-                    this.owner.editorModule.layoutWholeDocument();
-                    this.owner.viewer.preVisibleWidth = currentVisibleWidth;
-                }
-                if (this.resizerTimer) {
-                    clearTimeout(this.resizerTimer);
+                if (!isNullOrUndefined(this.owner)) {
+                    let currentVisibleWidth: number;
+                    if (!isNullOrUndefined(this.visibleBounds)) {
+                        currentVisibleWidth = this.visibleBounds.width;
+                    } else {
+                        currentVisibleWidth = 0;
+                    }
+                    if (isNullOrUndefined(this.owner.viewer.preVisibleWidth)) {
+                        this.owner.viewer.preVisibleWidth = 0;
+                    }
+                    if ((!isNullOrUndefined(this.visibleBounds) && (currentVisibleWidth !== this.owner.viewer.preVisibleWidth))) {
+                        this.owner.editorModule.layoutWholeDocument();
+                        this.owner.viewer.preVisibleWidth = currentVisibleWidth;
+                    }
+                    if (this.resizerTimer) {
+                        clearTimeout(this.resizerTimer);
+                    }
                 }
             }, 50);
         }
@@ -2536,9 +2565,6 @@ export class DocumentHelper {
             this.selection.updateCaretPosition();
         }
     }
-    /**
-     * Updates viewer size.
-     */
     private updateViewerSizeInternal(element: HTMLElement): void {
         if (!isNullOrUndefined(element)) {
             let rect: ClientRect = element.getBoundingClientRect();
@@ -2571,7 +2597,11 @@ export class DocumentHelper {
     }
     /**
      * Inserts page in specified index.
+     * 
      * @private
+     * @param {number} index - Specifes index to insert page
+     * @param {Page} page - Page to insert.
+     * @returns {void}
      */
     public insertPage(index: number, page: Page): void {
         if (this.pages.indexOf(page) > -1) {
@@ -2590,13 +2620,6 @@ export class DocumentHelper {
         }
     }
 
-    /**
-     * Updates text position for selection.
-     * @param cursorPoint 
-     * @param tapCount 
-     * @param clearMultiSelection 
-     * @private
-     */
     public updateTextPositionForSelection(cursorPoint: Point, tapCount: number): void {
         let widget: LineWidget = this.getLineWidget(cursorPoint);
         if (!isNullOrUndefined(widget)) {
@@ -2618,12 +2641,6 @@ export class DocumentHelper {
             }
         }
     }
-    /**
-     * Scrolls to specified position.
-     * @param startPosition 
-     * @param endPosition 
-     * @private
-     */
     public scrollToPosition(startPosition: TextPosition, endPosition: TextPosition, skipCursorUpdate?: boolean): void {
         if (this.skipScrollToPosition || this.isWebPrinting) {
             this.skipScrollToPosition = false;
@@ -2662,7 +2679,6 @@ export class DocumentHelper {
         if (x < 30) {
             x = 30;
         }
-        // tslint:disable-next-line:max-line-length
         y = endPage.boundingRectangle.y * this.zoomFactor + (this.pages.indexOf(endPage) + 1) * (this.owner.viewer as PageLayoutViewer).pageGap * (1 - this.zoomFactor);
         let scrollTop: number = this.owner.viewer.containerTop;
         let scrollLeft: number = this.owner.viewer.containerLeft;
@@ -2689,17 +2705,9 @@ export class DocumentHelper {
             this.viewerContainer.scrollLeft = scrollLeft + (this.pageContainer.offsetWidth / 100) * 15 + scrollBarWidth;
         }
     }
-    /**
-     * Gets line widget using cursor point.
-     * @private
-     */
     public getLineWidget(cursorPoint: Point): LineWidget {
         return this.getLineWidgetInternal(cursorPoint, false);
     }
-    /**
-     * Gets line widget.
-     * @private
-     */
     public getLineWidgetInternal(cursorPoint: Point, isMouseDragged: boolean): LineWidget {
         let widget: LineWidget = undefined;
         if (!isNullOrUndefined(this.currentPage)) {
@@ -2745,7 +2753,6 @@ export class DocumentHelper {
                     }
                     widget = this.selection.getLineWidgetBodyWidget((shapeInfo.element as ShapeElementBox).textFrame, cursorPoint);
                 } else if (isMouseDragged && this.isFootnoteWidget) {
-                    // tslint:disable-next-line:max-line-length
                     if (this.selection.start.paragraph.footNoteReference !== undefined && this.selection.start.paragraph.containerWidget instanceof FootNoteWidget && this.selection.start.paragraph.containerWidget.footNoteType === 'Footnote') {
                         return this.selection.getLineWidgetBodyWidget(this.currentPage.footnoteWidget, cursorPoint);
                     } else if (this.selection.start.paragraph.footNoteReference !== undefined &&
@@ -2754,7 +2761,6 @@ export class DocumentHelper {
                         return this.selection.getLineWidgetBodyWidget(this.currentPage.endnoteWidget, cursorPoint);
                     }
                 } else {
-                    // tslint:disable-next-line:max-line-length
                     if (!isMouseDragged && this.currentPage.footnoteWidget && this.isInFootnoteWidget(this.currentPage.footnoteWidget, cursorPoint)) {
                         widget = this.selection.getLineWidgetBodyWidget(this.currentPage.footnoteWidget, cursorPoint);
                         if (widget) {
@@ -2791,9 +2797,6 @@ export class DocumentHelper {
         }
         return false;
     }
-    /**
-     * @private
-     */
     private checkFloatingItems(blockContainer: BlockContainer, cursorPoint: Point, isMouseDragged: boolean): ShapeInfo {
         let isInShape: boolean = false;
         let isInShapeBorder: boolean = false;
@@ -2802,7 +2805,7 @@ export class DocumentHelper {
         let isMouseDraggedInShape: boolean = isMouseDragged && selectionInShape;
         if (blockContainer.floatingElements.length > 0) {
             let page: Page = this.currentPage;
-            /* tslint:disable */
+            /* eslint-disable */
             blockContainer.floatingElements.sort(function (a, b) { return b.zOrderPosition - a.zOrderPosition; });
             if (isMouseDraggedInShape) {
                 let textFrame: TextFrame = this.owner.selection.getCurrentTextFrame();
@@ -2835,9 +2838,6 @@ export class DocumentHelper {
             'isInShapeBorder': isInShapeBorder
         }
     }
-    /**
-     * @private
-     */
     public isBlockInHeader(block: Widget): boolean {
         while (!(block.containerWidget instanceof HeaderFooterWidget)) {
             if (!block.containerWidget) {
@@ -2850,10 +2850,6 @@ export class DocumentHelper {
         }
         return (block.containerWidget as HeaderFooterWidget).headerFooterType.indexOf('Header') !== -1;
     }
-    /**
-     * Clears selection highlight.
-     * @private
-     */
     public clearSelectionHighlight(): void {
         let canClear: boolean = true;
         canClear = (!this.isControlPressed || !this.isMouseDown);
@@ -2868,7 +2864,10 @@ export class DocumentHelper {
     }
     /**
      * Fired on keyup event.
+     * 
      * @private
+     * @param {KeyboardEvent} event - Specifies keyboard event.
+     * @returns {void}
      */
     public onKeyUpInternal = (event: KeyboardEvent): void => {
         if (Browser.isDevice && (event.target as HTMLElement) === this.editableDiv) {
@@ -2882,7 +2881,10 @@ export class DocumentHelper {
     }
     /**
      * Fired on keydown.
+     * 
      * @private
+     * @param {KeyboardEvent} event - Specifies keyboard event.
+     * @returns {void}
      */
     public onKeyDownInternal = (event: KeyboardEvent): void => {
         if (!isNullOrUndefined(event.target) && (event.target as HTMLElement) !== this.editableDiv) {
@@ -2921,13 +2923,14 @@ export class DocumentHelper {
     }
     /**
      * @private
+     * @returns {void}
      */
     public removeEmptyPages(): void {
         let scrollToLastPage: boolean = false;
         for (let j: number = 0; j < this.pages.length; j++) {
             let page: Page = this.pages[j];
             if (page.bodyWidgets.length === 0 || page.bodyWidgets[0].childWidgets.length === 0) {
-                // tslint:disable-next-line:max-line-length
+
                 if (j === this.pages.length - 1 && this.owner.viewer instanceof PageLayoutViewer && this.owner.viewer.visiblePages.indexOf(this.pages[j]) !== -1) {
                     scrollToLastPage = true;
                 }
@@ -2941,6 +2944,7 @@ export class DocumentHelper {
     }
     /**
      * @private
+     * @returns {void}
      */
     public scrollToBottom(): void {
         if (this.selection.start.paragraph && this.selection.start.paragraph.bodyWidget) {
@@ -2949,10 +2953,6 @@ export class DocumentHelper {
             this.viewerContainer.scrollTop = page.boundingRectangle.bottom - containerHeight;
         }
     }
-    /**
-     * Returns the field code result.
-     * @private
-     */
     public getFieldResult(fieldBegin: FieldElementBox, page: Page): string {
         if (!isNullOrUndefined(page) && !isNullOrUndefined(this.selection)) {
             let fieldCode: string = this.selection.getFieldCode(fieldBegin);
@@ -3004,9 +3004,6 @@ export class DocumentHelper {
         }
         return '';
     }
-    /**
-     * Returns field text.
-     */
     private getFieldText(pattern: string, value: number): string {
         switch (pattern) {
             case 'ALPHABETIC':
@@ -3023,6 +3020,8 @@ export class DocumentHelper {
     }
     /**
      * Destroys the internal objects maintained for control.
+     * 
+     * @returns {void}
      */
     public destroy(): void {
         if (!isNullOrUndefined(this.owner)) {
@@ -3107,6 +3106,8 @@ export class DocumentHelper {
     }
     /**
      * Un-Wires events and methods
+     * 
+     * @returns {void}
      */
     private unWireEvent(): void {
         this.viewerContainer.removeEventListener('scroll', this.scrollHandler);
@@ -3134,13 +3135,9 @@ export class DocumentHelper {
         this.viewerContainer.removeEventListener('dblclick', this.onDoubleTap);
         window.removeEventListener('resize', this.onWindowResize);
         window.removeEventListener('keyup', this.onKeyUpInternal);
-        window.removeEventListener('mouseup', this.onImageResizer);
-        window.removeEventListener('touchend', this.onImageResizer);
+        window.removeEventListener('mouseup', this.onImageResizer.bind(this));
+        window.removeEventListener('touchend', this.onImageResizer.bind(this));
     }
-    /**
-     * updateCursor
-     * @private
-     */
     public updateCursor(event: MouseEvent): void {
         let hyperlinkField: FieldElementBox = undefined;
         let footnoteElement: FootnoteElementBox = undefined;
@@ -3187,7 +3184,6 @@ export class DocumentHelper {
                 this.selection.setHyperlinkContentToToolTip(hyperlinkField, widget, touchPoint.x, false);
             }
             if (formField) {
-                // tslint:disable-next-line:max-line-length
                 let isInlineFormFillMode: boolean = (formField.formFieldData instanceof TextFormField) && formField.formFieldData.type === 'Text';
                 if (this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline' && isInlineFormFillMode) {
                     //Update text cursor in text form field.
@@ -3236,14 +3232,11 @@ export class DocumentHelper {
             }
             return;
         } else if (touchPoint.x >= lineLeft &&
-            // tslint:disable-next-line:max-line-length
             event.offsetX < (this.visibleBounds.width - (this.visibleBounds.width - this.viewerContainer.clientWidth)) &&
-            // tslint:disable-next-line:max-line-length
             event.offsetY < (this.visibleBounds.height - (this.visibleBounds.height - this.viewerContainer.clientHeight))) {
             if (this.selection.isEmpty) {
                 div.style.cursor = 'text';
             } else {
-                // tslint:disable-next-line:max-line-length
                 div.style.cursor = this.selection.checkCursorIsInSelection(widget, touchPoint) ? 'default' : 'text';
             }
         } else {
@@ -3268,6 +3261,10 @@ export class DocumentHelper {
         }
     }
 }
+
+/**
+ * @private
+ */
 export abstract class LayoutViewer {
     public owner: DocumentEditor;
     constructor(owner: DocumentEditor) {
@@ -3323,20 +3320,15 @@ export abstract class LayoutViewer {
         this.pageFitTypeIn = value;
         this.onPageFitTypeChanged(this.pageFitTypeIn);
     }
-    /**
-     * @private
-     */
-    public updateClientArea(sectionFormat: WSectionFormat, page: Page, isRelayout?: boolean): void {
+    public updateClientArea(sectionFormat: WSectionFormat, page: Page, isReLayout?: boolean): void {
         let width: number = 0; let height: number = 0;
         if (this instanceof WebLayoutViewer) {
             let top: number = 0;
-            // tslint:disable-next-line:max-line-length
             width = (this.documentHelper.visibleBounds.width - (this.padding.right * 4) - (this.padding.left * 2)) / this.documentHelper.zoomFactor;
             if (width < 0) {
                 width = 0;
             }
             height = Number.POSITIVE_INFINITY;
-            // tslint:disable-next-line:max-line-length
             this.clientArea = new Rect(this.padding.left / this.documentHelper.zoomFactor, top, width, height);
             this.clientActiveArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
         } else {
@@ -3362,7 +3354,7 @@ export abstract class LayoutViewer {
                 isEmptyWidget = page.footerWidget.isEmpty;
                 let footnoteHeight: number = !isNullOrUndefined(page.footnoteWidget) ? page.footnoteWidget.height : 0;
                 if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height + footnoteHeight, bottomMargin));
                 }
             }
@@ -3374,53 +3366,34 @@ export abstract class LayoutViewer {
                 width = 0;
             }
             this.clientArea = new Rect(HelperMethods.convertPointToPixel(sectionFormat.leftMargin), top, width, pageHeight - top - bottom);
-            if (isRelayout && page.footnoteWidget) {
+            if (isReLayout && page.footnoteWidget) {
                 this.clientArea.height -= page.footnoteWidget.height;
             }
             this.clientActiveArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
         }
     }
-    /**
-     * Updates client area left or top position.
-     * @private
-     */
     public updateClientAreaTopOrLeft(tableWidget: TableWidget, beforeLayout: boolean): void {
         if (beforeLayout) {
             this.clientActiveArea.y = this.clientActiveArea.y + tableWidget.topBorderWidth;
             this.clientActiveArea.x = this.clientActiveArea.x + tableWidget.leftBorderWidth;
         }
     }
-    /**
-     * Updates client area for table.
-     * @private
-     */
     public updateClientAreaForTable(tableWidget: TableWidget): void {
         this.clientActiveArea.x = this.clientArea.x = tableWidget.x;
         this.clientActiveArea.width = this.clientArea.width = tableWidget.width;
     }
-    /**
-     * Updates client area for row.
-     * @private
-     */
     public updateClientAreaForRow(row: TableRowWidget, beforeLayout: boolean): void {
-        // tslint:disable-next-line:max-line-length
         let tableWidget: TableWidget = row.ownerTable as TableWidget;
         if (beforeLayout) {
-            //tslint:disable:no-empty
         } else {
             this.clientActiveArea.x = this.clientArea.x = tableWidget.x;
             this.clientActiveArea.width = this.clientArea.width = tableWidget.width;
             this.clientArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
-            // tslint:disable-next-line:max-line-length
             this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height - this.documentHelper.layout.footnoteHeight);
         }
     }
-    /**
-     * Updates client area for cell.
-     * @private
-     */
     public updateClientAreaForCell(cell: TableCellWidget, beforeLayout: boolean): void {
-        // tslint:disable-next-line:max-line-length
+
         let rowWidget: TableRowWidget = (cell as TableCellWidget).ownerRow as TableRowWidget;
         let cellWidget: TableCellWidget = cell as TableCellWidget;
         if (beforeLayout) {
@@ -3431,7 +3404,6 @@ export abstract class LayoutViewer {
                 this.clientActiveArea.height = Number.POSITIVE_INFINITY;
             }
             this.clientArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
-            // tslint:disable-next-line:max-line-length
             this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height);
         } else {
             this.clientActiveArea.x = this.clientArea.x = cellWidget.x + cellWidget.width + cellWidget.margin.right;
@@ -3440,20 +3412,14 @@ export abstract class LayoutViewer {
             } else {
                 this.clientActiveArea.width = this.clientArea.width = rowWidget.x + rowWidget.width - this.clientArea.x;
             }
-            // tslint:disable-next-line:max-line-length
             this.clientActiveArea.y = cellWidget.y - cellWidget.margin.top - HelperMethods.convertPointToPixel(cell.ownerTable.tableFormat.cellSpacing);
             if (!cell.ownerTable.isInsideTable) {
                 this.clientActiveArea.height = this.clientArea.bottom - rowWidget.y > 0 ? this.clientArea.bottom - rowWidget.y : 0;
             }
             this.clientArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
-            // tslint:disable-next-line:max-line-length
             this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height);
         }
     }
-    /**
-     * Updates client area for TextBox shape.
-     * @private
-     */
     public updateClientAreaForTextBoxShape(textBox: ShapeElementBox, beforeLayout: boolean): void {
         if (beforeLayout) {
             let marginLeft: number = HelperMethods.convertPointToPixel(textBox.textFrame.marginLeft);
@@ -3462,47 +3428,27 @@ export abstract class LayoutViewer {
             let marginBottom: number = HelperMethods.convertPointToPixel(textBox.textFrame.marginBottom);
             let width: number = textBox.width;
             let height: number = Number.POSITIVE_INFINITY;
-            // tslint:disable-next-line:max-line-length
             this.clientArea = new Rect(textBox.x + marginLeft, textBox.y + marginTop, width - marginLeft - marginRight, height - marginTop - marginBottom);
             this.clientActiveArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
         }
     }
-    /**
-    * Updates the client area based on widget.
-    * @private
-    */
-    public updateClientAreaByWidgetfootnote(widget: FootNoteWidget): void {
+    public updateClientAreaByWidgetFootNote(widget: FootNoteWidget): void {
         this.clientArea.x = widget.x;
         this.clientArea.y = widget.y;
         this.clientActiveArea.x = widget.x;
         this.clientActiveArea.y = widget.y;
     }
-    /**
-     * Updates the client area based on widget.
-     * @private
-     */
     public updateClientAreaByWidget(widget: ParagraphWidget): void {
         this.clientArea.x = widget.x;
         this.clientArea.y = widget.y;
         this.clientActiveArea.x = widget.x;
         this.clientActiveArea.y = widget.y;
     }
-    //Widget
-    /**
-     * Updates client area location.    
-     * @param widget 
-     * @param area 
-     * @private
-     */
     public updateClientAreaLocation(widget: Widget, area: Rect): void {
         widget.x = area.x;
         widget.y = area.y;
         widget.width = area.width;
     }
-    /**
-     * Updates client area for block.
-     * @private
-     */
     public updateClientAreaForBlock(block: BlockWidget, beforeLayout: boolean, tableCollection?: TableWidget[]): void {
         let leftIndent: number = HelperMethods.convertPointToPixel((block as BlockWidget).leftIndent);
         let rightIndent: number = HelperMethods.convertPointToPixel((block as BlockWidget).rightIndent);
@@ -3518,7 +3464,6 @@ export abstract class LayoutViewer {
                 tableWidget.x = this.clientActiveArea.x;
                 tableWidget.y = this.clientActiveArea.y;
             } else {
-                // tslint:disable-next-line:max-line-length
                 if (block instanceof TableWidget && !isNullOrUndefined((block as TableWidget).tableFormat)) {
                     if (!block.isGridUpdated) {
                         block.buildTableColumns();
@@ -3531,7 +3476,6 @@ export abstract class LayoutViewer {
                         // Otherwise, calculate the width.
                         tableWidth = HelperMethods.convertPointToPixel(block.tableHolder.getTotalWidth(0));
                         tableWidth = tableWidth === 0 ? block.tableHolder.tableWidth === 0 ?
-                            // tslint:disable-next-line:max-line-length
                             block.getTableClientWidth(block.getOwnerWidth(false)) : block.tableHolder.tableWidth : tableWidth;
                         // Fore resizing table, the tableholder table width taken for updated width. 
                         // Since, the columns will be cleared if we performed resizing.
@@ -3549,7 +3493,6 @@ export abstract class LayoutViewer {
                             rightIndent = leftIndent;
                         }
                         if (!block.isInsideTable) {
-                            // tslint:disable-next-line:max-line-length
                             //leftIndent = (block.tableFormat.horizontalPositionAbs === 'Left') ? block.tableFormat.horizontalPosition : leftIndent;
                         }
                         this.documentHelper.tableLefts.push(leftIndent);
@@ -3580,7 +3523,6 @@ export abstract class LayoutViewer {
             this.clientActiveArea.x = this.clientArea.x = this.clientArea.x - (bidi ? rightIndent : leftIndent);
         }
         this.clientArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
-        // tslint:disable-next-line:max-line-length
         this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height);
     }
 
@@ -3595,10 +3537,6 @@ export abstract class LayoutViewer {
         }
         return tableAlignment;
     }
-    /**
-     * Updates client active area left.
-     * @private
-     */
     public cutFromLeft(x: number): void {
         if (x < this.clientActiveArea.x) {
             x = this.clientActiveArea.x;
@@ -3609,10 +3547,6 @@ export abstract class LayoutViewer {
         this.clientActiveArea.width = this.clientActiveArea.right > x ? this.clientActiveArea.right - x : 0;
         this.clientActiveArea.x = x;
     }
-    /**
-     * Updates client active area top.
-     * @private
-     */
     public cutFromTop(y: number): void {
         if (y < this.clientActiveArea.y) {
             y = this.clientActiveArea.y;
@@ -3625,10 +3559,6 @@ export abstract class LayoutViewer {
         this.clientActiveArea.width = this.clientArea.width;
         this.clientActiveArea.y = y;
     }
-    /**
-     * Updates client width.
-     * @private
-     */
     public updateClientWidth(width: number): void {
         this.clientActiveArea.x -= width;
         if (this.clientActiveArea.width + width > 0) {
@@ -3637,17 +3567,12 @@ export abstract class LayoutViewer {
             this.clientActiveArea.width = 0;
         }
     }
-    /**
-     * Finds focused page.
-     * @private
-     */
     public findFocusedPage(currentPoint: Point, updateCurrentPage: boolean): Point {
         let point: Point = new Point(currentPoint.x, currentPoint.y);
         point.x += this.documentHelper.viewerContainer.scrollLeft;
         point.y += this.documentHelper.viewerContainer.scrollTop;
         for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
             let page: Page = this.documentHelper.pages[i];
-            // tslint:disable-next-line:max-line-length
             let pageTop: number = (page.boundingRectangle.y - this.pageGap * (i + 1)) * this.documentHelper.zoomFactor + this.pageGap * (i + 1);
             let pageHeight: number = (page.boundingRectangle.height * this.documentHelper.zoomFactor) + this.pageGap;
             let pageLeft: number = page.boundingRectangle.x;
@@ -3674,9 +3599,6 @@ export abstract class LayoutViewer {
         }
         return point;
     }
-    /**
-     * @private
-     */
     public getPageHeightAndWidth(height: number, width: number, viewerWidth: number, viewerHeight: number): PageInfo {
         height = 0;
         for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
@@ -3698,10 +3620,6 @@ export abstract class LayoutViewer {
             'viewerHeight': viewerHeight
         };
     }
-    /**
-     * Renders visible pages.
-     * @private
-     */
     public renderVisiblePages(): void {
         if (isNullOrUndefined(this.visiblePages) || this.visiblePages.length < 1) {
             return;
@@ -3716,7 +3634,7 @@ export abstract class LayoutViewer {
             this.owner.viewer.renderPage(page, x, y, width, height);
         }
     }
-    // tslint:disable:max-func-body-length
+    /* eslint-disable  */
     public handleZoom(): void {
         let prevScaleFactor: number = this.documentHelper.preZoomFactor;
         let page: Page = null;
@@ -3730,7 +3648,6 @@ export abstract class LayoutViewer {
             if (x < 30) {
                 x = 30;
             }
-            // tslint:disable-next-line:max-line-length
             y = endPage.boundingRectangle.y * prevScaleFactor + (this.documentHelper.pages.indexOf(endPage) + 1) * this.pageGap * (1 - prevScaleFactor);
             let caretInfo: CaretHeightInfo = this.documentHelper.selection.updateCaretSize(this.owner.selection.end, true);
             let topMargin: number = caretInfo.topMargin;
@@ -3751,7 +3668,6 @@ export abstract class LayoutViewer {
                 horizontalWidth = this.documentHelper.pages[i].boundingRectangle.width;
             }
         }
-        // tslint:disable-next-line:max-line-length
         let height: number = (verticalHeight * this.documentHelper.zoomFactor + (this.documentHelper.pages.length + 1) * this.pageGap * (1 - this.documentHelper.zoomFactor)) - this.documentHelper.visibleBounds.height;
         let horWidth: number = horizontalWidth * this.documentHelper.zoomFactor - this.documentHelper.visibleBounds.width;
         if (this.documentHelper.visibleBounds.width - horizontalWidth * this.documentHelper.zoomFactor < 60) {
@@ -3762,7 +3678,6 @@ export abstract class LayoutViewer {
             let value: number = this.containerTop;
             if (this.visiblePages.length > 0) {
                 page = this.visiblePages[0];
-                // tslint:disable-next-line:max-line-length
                 let prevPageTop: number = (page.boundingRectangle.y - (page.index + 1) * this.pageGap) * prevScaleFactor + (page.index + 1) * this.pageGap;
                 let zoomY: number = this.documentHelper.zoomY;
                 if (isNullOrUndefined) {
@@ -3775,10 +3690,8 @@ export abstract class LayoutViewer {
                         break;
                     }
                     page = this.documentHelper.pages[pageIndex];
-                    // tslint:disable-next-line:max-line-length
                     prevPageTop = (page.boundingRectangle.y - (page.index + 1) * this.pageGap) * prevScaleFactor + (page.index + 1) * this.pageGap;
                 }
-                // tslint:disable-next-line:max-line-length
                 let currentY: number = (page.boundingRectangle.y - (page.index + 1) * this.pageGap) * this.documentHelper.zoomFactor + (page.index + 1) * this.pageGap
                     + ((prevY - prevPageTop) < 0 ? prevY - prevPageTop : (prevY - prevPageTop) * (this.documentHelper.zoomFactor / prevScaleFactor));
                 value = currentY - zoomY;
@@ -3801,7 +3714,6 @@ export abstract class LayoutViewer {
                 }
                 let prevValue: number = (page.boundingRectangle.width * prevScaleFactor) / page.boundingRectangle.width;
                 let prevX: number = value + zoomX;
-                // tslint:disable-next-line:max-line-length
                 let currentX: number = page.boundingRectangle.x
                     + ((prevX - page.boundingRectangle.x) < 0 ? prevX - page.boundingRectangle.x : (prevX - page.boundingRectangle.x) * (this.documentHelper.zoomFactor / prevValue));
                 value = currentX - zoomX;
@@ -3819,10 +3731,6 @@ export abstract class LayoutViewer {
             this.owner.editorModule.layoutWholeDocument();
         }
     }
-    /**
-     * @private
-     */
-    // tslint:disable-next-line:max-line-length
     public updateCanvasWidthAndHeight(viewerWidth: number, viewerHeight: number, containerHeight: number, containerWidth: number, width: number, height: number): CanvasInfo {
         if (this instanceof PageLayoutViewer) {
             if (this.documentHelper.visibleBounds.width !== this.documentHelper.viewerContainer.clientWidth) {
@@ -3871,10 +3779,6 @@ export abstract class LayoutViewer {
             'containerWidth': containerWidth
         };
     }
-    /**
-     * @private
-     */
-    // tslint:disable-next-line:max-line-length
     public updateScrollBarPosition(containerWidth: number, containerHeight: number, viewerWidth: number, viewerHeight: number, width: number, height: number): void {
         this.owner.viewer.containerTop = this.documentHelper.viewerContainer.scrollTop;
         this.documentHelper.containerCanvas.style.position = 'absolute';
@@ -3937,13 +3841,9 @@ export class PageLayoutViewer extends LayoutViewer {
         // }
         this.owner = owner;
     }
-    get documentHelper(): DocumentHelper {
+    public get documentHelper(): DocumentHelper {
         return this.owner.documentHelper;
     }
-    /**
-     * Creates new page.
-     * @private
-     */
     public createNewPage(section: BodyWidget, index?: number): Page {
         let viewer: PageLayoutViewer = this;
         let yPos: number = this.pageGap;
@@ -3951,7 +3851,7 @@ export class PageLayoutViewer extends LayoutViewer {
             yPos = this.documentHelper.pages[this.documentHelper.pages.length - 1].boundingRectangle.bottom + this.pageGap;
         }
         let page: Page = new Page(this.documentHelper);
-        this.updatePageBoundingRectange(section, page, yPos);
+        this.updatePageBoundingRectangle(section, page, yPos);
         if (isNullOrUndefined(index)) {
             this.documentHelper.pages.push(page);
         } else {
@@ -3964,25 +3864,16 @@ export class PageLayoutViewer extends LayoutViewer {
         this.updateClientArea(section.sectionFormat, page);
         return page;
     }
-    /**
-     * @private
-     */
-    public updatePageBoundingRectange(section: BodyWidget, page: Page, yPos: number): void {
+    public updatePageBoundingRectangle(section: BodyWidget, page: Page, yPosition: number): void {
         //page.viewer = this;
-        // tslint:disable-next-line:max-line-length
         let pageWidth: number = !isNullOrUndefined(section.sectionFormat) ? HelperMethods.convertPointToPixel(section.sectionFormat.pageWidth) : 816;
-        // tslint:disable-next-line:max-line-length
         let pageHeight: number = !isNullOrUndefined(section.sectionFormat) ? HelperMethods.convertPointToPixel(section.sectionFormat.pageHeight) : 1056;
         let xPos: number = (this.documentHelper.visibleBounds.width - pageWidth * this.documentHelper.zoomFactor) / 2;
         if (xPos < this.pageLeft) {
             xPos = this.pageLeft;
         }
-        page.boundingRectangle = new Rect(xPos, yPos, pageWidth, pageHeight);
+        page.boundingRectangle = new Rect(xPos, yPosition, pageWidth, pageHeight);
     }
-    /**
-     * Fired when page fit type changed.
-     * @private
-     */
     public onPageFitTypeChanged(pageFitType: PageFitType): void {
         let width: number = this.documentHelper.visibleBounds.width;
         let height: number = this.documentHelper.visibleBounds.height;
@@ -3992,7 +3883,6 @@ export class PageLayoutViewer extends LayoutViewer {
         switch (pageFitType) {
             case 'FitOnePage':
                 if (height > 0 && pageHeight > 0) {
-                    // tslint:disable-next-line:max-line-length
                     let zoomFactor: number = (this.documentHelper.visibleBounds.height - 2 * this.pageGap - (this.pageGap - 2)) / pageHeight;
                     if (zoomFactor === this.documentHelper.zoomFactor) {
                         if (!isNullOrUndefined(this.owner.selection) && !isNullOrUndefined(this.owner.selection.start) &&
@@ -4014,22 +3904,13 @@ export class PageLayoutViewer extends LayoutViewer {
                 break;
         }
     }
-    /**
-     * Gets current page header footer.
-     * @private
-     */
     public getCurrentPageHeaderFooter(section: BodyWidget, isHeader: boolean): HeaderFooterWidget {
         return this.getCurrentHeaderFooter(this.getHeaderFooterType(section, isHeader), section.index);
     }
-    /**
-     * Get header footer type
-     * @private
-     */
     public getHeaderFooterType(section: BodyWidget, isHeader: boolean): HeaderFooterType {
         let type: HeaderFooterType;
         type = isHeader ? 'OddHeader' : 'OddFooter';
         let page: Page = section.page;
-        // tslint:disable-next-line:max-line-length
         if (section.sectionFormat.differentFirstPage && (isNullOrUndefined(page.previousPage) || page.sectionIndex !== page.previousPage.sectionIndex)) {
             type = isHeader ? 'FirstPageHeader' : 'FirstPageFooter';
         } else if (section.sectionFormat.differentOddAndEvenPages && this.documentHelper.pages.length % 2 === 0) {
@@ -4037,12 +3918,6 @@ export class PageLayoutViewer extends LayoutViewer {
         }
         return type;
     }
-    /**
-     * Gets current header footer.
-     * @param type
-     * @param section 
-     * @private
-     */
     public getCurrentHeaderFooter(type: HeaderFooterType, sectionIndex: number): HeaderFooterWidget {
         if (this.documentHelper.headersFooters[sectionIndex]) {
             let index: number = this.getHeaderFooter(type);
@@ -4071,11 +3946,6 @@ export class PageLayoutViewer extends LayoutViewer {
         paragraph.childWidgets.push(new LineWidget(paragraph));
         return headerFooter;
     }
-    /**
-     * Gets header footer.
-     * @param type
-     * @private
-     */
     public getHeaderFooter(type: HeaderFooterType): number {
         switch (type) {
             case 'OddHeader':
@@ -4092,29 +3962,19 @@ export class PageLayoutViewer extends LayoutViewer {
                 return 5;
         }
     }
-    /**
-     * Updates header footer client area.
-     * @private
-     */
     public updateHFClientArea(sectionFormat: WSectionFormat, isHeader: boolean): void {
-        // tslint:disable-next-line:max-line-length
         let width: number = HelperMethods.convertPointToPixel(sectionFormat.pageWidth - sectionFormat.leftMargin - sectionFormat.rightMargin);
         if (width < 0) {
             width = 0;
         }
         if (isHeader) {
-            // tslint:disable-next-line:max-line-length
             this.clientArea = new Rect(HelperMethods.convertPointToPixel(sectionFormat.leftMargin), HelperMethods.convertPointToPixel(sectionFormat.headerDistance), width, Number.POSITIVE_INFINITY);
         } else {
-            // tslint:disable-next-line:max-line-length
             this.clientArea = new Rect(HelperMethods.convertPointToPixel(sectionFormat.leftMargin), HelperMethods.convertPointToPixel(sectionFormat.pageHeight - sectionFormat.footerDistance), width, Number.POSITIVE_INFINITY);
         }
         this.clientActiveArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
     }
-    /**
-     * @private
-     */
-    public updateHCFClientAreaWithTop(sectionFormat: WSectionFormat, isHeader: boolean, page: Page): void {
+    public updateHeaderFooterClientAreaWithTop(sectionFormat: WSectionFormat, isHeader: boolean, page: Page): void {
         this.updateHFClientArea(sectionFormat, isHeader);
         if (!isHeader) {
             if (page.footerWidget.y < this.clientActiveArea.y) {
@@ -4123,26 +3983,13 @@ export class PageLayoutViewer extends LayoutViewer {
             }
         }
     }
-    public updateFooterWidgetTop() {
-
-
-    }
-    /**
-     * @private
-     */
-    // tslint:disable-next-line:max-line-length
-    public updateFootnoteClientArea(sectionFormat: WSectionFormat, footnote: FootNoteWidget, footnotetype?: FootnoteType, para?: ParagraphWidget): void {
+    public updateFootnoteClientArea(sectionFormat: WSectionFormat, footnote: FootNoteWidget, footNoteType?: FootnoteType, para?: ParagraphWidget): void {
         let width = HelperMethods.convertPointToPixel(sectionFormat.pageWidth - sectionFormat.leftMargin - sectionFormat.rightMargin);
-        // tslint:disable-next-line:max-line-length
         this.clientArea = new Rect(HelperMethods.convertPointToPixel(sectionFormat.leftMargin), HelperMethods.convertPointToPixel(sectionFormat.pageHeight - sectionFormat.bottomMargin) - footnote.height, width, footnote.height);
 
         this.clientActiveArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, footnote.height);
 
     }
-    /**
-     * Scrolls to the specified page
-     * @private
-     */
     public scrollToPage(pageIndex: number): void {
         let top: number = 0;
         for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
@@ -4154,45 +4001,30 @@ export class PageLayoutViewer extends LayoutViewer {
         this.documentHelper.viewerContainer.scrollTop = top;
         this.updateScrollBars();
     }
-    /**
-     * Updates scroll bars.
-     * @private
-     */
     public updateScrollBars(): void {
         let updatePositionObj: PageInfo;
         updatePositionObj = this.getPageHeightAndWidth(0, 0, 0, 0);
-        // tslint:disable-next-line:max-line-length
         let containerWidth: number = (updatePositionObj.width * this.documentHelper.zoomFactor) + (this.pageLeft * 2);
-        // tslint:disable-next-line:max-line-length
         let containerHeight: number = (updatePositionObj.height * this.documentHelper.zoomFactor) + (this.documentHelper.pages.length + 1) * this.pageGap;
         let updateObj: CanvasInfo;
-        // tslint:disable-next-line:max-line-length
         updateObj = this.updateCanvasWidthAndHeight(updatePositionObj.viewerWidth, updatePositionObj.viewerHeight, containerHeight, containerWidth, updatePositionObj.width, updatePositionObj.height);
         containerHeight = updateObj.containerHeight;
         containerWidth = updateObj.containerWidth;
         this.documentHelper.containerContext.globalAlpha = 1;
         this.documentHelper.selectionContext.globalAlpha = 0.4;
         for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
-            // tslint:disable-next-line:max-line-length
             let left: number = (updateObj.width - this.documentHelper.pages[i].boundingRectangle.width * this.documentHelper.zoomFactor) / 2;
             if (left > this.pageLeft) {
-                // tslint:disable-next-line:max-line-length
                 this.documentHelper.pages[i].boundingRectangle = new Rect(left, this.documentHelper.pages[i].boundingRectangle.y, this.documentHelper.pages[i].boundingRectangle.width, this.documentHelper.pages[i].boundingRectangle.height);
             } else {
-                // tslint:disable-next-line:max-line-length
                 this.documentHelper.pages[i].boundingRectangle = new Rect(this.pageLeft, this.documentHelper.pages[i].boundingRectangle.y, this.documentHelper.pages[i].boundingRectangle.width, this.documentHelper.pages[i].boundingRectangle.height);
             }
         }
-        // tslint:disable-next-line:max-line-length
         this.updateScrollBarPosition(containerWidth, containerHeight, updateObj.viewerWidth, updateObj.viewerHeight, updateObj.width, updateObj.height);
         this.updateVisiblePages();
         this.documentHelper.isScrollToSpellCheck = false;
 
     }
-    /**
-     * Updates visible pages.
-     * @private
-     */
     public updateVisiblePages(): void {
         // Clears the container first.
         this.visiblePages = [];
@@ -4212,27 +4044,21 @@ export class PageLayoutViewer extends LayoutViewer {
             }
         }
     }
-    /**
-     * Adds visible pages.
-     */
     private addVisiblePage(page: Page, x: number, y: number): void {
         let width: number = page.boundingRectangle.width * this.documentHelper.zoomFactor;
         let height: number = page.boundingRectangle.height * this.documentHelper.zoomFactor;
-        // tslint:disable-next-line:max-line-length
         if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.currentPage !== undefined && this.owner.imageResizerModule.currentPage === page && this.owner.imageResizerModule.isImageResizerVisible) {
             this.owner.imageResizerModule.setImageResizerPositions(x, y, width, height);
         }
         this.visiblePages.push(page);
-        // tslint:disable-next-line:max-line-length
         if (this.owner.isSpellCheck && this.owner.spellChecker.enableOptimizedSpellCheck && (this.documentHelper.triggerElementsOnLoading || this.documentHelper.isScrollHandler) && this.documentHelper.cachedPages.indexOf(page.index) < 0) {
             page.allowNextPageRendering = false;
             this.documentHelper.cachedPages.push(page.index);
             let content: string = this.owner.spellChecker.getPageContent(page);
             if (content.trim().length > 0) {
-                // tslint:disable-next-line:max-line-length
-                /* tslint:disable:no-any */
-                this.owner.spellChecker.CallSpellChecker(this.owner.spellChecker.languageID, content, true, false, false, true).then((data: any) => {
-                    /* tslint:disable:no-any */
+                /* eslint-disable @typescript-eslint/no-explicit-any */
+                this.owner.spellChecker.callSpellChecker(this.owner.spellChecker.languageID, content, true, false, false, true).then((data: any) => {
+                    /* eslint-disable @typescript-eslint/no-explicit-any */
                     let jsonObject: any = JSON.parse(data);
                     this.owner.spellChecker.updateUniqueWords(jsonObject.SpellCollection);
                     page.allowNextPageRendering = true;
@@ -4248,12 +4074,7 @@ export class PageLayoutViewer extends LayoutViewer {
             this.renderPage(page, x, y, width, height);
         }
     }
-    /**
-     * Render specified page widgets.
-     * @private
-     */
     public renderPage(page: Page, x: number, y: number, width: number, height: number): void {
-        // tslint:disable-next-line:max-line-length
         this.documentHelper.render.renderWidgets(page, x - this.owner.viewer.containerLeft, y - this.owner.viewer.containerTop, width, height);
     }
 
@@ -4295,10 +4116,8 @@ export class WebLayoutViewer extends LayoutViewer {
         }
         page = new Page(this.documentHelper);
         if (this.documentHelper.pages.length === 0) {
-            // tslint:disable-next-line:max-line-length
             page.boundingRectangle = new Rect(x, yPos, this.documentHelper.visibleBounds.width, this.documentHelper.visibleBounds.height);
         } else {
-            // tslint:disable-next-line:max-line-length
             page.boundingRectangle = new Rect(x, yPos - 20, this.documentHelper.visibleBounds.width, this.documentHelper.visibleBounds.height);
         }
         this.documentHelper.pages.push(page);
@@ -4342,7 +4161,6 @@ export class WebLayoutViewer extends LayoutViewer {
             for (let j: number = 0; j < (page.bodyWidgets[0] as BodyWidget).childWidgets.length; j++) {
                 if ((page.bodyWidgets[0] as BodyWidget).childWidgets[j] instanceof TableWidget) {
                     let tableWidget: TableWidget = page.bodyWidgets[0].childWidgets[j] as TableWidget;
-                    // tslint:disable-next-line:max-line-length
                     let tableWidth: number = HelperMethods.convertPointToPixel((tableWidget as TableWidget).getTableWidth()) *
                         this.documentHelper.zoomFactor + this.padding.left * 4 + this.padding.right * 4
                         + page.boundingRectangle.x;
@@ -4360,15 +4178,11 @@ export class WebLayoutViewer extends LayoutViewer {
         let updatePositionObj: PageInfo;
         updatePositionObj = this.getPageHeightAndWidth(0, 0, 0, 0);
         let containerWidth: number = this.getContentWidth() * this.documentHelper.zoomFactor + this.padding.left + this.padding.right;
-        /* tslint:disable-next-line:max-line-length */
         let containerHeight: number = this.getContentHeight() * this.documentHelper.zoomFactor + this.padding.top + this.padding.bottom;
         let updateObj: CanvasInfo;
-        // tslint:disable-next-line:max-line-length
         updateObj = this.updateCanvasWidthAndHeight(updatePositionObj.viewerWidth, updatePositionObj.viewerHeight, containerHeight, containerWidth, updatePositionObj.width, updatePositionObj.height);
-        // tslint:disable-next-line:max-line-length
         this.documentHelper.containerContext.globalAlpha = 1;
         this.documentHelper.selectionContext.globalAlpha = 0.4;
-        // tslint:disable-next-line:max-line-length
         this.updateScrollBarPosition(containerWidth, containerHeight, updateObj.viewerWidth, updateObj.viewerHeight, updateObj.width, updateObj.height);
         this.updateVisiblePages();
         this.documentHelper.isScrollToSpellCheck = false;
@@ -4395,22 +4209,19 @@ export class WebLayoutViewer extends LayoutViewer {
     }
     public addVisiblePage(page: Page, x: number, y: number): void {
         let width: number = this.getContentWidth();
-        // tslint:disable-next-line:max-line-length
         let height: number = this.getContentHeight() * this.documentHelper.zoomFactor + this.padding.top + this.padding.bottom;
         if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.currentPage !== undefined && this.owner.imageResizerModule.currentPage === page && this.owner.imageResizerModule.isImageResizerVisible) {
             this.owner.imageResizerModule.setImageResizerPositions(x, y, width, height);
         }
         this.visiblePages.push(page);
-        // tslint:disable-next-line:max-line-length
         if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellChecker.enableOptimizedSpellCheck && (this.owner.documentHelper.triggerElementsOnLoading || this.owner.documentHelper.isScrollHandler) && this.documentHelper.cachedPages.indexOf(page.index) < 0) {
             page.allowNextPageRendering = false;
             this.owner.documentHelper.cachedPages.push(page.index);
             let contentlen: string = this.documentHelper.owner.spellChecker.getPageContent(page);
             if (contentlen.trim().length > 0) {
-                // tslint:disable-next-line:max-line-length
-                /* tslint:disable:no-any */
-                this.owner.spellChecker.CallSpellChecker(this.owner.spellChecker.languageID, contentlen, true, false, false, true).then((data: any) => {
-                    /* tslint:disable:no-any */
+                /* eslint-disable @typescript-eslint/no-explicit-any */
+                this.owner.spellChecker.callSpellChecker(this.owner.spellChecker.languageID, contentlen, true, false, false, true).then((data: any) => {
+                    /* eslint-disable @typescript-eslint/no-explicit-any */
                     let jsonObj: any = JSON.parse(data);
                     this.owner.spellChecker.updateUniqueWords(jsonObj.SpellCollection);
                     page.allowNextPageRendering = true;
@@ -4433,7 +4244,6 @@ export class WebLayoutViewer extends LayoutViewer {
      * @private
      */
     public renderPage(page: Page, x: number, y: number, width: number, height: number): void {
-        // tslint:disable-next-line:max-line-length
         this.documentHelper.render.renderWidgets(page, x - this.owner.viewer.containerLeft, y - this.owner.viewer.containerTop, width, height);
     }
 

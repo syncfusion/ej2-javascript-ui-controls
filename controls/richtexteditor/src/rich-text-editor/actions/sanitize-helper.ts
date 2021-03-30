@@ -17,14 +17,12 @@ const removeTags: string[] = [
     '[lowsrc^="javascript:"]',
     '[type^="application/x-shockwave-flash"]'
 ];
-
 const removeAttrs: SanitizeRemoveAttrs[] = [
     { attribute: 'href', selector: '[href*="javascript:"]' },
     { attribute: 'background', selector: '[background^="javascript:"]' },
     { attribute: 'style', selector: '[style*="javascript:"]' },
     { attribute: 'style', selector: '[style*="expression("]' },
     { attribute: 'href', selector: 'a[href^="data:text/html;base64"]' }];
-
 const jsEvents: string[] = ['onchange',
     'onclick',
     'onmouseover',
@@ -113,12 +111,13 @@ const jsEvents: string[] = ['onchange',
     'onstart',
     'onpropertychange'
 ];
+
 export class SanitizeHtmlHelper {
     public removeAttrs: SanitizeRemoveAttrs[];
     public removeTags: string[];
     public wrapElement: HTMLElement;
     public initialize(value: string, parent?: IRichTextEditor): string {
-        let item: BeforeSanitizeHtmlArgs = {
+        const item: BeforeSanitizeHtmlArgs = {
             selectors: {
                 tags: removeTags,
                 attributes: removeAttrs
@@ -147,14 +146,14 @@ export class SanitizeHtmlHelper {
     }
 
     private removeXssTags(): void {
-        let elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll(this.removeTags.join(','));
+        const elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll(this.removeTags.join(','));
         for (let i: number = 0; i < elements.length; i++) {
-           detach(elements[i]);
+            detach(elements[i]);
         }
     }
 
     private removeJsEvents(): void {
-        let elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll('[' + jsEvents.join('],[') + ']');
+        const elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll('[' + jsEvents.join('],[') + ']');
         for (let i: number = 0; i < elements.length; i++) {
             for (let j: number = 0; j < jsEvents.length; j++) {
                 if (elements[i].hasAttribute(jsEvents[j])) {
@@ -166,7 +165,7 @@ export class SanitizeHtmlHelper {
 
     private removeXssAttrs(): void {
         for (let i: number = 0; i < this.removeAttrs.length; i++) {
-            let elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll(this.removeAttrs[i].selector);
+            const elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll(this.removeAttrs[i].selector);
             for (let j: number = 0; j < elements.length; j++) {
                 elements[j].removeAttribute(this.removeAttrs[i].attribute);
             }

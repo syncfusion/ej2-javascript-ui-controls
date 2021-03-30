@@ -1,3 +1,5 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { Axis } from '../axis/axis';
 import { getActualDesiredIntervalsCount, triggerLabelRender } from '../../common/utils/helper';
 import { Size } from '@syncfusion/ej2-svg-base';
@@ -17,6 +19,7 @@ export class Category extends NiceInterval {
 
     /**
      * Constructor for the category module.
+     *
      * @private
      */
     constructor(chart: Chart) {
@@ -25,12 +28,13 @@ export class Category extends NiceInterval {
 
     /**
      * The function to calculate the range and labels for the axis.
-     * @return {void}
+     *
+     * @returns {void}
      */
 
     public calculateRangeAndInterval(size: Size, axis: Axis): void {
 
-        this.calculateRange(axis, size);
+        this.calculateRange(axis);
 
         this.getActualRange(axis, size);
 
@@ -41,6 +45,7 @@ export class Category extends NiceInterval {
 
     /**
      * Actual Range for the axis.
+     *
      * @private
      */
 
@@ -59,10 +64,11 @@ export class Category extends NiceInterval {
     }
     /**
      * Padding for the axis.
+     *
      * @private
      */
     public applyRangePadding(axis: Axis, size: Size): void {
-        let ticks: number = (axis.labelPlacement === 'BetweenTicks' && this.chart.chartAreaType !== 'PolarRadar') ? 0.5 : 0;
+        const ticks: number = (axis.labelPlacement === 'BetweenTicks' && this.chart.chartAreaType !== 'PolarRadar') ? 0.5 : 0;
         if (ticks > 0) {
             axis.actualRange.min -= ticks;
             axis.actualRange.max += ticks;
@@ -76,6 +82,7 @@ export class Category extends NiceInterval {
 
     /**
      * Calculate label for the axis.
+     *
      * @private
      */
 
@@ -120,11 +127,12 @@ export class Category extends NiceInterval {
 
     /**
      * To destroy the category axis.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method performed here
          */

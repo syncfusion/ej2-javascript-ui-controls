@@ -1,6 +1,4 @@
-/**
- * 
- */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { Smithchart } from '../../smithchart';
 import { SmithchartSeriesModel } from '../../smithchart/series/series-model';
 import { ClosestPoint, Point, SmithchartRect } from '../../smithchart/utils/utils';
@@ -33,8 +31,8 @@ export class TooltipRender {
         }
         this.setMouseXY(smithchart, pageX, pageY);
         for (let i: number = 0; i < smithchart.series.length; i++) {
-            let series: SmithchartSeriesModel = smithchart.series[i];
-            let seriesIndex: number = i;
+            const series: SmithchartSeriesModel = smithchart.series[i];
+            const seriesIndex: number = i;
             let closestPoint: ClosestPoint = new ClosestPoint();
             closestPoint = this.closestPointXY(smithchart, this.mouseX, this.mouseY, series, seriesIndex);
             if (closestPoint.location && series.tooltip.visible && series.visibility === 'visible') {
@@ -51,10 +49,10 @@ export class TooltipRender {
     }
 
     private setMouseXY(smithchart: Smithchart, pageX: number, pageY: number): void {
-        let svgRectElement: Element = document.getElementById(smithchart.element.id + '_svg');
+        const svgRectElement: Element = document.getElementById(smithchart.element.id + '_svg');
         if (smithchart.element && svgRectElement) {
-            let rect: ClientRect = smithchart.element.getBoundingClientRect();
-            let svgRect: ClientRect = svgRectElement.getBoundingClientRect();
+            const rect: ClientRect = smithchart.element.getBoundingClientRect();
+            const svgRect: ClientRect = svgRectElement.getBoundingClientRect();
             this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
             this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
         }
@@ -62,12 +60,12 @@ export class TooltipRender {
 
     private createTooltip(
         smithchart: Smithchart, e: PointerEvent, pointindex: number, seriesindex: number, series: SmithchartSeriesModel): void {
-        let currentPoint: ISmithChartPoint = series.points[pointindex];
-        let pointX: number = currentPoint.resistance;
-        let pointY: number = currentPoint.reactance;
-        let tooltip: string[] = currentPoint.tooltip ? [currentPoint.tooltip] : null;
-        let tooltipText: string[] = [pointX + ' ' + ':' + ' ' + '<b>' + pointY + '</b>'];
-        let argsData: ISmithChartTooltipEventArgs = {
+        const currentPoint: ISmithChartPoint = series.points[pointindex];
+        const pointX: number = currentPoint.resistance;
+        const pointY: number = currentPoint.reactance;
+        const tooltip: string[] = currentPoint.tooltip ? [currentPoint.tooltip] : null;
+        const tooltipText: string[] = [pointX + ' ' + ':' + ' ' + '<b>' + pointY + '</b>'];
+        const argsData: ISmithChartTooltipEventArgs = {
             cancel: false, name: 'tooltipRender',
             text: tooltip || tooltipText,
             headerText: '<b>' + series.name + '</b>',
@@ -76,8 +74,9 @@ export class TooltipRender {
         };
 
 
-        let smithChartTooltipSuccess: Function = (argsData: ISmithChartTooltipEventArgs) => {
-            let markerHeight: number = smithchart.series[seriesindex].marker.height / 2;
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        const smithChartTooltipSuccess: Function = (argsData: ISmithChartTooltipEventArgs) => {
+            const markerHeight: number = smithchart.series[seriesindex].marker.height / 2;
             let div: Element = document.getElementById(smithchart.element.id + '_smithchart_tooltip_div');
             if (isNullOrUndefined(div)) {
                 div = createElement('div', {
@@ -125,9 +124,9 @@ export class TooltipRender {
             this.locationX = chartPoint.x;
             this.locationY = chartPoint.y;
             pointIndex = j;
-            let a: number = x - chartPoint.x;
-            let b: number = y - chartPoint.y;
-            let distance: number = Math.abs(Math.sqrt((a * a) + (b * b)));
+            const a: number = x - chartPoint.x;
+            const b: number = y - chartPoint.y;
+            const distance: number = Math.abs(Math.sqrt((a * a) + (b * b)));
             if (distance < series.marker.width) {
                 closePoint = chartPoint;
                 pointIndex = j;
@@ -138,18 +137,21 @@ export class TooltipRender {
     }
     /**
      * Get module name.
+     *
+     * @returns {string} It returns module name
      */
     protected getModuleName(): string {
         return 'TooltipRender';
     }
     /**
-     * To destroy the legend. 
-     * @return {void}
+     * To destroy the legend.
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(smithchart: Smithchart): void {
+    public destroy(): void {
         /**
          * Destroy method performed here
          */
     }
-} 
+}

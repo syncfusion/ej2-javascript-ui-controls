@@ -13,6 +13,7 @@ export interface BorderModel {
 
     /**
      * Gets and sets the width of the border in circular gauge.
+     *
      * @default 1
      */
     width?: number;
@@ -26,6 +27,7 @@ export interface FontModel {
 
     /**
      * Gets and sets the font size of the text in annotation, label, and tooltip, etc. The default of the size is '16px'.
+     *
      * @default '16px'
      */
     size?: string;
@@ -37,24 +39,28 @@ export interface FontModel {
 
     /**
      * Gets and sets the font family for the given text in annotation, tooltip etc.
+     *
      * @default 'segoe UI'
      */
     fontFamily?: string;
 
     /**
      * Gets and sets the font weight for the text in annotation, tooltip etc.
+     *
      * @default 'Normal'
      */
     fontWeight?: string;
 
     /**
      * Gets and sets the style of the font, which is in in annotation, tooltip etc.
+     *
      * @default 'Normal'
      */
     fontStyle?: string;
 
     /**
      * Sets and gets the opacity for the annotation or tooltip text.
+     *
      * @default 1
      */
     opacity?: number;
@@ -68,6 +74,7 @@ export interface RangeTooltipModel {
 
     /**
      * Gets and sets the fill color of the range tooltip. This property accepts value in hex code, rgba string as a valid CSS color string.
+     *
      * @default null
      */
 
@@ -81,6 +88,7 @@ export interface RangeTooltipModel {
 
     /**
      * Sets and gets the format of the range tooltip in circular gauge.
+     *
      * @default null
      */
     format?: string;
@@ -88,12 +96,14 @@ export interface RangeTooltipModel {
     /**
      * Sets and gets the custom template to format the tooltip content. Use ${x} and ${y}
      * as a placeholder text to display the corresponding data point.
+     *
      * @default null
      */
     template?: string;
 
     /**
      * Enables and disables the animation for the range tooltip. The animation is set as true by default.
+     *
      * @default true
      */
     enableAnimation?: boolean;
@@ -105,6 +115,7 @@ export interface RangeTooltipModel {
 
     /**
      * Enables and disables the range tooltip to be shown at mouse position. By default, it set as false.
+     *
      * @default false
      */
     showAtMousePosition?: boolean;
@@ -119,6 +130,7 @@ export interface AnnotationTooltipModel {
     /**
      * Sets and gets the fill color of the annotation tooltip. This property accepts value in hex code,
      * rgba string as a valid CSS color string.
+     *
      * @default null
      */
     fill?: string;
@@ -130,6 +142,7 @@ export interface AnnotationTooltipModel {
 
     /**
      * Sets and gets the format of annotation in tooltip.
+     *
      * @default null
      */
 
@@ -138,6 +151,7 @@ export interface AnnotationTooltipModel {
     /**
      * Sets and gets the custom template to format the tooltip content. Use ${x} and ${y}
      * as a placeholder text to display the corresponding data point.
+     *
      * @default null
      */
 
@@ -145,6 +159,7 @@ export interface AnnotationTooltipModel {
 
     /**
      * Enables and disables the animation of the annotation tooltip. By default, the animation is set as true.
+     *
      * @default true
      */
     enableAnimation?: boolean;
@@ -163,24 +178,28 @@ export interface MarginModel {
 
     /**
      * Gets and sets the left margin value of the gauge.
+     *
      * @default 10
      */
     left?: number;
 
     /**
      * Gets and sets the right margin value of the gauge.
+     *
      * @default 10
      */
     right?: number;
 
     /**
      * Gets and sets the top margin value of the gauge.
+     *
      * @default 10
      */
     top?: number;
 
     /**
      * Gets and sets the bottom margin value of the gauge.
+     *
      * @default 10
      */
     bottom?: number;
@@ -194,6 +213,7 @@ export interface TooltipSettingsModel {
 
     /**
      * Enables or Disables the visibility of tooltip.
+     *
      * @default false
      */
 
@@ -201,6 +221,7 @@ export interface TooltipSettingsModel {
 
     /**
      * Sets and gets the fill color of the tooltip. This property accepts value in hex code, rgba string as a valid CSS color string.
+     *
      * @default null
      */
 
@@ -226,6 +247,7 @@ export interface TooltipSettingsModel {
 
     /**
      * Sets and gets the format for the tooltip content in circular gauge.
+     *
      * @default null
      */
 
@@ -234,6 +256,7 @@ export interface TooltipSettingsModel {
     /**
      * Sets and gets the custom template to format the tooltip content. Use ${x} and ${y}
      * as a placeholder text to display the corresponding data point.
+     *
      * @default null
      */
 
@@ -241,6 +264,7 @@ export interface TooltipSettingsModel {
 
     /**
      * Enables and disables the animation to take place in circular gauge.
+     *
      * @default true
      */
     enableAnimation?: boolean;
@@ -252,12 +276,14 @@ export interface TooltipSettingsModel {
 
     /**
      * Enables and disables the tooltip of the circular gauge at mouse position. By default, it set as false.
+     *
      * @default false
      */
     showAtMousePosition?: boolean;
 
     /**
      * Sets and gets the options to select the type of tooltip for range, annotation and pointer.
+     *
      * @default Pointer
      */
     type?: string[];

@@ -1,3 +1,7 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
 /**
  * Defines the common functionalities of accumulation series
  */
@@ -20,15 +24,17 @@ export class AccumulationBase {
 
     /**
      * Gets the center of the pie
+     *
      * @private
      */
     public get center(): ChartLocation {
         return this.pieCenter || (this.accumulation.visibleSeries[0].type === 'Pie' ?
-        this.accumulation.pieSeriesModule.center : null );
+            this.accumulation.pieSeriesModule.center : null);
     }
 
     /**
      * Sets the center of the pie
+     *
      * @private
      */
     public set center(value: ChartLocation) {
@@ -38,6 +44,7 @@ export class AccumulationBase {
     private pieRadius: number;
     /**
      * Gets the radius of the pie
+     *
      * @private
      */
     public get radius(): number {
@@ -47,6 +54,7 @@ export class AccumulationBase {
 
     /**
      * Sets the radius of the pie
+     *
      * @private
      */
     public set radius(value: number) {
@@ -56,15 +64,17 @@ export class AccumulationBase {
     private pieLabelRadius: number;
     /**
      * Gets the label radius of the pie
+     *
      * @private
      */
     public get labelRadius(): number {
         return this.pieLabelRadius !== undefined ? this.pieLabelRadius :
-             this.accumulation.pieSeriesModule.labelRadius;
+            this.accumulation.pieSeriesModule.labelRadius;
     }
 
     /**
      * Sets the label radius of the pie
+     *
      * @private
      */
     public set labelRadius(value: number) {
@@ -76,6 +86,7 @@ export class AccumulationBase {
 
     /**
      * Checks whether the series is circular or not
+     *
      * @private
      */
     protected isCircular(): boolean {
@@ -84,6 +95,7 @@ export class AccumulationBase {
 
     /**
      * To check various radius pie
+     *
      * @private
      */
     protected isVariousRadius(): boolean {
@@ -93,11 +105,12 @@ export class AccumulationBase {
 
     /**
      * To process the explode on accumulation chart loading
+     *
      * @private
      */
     public processExplode(event: Event): void {
         if ((<HTMLElement>event.target).id.indexOf('_Series_') > -1 || (<HTMLElement>event.target).id.indexOf('_datalabel_') > -1) {
-            let pointIndex: number = indexFinder((<HTMLElement>event.target).id).point;
+            const pointIndex: number = indexFinder((<HTMLElement>event.target).id).point;
             if (isNaN(pointIndex) || ((<HTMLElement>event.target).id.indexOf('_datalabel_') > -1 &&
                 this.accumulation.visibleSeries[0].points[pointIndex].labelPosition === 'Outside')) {
                 return null;
@@ -109,19 +122,20 @@ export class AccumulationBase {
 
     /**
      * To invoke the explode on accumulation chart loading
+     *
      * @private
      */
     public invokeExplode(): void {
-        let series: AccumulationSeries = this.accumulation.visibleSeries[0];
-        let duration: number = this.accumulation.enableAnimation ? 300 : 0;
-        for (let point of series.points) {
+        const series: AccumulationSeries = this.accumulation.visibleSeries[0];
+        const duration: number = this.accumulation.enableAnimation ? 300 : 0;
+        for (const point of series.points) {
             if (point.isExplode) {
                 this.pointExplode(point.index, point, duration);
             }
         }
         if (this.accumulation.accumulationSelectionModule && this.accumulation.selectionMode !== 'None' &&
             this.accumulation.accumulationSelectionModule.selectedDataIndexes.length) {
-            for (let index of this.accumulation.accumulationSelectionModule.selectedDataIndexes) {
+            for (const index of this.accumulation.accumulationSelectionModule.selectedDataIndexes) {
                 this.explodePoints(index.point, this.accumulation, true);
                 this.deExplodeAll(index.point, duration);
             }
@@ -130,12 +144,13 @@ export class AccumulationBase {
 
     /**
      * To deExplode all points in the series
+     *
      * @private
      */
     public deExplodeAll(index: number, animationDuration: number): void {
-        let pointId: string = this.accumulation.element.id + '_Series_0_Point_';
-        let points: AccPoints[] = this.accumulation.visibleSeries[0].points;
-        for (let currentPoint of points) {
+        const pointId: string = this.accumulation.element.id + '_Series_0_Point_';
+        const points: AccPoints[] = this.accumulation.visibleSeries[0].points;
+        for (const currentPoint of points) {
             if ((index !== currentPoint.index && !currentPoint.isSliced) || currentPoint.isClubbed) {
                 currentPoint.isExplode = false;
                 this.deExplodeSlice(currentPoint.index, pointId, animationDuration);
@@ -145,40 +160,40 @@ export class AccumulationBase {
 
     /**
      * To explode point by index
+     *
      * @private
      */
     public explodePoints(index: number, chart: AccumulationChart, explode: boolean = false): void {
-
-        let series: AccumulationSeries = chart.visibleSeries[0];
-        let points: AccPoints[] = series.points;
-        let point: AccPoints = pointByIndex(index, points);
-        let explodePoints : boolean = true;
-        let duration: number = this.accumulation.enableAnimation ? 300 : 0;
+        const series: AccumulationSeries = chart.visibleSeries[0];
+        const points: AccPoints[] = series.points;
+        const point: AccPoints = pointByIndex(index, points);
+        let explodePoints: boolean = true;
+        const duration: number = this.accumulation.enableAnimation ? 300 : 0;
         if (isNullOrUndefined(point)) {
             return null;
         }
-        let clubPointsExploded: boolean =  !explode &&
+        const clubPointsExploded: boolean = !explode &&
             (point.isSliced || (series.clubbedPoints.length &&
                 points[points.length - 1].index === series.clubbedPoints[series.clubbedPoints.length - 1].index));
         if (series.type === 'Pie' && (clubPointsExploded || point.isClubbed)) {
-            explodePoints = this.clubPointExplode(index, point, series, points, chart, duration, explode, clubPointsExploded);
+            explodePoints = this.clubPointExplode(index, point, series, points, chart, duration, clubPointsExploded);
         }
         if (explodePoints) {
-          this.pointExplode(index, point, duration, explode);
+            this.pointExplode(index, point, duration, explode);
         }
     }
 
-    private  getSum(points: AccPoints[]) : number {
-            let total: number = 0;
-            points.map((point: AccPoints) => {
-                total += point.visible ? point.y : 0;
-            });
-            return total;
-        };
+    private getSum(points: AccPoints[]): number {
+        let total: number = 0;
+        points.map((point: AccPoints) => {
+            total += point.visible ? point.y : 0;
+        });
+        return total;
+    }
 
-    private clubPointExplode(index : number, point : AccPoints, series : AccumulationSeries, points: AccPoints[], chart: AccumulationChart,
-                             duration : number, explode: boolean = false, clubPointsExploded: boolean = false) : boolean {
-         if (point.isClubbed) {
+    private clubPointExplode(index: number, point: AccPoints, series: AccumulationSeries, points: AccPoints[], chart: AccumulationChart,
+                             duration: number, clubPointsExploded: boolean = false): boolean {
+        if (point.isClubbed) {
             chart.animateSeries = false;
             points.splice(points.length - 1, 1);
             series.clubbedPoints.map((point: AccPoints) => {
@@ -193,7 +208,7 @@ export class AccumulationBase {
         } else if (clubPointsExploded || point.isSliced) {
             chart.animateSeries = false;
             points.splice(points.length - series.clubbedPoints.length, series.clubbedPoints.length);
-            let clubPoint: AccPoints = series.generateClubPoint();
+            const clubPoint: AccPoints = series.generateClubPoint();
             clubPoint.index = points.length;
             clubPoint.color = series.clubbedPoints[0].color;
             points.push(clubPoint);
@@ -208,22 +223,25 @@ export class AccumulationBase {
             if (point.isSliced) {
                 return false;
             }
-        }return true;
+        }
+        return true;
     }
     /**
      * To Explode points
-     * @param index
-     * @param point
-     * @param explode
+     *
+     * @param {number} index Index of a point.
+     * @param {AccPoints} point To get the point of explode.
+     * @param {number} duration Duration of the explode point.
+     * @param {boolean} explode Either true or false.
      */
     private pointExplode(index: number, point: AccPoints, duration: number, explode?: boolean): void {
         let translate: ChartLocation;
-        let pointId: string = this.accumulation.element.id + '_Series_0_Point_';
-        let chart: AccumulationChart = this.accumulation;
+        const pointId: string = this.accumulation.element.id + '_Series_0_Point_';
+        const chart: AccumulationChart = this.accumulation;
         if (!this.isCircular()) {
             translate = {
                 x: ((point.labelRegion && point.labelRegion.x < point.region.x) ? -chart.explodeDistance :
-                    chart.explodeDistance), y : 0
+                    chart.explodeDistance), y: 0
             };
         } else {
             translate = degreeToLocation(point.midAngle, chart.explodeDistance, this.center);
@@ -241,8 +259,8 @@ export class AccumulationBase {
      * To check point is exploded by id
      */
     private isExplode(id: string): boolean {
-        let element: Element = getElement(id);
-        let transform: string = element ? element.getAttribute('transform') : null;
+        const element: Element = getElement(id);
+        const transform: string = element ? element.getAttribute('transform') : null;
         return (element && (transform === 'translate(0, 0)' || transform === null || transform === 'translate(0)'));
     }
 
@@ -250,19 +268,19 @@ export class AccumulationBase {
      * To deExplode the point by index
      */
     private deExplodeSlice(index: number, sliceId: string, animationDuration: number): void {
-        let element: Element = getElement(sliceId + index);
+        const element: Element = getElement(sliceId + index);
         if (element) {
-            let borderElement: boolean = (<Element>element.parentNode.lastChild).hasAttribute('transform');
+            const borderElement: boolean = (<Element>element.parentNode.lastChild).hasAttribute('transform');
             if (borderElement) {
                 (<Element>element.parentNode.lastChild).removeAttribute('transform');
             }
         }
-        let transform: string = element ? element.getAttribute('transform') : null;
+        const transform: string = element ? element.getAttribute('transform') : null;
         if (
             this.accumulation.enableAnimation && element && transform &&
             transform !== 'translate(0, 0)' && transform !== 'translate(0)'
         ) {
-            let result: RegExpExecArray = /translate\((-?\d+\.?\d*),?\s*(-?\d+[.]?\d*)?\)/.exec(transform);
+            const result: RegExpExecArray = /translate\((-?\d+\.?\d*),?\s*(-?\d+[.]?\d*)?\)/.exec(transform);
             this.performAnimation(
                 index, sliceId, 0, 0, +result[1], +result[2] || 0, animationDuration, true
             );
@@ -290,7 +308,7 @@ export class AccumulationBase {
      * To translate the point element by id and position
      */
     private setElementTransform(id: string, position: string): void {
-        let element: Element = getElement(id);
+        const element: Element = getElement(id);
         if (element) {
             element.setAttribute('transform', position);
         }
@@ -303,27 +321,28 @@ export class AccumulationBase {
         index: number, translate: ChartLocation, sliceId: string, center: ChartLocation,
         animationDuration: number
     ): void {
-            this.performAnimation(index, sliceId, 0, 0, translate.x - center.x, translate.y - center.y, animationDuration);
-        }
+        this.performAnimation(index, sliceId, 0, 0, translate.x - center.x, translate.y - center.y, animationDuration);
+    }
 
     /**
      * To Perform animation point explode
-     * @param index
-     * @param sliceId
-     * @param start
-     * @param endX
-     * @param endY
+     *
+     * @param {number} index Index of the series.
+     * @param {string} sliceId ID of the series.
+     * @param {number} startX X value of start.
+     * @param {number} startY Y value of start.
+     * @param {number} endX X value of end.
+     * @param {number} endY Y value of end.
+     * @param {number} duration Duration of the animation.
      */
     private performAnimation(
         index: number, sliceId: string, startX: number, startY: number, endX: number, endY: number,
         duration: number, isReverse?: boolean
     ): void {
-        let chart: AccumulationChart = this.accumulation;
-        let seriesIndex: number;
-        let point: AccPoints;
-        let values : string[] = sliceId.split('_');
-        seriesIndex = parseInt(sliceId.split('_')[values.length - 3], 10);
-        point = chart.visibleSeries[seriesIndex].points[index];
+        const chart: AccumulationChart = this.accumulation;
+        const values: string[] = sliceId.split('_');
+        const seriesIndex: number = parseInt(sliceId.split('_')[values.length - 3], 10);
+        const point: AccPoints = chart.visibleSeries[seriesIndex].points[index];
         if (duration <= 0) {
             this.setTranslate(
                 index, sliceId,
@@ -345,7 +364,7 @@ export class AccumulationBase {
                     point.transform
                 );
             },
-            end: (model: AnimationOptions) => {
+            end: () => {
                 this.setTranslate(
                     index, sliceId,
                     'translate(' + (isReverse ? startX : endX) + ', ' + (isReverse ? startX : endY) + ')',

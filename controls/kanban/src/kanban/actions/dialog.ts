@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { append, createElement, remove, isNullOrUndefined, closest, extend } from '@syncfusion/ej2-base';
 import { DropDownList, DropDownListModel } from '@syncfusion/ej2-dropdowns';
 import { FormValidator, NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
@@ -11,7 +12,6 @@ import * as cls from '../base/css-constant';
 
 /**
  * Dialog module is used to perform card actions.
- * @hidden
  */
 export class KanbanDialog {
     private parent: Kanban;
@@ -20,17 +20,18 @@ export class KanbanDialog {
     private formObj: FormValidator;
     private action: CurrentAction;
     private storeElement: HTMLElement;
-    private cardData: { [key: string]: Object };
+    private cardData: Record<string, any>;
 
     /**
      * Constructor for dialog module
-     * @private
+     *
+     * @param {Kanban} parent Accepts the kanban instance
      */
     constructor(parent: Kanban) {
         this.parent = parent;
     }
 
-    public openDialog(action: CurrentAction, data?: { [key: string]: Object }): void {
+    public openDialog(action: CurrentAction, data?: Record<string, any>): void {
         this.action = action;
         this.parent.activeCardData.data = data;
         this.renderDialog(data, action);
@@ -41,10 +42,10 @@ export class KanbanDialog {
         this.dialogObj.hide();
     }
 
-    private renderDialog(args: { [key: string]: Object }, action: CurrentAction): void {
+    private renderDialog(args: Record<string, any>, action: CurrentAction): void {
         this.element = createElement('div', { id: this.parent.element.id + '_dialog_wrapper' });
         this.parent.element.appendChild(this.element);
-        let dialogModel: DialogModel = {
+        const dialogModel: DialogModel = {
             buttons: this.getDialogButtons(action),
             content: this.getDialogContent(args, action),
             cssClass: cls.DIALOG_CLASS,
@@ -65,12 +66,12 @@ export class KanbanDialog {
         (this.dialogObj.element.querySelector('.e-dlg-closeicon-btn') as HTMLElement).title = this.parent.localeObj.getConstant('close');
     }
 
-    private getDialogContent(args: { [key: string]: Object }, action: CurrentAction): HTMLElement | string {
+    private getDialogContent(args: Record<string, any>, action: CurrentAction): HTMLElement | string {
         if (action === 'Delete') {
             return this.parent.localeObj.getConstant('deleteContent');
         } else {
-            let container: HTMLElement = createElement('div', { className: cls.FORM_WRAPPER_CLASS });
-            let form: HTMLFormElement = createElement('form', {
+            const container: HTMLElement = createElement('div', { className: cls.FORM_WRAPPER_CLASS });
+            const form: HTMLFormElement = createElement('form', {
                 id: this.parent.element.id + 'EditForm',
                 className: cls.FORM_CLASS, attrs: { onsubmit: 'return false;' }
             }) as HTMLFormElement;
@@ -79,22 +80,22 @@ export class KanbanDialog {
                     this.destroyComponents();
                     [].slice.call(form.childNodes).forEach((node: HTMLElement) => remove(node));
                 }
-                let templateId: string = this.parent.element.id + '_dialogTemplate';
-                let dialogTemplate: HTMLElement[] = this.parent.templateParser(
+                const templateId: string = this.parent.element.id + '_dialogTemplate';
+                const dialogTemplate: HTMLElement[] = this.parent.templateParser(
                     this.parent.dialogSettings.template)(args, this.parent, 'dialogTemplate', templateId, false);
                 append(dialogTemplate, form);
                 this.parent.renderTemplates();
             } else {
-                let dialogWrapper: HTMLElement = createElement('div', { className: cls.DIALOG_CONTENT_CONTAINER });
+                const dialogWrapper: HTMLElement = createElement('div', { className: cls.DIALOG_CONTENT_CONTAINER });
                 form.appendChild(dialogWrapper);
-                let table: HTMLElement = createElement('table');
+                const table: HTMLElement = createElement('table');
                 dialogWrapper.appendChild(table);
-                let dialogFields: DialogFieldsModel[] = this.getDialogFields();
-                for (let field of dialogFields) {
-                    let tr: HTMLElement = createElement('tr');
+                const dialogFields: DialogFieldsModel[] = this.getDialogFields();
+                for (const field of dialogFields) {
+                    const tr: HTMLElement = createElement('tr');
                     table.appendChild(tr);
                     tr.appendChild(createElement('td', { className: 'e-label', innerHTML: field.text ? field.text : field.key }));
-                    let td: HTMLElement = createElement('td');
+                    const td: HTMLElement = createElement('td');
                     tr.appendChild(td);
                     td.appendChild(this.renderComponents(field));
                 }
@@ -123,9 +124,9 @@ export class KanbanDialog {
     }
 
     private getDialogButtons(action: CurrentAction): ButtonPropsModel[] {
-        let primaryButtonClass: string = action === 'Delete' ? 'e-dialog-yes' : action === 'Add' ? 'e-dialog-add' : 'e-dialog-edit';
-        let flatButtonClass: string = action === 'Delete' ? 'e-dialog-no' : 'e-dialog-cancel';
-        let dialogButtons: ButtonPropsModel[] = [
+        const primaryButtonClass: string = action === 'Delete' ? 'e-dialog-yes' : action === 'Add' ? 'e-dialog-add' : 'e-dialog-edit';
+        const flatButtonClass: string = action === 'Delete' ? 'e-dialog-no' : 'e-dialog-cancel';
+        const dialogButtons: ButtonPropsModel[] = [
             {
                 buttonModel: {
                     cssClass: 'e-flat ' + primaryButtonClass, isPrimary: true,
@@ -141,7 +142,7 @@ export class KanbanDialog {
             }
         ];
         if (action === 'Edit') {
-            let deleteButton: ButtonPropsModel = {
+            const deleteButton: ButtonPropsModel = {
                 buttonModel: { cssClass: 'e-flat e-dialog-delete', isPrimary: false, content: this.parent.localeObj.getConstant('delete') },
                 click: this.dialogButtonClick.bind(this)
             };
@@ -151,49 +152,46 @@ export class KanbanDialog {
     }
 
     private renderComponents(field: DialogFieldsModel): HTMLElement {
-        let wrapper: HTMLElement = createElement('div', { className: field.key + '_wrapper' });
+        const wrapper: HTMLElement = createElement('div', { className: field.key + '_wrapper' });
         let element: HTMLElement = createElement('input', { className: cls.FIELD_CLASS, attrs: { 'name': field.key } });
         wrapper.appendChild(element);
+        let divElement: HTMLElement;
+        let dropDownOptions: DropDownListModel;
         let controlObj: DropDownList | NumericTextBox | TextBox;
-        let fieldValue: Object = this.parent.activeCardData.data ?
-            (<{ [key: string]: Object }>this.parent.activeCardData.data)[field.key] : null;
+        const fieldValue: string | number = this.parent.activeCardData.data ?
+            this.parent.activeCardData.data[field.key] as string | number : null;
         switch (field.type) {
-            case 'DropDown':
-                let dropDownOptions: DropDownListModel;
-                if (field.key === this.parent.keyField) {
-                    dropDownOptions = {
-                        dataSource: this.parent.layoutModule.columnKeys,
-                        value: fieldValue as string
-                    };
-                } else if (field.key === this.parent.swimlaneSettings.keyField) {
-                    dropDownOptions = {
-                        dataSource: [].slice.call(this.parent.layoutModule.kanbanRows),
-                        fields: { text: 'textField', value: 'keyField' },
-                        value: fieldValue as string
-                    };
-                }
-                controlObj = new DropDownList(dropDownOptions);
-                break;
-            case 'Numeric':
-                controlObj = new NumericTextBox({ value: fieldValue as number });
-                break;
-            case 'TextBox':
-                controlObj = new TextBox({ value: fieldValue as string });
-                if (fieldValue && this.parent.cardSettings.headerField === field.key) {
-                    controlObj.enabled = false;
-                }
-                break;
-            case 'TextArea':
-                remove(element);
-                let divElement: HTMLElement = createElement('div');
-                element = createElement('textarea', {
-                    className: cls.FIELD_CLASS, attrs: { 'name': field.key, 'rows': '3' },
-                    innerHTML: fieldValue as string
-                });
-                wrapper.appendChild(divElement).appendChild(element);
-                break;
-            default:
-                break;
+        case 'DropDown':
+            if (field.key === this.parent.keyField) {
+                dropDownOptions = { dataSource: this.parent.layoutModule.columnKeys, value: fieldValue as string };
+            } else if (field.key === this.parent.swimlaneSettings.keyField) {
+                dropDownOptions = {
+                    dataSource: [].slice.call(this.parent.layoutModule.kanbanRows),
+                    fields: { text: 'textField', value: 'keyField' }, value: fieldValue as string
+                };
+            }
+            controlObj = new DropDownList(dropDownOptions);
+            break;
+        case 'Numeric':
+            controlObj = new NumericTextBox({ value: fieldValue as number });
+            break;
+        case 'TextBox':
+            controlObj = new TextBox({ value: fieldValue as string });
+            if (fieldValue && this.parent.cardSettings.headerField === field.key) {
+                controlObj.enabled = false;
+            }
+            break;
+        case 'TextArea':
+            remove(element);
+            divElement = createElement('div');
+            element = createElement('textarea', {
+                className: cls.FIELD_CLASS, attrs: { 'name': field.key, 'rows': '3' },
+                innerHTML: fieldValue as string
+            });
+            wrapper.appendChild(divElement).appendChild(element);
+            break;
+        default:
+            break;
         }
         if (controlObj) {
             controlObj.appendTo(element);
@@ -202,7 +200,7 @@ export class KanbanDialog {
     }
 
     private onBeforeDialogOpen(args: BeforeOpenEventArgs): void {
-        let eventProp: DialogEventArgs = {
+        const eventProp: DialogEventArgs = {
             data: this.parent.activeCardData.data,
             cancel: false, element: this.element,
             target: this.parent.activeCardData.element,
@@ -216,10 +214,10 @@ export class KanbanDialog {
     }
 
     private onBeforeDialogClose(args: BeforeCloseEventArgs): void {
-        let formInputs: HTMLInputElement[] = this.getFormElements();
-        let cardObj: { [key: string]: Object } = {};
-        for (let input of formInputs) {
-            let columnName: string = input.name || this.getColumnName(input);
+        const formInputs: HTMLInputElement[] = this.getFormElements();
+        let cardObj: Record<string, any> = {};
+        for (const input of formInputs) {
+            const columnName: string = input.name || this.getColumnName(input);
             if (!isNullOrUndefined(columnName) && columnName !== '') {
                 let value: string | number | boolean | Date | string[] | number[] = this.getValueFromElement(input as HTMLElement);
                 if (columnName === this.parent.cardSettings.headerField) {
@@ -228,12 +226,12 @@ export class KanbanDialog {
                 cardObj[columnName] = value;
             }
         }
-        cardObj = extend(this.parent.activeCardData.data, cardObj) as { [key: string]: Object };
-        let eventProp: DialogEventArgs = { data: cardObj, cancel: false, element: this.element, requestType: this.action };
+        cardObj = extend(this.parent.activeCardData.data, cardObj) as Record<string, any>;
+        const eventProp: DialogEventArgs = { data: cardObj, cancel: false, element: this.element, requestType: this.action };
         this.parent.trigger(events.dialogClose, eventProp, (closeArgs: DialogEventArgs) => {
             args.cancel = closeArgs.cancel;
             if (!closeArgs.cancel) {
-                this.cardData = eventProp.data as { [key: string]: Object };
+                this.cardData = eventProp.data;
                 this.destroy();
             }
         });
@@ -241,28 +239,28 @@ export class KanbanDialog {
 
     private getIDType(): string {
         if (this.parent.kanbanData.length !== 0) {
-            return typeof ((<{ [key: string]: Object }>this.parent.kanbanData[0])[this.parent.cardSettings.headerField]);
+            return typeof (this.parent.kanbanData[0][this.parent.cardSettings.headerField]);
         }
         return 'string';
     }
 
     private applyFormValidation(): void {
-        let form: HTMLFormElement = this.element.querySelector('.' + cls.FORM_CLASS) as HTMLFormElement;
-        let rules: { [key: string]: Object } = {};
-        for (let field of this.parent.dialogSettings.fields) {
+        const form: HTMLFormElement = this.element.querySelector('.' + cls.FORM_CLASS) as HTMLFormElement;
+        const rules: Record<string, any> = {};
+        for (const field of this.parent.dialogSettings.fields) {
             rules[field.key] = (field.validationRules && Object.keys(field.validationRules).length > 0) ? field.validationRules : null;
         }
         this.formObj = new FormValidator(form, {
-            rules: rules as { [name: string]: { [rule: string]: Object } },
+            rules: rules as { [name: string]: { [rule: string]: Record<string, any> } },
             customPlacement: (inputElement: HTMLElement, error: HTMLElement) => {
-                let id: string = error.getAttribute('for');
-                let elem: Element = this.element.querySelector('#' + id + '_Error');
+                const id: string = error.getAttribute('for');
+                const elem: Element = this.element.querySelector('#' + id + '_Error');
                 if (!elem) {
                     this.createTooltip(inputElement, error, id, '');
                 }
             },
             validationComplete: (args: { status: string, inputName: string, element: HTMLElement, message: string }) => {
-                let elem: HTMLElement = this.element.querySelector('#' + args.inputName + '_Error') as HTMLElement;
+                const elem: HTMLElement = this.element.querySelector('#' + args.inputName + '_Error') as HTMLElement;
                 if (elem) {
                     elem.style.display = (args.status === 'failure') ? '' : 'none';
                 }
@@ -273,7 +271,7 @@ export class KanbanDialog {
     private createTooltip(element: Element, error: HTMLElement, name: string, display: string): void {
         let dlgContent: Element;
         let client: ClientRect;
-        let inputClient: ClientRect = element.parentElement.getBoundingClientRect();
+        const inputClient: ClientRect = element.parentElement.getBoundingClientRect();
         if (this.element.classList.contains(cls.DIALOG_CLASS)) {
             dlgContent = this.element;
             client = this.element.getBoundingClientRect();
@@ -281,16 +279,16 @@ export class KanbanDialog {
             dlgContent = this.element.querySelector('.e-kanban-dialog .e-dlg-content');
             client = dlgContent.getBoundingClientRect();
         }
-        let div: HTMLElement = createElement('div', {
+        const div: HTMLElement = createElement('div', {
             className: 'e-tooltip-wrap e-popup ' + cls.ERROR_VALIDATION_CLASS,
             id: name + '_Error',
             styles: 'display:' + display + ';top:' +
                 (inputClient.bottom - client.top + dlgContent.scrollTop + 9) + 'px;left:' +
                 (inputClient.left - client.left + dlgContent.scrollLeft + inputClient.width / 2) + 'px;'
         });
-        let content: Element = createElement('div', { className: 'e-tip-content' });
+        const content: Element = createElement('div', { className: 'e-tip-content' });
         content.appendChild(error);
-        let arrow: Element = createElement('div', { className: 'e-arrow-tip e-tip-top' });
+        const arrow: Element = createElement('div', { className: 'e-arrow-tip e-tip-top' });
         arrow.appendChild(createElement('div', { className: 'e-arrow-tip-outer e-tip-top' }));
         arrow.appendChild(createElement('div', { className: 'e-arrow-tip-inner e-tip-top' }));
         div.appendChild(content);
@@ -309,15 +307,15 @@ export class KanbanDialog {
     }
 
     private dialogButtonClick(event: Event): void {
-        let target: HTMLElement = (event.target as HTMLElement).cloneNode(true) as HTMLElement;
-        let id: string = this.formObj.element.id;
+        const target: HTMLElement = (event.target as HTMLElement).cloneNode(true) as HTMLElement;
+        const id: string = this.formObj.element.id;
         if (document.getElementById(id) && this.formObj.validate() &&
             (target.classList.contains('e-dialog-edit') || target.classList.contains('e-dialog-add'))) {
             this.dialogObj.hide();
             if (target.classList.contains('e-dialog-edit')) {
-                let activeCard: CardClickEventArgs = this.parent.activeCardData;
+                const activeCard: CardClickEventArgs = this.parent.activeCardData;
                 let updateIndex: number;
-                if ((<{ [key: string]: Object }>activeCard.data)[this.parent.keyField] === this.cardData[this.parent.keyField]
+                if (activeCard.data[this.parent.keyField] === this.cardData[this.parent.keyField]
                     && activeCard.element) {
                     updateIndex = [].slice.call(activeCard.element.parentElement.children).indexOf(activeCard.element);
                 }
@@ -331,19 +329,19 @@ export class KanbanDialog {
         if (!target.classList.contains('e-dialog-edit') && !target.classList.contains('e-dialog-add')) {
             this.dialogObj.hide();
             if (target.classList.contains('e-dialog-yes')) {
-                this.parent.crudModule.deleteCard(<{ [key: string]: Object }>this.parent.activeCardData.data);
+                this.parent.crudModule.deleteCard(this.parent.activeCardData.data);
             } else if (target.classList.contains('e-dialog-no')) {
-                this.openDialog('Edit', this.parent.activeCardData.data as { [key: string]: Object });
+                this.openDialog('Edit', this.parent.activeCardData.data);
             } else if (target.classList.contains('e-dialog-delete')) {
-                this.openDialog('Delete', this.parent.activeCardData.data as { [key: string]: Object });
+                this.openDialog('Delete', this.parent.activeCardData.data);
             }
         }
     }
 
     private getFormElements(): HTMLInputElement[] {
-        let elements: HTMLInputElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.FIELD_CLASS));
-        let validElements: HTMLInputElement[] = [];
-        for (let element of elements) {
+        const elements: HTMLInputElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.FIELD_CLASS));
+        const validElements: HTMLInputElement[] = [];
+        for (const element of elements) {
             if (element.classList.contains('e-control')) {
                 validElements.push(element);
             } else if (element.querySelector('.e-control')) {
@@ -366,10 +364,10 @@ export class KanbanDialog {
             } else if (element.classList.contains('e-numerictextbox')) {
                 fieldSelector = 'e-numeric';
             }
-            let classSelector: string = isDropDowns ? `.${fieldSelector}:not(.e-control)` : `.${fieldSelector}`;
-            let control: Element = closest(element, classSelector) || element.querySelector(`.${fieldSelector}`);
+            const classSelector: string = isDropDowns ? `.${fieldSelector}:not(.e-control)` : `.${fieldSelector}`;
+            const control: Element = closest(element, classSelector) || element.querySelector(`.${fieldSelector}`);
             if (control) {
-                let attrEle: Element = control.querySelector('[name]');
+                const attrEle: Element = control.querySelector('[name]');
                 if (attrEle) {
                     attrName = (<HTMLInputElement>attrEle).name;
                 }
@@ -380,7 +378,7 @@ export class KanbanDialog {
 
     private getValueFromElement(element: HTMLElement): number | string | Date | boolean | string[] | number[] {
         let value: number | string | Date | boolean | string[] | number[];
-        let instance: Object[] = (element as EJ2Instance).ej2_instances;
+        const instance: Record<string, number | string | Date | boolean | string[] | number[]>[] = (element as EJ2Instance).ej2_instances;
         if (instance && instance.length > 0) {
             value = (instance[0] as { [key: string]: number | string | Date | boolean | string[] | number[] }).value ||
                 (instance[0] as { [key: string]: number | string | Date | boolean | string[] | number[] }).checked;
@@ -391,9 +389,9 @@ export class KanbanDialog {
     }
 
     private destroyComponents(): void {
-        let formelement: HTMLElement[] = this.getFormElements();
-        for (let element of formelement) {
-            let instance: Object[] = (element as EJ2Instance).ej2_instances;
+        const formelement: HTMLElement[] = this.getFormElements();
+        for (const element of formelement) {
+            const instance: Kanban[] = (element as EJ2Instance).ej2_instances as Kanban[];
             if (instance && instance.length > 0) {
                 instance.forEach((node: Kanban) => node.destroy());
             }

@@ -1,4 +1,4 @@
-import { extend, Property, ChildProperty, Complex, Collection, } from '@syncfusion/ej2-base';
+import { extend, Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';
 import { SheetModel } from './index';
 import { CellStyleModel, HyperlinkModel, CellStyle, wrapEvent, ValidationModel, Chart, ChartModel } from '../common/index';
 import { ImageModel, Image } from '../common/index';
@@ -14,6 +14,7 @@ import { getSheet } from './sheet';
 export class Cell extends ChildProperty<RowModel> {
     /**
      * Specifies the image of the cell.
+     *
      * @default []
      */
     @Collection([], Image)
@@ -21,6 +22,7 @@ export class Cell extends ChildProperty<RowModel> {
 
     /**
      * Specifies the chart of the cell.
+     *
      * @default []
      */
     @Collection([], Chart)
@@ -28,6 +30,7 @@ export class Cell extends ChildProperty<RowModel> {
 
     /**
      * Defines the value of the cell which can be text or number.
+     *
      * @default ''
      */
     @Property('')
@@ -35,6 +38,7 @@ export class Cell extends ChildProperty<RowModel> {
 
     /**
      * Defines the formula or expression of the cell.
+     *
      * @default ''
      */
     @Property('')
@@ -42,6 +46,7 @@ export class Cell extends ChildProperty<RowModel> {
 
     /**
      * Specifies the index of the cell.
+     *
      * @default 0
      * @asptype int
      */
@@ -50,6 +55,7 @@ export class Cell extends ChildProperty<RowModel> {
 
     /**
      * Specifies the number format code to display value in specified number format.
+     *
      * @default 'General'
      */
     @Property('General')
@@ -65,13 +71,14 @@ export class Cell extends ChildProperty<RowModel> {
      *      sheets: [{
      *       ...
      *            rows: [{
-     *                  cells: [{ value: '12', index: 2,  style: { fontWeight: 'bold', fontSize: 12, fontStyle: 'italic', textIndent: '2pt' 
+     *                  cells: [{ value: '12', index: 2,  style: { fontWeight: 'bold', fontSize: 12, fontStyle: 'italic', textIndent: '2pt'
      *                         backgroundColor: '#4b5366', color: '#ffffff' } }]
      *                  }]
      *            }]
      *  });
      * spreadsheet.appendTo('#Spreadsheet');
      * ```
+     *
      * @default {}
      */
     @Complex<CellStyleModel>({}, CellStyle)
@@ -79,6 +86,7 @@ export class Cell extends ChildProperty<RowModel> {
 
     /**
      * Specifies the hyperlink of the cell.
+     *
      * @default ''
      */
     @Property('')
@@ -86,6 +94,7 @@ export class Cell extends ChildProperty<RowModel> {
 
     /**
      * Wraps the cell text to the next line, if the text width exceeds the column width.
+     *
      * @default false
      */
     @Property(false)
@@ -93,6 +102,7 @@ export class Cell extends ChildProperty<RowModel> {
 
     /**
      * Specifies the cell is locked or not, for allow edit range in spreadsheet protect option.
+     *
      * @default null
      */
     @Property(true)
@@ -101,6 +111,7 @@ export class Cell extends ChildProperty<RowModel> {
 
     /**
      * Specifies the validation of the cell.
+     *
      * @default ''
      */
     @Property('')
@@ -108,6 +119,7 @@ export class Cell extends ChildProperty<RowModel> {
 
     /**
      * Specifies the column-wise cell merge count.
+     *
      * @default 1
      * @asptype int
      */
@@ -116,6 +128,7 @@ export class Cell extends ChildProperty<RowModel> {
 
     /**
      * Specifies the row-wise cell merge count.
+     *
      * @default 1
      * @asptype int
      */
@@ -125,10 +138,16 @@ export class Cell extends ChildProperty<RowModel> {
 
 /**
  * @hidden
- */
+ * @param {number} rowIndex - Specifies the rowIndex.
+ * @param {number} colIndex - Specifies the colIndex.
+ * @param {SheetModel} sheet - Specifies the sheet.
+ * @param {boolean} isInitRow - Specifies the isInitRow.
+ * @param {boolean} returnEmptyObjIfNull - Specifies the bool value.
+ * @returns {CellModel} - get the cell.
+*/
 export function getCell(
     rowIndex: number, colIndex: number, sheet: SheetModel, isInitRow?: boolean, returnEmptyObjIfNull?: boolean): CellModel {
-    let row: RowModel = getRow(sheet, rowIndex);
+    const row: RowModel = getRow(sheet, rowIndex);
     if (!row || !row.cells) {
         if (isInitRow) {
             if (!row) {
@@ -145,7 +164,13 @@ export function getCell(
 
 /**
  * @hidden
- */
+ * @param {number} rowIndex - Specifies the rowIndex.
+ * @param {number} colIndex - Specifies the colIndex.
+ * @param {SheetModel} sheet - Specifies the sheet.
+ * @param {CellModel} cell - Specifies the cell.
+ * @param {boolean} isExtend - Specifies the bool value.
+ * @returns {void} - set the cell.
+*/
 export function setCell(rowIndex: number, colIndex: number, sheet: SheetModel, cell: CellModel, isExtend?: boolean): void {
     if (!sheet.rows[rowIndex]) {
         sheet.rows[rowIndex] = { cells: [] };
@@ -159,12 +184,17 @@ export function setCell(rowIndex: number, colIndex: number, sheet: SheetModel, c
     }
 }
 
-/** @hidden */
+/**
+ * @hidden
+ * @param {CellStyleModel} style - Specifies the style.
+ * @param {boolean} defaultKey - Specifies the defaultKey.
+ * @returns {CellStyleModel} - Specifies the CellStyleModel. 
+*/
 export function skipDefaultValue(style: CellStyleModel, defaultKey?: boolean): CellStyleModel {
-    let defaultProps: CellStyleModel = { fontFamily: 'Calibri', verticalAlign: 'bottom', textIndent: '0pt', backgroundColor: '#ffffff',
+    const defaultProps: CellStyleModel = { fontFamily: 'Calibri', verticalAlign: 'bottom', textIndent: '0pt', backgroundColor: '#ffffff',
         color: '#000000', textAlign: 'left', fontSize: '11pt', fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none',
         border: '', borderLeft: '', borderTop: '', borderRight: '', borderBottom: '' };
-    let changedProps: CellStyleModel = {};
+    const changedProps: CellStyleModel = {};
     Object.keys(defaultKey ? defaultProps : style).forEach((propName: string): void => {
         if (style[propName] !== defaultProps[propName]) {
             changedProps[propName] = style[propName];
@@ -173,11 +203,17 @@ export function skipDefaultValue(style: CellStyleModel, defaultKey?: boolean): C
     return changedProps;
 }
 
-/** @hidden */
+/**
+ * @hidden
+ * @param {string} address - Specifies the address.
+ * @param {boolean} wrap - Specifies the wrap.
+ * @param {Workbook} context - Specifies the context.
+ * @returns {void} - Specifies the wrap.
+*/
 export function wrap(address: string, wrap: boolean = true, context?: Workbook): void {
-    let addressInfo: { sheetIndex: number, indices: number[] } = context.getAddressInfo(address);
-    let rng: number[] = addressInfo.indices;
-    let sheet: SheetModel = getSheet(context, addressInfo.sheetIndex);
+    const addressInfo: { sheetIndex: number, indices: number[] } = context.getAddressInfo(address);
+    const rng: number[] = addressInfo.indices;
+    const sheet: SheetModel = getSheet(context, addressInfo.sheetIndex);
     for (let i: number = rng[0]; i <= rng[2]; i++) {
         for (let j: number = rng[1]; j <= rng[3]; j++) {
             setCell(i, j, sheet, { wrap: wrap }, true);

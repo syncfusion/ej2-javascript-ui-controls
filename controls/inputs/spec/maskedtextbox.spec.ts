@@ -2,7 +2,7 @@
  * MaskedTextBox spec document
  */
 
-import { createElement, KeyboardEvents, EmitType, EventHandler, extend, Browser, isBlazor } from '@syncfusion/ej2-base';
+import { createElement, KeyboardEvents, EmitType, EventHandler, extend, Browser, isBlazor, Event } from '@syncfusion/ej2-base';
 import { MaskedTextBox, MaskChangeEventArgs, MaskFocusEventArgs, MaskBlurEventArgs} from '../src/maskedtextbox/maskedtextbox/maskedtextbox';
 import { maskInput, setMaskValue, getVal, getMaskedVal, mobileRemoveFunction, maskInputDropHandler, maskInputBlurHandler } from '../src/maskedtextbox/base/mask-base';
 import  {profile , inMB, getMemoryProfile} from './common.spec';
@@ -14,6 +14,8 @@ function eventObject(eventType: string, eventName: string): Object {
     returnObject.preventDefault = () => { return true; };
     return returnObject;
 }
+
+let focusEvent: FocusEvent = document.createEvent('FocusEvent');
 
 describe('MaskedTextBox Component', () => {
     beforeAll(() => {
@@ -707,7 +709,7 @@ describe('MaskedTextBox Component', () => {
             let eventUp: any = eventObject('KeyboardEvent', 'keyup');
             input.focus();
             setTimeout(function() {
-                expect(input.selectionStart == 0 && input.selectionEnd != 0).toEqual(true);
+                expect(input.selectionStart == 0 && input.selectionEnd == 0).toEqual(true);
                 let event: any = eventObject('KeyboardEvent', 'keypress');
                 event.key = "P";
                 EventHandler.trigger(input, 'keypress', event);
@@ -1696,15 +1698,18 @@ describe('MaskedTextBox Component', () => {
             expect(input.parentElement.classList.contains('e-float-input')).toEqual(true);
             expect(input.parentElement.getElementsByTagName('label')[0].innerText === 'Enter card number').toEqual(true);
             expect(input.value === '').toBe(true);
-            input.focus();
+            focusEvent.initEvent('focus');
+            input.dispatchEvent(focusEvent);
             input.selectionStart = input.selectionEnd = 0;
             expect(input.value === '____ ____ ____ ____').toBe(true);
-            input.blur();
+            focusEvent.initEvent('blur');
+            input.dispatchEvent(focusEvent);
             expect(input.value === '').toBe(true);
-            input.focus();
+            focusEvent.initEvent('focus');
+            input.dispatchEvent(focusEvent);
             setTimeout(
                 () => {
-                    expect(input.selectionStart === 0 && input.selectionEnd != 0).toEqual(true);
+                    expect(input.selectionStart === 0 && input.selectionEnd == 0).toEqual(true);
                     done();
                 },
                 10);
@@ -2544,15 +2549,17 @@ describe('MaskedTextBox Component', () => {
             let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
             expect(input.parentElement.classList.contains('e-float-input')).toEqual(true);
             expect(input.parentElement.getElementsByTagName('label')[0].innerText === 'Enter card number').toEqual(true);
-            input.focus();
+            focusEvent.initEvent('focus', true, true);
+            input.dispatchEvent(focusEvent);
             input.selectionStart = input.selectionEnd = 0;
             expect(input.value === '____ ____ ____ ____').toBe(true);
-            input.blur();
+            focusEvent.initEvent('blur');
+            input.dispatchEvent(focusEvent);
             expect(input.value === '').toBe(true);
             input.focus();
             setTimeout(
                 () => {
-                    expect(input.selectionStart === 0 && input.selectionEnd != 0).toEqual(true);
+                    expect(input.selectionStart === 0 && input.selectionEnd == 0).toEqual(true);
                     done();
                 },
                 10);
@@ -2696,10 +2703,11 @@ describe('MaskedTextBox Component', () => {
             });
             maskBox.appendTo('#mask1');
             expect(j).toEqual(0);
-            document.getElementById('mask1').focus();
+            focusEvent.initEvent('focus');
+            document.getElementById('mask1').dispatchEvent(focusEvent);
             expect(j).toEqual(1);
-            expect(selectStart).toEqual(0);
-            expect(selectEnd).toEqual(19);
+            expect(selectStart).toEqual(maskBox.value.length);
+            expect(selectEnd).toEqual(maskBox.value.length);
             expect(name).toEqual("focus");
         });
         it('FocusFn event testing with argument value and event', () => {
@@ -2711,9 +2719,10 @@ describe('MaskedTextBox Component', () => {
                 focus: FocusFn
             });
             maskBox.appendTo('#mask1');
-            document.getElementById('mask1').focus();
-            expect(selectStart).toEqual(0);
-            expect(selectEnd).toEqual(19);
+            focusEvent.initEvent('focus');
+            document.getElementById('mask1').dispatchEvent(focusEvent);
+            expect(selectStart).toEqual(maskBox.value.length);
+            expect(selectEnd).toEqual(maskBox.value.length);
             expect(name).toEqual("focus");
             expect(value).toEqual("123");
             expect(event).not.toBeNull();
@@ -3201,5 +3210,39 @@ describe('EJ2-44945- Delete key removes only first digit in the ejs-maskedtextbo
         EventHandler.trigger(input, 'keydown', event);
         expect(input.value).toBe("+1(1__)-_567-890");
         expect(input.selectionEnd).toBe(9);
+    });
+});
+describe('EJ2-41360- Masked Textbox focus behavior checking', function () {
+    let maskBox: any;
+    let isFocus: boolean = false;
+    beforeEach(function () {
+        maskBox = undefined;
+        let ele: HTMLElement = createElement('input', { id: 'mask1' });
+        document.body.appendChild(ele);
+    });
+    afterEach(function () {
+        if (maskBox) {
+            maskBox.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('clicking control to check focus behavior', function () {
+        maskBox = new MaskedTextBox({
+            mask: "000-0000-000",
+            value: "1234567890",
+            focus: (args) => {
+                isFocus = true;
+            }
+        });
+        maskBox.appendTo('#mask1');
+        let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+        let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+        clickEvent.initEvent('mousedown', true, true);
+        input.dispatchEvent(clickEvent);
+        clickEvent.initEvent('mouseup', true, true);
+        input.dispatchEvent(clickEvent);
+        focusEvent.initEvent('focus', true, true)
+        input.dispatchEvent(focusEvent);
+        expect(isFocus).toBe(true);
     });
 });

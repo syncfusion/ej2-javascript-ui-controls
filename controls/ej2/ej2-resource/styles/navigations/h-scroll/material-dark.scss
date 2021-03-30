@@ -1,0 +1,488 @@
+
+//default 
+$hscroll-skin: 'material' !default;
+$hscroll-default-bg: $grey-900 !default;
+$hscroll-press-bg: rgba($grey-white, .18) !default;
+$hscroll-active-bg: rgba($grey-white, .18) !default;
+$hscroll-border-size: 1px !default;
+$hscroll-nav-nrml-minheight: 42px !default;
+$hscroll-nav-bgr-minheight: 56px !default;
+$hscroll-mob-nav-nrml-width: 50px !default;
+$hscroll-device-arrow-width: 50px !default;
+$hscroll-device-arrow-size: 14px !default;
+$hscroll-device-arrow-size-bigger: 14px !default;
+$hscroll-overlay-opacity: .5 !default;
+$hscroll-device-arrow-border-color: $default-border-color !default;
+$hscroll-device-arrow-rtl-box-shadow: 4px 0 8px 0 rgba($shadow , .06) !default;
+$hscroll-device-arrow-bg: $hscroll-default-bg !default;
+$hscroll-device-arrow-border-size: 0 !default;
+$hscroll-device-arrow-box-shadow: -4px 0 8px 0 rgba($shadow , .6) !default;
+$hscroll-device-arrow-color: $default-icon-color !default;
+$hscroll-overlay-bg: $hscroll-default-bg !default;
+$hscroll-overlay-start: rgba($hscroll-overlay-bg, .0001) !default;
+$hscroll-overlay-end: rgba($hscroll-overlay-bg, $hscroll-overlay-opacity) !default;
+$hscroll-right-bg: linear-gradient(to right, $hscroll-overlay-start 0, $hscroll-overlay-end 100%) !default;
+$hscroll-left-bg: linear-gradient(to right, $hscroll-overlay-end 0, $hscroll-overlay-start 100%) !default;
+$hscroll-border-size: $border-size !default;
+$hscroll-border-type: solid !default;
+$hscroll-hover-font: $hover-font-color !default;
+$hscroll-active-font-color: $active-font-color !default;
+$hscroll-nav-nrml-width: 40px !default;
+$hscroll-nav-bgr-width: 50px !default;
+$hscroll-nrml-padding: 0 $hscroll-nav-nrml-width !default;
+$hscroll-bgr-padding: 0 $hscroll-nav-bgr-width !default;
+$hscroll-border-type: $border-type !default;
+$hscroll-box-shadow: none !default;
+$hscroll-hover-bg: rgba($grey-white, .1) !default;
+$hscroll-hover-border-color: rgba($grey-white, .1) !default;
+$hscroll-default-icon-color: rgba($grey-dark-font, .54) !default;
+$hscroll-focus-border: 0 !default;
+$hscroll-active-border: 0 !default;
+$hscroll-hover-border: 0 !default;
+$hscroll-active-box-shadow: none !default;
+
+$hscroll-default-border: $hscroll-hover-border-color !default;
+$hscroll-ribble-animation-border-frame: rgba(255, 255, 255, .5) !default;
+$hscroll-ribble-animation-shadow-frame: 0 0 0 0 $hscroll-ribble-animation-border-frame !default;
+$hscroll-ribble-animation-shadow-frame-end: 0 0 0 200px rgba(255, 255, 255, .12) !default;
+
+@mixin hscroll-btn-animation {
+  background-color: transparent;
+  border-radius: 50%;
+  border-width: 1px;
+  box-sizing: border-box;
+  content: '' ;
+  height: 1px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  visibility: hidden;
+  width: 1px;
+}
+
+@mixin hscroll-btn-animation-after {
+  animation: hscroll-popup-shadow .6s ease-out 0ms;
+  visibility: visible;
+}
+
+@keyframes hscroll-popup-shadow {
+  0% {
+    border-color: $hscroll-ribble-animation-border-frame;
+    box-shadow: $hscroll-ribble-animation-shadow-frame;
+    }
+
+  100% {
+    box-shadow: $hscroll-ribble-animation-shadow-frame-end;
+    }
+ }
+//enddefault
+@include export-module('hscroll-material-icons') {
+  /*! hscroll icons */
+  #{&}.e-hscroll {
+
+    &.e-rtl {
+
+      &.e-scroll-device {
+
+        .e-nav-right-arrow::before {
+          content: '\e904';
+        }
+
+        .e-nav-left-arrow::before {
+          content: '\e913';
+        }
+
+      }
+
+      .e-nav-left-arrow::before {
+        content: '\e913';
+        }
+
+      .e-nav-right-arrow::before {
+        content: '\e904';
+        }
+    }
+
+    &.e-scroll-device {
+
+      .e-nav-right-arrow::before {
+        content: '\e913';
+      }
+
+      .e-nav-left-arrow::before {
+        content: '\e904';
+      }
+    }
+
+    .e-nav-left-arrow::before {
+      content: '\e904';
+      line-height: normal;
+    }
+
+    .e-nav-right-arrow::before {
+      content: '\e913';
+      line-height: normal;
+    }
+  }
+}
+
+@include export-module('h-scroll') {
+  /*! h-scroll layout */
+
+  .e-bigger #{&}.e-hscroll,
+  #{&}.e-hscroll.e-bigger {
+    min-height: $hscroll-nav-bgr-minheight;
+
+    &:not(.e-scroll-device) {
+      padding: $hscroll-bgr-padding;
+    }
+
+    &.e-scroll-device {
+      padding-right: $hscroll-nav-bgr-width;
+    }
+
+    &.e-rtl.e-scroll-device {
+      padding-left: $hscroll-nav-bgr-width;
+      padding-right: initial;
+    }
+
+    .e-nav-arrow.e-icons {
+      font-size: $hscroll-device-arrow-size-bigger;
+     }
+
+    &.e-rtl .e-scroll-overlay.e-scroll-right-overlay {
+      left: $hscroll-nav-bgr-width;
+    }
+
+    .e-scroll-overlay {
+
+      &.e-scroll-right-overlay {
+        right: $hscroll-nav-bgr-width;
+      }
+    }
+
+    .e-scroll-nav {
+      min-height: $hscroll-nav-bgr-minheight;
+      width: $hscroll-nav-bgr-width;
+    }
+
+  }
+
+  #{&}.e-hscroll {
+    display: block;
+    position: relative;
+    width: inherit;
+
+    &.e-rtl {
+
+      &.e-scroll-device {
+        padding-left: $hscroll-mob-nav-nrml-width;
+        padding-right: initial;
+
+        .e-scroll-nav {
+          transform: skewX(-16deg) translateX(-6px);
+        }
+
+        .e-scroll-overlay {
+
+          &.e-scroll-right-overlay {
+            left: $hscroll-device-arrow-width;
+            right: auto;
+            transform: skewX(-16deg) translateX(-6px);
+          }
+
+          &.e-scroll-left-overlay {
+            left: auto;
+            right: 0;
+          }
+        }
+      }
+   }
+
+    &:not(.e-scroll-device) {
+      padding: $hscroll-nrml-padding;
+    }
+
+    &.e-scroll-device {
+      padding-right: $hscroll-mob-nav-nrml-width;
+
+      .e-scroll-nav {
+        transform: skewX(-16deg) translateX(6px);
+        width: $hscroll-device-arrow-width;
+
+        .e-nav-arrow {
+          font-size: $hscroll-device-arrow-size;
+          transform: skewX(16deg);
+        }
+      }
+
+      .e-scroll-overlay {
+        opacity: $hscroll-overlay-opacity;
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        z-index: 100;
+
+        &.e-scroll-right-overlay {
+          left: auto;
+          right: $hscroll-device-arrow-width;
+          transform: skewX(-16deg) translateX(6px);
+        }
+
+        &.e-scroll-left-overlay {
+          left: 0;
+          right: auto;
+        }
+      }
+    }
+
+    &.e-overlay {
+
+      .e-hscroll-content {
+
+        > * {
+          pointer-events: none;
+        }
+      }
+    }
+
+    > * {
+      height: inherit;
+     }
+
+    .e-hscroll-content {
+      display: inline-block;
+      height: inherit;
+      position: relative;
+      touch-action: none;
+
+      > * {
+        pointer-events: auto;
+      }
+  }
+
+    &.e-rtl {
+
+      .e-scroll-nav  {
+
+        &.e-scroll-right-nav {
+          left: 0;
+          right: auto;
+        }
+
+        &.e-scroll-left-nav {
+          left: auto;
+          right: 0;
+        }
+    }
+    }
+
+    .e-scroll-nav  {
+      align-items: center;
+      bottom: 0;
+      cursor: pointer;
+      display: flex;
+      height: 100%;
+      min-height: $hscroll-nav-nrml-minheight;
+      overflow: hidden;
+      position: absolute;
+      top: 0;
+      width: $hscroll-nav-nrml-width;
+
+      &.e-scroll-left-nav {
+        left: 0;
+      }
+
+      &.e-scroll-right-nav {
+        right: 0;
+      }
+
+      &.e-ie-align {
+        display: table;
+        }
+    }
+
+    .e-nav-arrow {
+      position: relative;
+  }
+
+    .e-nav-arrow.e-icons {
+      display: table-cell;
+      text-align: center;
+      vertical-align: middle;
+      width: 100%;
+      }
+
+    .e-hscroll-bar {
+
+      .e-hscroll-content {
+
+        .e-overlay {
+          pointer-events: none;
+          }
+        }
+      }
+  }
+}
+@include export-module('h-scroll-theme') {
+  /*! h-scroll theme */
+  #{&}.e-hscroll {
+
+    .e-icons {
+      color: $hscroll-default-icon-color;
+    }
+
+    &.e-rtl {
+
+      &.e-scroll-device {
+
+        .e-scroll-nav.e-scroll-right-nav {
+          border-color: $hscroll-device-arrow-border-color;
+          box-shadow: $hscroll-device-arrow-rtl-box-shadow;
+        }
+      }
+
+    }
+
+    &.e-scroll-device {
+
+      .e-scroll-nav.e-scroll-right-nav {
+        background-color: $hscroll-device-arrow-bg;
+        border-color: $hscroll-device-arrow-border-color;
+        border-width: $hscroll-device-arrow-border-size;
+        box-shadow: $hscroll-device-arrow-box-shadow;
+
+        .e-nav-arrow {
+          color: $hscroll-device-arrow-color;
+        }
+      }
+    }
+
+    .e-scroll-overlay {
+      background-color: transparent;
+      background-repeat: repeat-x;
+
+      &.e-scroll-left-overlay {
+        background-image: $hscroll-left-bg;
+      }
+
+      &.e-scroll-right-overlay {
+        background-image: $hscroll-right-bg;
+      }
+    }
+
+    &.e-rtl {
+
+      .e-scroll-nav  {
+        background: $hscroll-default-bg;
+
+        &.e-scroll-left-nav {
+          border-left: $hscroll-border-size $hscroll-border-type $hscroll-default-border;
+          border-right: 0;
+        }
+
+        &.e-scroll-right-nav {
+          border-left: 0;
+          border-right: $hscroll-border-size $hscroll-border-type $hscroll-default-border;
+        }
+
+        &:hover {
+          background: $hscroll-hover-bg;
+          border: $hscroll-hover-border;
+          color: $hscroll-hover-font;
+
+          @if $hscroll-skin == 'material' {
+            border-color: $hscroll-hover-border-color;
+          }
+
+          @if $hscroll-skin == 'highcontrast' {
+            &:active {
+              background: $hscroll-press-bg;
+            }
+          }
+        }
+      }
+    }
+
+    &:not(.e-scroll-device) {
+
+      .e-scroll-nav  {
+
+        &:hover {
+          background: $hscroll-hover-bg;
+          border: $hscroll-hover-border;
+          color: $hscroll-hover-font;
+
+          @if $hscroll-skin == 'bootstrap4' {
+            .e-icons {
+              color: inherit;
+            }
+          }
+
+          @if $hscroll-skin == 'highcontrast' {
+            border: 2px solid $hscroll-nav-hover-border-color;
+
+            &:active {
+              border: 0;
+            }
+          }
+        }
+
+        &:focus {
+          background: $hscroll-hover-bg;
+          border: $hscroll-focus-border;
+          color: $hscroll-hover-font;
+
+          @if $hscroll-skin == 'material' {
+            border-color: $hscroll-hover-border-color;
+          }
+
+          @if $hscroll-skin == 'bootstrap4' {
+            .e-icons {
+              color: inherit;
+            }
+          }
+
+          @if $hscroll-skin == 'highcontrast' {
+            background: $hscroll-nav-focus-bg-color;
+            border: $hscroll-dash-border;
+          }
+        }
+
+        &:active {
+          background: $hscroll-press-bg;
+          border: $hscroll-active-border;
+          box-shadow: $hscroll-active-box-shadow;
+          color: $hscroll-active-font-color;
+          @if $hscroll-skin == 'highcontrast' {
+            .e-icons {
+              color: $hscroll-nav-active-color;
+            }
+          }
+        }
+      }
+
+    }
+
+    .e-scroll-nav  {
+      background: $hscroll-default-bg;
+
+      &.e-scroll-left-nav {
+        border-right: $hscroll-border-size $hscroll-border-type $hscroll-default-border;
+      }
+
+      &.e-scroll-right-nav {
+        border-left: $hscroll-border-size $hscroll-border-type $hscroll-default-border;
+      }
+
+      &::after {
+        @include hscroll-btn-animation;
+      }
+
+      &:active::after {
+        @include hscroll-btn-animation-after;
+     }
+
+    }
+  }
+}

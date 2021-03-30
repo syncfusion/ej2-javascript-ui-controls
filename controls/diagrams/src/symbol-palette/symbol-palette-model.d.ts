@@ -9,12 +9,14 @@ export interface PaletteModel {
 
     /**
      * Defines the unique id of a symbol group
+     *
      * @default ''
      */
     id?: string;
 
     /**
      * Sets the height of the symbol group
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -23,24 +25,28 @@ export interface PaletteModel {
 
     /**
      * Sets whether the palette items to be expanded or not
+     *
      * @default true
      */
     expanded?: boolean;
 
     /**
      * Defines the content of the symbol group
+     *
      * @default ''
      */
     iconCss?: string;
 
     /**
      * Defines the title of the symbol group
+     *
      * @default ''
      */
     title?: string;
 
     /**
      * Defines the collection of predefined symbols
+     *
      * @aspType object
      */
     symbols?: (NodeModel | ConnectorModel)[];
@@ -54,6 +60,7 @@ export interface SymbolDragSizeModel {
 
     /**
      * Sets the drag width of the symbols
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -62,6 +69,7 @@ export interface SymbolDragSizeModel {
 
     /**
      * Sets the drag height of the symbols
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -77,6 +85,7 @@ export interface SymbolPreviewModel {
 
     /**
      * Sets the preview width of the symbols
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -85,6 +94,7 @@ export interface SymbolPreviewModel {
 
     /**
      * Sets the preview height of the symbols
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -93,6 +103,7 @@ export interface SymbolPreviewModel {
 
     /**
      * Defines the distance to be left between the cursor and symbol
+     *
      * @default {}
      */
     offset?: PointModel;
@@ -106,24 +117,28 @@ export interface SymbolPaletteModel extends ComponentModel{
 
     /**
      * Configures the key, when it pressed the symbol palette will be focused
+     *
      * @default 'S'
      */
     accessKey?: string;
 
     /**
      * Defines the width of the symbol palette
+     *
      * @default '100%'
      */
     width?: string | number;
 
     /**
      * Defines the height of the symbol palette
+     *
      * @default '100%'
      */
     height?: string | number;
 
     /**
      * Defines the collection of symbol groups
+     *
      * @default []
      * @blazorType System.Collections.ObjectModel.ObservableCollection<SymbolPalettePalette>
      */
@@ -168,17 +183,20 @@ export interface SymbolPaletteModel extends ComponentModel{
      * node.style.strokeColor = '#3A3A3A';
      * }
      * ```
+     *
      * @deprecated
      */
     getSymbolInfo?: Function | string;
 
     /**
      * Defines the size, appearance and description of a symbol
+     *
      */
     symbolInfo?: SymbolInfo;
 
     /**
      * Defines the symbols to be added in search palette
+     *
      * @aspDefaultValueIgnore
      * @default undefined
      * @deprecated
@@ -187,11 +205,13 @@ export interface SymbolPaletteModel extends ComponentModel{
 
     /**
      * Defines the symbols to be added in search palette
+     *
      */
     ignoreSymbolsOnSearch?: string[];
 
     /**
      * Defines the content of a symbol
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -201,6 +221,7 @@ export interface SymbolPaletteModel extends ComponentModel{
 
     /**
      * Defines the width of the symbol
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -209,6 +230,7 @@ export interface SymbolPaletteModel extends ComponentModel{
 
     /**
      * Defines the height of the symbol
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -217,18 +239,21 @@ export interface SymbolPaletteModel extends ComponentModel{
 
     /**
      * Defines the space to be left around a symbol
+     *
      * @default {left:10,right:10,top:10,bottom:10}
      */
     symbolMargin?: MarginModel;
 
     /**
      * Defines whether the symbols can be dragged from palette or not
+     *
      * @default true
      */
     allowDrag?: boolean;
 
     /**
      * Defines the size and position of the symbol preview
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -237,6 +262,7 @@ export interface SymbolPaletteModel extends ComponentModel{
 
     /**
      * Defines the size of a drop symbol
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -245,17 +271,20 @@ export interface SymbolPaletteModel extends ComponentModel{
 
     /**
      * Enables/Disables search option in symbol palette
+     *
      * @default false
      */
     enableSearch?: boolean;
 
     /**
      * Enables/Disables animation when the palette header is expanded/collapsed
+     *
      */
     enableAnimation?: boolean;
 
     /**
      * Defines how many palettes can be at expanded mode at a time
+     *
      * @default 'Multiple'
      * @aspDefaultValueIgnore
      * @blazorType Syncfusion.Blazor.Navigations.ExpandMode
@@ -266,6 +295,7 @@ export interface SymbolPaletteModel extends ComponentModel{
 
     /**
      * Triggers after the selection changes in the symbol palette
+     *
      * @event
      * @blazorProperty 'OnPaletteSelectionChange'
      */
@@ -273,6 +303,7 @@ export interface SymbolPaletteModel extends ComponentModel{
 
     /**
      * Triggers when the icon is expanded
+     *
      * @event
      * @blazorProperty 'OnPaletteExpanding'
      */
@@ -280,24 +311,28 @@ export interface SymbolPaletteModel extends ComponentModel{
 
     /**
      * Helps to return the default properties of node
+     *
      * @deprecated
      */
     getNodeDefaults?: Function | string;
 
     /**
      * Helps to return the default properties of node
+     *
      * @blazorType DiagramNode
      */
     nodeDefaults?: NodeModel;
 
     /**
      * Helps to return the default properties of connector
+     *
      * @deprecated
      */
     getConnectorDefaults?: Function | string;
 
     /**
      * Helps to return the default properties of connectors
+     *
      * @blazorType DiagramConnector
      */
     connectorDefaults?: ConnectorModel;

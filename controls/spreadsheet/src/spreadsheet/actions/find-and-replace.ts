@@ -20,6 +20,8 @@ export class FindAndReplace {
     private shortValue: string = '';
     /**
      * Constructor for FindAndReplace module.
+     *
+     * @param {Spreadsheet} parent - Constructor for FindAndReplace module.
      */
     constructor(parent: Spreadsheet) {
         this.parent = parent;
@@ -52,36 +54,36 @@ export class FindAndReplace {
         }
     }
     private findUndoRedo(options: ReplaceAllArgs): void {
-        let eventArgs: BeforeReplaceEventArgs = { address: options.address, compareVal: options.compareVal, cancel: false };
+        const eventArgs: BeforeReplaceEventArgs = { address: options.address, compareVal: options.compareVal, cancel: false };
         if (options.undoRedoOpt === 'before') {
             this.parent.notify(beginAction, { action: 'beforeReplace', eventArgs: eventArgs });
         } else if (options.undoRedoOpt === 'after') {
             if (!eventArgs.cancel) {
-                let eventArgs: ReplaceEventArgs = { address: options.address, compareVal: options.compareVal };
+                const eventArgs: ReplaceEventArgs = { address: options.address, compareVal: options.compareVal };
                 this.parent.notify(completeAction, { action: 'replace', eventArgs: eventArgs });
             }
         } else if (options.undoRedoOpt === 'beforeReplaceAll') {
             if (!eventArgs.cancel) {
-                let eventArgs: ReplaceAllEventArgs = { replaceValue: options.replaceValue, addressCollection: options.Collection};
+                const eventArgs: ReplaceAllEventArgs = { replaceValue: options.replaceValue, addressCollection: options.Collection};
                 this.parent.notify(beginAction, { action: 'beforeReplaceAll', eventArgs });
             }
         } else if (options.undoRedoOpt === 'afterReplaceAll') {
             if (!eventArgs.cancel) {
-                let eventArgs: ReplaceAllEventArgs = { replaceValue: options.replaceValue, addressCollection: options.Collection };
+                const eventArgs: ReplaceAllEventArgs = { replaceValue: options.replaceValue, addressCollection: options.Collection };
                 this.parent.notify(completeAction, { action: 'replaceAll', eventArgs });
             }
         }
     }
     private renderFindDlg(): void {
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
-        let cancelButton: boolean = false;
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+        const cancelButton: boolean = false;
         if (isNullOrUndefined(this.parent.element.querySelector('.e-find-dlg'))) {
-            let dlg: DialogModel = {
+            const dlg: DialogModel = {
                 isModal: false, showCloseIcon: true, cssClass: 'e-find-dlg', allowDragging: true,
                 header: l10n.getConstant('FindAndReplace'), closeOnEscape: false,
                 beforeOpen: (args: BeforeOpenEventArgs): void => {
-                    let dlgArgs: DialogBeforeOpenEventArgs = {
+                    const dlgArgs: DialogBeforeOpenEventArgs = {
                         dialogName: 'FindAndReplaceDialog',
                         element: args.element, target: args.target, cancel: args.cancel
                     };
@@ -96,8 +98,12 @@ export class FindAndReplace {
                     buttonModel: {
                         content: l10n.getConstant('FindPreviousBtn'), isPrimary: true, cssClass: 'e-btn-findPrevious', disabled: true
                     },
-                    click: (): void => {
+                    click: (e: KeyboardEvent): void => {
                         this.dialogMessage();
+                        if (e && e.keyCode === 13) {
+                            this.findDlgClick('next');
+                            return;
+                        }
                         this.findDlgClick('prev');
                     }
                 }, {
@@ -126,10 +132,10 @@ export class FindAndReplace {
                         this.findDlgClick('replaceAll');
                     }
                 }], open: (): void => {
-                    let findInput: string = (this.parent.element.querySelector('.e-text-findNext') as HTMLInputElement).value;
+                    const findInput: string = (this.parent.element.querySelector('.e-text-findNext') as HTMLInputElement).value;
                     if (findInput) {
-                        let prevButton: HTMLElement = this.parent.element.querySelector('.e-btn-findPrevious') as HTMLElement;
-                        let prevButtonObj: Button = getComponent(prevButton, 'btn') as Button;
+                        const prevButton: HTMLElement = this.parent.element.querySelector('.e-btn-findPrevious') as HTMLElement;
+                        const prevButtonObj: Button = getComponent(prevButton, 'btn') as Button;
                         prevButtonObj.disabled = false;
                         (getComponent(
                             this.parent.element.querySelector('.e-btn-findNext') as HTMLElement, 'btn') as Button).disabled = false;
@@ -151,15 +157,15 @@ export class FindAndReplace {
         }
     }
     private renderGotoDlg(): void {
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
-        let cancelBtn: boolean = false;
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+        const cancelBtn: boolean = false;
         if (isNullOrUndefined(this.parent.element.querySelector('.e-find-dlg'))) {
-            let dlg: DialogModel = {
+            const dlg: DialogModel = {
                 width: 300, isModal: false, showCloseIcon: true, cssClass: 'e-goto-dlg', allowDragging: true,
                 header: l10n.getConstant('GotoHeader'),
                 beforeOpen: (args: BeforeOpenEventArgs): void => {
-                    let dlgArgs: DialogBeforeOpenEventArgs = {
+                    const dlgArgs: DialogBeforeOpenEventArgs = {
                         dialogName: 'GoToDialog',
                         element: args.element, target: args.target, cancel: args.cancel
                     };
@@ -176,12 +182,12 @@ export class FindAndReplace {
                     },
                     click: (): void => {
                         this.gotoHandler();
-                    },
+                    }
                 }], close: (): void => {
                     dialogInst.hide();
                 }, open: (): void => {
                     this.textFocus();
-                },
+                }
 
             };
             dialogInst.show(dlg, cancelBtn);
@@ -190,7 +196,7 @@ export class FindAndReplace {
         }
     }
     private textFocus(): void {
-        let element: HTMLElement = this.parent.element.querySelector('.e-text-goto');
+        const element: HTMLElement = this.parent.element.querySelector('.e-text-goto');
         element.addEventListener('focus', (): void => {
             if (this.parent.element.querySelector('.e-goto-alert-span')) {
                 this.parent.element.querySelector('.e-goto-alert-span').remove();
@@ -214,67 +220,67 @@ export class FindAndReplace {
                 this.gotoAlert();
             }
         }
-        let value: string = findInput.value;
+        const value: string = findInput.value;
         if (findInput.value !== '') {
-        let sheetIndex: number = this.parent.activeSheetIndex;
-        let checkCase: HTMLElement = this.parent.element.querySelector('.e-findnreplace-checkcase') as HTMLElement;
-        let isCSen: boolean;
-        if (!checkCase) {
-            isCSen = false;
-        } else {
-            let caseCheckbox: CheckBox = getComponent(checkCase, 'checkbox') as CheckBox;
-            isCSen = caseCheckbox.checked;
+            const sheetIndex: number = this.parent.activeSheetIndex;
+            const checkCase: HTMLElement = this.parent.element.querySelector('.e-findnreplace-checkcase') as HTMLElement;
+            let isCSen: boolean;
+            if (!checkCase) {
+                isCSen = false;
+            } else {
+                const caseCheckbox: CheckBox = getComponent(checkCase, 'checkbox') as CheckBox;
+                isCSen = caseCheckbox.checked;
+            }
+            const checkmatch: HTMLElement = this.parent.element.querySelector('.e-findnreplace-checkmatch') as HTMLElement;
+            let isEMatch: boolean;
+            if (!checkmatch) {
+                isEMatch = false;
+            } else {
+                const entireMatchCheckbox: CheckBox = getComponent(checkmatch, 'checkbox') as CheckBox;
+                isEMatch = entireMatchCheckbox.checked;
+            }
+            const searchitem: HTMLElement = this.parent.element.querySelector('.e-findnreplace-searchby') as HTMLElement;
+            let searchBy: string;
+            if (!searchitem) {
+                searchBy = 'By Row';
+            } else {
+                const searchDDL: DropDownList = getComponent(searchitem, 'dropdownlist') as DropDownList;
+                searchBy = searchDDL.value.toString();
+            }
+            const modeitem: HTMLElement = this.parent.element.querySelector('.e-findnreplace-searchwithin') as HTMLElement;
+            let mode: string;
+            if (!modeitem) {
+                mode = 'Sheet';
+            } else {
+                const modeDDL: DropDownList = getComponent(modeitem, 'dropdownlist') as DropDownList;
+                mode = modeDDL.value.toString();
+            }
+            const args: FindOptions = {
+                value: value, sheetIndex: sheetIndex, findOpt: findOpt.findOption, mode: mode, isCSen: isCSen,
+                isEMatch: isEMatch, searchBy: searchBy
+            };
+            if (findOpt.findOption === 'next' || findOpt.findOption === 'prev') {
+                this.parent.find(args);
+            } else if (findOpt.countArgs.countOpt === 'count') {
+                this.parent.notify(count, args);
+                findOpt.countArgs.findCount = args.findCount;
+            }
         }
-        let checkmatch: HTMLElement = this.parent.element.querySelector('.e-findnreplace-checkmatch') as HTMLElement;
-        let isEMatch: boolean;
-        if (!checkmatch) {
-            isEMatch = false;
-        } else {
-            let entireMatchCheckbox: CheckBox = getComponent(checkmatch, 'checkbox') as CheckBox;
-            isEMatch = entireMatchCheckbox.checked;
-        }
-        let searchitem: HTMLElement = this.parent.element.querySelector('.e-findnreplace-searchby') as HTMLElement;
-        let searchBy: string;
-        if (!searchitem) {
-            searchBy = 'By Row';
-        } else {
-            let searchDDL: DropDownList = getComponent(searchitem, 'dropdownlist') as DropDownList;
-            searchBy = searchDDL.value.toString();
-        }
-        let modeitem: HTMLElement = this.parent.element.querySelector('.e-findnreplace-searchwithin') as HTMLElement;
-        let mode: string;
-        if (!modeitem) {
-            mode = 'Sheet';
-        } else {
-            let modeDDL: DropDownList = getComponent(modeitem, 'dropdownlist') as DropDownList;
-            mode = modeDDL.value.toString();
-        }
-        let args: FindOptions = {
-            value: value, sheetIndex: sheetIndex, findOpt: findOpt.findOption, mode: mode, isCSen: isCSen,
-            isEMatch: isEMatch, searchBy: searchBy
-        };
-        if (findOpt.findOption === 'next' || findOpt.findOption === 'prev') {
-            this.parent.find(args);
-        } else if (findOpt.countArgs.countOpt === 'count') {
-            this.parent.notify(count, args);
-            findOpt.countArgs.findCount = args.findCount;
-        }
-    }
     }
     private replaceHandler(replace: { [key: string]: string }): void {
-        let sheetIndex: number = this.parent.activeSheetIndex;
-        let findInput: HTMLInputElement = this.parent.element.querySelector('.e-text-findNext') as HTMLInputElement;
-        let replaceWith: HTMLInputElement = this.parent.element.querySelector('.e-text-replaceInp') as HTMLInputElement;
-        let checkCase: HTMLElement = this.parent.element.querySelector('.e-findnreplace-checkcase') as HTMLElement;
-        let caseCheckbox: CheckBox = getComponent(checkCase, 'checkbox') as CheckBox;
-        let checkmatch: HTMLElement = this.parent.element.querySelector('.e-findnreplace-checkmatch') as HTMLElement;
-        let eMatchCheckbox: CheckBox = getComponent(checkmatch, 'checkbox') as CheckBox;
-        let searchitem: HTMLElement = this.parent.element.querySelector('.e-findnreplace-searchby') as HTMLElement;
-        let searchDDL: DropDownList = getComponent(searchitem, 'dropdownlist') as DropDownList;
-        let modeitem: HTMLElement = this.parent.element.querySelector('.e-findnreplace-searchwithin') as HTMLElement;
-        let modeDDL: DropDownList = getComponent(modeitem, 'dropdownlist') as DropDownList;
-        let findOption: string = 'next';
-        let args: FindOptions = {
+        const sheetIndex: number = this.parent.activeSheetIndex;
+        const findInput: HTMLInputElement = this.parent.element.querySelector('.e-text-findNext') as HTMLInputElement;
+        const replaceWith: HTMLInputElement = this.parent.element.querySelector('.e-text-replaceInp') as HTMLInputElement;
+        const checkCase: HTMLElement = this.parent.element.querySelector('.e-findnreplace-checkcase') as HTMLElement;
+        const caseCheckbox: CheckBox = getComponent(checkCase, 'checkbox') as CheckBox;
+        const checkmatch: HTMLElement = this.parent.element.querySelector('.e-findnreplace-checkmatch') as HTMLElement;
+        const eMatchCheckbox: CheckBox = getComponent(checkmatch, 'checkbox') as CheckBox;
+        const searchitem: HTMLElement = this.parent.element.querySelector('.e-findnreplace-searchby') as HTMLElement;
+        const searchDDL: DropDownList = getComponent(searchitem, 'dropdownlist') as DropDownList;
+        const modeitem: HTMLElement = this.parent.element.querySelector('.e-findnreplace-searchwithin') as HTMLElement;
+        const modeDDL: DropDownList = getComponent(modeitem, 'dropdownlist') as DropDownList;
+        const findOption: string = 'next';
+        const args: FindOptions = {
             value: findInput.value, mode: modeDDL.value.toString(), isCSen: caseCheckbox.checked,
             isEMatch: eMatchCheckbox.checked, searchBy: searchDDL.value.toString(), findOpt: findOption, replaceValue: replaceWith.value,
             replaceBy: replace.findDlgArgs ? replace.findDlgArgs : replace.replaceMode, sheetIndex: sheetIndex
@@ -286,25 +292,28 @@ export class FindAndReplace {
         if (address) {
             this.parent.goTo(address.address);
         } else {
-            let item: HTMLInputElement = this.parent.element.querySelector('.e-text-goto') as HTMLInputElement;
-            let gotoaddress: string = item.value;
-            let splitAddress: string[] = gotoaddress.split('');
+            const item: HTMLInputElement = this.parent.element.querySelector('.e-text-goto') as HTMLInputElement;
+            const gotoaddress: string = item.value;
+            const splitAddress: string[] = gotoaddress.split('');
             if ((gotoaddress === '') || isNaN(parseInt(splitAddress[1], 10))) {
                 this.gotoAlert();
                 return;
             } else {
-                let address: string = gotoaddress.toString().toUpperCase();
+                const address: string = gotoaddress.toString().toUpperCase();
                 this.parent.goTo(address);
             }
         }
     }
 
     private gotoAlert(): void {
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let gotoSpan: Element = this.parent.createElement('span', {
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const gotoSpan: Element = this.parent.createElement('span', {
             className: 'e-goto-alert-span',
             innerHTML: l10n.getConstant('InsertingEmptyValue')
         });
+        if (this.parent.element.querySelector('.e-goto-alert-span')) {
+            this.parent.element.querySelector('.e-goto-alert-span').remove();
+        }
         (this.parent.element.querySelector('.e-goto-dlg').querySelector('.e-dlg-content')).appendChild(gotoSpan);
     }
 
@@ -312,19 +321,21 @@ export class FindAndReplace {
         if (this.parent.element.querySelector('.e-replace-alert-span')) {
             this.parent.element.querySelector('.e-replace-alert-span').remove();
         }
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let findSpan: Element = this.parent.createElement('span', {
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const findSpan: Element = this.parent.createElement('span', {
             className: 'e-find-alert-span',
             innerHTML: l10n.getConstant('NoElements')
         });
-        (this.parent.element.querySelector('.e-find-dlg').querySelector('.e-dlg-content')).appendChild(findSpan);
+        if (this.parent.element.querySelector('.e-find-dlg')) {
+            (this.parent.element.querySelector('.e-find-dlg').querySelector('.e-dlg-content')).appendChild(findSpan);
+        }
     }
     private replaceAllDialog(options: { [key: string]: number | string }): void {
         if (this.parent.element.querySelector('.e-find-alert-span')) {
             this.parent.element.querySelector('.e-find-alert-span').remove();
         }
-        let l10n: L10n = (this.parent.serviceLocator.getService(locale));
-        let replaceSpan: Element = this.parent.createElement('span', {
+        const l10n: L10n = (this.parent.serviceLocator.getService(locale));
+        const replaceSpan: Element = this.parent.createElement('span', {
             className: 'e-replace-alert-span',
             innerHTML: options.count + l10n.getConstant('ReplaceAllEnd') + options.replaceValue
         });
@@ -335,10 +346,10 @@ export class FindAndReplace {
 
     private findKeyUp(e: KeyboardEvent): void {
         if (e.target as HTMLElement, 'e-text-findNext') {
-            let findValue: string = (this.parent.element.querySelector('.e-text-findNext') as HTMLInputElement).value;
+            const findValue: string = (this.parent.element.querySelector('.e-text-findNext') as HTMLInputElement).value;
             if (!isNullOrUndefined(findValue) && findValue !== '') {
-                let prevButton: HTMLElement = this.parent.element.querySelector('.e-btn-findPrevious') as HTMLElement;
-                let prevButtonObj: Button = getComponent(prevButton, 'btn') as Button;
+                const prevButton: HTMLElement = this.parent.element.querySelector('.e-btn-findPrevious') as HTMLElement;
+                const prevButtonObj: Button = getComponent(prevButton, 'btn') as Button;
                 prevButtonObj.disabled = false;
                 (getComponent(this.parent.element.querySelector('.e-btn-findNext') as HTMLElement, 'btn') as Button).disabled = false;
             } else {
@@ -347,17 +358,16 @@ export class FindAndReplace {
                 this.dialogMessage();
             }
         }
-        let findValue: string = (this.parent.element.querySelector('.e-text-findNext') as HTMLInputElement).value;
-        let replaceValue: string = (this.parent.element.querySelector('.e-text-replaceInp') as HTMLInputElement).value;
+        const findValue: string = (this.parent.element.querySelector('.e-text-findNext') as HTMLInputElement).value;
+        const replaceValue: string = (this.parent.element.querySelector('.e-text-replaceInp') as HTMLInputElement).value;
         if (!isNullOrUndefined(findValue) && !isNullOrUndefined(replaceValue) && (findValue !== '') && (replaceValue !== '')) {
             if (this.parent.getActiveSheet().isProtected === false) {
-            (getComponent(this.parent.element.querySelector('.e-btn-replace') as HTMLElement, 'btn') as Button).disabled = false;
-            (getComponent(this.parent.element.querySelector('.e-btn-replaceAll') as HTMLElement, 'btn') as Button).disabled = false;
+                (getComponent(this.parent.element.querySelector('.e-btn-replace') as HTMLElement, 'btn') as Button).disabled = false;
+                (getComponent(this.parent.element.querySelector('.e-btn-replaceAll') as HTMLElement, 'btn') as Button).disabled = false;
             }
         } else {
             (getComponent(this.parent.element.querySelector('.e-btn-replace') as HTMLElement, 'btn') as Button).disabled = true;
             (getComponent(this.parent.element.querySelector('.e-btn-replaceAll') as HTMLElement, 'btn') as Button).disabled = true;
-            this.dialogMessage();
         }
     }
 
@@ -365,14 +375,14 @@ export class FindAndReplace {
         if (this.parent.element.querySelector('.e-text-findNext-short') as HTMLInputElement) {
             this.shortValue = (this.parent.element.querySelector('.e-text-findNext-short') as HTMLInputElement).value;
         }
-        let dialogElem: HTMLElement = this.parent.createElement('div', { className: 'e-link-dialog' });
-        let findElem: HTMLElement = this.parent.createElement('div', { className: 'e-find' });
-        let findCheck: HTMLElement = this.parent.createElement('div', { className: 'e-findCheck' });
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const dialogElem: HTMLElement = this.parent.createElement('div', { className: 'e-link-dialog' });
+        const findElem: HTMLElement = this.parent.createElement('div', { className: 'e-find' });
+        const findCheck: HTMLElement = this.parent.createElement('div', { className: 'e-findCheck' });
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
         dialogElem.appendChild(findElem);
-        let findTextE: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
-        let findTextH: HTMLElement = this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('FindWhat') });
-        let findTextIp: HTMLElement = this.parent.createElement('input', {
+        const findTextE: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
+        const findTextH: HTMLElement = this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('FindWhat') });
+        const findTextIp: HTMLElement = this.parent.createElement('input', {
             className: 'e-input e-text-findNext', attrs: {
                 'type': 'Text', 'placeholder': l10n.getConstant('FindValue'),
                 'value': this.shortValue
@@ -381,74 +391,74 @@ export class FindAndReplace {
         findTextE.appendChild(findTextIp);
         findTextE.insertBefore(findTextH, findTextIp);
         findElem.appendChild(findTextE);
-        let findTextBox: TextBox = new TextBox({ width: '70%' });
+        const findTextBox: TextBox = new TextBox({ width: '70%' });
         findTextBox.createElement = this.parent.createElement;
         findTextBox.appendTo(findTextIp);
-        let replaceTextE: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
-        let replaceTextH: HTMLElement =
+        const replaceTextE: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
+        const replaceTextH: HTMLElement =
             this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('ReplaceWith') });
-        let replaceTextIp: HTMLElement = this.parent.createElement('input', {
+        const replaceTextIp: HTMLElement = this.parent.createElement('input', {
             className: 'e-input e-text-replaceInp', attrs: { 'type': 'Text', 'placeholder': l10n.getConstant('ReplaceValue') }
         });
         replaceTextE.appendChild(replaceTextIp);
         replaceTextE.insertBefore(replaceTextH, replaceTextIp);
         findElem.appendChild(replaceTextE);
-        let replaceTextBox: TextBox = new TextBox({ width: '70%' });
+        const replaceTextBox: TextBox = new TextBox({ width: '70%' });
         replaceTextBox.createElement = this.parent.createElement;
         replaceTextBox.appendTo(replaceTextIp);
-        let withinData: { [key: string]: Object }[] = [
+        const withinData: { [key: string]: Object }[] = [
             { Id: 'Sheet', Within: l10n.getConstant('Sheet') },
             { Id: 'Workbook', Within: l10n.getConstant('Workbook') }
         ];
-        let withInDDL: DropDownList = new DropDownList(
+        const withInDDL: DropDownList = new DropDownList(
             {
                 dataSource: withinData,
                 cssClass: 'e-searchby',
                 fields: { value: 'Id', text: 'Within' }, width: '50%', index: 0
             });
-        let withIn: HTMLElement = this.parent.createElement('input', {
+        const withIn: HTMLElement = this.parent.createElement('input', {
             className: 'e-findnreplace-searchwithin', attrs: { type: 'select', label: l10n.getConstant('SearchBy') }
         });
-        let withinTextH: HTMLElement =
+        const withinTextH: HTMLElement =
             this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('SearchWithin') });
         findElem.appendChild(withinTextH);
         findElem.appendChild(withIn);
         withInDDL.createElement = this.parent.createElement;
         withInDDL.appendTo(withIn);
-        let searchData: { [key: string]: Object }[] = [
+        const searchData: { [key: string]: Object }[] = [
             { Id: 'By Row', Search: l10n.getConstant('ByRow') },
             { Id: 'By Column', Search: l10n.getConstant('ByColumn') }
         ];
-        let searchDDL: DropDownList = new DropDownList(
+        const searchDDL: DropDownList = new DropDownList(
             {
                 dataSource: searchData,
                 cssClass: 'e-searchby',
                 fields: { value: 'Id', text: 'Search' }, width: '50%', index: 0
             });
-        let searchIn: HTMLElement = this.parent.createElement('input', {
+        const searchIn: HTMLElement = this.parent.createElement('input', {
             className: 'e-findnreplace-searchby', attrs: { type: 'select', label: l10n.getConstant('SearchBy') }
         });
-        let searchTextH: HTMLElement = this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('SearchBy') });
+        const searchTextH: HTMLElement = this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('SearchBy') });
         findElem.appendChild(searchTextH);
         findElem.appendChild(searchIn);
         searchDDL.createElement = this.parent.createElement;
         searchDDL.appendTo(searchIn);
 
-        let isCSen: CheckBox = new CheckBox({
+        const isCSen: CheckBox = new CheckBox({
             label: l10n.getConstant('MatchCase'), checked: false,
             cssClass: 'e-findnreplace-casecheckbox'
         });
-        let caaseCheckbox: HTMLElement = this.parent.createElement('input', {
+        const caaseCheckbox: HTMLElement = this.parent.createElement('input', {
             className: 'e-findnreplace-checkcase', attrs: { type: 'checkbox' }
         });
         findCheck.appendChild(caaseCheckbox);
         isCSen.createElement = this.parent.createElement;
         isCSen.appendTo(caaseCheckbox);
-        let isEMatch: CheckBox = new CheckBox({
+        const isEMatch: CheckBox = new CheckBox({
             label: l10n.getConstant('MatchExactCellElements'), checked: false,
-            cssClass: 'e-findnreplace-exactmatchcheckbox',
+            cssClass: 'e-findnreplace-exactmatchcheckbox'
         });
-        let entirematchCheckbox: HTMLElement = this.parent.createElement('input', {
+        const entirematchCheckbox: HTMLElement = this.parent.createElement('input', {
             className: 'e-findnreplace-checkmatch', attrs: { type: 'checkbox' }
         });
         findCheck.appendChild(entirematchCheckbox);
@@ -458,16 +468,16 @@ export class FindAndReplace {
         return dialogElem;
     }
     private GotoContent(): HTMLElement {
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let dialogElem: HTMLElement = this.parent.createElement('div', { className: 'e-link-dialog' });
-        let gotoElem: HTMLElement = this.parent.createElement('div', { className: 'e-goto' });
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const dialogElem: HTMLElement = this.parent.createElement('div', { className: 'e-link-dialog' });
+        const gotoElem: HTMLElement = this.parent.createElement('div', { className: 'e-goto' });
         dialogElem.appendChild(gotoElem);
-        let gotoTextE: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
-        let gotoTextH: HTMLElement = this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('Reference') });
-        let gotoTextBox: TextBox = new TextBox({
+        const gotoTextE: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
+        const gotoTextH: HTMLElement = this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('Reference') });
+        const gotoTextBox: TextBox = new TextBox({
             placeholder: l10n.getConstant('EntercellAddress')
         });
-        let gotoTextIp: HTMLElement = this.parent.createElement('input', { className: 'e-text-goto', attrs: { 'type': 'Text' } });
+        const gotoTextIp: HTMLElement = this.parent.createElement('input', { className: 'e-text-goto', attrs: { 'type': 'Text' } });
         gotoTextE.appendChild(gotoTextIp);
         gotoTextE.insertBefore(gotoTextH, gotoTextIp);
         gotoElem.appendChild(gotoTextE);
@@ -478,7 +488,8 @@ export class FindAndReplace {
 
     /**
      * To destroy the find-and-replace module.
-     * @return {void}
+     *
+     * @returns {void} - To destroy the find-and-replace module.
      */
     protected destroy(): void {
         this.removeEventListener();
@@ -486,7 +497,8 @@ export class FindAndReplace {
     }
     /**
      * Gets the module name.
-     * @returns string
+     *
+     * @returns {string} - Gets the module name.
      */
     protected getModuleName(): string {
         return 'findAndReplace';

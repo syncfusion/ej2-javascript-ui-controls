@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/ban-types */
 /**
  *  Context Menu spec document
  */
@@ -9,7 +11,7 @@ import { getScrollableParent } from '@syncfusion/ej2-popups';
 import { profile , inMB, getMemoryProfile } from './common.spec';
 
 function copyObject(source: any, destination: any): Object {
-    for (let prop in source) {
+    for (const prop in source) {
         destination[prop] = source[prop];
     }
     return destination;
@@ -25,9 +27,9 @@ function setMouseCoordinates(eventarg: any, x: number, y: number, target: Elemen
 }
 
 export function getEventObject(eventType: string, eventName: string): Object {
-    let tempEvent: any = document.createEvent(eventType);
+    const tempEvent: any = document.createEvent(eventType);
     tempEvent.initEvent(eventName, true, true);
-    let returnObject: any = copyObject(tempEvent, {});
+    const returnObject: any = copyObject(tempEvent, {});
     returnObject.preventDefault = () => { return true; };
     return returnObject;
 }
@@ -43,7 +45,7 @@ describe('ContextMenu', () => {
     });
 
     let contextMenu: any;
-    let items: MenuItemModel[] = [
+    const items: MenuItemModel[] = [
         {
             text: 'Preview',
             iconCss: 'e-icons e-preview'
@@ -103,16 +105,15 @@ describe('ContextMenu', () => {
             }]
         }
     ];
-    let options: { [key: string]: Object } = {
+    const options: { [key: string]: Object } = {
         target: '#target',
         items: items
     };
-    let ul: HTMLElement = createElement('ul', { id: 'contextmenu' });
-    let parent: HTMLElement = createElement('div', { id: 'parentEle' });
-    let div: HTMLElement = createElement('div', { id: 'target', styles: 'width: 300px;height: 300px' });
-    let filterDiv: HTMLElement = createElement('div', { className: 'e-list-item', styles: 'width: 100px;height: 100px' });
-    let ulEle: HTMLElement = createElement('ul', { id: 'list' });
-    let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+    const ul: HTMLElement = createElement('ul', { id: 'contextmenu' });
+    const div: HTMLElement = createElement('div', { id: 'target', styles: 'width: 300px;height: 300px' });
+    const filterDiv: HTMLElement = createElement('div', { className: 'e-list-item', styles: 'width: 100px;height: 100px' });
+    const ulEle: HTMLElement = createElement('ul', { id: 'list' });
+    const androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
         'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
 
     describe('DOM', () => {
@@ -168,14 +169,14 @@ describe('ContextMenu', () => {
             document.body.appendChild(div);
             document.body.appendChild(ul);
             contextMenu = new ContextMenu({ items: items, target: '#target', cssClass: 'e-custom' }, '#contextmenu');
-            let wrap: HTMLElement = contextMenu.getWrapper();
+            const wrap: HTMLElement = contextMenu.getWrapper();
             expect(wrap.classList.contains('e-custom')).toEqual(true);
         });
         it('RTL Checking', () => {
             document.body.appendChild(div);
             document.body.appendChild(ul);
             contextMenu = new ContextMenu({ items: items, target: '#target', enableRtl: true }, '#contextmenu');
-            let wrap: HTMLElement = contextMenu.getWrapper();
+            const wrap: HTMLElement = contextMenu.getWrapper();
             expect(wrap.classList.contains('e-rtl')).toEqual(true);
         });
         it('Target as null Checking', () => {
@@ -186,25 +187,25 @@ describe('ContextMenu', () => {
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
         });
-        let mouseEventArgs: any = {
+        const mouseEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             target: null,
             type: 'click',
             changedTouches: [{ clientX: 0, clientY: 0 }]
         };
-        let touchEventArgs: any = {
+        const touchEventArgs: any = {
             originalEvent: mouseEventArgs
         };
         it('RTL for Submenu', () => {
             document.body.appendChild(div);
             document.body.appendChild(ul);
             contextMenu = new ContextMenu({ items: items, target: '#target', enableRtl: true }, '#contextmenu');
-            let wrap: HTMLElement = contextMenu.getWrapper();
+            const wrap: HTMLElement = contextMenu.getWrapper();
             expect(wrap.classList.contains('e-rtl')).toEqual(true);
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             mouseEventArgs.target = li[1];
             mouseEventArgs.type = 'mouseover';
             contextMenu.clickHandler(mouseEventArgs);
@@ -221,7 +222,7 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             mouseEventArgs.target = li[0];
             contextMenu.clickHandler(mouseEventArgs);
             expect(contextMenu.element.style.display).toBe('none');
@@ -233,8 +234,7 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
-            let wrap: HTMLElement = contextMenu.getWrapper();
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             mouseEventArgs.target = li[1];
             contextMenu.clickHandler(mouseEventArgs);
         });
@@ -258,36 +258,36 @@ describe('ContextMenu', () => {
         it('IconCss Checking', () => {
             document.body.appendChild(div);
             document.body.appendChild(ul);
-            let items: MenuItemModel[] = [{ text: 'Cut', iconCss: 'e-cut' }, { text: 'Copy' }, { text: 'Paste' }];
+            const items: MenuItemModel[] = [{ text: 'Cut', iconCss: 'e-cut' }, { text: 'Copy' }, { text: 'Paste' }];
             contextMenu = new ContextMenu({ items: items, target: '#target' }, '#contextmenu');
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
-            let span: HTMLElement = li[0].children[0] as HTMLElement;
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
+            const span: HTMLElement = li[0].children[0] as HTMLElement;
             expect(span.classList.contains('e-menu-icon')).toEqual(true);
         });
         it('IconCss as empty string Checking', () => {
             document.body.appendChild(div);
             document.body.appendChild(ul);
-            let items: MenuItemModel[] = [{ text: 'Cut', iconCss: '' }, { text: 'Copy', iconCss: 'e-cut' }, { text: 'Paste', iconCss: 'e-cut' }];
+            const items: MenuItemModel[] = [{ text: 'Cut', iconCss: '' }, { text: 'Copy', iconCss: 'e-cut' }, { text: 'Paste', iconCss: 'e-cut' }];
             contextMenu = new ContextMenu({ items: items, target: '#target' }, '#contextmenu');
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             expect(li[0].classList.contains('e-blankicon')).toEqual(true);
             expect(li[0].getElementsByClassName('e-menu-icon')[0]).toBeUndefined();
         });
         it('Separator Checking', () => {
             document.body.appendChild(div);
             document.body.appendChild(ul);
-            let items: MenuItemModel[] = [{ text: 'Cut', iconCss: 'e-cut' }, { text: 'Copy' }, { separator: true }, { text: 'Paste' }];
+            const items: MenuItemModel[] = [{ text: 'Cut', iconCss: 'e-cut' }, { text: 'Copy' }, { separator: true }, { text: 'Paste' }];
             contextMenu = new ContextMenu({ items: items, target: '#target' }, '#contextmenu');
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             expect(li[2].classList.contains('e-separator')).toEqual(true);
         });
         it('Filter checking', () => {
@@ -300,7 +300,7 @@ describe('ContextMenu', () => {
             EventHandler.trigger(div, 'contextmenu', contextmenu);
         });
         it('Right click on non filter element', () => {
-            let nonFilter: HTMLElement = createElement('div', { className: 'e-filter', styles: 'width: 100px;height: 100px' });
+            const nonFilter: HTMLElement = createElement('div', { className: 'e-filter', styles: 'width: 100px;height: 100px' });
             div.appendChild(filterDiv);
             div.appendChild(nonFilter);
             document.body.appendChild(div);
@@ -316,7 +316,7 @@ describe('ContextMenu', () => {
         afterEach(() => {
             contextMenu.destroy();
         });
-        let mouseEventArgs: any = {
+        const mouseEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             target: null,
             type: 'mouseover'
@@ -328,7 +328,7 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             mouseEventArgs.target = li[1].firstChild;
             contextMenu.moverHandler(mouseEventArgs);
         });
@@ -339,7 +339,7 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             mouseEventArgs.target = li[1];
             mouseEventArgs.type = 'mouseover';
             contextMenu.moverHandler(mouseEventArgs);
@@ -355,7 +355,7 @@ describe('ContextMenu', () => {
             mouseEventArgs.target = li[1];
             mouseEventArgs.type = 'mouseover';
             contextMenu.clickHandler(mouseEventArgs);
-            let childUL: HTMLElement = contextMenu.getWrapper().children[1];
+            const childUL: HTMLElement = contextMenu.getWrapper().children[1];
             li = <Element[] & NodeListOf<HTMLLIElement>>childUL.querySelectorAll('li');
             mouseEventArgs.target = li[1];
             mouseEventArgs.type = 'mouseover';
@@ -368,11 +368,10 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             mouseEventArgs.target = li[1];
             mouseEventArgs.type = 'mouseover';
             contextMenu.moverHandler(mouseEventArgs);
-            let childUL: HTMLElement = contextMenu.getWrapper().children[1];
             mouseEventArgs.target = li[2];
             mouseEventArgs.type = 'mouseover';
             contextMenu.moverHandler(mouseEventArgs);
@@ -420,21 +419,20 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             mouseEventArgs.target = li[1];
             mouseEventArgs.type = 'click';
             contextMenu.clickHandler(mouseEventArgs);
-            let childUL: HTMLElement = contextMenu.getWrapper().children[1];
         });
         it('Hover on Separator element', () => {
             document.body.appendChild(div);
             document.body.appendChild(ul);
-            let items: MenuItemModel[] = [{ text: 'Cut', iconCss: 'e-cut' }, { text: 'Copy' }, { separator: true }, { text: 'Paste' }];
+            const items: MenuItemModel[] = [{ text: 'Cut', iconCss: 'e-cut' }, { text: 'Copy' }, { separator: true }, { text: 'Paste' }];
             contextMenu = new ContextMenu({ items: items, target: '#target' }, '#contextmenu');
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             mouseEventArgs.target = li[2];
             mouseEventArgs.type = 'mouseover';
             contextMenu.moverHandler(mouseEventArgs);
@@ -449,12 +447,11 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             mouseEventArgs.target = li[1];
             mouseEventArgs.type = 'click';
             contextMenu.clickHandler(mouseEventArgs);
             contextMenu.clickHandler(mouseEventArgs);
-            let childUL: HTMLElement = contextMenu.getWrapper().children[1];
         });
         it('Mouse Click on sub items not having sub elements', () => {
             document.body.appendChild(div);
@@ -467,7 +464,7 @@ describe('ContextMenu', () => {
             mouseEventArgs.target = li[1];
             mouseEventArgs.type = 'click';
             contextMenu.clickHandler(mouseEventArgs);
-            let childUL: HTMLElement = contextMenu.getWrapper().children[1];
+            const childUL: HTMLElement = contextMenu.getWrapper().children[1];
             li = <Element[] & NodeListOf<HTMLLIElement>>childUL.querySelectorAll('li');
             mouseEventArgs.target = li[1];
             mouseEventArgs.type = 'click';
@@ -480,11 +477,10 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             mouseEventArgs.target = li[1];
             mouseEventArgs.type = 'click';
             contextMenu.moverHandler(mouseEventArgs);
-            let childUL: HTMLElement = contextMenu.getWrapper().children[1];
             mouseEventArgs.target = li[2];
             mouseEventArgs.type = 'click';
             contextMenu.moverHandler(mouseEventArgs);
@@ -613,7 +609,7 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             contextMenu.moverHandler({ type: 'mouseover', target: li[1] });
             contextMenu.enableItems(['Share All'], true);
         });
@@ -633,7 +629,7 @@ describe('ContextMenu', () => {
             Browser.userAgent = "";
             contextMenu.destroy();
         });
-        let mouseEventArgs: any = {
+        const mouseEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             target: null,
             type: 'click'
@@ -646,15 +642,15 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             mouseEventArgs.target = li[1].firstChild;
             contextMenu.clickHandler(mouseEventArgs);
-            let childUL: HTMLElement = contextMenu.getWrapper().children[1];
-            let headerLI: Element = childUL.children[0];
+            const childUL: HTMLElement = contextMenu.getWrapper().children[1];
+            const headerLI: Element = childUL.children[0];
             expect(headerLI.classList.contains('e-menu-header')).toEqual(true);
         });
         it('Click event Checking for ios', () => {
-            let iosUserAgent: string = 'Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) ' +
+            const iosUserAgent: string = 'Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) ' +
                 'AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3';
             Browser.userAgent = iosUserAgent;
             document.body.appendChild(div);
@@ -670,11 +666,11 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             mouseEventArgs.target = li[1].firstChild;
             contextMenu.clickHandler(mouseEventArgs);
-            let childUL: HTMLElement = contextMenu.getWrapper().children[1];
-            let headerLI: Element = childUL.children[0];
+            const childUL: HTMLElement = contextMenu.getWrapper().children[1];
+            const headerLI: Element = childUL.children[0];
             expect(headerLI.classList.contains('e-menu-header')).toEqual(true);
             mouseEventArgs.target = headerLI;
             contextMenu.clickHandler(mouseEventArgs);
@@ -688,11 +684,11 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             mouseEventArgs.target = li[1].firstChild;
             contextMenu.clickHandler(mouseEventArgs);
-            let childUL: HTMLElement = contextMenu.getWrapper().children[1];
-            let headerLI: Element = childUL.children[0];
+            const childUL: HTMLElement = contextMenu.getWrapper().children[1];
+            const headerLI: Element = childUL.children[0];
             expect(headerLI.classList.contains('e-menu-header')).toEqual(true);
             mouseEventArgs.target = childUL.children[1];
             contextMenu.clickHandler(mouseEventArgs);
@@ -707,7 +703,7 @@ describe('ContextMenu', () => {
             contextMenu.enableItems(['Copy']);
             expect(contextMenu.element.children[3].classList.contains('e-disabled')).toBe(false);
         });
-        let clickEventArgs: any = {
+        const clickEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             target: null,
             type: 'click',
@@ -721,7 +717,7 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             clickEventArgs.target = li[1];
             contextMenu.clickHandler(clickEventArgs);
             contextMenu.navIdx = [1, 0];
@@ -734,7 +730,6 @@ describe('ContextMenu', () => {
             contextMenu = new ContextMenu(options, '#contextmenu');
             contextMenu.hideItems(['Copy']);
             contextMenu.hideItems(['Facebook']);
-            let wrap: HTMLElement = contextMenu.getWrapper();
         });
     });
 
@@ -751,7 +746,7 @@ describe('ContextMenu', () => {
             contextMenu.dataBind();
             contextMenu.cssClass = 'e-styles e-custom';
             contextMenu.dataBind();
-            let wrap: HTMLElement = contextMenu.getWrapper();
+            const wrap: HTMLElement = contextMenu.getWrapper();
             expect(wrap.classList.contains('e-styles')).toEqual(true);
             expect(wrap.classList.contains('e-custom')).toEqual(true);
         });
@@ -761,7 +756,7 @@ describe('ContextMenu', () => {
             contextMenu = new ContextMenu({ items: items, target: '#target', enableRtl: false }, '#contextmenu');
             contextMenu.enableRtl = true;
             contextMenu.dataBind();
-            let wrap: HTMLElement = contextMenu.getWrapper();
+            const wrap: HTMLElement = contextMenu.getWrapper();
             expect(wrap.classList.contains('e-rtl')).toEqual(true);
         });
         it('showItemOnClick', () => {
@@ -804,7 +799,7 @@ describe('ContextMenu', () => {
         afterEach(() => {
             contextMenu.destroy();
         });
-        let downEventArgs: any = {
+        const downEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             action: 'downarrow',
             type: 'keyup',
@@ -817,7 +812,7 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             li[3].classList.add('e-focused');
             downEventArgs.target = li[4];
             contextMenu.keyBoardHandler(downEventArgs);
@@ -830,7 +825,7 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             downEventArgs.target = contextMenu.getWrapper();
             contextMenu.keyBoardHandler(downEventArgs);
             expect((li[0] as Element).classList.contains('e-focused')).toBe(true);
@@ -849,12 +844,12 @@ describe('ContextMenu', () => {
         it('down arrow action with separator checking', () => {
             document.body.appendChild(div);
             document.body.appendChild(ul);
-            let items: MenuItemModel[] = [{ text: 'Cut' }, { text: 'Copy' }, { separator: true }, { text: 'Paste' }];
+            const items: MenuItemModel[] = [{ text: 'Cut' }, { text: 'Copy' }, { separator: true }, { text: 'Paste' }];
             contextMenu = new ContextMenu({ items: items, target: '#target' }, '#contextmenu');
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             li[1].classList.add('e-focused');
             contextMenu.keyBoardHandler(downEventArgs);
             expect(li[3].classList.contains('e-focused')).toBe(true);
@@ -870,7 +865,7 @@ describe('ContextMenu', () => {
             contextMenu.keyBoardHandler(downEventArgs);
             expect(contextMenu.element.firstElementChild.classList.contains('e-focused')).toEqual(true);
         });
-        let upEventArgs: any = {
+        const upEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             action: 'uparrow',
             type: 'keyup',
@@ -883,7 +878,7 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             li[3].classList.add('e-focused');
             upEventArgs.target = li[3];
             contextMenu.keyBoardHandler(upEventArgs);
@@ -896,7 +891,6 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
             upEventArgs.target = contextMenu.getWrapper();
             contextMenu.keyBoardHandler(upEventArgs);
         });
@@ -907,7 +901,7 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             li[0].classList.add('e-focused');
             upEventArgs.target = li[0];
             contextMenu.keyBoardHandler(upEventArgs);
@@ -916,12 +910,12 @@ describe('ContextMenu', () => {
         it('up arrow action with separator checking', () => {
             document.body.appendChild(div);
             document.body.appendChild(ul);
-            let items: MenuItemModel[] = [{ text: 'Cut' }, { text: 'Copy' }, { separator: true }, { text: 'Paste' }];
+            const items: MenuItemModel[] = [{ text: 'Cut' }, { text: 'Copy' }, { separator: true }, { text: 'Paste' }];
             contextMenu = new ContextMenu({ items: items, target: '#target' }, '#contextmenu');
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             li[3].classList.add('e-focused');
             upEventArgs.target = li[3];
             contextMenu.keyBoardHandler(upEventArgs);
@@ -937,12 +931,12 @@ describe('ContextMenu', () => {
             upEventArgs.target = ul;
             contextMenu.keyBoardHandler(upEventArgs);
         });
-        let leftEventArgs: any = {
+        const leftEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             action: 'leftarrow',
             type: 'keyup'
         };
-        let rightEventArgs: any = {
+        const rightEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             action: 'rightarrow',
             type: 'keyup'
@@ -954,7 +948,7 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             li[0].classList.add('e-focused');
             leftEventArgs.target = li[0];
             contextMenu.keyBoardHandler(leftEventArgs);
@@ -967,7 +961,7 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             leftEventArgs.target = li[0];
             contextMenu.keyBoardHandler(leftEventArgs);
         });
@@ -978,11 +972,10 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             li[1].classList.add('e-focused');
             rightEventArgs.target = li[1];
             contextMenu.keyBoardHandler(rightEventArgs);
-            let childUL: HTMLElement = contextMenu.getWrapper().children[1].firstChild;
             leftEventArgs.target = li[1];
             contextMenu.keyBoardHandler(leftEventArgs);
             expect(contextMenu.getWrapper().childElementCount).toBe(1);
@@ -994,11 +987,10 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             li[1].classList.add('e-focused');
             rightEventArgs.target = li[1];
             contextMenu.keyBoardHandler(rightEventArgs);
-            let childUL: HTMLElement = contextMenu.getWrapper().children[1].firstChild;
             expect(contextMenu.getWrapper().childElementCount).toBe(2);
         });
         it('right arrow action with focused not added', () => {
@@ -1008,7 +1000,7 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             rightEventArgs.target = li[1];
             contextMenu.keyBoardHandler(rightEventArgs);
         });
@@ -1019,11 +1011,10 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             li[1].classList.add('e-focused');
             rightEventArgs.target = li[1];
             contextMenu.keyBoardHandler(rightEventArgs);
-            let childUL: HTMLElement = contextMenu.getWrapper().children[1].firstChild;
         });
         it('right arrow action for sub elements', () => {
             document.body.appendChild(div);
@@ -1032,7 +1023,7 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             li[1].classList.add('e-focused');
             rightEventArgs.target = li[1];
             contextMenu.keyBoardHandler(rightEventArgs);
@@ -1040,7 +1031,7 @@ describe('ContextMenu', () => {
         it('right arrow action for sub elements with separator', () => {
             document.body.appendChild(div);
             document.body.appendChild(ul);
-            let menuItems: MenuItemModel[] = [
+            const menuItems: MenuItemModel[] = [
                 {
                     text: 'Preview',
                     iconCss: 'e-icons e-preview'
@@ -1066,7 +1057,7 @@ describe('ContextMenu', () => {
                     text: 'Get Link'
                 }
             ];
-            let menuOptions: { [key: string]: Object } = {
+            const menuOptions: { [key: string]: Object } = {
                 target: '#target',
                 items: menuItems
             };
@@ -1078,7 +1069,7 @@ describe('ContextMenu', () => {
             li[1].classList.add('e-focused');
             rightEventArgs.target = li[1];
             contextMenu.keyBoardHandler(rightEventArgs);
-            let childUL: HTMLElement = contextMenu.getWrapper().children[1];
+            const childUL: HTMLElement = contextMenu.getWrapper().children[1];
             li = <Element[] & NodeListOf<HTMLLIElement>>childUL.querySelectorAll('li');
             li[0].classList.remove('e-focused');
             li[1].classList.add('e-focused');
@@ -1092,12 +1083,12 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             li[2].classList.add('e-focused');
             rightEventArgs.target = li[2];
             contextMenu.keyBoardHandler(rightEventArgs);
         });
-        let escapeEventArgs: any = {
+        const escapeEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             action: 'escape',
             type: 'keyup'
@@ -1109,12 +1100,12 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             li[0].classList.add('e-focused');
             escapeEventArgs.target = li[0];
             contextMenu.keyBoardHandler(escapeEventArgs);
         });
-        let enterEventArgs: any = {
+        const enterEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             action: 'enter',
             type: 'keyup'
@@ -1126,7 +1117,7 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             li[3].classList.add('e-focused');
             enterEventArgs.target = li[3];
             contextMenu.keyBoardHandler(enterEventArgs);
@@ -1139,7 +1130,7 @@ describe('ContextMenu', () => {
             let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
             contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
             EventHandler.trigger(div, 'contextmenu', contextmenu);
-            let li: Element[] = contextMenu.element.querySelectorAll('li');
+            const li: Element[] = contextMenu.element.querySelectorAll('li');
             li[1].classList.add('e-focused');
             enterEventArgs.target = li[1];
             contextMenu.keyBoardHandler(enterEventArgs);
@@ -1166,7 +1157,7 @@ describe('ContextMenu', () => {
             expect(contextMenu.element.parentElement.classList.contains('e-contextmenu-wrapper')).toEqual(true);
         });
         it('Get scrollable parents Checking', () => {
-            let targetElement: HTMLElement = createElement('div', { id: 'target2' });
+            const targetElement: HTMLElement = createElement('div', { id: 'target2' });
             targetElement.innerHTML =
                 '<div id="par" style="position: relative;overflow:scroll"><div style="position:absolute" id="target1"></div></div>';
             document.body.innerHTML = '';
@@ -1174,7 +1165,7 @@ describe('ContextMenu', () => {
             document.body.appendChild(div);
             document.body.appendChild(ul);
             contextMenu = new ContextMenu(options, '#contextmenu');
-            let parents: HTMLElement[] = getScrollableParent(document.getElementById('target1'));
+            const parents: HTMLElement[] = getScrollableParent(document.getElementById('target1'));
             expect(parents.length).toBe(2);
         });
         it('Collision Checking', () => {
@@ -1194,7 +1185,7 @@ describe('ContextMenu', () => {
         });
 
         it('beforeItemRender and select event testing', () => {
-            let count: number = 0;
+            let count = 0;
             document.body.appendChild(div);
             document.body.appendChild(ul);
             contextMenu = new ContextMenu(
@@ -1218,7 +1209,7 @@ describe('ContextMenu', () => {
                     }
                 },
                 '#contextmenu');
-            let target: HTMLElement = contextMenu.element.children[0];
+            const target: HTMLElement = contextMenu.element.children[0];
             contextMenu.open(40, 62, target);
             expect(target.classList.contains('e-check')).toBeTruthy();
             target.click();
@@ -1245,7 +1236,7 @@ describe('ContextMenu', () => {
                 },
                 '#contextmenu');
             contextMenu.element.style.display = 'none';
-            let target: HTMLElement = select('#target') as HTMLElement;
+            const target: HTMLElement = select('#target') as HTMLElement;
             expect(isVisible(contextMenu.element)).toBeFalsy();
             contextMenu.open(50, 30, target);
             expect(isVisible(contextMenu.element)).toBeFalsy();
@@ -1270,7 +1261,7 @@ describe('ContextMenu', () => {
                     }
                 },
                 '#contextmenu');
-            let target: HTMLElement = select('#target') as HTMLElement;
+            const target: HTMLElement = select('#target') as HTMLElement;
             contextMenu.open(10, 10, target);
             expect(isVisible(contextMenu.element)).toBeTruthy();
             contextMenu.close();
@@ -1299,7 +1290,7 @@ describe('ContextMenu', () => {
                     }
                 },
                 '#contextmenu');
-            let target: HTMLElement = select('#target') as HTMLElement;
+            const target: HTMLElement = select('#target') as HTMLElement;
             contextMenu.open(20, 17, target);
             expect(isVisible(contextMenu.element)).toBeTruthy();
             contextMenu.close();
@@ -1309,10 +1300,10 @@ describe('ContextMenu', () => {
 
     it('memory leak', () => {
         profile.sample();
-        let average: any = inMB(profile.averageChange)
+        const average: any = inMB(profile.averageChange)
         // check average change in memory samples to not be over 10MB
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile())
+        const memory: any = inMB(getMemoryProfile())
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { isNullOrUndefined, Internationalization, append, createElement, addClass } from '@syncfusion/ej2-base';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { Schedule } from '../base/schedule';
@@ -27,11 +28,10 @@ export class EventTooltip {
             enableRtl: this.parent.enableRtl
         });
         this.tooltipObj.appendTo(this.parent.element);
-        this.tooltipObj.isStringTemplate = true;
     }
 
     private getTargets(): string {
-        let targets: string[] = [];
+        const targets: string[] = [];
         if (this.parent.activeViewOptions.group.headerTooltipTemplate) {
             targets.push('.' + cls.RESOURCE_CELLS_CLASS);
         }
@@ -41,7 +41,6 @@ export class EventTooltip {
         return targets.join(',');
     }
 
-    // tslint:disable-next-line:max-func-body-length
     private onBeforeRender(args: TooltipEventArgs): void {
         if (!isNullOrUndefined(args.target.getAttribute('data-tooltip-id'))) {
             return;
@@ -49,46 +48,44 @@ export class EventTooltip {
         if (args.target.classList.contains(cls.RESOURCE_CELLS_CLASS) && this.parent.activeViewOptions.group.resources.length > 0) {
             let resCollection: TdData;
             if (this.parent.activeView.isTimelineView()) {
-                let index: number = parseInt(args.target.getAttribute('data-group-index') as string, 0);
+                const index: number = parseInt(args.target.getAttribute('data-group-index') as string, 10);
                 resCollection = this.parent.resourceBase.lastResourceLevel[index];
             } else {
-                let rowIndex: number = (args.target.parentNode as HTMLTableRowElement).sectionRowIndex;
-                let cellIndex: number = (args.target as HTMLTableCellElement).cellIndex;
+                const rowIndex: number = (args.target.parentNode as HTMLTableRowElement).sectionRowIndex;
+                const cellIndex: number = (args.target as HTMLTableCellElement).cellIndex;
                 resCollection = this.parent.activeView.getColumnLevels()[rowIndex][cellIndex];
             }
-            let data: ResourceDetails = {
+            const data: ResourceDetails = {
                 resource: resCollection.resource,
                 resourceData: resCollection.resourceData
             };
-            let contentContainer: HTMLElement = createElement('div');
-            let templateId: string = this.parent.element.id + '_headerTooltipTemplate';
-            let tooltipTemplate: HTMLElement[] =
+            const contentContainer: HTMLElement = createElement('div');
+            const templateId: string = this.parent.element.id + '_headerTooltipTemplate';
+            const tooltipTemplate: HTMLElement[] =
                 [].slice.call(this.parent.getHeaderTooltipTemplate()(data, this.parent, 'headerTooltipTemplate', templateId, false));
             append(tooltipTemplate, contentContainer);
             this.setContent(contentContainer);
             this.parent.renderTemplates();
             return;
         }
-        let record: { [key: string]: Object } =
-            <{ [key: string]: Object }>this.parent.eventBase.getEventByGuid(args.target.getAttribute('data-guid'));
+        const record: Record<string, any> = this.parent.eventBase.getEventByGuid(args.target.getAttribute('data-guid'));
         if (!isNullOrUndefined(this.parent.eventSettings.tooltipTemplate)) {
-            let contentContainer: HTMLElement = createElement('div');
-            let templateId: string = this.parent.element.id + '_tooltipTemplate';
-            let templateArgs: Object = util.addLocalOffsetToEvent(record, this.parent.eventFields);
-            let tooltipTemplate: HTMLElement[] =
-                [].slice.call(this.parent.getEventTooltipTemplate()(templateArgs, this.parent, 'tooltipTemplate', templateId, false));
+            const contentContainer: HTMLElement = createElement('div');
+            const templateId: string = this.parent.element.id + '_tooltipTemplate';
+            const tooltipTemplate: HTMLElement[] =
+                [].slice.call(this.parent.getEventTooltipTemplate()(record, this.parent, 'tooltipTemplate', templateId, false));
             append(tooltipTemplate, contentContainer);
             this.setContent(contentContainer);
         } else {
-            let globalize: Internationalization = this.parent.globalize;
-            let fields: EventFieldsMapping = this.parent.eventFields;
-            let eventStart: Date = new Date('' + record[fields.startTime]) as Date;
+            const globalize: Internationalization = this.parent.globalize;
+            const fields: EventFieldsMapping = this.parent.eventFields;
+            const eventStart: Date = new Date('' + record[fields.startTime]) as Date;
             let eventEnd: Date = new Date('' + record[fields.endTime]) as Date;
             eventEnd = (eventEnd.getHours() === 0 && eventEnd.getMinutes() === 0) ? new Date(eventEnd.setMilliseconds(-1000)) : eventEnd;
-            let startDate: Date = util.resetTime(new Date('' + eventStart));
-            let endDate: Date = util.resetTime(new Date('' + eventEnd));
-            let tooltipSubject: string = (record[fields.subject] || this.parent.eventSettings.fields.subject.default) as string;
-            let tooltipLocation: string = !isNullOrUndefined(record[fields.location]) ? <string>record[fields.location] : '';
+            const startDate: Date = util.resetTime(new Date('' + eventStart));
+            const endDate: Date = util.resetTime(new Date('' + eventEnd));
+            const tooltipSubject: string = (record[fields.subject] || this.parent.eventSettings.fields.subject.default) as string;
+            const tooltipLocation: string = !isNullOrUndefined(record[fields.location]) ? <string>record[fields.location] : '';
             let startMonthDate: string = '';
             let startMonthYearDate: string = '';
             let endMonthYearDate: string = '';
@@ -105,11 +102,11 @@ export class EventTooltip {
             startMonthDate = util.capitalizeFirstWord(startMonthDate, 'single');
             startMonthYearDate = util.capitalizeFirstWord(startMonthYearDate, 'single');
             endMonthYearDate = util.capitalizeFirstWord(endMonthYearDate, 'single');
-            let skeleton: string = 'short';
-            let startTime: string = globalize.formatDate(eventStart, {
+            const skeleton: string = 'short';
+            const startTime: string = globalize.formatDate(eventStart, {
                 type: 'time', skeleton: skeleton, calendar: this.parent.getCalendarMode()
             });
-            let endTime: string = globalize.formatDate(eventEnd, {
+            const endTime: string = globalize.formatDate(eventEnd, {
                 type: 'time', skeleton: skeleton, calendar: this.parent.getCalendarMode()
             });
             let tooltipDetails: string;
@@ -123,9 +120,9 @@ export class EventTooltip {
                 tooltipDetails = (startDate.getFullYear() === endDate.getFullYear()) ? (startMonthDate + ' - ' + endMonthYearDate) :
                     (startMonthYearDate + ' - ' + endMonthYearDate);
             }
-            let tooltipTime: string = (record[fields.isAllDay]) ? this.parent.localeObj.getConstant('allDay') :
+            const tooltipTime: string = (record[fields.isAllDay]) ? this.parent.localeObj.getConstant('allDay') :
                 (startTime + ' - ' + endTime);
-            let content: string = '<div><div class="e-subject">' + tooltipSubject + '</div>' +
+            const content: string = '<div><div class="e-subject">' + tooltipSubject + '</div>' +
                 '<div class="e-location">' + tooltipLocation + '</div>' +
                 '<div class="e-details">' + tooltipDetails + '</div>' +
                 '<div class="e-all-day">' + tooltipTime + '</div></div>';
@@ -145,14 +142,11 @@ export class EventTooltip {
     public close(): void {
         this.tooltipObj.close();
     }
-    /**
-     * To destroy the event tooltip. 
-     * @return {void}
-     * @private
-     */
+
     public destroy(): void {
         this.tooltipObj.destroy();
         addClass([this.parent.element], 'e-control');
         this.tooltipObj = null;
     }
+
 }

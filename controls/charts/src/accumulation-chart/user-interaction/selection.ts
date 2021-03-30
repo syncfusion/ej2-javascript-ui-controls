@@ -1,10 +1,13 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable valid-jsdoc */
 /**
  * AccumulationChart Selection src file
  */
 import { extend, isNullOrUndefined  } from '@syncfusion/ej2-base';
 import { Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { indexFinder } from '../../common/utils/helper';
-import { AccumulationSelectionMode } from '../model/enum';
 import { AccumulationChart } from '../accumulation';
 import { AccumulationSeries, pointByIndex, AccPoints } from '../model/acc-base';
 import { AccumulationSeriesModel } from '../model/acc-base-model';
@@ -37,8 +40,9 @@ export class AccumulationSelection extends BaseSelection {
     }
     /**
      * Invoke selection for rendered chart.
-     * @param  {AccumulationChart} chart - Define the chart to invoke the selection.
-     * @return {void}
+     *
+     * @param {AccumulationChart} accumulation Define the chart to invoke the selection.
+     * @returns {void}
      */
     public invokeSelection(accumulation: AccumulationChart): void {
         this.initPrivateVariables(accumulation);
@@ -62,11 +66,12 @@ export class AccumulationSelection extends BaseSelection {
      * To get series point element by index
      */
     private getElementByIndex(index: Index): Element {
-        let elementId: string = this.control.element.id + '_Series_' + index.series + '_Point_' + index.point;
+        const elementId: string = this.control.element.id + '_Series_' + index.series + '_Point_' + index.point;
         return document.getElementById(elementId);
     }
     /**
      * To calculate selected elements on mouse click or touch
+     *
      * @private
      */
     public calculateSelectedElements(accumulation: AccumulationChart, event: Event): void {
@@ -85,12 +90,12 @@ export class AccumulationSelection extends BaseSelection {
         <Element>accumulation.getSeriesElement().childNodes[index.series].childNodes[index.point]
             : element;
         switch (accumulation.selectionMode) {
-            case 'Point':
-                if (!isNaN(index.point)) {
-                    this.selection(accumulation, index, [element]);
-                    this.blurEffect(accumulation.element.id, accumulation.visibleSeries);
-                }
-                break;
+        case 'Point':
+            if (!isNaN(index.point)) {
+                this.selection(accumulation, index, [element]);
+                this.blurEffect(accumulation.element.id, accumulation.visibleSeries);
+            }
+            break;
         }
     }
     /**
@@ -100,12 +105,12 @@ export class AccumulationSelection extends BaseSelection {
         if (!accumulation.isMultiSelect) {
             this.removeMultiSelectEelments(accumulation, this.selectedDataIndexes, index, accumulation.series);
         }
-        let className: string = selectedElements[0] && (selectedElements[0].getAttribute('class') || '');
+        const className: string = selectedElements[0] && (selectedElements[0].getAttribute('class') || '');
         if (selectedElements[0] && className.indexOf(this.getSelectionClass(selectedElements[0].id)) > -1) {
             this.removeStyles(selectedElements, index);
             this.addOrRemoveIndex(this.selectedDataIndexes, index);
             if (accumulation.enableBorderOnMouseMove) {
-                let borderElement: Element = document.getElementById(selectedElements[0].id.split('_')[0] + 'PointHover_Border');
+                const borderElement: Element = document.getElementById(selectedElements[0].id.split('_')[0] + 'PointHover_Border');
                 if (!isNullOrUndefined(borderElement)) {
                     this.removeSvgClass(borderElement, borderElement.getAttribute('class'));
                 }
@@ -113,7 +118,7 @@ export class AccumulationSelection extends BaseSelection {
         } else {
             this.applyStyles(selectedElements, index);
             if (accumulation.enableBorderOnMouseMove) {
-                let borderElement: Element = document.getElementById(selectedElements[0].id.split('_')[0] + 'PointHover_Border');
+                const borderElement: Element = document.getElementById(selectedElements[0].id.split('_')[0] + 'PointHover_Border');
                 if (!isNullOrUndefined(borderElement)) {
                     this.addSvgClass(borderElement, selectedElements[0].getAttribute('class'));
                 }
@@ -123,10 +128,11 @@ export class AccumulationSelection extends BaseSelection {
     }
     /**
      * To redraw the selection process on accumulation chart refresh.
+     *
      * @private
      */
-    public redrawSelection(accumulation: AccumulationChart, oldMode: AccumulationSelectionMode): void {
-        let selectedDataIndexes: Indexes[] = <Indexes[]>extend([], this.selectedDataIndexes, null, true);
+    public redrawSelection(accumulation: AccumulationChart): void {
+        const selectedDataIndexes: Indexes[] = <Indexes[]>extend([], this.selectedDataIndexes, null, true);
         this.removeSelectedElements(accumulation, this.selectedDataIndexes);
         this.blurEffect(accumulation.element.id, accumulation.visibleSeries);
         this.selectDataIndex(selectedDataIndexes, accumulation);
@@ -135,19 +141,17 @@ export class AccumulationSelection extends BaseSelection {
      * To remove the selected elements style classes by indexes.
      */
     private removeSelectedElements(accumulation: AccumulationChart, indexes: Index[]): void {
-        let seriesgroup: Element = accumulation.getSeriesElement();
-        for (let index of indexes) {
+        for (const index of indexes) {
             this.removeStyles([this.getElementByIndex(index)], index);
         }
     }
     /**
-     * To perform the selection for legend elements. 
+     * To perform the selection for legend elements.
+     *
      * @private
      */
     public legendSelection(accumulation: AccumulationChart, series: number, pointIndex: number): void {
-        let element: Element = <Element>accumulation.getSeriesElement().childNodes[series].childNodes[pointIndex];
-        let seriesStyle: string = this.generateStyle(accumulation.visibleSeries[series]);
-        let seriesElements: Element = <Element>accumulation.getSeriesElement().childNodes[series].childNodes[pointIndex];
+        const seriesElements: Element = <Element>accumulation.getSeriesElement().childNodes[series].childNodes[pointIndex];
         this.selection(accumulation, new Index(series, pointIndex), [seriesElements]);
         this.blurEffect(accumulation.element.id, accumulation.visibleSeries);
     }
@@ -156,7 +160,7 @@ export class AccumulationSelection extends BaseSelection {
      */
     private selectDataIndex(indexes: Index[], accumulation: AccumulationChart): void {
         let element: Element;
-        for (let index of indexes) {
+        for (const index of indexes) {
             element = this.getElementByIndex(index);
             if (element) {
                 this.performSelection(index, accumulation, element);
@@ -182,8 +186,8 @@ export class AccumulationSelection extends BaseSelection {
      * To apply the opacity effect for accumulation chart series elements.
      */
     private blurEffect(pieId: string, visibleSeries: AccumulationSeries[]): void {
-        let visibility: boolean = this.checkPointVisibility(this.selectedDataIndexes); // legend click scenario
-        for (let series of visibleSeries) {
+        const visibility: boolean = this.checkPointVisibility(this.selectedDataIndexes); // legend click scenario
+        for (const series of visibleSeries) {
             if (series.visible) {
                 this.checkSelectionElements(document.getElementById(pieId + '_SeriesCollection'),
                                             this.generateStyle(series), visibility);
@@ -194,7 +198,7 @@ export class AccumulationSelection extends BaseSelection {
      * To check selection elements by style class name.
      */
     private checkSelectionElements(element: Element, className: string, visibility: boolean): void {
-        let children: NodeList = element.childNodes[0].childNodes;
+        const children: NodeList = element.childNodes[0].childNodes;
         let legendShape: Element;
         let elementClass: string;
         let parentClass: string;
@@ -222,8 +226,8 @@ export class AccumulationSelection extends BaseSelection {
      * To apply selection style for elements.
      */
     private applyStyles(elements: Element[], index: Index): void {
-        let accumulationTooltip: AccumulationTooltip = (this.control as AccumulationChart).accumulationTooltipModule;
-        for (let element of elements) {
+        const accumulationTooltip: AccumulationTooltip = (this.control as AccumulationChart).accumulationTooltipModule;
+        for (const element of elements) {
             let legendShape: Element;
             if (element) {
                 if ((this.control as AccumulationChart).accumulationLegendModule && this.control.legendSettings.visible) {
@@ -233,7 +237,7 @@ export class AccumulationSelection extends BaseSelection {
                 }
                 this.removeSvgClass(<Element>element.parentNode, this.unselected);
                 this.removeSvgClass(element, this.unselected);
-                let opacity: number = accumulationTooltip && (accumulationTooltip.previousPoints.length > 0 &&
+                const opacity: number = accumulationTooltip && (accumulationTooltip.previousPoints.length > 0 &&
                     accumulationTooltip.previousPoints[0].point.index !== index.point) ?
                     accumulationTooltip.svgTooltip.opacity : this.series[index.series].opacity;
                 element.setAttribute('opacity', opacity.toString());
@@ -251,15 +255,15 @@ export class AccumulationSelection extends BaseSelection {
      * To remove selection style for elements.
      */
     private removeStyles(elements: Element[], index: Index): void {
-        let accumulationTooltip: AccumulationTooltip = (this.control as AccumulationChart).accumulationTooltipModule;
+        const accumulationTooltip: AccumulationTooltip = (this.control as AccumulationChart).accumulationTooltipModule;
         let legendShape: Element;
-        for (let element of elements) {
+        for (const element of elements) {
             if (element) {
                 if ((this.control as AccumulationChart).accumulationLegendModule && this.control.legendSettings.visible) {
                     legendShape = document.getElementById(this.control.element.id + '_chart_legend_shape_' + index.point);
                     this.removeSvgClass(legendShape, this.getSelectionClass(legendShape.id));
                 }
-                let opacity: number = accumulationTooltip && (accumulationTooltip.previousPoints[0].point.index === index.point) ?
+                const opacity: number = accumulationTooltip && (accumulationTooltip.previousPoints[0].point.index === index.point) ?
                     accumulationTooltip.svgTooltip.opacity : this.series[index.series].opacity;
                 element.setAttribute('opacity', opacity.toString());
                 this.removeSvgClass(element, this.getSelectionClass(element.id));
@@ -289,7 +293,7 @@ export class AccumulationSelection extends BaseSelection {
      */
     private checkPointVisibility(selectedDataIndexes: Indexes[]): boolean {
         let visible: boolean = false;
-        for (let data of selectedDataIndexes) {
+        for (const data of selectedDataIndexes) {
             if (pointByIndex(data.point, <AccPoints[]>this.control.visibleSeries[0].points).visible) {
                 visible = true;
                 break;
@@ -304,11 +308,12 @@ export class AccumulationSelection extends BaseSelection {
         return 'AccumulationSelection';
     }
     /**
-     * To destroy the selection. 
-     * @return {void}
+     * To destroy the selection.
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(accumulation: AccumulationChart): void {
+    public destroy(): void {
         // Destroy method performed here
     }
 }

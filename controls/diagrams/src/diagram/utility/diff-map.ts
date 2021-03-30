@@ -11,7 +11,7 @@ import { isBlazor } from '@syncfusion/ej2-base';
  * Defines the behavior of commands
  */
 
-/* tslint:disable */
+/* eslint-disable */
  export class DeepDiffMapper {
     public valueCreated = 'created';
     public valueUpdated = "updated";
@@ -358,5 +358,5 @@ import { isBlazor } from '@syncfusion/ej2-base';
         }
         return final;
     }
-    /* tslint:enable */
+    /* eslint-enable */
 }

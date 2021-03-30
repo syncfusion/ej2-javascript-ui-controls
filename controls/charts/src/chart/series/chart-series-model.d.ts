@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, Collection, DateFormatOptions, getValue } from '@syncfusion/ej2-base';import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';import { StackValues, RectOption, ControlPoints, PolarArc, appendChildElement, appendClipElement } from '../../common/utils/helper';import { firstToLowerCase, ChartLocation, CircleOption, IHistogramValues } from '../../common/utils/helper';import { Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { ChartSeriesType, ChartShape, LegendShape, LabelPosition, SeriesValueType, EmptyPointMode, SplineType } from '../utils/enum';import { ChartDrawType, DataLabelIntersectAction } from '../utils/enum';import { BorderModel, FontModel, MarginModel, AnimationModel, EmptyPointSettingsModel, OffsetModel } from '../../common/model/base-model';import { ConnectorModel } from '../../common/model/base-model';import { CornerRadiusModel, DragSettingsModel } from '../../common/model/base-model';import { ErrorBarType, ErrorBarDirection, ErrorBarMode, TrendlineTypes } from '../utils/enum';import { Border, Font, Margin, Animation, EmptyPointSettings, CornerRadius, Connector, DragSettings } from '../../common/model/base';import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';import { Chart } from '../chart';import { Axis, Column, Row } from '../axis/axis';import { Data } from '../../common/model/data';import { Offset } from '../../common/model/base';import { ISeriesRenderEventArgs } from '../../chart/model/chart-interface';import { seriesRender } from '../../common/model/constants';import { Alignment, SeriesCategories } from '../../common/utils/enum';import { BoxPlotMode, Segment } from '../utils/enum';import { sort, getVisiblePoints, setRange } from '../../common/utils/helper';import { Browser } from '@syncfusion/ej2-base';import { StockSeries } from '../../stock-chart/index';
+import { Property, ChildProperty, Complex, Collection, DateFormatOptions, getValue } from '@syncfusion/ej2-base';import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';import { StackValues, RectOption, ControlPoints, PolarArc, appendChildElement, appendClipElement } from '../../common/utils/helper';import { firstToLowerCase, ChartLocation, CircleOption, IHistogramValues, getColorByValue } from '../../common/utils/helper';import { Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { ChartSeriesType, ChartShape, LegendShape, LabelPosition, SeriesValueType, EmptyPointMode, SplineType } from '../utils/enum';import { ChartDrawType, DataLabelIntersectAction } from '../utils/enum';import { BorderModel, FontModel, MarginModel, AnimationModel, EmptyPointSettingsModel, OffsetModel } from '../../common/model/base-model';import { ConnectorModel } from '../../common/model/base-model';import { CornerRadiusModel, DragSettingsModel } from '../../common/model/base-model';import { ErrorBarType, ErrorBarDirection, ErrorBarMode, TrendlineTypes } from '../utils/enum';import { Border, Font, Margin, Animation, EmptyPointSettings, CornerRadius, Connector, DragSettings } from '../../common/model/base';import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';import { Chart } from '../chart';import { Axis, Column, Row } from '../axis/axis';import { Data } from '../../common/model/data';import { Offset } from '../../common/model/base';import { ISeriesRenderEventArgs } from '../../chart/model/chart-interface';import { seriesRender } from '../../common/model/constants';import { Alignment, SeriesCategories } from '../../common/utils/enum';import { BoxPlotMode, Segment } from '../utils/enum';import { sort, getVisiblePoints, setRange } from '../../common/utils/helper';import { Browser } from '@syncfusion/ej2-base';import { StockSeries } from '../../stock-chart/index';
 
 /**
  * Interface for a class DataLabelSettings
@@ -7,6 +7,7 @@ export interface DataLabelSettingsModel {
 
     /**
      * If set true, data label for series renders.
+     *
      * @default false
      */
 
@@ -14,6 +15,7 @@ export interface DataLabelSettingsModel {
 
     /**
      * If set true, data label for zero values in series renders.
+     *
      * @default true
      */
 
@@ -21,6 +23,7 @@ export interface DataLabelSettingsModel {
 
     /**
      * The DataSource field that contains the data label value.
+     *
      * @default null
      */
 
@@ -28,6 +31,7 @@ export interface DataLabelSettingsModel {
 
     /**
      * The background color of the data label accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default 'transparent'
      */
 
@@ -35,6 +39,7 @@ export interface DataLabelSettingsModel {
 
     /**
      * The opacity for the background.
+     *
      * @default 1
      */
 
@@ -42,6 +47,7 @@ export interface DataLabelSettingsModel {
 
     /**
      * Specifies angle for data label.
+     *
      * @default 0
      */
 
@@ -49,6 +55,7 @@ export interface DataLabelSettingsModel {
 
     /**
      * Enables rotation for data label.
+     *
      * @default false
      */
 
@@ -61,6 +68,7 @@ export interface DataLabelSettingsModel {
      * * Bottom: Positions the label at the bottom of the point.
      * * Middle: Positions the label to the middle of the point.
      * * Auto: Positions the label based on series.
+     *
      * @default 'Auto'
      */
 
@@ -68,12 +76,14 @@ export interface DataLabelSettingsModel {
 
     /**
      * The roundedCornerX for the data label. It requires `border` values not to be null.
+     *
      * @default 5
      */
     rx?: number;
 
     /**
      * The roundedCornerY for the data label. It requires `border` values not to be null.
+     *
      * @default 5
      */
     ry?: number;
@@ -83,6 +93,7 @@ export interface DataLabelSettingsModel {
      * * Near: Aligns the label to the left of the point.
      * * Center: Aligns the label to the center of the point.
      * * Far: Aligns the label to the right of the point.
+     *
      * @default 'Center'
      */
     alignment?: Alignment;
@@ -108,6 +119,7 @@ export interface DataLabelSettingsModel {
     /**
      * Custom template to show the data label. Use ${point.x} and ${point.y} as a placeholder
      * text to display the corresponding data point.
+     *
      * @default null
      */
 
@@ -115,6 +127,7 @@ export interface DataLabelSettingsModel {
 
     /**
      * Show Datalabel Even two Data Labels Are Overflow
+     *
      * @default 'Hide'
      */
 
@@ -129,6 +142,7 @@ export interface MarkerSettingsModel {
 
     /**
      * If set to true the marker for series is rendered. This is applicable only for line and area type series.
+     *
      * @default false
      */
 
@@ -145,6 +159,7 @@ export interface MarkerSettingsModel {
      * * Pentagon
      * * InvertedTriangle
      * * Image
+     *
      * @default 'Circle'
      */
 
@@ -152,6 +167,7 @@ export interface MarkerSettingsModel {
 
     /**
      * The URL for the Image that is to be displayed as a marker.  It requires marker `shape` value to be an `Image`.
+     *
      * @default ''
      */
 
@@ -159,6 +175,7 @@ export interface MarkerSettingsModel {
 
     /**
      * The height of the marker in pixels.
+     *
      * @default 5
      */
 
@@ -166,6 +183,7 @@ export interface MarkerSettingsModel {
 
     /**
      * The width of the marker in pixels.
+     *
      * @default 5
      */
 
@@ -185,6 +203,7 @@ export interface MarkerSettingsModel {
 
     /**
      *  The fill color of the marker that accepts value in hex and rgba as a valid CSS color string. By default, it will take series' color.
+     *
      * @default null
      */
 
@@ -192,6 +211,7 @@ export interface MarkerSettingsModel {
 
     /**
      * The opacity of the marker.
+     *
      * @default 1
      */
 
@@ -219,12 +239,14 @@ export interface TrendlineModel {
 
     /**
      * Defines the name of trendline
+     *
      * @default ''
      */
     name?: string;
 
     /**
      * Defines the pattern of dashes and gaps to stroke.
+     *
      * @default '0'
      */
 
@@ -232,6 +254,7 @@ export interface TrendlineModel {
 
     /**
      * Specifies the visibility of trendline.
+     *
      * @default true
      */
 
@@ -239,30 +262,35 @@ export interface TrendlineModel {
 
     /**
      * Defines the type of the trendline
+     *
      * @default 'Linear'
      */
     type?: TrendlineTypes;
 
     /**
      * Defines the period, the price changes over which will be considered to predict moving average trend line
+     *
      * @default 2
      */
     period?: number;
 
     /**
      * Defines the polynomial order of the polynomial trendline
+     *
      * @default 2
      */
     polynomialOrder?: number;
 
     /**
      * Defines the period, by which the trend has to backward forecast
+     *
      * @default 0
      */
     backwardForecast?: number;
 
     /**
      * Defines the period, by which the trend has to forward forecast
+     *
      * @default 0
      */
     forwardForecast?: number;
@@ -274,18 +302,21 @@ export interface TrendlineModel {
 
     /**
      * Options to customize the marker for trendlines
+     *
      * @deprecated
      */
     marker?: MarkerSettingsModel;
 
     /**
      * Enables/disables tooltip for trendlines
+     *
      * @default true
      */
     enableTooltip?: boolean;
 
     /**
      * Defines the intercept of the trendline
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -293,18 +324,21 @@ export interface TrendlineModel {
 
     /**
      * Defines the fill color of trendline
+     *
      * @default ''
      */
     fill?: string;
 
     /**
      * Defines the width of the trendline
+     *
      * @default 1
      */
     width?: number;
 
     /**
      * Sets the legend shape of the trendline
+     *
      * @default 'SeriesType'
      */
     legendShape?: LegendShape;
@@ -318,6 +352,7 @@ export interface ErrorBarCapSettingsModel {
 
     /**
      * The width of the error bar in pixels.
+     *
      * @default 1
      */
 
@@ -325,6 +360,7 @@ export interface ErrorBarCapSettingsModel {
 
     /**
      * The length of the error bar in pixels.
+     *
      * @default 10
      */
 
@@ -332,6 +368,7 @@ export interface ErrorBarCapSettingsModel {
 
     /**
      *  The stroke color of the cap, which accepts value in hex, rgba as a valid CSS color string.
+     *
      * @default null
      */
 
@@ -339,6 +376,7 @@ export interface ErrorBarCapSettingsModel {
 
     /**
      * The opacity of the cap.
+     *
      * @default 1
      */
 
@@ -353,6 +391,7 @@ export interface ChartSegmentModel {
 
     /**
      * Defines the starting point of region.
+     *
      * @default null
      */
 
@@ -360,6 +399,7 @@ export interface ChartSegmentModel {
 
     /**
      * Defines the color of a region.
+     *
      * @default null
      */
 
@@ -367,6 +407,7 @@ export interface ChartSegmentModel {
 
     /**
      * Defines the pattern of dashes and gaps to stroke.
+     *
      * @default '0'
      */
 
@@ -381,6 +422,7 @@ export interface ErrorBarSettingsModel {
 
     /**
      * If set true, error bar for data gets rendered.
+     *
      * @default false
      */
 
@@ -393,6 +435,7 @@ export interface ErrorBarSettingsModel {
      * * StandardDeviation - Renders a standard deviation type error bar.
      * * StandardError -Renders a standard error type error bar.
      * * Custom -Renders a custom type error bar.
+     *
      * @default 'Fixed'
      */
 
@@ -403,6 +446,7 @@ export interface ErrorBarSettingsModel {
      * * both -  Renders both direction of error bar.
      * * minus - Renders minus direction of error bar.
      * * plus - Renders plus direction error bar.
+     *
      * @default 'Both'
      */
 
@@ -413,6 +457,7 @@ export interface ErrorBarSettingsModel {
      * * Vertical -  Renders a vertical error bar.
      * * Horizontal - Renders a horizontal error bar.
      * * Both - Renders both side error bar.
+     *
      * @default 'Vertical'
      */
 
@@ -420,6 +465,7 @@ export interface ErrorBarSettingsModel {
 
     /**
      *  The color for stroke of the error bar, which accepts value in hex, rgba as a valid CSS color string.
+     *
      * @default null
      */
 
@@ -427,6 +473,7 @@ export interface ErrorBarSettingsModel {
 
     /**
      * The vertical error of the error bar.
+     *
      * @default 1
      */
 
@@ -434,6 +481,7 @@ export interface ErrorBarSettingsModel {
 
     /**
      * The stroke width of the error bar..
+     *
      * @default 1
      */
 
@@ -441,6 +489,7 @@ export interface ErrorBarSettingsModel {
 
     /**
      * The horizontal error of the error bar.
+     *
      * @default 1
      */
 
@@ -448,6 +497,7 @@ export interface ErrorBarSettingsModel {
 
     /**
      * The vertical positive error of the error bar.
+     *
      * @default 3
      */
 
@@ -455,6 +505,7 @@ export interface ErrorBarSettingsModel {
 
     /**
      * The vertical negative error of the error bar.
+     *
      * @default 3
      */
 
@@ -462,6 +513,7 @@ export interface ErrorBarSettingsModel {
 
     /**
      * The horizontal positive error of the error bar.
+     *
      * @default 1
      */
 
@@ -469,6 +521,7 @@ export interface ErrorBarSettingsModel {
 
     /**
      * The horizontal negative error of the error bar.
+     *
      * @default 1
      */
 
@@ -489,14 +542,22 @@ export interface SeriesBaseModel {
     /**
      * The DataSource field that contains the x value.
      * It is applicable for series and technical indicators
+     *
      * @default ''
      */
 
     xName?: string;
 
     /**
+     * The Data Source field that contains the color mapping value.
+     * It is applicable for range color mapping properly.
+     */
+    colorName?: string;
+
+    /**
      * The DataSource field that contains the high value of y
      * It is applicable for series and technical indicators
+     *
      * @default ''
      */
 
@@ -505,6 +566,7 @@ export interface SeriesBaseModel {
     /**
      * The DataSource field that contains the low value of y
      * It is applicable for series and technical indicators
+     *
      * @default ''
      */
 
@@ -513,6 +575,7 @@ export interface SeriesBaseModel {
     /**
      * The DataSource field that contains the open value of y
      * It is applicable for series and technical indicators
+     *
      * @default ''
      */
 
@@ -521,6 +584,7 @@ export interface SeriesBaseModel {
     /**
      * The DataSource field that contains the close value of y
      * It is applicable for series and technical indicators
+     *
      * @default ''
      */
 
@@ -529,6 +593,7 @@ export interface SeriesBaseModel {
     /**
      * Defines the data source field that contains the volume value in candle charts
      * It is applicable for financial series and technical indicators
+     *
      * @default ''
      */
 
@@ -537,6 +602,7 @@ export interface SeriesBaseModel {
     /**
      * The DataSource field that contains the color value of point
      * It is applicable for series
+     *
      * @default ''
      */
 
@@ -544,6 +610,7 @@ export interface SeriesBaseModel {
 
     /**
      * Specifies the visibility of series.
+     *
      * @default true
      */
 
@@ -572,6 +639,7 @@ export interface SeriesBaseModel {
      * });
      * chart.appendTo('#Chart');
      * ```
+     *
      * @default null
      */
 
@@ -600,6 +668,7 @@ export interface SeriesBaseModel {
      * });
      * chart.appendTo('#Chart');
      * ```
+     *
      * @default null
      */
 
@@ -615,6 +684,7 @@ export interface SeriesBaseModel {
      * The fill color for the series that accepts value in hex and rgba as a valid CSS color string.
      * It also represents the color of the signal lines in technical indicators.
      * For technical indicators, the default value is 'blue' and for series, it has null.
+     *
      * @default null
      */
 
@@ -623,6 +693,7 @@ export interface SeriesBaseModel {
     /**
      * The stroke width for the series that is applicable only for `Line` type series.
      * It also represents the stroke width of the signal lines in technical indicators.
+     *
      * @default 1
      */
 
@@ -630,6 +701,7 @@ export interface SeriesBaseModel {
 
     /**
      * Defines the pattern of dashes and gaps to stroke the lines in `Line` type series.
+     *
      * @default '0'
      */
 
@@ -657,6 +729,7 @@ export interface SeriesBaseModel {
      * });
      * chart.appendTo('#Chart');
      * ```
+     *
      * @default ''
      */
 
@@ -664,6 +737,7 @@ export interface SeriesBaseModel {
 
     /**
      * Specifies query to select data from DataSource. This property is applicable only when the DataSource is `ej.DataManager`.
+     *
      * @default ''
      */
     query?: Query;
@@ -680,6 +754,7 @@ export interface SeriesBaseModel {
 
     /**
      * This property used to improve chart performance via data mapping for series dataSource.
+     *
      * @default false
      */
     enableComplexProperty?: boolean;
@@ -693,6 +768,7 @@ export interface SeriesModel extends SeriesBaseModel{
 
     /**
      * The name of the series visible in legend.
+     *
      * @default ''
      */
 
@@ -700,6 +776,7 @@ export interface SeriesModel extends SeriesBaseModel{
 
     /**
      * The DataSource field that contains the y value.
+     *
      * @default ''
      */
 
@@ -716,12 +793,14 @@ export interface SeriesModel extends SeriesBaseModel{
      *  'StackingArea'
      *  'RangeColumn'
      *  'SplineArea'
+     *
      * @default 'Line'
      */
     drawType?: ChartDrawType;
 
     /**
      * Specifies whether to join start and end point of a line/area series used in polar/radar chart to form a closed path.
+     *
      * @default true
      */
     isClosed?: boolean;
@@ -729,6 +808,7 @@ export interface SeriesModel extends SeriesBaseModel{
     /**
      * This property is used in financial charts to visualize the price movements in stock.
      * It defines the color of the candle/point, when the opening price is less than the closing price.
+     *
      * @default '#2ecd71'
      */
 
@@ -737,6 +817,7 @@ export interface SeriesModel extends SeriesBaseModel{
     /**
      * This property is used in financial charts to visualize the price movements in stock.
      * It defines the color of the candle/point, when the opening price is higher than the closing price.
+     *
      * @default '#e74c3d'
      */
 
@@ -745,12 +826,14 @@ export interface SeriesModel extends SeriesBaseModel{
     /**
      * This property is applicable for candle series.
      * It enables/disables to visually compare the current values with the previous values in stock.
+     *
      * @default false
      */
     enableSolidCandles?: boolean;
 
     /**
      * The DataSource field that contains the size value of y
+     *
      * @default ''
      */
 
@@ -758,6 +841,7 @@ export interface SeriesModel extends SeriesBaseModel{
 
     /**
      * The bin interval of each histogram points.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -766,6 +850,7 @@ export interface SeriesModel extends SeriesBaseModel{
 
     /**
      * The normal distribution of histogram series.
+     *
      * @default false
      */
 
@@ -775,6 +860,7 @@ export interface SeriesModel extends SeriesBaseModel{
      * This property allows grouping series in `stacked column / bar` charts.
      * Any string value can be provided to the stackingGroup property.
      * If any two or above series have the same value, those series will be grouped together.
+     *
      * @default ''
      */
 
@@ -788,12 +874,14 @@ export interface SeriesModel extends SeriesBaseModel{
 
     /**
      * The opacity of the series.
+     *
      * @default 1
      */
     opacity?: number;
 
     /**
      * The z order of the series.
+     *
      * @default 0
      */
     zOrder?: number;
@@ -826,6 +914,7 @@ export interface SeriesModel extends SeriesBaseModel{
      * * Radar
      * * BoxAndWhisker
      * * Pareto
+     *
      * @default 'Line'
      */
 
@@ -853,18 +942,21 @@ export interface SeriesModel extends SeriesBaseModel{
 
     /**
      * If set true, the Tooltip for series will be visible.
+     *
      * @default true
      */
     enableTooltip?: boolean;
 
     /**
      * user can format now each series tooltip format separately.
+     *
      * @default ''
      */
     tooltipFormat?: string;
 
     /**
-     * The provided value will be considered as a Tooltip name 
+     * The provided value will be considered as a Tooltip name
+     *
      * @default ''
      */
     tooltipMappingName?: string;
@@ -896,42 +988,49 @@ export interface SeriesModel extends SeriesBaseModel{
 
     /**
      * Custom style for the selected series or points.
+     *
      * @default null
      */
     selectionStyle?: string;
 
     /**
      * Custom style for the deselected series or points.
+     *
      * @default null
      */
     unSelectedStyle?: string;
 
     /**
      * Custom style for the non-highlighted series or points.
+     *
      * @default null
      */
     nonHighlightStyle?: string;
 
     /**
      * Minimum radius
+     *
      * @default 1
      */
     minRadius?: number;
 
     /**
      * Maximum radius
+     *
      * @default 3
      */
     maxRadius?: number;
 
     /**
      * Defines type of spline to be rendered.
+     *
      * @default 'Natural'
      */
     splineType?: SplineType;
 
     /**
      * It defines tension of cardinal spline types
+     *
      * @default 0.5
      */
     cardinalSplineTension?: number;
@@ -943,6 +1042,7 @@ export interface SeriesModel extends SeriesBaseModel{
 
     /**
      * If set true, the mean value for box and whisker will be visible.
+     *
      * @default true
      */
     showMean?: boolean;
@@ -952,6 +1052,7 @@ export interface SeriesModel extends SeriesBaseModel{
      * Exclusive
      * Inclusive
      * Normal
+     *
      * @default 'Normal'
      */
     boxPlotMode?: BoxPlotMode;
@@ -959,6 +1060,7 @@ export interface SeriesModel extends SeriesBaseModel{
     /**
      * To render the column series points with particular column width. If the series type is histogram the
      * default value is 1 otherwise 0.7.
+     *
      * @default null
      * @aspDefaultValueIgnore
      * @blazorDefaultValue Double.NaN
@@ -967,24 +1069,28 @@ export interface SeriesModel extends SeriesBaseModel{
 
     /**
      * To render the column series points with particular column spacing. It takes value from 0 - 1.
+     *
      * @default 0
      */
     columnSpacing?: number;
 
     /**
      * Defines the visual representation of the negative changes in waterfall charts.
+     *
      * @default '#C64E4A'
      */
     negativeFillColor?: string;
 
     /**
      * Defines the visual representation of the summaries in waterfall charts.
+     *
      * @default '#4E81BC'
      */
     summaryFillColor?: string;
 
     /**
      * Defines the collection of indexes of the intermediate summary columns in waterfall charts.
+     *
      * @default []
      * @aspType int[]
      */
@@ -992,6 +1098,7 @@ export interface SeriesModel extends SeriesBaseModel{
 
     /**
      * Defines the collection of indexes of the overall summary columns in waterfall charts.
+     *
      * @default []
      * @aspType int[]
      */

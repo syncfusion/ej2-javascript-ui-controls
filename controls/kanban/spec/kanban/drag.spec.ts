@@ -1,19 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * drag spec
  */
-import { Kanban, KanbanModel } from '../../src/kanban/index';
+import { DragEventArgs, Kanban, KanbanModel } from '../../src/kanban/index';
 import { kanbanData } from './common/kanban-data.spec';
 import { profile, inMB, getMemoryProfile } from './common/common.spec';
 import * as util from './common/util.spec';
+import { closest, createElement } from '@syncfusion/ej2-base';
 
 Kanban.Inject();
 
 describe('Drag module', () => {
     beforeAll(() => {
-        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
             (this as any).skip(); //Skips test (in Chai)
             return;
@@ -40,7 +41,7 @@ describe('Drag module', () => {
     describe('Basic drag and drop', () => {
         let kanbanObj: Kanban;
         beforeAll((done: DoneFn) => {
-            let model: KanbanModel = { allowDragAndDrop: false };
+            const model: KanbanModel = { allowDragAndDrop: false };
             kanbanObj = util.createKanban(model, kanbanData, done);
         });
 
@@ -57,7 +58,6 @@ describe('Drag module', () => {
     describe('Drag and drop functionality', () => {
         let kanbanObj: Kanban;
         let key: string;
-        let width: string;
         let droppedElement: HTMLElement;
         let dragElement: HTMLElement;
         beforeAll((done: DoneFn) => {
@@ -74,39 +74,38 @@ describe('Drag module', () => {
             util.triggerMouseEvent(dragElement, 'mousedown');
             util.triggerMouseEvent(dragElement, 'mousemove', 100, 100);
             expect(key).toEqual('Open');
-            width = dragElement.style.width;
             expect(dragElement.classList.contains('e-kanban-dragged-card')).toBeTruthy();
             expect(dragElement.nextElementSibling.classList.contains('e-target-dragged-clone')).toBeTruthy();
             expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toBe(1);
         });
 
         it('Created Dropped clone on above the column testing and target is card', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0);
+            const element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0);
             util.triggerMouseEvent(element, 'mousemove', 250, 100);
             expect(element.previousElementSibling.classList.contains('e-target-dropped-clone')).toEqual(true);
         });
 
         it('Created Dropped clone on above the column testing and target is card wrapper', () => {
-            let ele: HTMLElement = (kanbanObj.element.querySelectorAll('.e-card-wrapper') as NodeListOf<Element>).item(1) as HTMLElement;
+            const ele: HTMLElement = (kanbanObj.element.querySelectorAll('.e-card-wrapper') as NodeListOf<Element>).item(1) as HTMLElement;
             util.triggerMouseEvent(ele, 'mousemove', 250, 140);
             expect(ele.firstElementChild.classList.contains('e-target-dropped-clone')).toEqual(true);
         });
 
         it('Created Dropped clone on column bottom testing', () => {
-            let element: HTMLElement = (<NodeListOf<Element>>kanbanObj.element.querySelectorAll('.e-content-cells')).item(1) as HTMLElement;
+            const element: HTMLElement = (<NodeListOf<Element>>kanbanObj.element.querySelectorAll('.e-content-cells')).item(1) as HTMLElement;
             util.triggerMouseEvent(element, 'mousemove', 300, 1400);
             expect(element.firstElementChild.lastElementChild.classList.contains('e-target-dropped-clone')).toEqual(true);
             expect(document.body.style.cursor).toBe('');
         });
 
         it('Cursor changed testing between the columns', () => {
-            let element: HTMLElement = (<NodeListOf<Element>>kanbanObj.element.querySelectorAll('.e-content-table')).item(0) as HTMLElement;
+            const element: HTMLElement = (<NodeListOf<Element>>kanbanObj.element.querySelectorAll('.e-content-table')).item(0) as HTMLElement;
             util.triggerMouseEvent(element, 'mousemove', 450, 140);
             expect(document.body.style.cursor).toBe('not-allowed');
         });
 
         it('Cursor changed testing with header', () => {
-            let element: HTMLElement = (<NodeListOf<Element>>kanbanObj.element.querySelectorAll('.e-header-cells')).item(0) as HTMLElement;
+            const element: HTMLElement = (<NodeListOf<Element>>kanbanObj.element.querySelectorAll('.e-header-cells')).item(0) as HTMLElement;
             util.triggerMouseEvent(element, 'mousemove', 100, 0);
             expect(document.body.style.cursor).toBe('not-allowed');
         });
@@ -114,12 +113,13 @@ describe('Drag module', () => {
         it('Dropped clone behavior testing', () => {
             droppedElement = kanbanObj.element.querySelectorAll('.e-card[data-id="9"] .e-card-header').item(0) as HTMLElement;
             util.triggerMouseEvent(droppedElement, 'mousemove', 500, 200);
+            util.triggerMouseEvent(droppedElement, 'mousemove', 500, 200);
             expect(document.body.style.cursor).toBe('');
             expect(droppedElement.closest('.e-card').nextElementSibling.classList.contains('e-target-dropped-clone')).toEqual(true);
         });
 
         it('Drag Possible testing when drag the card', () => {
-            let cells: NodeList = kanbanObj.element.querySelectorAll('.e-content-cells');
+            const cells: NodeList = kanbanObj.element.querySelectorAll('.e-content-cells');
             expect((<HTMLElement>cells[0]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[1]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[2]).classList.contains('e-dropping')).toEqual(true);
@@ -131,7 +131,7 @@ describe('Drag module', () => {
         });
 
         it('Drag Possible testing after dropped the card', () => {
-            let cells: NodeList = kanbanObj.element.querySelectorAll('.e-content-cells');
+            const cells: NodeList = kanbanObj.element.querySelectorAll('.e-content-cells');
             expect((<HTMLElement>cells[0]).classList.contains('e-dropping')).toEqual(false);
             expect((<HTMLElement>cells[1]).classList.contains('e-dropping')).toEqual(false);
             expect((<HTMLElement>cells[2]).classList.contains('e-dropping')).toEqual(false);
@@ -146,8 +146,8 @@ describe('Drag module', () => {
         });
 
         it('Testing the cards after dropping the card', () => {
-            let data: { [key: string]: Object } = kanbanObj.getCardDetails(dragElement) as { [key: string]: Object };
-            let curKey: Object = data[kanbanObj.keyField];
+            const data: Record<string, any> = kanbanObj.getCardDetails(dragElement);
+            const curKey: string = data[kanbanObj.keyField] as string;
             expect(curKey).not.toBe(key);
             expect(curKey).toEqual('Testing');
         });
@@ -156,7 +156,7 @@ describe('Drag module', () => {
             dragElement = kanbanObj.element.querySelectorAll('.e-card[data-id="13"]').item(0) as HTMLElement;
             util.triggerMouseEvent(dragElement, 'mousedown');
             util.triggerMouseEvent(dragElement, 'mousemove', 100, 100);
-            let element: HTMLElement = (<NodeListOf<Element>>kanbanObj.element.querySelectorAll('.e-content-table')).item(0) as HTMLElement;
+            const element: HTMLElement = (<NodeListOf<Element>>kanbanObj.element.querySelectorAll('.e-content-table')).item(0) as HTMLElement;
             util.triggerMouseEvent(element, 'mousemove', 450, 140);
             expect(document.body.style.cursor).toBe('not-allowed');
             expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toBe(1);
@@ -175,14 +175,14 @@ describe('Drag module', () => {
             util.triggerMouseEvent(dragElement, 'mousedown');
             util.triggerMouseEvent(dragElement, 'mousemove', 100, 100);
             // Mouse move action
-            let element: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="14"] .e-card-content').item(0) as HTMLElement;
+            const element: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="14"] .e-card-content').item(0) as HTMLElement;
             util.triggerMouseEvent(element, 'mousemove', 350, 270);
             expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toBe(1);
             expect(kanbanObj.element.querySelectorAll('.e-target-dropped-clone').length).toBe(1);
             expect(kanbanObj.element.querySelectorAll('.e-card.e-cloned-card').length).toBe(1);
         });
         it('Dropped clone removed testing on dragging clone on one column to another column', () => {
-            let ele: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="8"]').item(0) as HTMLElement;
+            const ele: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="8"]').item(0) as HTMLElement;
             util.triggerMouseEvent(ele, 'mousemove', 650, 150);
             expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toBe(1);
             expect(kanbanObj.element.querySelectorAll('.e-target-dropped-clone').length).toBe(1);
@@ -201,11 +201,10 @@ describe('Drag module', () => {
     describe('Drag and drop with swimlane', () => {
         let kanbanObj: Kanban;
         let key: string;
-        let width: string;
         let droppedElement: HTMLElement;
         let draggedElement: HTMLElement;
         beforeAll((done: DoneFn) => {
-            let model: KanbanModel = {
+            const model: KanbanModel = {
                 swimlaneSettings: {
                     keyField: 'Assignee'
                 }
@@ -228,69 +227,68 @@ describe('Drag module', () => {
             util.triggerMouseEvent(draggedElement, 'mousemove', 100, 100);
             expect(key).toEqual('Open');
             util.triggerMouseEvent(draggedElement, 'mousemove');
-            width = draggedElement.style.width;
             expect(draggedElement.classList.contains('e-kanban-dragged-card')).toBeTruthy();
             expect(draggedElement.nextElementSibling.classList.contains('e-target-dropped-clone')).toBeTruthy();
             expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toBe(1);
         });
 
         it('Created Dropped clone on above the column testing and target is card', () => {
-            let element: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0) as HTMLElement;
+            const element: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0) as HTMLElement;
             util.triggerMouseEvent(element, 'mousemove', 250, 100);
             expect(element.previousElementSibling.classList.contains('e-target-dropped-clone')).toEqual(true);
         });
 
         it('Created Dropped clone on above the column testing and target is card wrapper', () => {
-            let ele: HTMLElement = kanbanObj.element.querySelectorAll('.e-card-wrapper').item(1) as HTMLElement;
+            const ele: HTMLElement = kanbanObj.element.querySelectorAll('.e-card-wrapper').item(1) as HTMLElement;
             util.triggerMouseEvent(ele, 'mousemove', 250, 140);
             expect(ele.firstElementChild.classList.contains('e-target-dropped-clone')).toEqual(true);
         });
 
         it('Created Dropped clone on column bottom testing', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells').item(1);
+            const element: Element = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells').item(1);
             util.triggerMouseEvent(element, 'mousemove', 300, 350);
             expect(element.firstElementChild.lastElementChild.classList.contains('e-target-dropped-clone')).toEqual(true);
             expect(document.body.style.cursor).toBe('');
         });
 
         it('Cursor changed testing between the columns', () => {
-            let element: HTMLElement = kanbanObj.element.querySelectorAll('.e-content-table').item(0) as HTMLElement;
+            const element: HTMLElement = kanbanObj.element.querySelectorAll('.e-content-table').item(0) as HTMLElement;
             util.triggerMouseEvent(element, 'mousemove', 450, 140);
             expect(document.body.style.cursor).toBe('not-allowed');
         });
 
         it('Cursor changed testing with header', () => {
-            let element: HTMLElement = kanbanObj.element.querySelectorAll('.e-header-cells').item(0) as HTMLElement;
+            const element: HTMLElement = kanbanObj.element.querySelectorAll('.e-header-cells').item(0) as HTMLElement;
             util.triggerMouseEvent(element, 'mousemove', 100, 0);
             expect(document.body.style.cursor).toBe('not-allowed');
         });
 
         it('Cursor changed testing with Kanban content', () => {
-            let element: HTMLElement = kanbanObj.element.querySelectorAll('.e-kanban-content').item(0) as HTMLElement;
+            const element: HTMLElement = kanbanObj.element.querySelectorAll('.e-kanban-content').item(0) as HTMLElement;
             util.triggerMouseEvent(element, 'mousemove', 100, 3000);
             expect(document.body.style.cursor).toBe('not-allowed');
         });
 
         it('Cursor changed testing on swimlane row', () => {
-            let element: HTMLElement = (<NodeListOf<Element>>kanbanObj.element.querySelectorAll('.e-swimlane-row')).item(0) as HTMLElement;
+            const element: HTMLElement = (<NodeListOf<Element>>kanbanObj.element.querySelectorAll('.e-swimlane-row')).item(0) as HTMLElement;
             util.triggerMouseEvent(element, 'mousemove', 250, 400);
             expect(document.body.style.cursor).toBe('not-allowed');
         });
 
         it('Cursor changed testing on swimlane row target as content cell', () => {
-            let element: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-content-cells').item(1) as HTMLElement;
+            const element: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-content-cells').item(1) as HTMLElement;
             util.triggerMouseEvent(element, 'mousemove', 250, 470);
             expect(document.body.style.cursor).toBe('not-allowed');
         });
 
         it('Cursor changed testing on swimlane row content cell', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells').item(5);
+            const element: Element = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells').item(5);
             util.triggerMouseEvent(element, 'mousemove', 250, 500);
             expect(document.body.style.cursor).toBe('not-allowed');
         });
 
         it('Cursor changed testing on swimlane row content', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="4"]').item(0);
+            const element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="4"]').item(0);
             util.triggerMouseEvent(element, 'mousemove', 250, 550);
             expect(document.body.style.cursor).toBe('not-allowed');
         });
@@ -298,11 +296,12 @@ describe('Drag module', () => {
         it('Dropped clone behavior testing', () => {
             droppedElement = <HTMLElement>kanbanObj.element.querySelectorAll('.e-card[data-id="37"] .e-card-header').item(0);
             util.triggerMouseEvent(droppedElement, 'mousemove', 700, 200);
+            util.triggerMouseEvent(droppedElement, 'mousemove', 700, 200);
             expect(document.body.style.cursor).toBe('');
             expect(droppedElement.closest('.e-card').nextElementSibling.classList.contains('e-target-dropped-clone')).toEqual(true);
         });
         it('Drag Possible testing when drag the card', () => {
-            let cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
+            const cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
             expect((<HTMLElement>cells[0]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[1]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[2]).classList.contains('e-dropping')).toEqual(true);
@@ -317,7 +316,7 @@ describe('Drag module', () => {
         });
 
         it('Drag Possible testing after dropped the card', () => {
-            let cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
+            const cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
             for (let i: number = 0; i < cells.length; i++) {
                 expect((<HTMLElement>cells[i]).classList.contains('e-dropping')).toEqual(false);
             }
@@ -331,8 +330,8 @@ describe('Drag module', () => {
         });
 
         it('Testing the cards after dropping the card', () => {
-            let data: { [key: string]: Object } = kanbanObj.getCardDetails(draggedElement) as { [key: string]: Object };
-            let curKey: Object = data[kanbanObj.keyField];
+            const data: Record<string, any> = kanbanObj.getCardDetails(draggedElement);
+            const curKey: string = data[kanbanObj.keyField] as string;
             expect(curKey).not.toBe(key);
             expect(curKey).toEqual('Close');
         });
@@ -341,14 +340,13 @@ describe('Drag module', () => {
     describe('Drag and drop testing on within the swimlanes', () => {
         let kanbanObj: Kanban;
         let rows: string[];
-        let swimlaneKey: Object;
-        let columnKey: Object;
+        let swimlaneKey: string;
+        let columnKey: string;
         let key: string;
-        let width: string;
         let droppedElement: HTMLElement;
         let draggedElement: HTMLElement;
         beforeAll((done: DoneFn) => {
-            let model: KanbanModel = {
+            const model: KanbanModel = {
                 swimlaneSettings: {
                     keyField: 'Assignee',
                     allowDragAndDrop: true
@@ -372,63 +370,62 @@ describe('Drag module', () => {
             util.triggerMouseEvent(draggedElement, 'mousemove', 100, 100);
             expect(key).toEqual('Open');
             util.triggerMouseEvent(draggedElement, 'mousemove');
-            width = draggedElement.style.width;
             expect(draggedElement.classList.contains('e-kanban-dragged-card')).toBeTruthy();
             expect(draggedElement.nextElementSibling.classList.contains('e-target-dropped-clone')).toBeTruthy();
             expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toBe(1);
         });
 
         it('Created Dropped clone on above the column testing and target is card', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0);
+            const element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0);
             util.triggerMouseEvent(element, 'mousemove', 250, 100);
             expect(element.previousElementSibling.classList.contains('e-target-dropped-clone')).toEqual(true);
         });
 
         it('Created Dropped clone on above the column testing and target is card wrapper', () => {
-            let ele: Element = kanbanObj.element.querySelectorAll('.e-card-wrapper').item(1);
+            const ele: Element = kanbanObj.element.querySelectorAll('.e-card-wrapper').item(1);
             util.triggerMouseEvent(ele, 'mousemove', 250, 140);
             expect(ele.firstElementChild.classList.contains('e-target-dropped-clone')).toEqual(true);
         });
 
         it('Created Dropped clone on column bottom testing', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells').item(1);
+            const element: Element = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells').item(1);
             util.triggerMouseEvent(element, 'mousemove', 300, 350);
             expect(element.firstElementChild.lastElementChild.classList.contains('e-target-dropped-clone')).toEqual(true);
             expect(document.body.style.cursor).toBe('');
         });
 
         it('Cursor changed testing between the columns', () => {
-            let element: HTMLElement = (<NodeListOf<Element>>kanbanObj.element.querySelectorAll('.e-content-table')).item(0) as HTMLElement;
+            const element: HTMLElement = (<NodeListOf<Element>>kanbanObj.element.querySelectorAll('.e-content-table')).item(0) as HTMLElement;
             util.triggerMouseEvent(element, 'mousemove', 450, 140);
             expect(document.body.style.cursor).toBe('not-allowed');
         });
 
         it('Cursor changed testing with header', () => {
-            let element: HTMLElement = (<NodeListOf<Element>>kanbanObj.element.querySelectorAll('.e-header-cells')).item(0) as HTMLElement;
+            const element: HTMLElement = (<NodeListOf<Element>>kanbanObj.element.querySelectorAll('.e-header-cells')).item(0) as HTMLElement;
             util.triggerMouseEvent(element, 'mousemove', 100, 0);
             expect(document.body.style.cursor).toBe('not-allowed');
         });
 
         it('Cursor changed testing with Kanban content', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-kanban-content').item(0);
+            const element: Element = kanbanObj.element.querySelectorAll('.e-kanban-content').item(0);
             util.triggerMouseEvent(element, 'mousemove', 100, 3000);
             expect(document.body.style.cursor).toBe('not-allowed');
         });
 
         it('Cursor changed testing on swimlane row', () => {
-            let element: HTMLElement = (<NodeListOf<Element>>kanbanObj.element.querySelectorAll('.e-swimlane-row')).item(0) as HTMLElement;
+            const element: HTMLElement = (<NodeListOf<Element>>kanbanObj.element.querySelectorAll('.e-swimlane-row')).item(0) as HTMLElement;
             util.triggerMouseEvent(element, 'mousemove', 250, 400);
             expect(document.body.style.cursor).toBe('not-allowed');
         });
 
         it('Cursor changed testing on swimlane row content cell', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells').item(5);
+            const element: Element = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells').item(5);
             util.triggerMouseEvent(element, 'mousemove', 250, 500);
             expect(document.body.style.cursor).toBe('');
         });
 
         it('Cursor changed testing on swimlane row content', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="4"]').item(0);
+            const element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="4"]').item(0);
             util.triggerMouseEvent(element, 'mousemove', 250, 550);
             expect(document.body.style.cursor).toBe('');
             expect(element.previousElementSibling.classList.contains('e-target-dropped-clone')).toEqual(true);
@@ -442,7 +439,7 @@ describe('Drag module', () => {
         });
 
         it('Drag Possible testing when drag the card', () => {
-            let cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
+            const cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
             for (let i: number = 0; i < cells.length; i++) {
                 expect((<HTMLElement>cells[i]).classList.contains('e-dropping')).toEqual(true);
             }
@@ -453,7 +450,7 @@ describe('Drag module', () => {
         });
 
         it('Drag Possible testing after dropped the card', () => {
-            let cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
+            const cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
             for (let i: number = 0; i < cells.length; i++) {
                 expect((<HTMLElement>cells[i]).classList.contains('e-dropping')).toEqual(false);
             }
@@ -467,32 +464,31 @@ describe('Drag module', () => {
         });
 
         it('Testing the cards after dropping the card', () => {
-            let data: { [key: string]: Object } = kanbanObj.getCardDetails(draggedElement) as { [key: string]: Object };
-            let curKey: Object = data[kanbanObj.keyField];
+            const data: Record<string, any> = kanbanObj.getCardDetails(draggedElement);
+            const curKey: string = data[kanbanObj.keyField] as string;
             expect(curKey).not.toBe(key);
             expect(curKey).toEqual('Close');
         });
 
         it('Swimlane to swimlane drag and drop initial data testing', () => {
-            let allKeys: string[] = kanbanData.map((obj: { [key: string]: string }) =>
+            const allKeys: string[] = kanbanData.map((obj: { [key: string]: string }) =>
                 obj[kanbanObj.swimlaneSettings.keyField]);
             rows = allKeys.filter((key: string, index: number) => allKeys.indexOf(key) === index).sort();
             draggedElement = (kanbanObj.element.querySelectorAll('.e-card[data-id="2"]') as NodeListOf<Element>).item(0) as HTMLElement;
-            let data: { [key: string]: Object } = kanbanObj.getCardDetails(draggedElement) as { [key: string]: Object };
-            swimlaneKey = data[kanbanObj.swimlaneSettings.keyField];
-            let contentRow: Element = draggedElement.closest('.e-content-row');
-            let curSwimlaneKey: Object = contentRow.previousElementSibling.getAttribute('data-key');
+            const data: Record<string, any> = kanbanObj.getCardDetails(draggedElement);
+            swimlaneKey = data[kanbanObj.swimlaneSettings.keyField] as string;
+            const contentRow: Element = draggedElement.closest('.e-content-row');
+            const curSwimlaneKey: string = contentRow.previousElementSibling.getAttribute('data-key');
             expect(swimlaneKey).toEqual(curSwimlaneKey);
             expect(curSwimlaneKey).toEqual(rows[0]);
-            columnKey = data[kanbanObj.keyField];
-            let curColumnKey: Object = draggedElement.getAttribute('data-key');
+            columnKey = data[kanbanObj.keyField] as string;
+            const curColumnKey: string = draggedElement.getAttribute('data-key');
             expect(columnKey).toEqual(curColumnKey);
             util.triggerMouseEvent(draggedElement, 'mousedown');
         });
 
         it('Swimlane to swimlane Dragged clone behavior testing', () => {
             util.triggerMouseEvent(draggedElement, 'mousemove', 100, 100);
-            width = draggedElement.style.width;
             expect(draggedElement.classList.contains('e-kanban-dragged-card')).toBeTruthy();
             expect(draggedElement.nextElementSibling.classList.contains('e-target-dragged-clone')).toBeTruthy();
             expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toBe(1);
@@ -505,7 +501,7 @@ describe('Drag module', () => {
         });
 
         it('Swilane to swimlane Drag Possible testing when drag the card', () => {
-            let cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
+            const cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
             for (let i: number = 0; i < cells.length; i++) {
                 expect((<HTMLElement>cells[i]).classList.contains('e-dropping')).toEqual(true);
             }
@@ -516,7 +512,7 @@ describe('Drag module', () => {
         });
 
         it('Swimlane to swimlane Drag Possible testing after dropped the card', () => {
-            let cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
+            const cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
             for (let i: number = 0; i < cells.length; i++) {
                 expect((<HTMLElement>cells[i]).classList.contains('e-dropping')).toEqual(false);
             }
@@ -530,31 +526,31 @@ describe('Drag module', () => {
         });
 
         it('Swimlane to swimlane Testing the cards after dropping the card', () => {
-            let data: { [key: string]: Object } = kanbanObj.getCardDetails(draggedElement) as { [key: string]: Object };
-            let curKey: Object = data[kanbanObj.keyField];
+            const data: Record<string, any> = kanbanObj.getCardDetails(draggedElement);
+            const curKey: string = data[kanbanObj.keyField] as string;
             expect(curKey).not.toBe(key);
             expect(curKey).not.toBe(columnKey);
-            let curSwimlaneKey: Object = data[kanbanObj.swimlaneSettings.keyField];
+            const curSwimlaneKey: string = data[kanbanObj.swimlaneSettings.keyField] as string;
             expect(curSwimlaneKey).toBe(rows[1]);
             expect(curSwimlaneKey).not.toBe(swimlaneKey);
         });
 
         it('Maintain swimlane collapsed state when drag and drop - collapsed the swimlanes', () => {
-            let element: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[0] as HTMLElement;
+            const element: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[0] as HTMLElement;
             element.click();
             expect(element.classList.contains('e-swimlane-row-collapse')).toBe(true);
             expect(element.closest('.e-content-row').nextElementSibling.classList.contains('e-collapsed')).toBe(true);
         });
 
         it('Maintain swimlane collapsed state when drag and drop - collapsed the third swimlanes', () => {
-            let element: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[2] as HTMLElement;
+            const element: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[2] as HTMLElement;
             element.click();
             expect(element.classList.contains('e-swimlane-row-collapse')).toBe(true);
             expect(element.closest('.e-content-row').nextElementSibling.classList.contains('e-collapsed')).toBe(true);
         });
 
         it('Maintain swimlane collapsed state when drag and drop - collapsed the fourth swimlanes', () => {
-            let element: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[3] as HTMLElement;
+            const element: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[3] as HTMLElement;
             element.click();
             expect(element.classList.contains('e-swimlane-row-collapse')).toBe(true);
             expect(element.closest('.e-content-row').nextElementSibling.classList.contains('e-collapsed')).toBe(true);
@@ -569,13 +565,13 @@ describe('Drag module', () => {
         it('Maintain swimlane collapsed state when drag and drop - move the card', () => {
             util.triggerMouseEvent(droppedElement, 'mousemove', 250, 250);
             expect(kanbanObj.element.querySelectorAll('.e-target-dropped-clone').length).toBe(1);
-            let element: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[0] as HTMLElement;
+            const element: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[0] as HTMLElement;
             expect(element.classList.contains('e-swimlane-row-collapse')).toBe(true);
             expect(element.closest('.e-content-row').nextElementSibling.classList.contains('e-collapsed')).toBe(true);
-            let element1: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[2] as HTMLElement;
+            const element1: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[2] as HTMLElement;
             expect(element1.classList.contains('e-swimlane-row-collapse')).toBe(true);
             expect(element1.closest('.e-content-row').nextElementSibling.classList.contains('e-collapsed')).toBe(true);
-            let element2: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[3] as HTMLElement;
+            const element2: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[3] as HTMLElement;
             expect(element2.classList.contains('e-swimlane-row-collapse')).toBe(true);
             expect(element2.closest('.e-content-row').nextElementSibling.classList.contains('e-collapsed')).toBe(true);
         });
@@ -583,13 +579,13 @@ describe('Drag module', () => {
         it('Maintain swimlane collapsed state when drag and drop - drop the card', (done: DoneFn) => {
             kanbanObj.dataBound = () => {
                 expect(kanbanObj.element.querySelectorAll('.e-target-dropped-clone').length).toBe(0);
-                let element: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[0] as HTMLElement;
+                const element: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[0] as HTMLElement;
                 expect(element.classList.contains('e-swimlane-row-collapse')).toBe(true);
                 expect(element.closest('.e-content-row').nextElementSibling.classList.contains('e-collapsed')).toBe(true);
-                let element1: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[2] as HTMLElement;
+                const element1: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[2] as HTMLElement;
                 expect(element1.classList.contains('e-swimlane-row-collapse')).toBe(true);
                 expect(element1.closest('.e-content-row').nextElementSibling.classList.contains('e-collapsed')).toBe(true);
-                let element2: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[3] as HTMLElement;
+                const element2: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[3] as HTMLElement;
                 expect(element2.classList.contains('e-swimlane-row-collapse')).toBe(true);
                 expect(element2.closest('.e-content-row').nextElementSibling.classList.contains('e-collapsed')).toBe(true);
                 done();
@@ -608,13 +604,13 @@ describe('Drag module', () => {
             droppedElement = kanbanObj.element.querySelectorAll('.e-card[data-id="3"] .e-card-content').item(0) as HTMLElement;
             util.triggerMouseEvent(droppedElement, 'mousemove', 130, 190);
             expect(kanbanObj.element.querySelectorAll('.e-target-dropped-clone').length).toBe(1);
-            let element: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[0] as HTMLElement;
+            const element: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[0] as HTMLElement;
             expect(element.classList.contains('e-swimlane-row-collapse')).toBe(true);
             expect(element.closest('.e-content-row').nextElementSibling.classList.contains('e-collapsed')).toBe(true);
-            let element1: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[2] as HTMLElement;
+            const element1: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[2] as HTMLElement;
             expect(element1.classList.contains('e-swimlane-row-collapse')).toBe(true);
             expect(element1.closest('.e-content-row').nextElementSibling.classList.contains('e-collapsed')).toBe(true);
-            let element2: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[3] as HTMLElement;
+            const element2: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[3] as HTMLElement;
             expect(element2.classList.contains('e-swimlane-row-collapse')).toBe(true);
             expect(element2.closest('.e-content-row').nextElementSibling.classList.contains('e-collapsed')).toBe(true);
 
@@ -623,13 +619,13 @@ describe('Drag module', () => {
         it('Maintain swimlane collapsed state when swimlane drag and drop - drop the card', (done: DoneFn) => {
             kanbanObj.dataBound = () => {
                 expect(kanbanObj.element.querySelectorAll('.e-target-dropped-clone').length).toBe(0);
-                let element: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[0] as HTMLElement;
+                const element: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[0] as HTMLElement;
                 expect(element.classList.contains('e-swimlane-row-collapse')).toBe(true);
                 expect(element.closest('.e-content-row').nextElementSibling.classList.contains('e-collapsed')).toBe(true);
-                let element1: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[2] as HTMLElement;
+                const element1: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[2] as HTMLElement;
                 expect(element1.classList.contains('e-swimlane-row-collapse')).toBe(true);
                 expect(element1.closest('.e-content-row').nextElementSibling.classList.contains('e-collapsed')).toBe(true);
-                let element2: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[3] as HTMLElement;
+                const element2: HTMLElement = kanbanObj.element.querySelectorAll('.e-swimlane-row .e-icons')[3] as HTMLElement;
                 expect(element2.classList.contains('e-swimlane-row-collapse')).toBe(true);
                 expect(element2.closest('.e-content-row').nextElementSibling.classList.contains('e-collapsed')).toBe(true);
                 done();
@@ -644,7 +640,7 @@ describe('Drag module', () => {
         let droppedElement: HTMLElement;
         let draggedElement: HTMLElement;
         beforeAll((done: DoneFn) => {
-            let model: KanbanModel = {
+            const model: KanbanModel = {
                 columns: [
                     { headerText: 'Backlog', keyField: 'Open, Review' },
                     { headerText: 'In Progress', keyField: 'InProgress' },
@@ -683,23 +679,23 @@ describe('Drag module', () => {
         });
 
         it('All multiple key columns cards are displayed none when drag the multiple column key testing', () => {
-            let wrapper: Element = kanbanObj.element.querySelector('.e-content-cells .e-card-wrapper');
+            const wrapper: Element = kanbanObj.element.querySelector('.e-content-cells .e-card-wrapper');
             expect(wrapper.classList.contains('e-multi-card-wrapper')).toBe(true);
         });
 
         it('Column key testing on multiple key testing', () => {
-            let clone: Element = kanbanObj.element.querySelectorAll('.e-target-multi-clone').item(0);
+            const clone: Element = kanbanObj.element.querySelectorAll('.e-target-multi-clone').item(0);
             for (let i: number = 0; i < clone.childElementCount; i++) {
                 expect(clone.children[i].classList.contains('e-column-key')).toBe(true);
                 expect(clone.children[i].firstElementChild.classList.contains('e-text')).toBe(true);
-                let headerKey: string = kanbanObj.element.querySelectorAll('.e-header-cells')[0].getAttribute('data-key');
+                const headerKey: string = kanbanObj.element.querySelectorAll('.e-header-cells')[0].getAttribute('data-key');
                 expect(clone.children[i].firstElementChild.innerHTML).toBe(headerKey.split(',')[i].trim());
                 expect(clone.children[i].getAttribute('data-key')).toBe(headerKey.split(',')[i].trim());
             }
         });
 
         it('Drag Possible testing when drag the card', () => {
-            let cells: NodeList = kanbanObj.element.querySelectorAll('.e-content-cells');
+            const cells: NodeList = kanbanObj.element.querySelectorAll('.e-content-cells');
             expect((<HTMLElement>cells[0]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[1]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[2]).classList.contains('e-dropping')).toEqual(true);
@@ -714,16 +710,16 @@ describe('Drag module', () => {
 
         it('Drag Possible testing after dropped the card', (done: DoneFn) => {
             kanbanObj.dataBound = () => {
-                let cells: NodeList = kanbanObj.element.querySelectorAll('.e-content-cells');
+                const cells: NodeList = kanbanObj.element.querySelectorAll('.e-content-cells');
                 expect((<HTMLElement>cells[0]).classList.contains('e-dropping')).toEqual(false);
                 expect((<HTMLElement>cells[1]).classList.contains('e-dropping')).toEqual(false);
                 expect((<HTMLElement>cells[2]).classList.contains('e-dropping')).toEqual(false);
                 expect((<HTMLElement>cells[3]).classList.contains('e-dropping')).toEqual(false);
-                let element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0);
-                let data: { [key: string]: Object } = kanbanObj.getCardDetails(element) as { [key: string]: Object };
-                let curKey: Object = data[kanbanObj.keyField];
+                const element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0);
+                const data: Record<string, any> = kanbanObj.getCardDetails(element);
+                const curKey: string = data[kanbanObj.keyField] as string;
                 expect(curKey).not.toBe(key);
-                let headerCell: HTMLElement = kanbanObj.element.querySelector('.e-header-cells');
+                const headerCell: HTMLElement = kanbanObj.element.querySelector('.e-header-cells');
                 expect(curKey).toEqual(headerCell.getAttribute('data-key').split(',')[0].trim());
                 expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toBe(0);
                 expect(kanbanObj.element.querySelectorAll('.e-card.e-cloned-card').length).toBe(0);
@@ -731,7 +727,7 @@ describe('Drag module', () => {
                 expect(kanbanObj.element.querySelectorAll('.e-multi-active').length).toBe(0);
                 expect(kanbanObj.element.querySelectorAll('.e-column-keys').length).toBe(0);
                 expect(kanbanObj.element.querySelectorAll('.e-multi-bottom-border').length).toBe(0);
-                let changedKey: string = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0).getAttribute('data-key');
+                const changedKey: string = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0).getAttribute('data-key');
                 expect(changedKey).not.toBe(key);
                 expect(changedKey).toBe(headerCell.getAttribute('data-key').split(',')[0].trim());
                 done();
@@ -764,23 +760,23 @@ describe('Drag module', () => {
         });
 
         it('All multiple key columns cards are displayed none when drag the multiple column key testing', () => {
-            let wrapper: Element = kanbanObj.element.querySelector('.e-content-cells .e-card-wrapper');
+            const wrapper: Element = kanbanObj.element.querySelector('.e-content-cells .e-card-wrapper');
             expect(wrapper.classList.contains('e-multi-card-wrapper')).toBe(true);
         });
 
         it('Column key testing on multiple key testing', () => {
-            let clone: HTMLElement = kanbanObj.element.querySelector('.e-target-multi-clone');
+            const clone: HTMLElement = kanbanObj.element.querySelector('.e-target-multi-clone');
             for (let i: number = 0; i < clone.childElementCount; i++) {
                 expect(clone.children[i].classList.contains('e-column-key')).toBe(true);
                 expect(clone.children[i].firstElementChild.classList.contains('e-text')).toBe(true);
-                let headerCell: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
+                const headerCell: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
                 expect(clone.children[i].firstElementChild.innerHTML).toBe(headerCell[0].getAttribute('data-key').split(',')[i].trim());
                 expect(clone.children[i].getAttribute('data-key')).toBe(headerCell[0].getAttribute('data-key').split(',')[i].trim());
             }
         });
 
         it('Drag Possible testing when drag the card', () => {
-            let cells: NodeList = kanbanObj.element.querySelectorAll('.e-content-cells');
+            const cells: NodeList = kanbanObj.element.querySelectorAll('.e-content-cells');
             expect((<HTMLElement>cells[0]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[1]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[2]).classList.contains('e-dropping')).toEqual(true);
@@ -795,7 +791,7 @@ describe('Drag module', () => {
 
         it('Drag Possible testing after dropped the card', (done: DoneFn) => {
             kanbanObj.dataBound = () => {
-                let cells: NodeList = kanbanObj.element.querySelectorAll('.e-content-cells');
+                const cells: NodeList = kanbanObj.element.querySelectorAll('.e-content-cells');
                 expect((<HTMLElement>cells[0]).classList.contains('e-dropping')).toEqual(false);
                 expect((<HTMLElement>cells[1]).classList.contains('e-dropping')).toEqual(false);
                 expect((<HTMLElement>cells[2]).classList.contains('e-dropping')).toEqual(false);
@@ -803,16 +799,16 @@ describe('Drag module', () => {
                 expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toBe(0);
                 expect(kanbanObj.element.querySelectorAll('.e-card.e-cloned-card').length).toBe(0);
                 expect(kanbanObj.element.querySelectorAll('.e-kanban-dragged-card').length).toBe(0);
-                let element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="5"]').item(0);
-                let data: { [key: string]: Object } = kanbanObj.getCardDetails(element) as { [key: string]: Object };
-                let curKey: Object = data[kanbanObj.keyField];
+                const element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="5"]').item(0);
+                const data: Record<string, any> = kanbanObj.getCardDetails(element);
+                const curKey: string = data[kanbanObj.keyField] as string;
                 expect(curKey).not.toBe(key);
-                let headerCell: HTMLElement = kanbanObj.element.querySelector('.e-header-cells');
+                const headerCell: HTMLElement = kanbanObj.element.querySelector('.e-header-cells');
                 expect(curKey).toEqual(headerCell.getAttribute('data-key').split(',')[1].trim());
                 expect(kanbanObj.element.querySelectorAll('.e-multi-active').length).toBe(0);
                 expect(kanbanObj.element.querySelectorAll('.e-column-keys').length).toBe(0);
                 expect(kanbanObj.element.querySelectorAll('.e-multi-bottom-border').length).toBe(0);
-                let changedKey: string = kanbanObj.element.querySelectorAll('.e-card[data-id="5"]').item(0).getAttribute('data-key');
+                const changedKey: string = kanbanObj.element.querySelectorAll('.e-card[data-id="5"]').item(0).getAttribute('data-key');
                 expect(changedKey).not.toBe(key);
                 expect(changedKey).toBe(headerCell.getAttribute('data-key').split(',')[1].trim());
                 done();
@@ -827,7 +823,7 @@ describe('Drag module', () => {
         let droppedElement: HTMLElement;
         let draggedElement: HTMLElement;
         beforeAll((done: DoneFn) => {
-            let model: KanbanModel = {
+            const model: KanbanModel = {
                 columns: [
                     { headerText: 'Backlog', keyField: 'Open, Review' },
                     { headerText: 'In Progress', keyField: 'InProgress' },
@@ -869,23 +865,23 @@ describe('Drag module', () => {
         });
 
         it('All multiple key columns cards are displayed none when drag the multiple column key testing', () => {
-            let wrapper: Element = kanbanObj.element.querySelector('.e-content-cells .e-card-wrapper');
+            const wrapper: Element = kanbanObj.element.querySelector('.e-content-cells .e-card-wrapper');
             expect(wrapper.classList.contains('e-multi-card-wrapper')).toBe(true);
         });
 
         it('Column key testing on multiple key testing', () => {
-            let clone: Element = kanbanObj.element.querySelectorAll('.e-target-multi-clone').item(0);
+            const clone: Element = kanbanObj.element.querySelectorAll('.e-target-multi-clone').item(0);
             for (let i: number = 0; i < clone.childElementCount; i++) {
                 expect(clone.children[i].classList.contains('e-column-key')).toBe(true);
                 expect(clone.children[i].firstElementChild.classList.contains('e-text')).toBe(true);
-                let headerCell: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
+                const headerCell: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
                 expect(clone.children[i].firstElementChild.innerHTML).toBe(headerCell[0].getAttribute('data-key').split(',')[i].trim());
                 expect(clone.children[i].getAttribute('data-key')).toBe(headerCell[0].getAttribute('data-key').split(',')[i].trim());
             }
         });
 
         it('Drag Possible testing when drag the card', () => {
-            let cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
+            const cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
             expect((<HTMLElement>cells[0]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[1]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[2]).classList.contains('e-dropping')).toEqual(true);
@@ -903,16 +899,16 @@ describe('Drag module', () => {
 
         it('Drag Possible testing after dropped the card', (done: DoneFn) => {
             kanbanObj.dataBound = () => {
-                let className: string = '.e-content-row:not(.e-swimlane-row) .e-content-cells';
-                let cells: HTMLElement[] = [].slice.call(kanbanObj.element.querySelectorAll(className));
+                const className: string = '.e-content-row:not(.e-swimlane-row) .e-content-cells';
+                const cells: HTMLElement[] = [].slice.call(kanbanObj.element.querySelectorAll(className));
                 for (let i: number = 0; i < cells.length; i++) {
                     expect((<HTMLElement>cells[i]).classList.contains('e-dropping')).toEqual(false);
                 }
-                let element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0);
-                let data: { [key: string]: Object } = kanbanObj.getCardDetails(element) as { [key: string]: Object };
-                let curKey: Object = data[kanbanObj.keyField];
+                const element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0);
+                const data: Record<string, any> = kanbanObj.getCardDetails(element);
+                const curKey: string = data[kanbanObj.keyField] as string;
                 expect(curKey).not.toBe(key);
-                let headerCell: HTMLElement = kanbanObj.element.querySelector('.e-header-cells');
+                const headerCell: HTMLElement = kanbanObj.element.querySelector('.e-header-cells');
                 expect(curKey).toEqual(headerCell.getAttribute('data-key').split(',')[0].trim());
                 expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toBe(0);
                 expect(kanbanObj.element.querySelectorAll('.e-card.e-cloned-card').length).toBe(0);
@@ -920,7 +916,7 @@ describe('Drag module', () => {
                 expect(kanbanObj.element.querySelectorAll('.e-multi-active').length).toBe(0);
                 expect(kanbanObj.element.querySelectorAll('.e-column-keys').length).toBe(0);
                 expect(kanbanObj.element.querySelectorAll('.e-multi-bottom-border').length).toBe(0);
-                let changedKey: string = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0).getAttribute('data-key');
+                const changedKey: string = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0).getAttribute('data-key');
                 expect(changedKey).not.toBe(key);
                 expect(changedKey).toBe(headerCell.getAttribute('data-key').split(',')[0].trim());
                 done();
@@ -953,23 +949,23 @@ describe('Drag module', () => {
         });
 
         it('All multiple key columns cards are displayed none when drag the multiple column key testing', () => {
-            let wrapper: Element = kanbanObj.element.querySelector('.e-content-cells .e-card-wrapper');
+            const wrapper: Element = kanbanObj.element.querySelector('.e-content-cells .e-card-wrapper');
             expect(wrapper.classList.contains('e-multi-card-wrapper')).toBe(true);
         });
 
         it('Column key testing on multiple key testing', () => {
-            let clone: HTMLElement = kanbanObj.element.querySelector('.e-target-multi-clone');
+            const clone: HTMLElement = kanbanObj.element.querySelector('.e-target-multi-clone');
             for (let i: number = 0; i < clone.childElementCount; i++) {
                 expect(clone.children[i].classList.contains('e-column-key')).toBe(true);
                 expect(clone.children[i].firstElementChild.classList.contains('e-text')).toBe(true);
-                let headerCell: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
+                const headerCell: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
                 expect(clone.children[i].firstElementChild.innerHTML).toBe(headerCell[0].getAttribute('data-key').split(',')[i].trim());
                 expect(clone.children[i].getAttribute('data-key')).toBe(headerCell[0].getAttribute('data-key').split(',')[i].trim());
             }
         });
 
         it('Drag Possible testing when drag the card', () => {
-            let cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
+            const cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
             expect((<HTMLElement>cells[0]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[1]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[2]).classList.contains('e-dropping')).toEqual(true);
@@ -987,24 +983,24 @@ describe('Drag module', () => {
 
         it('Drag Possible testing after dropped the card', (done: DoneFn) => {
             kanbanObj.dataBound = () => {
-                let className: string = '.e-content-row:not(.e-swimlane-row) .e-content-cells';
-                let cells: HTMLElement[] = [].slice.call(kanbanObj.element.querySelectorAll(className));
+                const className: string = '.e-content-row:not(.e-swimlane-row) .e-content-cells';
+                const cells: HTMLElement[] = [].slice.call(kanbanObj.element.querySelectorAll(className));
                 for (let i: number = 4; i < cells.length; i++) {
                     expect((<HTMLElement>cells[i]).classList.contains('e-dropping')).toEqual(false);
                 }
                 expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toBe(0);
                 expect(kanbanObj.element.querySelectorAll('.e-card.e-cloned-card').length).toBe(0);
                 expect(kanbanObj.element.querySelectorAll('.e-kanban-dragged-card').length).toBe(0);
-                let element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="45"]').item(0);
-                let data: { [key: string]: Object } = kanbanObj.getCardDetails(element) as { [key: string]: Object };
-                let curKey: Object = data[kanbanObj.keyField];
+                const element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="45"]').item(0);
+                const data: Record<string, any> = kanbanObj.getCardDetails(element);
+                const curKey: string = data[kanbanObj.keyField] as string;
                 expect(curKey).not.toBe(key);
-                let headerCell: HTMLElement = kanbanObj.element.querySelector('.e-header-cells');
+                const headerCell: HTMLElement = kanbanObj.element.querySelector('.e-header-cells');
                 expect(curKey).toEqual(headerCell.getAttribute('data-key').split(',')[1].trim());
                 expect(kanbanObj.element.querySelectorAll('.e-multi-active').length).toBe(0);
                 expect(kanbanObj.element.querySelectorAll('.e-column-keys').length).toBe(0);
                 expect(kanbanObj.element.querySelectorAll('.e-multi-bottom-border').length).toBe(0);
-                let changedKey: string = kanbanObj.element.querySelectorAll('.e-card[data-id="45"]').item(0).getAttribute('data-key');
+                const changedKey: string = kanbanObj.element.querySelectorAll('.e-card[data-id="45"]').item(0).getAttribute('data-key');
                 expect(changedKey).not.toBe(key);
                 expect(changedKey).toBe(headerCell.getAttribute('data-key').split(',')[1].trim());
                 done();
@@ -1027,13 +1023,13 @@ describe('Drag module', () => {
             droppedElement = kanbanObj.element.querySelectorAll('.e-card[data-id="3"] .e-card-content').item(0) as HTMLElement;
             util.triggerMouseEvent(droppedElement, 'mousemove', 100, 700);
             expect(document.body.style.cursor).toBe('not-allowed');
-            let ele: Element = droppedElement.closest('.e-content-cells').lastElementChild;
+            const ele: Element = droppedElement.closest('.e-content-cells').lastElementChild;
             expect(ele.classList.contains('e-target-multi-clone')).not.toEqual(true);
         });
 
         it('Dropped multi clone testing with columns', () => {
             util.triggerMouseEvent(droppedElement, 'mousemove', 100, 750);
-            let wrapper: Element = droppedElement.closest('.e-card-wrapper');
+            const wrapper: Element = droppedElement.closest('.e-card-wrapper');
             expect(wrapper.classList.contains('e-multi-card-wrapper')).not.toBe(true);
             util.triggerMouseEvent(droppedElement, 'mouseup', 100, 750);
         });
@@ -1042,7 +1038,7 @@ describe('Drag module', () => {
     describe('Allow Toggle Colum with swimlanes and swimlane drag and drop', () => {
         let kanbanObj: Kanban;
         beforeAll((done: DoneFn) => {
-            let model: KanbanModel = {
+            const model: KanbanModel = {
                 columns: [
                     { headerText: 'Backlog', keyField: 'Open', allowToggle: false, isExpanded: true },
                     { headerText: 'In Progress', keyField: 'InProgress', allowToggle: true, isExpanded: false },
@@ -1051,7 +1047,7 @@ describe('Drag module', () => {
                 ],
                 swimlaneSettings: {
                     keyField: 'Assignee',
-                    allowDragAndDrop: true,
+                    allowDragAndDrop: true
                 }
             };
             kanbanObj = util.createKanban(model, kanbanData, done);
@@ -1062,31 +1058,31 @@ describe('Drag module', () => {
         });
 
         it('Single column collapse testing', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[3].children[0].lastElementChild;
+            const element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[3].children[0].lastElementChild;
             (<HTMLElement>element).click();
             expect(element.classList.contains('e-column-collapse')).toBe(true);
-            let ele: NodeList = util.getElement(kanbanObj, '.e-content-row:not(.e-swimlane-row) .e-content-cells[data-key="Close"]');
+            const ele: NodeList = util.getElement(kanbanObj, '.e-content-row:not(.e-swimlane-row) .e-content-cells[data-key="Close"]');
             for (let i: number = 0; i < ele.length; i++) {
                 expect((<Element>ele[i]).classList.contains('e-collapsed')).toBe(true);
             }
         });
 
         it('Single column expand testing', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[3].children[0].lastElementChild;
+            const element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[3].children[0].lastElementChild;
             (<HTMLElement>element).click();
             expect(element.classList.contains('e-column-expand')).toBe(true);
-            let ele: NodeList = util.getElement(kanbanObj, '.e-content-row:not(.e-swimlane-row) .e-content-cells[data-key="Close"]');
+            const ele: NodeList = util.getElement(kanbanObj, '.e-content-row:not(.e-swimlane-row) .e-content-cells[data-key="Close"]');
             for (let i: number = 0; i < ele.length; i++) {
                 expect((<Element>ele[i]).classList.contains('e-collapsed')).toBe(false);
             }
         });
 
         it('Maintain single collapsed state testing - drag the card', () => {
-            let headerCell: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[1].children[0].lastElementChild;
+            const headerCell: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[1].children[0].lastElementChild;
             expect(headerCell.classList.contains('e-column-collapse')).toBe(true);
-            let contentCell: Element = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells')[1];
+            const contentCell: Element = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells')[1];
             expect(contentCell.classList.contains('e-collapsed')).toBe(true);
-            let draggedElement: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="45"]').item(0) as HTMLElement;
+            const draggedElement: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="45"]').item(0) as HTMLElement;
             util.triggerMouseEvent(draggedElement, 'mousedown');
             util.triggerMouseEvent(draggedElement, 'mousemove', 700, 210);
             expect(draggedElement.classList.contains('e-kanban-dragged-card')).toBeTruthy();
@@ -1095,22 +1091,22 @@ describe('Drag module', () => {
         });
 
         it('Maintain single collapsed state testing - card moved to another place', () => {
-            let droppedElement: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="22"]').item(0) as HTMLElement;
+            const droppedElement: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="22"]').item(0) as HTMLElement;
             util.triggerMouseEvent(droppedElement, 'mousemove', 700, 510);
             expect(droppedElement.previousElementSibling.classList.contains('e-target-dropped-clone')).toEqual(true);
 
         });
 
         it('Maintain single collapsed state testing - after drag stop', (done: DoneFn) => {
-            let droppedElement: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="22"]').item(0) as HTMLElement;
+            const droppedElement: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="22"]').item(0) as HTMLElement;
             kanbanObj.dataBound = () => {
                 expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toBe(0);
                 expect(kanbanObj.element.querySelectorAll('.e-target-dropped-clone').length).toBe(0);
                 expect(kanbanObj.element.querySelectorAll('.e-card.e-cloned-card').length).toBe(0);
                 expect(kanbanObj.element.querySelectorAll('.e-kanban-dragged-card').length).toBe(0);
-                let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[1].children[0].lastElementChild;
+                const element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[1].children[0].lastElementChild;
                 expect(element.classList.contains('e-column-collapse')).toBe(true);
-                let ele: NodeList = util.getElement(kanbanObj, '.e-content-row:not(.e-swimlane-row) .e-content-cells[data-key="InProgress"]');
+                const ele: NodeList = util.getElement(kanbanObj, '.e-content-row:not(.e-swimlane-row) .e-content-cells[data-key="InProgress"]');
                 for (let i: number = 0; i < ele.length; i++) {
                     expect((<Element>ele[i]).classList.contains('e-collapsed')).toBe(true);
                 }
@@ -1120,14 +1116,14 @@ describe('Drag module', () => {
         });
 
         it('Single Collapsed column with drag and drop behavior testing - check the column expand when cursor move', () => {
-            let draggedElement: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="25"]').item(0) as HTMLElement;
+            const draggedElement: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="25"]').item(0) as HTMLElement;
             util.triggerMouseEvent(draggedElement, 'mousedown');
             util.triggerMouseEvent(draggedElement, 'mousemove', 280, 600);
-            let element: Element = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells').item(1);
+            const element: Element = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells').item(1);
             util.triggerMouseEvent(element, 'mousemove', 290, 600);
         });
         it('Single Collapsed column with drag and drop behavior testing - drop the card on collapsed column', () => {
-            let droppedElement: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="29"]').item(0) as HTMLElement;
+            const droppedElement: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="29"]').item(0) as HTMLElement;
             util.triggerMouseEvent(droppedElement, 'mousemove', 450, 600);
             util.triggerMouseEvent(droppedElement, 'mouseup', 450, 600);
         });
@@ -1136,7 +1132,7 @@ describe('Drag module', () => {
     describe('Multiple selection drag and drop', () => {
         let kanbanObj: Kanban;
         beforeAll((done: DoneFn) => {
-            let model: KanbanModel = {
+            const model: KanbanModel = {
                 columns: [
                     { headerText: 'Backlog', keyField: 'Open', allowToggle: true },
                     { headerText: 'In Progress', keyField: 'InProgress', allowToggle: true },
@@ -1145,7 +1141,7 @@ describe('Drag module', () => {
                 ],
                 swimlaneSettings: {
                     keyField: 'Assignee',
-                    allowDragAndDrop: true,
+                    allowDragAndDrop: true
                 },
                 cardSettings: {
                     selectionType: 'Multiple'
@@ -1159,40 +1155,277 @@ describe('Drag module', () => {
         });
 
         it('Select multiple cards', () => {
-            let card1: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="45"]').item(0) as HTMLElement;
+            const card1: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="45"]').item(0) as HTMLElement;
             util.triggerMouseEvent(card1, 'click');
             expect(card1.classList.contains('e-selection')).toEqual(true);
-            let card2: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="18"]').item(0) as HTMLElement;
+            const card2: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="18"]').item(0) as HTMLElement;
             util.triggerMouseEvent(card2, 'click', null, null, false, true);
-            let card3: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="66"]').item(0) as HTMLElement;
+            const card3: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="66"]').item(0) as HTMLElement;
             util.triggerMouseEvent(card3, 'click', null, null, false, true);
             expect(card1.classList.contains('e-selection')).toEqual(true);
             expect(card2.classList.contains('e-selection')).toEqual(true);
             expect(card3.classList.contains('e-selection')).toEqual(true);
         });
         it('Drag multiple cards', () => {
-            let draggedElement: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="66"]').item(0) as HTMLElement;
+            const draggedElement: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="66"]').item(0) as HTMLElement;
             util.triggerMouseEvent(draggedElement, 'mousedown');
             util.triggerMouseEvent(draggedElement, 'mousemove', 250, 170);
             expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toEqual(3);
         });
         it('Cloned card layout testing', () => {
-            let ele: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0) as HTMLElement;
+            const ele: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0) as HTMLElement;
             util.triggerMouseEvent(ele, 'mousemove', 250, 170);
-            let element: HTMLElement = kanbanObj.element.querySelectorAll('.e-cloned-card').item(0) as HTMLElement;
+            const element: HTMLElement = kanbanObj.element.querySelectorAll('.e-cloned-card').item(0) as HTMLElement;
             expect(element.querySelectorAll('.e-multi-card-text').item(0).innerHTML).toEqual('3 Cards');
         });
         it('Dropped card to columns', () => {
-            let ele: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0) as HTMLElement;
+            const ele: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0) as HTMLElement;
             util.triggerMouseEvent(ele, 'mouseup', 250, 150);
+        });
+    });
+
+    describe('Prevent Drag and drop by args value as true', () => {
+        let kanbanObj: Kanban;
+        let dragElement: HTMLElement;
+        beforeAll((done: DoneFn) => {
+            kanbanObj = util.createKanban({}, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('Check the card dragging or not', () => {
+            kanbanObj.dragStart = (args: DragEventArgs) => args.cancel = true;
+            dragElement = (kanbanObj.element.querySelectorAll('.e-card[data-id="2"]') as NodeListOf<Element>).item(0) as HTMLElement;
+            util.triggerMouseEvent(dragElement, 'mousedown');
+            util.triggerMouseEvent(dragElement, 'mousemove', 100, 100);
+            expect(dragElement.classList.contains('e-kanban-dragged-card')).toBeFalsy();
+            expect(dragElement.nextElementSibling.classList.contains('e-target-dragged-clone')).toBeFalsy();
+            expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toBe(0);
+        });
+    });
+
+    describe('External drop functionality', () => {
+        let kanbanObj: Kanban;
+        let kanbanObj1: Kanban;
+        let draggedElement: HTMLElement;
+        beforeAll((done: DoneFn) => {
+            let kanbanData1: Record<string, any>[] = [
+                {
+                    'Id': 1,
+                    'Status': 'Open',
+                    'Summary': 'Analyze the new requirements gathered from the customer.',
+                    'Type': 'Story',
+                    'Priority': 'Low',
+                    'Tags': 'Analyze,Customer',
+                    'Estimate': 3.5,
+                    'Assignee': 'Andrew Fuller',
+                    'AssigneeName': 'Andrew',
+                    'RankId': 1
+                },
+                {
+                    'Id': 2,
+                    'Status': 'InProgress',
+                    'Summary': 'Improve application performance',
+                    'Type': 'Improvement',
+                    'Priority': 'Normal',
+                    'Tags': 'Improvement',
+                    'Estimate': 6,
+                    'Assignee': 'Andrew Fuller',
+                    'AssigneeName': 'Andrew',
+                    'RankId': 1
+                },
+                {
+                    'Id': 3,
+                    'Status': 'Open',
+                    'Summary': 'Arrange a web meeting with the customer to get new requirements.',
+                    'Type': 'Others',
+                    'Priority': 'Critical',
+                    'Tags': 'Meeting',
+                    'Estimate': 5.5,
+                    'Assignee': 'Janet Leverling',
+                    'AssigneeName': 'Janet',
+                    'RankId': 2
+                },
+                {
+                    'Id': 4,
+                    'Status': 'InProgress',
+                    'Summary': 'Fix the issues reported in the IE browser.',
+                    'Type': 'Bug',
+                    'Priority': 'Release Breaker',
+                    'Tags': 'IE',
+                    'Estimate': 2.5,
+                    'Assignee': 'Janet Leverling',
+                    'AssigneeName': 'Janet',
+                    'RankId': 2
+                },
+                {
+                    'Id': 5,
+                    'Status': 'Close',
+                    'Summary': 'Fix the issues reported by the customer.',
+                    'Type': 'Bug',
+                    'Priority': 'Low',
+                    'Tags': 'Customer',
+                    'Estimate': '3.5',
+                    'Assignee': 'Steven walker',
+                    'AssigneeName': 'Steven',
+                    'RankId': 1
+                }];
+            let kanbanData2: Record<string, any>[] = [{
+                'Id': 1,
+                'Status': 'Close',
+                'Summary': 'Arrange a web meeting with the customer to get the login page requirements.',
+                'Type': 'Others',
+                'Priority': 'Low',
+                'Tags': 'Meeting',
+                'Estimate': 2,
+                'Assignee': 'Andrew Fuller',
+                'AssigneeName': 'Andrew',
+                'RankId': 1
+            },
+            {
+                'Id': 2,
+                'Status': 'Open',
+                'Summary': 'Validate new requirements',
+                'Type': 'Improvement',
+                'Priority': 'Low',
+                'Tags': 'Validation',
+                'Estimate': 1.5,
+                'Assignee': 'Robert King',
+                'AssigneeName': 'Robert',
+                'RankId': 1
+            },
+            {
+                'Id': 3,
+                'Status': 'Close',
+                'Summary': 'Login page validation',
+                'Type': 'Story',
+                'Priority': 'Release Breaker',
+                'Tags': 'Validation,Fix',
+                'Estimate': 2.5,
+                'Assignee': 'Janet Leverling',
+                'AssigneeName': 'Janet',
+                'RankId': 2
+            },
+            {
+                'Id': 4,
+                'Status': 'InProgress',
+                'Summary': 'Fix the issues reported in Safari browser.',
+                'Type': 'Bug',
+                'Priority': 'Release Breaker',
+                'Tags': 'Fix,Safari',
+                'Estimate': 1.5,
+                'Assignee': 'Nancy Davloio',
+                'AssigneeName': 'Nancy',
+                'RankId': 2
+            },
+            {
+                'Id': 5,
+                'Status': 'Close',
+                'Summary': 'Test the application in the IE browser.',
+                'Type': 'Story',
+                'Priority': 'Low',
+                'Tags': 'Testing,IE',
+                'Estimate': 5.5,
+                'Assignee': 'Janet Leverling',
+                'AssigneeName': 'Janet',
+                'RankId': 3
+            }];
+            let kanbanDragStop: any = (args: DragEventArgs) => {
+                if (closest(args.event.target as Element, '#kanban1')) {
+                    kanbanObj.deleteCard(args.data);
+                    args.data.forEach((card: { [key: string]: Object }, index: number) => changeId(card, index + 1));
+                    kanbanObj1.addCard(args.data, args.dropIndex);
+                    args.cancel = true;
+                }
+            };
+            let changeId: any = (card: { [key: string]: Object }, increase: number) => {
+                let index: number = ((kanbanObj1.kanbanData) as { [key: string]: Object }[]).findIndex(
+                    (colData: { [key: string]: Object }) =>
+                        colData[kanbanObj1.cardSettings.headerField] === card[kanbanObj1.cardSettings.headerField]);
+                if (index !== -1) {
+                    card[kanbanObj1.cardSettings.headerField] = Math.max.apply(Math, kanbanObj1.kanbanData.map(
+                        (obj: { [key: string]: string }) => parseInt(obj[kanbanObj1.cardSettings.headerField], 10))) + increase;
+                }
+            }
+            const model: KanbanModel = {
+
+                keyField: 'Status',
+                columns: [
+                    { headerText: 'Backlog', keyField: 'Open, Review' },
+                    { headerText: 'In Progress', keyField: 'InProgress' },
+                    { headerText: 'Done', keyField: 'Close' }
+                ],
+                externalDropId: ['#Kanban2'],
+                cardSettings: {
+                    showHeader: true,
+                    contentField: 'RankId',
+                    headerField: 'Id',
+                    selectionType: 'Multiple'
+                },
+                showEmptyColumn: true,
+                dragStop: kanbanDragStop
+            };
+            kanbanObj = util.createKanban(model, kanbanData1, done, createElement('div', { id: 'Kanban1' }));
+
+            const model2: KanbanModel = {
+                keyField: 'Status',
+                columns: [
+                    { headerText: 'Backlog', keyField: 'Open' },
+                    { headerText: 'In Progress', keyField: 'InProgress' },
+                    { headerText: 'Testing', keyField: 'Testing' },
+                    { headerText: 'Done', keyField: 'Review, Close' }
+                ],
+                cardSettings: {
+                    showHeader: true,
+                    contentField: 'RankId',
+                    headerField: 'Id'
+                },
+                showEmptyColumn: true,
+                sortSettings: {
+                    field: 'RankId',
+                    direction: 'Descending'
+                }
+            };
+            kanbanObj1 = util.createKanban(model2, kanbanData2, done, createElement('div', { id: 'Kanban2' }));
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+            util.destroy(kanbanObj1);
+        });
+
+        it('Check the first kanbanObject data', (done: Function) => {
+            setTimeout(() => {
+                expect(kanbanObj.kanbanData.length).toEqual(5);
+                done();
+            }, 500);
+        });
+
+        it('check the next kanban data length', () => {
+            expect(kanbanObj1.kanbanData.length).toEqual(5);
+            expect(kanbanObj.element.querySelectorAll('.e-card-wrapper')[0].childElementCount).toEqual(2);
+            expect(kanbanObj.element.querySelectorAll('.e-card-wrapper')[1].childElementCount).toEqual(2);
+            draggedElement = kanbanObj.element.querySelectorAll('.e-card[data-id="1"]').item(0) as HTMLElement;
+            util.triggerMouseEvent(draggedElement, 'mousedown');
+            util.triggerMouseEvent(draggedElement, 'mousemove', 100, 230);
+        });
+
+        it('On dragging the card to another kanban', () => {
+            let ele: HTMLElement = kanbanObj1.element.querySelectorAll('.e-card[data-id="4"]').item(0).querySelector('.e-card-header') as HTMLElement;
+            util.triggerMouseEvent(ele, 'mousemove', 100, 300);
+            util.triggerMouseEvent(ele, 'mouseup');
+            expect(kanbanObj.element.querySelectorAll('.e-card-wrapper')[0].childElementCount).toEqual(1);
+            expect(kanbanObj.element.querySelectorAll('.e-card-wrapper')[1].childElementCount).toEqual(3);
         });
     });
 
     it('memory leak', () => {
         profile.sample();
-        let average: any = inMB(profile.averageChange);
+        const average: number = inMB(profile.averageChange);
         expect(average).toBeLessThan(10); //Check average change in memory samples to not be over 10MB
-        let memory: any = inMB(getMemoryProfile());
+        const memory: number = inMB(getMemoryProfile());
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });

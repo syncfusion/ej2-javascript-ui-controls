@@ -7,11 +7,16 @@ import { Deferred, Query } from '@syncfusion/ej2-data';
 import { TaskFieldsModel } from '../models/models';
 import { ColumnModel as GanttColumnModel, Column as GanttColumn } from '../models/column';
 import { ITaskData, IGanttData } from './interface';
+import { DataStateChangeEventArgs } from '@syncfusion/ej2-treegrid';
 import { QueryCellInfoEventArgs, HeaderCellInfoEventArgs, RowDataBoundEventArgs } from '@syncfusion/ej2-grids';
 import { ColumnMenuOpenEventArgs, ColumnMenuClickEventArgs } from '@syncfusion/ej2-grids';
+import { isCountRequired } from './utils';
 
 /**
  * TreeGrid related code goes here
+ *
+ * @param {object} args .
+ * @returns {void} .
  */
 export class GanttTreeGrid {
     private parent: Gantt;
@@ -20,9 +25,11 @@ export class GanttTreeGrid {
     /**
      * @private
      */
+    // eslint-disable-next-line
     public currentEditRow: {};
     private previousScroll: { top: number, left: number } = { top: 0, left: 0 };
     /** @hidden */
+    // eslint-disable-next-line
     public prevCurrentView: Object;
 
     constructor(parent: Gantt) {
@@ -41,24 +48,27 @@ export class GanttTreeGrid {
         this.parent.on('destroy', this.destroy, this);
         this.parent.treeGrid.on('renderReactTemplate', this.renderReactTemplate, this);
     }
+    // eslint-disable-next-line
     private renderReactTemplate(args: Object[]): void {
-        let portals: string = 'portals';
+        const portals: string = 'portals';
         this.parent[portals] = args;
         this.parent.renderTemplates();
     }
     private createContainer(): void {
         //let height: number = this.parent.ganttHeight - this.parent.toolbarModule.element.offsetHeight - 46;
         this.treeGridElement = createElement('div', {
-            id: 'treeGrid' + this.parent.element.id, className: 'e-gantt-tree-grid',
+            id: 'treeGrid' + this.parent.element.id, className: 'e-gantt-tree-grid'
             //  styles: 'height:' + height + 'px;'
         });
-        let tempHeader: HTMLElement = createElement('div', { className: 'e-gantt-temp-header' });
+        const tempHeader: HTMLElement = createElement('div', { className: 'e-gantt-temp-header' });
         this.parent.treeGridPane.appendChild(this.treeGridElement);
         this.treeGridElement.appendChild(tempHeader);
         this.parent.treeGridPane.classList.add('e-temp-content');
     }
     /**
      * Method to initiate TreeGrid
+     *
+     * @returns {void} .
      */
     public renderTreeGrid(): void {
         this.composeProperties();
@@ -73,16 +83,24 @@ export class GanttTreeGrid {
         this.parent.treeGrid.childMapping = isNullOrUndefined(this.parent.taskFields.child) ? '' : this.parent.taskFields.child;
         this.parent.treeGrid.treeColumnIndex = this.parent.treeColumnIndex;
         this.parent.treeGrid.columns = this.treeGridColumns;
-        this.parent.treeGrid.dataSource = this.parent.flatData;
+        if (this.parent.dataSource instanceof Object && isCountRequired(this.parent)) {
+            // In order to bind the observable data at load time, hasChildMapping is necessary to be mapped.
+            this.parent.treeGrid.hasChildMapping = 'isParent';
+            const count: number = getValue('count', this.parent.dataSource);
+            this.parent.treeGrid.dataSource = {result: this.parent.flatData, count: count};
+        } else {
+            this.parent.treeGrid.hasChildMapping = null;
+            this.parent.treeGrid.dataSource = this.parent.flatData;
+        }
         this.parent.treeGrid.expandStateMapping = this.parent.taskFields.expandState;
-        let isGantt: string = 'isGantt';
+        const isGantt: string = 'isGantt';
         this.parent.treeGrid[isGantt] = true;
         this.parent.treeGrid.rowHeight = this.parent.rowHeight;
         this.parent.treeGrid.gridLines = this.parent.gridLines;
         if (!isBlazor() || this.parent.searchSettings.fields.length !== 0 || this.parent.searchSettings.key !== '') {
             this.parent.treeGrid.searchSettings = this.parent.searchSettings;
         }
-        let isJsComponent: string = 'isJsComponent';
+        const isJsComponent: string = 'isJsComponent';
         this.parent.treeGrid[isJsComponent] = true;
         let toolbarHeight: number = 0;
         if (!isNullOrUndefined(this.parent.toolbarModule) && !isNullOrUndefined(this.parent.toolbarModule.element)) {
@@ -111,13 +129,14 @@ export class GanttTreeGrid {
         return scrollbarWidth;
     }
     /**
+     * @returns {void} .
      * @private
      */
     public ensureScrollBar(): void {
-        let content: HTMLElement = this.getContentDiv();
-        let headerDiv: HTMLElement = this.getHeaderDiv();
-        let scrollWidth: number = this.getScrollbarWidth();
-        let isMobile: boolean = /Android|Mac|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const content: HTMLElement = this.getContentDiv();
+        const headerDiv: HTMLElement = this.getHeaderDiv();
+        const scrollWidth: number = this.getScrollbarWidth();
+        const isMobile: boolean = /Android|Mac|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         if (scrollWidth !== 0) {
             content.style.cssText += 'width: calc(100% + ' + scrollWidth + 'px);';
         } else {
@@ -143,27 +162,42 @@ export class GanttTreeGrid {
         this.parent.treeGrid.columnMenuOpen = this.columnMenuOpen.bind(this);
         this.parent.treeGrid.columnMenuClick = this.columnMenuClick.bind(this);
         this.parent.treeGrid.beforeDataBound = this.beforeDataBound.bind(this);
+        this.parent.treeGrid.dataStateChange = this.dataStateChange.bind(this);
     }
 
+    // eslint-disable-next-line
     private beforeDataBound(args: object): void {
         this.parent.updatedRecords = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
-        getValue('virtualScrollModule.visualData', this.parent.treeGrid) : getValue('result', args);
+            getValue('virtualScrollModule.visualData', this.parent.treeGrid) : getValue('result', args);
         if (getValue('actionArgs.requestType', args) !== 'virtualscroll' && this.parent.virtualScrollModule &&
         this.parent.enableVirtualization) {
             this.parent.updateContentHeight(args);
-       }
+        }
     }
+    // eslint-disable-next-line
     private dataBound(args: object): void {
         this.ensureScrollBar();
         this.parent.treeDataBound(args);
         this.prevCurrentView = extend([], [], this.parent.currentViewData, true);
     }
+    private dataStateChange(args: DataStateChangeEventArgs): void {
+        if (args.action && args.action.requestType === 'refresh') {
+            this.parent.treeGrid.dataSource = {
+                result: getValue('result', this.parent.treeGrid.dataSource),
+                count: getValue('count', this.parent.treeGrid.dataSource)
+            };
+        }
+        this.parent.trigger('dataStateChange', args);
+    }
+    // eslint-disable-next-line
     private collapsing(args: object): void | Deferred {
         // Collapsing event
-        let callBackPromise: Deferred = new Deferred();
+        const callBackPromise: Deferred = new Deferred();
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
-            let collapsingArgs: object = this.createExpandCollapseArgs(args);
+            // eslint-disable-next-line
+            const collapsingArgs: object = this.createExpandCollapseArgs(args);
             if (isBlazor()) {
+                // eslint-disable-next-line
                 this.parent.trigger('collapsing', collapsingArgs, (arg: object) => {
                     callBackPromise.resolve(arg);
                     setValue('chartRow', getElement(getValue('chartRow', arg)), arg);
@@ -179,12 +213,15 @@ export class GanttTreeGrid {
             setValue('cancel', getValue('cancel', collapsingArgs), args);
         }
     }
+    // eslint-disable-next-line
     private expanding(args: object): void | Deferred {
         // Expanding event
-        let callBackPromise: Deferred = new Deferred();
+        const callBackPromise: Deferred = new Deferred();
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
-            let expandingArgs: object = this.createExpandCollapseArgs(args);
+            // eslint-disable-next-line
+            const expandingArgs: object = this.createExpandCollapseArgs(args);
             if (isBlazor()) {
+                // eslint-disable-next-line
                 this.parent.trigger('expanding', expandingArgs, (arg: object) => {
                     callBackPromise.resolve(arg);
                     setValue('chartRow', getElement(getValue('chartRow', arg)), arg);
@@ -200,23 +237,28 @@ export class GanttTreeGrid {
             setValue('cancel', getValue('cancel', expandingArgs), args);
         }
     }
+    // eslint-disable-next-line
     private collapsed(args: object): void {
         this.updateExpandStatus(args);
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
-            let collapsedArgs: object = this.createExpandCollapseArgs(args);
+            // eslint-disable-next-line
+            const collapsedArgs: object = this.createExpandCollapseArgs(args);
             this.parent.ganttChartModule.collapsedGanttRow(collapsedArgs);
         }
     }
+    // eslint-disable-next-line
     private expanded(args: object): void {
         this.updateExpandStatus(args);
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
-            let expandedArgs: object = this.createExpandCollapseArgs(args);
+            // eslint-disable-next-line
+            const expandedArgs: object = this.createExpandCollapseArgs(args);
             this.parent.ganttChartModule.expandedGanttRow(expandedArgs);
         }
     }
+    // eslint-disable-next-line
     private updateExpandStatus(args: object): void {
         if (getValue('data', args) && isBlazor()) {
-            let record: IGanttData = this.parent.getTaskByUniqueID(getValue('data', args).uniqueID);
+            const record: IGanttData = this.parent.getTaskByUniqueID(getValue('data', args).uniqueID);
             record.expanded = getValue('data', args).expanded;
         }
     }
@@ -224,6 +266,7 @@ export class GanttTreeGrid {
         this.parent.notify('actionBegin', args);
         this.parent.trigger('actionBegin', args);
     }
+    // eslint-disable-next-line
     private created(args: object): void {
         this.updateKeyConfigSettings();
     }
@@ -246,35 +289,40 @@ export class GanttTreeGrid {
     private columnMenuClick = (args: ColumnMenuClickEventArgs) => {
         this.parent.trigger('columnMenuClick', args);
     }
+    // eslint-disable-next-line
     private createExpandCollapseArgs(args: object): object {
-        let record: IGanttData = getValue('data', args);
-        let gridRow: Node = getValue('row', args);
+        const record: IGanttData = getValue('data', args);
+        const gridRow: Node = getValue('row', args);
         let chartRow: Node;
         if (isBlazor()) {
-            /* tslint:disable-next-line */
+            /* eslint-disable-next-line */
             chartRow = this.parent.ganttChartModule.getChartRows()[this.parent.currentViewData.indexOf(this.parent.getTaskByUniqueID(record.uniqueID))];
         } else {
             chartRow = this.parent.ganttChartModule.getChartRows()[this.parent.currentViewData.indexOf(record)];
         }
-        let eventArgs: object = { data: record, gridRow: gridRow, chartRow: chartRow, cancel: false };
+        // eslint-disable-next-line
+        const eventArgs: object = { data: record, gridRow: gridRow, chartRow: chartRow, cancel: false };
         return eventArgs;
     }
 
+    // eslint-disable-next-line
     private treeActionComplete(args: object): void {
-        let updatedArgs: object = extend({}, args, true);
+        // eslint-disable-next-line
+        const updatedArgs: object = extend({}, args, true);
         if (getValue('requestType', args) === 'sorting') {
             this.parent.notify('updateModel', {});
             deleteObject(updatedArgs, 'isFrozen');
         } else if (getValue('requestType', args) === 'filtering') {
             this.parent.notify('updateModel', {});
-            let focussedElement: HTMLElement = this.parent.element.querySelector('.e-treegrid');
+            const focussedElement: HTMLElement = this.parent.element.querySelector('.e-treegrid');
             focussedElement.focus();
         } else if (getValue('type', args) === 'save') {
             if (this.parent.editModule && this.parent.editModule.cellEditModule) {
-                let data: IGanttData = getValue('data', args);
+                const data: IGanttData = getValue('data', args);
                 if (!isNullOrUndefined(data) && !isNullOrUndefined(this.parent.getTaskByUniqueID(data.uniqueID))) {
-                    /* tslint:disable-next-line */
+                    /* eslint-disable-next-line */
                     this.parent.getTaskByUniqueID(data.uniqueID).taskData[this.parent.taskFields.duration] = data.taskData[this.parent.taskFields.duration];
+                    /* eslint-disable-next-line */
                     this.parent.getTaskByUniqueID(data.uniqueID).taskData[this.parent.taskFields.resourceInfo] = data.taskData[this.parent.taskFields.resourceInfo];
                 }
                 this.parent.editModule.cellEditModule.initiateCellEdit(args, this.currentEditRow);
@@ -324,9 +372,11 @@ export class GanttTreeGrid {
 
     /**
      * Method to bind internal events on TreeGrid element
+     *
+     * @returns {void} .
      */
     private wireEvents(): void {
-        let content: HTMLElement = this.parent.treeGrid.element.querySelector('.e-content');
+        const content: HTMLElement = this.parent.treeGrid.element.querySelector('.e-content');
         if (content) {
             EventHandler.add(content, 'scroll', this.scrollHandler, this);
         }
@@ -335,7 +385,7 @@ export class GanttTreeGrid {
         }
     }
     private unWireEvents(): void {
-        let content: HTMLElement = this.parent.treeGrid.element &&
+        const content: HTMLElement = this.parent.treeGrid.element &&
             this.parent.treeGrid.element.querySelector('.e-content');
         if (content) {
             EventHandler.remove(content, 'scroll', this.scrollHandler);
@@ -344,8 +394,9 @@ export class GanttTreeGrid {
             EventHandler.remove(this.parent.treeGridPane, 'click', this.treeGridClickHandler);
         }
     }
+    // eslint-disable-next-line
     private scrollHandler(e: WheelEvent): void {
-        let content: HTMLElement = this.parent.treeGrid.element.querySelector('.e-content');
+        const content: HTMLElement = this.parent.treeGrid.element.querySelector('.e-content');
         if (content.scrollTop !== this.previousScroll.top) {
             this.parent.notify('grid-scroll', { top: content.scrollTop });
         }
@@ -355,16 +406,17 @@ export class GanttTreeGrid {
         }
     }
     /**
+     * @returns {void} .
      * @private
      */
     public validateGanttColumns(): void {
-        let ganttObj: Gantt = this.parent;
-        let length: number = ganttObj.columns.length;
-        let tasks: TaskFieldsModel = this.parent.taskFields;
+        const ganttObj: Gantt = this.parent;
+        const length: number = ganttObj.columns.length;
+        const tasks: TaskFieldsModel = this.parent.taskFields;
         this.parent.columnMapping = {};
         this.parent.columnByField = {};
         this.parent.customColumns = [];
-        let tasksMapping: string[] = ['id', 'name', 'startDate', 'endDate', 'duration', 'dependency',
+        const tasksMapping: string[] = ['id', 'name', 'startDate', 'endDate', 'duration', 'dependency',
             'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes', 'work', 'manual', 'type'];
         for (let i: number = 0; i < length; i++) {
             let column: GanttColumnModel = {};
@@ -391,7 +443,7 @@ export class GanttTreeGrid {
                 this.bindTreeGridColumnProperties(column, true);
                 continue;
             } else {
-                let index: number = tasksMapping.indexOf(columnName[0]);
+                const index: number = tasksMapping.indexOf(columnName[0]);
                 tasksMapping.splice(index, 1);
                 this.createTreeGridColumn(column, true);
                 this.parent.columnMapping[columnName[0]] = column.field;
@@ -400,7 +452,7 @@ export class GanttTreeGrid {
 
         /** Create default columns with task settings property */
         for (let j: number = 0; j < tasksMapping.length; j++) {
-            let column: GanttColumnModel = {};
+            const column: GanttColumnModel = {};
             if (!isNullOrUndefined(tasks[tasksMapping[j]])) {
                 column.field = tasks[tasksMapping[j]];
                 this.createTreeGridColumn(column, length === 0);
@@ -408,20 +460,20 @@ export class GanttTreeGrid {
             }
         }
         if (this.parent.viewType !== 'ProjectView') {
-            let column: GanttColumnModel = {};
+            const column: GanttColumnModel = {};
             this.composeUniqueIDColumn(column);
             this.createTreeGridColumn(column, true);
         }
     }
 
     /**
-     * 
-     * @param column 
-     * @param isDefined 
+     *
+     * @param {GanttColumnModel} column .
+     * @param {boolean} isDefined .
+     * @returns {void} .
      */
-    /* tslint:disable-next-line:max-func-body-length */
     private createTreeGridColumn(column: GanttColumnModel, isDefined?: boolean): void {
-        let taskSettings: TaskFieldsModel = this.parent.taskFields;
+        const taskSettings: TaskFieldsModel = this.parent.taskFields;
         column.disableHtmlEncode = !isNullOrUndefined(column.disableHtmlEncode) ? column.disableHtmlEncode : this.parent.disableHtmlEncode;
         if (taskSettings.id !== column.field) {
             column.clipMode = column.clipMode ? column.clipMode : 'EllipsisWithTooltip';
@@ -454,7 +506,7 @@ export class GanttTreeGrid {
             column.width = column.width ? column.width : 150;
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('duration');
             column.valueAccessor = column.valueAccessor ? column.valueAccessor : !isNullOrUndefined(column.edit) ? null :
-            this.durationValueAccessor.bind(this);
+                this.durationValueAccessor.bind(this);
             column.editType = column.editType ? column.editType : 'stringedit';
             column.type = 'string';
         } else if (taskSettings.progress === column.field) {
@@ -482,7 +534,7 @@ export class GanttTreeGrid {
             }
         } else if (taskSettings.baselineStartDate === column.field ||
             taskSettings.baselineEndDate === column.field) {
-            let colName: string = (taskSettings.baselineEndDate === column.field) ? 'baselineEndDate' :
+            const colName: string = (taskSettings.baselineEndDate === column.field) ? 'baselineEndDate' :
                 'baselineStartDate';
             column.width = column.width ? column.width : 150;
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant(colName);
@@ -515,14 +567,16 @@ export class GanttTreeGrid {
                         { id: 2, text: this.parent.localeObj.getConstant('auto'), value: false }
                     ],
                     fields: { text: 'text', value: 'value'}
-                },
+                }
             };
         }
         this.bindTreeGridColumnProperties(column, isDefined);
     }
     /**
      * Compose Resource columns
-     * @param column 
+     *
+     * @param {GanttColumnModel} column .
+     * @returns {void} .
      */
     private composeResourceColumn(column: GanttColumnModel): void {
         column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('resourceName');
@@ -532,12 +586,15 @@ export class GanttTreeGrid {
         column.allowFiltering = column.allowFiltering === false ? false : true;
     }
     /**
-     * 
+     * @param {IGanttData} data .
+     * @returns {object} .
      * @private
      */
+    // eslint-disable-next-line
     public getResourceIds(data: IGanttData): object {
-        let value: Object[] = getValue(this.parent.taskFields.resourceInfo, data.taskData);
-        let id: number[] = [];
+        // eslint-disable-next-line
+        const value: Object[] = getValue(this.parent.taskFields.resourceInfo, data.taskData);
+        const id: number[] = [];
         if (!isNullOrUndefined(value)) {
             for (let i: number = 0; i < value.length; i++) {
                 id.push(typeof value[i] === 'object' ? value[i][this.parent.resourceFields.id] : value[i]);
@@ -549,7 +606,9 @@ export class GanttTreeGrid {
     }
     /**
      * Create Id column
-     * @param column 
+     *
+     * @param {GanttColumnModel} column .
+     * @returns {void} .
      */
     private composeIDColumn(column: GanttColumnModel): void {
         column.isPrimaryKey = isNullOrUndefined(column.isPrimaryKey) ? true : column.isPrimaryKey;
@@ -572,7 +631,9 @@ export class GanttTreeGrid {
 
     /**
      * Create progress column
-     * @param column 
+     *
+     * @param {GanttColumnModel} column .
+     * @returns {void} .
      */
     private composeProgressColumn(column: GanttColumnModel): void {
         column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('progress');
@@ -581,11 +642,13 @@ export class GanttTreeGrid {
     }
 
     /**
-     * 
+     * @param {GanttColumnModel} newGanttColumn .
+     * @param {boolean} isDefined .
+     * @returns {void} .
      */
     private bindTreeGridColumnProperties(newGanttColumn: GanttColumnModel, isDefined?: boolean): void {
-        let treeGridColumn: ColumnModel = {}; let ganttColumn: GanttColumnModel = {};
-        for (let prop of Object.keys(newGanttColumn)) {
+        const treeGridColumn: ColumnModel = {}; const ganttColumn: GanttColumnModel = {};
+        for (const prop of Object.keys(newGanttColumn)) {
             treeGridColumn[prop] = ganttColumn[prop] = newGanttColumn[prop];
         }
         this.parent.columnByField[ganttColumn.field] = ganttColumn;
@@ -594,36 +657,41 @@ export class GanttTreeGrid {
             this.treeGridColumns.push(treeGridColumn);
         }
     }
+    // eslint-disable-next-line
     private durationValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
-        let ganttProp: ITaskData = data.ganttProperties;
+        const ganttProp: ITaskData = data.ganttProperties;
         if (!isNullOrUndefined(ganttProp)) {
             return this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
         }
         return '';
     }
 
+    // eslint-disable-next-line
     private resourceValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
-        let ganttProp: ITaskData = data.ganttProperties;
+        const ganttProp: ITaskData = data.ganttProperties;
         if (!isNullOrUndefined(ganttProp)) {
             return ganttProp.resourceNames;
         }
         return '';
     }
 
+    // eslint-disable-next-line
     private workValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
-        let ganttProp: ITaskData = data.ganttProperties;
+        const ganttProp: ITaskData = data.ganttProperties;
         if (!isNullOrUndefined(ganttProp)) {
             return this.parent.dataOperation.getWorkString(ganttProp.work, ganttProp.workUnit);
         }
         return '';
     }
+    // eslint-disable-next-line
     private taskTypeValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
-        let ganttProp: ITaskData = data.ganttProperties;
+        const ganttProp: ITaskData = data.ganttProperties;
         if (!isNullOrUndefined(ganttProp)) {
             return ganttProp.taskType;
         }
         return '';
     }
+    // eslint-disable-next-line
     private modeValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
         if (data[field]) {
             return 'Manual';
@@ -632,10 +700,12 @@ export class GanttTreeGrid {
         }
     }
 
+    // eslint-disable-next-line
     private idValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
         return data.level === 0 ? 'R-' + data.ganttProperties.taskId : 'T-' + data.ganttProperties.taskId;
     }
 
+    // eslint-disable-next-line
     private updateScrollTop(args: object): void {
         this.treeGridElement.querySelector('.e-content').scrollTop = getValue('top', args);
         this.previousScroll.top = this.treeGridElement.querySelector('.e-content').scrollTop;

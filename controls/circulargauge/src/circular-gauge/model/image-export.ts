@@ -4,7 +4,8 @@ import { ExportType } from '../utils/enum';
 import { triggerDownload } from '../utils/helper';
 
 /**
- * Represent the Image Export for gauge 
+ * Represent the Image Export for gauge
+ *
  * @hidden
  */
 export class ImageExport {
@@ -12,33 +13,38 @@ export class ImageExport {
 
     /**
      * Constructor for gauge
-     * @param control 
+     *
+     * @param {CircularGauge} control - Specfies the instance of the gauge
      */
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(control: CircularGauge) {
         this.control = control;
     }
 
     /**
      * To export the file as image/svg format
-     * @param type
-     * @param fileName
-     * @param allowDownload
+     *
+     * @param {ExportType} type - Specifies the type of the image file.
+     * @param {string} fileName - Specifies the file name of the image file.
+     * @param {boolean} allowDownload - Specifies whether to download the image file or not.
+     * @returns {Promise<string>} - Returns promise string.
      * @private
      */
     public export(type: ExportType, fileName: string, allowDownload?: boolean): Promise<string> {
-        let promise: Promise<string> = new Promise((resolve: Function, reject: Function) => {
-            let isDownload: boolean = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
-            let element: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas', {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const promise: Promise<string> = new Promise((resolve: any, reject: any) => {
+            const isDownload: boolean = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
+            const element: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas', {
                 id: 'ej2-canvas',
                 attrs: {
                     'width': this.control.availableSize.width.toString(),
                     'height': this.control.availableSize.height.toString()
                 }
             });
-            let svgData: string = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+            const svgData: string = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
                 this.control.svgObject.outerHTML +
                 '</svg>';
-            let url: string = window.URL.createObjectURL(
+            const url: string = window.URL.createObjectURL(
                 new Blob(
                     type === 'SVG' ? [svgData] :
                         [(new XMLSerializer()).serializeToString(this.control.svgObject)],
@@ -55,8 +61,8 @@ export class ImageExport {
                     resolve(null);
                 }
             } else {
-                let image: HTMLImageElement = new Image();
-                let context: CanvasRenderingContext2D = element.getContext('2d');
+                const image: HTMLImageElement = new Image();
+                const context: CanvasRenderingContext2D = element.getContext('2d');
                 image.onload = (() => {
                     context.drawImage(image, 0, 0);
                     window.URL.revokeObjectURL(url);
@@ -88,7 +94,9 @@ export class ImageExport {
 
     /**
      * To destroy the ImageExport.
-     * @return {void}
+     *
+     * @param {CircularGauge} gauge - Specifies the instance of the gauge.
+     * @returns {void}
      * @private
      */
     public destroy(gauge: CircularGauge): void {

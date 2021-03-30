@@ -15,14 +15,14 @@ export class MultiSelect implements IComponent {
     private openEvent: EmitType<PopupEventArgs>;
     private closeEvent: EmitType<PopupEventArgs>;
 
-    constructor(parent?: InPlaceEditor) {
+    public constructor(parent?: InPlaceEditor) {
         this.parent = parent;
         this.parent.multiSelectModule = this;
         this.base = new Base(this.parent, this);
     }
 
     public render(e: NotifyParams): void {
-        let compModel: MultiSelectModel = { ...this.parent.model as MultiSelectModel };
+        const compModel: MultiSelectModel = { ...this.parent.model as MultiSelectModel };
         this.openEvent = compModel.open;
         this.closeEvent = compModel.close;
         compModel.open = this.openHandler.bind(this);
@@ -49,7 +49,7 @@ export class MultiSelect implements IComponent {
 
     public focus(): void {
         if (!this.isPopOpen) {
-            let evt: MouseEvent = document.createEvent('MouseEvent') as MouseEvent;
+            const evt: MouseEvent = document.createEvent('MouseEvent') as MouseEvent;
             evt.initEvent('mousedown', true, true);
             (closest(this.compObj.element, '.e-multi-select-wrapper') as HTMLElement).dispatchEvent(evt);
         }
@@ -68,8 +68,9 @@ export class MultiSelect implements IComponent {
 
     /**
      * Destroys the module.
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
@@ -78,6 +79,8 @@ export class MultiSelect implements IComponent {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} - returns the string
      */
     private getModuleName(): string {
         return 'multi-select';

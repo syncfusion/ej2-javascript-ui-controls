@@ -1,13 +1,18 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * To import utils
  */
-import {isNullOrUndefined, } from '@syncfusion/ej2-base';
-import {LineAttributes, PathAttributes, CircleAttributes, SVGAttributes, EllipseAttributes, PolylineAttributes,
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import {
+    LineAttributes, PathAttributes, CircleAttributes, SVGAttributes, EllipseAttributes, PolylineAttributes,
     BaseAttibutes, TextAttributes, ImageAttributes, SVGCanvasAttributes, PatternAttributes,
-    LinearGradient, RadialGradient, RectAttributes, GradientColor } from './svg-canvas-interface';
+    LinearGradient, RadialGradient, RectAttributes, GradientColor
+} from './svg-canvas-interface';
 
 export class SvgRenderer {
-    //Internal Variables 
+    //Internal Variables
     private svgLink: string = 'http://www.w3.org/2000/svg';
     private svgObj: Element;
     private rootId: string;
@@ -15,12 +20,14 @@ export class SvgRenderer {
 
     /**
      * Specifies the height of the canvas element.
+     *
      * @default null
      */
     public height: number;
 
     /**
      * Specifies the width of the canvas element.
+     *
      * @default null
      */
     public width: number;
@@ -32,15 +39,16 @@ export class SvgRenderer {
     }
 
     // method to get the attributes value
-    /* tslint:disable */ 
+    // tslint:disable-next-line:no-any
     private getOptionValue<T>(options: any, key: string): T {
         return options[key] as T;
     } /* tslint:enable */
 
     /**
      * To create a Html5 SVG element
+     *
      * @param {SVGAttributes} options - Options to create SVG
-     * @return {Element}
+     * @returns {Element} It returns a appropriate element
      */
     public createSvg(options: SVGAttributes): Element {
         if (isNullOrUndefined(options.id)) {
@@ -57,8 +65,8 @@ export class SvgRenderer {
 
     // method to set the height and width for the SVG element
     private setSVGSize(width: number, height: number): void {
-        let element: Element = document.getElementById(this.rootId);
-        let size: ClientRect = !isNullOrUndefined(element) ? element.getBoundingClientRect() : null;
+        const element: Element = document.getElementById(this.rootId);
+        const size: ClientRect = !isNullOrUndefined(element) ? element.getBoundingClientRect() : null;
         if (isNullOrUndefined(this.width) || this.width <= 0) {
             this.svgObj.setAttribute('width', width ? width.toString() : size.width.toString());
         } else {
@@ -74,11 +82,11 @@ export class SvgRenderer {
 
     /**
      * To draw a path
+     *
      * @param {PathAttributes} options - Options to draw a path in SVG
-     * @param {Int32Array} canvasTranslate - Used as dummy variable for canvas rendering
-     * @return {Element}
+     * @returns {Element} It returns a appropriate path
      */
-    public drawPath(options: PathAttributes, canvasTranslate ?: Int32Array): Element {
+    public drawPath(options: PathAttributes): Element {
         let path: Element = document.getElementById(options.id);
         if (path === null) {
             path = document.createElementNS(this.svgLink, 'path');
@@ -89,8 +97,9 @@ export class SvgRenderer {
 
     /**
      * To draw a line
+     *
      * @param {LineAttributes} options - Options to draw a line in SVG
-     * @return {Element}
+     * @returns {Element} It returns a appropriate element
      */
     public drawLine(options: LineAttributes): Element {
         let line: Element = document.getElementById(options.id);
@@ -103,10 +112,11 @@ export class SvgRenderer {
 
     /**
      * To draw a rectangle
+     *
      * @param {BaseAttibutes} options - Required options to draw a rectangle in SVG
-     * @return {Element}
+     * @returns {Element} It returns a appropriate element
      */
-    public drawRectangle(options: RectAttributes, canvasTranslate ?: Int32Array): Element {
+    public drawRectangle(options: RectAttributes): Element {
         let rectangle: Element = document.getElementById(options.id);
         if (rectangle === null) {
             rectangle = document.createElementNS(this.svgLink, 'rect');
@@ -117,8 +127,9 @@ export class SvgRenderer {
 
     /**
      * To draw a circle
+     *
      * @param {CircleAttributes} options - Required options to draw a circle in SVG
-     * @return {Element}
+     * @returns {Element} It returns a appropriate element
      */
     public drawCircle(options: CircleAttributes): Element {
         let circle: Element = document.getElementById(options.id);
@@ -131,8 +142,9 @@ export class SvgRenderer {
 
     /**
      * To draw a polyline
+     *
      * @param {PolylineAttributes} options - Options required to draw a polyline
-     * @return {Element}
+     * @returns {Element} It returns a appropriate element
      */
     public drawPolyline(options: PolylineAttributes): Element {
         let polyline: Element = document.getElementById(options.id);
@@ -145,8 +157,9 @@ export class SvgRenderer {
 
     /**
      * To draw an ellipse
+     *
      * @param {EllipseAttributes} options - Options required to draw an ellipse
-     * @return {Element}
+     * @returns {Element} It returns a appropriate element
      */
     public drawEllipse(options: EllipseAttributes): Element {
         let ellipse: Element = document.getElementById(options.id);
@@ -159,8 +172,9 @@ export class SvgRenderer {
 
     /**
      * To draw a polygon
+     *
      * @param {PolylineAttributes} options - Options needed to draw a polygon in SVG
-     * @return {Element}
+     * @returns {Element} It returns a appropriate element
      */
     public drawPolygon(options: PolylineAttributes): Element {
         let polygon: Element = document.getElementById(options.id);
@@ -172,12 +186,13 @@ export class SvgRenderer {
     }
 
     /**
-     * To draw an image 
+     * To draw an image
+     *
      * @param {ImageAttributes} options - Required options to draw an image in SVG
-     * @return {Element}
+     * @returns {Element} It returns a appropriate element
      */
     public drawImage(options: ImageAttributes): Element {
-        let img: Element = document.createElementNS(this.svgLink, 'image');
+        const img: Element = document.createElementNS(this.svgLink, 'image');
         img.setAttributeNS(null, 'height', options.height.toString());
         img.setAttributeNS(null, 'width', options.width.toString());
         img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', options.href);
@@ -196,12 +211,12 @@ export class SvgRenderer {
 
     /**
      * To draw a text
+     *
      * @param {TextAttributes} options - Options needed to draw a text in SVG
-     * @return {Element}
+     * @param {string} label - Label of the text
+     * @returns {Element} It returns a appropriate element
      */
-    public createText(
-        options: TextAttributes, label: string, transX?: number, transY?: number, dy?: number, isTSpan?: boolean
-    ): Element {
+    public createText(options: TextAttributes, label: string): Element {
         let text: Element = document.createElementNS(this.svgLink, 'text');
         text = this.setElementAttributes(options as SVGCanvasAttributes, text);
         if (!isNullOrUndefined(label)) {
@@ -212,9 +227,10 @@ export class SvgRenderer {
 
     /**
      * To create a tSpan
+     *
      * @param {TextAttributes} options - Options to create tSpan
      * @param {string} label - The text content which is to be rendered in the tSpan
-     * @return {Element}
+     * @returns {Element} It returns a appropriate element
      */
     public createTSpan(options: TextAttributes, label: string): Element {
         let tSpan: Element = document.createElementNS(this.svgLink, 'tspan');
@@ -227,28 +243,31 @@ export class SvgRenderer {
 
     /**
      * To create a title
+     *
      * @param {string} text - The text content which is to be rendered in the title
-     * @return {Element}
+     * @returns {Element} It returns a appropriate element
      */
     public createTitle(text: string): Element {
-        let title: Element = document.createElementNS(this.svgLink, 'title');
+        const title: Element = document.createElementNS(this.svgLink, 'title');
         title.textContent = text;
         return title;
     }
 
     /**
      * To create defs element in SVG
-     * @return {Element}
+     *
+     * @returns {Element} It returns a appropriate element
      */
     public createDefs(): Element {
-        let defs: Element = document.createElementNS(this.svgLink, 'defs');
+        const defs: Element = document.createElementNS(this.svgLink, 'defs');
         return defs;
     }
 
     /**
      * To create clip path in SVG
+     *
      * @param {BaseAttibutes} options - Options needed to create clip path
-     * @return {Element}
+     * @returns {Element} It returns a appropriate element
      */
     public createClipPath(options: BaseAttibutes): Element {
         let clipPath: Element = document.createElementNS(this.svgLink, 'clipPath');
@@ -258,8 +277,9 @@ export class SvgRenderer {
 
     /**
      * To create foreign object in SVG
+     *
      * @param {BaseAttibutes} options - Options needed to create foreign object
-     * @return {Element}
+     * @returns {Element} It returns a appropriate element
      */
     public createForeignObject(options: BaseAttibutes): Element {
         let foreignObject: Element = document.createElementNS(this.svgLink, 'foreignObject');
@@ -269,8 +289,9 @@ export class SvgRenderer {
 
     /**
      * To create group element in SVG
+     *
      * @param {BaseAttibutes} options - Options needed to create group
-     * @return {Element}
+     * @returns {Element} It returns a appropriate element
      */
     public createGroup(options: BaseAttibutes): Element {
         let group: Element = document.createElementNS(this.svgLink, 'g');
@@ -280,9 +301,10 @@ export class SvgRenderer {
 
     /**
      * To create pattern in SVG
+     *
      * @param {PatternAttributes} options - Required options to create pattern in SVG
-     * @param {string} type - Specifies the name of the pattern
-     * @return {Element}
+     * @param {string} element - Specifies the name of the pattern
+     * @returns {Element} It returns a appropriate element
      */
     public createPattern(options: PatternAttributes, element: string): Element {
         let pattern: Element = document.createElementNS(this.svgLink, element);
@@ -292,16 +314,16 @@ export class SvgRenderer {
 
     /**
      * To create radial gradient in SVG
+     *
      * @param {string[]} colors - Specifies the colors required to create radial gradient
-     * @param {string[]} colorStop - Specifies the colorstop required to create radial gradient
      * @param {string} name - Specifies the name of the gradient
      * @param {RadialGradient} options - value for radial gradient
-     * @return {string}
+     * @returns {string} It returns color name
      */
     public createRadialGradient(colors: GradientColor[], name: string, options: RadialGradient): string {
         let colorName: string;
         if (!isNullOrUndefined(colors[0].colorStop)) {
-            let newOptions: RadialGradient = {
+            const newOptions: RadialGradient = {
                 'id': this.rootId + '_' + name + 'radialGradient',
                 'cx': options.cx + '%',
                 'cy': options.cy + '%',
@@ -319,16 +341,16 @@ export class SvgRenderer {
 
     /**
      * To create linear gradient in SVG
-     * @param {string[]} colors - Array of string specifies the values for color
-     * @param {string[]} colors - Array of string specifies the values for colorStop
+     *
+     * @param {GradientColor[]} colors - Array of string specifies the values for color
      * @param {string} name - Specifies the name of the gradient
      * @param {LinearGradient} options - Specifies the options for gradient
-     * @return {string}
+     * @returns {string} It returns color name
      */
     public createLinearGradient(colors: GradientColor[], name: string, options: LinearGradient): string {
         let colorName: string;
         if (!isNullOrUndefined(colors[0].colorStop)) {
-            let newOptions: LinearGradient = {
+            const newOptions: LinearGradient = {
                 'id': this.rootId + '_' + name + 'linearGradient',
                 'x1': options.x1 + '%',
                 'y1': options.y1 + '%',
@@ -345,19 +367,19 @@ export class SvgRenderer {
 
     /**
      * To render the gradient element in SVG
+     *
      * @param {string} gradientType - Specifies the type of the gradient
      * @param {RadialGradient | LinearGradient} options - Options required to render a gradient
      * @param {string[]} colors - Array of string specifies the values for color
-     * @param {string[]} colorStop - Array of string specifies the values for colorStop
-     * @return {Element}
+     * @returns {Element} It returns a appropriate element
      */
-    public drawGradient(gradientType: string, options: RadialGradient | LinearGradient, colors:
-GradientColor[]): Element {
-        let defs: Element = this.createDefs();
+    public drawGradient(gradientType: string, options: RadialGradient | LinearGradient,
+                        colors: GradientColor[]): Element {
+        const defs: Element = this.createDefs();
         let gradient: Element = document.createElementNS(this.svgLink, gradientType);
         gradient = this.setElementAttributes(options as SVGCanvasAttributes, gradient);
         for (let i: number = 0; i < colors.length; i++) {
-            let stop: Element = document.createElementNS(this.svgLink, 'stop');
+            const stop: Element = document.createElementNS(this.svgLink, 'stop');
             stop.setAttribute('offset', colors[i].colorStop);
             stop.setAttribute('stop-color', colors[i].color);
             stop.setAttribute('stop-opacity', colors[i].opacity ? (colors[i].opacity) : '1');
@@ -372,14 +394,15 @@ GradientColor[]): Element {
 
     /**
      * To render a clip path
+     *
      * @param {BaseAttibutes} options - Options required to render a clip path
-     * @return {Element}
+     * @returns {Element} It returns a appropriate element
      */
     public drawClipPath(options: BaseAttibutes): Element {
-        let defs: Element = this.createDefs();
-        let clipPath: Element = this.createClipPath({ 'id': options.id });
-        options.id  = options.id + '_Rect';
-        let rect: Element = this.drawRectangle(options);
+        const defs: Element = this.createDefs();
+        const clipPath: Element = this.createClipPath({ 'id': options.id });
+        options.id = options.id + '_Rect';
+        const rect: Element = this.drawRectangle(options);
         clipPath.appendChild(rect);
         defs.appendChild(clipPath);
         return defs;
@@ -387,14 +410,15 @@ GradientColor[]): Element {
 
     /**
      * To create circular clip path in SVG
+     *
      * @param {CircleAttributes} options - Options required to create circular clip path
-     * @return {Element}
+     * @returns {Element} It returns a appropriate element
      */
     public drawCircularClipPath(options: CircleAttributes): Element {
-        let defs: Element = this.createDefs();
-        let clipPath: Element = this.createClipPath({ 'id': options.id });
-        options.id  = options.id + '_Circle';
-        let circle: Element = this.drawCircle(options);
+        const defs: Element = this.createDefs();
+        const clipPath: Element = this.createClipPath({ 'id': options.id });
+        options.id = options.id + '_Circle';
+        const circle: Element = this.drawCircle(options);
         clipPath.appendChild(circle);
         defs.appendChild(clipPath);
         return defs;
@@ -402,12 +426,13 @@ GradientColor[]): Element {
 
     /**
      * To set the attributes to the element
+     *
      * @param {SVGCanvasAttributes} options - Attributes to set for the element
      * @param {Element} element - The element to which the attributes need to be set
-     * @return {Element}
+     * @returns {Element} It returns a appropriate element
      */
     public setElementAttributes(options: SVGCanvasAttributes, element: Element | HTMLElement): Element | HTMLElement {
-        let keys: string[] = Object.keys(options);
+        const keys: string[] = Object.keys(options);
         for (let i: number = 0; i < keys.length; i++) {
             element.setAttribute(keys[i], options[keys[i]]);
         }
@@ -417,10 +442,8 @@ GradientColor[]): Element {
     /**
      * To create a Html5 canvas element
      * Dummy method for using canvas/svg render in the same variable name in chart control
-     * @param {BaseAttibutes} options - Options to create canvas
-     * @return {HTMLCanvasElement}
      */
-    public createCanvas(options: BaseAttibutes): HTMLCanvasElement {
+    public createCanvas(): HTMLCanvasElement {
         return null;
     }
 }

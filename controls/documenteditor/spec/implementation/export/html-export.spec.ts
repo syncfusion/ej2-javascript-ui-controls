@@ -29,7 +29,7 @@ describe('Page Break Character Document Copy Validation', () => {
     it('Test Page Break Character Document Html Export', () => {
 console.log('Test Page Break Character Document Html Export');
         let object: any = {};
-        expect(editor.selection.htmlWriter.serializeSpan('\f', object)).toBe('<br style = "page-break-after:always;"/>');
+        expect((editor.selection.htmlWriter as any).serializeSpan('\f', object)).toBe('<br style = "page-break-after:always;"/>');
     });
 });
 describe('Merge Field Validation', () => {

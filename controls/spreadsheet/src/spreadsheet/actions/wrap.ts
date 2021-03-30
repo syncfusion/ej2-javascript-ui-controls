@@ -15,6 +15,8 @@ export class WrapText {
 
     /**
      * Constructor for the Spreadsheet Wrap Text module.
+     *
+     * @param {Spreadsheet} parent - Specifies the Spreadsheet.
      * @private
      */
     constructor(parent: Spreadsheet) {
@@ -73,7 +75,7 @@ export class WrapText {
                         colwidth = getExcludedColumnWidth(args.sheet, i, j, cell.colSpan > 1 ? j + cell.colSpan - 1 : j);
                         let displayText: string = this.parent.getDisplayText(cell);
                         if (displayText.indexOf('\n') < 0) {
-                            let editElem: HTMLElement = this.parent.element.querySelector('.e-spreadsheet-edit');
+                            const editElem: HTMLElement = this.parent.element.querySelector('.e-spreadsheet-edit');
                             if (editElem) {
                                 if (editElem.textContent.indexOf('\n') > -1) {
                                     displayText = editElem.textContent;
@@ -87,7 +89,7 @@ export class WrapText {
                                 }
                                 let lines: number; let n: number = 0; let p: number;
                                 if (displayText.indexOf('\n') > -1) {
-                                    let splitVal: string[] = displayText.split('\n'); let valLength: number = splitVal.length;
+                                    const splitVal: string[] = displayText.split('\n'); const valLength: number = splitVal.length;
                                     for (p = 0; p < valLength; p++) {
                                         lines = getLines(splitVal[p], colwidth, cell.style, this.parent.cellStyle);
                                         if (lines === 0) {
@@ -125,11 +127,11 @@ export class WrapText {
         }
     }
     private ribbonClickHandler(args: ClickEventArgs): void {
-        let target: Element = closest(args.originalEvent.target as Element, '.e-btn');
+        const target: Element = closest(args.originalEvent.target as Element, '.e-btn');
         if (target && target.id === this.parent.element.id + '_wrap') {
-            let wrap: boolean = target.classList.contains('e-active');
-            let address: string = getAddressFromSelectedRange(this.parent.getActiveSheet());
-            let eventArgs: BeforeWrapEventArgs = { address: address, wrap: wrap, cancel: false };
+            const wrap: boolean = target.classList.contains('e-active');
+            const address: string = getAddressFromSelectedRange(this.parent.getActiveSheet());
+            const eventArgs: BeforeWrapEventArgs = { address: address, wrap: wrap, cancel: false };
             this.parent.notify(beginAction, { action: 'beforeWrap', eventArgs: eventArgs });
             if (!eventArgs.cancel) {
                 wrapText(this.parent.getActiveSheet().selectedRange, wrap, this.parent);
@@ -138,24 +140,15 @@ export class WrapText {
         }
     }
 
-    private getTextWidth(text: string, style: CellStyleModel = this.parent.cellStyle): number {
-        let defaultStyle: CellStyleModel = this.parent.cellStyle;
-        let canvas: HTMLCanvasElement = document.createElement('canvas');
-        let context: CanvasRenderingContext2D = canvas.getContext('2d');
-        context.font = (style.fontStyle || defaultStyle.fontStyle) + ' ' + (style.fontWeight || defaultStyle.fontWeight) + ' '
-            + (style.fontSize || defaultStyle.fontSize) + ' ' + (style.fontFamily || defaultStyle.fontFamily);
-        return context.measureText(text).width;
-    }
-
     private rowHeightChangedHandler(args: { rowIdx: number, isCustomHgt: boolean }): void {
         if (args.isCustomHgt) {
-            let sheet: SheetModel = this.parent.getActiveSheet();
-            let leftIdx: number = this.parent.viewport.leftIndex;
-            let rightIdx: number = leftIdx + this.parent.viewport.colCount + this.parent.getThreshold('col') * 2;
+            const sheet: SheetModel = this.parent.getActiveSheet();
+            const leftIdx: number = this.parent.viewport.leftIndex;
+            const rightIdx: number = leftIdx + this.parent.viewport.colCount + this.parent.getThreshold('col') * 2;
             for (let i: number = leftIdx; i < rightIdx; i++) {
-                let cell: CellModel = getCell(args.rowIdx, i, sheet);
+                const cell: CellModel = getCell(args.rowIdx, i, sheet);
                 if (cell && cell.wrap) {
-                    let ele: Element = this.parent.getCell(args.rowIdx, i);
+                    const ele: Element = this.parent.getCell(args.rowIdx, i);
                     if (ele.children.length === 0 || !ele.querySelector('.e-wrap-content')) {
                         ele.innerHTML = this.parent.createElement('span', {
                             className: 'e-wrap-content',
@@ -168,6 +161,8 @@ export class WrapText {
     }
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} - Get the module name.
      * @private
      */
     protected getModuleName(): string {

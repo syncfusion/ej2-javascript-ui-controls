@@ -7,6 +7,7 @@ import { extend } from '@syncfusion/ej2-base';
 import * as EVENTS from './../../common/constant';
 /**
  * SelectionCommands internal component
+ * 
  * @hidden
  * @deprecated
  */
@@ -15,7 +16,7 @@ export class MDSelectionFormats {
     private selection: MarkdownSelection;
     public syntax: { [key: string]: string };
     private currentAction: string;
-    constructor(parent: IMDFormats) {
+    public constructor(parent: IMDFormats) {
         extend(this, this, parent, true);
         this.selection = this.parent.markdownSelection;
         this.addEventListener();
@@ -26,34 +27,34 @@ export class MDSelectionFormats {
     }
     private keyDownHandler(e: IMDKeyboardEvent): void {
         switch ((e.event as KeyboardEventArgs).action) {
-            case 'bold':
-                this.applyCommands({ subCommand: 'Bold', callBack: e.callBack });
-                e.event.preventDefault();
-                break;
-            case 'italic':
-                this.applyCommands({ subCommand: 'Italic', callBack: e.callBack });
-                e.event.preventDefault();
-                break;
-            case 'strikethrough':
-                this.applyCommands({ subCommand: 'StrikeThrough', callBack: e.callBack });
-                e.event.preventDefault();
-                break;
-            case 'uppercase':
-                this.applyCommands({ subCommand: 'UpperCase', callBack: e.callBack });
-                e.event.preventDefault();
-                break;
-            case 'lowercase':
-                this.applyCommands({ subCommand: 'LowerCase', callBack: e.callBack });
-                e.event.preventDefault();
-                break;
-            case 'superscript':
-                this.applyCommands({ subCommand: 'SuperScript', callBack: e.callBack });
-                e.event.preventDefault();
-                break;
-            case 'subscript':
-                this.applyCommands({ subCommand: 'SubScript', callBack: e.callBack });
-                e.event.preventDefault();
-                break;
+        case 'bold':
+            this.applyCommands({ subCommand: 'Bold', callBack: e.callBack });
+            e.event.preventDefault();
+            break;
+        case 'italic':
+            this.applyCommands({ subCommand: 'Italic', callBack: e.callBack });
+            e.event.preventDefault();
+            break;
+        case 'strikethrough':
+            this.applyCommands({ subCommand: 'StrikeThrough', callBack: e.callBack });
+            e.event.preventDefault();
+            break;
+        case 'uppercase':
+            this.applyCommands({ subCommand: 'UpperCase', callBack: e.callBack });
+            e.event.preventDefault();
+            break;
+        case 'lowercase':
+            this.applyCommands({ subCommand: 'LowerCase', callBack: e.callBack });
+            e.event.preventDefault();
+            break;
+        case 'superscript':
+            this.applyCommands({ subCommand: 'SuperScript', callBack: e.callBack });
+            e.event.preventDefault();
+            break;
+        case 'subscript':
+            this.applyCommands({ subCommand: 'SubScript', callBack: e.callBack });
+            e.event.preventDefault();
+            break;
         }
     }
     private isBold(text: string, cmd: string): boolean {
@@ -65,15 +66,15 @@ export class MDSelectionFormats {
     private isMatch(text: string, cmd: string): string[] {
         let matchText: string[] = [''];
         switch (cmd) {
-            case this.syntax.Italic:
-                matchText = text.match(this.singleCharRegx(cmd));
-                break;
-            case this.syntax.InlineCode:
-                matchText = text.match(this.singleCharRegx(cmd));
-                break;
-            case this.syntax.StrikeThrough:
-                matchText = text.match(this.singleCharRegx(cmd));
-                break;
+        case this.syntax.Italic:
+            matchText = text.match(this.singleCharRegx(cmd));
+            break;
+        case this.syntax.InlineCode:
+            matchText = text.match(this.singleCharRegx(cmd));
+            break;
+        case this.syntax.StrikeThrough:
+            matchText = text.match(this.singleCharRegx(cmd));
+            break;
         }
         return matchText;
     }
@@ -83,26 +84,24 @@ export class MDSelectionFormats {
     private singleCharRegx(cmd: string): RegExp {
         return new RegExp('(\\' + cmd + ')', 'g');
     }
-    /**
-     * markdown isAppliedCommand method
-     * @hidden
-     * @deprecated
-     */
+
     public isAppliedCommand(cmd?: string): | boolean {
-        let selectCmd: string = '';
+        // eslint-disable-next-line
+        const selectCmd: string = '';
         let isFormat: boolean = false;
-        let textArea: HTMLTextAreaElement = this.parent.element as HTMLTextAreaElement;
-        let start: number = textArea.selectionStart;
-        let splitAt: Function = (index: number) => (x: string) => [x.slice(0, index), x.slice(index)];
-        let splitText: string[] = splitAt(start)(textArea.value);
-        let cmdB: string = this.syntax.Bold.substr(0, 1);
-        let cmdI: string = this.syntax.Italic;
-        let selectedText: string = this.parent.markdownSelection.getSelectedText(textArea);
+        const textArea: HTMLTextAreaElement = this.parent.element as HTMLTextAreaElement;
+        const start: number = textArea.selectionStart;
+        // eslint-disable-next-line
+        const splitAt: Function = (index: number) => (x: string) => [x.slice(0, index), x.slice(index)];
+        const splitText: string[] = splitAt(start)(textArea.value);
+        const cmdB: string = this.syntax.Bold.substr(0, 1);
+        const cmdI: string = this.syntax.Italic;
+        const selectedText: string = this.parent.markdownSelection.getSelectedText(textArea);
         if (selectedText !== '' && selectedText === selectedText.toLocaleUpperCase() && cmd === 'UpperCase') {
             return true;
         } else if (selectedText === '') {
-            let beforeText: string = textArea.value.substr(splitText[0].length - 1, 1);
-            let afterText: string = splitText[1].substr(0, 1);
+            const beforeText: string = textArea.value.substr(splitText[0].length - 1, 1);
+            const afterText: string = splitText[1].substr(0, 1);
             if ((beforeText !== '' && afterText !== '' && beforeText.match(/[a-z]/i)) &&
                 beforeText === beforeText.toLocaleUpperCase() && afterText === afterText.toLocaleUpperCase() && cmd === 'UpperCase') {
                 return true;
@@ -122,6 +121,7 @@ export class MDSelectionFormats {
                     this.isMatch(splitText[1], this.syntax.InlineCode).length % 2 === 1) && cmd === 'InlineCode') {
                 isFormat = true;
             }
+            /* eslint-disable */
             if ((!isNullOrUndefined(splitText[0].match(/\<sub>/g)) && !isNullOrUndefined(splitText[1].match(/\<\/sub>/g))) &&
                 (splitText[0].match(/\<sub>/g).length % 2 === 1 &&
                     splitText[1].match(/\<\/sub>/g).length % 2 === 1) && cmd === 'SubScript') {
@@ -132,6 +132,7 @@ export class MDSelectionFormats {
                 cmd === 'SuperScript') {
                 isFormat = true;
             }
+            /* eslint-enable */
         }
         if ((this.isBold(splitText[0], cmdB) && this.isBold(splitText[1], cmdB)) &&
             (splitText[0].match(this.multiCharRegx(cmdB)).length % 2 === 1 &&
@@ -158,6 +159,7 @@ export class MDSelectionFormats {
                 this.isMatch(splitText[1], this.syntax.InlineCode).length % 2 === 1) && cmd === 'InlineCode') {
             isFormat = true;
         }
+        /* eslint-disable */
         if ((!isNullOrUndefined(splitText[0].match(/\<sub>/g)) && !isNullOrUndefined(splitText[1].match(/\<\/sub>/g))) &&
             (splitText[0].match(/\<sub>/g).length % 2 === 1 && splitText[1].match(/\<\/sub>/g).length % 2 === 1) && cmd === 'SubScript') {
             isFormat = true;
@@ -165,28 +167,29 @@ export class MDSelectionFormats {
         if ((!isNullOrUndefined(splitText[0].match(/\<sup>/g)) && !isNullOrUndefined(splitText[1].match(/\<\/sup>/g))) &&
             (splitText[0].match(/\<sup>/g).length % 2 === 1 && splitText[1].match(/\<\/sup>/g).length % 2 === 1) && cmd === 'SuperScript') {
             isFormat = true;
+            /* eslint-enable */
         }
         return isFormat;
     }
     private applyCommands(e: IMarkdownSubCommands): void {
         this.currentAction = e.subCommand;
-        let textArea: HTMLTextAreaElement = this.parent.element as HTMLTextAreaElement;
+        const textArea: HTMLTextAreaElement = this.parent.element as HTMLTextAreaElement;
         this.selection.save(textArea.selectionStart, textArea.selectionEnd);
-        let start: number = textArea.selectionStart;
-        let end: number = textArea.selectionEnd;
+        const start: number = textArea.selectionStart;
+        const end: number = textArea.selectionEnd;
         let addedLength: number = 0;
-        let selection: { [key: string]: string | number } = this.parent.markdownSelection.getSelectedInlinePoints(textArea);
+        const selection: { [key: string]: string | number } = this.parent.markdownSelection.getSelectedInlinePoints(textArea);
         if (this.isAppliedCommand(e.subCommand) && selection.text !== '') {
-            let startCmd: string = this.syntax[e.subCommand];
-            let endCmd: string = e.subCommand === 'SubScript' ? '</sub>' :
+            const startCmd: string = this.syntax[e.subCommand];
+            const endCmd: string = e.subCommand === 'SubScript' ? '</sub>' :
                 e.subCommand === 'SuperScript' ? '</sup>' : this.syntax[e.subCommand];
             let startLength: number = (e.subCommand === 'UpperCase' || e.subCommand === 'LowerCase') ? 0 : startCmd.length;
             let startNo: number = textArea.value.substr(0, selection.start as number).lastIndexOf(startCmd);
             let endNo: number = textArea.value.substr(selection.end as number, textArea.value.length).indexOf(endCmd);
             endNo = endNo + (selection.end as number);
-            let repStartText: string = this.replaceAt(
+            const repStartText: string = this.replaceAt(
                 textArea.value.substr(0, selection.start as number), startCmd, '', startNo, selection.start as number);
-            let repEndText: string = this.replaceAt(
+            const repEndText: string = this.replaceAt(
                 textArea.value.substr(selection.end as number, textArea.value.length), endCmd, '', 0, endNo);
             textArea.value = repStartText + selection.text + repEndText;
             this.restore(textArea, start - startLength, end - startLength, e);
@@ -195,22 +198,22 @@ export class MDSelectionFormats {
         if (selection.text !== '' && !this.isApplied(selection, e.subCommand)) {
             addedLength = (e.subCommand === 'UpperCase' || e.subCommand === 'LowerCase') ? 0 :
                 this.syntax[e.subCommand].length;
-            let repStart: string = textArea.value.substr(
+            const repStart: string = textArea.value.substr(
                 selection.start as number - this.syntax[e.subCommand].length, this.syntax[e.subCommand].length);
             let repEnd: string;
             if ((repStart === e.subCommand) || ((selection.start as number - this.syntax[e.subCommand].length ===
                 textArea.value.indexOf(this.syntax[e.subCommand])) && (selection.end as number === textArea.value.lastIndexOf(
-                    this.syntax[e.subCommand]) || selection.end as number === textArea.value.lastIndexOf(
-                        '</' + this.syntax[e.subCommand].substring(1, 5))))) {
+                this.syntax[e.subCommand]) || selection.end as number === textArea.value.lastIndexOf(
+                '</' + this.syntax[e.subCommand].substring(1, 5))))) {
                 if (e.subCommand === 'SubScript' || e.subCommand === 'SuperScript') {
                     repEnd = textArea.value.substr(selection.end as number, this.syntax[e.subCommand].length + 1);
                 } else {
                     repEnd = textArea.value.substr(selection.end as number, this.syntax[e.subCommand].length);
                 }
-                let repStartText: string = this.replaceAt(
+                const repStartText: string = this.replaceAt(
                     textArea.value.substr(0, selection.start as number),
                     repStart, '', selection.start as number - this.syntax[e.subCommand].length, selection.start as number);
-                let repEndText: string = this.replaceAt(
+                const repEndText: string = this.replaceAt(
                     textArea.value.substr(selection.end as number, textArea.value.length), repEnd, '', 0, repEnd.length);
                 textArea.value = repStartText + selection.text + repEndText;
                 this.restore(textArea, start - addedLength, end - addedLength, e);
@@ -271,64 +274,64 @@ export class MDSelectionFormats {
     private textReplace(text: string, command: string): string {
         let regx: RegExp = this.singleCharRegx(this.syntax[command]);
         switch (command) {
-            case 'Bold':
-                regx = this.multiCharRegx(this.syntax[command].substr(0, 1));
+        case 'Bold':
+            regx = this.multiCharRegx(this.syntax[command].substr(0, 1));
+            text = text.replace(regx, '');
+            break;
+        case 'Italic':
+            if (!this.isBold(text, this.syntax[command].substr(0, 1))) {
                 text = text.replace(regx, '');
-                break;
-            case 'Italic':
-                if (!this.isBold(text, this.syntax[command].substr(0, 1))) {
-                    text = text.replace(regx, '');
-                } else {
-                    let regxB: RegExp = this.multiCharRegx(this.syntax[command].substr(0, 1));
-                    let repText: string = text;
-                    repText = repText.replace(regxB, '$%@').replace(regx, '');
-                    let regxTemp: RegExp = new RegExp('\\$%@', 'g');
-                    text = repText.replace(regxTemp, this.syntax[command].substr(0, 1) + this.syntax[command].substr(0, 1));
-                }
-                break;
-            case 'StrikeThrough':
-                text = text.replace(regx, '');
-                break;
-            case 'InlineCode':
-                text = text.replace(regx, '');
-                break;
-            case 'SubScript':
-                text = text.replace(/<sub>/g, '').replace(/<\/sub>/g, '');
-                break;
-            case 'SuperScript':
-                text = text.replace(/<sup>/g, '').replace(/<\/sup>/g, '');
-                break;
+            } else {
+                let regxB: RegExp = this.multiCharRegx(this.syntax[command].substr(0, 1));
+                let repText: string = text;
+                repText = repText.replace(regxB, '$%@').replace(regx, '');
+                let regxTemp: RegExp = new RegExp('\\$%@', 'g');
+                text = repText.replace(regxTemp, this.syntax[command].substr(0, 1) + this.syntax[command].substr(0, 1));
+            }
+            break;
+        case 'StrikeThrough':
+            text = text.replace(regx, '');
+            break;
+        case 'InlineCode':
+            text = text.replace(regx, '');
+            break;
+        case 'SubScript':
+            text = text.replace(/<sub>/g, '').replace(/<\/sub>/g, '');
+            break;
+        case 'SuperScript':
+            text = text.replace(/<sup>/g, '').replace(/<\/sup>/g, '');
+            break;
         }
         return text;
     }
     private isApplied(line: { [key: string]: string | number }, command: string): boolean | void {
         let regx: RegExp = this.singleCharRegx(this.syntax[command]);
         switch (command) {
-            case 'SubScript':
-            case 'SuperScript':
-                regx = this.singleCharRegx(this.syntax[command]);
-                return regx.test(line.text as string);
-            case 'Bold':
-            case 'StrikeThrough':
-                regx = this.multiCharRegx(this.syntax[command].substr(0, 1));
-                return regx.test(line.text as string);
-            case 'UpperCase':
-            case 'LowerCase':
-                regx = new RegExp('^[' + this.syntax[command] + ']*$', 'g');
-                return regx.test(line.text as string);
-            case 'Italic':
-                let regTest: boolean;
-                let regxB: RegExp = this.multiCharRegx(this.syntax[command].substr(0, 1));
-                if (regxB.test(line.text as string)) {
-                    let repText: string = line.text as string;
-                    repText = repText.replace(regxB, '$%#');
-                    regTest = regx.test(repText);
-                } else {
-                    regTest = regx.test(line.text as string);
-                }
-                return regTest;
-            case 'InlineCode':
-                return regx.test(line.text as string);
+        case 'SubScript':
+        case 'SuperScript':
+            regx = this.singleCharRegx(this.syntax[command]);
+            return regx.test(line.text as string);
+        case 'Bold':
+        case 'StrikeThrough':
+            regx = this.multiCharRegx(this.syntax[command].substr(0, 1));
+            return regx.test(line.text as string);
+        case 'UpperCase':
+        case 'LowerCase':
+            regx = new RegExp('^[' + this.syntax[command] + ']*$', 'g');
+            return regx.test(line.text as string);
+        case 'Italic':
+            let regTest: boolean;
+            let regxB: RegExp = this.multiCharRegx(this.syntax[command].substr(0, 1));
+            if (regxB.test(line.text as string)) {
+                let repText: string = line.text as string;
+                repText = repText.replace(regxB, '$%#');
+                regTest = regx.test(repText);
+            } else {
+                regTest = regx.test(line.text as string);
+            }
+            return regTest;
+        case 'InlineCode':
+            return regx.test(line.text as string);
         }
     }
 }

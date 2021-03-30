@@ -1,7 +1,7 @@
 /**
  * 
  */
-//tslint:disable
+/* eslint-disable */
 export let  electionData: Object[] = 
 [
     {  State: "Alabama", Trump:62.9,Clinton:34.6, WinPercentage: 62.9,Winner:"Trump", Population : 4780127 },

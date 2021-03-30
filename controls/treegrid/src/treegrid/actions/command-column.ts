@@ -1,7 +1,8 @@
 import { Grid, CommandColumn as Command } from '@syncfusion/ej2-grids';
 import { TreeGrid } from '../base';
 /**
- * Command Column Module for TreeGrid 
+ * Command Column Module for TreeGrid
+ *
  * @hidden
  */
 export class CommandColumn {
@@ -12,17 +13,20 @@ export class CommandColumn {
     }
     /**
      * For internal use only - Get the module name.
+     *
      * @private
+     * @returns {string} Returns CommandColumn module name
      */
     protected getModuleName(): string {
         return 'commandColumn';
     }
     /**
      * Destroys the ContextMenu.
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void}
      */
     public destroy(): void {
-      //this.removeEventListener();
+        //this.removeEventListener();
     }
 }

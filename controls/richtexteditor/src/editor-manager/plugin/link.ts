@@ -1,12 +1,14 @@
-﻿import { createElement, isNullOrUndefined as isNOU, closest } from '@syncfusion/ej2-base';
-import { EditorManager } from './../base/editor-manager';
+﻿import { EditorManager } from './../base/editor-manager';
 import * as CONSTANT from './../base/constant';
 import { IHtmlItem } from './../base/interface';
 import { NodeSelection } from '../../selection/selection';
 import { NodeCutter } from './nodecutter';
 import { InsertHtml } from './inserthtml';
+import { createElement, isNullOrUndefined as isNOU, closest } from '@syncfusion/ej2-base';
+
 /**
  * Link internal component
+ * 
  * @hidden
  * @deprecated
  */
@@ -14,10 +16,12 @@ export class LinkCommand {
     private parent: EditorManager;
     /**
      * Constructor for creating the Formats plugin
+     *
+     * @param {EditorManager} parent - specifies the editor manager
      * @hidden
      * @deprecated
      */
-    constructor(parent: EditorManager) {
+    public constructor(parent: EditorManager) {
         this.parent = parent;
         this.addEventListener();
     }
@@ -27,16 +31,16 @@ export class LinkCommand {
 
     private linkCommand(e: IHtmlItem): void {
         switch (e.value.toString().toLocaleLowerCase()) {
-            case 'createlink':
-            case 'editlink':
-                this.createLink(e);
-                break;
-            case 'openlink':
-                this.openLink(e);
-                break;
-            case 'removelink':
-                this.removeLink(e);
-                break;
+        case 'createlink':
+        case 'editlink':
+            this.createLink(e);
+            break;
+        case 'openlink':
+            this.openLink(e);
+            break;
+        case 'removelink':
+            this.removeLink(e);
+            break;
         }
     }
 
@@ -46,7 +50,7 @@ export class LinkCommand {
         closestAnchor = !isNOU(closestAnchor) ? closestAnchor :
             (!isNOU(e.item.selectParent) && e.item.selectParent.length > 0) ? (e.item.selectParent[0]) as Element : null;
         if (!isNOU(closestAnchor) && (closestAnchor as HTMLElement).tagName === 'A') {
-            let anchorEle: HTMLElement = closestAnchor as HTMLElement;
+            const anchorEle: HTMLElement = closestAnchor as HTMLElement;
             let linkText: string = '';
             if (!isNOU(e.item.url)) {
                 anchorEle.setAttribute('href', e.item.url);
@@ -67,29 +71,29 @@ export class LinkCommand {
                 e.item.selection.setSelectionText(this.parent.currentDocument, anchorEle, anchorEle, 1, 1);
                 e.item.selection.restore();
             } else {
-                let startIndex: number = e.item.action === 'Paste' ? anchorEle.childNodes[0].textContent.length : 0;
+                const startIndex: number = e.item.action === 'Paste' ? anchorEle.childNodes[0].textContent.length : 0;
                 e.item.selection.setSelectionText(
-                this.parent.currentDocument,
-                anchorEle.childNodes[0],
-                anchorEle.childNodes[0], startIndex, anchorEle.childNodes[0].textContent.length);
+                    this.parent.currentDocument,
+                    anchorEle.childNodes[0],
+                    anchorEle.childNodes[0], startIndex, anchorEle.childNodes[0].textContent.length);
             }
         } else {
-            let domSelection: NodeSelection = new NodeSelection();
-            let range: Range = domSelection.getRange(this.parent.currentDocument);
-            let  text : boolean = isNOU(e.item.text) ? true : e.item.text.replace(/ /g, '').localeCompare(range.toString()
-            .replace(/\n/g, ' ').replace(/ /g, '')) < 0;
+            const domSelection: NodeSelection = new NodeSelection();
+            const range: Range = domSelection.getRange(this.parent.currentDocument);
+            const  text : boolean = isNOU(e.item.text) ? true : e.item.text.replace(/ /g, '').localeCompare(range.toString()
+                .replace(/\n/g, ' ').replace(/ /g, '')) < 0;
             if (e.event && (e.event as KeyboardEvent).type === 'keydown' && ((e.event as KeyboardEvent).keyCode === 32
                 || (e.event as KeyboardEvent).keyCode === 13) || e.item.action === 'Paste' || range.collapsed || text) {
-                let anchor: HTMLElement = this.createAchorNode(e);
+                const anchor: HTMLElement = this.createAchorNode(e);
                 anchor.innerText = e.item.text === '' ? e.item.url : e.item.text;
                 e.item.selection.restore();
                 InsertHtml.Insert(this.parent.currentDocument, anchor, this.parent.editableElement);
                 if (e.event && (e.event as KeyboardEvent).type === 'keydown' && ((e.event as KeyboardEvent).keyCode === 32
                     || (e.event as KeyboardEvent).keyCode === 13)) {
-                    let startContainer: Node = e.item.selection.range.startContainer;
+                    const startContainer: Node = e.item.selection.range.startContainer;
                     startContainer.textContent = this.removeText(startContainer.textContent, e.item.text);
                 } else {
-                    let startIndex: number = e.item.action === 'Paste' ? anchor.childNodes[0].textContent.length : 0;
+                    const startIndex: number = e.item.action === 'Paste' ? anchor.childNodes[0].textContent.length : 0;
                     e.item.selection.setSelectionText(
                         this.parent.currentDocument, anchor.childNodes[0], anchor.childNodes[0],
                         startIndex, anchor.childNodes[0].textContent.length);
@@ -108,19 +112,19 @@ export class LinkCommand {
                 elements: this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument) as Element[]
             });
         }
-    };
+    }
     private createLinkNode(e: IHtmlItem): void {
-        let domSelection: NodeSelection = new NodeSelection();
-        let nodeCutter: NodeCutter = new NodeCutter();
-        let range: Range = domSelection.getRange(this.parent.currentDocument);
-        let nodes: Node[] = this.getSelectionNodes(domSelection.getNodeCollection(range));
-        let save: NodeSelection = domSelection.save(range, this.parent.currentDocument);
-        let txtArray: Node[] = [];
-        let inlineNodes: Node[] = [];
+        const domSelection: NodeSelection = new NodeSelection();
+        const nodeCutter: NodeCutter = new NodeCutter();
+        const range: Range = domSelection.getRange(this.parent.currentDocument);
+        const nodes: Node[] = this.getSelectionNodes(domSelection.getNodeCollection(range));
+        const save: NodeSelection = domSelection.save(range, this.parent.currentDocument);
+        const txtArray: Node[] = [];
+        const inlineNodes: Node[] = [];
         let currentNode: Node;
-        let removeNodes: Node[] = [];
-        let anchorNodes: Node[] = [];
-        let finalinlineNodes: Node[] = [];
+        const removeNodes: Node[] = [];
+        const anchorNodes: Node[] = [];
+        const finalinlineNodes: Node[] = [];
         let cloneNode: Node;
         for (let index: number = 0; index < nodes.length; index++) {
             nodes[index] = nodeCutter.GetSpliceNode(range, nodes[index] as HTMLElement);
@@ -131,7 +135,7 @@ export class LinkCommand {
             currentNode = txtArray[i];
             while (check === true) {
                 if (currentNode.parentNode.nodeName === 'A') {
-                    let anchorEle: HTMLElement = currentNode.parentNode as HTMLElement;
+                    const anchorEle: HTMLElement = currentNode.parentNode as HTMLElement;
                     currentNode.parentNode.parentNode.insertBefore(anchorEle.firstChild, anchorEle);
                     currentNode.parentNode.removeChild(anchorEle);
                 }
@@ -166,7 +170,7 @@ export class LinkCommand {
             }
             if (i < finalinlineNodes.length - 1) {
                 if (finalinlineNodes[i].parentNode === finalinlineNodes[i + 1].parentNode) {
-                    let cln: Node = finalinlineNodes[i + 1].cloneNode(true);
+                    const cln: Node = finalinlineNodes[i + 1].cloneNode(true);
                     anchorNodes[j].appendChild(cln);
                 } else {
                     j = j + 1;
@@ -206,7 +210,7 @@ export class LinkCommand {
     }
 
     private createAchorNode(e: IHtmlItem): HTMLElement {
-        let anchorEle: HTMLElement = createElement('a', {
+        const anchorEle: HTMLElement = createElement('a', {
             className: 'e-rte-anchor',
             attrs: {
                 href: e.item.url,
@@ -237,7 +241,7 @@ export class LinkCommand {
     }
 
     private removeText(text: string, val: string): string {
-        let arr: string[] = text.split(' ');
+        const arr: string[] = text.split(' ');
         for (let i: number = 0; i < arr.length; i++) {
             if (arr[i] === val) {
                 arr.splice(i, 1);
@@ -252,13 +256,13 @@ export class LinkCommand {
     }
     private removeLink(e: IHtmlItem): void {
 
-        let blockNodes: Node[] = this.parent.domNode.blockNodes();
+        const blockNodes: Node[] = this.parent.domNode.blockNodes();
         if (blockNodes.length < 2) {
             this.parent.domNode.setMarker(e.item.selection);
-            let closestAnchor: Node = closest(e.item.selectParent[0], 'a');
-            let selectParent: Node = closestAnchor ? closestAnchor : e.item.selectParent[0];
-            let parent: Node = selectParent.parentNode;
-            let child: Node[] = [];
+            const closestAnchor: Node = closest(e.item.selectParent[0], 'a');
+            const selectParent: Node = closestAnchor ? closestAnchor : e.item.selectParent[0];
+            const parent: Node = selectParent.parentNode;
+            const child: Node[] = [];
             for (; selectParent.firstChild; null) {
                 child.push(parent.insertBefore(selectParent.firstChild, selectParent));
             }
@@ -270,7 +274,7 @@ export class LinkCommand {
             e.item.selection = this.parent.domNode.saveMarker(e.item.selection);
         } else {
             for (let i: number = 0; i < blockNodes.length; i++) {
-                let linkNode : NodeListOf<HTMLAnchorElement> = (blockNodes[i] as HTMLElement).querySelectorAll('a');
+                const linkNode : NodeListOf<HTMLAnchorElement> = (blockNodes[i] as HTMLElement).querySelectorAll('a');
                 for (let j: number = 0; j < linkNode.length; j++) {
                     if (document.getSelection().containsNode(linkNode[j], true)) {
                         linkNode[j].outerHTML = linkNode[j].innerHTML;

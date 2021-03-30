@@ -46,15 +46,15 @@ export type ToolbarItem =
     'PrevTimeSpan' |
     /** Move HScroll to nextTimeSpan */
     'NextTimeSpan' |
-     /** To perform Zoom in action on Gantt timeline */
+    /** To perform Zoom in action on Gantt timeline */
     'ZoomIn'|
-     /** To perform zoom out action on Gantt timeline */
+    /** To perform zoom out action on Gantt timeline */
     'ZoomOut'|
-     /** To show all project task in available chart width */
+    /** To show all project task in available chart width */
     'ZoomToFit' |
-     /** To export Gantt in excel sheet */
+    /** To export Gantt in excel sheet */
     'ExcelExport' |
-     /** To export Gantt in CSV */
+    /** To export Gantt in CSV */
     'CsvExport' |
     /** To export Gantt in PDF */
     'PdfExport' |
@@ -63,7 +63,7 @@ export type ToolbarItem =
     /** To outdent a selected record */
     'Outdent';
 
-/** 
+/**
  * Defines the schedule header mode. They are
  * * none - Define the default mode header.
  * * week - Define the week mode header.
@@ -87,10 +87,10 @@ export type TimelineViewMode =
     /** Define the minutes mode header. */
     'Minutes';
 
-/** 
+/**
  * Defines modes of editing.
  * * Auto
- * * Dialog 
+ * * Dialog
  */
 export type EditMode =
     /**  Defines Cell editing in TreeGrid and dialog in chart side */
@@ -184,10 +184,10 @@ export type RowPosition = /**  Defines new row position as top of all rows */
     /**  Defines new row position as child to the selected row */
     'Child';
 
-/** 
+/**
  * Defines directions of Sorting. They are
  * * Ascending
- * * Descending 
+ * * Descending
  */
 export type SortDirection =
     /**  Defines SortDirection as Ascending */
@@ -197,6 +197,7 @@ export type SortDirection =
 
 /**
  * Defines predefined contextmenu items.
+ *
  * @hidden
  */
 export type ContextMenuItem =
@@ -229,6 +230,7 @@ export type ContextMenuItem =
 
 /**
  * Defines contextmenu types.
+ *
  * @hidden
  */
 export type ContextMenuType =
@@ -349,8 +351,9 @@ export type PdfTheme =
  * @hidden
  */
 export type CObject =
+// eslint-disable-next-line
     { [key: string]: Object; };
-/** 
+/**
  * To define schedule mode of Gantt
  */
 export type ScheduleMode =

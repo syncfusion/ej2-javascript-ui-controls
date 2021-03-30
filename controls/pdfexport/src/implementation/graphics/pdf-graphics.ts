@@ -1195,15 +1195,15 @@ export class PdfGraphics {
     private drawUnicodeLine(lineInfo : LineInfo, layoutRectangle : RectangleF, font : PdfFont, format : PdfStringFormat) : void {
         let line : string = lineInfo.text;
         let lineWidth : number = lineInfo.width;
-        let rtl : boolean = (format !== null && format.rightToLeft);
-        let useWordSpace : boolean = (format !== null && (format.wordSpacing !== 0 || format.alignment === PdfTextAlignment.Justify));
+        let rtl : boolean = (format !== null && typeof format !== 'undefined' && format.rightToLeft);
+        let useWordSpace : boolean = (format !== null && typeof format !== 'undefined' && (format.wordSpacing !== 0 || format.alignment === PdfTextAlignment.Justify));
         let ttfFont : PdfTrueTypeFont = font as PdfTrueTypeFont;
         let wordSpacing : number = this.justifyLine(lineInfo, layoutRectangle.width, format);
         let rtlRender : RtlRenderer = new RtlRenderer();
-        if (rtl || (format !== null && format.textDirection !== PdfTextDirection.None)) {
+        if (rtl || (format !== null && typeof format !== 'undefined' && format.textDirection !== PdfTextDirection.None)) {
                 let blocks : string[] = null;
-                let rightAlign : boolean  = (format !== null && format.alignment === PdfTextAlignment.Right);
-                if (format !== null && format.textDirection !== PdfTextDirection.None) {
+                let rightAlign : boolean  = (format !== null && typeof format !== 'undefined' && format.alignment === PdfTextAlignment.Right);
+                if (format !== null && typeof format !== 'undefined' && format.textDirection !== PdfTextDirection.None) {
                     /* tslint:disable-next-line:max-line-length */
                     blocks = rtlRender.layout(line, ttfFont, (format.textDirection === PdfTextDirection.RightToLeft) ? true : false, useWordSpace, format);
                 } else {
@@ -1211,7 +1211,7 @@ export class PdfGraphics {
                 }
                 let words : string[] = null;
                 if (blocks.length > 1) {
-                    if (format !== null && format.textDirection !== PdfTextDirection.None) {
+                    if (format !== null && typeof format !== 'undefined' && format.textDirection !== PdfTextDirection.None) {
                         /* tslint:disable-next-line:max-line-length */
                         words = rtlRender.splitLayout(line, ttfFont, (format.textDirection === PdfTextDirection.RightToLeft) ? true : false, useWordSpace, format);
                     } else {
@@ -1255,7 +1255,7 @@ export class PdfGraphics {
         let firstLineIndent : number = 0;
         let paragraphIndent : number = 0;
         try {
-            if (format !== null) {
+            if (format !== null && typeof format !== 'undefined') {
                 firstLineIndent = format.firstLineIndent;
                 paragraphIndent = format.paragraphIndent;
                 format.firstLineIndent = 0;
@@ -1263,7 +1263,7 @@ export class PdfGraphics {
             }
             let spaceWidth : number = font.getCharWidth(StringTokenizer.whiteSpace, format) + wordSpacing;
             let characterSpacing : number = (format != null) ? format.characterSpacing : 0;
-            let wordSpace : number = (format !== null && wordSpacing === 0) ? format.wordSpacing : 0;
+            let wordSpace : number = (format !== null && typeof format !== 'undefined' && wordSpacing === 0) ? format.wordSpacing : 0;
             spaceWidth += characterSpacing + wordSpace;
             for (let i : number = 0; i < blocks.length; i++) {
                 let token : string = blocks[i];
@@ -1289,7 +1289,7 @@ export class PdfGraphics {
             }
         }
         finally {
-            if (format !== null) {
+            if (format !== null && typeof format !== 'undefined') {
                 format.firstLineIndent = firstLineIndent;
                 format.paragraphIndent = paragraphIndent;
             }
@@ -1518,7 +1518,7 @@ export class PdfGraphics {
      * @private
      */
     private rightToLeft(format : PdfStringFormat) : boolean {
-        let rtl : boolean = (format != null && format.rightToLeft);
+        let rtl : boolean = (format !== null && typeof format !== 'undefined' && format.rightToLeft);
         if (format !== null && typeof format !== 'undefined') {
             if (format.textDirection !== PdfTextDirection.None && typeof format.textDirection !== 'undefined') {
                 rtl = true;

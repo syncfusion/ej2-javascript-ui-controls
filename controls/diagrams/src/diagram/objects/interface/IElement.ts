@@ -24,6 +24,7 @@ import { NodeFixedUserHandleModel, ConnectorFixedUserHandleModel } from '../fixe
 export interface IElement {
     /** returns the wrapper of the diagram element */
     wrapper: Container;
+    // eslint-disable-next-line @typescript-eslint/ban-types
     init(diagram: Diagram, getDescription?: Function): void;
 }
 
@@ -36,14 +37,14 @@ export interface IDataLoadedEventArgs {
 }
 /**
  * ISelectionChangeEventArgs notifies when the node/connector are select
- * 
+ *
  */
 export interface ISelectionChangeEventArgs {
     /** returns the collection of nodes and connectors that have to be removed from selection list */
     oldValue: (NodeModel | ConnectorModel)[];
     /** returns the collection of nodes and connectors that have to be added to selection list  */
     newValue: (NodeModel | ConnectorModel)[];
-    /** 
+    /**
      * Triggers before and after adding the selection to the object
      * in the diagram which can be differentiated through `state` argument.
      * We can cancel the event only before the selection of the object
@@ -58,14 +59,14 @@ export interface ISelectionChangeEventArgs {
 }
 /**
  * IBlazorSelectionChangeEventArgs notifies when the node/connector are select in Blazor
- * 
+ *
  */
 export interface IBlazorSelectionChangeEventArgs {
     /** returns the collection of nodes and connectors that have to be removed from selection list */
     oldValue: DiagramEventObjectCollection;
     /** returns the collection of nodes and connectors that have to be added to selection list  */
     newValue: DiagramEventObjectCollection;
-    /** 
+    /**
      * Triggers before and after adding the selection to the object
      * in the diagram which can be differentiated through `state` argument.
      * We can cancel the event only before the selection of the object
@@ -81,20 +82,23 @@ export interface IBlazorSelectionChangeEventArgs {
 
 /**
  * ISizeChangeEventArgs notifies when the node are resized
- * 
+ *
  */
 export interface ISizeChangeEventArgs {
     /** returns the node that is selected for resizing
+     *
      * @blazorType DiagramSelectedItems
      */
     source?: SelectorModel;
     /** returns the state of the event */
     state: State;
     /** returns the previous width, height, offsetX and offsetY values of the element that is being resized
+     *
      * @blazorType DiagramSelectedItems
      */
     oldValue: SelectorModel;
     /** returns the new width, height, offsetX and offsetY values of the element that is being resized
+     *
      * @blazorType DiagramSelectedItems
      */
     newValue: SelectorModel;
@@ -104,20 +108,23 @@ export interface ISizeChangeEventArgs {
 
 /**
  * IRotationEventArgs notifies when the node/connector are rotated
- * 
+ *
  */
 export interface IRotationEventArgs {
     /** returns the node that is selected for rotation
+     *
      * @blazorType DiagramSelectedItems
      */
     source?: SelectorModel;
     /** returns the state of the event */
     state: State;
     /** returns the previous rotation angle
+     *
      * @blazorType DiagramSelectedItems
      */
     oldValue: SelectorModel;
     /** returns the new rotation angle
+     *
      * @blazorType DiagramSelectedItems
      */
     newValue: SelectorModel;
@@ -128,7 +135,8 @@ export interface IRotationEventArgs {
  * IConnectorInitEventArgs notifies when the connector is initiated
  */
 export interface IConnectorInitEventArgs {
-    /** returns connector that is being changed 
+    /** returns connector that is being changed
+     *
      * @blazorType DiagramConnector
      */
     element?: ConnectorModel;
@@ -136,62 +144,70 @@ export interface IConnectorInitEventArgs {
 
 /**
  * DiagramCollectionObject is the interface for the diagram objects
- * 
+ *
  */
 export interface DiagramEventObjectCollection {
-    /** returns the collection of node 
+    /** returns the collection of node
+     *
      * @blazorType ObservableCollection<DiagramNode>
      */
     nodes?: NodeModel[];
-    /** returns the collection of connector 
+    /** returns the collection of connector
+     *
      * @blazorType ObservableCollection<DiagramConnector>
      */
     connectors?: ConnectorModel[];
     /**
      * @private
      * Returns the collection of node id
+     *
      */
     nodeCollection?: string[];
     /**
      * @private
      * Returns the collection of connector id
+     *
      */
     connectorCollection?: string[];
 }
 
 /**
  * DiagramObject is the interface for the diagram object
- * 
+ *
  */
 
 export interface DiagramEventObject {
-    /** returns the  node 
+    /** returns the  node
+     *
      * @blazorType DiagramNode
      */
     node?: NodeModel;
-    /** returns the  connector 
+    /** returns the  connector
+     *
      * @blazorType DiagramConnector
      */
     connector?: ConnectorModel;
     /**
      * @private
      * returns the id of node
+     *
      */
     nodeId?: string;
     /**
      * @private
      * returns the id of connector
+     *
      */
     connectorId?: string;
 }
 
 /**
  * fixedUserHandleClickEventArgs notifies when the fixed user handle gets clicked
- * 
+ *
  */
 /**   @private  */
 export interface BlazorFixedUserHandleClickEventArgs {
-    /** returns the fixed user handle of nodes/connector. 
+    /** returns the fixed user handle of nodes/connector.
      */
     fixedUserHandle: DiagramFixedUserHandle;
     /** returns the selected nodes/connector */
@@ -200,10 +216,10 @@ export interface BlazorFixedUserHandleClickEventArgs {
 
 /**
  * fixedUserHandleClickEventArgs notifies when the fixed user handle gets clicked
- * 
+ *
  */
 export interface FixedUserHandleClickEventArgs {
-    /** returns the fixed user handle  of nodes/connector. 
+    /** returns the fixed user handle  of nodes/connector.
      */
     fixedUserHandle: NodeFixedUserHandleModel | ConnectorFixedUserHandleModel;
     /** returns the selected nodes/connector */
@@ -211,11 +227,12 @@ export interface FixedUserHandleClickEventArgs {
 }
 /**
  * DiagramFixedUserHandle is the interface for the fixed user handle
- * 
+ *
  */
 /**   @private  */
 export interface DiagramFixedUserHandle {
     /** returns the  node fixed user handle
+     *
      * @blazorType DiagramNodeFixedUserHandle
      */
     nodeFixedUserHandle?: NodeFixedUserHandleModel;
@@ -228,7 +245,7 @@ export interface DiagramFixedUserHandle {
 
 /**
  * ICollectionChangeEventArgs notifies while the node/connector are added or removed
- * 
+ *
  */
 export interface ICollectionChangeEventArgs {
     /** returns the selected element  */
@@ -248,7 +265,7 @@ export interface ICollectionChangeEventArgs {
 }
 /**
  * IBlazorCollectionChangeEventArgs notifies while the node/connector are added or removed in the diagram
- * 
+ *
  */
 export interface IBlazorCollectionChangeEventArgs {
     /** returns the action of diagram */
@@ -264,10 +281,11 @@ export interface IBlazorCollectionChangeEventArgs {
 }
 /**
  * IBlazorSegmentCollectionChangeEventArgs notifies while the segment of the connectors changes
- * 
+ *
  */
 export interface IBlazorSegmentCollectionChangeEventArgs {
-    /** returns the selected element 
+    /** returns the selected element
+     *
      * @blazorType DiagramConnector
      */
     element: ConnectorModel;
@@ -282,7 +300,7 @@ export interface IBlazorSegmentCollectionChangeEventArgs {
 }
 /**
  * UserHandleEventsArgs notifies while the user handle gets clicked.
- * 
+ *
  */
 export interface UserHandleEventsArgs {
     /** returns the user handle object */
@@ -291,10 +309,11 @@ export interface UserHandleEventsArgs {
 
 /**
  * ICollectionChangeEventArgs notifies while the node/connector are added or removed
- * 
+ *
  */
 export interface ISegmentCollectionChangeEventArgs {
-    /** returns the selected element 
+    /** returns the selected element
+     *
      * @blazorType DiagramConnector
      */
     element: ConnectorModel;
@@ -310,7 +329,7 @@ export interface ISegmentCollectionChangeEventArgs {
 
 /**
  * IPropertyChangeEventArgs notifies when the node/connector property changed
- * 
+ *
  */
 export interface IPropertyChangeEventArgs {
     /** returns the selected element */
@@ -328,11 +347,13 @@ export interface IPropertyChangeEventArgs {
  */
 
 export interface DiagramPropertyChangeObject {
-    /** returns the new source node or target node of the connector 
+    /** returns the new source node or target node of the connector
+     *
      * @blazorType DiagramNode
      */
     node?: NodeModel;
-    /** returns the new source node or target node of the connector 
+    /** returns the new source node or target node of the connector
+     *
      * @blazorType DiagramConnector
      */
     connector?: ConnectorModel;
@@ -341,7 +362,7 @@ export interface DiagramPropertyChangeObject {
 
 /**
  * IBlazorPropertyChangeEventArgs notifies when the node/connector property changed
- * 
+ *
  */
 export interface IBlazorPropertyChangeEventArgs {
     /** returns the selected element */
@@ -356,7 +377,7 @@ export interface IBlazorPropertyChangeEventArgs {
 
 /**
  * IDraggingEventArgs notifies when the node/connector are dragged
- * 
+ *
  */
 export interface IDraggingEventArgs {
     /** returns the node or connector that is being dragged */
@@ -383,10 +404,11 @@ export interface ConnectorValue {
 
 /**
  * BlazorConnectionObject interface for the connector object
- * 
+ *
  */
 export interface BlazorConnectionObject {
-    /** returns the new source node or target node of the connector 
+    /** returns the new source node or target node of the connector
+     *
      * @blazorType DiagramConnector
      */
     connector?: ConnectorModel;
@@ -396,10 +418,11 @@ export interface BlazorConnectionObject {
 
 /**
  * IBlazorConnectionChangeEventArgs notifies when the connector are connect or disconnect
- * 
+ *
  */
 export interface IBlazorConnectionChangeEventArgs {
-    /** returns the new source node or target node of the connector 
+    /** returns the new source node or target node of the connector
+     *
      * @blazorType DiagramConnector
      */
     connector?: ConnectorModel;
@@ -416,8 +439,8 @@ export interface IBlazorConnectionChangeEventArgs {
 }
 
 /**
- * IBlazorDragLeaveEventArgs notifies when the element leaves from  the diagram 
- * 
+ * IBlazorDragLeaveEventArgs notifies when the element leaves from  the diagram
+ *
  */
 export interface IBlazorDragLeaveEventArgs {
     /** returns the id of the diagram */
@@ -430,17 +453,20 @@ export interface IBlazorDragLeaveEventArgs {
  * IBlazorDraggingEventArgs notifies when the node/connector are dragged
  */
 export interface IBlazorDraggingEventArgs {
-    /** returns the node or connector that is being dragged 
+    /** returns the node or connector that is being dragged
+     *
      * @blazorType DiagramSelectedItems
      */
     source?: SelectorModel;
     /** returns the state of drag event (Starting, dragging, completed) */
     state: State;
-    /** returns the previous node or connector that is dragged 
+    /** returns the previous node or connector that is dragged
+     *
      * @blazorType DiagramSelectedItems
      */
     oldValue: SelectorModel;
     /** returns the current node or connector that is being dragged
+     *
      * @blazorType DiagramSelectedItems
      */
     newValue: SelectorModel;
@@ -456,7 +482,7 @@ export interface IBlazorDraggingEventArgs {
 
 /**
  * IConnectionChangeEventArgs notifies when the connector are connect or disconnect
- * 
+ *
  */
 export interface IConnectionChangeEventArgs {
     /** returns the new source node or target node of the connector */
@@ -475,10 +501,11 @@ export interface IConnectionChangeEventArgs {
 
 /**
  * IEndChangeEventArgs notifies when the connector end point are resized
- * 
+ *
  */
 export interface IEndChangeEventArgs {
     /** returns the connector, the target point of which is being dragged
+     *
      * @blazorType DiagramConnector
      */
     connector: ConnectorModel;
@@ -498,7 +525,7 @@ export interface IEndChangeEventArgs {
 
 /**
  * Animation notifies when the animation is take place
- * 
+ *
  */
 export interface Animation {
     /** returns the current animation status */
@@ -507,7 +534,7 @@ export interface Animation {
 
 /**
  * IClickEventArgs notifies while click on the objects or diagram
- * 
+ *
  */
 export interface IClickEventArgs {
     /** returns the object that is clicked or id of the diagram */
@@ -524,7 +551,7 @@ export interface IClickEventArgs {
 
 /**
  * IBlazorClickEventArgs notifies while click on the objects or diagram
- * 
+ *
  */
 export interface IBlazorClickEventArgs {
     /** returns the object that is clicked or id of the diagram */
@@ -540,8 +567,8 @@ export interface IBlazorClickEventArgs {
 }
 
 /**
- * IDoubleClickEventArgs notifies while double click on the diagram or its objects 
- * 
+ * IDoubleClickEventArgs notifies while double click on the diagram or its objects
+ *
  */
 export interface IDoubleClickEventArgs {
     /** returns the object that is clicked or id of the diagram */
@@ -557,7 +584,8 @@ export interface IDoubleClickEventArgs {
  */
 
 export interface DiagramClickEventObject {
-    /** returns the selected items 
+    /** returns the selected items
+     *
      * @blazorType DiagramSelectedItems
      */
     selector?: SelectorModel;
@@ -565,8 +593,8 @@ export interface DiagramClickEventObject {
 }
 
 /**
- * IDoubleClickEventArgs notifies while double click on the diagram or its objects 
- * 
+ * IDoubleClickEventArgs notifies while double click on the diagram or its objects
+ *
  */
 export interface IBlazorDoubleClickEventArgs {
     /** returns the object that is clicked or id of the diagram */
@@ -591,11 +619,13 @@ export interface IMouseEventArgs {
  */
 
 export interface DiagramMouseEventObject {
-    /** returns the new source node or target node of the connector 
+    /** returns the new source node or target node of the connector
+     *
      * @blazorType DiagramNode
      */
     node?: NodeModel;
-    /** returns the new source node or target node of the connector 
+    /** returns the new source node or target node of the connector
+     *
      * @blazorType DiagramConnector
      */
     connector?: ConnectorModel;
@@ -606,12 +636,13 @@ export interface DiagramMouseEventObject {
  * MouseEventElement notifies whether it is node or connector or selector model
  */
 
+// eslint-disable-next-line no-redeclare
 export interface DiagramEventObjectCollection {
-    /** returns the collection of node 
+    /** returns the collection of node
      * ObservableCollection<DiagramNode>
      */
     node?: NodeModel[];
-    /** returns the collection of connectors 
+    /** returns the collection of connectors
      * ObservableCollection<DiagramConnector>
      */
     connector?: ConnectorModel[];
@@ -628,7 +659,7 @@ export interface IBlazorMouseEventArgs {
 
 /**
  * scrollArgs notifies when the scroller had updated
- * 
+ *
  */
 export interface ScrollValues {
     /** returns the horizontaloffset of the scroller */
@@ -645,7 +676,7 @@ export interface ScrollValues {
 
 /**
  * IBlazorScrollChangeEventArgs notifies when the scroller has changed
- * 
+ *
  */
 export interface IBlazorScrollChangeEventArgs {
     /** returns the object that is clicked or id of the diagram */
@@ -659,7 +690,7 @@ export interface IBlazorScrollChangeEventArgs {
 }
 /**
  * IScrollChangeEventArgs notifies when the scroller has changed
- * 
+ *
  */
 export interface IScrollChangeEventArgs {
     /** returns the object that is clicked or id of the diagram */
@@ -674,7 +705,7 @@ export interface IScrollChangeEventArgs {
 
 /**
  * IPaletteSelectionChangeArgs notifies when the selection objects change in the symbol palette
- * 
+ *
  */
 export interface IPaletteSelectionChangeArgs {
     /** returns the old palette item that is selected */
@@ -685,7 +716,7 @@ export interface IPaletteSelectionChangeArgs {
 
 /**
  * IPaletteExpandArgs notifies when the palette items are expanded or collapsed in the symbol palette
- * 
+ *
  */
 export interface IPaletteExpandArgs {
     /** returns the index of the palette item selected */
@@ -704,7 +735,7 @@ export interface IPaletteExpandArgs {
 
 /**
  * IDragEnterEventArgs notifies when the element enter into the diagram from symbol palette
- * 
+ *
  */
 export interface IDragEnterEventArgs {
     /** returns the node or connector that is to be dragged into diagram */
@@ -719,7 +750,7 @@ export interface IDragEnterEventArgs {
 
 /**
  * IBlazorDragEnterEventArgs notifies when the element enter into the diagram from symbol palette
- * 
+ *
  */
 export interface IBlazorDragEnterEventArgs {
     /** returns the node or connector that is to be dragged into diagram */
@@ -733,13 +764,14 @@ export interface IBlazorDragEnterEventArgs {
 }
 
 /**
- * IDragLeaveEventArgs notifies when the element leaves from  the diagram 
- * 
+ * IDragLeaveEventArgs notifies when the element leaves from  the diagram
+ *
  */
 export interface IDragLeaveEventArgs {
     /** returns the id of the diagram */
     diagram: DiagramModel;
     /** returns the node or connector that is dragged outside of the diagram
+     *
      * @blazorType DiagramSelectedItems
      */
     element: SelectorModel;
@@ -747,16 +779,18 @@ export interface IDragLeaveEventArgs {
 
 /**
  * IDragOverEventArgs notifies when an element drag over another diagram element
- * 
+ *
  */
 export interface IDragOverEventArgs {
     /** returns the id of the diagram */
     diagram: DiagramModel;
-    /** returns the node or connector that is dragged over diagram 
+    /** returns the node or connector that is dragged over diagram
+     *
      * @blazorType DiagramSelectedItems
      */
     element: SelectorModel;
     /** returns the node/connector over which the symbol is dragged
+     *
      * @blazorType DiagramSelectedItems
      */
     target: SelectorModel;
@@ -798,24 +832,27 @@ export interface IBlazorTextEditEventArgs {
 
 /**
  * DiagramObject is the interface for the diagram object
- * 
+ *
  */
 
 export interface DiagramEventAnnotation {
     /** returns the  node annotation
+     *
      * @blazorType DiagramNodeAnnotation
      */
     nodeAnnotation?: ShapeAnnotationModel;
-    /** returns the  connector annotation 
+    /** returns the  connector annotation
      * @blazorType DiagramConnectorAnnotation
      */
     connectorAnnotation?: PathAnnotationModel;
     /**
      * @private
      * returns the id of node
+     *
      */
     annotationId?: string;
     /** returns the  text node
+     *
      * @blazorType DiagramNode
      */
     textNode?: TextModel;
@@ -837,7 +874,7 @@ export interface IBlazorHistoryChangeArgs {
 }
 /**
  * IHistoryChangeArgs notifies when the label of an element under goes editing
- * 
+ *
  */
 export interface IHistoryChangeArgs {
     /** returns a collection of objects that are changed in the last undo/redo */
@@ -852,7 +889,7 @@ export interface IHistoryChangeArgs {
 }
 /**
  * IBlazorChangeArgs
- * 
+ *
  */
 export interface ChangedObject {
     /** returns the type of the entry */
@@ -892,7 +929,7 @@ export interface ICustomHistoryChangeArgs {
 
 /**
  * ICustomHistoryChangeArgs notifies when the label of an element under goes editing
- * 
+ *
  */
 export interface IBlazorCustomHistoryChangeArgs {
     /** returns the type of the entry that means undo or redo */
@@ -905,24 +942,29 @@ export interface IBlazorCustomHistoryChangeArgs {
 
 export interface HistoryChangeEventObject {
     /** returns a node objects
+     *
      * @blazorType DiagramNode
      */
     node?: Node;
     /** returns a connector objects
+     *
      * @blazorType DiagramConnector
      */
     connector?: ConnectorModel;
-    /** returns a selector objects 
+    /** returns a selector objects
+     *
      * @blazorType DiagramSelectedItems
      */
     selector?: SelectorModel;
     /** returns a diagram objects  */
     diagram?: DiagramModel;
-    /** returns a shape annotation objects 
+    /** returns a shape annotation objects
+     *
      * @blazorType DiagramNodeAnnotation
      */
     shapeAnnotation?: ShapeAnnotation;
-    /** returns a path annotation objects 
+    /** returns a path annotation objects
+     *
      * @blazorType DiagramConnectorAnnotation
      */
     pathAnnotation?: PathAnnotation;
@@ -935,14 +977,16 @@ export interface HistoryChangeEventObject {
 
 /**
  * DiagramDropObject notifies when the element is dropped in the diagram in blazor
- * 
+ *
  */
 export interface DiagramEventDropObject {
-    /** returns a node objects 
+    /** returns a node objects
+     *
      * @blazorType DiagramNode
      */
     node?: NodeModel;
-    /** returns a connector objects 
+    /** returns a connector objects
+     *
      * @blazorType DiagramConnector
      */
     connector?: ConnectorModel;
@@ -951,7 +995,7 @@ export interface DiagramEventDropObject {
 }
 /**
  * IBlazorDropEventArgs notifies when the element is dropped in the diagram in blazor
- * 
+ *
  */
 export interface IBlazorDropEventArgs {
     /** returns node or connector that is being dropped */
@@ -968,7 +1012,7 @@ export interface IBlazorDropEventArgs {
 
 /**
  * IDropEventArgs notifies when the element is dropped in the diagram
- * 
+ *
  */
 export interface IDropEventArgs {
     /** returns node or connector that is being dropped */
@@ -984,7 +1028,7 @@ export interface IDropEventArgs {
 }
 
 /**
- * Interface for command 
+ * Interface for command
  */
 export interface ICommandExecuteEventArgs {
     /** Sets the key value, on recognition of which the command will be executed */
@@ -1003,6 +1047,7 @@ export interface StackEntryObject {
  */
 export interface IExpandStateChangeEventArgs {
     /** returns node that is being changed the icon
+     *
      * @blazorType DiagramNode
      */
     element?: NodeModel;
@@ -1012,10 +1057,11 @@ export interface IExpandStateChangeEventArgs {
 
 /**
  * IImageLoadEventArgs notifies while the image node is loaded.
- * 
+ *
  */
 export interface IImageLoadEventArgs {
-    /** returns the selected element 
+    /** returns the selected element
+     *
      * @blazorType DiagramNode
      */
     element: NodeModel;
@@ -1025,10 +1071,11 @@ export interface IImageLoadEventArgs {
 
 /**
  * IKeyEventArgs notifies while perform the key actions.
- * 
+ *
  */
 export interface IKeyEventArgs {
     /** Returns the selected element of the diagram
+     *
      * @blazorType DiagramSelectedItems
      */
     element?: SelectorModel;

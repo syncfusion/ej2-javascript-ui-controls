@@ -6,14 +6,20 @@ import { VerticalView } from './vertical-view';
  */
 export class Week extends VerticalView {
     public viewClass: string = 'e-week-view';
+
     /**
      * Constructor for week view
+     *
+     * @param {Schedule} parent Accepts the schedule instance
      */
     constructor(parent: Schedule) {
         super(parent);
     }
+
     /**
      * Get module name.
+     *
+     * @returns {string} Returns the module name.
      */
     protected getModuleName(): string {
         return 'week';

@@ -84,6 +84,7 @@ export class Render {
         this.injectGridModules(parent);
         this.rowStartPos = this.getRowStartPos();
         if (this.parent.grid && this.parent.grid.element && this.parent.element.querySelector('.e-grid')) {
+            this.parent.notEmpty = true;
             if (!engine.isEngineUpdated) {
                 engine.headerContent = this.frameDataSource('header');
                 engine.valueContent = this.frameDataSource('value');
@@ -1375,8 +1376,8 @@ export class Render {
                                 tCell.classList.add('e-gtot');
                             }
                         }
-                        if (cell.valueSort.levelName === (this.parent.localeObj.getConstant('grandTotal') +
-                            (this.parent.dataSourceSettings.valueSortSettings.headerDelimiter) + (cell.formattedText))) {
+                        if (cell.valueSort.levelName === (this.parent.localeObj.getConstant('grandTotal') + (this.parent.dataSourceSettings.valueSortSettings.headerDelimiter) + (cell.formattedText))
+                            || cell.valueSort.levelName === ('Grand Total' + (this.parent.dataSourceSettings.valueSortSettings.headerDelimiter) + (cell.formattedText))) {
                             tCell.classList.add('e-gtot');
                         } else {
                             tCell.classList.add(cls.VALUESHEADER);

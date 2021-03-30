@@ -1,0 +1,66 @@
+
+// Avatar Base
+$avatar-base-border-radius: 5px !default;
+$avatar-base-font-size: 1em !default;
+$avatar-base-width: 3em !default;
+$avatar-base-height: 3em !default;
+$avatar-base-background-color: #bcbcbc !default;
+$avatar-base-text-color: #fff !default;
+$avatar-base-font-weight: 400 !default;
+$avatar-base-img-height: 100% !default;
+
+// Circle Avatar
+$avatar-circle-border-radius: 50% !default;
+
+// Avatar size
+$avatar-xsmall-font-size: .6em !default;
+$avatar-small-font-size: .8em !default;
+$avatar-large-font-size: 1.2em !default;
+$avatar-xlarge-font-size: 1.4em !default;
+
+@include export-module('avatar-layout') {
+  .e-avatar {
+    align-content: center;
+    align-items: center;
+    background-color: $avatar-base-background-color;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    border-radius: $avatar-base-border-radius;
+    color: $avatar-base-text-color;
+    display: inline-flex;
+    font-family: $font-family;
+    font-size: $avatar-base-font-size;
+    font-weight: $avatar-base-font-weight;
+    height: $avatar-base-height;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    width: $avatar-base-width;
+
+    img {
+      height: $avatar-base-img-height;
+      width: auto;
+    }
+
+    &.e-avatar-circle {
+      border-radius: $avatar-circle-border-radius;
+    }
+
+    &.e-avatar-xsmall {
+      font-size: $avatar-xsmall-font-size;
+    }
+
+    &.e-avatar-small {
+      font-size: $avatar-small-font-size;
+    }
+
+    &.e-avatar-large {
+      font-size: $avatar-large-font-size;
+    }
+
+    &.e-avatar-xlarge {
+      font-size: $avatar-xlarge-font-size;
+    }
+  }
+}

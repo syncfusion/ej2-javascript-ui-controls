@@ -2,13 +2,14 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
 import { SelectionType } from '../base/type';
 
 
-/**  
+/**
  * Holds the configuration of card settings in kanban board.
  */
 export class CardSettings extends ChildProperty<CardSettings> {
 
     /**
      * Show or hide the card header
+     *
      * @default true
      */
     @Property(true)
@@ -16,6 +17,7 @@ export class CardSettings extends ChildProperty<CardSettings> {
 
     /**
      * Defines the card header text
+     *
      * @default null
      */
     @Property()
@@ -23,6 +25,7 @@ export class CardSettings extends ChildProperty<CardSettings> {
 
     /**
      * Defines the card content text
+     *
      * @default null
      */
     @Property()
@@ -30,6 +33,7 @@ export class CardSettings extends ChildProperty<CardSettings> {
 
     /**
      * Defines the card content labels
+     *
      * @default null
      */
     @Property()
@@ -37,6 +41,7 @@ export class CardSettings extends ChildProperty<CardSettings> {
 
     /**
      * Defines the card color
+     *
      * @default null
      */
     @Property()
@@ -44,6 +49,7 @@ export class CardSettings extends ChildProperty<CardSettings> {
 
     /**
      * Defines the card icons
+     *
      * @default null
      */
     @Property()
@@ -51,6 +57,7 @@ export class CardSettings extends ChildProperty<CardSettings> {
 
     /**
      * Defines the card template
+     *
      * @default null
      */
     @Property()
@@ -61,6 +68,7 @@ export class CardSettings extends ChildProperty<CardSettings> {
      * * Single
      * * Multiple
      * * None
+     *
      * @default 'Single'
      */
     @Property('Single')

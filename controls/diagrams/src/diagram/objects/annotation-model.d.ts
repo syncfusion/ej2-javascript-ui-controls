@@ -7,18 +7,21 @@ export interface HyperlinkModel {
 
     /**
      * Sets the fill color of the hyperlink
+     *
      * @default 'blue'
      */
     color?: string;
 
     /**
      * Defines the content for hyperlink
+     *
      * @default ''
      */
     content?: string;
 
     /**
      * Defines the link for hyperlink
+     *
      * @default ''
      */
     link?: string;
@@ -29,6 +32,7 @@ export interface HyperlinkModel {
      * * Underline - Decorates the text with an underline
      * * LineThrough - Decorates the text by striking it with a line
      * * None - Text will not have any specific decoration
+     *
      * @default 'None'
      */
     textDecoration?: TextDecoration;
@@ -42,12 +46,14 @@ export interface AnnotationModel {
 
     /**
      * Sets the textual description of the node/connector
+     *
      * @default ''
      */
     content?: string;
 
     /**
      * Sets the textual description of the node/connector
+     *
      * @default 'undefined'
      */
     template?: string | HTMLElement;
@@ -56,12 +62,14 @@ export interface AnnotationModel {
      *  Defines the type of annotation template
      * String -  Defines annotation template to be in string
      * Template - Defines annotation template to be in html content
+     *
      * @default 'String'
      */
     annotationType?: AnnotationType;
 
     /**
      * Defines the visibility of the label
+     *
      * @default true
      */
     visibility?: boolean;
@@ -70,6 +78,7 @@ export interface AnnotationModel {
      * Enables or disables the default behaviors of the label.
      * * ReadOnly - Enables/Disables the ReadOnly Constraints
      * * InheritReadOnly - Enables/Disables the InheritReadOnly Constraints
+     *
      * @default 'InheritReadOnly'
      * @aspNumberEnum
      * @blazorNumberEnum
@@ -97,6 +106,7 @@ export interface AnnotationModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -105,12 +115,14 @@ export interface AnnotationModel {
 
     /**
      * Defines the unique id of the annotation
+     *
      * @default ''
      */
     id?: string;
 
     /**
      * Sets the width of the text
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -119,6 +131,7 @@ export interface AnnotationModel {
 
     /**
      * Sets the height of the text
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -127,12 +140,14 @@ export interface AnnotationModel {
 
     /**
      * Sets the rotate angle of the text
+     *
      * @default 0
      */
     rotateAngle?: number;
 
     /**
      * Defines the appearance of the text
+     *
      * @default new TextStyle()
      * @blazorType AnnotationStyle
      */
@@ -145,6 +160,7 @@ export interface AnnotationModel {
      * * Right - Aligns the diagram element at the right of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
+     *
      * @default 'Center'
      */
     horizontalAlignment?: HorizontalAlignment;
@@ -156,18 +172,21 @@ export interface AnnotationModel {
      * * Bottom - Aligns the diagram element at the bottom of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
+     *
      * @default 'Center'
      */
     verticalAlignment?: VerticalAlignment;
 
     /**
      * Sets the space to be left between an annotation and its parent node/connector
+     *
      * @default new Margin(0,0,0,0)
      */
     margin?: MarginModel;
 
     /**
      * Sets the space to be left between an annotation and its parent node/connector
+     *
      * @default new Margin(20,20,20,20)
      */
     dragLimit?: MarginModel;
@@ -176,6 +195,7 @@ export interface AnnotationModel {
      * Sets the type of the annotation
      *  * Shape - Sets the annotation type as Shape
      *  * Path - Sets the annotation type as Path
+     *
      * @default 'Shape'
      */
     type?: AnnotationTypes;
@@ -189,7 +209,7 @@ export interface AnnotationModel {
      * let addInfo: {}  = { content: 'label' };
      * let nodes: NodeModel[] = [{
      * id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
-     * annotations: [{ id: 'label1', 
+     * annotations: [{ id: 'label1',
      * content: 'text', constraints: ~AnnotationConstraints.InheritReadOnly, addInfo: addInfo
      * }],
      * }];
@@ -200,6 +220,7 @@ export interface AnnotationModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -215,6 +236,7 @@ export interface ShapeAnnotationModel extends AnnotationModel{
 
     /**
      * Sets the position of the annotation with respect to its parent bounds
+     *
      * @default { x: 0.5, y: 0.5 }
      * @blazorType NodeAnnotationOffset
      */
@@ -229,12 +251,14 @@ export interface PathAnnotationModel extends AnnotationModel{
 
     /**
      * Sets the segment offset of annotation
+     *
      * @default 0.5
      */
     offset?: number;
 
     /**
      * Sets the displacement of an annotation from its actual position
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -246,12 +270,14 @@ export interface PathAnnotationModel extends AnnotationModel{
      *  * Center - Aligns the annotation at the center of a connector segment
      *  * Before - Aligns the annotation before a connector segment
      *  * After - Aligns the annotation after a connector segment
+     *
      * @default Center
      */
     alignment?: AnnotationAlignment;
 
     /**
      * Enable/Disable the angle based on the connector segment
+     *
      * @default false
      */
     segmentAngle?: boolean;

@@ -6,7 +6,8 @@ import { WUniqueFormats } from '../../base/unique-formats';
 import { WStyle, WParagraphStyle } from './style';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Revision } from '../track-changes/track-changes';
-/** 
+/* eslint-disable */
+/**
  * @private
  */
 export class WCharacterFormat {
@@ -23,131 +24,128 @@ export class WCharacterFormat {
      * @private
      */
     public revisions: Revision[] = [];
-    get bold(): boolean {
+    public get bold(): boolean {
         return this.getPropertyValue('bold') as boolean;
     }
-    set bold(value: boolean) {
+    public set bold(value: boolean) {
         this.setPropertyValue('bold', value);
     }
-    get italic(): boolean {
+    public get italic(): boolean {
         return this.getPropertyValue('italic') as boolean;
     }
-    set italic(value: boolean) {
+    public set italic(value: boolean) {
         this.setPropertyValue('italic', value);
     }
-    get fontSize(): number {
+    public get fontSize(): number {
         return this.getPropertyValue('fontSize') as number;
     }
-    set fontSize(value: number) {
+    public set fontSize(value: number) {
         this.setPropertyValue('fontSize', value);
     }
-    get fontFamily(): string {
+    public get fontFamily(): string {
         return this.getPropertyValue('fontFamily') as string;
     }
-    set fontFamily(value: string) {
+    public set fontFamily(value: string) {
         this.setPropertyValue('fontFamily', value);
     }
-    get underline(): Underline {
+    public get underline(): Underline {
         return this.getPropertyValue('underline') as Underline;
     }
-    set underline(value: Underline) {
+    public set underline(value: Underline) {
         this.setPropertyValue('underline', value);
     }
-    get strikethrough(): Strikethrough {
+    public get strikethrough(): Strikethrough {
         return this.getPropertyValue('strikethrough') as Strikethrough;
     }
-    set strikethrough(value: Strikethrough) {
+    public set strikethrough(value: Strikethrough) {
         this.setPropertyValue('strikethrough', value);
     }
-    get baselineAlignment(): BaselineAlignment {
+    public get baselineAlignment(): BaselineAlignment {
         return this.getPropertyValue('baselineAlignment') as BaselineAlignment;
     }
-    set baselineAlignment(value: BaselineAlignment) {
+    public set baselineAlignment(value: BaselineAlignment) {
         this.setPropertyValue('baselineAlignment', value);
     }
-    get highlightColor(): HighlightColor {
+    public get highlightColor(): HighlightColor {
         return this.getPropertyValue('highlightColor') as HighlightColor;
     }
-    set highlightColor(value: HighlightColor) {
+    public set highlightColor(value: HighlightColor) {
         this.setPropertyValue('highlightColor', value);
     }
-    get fontColor(): string {
+    public get fontColor(): string {
         return this.getPropertyValue('fontColor') as string;
     }
-    set fontColor(value: string) {
+    public set fontColor(value: string) {
         this.setPropertyValue('fontColor', value);
     }
 
-    get bidi(): boolean {
+    public get bidi(): boolean {
         return this.getPropertyValue('bidi') as boolean;
     }
 
-    set bidi(value: boolean) {
+    public set bidi(value: boolean) {
         this.setPropertyValue('bidi', value);
     }
 
-    get bdo(): BiDirectionalOverride {
+    public get bdo(): BiDirectionalOverride {
         return this.getPropertyValue('bdo') as BiDirectionalOverride;
     }
 
-    set bdo(value: BiDirectionalOverride) {
+    public set bdo(value: BiDirectionalOverride) {
         this.setPropertyValue('bdo', value);
     }
 
-    get boldBidi(): boolean {
+    public get boldBidi(): boolean {
         return this.getPropertyValue('boldBidi') as boolean;
     }
-    set boldBidi(value: boolean) {
+    public set boldBidi(value: boolean) {
         this.setPropertyValue('boldBidi', value);
     }
-    get italicBidi(): boolean {
+    public get italicBidi(): boolean {
         return this.getPropertyValue('italicBidi') as boolean;
     }
-    set italicBidi(value: boolean) {
+    public set italicBidi(value: boolean) {
         this.setPropertyValue('italicBidi', value);
     }
-    get fontSizeBidi(): number {
+    public get fontSizeBidi(): number {
         return this.getPropertyValue('fontSizeBidi') as number;
     }
-    set fontSizeBidi(value: number) {
+    public set fontSizeBidi(value: number) {
         this.setPropertyValue('fontSizeBidi', value);
     }
-    get fontFamilyBidi(): string {
+    public get fontFamilyBidi(): string {
         return this.getPropertyValue('fontFamilyBidi') as string;
     }
-    set fontFamilyBidi(value: string) {
+    public set fontFamilyBidi(value: string) {
         this.setPropertyValue('fontFamilyBidi', value);
     }
-    get allCaps(): boolean {
+    public get allCaps(): boolean {
         return this.getPropertyValue('allCaps') as boolean;
     }
-    set allCaps(value: boolean) {
+    public set allCaps(value: boolean) {
         this.setPropertyValue('allCaps', value);
     }
 
-    constructor(node?: Object) {
+    public constructor(node?: Object) {
         this.ownerBase = node;
     }
     public getPropertyValue(property: string): Object {
         if (!this.hasValue(property)) {
-            let charStyleValue: Object = this.checkCharacterStyle(property);
+            const charStyleValue: Object = this.checkCharacterStyle(property);
             if (!isNullOrUndefined(charStyleValue)) {
                 return charStyleValue;
             } else {
                 if (!isNullOrUndefined(this.baseCharStyle)) {
-                    /* tslint:disable-next-line:no-any */
-                    let paragraph: any = (this.ownerBase as TextElementBox).paragraph;
-                    let line: LineWidget = (this.ownerBase as TextElementBox).line;
+                    const paragraph: any = (this.ownerBase as TextElementBox).paragraph;
+                    const line: LineWidget = (this.ownerBase as TextElementBox).line;
                     if (!isNullOrUndefined(paragraph) && !isNullOrUndefined(line)) {
-                        let length: number = line.children.length;
+                        const length: number = line.children.length;
                         for (let i: number = 0; i < length; i++) {
-                            /* tslint:disable-next-line:no-any */
-                            let element: any = (this.ownerBase as any).line.children[i];
+                            const element: any = (this.ownerBase as any).line.children[i];
                             if (element instanceof TextElementBox) {
-                                /* tslint:disable-next-line:no-any */
-                                let text: any = element.text;
+                                const text: any = element.text;
                                 if (text.startsWith('HYPERLINK')) {
-                                    let index: number = text.indexOf('_Toc');
+                                    const index: number = text.indexOf('_Toc');
                                     if (index !== -1) {
                                         this.baseCharStyle = (this.ownerBase as TextElementBox).paragraph.paragraphFormat.baseStyle;
                                     }
@@ -156,13 +154,13 @@ export class WCharacterFormat {
                         }
                     }
                 }
-                let baseStyleValue: Object = this.checkBaseStyle(property);
+                const baseStyleValue: Object = this.checkBaseStyle(property);
                 if (!isNullOrUndefined(baseStyleValue)) {
                     return baseStyleValue;
                 }
             }
         } else {
-            let propertyType: number = WUniqueFormat.getPropertyType(WCharacterFormat.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(WCharacterFormat.uniqueFormatType, property);
             if (!isNullOrUndefined(this.uniqueCharacterFormat) && this.uniqueCharacterFormat.propertiesHash.containsKey(propertyType)) {
                 return this.uniqueCharacterFormat.propertiesHash.get(propertyType);
             }
@@ -170,9 +168,8 @@ export class WCharacterFormat {
         return this.getDefaultValue(property);
     }
     private getDefaultValue(property: string): Object {
-        let propertyType: number = WUniqueFormat.getPropertyType(WCharacterFormat.uniqueFormatType, property);
-        let docCharacterFormat: WCharacterFormat = this.documentCharacterFormat();
-        // tslint:disable-next-line:max-line-length
+        const propertyType: number = WUniqueFormat.getPropertyType(WCharacterFormat.uniqueFormatType, property);
+        const docCharacterFormat: WCharacterFormat = this.documentCharacterFormat();
         if (!isNullOrUndefined(docCharacterFormat) && !isNullOrUndefined(docCharacterFormat.uniqueCharacterFormat) && docCharacterFormat.uniqueCharacterFormat.propertiesHash.containsKey(propertyType)) {
             return docCharacterFormat.uniqueCharacterFormat.propertiesHash.get(propertyType);
         } else {
@@ -182,7 +179,6 @@ export class WCharacterFormat {
     private documentCharacterFormat(): WCharacterFormat {
         let docCharacterFormat: WCharacterFormat;
         if (!isNullOrUndefined(this.ownerBase)) {
-            // tslint:disable-next-line:max-line-length
             if (!isNullOrUndefined((this.ownerBase as TextElementBox).paragraph) && !isNullOrUndefined((this.ownerBase as TextElementBox).paragraph.bodyWidget)) {
                 docCharacterFormat = (this.ownerBase as TextElementBox).paragraph.bodyWidget.page.documentHelper.characterFormat;
             } else {
@@ -194,13 +190,12 @@ export class WCharacterFormat {
         return docCharacterFormat;
     }
     private checkBaseStyle(property: string): Object {
-        /* tslint:disable-next-line:no-any */
         let baseStyle: any;
         if (!isNullOrUndefined(this.ownerBase)) {
             if (!isNullOrUndefined((this.ownerBase as TextElementBox).paragraph)) {
                 baseStyle = (this.ownerBase as TextElementBox).paragraph.paragraphFormat.baseStyle;
             } else {
-                // tslint:disable-next-line:max-line-length
+
                 if ((this.ownerBase instanceof ParagraphWidget) && !isNullOrUndefined((this.ownerBase as ParagraphWidget).paragraphFormat)) {
                     baseStyle = (this.ownerBase as ParagraphWidget).paragraphFormat.baseStyle;
                 } else {
@@ -219,19 +214,18 @@ export class WCharacterFormat {
             }
         }
         if (!isNullOrUndefined(baseStyle)) {
-            let propertyType: number = WUniqueFormat.getPropertyType(WCharacterFormat.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(WCharacterFormat.uniqueFormatType, property);
             return baseStyle.characterFormat.uniqueCharacterFormat.propertiesHash.get(propertyType);
         }
         return undefined;
     }
     private checkCharacterStyle(property: string): Object {
-        /* tslint:disable-next-line:no-any */
         let baseStyle: any = this.baseCharStyle;
         if (!isNullOrUndefined(baseStyle)) {
             while (!isNullOrUndefined(baseStyle) && baseStyle.name !== 'Default Paragraph Font') {
-                let hasKey: boolean = baseStyle.characterFormat.hasValue(property);
+                const hasKey: boolean = baseStyle.characterFormat.hasValue(property);
                 if (hasKey) {
-                    let returnPropertyType: number = WUniqueFormat.getPropertyType(WCharacterFormat.uniqueFormatType, property);
+                    const returnPropertyType: number = WUniqueFormat.getPropertyType(WCharacterFormat.uniqueFormatType, property);
                     return baseStyle.characterFormat.uniqueCharacterFormat.propertiesHash.get(returnPropertyType);
                 } else {
                     baseStyle = baseStyle.basedOn;
@@ -247,18 +241,16 @@ export class WCharacterFormat {
         if (isNullOrUndefined(this.uniqueCharacterFormat)) {
             this.initializeUniqueCharacterFormat(property, value);
         } else {
-            let propertyType: number = WUniqueFormat.getPropertyType(this.uniqueCharacterFormat.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(this.uniqueCharacterFormat.uniqueFormatType, property);
             if (this.uniqueCharacterFormat.propertiesHash.containsKey(propertyType) &&
-                // tslint:disable-next-line:max-line-length
                 this.uniqueCharacterFormat.propertiesHash.get(propertyType) === value) {  //Do nothing, since no change in property value and return
                 return;
             }
-            // tslint:disable-next-line:max-line-length
             this.uniqueCharacterFormat = WCharacterFormat.uniqueCharacterFormats.updateUniqueFormat(this.uniqueCharacterFormat, property, value);
         }
     }
     private initializeUniqueCharacterFormat(property: string, propValue: object): void {
-        let uniqueCharFormatTemp: Dictionary<number, object> = new Dictionary<number, object>();
+        const uniqueCharFormatTemp: Dictionary<number, object> = new Dictionary<number, object>();
         this.addUniqueCharacterFormat('fontColor', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('fontFamily', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('fontSize', property, propValue, uniqueCharFormatTemp);
@@ -276,13 +268,12 @@ export class WCharacterFormat {
         this.addUniqueCharacterFormat('boldBidi', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('italicBidi', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('allCaps', property, propValue, uniqueCharFormatTemp);
-        // tslint:disable-next-line:max-line-length
+
         this.uniqueCharacterFormat = WCharacterFormat.uniqueCharacterFormats.addUniqueFormat(uniqueCharFormatTemp, WCharacterFormat.uniqueFormatType);
     }
-    // tslint:disable-next-line:max-line-length
+
     private addUniqueCharacterFormat(property: string, modifiedProperty: string, propValue: object, uniqueCharFormatTemp: Dictionary<number, object>): void {
-        let propertyType: number;
-        propertyType = WUniqueFormat.getPropertyType(WCharacterFormat.uniqueFormatType, property);
+        let propertyType: number = WUniqueFormat.getPropertyType(WCharacterFormat.uniqueFormatType, property);
         if (property === modifiedProperty) {
             uniqueCharFormatTemp.add(propertyType, propValue);
         }
@@ -290,57 +281,57 @@ export class WCharacterFormat {
     private static getPropertyDefaultValue(property: string): Object {
         let value: Object = undefined;
         switch (property) {
-            case 'bold':
-                value = false;
-                break;
-            case 'italic':
-                value = false;
-                break;
-            case 'fontSize':
-                value = 11;
-                break;
-            case 'underline':
-                value = 'None';
-                break;
-            case 'strikethrough':
-                value = 'None';
-                break;
-            case 'baselineAlignment':
-                value = 'Normal';
-                break;
-            case 'highlightColor':
-                value = 'NoColor';
-                break;
-            case 'fontColor':
-                value = 'empty';
-                break;
-            case 'fontFamily':
-                value = 'Calibri';
-                break;
-            case 'styleName':
-                value = 'Default Paragraph Font';
-                break;
-            case 'bidi':
-                value = false;
-                break;
-            case 'bdo':
-                value = 'None';
-                break;
-            case 'boldBidi':
-                value = false;
-                break;
-            case 'italicBidi':
-                value = false;
-                break;
-            case 'fontSizeBidi':
-                value = 11;
-                break;
-            case 'fontFamilyBidi':
-                value = 'Calibri';
-                break;
-            case 'allCaps':
-                value = false;
-                break;
+        case 'bold':
+            value = false;
+            break;
+        case 'italic':
+            value = false;
+            break;
+        case 'fontSize':
+            value = 11;
+            break;
+        case 'underline':
+            value = 'None';
+            break;
+        case 'strikethrough':
+            value = 'None';
+            break;
+        case 'baselineAlignment':
+            value = 'Normal';
+            break;
+        case 'highlightColor':
+            value = 'NoColor';
+            break;
+        case 'fontColor':
+            value = 'empty';
+            break;
+        case 'fontFamily':
+            value = 'Calibri';
+            break;
+        case 'styleName':
+            value = 'Default Paragraph Font';
+            break;
+        case 'bidi':
+            value = false;
+            break;
+        case 'bdo':
+            value = 'None';
+            break;
+        case 'boldBidi':
+            value = false;
+            break;
+        case 'italicBidi':
+            value = false;
+            break;
+        case 'fontSizeBidi':
+            value = 11;
+            break;
+        case 'fontFamilyBidi':
+            value = 'Calibri';
+            break;
+        case 'allCaps':
+            value = false;
+            break;
         }
         return value;
     }
@@ -362,22 +353,19 @@ export class WCharacterFormat {
             this.uniqueCharacterFormat === format.uniqueCharacterFormat;
     }
     public cloneFormat(): WCharacterFormat {
-        let format: WCharacterFormat = new WCharacterFormat(undefined);
+        const format: WCharacterFormat = new WCharacterFormat(undefined);
         format.uniqueCharacterFormat = this.uniqueCharacterFormat;
         format.baseCharStyle = this.baseCharStyle;
         if (this.revisions.length > 0) {
-        format.removedIds = Revision.cloneRevisions(this.revisions);
+            format.removedIds = Revision.cloneRevisions(this.revisions);
         } else {
             format.removedIds = this.removedIds.slice();
         }
         return format;
     }
-    /**
-     * @private
-     */
     public hasValue(property: string): boolean {
         if (!isNullOrUndefined(this.uniqueCharacterFormat) && !isNullOrUndefined(this.uniqueCharacterFormat.propertiesHash)) {
-            let propertyType: number = WUniqueFormat.getPropertyType(this.uniqueCharacterFormat.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(this.uniqueCharacterFormat.uniqueFormatType, property);
             return this.uniqueCharacterFormat.propertiesHash.containsKey(propertyType);
         }
         return false;
@@ -403,9 +391,9 @@ export class WCharacterFormat {
             }
             if (format.revisions.length > 0) {
                 this.removedIds = Revision.cloneRevisions(format.revisions);
-             } else {
-                 this.removedIds = format.removedIds.slice();
-             }
+            } else {
+                this.removedIds = format.removedIds.slice();
+            }
         }
     }
 
@@ -427,20 +415,12 @@ export class WCharacterFormat {
     public static clear(): void {
         this.uniqueCharacterFormats.clear();
     }
-    public ApplyStyle(baseCharStyle: WStyle): void {
+    public applyStyle(baseCharStyle: WStyle): void {
         this.baseCharStyle = baseCharStyle;
     }
-    /**
-     * For internal use
-     * @private
-     */
     public getValue(property: string): Object {
         return this.hasValue(property) ? this.getPropertyValue(property) : undefined;
     }
-    /**
-     * For internal use
-     * @private
-     */
     public mergeFormat(format: WCharacterFormat): void {
         if (isNullOrUndefined(this.getValue('bold'))) {
             this.bold = format.getValue('bold') as boolean;

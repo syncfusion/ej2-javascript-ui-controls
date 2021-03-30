@@ -6,6 +6,7 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
 export class Point extends ChildProperty<Point> {
     /**
      * Sets the x-coordinate of a position
+     *
      * @default 0
      */
     @Property(0)
@@ -13,6 +14,7 @@ export class Point extends ChildProperty<Point> {
 
     /**
      * Sets the y-coordinate of a position
+     *
      * @default 0
      */
     @Property(0)

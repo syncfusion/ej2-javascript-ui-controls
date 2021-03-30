@@ -25,10 +25,12 @@ export class NotesDialog {
      */
     private noteNumberFormat: string = undefined;
     private sectionFormat: WSectionFormat = undefined;
+
     /**
+     * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
      */
-    constructor(documentHelper: DocumentHelper) {
+    public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
     }
 
@@ -37,26 +39,28 @@ export class NotesDialog {
     }
     /**
      * @private
+     * @param {L10n} localValue - Specifies the locale value
+     * @param {boolean} isRtl - Specifies the is rtl
+     * @returns {void}
      */
     public notesDialog(localValue: L10n, isRtl?: boolean): void {
-        let idName: string = this.documentHelper.owner.containerId + '_insert_Footnote';
+        const idName: string = this.documentHelper.owner.containerId + '_insert_Footnote';
         this.target = createElement('div', { id: idName, className: 'e-de-insert-footnote' });
-        let firstDiv: HTMLElement = createElement('div');
+        const firstDiv: HTMLElement = createElement('div');
 
-        let container: HTMLElement = createElement('div', {
+        const container: HTMLElement = createElement('div', {
             className: 'e-de-insert-footnote-dlg-sub-header', innerHTML: localValue.getConstant('Start at')
         });
-        let startatValue: HTMLElement = createElement('div');
+        const startatValue: HTMLElement = createElement('div');
         this.footCount = createElement('input', {
             attrs: { type: 'text' }, id: this.documentHelper.owner.containerId + 'row'
         }) as HTMLInputElement;
         startatValue.appendChild(this.footCount);
-        let numberformat: HTMLElement = createElement('div', {
+        const numberformat: HTMLElement = createElement('div', {
             className: 'e-de-insert-footnote-dlg-sub-header', innerHTML: localValue.getConstant('Number format')
         });
-        // tslint:disable-next-line:max-line-length
-        let numberFormatDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { id: '_paperSizeDiv', styles: 'height:37px;', className: 'e-de-page-setup-dlg-sub-container' });
-        let formatType: HTMLElement = createElement('select', {
+        const numberFormatDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { id: '_paperSizeDiv', styles: 'height:37px;', className: 'e-de-page-setup-dlg-sub-container' });
+        const formatType: HTMLElement = createElement('select', {
             id: this.target.id + '_papersize', styles: 'padding-bottom: 20px;',
             innerHTML: '<option value="1, 2, 3, ...">' + localValue.getConstant('1, 2, 3, ...') +
                 '</option><option value="a, b, c, ...">' + localValue.getConstant('a, b, c, ...') +
@@ -85,9 +89,10 @@ export class NotesDialog {
 
     /**
      * @private
+     * @returns {void}
      */
     public show(): void {
-        let localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        const localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         localValue.setLocale(this.documentHelper.owner.locale);
         if (!this.target) {
             this.notesDialog(localValue);
@@ -95,10 +100,9 @@ export class NotesDialog {
         if (this.documentHelper.selection.caret.style.display !== 'none') {
             this.documentHelper.selection.caret.style.display = 'none';
         }
-        // tslint:disable-next-line
         //let footType: any = this.documentHelper.selection.startInternal.currentWidget.paragraph.containerWidget;
         if (this.documentHelper.selection.isinFootnote) {
-        this.documentHelper.dialog.header = localValue.getConstant('Footnote');
+            this.documentHelper.dialog.header = localValue.getConstant('Footnote');
         } else {
             this.documentHelper.dialog.header = localValue.getConstant('Endnote');
         }
@@ -119,20 +123,22 @@ export class NotesDialog {
         this.documentHelper.dialog.dataBind();
         this.documentHelper.dialog.show();
         if (this.documentHelper.selection.isinEndnote) {
-            let alignValue: number = this.endnoteListValue(this.list);
+            const alignValue: number = this.endnoteListValue(this.list);
             this.notesList.index = alignValue;
         }
     }
     /**
      * @private
+     * @returns {void}
      */
     public onCancelButtonClick = (): void => {
         this.documentHelper.dialog.hide();
         this.documentHelper.updateFocus();
         this.unWireEventsAndBindings();
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public loadFontDialog = (): void => {
         this.documentHelper.updateFocus();
@@ -144,30 +150,29 @@ export class NotesDialog {
             section = this.documentHelper.owner.selection.sectionFormat;
         }
         if (this.documentHelper.selection.isinFootnote) {
-            let footnotesFormat: string = section.footNoteNumberFormat;
-            let startAt: number = section.initialFootNoteNumber;
+            const footnotesFormat: string = section.footNoteNumberFormat;
+            const startAt: number = section.initialFootNoteNumber;
             format = this.reversetype(footnotesFormat);
             this.notesList.value = format;
             this.startValueTextBox.value = startAt;
         } else {
-            let endnotesFormat: string = section.endnoteNumberFormat;
+            const endnotesFormat: string = section.endnoteNumberFormat;
             format = this.reversetype(endnotesFormat);
-            let startAt: number = section.initialEndNoteNumber;
+            const startAt: number = section.initialEndNoteNumber;
             this.notesList.value = format;
             this.startValueTextBox.value = startAt;
         }
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public onInsertFootnoteClick = (): void => {
-        let format: WSectionFormat | SelectionSectionFormat;
-        format = new WSectionFormat(undefined);
+        const format: WSectionFormat | SelectionSectionFormat = new WSectionFormat(undefined);
         if (!isNullOrUndefined(this.notesList)) {
-            let renderFormat: FootEndNoteNumberFormat;
-            let formats: string = (this.notesList.value).toString();
-            renderFormat = this.types(formats);
-            let startValue: number = this.startValueTextBox.value;
+            const formats: string = (this.notesList.value).toString();
+            const renderFormat : FootEndNoteNumberFormat = this.types(formats);
+            const startValue: number = this.startValueTextBox.value;
             if (!isNullOrUndefined(this.notesList)) {
                 if (this.documentHelper.selection.isinFootnote) {
                     format.footNoteNumberFormat = renderFormat;
@@ -184,43 +189,43 @@ export class NotesDialog {
             }
         }
         this.documentHelper.hideDialog();
-    }
+    };
     private types(type: string): FootEndNoteNumberFormat {
         switch (type) {
-            case '1, 2, 3, ...':
-                return 'Arabic';
-            case 'A, B, C, ...':
-                return 'UpperCaseLetter';
-            case 'a, b, c, ...':
-                return 'LowerCaseLetter';
-            case 'I, II, III, ...':
-                return 'LowerCaseRoman';
-            case 'i, ii, iii, ...':
-                return 'UpperCaseRoman';
-            default:
-                return 'Arabic';
+        case '1, 2, 3, ...':
+            return 'Arabic';
+        case 'A, B, C, ...':
+            return 'UpperCaseLetter';
+        case 'a, b, c, ...':
+            return 'LowerCaseLetter';
+        case 'I, II, III, ...':
+            return 'LowerCaseRoman';
+        case 'i, ii, iii, ...':
+            return 'UpperCaseRoman';
+        default:
+            return 'Arabic';
 
         }
 
     }
     private reversetype(type: string): string {
         switch (type) {
-            case 'Arabic':
-                return '1, 2, 3, ...';
-            case 'UpperCaseLetter':
-                return 'A, B, C, ...';
-            case 'LowerCaseLetter':
-                return 'a, b, c, ...';
-            case 'UpperCaseRoman':
-                return 'I, II, III, ...';
-            case 'LowerCaseRoman':
-                return 'i, ii, iii, ...';
-            default:
-                return '1, 2, 3, ...';
+        case 'Arabic':
+            return '1, 2, 3, ...';
+        case 'UpperCaseLetter':
+            return 'A, B, C, ...';
+        case 'LowerCaseLetter':
+            return 'a, b, c, ...';
+        case 'UpperCaseRoman':
+            return 'I, II, III, ...';
+        case 'LowerCaseRoman':
+            return 'i, ii, iii, ...';
+        default:
+            return '1, 2, 3, ...';
         }
 
     }
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private endnoteListValue(listFocus: any): number {
         let value: number;
         if (listFocus === 'A, B, C, ...') {
@@ -229,21 +234,24 @@ export class NotesDialog {
             value = 1;
         } else if (listFocus === 'a, b, c, ...') {
             value = 2;
-        } else if (listFocus === 'A, B, C, ...') {
-            value = 3;
         } else {
-            value = 4;
+            value = 3;
         }
+        //  else {
+        //     value = 4;
+        // }
         return value;
     }
     /**
      * @private
+     * @returns {void}
      */
     public unWireEventsAndBindings = (): void => {
         this.notesList.value = undefined;
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         if (this.footCount) {

@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable @typescript-eslint/ban-types */
 import { BulletChart } from '../bullet-chart';
 import { measureText, textElement, TextOption, Rect } from '@syncfusion/ej2-svg-base';
 import { Orientation } from '../../chart/utils/enum';
@@ -39,48 +43,47 @@ export class BulletChartAxis {
         this.isLabelBelow = !this.bulletChart.opposedPosition;
     }
 
-    public renderMajorTickLines(intervalValue : number, scale: Element) : void {
-         if (this.bulletChart.orientation === 'Horizontal') {
-             this.renderXMajorTickLines(intervalValue, scale);
-         } else {
+    public renderMajorTickLines(intervalValue: number, scale: Element): void {
+        if (this.bulletChart.orientation === 'Horizontal') {
+            this.renderXMajorTickLines(intervalValue, scale);
+        } else {
             this.renderYMajorTickLines(intervalValue, scale);
-         }
+        }
     }
-    public renderMinorTickLines(intervalValue : number, scale: Element) : void {
+    public renderMinorTickLines(intervalValue: number, scale: Element): void {
         if (this.bulletChart.orientation === 'Horizontal') {
             this.renderXMinorTickLines(intervalValue, scale);
         } else {
-           this.renderYMinorTickLines(intervalValue, scale);
+            this.renderYMinorTickLines(intervalValue, scale);
         }
-   }
-    public renderAxisLabels(intervalValue : number, scale: Element) : void {
+    }
+    public renderAxisLabels(intervalValue: number, scale: Element): void {
         if (this.bulletChart.orientation === 'Horizontal') {
             this.renderXAxisLabels(intervalValue, scale);
         } else {
-           this.renderYAxisLabels(intervalValue, scale);
+            this.renderYAxisLabels(intervalValue, scale);
         }
-   }
+    }
 
     /**
      * To render grid lines of bullet chart axis
      */
-    public renderXMajorTickLines(intervalValue : number, scale: Element): void {
-        let bullet :  BulletChart =  this.bulletChart;
-        let tickGroup: Element = bullet.renderer.createGroup({ 'id': bullet.svgObject.id + '_majorTickGroup' });
-        let min: number = bullet.minimum;
-        let max: number = bullet.maximum;
-        let interval: number = bullet.interval;
-        let enableRtl : boolean = bullet.enableRtl;
-        let y1: number  = bullet.initialClipRect.y + ((bullet.opposedPosition) ? 0 : bullet.initialClipRect.height);
-        // tslint:disable-next-line:max-line-length
-        let y2: number =  y1 + ((!bullet.opposedPosition) ? ((bullet.tickPosition !== 'Inside' ? this.majorTickSize : -this.majorTickSize)) :
-                              ((bullet.tickPosition !== 'Inside' ? -this.majorTickSize : this.majorTickSize)));
-        let majorTick : MajorTickLinesModel = bullet.majorTickLines;
+    public renderXMajorTickLines(intervalValue: number, scale: Element): void {
+        const bullet: BulletChart = this.bulletChart;
+        const tickGroup: Element = bullet.renderer.createGroup({ 'id': bullet.svgObject.id + '_majorTickGroup' });
+        const min: number = bullet.minimum;
+        const max: number = bullet.maximum;
+        const interval: number = bullet.interval;
+        const enableRtl: boolean = bullet.enableRtl;
+        const y1: number = bullet.initialClipRect.y + ((bullet.opposedPosition) ? 0 : bullet.initialClipRect.height);
+        const y2: number = y1 + ((!bullet.opposedPosition) ? ((bullet.tickPosition !== 'Inside' ?
+            this.majorTickSize : -this.majorTickSize)) : ((bullet.tickPosition !== 'Inside' ? -this.majorTickSize : this.majorTickSize)));
+        const majorTick: MajorTickLinesModel = bullet.majorTickLines;
         let strokeColor: string = majorTick.color || bullet.themeStyle.majorTickLineColor;
         let options: Object;
-        let condition : boolean;
-        let size : number = bullet.initialClipRect.x + ((bullet.enableRtl) ? bullet.initialClipRect.width : 0);
-        let majorPointX: number = bullet.initialClipRect.x + majorTick.width / 2 + ((enableRtl) ? bullet.initialClipRect.width : 0) ;
+        let condition: boolean;
+        const size: number = bullet.initialClipRect.x + ((bullet.enableRtl) ? bullet.initialClipRect.width : 0);
+        let majorPointX: number = bullet.initialClipRect.x + majorTick.width / 2 + ((enableRtl) ? bullet.initialClipRect.width : 0);
         for (let i: number = min; i <= max; i += interval) {
             condition = (!bullet.enableRtl) ? (i === max) : (i === min);
             if (condition) {
@@ -93,8 +96,8 @@ export class BulletChartAxis {
                     this.bulletChart.orientation, bullet.enableRtl);
             }
             options = this.majorTicks(majorPointX, majorPointX, y1, y2, strokeColor, i);
-            let majorTicks: Element = bullet.renderer.drawLine(options);
-            majorPointX =  majorPointX + ((enableRtl ? -intervalValue : intervalValue));
+            const majorTicks: Element = bullet.renderer.drawLine(options);
+            majorPointX = majorPointX + ((enableRtl ? -intervalValue : intervalValue));
             tickGroup.appendChild(majorTicks);
             scale.appendChild(tickGroup);
         }
@@ -102,24 +105,24 @@ export class BulletChartAxis {
     /**
      * To render grid lines of bullet chart axis
      */
-    public renderYMajorTickLines(intervalValue : number, scale: Element): void {
-        let bulletChart :  BulletChart =  this.bulletChart;
-        let tickGroup: Element = bulletChart.renderer.createGroup({ 'id': bulletChart.svgObject.id + '_majorTickGroup' });
-        let min: number = bulletChart.minimum;
-        let max: number = bulletChart.maximum;
-        let interval: number = bulletChart.interval;
-        let enableRtl : boolean = bulletChart.enableRtl;
-        let rect: Rect = bulletChart.initialClipRect;
-        let x1: number  = rect.x + ((!bulletChart.opposedPosition) ? 0 : rect.width);
-        // tslint:disable-next-line:max-line-length
-        let x2: number =  x1 - ((!bulletChart.opposedPosition) ? ((bulletChart.tickPosition !== 'Inside' ? this.majorTickSize : -this.majorTickSize)) :
-                              ((bulletChart.tickPosition !== 'Inside' ? -this.majorTickSize : this.majorTickSize)));
-        let majorTick : MajorTickLinesModel = bulletChart.majorTickLines;
+    public renderYMajorTickLines(intervalValue: number, scale: Element): void {
+        const bulletChart: BulletChart = this.bulletChart;
+        const tickGroup: Element = bulletChart.renderer.createGroup({ 'id': bulletChart.svgObject.id + '_majorTickGroup' });
+        const min: number = bulletChart.minimum;
+        const max: number = bulletChart.maximum;
+        const interval: number = bulletChart.interval;
+        const enableRtl: boolean = bulletChart.enableRtl;
+        const rect: Rect = bulletChart.initialClipRect;
+        const x1: number = rect.x + ((!bulletChart.opposedPosition) ? 0 : rect.width);
+        const x2: number = x1 - ((!bulletChart.opposedPosition) ? ((bulletChart.tickPosition !== 'Inside' ?
+            this.majorTickSize : -this.majorTickSize)) : ((bulletChart.tickPosition !== 'Inside'
+            ? -this.majorTickSize : this.majorTickSize)));
+        const majorTick: MajorTickLinesModel = bulletChart.majorTickLines;
         let strokeColor: string = majorTick.color || bulletChart.themeStyle.majorTickLineColor;
-        let condition : boolean;
+        let condition: boolean;
         let options: Object;
-        let size : number = rect.y + ((!bulletChart.enableRtl) ? rect.height : 0);
-        let majorPointY: number = rect.y + majorTick.width / 2 + ((!enableRtl) ? rect.height : 0) ;
+        const size: number = rect.y + ((!bulletChart.enableRtl) ? rect.height : 0);
+        let majorPointY: number = rect.y + majorTick.width / 2 + ((!enableRtl) ? rect.height : 0);
         for (let i: number = min; i <= max; i += interval) {
             condition = (bulletChart.enableRtl) ? (i === max) : (i === min);
             if (condition) {
@@ -132,15 +135,15 @@ export class BulletChartAxis {
                     this.bulletChart.orientation, bulletChart.enableRtl);
             }
             options = this.majorTicks(x1, x2, majorPointY, majorPointY, strokeColor, i);
-            let majorTicks: Element = bulletChart.renderer.drawLine(options);
-            majorPointY =  majorPointY + ((!enableRtl ? -intervalValue : intervalValue));
+            const majorTicks: Element = bulletChart.renderer.drawLine(options);
+            majorPointY = majorPointY + ((!enableRtl ? -intervalValue : intervalValue));
             tickGroup.appendChild(majorTicks);
             scale.appendChild(tickGroup);
         }
     }
 
     private majorTicks(x1: number, x2: number, y1: number, y2: number, strokeColor: string, i: number): object {
-        let options: object = {
+        const options: object = {
             'id': this.bulletChart.svgObject.id + '_MajorTickLine_' + i,
             'x1': x1,
             'y1': y1,
@@ -153,39 +156,39 @@ export class BulletChartAxis {
         return options;
     }
 
-    private bindingRangeStrokes(majorPointX: number, size : number, orientation : Orientation, rtl : boolean): string {
-               if ((orientation === 'Vertical' && !rtl) || (rtl && orientation === 'Horizontal')) {
-                return this.backwardStrokeBinding(majorPointX, size);
-               } else {
-                return this.forwardStrokeBinding(majorPointX, size);
-               }
+    private bindingRangeStrokes(majorPointX: number, size: number, orientation: Orientation, rtl: boolean): string {
+        if ((orientation === 'Vertical' && !rtl) || (rtl && orientation === 'Horizontal')) {
+            return this.backwardStrokeBinding(majorPointX, size);
+        } else {
+            return this.forwardStrokeBinding(majorPointX, size);
+        }
     }
 
     /**
      * To render minor tick lines of bullet chart
      */
     public renderXMinorTickLines(intervalValue: number, scaleGroup: Element): void {
-        let minorTickGroup: Element = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_minorTickGroup' });
-        let bullet : BulletChart = this.bulletChart;
-        let max: number = bullet.maximum;
-        let min: number = bullet.minimum;
-        let interval: number = bullet.interval;
-        let minorTick : number = bullet.minorTickLines.height;
-        let minorTicksPerInterval: number = this.bulletChart.minorTicksPerInterval;
+        const minorTickGroup: Element = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_minorTickGroup' });
+        const bullet: BulletChart = this.bulletChart;
+        const max: number = bullet.maximum;
+        const min: number = bullet.minimum;
+        const interval: number = bullet.interval;
+        const minorTick: number = bullet.minorTickLines.height;
+        const minorTicksPerInterval: number = this.bulletChart.minorTicksPerInterval;
         let minorPointX: number;
         let x: number;
         let majorPointX: number = bullet.initialClipRect.x;
-        let y1: number = bullet.initialClipRect.y + ((bullet.opposedPosition) ? 0 : bullet.initialClipRect.height);
-        let y2: number =  y1 + ((!bullet.opposedPosition) ? ((bullet.tickPosition !== 'Inside' ? minorTick : -minorTick)) :
-        ((bullet.tickPosition !== 'Inside' ? -minorTick : minorTick)));
+        const y1: number = bullet.initialClipRect.y + ((bullet.opposedPosition) ? 0 : bullet.initialClipRect.height);
+        const y2: number = y1 + ((!bullet.opposedPosition) ? ((bullet.tickPosition !== 'Inside' ? minorTick : -minorTick)) :
+            ((bullet.tickPosition !== 'Inside' ? -minorTick : minorTick)));
         let strokeColor: string = bullet.minorTickLines.color || bullet.themeStyle.minorTickLineColor;
         let options: object;
         let minorTicks: Element;
-        let size : number = bullet.initialClipRect.x + ((bullet.enableRtl) ? bullet.initialClipRect.width : 0);
+        const size: number = bullet.initialClipRect.x + ((bullet.enableRtl) ? bullet.initialClipRect.width : 0);
         for (let i: number = min; i < max; i += interval) {
             minorPointX = intervalValue / minorTicksPerInterval;
             for (let j: number = 1; j <= minorTicksPerInterval; j++) {
-                x =  majorPointX + minorPointX - (minorPointX / (minorTicksPerInterval + 1));
+                x = majorPointX + minorPointX - (minorPointX / (minorTicksPerInterval + 1));
                 if (bullet.minorTickLines.useRangeColor) {
                     strokeColor = this.bindingRangeStrokes(x, size, this.bulletChart.orientation, bullet.enableRtl);
                 }
@@ -203,30 +206,30 @@ export class BulletChartAxis {
      * To render minor tick lines of bullet chart
      */
     public renderYMinorTickLines(intervalValue: number, scaleGroup: Element): void {
-        let minorTickGroup: Element = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_minorTickGroup' });
-        let bulletChart : BulletChart = this.bulletChart;
-        let max: number = bulletChart.maximum;
-        let min: number = bulletChart.minimum;
-        let interval: number = bulletChart.interval;
-        let minorTick : number = bulletChart.minorTickLines.height;
-        let minorTicksPerInterval: number = this.bulletChart.minorTicksPerInterval;
+        const minorTickGroup: Element = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_minorTickGroup' });
+        const bulletChart: BulletChart = this.bulletChart;
+        const max: number = bulletChart.maximum;
+        const min: number = bulletChart.minimum;
+        const interval: number = bulletChart.interval;
+        const minorTick: number = bulletChart.minorTickLines.height;
+        const minorTicksPerInterval: number = this.bulletChart.minorTicksPerInterval;
         let minorPointY: number;
         let y: number;
         let majorPointY: number = bulletChart.initialClipRect.y + ((!bulletChart.enableRtl) ? bulletChart.initialClipRect.height : 0);
-        let x1: number = bulletChart.initialClipRect.x + ((!bulletChart.opposedPosition) ? 0 : bulletChart.initialClipRect.width);
-        let x2: number =  x1 - ((!bulletChart.opposedPosition) ? ((bulletChart.tickPosition !== 'Inside' ? minorTick : -minorTick)) :
-        ((bulletChart.tickPosition !== 'Inside' ? -minorTick : minorTick)));
+        const x1: number = bulletChart.initialClipRect.x + ((!bulletChart.opposedPosition) ? 0 : bulletChart.initialClipRect.width);
+        const x2: number = x1 - ((!bulletChart.opposedPosition) ? ((bulletChart.tickPosition !== 'Inside' ? minorTick : -minorTick)) :
+            ((bulletChart.tickPosition !== 'Inside' ? -minorTick : minorTick)));
         let strokeColor: string = bulletChart.minorTickLines.color || bulletChart.themeStyle.minorTickLineColor;
         let options: object;
         let minorTicks: Element;
-        let size : number = bulletChart.initialClipRect.y + ((!bulletChart.enableRtl) ? bulletChart.initialClipRect.height : 0);
+        const size: number = bulletChart.initialClipRect.y + ((!bulletChart.enableRtl) ? bulletChart.initialClipRect.height : 0);
         for (let i: number = min; i < max; i += interval) {
             minorPointY = intervalValue / minorTicksPerInterval;
             for (let j: number = 1; j <= minorTicksPerInterval; j++) {
                 if (!this.bulletChart.enableRtl) {
-                    y =  majorPointY - minorPointY + (minorPointY / (minorTicksPerInterval + 1));
+                    y = majorPointY - minorPointY + (minorPointY / (minorTicksPerInterval + 1));
                 } else {
-                    y =  majorPointY + minorPointY - (minorPointY / (minorTicksPerInterval + 1));
+                    y = majorPointY + minorPointY - (minorPointY / (minorTicksPerInterval + 1));
                 }
                 if (bulletChart.minorTickLines.useRangeColor) {
                     strokeColor = this.bindingRangeStrokes(y, size, this.bulletChart.orientation, bulletChart.enableRtl);
@@ -241,8 +244,8 @@ export class BulletChartAxis {
         }
     }
 
-    private minorXTicks(x1: number, x2 : number, y1: number, y2: number, strokeColor: string, i: string): object {
-        let options: object = {
+    private minorXTicks(x1: number, x2: number, y1: number, y2: number, strokeColor: string, i: string): object {
+        const options: object = {
             'id': this.bulletChart.svgObject.id + '_MajorTickLine_' + i,
             'x1': x1,
             'x2': x2,
@@ -255,9 +258,9 @@ export class BulletChartAxis {
         return options;
     }
 
-    private forwardStrokeBinding(position: number, size : number): string {
-        let bullet : BulletChart = this.bulletChart;
-        let previous : number = size;
+    private forwardStrokeBinding(position: number, size: number): string {
+        const bullet: BulletChart = this.bulletChart;
+        let previous: number = size;
         // (bullet.orientation === 'Horizontal') ? bullet.initialClipRect.x :
         // (bullet.initialClipRect.y + bullet.initialClipRect.height);
         for (let k: number = 0; k <= bullet.rangeCollection.length - 1; k++) {
@@ -269,9 +272,9 @@ export class BulletChartAxis {
         return null;
     }
 
-    private backwardStrokeBinding(position: number, size : number): string {
-        let bullet : BulletChart = this.bulletChart;
-        let previous : number = size;
+    private backwardStrokeBinding(position: number, size: number): string {
+        const bullet: BulletChart = this.bulletChart;
+        let previous: number = size;
         for (let k: number = 0; k <= bullet.rangeCollection.length - 1; k++) {
             previous -= (!k) ? 0 : bullet.rangeCollection[k - 1];
             if (Math.round(position) >= Math.round(previous - bullet.rangeCollection[k]) && position <= previous) {
@@ -285,28 +288,27 @@ export class BulletChartAxis {
      * To render axis labels of bullet chart
      */
     public renderXAxisLabels(intervalValue: number, scaleGroup: Element): void {
-        let axisLabelGroup: Element = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_axisLabelGroup' });
-        let text : string;
-        let bullet : BulletChart = this.bulletChart;
-        let locale: string = this.bulletChart.locale;
-        let padding : number = 5;
-        let enableRtl: boolean = bullet.enableRtl;
-        let tick: number = (((bullet.tickPosition === bullet.labelPosition) ? bullet.majorTickLines.height : 0) + padding * 2);
+        const axisLabelGroup: Element = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_axisLabelGroup' });
+        let text: string;
+        const bullet: BulletChart = this.bulletChart;
+        const locale: string = this.bulletChart.locale;
+        const padding: number = 5;
+        const enableRtl: boolean = bullet.enableRtl;
+        const tick: number = (((bullet.tickPosition === bullet.labelPosition) ? bullet.majorTickLines.height : 0) + padding * 2);
         let y: number = bullet.initialClipRect.y + ((bullet.opposedPosition) ? ((bullet.labelPosition === 'Inside') ? tick : -tick)
-                                                  : bullet.initialClipRect.height + ((bullet.labelPosition === 'Inside') ? -tick : tick));
+            : bullet.initialClipRect.height + ((bullet.labelPosition === 'Inside') ? -tick : tick));
         let x: number = bullet.initialClipRect.x + ((enableRtl) ? bullet.initialClipRect.width : 0);
-        let min: number = bullet.minimum; let max: number = bullet.maximum;
-        let transformText: string;
-        let interval: number = bullet.interval;
-        let localizedText: boolean = locale && this.bulletChart.enableGroupSeparator;
-        let format: string = this.getFormat(this.bulletChart);
+        const min: number = bullet.minimum; const max: number = bullet.maximum;
+        const interval: number = bullet.interval;
+        const localizedText: boolean = locale && this.bulletChart.enableGroupSeparator;
+        const format: string = this.getFormat(this.bulletChart);
         let strokeColor: string = bullet.labelStyle.color || bullet.themeStyle.labelFontColor;
-        let condition : boolean;  let isCustomFormat: boolean = format.match('{value}') !== null;
+        let condition: boolean; const isCustomFormat: boolean = format.match('{value}') !== null;
         this.format = this.bulletChart.intl.getNumberFormat({
             format: isCustomFormat ? '' : format, useGrouping: this.bulletChart.enableGroupSeparator
         });
-        let size : number = bullet.initialClipRect.x + ((bullet.enableRtl) ? bullet.initialClipRect.width : 0);
-        y +=  measureText(this.formatValue(this, isCustomFormat, format, this.bulletChart.maximum), bullet.labelStyle).height / 3;
+        const size: number = bullet.initialClipRect.x + ((bullet.enableRtl) ? bullet.initialClipRect.width : 0);
+        y += measureText(this.formatValue(this, isCustomFormat, format, this.bulletChart.maximum), bullet.labelStyle).height / 3;
         for (let i: number = min; i <= max; i += interval) {
             condition = (!bullet.enableRtl) ? (i === max) : (i === min);
             if (bullet.labelStyle.useRangeColor) {
@@ -314,10 +316,9 @@ export class BulletChartAxis {
                     x - ((condition) ? this.bulletChart.majorTickLines.width / 2 : 0), size,
                     this.bulletChart.orientation, bullet.enableRtl);
             }
-            transformText = '';
             text = localizedText ? i.toLocaleString(locale) : this.formatValue(this, isCustomFormat, format, i);
-            let labelOptions: TextOption = this.labelXOptions(x, y, text, i);
-            let label: Element = textElement(
+            const labelOptions: TextOption = this.labelXOptions(x, y, text, i);
+            const label: Element = textElement(
                 labelOptions, this.bulletChart.labelStyle, strokeColor, scaleGroup
             );
             axisLabelGroup.appendChild(label);
@@ -327,15 +328,15 @@ export class BulletChartAxis {
     }
 
     private labelXOptions(labelX: number, pointY: number, displayText: string, i: number): TextOption {
-        let labelOptions: TextOption = {
+        const labelOptions: TextOption = {
             'id': this.bulletChart.svgObject.id + '_AxisLabel_' + i,
-            'anchor':  'middle',
+            'anchor': 'middle',
             'text': displayText,
-            'transform' : '',
+            'transform': '',
             'x': labelX,
             'y': pointY,
             'baseLine': '',
-            'labelRotation': 0,
+            'labelRotation': 0
         };
         return labelOptions;
     }
@@ -344,34 +345,34 @@ export class BulletChartAxis {
      * To render axis labels of bullet chart
      */
     public renderYAxisLabels(intervalValue: number, scaleGroup: Element): void {
-        let axisLabelGroup: Element = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_axisLabelGroup' });
-        let text : string;
-        let bulletChart : BulletChart = this.bulletChart;
-        let locale: string = bulletChart.locale;
-        let padding : number = 5;
-        let enableRtl: boolean = bulletChart.enableRtl;
-        let tick: number = (((bulletChart.tickPosition === bulletChart.labelPosition) ?
-        bulletChart.majorTickLines.height : 0) + padding * 2);
+        const axisLabelGroup: Element = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_axisLabelGroup' });
+        let text: string;
+        const bulletChart: BulletChart = this.bulletChart;
+        const locale: string = bulletChart.locale;
+        const padding: number = 5;
+        const enableRtl: boolean = bulletChart.enableRtl;
+        const tick: number = (((bulletChart.tickPosition === bulletChart.labelPosition) ?
+            bulletChart.majorTickLines.height : 0) + padding * 2);
         let y: number = bulletChart.initialClipRect.y + ((!enableRtl) ? bulletChart.initialClipRect.height : 0);
-        let x: number = bulletChart.initialClipRect.x + ((!bulletChart.opposedPosition) ?
-        ((bulletChart.labelPosition === 'Inside') ? (tick + padding * 2) : -tick)
-        : bulletChart.initialClipRect.width + ((bulletChart.labelPosition === 'Inside') ? -(tick + padding * 2) : tick));
-        let min: number = bulletChart.minimum; let max: number = bulletChart.maximum;
-        let interval: number = bulletChart.interval;
-        let localizedText: boolean = locale && this.bulletChart.enableGroupSeparator;
+        const x: number = bulletChart.initialClipRect.x + ((!bulletChart.opposedPosition) ?
+            ((bulletChart.labelPosition === 'Inside') ? (tick + padding * 2) : -tick)
+            : bulletChart.initialClipRect.width + ((bulletChart.labelPosition === 'Inside') ? -(tick + padding * 2) : tick));
+        const min: number = bulletChart.minimum; const max: number = bulletChart.maximum;
+        const interval: number = bulletChart.interval;
+        const localizedText: boolean = locale && this.bulletChart.enableGroupSeparator;
         let strokeColor: string = bulletChart.labelStyle.color || bulletChart.themeStyle.labelFontColor;
-        let format: string = this.getFormat(this.bulletChart);
-        let isCustomFormat: boolean = format.match('{value}') !== null;
-        let condition : boolean;
+        const format: string = this.getFormat(this.bulletChart);
+        const isCustomFormat: boolean = format.match('{value}') !== null;
+        let condition: boolean;
         this.format = this.bulletChart.intl.getNumberFormat({
             format: isCustomFormat ? '' : format, useGrouping: this.bulletChart.enableGroupSeparator
         });
-        let size : number = bulletChart.initialClipRect.y + ((!bulletChart.enableRtl) ? bulletChart.initialClipRect.height : 0);
-        let labelWidth : number = measureText(
+        const size: number = bulletChart.initialClipRect.y + ((!bulletChart.enableRtl) ? bulletChart.initialClipRect.height : 0);
+        const labelWidth: number = measureText(
             this.formatValue(this, isCustomFormat, format, this.bulletChart.maximum), bulletChart.labelStyle).width / 2;
-        let height : number = measureText(
+        const height: number = measureText(
             this.formatValue(this, isCustomFormat, format, this.bulletChart.maximum), bulletChart.labelStyle).height / 3;
-        y +=  height;
+        y += height;
         for (let i: number = min; i <= max; i += interval) {
             condition = (bulletChart.enableRtl) ? (i === max) : (i === min);
             if (bulletChart.labelStyle.useRangeColor) {
@@ -381,9 +382,9 @@ export class BulletChartAxis {
             }
             text = localizedText ? i.toLocaleString(locale) : this.formatValue(this, isCustomFormat, format, i);
             //labelWidth = measureText(text, bullet.labelStyle).width / 2;
-            let labelOptions: TextOption = this.labelXOptions(
-                x - (!this.bulletChart.opposedPosition ? labelWidth : -labelWidth) , y, text, i);
-            let label: Element = textElement(
+            const labelOptions: TextOption = this.labelXOptions(
+                x - (!this.bulletChart.opposedPosition ? labelWidth : -labelWidth), y, text, i);
+            const label: Element = textElement(
                 labelOptions, this.bulletChart.labelStyle, strokeColor, scaleGroup
             );
             axisLabelGroup.appendChild(label);
@@ -394,6 +395,7 @@ export class BulletChartAxis {
 
     /**
      * Format of the axis label.
+     *
      * @private
      */
 
@@ -406,6 +408,7 @@ export class BulletChartAxis {
 
     /**
      * Formatted the axis label.
+     *
      * @private
      */
 

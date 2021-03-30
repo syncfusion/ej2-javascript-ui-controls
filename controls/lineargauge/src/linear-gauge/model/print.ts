@@ -1,3 +1,4 @@
+/* eslint-disable valid-jsdoc */
 import { print as printWindow, createElement } from '@syncfusion/ej2-base';
 import { LinearGauge} from '../../index';
 import { getElement } from '../utils/helper';
@@ -6,6 +7,7 @@ import { beforePrint } from '../model/constant';
 
 /**
  * Represent the print and export for gauge.
+ *
  * @hidden
  */
 export class Print {
@@ -14,22 +16,25 @@ export class Print {
 
     /**
      * Constructor for gauge
-     * @param control 
+     *
+     * @param control
      */
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(control: LinearGauge) {
         this.control = control;
     }
 
-     /**
-      * To print the gauge
-      * @param elements
-      * @private 
-      */
+    /**
+     * To print the gauge
+     *
+     * @param elements
+     * @private
+     */
     public print(elements?: string[] | string | Element): void {
         this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
         this.printWindow.moveTo(0, 0);
         this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
-        let argsData: IPrintEventArgs = {
+        const argsData: IPrintEventArgs = {
             cancel: false, htmlContent: this.getHTMLContent(elements), name: beforePrint
         };
         this.control.trigger('beforePrint', argsData, (beforePrintArgs: IPrintEventArgs) => {
@@ -39,13 +44,14 @@ export class Print {
         });
     }
 
-     /**
-      * To get the html string of the gauge
-      * @param elements 
-      * @private
-      */
+    /**
+     * To get the html string of the gauge
+     *
+     * @param elements
+     * @private
+     */
     private getHTMLContent(elements?: string[] | string | Element): Element {
-        let div: Element = createElement('div');
+        const div: Element = createElement('div');
         if (elements) {
             if (elements instanceof Array) {
                 elements.forEach((value: string) => {
@@ -62,15 +68,16 @@ export class Print {
         return div;
     }
 
-     /**
-      * Get module name.
-      */
-     protected getModuleName(): string {
+    /**
+     * Get module name.
+     */
+    protected getModuleName(): string {
         return 'Print';
     }
 
     /**
      * To destroy the print.
+     *
      * @return {void}
      * @private
      */

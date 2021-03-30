@@ -1,5 +1,5 @@
 /**
- * Schedule Month view spec 
+ * Schedule Month view spec
  */
 import { createElement, closest, Browser } from '@syncfusion/ej2-base';
 import {
@@ -18,11 +18,12 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
 describe('Schedule Month view', () => {
     beforeAll(() => {
-        // tslint:disable:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this as any).skip(); //Skips test (in Chai)
             return;
         }
@@ -31,7 +32,7 @@ describe('Schedule Month view', () => {
     describe('Initial load', () => {
         let schObj: Schedule;
         beforeAll(() => {
-            let model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 4) };
+            const model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 4) };
             schObj = util.createSchedule(model, []);
         });
         afterAll(() => {
@@ -59,7 +60,7 @@ describe('Schedule Month view', () => {
         });
 
         it('work cells', () => {
-            let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
             expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
@@ -99,9 +100,9 @@ describe('Schedule Month view', () => {
         });
 
         it('horizontal scroll', () => {
-            let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
-            let headerCellsArea: HTMLElement = schObj.element.querySelector('.e-date-header-wrap') as HTMLElement;
-            // tslint:disable-next-line:no-any
+            const contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            const headerCellsArea: HTMLElement = schObj.element.querySelector('.e-date-header-wrap') as HTMLElement;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (schObj.activeView as any).onContentScroll({ target: contentArea });
             expect(contentArea.scrollLeft).toEqual(0);
             expect(headerCellsArea.scrollLeft).toEqual(0);
@@ -111,7 +112,7 @@ describe('Schedule Month view', () => {
     describe('Current Day Highlight testing', () => {
         let schObj: Schedule;
         beforeAll((): void => {
-            let model: ScheduleModel = { height: '250px', width: '500px', currentView: 'Month' };
+            const model: ScheduleModel = { height: '250px', width: '500px', currentView: 'Month' };
             schObj = util.createSchedule(model, []);
         });
         afterAll((): void => {
@@ -125,21 +126,21 @@ describe('Schedule Month view', () => {
         it('checking current day highlight with different firstDayOfWeek', () => {
             schObj.firstDayOfWeek = 3;
             schObj.dataBind();
-            let index: number = schObj.activeView.renderDates.slice(0, 7).map((date: Date) => date.getDay()).indexOf(new Date().getDay());
+            const index: number = schObj.activeView.renderDates.slice(0, 7).map((date: Date) => date.getDay()).indexOf(new Date().getDay());
             expect(schObj.element.querySelectorAll('.e-header-cells').item(index).classList).toContain('e-current-day');
         });
 
         it('checking current day highlight with different workDays', () => {
             schObj.workDays = [0, 1, 2, 3, 4, 5, 6];
             schObj.dataBind();
-            let index: number = schObj.activeView.renderDates.slice(0, 7).map((date: Date) => date.getDay()).indexOf(new Date().getDay());
+            const index: number = schObj.activeView.renderDates.slice(0, 7).map((date: Date) => date.getDay()).indexOf(new Date().getDay());
             expect(schObj.element.querySelectorAll('.e-header-cells').item(index).classList).toContain('e-current-day');
         });
 
         it('checking current day highlight with showWeekend property', () => {
             schObj.showWeekend = false;
             schObj.dataBind();
-            let index: number = schObj.activeView.renderDates.slice(0, 7).map((date: Date) => date.getDay()).indexOf(new Date().getDay());
+            const index: number = schObj.activeView.renderDates.slice(0, 7).map((date: Date) => date.getDay()).indexOf(new Date().getDay());
             expect(schObj.element.querySelectorAll('.e-header-cells').item(index).classList).toContain('e-current-day');
         });
     });
@@ -154,7 +155,7 @@ describe('Schedule Month view', () => {
         });
 
         it('width and height', () => {
-            let model: ScheduleModel = { height: '250px', width: '500px', currentView: 'Month', selectedDate: new Date(2017, 9, 4) };
+            const model: ScheduleModel = { height: '250px', width: '500px', currentView: 'Month', selectedDate: new Date(2017, 9, 4) };
             schObj = util.createSchedule(model, []);
             expect(schObj.element.style.width).toEqual('500px');
             expect(schObj.element.style.height).toEqual('250px');
@@ -163,9 +164,9 @@ describe('Schedule Month view', () => {
         });
 
         it('start and end hour', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'Month', selectedDate: new Date(2017, 9, 4),
-                startHour: '04:00', endHour: '11:00',
+                startHour: '04:00', endHour: '11:00'
             };
             schObj = util.createSchedule(model, []);
             expect(schObj.getWorkCellElements().length).toEqual(35);
@@ -181,7 +182,7 @@ describe('Schedule Month view', () => {
         });
 
         it('work hours start and end', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'Month', selectedDate: new Date(2017, 9, 4),
                 workHours: { highlight: true, start: '10:00', end: '16:00' }
             };
@@ -201,7 +202,7 @@ describe('Schedule Month view', () => {
         });
 
         it('show weekend', () => {
-            let model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5), showWeekend: false };
+            const model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5), showWeekend: false };
             schObj = util.createSchedule(model, []);
             expect(schObj.getWorkCellElements().length).toEqual(25);
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>Monday</span>');
@@ -224,7 +225,7 @@ describe('Schedule Month view', () => {
         });
 
         it('work days', () => {
-            let model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5), workDays: [0, 1, 3, 4] };
+            const model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5), workDays: [0, 1, 3, 4] };
             schObj = util.createSchedule(model, []);
             expect(schObj.getWorkCellElements().length).toEqual(35);
             expect(schObj.element.querySelectorAll('.e-work-days').length).toEqual(5 * 4);
@@ -243,7 +244,7 @@ describe('Schedule Month view', () => {
         });
 
         it('first day of week', () => {
-            let model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5), firstDayOfWeek: 2 };
+            const model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5), firstDayOfWeek: 2 };
             schObj = util.createSchedule(model, []);
             expect(schObj.getWorkCellElements().length).toEqual(42);
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>Tuesday</span>');
@@ -257,7 +258,7 @@ describe('Schedule Month view', () => {
         });
 
         it('date format', () => {
-            let model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5), dateFormat: 'y MMM' };
+            const model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5), dateFormat: 'y MMM' };
             schObj = util.createSchedule(model, []);
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('2017 Oct');
             schObj.dateFormat = 'MMM y';
@@ -268,11 +269,11 @@ describe('Schedule Month view', () => {
         // Date header template not applicable in Month view
 
         it('cell template', () => {
-            let templateEle: HTMLElement = createElement('div', { innerHTML: '<span class="custom-element"></span>' });
-            let model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5), cellTemplate: templateEle.innerHTML };
+            const templateEle: HTMLElement = createElement('div', { innerHTML: '<span class="custom-element"></span>' });
+            const model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5), cellTemplate: templateEle.innerHTML };
             schObj = util.createSchedule(model, []);
             expect(schObj.element.querySelectorAll('.custom-element').length).toEqual(schObj.getWorkCellElements().length);
-            let workCellEle: HTMLElement = createElement('div', {
+            const workCellEle: HTMLElement = createElement('div', {
                 innerHTML: '<div class="e-date-header e-navigate" aria-label="Wednesday, October 4, 2017">4</div><span>10/4/17, 12:00 AM</span>'
             });
             schObj.cellTemplate = '<span>${getShortDateTime(data.date)}</span>';
@@ -281,16 +282,16 @@ describe('Schedule Month view', () => {
         });
 
         it('check current date class', () => {
-            let model: ScheduleModel = { currentView: 'Month' };
+            const model: ScheduleModel = { currentView: 'Month' };
             schObj = util.createSchedule(model, []);
             expect(schObj.element.querySelector('.e-current-day').classList).toContain('e-header-cells');
             expect(schObj.element.querySelector('.e-current-date').classList).toContain('e-work-cells');
         });
 
         it('work cell click', () => {
-            let model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5) };
+            const model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5) };
             schObj = util.createSchedule(model, []);
-            let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.classList).not.toContain('e-selected-cell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             firstWorkCell.click();
@@ -300,8 +301,8 @@ describe('Schedule Month view', () => {
         });
 
         it('header cell click day view navigation', () => {
-            let navFn: jasmine.Spy = jasmine.createSpy('navEvent');
-            let model: ScheduleModel = { navigating: navFn, currentView: 'Month', selectedDate: new Date(2017, 9, 5) };
+            const navFn: jasmine.Spy = jasmine.createSpy('navEvent');
+            const model: ScheduleModel = { navigating: navFn, currentView: 'Month', selectedDate: new Date(2017, 9, 5) };
             schObj = util.createSchedule(model, []);
             expect(navFn).toHaveBeenCalledTimes(0);
             expect(schObj.element.querySelector('.e-work-cells').innerHTML).toEqual('<div class="e-date-header e-navigate" aria-label="Sunday, October 1, 2017">Oct 1</div>');
@@ -312,21 +313,21 @@ describe('Schedule Month view', () => {
         });
 
         it('disable header bar', () => {
-            let model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5), showHeaderBar: false };
+            const model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5), showHeaderBar: false };
             schObj = util.createSchedule(model, []);
             expect(schObj.element.querySelectorAll('.e-schedule-toolbar-container').length).toEqual(0);
         });
 
         it('minDate and maxDate', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'Month',
                 minDate: new Date(2017, 8, 28),
                 selectedDate: new Date(2017, 9, 5),
                 maxDate: new Date(2017, 10, 12)
             };
             schObj = util.createSchedule(model, []);
-            let prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS);
-            let nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS);
+            const prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS);
+            const nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS);
             expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
             expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 2017');
@@ -380,14 +381,14 @@ describe('Schedule Month view', () => {
         });
 
         it('events call confirmation', () => {
-            let createdFn: jasmine.Spy = jasmine.createSpy('createdEvent');
-            let clickFn: jasmine.Spy = jasmine.createSpy('clickEvent');
-            let dblClickFn: jasmine.Spy = jasmine.createSpy('dblClickEvent');
-            let beginFn: jasmine.Spy = jasmine.createSpy('beginEvent');
-            let endFn: jasmine.Spy = jasmine.createSpy('endEvent');
-            let navFn: jasmine.Spy = jasmine.createSpy('navEvent');
-            let renderFn: jasmine.Spy = jasmine.createSpy('renderEvent');
-            let model: ScheduleModel = {
+            const createdFn: jasmine.Spy = jasmine.createSpy('createdEvent');
+            const clickFn: jasmine.Spy = jasmine.createSpy('clickEvent');
+            const dblClickFn: jasmine.Spy = jasmine.createSpy('dblClickEvent');
+            const beginFn: jasmine.Spy = jasmine.createSpy('beginEvent');
+            const endFn: jasmine.Spy = jasmine.createSpy('endEvent');
+            const navFn: jasmine.Spy = jasmine.createSpy('navEvent');
+            const renderFn: jasmine.Spy = jasmine.createSpy('renderEvent');
+            const model: ScheduleModel = {
                 created: createdFn,
                 cellClick: clickFn,
                 cellDoubleClick: dblClickFn,
@@ -415,19 +416,19 @@ describe('Schedule Month view', () => {
             let eventName1: string;
             let eventName2: string;
             let eventName3: string;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 select: (args: SelectEventArgs) => eventName1 = args.name,
                 cellClick: (args: CellClickEventArgs) => eventName2 = args.name,
                 popupOpen: (args: PopupOpenEventArgs) => eventName3 = args.name,
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5)
             };
             schObj = util.createSchedule(model, []);
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
             util.triggerMouseEvent(workCells[3], 'mousedown');
             util.triggerMouseEvent(workCells[3], 'mouseup');
             (schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement).click();
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
@@ -438,17 +439,17 @@ describe('Schedule Month view', () => {
 
         it('multi cell select', () => {
             let eventName: string;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 select: (args: SelectEventArgs) => eventName = args.name,
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5)
             };
             schObj = util.createSchedule(model, []);
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
             util.triggerMouseEvent(workCells[3], 'mousedown');
             util.triggerMouseEvent(workCells[5], 'mousemove');
             util.triggerMouseEvent(workCells[5], 'mouseup');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
@@ -457,17 +458,17 @@ describe('Schedule Month view', () => {
 
         it('validate start and end time on multi cell select', () => {
             let eventName: string;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 select: (args: SelectEventArgs) => eventName = args.name,
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5)
             };
             schObj = util.createSchedule(model, []);
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
             util.triggerMouseEvent(workCells[3], 'mousedown');
             util.triggerMouseEvent(workCells[5], 'mousemove');
             util.triggerMouseEvent(workCells[5], 'mouseup');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
@@ -480,7 +481,7 @@ describe('Schedule Month view', () => {
             let cellStartTime: number;
             let cellEndTime: number;
             let eventName: string;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 cellClick: (args: CellClickEventArgs) => {
                     cellStartTime = args.startTime.getTime();
                     cellEndTime = args.endTime.getTime();
@@ -496,12 +497,12 @@ describe('Schedule Month view', () => {
         });
 
         it('cancel cell click', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 cellClick: (args: CellClickEventArgs) => args.cancel = true,
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5)
             };
             schObj = util.createSchedule(model, []);
-            let workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
+            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
             expect(workCell.classList).not.toContain('e-selected-cell');
             expect(workCell.getAttribute('aria-selected')).toEqual('false');
             workCell.click();
@@ -513,7 +514,7 @@ describe('Schedule Month view', () => {
             let cellStartTime: number;
             let cellEndTime: number;
             let eventName: string;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 cellDoubleClick: (args: CellClickEventArgs) => {
                     cellStartTime = args.startTime.getTime();
                     cellEndTime = args.endTime.getTime();
@@ -530,25 +531,25 @@ describe('Schedule Month view', () => {
         });
 
         it('cancel cell double click', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 cellDoubleClick: (args: CellClickEventArgs) => args.cancel = true,
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5)
             };
             schObj = util.createSchedule(model, []);
-            let workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
+            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
             util.triggerMouseEvent(workCell, 'click');
             util.triggerMouseEvent(workCell, 'dblclick');
         });
 
         it('date navigating', () => {
-            let actionBeginArgs: ActionEventArgs = { cancel: false, name: 'actionBegin', requestType: 'dateNavigate' };
-            let actionCompleteArgs: ActionEventArgs = { cancel: false, name: 'actionComplete', requestType: 'dateNavigate' };
-            let navArgs: NavigatingEventArgs = {
+            const actionBeginArgs: ActionEventArgs = { cancel: false, name: 'actionBegin', requestType: 'dateNavigate' };
+            const actionCompleteArgs: ActionEventArgs = { cancel: false, name: 'actionComplete', requestType: 'dateNavigate' };
+            const navArgs: NavigatingEventArgs = {
                 action: 'date', cancel: false, name: 'navigating',
                 currentDate: new Date(2017, 10, 5), previousDate: new Date(2017, 9, 5)
             };
             let args: NavigatingEventArgs; let beginArgs: ActionEventArgs; let completeArgs: ActionEventArgs;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 navigating: (e: NavigatingEventArgs) => args = e,
                 actionBegin: (e: ActionEventArgs) => beginArgs = e,
                 actionComplete: (e: ActionEventArgs) => completeArgs = e,
@@ -562,7 +563,7 @@ describe('Schedule Month view', () => {
         });
 
         it('cancel date navigate in action begin', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 actionBegin: (e: ActionEventArgs) => e.cancel = true,
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5)
             };
@@ -575,7 +576,7 @@ describe('Schedule Month view', () => {
         });
 
         it('cancel date navigating', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 navigating: (e: NavigatingEventArgs) => e.cancel = true,
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5)
             };
@@ -588,14 +589,14 @@ describe('Schedule Month view', () => {
         });
 
         it('view navigating', () => {
-            let actionBeginArgs: ActionEventArgs = { cancel: false, name: 'actionBegin', requestType: 'viewNavigate' };
-            let actionCompleteArgs: ActionEventArgs = { cancel: false, name: 'actionComplete', requestType: 'viewNavigate' };
-            let navArgs: NavigatingEventArgs = {
+            const actionBeginArgs: ActionEventArgs = { cancel: false, name: 'actionBegin', requestType: 'viewNavigate' };
+            const actionCompleteArgs: ActionEventArgs = { cancel: false, name: 'actionComplete', requestType: 'viewNavigate' };
+            const navArgs: NavigatingEventArgs = {
                 action: 'view', cancel: false, name: 'navigating',
                 currentView: 'Week', previousView: 'Month'
             };
             let args: NavigatingEventArgs; let beginArgs: ActionEventArgs; let completeArgs: ActionEventArgs;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 navigating: (e: NavigatingEventArgs) => args = e,
                 actionBegin: (e: ActionEventArgs) => beginArgs = e,
                 actionComplete: (e: ActionEventArgs) => completeArgs = e,
@@ -609,7 +610,7 @@ describe('Schedule Month view', () => {
         });
 
         it('cancel view navigate in action begin', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 actionBegin: (e: ActionEventArgs) => e.cancel = true,
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5)
             };
@@ -620,7 +621,7 @@ describe('Schedule Month view', () => {
         });
 
         it('cancel view navigating', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 navigating: (e: NavigatingEventArgs) => e.cancel = true,
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5)
             };
@@ -641,28 +642,28 @@ describe('Schedule Month view', () => {
         });
 
         it('getCellDetails', () => {
-            let model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5) };
+            const model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5) };
             schObj = util.createSchedule(model, []);
-            let data: CellClickEventArgs = schObj.getCellDetails(schObj.element.querySelector('.e-work-cells'));
+            const data: CellClickEventArgs = schObj.getCellDetails(schObj.element.querySelector('.e-work-cells'));
             expect(data.startTime.getTime()).toEqual(new Date(2017, 9, 1).getTime());
             expect(data.endTime.getTime()).toEqual(new Date(2017, 9, 2).getTime());
             expect(data.isAllDay).toEqual(true);
 
-            let tdElement: HTMLElement = schObj.element.querySelector('.e-work-cells');
+            const tdElement: HTMLElement = schObj.element.querySelector('.e-work-cells');
             tdElement.removeAttribute('data-date');
             expect(schObj.getCellDetails(tdElement)).toBeUndefined();
         });
 
         it('scrollTo', () => {
-            let model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5), height: 500, width: 500 };
+            const model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5), height: 500, width: 500 };
             schObj = util.createSchedule(model, []);
             schObj.scrollTo('06:00');
-            let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            const contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
             expect(contentArea.scrollTop).toEqual(0);
         });
 
         it('interval count', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 height: '550px', width: '500px', currentView: 'Month',
                 views: [{ option: 'Month', interval: 2 }], selectedDate: new Date(2017, 9, 4)
             };
@@ -683,8 +684,8 @@ describe('Schedule Month view', () => {
 
     describe('Resource group single level', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 height: '500px', selectedDate: new Date(2018, 3, 1),
                 currentView: 'Month', group: { resources: ['Owners'] },
                 resources: [{
@@ -706,7 +707,7 @@ describe('Schedule Month view', () => {
         it('Checking appointment element', () => {
             expect(schObj.element.querySelectorAll('.e-appointment').length).toBeGreaterThan(0);
         });
-        it('Checking resource grouping setmodel', (done: Function) => {
+        it('Checking resource grouping setmodel', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toBeGreaterThan(0);
                 done();
@@ -718,8 +719,8 @@ describe('Schedule Month view', () => {
 
     describe('Resources with group', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%', height: '550px', currentView: 'Month',
                 selectedDate: new Date(2018, 3, 1),
                 group: { resources: ['Rooms', 'Owners'] },
@@ -769,8 +770,8 @@ describe('Schedule Month view', () => {
 
     describe('Custom work days of Resources in group', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%', height: '550px', currentView: 'Month',
                 selectedDate: new Date(2018, 3, 1),
                 group: { resources: ['Rooms', 'Owners'] },
@@ -820,8 +821,8 @@ describe('Schedule Month view', () => {
 
     describe('Resource header template of Resources in group', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%', height: '550px', currentView: 'Month',
                 selectedDate: new Date(2018, 3, 1),
                 views: [
@@ -873,8 +874,8 @@ describe('Schedule Month view', () => {
 
     describe('Resources with group by date', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%', height: '550px', currentView: 'Month',
                 selectedDate: new Date(2018, 3, 1),
                 group: {
@@ -927,8 +928,8 @@ describe('Schedule Month view', () => {
 
     describe('Default schedule block events', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = { width: '500px', height: '500px', currentView: 'Month', selectedDate: new Date(2017, 10, 1) };
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = { width: '500px', height: '500px', currentView: 'Month', selectedDate: new Date(2017, 10, 1) };
             schObj = util.createSchedule(schOptions, blockData.slice(0, 14), done);
         });
         afterAll(() => {
@@ -937,15 +938,15 @@ describe('Schedule Month view', () => {
 
         it('block event initial rendering testing', () => {
             expect(schObj.element.querySelectorAll('.e-block-appointment').length).toEqual(4);
-            let blockEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_2"]') as HTMLElement;
+            const blockEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_2"]') as HTMLElement;
             expect(blockEvent.offsetWidth).toEqual(70);
             expect(blockEvent.offsetHeight).toEqual(57);
         });
 
-        it('add event', (done: Function) => {
+        it('add event', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
-                let addedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_15"]') as HTMLElement;
+                const addedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_15"]') as HTMLElement;
                 expect(addedEvent.offsetWidth).toEqual(66);
                 expect(addedEvent.offsetHeight).toEqual(22);
                 done();
@@ -953,72 +954,72 @@ describe('Schedule Month view', () => {
             expect(schObj.blockData.length).toEqual(7);
             util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'click');
             util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'dblclick');
-            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            let startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
             startObj.value = new Date(2017, 9, 30);
             startObj.dataBind();
-            let endObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            const endObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
             endObj.value = new Date(2017, 9, 30);
             endObj.dataBind();
-            let saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
             saveButton.click();
-            let alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            const alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
             expect(schObj.quickPopup.quickDialog.visible).toBe(true);
             expect(alertDialog.querySelector('.e-dlg-content').innerHTML)
                 .toEqual('Events cannot be scheduled within the blocked time range.');
-            let okButton: HTMLElement = alertDialog.querySelector('.e-quick-alertok') as HTMLElement;
+            const okButton: HTMLElement = alertDialog.querySelector('.e-quick-alertok') as HTMLElement;
             okButton.click();
             expect(schObj.quickPopup.quickDialog.visible).toBe(false);
-            let startRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            const startRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
             startRevisedObj.value = new Date(2017, 9, 31);
             startRevisedObj.dataBind();
-            let endRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            const endRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
             endRevisedObj.value = new Date(2017, 9, 31);
             endRevisedObj.dataBind();
             saveButton.click();
         });
 
-        it('edit event', (done: Function) => {
+        it('edit event', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
-                let editedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_15"]') as HTMLElement;
+                const editedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_15"]') as HTMLElement;
                 expect(editedEvent.offsetWidth).toEqual(66);
                 expect(editedEvent.offsetHeight).toEqual(22);
                 done();
             };
-            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             util.triggerMouseEvent(schObj.element.querySelector('.e-appointment') as HTMLElement, 'click');
             util.triggerMouseEvent(schObj.element.querySelector('.e-appointment') as HTMLElement, 'dblclick');
-            let startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            const startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
             startObj.value = new Date(2017, 9, 30);
             startObj.dataBind();
-            let endObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            const endObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
             endObj.value = new Date(2017, 9, 30);
             endObj.dataBind();
-            let saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
             saveButton.click();
-            let alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            const alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
             expect(schObj.quickPopup.quickDialog.visible).toBe(true);
             expect(alertDialog.querySelector('.e-dlg-content').innerHTML)
                 .toEqual('Events cannot be scheduled within the blocked time range.');
-            let okButton: HTMLElement = alertDialog.querySelector('.e-quick-alertok') as HTMLElement;
+            const okButton: HTMLElement = alertDialog.querySelector('.e-quick-alertok') as HTMLElement;
             okButton.click();
             expect(schObj.quickPopup.quickDialog.visible).toBe(false);
-            let startRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            const startRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
             startRevisedObj.value = new Date(2017, 9, 31);
             startRevisedObj.dataBind();
-            let endRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            const endRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
             endRevisedObj.value = new Date(2017, 9, 31);
             endRevisedObj.dataBind();
             saveButton.click();
         });
-        it('change through set properties', (done: Function) => {
+        it('change through set properties', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(6);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(8);
-                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                 expect(moreIndicatorList.length).toEqual(0);
                 done();
             };
@@ -1026,17 +1027,17 @@ describe('Schedule Month view', () => {
             schObj.dataBind();
         });
         it('checking block event with enableAdativeRows property', () => {
-            let blockEventElement: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-block-appointment'));
+            const blockEventElement: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-block-appointment'));
             expect(blockEventElement.length).toEqual(4);
-            let blockIndicator: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-block-indicator'));
+            const blockIndicator: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-block-indicator'));
             expect(blockIndicator.length).toEqual(7);
         });
     });
 
     describe('Multi level resource rendering in block events', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
                 height: '500px', width: '500px', currentView: 'Month',
                 selectedDate: new Date(2017, 10, 1),
                 group: { resources: ['Rooms', 'Owners'] },
@@ -1063,10 +1064,10 @@ describe('Schedule Month view', () => {
             util.destroy(schObj);
         });
 
-        it('resource add event', (done: Function) => {
+        it('resource add event', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
-                let addedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement;
+                const addedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement;
                 expect(addedEvent.offsetWidth).toEqual(31);
                 expect(addedEvent.offsetHeight).toEqual(22);
                 done();
@@ -1074,61 +1075,61 @@ describe('Schedule Month view', () => {
             expect(schObj.blockData.length).toEqual(10);
             util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'click');
             util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'dblclick');
-            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            let startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
             startObj.value = new Date(2017, 9, 30);
             startObj.dataBind();
-            let endObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            const endObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
             endObj.value = new Date(2017, 9, 30);
             endObj.dataBind();
-            let saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
             saveButton.click();
-            let alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            const alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
             expect(schObj.quickPopup.quickDialog.visible).toBe(true);
             expect(alertDialog.querySelector('.e-dlg-content').innerHTML)
                 .toEqual('Events cannot be scheduled within the blocked time range.');
-            let okButton: HTMLElement = alertDialog.querySelector('.e-quick-alertok') as HTMLElement;
+            const okButton: HTMLElement = alertDialog.querySelector('.e-quick-alertok') as HTMLElement;
             okButton.click();
             expect(schObj.quickPopup.quickDialog.visible).toBe(false);
-            let startRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            const startRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
             startRevisedObj.value = new Date(2017, 9, 31);
             startRevisedObj.dataBind();
-            let endRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            const endRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
             endRevisedObj.value = new Date(2017, 9, 31);
             endRevisedObj.dataBind();
             saveButton.click();
         });
 
-        it('resource edit event', (done: Function) => {
+        it('resource edit event', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
-                let editedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement;
+                const editedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement;
                 expect(editedEvent.offsetWidth).toEqual(31);
                 expect(editedEvent.offsetHeight).toEqual(22);
                 done();
             };
             util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement, 'click');
             util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement, 'dblclick');
-            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            let startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
             startObj.value = new Date(2017, 9, 30);
             startObj.dataBind();
-            let endObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            const endObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
             endObj.value = new Date(2017, 9, 30);
             endObj.dataBind();
-            let saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
             saveButton.click();
-            let alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            const alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
             expect(schObj.quickPopup.quickDialog.visible).toBe(true);
             expect(alertDialog.querySelector('.e-dlg-content').innerHTML)
                 .toEqual('Events cannot be scheduled within the blocked time range.');
-            let okButton: HTMLElement = alertDialog.querySelector('.e-quick-alertok') as HTMLElement;
+            const okButton: HTMLElement = alertDialog.querySelector('.e-quick-alertok') as HTMLElement;
             okButton.click();
             expect(schObj.quickPopup.quickDialog.visible).toBe(false);
-            let startRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            const startRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
             startRevisedObj.value = new Date(2017, 9, 31);
             startRevisedObj.dataBind();
-            let endRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            const endRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
             endRevisedObj.value = new Date(2017, 9, 31);
             endRevisedObj.dataBind();
             saveButton.click();
@@ -1138,8 +1139,8 @@ describe('Schedule Month view', () => {
     describe('Events rendering with rowAutoHeight property', () => {
         describe('default view', () => {
             let schObj: Schedule;
-            beforeAll((done: Function) => {
-                let schOptions: ScheduleModel = {
+            beforeAll((done: DoneFn) => {
+                const schOptions: ScheduleModel = {
                     height: '500px', selectedDate: new Date(2017, 10, 6),
                     rowAutoHeight: true, currentView: 'Month'
                 };
@@ -1149,52 +1150,52 @@ describe('Schedule Month view', () => {
                 util.destroy(schObj);
             });
             it('elements in DOM', () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(11);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(8);
                 expect((closest(eventElementList[0], '.e-work-cells') as HTMLTableCellElement).cellIndex).toEqual(3);
-                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                 expect(moreIndicatorList.length).toEqual(0);
             });
-            it('add events', (done: Function) => {
+            it('add events', (done: DoneFn) => {
                 schObj.dataBound = () => {
-                    let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                     expect(eventElementList.length).toEqual(12);
-                    let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                    const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                     expect(moreIndicatorList.length).toEqual(0);
                     done();
                 };
                 expect(schObj.eventsData.length).toEqual(7);
-                let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+                const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
                 util.triggerMouseEvent(workCells[15], 'click');
-                let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+                const cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
                 (<HTMLElement>cellPopup.querySelector('.e-event-create')).click();
             });
-            it('row height update after delete a event', (done: Function) => {
+            it('row height update after delete a event', (done: DoneFn) => {
                 schObj.dataBound = () => {
-                    let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                     expect(eventElementList.length).toEqual(11);
-                    let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                    const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                     expect(moreIndicatorList.length).toEqual(0);
                     done();
                 };
                 expect(schObj.eventsData.length).toEqual(8);
-                let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 util.triggerMouseEvent(eventElements[7], 'click');
-                let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+                const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
                 expect(eventPopup).toBeTruthy();
                 (<HTMLElement>eventPopup.querySelector('.e-delete')).click();
                 (<HTMLElement>document.body.querySelector('.e-quick-dialog-delete')).click();
             });
-            it('change through set properties', (done: Function) => {
+            it('change through set properties', (done: DoneFn) => {
                 schObj.dataBound = () => {
-                    let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                     expect(eventElementList.length).toEqual(6);
-                    let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                    const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                     expect(eventWrapperList.length).toEqual(13);
                     expect((closest(eventElementList[0], '.e-work-cells') as HTMLTableCellElement).cellIndex).toEqual(3);
-                    let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                    const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                     expect(moreIndicatorList.length).toEqual(9);
                     done();
                 };
@@ -1204,12 +1205,12 @@ describe('Schedule Month view', () => {
         });
 
         describe('Mobile view', () => {
-            let uA: string = Browser.userAgent;
+            const uA: string = Browser.userAgent;
             let schObj: Schedule;
-            beforeAll((done: Function) => {
-                let schOptions: ScheduleModel = {
+            beforeAll((done: DoneFn) => {
+                const schOptions: ScheduleModel = {
                     height: '550px', selectedDate: new Date(2017, 10, 6),
-                    rowAutoHeight: true, currentView: 'Month',
+                    rowAutoHeight: true, currentView: 'Month'
                 };
                 schObj = util.createSchedule(schOptions, testData, done);
             });
@@ -1219,22 +1220,22 @@ describe('Schedule Month view', () => {
             });
 
             it('elements in DOM', () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(11);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(8);
                 expect((closest(eventElementList[0], '.e-work-cells') as HTMLTableCellElement).cellIndex).toEqual(3);
-                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                 expect(moreIndicatorList.length).toEqual(0);
             });
-            it('change through set properties', (done: Function) => {
+            it('change through set properties', (done: DoneFn) => {
                 schObj.dataBound = () => {
-                    let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                     expect(eventElementList.length).toEqual(9);
-                    let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                    const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                     expect(eventWrapperList.length).toEqual(8);
                     expect((closest(eventElementList[0], '.e-work-cells') as HTMLTableCellElement).cellIndex).toEqual(3);
-                    let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                    const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                     expect(moreIndicatorList.length).toEqual(2);
                     done();
                 };
@@ -1245,8 +1246,8 @@ describe('Schedule Month view', () => {
 
         describe('RTL view', () => {
             let schObj: Schedule;
-            beforeAll((done: Function) => {
-                let schOptions: ScheduleModel = {
+            beforeAll((done: DoneFn) => {
+                const schOptions: ScheduleModel = {
                     height: '550px', selectedDate: new Date(2017, 10, 6), rowAutoHeight: true,
                     enableRtl: true, currentView: 'Month'
                 };
@@ -1256,54 +1257,54 @@ describe('Schedule Month view', () => {
                 util.destroy(schObj);
             });
             it('elements in DOM', () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(11);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(8);
                 expect((closest(eventElementList[0], '.e-work-cells') as HTMLTableCellElement).cellIndex).toEqual(3);
-                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                 expect(moreIndicatorList.length).toEqual(0);
             });
-            it('add events', (done: Function) => {
+            it('add events', (done: DoneFn) => {
                 schObj.dataBound = () => {
                     expect(schObj.eventsData.length).toEqual(8);
-                    let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                     expect(eventElementList.length).toEqual(12);
-                    let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                    const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                     expect(moreIndicatorList.length).toEqual(0);
                     done();
                 };
                 expect(schObj.eventsData.length).toEqual(7);
-                let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+                const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
                 util.triggerMouseEvent(workCells[15], 'click');
-                let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+                const cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
                 (<HTMLElement>cellPopup.querySelector('.e-event-create')).click();
             });
-            it('row height update after delete a event', (done: Function) => {
+            it('row height update after delete a event', (done: DoneFn) => {
                 schObj.dataBound = () => {
                     expect(schObj.eventsData.length).toEqual(7);
-                    let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                     expect(eventElementList.length).toEqual(11);
-                    let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                    const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                     expect(moreIndicatorList.length).toEqual(0);
                     done();
                 };
                 expect(schObj.eventsData.length).toEqual(8);
-                let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 util.triggerMouseEvent(eventElements[7], 'click');
-                let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+                const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
                 expect(eventPopup).toBeTruthy();
                 (<HTMLElement>eventPopup.querySelector('.e-delete')).click();
                 (<HTMLElement>document.body.querySelector('.e-quick-dialog-delete')).click();
             });
-            it('change through set properties', (done: Function) => {
+            it('change through set properties', (done: DoneFn) => {
                 schObj.dataBound = () => {
-                    let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                     expect(eventElementList.length).toEqual(9);
-                    let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                    const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                     expect(eventWrapperList.length).toEqual(8);
                     expect((closest(eventElementList[0], '.e-work-cells') as HTMLTableCellElement).cellIndex).toEqual(3);
-                    let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                    const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                     expect(moreIndicatorList.length).toEqual(2);
                     done();
                 };
@@ -1313,8 +1314,8 @@ describe('Schedule Month view', () => {
         });
         describe('resource grouping appointment rendering', () => {
             let schObj: Schedule;
-            beforeAll((done: Function) => {
-                let schOptions: ScheduleModel = {
+            beforeAll((done: DoneFn) => {
+                const schOptions: ScheduleModel = {
                     height: '500px', selectedDate: new Date(2018, 3, 1),
                     rowAutoHeight: true, currentView: 'Month',
                     group: { resources: ['Rooms', 'Owners'] },
@@ -1342,63 +1343,63 @@ describe('Schedule Month view', () => {
             });
 
             it('Checking appointment element', () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(10);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(10);
-                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                 expect(moreIndicatorList.length).toEqual(0);
             });
 
-            it('Add event', (done: Function) => {
+            it('Add event', (done: DoneFn) => {
                 schObj.dataBound = () => {
                     expect(schObj.eventsData.length).toEqual(10);
-                    let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                     expect(eventElementList.length).toEqual(15);
-                    let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                    const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                     expect(moreIndicatorList.length).toEqual(0);
                     done();
                 };
-                let workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+                const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
                 util.triggerMouseEvent(workCell, 'click');
                 util.triggerMouseEvent(workCell, 'dblclick');
                 expect(schObj.eventsData.length).toEqual(9);
-                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-                let recObj: RecurrenceEditor = (dialogElement.querySelector('.e-recurrenceeditor') as EJ2Instance).
+                const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                const recObj: RecurrenceEditor = (dialogElement.querySelector('.e-recurrenceeditor') as EJ2Instance).
                     ej2_instances[0] as RecurrenceEditor;
                 recObj.value = 'FREQ=DAILY;INTERVAL=1;COUNT=5';
                 recObj.dataBind();
-                let saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+                const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
                 saveButton.click();
             });
 
-            it('Delete event', (done: Function) => {
+            it('Delete event', (done: DoneFn) => {
                 schObj.dataBound = () => {
                     expect(schObj.eventsData.length).toEqual(9);
-                    let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                     expect(eventElementList.length).toEqual(14);
-                    let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                    const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                     expect(moreIndicatorList.length).toEqual(0);
                     done();
                 };
-                let appElement: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_1"]') as HTMLElement;
+                const appElement: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_1"]') as HTMLElement;
                 util.triggerMouseEvent(appElement, 'click');
                 util.triggerMouseEvent(appElement, 'dblclick');
                 expect(schObj.eventsData.length).toEqual(10);
-                let quickDialog: Element = document.querySelector('.e-quick-dialog');
-                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-                let deleteButton: HTMLInputElement =
+                const quickDialog: Element = document.querySelector('.e-quick-dialog');
+                const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                const deleteButton: HTMLInputElement =
                     <HTMLInputElement>dialogElement.querySelector('.' + cls.DELETE_EVENT_CLASS);
                 deleteButton.click();
                 util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-delete'), 'click');
             });
-            it('change through set properties', (done: Function) => {
+            it('change through set properties', (done: DoneFn) => {
                 schObj.dataBound = () => {
-                    let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                     expect(eventElementList.length).toEqual(12);
-                    let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                    const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                     expect(eventWrapperList.length).toEqual(12);
-                    let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                    const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                     expect(moreIndicatorList.length).toEqual(2);
                     done();
                 };
@@ -1408,8 +1409,8 @@ describe('Schedule Month view', () => {
         });
         describe('CR Issue EJ2- Getting Week numbers while changing firstdayofWeek', () => {
             let schObj: Schedule;
-            beforeAll((done: Function) => {
-                let schOptions: ScheduleModel = {
+            beforeAll((done: DoneFn) => {
+                const schOptions: ScheduleModel = {
                     selectedDate: new Date(2017, 10, 6),
                     currentView: 'Month',
                     showWeekNumber: true
@@ -1438,8 +1439,8 @@ describe('Schedule Month view', () => {
 
     describe('Getting Week numbers while changing weekRule property', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
                 selectedDate: new Date(2020, 11, 29),
                 currentView: 'Month',
                 showWeekNumber: true
@@ -1467,20 +1468,20 @@ describe('Schedule Month view', () => {
 
     describe('More indicator event rendering based on the provided template', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let mt: string = '<div class="template-wrap" style="background:#007EE3;width:-webkit-fill-available;">' +
+        beforeAll((done: DoneFn) => {
+            const mt: string = '<div class="template-wrap" style="background:#007EE3;width:-webkit-fill-available;">' +
                 '<div class="subject" style="background:#007EE3">${Subject}</div></div>';
-            let scriptMonthEvent: HTMLScriptElement = document.createElement('script');
+            const scriptMonthEvent: HTMLScriptElement = document.createElement('script');
             scriptMonthEvent.type = 'text/x-template';
             scriptMonthEvent.id = 'month-event-template';
             scriptMonthEvent.appendChild(document.createTextNode(mt));
             document.getElementsByTagName('head')[0].appendChild(scriptMonthEvent);
-            let viewCollection: ViewsModel[] = [{ option: 'Month', eventTemplate: '#month-event-template' }];
-            let schOptions: ScheduleModel = {
+            const viewCollection: ViewsModel[] = [{ option: 'Month', eventTemplate: '#month-event-template' }];
+            const schOptions: ScheduleModel = {
                 height: '900px',
                 selectedDate: new Date(2017, 10, 5),
                 currentView: 'Month',
-                views: viewCollection,
+                views: viewCollection
             };
             schObj = util.createSchedule(schOptions, defaultData, done);
         });
@@ -1489,24 +1490,24 @@ describe('Schedule Month view', () => {
             document.getElementById('month-event-template').remove();
         });
         it('Checking the template applied to the events or not', () => {
-            let moreIndicator: HTMLElement = document.querySelector('.e-more-indicator');
+            const moreIndicator: HTMLElement = document.querySelector('.e-more-indicator');
             util.triggerMouseEvent(moreIndicator, 'click');
-            let elementList: NodeListOf<Element> = document.querySelectorAll('.e-more-appointment-wrapper');
+            const elementList: NodeListOf<Element> = document.querySelectorAll('.e-more-appointment-wrapper');
             let templateElement: string = elementList[0].children[0].innerHTML;
             expect(templateElement).toEqual('<div class="template-wrap" style="background:#007EE3;' +
                 'width:-webkit-fill-available;"><div class="subject" style="background:#007EE3">Conference</div></div>');
             templateElement = elementList[0].children[6].innerHTML;
             expect(templateElement).toEqual('<div class="template-wrap" style="background:#007EE3;width:-webkit-fill-available;">'
                 + '<div class="subject" style="background:#007EE3">Same Time</div></div>');
-            let closeButton: HTMLElement = document.querySelector('.' + cls.MORE_EVENT_CLOSE_CLASS);
+            const closeButton: HTMLElement = document.querySelector('.' + cls.MORE_EVENT_CLOSE_CLASS);
             util.triggerMouseEvent(closeButton, 'click');
         });
     });
 
     describe('CR Issue EJ2- Getting Week numbers while changing firstdayofWeek', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
                 selectedDate: new Date(2017, 10, 6),
                 currentView: 'Month',
                 showWeekNumber: true
@@ -1534,13 +1535,13 @@ describe('Schedule Month view', () => {
 
     describe('Testing month view cell header template', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
                 height: '500px',
                 cellHeaderTemplate: '<span>${date.toLocaleDateString()}</span>',
                 selectedDate: new Date(2017, 10, 1),
                 views: ['Month', 'MonthAgenda'],
-                currentView: 'Month',
+                currentView: 'Month'
             };
             schObj = util.createSchedule(schOptions, defaultData, done);
         });
@@ -1548,7 +1549,7 @@ describe('Schedule Month view', () => {
             util.destroy(schObj);
         });
         it('Checking cell header template on month view', () => {
-            let headerElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header'));
+            const headerElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header'));
             expect(headerElements[0].innerHTML.toString()).toEqual('<span>10/29/2017</span>');
             expect(headerElements[6].innerHTML.toString()).toEqual('<span>11/4/2017</span>');
             expect(headerElements[17].innerHTML.toString()).toEqual('<span>11/15/2017</span>');
@@ -1556,7 +1557,7 @@ describe('Schedule Month view', () => {
         });
         it('Checking cell header template on month agenda view', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let headerElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header'));
+                const headerElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header'));
                 expect(headerElements[0].innerHTML.toString()).toEqual('<span>10/29/2017</span>');
                 expect(headerElements[6].innerHTML.toString()).toEqual('<span>11/4/2017</span>');
                 expect(headerElements[12].innerHTML.toString()).toEqual('<span>11/10/2017</span>');
@@ -1571,13 +1572,9 @@ describe('Schedule Month view', () => {
 
     it('memory leak', () => {
         profile.sample();
-        // tslint:disable:no-any
-        let average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
+        const average: number = inMB(profile.averageChange);
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        const memory: number = inMB(getMemoryProfile());
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        // tslint:enable:no-any
     });
 });

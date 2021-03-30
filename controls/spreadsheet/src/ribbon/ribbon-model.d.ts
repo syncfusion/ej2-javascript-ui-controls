@@ -9,12 +9,14 @@ export interface RibbonHeaderModel {
 
     /**
      * Specifies the display text of the Ribbon tab header.
+     *
      * @default ''
      */
     text?: string;
 
     /**
      * Specifies the icon class that is used to render an icon in the Ribbon tab header.
+     *
      * @default ''
      */
     iconCss?: string;
@@ -26,6 +28,7 @@ export interface RibbonHeaderModel {
      * - Top: Places the icon on the `top` of the item.
      * - Right: Places the icon to the `right` end of the item.
      * - Bottom: Places the icon at the `bottom` of the item.
+     *
      * @default 'left'
      */
     iconPosition?: string;
@@ -39,24 +42,28 @@ export interface RibbonItemModel {
 
     /**
      * The object used for configuring the Tab item header properties.
+     *
      * @default {}
      */
     header?: RibbonHeaderModel;
 
     /**
      * Specifies the content of Tab item, that is displayed when concern item header is selected.
+     *
      * @default ''
      */
     content?: ItemModel[];
 
     /**
      * Sets the CSS classes to the Tab item to customize its styles.
+     *
      * @default ''
      */
     cssClass?: string;
 
     /**
      * Sets true to disable user interactions of the Tab item.
+     *
      * @default false
      */
     disabled?: boolean;
@@ -70,86 +77,100 @@ export interface RibbonModel extends ComponentModel{
 
     /**
      * Defines class/multiple classes separated by a space in the Spreadsheet element.
+     *
      * @default ""
      */
     cssClass?: string;
 
     /**
      * Used the specify the ribbon menu type as `Menu` or `Sidebar`.
+     *
      * @default true
      */
     menuType?: boolean;
 
     /**
      * An array of object that is used to configure the Ribbon menu.
+     *
      * @default []
      */
     menuItems?: MenuItemModel[];
 
     /**
      * Specifies the index for activating the current Ribbon tab.
+     *
      * @default 0
      */
     selectedTab?: number;
 
     /**
      * An array of object that is used to configure the Ribbon tab.
+     *
      * @default []
      */
     items?: RibbonItemModel[];
 
     /**
      * Triggers while selecting the tab item.
-     * @event
+     *
+     * @event anEvent
      */
     selecting?: EmitType<SelectingEventArgs>;
 
     /**
      * Triggers while selecting the file menu item.
-     * @event
+     *
+     * @event anEvent
      */
     fileMenuItemSelect?: EmitType<MenuEventArgs>;
 
     /**
      * Triggers while rendering each file menu item.
-     * @event
+     *
+     * @event anEvent
      */
     beforeFileMenuItemRender?: EmitType<MenuEventArgs>;
 
     /**
      * Triggers before opening the file menu.
-     * @event
+     *
+     * @event anEvent
      */
     beforeOpen?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
      * Triggers before closing the file menu.
-     * @event
+     *
+     * @event anEvent
      */
     beforeClose?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
      * Triggers format dropdown items gets selected.
-     * @event
+     *
+     * @event anEvent
      * @hidden
      */
     selectFormat?: EmitType<SelectEventArgs>;
 
     /**
      * Triggers while clicking the ribbon content elements.
-     * @event
+     *
+     * @event anEvent
      */
     clicked?: EmitType<ClickEventArgs>;
 
     /**
      * Triggers once the component rendering is completed.
-     * @event
+     *
+     * @event anEvent
      */
     created?: EmitType<Event>;
 
     /**
      * Triggers once the component rendering is completed.
-     * @event
+     *
+     * @event anEvent
      */
     expandCollapse?: EmitType<ExpandCollapseEventArgs>;
 

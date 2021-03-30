@@ -768,3 +768,77 @@ describe('EJ2-46060: List not generated after enter key press and bold format ch
         destroy(rteObj);
     });
 });
+
+describe('EJ2-46956: Applying background color to multiple span element does not work properly', () => {
+    let rteObj: any;
+    let domSelection: NodeSelection = new NodeSelection();
+    it(' Apply transparent first parent', () => {
+        rteObj = renderRTE({
+            value: `<p>
+            <span style="font-family: helvetica; font-size: 13px; background-color: rgb(255, 255, 0);">Bij
+                het toekennen van rechten
+                moet
+                altijd rekening worden
+                gehouden met het beleid voor dataclassificatie. Dit door te kijken naar de classificatie
+                van de
+                informatie zoals aanwezig in de map of applicatie waar de gebruiker toegang tot wil. Als
+                er in de map of
+                rechten binnen een applicatie waar de medewerker toegang tot wil informatie met een
+                classificatieniveau
+                hoger dan het niveau dat deze medewerker mag inzien aanwezig zijn, dienen de rechten
+                niet te worden
+                toegekend. De toegangsrechten worden minimaal iedere drie maanden
+                gecontroleerd
+                door de
+            </span>
+            <span style="font-family: helvetica; font-size: 13px; background-color: unset;">
+                <span class="Apple-converted-space"> m</span>
+            </span>
+            <span style="font-family: helvetica; font-size: 13px; background-color: unset;">anager
+                alarmcentrale
+                <span class="Apple-converted-space"></span>en
+                waar no﻿﻿﻿﻿
+            </span>
+            <span style="font-family: helvetica; font-size: 13px; background-color: unset;">dig
+                worden de toegangsrechten bijgesteld.
+            </span>
+            </p>`,
+            toolbarSettings: {
+                items: ['BackgroundColor']
+            }
+        });
+        let rteEle = rteObj.element;
+        let span1: Node = rteObj.element.querySelectorAll('.e-content span')[0];
+        let span2: Node = rteObj.element.querySelectorAll('.e-content span')[1];
+        domSelection.setSelectionText(document, span1, span2, 0, 0);
+        rteObj.notify('selection-save', {});
+        let backgroundColorPicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn")[0];
+        backgroundColorPicker.click();
+        let noColorItem: HTMLElement = <HTMLElement>document.querySelector(".e-nocolor-item");
+        noColorItem.click();
+        expect(rteObj.element.querySelectorAll('.e-content span')[0].style.backgroundColor).toBe('transparent');
+    });
+    it(' Apply transparent to text selection', () => {
+        rteObj = renderRTE({
+            value: `<p style="margin:0px 0px 10px;font-size:13px;line-height:18px;color:rgb(51, 51, 51);font-family:helvetica;font-style:normal;font-weight:normal;text-align:start;text-indent:0px;white-space:normal;text-decoration:none"><span><span style="background-color:rgb(255, 255, 0)"><span style="color:rgb(51, 51, 51);font-family:helvetica;font-size:13px;font-style:normal;font-weight:normal;text-align:start;text-indent:0px;white-space:normal;text-decoration:none;float:none;display:inline">Bij het toekennen van rech</span><span style="color:rgb(51, 51, 51);font-family:helvetica;font-size:13px;font-style:normal;font-weight:normal;text-align:start;text-indent:0px;white-space:normal;text-decoration:none;float:none;display:inline">ten</span><span style="color:rgb(51, 51, 51);font-family:helvetica;font-size:13px;font-style:normal;font-weight:normal;text-align:start;text-indent:0px;white-space:normal;text-decoration:none;float:none;display:inline">moet altijd rek</span><span style="font-family: helvetica; font-size: 13px; font-style: normal; font-weight: normal; text-align: start; text-indent: 0px; white-space: normal;  text-decoration: inherit; float: none; display: inline;">ening wor</span><span style="font-family: helvetica; font-size: 13px; font-style: normal; font-weight: normal; text-align: start; text-indent: 0px; white-space: normal;  text-decoration: inherit; float: none; display: inline;">de</span><span style="font-family: helvetica; font-size: 13px; font-style: normal; font-weight: normal; text-align: start; text-indent: 0px; white-space: normal;  text-decoration: inherit; float: none; display: inline;">n gehouden met het bele</span><span style="color:rgb(51, 51, 51);font-family:helvetica;font-size:13px;font-style:normal;font-weight:normal;text-align:start;text-indent:0px;white-space:normal;text-decoration:none;float:none;display:inline">id</span><span style="color:rgb(51, 51, 51);font-family:helvetica;font-size:13px;font-style:normal;font-weight:normal;text-align:start;text-indent:0px;white-space:normal;text-decoration:none;float:none;display:inline">den gecont</span><span style="color:rgb(51, 51, 51);font-family:helvetica;font-size:13px;font-style:normal;font-weight:normal;text-align:start;text-indent:0px;white-space:normal;text-decoration:none;float:none;display:inline">roleer</span><span style="color:rgb(51, 51, 51);font-family:helvetica;font-size:13px;font-style:normal;font-weight:normal;text-align:start;text-indent:0px;white-space:normal;text-decoration:none;float:none;display:inline">d door def</span></span></span></p>`,
+            toolbarSettings: {
+                items: ['BackgroundColor']
+            }
+        });
+        let rteEle = rteObj.element;
+        let startSpan: Node = rteObj.element.querySelectorAll('.e-content span')[2];
+        let endSpan: Node = rteObj.element.querySelectorAll('.e-content span')[4];
+        domSelection.setSelectionText(document, startSpan, endSpan, 1, 1);
+        rteObj.notify('selection-save', {});
+        let backgroundColorPicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn")[0];
+        backgroundColorPicker.click();
+        let noColorItem: HTMLElement = <HTMLElement>document.querySelector(".e-nocolor-item");
+        noColorItem.click();
+        expect(rteObj.element.querySelectorAll('.e-content span > span')[2].style.backgroundColor).toBe('transparent');
+        expect(rteObj.element.querySelectorAll('.e-content span > span')[4].style.backgroundColor).toBe('transparent');
+        expect(rteObj.element.querySelectorAll('.e-content span > span')[6].style.backgroundColor).toBe('transparent');
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+});

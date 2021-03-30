@@ -10,6 +10,8 @@ export class Delete {
     private parent: Spreadsheet;
     /**
      * Constructor for the Spreadsheet insert module.
+     *
+     * @param {Spreadsheet} parent - Constructor for the Spreadsheet insert module.
      * @private
      */
     constructor(parent: Spreadsheet) {
@@ -21,11 +23,11 @@ export class Delete {
         if (args.isAction) { isAction = true; delete args.isAction; }
         if (isAction) { this.parent.notify(beginAction, { eventArgs: args, action: 'delete' }); }
         if (args.modelType === 'Sheet') {
-            let activeSheetDeleted: boolean = args.activeSheetIndex >= args.startIndex && args.activeSheetIndex <= args.endIndex;
+            const activeSheetDeleted: boolean = args.activeSheetIndex >= args.startIndex && args.activeSheetIndex <= args.endIndex;
             if (activeSheetDeleted) {
                 this.parent.setProperties(
                     { activeSheetIndex: this.parent.skipHiddenSheets(args.startIndex < this.parent.sheets.length ? args.startIndex :
-                    (args.startIndex ? args.startIndex - 1 : 0)) },
+                        (args.startIndex ? args.startIndex - 1 : 0)) },
                     true);
             }
             this.parent.notify(refreshSheetTabs, null);
@@ -33,35 +35,41 @@ export class Delete {
             focus(this.parent.element);
         } else if (args.modelType === 'Row') {
             if (!this.parent.scrollSettings.enableVirtualization || args.startIndex <= this.parent.viewport.bottomIndex) {
-                if (this.parent.scrollSettings.enableVirtualization) {
+                if (args.freezePane) {
+                    this.parent.renderModule.refreshSheet();
+                } else if (this.parent.scrollSettings.enableVirtualization) {
                     if (args.startIndex < this.parent.viewport.topIndex) { this.parent.viewport.topIndex -= args.model.length; }
                     this.parent.renderModule.refreshUI({
                         skipUpdateOnFirst: this.parent.viewport.topIndex === skipHiddenIdx(
                             this.parent.getActiveSheet(), 0, true), rowIndex: this.parent.viewport.topIndex, refresh: 'Row',
                         colIndex: this.parent.viewport.leftIndex
                     });
+                    this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
                 } else {
                     this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, refresh: 'Row', rowIndex: args.startIndex, colIndex: 0 });
+                    this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
                 }
             }
-            this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
         } else {
             if (!this.parent.scrollSettings.enableVirtualization || args.startIndex <= this.parent.viewport.rightIndex) {
-                if (this.parent.scrollSettings.enableVirtualization) {
+                if (args.freezePane) {
+                    this.parent.renderModule.refreshSheet();
+                } else if (this.parent.scrollSettings.enableVirtualization) {
                     if (args.startIndex < this.parent.viewport.leftIndex) { this.parent.viewport.leftIndex -= args.model.length; }
                     this.parent.renderModule.refreshUI({
                         skipUpdateOnFirst: this.parent.viewport.leftIndex === skipHiddenIdx(
                             this.parent.getActiveSheet(), 0, true, 'columns'), rowIndex: this.parent.viewport.topIndex, refresh: 'Column',
                         colIndex: this.parent.viewport.leftIndex
                     });
+                    this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
                 } else {
                     this.parent.renderModule.refreshUI({
                         skipUpdateOnFirst: true, refresh: 'Column', rowIndex: 0,
                         colIndex: args.startIndex
                     });
+                    this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
                 }
             }
-            this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
         }
         this.refreshImgElement(args.deletedModel.length, this.parent.activeSheetIndex, args.modelType, args.startIndex);
         if (isAction) { this.parent.notify(completeAction, { eventArgs: args, action: 'delete' }); }
@@ -71,9 +79,9 @@ export class Delete {
     }
 
     private refreshImgElement(count: number, sheetIdx: number, modelType: string, index: number): void {
-        let sheet: SheetModel = this.parent.sheets[sheetIdx];
+        const sheet: SheetModel = this.parent.sheets[sheetIdx];
         let cell: CellModel;
-        let address: number[] = [0, 0, sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
+        const address: number[] = [0, 0, sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
         for (let i: number = 0; i <= address[2]; i++) {
             for (let j: number = address[1]; j <= address[3]; j++) {
                 cell = getCell(i, j, sheet);
@@ -92,6 +100,8 @@ export class Delete {
     }
     /**
      * Destroy delete module.
+     *
+     * @returns {void} - Destroy delete module.
      */
     public destroy(): void {
         this.removeEventListener();
@@ -104,6 +114,8 @@ export class Delete {
     }
     /**
      * Get the delete module name.
+     *
+     * @returns {string} - Get the delete module name.
      */
     public getModuleName(): string {
         return 'delete';

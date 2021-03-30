@@ -10,7 +10,7 @@ export class Base {
     protected parent: InPlaceEditor;
     protected module: IComponent;
 
-    constructor(parent: InPlaceEditor, module: IComponent) {
+    public constructor(parent: InPlaceEditor, module: IComponent) {
         this.parent = parent;
         this.module = module;
         this.addEventListener();
@@ -37,7 +37,9 @@ export class Base {
     }
 
     private destroyComponent(): void {
-        if (isNOU(this.module.compObj)) { return; }
+        if (isNOU(this.module.compObj)) {
+            return;
+        }
         this.module.compObj.destroy();
         this.module.compObj = undefined;
     }
@@ -58,7 +60,9 @@ export class Base {
     }
 
     protected removeEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.off(events.render, this.render);
         this.parent.off(events.setFocus, this.focus);
         this.parent.off(events.showPopup, this.showPopup);

@@ -4,8 +4,8 @@ import { RangeModel, SheetModel, UsedRangeModel } from './sheet-model';
 import { RowModel } from './row-model';
 import { ColumnModel } from './column-model';
 import { processIdx } from './data';
-import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel, ExtendedRange } from '../common/index';
-import { ProtectSettings } from '../common/index';
+import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel, ExtendedRange, getCellIndexes } from '../common/index';
+import { ProtectSettings, getCellAddress } from '../common/index';
 import { isUndefined, ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
 
@@ -32,6 +32,7 @@ import { WorkbookModel } from './workbook-model';
 export class Range extends ChildProperty<Sheet> {
     /**
      * Specifies the data as JSON / Data manager to the sheet.
+     *
      * @default null
      */
     @Property(null)
@@ -39,14 +40,16 @@ export class Range extends ChildProperty<Sheet> {
 
     /**
      * Specifies the start cell from which the datasource will be populated.
+     *
      * @default 'A1'
      */
     @Property('A1')
     public startCell: string;
 
     /**
-     * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/data/api-query.html) 
+     * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/data/api-query.html)
      * that will be executed along with data processing.
+     *
      * @default null
      */
     @Property(null)
@@ -54,6 +57,7 @@ export class Range extends ChildProperty<Sheet> {
 
     /**
      * Show/Hide the field of the datasource as header.
+     *
      * @default true
      */
     @Property(true)
@@ -61,6 +65,7 @@ export class Range extends ChildProperty<Sheet> {
 
     /**
      * Template helps to compiles the given HTML String (or HTML Element ID) into HtML Element and append to the Cell.
+     *
      *  @default ''
      */
     @Property('')
@@ -68,6 +73,7 @@ export class Range extends ChildProperty<Sheet> {
 
     /**
      * Specifies the address for updating the dataSource or template.
+     *
      * @default 'A1'
      */
     @Property('A1')
@@ -75,11 +81,11 @@ export class Range extends ChildProperty<Sheet> {
 
 
     protected setProperties(prop: object, muteOnChange: boolean): void {
-        let name: string = 'name';
-        let instance: string = 'instance';
-        let parentObj: string = 'parentObj';
-        let currRangeIdx: string = 'currRangeIdx';
-        let controlParent: string = 'controlParent';
+        const name: string = 'name';
+        const instance: string = 'instance';
+        const parentObj: string = 'parentObj';
+        const currRangeIdx: string = 'currRangeIdx';
+        const controlParent: string = 'controlParent';
         if (this[parentObj].isComplexArraySetter && this[controlParent] && this[controlParent].isAngular) {
             if (Object.keys(prop).length) {
                 if (this[parentObj][currRangeIdx] === undefined) {
@@ -87,7 +93,7 @@ export class Range extends ChildProperty<Sheet> {
                 } else {
                     this[parentObj][currRangeIdx] += 1;
                 }
-                let range: ExtendedRange = this[parentObj].ranges[this[parentObj][currRangeIdx]];
+                const range: ExtendedRange = this[parentObj].ranges[this[parentObj][currRangeIdx]];
                 if (range && range.info) {
                     (this as ExtendedRange).info = range.info;
                 }
@@ -98,10 +104,10 @@ export class Range extends ChildProperty<Sheet> {
                 });
             } else if (this[controlParent].tagObjects[0].instance && this[controlParent].tagObjects[0].instance.hasChanges
                 && !this[controlParent].tagObjects[0].instance.isInitChanges) {
-                let sheetIdx: number = this[controlParent].sheets.indexOf(this[parentObj]);
+                const sheetIdx: number = this[controlParent].sheets.indexOf(this[parentObj]);
                 if (this[parentObj].changedRangeIdx === undefined) {
                     let rangeIdx: number;
-                    let tagObjects: Object[] = this[controlParent].tagObjects[0].instance.list[sheetIdx].tagObjects;
+                    const tagObjects: Object[] = this[controlParent].tagObjects[0].instance.list[sheetIdx].tagObjects;
                     for (let i: number = 0; i < tagObjects.length; i++) {
                         if (tagObjects[i][name] === 'ranges') {
                             tagObjects[i][instance].list
@@ -127,6 +133,7 @@ export class Range extends ChildProperty<Sheet> {
 export class UsedRange extends ChildProperty<UsedRange> {
     /**
      * Specifies the last used row index of the sheet.
+     *
      * @default 0
      * @asptype int
      */
@@ -135,6 +142,7 @@ export class UsedRange extends ChildProperty<UsedRange> {
 
     /**
      * Specifies the last used column index of the sheet.
+     *
      * @default 0
      * @asptype int
      */
@@ -148,6 +156,7 @@ export class UsedRange extends ChildProperty<UsedRange> {
 export class Sheet extends ChildProperty<WorkbookModel> {
     /**
      * Represents sheet unique id.
+     *
      * @default 0
      * @hidden
      */
@@ -156,6 +165,7 @@ export class Sheet extends ChildProperty<WorkbookModel> {
 
     /**
      * Configures row and its properties for the sheet.
+     *
      * @default []
      */
     @Property(null)
@@ -163,6 +173,7 @@ export class Sheet extends ChildProperty<WorkbookModel> {
 
     /**
      * Configures column and its properties for the sheet.
+     *
      * @default []
      */
     @Property([])
@@ -170,6 +181,7 @@ export class Sheet extends ChildProperty<WorkbookModel> {
 
     /**
      * Configures protect and its options.
+     *
      * @default { selectCells: false, formatCells: false, formatRows: false, formatColumns: false, insertLink: false  }
      */
     @Complex<ProtectSettingsModel>({}, ProtectSettings)
@@ -177,6 +189,7 @@ export class Sheet extends ChildProperty<WorkbookModel> {
 
     /**
      * Specifies the collection of range for the sheet.
+     *
      * @default []
      */
     @Collection([], Range)
@@ -184,6 +197,7 @@ export class Sheet extends ChildProperty<WorkbookModel> {
 
     /**
      * Specifies the conditional formatting for the sheet.
+     *
      * @default []
      */
     @Collection([], ConditionalFormat)
@@ -192,6 +206,7 @@ export class Sheet extends ChildProperty<WorkbookModel> {
 
     /**
      * Specifies index of the sheet. Based on the index, sheet properties are applied.
+     *
      * @default 0
      * @asptype int
      */
@@ -200,6 +215,7 @@ export class Sheet extends ChildProperty<WorkbookModel> {
 
     /**
      * Specifies the name of the sheet, the name will show in the sheet tabs.
+     *
      * @default ''
      */
     @Property('')
@@ -207,6 +223,7 @@ export class Sheet extends ChildProperty<WorkbookModel> {
 
     /**
      * Defines the number of rows to be rendered in the sheet.
+     *
      * @default 100
      * @asptype int
      */
@@ -215,6 +232,7 @@ export class Sheet extends ChildProperty<WorkbookModel> {
 
     /**
      * Defines the number of columns to be rendered in the sheet.
+     *
      * @default 100
      * @asptype int
      */
@@ -235,6 +253,7 @@ export class Sheet extends ChildProperty<WorkbookModel> {
      * });
      * spreadsheet.appendTo('#Spreadsheet');
      * ```
+     *
      * @default 'A1:A1'
      */
     @Property('A1:A1')
@@ -242,6 +261,7 @@ export class Sheet extends ChildProperty<WorkbookModel> {
 
     /**
      * Specifies active cell within `selectedRange` in the sheet.
+     *
      * @default 'A1'
      */
     @Property('A1')
@@ -249,6 +269,7 @@ export class Sheet extends ChildProperty<WorkbookModel> {
 
     /**
      * Defines the used range of the sheet.
+     *
      * @default { rowIndex: 0, colIndex: 0 }
      */
     @Property({})
@@ -256,6 +277,7 @@ export class Sheet extends ChildProperty<WorkbookModel> {
 
     /**
      * Specified cell will be positioned at the upper-left corner of the sheet.
+     *
      * @default 'A1'
      */
     @Property('A1')
@@ -263,6 +285,7 @@ export class Sheet extends ChildProperty<WorkbookModel> {
 
     /**
      * Specifies to show / hide column and row headers in the sheet.
+     *
      * @default true
      */
     @Property(true)
@@ -270,6 +293,7 @@ export class Sheet extends ChildProperty<WorkbookModel> {
 
     /**
      * Specifies to show / hide grid lines in the sheet.
+     *
      * @default true
      */
     @Property(true)
@@ -277,6 +301,7 @@ export class Sheet extends ChildProperty<WorkbookModel> {
 
     /**
      * Specifies to  protect the cells in the sheet.
+     *
      * @default false
      */
     @Property(false)
@@ -284,23 +309,55 @@ export class Sheet extends ChildProperty<WorkbookModel> {
 
     /**
      * Specifies the sheet visibility state. There must be at least one visible sheet in Spreadsheet.
+     *
      * @default 'Visible'
      */
     @Property('Visible')
     public state: SheetState;
 
     /**
+     * Gets or sets the number of frozen rows.
+     *
+     * @default 0
+     * @asptype int
+     */
+    @Property(0)
+    public frozenRows: number;
+
+    /**
+     * Gets or sets the number of frozen columns.
+     *
+     * @default 0
+     * @asptype int
+     */
+    @Property(0)
+    public frozenColumns: number;
+
+    /**
      * Represents the maximum row height collection.
+     *
      * @default []
      * @hidden
      */
     // @Property([])
     public maxHgts: object[];
+
+    /**
+     * Represents the freeze pane top left cell. Its default value would be based on the number of freeze rows and columns.
+     *
+     * @default 'A1'
+     */
+    @Property('A1')
+    public paneTopLeftCell: string;
 }
 
 /**
  * To get sheet index from address.
+ *
  * @hidden
+ * @param {Workbook} context - Specifies the context.
+ * @param {string} name - Specifies the name.
+ * @returns {number} - To gget sheet index from address.
  */
 export function getSheetIndex(context: Workbook, name: string): number {
     let idx: number;
@@ -315,7 +372,11 @@ export function getSheetIndex(context: Workbook, name: string): number {
 
 /**
  * To get sheet index from sheet id.
+ *
  * @hidden
+ * @param {Workbook} context - Specifies the context.
+ * @param {number} id - Specifies the id.
+ * @returns {number} - To get the sheet index from id.
  */
 export function getSheetIndexFromId(context: Workbook, id: number): number {
     let idx: number;
@@ -330,7 +391,10 @@ export function getSheetIndexFromId(context: Workbook, id: number): number {
 
 /**
  * To get sheet name from address.
+ *
  * @hidden
+ * @param {string} address - Specifies the address.
+ * @returns {address} - To get Sheet Name From Address.
  */
 export function getSheetNameFromAddress(address: string): string {
     return address.split('!')[0].replace(/\'/gi, '');
@@ -338,11 +402,16 @@ export function getSheetNameFromAddress(address: string): string {
 
 /**
  * To get sheet index from sheet name.
+ *
  * @hidden
+ * @param {Workbook} context - Specifies the context.
+ * @param {string} name - Specifies the name.
+ * @param {SheetModel} info - Specifies the sheet info.
+ * @returns {number} - To get the sheet index by name.
  */
 export function getSheetIndexByName
-    (context: Workbook, name: string, info: { visibleName: string, sheet: string, index: number }[]): number {
-    let len: number = info.length;
+(context: Workbook, name: string, info: { visibleName: string, sheet: string, index: number }[]): number {
+    const len: number = info.length;
     for (let i: number = 0; i < len; i++) {
         if (info[i].sheet.toUpperCase() === name.toUpperCase()) {
             return info[i].index;
@@ -353,19 +422,37 @@ export function getSheetIndexByName
 
 /**
  * update selected range
+ *
  * @hidden
+ * @param {Workbook} context - Specifies the context.
+ * @param {string} range - Specifies the range.
+ * @param {SheetModel} sheet - Specifies the sheet.
+ * @returns {void} - Update the selected range.
  */
-export function updateSelectedRange(context: Workbook, range: string, sheet: SheetModel = {}): void {
-    context.setSheetPropertyOnMute(sheet, 'selectedRange', range);
+export function updateSelectedRange(context: Workbook, range: string, sheet: SheetModel = {}, isMultiRange?: boolean): void {
+    context.setSheetPropertyOnMute(sheet, 'selectedRange', isMultiRange ? sheet.selectedRange + ' ' + range : range);
 }
 
 /**
  * get selected range
  * @hidden
+ * @param {SheetModel} sheet - Specifies the sheet.
+ * @returns {string} - Get selected range.
  */
 export function getSelectedRange(sheet: SheetModel): string {
     return sheet && sheet.selectedRange || 'A1';
 }
+
+/**
+ * @hidden
+ * @param {Workbook} context - Specifies the context.
+ * @param {number} idx - Specifies the idx.
+ * @returns {SheetModel} - To get sheet.
+ */
+export function getSingleSelectedRange(sheet: SheetModel): string {
+    return sheet.selectedRange.split(' ')[0];
+}
+
 
 /**
  * @hidden
@@ -376,9 +463,11 @@ export function getSheet(context: Workbook, idx: number): SheetModel {
 
 /**
  * @hidden
+ * @param {Workbook} context - Specifies the context.
+ * @returns {number} - To get sheet name count.
  */
 export function getSheetNameCount(context: Workbook): number {
-    let name: string[] = [];
+    const name: string[] = [];
     context.sheets.forEach((sheet: SheetModel) => {
         name.push(sheet.name.toLowerCase());
     });
@@ -394,6 +483,8 @@ export function getSheetNameCount(context: Workbook): number {
 
 /**
  * @hidden
+ * @param {SheetModel[]} sheets - Specifies the sheets.
+ * @returns {number} - To get sheet id.
  */
 export function getMaxSheetId(sheets: SheetModel[]): number {
     let cnt: number = 0;
@@ -405,9 +496,12 @@ export function getMaxSheetId(sheets: SheetModel[]): number {
 
 /**
  * @hidden
+ * @param {Workbook} context - Specifies the context.
+ * @param {SheetModel[]} sheet - Specifies the sheet.
+ * @returns {void} - To initiate sheet.
  */
 export function initSheet(context: Workbook, sheet?: SheetModel[]): void {
-    let sheets: SheetModel[] = sheet ? sheet : context.sheets;
+    const sheets: SheetModel[] = sheet ? sheet : context.sheets;
     sheets.forEach((sheet: SheetModel) => {
         sheet.id = sheet.id || 0;
         sheet.name = sheet.name || '';
@@ -427,22 +521,34 @@ export function initSheet(context: Workbook, sheet?: SheetModel[]): void {
         sheet.protectSettings = sheet.protectSettings || { selectCells: false, formatCells: false, formatRows: false, formatColumns: false,
             insertLink: false };
         sheet.isProtected = sheet.isProtected || false;
+        if (!sheet.paneTopLeftCell || sheet.paneTopLeftCell === 'A1') {
+            sheet.frozenRows = sheet.frozenRows ? sheet.frozenRows : 0;
+            sheet.frozenColumns = sheet.frozenColumns ? sheet.frozenColumns : 0;
+            const indexes: number[] = getCellIndexes(sheet.topLeftCell);
+            context.setSheetPropertyOnMute(sheet, 'paneTopLeftCell', getCellAddress(
+                sheet.frozenRows ? indexes[0] + sheet.frozenRows : indexes[0],
+                sheet.frozenColumns ? indexes[1] + sheet.frozenColumns : indexes[1]));
+        }
         processIdx(sheet.columns);
         initRow(sheet.rows);
     });
     processIdx(sheets, true, context);
 }
 
-function initRangeSettings(ranges: RangeModel[]): RangeModel[] {
-    ranges.forEach((range: RangeModel) => {
-        range.startCell = range.startCell || 'A1';
-        range.address = range.address || 'A1';
-        range.template = range.template || '';
-        range.showFieldAsHeader = isUndefined(range.showFieldAsHeader) ? true : range.showFieldAsHeader;
-    });
-    return ranges;
-}
+// function initRangeSettings(ranges: RangeModel[]): RangeModel[] {
+//     ranges.forEach((range: RangeModel) => {
+//         range.startCell = range.startCell || 'A1';
+//         range.address = range.address || 'A1';
+//         range.template = range.template || '';
+//         range.showFieldAsHeader = isUndefined(range.showFieldAsHeader) ? true : range.showFieldAsHeader;
+//     });
+//     return ranges;
+// }
 
+/**
+ * @param {RowModel[]} rows - Specifies the rows.
+ * @returns {void} - Specifies the row.
+ */
 function initRow(rows: RowModel[]): void {
     rows.forEach((row: RowModel) => {
         if (row && row.cells) {
@@ -454,6 +560,10 @@ function initRow(rows: RowModel[]): void {
 
 /**
  * get sheet name
+ *
+ * @param {Workbook} context - Specifies the context.
+ * @param {number} idx - Specifies the idx.
+ * @returns {string} - To get sheet name.
  * @hidden
  */
 export function getSheetName(context: Workbook, idx: number = context.activeSheetIndex): string {

@@ -2407,4 +2407,9 @@
     background-color: $pv-annotation-dropdown-background-color;
     border-color: $pv-annotation-dropdown-border-color;
   }
+
+  .e-pdfviewer-signatureformfields.e-pv-signature-focus,
+  .e-pdfviewer-signatureformfields-signature.e-pv-signature-focus {
+    outline: $pv-print-popup-container-background-color dotted 2px;
+  }
 }

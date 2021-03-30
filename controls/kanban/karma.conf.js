@@ -1,6 +1,7 @@
 // Karma configuration
 // Generated on Tue Apr 26 2016 09:56:05 GMT+0530 (India Standard Time)
 
+// eslint-disable-next-line no-undef
 module.exports = function (config) {
     config.set({
 
@@ -12,22 +13,22 @@ module.exports = function (config) {
 
         // list of files / patterns to load in the browser
         files: [
-            "test-main.js",
-            "demos/css/material.css",
-            { pattern: "src/**/*.js", included: false },
-            { pattern: "spec/**/*.spec.js", included: false },
-            { pattern: "node_modules/@syncfusion/ej2-base/**/*.js", included: false },
-            { pattern: "node_modules/@syncfusion/ej2-buttons/**/*.js", included: false },
-            { pattern: "node_modules/@syncfusion/ej2-data/**/*.js", included: false },
-            { pattern: "node_modules/@syncfusion/ej2-dropdowns/**/*.js", included: false },
-            { pattern: "node_modules/@syncfusion/ej2-inputs/**/*.js", included: false },
-            { pattern: "node_modules/@syncfusion/ej2-lists/**/*.js", included: false },
-            { pattern: "node_modules/@syncfusion/ej2-popups/**/*.js", included: false },
-            { pattern: "node_modules/@syncfusion/ej2-splitbuttons/**/*.js", included: false },
-            { pattern: "node_modules/@syncfusion/ej2-navigations/**/*.js", included: false },
+            'test-main.js',
+            'demos/css/material.css',
+            { pattern: 'src/**/*.js', included: false },
+            { pattern: 'spec/**/*.spec.js', included: false },
+            { pattern: 'node_modules/@syncfusion/ej2-base/**/*.js', included: false },
+            { pattern: 'node_modules/@syncfusion/ej2-buttons/**/*.js', included: false },
+            { pattern: 'node_modules/@syncfusion/ej2-data/**/*.js', included: false },
+            { pattern: 'node_modules/@syncfusion/ej2-dropdowns/**/*.js', included: false },
+            { pattern: 'node_modules/@syncfusion/ej2-inputs/**/*.js', included: false },
+            { pattern: 'node_modules/@syncfusion/ej2-lists/**/*.js', included: false },
+            { pattern: 'node_modules/@syncfusion/ej2-popups/**/*.js', included: false },
+            { pattern: 'node_modules/@syncfusion/ej2-splitbuttons/**/*.js', included: false },
+            { pattern: 'node_modules/@syncfusion/ej2-navigations/**/*.js', included: false },
             { pattern: 'node_modules/es6-promise/dist/es6-promise.js', included: false }
 
-            // Add dependent package's script files here              
+            // Add dependent package's script files here
         ],
 
         // list of files to exclude
@@ -42,11 +43,11 @@ module.exports = function (config) {
         // available reporters: https://npmjs.org/browse/keyword/karma-reporter
         reporters: ['dots', 'html'],
 
-        // the default html configuration 
+        // the default html configuration
         htmlReporter: {
-            outputFile: "test-report/units.html",
-            pageTitle: "Unit Tests",
-            subPageTitle: "Asampleprojectdescription"
+            outputFile: 'test-report/units.html',
+            pageTitle: 'Unit Tests',
+            subPageTitle: 'Asampleprojectdescription'
         },
 
         // web server port
@@ -75,7 +76,7 @@ module.exports = function (config) {
         concurrency: Infinity,
 
         coverageReporter: {
-            type: "html",
+            type: 'html',
             check: {
                 each: {
                     statements: 90,

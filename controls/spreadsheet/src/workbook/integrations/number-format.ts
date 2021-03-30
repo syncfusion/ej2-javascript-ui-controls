@@ -14,7 +14,7 @@ export class WorkbookNumberFormat {
     constructor(parent: Workbook) {
         this.parent = parent;
         this.localeObj = getNumericObject(this.parent.locale);
-        /* tslint:disable:no-any */
+        /* eslint-disable @typescript-eslint/no-explicit-any */
         this.decimalSep = (<any>this.localeObj).decimal;
         this.groupSep = (<any>this.localeObj).group;
         this.addEventListener();
@@ -25,10 +25,10 @@ export class WorkbookNumberFormat {
         if (args.range && args.range.indexOf('!') > -1) {
             activeSheetIndex = getSheetIndex(this.parent, args.range.split('!')[0]);
         }
-        let sheet: SheetModel = this.parent.sheets[activeSheetIndex];
-        let formatRange: string = args.range ? ((args.range.indexOf('!') > -1) ?
+        const sheet: SheetModel = this.parent.sheets[activeSheetIndex];
+        const formatRange: string = args.range ? ((args.range.indexOf('!') > -1) ?
             args.range.split('!')[1] : args.range) : sheet.selectedRange;
-        let selectedRange: number[] = getRangeIndexes(formatRange);
+        const selectedRange: number[] = getRangeIndexes(formatRange);
         let cell: CellModel;
         for (let i: number = selectedRange[0]; i <= selectedRange[2]; i++) {
             for (let j: number = selectedRange[1]; j <= selectedRange[3]; j++) {
@@ -45,19 +45,22 @@ export class WorkbookNumberFormat {
 
     /**
      * @hidden
+     *
+     * @param {{ [key: string]: string | number | boolean | CellModel }} args - Specifies the args.
+     * @returns {string} - to get formatted cell.
      */
     public getFormattedCell(args: { [key: string]: string | number | boolean | CellModel }): string {
-        let fResult: string = isNullOrUndefined(args.value as string) ? '' : args.value as string;
-        let sheet: SheetModel = this.parent.sheets[isNullOrUndefined(args.sheetIndex) ? this.parent.activeSheetIndex :
+        const fResult: string = isNullOrUndefined(args.value as string) ? '' : args.value as string;
+        const sheet: SheetModel = this.parent.sheets[isNullOrUndefined(args.sheetIndex) ? this.parent.activeSheetIndex :
             <number>args.sheetIndex];
-        let range: number[] = getRangeIndexes(sheet.activeCell);
-        let sheetIdx: number = Number(args.sheetIndex) ? Number(args.sheetIndex) : this.parent.activeSheetIndex;
+            const range: number[] = getRangeIndexes(sheet.activeCell);
+        const sheetIdx: number = Number(args.sheetIndex) ? Number(args.sheetIndex) : this.parent.activeSheetIndex;
         let cell: CellModel = args.cell as CellModel ? args.cell as CellModel : getCell(range[0], range[1], sheet);
         let rightAlign: boolean = false;
-        let currencySymbol: string = getNumberDependable(this.parent.locale, 'USD');
+        const currencySymbol: string = getNumberDependable(this.parent.locale, 'USD');
         if (args.format === '' || args.format === 'General') {
             cell = cell ? cell : {};
-            let dateEventArgs: { [key: string]: string | number | boolean } = {
+            const dateEventArgs: { [key: string]: string | number | boolean } = {
                 value: <string>args.value, rowIndex: range[0], colIndex: range[1], sheetIndex: this.parent.activeSheetIndex,
                 updatedVal: <string>args.value, isDate: false, isTime: false
             };
@@ -73,7 +76,7 @@ export class WorkbookNumberFormat {
             }
         }
         args.type = args.format ? getTypeFromFormat(args.format as string) : 'General';
-        let result: { [key: string]: string | boolean } = this.processFormats(args, fResult, rightAlign, cell);
+        const result: { [key: string]: string | boolean } = this.processFormats(args, fResult, rightAlign, cell);
         if ((this.parent.getActiveSheet().id - 1 === sheetIdx)) {
             this.parent.notify(refreshCellElement, {
                 isRightAlign: result.rightAlign, result: result.fResult || args.value as string,
@@ -93,72 +96,72 @@ export class WorkbookNumberFormat {
     private processFormats(
         args: { [key: string]: string | number | boolean | CellModel },
         fResult: string, isRightAlign: boolean, cell?: CellModel): { [key: string]: string | boolean } {
-        let intl: Internationalization = new Internationalization();
-        let currencySymbol: string = getNumberDependable(this.parent.locale, 'USD');
+        const intl: Internationalization = new Internationalization();
+        const currencySymbol: string = getNumberDependable(this.parent.locale, 'USD');
         let result: { [key: string]: string | boolean };
         args.format = args.format ? args.format : 'General';
         if (fResult !== '') {
             switch (args.type) {
-                case 'General':
-                    result = this.autoDetectGeneralFormat({
-                        args: args, currencySymbol: currencySymbol, fResult: fResult, intl: intl,
-                        isRightAlign: isRightAlign, curCode: 'USD', cell: cell, rowIdx: Number(args.rowIdx),
-                        colIdx: Number(args.colIdx)
-                    });
-                    fResult = result.fResult as string;
-                    isRightAlign = result.isRightAlign as boolean;
-                    break;
-                case 'Number':
-                    if (isNumber(fResult)) {
-                        fResult = this.applyNumberFormat(args, intl);
-                        isRightAlign = true;
-                    }
-                    break;
-                case 'Currency':
-                    if (isNumber(fResult)) {
-                        fResult = this.currencyFormat(args, intl);
-                        isRightAlign = true;
-                    }
-                    break;
-                case 'Percentage':
-                    if (isNumber(fResult)) {
-                        fResult = this.percentageFormat(args, intl);
-                        isRightAlign = true;
-                    }
-                    break;
-                case 'Accounting':
-                    if (isNumber(fResult)) {
-                        fResult = this.accountingFormat(args, intl);
-                        isRightAlign = true;
-                    }
-                    break;
-                case 'ShortDate':
-                    fResult = this.shortDateFormat(args, intl);
-                    isRightAlign = fResult ? true : false;
-                    break;
-                case 'LongDate':
-                    fResult = this.longDateFormat(args, intl);
-                    isRightAlign = fResult ? true : false;
-                    break;
-                case 'Time':
-                    fResult = this.timeFormat(args, intl);
-                    isRightAlign = fResult ? true : false;
-                    break;
-                case 'Fraction':
-                    if (isNumber(fResult)) {
-                        fResult = this.fractionFormat(args);
-                        isRightAlign = true;
-                    }
-                    break;
-                case 'Scientific':
-                    if (isNumber(fResult)) {
-                        fResult = this.scientificFormat(args);
-                        isRightAlign = true;
-                    }
-                    break;
-                case 'Text':
-                    isRightAlign = false;
-                    break;
+            case 'General':
+                result = this.autoDetectGeneralFormat({
+                    args: args, currencySymbol: currencySymbol, fResult: fResult, intl: intl,
+                    isRightAlign: isRightAlign, curCode: 'USD', cell: cell, rowIdx: Number(args.rowIdx),
+                    colIdx: Number(args.colIdx)
+                });
+                fResult = result.fResult as string;
+                isRightAlign = result.isRightAlign as boolean;
+                break;
+            case 'Number':
+                if (isNumber(fResult)) {
+                    fResult = this.applyNumberFormat(args, intl);
+                    isRightAlign = true;
+                }
+                break;
+            case 'Currency':
+                if (isNumber(fResult)) {
+                    fResult = this.currencyFormat(args, intl);
+                    isRightAlign = true;
+                }
+                break;
+            case 'Percentage':
+                if (isNumber(fResult)) {
+                    fResult = this.percentageFormat(args, intl);
+                    isRightAlign = true;
+                }
+                break;
+            case 'Accounting':
+                if (isNumber(fResult)) {
+                    fResult = this.accountingFormat(args, intl);
+                    isRightAlign = true;
+                }
+                break;
+            case 'ShortDate':
+                fResult = this.shortDateFormat(args, intl);
+                isRightAlign = fResult ? true : false;
+                break;
+            case 'LongDate':
+                fResult = this.longDateFormat(args, intl);
+                isRightAlign = fResult ? true : false;
+                break;
+            case 'Time':
+                fResult = this.timeFormat(args, intl);
+                isRightAlign = fResult ? true : false;
+                break;
+            case 'Fraction':
+                if (isNumber(fResult)) {
+                    fResult = this.fractionFormat(args);
+                    isRightAlign = true;
+                }
+                break;
+            case 'Scientific':
+                if (isNumber(fResult)) {
+                    fResult = this.scientificFormat(args);
+                    isRightAlign = true;
+                }
+                break;
+            case 'Text':
+                isRightAlign = false;
+                break;
             }
         }
         return { fResult: fResult, rightAlign: isRightAlign };
@@ -181,7 +184,7 @@ export class WorkbookNumberFormat {
             options.isRightAlign = true;
         }
         if (!isNullOrUndefined(options.fResult)) {
-            let res: string = options.fResult.toString();
+            const res: string = options.fResult.toString();
             if (res.indexOf('%') > -1 && res.split('%')[0] !== '' && res.split('%')[1].trim() === '' &&
                 Number(res.split('%')[0].split(this.groupSep).join('')).toString() !== 'NaN' &&
                 !this.parent.isEdit) {
@@ -206,18 +209,49 @@ export class WorkbookNumberFormat {
     }
 
     private findSuffix(zeros: string, resultSuffix: string): string {
-        let len: number = zeros.length;
-        let suffixLen: number = len - resultSuffix.length;
+        const len: number = zeros.length;
+        const suffixLen: number = len - resultSuffix.length;
         return zeros.substr(0, suffixLen < 0 ? 0 : suffixLen) + resultSuffix;
     }
 
     private applyNumberFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
         args.format = this.isCustomFormat(args.format.toString());
-        let formatArr: string[] = args.format.toString().split(';');
-        if (Number(args.value) >= 0) {
+        const formatArr: string[] = args.format.toString().split(';');
+        if (Number(args.value) > 0) {
             args.format = formatArr[0];
-        } else {
+        } else if (Number(args.value) == 0) {
+            args.format = formatArr[2] ? formatArr[2] : formatArr[0];
+            if (args.format.indexOf('"') > -1 && args.format.indexOf('#') === -1) {
+                args.format = args.format.split('_').join(' ').split('*').join(' ').split('?').join(' ').split('"').join('');
+                return args.format;
+            }
+        } else if (Number(args.value) < 0) {
             args.format = !isNullOrUndefined(formatArr[1]) ? formatArr[1].split('*').join(' ') : formatArr[0];
+            if (args.format.indexOf('-') > -1) {
+                args.value = args.value.toString().split('-').join('');
+            }
+        } else {
+            args.format = formatArr[3] ? formatArr[3] : formatArr[0];
+            args.format = args.format.split('_').join(' ').split('*').join(' ').split('?').join(' ');
+            if (args.format.indexOf('@') > -1) {
+                return args.format.split('@').join(args.value.toString());
+            }
+        }
+        args.format = args.format.split('_').join(' ').split('*').join(' ').split('"').join('');
+        if (args.format.indexOf('?') > -1 && args.format.indexOf(this.decimalSep) > -1) {
+            const formatDecimalLen: number = args.format.split(this.decimalSep)[1].length;
+            let replaceString: string = '';
+            if (Number(args.value) % 1) {
+                const valueDecimalLen: number = args.value.toString().split('.')[1].length;
+                if (formatDecimalLen > valueDecimalLen) {
+                    replaceString = ' ';
+                } else {
+                    replaceString = '0';
+                }
+            }
+            args.format = args.format.split('?').join(replaceString);
+        } else {
+            args.format = args.format.split('?').join(' ');
         }
         return intl.formatNumber(Number(args.value), {
             format: args.format as string
@@ -235,12 +269,13 @@ export class WorkbookNumberFormat {
     private currencyFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
         args.format = args.format === '' ? getFormatFromType('Currency') : args.format;
         args.format = args.format.toString().split('_(').join(' ').split('_)').join(' ').split('[Red]').join('');
-        let formatArr: string[] = args.format.toString().split(';');
+        const formatArr: string[] = args.format.toString().split(';');
         if (Number(args.value) >= 0) {
             args.format = formatArr[0];
         } else {
             args.format = isNullOrUndefined(formatArr[1]) ? formatArr[0] : formatArr[1].split('*').join(' ');
         }
+        args.format = this.getFormatForOtherCurrency(args.format);
         return intl.formatNumber(Number(args.value), {
             format: args.format as string,
             currency: 'USD'
@@ -257,13 +292,14 @@ export class WorkbookNumberFormat {
     private accountingFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
         args.format = args.format === '' ? getFormatFromType('Accounting') : args.format;
         args.format = (args.format as string).split('_(').join(' ').split('_)').join(' ').split('[Red]').join('').split('_').join('');
-        let currencySymbol: string = getNumberDependable(this.parent.locale, 'USD');
-        let formatArr: string[] = (args.format as string).split(';');
+        const currencySymbol: string = getNumberDependable(this.parent.locale, 'USD');
+        const formatArr: string[] = (args.format as string).split(';');
         if (Number(args.value) >= 0) {
             args.format = formatArr[0];
         } else {
             args.format = formatArr[1].split('*').join(' ');
         }
+        args.format = this.getFormatForOtherCurrency(args.format);
         if (Number(args.value) === 0) {
             return currencySymbol + '- ';
         } else {
@@ -274,8 +310,20 @@ export class WorkbookNumberFormat {
         }
     }
 
+    private getFormatForOtherCurrency(format: string): string {
+        if (format.indexOf('[$') > -1) {
+            const symbol: string = format.split(']')[0].split('[$')[1].split('-')[0];
+            if (format.indexOf('0') > format.indexOf('[$')) {
+                format = symbol + format.slice(format.indexOf(']') + 1, format.length);
+            } else {
+                format = format.slice(0, format.indexOf('[$')) + symbol;
+            }
+        }
+        return format;
+    }
+
     private shortDateFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
-        let shortDate: Date = intToDate(args.value as number);
+        const shortDate: Date = intToDate(args.value as number);
         let code: string = (args.format === '' || args.format === 'General') ? getFormatFromType('ShortDate')
             : args.format.toString();
         let dateObj: Object;
@@ -295,7 +343,7 @@ export class WorkbookNumberFormat {
     }
 
     private longDateFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
-        let longDate: Date = intToDate(args.value as number);
+        const longDate: Date = intToDate(args.value as number);
         let code: string = (args.format === '' || args.format === 'General') ? getFormatFromType('LongDate')
             : args.format.toString();
         if (code === getFormatFromType('LongDate')) {
@@ -314,7 +362,7 @@ export class WorkbookNumberFormat {
         if (!isNullOrUndefined(args.value.toString().split(this.decimalSep)[1])) {
             args.value = parseFloat('1' + this.decimalSep + args.value.toString().split(this.decimalSep)[1]) || args.value;
         }
-        let time: Date = intToDate(args.value as number);
+        const time: Date = intToDate(args.value as number);
         let code: string = (args.format === '' || args.format === 'General') ? getFormatFromType('Time')
             : args.format.toString();
         if (code === getFormatFromType('Time')) {
@@ -329,8 +377,8 @@ export class WorkbookNumberFormat {
 
     private scientificFormat(args: { [key: string]: string | number | boolean | CellModel }): string {
         args.format = args.format === '' ? getFormatFromType('Scientific') : args.format;
-        let zeros: string = (args.format as string).split('+')[1];
-        let prefix: number = this.findDecimalPlaces(args.format as string, 'Scientific');
+        const zeros: string = (args.format as string).split('+')[1];
+        const prefix: number = this.findDecimalPlaces(args.format as string, 'Scientific');
         let fResult: string = Number(args.value).toExponential(prefix);
         if (fResult.indexOf('e+') > -1) {
             fResult = fResult.split('e+')[0] + 'E+' + this.findSuffix(zeros, fResult.split('e+')[1]);
@@ -354,25 +402,24 @@ export class WorkbookNumberFormat {
 
     private findDecimalPlaces(code: string, type: string): number {
         switch (type) {
-            case 'Scientific':
-                let eIndex: number = code.toUpperCase().indexOf('E');
-                let decIndex: number = code.indexOf(this.decimalSep);
-                if (eIndex > -1) {
-                    return code.substring(decIndex + 1, eIndex).length;
-                }
+        case 'Scientific':
+            let eIndex: number = code.toUpperCase().indexOf('E');
+            let decIndex: number = code.indexOf(this.decimalSep);
+            if (eIndex > -1) {
+                return code.substring(decIndex + 1, eIndex).length;
+            }
         }
         return 2;
     }
 
     public checkDateFormat(args: { [key: string]: string | number | boolean | Date | CellModel }): void {
         let dateObj: ToDateArgs;
-        let intl: Internationalization = new Internationalization();
+        const intl: Internationalization = new Internationalization();
         let value: string = !isNullOrUndefined(args.value) ? args.value.toString() : '';
-        let checkedDate: string;
         let cell: CellModel = getCell(
             <number>args.rowIndex, <number>args.colIndex,
             getSheet(this.parent, isNullOrUndefined(<number>args.sheetIndex) ? this.parent.activeSheetIndex : <number>args.sheetIndex));
-        checkedDate = this.checkCustomDateFormat(value);
+        const checkedDate: string = this.checkCustomDateFormat(value);
         if (value && (value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) && checkedDate !== 'Invalid') {
             value = checkedDate;
             if (value && value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) {
@@ -397,8 +444,8 @@ export class WorkbookNumberFormat {
     }
 
     private checkCustomDateFormat(val: string): string {
-        let dateArr: string | string[] = val.indexOf('/') > -1 ? val.split('/') : val.indexOf('-') > 0 ? val.split('-') : '';
-        let months: string[] = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'sept', 'oct', 'nov', 'dec'];
+        const dateArr: string | string[] = val.indexOf('/') > -1 ? val.split('/') : val.indexOf('-') > 0 ? val.split('-') : '';
+        const months: string[] = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'sept', 'oct', 'nov', 'dec'];
         if (dateArr.length === 2) {
             if (months.indexOf(dateArr[0].toLowerCase()) > -1 && Number(dateArr[1]) <= 31) {
                 return '01-' + dateArr[0] + '-' + dateArr[1];
@@ -420,21 +467,21 @@ export class WorkbookNumberFormat {
     }
 
     private formattedBarText(args: { [key: string]: CellModel | string }): void {
-        let type: string = getTypeFromFormat((<CellModel>args.cell) ? (<CellModel>args.cell).format : '');
+        const type: string = getTypeFromFormat((<CellModel>args.cell) ? (<CellModel>args.cell).format : '');
         let intl: Internationalization = new Internationalization();
-        let beforeText: string = <string>args.value;
-        let date: string = (type === 'ShortDate' && args.cell && (<CellModel>args.cell).format) ?
+        const beforeText: string = <string>args.value;
+        const date: string = (type === 'ShortDate' && args.cell && (<CellModel>args.cell).format) ?
             (<CellModel>args.cell).format : getFormatFromType('ShortDate');
-        let time: string = getFormatFromType('Time');
+        const time: string = getFormatFromType('Time');
         switch (type) {
-            case 'ShortDate':
-            case 'LongDate':
-                args.value = this.shortDateFormat({ type: type, value: <string>args.value, format: date }, intl);
-                break;
-            case 'Time':
-                args.value = this.shortDateFormat({ type: type, value: <string>args.value, format: date }, intl) + ' ' +
-                    this.timeFormat({ type: type, value: <string>args.value, format: time }, intl);
-                break;
+        case 'ShortDate':
+        case 'LongDate':
+            args.value = this.shortDateFormat({ type: type, value: <string>args.value, format: date }, intl);
+            break;
+        case 'Time':
+            args.value = this.shortDateFormat({ type: type, value: <string>args.value, format: date }, intl) + ' ' +
+                this.timeFormat({ type: type, value: <string>args.value, format: time }, intl);
+            break;
         }
         if (!args.value || (args.value && args.value.toString().indexOf('null') > -1)) {
             args.value = beforeText;
@@ -443,6 +490,8 @@ export class WorkbookNumberFormat {
 
     /**
      * Adding event listener for number format.
+     *
+     * @returns {void} - Adding event listener for number format.
      */
     private addEventListener(): void {
         this.parent.on(applyNumberFormatting, this.numberFormatting, this);
@@ -454,6 +503,8 @@ export class WorkbookNumberFormat {
 
     /**
      * Removing event listener for number format.
+     *
+     * @returns {void} -  Removing event listener for number format.
      */
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
@@ -466,6 +517,8 @@ export class WorkbookNumberFormat {
 
     /**
      * To Remove the event listeners.
+     *
+     * @returns {void} - To Remove the event listeners.
      */
     public destroy(): void {
         this.removeEventListener();
@@ -474,6 +527,8 @@ export class WorkbookNumberFormat {
 
     /**
      * Get the workbook number format module name.
+     *
+     * @returns {string} - Get the module name.
      */
     public getModuleName(): string {
         return 'workbookNumberFormat';
@@ -482,98 +537,113 @@ export class WorkbookNumberFormat {
 
 /**
  * To Get the number built-in format code from the number format type.
- * @param {string} type - Specifies the type of the number formatting. 
+ *
+ * @param {string} type - Specifies the type of the number formatting.
+ * @returns {string} - To Get the number built-in format code from the number format type.
  */
 export function getFormatFromType(type: NumberFormatType): string {
     let code: string = 'General';
     switch (type.split(' ').join('')) {
-        case 'Number':
-            code = '0.00';
-            break;
-        case 'Currency':
-            code = '$#,##0.00';
-            break;
-        case 'Accounting':
-            code = '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)';
-            break;
-        case 'ShortDate':
-            code = 'mm-dd-yyyy';
-            break;
-        case 'LongDate':
-            code = 'dddd, mmmm dd, yyyy';
-            break;
-        case 'Time':
-            code = 'h:mm:ss AM/PM';
-            break;
-        case 'Percentage':
-            code = '0.00%';
-            break;
-        case 'Fraction':
-            code = '# ?/?';
-            break;
-        case 'Scientific':
-            code = '0.00E+00';
-            break;
-        case 'Text':
-            code = '@';
-            break;
+    case 'Number':
+        code = '0.00';
+        break;
+    case 'Currency':
+        code = '$#,##0.00';
+        break;
+    case 'Accounting':
+        code = '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)';
+        break;
+    case 'ShortDate':
+        code = 'mm-dd-yyyy';
+        break;
+    case 'LongDate':
+        code = 'dddd, mmmm dd, yyyy';
+        break;
+    case 'Time':
+        code = 'h:mm:ss AM/PM';
+        break;
+    case 'Percentage':
+        code = '0.00%';
+        break;
+    case 'Fraction':
+        code = '# ?/?';
+        break;
+    case 'Scientific':
+        code = '0.00E+00';
+        break;
+    case 'Text':
+        code = '@';
+        break;
     }
     return code;
 }
 
 /**
  * @hidden
+ * @param {string} format -  Specidfies the format.
+ * @returns {string} - To get type from format.
  */
 export function getTypeFromFormat(format: string): string {
     let code: string = 'General';
     switch (format) {
-        case '0.00':
-        case '_-* #,##0.00_-;-* #,##0.00_-;_-* "-"_-;_-@_-':
-        case '_-* #,##0_-;-* #,##0_-;_-* "-"_-;_-@_-':
-            code = 'Number';
-            break;
-        case '$#,##0.00':
-        case '$#,##0_);[Red]($#,##0)':
-        case '$#,##0.00_);[Red]($#,##0.00)':
-        case '$#,##0.00_);($#,##0.00)':
-        case '$#,##0_);($#,##0)':
-            code = 'Currency';
-            break;
-        case '_($*#,##0.00_);_($*(#,##0.00);_($*"-"??_);_(@_)':
-        case '_($*#,##0.00_);_($* (#,##0.00);_($*"-"??_);_(@_)':
-        case '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)':
-        case '_ $ * #,##0.00_ ;_ $ * -#,##0.00_ ;_ $ * "-"??_ ;_ @_ ':
-            code = 'Accounting';
-            break;
-        case 'mm-dd-yyyy':
-        case 'dd-mm-yyyy':
-        case 'dd-mm-yy':
-        case 'mm-dd-yy':
-        case 'dd/MM/yyyy':
-        case 'yyyy-MM-dd':
-            code = 'ShortDate';
-            break;
-        case 'dddd, mmmm dd, yyyy':
-            code = 'LongDate';
-            break;
-        case 'h:mm:ss AM/PM':
-            code = 'Time';
-            break;
-        case '0.00%':
-        case '0%':
-            code = 'Percentage';
-            break;
-        case '# ?/?':
-        case '# ??/??':
-        case '# ???/???':
-            code = 'Fraction';
-            break;
-        case '0.00E+00':
-            code = 'Scientific';
-            break;
-        case '@':
-            code = 'Text';
-            break;
+    case '0.00':
+    case '_-* #,##0.00_-;-* #,##0.00_-;_-* "-"_-;_-@_-':
+    case '_-* #,##0_-;-* #,##0_-;_-* "-"_-;_-@_-':
+        code = 'Number';
+        break;
+    case '$#,##0.00':
+    case '$#,##0_);[Red]($#,##0)':
+    case '$#,##0.00_);[Red]($#,##0.00)':
+    case '$#,##0.00_);($#,##0.00)':
+    case '$#,##0_);($#,##0)':
+        code = 'Currency';
+        break;
+    case '_($*#,##0.00_);_($*(#,##0.00);_($*"-"??_);_(@_)':
+    case '_($*#,##0.00_);_($* (#,##0.00);_($*"-"??_);_(@_)':
+    case '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)':
+    case '_ $ * #,##0.00_ ;_ $ * -#,##0.00_ ;_ $ * "-"??_ ;_ @_ ':
+        code = 'Accounting';
+        break;
+    case 'mm-dd-yyyy':
+    case 'dd-mm-yyyy':
+    case 'dd-mm-yy':
+    case 'mm-dd-yy':
+    case 'dd/MM/yyyy':
+    case 'yyyy-MM-dd':
+        code = 'ShortDate';
+        break;
+    case 'dddd, mmmm dd, yyyy':
+        code = 'LongDate';
+        break;
+    case 'h:mm:ss AM/PM':
+        code = 'Time';
+        break;
+    case '0.00%':
+    case '0%':
+        code = 'Percentage';
+        break;
+    case '# ?/?':
+    case '# ??/??':
+    case '# ???/???':
+        code = 'Fraction';
+        break;
+    case '0.00E+00':
+        code = 'Scientific';
+        break;
+    case '@':
+        code = 'Text';
+        break;
+    default:
+            if (format) {
+                if (format.indexOf('[$') > -1) {
+                    if(format.indexOf('* ') > -1){
+                        code = 'Accounting';
+                    } else {
+                        code = 'Currency';
+                    }
+                }
+            }
+        break;
     }
     return code;
 }

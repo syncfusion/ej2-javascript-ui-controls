@@ -52,7 +52,7 @@ export interface CustomStampModel {
     customStampName?: string;
 
     /**
-     * Defines the custom stamp images source to be added in stamp menu of the PDF Viewer toolbar. 
+     * Defines the custom stamp images source to be added in stamp menu of the PDF Viewer toolbar.
      */
     customStampImageSource?: string;
 
@@ -103,13 +103,13 @@ export interface SignatureIndicatorSettingsModel {
     backgroundColor?: string;
 
     /**
-     * Specifies the width of the signature indicator. Maximum width is half the width of the signature field. 
+     * Specifies the width of the signature indicator. Maximum width is half the width of the signature field.
      * Minimum width is the default value.
      */
     width?: number;
 
     /**
-     * Specifies the height of the signature indicator. Maximum height is half the height of the signature field. 
+     * Specifies the height of the signature indicator. Maximum height is half the height of the signature field.
      * Minimum height is the default value.
      */
     height?: number;
@@ -235,12 +235,14 @@ export interface StrikethroughSettingsModel {
 
     /**
      * Enables or disables the multi-page text markup annotation selection in UI.
+     *
      * @default false
      */
     enableMultiPageAnnotation?: boolean;
 
     /**
      * Enable or disable the text markup resizer to modify the bounds in UI.
+     *
      * @default false
      */
     enableTextMarkupResizer?: boolean;
@@ -248,6 +250,7 @@ export interface StrikethroughSettingsModel {
     /**
      * Gets or sets the allowed interactions for the locked strikethrough annotations.
      * IsLock can be configured using strikethrough settings.
+     *
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
@@ -296,12 +299,14 @@ export interface UnderlineSettingsModel {
 
     /**
      * Enables or disables the multi-page text markup annotation selection in UI.
+     *
      * @default false
      */
     enableMultiPageAnnotation?: boolean;
 
     /**
      * Enable or disable the text markup resizer to modify the bounds in UI.
+     *
      * @default false
      */
     enableTextMarkupResizer?: boolean;
@@ -309,6 +314,7 @@ export interface UnderlineSettingsModel {
     /**
      * Gets or sets the allowed interactions for the locked underline annotations.
      * IsLock can be configured using underline settings.
+     *
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
@@ -357,12 +363,14 @@ export interface HighlightSettingsModel {
 
     /**
      * Enables or disables the multi-page text markup annotation selection in UI.
+     *
      * @default false
      */
     enableMultiPageAnnotation?: boolean;
 
     /**
      * Enable or disable the text markup resizer to modify the bounds in UI.
+     *
      * @default false
      */
     enableTextMarkupResizer?: boolean;
@@ -370,6 +378,7 @@ export interface HighlightSettingsModel {
     /**
      * Gets or sets the allowed interactions for the locked highlight annotations.
      * IsLock can be configured using highlight settings.
+     *
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
@@ -464,6 +473,7 @@ export interface LineSettingsModel {
     /**
      * Gets or sets the allowed interactions for the locked highlight annotations.
      * IsLock can be configured using line settings.
+     *
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
@@ -558,6 +568,7 @@ export interface ArrowSettingsModel {
     /**
      * Gets or sets the allowed interactions for the locked arrow annotations.
      * IsLock can be configured using arrow settings.
+     *
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
@@ -637,6 +648,7 @@ export interface RectangleSettingsModel {
     /**
      * Gets or sets the allowed interactions for the locked rectangle annotations.
      * IsLock can be configured using rectangle settings.
+     *
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
@@ -716,6 +728,7 @@ export interface CircleSettingsModel {
     /**
      * Gets or sets the allowed interactions for the locked circle annotations.
      * IsLock can be configured using circle settings.
+     *
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
@@ -837,6 +850,7 @@ export interface PolygonSettingsModel {
     /**
      * Gets or sets the allowed interactions for the locked polygon annotations.
      * IsLock can be configured using polygon settings.
+     *
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
@@ -916,6 +930,7 @@ export interface StampSettingsModel {
     /**
      * Gets or sets the allowed interactions for the locked stamp annotations.
      * IsLock can be configured using stamp settings.
+     *
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
@@ -1005,6 +1020,7 @@ export interface CustomStampSettingsModel {
     /**
      * Gets or sets the allowed interactions for the locked custom stamp annotations.
      * IsLock can be configured using custom stamp settings.
+     *
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
@@ -1109,6 +1125,7 @@ export interface DistanceSettingsModel {
     /**
      * Gets or sets the allowed interactions for the locked distance annotations.
      * IsLock can be configured using distance settings.
+     *
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
@@ -1198,6 +1215,7 @@ export interface PerimeterSettingsModel {
     /**
      * Gets or sets the allowed interactions for the locked perimeter annotations.
      * IsLock can be configured using perimeter settings.
+     *
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
@@ -1272,6 +1290,7 @@ export interface AreaSettingsModel {
     /**
      * Gets or sets the allowed interactions for the locked area annotations.
      * IsLock can be configured using area settings.
+     *
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
@@ -1351,6 +1370,7 @@ export interface RadiusSettingsModel {
     /**
      * Gets or sets the allowed interactions for the locked radius annotations.
      * IsLock can be configured using area settings.
+     *
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
@@ -1425,6 +1445,7 @@ export interface VolumeSettingsModel {
     /**
      * Gets or sets the allowed interactions for the locked volume annotations.
      * IsLock can be configured using volume settings.
+     *
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
@@ -1474,6 +1495,7 @@ export interface InkAnnotationSettingsModel {
     /**
      * Gets or sets the allowed interactions for the locked ink annotations.
      * IsLock can be configured using ink settings.
+     *
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
@@ -1523,6 +1545,7 @@ export interface StickyNotesSettingsModel {
     /**
      * Gets or sets the allowed interactions for the locked sticky notes annotations.
      * IsLock can be configured using sticky notes settings.
+     *
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
@@ -1679,6 +1702,7 @@ export interface FreeTextSettingsModel {
     /**
      * Gets or sets the allowed interactions for the locked free text annotations.
      * IsLock can be configured using free text settings.
+     *
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
@@ -1707,18 +1731,21 @@ export interface AnnotationSelectorSettingsModel {
 
     /**
      * Specifies the border color of the resizer.
+     *
      * @ignore
      */
     resizerBorderColor?: string;
 
     /**
      * Specifies the fill color of the resizer.
+     *
      * @ignore
      */
     resizerFillColor?: string;
 
     /**
      * Specifies the size of the resizer.
+     *
      * @ignore
      */
     resizerSize?: number;
@@ -1857,6 +1884,7 @@ export interface AnnotationSettingsModel {
     /**
      * Gets or sets the allowed interactions for the locked annotations.
      * IsLock can be configured using annotation settings.
+     *
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
@@ -1954,6 +1982,7 @@ export interface RectangleBoundsModel {
 
     /**
      * Returns true if height and width of the rectangle is zero.
+     *
      * @default 'false'
      */
     isEmpty?: boolean;
@@ -2043,12 +2072,14 @@ export interface ContextMenuSettingsModel {
 
     /**
      * Defines the context menu action.
+     *
      * @default RightClick
      */
     contextMenuAction?: ContextMenuAction;
 
     /**
      * Defines the context menu items should be visible in the PDF Viewer.
+     *
      *  @default []
      */
     contextMenuItems?: ContextMenuItem[];
@@ -2067,12 +2098,14 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * gets the page count of the document loaded in the PdfViewer control.
+     *
      * @default 0
      */
     pageCount?: number;
 
     /**
      * Checks whether the PDF document is edited.
+     *
      * @asptype bool
      * @blazorType bool
      */
@@ -2080,6 +2113,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Returns the current page number of the document displayed in the PdfViewer control.
+     *
      * @default 0
      */
     currentPageNumber?: number;
@@ -2101,170 +2135,198 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Defines the scrollable height of the PdfViewer control.
+     *
      * @default 'auto'
      */
     height?: string | number;
 
     /**
      * Defines the scrollable width of the PdfViewer control.
+     *
      * @default 'auto'
      */
     width?: string | number;
 
     /**
      * Enable or disables the toolbar of PdfViewer.
+     *
      * @default true
      */
     enableToolbar?: boolean;
 
     /**
      * Specifies the retry count for the failed requests.
+     *
      * @default 1
      */
     retryCount?: number;
 
     /**
      * If it is set as false then error message box is not displayed in PDF viewer control.
+     *
      * @default true
      */
     showNotificationDialog?: boolean;
 
     /**
      * Enable or disables the Navigation toolbar of PdfViewer.
+     *
      * @default true
      */
     enableNavigationToolbar?: boolean;
 
     /**
      * Enable or disables the Comment Panel of PdfViewer.
+     *
      * @default true
      */
     enableCommentPanel?: boolean;
 
     /**
      * If it set as true, then the command panel show at initial document loading in the PDF viewer
+     *
      * @default false
      */
     isCommandPanelOpen?: boolean;
 
     /**
      * Enable or disable the text markup resizer to modify the bounds in UI.
+     *
      * @default false
      */
     enableTextMarkupResizer?: boolean;
 
     /**
      * Enable or disable the multi line text markup annotations in overlapping collections.
+     *
      * @default false
      */
     enableMultiLineOverlap?: boolean;
 
     /**
      * Checks if the freeText value is valid or not. FALSE by default
+     *
      * @default false
      */
     isValidFreeText?: boolean;
 
     /**
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
+     *
      * @deprecated This property renamed into "isAnnotationToolbarVisible"
      * @default false
      */
     isAnnotationToolbarOpen?: boolean;
 
     /**
-     * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially 
+     * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially
      * and get the annotation Toolbar Visible status.
+     *
      * @default false
      */
     isAnnotationToolbarVisible?: boolean;
 
     /**
      * Enables or disables the multi-page text markup annotation selection in UI.
+     *
      * @default false
      */
     enableMultiPageAnnotation?: boolean;
 
     /**
      * Enable or disables the download option of PdfViewer.
+     *
      * @default true
      */
     enableDownload?: boolean;
 
     /**
      * Enable or disables the print option of PdfViewer.
+     *
      * @default true
      */
     enablePrint?: boolean;
 
     /**
      * Enables or disables the thumbnail view in the PDF viewer
+     *
      * @default true
      */
     enableThumbnail?: boolean;
 
     /**
      * If it set as true, then the thumbnail view show at initial document loading in the PDF viewer
+     *
      * @default false
      */
     isThumbnailViewOpen?: boolean;
 
     /**
      * Enables or disable saving Hand Written signature as editable in the PDF.
+     *
      * @default false
      */
     isSignatureEditable?: boolean;
 
     /**
      * Enables or disables the bookmark view in the PDF viewer
+     *
      * @default true
      */
     enableBookmark?: boolean;
 
     /**
      * Enables or disables the bookmark styles in the PDF viewer
+     *
      * @default false
      */
     enableBookmarkStyles?: boolean;
 
     /**
      * Enables or disables the hyperlinks in PDF document.
+     *
      * @default true
      */
     enableHyperlink?: boolean;
 
     /**
      * Enables or disables the handwritten signature in PDF document.
+     *
      * @default true
      */
     enableHandwrittenSignature?: boolean;
 
     /**
      * If it is set as false, then the ink annotation support in the PDF Viewer will be disabled. By default it is true.
+     *
      * @default true
      */
     enableInkAnnotation?: boolean;
 
     /**
      * restrict zoom request.
+     *
      * @default false
      */
     restrictZoomRequest?: boolean;
 
     /**
      * Specifies the open state of the hyperlink in the PDF document.
+     *
      * @default CurrentTab
      */
     hyperlinkOpenState?: LinkTarget;
 
     /**
      * Specifies the state of the ContextMenu in the PDF document.
+     *
      * @default RightClick
      */
     contextMenuOption?: ContextMenuAction;
 
     /**
      * enable or disable context menu Items
+     *
      * @default []
      */
     disableContextMenuItems?: ContextMenuItem[];
@@ -2272,186 +2334,216 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      * Gets the form fields present in the loaded PDF document. It used to get the form fields id, name, type and it's values.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     formFieldCollections?: FormFieldModel[];
 
     /**
      * Enable or disables the Navigation module of PdfViewer.
+     *
      * @default true
      */
     enableNavigation?: boolean;
 
     /**
      * Enable or disables the auto complete option in form documents.
+     *
      * @default true
      */
     enableAutoComplete?: boolean;
 
     /**
      * Enable or disables the Magnification module of PdfViewer.
+     *
      * @default true
      */
     enableMagnification?: boolean;
 
     /**
      * Enable or disables the Label for shapeAnnotations of PdfViewer.
+     *
      * @default false
      */
     enableShapeLabel?: boolean;
 
     /**
      * Enable or disables the customization of measure values in PdfViewer.
+     *
      * @default true
      */
     enableImportAnnotationMeasurement?: boolean;
 
     /**
      * Enable or disables the Pinch zoom of PdfViewer.
+     *
      * @default true
      */
     enablePinchZoom?: boolean;
 
     /**
      * Enable or disables the text selection in the PdfViewer.
+     *
      * @default true
      */
     enableTextSelection?: boolean;
 
     /**
      * Enable or disables the text search in the PdfViewer.
+     *
      * @default true
      */
     enableTextSearch?: boolean;
 
     /**
      * Enable or disable the annotation in the Pdfviewer.
+     *
      * @default true
      */
     enableAnnotation?: boolean;
 
     /**
      * Enable or disable the form fields in the Pdfviewer.
+     *
      * @default true
      */
     enableFormFields?: boolean;
 
     /**
      * Enable or disable the form fields validation.
+     *
      * @default false
      */
     enableFormFieldsValidation?: boolean;
 
     /**
      * Enable if the PDF document contains form fields.
+     *
      * @default false
      */
     isFormFieldDocument?: boolean;
 
     /**
      * Gets or sets a boolean value to show or hide desktop toolbar in mobile devices. FALSE by default.
+     *
      * @default false
      */
     enableDesktopMode?: boolean;
 
     /**
-     * Gets or sets a boolean value to show or hide the save signature check box option in the signature dialog. 
+     * Gets or sets a boolean value to show or hide the save signature check box option in the signature dialog.
      * FALSE by default
+     *
      * @default false
      */
     hideSaveSignature?: boolean;
 
     /**
      * Enable or disable the free text annotation in the Pdfviewer.
+     *
      * @default true
      */
     enableFreeText?: boolean;
 
     /**
      * Enable or disables the text markup annotation in the PdfViewer.
+     *
      * @default true
      */
     enableTextMarkupAnnotation?: boolean;
 
     /**
      * Enable or disables the shape annotation in the PdfViewer.
+     *
      * @default true
      */
     enableShapeAnnotation?: boolean;
 
     /**
      * Enable or disables the calibrate annotation in the PdfViewer.
+     *
      * @default true
      */
     enableMeasureAnnotation?: boolean;
 
     /**
      * Enables and disables the stamp annotations when the PDF viewer control is loaded initially.
+     *
      * @default true
      */
     enableStampAnnotations?: boolean;
 
     /**
      * Enables and disables the stickyNotes annotations when the PDF viewer control is loaded initially.
+     *
      * @default true
      */
     enableStickyNotesAnnotation?: boolean;
 
     /**
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
+     *
      * @default true
      */
     enableAnnotationToolbar?: boolean;
 
     /**
      * Gets or sets a boolean value to show or hide the bookmark panel while loading a document. FALSE by default.
+     *
      * @default false
      */
     isBookmarkPanelOpen?: boolean;
 
     /**
      * Sets the interaction mode of the PdfViewer
+     *
      * @default TextSelection
      */
     interactionMode?: InteractionMode;
 
     /**
      * Specifies the rendering mode in the PDF Viewer.
+     *
      * @default Default
      */
     zoomMode?: ZoomMode;
 
     /**
      * Specifies the signature mode in the PDF Viewer.
+     *
      * @default Default
      */
     signatureFitMode?: SignatureFitMode;
 
     /**
      * Specifies the print mode in the PDF Viewer.
+     *
      * @default Default
      */
     printMode?: PrintMode;
 
     /**
      * Sets the initial loading zoom value from 10 to 400 in PdfViewer Control.
+     *
      * @default 0
      */
     zoomValue?: number;
 
     /**
      *  Enable or disable the zoom optimization mode in PDF Viewer.
+     *
      * @default true
      */
     enableZoomOptimization?: boolean;
 
     /**
      * Enable or disables the get the document text collections.
+     *
      * @default false
      */
     isExtractText?: boolean;
 
     /**
      * Maintain the selection of text markup annotation.
+     *
      * @default false
      */
     isMaintainSelection?: boolean;
@@ -2464,140 +2556,140 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      * Defines the settings of the PdfViewer toolbar.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     toolbarSettings?: ToolbarSettingsModel;
 
     /**
      * Defines the ajax Request settings of the PdfViewer.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     ajaxRequestSettings?: AjaxRequestSettingsModel;
 
     /**
      * Defines the stamp items of the PdfViewer.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
 
     customStamp?: CustomStampModel[];
 
     /**
      * Defines the settings of the PdfViewer service.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     serverActionSettings?: ServerActionSettingsModel;
 
     /**
      * Defines the  properties of signature field
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     signatureFieldSettings?: SignatureFieldSettingsModel;
 
     /**
      * Defines the settings of highlight annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     highlightSettings?: HighlightSettingsModel;
 
     /**
      * Defines the settings of strikethrough annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     strikethroughSettings?: StrikethroughSettingsModel;
 
     /**
      * Defines the settings of underline annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     underlineSettings?: UnderlineSettingsModel;
 
     /**
      * Defines the settings of line annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     lineSettings?: LineSettingsModel;
 
     /**
      * Defines the settings of arrow annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     arrowSettings?: ArrowSettingsModel;
 
     /**
      * Defines the settings of rectangle annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     rectangleSettings?: RectangleSettingsModel;
 
     /**
      * Defines the settings of shape label.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     shapeLabelSettings?: ShapeLabelSettingsModel;
 
     /**
      * Defines the settings of circle annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     circleSettings?: CircleSettingsModel;
 
     /**
      * Defines the settings of polygon annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     polygonSettings?: PolygonSettingsModel;
 
     /**
      * Defines the settings of stamp annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     stampSettings?: StampSettingsModel;
 
     /**
      * Defines the settings of customStamp annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     customStampSettings?: CustomStampSettingsModel;
 
     /**
      * Defines the settings of distance annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     distanceSettings?: DistanceSettingsModel;
 
     /**
      * Defines the settings of perimeter annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     perimeterSettings?: PerimeterSettingsModel;
 
     /**
      * Defines the settings of area annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     areaSettings?: AreaSettingsModel;
 
     /**
      * Defines the settings of radius annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     radiusSettings?: RadiusSettingsModel;
 
     /**
      * Defines the settings of volume annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     volumeSettings?: VolumeSettingsModel;
 
     /**
      * Defines the settings of stickyNotes annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     stickyNotesSettings?: StickyNotesSettingsModel;
 
     /**
      * Defines the settings of free text annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     freeTextSettings?: FreeTextSettingsModel;
 
     /**
@@ -2608,7 +2700,7 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      * Defines the settings of annotation selector.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
     /**
@@ -2619,19 +2711,19 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      * Defines the settings of handWrittenSignature.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     handWrittenSignatureSettings?: HandWrittenSignatureSettingsModel;
 
     /**
      * Defines the ink annotation settings for PDF Viewer.It used to customize the strokeColor, thickness, opacity of the ink annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     inkAnnotationSettings?: InkAnnotationSettingsModel;
 
     /**
      * Defines the settings of the annotations.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     annotationSettings?: AnnotationSettingsModel;
 
     /**
@@ -2647,17 +2739,19 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      * Defines the context menu settings.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     contextMenuSettings?: ContextMenuSettingsModel;
 
     /**
      * Defines the collection of selected items, size and position of the selector
+     *
      * @default {}
      */
     selectedItems?: SelectorModel;
 
     /**
      * Triggers while created the PdfViewer component.
+     *
      * @event
      * @blazorProperty 'Created'
      */
@@ -2665,6 +2759,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers while loading document into PdfViewer.
+     *
      * @event
      * @blazorProperty 'DocumentLoaded'
      */
@@ -2672,6 +2767,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers while close the document
+     *
      * @event
      * @blazorProperty 'DocumentUnloaded'
      */
@@ -2679,6 +2775,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers while loading document got failed in PdfViewer.
+     *
      * @event
      * @blazorProperty 'DocumentLoadFailed'
      */
@@ -2686,6 +2783,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when the AJAX request is failed.
+     *
      * @event
      * @blazorProperty 'AjaxRequestFailed'
      */
@@ -2693,6 +2791,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when validation is failed.
+     *
      * @event
      * @blazorProperty 'validateFormFields'
      */
@@ -2700,6 +2799,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when the mouse click is performed over the page of the PDF document.
+     *
      * @event
      * @blazorProperty 'OnPageClick'
      */
@@ -2707,6 +2807,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when there is change in current page number.
+     *
      * @event
      * @blazorProperty 'PageChanged'
      */
@@ -2714,6 +2815,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when hyperlink in the PDF Document is clicked
+     *
      * @event
      * @blazorProperty 'OnHyperlinkClick'
      */
@@ -2721,6 +2823,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when hyperlink in the PDF Document is hovered
+     *
      * @event
      * @blazorProperty 'OnHyperlinkMouseOver'
      */
@@ -2728,6 +2831,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when there is change in the magnification value.
+     *
      * @event
      * @blazorProperty 'ZoomChanged'
      */
@@ -2735,6 +2839,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when an annotation is added over the page of the PDF document.
+     *
      * @event
      * @blazorProperty 'AnnotationAdded'
      */
@@ -2742,6 +2847,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when an annotation is removed from the page of the PDF document.
+     *
      * @event
      * @blazorProperty 'AnnotationRemoved'
      */
@@ -2749,6 +2855,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when the property of the annotation is changed in the page of the PDF document.
+     *
      * @event
      * @blazorProperty 'AnnotationPropertiesChanged'
      */
@@ -2756,6 +2863,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when an annotation is resized over the page of the PDF document.
+     *
      * @event
      * @blazorProperty 'AnnotationResized'
      */
@@ -2763,49 +2871,57 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when signature is added  over the page of the PDF document.
+     *
      * @event
      */
     addSignature?: EmitType<AddSignatureEventArgs>;
 
     /**
      * Triggers when signature is removed over the page of the PDF document.
+     *
      * @event
      */
     removeSignature?: EmitType<RemoveSignatureEventArgs>;
 
     /**
      * Triggers when an signature is moved over the page of the PDF document.
+     *
      * @event
      */
     moveSignature?: EmitType<MoveSignatureEventArgs>;
 
     /**
      * Triggers when the property of the signature is changed in the page of the PDF document.
+     *
      * @event
      */
     signaturePropertiesChange?: EmitType<SignaturePropertiesChangeEventArgs>;
 
     /**
      * Triggers when signature is resized over the page of the PDF document.
+     *
      * @event
      */
     resizeSignature?: EmitType<ResizeSignatureEventArgs>;
 
     /**
      * Triggers when signature is selected over the page of the PDF document.
+     *
      * @event
      */
     signatureSelect?: EmitType<SignatureSelectEventArgs>;
 
     /**
      * Triggers when an annotation is selected over the page of the PDF document.
+     *
      * @event
      * @blazorProperty 'AnnotationSelected'
      */
     annotationSelect?: EmitType<AnnotationSelectEventArgs>;
 
     /**
-     * Triggers when an annotation is unselected over the page of the PDF document. 
+     * Triggers when an annotation is unselected over the page of the PDF document.
+     *
      * @event
      * @blazorProperty 'AnnotationUnSelect'
      */
@@ -2813,6 +2929,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers an event when the annotation is double click.
+     *
      * @event
      * @blazorProperty 'OnAnnotationDoubleClick'
      */
@@ -2820,6 +2937,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when an annotation is moved over the page of the PDF document.
+     *
      * @event
      * @blazorProperty 'AnnotationMoved'
      */
@@ -2827,24 +2945,28 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when mouse over the annotation object.
+     *
      * @event
      */
     annotationMouseover?: EmitType<AnnotationMouseoverEventArgs>;
 
     /**
      * Triggers when mouse over the annotation object.
+     *
      * @event
      */
     annotationMouseLeave?: EmitType<AnnotationMouseLeaveEventArgs>;
 
     /**
      * Triggers when mouse over the page.
+     *
      * @event
      */
     pageMouseover?: EmitType<PageMouseoverEventArgs>;
 
     /**
      * Triggers when an imported annotations started in the PDF document.
+     *
      * @event
      * @blazorProperty 'ImportStarted'
      */
@@ -2852,6 +2974,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when an exported annotations started in the PDF Viewer.
+     *
      * @event
      * @blazorProperty 'ExportStarted'
      */
@@ -2859,6 +2982,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when an imports annotations succeed in the PDF document.
+     *
      * @event
      * @blazorProperty 'ImportSucceed'
      */
@@ -2866,6 +2990,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when an export annotations succeed in the PDF Viewer.
+     *
      * @event
      * @blazorProperty 'ExportSucceed'
      */
@@ -2873,6 +2998,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when an imports annotations failed in the PDF document.
+     *
      * @event
      * @blazorProperty 'ImportFailed'
      */
@@ -2880,6 +3006,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when an export annotations failed in the PDF Viewer.
+     *
      * @event
      * @blazorProperty 'ExportFailed'
      */
@@ -2887,6 +3014,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when an text extraction is completed in the PDF Viewer.
+     *
      * @event
      * @blazorProperty 'ExtractTextCompleted'
      */
@@ -2894,6 +3022,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers an event when the thumbnail is clicked in the thumbnail panel of PDF Viewer.
+     *
      * @event
      * @blazorProperty 'OnThumbnailClick'
      */
@@ -2901,6 +3030,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers an event when the bookmark is clicked in the bookmark panel of PDF Viewer.
+     *
      * @event
      * @blazorProperty 'BookmarkClick'
      */
@@ -2908,6 +3038,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers an event when the text selection is started.
+     *
      * @event
      * @blazorProperty 'OnTextSelectionStart'
      */
@@ -2915,6 +3046,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers an event when the text selection is finished.
+     *
      * @event
      * @blazorProperty 'OnTextSelectionEnd'
      */
@@ -2922,6 +3054,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers an event when the download action is started.
+     *
      * @event
      * @blazorProperty 'DownloadStart'
      */
@@ -2929,6 +3062,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers an event when the button is clicked.
+     *
      * @deprecated This property renamed into "formFieldClick"
      * @event
      * @blazorProperty 'ButtonFieldClick'
@@ -2937,6 +3071,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers an event when the form field is clicked.
+     *
      * @event
      * @blazorProperty 'FormFieldClick'
      */
@@ -2944,6 +3079,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers an event when the download actions is finished.
+     *
      * @event
      * @blazorProperty 'DownloadEnd'
      */
@@ -2951,6 +3087,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers an event when the print action is started.
+     *
      * @event
      * @blazorProperty 'PrintStart'
      */
@@ -2958,6 +3095,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers an event when the print actions is finished.
+     *
      * @event
      * @blazorProperty 'PrintEnd'
      */
@@ -2965,6 +3103,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers an event when the text search is started.
+     *
      * @event
      * @blazorProperty 'OnTextSearchStart'
      */
@@ -2972,6 +3111,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers an event when the text search is completed.
+     *
      * @event
      * @blazorProperty 'OnTextSearchComplete'
      */
@@ -2979,6 +3119,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers an event when the text search text is highlighted.
+     *
      * @event
      * @blazorProperty 'OnTextSearchHighlight'
      */
@@ -2986,6 +3127,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers before the data send in to the server.
+     *
      * @event
      * @deprecated
      */
@@ -2993,6 +3135,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when the comment is added for the annotation in the comment panel.
+     *
      * @event
      * @blazorProperty 'commentAdd'
      */
@@ -3000,6 +3143,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when the comment is edited for the annotation in the comment panel.
+     *
      * @event
      * @blazorProperty 'commentEdit'
      */
@@ -3007,6 +3151,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when the comment is deleted for the annotation in the comment panel.
+     *
      * @event
      * @blazorProperty 'commentDelete'
      */
@@ -3014,6 +3159,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when the comment is selected for the annotation in the comment panel.
+     *
      * @event
      * @blazorProperty 'commentSelect
      */
@@ -3021,6 +3167,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when the comment for status is changed for the annotation in the comment panel.
+     *
      * @event
      * @blazorProperty 'commentStatusChanged'
      */
@@ -3028,6 +3175,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers the event before adding a text in the freeText annotation.
+     *
      * @event
      * @blazorProperty 'beforeAddFreeText'
      */
@@ -3035,6 +3183,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when focus out from the form fields.
+     *
      * @event
      * @blazorProperty 'formFieldFocusOut'
      */
@@ -3042,6 +3191,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * PDF document annotation collection.
+     *
      * @private
      * @deprecated
      */
@@ -3049,6 +3199,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * store the drawing objects.
+     *
      * @private
      * @deprecated
      */

@@ -7,7 +7,7 @@ import { ISmithchartPrintEventArgs } from '../../../src/smithchart/model/interfa
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 
-/* tslint:disable:no-string-literal */
+/* eslint-disable @typescript-eslint/dot-notation */
 describe('smithChart component Spec', () => {
     beforeAll(() => {
         const isDef = (o: any) => o !== undefined && o !== null;

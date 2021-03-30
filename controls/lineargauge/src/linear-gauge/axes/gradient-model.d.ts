@@ -7,24 +7,28 @@ export interface ColorStopModel {
 
     /**
      * Specifies the color of the gradient.
+     *
      * @default "#000000"
      */
     color?: string;
 
     /**
      * Specifies the opacity of the gradient.
+     *
      * @default 1
      */
     opacity?: number;
 
     /**
      * Specifies the offset of the gradient.
+     *
      * @default "0%"
      */
     offset?: string;
 
     /**
      * Specifies the style of the gradient.
+     *
      * @default ""
      */
     style?: string;
@@ -38,12 +42,14 @@ export interface GradientPositionModel {
 
     /**
      * Specifies the horizontal position of the gradient.
+     *
      * @default "0%"
      */
     x?: string;
 
     /**
      * Specifies the vertical position of the gradient.
+     *
      * @default "0%"
      */
     y?: string;
@@ -57,12 +63,14 @@ export interface LinearGradientModel {
 
     /**
      * Specifies the start value of the linear gradient.
+     *
      * @default "0%"
      */
     startValue?: string;
 
     /**
      * Specifies the end value of the linear gradient.
+     *
      * @default "100%"
      */
     endValue?: string;
@@ -81,6 +89,7 @@ export interface RadialGradientModel {
 
     /**
      * Specifies the radius of the radial gradient.
+     *
      * @default "0%"
      */
     radius?: string;

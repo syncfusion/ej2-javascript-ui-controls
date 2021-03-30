@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';
 import { ShapeStyle, Margin } from '../core/appearance';
 import { ShapeStyleModel, MarginModel } from '../core/appearance-model';
@@ -11,8 +13,9 @@ import { HorizontalAlignment, VerticalAlignment, PortShapes, PortConstraints, Po
  */
 export abstract class Port extends ChildProperty<Port> {
 
-    /** 
+    /**
      * Defines the unique id of the port
+     *
      * @default ''
      */
     @Property('')
@@ -25,6 +28,7 @@ export abstract class Port extends ChildProperty<Port> {
      * * Right - Aligns the diagram element at the right of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
+     *
      * @default 'Center'
      */
     @Property('Center')
@@ -37,6 +41,7 @@ export abstract class Port extends ChildProperty<Port> {
      * * Bottom - Aligns the diagram element at the bottom of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
+     *
      * @default 'Center'
      */
     @Property('Center')
@@ -44,6 +49,7 @@ export abstract class Port extends ChildProperty<Port> {
 
     /**
      * Defines the space that the port has to be moved from its actual position
+     *
      * @default new Margin(0,0,0,0)
      */
     @Complex<MarginModel>({}, Margin)
@@ -51,6 +57,7 @@ export abstract class Port extends ChildProperty<Port> {
 
     /**
      * Sets the width of the port
+     *
      * @default 12
      */
     @Property(12)
@@ -58,6 +65,7 @@ export abstract class Port extends ChildProperty<Port> {
 
     /**
      * Sets the height of the port
+     *
      * @default 12
      */
     @Property(12)
@@ -81,6 +89,7 @@ export abstract class Port extends ChildProperty<Port> {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default {}
      */
     @Complex<ShapeStyleModel>({}, ShapeStyle)
@@ -92,6 +101,7 @@ export abstract class Port extends ChildProperty<Port> {
      * * Circle - Sets the decorator shape as Circle
      * * Square - Sets the decorator shape as Square
      * * Custom - Sets the decorator shape as Custom
+     *
      * @default 'Square'
      */
     @Property('Square')
@@ -103,6 +113,7 @@ export abstract class Port extends ChildProperty<Port> {
      * * Hidden - Always hides the port
      * * Hover - Shows the port when the mouse hovers over a node
      * * Connect - Shows the port when a connection end point is dragged over a node
+     *
      * @default 'Connect'
      * @aspNumberEnum
      * @blazorNumberEnum
@@ -112,6 +123,7 @@ export abstract class Port extends ChildProperty<Port> {
 
     /**
      * Defines the geometry of the port
+     *
      * @default ''
      */
     @Property('')
@@ -119,6 +131,7 @@ export abstract class Port extends ChildProperty<Port> {
 
     /**
      * Defines the constraints of port
+     *
      * @default 'Default'
      * @aspNumberEnum
      * @blazorNumberEnum
@@ -128,6 +141,7 @@ export abstract class Port extends ChildProperty<Port> {
 
     /**
      * Allows the user to save custom information/data about a port
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -137,6 +151,7 @@ export abstract class Port extends ChildProperty<Port> {
 
     /**
      * Defines the collection of the objects that are connected to a particular port
+     *
      * @default undefined
      * @blazorDefaultValue new string[] { }
      */
@@ -145,6 +160,7 @@ export abstract class Port extends ChildProperty<Port> {
 
     /**
      * Defines the collection of the objects that are connected to a particular port
+     *
      * @default undefined
      * @blazorDefaultValue new string[] { }
      */
@@ -164,19 +180,23 @@ export abstract class Port extends ChildProperty<Port> {
 export class PointPort extends Port {
     /**
      * Defines the position of the port with respect to the boundaries of nodes/connector
+     *
      * @default new Point(0.5,0.5)
      * @blazorType NodePortOffset
      */
     @Complex<PointModel>({ x: 0.5, y: 0.5 }, Point)
     public offset: PointModel;
-    // tslint:disable-next-line:no-any
+
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
     }
 
     /**
+     * getClassName method \
+     *
+     * @returns { string } toBounds method .\
+     *
      * @private
-     * Returns the name of class PointPort
      */
     public getClassName(): string {
         return 'PointPort';

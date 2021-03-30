@@ -2,13 +2,14 @@
 
 ## [Unreleased]
 
-## 18.4.49 (2021-03-23)
+## 19.1.54 (2021-03-30)
 
 ### QueryBuilder
 
-#### Bug Fixes
+#### New Features
 
-- Issue with tooltip has been fixed.
+- Provided Complex data binding Support
+- Provided Header Template Support
 
 ## 18.4.42 (2021-02-09)
 

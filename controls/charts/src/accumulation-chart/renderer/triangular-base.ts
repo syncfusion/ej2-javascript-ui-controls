@@ -1,4 +1,7 @@
-
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable valid-jsdoc */
 /**
  * Defines the common behavior of funnel and pyramid series
  */
@@ -11,15 +14,16 @@ import { AccumulationLabelPosition } from '../model/enum';
 import { AccumulationBase } from './accumulation-base';
 
 /**
- * TriangularBase is used to calculate base functions for funnel/pyramid series. 
+ * TriangularBase is used to calculate base functions for funnel/pyramid series.
  */
 export class TriangularBase extends AccumulationBase {
     /**
      * Initializes the properties of funnel/pyramid series
+     *
      * @private
      */
     public initProperties(chart: AccumulationChart, series: AccumulationSeries): void {
-        let actualChartArea: Size = chart.initialClipRect;
+        const actualChartArea: Size = chart.initialClipRect;
         series.triangleSize = new Size(stringToNumber(series.width, actualChartArea.width),
                                        stringToNumber(series.height, actualChartArea.height));
 
@@ -32,33 +36,34 @@ export class TriangularBase extends AccumulationBase {
             series.explodeOffset = '25px';
         }
         chart.explodeDistance = stringToNumber(series.explodeOffset, actualChartArea.width);
-        let points: AccPoints[] = series.points;
+        const points: AccPoints[] = series.points;
 
         this.initializeSizeRatio(points, series);
     }
 
     /**
      * Initializes the size of the pyramid/funnel segments
+     *
      * @private
      */
     protected initializeSizeRatio(points: AccPoints[], series: AccumulationSeries, reverse: boolean = false): void {
 
-        let sumOfPoints: number = series.sumOfPoints;
+        const sumOfPoints: number = series.sumOfPoints;
 
         //Limiting the ratio within the range of 0 to 1
-        let gapRatio: number = Math.min(Math.max(series.gapRatio, 0), 1);
+        const gapRatio: number = Math.min(Math.max(series.gapRatio, 0), 1);
 
         //% equivalence of a value 1
-        let coEff: number = 1 / (sumOfPoints * (1 + gapRatio / (1 - gapRatio)));
+        const coEff: number = 1 / (sumOfPoints * (1 + gapRatio / (1 - gapRatio)));
 
-        let spacing: number = gapRatio / (points.length - 1);
+        const spacing: number = gapRatio / (points.length - 1);
         let y: number = 0;
 
         //starting from bottom
         for (let i: number = points.length - 1; i >= 0; i--) {
-            let index: number = reverse ? points.length - 1 - i : i;
+            const index: number = reverse ? points.length - 1 - i : i;
             if (points[index].visible) {
-                let height: number = coEff * points[index].y;
+                const height: number = coEff * points[index].y;
                 points[index].yRatio = y; points[index].heightRatio = height;
                 y += height + spacing;
             }
@@ -67,15 +72,16 @@ export class TriangularBase extends AccumulationBase {
 
     /**
      * Marks the label location from the set of points that forms a pyramid/funnel segment
+     *
      * @private
      */
     protected setLabelLocation(series: AccumulationSeries, point: AccPoints, points: ChartLocation[]): void {
 
-        let last: number = points.length - 1;
-        let bottom: number = series.type === 'Funnel' ? points.length - 2 : points.length - 1;
+        const last: number = points.length - 1;
+        const bottom: number = series.type === 'Funnel' ? points.length - 2 : points.length - 1;
 
-        let x: number = (points[0].x + points[bottom].x) / 2;
-        let right: number = (points[1].x + points[bottom - 1].x) / 2;
+        const x: number = (points[0].x + points[bottom].x) / 2;
+        const right: number = (points[1].x + points[bottom - 1].x) / 2;
 
 
         point.region = new Rect(x, points[0].y, right - x, points[bottom].y - points[0].y);
@@ -93,6 +99,7 @@ export class TriangularBase extends AccumulationBase {
 
     /**
      * Finds the path to connect the list of points
+     *
      * @private
      */
     protected findPath(locations: ChartLocation[]): string {
@@ -108,14 +115,15 @@ export class TriangularBase extends AccumulationBase {
 
     /**
      * To calculate data-label bounds
+     *
      * @private
      */
     public defaultLabelBound(series: AccumulationSeries, visible: boolean, position: AccumulationLabelPosition,
                              chart: AccumulationChart): void {
-        let x: number = (chart.initialClipRect.width - series.triangleSize.width) / 2;
-        let y: number = (chart.initialClipRect.height - series.triangleSize.height) / 2;
+        const x: number = (chart.initialClipRect.width - series.triangleSize.width) / 2;
+        const y: number = (chart.initialClipRect.height - series.triangleSize.height) / 2;
 
-        let accumulationBound: Rect = new Rect(x, y, series.triangleSize.width, series.triangleSize.height);
+        const accumulationBound: Rect = new Rect(x, y, series.triangleSize.width, series.triangleSize.height);
         series.labelBound = new Rect(
             accumulationBound.x,
             accumulationBound.y,

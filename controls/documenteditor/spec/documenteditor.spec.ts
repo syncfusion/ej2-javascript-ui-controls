@@ -1699,7 +1699,7 @@ console.log('set dropdown form fields');
 console.log('prevent content change trigger');
         documentEditor.openBlank();
         documentEditor.layoutType = 'Continuous';
-        expect(() => { documentEditor.editor.layoutWholeDocument(true) }).not.toThrowError();
+        expect(() => { documentEditor.editor.layoutWholeDocument() }).not.toThrowError();
     })
     it('Bookmark reference validation', () => {
 console.log('Bookmark reference validation');

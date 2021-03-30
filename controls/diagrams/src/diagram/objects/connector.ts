@@ -1,3 +1,11 @@
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable no-self-assign */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='./node-base-model.d.ts'/>
 import { Property, Complex, Collection, ChildProperty, ComplexFactory, CollectionFactory, isBlazor } from '@syncfusion/ej2-base';
 import { ShapeStyle, StrokeStyle } from '../core/appearance';
@@ -40,41 +48,41 @@ import { SymbolSizeModel } from './preview-model';
 import { SymbolSize } from './preview';
 import { ConnectorFixedUserHandle } from './fixed-user-handle';
 import { ConnectorFixedUserHandleModel } from './fixed-user-handle-model';
-let getConnectorType: Function = (obj: ConnectorShape): Object => {
+const getConnectorType: Function = (obj: ConnectorShape): Object => {
     if (isBlazor()) {
         return DiagramConnectorShape;
     } else {
         if (obj) {
             switch (obj.type) {
-                case 'Bpmn':
-                    return BpmnFlow;
-                case 'UmlActivity':
-                    return ActivityFlow;
-                case 'UmlClassifier':
-                    return RelationShip;
-                default:
-                    return ConnectorShape;
+            case 'Bpmn':
+                return BpmnFlow;
+            case 'UmlActivity':
+                return ActivityFlow;
+            case 'UmlClassifier':
+                return RelationShip;
+            default:
+                return ConnectorShape;
             }
         }
         return ConnectorShape;
     }
 };
 
-let getSegmentType: Function = (obj: Connector): Object => {
+const getSegmentType: Function = (obj: Connector): Object => {
 
     if (obj) {
         if (isBlazor()) {
             return DiagramConnectorSegment;
         } else {
             switch (obj.type) {
-                case 'Straight':
-                    return StraightSegment;
-                case 'Bezier':
-                    return BezierSegment;
-                case 'Orthogonal':
-                    return OrthogonalSegment;
-                default:
-                    return StraightSegment;
+            case 'Straight':
+                return StraightSegment;
+            case 'Bezier':
+                return BezierSegment;
+            case 'Orthogonal':
+                return OrthogonalSegment;
+            default:
+                return StraightSegment;
             }
         }
     }
@@ -88,6 +96,7 @@ let getSegmentType: Function = (obj: Connector): Object => {
 export class Decorator extends ChildProperty<Decorator> {
     /**
      * Sets the width of the decorator
+     *
      * @default 10
      */
     @Property(10)
@@ -95,6 +104,7 @@ export class Decorator extends ChildProperty<Decorator> {
 
     /**
      * Sets the height of the decorator
+     *
      * @default 10
      */
     @Property(10)
@@ -114,6 +124,7 @@ export class Decorator extends ChildProperty<Decorator> {
      * * IndentedArrow - Sets the decorator shape as Indented Arrow
      * * OutdentedArrow - Sets the decorator shape as Outdented Arrow
      * * DoubleArrow - Sets the decorator shape as DoubleArrow
+     *
      * @default 'Arrow'
      */
     /**
@@ -145,6 +156,7 @@ export class Decorator extends ChildProperty<Decorator> {
 
     /**
      * Defines the appearance of the decorator
+     *
      * @default new ShapeStyle()
      * @blazorType DecoratorShapeStyle
      */
@@ -159,6 +171,7 @@ export class Decorator extends ChildProperty<Decorator> {
 
     /**
      * Defines the geometry of the decorator shape
+     *
      * @default ''
      */
     @Property('')
@@ -171,6 +184,7 @@ export class Decorator extends ChildProperty<Decorator> {
 export class Vector extends ChildProperty<Vector> {
     /**
      * Defines the angle between the connector end point and control point of the bezier segment
+     *
      * @default 0
      */
     @Property(0)
@@ -178,6 +192,7 @@ export class Vector extends ChildProperty<Vector> {
 
     /**
      * Defines the distance between the connector end point and control point of the bezier segment
+     *
      * @default 0
      */
     @Property(0)
@@ -193,6 +208,7 @@ export class ConnectorShape extends ChildProperty<ConnectorShape> {
     /**
      * Defines the application specific type of connector
      * * Bpmn - Sets the type of the connection shape as Bpmn
+     *
      * @default 'None'
      */
     @Property('None')
@@ -208,6 +224,7 @@ export class ActivityFlow extends ConnectorShape {
      * Object - Sets the type of the UMLActivity Flow as Object
      * Control - Sets the type of the UMLActivity Flow as Control
      * Exception - Sets the type of the UMLActivity Flow as Exception
+     *
      * @default 'Object'
      * @IgnoreSingular
      */
@@ -216,6 +233,7 @@ export class ActivityFlow extends ConnectorShape {
 
     /**
      * Defines the height of the exception flow.
+     *
      * @default '50'
      */
     @Property(30)
@@ -231,6 +249,7 @@ export class BpmnFlow extends ConnectorShape {
      * * Sequence - Sets the type of the Bpmn Flow as Sequence
      * * Association - Sets the type of the Bpmn Flow as Association
      * * Message - Sets the type of the Bpmn Flow as Message
+     *
      * @default 'Sequence'
      */
     @Property('Sequence')
@@ -240,6 +259,7 @@ export class BpmnFlow extends ConnectorShape {
      * * Default - Sets the type of the sequence flow as Default
      * * Normal - Sets the type of the sequence flow as Normal
      * * Conditional - Sets the type of the sequence flow as Conditional
+     *
      * @default 'Normal'
      */
     @Property('Normal')
@@ -250,6 +270,7 @@ export class BpmnFlow extends ConnectorShape {
      * * Default - Sets the type of the Message flow as Default
      * * InitiatingMessage - Sets the type of the Message flow as InitiatingMessage
      * * NonInitiatingMessage - Sets the type of the Message flow as NonInitiatingMessage
+     *
      * @default ''
      */
     /**
@@ -277,6 +298,7 @@ export class BpmnFlow extends ConnectorShape {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default 'Default'
      * @blazorDefaultValue 'Default'
      */
@@ -289,6 +311,7 @@ export class BpmnFlow extends ConnectorShape {
      * * Directional - Sets the type of Association flow as Directional
      * * BiDirectional - Sets the type of Association flow as BiDirectional
      * * @default 'Default'
+     *
      * @blazorDefaultValue Default
      */
     @Property('Default')
@@ -305,6 +328,7 @@ export class ConnectorSegment extends ChildProperty<ConnectorSegment> {
      * * Straight - Sets the segment type as Straight
      * * Orthogonal - Sets the segment type as Orthogonal
      * * Bezier - Sets the segment type as Bezier
+     *
      * @default 'Straight'
      */
     @Property('Straight')
@@ -312,6 +336,7 @@ export class ConnectorSegment extends ChildProperty<ConnectorSegment> {
 
     /**
      * Defines the segment to be drag or not
+     *
      * @default true
      */
     @Property(true)
@@ -341,14 +366,16 @@ export class StraightSegment extends ConnectorSegment {
 
     /**
      * Sets the end point of the connector segment
+     *
      * @default new Point(0,0)
      */
     @Complex<PointModel>({ x: 0, y: 0 }, Point)
     public point: PointModel;
 
     /**
-     * @private
      * Returns the name of class StraightSegment
+     *
+     * @private
      */
     public getClassName(): string {
         return 'StraightSegment';
@@ -361,19 +388,22 @@ export class StraightSegment extends ConnectorSegment {
 export class BezierSegment extends StraightSegment {
 
     /**
-     * @private
      * Sets the first control point of the bezier connector
+     *
+     * @private
      */
     public bezierPoint1: PointModel;
 
     /**
-     * @private
      *  Sets the second control point of the bezier connector
+     *
+     * @private
      */
     public bezierPoint2: PointModel;
 
     /**
      * Sets the first control point of the connector
+     *
      * @default {}
      */
     @Complex<PointModel>({ x: 0, y: 0 }, Point)
@@ -381,6 +411,7 @@ export class BezierSegment extends StraightSegment {
 
     /**
      * Sets the second control point of the connector
+     *
      * @default {}
      */
     @Complex<PointModel>({ x: 0, y: 0 }, Point)
@@ -388,6 +419,7 @@ export class BezierSegment extends StraightSegment {
 
     /**
      * Defines the length and angle between the source point and the first control point of the diagram
+     *
      * @default {}
      */
     @Complex<VectorModel>({ angle: 0, distance: 0 }, Vector)
@@ -395,6 +427,7 @@ export class BezierSegment extends StraightSegment {
 
     /**
      * Defines the length and angle between the target point and the second control point of the diagram
+     *
      * @default {}
      */
     @Complex<VectorModel>({ angle: 0, distance: 0 }, Vector)
@@ -440,6 +473,7 @@ export class OrthogonalSegment extends ConnectorSegment {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default 0
      */
     @Property(null)
@@ -451,14 +485,16 @@ export class OrthogonalSegment extends ConnectorSegment {
      * * Right - Sets the direction type as Right
      * * Top - Sets the direction type as Top
      * * Bottom - Sets the direction type as Bottom
+     *
      * @default null
      */
     @Property(null)
     public direction: Direction;
 
     /**
-     * @private
      * Returns the module of class OrthogonalSegment
+     *
+     * @private
      */
     public getClassName(): string {
         return 'OrthogonalSegment';
@@ -476,6 +512,7 @@ export class DiagramConnectorSegment extends ChildProperty<DiagramConnectorSegme
      * * Straight - Sets the segment type as Straight
      * * Orthogonal - Sets the segment type as Orthogonal
      * * Bezier - Sets the segment type as Bezier
+     *
      * @default 'Straight'
      */
     @Property('Straight')
@@ -483,6 +520,7 @@ export class DiagramConnectorSegment extends ChildProperty<DiagramConnectorSegme
 
     /**
      * Defines the segment to be drag or not
+     *
      * @default true
      */
     @Property(true)
@@ -490,6 +528,7 @@ export class DiagramConnectorSegment extends ChildProperty<DiagramConnectorSegme
 
     /**
      * Sets the end point of the connector segment
+     *
      * @default new Point(0,0)
      */
     @Complex<PointModel>({ x: 0, y: 0 }, Point)
@@ -497,6 +536,7 @@ export class DiagramConnectorSegment extends ChildProperty<DiagramConnectorSegme
 
     /**
      * Sets the first control point of the connector
+     *
      * @default {}
      */
     @Complex<PointModel>({ x: 0, y: 0 }, Point)
@@ -504,25 +544,30 @@ export class DiagramConnectorSegment extends ChildProperty<DiagramConnectorSegme
 
     /**
      * Sets the second control point of the connector
+     *
      * @default {}
      */
     @Complex<PointModel>({ x: 0, y: 0 }, Point)
     public point2: PointModel;
 
     /**
-     * @private
      * Sets the first control point of the bezier connector
+     *
+     * @private
+     *
      */
     public bezierPoint1: PointModel;
 
     /**
      * @private
      *  Sets the second control point of the bezier connector
+     *
      */
     public bezierPoint2: PointModel;
 
     /**
      * Defines the length and angle between the source point and the first control point of the diagram
+     *
      * @default {}
      */
     @Complex<VectorModel>({ angle: 0, distance: 0 }, Vector)
@@ -530,6 +575,7 @@ export class DiagramConnectorSegment extends ChildProperty<DiagramConnectorSegme
 
     /**
      * Defines the length and angle between the target point and the second control point of the diagram
+     *
      * @default {}
      */
     @Complex<VectorModel>({ angle: 0, distance: 0 }, Vector)
@@ -560,6 +606,7 @@ export class DiagramConnectorSegment extends ChildProperty<DiagramConnectorSegme
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default 0
      * @isBlazorNullableType true
      */
@@ -572,6 +619,7 @@ export class DiagramConnectorSegment extends ChildProperty<DiagramConnectorSegme
      * * Right - Sets the direction type as Right
      * * Top - Sets the direction type as Top
      * * Bottom - Sets the direction type as Bottom
+     *
      * @default null
      * @isBlazorNullableType true
      */
@@ -591,14 +639,14 @@ export class DiagramConnectorSegment extends ChildProperty<DiagramConnectorSegme
  * Get the direction of the control points while the bezier is connected to the node
  */
 export function getDirection(bounds: Rect, points: PointModel, excludeBounds: boolean): string {
-    let center: PointModel = bounds.center;
+    const center: PointModel = bounds.center;
     let direction: string;
-    let part: number = excludeBounds ? 45 : (180 / (2 + 2 / (bounds.height / bounds.width)));
-    let fourty5: number = part;
-    let one35: number = (180 - part);
-    let two25: number = one35 + (2 * part);
-    let three15: number = 360 - part;
-    let angle: number = findAngle(points, center);
+    const part: number = excludeBounds ? 45 : (180 / (2 + 2 / (bounds.height / bounds.width)));
+    const fourty5: number = part;
+    const one35: number = (180 - part);
+    const two25: number = one35 + (2 * part);
+    const three15: number = 360 - part;
+    const angle: number = findAngle(points, center);
     if (angle > fourty5 && angle < one35) {
         return direction = 'top';
     } else if (angle > one35 && angle < two25) {
@@ -631,16 +679,16 @@ export function getBezierPoints(sourcePoint: PointModel, targetPoint: PointModel
         }
     }
     switch (direction) {
-        case 'bottom':
-        case 'top':
-            distance = Math.min(Math.abs(sourcePoint.y - targetPoint.y) * 0.45, distance);
-            value = { x: sourcePoint.x, y: sourcePoint.y + (direction === 'bottom' ? distance : -distance) };
-            break;
-        case 'right':
-        case 'left':
-            distance = Math.min(Math.abs(sourcePoint.x - targetPoint.x) * 0.45, distance);
-            value = { x: sourcePoint.x + (direction === 'right' ? distance : - distance), y: sourcePoint.y };
-            break;
+    case 'bottom':
+    case 'top':
+        distance = Math.min(Math.abs(sourcePoint.y - targetPoint.y) * 0.45, distance);
+        value = { x: sourcePoint.x, y: sourcePoint.y + (direction === 'bottom' ? distance : -distance) };
+        break;
+    case 'right':
+    case 'left':
+        distance = Math.min(Math.abs(sourcePoint.x - targetPoint.x) * 0.45, distance);
+        value = { x: sourcePoint.x + (direction === 'right' ? distance : - distance), y: sourcePoint.y };
+        break;
     }
     return value;
 
@@ -656,18 +704,18 @@ export function getBezierBounds(
     let miny: number = 0;
     let maxx: number = 0;
     let maxy: number = 0;
-    let tolerancevalue: number = 3;
-    let max: number = Number(((connector as Connector).distance(controlPoint1, startPoint) +
+    const tolerancevalue: number = 3;
+    const max: number = Number(((connector as Connector).distance(controlPoint1, startPoint) +
         (connector as Connector).distance(controlPoint2, controlPoint1) +
         (connector as Connector).distance(endPoint, controlPoint2)) / tolerancevalue);
     if (max !== 0) {
         for (let i: number = 0; i <= max; i++) {
-            let t: number = i / max;
-            let x: number = (1 - t) * (1 - t) * (1 - t) * startPoint.x +
+            const t: number = i / max;
+            const x: number = (1 - t) * (1 - t) * (1 - t) * startPoint.x +
                 3 * t * (1 - t) * (1 - t) * controlPoint1.x +
                 3 * t * t * (1 - t) * controlPoint2.x +
                 t * t * t * endPoint.x;
-            let y: number = (1 - t) * (1 - t) * (1 - t) * startPoint.y +
+            const y: number = (1 - t) * (1 - t) * (1 - t) * startPoint.y +
                 3 * t * (1 - t) * (1 - t) * controlPoint1.y +
                 3 * t * t * (1 - t) * controlPoint2.y +
                 t * t * t * endPoint.y;
@@ -685,7 +733,7 @@ export function getBezierBounds(
     return {
         x: minx, y: miny, width: maxx - minx, height: maxy - miny,
         left: minx, top: miny, right: (minx + (maxx - minx)), bottom: (miny + (maxy - miny)),
-        center: { x: (minx + (maxx - minx)) / 2, y: (miny + (maxy - miny)) / 2 },
+        center: { x: (minx + (maxx - minx)) / 2, y: (miny + (maxy - miny)) / 2 }
     } as Rect;
 }
 
@@ -696,14 +744,14 @@ export function bezierPoints(
     connector: ConnectorModel, startPoint: PointModel, point1: PointModel, point2: PointModel,
     endPoint: PointModel, i: number, max: number):
     PointModel {
-    let pt: PointModel = { x: 0, y: 0 };
-    let t: number = i / max;
-    let x: number = (1 - t) * (1 - t) * (1 - t) * startPoint.x +
+    const pt: PointModel = { x: 0, y: 0 };
+    const t: number = i / max;
+    const x: number = (1 - t) * (1 - t) * (1 - t) * startPoint.x +
         3 * t * (1 - t) * (1 - t) * point1.x +
         3 * t * t * (1 - t) * point2.x +
         t * t * t * endPoint.x;
     pt.x = x;
-    let y: number = (1 - t) * (1 - t) * (1 - t) * startPoint.y +
+    const y: number = (1 - t) * (1 - t) * (1 - t) * startPoint.y +
         3 * t * (1 - t) * (1 - t) * point1.y +
         3 * t * t * (1 - t) * point2.y +
         t * t * t * endPoint.y;
@@ -717,6 +765,7 @@ export function bezierPoints(
 export class MultiplicityLabel extends ChildProperty<MultiplicityLabel>  {
     /**
      * Defines the type of the Classifier Multiplicity
+     *
      * @default true
      * @IgnoreSingular
      */
@@ -724,6 +773,7 @@ export class MultiplicityLabel extends ChildProperty<MultiplicityLabel>  {
     public optional: boolean;
     /**
      * Defines the type of the Classifier Multiplicity
+     *
      * @default ''
      * @IgnoreSingular
      */
@@ -731,6 +781,7 @@ export class MultiplicityLabel extends ChildProperty<MultiplicityLabel>  {
     public lowerBounds: string;
     /**
      * Defines the type of the Classifier Multiplicity
+     *
      * @default ''
      * @IgnoreSingular
      */
@@ -743,6 +794,7 @@ export class MultiplicityLabel extends ChildProperty<MultiplicityLabel>  {
 export class ClassifierMultiplicity extends ChildProperty<ClassifierMultiplicity>  {
     /**
      * Defines the type of the Classifier Multiplicity
+     *
      * @default 'OneToOne'
      * @IgnoreSingular
      */
@@ -750,6 +802,7 @@ export class ClassifierMultiplicity extends ChildProperty<ClassifierMultiplicity
     public type: Multiplicity;
     /**
      * Defines the type of the Classifier Multiplicity
+     *
      * @default ''
      * @IgnoreSingular
      */
@@ -757,6 +810,7 @@ export class ClassifierMultiplicity extends ChildProperty<ClassifierMultiplicity
     public target: MultiplicityLabelModel;
     /**
      * Defines the type of the Classifier Multiplicity
+     *
      * @default ''
      * @IgnoreSingular
      */
@@ -769,6 +823,7 @@ export class ClassifierMultiplicity extends ChildProperty<ClassifierMultiplicity
 export class RelationShip extends ConnectorShape {
     /**
      * Defines the type of the  UMLConnector
+     *
      * @default 'None'
      * @IgnoreSingular
      */
@@ -776,6 +831,7 @@ export class RelationShip extends ConnectorShape {
     public type: ConnectionShapes;
     /**
      * Defines the association direction
+     *
      * @default 'Aggregation'
      * @IgnoreSingular
      */
@@ -783,6 +839,7 @@ export class RelationShip extends ConnectorShape {
     public relationship: ClassifierShape;
     /**
      * Defines the association direction
+     *
      * @default 'Directional'
      * @IgnoreSingular
      */
@@ -790,6 +847,7 @@ export class RelationShip extends ConnectorShape {
     public associationType: AssociationFlow;
     /**
      * Defines the type of the Classifier Multiplicity
+     *
      * @default ''
      * @IgnoreSingular
      */
@@ -804,6 +862,7 @@ export class DiagramConnectorShape extends ChildProperty<DiagramConnectorShape> 
     /**
      * Defines the application specific type of connector
      * * Bpmn - Sets the type of the connection shape as Bpmn
+     *
      * @default 'None'
      */
     @Property('None')
@@ -811,6 +870,7 @@ export class DiagramConnectorShape extends ChildProperty<DiagramConnectorShape> 
 
     /**
      * Defines the association direction
+     *
      * @default 'Directional'
      * @IgnoreSingular
      */
@@ -819,6 +879,7 @@ export class DiagramConnectorShape extends ChildProperty<DiagramConnectorShape> 
 
     /**
      * Defines the association direction
+     *
      * @default 'Aggregation'
      * @IgnoreSingular
      */
@@ -827,6 +888,7 @@ export class DiagramConnectorShape extends ChildProperty<DiagramConnectorShape> 
 
     /**
      * Defines the type of the Classifier Multiplicity
+     *
      * @default ''
      * @IgnoreSingular
      */
@@ -838,6 +900,7 @@ export class DiagramConnectorShape extends ChildProperty<DiagramConnectorShape> 
      * * Sequence - Sets the type of the Bpmn Flow as Sequence
      * * Association - Sets the type of the Bpmn Flow as Association
      * * Message - Sets the type of the Bpmn Flow as Message
+     *
      * @default 'Sequence'
      */
     @Property('Sequence')
@@ -848,6 +911,7 @@ export class DiagramConnectorShape extends ChildProperty<DiagramConnectorShape> 
      * * Default - Sets the type of the Message flow as Default
      * * InitiatingMessage - Sets the type of the Message flow as InitiatingMessage
      * * NonInitiatingMessage - Sets the type of the Message flow as NonInitiatingMessage
+     *
      * @default ''
      */
     /**
@@ -884,6 +948,7 @@ export class DiagramConnectorShape extends ChildProperty<DiagramConnectorShape> 
      * * Default - Sets the type of the sequence flow as Default
      * * Normal - Sets the type of the sequence flow as Normal
      * * Conditional - Sets the type of the sequence flow as Conditional
+     *
      * @default 'Normal'
      */
     @Property('Normal')
@@ -904,6 +969,7 @@ export class DiagramConnectorShape extends ChildProperty<DiagramConnectorShape> 
      * Object - Sets the type of the UMLActivity Flow as Object
      * Control - Sets the type of the UMLActivity Flow as Control
      * Exception - Sets the type of the UMLActivity Flow as Exception
+     *
      * @default 'Object'
      * @IgnoreSingular
      */
@@ -912,6 +978,7 @@ export class DiagramConnectorShape extends ChildProperty<DiagramConnectorShape> 
 
     /**
      * Defines the height of the exception flow.
+     *
      * @default '50'
      */
     @Property(30)
@@ -925,6 +992,7 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Defines the shape of the connector
+     *
      * @default 'Bpmn'
      * @aspType object
      * @blazorType DiagramConnectorShape
@@ -949,6 +1017,7 @@ export class Connector extends NodeBase implements IElement {
      * * InheritToolTip - Displays a tooltip for the connectors.
      * * Interaction - Features of the connector used for interaction.
      * * ReadOnly - Enables ReadOnly
+     *
      * @default 'Default'
      * @aspNumberEnum
      * @blazorNumberEnum
@@ -957,6 +1026,7 @@ export class Connector extends NodeBase implements IElement {
     public constraints: ConnectorConstraints;
     /**
      * Defines the bridgeSpace of connector
+     *
      * @default 10
      */
     @Property(10)
@@ -964,6 +1034,7 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Defines the collection of textual annotations of connectors
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -985,6 +1056,7 @@ export class Connector extends NodeBase implements IElement {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @blazorType ObservableCollection<DiagramConnectorAnnotation>
      */
     @Collection<PathAnnotationModel>([], PathAnnotation)
@@ -992,6 +1064,7 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Sets the beginning point of the connector
+     *
      * @default new Point(0,0)
      */
     @Complex<PointModel>({}, Point)
@@ -999,6 +1072,7 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Sets the end point of the connector
+     *
      * @default new Point(0,0)
      */
     @Complex<PointModel>({}, Point)
@@ -1006,6 +1080,7 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Specifies the collection of the fixed user handle
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -1016,6 +1091,7 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Defines the segments
+     *
      * @default []
      * @aspType object
      * @blazorType ObservableCollection<DiagramConnectorSegment>
@@ -1025,6 +1101,7 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Sets the source node/connector object of the connector
+     *
      * @default null
      */
     @Property('')
@@ -1032,6 +1109,7 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Sets the target node/connector object of the connector
+     *
      * @default null
      */
     @Property('')
@@ -1039,12 +1117,14 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Sets the connector padding value
+     *
      * @default 10
      */
     @Property(10)
     public hitPadding: number;
     /**
      * Sets the connector padding value
+     *
      * @default 0
      */
     @Property(0)
@@ -1055,6 +1135,7 @@ export class Connector extends NodeBase implements IElement {
      * * Straight - Sets the segment type as Straight
      * * Orthogonal - Sets the segment type as Orthogonal
      * * Bezier - Sets the segment type as Bezier
+     *
      * @default 'Straight'
      * @aspType Syncfusion.EJ2.Diagrams.Segments
      * @blazorDefaultValueIgnore
@@ -1065,6 +1146,7 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Sets the corner radius of the connector
+     *
      * @default 0
      */
     @Property(0)
@@ -1072,6 +1154,7 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Defines the source decorator of the connector
+     *
      * @default new Decorator()
      * @blazorType ConnectorSourceDecorator
      * @blazorDefaultValue new ConnectorSourceDecorator()
@@ -1081,6 +1164,7 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Defines the target decorator of the connector
+     *
      * @default new Decorator()
      * @blazorType ConnectorTargetDecorator
      * @blazorDefaultValue new ConnectorTargetDecorator()
@@ -1088,8 +1172,9 @@ export class Connector extends NodeBase implements IElement {
     @Complex<DecoratorModel>({ shape: 'Arrow' }, Decorator)
     public targetDecorator: DecoratorModel;
 
-    /** 
+    /**
      * defines the tooltip for the connector
+     *
      * @default new DiagramToolTip();
      */
     @Complex<DiagramTooltipModel>({}, DiagramTooltip)
@@ -1097,6 +1182,7 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Sets the unique id of the source port of the connector
+     *
      * @default ''
      */
     @Property('')
@@ -1104,6 +1190,7 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Sets the unique id of the target port of the connector
+     *
      * @default ''
      */
     @Property('')
@@ -1111,6 +1198,7 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Sets the source padding of the connector
+     *
      * @default 0
      * @isBlazorNullableType true
      */
@@ -1119,6 +1207,7 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Defines the size of the symbol preview
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -1128,6 +1217,7 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Defines the size of a drop symbol
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -1137,6 +1227,7 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Sets the target padding of the connector
+     *
      * @default 0
      * @isBlazorNullableType true
      */
@@ -1145,6 +1236,7 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Defines the appearance of the connection path
+     *
      * @default ''
      * @blazorType ConnectorShapeStyle
      * @blazorDefaultValue new ConnectorShapeStyle()
@@ -1157,6 +1249,7 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Defines the UI of the connector
+     *
      * @default null
      * @deprecated
      */
@@ -1191,9 +1284,9 @@ export class Connector extends NodeBase implements IElement {
     /* tslint:disable */
     private setPortID(diagram: any, isTarget?: boolean): void {
         if (this.targetID && this.sourceID) {
-            let targetNode: any = diagram.nameTable[this.targetID];
-            let sourceNode: any = diagram.nameTable[this.sourceID];
-            let ports: any = isTarget ? (targetNode && targetNode.ports) : (sourceNode && sourceNode.ports);
+            const targetNode: any = diagram.nameTable[this.targetID];
+            const sourceNode: any = diagram.nameTable[this.sourceID];
+            const ports: any = isTarget ? (targetNode && targetNode.ports) : (sourceNode && sourceNode.ports);
             let port: any;
             for (let i: number = 0; ports && i < ports.length; i++) {
                 port = ports[i];
@@ -1210,7 +1303,7 @@ export class Connector extends NodeBase implements IElement {
             }
         }
     }
-     /* tslint:enable */
+    /* tslint:enable */
     /** @private */
     // tslint:disable-next-line:no-any
     public init(diagram: any): Canvas {
@@ -1218,64 +1311,66 @@ export class Connector extends NodeBase implements IElement {
         if (this.sourcePortID) { this.setPortID(diagram); }
         if (this.targetPortID) { this.setPortID(diagram, true); }
         let bpmnElement: PathElement;
-        let container: Canvas = new Canvas(); let segment: PathElement = new PathElement();
+        const container: Canvas = new Canvas(); let segment: PathElement = new PathElement();
         segment.id = this.id + '_path';
         let srcDecorator: PathElement = new PathElement();
         let targetDecorator: PathElement = new PathElement();
         segment = this.getSegmentElement(this, segment);
-        let bounds: Rect;
+        //let bounds: Rect;
         let points: PointModel[] = [];
         points = this.getConnectorPoints(this.type);
         points = this.clipDecorators(this, points);
-        bounds = Rect.toBounds(points);
+        const bounds: Rect = Rect.toBounds(points);
         container.width = bounds.width;
         container.height = bounds.height;
         container.offsetX = bounds.x + container.pivot.x * bounds.width;
         container.offsetY = bounds.y + container.pivot.y * bounds.height;
         switch (this.shape.type) {
-            case 'Bpmn':
-                let flow: BpmnFlows = (isBlazor() ? (this.shape as DiagramConnectorShape).bpmnFlow : (this.shape as BpmnFlow).flow);
-                switch (flow) {
-                    case 'Sequence':
-                        bpmnElement = this.getBpmnSequenceFlow();
-                        break;
-                    case 'Association':
-                        bpmnElement = new PathElement();
-                        bpmnElement.visible = false;
-                        this.getBpmnAssociationFlow();
-                        break;
-                    case 'Message':
-                        bpmnElement = this.getBpmnMessageFlow();
-                        segment = this.getSegmentElement(this, segment);
-                        this.updateShapePosition(this, bpmnElement);
-                        break;
-                }
+        case 'Bpmn':
+            // eslint-disable-next-line no-case-declarations
+            const flow: BpmnFlows = (isBlazor() ? (this.shape as DiagramConnectorShape).bpmnFlow : (this.shape as BpmnFlow).flow);
+            switch (flow) {
+            case 'Sequence':
+                bpmnElement = this.getBpmnSequenceFlow();
                 break;
-            case 'UmlActivity':
-                let activityFlow: UmlActivityFlows = (isBlazor() ? (this.shape as DiagramConnectorShape).umlActivityFlow :
-                    (this.shape as ActivityFlow).flow);
-                switch (activityFlow) {
-                    case 'Object':
-                        this.getUMLObjectFlow();
-                        break;
-                    case 'Exception':
-                        this.getUMLExceptionFlow(segment);
-                        break;
-                }
+            case 'Association':
+                bpmnElement = new PathElement();
+                bpmnElement.visible = false;
+                this.getBpmnAssociationFlow();
                 break;
-            case 'UmlClassifier':
-                this.getConnectorRelation(); break;
+            case 'Message':
+                bpmnElement = this.getBpmnMessageFlow();
+                segment = this.getSegmentElement(this, segment);
+                this.updateShapePosition(this, bpmnElement);
+                break;
+            }
+            break;
+        case 'UmlActivity':
+            // eslint-disable-next-line no-case-declarations
+            const activityFlow: UmlActivityFlows = (isBlazor() ? (this.shape as DiagramConnectorShape).umlActivityFlow :
+                (this.shape as ActivityFlow).flow);
+            switch (activityFlow) {
+            case 'Object':
+                this.getUMLObjectFlow();
+                break;
+            case 'Exception':
+                this.getUMLExceptionFlow(segment);
+                break;
+            }
+            break;
+        case 'UmlClassifier':
+            this.getConnectorRelation(); break;
         }
         let anglePoints: PointModel[] = this.intermediatePoints as PointModel[];
         if (this.type === 'Bezier') {
-            let firstSegment: BezierSegment = this.segments[0] as BezierSegment;
-            let lastSegment: BezierSegment = this.segments[this.segments.length - 1] as BezierSegment;
+            const firstSegment: BezierSegment = this.segments[0] as BezierSegment;
+            const lastSegment: BezierSegment = this.segments[this.segments.length - 1] as BezierSegment;
             anglePoints = [!Point.isEmptyPoint(lastSegment.point2) ? lastSegment.point2 : lastSegment.bezierPoint2,
-            !Point.isEmptyPoint(firstSegment.point1) ? firstSegment.point1 : firstSegment.bezierPoint1];
+                !Point.isEmptyPoint(firstSegment.point1) ? firstSegment.point1 : firstSegment.bezierPoint1];
         }
-        let accessContent: string = 'getDescription';
-        let getDescription: Function = diagram[accessContent];
-        let strokeWidth: number = this.sourceWrapper ? this.sourceWrapper.style.strokeWidth / 2 / 2 : 0;
+        const accessContent: string = 'getDescription';
+        const getDescription: Function = diagram[accessContent];
+        //const strokeWidth: number = this.sourceWrapper ? this.sourceWrapper.style.strokeWidth / 2 / 2 : 0;
         srcDecorator = this.getDecoratorElement(
             points[0], anglePoints[1], this.sourceDecorator, true, getDescription);
         targetDecorator = this.getDecoratorElement(
@@ -1287,7 +1382,7 @@ export class Connector extends NodeBase implements IElement {
         segment.style['fill'] = 'transparent';
         if (getDescription !== undefined) {
             // tslint:disable-next-line:no-any
-            let wrapperContent: any = getDescription(this, diagram);
+            const wrapperContent: any = getDescription(this, diagram);
             segment.description = wrapperContent ? wrapperContent : this.id;
         }
         container.style.strokeColor = 'transparent';
@@ -1314,7 +1409,7 @@ export class Connector extends NodeBase implements IElement {
         return container;
     }
     private getConnectorRelation(): void {
-        let shape: RelationShip = (this.shape as RelationShip);
+        const shape: RelationShip = (this.shape as RelationShip);
         if (shape.relationship === 'Association') {
             this.segments[0].type = 'Straight';
             this.sourceDecorator.shape = 'None';
@@ -1346,8 +1441,8 @@ export class Connector extends NodeBase implements IElement {
             this.targetDecorator.shape = 'None';
         }
         let text1: string = '';
-        let lower: MultiplicityLabelModel;
-        let upper: MultiplicityLabelModel;
+        //let lower: MultiplicityLabelModel;
+        //let upper: MultiplicityLabelModel;
         let sourceText: string = '';
         let targetText: string = '';
         let text: string = '';
@@ -1359,8 +1454,8 @@ export class Connector extends NodeBase implements IElement {
             shape.multiplicity.target.lowerBounds = shape.multiplicity.target.lowerBounds;
             shape.multiplicity.target.upperBounds = shape.multiplicity.target.upperBounds;
         }
-        lower = shape.multiplicity.source;
-        upper = shape.multiplicity.target;
+        const lower: MultiplicityLabelModel = shape.multiplicity.source;
+        const upper: MultiplicityLabelModel = shape.multiplicity.target;
         text = lower.upperBounds ? lower.lowerBounds + '...' + lower.upperBounds : lower.lowerBounds;
         text1 = upper.upperBounds ? upper.lowerBounds + '...' + upper.upperBounds : upper.lowerBounds;
         if (shape.multiplicity.type === 'ManyToOne') {
@@ -1397,7 +1492,7 @@ export class Connector extends NodeBase implements IElement {
         }
         if (((this.shape as BpmnFlow).sequence) === 'Default') {
             segment = this.getSegmentElement(this, segment);
-            let anglePoints: PointModel[] = this.intermediatePoints as PointModel[];
+            const anglePoints: PointModel[] = this.intermediatePoints as PointModel[];
             pathseq = updatePathElement(anglePoints, this);
             this.targetDecorator.shape = 'Arrow';
         }
@@ -1419,15 +1514,15 @@ export class Connector extends NodeBase implements IElement {
     /** @private */
     public getUMLExceptionFlow(segment: PathElement): void {
         this.type = 'Straight';
-        let height: number = ((this.shape as ActivityFlow).exceptionFlowHeight) / 2;
-        let midPt: PointModel = { x: (this.targetPoint.x + this.sourcePoint.x) / 2, y: (this.targetPoint.y + this.sourcePoint.y) / 2 };
-        let xDist: number = midPt.x - this.sourcePoint.x;
-        let yDist: number = midPt.y - this.sourcePoint.y;
-        let dist: number = Math.sqrt(xDist * xDist + yDist * yDist);
-        let fractionOfTotal: number = (height) / dist;
-        let midPt2: PointModel = { x: midPt.x - xDist * fractionOfTotal, y: midPt.y - yDist * fractionOfTotal };
-        let midPt1: PointModel = { x: midPt.x + xDist * fractionOfTotal, y: midPt.y + yDist * fractionOfTotal };
-        let matrix: Matrix = identityMatrix();
+        const height: number = ((this.shape as ActivityFlow).exceptionFlowHeight) / 2;
+        const midPt: PointModel = { x: (this.targetPoint.x + this.sourcePoint.x) / 2, y: (this.targetPoint.y + this.sourcePoint.y) / 2 };
+        const xDist: number = midPt.x - this.sourcePoint.x;
+        const yDist: number = midPt.y - this.sourcePoint.y;
+        const dist: number = Math.sqrt(xDist * xDist + yDist * yDist);
+        const fractionOfTotal: number = (height) / dist;
+        const midPt2: PointModel = { x: midPt.x - xDist * fractionOfTotal, y: midPt.y - yDist * fractionOfTotal };
+        const midPt1: PointModel = { x: midPt.x + xDist * fractionOfTotal, y: midPt.y + yDist * fractionOfTotal };
+        const matrix: Matrix = identityMatrix();
         rotateMatrix(matrix, 315, midPt.x, midPt.y);
         this.segments = [];
         let segments: StraightSegmentModel = new StraightSegment(
@@ -1455,9 +1550,9 @@ export class Connector extends NodeBase implements IElement {
 
     /** @private */
     public getfixedUserHandle(fixedUserHandle: ConnectorFixedUserHandle, points: PointModel[], bounds: Rect): Canvas {
-        let fixedUserHandleContainer: Canvas = new Canvas();
+        const fixedUserHandleContainer: Canvas = new Canvas();
         fixedUserHandleContainer.float = true;
-        let children: DiagramElement[] = [];
+        const children: DiagramElement[] = [];
         fixedUserHandle.id = fixedUserHandle.id || randomId();
         fixedUserHandleContainer.id = this.id + '_' + fixedUserHandle.id;
         fixedUserHandleContainer.children = children;
@@ -1469,14 +1564,14 @@ export class Connector extends NodeBase implements IElement {
         fixedUserHandleContainer.style.strokeColor = fixedUserHandle.handleStrokeColor;
         fixedUserHandleContainer.cornerRadius = fixedUserHandle.cornerRadius;
         this.updateAnnotation(fixedUserHandle, points, bounds, fixedUserHandleContainer);
-        let symbolIcon: DiagramElement = initfixedUserHandlesSymbol(fixedUserHandle, fixedUserHandleContainer);
+        const symbolIcon: DiagramElement = initfixedUserHandlesSymbol(fixedUserHandle, fixedUserHandleContainer);
         fixedUserHandleContainer.children.push(symbolIcon);
         fixedUserHandleContainer.description = fixedUserHandleContainer.id;
         return fixedUserHandleContainer;
     }
 
     private getBpmnMessageFlow(): PathElement {
-        let segmentMessage: PathElement = new PathElement();
+        const segmentMessage: PathElement = new PathElement();
         this.targetDecorator.shape = 'Arrow';
         this.targetDecorator.width = 5;
         this.targetDecorator.height = 10;
@@ -1538,7 +1633,7 @@ export class Connector extends NodeBase implements IElement {
         textele.style = annotation.style;
         // tslint:disable-next-line:no-any
         let wrapperContent: any;
-        let description: Function = getFunction(getDescription);
+        const description: Function = getFunction(getDescription);
         if (description) {
             wrapperContent = description(annotation, this);
         }
@@ -1552,26 +1647,26 @@ export class Connector extends NodeBase implements IElement {
         textElement: TextElement | DiagramHtmlElement | DiagramElement, canRefresh?: number
 
     ): void {
-        let getPointloop: SegmentInfo;
-        let newPoint: PointModel; let align: Alignment; let hAlign: string;
-        let vAlign: string; let offsetPoint: PointModel; let pivotPoint: PointModel = { x: 0, y: 0 };
+        //let getPointloop: SegmentInfo;
+        //let align: Alignment; let hAlign: string;
+        const pivotPoint: PointModel = { x: 0, y: 0 };
         if (!(textElement instanceof DiagramHtmlElement || DiagramElement) && (!canRefresh)) {
             (textElement as TextElement).refreshTextElement();
         }
         textElement.width = (annotation.width || bounds.width);
-        getPointloop = getAnnotationPosition(points, annotation, bounds);
-        newPoint = getPointloop.point;
+        const getPointloop: SegmentInfo = getAnnotationPosition(points, annotation, bounds);
+        const newPoint: PointModel = getPointloop.point;
         if (annotation instanceof PathAnnotation && annotation.segmentAngle) {
             textElement.rotateAngle = annotation.rotateAngle + getPointloop.angle;
             textElement.rotateAngle = (textElement.rotateAngle + 360) % 360;
         }
         if (bounds.width === 0) { bounds.width = this.style.strokeWidth; }
         if (bounds.height === 0) { bounds.height = this.style.strokeWidth; }
-        offsetPoint = { x: ((newPoint.x - bounds.x) / bounds.width), y: ((newPoint.y - bounds.y) / bounds.height) };
+        const offsetPoint: PointModel = { x: ((newPoint.x - bounds.x) / bounds.width), y: ((newPoint.y - bounds.y) / bounds.height) };
         pivotPoint.x = bounds.width * offsetPoint.x;
         pivotPoint.y = bounds.height * offsetPoint.y;
-        align = alignLabelOnSegments(annotation, getPointloop.angle, points);
-        hAlign = align.hAlign; vAlign = align.vAlign;
+        const align: Alignment = alignLabelOnSegments(annotation, getPointloop.angle, points);
+        const hAlign: string = align.hAlign; const vAlign: string = align.vAlign;
         let horizor: HorizontalAlignment; let verzor: VerticalAlignment;
         if (hAlign === 'left') {
             horizor = 'Left';
@@ -1600,10 +1695,10 @@ export class Connector extends NodeBase implements IElement {
     public getConnectorPoints(
         type: Segments, points?: PointModel[], layoutOrientation?: LayoutOrientation,
         lineDistribution?: boolean): PointModel[] {
-        let width: number = Math.abs(this.sourcePoint.x - this.targetPoint.x);
-        let height: number = Math.abs(this.sourcePoint.y - this.targetPoint.y);
+        //const width: number = Math.abs(this.sourcePoint.x - this.targetPoint.x);
+        //const height: number = Math.abs(this.sourcePoint.y - this.targetPoint.y);
         points = findConnectorPoints(this, layoutOrientation, lineDistribution);
-        let newPoints: PointModel[] = points.slice(0);
+        const newPoints: PointModel[] = points.slice(0);
         if (newPoints && newPoints.length > 0) {
             this.sourcePoint = newPoints[0];
             this.targetPoint = newPoints[newPoints.length - 1];
@@ -1616,20 +1711,20 @@ export class Connector extends NodeBase implements IElement {
         let point: PointModel = { x: 0, y: 0 };
         let start: PointModel = { x: 0, y: 0 };
         let end: PointModel = { x: 0, y: 0 };
-        let length: number = points.length;
+        const length: number = points.length;
         start = !isSource ? points[length - 1] : points[0];
         end = !isSource ? points[length - 2] : points[1];
         let len: number = Point.distancePoints(start, end);
         len = (len === 0) ? 1 : len;
         let strokeWidth: number = 1;
-        let node: DiagramElement = isSource ? connector.sourceWrapper : connector.targetWrapper;
+        const node: DiagramElement = isSource ? connector.sourceWrapper : connector.targetWrapper;
         if (node) {
             strokeWidth = node.style.strokeWidth;
             if (diagramAction && ((diagramAction) & DiagramAction.DecoratorPropertyChange)) {
                 strokeWidth = 1;
             }
         }
-        let width: number = strokeWidth - 1;
+        const width: number = strokeWidth - 1;
         point.x = (Math.round(start.x + width * (end.x - start.x) / len));
         point.y = (Math.round(start.y + width * (end.y - start.y) / len));
         if ((isSource && connector.sourceDecorator.shape !== 'None') ||
@@ -1653,16 +1748,18 @@ export class Connector extends NodeBase implements IElement {
     /** @private */
     public updateSegmentElement(
         connector: Connector, points: PointModel[], element: PathElement, diagramActions: DiagramAction): PathElement {
-        let segmentPath: string; let bounds: Rect = new Rect();
-        let point: PointModel[];
-        segmentPath = this.getSegmentPath(connector, points, diagramActions);
+        let bounds: Rect = new Rect();
+        //let point: PointModel[];
+        const segmentPath: string = this.getSegmentPath(connector, points, diagramActions);
         if (connector.type === 'Bezier') {
             if (this.segments.length > 0) {
                 for (let i: number = 0; i < this.segments.length; i++) {
-                    let segment: BezierSegment = this.segments[i] as BezierSegment;
-                    let connectorSegment: BezierSegment = connector.segments[i] as BezierSegment;
-                    let point1: PointModel = !Point.isEmptyPoint(segment.point1) ? connectorSegment.point1 : connectorSegment.bezierPoint1;
-                    let point2: PointModel = !Point.isEmptyPoint(segment.point2) ? connectorSegment.point2 : connectorSegment.bezierPoint2;
+                    const segment: BezierSegment = this.segments[i] as BezierSegment;
+                    const connectorSegment: BezierSegment = connector.segments[i] as BezierSegment;
+                    // eslint-disable-next-line max-len
+                    const point1: PointModel = !Point.isEmptyPoint(segment.point1) ? connectorSegment.point1 : connectorSegment.bezierPoint1;
+                    // eslint-disable-next-line max-len
+                    const point2: PointModel = !Point.isEmptyPoint(segment.point2) ? connectorSegment.point2 : connectorSegment.bezierPoint2;
                     bounds.uniteRect(getBezierBounds(segment.points[0], point1, point2, segment.points[1], connector));
                 }
             }
@@ -1686,7 +1783,7 @@ export class Connector extends NodeBase implements IElement {
     public getSegmentElement(
         connector: Connector, segmentElement: PathElement, layoutOrientation?: LayoutOrientation, diagramActions?: DiagramAction
     ): PathElement {
-        let bounds: Rect; let segmentPath: string;
+        //let bounds: Rect; let segmentPath: string;
         let points: PointModel[] = [];
         flipConnector(connector);
         points = this.getConnectorPoints(connector.type, undefined, layoutOrientation);
@@ -1701,13 +1798,13 @@ export class Connector extends NodeBase implements IElement {
         isSource: Boolean, getDescription?: Function)
         :
         PathElement {
-        let decEle: PathElement = new PathElement();
+        const decEle: PathElement = new PathElement();
         let getPath: string; let angle: number;
         decEle.transform = Transform.Self;
         this.updateDecoratorElement(decEle, offsetPoint, adjacentPoint, decorator);
         if (getDescription !== undefined) {
             // tslint:disable-next-line:no-any
-            let wrapperContent: any = getDescription(decorator, this);
+            const wrapperContent: any = getDescription(decorator, this);
             decEle.description = wrapperContent ? wrapperContent :
                 ('Specifies the ' + isSource ? 'source' : 'target' + 'port element of the connector');
         }
@@ -1719,7 +1816,7 @@ export class Connector extends NodeBase implements IElement {
         if (connector.bridges.length > 0) {
             if (connector.type === 'Straight' && connector.segments.length < 2) {
                 for (let n: number = 0; n < connector.bridges.length; n++) {
-                    let bridge: Bridge = connector.bridges[n];
+                    const bridge: Bridge = connector.bridges[n];
                     if (!bridge.rendered) {
                         pathData += ' L' + bridge.startPoint.x + ' ' + bridge.startPoint.y;
                         pathData += bridge.path;
@@ -1728,7 +1825,7 @@ export class Connector extends NodeBase implements IElement {
                 }
             } else if (connector.type === 'Orthogonal' || (connector.type === 'Straight' && connector.segments.length > 1)) {
                 for (let n: number = 0; n < connector.bridges.length; n++) {
-                    let bridge: Bridge = connector.bridges[n];
+                    const bridge: Bridge = connector.bridges[n];
                     if (bridge.segmentPointIndex === pointIndex) {
                         if (!bridge.rendered) {
                             if (bridge.segmentPointIndex === pointIndex) {
@@ -1747,11 +1844,11 @@ export class Connector extends NodeBase implements IElement {
     /** @private */
     public updateDecoratorElement(
         element: DiagramElement, pt: PointModel, adjacentPoint: PointModel, decorator: DecoratorModel): void {
-        let getPath: string; let angle: number;
+        //let getPath: string;// let angle: number;
         element.offsetX = pt.x; element.offsetY = pt.y;
-        angle = Point.findAngle(pt, adjacentPoint);
-        getPath = getDecoratorShape(decorator.shape, decorator);
-        let size: Size = new Size(decorator.width, decorator.height);
+        const angle: number = Point.findAngle(pt, adjacentPoint);
+        const getPath: string = getDecoratorShape(decorator.shape, decorator);
+        const size: Size = new Size(decorator.width, decorator.height);
         element.pivot.x = decorator.pivot.x; element.pivot.y = decorator.pivot.y;
         element.style = decorator.style;
         element.rotateAngle = angle;
@@ -1772,7 +1869,7 @@ export class Connector extends NodeBase implements IElement {
             j++;
         }
         for (let m: number = 0; m < connector.bridges.length; m++) {
-            let bridge: Bridge = connector.bridges[m];
+            const bridge: Bridge = connector.bridges[m];
             bridge.rendered = false;
         }
         pts = this.clipDecorators(connector, pts, diagramAction);
@@ -1780,7 +1877,7 @@ export class Connector extends NodeBase implements IElement {
             for (let j: number = 0; j < pts.length - 1; j++) {
                 getPt = pts[j];
                 if (j === 0) { path = 'M' + getPt.x + ' ' + getPt.y; }
-                let segLength: number = Point.distancePoints(pts[j], pts[j + 1]);
+                const segLength: number = Point.distancePoints(pts[j], pts[j + 1]);
                 if (segLength > 0) {
                     if (j < pts.length - 2) {
                         if (segLength < this.cornerRadius * 2) {
@@ -1806,7 +1903,7 @@ export class Connector extends NodeBase implements IElement {
             }
         } else {
             if (this.type === 'Bezier') {
-                let direction: string; let segments: BezierSegment[] = (this.segments as BezierSegment[]);
+                let direction: string; const segments: BezierSegment[] = (this.segments as BezierSegment[]);
                 for (let j: number = 0; j < segments.length; j++) {
                     if (pts.length > 2) { segments[j].bezierPoint1 = { x: 0, y: 0 }; segments[j].bezierPoint2 = { x: 0, y: 0 }; }
                     if (Point.isEmptyPoint(segments[j].point1) && !segments[j].vector1.angle && !segments[j].vector1.distance) {
@@ -1843,7 +1940,7 @@ export class Connector extends NodeBase implements IElement {
                 pts = this.clipDecorators(connector, pts, diagramAction);
                 for (let j: number = 0; j < segments.length; j++) {
                     if (j === 0) { path = 'M' + pts[0].x + ' ' + pts[0].y; }
-                    let lastPoint: string = (j === segments.length - 1) ? pts[pts.length - 1].x + ' ' + pts[pts.length - 1].y :
+                    const lastPoint: string = (j === segments.length - 1) ? pts[pts.length - 1].x + ' ' + pts[pts.length - 1].y :
                         segments[j].points[segments[j].points.length - 1].x + ' ' + segments[j].points[segments[j].points.length - 1].y;
                     path += 'C' +
                         segments[j].bezierPoint1.x + ' ' + segments[j].bezierPoint1.y + ' ' + segments[j].bezierPoint2.x + ' '
@@ -1867,30 +1964,30 @@ export class Connector extends NodeBase implements IElement {
     public updateShapeElement(connector: Connector): void {
         let element: DiagramElement;
         switch (connector.shape.type) {
-            case 'Bpmn':
-                if (connector.wrapper.children[3] instanceof PathElement) {
-                    element = connector.wrapper.children[3];
-                }
-                if ((connector.shape as BpmnFlow).flow === 'Message' ||
+        case 'Bpmn':
+            if (connector.wrapper.children[3] instanceof PathElement) {
+                element = connector.wrapper.children[3];
+            }
+            if ((connector.shape as BpmnFlow).flow === 'Message' ||
                     (isBlazor() && (connector.shape as DiagramConnectorShape).bpmnFlow === 'Message')) {
-                    this.updateShapePosition(connector, element);
-                }
-                break;
-            case 'UmlActivity':
-                if ((connector.shape as ActivityFlow).flow === 'Exception' || (isBlazor() &&
+                this.updateShapePosition(connector, element);
+            }
+            break;
+        case 'UmlActivity':
+            if ((connector.shape as ActivityFlow).flow === 'Exception' || (isBlazor() &&
                     (connector.shape as DiagramConnectorShape).umlActivityFlow === 'Exception')) {
-                    this.getUMLExceptionFlow(connector.wrapper.children[0] as PathElement);
-                }
-                break;
+                this.getUMLExceptionFlow(connector.wrapper.children[0] as PathElement);
+            }
+            break;
         }
     }
     /** @private */
     public updateShapePosition(connector: Connector, element: DiagramElement): void {
-        let segmentOffset: number = 0.5; let angle: number; let pt: PointModel; let length: number = 0;
-        let anglePoints: PointModel[] = this.intermediatePoints as PointModel[];
+        const segmentOffset: number = 0.5; let angle: number; let pt: PointModel; let length: number = 0;
+        const anglePoints: PointModel[] = this.intermediatePoints as PointModel[];
         for (let i: number = 0; i < anglePoints.length - 1; i++) {
             length = length + this.distance(anglePoints[i], anglePoints[i + 1]);
-            let offsetLength: number = length * segmentOffset;
+            const offsetLength: number = length * segmentOffset;
             if (length >= offsetLength) {
                 angle = findAngle(anglePoints[i], anglePoints[i + 1]);
                 pt = Point.transform(anglePoints[i], angle, offsetLength);
@@ -1906,9 +2003,9 @@ export class Connector extends NodeBase implements IElement {
         let ty: number = 0;
 
         if (this.wrapper && this.wrapper.outerBounds) {
-            let outerBounds: Rect = getOuterBounds(this);
-            let connWidth: number = (this.wrapper.bounds.width || this.style.strokeWidth || 1) - 2;
-            let connHeight: number = (this.wrapper.bounds.height || this.style.strokeWidth || 1) - 2;
+            const outerBounds: Rect = getOuterBounds(this);
+            const connWidth: number = (this.wrapper.bounds.width || this.style.strokeWidth || 1) - 2;
+            const connHeight: number = (this.wrapper.bounds.height || this.style.strokeWidth || 1) - 2;
             tx = (outerBounds.width - connWidth);
             ty = (outerBounds.height - connHeight);
             sw = (width - (Math.max(tx, ty))) / connWidth;
@@ -1917,7 +2014,7 @@ export class Connector extends NodeBase implements IElement {
         }
 
         sw = sh = Math.min(sw, sh);
-        let matrix: Matrix = identityMatrix();
+        const matrix: Matrix = identityMatrix();
         refObject = refObject || this.wrapper;
         rotateMatrix(matrix, -refObject.rotateAngle, refObject.offsetX, refObject.offsetY);
         scaleMatrix(matrix, sw, sh, refObject.offsetX, refObject.offsetY);

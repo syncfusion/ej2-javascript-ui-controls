@@ -15,7 +15,7 @@ import {
     RichTextEditorModel,
     Count
 } from '@syncfusion/ej2-richtexteditor';
-import { AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, TaskFieldsModel, ResourceFieldsModel } from '../models/models';
+import { AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, TaskFieldsModel, ResourceFieldsModel, AddDialogFieldSettings } from '../models/models';
 import { CObject } from '../base/enum';
 import { ColumnModel as GanttColumnModel } from '../models/column';
 import { TextBox, NumericTextBox, NumericTextBoxModel, MaskedTextBox, TextBoxModel } from '@syncfusion/ej2-inputs';
@@ -32,11 +32,12 @@ import {
 } from '@syncfusion/ej2-treegrid';
 import { getUid } from '../base/utils';
 interface EJ2Instance extends HTMLElement {
+    // eslint-disable-next-line
     ej2_instances: Object[];
 }
 
 /**
- * 
+ *
  * @hidden
  */
 export class DialogEdit {
@@ -61,6 +62,7 @@ export class DialogEdit {
     private editedRecord: IGanttData;
     private rowData: IGanttData;
     private beforeOpenArgs: CObject;
+    // eslint-disable-next-line
     private inputs: Object;
     private idCollection: IDependencyEditData[];
     /**
@@ -68,14 +70,16 @@ export class DialogEdit {
      */
     public updatedEditFields: EditDialogFieldSettingsModel[] = null;
     private updatedAddFields: AddDialogFieldSettingsModel[] = null;
-    private addedRecord: object = null;
+    private addedRecord: Record<string, unknown> = null;
     private dialogEditValidationFlag: boolean = false;
     private tabObj: Tab;
     private selectedSegment: ITaskSegment;
+    // eslint-disable-next-line
     public ganttResources: Object[] = [];
     /**
      * @private
      */
+    // eslint-disable-next-line
     public previousResource: Object[] = [];
     /**
      * @private
@@ -83,6 +87,9 @@ export class DialogEdit {
     public isResourceUpdate: boolean = false;
     /**
      * Constructor for render module
+     *
+     * @param {Gantt} parent .
+     * @returns {void} .
      */
     constructor(parent: Gantt) {
         this.parent = parent;
@@ -98,7 +105,7 @@ export class DialogEdit {
             datetimepickeredit: DateTimePicker,
             maskededit: MaskedTextBox,
             numericedit: NumericTextBox,
-            stringedit: TextBox,
+            stringedit: TextBox
         };
         this.processDialogFields();
         this.wireEvents();
@@ -109,7 +116,7 @@ export class DialogEdit {
     }
 
     private dblClickHandler(e: PointerEvent): void {
-        let ganttData: IGanttData = this.parent.ganttChartModule.getRecordByTarget(e);
+        const ganttData: IGanttData = this.parent.ganttChartModule.getRecordByTarget(e);
         if (!isNullOrUndefined(ganttData)) {
             this.openEditDialog(ganttData);
         }
@@ -117,6 +124,8 @@ export class DialogEdit {
 
     /**
      * Method to validate add and edit dialog fields property.
+     *
+     * @returns {void} .
      * @private
      */
     public processDialogFields(): void {
@@ -137,10 +146,10 @@ export class DialogEdit {
     }
 
     private validateDialogFields(dialogFields: AddDialogFieldSettingsModel[]): AddDialogFieldSettingsModel[] {
-        let newDialogFields: AddDialogFieldSettingsModel[] = [];
+        const newDialogFields: AddDialogFieldSettingsModel[] = [];
         let emptyCustomColumn: number = 0;
         for (let i: number = 0; i < dialogFields.length; i++) {
-            let fieldItem: AddDialogFieldSettingsModel = getActualProperties(dialogFields[i]);
+            const fieldItem: AddDialogFieldSettingsModel = getActualProperties(dialogFields[i]);
             if (fieldItem.type === 'General' && (isNullOrUndefined(fieldItem.fields) || fieldItem.fields.length === 0)) {
                 fieldItem.fields = this.getGeneralColumnFields();
             }
@@ -162,10 +171,12 @@ export class DialogEdit {
     }
     /**
      * Method to get general column fields
+     *
+     * @returns {string[]} .
      */
     private getGeneralColumnFields(): string[] {
-        let fields: string[] = [];
-        for (let key of Object.keys(this.parent.columnMapping)) {
+        const fields: string[] = [];
+        for (const key of Object.keys(this.parent.columnMapping)) {
             if (key === 'dependency' || key === 'resourceInfo' || key === 'notes') {
                 continue;
             }
@@ -176,9 +187,11 @@ export class DialogEdit {
 
     /**
      * Method to get custom column fields
+     *
+     * @returns {void} .
      */
     private getCustomColumnFields(): string[] {
-        let fields: string[] = [];
+        const fields: string[] = [];
         for (let i: number = 0; i < this.parent.customColumns.length; i++) {
             fields.push(this.parent.customColumns[i]);
         }
@@ -187,12 +200,14 @@ export class DialogEdit {
 
     /**
      * Get default dialog fields when fields are not defined for add and edit dialogs
+     *
+     * @returns {AddDialogFieldSettings} .
      */
     private getDefaultDialogFields(): AddDialogFieldSettingsModel[] {
-        let dialogFields: AddDialogFieldSettingsModel[] = [];
+        const dialogFields: AddDialogFieldSettingsModel[] = [];
         let fieldItem: AddDialogFieldSettingsModel = {};
-        let taskFields: TaskFieldsModel = this.parent.taskFields;
-        let columnMapping: { [key: string]: string; } = this.parent.columnMapping;
+        const taskFields: TaskFieldsModel = this.parent.taskFields;
+        const columnMapping: { [key: string]: string; } = this.parent.columnMapping;
         if (Object.keys(columnMapping).length !== 0) {
             fieldItem.type = 'General';
             dialogFields.push(fieldItem);
@@ -231,6 +246,7 @@ export class DialogEdit {
         return dialogFields;
     }
     /**
+     * @returns {void} .
      * @private
      */
     public openAddDialog(): void {
@@ -240,7 +256,7 @@ export class DialogEdit {
     }
     /**
      *
-     * @return {Date}
+     * @returns {Date} .
      * @private
      */
     public getMinimumStartDate(): Date {
@@ -255,16 +271,17 @@ export class DialogEdit {
     }
 
     /**
+     * @returns {IGanttData} .
      * @private
      */
     public composeAddRecord(): IGanttData {
-        let tempData: IGanttData = {};
+        const tempData: IGanttData = {};
         tempData.ganttProperties = {};
-        let columns: GanttColumnModel[] = this.parent.ganttColumns;
-        let taskSettings: TaskFieldsModel = this.parent.taskFields;
-        let id: number | string = this.parent.editModule.getNewTaskId();
+        const columns: GanttColumnModel[] = this.parent.ganttColumns;
+        const taskSettings: TaskFieldsModel = this.parent.taskFields;
+        const id: number | string = this.parent.editModule.getNewTaskId();
         for (let i: number = 0; i < columns.length; i++) {
-            let field: string = columns[i].field;
+            const field: string = columns[i].field;
             if (field === taskSettings.id) {
                 tempData[field] = id;
                 tempData.ganttProperties.rowUniqueID = tempData[field];
@@ -304,19 +321,20 @@ export class DialogEdit {
         }
         tempData.ganttProperties.isAutoSchedule = (this.parent.taskMode === 'Auto') ? true :
             (this.parent.taskMode === 'Manual') ? false :
-            tempData[taskSettings.manual] === true ? false : true;
+                tempData[taskSettings.manual] === true ? false : true;
         return tempData;
     }
     /**
+     * @returns {void} .
      * @private
      */
     public openToolbarEditDialog(): void {
-        let gObj: Gantt = this.parent;
+        const gObj: Gantt = this.parent;
         if (gObj.editModule && gObj.editSettings.allowEditing) {
             if (this.parent.ganttChartModule.focusedRowIndex > -1 && gObj.selectionModule) {
                 gObj.selectionModule.selectRow(this.parent.ganttChartModule.focusedRowIndex, false, false);
             }
-            let selectedRowId: number | string = gObj.selectionModule ?
+            const selectedRowId: number | string = gObj.selectionModule ?
                 (gObj.selectionSettings.mode === 'Row' || gObj.selectionSettings.mode === 'Both') &&
                     gObj.selectionModule.selectedRowIndexes.length === 1 ?
                     gObj.updatedRecords[gObj.selectionModule.selectedRowIndexes[0]].ganttProperties.rowUniqueID :
@@ -330,11 +348,13 @@ export class DialogEdit {
         }
     }
     /**
-     * @param taskId 
+     * @param { number | string | object} taskId .
+     * @returns {void} .
      * @private
      */
-    public openEditDialog(taskId: number | string | Object): void {
-        let ganttObj: Gantt = this.parent;
+    // eslint-disable-next-line
+    public openEditDialog(taskId: number | string | object): void {
+        const ganttObj: Gantt = this.parent;
         if (typeof taskId === 'object' && !isNullOrUndefined(taskId)) {
             this.rowIndex = this.parent.currentViewData.indexOf(taskId);
             if (this.rowIndex > -1) {
@@ -360,13 +380,13 @@ export class DialogEdit {
     }
 
     private createDialog(): void {
-        let ganttObj: Gantt = this.parent;
-        let dialogModel: DialogModel = {};
+        const ganttObj: Gantt = this.parent;
+        const dialogModel: DialogModel = {};
         this.beforeOpenArgs.dialogModel = dialogModel;
         this.beforeOpenArgs.rowData = this.editedRecord;
         this.beforeOpenArgs.rowIndex = this.rowIndex;
-        let dialogMaxWidth: string = this.parent.isAdaptive ? '' : '600px';
-        let dialog: HTMLElement = this.parent.createElement(
+        const dialogMaxWidth: string = this.parent.isAdaptive ? '' : '600px';
+        const dialog: HTMLElement = this.parent.createElement(
             'div', { id: ganttObj.element.id + '_dialog', styles: 'max-width:' + dialogMaxWidth });
         ganttObj.element.appendChild(dialog);
         dialogModel.animationSettings = { effect: 'None' };
@@ -375,16 +395,16 @@ export class DialogEdit {
         dialogModel.cssClass = 'e-gantt-dialog';
         dialogModel.allowDragging = this.parent.isAdaptive ? false : true;
         dialogModel.showCloseIcon = true;
-        let position: PositionDataModel = this.parent.isAdaptive ? { X: 'top', Y: 'left' } : { X: 'center', Y: 'center' };
+        const position: PositionDataModel = this.parent.isAdaptive ? { X: 'top', Y: 'left' } : { X: 'center', Y: 'center' };
         dialogModel.position = position;
         //dialogModel.width = '750px';
         dialogModel.height = this.parent.isAdaptive ? '100%' : 'auto';
         dialogModel.target = this.parent.element;
         dialogModel.close = this.dialogClose.bind(this);
         dialogModel.closeOnEscape = true;
-        dialogModel.open = (args: object) => {
-            let dialogElement: HTMLElement = getValue('element', args);
-            let generalTabElement: HTMLElement = dialogElement.querySelector('#' + this.parent.element.id + 'GeneralTabContainer');
+        dialogModel.open = (args: Record<string, unknown>) => {
+            const dialogElement: HTMLElement = getValue('element', args);
+            const generalTabElement: HTMLElement = dialogElement.querySelector('#' + this.parent.element.id + 'GeneralTabContainer');
             if (generalTabElement && generalTabElement.scrollHeight > generalTabElement.offsetHeight) {
                 generalTabElement.classList.add('e-scroll');
             }
@@ -412,7 +432,7 @@ export class DialogEdit {
     }
 
     private buttonClick(e: MouseEvent): void {
-        let target: HTMLElement = e.target as HTMLElement;
+        const target: HTMLElement = e.target as HTMLElement;
         target.style.pointerEvents = 'none';
         if ((this.localeObj.getConstant('cancel')).toLowerCase() === (e.target as HTMLInputElement).innerText.trim().toLowerCase()) {
             if (this.dialog && !this.dialogObj.isDestroyed) {
@@ -425,6 +445,7 @@ export class DialogEdit {
         }
     }
     /**
+     * @returns {void} .
      * @private
      */
     public dialogClose(): void {
@@ -453,11 +474,11 @@ export class DialogEdit {
     }
 
     private destroyDialogInnerElements(): void {
-        let ganttObj: Gantt = this.parent;
-        let tabModel: TabModel = this.beforeOpenArgs.tabModel;
-        let items: TabItemModel[] = tabModel.items;
+        const ganttObj: Gantt = this.parent;
+        const tabModel: TabModel = this.beforeOpenArgs.tabModel;
+        const items: TabItemModel[] = tabModel.items;
         for (let i: number = 0; i < items.length; i++) {
-            let element: HTMLElement = items[i].content as HTMLElement;
+            const element: HTMLElement = items[i].content as HTMLElement;
             let id: string = element.id;
             if (!isNullOrUndefined(id) || id !== '') {
                 id = id.replace(ganttObj.element.id, '');
@@ -465,13 +486,13 @@ export class DialogEdit {
                 if (id === 'General') {
                     this.destroyCustomField(element);
                 } else if (id === 'Dependency') {
-                    let gridObj: Grid = <Grid>(<EJ2Instance>element).ej2_instances[0];
+                    const gridObj: Grid = <Grid>(<EJ2Instance>element).ej2_instances[0];
                     gridObj.destroy();
                 } else if (id === 'Notes') {
-                    let rte: RichTextEditor = <RichTextEditor>(<EJ2Instance>element).ej2_instances[0];
+                    const rte: RichTextEditor = <RichTextEditor>(<EJ2Instance>element).ej2_instances[0];
                     rte.destroy();
                 } else if (id === 'Resources') {
-                    let treeGridObj: TreeGrid = <TreeGrid>(<EJ2Instance>element).ej2_instances[0];
+                    const treeGridObj: TreeGrid = <TreeGrid>(<EJ2Instance>element).ej2_instances[0];
                     treeGridObj.destroy();
                 } else if (id.indexOf('Custom') !== -1) {
                     this.destroyCustomField(element);
@@ -481,24 +502,25 @@ export class DialogEdit {
     }
 
     private destroyCustomField(element: HTMLElement): void {
-        let childNodes: NodeList = element.childNodes;
-        let ganttObj: Gantt = this.parent;
+        const childNodes: NodeList = element.childNodes;
+        const ganttObj: Gantt = this.parent;
         for (let i: number = 0; i < childNodes.length; i++) {
-            let div: HTMLElement = childNodes[i] as HTMLElement;
-            let inputElement: HTMLInputElement = div.querySelector('input[id^="' + ganttObj.element.id + '"]');
+            const div: HTMLElement = childNodes[i] as HTMLElement;
+            const inputElement: HTMLInputElement = div.querySelector('input[id^="' + ganttObj.element.id + '"]');
             if (inputElement) {
-                let fieldName: string = inputElement.id.replace(ganttObj.element.id, '');
-                /* tslint:disable-next-line:no-any */
-                let controlObj: any = <any>(<EJ2Instance>div.querySelector('#' + ganttObj.element.id + fieldName)).ej2_instances[0];
+                const fieldName: string = inputElement.id.replace(ganttObj.element.id, '');
+                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                const controlObj: any = <any>(<EJ2Instance>div.querySelector('#' + ganttObj.element.id + fieldName)).ej2_instances[0];
                 if (!isNullOrUndefined(controlObj)) {
-                    let column: GanttColumnModel = ganttObj.columnByField[fieldName];
+                    const column: GanttColumnModel = ganttObj.columnByField[fieldName];
                     if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
+                        // eslint-disable-next-line
                         let destroy: Function = column.edit.destroy as Function;
                         if (typeof destroy === 'string') {
                             destroy = getObject(destroy, window);
                             destroy();
                         } else {
-                            (column.edit.destroy as Function)();
+                            (column.edit.destroy as () => void)();
                         }
                     } else {
                         controlObj.destroy();
@@ -508,6 +530,7 @@ export class DialogEdit {
         }
     }
     /**
+     * @returns {void} .
      * @private
      */
     public destroy(): void {
@@ -520,6 +543,8 @@ export class DialogEdit {
     }
     /**
      * Method to get current edit dialog fields value
+     *
+     * @returns {AddDialogFieldSettings} .
      */
     private getEditFields(): AddDialogFieldSettingsModel[] {
         if (this.isEdit) {
@@ -529,22 +554,21 @@ export class DialogEdit {
 
         }
     }
-    /* tslint:disable-next-line:max-func-body-length */
     private createTab(dialogModel: DialogModel, dialog: HTMLElement): void {
-        let ganttObj: Gantt = this.parent;
-        let tabModel: TabModel = {}; let tabItems: TabItemModel[] = [];
-        let dialogSettings: AddDialogFieldSettingsModel[] = this.getEditFields();
+        const ganttObj: Gantt = this.parent;
+        const tabModel: TabModel = {}; const tabItems: TabItemModel[] = [];
+        const dialogSettings: AddDialogFieldSettingsModel[] = this.getEditFields();
         let tabElement: HTMLElement;
-        let tasks: TaskFieldsModel = ganttObj.taskFields;
-        let length: number = dialogSettings.length;
+        const tasks: TaskFieldsModel = ganttObj.taskFields;
+        const length: number = dialogSettings.length;
         tabModel.items = tabItems;
         tabModel.locale = this.parent.locale;
         this.beforeOpenArgs.tabModel = tabModel;
         let count: number = 0; let index: number = 0;
         if (length > 0) {
             for (let i: number = 0; i < length; i++) {
-                let dialogField: AddDialogFieldSettingsModel = dialogSettings[i];
-                let tabItem: TabItemModel = {};
+                const dialogField: AddDialogFieldSettingsModel = dialogSettings[i];
+                const tabItem: TabItemModel = {};
                 if (dialogField.type === 'General') {
                     if (Object.keys(ganttObj.columnMapping).length === 0) {
                         continue;
@@ -596,6 +620,7 @@ export class DialogEdit {
                     }
                     if (isNullOrUndefined(dialogField.headerText)) {
                         dialogField.headerText = this.localeObj.getConstant('customTab');
+                        // eslint-disable-next-line
                         count++;
                     }
                     tabItem.content = 'Custom' + '' + index++;
@@ -606,7 +631,7 @@ export class DialogEdit {
             }
         }
         this.beforeOpenArgs.requestType = this.isEdit ? 'beforeOpenEditDialog' : 'beforeOpenAddDialog';
-        let args: ActionBeginArgs = {
+        const args: ActionBeginArgs = {
             rowData: this.beforeOpenArgs.rowData as IGanttData,
             name: this.beforeOpenArgs.name as string,
             requestType: this.beforeOpenArgs.requestType as string,
@@ -627,7 +652,7 @@ export class DialogEdit {
                 this.dialogObj = new Dialog(dialogModel);
                 this.dialogObj.isStringTemplate = true;
                 this.dialogObj.appendTo(this.dialog);
-                let actionCompleteArgs: CObject = {
+                const actionCompleteArgs: CObject = {
                     action: 'OpenDialog',
                     requestType: this.isEdit ? 'openEditDialog' : 'openAddDialog',
                     data: this.beforeOpenArgs.rowData,
@@ -647,15 +672,17 @@ export class DialogEdit {
     }
 
     private tabSelectedEvent(args: SelectEventArgs): void {
-        let ganttObj: Gantt = this.parent;
-        let id: string = (args.selectedContent.childNodes[0] as HTMLElement).id;
+        const ganttObj: Gantt = this.parent;
+        const id: string = (args.selectedContent.childNodes[0] as HTMLElement).id;
         if (this.parent.isAdaptive) {
             this.responsiveTabContent(id, ganttObj);
         }
         if (id === ganttObj.element.id + 'ResourcesTabContainer') {
-            let resourceTreeGrid: TreeGrid = <TreeGrid>(<EJ2Instance>ganttObj.element.querySelector('#' + id)).ej2_instances[0];
-            let resources: Object[] = this.ganttResources;
-            let currentViewData: Object[] = resourceTreeGrid.getCurrentViewRecords();
+            const resourceTreeGrid: TreeGrid = <TreeGrid>(<EJ2Instance>ganttObj.element.querySelector('#' + id)).ej2_instances[0];
+            // eslint-disable-next-line
+            const resources: Object[] = this.ganttResources;
+            // eslint-disable-next-line
+            const currentViewData: Object[] = resourceTreeGrid.getCurrentViewRecords();
             if (resources && resources.length > 0) {
                 currentViewData.forEach((data: CObject, index: number): void => {
                     for (let i: number = 0; i < resources.length; i++) {
@@ -672,23 +699,23 @@ export class DialogEdit {
         } else if (id === ganttObj.element.id + 'SegmentsTabContainer') {
             if (isNullOrUndefined((this.beforeOpenArgs.rowData as IGanttData).ganttProperties.startDate)) {
                 ((<EJ2Instance>ganttObj.element.querySelector('#' + id)).ej2_instances[0] as Grid)
-                .enableToolbarItems([this.parent.element.id + 'SegmentsTabContainer' + '_add'], false);
+                    .enableToolbarItems([this.parent.element.id + 'SegmentsTabContainer' + '_add'], false);
             } else {
                 ((<EJ2Instance>ganttObj.element.querySelector('#' + id)).ej2_instances[0] as Grid)
-                .enableToolbarItems([this.parent.element.id + 'SegmentsTabContainer' + '_add'], true);
+                    .enableToolbarItems([this.parent.element.id + 'SegmentsTabContainer' + '_add'], true);
             }
 
         }
     }
 
     private responsiveTabContent(id: string, ganttObj: Gantt): void {
-        let dialogContent: HTMLElement = document.getElementById(ganttObj.element.id + '_dialog_dialog-content');
+        const dialogContent: HTMLElement = document.getElementById(ganttObj.element.id + '_dialog_dialog-content');
         let dialogContentHeight: number = dialogContent.clientHeight;
         dialogContentHeight -= (dialogContent.querySelector('.e-tab-header') as HTMLElement).offsetHeight;
-        let grid: HTMLElement = document.querySelector('#' + id);
+        const grid: HTMLElement = document.querySelector('#' + id);
         if (grid.classList.contains('e-grid')) {
             dialogContentHeight -= (((grid as EJ2Instance).ej2_instances[0] as Grid).getHeaderContent() as HTMLElement).offsetHeight;
-            let toolbar: HTMLElement = grid.querySelector('.e-toolbar');
+            const toolbar: HTMLElement = grid.querySelector('.e-toolbar');
             if (toolbar) {
                 dialogContentHeight -= toolbar.offsetHeight;
             }
@@ -696,9 +723,10 @@ export class DialogEdit {
         grid.parentElement.style.height = dialogContentHeight + 'px';
     }
 
-    private getFieldsModel(fields: string[]): Object {
-        let fieldsModel: Object = {};
-        let columnByField: Object = this.parent.columnByField;
+    private getFieldsModel(fields: string[]): Record<string, unknown> {
+        const fieldsModel: Record<string, unknown> = {};
+        // eslint-disable-next-line
+        const columnByField: Object = this.parent.columnByField;
         for (let i: number = 0; i < fields.length; i++) {
             if (fields[i] === this.parent.taskFields.dependency ||
                 fields[i] === this.parent.taskFields.resourceInfo ||
@@ -706,100 +734,111 @@ export class DialogEdit {
                 continue;
             }
             if (!isNullOrUndefined(columnByField[fields[i]])) {
-                let fieldName: string = fields[i];
+                const fieldName: string = fields[i];
                 this.createInputModel(columnByField[fieldName], fieldsModel);
             }
         }
         return fieldsModel;
     }
-    private createInputModel(column: GanttColumnModel, fieldsModel: Object): Object {
-        let ganttObj: Gantt = this.parent;
-        let locale: string = this.parent.locale;
-        let taskSettings: TaskFieldsModel = this.parent.taskFields;
-        let common: Object = {
+    private createInputModel(column: GanttColumnModel, fieldsModel: object): object {    // eslint-disable-line
+        const ganttObj: Gantt = this.parent;
+        const locale: string = this.parent.locale;
+        const taskSettings: TaskFieldsModel = this.parent.taskFields;
+        // eslint-disable-next-line
+        const common: Object = {
             placeholder: column.headerText,
-            floatLabelType: 'Auto',
+            floatLabelType: 'Auto'
         };
         switch (column.editType) {
-            case 'booleanedit':
-                let checkboxModel: CheckBoxModel = {
-                    label: column.headerText,
-                    locale: locale,
+        case 'booleanedit':
+        {
+            const checkboxModel: CheckBoxModel = {
+                label: column.headerText,
+                locale: locale
+            };
+            fieldsModel[column.field] = checkboxModel;
+            break;
+        }
+        case 'stringedit':
+        {
+            const textBox: TextBox = common as TextBox;
+            if (column.field === ganttObj.columnMapping.duration || column.field === ganttObj.columnMapping.startDate ||
+                    column.field === ganttObj.columnMapping.endDate) {
+                textBox.change = (args: CObject): void => {
+                    this.validateScheduleFields(args, column, ganttObj);
                 };
-                fieldsModel[column.field] = checkboxModel;
-                break;
-            case 'stringedit':
-                let textBox: TextBox = common as TextBox;
-                if (column.field === ganttObj.columnMapping.duration || column.field === ganttObj.columnMapping.startDate ||
+            }
+            fieldsModel[column.field] = common;
+            break;
+        }
+        case 'numericedit':
+        {
+            const numeric: NumericTextBoxModel = <NumericTextBoxModel>common;
+            if (taskSettings.progress === column.field) {
+                numeric.min = 0;
+                numeric.max = 100;
+            }
+            if (taskSettings.work === column.field) {
+                numeric.change = (args: CObject): void => {
+                    this.validateScheduleFields(args, column, ganttObj);
+                };
+            }
+            fieldsModel[column.field] = numeric;
+            break;
+        }
+        case 'datepickeredit':
+        {
+            const datePickerObj: DatePickerModel = common as DatePickerModel;
+            datePickerObj.format = this.parent.getDateFormat();
+            datePickerObj.strictMode = true;
+            datePickerObj.firstDayOfWeek = ganttObj.timelineModule.customTimelineSettings.weekStartDay;
+            if (column.field === ganttObj.columnMapping.startDate ||
                     column.field === ganttObj.columnMapping.endDate) {
-                    textBox.change = (args: CObject): void => {
-                        this.validateScheduleFields(args, column, ganttObj);
-                    };
-                }
-                fieldsModel[column.field] = common;
-                break;
-            case 'numericedit':
-                let numeric: NumericTextBoxModel = <NumericTextBoxModel>common;
-                if (taskSettings.progress === column.field) {
-                    numeric.min = 0;
-                    numeric.max = 100;
-                }
-                if (taskSettings.work === column.field) {
-                    numeric.change = (args: CObject): void => {
-                        this.validateScheduleFields(args, column, ganttObj);
-                    };
-                }
-                fieldsModel[column.field] = numeric;
-                break;
-            case 'datepickeredit':
-                let datePickerObj: DatePickerModel = common as DatePickerModel;
-                datePickerObj.format = this.parent.getDateFormat();
-                datePickerObj.strictMode = true;
-                datePickerObj.firstDayOfWeek = ganttObj.timelineModule.customTimelineSettings.weekStartDay;
-                if (column.field === ganttObj.columnMapping.startDate ||
+                datePickerObj.renderDayCell = this.parent.renderWorkingDayCell.bind(this.parent);
+                datePickerObj.change = (args: CObject): void => {
+                    this.validateScheduleFields(args, column, ganttObj);
+                };
+            }
+            fieldsModel[column.field] = datePickerObj;
+            break;
+        }
+        case 'datetimepickeredit':
+        {
+            const dateTimePickerObj: DatePickerModel = common as DatePickerModel;
+            dateTimePickerObj.format = this.parent.getDateFormat();
+            dateTimePickerObj.strictMode = true;
+            dateTimePickerObj.firstDayOfWeek = ganttObj.timelineModule.customTimelineSettings.weekStartDay;
+            if (column.field === ganttObj.columnMapping.startDate ||
                     column.field === ganttObj.columnMapping.endDate) {
-                    datePickerObj.renderDayCell = this.parent.renderWorkingDayCell.bind(this.parent);
-                    datePickerObj.change = (args: CObject): void => {
-                        this.validateScheduleFields(args, column, ganttObj);
-                    };
-                }
-                fieldsModel[column.field] = datePickerObj;
-                break;
-            case 'datetimepickeredit':
-                let dateTimePickerObj: DatePickerModel = common as DatePickerModel;
-                dateTimePickerObj.format = this.parent.getDateFormat();
-                dateTimePickerObj.strictMode = true;
-                dateTimePickerObj.firstDayOfWeek = ganttObj.timelineModule.customTimelineSettings.weekStartDay;
-                if (column.field === ganttObj.columnMapping.startDate ||
-                    column.field === ganttObj.columnMapping.endDate) {
-                    dateTimePickerObj.renderDayCell = this.parent.renderWorkingDayCell.bind(this.parent);
-                    dateTimePickerObj.change = (args: CObject): void => {
-                        this.validateScheduleFields(args, column, ganttObj);
-                    };
-                }
-                fieldsModel[column.field] = dateTimePickerObj;
-                break;
-            case 'dropdownedit':
-                if (column.field === 'taskType' || column.field === ganttObj.columnMapping.manual) {
-                    let dataKey: string = 'dataSource';
-                    let fieldsKey: string = 'fields';
-                    let types: Object[] = [
-                        { 'ID': 1, 'Value': 'FixedUnit' }, { 'ID': 2, 'Value': 'FixedWork' }, { 'ID': 3, 'Value': 'FixedDuration' }];
-                    common[dataKey] = types;
-                    common[fieldsKey] = { value: 'Value' };
-                    let dropDownListObj: DropDownListModel = common as DropDownListModel;
-                    dropDownListObj.change = (args: CObject | ChangeEventArgs): void => {
-                        if (column.field === taskSettings.manual) {
-                            this.editedRecord.ganttProperties.isAutoSchedule = !args.value;
-                        }
-                        this.validateScheduleFields(args as CObject, column, ganttObj);
-                    };
-                }
-                fieldsModel[column.field] = common;
-                break;
-            case 'maskededit':
-                fieldsModel[column.field] = common;
-                break;
+                dateTimePickerObj.renderDayCell = this.parent.renderWorkingDayCell.bind(this.parent);
+                dateTimePickerObj.change = (args: CObject): void => {
+                    this.validateScheduleFields(args, column, ganttObj);
+                };
+            }
+            fieldsModel[column.field] = dateTimePickerObj;
+            break;
+        }
+        case 'dropdownedit':
+            if (column.field === 'taskType' || column.field === ganttObj.columnMapping.manual) {
+                const dataKey: string = 'dataSource';
+                const fieldsKey: string = 'fields';
+                const types: Record<string, unknown>[] = [
+                    { 'ID': 1, 'Value': 'FixedUnit' }, { 'ID': 2, 'Value': 'FixedWork' }, { 'ID': 3, 'Value': 'FixedDuration' }];
+                common[dataKey] = types;
+                common[fieldsKey] = { value: 'Value' };
+                const dropDownListObj: DropDownListModel = common as DropDownListModel;
+                dropDownListObj.change = (args: CObject | ChangeEventArgs): void => {
+                    if (column.field === taskSettings.manual) {
+                        this.editedRecord.ganttProperties.isAutoSchedule = !args.value;
+                    }
+                    this.validateScheduleFields(args as CObject, column, ganttObj);
+                };
+            }
+            fieldsModel[column.field] = common;
+            break;
+        case 'maskededit':
+            fieldsModel[column.field] = common;
+            break;
         }
         if (!isNullOrUndefined(column.edit) && !isNullOrUndefined(column.edit.params)) {
             extend(fieldsModel[column.field], column.edit.params);
@@ -808,9 +847,9 @@ export class DialogEdit {
     }
 
     private validateScheduleFields(args: CObject, column: GanttColumnModel, ganttObj: Gantt): boolean {
-        let dialog: HTMLElement = ganttObj.editModule.dialogModule.dialog;
+        const dialog: HTMLElement = ganttObj.editModule.dialogModule.dialog;
         let targetId: string = null; let inputElement: HTMLInputElement;
-        let currentData: IGanttData = ganttObj.editModule.dialogModule.editedRecord;
+        const currentData: IGanttData = ganttObj.editModule.dialogModule.editedRecord;
         if (!isNullOrUndefined(args.element)) {
             inputElement = args.element as HTMLInputElement;
             targetId = inputElement.getAttribute('id');
@@ -823,7 +862,7 @@ export class DialogEdit {
             targetId = inputElement.querySelector('input').getAttribute('id');
             inputElement = inputElement.querySelector('#' + targetId);
         }
-        let cellValue: string = inputElement.value;
+        const cellValue: string = inputElement.value;
         let colName: string = targetId.replace(ganttObj.element.id, '');
         if (colName.search('Segments') === 0) {
             colName = colName.replace('SegmentsTabContainer', '');
@@ -831,8 +870,8 @@ export class DialogEdit {
             return true;
         } else {
             this.validateScheduleValuesByCurrentField(colName, cellValue, this.editedRecord);
-            let ganttProp: ITaskData = currentData.ganttProperties;
-            let tasks: TaskFieldsModel = ganttObj.taskFields;
+            const ganttProp: ITaskData = currentData.ganttProperties;
+            const tasks: TaskFieldsModel = ganttObj.taskFields;
             if (!isNullOrUndefined(tasks.startDate)) {
                 this.updateScheduleFields(dialog, ganttProp, 'startDate');
             }
@@ -851,17 +890,17 @@ export class DialogEdit {
     }
 
     private updateScheduleFields(dialog: HTMLElement, ganttProp: ITaskData, ganttField: string): void {
-        let ganttObj: Gantt = this.parent;
-        let ganttId: string = ganttObj.element.id;
-        let columnName: string = getValue(ganttField, ganttObj.columnMapping);
-        let col: GanttColumnModel = ganttObj.columnByField[columnName];
+        const ganttObj: Gantt = this.parent;
+        const ganttId: string = ganttObj.element.id;
+        const columnName: string = getValue(ganttField, ganttObj.columnMapping);
+        const col: GanttColumnModel = ganttObj.columnByField[columnName];
         let tempValue: string | Date | number;
-        let taskField: TaskFieldsModel = this.parent.taskFields;
+        const taskField: TaskFieldsModel = this.parent.taskFields;
         if (col.editType === 'stringedit') {
-            let textBox: TextBox = <TextBox>(<EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0];
-            tempValue = !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read) ? (col.edit.read as Function)() :
-                !isNullOrUndefined(col.valueAccessor) ? (col.valueAccessor as Function)
-                    (columnName, ganttObj.editModule.dialogModule.editedRecord, col) :
+            const textBox: TextBox = <TextBox>(<EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0];
+            tempValue = !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read) ? (col.edit.read as () => void)() :
+                // eslint-disable-next-line
+                !isNullOrUndefined(col.valueAccessor) ? (col.valueAccessor as Function) (columnName, ganttObj.editModule.dialogModule.editedRecord, col) :
                     this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
             if (textBox.value !== tempValue.toString() && taskField.duration === columnName) {
                 textBox.value = tempValue as string;
@@ -871,7 +910,7 @@ export class DialogEdit {
                 textBox.dataBind();
             }
         } else if (col.editType === 'datepickeredit' || col.editType === 'datetimepickeredit') {
-            let picker: DatePicker = col.editType === 'datepickeredit' ?
+            const picker: DatePicker = col.editType === 'datepickeredit' ?
                 <DatePicker>(<EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0] :
                 <DateTimePicker>(<EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0];
             tempValue = ganttProp[ganttField];
@@ -883,7 +922,7 @@ export class DialogEdit {
                 picker.dataBind();
             }
         } else if (col.editType === 'numericedit') {
-            let numericTextBox: NumericTextBox = <NumericTextBox>(
+            const numericTextBox: NumericTextBox = <NumericTextBox>(
                 <EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0];
             tempValue = ganttProp[ganttField];
             if (!isNullOrUndefined(tempValue)) {
@@ -894,10 +933,12 @@ export class DialogEdit {
     }
 
     /**
+     * @param {IGanttData} ganttData .
+     * @returns {void} .
      * @private
      */
     public validateDuration(ganttData: IGanttData): void {
-        let ganttProp: ITaskData = ganttData.ganttProperties;
+        const ganttProp: ITaskData = ganttData.ganttProperties;
         if (!this.dialogEditValidationFlag) {
             if (isNullOrUndefined(ganttProp.duration)) {
                 this.parent.setRecordValue('endDate', null, ganttProp, true);
@@ -910,14 +951,14 @@ export class DialogEdit {
             } else if (!isScheduledTask(ganttProp) && !isNullOrUndefined(ganttProp.endDate)) {
                 this.parent.dateValidationModule.calculateStartDate(ganttData);
             }
-            let milestone: boolean = ganttProp.duration === 0 ? true : false;
+            const milestone: boolean = ganttProp.duration === 0 ? true : false;
             this.parent.setRecordValue('isMilestone', milestone, ganttProp, true);
             this.dialogEditValidationFlag = true;
         }
     }
     private validateStartDate(ganttData: IGanttData): void {
-        let ganttProp: ITaskData = ganttData.ganttProperties;
-        let tasks: TaskFieldsModel = this.parent.taskFields;
+        const ganttProp: ITaskData = ganttData.ganttProperties;
+        const tasks: TaskFieldsModel = this.parent.taskFields;
         if (!this.dialogEditValidationFlag) {
             if (isNullOrUndefined(ganttProp.startDate)) {
                 this.parent.setRecordValue('duration', null, ganttProp, true);
@@ -944,8 +985,8 @@ export class DialogEdit {
         }
     }
     private validateEndDate(ganttData: IGanttData): void {
-        let ganttProp: ITaskData = ganttData.ganttProperties;
-        let tasks: TaskFieldsModel = this.parent.taskFields;
+        const ganttProp: ITaskData = ganttData.ganttProperties;
+        const tasks: TaskFieldsModel = this.parent.taskFields;
         if (!this.dialogEditValidationFlag) {
             if (isNullOrUndefined(ganttProp.endDate)) {
                 this.parent.setRecordValue('duration', null, ganttProp, true);
@@ -972,16 +1013,17 @@ export class DialogEdit {
         }
     }
     /**
-     * 
-     * @param columnName 
-     * @param value 
-     * @param currentData
-     * @private 
+     *
+     * @param {string} columnName .
+     * @param {string} value .
+     * @param {IGanttData} currentData .
+     * @returns {boolean} .
+     * @private
      */
     public validateScheduleValuesByCurrentField(columnName: string, value: string, currentData: IGanttData): boolean {
-        let ganttObj: Gantt = this.parent;
-        let ganttProp: ITaskData = currentData.ganttProperties;
-        let taskSettings: TaskFieldsModel = ganttObj.taskFields;
+        const ganttObj: Gantt = this.parent;
+        const ganttProp: ITaskData = currentData.ganttProperties;
+        const taskSettings: TaskFieldsModel = ganttObj.taskFields;
         if (taskSettings.duration === columnName) {
             if (!isNullOrUndefined(value) && value !== '') {
                 ganttObj.dataOperation.updateDurationValue(value, ganttProp);
@@ -1037,8 +1079,9 @@ export class DialogEdit {
         }
         return true;
     }
+    // eslint-disable-next-line
     private getSegmentsModel(fields: string[]): Object {
-        let taskSettings: TaskFieldsModel = this.parent.taskFields;
+        const taskSettings: TaskFieldsModel = this.parent.taskFields;
         if (isNullOrUndefined(fields) || fields.length === 0) {
             fields = [];
             if (!isNullOrUndefined(taskSettings.startDate)) {
@@ -1051,7 +1094,7 @@ export class DialogEdit {
                 fields.push('duration');
             }
         }
-        let segmentInputModel: GridModel = {};
+        const segmentInputModel: GridModel = {};
         segmentInputModel.editSettings = {
             allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal', newRowPosition: 'Bottom'
         };
@@ -1068,65 +1111,67 @@ export class DialogEdit {
                 id: this.parent.element.id + 'SegmentsTabContainer' + '_delete', prefixIcon: 'e-delete',
                 tooltipText: this.localeObj.getConstant('delete'), align: 'Right',
                 text: this.parent.isAdaptive ? '' : this.localeObj.getConstant('delete')
-            },
+            }
         ];
-        let gridColumns: GridColumnModel[] = [];
+        const gridColumns: GridColumnModel[] = [];
         for (let i: number = 0; i < fields.length; i++) {
             let gridColumn: GridColumnModel = {};
-            let generalTabString: string = 'General';
+            const generalTabString: string = 'General';
             switch (fields[i]) {
-                case 'startDate':
-                case 'endDate':
-                    gridColumn = {
-                        field: fields[i], headerText: this.localeObj.getConstant(fields[i]), editType: 'stringedit', width: '200px',
-                        edit: {
-                            write: (args: CObject): void => {
-                                let datePickerModel: object = this.beforeOpenArgs[generalTabString][this.parent.taskFields[fields[i]]];
-                                let value: string = args.rowData[(args.column as GridColumnModel).field];
-                                setValue('value', value, datePickerModel);
-                                let datePicker: DatePicker = new DatePicker(datePickerModel);
-                                datePicker.appendTo(args.element as HTMLElement);
-                            },
-                            read: (args: HTMLElement): Date => {
-                                let ej2Instance: DatePickerModel =
+            case 'startDate':
+            case 'endDate':
+                gridColumn = {
+                    field: fields[i], headerText: this.localeObj.getConstant(fields[i]), editType: 'stringedit', width: '200px',
+                    edit: {
+                        write: (args: CObject): void => {
+                            // eslint-disable-next-line
+                            const datePickerModel: object = this.beforeOpenArgs[generalTabString][this.parent.taskFields[fields[i]]];
+                            const value: string = args.rowData[(args.column as GridColumnModel).field];
+                            setValue('value', value, datePickerModel);
+                            const datePicker: DatePicker = new DatePicker(datePickerModel);
+                            datePicker.appendTo(args.element as HTMLElement);
+                        },
+                        read: (args: HTMLElement): Date => {
+                            const ej2Instance: DatePickerModel =
                                     <CObject>(<EJ2Instance>args).ej2_instances[0];
-                                return ej2Instance.value as Date;
-                            }
+                            return ej2Instance.value as Date;
+                        }
 
-                        },
-                        format: this.parent.getDateFormat()
-                    };
-                    if (fields[i] === 'startDate') {
-                        gridColumn.validationRules = { required: true };
-                    }
-                    gridColumns.push(gridColumn);
-                    break;
-                case 'duration':
-                    gridColumn = {
-                        field: fields[i], headerText: this.localeObj.getConstant(fields[i]), editType: 'stringedit', width: '100px',
-                        edit: {
-                            write: (args: CObject): void => {
-                                let inputTextModel: object = this.beforeOpenArgs[generalTabString][this.parent.taskFields[fields[i]]];
-                                (inputTextModel as TextBox).floatLabelType = 'Never';
-                                let value: string = args.rowData[(args.column as GridColumnModel).field];
-                                if (!isNullOrUndefined(value)) {
-                                    setValue('value', value, inputTextModel);
-                                } else {
-                                    setValue('value', null, inputTextModel);
-                                }
+                    },
+                    format: this.parent.getDateFormat()
+                };
+                if (fields[i] === 'startDate') {
+                    gridColumn.validationRules = { required: true };
+                }
+                gridColumns.push(gridColumn);
+                break;
+            case 'duration':
+                gridColumn = {
+                    field: fields[i], headerText: this.localeObj.getConstant(fields[i]), editType: 'stringedit', width: '100px',
+                    edit: {
+                        write: (args: CObject): void => {
+                            // eslint-disable-next-line
+                            const inputTextModel: object = this.beforeOpenArgs[generalTabString][this.parent.taskFields[fields[i]]];
+                            (inputTextModel as TextBox).floatLabelType = 'Never';
+                            const value: string = args.rowData[(args.column as GridColumnModel).field];
+                            if (!isNullOrUndefined(value)) {
                                 setValue('value', value, inputTextModel);
-                                let inputModel: TextBox = new TextBox(inputTextModel);
-                                inputModel.appendTo(args.element as HTMLElement);
-                            },
-                            read: (args: HTMLElement): string => {
-                                let ej2Instance: TextBoxModel =
-                                    <CObject>(<EJ2Instance>args).ej2_instances[0];
-                                return ej2Instance.value.toString();
+                            } else {
+                                setValue('value', null, inputTextModel);
                             }
+                            setValue('value', value, inputTextModel);
+                            const inputModel: TextBox = new TextBox(inputTextModel);
+                            inputModel.appendTo(args.element as HTMLElement);
                         },
-                    };
-                    gridColumns.push(gridColumn);
-                    break;
+                        read: (args: HTMLElement): string => {
+                            const ej2Instance: TextBoxModel =
+                                <CObject>(<EJ2Instance>args).ej2_instances[0];
+                            return ej2Instance.value.toString();
+                        }
+                    }
+                };
+                gridColumns.push(gridColumn);
+                break;
             }
         }
         segmentInputModel.columns = gridColumns;
@@ -1143,12 +1188,11 @@ export class DialogEdit {
         return column;
     }
     private updateSegmentField(columnName: string, args: CObject, segment: ITaskSegment): void {
-        let dialog: HTMLElement = this.parent.editModule.dialogModule.dialog;
-        let gridModel: GridModel = getValue('Segments', this.beforeOpenArgs) as GridModel;
-        let col: GridColumnModel = this.getGridColumnByField(columnName, gridModel.columns as GridColumnModel[]);
-        let tempValue: string | Date | number;
-        let ganttId: string = this.parent.element.id;
-        tempValue = segment[columnName];
+        const dialog: HTMLElement = this.parent.editModule.dialogModule.dialog;
+        const gridModel: GridModel = getValue('Segments', this.beforeOpenArgs) as GridModel;
+        const col: GridColumnModel = this.getGridColumnByField(columnName, gridModel.columns as GridColumnModel[]);
+        const ganttId: string = this.parent.element.id;
+        const tempValue: string | Date | number = segment[columnName];
         let inputValue: TextBox | DatePicker;
 
         if (col.editType === 'stringedit') {
@@ -1164,7 +1208,7 @@ export class DialogEdit {
         }
     }
     private validateSegmentFields(ganttObj: Gantt, columnName: string, cellValue: string, args: CObject): void {
-        let taskSettings: TaskFieldsModel = this.parent.taskFields;
+        const taskSettings: TaskFieldsModel = this.parent.taskFields;
         if (!isNullOrUndefined(taskSettings.duration) && taskSettings.duration.toLowerCase() === columnName.toLowerCase()) {
             if (!isNullOrUndefined(cellValue) && cellValue !== '') {
                 this.selectedSegment.duration = Number(cellValue);
@@ -1214,11 +1258,12 @@ export class DialogEdit {
             this.updateSegmentField('duration', args, this.selectedSegment);
         }
     }
+    // eslint-disable-next-line
     private getPredecessorModel(fields: string[]): Object {
         if (isNullOrUndefined(fields) || fields.length === 0) {
             fields = ['ID', 'Name', 'Type', 'Offset', 'UniqueId'];
         }
-        let inputModel: GridModel = {};
+        const inputModel: GridModel = {};
         inputModel.editSettings = { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' };
         inputModel.locale = this.parent.locale;
         inputModel.dataSource = [];
@@ -1233,9 +1278,9 @@ export class DialogEdit {
                 id: this.parent.element.id + 'DependencyTabContainer' + '_delete', prefixIcon: 'e-delete',
                 tooltipText: this.localeObj.getConstant('delete'), align: 'Right',
                 text: this.parent.isAdaptive ? '' : this.localeObj.getConstant('delete')
-            },
+            }
         ];
-        let columns: GridColumnModel[] = [];
+        const columns: GridColumnModel[] = [];
         for (let i: number = 0; i < fields.length; i++) {
             let column: GridColumnModel = {};
             if (fields[i].toLowerCase() === 'id') {
@@ -1275,14 +1320,15 @@ export class DialogEdit {
         inputModel.height = this.parent.isAdaptive ? '100%' : '153px';
         return inputModel;
     }
+    // eslint-disable-next-line
     private getResourcesModel(fields: string[]): Object {
-        let ganttObj: Gantt = this.parent;
-        let resourceSettings: ResourceFieldsModel = ganttObj.resourceFields;
+        const ganttObj: Gantt = this.parent;
+        const resourceSettings: ResourceFieldsModel = ganttObj.resourceFields;
         if (isNullOrUndefined(fields) || fields.length === 0) {
             fields = [resourceSettings.id, resourceSettings.name, resourceSettings.unit, resourceSettings.group];
         }
 
-        let inputModel: TreeGridModel = {
+        const inputModel: TreeGridModel = {
             allowFiltering: true,
             treeColumnIndex: -1,
             childMapping: '',
@@ -1293,8 +1339,8 @@ export class DialogEdit {
             filterSettings: { type: 'Menu' },
             selectionSettings: { checkboxOnly: true, checkboxMode: 'Default', persistSelection: true, type: 'Multiple' }
         };
-        let columns: TreeGridColumnModel[] = [
-            { type: 'checkbox', allowEditing: false, allowSorting: false, allowFiltering: false, width: 60 },
+        const columns: TreeGridColumnModel[] = [
+            { type: 'checkbox', allowEditing: false, allowSorting: false, allowFiltering: false, width: 60 }
         ];
         for (let i: number = 0; i < fields.length; i++) {
             let column: TreeGridColumnModel = {};
@@ -1333,6 +1379,7 @@ export class DialogEdit {
         return inputModel;
     }
 
+    // eslint-disable-next-line
     private getNotesModel(fields: string[]): Object {
         if (isNullOrUndefined(fields) || fields.length === 0) {
             fields = ['Bold', 'Italic', 'Underline', 'StrikeThrough',
@@ -1343,7 +1390,7 @@ export class DialogEdit {
                 'CreateLink', '|', 'ClearFormat', 'Print',
                 '|', 'Undo', 'Redo'];
         }
-        let inputModel: RichTextEditorModel = {
+        const inputModel: RichTextEditorModel = {
             placeholder: this.localeObj.getConstant('writeNotes'),
             toolbarSettings: {
                 items: fields
@@ -1367,11 +1414,11 @@ export class DialogEdit {
         });
     }
     private renderTabItems(): void {
-        let tabModel: TabModel = this.beforeOpenArgs.tabModel;
-        let items: TabItemModel[] = tabModel.items;
+        const tabModel: TabModel = this.beforeOpenArgs.tabModel;
+        const items: TabItemModel[] = tabModel.items;
         let index: number = 0;
         for (let i: number = 0; i < items.length; i++) {
-            let item: TabItemModel = items[i];
+            const item: TabItemModel = items[i];
             if (item.content instanceof HTMLElement) {
                 continue;
             } else if (item.content === 'General') {
@@ -1397,21 +1444,20 @@ export class DialogEdit {
         }
     }
     private segmentGridActionBegin(args: ActionEventArgs): void {
-        let taskFields: TaskFieldsModel = this.parent.taskFields;
-        let itemName: string = 'Segments';
-        let gridModel: GridModel = this.beforeOpenArgs[itemName] as GridModel;
+        const taskFields: TaskFieldsModel = this.parent.taskFields;
+        const itemName: string = 'Segments';
+        const gridModel: GridModel = this.beforeOpenArgs[itemName] as GridModel;
         if (args.requestType === 'add' || args.requestType === 'beginEdit' || args.requestType === 'save') {
-            let isEdit: boolean = args.requestType === 'add' ? false : true;
-            let gridData: Object[] = gridModel.dataSource as object[];
-            let selectedItem: object = getValue('rowData', args);
-            let startDate: Date = (this.beforeOpenArgs.rowData as IGanttData).ganttProperties.startDate;
+            const gridData: Record<string, unknown>[] = gridModel.dataSource as Record<string, unknown>[];
+            const selectedItem: Record<string, unknown> = getValue('rowData', args);
+            const startDate: Date = (this.beforeOpenArgs.rowData as IGanttData).ganttProperties.startDate;
             if (!isNullOrUndefined(startDate)) {
                 if (args.requestType === 'add') {
-                    let arg: Object = {};
+                    let arg: Record<string, unknown> = {};
                     let sDate: Date = getValue('startDate', selectedItem);
                     let eDate: Date = getValue('endDate', selectedItem);
                     let duration: number = getValue('duration', selectedItem);
-                    let startDate: Date = !isNullOrUndefined(gridData) && gridData.length > 0 ?
+                    const startDate: Date = !isNullOrUndefined(gridData) && gridData.length > 0 ?
                         !isNullOrUndefined(taskFields.endDate) ? new Date((getValue('endDate', gridData[0]) as Date).getTime()) :
                             new Date((getValue('startDate', gridData[0]) as Date).getTime()) :
                         !isNullOrUndefined((this.beforeOpenArgs.rowData as IGanttData).ganttProperties.startDate) &&
@@ -1450,9 +1496,9 @@ export class DialogEdit {
         }
     }
     private renderSegmentsTab(itemName: string): HTMLElement {
-        let ganttObj: Gantt = this.parent;
-        let gridModel: GridModel = this.beforeOpenArgs[itemName];
-        let ganttData: IGanttData = this.beforeOpenArgs.rowData;
+        const ganttObj: Gantt = this.parent;
+        const gridModel: GridModel = this.beforeOpenArgs[itemName];
+        const ganttData: IGanttData = this.beforeOpenArgs.rowData;
         let preData: ITaskSegment[] = [];
         if (this.isEdit) {
             preData = isNullOrUndefined(ganttData.ganttProperties.segments) ? [] : ganttData.ganttProperties.segments;
@@ -1460,22 +1506,23 @@ export class DialogEdit {
         gridModel.dataSource = preData;
         gridModel.actionBegin = this.segmentGridActionBegin.bind(this);
         Grid.Inject(Edit, Page, GridToolbar, ForeignKey);
-        let gridObj: Grid = new Grid(gridModel);
-        let divElement: HTMLElement = this.createDivElement('', ganttObj.element.id + '' + itemName + 'TabContainer');
+        const gridObj: Grid = new Grid(gridModel);
+        const divElement: HTMLElement = this.createDivElement('', ganttObj.element.id + '' + itemName + 'TabContainer');
         gridObj.appendTo(divElement);
         return divElement;
     }
     private renderGeneralTab(itemName: string): HTMLElement {
-        let ganttObj: Gantt = this.parent;
-        let itemModel: Object = this.beforeOpenArgs[itemName];
-        let divElement: HTMLElement = this.createDivElement('e-edit-form-row', ganttObj.element.id
+        const ganttObj: Gantt = this.parent;
+        // eslint-disable-next-line
+        const itemModel: Object = this.beforeOpenArgs[itemName];
+        const divElement: HTMLElement = this.createDivElement('e-edit-form-row', ganttObj.element.id
             + '' + itemName + 'TabContainer');
-        for (let key of Object.keys(itemModel)) {
+        for (const key of Object.keys(itemModel)) {
             if (this.parent.columnByField[key].visible === false) {
                 continue;
             }
-            let column: GanttColumnModel = this.parent.columnByField[key];
-            let inputModel: { [key: string]: Object } = itemModel[key];
+            const column: GanttColumnModel = this.parent.columnByField[key];
+            const inputModel: { [key: string]: Record<string, unknown> } = itemModel[key];
             divElement.appendChild(this.renderInputElements(inputModel, column));
         }
         return divElement;
@@ -1512,15 +1559,15 @@ export class DialogEdit {
     }
 
     private renderPredecessorTab(itemName: string): HTMLElement {
-        let ganttObj: Gantt = this.parent;
-        let gridModel: GridModel = this.beforeOpenArgs[itemName];
-        let dependencyColumn: GanttColumnModel = this.parent.columnByField[this.parent.taskFields.dependency];
+        const ganttObj: Gantt = this.parent;
+        const gridModel: GridModel = this.beforeOpenArgs[itemName];
+        const dependencyColumn: GanttColumnModel = this.parent.columnByField[this.parent.taskFields.dependency];
         if (dependencyColumn.allowEditing === false || dependencyColumn.isPrimaryKey || this.parent.readOnly) {
             gridModel.editSettings.allowEditing = false;
             gridModel.editSettings.allowAdding = false;
             gridModel.editSettings.allowDeleting = false;
         }
-        let ganttData: IGanttData = this.beforeOpenArgs.rowData;
+        const ganttData: IGanttData = this.beforeOpenArgs.rowData;
         let preData: IPreData[] = [];
         this.taskNameCollection();
         if (this.isEdit) {
@@ -1529,22 +1576,22 @@ export class DialogEdit {
         }
         gridModel.dataSource = preData;
         gridModel.actionBegin = this.gridActionBegin.bind(this);
-        let columns: GridColumnModel[] = <GridColumnModel[]>gridModel.columns;
+        const columns: GridColumnModel[] = <GridColumnModel[]>gridModel.columns;
         columns[1].edit = {
             write: (args: CObject): void => {
                 if (getValue('requestType', args) === 'add') {
                     setValue('rowData.uniqueId', getUid(), args);
                 }
-                let field: string = 'name';
-                let autoObj: ComboBox = new ComboBox({
+                const field: string = 'name';
+                const autoObj: ComboBox = new ComboBox({
                     dataSource: new DataManager(this.idCollection),
                     popupHeight: '180px',
                     allowCustom: false,
                     fields: { value: 'text' },
                     value: args.rowData[field],
                     change: (arg: ChangeEventArgs) => {
-                        let tr: HTMLElement = closest(arg.element, 'tr') as HTMLElement;
-                        let idInput: HTMLInputElement = tr.querySelector('#' + this.parent.element.id + 'DependencyTabContainerid');
+                        const tr: HTMLElement = closest(arg.element, 'tr') as HTMLElement;
+                        const idInput: HTMLInputElement = tr.querySelector('#' + this.parent.element.id + 'DependencyTabContainerid');
                         if (idInput) {
                             if (!isNullOrUndefined(arg.itemData) && !isNullOrUndefined(arg.item)) {
                                 idInput.value = (arg.itemData as IPreData).id;
@@ -1553,34 +1600,36 @@ export class DialogEdit {
                             }
                         }
                     },
-                    autofill: true,
+                    autofill: true
                 });
                 autoObj.appendTo(args.element as HTMLElement);
             },
             read: (args: HTMLElement): string => {
-                let ej2Instance: ComboBoxModel =
+                const ej2Instance: ComboBoxModel =
                     <CObject>(<EJ2Instance>args).ej2_instances[0];
                 return ej2Instance.value as string;
             }
         };
         Grid.Inject(Edit, Page, GridToolbar, ForeignKey);
-        let gridObj: Grid = new Grid(gridModel);
-        let divElement: HTMLElement = this.createDivElement('e-dependent-div', ganttObj.element.id + '' + itemName + 'TabContainer');
+        const gridObj: Grid = new Grid(gridModel);
+        const divElement: HTMLElement = this.createDivElement('e-dependent-div', ganttObj.element.id + '' + itemName + 'TabContainer');
         gridObj.appendTo(divElement);
         return divElement;
     }
 
     private gridActionBegin(args: GridActionEventArgs): void {
-        let itemName: string = 'Dependency';
-        let gridModel: GridModel = this.beforeOpenArgs[itemName] as GridModel;
+        const itemName: string = 'Dependency';
+        const gridModel: GridModel = this.beforeOpenArgs[itemName] as GridModel;
         if (args.requestType === 'add' || args.requestType === 'beginEdit') {
-            let isEdit: boolean = args.requestType === 'add' ? false : true;
+            const isEdit: boolean = args.requestType === 'add' ? false : true;
             this.idCollection = extend([], [], this.preTableCollection, true) as IDependencyEditData[];
-            let gridData: Object[] = gridModel.dataSource as object[];
+            const gridData: Record<string, unknown>[] = gridModel.dataSource as Record<string, unknown>[];
             for (let i: number = 0; i <= gridData.length; i++) {
+                // eslint-disable-next-line
                 this.idCollection.forEach((data: IDependencyEditData, index: number): void => {
                     if (data.id === getValue('id', gridData[i])) {
-                        let selectedItem: object = getValue('rowData', args);
+                        // eslint-disable-next-line
+                        const selectedItem: object = getValue('rowData', args);
                         if (isEdit && getValue('id', selectedItem) === data.id) {
                             return;
                         }
@@ -1593,17 +1642,17 @@ export class DialogEdit {
 
     private updateResourceCollection(args: RowSelectEventArgs, resourceTreeGridId: string): void {
         if (!isNullOrUndefined(args.data) && Object.keys(args.data).length) {
-            let ganttObj: Gantt = this.parent;
-            let treeGridId: HTMLElement = ganttObj.element.querySelector('#' + resourceTreeGridId);
-            let resourceTreeGrid: TreeGrid = <TreeGrid>(<EJ2Instance>treeGridId).ej2_instances[0];
+            const ganttObj: Gantt = this.parent;
+            const treeGridId: HTMLElement = ganttObj.element.querySelector('#' + resourceTreeGridId);
+            const resourceTreeGrid: TreeGrid = <TreeGrid>(<EJ2Instance>treeGridId).ej2_instances[0];
             if (!isNullOrUndefined(resourceTreeGrid) && resourceTreeGrid.getSelectedRecords().length > 0) {
-                let tempRecords: CObject[] = <CObject[]>resourceTreeGrid.getSelectedRecords();
+                const tempRecords: CObject[] = <CObject[]>resourceTreeGrid.getSelectedRecords();
                 let index: number;
-                let selectedItems: CObject[] = [];
+                const selectedItems: CObject[] = [];
                 for (index = 0; index < tempRecords.length; index++) {
                     selectedItems.push(<CObject>tempRecords[index].taskData);
                 }
-                this.ganttResources = <Object[]>extend([], selectedItems);
+                this.ganttResources = <Record<string, unknown>[]>extend([], selectedItems);
             } else {
                 this.ganttResources = [];
             }
@@ -1613,19 +1662,20 @@ export class DialogEdit {
     }
 
     private renderResourceTab(itemName: string): HTMLElement {
-        let ganttObj: Gantt = this.parent;
-        let resourceSettings: ResourceFieldsModel = ganttObj.resourceFields;
-        let ganttData: IGanttData = this.beforeOpenArgs.rowData;
-        let rowResource: Object[] = ganttData.ganttProperties.resourceInfo;
-        let inputModel: TreeGridModel = this.beforeOpenArgs[itemName];
-        let resourceTreeGridId: string = ganttObj.element.id + '' + itemName + 'TabContainer';
-        let resourceData: Object[] = <Object[]>extend([], [], ganttObj.resources, true);
+        const ganttObj: Gantt = this.parent;
+        const resourceSettings: ResourceFieldsModel = ganttObj.resourceFields;
+        const ganttData: IGanttData = this.beforeOpenArgs.rowData;
+        // eslint-disable-next-line
+        const rowResource: Object[] = ganttData.ganttProperties.resourceInfo;
+        const inputModel: TreeGridModel = this.beforeOpenArgs[itemName];
+        const resourceTreeGridId: string = ganttObj.element.id + '' + itemName + 'TabContainer';
+        const resourceData: Record<string, unknown>[] = <Record<string, unknown>[]>extend([], [], ganttObj.resources, true);
         this.parent.dataOperation.updateResourceUnit(resourceData);
         if (!isNullOrUndefined(rowResource)) {
             let count: number;
-            let rowResourceLength: number = rowResource.length;
+            const rowResourceLength: number = rowResource.length;
             let index: number;
-            let resourceDataLength: number = resourceData.length;
+            const resourceDataLength: number = resourceData.length;
             for (count = 0; count < rowResourceLength; count++) {
                 for (index = 0; index < resourceDataLength; index++) {
                     if (rowResource[count][resourceSettings.id] === resourceData[index][resourceSettings.id]) {
@@ -1635,7 +1685,8 @@ export class DialogEdit {
             }
         }
         inputModel.dataSource = resourceData;
-        let resourceInfo: Object[] = ganttData.ganttProperties.resourceInfo;
+        // eslint-disable-next-line
+        const resourceInfo: Object[] = ganttData.ganttProperties.resourceInfo;
         if (this.isEdit && !isNullOrUndefined(resourceInfo)) {
             for (let i: number = 0; i < resourceInfo.length; i++) {
                 this.ganttResources.push(resourceInfo[i]);
@@ -1648,10 +1699,10 @@ export class DialogEdit {
             this.updateResourceCollection(args, resourceTreeGridId);
         };
 
-        let divElement: HTMLElement = this.createDivElement('e-resource-div', resourceTreeGridId);
+        const divElement: HTMLElement = this.createDivElement('e-resource-div', resourceTreeGridId);
         TreeGrid.Inject(Selection, Filter, TreeGridEdit, VirtualScroll);
-        let treeGridObj: TreeGrid = new TreeGrid(inputModel);
-        let resourceColumn: GanttColumnModel = this.parent.columnByField[this.parent.taskFields.resourceInfo];
+        const treeGridObj: TreeGrid = new TreeGrid(inputModel);
+        const resourceColumn: GanttColumnModel = this.parent.columnByField[this.parent.taskFields.resourceInfo];
         if (resourceColumn.allowEditing === false || resourceColumn.isPrimaryKey || this.parent.readOnly) {
             treeGridObj.allowSelection = false;
             treeGridObj.allowFiltering = false;
@@ -1665,33 +1716,35 @@ export class DialogEdit {
     }
 
     private renderNotesTab(itemName: string): HTMLElement {
-        let ganttObj: Gantt = this.parent;
-        let inputModel: RichTextEditorModel = this.beforeOpenArgs[itemName];
-        let ganttProp: ITaskData = this.editedRecord.ganttProperties;
-        let divElement: HTMLElement = this.createDivElement('', ganttObj.element.id + '' + itemName + 'TabContainer');
+        const ganttObj: Gantt = this.parent;
+        const inputModel: RichTextEditorModel = this.beforeOpenArgs[itemName];
+        const ganttProp: ITaskData = this.editedRecord.ganttProperties;
+        const divElement: HTMLElement = this.createDivElement('', ganttObj.element.id + '' + itemName + 'TabContainer');
         RichTextEditor.Inject(RTEToolbar, Link, HtmlEditor, QuickToolbar, Count);
         inputModel.value = ganttProp.notes;
-        let notesColumn: GanttColumnModel = this.parent.columnByField[this.parent.taskFields.notes];
+        const notesColumn: GanttColumnModel = this.parent.columnByField[this.parent.taskFields.notes];
         if (notesColumn.allowEditing === false || notesColumn.isPrimaryKey || this.parent.readOnly) {
             inputModel.enabled = false;
         }
-        let rteObj: RichTextEditor = new RichTextEditor(inputModel);
+        const rteObj: RichTextEditor = new RichTextEditor(inputModel);
         rteObj.appendTo(divElement);
         return divElement;
     }
 
     private renderInputElements(inputModel: CObject, column: GanttColumnModel): HTMLElement {
-        let ganttId: string = this.parent.element.id;
-        let ganttData: IGanttData = this.editedRecord;
-        let divElement: HTMLElement = this.createDivElement('e-edit-form-column');
+        const ganttId: string = this.parent.element.id;
+        const ganttData: IGanttData = this.editedRecord;
+        const divElement: HTMLElement = this.createDivElement('e-edit-form-column');
         let inputElement: HTMLElement;
-        let editArgs: Object = { column: column, data: ganttData };
+        const editArgs: Record<string, unknown> = { column: column, data: ganttData };
         if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
+            // eslint-disable-next-line
             let create: Function = column.edit.create as Function;
             if (typeof create === 'string') {
                 create = getObject(create, window);
                 inputElement = create(editArgs);
             } else {
+                // eslint-disable-next-line
                 inputElement = (column.edit.create as Function)(editArgs);
             }
             inputElement.className = '';
@@ -1715,7 +1768,7 @@ export class DialogEdit {
                     inputModel.value = (column.valueAccessor as Function)(column.field, ganttData, column);
                 }
             } else if (isNullOrUndefined(column.edit)) {
-                let ganttProp: ITaskData = ganttData.ganttProperties;
+                const ganttProp: ITaskData = ganttData.ganttProperties;
                 inputModel.value = this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
             }
         } else {
@@ -1730,16 +1783,18 @@ export class DialogEdit {
             }
         }
         if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
+            // eslint-disable-next-line
             let write: Function = column.edit.write as Function;
             let inputObj: Inputs;
             if (typeof write === 'string') {
                 write = getObject(write, window);
                 inputObj = write({
-                    column: column, rowData: ganttData, element: inputElement,
+                    column: column, rowData: ganttData, element: inputElement
                 });
             } else {
+                // eslint-disable-next-line
                 inputObj = (column.edit.write as Function)({
-                    column: column, rowData: ganttData, element: inputElement,
+                    column: column, rowData: ganttData, element: inputElement
                 });
             }
             if (column.field === this.parent.taskFields.duration) {
@@ -1748,24 +1803,24 @@ export class DialogEdit {
                 };
             }
         } else {
-            let inputObj: Inputs = new this.inputs[column.editType](inputModel);
+            const inputObj: Inputs = new this.inputs[column.editType](inputModel);
             inputObj.appendTo(inputElement);
         }
         return divElement;
     }
 
     private taskNameCollection(): void {
-        let flatData: IGanttData[] = this.parent.flatData;
+        const flatData: IGanttData[] = this.parent.flatData;
         this.preTaskIds = [];
         this.preTableCollection = [];
         for (let i: number = 0; i < flatData.length; i++) {
-            let data: IGanttData = flatData[i];
+            const data: IGanttData = flatData[i];
             if (data.hasChildRecords) {
                 continue;
             }
-            let taskId: string = this.parent.viewType === 'ResourceView' ? data.ganttProperties.taskId.toString()
+            const taskId: string = this.parent.viewType === 'ResourceView' ? data.ganttProperties.taskId.toString()
                 : data.ganttProperties.rowUniqueID.toString();
-            let tempObject: IDependencyEditData = {
+            const tempObject: IDependencyEditData = {
                 id: taskId,
                 text: (taskId + '-' + data.ganttProperties.taskName),
                 value: taskId
@@ -1776,16 +1831,16 @@ export class DialogEdit {
     }
 
     private predecessorEditCollection(ganttData: IGanttData): IPreData[] {
-        let preDataCollection: IPreData[] = [];
-        let ganttProp: ITaskData = ganttData.ganttProperties;
+        const preDataCollection: IPreData[] = [];
+        const ganttProp: ITaskData = ganttData.ganttProperties;
         if (this.isEdit && !isNullOrUndefined(this.parent.taskFields.dependency) && !isNullOrUndefined(ganttData) &&
             !isNullOrUndefined(ganttProp.predecessor)) {
-            let predecessor: IPredecessor[] = ganttProp.predecessor;
-            let idCollection: IDependencyEditData[] = this.preTableCollection;
+            const predecessor: IPredecessor[] = ganttProp.predecessor;
+            const idCollection: IDependencyEditData[] = this.preTableCollection;
             for (let i: number = 0; i < predecessor.length; i++) {
-                let from: string = predecessor[i].from.toString();
-                let preData: IPreData = {};
-                let taskID: string = this.parent.viewType === 'ResourceView' ? ganttProp.taskId : ganttProp.rowUniqueID;
+                const from: string = predecessor[i].from.toString();
+                const preData: IPreData = {};
+                const taskID: string = this.parent.viewType === 'ResourceView' ? ganttProp.taskId : ganttProp.rowUniqueID;
                 if (taskID.toString() !== from) {
                     preData.id = from;
                     for (let index: number = 0; index < idCollection.length; index++) {
@@ -1795,8 +1850,8 @@ export class DialogEdit {
                         }
                     }
                     preData.type = predecessor[i].type;
-                    let offset: number = predecessor[i].offset;
-                    let offsetUnit: string = predecessor[i].offsetUnit;
+                    const offset: number = predecessor[i].offset;
+                    const offsetUnit: string = predecessor[i].offsetUnit;
                     preData.offset = this.parent.dataOperation.getDurationString(offset, offsetUnit);
                     preData.uniqueId = getUid();
                     preDataCollection.push(preData);
@@ -1808,7 +1863,7 @@ export class DialogEdit {
 
     private updatePredecessorDropDownData(ganttData: IGanttData): void {
         let index: number = -1;
-        let id: string = this.parent.viewType === 'ResourceView' ? ganttData.ganttProperties.taskId.toString()
+        const id: string = this.parent.viewType === 'ResourceView' ? ganttData.ganttProperties.taskId.toString()
             : ganttData.ganttProperties.rowUniqueID.toString();
         index = this.preTaskIds.indexOf(id);
         this.preTableCollection.splice(index, 1);
@@ -1817,19 +1872,19 @@ export class DialogEdit {
     }
 
     private validSuccessorTasks(data: IGanttData, ids: string[], idCollection: IDependencyEditData[]): void {
-        let ganttProp: ITaskData = data.ganttProperties;
+        const ganttProp: ITaskData = data.ganttProperties;
         if (ganttProp.predecessor && ganttProp.predecessor.length > 0) {
-            let predecessor: IPredecessor[] = ganttProp.predecessor;
-            let fromId: string = this.parent.viewType === 'ResourceView' ? ganttProp.taskId.toString() : ganttProp.rowUniqueID.toString();
+            const predecessor: IPredecessor[] = ganttProp.predecessor;
+            const fromId: string = this.parent.viewType === 'ResourceView' ? ganttProp.taskId.toString() : ganttProp.rowUniqueID.toString();
             predecessor.forEach((item: IPredecessor) => {
                 if (item.from.toString() === fromId) {
-                    let toId: string = item.to; let idIndex: number = -1;
+                    const toId: string = item.to; let idIndex: number = -1;
                     idIndex = ids.indexOf(toId);
                     if (idIndex > -1) {
                         ids.splice(idIndex, 1);
                         idCollection.splice(idIndex, 1);
                     }
-                    let ganttData: IGanttData = this.parent.connectorLineModule.getRecordByID(toId);
+                    const ganttData: IGanttData = this.parent.connectorLineModule.getRecordByID(toId);
                     this.validSuccessorTasks(ganttData, ids, idCollection);
                 }
             });
@@ -1837,9 +1892,9 @@ export class DialogEdit {
     }
 
     private getPredecessorType(): IDependencyEditData[] {
-        let typeText: string[] = [this.parent.getPredecessorTextValue('SS'), this.parent.getPredecessorTextValue('SF'),
-        this.parent.getPredecessorTextValue('FS'), this.parent.getPredecessorTextValue('FF')];
-        let types: IDependencyEditData[] = [
+        const typeText: string[] = [this.parent.getPredecessorTextValue('SS'), this.parent.getPredecessorTextValue('SF'),
+            this.parent.getPredecessorTextValue('FS'), this.parent.getPredecessorTextValue('FF')];
+        const types: IDependencyEditData[] = [
             { id: 'FS', text: typeText[2], value: typeText[2] },
             { id: 'FF', text: typeText[3], value: typeText[3] },
             { id: 'SS', text: typeText[0], value: typeText[0] },
@@ -1853,11 +1908,11 @@ export class DialogEdit {
         } else {
             this.addedRecord = {};
         }
-        let ganttObj: Gantt = this.parent;
-        let tabModel: TabModel = this.beforeOpenArgs.tabModel;
-        let items: TabItemModel[] = tabModel.items;
+        const ganttObj: Gantt = this.parent;
+        const tabModel: TabModel = this.beforeOpenArgs.tabModel;
+        const items: TabItemModel[] = tabModel.items;
         for (let i: number = 0; i < items.length; i++) {
-            let element: HTMLElement = items[i].content as HTMLElement;
+            const element: HTMLElement = items[i].content as HTMLElement;
             let id: string = element.id;
             if (!isNullOrUndefined(id) || id !== '') {
                 id = id.replace(ganttObj.element.id, '');
@@ -1882,18 +1937,19 @@ export class DialogEdit {
              * If any update on edited task do it here
              */
             this.parent.dataOperation.updateWidthLeft(this.rowData);
-            let editArgs: ITaskbarEditedEventArgs = {
+            const editArgs: ITaskbarEditedEventArgs = {
                 data: this.rowData,
                 action: 'DialogEditing'
             };
             this.parent.editModule.initiateUpdateAction(editArgs);
         } else {
             if (this.parent.viewType === 'ResourceView') {
-                let newRecords: Object = extend({}, this.addedRecord, true);
+                // eslint-disable-next-line
+                const newRecords: Object = extend({}, this.addedRecord, true);
                 if (newRecords[this.parent.taskFields.resourceInfo].length) {
                     for (let i: number = 0; i < newRecords[this.parent.taskFields.resourceInfo].length; i++) {
-                        let id: string = newRecords[this.parent.taskFields.resourceInfo][i].toString();
-                        let parentRecordIndex: number = this.parent.getTaskIds().indexOf('R' + id.toString());
+                        const id: string = newRecords[this.parent.taskFields.resourceInfo][i].toString();
+                        const parentRecordIndex: number = this.parent.getTaskIds().indexOf('R' + id.toString());
                         if (parentRecordIndex !== -1) {
                             this.parent.editModule.addRecord(this.addedRecord, 'Child', parentRecordIndex);
                             break;
@@ -1910,10 +1966,11 @@ export class DialogEdit {
     }
 
     private updateSegmentTaskData(dataSource: ITaskSegment[]): void {
-        let userData: ITaskSegment[] = [];
-        let taskSettings: TaskFieldsModel = this.parent.taskFields;
+        const userData: ITaskSegment[] = [];
+        const taskSettings: TaskFieldsModel = this.parent.taskFields;
         for (let i: number = 0; i < dataSource.length; i++) {
-            let taskData: Object = {};
+            // eslint-disable-next-line
+            const taskData: Object = {};
 
             if (!isNullOrUndefined(taskSettings.startDate)) {
                 taskData[this.parent.taskFields.startDate] = dataSource[i].startDate;
@@ -1940,35 +1997,38 @@ export class DialogEdit {
                 this.rowData);
         }
     }
+    // eslint-disable-next-line
     private updateSegmentsData(segmentForm: HTMLElement, data: IGanttData): void {
-        let gridObj: Grid = <Grid>(<EJ2Instance>segmentForm).ej2_instances[0];
+        const gridObj: Grid = <Grid>(<EJ2Instance>segmentForm).ej2_instances[0];
         if (gridObj.isEdit) {
             gridObj.endEdit();
         }
-        let dataSource: ITaskSegment[] = <ITaskSegment[]>gridObj.currentViewData;
+        const dataSource: ITaskSegment[] = <ITaskSegment[]>gridObj.currentViewData;
         this.updateSegmentTaskData(dataSource);
     }
 
     private updateGeneralTab(generalForm: HTMLElement, isCustom: boolean): void {
-        let ganttObj: Gantt = this.parent;
-        let childNodes: NodeList = generalForm.childNodes;
-        let tasksData: Object = {};
+        const ganttObj: Gantt = this.parent;
+        const childNodes: NodeList = generalForm.childNodes;
+        let tasksData: Record<string, unknown> = {};
         if (!this.isEdit) {
             tasksData = this.addedRecord;
         }
         for (let i: number = 0; i < childNodes.length; i++) {
-            let div: HTMLElement = childNodes[i] as HTMLElement;
-            let inputElement: HTMLInputElement = div.querySelector('input[id^="' + ganttObj.element.id + '"]');
+            const div: HTMLElement = childNodes[i] as HTMLElement;
+            const inputElement: HTMLInputElement = div.querySelector('input[id^="' + ganttObj.element.id + '"]');
             if (inputElement) {
-                let fieldName: string = inputElement.id.replace(ganttObj.element.id, '');
-                let controlObj: CObject = <CObject>(<EJ2Instance>div.querySelector('#' + ganttObj.element.id + fieldName)).ej2_instances[0];
-                let column: GanttColumnModel = ganttObj.columnByField[fieldName];
+                const fieldName: string = inputElement.id.replace(ganttObj.element.id, '');
+                const controlObj: CObject = <CObject>(<EJ2Instance>div.querySelector('#' + ganttObj.element.id + fieldName)).ej2_instances[0];
+                const column: GanttColumnModel = ganttObj.columnByField[fieldName];
                 if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
+                    // eslint-disable-next-line
                     let read: Function = column.edit.read as Function;
                     if (typeof read === 'string') {
                         read = getObject(read, window);
                         tasksData[fieldName] = read(inputElement, controlObj.value);
                     } else {
+                        // eslint-disable-next-line
                         tasksData[fieldName] = (column.edit.read as Function)(inputElement, controlObj.value);
                     }
                 } else if (isCustom && column.editType === 'booleanedit') {
@@ -2016,18 +2076,18 @@ export class DialogEdit {
         }
     }
     private updatePredecessorTab(preElement: HTMLElement): void {
-        let gridObj: Grid = <Grid>(<EJ2Instance>preElement).ej2_instances[0];
+        const gridObj: Grid = <Grid>(<EJ2Instance>preElement).ej2_instances[0];
         if (gridObj.isEdit) {
             gridObj.endEdit();
         }
-        let dataSource: IPreData[] = <IPreData[]>gridObj.dataSource;
-        let predecessorName: string[] = [];
+        const dataSource: IPreData[] = <IPreData[]>gridObj.dataSource;
+        const predecessorName: string[] = [];
         let newValues: IPredecessor[] = [];
         let predecessorString: string = '';
-        let ids: string[] = [];
+        const ids: string[] = [];
         for (let i: number = 0; i < dataSource.length; i++) {
-            let preData: IPreData = dataSource[i];
-            let newId: string = preData.name.split('-')[0];
+            const preData: IPreData = dataSource[i];
+            const newId: string = preData.name.split('-')[0];
             if (preData.id !== newId) {
                 preData.id = newId;
             }
@@ -2067,11 +2127,11 @@ export class DialogEdit {
         }
     }
     private updateResourceTab(resourceElement: HTMLElement): void {
-        let treeGridObj: TreeGrid = <TreeGrid>(<EJ2Instance>resourceElement).ej2_instances[0];
+        const treeGridObj: TreeGrid = <TreeGrid>(<EJ2Instance>resourceElement).ej2_instances[0];
         if (treeGridObj) {
             treeGridObj.grid.endEdit();
         }
-        let selectedItems: CObject[] = <CObject[]>this.ganttResources;
+        const selectedItems: CObject[] = <CObject[]>this.ganttResources;
         if (this.parent.viewType === 'ResourceView' && !isNullOrUndefined(this.rowData.ganttProperties)) {
             if (JSON.stringify(this.ganttResources) !== JSON.stringify(this.rowData.ganttProperties.resourceInfo)) {
                 this.isResourceUpdate = true;
@@ -2081,7 +2141,8 @@ export class DialogEdit {
                 this.isResourceUpdate = false;
             }
         }
-        let idArray: object[] = [];
+        // eslint-disable-next-line
+        const idArray: object[] = [];
         if (this.isEdit) {
             this.parent.setRecordValue('resourceInfo', selectedItems, this.rowData.ganttProperties, true);
             this.parent.dataOperation.updateMappingData(this.rowData, 'resourceInfo');
@@ -2096,8 +2157,8 @@ export class DialogEdit {
         }
     }
     private updateNotesTab(notesElement: HTMLElement): void {
-        let ganttObj: Gantt = this.parent;
-        let rte: RichTextEditor = <RichTextEditor>(<EJ2Instance>notesElement).ej2_instances[0];
+        const ganttObj: Gantt = this.parent;
+        const rte: RichTextEditor = <RichTextEditor>(<EJ2Instance>notesElement).ej2_instances[0];
         if (this.isEdit) {
             this.parent.setRecordValue('notes', rte.getHtml(), this.rowData.ganttProperties, true);
             ganttObj.dataOperation.updateMappingData(this.rowData, 'notes');

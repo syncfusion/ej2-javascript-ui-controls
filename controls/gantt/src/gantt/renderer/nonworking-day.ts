@@ -18,6 +18,8 @@ export class NonWorkingDay {
     }
     /**
      * Method append nonworking container
+     *
+     * @returns {void} .
      */
     private createNonworkingContainer(): void {
         if (!this.parent.ganttChartModule.chartBodyContent.contains(this.nonworkingContainer)) {
@@ -33,6 +35,8 @@ export class NonWorkingDay {
     }
     /**
      * calculation for holidays rendering.
+     *
+     * @returns {void} .
      * @private
      */
     public renderHolidays(): void {
@@ -54,14 +58,16 @@ export class NonWorkingDay {
     }
     /**
      * Method to return holidays as html string
+     *
+     * @returns {HTMLElement} .
      */
     private getHolidaysElement(): HTMLElement {
         let fromDate: Date;
         let toDate: Date;
-        let container: HTMLElement = createElement('div');
-        let height: number = this.parent.contentHeight;
-        let scrollElement: HTMLElement = this.parent.ganttChartModule.scrollElement;
-        let viewportHeight: number = parseInt(scrollElement.style.height, 10);
+        const container: HTMLElement = createElement('div');
+        const height: number = this.parent.contentHeight;
+        const scrollElement: HTMLElement = this.parent.ganttChartModule.scrollElement;
+        const viewportHeight: number = parseInt(scrollElement.style.height, 10);
         for (let i: number = 0; i < this.parent.holidays.length; i++) {
             if (this.parent.holidays[i].from && this.parent.holidays[i].to) {
                 fromDate = this.parent.dateValidationModule.getDateFromFormat(this.parent.holidays[i].from);
@@ -76,17 +82,17 @@ export class NonWorkingDay {
                 fromDate = this.parent.dateValidationModule.getDateFromFormat(this.parent.holidays[i].to);
                 fromDate.setHours(0, 0, 0, 0);
             }
-            let width: number = (this.parent.holidays[i].from && this.parent.holidays[i].to) ?
+            const width: number = (this.parent.holidays[i].from && this.parent.holidays[i].to) ?
                 this.parent.dataOperation.getTaskWidth(fromDate, toDate) : this.parent.perDayWidth;
-            let left: number = this.parent.dataOperation.getTaskLeft(fromDate, false);
-            let holidayDiv: HTMLElement = createElement('div', {
+            const left: number = this.parent.dataOperation.getTaskLeft(fromDate, false);
+            const holidayDiv: HTMLElement = createElement('div', {
                 className: cls.holidayElement, styles: `left:${left}px; width:${width}px; height:100%;`
             });
-            let spanTop: number = (viewportHeight < height) ? viewportHeight / 2 : height / 2;
-            let spanElement: HTMLElement = createElement('span', {
+            const spanTop: number = (viewportHeight < height) ? viewportHeight / 2 : height / 2;
+            const spanElement: HTMLElement = createElement('span', {
                 className: cls.holidayLabel, styles: `top:${spanTop}px;left:${(width / 2)}px;`
             });
-            let property: string = this.parent.disableHtmlEncode ? 'textContent' : 'innerHTML';
+            const property: string = this.parent.disableHtmlEncode ? 'textContent' : 'innerHTML';
             spanElement[property] = this.parent.holidays[i].label ? this.parent.holidays[i].label : '';
             holidayDiv.appendChild(spanElement);
             if (this.parent.holidays[i].cssClass) {
@@ -97,6 +103,7 @@ export class NonWorkingDay {
         return container;
     }
     /**
+     * @returns {void} .
      * @private
      */
     public renderWeekends(): void {
@@ -112,32 +119,34 @@ export class NonWorkingDay {
         } else if (this.weekendContainer) {
             remove(this.weekendContainer);
             if (this.nonworkingContainer && this.nonworkingContainer.childNodes.length === 0) {
-               remove(this.nonworkingContainer);
+                remove(this.nonworkingContainer);
             }
         }
     }
     /**
      * Method to get weekend html string
+     *
+     * @returns {HTMLElement} .
      */
     private getWeekendElements(): HTMLElement {
-        let container: HTMLElement = createElement('div');
-        let startDate: Date = new Date(this.parent.timelineModule.timelineStartDate.getTime());
-        let endDate: Date = new Date(this.parent.timelineModule.timelineEndDate.getTime());
-        let nonWorkingIndex: number[] = this.parent.nonWorkingDayIndex;
+        const container: HTMLElement = createElement('div');
+        const startDate: Date = new Date(this.parent.timelineModule.timelineStartDate.getTime());
+        const endDate: Date = new Date(this.parent.timelineModule.timelineEndDate.getTime());
+        const nonWorkingIndex: number[] = this.parent.nonWorkingDayIndex;
         let isFirstCell: boolean = true;
         do {
             if (nonWorkingIndex.indexOf(startDate.getDay()) !== -1) {
-                let left: number = this.parent.dataOperation.getTaskLeft(startDate, false);
+                const left: number = this.parent.dataOperation.getTaskLeft(startDate, false);
                 let width: number = this.parent.perDayWidth;
                 if (isFirstCell) {
-                    let start: Date =  new Date(startDate.getTime());
-                    let tempEnd: Date = new Date(start.getTime());
+                    const start: Date =  new Date(startDate.getTime());
+                    const tempEnd: Date = new Date(start.getTime());
                     tempEnd.setDate(tempEnd.getDate() + 1);
                     tempEnd.setHours(0, 0, 0, 0);
                     width = this.parent.dataOperation.getTaskWidth(start, tempEnd);
                     isFirstCell = false;
                 }
-                let weekendDiv: HTMLElement = createElement('div', {
+                const weekendDiv: HTMLElement = createElement('div', {
                     className: cls.weekend, styles: `left:${left}px;width:${width}px;height:100%;`
                 });
                 container.appendChild(weekendDiv);
@@ -149,21 +158,23 @@ export class NonWorkingDay {
     }
 
     private updateHolidayLabelHeight(): void {
-        let height: number = this.parent.contentHeight;
-        let scrollElement: HTMLElement = this.parent.ganttChartModule.scrollElement;
-        let viewportHeight: number = parseInt(scrollElement.style.height, 10);
-        let top: number = (viewportHeight < height) ? viewportHeight / 2 : height / 2;
-        let labels: NodeList = this.holidayContainer.querySelectorAll('.' + cls.holidayLabel);
+        const height: number = this.parent.contentHeight;
+        const scrollElement: HTMLElement = this.parent.ganttChartModule.scrollElement;
+        const viewportHeight: number = parseInt(scrollElement.style.height, 10);
+        const top: number = (viewportHeight < height) ? viewportHeight / 2 : height / 2;
+        const labels: NodeList = this.holidayContainer.querySelectorAll('.' + cls.holidayLabel);
         for (let i: number = 0; i < labels.length; i++) {
             (labels[i] as HTMLElement).style.top = formatUnit(top);
         }
     }
     /**
      * Method to update height for all internal containers
+     *
+     * @returns {void} .
      * @private
      */
     public updateContainerHeight(): void {
-        let height: number = this.parent.getContentHeight();
+        const height: number = this.parent.getContentHeight();
         if (this.holidayContainer) {
             this.holidayContainer.style.height = formatUnit(height);
             this.updateHolidayLabelHeight();
@@ -174,6 +185,8 @@ export class NonWorkingDay {
     }
     /**
      * Method to remove containers of holiday and weekend
+     *
+     * @returns {void} .
      */
     public removeContainers(): void {
         if (this.holidayContainer) {

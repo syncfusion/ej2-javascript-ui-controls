@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable @typescript-eslint/indent */
 /**
  * Used for stock event calculations.
  */
@@ -15,7 +18,7 @@ import { IStockEventRenderArgs } from '../model/base';
 import { stockEventRender } from '../../common/model/constants';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 /**
- * @private 
+ * @private
  */
 export class StockEvents extends BaseTooltip {
     constructor(stockChart: StockChart) {
@@ -32,22 +35,23 @@ export class StockEvents extends BaseTooltip {
     private pointIndex: number;
     private seriesIndex: number;
     /**
-     * @private 
      * To render stock events in chart
+     *
+     * @returns {Element} Stock event element
+     * @private
      */
     public renderStockEvents(): Element {
-        let sChart: StockChart = this.stockChart;
+        const sChart: StockChart = this.stockChart;
         let stockEvent: StockEventsSettingsModel;
         let stockEventElement: Element;
-        let symbolLocation: ChartLocation;
         let textSize: Size;
         // Creation of group elements for stock events
-        let stockEventsElementGroup: Element = sChart.renderer.createGroup({ id: this.chartId + '_StockEvents' });
+        const stockEventsElementGroup: Element = sChart.renderer.createGroup({ id: this.chartId + '_StockEvents' });
         this.symbolLocations = initialArray(sChart.series.length, sChart.stockEvents.length, new ChartLocation(0, 0));
         for (let i: number = 0; i < sChart.stockEvents.length; i++) {
             stockEvent = this.stockChart.stockEvents[i];
-            for (let series of sChart.chart.series as Series[]) {
-                let argsData: IStockEventRenderArgs = {
+            for (const series of sChart.chart.series as Series[]) {
+                const argsData: IStockEventRenderArgs = {
                     name: stockEventRender, stockChart: sChart, text: stockEvent.text,
                     type: stockEvent.type, cancel: false, series: series
                 };
@@ -59,7 +63,7 @@ export class StockEvents extends BaseTooltip {
                     stockEventElement = sChart.renderer.createGroup(
                         { id: this.chartId + '_Series_' + series.index + '_StockEvents_' + i }
                     );
-                    let stockEventDate: number = this.stockChart.isBlazor ? Date.parse((stockEvent.date).toString()) :
+                    const stockEventDate: number = this.stockChart.isBlazor ? Date.parse((stockEvent.date).toString()) :
                             this.dateParse(stockEvent.date).getTime();
                     if (withIn(stockEventDate , series.xAxis.visibleRange)) {
                         if (stockEvent.seriesIndexes.length > 0) {
@@ -82,8 +86,7 @@ export class StockEvents extends BaseTooltip {
 
     private creatEventGroup(stockEventElement: Element, series: Series, stockEvent: StockEventsSettingsModel,
                             i: number, textSize: Size): Element {
-        let symbolLocation: ChartLocation;
-        symbolLocation = this.findClosePoint(series, stockEvent);
+        const symbolLocation: ChartLocation = this.findClosePoint(series, stockEvent);
         if (!stockEvent.showOnSeries) {
             symbolLocation.y = series.yAxis.rect.y + series.yAxis.rect.height;
         }
@@ -93,12 +96,12 @@ export class StockEvents extends BaseTooltip {
     }
 
     private findClosePoint(series: Series, sEvent: StockEventsSettingsModel): ChartLocation {
-        let stockEventDate: number = this.stockChart.isBlazor ? Date.parse((sEvent.date).toString()) :
+        const stockEventDate: number = this.stockChart.isBlazor ? Date.parse((sEvent.date).toString()) :
                             this.dateParse(sEvent.date).getTime();
-        let closeIndex: number = this.getClosest(series, stockEventDate );
+        const closeIndex: number = this.getClosest(series, stockEventDate );
         let pointData: PointData;
         let point: Points;
-        let xPixel: number; let yPixel: number;
+        let yPixel: number;
         for (let k: number = 0; k < series.points.length; k++) {
             point = series.points[k];
             if (closeIndex === point.xValue && point.visible) {
@@ -109,7 +112,7 @@ export class StockEvents extends BaseTooltip {
                 }
             }
         }
-        xPixel = series.xAxis.rect.x + valueToCoefficient(pointData.point.xValue, series.xAxis) * series.xAxis.rect.width;
+        const xPixel: number = series.xAxis.rect.x + valueToCoefficient(pointData.point.xValue, series.xAxis) * series.xAxis.rect.width;
         yPixel = valueToCoefficient(pointData.point[sEvent.placeAt] as number, series.yAxis) * series.yAxis.rect.height;
         yPixel = (yPixel * -1) + (series.yAxis.rect.y + series.yAxis.rect.height);
         return new ChartLocation(xPixel, yPixel);
@@ -117,11 +120,11 @@ export class StockEvents extends BaseTooltip {
 
     private createStockElements(stockEventElement: Element, stockEve: StockEventsSettingsModel, series: Series, i: number,
                                 symbolLocation: ChartLocation, textSize: Size): void {
-        let result: Size = new Size(textSize.width > 20 ? textSize.width : 20, textSize.height > 20 ? textSize.height : 20);
+        const result: Size = new Size(textSize.width > 20 ? textSize.width : 20, textSize.height > 20 ? textSize.height : 20);
         let pathString: string; let pathOption: PathOption;
-        let lx: number = symbolLocation.x; let ly: number = symbolLocation.y;
-        let stockId: string = this.chartId + '_Series_' + series.index + '_StockEvents_' + i;
-        let border: BorderModel = stockEve.border;
+        const lx: number = symbolLocation.x; const ly: number = symbolLocation.y;
+        const stockId: string = this.chartId + '_Series_' + series.index + '_StockEvents_' + i;
+        const border: BorderModel = stockEve.border;
         switch (stockEve.type) {
             case 'Flag':
             case 'Circle':
@@ -216,21 +219,21 @@ export class StockEvents extends BaseTooltip {
     }
 
     public renderStockEventTooltip(targetId: string): void {
-        let seriesIndex: number = parseInt((targetId.split('_StockEvents_')[0]).split(this.chartId + '_Series_')[1], 10);
-        let pointIndex: number = parseInt(targetId.split('_StockEvents_')[1].replace(/\D+/g, ''), 10);
-        let updatedLocation: ChartLocation = this.symbolLocations[seriesIndex][pointIndex];
-        let pointLocation: ChartLocation = new ChartLocation(
+        const seriesIndex: number = parseInt((targetId.split('_StockEvents_')[0]).split(this.chartId + '_Series_')[1], 10);
+        const pointIndex: number = parseInt(targetId.split('_StockEvents_')[1].replace(/\D+/g, ''), 10);
+        const updatedLocation: ChartLocation = this.symbolLocations[seriesIndex][pointIndex];
+        const pointLocation: ChartLocation = new ChartLocation(
             updatedLocation.x,
             updatedLocation.y + this.stockChart.toolbarHeight + this.stockChart.titleSize.height);
         this.applyHighLights(pointIndex, seriesIndex);
         //title size and toolbar height is added location for placing tooltip
-        let svgElement: HTMLElement = this.getElement(this.chartId + '_StockEvents_Tooltip_svg');
-        let isTooltip: boolean = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0);
+        const svgElement: HTMLElement = this.getElement(this.chartId + '_StockEvents_Tooltip_svg');
+        const isTooltip: boolean = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0);
         if (!isTooltip) {
             if (getElement(this.chartId + '_StockEvents_Tooltip_svg')) {
                 remove(getElement(this.chartId + '_StockEvents_Tooltip'));
             }
-            let tooltipElement: Element = createElement('div', {
+            const tooltipElement: Element = createElement('div', {
                 id: this.chartId + '_StockEvents_Tooltip', className: 'ejSVGTooltip',
                 attrs: { 'style': 'pointer-events:none; position:absolute;z-index: 1' }
             });
@@ -255,13 +258,15 @@ export class StockEvents extends BaseTooltip {
 
     /**
      * Remove the stock event tooltip
-     * @param duration 
+     *
+     * @param {number} duration tooltip timeout duration
+     * @returns {void}
      */
     public removeStockEventTooltip(duration: number): void {
-        let tooltipElement: HTMLElement = this.getElement(this.chartId + '_StockEvents_Tooltip');
+        const tooltipElement: HTMLElement = this.getElement(this.chartId + '_StockEvents_Tooltip');
         this.stopAnimation();
         if (tooltipElement && this.stockEventTooltip) {
-            this.toolTipInterval = setTimeout(
+            this.toolTipInterval = +setTimeout(
                 (): void => {
                     this.stockEventTooltip.fadeOut();
                     this.removeHighLights();
@@ -294,13 +299,13 @@ export class StockEvents extends BaseTooltip {
             this.removeHighLights();
         }
         this.pointIndex = pointIndex; this.seriesIndex = seriesIndex;
-        let stockId: string = this.chartId + '_Series_' + seriesIndex + '_StockEvents_' + pointIndex;
+        const stockId: string = this.chartId + '_Series_' + seriesIndex + '_StockEvents_' + pointIndex;
         this.setOpacity(stockId + '_Shape', 0.5);
         this.setOpacity(stockId + '_Text', 0.5);
     }
 
     private removeHighLights(): void {
-        let stockId: string = this.chartId + '_Series_' + this.seriesIndex + '_StockEvents_' + this.pointIndex;
+        const stockId: string = this.chartId + '_Series_' + this.seriesIndex + '_StockEvents_' + this.pointIndex;
         this.setOpacity(stockId + '_Shape', 1);
         this.setOpacity(stockId + '_Text', 1);
     }
@@ -311,21 +316,32 @@ export class StockEvents extends BaseTooltip {
         }
     }
     /**
-     * @param value 
      * To convert the c# or javascript date formats into js format
      * refer chart control's dateTime processing.
+     *
+     * @param {Date | string} value date or string value
+     * @returns {Date} date format value
      */
     private dateParse(value: Date | string): Date {
-        let dateParser: Function = this.chart.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
-        let dateFormatter: Function = this.chart.intl.getDateFormat({ skeleton: 'full', type: 'dateTime' });
+        const dateParser: Function = this.chart.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
+        const dateFormatter: Function = this.chart.intl.getDateFormat({ skeleton: 'full', type: 'dateTime' });
         return new Date((Date.parse(dateParser(dateFormatter(new Date(DataUtil.parse.parseJson({ val: value }).val))))));
     }
 }
 
+// eslint-disable-next-line valid-jsdoc
+/**
+ * To initialthe array
+ *
+ * @param {number} numrows numrows
+ * @param {number} numcols numcols
+ * @param {ChartLocation} initial initial
+ * @returns {ChartLocation[][]} ChartLocation
+ */
 function initialArray(numrows: number, numcols: number, initial: ChartLocation): ChartLocation[][] {
-    let arr: ChartLocation[][] = [];
+    const arr: ChartLocation[][] = [];
     for (let i: number = 0; i < numrows; ++i) {
-        let columns: ChartLocation[] = [];
+        const columns: ChartLocation[] = [];
         for (let j: number = 0; j < numcols; ++j) {
             columns[j] = initial;
         }

@@ -47,12 +47,12 @@ export class ScheduleTouch {
             this.onTransitionEnd();
         }
         if (e.scrollDirection === 'Left' || e.scrollDirection === 'Right') {
-            let args: ActionEventArgs = { requestType: 'dateNavigate', cancel: false, event: e.originalEvent };
+            const args: ActionEventArgs = { requestType: 'dateNavigate', cancel: false, event: e.originalEvent };
             this.parent.trigger(events.actionBegin, args);
             if (args.cancel) {
                 return;
             }
-            let scrollDiv: HTMLElement = this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+            const scrollDiv: HTMLElement = this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
             if (scrollDiv && scrollDiv.scrollWidth > scrollDiv.clientWidth) {
                 return;
             } else {
@@ -70,7 +70,7 @@ export class ScheduleTouch {
                 };
                 this.setDimensions(this.nextPanel.element);
             }
-            let x: number = this.parent.enableRtl ? e.distanceX : - e.distanceX;
+            const x: number = this.parent.enableRtl ? e.distanceX : - e.distanceX;
             this.element.style.transform = 'translatex(' + (this.getTranslateX(this.element) + x) + 'px)';
         } else if (e.scrollDirection === this.touchRightDirection) {
             let prevWidth: number = 0;
@@ -83,7 +83,7 @@ export class ScheduleTouch {
                 this.setDimensions(this.previousPanel.element);
                 prevWidth = this.previousPanel.element.offsetWidth;
             }
-            let x: number = this.parent.enableRtl ? prevWidth - e.distanceX : -  prevWidth + e.distanceX;
+            const x: number = this.parent.enableRtl ? prevWidth - e.distanceX : -  prevWidth + e.distanceX;
             this.element.style.transform = 'translatex(' + (this.getTranslateX(this.element) + x) + 'px)';
         }
     }
@@ -91,12 +91,12 @@ export class ScheduleTouch {
     private swipeHandler(e: SwipeEventArgs): void {
         if (!this.isScrollTriggered || this.parent.uiStateValues.action) { return; }
         this.isScrollTriggered = false;
-        let swipeDate: Date = e.swipeDirection === 'Left' ?
+        const swipeDate: Date = e.swipeDirection === 'Left' ?
             this.parent.activeView.renderDates[0] : this.parent.activeView.renderDates.slice(-1)[0];
         if ((e.swipeDirection === 'Left' && swipeDate < this.parent.maxDate) ||
             (e.swipeDirection === 'Right' && swipeDate >= this.parent.minDate)) {
-            let time: number = Date.now() - this.timeStampStart;
-            let offsetDist: number = (e.distanceX * (Browser.isDevice ? 6 : 1.66));
+            const time: number = Date.now() - this.timeStampStart;
+            const offsetDist: number = (e.distanceX * (Browser.isDevice ? 6 : 1.66));
             if (offsetDist > time || (e.distanceX > (this.parent.element.offsetWidth / 2))) {
                 this.swapPanels(e.swipeDirection);
                 if (offsetDist > time && (e.distanceX > (this.parent.element.offsetWidth / 2))) {
@@ -106,7 +106,7 @@ export class ScheduleTouch {
             } else {
                 this.cancelSwipe();
             }
-            let args: ActionEventArgs = { requestType: 'dateNavigate', cancel: false, event: e.originalEvent };
+            const args: ActionEventArgs = { requestType: 'dateNavigate', cancel: false, event: e.originalEvent };
             this.parent.trigger(events.actionComplete, args);
         } else {
             this.cancelSwipe();
@@ -115,7 +115,7 @@ export class ScheduleTouch {
     }
 
     private tapHoldHandler(e: TapEventArgs): void {
-        let target: Element = closest((e.originalEvent.target as Element), '.' + cls.APPOINTMENT_CLASS);
+        const target: Element = closest((e.originalEvent.target as Element), '.' + cls.APPOINTMENT_CLASS);
         if (!isNullOrUndefined(target) && this.parent.isAdaptive) {
             this.parent.quickPopup.tapHoldEventPopup(e.originalEvent);
             return;
@@ -142,19 +142,20 @@ export class ScheduleTouch {
 
     private swapPanels(direction: string): void {
         if (direction === this.touchLeftDirection) {
-            let temp: LayoutData = this.nextPanel;
+            const temp: LayoutData = this.nextPanel;
             this.nextPanel = this.currentPanel;
             this.currentPanel = temp;
         } else {
-            let temp: LayoutData = this.previousPanel;
+            const temp: LayoutData = this.previousPanel;
             this.previousPanel = this.currentPanel;
             this.currentPanel = temp;
         }
     }
 
     private confirmSwipe(swipeDirection: string): void {
-        let previousDate: Date = swipeDirection === this.touchLeftDirection ? this.nextPanel.selectedDate : this.previousPanel.selectedDate;
-        let args: NavigatingEventArgs = {
+        const previousDate: Date = swipeDirection === this.touchLeftDirection ?
+            this.nextPanel.selectedDate : this.previousPanel.selectedDate;
+        const args: NavigatingEventArgs = {
             action: 'date', cancel: false, previousDate: previousDate, currentDate: this.currentPanel.selectedDate
         };
         this.parent.trigger(events.navigating, args, (navArgs: NavigatingEventArgs) => {
@@ -188,7 +189,7 @@ export class ScheduleTouch {
         this.parent.activeView.getRenderDates();
         this.parent.activeView.generateColumnLevels();
         addClass([this.element], cls.TRANSLATE_CLASS);
-        let prevWidth: number = this.previousPanel ? this.previousPanel.element.offsetWidth : 0;
+        const prevWidth: number = this.previousPanel ? this.previousPanel.element.offsetWidth : 0;
         this.element.style.transform = 'translatex(' + (this.parent.enableRtl ? prevWidth : -this.currentPanel.element.offsetLeft) + 'px)';
     }
 
@@ -213,7 +214,7 @@ export class ScheduleTouch {
     }
 
     private getTranslateX(element: HTMLElement): number {
-        let style: CSSStyleDeclaration = window.getComputedStyle(element);
+        const style: CSSStyleDeclaration = window.getComputedStyle(element);
         return new WebKitCSSMatrix(style.webkitTransform).m41;
     }
 
@@ -230,12 +231,11 @@ export class ScheduleTouch {
         util.removeChildren(this.element);
         removeClass([this.element], cls.TRANSLATE_CLASS);
     }
-    /**
-     * @hidden
-     */
+
     public destroy(): void {
         this.touchObj.destroy();
         EventHandler.remove(this.element, 'transitionend', this.onTransitionEnd);
         this.resetValues();
     }
+
 }

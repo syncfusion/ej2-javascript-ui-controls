@@ -2273,6 +2273,10 @@
     .e-de-outline-rtl {
       width: 173px;
     }
+
+    .e-de-rp-header {
+      font-size: 16px;
+    }
   }
 
   .e-de-restrict-format {
@@ -2418,7 +2422,9 @@
   }
 
   .e-de-user-add-btn {
-    background: $de-style-toggle-btn-color;
+    @if($skin-name != 'bootstrap4'){
+      background: $de-style-toggle-btn-color;
+    }
     border-radius: 2px;
     width: 74px;
   }

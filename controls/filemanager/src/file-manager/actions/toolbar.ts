@@ -31,7 +31,10 @@ export class Toolbar {
 
     /**
      * Constructor for the Toolbar module
+     *
      * @hidden
+     * @param {IFileManager} parent - specifies the parent element.
+     * @private
      */
     constructor(parent?: IFileManager) {
         this.parent = parent;
@@ -41,7 +44,7 @@ export class Toolbar {
 
     private render(): void {
         this.items = this.toolbarItemData(this.getItems(this.parent.toolbarSettings.items.map((item: string) => item.trim())));
-        let eventArgs: ToolbarCreateEventArgs = { items: this.items };
+        const eventArgs: ToolbarCreateEventArgs = { items: this.items };
         this.parent.trigger('toolbarCreate', eventArgs, (toolbarCreateArgs: ToolbarCreateEventArgs) => {
             this.items = toolbarCreateArgs.items;
             this.toolbarObj = new BaseToolbar({
@@ -58,7 +61,7 @@ export class Toolbar {
     }
 
     public getItemIndex(item: string): number {
-        let itemId: string = this.getId(item);
+        const itemId: string = this.getId(item);
         for (let i: number = 0; i < this.items.length; i++) {
             if (this.items[i].id === itemId) {
                 return i;
@@ -68,14 +71,15 @@ export class Toolbar {
     }
 
     private getItems(items: string[]): string[] {
-        let currItems: string[] = items.slice();
+        const currItems: string[] = items.slice();
         if (this.parent.isDevice && this.parent.allowMultiSelection) { currItems.push('SelectAll'); }
         return currItems;
     }
     /* istanbul ignore next */
     private onClicked(args: ClickEventArgs): void {
         if (isNOU(args.item) || !args.item.id) { return; }
-        let tool: string = args.item.id.substr((this.parent.element.id + '_tb_').length);
+        const tool: string = args.item.id.substr((this.parent.element.id + '_tb_').length);
+        // eslint-disable-next-line
         let details: Object[];
         if (tool === 'refresh' || tool === 'newfolder' || tool === 'upload') {
             details = [getPathObject(this.parent)];
@@ -84,69 +88,71 @@ export class Toolbar {
             this.parent.notify(events.selectedData, {});
             details = this.parent.itemData;
         }
-        let eventArgs: ToolbarClickEventArgs = { cancel: false, fileDetails: details, item: args.item };
+        const eventArgs: ToolbarClickEventArgs = { cancel: false, fileDetails: details, item: args.item };
         this.parent.trigger('toolbarClick', eventArgs, (toolbarClickArgs: ToolbarClickEventArgs) => {
+            let sItems: string[];
+            let target: Element;
             if (!toolbarClickArgs.cancel) {
                 switch (tool) {
-                    case 'sortby':
-                        let target: Element = closest((args.originalEvent.target as Element), '.' + CLS.TB_ITEM);
-                        if (target && target.classList.contains('e-toolbar-popup')) {
-                            args.cancel = true;
+                case 'sortby':
+                    target = closest((args.originalEvent.target as Element), '.' + CLS.TB_ITEM);
+                    if (target && target.classList.contains('e-toolbar-popup')) {
+                        args.cancel = true;
+                    }
+                    break;
+                case 'newfolder':
+                    createNewFolder(this.parent);
+                    break;
+                case 'cut':
+                    cutFiles(this.parent);
+                    break;
+                case 'copy':
+                    copyFiles(this.parent);
+                    break;
+                case 'delete':
+                    for (let i: number = 0; i < details.length; i++) {
+                        if (!hasEditAccess(details[i])) {
+                            createDeniedDialog(this.parent, details[i], events.permissionEdit);
+                            return;
                         }
-                        break;
-                    case 'newfolder':
-                        createNewFolder(this.parent);
-                        break;
-                    case 'cut':
-                        cutFiles(this.parent);
-                        break;
-                    case 'copy':
-                        copyFiles(this.parent);
-                        break;
-                    case 'delete':
-                        for (let i: number = 0; i < details.length; i++) {
-                            if (!hasEditAccess(details[i])) {
-                                createDeniedDialog(this.parent, details[i], events.permissionEdit);
-                                return;
-                            }
-                        }
-                        createDialog(this.parent, 'Delete');
-                        break;
-                    case 'details':
-                        this.parent.notify(events.detailsInit, {});
-                        let sItems: string[] = this.parent.selectedItems;
-                        if (this.parent.activeModule === 'navigationpane') {
-                            sItems = [];
-                        }
-                        GetDetails(this.parent, sItems, this.parent.path, 'details');
-                        break;
-                    case 'paste':
-                        this.parent.folderPath = '';
-                        pasteHandler(this.parent);
-                        break;
-                    case 'refresh':
-                        refresh(this.parent);
-                        break;
-                    case 'download':
-                        doDownload(this.parent);
-                        break;
-                    case 'rename':
-                        if (!hasEditAccess(details[0])) {
-                            createDeniedDialog(this.parent, details[0], events.permissionEdit);
-                        } else {
-                            this.parent.notify(events.renameInit, {});
-                            createDialog(this.parent, 'Rename');
-                        }
-                        break;
-                    case 'upload':
-                        uploadItem(this.parent);
-                        break;
-                    case 'selectall':
-                        this.parent.notify(events.selectAllInit, {});
-                        break;
-                    case 'selection':
-                        this.parent.notify(events.clearAllInit, {});
-                        break;
+                    }
+                    createDialog(this.parent, 'Delete');
+                    break;
+                case 'details':
+                    this.parent.notify(events.detailsInit, {});
+                    sItems = this.parent.selectedItems;
+                    if (this.parent.activeModule === 'navigationpane') {
+                        sItems = [];
+                    }
+                    GetDetails(this.parent, sItems, this.parent.path, 'details');
+                    break;
+                case 'paste':
+                    this.parent.folderPath = '';
+                    pasteHandler(this.parent);
+                    break;
+                case 'refresh':
+                    refresh(this.parent);
+                    break;
+                case 'download':
+                    doDownload(this.parent);
+                    break;
+                case 'rename':
+                    if (!hasEditAccess(details[0])) {
+                        createDeniedDialog(this.parent, details[0], events.permissionEdit);
+                    } else {
+                        this.parent.notify(events.renameInit, {});
+                        createDialog(this.parent, 'Rename');
+                    }
+                    break;
+                case 'upload':
+                    uploadItem(this.parent);
+                    break;
+                case 'selectall':
+                    this.parent.notify(events.selectAllInit, {});
+                    break;
+                case 'selection':
+                    this.parent.notify(events.clearAllInit, {});
+                    break;
                 }
             }
         });
@@ -154,17 +160,17 @@ export class Toolbar {
 
     private toolbarCreateHandler(): void {
         if (!isNOU(select('#' + this.getId('SortBy'), this.parent.element))) {
-            let items: SplitButtonItemModel[] = [
+            const items: SplitButtonItemModel[] = [
                 { id: this.getPupupId('name'), text: getLocaleText(this.parent, 'Name'), iconCss: CLS.TB_OPTION_DOT },
                 { id: this.getPupupId('size'), text: getLocaleText(this.parent, 'Size') },
                 { id: this.getPupupId('date'), text: getLocaleText(this.parent, 'DateModified') },
                 { separator: true },
                 { id: this.getPupupId('ascending'), text: getLocaleText(this.parent, 'Ascending'),
-                 iconCss: this.parent.sortOrder === 'Ascending' ? CLS.TB_OPTION_TICK : '' },
+                    iconCss: this.parent.sortOrder === 'Ascending' ? CLS.TB_OPTION_TICK : '' },
                 { id: this.getPupupId('descending'), text: getLocaleText(this.parent, 'Descending'),
-                 iconCss: this.parent.sortOrder === 'Descending' ? CLS.TB_OPTION_TICK : ''  },
+                    iconCss: this.parent.sortOrder === 'Descending' ? CLS.TB_OPTION_TICK : ''  },
                 { id: this.getPupupId('none'), text: getLocaleText(this.parent, 'None'),
-                 iconCss: this.parent.sortOrder === 'None' ? CLS.TB_OPTION_TICK : ''  }
+                    iconCss: this.parent.sortOrder === 'None' ? CLS.TB_OPTION_TICK : ''  }
             ];
             this.buttonObj = new DropDownButton({
                 items: items, cssClass: getCssClass(this.parent, CLS.ROOT_POPUP),
@@ -176,9 +182,9 @@ export class Toolbar {
             this.buttonObj.appendTo('#' + this.getId('SortBy'));
         }
         if (!isNOU(select('#' + this.getId('View'), this.parent.element))) {
-            let gridSpan: string = '<span class="' + CLS.ICON_GRID + ' ' + CLS.MENU_ICON + '"></span>';
-            let largeIconSpan: string = '<span class="' + CLS.ICON_LARGE + ' ' + CLS.MENU_ICON + '"></span>';
-            let layoutItems: SplitButtonItemModel[] = [
+            const gridSpan: string = '<span class="' + CLS.ICON_GRID + ' ' + CLS.MENU_ICON + '"></span>';
+            const largeIconSpan: string = '<span class="' + CLS.ICON_LARGE + ' ' + CLS.MENU_ICON + '"></span>';
+            const layoutItems: SplitButtonItemModel[] = [
                 {
                     id: this.getPupupId('large'), text: largeIconSpan + getLocaleText(this.parent, 'View-LargeIcons'),
                     iconCss: this.parent.view === 'Details' ? '' : CLS.TB_OPTION_TICK
@@ -202,7 +208,7 @@ export class Toolbar {
         this.hideItems(this.default, true);
         this.hideStatus();
 
-        let btnElement: HTMLInputElement[] = (selectAll('.e-btn', this.toolbarObj.element) as HTMLInputElement[]);
+        const btnElement: HTMLInputElement[] = (selectAll('.e-btn', this.toolbarObj.element) as HTMLInputElement[]);
         for (let btnCount: number = 0; btnCount < btnElement.length; btnCount++) {
             /* istanbul ignore next */
             btnElement[btnCount].onkeydown = (e: KeyboardEvent) => {
@@ -221,7 +227,7 @@ export class Toolbar {
 
     private updateSortByButton(): void {
         if (this.buttonObj) {
-            let items: SplitButtonItemModel[] = this.buttonObj.items;
+            const items: SplitButtonItemModel[] = this.buttonObj.items;
             for (let itemCount: number = 0; itemCount < items.length; itemCount++) {
                 if (items[itemCount].id === this.getPupupId('name')) {
                     items[itemCount].iconCss = this.parent.sortBy === 'name' ? CLS.TB_OPTION_DOT : '';
@@ -257,80 +263,80 @@ export class Toolbar {
     }
 
     private toolbarItemData(data: string[]): ItemModel[] {
-        let items: ItemModel[] = [];
+        const items: ItemModel[] = [];
         let mode: DisplayMode = 'Both';
         if (this.parent.isMobile) {
             mode = 'Overflow';
         }
         for (let i: number = 0; i < data.length; i++) {
             let item: ItemModel;
-            let itemId: string = this.getId(data[i]);
-            let itemText: string = getLocaleText(this.parent, data[i]);
-            let itemTooltip: string = getLocaleText(this.parent, 'Tooltip-' + data[i]);
+            const itemId: string = this.getId(data[i]);
+            const itemText: string = getLocaleText(this.parent, data[i]);
+            const itemTooltip: string = getLocaleText(this.parent, 'Tooltip-' + data[i]);
+            const spanElement: string = '<span class="e-tbar-btn-text e-tbar-ddb-text">' + itemText + '</span>';
             switch (data[i]) {
-                case '|':
-                    item = { type: 'Separator' };
-                    break;
-                case 'Upload':
-                    item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_UPLOAD, showTextOn: mode };
-                    break;
-                case 'SortBy':
-                    let spanElement: string = '<span class="e-tbar-btn-text e-tbar-ddb-text">' + itemText + '</span>';
-                    item = {
-                        id: itemId, tooltipText: itemTooltip,
-                        template: '<button id="' + itemId + '" class="e-tbar-btn e-tbtn-txt" tabindex="-1">' + spanElement + '</button>',
-                    };
-                    break;
-                case 'Refresh':
-                    item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_REFRESH, showTextOn: mode };
-                    break;
-                case 'Selection':
-                    item = {
-                        id: itemId, text: itemText, tooltipText: itemTooltip, suffixIcon: CLS.ICON_CLEAR, overflow: 'Show',
-                        align: 'Right'
-                    };
-                    break;
-                case 'View':
-                    item = {
-                        id: itemId, tooltipText: itemTooltip, prefixIcon: this.parent.view === 'Details' ? CLS.ICON_GRID : CLS.ICON_LARGE,
-                        overflow: 'Show', align: 'Right', text: itemText, showTextOn: 'Overflow',
-                        template: '<button id="' + itemId + '" class="e-tbar-btn e-tbtn-txt" tabindex="-1" aria-label=' +
-                            getLocaleText(this.parent, 'View') + '></button>'
-                    };
-                    break;
-                case 'Details':
-                    item = {
-                        id: itemId, tooltipText: itemTooltip, prefixIcon: CLS.ICON_DETAILS, overflow: 'Show', align: 'Right',
-                        text: itemText, showTextOn: 'Overflow'
-                    };
-                    break;
-                case 'NewFolder':
-                    item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_NEWFOLDER, showTextOn: mode };
-                    break;
-                case 'Cut':
-                    item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_CUT, showTextOn: mode };
-                    break;
-                case 'Copy':
-                    item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_COPY, showTextOn: mode };
-                    break;
-                case 'Paste':
-                    item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_PASTE, showTextOn: mode };
-                    break;
-                case 'Delete':
-                    item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_DELETE, showTextOn: mode };
-                    break;
-                case 'Rename':
-                    item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_RENAME, showTextOn: mode };
-                    break;
-                case 'Download':
-                    item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_DOWNLOAD, showTextOn: mode };
-                    break;
-                case 'SelectAll':
-                    item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_SELECTALL, showTextOn: mode };
-                    break;
-                default:
-                    item = { id: itemId, text: itemText, tooltipText: itemTooltip };
-                    break;
+            case '|':
+                item = { type: 'Separator' };
+                break;
+            case 'Upload':
+                item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_UPLOAD, showTextOn: mode };
+                break;
+            case 'SortBy':
+                item = {
+                    id: itemId, tooltipText: itemTooltip,
+                    template: '<button id="' + itemId + '" class="e-tbar-btn e-tbtn-txt" tabindex="-1">' + spanElement + '</button>'
+                };
+                break;
+            case 'Refresh':
+                item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_REFRESH, showTextOn: mode };
+                break;
+            case 'Selection':
+                item = {
+                    id: itemId, text: itemText, tooltipText: itemTooltip, suffixIcon: CLS.ICON_CLEAR, overflow: 'Show',
+                    align: 'Right'
+                };
+                break;
+            case 'View':
+                item = {
+                    id: itemId, tooltipText: itemTooltip, prefixIcon: this.parent.view === 'Details' ? CLS.ICON_GRID : CLS.ICON_LARGE,
+                    overflow: 'Show', align: 'Right', text: itemText, showTextOn: 'Overflow',
+                    template: '<button id="' + itemId + '" class="e-tbar-btn e-tbtn-txt" tabindex="-1" aria-label=' +
+                        getLocaleText(this.parent, 'View') + '></button>'
+                };
+                break;
+            case 'Details':
+                item = {
+                    id: itemId, tooltipText: itemTooltip, prefixIcon: CLS.ICON_DETAILS, overflow: 'Show', align: 'Right',
+                    text: itemText, showTextOn: 'Overflow'
+                };
+                break;
+            case 'NewFolder':
+                item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_NEWFOLDER, showTextOn: mode };
+                break;
+            case 'Cut':
+                item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_CUT, showTextOn: mode };
+                break;
+            case 'Copy':
+                item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_COPY, showTextOn: mode };
+                break;
+            case 'Paste':
+                item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_PASTE, showTextOn: mode };
+                break;
+            case 'Delete':
+                item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_DELETE, showTextOn: mode };
+                break;
+            case 'Rename':
+                item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_RENAME, showTextOn: mode };
+                break;
+            case 'Download':
+                item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_DOWNLOAD, showTextOn: mode };
+                break;
+            case 'SelectAll':
+                item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_SELECTALL, showTextOn: mode };
+                break;
+            default:
+                item = { id: itemId, text: itemText, tooltipText: itemTooltip };
+                break;
             }
             items.push(item);
         }
@@ -354,7 +360,7 @@ export class Toolbar {
     private reRenderToolbar(e: NotifyArgs): void {
         if (e.newProp.toolbarSettings.items !== undefined) {
             this.items = this.toolbarItemData(this.getItems(e.newProp.toolbarSettings.items.map((item: string) => item.trim())));
-            let eventArgs: ToolbarCreateEventArgs = { items: this.items };
+            const eventArgs: ToolbarCreateEventArgs = { items: this.items };
             this.parent.trigger('toolbarCreate', eventArgs, (toolbarCreateArgs: ToolbarCreateEventArgs) => {
                 if (this.buttonObj) { this.buttonObj.destroy(); }
                 if (this.layoutBtnObj) { this.layoutBtnObj.destroy(); }
@@ -376,7 +382,7 @@ export class Toolbar {
             this.hideItems(this.multiple, false);
             this.hideItems(this.selection, true);
         }
-        let ele: Element = select('#' + this.getId('Selection'), this.toolbarObj.element);
+        const ele: Element = select('#' + this.getId('Selection'), this.toolbarObj.element);
         if (this.parent.selectedItems.length > 0 && ele) {
             let txt: string;
             if (this.parent.selectedItems.length === 1) {
@@ -391,13 +397,13 @@ export class Toolbar {
 
     private hideItems(tools: string[], toHide: boolean): void {
         for (let i: number = 0; i < tools.length; i++) {
-            let ele: Element = select('#' + this.getId(tools[i]), this.parent.element);
+            const ele: Element = select('#' + this.getId(tools[i]), this.parent.element);
             if (ele) { this.toolbarObj.hideItem(ele.parentElement, toHide); }
         }
     }
 
     private hideStatus(): void {
-        let ele: Element = select('#' + this.getId('Selection'), this.toolbarObj.element);
+        const ele: Element = select('#' + this.getId('Selection'), this.toolbarObj.element);
         if (ele) { this.toolbarObj.hideItem(ele.parentElement, true); }
     }
 
@@ -412,7 +418,7 @@ export class Toolbar {
     private onLayoutChange(): void {
         if (this.layoutBtnObj) {
             this.layoutBtnObj.iconCss = this.parent.view === 'Details' ? CLS.ICON_GRID : CLS.ICON_LARGE;
-            let items: SplitButtonItemModel[] = this.layoutBtnObj.items;
+            const items: SplitButtonItemModel[] = this.layoutBtnObj.items;
             for (let itemCount: number = 0; itemCount < items.length; itemCount++) {
                 if (items[itemCount].id === this.getPupupId('large')) {
                     items[itemCount].iconCss = this.parent.view === 'LargeIcons' ? CLS.TB_OPTION_TICK : '';
@@ -435,6 +441,8 @@ export class Toolbar {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} - returns module name.
      * @private
      */
     private getModuleName(): string {
@@ -446,23 +454,23 @@ export class Toolbar {
             /* istanbul ignore next */
             return;
         }
-        for (let prop of Object.keys(e.newProp)) {
+        for (const prop of Object.keys(e.newProp)) {
             switch (prop) {
-                case 'cssClass':
-                    if (this.buttonObj) {
-                        this.buttonObj.cssClass = getCssClass(this.parent, CLS.ROOT_POPUP);
-                    }
-                    if (this.layoutBtnObj) {
-                        this.layoutBtnObj.cssClass = getCssClass(this.parent, 'e-caret-hide ' + CLS.ROOT_POPUP);
-                    }
-                    break;
-                case 'height':
-                case 'width':
-                    this.toolbarObj.refreshOverflow();
-                    break;
-                case 'toolbarSettings':
-                    this.reRenderToolbar(e);
-                    break;
+            case 'cssClass':
+                if (this.buttonObj) {
+                    this.buttonObj.cssClass = getCssClass(this.parent, CLS.ROOT_POPUP);
+                }
+                if (this.layoutBtnObj) {
+                    this.layoutBtnObj.cssClass = getCssClass(this.parent, 'e-caret-hide ' + CLS.ROOT_POPUP);
+                }
+                break;
+            case 'height':
+            case 'width':
+                this.toolbarObj.refreshOverflow();
+                break;
+            case 'toolbarSettings':
+                this.reRenderToolbar(e);
+                break;
             }
         }
     }
@@ -478,7 +486,7 @@ export class Toolbar {
 
     public enableItems(items: string[], isEnable?: boolean): void {
         for (let i: number = 0; i < items.length; i++) {
-            let ele: Element = select('#' + this.getId(items[i]), this.parent.element);
+            const ele: Element = select('#' + this.getId(items[i]), this.parent.element);
             if (ele) {
                 this.toolbarObj.enableItems(ele.parentElement, isEnable);
             }

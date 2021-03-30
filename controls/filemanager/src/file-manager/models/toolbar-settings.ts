@@ -9,6 +9,7 @@ export const toolbarItems: string[] = ['NewFolder', 'Upload', 'Cut', 'Copy', 'Pa
 export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
     /**
      * An array of string or object that is used to configure the toolbar items.
+     *
      * @default toolbarItems
      */
     @Property(toolbarItems)
@@ -16,6 +17,7 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
 
     /**
      * Enables or disables the toolbar rendering in the file manager component.
+     *
      * @default true
      */
     @Property(true)

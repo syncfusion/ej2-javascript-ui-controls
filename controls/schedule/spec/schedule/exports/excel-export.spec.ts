@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Excel export spec
  */
@@ -12,10 +13,9 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, 
 
 describe('excel export', () => {
     beforeAll(() => {
-        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
             (this as any).skip(); //Skips test (in Chai)
             return;
@@ -24,8 +24,8 @@ describe('excel export', () => {
 
     describe('Exports properties check', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let events: Object[] = [{
+        beforeAll((done: DoneFn) => {
+            const events: Record<string, any>[] = [{
                 Id: 1,
                 Subject: 'Meteor Showers in 2018',
                 StartTime: new Date(2018, 1, 14, 13, 0),
@@ -44,32 +44,32 @@ describe('excel export', () => {
                 EndTime: new Date(2018, 1, 15, 11, 0),
                 CategoryColor: '#f57f17'
             }];
-            let options: ScheduleModel = { selectedDate: new Date(2018, 1, 15) };
+            const options: ScheduleModel = { selectedDate: new Date(2018, 1, 15) };
             schObj = createSchedule(options, events, done);
         });
         afterAll(() => {
             destroy(schObj);
         });
 
-        it('export check', (done: Function) => {
+        it('export check', (done: DoneFn) => {
             schObj.exportToExcel({});
             setTimeout(() => done(), 50);
         });
 
-        it('export check with filename', (done: Function) => {
-            let exportValues: ExportOptions = { fileName: 'hello' };
+        it('export check with filename', (done: DoneFn) => {
+            const exportValues: ExportOptions = { fileName: 'hello' };
             schObj.exportToExcel(exportValues);
             setTimeout(() => done(), 50);
         });
 
-        it('export check with fields', (done: Function) => {
-            let exportValues: ExportOptions = { fields: ['Id', 'Subject', 'Location'] };
+        it('export check with fields', (done: DoneFn) => {
+            const exportValues: ExportOptions = { fields: ['Id', 'Subject', 'Location'] };
             schObj.exportToExcel(exportValues);
             setTimeout(() => done(), 50);
         });
 
-        it('export check with data', (done: Function) => {
-            let exportValues: ExportOptions = {
+        it('export check with data', (done: DoneFn) => {
+            const exportValues: ExportOptions = {
                 customData: [{
                     Id: 1,
                     Subject: 'Explosion of Betelgeuse Star',
@@ -90,20 +90,20 @@ describe('excel export', () => {
             setTimeout(() => done(), 50);
         });
 
-        it('export check with format', (done: Function) => {
-            let exportValues: ExportOptions = { exportType: 'xlsx' };
+        it('export check with format', (done: DoneFn) => {
+            const exportValues: ExportOptions = { exportType: 'xlsx' };
             schObj.exportToExcel(exportValues);
             setTimeout(() => done(), 50);
         });
 
-        it('export check with ignore occurrences', (done: Function) => {
-            let exportValues: ExportOptions = { includeOccurrences: true };
+        it('export check with ignore occurrences', (done: DoneFn) => {
+            const exportValues: ExportOptions = { includeOccurrences: true };
             schObj.exportToExcel(exportValues);
             setTimeout(() => done(), 50);
         });
 
-        it('export check with data and ignore occurrences', (done: Function) => {
-            let exportValues: ExportOptions = {
+        it('export check with data and ignore occurrences', (done: DoneFn) => {
+            const exportValues: ExportOptions = {
                 customData: [{
                     Id: 1,
                     Subject: 'Explosion of Betelgeuse Star',
@@ -126,30 +126,24 @@ describe('excel export', () => {
         });
 
         it('Excel schedule Check style', () => {
-            // tslint:disable:no-any
             (<any>schObj.excelExportModule).theme = {
                 header: { bold: false, fontSize: 15 },
                 caption: { bold: true, fontSize: 10 },
                 record: { fontName: 'TimesRoman', fontColor: '#FFFFFF', fontSize: 12 }
             };
-            let style: any = (<any>schObj.excelExportModule).theme;
+            const style: any = (<any>schObj.excelExportModule).theme;
             expect(style.caption.bold).toBeTruthy();
             expect(style.caption.fontSize).toBe(10);
             expect(style.record.fontName).toBe('TimesRoman');
             expect(style.record.fontColor).toBe('#FFFFFF');
-            // tslint:enable:no-any
         });
     });
 
     it('memory leak', () => {
         profile.sample();
-        // tslint:disable:no-any
-        let average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
+        const average: number = inMB(profile.averageChange);
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        const memory: number = inMB(getMemoryProfile());
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        // tslint:enable:no-any
     });
 });

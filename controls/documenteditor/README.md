@@ -1,4 +1,4 @@
-[![npm](http://ej2.syncfusion.com/github-badges?package=@syncfusion/ej2-documenteditor)](https://www.npmjs.com/package/@syncfusion/ej2-documenteditor)&nbsp;&nbsp;[![coverage](http://ej2.syncfusion.com/badges/ej2-documenteditor/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-documenteditor)
+[![coverage](http://ej2.syncfusion.com/badges/ej2-documenteditor/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-documenteditor)
 
 # ej2-documenteditor
 

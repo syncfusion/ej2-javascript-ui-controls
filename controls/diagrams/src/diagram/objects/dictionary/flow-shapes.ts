@@ -1,10 +1,15 @@
 /**
- * FlowShapeDictionary defines the shape of the built-in flow shapes
+ * FlowShapeDictionary defines the shape of the built-in flow shapes \
+ *
+ * @returns { string }     FlowShapeDictionary defines the shape of the built-in flow shapes .\
+ * @param {string} shape - provide the element value.
+ *
+ * @private
  */
-/** @private */
 export function getFlowShape(shape: string): string {
     return flowShapes[shape.toString()];
 }
+/* eslint-disable */
 let flowShapes: {} = {
     // Process,
     'Process': 'M419.511,76.687L359.511,76.687L359.511,43.086L419.511,43.086z',
@@ -86,3 +91,5 @@ let flowShapes: {} = {
     // StoredData
     'StoredData': 'M 5.55 0L 50 0A 1.5,30 0 0,1 50,0A 5.555,25 0 0,0 50,50A 1.5,30 0 0,1 50,50L 5.555 50A 5.55,25 0 0,1 5.555,0Z',
 };
+
+/* eslint-enable */

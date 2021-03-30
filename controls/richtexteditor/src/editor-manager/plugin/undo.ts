@@ -17,28 +17,30 @@ export class UndoRedoManager {
     public undoRedoStack: IHtmlUndoRedoData[] = [];
     public undoRedoSteps: number;
     public undoRedoTimer: number;
-    constructor(parent?: EditorManager, options?: { [key: string]: number }) {
+    public constructor(parent?: EditorManager, options?: { [key: string]: number }) {
         this.parent = parent;
         this.undoRedoSteps = !isNullOrUndefined(options) ? options.undoRedoSteps : 30;
         this.undoRedoTimer = !isNullOrUndefined(options) ? options.undoRedoTimer : 300;
         this.addEventListener();
     }
     protected addEventListener(): void {
-        let debounceListener: Function = debounce(this.keyUp, this.undoRedoTimer);
+        // eslint-disable-next-line
+        const debounceListener: Function = debounce(this.keyUp, this.undoRedoTimer);
         this.parent.observer.on(EVENTS.KEY_UP_HANDLER, debounceListener, this);
         this.parent.observer.on(EVENTS.KEY_DOWN_HANDLER, this.keyDown, this);
         this.parent.observer.on(EVENTS.ACTION, this.onAction, this);
         this.parent.observer.on(EVENTS.MODEL_CHANGED_PLUGIN, this.onPropertyChanged, this);
     }
+    // eslint-disable-next-line
     private onPropertyChanged(props: { [key: string]: Object }): void {
-        for (let prop of Object.keys(props.newProp)) {
+        for (const prop of Object.keys(props.newProp)) {
             switch (prop) {
-                case 'undoRedoSteps':
-                    this.undoRedoSteps = (props.newProp as { [key: string]: number }).undoRedoSteps;
-                    break;
-                case 'undoRedoTimer':
-                    this.undoRedoTimer = (props.newProp as { [key: string]: number }).undoRedoTimer;
-                    break;
+            case 'undoRedoSteps':
+                this.undoRedoSteps = (props.newProp as { [key: string]: number }).undoRedoSteps;
+                break;
+            case 'undoRedoTimer':
+                this.undoRedoTimer = (props.newProp as { [key: string]: number }).undoRedoTimer;
+                break;
             }
         }
     }
@@ -50,6 +52,9 @@ export class UndoRedoManager {
 
     /**
      * onAction method
+     *
+     * @param {IHtmlSubCommands} e - specifies the sub command
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -62,8 +67,9 @@ export class UndoRedoManager {
     }
     /**
      * Destroys the ToolBar.
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -71,17 +77,18 @@ export class UndoRedoManager {
         this.removeEventListener();
     }
     private keyDown(e: IHtmlKeyboardEvent): void {
-        let event: KeyboardEvent = e.event as KeyboardEvent;
-        let proxy: this = this;
+        const event: KeyboardEvent = e.event as KeyboardEvent;
+        // eslint-disable-next-line
+        const proxy: this = this;
         switch ((event as KeyboardEventArgs).action) {
-            case 'undo':
-                event.preventDefault();
-                proxy.undo(e);
-                break;
-            case 'redo':
-                event.preventDefault();
-                proxy.redo(e);
-                break;
+        case 'undo':
+            event.preventDefault();
+            proxy.undo(e);
+            break;
+        case 'redo':
+            event.preventDefault();
+            proxy.redo(e);
+            break;
         }
     }
     private keyUp(e: IHtmlKeyboardEvent): void {
@@ -91,16 +98,19 @@ export class UndoRedoManager {
     }
     /**
      * RTE collection stored html format.
-     * @method saveData
-     * @return {void}
+     *
+     * @function saveData
+     * @param {KeyboardEvent} e - specifies the keyboard event
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public saveData(e?: KeyboardEvent | MouseEvent | IUndoCallBack): void {
-        let range: Range = new NodeSelection().getRange(this.parent.currentDocument);
-        let save: NodeSelection = new NodeSelection().save(range, this.parent.currentDocument);
-        let htmlText: string = this.parent.editableElement.innerHTML;
-        let changEle: { [key: string]: string | Object } = { text: htmlText, range: save };
+        const range: Range = new NodeSelection().getRange(this.parent.currentDocument);
+        const save: NodeSelection = new NodeSelection().save(range, this.parent.currentDocument);
+        const htmlText: string = this.parent.editableElement.innerHTML;
+        // eslint-disable-next-line
+        const changEle: { [key: string]: string | Object} = { text: htmlText, range: save };
         if (this.undoRedoStack.length >= this.steps) {
             this.undoRedoStack = this.undoRedoStack.slice(0, this.steps + 1);
         }
@@ -123,18 +133,23 @@ export class UndoRedoManager {
     }
     /**
      * Undo the editable text.
-     * @method undo
-     * @return {void}
+     *
+     * @function undo
+     * @param {IHtmlSubCommands} e - specifies the sub commands
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public undo(e?: IHtmlSubCommands | IHtmlKeyboardEvent): void {
         if (this.steps > 0) {
-            let range: string | object = this.undoRedoStack[this.steps - 1].range;
-            let removedContent: string = this.undoRedoStack[this.steps - 1].text as string;
+            // eslint-disable-next-line
+            const range: string | object = this.undoRedoStack[this.steps - 1].range;
+            const removedContent: string = this.undoRedoStack[this.steps - 1].text as string;
             this.parent.editableElement.innerHTML = removedContent;
             (this.parent.editableElement as HTMLElement).focus();
-            if (isIDevice()) { setEditFrameFocus(this.parent.editableElement, (e as IHtmlSubCommands).selector); }
+            if (isIDevice()) {
+                setEditFrameFocus(this.parent.editableElement, (e as IHtmlSubCommands).selector);
+            }
             (range as NodeSelection).restore();
             this.steps--;
             if (e.callBack) {
@@ -150,17 +165,22 @@ export class UndoRedoManager {
     }
     /**
      * Redo the editable text.
-     * @method redo
-     * @return {void}
+     *
+     * @param {IHtmlSubCommands} e - specifies the sub commands
+     * @function redo
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public redo(e?: IHtmlSubCommands | IHtmlKeyboardEvent): void {
         if (this.undoRedoStack[this.steps + 1] != null) {
-            let range: string | object = this.undoRedoStack[this.steps + 1].range;
+            // eslint-disable-next-line
+            const range: string | object = this.undoRedoStack[this.steps + 1].range;
             this.parent.editableElement.innerHTML = this.undoRedoStack[this.steps + 1].text as string;
             (this.parent.editableElement as HTMLElement).focus();
-            if (isIDevice()) { setEditFrameFocus(this.parent.editableElement, (e as IHtmlSubCommands).selector); }
+            if (isIDevice()) {
+                setEditFrameFocus(this.parent.editableElement, (e as IHtmlSubCommands).selector);
+            }
             (range as NodeSelection).restore();
             this.steps++;
             if (e.callBack) {
@@ -177,11 +197,13 @@ export class UndoRedoManager {
 
     /**
      * getUndoStatus method
+     *
+     * @returns {boolean} - returns the boolean value
      * @hidden
      * @deprecated
      */
     public getUndoStatus(): { [key: string]: boolean } {
-        let status: { [key: string]: boolean } = { undo: false, redo: false };
+        const status: { [key: string]: boolean } = { undo: false, redo: false };
         if (this.steps > 0) {
             status.undo = true;
         }

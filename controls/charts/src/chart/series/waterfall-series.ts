@@ -1,7 +1,11 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { withInRange } from '../../common/utils/helper';
 import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { subArraySum, getElement, appendChildElement, redrawElement } from '../../common/utils/helper';
-import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
 import { DoubleRange } from '../utils/double-range';
 import { ColumnBase } from './column-base';
@@ -15,14 +19,15 @@ export class WaterfallSeries extends ColumnBase {
 
     /**
      * Render waterfall series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
     public render(series: Series): void {
         let rect: Rect;
-        let sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
-        let origin: number = Math.max(<number>series.yAxis.visibleRange.min, 0);
+        const sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
+        const origin: number = Math.max(<number>series.yAxis.visibleRange.min, 0);
         let argsData: IPointRenderEventArgs;
         let prevEndValue: number = 0;
         let direction: string = '';
@@ -30,15 +35,15 @@ export class WaterfallSeries extends ColumnBase {
         let originValue: number;
         let prevRegion: Rect = null;
         let y: number;
-        let isInversed: Boolean =  series.chart.requireInvertedAxis;
+        const isInversed: boolean =  series.chart.requireInvertedAxis;
         let intermediateOrigin: number = 0;
-        let redraw: boolean = series.chart.redraw;
-        for (let point of series.points) {
+        const redraw: boolean = series.chart.redraw;
+        for (const point of series.points) {
             point.symbolLocations = []; point.regions = [];
             if (point.visible && withInRange(series.points[point.index - 1], point, series.points[point.index + 1], series)) {
                 //Calcute the current point value to render waterfall series.
-                let isSum: boolean = this.isIntermediateSum(series, point.index);
-                let totalSum: boolean = this.isSumIndex(series, point.index);
+                const isSum: boolean = this.isIntermediateSum(series, point.index);
+                const totalSum: boolean = this.isSumIndex(series, point.index);
                 currentEndValue += isSum || totalSum === true ? 0 : point.yValue;
 
                 //Calcute the origin value for points
@@ -46,7 +51,7 @@ export class WaterfallSeries extends ColumnBase {
                 rect = this.getRectangle(point.xValue + sideBySideInfo.start, currentEndValue,
                                          point.xValue + sideBySideInfo.end, originValue, series);
                 argsData = this.triggerPointRenderEvent(series, point);
-                //intermediateOrigin is used only for imtermediate data 
+                //intermediateOrigin is used only for imtermediate data
                 if (isSum) {
                     intermediateOrigin = currentEndValue;
                 }
@@ -55,15 +60,15 @@ export class WaterfallSeries extends ColumnBase {
                     this.updateSymbolLocation(point, rect, series);
                     this.drawRectangle(series, point, rect, argsData);
                 }
-                let currentRegion: Rect = point.regions[0];
+                const currentRegion: Rect = point.regions[0];
                 if (prevRegion !== null) {
-                    let prevLeft: number = isInversed ? prevRegion.x : prevRegion.y;
-                    let currentLeft: number = isInversed ? currentRegion.x : currentRegion.y;
+                    const prevLeft: number = isInversed ? prevRegion.x : prevRegion.y;
+                    const currentLeft: number = isInversed ? currentRegion.x : currentRegion.y;
                     let prevBottom: number;
                     let currentBottom: number;
                     let currentYValue: number = currentRegion.y;
                     let currentXValue: number = currentRegion.x;
-                    let beforePoint: Points = series.points[point.index - 1];
+                    const beforePoint: Points = series.points[point.index - 1];
                     if (point.yValue === 0) {
                         prevBottom = isInversed ? prevRegion.x + prevRegion.width : prevRegion.y + prevRegion.height;
                         currentBottom = isInversed ?
@@ -104,23 +109,24 @@ export class WaterfallSeries extends ColumnBase {
                 prevRegion = point.regions[0];
             }
         }
-        let options: PathOption = new PathOption(
+        const options: PathOption = new PathOption(
             series.chart.element.id + '_Series_' + series.index + '_Connector_', 'none', series.connector.width,
             series.connector.color, series.opacity, series.connector.dashArray, direction);
         if (redraw && getElement(options.id)) {
             direction = getElement(options.id).getAttribute('d');
         }
-        let element: HTMLElement = <HTMLElement>(redrawElement(redraw, options.id, options, series.chart.renderer) ||
+        const element: HTMLElement = <HTMLElement>(redrawElement(redraw, options.id, options, series.chart.renderer) ||
             series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y])));
         element.style.visibility = (!series.chart.enableCanvas) ? ((series.animation.enable && series.chart.animateSeries) ?
-                                    'hidden' : 'visible') : null;
+            'hidden' : 'visible') : null;
         appendChildElement(series.chart.enableCanvas, series.seriesElement, element, redraw, true, null, null, null, direction);
         this.renderMarker(series);
     }
 
     /**
      * To check intermediateSumIndex in waterfall series.
-     * @return boolean
+     *
+     * @returns {boolean} check intermediateSumIndex
      * @private
      */
     private isIntermediateSum(series: Series, index: number): boolean {
@@ -132,7 +138,8 @@ export class WaterfallSeries extends ColumnBase {
 
     /**
      * To check sumIndex in waterfall series.
-     * @return boolean
+     *
+     * @returns {boolean} check sumIndex
      * @private
      */
     private isSumIndex(series: Series, index: number): boolean {
@@ -144,13 +151,14 @@ export class WaterfallSeries extends ColumnBase {
 
     /**
      * To trigger the point rendering event for waterfall series.
-     * @return IPointRenderEventArgs
+     *
+     * @returns {IPointRenderEventArgs} point rendering event values
      * @private
      */
     private triggerPointRenderEvent(series: Series, point: Points): IPointRenderEventArgs {
         let color: string;
-        let isSum: boolean = this.isIntermediateSum(series, point.index);
-        let totalSum: boolean = this.isSumIndex(series, point.index);
+        const isSum: boolean = this.isIntermediateSum(series, point.index);
+        const totalSum: boolean = this.isSumIndex(series, point.index);
         if (isSum || totalSum) {
             color = series.summaryFillColor;
         } else if (point.y < 0) {
@@ -163,13 +171,14 @@ export class WaterfallSeries extends ColumnBase {
 
     /**
      * Add sumIndex and intermediateSumIndex data.
-     * @return {object[]}
+     *
+     * @returns {object[]} data
      * @private
      */
     public processInternalData(json: Object[], series: Series): Object[] {
-        let data: Object[] = json; let length: number = json.length; let index: number;
-        let intermediateSum: number[] = series.intermediateSumIndexes;
-        let sumIndex: number[] = series.sumIndexes;
+        const data: Object[] = json; let index: number;
+        const intermediateSum: number[] = series.intermediateSumIndexes;
+        const sumIndex: number[] = series.sumIndexes;
         if (intermediateSum !== undefined && intermediateSum.length > 0) {
             for (let i: number = 0; i < intermediateSum.length; i++) {
                 for (let j: number = 0; j < data.length; j++) {
@@ -203,8 +212,9 @@ export class WaterfallSeries extends ColumnBase {
 
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
     public doAnimation(series: Series): void {
         this.animate(series);
@@ -219,16 +229,16 @@ export class WaterfallSeries extends ColumnBase {
          */
     }
     /**
-     * To destroy the waterfall series. 
-     * @return {void}
+     * To destroy the waterfall series.
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroys the waterfall series.
          */
     }
-
 
 }

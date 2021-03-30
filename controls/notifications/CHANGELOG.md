@@ -2,15 +2,7 @@
 
 ## [Unreleased]
 
-## 18.4.49 (2021-03-23)
-
-### Toast
-
-#### New Features
-
-- `I307310` - Provided the 'progressDirection' property to customize the progress bar direction from left-to-right or right-to-left.
-
-## 18.4.34 (2021-01-12)
+## 19.1.54 (2021-03-30)
 
 ### Toast
 

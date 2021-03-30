@@ -1,3 +1,7 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable @typescript-eslint/ban-types */
 import { RangeNavigator, RangeValueType } from '../index';
 import { Browser, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { RectOption, drawSymbol, linear } from '../../common/utils/helper';
@@ -46,7 +50,7 @@ export class RangeSlider {
         this.control = range;
         this.points = [];
         this.isIOS = Browser.isIos || Browser.isIos7;
-        let thumb: ThumbSettingsModel = range.navigatorStyleSettings.thumb;
+        const thumb: ThumbSettingsModel = range.navigatorStyleSettings.thumb;
         this.thumbVisible = (range.themeStyle.thumbWidth !== 0 && range.themeStyle.thumbHeight !== 0);
         this.elementId = range.element.id;
         this.thumpPadding = range.themeStyle.thumbWidth / 2;
@@ -56,17 +60,18 @@ export class RangeSlider {
     }
     /**
      * Render Slider elements for range navigator
-     * @param range 
+     *
+     * @param {RangeNavigator} range RangeNavigator instance
      */
     public render(range: RangeNavigator): void {
-        let renderer: SvgRenderer = range.renderer;
-        let style: StyleSettingsModel = range.navigatorStyleSettings;
-        let disabledColor: string = (range.disableRangeSelector) ? 'transparent' : null;
-        let sliderGroup: Element = renderer.createGroup({
+        const renderer: SvgRenderer = range.renderer;
+        const style: StyleSettingsModel = range.navigatorStyleSettings;
+        const disabledColor: string = (range.disableRangeSelector) ? 'transparent' : null;
+        const sliderGroup: Element = renderer.createGroup({
             'id': this.elementId + '_sliders',
             style: (range.disableRangeSelector) ? 'pointer-events:none;' : ''
         });
-        let option: RectOption = new RectOption(
+        const option: RectOption = new RectOption(
             this.elementId + '_leftUnSelectedArea',
             disabledColor || style.unselectedRegionColor || range.themeStyle.unselectedRectColor, { width: 0 }, 1, {
                 x: range.bounds.x, y: range.bounds.y,
@@ -98,20 +103,22 @@ export class RangeSlider {
     }
     /**
      * Thumb creation performed
-     * @param render 
-     * @param bounds 
-     * @param parent 
-     * @param id 
+     *
+     * @param {SvgRenderer} render SvgRenderer
+     * @param {Rect} bounds bounds
+     * @param {Element} parent parent element
+     * @param {string} id id
+     * @param {Element} sliderGroup sliderGroup
      */
     public createThump(render: SvgRenderer, bounds: Rect, parent: Element, id: string, sliderGroup?: Element): void {
-        let control: RangeNavigator = this.control;
-        let thump: ThumbSettingsModel = control.navigatorStyleSettings.thumb;
-        let style: IRangeStyle = control.themeStyle;
-        let y: number = bounds.y + bounds.height / 2;
-        let x: number = this.thumpPadding;
-        let tickLength: number = (control.themeStyle.thumbHeight / 2) - 5;
-        let disabledColor: string = control.disableRangeSelector ? 'transparent' : null;
-        let lineColor: string = disabledColor || thump.border.color || style.thumpLineColor;
+        const control: RangeNavigator = this.control;
+        const thump: ThumbSettingsModel = control.navigatorStyleSettings.thumb;
+        const style: IRangeStyle = control.themeStyle;
+        const y: number = bounds.y + bounds.height / 2;
+        const x: number = this.thumpPadding;
+        const tickLength: number = (control.themeStyle.thumbHeight / 2) - 5;
+        const disabledColor: string = control.disableRangeSelector ? 'transparent' : null;
+        const lineColor: string = disabledColor || thump.border.color || style.thumpLineColor;
         let shadowElement: Element;
         parent.appendChild(render.drawPath(new PathOption(
             id + '_ThumpLine', 'transparent',
@@ -170,83 +177,81 @@ export class RangeSlider {
     }
     /**
      * Set slider value for range navigator
-     * @param start 
-     * @param end 
      */
     public setSlider(start: number, end: number, trigger: boolean, showTooltip: boolean): void {
-            let range: RangeNavigator = this.control;
-            let padding: number = range.bounds.x;
-            let axisRange: VisibleRangeModel = range.chartSeries.xAxis.actualRange;
-            let isLeightWeight: boolean = range.series.length === 0;
-            if (isNaN(start) && isNaN(end)) {
-                start = 0;
-                end = range.bounds.width;
-            }
-            if (!(end >= start)) {
-                start = [end, end = start][0];
-            }
-            start = end >= start ? start : [end, end = start][0];
-            start = Math.max(start, axisRange.min);
-            end = Math.min(end, axisRange.max);
-            this.startX = padding + getXLocation(start, axisRange, range.bounds.width, range.enableRtl);
-            this.endX = padding + getXLocation(end, axisRange, range.bounds.width, range.enableRtl);
-            let selectedX: number = range.enableRtl ? this.endX : this.startX;
-            let rightPadding: number = range.enableRtl ? this.startX : this.endX;
-            this.sliderWidth = Math.abs(this.endX - this.startX);
-            this.selectedElement.setAttribute('x', (selectedX) + '');
-            this.selectedElement.setAttribute('width', this.sliderWidth + '');
-            this.leftUnSelectedElement.setAttribute('width', (selectedX - padding) + '');
-            this.rightUnSelectedElement.setAttribute('x', rightPadding + '');
-            this.rightUnSelectedElement.setAttribute('width', (range.bounds.width - (rightPadding - padding)) + '');
-            this.leftSlider.setAttribute('transform', 'translate(' + (this.startX - this.thumpPadding) + ', 0)');
-            this.rightSlider.setAttribute('transform', 'translate(' + (this.endX - this.thumpPadding) + ', 0)');
-            let left: number = this.control.svgObject.getBoundingClientRect().left -
-                this.control.element.getBoundingClientRect().left;
-            let leftX: number = this.control.enableRtl ? this.endX : this.startX;
-            let rightX: number = this.control.enableRtl ? this.startX : this.endX;
-            this.leftRect = {
-                x: isLeightWeight ? left + padding : padding,
-                y: isLeightWeight ? 0 : range.bounds.y,
-                width: isLeightWeight ? leftX - padding : leftX,
-                height: isLeightWeight ? this.thumpY : range.bounds.height
-            };
-            this.rightRect = {
-                x: isLeightWeight ? left + rightX : rightX,
-                y: isLeightWeight ? 0 : range.bounds.y,
-                width: (range.bounds.width - (rightPadding - padding)),
-                height: isLeightWeight ? this.thumpY : range.bounds.height
-            };
-            this.midRect = {
-                x: isLeightWeight ? leftX + left : 0,
-                y: isLeightWeight ? 0 : range.bounds.y,
-                width: isLeightWeight ? Math.abs(this.endX - this.startX) : rightX,
-                height: isLeightWeight ? this.thumpY : range.bounds.height
-            };
-            this.currentStart = start;
-            this.currentEnd = end;
-            if (showTooltip) {
-                this.control.rangeTooltipModule.renderLeftTooltip(this);
-                this.control.rangeTooltipModule.renderRightTooltip(this);
-            }
-            if (trigger) {
-                this.triggerEvent(axisRange);
-            }
+        const range: RangeNavigator = this.control;
+        const padding: number = range.bounds.x;
+        const axisRange: VisibleRangeModel = range.chartSeries.xAxis.actualRange;
+        const isLeightWeight: boolean = range.series.length === 0;
+        if (isNaN(start) && isNaN(end)) {
+            start = 0;
+            end = range.bounds.width;
+        }
+        if (!(end >= start)) {
+            start = [end, end = start][0];
+        }
+        start = end >= start ? start : [end, end = start][0];
+        start = Math.max(start, axisRange.min);
+        end = Math.min(end, axisRange.max);
+        this.startX = padding + getXLocation(start, axisRange, range.bounds.width, range.enableRtl);
+        this.endX = padding + getXLocation(end, axisRange, range.bounds.width, range.enableRtl);
+        const selectedX: number = range.enableRtl ? this.endX : this.startX;
+        const rightPadding: number = range.enableRtl ? this.startX : this.endX;
+        this.sliderWidth = Math.abs(this.endX - this.startX);
+        this.selectedElement.setAttribute('x', (selectedX) + '');
+        this.selectedElement.setAttribute('width', this.sliderWidth + '');
+        this.leftUnSelectedElement.setAttribute('width', (selectedX - padding) + '');
+        this.rightUnSelectedElement.setAttribute('x', rightPadding + '');
+        this.rightUnSelectedElement.setAttribute('width', (range.bounds.width - (rightPadding - padding)) + '');
+        this.leftSlider.setAttribute('transform', 'translate(' + (this.startX - this.thumpPadding) + ', 0)');
+        this.rightSlider.setAttribute('transform', 'translate(' + (this.endX - this.thumpPadding) + ', 0)');
+        const left: number = this.control.svgObject.getBoundingClientRect().left -
+            this.control.element.getBoundingClientRect().left;
+        const leftX: number = this.control.enableRtl ? this.endX : this.startX;
+        const rightX: number = this.control.enableRtl ? this.startX : this.endX;
+        this.leftRect = {
+            x: isLeightWeight ? left + padding : padding,
+            y: isLeightWeight ? 0 : range.bounds.y,
+            width: isLeightWeight ? leftX - padding : leftX,
+            height: isLeightWeight ? this.thumpY : range.bounds.height
+        };
+        this.rightRect = {
+            x: isLeightWeight ? left + rightX : rightX,
+            y: isLeightWeight ? 0 : range.bounds.y,
+            width: (range.bounds.width - (rightPadding - padding)),
+            height: isLeightWeight ? this.thumpY : range.bounds.height
+        };
+        this.midRect = {
+            x: isLeightWeight ? leftX + left : 0,
+            y: isLeightWeight ? 0 : range.bounds.y,
+            width: isLeightWeight ? Math.abs(this.endX - this.startX) : rightX,
+            height: isLeightWeight ? this.thumpY : range.bounds.height
+        };
+        this.currentStart = start;
+        this.currentEnd = end;
+        if (showTooltip) {
+            this.control.rangeTooltipModule.renderLeftTooltip(this);
+            this.control.rangeTooltipModule.renderRightTooltip(this);
+        }
+        if (trigger) {
+            this.triggerEvent(axisRange);
+        }
     }
     /**
      * Trigger changed event
-     * @param private 
+     *
+     * @param {VisibleRangeModel} range axis visible range
      */
     public triggerEvent(range: VisibleRangeModel): void {
-        let argsData: IChangedEventArgs;
-        let xAxis: Axis = this.control.chartSeries.xAxis;
-        let valueType: RangeValueType = xAxis.valueType as RangeValueType;
-        let trigger: boolean = this.control.enableDeferredUpdate;
-        let enabledTooltip: boolean = this.control.tooltip.enable;
+        const xAxis: Axis = this.control.chartSeries.xAxis;
+        const valueType: RangeValueType = xAxis.valueType as RangeValueType;
+        const trigger: boolean = this.control.enableDeferredUpdate;
+        const enabledTooltip: boolean = this.control.tooltip.enable;
         if (this.isDrag && this.control.allowSnapping) {
             this.isDrag = false;
             this.setAllowSnapping(this.control, this.currentStart, this.currentEnd, trigger, enabledTooltip);
         }
-        argsData = {
+        const argsData: IChangedEventArgs = {
             cancel: false,
             start: valueType === 'DateTime' ? new Date(this.currentStart) :
                 (valueType === 'Logarithmic' ? Math.pow(xAxis.logBase, this.currentStart) : this.currentStart),
@@ -283,40 +288,42 @@ export class RangeSlider {
     }
     /**
      * Move move handler perfomed here
+     *
      * @hidden
-     * @param e 
+     * @param {PointerEvent} e mouse event argument
      */
     private mouseMoveHandler(e: PointerEvent | TouchEvent): void {
-        let control: RangeNavigator = this.control;
-        let axisRange: VisibleRangeModel = control.chartSeries.xAxis.actualRange;
-        let bounds: Rect = control.bounds;
+        const control: RangeNavigator = this.control;
+        const axisRange: VisibleRangeModel = control.chartSeries.xAxis.actualRange;
+        const bounds: Rect = control.bounds;
         let start: number;
         let end: number;
         this.getCurrentSlider((<Element>e.target).id);
         if (this.isDrag && control.mouseX >= bounds.x) {
             switch (this.currentSlider) {
-                case 'Left':
-                    control.startValue = this.getRangeValue(Math.abs(control.mouseX - bounds.x));
-                    break;
-                case 'Right':
-                    control.endValue = this.getRangeValue(Math.abs(control.mouseX - bounds.x));
-                    break;
-                case 'Middle':
-                    start = Math.max(
-                        this.getRangeValue(Math.abs(this.startX - (this.previousMoveX - control.mouseX) - bounds.x)), axisRange.min
-                    );
-                    end = Math.min(
-                        this.getRangeValue(Math.abs(this.endX - (this.previousMoveX - control.mouseX) - bounds.x)), axisRange.max
-                    );
-                    let currentWidth: number = Math.floor(Math.abs(
-                        getXLocation(end, axisRange, control.bounds.width, control.enableRtl) -
+            case 'Left':
+                control.startValue = this.getRangeValue(Math.abs(control.mouseX - bounds.x));
+                break;
+            case 'Right':
+                control.endValue = this.getRangeValue(Math.abs(control.mouseX - bounds.x));
+                break;
+            case 'Middle':
+                start = Math.max(
+                    this.getRangeValue(Math.abs(this.startX - (this.previousMoveX - control.mouseX) - bounds.x)), axisRange.min
+                );
+                end = Math.min(
+                    this.getRangeValue(Math.abs(this.endX - (this.previousMoveX - control.mouseX) - bounds.x)), axisRange.max
+                );
+                // eslint-disable-next-line no-case-declarations
+                const currentWidth: number = Math.floor(Math.abs(
+                    getXLocation(end, axisRange, control.bounds.width, control.enableRtl) -
                         getXLocation(start, axisRange, control.bounds.width, control.enableRtl)
-                    ));
-                    if (currentWidth === Math.floor(this.sliderWidth)) {
-                        control.startValue = start;
-                        control.endValue = end;
-                    }
-                    break;
+                ));
+                if (currentWidth === Math.floor(this.sliderWidth)) {
+                    control.startValue = start;
+                    control.endValue = end;
+                }
+                break;
             }
             if (e.preventDefault && this.isIOS) {
                 e.preventDefault();
@@ -331,19 +338,21 @@ export class RangeSlider {
     }
     /**
      * To get the range value
-     * @param x 
+     *
+     * @param {number} x xValue
      */
     private getRangeValue(x: number): number {
-        let control: RangeNavigator = this.control;
-        let axisRange: VisibleRangeModel = control.chartSeries.xAxis.actualRange;
-        let bounds: Rect = control.bounds;
+        const control: RangeNavigator = this.control;
+        const axisRange: VisibleRangeModel = control.chartSeries.xAxis.actualRange;
+        const bounds: Rect = control.bounds;
         return getRangeValueXByPoint(
             x, bounds.width, axisRange, control.enableRtl
         );
     }
     /**
      * Moused down handler for slider perform here
-     * @param e 
+     *
+     * @param {PointerEvent} e mouse event argument
      */
     private mouseDownHandler(e: PointerEvent): void {
         this.currentSlider = this.getCurrentSlider((<Element>e.target).id);
@@ -353,10 +362,11 @@ export class RangeSlider {
     }
     /**
      * To get the current slider element
-     * @param id 
+     *
+     * @param {string} id slider element id
      */
     private getCurrentSlider(id: string): string {
-        let hoverColor: string = this.control.themeStyle.thumbHoverColor;
+        const hoverColor: string = this.control.themeStyle.thumbHoverColor;
         if (id.indexOf(this.elementId + '_LeftSlider') > -1) {
             (this.leftSlider.childNodes[2] as Element).setAttribute('fill', hoverColor);
             return 'Left';
@@ -386,20 +396,19 @@ export class RangeSlider {
     }
     /**
      * Mouse up handler performed here
-     * @param e 
      */
-    private mouseUpHandler(e: PointerEvent): void {
-        let control: RangeNavigator = this.control;
-        let range: VisibleRangeModel = control.chartSeries.xAxis.actualRange;
+    private mouseUpHandler(): void {
+        const control: RangeNavigator = this.control;
+        const range: VisibleRangeModel = control.chartSeries.xAxis.actualRange;
         let trigger: boolean = control.enableDeferredUpdate;
-        let enabledTooltip: boolean = control.tooltip.enable;
+        const enabledTooltip: boolean = control.tooltip.enable;
         if (control.stockChart) {
             control.stockChart.zoomChange = false;
         }
         if (this.currentSlider === 'UnSelectedArea') {
             let value: number; let start: number; let end: number;
-            let isRtl: boolean = control.enableRtl;
-            let difference: number = control.endValue - control.startValue;
+            const isRtl: boolean = control.enableRtl;
+            const difference: number = control.endValue - control.startValue;
             if (control.mouseDownX < this.startX) {
                 value = Math.max(
                     this.getRangeValue((control.mouseDownX - (this.sliderWidth / 2) - control.bounds.x)),
@@ -418,7 +427,7 @@ export class RangeSlider {
             this.performAnimation(start, end, control);
             trigger = false;
         } else if (this.currentSlider === 'firstLevelLabels' || this.currentSlider === 'secondLevelLabels') {
-            let secondLabel: VisibleLabels = control.rangeAxis[this.currentSlider][this.labelIndex + 1];
+            const secondLabel: VisibleLabels = control.rangeAxis[this.currentSlider][this.labelIndex + 1];
             /**
              * One millisecond is subtracted from the label to indicate the previous label value
              */
@@ -451,15 +460,18 @@ export class RangeSlider {
     }
     /**
      * Allow Snapping perfomed here
-     * @param control
-     * @param start 
-     * @param end 
+     *
+     * @param {RangeNavigator} control RangeNavigator instance
+     * @param {number} start start
+     * @param {number} end end
+     * @param {boolean} trigger trigger
+     * @param {boolean} tooltip tooltip
      */
     private setAllowSnapping(
         control: RangeNavigator, start: number, end: number,
         trigger: boolean, tooltip: boolean
     ): void {
-        let values: number[] = control.rangeAxis.lowerValues;
+        const values: number[] = control.rangeAxis.lowerValues;
         values.push(control.chartSeries.xAxis.actualRange.max);
         this.setSlider(getNearestValue(values, start), getNearestValue(values, end), trigger, tooltip);
         control.startValue = this.currentStart;
@@ -467,14 +479,12 @@ export class RangeSlider {
     }
     /**
      * Animation Calculation for slider navigation
-     * @param start 
-     * @param end
      */
     public performAnimation(start: number, end: number, control: RangeNavigator, animationDuration ?: number): void {
-        let currentStart: number = this.currentStart;
-        let currentEnd: number = this.currentEnd;
-        let isDeffered: boolean = control.enableDeferredUpdate;
-        let enableTooltip: boolean = control.tooltip.enable;
+        const currentStart: number = this.currentStart;
+        const currentEnd: number = this.currentEnd;
+        const isDeffered: boolean = control.enableDeferredUpdate;
+        const enableTooltip: boolean = control.tooltip.enable;
         new Animation({}).animate(createElement('div'), {
             duration: !isNullOrUndefined(animationDuration) ? animationDuration : this.control.animationDuration,
             progress: (args: AnimationOptions): void => {
@@ -484,7 +494,7 @@ export class RangeSlider {
                     enableTooltip
                 );
             },
-            end: (model: AnimationOptions) => {
+            end: () => {
                 if (control.allowSnapping) {
                     this.setAllowSnapping(control, start, end, true, enableTooltip);
                 } else {

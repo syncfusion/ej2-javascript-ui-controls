@@ -10,7 +10,7 @@ import { RendererFactory } from '../services/renderer-factory';
 export class ToolbarAction {
     protected parent: IRichTextEditor;
     private serviceLocator: ServiceLocator;
-    constructor(parent?: IRichTextEditor) {
+    public constructor(parent?: IRichTextEditor) {
         this.parent = parent;
         this.addEventListener();
         this.serviceLocator = new ServiceLocator;
@@ -25,8 +25,12 @@ export class ToolbarAction {
     }
 
     private toolbarClick(args: IDropDownClickArgs): void {
-        if (isNOU(args.item)) { return; }
+        if (isNOU(args.item)) { 
+            return;
+        }
+        // eslint-disable-next-line
         if (!isNOU((args.item as { [key: string]: object }).controlParent)) {
+            // eslint-disable-next-line
             let activeEle: HTMLElement = (((args.item as { [key: string]: object }).controlParent as { [key: string]: object })
                 .activeEle as HTMLElement);
             if (activeEle) {
@@ -40,7 +44,7 @@ export class ToolbarAction {
         this.parent.notify(events.selectionRestore, {});
         if (!(document.body.contains(document.body.querySelector('.e-rte-quick-toolbar'))
             && e.item && (e.item.command === 'Images' || e.item.command === 'Display' || e.item.command as string === 'Table'))) {
-            let value: string = e.item.controlParent && this.parent.quickToolbarModule && this.parent.quickToolbarModule.tableQTBar
+            const value: string = e.item.controlParent && this.parent.quickToolbarModule && this.parent.quickToolbarModule.tableQTBar
                 && this.parent.quickToolbarModule.tableQTBar.element.contains(e.item.controlParent.element) ? 'Table' : null;
             this.parent.formatter.process(this.parent, e, e.originalEvent, value);
         }

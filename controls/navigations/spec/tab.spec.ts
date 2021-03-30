@@ -7839,6 +7839,37 @@ describe('Tab Control', () => {
             expect(JSON.parse(window.localStorage.tabej2Tab).actEleId).toEqual('e-item_1');
         });
     });
+    describe('Getting tab item index using item ID ', () => {
+        let tab: Tab;
+        let i: boolean;
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('tab item index testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1", id: '1' },
+                    { header: { "text": "item2" }, content: "Content2", id: '2' }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelectorAll(".e-toolbar-item")[0].getAttribute('data-id')).toBe("1");
+            let tabIndex: number = tab.getItemIndex(tab.items[0].id);
+            expect(tabIndex).toEqual(0);
+            expect(element.querySelectorAll(".e-toolbar-item")[1].getAttribute('data-id')).toBe("2");
+            tabIndex = tab.getItemIndex(tab.items[1].id);
+            expect(tabIndex).toEqual(1);        
+        });
+    });
     describe('Localization - Mouseover on close icon testing', () => {
         let tab: any;
         let mouseEventArgs: any;
@@ -10343,4 +10374,54 @@ describe('Tab Control', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
+});
+
+describe('allowDragandDrop property testing', () => {
+    let tab: Tab;
+    beforeEach((): void => {
+        tab = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        if (tab) {
+            tab.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('allowDragAndDrop property with default value testing', () => {
+        tab = new Tab({
+            items: [
+                { header: { "text": "item1" }, content: "Content1" },
+                { header: { "text": "item2" }, content: "Content2" }
+            ]
+        }, '#ej2Tab');
+        expect(tab.allowDragAndDrop).toBe(false);
+    });
+    it('allowDragAndDrop property testing', () => {
+        tab = new Tab({
+            allowDragAndDrop: true,
+            items: [
+                { header: { "text": "item1" }, content: "Content1" },
+                { header: { "text": "item2" }, content: "Content2" },
+                { header: { "text": "item3" }, content: "Content3" }
+            ]
+        });
+        tab.appendTo('#ej2Tab');
+        let element: HTMLElement = document.getElementById('ej2Tab');
+        expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(3);
+        expect(element.querySelectorAll('.e-toolbar-item')[0].classList.contains('e-draggable')).toBe(true);
+        expect(element.querySelectorAll('.e-toolbar-item')[1].classList.contains('e-draggable')).toBe(true);
+        expect(element.querySelectorAll('.e-toolbar-item')[2].classList.contains('e-draggable')).toBe(true);
+    });
+    it('Disabled property with drag and drop', () => {
+        tab = new Tab({
+            items: [
+                { header: { "text": "item1" }, content: "Content1" },
+                { header: { "text": "item2" }, content: "Content2" }
+            ]
+        }, '#ej2Tab');
+        tab.enableTab(1, false);
+        expect((tab.element.querySelectorAll('.e-toolbar-item')[1]).classList.contains('e-draggable')).toBe(false);
+    });
 });

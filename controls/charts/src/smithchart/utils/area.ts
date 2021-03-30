@@ -1,36 +1,28 @@
-/**
- * 
- */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { TitleModel } from '../../smithchart/title/title-model';
 import { SmithchartLegendSettingsModel } from '../../smithchart/legend/legend-model';
 import { Smithchart } from '../../smithchart';
 import { measureText } from '../../smithchart/utils/helper';
 import { SmithchartRect } from '../../smithchart/utils/utils';
 import { SmithchartFontModel, SmithchartMarginModel, SmithchartBorderModel } from '../../smithchart/utils/utils-model';
-/* tslint:disable:no-string-literal */
+
 export class AreaBounds {
 
     public yOffset: number;
     public calculateAreaBounds(smithchart: Smithchart, title: TitleModel, bounds: SmithchartRect): SmithchartRect {
-        let x: number;
-        let y: number;
-        let width: number;
-        let height: number;
-        let rightSpace: number;
-        let margin: SmithchartMarginModel = smithchart.margin;
-        let border: SmithchartBorderModel = smithchart.border;
-
-        let spaceValue: {
+        const margin: SmithchartMarginModel = smithchart.margin;
+        const border: SmithchartBorderModel = smithchart.border;
+        const spaceValue: {
             leftLegendWidth: number, rightLegendWidth: number,
             topLegendHeight: number, bottomLegendHeight: number,
             modelTitleHeight: number, modelsubTitleHeight: number
         } = this.getLegendSpace(smithchart, bounds);
-        x = spaceValue['leftLegendWidth'] + margin.left + border.width;
-        rightSpace = spaceValue['rightLegendWidth'] + margin.left + margin.right + (2 * border.width);
-        width = smithchart.availableSize['width'] - (x + rightSpace);
-        y = margin['top'] + (2 * smithchart.elementSpacing) + spaceValue['modelTitleHeight'] +
+        const x: number = spaceValue['leftLegendWidth'] + margin.left + border.width;
+        const rightSpace: number = spaceValue['rightLegendWidth'] + margin.left + margin.right + (2 * border.width);
+        const width: number = smithchart.availableSize['width'] - (x + rightSpace);
+        const y: number = margin['top'] + (2 * smithchart.elementSpacing) + spaceValue['modelTitleHeight'] +
             spaceValue['modelsubTitleHeight'] + spaceValue['topLegendHeight'] + border.width;
-        height = smithchart.availableSize['height'] - (spaceValue['modelTitleHeight'] +
+        const height: number = smithchart.availableSize['height'] - (spaceValue['modelTitleHeight'] +
             (2 * smithchart.elementSpacing) + spaceValue['modelsubTitleHeight'] + margin['top'] +
             spaceValue['topLegendHeight'] + spaceValue['bottomLegendHeight']);
 
@@ -43,16 +35,16 @@ export class AreaBounds {
         modelTitleHeight: number, modelsubTitleHeight: number
     } {
 
-        let title: TitleModel = smithchart.title;
-        let legend: SmithchartLegendSettingsModel = smithchart.legendSettings;
-        let position: string = legend.position.toLowerCase();
+        const title: TitleModel = smithchart.title;
+        const legend: SmithchartLegendSettingsModel = smithchart.legendSettings;
+        const position: string = legend.position.toLowerCase();
         let subtitleHeight: number = 0;
         let modelsubTitleHeight: number = 0;
-        let titleHeight: number = 0;
-        let font: SmithchartFontModel = smithchart.font;
+        const titleHeight: number = 0;
+        const font: SmithchartFontModel = smithchart.font;
         let modelTitleHeight: number = 0;
-        let itemPadding: number = 10;
-        let legendBorder: number = legend.border.width;
+        const itemPadding: number = 10;
+        const legendBorder: number = legend.border.width;
         let leftLegendWidth: number = 0;
         let rightLegendWidth: number = 0;
         let topLegendHeight: number = 0;
@@ -77,4 +69,3 @@ export class AreaBounds {
         };
     }
 }
-

@@ -15,10 +15,8 @@ export class VirtualScroll {
     public bufferCount: number = 3;
     private renderedLength: number = 0;
     private averageRowHeight: number = 0;
-    private startIndex: number = 0;
     private timeValue: number;
     private isScrollHeightNull: boolean = true;
-    private previousTop: number = 0;
 
     constructor(parent: Schedule) {
         this.parent = parent;
@@ -40,20 +38,11 @@ export class VirtualScroll {
         return Math.ceil(this.parent.element.clientHeight / this.itemSize) + this.bufferCount;
     }
 
-    private triggerScrolling(): void {
-        this.parent.showSpinner();
-        // tslint:disable-next-line:no-any
-        let scheduleObj: any = this.parent;
-        let adaptor: string = 'interopAdaptor';
-        let invokeMethodAsync: string = 'invokeMethodAsync';
-        scheduleObj[adaptor][invokeMethodAsync]('OnContentUpdate', this.startIndex);
-    }
-
     public setTranslateValue(): void {
-        let resWrap: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS);
-        let conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
-        let eventWrap: HTMLElement = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS);
-        let timeIndicator: HTMLElement = this.parent.element.querySelector('.' + cls.CURRENT_TIMELINE_CLASS) as HTMLElement;
+        const resWrap: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS);
+        const conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
+        const eventWrap: HTMLElement = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS);
+        const timeIndicator: HTMLElement = this.parent.element.querySelector('.' + cls.CURRENT_TIMELINE_CLASS) as HTMLElement;
         this.renderVirtualTrackHeight(conWrap, resWrap);
         this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
     }
@@ -61,17 +50,16 @@ export class VirtualScroll {
     private renderVirtualTrackHeight(contentWrap: HTMLElement, resourceWrap: HTMLElement): void {
         this.parent.resourceBase.setExpandedResources();
         if (this.isScrollHeightNull) {
-            let wrap: HTMLElement = createElement('div', { className: cls.VIRTUAL_TRACK_CLASS }) as HTMLElement;
-            let resWrap: HTMLElement[] =
-                [].slice.call((resourceWrap).querySelectorAll('table td'));
-            let startIndex: number = parseInt(resWrap[0].getAttribute('data-group-index'), 10);
-            let endIndex: number = parseInt(resWrap[resWrap.length - 1].getAttribute('data-group-index'), 10);
+            const wrap: HTMLElement = createElement('div', { className: cls.VIRTUAL_TRACK_CLASS }) as HTMLElement;
+            const resWrap: HTMLElement[] = [].slice.call((resourceWrap).querySelectorAll('table td'));
+            const startIndex: number = parseInt(resWrap[0].getAttribute('data-group-index'), 10);
+            const endIndex: number = parseInt(resWrap[resWrap.length - 1].getAttribute('data-group-index'), 10);
             this.parent.resourceBase.renderedResources = this.parent.resourceBase.expandedResources.filter((resource: TdData) =>
                 (resource.groupIndex >= startIndex && resource.groupIndex <= endIndex));
             this.setItemSize();
             wrap.style.height = (this.parent.resourceBase.expandedResources.length * this.itemSize) + 'px';
             this.isScrollHeightNull = false;
-            let virtual: HTMLElement = this.parent.element.querySelector('.' + cls.VIRTUAL_TRACK_CLASS) as HTMLElement;
+            const virtual: HTMLElement = this.parent.element.querySelector('.' + cls.VIRTUAL_TRACK_CLASS) as HTMLElement;
             if (!isNullOrUndefined(virtual)) {
                 remove(virtual);
             }
@@ -80,19 +68,19 @@ export class VirtualScroll {
     }
 
     public renderVirtualTrack(contentWrap: Element): void {
-        let wrap: HTMLElement = createElement('div', { className: cls.VIRTUAL_TRACK_CLASS }) as HTMLElement;
+        const wrap: HTMLElement = createElement('div', { className: cls.VIRTUAL_TRACK_CLASS }) as HTMLElement;
         wrap.style.height = (this.parent.resourceBase.expandedResources.length * this.itemSize) + 'px';
         contentWrap.appendChild(wrap);
     }
 
     public updateVirtualScrollHeight(): void {
-        let virtual: HTMLElement = this.parent.element.querySelector('.' + cls.VIRTUAL_TRACK_CLASS) as HTMLElement;
-        let lastResourceIndex: number =
+        const virtual: HTMLElement = this.parent.element.querySelector('.' + cls.VIRTUAL_TRACK_CLASS) as HTMLElement;
+        const lastResourceIndex: number =
             this.parent.resourceBase.expandedResources[this.parent.resourceBase.expandedResources.length - 1].groupIndex;
-        let lastRenderIndex: number =
+        const lastRenderIndex: number =
             this.parent.resourceBase.renderedResources[this.parent.resourceBase.renderedResources.length - 1].groupIndex;
         if (lastRenderIndex !== lastResourceIndex) {
-            let conTable: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement;
+            const conTable: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement;
             this.renderedLength = conTable.querySelector('tbody').children.length;
             virtual.style.height = (conTable.offsetHeight + (this.parent.resourceBase.expandedResources.length - (this.renderedLength)) *
                 conTable.offsetHeight / this.renderedLength) + 'px';
@@ -103,17 +91,17 @@ export class VirtualScroll {
     }
 
     public updateVirtualTrackHeight(wrap: HTMLElement): void {
-        let resourceCount: number = this.parent.resourceBase.renderedResources.length;
+        const resourceCount: number = this.parent.resourceBase.renderedResources.length;
         if (resourceCount !== this.getRenderedCount()) {
             wrap.style.height = (this.parent.element.querySelector('.e-content-wrap') as HTMLElement).clientHeight + 'px';
-            let resWrap: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS) as HTMLElement;
-            let conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
-            let eventWrap: HTMLElement = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS) as HTMLElement;
+            const resWrap: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS) as HTMLElement;
+            const conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+            const eventWrap: HTMLElement = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS) as HTMLElement;
             this.translateY = 0;
             this.setTranslate(resWrap, conWrap, eventWrap);
         } else {
-            let lastRenderIndex: number = this.parent.resourceBase.renderedResources[resourceCount - 1].groupIndex;
-            let lastCollIndex: number =
+            const lastRenderIndex: number = this.parent.resourceBase.renderedResources[resourceCount - 1].groupIndex;
+            const lastCollIndex: number =
                 this.parent.resourceBase.expandedResources[this.parent.resourceBase.expandedResources.length - 1].groupIndex;
             let renderedResConut: number = resourceCount + (lastCollIndex - lastRenderIndex);
             renderedResConut = (renderedResConut > this.parent.resourceBase.expandedResources.length) ?
@@ -126,10 +114,6 @@ export class VirtualScroll {
         this.itemSize = util.getElementHeightFromClass(this.parent.activeView.element, cls.WORK_CELLS_CLASS) || this.itemSize;
     }
 
-    private beforeInvoke(resWrap: HTMLElement, conWrap: HTMLElement, eventWrap: HTMLElement, timeIndicator?: HTMLElement): void {
-        //code
-    }
-
     private renderEvents(): void {
         this.parent.notify(events.dataReady, {});
         this.parent.notify(events.contentReady, {});
@@ -137,27 +121,25 @@ export class VirtualScroll {
     }
 
     public virtualScrolling(): void {
-        this.parent.quickPopup.quickPopupHide();
-        this.parent.quickPopup.morePopup.hide();
-        let resWrap: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS) as HTMLElement;
-        let conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
-        let eventWrap: HTMLElement = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS) as HTMLElement;
-        let timeIndicator: HTMLElement = this.parent.element.querySelector('.' + cls.CURRENT_TIMELINE_CLASS) as HTMLElement;
-        let conTable: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement;
+        if (this.parent.quickPopup) {
+            this.parent.quickPopup.quickPopupHide();
+            this.parent.quickPopup.morePopup.hide();
+        }
+        const resWrap: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS) as HTMLElement;
+        const conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+        const eventWrap: HTMLElement = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS) as HTMLElement;
+        const timeIndicator: HTMLElement = this.parent.element.querySelector('.' + cls.CURRENT_TIMELINE_CLASS) as HTMLElement;
+        const conTable: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement;
         this.renderedLength = resWrap.querySelector('tbody').children.length;
-        let firstTDIndex: number = parseInt(resWrap.querySelector('tbody td').getAttribute('data-group-index'), 10);
-        let scrollHeight: number = this.parent.rowAutoHeight ?
+        const firstTDIndex: number = parseInt(resWrap.querySelector('tbody td').getAttribute('data-group-index'), 10);
+        const scrollHeight: number = this.parent.rowAutoHeight ?
             (conTable.offsetHeight - conWrap.offsetHeight) : this.bufferCount * this.itemSize;
         addClass([conWrap], 'e-transition');
         let resCollection: TdData[] = [];
         if ((conWrap.scrollTop) - this.translateY < 0) {
             resCollection = this.upScroll(conWrap, firstTDIndex);
-            this.beforeInvoke(resWrap, conWrap, eventWrap, timeIndicator);
         } else if (conWrap.scrollTop - this.translateY > scrollHeight) {
             resCollection = this.downScroll(conWrap, firstTDIndex);
-            if (!(this.previousTop === conWrap.scrollTop)) {
-                this.beforeInvoke(resWrap, conWrap, eventWrap, timeIndicator);
-            }
         }
         if (!isNullOrUndefined(resCollection) && resCollection.length > 0) {
             this.parent.showSpinner();
@@ -179,12 +161,12 @@ export class VirtualScroll {
             index = (index > firstTDIndex) ? firstTDIndex - this.bufferCount : index;
         }
         index = (index > 0) ? index : 0;
-        let prevSetCollection: TdData[] = this.getBufferCollection(index, index + this.renderedLength);
+        const prevSetCollection: TdData[] = this.getBufferCollection(index, index + this.renderedLength);
         this.parent.resourceBase.renderedResources = prevSetCollection;
         if (firstTDIndex === 0) {
             this.translateY = conWrap.scrollTop;
         } else {
-            let height: number = (this.parent.rowAutoHeight) ? this.averageRowHeight : this.itemSize;
+            const height: number = (this.parent.rowAutoHeight) ? this.averageRowHeight : this.itemSize;
             this.translateY = (conWrap.scrollTop - (this.bufferCount * height) > 0) ?
                 conWrap.scrollTop - (this.bufferCount * height) : 0;
         }
@@ -192,15 +174,14 @@ export class VirtualScroll {
     }
 
     private downScroll(conWrap: HTMLElement, firstTDIndex: number): TdData[] {
-        let lastResource: number = this.parent.resourceBase.
+        const lastResource: number = this.parent.resourceBase.
             renderedResources[this.parent.resourceBase.renderedResources.length - 1].groupIndex;
-        let lastResourceIndex: number =
+        const lastResourceIndex: number =
             this.parent.resourceBase.expandedResources[this.parent.resourceBase.expandedResources.length - 1].groupIndex;
         if (lastResource === lastResourceIndex) {
             return null;
         }
         let nextSetResIndex: number = 0;
-        let height: number = (this.parent.rowAutoHeight) ? this.averageRowHeight : this.itemSize;
         nextSetResIndex = ~~(conWrap.scrollTop / this.itemSize);
         if (this.parent.rowAutoHeight) {
             nextSetResIndex = ~~((conWrap.scrollTop - this.translateY) / this.averageRowHeight) + firstTDIndex;
@@ -209,22 +190,22 @@ export class VirtualScroll {
         let lastIndex: number = nextSetResIndex + this.renderedLength;
         lastIndex = (lastIndex > this.parent.resourceBase.expandedResources.length) ?
             nextSetResIndex + (this.parent.resourceBase.expandedResources.length - nextSetResIndex) : lastIndex;
-        let nextSetCollection: TdData[] = this.getBufferCollection(lastIndex - this.renderedLength, lastIndex);
+        const nextSetCollection: TdData[] = this.getBufferCollection(lastIndex - this.renderedLength, lastIndex);
         this.translateY = conWrap.scrollTop;
         return nextSetCollection;
     }
 
     public updateContent(resWrap: HTMLElement, conWrap: HTMLElement, eventWrap: HTMLElement, resCollection: TdData[]): void {
-        let renderedLenth: number = resWrap.querySelector('tbody').children.length;
+        const renderedLenth: number = resWrap.querySelector('tbody').children.length;
         for (let i: number = 0; i < renderedLenth; i++) {
             remove(resWrap.querySelector('tbody tr'));
             remove(conWrap.querySelector('tbody tr'));
             remove(eventWrap.querySelector('div'));
         }
         this.parent.resourceBase.renderedResources = resCollection;
-        let resourceRows: Element[] = this.parent.resourceBase.getContentRows(resCollection);
-        let contentRows: Element[] = this.parent.activeView.getContentRows();
-        let eventRows: Element[] = this.parent.activeView.getEventRows(resCollection.length);
+        const resourceRows: Element[] = this.parent.resourceBase.getContentRows(resCollection);
+        const contentRows: Element[] = this.parent.activeView.getContentRows();
+        const eventRows: Element[] = this.parent.activeView.getEventRows(resCollection.length);
         append(resourceRows, resWrap.querySelector('tbody'));
         append(contentRows, conWrap.querySelector('tbody'));
         append(eventRows, eventWrap);
@@ -235,23 +216,16 @@ export class VirtualScroll {
     }
 
     private setTranslate(resWrap: HTMLElement, conWrap: HTMLElement, eventWrap: HTMLElement, timeIndicator?: HTMLElement): void {
-        setStyleAttribute(resWrap.querySelector('table') as HTMLElement, {
-            transform: `translateY(${this.translateY}px)`
-        });
-        setStyleAttribute(conWrap.querySelector('table') as HTMLElement, {
-            transform: `translateY(${this.translateY}px)`
-        });
-        setStyleAttribute(eventWrap, {
-            transform: `translateY(${this.translateY}px)`
-        });
+        setStyleAttribute(resWrap.querySelector('table') as HTMLElement, { transform: `translateY(${this.translateY}px)` });
+        setStyleAttribute(conWrap.querySelector('table') as HTMLElement, { transform: `translateY(${this.translateY}px)` });
+        setStyleAttribute(eventWrap, { transform: `translateY(${this.translateY}px)` });
         if (!isNullOrUndefined(timeIndicator)) {
-            setStyleAttribute(timeIndicator, {
-                transform: `translateY(${this.translateY}px)`
-            });
+            setStyleAttribute(timeIndicator, { transform: `translateY(${this.translateY}px)` });
         }
     }
 
     public destroy(): void {
         this.removeEventListener();
     }
+
 }

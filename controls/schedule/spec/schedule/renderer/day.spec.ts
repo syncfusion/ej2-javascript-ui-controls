@@ -1,5 +1,5 @@
 /**
- * Schedule day view spec 
+ * Schedule day view spec
  */
 import { createElement } from '@syncfusion/ej2-base';
 import {
@@ -16,11 +16,12 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, DragAndDrop);
 
 describe('Schedule day view', () => {
     beforeAll(() => {
-        // tslint:disable:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this as any).skip(); //Skips test (in Chai)
             return;
         }
@@ -29,7 +30,7 @@ describe('Schedule day view', () => {
     describe('Initial load', () => {
         let schObj: Schedule;
         beforeAll(() => {
-            let model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 4) };
+            const model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 4) };
             schObj = util.createSchedule(model, []);
         });
         afterAll(() => {
@@ -65,7 +66,7 @@ describe('Schedule day view', () => {
         });
 
         it('work cells', () => {
-            let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
             expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
@@ -102,7 +103,7 @@ describe('Schedule day view', () => {
         });
 
         it('width and height', () => {
-            let model: ScheduleModel = { height: '600px', width: '500px', currentView: 'Day', selectedDate: new Date(2017, 9, 4) };
+            const model: ScheduleModel = { height: '600px', width: '500px', currentView: 'Day', selectedDate: new Date(2017, 9, 4) };
             schObj = util.createSchedule(model, []);
             expect(schObj.element.style.width).toEqual('500px');
             expect(schObj.element.style.height).toEqual('600px');
@@ -111,7 +112,7 @@ describe('Schedule day view', () => {
         });
 
         it('start and end hour', () => {
-            let model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 4), startHour: '04:00', endHour: '11:00' };
+            const model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 4), startHour: '04:00', endHour: '11:00' };
             schObj = util.createSchedule(model, []);
             expect(schObj.getWorkCellElements().length).toEqual(14);
             expect(schObj.element.querySelectorAll('.e-work-hours').length).toEqual(4);
@@ -136,7 +137,7 @@ describe('Schedule day view', () => {
         });
 
         it('work hours start and end', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'Day', selectedDate: new Date(2017, 9, 4),
                 workHours: { highlight: true, start: '10:00', end: '16:00' }
             };
@@ -161,7 +162,7 @@ describe('Schedule day view', () => {
         });
 
         it('show weekend', () => {
-            let model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 5), showWeekend: false };
+            const model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 5), showWeekend: false };
             schObj = util.createSchedule(model, []);
             expect(schObj.getWorkCellElements().length).toEqual(48);
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML)
@@ -192,7 +193,7 @@ describe('Schedule day view', () => {
         });
 
         it('work days', () => {
-            let model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 5), workDays: [0, 1, 2, 3, 4] };
+            const model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 5), workDays: [0, 1, 2, 3, 4] };
             schObj = util.createSchedule(model, []);
             expect(schObj.getWorkCellElements().length).toEqual(48);
             expect(schObj.element.querySelectorAll('.e-work-hours').length).toEqual(18);
@@ -205,7 +206,7 @@ describe('Schedule day view', () => {
         });
 
         it('first day of week', () => {
-            let model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 5), firstDayOfWeek: 2 };
+            const model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 5), firstDayOfWeek: 2 };
             schObj = util.createSchedule(model, []);
             expect(schObj.getWorkCellElements().length).toEqual(48);
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 5, 2017');
@@ -216,7 +217,7 @@ describe('Schedule day view', () => {
         });
 
         it('Week Number and firstDayofWeek Combination', () => {
-            let model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2019, 0, 1), showWeekNumber: true };
+            const model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2019, 0, 1), showWeekNumber: true };
             schObj = util.createSchedule(model, []);
 
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('January 1, 2019');
@@ -237,7 +238,7 @@ describe('Schedule day view', () => {
         });
 
         it('date format', () => {
-            let model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 5), dateFormat: 'y MMM' };
+            const model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 5), dateFormat: 'y MMM' };
             schObj = util.createSchedule(model, []);
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('2017 Oct');
 
@@ -247,7 +248,7 @@ describe('Schedule day view', () => {
         });
 
         it('date header template', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'Day', selectedDate: new Date(2017, 9, 5),
                 dateHeaderTemplate: '<span>${getDateHeaderText(data.date)}</span>'
             };
@@ -261,8 +262,8 @@ describe('Schedule day view', () => {
         });
 
         it('cell template', () => {
-            let templateEle: HTMLElement = createElement('div', { innerHTML: '<span class="custom-element"></span>' });
-            let model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 5), cellTemplate: templateEle.innerHTML };
+            const templateEle: HTMLElement = createElement('div', { innerHTML: '<span class="custom-element"></span>' });
+            const model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 5), cellTemplate: templateEle.innerHTML };
             schObj = util.createSchedule(model, []);
             expect(schObj.element.querySelectorAll('.custom-element').length).toEqual(49);
             expect(schObj.element.querySelector('.e-date-header-container .e-all-day-cells').innerHTML).toEqual(templateEle.innerHTML);
@@ -274,15 +275,15 @@ describe('Schedule day view', () => {
         });
 
         it('check current date class', () => {
-            let model: ScheduleModel = { currentView: 'Day' };
+            const model: ScheduleModel = { currentView: 'Day' };
             schObj = util.createSchedule(model, []);
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').classList).toContain('e-current-day');
         });
 
         it('work cell click', () => {
-            let model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 5) };
+            const model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 5) };
             schObj = util.createSchedule(model, []);
-            let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.classList).not.toContain('e-selected-cell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             util.triggerMouseEvent(firstWorkCell, 'click');
@@ -292,8 +293,8 @@ describe('Schedule day view', () => {
         });
 
         it('header cell click day view navigation', () => {
-            let navFn: jasmine.Spy = jasmine.createSpy('navEvent');
-            let model: ScheduleModel = { navigating: navFn, currentView: 'Day', selectedDate: new Date(2017, 9, 5) };
+            const navFn: jasmine.Spy = jasmine.createSpy('navEvent');
+            const model: ScheduleModel = { navigating: navFn, currentView: 'Day', selectedDate: new Date(2017, 9, 5) };
             schObj = util.createSchedule(model, []);
             expect(navFn).toHaveBeenCalledTimes(0);
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML)
@@ -305,9 +306,9 @@ describe('Schedule day view', () => {
         });
 
         it('read only on cell click', () => {
-            let model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 5), readonly: true };
+            const model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 5), readonly: true };
             schObj = util.createSchedule(model, []);
-            let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.classList).not.toContain('e-selected-cell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             util.triggerMouseEvent(firstWorkCell, 'click');
@@ -316,7 +317,7 @@ describe('Schedule day view', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
             schObj.readonly = false;
             schObj.dataBind();
-            let firstWorkCell1: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const firstWorkCell1: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell1.classList).not.toContain('e-selected-cell');
             expect(firstWorkCell1.getAttribute('aria-selected')).toEqual('false');
             util.triggerMouseEvent(firstWorkCell1, 'click');
@@ -326,15 +327,15 @@ describe('Schedule day view', () => {
         });
 
         it('minDate and maxDate', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'Day',
                 minDate: new Date(2017, 9, 4),
                 selectedDate: new Date(2017, 9, 5),
                 maxDate: new Date(2017, 9, 6)
             };
             schObj = util.createSchedule(model, []);
-            let prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS);
-            let nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS);
+            const prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS);
+            const nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS);
             expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
             expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 5, 2017');
@@ -374,14 +375,14 @@ describe('Schedule day view', () => {
         });
 
         it('events call confirmation', () => {
-            let createdFn: jasmine.Spy = jasmine.createSpy('createdEvent');
-            let clickFn: jasmine.Spy = jasmine.createSpy('clickEvent');
-            let dblClickFn: jasmine.Spy = jasmine.createSpy('dblClickEvent');
-            let beginFn: jasmine.Spy = jasmine.createSpy('beginEvent');
-            let endFn: jasmine.Spy = jasmine.createSpy('endEvent');
-            let navFn: jasmine.Spy = jasmine.createSpy('navEvent');
-            let renderFn: jasmine.Spy = jasmine.createSpy('renderEvent');
-            let model: ScheduleModel = {
+            const createdFn: jasmine.Spy = jasmine.createSpy('createdEvent');
+            const clickFn: jasmine.Spy = jasmine.createSpy('clickEvent');
+            const dblClickFn: jasmine.Spy = jasmine.createSpy('dblClickEvent');
+            const beginFn: jasmine.Spy = jasmine.createSpy('beginEvent');
+            const endFn: jasmine.Spy = jasmine.createSpy('endEvent');
+            const navFn: jasmine.Spy = jasmine.createSpy('navEvent');
+            const renderFn: jasmine.Spy = jasmine.createSpy('renderEvent');
+            const model: ScheduleModel = {
                 created: createdFn,
                 cellClick: clickFn,
                 cellDoubleClick: dblClickFn,
@@ -409,7 +410,7 @@ describe('Schedule day view', () => {
             let eventName1: string;
             let eventName2: string;
             let eventName3: string;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 select: (args: SelectEventArgs) => {
                     eventName1 = args.name;
                     args.showQuickPopup = true;
@@ -419,12 +420,12 @@ describe('Schedule day view', () => {
                 currentView: 'Day', selectedDate: new Date(2017, 9, 5)
             };
             schObj = util.createSchedule(model, []);
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
             util.triggerMouseEvent(workCells[3], 'mousedown');
             util.triggerMouseEvent(workCells[3], 'mouseup');
             (schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement).click();
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
@@ -435,7 +436,7 @@ describe('Schedule day view', () => {
 
         it('multi cell select', () => {
             let eventName: string;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 select: (args: SelectEventArgs) => {
                     eventName = args.name;
                     args.showQuickPopup = true;
@@ -443,12 +444,12 @@ describe('Schedule day view', () => {
                 currentView: 'Day', selectedDate: new Date(2017, 9, 5)
             };
             schObj = util.createSchedule(model, []);
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
             util.triggerMouseEvent(workCells[3], 'mousedown');
             util.triggerMouseEvent(workCells[5], 'mousemove');
             util.triggerMouseEvent(workCells[5], 'mouseup');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
@@ -457,7 +458,7 @@ describe('Schedule day view', () => {
 
         it('validate start and end time on multi cell select', () => {
             let eventName: string;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 select: (args: SelectEventArgs) => {
                     eventName = args.name;
                     args.showQuickPopup = true;
@@ -465,12 +466,12 @@ describe('Schedule day view', () => {
                 currentView: 'Day', selectedDate: new Date(2017, 9, 5)
             };
             schObj = util.createSchedule(model, []);
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
             util.triggerMouseEvent(workCells[3], 'mousedown');
             util.triggerMouseEvent(workCells[5], 'mousemove');
             util.triggerMouseEvent(workCells[5], 'mouseup');
-            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
@@ -479,22 +480,23 @@ describe('Schedule day view', () => {
             expect(eventName).toEqual('select');
         });
 
-        it('event select', (done: Function) => {
+        it('event select', (done: DoneFn) => {
             let eventName1: string;
             let eventName2: string;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'Day', selectedDate: new Date(2017, 9, 5),
                 eventClick: (args: EventClickArgs) => eventName2 = args.name,
                 select: (args: SelectEventArgs) => eventName1 = args.name,
                 dataBound: () => {
-                    let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    const eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                     util.triggerMouseEvent(eventElements[0], 'click');
                     expect(eventName1).toEqual('select');
                     expect(eventName2).toEqual('eventClick');
                     done();
                 }
             };
-            let eventData: Object[] = [{
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const eventData: Record<string, any>[] = [{
                 Id: 1,
                 Subject: 'Server Maintenance',
                 StartTime: new Date(2017, 9, 5, 10),
@@ -507,7 +509,7 @@ describe('Schedule day view', () => {
             let cellStartTime: number;
             let cellEndTime: number;
             let eventName: string;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'Day', selectedDate: new Date(2017, 9, 5),
                 cellClick: (args: CellClickEventArgs) => {
                     cellStartTime = args.startTime.getTime();
@@ -523,12 +525,12 @@ describe('Schedule day view', () => {
         });
 
         it('cancel cell click', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'Day', selectedDate: new Date(2017, 9, 5),
                 cellClick: (args: CellClickEventArgs) => args.cancel = true
             };
             schObj = util.createSchedule(model, []);
-            let workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
+            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
             expect(workCell.classList).not.toContain('e-selected-cell');
             expect(workCell.getAttribute('aria-selected')).toEqual('false');
             util.triggerMouseEvent(workCell, 'click');
@@ -540,7 +542,7 @@ describe('Schedule day view', () => {
             let cellStartTime: number;
             let cellEndTime: number;
             let eventName: string;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'Day', selectedDate: new Date(2017, 9, 5),
                 cellDoubleClick: (args: CellClickEventArgs) => {
                     cellStartTime = args.startTime.getTime();
@@ -557,25 +559,25 @@ describe('Schedule day view', () => {
         });
 
         it('cancel cell double click', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'Day', selectedDate: new Date(2017, 9, 5),
                 cellDoubleClick: (args: CellClickEventArgs) => args.cancel = true
             };
             schObj = util.createSchedule(model, []);
-            let workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
+            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
             util.triggerMouseEvent(workCell, 'click');
             util.triggerMouseEvent(workCell, 'dblclick');
         });
 
         it('date navigating', () => {
-            let actionBeginArgs: ActionEventArgs = { cancel: false, name: 'actionBegin', requestType: 'dateNavigate' };
-            let actionCompleteArgs: ActionEventArgs = { cancel: false, name: 'actionComplete', requestType: 'dateNavigate' };
-            let navArgs: NavigatingEventArgs = {
+            const actionBeginArgs: ActionEventArgs = { cancel: false, name: 'actionBegin', requestType: 'dateNavigate' };
+            const actionCompleteArgs: ActionEventArgs = { cancel: false, name: 'actionComplete', requestType: 'dateNavigate' };
+            const navArgs: NavigatingEventArgs = {
                 action: 'date', cancel: false, name: 'navigating',
                 currentDate: new Date(2017, 9, 6), previousDate: new Date(2017, 9, 5)
             };
             let args: NavigatingEventArgs; let beginArgs: ActionEventArgs; let completeArgs: ActionEventArgs;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'Day', selectedDate: new Date(2017, 9, 5),
                 navigating: (e: NavigatingEventArgs) => args = e,
                 actionBegin: (e: ActionEventArgs) => beginArgs = e,
@@ -589,7 +591,7 @@ describe('Schedule day view', () => {
         });
 
         it('cancel date navigate in action begin', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'Day', selectedDate: new Date(2017, 9, 5),
                 actionBegin: (e: ActionEventArgs) => e.cancel = true
             };
@@ -602,7 +604,7 @@ describe('Schedule day view', () => {
         });
 
         it('cancel date navigating', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'Day', selectedDate: new Date(2017, 9, 5),
                 navigating: (e: NavigatingEventArgs) => e.cancel = true
             };
@@ -615,14 +617,14 @@ describe('Schedule day view', () => {
         });
 
         it('view navigating', () => {
-            let actionBeginArgs: ActionEventArgs = { cancel: false, name: 'actionBegin', requestType: 'viewNavigate' };
-            let actionCompleteArgs: ActionEventArgs = { cancel: false, name: 'actionComplete', requestType: 'viewNavigate' };
-            let navArgs: NavigatingEventArgs = {
+            const actionBeginArgs: ActionEventArgs = { cancel: false, name: 'actionBegin', requestType: 'viewNavigate' };
+            const actionCompleteArgs: ActionEventArgs = { cancel: false, name: 'actionComplete', requestType: 'viewNavigate' };
+            const navArgs: NavigatingEventArgs = {
                 action: 'view', cancel: false, name: 'navigating',
                 currentView: 'Week', previousView: 'Day'
             };
             let args: NavigatingEventArgs; let beginArgs: ActionEventArgs; let completeArgs: ActionEventArgs;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'Day', selectedDate: new Date(2017, 9, 5),
                 navigating: (e: NavigatingEventArgs) => args = e,
                 actionBegin: (e: ActionEventArgs) => beginArgs = e,
@@ -636,7 +638,7 @@ describe('Schedule day view', () => {
         });
 
         it('cancel view navigate in action begin', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'Day', selectedDate: new Date(2017, 9, 5),
                 actionBegin: (e: ActionEventArgs) => e.cancel = true
             };
@@ -647,7 +649,7 @@ describe('Schedule day view', () => {
         });
 
         it('cancel view navigating', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'Day', selectedDate: new Date(2017, 9, 5),
                 navigating: (e: NavigatingEventArgs) => e.cancel = true
             };
@@ -668,7 +670,7 @@ describe('Schedule day view', () => {
         });
 
         it('getCellDetails', () => {
-            let model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 5) };
+            const model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 5) };
             schObj = util.createSchedule(model, []);
             let data: CellClickEventArgs = schObj.getCellDetails(schObj.element.querySelector('.e-work-cells'));
             expect(data.startTime.getTime()).toEqual(new Date(2017, 9, 5).getTime());
@@ -682,10 +684,10 @@ describe('Schedule day view', () => {
         });
 
         it('setWorkHours', () => {
-            let model: ScheduleModel = { workHours: { highlight: false }, currentView: 'Day', selectedDate: new Date(2017, 9, 5) };
+            const model: ScheduleModel = { workHours: { highlight: false }, currentView: 'Day', selectedDate: new Date(2017, 9, 5) };
             schObj = util.createSchedule(model, []);
             schObj.setWorkHours([new Date(2017, 9, 5)], '04:00', '08:00');
-            let workHourCells: HTMLTableCellElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-hours'));
+            const workHourCells: HTMLTableCellElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-hours'));
             expect(workHourCells.length).toEqual(8);
             expect((workHourCells[0].parentElement as HTMLTableRowElement).rowIndex).toEqual(10);
             expect((workHourCells[workHourCells.length - 1].parentElement as HTMLTableRowElement).rowIndex).toEqual(17);
@@ -696,7 +698,7 @@ describe('Schedule day view', () => {
         });
 
         it('setWorkHours while start and end hour set', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 workHours: { highlight: false },
                 startHour: '04:00', endHour: '17:00',
                 currentView: 'Day', selectedDate: new Date(2017, 9, 5)
@@ -709,7 +711,7 @@ describe('Schedule day view', () => {
         });
 
         it('setWorkHours while date not in range', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 workHours: { highlight: false },
                 startHour: '04:00', endHour: '17:00',
                 currentView: 'Day', selectedDate: new Date(2017, 9, 5)
@@ -720,23 +722,23 @@ describe('Schedule day view', () => {
         });
 
         it('scrollTo', () => {
-            let model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 5), height: 500, width: 500 };
+            const model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 5), height: 500, width: 500 };
             schObj = util.createSchedule(model, []);
             schObj.scrollTo('06:00');
-            let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            const contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
             expect(contentArea.scrollTop).toEqual(432);
         });
 
         it('scrollTo empty hour', () => {
-            let model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 5), height: 500, width: 500 };
+            const model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 5), height: 500, width: 500 };
             schObj = util.createSchedule(model, []);
             schObj.scrollTo('');
-            let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            const contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
             expect(contentArea.scrollTop).toEqual(648);
         });
 
         it('interval count', () => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 height: '550px', width: '500px', currentView: 'Day',
                 views: [{ option: 'Day', interval: 3 }], selectedDate: new Date(2017, 9, 4)
             };
@@ -756,8 +758,8 @@ describe('Schedule day view', () => {
 
     describe('Resources with group', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%', height: '550px', currentView: 'Day',
                 selectedDate: new Date(2018, 3, 1),
                 group: { resources: ['Rooms', 'Owners'] },
@@ -796,8 +798,8 @@ describe('Schedule day view', () => {
 
     describe('Custom work days of Resources in group', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%', height: '550px', currentView: 'Day',
                 selectedDate: new Date(2018, 3, 1),
                 group: { resources: ['Rooms', 'Owners'] },
@@ -836,8 +838,8 @@ describe('Schedule day view', () => {
 
     describe('Resource header template of Resources in group', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%', height: '550px', currentView: 'Day',
                 selectedDate: new Date(2018, 3, 1),
                 resourceHeaderTemplate: '<p>${resourceData.text}</p>',
@@ -872,8 +874,8 @@ describe('Schedule day view', () => {
 
     describe('Resources with group by date', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 width: '100%', height: '550px', currentView: 'Day',
                 selectedDate: new Date(2018, 3, 1),
                 group: {
@@ -915,8 +917,8 @@ describe('Schedule day view', () => {
 
     describe('Default schedule block events', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = { width: '500px', height: '500px', currentView: 'Day', selectedDate: new Date(2017, 9, 30) };
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = { width: '500px', height: '500px', currentView: 'Day', selectedDate: new Date(2017, 9, 30) };
             schObj = util.createSchedule(schOptions, blockData.slice(0, 14), done);
         });
         afterAll(() => {
@@ -925,58 +927,58 @@ describe('Schedule day view', () => {
 
         it('block event initial rendering testing', () => {
             expect(schObj.element.querySelectorAll('.e-block-appointment').length).toEqual(1);
-            let blockEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const blockEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
             expect(blockEvent.offsetTop).toEqual(720);
             expect(blockEvent.style.width).toEqual('100%');
             expect(blockEvent.offsetHeight).toEqual(108);
         });
 
-        it('add event', (done: Function) => {
+        it('add event', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
-                let addedAppointment: HTMLElement = schObj.element.querySelector('[data-id="Appointment_15"]') as HTMLElement;
+                const addedAppointment: HTMLElement = schObj.element.querySelector('[data-id="Appointment_15"]') as HTMLElement;
                 expect(addedAppointment.offsetTop).toEqual(72);
                 expect(addedAppointment.style.width).toEqual('96%');
                 expect(addedAppointment.offsetHeight).toEqual(72);
                 done();
             };
-            let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
-            let timeCellsArea: HTMLElement = schObj.element.querySelector('.e-time-cells-wrap') as HTMLElement;
+            const contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            const timeCellsArea: HTMLElement = schObj.element.querySelector('.e-time-cells-wrap') as HTMLElement;
             util.triggerScrollEvent(contentArea, 648);
             expect(contentArea.scrollTop).toEqual(648);
             expect(timeCellsArea.scrollTop).toEqual(648);
             expect(schObj.blockData.length).toEqual(7);
             util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'click');
             util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'dblclick');
-            let startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            const startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
             startObj.value = new Date(2017, 9, 30, 10, 30);
             startObj.dataBind();
-            let endObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            const endObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
             endObj.value = new Date(2017, 9, 30, 11, 30);
             endObj.dataBind();
-            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            let saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
             saveButton.click();
-            let alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            const alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
             expect(schObj.quickPopup.quickDialog.visible).toBe(true);
             expect(alertDialog.querySelector('.e-dlg-content').innerHTML)
                 .toEqual('Events cannot be scheduled within the blocked time range.');
-            let okButton: HTMLElement = alertDialog.querySelector('.e-quick-alertok') as HTMLElement;
+            const okButton: HTMLElement = alertDialog.querySelector('.e-quick-alertok') as HTMLElement;
             okButton.click();
             expect(schObj.quickPopup.quickDialog.visible).toBe(false);
-            let startRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            const startRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
             startRevisedObj.value = new Date(2017, 9, 30, 1, 0);
             startRevisedObj.dataBind();
-            let endRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            const endRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
             endRevisedObj.value = new Date(2017, 9, 30, 2, 0);
             endRevisedObj.dataBind();
             saveButton.click();
         });
 
-        it('edit event', (done: Function) => {
+        it('edit event', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
-                let editedAppointment: HTMLElement = schObj.element.querySelector('[data-id="Appointment_15"]') as HTMLElement;
+                const editedAppointment: HTMLElement = schObj.element.querySelector('[data-id="Appointment_15"]') as HTMLElement;
                 expect(editedAppointment.offsetTop).toEqual(144);
                 expect(editedAppointment.style.width).toEqual('96%');
                 expect(editedAppointment.offsetHeight).toEqual(72);
@@ -984,26 +986,26 @@ describe('Schedule day view', () => {
             };
             util.triggerMouseEvent(schObj.element.querySelector('.e-appointment') as HTMLElement, 'click');
             util.triggerMouseEvent(schObj.element.querySelector('.e-appointment') as HTMLElement, 'dblclick');
-            let startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            const startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
             startObj.value = new Date(2017, 9, 30, 10, 30);
             startObj.dataBind();
-            let endObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            const endObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
             endObj.value = new Date(2017, 9, 30, 11, 30);
             endObj.dataBind();
-            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            let saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
             saveButton.click();
-            let alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            const alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
             expect(schObj.quickPopup.quickDialog.visible).toBe(true);
             expect(alertDialog.querySelector('.e-dlg-content').innerHTML)
                 .toEqual('Events cannot be scheduled within the blocked time range.');
-            let okButton: HTMLElement = alertDialog.querySelector('.e-quick-alertok') as HTMLElement;
+            const okButton: HTMLElement = alertDialog.querySelector('.e-quick-alertok') as HTMLElement;
             okButton.click();
             expect(schObj.quickPopup.quickDialog.visible).toBe(false);
-            let startRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            const startRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
             startRevisedObj.value = new Date(2017, 9, 30, 2, 0);
             startRevisedObj.dataBind();
-            let endRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            const endRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
             endRevisedObj.value = new Date(2017, 9, 30, 3, 0);
             endRevisedObj.dataBind();
             saveButton.click();
@@ -1012,8 +1014,8 @@ describe('Schedule day view', () => {
 
     describe('Multi level resource rendering in block events', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
                 height: '500px', width: '500px', currentView: 'Day',
                 selectedDate: new Date(2017, 9, 30),
                 group: { resources: ['Rooms', 'Owners'] },
@@ -1040,52 +1042,52 @@ describe('Schedule day view', () => {
             util.destroy(schObj);
         });
 
-        it('resource add event', (done: Function) => {
+        it('resource add event', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
-                let addAppointment: HTMLElement = schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement;
+                const addAppointment: HTMLElement = schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement;
                 expect(addAppointment.offsetTop).toEqual(72);
                 expect(addAppointment.style.width).toEqual('96%');
                 expect(addAppointment.offsetHeight).toEqual(72);
                 done();
             };
-            let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
-            let timeCellsArea: HTMLElement = schObj.element.querySelector('.e-time-cells-wrap') as HTMLElement;
+            const contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            const timeCellsArea: HTMLElement = schObj.element.querySelector('.e-time-cells-wrap') as HTMLElement;
             util.triggerScrollEvent(contentArea, 648);
             expect(contentArea.scrollTop).toEqual(648);
             expect(timeCellsArea.scrollTop).toEqual(648);
             expect(schObj.blockData.length).toEqual(10);
             util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'click');
             util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'dblclick');
-            let startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            const startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
             startObj.value = new Date(2017, 9, 30, 10, 30);
             startObj.dataBind();
-            let endObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            const endObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
             endObj.value = new Date(2017, 9, 30, 11, 30);
             endObj.dataBind();
-            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            let saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
             saveButton.click();
-            let alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            const alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
             expect(schObj.quickPopup.quickDialog.visible).toBe(true);
             expect(alertDialog.querySelector('.e-dlg-content').innerHTML)
                 .toEqual('Events cannot be scheduled within the blocked time range.');
-            let okButton: HTMLElement = alertDialog.querySelector('.e-quick-alertok') as HTMLElement;
+            const okButton: HTMLElement = alertDialog.querySelector('.e-quick-alertok') as HTMLElement;
             okButton.click();
             expect(schObj.quickPopup.quickDialog.visible).toBe(false);
-            let startRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            const startRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
             startRevisedObj.value = new Date(2017, 9, 30, 1, 0);
             startRevisedObj.dataBind();
-            let endRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            const endRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
             endRevisedObj.value = new Date(2017, 9, 30, 2, 0);
             endRevisedObj.dataBind();
             saveButton.click();
         });
 
-        it('resource edit event', (done: Function) => {
+        it('resource edit event', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
-                let editedAppointment: HTMLElement = schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement;
+                const editedAppointment: HTMLElement = schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement;
                 expect(editedAppointment.offsetTop).toEqual(144);
                 expect(editedAppointment.style.width).toEqual('96%');
                 expect(editedAppointment.offsetHeight).toEqual(72);
@@ -1093,26 +1095,26 @@ describe('Schedule day view', () => {
             };
             util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement, 'click');
             util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement, 'dblclick');
-            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            let startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
             startObj.value = new Date(2017, 9, 30, 10, 0);
             startObj.dataBind();
-            let endObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            const endObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
             endObj.value = new Date(2017, 9, 30, 11, 30);
             endObj.dataBind();
-            let saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
             saveButton.click();
-            let alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            const alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
             expect(schObj.quickPopup.quickDialog.visible).toBe(true);
             expect(alertDialog.querySelector('.e-dlg-content').innerHTML)
                 .toEqual('Events cannot be scheduled within the blocked time range.');
-            let okButton: HTMLElement = alertDialog.querySelector('.e-quick-alertok') as HTMLElement;
+            const okButton: HTMLElement = alertDialog.querySelector('.e-quick-alertok') as HTMLElement;
             okButton.click();
             expect(schObj.quickPopup.quickDialog.visible).toBe(false);
-            let startRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            const startRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
             startRevisedObj.value = new Date(2017, 9, 30, 2, 0);
             startRevisedObj.dataBind();
-            let endRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            const endRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
             endRevisedObj.value = new Date(2017, 9, 30, 3, 0);
             endRevisedObj.dataBind();
             saveButton.click();
@@ -1121,13 +1123,9 @@ describe('Schedule day view', () => {
 
     it('memory leak', () => {
         profile.sample();
-        // tslint:disable:no-any
-        let average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
+        const average: number = inMB(profile.averageChange);
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        const memory: number = inMB(getMemoryProfile());
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        // tslint:enable:no-any
     });
 });

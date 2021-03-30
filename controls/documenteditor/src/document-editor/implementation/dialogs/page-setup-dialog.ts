@@ -1,7 +1,7 @@
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { createElement, L10n } from '@syncfusion/ej2-base';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
-import { CheckBox, RadioButton, ChangeArgs } from '@syncfusion/ej2-buttons';
+import { CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 import { SelectionSectionFormat } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { WSectionFormat } from './../../implementation/format/index';
@@ -59,10 +59,12 @@ export class PageSetupDialog {
     private marginTab: HTMLDivElement;
     private paperTab: HTMLDivElement;
     private layoutTab: HTMLDivElement;
+
     /**
+     * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
      */
-    constructor(documentHelper: DocumentHelper) {
+    public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
     }
     private getModuleName(): string {
@@ -70,11 +72,14 @@ export class PageSetupDialog {
     }
     /**
      * @private
+     * @param {L10n} locale - Specifies the locale value
+     * @param {boolean} isRtl - Specifies the is rtl
+     * @returns {void}
      */
     public initPageSetupDialog(locale: L10n, isRtl?: boolean): void {
-        let id: string = this.documentHelper.owner.containerId + '_pagesetup_dialog';
+        const id: string = this.documentHelper.owner.containerId + '_pagesetup_dialog';
         this.target = createElement('div', { id: id, className: 'e-de-pagesetup-dlg-container' });
-        let ejtabContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_MarginTabContainer' });
+        const ejtabContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_MarginTabContainer' });
         this.target.appendChild(ejtabContainer);
         this.marginTab = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_marginPropertyTab', styles: 'position: relative;'
@@ -85,25 +90,24 @@ export class PageSetupDialog {
         this.layoutTab = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_CellPropertiesDialogTab', styles: 'position: relative;'
         });
-        // tslint:disable-next-line:max-line-length
-        let ejtab: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_PageSetupDialogTab', className: 'e-de-page-setup-ppty-tab' });
-        let headerContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-tab-header' });
-        let marginHeader: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        const ejtab: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_PageSetupDialogTab', className: 'e-de-page-setup-ppty-tab' });
+        const headerContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-tab-header' });
+        const marginHeader: HTMLDivElement = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_marginHeader', innerHTML: locale.getConstant('Margin')
         });
-        let paperHeader: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        const paperHeader: HTMLDivElement = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_paperHeader', innerHTML: locale.getConstant('Paper')
         });
-        let layoutHeader: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        const layoutHeader: HTMLDivElement = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_layoutHeader', innerHTML: locale.getConstant('Layout')
         });
         headerContainer.appendChild(marginHeader);
         headerContainer.appendChild(paperHeader);
         headerContainer.appendChild(layoutHeader);
 
-        let marginContent: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_marginContent' });
-        let paperContent: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_paperContent' });
-        let layoutContent: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_layoutContent' });
+        const marginContent: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_marginContent' });
+        const paperContent: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_paperContent' });
+        const layoutContent: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_layoutContent' });
         marginContent.appendChild(this.marginTab);
         paperContent.appendChild(this.paperTab);
         layoutContent.appendChild(this.layoutTab);
@@ -111,46 +115,48 @@ export class PageSetupDialog {
         this.initMarginProperties(this.marginTab, locale, isRtl);
         this.initPaperSizeProperties(this.paperTab, locale, isRtl);
         this.initLayoutProperties(this.layoutTab, locale, isRtl);
-        let items: TabItemModel[] = [
+        const items: TabItemModel[] = [
             { header: { text: marginHeader }, content: marginContent },
             { header: { text: paperHeader }, content: paperContent },
             { header: { text: layoutHeader }, content: layoutContent }];
-        let tabObj: Tab = new Tab({ items: items, enableRtl: isRtl }, ejtab);
+        const tabObj: Tab = new Tab({ items: items, enableRtl: isRtl }, ejtab);
         tabObj.isStringTemplate = true;
         this.target.addEventListener('keyup', this.keyUpInsertPageSettings);
     }
 
     /**
      * @private
+     * @param {HTMLDivElement} element - Specifies the div element
+     * @param {L10n} locale - Specifies the locale value
+     * @param {boolean} isRtl - Specifies the is rtl
+     * @returns {void}
      */
     public initMarginProperties(element: HTMLDivElement, locale: L10n, isRtl?: boolean): void {
-        let marginDiv: HTMLDivElement = createElement('div', {
+        const marginDiv: HTMLDivElement = createElement('div', {
             id: 'margin_div',
             className: 'e-de-page-setup-dlg-sub-container', styles: 'height:135px;'
         }) as HTMLDivElement;
-        // tslint:disable-next-line:max-line-length
-        let leftMarginDiv: HTMLDivElement = createElement('div', { id: 'left_margin', className: 'e-de-page-setup-dlg-left-sub-container' }) as HTMLDivElement;
+        const leftMarginDiv: HTMLDivElement = createElement('div', { id: 'left_margin', className: 'e-de-page-setup-dlg-left-sub-container' }) as HTMLDivElement;
         marginDiv.appendChild(leftMarginDiv);
-        // tslint:disable-next-line:max-line-length
-        let rightMarginDiv: HTMLDivElement = createElement('div', { className: 'e-de-page-setup-dlg-right-sub-container' }) as HTMLDivElement;
+        const rightMarginDiv: HTMLDivElement = createElement('div', { className: 'e-de-page-setup-dlg-right-sub-container' }) as HTMLDivElement;
         marginDiv.appendChild(rightMarginDiv);
         if (isRtl) {
             leftMarginDiv.classList.add('e-de-rtl');
             rightMarginDiv.classList.add('e-de-rtl');
         }
 
-        let topLabel: HTMLLabelElement = createElement('label', {
+        const topLabel: HTMLLabelElement = createElement('label', {
             innerHTML: locale.getConstant('Top'), className: 'e-de-page-setup-dlg-sub-header',
             id: this.target.id + '_TopLabel', styles: 'padding-top:0px;'
         }) as HTMLLabelElement;
-        let topTextBox: HTMLInputElement = createElement('input', {
+        const topTextBox: HTMLInputElement = createElement('input', {
             attrs: { 'type': 'text' }, id: this.target.id + '_Top'
         }) as HTMLInputElement;
-        let bottomBoxLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        const bottomBoxLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
             innerHTML: locale.getConstant('Bottom'),
             className: 'e-de-page-setup-dlg-sub-title-header', id: this.target.id + '_bottomLabel'
         });
-        let bottomTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        const bottomTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'text' },
             id: this.target.id + '_bottom'
         });
@@ -158,18 +164,18 @@ export class PageSetupDialog {
         leftMarginDiv.appendChild(topTextBox);
         leftMarginDiv.appendChild(bottomBoxLabel);
         leftMarginDiv.appendChild(bottomTextBox);
-        let leftBoxLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        const leftBoxLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
             innerHTML: locale.getConstant('Left'), className: 'e-de-page-setup-dlg-sub-header', styles: 'padding-top:0px;',
             id: this.target.id + '_leftLabel'
         });
-        let leftTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        const leftTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'text' }, id: this.target.id + '_left'
         });
-        let rightLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        const rightLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
             innerHTML: locale.getConstant('Right'),
             id: this.target.id + '_rightLabel', className: 'e-de-page-setup-dlg-sub-title-header'
         });
-        let rightTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        const rightTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'text' },
             id: this.target.id + '_right'
         });
@@ -188,30 +194,27 @@ export class PageSetupDialog {
         this.rightMarginBox = new NumericTextBox({ value: 74, width: 170, decimals: 2 });
         this.rightMarginBox.appendTo(rightTextBox);
 
-        // tslint:disable-next-line:max-line-length
-        let orientationDiv: HTMLDivElement = createElement('div', { id: 'orientation_div', className: 'e-de-page-setup-dlg-sub-container-port' }) as HTMLDivElement;
-        // tslint:disable-next-line:max-line-length
-        let orientationLabeldiv: HTMLElement = createElement('div', { id: '_orientationLabelDiv', className: 'e-de-page-setup-dlg-sub-label', innerHTML: locale.getConstant('Orientation') });
-        let orientationPropDiv: HTMLDivElement = createElement('div', { id: '_orientationPropDiv', styles: 'display: flex;', className: 'e-de-page-setup-dlg-orientation-prop' }) as HTMLDivElement;
+        const orientationDiv: HTMLDivElement = createElement('div', { id: 'orientation_div', className: 'e-de-page-setup-dlg-sub-container-port' }) as HTMLDivElement;
+        const orientationLabeldiv: HTMLElement = createElement('div', { id: '_orientationLabelDiv', className: 'e-de-page-setup-dlg-sub-label', innerHTML: locale.getConstant('Orientation') });
+        const orientationPropDiv: HTMLDivElement = createElement('div', { id: '_orientationPropDiv', styles: 'display: flex;', className: 'e-de-page-setup-dlg-orientation-prop' }) as HTMLDivElement;
         let portraitDivStyles: string;
         if (isRtl) {
             portraitDivStyles = 'padding-left: 30px;';
         } else {
             portraitDivStyles = 'padding-right: 30px;';
         }
-        let portraitDiv: HTMLDivElement = createElement('div', { id: '_portraitDiv', styles: portraitDivStyles }) as HTMLDivElement;
-        let portrait: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        const portraitDiv: HTMLDivElement = createElement('div', { id: '_portraitDiv', styles: portraitDivStyles }) as HTMLDivElement;
+        const portrait: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'radiobutton' }, id: this.target.id + '_portrait'
         });
-        let landscapeDiv: HTMLDivElement = createElement('div', { id: '_landscapeDiv' }) as HTMLDivElement;
-        let landscape: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        const landscapeDiv: HTMLDivElement = createElement('div', { id: '_landscapeDiv' }) as HTMLDivElement;
+        const landscape: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'radiobutton' }, id: this.target.id + '_landscape'
         });
         portraitDiv.appendChild(portrait); landscapeDiv.appendChild(landscape);
         orientationPropDiv.appendChild(portraitDiv); orientationPropDiv.appendChild(landscapeDiv);
         orientationDiv.appendChild(orientationLabeldiv);
         orientationDiv.appendChild(orientationPropDiv);
-        // tslint:disable-next-line:max-line-length
         this.portrait = new RadioButton({ label: locale.getConstant('Portrait'), checked: true, enableRtl: isRtl, change: this.onPortrait });
         this.landscape = new RadioButton({ label: locale.getConstant('Landscape'), enableRtl: isRtl, change: this.onLandscape });
         this.portrait.appendTo(portrait); this.landscape.appendTo(landscape);
@@ -219,39 +222,41 @@ export class PageSetupDialog {
     }
     /**
      * @private
+     * @param {HTMLDivElement} element - Specifies the div element
+     * @param {L10n} locale - Specifies the locale value
+     * @param {boolean} isRtl - Specifies the is rtl
+     * @returns {void}
      */
     public initPaperSizeProperties(element: HTMLDivElement, locale: L10n, isRtl?: boolean): void {
-        let sizeDiv: HTMLDivElement = createElement('div', {
+        const sizeDiv: HTMLDivElement = createElement('div', {
             id: 'size_div',
             className: 'e-de-page-setup-dlg-sub-size-container'
         }) as HTMLDivElement;
-        // tslint:disable-next-line:max-line-length
-        let leftSizeDiv: HTMLDivElement = createElement('div', { id: 'left_size', className: 'e-de-page-setup-dlg-left-sub-container' }) as HTMLDivElement;
+        const leftSizeDiv: HTMLDivElement = createElement('div', { id: 'left_size', className: 'e-de-page-setup-dlg-left-sub-container' }) as HTMLDivElement;
         sizeDiv.appendChild(leftSizeDiv);
-        // tslint:disable-next-line:max-line-length
-        let rightSizeDiv: HTMLDivElement = createElement('div', { className: 'e-de-page-setup-dlg-right-sub-container' }) as HTMLDivElement;
+        const rightSizeDiv: HTMLDivElement = createElement('div', { className: 'e-de-page-setup-dlg-right-sub-container' }) as HTMLDivElement;
         sizeDiv.appendChild(rightSizeDiv);
         if (isRtl) {
             leftSizeDiv.classList.add('e-de-rtl');
             rightSizeDiv.classList.add('e-de-rtl');
         }
 
-        let widthLabel: HTMLLabelElement = createElement('label', {
+        const widthLabel: HTMLLabelElement = createElement('label', {
             innerHTML: locale.getConstant('Width'), className: 'e-de-page-setup-dlg-sub-header',
             id: this.target.id + '_widthLabel', styles: 'padding-top:0px;'
         }) as HTMLLabelElement;
-        let widthTextBox: HTMLInputElement = createElement('input', {
+        const widthTextBox: HTMLInputElement = createElement('input', {
             attrs: { 'type': 'text' }, id: this.target.id + '_Width'
         }) as HTMLInputElement;
 
         leftSizeDiv.appendChild(widthLabel);
         leftSizeDiv.appendChild(widthTextBox);
 
-        let heightLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        const heightLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
             innerHTML: locale.getConstant('Height'), className: 'e-de-page-setup-dlg-sub-header', styles: 'padding-top:0px;',
             id: this.target.id + '_heightLabel'
         });
-        let heightTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        const heightTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'text' }, id: this.target.id + '_height'
         });
         rightSizeDiv.appendChild(heightLabel);
@@ -262,10 +267,8 @@ export class PageSetupDialog {
         this.widthBox.appendTo(widthTextBox);
         this.heightBox = new NumericTextBox({ value: 792, width: 170, decimals: 2 });
         this.heightBox.appendTo(heightTextBox);
-
-        // tslint:disable-next-line:max-line-length
-        let paperSizeDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { id: '_paperSizeDiv', styles: 'height:37px;', className: 'e-de-page-setup-dlg-sub-container' });
-        let paperSize: HTMLElement = createElement('select', {
+        const paperSizeDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { id: '_paperSizeDiv', styles: 'height:37px;', className: 'e-de-page-setup-dlg-sub-container' });
+        const paperSize: HTMLElement = createElement('select', {
             id: this.target.id + '_papersize', styles: 'width:170px;padding-bottom: 20px;',
             innerHTML: '<option value="letter">' + locale.getConstant('Letter') +
                 '</option><option value="tabloid">' + locale.getConstant('Tabloid') +
@@ -286,19 +289,20 @@ export class PageSetupDialog {
     }
     /**
      * @private
+     * @param {HTMLDivElement} element - Specifies the div element
+     * @param {L10n} locale - Specifies the locale value
+     * @param {boolean} isRtl - Specifies the is rtl
+     * @returns {void}
      */
     public initLayoutProperties(element: HTMLDivElement, locale: L10n, isRtl?: boolean): void {
-        // tslint:disable-next-line:max-line-length
-        let layoutDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { id: '_layoutDiv', className: 'e-de-page-setup-dlg-layout-sub-container', });
-        // tslint:disable-next-line:max-line-length
-        let firstPageDiv: HTMLDivElement = createElement('div', { id: '_firstPageDiv', styles: 'height: 27px;', className: 'e-de-page-setup-dlg-first-page-prop' }) as HTMLDivElement;
-        let checkBox1: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        const layoutDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { id: '_layoutDiv', className: 'e-de-page-setup-dlg-layout-sub-container' });
+        const firstPageDiv: HTMLDivElement = createElement('div', { id: '_firstPageDiv', styles: 'height: 27px;', className: 'e-de-page-setup-dlg-first-page-prop' }) as HTMLDivElement;
+        const checkBox1: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'checkbox' }, id: this.target.id + '_oddoreven'
         });
         firstPageDiv.appendChild(checkBox1);
-        // tslint:disable-next-line:max-line-length
-        let oddOrEvenDiv: HTMLDivElement = createElement('div', { id: '_oddOrEvenDiv', styles: 'height: 27px;', className: 'e-de-page-setup-dlg-odd-or-even-prop' }) as HTMLDivElement;
-        let checkBox2: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        const oddOrEvenDiv: HTMLDivElement = createElement('div', { id: '_oddOrEvenDiv', styles: 'height: 27px;', className: 'e-de-page-setup-dlg-odd-or-even-prop' }) as HTMLDivElement;
+        const checkBox2: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'checkbox' }, id: this.target.id + '_even'
         });
         oddOrEvenDiv.appendChild(checkBox2);
@@ -309,43 +313,39 @@ export class PageSetupDialog {
         this.checkBox1.appendTo(checkBox1); this.checkBox2.appendTo(checkBox2);
         element.appendChild(layoutDiv);
 
-        // tslint:disable-next-line:max-line-length
-        let textLabelDiv: HTMLDivElement = createElement('div', { id: '_textLabelDiv', className: 'e-de-page-setup-dlg-sub-label' }) as HTMLDivElement;
-        let textLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        const textLabelDiv: HTMLDivElement = createElement('div', { id: '_textLabelDiv', className: 'e-de-page-setup-dlg-sub-label' }) as HTMLDivElement;
+        const textLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
             innerHTML: locale.getConstant('From edge'), id: this.target.id + '_textLabel'
         });
         textLabelDiv.appendChild(textLabel);
         element.appendChild(textLabelDiv);
 
-        // tslint:disable-next-line:max-line-length
-        let propertyDiv: HTMLDivElement = createElement('div', { id: '_headerFooeterPropDiv', className: 'e-de-page-setup-dlg-sub-container', styles: 'height: 65px;' }) as HTMLDivElement;
-        // tslint:disable-next-line:max-line-length
-        let leftLayoutDiv: HTMLDivElement = createElement('div', { id: '_leftLayoutDiv', className: 'e-de-page-setup-dlg-left-layout-container' }) as HTMLDivElement;
+        const propertyDiv: HTMLDivElement = createElement('div', { id: '_headerFooeterPropDiv', className: 'e-de-page-setup-dlg-sub-container', styles: 'height: 65px;' }) as HTMLDivElement;
+        const leftLayoutDiv: HTMLDivElement = createElement('div', { id: '_leftLayoutDiv', className: 'e-de-page-setup-dlg-left-layout-container' }) as HTMLDivElement;
         propertyDiv.appendChild(leftLayoutDiv);
-        // tslint:disable-next-line:max-line-length
-        let rightLayoutDiv: HTMLDivElement = createElement('div', { className: 'e-de-page-setup-dlg-right-layout-container' }) as HTMLDivElement;
+        const rightLayoutDiv: HTMLDivElement = createElement('div', { className: 'e-de-page-setup-dlg-right-layout-container' }) as HTMLDivElement;
         propertyDiv.appendChild(rightLayoutDiv);
         if (isRtl) {
             rightLayoutDiv.classList.add('e-de-rtl');
             leftLayoutDiv.classList.add('e-de-rtl');
         }
 
-        let headerLabel: HTMLLabelElement = createElement('label', {
+        const headerLabel: HTMLLabelElement = createElement('label', {
             innerHTML: locale.getConstant('Header'), className: 'e-de-page-setup-dlg-sub-header',
             id: this.target.id + '_headerLabel', styles: 'padding-top:0px;'
         }) as HTMLLabelElement;
-        let headerBox: HTMLInputElement = createElement('input', {
+        const headerBox: HTMLInputElement = createElement('input', {
             attrs: { 'type': 'text' }, id: this.target.id + '_header'
         }) as HTMLInputElement;
 
         leftLayoutDiv.appendChild(headerLabel);
         leftLayoutDiv.appendChild(headerBox);
 
-        let footerLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        const footerLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
             innerHTML: locale.getConstant('Footer'), className: 'e-de-page-setup-dlg-sub-header', styles: 'padding-top:0px;',
             id: this.target.id + '_footerLabel'
         });
-        let footerBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        const footerBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'text' }, id: this.target.id + '_footer'
         });
         rightLayoutDiv.appendChild(footerLabel);
@@ -359,9 +359,10 @@ export class PageSetupDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public show(): void {
-        let localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        const localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         localValue.setLocale(this.documentHelper.owner.locale);
         if (!this.target) {
             this.initPageSetupDialog(localValue, this.documentHelper.owner.enableRtl);
@@ -386,10 +387,11 @@ export class PageSetupDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public loadPageSetupDialog = (): void => {
         this.documentHelper.updateFocus();
-        let sectionFormat: SelectionSectionFormat = this.documentHelper.selection.sectionFormat;
+        const sectionFormat: SelectionSectionFormat = this.documentHelper.selection.sectionFormat;
         this.topMarginBox.value = sectionFormat.topMargin;
         this.leftMarginBox.value = sectionFormat.leftMargin;
         this.bottomMarginBox.value = sectionFormat.bottomMargin;
@@ -405,9 +407,9 @@ export class PageSetupDialog {
         } else {
             this.portrait.checked = true;
         }
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.setPageSize(this.portrait.checked, parseFloat(sectionFormat.pageWidth.toFixed(1)), parseFloat(sectionFormat.pageHeight.toFixed(1)));
-    }
+    };
     private setPageSize(isPortrait: boolean, width: number, height: number): void {
         if ((isPortrait && width === 612 && height === 792)
             || (!isPortrait && width === 792 && height === 612)) {
@@ -445,32 +447,37 @@ export class PageSetupDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public closePageSetupDialog = (): void => {
         this.unWireEventsAndBindings();
         this.documentHelper.updateFocus();
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public onCancelButtonClick = (): void => {
         this.documentHelper.dialog.hide();
         this.unWireEventsAndBindings();
         this.documentHelper.updateFocus();
-    }
+    };
     /**
      * @private
+     * @param {KeyboardEvent} event - Specifies the event args.
+     * @returns {void}
      */
     public keyUpInsertPageSettings = (event: KeyboardEvent): void => {
         if (event.keyCode === 13) {
             this.applyPageSetupProperties();
         }
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public applyPageSetupProperties = (): void => {
-        let sectionFormat: WSectionFormat = new WSectionFormat();
+        const sectionFormat: WSectionFormat = new WSectionFormat();
         sectionFormat.bottomMargin = this.bottomMarginBox.value;
         sectionFormat.topMargin = this.topMarginBox.value;
         sectionFormat.leftMargin = this.leftMarginBox.value;
@@ -483,16 +490,18 @@ export class PageSetupDialog {
         sectionFormat.footerDistance = this.footerBox.value;
         this.documentHelper.owner.editorModule.onApplySectionFormat(undefined, sectionFormat);
         this.documentHelper.hideDialog();
-    }
+    };
     /**
      * @private
+     * @param {ChangeEventArgs} event - Specifies the event args.
+     * @returns {void}
      */
     public changeByPaperSize = (event: ChangeEventArgs): void => {
-        let value: string = event.value as string;
-        let sectionFormat: SelectionSectionFormat = this.documentHelper.selection.sectionFormat;
-        let width: number = sectionFormat.pageWidth;
-        let height: number = sectionFormat.pageHeight;
-        /* tslint:disable-next-line:max-line-length */
+        const value: string = event.value as string;
+        // const sectionFormat: SelectionSectionFormat = this.documentHelper.selection.sectionFormat;
+        // const width: number = sectionFormat.pageWidth;
+        // const height: number = sectionFormat.pageHeight;
+        /* eslint-disable-next-line max-len */
         if (this.documentHelper.selection.sectionFormat.pageWidth > this.documentHelper.selection.sectionFormat.pageHeight || this.landscape.checked) {
             this.isPortrait = false; this.portrait.checked = false;
         } else {
@@ -587,33 +596,36 @@ export class PageSetupDialog {
                 this.heightBox.value =  this.documentHelper.selection.sectionFormat.pageHeight;
             }
         }
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
-    public onPortrait = (event: ChangeArgs): void => {
+    public onPortrait = (): void => {
         this.landscape.checked = false;
-        let width: number = this.widthBox.value;
-        let height: number = this.heightBox.value;
+        const width: number = this.widthBox.value;
+        const height: number = this.heightBox.value;
         if (width > height) {
             this.widthBox.value = height;
             this.heightBox.value = width;
         }
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
-    public onLandscape = (event: ChangeArgs): void => {
+    public onLandscape = (): void => {
         this.portrait.checked = false;
-        let width: number = this.widthBox.value;
-        let height: number = this.heightBox.value;
+        const width: number = this.widthBox.value;
+        const height: number = this.heightBox.value;
         if (width < height) {
             this.widthBox.value = height;
             this.heightBox.value = width;
         }
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public unWireEventsAndBindings = (): void => {
         this.paperSize.value = undefined;
@@ -629,9 +641,10 @@ export class PageSetupDialog {
         this.checkBox2.checked = false;
         this.portrait.checked = false;
         this.landscape.checked = false;
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         if (this.topMarginBox) {

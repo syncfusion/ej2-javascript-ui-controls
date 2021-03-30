@@ -1,11 +1,11 @@
 import { Smithchart} from '../../index';
 
-
-
 /**
  * Specifies Smithchart Events
+ *
  * @private
  */
+
 export interface ISmithchartEventArgs {
     /** Defines the name of the event */
     name: string;
@@ -36,15 +36,6 @@ export interface ISmithchartAnimationCompleteEventArgs extends ISmithchartEventA
      * smithchart instance event argument
      */
     smithchart?: Smithchart;
-}
-
-export interface ISmithchartLegendRenderEventArgs extends ISmithchartEventArgs {
-    /** Defines the current legend text */
-    text: string;
-    /** Defines the current legend fill color */
-    fill: string;
-    /** Defines the current legend shape */
-    shape: string;
 }
 
 /**

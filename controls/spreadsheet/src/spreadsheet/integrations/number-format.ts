@@ -13,7 +13,7 @@ export class NumberFormat {
     }
 
     private refreshCellElement(args: RefreshValueArgs): void {
-        let cell: HTMLElement = this.parent.getCell(args.rowIndex, args.colIndex);
+        const cell: HTMLElement = this.parent.getCell(args.rowIndex, args.colIndex);
         if (!isNullOrUndefined(cell)) {
             this.parent.refreshNode(cell as Element, args);
         }
@@ -21,7 +21,9 @@ export class NumberFormat {
 
     /**
      * Adding event listener for number format.
+     *
      * @hidden
+     * @returns {void} - Adding event listener for number format.
      */
     private addEventListener(): void {
         this.parent.on(refreshCellElement, this.refreshCellElement, this);
@@ -29,7 +31,9 @@ export class NumberFormat {
 
     /**
      * Removing event listener for number format.
+     *
      * @hidden
+     * @returns {void} - Removing event listener for number format.
      */
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
@@ -39,6 +43,8 @@ export class NumberFormat {
 
     /**
      * To Remove the event listeners.
+     *
+     * @returns {void} - To Remove the event listeners.
      */
     public destroy(): void {
         this.removeEventListener();
@@ -47,6 +53,8 @@ export class NumberFormat {
 
     /**
      * Get the workbook import module name.
+     *
+     * @returns {string} - Get the workbook import module name.
      */
     public getModuleName(): string {
         return 'numberFormat';

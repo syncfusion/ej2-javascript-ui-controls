@@ -1,3 +1,9 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { Chart } from '../chart';
 import { EventHandler, Browser, createElement } from '@syncfusion/ej2-base';
 import { getRectLocation, minMax, getElement, ChartLocation, RectOption } from '../../common/utils/helper';
@@ -6,7 +12,6 @@ import { Axis } from '../axis/axis';
 import { Toolkit } from './zooming-toolkit';
 import { AxisModel } from '../axis/axis-model';
 import { VisibleRangeModel } from '../axis/axis';
-import { Series } from '../series/chart-series';
 import { ZoomMode, ToolbarItems } from '../utils/enum';
 import { ZoomSettingsModel } from '../chart-model';
 import { CartesianAxisLayoutPanel } from '../axis/cartesian-panel';
@@ -58,7 +63,8 @@ export class Zoom {
 
     /**
      * Constructor for Zooming module.
-     * @private.
+     *
+     * @private
      */
 
     constructor(chart: Chart) {
@@ -69,7 +75,7 @@ export class Zoom {
         this.cancelEvent = this.isPointer ? 'pointerleave' : 'mouseleave';
         this.addEventListener();
         this.isDevice = Browser.isDevice;
-        let zooming: ZoomSettingsModel = chart.zoomSettings;
+        const zooming: ZoomSettingsModel = chart.zoomSettings;
         this.toolkit = new Toolkit(chart);
         this.zooming = zooming;
         this.elementId = chart.element.id;
@@ -87,10 +93,11 @@ export class Zoom {
 
     /**
      * Function that handles the Rectangular zooming.
-     * @return {void}
+     *
+     * @returns {void}
      */
     public renderZooming(e: PointerEvent | TouchEvent, chart: Chart, isTouch: boolean): void {
-        this.calculateZoomAxesRange(chart, chart.axisCollections);
+        this.calculateZoomAxesRange(chart);
         if (this.zooming.enableSelectionZooming && (!isTouch
             || (chart.isDoubleTap && this.touchStartList.length === 1)) && (!this.isPanning || chart.isDoubleTap)) {
             this.isPanning = this.isDevice ? true : this.isPanning;
@@ -106,10 +113,10 @@ export class Zoom {
 
     // Zooming rectangle drawn here
     private drawZoomingRectangle(chart: Chart): void {
-        let areaBounds: Rect = chart.chartAxisLayoutPanel.seriesClipRect;
-        let startLocation: ChartLocation = new ChartLocation(chart.previousMouseMoveX, chart.previousMouseMoveY);
-        let endLocation: ChartLocation = new ChartLocation(chart.mouseX, chart.mouseY);
-        let rect: Rect = this.zoomingRect = getRectLocation(startLocation, endLocation, areaBounds);
+        const areaBounds: Rect = chart.chartAxisLayoutPanel.seriesClipRect;
+        const startLocation: ChartLocation = new ChartLocation(chart.previousMouseMoveX, chart.previousMouseMoveY);
+        const endLocation: ChartLocation = new ChartLocation(chart.mouseX, chart.mouseY);
+        const rect: Rect = this.zoomingRect = getRectLocation(startLocation, endLocation, areaBounds);
         if (rect.width > 0 && rect.height > 0) {
             this.isZoomed = true;
             chart.disableTrackTooltip = true;
@@ -121,18 +128,18 @@ export class Zoom {
                 rect.width = areaBounds.width;
                 rect.x = areaBounds.x;
             }
-            let svg: Element = chart.enableCanvas ? document.getElementById(this.elementId + '_tooltip_svg') : chart.svgObject;
+            const svg: Element = chart.enableCanvas ? document.getElementById(this.elementId + '_tooltip_svg') : chart.svgObject;
             svg.appendChild(chart.svgRenderer.drawRectangle(new RectOption(
-                    this.elementId + '_ZoomArea', chart.themeStyle.selectionRectFill,
-                    { color: chart.themeStyle.selectionRectStroke, width: 1 }, 1, rect, 0, 0, '', '3')
-                ) as HTMLElement);
+                this.elementId + '_ZoomArea', chart.themeStyle.selectionRectFill,
+                { color: chart.themeStyle.selectionRectStroke, width: 1 }, 1, rect, 0, 0, '', '3')
+            ) as HTMLElement);
         }
     }
 
     // Panning performed here
     private doPan(chart: Chart, axes: AxisModel[]): void {
         if (chart.startMove && chart.crosshair.enable) {
-           return null;
+            return null;
         }
         let currentScale: number;
         let offset: number;
@@ -142,9 +149,8 @@ export class Zoom {
         this.zoomCompleteEvtCollection = [];
         chart.disableTrackTooltip = true;
         let argsData: IZoomCompleteEventArgs;
-        let zoomingEventArgs: IZoomingEventArgs;
-        let zoomedAxisCollection: IAxisData[] = [];
-        for (let axis of (axes as Axis[])) {
+        const zoomedAxisCollection: IAxisData[] = [];
+        for (const axis of (axes as Axis[])) {
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
                 previousZoomPosition: axis.zoomPosition, currentZoomFactor: axis.zoomFactor,
@@ -169,11 +175,11 @@ export class Zoom {
                 axisRange: axis.visibleRange
             });
         }
-        zoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
+        const zoomingEventArgs: IZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
         if (!zoomingEventArgs.cancel && this.chart.isBlazor) {
             this.chart.trigger(onZooming, zoomingEventArgs, () => {
                 this.performDefferedZoom(chart);
-             });
+            });
         } else {
             this.performDefferedZoom(chart);
             this.redrawOnZooming(chart, false);
@@ -187,12 +193,12 @@ export class Zoom {
             translateX = chart.mouseX - chart.mouseDownX;
             translateY = chart.mouseY - chart.mouseDownY;
             switch (this.zooming.mode) {
-                case 'X':
-                    translateY = 0;
-                    break;
-                case 'Y':
-                    translateX = 0;
-                    break;
+            case 'X':
+                translateY = 0;
+                break;
+            case 'Y':
+                translateX = 0;
+                break;
             }
             this.setTransform(translateX, translateY, null, null, chart, false);
             this.refreshAxis(<CartesianAxisLayoutPanel>chart.chartAxisLayoutPanel, chart, chart.axisCollections);
@@ -208,11 +214,12 @@ export class Zoom {
 
     /**
      * Redraw the chart on zooming.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public performZoomRedraw(chart: Chart): void {
-        let rect: Rect = this.zoomingRect;
+        const rect: Rect = this.zoomingRect;
         chart.animateSeries = false;
         if (this.isZoomed) {
             if (rect.width > 0 && rect.height > 0) {
@@ -231,7 +238,7 @@ export class Zoom {
     }
 
     private refreshAxis(layout: CartesianAxisLayoutPanel, chart: Chart, axes: AxisModel[]): void {
-        let mode: ZoomMode = chart.zoomSettings.mode;
+        const mode: ZoomMode = chart.zoomSettings.mode;
         layout.measureAxis(new Rect(
             chart.initialClipRect.x, chart.initialClipRect.y, chart.initialClipRect.width, chart.initialClipRect.height));
         axes.map((axis: Axis, index: number) => {
@@ -246,13 +253,12 @@ export class Zoom {
 
     // Rectangular zoom calculated here performed here
     private doZoom(chart: Chart, axes: AxisModel[], bounds: Rect): void {
-        let zoomRect: Rect = this.zoomingRect;
-        let mode: ZoomMode = this.zooming.mode;
+        const zoomRect: Rect = this.zoomingRect;
+        const mode: ZoomMode = this.zooming.mode;
         let argsData: IZoomCompleteEventArgs;
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
-        let onZoomingEventArg: IZoomingEventArgs;
-        let zoomedAxisCollections: IAxisData[] = []; this.zoomCompleteEvtCollection = [];
-        for (let axis of (axes as Axis[])) {
+        const zoomedAxisCollections: IAxisData[] = []; this.zoomCompleteEvtCollection = [];
+        for (const axis of (axes as Axis[])) {
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis,
                 previousZoomFactor: axis.zoomFactor,
@@ -284,10 +290,10 @@ export class Zoom {
             });
         }
 
-        onZoomingEventArg = { cancel: false, axisCollection: zoomedAxisCollections, name: onZooming };
+        const onZoomingEventArg: IZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollections, name: onZooming };
         if (!onZoomingEventArg.cancel && this.chart.isBlazor) {
             this.chart.trigger(onZooming, onZoomingEventArg, () => { this.zoomingRect = new Rect(0, 0, 0, 0);
-                                                                     this.performZoomRedraw(chart); });
+                this.performZoomRedraw(chart); });
         } else {
             this.zoomingRect = new Rect(0, 0, 0, 0);
             this.redrawOnZooming(chart);
@@ -296,8 +302,8 @@ export class Zoom {
 
     /** It is used to redraw the chart and trigger zoomComplete event */
     private redrawOnZooming(chart: Chart, isRedraw: boolean = true, isMouseUp: boolean = false): void {
-        let zoomCompleteCollection: IZoomCompleteEventArgs[] = isMouseUp ? this.toolkit.zoomCompleteEvtCollection :
-        this.zoomCompleteEvtCollection;
+        const zoomCompleteCollection: IZoomCompleteEventArgs[] = isMouseUp ? this.toolkit.zoomCompleteEvtCollection :
+            this.zoomCompleteEvtCollection;
         if (isRedraw) {
             this.performZoomRedraw(chart);
         }
@@ -321,27 +327,27 @@ export class Zoom {
 
     /**
      * Function that handles the Mouse wheel zooming.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public performMouseWheelZooming(e: WheelEvent, mouseX: number, mouseY: number, chart: Chart, axes: AxisModel[]): void {
-        let direction: number = (this.browserName === 'mozilla' && !this.isPointer) ?
-            -(e.detail) / 3 > 0 ? 1 : -1 : (e.wheelDelta > 0 ? 1 : -1);
-        let mode: ZoomMode = this.zooming.mode;
+        const direction: number = (this.browserName === 'mozilla' && !this.isPointer) ?
+            -(e.detail) / 3 > 0 ? 1 : -1 : (e['wheelDelta'] > 0 ? 1 : -1);
+        const mode: ZoomMode = this.zooming.mode;
         let origin: number = 0.5;
         let cumulative: number;
         let zoomFactor: number;
         let zoomPosition: number;
         this.isZoomed = true;
-        this.calculateZoomAxesRange(chart, chart.axisCollections);
+        this.calculateZoomAxesRange(chart);
         chart.disableTrackTooltip = true;
         this.performedUI =  true;
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
         this.zoomCompleteEvtCollection = [];
         let argsData: IZoomCompleteEventArgs;
-        let onZoomingEventArgs: IZoomingEventArgs;
-        let zoomedAxisCollection: IAxisData[] = [];
-        for (let axis of (axes as Axis[])) {
+        const zoomedAxisCollection: IAxisData[] = [];
+        for (const axis of (axes as Axis[])) {
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
                 previousZoomPosition: axis.zoomPosition,
@@ -374,7 +380,7 @@ export class Zoom {
                 axisRange: axis.visibleRange
             });
         }
-        onZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
+        const onZoomingEventArgs: IZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
         if (!onZoomingEventArgs.cancel && this.chart.isBlazor) {
             this.chart.trigger(onZooming, onZoomingEventArgs, () => { this.performZoomRedraw(chart); });
         } else {
@@ -384,56 +390,50 @@ export class Zoom {
 
     /**
      * Function that handles the Pinch zooming.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public performPinchZooming(e: TouchEvent, chart: Chart): boolean {
         if ((this.zoomingRect.width > 0 && this.zoomingRect.height > 0) || (chart.startMove && chart.crosshair.enable)) {
             return false;
         }
-        this.calculateZoomAxesRange(chart, chart.axisCollections);
+        this.calculateZoomAxesRange(chart);
         this.isZoomed = true;
         this.isPanning = true;
         this.performedUI = true;
         this.offset = !chart.delayRedraw ? chart.chartAxisLayoutPanel.seriesClipRect : this.offset;
         chart.delayRedraw = true;
         chart.disableTrackTooltip = true;
-        let elementOffset: ClientRect = chart.element.getBoundingClientRect();
-        let touchDown: TouchList = <TouchList>this.touchStartList;
-        let touchMove: TouchList = <TouchList>this.touchMoveList;
-        let touch0StartX: number = touchDown[0].pageX - elementOffset.left;
-        let touch0StartY: number = touchDown[0].pageY - elementOffset.top;
-        let touch0EndX: number = touchMove[0].pageX - elementOffset.left;
-        let touch0EndY: number = touchMove[0].pageY - elementOffset.top;
-        let touch1StartX: number = touchDown[1].pageX - elementOffset.left;
-        let touch1StartY: number = touchDown[1].pageY - elementOffset.top;
-        let touch1EndX: number = touchMove[1].pageX - elementOffset.left;
-        let touch1EndY: number = touchMove[1].pageY - elementOffset.top;
-        let scaleX: number;
-        let scaleY: number;
-        let translateXValue: number;
-        let translateYValue: number;
-        let pinchRect: Rect;
-        let clipX: number;
-        let clipY: number;
-        scaleX = Math.abs(touch0EndX - touch1EndX) / Math.abs(touch0StartX - touch1StartX);
-        scaleY = Math.abs(touch0EndY - touch1EndY) / Math.abs(touch0StartY - touch1StartY);
-        clipX = ((this.offset.x - touch0EndX) / scaleX) + touch0StartX;
-        clipY = ((this.offset.y - touch0EndY) / scaleY) + touch0StartY;
-        pinchRect = new Rect(clipX, clipY, this.offset.width / scaleX, this.offset.height / scaleY);
-        translateXValue = (touch0EndX - (scaleX * touch0StartX));
-        translateYValue = (touch0EndY - (scaleY * touch0StartY));
+        const elementOffset: ClientRect = chart.element.getBoundingClientRect();
+        const touchDown: TouchList = <TouchList>this.touchStartList;
+        const touchMove: TouchList = <TouchList>this.touchMoveList;
+        const touch0StartX: number = touchDown[0].pageX - elementOffset.left;
+        const touch0StartY: number = touchDown[0].pageY - elementOffset.top;
+        const touch0EndX: number = touchMove[0].pageX - elementOffset.left;
+        const touch0EndY: number = touchMove[0].pageY - elementOffset.top;
+        const touch1StartX: number = touchDown[1].pageX - elementOffset.left;
+        const touch1StartY: number = touchDown[1].pageY - elementOffset.top;
+        const touch1EndX: number = touchMove[1].pageX - elementOffset.left;
+        const touch1EndY: number = touchMove[1].pageY - elementOffset.top;
+        const scaleX: number = Math.abs(touch0EndX - touch1EndX) / Math.abs(touch0StartX - touch1StartX);
+        const scaleY: number = Math.abs(touch0EndY - touch1EndY) / Math.abs(touch0StartY - touch1StartY);
+        const clipX: number = ((this.offset.x - touch0EndX) / scaleX) + touch0StartX;
+        const clipY: number = ((this.offset.y - touch0EndY) / scaleY) + touch0StartY;
+        const pinchRect: Rect = new Rect(clipX, clipY, this.offset.width / scaleX, this.offset.height / scaleY);
+        const translateXValue: number = (touch0EndX - (scaleX * touch0StartX));
+        const translateYValue: number = (touch0EndY - (scaleY * touch0StartY));
         if (!isNaN(scaleX - scaleX) && !isNaN(scaleY - scaleY)) {
             switch (this.zooming.mode) {
-                case 'XY':
-                    this.setTransform(translateXValue, translateYValue, scaleX, scaleY, chart, true);
-                    break;
-                case 'X':
-                    this.setTransform(translateXValue, 0, scaleX, 1, chart, true);
-                    break;
-                case 'Y':
-                    this.setTransform(0, translateYValue, 1, scaleY, chart, true);
-                    break;
+            case 'XY':
+                this.setTransform(translateXValue, translateYValue, scaleX, scaleY, chart, true);
+                break;
+            case 'X':
+                this.setTransform(translateXValue, 0, scaleX, 1, chart, true);
+                break;
+            case 'Y':
+                this.setTransform(0, translateYValue, 1, scaleY, chart, true);
+                break;
             }
         }
         this.calculatePinchZoomFactor(chart, pinchRect);
@@ -443,7 +443,7 @@ export class Zoom {
     }
 
     private calculatePinchZoomFactor(chart: Chart, pinchRect: Rect): void {
-        let mode: ZoomMode = this.zooming.mode;
+        const mode: ZoomMode = this.zooming.mode;
         let selectionMin: number;
         let selectionMax: number;
         let rangeMin: number;
@@ -453,11 +453,10 @@ export class Zoom {
         let argsData: IZoomCompleteEventArgs;
         let currentZF: number;
         let currentZP: number;
-        let onZoomingEventArgs: IZoomingEventArgs;
-        let zoomedAxisCollection: IAxisData[] = [];
+        const zoomedAxisCollection: IAxisData[] = [];
         this.zoomCompleteEvtCollection = [];
         for (let index: number = 0; index < chart.axisCollections.length; index++) {
-            let axis: Axis = chart.axisCollections[index];
+            const axis: Axis = chart.axisCollections[index];
             if ((axis.orientation === 'Horizontal' && mode !== 'Y') ||
                 (axis.orientation === 'Vertical' && mode !== 'X')) {
                 currentZF = axis.zoomFactor;
@@ -498,7 +497,7 @@ export class Zoom {
                 });
             }
         }
-        onZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
+        const onZoomingEventArgs: IZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
         if (!onZoomingEventArgs.cancel && this.chart.isBlazor) {
             this.chart.trigger(onZooming, onZoomingEventArgs);
         }
@@ -517,7 +516,7 @@ export class Zoom {
         let yAxisLoc: number;
         let element: Element;
         if (transX !== null && transY !== null) {
-            for (let value of chart.visibleSeries) {
+            for (const value of chart.visibleSeries) {
                 xAxisLoc = chart.requireInvertedAxis ? value.yAxis.rect.x : value.xAxis.rect.x;
                 yAxisLoc = chart.requireInvertedAxis ? value.xAxis.rect.y : value.yAxis.rect.y;
                 translate = 'translate(' + (transX + (isPinch ? (scaleX * xAxisLoc) : xAxisLoc)) +
@@ -550,11 +549,11 @@ export class Zoom {
         }
     }
 
-    private calculateZoomAxesRange(chart: Chart, axes: AxisModel[]): void {
+    private calculateZoomAxesRange(chart: Chart): void {
         let range: IZoomAxisRange;
         let axisRange: VisibleRangeModel;
         for (let index: number = 0; index < chart.axisCollections.length; index++) {
-            let axis: Axis = chart.axisCollections[index];
+            const axis: Axis = chart.axisCollections[index];
             axisRange = axis.visibleRange;
             if (this.zoomAxes[index]) {
                 if (!chart.delayRedraw) {
@@ -575,25 +574,24 @@ export class Zoom {
     // Zooming Toolkit created here
     private showZoomingToolkit(chart: Chart): boolean {
         let toolboxItems: ToolbarItems[] = this.zooming.toolbarItems;
-        let areaBounds: Rect = chart.chartAxisLayoutPanel.seriesClipRect;
-        let spacing: number = 5;
-        let render: SvgRenderer | CanvasRenderer = chart.svgRenderer;
-        let length: number = this.isDevice ? 1 : toolboxItems.length;
-        let iconSize: number = this.isDevice ? measureText('Reset Zoom', { size: '12px' }).width : 16;
-        let height: number = this.isDevice ? measureText('Reset Zoom', { size: '12px' }).height : 22;
-        let width: number = (length * iconSize) + ((length + 1) * spacing) + ((length - 1) * spacing);
-        let transX: number = areaBounds.x + areaBounds.width - width - spacing;
-        let transY: number = (areaBounds.y + spacing);
+        const areaBounds: Rect = chart.chartAxisLayoutPanel.seriesClipRect;
+        const spacing: number = 5;
+        const render: SvgRenderer | CanvasRenderer = chart.svgRenderer;
+        const length: number = this.isDevice ? 1 : toolboxItems.length;
+        const iconSize: number = this.isDevice ? measureText('Reset Zoom', { size: '12px' }).width : 16;
+        const height: number = this.isDevice ? measureText('Reset Zoom', { size: '12px' }).height : 22;
+        const width: number = (length * iconSize) + ((length + 1) * spacing) + ((length - 1) * spacing);
+        const transX: number = areaBounds.x + areaBounds.width - width - spacing;
+        const transY: number = (areaBounds.y + spacing);
         let xPosition: number = spacing;
-        let outerElement: Element;
-        let toolkit: Toolkit = this.toolkit; let element: Element;
+        const toolkit: Toolkit = this.toolkit; let element: Element;
         let shadowElement: string = '<filter id="chart_shadow" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="5"/>';
         shadowElement += '<feOffset dx="-3" dy="4" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="1"/>';
         shadowElement += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
         if (length === 0 || getElement(this.elementId + '_Zooming_KitCollection')) {
             return false;
         }
-        let defElement: Element = render.createDefs();
+        const defElement: Element = render.createDefs();
         toolboxItems = this.isDevice ? ['Reset'] : toolboxItems;
         defElement.innerHTML = shadowElement;
         this.toolkitElements = render.createGroup({
@@ -605,7 +603,7 @@ export class Zoom {
             this.elementId + '_Zooming_Rect', '#fafafa', { color: 'transparent', width: 1 },
             1, new Rect(0, 0, width, (height + (spacing * 2))), 0, 0
         )) as HTMLElement);
-        outerElement = render.drawRectangle(new RectOption(
+        const outerElement: Element = render.drawRectangle(new RectOption(
             this.elementId + '_Zooming_Rect', '#fafafa', { color: 'transparent', width: 1 },
             0.1, new Rect(0, 0, width, (height + (spacing * 2))), 0, 0
         ));
@@ -619,22 +617,22 @@ export class Zoom {
             });
             // for desktop toolkit hight is 32 and top padding is 8 icon size 16
             switch (currentItem) {
-                case 'Pan': toolkit.createPanButton(element, this.toolkitElements, chart); break;
-                case 'Zoom': toolkit.createZoomButton(element, this.toolkitElements, chart); break;
-                case 'ZoomIn': toolkit.createZoomInButton(element, this.toolkitElements, chart); break;
-                case 'ZoomOut': toolkit.createZoomOutButton(element, this.toolkitElements, chart); break;
-                case 'Reset': toolkit.createResetButton(element, this.toolkitElements, chart, this.isDevice); break;
+            case 'Pan': toolkit.createPanButton(element, this.toolkitElements); break;
+            case 'Zoom': toolkit.createZoomButton(element, this.toolkitElements); break;
+            case 'ZoomIn': toolkit.createZoomInButton(element, this.toolkitElements, chart); break;
+            case 'ZoomOut': toolkit.createZoomOutButton(element, this.toolkitElements, chart); break;
+            case 'Reset': toolkit.createResetButton(element, this.toolkitElements, chart, this.isDevice); break;
             }
             xPosition += iconSize + (spacing * 2);
         }
         this.toolkitElements.setAttribute('opacity', this.isDevice ? '1' : '' + this.zoomkitOpacity);
         this.toolkitElements.setAttribute('cursor', 'auto');
         if (chart.enableCanvas) {
-            let zoomDiv: HTMLElement = document.createElement('div');
+            const zoomDiv: HTMLElement = document.createElement('div');
             zoomDiv.id = chart.element.id + '_zoom';
             zoomDiv.setAttribute('style', 'position:absolute; z-index:1');
-            let zoomheight: number = chart.availableSize.height / 2;
-            let svg: Element = chart.svgRenderer.createSvg({
+            const zoomheight: number = chart.availableSize.height / 2;
+            const svg: Element = chart.svgRenderer.createSvg({
                 id: chart.element.id + '_zoomkit_svg',
                 width: chart.availableSize.width,
                 height: zoomheight
@@ -658,11 +656,12 @@ export class Zoom {
     }
     /**
      * To the show the zooming toolkit.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public applyZoomToolkit(chart: Chart, axes: AxisModel[]): void {
-        let showToolkit: boolean = this.isAxisZoomed(axes);
+        const showToolkit: boolean = this.isAxisZoomed(axes);
         if (showToolkit) {
             this.showZoomingToolkit(chart);
             this.isZoomed = true;
@@ -676,27 +675,27 @@ export class Zoom {
 
     /**
      * Return boolean property to show zooming toolkit.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public isAxisZoomed(axes: AxisModel[]): boolean {
         let showToolkit: boolean = false;
-        for (let axis of (axes as Axis[])) {
+        for (const axis of (axes as Axis[])) {
             showToolkit = (showToolkit || (axis.zoomFactor !== 1 || axis.zoomPosition !== 0));
         }
         return showToolkit;
     }
 
-    private zoomToolkitMove(e: PointerEvent): boolean {
-        let element: HTMLElement = <HTMLElement>this.toolkitElements;
-        let opacity: number = +element.getAttribute('opacity');
+    private zoomToolkitMove(): boolean {
+        const element: HTMLElement = <HTMLElement>this.toolkitElements;
         this.zoomkitOpacity = 1;
         element.setAttribute('opacity', '' + this.zoomkitOpacity);
         return false;
     }
 
-    private zoomToolkitLeave(e: PointerEvent): boolean {
-        let element: HTMLElement = <HTMLElement>this.toolkitElements;
+    private zoomToolkitLeave(): boolean {
+        const element: HTMLElement = <HTMLElement>this.toolkitElements;
         this.zoomkitOpacity = 0.3;
         element.setAttribute('opacity', '' + this.zoomkitOpacity);
         return false;
@@ -725,16 +724,17 @@ export class Zoom {
     }
 
     /**
-     * Handles the mouse wheel on chart. 
-     * @return {boolean}
+     * Handles the mouse wheel on chart.
+     *
+     * @returns {boolean} false
      * @private
      */
     public chartMouseWheel(e: WheelEvent): boolean {
-        let chart: Chart = this.chart;
-        let offset: ClientRect = chart.element.getBoundingClientRect();
-        let svgRect: ClientRect = getElement(chart.svgId).getBoundingClientRect();
-        let mouseX: number = (e.clientX - offset.left) - Math.max(svgRect.left - offset.left, 0);
-        let mouseY: number = (e.clientY - offset.top) - Math.max(svgRect.top - offset.top, 0);
+        const chart: Chart = this.chart;
+        const offset: ClientRect = chart.element.getBoundingClientRect();
+        const svgRect: ClientRect = getElement(chart.svgId).getBoundingClientRect();
+        const mouseX: number = (e.clientX - offset.left) - Math.max(svgRect.left - offset.left, 0);
+        const mouseY: number = (e.clientY - offset.top) - Math.max(svgRect.top - offset.top, 0);
 
         if (this.zooming.enableMouseWheelZooming &&
             withInBounds(mouseX, mouseY, chart.chartAxisLayoutPanel.seriesClipRect)) {
@@ -748,7 +748,7 @@ export class Zoom {
      */
     private mouseMoveHandler(e: PointerEvent | TouchEvent): void {
         //Zooming for chart
-        let chart: Chart = this.chart;
+        const chart: Chart = this.chart;
         let touches: TouchList = null;
         if (e.type === 'touchmove') {
             if (e.preventDefault && this.isIOS &&
@@ -774,7 +774,7 @@ export class Zoom {
      */
     private mouseDownHandler(e: PointerEvent): void {
         //Zooming for chart
-        let chart: Chart = this.chart;
+        const chart: Chart = this.chart;
         let touches: TouchList = null;
         let target: Element;
         if (e.type === 'touchstart') {
@@ -795,8 +795,8 @@ export class Zoom {
      * @hidden
      */
     private mouseUpHandler(e: PointerEvent): void {
-        let chart: Chart = this.chart;
-        let performZoomRedraw: boolean = (<Element>e.target).id.indexOf(chart.element.id + '_ZoomOut_') === -1 ||
+        const chart: Chart = this.chart;
+        const performZoomRedraw: boolean = (<Element>e.target).id.indexOf(chart.element.id + '_ZoomOut_') === -1 ||
             (<Element>e.target).id.indexOf(chart.element.id + '_ZoomIn_') === -1;
         if (chart.isChartDrag || performZoomRedraw) {
             this.redrawOnZooming(chart, true, true);
@@ -813,7 +813,7 @@ export class Zoom {
     /**
      * @hidden
      */
-    private mouseCancelHandler(e: PointerEvent): void {
+    private mouseCancelHandler(): void {
         if (this.isZoomed) {
             this.performZoomRedraw(this.chart);
         }
@@ -822,8 +822,9 @@ export class Zoom {
         this.touchMoveList = [];
     }
     /**
-     * Handles the touch pointer. 
-     * @return {boolean}
+     * Handles the touch pointer.
+     *
+     * @returns {ITouches[]} touchList collection
      * @private
      */
     public addTouchPointer(touchList: ITouches[], e: PointerEvent, touches: TouchList): ITouches[] {
@@ -856,11 +857,12 @@ export class Zoom {
         return 'Zoom';
     }
     /**
-     * To destroy the zooming. 
-     * @return {void}
+     * To destroy the zooming.
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         // Destroy method performed here
         this.removeEventListener();
     }

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';
 import { PointModel, DecoratorShapes } from '@syncfusion/ej2-drawings';
 import { Point } from '@syncfusion/ej2-drawings';
@@ -8,12 +9,14 @@ import { PdfAnnotationType } from './enum';
 import { ICommentsCollection, IReviewCollection, AnnotationSelectorSettingsModel, AllowedInteraction } from '../index';
 /**
  * The `PdfBounds` is base for annotation bounds.
+ *
  * @hidden
  */
 export abstract class PdfBounds extends ChildProperty<PdfBounds> {
 
     /**
      * Represents the the x value of the annotation.
+     *
      * @default 0
      */
     @Property(0)
@@ -21,6 +24,7 @@ export abstract class PdfBounds extends ChildProperty<PdfBounds> {
 
     /**
      * Represents the the y value of the annotation.
+     *
      * @default 0
      */
     @Property(0)
@@ -28,6 +32,7 @@ export abstract class PdfBounds extends ChildProperty<PdfBounds> {
 
     /**
      * Represents the the width value of the annotation.
+     *
      * @default 0
      */
     @Property(0)
@@ -35,6 +40,7 @@ export abstract class PdfBounds extends ChildProperty<PdfBounds> {
 
     /**
      * Represents the the height value of the annotation.
+     *
      * @default 0
      */
     @Property(0)
@@ -42,6 +48,7 @@ export abstract class PdfBounds extends ChildProperty<PdfBounds> {
 
     /**
      * Represents the the left value of the annotation.
+     *
      * @default 0
      */
     @Property(0)
@@ -49,6 +56,7 @@ export abstract class PdfBounds extends ChildProperty<PdfBounds> {
 
     /**
      * Represents the the top value of the annotation.
+     *
      * @default 0
      */
     @Property(0)
@@ -56,6 +64,7 @@ export abstract class PdfBounds extends ChildProperty<PdfBounds> {
 
     /**
      * Represents the the right value of the annotation.
+     *
      * @default 0
      */
     @Property(0)
@@ -63,6 +72,7 @@ export abstract class PdfBounds extends ChildProperty<PdfBounds> {
 
     /**
      * Represents the the bottom value of the annotation.
+     *
      * @default 0
      */
     @Property(0)
@@ -70,6 +80,7 @@ export abstract class PdfBounds extends ChildProperty<PdfBounds> {
 
     /**
      * Sets the reference point, that will act as the offset values(offsetX, offsetY) of a node
+     *
      * @default new Point(0,0)
      */
     @Complex<PointModel>({ x: 0, y: 0 }, Point)
@@ -77,6 +88,7 @@ export abstract class PdfBounds extends ChildProperty<PdfBounds> {
 
     /**
      * Sets the size of the annotation
+     *
      * @default new Size(0, 0)
      */
     @Complex<Size>(new Size(0, 0), Size)
@@ -85,12 +97,14 @@ export abstract class PdfBounds extends ChildProperty<PdfBounds> {
 
 /**
  * The `PdfFont` is base for annotation Text styles.
+ *
  * @hidden
  */
 export abstract class PdfFont extends ChildProperty<PdfFont> {
 
     /**
      * Represents the the font Bold style of annotation text content.
+     *
      * @default 'false'
      */
     @Property(false)
@@ -98,6 +112,7 @@ export abstract class PdfFont extends ChildProperty<PdfFont> {
 
     /**
      * Represents the the font Italic style of annotation text content.
+     *
      * @default 'false'
      */
     @Property(false)
@@ -105,6 +120,7 @@ export abstract class PdfFont extends ChildProperty<PdfFont> {
 
     /**
      * Represents the the font Underline style of annotation text content.
+     *
      * @default 'false'
      */
     @Property(false)
@@ -112,6 +128,7 @@ export abstract class PdfFont extends ChildProperty<PdfFont> {
 
     /**
      * Represents the the font Strikeout style of annotation text content.
+     *
      * @default 'false'
      */
     @Property(false)
@@ -120,12 +137,14 @@ export abstract class PdfFont extends ChildProperty<PdfFont> {
 
 /**
  * Defines the common behavior of PdfAnnotationBase
+ *
  * @hidden
  */
 export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the unique id of annotation
+     *
      * @default ''
      */
     @Property('')
@@ -133,6 +152,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the annotation type of the pdf
+     *
      * @default 'Rectangle'
      */
     @Property('Rectangle')
@@ -140,6 +160,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the measure type of the annotation
+     *
      * @default ''
      */
     @Property('')
@@ -147,6 +168,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the auther value of the annotation
+     *
      * @default ''
      */
     @Property('')
@@ -154,6 +176,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the modified date of the annotation
+     *
      * @default ''
      */
     @Property('')
@@ -161,6 +184,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the subject of the annotation
+     *
      * @default ''
      */
     @Property('')
@@ -168,6 +192,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the notes of the annotation
+     *
      * @default ''
      */
     @Property('')
@@ -175,6 +200,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * specifies the locked action of the comment
+     *
      * @default 'false'
      */
     @Property(false)
@@ -182,6 +208,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the stroke color of the annotation
+     *
      * @default 'black'
      */
     @Property('black')
@@ -189,6 +216,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the fill color of the annotation
+     *
      * @default 'tranparent'
      */
     @Property('#ffffff00')
@@ -196,6 +224,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the fill color of the annotation
+     *
      * @default 'tranparent'
      */
     @Property('#ffffff00')
@@ -203,6 +232,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the stroke color of the annotation
+     *
      * @default 'black'
      */
     @Property('black')
@@ -210,12 +240,14 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the path data of the annotation
+     *
      * @default ''
      */
     @Property('')
     public data: string;
     /**
      * Represents the opecity value of the annotation
+     *
      * @default 1
      */
     @Property(1)
@@ -223,6 +255,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the thickness value of annotation
+     *
      * @default 1
      */
     @Property(1)
@@ -230,6 +263,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the border style of annotation
+     *
      * @default ''
      */
     @Property('')
@@ -237,6 +271,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the border dash array of annotation
+     *
      * @default ''
      */
     @Property('')
@@ -244,6 +279,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the rotate angle of annotation
+     *
      * @default 0
      */
     @Property(0)
@@ -251,6 +287,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the annotation as cloud shape
+     *
      * @default false
      */
     @Property(false)
@@ -259,6 +296,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the cloud intensity
+     *
      * @default 0
      */
     @Property(0)
@@ -266,6 +304,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the height of the leader of distance shapes
+     *
      * @default 40
      */
     @Property(40)
@@ -273,6 +312,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the line start shape style
+     *
      * @default null
      */
     @Property(null)
@@ -280,6 +320,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the line end shape style
+     *
      * @default null
      */
     @Property(null)
@@ -287,6 +328,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents vertex points in the line annotation or shape annotation.
+     *
      * @default []
      */
     @Property([])
@@ -294,6 +336,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents vertex points in the line annotation or shape annotation.
+     *
      * @default null
      */
     @Property(null)
@@ -301,6 +344,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents vertex points in the line annotation or shape annotation.
+     *
      * @default None
      */
     @Property('None')
@@ -308,6 +352,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents vertex points in the line annotation or shape annotation.
+     *
      * @default None
      */
     @Property('None')
@@ -315,6 +360,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents vertex points in the line annotation or shape annotation.
+     *
      * @default null
      */
     @Property(null)
@@ -322,6 +368,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents vertex points in the line annotation or shape annotation.
+     *
      * @default []
      */
     @Property([])
@@ -329,6 +376,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents bounds of the annotation
+     *
      * @default new Point(0,0)
      */
     @Complex<PdfBoundsModel>({ x: 0, y: 0 }, PdfBounds)
@@ -336,6 +384,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the cloud intensity
+     *
      * @default 0
      */
     @Property(0)
@@ -343,6 +392,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the cloud intensity
+     *
      * @default -1
      */
 
@@ -351,6 +401,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the cloud intensity
+     *
      * @default null
      */
     @Property(null)
@@ -358,12 +409,14 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the dynamic stamp
+     *
      * @default false
      */
     @Property(false)
     public isDynamicStamp: boolean;
     /**
      * Represents the dynamic text.
+     *
      * @default ''
      */
     @Property('')
@@ -371,6 +424,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the unique annotName of the annotation
+     *
      * @default ''
      */
     @Property('')
@@ -378,6 +432,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the review collection of the annotation
+     *
      * @default ''
      */
     @Property({})
@@ -385,6 +440,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the comments collection of the annotation
+     *
      * @default []
      */
     @Property([])
@@ -392,6 +448,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the comments collection of the annotation
+     *
      * @default '#000'
      */
     @Property('#000')
@@ -399,6 +456,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the font size of the annotation content
+     *
      * @default '16'
      */
     @Property(16)
@@ -406,6 +464,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the font family of the annotation content
+     *
      * @default 'Helvetica'
      */
     @Property('Helvetica')
@@ -413,6 +472,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the shape annotation label add flag
+     *
      * @default 'false'
      */
     @Property(false)
@@ -420,6 +480,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the shape annotation label content
+     *
      * @default 'label'
      */
     @Property('label')
@@ -427,12 +488,14 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the shape annotation label content fill color
+     *
      * @default '#ffffff00'
      */
     @Property('#ffffff00')
     public labelFillColor: string;
     /**
      * Represents the shape annotation label content max-length
+     *
      * @default '15'
      */
     @Property(15)
@@ -440,6 +503,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the opecity value of the annotation
+     *
      * @default 1
      */
     @Property(1)
@@ -447,6 +511,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the selection settings of the annotation
+     *
      * @default ''
      */
     @Property('')
@@ -454,6 +519,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the shape annotation label content border color
+     *
      * @default '#ffffff00'
      */
     @Property('#ffffff00')
@@ -461,6 +527,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the text anlignment style of annotation
+     *
      * @default 'left'
      */
     @Property('left')
@@ -468,6 +535,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the unique Name of the annotation
+     *
      * @default ''
      */
     @Property('')
@@ -475,6 +543,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * specifies the minHeight of the annotation.
+     *
      * @default 0
      */
     @Property(0)
@@ -482,6 +551,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * specifies the minWidth of the annotation.
+     *
      * @default 0
      */
     @Property(0)
@@ -489,6 +559,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * specifies the minHeight of the annotation.
+     *
      * @default 0
      */
     @Property(0)
@@ -496,6 +567,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * specifies the maxWidth of the annotation.
+     *
      * @default 0
      */
     @Property(0)
@@ -503,6 +575,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * specifies the locked action of the annotation.
+     *
      * @default 'false'
      */
     @Property(false)
@@ -510,6 +583,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * specifies the particular annotation mode.
+     *
      * @default 'UI Drawn Annotation'
      */
     @Property('UI Drawn Annotation')
@@ -517,6 +591,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * specifies the default settings of the annotation.
+     *
      * @default ''
      */
     @Property('')
@@ -524,6 +599,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * specifies the previous font size  of the annotation.
+     *
      * @default '16'
      */
     @Property(16)
@@ -531,6 +607,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the text style of annotation
+     *
      * @default ''
      */
     @Complex<PdfFontModel>({ isBold: false, isItalic: false, isStrikeout: false, isUnderline: false }, PdfFont)
@@ -538,6 +615,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the shape annotation label content bounds
+     *
      * @default ''
      */
     @Complex<PdfBoundsModel>({ x: 0, y: 0 }, PdfBounds)
@@ -545,10 +623,10 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
     /**
      * specifies the custom data of the annotation.
      */
-   @Property(null)
-   public customData: object;
-    /** 
-     * specifies the allowed interactions of the locked annotation. 
+    @Property(null)
+    public customData: object;
+    /**
+     * specifies the allowed interactions of the locked annotation.
      */
     @Property(['None'])
     public allowedInteractions: AllowedInteraction;
@@ -565,7 +643,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
     @Property(false)
     public isReadonly: boolean;
 
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
     }

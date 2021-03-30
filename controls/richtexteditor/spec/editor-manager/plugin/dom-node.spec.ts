@@ -21,7 +21,8 @@ describe('DOMNode plugin', () => {
             <span> span node</span>
             <p> p node</p>
           </div>
-          <ol onClick="alert(&quot; Let's change it &quot;)" style='color: rgb(92, 92, 92);font-family:"Times New Roman", Times, serif; font-size: medium;'>
+          <ol onClick="alert(&quot; Let's change it &quot;)" style='color: rgb(92, 92, 92);font-family:"Times New Roman",
+          Times, serif; font-size: medium;'>
             <li>one
                 <ol>
                     <li><p>one-1</p></li>

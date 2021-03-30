@@ -18,10 +18,11 @@ export class Splitter {
         this.parent.on('destroy', this.destroy, this);
     }
     /**
+     * @returns {void} .
      * @private
      */
     public renderSplitter(): void {
-        let splitterPosition: string = this.calculateSplitterPosition(this.parent.splitterSettings);
+        const splitterPosition: string = this.calculateSplitterPosition(this.parent.splitterSettings);
         this.parent.splitterElement = createElement('div', { className: cls.splitter });
         this.parent.treeGridPane = createElement('div', { className: cls.treeGridPane });
         this.parent.chartPane = createElement('div', { className: cls.ganttChartPane });
@@ -44,11 +45,11 @@ export class Splitter {
             ],
             orientation: 'Horizontal',
             resizeStart: (args: ResizeEventArgs) => {
-                let leftPane: HTMLElement = isBlazor() ? args.element.querySelectorAll('.e-pane')[0] as HTMLElement : args.pane[0];
-                let rightPane: HTMLElement = isBlazor() ? args.element.querySelectorAll('.e-pane')[1] as HTMLElement : args.pane[1];
+                const leftPane: HTMLElement = isBlazor() ? args.element.querySelectorAll('.e-pane')[0] as HTMLElement : args.pane[0];
+                const rightPane: HTMLElement = isBlazor() ? args.element.querySelectorAll('.e-pane')[1] as HTMLElement : args.pane[1];
                 this.splitterPreviousPositionGrid = leftPane.scrollWidth + 1 + 'px';
                 this.splitterPreviousPositionChart = rightPane.scrollWidth + 1 + 'px';
-                let callBackPromise: Deferred = new Deferred();
+                const callBackPromise: Deferred = new Deferred();
                 this.parent.trigger('splitterResizeStart', args, (resizeStartArgs: ResizeEventArgs) => {
                     callBackPromise.resolve(resizeStartArgs);
                 });
@@ -58,7 +59,7 @@ export class Splitter {
                 this.parent.trigger('splitterResizing', args);
             },
             resizeStop: (args: ISplitterResizedEventArgs) => {
-                let callBackPromise: Deferred = new Deferred();
+                const callBackPromise: Deferred = new Deferred();
                 this.parent.trigger('splitterResized', args, (splitterResizedArgs: ISplitterResizedEventArgs) => {
                     if (splitterResizedArgs.cancel === true) {
                         this.splitterObject.paneSettings[0].size = null;
@@ -75,6 +76,9 @@ export class Splitter {
         this.splitterObject.appendTo(this.parent.splitterElement);
     }
     /**
+     * @param {SplitterSettingsModel} splitter .
+     * @param {boolean} isDynamic .
+     * @returns {string} .
      * @private
      */
     public calculateSplitterPosition(splitter: SplitterSettingsModel, isDynamic?: boolean): string {
@@ -95,13 +99,14 @@ export class Splitter {
         }
     }
     /**
-     * 
+     * @param {string} position .
+     * @returns {string} .
      */
     private getSpliterPositionInPercentage(position: string): string {
         let value: string = !isNullOrUndefined(position) && position !== '' ? position : null;
         if (!isNullOrUndefined(value)) {
             if (position.indexOf('px') !== -1) {
-                let intValue: number = parseInt(position, 10);
+                const intValue: number = parseInt(position, 10);
                 value = (((intValue / this.parent.ganttWidth) * 100) <= 100 ? ((intValue / this.parent.ganttWidth) * 100) + '%' :
                     '25%');
             } else {
@@ -112,11 +117,12 @@ export class Splitter {
         return value;
     }
     /**
-     * 
+     * @param {number} index .
+     * @returns {number} .
      */
     private getTotalColumnWidthByIndex(index: number): number {
         let width: number = 0;
-        let tr: NodeList = this.parent.treeGrid.element.querySelectorAll('.e-headercell');
+        const tr: NodeList = this.parent.treeGrid.element.querySelectorAll('.e-headercell');
         index = tr.length > index ? index : tr.length;
         for (let column: number = 0; column < index; column++) {
             width = width + (tr[column] as HTMLElement).offsetWidth;
@@ -124,23 +130,25 @@ export class Splitter {
         return width;
     }
     /**
+     * @returns {void} .
      * @private
      */
     public updateSplitterPosition(): void {
         this.splitterObject.separatorSize = this.parent.splitterSettings.separatorSize >= 4 ?
             this.parent.splitterSettings.separatorSize : 4;
-        let splitterPosition: string = this.calculateSplitterPosition(this.parent.splitterSettings, true);
+        const splitterPosition: string = this.calculateSplitterPosition(this.parent.splitterSettings, true);
         this.splitterObject.paneSettings[0].min = this.getSpliterPositionInPercentage(this.parent.splitterSettings.minimum);
         this.splitterObject.dataBind();
         this.splitterObject.paneSettings[0].size = splitterPosition;
     }
     /**
+     * @returns {void} .
      * @private
      */
     public triggerCustomResizedEvent(): void {
-        let pane1: HTMLElement = this.splitterObject.element.querySelectorAll('.e-pane')[0] as HTMLElement;
-        let pane2: HTMLElement = this.splitterObject.element.querySelectorAll('.e-pane')[1] as HTMLElement;
-        let eventArgs: ISplitterResizedEventArgs = {
+        const pane1: HTMLElement = this.splitterObject.element.querySelectorAll('.e-pane')[0] as HTMLElement;
+        const pane2: HTMLElement = this.splitterObject.element.querySelectorAll('.e-pane')[1] as HTMLElement;
+        const eventArgs: ISplitterResizedEventArgs = {
             event: null,
             element: this.splitterObject.element,
             pane: [pane1, pane2],

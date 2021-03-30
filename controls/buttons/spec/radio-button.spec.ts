@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { RadioButton } from './../src/radio-button/radio-button';
 import { createElement } from '@syncfusion/ej2-base';
 import { profile , inMB, getMemoryProfile } from './common.spec';
@@ -16,11 +17,11 @@ describe('RadioButton', () => {
     });
 
     let radio: any;
-    let element: HTMLFormElement = createElement('input', { id: 'radio' }) as HTMLFormElement;
+    const element: HTMLFormElement = createElement('input', { id: 'radio' }) as HTMLFormElement;
     element.setAttribute('type', 'radio');
     document.body.appendChild(element);
     describe('DOM', () => {
-        let i: number = 0;
+        let i = 0;
         function changeFn(): void {
             i = 1;
         }
@@ -80,9 +81,8 @@ describe('RadioButton', () => {
     });
 
     describe('Property', () => {
-        let i: number = 0;
         function changeFn(): void {
-            i = 1;
+            console.log("changed");
         }
         afterEach(() => {
             radio.destroy();
@@ -140,18 +140,18 @@ describe('RadioButton', () => {
 
         it('Enable Html Sanitizer testing', () => {
             radio = new RadioButton({ label: '<style>body{background:rgb(0, 0, 255)}</style>', enableHtmlSanitizer: true }, '#radio');
-            let htmlele: Element = document.body;
+            const htmlele: Element = document.body;
             expect(window.getComputedStyle(htmlele).backgroundColor).not.toBe('rgb(0, 0, 255)');
         });
 
         it('Enable Html Sanitizer disabled testing', () => {
             radio = new RadioButton({ label: '<style>body{background:rgb(0, 0, 255)}</style>' }, '#radio');
-            let htmlele: Element = document.body;
+            const htmlele: Element = document.body;
             expect(window.getComputedStyle(htmlele).backgroundColor).toBe('rgb(0, 0, 255)');
         });
         it('Enable Html Attributes testing', () => {
             radio = new RadioButton({ htmlAttributes: {'title':'Choose Option'}, label: '<style>body{background:rgb(0, 0, 255)}</style>' }, '#radio');
-            let htmlele: Element = document.body;
+            const htmlele: Element = document.body;
             expect(window.getComputedStyle(htmlele).backgroundColor).toBe('rgb(0, 0, 255)');
         });
     });
@@ -266,7 +266,7 @@ describe('RadioButton', () => {
             expect(element.nextElementSibling.classList.contains('e-focus')).toEqual(false);
             radio.focusOutHandler();
             radio.focusHandler();
-            let event: any = {
+            const event: any = {
                 preventDefault: (): void => { /** NO Code */ },
                 type: 'mousedown'
             };
@@ -292,7 +292,7 @@ describe('RadioButton', () => {
             document.body.appendChild(createElement('input', { id: 'group1', attrs: { 'type': 'radio' } }));
             document.body.appendChild(createElement('input', { id: 'group2', attrs: { 'type': 'radio' } }));
             radio = new RadioButton({ name: 'group', value: '1' }, '#group1');
-            let radio2: RadioButton = new RadioButton({ name: 'group', value: '2' }, '#group2');
+            const radio2: RadioButton = new RadioButton({ name: 'group', value: '2' }, '#group2');
             expect(radio.getSelectedValue()).toEqual('');
             radio.element.click();
             expect(radio2.getSelectedValue()).toEqual('1');
@@ -371,10 +371,10 @@ describe('RadioButton', () => {
 
     it('memory leak', () => {
         profile.sample();
-        let average: any = inMB(profile.averageChange);
+        const average: any = inMB(profile.averageChange);
         // check average change in memory samples to not be over 10MB
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
+        const memory: any = inMB(getMemoryProfile());
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });

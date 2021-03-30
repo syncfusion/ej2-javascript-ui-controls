@@ -773,7 +773,7 @@ export class HeaderRender implements IRenderer {
 
     private renderCustomToolbar(): void {
         let gObj: IGrid = this.parent;
-        if (gObj.rowRenderingMode === 'Vertical' && !gObj.toolbar && (gObj.allowSorting || gObj.allowFiltering)) {
+        if (gObj.rowRenderingMode === 'Vertical' && !gObj.toolbar && (gObj.allowSorting || (gObj.allowFiltering && gObj.filterSettings.type !== 'FilterBar'))) {
             let div: HTMLElement = gObj.createElement('div', { className: 'e-res-toolbar e-toolbar' });
             let toolbarItems: HTMLElement = gObj.createElement('div', { className: 'e-toolbar-items' });
             let toolbarLeft: HTMLElement = gObj.createElement('div', { className: 'e-toolbar-left' });
@@ -804,6 +804,10 @@ export class HeaderRender implements IRenderer {
             toolbarItems.appendChild(toolbarLeft);
             div.appendChild(toolbarItems);
             gObj.element.insertBefore(div, this.parent.element.querySelector('.e-gridheader'));
+        } else {
+            if (!gObj.toolbar) {
+                gObj.getContent().classList.add('e-responsive-header');
+            }
         }
     }
 

@@ -2198,7 +2198,7 @@ describe('DDList', () => {
             let li: Element[] = listObj.popupObj.element.querySelectorAll('li');
             mouseEventArgs.target = li[0];
             expect((li[0] as Element).classList.contains('e-hover')).toBe(true);
-            listObj.onMouseLeave(mouseEventArgs);
+            listObj.onMouseLeave();
             expect((li[0] as Element).classList.contains('e-hover')).toBe(false);
         });
         afterAll(() => {

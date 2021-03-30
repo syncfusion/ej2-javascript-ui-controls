@@ -5,7 +5,7 @@ import { createElement, isNullOrUndefined, L10n, classList } from '@syncfusion/e
 import { FindOption } from '../../base/types';
 import { TextPosition } from '../selection/selection-helper';
 import { HelperMethods } from '../editor/editor-helper';
-import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
+import { CheckBox } from '@syncfusion/ej2-buttons';
 import { Tab, SelectEventArgs, TabItemModel } from '@syncfusion/ej2-navigations';
 
 /**
@@ -48,7 +48,7 @@ export class OptionsPane {
     private navigateToPreviousResult: HTMLElement;
     private navigateToNextResult: HTMLElement;
     private closeButton: HTMLElement;
-    private isOptionsPane: Boolean = true;
+    private isOptionsPane: boolean = true;
     private findTab: HTMLElement;
     private findTabButton: HTMLElement;
     private replaceTabButton: HTMLElement;
@@ -71,28 +71,26 @@ export class OptionsPane {
      */
     public isReplace: boolean = false;
     private localeValue: L10n;
-    /**
-     * Constructor for Options pane module
-     * @private
-     */
-    constructor(documentHelper: DocumentHelper) {
+
+    public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
     }
-    get viewer(): LayoutViewer {
+    private get viewer(): LayoutViewer {
         return this.documentHelper.owner.viewer;
     }
-    /**
-     * Get the module name.
-     */
+
     private getModuleName(): string {
         return 'OptionsPane';
     }
     /**
      * Initialize the options pane.
-     * @param {L10n} localeValue - Specifies the localization based on culture.
+     *
      * @private
+     * @param {L10n} localeValue - Specifies the localization based on culture.
+     * @param {boolean} isRtl - Specifies the Rtl.
+     * @returns {void}
      */
-    // tslint:disable:max-func-body-length
+    /* eslint-disable  */
     public initOptionsPane(localeValue: L10n, isRtl?: boolean): void {
         let viewer: LayoutViewer = this.viewer;
         this.localeValue = localeValue;
@@ -103,7 +101,6 @@ export class OptionsPane {
             innerHTML: localeValue.getConstant(this.searchText)
         });
         this.optionsPane.appendChild(this.searchDiv);
-        // tslint:disable-next-line:max-line-length
         this.closeButton = createElement('button', {
             className: 'e-de-op-close-button e-de-close-icon e-de-op-icon-btn e-btn e-flat e-icon-btn', id: 'close',
             attrs: { type: 'button' }
@@ -121,7 +118,6 @@ export class OptionsPane {
         this.findTabContentDiv = createElement('div', { className: 'e-de-search-tab-content' });
         this.searchTextBoxContainer = createElement('div', { className: 'e-input-group e-de-op-input-group' });
         this.findTabContentDiv.appendChild(this.searchTextBoxContainer);
-        // tslint:disable-next-line:max-line-length
         this.searchInput = createElement('input', { className: 'e-input e-de-search-input', id: this.documentHelper.owner.containerId + '_option_search_text_box', attrs: { placeholder: localeValue.getConstant('Search for') } }) as HTMLInputElement;
         this.searchTextBoxContainer.appendChild(this.searchInput);
         this.searchIcon = createElement('span', {
@@ -131,12 +127,10 @@ export class OptionsPane {
         this.searchIcon.tabIndex = 0;
         this.searchTextBoxContainer.appendChild(this.searchIcon);
         this.focusedElement.push(this.searchIcon);
-        // tslint:disable-next-line:max-line-length
         this.navigateToPreviousResult = createElement('span', { className: 'e-de-op-icon e-de-op-nav-btn e-arrow-up e-spin-up e-btn-icon e-icon e-input-group-icon' });
         this.navigateToPreviousResult.tabIndex = 0;
         this.searchTextBoxContainer.appendChild(this.navigateToPreviousResult);
         this.focusedElement.push(this.navigateToPreviousResult);
-        // tslint:disable-next-line:max-line-length
         this.navigateToNextResult = createElement('span', { className: 'e-de-op-icon e-de-op-nav-btn e-arrow-down e-spin-down e-btn-icon e-icon e-input-group-icon' });
         this.navigateToNextResult.tabIndex = 0;
         this.searchTextBoxContainer.appendChild(this.navigateToNextResult);
@@ -147,8 +141,7 @@ export class OptionsPane {
             id: this.documentHelper.owner.containerId + '_matchCase'
         }) as HTMLInputElement;
         div.appendChild(this.matchInput);
-        // tslint:disable-next-line:max-line-length
-        this.matchCase = new CheckBox({ label: localeValue.getConstant('Match case'), enableRtl: isRtl, checked: false, change: this.matchChange });
+        this.matchCase = new CheckBox({ label: localeValue.getConstant('Match case'), enableRtl: isRtl, checked: false, change: this.matchChange.bind(this) });
         this.matchCase.appendTo(this.matchInput);
         this.focusedElement.push(this.matchInput);
         this.matchInput.tabIndex = 0;
@@ -163,8 +156,7 @@ export class OptionsPane {
             id: this.documentHelper.owner.containerId + '_wholeWord' + wholeWordLabel
         }) as HTMLInputElement;
         div.appendChild(this.wholeInput);
-        // tslint:disable-next-line:max-line-length
-        this.wholeWord = new CheckBox({ label: localeValue.getConstant('Whole words'), enableRtl: isRtl, checked: false, change: this.wholeWordsChange });
+        this.wholeWord = new CheckBox({ label: localeValue.getConstant('Whole words'), enableRtl: isRtl, checked: false, change: this.wholeWordsChange.bind(this) });
         this.wholeWord.appendTo(this.wholeInput);
         this.focusedElement.push(this.wholeInput);
         this.wholeInput.tabIndex = 0;
@@ -178,17 +170,15 @@ export class OptionsPane {
         findTabContent.appendChild(this.findTabContentDiv);
         this.resultContainer = createElement('div', { styles: 'width:85%;display:block;', className: 'e-de-op-result-container' });
         this.findDiv.appendChild(this.resultContainer);
-        // tslint:disable-next-line:max-line-length
         this.messageDiv = createElement('div', { className: this.documentHelper.owner.containerId + '_messageDiv e-de-op-msg', innerHTML: this.localeValue.getConstant(this.messageDivText), id: this.documentHelper.owner.containerId + '_search_status' });
         this.resultContainer.appendChild(this.messageDiv);
-        // tslint:disable-next-line:max-line-length
         this.resultsListBlock = createElement('div', { id: this.documentHelper.owner.containerId + '_list_box_container', styles: 'display:none;width:270px;list-style:none;padding-right:5px;overflow:auto;', className: 'e-de-result-list-block' });
         this.findDiv.appendChild(this.resultsListBlock);
         this.findTabContentDiv.appendChild(this.findDiv);
         let items: TabItemModel[] = [
             { header: { text: this.findTabButton }, content: findTabContent },
             { header: { text: this.replaceTabButton }, content: replaceTabContent }] as TabItemModel[];
-        this.tabInstance = new Tab({ items: items, enableRtl: isRtl, selected: this.selectedTabItem });
+        this.tabInstance = new Tab({ items: items, enableRtl: isRtl, selected: this.selectedTabItem.bind(this) });
         this.tabInstance.isStringTemplate = true;
         this.tabInstance.appendTo(this.findTab);
         this.onWireEvents();
@@ -198,9 +188,6 @@ export class OptionsPane {
             this.searchDiv.classList.add('e-de-rtl');
         }
     }
-    /**
-     * Create replace pane instances.
-     */
     private createReplacePane(isRtl?: boolean): void {
         this.replaceDiv = createElement('div');
         this.replaceTabContentDiv.appendChild(this.replaceDiv);
@@ -240,12 +227,8 @@ export class OptionsPane {
         this.occurrenceDiv = createElement('div', { styles: 'display:none;' });
         this.replaceDiv.appendChild(this.occurrenceDiv);
     }
-    /**
-     * Gets selected tab item which tab is selected.
-     * @param {SelectEventArgs} args - Specifies which tab will be opened.
-     * @private
-     */
-    public selectedTabItem = (args: SelectEventArgs): void => {
+
+    private selectedTabItem(args: SelectEventArgs): void {
         let contentParent: Element = this.findTab.getElementsByClassName('e-content').item(0);
         if (args.previousIndex !== args.selectedIndex) {
             let previousTab: Element = contentParent.children[0];
@@ -269,6 +252,9 @@ export class OptionsPane {
             }
         }
     }
+    /**
+     * @returns {void}
+     */
     private searchOptionChange = (): void => {
         this.clearSearchResultItems();
         this.documentHelper.owner.searchModule.clearSearchHighlight();
@@ -310,7 +296,6 @@ export class OptionsPane {
             this.focusedElement.push(this.resultsListBlock.children[i] as HTMLElement);
         }
         let currentIndexValue: number = this.results.currentIndex;
-        // tslint:disable-next-line:max-line-length
         this.messageDiv.innerHTML = this.localeValue.getConstant('Result') + ' ' + (currentIndexValue + 1) + ' ' + this.localeValue.getConstant('of') + ' ' + this.resultsListBlock.children.length;
         let listElement: HTMLElement = this.resultsListBlock.children[currentIndexValue] as HTMLElement;
         if (listElement.classList.contains('e-de-search-result-item')) {
@@ -322,10 +307,11 @@ export class OptionsPane {
     }
     /**
      * Apply find option based on whole words value.
-     * @param {ChangeEventArgs} args - Specifies the search options value.
+     *
      * @private
+     * @returns {void}
      */
-    public wholeWordsChange = (args: ChangeEventArgs): void => {
+    public wholeWordsChange(): void {
         if (this.matchInput.checked && this.wholeInput.checked) {
             this.findOption = 'CaseSensitiveWholeWord';
         } else if (this.matchInput.checked && !(this.wholeInput.checked)) {
@@ -339,10 +325,11 @@ export class OptionsPane {
     }
     /**
      * Apply find option based on match value.
-     * @param {ChangeEventArgs} args - Specifies the search options value.
+     *
      * @private
+     * @returns {void}
      */
-    public matchChange = (args: ChangeEventArgs): void => {
+    public matchChange(): void {
         if (this.matchInput.checked && this.wholeInput.checked) {
             this.findOption = 'CaseSensitiveWholeWord';
         } else if (!(this.matchInput.checked) && this.wholeInput.checked) {
@@ -354,11 +341,11 @@ export class OptionsPane {
         }
         this.searchOptionChange();
     }
-    /**
-     * Apply find options based on regular value.
-     * @param {ChangeEventArgs} args - Specifies the search options value.
-     * @private
-     */
+    // /**
+    //  * Apply find options based on regular value.
+    //  * @param {ChangeEventArgs} args - Specifies the search options value.
+    //  * @private
+    //  */
     // public regularChange = (args: ChangeEventArgs): void => {
     //     if (args.checked) {
     //         this.matchCase.element.parentElement.parentElement.classList.add('e-checkbox-disabled');
@@ -372,12 +359,14 @@ export class OptionsPane {
     //         this.wholeWord.element.parentElement.parentElement.classList.remove('e-checkbox-disabled');
     //     }
     // }
-    // tslint:enable:no-any 
+    /* eslint-enable @typescript-eslint/no-explicit-any */
     /**
      * Binding events from the element when optins pane creation.
+     *
      * @private
+     * @returns {void}
      */
-    public onWireEvents = (): void => {
+    public onWireEvents(): void {
         this.searchIcon.addEventListener('click', this.searchIconClickInternal);
         this.navigateToNextResult.addEventListener('click', this.navigateNextResultButtonClick);
         this.navigateToPreviousResult.addEventListener('click', this.navigatePreviousResultButtonClick);
@@ -390,10 +379,11 @@ export class OptionsPane {
     }
     /**
      * Fires on key down actions done.
+     *
      * @private
+     * @returns {void}
      */
     public onKeyDownInternal(): void {
-        // tslint:disable-next-line:max-line-length
         let inputElement: HTMLInputElement = document.getElementById(this.documentHelper.owner.containerId + '_option_search_text_box') as HTMLInputElement;
         inputElement.blur();
         let text: string = inputElement.value;
@@ -443,7 +433,6 @@ export class OptionsPane {
             }
             let lists: HTMLCollection = this.resultsListBlock.children;
             let currentIndex: number = this.results.currentIndex;
-            // tslint:disable-next-line:max-line-length
             this.messageDiv.innerHTML = this.localeValue.getConstant('Result') + ' ' + (currentIndex + 1) + ' ' + this.localeValue.getConstant('of') + ' ' + this.resultsListBlock.children.length;
             let listElement: HTMLElement = this.resultsListBlock.children[currentIndex] as HTMLElement;
             if (listElement.classList.contains('e-de-search-result-item')) {
@@ -467,9 +456,11 @@ export class OptionsPane {
     }
     /**
      * Enable find pane only.
+     *
      * @private
+     * @returns {void}
      */
-    public onFindPane = (): void => {
+    public onFindPane(): void {
         this.replaceDiv.style.display = 'none';
         this.occurrenceDiv.style.display = 'none';
         if (!isNullOrUndefined(this.results) && this.results.length === 0) {
@@ -484,7 +475,6 @@ export class OptionsPane {
         this.findDiv.style.display = 'block';
         this.messageDiv.style.display = 'block';
         this.focusedElement = [];
-        // tslint:disable-next-line:max-line-length
         this.focusedElement.push(this.closeButton, this.searchInput, this.searchIcon, this.navigateToPreviousResult, this.navigateToNextResult, this.matchInput, this.wholeInput);
         this.focusedIndex = 1;
         this.searchInput.select();
@@ -499,6 +489,9 @@ export class OptionsPane {
             this.messageDiv.classList.remove('e-de-op-replace-messagediv');
         }
     }
+    /**
+     * @returns {void}
+     */
     private onEnableDisableReplaceButton = (): void => {
         if (this.searchInput.value.length !== 0) {
             (this.replaceButton as HTMLButtonElement).disabled = false;
@@ -510,9 +503,11 @@ export class OptionsPane {
     }
     /**
      * Enable replace pane only.
+     *
      * @private
+     * @returns {void}
      */
-    public onReplacePane = (): void => {
+    public onReplacePane(): void {
         this.findDiv.style.display = 'block';
         this.replaceDiv.style.display = 'block';
         this.replaceTabContentDiv.style.display = 'block';
@@ -528,7 +523,6 @@ export class OptionsPane {
             (this.replaceAllButton as HTMLButtonElement).disabled = true;
         }
         this.focusedElement = [];
-        // tslint:disable-next-line:max-line-length
         this.focusedElement.push(this.closeButton, this.searchInput, this.searchIcon, this.navigateToPreviousResult, this.navigateToNextResult, this.matchInput, this.wholeInput, this.replaceWith, this.replaceButton, this.replaceAllButton);
         this.focusedIndex = 1;
         if (this.searchInput.value === '') {
@@ -540,8 +534,10 @@ export class OptionsPane {
     }
     /**
      * Fires on key down on options pane.
-     * @param {KeyboardEvent} event - Specifies the focus of current element.
+     * 
      * @private
+     * @param {KeyboardEvent} event - Specifies the focus of current element.
+     * @returns {void}
      */
     public onKeyDownOnOptionPane = (event: KeyboardEvent): void => {
         // if (event.keyCode === 70) {
@@ -568,7 +564,6 @@ export class OptionsPane {
                 this.scrollToPosition(element);
             }
         } else if (event.keyCode === 13) {
-            // tslint:disable-next-line:max-line-length
             if (event.target !== this.searchInput && event.target !== this.closeButton) {
                 event.preventDefault();
                 let index: number = this.focusedElement.indexOf(event.target as HTMLElement);
@@ -611,7 +606,9 @@ export class OptionsPane {
     }
     /**
      * Fires on replace.
+     *
      * @private
+     * @returns {void}
      */
     public onReplaceButtonClick = (): void => {
         let optionsPane: HTMLElement = this.optionsPane;
@@ -637,9 +634,7 @@ export class OptionsPane {
                         let pattern: RegExp = this.documentHelper.owner.searchModule.textSearch.stringToRegex(findText, this.findOption);
                         let endSelection: TextPosition = this.documentHelper.selection.end;
                         let index: string = endSelection.getHierarchicalIndexInternal();
-                        // tslint:disable-next-line:max-line-length
-                        this.documentHelper.owner.searchModule.textSearchResults = this.documentHelper.owner.searchModule.textSearch.findAll(pattern, this.findOption, index);
-                        this.results = this.documentHelper.owner.searchModule.textSearchResults;
+                        this.results = this.documentHelper.owner.searchModule.textSearch.findAll(pattern, this.findOption, index);
                         if (!isNullOrUndefined(this.results) && !isNullOrUndefined(this.results.currentSearchResult)) {
                             this.documentHelper.owner.searchModule.navigate(this.results.currentSearchResult);
                         } else {
@@ -652,8 +647,11 @@ export class OptionsPane {
                         } else {
                             this.resultsListBlock.innerHTML = '';
                         }
+                    } else {
+                        this.documentHelper.owner.search.findAll(findText, this.findOption);
                     }
                 } else {
+                    this.documentHelper.owner.search.findAll(findText, this.findOption);
                     this.messageDiv.style.display = 'block';
                     this.messageDiv.innerHTML = this.localeValue.getConstant(this.matchDivReplaceText);
                 }
@@ -662,7 +660,9 @@ export class OptionsPane {
     }
     /**
      * Fires on replace all.
+     *
      * @private
+     * @returns {void}
      */
     public onReplaceAllButtonClick = (): void => {
         this.replaceAll();
@@ -671,7 +671,9 @@ export class OptionsPane {
     }
     /**
      * Replace all.
+     *
      * @private
+     * @returns {void}
      */
     public replaceAll(): void {
         let optionsPane: HTMLElement = this.optionsPane;
@@ -688,18 +690,19 @@ export class OptionsPane {
             this.matchDiv.style.display = 'block';
             this.matchDiv.innerHTML = this.localeValue.getConstant('All Done') + '!';
             this.occurrenceDiv.style.display = 'block';
-            // tslint:disable-next-line:max-line-length
             this.occurrenceDiv.innerHTML = this.localeValue.getConstant('We replaced all') + ' ' + count + ' ' + this.localeValue.getConstant('instances') + ' ' + this.localeValue.getConstant('of') + ' "' + findText + '" ' + this.localeValue.getConstant('with') + ' "' + replaceText + '" ';
         }
     }
     /**
      * Fires on search icon.
+     * 
      * @private
+     * @returns {void}
      */
     public searchIconClickInternal = (): void => {
-        // tslint:disable:no-any 
+        /* eslint-disable @typescript-eslint/no-explicit-any */
         let inputElement: any = document.getElementById(this.documentHelper.owner.containerId + '_option_search_text_box');
-        // tslint:enable:no-any
+        /* eslint-enable @typescript-eslint/no-explicit-any */
         let text: string = inputElement.value;
         if (text === '') {
             return;
@@ -751,7 +754,9 @@ export class OptionsPane {
     }
     /**
      * Fires on getting next results.
+     *
      * @private
+     * @returns {void}
      */
     public navigateNextResultButtonClick = (): void => {
         if (document.getElementById(this.documentHelper.owner.containerId + '_list_box_container') != null &&
@@ -774,14 +779,13 @@ export class OptionsPane {
                 this.results.currentIndex = 0;
                 nextResult = this.results.innerList[0];
             }
-            // tslint:disable-next-line:max-line-length
             this.messageDiv.innerHTML = this.localeValue.getConstant('Result') + ' ' + (this.results.currentIndex + 1) + ' ' + this.localeValue.getConstant('of') + ' ' + this.resultsListBlock.children.length;
             this.updateListItems(nextResult);
             this.focusedIndex = this.focusedElement.indexOf(this.navigateToNextResult);
         }
     }
     private updateListItems(textSearchResult: TextSearchResult): void {
-        let searchElements: NodeListOf<Element> = this.resultsListBlock.getElementsByClassName('e-de-search-result-hglt');
+        let searchElements: HTMLCollectionOf<Element> = this.resultsListBlock.getElementsByClassName('e-de-search-result-hglt');
         for (let j: number = 0; j < searchElements.length; j++) {
             let list: HTMLElement = searchElements[j] as HTMLElement;
             classList(list, ['e-de-search-result-item'], ['e-de-search-result-hglt']);
@@ -796,7 +800,9 @@ export class OptionsPane {
     }
     /**
      * Fires on getting previous results.
+     *
      * @private
+     * @returns {void}
      */
     public navigatePreviousResultButtonClick = (): void => {
         if (document.getElementById(this.documentHelper.owner.containerId + '_list_box_container') != null &&
@@ -819,7 +825,6 @@ export class OptionsPane {
                 this.results.currentIndex = this.results.length - 1;
                 previousResult = this.results.innerList[this.results.currentIndex];
             }
-            // tslint:disable-next-line:max-line-length
             this.messageDiv.innerHTML = this.localeValue.getConstant('Result') + ' ' + (this.results.currentIndex + 1) + ' ' + this.localeValue.getConstant('of') + ' ' + this.resultsListBlock.children.length;
             this.updateListItems(previousResult);
             this.focusedIndex = this.focusedElement.indexOf(this.navigateToPreviousResult);
@@ -827,8 +832,10 @@ export class OptionsPane {
     }
     /**
      * Scrolls to position.
+     *
+     * @private 
      * @param {HTMLElement} list - Specifies the list element.
-     * @private
+     * @returns {void}
      */
     public scrollToPosition(list: HTMLElement): void {
         let rect: ClientRect = list.getBoundingClientRect();
@@ -849,8 +856,10 @@ export class OptionsPane {
     }
     /**
      * Fires on key down
-     * @param {KeyboardEvent} event - Speficies key down actions.
+     *
      * @private
+     * @param {KeyboardEvent} event - Speficies key down actions.
+     * @returns {void}
      */
     public onKeyDown = (event: KeyboardEvent): void => {
         let code: number = event.which || event.keyCode;
@@ -879,7 +888,9 @@ export class OptionsPane {
     }
     /**
      * Clear the focus elements.
+     *
      * @private
+     * @returns {void}
      */
     public clearFocusElement(): void {
         for (let i: number = 0; i < this.resultsListBlock.children.length; i++) {
@@ -892,7 +903,9 @@ export class OptionsPane {
     }
     /**
      * Close the optios pane.
+     *
      * @private
+     * @returns {void}
      */
     public close = (): void => {
         this.clearFocusElement();
@@ -903,8 +916,10 @@ export class OptionsPane {
     }
     /**
      * Fires on results list block.
-     * @param {MouseEvent} args - Specifies which list was clicked.
+     *
      * @private
+     * @param {MouseEvent} args - Specifies which list was clicked.
+     * @returns {void}
      */
     public resultListBlockClick = (args: MouseEvent): void => {
         let currentlist: EventTarget = args.target;
@@ -933,7 +948,6 @@ export class OptionsPane {
         }
         let currentelement: TextSearchResult = this.results.innerList[index];
         this.results.currentIndex = index;
-        // tslint:disable-next-line:max-line-length
         this.messageDiv.innerHTML = this.localeValue.getConstant('Result') + ' ' + (index + 1) + ' ' + this.localeValue.getConstant('of') + ' ' + this.resultsListBlock.children.length;
         this.documentHelper.owner.searchModule.navigate(currentelement);
         this.documentHelper.owner.searchModule.highlight(this.results);
@@ -943,8 +957,10 @@ export class OptionsPane {
     }
     /**
      * Show or hide option pane based on boolean value.
-     * @param {boolean} show - Specifies showing or hiding the options pane.
+     *
      * @private
+     * @param {boolean} show - Specifies showing or hiding the options pane.
+     * @returns {void}
      */
     public showHideOptionsPane(show: boolean): void {
         if (!isNullOrUndefined(this.documentHelper.owner.selectionModule)) {
@@ -962,7 +978,6 @@ export class OptionsPane {
                         optionsPaneContainerStyle = 'display:inline-flex;';
                     }
                     this.documentHelper.optionsPaneContainer.setAttribute('style', optionsPaneContainerStyle);
-                    // tslint:disable-next-line:max-line-length
                     this.documentHelper.optionsPaneContainer.insertBefore(this.documentHelper.owner.optionsPaneModule.optionsPane, this.documentHelper.viewerContainer);
                 }
                 this.optionsPane.style.display = 'block';
@@ -980,7 +995,6 @@ export class OptionsPane {
                 }
                 this.searchDiv.innerHTML = this.localeValue.getConstant(this.searchText);
                 this.isOptionsPaneShow = true;
-                // tslint:disable-next-line:max-line-length
                 let textBox: HTMLInputElement = document.getElementById(this.documentHelper.owner.getDocumentEditorElement().id + '_option_search_text_box') as HTMLInputElement;
                 let selectedText: string = this.documentHelper.owner.selection.text;
                 if (!isNullOrUndefined(selectedText)) {
@@ -999,10 +1013,8 @@ export class OptionsPane {
                 this.focusedIndex = 1;
                 this.focusedElement = [];
                 if (this.isOptionsPane) {
-                    // tslint:disable-next-line:max-line-length
                     this.focusedElement.push(this.closeButton, this.searchInput, this.searchIcon, this.navigateToPreviousResult, this.navigateToNextResult, this.matchInput, this.wholeInput);
                 } else {
-                    // tslint:disable-next-line:max-line-length
                     this.focusedElement.push(this.closeButton, this.searchInput, this.searchIcon, this.navigateToPreviousResult, this.navigateToNextResult, this.matchInput, this.wholeInput, this.replaceWith, this.replaceButton, this.replaceAllButton);
                 }
                 this.documentHelper.updateViewerSize();
@@ -1035,7 +1047,9 @@ export class OptionsPane {
 
     /**
      * Clears search results.
+     *
      * @private
+     * @returns {void}
      */
     public clearSearchResultItems(): void {
         if (!isNullOrUndefined(this.documentHelper.owner.findResultsList)) {
@@ -1044,7 +1058,9 @@ export class OptionsPane {
     }
     /**
      * Dispose the internal objects which are maintained.
+     *
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         if (this.optionsPane) {
@@ -1114,6 +1130,8 @@ export class OptionsPane {
     }
     /**
      * Dispose the internal objects which are maintained.
+     *
+     * @returns {void}
      */
     private destroyInternal(): void {
         if (this.searchText) {

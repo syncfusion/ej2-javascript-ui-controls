@@ -1,7 +1,7 @@
 /**
  * 
  */
-//tslint:disable
+/* eslint-disable */
 export let ProductSale: Object[] =[
     {Product:" Samsung", Percentage:22},
     {Product:"Apple", Percentage:11.2},

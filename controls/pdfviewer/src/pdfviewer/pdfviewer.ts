@@ -1,17 +1,18 @@
-// tslint:disable-next-line:max-line-length
+/* eslint-disable */
+// eslint-disable-next-line max-len
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';
-// tslint:disable-next-line:max-line-length
+// eslint-disable-next-line max-len
 import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel, SignatureFieldSettingsModel, SignatureIndicatorSettingsModel } from './pdfviewer-model';
 import { ToolbarSettingsModel, ShapeLabelSettingsModel } from './pdfviewer-model';
-// tslint:disable-next-line:max-line-length
+// eslint-disable-next-line max-len
 import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel, ScrollSettingsModel, FormFieldModel , InkAnnotationSettingsModel } from './pdfviewer-model';
 import { PdfViewerBase } from './index';
 import { Navigation } from './index';
 import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
-// tslint:disable-next-line:max-line-length
+// eslint-disable-next-line max-len
 import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
@@ -21,12 +22,12 @@ import { TextSelection } from './index';
 import { TextSearch } from './index';
 import { FormFields } from './index';
 import { Print, CalibrationUnit } from './index';
-// tslint:disable-next-line:max-line-length
+// eslint-disable-next-line max-len
 import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';
 import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs , ButtonFieldClickEventArgs} from './index';
-// tslint:disable-next-line:max-line-length
+// eslint-disable-next-line max-len
 import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';
-// tslint:disable-next-line:max-line-length
+// eslint-disable-next-line max-len
 import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';
 import { PdfAnnotationBase, ZOrderPageTable } from './drawing/pdf-annotation';
 import { PdfAnnotationBaseModel } from './drawing/pdf-annotation-model';
@@ -36,9 +37,9 @@ import { SelectorModel } from './drawing/selector-model';
 import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';
 import { renderAdornerLayer } from './drawing/dom-util';
 import { ThumbnailClickEventArgs } from './index';
-// tslint:disable-next-line:max-line-length
+// eslint-disable-next-line max-len
 import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs } from './base';
-// tslint:disable-next-line:max-line-length
+// eslint-disable-next-line max-len
 import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
 import { ContextMenuSettingsModel } from './pdfviewer-model';
 
@@ -89,12 +90,12 @@ export interface IAjaxHeaders {
     /**
      * specifies the ajax Header Name of the PdfViewer.
      */
-    headerName: string;
+    headerName: string
 
     /**
      * specifies the ajax Header Value of the PdfViewer.
      */
-    headerValue: string;
+    headerValue: string
 }
 
 export class CustomStamp extends ChildProperty<CustomStamp> {
@@ -105,7 +106,7 @@ export class CustomStamp extends ChildProperty<CustomStamp> {
     public customStampName: string;
 
     /**
-     * Defines the custom stamp images source to be added in stamp menu of the PDF Viewer toolbar. 
+     * Defines the custom stamp images source to be added in stamp menu of the PDF Viewer toolbar.
      */
     @Property('')
     public customStampImageSource: string;
@@ -158,14 +159,14 @@ export class SignatureIndicatorSettings extends ChildProperty<SignatureIndicator
     public backgroundColor: string;
 
     /**
-     * Specifies the width of the signature indicator. Maximum width is half the width of the signature field. 
+     * Specifies the width of the signature indicator. Maximum width is half the width of the signature field.
      * Minimum width is the default value.
      */
     @Property(19)
     public width: number;
 
     /**
-     * Specifies the height of the signature indicator. Maximum height is half the height of the signature field. 
+     * Specifies the height of the signature indicator. Maximum height is half the height of the signature field.
      * Minimum height is the default value.
      */
     @Property(10)
@@ -311,6 +312,7 @@ export class StrikethroughSettings extends ChildProperty<StrikethroughSettings> 
 
     /**
      * Enables or disables the multi-page text markup annotation selection in UI.
+     *
      * @default false
      */
     @Property(false)
@@ -318,6 +320,7 @@ export class StrikethroughSettings extends ChildProperty<StrikethroughSettings> 
 
     /**
      * Enable or disable the text markup resizer to modify the bounds in UI.
+     *
      * @default false
      */
     @Property(false)
@@ -326,6 +329,7 @@ export class StrikethroughSettings extends ChildProperty<StrikethroughSettings> 
     /**
      * Gets or sets the allowed interactions for the locked strikethrough annotations.
      * IsLock can be configured using strikethrough settings.
+     *
      * @default ['None']
      */
     @Property(['None'])
@@ -380,6 +384,7 @@ export class UnderlineSettings extends ChildProperty<UnderlineSettings> {
 
     /**
      * Enables or disables the multi-page text markup annotation selection in UI.
+     *
      * @default false
      */
     @Property(false)
@@ -387,6 +392,7 @@ export class UnderlineSettings extends ChildProperty<UnderlineSettings> {
 
     /**
      * Enable or disable the text markup resizer to modify the bounds in UI.
+     *
      * @default false
      */
     @Property(false)
@@ -395,6 +401,7 @@ export class UnderlineSettings extends ChildProperty<UnderlineSettings> {
     /**
      * Gets or sets the allowed interactions for the locked underline annotations.
      * IsLock can be configured using underline settings.
+     *
      * @default ['None']
      */
     @Property(['None'])
@@ -449,6 +456,7 @@ export class HighlightSettings extends ChildProperty<HighlightSettings> {
 
     /**
      * Enables or disables the multi-page text markup annotation selection in UI.
+     *
      * @default false
      */
     @Property(false)
@@ -456,6 +464,7 @@ export class HighlightSettings extends ChildProperty<HighlightSettings> {
 
     /**
      * Enable or disable the text markup resizer to modify the bounds in UI.
+     *
      * @default false
      */
     @Property(false)
@@ -464,6 +473,7 @@ export class HighlightSettings extends ChildProperty<HighlightSettings> {
     /**
      * Gets or sets the allowed interactions for the locked highlight annotations.
      * IsLock can be configured using highlight settings.
+     *
      * @default ['None']
      */
     @Property(['None'])
@@ -573,6 +583,7 @@ export class LineSettings extends ChildProperty<LineSettings> {
     /**
      * Gets or sets the allowed interactions for the locked highlight annotations.
      * IsLock can be configured using line settings.
+     *
      * @default ['None']
      */
     @Property(['None'])
@@ -682,6 +693,7 @@ export class ArrowSettings extends ChildProperty<ArrowSettings> {
     /**
      * Gets or sets the allowed interactions for the locked arrow annotations.
      * IsLock can be configured using arrow settings.
+     *
      * @default ['None']
      */
     @Property(['None'])
@@ -773,6 +785,7 @@ export class RectangleSettings extends ChildProperty<RectangleSettings> {
     /**
      * Gets or sets the allowed interactions for the locked rectangle annotations.
      * IsLock can be configured using rectangle settings.
+     *
      * @default ['None']
      */
     @Property(['None'])
@@ -864,6 +877,7 @@ export class CircleSettings extends ChildProperty<CircleSettings> {
     /**
      * Gets or sets the allowed interactions for the locked circle annotations.
      * IsLock can be configured using circle settings.
+     *
      * @default ['None']
      */
     @Property(['None'])
@@ -998,6 +1012,7 @@ export class PolygonSettings extends ChildProperty<PolygonSettings> {
     /**
      * Gets or sets the allowed interactions for the locked polygon annotations.
      * IsLock can be configured using polygon settings.
+     *
      * @default ['None']
      */
     @Property(['None'])
@@ -1089,6 +1104,7 @@ export class StampSettings extends ChildProperty<StampSettings> {
     /**
      * Gets or sets the allowed interactions for the locked stamp annotations.
      * IsLock can be configured using stamp settings.
+     *
      * @default ['None']
      */
     @Property(['None'])
@@ -1190,6 +1206,7 @@ export class CustomStampSettings extends ChildProperty<CustomStampSettings> {
     /**
      * Gets or sets the allowed interactions for the locked custom stamp annotations.
      * IsLock can be configured using custom stamp settings.
+     *
      * @default ['None']
      */
     @Property(['None'])
@@ -1311,6 +1328,7 @@ export class DistanceSettings extends ChildProperty<DistanceSettings> {
     /**
      * Gets or sets the allowed interactions for the locked distance annotations.
      * IsLock can be configured using distance settings.
+     *
      * @default ['None']
      */
     @Property(['None'])
@@ -1414,6 +1432,7 @@ export class PerimeterSettings extends ChildProperty<PerimeterSettings> {
     /**
      * Gets or sets the allowed interactions for the locked perimeter annotations.
      * IsLock can be configured using perimeter settings.
+     *
      * @default ['None']
      */
     @Property(['None'])
@@ -1499,6 +1518,7 @@ export class AreaSettings extends ChildProperty<AreaSettings> {
     /**
      * Gets or sets the allowed interactions for the locked area annotations.
      * IsLock can be configured using area settings.
+     *
      * @default ['None']
      */
     @Property(['None'])
@@ -1590,6 +1610,7 @@ export class RadiusSettings extends ChildProperty<RadiusSettings> {
     /**
      * Gets or sets the allowed interactions for the locked radius annotations.
      * IsLock can be configured using area settings.
+     *
      * @default ['None']
      */
     @Property(['None'])
@@ -1675,6 +1696,7 @@ export class VolumeSettings extends ChildProperty<VolumeSettings> {
     /**
      * Gets or sets the allowed interactions for the locked volume annotations.
      * IsLock can be configured using volume settings.
+     *
      * @default ['None']
      */
     @Property(['None'])
@@ -1729,6 +1751,7 @@ export class InkAnnotationSettings extends ChildProperty<InkAnnotationSettings> 
     /**
      * Gets or sets the allowed interactions for the locked ink annotations.
      * IsLock can be configured using ink settings.
+     *
      * @default ['None']
      */
     @Property(['None'])
@@ -1784,6 +1807,7 @@ export class StickyNotesSettings extends ChildProperty<StickyNotesSettings> {
     /**
      * Gets or sets the allowed interactions for the locked sticky notes annotations.
      * IsLock can be configured using sticky notes settings.
+     *
      * @default ['None']
      */
     @Property(['None'])
@@ -1963,6 +1987,7 @@ export class FreeTextSettings extends ChildProperty<FreeTextSettings> {
     /**
      * Gets or sets the allowed interactions for the locked free text annotations.
      * IsLock can be configured using free text settings.
+     *
      * @default ['None']
      */
     @Property(['None'])
@@ -1994,6 +2019,7 @@ export class AnnotationSelectorSettings extends ChildProperty<AnnotationSelector
 
     /**
      * Specifies the border color of the resizer.
+     *
      * @ignore
      */
     @Property('black')
@@ -2001,6 +2027,7 @@ export class AnnotationSelectorSettings extends ChildProperty<AnnotationSelector
 
     /**
      * Specifies the fill color of the resizer.
+     *
      * @ignore
      */
     @Property('#FF4081')
@@ -2008,6 +2035,7 @@ export class AnnotationSelectorSettings extends ChildProperty<AnnotationSelector
 
     /**
      * Specifies the size of the resizer.
+     *
      * @ignore
      */
     @Property(8)
@@ -2164,6 +2192,7 @@ export class AnnotationSettings extends ChildProperty<AnnotationSettings> {
     /**
      * Gets or sets the allowed interactions for the locked annotations.
      * IsLock can be configured using annotation settings.
+     *
      * @default ['None']
      */
     @Property(['None'])
@@ -2258,6 +2287,7 @@ export class RectangleBounds extends ChildProperty<RectangleBounds> {
     public bottom: number;
     /**
      * Returns true if height and width of the rectangle is zero.
+     *
      * @default 'false'
      */
     @Property()
@@ -2349,6 +2379,7 @@ export class FormField extends ChildProperty<FormField> {
 export class ContextMenuSettings extends ChildProperty<ContextMenuSettings> {
     /**
      * Defines the context menu action.
+     *
      * @default RightClick
      */
     @Property('RightClick')
@@ -2356,6 +2387,7 @@ export class ContextMenuSettings extends ChildProperty<ContextMenuSettings> {
 
     /**
      * Defines the context menu items should be visible in the PDF Viewer.
+     *
      *  @default []
      */
     @Property([])
@@ -2383,6 +2415,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * gets the page count of the document loaded in the PdfViewer control.
+     *
      * @default 0
      */
     @Property(0)
@@ -2390,6 +2423,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Checks whether the PDF document is edited.
+     *
      * @asptype bool
      * @blazorType bool
      */
@@ -2398,6 +2432,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Returns the current page number of the document displayed in the PdfViewer control.
+     *
      * @default 0
      */
     @Property(0)
@@ -2411,6 +2446,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Returns the current zoom percentage of the PdfViewer control.
+     *
      * @asptype int
      * @blazorType int
      */
@@ -2421,13 +2457,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Get the Loaded document annotation Collections in the PdfViewer control.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public annotationCollection: any[];
 
     /**
      * Get the Loaded document signature Collections in the PdfViewer control.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public signatureCollection: any[] = [];
 
     /**
@@ -2449,6 +2485,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Defines the scrollable height of the PdfViewer control.
+     *
      * @default 'auto'
      */
     @Property('auto')
@@ -2456,6 +2493,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Defines the scrollable width of the PdfViewer control.
+     *
      * @default 'auto'
      */
     @Property('auto')
@@ -2463,6 +2501,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the toolbar of PdfViewer.
+     *
      * @default true
      */
     @Property(true)
@@ -2470,6 +2509,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Specifies the retry count for the failed requests.
+     *
      * @default 1
      */
     @Property(1)
@@ -2477,6 +2517,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * If it is set as false then error message box is not displayed in PDF viewer control.
+     *
      * @default true
      */
     @Property(true)
@@ -2484,6 +2525,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the Navigation toolbar of PdfViewer.
+     *
      * @default true
      */
     @Property(true)
@@ -2491,6 +2533,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the Comment Panel of PdfViewer.
+     *
      * @default true
      */
     @Property(true)
@@ -2498,6 +2541,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * If it set as true, then the command panel show at initial document loading in the PDF viewer
+     *
      * @default false
      */
     @Property(false)
@@ -2505,6 +2549,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the text markup resizer to modify the bounds in UI.
+     *
      * @default false
      */
     @Property(false)
@@ -2512,6 +2557,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the multi line text markup annotations in overlapping collections.
+     *
      * @default false
      */
     @Property(false)
@@ -2519,6 +2565,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Checks if the freeText value is valid or not. FALSE by default
+     *
      * @default false
      */
     @Property(false)
@@ -2526,6 +2573,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
+     *
      * @deprecated This property renamed into "isAnnotationToolbarVisible"
      * @default false
      */
@@ -2533,8 +2581,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public isAnnotationToolbarOpen: boolean;
 
     /**
-     * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially 
+     * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially
      * and get the annotation Toolbar Visible status.
+     *
      * @default false
      */
     @Property(false)
@@ -2542,6 +2591,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enables or disables the multi-page text markup annotation selection in UI.
+     *
      * @default false
      */
     @Property(false)
@@ -2549,6 +2599,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the download option of PdfViewer.
+     *
      * @default true
      */
     @Property(true)
@@ -2556,6 +2607,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the print option of PdfViewer.
+     *
      * @default true
      */
     @Property(true)
@@ -2563,6 +2615,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enables or disables the thumbnail view in the PDF viewer
+     *
      * @default true
      */
     @Property(true)
@@ -2570,6 +2623,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * If it set as true, then the thumbnail view show at initial document loading in the PDF viewer
+     *
      * @default false
      */
     @Property(false)
@@ -2577,6 +2631,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enables or disable saving Hand Written signature as editable in the PDF.
+     *
      * @default false
      */
     @Property(false)
@@ -2584,6 +2639,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enables or disables the bookmark view in the PDF viewer
+     *
      * @default true
      */
     @Property(true)
@@ -2591,6 +2647,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enables or disables the bookmark styles in the PDF viewer
+     *
      * @default false
      */
     @Property(false)
@@ -2598,6 +2655,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enables or disables the hyperlinks in PDF document.
+     *
      * @default true
      */
     @Property(true)
@@ -2605,24 +2663,28 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enables or disables the handwritten signature in PDF document.
+     *
      * @default true
      */
     @Property(true)
     public enableHandwrittenSignature: boolean;
     /**
      * If it is set as false, then the ink annotation support in the PDF Viewer will be disabled. By default it is true.
+     *
      * @default true
      */
     @Property(true)
     public enableInkAnnotation: boolean;
     /**
      * restrict zoom request.
+     *
      * @default false
      */
     @Property(false)
     public restrictZoomRequest: boolean;
     /**
      * Specifies the open state of the hyperlink in the PDF document.
+     *
      * @default CurrentTab
      */
     @Property('CurrentTab')
@@ -2630,6 +2692,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Specifies the state of the ContextMenu in the PDF document.
+     *
      * @default RightClick
      */
     @Property('RightClick')
@@ -2637,6 +2700,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * enable or disable context menu Items
+     *
      * @default []
      */
     @Property([])
@@ -2645,12 +2709,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Gets the form fields present in the loaded PDF document. It used to get the form fields id, name, type and it's values.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ name: '', id: '', type: '', isReadOnly: false, value: '', signatureType: [''], fontName: '' })
     public formFieldCollections: FormFieldModel[];
 
     /**
      * Enable or disables the Navigation module of PdfViewer.
+     *
      * @default true
      */
     @Property(true)
@@ -2658,6 +2723,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the auto complete option in form documents.
+     *
      * @default true
      */
     @Property(true)
@@ -2665,6 +2731,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the Magnification module of PdfViewer.
+     *
      * @default true
      */
     @Property(true)
@@ -2672,6 +2739,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the Label for shapeAnnotations of PdfViewer.
+     *
      * @default false
      */
     @Property(false)
@@ -2679,6 +2747,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the customization of measure values in PdfViewer.
+     *
      * @default true
      */
     @Property(true)
@@ -2686,6 +2755,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the Pinch zoom of PdfViewer.
+     *
      * @default true
      */
     @Property(true)
@@ -2693,6 +2763,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the text selection in the PdfViewer.
+     *
      * @default true
      */
     @Property(true)
@@ -2700,6 +2771,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the text search in the PdfViewer.
+     *
      * @default true
      */
     @Property(true)
@@ -2707,6 +2779,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the annotation in the Pdfviewer.
+     *
      * @default true
      */
     @Property(true)
@@ -2714,6 +2787,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the form fields in the Pdfviewer.
+     *
      * @default true
      */
     @Property(true)
@@ -2721,6 +2795,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the form fields validation.
+     *
      * @default false
      */
     @Property(false)
@@ -2728,6 +2803,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable if the PDF document contains form fields.
+     *
      * @default false
      */
     @Property(false)
@@ -2735,14 +2811,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Gets or sets a boolean value to show or hide desktop toolbar in mobile devices. FALSE by default.
+     *
      * @default false
      */
     @Property(false)
     public enableDesktopMode: boolean;
 
     /**
-     * Gets or sets a boolean value to show or hide the save signature check box option in the signature dialog. 
+     * Gets or sets a boolean value to show or hide the save signature check box option in the signature dialog.
      * FALSE by default
+     *
      * @default false
      */
     @Property(false)
@@ -2750,6 +2828,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the free text annotation in the Pdfviewer.
+     *
      * @default true
      */
     @Property(true)
@@ -2757,6 +2836,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the text markup annotation in the PdfViewer.
+     *
      * @default true
      */
     @Property(true)
@@ -2764,6 +2844,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the shape annotation in the PdfViewer.
+     *
      * @default true
      */
     @Property(true)
@@ -2771,6 +2852,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the calibrate annotation in the PdfViewer.
+     *
      * @default true
      */
     @Property(true)
@@ -2778,6 +2860,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enables and disables the stamp annotations when the PDF viewer control is loaded initially.
+     *
      * @default true
      */
     @Property(true)
@@ -2785,6 +2868,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enables and disables the stickyNotes annotations when the PDF viewer control is loaded initially.
+     *
      * @default true
      */
     @Property(true)
@@ -2792,6 +2876,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
+     *
      * @default true
      */
     @Property(true)
@@ -2799,6 +2884,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Gets or sets a boolean value to show or hide the bookmark panel while loading a document. FALSE by default.
+     *
      * @default false
      */
     @Property(false)
@@ -2806,6 +2892,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Sets the interaction mode of the PdfViewer
+     *
      * @default TextSelection
      */
     @Property('TextSelection')
@@ -2813,6 +2900,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Specifies the rendering mode in the PDF Viewer.
+     *
      * @default Default
      */
     @Property('Default')
@@ -2820,6 +2908,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Specifies the signature mode in the PDF Viewer.
+     *
      * @default Default
      */
     @Property('Default')
@@ -2827,6 +2916,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Specifies the print mode in the PDF Viewer.
+     *
      * @default Default
      */
     @Property('Default')
@@ -2834,6 +2924,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Sets the initial loading zoom value from 10 to 400 in PdfViewer Control.
+     *
      * @default 0
      */
     @Property(0)
@@ -2841,6 +2932,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      *  Enable or disable the zoom optimization mode in PDF Viewer.
+     *
      * @default true
      */
     @Property(true)
@@ -2848,6 +2940,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the get the document text collections.
+     *
      * @default false
      */
     @Property(false)
@@ -2855,6 +2948,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Maintain the selection of text markup annotation.
+     *
      * @default false
      */
     @Property(false)
@@ -2869,21 +2963,21 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Defines the settings of the PdfViewer toolbar.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ showTooltip: true, toolbarItems: ['OpenOption', 'UndoRedoTool', 'PageNavigationTool', 'MagnificationTool', 'PanTool', 'SelectionTool', 'CommentTool', 'SubmitForm', 'AnnotationEditTool', 'FreeTextAnnotationOption', 'InkAnnotationOption', 'ShapeAnnotationOption', 'StampAnnotation', 'SignatureOption', 'SearchOption', 'PrintOption', 'DownloadOption'], annotationToolbarItems: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'HandWrittenSignatureTool', 'InkAnnotationTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool', 'FreeTextAnnotationTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool', 'FontAlignAnnotationTool', 'FontColorAnnotationTool', 'CommentPanelTool'] })
     public toolbarSettings: ToolbarSettingsModel;
 
     /**
      * Defines the ajax Request settings of the PdfViewer.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ ajaxHeaders: [], withCredentials: false })
     public ajaxRequestSettings: AjaxRequestSettingsModel;
 
     /**
      * Defines the stamp items of the PdfViewer.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
 
     @Property({ customStampName: '', customStampImageSource: '' })
     public customStamp: CustomStampModel[];
@@ -2891,139 +2985,139 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Defines the settings of the PdfViewer service.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ load: 'Load', renderPages: 'RenderPdfPages', unload: 'Unload', download: 'Download', renderThumbnail: 'RenderThumbnailImages', print: 'PrintImages', renderComments: 'RenderAnnotationComments', importAnnotations: 'ImportAnnotations', exportAnnotations: 'ExportAnnotations', importFormFields: 'ImportFormFields', exportFormFields: 'ExportFormFields', renderTexts: 'RenderPdfTexts' })
     public serverActionSettings: ServerActionSettingsModel;
 
     /**
      * Defines the  properties of signature field
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ signatureIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: 'Sign', color: 'black'}})
     public signatureFieldSettings: SignatureFieldSettingsModel;
 
     /**
      * Defines the settings of highlight annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ opacity: 1, color: '#FFDF56', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false, allowedInteractions: ['None'], isPrint: true })
     public highlightSettings: HighlightSettingsModel;
 
     /**
      * Defines the settings of strikethrough annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ opacity: 1, color: '#ff0000', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false, allowedInteractions: ['None'], isPrint: true })
     public strikethroughSettings: StrikethroughSettingsModel;
 
     /**
      * Defines the settings of underline annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ opacity: 1, color: '#00ff00', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false, allowedInteractions: ['None'], isPrint: true })
     public underlineSettings: UnderlineSettingsModel;
 
     /**
      * Defines the settings of line annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'None', lineHeadEndStyle: 'None', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true })
     public lineSettings: LineSettingsModel;
 
     /**
      * Defines the settings of arrow annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true })
     public arrowSettings: ArrowSettingsModel;
 
     /**
      * Defines the settings of rectangle annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true })
     public rectangleSettings: RectangleSettingsModel;
 
     /**
      * Defines the settings of shape label.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ff0000', fontColor: '#000', fontSize: 16, labelHeight: 24.6, labelMaxWidth: 151, labelContent: 'Label' })
     public shapeLabelSettings: ShapeLabelSettingsModel;
 
     /**
      * Defines the settings of circle annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true })
     public circleSettings: CircleSettingsModel;
 
     /**
      * Defines the settings of polygon annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true })
     public polygonSettings: PolygonSettingsModel;
 
     /**
      * Defines the settings of stamp annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ opacity: 1, author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, dynamicStamps: [DynamicStampItem.Revised, DynamicStampItem.Reviewed, DynamicStampItem.Received, DynamicStampItem.Confidential, DynamicStampItem.Approved, DynamicStampItem.NotApproved], signStamps: [SignStampItem.Witness, SignStampItem.InitialHere, SignStampItem.SignHere, SignStampItem.Accepted, SignStampItem.Rejected], standardBusinessStamps: [StandardBusinessStampItem.Approved, StandardBusinessStampItem.NotApproved, StandardBusinessStampItem.Draft, StandardBusinessStampItem.Final, StandardBusinessStampItem.Completed, StandardBusinessStampItem.Confidential, StandardBusinessStampItem.ForPublicRelease, StandardBusinessStampItem.NotForPublicRelease, StandardBusinessStampItem.ForComment, StandardBusinessStampItem.Void, StandardBusinessStampItem.PreliminaryResults, StandardBusinessStampItem.InformationOnly], allowedInteractions: ['None'], isPrint: true })
     public stampSettings: StampSettingsModel;
 
     /**
      * Defines the settings of customStamp annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ opacity: 1, author: 'Guest', width: 0, height: 0, left: 0, top: 0, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, enableCustomStamp: true, allowedInteractions: ['None'], isPrint: true })
     public customStampSettings: CustomStampSettingsModel;
 
     /**
      * Defines the settings of distance annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, leaderLength: 40, resizeCursorType: CursorType.move, allowedInteractions: ['None'], isPrint: true })
     public distanceSettings: DistanceSettingsModel;
 
     /**
      * Defines the settings of perimeter annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Open', lineHeadEndStyle: 'Open', minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'], isPrint: true })
     public perimeterSettings: PerimeterSettingsModel;
 
     /**
      * Defines the settings of area annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'], isPrint: true })
     public areaSettings: AreaSettingsModel;
 
     /**
      * Defines the settings of radius annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true })
     public radiusSettings: RadiusSettingsModel;
 
     /**
      * Defines the settings of volume annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'], isPrint: true })
     public volumeSettings: VolumeSettingsModel;
 
     /**
      * Defines the settings of stickyNotes annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ author: 'Guest', opacity: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, isLock: false, allowedInteractions: ['None'], isPrint: true })
     public stickyNotesSettings: StickyNotesSettingsModel;
     /**
      * Defines the settings of free text annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ffffff00', author: 'Guest', borderWidth: 1, width: 151, fontSize: 16, height: 24.6, fontColor: '#000', fontFamily: 'Helvetica', defaultText: 'Type Here', textAlignment: 'Left', fontStyle: FontStyle.None, allowTextOnly: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, isReadonly: false })
     public freeTextSettings: FreeTextSettingsModel;
 
@@ -3036,7 +3130,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Defines the settings of annotation selector.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null })
     public annotationSelectorSettings: AnnotationSelectorSettingsModel;
 
@@ -3049,21 +3143,21 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Defines the settings of handWrittenSignature.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ opacity: 1, strokeColor: '#000000', width: 150, height: 100, thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'] })
     public handWrittenSignatureSettings: HandWrittenSignatureSettingsModel;
 
     /**
      * Defines the ink annotation settings for PDF Viewer.It used to customize the strokeColor, thickness, opacity of the ink annotation.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ author: 'Guest', opacity: 1, strokeColor: '#ff0000', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, isLock: false, allowedInteractions: ['None'], isPrint: true })
     public inkAnnotationSettings: InkAnnotationSettingsModel;
 
     /**
      * Defines the settings of the annotations.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ author: 'Guest', minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, skipPrint: false, skipDownload: false, allowedInteractions: ['None'] })
     public annotationSettings: AnnotationSettingsModel;
 
@@ -3082,7 +3176,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Defines the context menu settings.
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     @Property({ contextMenuAction: 'RightClick', contextMenuItems: [ ContextMenuItem.Comment, ContextMenuItem.Copy, ContextMenuItem.Cut, ContextMenuItem.Delete, ContextMenuItem.Highlight, ContextMenuItem.Paste, ContextMenuItem.Properties, ContextMenuItem.ScaleRatio, ContextMenuItem.Strikethrough, ContextMenuItem.Underline] })
     public contextMenuSettings: ContextMenuSettingsModel;
 
@@ -3099,6 +3193,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     /**
      * Defines the collection of selected items, size and position of the selector
+     *
      * @default {}
      */
     @Complex<SelectorModel>({}, Selector)
@@ -3174,10 +3269,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public _dotnetInstance: any;
     /**
      * Gets the bookmark view object of the pdf viewer.
+     *
      * @asptype BookmarkView
      * @blazorType BookmarkView
      * @returns { BookmarkView }
@@ -3188,6 +3284,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Gets the print object of the pdf viewer.
+     *
      * @asptype Print
      * @blazorType Print
      * @returns { Print }
@@ -3198,6 +3295,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Gets the magnification object of the pdf viewer.
+     *
      * @asptype Magnification
      * @blazorType Magnification
      * @returns { Magnification }
@@ -3207,6 +3305,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
     /**
      * Gets the navigation object of the pdf viewer.
+     *
      * @asptype Navigation
      * @blazorType Navigation
      * @returns { Navigation }
@@ -3217,6 +3316,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Gets the text search object of the pdf viewer.
+     *
      * @asptype TextSearch
      * @blazorType TextSearch
      * @returns { TextSearch }
@@ -3227,6 +3327,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Gets the toolbar object of the pdf viewer.
+     *
      * @asptype Toolbar
      * @blazorType Toolbar
      * @returns { Toolbar }
@@ -3237,6 +3338,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Gets the thumbnail-view object of the pdf viewer.
+     *
      * @asptype ThumbnailView
      * @blazorType ThumbnailView
      * @returns { ThumbnailView }
@@ -3247,6 +3349,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Gets the annotation object of the pdf viewer.
+     *
      * @asptype Annotation
      * @blazorType Annotation
      * @returns { Annotation }
@@ -3257,6 +3360,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Gets the TextSelection object of the pdf viewer.
+     *
      * @asptype TextSelection
      * @blazorType TextSelection
      * @returns { TextSelection }
@@ -3267,6 +3371,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers while created the PdfViewer component.
+     *
      * @event
      * @blazorProperty 'Created'
      */
@@ -3275,6 +3380,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers while loading document into PdfViewer.
+     *
      * @event
      * @blazorProperty 'DocumentLoaded'
      */
@@ -3283,6 +3389,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers while close the document
+     *
      * @event
      * @blazorProperty 'DocumentUnloaded'
      */
@@ -3291,6 +3398,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers while loading document got failed in PdfViewer.
+     *
      * @event
      * @blazorProperty 'DocumentLoadFailed'
      */
@@ -3299,6 +3407,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when the AJAX request is failed.
+     *
      * @event
      * @blazorProperty 'AjaxRequestFailed'
      */
@@ -3307,6 +3416,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when validation is failed.
+     *
      * @event
      * @blazorProperty 'validateFormFields'
      */
@@ -3315,6 +3425,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when the mouse click is performed over the page of the PDF document.
+     *
      * @event
      * @blazorProperty 'OnPageClick'
      */
@@ -3323,6 +3434,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when there is change in current page number.
+     *
      * @event
      * @blazorProperty 'PageChanged'
      */
@@ -3331,6 +3443,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when hyperlink in the PDF Document is clicked
+     *
      * @event
      * @blazorProperty 'OnHyperlinkClick'
      */
@@ -3339,6 +3452,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when hyperlink in the PDF Document is hovered
+     *
      * @event
      * @blazorProperty 'OnHyperlinkMouseOver'
      */
@@ -3347,6 +3461,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when there is change in the magnification value.
+     *
      * @event
      * @blazorProperty 'ZoomChanged'
      */
@@ -3355,6 +3470,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when an annotation is added over the page of the PDF document.
+     *
      * @event
      * @blazorProperty 'AnnotationAdded'
      */
@@ -3363,6 +3479,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when an annotation is removed from the page of the PDF document.
+     *
      * @event
      * @blazorProperty 'AnnotationRemoved'
      */
@@ -3371,6 +3488,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when the property of the annotation is changed in the page of the PDF document.
+     *
      * @event
      * @blazorProperty 'AnnotationPropertiesChanged'
      */
@@ -3379,6 +3497,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when an annotation is resized over the page of the PDF document.
+     *
      * @event
      * @blazorProperty 'AnnotationResized'
      */
@@ -3387,6 +3506,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when signature is added  over the page of the PDF document.
+     *
      * @event
      */
     @Event()
@@ -3394,6 +3514,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when signature is removed over the page of the PDF document.
+     *
      * @event
      */
     @Event()
@@ -3401,6 +3522,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when an signature is moved over the page of the PDF document.
+     *
      * @event
      */
     @Event()
@@ -3408,6 +3530,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when the property of the signature is changed in the page of the PDF document.
+     *
      * @event
      */
     @Event()
@@ -3415,6 +3538,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when signature is resized over the page of the PDF document.
+     *
      * @event
      */
     @Event()
@@ -3422,6 +3546,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when signature is selected over the page of the PDF document.
+     *
      * @event
      */
     @Event()
@@ -3429,6 +3554,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when an annotation is selected over the page of the PDF document.
+     *
      * @event
      * @blazorProperty 'AnnotationSelected'
      */
@@ -3436,7 +3562,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public annotationSelect: EmitType<AnnotationSelectEventArgs>;
 
     /**
-     * Triggers when an annotation is unselected over the page of the PDF document. 
+     * Triggers when an annotation is unselected over the page of the PDF document.
+     *
      * @event
      * @blazorProperty 'AnnotationUnSelect'
      */
@@ -3445,6 +3572,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers an event when the annotation is double click.
+     *
      * @event
      * @blazorProperty 'OnAnnotationDoubleClick'
      */
@@ -3453,6 +3581,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when an annotation is moved over the page of the PDF document.
+     *
      * @event
      * @blazorProperty 'AnnotationMoved'
      */
@@ -3461,6 +3590,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when mouse over the annotation object.
+     *
      * @event
      */
     @Event()
@@ -3468,6 +3598,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when mouse over the annotation object.
+     *
      * @event
      */
     @Event()
@@ -3475,6 +3606,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when mouse over the page.
+     *
      * @event
      */
     @Event()
@@ -3482,6 +3614,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when an imported annotations started in the PDF document.
+     *
      * @event
      * @blazorProperty 'ImportStarted'
      */
@@ -3490,6 +3623,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when an exported annotations started in the PDF Viewer.
+     *
      * @event
      * @blazorProperty 'ExportStarted'
      */
@@ -3498,6 +3632,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when an imports annotations succeed in the PDF document.
+     *
      * @event
      * @blazorProperty 'ImportSucceed'
      */
@@ -3506,6 +3641,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when an export annotations succeed in the PDF Viewer.
+     *
      * @event
      * @blazorProperty 'ExportSucceed'
      */
@@ -3514,6 +3650,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when an imports annotations failed in the PDF document.
+     *
      * @event
      * @blazorProperty 'ImportFailed'
      */
@@ -3522,6 +3659,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when an export annotations failed in the PDF Viewer.
+     *
      * @event
      * @blazorProperty 'ExportFailed'
      */
@@ -3530,6 +3668,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when an text extraction is completed in the PDF Viewer.
+     *
      * @event
      * @blazorProperty 'ExtractTextCompleted'
      */
@@ -3538,6 +3677,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers an event when the thumbnail is clicked in the thumbnail panel of PDF Viewer.
+     *
      * @event
      * @blazorProperty 'OnThumbnailClick'
      */
@@ -3546,6 +3686,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers an event when the bookmark is clicked in the bookmark panel of PDF Viewer.
+     *
      * @event
      * @blazorProperty 'BookmarkClick'
      */
@@ -3554,6 +3695,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers an event when the text selection is started.
+     *
      * @event
      * @blazorProperty 'OnTextSelectionStart'
      */
@@ -3562,6 +3704,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers an event when the text selection is finished.
+     *
      * @event
      * @blazorProperty 'OnTextSelectionEnd'
      */
@@ -3570,6 +3713,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers an event when the download action is started.
+     *
      * @event
      * @blazorProperty 'DownloadStart'
      */
@@ -3578,6 +3722,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers an event when the button is clicked.
+     *
      * @deprecated This property renamed into "formFieldClick"
      * @event
      * @blazorProperty 'ButtonFieldClick'
@@ -3587,6 +3732,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers an event when the form field is clicked.
+     *
      * @event
      * @blazorProperty 'FormFieldClick'
      */
@@ -3595,6 +3741,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers an event when the download actions is finished.
+     *
      * @event
      * @blazorProperty 'DownloadEnd'
      */
@@ -3603,6 +3750,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers an event when the print action is started.
+     *
      * @event
      * @blazorProperty 'PrintStart'
      */
@@ -3611,6 +3759,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers an event when the print actions is finished.
+     *
      * @event
      * @blazorProperty 'PrintEnd'
      */
@@ -3619,6 +3768,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers an event when the text search is started.
+     *
      * @event
      * @blazorProperty 'OnTextSearchStart'
      */
@@ -3627,6 +3777,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers an event when the text search is completed.
+     *
      * @event
      * @blazorProperty 'OnTextSearchComplete'
      */
@@ -3635,6 +3786,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers an event when the text search text is highlighted.
+     *
      * @event
      * @blazorProperty 'OnTextSearchHighlight'
      */
@@ -3643,6 +3795,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers before the data send in to the server.
+     *
      * @event
      * @deprecated
      */
@@ -3651,6 +3804,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when the comment is added for the annotation in the comment panel.
+     *
      * @event
      * @blazorProperty 'commentAdd'
      */
@@ -3659,6 +3813,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when the comment is edited for the annotation in the comment panel.
+     *
      * @event
      * @blazorProperty 'commentEdit'
      */
@@ -3667,6 +3822,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when the comment is deleted for the annotation in the comment panel.
+     *
      * @event
      * @blazorProperty 'commentDelete'
      */
@@ -3675,6 +3831,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when the comment is selected for the annotation in the comment panel.
+     *
      * @event
      * @blazorProperty 'commentSelect
      */
@@ -3683,6 +3840,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when the comment for status is changed for the annotation in the comment panel.
+     *
      * @event
      * @blazorProperty 'commentStatusChanged'
      */
@@ -3691,6 +3849,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers the event before adding a text in the freeText annotation.
+     *
      * @event
      * @blazorProperty 'beforeAddFreeText'
      */
@@ -3699,6 +3858,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when focus out from the form fields.
+     *
      * @event
      * @blazorProperty 'formFieldFocusOut'
      */
@@ -3707,6 +3867,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * PDF document annotation collection.
+     *
      * @private
      * @deprecated
      */
@@ -3721,6 +3882,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * store the drawing objects.
+     *
      * @private
      * @deprecated
      */
@@ -3762,120 +3924,124 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * To modify the Json Data in ajax request.
+     *
+     * @param jsonData
      * @returns void
      * @deprecated
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public setJsonData(jsonData: any): void {
         this.viewerBase.ajaxData = jsonData;
     }
 
     public onPropertyChanged(newProp: PdfViewerModel, oldProp: PdfViewerModel): void {
         let requireRefresh: boolean = false;
-        if (this.isDestroyed) { return; }
-        let properties: string[] = Object.keys(newProp);
-        for (let prop of properties) {
+        if (this.isDestroyed) {
+            return;
+        }
+        const properties: string[] = Object.keys(newProp);
+        for (const prop of properties) {
             switch (prop) {
-                case 'locale':
-                    if (this.viewerBase.loadedData) {
-                         // tslint:disable-next-line
+            case 'locale':
+                if (this.viewerBase.loadedData) {
+                    // eslint-disable-next-line
                         let data: any = window.sessionStorage.getItem(this.viewerBase.documentId + '_formfields');
-                        this.viewerBase.formfieldvalue = JSON.parse(data);
-                        // tslint:disable-next-line
+                    this.viewerBase.formfieldvalue = JSON.parse(data);
+                    // eslint-disable-next-line
                         let annotCollection: any[] = this.annotationCollection;
-                        let filename: string = this.viewerBase.jsonDocumentId;
-                        super.refresh();
-                        this.load(this.viewerBase.loadedData, null);
-                        this.addAnnotation(annotCollection);
-                        this.viewerBase.loadedData = null;
-                        this.downloadFileName = filename;
-                        this.fileName = filename;
+                    const filename: string = this.viewerBase.jsonDocumentId;
+                    super.refresh();
+                    this.load(this.viewerBase.loadedData, null);
+                    this.addAnnotation(annotCollection);
+                    this.viewerBase.loadedData = null;
+                    this.downloadFileName = filename;
+                    this.fileName = filename;
+                }
+                break;
+            case 'enableToolbar':
+                this.notify('', { module: 'toolbar', enable: this.enableToolbar });
+                requireRefresh = true;
+                break;
+            case 'enableCommentPanel':
+                this.notify('', { module: 'annotation', enable: this.enableCommentPanel });
+                requireRefresh = true;
+                if (this.toolbarModule && this.toolbarModule.annotationToolbarModule) {
+                    this.toolbarModule.annotationToolbarModule.enableCommentPanelTool(this.enableCommentPanel);
+                }
+                if (!this.enableCommentPanel) {
+                    if (this.viewerBase.navigationPane) {
+                        this.viewerBase.navigationPane.closeCommentPanelContainer();
                     }
-                    break;
-                case 'enableToolbar':
-                    this.notify('', { module: 'toolbar', enable: this.enableToolbar });
-                    requireRefresh = true;
-                    break;
-                case 'enableCommentPanel':
-                    this.notify('', { module: 'annotation', enable: this.enableCommentPanel });
-                    requireRefresh = true;
-                    if (this.toolbarModule && this.toolbarModule.annotationToolbarModule) {
-                        this.toolbarModule.annotationToolbarModule.enableCommentPanelTool(this.enableCommentPanel);
+                }
+                break;
+            case 'documentPath':
+                this.load(newProp.documentPath, null);
+                break;
+            case 'interactionMode':
+                this.interactionMode = newProp.interactionMode;
+                if (newProp.interactionMode === 'Pan') {
+                    this.viewerBase.initiatePanning();
+                    if (this.toolbar) {
+                        this.toolbar.updateInteractionTools(false);
                     }
-                    if (!this.enableCommentPanel) {
-                        if (this.viewerBase.navigationPane) {
-                            this.viewerBase.navigationPane.closeCommentPanelContainer();
-                        }
+                } else if (newProp.interactionMode === 'TextSelection') {
+                    this.viewerBase.initiateTextSelectMode();
+                    if (this.toolbar) {
+                        this.toolbar.updateInteractionTools(true);
                     }
-                    break;
-                case 'documentPath':
-                    this.load(newProp.documentPath, null);
-                    break;
-                case 'interactionMode':
-                    this.interactionMode = newProp.interactionMode;
-                    if (newProp.interactionMode === 'Pan') {
-                        this.viewerBase.initiatePanning();
-                        if (this.toolbar) {
-                            this.toolbar.updateInteractionTools(false);
-                        }
-                    } else if (newProp.interactionMode === 'TextSelection') {
-                        this.viewerBase.initiateTextSelectMode();
-                        if (this.toolbar) {
-                            this.toolbar.updateInteractionTools(true);
-                        }
+                }
+                break;
+            case 'height':
+                this.height = newProp.height;
+                this.viewerBase.updateHeight();
+                this.viewerBase.onWindowResize();
+                if (this.toolbar.annotationToolbarModule && this.toolbar.annotationToolbarModule.isToolbarHidden) {
+                    this.toolbar.annotationToolbarModule.adjustViewer(false);
+                } else {
+                    this.toolbar.annotationToolbarModule.adjustViewer(true);
+                }
+                break;
+            case 'width':
+                this.width = newProp.width;
+                this.viewerBase.updateWidth();
+                this.viewerBase.onWindowResize();
+                break;
+            case 'customStamp':
+                this.renderCustomerStamp(this.customStamp[0]);
+                break;
+            case 'customStampSettings':
+                if (newProp.customStampSettings.customStamps) {
+                    this.renderCustomerStamp(this.customStampSettings.customStamps[0]);
+                }
+                break;
+            case 'enableFormFields':
+                if (this.enableFormFields && this.formFieldsModule) {
+                    for (let m: number = 0; m < this.pageCount; m++) {
+                        this.formFieldsModule.renderFormFields(m);
                     }
-                    break;
-                case 'height':
-                    this.height = newProp.height;
-                    this.viewerBase.updateHeight();
-                    this.viewerBase.onWindowResize();
-                    if (this.toolbar.annotationToolbarModule && this.toolbar.annotationToolbarModule.isToolbarHidden) {
-                        this.toolbar.annotationToolbarModule.adjustViewer(false);
-                    } else {
-                        this.toolbar.annotationToolbarModule.adjustViewer(true);
-                    }
-                    break;
-                case 'width':
-                    this.width = newProp.width;
-                    this.viewerBase.updateWidth();
-                    this.viewerBase.onWindowResize();
-                    break;
-                case 'customStamp':
-                    this.renderCustomerStamp(this.customStamp[0]);
-                    break;
-                case 'customStampSettings':
-                    if (newProp.customStampSettings.customStamps) {
-                        this.renderCustomerStamp(this.customStampSettings.customStamps[0]);
-                    }
-                    break;
-                case 'enableFormFields':
-                    if (this.enableFormFields && this.formFieldsModule) {
-                        for (let m: number = 0; m < this.pageCount; m++) {
-                            this.formFieldsModule.renderFormFields(m);
-                        }
-                    } else {
-                        this.formFieldsModule = new FormFields(this, this.viewerBase);
-                        this.formFieldsModule.formFieldsReadOnly(this.enableFormFields);
-                    }
-                    break;
-                case 'highlightSettings':
-                case 'underlineSettings':
-                case 'strikethroughSettings':
-                    if (this.annotationModule && this.annotationModule.textMarkupAnnotationModule) {
-                        this.annotationModule.textMarkupAnnotationModule.updateTextMarkupSettings(prop);
-                    }
-                    break;
+                } else {
+                    this.formFieldsModule = new FormFields(this, this.viewerBase);
+                    this.formFieldsModule.formFieldsReadOnly(this.enableFormFields);
+                }
+                break;
+            case 'highlightSettings':
+            case 'underlineSettings':
+            case 'strikethroughSettings':
+                if (this.annotationModule && this.annotationModule.textMarkupAnnotationModule) {
+                    this.annotationModule.textMarkupAnnotationModule.updateTextMarkupSettings(prop);
+                }
+                break;
             }
         }
     }
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private renderCustomerStamp(customStamp: any) {
         this.annotation.stampAnnotationModule.isStampAddMode = true;
         this.annotationModule.stampAnnotationModule.isStampAnnotSelected = true;
         this.viewerBase.stampAdded = true;
         this.viewerBase.isAlreadyAdded = false;
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         this.annotation.stampAnnotationModule.createCustomStampAnnotation(customStamp.customStampImageSource, customStamp.customStampName);
     }
 
@@ -3884,7 +4050,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     public requiredModules(): ModuleDeclaration[] {
-        let modules: ModuleDeclaration[] = [];
+        const modules: ModuleDeclaration[] = [];
         if (this.enableMagnification) {
             modules.push({
                 member: 'Magnification', args: [this, this.viewerBase]
@@ -3977,7 +4143,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Match case': 'Match case',
         'Apply': 'Apply',
         'GoToPage': 'Go to Page',
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         'No matches': 'Viewer has finished searching the document. No more matches were found',
         'No Text Found': 'No Text Found',
         'Undo': 'Undo',
@@ -3993,9 +4159,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Highlight context': 'Highlight',
         'Underline context': 'Underline',
         'Strikethrough context': 'Strike through',
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         'Server error': 'Web-service is not listening. PDF Viewer depends on web-service for all it\'s features. Please start the web service to continue.',
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         'Client error': 'Client-side error is found. Please check the custom headers provided in the AjaxRequestSettings property and web action methods in the ServerActionSettings property.',
         'Open text': 'Open',
         'First text': 'First Page',
@@ -4097,11 +4263,18 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Dynamic': 'Dynamic',
         'Standard Business': 'Standard Business',
         'Sign Here': 'Sign Here',
-        'Custom Stamp': 'Custom Stamp'
+        'Custom Stamp': 'Custom Stamp',
+        'Enter Signature as Name': 'Enter your name',
+        'Draw-hand Signature': 'DRAW',
+        'Type Signature': 'TYPE',
+        'Upload Signature': 'UPLOAD',
+        'Browse Signature Image': 'BROWSE',
+        'Save Signature': 'Save Signature'
     };
 
     /**
      * Loads the given PDF document in the PDF viewer control
+     *
      * @param  {string} document - Specifies the document name for load
      * @param  {string} password - Specifies the Given document password
      * @returns void
@@ -4124,6 +4297,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Downloads the PDF document being loaded in the ejPdfViewer control.
+     *
      * @returns void
      */
     public download(): void {
@@ -4134,6 +4308,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Saves the PDF document being loaded in the PDF Viewer control as blob.
+     *
      * @returns Promise<Blob>
      */
     public saveAsBlob(): Promise<Blob> {
@@ -4148,6 +4323,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * updates the PDF Viewer container width and height from externally.
+     *
      * @returns void
      */
     public updateViewerContainer(): void {
@@ -4156,6 +4332,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Specifies the message to be displayed  in the popup.
+     *
+     * @param errorString
      * @returns void
      */
     public showNotificationPopup(errorString: string): void {
@@ -4164,11 +4342,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Update the form field values from externally.
+     *
+     * @param fieldValue
      * @returns void
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public updateFormFieldsValue(fieldValue: any): void {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let target: any = document.getElementById(fieldValue.id);
         if (fieldValue.type === 'Textbox' || fieldValue.type === 'Password') {
             target.value = fieldValue.value;
@@ -4192,6 +4372,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Perform undo action for the edited annotations
+     *
      * @returns void
      */
     public undo(): void {
@@ -4202,6 +4383,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Perform redo action for the edited annotations
+     *
      * @returns void
      */
     public redo(): void {
@@ -4212,6 +4394,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Unloads the PDF document being displayed in the PDF viewer.
+     *
      * @returns void
      */
     public unload(): void {
@@ -4240,13 +4423,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.viewerBase.destroy();
     }
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     /**
      * Perform imports annotations action in the PDF Viewer
      * @param  {any} importData - Specifies the data for annotation imports
      * @returns void
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public importAnnotation(importData: any, annotationDataFormat?: AnnotationDataFormat): void {
         if (this.annotationModule) {
             if (typeof (importData) === 'string') {
@@ -4267,6 +4450,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Perform export annotations action in the PDF Viewer
+     *
+     * @param annotationDataFormat
      * @returns void
      */
     public exportAnnotation(annotationDataFormat?: AnnotationDataFormat): void {
@@ -4281,6 +4466,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Perform export annotations action in the PDF Viewer
+     *
      * @returns Promise<object>
      */
     public exportAnnotationsAsObject(): Promise<object> {
@@ -4296,9 +4482,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
     /**
      * Perform to add annotations in the PDF Viewer
+     *
+     * @param annotation
      * @returns void
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public addAnnotation(annotation: any): void {
         if (this.viewerBase) {
             this.viewerBase.addAnnotation(annotation);
@@ -4306,12 +4494,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     /**
      * Perform  action in the PDF Viewer
      * @returns void
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public importFormFields(formFields: any): void {
         if (this.formFieldsModule) {
             this.viewerBase.importFormFields(formFields);
@@ -4320,6 +4508,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Perform export action in the PDF Viewer
+     *
+     * @param path
      * @returns void
      */
     public exportFormFields(path?: string): void {
@@ -4330,6 +4520,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Perform export annotations action in the PDF Viewer
+     *
      * @returns Promise<object>
      */
     public exportFormFieldsAsObject(): Promise<object> {
@@ -4346,6 +4537,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * reset all form fields data
+     *
      * @returns void
      */
     public resetFormFields(): void {
@@ -4354,14 +4546,17 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Clears data from the form fields.
      * Parameter - Specifies the form field object.
+     *
+     * @param formField
      * @returns void
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public clearFormFields(formField?: any): void {
         this.formFieldsModule.clearFormFields(formField);
     }
     /**
      * To delete the annotation Collections in the PDF Document.
+     *
      * @returns void
      */
     public deleteAnnotations(): void {
@@ -4372,6 +4567,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * To retrieve the form fields in the PDF Document.
+     *
      * @returns void
      */
     public retrieveFormFields(): FormFieldModel[] {
@@ -4380,31 +4576,43 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * To update the form fields in the PDF Document.
+     *
+     * @param formFields
      * @returns void
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public updateFormFields(formFields: any): void {
         this.formFieldsModule.updateFormFieldValues(formFields);
     }
 
     /**
+     * @param JsonData
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireAjaxRequestInitiate(JsonData: any): void {
-        let eventArgs: AjaxRequestInitiateEventArgs = { name: 'ajaxRequestInitiate', JsonData: JsonData };
+        const eventArgs: AjaxRequestInitiateEventArgs = { name: 'ajaxRequestInitiate', JsonData: JsonData };
         this.trigger('ajaxRequestInitiate', eventArgs);
     }
     /**
+     * @param value
+     * @param fieldName
+     * @param id
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireButtonFieldClickEvent(value: string, fieldName: string, id: string): void {
-        let eventArgs: ButtonFieldClickEventArgs = { name: 'buttonFieldClicked', buttonFieldValue: value, buttonFieldName: fieldName, id: id };
+        const eventArgs: ButtonFieldClickEventArgs = { name: 'buttonFieldClicked', buttonFieldValue: value, buttonFieldName: fieldName, id: id };
         this.trigger('buttonFieldClick', eventArgs);
     }
 
     /**
+     * @param name
+     * @param field
+     * @param cancel
+     * @param name
+     * @param field
+     * @param cancel
      * @private
      */
     public async fireFormFieldClickEvent(name: string, field: FormFieldModel, cancel?: boolean): Promise<void> {
@@ -4423,11 +4631,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
+     * @param pageData
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireDocumentLoad(pageData: any): void {
-        let eventArgs: LoadEventArgs = { name: 'documentLoad', documentName: this.fileName, pageData: pageData };
+        const eventArgs: LoadEventArgs = { name: 'documentLoad', documentName: this.fileName, pageData: pageData };
         this.trigger('documentLoad', eventArgs);
         if (isBlazor()) {
             this._dotnetInstance.invokeMethodAsync('LoadDocument', null);
@@ -4436,28 +4645,45 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
+     * @param fileName
      * @private
      */
     public fireDocumentUnload(fileName: string): void {
-        let eventArgs: UnloadEventArgs = { name: 'documentUnload', documentName: fileName };
+        const eventArgs: UnloadEventArgs = { name: 'documentUnload', documentName: fileName };
         this.trigger('documentUnload', eventArgs);
     }
 
     /**
+     * @param isPasswordRequired
+     * @param password
+     * @param isPasswordRequired
+     * @param password
      * @private
      */
     public fireDocumentLoadFailed(isPasswordRequired: boolean, password: string): void {
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: LoadFailedEventArgs = { name: 'documentLoadFailed', documentName: this.fileName, isPasswordRequired: isPasswordRequired, password: password };
+        // eslint-disable-next-line max-len
+        const eventArgs: LoadFailedEventArgs = { name: 'documentLoadFailed', documentName: this.fileName, isPasswordRequired: isPasswordRequired, password: password };
         this.trigger('documentLoadFailed', eventArgs);
     }
 
     /**
+     * @param errorStatusCode
+     * @param errorMessage
+     * @param action
+     * @param retryCount
+     * @param errorStatusCode
+     * @param errorMessage
+     * @param action
+     * @param retryCount
+     * @param errorStatusCode
+     * @param errorMessage
+     * @param action
+     * @param retryCount
      * @private
      */
     public fireAjaxRequestFailed(errorStatusCode: number, errorMessage: string, action: string, retryCount?: boolean): void {
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: AjaxRequestFailureEventArgs = { name: 'ajaxRequestFailed', documentName: this.fileName, errorStatusCode: errorStatusCode, errorMessage: errorMessage, action: action };
+        // eslint-disable-next-line max-len
+        const eventArgs: AjaxRequestFailureEventArgs = { name: 'ajaxRequestFailed', documentName: this.fileName, errorStatusCode: errorStatusCode, errorMessage: errorMessage, action: action };
         if (retryCount) {
             eventArgs.retryCount = true;
         }
@@ -4465,15 +4691,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
+     * @param action
      * @private
      */
     public fireValidatedFailed(action: string): void {
         if (!isBlazor()) {
-            // tslint:disable-next-line:max-line-length
-            let eventArgs: ValidateFormFieldsArgs = { formField: this.viewerBase.createFormfieldsJsonData(), documentName: this.fileName, nonFillableFields: this.formFieldsModule.nonFillableFields };
+            // eslint-disable-next-line max-len
+            const eventArgs: ValidateFormFieldsArgs = { formField: this.viewerBase.createFormfieldsJsonData(), documentName: this.fileName, nonFillableFields: this.formFieldsModule.nonFillableFields };
             this.trigger('validateFormFields', eventArgs);
         }   else {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let eventArgs: any = {};
             eventArgs.documentName = this.fileName;
             eventArgs.formFields = this.formFieldCollections;
@@ -4483,19 +4710,29 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
+     * @param x
+     * @param y
+     * @param pageNumber
+     * @param x
+     * @param y
+     * @param pageNumber
+     * @param x
+     * @param y
+     * @param pageNumber
      * @private
      */
     public firePageClick(x: number, y: number, pageNumber: number): void {
-        let eventArgs: PageClickEventArgs = { name: 'pageClick', documentName: this.fileName, x: x, y: y, pageNumber: pageNumber };
+        const eventArgs: PageClickEventArgs = { name: 'pageClick', documentName: this.fileName, x: x, y: y, pageNumber: pageNumber };
         this.trigger('pageClick', eventArgs);
     }
 
     /**
+     * @param previousPageNumber
      * @private
      */
     public firePageChange(previousPageNumber: number): void {
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: PageChangeEventArgs = { name: 'pageChange', documentName: this.fileName, currentPageNumber: this.currentPageNumber, previousPageNumber: previousPageNumber };
+        // eslint-disable-next-line max-len
+        const eventArgs: PageChangeEventArgs = { name: 'pageChange', documentName: this.fileName, currentPageNumber: this.currentPageNumber, previousPageNumber: previousPageNumber };
         this.trigger('pageChange', eventArgs);
         if (isBlazor()) {
             //this._dotnetInstance.invokeMethodAsync('OnPageChanged', this.currentPageNumber);
@@ -4507,45 +4744,122 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public fireZoomChange(): void {
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: ZoomChangeEventArgs = { name: 'zoomChange', zoomValue: this.magnificationModule.zoomFactor * 100, previousZoomValue: this.magnificationModule.previousZoomFactor * 100 };
+        // eslint-disable-next-line max-len
+        const eventArgs: ZoomChangeEventArgs = { name: 'zoomChange', zoomValue: this.magnificationModule.zoomFactor * 100, previousZoomValue: this.magnificationModule.previousZoomFactor * 100 };
         this.trigger('zoomChange', eventArgs);
     }
 
     /**
+     * @param hyperlink
+     * @param hyperlinkElement
      * @private
      */
     public fireHyperlinkClick(hyperlink: string, hyperlinkElement: HTMLAnchorElement): void {
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: HyperlinkClickEventArgs = { name: 'hyperlinkClick', hyperlink: hyperlink, hyperlinkElement: hyperlinkElement };
+        // eslint-disable-next-line max-len
+        const eventArgs: HyperlinkClickEventArgs = { name: 'hyperlinkClick', hyperlink: hyperlink, hyperlinkElement: hyperlinkElement };
         this.trigger('hyperlinkClick', eventArgs);
     }
 
     /**
+     * @param hyperlinkElement
      * @private
      */
     public fireHyperlinkHover(hyperlinkElement: HTMLAnchorElement): void {
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: HyperlinkMouseOverArgs = { name: 'hyperlinkMouseOver', hyperlinkElement: hyperlinkElement };
+        // eslint-disable-next-line max-len
+        const eventArgs: HyperlinkMouseOverArgs = { name: 'hyperlinkMouseOver', hyperlinkElement: hyperlinkElement };
         this.trigger('hyperlinkMouseOver', eventArgs);
     }
 
     /**
+     * @param fieldName
+     * @param value
+     * @param fieldName
+     * @param value
      * @private
      */
     public fireFocusOutFormField(fieldName: string, value: string): void {
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: FormFieldFocusOutEventArgs = { name: 'formFieldFocusOut', fieldName: fieldName, value: value};
-        // tslint:disable-next-line
+        // eslint-disable-next-line max-len
+        const eventArgs: FormFieldFocusOutEventArgs = { name: 'formFieldFocusOut', fieldName: fieldName, value: value};
+        // eslint-disable-next-line
         this.trigger('formFieldFocusOut', eventArgs);
     }
 
     /**
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
+     * @param settings
+     * @param textMarkupContent
+     * @param tmStartIndex
+     * @param tmEndIndex
+     * @param labelSettings
+     * @param multiPageCollection
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
+     * @param settings
+     * @param textMarkupContent
+     * @param tmStartIndex
+     * @param tmEndIndex
+     * @param labelSettings
+     * @param multiPageCollection
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
+     * @param settings
+     * @param textMarkupContent
+     * @param tmStartIndex
+     * @param tmEndIndex
+     * @param labelSettings
+     * @param multiPageCollection
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
+     * @param settings
+     * @param textMarkupContent
+     * @param tmStartIndex
+     * @param tmEndIndex
+     * @param labelSettings
+     * @param multiPageCollection
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
+     * @param settings
+     * @param textMarkupContent
+     * @param tmStartIndex
+     * @param tmEndIndex
+     * @param labelSettings
+     * @param multiPageCollection
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
+     * @param settings
+     * @param textMarkupContent
+     * @param tmStartIndex
+     * @param tmEndIndex
+     * @param labelSettings
+     * @param multiPageCollection
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
+     * @param settings
+     * @param textMarkupContent
+     * @param tmStartIndex
+     * @param tmEndIndex
+     * @param labelSettings
+     * @param multiPageCollection
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireAnnotationAdd(pageNumber: number, index: string, type: AnnotationType, bounds: any, settings: any, textMarkupContent?: string, tmStartIndex?: number, tmEndIndex?: number, labelSettings?: ShapeLabelSettingsModel, multiPageCollection?: any): void {
-        let eventArgs: AnnotationAddEventArgs = { name: 'annotationAdd', pageIndex: pageNumber, annotationId: index, annotationType: type, annotationBound: bounds, annotationSettings: settings };
+        const eventArgs: AnnotationAddEventArgs = { name: 'annotationAdd', pageIndex: pageNumber, annotationId: index, annotationType: type, annotationBound: bounds, annotationSettings: settings };
         if (textMarkupContent) {
             if (isBlazor()) {
                 eventArgs.annotationSettings.textMarkupContent = textMarkupContent;
@@ -4572,12 +4886,20 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
+     * @param textMarkupContent
+     * @param tmStartIndex
+     * @param tmEndIndex
+     * @param multiPageCollection
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireAnnotationRemove(pageNumber: number, index: string, type: AnnotationType, bounds: any, textMarkupContent?: string, tmStartIndex?: number, tmEndIndex?: number, multiPageCollection?: any): void {
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: AnnotationRemoveEventArgs = { name: 'annotationRemove', pageIndex: pageNumber, annotationId: index, annotationType: type, annotationBounds: bounds };
+        // eslint-disable-next-line max-len
+        const eventArgs: AnnotationRemoveEventArgs = { name: 'annotationRemove', pageIndex: pageNumber, annotationId: index, annotationType: type, annotationBounds: bounds };
         if (textMarkupContent) {
             eventArgs.textMarkupContent = textMarkupContent;
             eventArgs.textMarkupStartIndex = tmStartIndex;
@@ -4590,79 +4912,142 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
+     * @param value
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireBeforeAddFreeTextAnnotation(value: string): void {
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: BeforeAddFreeTextEventArgs = { name: 'beforeAddFreeText', value: value };
-        // tslint:disable-next-line
+        // eslint-disable-next-line max-len
+        const eventArgs: BeforeAddFreeTextEventArgs = { name: 'beforeAddFreeText', value: value };
+        // eslint-disable-next-line
         this.trigger('beforeAddFreeText', eventArgs);
     }
 
     /**
+     * @param id
+     * @param text
+     * @param annotation
+     * @param id
+     * @param text
+     * @param annotation
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireCommentAdd(id: string, text: string, annotation: any): void {
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: CommentEventArgs = { name: 'CommentAdd', id: id, text: text, annotation: annotation };
-        // tslint:disable-next-line
+        // eslint-disable-next-line max-len
+        const eventArgs: CommentEventArgs = { name: 'CommentAdd', id: id, text: text, annotation: annotation };
+        // eslint-disable-next-line
         this.trigger('commentAdd', eventArgs);
     }
 
     /**
+     * @param id
+     * @param text
+     * @param annotation
+     * @param id
+     * @param text
+     * @param annotation
+     * @param id
+     * @param text
+     * @param annotation
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireCommentEdit(id: string, text: string, annotation: any): void {
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: CommentEventArgs = { name: 'CommentEdit', id: id, text: text, annotation: annotation };
-        // tslint:disable-next-line
+        // eslint-disable-next-line max-len
+        const eventArgs: CommentEventArgs = { name: 'CommentEdit', id: id, text: text, annotation: annotation };
+        // eslint-disable-next-line
         this.trigger('commentEdit', eventArgs);
     }
 
     /**
+     * @param id
+     * @param text
+     * @param annotation
+     * @param id
+     * @param text
+     * @param annotation
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireCommentDelete(id: string, text: string, annotation: any): void {
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: CommentEventArgs = { name: 'CommentDelete', id: id, text: text, annotation: annotation };
-        // tslint:disable-next-line
+        // eslint-disable-next-line max-len
+        const eventArgs: CommentEventArgs = { name: 'CommentDelete', id: id, text: text, annotation: annotation };
+        // eslint-disable-next-line
         this.trigger('commentDelete', eventArgs);
     }
 
     /**
+     * @param id
+     * @param text
+     * @param annotation
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireCommentSelect(id: string ,text: string, annotation: any): void {
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: CommentEventArgs = { name: 'CommentSelect', id: id, text: text, annotation: annotation };
-        // tslint:disable-next-line
+        // eslint-disable-next-line max-len
+        const eventArgs: CommentEventArgs = { name: 'CommentSelect', id: id, text: text, annotation: annotation };
+        // eslint-disable-next-line
         this.trigger('commentSelect', eventArgs);
     }
 
     /**
+     * @param id
+     * @param text
+     * @param annotation
+     * @param statusChange
+     * @param id
+     * @param text
+     * @param annotation
+     * @param statusChange
+     * @param id
+     * @param text
+     * @param annotation
+     * @param statusChange
+     * @param id
+     * @param text
+     * @param annotation
+     * @param statusChange
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireCommentStatusChanged(id: string, text: string, annotation: any, statusChange: CommentStatus): void {
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: CommentEventArgs = { name: 'CommentStatusChanged', id: id, text: text, annotation: annotation, status: statusChange};
-        // tslint:disable-next-line
+        // eslint-disable-next-line max-len
+        const eventArgs: CommentEventArgs = { name: 'CommentStatusChanged', id: id, text: text, annotation: annotation, status: statusChange};
+        // eslint-disable-next-line
         this.trigger('commentStatusChanged', eventArgs);
     }
 
     /**
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param isColorChanged
+     * @param isOpacityChanged
+     * @param isTextChanged
+     * @param isCommentsChanged
+     * @param textMarkupContent
+     * @param tmStartIndex
+     * @param tmEndIndex
+     * @param multiPageCollection
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param isColorChanged
+     * @param isOpacityChanged
+     * @param isTextChanged
+     * @param isCommentsChanged
+     * @param textMarkupContent
+     * @param tmStartIndex
+     * @param tmEndIndex
+     * @param multiPageCollection
      * @private
      */
-    // tslint:disable-next-line:max-line-length
-    // tslint:disable-next-line
+    // eslint-disable-next-line max-len
+    // eslint-disable-next-line
     public fireAnnotationPropertiesChange(pageNumber: number, index: string, type: AnnotationType, isColorChanged: boolean, isOpacityChanged: boolean, isTextChanged: boolean, isCommentsChanged: boolean, textMarkupContent?: string, tmStartIndex?: number, tmEndIndex?: number, multiPageCollection?: any): void {
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: AnnotationPropertiesChangeEventArgs = { name: 'annotationPropertiesChange', pageIndex: pageNumber, annotationId: index, annotationType: type, isColorChanged: isColorChanged, isOpacityChanged: isOpacityChanged, isTextChanged: isTextChanged, isCommentsChanged: isCommentsChanged };
+        // eslint-disable-next-line max-len
+        const eventArgs: AnnotationPropertiesChangeEventArgs = { name: 'annotationPropertiesChange', pageIndex: pageNumber, annotationId: index, annotationType: type, isColorChanged: isColorChanged, isOpacityChanged: isOpacityChanged, isTextChanged: isTextChanged, isCommentsChanged: isCommentsChanged };
         if (textMarkupContent) {
             eventArgs.textMarkupContent = textMarkupContent;
             eventArgs.textMarkupStartIndex = tmStartIndex;
@@ -4675,11 +5060,35 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
+     * @param opacity
+     * @param strokeColor
+     * @param thickness
+     * @param data
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
+     * @param opacity
+     * @param strokeColor
+     * @param thickness
+     * @param data
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
+     * @param opacity
+     * @param strokeColor
+     * @param thickness
+     * @param data
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireSignatureAdd(pageNumber: number, index: string, type: any, bounds: any, opacity: number, strokeColor?: string, thickness?: number, data?: string): void {
-        let eventArgs: AddSignatureEventArgs = { pageIndex: pageNumber, id: index, type: type, bounds: bounds, opacity: opacity };
+        const eventArgs: AddSignatureEventArgs = { pageIndex: pageNumber, id: index, type: type, bounds: bounds, opacity: opacity };
         if (thickness) {
             eventArgs.thickness = thickness;
         }
@@ -4693,59 +5102,200 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireSignatureRemove(pageNumber: number, index: string, type: AnnotationType, bounds: any): void {
-        let eventArgs: RemoveSignatureEventArgs = { pageIndex: pageNumber, id: index, type: type, bounds: bounds };
+        const eventArgs: RemoveSignatureEventArgs = { pageIndex: pageNumber, id: index, type: type, bounds: bounds };
         this.trigger('removeSignature', eventArgs);
     }
 
     /**
+     * @param pageNumber
+     * @param id
+     * @param type
+     * @param opacity
+     * @param strokeColor
+     * @param thickness
+     * @param previousPosition
+     * @param currentPosition
+     * @param pageNumber
+     * @param id
+     * @param type
+     * @param opacity
+     * @param strokeColor
+     * @param thickness
+     * @param previousPosition
+     * @param currentPosition
+     * @param pageNumber
+     * @param id
+     * @param type
+     * @param opacity
+     * @param strokeColor
+     * @param thickness
+     * @param previousPosition
+     * @param currentPosition
+     * @param pageNumber
+     * @param id
+     * @param type
+     * @param opacity
+     * @param strokeColor
+     * @param thickness
+     * @param previousPosition
+     * @param currentPosition
+     * @param pageNumber
+     * @param id
+     * @param type
+     * @param opacity
+     * @param strokeColor
+     * @param thickness
+     * @param previousPosition
+     * @param currentPosition
+     * @param pageNumber
+     * @param id
+     * @param type
+     * @param opacity
+     * @param strokeColor
+     * @param thickness
+     * @param previousPosition
+     * @param currentPosition
+     * @param pageNumber
+     * @param id
+     * @param type
+     * @param opacity
+     * @param strokeColor
+     * @param thickness
+     * @param previousPosition
+     * @param currentPosition
+     * @param pageNumber
+     * @param id
+     * @param type
+     * @param opacity
+     * @param strokeColor
+     * @param thickness
+     * @param previousPosition
+     * @param currentPosition
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireSignatureMove(pageNumber: number, id: string, type: AnnotationType, opacity: number, strokeColor: string, thickness: number, previousPosition: object, currentPosition: object): void {
-        let eventArgs: MoveSignatureEventArgs = { pageIndex: pageNumber, id: id, type: type, opacity: opacity, strokeColor: strokeColor, thickness: thickness, previousPosition: previousPosition, currentPosition: currentPosition };
+        const eventArgs: MoveSignatureEventArgs = { pageIndex: pageNumber, id: id, type: type, opacity: opacity, strokeColor: strokeColor, thickness: thickness, previousPosition: previousPosition, currentPosition: currentPosition };
         this.trigger('moveSignature', eventArgs);
     }
 
     /**
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param isStrokeColorChanged
+     * @param isOpacityChanged
+     * @param isThicknessChanged
+     * @param oldProp
+     * @param newProp
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param isStrokeColorChanged
+     * @param isOpacityChanged
+     * @param isThicknessChanged
+     * @param oldProp
+     * @param newProp
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param isStrokeColorChanged
+     * @param isOpacityChanged
+     * @param isThicknessChanged
+     * @param oldProp
+     * @param newProp
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param isStrokeColorChanged
+     * @param isOpacityChanged
+     * @param isThicknessChanged
+     * @param oldProp
+     * @param newProp
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireSignaturePropertiesChange(pageNumber: number, index: string, type: AnnotationType, isStrokeColorChanged: boolean, isOpacityChanged: boolean, isThicknessChanged: boolean, oldProp: any, newProp: any): void {
-        let eventArgs: SignaturePropertiesChangeEventArgs = { pageIndex: pageNumber, id: index, type: type, isStrokeColorChanged: isStrokeColorChanged, isOpacityChanged: isOpacityChanged, isThicknessChanged: isThicknessChanged, oldValue: oldProp, newValue: newProp };
+        const eventArgs: SignaturePropertiesChangeEventArgs = { pageIndex: pageNumber, id: index, type: type, isStrokeColorChanged: isStrokeColorChanged, isOpacityChanged: isOpacityChanged, isThicknessChanged: isThicknessChanged, oldValue: oldProp, newValue: newProp };
         this.trigger('signaturePropertiesChange', eventArgs);
     }
 
     /**
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param opacity
+     * @param strokeColor
+     * @param thickness
+     * @param currentPosition
+     * @param previousPosition
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param opacity
+     * @param strokeColor
+     * @param thickness
+     * @param currentPosition
+     * @param previousPosition
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param opacity
+     * @param strokeColor
+     * @param thickness
+     * @param currentPosition
+     * @param previousPosition
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireSignatureResize(pageNumber: number, index: string, type: AnnotationType, opacity: number, strokeColor: string, thickness: number, currentPosition: any, previousPosition: any): void {
-        let eventArgs: ResizeSignatureEventArgs = { pageIndex: pageNumber, id: index, type: type, opacity: opacity, strokeColor: strokeColor, thickness: thickness, currentPosition: currentPosition, previousPosition: previousPosition };
+        const eventArgs: ResizeSignatureEventArgs = { pageIndex: pageNumber, id: index, type: type, opacity: opacity, strokeColor: strokeColor, thickness: thickness, currentPosition: currentPosition, previousPosition: previousPosition };
         this.trigger('resizeSignature', eventArgs);
     }
 
     /**
+     * @param id
+     * @param pageNumber
+     * @param signature
+     * @param id
+     * @param pageNumber
+     * @param signature
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireSignatureSelect(id: string, pageNumber: number, signature: object) {
-        let eventArgs: SignatureSelectEventArgs = { id: id, pageIndex: pageNumber, signature: signature };
+        const eventArgs: SignatureSelectEventArgs = { id: id, pageIndex: pageNumber, signature: signature };
         this.trigger('signatureSelect', eventArgs);
     }
 
     /**
+     * @param id
+     * @param pageNumber
+     * @param annotation
+     * @param annotationCollection
+     * @param multiPageCollection
+     * @param isSelected
+     * @param annotationAddMode
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireAnnotationSelect(id: string, pageNumber: number, annotation: any, annotationCollection?: any, multiPageCollection?: any, isSelected?: boolean, annotationAddMode?: string): void {
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         let eventArgs: AnnotationSelectEventArgs = { name: 'annotationSelect', annotationId: id, pageIndex: pageNumber, annotation: annotation };
         if (annotationCollection) {
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             eventArgs = { name: 'annotationSelect', annotationId: id, pageIndex: pageNumber, annotation: annotation, annotationCollection: annotationCollection };
         }
         if (multiPageCollection) {
@@ -4760,7 +5310,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
         if (isBlazor()) {
             if (annotation.type === 'FreeText' ) {
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let fontStyle: any  = { isBold : false, isItalic : false, isStrikeout : false, isUnderline : false };
                 if (annotation.fontStyle === 1 ) {
                     fontStyle.isBold = true;
@@ -4780,50 +5330,68 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     *  @private
+     * @param id
+     * @param pageNumber
+     * @param annotation
+     * @param id
+     * @param pageNumber
+     * @param annotation
+     * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireAnnotationUnSelect(id: string, pageNumber: number, annotation: any): void {
         if (isBlazor()) {
             this.viewerBase.blazorUIAdaptor.annotationUnSelect();
         }
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: AnnotationUnSelectEventArgs = { name: 'annotationUnSelect', annotationId: id, pageIndex: pageNumber, annotation: annotation };
+        // eslint-disable-next-line max-len
+        const eventArgs: AnnotationUnSelectEventArgs = { name: 'annotationUnSelect', annotationId: id, pageIndex: pageNumber, annotation: annotation };
         this.trigger('annotationUnSelect', eventArgs);
     }
 
     /**
+     * @param id
+     * @param pageNumber
+     * @param annotation
+     * @param id
+     * @param pageNumber
+     * @param annotation
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireAnnotationDoubleClick(id: string, pageNumber: number, annotation: any): void {
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: AnnotationDoubleClickEventArgs = { name: 'annotationDblClick', annotationId: id, pageIndex: pageNumber, annotation: annotation };
+        // eslint-disable-next-line max-len
+        const eventArgs: AnnotationDoubleClickEventArgs = { name: 'annotationDblClick', annotationId: id, pageIndex: pageNumber, annotation: annotation };
         this.trigger('annotationDoubleClick', eventArgs);
     }
 
     /**
+     * @param pageNumber
      * @private
      */
     public fireTextSelectionStart(pageNumber: number): void {
         this.isTextSelectionStarted = true;
-        let eventArgs: TextSelectionStartEventArgs = { pageIndex: pageNumber };
+        const eventArgs: TextSelectionStartEventArgs = { pageIndex: pageNumber };
         this.trigger('textSelectionStart', eventArgs);
     }
 
     /**
+     * @param pageNumber
+     * @param text
+     * @param bound
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireTextSelectionEnd(pageNumber: number, text: string, bound: any[]): void {
         if (this.isTextSelectionStarted) {
-            let eventArgs: TextSelectionEndEventArgs = { pageIndex: pageNumber, textContent: text, textBounds: bound };
+            const eventArgs: TextSelectionEndEventArgs = { pageIndex: pageNumber, textContent: text, textBounds: bound };
             this.trigger('textSelectionEnd', eventArgs);
             this.isTextSelectionStarted = false;
         }
     }
 
     /**
+     * @param canvas
+     * @param index
      * @private
      */
     public renderDrawing(canvas?: HTMLCanvasElement, index?: number): void {
@@ -4835,11 +5403,111 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         }
     }
     /**
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
+     * @param settings
+     * @param textMarkupContent
+     * @param tmStartIndex
+     * @param tmEndIndex
+     * @param labelSettings
+     * @param multiPageCollection
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
+     * @param settings
+     * @param textMarkupContent
+     * @param tmStartIndex
+     * @param tmEndIndex
+     * @param labelSettings
+     * @param multiPageCollection
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
+     * @param settings
+     * @param textMarkupContent
+     * @param tmStartIndex
+     * @param tmEndIndex
+     * @param labelSettings
+     * @param multiPageCollection
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
+     * @param settings
+     * @param textMarkupContent
+     * @param tmStartIndex
+     * @param tmEndIndex
+     * @param labelSettings
+     * @param multiPageCollection
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
+     * @param settings
+     * @param textMarkupContent
+     * @param tmStartIndex
+     * @param tmEndIndex
+     * @param labelSettings
+     * @param multiPageCollection
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
+     * @param settings
+     * @param textMarkupContent
+     * @param tmStartIndex
+     * @param tmEndIndex
+     * @param labelSettings
+     * @param multiPageCollection
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
+     * @param settings
+     * @param textMarkupContent
+     * @param tmStartIndex
+     * @param tmEndIndex
+     * @param labelSettings
+     * @param multiPageCollection
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
+     * @param settings
+     * @param textMarkupContent
+     * @param tmStartIndex
+     * @param tmEndIndex
+     * @param labelSettings
+     * @param multiPageCollection
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
+     * @param settings
+     * @param textMarkupContent
+     * @param tmStartIndex
+     * @param tmEndIndex
+     * @param labelSettings
+     * @param multiPageCollection
+     * @param pageNumber
+     * @param index
+     * @param type
+     * @param bounds
+     * @param settings
+     * @param textMarkupContent
+     * @param tmStartIndex
+     * @param tmEndIndex
+     * @param labelSettings
+     * @param multiPageCollection
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireAnnotationResize(pageNumber: number, index: string, type: AnnotationType, bounds: any, settings: any, textMarkupContent?: string, tmStartIndex?: number, tmEndIndex?: number, labelSettings?: ShapeLabelSettingsModel, multiPageCollection?: any): void {
-        let eventArgs: AnnotationResizeEventArgs = { name: 'annotationResize', pageIndex: pageNumber, annotationId: index, annotationType: type, annotationBound: bounds, annotationSettings: settings };
+        const eventArgs: AnnotationResizeEventArgs = { name: 'annotationResize', pageIndex: pageNumber, annotationId: index, annotationType: type, annotationBound: bounds, annotationSettings: settings };
         if (textMarkupContent) {
             eventArgs.textMarkupContent = textMarkupContent;
             eventArgs.textMarkupStartIndex = tmStartIndex;
@@ -4854,19 +5522,66 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.trigger('annotationResize', eventArgs);
     }
     /**
+     * @param pageNumber
+     * @param id
+     * @param type
+     * @param annotationSettings
+     * @param previousPosition
+     * @param currentPosition
+     * @param pageNumber
+     * @param id
+     * @param type
+     * @param annotationSettings
+     * @param previousPosition
+     * @param currentPosition
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireAnnotationMove(pageNumber: number, id: string, type: AnnotationType, annotationSettings: any, previousPosition: object, currentPosition: object): void {
-        let eventArgs: AnnotationMoveEventArgs = { name: 'annotationMove', pageIndex: pageNumber, annotationId: id, annotationType: type, annotationSettings: annotationSettings, previousPosition: previousPosition, currentPosition: currentPosition };
+        const eventArgs: AnnotationMoveEventArgs = { name: 'annotationMove', pageIndex: pageNumber, annotationId: id, annotationType: type, annotationSettings: annotationSettings, previousPosition: previousPosition, currentPosition: currentPosition };
         this.trigger('annotationMove', eventArgs);
     }
     /**
+     * @param id
+     * @param pageNumber
+     * @param annotationType
+     * @param bounds
+     * @param annotation
+     * @param currentPosition
+     * @param mousePosition
+     * @param id
+     * @param pageNumber
+     * @param annotationType
+     * @param bounds
+     * @param annotation
+     * @param currentPosition
+     * @param mousePosition
+     * @param id
+     * @param pageNumber
+     * @param annotationType
+     * @param bounds
+     * @param annotation
+     * @param currentPosition
+     * @param mousePosition
+     * @param id
+     * @param pageNumber
+     * @param annotationType
+     * @param bounds
+     * @param annotation
+     * @param currentPosition
+     * @param mousePosition
+     * @param id
+     * @param pageNumber
+     * @param annotationType
+     * @param bounds
+     * @param annotation
+     * @param currentPosition
+     * @param mousePosition
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireAnnotationMouseover(id: string, pageNumber: number, annotationType: AnnotationType, bounds: any, annotation: any, currentPosition: any, mousePosition: any) {
-        let eventArgs: AnnotationMouseoverEventArgs = { name: 'annotationMouseover', annotationId: id, pageIndex: pageNumber, annotationType: annotationType, annotationBounds: bounds, annotation: annotation, pageX: currentPosition.left, pageY: currentPosition.top, X: mousePosition.left, Y: mousePosition.top };
+        const eventArgs: AnnotationMouseoverEventArgs = { name: 'annotationMouseover', annotationId: id, pageIndex: pageNumber, annotationType: annotationType, annotationBounds: bounds, annotation: annotation, pageX: currentPosition.left, pageY: currentPosition.top, X: mousePosition.left, Y: mousePosition.top };
         if (isBlazor()) {
             if (annotation.subject === 'Perimeter calculation') {
                 eventArgs.annotationType = 'Perimeter';
@@ -4883,40 +5598,46 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.trigger('annotationMouseover', eventArgs);
     }
     /**
+     * @param pageNumber
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireAnnotationMouseLeave(pageNumber: number) {
-        let eventArgs: AnnotationMouseLeaveEventArgs = { name: 'annotationMouseLeave', pageIndex: pageNumber };
+        const eventArgs: AnnotationMouseLeaveEventArgs = { name: 'annotationMouseLeave', pageIndex: pageNumber };
         this.trigger('annotationMouseLeave', eventArgs);
     }
     /**
+     * @param pageX
+     * @param pageY
      * @private
      */
     public firePageMouseover(pageX: number, pageY: number): void {
-        let eventArgs: PageMouseoverEventArgs = { pageX: pageX, pageY: pageY };
+        const eventArgs: PageMouseoverEventArgs = { pageX: pageX, pageY: pageY };
         this.trigger('pageMouseover', eventArgs);
     }
     /**
+     * @param fileName
      * @private
      */
     public fireDownloadStart(fileName: string): void {
-        let eventArgs: DownloadStartEventArgs = { fileName: fileName };
+        const eventArgs: DownloadStartEventArgs = { fileName: fileName };
         this.trigger('downloadStart', eventArgs);
     }
     /**
+     * @param fileName
+     * @param downloadData
      * @private
      */
     public fireDownloadEnd(fileName: string, downloadData: string): void {
-        let eventArgs: DownloadEndEventArgs = { fileName: fileName, downloadDocument: downloadData };
+        const eventArgs: DownloadEndEventArgs = { fileName: fileName, downloadDocument: downloadData };
         this.trigger('downloadEnd', eventArgs);
     }
     /**
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public async firePrintStart(): Promise<void> {
-        let eventArgs: PrintStartEventArgs = { fileName: this.downloadFileName ? this.downloadFileName : this.fileName, cancel: false };
+        let eventArgs: PrintStartEventArgs = { fileName: this.downloadFileName, cancel: false };
         if (isBlazor) {
             eventArgs = await this.triggerEvent('printStart', eventArgs) as PrintStartEventArgs || eventArgs;
         } else {
@@ -4927,6 +5648,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         }
     }
     /**
+     * @param eventName
+     * @param args
+     * @param eventName
+     * @param args
      * @private
      */
     public async triggerEvent(eventName: string, args: object): Promise<void | object> {
@@ -4937,187 +5662,263 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         return eventArgs;
     }
     /**
+     * @param fileName
      * @private
      */
     public firePrintEnd(fileName: string): void {
-        let eventArgs: PrintEndEventArgs = { fileName: fileName };
+        const eventArgs: PrintEndEventArgs = { fileName: fileName };
         this.trigger('printEnd', eventArgs);
     }
     /**
+     * @param pageNumber
      * @private
      */
     public fireThumbnailClick(pageNumber: number): void {
-        let eventArgs: ThumbnailClickEventArgs = { name: 'thumbnailClick', pageNumber: pageNumber };
+        const eventArgs: ThumbnailClickEventArgs = { name: 'thumbnailClick', pageNumber: pageNumber };
         this.trigger('thumbnailClick', eventArgs);
     }
 
     /**
-     * 
+     * @param pageNumber
+     * @param position
+     * @param text
+     * @param fileName
+     * @param pageNumber
+     * @param position
+     * @param text
+     * @param fileName
+     * @param pageNumber
+     * @param position
+     * @param text
+     * @param fileName
      * @private
      */
     public fireBookmarkClick(pageNumber: number, position: number, text: string, fileName: string ): void {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let eventArgs: BookmarkClickEventArgs = { name: 'bookmarkClick', pageNumber: pageNumber , position: position, text: text, fileName: fileName};
         this.trigger('bookmarkClick', eventArgs);
     }
     /**
+     * @param importData
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireImportStart(importData: any): void {
-        let eventArgs: ImportStartEventArgs = { name: 'importAnnotationsStart', importData: importData, formFieldData: null};
+        const eventArgs: ImportStartEventArgs = { name: 'importAnnotationsStart', importData: importData, formFieldData: null};
         this.trigger('importStart', eventArgs);
     }
     /**
+     * @param exportData
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireExportStart(exportData: any): void {
-        let eventArgs: ExportStartEventArgs = { name: 'exportAnnotationsStart', exportData: exportData, formFieldData: null};
+        const eventArgs: ExportStartEventArgs = { name: 'exportAnnotationsStart', exportData: exportData, formFieldData: null};
         this.trigger('exportStart', eventArgs);
     }
     /**
+     * @param importData
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireImportSuccess(importData: any): void {
-        let eventArgs: ImportSuccessEventArgs = { name: 'importAnnotationsSuccess', importData: importData, formFieldData: null };
+        const eventArgs: ImportSuccessEventArgs = { name: 'importAnnotationsSuccess', importData: importData, formFieldData: null };
         this.trigger('importSuccess', eventArgs);
     }
     /**
+     * @param exportData
+     * @param fileName
+     * @param exportData
+     * @param fileName
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireExportSuccess(exportData: any, fileName: string): void {
-        let eventArgs: ExportSuccessEventArgs = { name: 'exportAnnotationsSuccess', exportData: exportData, fileName: fileName, formFieldData: null };
+        const eventArgs: ExportSuccessEventArgs = { name: 'exportAnnotationsSuccess', exportData: exportData, fileName: fileName, formFieldData: null };
         this.trigger('exportSuccess', eventArgs);
     }
     /**
+     * @param data
+     * @param errorDetails
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireImportFailed(data: any, errorDetails: string): void {
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: ImportFailureEventArgs = { name: 'importAnnotationsFailed', importData: data, errorDetails: errorDetails, formFieldData: null };
+        // eslint-disable-next-line max-len
+        const eventArgs: ImportFailureEventArgs = { name: 'importAnnotationsFailed', importData: data, errorDetails: errorDetails, formFieldData: null };
         this.trigger('importFailed', eventArgs);
     }
     /**
+     * @param data
+     * @param errorDetails
+     * @param data
+     * @param errorDetails
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireExportFailed(data: any, errorDetails: string): void {
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: ExportFailureEventArgs = { name: 'exportAnnotationsFailed', exportData: data, errorDetails: errorDetails, formFieldData: null };
+        // eslint-disable-next-line max-len
+        const eventArgs: ExportFailureEventArgs = { name: 'exportAnnotationsFailed', exportData: data, errorDetails: errorDetails, formFieldData: null };
         this.trigger('exportFailed', eventArgs);
     }
     /**
+     * @param data
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireFormImportStarted(data: any): void {
-        let eventArgs: ImportStartEventArgs = { name: 'importFormFieldsStart', importData: null, formFieldData: data };
+        const eventArgs: ImportStartEventArgs = { name: 'importFormFieldsStart', importData: null, formFieldData: data };
         this.trigger('importStart', eventArgs);
     }
     /**
+     * @param data
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireFormExportStarted(data: any): void {
-        let eventArgs: ExportStartEventArgs = { name: 'exportFormFieldsStart', exportData: null, formFieldData: data };
+        const eventArgs: ExportStartEventArgs = { name: 'exportFormFieldsStart', exportData: null, formFieldData: data };
         this.trigger('exportStart', eventArgs);
     }
     /**
+     * @param data
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireFormImportSuccess(data: any): void {
-        let eventArgs: ImportSuccessEventArgs = { name: 'importFormFieldsSuccess', importData: data, formFieldData: data };
+        const eventArgs: ImportSuccessEventArgs = { name: 'importFormFieldsSuccess', importData: data, formFieldData: data };
         this.trigger('importSuccess', eventArgs);
     }
     /**
+     * @param data
+     * @param fileName
+     * @param data
+     * @param fileName
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireFormExportSuccess(data: any, fileName: string): void {
-        let eventArgs: ExportSuccessEventArgs = { name: 'exportFormFieldsSuccess', exportData: data, fileName: fileName, formFieldData: data };
+        const eventArgs: ExportSuccessEventArgs = { name: 'exportFormFieldsSuccess', exportData: data, fileName: fileName, formFieldData: data };
         this.trigger('exportSuccess', eventArgs);
     }
     /**
+     * @param data
+     * @param errorDetails
+     * @param data
+     * @param errorDetails
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireFormImportFailed(data: any, errorDetails: string): void {
-        //tslint:disable-next-line:max-line-length
-        let eventArgs: ImportFailureEventArgs = { name: 'importFormFieldsfailed', importData: data, errorDetails: errorDetails, formFieldData: data };
+        // eslint-disable-next-line max-len
+        const eventArgs: ImportFailureEventArgs = { name: 'importFormFieldsfailed', importData: data, errorDetails: errorDetails, formFieldData: data };
         this.trigger('importFailed', eventArgs);
     }
     /**
+     * @param data
+     * @param errorDetails
+     * @param data
+     * @param errorDetails
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireFormExportFailed(data: any, errorDetails: string): void {
-        //tslint:disable-next-line:max-line-length
-        let eventArgs: ExportFailureEventArgs = { name: 'exportFormFieldsFailed', exportData: data, errorDetails: errorDetails, formFieldData: data };
+        // eslint-disable-next-line max-len
+        const eventArgs: ExportFailureEventArgs = { name: 'exportFormFieldsFailed', exportData: data, errorDetails: errorDetails, formFieldData: data };
         this.trigger('exportFailed', eventArgs);
     }
 
     /**
+     * @param documentCollection
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireTextExtractionCompleted(documentCollection: DocumentTextCollectionSettingsModel[][]): void {
-        let eventArgs: ExtractTextCompletedEventArgs = { documentTextCollection: documentCollection };
+        const eventArgs: ExtractTextCompletedEventArgs = { documentTextCollection: documentCollection };
         this.trigger('extractTextCompleted', eventArgs);
     }
     /**
+     * @param searchText
+     * @param isMatchcase
+     * @param searchText
+     * @param isMatchcase
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireTextSearchStart(searchText: string, isMatchcase: boolean): void {
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: TextSearchStartEventArgs = { name: 'textSearchStart', searchText: searchText, matchCase: isMatchcase };
+        // eslint-disable-next-line max-len
+        const eventArgs: TextSearchStartEventArgs = { name: 'textSearchStart', searchText: searchText, matchCase: isMatchcase };
         this.trigger('textSearchStart', eventArgs);
     }
     /**
+     * @param searchText
+     * @param isMatchcase
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireTextSearchComplete(searchText: string, isMatchcase: boolean): void {
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: TextSearchCompleteEventArgs = { name: 'textSearchComplete', searchText: searchText, matchCase: isMatchcase };
+        // eslint-disable-next-line max-len
+        const eventArgs: TextSearchCompleteEventArgs = { name: 'textSearchComplete', searchText: searchText, matchCase: isMatchcase };
         this.trigger('textSearchComplete', eventArgs);
     }
     /**
+     * @param searchText
+     * @param isMatchcase
+     * @param bounds
+     * @param pageNumber
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public fireTextSearchHighlight(searchText: string, isMatchcase: boolean, bounds: RectangleBoundsModel, pageNumber: number): void {
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: TextSearchHighlightEventArgs = { name: 'textSearchHighlight', searchText: searchText, matchCase: isMatchcase, bounds: bounds, pageNumber: pageNumber };
+        // eslint-disable-next-line max-len
+        const eventArgs: TextSearchHighlightEventArgs = { name: 'textSearchHighlight', searchText: searchText, matchCase: isMatchcase, bounds: bounds, pageNumber: pageNumber };
         this.trigger('textSearchHighlight', eventArgs);
     }
     /**
+     * @param bounds
+     * @param commonStyle
+     * @param cavas
+     * @param index
      * @private
      */
     public renderAdornerLayer(bounds: ClientRect, commonStyle: string, cavas: HTMLElement, index: number): void {
         renderAdornerLayer(bounds, commonStyle, cavas, index, this);
     }
     /**
+     * @param index
+     * @param currentSelector
+     * @param index
+     * @param currentSelector
      * @private
      */
     public renderSelector(index: number, currentSelector?: AnnotationSelectorSettingsModel): void {
         this.drawing.renderSelector(index, currentSelector);
     }
     /**
+     * @param objArray
+     * @param currentSelector
+     * @param multipleSelection
+     * @param preventUpdate
+     * @param objArray
+     * @param currentSelector
+     * @param multipleSelection
+     * @param preventUpdate
+     * @param objArray
+     * @param currentSelector
+     * @param multipleSelection
+     * @param preventUpdate
+     * @param objArray
+     * @param currentSelector
+     * @param multipleSelection
+     * @param preventUpdate
      * @private
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     public select(objArray: string[], currentSelector?: AnnotationSelectorSettingsModel, multipleSelection?: boolean, preventUpdate?: boolean): void {
-        let annotationSelect: number = this.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage;
-        // tslint:disable-next-line
+        const annotationSelect: number = this.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage;
+        // eslint-disable-next-line
         let annotation: any = this.selectedItems.annotations[0];
         if (annotationSelect) {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let currentAnnot: any = this.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation;
             this.annotationModule.textMarkupAnnotationModule.clearCurrentAnnotationSelection(annotationSelect, true);
             this.fireAnnotationUnSelect(currentAnnot.annotName, currentAnnot.pageNumber, currentAnnot);
@@ -5133,36 +5934,84 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.drawing.select(objArray, currentSelector, multipleSelection, preventUpdate);
     }
     /**
+     * @param pageId
      * @private
      */
     public getPageTable(pageId: number): ZOrderPageTable {
         return this.drawing.getPageTable(pageId);
     }
     /**
+     * @param diffX
+     * @param diffY
+     * @param pageIndex
+     * @param currentSelector
+     * @param helper
+     * @param diffX
+     * @param diffY
+     * @param pageIndex
+     * @param currentSelector
+     * @param helper
+     * @param diffX
+     * @param diffY
+     * @param pageIndex
+     * @param currentSelector
+     * @param helper
      * @private
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     public dragSelectedObjects(diffX: number, diffY: number, pageIndex: number, currentSelector?: AnnotationSelectorSettingsModel, helper?: PdfAnnotationBaseModel): boolean {
         return this.drawing.dragSelectedObjects(diffX, diffY, pageIndex, currentSelector, helper);
     }
     /**
+     * @param sx
+     * @param sy
+     * @param pivot
      * @private
      */
     public scaleSelectedItems(sx: number, sy: number, pivot: PointModel): boolean {
         return this.drawing.scaleSelectedItems(sx, sy, pivot);
     }
     /**
+     * @param endPoint
+     * @param obj
+     * @param point
+     * @param segment
+     * @param target
+     * @param targetPortId
+     * @param currentSelector
+     * @param endPoint
+     * @param obj
+     * @param point
+     * @param segment
+     * @param target
+     * @param targetPortId
+     * @param currentSelector
+     * @param endPoint
+     * @param obj
+     * @param point
+     * @param segment
+     * @param target
+     * @param targetPortId
+     * @param currentSelector
+     * @param endPoint
+     * @param obj
+     * @param point
+     * @param segment
+     * @param target
+     * @param targetPortId
+     * @param currentSelector
      * @private
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     public dragConnectorEnds(endPoint: string, obj: IElement, point: PointModel, segment: PointModel, target?: IElement, targetPortId?: string, currentSelector?: AnnotationSelectorSettingsModel): boolean {
         return this.drawing.dragConnectorEnds(endPoint, obj, point, segment, target, null, currentSelector);
     }
     /**
+     * @param pageId
      * @private
      */
     public clearSelection(pageId: number): void {
-        let selectormodel: SelectorModel = this.selectedItems;
+        const selectormodel: SelectorModel = this.selectedItems;
         if (selectormodel.annotations.length > 0) {
             selectormodel.offsetX = 0;
             selectormodel.offsetY = 0;
@@ -5176,12 +6025,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.viewerBase.isAnnotationSelect = false;
     }
     /**
+     * @param obj
      * @private
      */
     public add(obj: PdfAnnotationBase): PdfAnnotationBaseModel {
         return this.drawing.add(obj);
     }
     /**
+     * @param obj
      * @private
      */
     public remove(obj: PdfAnnotationBaseModel): void {
@@ -5195,12 +6046,17 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         return this.drawing.copy();
     }
     /**
+     * @param angle
+     * @param currentSelector
+     * @param angle
+     * @param currentSelector
      * @private
      */
     public rotate(angle: number, currentSelector?: AnnotationSelectorSettingsModel): boolean {
         return this.drawing.rotate(this.selectedItems, angle, null, currentSelector);
     }
     /**
+     * @param obj
      * @private
      */
     public paste(obj?: PdfAnnotationBaseModel[]): void {
@@ -5216,9 +6072,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public refresh(): void {
         for (let i: number = 0; i < this.annotations.length; i++) {
             if (this.zIndexTable.length !== undefined) {
-                let notFound: boolean = true;
+                const notFound: boolean = true;
                 for (let i: number = 0; i < this.zIndexTable.length; i++) {
-                    let objects: (PdfAnnotationBaseModel)[] = this.zIndexTable[i].objects;
+                    const objects: (PdfAnnotationBaseModel)[] = this.zIndexTable[i].objects;
                     for (let j: number = 0; j < objects.length; j++) {
                         objects.splice(j, 1);
                     }
@@ -5251,6 +6107,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         return this.drawing.cut(index || 0);
     }
     /**
+     * @param actualObject
+     * @param node
      * @private
      */
     public nodePropertyChange(
@@ -5258,9 +6116,27 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.drawing.nodePropertyChange(actualObject, node);
     }
     /**
+     * @param tx
+     * @param ty
+     * @param pageIndex
+     * @param nodeBounds
+     * @param isStamp
+     * @param isSkip
+     * @param tx
+     * @param ty
+     * @param pageIndex
+     * @param nodeBounds
+     * @param isStamp
+     * @param isSkip
+     * @param tx
+     * @param ty
+     * @param pageIndex
+     * @param nodeBounds
+     * @param isStamp
+     * @param isSkip
      * @private
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     public checkBoundaryConstraints(tx: number, ty: number, pageIndex: number, nodeBounds?: Rect, isStamp?: boolean, isSkip?: boolean): boolean {
         return this.drawing.checkBoundaryConstraints(tx, ty, pageIndex, nodeBounds, isStamp, isSkip);
     }

@@ -1,3 +1,9 @@
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-this-alias */
 import { Browser, isBlazor } from '@syncfusion/ej2-base';
 import { CanvasRenderer } from './rendering/canvas-renderer';
 import { DiagramRenderer } from './rendering/renderer';
@@ -34,20 +40,21 @@ export class PrintAndExport {
 
     /**
      * To Export the diagram
+     *
      * @private
      */
     public exportDiagram(options: IExportOptions): string | SVGElement {
         let fileType: string;
         let customBounds: boolean;
         let content: SVGElement;
-        let content1: string = '';
+        const content1: string = '';
         let data: string = 'data';
-        let mode: string;
-        let buffers: string[] = [];
+        //let mode: string;
+        const buffers: string[] = [];
         let margin: MarginModel = options.margin || {};
-        let region: DiagramRegions = options && options.region ? options.region : 'Content';
-        mode = options && options.mode ? options.mode : 'Download';
-        let bounds: Rect = this.getDiagramBounds(region, options);
+        const region: DiagramRegions = options && options.region ? options.region : 'Content';
+        const mode: string = options && options.mode ? options.mode : 'Download';
+        const bounds: Rect = this.getDiagramBounds(region, options);
         if (options.bounds) {
             customBounds = true;
             bounds.x = options.bounds.x ? options.bounds.x : bounds.x;
@@ -61,14 +68,14 @@ export class PrintAndExport {
             right: margin.right !== undefined ? margin.right : 25,
             left: margin.left !== undefined ? margin.left : 25
         };
-        let nodes: NodeModel[] = this.diagram.nodes;
+        const nodes: NodeModel[] = this.diagram.nodes;
         if (region !== 'PageSettings') {
             bounds.x -= margin.left;
             bounds.y -= margin.top;
             bounds.width += margin.left + margin.right;
             bounds.height += margin.top + margin.bottom;
         }
-        let fileName: string = options.fileName || 'diagram';
+        const fileName: string = options.fileName || 'diagram';
         if (options.format !== 'SVG') {
             data = this.setCanvas(options, bounds, margin, mode, customBounds, region, fileName);
             if (data !== null) {
@@ -78,15 +85,15 @@ export class PrintAndExport {
             fileType = options.format;
             options.bounds = bounds;
             options.margin = margin;
-            let svg: SVGElement = content = this.diagramAsSvg(options, margin);
+            const svg: SVGElement = content = this.diagramAsSvg(options, margin);
             if (mode === 'Data') {
                 if (isBlazor() && options.format === 'SVG') {
-                    let svgData: string = new XMLSerializer().serializeToString(svg);
+                    const svgData: string = new XMLSerializer().serializeToString(svg);
                     return svgData;
                 }
                 return content;
             }
-            let buffer: string = new XMLSerializer().serializeToString(svg);
+            const buffer: string = new XMLSerializer().serializeToString(svg);
             buffers.push(buffer);
         }
         if (mode === 'Download' && data !== null) {
@@ -98,14 +105,14 @@ export class PrintAndExport {
             //     return content;
             // } else {
             for (let b: number = 0; b < buffers.length; b++) {
-                let blob: Blob = new Blob([buffers[b]], { type: 'application/octet-stream' });
+                const blob: Blob = new Blob([buffers[b]], { type: 'application/octet-stream' });
                 if (Browser.info.name === 'msie') {
                     window.navigator.msSaveOrOpenBlob(blob, fileName + '.' + fileType);
                 } else {
-                    let pom: HTMLAnchorElement = createHtmlElement('a', { 'download': fileName + '.' + fileType }) as HTMLAnchorElement;
-                    let url: string = URL.createObjectURL(blob);
+                    const pom: HTMLAnchorElement = createHtmlElement('a', { 'download': fileName + '.' + fileType }) as HTMLAnchorElement;
+                    const url: string = URL.createObjectURL(blob);
                     pom.href = url;
-                    let e: MouseEvent = document.createEvent('MouseEvents');
+                    const e: MouseEvent = document.createEvent('MouseEvents');
                     e.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
                     pom.dispatchEvent(e);
                 }
@@ -119,12 +126,12 @@ export class PrintAndExport {
         let content: string;
         options.bounds = bounds;
         options.region = region;
-        let scaleX: string = 'scaleX';
-        let scaleY: string = 'scaleY';
-        let scaleOffsetX: string = 'scaleOffsetX';
-        let scaleOffsetY: string = 'scaleOffsetY';
+        const scaleX: string = 'scaleX';
+        const scaleY: string = 'scaleY';
+        const scaleOffsetX: string = 'scaleOffsetX';
+        const scaleOffsetY: string = 'scaleOffsetY';
         this.setScaleValueforCanvas(options, bounds);
-        let canvas: HTMLCanvasElement = this.diagramAsCanvas(
+        const canvas: HTMLCanvasElement = this.diagramAsCanvas(
             {
                 bounds: bounds, margin: margin, region: region, scaleX: options[scaleX],
                 scaleY: options[scaleY], scaleOffsetX: options[scaleOffsetX], scaleOffsetY: options[scaleOffsetY]
@@ -146,7 +153,7 @@ export class PrintAndExport {
     private canvasMultiplePage(
         options: IExportOptions, canvas: HTMLCanvasElement, margin: MarginModel, image: string, fileName: string): void {
         let images: HTMLElement | string[] = [];
-        let fileType: string = options.format || 'JPG';
+        const fileType: string = options.format || 'JPG';
 
         if (options.multiplePage) {
             options.pageHeight = options.pageHeight ? options.pageHeight : this.diagram.pageSettings.height;
@@ -157,7 +164,7 @@ export class PrintAndExport {
             if (options.pageOrientation) {
                 if ((options.pageOrientation === 'Landscape' && options.pageHeight > options.pageWidth) ||
                     options.pageOrientation === 'Portrait' && options.pageWidth > options.pageHeight) {
-                    let temp: number = options.pageWidth;
+                    const temp: number = options.pageWidth;
                     options.pageWidth = options.pageHeight;
                     options.pageHeight = temp;
                 }
@@ -168,11 +175,11 @@ export class PrintAndExport {
                 left: !isNaN(margin.left) ? margin.left : 0,
                 right: !isNaN(margin.right) ? margin.right : 0
             };
-            let attr: Object = {
+            const attr: Object = {
                 'id': this.diagram.element.id + '_printImage',
-                'src': image,
+                'src': image
             };
-            let img: HTMLImageElement = createHtmlElement('img', attr) as HTMLImageElement;
+            const img: HTMLImageElement = createHtmlElement('img', attr) as HTMLImageElement;
             img.onload = () => {
                 images = this.getMultipleImage(img, options, true);
                 this.exportImage(images, fileName, fileType, image);
@@ -184,15 +191,15 @@ export class PrintAndExport {
     }
 
     private exportImage(images: string[] | HTMLElement, fileName: string, fileType: string, image: string): void {
-        let buffers: ArrayBuffer[] = [];
-        let length: number = (!(images instanceof HTMLElement)) ? images.length : 0;
+        const buffers: ArrayBuffer[] = [];
+        const length: number = (!(images instanceof HTMLElement)) ? images.length : 0;
         for (let g: number = 0; g < length; g++) {
             image = images[g];
             image = image.replace(/^data:[a-z]*;,/, '');
-            let image1: string[] = image.split(',');
-            let byteString: string = atob(image1[1]);
-            let buffer: ArrayBuffer = new ArrayBuffer(byteString.length);
-            let intArray: Uint8Array = new Uint8Array(buffer);
+            const image1: string[] = image.split(',');
+            const byteString: string = atob(image1[1]);
+            const buffer: ArrayBuffer = new ArrayBuffer(byteString.length);
+            const intArray: Uint8Array = new Uint8Array(buffer);
             for (let i: number = 0; i < byteString.length; i++) {
                 intArray[i] = byteString.charCodeAt(i);
             }
@@ -205,14 +212,14 @@ export class PrintAndExport {
         //     return content;
         // } else {
         for (let j: number = 0; j < buffers.length; j++) {
-            let b: Blob = new Blob([buffers[j]], { type: 'application/octet-stream' });
+            const b: Blob = new Blob([buffers[j]], { type: 'application/octet-stream' });
             if (Browser.info.name === 'msie') {
                 window.navigator.msSaveOrOpenBlob(b, fileName + '.' + fileType);
             } else {
-                let htmlElement: HTMLAnchorElement = createHtmlElement('a', { 'download': fileName + '.' + fileType }) as HTMLAnchorElement;
-                let urlLink: string = URL.createObjectURL(b);
+                const htmlElement: HTMLAnchorElement = createHtmlElement('a', { 'download': fileName + '.' + fileType }) as HTMLAnchorElement;
+                const urlLink: string = URL.createObjectURL(b);
                 htmlElement.href = urlLink;
-                let mouseEvent: MouseEvent = document.createEvent('MouseEvents');
+                const mouseEvent: MouseEvent = document.createEvent('MouseEvents');
                 mouseEvent.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
                 setTimeout(
                     () => {
@@ -225,9 +232,9 @@ export class PrintAndExport {
     }
     /**   @private  */
     public getObjectsBound(options?: IExportOptions): Rect {
-        let nodes: NodeModel[] = this.diagram.nodes;
+        const nodes: NodeModel[] = this.diagram.nodes;
         let nodebounds: Rect;
-        for (let node of nodes) {
+        for (const node of nodes) {
             if (node.visible) {
                 if (((options.format !== 'SVG' && !(node instanceof DiagramNativeElement) && !(node instanceof DiagramHtmlElement))
                     || (options.format === 'SVG' && !(node instanceof DiagramHtmlElement)))) {
@@ -239,8 +246,8 @@ export class PrintAndExport {
                 }
             }
         }
-        let connectors: ConnectorModel[] = this.diagram.connectors;
-        for (let connector of connectors) {
+        const connectors: ConnectorModel[] = this.diagram.connectors;
+        for (const connector of connectors) {
             if (connector.visible) {
                 if (!nodebounds) {
                     nodebounds = connector.wrapper.outerBounds;
@@ -254,7 +261,7 @@ export class PrintAndExport {
 
     /**   @private  */
     public getDiagramBounds(mode?: string, options?: IExportOptions): Rect {
-        let rect: Rect = this.getObjectsBound(options);
+        const rect: Rect = this.getObjectsBound(options);
         let left: number = rect.left;
         let top: number = rect.top;
         let right: number = rect.right - rect.left;
@@ -290,7 +297,7 @@ export class PrintAndExport {
                 }
             }
         }
-        let svgBounds: Rect = new Rect();
+        const svgBounds: Rect = new Rect();
         svgBounds.x = left;
         svgBounds.y = top;
         svgBounds.width = right;
@@ -299,10 +306,10 @@ export class PrintAndExport {
     }
 
     private setScaleValueforCanvas(options: IExportOptions, bounds: Rect): void {
-        let scaleX: string = 'scaleX';
-        let scaleY: string = 'scaleY';
-        let scaleOffsetX: string = 'scaleOffsetX';
-        let scaleOffsetY: string = 'scaleOffsetY';
+        const scaleX: string = 'scaleX';
+        const scaleY: string = 'scaleY';
+        const scaleOffsetX: string = 'scaleOffsetX';
+        const scaleOffsetY: string = 'scaleOffsetY';
         options[scaleX] = 1;
         options[scaleY] = 1;
         options[scaleOffsetX] = 0;
@@ -315,13 +322,13 @@ export class PrintAndExport {
         }
         if (pageOrientation === 'Portrait') {
             if (options.pageWidth > options.pageHeight) {
-                let temp: number = options.pageHeight;
+                const temp: number = options.pageHeight;
                 options.pageHeight = options.pageWidth;
                 options.pageWidth = temp;
             }
         } else {
             if (options.pageHeight > options.pageWidth) {
-                let temp: number = options.pageWidth;
+                const temp: number = options.pageWidth;
                 options.pageWidth = options.pageHeight;
                 options.pageHeight = temp;
             }
@@ -329,8 +336,8 @@ export class PrintAndExport {
         if (options.pageWidth && options.pageHeight && !options.multiplePage) {
             options.stretch = 'Meet';
         }
-        let height: number = options.pageHeight || bounds.height;
-        let width: number = options.pageWidth || bounds.width;
+        const height: number = options.pageHeight || bounds.height;
+        const width: number = options.pageWidth || bounds.width;
         if (options.stretch === 'Stretch' || options.stretch === 'Meet' || options.stretch === 'Slice') {
             options[scaleX] = width / bounds.width;
             options[scaleY] = height / bounds.height;
@@ -349,15 +356,15 @@ export class PrintAndExport {
     }
 
     private diagramAsSvg(options: IExportOptions, margin: MarginModel): SVGElement {
-        let svg: SVGElement = this.diagram.createSvg(this.diagram.element.id + '_diagram_svg', options.bounds.width, options.bounds.height);
+        const svg: SVGElement = this.diagram.createSvg(this.diagram.element.id + '_diagram_svg', options.bounds.width, options.bounds.height);
         document.body.appendChild(svg);
         let g: SVGElement = createSvgElement('g', { 'id': this.diagram.element.id + '_pageBackground' });
-        let region: DiagramRegions = options && options.region ? options.region : 'Content';
-        let bounds: Rect = this.getDiagramBounds(region, options);
-        let left: number = bounds.x;
-        let top: number = bounds.y;
-        let width: number = bounds.width;
-        let height: number = bounds.height;
+        const region: DiagramRegions = options && options.region ? options.region : 'Content';
+        const bounds: Rect = this.getDiagramBounds(region, options);
+        const left: number = bounds.x;
+        const top: number = bounds.y;
+        const width: number = bounds.width;
+        const height: number = bounds.height;
         svg.appendChild(g);
         let attr: Object = {
             'x': String(left),
@@ -365,7 +372,7 @@ export class PrintAndExport {
         };
         setAttributeSvg(g, attr);
         this.setTransform(g, options.bounds, margin);
-        let gradient: HTMLElement = document.getElementById(this.diagram.element.id + 'gradient_pattern');
+        const gradient: HTMLElement = document.getElementById(this.diagram.element.id + 'gradient_pattern');
         if (gradient) {
             svg.appendChild(gradient);
         }
@@ -373,12 +380,12 @@ export class PrintAndExport {
             'x': String(left),
             'y': String(top), 'width': String(width + margin.left + margin.right), 'height': String(height + margin.top + margin.bottom)
         };
-        let backimage: SVGElement =
+        const backimage: SVGElement =
             document.getElementById(this.diagram.element.id + '_backgroundImageLayer').cloneNode(true) as SVGElement;
         setAttributeSvg(backimage, attr);
         svg.appendChild(backimage);
         this.setTransform(backimage, bounds, margin);
-        let backRect: SVGElement = document.getElementById(this.diagram.element.id + '_backgroundLayerrect').cloneNode(true) as SVGElement;
+        const backRect: SVGElement = document.getElementById(this.diagram.element.id + '_backgroundLayerrect').cloneNode(true) as SVGElement;
         setAttributeSvg(backRect, attr);
         svg.appendChild(backRect);
         this.setTransform(backRect, bounds, margin);
@@ -386,7 +393,7 @@ export class PrintAndExport {
         if (this.diagram.mode === 'SVG') {
             let element: HTMLElement;
             let i: number;
-            let diagramLayerSVG: SVGSVGElement = getDiagramLayerSvg(this.diagram.element.id);
+            const diagramLayerSVG: SVGSVGElement = getDiagramLayerSvg(this.diagram.element.id);
             svg.appendChild(diagramLayerSVG.getElementById(this.diagram.diagramLayer.id).cloneNode(true));
             for (i = 0; i < svg.childNodes.length; i++) {
                 element = svg.childNodes[i] as HTMLElement;
@@ -399,8 +406,8 @@ export class PrintAndExport {
             svg.appendChild(g);
             this.setTransform(g, options.bounds, margin);
             //renderLabels
-            let renderer: DiagramRenderer = new DiagramRenderer('', null, true);
-            let htmlLayer: HTMLElement = getHTMLLayer(this.diagram.element.id);
+            const renderer: DiagramRenderer = new DiagramRenderer('', null, true);
+            const htmlLayer: HTMLElement = getHTMLLayer(this.diagram.element.id);
             this.diagram.renderDiagramElements(svg, renderer, htmlLayer, false);
         }
         document.body.removeChild(svg);
@@ -411,41 +418,41 @@ export class PrintAndExport {
             (-bounds.y + margin.top) + ')');
     }
     private diagramAsCanvas(options: IExportOptions, customBounds: boolean): HTMLCanvasElement {
-        let scaleX: string = 'scaleX';
-        let scaleY: string = 'scaleY';
-        let scaleOffsetX: string = 'scaleOffsetX';
-        let scaleOffsetY: string = 'scaleOffsetY';
+        const scaleX: string = 'scaleX';
+        const scaleY: string = 'scaleY';
+        const scaleOffsetX: string = 'scaleOffsetX';
+        const scaleOffsetY: string = 'scaleOffsetY';
         let element: NodeModel | ConnectorModel;
-        let elements: NodeModel[] | ConnectorModel[] = [];
+        const elements: NodeModel[] | ConnectorModel[] = [];
         let region: Rect = options.bounds;
-        let margin: MarginModel = options.margin;
-        let mode: DiagramRegions = options && options.region ? options.region : 'Content';
+        const margin: MarginModel = options.margin;
+        const mode: DiagramRegions = options && options.region ? options.region : 'Content';
         let pageBounds: Rect = this.getDiagramBounds(mode, options);
-        let bgColor: string = this.diagram.pageSettings.background.color;
-        let canvas: HTMLCanvasElement = CanvasRenderer.createCanvas(
+        const bgColor: string = this.diagram.pageSettings.background.color;
+        const canvas: HTMLCanvasElement = CanvasRenderer.createCanvas(
             this.diagram.element.id + '_diagram', options.bounds.width, options.bounds.height);
         //canvas.setAttribute('style', 'position:absolute;top:135px;left:160px;');
-        let context: CanvasRenderingContext2D = canvas.getContext('2d');
+        const context: CanvasRenderingContext2D = canvas.getContext('2d');
         context.translate(-region.x, -region.y);
         context.save();
         context.fillStyle = (this.diagram.pageSettings.background.color === 'transparent') ? 'white' :
-        this.diagram.pageSettings.background.color;
+            this.diagram.pageSettings.background.color;
         region = mode === 'Content' ? pageBounds : region;
         context.fillRect(region.x, region.y, region.width, region.height);
-        let bgImg: BackgroundModel = this.diagram.pageSettings.background;
+        const bgImg: BackgroundModel = this.diagram.pageSettings.background;
         if (bgImg && bgImg.source) {
             pageBounds = this.getDiagramBounds(mode, options);
-            let image: HTMLImageElement = new Image();
+            const image: HTMLImageElement = new Image();
             image.src = bgImg.source;
-            let proportionX: number = pageBounds.width / image.width;
-            let proportionY: number = pageBounds.height / image.height;
+            const proportionX: number = pageBounds.width / image.width;
+            const proportionY: number = pageBounds.height / image.height;
             let x: number = pageBounds.x;
             let y: number = pageBounds.y;
             let width: number = pageBounds.width;
             let height: number = pageBounds.height;
-            let exportable: boolean = this.isImageExportable(bgImg);
+            const exportable: boolean = this.isImageExportable(bgImg);
             if (bgImg.scale !== 'None' && bgImg.align !== 'None') {
-                let proportion: number = bgImg.scale === 'Meet' ? Math.min(proportionX, proportionY) : Math.max(proportionX, proportionY);
+                const proportion: number = bgImg.scale === 'Meet' ? Math.min(proportionX, proportionY) : Math.max(proportionX, proportionY);
                 width = proportion * image.width;
                 height = proportion * image.height;
                 if (bgImg.align.indexOf('xmid') > -1) {
@@ -477,8 +484,8 @@ export class PrintAndExport {
                 (pageBounds.width * options[scaleX]) + margin.left + margin.right,
                 (options[scaleY] * pageBounds.height) + margin.top + margin.bottom);
         }
-        let brColor: string = this.diagram.pageSettings.background.color;
-        let brWidth: number = this.diagram.pageSettings.width;
+        const brColor: string = this.diagram.pageSettings.background.color;
+        const brWidth: number = this.diagram.pageSettings.width;
         if (brWidth) {
             context.strokeStyle = brColor === 'none' ? 'transparent' : brColor;
             context.lineWidth = brWidth;
@@ -487,8 +494,8 @@ export class PrintAndExport {
                 pageBounds.height * options[scaleY]);
         }
         context.restore();
-        let htmlLayer: HTMLElement = getHTMLLayer(this.diagram.element.id);
-        let renderer: DiagramRenderer = new DiagramRenderer('', null, false);
+        const htmlLayer: HTMLElement = getHTMLLayer(this.diagram.element.id);
+        const renderer: DiagramRenderer = new DiagramRenderer('', null, false);
         this.updateObjectValue(options[scaleX], options[scaleOffsetX], options[scaleOffsetY], true);
         this.diagram.renderDiagramElements(canvas, renderer, htmlLayer, false, true);
         this.updateObjectValue(options[scaleX], options[scaleOffsetX], options[scaleOffsetY], false);
@@ -543,9 +550,9 @@ export class PrintAndExport {
         if (backgroundImage.source) {
             try {
                 canvas = CanvasRenderer.createCanvas(this.diagram.element.id + 'temp_canvas', 100, 100);
-                let ctx: CanvasRenderingContext2D = canvas.getContext('2d');
+                const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
                 ctx.save();
-                let image: HTMLImageElement = new Image();
+                const image: HTMLImageElement = new Image();
                 image.src = backgroundImage.source;
                 ctx.drawImage(image, 0, 0, 100, 100);
                 ctx.restore();
@@ -559,7 +566,7 @@ export class PrintAndExport {
     private getPrintCanvasStyle(img: HTMLImageElement, options: IExportOptions): Size {
         let width: number = 0;
         let height: number = 0;
-        let size: Size = new Size();
+        const size: Size = new Size();
         width = img.width;
         height = img.height;
         if (options.pageHeight || options.pageWidth) {
@@ -568,7 +575,7 @@ export class PrintAndExport {
         }
         if (options.pageOrientation) {
             if ((options.pageOrientation === 'Landscape' && height > width) || options.pageOrientation === 'Portrait' && width > height) {
-                let temp: number = width;
+                const temp: number = width;
                 width = height;
                 height = temp;
             }
@@ -578,27 +585,27 @@ export class PrintAndExport {
         return size;
     }
     private getMultipleImage(img: HTMLImageElement, options: IExportOptions, isExport?: boolean): HTMLElement | string[] {
-        let imageArray: string[] = [];
-        let div: HTMLElement = createHtmlElement('div', {}) as HTMLDivElement;
-        let pageSize: Size = this.getPrintCanvasStyle(img, options);
-        let pageWidth: number;
-        let pageHeight: number;
-        let margin: MarginModel = options.margin;
-        let mLeft: number = margin.left;
-        let mTop: number = margin.top;
-        let mRight: number = margin.right;
-        let mBottom: number = margin.bottom;
+        const imageArray: string[] = [];
+        const div: HTMLElement = createHtmlElement('div', {}) as HTMLDivElement;
+        const pageSize: Size = this.getPrintCanvasStyle(img, options);
+        //let pageWidth: number;
+        //let pageHeight: number;
+        const margin: MarginModel = options.margin;
+        const mLeft: number = margin.left;
+        const mTop: number = margin.top;
+        const mRight: number = margin.right;
+        const mBottom: number = margin.bottom;
         let x: number = 0;
-        let y: number = 0;
-        pageWidth = pageSize.width + x;
-        pageHeight = pageSize.height + y;
+        const y: number = 0;
+        const pageWidth: number = pageSize.width + x;
+        const pageHeight: number = pageSize.height + y;
         let drawnX: number = 0;
         let drawnY: number = 0;
         if (options && options.multiplePage) {
             div.style.height = 'auto';
             div.style.width = 'auto';
-            let imgHeight: number = img.height;
-            let imgWidth: number = img.width;
+            const imgHeight: number = img.height;
+            const imgWidth: number = img.width;
             //if (img) {
             let i: number = 0; let j: number = 0; let url: string; let clipWidth: number = 0; let clipHeight: number = 0;
             let ctx: CanvasRenderingContext2D; let canvas: HTMLCanvasElement;
@@ -646,18 +653,20 @@ export class PrintAndExport {
             } while (drawnY < imgHeight);
             //}
         } else {
-            let x: number = 0; let y: number = 0;
-            let pageSize: Size = this.getPrintCanvasStyle(img, options);
-            let pageWidth: number; let pageHeight: number;
-            pageWidth = pageSize.width;
-            pageHeight = pageSize.height;
-            let ctx: CanvasRenderingContext2D; let canvas: HTMLCanvasElement; let url: string;
-            canvas = CanvasRenderer.createCanvas(this.diagram.element.id + '_diagram', pageWidth, pageHeight);
-            ctx = canvas.getContext('2d');
+            const x: number = 0; const y: number = 0;
+            const pageSize: Size = this.getPrintCanvasStyle(img, options);
+            ///let pageWidth: number; let pageHeight: number;
+            const pageWidth: number = pageSize.width;
+            const pageHeight: number = pageSize.height;
+            //let ctx: CanvasRenderingContext2D;
+            //let canvas: HTMLCanvasElement;
+            //let url: string;
+            const canvas: HTMLCanvasElement = CanvasRenderer.createCanvas(this.diagram.element.id + '_diagram', pageWidth, pageHeight);
+            const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
             ctx.drawImage(
                 img, x + mLeft, y + mTop, img.width - (mRight + mLeft), img.height - (mTop + mBottom),
                 0 + mLeft, 0 + mTop, pageWidth - (mRight + mLeft), pageHeight - (mTop + mBottom));
-            url = canvas.toDataURL();
+            const url: string = canvas.toDataURL();
             ctx.restore();
             if (isExport) {
                 imageArray.push(url);
@@ -674,8 +683,8 @@ export class PrintAndExport {
 
     private printImage(div: HTMLElement, url: string, i: string | number, pageWidth?: string, pageHeight?: string): void {
         let attr: Object = { 'class': 'e-diagram-print-page', 'style': 'width:' + pageWidth + 'height:' + pageHeight };
-        let img: HTMLImageElement = createHtmlElement('img', attr) as HTMLImageElement;
-        let innerDiv: HTMLDivElement = createHtmlElement('div', attr) as HTMLDivElement;
+        const img: HTMLImageElement = createHtmlElement('img', attr) as HTMLImageElement;
+        const innerDiv: HTMLDivElement = createHtmlElement('div', attr) as HTMLDivElement;
         attr = { 'id': this.diagram.element.id + '_multiplePrint_img' + i, 'style': 'float:left', 'src': url };
         setAttributeHtml(img, attr);
         innerDiv.appendChild(img);
@@ -684,27 +693,28 @@ export class PrintAndExport {
 
     /**
      * To print the image
+     *
      * @private
      */
 
     public print(options: IExportOptions): void {
         options.mode = 'Data';
-        let url: string | SVGElement = this.exportDiagram(options);
+        const url: string | SVGElement = this.exportDiagram(options);
         this.printImages(url, options);
 
     }
 
     private printImages(url: string | SVGElement, options: IExportOptions): void {
-        let attr: Object = {
+        const attr: Object = {
             'id': this.diagram.element.id + '_printImage',
-            'src': url,
+            'src': url
         };
         options.margin = { top: 0, bottom: 0, right: 0, left: 0 };
-        let img: HTMLImageElement = createHtmlElement('img', attr) as HTMLImageElement;
+        const img: HTMLImageElement = createHtmlElement('img', attr) as HTMLImageElement;
         img.onload = () => {
-            let div: HTMLElement | string[] = this.getMultipleImage(img, options);
+            const div: HTMLElement | string[] = this.getMultipleImage(img, options);
             // specify window parameters
-            let printWind: Window = window.open('');
+            const printWind: Window = window.open('');
             if (printWind != null) {
                 if ((div instanceof HTMLElement)) {
                     printWind.document.write(
@@ -721,17 +731,17 @@ export class PrintAndExport {
 
     /** @private */
     public getDiagramContent(styleSheets?: StyleSheetList): string {
-        let container: HTMLElement = document.getElementById(this.diagram.element.id + 'content');
-        let scrollerX: number = container.scrollLeft;
-        let scrollerY: number = container.scrollTop;
-        let oldZoom: number = this.diagram.scrollSettings.currentZoom;
-        let oldHorizontalOffset: number = this.diagram.scroller.horizontalOffset;
-        let oldVerticalOffset: number = this.diagram.scroller.verticalOffset;
-        let oldWidth: number = Number(String(this.diagram.width).split('%')[0]) ?
+        const container: HTMLElement = document.getElementById(this.diagram.element.id + 'content');
+        const scrollerX: number = container.scrollLeft;
+        const scrollerY: number = container.scrollTop;
+        const oldZoom: number = this.diagram.scrollSettings.currentZoom;
+        const oldHorizontalOffset: number = this.diagram.scroller.horizontalOffset;
+        const oldVerticalOffset: number = this.diagram.scroller.verticalOffset;
+        const oldWidth: number = Number(String(this.diagram.width).split('%')[0]) ?
             container.clientWidth : Number(String(this.diagram.width).split('px')[0]);
-        let oldHeight: number = Number(String(this.diagram.height).split('%')[0]) ?
+        const oldHeight: number = Number(String(this.diagram.height).split('%')[0]) ?
             container.clientHeight : Number(String(this.diagram.height).split('px')[0]);
-        let bounds: Rect = this.getDiagramBounds('', {});
+        const bounds: Rect = this.getDiagramBounds('', {});
         this.diagram.scroller.zoom((1 / oldZoom));
         let scrollX: number = 0;
         let scrollY: number = 0;
@@ -746,7 +756,7 @@ export class PrintAndExport {
         this.diagram.scroller.verticalOffset = -scrollY;
         this.diagram.scroller.setSize();
         this.diagram.setSize(bounds.width, bounds.height);
-        let snapConstraints: SnapConstraints = this.diagram.snapSettings.constraints;
+        const snapConstraints: SnapConstraints = this.diagram.snapSettings.constraints;
         this.diagram.snapSettings.constraints = (this.diagram.snapSettings.constraints & ~SnapConstraints.ShowLines);
         this.diagram.dataBind();
         this.diagram.clearSelection();
@@ -758,7 +768,7 @@ export class PrintAndExport {
             }
         }
         let htmlData: string = document.getElementById(this.diagram.element.id + 'content').innerHTML;
-        let marginStyle: string = 'margin-left:' + 0 + 'px;margin-top:' + 0 + 'px;margin-right:'
+        const marginStyle: string = 'margin-left:' + 0 + 'px;margin-top:' + 0 + 'px;margin-right:'
             + 0 + 'px;margin-bottom:' + 0 + 'px;';
         htmlData = styleSheetRef + '<body style="margin: 0px; padding: 0px"><div style=\'' +
             marginStyle + '\'>' + htmlData + '</div></body>';
@@ -780,13 +790,14 @@ export class PrintAndExport {
         }
         this.diagram.renderSelector(false);
         /* tslint:disable */
+        // eslint-disable-next-line quotes
         return checkBrowserInfo() ? htmlData.replace("url(" + location.protocol + '//' + location.host + location.pathname + "#diagram_pattern ", "url(#diagram_pattern)") : htmlData;
         /* tslint:enable */
     }
 
     /** @private */
     public exportImages(image: string, options: IExportOptions): void {
-        let region: DiagramRegions = options && options.region ? options.region : 'Content';
+        const region: DiagramRegions = options && options.region ? options.region : 'Content';
         let margin: MarginModel = options.margin || {};
         margin = {
             top: !isNaN(margin.top) ? margin.top : 0,
@@ -794,24 +805,24 @@ export class PrintAndExport {
             left: !isNaN(margin.left) ? margin.left : 0,
             right: !isNaN(margin.right) ? margin.right : 0
         };
-        let bounds: Rect = this.getDiagramBounds(region, {});
+        const bounds: Rect = this.getDiagramBounds(region, {});
         if (options.bounds) {
             bounds.x = (!isNaN(options.bounds.x) ? options.bounds.x : bounds.x);
             bounds.y = (!isNaN(options.bounds.y) ? options.bounds.y : bounds.y);
             bounds.width = (options.bounds.width || bounds.width);
             bounds.height = (options.bounds.height || bounds.height);
         }
-        let img: HTMLImageElement = document.createElement('img');
-        let attr: {} = {
+        const img: HTMLImageElement = document.createElement('img');
+        const attr: {} = {
             'src': image
         };
         setAttributeHtml(img, attr);
-        let context: PrintAndExport = this;
+        const context: PrintAndExport = this;
         img.onload = () => {
-            let canvas: HTMLCanvasElement = CanvasRenderer.createCanvas(
+            const canvas: HTMLCanvasElement = CanvasRenderer.createCanvas(
                 context.diagram.element.id + 'innerImage', bounds.width + (margin.left + margin.right),
                 bounds.height + (margin.top + margin.bottom));
-            let ctx: CanvasRenderingContext2D = canvas.getContext('2d');
+            const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
             ctx.fillStyle = context.diagram.pageSettings.background.color;
             ctx.fillRect(0, 0, bounds.width + (margin.left + margin.right), bounds.height + (margin.top + margin.bottom));
             ctx.drawImage(
@@ -823,15 +834,15 @@ export class PrintAndExport {
                 return;
             }
             ctx.restore();
-            let fileName: string = options.fileName || 'diagram';
+            const fileName: string = options.fileName || 'diagram';
             this.canvasMultiplePage(options, canvas, margin, image, fileName);
         };
     }
 
     /**
-     * To destroy the Print and Export module
-     * @return {void}
-     * @private
+     *To destroy the ruler
+     *
+     * @returns {void} To destroy the ruler
      */
 
     public destroy(): void {

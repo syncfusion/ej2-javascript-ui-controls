@@ -7,12 +7,14 @@ export interface DialogFieldsModel {
 
     /**
      * Defines the field text
+     *
      * @default null
      */
     text?: string;
 
     /**
      * Defines the field key
+     *
      * @default null
      */
     key?: string;
@@ -23,14 +25,16 @@ export interface DialogFieldsModel {
      * * DropDown
      * * Numeric
      * * TextArea
+     *
      * @default null
      */
     type?: DialogFieldType;
 
     /**
      * Defines the validationRules for fields
+     *
      * @default {}
      */
-    validationRules?: Object;
+    validationRules?: Record<string, any>;
 
 }

@@ -1,3 +1,7 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
 import { firstToLowerCase } from '../../common/utils/helper';
 import { TechnicalIndicator } from './technical-indicator';
@@ -10,16 +14,17 @@ import { Chart } from '../chart';
 export class EmaIndicator extends TechnicalAnalysis {
     /**
      * Defines the predictions based on EMA approach
+     *
      * @private
      */
     public initDataSource(indicator: TechnicalIndicator, chart: Chart): void {
-        let field: string = firstToLowerCase(indicator.field);
-        let xField: string = 'x';
-        let emaPoints: Points[] = [];
-        let signalSeries: Series = indicator.targetSeries[0];
+        const field: string = firstToLowerCase(indicator.field);
+        const xField: string = 'x';
+        const emaPoints: Points[] = [];
+        const signalSeries: Series = indicator.targetSeries[0];
 
         //prepare data
-        let validData: Points[] = indicator.points;
+        const validData: Points[] = indicator.points;
 
         if (validData && validData.length && validData.length >= indicator.period) {
 
@@ -28,7 +33,7 @@ export class EmaIndicator extends TechnicalAnalysis {
             let average: number = 0;
 
             //smoothing factor
-            let k: number = (2 / (indicator.period + 1));
+            const k: number = (2 / (indicator.period + 1));
 
             for (let i: number = 0; i < indicator.period; i++) {
                 sum += validData[i][field];
@@ -43,9 +48,9 @@ export class EmaIndicator extends TechnicalAnalysis {
             let index: number = indicator.period;
             while (index < validData.length) {
                 //previous average
-                let prevAverage: number = emaPoints[index - indicator.period][signalSeries.yName];
+                const prevAverage: number = emaPoints[index - indicator.period][signalSeries.yName];
 
-                let yValue: number = (validData[index][field] - prevAverage) * k + prevAverage;
+                const yValue: number = (validData[index][field] - prevAverage) * k + prevAverage;
 
                 emaPoints.push(this.getDataPoint(
                     validData[index][xField], yValue,
@@ -59,11 +64,12 @@ export class EmaIndicator extends TechnicalAnalysis {
 
     /**
      * To destroy the EMA Indicator
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroys the EMA Indicator
          */

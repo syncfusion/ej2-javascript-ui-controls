@@ -1,4 +1,3 @@
-// tslint:disable-next-line:missing-jsdoc
 import { Component, Observer, L10n, KeyboardEventArgs, EmitType } from '@syncfusion/ej2-base';
 import { ItemModel, OverflowMode } from '@syncfusion/ej2-navigations';
 import { ItemModel as DropDownItemModel, DropDownButton } from '@syncfusion/ej2-splitbuttons';
@@ -35,181 +34,186 @@ import { Resize } from '../actions/resize';
 import { FileManager } from '../actions/file-manager';
 /**
  * Specifies Rich Text Editor interfaces.
+ * 
  * @hidden
  * @deprecated
  */
 export interface IRichTextEditor extends Component<HTMLElement> {
-    toolbarSettings?: ToolbarSettingsModel;
+    toolbarSettings?: ToolbarSettingsModel
 
-    quickToolbarSettings?: QuickToolbarSettingsModel;
+    quickToolbarSettings?: QuickToolbarSettingsModel
 
-    iframeSettings?: IFrameSettingsModel;
+    iframeSettings?: IFrameSettingsModel
 
     /**
      * Configures the image settings of the RTE.
+     * 
      * @default
      * {
-     *  allowedTypes: ['jpeg', 'jpg', 'png'],
+     * allowedTypes: ['jpeg', 'jpg', 'png'],
      * display: 'inline', width: '200px', saveFormat: 'Base64',
      * height: '200px', saveUrl:null, path: null, resize: false
      * }
      */
-    insertImageSettings: ImageSettingsModel;
-    fileManagerSettings: FileManagerSettingsModel;
+    insertImageSettings: ImageSettingsModel
+    fileManagerSettings: FileManagerSettingsModel
 
-    tableSettings: TableSettingsModel;
+    tableSettings: TableSettingsModel
 
-    pasteCleanupSettings: PasteCleanupSettingsModel;
+    pasteCleanupSettings: PasteCleanupSettingsModel
 
-    floatingToolbarOffset?: number;
+    floatingToolbarOffset?: number
 
-    showCharCount?: boolean;
-    enableTabKey?: boolean;
+    showCharCount?: boolean
+    enableTabKey?: boolean
 
-    maxLength?: number;
+    maxLength?: number
 
-    inlineMode?: InlineModeModel;
+    inlineMode?: InlineModeModel
 
-    width?: string | number;
+    width?: string | number
 
-    height?: string | number;
+    height?: string | number
 
-    fontFamily?: IFontProperties;
+    fontFamily?: IFontProperties
 
-    fontSize?: IFontProperties;
+    fontSize?: IFontProperties
 
-    fontColor?: IColorProperties;
+    fontColor?: IColorProperties
 
-    backgroundColor?: IColorProperties;
+    backgroundColor?: IColorProperties
 
-    format?: IFormatProperties;
+    format?: IFormatProperties
 
-    value?: string;
-    saveInterval?: number;
+    value?: string
+    saveInterval?: number
 
-    isBlur?: boolean;
-    isRTE?: boolean;
-    contentModule?: IRenderer;
-    enabled?: boolean;
-    readonly?: boolean;
-    placeholder?: string;
-    valueContainer?: HTMLTextAreaElement;
-    editorMode?: EditorMode;
-    enableHtmlEncode?: boolean;
-    formatter?: IFormatter;
-    inputElement?: HTMLElement;
-    toolbarModule?: Toolbar;
-    tableModule?: Table;
-    fileManagerModule?: FileManager;
-    sourceCodeModule?: ViewSource;
-    getToolbarElement?(): Element;
-    fullScreenModule?: FullScreen;
-    resizeModule?: Resize;
-    refreshUI?(): void;
-    pasteCleanupModule?: PasteCleanup;
-    undoRedoModule?: UndoRedoManager;
-    quickToolbarModule?: QuickToolbar;
-    undoRedoSteps?: number;
-    markdownEditorModule: MarkdownEditor;
-    htmlEditorModule: HtmlEditor;
-    countModule?: Count;
-    serviceLocator?: ServiceLocator;
-    setEnable?(): void;
-    setReadOnly?(isInit?: boolean): void;
-    setPlaceHolder?(): void;
-    updateValue?(): void;
-    print(): void;
-    getContent?(): Element;
-    setRTEContent?(value: Element): void;
-    ensureModuleInjected(module: Function): Boolean;
-    getToolbar(): HTMLElement;
-    getTBarItemsIndex?(items: string[]): number[];
-    getCollection?(items: string | string[]): string[];
-    getRange(): Range;
-    getID(): string;
-    updateValueData?(): void;
-    getBaseToolbarObject(): BaseToolbar;
-    setContentHeight(target?: string, isExpand?: boolean): void;
-    keyConfig?: { [key: string]: string };
-    undoRedoTimer?: number;
-    sourceCode?(): void;
-    enableToolbarItem?(items: string | string[]): void;
-    disableToolbarItem?(items: string | string[]): void;
-    wireScrollElementsEvents?(): void;
-    unWireScrollElementsEvents?(): void;
-    keyDown?(e?: KeyboardEvent): void;
-    keyboardModule?: KeyboardEvents;
-    onCopy?(): void;
-    onCut?(): void;
-    onPaste?(): void;
-    clipboardAction?: Function;
-    localeObj?: L10n;
-    invokeChangeEvent?(): void;
-    preventDefaultResize?(e?: FocusEvent | MouseEvent): void;
-    autoResize?(): void;
-    executeCommand?(commandName: CommandName, value?: string | HTMLElement): void;
-    serializeValue?(value: string): string;
-    sanitizeHtml?(value: string): string;
-    enableAutoUrl?: boolean;
-    enableXhtml?: boolean;
-    enableHtmlSanitizer?: boolean;
-    getInsertImgMaxWidth?(): string | number;
+    isBlur?: boolean
+    isRTE?: boolean
+    contentModule?: IRenderer
+    enabled?: boolean
+    readonly?: boolean
+    placeholder?: string
+    valueContainer?: HTMLTextAreaElement
+    editorMode?: EditorMode
+    enableHtmlEncode?: boolean
+    formatter?: IFormatter
+    inputElement?: HTMLElement
+    toolbarModule?: Toolbar
+    tableModule?: Table
+    fileManagerModule?: FileManager
+    sourceCodeModule?: ViewSource
+    getToolbarElement?(): Element
+    fullScreenModule?: FullScreen
+    resizeModule?: Resize
+    refreshUI?(): void
+    pasteCleanupModule?: PasteCleanup
+    undoRedoModule?: UndoRedoManager
+    quickToolbarModule?: QuickToolbar
+    undoRedoSteps?: number
+    markdownEditorModule: MarkdownEditor
+    htmlEditorModule: HtmlEditor
+    countModule?: Count
+    serviceLocator?: ServiceLocator
+    setEnable?(): void
+    setReadOnly?(isInit?: boolean): void
+    setPlaceHolder?(): void
+    updateValue?(): void
+    print(): void
+    getContent?(): Element
+    setRTEContent?(value: Element): void
+    // eslint-disable-next-line
+    ensureModuleInjected(module: object): boolean
+    getToolbar(): HTMLElement
+    getTBarItemsIndex?(items: string[]): number[]
+    getCollection?(items: string | string[]): string[]
+    getRange(): Range
+    getID(): string
+    updateValueData?(): void
+    getBaseToolbarObject(): BaseToolbar
+    setContentHeight(target?: string, isExpand?: boolean): void
+    keyConfig?: { [key: string]: string }
+    undoRedoTimer?: number
+    sourceCode?(): void
+    enableToolbarItem?(items: string | string[]): void
+    disableToolbarItem?(items: string | string[]): void
+    wireScrollElementsEvents?(): void
+    unWireScrollElementsEvents?(): void
+    keyDown?(e?: KeyboardEvent): void
+    keyboardModule?: KeyboardEvents
+    onCopy?(): void
+    onCut?(): void
+    onPaste?(): void
+    // eslint-disable-next-line
+    clipboardAction?: Function
+    localeObj?: L10n
+    invokeChangeEvent?(): void
+    preventDefaultResize?(e?: FocusEvent | MouseEvent): void
+    autoResize?(): void
+    executeCommand?(commandName: CommandName, value?: string | HTMLElement): void
+    serializeValue?(value: string): string
+    sanitizeHtml?(value: string): string
+    enableAutoUrl?: boolean
+    enableXhtml?: boolean
+    enableHtmlSanitizer?: boolean
+    getInsertImgMaxWidth?(): string | number
 }
 /**
  * @deprecated
  */
 export interface IRenderer {
-    linkQTBar?: BaseQuickToolbar;
-    imageQTBar?: BaseQuickToolbar;
-    tableQTBar?: BaseQuickToolbar;
-    textQTBar?: BaseQuickToolbar;
-    inlineQTBar?: BaseQuickToolbar;
-    renderPanel?(): void;
-    setPanel?(panel: Element): void;
-    getPanel?(): Element;
-    getEditPanel?(): Element;
-    getText?(): string;
-    getDocument?(): Document;
-    addEventListener?(): void;
-    removeEventListener?(): void;
-    renderToolbar?(args: IToolbarOptions): void;
-    renderPopup?(args: BaseQuickToolbar): void;
-    renderDropDownButton?(args: DropDownItemModel): DropDownButton;
-    renderColorPicker?(args: IColorPickerModel, item?: string): ColorPicker;
-    renderColorPickerDropDown?(args?: IColorPickerModel, item?: string, colorPicker?: ColorPicker): DropDownButton;
+    linkQTBar?: BaseQuickToolbar
+    imageQTBar?: BaseQuickToolbar
+    tableQTBar?: BaseQuickToolbar
+    textQTBar?: BaseQuickToolbar
+    inlineQTBar?: BaseQuickToolbar
+    renderPanel?(): void
+    setPanel?(panel: Element): void
+    getPanel?(): Element
+    getEditPanel?(): Element
+    getText?(): string
+    getDocument?(): Document
+    addEventListener?(): void
+    removeEventListener?(): void
+    renderToolbar?(args: IToolbarOptions): void
+    renderPopup?(args: BaseQuickToolbar): void
+    renderDropDownButton?(args: DropDownItemModel): DropDownButton
+    renderColorPicker?(args: IColorPickerModel, item?: string): ColorPicker
+    renderColorPickerDropDown?(args?: IColorPickerModel, item?: string, colorPicker?: ColorPicker): DropDownButton
 }
 
 /**
  * Provides information about a Notify.
  */
 export interface NotifyArgs {
-    module?: string;
-    args?: KeyboardEvent | MouseEvent | ClickEventArgs | ClipboardEvent | TouchEvent;
-    cancel?: boolean;
-    requestType?: string;
-    enable?: boolean;
-    properties?: Object;
-    selection?: NodeSelection;
-    selfLink?: Link;
-    link?: HTMLInputElement;
-    selectNode?: Node[];
-    selectParent?: Node[];
-    url?: string;
-    text?: string;
-    title?: string;
-    target?: string;
-    member?: string;
+    module?: string
+    args?: KeyboardEvent | MouseEvent | ClickEventArgs | ClipboardEvent | TouchEvent
+    cancel?: boolean
+    requestType?: string
+    enable?: boolean
+    // eslint-disable-next-line
+    properties?: object
+    selection?: NodeSelection
+    selfLink?: Link
+    link?: HTMLInputElement
+    selectNode?: Node[]
+    selectParent?: Node[]
+    url?: string
+    text?: string
+    title?: string
+    target?: string
+    member?: string
     /** Defines the notifier name. */
-    name?: string;
+    name?: string
     /** Defines the selection range. */
-    range?: Range;
+    range?: Range
     /** Defines the action. */
-    action?: string;
-    callBack?(args?: string | IImageCommandsArgs): void;
-    file?: Blob;
-    insertElement?: Element;
-    touchData?: ITouchData;
-    allowedStylePropertiesArray?: string[];
+    action?: string
+    callBack?(args?: string | IImageCommandsArgs): void
+    file?: Blob
+    insertElement?: Element
+    touchData?: ITouchData
+    allowedStylePropertiesArray?: string[]
 }
 
 /**
@@ -217,65 +221,65 @@ export interface NotifyArgs {
  */
 export interface IItemCollectionArgs {
     /** Defines the instance of the current selection */
-    selection?: NodeSelection;
+    selection?: NodeSelection
     /** Defines the HTML elements of currently selected content */
-    selectNode?: Node[];
+    selectNode?: Node[]
     /** Defines the parent HTML elements of current selection */
-    selectParent?: Node[];
+    selectParent?: Node[]
     /** Defines the URL action details for link element */
-    url?: string;
+    url?: string
     /** Defines the title of the link action details */
-    title?: string;
+    title?: string
     /** Defines the target as string for link element */
-    target?: string;
+    target?: string
     /** Defines the element to be inserted */
-    insertElement?: Element;
+    insertElement?: Element
 }
 
-/** 
+/**
  * Provides information about a TouchData.
  */
 export interface ITouchData {
-    prevClientX?: number;
-    prevClientY?: number;
-    clientX?: number;
-    clientY?: number;
+    prevClientX?: number
+    prevClientY?: number
+    clientX?: number
+    clientY?: number
 }
 
-/** 
+/**
  * @hidden
  * @deprecated
  */
 export interface IColorPickerModel extends ColorPickerModel {
-    element?: HTMLElement;
-    value?: string;
-    command?: string;
-    subCommand?: string;
-    target?: string;
-    iconCss?: string;
+    element?: HTMLElement
+    value?: string
+    command?: string
+    subCommand?: string
+    target?: string
+    iconCss?: string
 }
 
-/** 
+/**
  * @hidden
  * @deprecated
  */
 export interface IColorPickerEventArgs extends ColorPickerEventArgs {
-    item?: IColorPickerModel;
-    originalEvent: string;
-    cancel?: boolean;
+    item?: IColorPickerModel
+    originalEvent: string
+    cancel?: boolean
 }
 
-/** 
+/**
  * @hidden
  * @deprecated
  */
 export interface IDropDownItem extends ItemModel {
-    command?: string;
-    subCommand?: string;
-    controlParent?: DropDownButton;
+    command?: string
+    subCommand?: string
+    controlParent?: DropDownButton
 }
 
-/** 
+/**
  * @hidden
  * @deprecated
  */
@@ -287,32 +291,33 @@ export interface IDropDownClickArgs extends ClickEventArgs {
  * @deprecated
  */
 export interface IColorPickerRenderArgs {
-    items?: string[];
-    containerType?: string;
-    container?: HTMLElement;
+    items?: string[]
+    containerType?: string
+    container?: HTMLElement
 }
 
 /**
  * @deprecated
  */
 export interface IImageNotifyArgs {
-    module?: string;
-    args?: KeyboardEvent | MouseEvent | ClickEventArgs | IToolbarItemModel | ClipboardEvent | TouchEvent;
-    cancel?: boolean;
-    requestType?: string;
-    enable?: boolean;
-    properties?: Object;
-    selection?: NodeSelection;
-    selfImage?: Image;
-    link?: HTMLInputElement | HTMLElement;
-    selectNode?: Node[];
-    selectParent?: Node[];
-    target?: string;
-    alt?: HTMLInputElement | HTMLElement;
-    text?: string;
-    member?: string;
-    name?: string;
-    cssClass?: string;
+    module?: string
+    args?: KeyboardEvent | MouseEvent | ClickEventArgs | IToolbarItemModel | ClipboardEvent | TouchEvent
+    cancel?: boolean
+    requestType?: string
+    enable?: boolean
+    // eslint-disable-next-line
+    properties?: object
+    selection?: NodeSelection
+    selfImage?: Image
+    link?: HTMLInputElement | HTMLElement
+    selectNode?: Node[]
+    selectParent?: Node[]
+    target?: string
+    alt?: HTMLInputElement | HTMLElement
+    text?: string
+    member?: string
+    name?: string
+    cssClass?: string
 }
 
 /**
@@ -320,27 +325,27 @@ export interface IImageNotifyArgs {
  */
 export interface IImageCommandsArgs {
     /** Defines the src attribute of the image */
-    url?: string;
+    url?: string
     /** Defines the instance of the current selection */
-    selection?: NodeSelection;
+    selection?: NodeSelection
     /** Defines the minWidth, maxWidth and width of the image */
-    width?: { minWidth?: string | number, maxWidth?: string | number; width?: string | number };
+    width?: { minWidth?: string | number; maxWidth?: string | number; width?: string | number }
     /** Defines the minHeight, maxHeight and height of the image */
-    height?: { minHeight?: string | number, maxHeight?: string | number; height?: string | number };
+    height?: { minHeight?: string | number; maxHeight?: string | number; height?: string | number }
     /** Defines the alternate text attribute of the image */
-    altText?: string;
+    altText?: string
     /** Defines the class name to be added to the image */
-    cssClass?: string;
+    cssClass?: string
     /** Defines the image element to be edited */
-    selectParent?: Node[];
+    selectParent?: Node[]
 }
 
 /**
  * @deprecated
  */
 export interface ImageDragEvent extends DragEvent {
-    rangeParent?: Element;
-    rangeOffset?: number;
+    rangeParent?: Element
+    rangeOffset?: number
 }
 
 /**
@@ -348,11 +353,11 @@ export interface ImageDragEvent extends DragEvent {
  */
 export interface ImageDropEventArgs extends DragEvent {
     /** Defines the prevent action. */
-    cancel: boolean;
+    cancel: boolean
     /** Defines the parent of drop range. */
-    rangeParent?: Element;
+    rangeParent?: Element
     /** Defines the offset value of drop range. */
-    rangeOffset?: number;
+    rangeOffset?: number
 }
 
 /**
@@ -360,17 +365,17 @@ export interface ImageDropEventArgs extends DragEvent {
  */
 export interface ILinkCommandsArgs {
     /** Defines the url attribute of the link */
-    url?: string;
+    url?: string
     /** Defines the instance of the current selection */
-    selection?: NodeSelection;
+    selection?: NodeSelection
     /** Defines the title of the link to be inserted */
-    title?: string;
+    title?: string
     /** Defines the text of the link to be inserted */
-    text?: string;
+    text?: string
     /** Defines the target attribute of the link */
-    target?: string;
+    target?: string
     /** Defines the link element to be edited */
-    selectParent?: Node[];
+    selectParent?: Node[]
 }
 
 /**
@@ -378,152 +383,154 @@ export interface ILinkCommandsArgs {
  */
 export interface ITableCommandsArgs {
     /** Defines the number of rows to be inserted in the table */
-    row?: number;
+    row?: number
     /** Defines the number of columns to be inserted in the table */
-    columns?: number;
+    columns?: number
     /** Defines the minWidth, maxWidth and width of the table */
-    width?: { minWidth?: string | number, maxWidth?: string | number; width?: string | number };
+    width?: { minWidth?: string | number; maxWidth?: string | number; width?: string | number }
     /** Defines the instance of the current selection */
-    selection?: NodeSelection;
+    selection?: NodeSelection
 }
 
 /**
  * @deprecated
  */
 export interface ITableArgs {
-    row?: number;
-    columns?: number;
-    width?: { minWidth?: string | number, maxWidth?: string | number; width?: string | number };
-    selection?: NodeSelection;
-    selectNode?: Node[];
-    selectParent?: Node[];
-    subCommand?: string;
+    row?: number
+    columns?: number
+    width?: { minWidth?: string | number; maxWidth?: string | number; width?: string | number }
+    selection?: NodeSelection
+    selectNode?: Node[]
+    selectParent?: Node[]
+    subCommand?: string
 }
 
 /**
  * @deprecated
  */
 export interface ITableNotifyArgs {
-    module?: string;
-    args?: ClickEventArgs | MouseEvent | KeyboardEventArgs;
-    selection?: NodeSelection;
-    selectNode?: Node[];
-    selectParent?: Node[];
-    cancel?: boolean;
-    requestType?: string;
-    enable?: boolean;
-    properties?: Object;
-    self?: Table;
+    module?: string
+    args?: ClickEventArgs | MouseEvent | KeyboardEventArgs
+    selection?: NodeSelection
+    selectNode?: Node[]
+    selectParent?: Node[]
+    cancel?: boolean
+    requestType?: string
+    enable?: boolean
+    // eslint-disable-next-line
+    properties?: object
+    self?: Table
 }
 
 /**
  * Provides information about a EditorModel.
  */
 export interface IEditorModel {
-    execCommand?: Function;
-    observer?: Observer;
-    markdownSelection?: MarkdownSelection;
-    undoRedoManager?: UndoRedoManager | UndoRedoCommands;
-    nodeSelection?: NodeSelection;
-    mdSelectionFormats?: MDSelectionFormats;
+    // eslint-disable-next-line
+    execCommand?: Function
+    observer?: Observer
+    markdownSelection?: MarkdownSelection
+    undoRedoManager?: UndoRedoManager | UndoRedoCommands
+    nodeSelection?: NodeSelection
+    mdSelectionFormats?: MDSelectionFormats
 }
 
 /**
  * Provides information about a ToolbarItems.
  */
 export interface IToolbarItems {
-    template?: string;
-    tooltipText?: string;
-    undo?: boolean;
-    click?: EmitType<ClickEventArgs>;
+    template?: string
+    tooltipText?: string
+    undo?: boolean
+    click?: EmitType<ClickEventArgs>
 }
 
-/** 
+/**
  * @hidden
  * @deprecated
  */
 export interface IToolbarItemModel extends ItemModel {
-    command?: string;
-    subCommand?: string;
+    command?: string
+    subCommand?: string
 }
 
 /**
  * @deprecated
  */
 export interface IToolbarOptions {
-    enableRtl: boolean;
-    target: HTMLElement;
-    items?: ItemModel[];
-    rteToolbarObj: BaseToolbar;
-    enablePersistence: boolean;
-    overflowMode?: OverflowMode;
+    enableRtl: boolean
+    target: HTMLElement
+    items?: ItemModel[]
+    rteToolbarObj: BaseToolbar
+    enablePersistence: boolean
+    overflowMode?: OverflowMode
 }
 
 /**
  * @deprecated
  */
 export interface IToolbarSettings {
-    enable?: boolean;
-    items?: (string | IToolbarItems)[];
-    target?: HTMLElement;
-    type?: ToolbarType;
+    enable?: boolean
+    items?: (string | IToolbarItems)[]
+    target?: HTMLElement
+    type?: ToolbarType
 }
 
 /**
  * @deprecated
  */
 export interface IToolbarRenderOptions {
-    target: HTMLElement;
-    items?: (string | IToolbarItems)[];
-    mode?: OverflowMode;
-    container?: string;
+    target: HTMLElement
+    items?: (string | IToolbarItems)[]
+    mode?: OverflowMode
+    container?: string
 }
 
 /**
  * @deprecated
  */
 export interface IDropDownModel {
-    content?: string;
-    items: IDropDownItemModel[];
-    iconCss?: string;
-    itemName: string;
-    cssClass: string;
-    element: HTMLElement;
+    content?: string
+    items: IDropDownItemModel[]
+    iconCss?: string
+    itemName: string
+    cssClass: string
+    element: HTMLElement
 }
 
 /**
  * @deprecated
  */
 export interface IToolsItems {
-    id: string;
-    icon?: string;
-    tooltip?: string;
-    command?: string;
-    subCommand?: string;
-    value?: string;
+    id: string
+    icon?: string
+    tooltip?: string
+    command?: string
+    subCommand?: string
+    value?: string
 }
 
 /**
  * Provides information about a ToolbarItemConfig.
  */
 export interface IToolsItemConfigs {
-    icon?: string;
-    tooltip?: string;
-    command?: string;
-    subCommand?: string;
-    value?: string;
+    icon?: string
+    tooltip?: string
+    command?: string
+    subCommand?: string
+    value?: string
 }
 
-/** 
+/**
  * @hidden
  * @deprecated
  */
 export interface IDropDownItemModel extends DropDownItemModel {
-    cssClass?: string;
-    command?: string;
-    subCommand?: string;
-    value?: string;
-    text?: string;
+    cssClass?: string
+    command?: string
+    subCommand?: string
+    value?: string
+    text?: string
 }
 
 /**
@@ -531,23 +538,25 @@ export interface IDropDownItemModel extends DropDownItemModel {
  */
 export interface ActionCompleteEventArgs {
     /** Defines the current action. */
-    requestType?: string;
+    requestType?: string
     /** Defines the event name. */
-    name?: string;
+    name?: string
     /** Defines the editor mode. */
-    editorMode?: string;
+    editorMode?: string
     /**
-     * Defines the selected elements. 
+     * Defines the selected elements.
+     * 
      * @deprecated
      */
-    elements?: Node[];
+    elements?: Node[]
     /** Defines the event item. */
-    event?: MouseEvent | KeyboardEvent;
-    /** 
+    event?: MouseEvent | KeyboardEvent
+    /**
      * Defines the selected range.
+     * 
      * @deprecated
      */
-    range?: Range;
+    range?: Range
 }
 
 /**
@@ -555,23 +564,25 @@ export interface ActionCompleteEventArgs {
  */
 export interface ActionBeginEventArgs {
     /** Defines the current action. */
-    requestType?: string;
+    requestType?: string
     /** Cancel the print action */
-    cancel?: boolean;
+    cancel?: boolean
     /**
-     * Defines the current item. 
+     * Defines the current item.
+     * 
      * @deprecated
      */
-    item?: IToolbarItemModel | IDropDownItemModel;
+    item?: IToolbarItemModel | IDropDownItemModel
     /** Defines the current item. */
-    originalEvent?: MouseEvent | KeyboardEvent;
+    originalEvent?: MouseEvent | KeyboardEvent
     /** Defines the event name. */
-    name?: string;
+    name?: string
     /**
-     * Defines the url action details. 
+     * Defines the url action details.
+     * 
      * @deprecated
      */
-    itemCollection?: IItemCollectionArgs;
+    itemCollection?: IItemCollectionArgs
 }
 
 /**
@@ -579,66 +590,66 @@ export interface ActionBeginEventArgs {
  */
 export interface PrintEventArgs extends ActionBeginEventArgs {
     /** Defines the RTE element. */
-    element?: Element;
+    element?: Element
 }
 
 /**
  * @deprecated
  */
 export interface IShowPopupArgs {
-    args?: MouseEvent | TouchEvent | KeyboardEvent;
-    type?: string;
-    isNotify: boolean;
-    elements?: Element | Element[];
+    args?: MouseEvent | TouchEvent | KeyboardEvent
+    type?: string
+    isNotify: boolean
+    elements?: Element | Element[]
 }
 
 /**
  * @deprecated
  */
 export interface IUpdateItemsModel {
-    targetItem: string;
-    updateItem: string;
-    baseToolbar: BaseToolbar;
+    targetItem: string
+    updateItem: string
+    baseToolbar: BaseToolbar
 }
 
 /**
  * @deprecated
  */
 export interface IDropDownRenderArgs {
-    items?: string[];
-    containerType?: string;
-    container?: HTMLElement;
+    items?: string[]
+    containerType?: string
+    container?: HTMLElement
 }
 
 /**
  * @deprecated
  */
 export interface IShowQuickTBarOptions {
-    x: number;
-    y: number;
-    target: HTMLElement;
-    editTop: number;
-    editHeight: number;
-    popup: HTMLElement;
-    parentElement: HTMLElement;
-    tBarElementHeight: number;
-    parentData: ClientRect;
-    windowY: number;
-    windowHeight: number;
-    windowWidth: number;
-    popWidth: number;
-    popHeight: number;
-    bodyRightSpace: number;
+    x: number
+    y: number
+    target: HTMLElement
+    editTop: number
+    editHeight: number
+    popup: HTMLElement
+    parentElement: HTMLElement
+    tBarElementHeight: number
+    parentData: ClientRect
+    windowY: number
+    windowHeight: number
+    windowWidth: number
+    popWidth: number
+    popHeight: number
+    bodyRightSpace: number
 }
 
 /**
  * @deprecated
  */
 export interface IQuickToolbarOptions {
-    popupType: string;
-    mode: OverflowMode;
-    renderType: RenderType;
-    toolbarItems: (string | IToolbarItems)[];
+    popupType: string
+    mode: OverflowMode
+    renderType: RenderType
+    toolbarItems: (string | IToolbarItems)[]
 }
 
 /**
@@ -647,13 +658,14 @@ export interface IQuickToolbarOptions {
 export interface BeforeQuickToolbarOpenArgs {
     /**
      * Defines the instance of the current popup element
+     * 
      * @deprecated
      */
-    popup?: Popup;
+    popup?: Popup
     /** Determine whether the quick toolbar is open */
-    cancel: boolean;
+    cancel: boolean
     /** Defines the target element of the quick toolbar */
-    targetElement: Element;
+    targetElement: Element
 }
 
 /**
@@ -661,9 +673,9 @@ export interface BeforeQuickToolbarOpenArgs {
  */
 export interface AfterImageDeleteEventArgs {
     /** Defined the image element deleted */
-    element: Node;
+    element: Node
     /** Defines the src attribute of the image element deleted */
-    src: String;
+    src: string
 }
 
 /**
@@ -672,26 +684,27 @@ export interface AfterImageDeleteEventArgs {
 export interface QuickToolbarEventArgs {
     /**
      * Defines the instance of the current popup element
+     * 
      * @deprecated
      */
-    popup?: Popup;
+    popup?: Popup
     /**
      * Returns the element of the dialog.
      */
-    element: HTMLElement;
+    element: HTMLElement
     /**
      * Specify the name of the event.
      */
-    name?: string;
+    name?: string
 }
 
 /**
  * @deprecated
  */
 export interface IAdapterProcess {
-    text: string;
-    range: Range;
-    actionName: string;
+    text: string
+    range: Range
+    actionName: string
 }
 
 /**
@@ -699,73 +712,80 @@ export interface IAdapterProcess {
  */
 export interface IFormatter {
     /** Configure the format tags. */
-    formatTags?: { [key: string]: string };
+    formatTags?: { [key: string]: string }
     /** Configure the list tags. */
-    listTags?: { [key: string]: string };
+    listTags?: { [key: string]: string }
     /** Configure the key settings. */
-    keyConfig?: { [key: string]: string };
-    process?: Function;
-    onKeyHandler?: Function;
-    editorManager?: IEditorModel;
-    getUndoRedoStack?: Function;
-    onSuccess?: Function;
-    saveData?: Function;
-    disableToolbarItem?(items: string | string[]): void;
-    enableUndo?: Function;
-    setDocument?: Function;
-    getDocument?: Function;
-    setEditPanel?: Function;
-    getEditPanel?: Function;
-    updateFormatter?: Function;
-    initializePlugin?: Function;
-    isAppliedCommand?(e?: MouseEvent): string;
-    mdSelectionFormat?: MDSelectionFormats;
+    keyConfig?: { [key: string]: string }
+    // eslint-disable-next-line
+    process?: Function
+    // eslint-disable-next-line
+    onKeyHandler?: Function
+    editorManager?: IEditorModel
+    // eslint-disable-next-line
+    getUndoRedoStack?: Function
+    // eslint-disable-next-line
+    onSuccess?: Function
+    // eslint-disable-next-line
+    saveData?: Function
+    disableToolbarItem?(items: string | string[]): void
+    /* eslint-disable */
+    enableUndo?: Function
+    setDocument?: Function
+    getDocument?: Function
+    setEditPanel?: Function
+    getEditPanel?: Function
+    updateFormatter?: Function
+    initializePlugin?: Function
+    /* eslint-enable */
+    isAppliedCommand?(e?: MouseEvent): string
+    mdSelectionFormat?: MDSelectionFormats
 }
 /**
  * @deprecated
  */
 export interface IHtmlFormatterModel {
-    currentDocument?: Document;
-    element?: Element;
-    keyConfig?: { [key: string]: string };
-    options?: { [key: string]: number };
+    currentDocument?: Document
+    element?: Element
+    keyConfig?: { [key: string]: string }
+    options?: { [key: string]: number }
 }
 /**
  * @deprecated
  */
 export interface IMarkdownFormatterModel {
-    element?: Element;
-    formatTags?: { [key: string]: string };
-    listTags?: { [key: string]: string };
-    keyConfig?: { [key: string]: string };
-    options?: { [key: string]: number };
-    selectionTags?: { [key: string]: string };
+    element?: Element
+    formatTags?: { [key: string]: string }
+    listTags?: { [key: string]: string }
+    keyConfig?: { [key: string]: string }
+    options?: { [key: string]: number }
+    selectionTags?: { [key: string]: string }
 }
 
 /**
  * @deprecated
  */
 export interface IFontProperties {
-    default?: string;
-    items?: IDropDownItemModel[];
-    width?: string;
+    default?: string
+    items?: IDropDownItemModel[]
+    width?: string
 }
 
 /**
  * @deprecated
  */
 export interface IFormatProperties {
-    default?: string;
-    types?: IDropDownItemModel[];
-    width?: string;
+    default?: string
+    types?: IDropDownItemModel[]
+    width?: string
 }
 
 /**
  * @deprecated
  */
 export interface OffsetPosition {
-    left: number;
-    top: number;
+    left: number
+    top: number
 }
 
 /**
@@ -773,11 +793,11 @@ export interface OffsetPosition {
  */
 export interface ResizeArgs {
     /** Defines the resize event args. */
-    event?: MouseEvent | TouchEvent;
+    event?: MouseEvent | TouchEvent
     /** Defines the request type. */
-    requestType?: string;
+    requestType?: string
     /** Defines the prevent action. */
-    cancel?: boolean;
+    cancel?: boolean
 }
 
 /**
@@ -785,17 +805,19 @@ export interface ResizeArgs {
  */
 export interface BeforeSanitizeHtmlArgs {
     /** Illustrates whether the current action needs to be prevented or not. */
-    cancel?: boolean;
-    /** It is a callback function and executed it before our inbuilt action. It should return HTML as a string.
+    cancel?: boolean
+    /** It is a callback function and executed it before our inbuilt action. It should return HTML as a string
+     *
      * @function
      * @param {string} value - Returns the value.
      * @returns {string}
      */
-    helper?: Function;
+    // eslint-disable-next-line
+    helper?: Function
     /** Returns the selectors object which carrying both tags and attributes selectors to block list of cross-site scripting attack.
-     *  Also possible to modify the block list in this event.
+     * Also possible to modify the block list in this event.
      */
-    selectors?: SanitizeSelectors;
+    selectors?: SanitizeSelectors
 }
 
 /**
@@ -803,16 +825,16 @@ export interface BeforeSanitizeHtmlArgs {
  */
 export interface SanitizeSelectors {
     /** Returns the tags. */
-    tags?: string[];
+    tags?: string[]
     /** Returns the attributes. */
-    attributes?: SanitizeRemoveAttrs[];
+    attributes?: SanitizeRemoveAttrs[]
 }
 
 /**
  * Provides information about a ExecuteCommandOption.
  */
 export interface ExecuteCommandOption {
-    undo ?: boolean;
+    undo ?: boolean
 }
 
 /**
@@ -820,20 +842,20 @@ export interface ExecuteCommandOption {
  */
 export interface SanitizeRemoveAttrs {
     /** Defines the attribute name to sanitize */
-    attribute?: string;
+    attribute?: string
     /** Defines the selector that sanitize the specified attributes within the selector */
-    selector?: string;
+    selector?: string
 }
 
 /**
  * @deprecated
  */
 export interface ISetToolbarStatusArgs {
-    args: IToolbarStatus;
-    parent: IRichTextEditor;
-    tbElements: HTMLElement[];
-    tbItems: IToolbarItemModel[];
-    dropDownModule: DropDownButtons;
+    args: IToolbarStatus
+    parent: IRichTextEditor
+    tbElements: HTMLElement[]
+    tbItems: IToolbarItemModel[]
+    dropDownModule: DropDownButtons
 }
 
 /**
@@ -843,9 +865,9 @@ export interface ChangeEventArgs {
     /**
      * Returns value of RichTextEditor
      */
-    value: string;
+    value: string
     /** Defines the event name. */
-    name?: string;
+    name?: string
 }
 
 /**
@@ -855,19 +877,19 @@ export interface DialogOpenEventArgs {
     /**
      * Defines whether the current action can be prevented.
      */
-    target: HTMLElement | String;
+    target: HTMLElement | string
     /**
      * Returns the root container element of the dialog.
      */
-    container: HTMLElement;
+    container: HTMLElement
     /**
      * Returns the element of the dialog.
      */
-    element: Element;
+    element: Element
     /**
      * Specify the name of the event.
      */
-    name?: string;
+    name?: string
 }
 
 /**
@@ -877,35 +899,39 @@ export interface DialogCloseEventArgs {
     /**
      * Defines whether the current action can be prevented.
      */
-    cancel: boolean;
+    cancel: boolean
     /**
      * Returns the root container element of the dialog.
      */
-    container: HTMLElement;
+    container: HTMLElement
     /**
      * Returns the element of the dialog.
      */
-    element: Element;
+    element: Element
     /**
      * Returns the original event arguments.
      */
-    event: Event;
+    event: Event
     /**
      * Determines whether the event is triggered by interaction.
      */
-    isInteracted: boolean;
+    isInteracted: boolean
     /**
      * DEPRECATED-Determines whether the event is triggered by interaction.
      */
-    isInteraction: boolean;
+    isInteraction: boolean
     /**
      * Specify the name of the event.
      */
-    name?: string;
+    /* eslint-disable */
+    name?: String
+    /* eslint-enable */
     /**
      * Defines whether the current action can be prevented.
      */
-    target: HTMLElement | String;
+    /* eslint-disable */
+    target: HTMLElement | String
+    /* eslint-enable */
 }
 
 /**
@@ -915,15 +941,15 @@ export interface ToolbarUpdateEventArgs {
     /**
      * Specify the name of the event.
      */
-    name?: string;
+    name?: string
     /**
      * Specify the name of the event.
      */
-    redo: boolean;
+    redo: boolean
     /**
      * Specify the name of the event.
      */
-    undo: boolean;
+    undo: boolean
 }
 
 /**
@@ -933,33 +959,34 @@ export interface ImageSuccessEventArgs {
     /**
      * Returns the original event arguments.
      */
-    e?: object;
+    // eslint-disable-next-line
+    e?: object
     /**
      * Returns the details about upload file.
      * @blazorType Syncfusion.EJ2.Blazor.Inputs.FileInfo
      */
-    file: FileInfo;
+    file: FileInfo
     /**
      * Returns the upload status.
      */
-    statusText?: string;
+    statusText?: string
     /**
      * Returns the upload event operation.
      */
-    operation: string;
+    operation: string
     /**
      * Returns the upload event operation.
      * @blazorType ResponseEventArgs
      */
-    response?: ResponseEventArgs;
+    response?: ResponseEventArgs
     /**
      * Specify the name of the event.
      */
-    name?: string;
+    name?: string
     /**
      * Specify the name of the event.
      */
-    element?: HTMLElement;
+    element?: HTMLElement
 }
 
 /**
@@ -969,29 +996,30 @@ export interface ImageFailedEventArgs {
     /**
      * Returns the original event arguments.
      */
-    e?: object;
+    // eslint-disable-next-line
+    e?: object
     /**
      * Returns the details about upload file.
      * @blazorType Syncfusion.EJ2.Blazor.Inputs.FileInfo
      */
-    file: FileInfo;
+    file: FileInfo
     /**
      * Returns the upload status.
      */
-    statusText?: string;
+    statusText?: string
     /**
      * Returns the upload event operation.
      */
-    operation: string;
+    operation: string
     /**
      * Returns the upload event operation.
      * @blazorType ResponseEventArgs
      */
-    response?: ResponseEventArgs;
+    response?: ResponseEventArgs
     /**
      * Specify the name of the event.
      */
-    name?: string;
+    name?: string
 }
 
 /**
@@ -1001,23 +1029,25 @@ export interface ResponseEventArgs {
     /**
      * Returns the headers information of the upload image.
      */
-    headers?: string;
+    headers?: string
     /**
      * Returns the readyState information.
      */
-    readyState?: object;
+    // eslint-disable-next-line
+    readyState?: object
     /**
      * Returns the upload image statusCode.
      */
-    statusCode?: object;
+    // eslint-disable-next-line
+    statusCode?: object
     /**
      * Returns the upload image statusText.
      */
-    statusText?: string;
+    statusText?: string
     /**
      * Returns the credentials status of the upload image.
      */
-    withCredentials?: boolean;
+    withCredentials?: boolean
 }
 
 /**
@@ -1027,11 +1057,11 @@ export interface DestroyedEventArgs {
     /**
      * Specify the name of the event.
      */
-    name?: string;
+    name?: string
     /**
      * Defines whether the current action can be prevented.
      */
-    cancel: boolean;
+    cancel: boolean
 }
 
 /**
@@ -1041,15 +1071,15 @@ export interface BlurEventArgs {
     /**
      * Returns the original event arguments.
      */
-    event: Event;
+    event: Event
     /**
      * Determines whether the event is triggered by interaction.
      */
-    isInteracted: boolean;
+    isInteracted: boolean
     /**
      * Specify the name of the event.
      */
-    name?: string;
+    name?: string
 }
 
 /**
@@ -1059,24 +1089,24 @@ export interface ToolbarClickEventArgs {
     /**
      * Defines whether the current action can be prevented.
      */
-    cancel: boolean;
+    cancel: boolean
     /**
      * Defines the current Toolbar Item Object.
      * @blazorType Syncfusion.EJ2.Blazor.Navigations.ItemModel
      */
-    item: ItemModel;
+    item: ItemModel
     /**
      * Defines the current Event arguments
      */
-    originalEvent: MouseEvent;
+    originalEvent: MouseEvent
     /**
      * Specify the request type of the event.
      */
-    requestType: string;
+    requestType: string
     /**
      * Specify the name of the event.
      */
-    name?: string;
+    name?: string
 }
 
 /**
@@ -1086,15 +1116,15 @@ export interface FocusEventArgs {
     /**
      * Returns the original event arguments.
      */
-    event: FocusEvent;
+    event: FocusEvent
     /**
      * Determines whether the event is triggered by interaction.
      */
-    isInteracted: boolean;
+    isInteracted: boolean
     /**
      * Specify the name of the event.
      */
-    name?: string;
+    name?: string
 }
 
 /**
@@ -1106,20 +1136,20 @@ export declare type ColorModeType = 'Picker' | 'Palette';
  * @deprecated
  */
 export interface IColorProperties {
-    default?: string;
-    mode?: ColorModeType;
-    columns?: number;
-    colorCode?: { [key: string]: string[] };
-    modeSwitcher?: boolean;
+    default?: string
+    mode?: ColorModeType
+    columns?: number
+    colorCode?: { [key: string]: string[] }
+    modeSwitcher?: boolean
 }
 
 /**
  * @deprecated
  */
 export interface IExecutionGroup {
-    command: string;
-    subCommand?: string;
-    value?: string;
+    command: string
+    subCommand?: string
+    value?: string
 }
 
 /**
@@ -1129,26 +1159,29 @@ export interface ImageUploadingEventArgs {
     /**
      * Defines whether the current action can be prevented.
      */
-    cancel: boolean;
+    cancel: boolean
     /**
      * Defines the additional data in key and value pair format that will be submitted to the upload action.
+     * 
      * @blazorType object
      */
+    // eslint-disable-next-line
     customFormData: { [key: string]: Object; }[];
     /**
      * Returns the XMLHttpRequest instance that is associated with upload action.
+     * 
      * @blazorType object
      */
-    currentRequest?: { [key: string]: string; }[];
+    currentRequest?: { [key: string]: string }[]
     /**
      * Returns the list of files that will be uploaded.
      */
-    filesData: FileInfo[];
+    filesData: FileInfo[]
 }
 
 /**
  * @hidden
- * @deprecated 
+ * @deprecated
  */
 export const executeGroup: { [key: string]: IExecutionGroup } = {
     'bold': {
@@ -1283,11 +1316,11 @@ export const executeGroup: { [key: string]: IExecutionGroup } = {
     },
     'insertImage': {
         command: 'Images',
-        subCommand: 'Image',
+        subCommand: 'Image'
     },
     'editImage': {
         command: 'Images',
-        subCommand: 'Image',
+        subCommand: 'Image'
     },
     'insertTable': {
         command: 'Table',
@@ -1320,8 +1353,8 @@ export const executeGroup: { [key: string]: IExecutionGroup } = {
  * Defines types to be used as CommandName.
  */
 export declare type CommandName = 'bold' | 'italic' | 'underline' | 'strikeThrough' | 'superscript' |
-    'subscript' | 'uppercase' | 'lowercase' | 'fontColor' | 'fontName' | 'fontSize' | 'backColor' |
-    'justifyCenter' | 'justifyFull' | 'justifyLeft' | 'justifyRight' | 'undo' | 'createLink' |
-    'formatBlock' | 'heading' | 'indent' | 'insertHTML' | 'insertOrderedList' | 'insertUnorderedList' |
-    'insertParagraph' | 'outdent' | 'redo' | 'removeFormat' | 'insertText' | 'insertImage' |
-    'insertHorizontalRule' | 'insertBrOnReturn' | 'insertCode' | 'insertTable' | 'editImage' | 'editLink';
+'subscript' | 'uppercase' | 'lowercase' | 'fontColor' | 'fontName' | 'fontSize' | 'backColor' |
+'justifyCenter' | 'justifyFull' | 'justifyLeft' | 'justifyRight' | 'undo' | 'createLink' |
+'formatBlock' | 'heading' | 'indent' | 'insertHTML' | 'insertOrderedList' | 'insertUnorderedList' |
+'insertParagraph' | 'outdent' | 'redo' | 'removeFormat' | 'insertText' | 'insertImage' |
+'insertHorizontalRule' | 'insertBrOnReturn' | 'insertCode' | 'insertTable' | 'editImage' | 'editLink';

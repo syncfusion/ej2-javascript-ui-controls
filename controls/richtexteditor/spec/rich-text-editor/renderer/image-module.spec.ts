@@ -3273,7 +3273,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 500);
         });
     });
-    describe('BLAZ-9502, EJ2-47169 - Image focus not working after outside click then again click a image', () => {
+    describe('BLAZ-9502 - Image focus not working after outside click then again click a image', () => {
         let rteObj: RichTextEditor;
         beforeAll((done: Function) => {
             rteObj = renderRTE({
@@ -3354,6 +3354,33 @@ client side. Customer easy to edit the contents and get the HTML content for
             dispatchEvent(rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement, 'mousedown');
             expect((rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
             expect((rteObj.element.querySelector('.e-img-resize') as HTMLElement)).not.toBe(null);
+            done();
+        });
+    });
+    describe('Checking Image replace, using the Image dialog', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Image']
+                },
+                value: "<img src='https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png'>"
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('image dialog', (done) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
+            (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
+            (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();                
+            expect((rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('img')).not.toBe(null);    
             done();
         });
     });

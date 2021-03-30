@@ -855,7 +855,61 @@ describe('RTE base module', () => {
         });
     });
 
+    describe('Removing Image with delete and backspace key', () => {
+        let rteObj: RichTextEditor;
+        let afterImageDeleteTiggered: number = 0;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '',
+                afterImageDelete: (() => {
+                    afterImageDeleteTiggered++;
+                 })
+            });
+        });
+        
+        it('delete image with Delete key', () => {
+            let keyBoardEvent: any = { preventDefault: () => { }, action: 'delete', key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46 };
+            rteObj.contentModule.getEditPanel().innerHTML = `<div class='actiondiv'><p>test<img id='img1' src="https://www.google.co.in/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" width="250" height="250">test</p><p>test2</p></div>`;
+            let editNode = rteObj.contentModule.getEditPanel() as HTMLElement;
+            editNode.focus();
+            let selectNode: Element = editNode.querySelector('#img1');
+            let curDocument = rteObj.contentModule.getDocument();
+            setCursorPoint(curDocument, selectNode, 0);
+            keyBoardEvent.which = 46;
+            keyBoardEvent.code = 'Delete';
+            selectNode.remove();
+            keyBoardEvent.type = 'keydown';
+            (rteObj as any).keyDown(keyBoardEvent);
+            (rteObj.imageModule as any).deletedImg.push(selectNode);
+            keyBoardEvent.type = 'keyup';
+            (rteObj as any).keyUp(keyBoardEvent);
+            expect(afterImageDeleteTiggered).toBe(1);
+        });
 
+        it('delete image with Backspace key', () => {
+            afterImageDeleteTiggered = 0;
+            let keyBoardEvent: any = { preventDefault: () => { }, action: 'backspace', key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+            rteObj.contentModule.getEditPanel().innerHTML = `<div class='actiondiv'><p>test<img id='img1' src="https://www.google.co.in/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" width="250" height="250">test</p><p>test2</p></div>`;
+            let editNode = rteObj.contentModule.getEditPanel() as HTMLElement;
+            editNode.focus();
+            let selectNode: Element = editNode.querySelector('#img1');
+            let curDocument = rteObj.contentModule.getDocument();
+            setCursorPoint(curDocument, selectNode, 0);
+            keyBoardEvent.which = 8;
+            keyBoardEvent.code = 'Backspace';
+            selectNode.remove();
+            keyBoardEvent.type = 'keydown';
+            (rteObj as any).keyDown(keyBoardEvent);
+            (rteObj.imageModule as any).deletedImg.push(selectNode);
+            keyBoardEvent.type = 'keyup';
+            (rteObj as any).keyUp(keyBoardEvent);
+            expect(afterImageDeleteTiggered).toBe(1);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    
     describe('Toolbar - Print Module', () => {
         describe('Print rendering testing', () => {
             let beforeCount: number = 0;
@@ -4115,6 +4169,7 @@ describe('Check undo in execCommand', () => {
         destroy(rteObj);
     });
 });
+
 describe('Check destroy method', () => {
     let rteObj: RichTextEditor;
     beforeAll((done: Function) => {
@@ -4131,6 +4186,7 @@ describe('Check destroy method', () => {
         destroy(rteObj);
     });
 });
+
 describe('RTE content element height check-Pixel', function () {
     let rteObj: any;
     let elem: any;
@@ -4155,6 +4211,7 @@ describe('RTE content element height check-Pixel', function () {
             expect((document.querySelector('.e-rte-content') as HTMLElement).style.height).toBe('100px');
             done();
         }, 100);
+
     });
     afterAll(function () {
         destroy(rteObj);
@@ -4183,6 +4240,7 @@ describe('RTE content element height check-percentage', function () {
             expect((document.querySelector('.e-rte-content') as HTMLElement).style.height).toBe('50%');
             done();
         }, 100);
+
     });
     afterAll(function () {
         destroy(rteObj);

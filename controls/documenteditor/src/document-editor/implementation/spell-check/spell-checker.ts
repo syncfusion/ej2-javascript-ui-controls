@@ -1,4 +1,4 @@
-// tslint:disable-next-line:max-line-length
+/* eslint-disable */
 import { LayoutViewer, ContextElementInfo, TextPosition, ElementInfo, ErrorInfo, WCharacterFormat, SpecialCharacterInfo, SpaceCharacterInfo, TextSearchResults, TextInLineInfo, TextSearchResult, MatchResults, SfdtExport, TextExport, WordSpellInfo } from '../index';
 import { Dictionary } from '../../base/dictionary';
 import { ElementBox, TextElementBox, ErrorTextElementBox, LineWidget, TableCellWidget, Page, FieldElementBox } from '../viewer/page';
@@ -18,7 +18,7 @@ export class SpellChecker {
     /**
      * @private
      */
-    /* tslint:disable:no-any */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     public uniqueSpelledWords: any = {};
     private spellSuggestionInternal: boolean = true;
     /**
@@ -65,8 +65,10 @@ export class SpellChecker {
 
     /**
      * Gets the boolean indicating whether optimized spell check to be performed.
+     *
      * @aspType bool
      * @blazorType bool
+     * @returns {boolean} Returns enableOptimizedSpellCheck
      */
     public get enableOptimizedSpellCheck(): boolean {
         return this.performOptimizedCheck;
@@ -74,6 +76,7 @@ export class SpellChecker {
 
     /**
      * Sets the boolean indicating whether optimized spell check to be performed.
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -83,6 +86,7 @@ export class SpellChecker {
 
     /**
      * Gets the spell checked Unique words.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -91,6 +95,7 @@ export class SpellChecker {
     }
     /**
      * Sets the spell checked Unique words.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -100,6 +105,7 @@ export class SpellChecker {
 
     /**
      * Gets the languageID.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -108,6 +114,7 @@ export class SpellChecker {
     }
     /**
      * Sets the languageID.
+     *
      * @aspType int
      * @blazorType int
      */
@@ -116,6 +123,7 @@ export class SpellChecker {
     }
     /**
      * Getter indicates whether suggestion enabled.
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -124,14 +132,16 @@ export class SpellChecker {
     }
     /**
      * Setter to enable or disable suggestion
+     *
      * @aspType bool
-     * @blazorType bool 
+     * @blazorType bool
      */
     public set allowSpellCheckAndSuggestion(value: boolean) {
         this.spellSuggestionInternal = value;
     }
     /**
      * Getter indicates whether underline removed for mis-spelled word.
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -140,6 +150,7 @@ export class SpellChecker {
     }
     /**
      * Setter to enable or disable underline for mis-spelled word
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -149,6 +160,7 @@ export class SpellChecker {
     }
     /**
      * Getter indicates whether spell check has to be performed or not.
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -157,6 +169,7 @@ export class SpellChecker {
     }
     /**
      * Setter to enable or disable spell check has to be performed or not
+     *
      * @aspType bool
      * @blazorType bool
      */
@@ -164,10 +177,8 @@ export class SpellChecker {
         this.enableSpellCheckInternal = value;
         this.documentHelper.owner.editor.reLayout(this.documentHelper.selection);
     }
-    /**
-     *
-     */
-    constructor(documentHelper: DocumentHelper) {
+
+    public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
         this.errorWordCollection = new Dictionary<string, ElementBox[]>();
         this.errorSuggestions = new Dictionary<string, string[]>();
@@ -176,11 +187,12 @@ export class SpellChecker {
         this.textSearchResults = new TextSearchResults(this.documentHelper.owner);
         this.uniqueKey = this.documentHelper.owner.element.id + '_' + this.createGuid();
     }
-    get viewer(): LayoutViewer {
+    private get viewer(): LayoutViewer {
         return this.documentHelper.owner.viewer;
     }
     /**
      * Method to manage replace logic
+     *
      * @private
      */
     public manageReplace(content: string, dialogElement?: ElementBox): void {
@@ -188,7 +200,7 @@ export class SpellChecker {
         let exactText: string = '';
         let elementInfo: ElementInfo;
         if (!isNullOrUndefined(dialogElement) && dialogElement instanceof ErrorTextElementBox) {
-            let exactText: string = (dialogElement as ErrorTextElementBox).text;
+            const exactText: string = (dialogElement as ErrorTextElementBox).text;
             this.documentHelper.selection.start = (dialogElement as ErrorTextElementBox).start;
             this.documentHelper.selection.end = (dialogElement as ErrorTextElementBox).end;
             if (content !== 'Ignore Once') {
@@ -202,7 +214,7 @@ export class SpellChecker {
             }
         }
         if (!isNullOrUndefined(this.currentContextInfo) && this.currentContextInfo.element && content !== 'Ignore Once') {
-            let elementBox: ElementBox = this.currentContextInfo.element;
+            const elementBox: ElementBox = this.currentContextInfo.element;
             exactText = (this.currentContextInfo.element as TextElementBox).text;
 
             this.documentHelper.selection.start = (elementBox as ErrorTextElementBox).start;
@@ -223,24 +235,24 @@ export class SpellChecker {
     }
     /**
      * Method to handle replace logic
-     * @param {string} content 
+     *
      * @private
      */
     public handleReplace(content: string): void {
         let startPosition: TextPosition = this.documentHelper.selection.start;
-        let offset: number = startPosition.offset;
-        let startIndex: number = 0;
-        let startInlineObj: ElementInfo = (startPosition.currentWidget as LineWidget).getInline(offset, startIndex, false, true);
-        let startOffset: number = startInlineObj.element.line.getOffset(startInlineObj.element, 0) + startInlineObj.element.length;
+        const offset: number = startPosition.offset;
+        const startIndex: number = 0;
+        const startInlineObj: ElementInfo = (startPosition.currentWidget as LineWidget).getInline(offset, startIndex, false, true);
+        const startOffset: number = startInlineObj.element.line.getOffset(startInlineObj.element, 0) + startInlineObj.element.length;
         if (startOffset === offset) {
             this.retrieveExactElementInfo(startInlineObj);
         }
-        let exactText: string = (startInlineObj.element as TextElementBox).text;
-        // tslint:disable-next-line:max-line-length
-        let startPattern: RegExp = new RegExp('^[#\\@\\!\\~\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\'\\,\\<\\.\\>\\/\\?\\`\\s]+', 'g');
+        const exactText: string = (startInlineObj.element as TextElementBox).text;
+
+        const startPattern: RegExp = new RegExp('^[#\\@\\!\\~\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\'\\,\\<\\.\\>\\/\\?\\`\\s]+', 'g');
         let matches: RegExpExecArray[] = [];
         let matchInfo: RegExpExecArray;
-        //tslint:disable no-conditional-assignment
+        // eslint-disable  no-cond-assign
         while (!isNullOrUndefined(matchInfo = startPattern.exec(exactText))) {
             matches.push(matchInfo);
         }
@@ -252,28 +264,28 @@ export class SpellChecker {
         if (!isNullOrUndefined(matches) && matches.length > 0) {
             startPosition.offset += matches[0].toString().length;
         }
-        // tslint:disable-next-line:max-line-length
+
         startPosition.location = this.documentHelper.owner.selection.getPhysicalPositionInternal((startPosition.currentWidget as LineWidget), startPosition.offset, true);
-        // tslint:disable-next-line:max-line-length
+
         startPosition = this.documentHelper.owner.searchModule.textSearch.getTextPosition(startPosition.currentWidget as LineWidget, startPosition.offset.toString());
         //startPosition.location = this.owner.selection.getPhysicalPositionInternal(span.line, offset, true);
         startPosition.setPositionParagraph(startPosition.currentWidget as LineWidget, startPosition.offset);
-        let index: number = (startPosition.offset + (startInlineObj.element as TextElementBox).length) - startPosition.offset;
+        const index: number = (startPosition.offset + (startInlineObj.element as TextElementBox).length) - startPosition.offset;
         let endOffset: number = (startPosition.currentWidget as LineWidget).getOffset(startInlineObj.element, index);
-        let lineWidget: LineWidget = startPosition.currentWidget as LineWidget;
-        // tslint:disable-next-line:max-line-length
-        let endPattern: RegExp = new RegExp('[#\\@\\!\\~\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\'\\,\\<\\.\\>\\/\\?\\s\\`]+$', 'g');
+        const lineWidget: LineWidget = startPosition.currentWidget as LineWidget;
+
+        const endPattern: RegExp = new RegExp('[#\\@\\!\\~\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\'\\,\\<\\.\\>\\/\\?\\s\\`]+$', 'g');
         matches = [];
-        //tslint:disable no-conditional-assignment
+        // eslint-disable  no-cond-assign
         while (!isNullOrUndefined(matchInfo = endPattern.exec(exactText))) {
             matches.push(matchInfo);
         }
         if (!isNullOrUndefined(matches) && matches.length > 0) {
             endOffset -= matches[0].toString().length;
         }
-        // tslint:disable-next-line:max-line-length
+
         this.documentHelper.selection.end = this.documentHelper.owner.searchModule.textSearch.getTextPosition(lineWidget, endOffset.toString());
-        // tslint:disable-next-line:max-line-length
+
         this.documentHelper.selection.end.location = this.documentHelper.owner.selection.getPhysicalPositionInternal((startPosition.currentWidget as LineWidget), endOffset, true);
         this.documentHelper.selection.end.setPositionParagraph(lineWidget, endOffset);
         this.currentContextInfo = { 'element': startInlineObj.element, 'text': (startInlineObj.element as TextElementBox).text };
@@ -281,22 +293,22 @@ export class SpellChecker {
 
     /**
      * Method to retrieve exact element info
-     * @param {ElementInfo} startInlineObj 
+     *
      * @private
      */
     public retrieveExactElementInfo(startInlineObj: ElementInfo): void {
-        let nextElement: ElementBox = startInlineObj.element.nextElement;
-        // tslint:disable-next-line:max-line-length
+        const nextElement: ElementBox = startInlineObj.element.nextElement;
+
         startInlineObj.element = (!isNullOrUndefined(nextElement) && nextElement instanceof TextElementBox) ? startInlineObj.element.nextElement : startInlineObj.element;
     }
 
     /**
-     * Method to handle to ignore error Once 
-     * @param {ElementInfo} startInlineObj 
+     * Method to handle to ignore error Once
+     *
      * @private
      */
     public handleIgnoreOnce(startInlineObj: ElementInfo): void {
-        let textElement: TextElementBox = (startInlineObj.element as TextElementBox);
+        const textElement: TextElementBox = (startInlineObj.element as TextElementBox);
         let exactText: string = '';
         if (!isNullOrUndefined(this.currentContextInfo) && this.currentContextInfo.element) {
             exactText = (this.currentContextInfo.element as TextElementBox).text;
@@ -312,11 +324,12 @@ export class SpellChecker {
 
     /**
      * Method to handle ignore all items
+     *
      * @private
      */
     public handleIgnoreAllItems(contextElement?: ContextElementInfo): void {
-        let contextItem: ContextElementInfo = (!isNullOrUndefined(contextElement)) ? contextElement : this.retriveText();
-        let retrievedText: string = this.manageSpecialCharacters(contextItem.text, undefined, true);
+        const contextItem: ContextElementInfo = (!isNullOrUndefined(contextElement)) ? contextElement : this.retriveText();
+        const retrievedText: string = this.manageSpecialCharacters(contextItem.text, undefined, true);
         if (this.ignoreAllItems.indexOf(retrievedText) === -1) {
             this.ignoreAllItems.push(retrievedText);
             this.removeErrorsFromCollection(contextItem);
@@ -329,14 +342,15 @@ export class SpellChecker {
 
     /**
      * Method to handle dictionary
+     *
      * @private
      */
     public handleAddToDictionary(contextElement?: ContextElementInfo): void {
-        let contextItem: ContextElementInfo = (!isNullOrUndefined(contextElement)) ? contextElement : this.retriveText();
-        let retrievedText: string = this.manageSpecialCharacters(contextItem.text, undefined, true);
-        // tslint:disable-next-line:max-line-length
-        /* tslint:disable:no-any */
-        this.CallSpellChecker(this.languageID, retrievedText, false, false, true).then((data: any) => {
+        const contextItem: ContextElementInfo = (!isNullOrUndefined(contextElement)) ? contextElement : this.retriveText();
+        const retrievedText: string = this.manageSpecialCharacters(contextItem.text, undefined, true);
+
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        this.callSpellChecker(this.languageID, retrievedText, false, false, true).then((data: any) => {
             this.documentHelper.triggerSpellCheck = true;
             this.removeErrorsFromCollection(contextItem);
             this.ignoreAllItems.push(retrievedText);
@@ -346,44 +360,43 @@ export class SpellChecker {
     }
     /**
      * Method to append/remove special characters
-     * @param {string} exactText 
-     * @param {boolean} isRemove 
+     *
      * @private
      */
-    // tslint:disable-next-line:max-line-length
+
     public manageSpecialCharacters(exactText: string, replaceText: string, isRemove?: boolean): string {
         if (!isNullOrUndefined(exactText)) {
             if (isNullOrUndefined(replaceText)) {
                 replaceText = exactText;
             }
-            // tslint:disable-next-line:max-line-length
-            let pattern: RegExp = new RegExp('^[#\\@\\!\\~\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\\”\'\\,\\<\\.\\>\\/\\?\\`\\s]+', 'g');
+
+            const pattern: RegExp = new RegExp('^[#\\@\\!\\~\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\\”\'\\,\\<\\.\\>\\/\\?\\`\\s]+', 'g');
             let matches: RegExpExecArray[] = [];
             let matchInfo: RegExpExecArray;
-            //tslint:disable no-conditional-assignment
+            // eslint-disable  no-cond-assign
             while (!isNullOrUndefined(matchInfo = pattern.exec(exactText))) {
                 matches.push(matchInfo);
             }
 
             if (matches.length > 0) {
                 for (let i: number = 0; i < matches.length; i++) {
-                    /* tslint:disable:no-any */
-                    let match: any[] = matches[i];
+                    /* eslint-disable @typescript-eslint/no-explicit-any */
+                    const match: any[] = matches[i];
                     replaceText = (!isRemove) ? match[0] + replaceText : replaceText.replace(match[0], '');
                 }
             }
-            // tslint:disable-next-line:max-line-length
-            let endPattern: RegExp = new RegExp('[#\\@\\!\\~\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\\”\'\\,\\<\\.\\>\\/\\?\\s\\`]+$', 'g');
+
+            const endPattern: RegExp = new RegExp('[#\\@\\!\\~\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\\”\'\\,\\<\\.\\>\\/\\?\\s\\`]+$', 'g');
             matches = [];
-            //tslint:disable no-conditional-assignment
+            // eslint-disable  no-cond-assign
             while (!isNullOrUndefined(matchInfo = endPattern.exec(replaceText))) {
                 matches.push(matchInfo);
             }
 
             if (matches.length > 0) {
                 for (let i: number = 0; i < matches.length; i++) {
-                    /* tslint:disable:no-any */
-                    let match: any = matches[i];
+                    /* eslint-disable @typescript-eslint/no-explicit-any */
+                    const match: any = matches[i];
                     replaceText = (!isRemove) ? replaceText + match[0] : replaceText.slice(0, match.index);
                 }
             }
@@ -393,12 +406,12 @@ export class SpellChecker {
     }
     /**
      * Method to remove errors
-     * @param {ContextElementInfo} contextItem 
+     *
      * @private
      */
     public removeErrorsFromCollection(contextItem: ContextElementInfo): void {
         if (this.errorWordCollection.containsKey(contextItem.text)) {
-            let textElement: ElementBox[] = this.errorWordCollection.get(contextItem.text);
+            const textElement: ElementBox[] = this.errorWordCollection.get(contextItem.text);
             if (textElement.indexOf(contextItem.element) >= 0) {
                 textElement.splice(0, 1);
             }
@@ -410,6 +423,7 @@ export class SpellChecker {
 
     /**
      * Method to retrieve exact text
+     *
      * @private
      */
     public retriveText(): ContextElementInfo {
@@ -421,10 +435,10 @@ export class SpellChecker {
             this.documentHelper.selection.start = (currentElement as ErrorTextElementBox).start;
             this.documentHelper.selection.end = (currentElement as ErrorTextElementBox).end;
         } else {
-            let startPosition: TextPosition = this.documentHelper.selection.start;
-            let offset: number = startPosition.offset;
-            let startIndex: number = 0;
-            let startInlineObj: ElementInfo = (startPosition.currentWidget as LineWidget).getInline(offset, startIndex);
+            const startPosition: TextPosition = this.documentHelper.selection.start;
+            const offset: number = startPosition.offset;
+            const startIndex: number = 0;
+            const startInlineObj: ElementInfo = (startPosition.currentWidget as LineWidget).getInline(offset, startIndex);
             currentElement = startInlineObj.element;
             exactText = (startInlineObj.element as TextElementBox).text;
         }
@@ -433,24 +447,23 @@ export class SpellChecker {
     }
     /**
      * Method to handle suggestions
-     * @param {any} jsonObject 
-     * @param {PointerEvent} event 
+     *
      * @private
      */
-    /* tslint:disable:no-any */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     public handleSuggestions(allsuggestions: any): string[] {
         this.spellCheckSuggestion = [];
         if (allsuggestions.length === 0) {
             this.spellCheckSuggestion.push('Add To Dictionary');
         } else {
-            // tslint:disable-next-line:max-line-length
+
             allsuggestions = (allsuggestions.length === 5) ? this.constructInlineMenu(allsuggestions) : allsuggestions;
             this.spellCheckSuggestion.push('Add To Dictionary');
         }
-        /* tslint:disable:no-any */
-        let spellSuggestion: any = [];
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        const spellSuggestion: any = [];
         if (this.spellCheckSuggestion.length > 0) {
-            for (let str of this.spellCheckSuggestion) {
+            for (const str of this.spellCheckSuggestion) {
                 spellSuggestion.push(
                     {
                         text: str,
@@ -466,17 +479,15 @@ export class SpellChecker {
 
     /**
      * Method to check whether text element has errors
-     * @param {string} text 
-     * @param {any} element 
-     * @param {number} left 
+     *
      * @private
      */
     public checktextElementHasErrors(text: string, element: any, left: number): ErrorInfo {
         let hasError: boolean = false;
-        let erroElements: any[] = [];
+        const erroElements: any[] = [];
         text = text.replace(/[\s]+/g, '');
         if (!isNullOrUndefined(element.errorCollection) && element.errorCollection.length > 0) {
-            // tslint:disable-next-line:max-line-length
+
             if (!this.documentHelper.isScrollHandler && (element.ischangeDetected || element.paragraph.isChangeDetected)) {
                 this.updateStatusForGlobalErrors(element.errorCollection, element);
                 element.errorCollection = [];
@@ -498,20 +509,16 @@ export class SpellChecker {
         return { 'errorFound': hasError, 'elements': erroElements };
     }
 
-    /**
-     * Method to update status for error elements
-     * @param {ErrorTextElementBox[]} erroElements 
-     */
     private updateStatusForGlobalErrors(erroElements: ErrorTextElementBox[], parentElement: ElementBox): void {
         if (erroElements.length > 0) {
             for (let i: number = 0; i < erroElements.length; i++) {
-                let exactText: string = this.manageSpecialCharacters(erroElements[i].text, undefined, true);
+                const exactText: string = this.manageSpecialCharacters(erroElements[i].text, undefined, true);
                 if (this.errorWordCollection.containsKey(exactText)) {
-                    let elements: ElementBox[] = this.errorWordCollection.get(exactText);
+                    const elements: ElementBox[] = this.errorWordCollection.get(exactText);
                     for (let j: number = 0; j < elements.length; j++) {
                         if (elements[j] instanceof ErrorTextElementBox && elements[j] === erroElements[i]) {
                             elements[j].ischangeDetected = true;
-                            // tslint:disable-next-line:max-line-length
+
                             (elements[j] as ErrorTextElementBox).start.offset = parentElement.line.getOffset((parentElement as TextElementBox).istextCombined ? this.getCombinedElement(parentElement) : parentElement, 0);
                             elements[j].line = parentElement.line;
                             break;
@@ -524,14 +531,15 @@ export class SpellChecker {
 
     /**
      * Method to handle document error collection.
-     * @param {string} errorInElement 
+     *
+     * @param {string} errorInElement
      * @private
      */
     public handleErrorCollection(errorInElement: TextElementBox): boolean {
-        let errors: Dictionary<string, ElementBox[]> = this.errorWordCollection;
-        let exactText: string = this.manageSpecialCharacters(errorInElement.text, undefined, true);
+        const errors: Dictionary<string, ElementBox[]> = this.errorWordCollection;
+        const exactText: string = this.manageSpecialCharacters(errorInElement.text, undefined, true);
         if (errors.containsKey(exactText) && errorInElement.length > 1) {
-            let ignoreAllIndex: number = this.ignoreAllItems.indexOf(exactText);
+            const ignoreAllIndex: number = this.ignoreAllItems.indexOf(exactText);
             if (ignoreAllIndex > -1) {
                 if (errors.containsKey(exactText)) {
                     errors.remove(exactText);
@@ -543,12 +551,8 @@ export class SpellChecker {
 
         return false;
     }
-    /**
-     * Method to construct inline menu
-     */
-    /* tslint:disable:no-any */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     private constructInlineMenu(inlineSuggestion: any[]): any[] {
-        /* tslint:disable:no-any */
         for (let i: number = inlineSuggestion.length - 1; i > 0; i--) {
             if (inlineSuggestion.length > 3) {
                 this.spellCheckSuggestion.push(inlineSuggestion[i]);
@@ -560,20 +564,21 @@ export class SpellChecker {
     }
     /**
      * Method to retrieve error element text
+     *
      * @private
      */
     public findCurretText(): ContextElementInfo {
-        let insertPosition: TextPosition = this.documentHelper.selection.start;
-        /* tslint:disable:no-any */
+        const insertPosition: TextPosition = this.documentHelper.selection.start;
+        /* eslint-disable @typescript-eslint/no-explicit-any */
         let element: any;
-        /* tslint:disable:no-any */
+        /* eslint-disable @typescript-eslint/no-explicit-any */
         let inlineObj: any = insertPosition.currentWidget.getInline(this.documentHelper.selection.start.offset, 0);
         let text: string;
         if (!isNullOrUndefined(inlineObj.element)) {
             if (!isNullOrUndefined(inlineObj.element.errorCollection) && inlineObj.element.errorCollection.length > 0) {
                 for (let i: number = 0; i < inlineObj.element.errorCollection.length; i++) {
-                    let errorElement: ErrorTextElementBox = inlineObj.element.errorCollection[i];
-                    // tslint:disable-next-line:max-line-length
+                    const errorElement: ErrorTextElementBox = inlineObj.element.errorCollection[i];
+
                     if (errorElement.start.location.x <= insertPosition.location.x && errorElement.end.location.x >= insertPosition.location.x) {
                         text = errorElement.text;
                         element = errorElement;
@@ -592,16 +597,10 @@ export class SpellChecker {
 
         return { 'text': text, 'element': element };
     }
-
-    /**
-     * Method to add error word in document error collection
-     * @param text 
-     * @param element 
-     */
     private addErrorCollection(text: string, elementToCompare: ElementBox, suggestions: string[]): void {
         text = this.manageSpecialCharacters(text, undefined, true);
         if (this.errorWordCollection.containsKey(text)) {
-            let errorElements: ElementBox[] = this.errorWordCollection.get(text);
+            const errorElements: ElementBox[] = this.errorWordCollection.get(text);
             if (elementToCompare instanceof ErrorTextElementBox) {
                 if (!this.compareErrorTextElement(elementToCompare, errorElements)) {
                     errorElements.push(elementToCompare);
@@ -619,28 +618,23 @@ export class SpellChecker {
         }
     }
 
-    /**
-     * Method to compare error text elements
-     * @param {ErrorTextElementBox} errorElement 
-     * @param {ElementBox[]} errorCollection 
-     */
     private compareErrorTextElement(errorElement: ErrorTextElementBox, errorCollection: ElementBox[]): boolean {
-        let copyElement: ElementBox[] = [];
+        const copyElement: ElementBox[] = [];
         let isChanged: boolean = false;
         for (let i: number = 0; i < errorCollection.length; i++) {
             copyElement.push(errorCollection[i]);
         }
-        let length: number = errorCollection.length;
+        const length: number = errorCollection.length;
         for (let i: number = 0; i < length; i++) {
             if (copyElement[i] instanceof ErrorTextElementBox) {
                 if (copyElement[i].ischangeDetected) {
-                    let exactText: string = this.manageSpecialCharacters((copyElement[i] as TextElementBox).text, undefined, true);
+                    const exactText: string = this.manageSpecialCharacters((copyElement[i] as TextElementBox).text, undefined, true);
                     isChanged = true;
-                    // tslint:disable-next-line:max-line-length
+
                     this.removeErrorsFromCollection({ 'element': copyElement[i], 'text': exactText });
                 } else {
-                    let currentElement: ErrorTextElementBox = copyElement[i] as ErrorTextElementBox;
-                    // tslint:disable-next-line:max-line-length
+                    const currentElement: ErrorTextElementBox = copyElement[i] as ErrorTextElementBox;
+
                     if (errorElement.start.offset === currentElement.start.offset && errorElement.end.offset === currentElement.end.offset) {
                         return true;
                     }
@@ -649,7 +643,7 @@ export class SpellChecker {
         }
 
         if (isChanged) {
-            // tslint:disable-next-line:max-line-length
+
             this.errorWordCollection.add(this.manageSpecialCharacters(errorElement.text, undefined, true), [errorElement]);
         }
 
@@ -658,14 +652,13 @@ export class SpellChecker {
 
     /**
      * Method to compare text elements
-     * @param {TextElementBox} errorElement 
-     * @param {ElementBox[]} errorCollection 
+     *
      * @private
      */
     public compareTextElement(errorElement: TextElementBox, errorCollection: ElementBox[]): boolean {
         for (let i: number = 0; i < errorCollection.length; i++) {
             if (errorCollection[i] instanceof TextElementBox) {
-                let currentElement: TextElementBox = errorCollection[i] as TextElementBox;
+                const currentElement: TextElementBox = errorCollection[i] as TextElementBox;
                 if (currentElement === errorElement) {
                     return true;
                 }
@@ -677,22 +670,16 @@ export class SpellChecker {
 
     /**
      * Method to handle Word by word spell check
-     * @param {any} jsonObject 
-     *  @param {TextElementBox} elementBox 
-     * @param {number} left 
-     * @param {number} top 
-     * @param {number} underlineY 
-     * @param {BaselineAlignment} baselineAlignment 
-     * @param {boolean} isSamePage 
+     *
      * @private
      */
-    // tslint:disable-next-line:max-line-length
+
     public handleWordByWordSpellCheck(jsonObject: any, elementBox: TextElementBox, left: number, top: number, underlineY: number, baselineAlignment: BaselineAlignment, isSamePage: boolean): void {
         if (jsonObject.HasSpellingError && isSamePage) {
             this.addErrorCollection(elementBox.text, elementBox, jsonObject.Suggestions);
-            // tslint:disable-next-line:max-line-length
-            let backgroundColor: string = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? (elementBox.line.paragraph.containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
-            this.documentHelper.render.renderWavyline(elementBox, left, top, underlineY, '#FF0000', 'Single', baselineAlignment, backgroundColor);
+
+            const backgroundColor: string = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? (elementBox.line.paragraph.containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
+            this.documentHelper.render.renderWavyLine(elementBox, left, top, underlineY, '#FF0000', 'Single', baselineAlignment, backgroundColor);
             elementBox.isSpellChecked = true;
         } else {
             elementBox.isSpellChecked = true;
@@ -701,22 +688,21 @@ export class SpellChecker {
 
     /**
      * Method to check errors for combined elements
-     * @param {TextElementBox} elementBox 
-     * @param {number} underlineY 
+     *
      * @private
      */
-    // tslint:disable-next-line:max-line-length
+
     public checkElementCanBeCombined(elementBox: TextElementBox, underlineY: number, beforeIndex: number, callSpellChecker: boolean, textToCombine?: string, isNext?: boolean, isPrevious?: boolean, canCombine?: boolean): boolean {
         let currentText: string = isNullOrUndefined(textToCombine) ? '' : textToCombine;
         let isCombined: boolean = isNullOrUndefined(canCombine) ? false : canCombine;
-        let checkPrevious: boolean = !isNullOrUndefined(isPrevious) ? isPrevious : true;
-        let checkNext: boolean = !isNullOrUndefined(isNext) ? isNext : true;
-        let combinedElements: TextElementBox[] = [];
-        let line: LineWidget = this.documentHelper.selection.getLineWidget(elementBox, 0);
-        let index: number = line.children.indexOf(elementBox);
+        const checkPrevious: boolean = !isNullOrUndefined(isPrevious) ? isPrevious : true;
+        const checkNext: boolean = !isNullOrUndefined(isNext) ? isNext : true;
+        const combinedElements: TextElementBox[] = [];
+        const line: LineWidget = this.documentHelper.selection.getLineWidget(elementBox, 0);
+        const index: number = line.children.indexOf(elementBox);
         let prevText: string = elementBox.text;
         combinedElements.push(elementBox);
-        let difference: number = (isPrevious) ? 0 : 1;
+        const difference: number = (isPrevious) ? 0 : 1;
         let prevCombined: boolean = false;
         let isPrevField: boolean = false;
         if (elementBox.text !== '\v') {
@@ -740,7 +726,7 @@ export class SpellChecker {
                         isPrevField = true;
                     }
                 }
-                let currentElement: TextElementBox = (isCombined) ? textElement : elementBox;
+                const currentElement: TextElementBox = (isCombined) ? textElement : elementBox;
                 if (this.lookThroughPreviousLine(currentText, prevText, currentElement, underlineY, beforeIndex)) {
                     return true;
                 }
@@ -773,8 +759,8 @@ export class SpellChecker {
                         isPrevField = true;
                     }
                 }
-                let currentElement: TextElementBox = (canCombine) ? element : elementBox;
-                // tslint:disable-next-line:max-line-length
+                const currentElement: TextElementBox = (canCombine) ? element : elementBox;
+
                 if (currentElement.text !== '\f' && this.lookThroughNextLine(currentText, prevText, currentElement, underlineY, beforeIndex)) {
                     return true;
                 }
@@ -787,33 +773,31 @@ export class SpellChecker {
         return isCombined;
     }
 
-    // tslint:disable-next-line:max-line-length
+
     private lookThroughPreviousLine(currentText: string, prevText: string, currentElement: TextElementBox, underlineY: number, beforeIndex: number): boolean {
-        // tslint:disable-next-line:max-line-length
+
         if (!isNullOrUndefined(currentElement) && currentElement.indexInOwner === 0 && !isNullOrUndefined(currentElement.line.previousLine)) {
-            let previousLine: LineWidget = currentElement.line.previousLine;
-            let index: number = previousLine.children.length - 1;
+            const previousLine: LineWidget = currentElement.line.previousLine;
+            const index: number = previousLine.children.length - 1;
             if (!isNullOrUndefined(previousLine.children[index]) && previousLine.children[index] instanceof TextElementBox) {
-                let firstElement: TextElementBox = previousLine.children[index] as TextElementBox;
-                if (!isNullOrUndefined(currentElement.text)) {
-                    if (currentElement.text.indexOf(' ') !== 0 && firstElement.text.lastIndexOf(' ') !== firstElement.text.length - 1) {
-                        currentText = (currentText.length > 0) ? currentText : prevText;
-                        this.checkElementCanBeCombined(firstElement, underlineY, beforeIndex, true, currentText, false, true, true);
-                        return true;
-                    }
+                const firstElement: TextElementBox = previousLine.children[index] as TextElementBox;
+                if (currentElement.text.indexOf(' ') !== 0 && firstElement.text.lastIndexOf(' ') !== firstElement.text.length - 1) {
+                    currentText = (currentText.length > 0) ? currentText : prevText;
+                    this.checkElementCanBeCombined(firstElement, underlineY, beforeIndex, true, currentText, false, true, true);
+                    return true;
                 }
             }
         }
 
         return false;
     }
-    // tslint:disable-next-line:max-line-length
+
     private lookThroughNextLine(currentText: string, prevText: string, elementBox: TextElementBox, underlineY: number, beforeIndex: number): boolean {
-        // tslint:disable-next-line:max-line-length
+
         if (!isNullOrUndefined(elementBox) && elementBox.indexInOwner === elementBox.line.children.length - 1 && !isNullOrUndefined(elementBox.line.nextLine)) {
-            let nextLine: LineWidget = elementBox.line.nextLine;
+            const nextLine: LineWidget = elementBox.line.nextLine;
             if (!isNullOrUndefined(nextLine.children[0]) && nextLine.children[0] instanceof TextElementBox) {
-                let firstElement: TextElementBox = nextLine.children[0] as TextElementBox;
+                const firstElement: TextElementBox = nextLine.children[0] as TextElementBox;
                 if (elementBox.text.lastIndexOf(' ') !== elementBox.text.length - 1 && firstElement.text.indexOf(' ') !== 0) {
                     currentText = (currentText.length > 0) ? currentText : prevText;
                     this.checkElementCanBeCombined(firstElement, underlineY, beforeIndex, true, currentText, true, false, true);
@@ -827,41 +811,43 @@ export class SpellChecker {
 
     /**
      * Method to handle combined elements
-     * @param {TextElementBox} elementBox 
-     * @param {string} currentText 
-     * @param {number} underlineY 
-     * @param {number} beforeIndex 
+     *
+     * @param {TextElementBox} elementBox
+     * @param {string} currentText
+     * @param {number} underlineY
+     * @param {number} beforeIndex
      * @private
      */
     public handleCombinedElements(elementBox: TextElementBox, currentText: string, underlineY: number, beforeIndex: number): void {
         elementBox.istextCombined = true;
-        let splittedText: any[] = currentText.split(/[\s]+/);
-        // tslint:disable-next-line:max-line-length
+        const splittedText: any[] = currentText.split(/[\s]+/);
+
         if (this.ignoreAllItems.indexOf(currentText) === -1 && elementBox instanceof TextElementBox && elementBox.ignoreOnceItems.indexOf(currentText) === -1) {
             if (splittedText.length > 1) {
                 for (let i: number = 0; i < splittedText.length; i++) {
                     let currentText: string = splittedText[i];
                     currentText = this.manageSpecialCharacters(currentText, undefined, true);
-                    // tslint:disable-next-line:max-line-length
-                    this.documentHelper.render.handleUnorderdElements(currentText, elementBox, underlineY, i, 0, i === splittedText.length - 1, beforeIndex);
+
+                    this.documentHelper.render.handleUnorderedElements(currentText, elementBox, underlineY, i, 0, i === splittedText.length - 1, beforeIndex);
                 }
             } else {
                 currentText = this.manageSpecialCharacters(currentText, undefined, true);
-                this.documentHelper.render.handleUnorderdElements(currentText, elementBox, underlineY, 0, 0, true, beforeIndex);
+                this.documentHelper.render.handleUnorderedElements(currentText, elementBox, underlineY, 0, 0, true, beforeIndex);
             }
         }
     }
 
     /**
      * Method to check error element collection has unique element
-     * @param {ErrorTextElementBox[]} errorCollection 
-     * @param {ErrorTextElementBox} elementToCheck 
+     *
+     * @param {ErrorTextElementBox[]} errorCollection
+     * @param {ErrorTextElementBox} elementToCheck
      * @private
      */
-    public CheckArrayHasSameElement(errorCollection: ErrorTextElementBox[], elementToCheck: ErrorTextElementBox): boolean {
+    public checkArrayHasSameElement(errorCollection: ErrorTextElementBox[], elementToCheck: ErrorTextElementBox): boolean {
         for (let i: number = 0; i < errorCollection.length; i++) {
-            let errorText: ErrorTextElementBox = errorCollection[i];
-            // tslint:disable-next-line:max-line-length
+            const errorText: ErrorTextElementBox = errorCollection[i];
+
             if ((errorText.start.location.x === elementToCheck.start.location.x) && (errorText.start.location.y === elementToCheck.start.location.y)) {
                 return true;
             }
@@ -869,38 +855,24 @@ export class SpellChecker {
 
         return false;
     }
-
     /**
-     * Method to handle splitted and combined words for spell check.
-     * @param {any} jsonObject 
-     * @param {string} currentText 
-     * @param {ElementBox} elementBox 
-     * @param {boolean} isSamePage 
      * @private
      */
-    // tslint:disable-next-line:max-line-length
     public handleSplitWordSpellCheck(jsonObject: any, currentText: string, elementBox: TextElementBox, isSamePage: boolean, underlineY: number, iteration: number, markIndex: number, isLastItem?: boolean): void {
         if (jsonObject.HasSpellingError && elementBox.text !== ' ' && isSamePage) {
-            let matchResults: MatchResults = this.getMatchedResultsFromElement(elementBox, currentText);
-            // tslint:disable-next-line:max-line-length
+            const matchResults: MatchResults = this.getMatchedResultsFromElement(elementBox, currentText);
+
             markIndex = (elementBox.istextCombined) ? elementBox.line.getOffset(this.getCombinedElement(elementBox), 0) : markIndex;
-            // tslint:disable-next-line:max-line-length
+
             this.documentHelper.owner.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, matchResults.textResults, matchResults.elementInfo, 0, elementBox, false, null, markIndex);
             this.handleMatchedResults(matchResults.textResults, elementBox, underlineY, iteration, jsonObject.Suggestions, isLastItem);
         } else if (isLastItem) {
             elementBox.isSpellChecked = true;
         }
-        this.updateUniqueWords([{Text: currentText, HasSpellError: jsonObject.HasSpellingError}]);
+        this.updateUniqueWords([{ Text: currentText, HasSpellError: jsonObject.HasSpellingError }]);
     }
 
-    /**
-     * Method to include matched results in element box and to render it
-     * @param {TextSearchResults} results 
-     * @param {TextElementBox} elementBox 
-     * @param {number} wavyLineY 
-     * @param {number} index 
-     */
-    // tslint:disable-next-line:max-line-length
+
     private handleMatchedResults(results: TextSearchResults, elementBox: TextElementBox, wavyLineY: number, index: number, suggestions?: string[], isLastItem?: boolean): void {
         if (results.length === 0 && isLastItem) {
             elementBox.isSpellChecked = true;
@@ -908,16 +880,16 @@ export class SpellChecker {
         }
 
         for (let i: number = 0; i < results.length; i++) {
-            let span: ErrorTextElementBox = this.createErrorElementWithInfo(results.innerList[i], elementBox);
-            let color: string = '#FF0000';
-            // tslint:disable-next-line:max-line-length
-            if (!isNullOrUndefined(elementBox.errorCollection) && !this.CheckArrayHasSameElement(elementBox.errorCollection, span)) {
+            const span: ErrorTextElementBox = this.createErrorElementWithInfo(results.innerList[i], elementBox);
+            const color: string = '#FF0000';
+
+            if (!isNullOrUndefined(elementBox.errorCollection) && !this.checkArrayHasSameElement(elementBox.errorCollection, span)) {
                 elementBox.errorCollection.splice(index, 0, span);
             }
             this.addErrorCollection(span.text, span, suggestions);
-            // tslint:disable-next-line:max-line-length
-            let backgroundColor: string = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? (elementBox.paragraph.containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
-            this.documentHelper.render.renderWavyline(span, span.start.location.x, span.start.location.y - elementBox.margin.top, wavyLineY, color, 'Single', elementBox.characterFormat.baselineAlignment, backgroundColor);
+
+            const backgroundColor: string = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? (elementBox.paragraph.containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
+            this.documentHelper.render.renderWavyLine(span, span.start.location.x, span.start.location.y - elementBox.margin.top, wavyLineY, color, 'Single', elementBox.characterFormat.baselineAlignment, backgroundColor);
             if (isLastItem) {
                 elementBox.isSpellChecked = true;
             }
@@ -925,35 +897,30 @@ export class SpellChecker {
     }
     /**
      * Calls the spell checker service
-     * @param {number} languageID 
-     * @param {string} word 
-     * @param {boolean} checkSpellingAndSuggestion 
-     * @param {boolean} addWord 
      * @private
      */
-    /* tslint:disable:no-any */
-    // tslint:disable-next-line:max-line-length
-    public CallSpellChecker(languageID: number, word: string, checkSpelling: boolean, checkSuggestion: boolean, addWord?: boolean, isByPage?: boolean): Promise<any> {
-        let spellchecker : any = this;
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    public callSpellChecker(languageID: number, word: string, checkSpelling: boolean, checkSuggestion: boolean, addWord?: boolean, isByPage?: boolean): Promise<any> {
+        const spellchecker: any = this;
         return new Promise((resolve: Function, reject: Function) => {
             if (!isNullOrUndefined(this)) {
-                let httpRequest: XMLHttpRequest = new XMLHttpRequest();
-                // tslint:disable-next-line:max-line-length
+                const httpRequest: XMLHttpRequest = new XMLHttpRequest();
+
                 let service: string = this.documentHelper.owner.serviceUrl + this.documentHelper.owner.serverActionSettings.spellCheck;
                 service = (isByPage) ? service + 'ByPage' : service;
                 httpRequest.open('POST', service, true);
                 httpRequest.setRequestHeader('Content-Type', 'application/json');
                 this.setCustomHeaders(httpRequest);
-                // tslint:disable-next-line:max-line-length
-                /* tslint:disable:no-any */
-                let spellCheckData: any = { LanguageID: languageID, TexttoCheck: word, CheckSpelling: checkSpelling, CheckSuggestion: checkSuggestion, AddWord: addWord };
+
+                /* eslint-disable @typescript-eslint/no-explicit-any */
+                const spellCheckData: any = { LanguageID: languageID, TexttoCheck: word, CheckSpelling: checkSpelling, CheckSuggestion: checkSuggestion, AddWord: addWord };
                 httpRequest.send(JSON.stringify(spellCheckData));
                 httpRequest.onreadystatechange = () => {
                     if (httpRequest.readyState === 4) {
                         if (httpRequest.status === 200 || httpRequest.status === 304) {
                             resolve(httpRequest.response);
                         } else {
-                            let result: any = {
+                            const result: any = {
                                 name: 'onFailure',
                                 status: httpRequest.status,
                                 statusText: httpRequest.responseText,
@@ -971,34 +938,36 @@ export class SpellChecker {
 
     private setCustomHeaders(httpRequest: XMLHttpRequest): void {
         for (let i: number = 0; i < this.documentHelper.owner.headers.length; i++) {
-            let header: Object = this.documentHelper.owner.headers[i];
-            for (let key of Object.keys(header)) {
+            const header: Object = this.documentHelper.owner.headers[i];
+            for (const key of Object.keys(header)) {
                 httpRequest.setRequestHeader(key, header[key]);
             }
         }
     }
     /**
      * Method to check for next error
+     *
      * @private
+     * @returns {void}
      */
     public checkForNextError(): void {
         if (!isNullOrUndefined(this.viewer)) {
-            let errorWords: Dictionary<string, ElementBox[]> = this.errorWordCollection;
+            const errorWords: Dictionary<string, ElementBox[]> = this.errorWordCollection;
             if (errorWords.length > 0) {
                 for (let i: number = 0; i < errorWords.length; i++) {
-                    let errorElements: ElementBox[] = errorWords.get(errorWords.keys[i]);
+                    const errorElements: ElementBox[] = errorWords.get(errorWords.keys[i]);
                     for (let j: number = 0; j < errorElements.length; j++) {
                         if (errorElements[j] instanceof ErrorTextElementBox && !errorElements[j].ischangeDetected) {
                             this.updateErrorElementTextBox(errorWords.keys[i], errorElements[j] as ErrorTextElementBox);
                         } else if (errorElements[j] instanceof TextElementBox) {
-                            let matchResults: MatchResults = this.getMatchedResultsFromElement(errorElements[j]);
-                            let results: TextSearchResults = matchResults.textResults;
-                            // tslint:disable-next-line:max-line-length
-                            let markIndex: number = (errorElements[j].ischangeDetected) ? (errorElements[j] as ErrorTextElementBox).start.offset : errorElements[j].line.getOffset(errorElements[j], 0);
-                            // tslint:disable-next-line:max-line-length
+                            const matchResults: MatchResults = this.getMatchedResultsFromElement(errorElements[j]);
+                            const results: TextSearchResults = matchResults.textResults;
+
+                            const markIndex: number = (errorElements[j].ischangeDetected) ? (errorElements[j] as ErrorTextElementBox).start.offset : errorElements[j].line.getOffset(errorElements[j], 0);
+
                             this.documentHelper.owner.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, results, matchResults.elementInfo, 0, errorElements[j], false, null, markIndex);
                             for (let i: number = 0; i < results.length; i++) {
-                                let element: ErrorTextElementBox = this.createErrorElementWithInfo(results.innerList[i], errorElements[j]);
+                                const element: ErrorTextElementBox = this.createErrorElementWithInfo(results.innerList[i], errorElements[j]);
                                 this.updateErrorElementTextBox(element.text, element);
                                 break;
                             }
@@ -1014,12 +983,13 @@ export class SpellChecker {
     }
     /**
      * Method to create error element with matched results
-     * @param {TextSearchResult} result  
-     * @param {ElementBox} errorElement 
+     *
+     * @param {TextSearchResult} result
+     * @param {ElementBox} errorElement
      * @private
      */
     public createErrorElementWithInfo(result: TextSearchResult, errorElement: ElementBox): ErrorTextElementBox {
-        let element: ErrorTextElementBox = new ErrorTextElementBox();
+        const element: ErrorTextElementBox = new ErrorTextElementBox();
         element.text = result.text;
         element.start = result.start;
         element.end = result.end;
@@ -1031,21 +1001,24 @@ export class SpellChecker {
     }
     /**
      * Method to get matched results from element box
-     * @param {ElementBox} errorElement 
+     *
      * @private
+     * @param {ElementBox} errorElement - Specifies the error element box.
+     * @param {string} currentText - Specifies the current text
+     * @returns {MatchResults} - Returns match results info.
      */
     public getMatchedResultsFromElement(errorElement: ElementBox, currentText?: string): MatchResults {
-        let line: LineWidget = (errorElement as TextElementBox).line;
-        // tslint:disable-next-line:max-line-length
-        let pattern: RegExp = this.documentHelper.owner.searchModule.textSearch.stringToRegex((isNullOrUndefined(currentText)) ? (errorElement as TextElementBox).text : currentText, 'CaseSensitive');
+        const line: LineWidget = (errorElement as TextElementBox).line;
+
+        const pattern: RegExp = this.documentHelper.owner.searchModule.textSearch.stringToRegex((isNullOrUndefined(currentText)) ? (errorElement as TextElementBox).text : currentText, 'CaseSensitive');
         this.textSearchResults.clearResults();
-        let results: TextSearchResults = this.textSearchResults;
-        let textLineInfo: TextInLineInfo = this.documentHelper.owner.searchModule.textSearch.getElementInfo(line.children[0], 0, false);
-        let text: string = textLineInfo.fullText;
-        let matches: RegExpExecArray[] = [];
-        let spans: any = textLineInfo.elementsWithOffset;
+        const results: TextSearchResults = this.textSearchResults;
+        const textLineInfo: TextInLineInfo = this.documentHelper.owner.searchModule.textSearch.getElementInfo(line.children[0], 0, false);
+        const text: string = textLineInfo.fullText;
+        const matches: RegExpExecArray[] = [];
+        const spans: any = textLineInfo.elementsWithOffset;
         let matchObject: RegExpExecArray;
-        //tslint:disable no-conditional-assignment
+        // eslint-disable  no-cond-assign
         while (!isNullOrUndefined(matchObject = pattern.exec(text))) {
             matches.push(matchObject);
         }
@@ -1053,12 +1026,14 @@ export class SpellChecker {
     }
     /**
      * Method to update error element information
-     * @param {string} error 
-     * @param {ErrorTextElementBox} errorElement 
+     *
      * @private
+     * @param {string} error - Specifies the error word.
+     * @param {ErrorTextElementBox} errorElement - Specifies the error element box.
+     * @returns {void}
      */
     public updateErrorElementTextBox(error: string, errorElement: ErrorTextElementBox): void {
-        let element: ErrorTextElementBox = errorElement;
+        const element: ErrorTextElementBox = errorElement;
         this.documentHelper.clearSelectionHighlight();
         this.documentHelper.selection.start = element.start;
         this.documentHelper.selection.end = element.end;
@@ -1068,12 +1043,14 @@ export class SpellChecker {
 
     /**
      * Method to retrieve space information in a text
-     * @param {string} text 
-     * @param {WCharacterFormat} characterFormat 
+     *
      * @private
+     * @param {string} text - Specifies the text
+     * @param {WCharacterFormat} characterFormat - Specifies the character format.
+     * @returns {SpecialCharacterInfo} - Returs special character info.
      */
     public getWhiteSpaceCharacterInfo(text: string, characterFormat: WCharacterFormat): SpaceCharacterInfo {
-        /* tslint:disable:no-any */
+        /* eslint-disable @typescript-eslint/no-explicit-any */
         let matchedText: any = [];
         let width: number = 0;
         let length: number = 0;
@@ -1090,12 +1067,14 @@ export class SpellChecker {
 
     /**
      * Retrieve Special character info
-     * @param {string} text 
-     * @param {WCharacterFormat} characterFormat 
+     *
      * @private
+     * @param {string} text - Specifies the text
+     * @param {WCharacterFormat} characterFormat - Specifies the character format.
+     * @returns {SpecialCharacterInfo} - Returs special character info.
      */
     public getSpecialCharactersInfo(text: string, characterFormat: WCharacterFormat): SpecialCharacterInfo {
-        /* tslint:disable:no-any */
+        /* eslint-disable @typescript-eslint/no-explicit-any */
         let matchedText: any = [];
         let beginingwidth: number = 0;
         let endWidth: number = 0;
@@ -1120,8 +1099,10 @@ export class SpellChecker {
 
     /**
      * Method to retrieve next available combined element
-     * @param {ElementBox} element 
+     *
      * @private
+     * @param {ElementBox} element - Specified the element.
+     * @returns {ElementBox} - Returns combined element.
      */
     public getCombinedElement(element: ElementBox): ElementBox {
         let prevElement: ElementBox = element;
@@ -1132,10 +1113,7 @@ export class SpellChecker {
 
         return prevElement;
     }
-    /**
-     * Method to retrieve next available combined element
-     * @param {ElementBox} element 
-     */
+
     private checkCombinedElementsBeIgnored(elements: TextElementBox[], exactText: string): boolean {
         exactText = this.manageSpecialCharacters(exactText, undefined, true);
         for (let i: number = 0; i < elements.length; i++) {
@@ -1148,14 +1126,16 @@ export class SpellChecker {
     }
     /**
      * Method to update error collection
-     * @param {TextElementBox} currentElement 
-     * @param {TextElementBox} splittedElement
-     * @private 
+     *
+     * @private
+     * @param {TextElementBox} currentElement - Specifies current element.
+     * @param {TextElementBox} splittedElement - Specifies splitted element.
+     * @returns {void}
      */
     public updateSplittedElementError(currentElement: TextElementBox, splittedElement: TextElementBox): void {
-        let errorCount: number = currentElement.errorCollection.length;
+        const errorCount: number = currentElement.errorCollection.length;
         if (errorCount > 0) {
-            let errorCollection: ErrorTextElementBox[] = [];
+            const errorCollection: ErrorTextElementBox[] = [];
             for (let i: number = 0; i < errorCount; i++) {
                 errorCollection.push(currentElement.errorCollection[i]);
             }
@@ -1169,15 +1149,17 @@ export class SpellChecker {
     }
     /**
      * @private
+     * @param {Page} page - Specifies the page.
+     * @returns {string} - Returns page content.
      */
     public getPageContent(page: Page): string {
         let content: string = '';
         if (this.documentHelper.owner.sfdtExportModule) {
-            let sfdtExport: SfdtExport = this.documentHelper.owner.sfdtExportModule;
+            const sfdtExport: SfdtExport = this.documentHelper.owner.sfdtExportModule;
             sfdtExport.Initialize();
-            let document: any = sfdtExport.writePage(page);
+            const document: any = sfdtExport.writePage(page);
             if (this.documentHelper.owner.textExportModule) {
-                let textExport: TextExport = this.documentHelper.owner.textExportModule;
+                const textExport: TextExport = this.documentHelper.owner.textExportModule;
                 textExport.pageContent = '';
                 textExport.setDocument(document);
                 textExport.writeInternal();
@@ -1189,14 +1171,15 @@ export class SpellChecker {
 
     /**
      * @private
-     * @param spelledWords 
+     * @param {any[]} spelledWords - Specifies spelledWords
+     * @returns {void}
      */
     public updateUniqueWords(spelledWords: any[]): void {
         if (!isNullOrUndefined(localStorage.getItem(this.uniqueKey))) {
             this.uniqueSpelledWords = JSON.parse(localStorage.getItem(this.uniqueKey));
         }
         this.uniqueSpelledWords = this.uniqueSpelledWords || {};
-        let totalCount: number = spelledWords.length + Object.keys(this.uniqueSpelledWords).length;
+        const totalCount: number = spelledWords.length + Object.keys(this.uniqueSpelledWords).length;
         if (totalCount <= this.uniqueWordsCount) {
             for (let i: number = 0; i < spelledWords.length; i++) {
                 this.checkForUniqueWords(spelledWords[i]);
@@ -1206,26 +1189,26 @@ export class SpellChecker {
         this.uniqueSpelledWords = {};
     }
     private checkForUniqueWords(spellData: any): void {
-        let identityMatched: boolean = this.uniqueSpelledWords[spellData.Text];
+        const identityMatched: boolean = this.uniqueSpelledWords[spellData.Text];
         if (!identityMatched) {
-           this.uniqueSpelledWords[spellData.Text] = spellData.HasSpellError;
+            this.uniqueSpelledWords[spellData.Text] = spellData.HasSpellError;
         }
     }
     /**
      * Method to clear cached words for spell check
+     *
+     * @returns {void}
      */
     public clearCache(): void {
         if (!isNullOrUndefined(localStorage.getItem(this.uniqueKey))) {
             localStorage.removeItem(this.uniqueKey);
         }
     }
-    /**
-     * Method to create GUID
-     */
+
     private createGuid(): string {
         let dateTime: number = new Date().getTime();
-        let uuid: string = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char: string): string => {
-            let randNo: number = (dateTime + Math.random() * 16) % 16 | 0;
+        const uuid: string = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char: string): string => {
+            const randNo: number = (dateTime + Math.random() * 16) % 16 | 0;
             dateTime = Math.floor(dateTime / 16);
             return (char === 'x' ? randNo : (randNo & 0x3 | 0x8)).toString(16);
         });
@@ -1233,23 +1216,26 @@ export class SpellChecker {
     }
     /**
      * Check spelling in page data
+     *
      * @private
-     * @param {string} wordToCheck 
+     * @param {string} wordToCheck - Specifies wordToCheck
+     * @returns {WordSpellInfo} - Retruns WordSpellInfo
      */
     public checkSpellingInPageInfo(wordToCheck: string): WordSpellInfo {
-        let hasError: boolean = false;
-        let elementPresent: boolean = false;
-        /* tslint:disable:no-any */
-        let uniqueWords: any = JSON.parse(localStorage.getItem(this.uniqueKey));
+        const hasError: boolean = false;
+        const elementPresent: boolean = false;
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        const uniqueWords: any = JSON.parse(localStorage.getItem(this.uniqueKey));
         if (!isNullOrUndefined(uniqueWords)) {
             if (!isNullOrUndefined(uniqueWords[wordToCheck])) {
-                    return { hasSpellError: uniqueWords[wordToCheck], isElementPresent: true };
+                return { hasSpellError: uniqueWords[wordToCheck], isElementPresent: true };
             }
         }
         return { hasSpellError: hasError, isElementPresent: elementPresent };
     }
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         this.errorWordCollection = undefined;

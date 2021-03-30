@@ -77,7 +77,7 @@ describe('Bullet Chat Axis', () => {
         });
         it('checking with Title Postion Bottom and alignment far', (done: Function) => {
             bullet.titlePosition = 'Bottom';
-            // tslint:disable-next-line:align
+            // eslint-disable-next-line @typescript-eslint/indent
             bullet.titleStyle.textAlignment = 'Far';
             bullet.dataBind();
 
@@ -406,7 +406,7 @@ describe('Bullet Chat Axis', () => {
             svg = document.getElementById('container_BulletChartSubTitle');
             expect(svg.textContent).toEqual('(in px)');
             expect(svg.getAttribute('font-size')).toBe('20px');
-            // tslint:disable-next-line:chai-vague-errors
+            // eslint-disable-next-line 
             expect(svg.getAttribute('fill')).toBe('red');
             done();
         });
@@ -451,7 +451,7 @@ describe('Bullet Chat Axis', () => {
 
             svg = document.getElementById('container_svg_AxisLabel_20');
             expect(svg.textContent).toEqual('20%');
-            // tslint:disable-next-line:no-unused-expression
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             expect(svg.getAttribute('y') == '269.66666666666663' || svg.getAttribute('y') == '270').toBe(true);
             done();
         });

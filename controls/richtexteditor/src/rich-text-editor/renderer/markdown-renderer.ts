@@ -2,6 +2,7 @@ import { IRenderer, IRichTextEditor } from '../base/interface';
 
 /**
  * Markdown module is used to render Rich Text Editor as Markdown editor content
+ * 
  * @hidden
  * @deprecated
  */
@@ -12,19 +13,23 @@ export class MarkdownRender implements IRenderer {
 
     /**
      * Constructor for content renderer module
+     *
+     * @param {IRichTextEditor} parent - specifies the parent.
      */
-    constructor(parent?: IRichTextEditor) {
+    public constructor(parent?: IRichTextEditor) {
         this.parent = parent;
     }
 
     /**
      * The function is used to render Rich Text Editor content div
+     *
+     * @returns {void}
      * @hidden
-     * @deprecated  
+     * @deprecated
      */
     public renderPanel(): void {
-        let rteObj: IRichTextEditor = this.parent;
-        let div: HTMLElement = this.parent.createElement('div', { id: this.parent.getID() + '_view', className: 'e-rte-content' });
+        const rteObj: IRichTextEditor = this.parent;
+        const div: HTMLElement = this.parent.createElement('div', { id: this.parent.getID() + '_view', className: 'e-rte-content' });
         this.editableElement = this.parent.createElement('textarea', {
             className: 'e-content',
             id: this.parent.getID() + '_editable-content'
@@ -35,7 +40,8 @@ export class MarkdownRender implements IRenderer {
     }
     /**
      * Get the content div element of RichTextEditor
-     * @return {Element}
+     *
+     * @returns {Element} - specifies the element
      * @hidden
      * @deprecated
      */
@@ -44,7 +50,8 @@ export class MarkdownRender implements IRenderer {
     }
     /**
      * Get the editable element of RichTextEditor
-     * @return {Element}
+     *
+     * @returns {Element} - specifies the element
      * @hidden
      * @deprecated
      */
@@ -53,14 +60,17 @@ export class MarkdownRender implements IRenderer {
     }
     /**
      * Returns the text content as string.
-     * @return {string} 
+     *
+     * @returns {string} - specifies the string values.
      */
     public getText(): string {
         return (this.getEditPanel() as HTMLTextAreaElement).value;
     }
     /**
      * Set the content div element of RichTextEditor
-     * @param  {Element} panel
+     *
+     * @param  {Element} panel - specifies the element.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -69,7 +79,8 @@ export class MarkdownRender implements IRenderer {
     }
     /**
      * Get the document of RichTextEditor
-     * @param  {Document}
+      *
+     * @returns {void}
      * @hidden
      * @deprecated
      */

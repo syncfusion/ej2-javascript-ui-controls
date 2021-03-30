@@ -2,13 +2,23 @@
 
 ## [Unreleased]
 
-## 18.4.44 (2021-02-23)
+## 19.1.54 (2021-03-30)
 
 ### Dashboard Layout
 
 #### Bug Fixes
 
-- `I310199` - The issue with resize event in the bottom most panel while multiple panels get rendered has been resolved.
+- `#312164` - The issue with "Newly added dashboard panels hide while switch between mobile mode to normal mode" has been resolved.
+
+- `#310199` - The issue "Unable to resize when rendering multiple panels" has been resolved.
+
+### Splitter
+
+#### Bug Fixes
+
+- `#315820, #313937, #316711` - The issue with "Console error occurs on resizing when the splitter is rendered" has been resolved.
+
+- `#F163365` - The issue with "When the first pane is collapsed, the size of the second pane is not properly set" has been resolved.
 
 ## 18.4.30 (2020-12-17)
 

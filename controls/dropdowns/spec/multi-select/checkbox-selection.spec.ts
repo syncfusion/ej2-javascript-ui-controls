@@ -316,29 +316,29 @@ describe('MultiSelect', () => {
             keyboardEventArgs.keyCode = 70;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             let element1: HTMLElement = (<any>listObj).list.querySelector('li[data-value="JAVA"]');
             expect(element1.classList.contains(dropDownBaseClasses.selected)).toBe(false);
             (<any>listObj).checkBoxSelectionModule.filterInput.value = "";
             keyboardEventArgs.keyCode = 70;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             keyboardEventArgs.keyCode = 8;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             (<any>listObj).checkBoxSelectionModule.filterInput.value = "JAVA";
             //open action validation
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
             keyboardEventArgs.keyCode = 8;
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             let coll = (<any>listObj).liCollections;
             (<any>listObj).liCollections = undefined;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             (<any>listObj).liCollections = coll;
             expect(checker).toBe(true);
             listObj.destroy();
@@ -367,7 +367,7 @@ describe('MultiSelect', () => {
             keyboardEventArgs.keyCode = 70;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             expect(checker).toBe(true);
             listObj.hidePopup();
             listObj.destroy();
@@ -629,14 +629,14 @@ describe('MultiSelect', () => {
             keyboardEventArgs.keyCode = 70;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             (<any>listObj).checkBoxSelectionModule.clickOnBackIcon();
             (<any>listObj).checkBoxSelectionModule.filterInput.value = 'a';
             keyboardEventArgs.altKey = false;
             keyboardEventArgs.keyCode = 70;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             expect((<any>listObj).checkBoxSelectionModule.clearIconElement.style.visibility).toBe('visible');
             listObj.checkBoxSelectionModule.clearText(mouseEventArgs);
             listObj.checkBoxSelectionModule.removeEventListener();
@@ -654,7 +654,7 @@ describe('MultiSelect', () => {
             keyboardEventArgs.keyCode = 70;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             listObj.list.scrollTop = 100;
             expect(document.activeElement !== listObj.filterInput).toBe(true);
             listObj.checkBoxSelectionModule.clickOnBackIcon();
@@ -805,7 +805,7 @@ describe('MultiSelect', () => {
                 expect(document.body.contains((<any>multiObj).popupObj.element)).toBe(false);
                 keyboardEventArgs.keyCode = 70;
                 (<any>multiObj).keyDownStatus = true;
-                (<any>multiObj).KeyUp(keyboardEventArgs);
+                (<any>multiObj).keyUp(keyboardEventArgs);
                 expect(document.body.contains((<any>multiObj).popupObj.element)).toBe(true);
                 done();
             }, 500);
@@ -1063,7 +1063,7 @@ describe('MultiSelect', () => {
             listObj.appendTo(element);
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
 
             let wrapper: HTMLElement = (<any>listObj).chipCollectionWrapper;
             expect((<any>listObj).liCollections.length).toEqual(0);//34
@@ -1092,7 +1092,7 @@ describe('MultiSelect', () => {
             listObj.selectAll(true);
             expect((<any>listObj).list).not.toEqual(null);//34
             listObj.showOverAllClear();
-            listObj.ClearAll(mouseEventArgs);
+            listObj.clearAll(mouseEventArgs);
             listObj.destroy();
 
         });
@@ -1406,18 +1406,18 @@ describe('MultiSelect', () => {
             keyboardEventArgs.keyCode = 70;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             let element1: HTMLElement = (<any>listObj).list.querySelector('li[data-value="JAVA"]');
             expect(element1.classList.contains(dropDownBaseClasses.selected)).toBe(false);
             (<any>listObj).checkBoxSelectionModule.filterInput.value = "";
             keyboardEventArgs.keyCode = 70;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             keyboardEventArgs.keyCode = 8;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             listObj.destroy();
         });
         it('filtering inbuild support coverage', () => {
@@ -1433,18 +1433,18 @@ describe('MultiSelect', () => {
             keyboardEventArgs.keyCode = 70;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             let element1: HTMLElement = (<any>listObj).list.querySelector('li[data-value="JAVA"]');
             expect(element1.classList.contains(dropDownBaseClasses.selected)).toBe(false);
             (<any>listObj).checkBoxSelectionModule.filterInput.value = "";
             keyboardEventArgs.keyCode = 70;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             keyboardEventArgs.keyCode = 8;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             listObj.destroy();
         });
         it('filtering basic coverage', () => {
@@ -1465,7 +1465,7 @@ describe('MultiSelect', () => {
             keyboardEventArgs.keyCode = 8;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             let elem: HTMLElement[] = (<any>listObj).list.querySelectorAll('li.' + dropDownBaseClasses.focus);
             expect(elem.length).toBe(0);
             listObj.destroy();
@@ -1855,12 +1855,12 @@ describe('MultiSelect', () => {
             keyboardEventArgs.keyCode = 70;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             expect((<any>listObj).list.querySelectorAll('li[data-value="JAVA"]').length === 1).toBe(true);
             (<any>listObj).checkBoxSelectionModule.filterInput.value = "Python";
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             expect((<any>listObj).list.querySelectorAll('li[data-value="Python"]').length === 1).toBe(true);
             listObj.destroy();
 
@@ -1884,12 +1884,12 @@ describe('MultiSelect', () => {
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
             keyboardEventArgs.keyCode = 8;
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             let coll = (<any>listObj).liCollections;
             (<any>listObj).liCollections = undefined;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             (<any>listObj).liCollections = coll;
             expect(checker).toBe(true);
             listObj.destroy();
@@ -2038,7 +2038,7 @@ describe('MultiSelect', () => {
             dropDowns.inputElement.value = 'a';
             e.keyCode = 72;
             dropDowns.onInput(e);;
-            dropDowns.KeyUp(e);
+            dropDowns.keyUp(e);
             setTimeout(() => {
                 expect(dropDowns.list.querySelectorAll('li')[0].classList.contains('e-disabled')).toBe(true);
                 done();
@@ -2266,7 +2266,7 @@ describe('MultiSelect', () => {
             keyboardEventArgs.keyCode = 8;
             (<any>multiObj).keyDownStatus = true;
             (<any>multiObj).onKeyDown(keyboardEventArgs);
-            (<any>multiObj).KeyUp(keyboardEventArgs);
+            (<any>multiObj).keyUp(keyboardEventArgs);
             expect((<any>multiObj).mainList.querySelectorAll('li')[2].getAttribute('data-value') === list[2].getAttribute('data-value')).toBe(true);
         });
     });
@@ -2332,7 +2332,7 @@ describe('MultiSelect', () => {
                 keyboardEventArgs.altKey = false;
                 keyboardEventArgs.keyCode = 70;
                 (<any>multiObj).keyDownStatus = true;
-                (<any>multiObj).KeyUp(keyboardEventArgs);
+                (<any>multiObj).keyUp(keyboardEventArgs);
                 expect(document.body.contains((<any>multiObj).popupObj.element)).toBe(true);
                 let element1: HTMLElement = (<any>multiObj).list.querySelector('li[data-value="JAVA"]');
                 expect(element1.classList.contains(dropDownBaseClasses.selected)).toBe(false);
@@ -2506,7 +2506,7 @@ describe('MultiSelect', () => {
                 keyboardEventArgs.keyCode = 70;
                 dropDowns.keyDownStatus = true;
                 dropDowns.onInput(keyboardEventArgs);;
-                dropDowns.KeyUp(keyboardEventArgs);
+                dropDowns.keyUp(keyboardEventArgs);
                 let selectAll: HTMLElement = dropDowns.popupObj.element.querySelector('.e-selectall-parent .e-all-text');
                 expect(selectAll.textContent === 'Unselect All').toBe(true);
                 done();
@@ -2630,7 +2630,7 @@ describe('MultiSelect', () => {
             keyboardEventArgs.keyCode = 70;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             let element1: HTMLElement = (<any>listObj).list.querySelector('li[data-value="JAVA"]');
             listObj.hidePopup();
             listObj.showPopup();
@@ -3355,7 +3355,7 @@ describe('EJ2-44277', () => {
         keyboardEventArgs.keyCode = 65;
         (<any>listObj).keyDownStatus = true;
         (<any>listObj).onInput(keyboardEventArgs);
-        (<any>listObj).KeyUp(keyboardEventArgs);
+        (<any>listObj).keyUp(keyboardEventArgs);
         expect(count).toBe(1);
         (<any>listObj).checkBoxSelectionModule.clearText(mouseEventArgs);
         expect(count).toBe(2);

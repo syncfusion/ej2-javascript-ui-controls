@@ -2,7 +2,7 @@
 import { PdfQRBarcodeValues } from './qr-barcode-values';
 import { QRCodeVersion, ErrorCorrectionLevel } from '../barcode/enum/enum';
 /**
- * Qrcode used to calculate the Qrcode control 
+ * Qrcode used to calculate the Qrcode control
  */
 export class ErrorCorrectionCodewords {
 
@@ -57,30 +57,44 @@ export class ErrorCorrectionCodewords {
 
     /**
      * Sets and Gets the Data code word
+     *
+     * @param {string} value - Sets and Gets the Data code word
+     * @private
      */
-    /** @private */
     public set DC(value: string[]) {
         this.mDataCodeWord = value;
     }
 
+
+
     /**
      * Sets and Gets the DataBits
+     *
+     * @param {string} value - Sets and Gets the DataBits
+     * @private
      */
-    /** @private */
     public set DataBits(value: number) {
         this.databits = value;
     }
 
+
+
     /**
      * Sets and Gets the Error Correction Code Words
+     *
+     * @param {string} value - Sets and Gets the Error Correction Code Words
+     * @private
      */
-    /** @private */
     public set Eccw(value: number) {
         this.eccw = value;
     }
 
+
     /**
      * Initializes Error correction code word
+     *
+     * @param {QRCodeVersion} version - version of the qr code
+     * @param {ErrorCorrectionLevel} correctionLevel - defines the level of error correction.
      */
     constructor(version: QRCodeVersion, correctionLevel: ErrorCorrectionLevel) {
         this.mQrBarcodeValues = new PdfQRBarcodeValues(version, correctionLevel);
@@ -90,73 +104,80 @@ export class ErrorCorrectionCodewords {
         this.eccw = this.mQrBarcodeValues[variable];
     }
 
+
+
     /**
-     * Gets the Error correction code word
+     *  Gets the Error correction code word
+     *
+     * @returns { number} Gets the Error correction code word
+     * @private
      */
-    /* tslint:disable */
-    /** @private */
     public getErcw(): string[] {
-        let decimalRepresentation: number[];
-        let ecw: string[];
+        //const decimalRepresentation: number[];
+        //let ecw: string[];
         this.decimalValue = [this.databits];
 
         switch (this.eccw) {
-            case 7:
-                this.gx = [0, 87, 229, 146, 149, 238, 102, 21];
-                break;
-            case 10:
-                this.gx = [0, 251, 67, 46, 61, 118, 70, 64, 94, 32, 45];
-                break;
-            case 13:
-                this.gx = [0, 74, 152, 176, 100, 86, 100, 106, 104, 130, 218, 206, 140, 78];
-                break;
-            case 15:
-                this.gx = [0, 8, 183, 61, 91, 202, 37, 51, 58, 58, 237, 140, 124, 5, 99, 105];
-                break;
-            case 16:
-                this.gx = [0, 120, 104, 107, 109, 102, 161, 76, 3, 91, 191, 147, 169, 182, 194, 225, 120];
-                break;
-            case 17:
-                this.gx = [0, 43, 139, 206, 78, 43, 239, 123, 206, 214, 147, 24, 99, 150, 39, 243, 163, 136];
-                break;
-            case 18:
-                this.gx = [0, 215, 234, 158, 94, 184, 97, 118, 170, 79, 187, 152, 148, 252, 179, 5, 98, 96, 153];
-                break;
-            case 20:
-                this.gx = [0, 17, 60, 79, 50, 61, 163, 26, 187, 202, 180, 221, 225, 83, 239, 156, 164, 212, 212, 188, 190];
-                break;
-            case 22:
-                this.gx = [0, 210, 171, 247, 242, 93, 230, 14, 109, 221, 53, 200, 74, 8, 172, 98, 80, 219, 134, 160, 105, 165, 231];
-                break;
-            case 24:
-                this.gx = [0, 229, 121, 135, 48, 211, 117, 251, 126, 159, 180, 169, 152, 192, 226, 228, 218, 111, 0, 117, 232, 87,
-                    96, 227, 21];
-                break;
-            case 26:
-                this.gx = [0, 173, 125, 158, 2, 103, 182, 118, 17, 145, 201, 111, 28, 165, 53, 161, 21, 245, 142, 13, 102, 48, 227, 153,
-                    145, 218, 70];
-                break;
-            case 28:
-                this.gx = [0, 168, 223, 200, 104, 224, 234, 108, 180, 110, 190, 195, 147, 205, 27, 232, 201, 21, 43, 245, 87, 42, 195,
-                    212, 119, 242, 37, 9, 123];
-                break;
-            case 30:
-                this.gx = [0, 41, 173, 145, 152, 216, 31, 179, 182, 50, 48, 110, 86, 239, 96, 222, 125, 42, 173, 226, 193, 224, 130,
-                    156, 37, 251, 216, 238, 40, 192, 180];
-                break;
+        case 7:
+            this.gx = [0, 87, 229, 146, 149, 238, 102, 21];
+            break;
+        case 10:
+            this.gx = [0, 251, 67, 46, 61, 118, 70, 64, 94, 32, 45];
+            break;
+        case 13:
+            this.gx = [0, 74, 152, 176, 100, 86, 100, 106, 104, 130, 218, 206, 140, 78];
+            break;
+        case 15:
+            this.gx = [0, 8, 183, 61, 91, 202, 37, 51, 58, 58, 237, 140, 124, 5, 99, 105];
+            break;
+        case 16:
+            this.gx = [0, 120, 104, 107, 109, 102, 161, 76, 3, 91, 191, 147, 169, 182, 194, 225, 120];
+            break;
+        case 17:
+            this.gx = [0, 43, 139, 206, 78, 43, 239, 123, 206, 214, 147, 24, 99, 150, 39, 243, 163, 136];
+            break;
+        case 18:
+            this.gx = [0, 215, 234, 158, 94, 184, 97, 118, 170, 79, 187, 152, 148, 252, 179, 5, 98, 96, 153];
+            break;
+        case 20:
+            this.gx = [0, 17, 60, 79, 50, 61, 163, 26, 187, 202, 180, 221, 225, 83, 239, 156, 164, 212, 212, 188, 190];
+            break;
+        case 22:
+            this.gx = [0, 210, 171, 247, 242, 93, 230, 14, 109, 221, 53, 200, 74, 8, 172, 98, 80, 219, 134, 160, 105, 165, 231];
+            break;
+        case 24:
+            this.gx = [0, 229, 121, 135, 48, 211, 117, 251, 126, 159, 180, 169, 152, 192, 226, 228, 218, 111, 0, 117, 232, 87,
+                96, 227, 21];
+            break;
+        case 26:
+            this.gx = [0, 173, 125, 158, 2, 103, 182, 118, 17, 145, 201, 111, 28, 165, 53, 161, 21, 245, 142, 13, 102, 48, 227, 153,
+                145, 218, 70];
+            break;
+        case 28:
+            this.gx = [0, 168, 223, 200, 104, 224, 234, 108, 180, 110, 190, 195, 147, 205, 27, 232, 201, 21, 43, 245, 87, 42, 195,
+                212, 119, 242, 37, 9, 123];
+            break;
+        case 30:
+            this.gx = [0, 41, 173, 145, 152, 216, 31, 179, 182, 50, 48, 110, 86, 239, 96, 222, 125, 42, 173, 226, 193, 224, 130,
+                156, 37, 251, 216, 238, 40, 192, 180];
+            break;
         }
         this.gx = this.getElement(this.gx, this.alpha);
         this.toDecimal(this.mDataCodeWord);
-        decimalRepresentation = this.divide();
-        ecw = this.toBinary(decimalRepresentation);
+        const decimalRepresentation: number[]  = this.divide();
+        const ecw: string[] = this.toBinary(decimalRepresentation);
         return ecw;
     }
     /* tslint:enable */
 
 
+
     /**
      * Convert to decimal
-     * @param inString - is a binary values.
+     *
+     * @returns {void}Convert to decimal.
+     * @param {string[]} inString - Provide the version for the QR code
+     * @private
      */
     private toDecimal(inString: string[]): void {
         for (let i: number = 0; i < inString.length; i++) {
@@ -164,14 +185,19 @@ export class ErrorCorrectionCodewords {
         }
     }
 
+
     /**
      * Convert decimal to binary.
+     *
+     * @returns {string[]}Convert decimal to binary.
+     * @param {number[]} decimalRepresentation - Provide the version for the QR code
+     * @private
      */
     private toBinary(decimalRepresentation: number[]): string[] {
-        let toBinary: string[] = [];
+        const toBinary: string[] = [];
         for (let i: number = 0; i < this.eccw; i++) {
             let str: string = '';
-            let temp: string = decimalRepresentation[i].toString(2);
+            const temp: string = decimalRepresentation[i].toString(2);
             if (temp.length < 8) {
                 for (let j: number = 0; j < 8 - temp.length; j++) {
                     str += '0';
@@ -182,8 +208,12 @@ export class ErrorCorrectionCodewords {
         return toBinary;
     }
 
+
     /**
-     * Polynomial division
+     * Polynomial division.
+     *
+     * @returns {string[]}Polynomial division.
+     * @private
      */
     private divide(): number[] {
         let messagePolynom: { [key: number]: number } = {};
@@ -196,27 +226,27 @@ export class ErrorCorrectionCodewords {
             generatorPolynom[this.gx.length - 1 - i] = this.findElement(this.gx[i], this.alpha);
         }
         let tempMessagePolynom: { [key: number]: number } = {};
-        for (let poly of Object.keys(messagePolynom)) {
+        for (const poly of Object.keys(messagePolynom)) {
             tempMessagePolynom[Number(poly) + this.eccw] = messagePolynom[poly];
         }
         messagePolynom = tempMessagePolynom;
 
-        let genLeadtermFactor: number = this.decimalValue.length + this.eccw - this.gx.length;
+        const genLeadtermFactor: number = this.decimalValue.length + this.eccw - this.gx.length;
 
         tempMessagePolynom = {};
-        for (let poly of Object.keys(generatorPolynom)) {
+        for (const poly of Object.keys(generatorPolynom)) {
             tempMessagePolynom[Number(poly) + genLeadtermFactor] = generatorPolynom[poly];
         }
         generatorPolynom = tempMessagePolynom;
 
         let leadTermSource: { [key: number]: number } = messagePolynom;
         for (let i: number = 0; i < Object.keys(messagePolynom).length; i++) {
-            let largestExponent: number = this.findLargestExponent(leadTermSource);
+            const largestExponent: number = this.findLargestExponent(leadTermSource);
             if (leadTermSource[largestExponent] === 0) {
                 // First coefficient is already 0, simply remove it and continue
                 delete leadTermSource[largestExponent];
             } else {
-                let alphaNotation: { [key: number]: number } = this.convertToAlphaNotation(leadTermSource);
+                const alphaNotation: { [key: number]: number } = this.convertToAlphaNotation(leadTermSource);
                 let resPoly: { [key: number]: number } = this.multiplyGeneratorPolynomByLeadterm(
                     generatorPolynom, alphaNotation[this.findLargestExponent(alphaNotation)], i);
                 resPoly = this.convertToDecNotation(resPoly);
@@ -227,15 +257,15 @@ export class ErrorCorrectionCodewords {
 
         //Add the error correction word count according to polynomial values.
         this.eccw = Object.keys(leadTermSource).length;
-        let returnValue: number[] = [];
-        for (let temp of Object.keys(leadTermSource)) {
+        const returnValue: number[] = [];
+        for (const temp of Object.keys(leadTermSource)) {
             returnValue.push(leadTermSource[temp]);
         }
         return returnValue.reverse();
     }
 
     private xORPolynoms(messagePolynom: { [key: number]: number }, resPolynom: { [key: number]: number }): { [key: number]: number } {
-        let resultPolynom: { [key: number]: number } = {};
+        const resultPolynom: { [key: number]: number } = {};
         let longPoly: { [key: number]: number } = {};
         let shortPoly: { [key: number]: number } = {};
 
@@ -246,40 +276,40 @@ export class ErrorCorrectionCodewords {
             longPoly = resPolynom;
             shortPoly = messagePolynom;
         }
-        let messagePolyExponent: number = this.findLargestExponent(messagePolynom);
+        const messagePolyExponent: number = this.findLargestExponent(messagePolynom);
 
-        let shortPolyExponent: number = this.findLargestExponent(shortPoly);
+        const shortPolyExponent: number = this.findLargestExponent(shortPoly);
         let i: number = Object.keys(longPoly).length - 1;
-        for (let longPolySingle of Object.keys(longPoly)) {
+        for (const longPolySingle of Object.keys(longPoly)) {
             resultPolynom[messagePolyExponent - i] = longPoly[longPolySingle] ^ (Object.keys(shortPoly).length > i ?
                 shortPoly[shortPolyExponent - i] : 0);
             i--;
         }
-        let resultPolyExponent: number = this.findLargestExponent(resultPolynom);
+        const resultPolyExponent: number = this.findLargestExponent(resultPolynom);
         delete resultPolynom[resultPolyExponent];
         return resultPolynom;
     }
     private multiplyGeneratorPolynomByLeadterm(
         genPolynom: { [key: number]: number }, leadTermCoefficient: number, lowerExponentBy: number): { [key: number]: number } {
-        let tempPolynom: { [key: number]: number } = {};
+        const tempPolynom: { [key: number]: number } = {};
 
-        for (let treeNode of Object.keys(genPolynom)) {
+        for (const treeNode of Object.keys(genPolynom)) {
             tempPolynom[Number(treeNode) - lowerExponentBy] = (genPolynom[treeNode] + leadTermCoefficient) % 255;
         }
         return tempPolynom;
     }
 
     private convertToDecNotation(poly: { [key: number]: number }): { [key: number]: number } {
-        let tempPolynom: { [key: number]: number } = {};
-        for (let treeNode of Object.keys(poly)) {
+        const tempPolynom: { [key: number]: number } = {};
+        for (const treeNode of Object.keys(poly)) {
             tempPolynom[treeNode] = this.getIntValFromAlphaExp(poly[treeNode], this.alpha);
         }
         return tempPolynom;
     }
 
     private convertToAlphaNotation(polynom: { [key: number]: number }): { [key: number]: number } {
-        let tempPolynom: { [key: number]: number } = {};
-        for (let poly of Object.keys(polynom)) {
+        const tempPolynom: { [key: number]: number } = {};
+        for (const poly of Object.keys(polynom)) {
             if (polynom[poly] !== 0) {
                 tempPolynom[poly] = this.findElement(polynom[poly], this.alpha);
             }
@@ -289,7 +319,7 @@ export class ErrorCorrectionCodewords {
 
     private findLargestExponent(polynom: { [key: number]: number }): number {
         let largCo: number = 0;
-        for (let poly of Object.keys(polynom)) {
+        for (const poly of Object.keys(polynom)) {
             if (Number(poly) > largCo) {
                 largCo = Number(poly);
             }
@@ -304,8 +334,15 @@ export class ErrorCorrectionCodewords {
         return alpha[element];
     }
 
+
+
     /**
      * Find the element in the alpha
+     *
+     * @returns {number}Find the element in the alpha.
+     * @param {QRCodeVersion} element - Provide the element for the Qr code
+     * @param {ErrorCorrectionLevel} alpha -provide the number
+     * @private
      */
     private findElement(element: number, alpha: number[]): number {
         let j: number;
@@ -318,8 +355,16 @@ export class ErrorCorrectionCodewords {
     /**
      * Gets g(x) of the element
      */
+    /**
+     * Gets g(x) of the element
+     *
+     * @returns {number}Gets g(x) of the element .
+     * @param {QRCodeVersion} element - Provide the element for the Qr code
+     * @param {ErrorCorrectionLevel} alpha -provide the number
+     * @private
+     */
     private getElement(element: number[], alpha: number[]): number[] {
-        let gx: number[] = [element.length];
+        const gx: number[] = [element.length];
         for (let i: number = 0; i < element.length; i++) {
             if (element[i] > 255) {
                 element[i] = element[i] - 255;

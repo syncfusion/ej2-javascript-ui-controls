@@ -1,5 +1,5 @@
 import { createElement, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
-import { DropDownList, ComboBox } from '@syncfusion/ej2-dropdowns';
+import { DropDownList, ComboBox, SelectEventArgs, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { RadioButton, Button } from '@syncfusion/ej2-buttons';
 import { WStyle, WCharacterStyle, WParagraphStyle } from '../../implementation/format/style';
 import { StyleType } from '../../base';
@@ -8,8 +8,8 @@ import { WList } from '../list/list';
 import { Query } from '@syncfusion/ej2-data';
 import { WAbstractList } from '../list/abstract-list';
 import { WCharacterFormat, WParagraphFormat } from '../index';
-import { ColorPicker } from '@syncfusion/ej2-inputs';
-import { DropDownButton, ItemModel } from '@syncfusion/ej2-splitbuttons';
+import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
+import { DropDownButton, ItemModel, MenuEventArgs as DropDownButtonMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { DocumentHelper } from '../viewer';
 
@@ -54,28 +54,34 @@ export class StyleDialog {
     private styleDropdwn: DropDownButton;
 
     /**
+     * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
      */
-    constructor(documentHelper: DocumentHelper) {
+    public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
     }
+
     /**
      * @private
+     * @returns {string} Returns module name
      */
     public getModuleName(): string {
         return 'StyleDialog';
     }
     /**
      * @private
+     * @param {L10n} localValue - Specifies the locale value
+     * @param {boolean} isRtl - Specifies the is rtl
+     * @returns {void}
      */
-    //tslint:disable: max-func-body-length
+    /* eslint-disable  */
     public initStyleDialog(localValue: L10n, isRtl?: boolean): void {
         let instance: StyleDialog = this;
         this.localObj = localValue;
         let id: string = this.documentHelper.owner.containerId + '_style';
         this.target = createElement('div', { id: id, className: 'e-de-style-dialog' });
         let container: HTMLElement = createElement('div');
-        // tslint:disable-next-line:max-line-length
+
         let properties: HTMLElement = createElement('div', { className: 'e-de-style-properties', innerHTML: localValue.getConstant('Properties') });
         container.appendChild(properties);
         let styleNameTypeDiv: HTMLElement = createElement('div', { styles: 'display:flex', className: 'e-de-style-nametype-div' });
@@ -84,7 +90,7 @@ export class StyleDialog {
         styleNameTypeDiv.appendChild(nameWholeDiv);
         let name: HTMLElement = createElement('div', { className: 'e-de-style-name', innerHTML: localValue.getConstant('Name') + ':' });
         nameWholeDiv.appendChild(name);
-        // tslint:disable-next-line:max-line-length
+
         let nameValue: HTMLInputElement = createElement('input', { id: this.documentHelper.owner.containerId + '_style_name', styles: 'width:210px;', className: 'e-input e-de-style-dlg-name-input' }) as HTMLInputElement;
         nameValue.addEventListener('keyup', this.updateOkButton);
         nameValue.addEventListener('input', this.updateOkButton);
@@ -92,31 +98,31 @@ export class StyleDialog {
         nameWholeDiv.appendChild(nameValue);
         let styleTypeWholeDiv: HTMLElement = createElement('div');
         styleNameTypeDiv.appendChild(styleTypeWholeDiv);
-        // tslint:disable-next-line:max-line-length
+
         let styleType: HTMLElement = createElement('div', { className: 'e-de-style-styletype', innerHTML: localValue.getConstant('Style type') + ':' });
         styleTypeWholeDiv.appendChild(styleType);
         let styleTypeDivElement: HTMLElement = createElement('div', { className: 'e-de-style-style-type-div' });
         let styleTypeValue: HTMLSelectElement = createElement('select', { id: 'e-de-style-style-type' }) as HTMLSelectElement;
-        // tslint:disable-next-line:max-line-length
+
         styleTypeValue.innerHTML = '<option>' + localValue.getConstant('Paragraph') + '</option><option>' + localValue.getConstant('Character') + '</option><option>' + localValue.getConstant('Linked Style') + '</option>'; //<option>Linked(Paragraph and Character)</option><option>Table</option><option>List</option>';
         styleTypeDivElement.appendChild(styleTypeValue);
         this.styleType = new DropDownList({ change: this.styleTypeChange, popupHeight: '253px', width: '210px', enableRtl: isRtl });
         this.styleType.appendTo(styleTypeValue);
         styleTypeWholeDiv.appendChild(styleTypeDivElement);
-        // tslint:disable-next-line:max-line-length
+
         let styleBasedParaDiv: HTMLElement = createElement('div', { styles: 'display:flex', className: 'e-de-style-based-para-div' });
         container.appendChild(styleBasedParaDiv);
         let styleBasedOnWholeDiv: HTMLElement = createElement('div', { className: 'e-de-style-left-div' });
         styleBasedParaDiv.appendChild(styleBasedOnWholeDiv);
-        // tslint:disable-next-line:max-line-length
+
         let styleBasedOn: HTMLElement = createElement('div', { className: 'e-de-style-style-based-on', innerHTML: localValue.getConstant('Style based on') + ':' });
         styleBasedOnWholeDiv.appendChild(styleBasedOn);
         let styleBasedOnDivElement: HTMLElement = createElement('div', { className: 'e-de-style-style-based-on-div' });
-        // tslint:disable-next-line:max-line-length
+
         let styleBasedOnValue: HTMLInputElement = createElement('input', { id: 'e-de-style-style-based-on-value' }) as HTMLInputElement;
         //styleBasedOnValue.innerHTML = '<option>Normal</option><option>Heading 1</option><option>Heading 2</option><option>Heading 3</option><option>Heading 4</option><option>Heading 5</option><option>Heading 6</option>';
         styleBasedOnDivElement.appendChild(styleBasedOnValue);
-        // tslint:disable-next-line:max-line-length
+
         this.styleBasedOn = new DropDownList({ dataSource: [], select: this.styleBasedOnChange, popupHeight: '253px', width: '210px', enableRtl: isRtl });
         this.styleBasedOn.appendTo(styleBasedOnValue);
         styleBasedOnWholeDiv.appendChild(styleBasedOnDivElement);
@@ -128,20 +134,19 @@ export class StyleDialog {
             styleBasedOnWholeDiv.classList.add('e-de-rtl');
             styleParagraphWholeDiv.classList.add('e-de-rtl');
         }
-        // tslint:disable-next-line:max-line-length
+
         let styleParagraph: HTMLElement = createElement('div', { className: 'e-de-style-style-paragraph', innerHTML: localValue.getConstant('Style for following paragraph') + ':' });
         styleParagraphWholeDiv.appendChild(styleParagraph);
         let styleParagraphDivElement: HTMLElement = createElement('div', { className: 'e-de-style-style-paragraph-div' });
-        // tslint:disable-next-line:max-line-length
+
         let styleParagraphValue: HTMLInputElement = createElement('input', { id: 'e-de-style-style-paragraph-value' }) as HTMLInputElement;
-        // tslint:disable-next-line:max-line-length
+
         //styleParagraphValue.innerHTML = '<option>Normal</option><option>Heading 1</option><option>Heading 2</option><option>Heading 3</option><option>Heading 4</option><option>Heading 5</option><option>Heading 6</option>';
         styleParagraphDivElement.appendChild(styleParagraphValue);
-        // tslint:disable-next-line:max-line-length
+
         this.styleParagraph = new DropDownList({ dataSource: [], select: this.styleParagraphChange, popupHeight: '253px', width: '210px', enableRtl: isRtl });
         this.styleParagraph.appendTo(styleParagraphValue);
         styleParagraphWholeDiv.appendChild(styleParagraphDivElement);
-        // tslint:disable-next-line:max-line-length
         let formatting: HTMLElement = createElement('div', { className: 'e-de-style-formatting', innerHTML: localValue.getConstant('Formatting') });
         container.appendChild(formatting);
         let optionsDiv: HTMLElement = createElement('div', { className: 'e-de-style-options-div' });
@@ -157,16 +162,16 @@ export class StyleDialog {
         // let radioOptionsDiv: HTMLElement = createElement('div', { styles: 'display:flex' });
         // container.appendChild(radioOptionsDiv);
         // let onlyThisDocumentDiv: HTMLElement = createElement('div', { className: 'e-de-style-radio-button' });
-        // tslint:disable-next-line:max-line-length
+
         // let onlyThisDocument: HTMLInputElement = createElement('input', { className: 'e-de-style-only-this-doc', attrs: { type: 'radio' } }) as HTMLInputElement;
         // onlyThisDocumentDiv.appendChild(onlyThisDocument);
-        // tslint:disable-next-line:max-line-length
+
         // this.onlyThisDocument = new RadioButton({ label: 'Only in this document', value: 'only in this document', checked: true, name: 'styles' });
         // this.onlyThisDocument.appendTo(onlyThisDocument);
         // radioOptionsDiv.appendChild(onlyThisDocumentDiv);
 
         // let templateDiv: HTMLElement = createElement('div', { className: 'e-de-style-radio-button' });
-        // tslint:disable-next-line:max-line-length
+
         // let template: HTMLInputElement = createElement('input', { className: 'e-de-style-temp', attrs: { type: 'radio' } }) as HTMLInputElement;
         // templateDiv.appendChild(template);
         // this.template = new RadioButton({ label: 'Template', value: 'template', name: 'styles' });
@@ -205,13 +210,17 @@ export class StyleDialog {
                         args.element.classList.remove('e-disabled');
                     }
                 }
-            }
+            },
         });
         this.styleDropdwn.appendTo(formatBtn);
         this.styleDropdwn.addEventListener('select', this.openDialog);
     }
-    /* tslint:disable-next-line:no-any */
-    private openDialog = (args: any): void => {
+    /**
+     * 
+     * @param {DropDownButtonMenuEventArgs} args - Specifies the event args.
+     * @returns {void}
+     */
+    private openDialog = (args: DropDownButtonMenuEventArgs): void => {
         switch (args.item.id) {
             case 'style_font':
                 this.showFontDialog();
@@ -226,7 +235,7 @@ export class StyleDialog {
     }
     private createFontOptions(parentDiv: HTMLElement, isRtl?: boolean): void {
         let fontFamilyElement: HTMLElement = createElement('input', {
-            id: this.target.id + '_fontName' ,
+            id: this.target.id + '_fontName',
         });
         let fontStyle: { [key: string]: Object; }[];
         let isStringTemplate: boolean = true;
@@ -259,35 +268,50 @@ export class StyleDialog {
         this.fontSize.appendTo(fontSizeElement);
         let fontGroupButton: HTMLElement = createElement('div', { className: 'e-de-style-font-group-button' });
         parentDiv.appendChild(fontGroupButton);
-        // tslint:disable-next-line:max-line-length
+
         this.bold = this.createButtonElement(fontGroupButton, 'e-de-bold', 'e-de-style-bold-button-size', this.documentHelper.owner.containerId + '_style_bold');
         this.bold.addEventListener('click', this.setBoldProperty);
-        // tslint:disable-next-line:max-line-length
+
         this.italic = this.createButtonElement(fontGroupButton, 'e-de-italic', 'e-de-style-icon-button-size', this.documentHelper.owner.containerId + '_style_italic');
         this.italic.addEventListener('click', this.setItalicProperty);
-        // tslint:disable-next-line:max-line-length
+
         this.underline = this.createButtonElement(fontGroupButton, 'e-de-underline', 'e-de-style-icon-button-size', this.documentHelper.owner.containerId + '_style_underline');
         this.underline.addEventListener('click', this.setUnderlineProperty);
         let fontColorElement: HTMLElement = createElement('input', { attrs: { type: 'color' }, className: 'e-de-style-icon-button-size' });
         parentDiv.appendChild(fontColorElement);
-        // tslint:disable-next-line:max-line-length
+
         this.fontColor = new ColorPicker({ cssClass: 'e-de-style-font-color-picker', enableRtl: isRtl, change: this.fontColorUpdate, locale: this.documentHelper.owner.locale });
         this.fontColor.appendTo(fontColorElement);
     }
+    /**
+     * @private
+     * @returns {void}
+     */
     private setBoldProperty = (): void => {
         this.characterFormat.bold = !this.characterFormat.bold;
-        this.fontButtonClicked(undefined);
+        this.fontButtonClicked();
     }
+    /**
+     * @private
+     * @returns {void}
+     */
     private setItalicProperty = (): void => {
         this.characterFormat.italic = !this.characterFormat.italic;
-        this.fontButtonClicked(undefined);
+        this.fontButtonClicked();
     }
+    /**
+     * @private
+     * @returns {void}
+     */
     private setUnderlineProperty = (): void => {
         this.characterFormat.underline = this.characterFormat.underline === 'None' ? 'Single' : 'None';
-        this.fontButtonClicked(undefined);
+        this.fontButtonClicked();
     }
-    /* tslint:disable-next-line:no-any */
-    private fontButtonClicked = (args: any): void => {
+    /**
+     * @private
+     * @returns {void}
+     */
+    private fontButtonClicked = (): void => {
         if (this.characterFormat.bold) {
             if (!this.bold.classList.contains('e-active')) {
                 this.bold.classList.add('e-active');
@@ -318,16 +342,28 @@ export class StyleDialog {
             }
         }
     }
-    /* tslint:disable-next-line:no-any */
-    private fontSizeUpdate = (args: any): void => {
-        this.characterFormat.fontSize = args.value;
+    /**
+     * @private
+     * @param {ChangeEventArgs} args - Specifies the event args.
+     * @returns {void}
+     */
+    private fontSizeUpdate = (args: ChangeEventArgs): void => {
+        this.characterFormat.fontSize = args.value as number;
     }
-    /* tslint:disable-next-line:no-any */
-    private fontFamilyChanged = (args: any): void => {
-        this.characterFormat.fontFamily = args.value;
+    /**
+     * @private
+     * @param {ChangeEventArgs} args - Specifies the event args.
+     * @returns {void}
+     */
+    private fontFamilyChanged = (args: ChangeEventArgs): void => {
+        this.characterFormat.fontFamily = args.value.toString();
     }
-    /* tslint:disable-next-line:no-any */
-    private fontColorUpdate = (args: any): void => {
+    /**
+     * @private
+     * @param {ColorPickerEventArgs} args - Specifies the event args.
+     * @returns {void}
+     */
+    private fontColorUpdate = (args: ColorPickerEventArgs): void => {
         this.characterFormat.fontColor = args.currentValue.hex;
     }
     private createParagraphOptions(parentDiv: HTMLElement): void {
@@ -348,7 +384,7 @@ export class StyleDialog {
             this.paragraphFormat.lineSpacing = 1;
             this.updateParagraphFormat();
         });
-        // tslint:disable-next-line:max-line-length
+
         this.onePointFiveLineSpacing = this.createButtonElement(lineSpacingDiv, 'e-de-one-point-five-spacing', 'e-de-style-icon-button-size');
         this.onePointFiveLineSpacing.addEventListener('click', () => {
             this.paragraphFormat.lineSpacing = 1.5;
@@ -380,6 +416,10 @@ export class StyleDialog {
             this.paragraphFormat.leftIndent += 36;
         });
     }
+    /**
+     * @private
+     * @returns {void}
+     */
     private setLeftAlignment = (): void => {
         if (this.paragraphFormat.textAlignment === 'Left') {
             this.paragraphFormat.textAlignment = 'Justify';
@@ -388,6 +428,10 @@ export class StyleDialog {
         }
         this.updateParagraphFormat();
     }
+    /**
+     * @private
+     * @returns {void}
+     */
     private setRightAlignment = (): void => {
         if (this.paragraphFormat.textAlignment === 'Right') {
             this.paragraphFormat.textAlignment = 'Left';
@@ -396,6 +440,10 @@ export class StyleDialog {
         }
         this.updateParagraphFormat();
     }
+    /**
+     * @private
+     * @returns {void}
+     */
     private setCenterAlignment = (): void => {
         if (this.paragraphFormat.textAlignment === 'Center') {
             this.paragraphFormat.textAlignment = 'Left';
@@ -404,6 +452,10 @@ export class StyleDialog {
         }
         this.updateParagraphFormat();
     }
+    /**
+     * @private
+     * @returns {void}
+     */
     private setJustifyAlignment = (): void => {
         if (this.paragraphFormat.textAlignment === 'Justify') {
             this.paragraphFormat.textAlignment = 'Left';
@@ -424,10 +476,18 @@ export class StyleDialog {
         return buttonElement;
 
     }
+    /**
+     * @private
+     * @returns {void}
+     */
     private increaseBeforeAfterSpacing = (): void => {
         this.paragraphFormat.beforeSpacing += 6;
         this.paragraphFormat.afterSpacing += 6;
     }
+    /**
+     * @private
+     * @returns {void}
+     */
     private decreaseBeforeAfterSpacing = (): void => {
         if (this.paragraphFormat.beforeSpacing >= 6) {
             this.paragraphFormat.beforeSpacing -= 6;
@@ -443,7 +503,7 @@ export class StyleDialog {
     private toggleDisable(): void {
         if (this.styleType.value === this.localObj.getConstant('Character')) {
             this.styleParagraph.enabled = false;
-            // tslint:disable-next-line:max-line-length
+
             this.target.getElementsByClassName('e-style-paragraph').item(0).setAttribute('style', 'display:flex;pointer-events:none;opacity:0.5');
         } else {
             this.styleParagraph.enabled = true;
@@ -454,10 +514,11 @@ export class StyleDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public updateNextStyle = (args: FocusEvent): void => {
         let typedName: string = (args.srcElement as HTMLInputElement).value;
-        // tslint:disable-next-line:max-line-length
+
         if (this.getTypeValue() === this.localObj.getConstant('Paragraph') && !isNullOrUndefined(typedName) && typedName !== '' && !this.isUserNextParaUpdated) {
             let styles: string[] = this.documentHelper.styles.getStyleNames(this.getTypeValue());
             if (this.isEdit) {
@@ -472,6 +533,7 @@ export class StyleDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public updateOkButton = (): void => {
         let styleName: string = (this.target.getElementsByClassName('e-input e-de-style-dlg-name-input').item(0) as HTMLInputElement).value;
@@ -479,16 +541,17 @@ export class StyleDialog {
     }
     /**
      * @private
+     * @param {ChangeEventArgs} args - Specifies the event args.
+     * @returns {void}
      */
-    /* tslint:disable-next-line:no-any */
-    public styleTypeChange = (args: any): void => {
+    public styleTypeChange = (args: ChangeEventArgs): void => {
         if (args.isInteracted) {
             let type: StyleType;
             if (args.value === this.localObj.getConstant('Character')) {
                 this.style = new WCharacterStyle();
                 type = 'Character';
             }
-            // tslint:disable-next-line:max-line-length
+
             if (args.value === this.localObj.getConstant('Paragraph') || args.value === this.localObj.getConstant('Linked Style')) {
                 this.style = new WParagraphStyle();
                 type = 'Paragraph';
@@ -497,15 +560,18 @@ export class StyleDialog {
             this.updateStyleNames(type as StyleType);
         }
     }
-    /* tslint:disable-next-line:no-any */
-    private styleBasedOnChange = (args: any): void => {
+    /**
+     * @returns {void}
+     */
+    private styleBasedOnChange = (): void => {
         //Based on change
     }
     /**
      * @private
+     * @param {SelectEventArgs} args - Specifies the event args.
+     * @returns {void}
      */
-    /* tslint:disable-next-line:no-any */
-    public styleParagraphChange = (args: any): void => {
+    public styleParagraphChange = (args: SelectEventArgs): void => {
         if (args.isInteracted) {
             this.isUserNextParaUpdated = true;
         }
@@ -514,6 +580,7 @@ export class StyleDialog {
 
     /**
      * @private
+     * @returns {void}
      */
     public showFontDialog = (): void => {
         if (!isNullOrUndefined(this.documentHelper.owner.fontDialogModule)) {
@@ -523,6 +590,7 @@ export class StyleDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public showParagraphDialog = (): void => {
         if (!isNullOrUndefined(this.documentHelper.owner.paragraphDialogModule)) {
@@ -531,23 +599,27 @@ export class StyleDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public showNumberingBulletDialog = (): void => {
         this.numberingBulletDialog = new BulletsAndNumberingDialog(this.documentHelper);
         if (this.style instanceof WParagraphStyle && (!isNullOrUndefined(this.style.paragraphFormat))) {
-            // tslint:disable-next-line:max-line-length
+
             this.numberingBulletDialog.showNumberBulletDialog((this.style as WParagraphStyle).paragraphFormat.listFormat, this.abstractList);
         }
     }
     /**
      * @private
+     * @param {string} styleName - Specifies the style name.
+     * @param {string} header - Specifies the header.
+     * @returns {void}
      */
     public show(styleName?: string, header?: string): void {
         let localObj: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         this.isEdit = (!isNullOrUndefined(styleName) && styleName.length > 0) ? true : false;
         this.editStyleName = styleName;
         this.abstractList = new WAbstractList();
-        // tslint:disable-next-line:max-line-length
+
         let style: WCharacterStyle | WParagraphStyle = this.documentHelper.styles.findByName(styleName) as WCharacterStyle | WParagraphStyle;
         this.style = !this.isEdit ? new WParagraphStyle() : style ? style : this.getStyle(styleName) as WCharacterStyle | WParagraphStyle;
         localObj.setLocale(this.documentHelper.owner.locale);
@@ -578,6 +650,7 @@ export class StyleDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public onOkButtonClick = (): void => {
         let styleName: string = this.styleNameElement.value;
@@ -587,13 +660,13 @@ export class StyleDialog {
             if (!isNullOrUndefined(style)) {
                 this.style.type = this.getTypeValue();
                 this.style.basedOn = this.documentHelper.styles.findByName(this.styleBasedOn.value as string) as WStyle;
-                // tslint:disable-next-line:max-line-length
+
                 if (this.styleType.value === this.localObj.getConstant('Paragraph') || this.styleType.value === this.localObj.getConstant('Linked Style')) {
                     this.style.next = this.documentHelper.styles.findByName(this.styleParagraph.value as string) as WStyle;
                     (this.style as WParagraphStyle).characterFormat.mergeFormat((style as WParagraphStyle).characterFormat);
                     (this.style as WParagraphStyle).paragraphFormat.mergeFormat((style as WParagraphStyle).paragraphFormat, true);
                     this.updateList();
-                    // tslint:disable-next-line:max-line-length
+
                     this.style.link = (this.styleType.value === this.localObj.getConstant('Linked Style')) ? this.createLinkStyle(styleName, this.isEdit) : undefined;
                 }
 
@@ -606,12 +679,9 @@ export class StyleDialog {
                 this.documentHelper.owner.editorModule.layoutWholeDocument();
                 this.documentHelper.owner.isShiftingEnabled = false;
             } else {
-                /* tslint:disable-next-line:no-any */
                 let tmpStyle: any = this.getTypeValue() === 'Paragraph' ? new WParagraphStyle() : new WCharacterStyle;
                 tmpStyle.copyStyle(this.style);
-                /* tslint:disable-next-line:no-any */
                 let basedOn: any = this.documentHelper.styles.findByName(this.styleBasedOn.value as string) as WStyle;
-                // tslint:disable-next-line:max-line-length
                 if (this.styleType.value === this.localObj.getConstant('Paragraph') || this.styleType.value === this.localObj.getConstant('Linked Style')) {
                     if (styleName === this.styleParagraph.value) {
                         tmpStyle.next = tmpStyle;
@@ -620,12 +690,11 @@ export class StyleDialog {
                     }
                     this.updateList();
                 }
-                // tslint:disable-next-line:max-line-length
+
                 tmpStyle.link = (this.styleType.value === this.localObj.getConstant('Linked Style')) ? this.createLinkStyle(styleName) : undefined;
                 tmpStyle.type = this.getTypeValue();
                 tmpStyle.name = styleName;
                 tmpStyle.basedOn = basedOn;
-                /* tslint:disable-next-line:no-any */
                 this.documentHelper.styles.push(tmpStyle as any);
                 name = styleName;
                 this.documentHelper.owner.editorModule.applyStyle(name);
@@ -670,11 +739,14 @@ export class StyleDialog {
         }
         return this.documentHelper.styles.findByName(charStyle.name, 'Character') as WStyle;
     }
-    /* tslint:disable-next-line:no-any */
-    private loadStyleDialog = (args: any): void => {
+    /**
+     * @private
+     * @returns {void}
+     */
+    private loadStyleDialog = (): void => {
         this.documentHelper.updateFocus();
         this.isUserNextParaUpdated = false;
-        /* tslint:disable-next-line:max-line-length */
+
         this.styleNameElement = this.target.getElementsByClassName('e-input e-de-style-dlg-name-input').item(0) as HTMLInputElement;
         this.styleNameElement.value = null;
         if (!this.isEdit) {
@@ -685,7 +757,7 @@ export class StyleDialog {
             this.styleNameElement.value = this.editStyleName;
             name = this.editStyleName;
         }
-        /* tslint:disable-next-line:max-line-length */
+
         this.okButton = this.documentHelper.dialog2.element.getElementsByClassName('e-flat e-style-okay').item(0) as HTMLButtonElement;
         this.enableOrDisableOkButton();
         this.updateStyleNames(this.getTypeValue(), name);
@@ -694,6 +766,8 @@ export class StyleDialog {
     }
     /**
      * @private
+     * @param {L10n} characterFormat - Specifies the character format
+     * @returns {void}
      */
     public updateCharacterFormat(characterFormat?: WCharacterFormat): void {
         if (!isNullOrUndefined(characterFormat)) {
@@ -702,11 +776,12 @@ export class StyleDialog {
         this.fontFamily.value = this.characterFormat.fontFamily;
         this.fontSize.value = this.characterFormat.fontSize;
         this.fontColor.value = this.characterFormat.fontColor;
-        this.fontButtonClicked(undefined);
+        this.fontButtonClicked();
     }
 
     /**
      * @private
+     * @returns {void}
      */
     public updateParagraphFormat(paragraphFOrmat?: WParagraphFormat): void {
         if (!isNullOrUndefined(paragraphFOrmat)) {
@@ -791,7 +866,7 @@ export class StyleDialog {
     }
     private getTypeValue(): StyleType {
         let type: StyleType;
-        /* tslint:disable-next-line:max-line-length */
+
         if (this.styleType.value === this.localObj.getConstant('Linked Style') || this.styleType.value === this.localObj.getConstant('Paragraph')) {
             return 'Paragraph';
         } else {
@@ -809,7 +884,7 @@ export class StyleDialog {
             if (style.basedOn instanceof String || isNullOrUndefined(style.basedOn)) {
                 this.styleBasedOn.enabled = false;
             } else {
-                /* tslint:disable-next-line:max-line-length */
+
                 this.styleBasedOn.index = styles.indexOf(style.basedOn.name) > -1 ? styles.indexOf(style.basedOn.name) : 0;
             }
             if (style.type === 'Paragraph') {
@@ -856,15 +931,16 @@ export class StyleDialog {
     }
 
     private getStyle(styleName: string): WStyle {
-        /* tslint:disable-next-line:max-line-length */
+
         if (isNullOrUndefined(this.documentHelper.styles.findByName(styleName))) {
-            /* tslint:disable-next-line:max-line-length */
+
             this.documentHelper.owner.editor.createStyle(this.documentHelper.preDefinedStyles.get(styleName));
         }
         return this.documentHelper.styles.findByName(styleName) as WStyle;
     }
     /**
      * @private
+     * @returns {void}
      */
     public onCancelButtonClick = (): void => {
         if (!this.isEdit && this.style) {
@@ -875,12 +951,14 @@ export class StyleDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public closeStyleDialog = (): void => {
         this.documentHelper.updateFocus();
     }
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         this.documentHelper = undefined;

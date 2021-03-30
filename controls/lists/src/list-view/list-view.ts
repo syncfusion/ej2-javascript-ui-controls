@@ -86,7 +86,7 @@ export interface Fields {
 }
 
 
-/** 
+/**
  * Represents the field settings of the ListView.
  */
 
@@ -114,13 +114,13 @@ export class FieldSettings extends ChildProperty<FieldSettings> {
     @Property('isVisible')
     public isVisible: string;
     /**
-     * Specifies the enabled state of the ListView component. 
+     * Specifies the enabled state of the ListView component.
      * And, we can disable the component using this property by setting its value as false.
      */
     @Property('enabled')
     public enabled: string;
     /**
-     * The `iconCss` is used to customize the icon to the list items dynamically. 
+     * The `iconCss` is used to customize the icon to the list items dynamically.
      *  We can add a specific image to the icons using `iconCss` property.
      */
     @Property('iconCss')
@@ -149,7 +149,7 @@ export class FieldSettings extends ChildProperty<FieldSettings> {
     public sortBy: string;
 
     /**
-     * The `htmlAttributes` allows additional attributes such as id, class, etc., and 
+     * The `htmlAttributes` allows additional attributes such as id, class, etc., and
      *  accepts n number of attributes in a key-value pair format.
      */
     @Property('htmlAttributes')
@@ -211,6 +211,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     private ulElement: HTMLElement;
     private selectedLI: Element;
+    // eslint-disable-next-line
     private onUIScrolled: Function;
     private curUL: HTMLElement;
     private curDSLevel: string[];
@@ -224,6 +225,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     private listBaseOption: ListBaseOptions;
     public virtualizationModule: Virtualization;
     private animateOptions: AnimationOptions;
+    // eslint-disable-next-line
     private rippleFn: Function;
     private isNestedList: boolean;
     private currentLiElements: HTMLElement[];
@@ -244,11 +246,11 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     private enabledItems: string[] = [];
     private disabledItems: string[] = [];
     /**
-     * The `cssClass` property is used to add a user-preferred class name in the root element of the ListView, 
+     * The `cssClass` property is used to add a user-preferred class name in the root element of the ListView,
      *  using which we can customize the component (both CSS and functionality customization)
-     *   
-     * {% codeBlock src='listview/cssClass/index.md' %}{% endcodeBlock %}   
-     * 
+     *
+     * {% codeBlock src='listview/cssClass/index.md' %}{% endcodeBlock %}
+     *
      * @default ''
      */
     @Property('')
@@ -258,50 +260,51 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * If `enableVirtualization` set to true, which will increase the ListView performance, while loading a large amount of data.
      *
      * {% codeBlock src='listview/enableVirtualization/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default false
      */
     @Property(false)
     public enableVirtualization: boolean;
 
     /**
-     * The `htmlAttributes` allows additional attributes such as id, class, etc., and 
+     * The `htmlAttributes` allows additional attributes such as id, class, etc., and
      *  accepts n number of attributes in a key-value pair format.
-     *      
+     *
      * {% codeBlock src='listview/htmlAttributes/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default {}
      */
     @Property({})
     public htmlAttributes: { [key: string]: string; };
 
     /**
-     * If `enable` set to true, the list items are enabled. 
+     * If `enable` set to true, the list items are enabled.
      * And, we can disable the component using this property by setting its value as false.
-     *      
+     *
      * {% codeBlock src='listview/enable/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default true
      */
     @Property(true)
     public enable: boolean;
-
+    /* es-lint disable */
     /**
      * The `dataSource` provides the data to render the ListView component which is mapped with the fields of ListView.
+     *
      * @isGenericType true
-     * 
+     *
      * {% codeBlock src='listview/dataSource/index.md' %}{% endcodeBlock %}
-     *      
+     *
      * @default []
      */
     @Property([])
     public dataSource: { [key: string]: Object }[] | string[] | number[] | DataManager;
-
+    /* es-lint enable */
     /**
      * The `query` is used to fetch the specific data from dataSource by using where and select keywords.
-     *     
+     *
      * {% codeBlock src='listview/query/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default null
      * @blazorType Data.Query
      */
@@ -311,20 +314,21 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * The `fields` is used to map keys from the dataSource which extracts the appropriate data from the dataSource
      *  with specified mapped with the column fields to render the ListView.
-     *     
+     *
      * {% codeBlock src='listview/fields/index.md' %}{% endcodeBlock %}
-     * 
-     * @default ListBase.defaultMappedFields
+     *
+     * @default defaultMappedFields
      */
     @Complex<FieldSettingsModel>(ListBase.defaultMappedFields, FieldSettings)
     public fields: FieldSettingsModel;
 
     /**
-     * The `animation` property provides an option to apply the different 
+     * The `animation` property provides an option to apply the different
      *  animations on the ListView component.
-     * 
+     *
      * {% codeBlock src='listview/animation/index.md' %}{% endcodeBlock %}
-     *      
+     *
+     *
      * @default { effect: 'SlideLeft', duration: 400, easing: 'ease' }
      */
     @Property<AnimationSettings>({ effect: 'SlideLeft', duration: 400, easing: 'ease' })
@@ -335,9 +339,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * * `None` - The data source is not sorting.
      * * `Ascending` - The data source is sorting with ascending order.
      * * `Descending` - The data source is sorting with descending order.
-     *     
+     *
      * {% codeBlock src='listview/sortOrder/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default 'None'
      */
     @Property<SortOrder>('None')
@@ -345,9 +349,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * If `showIcon` set to true, which will show or hide the icon of the list item.
-     *     
+     *
      * {% codeBlock src='listview/showIcon/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default false
      */
     @Property<boolean>(false)
@@ -355,9 +359,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * If `showCheckBox` set to true, which will show or hide the checkbox.
-     * 
+     *
      * {% codeBlock src='listview/showCheckBox/index.md' %}{% endcodeBlock %}
-     *     
+     *
+     *
      * @default false
      */
     @Property<boolean>(false)
@@ -366,9 +371,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * The `checkBoxPosition` is used to set the position of check box in a list item.
      * By default, the `checkBoxPosition` is Left, which will appear before the text content in a list item.
-     *      
+     *
      * {% codeBlock src='listview/checkBoxPosition/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default 'Left'
      */
     @Property<string>('Left')
@@ -376,9 +381,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * The `headerTitle` is used to set the title of the ListView component.
-     *  
+     *
      * {% codeBlock src='listview/headerTitle/index.md' %}{% endcodeBlock %}
-     *    
+     *
+     *
      * @default ""
      */
     @Property<string>('')
@@ -386,9 +392,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * If `showHeader` set to true, which will show or hide the header of the ListView component.
-     *     
+     *
      * {% codeBlock src='listview/showHeader/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default false
      */
     @Property<boolean>(false)
@@ -396,9 +402,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * If `enableHtmlSanitizer` set to true, allows the cross-scripting site.
-     *      
+     *
      * {% codeBlock src='listview/enableHtmlSanitizer/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default false
      */
     @Property(false)
@@ -406,9 +412,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Defines the height of the ListView component which accepts both string and number values.
-     *      
+     *
      * {% codeBlock src='listview/height/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default ''
      */
     @Property('')
@@ -416,9 +422,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Defines the width of the ListView component which accepts both string and number values.
-     *      
+     *
      * {% codeBlock src='listview/width/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default ''
      */
     @Property('')
@@ -426,9 +432,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * The ListView component supports to customize the content of each list items with the help of `template` property.
-     *     
+     *
      * {% codeBlock src='listview/template/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default null
      * @deprecated
      */
@@ -437,9 +443,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * The ListView has an option to custom design the ListView header title with the help of `headerTemplate` property.
-     *     
+     *
      * {% codeBlock src="listview/headerTemplate/index.md" %}{% endcodeBlock %}
-     * 
+     *
      * @default null
      * @deprecated
      */
@@ -448,9 +454,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * The ListView has an option to custom design the group header title with the help of `groupTemplate` property.
-     *     
+     *
      * {% codeBlock src="listview/groupTemplate/index.md" %}{% endcodeBlock %}
-     * 
+     *
      * @default null
      * @deprecated
      */
@@ -459,7 +465,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when we select the list item in the component.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'Selected'
      */
     @Event()
@@ -467,132 +474,147 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when every ListView action starts.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'OnActionBegin'
      */
     @Event()
-    public actionBegin: EmitType<Object>;
+    public actionBegin: EmitType<object>;
 
     /**
      * Triggers when every ListView actions completed.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'OnActionComplete'
      */
+    /* es-lint disable */
     @Event()
-    public actionComplete: EmitType<Object>;
-
+    public actionComplete: EmitType<MouseEvent>;
+    /* es-lint enable */
     /**
      * Triggers, when the data fetch request from the remote server, fails.
-     * @event
+     *
+     * @event 'object'
+     *
      * @blazorProperty 'OnActionFailure'
      */
     @Event()
-    public actionFailure: EmitType<Object>;
+    public actionFailure: EmitType<MouseEvent>;
 
 
     /**
      * Constructor for creating the widget
+     *
+     * @param options
+     *
+     * @param element
      */
+
     constructor(options?: ListViewModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
     }
 
     /**
+     * @param newProp
+     *
+     * @param oldProp
+     *
      * @private
      */
-    public onPropertyChanged(newProp: ListViewModel, oldProp: ListViewModel): void {
-        for (let prop of Object.keys(newProp)) {
-            switch (prop) {
-                case 'htmlAttributes':
-                    this.setHTMLAttribute();
-                    break;
-                case 'cssClass':
-                    this.setCSSClass(oldProp.cssClass);
-                    break;
-                case 'enable':
-                    this.setEnable();
-                    break;
-                case 'width':
-                case 'height':
-                    this.setSize();
-                    break;
-                case 'enableRtl':
-                    this.setEnableRTL();
-                    break;
-                case 'fields':
-                    this.listBaseOption.fields = (this.fields as ListViewModel & { properties: Object }).properties;
-                    if (this.enableVirtualization) {
-                        if (!(this.isServerRendered && isBlazor())) { this.virtualizationModule.reRenderUiVirtualization(); }
-                    } else {
-                        if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
-                            this.itemReRender = true;
-                        }
-                        this.reRender();
-                    }
-                    break;
-                case 'headerTitle':
-                    if (!this.curDSLevel.length) {
-                        this.header(this.headerTitle, false, 'header');
-                    }
-                    break;
-                case 'query':
-                    if (this.enableVirtualization) {
-                        if (!(isBlazor() && this.isServerRendered)) { this.virtualizationModule.reRenderUiVirtualization(); }
-                    } else {
-                        if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
-                            this.itemReRender = true;
-                        }
-                        this.reRender();
-                    }
-                    break;
-                case 'showHeader':
-                    this.header(this.headerTitle, false, 'header');
-                    break;
-                case 'enableVirtualization':
-                    if (!isNullOrUndefined(this.contentContainer)) {
-                        detach(this.contentContainer);
-                    }
-                    this.refresh();
-                    break;
-                case 'showCheckBox':
-                case 'checkBoxPosition':
-                    if (!isBlazor() || !this.isServerRendered) {
-                        if (this.enableVirtualization) {
-                            this.virtualizationModule.reRenderUiVirtualization();
-                        } else {
-                            this.setCheckbox();
-                        }
-                    }
-                    break;
-                case 'dataSource':
-                    if (this.enableVirtualization) {
-                        if (!(this.isServerRendered && isBlazor())) { this.virtualizationModule.reRenderUiVirtualization(); }
-                    } else {
-                        if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
-                            this.itemReRender = true;
-                        }
-                        this.reRender();
-                    }
-                    break;
-                case 'sortOrder':
-                case 'showIcon':
-                    if (isBlazor() && this.isServerRendered) {
-                        // tslint:disable
-                        (this as any).interopAdaptor.invokeMethodAsync('ItemSorting');
-                        //tslint:enable
-                    } else {
 
-                        if (this.enableVirtualization) {
-                            this.virtualizationModule.reRenderUiVirtualization();
-                        } else {
-                            this.listBaseOption.showIcon = this.showIcon;
-                            this.curViewDS = this.getSubDS();
-                            this.resetCurrentList();
-                        }
+    public onPropertyChanged(newProp: ListViewModel, oldProp: ListViewModel): void {
+        for (const prop of Object.keys(newProp)) {
+            switch (prop) {
+            case 'htmlAttributes':
+                this.setHTMLAttribute();
+                break;
+            case 'cssClass':
+                this.setCSSClass(oldProp.cssClass);
+                break;
+            case 'enable':
+                this.setEnable();
+                break;
+            case 'width':
+            case 'height':
+                this.setSize();
+                break;
+            case 'enableRtl':
+                this.setEnableRTL();
+                break;
+            case 'fields':
+// eslint-disable-next-line
+                this.listBaseOption.fields = (this.fields as any & { properties: object }).properties;
+                if (this.enableVirtualization) {
+                    if (!(this.isServerRendered && isBlazor())) { this.virtualizationModule.reRenderUiVirtualization(); }
+                } else {
+                    if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                        this.itemReRender = true;
                     }
-                    break;
-                default:
-                    break;
+                    this.reRender();
+                }
+                break;
+            case 'headerTitle':
+                if (!this.curDSLevel.length) {
+                    this.header(this.headerTitle, false, 'header');
+                }
+                break;
+            case 'query':
+                if (this.enableVirtualization) {
+                    if (!(isBlazor() && this.isServerRendered)) { this.virtualizationModule.reRenderUiVirtualization(); }
+                } else {
+                    if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                        this.itemReRender = true;
+                    }
+                    this.reRender();
+                }
+                break;
+            case 'showHeader':
+                this.header(this.headerTitle, false, 'header');
+                break;
+            case 'enableVirtualization':
+                if (!isNullOrUndefined(this.contentContainer)) {
+                    detach(this.contentContainer);
+                }
+                this.refresh();
+                break;
+            case 'showCheckBox':
+            case 'checkBoxPosition':
+                if (!isBlazor() || !this.isServerRendered) {
+                    if (this.enableVirtualization) {
+                        this.virtualizationModule.reRenderUiVirtualization();
+                    } else {
+                        this.setCheckbox();
+                    }
+                }
+                break;
+            case 'dataSource':
+                if (this.enableVirtualization) {
+                    if (!(this.isServerRendered && isBlazor())) { this.virtualizationModule.reRenderUiVirtualization(); }
+                } else {
+                    if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                        this.itemReRender = true;
+                    }
+                    this.reRender();
+                }
+                break;
+            case 'sortOrder':
+            case 'showIcon':
+                if (isBlazor() && this.isServerRendered) {
+                    // eslint-disable-next-line
+                    (this as any).interopAdaptor.invokeMethodAsync('ItemSorting');
+                } else {
+
+                    if (this.enableVirtualization) {
+                        this.virtualizationModule.reRenderUiVirtualization();
+                    } else {
+                        this.listBaseOption.showIcon = this.showIcon;
+                        this.curViewDS = this.getSubDS();
+                        this.resetCurrentList();
+                    }
+                }
+                break;
+            default:
+                break;
             }
         }
     }
@@ -643,10 +665,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     private header(text?: string, showBack?: boolean, prop?: string): void {
 
         if (isBlazor() && this.isServerRendered) {
-            let args: object = { HeaderText: text, BackButton: showBack };
-            // tslint:disable
+            const args: object = { HeaderText: text, BackButton: showBack };
+            // eslint-disable-next-line
             (this as any).interopAdaptor.invokeMethodAsync('HeaderTitle', args);
-            // tslint:disable
         } else {
 
             if (this.headerEle === undefined && this.showHeader) {
@@ -654,25 +675,26 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     this.setProperties({ headerTitle: SanitizeHtmlHelper.sanitize(this.headerTitle) }, true);
                 }
                 this.headerEle = this.createElement('div', { className: classNames.header });
-                let innerHeaderEle: HTMLElement = this.createElement('span', { className: classNames.headerText, innerHTML: this.headerTitle });
-                let textEle: HTMLElement = this.createElement('div', { className: classNames.text, innerHTML: innerHeaderEle.outerHTML });
-                let hedBackButton: HTMLElement = this.createElement('div', {
+                const innerHeaderEle: HTMLElement = this.createElement('span', { className: classNames.headerText, innerHTML: this.headerTitle });
+                const textEle: HTMLElement = this.createElement('div', { className: classNames.text, innerHTML: innerHeaderEle.outerHTML });
+                const hedBackButton: HTMLElement = this.createElement('div', {
                     className: classNames.icon + ' ' + classNames.backIcon + ' e-but-back',
                     attrs: { style: 'display:none;' }
                 });
                 this.headerEle.appendChild(hedBackButton);
                 this.headerEle.appendChild(textEle);
                 if (this.headerTemplate) {
-                    let compiledString: Function = compile(this.headerTemplate);
-                    let headerTemplateEle: HTMLElement = this.createElement('div', { className: classNames.headerTemplateText });
-                     // tslint:disable-next-line
-                    let compiledElement: any = compiledString({}, this, prop, this.LISTVIEW_HEADERTEMPLATE_ID, null, null, this.headerEle);
+                    // eslint-disable-next-line
+                    const compiledString: Function = compile(this.headerTemplate);
+                    const headerTemplateEle: HTMLElement = this.createElement('div', { className: classNames.headerTemplateText });
+                    // eslint-disable-next-line
+                    const compiledElement: any = compiledString({}, this, prop, this.LISTVIEW_HEADERTEMPLATE_ID, null, null, this.headerEle);
                     if (compiledElement) {
-                    append(compiledElement, headerTemplateEle);
+                        append(compiledElement, headerTemplateEle);
                     }
                     append([headerTemplateEle], this.headerEle);
                     this.updateBlazorTemplates(false, true, true);
-                     // tslint:disable-next-line
+                    // eslint-disable-next-line
                     if ((this as any).isReact) {
                         this.renderReactTemplates();
                     }
@@ -685,8 +707,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             } else if (this.headerEle) {
                 if (this.showHeader) {
                     this.headerEle.style.display = '';
-                    let textEle: Element = this.headerEle.querySelector('.' + classNames.headerText);
-                    let hedBackButton: Element = this.headerEle.querySelector('.' + classNames.backIcon);
+                    const textEle: Element = this.headerEle.querySelector('.' + classNames.headerText);
+                    const hedBackButton: Element = this.headerEle.querySelector('.' + classNames.backIcon);
                     if (this.enableHtmlSanitizer) {
                         text = SanitizeHtmlHelper.sanitize(text);
                     }
@@ -715,9 +737,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     // Animation Related Functions
     private switchView(fromView: HTMLElement, toView: HTMLElement, reverse?: boolean): void {
         if (fromView && toView) {
-            this.trigger('actionBegin', { startList: fromView, endList: toView, isReverse: reverse });
-            let fPos: string = fromView.style.position;
-            let overflow: string = (this.element.style.overflow !== 'hidden') ? this.element.style.overflow : '';
+            const fPos: string = fromView.style.position;
+            const overflow: string = (this.element.style.overflow !== 'hidden') ? this.element.style.overflow : '';
 
             fromView.style.position = 'absolute';
             fromView.classList.add('e-view');
@@ -726,7 +747,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             if (this.animation.effect) {
                 anim = (this.enableRtl ? effectsRTLConfig[this.animation.effect] : effectsConfig[this.animation.effect]);
             } else {
-                let slideLeft: string = 'SlideLeft';
+                const slideLeft: string = 'SlideLeft';
                 anim = effectsConfig[slideLeft];
                 reverse = this.enableRtl;
                 duration = 0;
@@ -736,6 +757,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 name: (reverse === true ? anim[0] : anim[1]),
                 duration: duration,
                 timingFunction: this.animation.easing,
+                // eslint-disable-next-line
                 end: (model: AnimationOptions): void => {
                     fromView.style.display = 'none';
                     this.element.style.overflow = overflow;
@@ -764,7 +786,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 }
             } catch (e) {
                 compile(this.template);
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 if ((this as any).isReact) {
                     this.renderReactTemplates();
                 }
@@ -778,7 +800,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 itemRole: 'option', listRole: 'presentation', itemText: '',
                 groupItemRole: 'group', wrapperRole: 'presentation'
             },
-            fields: (this.fields as ListViewModel & { properties: Object }).properties, sortOrder: this.sortOrder, showIcon: this.showIcon,
+            // eslint-disable-next-line
+            fields: ((this.fields as any & { properties: Object }).properties) as FieldsMapping,
+            sortOrder: this.sortOrder,
+            showIcon: this.showIcon,
             itemCreated: this.renderCheckbox.bind(this),
             templateID: `${this.element.id}${LISTVIEW_TEMPLATE_PROPERTY}`,
             groupTemplateID: `${this.element.id}${LISTVIEW_GROUPTEMPLATE_PROPERTY}`,
@@ -788,35 +813,31 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         this.initialization();
     }
     private updateLiElementHeight(): void {
-        let liContainer: Element = this.element.querySelector('.' + classNames.virtualElementContainer);
+        const liContainer: Element = this.element.querySelector('.' + classNames.virtualElementContainer);
         if (liContainer.children[0]) {
             this.liElementHeight = liContainer.children[0].getBoundingClientRect().height;
-            // tslint:disable
+            // eslint-disable-next-line
             (this as any).interopAdaptor.invokeMethodAsync('LiElementHeight', this.liElementHeight);
-            // tslint:enable
         }
     }
     private initialization(): void {
         if (isBlazor() && this.isServerRendered && this.enableVirtualization) {
-            let ulContainer: Element = this.element.querySelector('.' + classNames.virtualElementContainer);
+            const ulContainer: Element = this.element.querySelector('.' + classNames.virtualElementContainer);
             if (ulContainer !== null) {
                 if (this.height === '') {
-                    // tslint:disable
+                    // eslint-disable-next-line
                     (this as any).interopAdaptor.invokeMethodAsync('SetComponentHeight', window.innerHeight);
-                    // tslint:enable
                     this.isWindow = true;
                     ulContainer.scrollIntoView();
                 }
                 if (this.height.toString().indexOf('%') !== -1) {
-                    // tslint:disable
+                    // eslint-disable-next-line
                     (this as any).interopAdaptor.invokeMethodAsync('SetContainerHeight', this.element.getBoundingClientRect().height.toString());
-                    // tslint:enable
                 }
                 if (ulContainer.children[0]) {
                     this.liElementHeight = ulContainer.children[0].getBoundingClientRect().height;
-                    // tslint:disable
+                    // eslint-disable-next-line
                     (this as any).interopAdaptor.invokeMethodAsync('LiElementHeight', this.liElementHeight);
-                    // tslint:enable
                 }
             }
         }
@@ -835,7 +856,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         this.removeElement(this.ulElement);
         this.removeElement(this.headerEle);
         this.removeElement(this.contentContainer);
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         if ((this as any).isReact) {
             this.clearTemplate();
         }
@@ -849,17 +870,18 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         if (this.showCheckBox && this.isValidLI(args.item)) {
             let checkboxElement: Element;
             let fieldData: DataSource;
+            // eslint-disable-next-line prefer-const
             checkboxElement = createCheckBox(this.createElement, false, {
                 checked: false, enableRtl: this.enableRtl,
                 cssClass: classNames.listviewCheckbox
             });
             checkboxElement.setAttribute('role', 'checkbox');
-            let frameElement: Element = checkboxElement.querySelector('.' + classNames.checkboxIcon);
+            const frameElement: Element = checkboxElement.querySelector('.' + classNames.checkboxIcon);
             args.item.classList.add(classNames.itemCheckList);
             args.item.firstElementChild.classList.add(classNames.checkbox);
             if (typeof (this.dataSource as string[])[0] !== 'string' && typeof (this.dataSource as number[])[0] !== 'number') {
-                fieldData = <DataSource>getFieldValues(args.curData, this.listBaseOption.fields);
-                if (<string>fieldData[this.listBaseOption.fields.isChecked]) {
+                fieldData = <DataSource>getFieldValues(args.curData  , this.listBaseOption.fields);
+                if (<object>fieldData[this.listBaseOption.fields.isChecked]) {
                     this.checkInternally(args, checkboxElement);
                 }
             } else if (((typeof (this.dataSource as string[])[0] === 'string' ||
@@ -877,8 +899,14 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 args.item.firstElementChild.appendChild(checkboxElement);
             }
             this.currentLiElements.push(args.item);
-            this.checkBoxPosition === 'Left' ? this.virtualCheckBox = args.item.firstElementChild.children[0] :
-             this.virtualCheckBox = args.item.firstElementChild.lastElementChild;
+            if ( this.checkBoxPosition === 'Left')
+            {
+                this.virtualCheckBox = args.item.firstElementChild.children[0];
+            }
+            else
+            {
+                this.virtualCheckBox = args.item.firstElementChild.lastElementChild;
+            }
         }
     }
 
@@ -891,8 +919,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Checks the specific list item by passing the unchecked fields as an argument to this method.
+     *
      * @param  {Fields | HTMLElement | Element} item - It accepts Fields or HTML list element as an argument.
      */
+
     public checkItem(item: Fields | HTMLElement | Element): void {
         this.toggleCheckBase(item, true);
     }
@@ -904,10 +934,24 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 liElement = this.getLiFromObjOrElement(item);
             }
             if (!isNullOrUndefined(liElement)) {
-                let checkboxIcon: Element = liElement.querySelector('.' + classNames.checkboxIcon);
-                checked ? liElement.classList.add(classNames.selected) : liElement.classList.remove(classNames.selected);
+                const checkboxIcon: Element = liElement.querySelector('.' + classNames.checkboxIcon);
+                if (checked === true)
+                {
+                    liElement.classList.add(classNames.selected);
+                }
+                else
+                {
+                    liElement.classList.remove(classNames.selected);
+                }
                 liElement.setAttribute('aria-selected', checked ? 'true' : 'false');
-                checked ? checkboxIcon.classList.add(classNames.checked) : checkboxIcon.classList.remove(classNames.checked);
+                if (checked === true)
+                {
+                    checkboxIcon.classList.add(classNames.checked);
+                }
+                else
+                {
+                    checkboxIcon.classList.remove(classNames.checked);
+                }
                 checkboxIcon.parentElement.setAttribute('aria-checked', checked ? 'true' : 'false');
             }
             this.setSelectedItemData(liElement);
@@ -916,8 +960,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Uncheck the specific list item by passing the checked fields as an argument to this method.
+     *
      * @param  {Fields | HTMLElement | Element} item - It accepts Fields or HTML list element as an argument.
      */
+
     public uncheckItem(item: Fields | HTMLElement | Element): void {
         this.toggleCheckBase(item, false);
     }
@@ -925,6 +971,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Checks all the unchecked items in the ListView.
      */
+
     public checkAllItems(): void {
         this.toggleAllCheckBase(true);
     }
@@ -932,6 +979,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Uncheck all the checked items in ListView.
      */
+
     public uncheckAllItems(): void {
         this.toggleAllCheckBase(false);
     }
@@ -939,7 +987,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     private toggleAllCheckBase(checked: boolean): void {
         if (this.showCheckBox) {
             for (let i: number = 0; i < this.liCollection.length; i++) {
-                let checkIcon: Element = this.liCollection[i].querySelector('.' + classNames.checkboxIcon);
+                const checkIcon: Element = this.liCollection[i].querySelector('.' + classNames.checkboxIcon);
                 if (checkIcon) {
                     if (checked) {
                         if (!checkIcon.classList.contains(classNames.checked)) {
@@ -960,15 +1008,16 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     private setCheckbox(): void {
         if (this.showCheckBox) {
-            let liCollection: HTMLElement[] = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.listItem));
-            let args: ItemCreatedArgs = {
+            const liCollection: HTMLElement[] = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.listItem));
+            const args: ItemCreatedArgs = {
                 item: undefined, curData: undefined, dataSource: undefined, fields: undefined,
                 options: undefined, text: ''
             };
             for (let i: number = 0; i < liCollection.length; i++) {
-                let element: HTMLElement = liCollection[i];
+                const element: HTMLElement = liCollection[i];
                 args.item = element;
-                args.curData = this.getItemData(element);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                args.curData = this.getItemData(element) as { [key: string]: Object } as any;
                 if (element.querySelector('.' + classNames.checkboxWrapper)) {
                     this.removeElement(element.querySelector('.' + classNames.checkboxWrapper));
                 }
@@ -978,9 +1027,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
         } else {
-            let liCollection: HTMLElement[] = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.itemCheckList));
+            const liCollection: HTMLElement[] = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.itemCheckList));
             for (let i: number = 0; i < liCollection.length; i++) {
-                let element: HTMLElement = liCollection[i];
+                const element: HTMLElement = liCollection[i];
                 element.classList.remove(classNames.selected);
                 element.firstElementChild.classList.remove(classNames.checkbox);
                 this.removeElement(element.querySelector('.' + classNames.checkboxWrapper));
@@ -994,6 +1043,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Refresh the height of the list item only on enabling the virtualization property.
      */
+
     public refreshItemHeight(): void {
         if (this.virtualizationModule) {
             this.virtualizationModule.refreshItemHeight();
@@ -1001,8 +1051,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private clickHandler(e: MouseEvent): void {
-        let target: Element = <Element>e.target;
-        let classList: DOMTokenList = target.classList;
+        const target: Element = <Element>e.target;
+        const classList: DOMTokenList = target.classList;
         let closestElement: HTMLElement;
         if (classList.contains(classNames.backIcon) || classList.contains(classNames.headerText)) {
             if (this.showCheckBox && this.curDSLevel[this.curDSLevel.length - 1]) {
@@ -1017,7 +1067,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 if ((e.target as HTMLElement).classList.contains(classNames.checkboxIcon)) {
                     li.classList.add(classNames.focused);
                     if (isNullOrUndefined(li.querySelector('.' + classNames.checked))) {
-                        let args: ItemCreatedArgs = {
+                        const args: ItemCreatedArgs = {
                             curData: undefined, dataSource: undefined, fields: undefined, options: undefined,
                             text: undefined, item: li
                         };
@@ -1030,8 +1080,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                         this.virtualizationModule.setCheckboxLI(li, e);
                     }
                     if (e) {
-                        let eventArgs: Object = this.selectEventData(li, e);
-                        let checkIcon: Element = li.querySelector('.' + classNames.checkboxIcon);
+                        const eventArgs: Object = this.selectEventData(li, e);
+                        const checkIcon: Element = li.querySelector('.' + classNames.checkboxIcon);
                         merge(eventArgs, { isChecked: checkIcon.classList.contains(classNames.checked) });
                         this.trigger('select', eventArgs);
                     }
@@ -1051,45 +1101,41 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             if (!isNullOrUndefined(closestElement)) {
                 if (closestElement.classList.contains('e-has-child') &&
                     !(e.target as HTMLElement).parentElement.classList.contains('e-listview-checkbox')) {
-                        closestElement.classList.add(classNames.disable);
+                    closestElement.classList.add(classNames.disable);
                 }
             }
         }
         if (isBlazor() && this.isServerRendered && this.enableVirtualization) {
-            let ulElementContainer: Element = this.element.querySelector('.' + classNames.virtualElementContainer);
+            const ulElementContainer: Element = this.element.querySelector('.' + classNames.virtualElementContainer);
             if (ulElementContainer.querySelector('.e-active')) {
-                // tslint:disable-next-line:no-any
-                let selectedElements: any = ulElementContainer.querySelectorAll('.e-active');
-                // tslint:enable-next-line:no-any
+                // eslint-disable-next-line
+                const selectedElements: any = ulElementContainer.querySelectorAll('.e-active');
                 if (this.showCheckBox) {
 
                     for (let i: number = 0; i < selectedElements.length; i++) {
-                        // tslint:disable-next-line:no-any
+                        // eslint-disable-next-line
                         if (!(this.previousSelectedItems as any).includes(selectedElements[i].getAttribute('data-uid'))) {
                             this.previousSelectedItems.push(selectedElements[i].getAttribute('data-uid'));
                         }
-                        // tslint:enable-next-line:no-any
                     }
                 } else {
                     this.previousSelectedItems[0] = (ulElementContainer.querySelector('.e-active').getAttribute('data-uid'));
                 }
             }
             if (ulElementContainer.querySelector('.e-focused')) {
-                // tslint:disable-next-line:no-any
-                let focusElement: any = ulElementContainer.querySelector('.e-focused');
-                // tslint:enable-next-line:no-any
+                // eslint-disable-next-line
+                const focusElement: any = ulElementContainer.querySelector('.e-focused');
                 if (!focusElement.classList.contains('e-active')) {
-                    let focusElementId: string = focusElement.getAttribute('data-uid');
-                    // tslint:disable-next-line:no-any
+                    const focusElementId: string = focusElement.getAttribute('data-uid');
+                    // eslint-disable-next-line
                     if ((this.previousSelectedItems as any).includes(focusElementId)) {
-                        let selectedElement1: string[] =
+                        const selectedElement1: string[] =
                             this.previousSelectedItems.slice(0, this.previousSelectedItems.indexOf(focusElementId));
-                        let selectedElement2: string[] =
+                        const selectedElement2: string[] =
                             this.previousSelectedItems.
-                            slice(this.previousSelectedItems.indexOf(focusElementId) + 1, this.previousSelectedItems.length);
+                                slice(this.previousSelectedItems.indexOf(focusElementId) + 1, this.previousSelectedItems.length);
                         this.previousSelectedItems = selectedElement1.concat(selectedElement2);
                     }
-                    // tslint:enable-next-line:no-any
                 }
             }
         }
@@ -1100,20 +1146,21 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private hoverHandler(e: MouseEvent): void {
-        let curLi: HTMLElement = <HTMLElement>closest((<Element>e.target).parentNode, '.' + classNames.listItem);
+        const curLi: HTMLElement = <HTMLElement>closest((<Element>e.target).parentNode, '.' + classNames.listItem);
         this.setHoverLI(curLi);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private leaveHandler(e: MouseEvent): void {
         this.removeHover();
-    };
+    }
     private homeKeyHandler(e: KeyboardEventArgs, end?: boolean): void {
         if (Object.keys(this.dataSource).length && this.curUL) {
             if (this.selectedItems) {
                 (this.selectedItems.item).setAttribute('aria-selected', 'false');
             }
-            let li: Element[] = <NodeListOf<Element> & Element[]>this.curUL.querySelectorAll('.' + classNames.listItem);
-            let focusedElement: Element = this.curUL.querySelector('.' + classNames.focused) ||
+            const li: Element[] = <NodeListOf<Element> & Element[]>this.curUL.querySelectorAll('.' + classNames.listItem);
+            const focusedElement: Element = this.curUL.querySelector('.' + classNames.focused) ||
                 this.curUL.querySelector('.' + classNames.selected);
             if (focusedElement) {
                 focusedElement.classList.remove(classNames.focused);
@@ -1121,7 +1168,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     focusedElement.classList.remove(classNames.selected);
                 }
             }
-            let index: number = !end ? 0 : li.length - 1;
+            const index: number = !end ? 0 : li.length - 1;
             if (li[index].classList.contains(classNames.hasChild) || this.showCheckBox) {
                 li[index].classList.add(classNames.focused);
             } else {
@@ -1138,7 +1185,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     private onArrowKeyDown(e: KeyboardEventArgs, prev: boolean): Element {
         let siblingLI: Element;
         let li: Element;
-        let hasChild: boolean = !isNullOrUndefined(this.curUL.querySelector('.' + classNames.hasChild)) ? true : false;
+        const hasChild: boolean = !isNullOrUndefined(this.curUL.querySelector('.' + classNames.hasChild)) ? true : false;
         if (hasChild || this.showCheckBox) {
             li = this.curUL.querySelector('.' + classNames.focused) || this.curUL.querySelector('.' + classNames.selected);
             siblingLI = ListBase.getSiblingLI(this.curUL.querySelectorAll('.' + classNames.listItem), li, prev);
@@ -1171,31 +1218,43 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     private arrowKeyHandler(e: KeyboardEventArgs, prev?: boolean): void {
         e.preventDefault();
         if (Object.keys(this.dataSource).length && this.curUL) {
-            let siblingLI: Element = this.onArrowKeyDown(e, prev);
-            let elementTop: number = this.element.getBoundingClientRect().top;
-            let elementHeight: number = this.element.getBoundingClientRect().height;
-            let firstItemBounds: ClientRect = this.curUL.querySelector('.' + classNames.listItem).getBoundingClientRect();
+            const siblingLI: Element = this.onArrowKeyDown(e, prev);
+            const elementTop: number = this.element.getBoundingClientRect().top;
+            const elementHeight: number = this.element.getBoundingClientRect().height;
+            const firstItemBounds: ClientRect = this.curUL.querySelector('.' + classNames.listItem).getBoundingClientRect();
             let heightDiff: number;
             let groupItemBounds: ClientRect;
             if (this.fields.groupBy) {
                 groupItemBounds = this.curUL.querySelector('.' + classNames.groupListItem).getBoundingClientRect();
             }
             if (siblingLI) {
-                let siblingTop: number = siblingLI.getBoundingClientRect().top;
-                let siblingHeight: number = siblingLI.getBoundingClientRect().height;
+                const siblingTop: number = siblingLI.getBoundingClientRect().top;
+                const siblingHeight: number = siblingLI.getBoundingClientRect().height;
                 if (!prev) {
-                    let height: number = this.isWindow ? window.innerHeight : elementHeight;
+                    const height: number = this.isWindow ? window.innerHeight : elementHeight;
                     heightDiff = this.isWindow ? (siblingTop + siblingHeight) :
                         ((siblingTop - elementTop) + siblingHeight);
                     if (heightDiff > height) {
-                        this.isWindow ? window.scroll(0, pageYOffset + (heightDiff - height)) :
+                        if (this.isWindow === true)
+                        {
+                            window.scroll(0, pageYOffset + (heightDiff - height));
+                        }
+                        else
+                        {
                             this.element.scrollTop = this.element.scrollTop + (heightDiff - height);
+                        }
                     }
                 } else {
                     heightDiff = this.isWindow ? siblingTop : (siblingTop - elementTop);
                     if (heightDiff < 0) {
-                        this.isWindow ? window.scroll(0, pageYOffset + heightDiff) :
+                        if (this.isWindow === true)
+                        {
+                            window.scroll(0, pageYOffset + heightDiff);
+                        }
+                        else
+                        {
                             this.element.scrollTop = this.element.scrollTop + heightDiff;
+                        }
                     }
                 }
             } else if (this.enableVirtualization && prev && this.virtualizationModule.uiFirstIndex) {
@@ -1204,20 +1263,38 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     this.onUIScrolled = undefined;
                 };
                 heightDiff = this.virtualizationModule.listItemHeight;
-                this.isWindow ? window.scroll(0, pageYOffset - heightDiff) :
+                if ( this.isWindow === true)
+                {
+                    window.scroll(0, pageYOffset - heightDiff);
+                }
+                else
+                {
                     this.element.scrollTop = this.element.scrollTop - heightDiff;
+                }
             } else if (prev) {
                 if (this.showHeader && this.headerEle) {
-                    let topHeight: number = groupItemBounds ? groupItemBounds.top : firstItemBounds.top;
-                    let headerBounds: ClientRect = this.headerEle.getBoundingClientRect();
+                    const topHeight: number = groupItemBounds ? groupItemBounds.top : firstItemBounds.top;
+                    const headerBounds: ClientRect = this.headerEle.getBoundingClientRect();
                     heightDiff = headerBounds.top < 0 ? (headerBounds.height - topHeight) : 0;
-                    this.isWindow ? window.scroll(0, pageYOffset - heightDiff)
-                        : this.element.scrollTop = 0;
+                    if ( this.isWindow === true)
+                    {
+                        window.scroll(0, pageYOffset - heightDiff);
+                    }
+                    else
+                    {
+                        this.element.scrollTop = 0;
+                    }
                 } else if (this.fields.groupBy) {
                     heightDiff = this.isWindow ? (groupItemBounds.top < 0 ? groupItemBounds.top : 0) :
                         (elementTop - firstItemBounds.top) + groupItemBounds.height;
-                    this.isWindow ? window.scroll(0, pageYOffset + heightDiff) :
+                    if ( this.isWindow === true)
+                    {
+                        window.scroll(0, pageYOffset + heightDiff);
+                    }
+                    else
+                    {
                         this.element.scrollTop = this.element.scrollTop - heightDiff;
+                    }
                 }
             }
         }
@@ -1225,8 +1302,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     private enterKeyHandler(e: KeyboardEventArgs): void {
         if (Object.keys(this.dataSource).length && this.curUL) {
-            let hasChild: boolean = !isNullOrUndefined(this.curUL.querySelector('.' + classNames.hasChild)) ? true : false;
-            let li: Element = this.curUL.querySelector('.' + classNames.focused);
+            const hasChild: boolean = !isNullOrUndefined(this.curUL.querySelector('.' + classNames.hasChild)) ? true : false;
+            const li: Element = this.curUL.querySelector('.' + classNames.focused);
             if (hasChild && li) {
                 li.classList.remove(classNames.focused);
                 if (this.showCheckBox) {
@@ -1238,11 +1315,11 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             }
         }
     }
-    private spaceKeyHandler(e: KeyboardEventArgs): void {
+    private spaceKeyHandler(): void {
         if (this.enable && this.showCheckBox && Object.keys(this.dataSource).length && this.curUL) {
-            let li: Element = this.curUL.querySelector('.' + classNames.focused);
+            const li: Element = this.curUL.querySelector('.' + classNames.focused);
             if (!isNullOrUndefined(li) && isNullOrUndefined(li.querySelector('.' + classNames.checked))) {
-                let args: ItemCreatedArgs = {
+                const args: ItemCreatedArgs = {
                     curData: undefined, dataSource: undefined, fields: undefined, options: undefined,
                     text: undefined, item: <HTMLElement>li
                 };
@@ -1255,30 +1332,30 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     private keyActionHandler(e: KeyboardEventArgs): void {
         switch (e.keyCode) {
-            case 36:
-                this.homeKeyHandler(e);
-                break;
-            case 35:
-                this.homeKeyHandler(e, true);
-                break;
-            case 40:
-                this.arrowKeyHandler(e);
-                break;
-            case 38:
-                this.arrowKeyHandler(e, true);
-                break;
-            case 13:
-                this.enterKeyHandler(e);
-                break;
-            case 8:
-                if (this.showCheckBox && this.curDSLevel[this.curDSLevel.length - 1]) {
-                    this.uncheckAllItems();
-                }
-                this.back();
-                break;
-            case 32:
-                this.spaceKeyHandler(e);
-                break;
+        case 36:
+            this.homeKeyHandler(e);
+            break;
+        case 35:
+            this.homeKeyHandler(e, true);
+            break;
+        case 40:
+            this.arrowKeyHandler(e);
+            break;
+        case 38:
+            this.arrowKeyHandler(e, true);
+            break;
+        case 13:
+            this.enterKeyHandler(e);
+            break;
+        case 8:
+            if (this.showCheckBox && this.curDSLevel[this.curDSLevel.length - 1]) {
+                this.uncheckAllItems();
+            }
+            this.back();
+            break;
+        case 32:
+            this.spaceKeyHandler();
+            break;
         }
     }
 
@@ -1293,8 +1370,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     private focusout(): void {
         if (Object.keys(this.dataSource).length && this.curUL) {
-            let focusedElement: Element = this.curUL.querySelector('.' + classNames.focused);
-            let activeElement: Element = this.curUL.querySelector('[aria-selected = true]');
+            const focusedElement: Element = this.curUL.querySelector('.' + classNames.focused);
+            const activeElement: Element = this.curUL.querySelector('[aria-selected = true]');
             if (focusedElement) {
                 focusedElement.classList.remove(classNames.focused);
                 if (activeElement && !this.showCheckBox) {
@@ -1323,21 +1400,21 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private removeFocus(): void {
-        let focusedLI: Element[] = <NodeListOf<Element> & Element[]>this.element.querySelectorAll('.' + classNames.focused);
-        for (let ele of focusedLI) {
+        const focusedLI: Element[] = <NodeListOf<Element> & Element[]>this.element.querySelectorAll('.' + classNames.focused);
+        for (const ele of focusedLI) {
             ele.classList.remove(classNames.focused);
         }
     }
 
     private removeHover(): void {
-        let hoverLI: Element = this.element.querySelector('.' + classNames.hover);
+        const hoverLI: Element = this.element.querySelector('.' + classNames.hover);
         if (hoverLI) { hoverLI.classList.remove(classNames.hover); }
     }
 
     private removeSelect(li?: HTMLElement): void {
         if (isNullOrUndefined(li)) {
-            let selectedLI: Element[] = <NodeListOf<Element> & Element[]>this.element.querySelectorAll('.' + classNames.selected);
-            for (let ele of selectedLI) {
+            const selectedLI: Element[] = <NodeListOf<Element> & Element[]>this.element.querySelectorAll('.' + classNames.selected);
+            for (const ele of selectedLI) {
                 if (this.showCheckBox && ele.querySelector('.' + classNames.checked)) {
                     continue;
                 } else {
@@ -1363,8 +1440,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 this.curUL.querySelector('.' + classNames.focused).classList.remove(classNames.focused);
             }
             li.classList.add(classNames.focused);
-            let checkboxElement: Element = li.querySelector('.' + classNames.checkboxWrapper);
-            let checkIcon: Element = checkboxElement.querySelector('.' + classNames.checkboxIcon + '.' + classNames.icon);
+            const checkboxElement: Element = li.querySelector('.' + classNames.checkboxWrapper);
+            const checkIcon: Element = checkboxElement.querySelector('.' + classNames.checkboxIcon + '.' + classNames.icon);
             this.removeHover();
             if (!checkIcon.classList.contains(classNames.checked)) {
                 checkIcon.classList.add(classNames.checked);
@@ -1377,7 +1454,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             }
             checkboxElement.setAttribute('aria-checked', checkIcon.classList.contains(classNames.checked) ?
                 'true' : 'false');
-            let eventArgs: Object = this.selectEventData(li, e);
+            const eventArgs: object = this.selectEventData(li, e);
             merge(eventArgs, { isChecked: checkIcon.classList.contains(classNames.checked) });
             if (this.enableVirtualization) {
                 this.virtualizationModule.setCheckboxLI(li, e);
@@ -1389,16 +1466,20 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private selectEventData(li: Element, e?: MouseEvent | KeyboardEvent | FocusEvent): Object {
-        let data: DataSource = this.getItemData(li);
-        let fieldData: DataSource = <DataSource>getFieldValues(data, this.listBaseOption.fields);
+        const data: DataSource = this.getItemData(li);
+        const fieldData: DataSource = getFieldValues(data as { [key: string]: Object } , this.listBaseOption.fields) as DataSource;
         let selectedItem: SelectedItem;
         if (!isNullOrUndefined(data)
             && typeof (this.dataSource as string[])[0] === 'string' || typeof (this.dataSource as number[])[0] === 'number') {
             selectedItem = { item: li, text: li && (li as HTMLElement).innerText.trim(), data: this.dataSource as string[] | number[] };
         } else {
-            selectedItem = { item: li, text: fieldData && <string>fieldData[this.listBaseOption.fields.text], data: data };
+            selectedItem =
+            // eslint-disable-next-line
+            { item: li, text: fieldData && <object>fieldData[this.listBaseOption.fields.text] as any,
+                // eslint-disable-next-line
+                data: data  as { [key: string]: Object } as any };
         }
-        let eventArgs: Object = {};
+        const eventArgs: object = {};
         merge(eventArgs, selectedItem);
         if (e) {
             merge(eventArgs, { isInteracted: true, event: e, index: this.curUL && Array.prototype.indexOf.call(this.curUL.children, li) });
@@ -1407,8 +1488,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private setSelectedItemData(li: Element): void {
-        let data: DataSource = this.getItemData(li);
-        let fieldData: DataSource = <DataSource>getFieldValues(data, this.listBaseOption.fields);
+        const data: DataSource = this.getItemData(li);
+        // eslint-disable-next-line
+        const fieldData: DataSource = <DataSource>getFieldValues(data  as { [key: string]: Object } as any, this.listBaseOption.fields);
         if (!isNullOrUndefined(data) && ((typeof (this.dataSource as string[])[0] === 'string') ||
             (typeof (this.dataSource as number[])[0] === 'number'))) {
             this.selectedItems = {
@@ -1419,8 +1501,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         } else {
             this.selectedItems = {
                 item: li,
-                text: fieldData && <string>fieldData[this.listBaseOption.fields.text],
-                data: data
+                // eslint-disable-next-line
+                text: fieldData && fieldData[this.listBaseOption.fields.text] as any,
+                // eslint-disable-next-line
+                data: data  as { [key: string]: Object } as any
             };
         }
     }
@@ -1437,7 +1521,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             if (this.enableVirtualization) {
                 this.virtualizationModule.setSelectLI(li, e);
             }
-            let eventArgs: Object = this.selectEventData(li, e);
+            const eventArgs: object = this.selectEventData(li, e);
             this.trigger('select', eventArgs);
             this.selectedLI = li;
             this.renderSubList(li);
@@ -1446,7 +1530,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     private setHoverLI(li: Element): void {
         if (this.isValidLI(li) && !li.classList.contains(classNames.hover) && this.enable) {
-            let lastLi: Element[] = <NodeListOf<Element> & Element[]>this.element.querySelectorAll('.' + classNames.hover);
+            const lastLi: Element[] = <NodeListOf<Element> & Element[]>this.element.querySelectorAll('.' + classNames.hover);
             if (lastLi && lastLi.length) { removeClass(lastLi, classNames.hover); }
             if (!(li as Element).classList.contains(classNames.selected) || this.showCheckBox) {
                 (li as Element).classList.add(classNames.hover);
@@ -1456,15 +1540,17 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     //Data Source Related Functions
     private getSubDS(): DataSource[] {
-        let levelKeys: string[] = this.curDSLevel;
+        const levelKeys: string[] = this.curDSLevel;
         if (levelKeys.length) {
             let ds: DataSource[] = <DataSource[]>this.localData;
-            for (let key of levelKeys) {
-                let field: DataSource = {};
-                field[this.fields.id] = key;
+            for (const key of levelKeys) {
+                const field: DataSource = {};
+                // eslint-disable-next-line
+                field[this.fields.id] = key as any;
                 this.curDSJSON = <DataSource[] & DataSource>this.findItemFromDS(ds, field);
-                let fieldData: DataSource = <DataSource>getFieldValues
-                    (this.curDSJSON, this.listBaseOption.fields);
+                const fieldData: DataSource = <DataSource>getFieldValues
+                // eslint-disable-next-line no-unexpected-multiline
+                (this.curDSJSON  as { [key: string]: Object }, this.listBaseOption.fields);
                 ds = this.curDSJSON ? <DataSource[] & DataSource>fieldData[this.fields.child] : ds;
             }
             return ds;
@@ -1473,9 +1559,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private getItemData(li: Element | HTMLElement | Fields): DataSource {
-        let dataSource: DataSource[] | string[] | number[] | DataManager = this.dataSource instanceof DataManager ?
+        const dataSource: DataSource[] | string[] | number[] | DataManager = this.dataSource instanceof DataManager ?
             this.localData : this.dataSource;
-        let fields: Fields = this.getElementUID(li);
+        const fields: Fields = this.getElementUID(li);
         let curDS: DataSource[];
         if (isNullOrUndefined(this.element.querySelector('.' + classNames.hasChild)) && this.fields.groupBy) {
             curDS = <DataSource[]>this.curViewDS;
@@ -1495,7 +1581,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
         if (dataSource && dataSource.length && fields) {
             dataSource.some((data: DataSource) => {
-                let fieldData: DataSource = <DataSource>getFieldValues(data, this.listBaseOption.fields);
+                const fieldData: DataSource =
+                 // eslint-disable-next-line
+                 <DataSource>getFieldValues(data  as { [key: string]: Object } as any, this.listBaseOption.fields);
                 //(!(fid) || id === fid) && (!(ftext) || text === ftext) && (!!fid || !!ftext)
                 if ((fields[this.fields.id] || fields[this.fields.text]) &&
                     (!fields[this.fields.id] || (!isNullOrUndefined(fieldData[this.fields.id]) &&
@@ -1505,12 +1593,14 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 } else if (typeof data !== 'object' && dataSource.indexOf(data) !== -1) {
                     resultJSON = (parent ? <DataSource[] | DataSource>dataSource : data);
                 } else if (!isNullOrUndefined(fields[this.fields.id]) && isNullOrUndefined(fieldData[this.fields.id])) {
-                    let li: Element = this.element.querySelector('[data-uid="'
+                    const li: Element = this.element.querySelector('[data-uid="'
                         + fields[this.fields.id] + '"]');
-                    if (li && (li as HTMLElement).innerText.trim() === fieldData[this.fields.text]) {
+                    // eslint-disable-next-line
+                    if (li && (li as HTMLElement).innerText.trim() === fieldData[this.fields.text]as any) {
                         resultJSON = data;
                     }
-                } else if ((fieldData as Object).hasOwnProperty(this.fields.child) && (fieldData[this.fields.child] as Object[]).length) {
+                // eslint-disable-next-line
+                } else if ((fieldData as object).hasOwnProperty(this.fields.child) && (fieldData[this.fields.child] as object[]).length) {
                     resultJSON = <DataSource & DataSource[]>this.findItemFromDS(
                         <DataSource[]>fieldData[this.fields.child], fields, parent);
                 }
@@ -1524,10 +1614,11 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private getQuery(): Query {
-        let columns: string[] = [];
-        let query: Query = (this.query ? this.query : new Query());
+        const columns: string[] = [];
+        const query: Query = (this.query ? this.query : new Query());
         if (!this.query) {
-            for (let column of Object.keys((this.fields as ListViewModel & { properties: Object }).properties)) {
+            // eslint-disable-next-line
+            for (const column of Object.keys((this.fields  as any & { properties: object }).properties)) {
                 if (column !== 'tableName' && !!((this.fields as DataSource)[column]) &&
                     (this.fields as DataSource)[column] !==
                     (ListBase.defaultMappedFields as DataSource)[column]
@@ -1538,7 +1629,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
             query.select(columns);
-            if ((this.fields as ListViewModel & { properties: Object }).properties.hasOwnProperty('tableName')) {
+            // eslint-disable-next-line
+            if ((this.fields as any & { properties: object }).properties.hasOwnProperty('tableName')) {
                 query.from(this.fields.tableName);
             }
         }
@@ -1568,25 +1660,27 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     private setLocalData(): void {
         this.trigger('actionBegin');
-        let listViewComponent: ListView = this;
+        // eslint-disable-next-line
+        const listViewComponent: ListView = this;
         if (this.dataSource instanceof DataManager) {
-            (this.dataSource as DataManager).executeQuery(this.getQuery()).then((e: Object) => {
+            (this.dataSource as DataManager).executeQuery(this.getQuery()).then((e: object) => {
                 if (this.isDestroyed) { return; }
                 this.localData = (e as ResultData).result;
                 if (!this.isServerRendered || (!isBlazor())) {
                     listViewComponent.removeElement(listViewComponent.contentContainer);
+                    // eslint-disable-next-line
                     if ((this as any).isReact) {
                         this.clearTemplate();
                     }
                 }
                 this.renderList();
                 this.trigger('actionComplete', e);
-            }).catch((e: Object) => {
+            }).catch((e: object) => {
                 if (this.isDestroyed) { return; }
                 this.trigger('actionFailure', e);
             });
         } else if (!this.dataSource || !(<DataSource[]>this.dataSource).length) {
-            let ul: HTMLElement = <HTMLElement>this.element.querySelector('ul');
+            const ul: HTMLElement = <HTMLElement>this.element.querySelector('ul');
             if (ul) {
                 remove(ul);
                 this.setProperties({ dataSource: ListBase.createJsonFromElement(ul) }, true);
@@ -1607,6 +1701,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             this.removeElement(this.headerEle);
             this.removeElement(this.ulElement);
             this.removeElement(this.contentContainer);
+            // eslint-disable-next-line
             if ((this as any).isReact) {
                 this.clearTemplate();
             }
@@ -1629,7 +1724,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     private setAttributes(liElements: HTMLElement[]): void {
         for (let i: number = 0; i < liElements.length; i++) {
-            let element: HTMLElement = liElements[i];
+            const element: HTMLElement = liElements[i];
             if (element.classList.contains('e-list-item')) {
                 element.setAttribute('id', this.element.id + '_' + element.getAttribute('data-uid'));
                 element.setAttribute('aria-selected', 'false');
@@ -1649,8 +1744,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private resetBlazorTemplates(): void {
-        // tslint:disable-next-line:no-any
-        let templateCollection: any = blazorTemplates;
+        // eslint-disable-next-line
+        const templateCollection: any = blazorTemplates;
         if (this.template) {
             templateCollection[this.LISTVIEW_TEMPLATE_ID] = [];
             resetBlazorTemplate(this.LISTVIEW_TEMPLATE_ID, LISTVIEW_TEMPLATE_PROPERTY);
@@ -1685,19 +1780,19 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     private UpdateCurrentUL(): void {
         this.ulElement = this.curUL = this.element.querySelector('.' + classNames.parentItem);
         if (this.curUL) {
-            // tslint:disable
+            // eslint-disable-next-line
             (this as any).liCollection = this.curUL.querySelectorAll('.' + classNames.listItem);
-            // tslint:enable
         }
     }
 
     private removeActiveClass(): void {
-        let listViewComponent: ListView = this;
+        // eslint-disable-next-line
+        const listViewComponent: ListView = this;
         setTimeout(
             () => {
-                let ulContainer: Element = listViewComponent.element.querySelector('.' + classNames.virtualElementContainer);
+                const ulContainer: Element = listViewComponent.element.querySelector('.' + classNames.virtualElementContainer);
                 for (let i: number = 0; i < ulContainer.childElementCount; i++) {
-                    let selectedElement: Element = ulContainer.children[i];
+                    const selectedElement: Element = ulContainer.children[i];
                     let elementIndex: number;
                     let hiddenElementIndex: number;
                     if (listViewComponent.showCheckBox) {
@@ -1773,34 +1868,33 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private renderingNestedList(): void {
-        let ul: Element = closest(this.liElement.parentNode, '.' + classNames.parentItem);
-        let ctrlId: string = this.element.id;
-        let ulElement: Element = document.getElementById(ctrlId);
-        let currentListItem: Element = ulElement.getElementsByTagName('UL')[ulElement.getElementsByTagName('UL').length - 1];
+        const ul: Element = closest(this.liElement.parentNode, '.' + classNames.parentItem);
+        const ctrlId: string = this.element.id;
+        const ulElement: Element = document.getElementById(ctrlId);
+        const currentListItem: Element = ulElement.getElementsByTagName('UL')[ulElement.getElementsByTagName('UL').length - 1];
         this.switchView(<HTMLElement>ul, <HTMLElement>currentListItem);
         this.liElement = null;
     }
     private renderSubList(li: Element): void {
         this.liElement = li;
-        let uID: string = li.getAttribute('data-uid');
+        const uID: string = li.getAttribute('data-uid');
         if (li.classList.contains(classNames.hasChild) && uID) {
-            let ul: Element = closest(li.parentNode, '.' + classNames.parentItem);
+            const ul: Element = closest(li.parentNode, '.' + classNames.parentItem);
             let ele: Element = this.element.querySelector('[pid=\'' + uID + '\']');
             this.curDSLevel.push(uID);
             this.setViewDataSource(this.getSubDS());
             if (!ele) {
-                let data: DataSource[] = this.curViewDS as DataSource[];
+                const data: DataSource[] = this.curViewDS as DataSource[];
                 if (isBlazor() && this.isServerRendered) {
-                    // tslint:disable
+                    // eslint-disable-next-line
                     (this as any).interopAdaptor.invokeMethodAsync('ListChildDataSource', data);
-                    // tslint:enable
                 } else {
                     ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length, null, this);
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line
                     if ((this as any).isReact) {
-                     this.renderReactTemplates();
+                        this.renderReactTemplates();
                     }
-                    let lists: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>ele.querySelectorAll('.' + classNames.listItem);
+                    const lists: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>ele.querySelectorAll('.' + classNames.listItem);
                     this.setAttributes(lists);
                     ele.setAttribute('pID', <string>uID);
                     (ele as HTMLElement).style.display = 'none';
@@ -1809,13 +1903,15 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
             if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
-                this.switchView(<HTMLElement>ul, <HTMLElement>ele, false);
+                this.switchView(<HTMLElement>ul, <HTMLElement>ele);
             }
             this.liCollection = <HTMLElement[] & NodeListOf<Element>>this.curUL.querySelectorAll('.' + classNames.listItem);
             if (this.selectedItems) {
-                let fieldData: DataSource = <DataSource>
+                const fieldData: DataSource = <DataSource>
                     getFieldValues(<DataSource | string>this.selectedItems.data, this.listBaseOption.fields);
-                this.header(<string>(fieldData[this.listBaseOption.fields.text]), true, 'header');
+
+                // eslint-disable-next-line
+                this.header((fieldData[this.listBaseOption.fields.text]) as any, true, 'header');
             }
             this.selectedLI = undefined;
         }
@@ -1844,7 +1940,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 this.contentContainer = this.createElement('div', { className: classNames.content });
                 this.element.appendChild(this.contentContainer);
                 this.renderIntoDom(this.ulElement);
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 if ((this as any).isReact) {
                     this.renderReactTemplates();
                 }
@@ -1855,7 +1951,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     private getElementUID(obj: Fields | HTMLElement | Element): Fields {
         let fields: DataSource = {};
         if (obj instanceof Element) {
-            fields[this.fields.id] = obj.getAttribute('data-uid');
+            // eslint-disable-next-line
+            fields[this.fields.id] = obj.getAttribute('data-uid') as any;
         } else {
             fields = <DataSource>obj;
         }
@@ -1865,6 +1962,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Initializes the ListView component rendering.
      */
+
     public render(): void {
         if (!isBlazor() || !this.isServerRendered) {
             this.element.classList.add(classNames.root);
@@ -1877,7 +1975,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             this.header();
             this.setLocalData();
             this.setHTMLAttribute();
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             if ((this as any).isReact) {
                 this.renderReactTemplates();
             }
@@ -1903,14 +2001,15 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * It is used to destroy the ListView component.
      */
+
     public destroy(): void {
         this.resetBlazorTemplates();
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         if ((this as any).isReact) {
             this.clearTemplate();
         }
         this.unWireEvents();
-        let classAr: string[] = [classNames.root, classNames.disable, 'e-rtl',
+        const classAr: string[] = [classNames.root, classNames.disable, 'e-rtl',
             'e-has-header', 'e-lib'].concat(this.cssClass.split(' ').filter((css: string) => css));
         removeClass([this.element], classAr);
         this.element.removeAttribute('role');
@@ -1927,13 +2026,14 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Switches back from the navigated sub list item.
      */
+
     public back(): void {
-        let pID: string = this.curDSLevel[this.curDSLevel.length - 1];
+        const pID: string = this.curDSLevel[this.curDSLevel.length - 1];
         if (pID === undefined || this.isInAnimation()) { return; }
         this.curDSLevel.pop();
         this.setViewDataSource(this.getSubDS());
         let toUL: HTMLElement = <HTMLElement>this.element.querySelector('[data-uid=\'' + pID + '\']');
-        let fromUL: HTMLElement = this.curUL;
+        const fromUL: HTMLElement = this.curUL;
         if (!toUL) {
             this.createList();
             this.renderIntoDom(this.ulElement);
@@ -1945,11 +2045,12 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 toUL = toUL.parentElement;
             }
         }
-        let fieldData: DataSource = <DataSource>getFieldValues(this.curDSJSON, this.listBaseOption.fields);
-        let text: string = <string>fieldData[this.fields.text];
+        const fieldData: DataSource = <DataSource>getFieldValues(this.curDSJSON, this.listBaseOption.fields);
+        // eslint-disable-next-line
+        const text: string = fieldData[this.fields.text] as any;
         this.switchView(fromUL, toUL, true);
         this.removeFocus();
-        let li: HTMLElement = <HTMLElement>this.element.querySelector('[data-uid=\'' + pID + '\']');
+        const li: HTMLElement = <HTMLElement>this.element.querySelector('[data-uid=\'' + pID + '\']');
         li.classList.remove(classNames.disable);
         li.classList.add(classNames.focused);
         if (this.showCheckBox && li.querySelector('.' + classNames.checkboxIcon).classList.contains(classNames.checked)) {
@@ -1967,27 +2068,36 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Selects the list item from the ListView by passing the elements or field object.
+     *
      * @param  {Fields | HTMLElement | Element} item - We can pass element Object or Fields as Object with ID and Text fields.
      */
+
     public selectItem(item: Fields | HTMLElement | Element): void {
         if (this.enableVirtualization) {
             this.virtualizationModule.selectItem(item);
         } else if (this.showCheckBox) {
             this.setCheckboxLI(this.getLiFromObjOrElement(item));
         } else {
-            isNullOrUndefined(item) ? this.removeSelect() : this.setSelectLI(this.getLiFromObjOrElement(item));
+            if (isNullOrUndefined(item) === true)
+            {
+                this.removeSelect();
+            }
+            else
+            {
+                this.setSelectLI(this.getLiFromObjOrElement(item));
+            }
 
         }
     }
 
     private getLiFromObjOrElement(obj: Fields | HTMLElement | Element): HTMLElement {
         let li: Element;
-        let dataSource: DataSource[] | string[] | number[] | DataManager = this.dataSource instanceof DataManager ?
+        const dataSource: DataSource[] | string[] | number[] | DataManager = this.dataSource instanceof DataManager ?
             this.localData : this.dataSource;
         if (!isNullOrUndefined(obj)) {
             if (typeof (dataSource as string[])[0] === 'string' || typeof (dataSource as number[])[0] === 'number') {
                 if (obj instanceof Element) {
-                    let uid: string = (obj as HTMLElement).getAttribute('data-uid').toString();
+                    const uid: string = (obj as HTMLElement).getAttribute('data-uid').toString();
                     for (let i: number = 0; i < this.liCollection.length; i++) {
                         if (this.liCollection[i].getAttribute('data-uid').toString() === uid) {
                             li = this.liCollection[i] as HTMLElement;
@@ -2005,16 +2115,17 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     });
                 }
             } else {
-                let resultJSON: DataSource[] | DataSource = this.getItemData(obj);
-                let fieldData: DataSource =
+                const resultJSON: DataSource[] | DataSource = this.getItemData(obj);
+                const fieldData: DataSource =
                     <DataSource>getFieldValues(resultJSON, this.listBaseOption.fields);
                 if (resultJSON) {
                     li = this.element.querySelector('[data-uid="'
                         + (<DataSource>fieldData)[this.fields.id] + '"]');
                     if (!this.enableVirtualization && isNullOrUndefined(li)) {
-                        let curLi: NodeListOf<Element> = this.element.querySelectorAll('.' + classNames.listItem);
+                        const curLi: NodeListOf<Element> = this.element.querySelectorAll('.' + classNames.listItem);
                         for (let i: number = 0; i < curLi.length; i++) {
-                            if ((curLi[i] as HTMLElement).innerText.trim() === fieldData[this.fields.text]) {
+                            // eslint-disable-next-line
+                            if ((curLi[i] as HTMLElement).innerText.trim() === fieldData[this.fields.text] as any) {
                                 li = curLi[i];
                             }
                         }
@@ -2027,9 +2138,11 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Selects multiple list items from the ListView.
+     *
      * @param  {Fields[] | HTMLElement[] | Element[]} item - We can pass array of
      *  elements or array of fields Object with ID and Text fields.
      */
+
     public selectMultipleItems(item: Fields[] | HTMLElement[] | Element[]): void {
         if (!isNullOrUndefined(item)) {
             for (let i: number = 0; i < item.length; i++) {
@@ -2041,7 +2154,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private getParentId(): string[] {
-        let parentId: string[] = [];
+        const parentId: string[] = [];
         if (this.isNestedList) {
             for (let i: number = this.curDSLevel.length - 1; i >= 0; i--) {
                 parentId.push(this.curDSLevel[i]);
@@ -2052,29 +2165,31 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Gets the details of the currently selected item from the list items.
+     *
      * @blazorType ListSelectedItem<TValue>
      */
+
     public getSelectedItems(): SelectedItem | SelectedCollection | UISelectedItem | NestedListData {
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line
         let finalValue: any;
         let isCompleted: boolean = false;
         this.selectedId = [];
-        let dataSource: DataSource[] | string[] | number[] | DataManager = this.dataSource instanceof DataManager ?
+        const dataSource: DataSource[] | string[] | number[] | DataManager = this.dataSource instanceof DataManager ?
             this.localData : this.dataSource;
         if (this.enableVirtualization && !isCompleted) {
             finalValue = this.virtualizationModule.getSelectedItems();
             isCompleted = true;
         } else if (this.showCheckBox && !isCompleted) {
-            // tslint:disable-next-line:no-any
-            let liCollection: any = this.curUL.getElementsByClassName(classNames.selected);
-            let liTextCollection: string[] = []; let liDataCollection: DataSource[] = []; this.selectedId = [];
-            let dataParent: DataAndParent[] = [];
+            // eslint-disable-next-line
+            const liCollection: any = this.curUL.getElementsByClassName(classNames.selected);
+            const liTextCollection: string[] = []; const liDataCollection: DataSource[] = []; this.selectedId = [];
+            const dataParent: DataAndParent[] = [];
             for (let i: number = 0; i < liCollection.length; i++) {
                 if (typeof (dataSource as string[])[0] === 'string' || typeof (dataSource as number[])[0] === 'number') {
                     liTextCollection.push((liCollection[i] as HTMLElement).innerText.trim());
                 } else {
-                    let tempData: DataSource = this.getItemData(liCollection[i] as HTMLElement);
-                    let fieldData: DataSource =
+                    const tempData: DataSource = this.getItemData(liCollection[i] as HTMLElement);
+                    const fieldData: DataSource =
                         <DataSource>getFieldValues(tempData, this.listBaseOption.fields);
                     if (this.isNestedList) {
                         dataParent.push({ data: tempData, parentId: this.getParentId() });
@@ -2082,8 +2197,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                         liDataCollection.push(tempData);
                     }
                     if (fieldData) {
-                        liTextCollection.push(<string>fieldData[this.listBaseOption.fields.text]);
-                        this.selectedId.push(<string>fieldData[this.listBaseOption.fields.id]);
+                        // eslint-disable-next-line
+                        liTextCollection.push(fieldData[this.listBaseOption.fields.text] as any );
+                        // eslint-disable-next-line
+                        this.selectedId.push(fieldData[this.listBaseOption.fields.id] as any);
                     } else {
                         liTextCollection.push(undefined);
                         this.selectedId.push(undefined);
@@ -2104,8 +2221,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 isCompleted = true;
             }
         } else if (!isCompleted) {
-            let liElement: Element = this.element.getElementsByClassName(classNames.selected)[0];
-            let fieldData: DataSource =
+            const liElement: Element = this.element.getElementsByClassName(classNames.selected)[0];
+            const fieldData: DataSource =
                 <DataSource>getFieldValues(this.getItemData(liElement), this.listBaseOption.fields);
             if ((typeof (dataSource as string[])[0] === 'string'
                 || typeof (dataSource as number[])[0] === 'number')
@@ -2120,9 +2237,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     finalValue = undefined;
                     isCompleted = true;
                 } else {
-                    this.selectedId.push(<string>fieldData[this.listBaseOption.fields.id]);
+                    // eslint-disable-next-line
+                    this.selectedId.push(fieldData[this.listBaseOption.fields.id] as any);
                     finalValue = {
-                        text: <string>fieldData[this.listBaseOption.fields.text], item: liElement,
+                        text: fieldData[this.listBaseOption.fields.text], item: liElement,
                         data: this.getItemData(liElement)
                     };
                     isCompleted = true;
@@ -2130,16 +2248,16 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             }
         }
         if (isBlazor()) {
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line
             return this.blazorGetSelectedItems(finalValue) as any;
         } else {
             return finalValue;
         }
     }
 
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line
     private blazorGetSelectedItems(finalGetSelectedItem: any): ListSelectedItem {
-        let blazorSelectedItem: ListSelectedItem = {
+        const blazorSelectedItem: ListSelectedItem = {
             data: [],
             index: [],
             parentId: [],
@@ -2170,23 +2288,27 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         return blazorSelectedItem;
     }
 
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line
     private convertItemsToArray(items: any): any[] {
         return Array.isArray(items) ? [...items] : [items];
     }
     /**
      * Finds out an item details from the current list.
+     *
      * @param  {Fields | HTMLElement | Element} item - We can pass element Object or Fields as Object with ID and Text fields.
      * @blazorType TValue
      */
+
     public findItem(item: Fields | HTMLElement | Element): SelectedItem {
         return <SelectedItem & DataSource>this.getItemData(item);
     }
 
     /**
      * Enables the disabled list items by passing the Id and text fields.
+     *
      * @param  {Fields | HTMLElement | Element} item - We can pass element Object or Fields as Object with ID and Text fields.
      */
+
     public enableItem(item: Fields | HTMLElement | Element): void {
         this.setItemState(item, true);
         if (this.enableVirtualization) {
@@ -2196,8 +2318,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Disables the list items by passing the Id and text fields.
+     *
      * @param  {Fields | HTMLElement | Element} item - We can pass element Object or Fields as Object with ID and Text fields.
      */
+
     public disableItem(item: Fields | HTMLElement | Element): void {
         this.setItemState(item, false);
         if (this.enableVirtualization) {
@@ -2207,24 +2331,27 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     //A function that used to set state of the list item like enable, disable.
     private setItemState(item: Fields | HTMLElement | Element, isEnable: boolean): void {
-        let resultJSON: DataSource = this.getItemData(item);
-        let fieldData: DataSource = <DataSource>getFieldValues(resultJSON, this.listBaseOption.fields);
+        const resultJSON: DataSource = this.getItemData(item);
+        const fieldData: DataSource = <DataSource>getFieldValues(resultJSON, this.listBaseOption.fields);
         if (resultJSON) {
-            let li: Element = this.element.querySelector('[data-uid="' + fieldData[this.fields.id] + '"]');
+            const li: Element = this.element.querySelector('[data-uid="' + fieldData[this.fields.id] + '"]');
             if (isEnable) {
                 if (li) { li.classList.remove(classNames.disable); }
                 delete resultJSON[this.fields.enabled];
             } else if (!isEnable) {
                 if (li) { li.classList.add(classNames.disable); }
-                resultJSON[this.fields.enabled] = false;
+                // eslint-disable-next-line
+                resultJSON[this.fields.enabled] = false as any ;
             }
         }
     }
 
     /**
      * Shows the hide list item from the ListView.
+     *
      * @param  {Fields | HTMLElement | Element} item - We can pass element Object or Fields as Object with ID and Text fields.
      */
+
     public showItem(item: Fields | HTMLElement | Element): void {
         this.showHideItem(item, false, '');
         if (this.enableVirtualization) {
@@ -2234,8 +2361,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Hides an list item from the ListView.
+     *
      * @param  {Fields | HTMLElement | Element} item - We can pass element Object or Fields as Object with ID and Text fields.
      */
+
     public hideItem(item: Fields | HTMLElement | Element): void {
         this.showHideItem(item, true, 'none');
         if (this.enableVirtualization) {
@@ -2244,13 +2373,14 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private showHideItem(obj: Fields | HTMLElement | Element, isHide: boolean, display: string): void {
-        let resultJSON: DataSource = this.getItemData(obj);
-        let fieldData: DataSource = <DataSource>getFieldValues(resultJSON, this.listBaseOption.fields);
+        const resultJSON: DataSource = this.getItemData(obj);
+        const fieldData: DataSource = <DataSource>getFieldValues(resultJSON, this.listBaseOption.fields);
         if (resultJSON) {
-            let li: HTMLElement = <HTMLElement>this.element.querySelector('[data-uid="' + fieldData[this.fields.id] + '"]');
+            const li: HTMLElement = <HTMLElement>this.element.querySelector('[data-uid="' + fieldData[this.fields.id] + '"]');
             if (li) { li.style.display = display; }
             if (isHide) {
-                resultJSON[this.fields.isVisible] = false;
+                // eslint-disable-next-line
+                resultJSON[this.fields.isVisible] = false as any;
             } else {
                 delete resultJSON[this.fields.isVisible];
             }
@@ -2262,10 +2392,14 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * To add a new list item(s) in the ListView, we need to pass the `data` as an array of items that need
      * to be added and `fields` as the target item to which we need to add the given item(s) as its children.
      * For example fields: { text: 'Name', tooltip: 'Name', id:'id'}
-     * @param  {{[key:string]:Object}[]} data - JSON Array Data that need to add.
+     *
+     * @param  {{Object}[]} data - JSON Array Data that need to add.
+     *
      * @param  {Fields} fields - Target item to add the given data as its children (can be null).
-     * @blazorArgsType data|object,fields|object
+     *
+     * @blazorType data|object,fields|object
      */
+
     public addItem(data: { [key: string]: Object }[], fields: Fields = undefined): void {
         const dataSource: DataSource[] = this.dataSource instanceof DataManager
             ? this.localData : this.dataSource as DataSource[];
@@ -2322,7 +2456,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private addItemInNestedList(targetItemData: DataSource, itemQueue: DataSource[]): void {
-        const targetItemId: string = targetItemData[this.fields.id] as string;
+        // eslint-disable-next-line
+        const targetItemId: string = targetItemData[this.fields.id] as any;
         const targetChildDS: DataSource[] = targetItemData[this.fields.child] as DataSource[];
         const isAlreadyRenderedUL: HTMLElement | null = this.element.querySelector('[pid=\'' + targetItemId + '\']');
         const targetLi: HTMLElement | null = this.element.querySelector('[data-uid=\'' + targetItemId + '\']');
@@ -2358,20 +2493,20 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private addItemIntoDom(currentItem: DataSource, targetUL: HTMLElement, curViewDS: DataSource[]): void {
-        let index: number = curViewDS.indexOf(currentItem);
+        const index: number = curViewDS.indexOf(currentItem);
         this.addListItem(currentItem, index, targetUL, curViewDS);
-        let curItemDS: DataSource = curViewDS[index - 1];
+        const curItemDS: DataSource = curViewDS[index - 1];
         if (curItemDS && curItemDS.isHeader && (curItemDS.items as DataSource[]).length === 1) {
             this.addListItem(curItemDS, (index - 1), targetUL, curViewDS);
         }
     }
 
     private addListItem(dataSource: DataSource, index: number, ulElement: HTMLElement, curViewDS: DataSource[]): void {
-        let target: HTMLElement = this.getLiFromObjOrElement((curViewDS as DataSource[])[index + 1]) ||
+        const target: HTMLElement = this.getLiFromObjOrElement((curViewDS as DataSource[])[index + 1]) ||
             this.getLiFromObjOrElement((curViewDS as DataSource[])[index + 2]) || null;
-        let li: HTMLElement[] = ListBase.createListItemFromJson(this.createElement, [dataSource], this.listBaseOption, null, null, this);
+        const li: HTMLElement[] = ListBase.createListItemFromJson(this.createElement, [dataSource], this.listBaseOption, null, null, this);
         this.setAttributes(li);
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         if (this.template && (this as any).isReact) {
             this.renderReactTemplates();
         }
@@ -2381,8 +2516,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Removes the list item from the data source based on a passed
      *  element like fields: { text: 'Name', tooltip: 'Name', id:'id'}
+     *
      * @param  {Fields | HTMLElement | Element} item - We can pass element Object or Fields as Object with ID and Text fields.
      */
+
     public removeItem(item: Fields | HTMLElement | Element): void {
         const listDataSource: DataSource[] = this.dataSource instanceof DataManager
             ? this.localData : this.dataSource as DataSource[];
@@ -2396,14 +2533,16 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     private removeItemFromList(obj: Fields | Element | HTMLElement, listDataSource: DataSource[]): void {
         const curViewDS: DataSource[] = this.curViewDS as DataSource[];
-        let fields: Fields = obj instanceof Element ? this.getElementUID(obj) : obj;
+        const fields: Fields = obj instanceof Element ? this.getElementUID(obj) : obj;
         let dataSource: DataSource[] | DataSource;
+        // eslint-disable-next-line prefer-const
         dataSource = this.findItemFromDS(listDataSource, <DataSource>fields, true);
         if (dataSource) {
             let data: DataSource | DataSource[];
+            // eslint-disable-next-line prefer-const
             data = this.findItemFromDS(dataSource as DataSource[], <DataSource>fields);
-            let index: number = curViewDS.indexOf(data as DataSource);
-            let li: HTMLElement = this.getLiFromObjOrElement(obj);
+            const index: number = curViewDS.indexOf(data as DataSource);
+            const li: HTMLElement = this.getLiFromObjOrElement(obj);
             let groupLi: HTMLElement;
             this.validateNestedView(li);
             if (this.fields.groupBy && this.curViewDS[index - 1] &&
@@ -2421,14 +2560,15 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             if (groupLi) {
                 detach(groupLi);
             }
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line
             const foundData: any = ((<DataSource[]>dataSource).length - 1) <= 0
                 ? this.findParent(
                     this.localData,
                     this.fields.id,
-                    (value: string) => value === (data as DataSource)[this.fields.id],
+                    // eslint-disable-next-line
+                    (value: string) => value === (data as DataSource)[this.fields.id] as any,
                     null) : null;
-            let dsIndex: number = (dataSource as DataSource[]).indexOf(data as DataSource);
+            const dsIndex: number = (dataSource as DataSource[]).indexOf(data as DataSource);
             (dataSource as DataSource[]).splice(dsIndex, 1);
             this.setViewDataSource(listDataSource);
             if (foundData
@@ -2437,7 +2577,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 && foundData.parent[this.fields.child].length <= 0) {
                 const parentLi: HTMLElement | null = this.getLiFromObjOrElement(foundData.parent);
                 if (parentLi) {
-                    let li: HTMLElement[] = ListBase.createListItemFromJson(
+                    const li: HTMLElement[] = ListBase.createListItemFromJson(
                         this.createElement,
                         [foundData.parent],
                         this.listBaseOption,
@@ -2468,8 +2608,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Removes multiple items from the ListView by passing the array of elements or array of field objects.
+     *
      * @param  {Fields[] | HTMLElement[] | Element[]} item - We can pass array of elements or array of field Object with ID and Text fields.
      */
+
     public removeMultipleItems(item: HTMLElement[] | Element[] | Fields[]): void {
         if (item.length) {
             for (let i: number = 0; i < item.length; i++) {
@@ -2479,8 +2621,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line
     private findParent(dataSource: any, id: string, callback: Function, parent: object): object {
+        // eslint-disable-next-line no-prototype-builtins
         if (dataSource.hasOwnProperty(id) && callback(dataSource[id]) === true) {
             return extend({}, dataSource);
         }
@@ -2488,8 +2631,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         for (let i: number = 0; i < Object.keys(dataSource).length; i++) {
             if (dataSource[Object.keys(dataSource)[i]]
                 && typeof dataSource[Object.keys(dataSource)[i]] === 'object') {
-                // tslint:disable-next-line:no-any
-                let result: any = this.findParent(dataSource[Object.keys(dataSource)[i]], id, callback, dataSource);
+                // eslint-disable-next-line
+                const result: any = this.findParent(dataSource[Object.keys(dataSource)[i]], id, callback, dataSource);
                 if (result != null) {
                     if (!result.parent) { result.parent = parent; }
                     return result;
@@ -2505,7 +2648,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     public requiredModules(): ModuleDeclaration[] {
-        let modules: ModuleDeclaration[] = [];
+        const modules: ModuleDeclaration[] = [];
         if (this.enableVirtualization) {
             modules.push({ args: [this], member: 'virtualization' });
         }
@@ -2517,6 +2660,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Get the properties to be maintained in the persisted state.
      */
+
     protected getPersistData(): string {
         return this.addOnPersist(['cssClass', 'enableRtl', 'htmlAttributes',
             'enable', 'fields', 'animation', 'headerTitle',
@@ -2526,7 +2670,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 }
 
 interface ResultData {
-    result: { [key: string]: Object }[];
+    result: { [key: string]: object }[];
 }
 
 /** @hidden */
@@ -2569,6 +2713,7 @@ export interface ClassNames {
 export interface ListSelectedItem {
     /**
      * Specifies the selected item dataSource collection.
+     *
      * @isGenericType true
      * @blazorType List<T>
      */
@@ -2600,12 +2745,14 @@ export interface SelectedItem {
 
     /**
      * It denotes the selected item list element.
+     *
      * @blazorType DOM
      */
     item: HTMLElement | Element;
 
     /**
      * It denotes the selected item dataSource JSON object.
+     *
      * @isGenericType true
      */
     data: { [key: string]: Object } | string[] | number[];
@@ -2628,9 +2775,10 @@ export interface SelectedCollection {
 
     /**
      * It denotes the selected item dataSource JSON object or object collection.
+     *
      * @isGenericType true
      */
-    data: { [key: string]: Object } | { [key: string]: Object }[] | string[] | number[];
+    data: { [key: string]: object } | { [key: string]: object }[] | string[] | number[];
 }
 
 /**
@@ -2649,9 +2797,10 @@ export interface UISelectedItem {
 
     /**
      * It denotes the selected item dataSource JSON object or object collection.
+     *
      * @isGenericType true
      */
-    data: { [key: string]: Object } | { [key: string]: Object }[] | string | number | string[] | number[];
+    data: { [key: string]: object } | { [key: string]: object }[] | string | number | string[] | number[];
     /**
      * It is used to denote the index of the selected element.
      */
@@ -2668,9 +2817,10 @@ export interface UISelectedItem {
 export interface DataAndParent {
     /**
      * It denotes the selected item dataSource JSON object or object collection.
+     *
      * @isGenericType true
      */
-    data: { [key: string]: Object } | { [key: string]: Object }[] | string[];
+    data: { [key: string]: object } | { [key: string]: object }[] | string[];
     /**
      * It denotes the selected item's parent id;
      */
@@ -2721,8 +2871,8 @@ export interface SelectEventArgs extends BaseEventArgs, SelectedItem {
  * An interface that holds item created event arguments
  */
 export interface ItemCreatedArgs {
-    curData: { [key: string]: Object };
-    dataSource: { [key: string]: Object } | string[];
+    curData: { [key: string]: object };
+    dataSource: { [key: string]: object  } | string[];
     fields: FieldsMapping;
     item: HTMLElement;
     options: ListBaseOptions;
@@ -2730,5 +2880,5 @@ export interface ItemCreatedArgs {
 }
 
 interface DataSource {
-    [key: string]: Object;
+    [key: string]: object;
 }

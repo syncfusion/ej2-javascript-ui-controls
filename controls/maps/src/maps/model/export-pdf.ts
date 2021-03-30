@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-member-accessibility */
 import { createElement, isNullOrUndefined} from '@syncfusion/ej2-base';
 import { Maps } from '../../index';
 import { ExportType } from '../utils/enum';
@@ -7,29 +8,35 @@ import { PdfPageOrientation, PdfDocument, PdfBitmap } from '@syncfusion/ej2-pdf-
 
 /**
  * This module enables the export to PDF functionality in Maps control.
+ *
  * @hidden
  */
 export class PdfExport {
     private control: Maps;
 
-   /**
-    * Constructor for Maps
-    * @param control 
-    */
+    /**
+     * Constructor for Maps
+     *
+     * @param {Maps} control Specifies the instance of the map
+     */
     constructor(control: Maps) {
         this.control = control;
     }
 
     /**
      * To export the file as image/svg format
-     * @param type 
-     * @param fileName 
+     *
+     * @param {ExportType} type - Specifies the type of the document
+     * @param {string} fileName - Specifies the file name of the document
+     * @param {boolean} allowDownload - Specifies whether to download the document or not
+     * @param {PdfPageOrientation} orientation - Specifies the orientation of the PDF document to export the component
+     * @returns {Promise<string>} - Returns the promise string
      * @private
      */
     public export(type: ExportType, fileName: string, allowDownload?: boolean, orientation?: PdfPageOrientation): Promise<string> {
-        // tslint:disable-next-line:max-func-body-length
-        let promise: Promise<string> = new Promise((resolve: Function, reject: Function) => {
-            let canvasElement: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas', {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const promise: Promise<string> = new Promise((resolve: any, reject: any) => {
+            const canvasElement: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas', {
                 id: 'ej2-canvas',
                 attrs: {
                     'width': this.control.availableSize.width.toString(),
@@ -37,18 +44,18 @@ export class PdfExport {
                 }
             });
             orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
-            let svgParent: HTMLElement = document.getElementById(this.control.element.id + '_Tile_SVG_Parent');
+            const svgParent: HTMLElement = document.getElementById(this.control.element.id + '_Tile_SVG_Parent');
             let svgData: string;
-            let url: string = window.URL.createObjectURL(
+            const url: string = window.URL.createObjectURL(
                 new Blob(
                     type === 'SVG' ? [svgData] :
                         [(new XMLSerializer()).serializeToString(this.control.svgObject)],
                     { type: 'image/svg+xml' }
                 )
-                );
-            let pdfDocument: PdfDocument = new PdfDocument();
-            let image: HTMLImageElement = new Image();
-            let ctx: CanvasRenderingContext2D = canvasElement.getContext('2d');
+            );
+            const pdfDocument: PdfDocument = new PdfDocument();
+            const image: HTMLImageElement = new Image();
+            const ctx: CanvasRenderingContext2D = canvasElement.getContext('2d');
             if (!this.control.isTileMap) {
                 image.onload = (() => {
                     ctx.drawImage(image, 0, 0);
@@ -65,16 +72,16 @@ export class PdfExport {
                             pdfDocument.destroy();
                         } else {
                             resolve(null);
-                    }
+                        }
                     }
                 });
                 image.src = url;
             } else {
-                let xHttp: XMLHttpRequest = new XMLHttpRequest();
-                let tileLength: number = this.control.mapLayerPanel.tiles.length;
+                const xHttp: XMLHttpRequest = new XMLHttpRequest();
+                const tileLength: number = this.control.mapLayerPanel.tiles.length;
                 for (let i: number = 0; i <= tileLength + 1; i++) {
-                    let tile: HTMLElement = document.getElementById(this.control.element.id + '_tile_' + (i - 1));
-                    let tileImg: HTMLImageElement = new Image();
+                    const tile: HTMLElement = document.getElementById(this.control.element.id + '_tile_' + (i - 1));
+                    const tileImg: HTMLImageElement = new Image();
                     tileImg.crossOrigin = 'Anonymous';
                     ctx.fillStyle = this.control.background ? this.control.background : '#FFFFFF';
                     ctx.fillRect(0, 0, this.control.availableSize.width, this.control.availableSize.height);
@@ -118,30 +125,31 @@ export class PdfExport {
                             }
                         }
                     });
-                        if (i === 0 || i === tileLength + 1) {
-                            if (i === 0) {
-                                tileImg.src = url;
-                            } else {
-                                setTimeout(() => {
-                                    tileImg.src = window.URL.createObjectURL(new Blob(
-                                        [(new XMLSerializer()).serializeToString(document.getElementById(
-                                            this.control.element.id + '_Tile_SVG'))],
-                                        { type: 'image/svg+xml' }));
-                                // tslint:disable-next-line:align
-                                }, 300);
-                            }
+                    if (i === 0 || i === tileLength + 1) {
+                        if (i === 0) {
+                            tileImg.src = url;
                         } else {
-                            xHttp.open('GET', tile.children[0].getAttribute('src'), true);
-                            xHttp.send();
-                            tileImg.src = tile.children[0].getAttribute('src');
+                            setTimeout(() => {
+                                tileImg.src = window.URL.createObjectURL(new Blob(
+                                    [(new XMLSerializer()).serializeToString(document.getElementById(
+                                        this.control.element.id + '_Tile_SVG'))],
+                                    { type: 'image/svg+xml' }));
+                            }, 300);
                         }
+                    } else {
+                        xHttp.open('GET', tile.children[0].getAttribute('src'), true);
+                        xHttp.send();
+                        tileImg.src = tile.children[0].getAttribute('src');
                     }
                 }
+            }
         });
         return promise;
     }
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name
      */
     protected getModuleName(): string {
         return 'PdfExport';
@@ -149,7 +157,9 @@ export class PdfExport {
 
     /**
      * To destroy the PdfExports.
-     * @return {void}
+     *
+     * @param {Maps} maps - Specifies the instance of the maps.
+     * @returns {void}
      * @private
      */
     public destroy(maps: Maps): void {

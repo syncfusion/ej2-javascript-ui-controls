@@ -1,7 +1,7 @@
 import { TextPosition } from '../selection/selection-helper';
 import { DocumentHelper } from '../index';
 import { DocumentEditor } from '../../document-editor';
-/** 
+/**
  * @private
  */
 export class TextSearchResult {
@@ -17,22 +17,22 @@ export class TextSearchResult {
      * @private
      */
     public isFooter: boolean;
-    get start(): TextPosition {
+    public get start(): TextPosition {
         return this.startIn;
     }
-    set start(value: TextPosition) {
+    public set start(value: TextPosition) {
         this.startIn = value;
     }
-    get end(): TextPosition {
+    public get end(): TextPosition {
         return this.endIn;
     }
-    set end(value: TextPosition) {
+    public set end(value: TextPosition) {
         this.endIn = value;
     }
-    get text(): string {
+    public get text(): string {
         return this.documentHelper.selection.getTextInternal(this.start, this.end, false);
     }
-    constructor(owner: DocumentEditor) {
+    public constructor(owner: DocumentEditor) {
         this.owner = owner;
         this.documentHelper = this.owner.documentHelper;
     }

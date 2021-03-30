@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { formatUnit, isNullOrUndefined, closest, extend, append, prepend } from '@syncfusion/ej2-base';
 import { createElement, remove, addClass, EventHandler } from '@syncfusion/ej2-base';
 import { IRenderer, NotifyEventArgs, EventFieldsMapping, TdData } from '../base/interface';
@@ -8,28 +9,22 @@ import * as util from '../base/util';
 import * as event from '../base/constant';
 import * as cls from '../base/css-constant';
 
-
 /**
  * agenda view
  */
-
 export class Agenda extends ViewBase implements IRenderer {
     public viewClass: string = 'e-agenda-view';
     public isInverseTableSelect: boolean = false;
     public agendaDates: { [key: string]: Date } = {};
     public virtualScrollTop: number = 1;
     public agendaBase: AgendaBase;
-    public dataSource: Object[];
-    /**
-     * Constructor for agenda view
-     */
+    public dataSource: Record<string, any>[];
+
     constructor(parent: Schedule) {
         super(parent);
         this.agendaBase = new AgendaBase(parent);
     }
-    /**
-     * Get module name.
-     */
+
     protected getModuleName(): string {
         return 'agenda';
     }
@@ -41,16 +36,16 @@ export class Agenda extends ViewBase implements IRenderer {
         this.element.appendChild(this.createTableLayout(cls.OUTER_TABLE_CLASS) as HTMLElement);
         this.element.querySelector('table').setAttribute('role', 'presentation');
         this.parent.element.querySelector('.' + cls.TABLE_CONTAINER_CLASS).appendChild(this.element);
-        let eTr: Element = createElement('tr');
+        const eTr: Element = createElement('tr');
         this.element.querySelector('tbody').appendChild(eTr);
-        let workTd: Element = createElement('td');
+        const workTd: Element = createElement('td');
         eTr.appendChild(workTd);
-        let wrap: Element = createElement('div', { className: cls.CONTENT_WRAP_CLASS });
+        const wrap: Element = createElement('div', { className: cls.CONTENT_WRAP_CLASS });
         workTd.appendChild(wrap);
-        let tbl: Element = this.createTableLayout(cls.CONTENT_TABLE_CLASS);
+        const tbl: Element = this.createTableLayout(cls.CONTENT_TABLE_CLASS);
         wrap.appendChild(tbl);
-        let tBody: Element = tbl.querySelector('tbody');
-        let agendaDate: Date = util.resetTime(this.parent.selectedDate);
+        const tBody: Element = tbl.querySelector('tbody');
+        const agendaDate: Date = util.resetTime(this.parent.selectedDate);
         this.agendaBase.renderEmptyContent(tBody, agendaDate);
         this.wireEvents();
         if (this.parent.resourceBase) {
@@ -63,23 +58,23 @@ export class Agenda extends ViewBase implements IRenderer {
     }
 
     private eventLoad(args: NotifyEventArgs): void {
-        this.dataSource = <Object[]>extend([], this.parent.eventsData, null, true);
-        for (let event of this.parent.eventsData) {
-            delete (<{ [key: string]: Object }>event).generatedDates;
+        this.dataSource = extend([], this.parent.eventsData, null, true) as Record<string, any>[];
+        for (const event of this.parent.eventsData) {
+            delete (<Record<string, any>>event).generatedDates;
         }
-        let eventCollection: Object[] = args.processedData;
+        let eventCollection: Record<string, any>[] = args.processedData;
         if (this.parent.uiStateValues.isGroupAdaptive) {
-            let resource: TdData = this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex];
+            const resource: TdData = this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex];
             this.dataSource = this.parent.eventBase.filterEventsByResource(resource, this.dataSource);
             eventCollection = this.parent.eventBase.filterEventsByResource(resource, eventCollection);
         }
         this.parent.eventsProcessed = this.agendaBase.processAgendaEvents(eventCollection);
-        let agendaDate: Date = util.resetTime(this.parent.selectedDate);
-        let tBody: Element = this.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody') as HTMLElement;
+        const agendaDate: Date = util.resetTime(this.parent.selectedDate);
+        const tBody: Element = this.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody') as HTMLElement;
         util.removeChildren(tBody);
         this.renderInitialContent(tBody, agendaDate);
         this.agendaBase.wireEventActions();
-        let contentArea: HTMLElement = closest(tBody, '.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+        const contentArea: HTMLElement = closest(tBody, '.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
         contentArea.scrollTop = 1;
         this.parent.notify(event.eventsLoaded, {});
         if (!this.parent.activeViewOptions.allowVirtualScrolling) {
@@ -88,12 +83,11 @@ export class Agenda extends ViewBase implements IRenderer {
     }
 
     private refreshEvent(refreshDate: Date): void {
-        let processedData: Object[] = [];
-        for (let eventData of this.dataSource) {
-            let fields: EventFieldsMapping = this.parent.eventFields;
-            let data: { [key: string]: Object } = eventData as { [key: string]: Object };
+        let processedData: Record<string, any>[] = [];
+        const fields: EventFieldsMapping = this.parent.eventFields;
+        for (const data of this.dataSource) {
             if (isNullOrUndefined(data[fields.recurrenceID]) && !isNullOrUndefined(data[fields.recurrenceRule]) &&
-                !isNullOrUndefined(data.generatedDates) && refreshDate >= (<{ [key: string]: Object }>data.generatedDates).end) {
+                !isNullOrUndefined(data.generatedDates) && refreshDate >= (<Record<string, any>>data.generatedDates).end) {
                 processedData = processedData.concat(this.parent.eventBase.generateOccurrence(data, refreshDate));
             }
         }
@@ -101,7 +95,7 @@ export class Agenda extends ViewBase implements IRenderer {
     }
 
     private renderInitialContent(tBody: Element, agendaDate: Date): void {
-        let emptyTBody: Element = createElement('tbody');
+        const emptyTBody: Element = createElement('tbody');
         let firstDate: Date = new Date(agendaDate.getTime());
         let lastDate: Date = (this.parent.activeViewOptions.allowVirtualScrolling && this.parent.hideEmptyAgendaDays) ?
             this.getEndDateFromStartDate(firstDate) : util.addDays(firstDate, this.parent.agendaDaysCount);
@@ -109,13 +103,13 @@ export class Agenda extends ViewBase implements IRenderer {
         append([].slice.call(emptyTBody.childNodes), tBody);
         // Initial rendering, to load previous date events upto scroll bar enable
         if (this.parent.activeViewOptions.allowVirtualScrolling && this.parent.hideEmptyAgendaDays && this.parent.eventsData.length > 0) {
-            let contentArea: HTMLElement = this.getContentAreaElement();
-            let contentChild: HTMLElement = contentArea.querySelector('.e-content-table');
+            const contentArea: HTMLElement = this.getContentAreaElement();
+            const contentChild: HTMLElement = contentArea.querySelector('.e-content-table');
             while (contentArea.offsetWidth <= contentArea.clientWidth) {
                 if (this.parent.isAdaptive && contentChild.offsetHeight >= contentArea.clientHeight) {
                     break;
                 }
-                let emptyTBody: Element = createElement('tbody');
+                const emptyTBody: Element = createElement('tbody');
                 lastDate = firstDate;
                 firstDate = util.addDays(lastDate, - this.parent.agendaDaysCount);
                 this.renderContent(emptyTBody, firstDate, lastDate);
@@ -129,14 +123,13 @@ export class Agenda extends ViewBase implements IRenderer {
     }
 
     public renderContent(tBody: Element, agendaDate: Date, lastDate: Date): void {
-        let fieldMapping: EventFieldsMapping = this.parent.eventFields;
-        let firstDate: Date = new Date(agendaDate.getTime());
-        let isObject: Object[] = this.appointmentFiltering(firstDate, lastDate);
+        const fieldMapping: EventFieldsMapping = this.parent.eventFields;
+        const firstDate: Date = new Date(agendaDate.getTime());
+        const isObject: Record<string, any>[] = this.appointmentFiltering(firstDate, lastDate);
         if (isObject.length > 0 && this.parent.activeViewOptions.allowVirtualScrolling && this.parent.hideEmptyAgendaDays) {
-            let appoint: { [key: string]: Object }[] = <{ [key: string]: Object }[]>isObject;
-            agendaDate = appoint[0][fieldMapping.startTime] as Date;
+            agendaDate = isObject[0][fieldMapping.startTime] as Date;
             agendaDate = new Date(new Date(agendaDate.getTime()).setHours(0, 0, 0, 0));
-            this.updateHeaderText(appoint[0][fieldMapping.startTime] as Date);
+            this.updateHeaderText(isObject[0][fieldMapping.startTime] as Date);
         }
         let endDate: Date;
         if (!this.parent.hideEmptyAgendaDays || (this.parent.agendaDaysCount > 0 && isObject.length > 0)) {
@@ -153,21 +146,18 @@ export class Agenda extends ViewBase implements IRenderer {
                 this.agendaBase.calculateResourceTableElement(tBody, this.parent.agendaDaysCount, date);
             } else {
                 for (let day: number = 0; day < this.parent.agendaDaysCount; day++) {
-                    let filterData: { [key: string]: Object }[] = [];
-                    filterData = this.appointmentFiltering(agendaDate) as { [key: string]: Object }[];
-                    let nTr: Element = this.agendaBase.createTableRowElement(agendaDate, 'data');
-                    if (this.element.querySelector('tr[aria-rowindex="' + parseInt(nTr.getAttribute('aria-rowindex'), 10)
-                        + '"]')) { continue; }
-                    // if (this.isMonthFirstDate(agendaDate)) {
-                    //     tBody.appendChild(this.renderMonthHeader(this.createTableRowElement(agendaDate, 'monthHeader')));
-                    // }
-                    let dTd: Element = nTr.children[0];
-                    let aTd: Element = nTr.children[1];
+                    const filterData: Record<string, any>[] = this.appointmentFiltering(agendaDate);
+                    const nTr: Element = this.agendaBase.createTableRowElement(agendaDate, 'data');
+                    if (this.element.querySelector('tr[aria-rowindex="' + parseInt(nTr.getAttribute('aria-rowindex'), 10) + '"]')) {
+                        continue;
+                    }
+                    const dTd: Element = nTr.children[0];
+                    const aTd: Element = nTr.children[1];
                     if (filterData.length > 0 || (!this.parent.hideEmptyAgendaDays && filterData.length === 0)) {
-                        let elementType: string = (!this.parent.hideEmptyAgendaDays && filterData.length === 0) ? 'noEvents' : 'data';
+                        const elementType: string = (!this.parent.hideEmptyAgendaDays && filterData.length === 0) ? 'noEvents' : 'data';
                         dTd.appendChild(this.agendaBase.createDateHeaderElement(agendaDate));
                         nTr.appendChild(dTd);
-                        let cTd: Element = this.agendaBase.createAgendaContentElement(elementType, filterData, aTd);
+                        const cTd: Element = this.agendaBase.createAgendaContentElement(elementType, filterData, aTd);
                         nTr.appendChild(cTd);
                         if (cTd.querySelectorAll('li').length > 0) {
                             tBody.appendChild(nTr);
@@ -185,22 +175,10 @@ export class Agenda extends ViewBase implements IRenderer {
         this.agendaDates = { start: firstDate, end: endDate };
     }
 
-    // private renderMonthHeader(mTr: Element): Element {
-    //     mTr.removeAttribute('aria-rowindex');
-    //     for (let td of [].slice.call(mTr.childNodes)) {
-    //         td.removeAttribute('aria-colindex');
-    //     }
-    //     let headerDate: Date = new Date(parseInt(mTr.children[0].getAttribute('data-date'), 10));
-    //     let div: Element = createElement('div', {
-    //         className: cls.DATE_HEADER_CLASS,
-    //         innerHTML: headerDate.toLocaleString(this.parent.locale, { month: 'long' }) + '&nbsp' + headerDate.getFullYear()
-    //     });
-    //     mTr.lastElementChild.appendChild(div);
-    //     return mTr;
-    // }
-
     private agendaScrolling(event: Event): void {
-        this.parent.quickPopup.quickPopupHide();
+        if (this.parent.quickPopup) {
+            this.parent.quickPopup.quickPopupHide();
+        }
         if (this.parent.activeViewOptions.allowVirtualScrolling) {
             this.virtualScrolling(event);
         }
@@ -210,17 +188,18 @@ export class Agenda extends ViewBase implements IRenderer {
     }
 
     private virtualScrolling(event: Event): void {
-        let target: Element = event.target as Element;
-        let scrollTop: number = target.scrollTop;
-        let scrollHeight: number = target.scrollHeight;
-        let offsetHeight: number = target.clientHeight;
-        let totalHeight: number = scrollTop + offsetHeight;
-        let direction: string = (this.virtualScrollTop < scrollTop) ? 'next' : 'previous';
-        let tBody: Element = target.querySelector('tbody');
-        let emptyTBody: Element = createElement('tbody');
-        let topElement: Element = this.getElementFromScrollerPosition(event, direction);
-        let scrollDate: Date = this.parent.getDateFromElement(topElement);
-        let filterDate: { [key: string]: Date }; let filterData: Object[];
+        const target: Element = event.target as Element;
+        const scrollTop: number = target.scrollTop;
+        const scrollHeight: number = target.scrollHeight;
+        const offsetHeight: number = target.clientHeight;
+        const totalHeight: number = scrollTop + offsetHeight;
+        const direction: string = (this.virtualScrollTop < scrollTop) ? 'next' : 'previous';
+        const tBody: Element = target.querySelector('tbody');
+        const emptyTBody: Element = createElement('tbody');
+        const topElement: Element = this.getElementFromScrollerPosition(event);
+        const scrollDate: Date = this.parent.getDateFromElement(topElement);
+        let filterDate: Record<string, Date>;
+        let filterData: Record<string, any>[];
         if (scrollTop === 0) {
             filterDate = this.getPreviousNextDate(util.addDays(scrollDate, -1), direction);
             filterData = this.appointmentFiltering(filterDate.start, filterDate.end);
@@ -230,7 +209,7 @@ export class Agenda extends ViewBase implements IRenderer {
                 this.agendaBase.wireEventActions();
                 for (let s: number = 0, element: HTMLCollection = tBody.children; s < element.length; s++) {
                     if (element[s].getAttribute('aria-rowindex') === topElement.getAttribute('aria-colindex')) {
-                        let scrollToValue: number = (<HTMLElement>element[s]).offsetTop -
+                        const scrollToValue: number = (<HTMLElement>element[s]).offsetTop -
                             (<HTMLElement>this.element.querySelector('.e-agenda-item')).offsetHeight;
                         target.scrollTop = scrollToValue;
                         break;
@@ -251,20 +230,20 @@ export class Agenda extends ViewBase implements IRenderer {
             this.updateHeaderText(scrollDate);
         }
         this.virtualScrollTop = scrollTop;
-        let selectedElements: Element[] = this.parent.eventBase.getSelectedAppointments();
+        const selectedElements: Element[] = this.parent.eventBase.getSelectedAppointments();
         if (selectedElements.length > 0) {
             (selectedElements[selectedElements.length - 1] as HTMLElement).focus();
         }
     }
 
-    private getElementFromScrollerPosition(event: Event, direction?: string): Element {
+    private getElementFromScrollerPosition(event: Event): Element {
         let filterElement: Element;
-        let target: Element = event.target as Element;
-        let scrollTop: number = target.scrollTop;
-        let scrollHeight: number = target.scrollHeight;
-        let offsetHeight: number = target.clientHeight;
-        let totalHeight: number = scrollTop + offsetHeight;
-        let liCollection: HTMLElement[] = [].slice.call(target.querySelectorAll('.e-agenda-item'));
+        const target: Element = event.target as Element;
+        const scrollTop: number = target.scrollTop;
+        const scrollHeight: number = target.scrollHeight;
+        const offsetHeight: number = target.clientHeight;
+        const totalHeight: number = scrollTop + offsetHeight;
+        const liCollection: HTMLElement[] = [].slice.call(target.querySelectorAll('.e-agenda-item'));
         let li: HTMLElement;
         let liDetails: ClientRect;
         if (liCollection.length > 0) {
@@ -294,22 +273,22 @@ export class Agenda extends ViewBase implements IRenderer {
         }
     }
 
-    private getPreviousNextDate(date: Date, type: string): { [key: string]: Date } {
+    private getPreviousNextDate(date: Date, type: string): Record<string, Date> {
         let currentDate: Date = new Date(date.getTime());
-        let firstDate: Date = this.getStartDateFromEndDate(date);
-        let lastDate: Date = this.getEndDateFromStartDate(date);
+        const firstDate: Date = this.getStartDateFromEndDate(date);
+        const lastDate: Date = this.getEndDateFromStartDate(date);
         let daysCount: number = 0;
         do {
-            let filterData: Object[] = this.appointmentFiltering(currentDate);
+            const filterData: Record<string, any>[] = this.appointmentFiltering(currentDate);
             if (filterData.length > 0 || !this.parent.hideEmptyAgendaDays) { daysCount++; }
             currentDate = util.addDays(currentDate, (type === 'next') ? 1 : -1);
             if (currentDate < firstDate || currentDate > lastDate) { break; }
         } while (daysCount !== this.parent.agendaDaysCount);
-        let endDate: Date = util.addDays(currentDate, (type === 'next') ? -1 : 1);
+        const endDate: Date = util.addDays(currentDate, (type === 'next') ? -1 : 1);
         return (type === 'next') ? { start: date, end: util.addDays(endDate, 1) } : { start: endDate, end: util.addDays(date, 1) };
     }
 
-    private appointmentFiltering(startDate?: Date, endDate?: Date): Object[] {
+    private appointmentFiltering(startDate?: Date, endDate?: Date): Record<string, any>[] {
         let dateStart: Date; let dateEnd: Date;
         if (!isNullOrUndefined(startDate) && isNullOrUndefined(endDate)) {
             dateStart = util.resetTime(new Date(startDate.getTime()));
@@ -318,7 +297,7 @@ export class Agenda extends ViewBase implements IRenderer {
             dateStart = new Date(startDate.getTime());
             dateEnd = new Date(endDate.getTime());
         }
-        let filterData: Object[] = this.parent.eventBase.filterEvents(dateStart, dateEnd);
+        let filterData: Record<string, any>[] = this.parent.eventBase.filterEvents(dateStart, dateEnd);
         if (filterData.length === 0) {
             this.refreshEvent(startDate);
             filterData = this.parent.eventBase.filterEvents(dateStart, dateEnd);
@@ -327,12 +306,10 @@ export class Agenda extends ViewBase implements IRenderer {
     }
 
     public getStartDateFromEndDate(endDate: Date): Date {
-        let filterDate: Date; let fieldMapping: EventFieldsMapping = this.parent.eventFields;
+        let filterDate: Date; const fields: EventFieldsMapping = this.parent.eventFields;
         if (this.parent.eventsProcessed.length > 0) {
-            let firstDate: number = Math.min.apply(Math, this.parent.eventsProcessed.map((a: { [key: string]: Object }) => {
-                let date: Date = a[fieldMapping.startTime] as Date;
-                return date.getTime();
-            }));
+            const firstDate: number = Math.min(...this.parent.eventsProcessed.map((a: Record<string, Date>) =>
+                a[fields.startTime].getTime()));
             filterDate = this.parent.hideEmptyAgendaDays ? new Date(firstDate) : this.parent.minDate;
         } else {
             filterDate = this.parent.hideEmptyAgendaDays ? util.addMonths(endDate, -1) : this.parent.minDate;
@@ -341,12 +318,10 @@ export class Agenda extends ViewBase implements IRenderer {
     }
 
     public getEndDateFromStartDate(startDate: Date): Date {
-        let filterDate: Date; let fieldMapping: EventFieldsMapping = this.parent.eventFields;
+        let filterDate: Date; const fieldMapping: EventFieldsMapping = this.parent.eventFields;
         if (this.parent.eventsProcessed.length > 0) {
-            let lastDate: number = Math.max.apply(Math, this.parent.eventsProcessed.map((a: { [key: string]: Object }) => {
-                let date: Date = a[fieldMapping.endTime] as Date;
-                return date.getTime();
-            }));
+            const lastDate: number = Math.max(...this.parent.eventsProcessed.map((a: Record<string, Date>) =>
+                a[fieldMapping.endTime].getTime()));
             filterDate = this.parent.hideEmptyAgendaDays ? new Date(lastDate) : this.parent.maxDate;
         } else {
             filterDate = this.parent.hideEmptyAgendaDays ? util.addMonths(startDate, 1) : this.parent.maxDate;
@@ -355,7 +330,7 @@ export class Agenda extends ViewBase implements IRenderer {
     }
 
     public getNextPreviousDate(type: string): Date {
-        let noOfDays: number = (type === 'next') ? 1 : -1;
+        const noOfDays: number = (type === 'next') ? 1 : -1;
         return util.addDays(this.parent.selectedDate, noOfDays);
     }
 
@@ -372,30 +347,26 @@ export class Agenda extends ViewBase implements IRenderer {
     }
 
     public getDateRangeText(date?: Date): string {
-        let formatDate: string = (this.parent.activeViewOptions.dateFormat) ? this.parent.activeViewOptions.dateFormat : 'MMMM y';
+        const formatDate: string = (this.parent.activeViewOptions.dateFormat) ? this.parent.activeViewOptions.dateFormat : 'MMMM y';
         if (this.parent.activeViewOptions.allowVirtualScrolling || this.parent.isAdaptive) {
-            let currentDate: Date = isNullOrUndefined(date) ? this.parent.selectedDate : date;
+            const currentDate: Date = isNullOrUndefined(date) ? this.parent.selectedDate : date;
             return util.capitalizeFirstWord(
                 this.parent.globalize.formatDate(currentDate, { format: formatDate, calendar: this.parent.getCalendarMode() }), 'multiple');
         } else {
-            let startDate: Date = this.parent.selectedDate;
-            let endDate: Date = util.addDays(startDate, this.parent.agendaDaysCount - 1);
+            const startDate: Date = this.parent.selectedDate;
+            const endDate: Date = util.addDays(startDate, this.parent.agendaDaysCount - 1);
             return this.formatDateRange(startDate, endDate);
         }
     }
 
     public dayNavigationClick(e: Event): void {
-        let date: Date = this.parent.getDateFromElement
-            (closest((<Element>e.currentTarget), '.' + cls.AGENDA_CELLS_CLASS) as HTMLTableCellElement);
+        const element: HTMLTableCellElement = closest((<Element>e.currentTarget), '.' + cls.AGENDA_CELLS_CLASS) as HTMLTableCellElement;
+        const date: Date = this.parent.getDateFromElement(element);
         if (!isNullOrUndefined(date) && !this.parent.isAdaptive && this.parent.isMinMaxDate(date)) {
             this.parent.setScheduleProperties({ selectedDate: date });
             this.parent.changeView('Day', e);
         }
     }
-
-    // private isMonthFirstDate(date: Date): boolean {
-    //     return date.getDate() === 1;
-    // }
 
     private wireEvents(): void {
         EventHandler.add(this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS), event.scroll, this.agendaScrolling, this);
@@ -403,8 +374,8 @@ export class Agenda extends ViewBase implements IRenderer {
 
     private unWireEvents(): void {
         EventHandler.remove(this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS), event.scroll, this.agendaScrolling);
-        let dateHeaderElement: Element[] = [].slice.call(this.element.querySelectorAll('.e-m-date'));
-        for (let element of dateHeaderElement) {
+        const dateHeaderElement: Element[] = [].slice.call(this.element.querySelectorAll('.e-m-date'));
+        for (const element of dateHeaderElement) {
             EventHandler.remove(element, 'click', this.dayNavigationClick);
         }
     }
@@ -420,7 +391,7 @@ export class Agenda extends ViewBase implements IRenderer {
     }
 
     private onAgendaScrollUiUpdate(): void {
-        let headerHeight: number = this.getHeaderBarHeight();
+        const headerHeight: number = this.getHeaderBarHeight();
         if (this.parent.headerModule) {
             if (this.parent.activeViewOptions.allowVirtualScrolling) {
                 this.parent.headerModule.updateHeaderItems('add');
@@ -428,14 +399,10 @@ export class Agenda extends ViewBase implements IRenderer {
                 this.parent.headerModule.updateHeaderItems('remove');
             }
         }
-        let contentArea: HTMLElement = this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+        const contentArea: HTMLElement = this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
         contentArea.style.height = formatUnit(this.parent.element.offsetHeight - headerHeight);
     }
-    /**
-     * To destroy the agenda. 
-     * @return {void}
-     * @private
-     */
+
     public destroy(): void {
         if (this.parent.isDestroyed) { return; }
         if (this.element) {
@@ -450,4 +417,5 @@ export class Agenda extends ViewBase implements IRenderer {
             }
         }
     }
+
 }

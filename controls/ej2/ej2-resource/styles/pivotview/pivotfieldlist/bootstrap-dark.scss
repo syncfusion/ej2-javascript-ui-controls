@@ -1,0 +1,5946 @@
+
+/*! component's default definitions and variables */
+$field-list-skin: 'bootstrap-dark' !default;
+$field-list-active-color: $brand-primary !default;
+$field-list-toggle-border-color: $grey-8c !default;
+$field-list-drag-default-border-color: $field-list-toggle-border-color !default;
+$field-list-border-type: $border-type !default;
+$field-list-border-size: $border-size !default;
+$field-list-table-background-color: $grey-dark !default;
+$field-list-default-padding-size: 8px !default;
+$field-list-title-padding-size: 20px !default;
+$field-list-static-padding-size: 10px !default;
+$field-list-treeview-padding-size: -40px !default;
+$field-list-header-padding-size: 14px !default;
+$field-list-axis-header-padding-size: 5px !default;
+$field-list-title-font-size: 18px !default;
+$field-list-content-font-size: $font-size !default;
+$field-list-button-font-weight: 500 !default;
+$field-list-font-family: $font-family !default;
+$field-list-header-background-color: $grey-darker !default;
+$field-list-default-fill-color: $content-bg-color !default;
+$field-list-default-border-radius: 5px !default;
+$field-list-drop-hover-color: $grey-e6 !default;
+$field-list-selected-color: rgba($header-bg-color, .87) !default;
+$field-list-toggle-bg-color: $grey-dark !default;
+$field-list-toggle-font-color: $grey-dark-font !default;
+$field-list-button-color: $gray-light !default;
+$field-list-button-icon-color: $grey-dark-font !default;
+$field-list-icon-hover-color: rgba($content-font-color, .87) !default;
+$field-list-button-font-color: $content-font-color !default;
+$field-list-button-border-color: rgba($header-bg-color, .12) !default;
+$field-list-button-hover-color: rgba($header-bg-color, .12) !default;
+$field-list-button-focus-color: $field-list-button-hover-color !default;
+$field-list-button-active-color: $content-font-color !default;
+$field-list-button-back-color: #f5f5f5 !default;
+$field-list-drag-clone-text-color: rgba($grey-dark-font, .87) !default;
+$field-list-drag-clone-bg-color: $grey-dark !default;
+$field-list-drag-clone-font-size: 14px !default;
+$field-list-header-font-size: 13px !default;
+$field-list-button-font-size: 13px !default;
+$field-list-icon-size: 14px !default;
+$field-list-toggle-icon-size: 17px !default;
+$field-list-toggle-padding-size: 8px !default;
+$field-list-toggle-icon-bigger-size: 20px !default;
+$field-list-editor-dialog-footer-padding: 0 !default;
+$field-list-toggle-size: 31px !default;
+$field-list-toggle-bigger-size: 36px !default;
+$field-list-editor-search-padding-size: 20px !default;
+$field-list-member-filter-list-padding-size: -35px !default;
+$field-list-member-filter-list-height: 160px !default;
+$field-list-member-filter-list-bigger-height: 125px !default;
+$field-list-member-field-list-height: 200px !default;
+$field-list-toggle-hover-color: $grey-8c !default;
+$pivot-formula-background: $grey-base !default;
+$pivot-text-area-background: $content-border-color !default;
+$field-list-treeview-drag-padding: 6px !default;
+$field-list-treeview-drag-margin: 2px !default;
+$field-list-treeview-drag-bigger-padding: 3px !default;
+$field-list-button-height: 32px !default;
+$field-list-bigger-button-height: 36px !default;
+$field-list-axis-content-height: 133px !default;
+$field-list-drag-icon-color: $grey-dark-font !default;
+$field-list-default-header-font-color: $grey-dark-font !default;
+$field-list-header-height: 28px !default;
+$field-list-bigger-header-height: 30px !default;
+$field-list-icon-container-size: 20px !default;
+$field-list-bigger-icon-container-size: 20px !default;
+$field-list-bigger-icon-size: 16px !default;
+$field-list-header-padding: 15px !default;
+$field-list-bigger-header-padding: 20px !default;
+$field-list-icon-to-text-padding: 8px !default;
+$field-list-bigger-icon-to-text-padding: 10px !default;
+$field-list-icon-to-icon-padding: 4px !default;
+$field-list-bigger-icon-to-icon-padding: 4px !default;
+$field-list-default-bigger-padding-size: 16px !default;
+$field-list-bigger-header-font-size: 14px !default;
+$field-list-bigger-button-font-size: 14px !default;
+$pivot-calculated-header-padding: 4px !default;
+$pivot-calculated-bigger-header-padding: 6px !default;
+$field-list-button-font-size: 13px !default;
+$field-list-button-padding: 9px 12px !default;
+$field-list-bigger-button-padding: 9px 16px !default;
+$field-list-header-icon-size: 14px !default;
+$field-list-bigger-header-icon-size: 16px !default;
+$field-list-header-content-line-height: 1.5em !default;
+$field-list-tree-header-padding: 7px !default;
+$field-list-bigger-tree-header-padding: 8px !default;
+$field-list-editor-label-padding-size: 16px 10px 16px 20px !default;
+$field-list-editor-label-font: 500 13px Helvetica !default;
+$field-list-editor-label-opacity: 1 !default;
+$field-list-editor-label-color: $grey-light-font !default;
+$field-list-editor-label-fill: $grey-f8 !default;
+$field-list-editor-label-excel-width: 312px !default;
+$field-list-editor-label-excel-padding-size: 18px 10px 12px 20px !default;
+$field-list-editor-label-excel-opacity: 100%;
+$field-list-back-font-color: $grey-light-font !default;
+$field-list-mobile-header-color: $grey-lighter !default;
+$field-list-mobile-header-font-color: $grey-light-font !default;
+$field-list-back-margin: 5px !default;
+$field-list-sort-wrapper-padding-size: 10px !default;
+$field-list-sort-select-background-color: $grey-dark !default;
+$field-list-sort-select-border-color: $grey-8c !default;
+$field-list-sort-select-color: $grey-light-font !default;
+
+/*! component's adaptive definitions and variables */
+$field-list-adaptive-content-padding-size: 20px !default;
+$field-list-adaptive-footer-padding-size: 15px !default;
+$field-list-adaptive-btn-icon-size: 18px !default;
+$field-list-adaptive-btn-size: 52px !default;
+$field-list-adaptive-icon-height: 50px !default;
+$field-list-adaptive-drag-prompt-height: 200px !default;
+$field-list-adaptive-pivot-button-height: 36px !default;
+$field-list-adaptive-pivot-button-padding: 9px 16px !default;
+$field-list-toggle-icon: '\e434' !default;
+$pivot-calculated-formula-font-family:  $font-family !default;
+$pivot-calculated-formula-font-padding: 5px 10px !default;
+$pivot-calculated-header-opacity: .87 !default;
+$pivot-dialog-font-weight: normal !default;
+$pivot-dialog-content-opacity: 1 !default;
+$pivot-dialog-content-padding: 15px !default;
+$pivot-dialog-footer-padding: 15px !default;
+$pivot-dialog-footer-paddingright: 15px !default;
+$field-list-toggle-shadow-color: -1px 1px 4px 0 rgba($shadow, .12) !default;
+$field-list-toggle-left-shadow-color: 1px 1px 4px 0 rgba($shadow, .12) !default;
+$field-list-drag-clone-shadow-color: 0 1px 3px 0 rgba($shadow, .12) !default;
+$field-list-default-header-icon-font-color: $field-list-default-header-font-color !default;
+$pivot-calculated-icon-opacity: 1 !default;
+$field-list-treeview-font-weight: 500 !default;
+$field-list-calc-formula-font-size: 13px !default;
+$field-list-calc-bigger-formula-font-size: 13px !default;
+$field-list-bigger-button-line-height: 1em !default;
+$error-font-color: #f44336 !default;
+/*! component's theme wise override definitions and variables */
+$field-list-active-color: $brand-primary !default;
+$field-list-default-font-color: $grey-dark-font !default;
+$field-list-default-formula-font-color: $field-list-default-font-color !default;
+$field-list-default-border-color: $grey-8c !default;
+$field-list-default-prompt-color: $grey-f8 !default;
+$field-list-toggle-border-color: $grey-cc !default;
+$field-list-border-type: $border-type !default;
+$field-list-border-size: $border-size !default;
+$field-list-table-background-color: $grey-dark !default;
+$field-list-default-bg-color: $grey-base !default;
+$field-list-default-padding-size: 8px !default;
+$field-list-title-padding-size: 20px !default;
+$field-list-title-font-size: 18px !default;
+$field-list-content-font-size: $font-size !default;
+$field-list-button-font-weight: bold !default;
+$field-list-font-family: $font-family !default;
+$field-list-header-background-color: $grey-lighter !default;
+$field-list-default-fill-color: $grey-white !default;
+$field-list-default-border-radius: 0 !default;
+$field-list-button-font-color: $grey-light-font !default;
+$field-list-button-border-color: $grey-d4 !default;
+$field-list-button-back-color: #f5f5f5 !default;
+$field-list-drag-clone-text-color: $grey-light-font !default;
+$field-list-drag-clone-border-radius: 4px !default;
+$field-list-editor-dialog-footer-padding: 15px !default;
+$field-list-member-filter-list-height: 150px !default;
+$field-list-member-filter-list-bigger-height: 133px !default;
+$field-list-drag-clone-font-size: 14px !default;
+$field-list-button-font-size: 13px !default;
+$field-list-toggle-icon-bigger-size: 20px !default;
+$field-list-toggle-padding-size: 8px !default;
+$field-list-toggle-size: 31px !default;
+$field-list-toggle-bigger-size: 36px !default;
+$pivot-formula-border: $grey-white !default;
+$pivot-text-area-background: $grey-light-font !default;
+$pivot-calculated-header-opacity: 1 !default;
+$pivot-dialog-font-weight: bold !default;
+$pivot-dialog-content-opacity: 1 !default;
+$pivot-dialog-content-padding: 15px !default;
+$pivot-dialog-footer-padding: 15px !default;
+$pivot-dialog-footer-paddingright: 15px !default;
+$field-list-header-content-line-height: 1.5em !default;
+$field-list-bigger-header-content-line-height: 1.6em !default;
+$field-list-header-icon-wrapper-padding: 4px !default;
+$field-list-bigger-header-icon-wrapper-padding: 7px !default;
+$field-list-static-header-icon-wrapper-padding: 4px !default;
+$field-list-static-bigger-header-icon-wrapper-padding: 7px !default;
+$field-list-default-header-font-color: $grey-light-font !default;
+$field-list-tree-icon-color: $field-list-default-header-font-color !default;
+$field-list-default-header-icon-font-color: $grey !default;
+$field-list-button-hover-color: $grey-f9 !default;
+$field-list-button-focus-color: $grey-e6 !default;
+$field-list-treeview-font-weight: bold !default;
+$error-font-color: #a94442 !default;
+$format-label-font-opacity: 1 !default;
+$format-label-font-color: $grey-light-font !default;
+$format-label-font-weight: 600 !default;
+$format-preview-bigger-height: 32px !default;
+$format-preview-border-color: $grey-e6 !default;
+$format-delete-icon: '\e201' !default;
+$format-outer-border-color: $grey-8c !default;
+$format-outer-fill-color: $grey-base !default;
+$format-outer-border-radius: 0 !default;
+$format-dialog-width: 625px !default;
+$format-dialog-bigger-width: 670px !default;
+$field-list-excel-member-filter-height: 140px !default;
+$field-list-excel-filter-height: 234px !default;
+$field-list-excel-member-filter-bigger-height: 99px !default;
+$field-list-excel-filter-bigger-height: 213px !default;
+$field-list-clear-filter-icon: '\ea81' !default;
+
+/*! component's common definitions and variables */
+$field-list-bigger-excel-dialog-min-width: 350px !default;
+$format-label-font-size: 13px !default;
+$format-label-bigger-font-size: 14px !default;
+$format-preview-height: 28px !default;
+$format-preview-width: 80px !default;
+$olap-tree-wrapper-height: 450px;
+$olap-tree-outer-div-height: 421px;
+$olap-bigger-tree-wrapper-height: 495px;
+$olap-bigger-tree-outer-div-height: 463px;
+@include export-module('field-list-icons') {
+  /*! field-list component icons */
+  .e-pivotfieldlist {
+    .e-select-table::before {
+      content: '\e434';
+    }
+  }
+
+  .e-pivot-formatting-dialog {
+    .e-format-delete-icon::before {
+      content: '\ea7f';
+    }
+
+    .e-add-icon::before {
+      content: '\e823';
+    }
+
+    .e-colorpicker-wrapper .e-format-back-color+.e-split-btn-wrapper .e-split-btn .e-selected-color::before,
+    .e-colorpicker-container .e-format-back-color+.e-split-btn-wrapper .e-split-btn .e-selected-color::before {
+      content: '\e35c';
+    }
+
+    .e-colorpicker-wrapper .e-format-font-color+.e-split-btn-wrapper .e-split-btn .e-selected-color::before,
+    .e-colorpicker-container .e-format-font-color+.e-split-btn-wrapper .e-split-btn .e-selected-color::before {
+      content: '\e35f';
+    }
+  }
+
+  .e-level-options {
+    .e-selected-level-icon::before {
+      content: '\e614';
+    }
+  }
+
+  .e-pivot-calc-dialog-div {
+    .e-drag::before {
+      content: '\e330';
+    }
+
+    .e-pivot-all-field-title-wrapper .e-info.e-icons::before,
+    .e-pivot-all-field-title-container .e-info.e-icons::before {
+      content: '\e607';
+    }
+
+    .e-list-item .e-text-content .e-edited.e-icons::before {
+      content: '\e7a3';
+    }
+
+    .e-list-item .e-text-content .e-edit.e-icons::before {
+      content: '\e338';
+    }
+
+    .e-list-item .e-text-content .e-remove-report.e-icons::before {
+      content: '\e70c';
+    }
+
+    .e-remove-report.e-icons::before {
+      content: '\e70c';
+    }
+
+    .e-list-item .e-text-content .e-format.e-icons::before {
+      content: '\e22f';
+    }
+
+    // sass-lint:disable-all
+    .e-measureGroupCDB-icon::before {
+      content: '\ea76' !important;
+    }
+
+    .e-measure-icon::before {
+        content: '\ea76' !important;
+    }
+
+    .e-folderCDB-icon::before {
+        content: '\e60b' !important;
+    }
+
+    .e-folderCDB-open-icon::before {
+        content: '\e609' !important;
+    }
+
+    .e-dimensionCDB-icon::before {
+        content: '\e65b' !important;
+    }
+
+    .e-kpiCDB-icon::before {
+        content: '\e664' !important;
+    }
+
+    .e-kpiGoal-icon::before {
+        content: '\e664' !important;
+    }
+
+    .e-kpiStatus-icon::before {
+        content: '\e664' !important;
+    }
+
+    .e-kpiTrend-icon::before {
+        content: '\e664' !important;
+    }
+
+    .e-kpiValue-icon::before {
+        content: '\e664' !important;
+    }
+
+    .e-namedSetCDB-icon::before {
+        content: '\e65d' !important;
+    }
+
+    .e-hierarchyCDB-icon::before {
+        content: '\e663' !important;
+    }
+
+    .e-attributeCDB-icon::before {
+        content: '\e65c' !important;
+    }
+
+    .e-hierarchy-level-0-icon::before {
+        content: '\e65a' !important;
+    }
+
+    .e-hierarchy-level-1-icon::before {
+        content: '\e65a' !important;
+    }
+
+    .e-hierarchy-level-2-icon::before {
+        content: '\e662' !important;
+    }
+
+    .e-hierarchy-level-3-icon::before {
+        content: '\e65e' !important;
+    }
+
+    .e-hierarchy-level-4-icon::before {
+        content: '\e660' !important;
+    }
+
+    .e-hierarchy-level-5-icon::before {
+        content: '\e661' !important;
+    }
+
+    .e-calcMemberGroupCDB::before {
+      content: '\e729' !important;
+    }
+
+    .e-calc-measure-icon::before {
+      content: '\ea76' !important;
+    }
+
+    .e-calc-dimension-icon::before {
+      content: '\e65b' !important;
+    }
+  
+    .e-sort-none::before {
+        content: '\e666' !important;
+    }
+
+    .e-sort-ascend::before {
+        content: '\e667' !important;
+    }
+
+    .e-sort-descend::before {
+        content: '\e665' !important;
+    }
+    // sass-lint:enable-all
+  }
+
+  .e-pivotfieldlist-wrapper,
+  .e-pivotfieldlist-container {
+    .e-field-list-back-icon::before {
+      content: '\e610';
+    }
+
+    .e-sort::before {
+      content: '\ea79';
+    }
+
+    .e-pv-filter::before {
+      content: '\ebb0';
+    }
+
+    .e-pv-filtered::before {
+      color: $field-list-active-color;
+      content: '\ebb2';
+    }
+
+    .e-drag::before {
+      content: '\e330';
+    }
+
+    .e-add-icon::before {
+      content: '\e823';
+    }
+
+    .e-remove::before {
+      content: '\ea7b';
+    }
+
+    .e-axis-rows::before {
+      content: '\ea75';
+    }
+
+    .e-axis-columns::before {
+      content: '\ea74';
+    }
+
+    .e-axis-values::before {
+      content: '\ea76';
+    }
+
+    .e-axis-filters::before {
+      content: '\ebb0';
+    }
+
+    .e-selected-option-icon::before {
+      content: '\ea84';
+    }
+
+    .e-clear-filter-icon::before {
+      content: '\ebab';
+    }
+
+    .e-dropdown-icon::before {
+      content: '\e95d';
+    }
+
+    // sass-lint:disable-all
+    .e-measureGroupCDB-icon::before {
+      content: '\ea76' !important;
+    }
+
+    .e-measure-icon::before {
+        content: '\ea76' !important;
+    }
+
+    .e-folderCDB-icon::before {
+        content: '\e60b' !important;
+    }
+
+    .e-folderCDB-open-icon::before {
+        content: '\e609' !important;
+    }
+
+    .e-dimensionCDB-icon::before {
+        content: '\e65b' !important;
+    }
+
+    .e-kpiCDB-icon::before {
+        content: '\e664' !important;
+    }
+
+    .e-kpiGoal-icon::before {
+        content: '\e664' !important;
+    }
+
+    .e-kpiStatus-icon::before {
+        content: '\e664' !important;
+    }
+
+    .e-kpiTrend-icon::before {
+        content: '\e664' !important;
+    }
+
+    .e-kpiValue-icon::before {
+        content: '\e664' !important;
+    }
+
+    .e-namedSetCDB-icon::before {
+        content: '\e65d' !important;
+    }
+
+    .e-hierarchyCDB-icon::before {
+        content: '\e663' !important;
+    }
+
+    .e-attributeCDB-icon::before {
+        content: '\e65c' !important;
+    }
+
+    .e-hierarchy-level-0-icon::before {
+        content: '\e65a' !important;
+    }
+
+    .e-hierarchy-level-1-icon::before {
+        content: '\e65a' !important;
+    }
+
+    .e-hierarchy-level-2-icon::before {
+        content: '\e662' !important;
+    }
+
+    .e-hierarchy-level-3-icon::before {
+        content: '\e65e' !important;
+    }
+
+    .e-hierarchy-level-4-icon::before {
+        content: '\e660' !important;
+    }
+
+    .e-hierarchy-level-5-icon::before {
+        content: '\e661' !important;
+    }
+
+    .e-calcMemberGroupCDB::before {
+      content: '\e729' !important;
+    }
+
+    .e-calc-measure-icon::before {
+      content: '\ea76' !important;
+    }
+
+    .e-calc-dimension-icon::before {
+      content: '\e65b' !important;
+    }
+  
+    .e-sort-none::before {
+        content: '\e666' !important;
+    }
+
+    .e-sort-ascend::before {
+        content: '\e667' !important;
+    }
+
+    .e-sort-descend::before {
+        content: '\e665' !important;
+    }
+    // sass-lint:enable-all
+
+    .e-pivot-calc-outer-div .e-pivot-accord .e-edited.e-icons::before {
+      content: '\e7a3';
+    }
+
+    .e-pivot-calc-outer-div .e-pivot-accord .e-edit.e-icons::before {
+      content: '\e338';
+    }
+
+    .e-pivot-calc-outer-div .e-pivot-accord .e-remove-report.e-icons::before {
+      content: '\e70c';
+    }
+
+    .e-pivot-button .e-edit::before {
+      content: '\e338';
+    }
+
+    .e-sort-ascend-icon::before {
+      content: '\e734';
+    }
+
+    .e-sort-descend-icon::before {
+      content: '\e733';
+    }
+  }
+}
+
+@include export-module('field-list-layout') {
+
+  /*! field-list theme */
+
+  .e-pivotfieldlist {
+    .e-disable {
+      display: none;
+    }
+
+    .e-hide {
+      visibility: hidden;
+    }
+  }
+
+  .e-pivot-formatting-dialog {
+    // sass-lint:disable-all
+    max-height: 480px !important;
+    min-width: $format-dialog-width !important;
+    width: $format-dialog-width !important;
+    // sass-lint:enable-all
+    .e-format-table tr:nth-child(odd) {
+      td {
+        padding-bottom: 10px;
+      }
+    }
+
+    .e-format-delete-icon {
+      font-weight: normal;
+      @if ($field-list-skin == 'bootstrap4') {
+        // sass-lint:disable-all
+        color: #000;
+        // sass-lint:enable-all
+        opacity: .5;
+      }
+
+      &:hover {
+        font-weight: 600;
+        @if ($field-list-skin == 'bootstrap4') {
+          opacity: 1;
+        }
+      }
+    }
+
+    .e-format-table tr:nth-child(even) {
+      td {
+        padding-bottom: 14px;
+        padding-right: 18px;
+      }
+    }
+
+    .e-format-value-span {
+      vertical-align: bottom;
+    }
+
+    .e-format-value1,
+    .e-format-value2,
+    .e-format-value-span {
+      margin-right: 10px;
+    }
+
+    .e-format-font-color-picker {
+      margin-left: 0;
+      margin-right: 18px;
+    }
+
+    .e-format-inner-div {
+      padding-left: 14px;
+      padding-top: 14px;
+    }
+
+    .e-format-outer-div {
+      background-color: $format-outer-fill-color;
+      border: 1px solid $format-outer-border-color;
+      border-radius: $format-outer-border-radius;
+      margin-bottom: 14px;
+    }
+
+    .e-format-condition-button {
+      float: left;
+    }
+
+    .e-split-colorpicker {
+      @if ($field-list-skin == 'bootstrap4') {
+        // sass-lint:disable-all
+        background-color: $format-label-font-color !important;
+        color: $field-list-default-bg-color !important;
+        // sass-lint:enable-all
+      }
+    }
+
+    .e-format-delete-button {
+      background-color: transparent;
+      border-color: transparent;
+      float: right;
+      padding-right: 12px;
+      padding-top: 12px;
+    }
+
+    .e-format-delete-button:hover,
+    .e-format-delete-button:focus,
+    .e-format-delete-button:active {
+      background-color: transparent;
+      border-color: transparent;
+      box-shadow: 0 0 0 transparent;
+
+      .e-format-delete-icon {
+        font-weight: 600;
+        @if ($field-list-skin == 'bootstrap4') {
+          opacity: 1;
+        }
+      }
+    }
+
+    .e-format-delete-icon {
+      font-size: 10px;
+    }
+
+    .e-format-label,
+    .e-format-value-label {
+      color: $format-label-font-color;
+      font-size: $format-label-font-size;
+      font-weight: $format-label-font-weight;
+      opacity: $format-label-font-opacity;
+    }
+
+    .e-format-value-preview {
+      border: 1px solid $format-preview-border-color;
+      border-radius: $field-list-default-border-radius;
+      height: $format-preview-height;
+      // sass-lint:disable-all
+      margin: 0 !important;
+      // sass-lint:enable-all
+      padding-left: 6px;
+      padding-top: 6px;
+      width: $format-preview-width;
+    }
+
+    .e-colorpicker-wrapper .e-split-btn-wrapper .e-split-btn .e-selected-color,
+    .e-colorpicker-container .e-split-btn-wrapper .e-split-btn .e-selected-color {
+      background: none;
+      margin: 0 2px;
+      width: 14px;
+    }
+
+    .e-colorpicker-wrapper .e-split-btn-wrapper .e-btn.e-icon-btn,
+    .e-colorpicker-container .e-split-btn-wrapper .e-btn.e-icon-btn {
+      @if ($field-list-skin == 'bootstrap4') {
+        padding: 4px 5px;
+      }
+    }
+
+    .e-split-preview,
+    .e-tip-transparent {
+      border: 1px solid $format-preview-border-color;
+      // sass-lint:disable-all
+      border-radius: 0 !important;
+      // sass-lint:enable-all
+      height: 40%;
+      left: -3px;
+      position: absolute;
+      top: 16px;
+      width: 150%;
+    }
+
+    &.e-device {
+      // sass-lint:disable-all
+      min-width: 320px !important;
+      width: 100%  !important;
+      // sass-lint:enable-all
+
+      .e-format-value1,
+      .e-format-value2,
+      .e-format-value-span {
+        margin-right: 2px;
+      }
+
+      .e-format-color-picker {
+        width: 33%;
+      }
+
+      .e-format-delete-button {
+        font-size: 12px;
+        padding-right: 16px;
+        padding-top: 16px;
+      }
+
+      .e-format-apply-button,
+      .e-format-cancel-button {
+        max-width: 40%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    &.e-rtl {
+      .e-format-font-color-picker {
+        margin-left: 18px;
+        margin-right: 0;
+      }
+
+      .e-format-condition-button {
+        float: right;
+
+        .e-add-icon {
+          margin-left: auto;
+        }
+      }
+
+      .e-format-inner-div {
+        padding-left: 0;
+        padding-right: 14px;
+      }
+
+      .e-format-delete-button {
+        float: left;
+        padding-left: 12px;
+      }
+    }
+  }
+
+  .e-bigger.e-pivot-formatting-dialog,
+  .e-bigger .e-pivot-formatting-dialog {
+    // sass-lint:disable-all
+    min-width: $format-dialog-bigger-width !important;
+    width: $format-dialog-bigger-width !important;
+    // sass-lint:enable-all
+
+    .e-format-label,
+    .e-format-value-label {
+      font-size: $format-label-bigger-font-size;
+    }
+
+    // sass-lint:disable-all
+    .e-format-value1, .e-format-value2 {
+        margin-bottom: 3px !important;
+    }
+    // sass-lint:enable-all
+
+    .e-format-inner-div {
+      padding-left: 16px;
+      padding-top: 16px;
+    }
+
+    .e-format-outer-div {
+      margin-bottom: 16px;
+    }
+
+    .e-format-table tr:nth-child(odd) td {
+      padding-bottom: 12px;
+    }
+
+    .e-format-table tr:nth-child(even) td {
+      padding-bottom: 16px;
+      padding-right: 20px;
+    }
+
+    .e-format-font-color-picker {
+      margin-left: 0;
+      margin-right: 20px;
+    }
+
+    .e-colorpicker-wrapper .e-split-btn-wrapper .e-btn.e-icon-btn,
+    .e-colorpicker-container .e-split-btn-wrapper .e-btn.e-icon-btn {
+      @if ($field-list-skin == 'bootstrap4') {
+        padding: 4px 8px;
+      }
+    }
+
+    &.e-device {
+      // sass-lint:disable-all
+      min-width: 320px !important;
+      width: 100%  !important;
+      // sass-lint:enable-all
+
+      .e-format-color-picker {
+        width: 33%;
+      }
+
+      .e-format-delete-button {
+        font-size: 12px;
+        padding-right: 16px;
+        padding-top: 16px;
+      }
+    }
+
+    &.e-rtl {
+      .e-format-font-color-picker {
+        margin-left: 20px;
+        margin-right: 0;
+      }
+    }
+  }
+
+  .e-pivot-calc-dialog-div {
+    // sass-lint:disable-all
+    max-height: 550px !important;
+    // sass-lint:enable-all
+    min-width: 290px;
+
+    .e-dlg-header-content,
+    .e-footer-content {
+      border: 0;
+    }
+
+    .e-dlg-content {
+      padding-bottom: $pivot-dialog-content-padding;
+    }
+
+    .e-pivot-all-field-title,
+    .e-pivot-field-name-title,
+    .e-pivot-formula-title,
+    .e-olap-hierarchy-title,
+    .e-olap-format-title,
+    .e-olap-member-title {
+      color: $field-list-default-header-font-color;
+      font-size: $field-list-header-font-size;
+      margin-top: 15px;
+      overflow: hidden;
+      padding: $pivot-calculated-header-padding 0;
+      padding-bottom: 0;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .e-treeview {
+      .e-sibling {
+        display: none;
+      }
+
+      .e-list-selected {
+        opacity: .5;
+      }
+    }
+
+    .e-treeview ul {
+      overflow: hidden;
+
+      li {
+        padding: 0;
+
+        .e-list-text {
+          font-family: $field-list-font-family;
+        }
+
+        .e-list-icon {
+          color: $field-list-tree-icon-color;
+          margin: 0;
+        }
+      }
+
+      .e-fullrow {
+        cursor: default;
+      }
+
+      .e-list-item .e-text-content {
+        height: 36px;
+        margin-left: -10px;
+        padding: 0;
+      }
+    }
+
+    .e-treeview .e-list-item div.e-icons {
+      cursor: pointer;
+      font-size: 12px;
+      height: 24px;
+      opacity: $pivot-calculated-icon-opacity;
+      padding: 2px 4px 4px;
+      pointer-events: auto;
+      width: 24px;
+    }
+
+    .e-treeview .e-list-item div.e-iconspace {
+      cursor: pointer;
+      display: inline-block;
+      font-size: 12px;
+      height: 24px;
+      opacity: $pivot-calculated-icon-opacity;
+      padding: 2px 4px 4px;
+      pointer-events: auto;
+      width: 24px;
+    }
+
+    .e-treeview .e-list-item span.e-icons {
+      color: $field-list-drag-icon-color;
+      cursor: move;
+      display: inline-block;
+      font-size: $field-list-icon-size;
+      height: 24px;
+      margin-right: 4px;
+      margin-top: 4px;
+      padding: 5px;
+      pointer-events: auto;
+      width: 24px;
+    }
+
+    .e-dlg-header {
+      font-size: 18px;
+      font-weight: 500;
+      opacity: $pivot-calculated-header-opacity;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 74%;
+    }
+
+    .e-contextmenu {
+      background-color: $pivot-formula-background;
+      border-radius: 4px;
+    }
+
+    .e-contextmenu .e-menu-item {
+      color: $pivot-text-area-background;
+      font-size: 14px;
+      height: 48px;
+      opacity: .87;
+    }
+
+    &.e-rtl {
+      .e-treeview .e-list-item div.e-icons {
+        font-size: 14px;
+        height: 24px;
+        margin-bottom: 10px;
+        padding: 5px;
+        width: 24px;
+      }
+
+      .e-treeview .e-list-item div.e-edit.e-icons,
+      .e-treeview .e-list-item div.e-edited.e-icons,
+      .e-treeview .e-list-item div.e-remove-report.e-icons {
+        margin-right: 0;
+        transform: rotate(0deg);
+      }
+
+      .e-treeview ul {
+        margin-right: 0;
+
+        li {
+          margin-left: 0;
+          margin-right: $field-list-treeview-padding-size;
+
+          .e-text-content {
+            padding: 0 24px 0 0;
+          }
+        }
+      }
+    }
+
+    // sass-lint:disable-all
+    .e-pivot-calc-input.e-empty-field::-webkit-input-placeholder {
+      color: $error-font-color !important;
+      font-weight: 600 !important;
+    }
+
+    .e-pivot-calc-input.e-empty-field:-moz-placeholder {
+        color: $error-font-color !important;
+        font-weight: 600 !important;
+    }
+
+    .e-pivot-calc-input.e-empty-field::-moz-placeholder {
+        color: $error-font-color !important;
+        font-weight: 600 !important;
+    }
+
+    .e-pivot-calc-input.e-empty-field:-ms-input-placeholder {
+        color: $error-font-color !important;
+        font-weight: 600 !important;
+    }
+    // sass-lint:enable-all
+
+    .e-pivot-formula {
+      background-color: $pivot-formula-background;
+      border: 1px solid $pivot-formula-border;
+      border-radius: 4px;
+      color: $field-list-default-formula-font-color;
+      font-size: $field-list-calc-formula-font-size;
+      height: 70px;
+      margin-top: 5px;
+      // opacity: .38;
+      padding: $pivot-calculated-formula-font-padding;
+      resize: none;
+      width: 100%;
+
+      &.e-copy-drop {
+        cursor: copy;
+      }
+    }
+
+    .e-list-parent .e-list-text {
+      margin-bottom: 8px;
+      min-width: 100px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 65%;
+    }
+
+    .e-pivot-treeview-outer {
+      background-color: $pivot-formula-background;
+      border: 1px solid $pivot-formula-border;
+      border-radius: 4px;
+      height: 120px;
+      margin-top: 5px;
+      overflow: auto;
+    }
+
+    // sass-lint:disable-all
+    &.e-olap-calc-dialog-div {
+      min-width: 575px;
+
+      .e-pivot-calc-outer-div {
+        display: flex;
+
+        .e-olap-field-tree-div {
+          height: $olap-tree-wrapper-height;
+          width: 50%;
+
+          .e-pivot-treeview-outer {
+            height: 100%;
+            margin-top: 0;
+            overflow: hidden;
+
+            .e-pivot-treeview-outer-div {
+              display: inline-block;
+              height: $olap-tree-outer-div-height;
+              overflow: auto;
+              width: 100%;
+            }
+
+            .e-treeview {
+              display: inline-table;
+              height: 100%;
+              width: 100%;
+
+              ul {
+                .e-fullrow {
+                  cursor: move;
+                }
+
+                .e-list-text {
+                  margin-bottom: 0; 
+                  overflow: unset;
+                  width: 100%;
+                }
+
+                .e-calcfieldmember .e-list-text{
+                  width: 150px;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                }
+
+                .e-list-item .e-text-content {
+                  height: 30px;
+                  margin: 0;
+                  padding: 0 0 0 24px;
+                }
+
+                .e-remove-report.e-list-icon {
+                  cursor: pointer;
+                  font-size: 13px;
+                  margin-top: 0;
+                }
+
+                .e-list-icon {
+                  cursor: auto;
+                  font-size: $field-list-icon-size;
+                  width: auto;
+
+                  &.e-edit {
+                    cursor: pointer;
+                    padding: 7px !important;
+                  }
+
+                  &.e-edited {
+                    cursor: pointer;
+                    padding: 7px !important;
+                  }
+                }
+
+                .e-list-item div.e-icons {
+                  padding: 0;
+                  height: auto;
+                }
+
+                li {
+                  margin-left: 0;
+                  margin-right: 0;
+                }
+              }
+
+              &.e-rtl {
+                ul {
+                  .e-list-icon {
+                    transform: rotateX(0deg) rotateY(180deg);
+                  }
+
+                  .e-list-item .e-text-content {
+                    padding: 0 24px 0 0;
+                  }
+
+                  li {
+                    margin-left: 0;
+                    margin-right: 0;
+                  }
+                } 
+              }
+            }
+
+            .e-treeview ul:first-child {
+              padding-left: 10px;
+              padding-right: 10px;
+            }
+
+            .e-pivot-all-field-title {
+              color: $field-list-default-header-font-color;
+              flex: auto;
+              margin-top: 0;
+              padding-bottom: $pivot-calculated-header-padding;
+              padding-left: $field-list-header-padding;
+              padding-right: $field-list-header-padding;
+            }
+
+            .e-pivot-all-field-title-wrapper {
+              background-color: $field-list-header-background-color;
+              color: $field-list-default-header-font-color;
+              display: flex;
+              font-size: $field-list-header-font-size;
+
+              .e-info {
+                padding: 7px !important;
+
+                &:hover {
+                  color: $field-list-active-color;
+                }
+              }
+            }
+
+            .e-pivot-all-field-title-container {
+              background-color: $field-list-header-background-color;
+              color: $field-list-default-header-font-color;
+              display: flex;
+              font-size: $field-list-header-font-size;
+
+              .e-info {
+                padding: 7px !important;
+
+                &:hover {
+                  color: $field-list-active-color;
+                }
+              }
+            }
+          }
+        }
+
+        .e-olap-calculated-div {
+          flex: auto;
+          margin-left: 18px;
+
+          .e-pivot-formula {
+            height: 100px;
+          }
+
+          .e-olap-calc-custom-format-div {
+            margin-top: 15px;
+          }
+
+          .e-pivot-formula-title,
+          .e-pivot-field-name-title,
+          .e-olap-hierarchy-title,
+          .e-olap-format-title,
+          .e-olap-member-title {
+            padding-left: 0;
+            padding-right: 0; 
+          }
+
+          .e-pivot-field-name-title {
+            margin-top: 0;
+            padding-top: 0;
+          }
+        }
+      }
+
+      &.e-dialog {
+        max-height: 700px !important;
+
+        .e-calc-clear-btn {
+          float: left;
+          margin: 0;
+        }
+      }
+
+      &.e-rtl {
+        .e-pivot-calc-outer-div {
+           .e-olap-calculated-div {
+            margin-left: 0;
+            margin-right: 18px;
+          }
+        }
+
+        &.e-dialog {
+          .e-calc-clear-btn {
+            float: right;
+          }
+        }
+      }
+    }
+    // sass-lint:enable-all
+  }
+
+  .e-bigger.e-pivot-calc-dialog-div,
+  .e-bigger .e-pivot-calc-dialog-div {
+    // sass-lint:disable-all
+    max-height: 580px !important;
+    // sass-lint:enable-all
+    min-width: 310px;
+
+    .e-pivot-all-field-title,
+    .e-pivot-field-name-title,
+    .e-pivot-formula-title,
+    .e-olap-hierarchy-title,
+    .e-olap-format-title,
+    .e-olap-member-title {
+      font-size: $field-list-bigger-header-font-size;
+      padding: $pivot-calculated-bigger-header-padding 0;
+      padding-bottom: 0;
+    }
+
+    .e-treeview ul {
+      li {
+        padding: 2px 0;
+      }
+    }
+
+    .e-treeview .e-list-item span.e-icons {
+      font-size: $field-list-bigger-icon-size;
+    }
+
+    .e-pivot-formula {
+      font-size: $field-list-calc-bigger-formula-font-size;
+    }
+
+    .e-footer-content {
+      padding-right: $pivot-dialog-footer-paddingright;
+      padding-top: $pivot-dialog-footer-padding;
+    }
+
+    // sass-lint:disable-all
+    &.e-olap-calc-dialog-div {
+      max-height: 700px !important;
+      min-width: 580px;
+
+      .e-pivot-calc-outer-div {
+        .e-olap-field-tree-div {
+          height: $olap-bigger-tree-wrapper-height;
+
+          .e-pivot-treeview-outer {
+            .e-pivot-treeview-outer-div {
+              height: $olap-bigger-tree-outer-div-height;
+            }
+
+            .e-pivot-all-field-title {
+              padding-bottom: $pivot-calculated-bigger-header-padding;
+            }
+
+            .e-pivot-all-field-title-wrapper,
+            .e-pivot-all-field-title-container {
+              font-size: $field-list-bigger-header-font-size;
+            }
+
+            .e-treeview ul {
+              .e-list-icon {
+                font-size: $field-list-bigger-icon-size;
+              }
+            }
+          }
+        }
+
+        .e-olap-calculated-div {
+          margin-left: 24px;
+        }
+      }
+
+      &.e-rtl {
+        .e-pivot-calc-outer-div {
+           .e-olap-calculated-div {
+            margin-left: 0;
+            margin-right: 24px;
+          }
+        }
+      }
+    }
+    // sass-lint:enable-all
+  }
+
+  .e-pivotfieldlist-wrapper {
+    .e-adaptive-field-list-dialog,
+    .e-member-editor-dialog {
+      max-width: 400px;
+      min-width: 320px;
+
+      .e-member-prompt {
+        padding: 25px $field-list-editor-search-padding-size;
+        text-align: center;
+        width: 100%;
+      }
+
+      .e-editor-search-wrapper {
+        display: flex;
+        padding: 0 $field-list-editor-search-padding-size 10px;
+      }
+
+      .e-member-editor-container-outer-div {
+        display: inline-block;
+        height: $field-list-member-filter-list-height;
+        max-width: 400px;
+        overflow: auto;
+        width: 100%;
+      }
+
+      .e-member-editor-container {
+        display: inline-table;
+        height: 100%;
+        width: 100%;
+
+        &.e-rtl {
+          ul {
+            .e-list-icon {
+              transform: rotateX(0deg) rotateY(180deg);
+            }
+          }
+        }
+      }
+
+      .e-member-editor-container ul {
+        margin-left: $field-list-member-filter-list-padding-size;
+        overflow: hidden;
+
+        li {
+          .e-list-text {
+            font-family: $field-list-font-family;
+          }
+
+          .e-list-icon {
+            margin: 0;
+          }
+        }
+      }
+
+      // sass-lint:disable-all
+      .e-disable {
+        display: none !important;
+      }
+
+      &.e-rtl {
+        .e-member-editor-wrapper {
+          ul {
+            margin-left: 0;
+            margin-right: $field-list-member-filter-list-padding-size;
+          }
+        }
+      }
+
+      &.e-olap-editor-dialog {
+        .e-member-editor-wrapper {
+          .e-member-editor-container ul {
+            margin-left: 0;
+          }
+
+          .e-treeview ul:first-child {
+            padding-left: 10px;
+            padding-right: 10px;
+          }
+
+          .e-editor-search-wrapper {
+            display: flex;
+          }
+        }
+
+        &.e-rtl {
+          .e-member-editor-wrapper {
+            ul {
+              margin-right: 0;
+            }
+          }
+        }
+      }
+    }
+
+    .e-member-editor-dialog {
+      .e-clear-filter-button {
+        float: left;
+        margin: 0;
+
+        &.e-disable {
+          display: none;
+        }
+      }
+
+      .e-editor-label-wrapper {
+        background-color: $field-list-editor-label-fill;
+        opacity: $field-list-editor-label-excel-opacity;
+        padding: $field-list-editor-label-padding-size;
+
+        .e-editor-label {
+          color: $field-list-editor-label-color;
+          font: $field-list-editor-label-font;
+          opacity: $field-list-editor-label-opacity;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+
+      .e-filter-sort {
+        box-shadow: none;
+        margin-left: $field-list-sort-wrapper-padding-size;
+
+        // sass-lint:disable-all
+        .e-member-sort {
+          @if ($field-list-skin == 'bootstrap4') {
+            background-color: $content-bg;
+            border-color: $gray-400;
+            color:  $gray-700;
+          }
+
+          &:hover {
+            @if ($field-list-skin == 'bootstrap4') {
+              background-color: #6c757d;
+              border-color: #6c757d;
+              color: #fff;
+            }
+          }
+
+          &.e-active {
+            @if ($field-list-skin == 'bootstrap4') {
+              background-color: $field-list-sort-select-background-color;
+              border-color: $field-list-sort-select-border-color;
+              color: $field-list-sort-select-color;
+              outline: none;
+            }
+          }
+
+          .e-sort-ascend-icon,
+          .e-sort-descend-icon {
+            font-size: 16px;
+          }
+
+          &:focus {
+            @if ($field-list-skin == 'bootstrap4') {
+              background-color: #6c757d;
+              border-color: #6c757d;
+              color: #fff;
+            }
+
+            &.e-active {
+              background-color: $field-list-sort-select-background-color;
+              border-color: $field-list-sort-select-border-color;
+              color: $field-list-sort-select-color;
+              outline: none;
+            }
+          }
+        }
+      }
+
+      .e-select-all-wrapper ul {
+        margin-left: $field-list-member-filter-list-padding-size;
+        overflow: hidden;
+
+        li {
+          .e-list-text {
+            font-family: $field-list-font-family;
+          }
+
+          .e-list-icon {
+            margin: 0;
+          }
+        }
+      }
+
+      .e-filter-tab-wrapper {
+        border: none;
+        // sass-lint:enable-all
+
+        .e-tab-header {
+          .e-toolbar-item .e-icon-left + .e-tab-text {
+            margin: 0 0 0 6px;
+          }
+
+          .e-text-wrap {
+            .e-tab-icon {
+              height: 14px;
+              min-width: 14px;
+              width: 14px;
+              @if ($field-list-skin == 'bootstrap4') {
+                height: auto;
+              }
+
+              &::before {
+                font-size: 14px;
+              }
+            }
+          }
+        }
+
+        &.e-rtl {
+          .e-tab-header {
+            .e-toolbar-item .e-icon-left + .e-tab-text {
+              margin: 0 6px 0 0;
+            }
+          }
+        }
+      }
+
+      .e-excelfilter {
+        padding-top: 20px;
+
+        .e-member-editor-container-outer-div {
+          height: $field-list-excel-member-filter-height;
+        }
+      }
+
+      .e-label-filter,
+      .e-value-filter {
+        height: $field-list-excel-filter-height;
+        overflow: auto;
+        padding: 20px;
+        padding-bottom: 0;
+
+        // sass-lint:disable-all
+        .e-filter-text-div {
+          color: $field-list-button-icon-color !important;
+          font-size: 13px;
+          font-weight: 500;
+        }
+        // sass-lint:enable-all
+
+        .e-filter-option-wrapper-1,
+        .e-filter-option-wrapper-2,
+        .e-separator-div {
+          padding-top: 20px;
+        }
+
+        .e-between-text-div {
+          padding: 8px 0;
+        }
+
+        .e-disable {
+          display: none;
+        }
+      }
+
+      &.e-excel-filter {
+        .e-editor-label-wrapper {
+          opacity: $field-list-editor-label-excel-opacity;
+          padding: $field-list-editor-label-excel-padding-size;
+        }
+      }
+
+      &.e-rtl {
+        .e-member-editor-wrapper {
+          .e-editor-search-wrapper {
+            .e-filter-sort {
+              margin-left: 0;
+              margin-right: $field-list-sort-wrapper-padding-size;
+            }
+          }
+        }
+
+        .e-footer-content {
+          .e-clear-filter-button {
+            float: right;
+          }
+        }
+      }
+
+      &.e-olap-editor-dialog {
+        .e-member-editor-wrapper {
+          .e-select-all-wrapper ul {
+            margin-left: 0;
+          }
+
+          .e-editor-search-wrapper {
+            .e-level-drop {
+              margin: 0 5px;
+
+              .e-caret {
+                font-size: $field-list-icon-size;
+              }
+
+              li .e-disabled {
+                opacity: .5;
+                pointer-events: none;
+              }
+            }
+          }
+        }
+
+        // sass-lint:disable-all
+        &.e-rtl {
+          .e-member-editor-wrapper {
+            .e-editor-search-wrapper {
+              .e-filter-sort {
+                margin-left: 0;
+                margin-right: $field-list-sort-wrapper-padding-size;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .e-adaptive-field-list-dialog {
+      .e-member-editor-container ul {
+        li {
+          // sass-lint:disable-all
+          .e-calc-measure-icon,
+          .e-calc-dimension-icon,
+          .e-attributeCDB-icon,
+          .e-hierarchyCDB-icon,
+          .e-level-members,
+          .e-namedSetCDB-icon,
+          .e-measure-icon,
+          .e-kpiGoal-icon,
+          .e-kpiStatus-icon,
+          .e-kpiTrend-icon,
+          .e-kpiValue-icon {
+            margin-left: 10px;
+          }
+        }
+      }
+
+      &.e-olap-editor-dialog {
+        // sass-lint:disable-all
+        &.e-rtl {
+          .e-member-editor-wrapper {
+            ul li {
+              .e-calc-measure-icon,
+              .e-calc-dimension-icon,
+              .e-attributeCDB-icon,
+              .e-hierarchyCDB-icon,
+              .e-level-members,
+              .e-namedSetCDB-icon,
+              .e-measure-icon,
+              .e-kpiGoal-icon,
+              .e-kpiStatus-icon,
+              .e-kpiTrend-icon,
+              .e-kpiValue-icon {
+                margin-left: 0;
+                margin-right: 10px;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .e-value-field-settings {
+      max-width: 400px;
+      min-width: 300px;
+
+      .e-dlg-content {
+        overflow: auto;
+      }
+
+      .e-value-field-div-content {
+        padding: 0 $field-list-editor-search-padding-size 10px;          
+
+        .e-field-option-wrapper {
+          .e-field-name-text-wrapper {
+            display: flex;
+
+            .e-field-name-title,
+            .e-field-name-content {
+              font-size: 13px;
+              font-weight: 500;
+            }
+
+            .e-field-name-title {
+              flex: none;
+            }
+
+            .e-field-name-content {
+              flex: auto;
+              width: 100%;
+            }
+          }
+
+          .e-caption-input-wrapper,
+          .e-type-option-wrapper,
+          .e-base-field-option-wrapper,
+          .e-base-item-option-wrapper {
+            padding-top: $field-list-editor-search-padding-size;
+
+            .e-base-field-option-text,
+            .e-base-item-option-text,
+            .e-type-option-text {
+              font-size: 13px;
+              font-weight: 500;
+              width: 100%;
+            }
+
+            .e-caption-input-text {
+              font-size: 13px;
+            }
+          }
+        }
+      }
+    }
+
+    .e-adaptive-field-list-dialog,
+    .e-member-editor-dialog,
+    .e-value-field-settings {
+      border-radius: $field-list-default-border-radius;
+      width: auto;
+
+      .e-dlg-header-content,
+      .e-footer-content {
+        border-radius: $field-list-default-border-radius;
+      }
+
+      .e-dlg-header-content {
+        border: 0;
+        font-weight: normal;
+      }
+
+      .e-footer-content {
+        border-top: $field-list-border-size $field-list-border-type $field-list-default-border-color;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        padding-top: $field-list-editor-dialog-footer-padding;
+      }
+
+      .e-dlg-content {
+        overflow: hidden;
+        padding: 0;
+
+        .e-empty-field::-webkit-input-placeholder {
+          color: $error-font-color !important;
+          font-weight: 600 !important;
+        }
+
+        .e-empty-field:-moz-placeholder {
+          color: $error-font-color !important;
+          font-weight: 600 !important;
+        }
+
+        .e-empty-field::-moz-placeholder {
+          color: $error-font-color !important;
+          font-weight: 600 !important;
+        }
+
+        .e-empty-field:-ms-input-placeholder {
+          color: $error-font-color !important;
+          font-weight: 600 !important;
+        }
+        // sass-lint:enable-all
+      }
+    }
+
+    .e-adaptive-field-list-dialog {
+      .e-dlg-content {
+        .e-member-editor-wrapper {
+          .e-member-editor-container-outer-div {
+            height: $field-list-member-field-list-height;
+          }
+        }
+      }
+    }
+  }
+
+  .e-pivotfieldlist-container {
+    .e-adaptive-field-list-dialog,
+    .e-member-editor-dialog {
+      min-width: 320px;
+      max-width: 400px;
+
+      .e-member-prompt {
+        padding: 25px $field-list-editor-search-padding-size;
+        text-align: center;
+        width: 100%;
+      }
+
+      .e-editor-search-container {
+        display: flex;
+        padding: 0 $field-list-editor-search-padding-size 10px;
+      }
+
+      .e-member-editor-container-outer-div {
+        display: inline-block;
+        height: $field-list-member-filter-list-height;
+        max-width: 400px;
+        overflow: auto;
+        width: 100%;
+      }
+
+      .e-member-editor-container {
+        display: inline-table;
+        height: 100%;
+        width: 100%;
+
+        &.e-rtl {
+          ul {
+            .e-list-icon {
+              transform: rotateX(0deg) rotateY(180deg);
+            }
+          }
+        }
+      }
+
+      .e-member-editor-container ul {
+        margin-left: $field-list-member-filter-list-padding-size;
+        overflow: hidden;
+
+        li {
+          .e-list-text {
+            font-family: $field-list-font-family;
+          }
+
+          .e-list-icon {
+            margin: 0;
+          }
+        }
+      }
+      
+      // sass-lint:disable-all
+      .e-disable {
+        display: none !important;
+      }
+      // sass-lint:enable-all
+
+      &.e-rtl {
+        .e-member-editor-outer-container {
+          ul {
+            margin-left: 0;
+            margin-right: $field-list-member-filter-list-padding-size;
+          }
+        }
+      }
+
+      &.e-olap-editor-dialog {
+        .e-member-editor-outer-container {
+          .e-member-editor-container ul {
+            margin-left: 0;
+          }
+
+          .e-treeview ul:first-child {
+            padding-left: 10px;
+            padding-right: 10px;
+          }
+
+          .e-editor-search-container {
+            display: flex;
+          }
+        }
+
+        // sass-lint:disable-all
+        &.e-rtl {
+          .e-member-editor-outer-container {
+            ul {
+              margin-right: 0;
+            }
+          }
+        }
+      }
+    }
+
+    .e-member-editor-dialog {
+      .e-clear-filter-button {
+        float: left;
+        margin: 0;
+
+        &.e-disable {
+          display: none;
+        }
+      }
+
+      .e-editor-label-container {
+        background-color: $field-list-editor-label-fill;
+        opacity: $field-list-editor-label-excel-opacity;
+        padding: $field-list-editor-label-padding-size;
+
+        .e-editor-label {
+          color: $field-list-editor-label-color;
+          font: $field-list-editor-label-font;
+          opacity: $field-list-editor-label-opacity;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+
+      .e-filter-sort {
+        box-shadow: none;
+        margin-left: $field-list-sort-wrapper-padding-size;
+
+        // sass-lint:disable-all
+        .e-member-sort {
+          @if ($field-list-skin == 'bootstrap4') {
+            background-color: $content-bg;
+            border-color: $gray-400;
+            color:  $gray-700;
+          }
+
+          &:hover {
+            @if ($field-list-skin == 'bootstrap4') {
+              background-color: #6c757d;
+              border-color: #6c757d;
+              color: #fff;
+            }
+          }
+
+          &.e-active {
+            @if ($field-list-skin == 'bootstrap4') {
+              background-color: $field-list-sort-select-background-color;
+              border-color: $field-list-sort-select-border-color;
+              color: $field-list-sort-select-color;
+              outline: none;
+            }
+          }
+
+          .e-sort-ascend-icon,
+          .e-sort-descend-icon {
+            font-size: 16px;
+          }
+
+          &:focus {
+            @if ($field-list-skin == 'bootstrap4') {
+              background-color: #6c757d;
+              border-color: #6c757d;
+              color: #fff;
+            }
+
+            &.e-active {
+              background-color: $field-list-sort-select-background-color;
+              border-color: $field-list-sort-select-border-color;
+              color: $field-list-sort-select-color;
+              outline: none;
+            }
+          }
+        }
+        // sass-lint:enable-all
+      }
+
+      .e-select-all-container ul {
+        margin-left: $field-list-member-filter-list-padding-size;
+        overflow: hidden;
+
+        li {
+          .e-list-text {
+            font-family: $field-list-font-family;
+          }
+
+          .e-list-icon {
+            margin: 0;
+          }
+        }
+      }
+
+      .e-filter-tab-container {
+        border: none;
+        // sass-lint:enable-all
+
+        .e-tab-header {
+          .e-toolbar-item .e-icon-left + .e-tab-text {
+            margin: 0 0 0 6px;
+          }
+
+          .e-text-wrap {
+            .e-tab-icon {
+              height: 14px;
+              min-width: 14px;
+              width: 14px;
+              @if ($field-list-skin == 'bootstrap4') {
+                height: auto;
+              }
+
+              &::before {
+                font-size: 14px;
+              }
+            }
+          }
+        }
+
+        &.e-rtl {
+          .e-tab-header {
+            .e-toolbar-item .e-icon-left + .e-tab-text {
+              margin: 0 6px 0 0;
+            }
+          }
+        }
+      }
+
+      .e-excelfilter {
+        padding-top: 20px;
+
+        .e-member-editor-container-outer-div {
+          height: $field-list-excel-member-filter-height;
+        }
+      }
+
+      .e-label-filter,
+      .e-value-filter {
+        height: $field-list-excel-filter-height;
+        overflow: auto;
+        padding: 20px;
+        padding-bottom: 0;
+
+        // sass-lint:disable-all
+        .e-filter-text-div {
+          color: $field-list-button-icon-color !important;
+          font-size: 13px;
+          font-weight: 500;
+        }
+        // sass-lint:enable-all
+
+        .e-filter-option-container-1,
+        .e-filter-option-container-2,
+        .e-separator-div {
+          padding-top: 20px;
+        }
+
+        .e-between-text-div {
+          padding: 8px 0;
+        }
+
+        .e-disable {
+          display: none;
+        }
+      }
+
+      &.e-excel-filter {
+        .e-editor-label-container {
+          opacity: $field-list-editor-label-excel-opacity;
+          padding: $field-list-editor-label-excel-padding-size;
+        }
+      }
+
+      &.e-rtl {
+        .e-member-editor-outer-container {
+          .e-editor-search-container {
+            .e-filter-sort {
+              margin-left: 0;
+              margin-right: $field-list-sort-wrapper-padding-size;
+            }
+          }
+        }
+
+        .e-footer-content {
+          .e-clear-filter-button {
+            float: right;
+          }
+        }
+      }
+
+      &.e-olap-editor-dialog {
+        .e-member-editor-outer-container {
+          .e-select-all-container ul {
+            margin-left: 0;
+          }
+
+          .e-editor-search-container {
+            .e-level-drop {
+              margin: 0 5px;
+
+              .e-caret {
+                font-size: $field-list-icon-size;
+              }
+
+              li .e-disabled {
+                opacity: .5;
+                pointer-events: none;
+              }
+            }
+          }
+        }
+
+        // sass-lint:disable-all
+        &.e-rtl {
+          .e-member-editor-outer-container {
+            .e-editor-search-container {
+              .e-filter-sort {
+                margin-left: 0;
+                margin-right: $field-list-sort-wrapper-padding-size;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .e-adaptive-field-list-dialog {
+      .e-member-editor-container ul {
+        li {
+          // sass-lint:disable-all
+          .e-calc-measure-icon,
+          .e-calc-dimension-icon,
+          .e-attributeCDB-icon,
+          .e-hierarchyCDB-icon,
+          .e-level-members,
+          .e-namedSetCDB-icon,
+          .e-measure-icon,
+          .e-kpiGoal-icon,
+          .e-kpiStatus-icon,
+          .e-kpiTrend-icon,
+          .e-kpiValue-icon {
+            margin-left: 10px;
+          }
+        }
+      }
+
+      &.e-olap-editor-dialog {
+        // sass-lint:disable-all
+        &.e-rtl {
+          .e-member-editor-outer-container {
+            ul li {
+              .e-calc-measure-icon,
+              .e-calc-dimension-icon,
+              .e-attributeCDB-icon,
+              .e-hierarchyCDB-icon,
+              .e-level-members,
+              .e-namedSetCDB-icon,
+              .e-measure-icon,
+              .e-kpiGoal-icon,
+              .e-kpiStatus-icon,
+              .e-kpiTrend-icon,
+              .e-kpiValue-icon {
+                margin-left: 0;
+                margin-right: 10px;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .e-value-field-settings {
+      max-width: 400px;
+      min-width: 300px;
+
+      .e-dlg-content {
+        overflow: auto;
+      }
+
+      .e-value-field-div-content {
+        padding: 0 $field-list-editor-search-padding-size 10px;          
+
+        .e-field-option-container {
+          .e-field-name-text-container {
+            display: flex;
+
+            .e-field-name-title,
+            .e-field-name-content {
+              font-size: 13px;
+              font-weight: 500;
+            }
+
+            .e-field-name-title {
+              flex: none;
+            }
+
+            .e-field-name-content {
+              flex: auto;
+              width: 100%;
+            }
+          }
+
+          .e-caption-input-container,
+          .e-type-option-container,
+          .e-base-field-option-container,
+          .e-base-item-option-container {
+            padding-top: $field-list-editor-search-padding-size;
+
+            .e-base-field-option-text,
+            .e-base-item-option-text,
+            .e-type-option-text {
+              font-size: 13px;
+              font-weight: 500;
+              width: 100%;
+            }
+
+            .e-caption-input-text {
+              font-size: 13px;
+            }
+          }
+        }
+      }
+    }
+
+    .e-adaptive-field-list-dialog,
+    .e-member-editor-dialog,
+    .e-value-field-settings {
+      border-radius: $field-list-default-border-radius;
+      width: auto;
+
+      .e-dlg-header-content,
+      .e-footer-content {
+        border-radius: $field-list-default-border-radius;
+      }
+
+      .e-dlg-header-content {
+        border: 0;
+        font-weight: normal;
+      }
+
+      .e-footer-content {
+        border-top: $field-list-border-size $field-list-border-type $field-list-default-border-color;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        padding-top: $field-list-editor-dialog-footer-padding;
+      }
+
+      .e-dlg-content {
+        overflow: hidden;
+        padding: 0;
+
+        // sass-lint:disable-all
+
+        .e-empty-field::-webkit-input-placeholder {
+          color: $error-font-color !important;
+          font-weight: 600 !important;
+        }
+
+        .e-empty-field:-moz-placeholder {
+          color: $error-font-color !important;
+          font-weight: 600 !important;
+        }
+
+        .e-empty-field::-moz-placeholder {
+          color: $error-font-color !important;
+          font-weight: 600 !important;
+        }
+
+        .e-empty-field:-ms-input-placeholder {
+          color: $error-font-color !important;
+          font-weight: 600 !important;
+        }
+        // sass-lint:enable-all
+      }
+    }
+
+    .e-adaptive-field-list-dialog {
+      .e-dlg-content {
+        .e-member-editor-outer-container {
+          .e-member-editor-container-outer-div {
+            height: $field-list-member-field-list-height;
+          }
+        }
+      }
+    }
+  }
+
+  .e-field-list-tree.e-drag-item.e-treeview,
+  .e-pivot-calc.e-drag-item.e-treeview {
+    background-color: $field-list-drag-clone-bg-color;
+    border: $field-list-border-size $field-list-border-type $field-list-default-border-color;
+    border-radius: $field-list-drag-clone-border-radius;
+    box-shadow: $field-list-drag-clone-shadow-color;
+    height: 28px;
+    min-width: 100px;
+    padding: 5px 10px;
+    @if ($field-list-skin == 'bootstrap4') {
+      border: 0;
+      padding: 6px 10px;
+    }
+
+    .e-text-content {
+      padding: 0;
+      text-align: center;
+      width: 100%;
+      @if ($field-list-skin == 'bootstrap4') {
+        box-shadow: none;
+      }
+
+      .e-list-text {
+        color: $field-list-drag-clone-text-color;
+        font-size: $field-list-drag-clone-font-size;
+        line-height: 1em;
+        width: 100%;
+        // @if ($field-list-skin == 'bootstrap4') {
+        //   line-height: 0;
+        // }
+      }
+    }
+
+    .e-text-content>.e-icons,
+    .e-checkbox-wrapper,
+    .e-list-icon {
+      display: none;
+    }
+
+    &.e-rtl {
+      .e-text-content {
+        padding-right: 0;
+      }
+    }
+
+    &.e-drag-restrict {
+      .e-text-content {
+        padding-left: 24px;
+
+        .e-list-text {
+          padding: 0;
+        }
+      }
+
+      // sass-lint:disable-all
+      .e-no-drop {
+        display: inline-block !important;
+        line-height: 0em;
+        @if ($field-list-skin == 'bootstrap4') {
+          color: $field-list-drag-clone-text-color;
+          opacity: 0.7;
+        }
+
+        &::before {
+          float: left;
+          font-size: $field-list-drag-clone-font-size;
+          padding: 5px 0;
+        }
+      }
+      // sass-lint:enable-all
+
+      &.e-rtl {
+        .e-text-content {
+          padding-left: 0;
+          padding-right: 24px;
+
+          .e-icons {
+            transform: rotateY(180deg);
+          }
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-field-list-tree.e-drag-item.e-treeview,
+  .e-bigger .e-pivot-calc.e-drag-item.e-treeview,
+  .e-bigger.e-field-list-tree.e-drag-item.e-treeview,
+  .e-bigger.e-pivot-calc.e-drag-item.e-treeview {
+    height: $field-list-bigger-button-height;
+    padding: 6px 12px;
+    @if ($field-list-skin == 'bootstrap4') {
+      padding: 9px 10px;
+    }
+
+    .e-text-content {
+      .e-list-text {
+        line-height: 1.5em;
+        // @if ($field-list-skin == 'bootstrap4') {
+        //   line-height: 0;
+        // }
+      }
+    }
+
+    &.e-drag-restrict {
+      .e-no-drop {
+          &::before {
+           padding: 4px;
+          }
+        }
+    }
+  }
+
+  // sass-lint:disable-all
+  .e-button-drag-clone {
+    background-color: $field-list-drag-clone-bg-color !important;
+    border: $field-list-border-size $field-list-border-type $field-list-drag-default-border-color;
+    border-radius: $field-list-drag-clone-border-radius;
+    box-shadow: $field-list-drag-clone-shadow-color;
+    color: $field-list-drag-clone-text-color;
+    font-size: $field-list-drag-clone-font-size;
+    height: 28px;
+    line-height: 1.0em;
+    min-width: 100px;
+    overflow: hidden;
+    padding: 5px 10px;
+    text-align: center;
+    width: auto;
+    z-index: 100000;
+    @if ($field-list-skin == 'bootstrap4') {
+      border: 0;
+      padding: 6px 10px;
+    }
+
+    .e-text-content {
+      width: 100%
+    }
+  }
+
+  .e-bigger .e-button-drag-clone,
+  .e-bigger.e-button-drag-clone {
+    height: $field-list-bigger-button-height !important;
+    line-height: 1.5em;
+    padding: 6px 12px;
+    @if ($field-list-skin == 'bootstrap4') {
+      border: 0;
+      padding: 7px 12px;
+    }
+  }
+
+  // sass-lint:enable-all
+  .e-pivot-error-dialog {
+    max-width: 400px;
+    width: auto;
+
+    .e-dlg-header-content,
+    .e-footer-content {
+      border: 0;
+    }
+
+    .e-dlg-header {
+      font-weight: $pivot-dialog-font-weight;
+      opacity: $pivot-calculated-header-opacity;
+    }
+
+    .e-dlg-content {
+      font-weight: normal;
+      opacity: $pivot-dialog-content-opacity;
+    }
+  }
+
+  .e-bigger .e-pivotfieldlist-wrapper,
+  .e-bigger.e-pivotfieldlist-wrapper {
+
+    .e-adaptive-field-list-dialog .e-dlg-content .e-member-editor-wrapper .e-member-editor-container-outer-div ,
+    .e-member-editor-dialog .e-dlg-content .e-member-editor-wrapper .e-member-editor-container-outer-div {
+      height: $field-list-member-filter-list-bigger-height;
+    }
+
+
+    // sass-lint:disable-all
+    .e-member-editor-dialog {
+      .e-editor-search-wrapper {
+        .e-sort-ascend-icon,
+        .e-sort-descend-icon {
+          font-size: 18px;
+        }
+
+        .e-level-drop {
+          .e-caret {
+            font-size: $field-list-bigger-icon-size !important;
+          }
+        }
+      }
+
+      .e-member-editor-wrapper ul {
+        @if ($field-list-skin == 'bootstrap4') {
+          margin-left: -30px;
+        }
+
+        li {
+          .e-calc-measure-icon,
+          .e-calc-dimension-icon,
+          .e-attributeCDB-icon,
+          .e-hierarchyCDB-icon,
+          .e-level-members,
+          .e-namedSetCDB-icon,
+          .e-measure-icon,
+          .e-kpiGoal-icon,
+          .e-kpiStatus-icon,
+          .e-kpiTrend-icon,
+          .e-kpiValue-icon {
+            margin-left: 10px;
+          }
+        }
+      }
+
+      &.e-rtl {
+        .e-member-editor-wrapper ul {
+          @if ($field-list-skin == 'bootstrap4') {
+            margin-right: -30px;
+          }
+
+          li {
+            .e-calc-measure-icon,
+            .e-calc-dimension-icon,
+            .e-attributeCDB-icon,
+            .e-hierarchyCDB-icon,
+            .e-level-members,
+            .e-namedSetCDB-icon,
+            .e-measure-icon,
+            .e-kpiGoal-icon,
+            .e-kpiStatus-icon,
+            .e-kpiTrend-icon,
+            .e-kpiValue-icon {
+              margin-left: 10px;
+            }
+          }
+        }
+      }
+    }
+    // sass-lint:enable-all
+
+    .e-member-editor-dialog {
+      .e-filter-tab-wrapper {
+        .e-tab-header {
+          .e-toolbar-item .e-icon-left + .e-tab-text {
+            margin: 0 0 0 6px;
+          }
+        }
+
+        &.e-rtl {
+          .e-tab-header {
+            .e-toolbar-item .e-icon-left + .e-tab-text {
+              margin: 0 6px 0 0;
+            }
+          }
+        }
+      }
+
+      .e-label-filter,
+      .e-value-filter {
+        height: $field-list-excel-filter-bigger-height;
+
+        .e-filter-text-div {
+          font-size: 14px;
+        }
+
+        .e-filter-option-wrapper-1,
+        .e-filter-option-wrapper-2,
+        .e-separator-div {
+          padding-top: 24px;
+        }
+
+        .e-between-text-div {
+          padding: 10px 0;
+        }
+      }
+
+      &.e-excel-filter {
+        min-width: $field-list-bigger-excel-dialog-min-width;
+      }
+
+
+    }
+
+    .e-adaptive-field-list-dialog,
+    .e-member-editor-dialog,
+    .e-value-field-settings {
+      .e-dlg-header-content {
+        .e-clear-filter-button.e-small {
+          font-size: 14px;
+          top: 0;
+        }
+      }
+    }
+
+    .e-value-field-settings {
+      .e-value-field-div-content {
+        padding: 0 $field-list-editor-search-padding-size 10px;
+      }
+    }
+
+    // sass-lint:disable-all
+    .e-value-field-settings {
+      .e-field-name-text-wrapper {
+        display: flex;
+
+        .e-field-name-title,
+        .e-field-name-content {
+          font-size: 14px;
+        }
+      }
+
+      .e-caption-input-wrapper,
+      .e-type-option-wrapper,
+      .e-base-field-option-wrapper,
+      .e-base-item-option-wrapper {
+        padding-top: 24px;
+
+        .e-base-field-option-text,
+        .e-base-item-option-text,
+        .e-type-option-text,
+        .e-caption-input-text {
+          font-size: 14px;
+        }
+      }
+    }
+    // sass-lint:enable-all
+  }
+
+  .e-bigger .e-pivotfieldlist-container,
+  .e-bigger.e-pivotfieldlist-container {
+
+    .e-adaptive-field-list-dialog .e-dlg-content .e-member-editor-outer-container .e-member-editor-container-outer-div ,
+    .e-member-editor-dialog .e-dlg-content .e-member-editor-outer-container .e-member-editor-container-outer-div {
+      height: $field-list-member-filter-list-bigger-height;
+    }
+
+    // sass-lint:disable-all
+    .e-member-editor-dialog {
+      .e-editor-search-container {
+        .e-sort-ascend-icon,
+        .e-sort-descend-icon {
+          font-size: 18px;
+        }
+
+        .e-level-drop {
+          .e-caret {
+            font-size: $field-list-bigger-icon-size !important;
+          }
+        }
+      }
+
+      .e-member-editor-outer-container ul {
+        @if ($field-list-skin == 'bootstrap4') {
+          margin-left: -30px;
+        }
+
+        li {
+          .e-calc-measure-icon,
+          .e-calc-dimension-icon,
+          .e-attributeCDB-icon,
+          .e-hierarchyCDB-icon,
+          .e-level-members,
+          .e-namedSetCDB-icon,
+          .e-measure-icon,
+          .e-kpiGoal-icon,
+          .e-kpiStatus-icon,
+          .e-kpiTrend-icon,
+          .e-kpiValue-icon {
+            margin-left: 10px;
+          }
+        }
+      }
+
+      &.e-rtl {
+        .e-member-editor-outer-container ul {
+          @if ($field-list-skin == 'bootstrap4') {
+            margin-right: -30px;
+          }
+
+          li {
+            .e-calc-measure-icon,
+            .e-calc-dimension-icon,
+            .e-attributeCDB-icon,
+            .e-hierarchyCDB-icon,
+            .e-level-members,
+            .e-namedSetCDB-icon,
+            .e-measure-icon,
+            .e-kpiGoal-icon,
+            .e-kpiStatus-icon,
+            .e-kpiTrend-icon,
+            .e-kpiValue-icon {
+              margin-left: 10px;
+            }
+          }
+        }
+      }
+    }
+    // sass-lint:enable-all
+
+    .e-member-editor-dialog {
+      .e-filter-tab-container {
+        .e-tab-header {
+          .e-toolbar-item .e-icon-left + .e-tab-text {
+            margin: 0 0 0 6px;
+          }
+        }
+
+        &.e-rtl {
+          .e-tab-header {
+            .e-toolbar-item .e-icon-left + .e-tab-text {
+              margin: 0 6px 0 0;
+            }
+          }
+        }
+      }
+
+      .e-excelfilter {
+        .e-member-editor-container-outer-div {
+          height: $field-list-excel-member-filter-bigger-height;
+        }
+      }
+
+      .e-label-filter,
+      .e-value-filter {
+        height: $field-list-excel-filter-bigger-height;
+
+        .e-filter-text-div {
+          font-size: 14px;
+        }
+
+        .e-filter-option-container-1,
+        .e-filter-option-container-2,
+        .e-separator-div {
+          padding-top: 24px;
+        }
+
+        .e-between-text-div {
+          padding: 10px 0;
+        }
+      }
+
+      &.e-excel-filter {
+        min-width: $field-list-bigger-excel-dialog-min-width;
+      }
+    }
+
+    .e-adaptive-field-list-dialog,
+    .e-member-editor-dialog,
+    .e-value-field-settings {
+      .e-dlg-header-content {
+        .e-clear-filter-button.e-small {
+          font-size: 14px;
+          top: 0;
+        }
+      }
+    }
+
+    .e-value-field-settings {
+      .e-value-field-div-content {
+        padding: 0 $field-list-editor-search-padding-size 10px;
+      }
+    }
+
+    // sass-lint:disable-all
+    .e-value-field-settings {
+      .e-field-name-text-container {
+        display: flex;
+
+        .e-field-name-title,
+        .e-field-name-content {
+          font-size: 14px;
+        }
+      }
+
+      .e-caption-input-container,
+      .e-type-option-container,
+      .e-base-field-option-container,
+      .e-base-item-option-container {
+        padding-top: 24px;
+
+        .e-base-field-option-text,
+        .e-base-item-option-text,
+        .e-type-option-text,
+        .e-caption-input-text {
+          font-size: 14px;
+        }
+      }
+    }
+  }
+}
+@include export-module('field-list-theme') {
+
+  /*! field-list theme */
+
+  .e-pivotfieldlist {
+
+    .e-member-editor-dialog,
+    .e-olap-editor-dialog {
+      visibility: hidden;
+    }
+
+    .e-select-table {
+      background-color: $field-list-toggle-bg-color;
+      border: .5px $field-list-border-type $field-list-toggle-border-color;
+      box-shadow: $field-list-toggle-shadow-color;
+      color: $field-list-toggle-font-color;
+      font-size: $field-list-toggle-icon-size;
+      height: $field-list-toggle-size;
+      max-height: $field-list-toggle-size;
+      max-width: $field-list-toggle-size;
+      min-height: $field-list-toggle-size;
+      min-width: $field-list-toggle-size;
+      padding: $field-list-toggle-padding-size;
+      position: relative;
+      width: $field-list-toggle-size;
+      z-index: 1000;
+
+      &.e-fieldlist-left {
+        box-shadow: $field-list-toggle-left-shadow-color;
+      }
+
+      &:focus,
+      &:active {
+        background-color: $field-list-toggle-hover-color;
+      }
+
+      &:hover {
+        background-color: $field-list-toggle-hover-color;
+      }
+    }
+  }
+
+  // sass-lint:disable-all
+  #{if(&, "&", "*")}.e-rtl {
+
+    .e-select-table {
+      padding: 8px 5px;
+    }
+  }
+  // sass-lint:enable-all
+
+  .e-bigger .e-pivotfieldlist,
+  .e-bigger.e-pivotfieldlist {
+    .e-select-table {
+      font-size: $field-list-toggle-icon-bigger-size;
+      height: $field-list-toggle-bigger-size;
+      max-height: $field-list-toggle-bigger-size;
+      max-width: $field-list-toggle-bigger-size;
+      min-height: $field-list-toggle-bigger-size;
+      min-width: $field-list-toggle-bigger-size;
+    }
+  }
+
+  .e-pivotfieldlist-wrapper {
+    font-family: $field-list-font-family;
+    font-size: $field-list-content-font-size;
+    max-width: 700px;
+    min-width: 300px;
+
+    .e-layout-footer {
+      padding: 10px 2px 2px;
+      text-align: right;
+
+      .e-defer-apply-button {
+        margin-right: 10px;
+      }
+
+      .e-cancel-btn,
+      .e-defer-apply-button,
+      .e-checkbox-layout {
+        max-width: 25%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .e-checkbox-layout .e-label {
+        white-space: nowrap;
+      }
+
+      .e-checkbox-layout {
+        max-width: 45%;
+      }
+
+    }
+
+    .e-checkbox-layout {
+      float: left;
+      margin-top: 6px;
+    }
+
+    &.e-rtl {
+      .e-layout-footer {
+        text-align: left;
+
+        .e-defer-apply-button {
+          margin-left: 10px;
+        }
+      }
+
+      .e-checkbox-layout {
+        float: right;
+      }
+    }
+
+    // sass-lint:disable-all
+    &.e-dialog {
+      max-height: 550px !important;
+
+      .e-layout-footer {
+        padding: 0;
+      }
+
+      .e-checkbox-layout {
+        margin-left: 10px;
+      }
+
+      .e-button-layout {
+        margin-right: 10px;
+      }
+    }
+
+    // sass-lint:enable-all
+
+    .e-dlg-header-content,
+    .e-footer-content {
+      border: 0;
+    }
+
+    .e-field-list-title {
+      display: flex;
+      font-size: $field-list-title-font-size;
+      min-height: 25px;
+      padding: 0 2px $field-list-title-padding-size;
+      width: 100%;
+
+      .e-title-content {
+        flex: auto;
+      }
+    }
+
+    .e-title-header {
+      display: flex;
+      padding: 2px;
+      width: 100%;
+
+      .e-title-content {
+        flex: auto;
+      }
+    }
+
+    .e-field-list-container {
+      display: flex;
+      height: 342px;
+      padding: 1px;
+      position: relative;
+
+      .e-field-table {
+        border: $field-list-border-size $field-list-border-type $field-list-default-border-color;
+        border-radius: $field-list-default-border-radius;
+        display: inline-block;
+        overflow: hidden;
+        width: 30%;
+
+        .e-field-list-tree {
+          .e-sibling {
+            display: none;
+          }
+        }
+
+        .e-field-header,
+        .e-field-list {
+          width: 100%;
+        }
+
+        .e-field-header {
+          background-color: $field-list-header-background-color;
+          color: $field-list-default-header-font-color;
+          font-size: $field-list-header-font-size;
+          font-weight: normal;
+          height: $field-list-header-height;
+          overflow: hidden;
+          padding: $field-list-tree-header-padding 0 0 $field-list-header-padding;
+          text-align: left;
+          text-overflow: ellipsis;
+          word-break: break-all;
+
+          @if ($field-list-skin == 'bootstrap4') {
+            padding-left: 12px;
+          }
+        }
+
+        .e-field-header-wrapper {
+          background-color: $field-list-header-background-color;
+          color: $field-list-default-header-font-color;
+          display: flex;
+          padding-right: $field-list-header-padding;
+
+          .e-field-header {
+            flex: auto;
+          }
+
+          .e-sort-none,
+          .e-sort-ascend,
+          .e-sort-descend {
+            color: $field-list-default-header-icon-font-color;
+            cursor: pointer;
+            font-size: $field-list-header-icon-size;
+            height: 20px;
+            padding: $field-list-tree-header-padding 0 0 $field-list-icon-to-icon-padding;
+            width: 20px;
+
+            &.e-selected::before {
+              color: $field-list-active-color;
+            }
+
+            &:hover {
+              font-weight: bold;
+            }
+
+            &:focus {
+              font-weight: bold;
+            }
+          }
+        }
+
+        .e-field-list-tree-outer-div {
+          display: inline-block;
+          height: 310px;
+          overflow: auto;
+          width: 100%;
+        }
+
+        .e-field-list {
+          display: inline-table;
+          height: 100%;
+          padding-left: 2px;
+          width: 100%;
+
+          ul {
+            overflow: hidden;
+
+            li {
+              margin-left: $field-list-treeview-padding-size;
+
+              .e-fullrow {
+                cursor: default;
+              }
+
+              .e-drag {
+                color: $field-list-drag-icon-color;
+                cursor: move;
+                display: inline-block;
+                font-size: $field-list-icon-size;
+                height: 20px;
+                margin-bottom: $field-list-treeview-drag-margin;
+                margin-right: 6px;
+                pointer-events: all;
+                text-align: center;
+                vertical-align: bottom;
+                width: 20px;
+
+                &.e-disable-drag {
+                  cursor: not-allowed;
+                  opacity: .4;
+                  visibility: hidden;
+                }
+              }
+
+              .e-list-icon {
+                color: $field-list-tree-icon-color;
+                margin: 0;
+              }
+
+              // sass-lint:disable-all
+              .e-calc-measure-icon,
+              .e-calc-dimension-icon,
+              .e-attributeCDB-icon,
+              .e-hierarchyCDB-icon,
+              .e-level-members,
+              .e-namedSetCDB-icon,
+              .e-measure-icon,
+              .e-kpiGoal-icon,
+              .e-kpiStatus-icon,
+              .e-kpiTrend-icon,
+              .e-kpiValue-icon {
+                margin-left: 10px;
+              }
+
+              // sass-lint:enable-all
+
+              .e-list-selected {
+                opacity: .5;
+              }
+
+              .e-selected-node {
+                font-weight: $field-list-treeview-font-weight;
+              }
+
+              .e-list-text {
+                font-family: $field-list-font-family;
+              }
+            }
+          }
+
+          &.e-olap-field-list-tree {
+            ul {
+              li {
+                margin-left: 0;
+                margin-right: 0;
+              }
+
+              .e-list-icon {
+                font-size: $field-list-icon-size;
+                height: auto;
+                width: auto;
+              }
+            }
+
+            &.e-treeview ul:first-child {
+              padding-left: 10px;
+              padding-right: 10px;
+            }
+
+            &.e-rtl {
+              ul {
+                .e-list-icon {
+                  transform: rotateX(0deg) rotateY(180deg);
+                }
+              }
+            }
+          }
+        }
+
+        &.e-olap-field-table {
+          width: 40%;
+        }
+      }
+
+      .e-axis-table {
+        display: flex;
+        overflow: hidden;
+        width: 70%;
+
+        .e-left-axis-fields,
+        .e-right-axis-fields {
+          padding-left: $field-list-default-padding-size;
+          width: 50%;
+        }
+
+        .e-left-axis-fields .e-field-list-filters,
+        .e-left-axis-fields .e-field-list-rows,
+        .e-right-axis-fields .e-field-list-columns,
+        .e-right-axis-fields .e-field-list-values {
+          background-color: $field-list-table-background-color;
+          border: $field-list-border-size $field-list-border-type $field-list-default-border-color;
+          border-radius: $field-list-default-border-radius;
+          fill: $field-list-default-fill-color;
+          font-weight: normal;
+          min-height: 165px;
+          position: relative;
+          width: 100%;
+
+          .e-axis-wrapper {
+            background-color: $field-list-header-background-color;
+            border-bottom: $field-list-border-size $field-list-border-type $field-list-default-border-color;
+            color: $field-list-default-header-font-color;
+            display: flex;
+            height: $field-list-header-height;
+            padding: 2px $field-list-header-padding 5px;
+
+            .e-axis-icon-wrapper {
+              height: 20px;
+              padding-top: $field-list-header-icon-wrapper-padding;
+              width: 20px;
+
+              .e-axis-rows,
+              .e-axis-columns,
+              .e-axis-values,
+              .e-axis-filters {
+                color: $field-list-default-header-icon-font-color;
+                font-size: $field-list-header-icon-size;
+              }
+            }
+          }
+
+          .e-axis-header {
+            flex: auto;
+            font-size: $field-list-header-font-size;
+            line-height: $field-list-header-content-line-height;
+            margin-top: 2px;
+            overflow: hidden;
+            padding: 0 8px;
+            text-overflow: ellipsis;
+            width: 100%;
+
+            @if ($field-list-skin == 'bootstrap4') {
+              margin-top: 3px;
+            }
+          }
+
+          .e-axis-content {
+            cursor: default;
+            width: 100%;
+
+            &.e-drag-restrict {
+              cursor: no-drop;
+            }
+
+            .e-pvt-btn-div {
+
+              .e-drop-indicator-last,
+              .e-drop-indicator {
+                display: block;
+                pointer-events: none;
+                width: 100%;
+
+                &.e-drop-hover {
+                  border-top: 2px dashed $field-list-drop-hover-color;
+                  margin-top: -2px;
+                }
+              }
+
+              &.e-first-btn {
+                .e-drop-indicator {
+                  &.e-drop-hover {
+                    position: absolute;
+                  }
+                }
+              }
+
+              .e-pivot-button {
+                background-color: $field-list-button-color;
+                border-bottom: $field-list-border-size $field-list-border-type $field-list-button-border-color;
+                border-left: 0;
+                border-radius: 0;
+                border-right: 0;
+                border-top: 0;
+                box-shadow: none;
+                cursor: default;
+                display: flex;
+                font-weight: normal;
+                height: $field-list-button-height;
+                line-height: 1em;
+                padding: $field-list-button-padding;
+                text-transform: none;
+                width: 100%;
+
+                @if ($field-list-skin == 'bootstrap4') {
+                  color: $field-list-button-font-color;
+                }
+
+                &.e-list-selected {
+                  color: $field-list-button-font-color;
+                  opacity: .5;
+                }
+
+                &:hover {
+                  background-color: $field-list-button-hover-color;
+
+                  .e-content {
+                    background-color: transparent;
+                  }
+                }
+
+                &:focus,
+                &:active {
+                  background-color: $field-list-button-focus-color;
+                  color: $field-list-button-active-color;
+
+                  .e-content {
+                    background-color: transparent;
+                  }
+
+                  .e-sort,
+                  .e-pv-filter,
+                  .e-pv-filtered,
+                  .e-dropdown-icon,
+                  .e-edit {
+                    color: $field-list-button-active-color;
+                  }
+                }
+
+
+                .e-content {
+                  background-color: transparent;
+                  flex: auto;
+                  font-size: $field-list-button-font-size;
+                  height: 16px;
+                  line-height: 1em;
+                  overflow: hidden;
+                  padding: 0 8px;
+                  text-align: left;
+                  text-overflow: ellipsis;
+                  width: 70%;
+                }
+
+                .e-draggable {
+                  height: 20px;
+                  width: 20px;
+                }
+
+                .e-drag {
+                  color: $field-list-drag-icon-color;
+                  cursor: move;
+                  font-size: $field-list-icon-size;
+                  height: 20px;
+                  width: 20px;
+
+                  &.e-disable-drag {
+                    cursor: not-allowed;
+                    opacity: .4;
+                    visibility: hidden;
+                  }
+                }
+
+                .e-sort,
+                .e-pv-filter,
+                .e-pv-filtered,
+                .e-dropdown-icon,
+                .e-edit {
+                  color: $field-list-button-icon-color;
+                  cursor: pointer;
+                  display: inline-block;
+                  font-size: $field-list-icon-size;
+                  height: 20px;
+                  padding-left: $field-list-icon-to-icon-padding;
+                  width: 20px;
+
+                  &:hover {
+                    color: $field-list-icon-hover-color;
+                  }
+
+                  &.e-disable {
+                    display: none;
+                  }
+                }
+
+                .e-sort {
+                  height: $field-list-icon-size;
+                }
+
+                .e-remove {
+                  display: none;
+                }
+
+                &.e-rtl {
+                  .e-content {
+                    text-align: right;
+                  }
+
+                  .e-sort,
+                  .e-pv-filter,
+                  .e-pv-filtered,
+                  .e-remove,
+                  .e-dropdown-icon,
+                  .e-edit {
+                    padding-left: 0;
+                    padding-right: $field-list-icon-to-icon-padding;
+                  }
+                }
+              }
+            }
+          }
+
+          .e-sort {
+            height: fit-content;
+            transform: rotateX(0deg);
+            transition: transform 200ms ease-in-out;
+
+            &.e-descend {
+              transform: rotateX(180deg);
+            }
+          }
+
+          .e-axis-content {
+            height: $field-list-axis-content-height;
+            overflow: auto;
+            scroll-behavior: smooth;
+          }
+
+          .e-draggable-prompt {
+            bottom: 32%;
+            color: $field-list-default-prompt-color;
+            font-size: $field-list-content-font-size;
+            height: 25px;
+            pointer-events: none;
+            position: absolute;
+            text-align: center;
+            width: 100%;
+
+            &.e-disable {
+              display: none;
+            }
+          }
+        }
+
+        .e-left-axis-fields .e-field-list-rows,
+        .e-right-axis-fields .e-field-list-values {
+          margin-top: $field-list-default-padding-size;
+        }
+
+        &.e-olap-axis-table {
+          width: 60%;
+        }
+      }
+    }
+
+    // sass-lint:disable-all
+    .e-calculated-field {
+      color: $field-list-default-font-color;
+      font-size: $field-list-button-font-size;
+      font-weight: $field-list-button-font-weight;
+      max-width: 160px;
+      min-width: 145px;
+
+      @if ($field-list-skin == 'bootstrap4') {
+        color: #f8f9fa;
+      }
+
+      &.e-disable {
+        display: none;
+      }
+    }
+
+    // sass-lint:enable-all
+
+    &.e-rtl {
+      .e-field-table {
+        .e-field-list {
+          padding-left: 0;
+          padding-right: 2px;
+
+          ul li {
+            margin-left: 0;
+            margin-right: $field-list-treeview-padding-size;
+
+            // sass-lint:disable-all
+            .e-list-text {
+              font-family: $field-list-font-family;
+            }
+
+            .e-drag {
+              margin-left: 6px !important;
+              margin-right: 0 !important;
+            }
+
+            .e-calc-measure-icon,
+            .e-calc-dimension-icon,
+            .e-attributeCDB-icon,
+            .e-hierarchyCDB-icon,
+            .e-level-members,
+            .e-namedSetCDB-icon,
+            .e-measure-icon,
+            .e-kpiGoal-icon,
+            .e-kpiStatus-icon,
+            .e-kpiTrend-icon,
+            .e-kpiValue-icon {
+              margin-left: 0;
+              margin-right: 10px;
+            }
+
+            // sass-lint:enable-all
+          }
+        }
+
+        .e-field-header {
+          padding-left: 0;
+          padding-right: $field-list-header-padding;
+          text-align: right;
+
+          @if ($field-list-skin == 'bootstrap4') {
+            padding-right: 12px;
+          }
+        }
+
+        .e-field-header-wrapper {
+          padding-left: $field-list-header-padding;
+          padding-right: 0;
+
+          .e-sort-none,
+          .e-sort-ascend,
+          .e-sort-descend {
+            padding: $field-list-tree-header-padding $field-list-icon-to-icon-padding 0 0;
+          }
+        }
+      }
+
+      .e-axis-table {
+
+        .e-left-axis-fields,
+        .e-right-axis-fields {
+          padding-left: 0;
+          padding-right: $field-list-default-padding-size;
+        }
+
+        .e-left-axis-fields .e-field-list-filters,
+        .e-left-axis-fields .e-field-list-rows,
+        .e-right-axis-fields .e-field-list-columns,
+        .e-right-axis-fields .e-field-list-values {
+          .e-axis-header {
+            float: right;
+          }
+        }
+      }
+    }
+
+    &.e-static {
+      background-color: $field-list-default-bg-color;
+      border: $field-list-border-size $field-list-border-type $field-list-default-border-color;
+      max-height: 700px;
+      padding: $field-list-static-padding-size;
+      position: relative;
+
+      .e-title-content {
+        color: $field-list-default-font-color;
+      }
+
+      .e-field-list-container {
+        display: inline-block;
+        height: 100%;
+        width: 100%;
+
+        .e-field-table {
+          height: 210px;
+          width: 100%;
+
+          .e-field-list-tree-outer-div {
+            height: 175px;
+          }
+        }
+
+        .e-center-div {
+          display: none;
+        }
+
+        .e-center-title {
+          color: $field-list-default-header-font-color;
+          font-size: $field-list-header-font-size;
+          height: 25px;
+          margin-top: 5px;
+          overflow: hidden;
+          text-align: left;
+          text-overflow: ellipsis;
+        }
+
+        .e-axis-table {
+          width: 100%;
+
+          .e-left-axis-fields {
+            padding: 0;
+          }
+
+          .e-right-axis-fields {
+            padding-left: $field-list-default-padding-size;
+          }
+
+          .e-left-axis-fields .e-field-list-rows,
+          .e-right-axis-fields .e-field-list-values {
+            margin-top: $field-list-default-padding-size;
+          }
+
+          .e-left-axis-fields .e-field-list-filters,
+          .e-left-axis-fields .e-field-list-rows,
+          .e-right-axis-fields .e-field-list-columns,
+          .e-right-axis-fields .e-field-list-values {
+            .e-axis-wrapper {
+              .e-axis-icon-wrapper {
+                padding-top: $field-list-static-header-icon-wrapper-padding;
+              }
+            }
+          }
+        }
+      }
+
+      &.e-rtl {
+        .e-center-title {
+          text-align: right;
+        }
+
+        .e-axis-table {
+          .e-left-axis-fields {
+            padding-left: $field-list-static-padding-size;
+          }
+
+          .e-right-axis-fields {
+            padding: 0;
+          }
+        }
+      }
+    }
+
+    &.e-device {
+      height: 100%;
+      // sass-lint:disable-all
+      max-height: 100% !important;
+      max-width: 100% !important;
+      // sass-lint:enable-all
+      min-height: 500px;
+      width: 100%;
+
+      .e-dlg-header-content {
+        background-color: $field-list-mobile-header-color;
+        color: $field-list-mobile-header-font-color;
+        font-size: 14px;
+        height: 48px;
+        padding-bottom: 9px;
+        padding-top: 9px;
+      }
+
+      .e-adaptive-field-list-dialog,
+      .e-member-editor-dialog {
+        .e-dlg-header-content {
+          background-color: transparent;
+          color: $field-list-mobile-header-font-color;
+        }
+      }
+
+      .e-title-mobile-header {
+        display: flex;
+      }
+
+      .e-title-mobile-content {
+        margin-top: $field-list-back-margin;
+      }
+
+      .e-field-list-back-icon {
+        color: $field-list-back-font-color;
+        font-size: 16px;
+        height: 24px;
+        margin-left: 0;
+        margin-right: 12px;
+        padding-top: 7px;
+        text-align: center;
+        width: 24px;
+      }
+
+      .e-disable {
+        display: none;
+      }
+
+      .e-adaptive-container {
+        height: 100%;
+        position: relative;
+
+        .e-tab-header {
+          background-color: $field-list-header-background-color;
+
+          .e-toolbar-item {
+            .e-tab-wrap {
+              border: 0;
+            }
+          }
+        }
+
+        .e-content {
+          display: initial;
+
+          .e-field-list-filters,
+          .e-field-list-rows,
+          .e-field-list-columns,
+          .e-field-list-values {
+            display: inline-block;
+            height: 100%;
+            min-height: 250px;
+            padding-top: $field-list-adaptive-content-padding-size;
+            position: relative;
+            width: 100%;
+
+            .e-axis-content {
+              overflow: auto;
+            }
+
+            .e-pvt-btn-div {
+              display: grid;
+
+              .e-drop-indicator {
+                display: none;
+              }
+
+              .e-pivot-button {
+                border: $field-list-border-size $field-list-border-type $field-list-button-border-color;
+                border-left: 0;
+                border-radius: 0;
+                border-right: 0;
+                border-top: 0;
+                border-width: 1px 0;
+                box-shadow: none;
+                display: flex;
+                font-size: $field-list-bigger-button-font-size;
+                font-weight: normal;
+                height: $field-list-adaptive-pivot-button-height;
+                line-height: normal;
+                padding: $field-list-adaptive-pivot-button-padding;
+                text-transform: none;
+                width: 100%;
+
+                &.e-list-selected {
+                  opacity: .5;
+                }
+
+                .e-content {
+                  flex: auto;
+                  font-size: $field-list-bigger-button-font-size;
+                  height: 100%;
+                  margin-top: -2px;
+                  overflow: hidden;
+                  text-align: left;
+                  text-overflow: ellipsis;
+                  width: 70%;
+                }
+
+                .e-drag {
+                  display: none;
+                }
+
+                // sass-lint:disable-all
+                .e-sort,
+                .e-pv-filter,
+                .e-pv-filtered,
+                .e-remove,
+                .e-dropdown-icon,
+                .e-edit {
+                  color: $field-list-button-icon-color;
+                  cursor: pointer;
+                  display: inline-block;
+                  font-size: $field-list-bigger-icon-size;
+                  height: 24px;
+                  padding-left: 10px;
+                  width: 24px;
+
+                  @if ($field-list-skin == 'bootstrap4') {
+                    color: #fff;
+                  }
+
+                  &:hover {
+                    color: $field-list-icon-hover-color;
+                  }
+
+                  &.e-disable {
+                    display: none;
+                  }
+                }
+
+                // sass-lint:enable-all
+
+                .e-sort {
+                  height: fit-content;
+                  transform: rotateX(0deg);
+                  transition: transform 200ms ease-in-out;
+
+                  &.e-descend {
+                    transform: rotateX(180deg);
+                  }
+                }
+
+                .e-remove {
+                  display: inline-block;
+                }
+
+                &.e-rtl {
+                  .e-content {
+                    text-align: right;
+                  }
+
+                  .e-sort,
+                  .e-pv-filter,
+                  .e-pv-filtered,
+                  .e-remove,
+                  .e-dropdown-icon,
+                  .e-edit {
+                    padding-left: 0;
+                    padding-right: 10px;
+                  }
+                }
+              }
+            }
+
+            .e-axis-content {
+              height: 100%;
+              width: 100%;
+            }
+
+            .e-draggable-prompt {
+              border: 1px dashed $field-list-header-background-color;
+              color: $field-list-header-background-color;
+              font-size: $field-list-drag-clone-font-size;
+              height: $field-list-adaptive-drag-prompt-height;
+              left: 15%;
+              line-height: $field-list-adaptive-drag-prompt-height;
+              pointer-events: none;
+              position: absolute;
+              text-align: center;
+              top: 25%;
+              vertical-align: middle;
+              width: 70%;
+            }
+          }
+
+          .e-pivot-calc-outer-div {
+            .e-pivot-formula {
+              background-color: $pivot-formula-background;
+              border: 1px solid $pivot-formula-border;
+              border-radius: 4px;
+              color: $field-list-default-font-color;
+              height: 200px;
+              margin-left: 20px;
+              margin-right: 20px;
+              margin-top: 25px;
+              padding: 2px 3px;
+              resize: none;
+              width: 90%;
+            }
+
+            // sass-lint:disable-all
+            .e-pivot-calc-input-div,
+            .e-member-options,
+            .e-pivot-calc-custom-format-div,
+            .e-olap-calc-custom-format-div {
+              margin-left: 20px;
+              margin-right: 20px;
+              margin-top: 20px;
+              width: 90% !important;
+            }
+
+            // sass-lint:enable-all
+
+            .e-accordion {
+              margin-top: 20px;
+              overflow: auto;
+
+              .e-acrdn-header-icon {
+                display: table;
+                font-size: 12px;
+                height: 36px;
+                min-height: 36px;
+                min-width: 28px;
+                padding: 0;
+                position: absolute;
+                right: 16px;
+                top: 0;
+
+                .e-list-icon {
+                  cursor: pointer;
+                  display: table-cell;
+                  padding-right: 6px;
+                  text-align: center;
+                  vertical-align: middle;
+                }
+              }
+
+              .e-icons.e-frame {
+                margin-right: 12px;
+              }
+
+              &.e-rtl {
+                .e-acrdn-header-icon {
+                  left: 16px;
+                  right: auto;
+                }
+
+                // sass-lint:disable-all
+                .e-icons.e-frame {
+                  margin-left: 12px !important;
+                  margin-right: 0 !important;
+                }
+
+                // sass-lint:enable-all
+              }
+            }
+
+            .e-radio-wrapper {
+              margin-bottom: 24px;
+              margin-right: 20px;
+
+              .e-label {
+                color: $pivot-text-area-background;
+                font-family: Roboto-Reguar;
+                font-size: 14px;
+                opacity: .87;
+              }
+            }
+
+            .e-pivot-ok-button,
+            .e-pivot-add-button,
+            .e-pivot-cancel-button {
+              float: right;
+              margin-right: 20px;
+              margin-top: 32px;
+            }
+
+            .e-pivot-ok-button {
+              bottom: 0;
+              position: sticky;
+            }
+
+            .e-pivot-accord {
+              max-height: 290px;
+              overflow: auto;
+
+              ul {
+
+                .e-list-icon {
+                  color: $field-list-tree-icon-color;
+                }
+
+                .e-calcfieldmember .e-list-text {
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  width: 53%;
+                }
+
+                .e-list-header-icon {
+                  display: table;
+                  height: 30px;
+                  min-height: 30px;
+                  min-width: 24px;
+                  padding: 0;
+                  position: absolute;
+                  right: 16px;
+                  top: 0;
+
+                  .e-list-edit-icon,
+                  .e-remove-report.e-icons {
+                    color: $field-list-tree-icon-color;
+                    display: table-cell;
+                    padding: 5px;
+                    pointer-events: all;
+                    text-align: center;
+                    vertical-align: middle;
+                  }
+                }
+              }
+
+              &.e-rtl {
+                ul {
+                  .e-list-header-icon {
+                    left: 16px;
+                    right: auto;
+                  }
+
+                  .e-list-icon {
+                    transform: rotateX(0deg) rotateY(180deg);
+                  }
+                }
+              }
+            }
+
+            .e-checkbox-wrapper .e-icons {
+              height: 18px;
+              width: 18px;
+
+              @if ($field-list-skin == 'bootstrap4') {
+                height: 14px;
+                width: 14px;
+              }
+            }
+
+            &.e-olap-calc-outer-div {
+              max-height: 350px;
+              overflow: hidden;
+              overflow-y: auto;
+            }
+          }
+        }
+
+        .e-field-list-footer {
+          bottom: 20px;
+          display: inline-block;
+          position: absolute;
+          vertical-align: bottom;
+          width: 100%;
+
+          .e-field-list-footer-content {
+            display: inline-block;
+            padding: $field-list-adaptive-footer-padding-size;
+            width: 100%;
+
+            .e-field-list-btn,
+            .e-calculated-field-btn {
+              float: right;
+              height: $field-list-adaptive-btn-size;
+              pointer-events: all;
+              width: $field-list-adaptive-btn-size;
+              z-index: 1000;
+
+              .e-add-icon {
+                font-size: $field-list-adaptive-btn-icon-size;
+                line-height: $field-list-adaptive-icon-height;
+              }
+            }
+          }
+        }
+      }
+
+      .e-footer-content.e-field-list-footer {
+        background-color: transparent;
+        bottom: 0;
+        display: inline-block;
+        padding: $field-list-adaptive-footer-padding-size;
+        pointer-events: none;
+        position: absolute;
+        vertical-align: bottom;
+        width: 100%;
+
+        .e-field-list-btn,
+        .e-calculated-field-btn,
+        .e-cancel-btn,
+        .e-defer-apply-button {
+          float: right;
+          height: $field-list-adaptive-btn-size;
+          pointer-events: all;
+          width: $field-list-adaptive-btn-size;
+          z-index: 1000;
+
+          .e-add-icon {
+            font-size: $field-list-adaptive-btn-icon-size;
+            line-height: $field-list-adaptive-icon-height;
+          }
+        }
+
+        .e-cancel-btn,
+        .e-defer-apply-button {
+          float: left;
+        }
+
+        .e-cancel-btn,
+        .e-defer-apply-button,
+        .e-checkbox-layout {
+          max-width: 20%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .e-checkbox-layout {
+          max-width: 45%;
+        }
+      }
+
+      &.e-static {
+        border: 0;
+        padding: 0;
+
+        .e-field-list-filters,
+        .e-field-list-rows,
+        .e-field-list-columns,
+        .e-field-list-values {
+          .e-axis-content {
+            max-height: 600px;
+          }
+        }
+      }
+
+      &.e-rtl {
+        .e-field-list-back-icon {
+          margin-left: 12px;
+          margin-right: 0;
+          transform: rotateY(180deg);
+        }
+
+        .e-field-list-footer {
+
+          .e-field-list-btn,
+          .e-calculated-field-btn {
+            float: left;
+          }
+
+          .e-cancel-btn,
+          .e-defer-apply-button {
+            float: right;
+          }
+        }
+
+        // sass-lint:disable-all
+        .e-pivot-calc-outer-div {
+
+          .e-pivot-ok-button,
+          .e-pivot-add-button,
+          .e-pivot-cancel-button {
+            float: left !important;
+            margin-left: 20px;
+          }
+        }
+
+        // sass-lint:enable-all
+      }
+    }
+  }
+
+  .e-pivotfieldlist-container {
+    font-family: $field-list-font-family;
+    font-size: $field-list-content-font-size;
+    max-width: 700px;
+    min-width: 300px;
+
+    .e-layout-footer {
+      padding: 10px 2px 2px;
+      text-align: right;
+
+      .e-defer-apply-button {
+        margin-right: 10px;
+      }
+
+      .e-cancel-btn,
+      .e-defer-apply-button,
+      .e-checkbox-layout {
+        max-width: 25%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .e-checkbox-layout .e-label {
+        white-space: nowrap;
+      }
+
+      .e-checkbox-layout {
+        max-width: 45%;
+      }
+
+    }
+
+    .e-checkbox-layout {
+      float: left;
+      margin-top: 6px;
+    }
+
+    &.e-rtl {
+      .e-layout-footer {
+        text-align: left;
+
+        .e-defer-apply-button {
+          margin-left: 10px;
+        }
+      }
+
+      .e-checkbox-layout {
+        float: right;
+      }
+    }
+
+    // sass-lint:disable-all
+    &.e-dialog {
+      max-height: 550px !important;
+
+      .e-layout-footer {
+        padding: 0;
+      }
+
+      .e-checkbox-layout {
+        margin-left: 10px;
+      }
+
+      .e-button-layout {
+        margin-right: 10px;
+      }
+    }
+
+    // sass-lint:enable-all
+
+    .e-dlg-header-content,
+    .e-footer-content {
+      border: 0;
+    }
+
+    .e-field-list-title {
+      display: flex;
+      font-size: $field-list-title-font-size;
+      min-height: 25px;
+      padding: 0 2px $field-list-title-padding-size;
+      width: 100%;
+
+      .e-title-content {
+        flex: auto;
+      }
+    }
+
+    .e-title-header {
+      display: flex;
+      padding: 2px;
+      width: 100%;
+
+      .e-title-content {
+        flex: auto;
+      }
+    }
+
+    .e-field-list-container {
+      display: flex;
+      height: 342px;
+      padding: 1px;
+      position: relative;
+
+      .e-field-table {
+        border: $field-list-border-size $field-list-border-type $field-list-default-border-color;
+        border-radius: $field-list-default-border-radius;
+        display: inline-block;
+        overflow: hidden;
+        width: 30%;
+
+        .e-field-list-tree {
+          .e-sibling {
+            display: none;
+          }
+        }
+
+        .e-field-header,
+        .e-field-list {
+          width: 100%;
+        }
+
+        .e-field-header {
+          background-color: $field-list-header-background-color;
+          color: $field-list-default-header-font-color;
+          font-size: $field-list-header-font-size;
+          font-weight: normal;
+          height: $field-list-header-height;
+          overflow: hidden;
+          padding: $field-list-tree-header-padding 0 0 $field-list-header-padding;
+          text-align: left;
+          text-overflow: ellipsis;
+          word-break: break-all;
+
+          @if ($field-list-skin == 'bootstrap4') {
+            padding-left: 12px;
+          }
+        }
+
+        .e-field-header-container {
+          background-color: $field-list-header-background-color;
+          color: $field-list-default-header-font-color;
+          display: flex;
+          padding-right: $field-list-header-padding;
+
+          .e-field-header {
+            flex: auto;
+          }
+
+          .e-sort-none,
+          .e-sort-ascend,
+          .e-sort-descend {
+            color: $field-list-default-header-icon-font-color;
+            cursor: pointer;
+            font-size: $field-list-header-icon-size;
+            height: 20px;
+            padding: $field-list-tree-header-padding 0 0 $field-list-icon-to-icon-padding;
+            width: 20px;
+
+            &.e-selected::before {
+              color: $field-list-active-color;
+            }
+
+            &:hover {
+              font-weight: bold;
+            }
+
+            &:focus {
+              font-weight: bold;
+            }
+          }
+        }
+
+        .e-field-list-tree-outer-div {
+          display: inline-block;
+          height: 310px;
+          overflow: auto;
+          width: 100%;
+        }
+
+        .e-field-list {
+          display: inline-table;
+          height: 100%;
+          padding-left: 2px;
+          width: 100%;
+
+          ul {
+            overflow: hidden;
+
+            li {
+              margin-left: $field-list-treeview-padding-size;
+
+              .e-fullrow {
+                cursor: default;
+              }
+
+              .e-drag {
+                color: $field-list-drag-icon-color;
+                cursor: move;
+                display: inline-block;
+                font-size: $field-list-icon-size;
+                height: 20px;
+                margin-bottom: $field-list-treeview-drag-margin;
+                margin-right: 6px;
+                pointer-events: all;
+                text-align: center;
+                vertical-align: bottom;
+                width: 20px;
+
+                &.e-disable-drag {
+                  cursor: not-allowed;
+                  opacity: .4;
+                  visibility: hidden;
+                }
+              }
+
+              .e-list-icon {
+                color: $field-list-tree-icon-color;
+                margin: 0;
+              }
+
+              // sass-lint:disable-all
+              .e-calc-measure-icon,
+              .e-calc-dimension-icon,
+              .e-attributeCDB-icon,
+              .e-hierarchyCDB-icon,
+              .e-level-members,
+              .e-namedSetCDB-icon,
+              .e-measure-icon,
+              .e-kpiGoal-icon,
+              .e-kpiStatus-icon,
+              .e-kpiTrend-icon,
+              .e-kpiValue-icon {
+                margin-left: 10px;
+              }
+
+              // sass-lint:enable-all
+
+              .e-list-selected {
+                opacity: .5;
+              }
+
+              .e-selected-node {
+                font-weight: $field-list-treeview-font-weight;
+              }
+
+              .e-list-text {
+                font-family: $field-list-font-family;
+              }
+            }
+          }
+
+          &.e-olap-field-list-tree {
+            ul {
+              li {
+                margin-left: 0;
+                margin-right: 0;
+              }
+
+              .e-list-icon {
+                font-size: $field-list-icon-size;
+                height: auto;
+                width: auto;
+              }
+            }
+
+            &.e-treeview ul:first-child {
+              padding-left: 10px;
+              padding-right: 10px;
+            }
+
+            &.e-rtl {
+              ul {
+                .e-list-icon {
+                  transform: rotateX(0deg) rotateY(180deg);
+                }
+              }
+            }
+          }
+        }
+
+        &.e-olap-field-table {
+          width: 40%;
+        }
+      }
+
+      .e-axis-table {
+        display: flex;
+        overflow: hidden;
+        width: 70%;
+
+        .e-left-axis-fields,
+        .e-right-axis-fields {
+          padding-left: $field-list-default-padding-size;
+          width: 50%;
+        }
+
+        .e-left-axis-fields .e-field-list-filters,
+        .e-left-axis-fields .e-field-list-rows,
+        .e-right-axis-fields .e-field-list-columns,
+        .e-right-axis-fields .e-field-list-values {
+          background-color: $field-list-table-background-color;
+          border: $field-list-border-size $field-list-border-type $field-list-default-border-color;
+          border-radius: $field-list-default-border-radius;
+          fill: $field-list-default-fill-color;
+          font-weight: normal;
+          min-height: 165px;
+          position: relative;
+          width: 100%;
+
+          .e-axis-container {
+            background-color: $field-list-header-background-color;
+            border-bottom: $field-list-border-size $field-list-border-type $field-list-default-border-color;
+            color: $field-list-default-header-font-color;
+            display: flex;
+            height: $field-list-header-height;
+            padding: 2px $field-list-header-padding 5px;
+
+            .e-axis-icon-container {
+              height: 20px;
+              padding-top: $field-list-header-icon-wrapper-padding;
+              width: 20px;
+
+              .e-axis-rows,
+              .e-axis-columns,
+              .e-axis-values,
+              .e-axis-filters {
+                color: $field-list-default-header-icon-font-color;
+                font-size: $field-list-header-icon-size;
+              }
+            }
+          }
+
+          .e-axis-header {
+            flex: auto;
+            font-size: $field-list-header-font-size;
+            line-height: $field-list-header-content-line-height;
+            margin-top: 2px;
+            overflow: hidden;
+            padding: 0 8px;
+            text-overflow: ellipsis;
+            width: 100%;
+
+            @if ($field-list-skin == 'bootstrap4') {
+              margin-top: 3px;
+            }
+          }
+
+          .e-axis-content {
+            cursor: default;
+            width: 100%;
+
+            &.e-drag-restrict {
+              cursor: no-drop;
+            }
+
+            .e-pvt-btn-div {
+
+              .e-drop-indicator-last,
+              .e-drop-indicator {
+                display: block;
+                pointer-events: none;
+                width: 100%;
+
+                &.e-drop-hover {
+                  border-top: 2px dashed $field-list-drop-hover-color;
+                  margin-top: -2px;
+                }
+              }
+
+              &.e-first-btn {
+                .e-drop-indicator {
+                  &.e-drop-hover {
+                    position: absolute;
+                  }
+                }
+              }
+
+              .e-pivot-button {
+                background-color: $field-list-button-color;
+                border-bottom: $field-list-border-size $field-list-border-type $field-list-button-border-color;
+                border-left: 0;
+                border-radius: 0;
+                border-right: 0;
+                border-top: 0;
+                box-shadow: none;
+                cursor: default;
+                display: flex;
+                font-weight: normal;
+                height: $field-list-button-height;
+                line-height: 1em;
+                padding: $field-list-button-padding;
+                text-transform: none;
+                width: 100%;
+
+                @if ($field-list-skin == 'bootstrap4') {
+                  color: $field-list-button-font-color;
+                }
+
+                &.e-list-selected {
+                  color: $field-list-button-font-color;
+                  opacity: .5;
+                }
+
+                &:hover {
+                  background-color: $field-list-button-hover-color;
+
+                  .e-content {
+                    background-color: transparent;
+                  }
+                }
+
+                &:focus,
+                &:active {
+                  background-color: $field-list-button-focus-color;
+                  color: $field-list-button-active-color;
+
+                  .e-content {
+                    background-color: transparent;
+                  }
+
+                  .e-sort,
+                  .e-pv-filter,
+                  .e-pv-filtered,
+                  .e-dropdown-icon,
+                  .e-edit {
+                    color: $field-list-button-active-color;
+                  }
+                }
+
+
+                .e-content {
+                  background-color: transparent;
+                  flex: auto;
+                  font-size: $field-list-button-font-size;
+                  height: 16px;
+                  line-height: 1em;
+                  overflow: hidden;
+                  padding: 0 8px;
+                  text-align: left;
+                  text-overflow: ellipsis;
+                  width: 70%;
+                }
+
+                .e-draggable {
+                  height: 20px;
+                  width: 20px;
+                }
+
+                .e-drag {
+                  color: $field-list-drag-icon-color;
+                  cursor: move;
+                  font-size: $field-list-icon-size;
+                  height: 20px;
+                  width: 20px;
+
+                  &.e-disable-drag {
+                    cursor: not-allowed;
+                    opacity: .4;
+                    visibility: hidden;
+                  }
+                }
+
+                .e-sort,
+                .e-pv-filter,
+                .e-pv-filtered,
+                .e-dropdown-icon,
+                .e-edit {
+                  color: $field-list-button-icon-color;
+                  cursor: pointer;
+                  display: inline-block;
+                  font-size: $field-list-icon-size;
+                  height: 20px;
+                  padding-left: $field-list-icon-to-icon-padding;
+                  width: 20px;
+
+                  &:hover {
+                    color: $field-list-icon-hover-color;
+                  }
+
+                  &.e-disable {
+                    display: none;
+                  }
+                }
+
+                .e-sort {
+                  height: $field-list-icon-size;
+                }
+
+                .e-remove {
+                  display: none;
+                }
+
+                &.e-rtl {
+                  .e-content {
+                    text-align: right;
+                  }
+
+                  .e-sort,
+                  .e-pv-filter,
+                  .e-pv-filtered,
+                  .e-remove,
+                  .e-dropdown-icon,
+                  .e-edit {
+                    padding-left: 0;
+                    padding-right: $field-list-icon-to-icon-padding;
+                  }
+                }
+              }
+            }
+          }
+
+          .e-sort {
+            height: fit-content;
+            transform: rotateX(0deg);
+            transition: transform 200ms ease-in-out;
+
+            &.e-descend {
+              transform: rotateX(180deg);
+            }
+          }
+
+          .e-axis-content {
+            height: $field-list-axis-content-height;
+            overflow: auto;
+            scroll-behavior: smooth;
+          }
+
+          .e-draggable-prompt {
+            bottom: 32%;
+            color: $field-list-default-prompt-color;
+            font-size: $field-list-content-font-size;
+            height: 25px;
+            pointer-events: none;
+            position: absolute;
+            text-align: center;
+            width: 100%;
+
+            &.e-disable {
+              display: none;
+            }
+          }
+        }
+
+        .e-left-axis-fields .e-field-list-rows,
+        .e-right-axis-fields .e-field-list-values {
+          margin-top: $field-list-default-padding-size;
+        }
+
+        &.e-olap-axis-table {
+          width: 60%;
+        }
+      }
+    }
+
+    // sass-lint:disable-all
+    .e-calculated-field {
+      color: $field-list-default-font-color;
+      font-size: $field-list-button-font-size;
+      font-weight: $field-list-button-font-weight;
+      max-width: 160px;
+      min-width: 145px;
+
+      @if ($field-list-skin == 'bootstrap4') {
+        color: #f8f9fa;
+      }
+
+      &.e-disable {
+        display: none;
+      }
+    }
+
+    // sass-lint:enable-all
+
+    &.e-rtl {
+      .e-field-table {
+        .e-field-list {
+          padding-left: 0;
+          padding-right: 2px;
+
+          ul li {
+            margin-left: 0;
+            margin-right: $field-list-treeview-padding-size;
+
+            // sass-lint:disable-all
+            .e-list-text {
+              font-family: $field-list-font-family;
+            }
+
+            .e-drag {
+              margin-left: 6px !important;
+              margin-right: 0 !important;
+            }
+
+            .e-calc-measure-icon,
+            .e-calc-dimension-icon,
+            .e-attributeCDB-icon,
+            .e-hierarchyCDB-icon,
+            .e-level-members,
+            .e-namedSetCDB-icon,
+            .e-measure-icon,
+            .e-kpiGoal-icon,
+            .e-kpiStatus-icon,
+            .e-kpiTrend-icon,
+            .e-kpiValue-icon {
+              margin-left: 0;
+              margin-right: 10px;
+            }
+
+            // sass-lint:enable-all
+          }
+        }
+
+        .e-field-header {
+          padding-left: 0;
+          padding-right: $field-list-header-padding;
+          text-align: right;
+
+          @if ($field-list-skin == 'bootstrap4') {
+            padding-right: 12px;
+          }
+        }
+
+        .e-field-header-container {
+          padding-left: $field-list-header-padding;
+          padding-right: 0;
+
+          .e-sort-none,
+          .e-sort-ascend,
+          .e-sort-descend {
+            padding: $field-list-tree-header-padding $field-list-icon-to-icon-padding 0 0;
+          }
+        }
+      }
+
+      .e-axis-table {
+
+        .e-left-axis-fields,
+        .e-right-axis-fields {
+          padding-left: 0;
+          padding-right: $field-list-default-padding-size;
+        }
+
+        .e-left-axis-fields .e-field-list-filters,
+        .e-left-axis-fields .e-field-list-rows,
+        .e-right-axis-fields .e-field-list-columns,
+        .e-right-axis-fields .e-field-list-values {
+          .e-axis-header {
+            float: right;
+          }
+        }
+      }
+    }
+
+    &.e-static {
+      background-color: $field-list-default-bg-color;
+      border: $field-list-border-size $field-list-border-type $field-list-default-border-color;
+      max-height: 700px;
+      padding: $field-list-static-padding-size;
+      position: relative;
+
+      .e-title-content {
+        color: $field-list-default-font-color;
+      }
+
+      .e-field-list-container {
+        display: inline-block;
+        height: 100%;
+        width: 100%;
+
+        .e-field-table {
+          height: 210px;
+          width: 100%;
+
+          .e-field-list-tree-outer-div {
+            height: 175px;
+          }
+        }
+
+        .e-center-div {
+          display: none;
+        }
+
+        .e-center-title {
+          color: $field-list-default-header-font-color;
+          font-size: $field-list-header-font-size;
+          height: 25px;
+          margin-top: 5px;
+          overflow: hidden;
+          text-align: left;
+          text-overflow: ellipsis;
+        }
+
+        .e-axis-table {
+          width: 100%;
+
+          .e-left-axis-fields {
+            padding: 0;
+          }
+
+          .e-right-axis-fields {
+            padding-left: $field-list-default-padding-size;
+          }
+
+          .e-left-axis-fields .e-field-list-rows,
+          .e-right-axis-fields .e-field-list-values {
+            margin-top: $field-list-default-padding-size;
+          }
+
+          .e-left-axis-fields .e-field-list-filters,
+          .e-left-axis-fields .e-field-list-rows,
+          .e-right-axis-fields .e-field-list-columns,
+          .e-right-axis-fields .e-field-list-values {
+            .e-axis-container {
+              .e-axis-icon-container {
+                padding-top: $field-list-static-header-icon-wrapper-padding;
+              }
+            }
+          }
+        }
+      }
+
+      &.e-rtl {
+        .e-center-title {
+          text-align: right;
+        }
+
+        .e-axis-table {
+          .e-left-axis-fields {
+            padding-left: $field-list-static-padding-size;
+          }
+
+          .e-right-axis-fields {
+            padding: 0;
+          }
+        }
+      }
+    }
+
+    &.e-device {
+      height: 100%;
+      // sass-lint:disable-all
+      max-height: 100% !important;
+      max-width: 100% !important;
+      // sass-lint:enable-all
+      min-height: 500px;
+      width: 100%;
+
+      .e-dlg-header-content {
+        background-color: $field-list-mobile-header-color;
+        color: $field-list-mobile-header-font-color;
+        font-size: 14px;
+        height: 48px;
+        padding-bottom: 9px;
+        padding-top: 9px;
+      }
+
+      .e-adaptive-field-list-dialog,
+      .e-member-editor-dialog {
+        .e-dlg-header-content {
+          background-color: transparent;
+          color: $field-list-mobile-header-font-color;
+        }
+      }
+
+      .e-title-mobile-header {
+        display: flex;
+      }
+
+      .e-title-mobile-content {
+        margin-top: $field-list-back-margin;
+      }
+
+      .e-field-list-back-icon {
+        color: $field-list-back-font-color;
+        font-size: 16px;
+        height: 24px;
+        margin-left: 0;
+        margin-right: 12px;
+        padding-top: 7px;
+        text-align: center;
+        width: 24px;
+      }
+
+      .e-disable {
+        display: none;
+      }
+
+      .e-adaptive-container {
+        height: 100%;
+        position: relative;
+
+        .e-tab-header {
+          background-color: $field-list-header-background-color;
+
+          .e-toolbar-item {
+            .e-tab-wrap {
+              border: 0;
+            }
+          }
+        }
+
+        .e-content {
+          display: initial;
+
+          .e-field-list-filters,
+          .e-field-list-rows,
+          .e-field-list-columns,
+          .e-field-list-values {
+            display: inline-block;
+            height: 100%;
+            min-height: 250px;
+            padding-top: $field-list-adaptive-content-padding-size;
+            position: relative;
+            width: 100%;
+
+            .e-axis-content {
+              overflow: auto;
+            }
+
+            .e-pvt-btn-div {
+              display: grid;
+
+              .e-drop-indicator {
+                display: none;
+              }
+
+              .e-pivot-button {
+                border: $field-list-border-size $field-list-border-type $field-list-button-border-color;
+                border-left: 0;
+                border-radius: 0;
+                border-right: 0;
+                border-top: 0;
+                border-width: 1px 0;
+                box-shadow: none;
+                display: flex;
+                font-size: $field-list-bigger-button-font-size;
+                font-weight: normal;
+                height: $field-list-adaptive-pivot-button-height;
+                line-height: normal;
+                padding: $field-list-adaptive-pivot-button-padding;
+                text-transform: none;
+                width: 100%;
+
+                &.e-list-selected {
+                  opacity: .5;
+                }
+
+                .e-content {
+                  flex: auto;
+                  font-size: $field-list-bigger-button-font-size;
+                  height: 100%;
+                  margin-top: -2px;
+                  overflow: hidden;
+                  text-align: left;
+                  text-overflow: ellipsis;
+                  width: 70%;
+                }
+
+                .e-drag {
+                  display: none;
+                }
+
+                // sass-lint:disable-all
+                .e-sort,
+                .e-pv-filter,
+                .e-pv-filtered,
+                .e-remove,
+                .e-dropdown-icon,
+                .e-edit {
+                  color: $field-list-button-icon-color;
+                  cursor: pointer;
+                  display: inline-block;
+                  font-size: $field-list-bigger-icon-size;
+                  height: 24px;
+                  padding-left: 10px;
+                  width: 24px;
+
+                  @if ($field-list-skin == 'bootstrap4') {
+                    color: #fff;
+                  }
+
+                  &:hover {
+                    color: $field-list-icon-hover-color;
+                  }
+
+                  &.e-disable {
+                    display: none;
+                  }
+                }
+
+                // sass-lint:enable-all
+
+                .e-sort {
+                  height: fit-content;
+                  transform: rotateX(0deg);
+                  transition: transform 200ms ease-in-out;
+
+                  &.e-descend {
+                    transform: rotateX(180deg);
+                  }
+                }
+
+                .e-remove {
+                  display: inline-block;
+                }
+
+                &.e-rtl {
+                  .e-content {
+                    text-align: right;
+                  }
+
+                  .e-sort,
+                  .e-pv-filter,
+                  .e-pv-filtered,
+                  .e-remove,
+                  .e-dropdown-icon,
+                  .e-edit {
+                    padding-left: 0;
+                    padding-right: 10px;
+                  }
+                }
+              }
+            }
+
+            .e-axis-content {
+              height: 100%;
+              width: 100%;
+            }
+
+            .e-draggable-prompt {
+              border: 1px dashed $field-list-header-background-color;
+              color: $field-list-header-background-color;
+              font-size: $field-list-drag-clone-font-size;
+              height: $field-list-adaptive-drag-prompt-height;
+              left: 15%;
+              line-height: $field-list-adaptive-drag-prompt-height;
+              pointer-events: none;
+              position: absolute;
+              text-align: center;
+              top: 25%;
+              vertical-align: middle;
+              width: 70%;
+            }
+          }
+
+          .e-pivot-calc-outer-div {
+            .e-pivot-formula {
+              background-color: $pivot-formula-background;
+              border: 1px solid $pivot-formula-border;
+              border-radius: 4px;
+              color: $field-list-default-font-color;
+              height: 200px;
+              margin-left: 20px;
+              margin-right: 20px;
+              margin-top: 25px;
+              padding: 2px 3px;
+              resize: none;
+              width: 90%;
+            }
+
+            // sass-lint:disable-all
+            .e-pivot-calc-input-div,
+            .e-member-options,
+            .e-pivot-calc-custom-format-div,
+            .e-olap-calc-custom-format-div {
+              margin-left: 20px;
+              margin-right: 20px;
+              margin-top: 20px;
+              width: 90% !important;
+            }
+
+            // sass-lint:enable-all
+
+            .e-accordion {
+              margin-top: 20px;
+              overflow: auto;
+
+              .e-acrdn-header-icon {
+                display: table;
+                font-size: 12px;
+                height: 36px;
+                min-height: 36px;
+                min-width: 28px;
+                padding: 0;
+                position: absolute;
+                right: 16px;
+                top: 0;
+
+                .e-list-icon {
+                  cursor: pointer;
+                  display: table-cell;
+                  padding-right: 6px;
+                  text-align: center;
+                  vertical-align: middle;
+                }
+              }
+
+              .e-icons.e-frame {
+                margin-right: 12px;
+              }
+
+              &.e-rtl {
+                .e-acrdn-header-icon {
+                  left: 16px;
+                  right: auto;
+                }
+
+                // sass-lint:disable-all
+                .e-icons.e-frame {
+                  margin-left: 12px !important;
+                  margin-right: 0 !important;
+                }
+
+                // sass-lint:enable-all
+              }
+            }
+
+            .e-radio-wrapper {
+              margin-bottom: 24px;
+              margin-right: 20px;
+
+              .e-label {
+                color: $pivot-text-area-background;
+                font-family: Roboto-Reguar;
+                font-size: 14px;
+                opacity: .87;
+              }
+            }
+
+            .e-pivot-ok-button,
+            .e-pivot-add-button,
+            .e-pivot-cancel-button {
+              float: right;
+              margin-right: 20px;
+              margin-top: 32px;
+            }
+
+            .e-pivot-ok-button {
+              bottom: 0;
+              position: sticky;
+            }
+
+            .e-pivot-accord {
+              max-height: 290px;
+              overflow: auto;
+
+              ul {
+
+                .e-list-icon {
+                  color: $field-list-tree-icon-color;
+                }
+
+                .e-calcfieldmember .e-list-text {
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  width: 53%;
+                }
+
+                .e-list-header-icon {
+                  display: table;
+                  height: 30px;
+                  min-height: 30px;
+                  min-width: 24px;
+                  padding: 0;
+                  position: absolute;
+                  right: 16px;
+                  top: 0;
+
+                  .e-list-edit-icon,
+                  .e-remove-report.e-icons {
+                    color: $field-list-tree-icon-color;
+                    display: table-cell;
+                    padding: 5px;
+                    pointer-events: all;
+                    text-align: center;
+                    vertical-align: middle;
+                  }
+                }
+              }
+
+              &.e-rtl {
+                ul {
+                  .e-list-header-icon {
+                    left: 16px;
+                    right: auto;
+                  }
+
+                  .e-list-icon {
+                    transform: rotateX(0deg) rotateY(180deg);
+                  }
+                }
+              }
+            }
+
+            .e-checkbox-wrapper .e-icons {
+              height: 18px;
+              width: 18px;
+
+              @if ($field-list-skin == 'bootstrap4') {
+                height: 14px;
+                width: 14px;
+              }
+            }
+
+            &.e-olap-calc-outer-div {
+              max-height: 350px;
+              overflow: hidden;
+              overflow-y: auto;
+            }
+          }
+        }
+
+        .e-field-list-footer {
+          bottom: 20px;
+          display: inline-block;
+          position: absolute;
+          vertical-align: bottom;
+          width: 100%;
+
+          .e-field-list-footer-content {
+            display: inline-block;
+            padding: $field-list-adaptive-footer-padding-size;
+            width: 100%;
+
+            .e-field-list-btn,
+            .e-calculated-field-btn {
+              float: right;
+              height: $field-list-adaptive-btn-size;
+              pointer-events: all;
+              width: $field-list-adaptive-btn-size;
+              z-index: 1000;
+
+              .e-add-icon {
+                font-size: $field-list-adaptive-btn-icon-size;
+                line-height: $field-list-adaptive-icon-height;
+              }
+            }
+          }
+        }
+      }
+
+      .e-footer-content.e-field-list-footer {
+        background-color: transparent;
+        bottom: 0;
+        display: inline-block;
+        padding: $field-list-adaptive-footer-padding-size;
+        pointer-events: none;
+        position: absolute;
+        vertical-align: bottom;
+        width: 100%;
+
+        .e-field-list-btn,
+        .e-calculated-field-btn,
+        .e-cancel-btn,
+        .e-defer-apply-button {
+          float: right;
+          height: $field-list-adaptive-btn-size;
+          pointer-events: all;
+          width: $field-list-adaptive-btn-size;
+          z-index: 1000;
+
+          .e-add-icon {
+            font-size: $field-list-adaptive-btn-icon-size;
+            line-height: $field-list-adaptive-icon-height;
+          }
+        }
+
+        .e-cancel-btn,
+        .e-defer-apply-button {
+          float: left;
+        }
+
+        .e-cancel-btn,
+        .e-defer-apply-button,
+        .e-checkbox-layout {
+          max-width: 20%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .e-checkbox-layout {
+          max-width: 45%;
+        }
+      }
+
+      &.e-static {
+        border: 0;
+        padding: 0;
+
+        .e-field-list-filters,
+        .e-field-list-rows,
+        .e-field-list-columns,
+        .e-field-list-values {
+          .e-axis-content {
+            max-height: 600px;
+          }
+        }
+      }
+
+      &.e-rtl {
+        .e-field-list-back-icon {
+          margin-left: 12px;
+          margin-right: 0;
+          transform: rotateY(180deg);
+        }
+
+        .e-field-list-footer {
+
+          .e-field-list-btn,
+          .e-calculated-field-btn {
+            float: left;
+          }
+
+          .e-cancel-btn,
+          .e-defer-apply-button {
+            float: right;
+          }
+        }
+
+        // sass-lint:disable-all
+        .e-pivot-calc-outer-div {
+
+          .e-pivot-ok-button,
+          .e-pivot-add-button,
+          .e-pivot-cancel-button {
+            float: left !important;
+            margin-left: 20px;
+          }
+        }
+
+        // sass-lint:enable-all
+      }
+    }
+  }
+
+  // sass-lint:disable-all
+  .e-bigger .e-pivotfieldlist-wrapper,
+  .e-bigger.e-pivotfieldlist-wrapper {
+    .e-field-table {
+
+      .e-left-axis-fields,
+      .e-right-axis-fields {
+        padding-left: $field-list-default-bigger-padding-size;
+      }
+
+      .e-field-header {
+        background-color: $field-list-header-background-color;
+        color: $field-list-default-header-font-color;
+        font-size: $field-list-bigger-header-font-size;
+        font-weight: normal;
+        height: $field-list-bigger-header-height;
+        overflow: hidden;
+        padding: $field-list-tree-header-padding 0 0 $field-list-bigger-header-padding;
+
+        @if ($field-list-skin == 'bootstrap4') {
+          height: 40px;
+          padding-left: 16px;
+          padding-top: $field-list-bigger-tree-header-padding;
+        }
+      }
+
+      .e-field-header-wrapper {
+        padding-right: $field-list-bigger-header-padding;
+
+        .e-sort-none,
+        .e-sort-ascend,
+        .e-sort-descend {
+          font-size: $field-list-bigger-header-icon-size;
+          height: 24px;
+          padding: $field-list-tree-header-padding 0 0 $field-list-bigger-icon-to-icon-padding;
+          width: 24px;
+        }
+      }
+
+      .e-field-list {
+        padding-left: 5px;
+
+        ul {
+          li {
+            padding: 0;
+          }
+        }
+
+        .e-drag {
+          font-size: $field-list-bigger-icon-size !important;
+          height: 24px !important;
+          margin-bottom: $field-list-treeview-drag-bigger-padding !important;
+          margin-right: 4px !important;
+          width: 24px !important;
+        }
+
+        // sass-lint:disable-all
+        .e-calc-measure-icon,
+        .e-calc-dimension-icon,
+        .e-attributeCDB-icon,
+        .e-hierarchyCDB-icon,
+        .e-level-members,
+        .e-namedSetCDB-icon,
+        .e-measure-icon,
+        .e-kpiGoal-icon,
+        .e-kpiStatus-icon,
+        .e-kpiTrend-icon,
+        .e-kpiValue-icon {
+          margin-left: 10px;
+        }
+
+        &.e-olap-field-list-tree {
+          ul {
+            .e-list-icon {
+              font-size: $field-list-bigger-icon-size;
+            }
+          }
+        }
+      }
+
+      .e-left-axis-fields .e-field-list-rows,
+      .e-right-axis-fields .e-field-list-values {
+        margin-top: $field-list-default-bigger-padding-size;
+      }
+    }
+
+    .e-axis-table {
+
+      .e-left-axis-fields .e-field-list-filters,
+      .e-left-axis-fields .e-field-list-rows,
+      .e-right-axis-fields .e-field-list-columns,
+      .e-right-axis-fields .e-field-list-values {
+        .e-axis-wrapper {
+          height: $field-list-bigger-header-height;
+          padding: 0 $field-list-bigger-header-padding 5px;
+
+          .e-axis-icon-wrapper {
+            height: 24px;
+            padding-top: $field-list-bigger-header-icon-wrapper-padding;
+            width: 24px;
+
+            .e-axis-rows,
+            .e-axis-columns,
+            .e-axis-values,
+            .e-axis-filters {
+              font-size: $field-list-bigger-header-icon-size;
+            }
+          }
+
+          .e-axis-header {
+            font-size: $field-list-bigger-header-font-size;
+            line-height: $field-list-bigger-header-content-line-height;
+            margin-top: 4px;
+            padding: 0 12px;
+
+            @if ($field-list-skin == 'bootstrap4') {
+              margin-top: 7px;
+            }
+          }
+        }
+
+        .e-axis-content {
+          @if ($field-list-skin == 'bootstrap4') {
+            height: 126px;
+          }
+
+          .e-pvt-btn-div {
+            .e-pivot-button {
+              font-size: $field-list-bigger-button-font-size;
+              height: $field-list-bigger-button-height !important;
+              padding: $field-list-bigger-button-padding !important;
+
+              .e-content {
+                font-size: $field-list-bigger-button-font-size;
+                line-height: $field-list-bigger-button-line-height;
+                padding: 0 10px
+              }
+
+              .e-draggable {
+                height: 24px;
+                width: 24px;
+              }
+
+              .e-sort,
+              .e-pv-filter,
+              .e-pv-filtered,
+              .e-dropdown-icon,
+              .e-edit {
+                cursor: pointer;
+                display: inline-block;
+                font-size: $field-list-bigger-icon-size;
+                height: 24px;
+                width: 24px;
+              }
+
+              .e-sort {
+                height: $field-list-bigger-icon-size;
+              }
+
+              .e-drag {
+                font-size: $field-list-bigger-icon-size;
+                width: 24px;
+              }
+            }
+          }
+        }
+
+        .e-draggable-prompt {
+          @if ($field-list-skin == 'bootstrap4') {
+            font-size: 16px;
+          }
+        }
+      }
+    }
+
+    .e-calculated-field {
+      font-size: $field-list-bigger-button-font-size;
+    }
+
+    &.e-static {
+      max-height: 720px;
+
+      .e-field-list-container {
+        .e-center-title {
+          color: $field-list-default-header-font-color;
+          font-size: $field-list-bigger-header-font-size;
+        }
+
+        .e-axis-table {
+          .e-right-axis-fields {
+            padding-left: $field-list-default-bigger-padding-size;
+          }
+
+          .e-left-axis-fields .e-field-list-rows,
+          .e-right-axis-fields .e-field-list-values {
+            margin-top: $field-list-default-bigger-padding-size;
+          }
+
+          .e-left-axis-fields .e-field-list-filters,
+          .e-left-axis-fields .e-field-list-rows,
+          .e-right-axis-fields .e-field-list-columns,
+          .e-right-axis-fields .e-field-list-values {
+            .e-axis-wrapper {
+              .e-axis-icon-wrapper {
+                padding-top: $field-list-static-bigger-header-icon-wrapper-padding;
+              }
+            }
+          }
+        }
+      }
+
+      &.e-rtl {
+        .e-axis-table {
+          .e-left-axis-fields {
+            padding-left: $field-list-default-bigger-padding-size;
+          }
+
+          // sass-lint:disable-all
+          .e-right-axis-fields {
+            padding: 0 !important;
+          }
+        }
+      }
+    }
+
+    &.e-rtl {
+      .e-field-table {
+        .e-field-list {
+          padding-left: 0;
+          padding-right: 5px;
+
+          .e-drag {
+            margin-left: 4px !important;
+            margin-right: 0 !important;
+          }
+
+          .e-calc-measure-icon,
+          .e-calc-dimension-icon,
+          .e-attributeCDB-icon,
+          .e-hierarchyCDB-icon,
+          .e-level-members,
+          .e-namedSetCDB-icon,
+          .e-measure-icon,
+          .e-kpiGoal-icon,
+          .e-kpiStatus-icon,
+          .e-kpiTrend-icon,
+          .e-kpiValue-icon {
+            margin-left: 0;
+            margin-right: 10px;
+          }
+
+          // sass-lint:enable-all
+        }
+
+        .e-field-header {
+          padding-right: $field-list-bigger-header-padding;
+        }
+
+        .e-field-header-wrapper {
+          padding-left: $field-list-bigger-header-padding;
+
+          .e-sort-none,
+          .e-sort-ascend,
+          .e-sort-descend {
+            padding: $field-list-tree-header-padding $field-list-bigger-icon-to-icon-padding 0 0;
+          }
+        }
+      }
+
+      .e-axis-table {
+
+        .e-left-axis-fields,
+        .e-right-axis-fields {
+          padding-left: 0;
+          padding-right: $field-list-default-padding-size;
+        }
+
+        .e-left-axis-fields .e-field-list-filters,
+        .e-left-axis-fields .e-field-list-rows,
+        .e-right-axis-fields .e-field-list-columns,
+        .e-right-axis-fields .e-field-list-values {
+          .e-pivot-button {
+
+            .e-sort,
+            .e-pv-filter,
+            .e-pv-filtered,
+            .e-remove,
+            .e-dropdown-icon,
+            .e-edit {
+              padding-left: 0;
+              padding-right: $field-list-bigger-icon-to-icon-padding;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // sass-lint:disable-all
+  .e-bigger .e-pivotfieldlist-container,
+  .e-bigger.e-pivotfieldlist-container {
+    .e-field-table {
+
+      .e-left-axis-fields,
+      .e-right-axis-fields {
+        padding-left: $field-list-default-bigger-padding-size;
+      }
+
+      .e-field-header {
+        background-color: $field-list-header-background-color;
+        color: $field-list-default-header-font-color;
+        font-size: $field-list-bigger-header-font-size;
+        font-weight: normal;
+        height: $field-list-bigger-header-height;
+        overflow: hidden;
+        padding: $field-list-tree-header-padding 0 0 $field-list-bigger-header-padding;
+
+        @if ($field-list-skin == 'bootstrap4') {
+          height: 40px;
+          padding-left: 16px;
+          padding-top: $field-list-bigger-tree-header-padding;
+        }
+      }
+
+      .e-field-header-container {
+        padding-right: $field-list-bigger-header-padding;
+
+        .e-sort-none,
+        .e-sort-ascend,
+        .e-sort-descend {
+          font-size: $field-list-bigger-header-icon-size;
+          height: 24px;
+          padding: $field-list-tree-header-padding 0 0 $field-list-bigger-icon-to-icon-padding;
+          width: 24px;
+        }
+      }
+
+      .e-field-list {
+        padding-left: 5px;
+
+        ul {
+          li {
+            padding: 0;
+          }
+        }
+
+        .e-drag {
+          font-size: $field-list-bigger-icon-size !important;
+          height: 24px !important;
+          margin-bottom: $field-list-treeview-drag-bigger-padding !important;
+          margin-right: 4px !important;
+          width: 24px !important;
+        }
+
+        // sass-lint:disable-all
+        .e-calc-measure-icon,
+        .e-calc-dimension-icon,
+        .e-attributeCDB-icon,
+        .e-hierarchyCDB-icon,
+        .e-level-members,
+        .e-namedSetCDB-icon,
+        .e-measure-icon,
+        .e-kpiGoal-icon,
+        .e-kpiStatus-icon,
+        .e-kpiTrend-icon,
+        .e-kpiValue-icon {
+          margin-left: 10px;
+        }
+
+        &.e-olap-field-list-tree {
+          ul {
+            .e-list-icon {
+              font-size: $field-list-bigger-icon-size;
+            }
+          }
+        }
+      }
+
+      .e-left-axis-fields .e-field-list-rows,
+      .e-right-axis-fields .e-field-list-values {
+        margin-top: $field-list-default-bigger-padding-size;
+      }
+    }
+
+    .e-axis-table {
+
+      .e-left-axis-fields .e-field-list-filters,
+      .e-left-axis-fields .e-field-list-rows,
+      .e-right-axis-fields .e-field-list-columns,
+      .e-right-axis-fields .e-field-list-values {
+        .e-axis-container {
+          height: $field-list-bigger-header-height;
+          padding: 0 $field-list-bigger-header-padding 5px;
+
+          .e-axis-icon-container {
+            height: 24px;
+            padding-top: $field-list-bigger-header-icon-wrapper-padding;
+            width: 24px;
+
+            .e-axis-rows,
+            .e-axis-columns,
+            .e-axis-values,
+            .e-axis-filters {
+              font-size: $field-list-bigger-header-icon-size;
+            }
+          }
+
+          .e-axis-header {
+            font-size: $field-list-bigger-header-font-size;
+            line-height: $field-list-bigger-header-content-line-height;
+            margin-top: 4px;
+            padding: 0 12px;
+
+            @if ($field-list-skin == 'bootstrap4') {
+              margin-top: 7px;
+            }
+          }
+        }
+
+        .e-axis-content {
+          @if ($field-list-skin == 'bootstrap4') {
+            height: 126px;
+          }
+
+          .e-pvt-btn-div {
+            .e-pivot-button {
+              font-size: $field-list-bigger-button-font-size;
+              height: $field-list-bigger-button-height !important;
+              padding: $field-list-bigger-button-padding !important;
+
+              .e-content {
+                font-size: $field-list-bigger-button-font-size;
+                line-height: $field-list-bigger-button-line-height;
+                padding: 0 10px
+              }
+
+              .e-draggable {
+                height: 24px;
+                width: 24px;
+              }
+
+              .e-sort,
+              .e-pv-filter,
+              .e-pv-filtered,
+              .e-dropdown-icon,
+              .e-edit {
+                cursor: pointer;
+                display: inline-block;
+                font-size: $field-list-bigger-icon-size;
+                height: 24px;
+                width: 24px;
+              }
+
+              .e-sort {
+                height: $field-list-bigger-icon-size;
+              }
+
+              .e-drag {
+                font-size: $field-list-bigger-icon-size;
+                width: 24px;
+              }
+            }
+          }
+        }
+
+        .e-draggable-prompt {
+          @if ($field-list-skin == 'bootstrap4') {
+            font-size: 16px;
+          }
+        }
+      }
+    }
+
+    .e-calculated-field {
+      font-size: $field-list-bigger-button-font-size;
+    }
+
+    &.e-static {
+      max-height: 720px;
+
+      .e-field-list-container {
+        .e-center-title {
+          color: $field-list-default-header-font-color;
+          font-size: $field-list-bigger-header-font-size;
+        }
+
+        .e-axis-table {
+          .e-right-axis-fields {
+            padding-left: $field-list-default-bigger-padding-size;
+          }
+
+          .e-left-axis-fields .e-field-list-rows,
+          .e-right-axis-fields .e-field-list-values {
+            margin-top: $field-list-default-bigger-padding-size;
+          }
+
+          .e-left-axis-fields .e-field-list-filters,
+          .e-left-axis-fields .e-field-list-rows,
+          .e-right-axis-fields .e-field-list-columns,
+          .e-right-axis-fields .e-field-list-values {
+            .e-axis-container {
+              .e-axis-icon-container {
+                padding-top: $field-list-static-bigger-header-icon-wrapper-padding;
+              }
+            }
+          }
+        }
+      }
+
+      &.e-rtl {
+        .e-axis-table {
+          .e-left-axis-fields {
+            padding-left: $field-list-default-bigger-padding-size;
+          }
+
+          // sass-lint:disable-all
+          .e-right-axis-fields {
+            padding: 0 !important;
+          }
+        }
+      }
+    }
+
+    &.e-rtl {
+      .e-field-table {
+        .e-field-list {
+          padding-left: 0;
+          padding-right: 5px;
+
+          .e-drag {
+            margin-left: 4px !important;
+            margin-right: 0 !important;
+          }
+
+          .e-calc-measure-icon,
+          .e-calc-dimension-icon,
+          .e-attributeCDB-icon,
+          .e-hierarchyCDB-icon,
+          .e-level-members,
+          .e-namedSetCDB-icon,
+          .e-measure-icon,
+          .e-kpiGoal-icon,
+          .e-kpiStatus-icon,
+          .e-kpiTrend-icon,
+          .e-kpiValue-icon {
+            margin-left: 0;
+            margin-right: 10px;
+          }
+
+          // sass-lint:enable-all
+        }
+
+        .e-field-header {
+          padding-right: $field-list-bigger-header-padding;
+        }
+
+        .e-field-header-container {
+          padding-left: $field-list-bigger-header-padding;
+
+          .e-sort-none,
+          .e-sort-ascend,
+          .e-sort-descend {
+            padding: $field-list-tree-header-padding $field-list-bigger-icon-to-icon-padding 0 0;
+          }
+        }
+      }
+
+      .e-axis-table {
+
+        .e-left-axis-fields,
+        .e-right-axis-fields {
+          padding-left: 0;
+          padding-right: $field-list-default-padding-size;
+        }
+
+        .e-left-axis-fields .e-field-list-filters,
+        .e-left-axis-fields .e-field-list-rows,
+        .e-right-axis-fields .e-field-list-columns,
+        .e-right-axis-fields .e-field-list-values {
+          .e-pivot-button {
+
+            .e-sort,
+            .e-pv-filter,
+            .e-pv-filtered,
+            .e-remove,
+            .e-dropdown-icon,
+            .e-edit {
+              padding-left: 0;
+              padding-right: $field-list-bigger-icon-to-icon-padding;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // sass-lint:enable-all
+}

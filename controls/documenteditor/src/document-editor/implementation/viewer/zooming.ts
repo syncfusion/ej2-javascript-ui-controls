@@ -1,12 +1,12 @@
 import { LayoutViewer, DocumentHelper } from './viewer';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 
-/** 
+/**
  * @private
  */
 export class Zoom {
     private documentHelper: DocumentHelper;
-    public setZoomFactor(value: number): void {
+    public setZoomFactor(): void {
         this.onZoomFactorChanged();
         if (!isNullOrUndefined(this.documentHelper.selection)) {
             this.documentHelper.selection.updateCaretPosition();
@@ -17,13 +17,11 @@ export class Zoom {
         }
         this.documentHelper.owner.fireZoomFactorChange();
     }
-    /**
-     * documentHelper definition
-     */
-    constructor(documentHelper: DocumentHelper) {
+
+    public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
     }
-    get viewer(): LayoutViewer {
+    private get viewer(): LayoutViewer {
         return this.documentHelper.owner.viewer;
     }
 
@@ -37,17 +35,25 @@ export class Zoom {
         this.zoom();
     }
     private zoom(): void {
-        let viewer: LayoutViewer = this.viewer;
+        const viewer: LayoutViewer = this.viewer;
         this.documentHelper.clearContent();
         viewer.handleZoom();
         this.documentHelper.updateFocus();
     }
-    public onMouseWheelInternal = (event: MouseWheelEvent): void => {
+    /**
+     * @private
+     * @param {WheelEvent} event Specifies the mouse wheen event
+     * @returns {void}
+     */
+    public onMouseWheelInternal = (event: WheelEvent): void => {
         if (event.ctrlKey === true) {
             event.preventDefault();
-            let pageX: number = event.pageX - this.documentHelper.viewerContainer.offsetLeft;
+            const pageX: number = event.pageX - this.documentHelper.viewerContainer.offsetLeft;
             if (pageX < this.documentHelper.pageContainer.offsetWidth) {
-                let wheel: boolean = navigator.userAgent.match('Firefox') ? event.detail < 0 : event.wheelDelta > 0;
+                let isFirefFox: RegExpMatchArray = navigator.userAgent.match('Firefox');
+                /* eslint-disable */
+                const wheel: boolean = isFirefFox ? event.detail < 0 : (Browser.isIE ? (event as any).wheelDelta > 0 : event.deltaY < 0);
+                /* eslint-enable */
                 let zoomFactor: number = this.documentHelper.zoomFactor;
                 if (wheel) {
                     if (zoomFactor <= 4.90) {

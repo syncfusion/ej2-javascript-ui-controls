@@ -35,7 +35,7 @@ export class BaseQuickToolbar {
     public toolbarElement: HTMLElement;
     private renderFactory: RendererFactory;
 
-    constructor(parent?: IRichTextEditor, locator?: ServiceLocator) {
+    public constructor(parent?: IRichTextEditor, locator?: ServiceLocator) {
         this.parent = parent;
         this.locator = locator;
         this.isDOMElement = false;
@@ -53,6 +53,9 @@ export class BaseQuickToolbar {
 
     /**
      * render method
+     *
+     * @param {IQuickToolbarOptions} args - specifies the arguments
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -65,7 +68,7 @@ export class BaseQuickToolbar {
         } else {
             className = '';
         }
-        let popupId: string = getUniqueID(args.popupType + '_Quick_Popup');
+        const popupId: string = getUniqueID(args.popupType + '_Quick_Popup');
         this.stringItems = args.toolbarItems;
         this.element = this.parent.createElement('div', { id: popupId, className: className + ' ' + classes.CLS_RTE_ELEMENTS });
         this.element.setAttribute('aria-owns', this.parent.getID());
@@ -89,11 +92,11 @@ export class BaseQuickToolbar {
     private setPosition(e: IShowQuickTBarOptions): void {
         let x: number;
         let y: number;
-        let imgWrapper: HTMLElement = <HTMLElement>closest(e.target, '.e-img-caption');
-        let target: HTMLElement = !isNOU(imgWrapper) ? imgWrapper : e.target;
+        const imgWrapper: HTMLElement = <HTMLElement>closest(e.target, '.e-img-caption');
+        const target: HTMLElement = !isNOU(imgWrapper) ? imgWrapper : e.target;
         addClass([this.toolbarElement], [classes.CLS_RM_WHITE_SPACE]);
-        let targetOffsetTop: number = target.offsetTop;
-        let parentOffsetTop: number = window.pageYOffset + e.parentData.top;
+        const targetOffsetTop: number = target.offsetTop;
+        const parentOffsetTop: number = window.pageYOffset + e.parentData.top;
         if ((targetOffsetTop - e.editTop) > e.popHeight) {
             y = parentOffsetTop + e.tBarElementHeight + (targetOffsetTop - e.editTop) - e.popHeight - 5;
         } else if (((e.editTop + e.editHeight) - (targetOffsetTop + target.offsetHeight)) > e.popHeight) {
@@ -115,8 +118,8 @@ export class BaseQuickToolbar {
     private checkCollision(e: IShowQuickTBarOptions, viewPort: string, type: string): void {
         let x: number;
         let y: number;
-        let parentTop: number = e.parentData.top;
-        let contentTop: number = e.windowY + parentTop + e.tBarElementHeight;
+        const parentTop: number = e.parentData.top;
+        const contentTop: number = e.windowY + parentTop + e.tBarElementHeight;
         let collision: string[] = [];
         if (viewPort === 'document') {
             collision = isCollide(e.popup);
@@ -125,52 +128,52 @@ export class BaseQuickToolbar {
         }
         for (let i: number = 0; i < collision.length; i++) {
             switch (collision[i]) {
-                case 'top':
-                    if (viewPort === 'document') {
-                        y = e.windowY;
+            case 'top':
+                if (viewPort === 'document') {
+                    y = e.windowY;
+                } else {
+                    y = (window.pageYOffset + parentTop) + e.tBarElementHeight;
+                }
+                break;
+            case 'bottom': {
+                let posY: number;
+                if (viewPort === 'document') {
+                    if (type === 'inline') {
+                        posY = (e.y - e.popHeight - 10);
                     } else {
-                        y = (window.pageYOffset + parentTop) + e.tBarElementHeight;
-                    }
-                    break;
-                case 'bottom':
-                    let posY: number;
-                    if (viewPort === 'document') {
-                        if (type === 'inline') {
-                            posY = (e.y - e.popHeight - 10);
-                        } else {
-                            if ((e.windowHeight - (parentTop + e.tBarElementHeight)) > e.popHeight) {
-                                if ((contentTop - e.windowHeight) > e.popHeight) {
-                                    posY = (contentTop + (e.windowHeight - parentTop)) - e.popHeight;
-                                } else {
-                                    posY = contentTop;
-                                }
+                        if ((e.windowHeight - (parentTop + e.tBarElementHeight)) > e.popHeight) {
+                            if ((contentTop - e.windowHeight) > e.popHeight) {
+                                posY = (contentTop + (e.windowHeight - parentTop)) - e.popHeight;
                             } else {
-                                posY = e.windowY + (parentTop + e.tBarElementHeight);
+                                posY = contentTop;
                             }
-                        }
-                    } else {
-                        if (e.target.tagName !== 'IMG') {
-                            posY = (e.parentData.bottom + window.pageYOffset) - e.popHeight - 10;
                         } else {
-                            posY = (e.parentData.bottom + window.pageYOffset) - e.popHeight - 5;
+                            posY = e.windowY + (parentTop + e.tBarElementHeight);
                         }
                     }
-                    y = posY;
-                    break;
-                case 'right':
-                    if (type === 'inline') {
-                        x = e.windowWidth - (e.popWidth + e.bodyRightSpace + 10);
+                } else {
+                    if (e.target.tagName !== 'IMG') {
+                        posY = (e.parentData.bottom + window.pageYOffset) - e.popHeight - 10;
                     } else {
-                        x = e.x - e.popWidth;
+                        posY = (e.parentData.bottom + window.pageYOffset) - e.popHeight - 5;
                     }
-                    break;
-                case 'left':
-                    if (type === 'inline') {
-                        x = 0;
-                    } else {
-                        x = e.parentData.left;
-                    }
-                    break;
+                }
+                y = posY;
+                break; }
+            case 'right':
+                if (type === 'inline') {
+                    x = e.windowWidth - (e.popWidth + e.bodyRightSpace + 10);
+                } else {
+                    x = e.x - e.popWidth;
+                }
+                break;
+            case 'left':
+                if (type === 'inline') {
+                    x = 0;
+                } else {
+                    x = e.parentData.left;
+                }
+                break;
             }
         }
         this.popupObj.position.X = (x) ? x : this.popupObj.position.X;
@@ -180,37 +183,42 @@ export class BaseQuickToolbar {
 
     /**
      * showPopup method
+     *
+     * @param {number} x - specifies the x value
+     * @param {number} y - specifies the y value
+     * @param {Element} target - specifies the element
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public showPopup(x: number, y: number, target: Element): void {
-        let eventArgs: BeforeQuickToolbarOpenArgs = isBlazor() ? { cancel: false, targetElement: target } :
+        const eventArgs: BeforeQuickToolbarOpenArgs = isBlazor() ? { cancel: false, targetElement: target } :
             { popup: this.popupObj, cancel: false, targetElement: target };
         this.parent.trigger(events.beforeQuickToolbarOpen, eventArgs, (beforeQuickToolbarArgs: BeforeQuickToolbarOpenArgs) => {
             if (!beforeQuickToolbarArgs.cancel) {
                 let editPanelTop: number;
                 let editPanelHeight: number;
-                let bodyStyle: CSSStyleDeclaration = window.getComputedStyle(document.body);
-                let bodyRight: number = parseFloat(
+                const bodyStyle: CSSStyleDeclaration = window.getComputedStyle(document.body);
+                const bodyRight: number = parseFloat(
                     bodyStyle.marginRight.split('px')[0]) + parseFloat(bodyStyle.paddingRight.split('px')[0]
                 );
-                let windowHeight: number = window.innerHeight;
-                let windowWidth: number = window.innerWidth;
-                let parent: HTMLElement = this.parent.element;
-                let toolbarAvail: boolean = !isNullOrUndefined(this.parent.getToolbar());
-                let tbHeight: number = toolbarAvail && this.parent.toolbarModule.getToolbarHeight();
-                let expTBHeight: number = toolbarAvail && this.parent.toolbarModule.getExpandTBarPopHeight();
-                let tBarHeight: number = (toolbarAvail) ? (tbHeight + expTBHeight) : 0;
+                const windowHeight: number = window.innerHeight;
+                const windowWidth: number = window.innerWidth;
+                const parent: HTMLElement = this.parent.element;
+                const toolbarAvail: boolean = !isNullOrUndefined(this.parent.getToolbar());
+                const tbHeight: number = toolbarAvail && this.parent.toolbarModule.getToolbarHeight();
+                const expTBHeight: number = toolbarAvail && this.parent.toolbarModule.getExpandTBarPopHeight();
+                const tBarHeight: number = (toolbarAvail) ? (tbHeight + expTBHeight) : 0;
                 addClass([this.element], [classes.CLS_HIDE]);
                 if (Browser.isDevice && !isIDevice()) {
                     addClass([this.parent.getToolbar()], [classes.CLS_HIDE]);
                 }
                 if (this.parent.iframeSettings.enable) {
-                    let cntEle: Window = (<HTMLIFrameElement>this.contentRenderer.getPanel()).contentWindow;
+                    const cntEle: Window = (<HTMLIFrameElement>this.contentRenderer.getPanel()).contentWindow;
                     editPanelTop = cntEle.pageYOffset;
                     editPanelHeight = cntEle.innerHeight;
                 } else {
-                    let cntEle: HTMLElement = <HTMLElement>closest(target, '.' + classes.CLS_RTE_CONTENT);
+                    const cntEle: HTMLElement = <HTMLElement>closest(target, '.' + classes.CLS_RTE_CONTENT);
                     editPanelTop = (cntEle) ? cntEle.scrollTop : 0;
                     editPanelHeight = (cntEle) ? cntEle.offsetHeight : 0;
                 }
@@ -233,7 +241,7 @@ export class BaseQuickToolbar {
                     containerType: 'quick',
                     items: this.stringItems
                 } as IColorPickerRenderArgs);
-                let showPopupData: IShowQuickTBarOptions = {
+                const showPopupData: IShowQuickTBarOptions = {
                     x: x, y: y,
                     target: target as HTMLElement,
                     editTop: editPanelTop,
@@ -270,11 +278,13 @@ export class BaseQuickToolbar {
 
     /**
      * hidePopup method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public hidePopup(): void {
-        let viewSourcePanel: HTMLElement = <HTMLElement>this.parent.sourceCodeModule.getViewPanel();
+        const viewSourcePanel: HTMLElement = <HTMLElement>this.parent.sourceCodeModule.getViewPanel();
         if (Browser.isDevice && !isIDevice()) {
             removeClass([this.parent.getToolbar()], [classes.CLS_HIDE]);
         }
@@ -286,14 +296,19 @@ export class BaseQuickToolbar {
         this.removeEleFromDOM();
         this.isDOMElement = false;
     }
-    /** 
+    /**
+     * @param {string} item - specifies the string value
+     * @param {number} index - specifies the index value
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public addQTBarItem(item: (string | IToolbarItems)[], index: number): void {
         this.quickTBarObj.toolbarObj.addItems((this.quickTBarObj.getItems(item, 'toolbar') as IToolbarItemModel[]), index);
     }
-    /** 
+     /**
+     * @param {number} index - specifies the index value
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -302,13 +317,13 @@ export class BaseQuickToolbar {
     }
 
     private removeEleFromDOM(): void {
-        let element: Element = this.popupObj.element;
+        const element: Element = this.popupObj.element;
         if (this.isDOMElement) {
             this.dropDownButtons.destroyDropDowns();
             this.colorPickerObj.destroyColorPicker();
             removeClass([this.element], [classes.CLS_POP]);
             detach(element);
-            let args: QuickToolbarEventArgs | Popup = isBlazor() ? { element: this.popupObj.element } : this.popupObj;
+            const args: QuickToolbarEventArgs | Popup = isBlazor() ? { element: this.popupObj.element } : this.popupObj;
             this.parent.trigger(events.quickToolbarClose, args);
         }
     }
@@ -329,8 +344,9 @@ export class BaseQuickToolbar {
 
     /**
      * Destroys the Quick toolbar.
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -343,11 +359,15 @@ export class BaseQuickToolbar {
     }
     /**
      * addEventListener method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public addEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
         if (this.parent.inlineMode.enable) {
@@ -355,32 +375,39 @@ export class BaseQuickToolbar {
         }
     }
    /**
-    * Called internally if any of the property value changed.
-    * @hidden
-    * @deprecated
-    */
+     * Called internally if any of the property value changed.
+     *
+     * @param {RichTextEditorModel} e - specifies the model element
+     * @returns {void}
+     * @hidden
+     * @deprecated
+     */
     protected onPropertyChanged(e: { [key: string]: RichTextEditorModel }): void {
         if (!isNullOrUndefined(e.newProp.inlineMode)) {
-            for (let prop of Object.keys(e.newProp.inlineMode)) {
+            for (const prop of Object.keys(e.newProp.inlineMode)) {
                 switch (prop) {
-                    case 'enable':
-                        if (e.newProp.inlineMode.enable) {
-                            this.parent.on(events.toolbarUpdated, this.updateStatus, this);
-                        } else {
-                            this.parent.off(events.toolbarUpdated, this.updateStatus);
-                        }
-                        break;
+                case 'enable':
+                    if (e.newProp.inlineMode.enable) {
+                        this.parent.on(events.toolbarUpdated, this.updateStatus, this);
+                    } else {
+                        this.parent.off(events.toolbarUpdated, this.updateStatus);
+                    }
+                    break;
                 }
             }
         }
     }
     /**
      * removeEventListener method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public removeEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
         if (this.parent.inlineMode.enable) {

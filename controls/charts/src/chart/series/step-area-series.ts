@@ -1,6 +1,9 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { getPoint, withInRange, ChartLocation } from '../../common/utils/helper';
 import { PathOption } from '@syncfusion/ej2-svg-base';
-import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
 import { LineBase } from './line-base';
 import { AnimationModel } from '../../common/model/base-model';
@@ -14,7 +17,8 @@ export class StepAreaSeries extends LineBase {
 
     /**
      * Render StepArea series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
@@ -22,10 +26,9 @@ export class StepAreaSeries extends LineBase {
         let secondPoint: ChartLocation;
         let start: ChartLocation = null;
         let direction: string = '';
-        let visiblePoints: Points[] = this.enableComplexProperty(series);
-        let pointsLength: number = visiblePoints.length;
-        let origin: number = Math.max(<number>series.yAxis.visibleRange.min, 0);
-        let options: PathOption;
+        const visiblePoints: Points[] = this.enableComplexProperty(series);
+        const pointsLength: number = visiblePoints.length;
+        const origin: number = Math.max(<number>series.yAxis.visibleRange.min, 0);
         let point: Points;
         let xValue: number;
         let lineLength: number;
@@ -81,7 +84,7 @@ export class StepAreaSeries extends LineBase {
             direction = '';
         }
 
-        options = new PathOption(
+        const options: PathOption = new PathOption(
             series.chart.element.id + '_Series_' + series.index, series.interior,
             series.border.width, series.border.color, series.opacity, series.dashArray, direction
         );
@@ -90,19 +93,21 @@ export class StepAreaSeries extends LineBase {
     }
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
     public doAnimation(series: Series): void {
-        let option: AnimationModel = series.animation;
+        const option: AnimationModel = series.animation;
         this.doLinearAnimation(series, option);
     }
     /**
      * To destroy the step Area series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method calling here
          */

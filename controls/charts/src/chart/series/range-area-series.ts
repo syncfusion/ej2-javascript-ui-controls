@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { withInRange, getPoint, ChartLocation } from '../../common/utils/helper';
 import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
-import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
 import { LineBase } from './line-base';
 import { AnimationModel } from '../../common/model/base-model';
@@ -13,7 +15,8 @@ import { Axis } from '../axis/axis';
 export class RangeAreaSeries extends LineBase {
     /**
      * Render RangeArea Series.
-     * @return {void}.
+     *
+     * @returns {void}
      * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, inverted: boolean): void {
@@ -22,7 +25,7 @@ export class RangeAreaSeries extends LineBase {
         let command: string = 'M';
         let closed: boolean = undefined;
 
-        let visiblePoints: Points[] = this.enableComplexProperty(series);
+        const visiblePoints: Points[] = this.enableComplexProperty(series);
 
         for (let i: number = 0, length: number = visiblePoints.length; i < length; i++) {
             point = visiblePoints[i];
@@ -32,17 +35,17 @@ export class RangeAreaSeries extends LineBase {
             let low: number = Math.min(<number>point.low, <number>point.high);
             let high: number = Math.max(<number>point.low, <number>point.high);
             if (yAxis.isInversed) {
-                let temp: number = low;
+                const temp: number = low;
                 low = high;
                 high = temp;
             }
 
-            let lowPoint: ChartLocation = getPoint(point.xValue, low, xAxis, yAxis, inverted);
-            let highPoint: ChartLocation = getPoint(point.xValue, high, xAxis, yAxis, inverted);
+            const lowPoint: ChartLocation = getPoint(point.xValue, low, xAxis, yAxis, inverted);
+            const highPoint: ChartLocation = getPoint(point.xValue, high, xAxis, yAxis, inverted);
             point.symbolLocations.push(highPoint);
             point.symbolLocations.push(lowPoint);
 
-            let rect: Rect = new Rect(
+            const rect: Rect = new Rect(
                 Math.min(lowPoint.x, highPoint.x), Math.min(lowPoint.y, highPoint.y),
                 Math.max(Math.abs(highPoint.x - lowPoint.x), series.marker.width),
                 Math.max(Math.abs(highPoint.y - lowPoint.y), series.marker.width));
@@ -78,10 +81,10 @@ export class RangeAreaSeries extends LineBase {
                 point.symbolLocations = [];
             }
         }
-        let name: string = series.category === 'Indicator' ? series.chart.element.id + '_Indicator_' + series.index + '_' + series.name :
+        const name: string = series.category === 'Indicator' ? series.chart.element.id + '_Indicator_' + series.index + '_' + series.name :
             series.chart.element.id + '_Series_' + series.index;
 
-        let options: PathOption = new PathOption(
+        const options: PathOption = new PathOption(
             name, series.interior,
             series.border.width, series.border.color, series.opacity, series.dashArray, direction);
         this.appendLinePath(options, series, '');
@@ -90,7 +93,8 @@ export class RangeAreaSeries extends LineBase {
 
     /**
      * path for rendering the low points
-     * @return {void}.
+     *
+     * @returns {void}.
      * @private
      */
 
@@ -109,12 +113,13 @@ export class RangeAreaSeries extends LineBase {
 
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
 
     public doAnimation(series: Series): void {
-        let option: AnimationModel = series.animation;
+        const option: AnimationModel = series.animation;
         this.doLinearAnimation(series, option);
     }
 
@@ -130,12 +135,13 @@ export class RangeAreaSeries extends LineBase {
     }
 
     /**
-     * To destroy the line series. 
-     * @return {void}
+     * To destroy the line series.
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroys range area series
          */

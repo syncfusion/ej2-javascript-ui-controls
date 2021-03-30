@@ -2,28 +2,29 @@
  * Util spec
  */
 import * as util from '../../../src/schedule/base/util';
+
 describe('Util module', () => {
     it('Week first date', () => {
-        let weekFirstDate: Date = util.getWeekFirstDate(new Date(2017, 9, 5), 0);
+        const weekFirstDate: Date = util.getWeekFirstDate(new Date(2017, 9, 5), 0);
         expect(weekFirstDate.getTime()).toBe(new Date(2017, 9, 1).getTime());
     });
     it('Week first date when dayOfWeek present', () => {
-        let weekFirstDate: Date = util.getWeekFirstDate(new Date(2017, 9, 5), 3);
+        const weekFirstDate: Date = util.getWeekFirstDate(new Date(2017, 9, 5), 3);
         expect(weekFirstDate.getTime()).toBe(new Date(2017, 9, 4).getTime());
     });
     it('First date of month', () => {
-        let weekFirstDate: Date = util.firstDateOfMonth(new Date(2017, 9, 5));
+        const weekFirstDate: Date = util.firstDateOfMonth(new Date(2017, 9, 5));
         expect(weekFirstDate.getTime()).toBe(new Date(2017, 9, 1).getTime());
     });
     it('Last date of month', () => {
-        let weekFirstDate: Date = util.lastDateOfMonth(new Date(2017, 9, 5));
+        const weekFirstDate: Date = util.lastDateOfMonth(new Date(2017, 9, 5));
         expect(weekFirstDate.getTime()).toBe(new Date(2017, 9, 31).getTime());
     });
     it('Get week number', () => {
         expect(util.getWeekNumber(new Date(2017, 9, 5))).toEqual(40);
     });
     it('Add millisecods to date', () => {
-        let date: Date = new Date(2017, 9, 5, 4, 30);
+        const date: Date = new Date(2017, 9, 5, 4, 30);
         util.setTime(date, 5400000);
         expect(date).toEqual(new Date(2017, 9, 5, 6));
     });

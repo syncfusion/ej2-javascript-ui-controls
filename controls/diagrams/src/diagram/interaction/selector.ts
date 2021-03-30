@@ -5,7 +5,7 @@ import { MarginModel } from '../core/appearance-model';
 import { Margin } from '../core/appearance';
 
 
-/** 
+/**
  * A collection of frequently used commands that will be added around the selector
  * ```html
  * <div id='diagram'></div>
@@ -32,7 +32,7 @@ import { Margin } from '../core/appearance';
  * let handle: UserHandleModel[] = [
  * { name: 'handle', margin: { top: 0, bottom: 0, left: 0, right: 0 }, offset: 0,
  * pathData: 'M 376.892,225.284L 371.279,211.95L 376.892,198.617L 350.225,211.95L 376.892,225.284 Z',
- * side: 'Top', horizontalAlignment: 'Center', verticalAlignment: 'Center', 
+ * side: 'Top', horizontalAlignment: 'Center', verticalAlignment: 'Center',
  * pathColor: 'yellow' }];
  * let diagram: Diagram = new Diagram({
  * ...
@@ -47,13 +47,15 @@ import { Margin } from '../core/appearance';
 export class UserHandle extends ChildProperty<UserHandle> {
     /**
      * Defines the name of user Handle
+     *
      * @default ''
      */
     @Property('')
     public name: string;
 
     /**
-     * Defines the path data of user Handle 
+     * Defines the path data of user Handle
+     *
      * @default ''
      */
     @Property('')
@@ -61,6 +63,7 @@ export class UserHandle extends ChildProperty<UserHandle> {
 
     /**
      * Defines the custom content of the user handle
+     *
      * @default ''
      */
     @Property('')
@@ -68,13 +71,15 @@ export class UserHandle extends ChildProperty<UserHandle> {
 
     /**
      * Defines the image source of the user handle
+     *
      * @default ''
      */
     @Property('')
     public source: string;
 
     /**
-     * Defines the background color of user Handle 
+     * Defines the background color of user Handle
+     *
      * @default 'black'
      */
     @Property('#000000')
@@ -86,55 +91,63 @@ export class UserHandle extends ChildProperty<UserHandle> {
      *  * Bottom - Aligns the user handles at the bottom of an object
      *  * Left - Aligns the user handles at the left of an object
      *  * Right - Aligns the user handles at the right of an object
+     *
      * @default 'Top'
      */
     @Property('Top')
     public side: Side;
 
     /**
-     * Defines the borderColor of user Handle 
+     * Defines the borderColor of user Handle
+     *
      * @default ''
      */
     @Property('')
     public borderColor: string;
 
     /**
-     * Defines the borderWidth of user Handle 
+     * Defines the borderWidth of user Handle
+     *
      * @default 0.5
      */
     @Property(0.5)
     public borderWidth: number;
 
     /**
-     * Defines the size of user Handle 
+     * Defines the size of user Handle
+     *
      * @default 25
      */
     @Property(25)
     public size: number;
 
     /**
-     * Defines the path color of user Handle 
+     * Defines the path color of user Handle
+     *
      * @default 'white'
      */
     @Property('white')
     public pathColor: string;
 
     /**
-     * Defines the displacement of user Handle 
+     * Defines the displacement of user Handle
+     *
      * @default 10
      */
     @Property(10)
     public displacement: number;
 
     /**
-     * Defines the visible of user Handle 
+     * Defines the visible of user Handle
+     *
      * @default true
      */
     @Property(true)
     public visible: boolean;
 
     /**
-     * Defines the offset of user Handle 
+     * Defines the offset of user Handle
+     *
      * @default 0
      * @isBlazorNullableType true
      */
@@ -143,6 +156,7 @@ export class UserHandle extends ChildProperty<UserHandle> {
 
     /**
      * Defines the margin of the user handle
+     *
      * @default new Margin(0,0,0,0)
      */
     @Complex<MarginModel>({}, Margin)
@@ -155,6 +169,7 @@ export class UserHandle extends ChildProperty<UserHandle> {
      * * Right - Aligns the diagram element at the right of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
+     *
      * @default 'Center'
      */
     @Property('Center')
@@ -167,28 +182,35 @@ export class UserHandle extends ChildProperty<UserHandle> {
      * * Bottom - Aligns the diagram element at the bottom of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
+     *
      * @default 'Center'
      */
     @Property('Center')
     public verticalAlignment: VerticalAlignment;
 
     /**
-     * Defines the visible of user Handle 
+     * Defines the visible of user Handle
+     *
      * @default false
      */
     @Property(false)
     public disableNodes: boolean;
 
     /**
-     * Defines the visible of user Handle 
+     * Defines the visible of user Handle
+     *
      * @default false
      */
     @Property(false)
     public disableConnectors: boolean;
 
+
     /**
-     * @private
+     *
      * Returns the name of class UserHandle
+     *
+     * @returns {string}  Returns the name of class UserHandle
+     * @private
      */
     public getClassName(): string {
         return 'UserHandle';
@@ -196,6 +218,7 @@ export class UserHandle extends ChildProperty<UserHandle> {
 
     /**
      * defines geometry of the html element
+     *
      * @private
      * @default ''
      */

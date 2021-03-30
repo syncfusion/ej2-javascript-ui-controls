@@ -7,26 +7,30 @@ export interface SplitterSettingsModel {
 
     /**
      * Defines splitter position at initial load, it accepts values in pixels.
+     *
      * @default null
      */
     position?: string;
 
     /**
      * Defines splitter position with respect to column index value.
-     * If `columnIndex` set as `2` then splitter bar placed at third column of grid. 
-     * @default -1 
+     * If `columnIndex` set as `2` then splitter bar placed at third column of grid.
+     *
+     * @default -1
      */
     columnIndex?: number;
 
     /**
      * Defines splitter bar size
-     * @default 4 
+     *
+     * @default 4
      */
     separatorSize?: number;
 
     /**
      * Defines minimum width of Grid part, splitter can't be moved less than this value on grid side.
-     * @default null 
+     *
+     * @default null
      */
     minimum?: string;
 
@@ -35,7 +39,8 @@ export interface SplitterSettingsModel {
      * * `Default` - Shows grid side and side of Gantt.
      * * `Grid` - Shows grid side alone in Gantt.
      * * `Chart` - Shows chart side alone in Gantt.
-     * @default Default 
+     *
+     * @default Default
      */
     view?: SplitterView;
 

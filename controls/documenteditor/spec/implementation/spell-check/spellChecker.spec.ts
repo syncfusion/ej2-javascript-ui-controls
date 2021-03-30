@@ -287,7 +287,7 @@ console.log('Spell check for CheckArrayHasSameElement API');
         editor.spellChecker.handleSplitWordSpellCheck(jsonData, 'Helo', element, true, 11, 0, 0);
         editor.spellChecker.handleSplitWordSpellCheck(jsonData, 'wrld', element, true, 11, 0, 0);
         expect((lineInfo.line.children[0] as TextElementBox).errorCollection.length).toBe(2);
-        expect(editor.spellChecker.CheckArrayHasSameElement(element.errorCollection, element.errorCollection[0])).toBe(true);
+        expect(editor.spellChecker.checkArrayHasSameElement(element.errorCollection, element.errorCollection[0])).toBe(true);
     });
     it('Spell check for ignore once case', () => {
 console.log('Spell check for ignore once case');
@@ -673,7 +673,7 @@ console.log('Remove underline API validation');
         expect(editor.spellChecker.removeUnderline).toBe(false)
     });
     //     let markIndex: number = element.line.getOffset(element, 0);
-    //     // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line
     //     editor.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, results, matchResults.elementInfo, 0,element , false, null, markIndex);  
     // });
 });

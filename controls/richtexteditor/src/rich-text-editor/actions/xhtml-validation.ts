@@ -8,7 +8,7 @@ import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
 export class XhtmlValidation {
     private parent: IRichTextEditor;
     private currentElement: HTMLElement;
-    constructor(parent?: IRichTextEditor) {
+    public constructor(parent?: IRichTextEditor) {
         this.parent = parent;
         this.addEventListener();
     }
@@ -41,16 +41,18 @@ export class XhtmlValidation {
     }
 
     /**
+     * @param {string} currentValue - specifies the string value.
+     * @returns {void}
      * @deprecated
      */
     public selfEncloseValidation(currentValue: string): string {
         currentValue = currentValue.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/&nbsp;/gi, ' ').replace(/ /g, ' ');
         let valueTemp: RegExpExecArray;
-        let valueDupe: string[] = [];
+        const valueDupe: string[] = [];
         let valueOriginal: string[] = [];
-        let imgRegexp: RegExp[] = [ /<img(.*?)>/gi, /<area(.*?)>/gi, /<base(.*?)>/gi, /<col (.*?)>/gi, /<embed(.*?)>/gi,
-        /<input(.*?)>/gi, /<link(.*?)>/gi, /<meta(.*?)>/gi, /<param(.*?)>/gi, /<source(.*?)>/gi,
-        /<track(.*?)>/gi, /<wbr(.*?)>/gi ];
+        const imgRegexp: RegExp[] = [ /<img(.*?)>/gi, /<area(.*?)>/gi, /<base(.*?)>/gi, /<col (.*?)>/gi, /<embed(.*?)>/gi,
+            /<input(.*?)>/gi, /<link(.*?)>/gi, /<meta(.*?)>/gi, /<param(.*?)>/gi, /<source(.*?)>/gi,
+            /<track(.*?)>/gi, /<wbr(.*?)>/gi ];
         for (let j: number = 0; j < imgRegexp.length; j++) {
             valueTemp = imgRegexp[j].exec(currentValue);
             while ((valueTemp) !== null) {
@@ -74,18 +76,18 @@ export class XhtmlValidation {
     private AddRootElement(): void {
         if ((this.currentElement.childNodes.length === 1 && this.currentElement.firstChild.nodeName !== 'DIV') ||
             this.currentElement.childNodes.length > 1) {
-            let parentEle: HTMLElement = this.parent.createElement('div');
+            const parentEle: HTMLElement = this.parent.createElement('div');
 
             while (this.currentElement.childNodes.length > 0) {
                 parentEle.appendChild(this.currentElement.childNodes[0]);
             }
             this.currentElement.appendChild(parentEle);
         }
-    };
+    }
 
     private clean(node: HTMLElement): string {
         for (let n: number = 0; n < node.childNodes.length; n++) {
-            let child: HTMLElement = node.childNodes[n] as HTMLElement;
+            const child: HTMLElement = node.childNodes[n] as HTMLElement;
             if (child.nodeType === 8 || child.nodeName === 'V:IMAGE') {
                 node.removeChild(child);
                 n--;
@@ -97,58 +99,58 @@ export class XhtmlValidation {
     }
 
     private ImageTags(): void {
-        let imgNodes: NodeListOf<HTMLElement> = this.currentElement.querySelectorAll('IMG');
+        const imgNodes: NodeListOf<HTMLElement> = this.currentElement.querySelectorAll('IMG');
         for (let i: number = imgNodes.length - 1; i >= 0; i--) {
             if (!imgNodes[i].hasAttribute('alt')) {
-                let img: Element = imgNodes[i];
+                const img: Element = imgNodes[i];
                 img.setAttribute('alt', '');
             }
         }
-    };
+    }
 
     private removeTags(): void {
-        let removeAttribute: string[][] = [['br', 'ul'], ['br', 'ol'], ['table', 'span'], ['div', 'span'], ['p', 'span']];
+        const removeAttribute: string[][] = [['br', 'ul'], ['br', 'ol'], ['table', 'span'], ['div', 'span'], ['p', 'span']];
         for (let i: number = 0; i < removeAttribute.length; i++) {
             this.RemoveElementNode(removeAttribute[i][0], removeAttribute[i][1]);
         }
-    };
+    }
 
     private RemoveElementNode(rmvNode: string, parentNode: string): void {
-        let parentArray: NodeListOf<HTMLElement> = this.currentElement.querySelectorAll(parentNode);
+        const parentArray: NodeListOf<HTMLElement> = this.currentElement.querySelectorAll(parentNode);
         for (let i: number = 0; i < parentArray.length; i++) {
-            let rmvArray: NodeListOf<HTMLElement> = parentArray[i].querySelectorAll(rmvNode);
+            const rmvArray: NodeListOf<HTMLElement> = parentArray[i].querySelectorAll(rmvNode);
             for (let j: number = rmvArray.length; j > 0; j--) {
                 detach(rmvArray[j - 1]);
             }
         }
-    };
+    }
     private RemoveUnsupported(): void {
-        let underlineEle: NodeListOf<HTMLElement> = <NodeListOf<HTMLElement>>this.currentElement.querySelectorAll('u');
+        const underlineEle: NodeListOf<HTMLElement> = <NodeListOf<HTMLElement>>this.currentElement.querySelectorAll('u');
         for (let i: number = underlineEle.length - 1; i >= 0; i--) {
-            let spanEle: HTMLElement = this.parent.createElement('span');
+            const spanEle: HTMLElement = this.parent.createElement('span');
             spanEle.style.textDecoration = 'underline';
             spanEle.innerHTML = underlineEle[i].innerHTML;
             underlineEle[i].parentNode.insertBefore(spanEle, underlineEle[i]);
             detach(underlineEle[i]);
         }
-        let strongEle: NodeListOf<HTMLElement> = this.currentElement.querySelectorAll('strong');
+        const strongEle: NodeListOf<HTMLElement> = this.currentElement.querySelectorAll('strong');
         for (let i: number = strongEle.length - 1; i >= 0; i--) {
-            let boldEle: HTMLElement = this.parent.createElement('b');
+            const boldEle: HTMLElement = this.parent.createElement('b');
             boldEle.innerHTML = strongEle[i].innerHTML;
             strongEle[i].parentNode.insertBefore(boldEle, strongEle[i]);
             detach(strongEle[i]);
         }
-        let attrArray: string[] = ['language', 'role', 'target', 'contenteditable', 'cellspacing',
+        const attrArray: string[] = ['language', 'role', 'target', 'contenteditable', 'cellspacing',
             'cellpadding', 'border', 'valign', 'colspan'];
         for (let i: number = 0; i <= attrArray.length; i++) {
             this.RemoveAttributeByName(attrArray[i]);
         }
-    };
-     private RemoveAttributeByName(attrName: string): void {
+    }
+    private RemoveAttributeByName(attrName: string): void {
         if (this.currentElement.firstChild !== null) {
             if (this.currentElement.firstChild.nodeType !== 3) {
                 for (let i: number = 0; i < this.currentElement.childNodes.length; i++) {
-                    let ele: Node = this.currentElement.childNodes[i];
+                    const ele: Node = this.currentElement.childNodes[i];
                     if (ele.nodeType !== 3 && ele.nodeName !== 'TABLE' && ele.nodeName !== 'TBODY' && ele.nodeName !== 'THEAD' &&
                         ele.nodeName !== 'TH' && ele.nodeName !== 'TR' && ele.nodeName !== 'TD') {
                         if ((ele as HTMLElement).hasAttribute(attrName)) {
@@ -156,7 +158,7 @@ export class XhtmlValidation {
                         }
                         if (ele.hasChildNodes()) {
                             for (let j: number = 0; j < ele.childNodes.length; j++) {
-                                let childEle: Node = ele.childNodes[j];
+                                const childEle: Node = ele.childNodes[j];
                                 if (childEle.nodeType !== 3 && childEle.nodeName !== 'TABLE' && childEle.nodeName !== 'TBODY' &&
                                     childEle.nodeName !== 'THEAD' && childEle.nodeName !== 'TH' && childEle.nodeName !== 'TR' &&
                                     childEle.nodeName !== 'TD' && (childEle as HTMLElement).hasAttribute(attrName)) {
@@ -179,5 +181,5 @@ export class XhtmlValidation {
                 }
             }
         }
-    };
+    }
 }

@@ -1,3 +1,9 @@
+/* eslint-disable no-case-declarations */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { TextStyleModel } from './tooltip-model';
 import { SvgRenderer } from '../svg-render/index';
 import { createElement, remove, merge } from '@syncfusion/ej2-base';
@@ -5,14 +11,14 @@ import { createElement, remove, merge } from '@syncfusion/ej2-base';
 
 /**
  * Function to measure the height and width of the text.
- * @param  {string} text
- * @param  {FontModel} font
- * @param  {string} id
- * @returns no
+ *
  * @private
+ * @param {string} text To get a text
+ * @param {FontModel} font To get a font of the text
+ * @returns {Size} measureText
  */
 export function measureText(text: string, font: TextStyleModel): Size {
-    let breakText: string = text || ''; // For avoid NuLL value
+    const breakText: string = text || ''; // For avoid NuLL value
     let htmlObject: HTMLElement = document.getElementById('chartmeasuretext');
 
     if (htmlObject === null) {
@@ -20,7 +26,7 @@ export function measureText(text: string, font: TextStyleModel): Size {
         document.body.appendChild(htmlObject);
     }
     if (typeof (text) === 'string' && (text.indexOf('<') > -1 || text.indexOf('>') > -1)) {
-        let textArray: string[] = text.split(' ');
+        const textArray: string[] = text.split(' ');
         for (let i: number = 0; i < textArray.length; i++) {
             if (textArray[i].indexOf('<br/>') === -1) {
                 textArray[i] = textArray[i].replace(/[<>]/g, '&');
@@ -49,10 +55,10 @@ export function findDirection(
     top: boolean, bottom: boolean, left: boolean, tipX: number, tipY: number, tipRadius?: number
 ): string {
     let direction: string = '';
-    let startX: number = rect.x;
-    let startY: number = rect.y;
-    let width: number = rect.x + rect.width;
-    let height: number = rect.y + rect.height;
+    const startX: number = rect.x;
+    const startY: number = rect.y;
+    const width: number = rect.x + rect.width;
+    const height: number = rect.y + rect.height;
     tipRadius = tipRadius ? tipRadius : 0;
 
     if (top) {
@@ -197,7 +203,7 @@ export function getElement(id: string): Element {
 }
 /** @private */
 export function removeElement(id: string): void {
-    let element: Element = getElement(id);
+    const element: Element = getElement(id);
     if (element) {
         remove(element);
     }
@@ -209,10 +215,9 @@ export interface IShapes {
 }
 /** @private */
 export function drawSymbol(location: TooltipLocation, shape: string, size: Size, url: string, options: PathOption, label: string): Element {
-    let functionName: string = 'Path';
-    let renderer: SvgRenderer = new SvgRenderer('');
-    let temp: IShapes = calculateShapes(location, size, shape, options, url);
-    let htmlObject: Element = renderer['draw' + temp.functionName](temp.renderOption);
+    const renderer: SvgRenderer = new SvgRenderer('');
+    const temp: IShapes = calculateShapes(location, size, shape, options, url);
+    const htmlObject: Element = renderer['draw' + temp.functionName](temp.renderOption);
     htmlObject.setAttribute('aria-label', label);
     return htmlObject;
 }
@@ -220,82 +225,82 @@ export function drawSymbol(location: TooltipLocation, shape: string, size: Size,
 export function calculateShapes(location: TooltipLocation, size: Size, shape: string, options: PathOption, url: string): IShapes {
     let path: string;
     let functionName: string = 'Path';
-    let width: number = size.width;
-    let height: number = size.height;
-    let locX: number = location.x;
-    let locY: number = location.y;
-    let x: number = location.x + (-width / 2);
-    let y: number = location.y + (-height / 2);
+    const width: number = size.width;
+    const height: number = size.height;
+    const locX: number = location.x;
+    const locY: number = location.y;
+    const x: number = location.x + (-width / 2);
+    const y: number = location.y + (-height / 2);
     switch (shape) {
-        case 'Circle':
-        case 'Bubble':
-            functionName = 'Ellipse';
-            merge(options, { 'rx': width / 2, 'ry': height / 2, 'cx': locX, 'cy': locY });
-            break;
-        case 'Cross':
-            path = 'M' + ' ' + x + ' ' + locY + ' ' + 'L' + ' ' + (locX + (width / 2)) + ' ' + locY + ' ' +
-                'M' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + locX + ' ' +
-                (locY + (-height / 2));
-            merge(options, { 'd': path });
-            break;
-        case 'HorizontalLine':
-            path = 'M' + ' ' + x + ' ' + locY + ' ' + 'L' + ' ' + (locX + (width / 2)) + ' ' + locY;
-            merge(options, { 'd': path });
-            break;
-        case 'VerticalLine':
-            path = 'M' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + locX + ' ' + (locY + (-height / 2));
-            merge(options, { 'd': path });
-            break;
-        case 'Diamond':
-            path = 'M' + ' ' + x + ' ' + locY + ' ' +
-                'L' + ' ' + locX + ' ' + (locY + (-height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + locY + ' ' +
-                'L' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + locY + ' z';
-            merge(options, { 'd': path });
-            break;
-        case 'Rectangle':
-            path = 'M' + ' ' + x + ' ' + (locY + (-height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (-height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (locY + (-height / 2)) + ' z';
-            merge(options, { 'd': path });
-            break;
-        case 'Triangle':
-            path = 'M' + ' ' + x + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + locX + ' ' + (locY + (-height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (locY + (height / 2)) + ' z';
-            merge(options, { 'd': path });
-            break;
-        case 'InvertedTriangle':
-            path = 'M' + ' ' + (locX + (width / 2)) + ' ' + (locY - (height / 2)) + ' ' +
-                'L' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + (locX - (width / 2)) + ' ' + (locY - (height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY - (height / 2)) + ' z';
-            merge(options, { 'd': path });
-            break;
-        case 'Pentagon':
-            let eq: number = 72;
-            let xValue: number;
-            let yValue: number;
-            for (let i: number = 0; i <= 5; i++) {
-                xValue = (width / 2) * Math.cos((Math.PI / 180) * (i * eq));
-                yValue = (height / 2) * Math.sin((Math.PI / 180) * (i * eq));
-                if (i === 0) {
-                    path = 'M' + ' ' + (locX + xValue) + ' ' + (locY + yValue) + ' ';
-                } else {
-                    path = path.concat('L' + ' ' + (locX + xValue) + ' ' + (locY + yValue) + ' ');
-                }
+    case 'Circle':
+    case 'Bubble':
+        functionName = 'Ellipse';
+        merge(options, { 'rx': width / 2, 'ry': height / 2, 'cx': locX, 'cy': locY });
+        break;
+    case 'Cross':
+        path = 'M' + ' ' + x + ' ' + locY + ' ' + 'L' + ' ' + (locX + (width / 2)) + ' ' + locY + ' ' +
+            'M' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + locX + ' ' +
+            (locY + (-height / 2));
+        merge(options, { 'd': path });
+        break;
+    case 'HorizontalLine':
+        path = 'M' + ' ' + x + ' ' + locY + ' ' + 'L' + ' ' + (locX + (width / 2)) + ' ' + locY;
+        merge(options, { 'd': path });
+        break;
+    case 'VerticalLine':
+        path = 'M' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + locX + ' ' + (locY + (-height / 2));
+        merge(options, { 'd': path });
+        break;
+    case 'Diamond':
+        path = 'M' + ' ' + x + ' ' + locY + ' ' +
+            'L' + ' ' + locX + ' ' + (locY + (-height / 2)) + ' ' +
+            'L' + ' ' + (locX + (width / 2)) + ' ' + locY + ' ' +
+            'L' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' +
+            'L' + ' ' + x + ' ' + locY + ' z';
+        merge(options, { 'd': path });
+        break;
+    case 'Rectangle':
+        path = 'M' + ' ' + x + ' ' + (locY + (-height / 2)) + ' ' +
+            'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (-height / 2)) + ' ' +
+            'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' +
+            'L' + ' ' + x + ' ' + (locY + (height / 2)) + ' ' +
+            'L' + ' ' + x + ' ' + (locY + (-height / 2)) + ' z';
+        merge(options, { 'd': path });
+        break;
+    case 'Triangle':
+        path = 'M' + ' ' + x + ' ' + (locY + (height / 2)) + ' ' +
+            'L' + ' ' + locX + ' ' + (locY + (-height / 2)) + ' ' +
+            'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' +
+            'L' + ' ' + x + ' ' + (locY + (height / 2)) + ' z';
+        merge(options, { 'd': path });
+        break;
+    case 'InvertedTriangle':
+        path = 'M' + ' ' + (locX + (width / 2)) + ' ' + (locY - (height / 2)) + ' ' +
+            'L' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' +
+            'L' + ' ' + (locX - (width / 2)) + ' ' + (locY - (height / 2)) + ' ' +
+            'L' + ' ' + (locX + (width / 2)) + ' ' + (locY - (height / 2)) + ' z';
+        merge(options, { 'd': path });
+        break;
+    case 'Pentagon':
+        const eq: number = 72;
+        let xValue: number;
+        let yValue: number;
+        for (let i: number = 0; i <= 5; i++) {
+            xValue = (width / 2) * Math.cos((Math.PI / 180) * (i * eq));
+            yValue = (height / 2) * Math.sin((Math.PI / 180) * (i * eq));
+            if (i === 0) {
+                path = 'M' + ' ' + (locX + xValue) + ' ' + (locY + yValue) + ' ';
+            } else {
+                path = path.concat('L' + ' ' + (locX + xValue) + ' ' + (locY + yValue) + ' ');
             }
-            path = path.concat('Z');
-            merge(options, { 'd': path });
-            break;
-        case 'Image':
-            functionName = 'Image';
-            merge(options, { 'href': url, 'height': height, 'width': width, x: x, y: y });
-            break;
+        }
+        path = path.concat('Z');
+        merge(options, { 'd': path });
+        break;
+    case 'Image':
+        functionName = 'Image';
+        merge(options, { 'href': url, 'height': height, 'width': width, x: x, y: y });
+        break;
     }
     return { renderOption: options, functionName: functionName };
 }
@@ -325,11 +330,7 @@ export function textElement(
     parent: HTMLElement | Element
 ): Element {
     let renderOptions: Object = {};
-    let htmlObject: HTMLElement;
-    let tspanElement: Element;
-    let renderer: SvgRenderer = new SvgRenderer('');
-    let text: string;
-    let height: number;
+    const renderer: SvgRenderer = new SvgRenderer('');
     renderOptions = {
         'id': options.id,
         'x': options.x,
@@ -344,8 +345,8 @@ export function textElement(
         'opacity': font.opacity,
         'dominant-baseline': options.baseLine
     };
-    text = typeof options.text === 'string' ? options.text : options.text[0];
-    htmlObject = renderer.createText(renderOptions, text) as HTMLElement;
+    const text: string = typeof options.text === 'string' ? options.text : options.text[0];
+    const htmlObject: HTMLElement = renderer.createText(renderOptions, text) as HTMLElement;
     htmlObject.style.fontFamily = font.fontFamily;
     htmlObject.style.fontStyle = font.fontStyle;
     htmlObject.style.fontSize = font.size;

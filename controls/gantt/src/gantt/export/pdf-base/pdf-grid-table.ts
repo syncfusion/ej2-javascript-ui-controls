@@ -10,16 +10,18 @@ import { SizeF, PdfBrush, PdfPen, PdfFontStyle, PdfFont, PdfGraphics } from '@sy
 import { PdfStringFormat, PdfStringLayouter, PdfStringLayoutResult } from '@syncfusion/ej2-pdf-export';
 
 /**
- * 
+ *
  */
 export class PdfTreeGridCell {
     /**
      * Gets or sets the parent `row`.
+     *
      * @private
      */
     public row: PdfTreeGridRow;
     /**
      * Gets or sets the cell `style`.
+     *
      * @private
      */
     public style: PdfGanttCellStyle;
@@ -27,14 +29,17 @@ export class PdfTreeGridCell {
     private cellHeight: number = 0;
     /**
      * Gets or sets a value that indicates the total number of rows that cell `spans` within a PdfGrid.
+     *
      * @private
      */
     public rowSpan: number;
     /**
      * Gets or sets a value that indicates the total number of columns that cell `spans` within a PdfGrid.
+     *
      * @private
      */
     public columnSpan: number;
+    // eslint-disable-next-line
     public value: Object;
     /** @private */
     public remainingString: string;
@@ -62,6 +67,8 @@ export class PdfTreeGridCell {
     }
     /**
      * Gets the `height` of the PdfTreeGrid cell.[Read-Only].
+     *
+     * @returns {number} .
      * @private
      */
     public get height(): number {
@@ -75,6 +82,8 @@ export class PdfTreeGridCell {
     }
     /**
      * Gets the `width` of the PdfTreeGrid cell.[Read-Only].
+     *
+     * @returns {number} .
      * @private
      */
     public get width(): number {
@@ -89,12 +98,12 @@ export class PdfTreeGridCell {
 
     private measureWidth(): number {
         let width: number = 0;
-        let layouter: PdfStringLayouter = new PdfStringLayouter();
+        const layouter: PdfStringLayouter = new PdfStringLayouter();
         if (typeof this.value === 'string') {
-            /* tslint:disable-next-line */
-            let font: PdfStandardFont = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, this.style.fontStyle);
-            /* tslint:disable-next-line */
-            let slr: PdfStringLayoutResult = layouter.layout((this.value as string), font, this.style.format, new SizeF(Number.MAX_VALUE, Number.MAX_VALUE), false, new SizeF(0, 0));
+            /* eslint-disable-next-line */
+            const font: PdfStandardFont = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, this.style.fontStyle);
+            /* eslint-disable-next-line */
+            const slr: PdfStringLayoutResult = layouter.layout((this.value as string), font, this.style.format, new SizeF(Number.MAX_VALUE, Number.MAX_VALUE), false, new SizeF(0, 0));
             width += slr.actualSize.width;
             width += (this.style.borders.left.width + this.style.borders.right.width) * 2;
         }
@@ -108,23 +117,26 @@ export class PdfTreeGridCell {
         return width;
     }
     /**
+     * @returns {number} .
      * @private
      */
-    /* tslint:disable */
+    /* eslint-disable */
     public measureHeight(): number {
-        let rowHeight: number = this.row.treegrid.rowHeight;
-        let height: number = 0;
+        const rowHeight: number = this.row.treegrid.rowHeight;
+        let height = 0;
         let width: number = this.calculateWidth();
         width -= this.row.treegrid.style.cellPadding.right + this.row.treegrid.style.cellPadding.left;
         width -= this.style.borders.left.width + this.style.borders.right.width;
-        let layouter: PdfStringLayouter = new PdfStringLayouter();
+        const layouter: PdfStringLayouter = new PdfStringLayouter();
         if (typeof this.value === 'string' || typeof this.remainingString === 'string') {
             let currentValue: string = this.value as string;
             if (!this.finishedDrawingCell) {
                 currentValue = !(isNullOrUndefined(this.remainingString) || this.remainingString === '') ? this.remainingString : (this.value as string);
             }
-            let font: PdfStandardFont = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, this.style.fontStyle);
-            let slr: PdfStringLayoutResult = layouter.layout(currentValue, font, this.style.format, new SizeF(width, 0), false, new SizeF(0, 0));
+            /* eslint-disable */
+            const font: PdfStandardFont = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, this.style.fontStyle);
+            /* eslint-disable */
+            const slr: PdfStringLayoutResult = layouter.layout(currentValue, font, this.style.format, new SizeF(width, 0), false, new SizeF(0, 0));
             height += slr.actualSize.height;
             height += (this.style.borders.top.width + this.style.borders.bottom.width) * 2;
         }
@@ -132,11 +144,11 @@ export class PdfTreeGridCell {
         height += this.row.treegrid.style.cellSpacing;
         return height > rowHeight ? height : rowHeight;
     }
-    /* tslint:enable */
+    /* eslint-enable */
 
     private calculateWidth(): number {
-        let cellIndex: number = this.row.cells.indexOf(this);
-        let columnSpan: number = this.columnSpan;
+        const cellIndex: number = this.row.cells.indexOf(this);
+        const columnSpan: number = this.columnSpan;
         let width: number = 0;
         for (let i: number = 0; i < columnSpan; i++) {
             width += this.row.treegrid.columns.getColumn(cellIndex + i).width;
@@ -148,13 +160,19 @@ export class PdfTreeGridCell {
     }
     /**
      * `Draws` the specified graphics.
+     *
+     * @param {PdfGraphics} graphics .
+     * @param {RectangleF} bounds .
+     * @param {boolean} cancelSubsequentSpans .
+     * @param {number} leftAdjustment .
+     * @returns {PdfStringLayoutResult} .
      * @private
      */
     public draw(graphics: PdfGraphics, bounds: RectangleF, cancelSubsequentSpans: boolean, leftAdjustment: number): PdfStringLayoutResult {
-        let result: PdfStringLayoutResult = null; let padding: number = 10;
+        let result: PdfStringLayoutResult = null; const padding: number = 10;
         if (cancelSubsequentSpans) {
             // Cancel all subsequent cell spans, if no space exists.
-            let currentCellIndex: number = this.row.cells.indexOf(this);
+            const currentCellIndex: number = this.row.cells.indexOf(this);
             for (let i: number = currentCellIndex + 1; i <= currentCellIndex + this.columnSpan; i++) {
                 this.row.cells.getCell(i).isCellMergeContinue = false;
                 this.row.cells.getCell(i).isRowMergeContinue = false;
@@ -174,8 +192,8 @@ export class PdfTreeGridCell {
         }
         //bounds = this.adjustContentLayoutArea(bounds);
         this.drawCellBackground(graphics, bounds);
-        let textPen: PdfPen = null;
-        let textBrush: PdfBrush = new PdfSolidBrush(this.style.fontColor);
+        const textPen: PdfPen = null;
+        const textBrush: PdfBrush = new PdfSolidBrush(this.style.fontColor);
         let font: PdfFont = null;
         if (this.row.isParentRow) {
             font = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, PdfFontStyle.Bold);
@@ -184,7 +202,9 @@ export class PdfTreeGridCell {
         }
         let innerLayoutArea: RectangleF = bounds;
         if (!this.isHeaderCell) {
+            /* eslint-disable-next-line */
             innerLayoutArea.x = innerLayoutArea.x;
+            /* eslint-disable-next-line */
             innerLayoutArea.width = innerLayoutArea.width;
         }
         if (innerLayoutArea.height >= graphics.clientSize.height) {
@@ -202,10 +222,10 @@ export class PdfTreeGridCell {
             let temp: string = null;
             if (this.finishedDrawingCell) {
                 temp = (this.remainingString === '') ? this.remainingString : this.value as string;
-                /* tslint:disable-next-line */
+                /* eslint-disable-next-line */
                 graphics.drawString(temp, font, textPen, textBrush, (innerLayoutArea.x + leftAdjustment), innerLayoutArea.y, (innerLayoutArea.width - leftAdjustment - padding), (innerLayoutArea.height - padding), this.style.format);
             } else {
-                /* tslint:disable-next-line */
+                /* eslint-disable-next-line */
                 graphics.drawString(this.remainingString, font, textPen, textBrush, (innerLayoutArea.x + leftAdjustment), innerLayoutArea.y, this.style.format);
             }
             result = graphics.stringLayoutResult;
@@ -218,10 +238,14 @@ export class PdfTreeGridCell {
 
     /**
      * Draw the `cell background`.
+     *
+     * @param {PdfGraphics} graphics .
+     * @param {RectangleF} bounds .
+     * @returns {void} .
      * @private
      */
     public drawCellBackground(graphics: PdfGraphics, bounds: RectangleF): void {
-        let backgroundBrush: PdfBrush = new PdfSolidBrush(this.style.backgroundColor);
+        const backgroundBrush: PdfBrush = new PdfSolidBrush(this.style.backgroundColor);
         if (backgroundBrush != null) {
             graphics.save();
             graphics.drawRectangle(backgroundBrush, bounds.x, bounds.y, bounds.width, bounds.height);
@@ -235,14 +259,17 @@ export class PdfTreeGridCell {
 
     /**
      * `Adjusts the text layout area`.
+     *
+     * @param {RectangleF} bounds .
+     * @returns {RectangleF} .
      * @private
      */
     private adjustContentLayoutArea(bounds: RectangleF): RectangleF {
         //Add Padding value to its Cell Bounds
-        let returnBounds: RectangleF = new RectangleF(new PointF(bounds.x, bounds.y), new SizeF(bounds.width, bounds.height));
-        let cellPadding: PdfPaddings = this.style.padding;
+        const returnBounds: RectangleF = new RectangleF(new PointF(bounds.x, bounds.y), new SizeF(bounds.width, bounds.height));
+        const cellPadding: PdfPaddings = this.style.padding;
         if (this.value instanceof PdfTreeGrid) {
-            let size: SizeF = (this.value as PdfTreeGrid).size;
+            const size: SizeF = (this.value as PdfTreeGrid).size;
             if (this.style.format.alignment === PdfTextAlignment.Center) {
                 returnBounds.x += cellPadding.left + (returnBounds.width - size.width) / 2;
                 returnBounds.y += cellPadding.top + (returnBounds.height - size.height) / 2;
@@ -261,6 +288,9 @@ export class PdfTreeGridCell {
     }
 
     /**
+     * @param {PdfGraphics} graphics .
+     * @param {RectangleF} bounds .
+     * @returns {void} .
      * @private
      */
     private drawCellBorder(graphics: PdfGraphics, bounds: RectangleF): void {
@@ -321,6 +351,7 @@ export class PdfTreeGridCell {
 /**
  * `PdfTreeGridCellCollection` class provides access to an ordered,
  * strongly typed collection of 'PdfTreeGridCell' objects.
+ *
  * @private
  */
 export class PdfTreeGridCellCollection {
@@ -336,6 +367,8 @@ export class PdfTreeGridCellCollection {
     //Constructor
     /**
      * Initializes a new instance of the `PdfGridCellCollection` class with the row.
+     *
+     * @param { PdfTreeGridRow} row .
      * @private
      */
     public constructor(row: PdfTreeGridRow) {
@@ -345,6 +378,9 @@ export class PdfTreeGridCellCollection {
     //Properties
     /**
      * Gets the current `cell`.
+     *
+     * @param {number} index .
+     * @returns {PdfTreeGridCell} .
      * @private
      */
     public getCell(index: number): PdfTreeGridCell {
@@ -355,19 +391,24 @@ export class PdfTreeGridCellCollection {
     }
     /**
      * Gets the cells `count`.[Read-Only].
+     *
+     * @returns {number} .
      * @private
      */
     public get count(): number {
         return this.cells.length;
     }
-    //Implementation    
+    //Implementation
     /**
      * `Adds` this instance.
+     *
+     * @param {PdfTreeGridCell} cell .
+     * @returns {PdfTreeGridCell | void} .
      * @private
      */
     public add(cell?: PdfTreeGridCell): PdfTreeGridCell | void {
         if (typeof cell === 'undefined') {
-            let tempcell: PdfTreeGridCell = new PdfTreeGridCell();
+            const tempcell: PdfTreeGridCell = new PdfTreeGridCell();
             this.add(tempcell);
             return cell;
         } else {
@@ -377,15 +418,17 @@ export class PdfTreeGridCellCollection {
     }
     /**
      * Returns the `index of` a particular cell in the collection.
+     *
+     * @param {PdfTreeGridCell} cell .
+     * @returns {number} .
      * @private
      */
     public indexOf(cell: PdfTreeGridCell): number {
         return this.cells.indexOf(cell);
     }
 }
-
 /**
- * 
+ *
  */
 export class PdfTreeGridRow {
     private treegridCells: PdfTreeGridCellCollection;
@@ -394,11 +437,12 @@ export class PdfTreeGridRow {
     private treegridRowBreakHeight: number;
     private rowHeight: number = 0;
     private rowWidth: number = 0;
-    /* tslint:disable-next-line */
-    private _isParentRow: boolean = false;
+    /* eslint-disable-next-line */
+    private _isParentRow = false;
     private intendLevel: number = 0;
     /**
      * The `Maximum span` of the row.
+     *
      * @public
      */
     public maximumRowSpan: number;
@@ -431,6 +475,8 @@ export class PdfTreeGridRow {
 
     /**
      * `Height` of the row yet to be drawn after split.
+     *
+     * @returns {number} .
      * @private
      */
     public get rowBreakHeight(): number {
@@ -444,6 +490,8 @@ export class PdfTreeGridRow {
     }
     /**
      * `over flow index` of the row.
+     *
+     * @returns {number} .
      * @private
      */
     public get rowOverflowIndex(): number {
@@ -461,6 +509,8 @@ export class PdfTreeGridRow {
 
     /**
      * Gets or sets the `height` of the row.
+     *
+     * @returns {number} .
      * @private
      */
     public get height(): number {
@@ -474,6 +524,8 @@ export class PdfTreeGridRow {
     }
     /**
      * Gets or sets the `width` of the row.
+     *
+     * @returns {number} .
      * @private
      */
     public get width(): number {
@@ -487,10 +539,10 @@ export class PdfTreeGridRow {
     }
 
     private measureWidth(): number {
-        let columns: PdfTreeGridColumn[] = this.treegrid.columns.columns;
+        const columns: PdfTreeGridColumn[] = this.treegrid.columns.columns;
         let totalWidth: number = 0;
         for (let i: number = 0; i < columns.length; i++) {
-            let column: PdfTreeGridColumn = columns[i];
+            const column: PdfTreeGridColumn = columns[i];
             totalWidth += column.width;
         }
         return totalWidth;
@@ -499,7 +551,7 @@ export class PdfTreeGridRow {
     private measureHeight(): number {
         let rowHeight: number = this.cells.getCell(0).height;
         for (let i: number = 0; i < this.cells.count; i++) {
-            let cell: PdfTreeGridCell = this.cells.getCell(i);
+            const cell: PdfTreeGridCell = this.cells.getCell(i);
             if (cell.columnSpan === 1 || cell.rowSpan === 1) {
                 rowHeight = Math.max(rowHeight, cell.height);
             } else {
@@ -512,6 +564,7 @@ export class PdfTreeGridRow {
 }
 /**
  * `PdfTreeGridRowCollection` class provides access to an ordered, strongly typed collection of 'PdfTreeGridRow' objects.
+ *
  * @private
  */
 export class PdfTreeGridRowCollection {
@@ -522,12 +575,15 @@ export class PdfTreeGridRowCollection {
     private treegrid: PdfTreeGrid;
     /**
      * The row collection of the `treegrid`.
+     *
      * @private
      */
     private rows: PdfTreeGridRow[];
     // Constructor
     /**
      * Initializes a new instance of the `PdfTreeGridRowCollection` class with the parent grid.
+     *
+     * @param {PdfTreeGrid} treegrid .
      * @private
      */
     public constructor(treegrid: PdfTreeGrid) {
@@ -537,6 +593,8 @@ export class PdfTreeGridRowCollection {
     //Properties
     /**
      * Gets the number of header in the `PdfTreeGrid`.[Read-Only].
+     *
+     * @returns {number} .
      * @private
      */
     public get count(): number {
@@ -545,6 +603,8 @@ export class PdfTreeGridRowCollection {
     //Implementation
     /**
      * Return the row collection of the `treegrid`.
+     *
+     * @returns {PdfTreeGridRow[]} .
      * @private
      */
     public get rowCollection(): PdfTreeGridRow[] {
@@ -554,7 +614,7 @@ export class PdfTreeGridRowCollection {
     public addRow(row: PdfTreeGridRow): void;
     public addRow(row?: PdfTreeGridRow): void | PdfTreeGridRow {
         if (typeof row === 'undefined') {
-            let row: PdfTreeGridRow = new PdfTreeGridRow(this.treegrid);
+            const row: PdfTreeGridRow = new PdfTreeGridRow(this.treegrid);
             this.addRow(row);
             return row;
         } else {
@@ -568,6 +628,9 @@ export class PdfTreeGridRowCollection {
     }
     /**
      * Return the row by index.
+     *
+     * @param {number} index .
+     * @returns {PdfTreeGridRow} .
      * @private
      */
     public getRow(index: number): PdfTreeGridRow {
@@ -576,22 +639,29 @@ export class PdfTreeGridRowCollection {
 }
 /**
  * `PdfTreeGridHeaderCollection` class provides customization of the settings for the header.
+ *
  * @private
  */
 export class PdfTreeGridHeaderCollection {
     /**
      * The `treegrid`.
+     *
+     * @returns {PdfTreeGrid} .
      * @private
      */
     private treegrid: PdfTreeGrid;
     /**
      * The array to store the `rows` of the grid header.
+     *
+     * @returns {PdfTreeGridRow[]} .
      * @private
      */
     private rows: PdfTreeGridRow[] = [];
     //constructor
     /**
      * Initializes a new instance of the `PdfTreeGridHeaderCollection` class with the parent grid.
+     *
+     * @param {PdfTreeGrid} treegrid .
      * @private
      */
     public constructor(treegrid: PdfTreeGrid) {
@@ -601,6 +671,9 @@ export class PdfTreeGridHeaderCollection {
     //Properties
     /**
      * Gets a 'PdfTreeGridRow' object that represents the `header` row in a 'PdfGridHeaderCollection' control.[Read-Only].
+     *
+     * @param {number} index .
+     * @returns {PdfTreeGridRow} .
      * @private
      */
     public getHeader(index: number): PdfTreeGridRow {
@@ -608,6 +681,8 @@ export class PdfTreeGridHeaderCollection {
     }
     /**
      * Gets the `number of header` in the 'PdfGrid'.[Read-Only]
+     *
+     * @returns {number} .
      * @private
      */
     public get count(): number {
@@ -616,6 +691,9 @@ export class PdfTreeGridHeaderCollection {
     //Implementation
     /**
      * `Adds` the specified row.
+     *
+     * @param {PdfTreeGridRow} row .
+     * @returns {void} .
      * @private
      */
     public add(row: PdfTreeGridRow): void {
@@ -631,9 +709,7 @@ export class PdfTreeGridColumn {
     private columnWidth: number = 0;
     private stringFormat: PdfStringFormat;
     private treeColumnIndex: boolean = false;
-    /* tslint:disable-next-line */
     private _headerText: string = '';
-    /* tslint:disable-next-line */
     private _field: string = '';
     constructor(treegrid: PdfTreeGrid) {
         this.treegrid = treegrid;
@@ -664,6 +740,8 @@ export class PdfTreeGridColumn {
     }
     /**
      * Gets or sets the information about the text `formatting`.
+     *
+     * @returns {PdfStringFormat} .
      * @private
      */
     public get format(): PdfStringFormat {
@@ -679,6 +757,7 @@ export class PdfTreeGridColumn {
 /**
  * `PdfTreeGridColumnCollection` class provides access to an ordered,
  * strongly typed collection of 'PdfTreeGridColumn' objects.
+ *
  * @private
  */
 export class PdfTreeGridColumnCollection {
@@ -699,6 +778,8 @@ export class PdfTreeGridColumnCollection {
     //Constructors
     /**
      * Initializes a new instance of the `PdfTreeGridColumnCollection` class with the parent grid.
+     *
+     * @param { PdfTreeGrid} treegrid .
      * @private
      */
     public constructor(treegrid: PdfTreeGrid) {
@@ -708,6 +789,9 @@ export class PdfTreeGridColumnCollection {
     //Implementation
     /**
      * `Add` a new column to the 'PdfGrid'.
+     *
+     * @param {number} count .
+     * @returns {void} .
      * @private
      */
     public add(count: number): void {
@@ -717,8 +801,8 @@ export class PdfTreeGridColumnCollection {
         for (let i: number = 0; i < count; i++) {
             this.internalColumns.push(new PdfTreeGridColumn(this.treegrid));
             for (let index: number = 0; index < this.treegrid.rows.count; index++) {
-                let row: PdfTreeGridRow = this.treegrid.rows.getRow(index);
-                let cell: PdfTreeGridCell = new PdfTreeGridCell();
+                const row: PdfTreeGridRow = this.treegrid.rows.getRow(index);
+                const cell: PdfTreeGridCell = new PdfTreeGridCell();
                 cell.value = '';
                 row.cells.add(cell);
             }
@@ -731,6 +815,8 @@ export class PdfTreeGridColumnCollection {
     }
     /**
      * Gets the `number of columns` in the 'PdfGrid'.[Read-Only].
+     *
+     * @returns {number} .
      * @private
      */
     public get count(): number {
@@ -738,6 +824,8 @@ export class PdfTreeGridColumnCollection {
     }
     /**
      * Gets the `widths`.
+     *
+     * @returns {number} .
      * @private
      */
     public get width(): number {
@@ -748,6 +836,8 @@ export class PdfTreeGridColumnCollection {
     }
     /**
      * Gets the `array of PdfGridColumn`.[Read-Only]
+     *
+     * @returns {PdfTreeGridColumn[]} .
      * @private
      */
     public get columns(): PdfTreeGridColumn[] {
@@ -755,6 +845,9 @@ export class PdfTreeGridColumnCollection {
     }
     /**
      * Gets the `PdfTreeGridColumn` from the specified index.[Read-Only]
+     *
+     * @param {number} index .
+     * @returns {PdfTreeGridColumn} .
      * @private
      */
     public getColumn(index: number): PdfTreeGridColumn {
@@ -767,6 +860,8 @@ export class PdfTreeGridColumnCollection {
     //Implementation
     /**
      * `Calculates the column widths`.
+     *
+     * @returns {number} .
      * @private
      */
     public measureColumnsWidth(): number {
@@ -779,10 +874,13 @@ export class PdfTreeGridColumnCollection {
     }
     /**
      * Gets the `widths of the columns`.
+     *
+     * @param {number} totalWidth .
+     * @returns {number} .
      * @private
      */
     public getDefaultWidths(totalWidth: number): number[] {
-        let widths: number[] = [];
+        const widths: number[] = [];
         let subFactor: number = this.count;
         for (let i: number = 0; i < this.count; i++) {
             widths[i] = this.internalColumns[i].width;
@@ -794,7 +892,7 @@ export class PdfTreeGridColumnCollection {
             }
         }
         for (let i: number = 0; i < this.count; i++) {
-            let width: number = totalWidth / subFactor;
+            const width: number = totalWidth / subFactor;
             if (widths[i] <= 0) {
                 widths[i] = width;
             }

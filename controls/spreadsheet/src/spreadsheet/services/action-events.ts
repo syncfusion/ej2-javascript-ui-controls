@@ -6,13 +6,16 @@ import { BeforePasteEventArgs, setActionData, updateUndoRedoCollection, BeforeCh
 
 /**
  *  Begin and complete events.
- * @hidden 
+ *
+ * @hidden
  */
 export class ActionEvents {
     private parent: Spreadsheet;
 
     /**
      * Constructor for initializing action begin and action complete services.
+     *
+     * @param {Spreadsheet} parent - Specifies the spreadsheet element.
      */
     constructor(parent: Spreadsheet) {
         this.parent = parent;
@@ -22,19 +25,19 @@ export class ActionEvents {
     }
 
     private initializeActionBegin(): void {
-        let cellFormat: Function = this.parent.beforeCellFormat;
+        const cellFormat: Function = this.parent.beforeCellFormat;
         this.parent.beforeCellFormat = (args: BeforeCellFormatArgs) => {
             this.actionEventHandler({ evtArgs: args, evtFunc: cellFormat, actionType: 'begin', eventType: 'format' });
         };
-        let beforeOpen: Function = this.parent.beforeOpen;
+        const beforeOpen: Function = this.parent.beforeOpen;
         this.parent.beforeOpen = (args: BeforeOpenEventArgs) => {
             this.actionEventHandler({ evtArgs: args, evtFunc: beforeOpen, actionType: 'begin', eventType: 'beforeOpen' });
         };
-        let beforeSave: Function = this.parent.beforeSave;
+        const beforeSave: Function = this.parent.beforeSave;
         this.parent.beforeSave = (args: BeforeSaveEventArgs) => {
             this.actionEventHandler({ evtArgs: args, evtFunc: beforeSave, actionType: 'begin', eventType: 'beforeSave' });
         };
-        let beforeSort: Function = this.parent.beforeSort;
+        const beforeSort: Function = this.parent.beforeSort;
         this.parent.beforeSort = (args: BeforeSortEventArgs) => {
             this.actionEventHandler({ evtArgs: args, evtFunc: beforeSort, actionType: 'begin', eventType: 'beforeSort' });
         };
@@ -42,11 +45,11 @@ export class ActionEvents {
 
 
     private initializeActionComplete(): void {
-        let sortComplete: Function = this.parent.sortComplete;
+        const sortComplete: Function = this.parent.sortComplete;
         this.parent.sortComplete = (args: SortEventArgs) => {
             this.actionEventHandler({ evtArgs: args, evtFunc: sortComplete, actionType: 'complete', eventType: 'sorting' });
         };
-        let cellSave: Function = this.parent.cellSave;
+        const cellSave: Function = this.parent.cellSave;
         this.parent.cellSave = (args: CellSaveEventArgs) => {
             this.actionEventHandler({ evtArgs: args, evtFunc: cellSave, actionType: 'complete', eventType: 'cellSave' });
         };

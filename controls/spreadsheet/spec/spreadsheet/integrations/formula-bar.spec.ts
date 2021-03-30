@@ -65,7 +65,5 @@ describe('Spreadsheet formula bar module ->', () => {
                 done();
             }, 20);
         });
-
     });
-
 });

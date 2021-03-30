@@ -9,7 +9,7 @@ import { Tooltip as tool } from '@syncfusion/ej2-svg-base';
 import { TooltipBorderModel, FontModel } from '../model/base-model';
 import { Series } from '../series/series';
 import { ITooltipEventArgs } from '../model/interface';
-import { BubbleTooltipData, TooltipBorder, Font, } from '../model/base';
+import { BubbleTooltipData, TooltipBorder, Font } from '../model/base';
 import { Theme } from '../model/theme';
 import { DataModel } from '../datasource/adaptor-model';
 
@@ -19,25 +19,29 @@ import { DataModel } from '../datasource/adaptor-model';
 export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
      * Custom template to format the ToolTip content.
+     *
      * @default ''
      */
     @Property('')
     public template: string;
     /**
-     * Specifies the color collection for heat map cell. 
+     * Specifies the color collection for heat map cell.
+     *
      * @default ''
      */
     @Property('')
     public fill: string;
     /**
-     * Specifies the cell border style. 
+     * Specifies the cell border style.
+     *
      * @default ''
      */
     @Complex<TooltipBorderModel>({}, TooltipBorder)
     public border: TooltipBorderModel;
 
     /**
-     * Specifies the cell label style. 
+     * Specifies the cell label style.
+     *
      * @default ''
      */
     @Complex<FontModel>(Theme.tooltipFont, Font)
@@ -45,7 +49,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
 }
 /**
- * 
+ *
  * The `Tooltip` module is used to render the tooltip for heatmap series.
  */
 export class Tooltip {
@@ -64,23 +68,26 @@ export class Tooltip {
     /**
      * Get module name
      */
+
     protected getModuleName(): string {
         return 'Tooltip';
     }
 
     /**
      * To show/hide Tooltip.
+     *
      * @private
      */
+
     public showHideTooltip(isShow: boolean, isFadeout?: boolean): void {
-        let ele: HTMLElement = document.getElementById(this.heatMap.element.id + 'Celltooltipcontainer');
+        const ele: HTMLElement = document.getElementById(this.heatMap.element.id + 'Celltooltipcontainer');
         if (!isShow) {
             if (ele && ele.style.visibility !== 'hidden') {
                 if (this.tooltipObject && isFadeout && this.heatMap.isRectBoundary) {
                     this.tooltipObject.fadeOut();
                 } else {
                     if (this.tooltipObject && this.tooltipObject.element) {
-                        let tooltipElement: HTMLElement = this.tooltipObject.element.firstChild as HTMLElement;
+                        const tooltipElement: HTMLElement = this.tooltipObject.element.firstChild as HTMLElement;
                         tooltipElement.setAttribute('opacity', '0');
                     }
                 }
@@ -94,23 +101,27 @@ export class Tooltip {
 
     /**
      * To destroy the Tooltip.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(heatMap: HeatMap): void {
+
+    public destroy(): void {
         /**
          * Destroy method performed here
          */
-    };
+    }
 
     /**
      * To add Tooltip to the rect cell.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
+
     private createTooltip(currentRect : CurrentRect, x: number, y: number, tempTooltipText?: string[]): void {
         let offset: number = null;
-        let element: HTMLElement = select('#' + this.heatMap.element.id + 'Celltooltipcontainer');
+        const element: HTMLElement = select('#' + this.heatMap.element.id + 'Celltooltipcontainer');
         if (this.heatMap.cellSettings.showLabel && this.heatMap.heatMapSeries.checkLabelXDisplay &&
             this.heatMap.heatMapSeries.checkLabelYDisplay) {
             offset = parseInt(this.heatMap.cellSettings.textStyle.size, 10) / 2;
@@ -126,9 +137,9 @@ export class Tooltip {
                     yValue: this.heatMap.heatMapSeries.hoverYAxisValue,
                     value : currentRect.value,
                     xLabel: this.heatMap.heatMapSeries.hoverXAxisLabel ?
-                    this.heatMap.heatMapSeries.hoverXAxisLabel.toString() : null,
+                        this.heatMap.heatMapSeries.hoverXAxisLabel.toString() : null,
                     yLabel: this.heatMap.heatMapSeries.hoverYAxisLabel ?
-                    this.heatMap.heatMapSeries.hoverYAxisLabel.toString() : null,
+                        this.heatMap.heatMapSeries.hoverYAxisLabel.toString() : null
                 },
                 theme: this.heatMap.theme,
                 content: tempTooltipText,
@@ -149,7 +160,7 @@ export class Tooltip {
                     {
                         height: this.heatMap.initialClipRect.height + this.heatMap.initialClipRect.y,
                         width: this.heatMap.initialClipRect.width, x: this.heatMap.initialClipRect.x
-            },
+                    }
 
 
             },
@@ -158,13 +169,15 @@ export class Tooltip {
 
     /**
      * To create div container for tooltip.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
+
     public createTooltipDiv(heatMap: HeatMap): void {
-        let position: string = 'absolute';
-        let top: number = heatMap.enableCanvasRendering && heatMap.allowSelection ? heatMap.availableSize.height : 0;
-        let element2: Element = <HTMLElement>createElement('div', {
+        const position: string = 'absolute';
+        const top: number = heatMap.enableCanvasRendering && heatMap.allowSelection ? heatMap.availableSize.height : 0;
+        const element2: Element = <HTMLElement>createElement('div', {
             id: this.heatMap.element.id + 'Celltooltipcontainer',
             styles: 'position:' + position + '; z-index: 3;top:-' + top + 'px'
         });
@@ -179,19 +192,21 @@ export class Tooltip {
 
     /**
      * To get default tooltip content.
+     *
      * @private
      */
+
     private getTooltipContent(currentRect: CurrentRect, hetmapSeries: Series): string[] {
         let value: number | string;
         let content: string[];
-        let heatMap: HeatMap = this.heatMap;
-        let adaptData: DataModel = this.heatMap.dataSourceSettings;
+        const heatMap: HeatMap = this.heatMap;
+        const adaptData: DataModel = this.heatMap.dataSourceSettings;
         if (heatMap.bubbleSizeWithColor) {
-            let xAxis: string = heatMap.xAxis.title && heatMap.xAxis.title.text !== '' ? heatMap.xAxis.title.text : 'X-Axis';
-            let yAxis: string = heatMap.yAxis.title && heatMap.yAxis.title.text !== '' ? heatMap.yAxis.title.text : 'Y-Axis';
-            let value1: string = adaptData.isJsonData && adaptData.adaptorType === 'Cell' ?
+            const xAxis: string = heatMap.xAxis.title && heatMap.xAxis.title.text !== '' ? heatMap.xAxis.title.text : 'X-Axis';
+            const yAxis: string = heatMap.yAxis.title && heatMap.yAxis.title.text !== '' ? heatMap.yAxis.title.text : 'Y-Axis';
+            const value1: string = adaptData.isJsonData && adaptData.adaptorType === 'Cell' ?
                 adaptData.bubbleDataMapping.size : 'Value 1';
-            let value2: string = adaptData.isJsonData && adaptData.adaptorType === 'Cell' ?
+            const value2: string = adaptData.isJsonData && adaptData.adaptorType === 'Cell' ?
                 adaptData.bubbleDataMapping.color : 'Value 2';
             value = hetmapSeries.getFormatedText(
                 (currentRect.value as BubbleTooltipData[])[0].bubbleData, this.heatMap.cellSettings.format);
@@ -211,12 +226,14 @@ export class Tooltip {
 
     /**
      * To render tooltip.
+     *
      * @private
      */
+
     public  renderTooltip(currentRect: CurrentRect): void {
-        let hetmapSeries: Series = this.heatMap.heatMapSeries;
+        const hetmapSeries: Series = this.heatMap.heatMapSeries;
         let tempTooltipText: string[] = [''];
-        let showTooltip: boolean = this.heatMap.bubbleSizeWithColor ?
+        const showTooltip: boolean = this.heatMap.bubbleSizeWithColor ?
             !isNullOrUndefined(currentRect.value) && !isNullOrUndefined((currentRect.value as BubbleTooltipData[])[0].bubbleData)
                 && (currentRect.value as BubbleTooltipData[])[0].bubbleData.toString() !== '' ? true : false
             : isNullOrUndefined(currentRect.value) || (!isNullOrUndefined(currentRect.value) &&
@@ -232,8 +249,8 @@ export class Tooltip {
                 // this.tooltipObject.content = this.getTemplateText(
                 //     currentRect, this.heatMap.tooltipTemplate, hetmapSeries.hoverXAxisLabel,
                 //     hetmapSeries.hoverYAxisLabel);
-                let content: string[] = this.getTooltipContent(currentRect, hetmapSeries);
-                let argData: ITooltipEventArgs = {
+                const content: string[] = this.getTooltipContent(currentRect, hetmapSeries);
+                const argData: ITooltipEventArgs = {
                     heatmap: (this.heatMap.isBlazor ? null : this.heatMap),
                     cancel: false,
                     name: 'tooltipRender',
@@ -250,11 +267,11 @@ export class Tooltip {
                     if (!observedArgs.cancel) {
                         tempTooltipText = observedArgs.content;
                         this.tooltipCallback(currentRect, tempTooltipText);
-                } else {
-                    if (this.tooltipObject) {
-                        this.showHideTooltip(false);
+                    } else {
+                        if (this.tooltipObject) {
+                            this.showHideTooltip(false);
+                        }
                     }
-                }
                 });
             } else {
                 //  this.tooltipObject.header = hetmapSeries.hoverYAxisLabel.toString();
@@ -266,6 +283,7 @@ export class Tooltip {
     /**
      * To render tooltip.
      */
+
     private tooltipCallback(currentRect: CurrentRect, tempTooltipText: string[]): void {
         if (!this.tooltipObject) {
             this.createTooltip(
@@ -282,7 +300,7 @@ export class Tooltip {
                     this.heatMap.heatMapSeries.hoverXAxisLabel.toString() : null,
                 yLabel: this.heatMap.heatMapSeries.hoverYAxisLabel ?
                     this.heatMap.heatMapSeries.hoverYAxisLabel.toString() : null,
-                value: currentRect.value,
+                value: currentRect.value
             };
         }
         this.showHideTooltip(true);

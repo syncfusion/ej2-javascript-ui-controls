@@ -1,4 +1,4 @@
-[![npm](http://ej2.syncfusion.com/github-badges?package=@syncfusion/ej2-dropdowns)](https://www.npmjs.com/package/@syncfusion/ej2-dropdowns)&nbsp;&nbsp;[![coverage](http://ej2.syncfusion.com/badges/ej2-dropdowns/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-dropdowns)
+[![coverage](http://ej2.syncfusion.com/badges/ej2-dropdowns/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-dropdowns)
 
 # ej2-dropdowns
 
@@ -118,4 +118,4 @@ Check the license details [here.](https://github.com/syncfusion/ej2/blob/master/
 ## 8. Change log 
  Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/dropdowns/CHANGELOG.md)
  
-© Copyright 2020 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
+© Copyright 2021 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

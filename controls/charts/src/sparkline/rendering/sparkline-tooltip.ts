@@ -1,3 +1,9 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
 import { Sparkline, ITooltipRenderingEventArgs } from '../index';
 import { SparkValues, PathOption, drawPath, getIdElement, Rect, withInBounds } from '../utils/helper';
 import { Browser, extend, isNullOrUndefined, remove, createElement } from '@syncfusion/ej2-base';
@@ -37,7 +43,7 @@ export class SparklineTooltip {
         this.sparkline.on(Browser.touchEndEvent, this.mouseUpHandler, this);
     }
 
-    private mouseLeaveHandler(e: PointerEvent): void {
+    private mouseLeaveHandler(): void {
         this.removeTooltipElements();
     }
 
@@ -50,10 +56,11 @@ export class SparklineTooltip {
     }
     private fadeOut(): void {
         clearTimeout(this.clearTooltip);
-        this.clearTooltip = setTimeout(this.removeTooltipElements.bind(this), 5000);
+        this.clearTooltip = +setTimeout(this.removeTooltipElements.bind(this), 5000);
     }
     /**
      * To remove tooltip and tracker elements.
+     *
      * @private
      */
     public removeTooltipElements(): void {
@@ -65,25 +72,23 @@ export class SparklineTooltip {
     }
     private processTooltip(e: PointerEvent | TouchEvent): void {
         let pointIndex: number;
-        let spark: Sparkline = this.sparkline;
-        let visiblePoints: SparkValues[] = spark.sparklineRenderer.visiblePoints;
-        let mouseX: number = spark.mouseX;
-        let mouseY: number = spark.mouseY;
+        const spark: Sparkline = this.sparkline;
+        const visiblePoints: SparkValues[] = spark.sparklineRenderer.visiblePoints;
+        const mouseX: number = spark.mouseX;
+        const mouseY: number = spark.mouseY;
         if (spark.type !== 'Pie') {
-            let locations: SparkValues[] = extend([], [], visiblePoints) as SparkValues[];
-            let trackerPositions: number[] = locations.map((point: SparkValues): number => { return point.location.x; });
+            const locations: SparkValues[] = extend([], [], visiblePoints) as SparkValues[];
+            const trackerPositions: number[] = locations.map((point: SparkValues): number => { return point.location.x; });
             let temp: number = Infinity;
-            let mousePosition: number;
             for (let i: number = 0, diff: number, len: number = trackerPositions.length; i < len; i++) {
                 diff = Math.abs(mouseX - trackerPositions[i]);
                 if (temp > diff) {
                     temp = diff;
-                    mousePosition = trackerPositions[i];
                     pointIndex = i;
                 }
             }
         } else {
-            let target: string = (e.target as Element).id;
+            const target: string = (e.target as Element).id;
             pointIndex = parseInt(target.split('_pie_')[1], 10);
         }
         if (isNaN(pointIndex) || !withInBounds(mouseX, mouseY, new Rect(0, 0, spark.availableSize.width, spark.availableSize.height))) {
@@ -103,9 +108,9 @@ export class SparklineTooltip {
      * To render tracker line
      */
     private renderTrackerLine(points: SparkValues): void {
-        let spark: Sparkline = this.sparkline; let theme: string = spark.theme.toLowerCase();
-        let tracker: TrackLineSettingsModel = spark.tooltipSettings.trackLineSettings;
-        let color: string = spark.sparkTheme.trackerLineColor ? spark.sparkTheme.trackerLineColor : tracker.color;
+        const spark: Sparkline = this.sparkline; const theme: string = spark.theme.toLowerCase();
+        const tracker: TrackLineSettingsModel = spark.tooltipSettings.trackLineSettings;
+        const color: string = spark.sparkTheme.trackerLineColor ? spark.sparkTheme.trackerLineColor : tracker.color;
         if (!tracker.visible || spark.type === 'Pie') {
             return;
         }
@@ -114,11 +119,11 @@ export class SparklineTooltip {
             group = spark.renderer.createGroup({ id: spark.element.id + '_sparkline_tracker_g' });
             spark.svgObject.appendChild(group);
         }
-        let pathEle: Element = getIdElement(spark.element.id + '_sparkline_tracker');
-        let d: string = 'M ' + points.location.x + ' ' + spark.padding.top + ' L ' + points.location.x + ' ' +
+        const pathEle: Element = getIdElement(spark.element.id + '_sparkline_tracker');
+        const d: string = 'M ' + points.location.x + ' ' + spark.padding.top + ' L ' + points.location.x + ' ' +
             (spark.availableSize.height - spark.padding.bottom);
         if (isNullOrUndefined(pathEle)) {
-            let pathOption: PathOption = new PathOption(
+            const pathOption: PathOption = new PathOption(
                 spark.element.id + '_sparkline_tracker', 'transparent', tracker.width, color, 1);
             pathOption.d = d;
             drawPath(spark, pathOption, group);
@@ -132,10 +137,9 @@ export class SparklineTooltip {
     /**
      * To render line series
      */
-    //ts-lint: disable
     private renderTooltip(points: SparkValues): void {
-        let spark: Sparkline = this.sparkline;
-        let tooltip: SparklineTooltipSettingsModel = spark.tooltipSettings;
+        const spark: Sparkline = this.sparkline;
+        const tooltip: SparklineTooltipSettingsModel = spark.tooltipSettings;
         if (!tooltip.visible) {
             return;
         }
@@ -147,20 +151,18 @@ export class SparklineTooltip {
             });
             getIdElement(spark.element.id + '_Secondary_Element').appendChild(div);
         }
-        let size: number = (spark.markerSettings.visible.length) ? spark.markerSettings.size : 0;
         let x: string = points.xVal.toString();
         if (spark.valueType === 'Category') {
             x = spark.dataSource[points.xVal][spark.xName] as string;
         } else if (spark.valueType === 'DateTime') {
             x = new Date(points.xVal).toDateString();
         }
-        let y: string = points.yVal.toString();
-        let text: string[] | HTMLElement = this.getFormat(
+        const text: string[] | HTMLElement = this.getFormat(
             spark.tooltipSettings.format, spark, x, this.formatValue(points.yVal, spark).toString());
         let location: { x: number, y: number } = { x: points.location.x, y: points.location.y };
         location = spark.type === 'Pie' ? { x: points.location.x, y: points.location.y } : location;
-        let textColor: string = tooltip.textStyle.color || spark.sparkTheme.tooltipFontColor;
-        let backgroundColor: string = tooltip.fill === '' ? spark.sparkTheme.tooltipFill : tooltip.fill;
+        const textColor: string = tooltip.textStyle.color || spark.sparkTheme.tooltipFontColor;
+        const backgroundColor: string = tooltip.fill === '' ? spark.sparkTheme.tooltipFill : tooltip.fill;
         let tooltipEvent: ITooltipRenderingEventArgs = {
             name: 'tooltipInitialize', cancel: false, text: text,
             textStyle: {
@@ -176,7 +178,7 @@ export class SparklineTooltip {
             const  { ...blazorTooltipArgs}: ITooltipRenderingEventArgs =  tooltipEvent;
             tooltipEvent = blazorTooltipArgs;
         }
-        spark.trigger('tooltipInitialize', tooltipEvent, (eventArgs?: ITooltipRenderingEventArgs) => {
+        spark.trigger('tooltipInitialize', tooltipEvent, () => {
             this.addTooltip(tooltipEvent, spark, backgroundColor, tooltip, location, div);
         });
     }
@@ -188,7 +190,7 @@ export class SparklineTooltip {
         let arg : object;
         let tootipArgs: ITooltipRenderingEventArgs;
         if (!isNullOrUndefined(tooltipEvent)) {
-            let {cancel : c, ...otherArgs} : ITooltipRenderingEventArgs = tooltipEvent;
+            const {cancel : c, ...otherArgs} : ITooltipRenderingEventArgs = tooltipEvent;
             cancel = c;
             tootipArgs = tooltipEvent;
         } else {
@@ -199,7 +201,7 @@ export class SparklineTooltip {
         if (tooltipEvent.cancel) {
             return;
         }
-        let element: Tooltip = new Tooltip({
+        const element: Tooltip = new Tooltip({
             content: tootipArgs.text,
             border: tooltip.border,
             template: tooltip.template,
@@ -243,7 +245,7 @@ export class SparklineTooltip {
      * To remove tracker line.
      */
     private removeTracker(): void {
-        let tracker: Element = this.sparkline.element.querySelector('#' + this.sparkline.element.id + '_sparkline_tracker_g');
+        const tracker: Element = this.sparkline.element.querySelector('#' + this.sparkline.element.id + '_sparkline_tracker_g');
         return tracker ? remove(tracker) : null;
     }
     /**
@@ -251,7 +253,7 @@ export class SparklineTooltip {
      */
     private removeTooltip(): void {
         this.pointIndex = null;
-        let tooltip: Element = this.sparkline.element.querySelector('#' + this.sparkline.element.id + '_sparkline_tooltip_div');
+        const tooltip: Element = this.sparkline.element.querySelector('#' + this.sparkline.element.id + '_sparkline_tooltip_div');
         return tooltip ? remove(tooltip) : null;
     }
     /**

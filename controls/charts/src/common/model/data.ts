@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { Query, DataManager, Deferred } from '@syncfusion/ej2-data';
 
 /**
@@ -10,17 +11,29 @@ export class Data {
 
     /**
      * Constructor for data module
+     *
+     * @param dataSource
+     * @param query
+     * @param dataSource
+     * @param query
      * @private
      */
-    constructor(dataSource?: Object | DataManager, query? : Query) {
+
+    constructor(dataSource?: Object | DataManager, query?: Query) {
         this.initDataManager(dataSource, query);
     }
 
     /**
      * The function used to initialize dataManager and query
-     * @return {void}
+     *
+     * @param dataSource
+     * @param query
+     * @param dataSource
+     * @param query
+     * @returns {void}
      * @private
      */
+
     public initDataManager(dataSource: Object | DataManager, query: Query): void {
         this.dataManager = dataSource instanceof DataManager ? <DataManager>dataSource : new DataManager(dataSource);
         this.query = query instanceof Query ? query : new Query();
@@ -28,34 +41,36 @@ export class Data {
 
     /**
      * The function used to generate updated Query from chart model
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
+
     public generateQuery(): Query {
-        let query: Query = this.query.clone();
+        const query: Query = this.query.clone();
         return query;
     }
 
     /**
      * The function used to get dataSource by executing given Query
+     *
      * @param  {Query} query - A Query that specifies to generate dataSource
-     * @return {void}
+     * @returns {void}
      * @private
      */
-    public getData(query: Query): Promise<Object> {
+
+    public getData(dataQuery: Query): Promise<Object> {
         if (this.dataManager.ready) {
-            let deferred: Deferred = new Deferred();
-            let ready: Promise<Object> = this.dataManager.ready;
-            ready.then((e: Object) => {
-                (<Promise<Object>>this.dataManager.executeQuery(query)).then((result: Object) => {
-                    deferred.resolve(result);
+            const dataManagerDeferred: Deferred = new Deferred();
+            const ready: Promise<Object> = this.dataManager.ready;
+            ready.then(() => {
+                (<Promise<Object>>this.dataManager.executeQuery(dataQuery)).then((result: Object) => {
+                    dataManagerDeferred.resolve(result);
                 });
-            }).catch((e: Object) => {
-                deferred.reject(e);
-            });
-            return deferred.promise;
+            }).catch((e: Object) => { dataManagerDeferred.reject(e); });
+            return dataManagerDeferred.promise;
         } else {
-            return this.dataManager.executeQuery(query);
+            return this.dataManager.executeQuery(dataQuery);
         }
     }
 

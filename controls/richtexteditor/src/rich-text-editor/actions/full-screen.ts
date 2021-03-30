@@ -12,13 +12,16 @@ export class FullScreen {
     protected parent: IRichTextEditor;
     private scrollableParent: HTMLElement[];
 
-    constructor(parent?: IRichTextEditor) {
+    public constructor(parent?: IRichTextEditor) {
         this.parent = parent;
         this.addEventListener();
     }
 
     /**
      * showFullScreen method
+     *
+     * @param {MouseEvent} event - specifies the mouse event
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -42,7 +45,9 @@ export class FullScreen {
                 if (!(this.parent.getBaseToolbarObject().toolbarObj.items[0] as { [key: string]: string }).properties) {
                     this.parent.getBaseToolbarObject().toolbarObj.removeItems(0);
                 }
-                if (Browser.isDevice) { this.parent.toolbarModule.removeFixedTBarClass(); }
+                if (Browser.isDevice) {
+                    this.parent.toolbarModule.removeFixedTBarClass();
+                }
                 this.parent.toolbarModule.updateItem({
                     targetItem: 'Maximize',
                     updateItem: 'Minimize',
@@ -55,6 +60,9 @@ export class FullScreen {
 
     /**
      * hideFullScreen method
+     *
+     * @param {MouseEvent} event - specifies the mouse event
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -65,7 +73,7 @@ export class FullScreen {
         }
         if (this.parent.element.classList.contains(classes.CLS_FULL_SCREEN)) {
             this.parent.element.classList.remove(classes.CLS_FULL_SCREEN);
-            let elem: NodeListOf<Element> = document.querySelectorAll('.e-rte-overflow');
+            const elem: NodeListOf<Element> = document.querySelectorAll('.e-rte-overflow');
             for (let i: number = 0; i < elem.length; i++) {
                 removeClass([elem[i]], ['e-rte-overflow']);
             }
@@ -80,36 +88,41 @@ export class FullScreen {
                     updateItem: 'Maximize',
                     baseToolbar: this.parent.getBaseToolbarObject()
                 });
-                if (Browser.isDevice && this.parent.inlineMode.enable) { this.parent.toolbarModule.addFixedTBarClass(); }
+                if (Browser.isDevice && this.parent.inlineMode.enable) {
+                    this.parent.toolbarModule.addFixedTBarClass();
+                }
             }
             this.parent.trigger(events.actionComplete, { requestType: 'Minimize', targetItem: 'Minimize', args: event });
         }
     }
 
+    // eslint-disable-next-line
     private toggleParentOverflow(isAdd: boolean): void {
-        if (isNOU(this.scrollableParent)) { return; }
+        if (isNOU(this.scrollableParent)) {
+            return;
+        }
         for (let i: number = 0; i < this.scrollableParent.length; i++) {
             if (this.scrollableParent[i].nodeName === '#document') {
-                let elem: HTMLElement = document.querySelector('body');
+                const elem: HTMLElement = document.querySelector('body');
                 addClass([elem], ['e-rte-overflow']);
             } else {
-                let elem: HTMLElement = this.scrollableParent[i];
+                const elem: HTMLElement = this.scrollableParent[i];
                 addClass([elem], ['e-rte-overflow']);
             }
         }
     }
 
     private onKeyDown(event: NotifyArgs): void {
-        let originalEvent: KeyboardEventArgs = event.args as KeyboardEventArgs;
+        const originalEvent: KeyboardEventArgs = event.args as KeyboardEventArgs;
         switch (originalEvent.action) {
-            case 'full-screen':
-                this.showFullScreen(event.args as KeyboardEventArgs);
-                originalEvent.preventDefault();
-                break;
-            case 'escape':
-                this.hideFullScreen(event.args as KeyboardEventArgs);
-                originalEvent.preventDefault();
-                break;
+        case 'full-screen':
+            this.showFullScreen(event.args as KeyboardEventArgs);
+            originalEvent.preventDefault();
+            break;
+        case 'escape':
+            this.hideFullScreen(event.args as KeyboardEventArgs);
+            originalEvent.preventDefault();
+            break;
         }
     }
 
@@ -125,6 +138,8 @@ export class FullScreen {
 
     /**
      * destroy method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -132,7 +147,7 @@ export class FullScreen {
         if (this.parent.element.classList.contains(classes.CLS_FULL_SCREEN)) {
             this.toggleParentOverflow(false);
         }
-        let elem: NodeListOf<Element> = document.querySelectorAll('.e-rte-overflow');
+        const elem: NodeListOf<Element> = document.querySelectorAll('.e-rte-overflow');
         for (let i: number = 0; i < elem.length; i++) {
             removeClass([elem[i]], ['e-rte-overflow']);
         }

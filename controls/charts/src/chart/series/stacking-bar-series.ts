@@ -1,6 +1,9 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable prefer-const */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { withInRange, StackValues } from '../../common/utils/helper';
 import { Rect } from '@syncfusion/ej2-svg-base';
-import { Chart } from '../chart';
 import { DoubleRange } from '../utils/double-range';
 import { Series } from './chart-series';
 import { ColumnBase } from './column-base';
@@ -14,7 +17,8 @@ export class StackingBarSeries extends ColumnBase {
 
     /**
      * Render the Stacking bar series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public render(series: Series): void {
@@ -40,11 +44,12 @@ export class StackingBarSeries extends ColumnBase {
         this.renderMarker(series);
     }
     /**
-     * To destroy the stacking bar. 
-     * @return {void}
+     * To destroy the stacking bar.
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method performed here
          */
@@ -57,8 +62,9 @@ export class StackingBarSeries extends ColumnBase {
     }
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
     public doAnimation(series: Series): void {
         this.animate(series);

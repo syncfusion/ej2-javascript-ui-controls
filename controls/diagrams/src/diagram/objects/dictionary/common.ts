@@ -1,15 +1,29 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { PortShapes, DecoratorShapes } from '../../enum/enum';
 import { DecoratorModel } from '../connector-model';
 import { IconShapeModel } from '../icon-model';
 
+
 /**
- * ShapeDictionary defines the shape of the default nodes and ports
+ *ShapeDictionary defines the shape of the default nodes and ports \
+ *
+ * @returns { string }     ShapeDictionary defines the shape of the default nodes and ports.\
+ * @param {PortShapes} shape - provide the element value.
+ *
+ * @private
  */
-/** @private */
 export function getPortShape(shape: PortShapes): string {
     return portShapes[shape.toString()];
 }
-/** @private */
+/**
+ *ShapeDictionary defines the shape of the default nodes and ports \
+ *
+ * @returns { string }     ShapeDictionary defines the shape of the default nodes and ports.\
+ * @param {DecoratorShapes} shape - provide the element value.
+ * @param {DecoratorModel} decorator - provide the element value.
+ *
+ * @private
+ */
 export function getDecoratorShape(shape: DecoratorShapes, decorator: DecoratorModel): string {
     if (shape === 'Custom') {
         return decorator.pathData;
@@ -17,39 +31,46 @@ export function getDecoratorShape(shape: DecoratorShapes, decorator: DecoratorMo
     return decoratorShapes[shape];
 }
 
+
 /**
+ *sets the path data for different icon shapes \
+ *
+ * @returns { string }     sets the path data for different icon shapes\
+ * @param {IconShapeModel} icon - provide the element value.
+ *
  * @private
- * @param {IconShapeModel} icon 
- * sets the path data for different icon shapes
  */
 export function getIconShape(icon: IconShapeModel): string {
     let data: string;
     switch (icon.shape) {
-        case 'Minus':
-            data = 'M0,50 L100,50';
-            break;
-        case 'Plus':
-            data = 'M0,-50 L0,50 M-50,0 L50,0';
-            break;
-        case 'ArrowUp':
-            data = 'M0,100 L50,0 L100,100 Z';
-            break;
-        case 'ArrowDown':
-            data = 'M0,0 L50,100 L100,0 Z';
-            break;
-        case 'Path':
-            data = icon.pathData;
-            break;
+    case 'Minus':
+        data = 'M0,50 L100,50';
+        break;
+    case 'Plus':
+        data = 'M0,-50 L0,50 M-50,0 L50,0';
+        break;
+    case 'ArrowUp':
+        data = 'M0,100 L50,0 L100,100 Z';
+        break;
+    case 'ArrowDown':
+        data = 'M0,0 L50,100 L100,0 Z';
+        break;
+    case 'Path':
+        data = icon.pathData;
+        break;
     }
     return data;
 }
 
+
+// eslint-disable-next-line prefer-const
 let portShapes: {} = {
     'X': 'M14,14 L106,106 M106,14 L14,106',
     'Circle': 'M0,50 A50,50,0 1 1 100,50 A50,50,0 1 1 0,50 Z',
-    'Square': 'M0,0 L10,0 L10,10 L0,10 z',
+    'Square': 'M0,0 L10,0 L10,10 L0,10 z'
 };
 
+// eslint-disable-next-line prefer-const
 let decoratorShapes: {} = {
     'OpenArrow': 'M15.9,23 L5,16 L15.9,9 L17,10.7 L8.7,16 L17,21.3Z',
     'Square': 'M0,0 L10,0 L10,10 L0,10 z',

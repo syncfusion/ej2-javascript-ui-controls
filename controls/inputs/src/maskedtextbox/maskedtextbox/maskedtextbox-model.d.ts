@@ -1,4 +1,4 @@
-import { Component, Event, Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, getValue, setValue, attributes, addClass, detach, createElement } from '@syncfusion/ej2-base';import { removeClass , Browser, closest, isBlazor} from '@syncfusion/ej2-base';import { Input, InputObject, FloatLabelType } from '../../input/input';import { regularExpressions, createMask, applyMask, wireEvents, unwireEvents, unstrippedValue, strippedValue } from '../base/index';import { setMaskValue, MaskUndo, setElementValue, bindClearEvent } from '../base/index';import { maskInputBlurHandler } from '../base/mask-base';
+import { Component, Event, Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, getValue, setValue, addClass, detach } from '@syncfusion/ej2-base';import { removeClass , Browser, closest, isBlazor} from '@syncfusion/ej2-base';import { Input, InputObject, FloatLabelType } from '../../input/input';import { regularExpressions, createMask, applyMask, wireEvents, unwireEvents, unstrippedValue, strippedValue } from '../base/index';import { setMaskValue, MaskUndo, setElementValue, bindClearEvent } from '../base/index';import { maskInputBlurHandler } from '../base/mask-base';
 import {MaskChangeEventArgs,MaskFocusEventArgs,MaskBlurEventArgs} from "./maskedtextbox";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -10,12 +10,14 @@ export interface MaskedTextBoxModel extends ComponentModel{
     /**
      * Gets or sets the CSS classes to root element of the MaskedTextBox which helps to customize the
      * complete UI styles for the MaskedTextBox component.
+     *
      * @default null
      */
     cssClass?: string;
 
     /**
      * Sets the width of the MaskedTextBox.
+     *
      * @default null
      */
     width?: number | string;
@@ -24,6 +26,7 @@ export interface MaskedTextBoxModel extends ComponentModel{
      * Gets or sets the string shown as a hint/placeholder when the MaskedTextBox is empty.
      * It acts as a label and floats above the MaskedTextBox based on the
      * <b><a href="#floatlabeltype" target="_blank">floatLabelType.</a></b>
+     *
      * @default null
      */
     placeholder?: string;
@@ -35,6 +38,7 @@ export interface MaskedTextBoxModel extends ComponentModel{
      * * Never - The floating label will not be enable when the placeholder is available.
      * * Always - The floating label always floats above the MaskedTextBox.
      * * Auto - The floating label floats above the MaskedTextBox after focusing it or when enters the value in it.
+     *
      * @default Never
      */
     floatLabelType?: FloatLabelType;
@@ -43,24 +47,28 @@ export interface MaskedTextBoxModel extends ComponentModel{
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
      * {% codeBlock src='maskedtextbox/htmlAttributes/index.md' %}{% endcodeBlock %}
+     *
      * @default {}
      */
-    htmlAttributes?: { [key: string]: string; };
+    htmlAttributes?: { [key: string]: string };
 
     /**
      * Sets a value that enables or disables the MaskedTextBox component.
+     *
      * @default true
      */
     enabled?: boolean;
 
     /**
      * Specifies the boolean value whether the Masked TextBox allows the user to change the text.
+     *
      * @default false
      */
     readonly?: boolean;
 
     /**
      * Specifies whether to show or hide the clear icon.
+     *
      * @default false
      */
     showClearButton?: boolean;
@@ -68,6 +76,7 @@ export interface MaskedTextBoxModel extends ComponentModel{
     /**
      * Sets a value that enables or disables the persisting state of the MaskedTextBox after reloading the page.
      * If enabled, the 'value' state will be persisted.
+     *
      * @default false
      */
     enablePersistence?: boolean;
@@ -82,6 +91,7 @@ export interface MaskedTextBoxModel extends ComponentModel{
      * [mask](../../maskedtextbox/mask-configuration/#standard-mask-elements).
      * * If the mask value is empty, the MaskedTextBox will behave as an input element with text type.
      * {% codeBlock src='maskedtextbox/mask/index.md' %}{% endcodeBlock %}
+     *
      * @default null
      */
     mask?: string;
@@ -91,6 +101,7 @@ export interface MaskedTextBoxModel extends ComponentModel{
      * The symbol used to show input positions in the MaskedTextBox.
      * For more information on prompt-character, refer to
      * [prompt-character](../../maskedtextbox/mask-configuration/#prompt-character).
+     *
      * @default '_'
      */
     promptChar?: string;
@@ -99,6 +110,7 @@ export interface MaskedTextBoxModel extends ComponentModel{
      * Gets or sets the value of the MaskedTextBox. It is a raw value of the MaskedTextBox excluding literals
      * and prompt characters. By using `getMaskedValue` property, you can get the value of MaskedTextBox with the masked format.
      * {% codeBlock src='maskedtextbox/value/index.md' %}{% endcodeBlock %}
+     *
      * @default null
      */
     value?: string;
@@ -111,40 +123,46 @@ export interface MaskedTextBoxModel extends ComponentModel{
      * > For more information on customCharacters, refer to
      * [customCharacters](../../maskedtextbox/mask-configuration/#custom-characters).
      * {% codeBlock src='maskedtextbox/customCharacters/index.md' %}{% endcodeBlock %}
+     *
      * @default null
      */
     customCharacters?: { [x: string]: Object };
 
     /**
      * Triggers when the MaskedTextBox component is created.
-     * @event
+     *
+     * @event created
      * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when the MaskedTextBox component is destroyed.
-     * @event
+     *
+     * @event destroyed
      * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 
     /**
      * Triggers when the value of the MaskedTextBox changes.
-     * @event
+     *
+     * @event change
      * @blazorProperty 'ValueChange'
      */
     change?: EmitType <MaskChangeEventArgs>;
 
     /**
      * Triggers when the MaskedTextBox got focus in.
-     * @event
+     *
+     * @event focus
      */
     focus?: EmitType<MaskFocusEventArgs>;
 
     /**
      * Triggers when the MaskedTextBox got focus out.
-     * @event
+     *
+     * @event blur
      */
     blur?: EmitType<MaskBlurEventArgs>;
 

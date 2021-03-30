@@ -8,9 +8,9 @@ import { BeforeExportEventArgs } from '../base/interface';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import * as cls from '../../common/base/css-constant';
 import { PivotView } from '../../pivotview/base/pivotview';
-import { ToolbarItems, ChartSeriesType } from '../base/enum';
+import { ToolbarItems, ChartSeriesType, MultipleAxisMode } from '../base/enum';
 import { Deferred } from '@syncfusion/ej2-data';
-import { CheckBox } from '@syncfusion/ej2-buttons';
+import { CheckBox, ChangeEventArgs as StateChange } from '@syncfusion/ej2-buttons';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { PivotUtil } from '../../base/util';
 import { ChartSettingsModel } from '../../pivotview/model/chartsettings-model';
@@ -1457,6 +1457,7 @@ export class Toolbar {
         }
         this.updateChartType(chartType, false);
         this.parent.chartSettings.enableMultipleAxis = checked;
+        this.parent.chartSettings.multipleAxisMode = (getInstance('#' + this.parent.element.id + '_AxisModeOption', DropDownList) as DropDownList).value as MultipleAxisMode;
         this.chartTypesDialog.close();
     }
     private updateChartType(type: ChartSeriesType, isMultiAxis: boolean): void {
@@ -1477,13 +1478,21 @@ export class Toolbar {
     private getDialogContent(): HTMLElement {
         let mainWrapper: HTMLElement = createElement('div', { className: 'e-chart-type-div-content' });
         let optionWrapperDiv: HTMLElement = createElement('div', { className: 'e-chart-type-option-wrapper' });
+        let axisModeWrapperDiv: HTMLElement = createElement('div', { className: 'e-multiple-axes-mode-wrapper' });
         let optionTextDiv: HTMLElement = createElement('div', {
             className: 'e-chart-type-option-text', innerHTML: this.parent.localeObj.getConstant('ChartType')
         });
+        let axisModeTextDiv: HTMLElement = createElement('div', {
+            className: 'e-multiple-axes-mode-text', innerHTML: this.parent.localeObj.getConstant('multipleAxisMode')
+        });
         let dropOptionDiv: HTMLElement = createElement('div', { id: this.parent.element.id + '_ChartTypeOption' });
+        let dropModeOptionDiv: HTMLElement = createElement('div', { id: this.parent.element.id + '_AxisModeOption' });
         optionWrapperDiv.appendChild(optionTextDiv);
         optionWrapperDiv.appendChild(dropOptionDiv);
         let chartTypeDatasource: { [key: string]: Object }[] = [];
+        let multipleAxisModeDatasource: { [key: string]: Object }[] = [
+            { value: 'Stacked', text: this.parent.localeObj.getConstant('stacked') },
+            { value: 'Single', text: this.parent.localeObj.getConstant('single') }];
         let chartType: ChartSeriesType[] = this.getValidChartType();
         for (let i: number = 0; i < chartType.length; i++) {
             chartTypeDatasource.push({ value: chartType[i], text: this.parent.localeObj.getConstant(chartType[i].toLowerCase()) });
@@ -1508,6 +1517,18 @@ export class Toolbar {
             attrs: { 'type': 'checkbox' }
         }) as HTMLInputElement;
         mainWrapper.appendChild(labelCheckboxWrap);
+        axisModeWrapperDiv.appendChild(axisModeTextDiv);
+        axisModeWrapperDiv.appendChild(dropModeOptionDiv);
+        mainWrapper.appendChild(axisModeWrapperDiv);
+        let axisModeWrapper: DropDownList = new DropDownList({
+            dataSource: multipleAxisModeDatasource, enableRtl: this.parent.enableRtl,
+            fields: { value: 'value', text: 'text' },
+            value: this.parent.chartSettings.multipleAxisMode ? this.parent.chartSettings.multipleAxisMode : 'Stacked',
+            width: '100%',
+            enabled: this.parent.chartSettings.enableMultipleAxis
+        });
+        axisModeWrapper.isStringTemplate = true;
+        axisModeWrapper.appendTo(dropModeOptionDiv);
         return mainWrapper;
     }
     private changeDropDown(args: ChangeEventArgs): void {
@@ -1519,8 +1540,11 @@ export class Toolbar {
         }
         if (['Pie', 'Funnel', 'Pyramid', 'Doughnut'].indexOf(args.value.toString()) > -1) {
             (getInstance('#' + this.parent.element.id + '_DialogMultipleAxis', CheckBox) as CheckBox).disabled = true;
+            (getInstance('#' + this.parent.element.id + '_AxisModeOption', DropDownList) as DropDownList).enabled = false;
         } else {
-            (getInstance('#' + this.parent.element.id + '_DialogMultipleAxis', CheckBox) as CheckBox).disabled = false;
+            let multipleAxisCheckBox: CheckBox = (getInstance('#' + this.parent.element.id + '_DialogMultipleAxis', CheckBox) as CheckBox);
+            multipleAxisCheckBox.disabled = false;
+            (getInstance('#' + this.parent.element.id + '_AxisModeOption', DropDownList) as DropDownList).enabled =  multipleAxisCheckBox.checked;
         }
     }
 
@@ -1529,6 +1553,9 @@ export class Toolbar {
             label: this.parent.localeObj.getConstant('multipleAxes'),
             cssClass: 'e-dialog-multiple-axis',
             checked: this.parent.chartSettings.enableMultipleAxis ? this.parent.chartSettings.enableMultipleAxis : false,
+            change: (args: StateChange) => {
+                (getInstance('#' + this.parent.element.id + '_AxisModeOption', DropDownList) as DropDownList).enabled = args.checked;
+            },
             enableRtl: this.parent.enableRtl,
         });
         let checkbox1: CheckBox = new CheckBox({
@@ -1542,6 +1569,7 @@ export class Toolbar {
         checkbox.appendTo(select('#' + this.parent.element.id + '_DialogMultipleAxis', this.chartTypesDialog.element) as HTMLElement);
         if (['Pie', 'Funnel', 'Pyramid', 'Doughnut'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) {
             checkbox.disabled = true;
+            (getInstance('#' + this.parent.element.id + '_AxisModeOption', DropDownList) as DropDownList).enabled = false;
         }
         let chartSettings: ChartSettingsModel = JSON.parse(this.parent.getPersistData()).chartSettings;
         if (chartSettings && chartSettings.legendSettings && chartSettings.legendSettings.visible !== undefined) {

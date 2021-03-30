@@ -1,10 +1,14 @@
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 /**
  * AccumulationChart base file
  */
 import { Property, ChildProperty, Complex, createElement } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
-import { Border, Font, Animation, Index, EmptyPointSettings, Connector } from '../../common/model/base';
+import { Border, Font, Animation, EmptyPointSettings, Connector } from '../../common/model/base';
 import { Rect, Size, PathOption } from '@syncfusion/ej2-svg-base';
 import { ChartLocation, stringToNumber, appendChildElement } from '../../common/utils/helper';
 import { AccumulationType, AccumulationLabelPosition, PyramidModes } from '../model/enum';
@@ -26,6 +30,7 @@ import { GroupModes } from './enum';
 export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAnnotationSettings> {
     /**
      * Content of the annotation, which accepts the id of the custom element.
+     *
      * @default null
      */
     @Property(null)
@@ -34,6 +39,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
     /**
      * if set coordinateUnit as `Pixel` X specifies the axis value
      * else is specifies pixel or percentage of coordinate
+     *
      * @default '0'
      */
     @Property('0')
@@ -42,6 +48,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
     /**
      * if set coordinateUnit as `Pixel` Y specifies the axis value
      * else is specifies pixel or percentage of coordinate
+     *
      * @default '0'
      */
     @Property('0')
@@ -51,6 +58,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
      * Specifies the coordinate units of the annotation. They are
      * * Pixel - Annotation renders based on x and y pixel value.
      * * Point - Annotation renders based on x and y axis value.
+     *
      * @default 'Pixel'
      */
 
@@ -61,6 +69,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
      * Specifies the regions of the annotation. They are
      * * Chart - Annotation renders based on chart coordinates.
      * * Series - Annotation renders based on series coordinates.
+     *
      * @default 'Chart'
      */
 
@@ -72,6 +81,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
      * * Top - Align the annotation element as top side.
      * * Bottom - Align the annotation element as bottom side.
      * * Middle - Align the annotation element as mid point.
+     *
      * @default 'Middle'
      * @deprecated
      */
@@ -84,6 +94,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
      * * Near - Align the annotation element as top side.
      * * Far - Align the annotation element as bottom side.
      * * Center - Align the annotation element as mid point.
+     *
      * @default 'Center'
      * @deprecated
      */
@@ -93,6 +104,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
 
     /**
      * Information about annotation for assistive technology.
+     *
      * @default null
      */
     @Property(null)
@@ -107,6 +119,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
 
     /**
      * If set true, data label for series gets render.
+     *
      * @default false
      */
 
@@ -115,6 +128,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
 
     /**
      * If set true, data label for zero values in series gets render.
+     *
      * @default true
      */
 
@@ -123,6 +137,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
 
     /**
      * The DataSource field which contains the data label value.
+     *
      * @default null
      */
 
@@ -131,6 +146,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
 
     /**
      * The background color of the data label, which accepts value in hex, rgba as a valid CSS color string.
+     *
      * @default 'transparent'
      */
 
@@ -141,6 +157,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
      * Specifies the position of data label. They are.
      * * Outside - Places label outside the point.
      * * Inside - Places label inside the point.
+     *
      * @default 'Inside'
      */
 
@@ -149,6 +166,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
 
     /**
      * The roundedCornerX for the data label. It requires `border` values not to be null.
+     *
      * @default 5
      */
     @Property(5)
@@ -156,6 +174,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
 
     /**
      * The roundedCornerY for the data label. It requires `border` values not to be null.
+     *
      * @default 5
      */
     @Property(5)
@@ -163,6 +182,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
 
     /**
      * Specifies angle for data label.
+     *
      * @default 0
      */
     @Property(0)
@@ -170,6 +190,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
 
     /**
      * Enables rotation for data label.
+     *
      * @default false
      */
 
@@ -201,6 +222,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
     /**
      * Custom template to format the data label content. Use ${point.x} and ${point.y} as a placeholder
      * text to display the corresponding data point.
+     *
      * @default null
      */
 
@@ -216,6 +238,7 @@ export class PieCenter extends ChildProperty<PieCenter> {
 
     /**
      * X value of the center.
+     *
      * @default '50%'
      */
     @Property('50%')
@@ -223,6 +246,7 @@ export class PieCenter extends ChildProperty<PieCenter> {
 
     /**
      * Y value of the center.
+     *
      * @default '50%'
      */
     @Property('50%')
@@ -232,9 +256,9 @@ export class PieCenter extends ChildProperty<PieCenter> {
 
 /**
  * Points model for the series.
+ *
  * @public
  */
-
 export class AccPoints {
     /** accumulation point x value */
     public x: Object;
@@ -343,6 +367,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
      * });
      * pie.appendTo('#Pie');
      * ```
+     *
      * @default ''
      */
 
@@ -351,6 +376,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * Specifies Query to select data from dataSource. This property is applicable only when the dataSource is `ej.DataManager`.
+     *
      * @default null
      */
     @Property()
@@ -358,6 +384,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * The DataSource field which contains the x value.
+     *
      * @default ''
      */
 
@@ -366,6 +393,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * Specifies the series name
+     *
      * @default ''
      */
 
@@ -374,6 +402,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * The provided value will be considered as a Tooltip Mapping name
+     *
      * @default ''
      */
     @Property('')
@@ -381,6 +410,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * The DataSource field which contains the y value.
+     *
      * @default ''
      */
 
@@ -389,6 +419,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * Specifies the series visibility.
+     *
      * @default true
      */
 
@@ -421,7 +452,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
      * * Pentagon - Renders a pentagon.
      * * InvertedTriangle - Renders a invertedTriangle.
      * * SeriesType -Render a legend shape based on series type.
-     * * Image -Render a image.
+     * * Image -Render a image.     * 
      * @default 'SeriesType'
      */
 
@@ -439,6 +470,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     /**
      * The DataSource field that contains the color value of point
      * It is applicable for series
+     *
      * @default ''
      */
 
@@ -448,6 +480,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * Custom style for the selected series or points.
+     *
      * @default null
      */
     @Property(null)
@@ -455,6 +488,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * AccumulationSeries y values less than groupTo are combined into single slice named others
+     *
      * @default null
      */
     @Property(null)
@@ -462,6 +496,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * AccumulationSeries y values less than groupMode are combined into single slice named others
+     *
      * @default Value
      */
     @Property('Value')
@@ -475,6 +510,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * Palette for series points.
+     *
      * @default []
      */
     @Property([])
@@ -482,6 +518,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * Start angle for a series.
+     *
      * @default 0
      */
     @Property(0)
@@ -489,6 +526,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * End angle for a series.
+     *
      * @default null
      */
     @Property(null)
@@ -496,6 +534,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * Radius of the pie series and its values in percentage.
+     *
      * @default '80%'
      */
     @Property('80%')
@@ -503,6 +542,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * When the innerRadius value is greater than 0 percentage, a donut will appear in pie series. It takes values only in percentage.
+     *
      * @default '0'
      */
     @Property('0')
@@ -510,6 +550,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * Specify the type of the series in accumulation chart.
+     *
      * @default 'Pie'
      */
     @Property('Pie')
@@ -517,6 +558,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * To enable or disable tooltip for a series.
+     *
      * @default true
      */
     @Property(true)
@@ -524,6 +566,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * If set true, series points will be exploded on mouse click or touch.
+     *
      * @default false
      */
     @Property(false)
@@ -531,6 +574,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * Distance of the point from the center, which takes values in both pixels and percentage.
+     *
      * @default '30%'
      */
     @Property('30%')
@@ -538,6 +582,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * If set true, all the points in the series will get exploded on load.
+     *
      * @default false
      */
     @Property(false)
@@ -545,8 +590,11 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * Index of the point, to be exploded on load.
+     *
      * @default null
+     *
      * @aspDefaultValueIgnore
+     *
      * @blazorDefaultValue Double.NaN
      */
     @Property(null)
@@ -560,6 +608,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * Defines the distance between the segments of a funnel/pyramid series. The range will be from 0 to 1
+     *
      * @default 0
      */
     @Property(0)
@@ -567,6 +616,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * Defines the width of the funnel/pyramid with respect to the chart area
+     *
      * @default '80%'
      */
     @Property('80%')
@@ -574,6 +624,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * Defines the height of the funnel/pyramid with respect to the chart area
+     *
      * @default '80%'
      */
     @Property('80%')
@@ -581,6 +632,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * Defines the width of the funnel neck with respect to the chart area
+     *
      * @default '20%'
      */
     @Property('20%')
@@ -588,6 +640,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * Defines the height of the funnel neck with respect to the chart area
+     *
      * @default '20%'
      */
     @Property('20%')
@@ -595,12 +648,14 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * Defines how the values have to be reflected, whether through height/surface of the segments
+     *
      * @default 'Linear'
      */
     @Property('Linear')
     public pyramidMode: PyramidModes;
     /**
      * The opacity of the series.
+     *
      * @default 1.
      */
     @Property(1)
@@ -634,43 +689,52 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public leftSidePoints: AccPoints[] = [];
     /**
      * To find the max bounds of the data label to place smart legend
-     *  @private
+     *
+     * @private
      */
     public labelBound: Rect;
     /**
      * To find the max bounds of the accumulation segment to place smart legend
-     *  @private
+     *
+     * @private
      */
     public accumulationBound: Rect;
 
     /**
      * Defines the funnel size
+     *
      * @private
      */
     public triangleSize: Size;
 
     /**
      * Defines the size of the funnel neck
+     *
      * @private
      */
     public neckSize: Size;
-    /** @private To refresh the Datamanager for series */
+    /**
+     * To refresh the Datamanager for series
+     *
+     * @private
+     */
     public refreshDataManager(accumulation: AccumulationChart, render: boolean): void {
-        let dateSource: Object | DataManager = this.dataSource || accumulation.dataSource;
+        const dateSource: Object | DataManager = this.dataSource || accumulation.dataSource;
         if (!(dateSource instanceof DataManager) && isNullOrUndefined(this.query)) {
             this.dataManagerSuccess({ result: dateSource, count: (dateSource as Object[]).length }, accumulation, render);
             return;
         }
-        let dataManager: Promise<Object> = this.dataModule.getData(this.dataModule.generateQuery().requiresCount());
+        const dataManager: Promise<Object> = this.dataModule.getData(this.dataModule.generateQuery().requiresCount());
         dataManager.then((e: { result: Object, count: number }) => this.dataManagerSuccess(e, accumulation));
     }
     /**
      * To get points on dataManager is success
+     *
      * @private
      */
     public dataManagerSuccess(e: { result: Object, count: number }, accumulation: AccumulationChart, render: boolean = true): void {
-        let argsData: IAccSeriesRenderEventArgs = {
-            name: seriesRender, series: this, data: e.result,
+        const argsData: IAccSeriesRenderEventArgs = {
+            name: seriesRender, series: this, data: e.result
         };
         accumulation.allowServerDataBinding = false;
         accumulation.trigger(seriesRender, argsData);
@@ -678,8 +742,10 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         if (!accumulation.isBlazor && !render) {
             this.getPoints(this.resultData, accumulation); // To update datasource using onPropertyChanged method. incident id: 290690
         }
-        // tslint:disable
-        if ((++accumulation.seriesCounts === accumulation.visibleSeries.length && render) || (window['Blazor'] && !render && accumulation.seriesCounts === 1)) {
+        /* eslint-disable */
+        if ((++accumulation.seriesCounts === accumulation.visibleSeries.length && render)
+            // tslint:disable-next-line:no-string-literal
+            || (window['Blazor'] && !render && accumulation.seriesCounts === 1)) {
             this.getPoints(this.resultData, accumulation);
             accumulation.refreshChart();
         }
@@ -902,6 +968,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * To find maximum bounds for smart legend placing
+     *
      * @private
      */
     public findMaxBounds(totalbound: Rect, bound: Rect): void {

@@ -2,41 +2,13 @@
 
 ## [Unreleased]
 
-## 18.4.44 (2021-02-23)
+## 19.1.54 (2021-03-30)
 
 ### Common
 
-#### Bug Fixes
+#### New Features
 
-- `I309800` - Resolved Events are not properly triggered when using `EJ2 controls` with the Windows web browser.
-
-## 18.4.43 (2021-02-16)
-
-### Common
-
-#### Bug Fixes
-
-- `I309628, I314101` - Resolved unwanted `Swipe event` trigger in Firefox.
-
-## 18.4.42 (2021-02-09)
-
-### Common
-
-#### Bug Fixes
-
-- Resolved Drag and Drop malfunction when setting top margin.
-- Resolved `Drag and Drop` malfunction while scrolling beyond screen size.
-- `I310147` - Provided Maximum fraction digit support for `Number Parser`.
-
-## 18.4.41 (2021-02-02)
-
-### Common
-
-- provided support for `Negative` number in `EJ2` Template conditions.
-
-#### Bug Fixes
-
-- Resolved unwanted window variable addition while iterating `for` template.
+- Provided Optional prefix addition support for Template function.
 
 ## 18.3.52 (2020-12-01)
 

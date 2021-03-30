@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { Chart } from '../../chart/chart';
 import { AccumulationChart } from '../../accumulation-chart/accumulation';
 import { ChartAnnotationSettings } from '../../chart/model/chart-base';
@@ -26,22 +27,26 @@ export class AnnotationBase {
 
     /**
      * Constructor for chart and accumulation annotation
-     * @param control 
+     *
+     * @param control
      */
+
     constructor(control: Chart | AccumulationChart) {
         this.control = control;
     }
 
     /**
      * Method to render the annotation for chart and accumulation series.
+     *
      * @private
-     * @param annotation 
-     * @param index 
+     * @param annotation
+     * @param index
      */
+
     public render(annotation: AccumulationAnnotationSettings | ChartAnnotationSettings, index: number): HTMLElement {
         this.isChart = this.control.getModuleName() === 'chart';
         this.annotation = annotation;
-        let childElement: HTMLElement = createTemplate(
+        const childElement: HTMLElement = createTemplate(
             createElement('div', {
                 id: this.control.element.id + '_Annotation_' + index,
                 styles: 'position: absolute; z-index: 1'  //by default z-index set for annotation elements
@@ -52,12 +57,13 @@ export class AnnotationBase {
 
     /**
      * Method to calculate the location for annotation - coordinate unit as pixel.
+     *
      * @private
-     * @param location 
+     * @param location
      */
+
     public setAnnotationPixelValue(location: ChartLocation): boolean {
-        let rect: Rect;
-        rect = this.annotation.region === 'Chart' ?
+        const rect: Rect = this.annotation.region === 'Chart' ?
             new Rect(0, 0, this.control.availableSize.width, this.control.availableSize.height) :
             this.isChart ?
                 (<Chart>this.control).chartAxisLayoutPanel.seriesClipRect :
@@ -72,25 +78,28 @@ export class AnnotationBase {
 
     /**
      * Method to calculate the location for annotation - coordinate unit as point.
+     *
      * @private
-     * @param location 
+     * @param location
      */
+
     public setAnnotationPointValue(location: ChartLocation): boolean {
         let symbolLocation: ChartLocation = new ChartLocation(0, 0);
         if (this.isChart) {
+            const chart: Chart = <Chart>this.control;
+            const annotation: ChartAnnotationSettings = <ChartAnnotationSettings>this.annotation;
+            const xAxisName: string = annotation.xAxisName;
+            const yAxisName: string = annotation.yAxisName;
+            const isInverted: boolean = chart.requireInvertedAxis;
+            const stockChart: StockChart = (this.control as Chart).stockChart;
             let xAxis: Axis; let yAxis: Axis;
-            let chart: Chart = <Chart>this.control;
-            let annotation: ChartAnnotationSettings = <ChartAnnotationSettings>this.annotation;
-            let xValue: number; let isLog: boolean = false;
-            let xAxisName: string = annotation.xAxisName;
-            let yAxisName: string = annotation.yAxisName;
-            let isInverted: boolean = chart.requireInvertedAxis;
-            let stockChart: StockChart = (this.control as Chart).stockChart;
-            for (let axis of chart.axisCollections) {
+            let xValue: number;
+
+            for (const axis of chart.axisCollections) {
                 if (xAxisName === axis.name || (xAxisName == null && axis.name === 'primaryXAxis')) {
                     xAxis = axis;
                     if (xAxis.valueType.indexOf('Category') > -1) {
-                        let xAnnotation: string =  xAxis.valueType === 'DateTimeCategory' ? ((annotation.x as Date).getTime()).toString() :
+                        const xAnnotation: string =  xAxis.valueType === 'DateTimeCategory' ? ((annotation.x as Date).getTime()).toString() :
                                                                                             <string>annotation.x;
                         if (xAxis.labels.indexOf(xAnnotation) < 0) {
                             return false;
@@ -98,7 +107,7 @@ export class AnnotationBase {
                             xValue = xAxis.labels.indexOf(xAnnotation);
                         }
                     } else if (xAxis.valueType === 'DateTime') {
-                        let option: DateFormatOptions = { skeleton: 'full', type: 'dateTime' };
+                        const option: DateFormatOptions = { skeleton: 'full', type: 'dateTime' };
                         xValue = (typeof this.annotation.x === 'object' || typeof new Date(this.annotation.x) === 'object') ?
                             Date.parse(chart.intl.getDateParser(option)(
                                 chart.intl.getDateFormat(option)(new Date(
@@ -109,7 +118,7 @@ export class AnnotationBase {
                         xValue = +annotation.x;
                     }
                 } else if (yAxisName === axis.name || (yAxisName == null && axis.name === 'primaryYAxis')) {
-                    yAxis = axis; isLog = yAxis.valueType === 'Logarithmic';
+                    yAxis = axis;
                 }
             }
             if (xAxis && yAxis && withIn(
@@ -135,29 +144,28 @@ export class AnnotationBase {
 
     /**
      * To process the annotation for accumulation chart
-     * @param annotation 
-     * @param index 
+     *
+     * @param annotation
+     * @param index
      * @param parentElement
      */
+
     public processAnnotation(
         annotation: ChartAnnotationSettings | AccumulationAnnotationSettings,
         index: number, parentElement: HTMLElement
     ): void {
-        let annotationElement: HTMLElement;
-        let location: ChartLocation;
-        let chart: Chart = this.control as Chart;
-        location = new ChartLocation(0, 0);
-        annotationElement = this.render(annotation, index);
+        const chart: Chart = this.control as Chart;
+        const location: ChartLocation = new ChartLocation(0, 0);
+        const annotationElement: HTMLElement = this.render(annotation, index);
+        const annotationRendered: Function = () => {
+            annotationElement.style.transform = 'translate(-50%, -50%)';
+        };
+        annotationRendered.bind(location, this);
         if (this['setAnnotation' + annotation.coordinateUnits + 'Value'](location)) {
             this.setElementStyle(location, annotationElement, parentElement);
         } else if (this.control.redraw) {
             removeElement(annotationElement.id);
         }
-
-        let annotationRendered: Function = () => {
-            annotationElement.style.transform = 'translate(-50%, -50%)';
-        };
-        annotationRendered.bind(location, this);
 
         updateBlazorTemplate((this.control.element.id + 'Annotation' + index).replace(/[^a-zA-Z0-9]/g, ''), 'ContentTemplate',
                              chart.stockChart ? chart.stockChart.annotations[index] : this.control.annotations[index], undefined,
@@ -167,22 +175,22 @@ export class AnnotationBase {
 
     /**
      * Method to calculate the location for annotation - coordinate unit as point in accumulation chart.
+     *
      * @private
-     * @param location 
+     * @param location
      */
+
     public setAccumulationPointValue(location: ChartLocation): boolean {
-        let accumulation: AccumulationChart = <AccumulationChart>this.control;
+        const accumulation: AccumulationChart = <AccumulationChart>this.control;
         let point: AccPoints;
-        for (let accPoint of accumulation.visibleSeries[0].points) {
+        for (const accPoint of accumulation.visibleSeries[0].points) {
             if (typeof accPoint.x === 'object') {
                 if (Date.parse(accPoint.x as string) === Date.parse(this.annotation.x as string) &&
-                    // tslint:disable-next-line    
-                    accPoint.y == this.annotation.y) {
+                    accPoint.y === this.annotation.y) {
                     point = accPoint;
                     break;
                 }
             } else {
-                // tslint:disable-next-line
                 if (accPoint.x == this.annotation.x && accPoint.y == this.annotation.y) {
                     point = accPoint;
                     break;
@@ -200,16 +208,18 @@ export class AnnotationBase {
 
     /**
      * Method to set the element style for accumulation / chart annotation.
+     *
      * @private
-     * @param location 
-     * @param element 
-     * @param parentElement 
+     * @param location
+     * @param element
+     * @param parentElement
      */
+
     public setElementStyle(
         location: ChartLocation, element: HTMLElement, parentElement: HTMLElement
     ): void {
-        let elementRect: ClientRect = measureElementRect(element, this.control.redraw);
-        let argsData: IAnnotationRenderEventArgs = {
+        const elementRect: ClientRect = measureElementRect(element, this.control.redraw);
+        const argsData: IAnnotationRenderEventArgs = {
             cancel: false, name: annotationRender, content: element,
             location: location
         };
@@ -228,16 +238,18 @@ export class AnnotationBase {
 
     /**
      * Method to calculate the alignment value for annotation.
+     *
      * @private
-     * @param alignment 
-     * @param size 
-     * @param value 
+     * @param alignment
+     * @param size
+     * @param value
      */
+
     public setAlignmentValue(alignment: Alignment | Position, size: number, value: number): number {
         switch (alignment) {
-            case 'Top': case 'Near': value -= size; break;
-            case 'Bottom': case 'Far': value += 0; break;
-            case 'Middle': case 'Center': value -= (size / 2); break;
+        case 'Top': case 'Near': value -= size; break;
+        case 'Bottom': case 'Far': value += 0; break;
+        case 'Middle': case 'Center': value -= (size / 2); break;
         }
         return value;
     }

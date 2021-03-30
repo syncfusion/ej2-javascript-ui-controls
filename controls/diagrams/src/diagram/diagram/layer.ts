@@ -7,19 +7,22 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
  */
 export class Layer extends ChildProperty<Layer> {
     /**
-     * Defines the id of a diagram layer 
+     * Defines the id of a diagram layer
+     *
      * @default ''
      */
     @Property('')
     public id: string;
     /**
      * Enables or disables the visibility of objects in a particular layer
+     *
      * @default true
      */
     @Property(true)
     public visible: boolean;
     /**
      * Enables or disables editing objects in a particular layer
+     *
      * @default false
      */
     @Property(false)
@@ -27,6 +30,7 @@ export class Layer extends ChildProperty<Layer> {
 
     /**
      * Defines the collection of the objects that are added to a particular layer
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -67,6 +71,7 @@ export class Layer extends ChildProperty<Layer> {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -75,6 +80,7 @@ export class Layer extends ChildProperty<Layer> {
     public addInfo: Object;
     /**
      * Defines the zOrder of the layer
+     *
      * @default -1
      */
     @Property(-1)
@@ -85,6 +91,8 @@ export class Layer extends ChildProperty<Layer> {
     public zIndexTable: {} = {};
 
     // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
         this.objects = [];

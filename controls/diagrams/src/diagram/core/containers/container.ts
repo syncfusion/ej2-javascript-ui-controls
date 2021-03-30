@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { DiagramElement } from '../elements/diagram-element';
 import { ElementAction } from '../../enum/enum';
 import { Thickness } from '../appearance';
@@ -20,7 +24,7 @@ export class Container extends DiagramElement {
      */
     public children: DiagramElement[];
 
-    //private members    
+    //private members
     private desiredBounds: Rect = undefined;
 
     /** @private */
@@ -41,15 +45,17 @@ export class Container extends DiagramElement {
 
     /**
      * Measures the minimum space that the container requires
-     * 
-     * @param {Size} availableSize 
+     *
+     * @param {Size} availableSize
+     * @param {string} id
+     * @param {Function} callback
      */
     public measure(availableSize: Size, id?: string, callback?: Function): Size {
         // measure the element and find the desired size
         this.desiredBounds = undefined;
         let desired: Size = undefined;
         let child: DiagramElement;
-        let center: PointModel = { x: 0, y: 0 };
+        const center: PointModel = { x: 0, y: 0 };
         let y: number; let x: number;
         let childBounds: Rect;
         if (this.hasChildren()) {
@@ -62,7 +68,7 @@ export class Container extends DiagramElement {
                 if (child.verticalAlignment === 'Stretch' && !availableSize.height) {
                     availableSize.height = child.bounds.height;
                 }
-                let force: boolean = child.horizontalAlignment === 'Stretch' || child.verticalAlignment === 'Stretch';
+                const force: boolean = child.horizontalAlignment === 'Stretch' || child.verticalAlignment === 'Stretch';
                 if (this.measureChildren || force || (child instanceof Container && child.measureChildren !== undefined)) {
                     child.measure(availableSize, id, callback);
                 }
@@ -83,11 +89,11 @@ export class Container extends DiagramElement {
                 }
             }
             if (this.desiredBounds !== undefined && this.rotateAngle !== 0) {
-                let offsetPt: PointModel = {
+                const offsetPt: PointModel = {
                     x: this.desiredBounds.x + this.desiredBounds.width * this.pivot.x,
                     y: this.desiredBounds.y + this.desiredBounds.height * this.pivot.y
                 };
-                let newPoint: PointModel = rotatePoint(this.rotateAngle, undefined, undefined, offsetPt);
+                const newPoint: PointModel = rotatePoint(this.rotateAngle, undefined, undefined, offsetPt);
                 this.desiredBounds.x = newPoint.x - this.desiredBounds.width * this.pivot.x;
                 this.desiredBounds.y = newPoint.y - this.desiredBounds.height * this.pivot.y;
             }
@@ -104,14 +110,15 @@ export class Container extends DiagramElement {
 
     /**
      * Arranges the container and its children
-     * @param {Size} desiredSize 
+     *
+     * @param {Size} desiredSize  - provide the desiredSize value
      */
     public arrange(desiredSize: Size): Size {
         let child: DiagramElement; let bounds: Rect;
-        let childBounds: Rect = this.desiredBounds;
+        const childBounds: Rect = this.desiredBounds;
         if (childBounds) {
-            let x: number = this.offsetX;
-            let y: number = this.offsetY;
+            const x: number = this.offsetX;
+            const y: number = this.offsetY;
 
             this.offsetX = childBounds.x + childBounds.width * this.pivot.x;
             this.offsetY = childBounds.y + childBounds.height * this.pivot.y;
@@ -153,11 +160,12 @@ export class Container extends DiagramElement {
 
     /**
      * Stretches the child elements based on the size of the container
-     * @param {Size} size 
+     *
+     * @param {Size} size  - provide the size value
      */
     protected stretchChildren(size: Size): void {
         if (this.hasChildren()) {
-            for (let child of this.children) {
+            for (const child of this.children) {
                 if (child.horizontalAlignment === 'Stretch' || child.desiredSize.width === undefined) {
                     child.desiredSize.width = size.width - child.margin.left - child.margin.right;
                 }
@@ -173,7 +181,7 @@ export class Container extends DiagramElement {
 
     /**
      * Considers the padding of the element when measuring its desired size
-     * @param {Size} size 
+     * @param {Size} size- provide the size value
      */
     protected applyPadding(size: Size): void {
         size.width += this.padding.left + this.padding.right;
@@ -182,11 +190,12 @@ export class Container extends DiagramElement {
 
     /**
      * Finds the offset of the child element with respect to the container
-     * @param {DiagramElement} child
-     * @param {PointModel} center
+     *
+     * @param {DiagramElement} child - provide the child value
+     * @param {PointModel} center- provide the center value
      */
     protected findChildOffsetFromCenter(child: DiagramElement, center: PointModel): void {
-        let topLeft: PointModel = { x: center.x - child.desiredSize.width / 2, y: center.y - child.desiredSize.height / 2 };
+        const topLeft: PointModel = { x: center.x - child.desiredSize.width / 2, y: center.y - child.desiredSize.height / 2 };
 
         let offset: PointModel = getOffset(topLeft, child);
         //Rotate based on child rotate angle
@@ -200,17 +209,17 @@ export class Container extends DiagramElement {
 
     //private methods - check its need
     private GetChildrenBounds(child: DiagramElement): Rect {
-        let childBounds: Rect; let childSize: Size;
-        childSize = child.desiredSize.clone();
+        let childBounds: Rect;
+        const childSize: Size = child.desiredSize.clone();
 
-        let diffAngle: number = child.rotateAngle - this.rotateAngle;
+        const diffAngle: number = child.rotateAngle - this.rotateAngle;
 
-        let refPoint: PointModel = { x: child.offsetX, y: child.offsetY };
+        const refPoint: PointModel = { x: child.offsetX, y: child.offsetY };
 
-        let left: number = refPoint.x - childSize.width * child.pivot.x;
-        let top: number = refPoint.y - childSize.height * child.pivot.y;
-        let right: number = left + childSize.width;
-        let bottom: number = top + childSize.height;
+        const left: number = refPoint.x - childSize.width * child.pivot.x;
+        const top: number = refPoint.y - childSize.height * child.pivot.y;
+        const right: number = left + childSize.width;
+        const bottom: number = top + childSize.height;
 
         let topLeft: PointModel = { x: left, y: top };
         let topRight: PointModel = { x: right, y: top };

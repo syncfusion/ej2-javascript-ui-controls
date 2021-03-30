@@ -92,7 +92,7 @@ describe('MultiSelect', () => {
                 keyboardEventArgs.keyCode = 113;
                 (<any>listObj).keyDownStatus = true;
                 (<any>listObj).onInput();
-                (<any>listObj).KeyUp(keyboardEventArgs);
+                (<any>listObj).keyUp(keyboardEventArgs);
                 setTimeout(() => {
                     expect(count === 1).toBe(true);
                     mouseEventArgs.target = (<any>listObj).liCollections[0];
@@ -113,7 +113,7 @@ describe('MultiSelect', () => {
                 keyboardEventArgs.keyCode = 113;
                 (<any>listObj).keyDownStatus = true;
                 (<any>listObj).onInput();
-                (<any>listObj).KeyUp(keyboardEventArgs);
+                (<any>listObj).keyUp(keyboardEventArgs);
                 setTimeout(() => {
                     expect(count === 1).toBe(true);
                     expect((<any>listObj).liCollections.length === 2).toBe(true);
@@ -211,7 +211,7 @@ describe('MultiSelect', () => {
 
         it('check whether the popup is shown or not', () => {
             mObj.focusIn();
-            mObj.ClearAll(new Event("mousedown"));
+            mObj.clearAll(new Event("mousedown"));
             let event: any = new Event('keydown');
             event.keyCode = 40;
             mObj.onKeyDown(event);
@@ -287,7 +287,7 @@ describe('MultiSelect', () => {
             keyboardEventArgs.keyCode = 70;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput();
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             expect(listObj.checkBoxSelectionModule.checkAllParent.style.display == "none").toBe(true);
         });
         it('Select all text for initial rendering', () => {
@@ -402,7 +402,7 @@ describe('MultiSelect', () => {
             event.keyCode = 67;
             event.key = "c";
             mObj.isValidKey = true;
-            mObj.KeyUp(event);
+            mObj.keyUp(event);
             mObj.actionComplete = function (e: any) {
                 if (e.result.length == 5) {
                     let li: any = mObj.popupObj.element.getElementsByTagName("li");
@@ -520,7 +520,7 @@ describe('MultiSelect', () => {
             setTimeout(() => {
                 (<any>listObj).keyDownStatus = true;
                 (<any>listObj).onInput();
-                (<any>listObj).KeyUp(keyboardEventArgs);
+                (<any>listObj).keyUp(keyboardEventArgs);
                 setTimeout(() => {
                     expect((<any>listObj).liCollections.length).toBe(1);
                     expect((<any>listObj).value).toBe(null);
@@ -665,7 +665,7 @@ describe('MultiSelect', () => {
             keyboardEventArgs.keyCode = 70;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput();
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             setTimeout(function () {
                 expect(document.body.contains((<any>listObj).popupObj.element)).toBe(true);
                 mouseEventArgs.target = (<any>listObj).liCollections[0];
@@ -675,7 +675,7 @@ describe('MultiSelect', () => {
                 keyboardEventArgs.keyCode = 70;
                 (<any>listObj).keyDownStatus = true;
                 (<any>listObj).onInput();
-                (<any>listObj).KeyUp(keyboardEventArgs);
+                (<any>listObj).keyUp(keyboardEventArgs);
                 expect(document.body.contains((<any>listObj).popupObj.element)).toBe(true);
                 done();
             }, 2000);
@@ -703,7 +703,7 @@ describe('MultiSelect', () => {
 
         it('when removed using clear button in MultiSelect', () => {
             mObj.focusIn();
-            mObj.ClearAll(new Event("mousedown"));
+            mObj.clearAll(new Event("mousedown"));
             let event: any = new Event('keydown');
             event.keyCode = 40;
             mObj.onKeyDown(event);
@@ -733,7 +733,7 @@ describe('MultiSelect', () => {
             });
             dropDowns.appendTo(element);
             dropDowns.showPopup();
-            dropDowns.ClearAll(keyboardEventArgs);
+            dropDowns.clearAll(keyboardEventArgs);
             expect(dropDowns.list.querySelector('li').getAttribute('data-value') === 'JavaScript').toBe(true);
         });
     });
@@ -1016,7 +1016,7 @@ describe('MultiSelect', () => {
             keyboardEventArgs.keyCode = 65;
             (<any>ddl).keyDownStatus = true;
             (<any>ddl).onInput();
-            (<any>ddl).KeyUp(keyboardEventArgs);
+            (<any>ddl).keyUp(keyboardEventArgs);
             expect((<any>ddl).liCollections.length).toBe(1);
         });
     });
@@ -1107,7 +1107,7 @@ describe('MultiSelect', () => {
             (<any>dropDowns).wrapperClick(mouseEventArgs);
             mouseEventArgs.target = dropDowns.componentWrapper.querySelector('.e-chips-close.e-close-hooker');
             mouseEventArgs.type = 'mouseup';
-            dropDowns.ClearAll(mouseEventArgs);
+            dropDowns.clearAll(mouseEventArgs);
             expect(dropDowns.value && dropDowns.value.length === 0).toBe(true);
         });
     });
@@ -1234,7 +1234,7 @@ describe('MultiSelect', () => {
             });
             dropDowns.appendTo(element);
             dropDowns.showPopup();
-            dropDowns.ClearAll(keyboardEventArgs);
+            dropDowns.clearAll(keyboardEventArgs);
             expect(dropDowns.componentWrapper.querySelector('.e-delim-view.e-delim-values').innerText === 'JavaScript').toBe(true);
         });
     });
@@ -1263,7 +1263,7 @@ describe('MultiSelect', () => {
             });
             dropDowns.appendTo(element);
             dropDowns.showPopup();
-            dropDowns.ClearAll(keyboardEventArgs);
+            dropDowns.clearAll(keyboardEventArgs);
             expect(dropDowns.componentWrapper.querySelector('.e-delim-view.e-delim-values').innerText === 'JavaScript').toBe(true);
         });
     });
@@ -1460,7 +1460,7 @@ describe('MultiSelect', () => {
             (<any>dropDowns).wrapperClick(mouseEventArgs);
             mouseEventArgs.target = dropDowns.componentWrapper.querySelector('.e-chips-close.e-close-hooker');
             mouseEventArgs.type = 'mouseup';
-            dropDowns.ClearAll(mouseEventArgs);
+            dropDowns.clearAll(mouseEventArgs);
             expect(ischanged).toBe(true);
         });
     });
@@ -1538,7 +1538,7 @@ describe('MultiSelect', () => {
             (<any>dropDowns).wrapperClick(mouseEventArgs);
             mouseEventArgs.target = dropDowns.componentWrapper.querySelector('.e-chips-close.e-close-hooker');
             mouseEventArgs.type = 'mouseup';
-            dropDowns.ClearAll(mouseEventArgs);
+            dropDowns.clearAll(mouseEventArgs);
             mouseEventArgs.target = document.body;
             dropDowns.onBlur(mouseEventArgs);
             expect(ischanged).toBe(true);
@@ -1587,7 +1587,7 @@ describe('MultiSelect', () => {
             keyboardEventArgs.keyCode = 65;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput();
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             expect((<any>listObj).liCollections.length).toBe(1);
             expect((<any>listObj).value).toBe(null);
             mouseEventArgs.target = (<any>listObj).liCollections[0];
@@ -1601,7 +1601,7 @@ describe('MultiSelect', () => {
             keyboardEventArgs.keyCode = 65;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput();
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             expect((<any>listObj).liCollections.length).toBe(2);
         });
     });
@@ -1640,7 +1640,7 @@ describe('MultiSelect', () => {
             listObj.hidePopup();
             listObj.selectAll(true);
             mouseEventArgs.target = (listObj as any).componentWrapper.querySelector('.e-chips-close.e-close-hooker');
-            (<any>listObj).ClearAll(mouseEventArgs);
+            (<any>listObj).clearAll(mouseEventArgs);
             expect((<any>listObj).value.length).toBe(0);
         });
     });
@@ -1731,7 +1731,7 @@ describe('MultiSelect', () => {
             setTimeout(() => {
                 (<any>listObj).keyDownStatus = true;
                 (<any>listObj).onInput();
-                (<any>listObj).KeyUp(keyboardEventArgs);
+                (<any>listObj).keyUp(keyboardEventArgs);
                 expect((<any>listObj).liCollections.length).toBe(2);
                 expect((<any>listObj).value).toBe(null);
                 mouseEventArgs.target = (<any>listObj).liCollections[0];
@@ -1840,7 +1840,7 @@ describe('MultiSelect', () => {
             keyboardEventArgs.altKey = false;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput();
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             // Tab key to focus out (hides popup)
             keyboardEventArgs.keyCode = 9;
             keyboardEventArgs.altKey = false;
@@ -1898,11 +1898,11 @@ describe('MultiSelect', () => {
             keyboardEventArgs.keyCode = 65;
             (<any>mulObj).keyDownStatus = true;
             (<any>mulObj).onInput();
-            (<any>mulObj).KeyUp(keyboardEventArgs);
+            (<any>mulObj).keyUp(keyboardEventArgs);
             expect((<any>mulObj).list.querySelectorAll('li').length === 1).toBe(true);
             // Clear the value using clear button
             mouseEventArgs.target = (<any>mulObj).overAllClear;
-            (<any>mulObj).ClearAll(mouseEventArgs);
+            (<any>mulObj).clearAll(mouseEventArgs);
             expect((<any>mulObj).value.length === 0).toBe(true);
             expect((<any>mulObj).list.querySelectorAll('li').length === 1).toBe(true);
         });
@@ -2112,7 +2112,7 @@ describe('MultiSelect', () => {
             keyboardEventArgs.keyCode = 88;
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput();
-            (<any>listObj).KeyUp(keyboardEventArgs);
+            (<any>listObj).keyUp(keyboardEventArgs);
             expect((<any>listObj).ulElement.querySelectorAll('li').length).toBe(1);
             listObj.onBlur();
             (<any>listObj).wrapperClick(mouseEventArgs);
@@ -2479,4 +2479,5 @@ describe('MultiSelect', () => {
             }
         });
     });
+
 });

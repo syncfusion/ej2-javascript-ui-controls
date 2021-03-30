@@ -1,3 +1,6 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable max-len */
+
 import { createElement, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { LinearGauge } from '../../linear-gauge';
 import { Axis } from '../axes/axis';
@@ -8,21 +11,21 @@ import { annotationRender } from '../model/constant';
 import { IAnnotationRenderEventArgs } from '../model/interface';
 
 /**
- * Represent the Annotation rendering for gauge 
+ * Represent the Annotation rendering for gauge
  */
 
 export class Annotations {
     private gauge: LinearGauge;
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(gauge: LinearGauge) {
         this.gauge = gauge;
     }
     /**
      * To render annotation elements
      */
-     //tslint:disable
     public renderAnnotationElements(): void {
-        let secondaryID: string = this.gauge.element.id + '_Secondary_Element';
-        let annotationGroup: HTMLElement = createElement('div', { id: this.gauge.element.id + '_AnnotationsGroup' });
+        const secondaryID: string = this.gauge.element.id + '_Secondary_Element';
+        const annotationGroup: HTMLElement = createElement('div', { id: this.gauge.element.id + '_AnnotationsGroup' });
         annotationGroup.style.position = 'absolute';
         annotationGroup.style.top = '0px';
         annotationGroup.style.left = '0px';
@@ -37,21 +40,21 @@ export class Annotations {
                 updateBlazorTemplate(this.gauge.element.id + '_ContentTemplate' + i, 'ContentTemplate', this.gauge.annotations[i]);
             }
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (this.gauge as any).renderReactTemplates();
     }
     /**
      * To create annotation elements
      */
-    //tslint:disable
     public createAnnotationTemplate(element: HTMLElement, annotationIndex: number): void {
-        let left: number; let top: number; let templateFn: Function;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let left: number; let top: number; let templateFn: any;
         let renderAnnotation: boolean = false;
         let templateElement: HTMLCollection; let axis: Axis;
         let axisIndex: number; let axisValue: number;
-        let id: string = this.gauge.element.id + '_Annotation_' + annotationIndex;
-        let annotation: Annotation = <Annotation>this.gauge.annotations[annotationIndex];
-        let childElement: HTMLElement;
-        childElement = createElement('div', {
+        const id: string = this.gauge.element.id + '_Annotation_' + annotationIndex;
+        const annotation: Annotation = <Annotation>this.gauge.annotations[annotationIndex];
+        const childElement: HTMLElement = createElement('div', {
             id: this.gauge.element.id + '_Annotation_' + annotationIndex, styles: 'position: absolute; z-index:' + annotation.zIndex + ';'
         });
         let argsData: IAnnotationRenderEventArgs = {
@@ -60,7 +63,7 @@ export class Annotations {
         };
         argsData.textStyle.color = annotation.font.color || this.gauge.themeStyle.labelColor;
         if (this.gauge.isBlazor) {
-            let {cancel, name, content, annotation, textStyle} : IAnnotationRenderEventArgs = argsData;
+            const {cancel, name, content, annotation, textStyle} : IAnnotationRenderEventArgs = argsData;
             argsData = {cancel, name, content, annotation, textStyle};
         }
         this.gauge.trigger(annotationRender, argsData, (observerArgs: IAnnotationRenderEventArgs) => {
@@ -68,7 +71,7 @@ export class Annotations {
                 templateFn = getTemplateFunction(argsData.content);
                 if (templateFn && (!this.gauge.isBlazor ? templateFn(this.gauge, this.gauge, argsData.content, this.gauge.element.id + '_ContentTemplate' + annotationIndex).length : {})) {
                     templateElement = Array.prototype.slice.call(templateFn(!this.gauge.isBlazor ? this.gauge : {}, this.gauge, argsData.content, this.gauge.element.id + '_ContentTemplate' + annotationIndex));
-                    let length: number = templateElement.length;
+                    const length: number = templateElement.length;
                     for (let i: number = 0; i < length; i++) {
                         childElement.appendChild(templateElement[i]);
                     }
@@ -78,13 +81,13 @@ export class Annotations {
                         styles: getFontStyle(argsData.textStyle)
                     }));
                 }
-                let offset: Size = getElementOffset(<HTMLElement>childElement.cloneNode(true), this.gauge.element);
+                const offset: Size = getElementOffset(<HTMLElement>childElement.cloneNode(true), this.gauge.element);
                 if (!(isNullOrUndefined(annotation.axisValue))) {
                     axisIndex = isNullOrUndefined(annotation.axisIndex) ? 0 : annotation.axisIndex;
                     axis = <Axis>this.gauge.axes[axisIndex];
-                    let range: VisibleRange = axis.visibleRange;
+                    const range: VisibleRange = axis.visibleRange;
                     renderAnnotation = (annotation.axisValue >= range.min && annotation.axisValue <= range.max) ? true : false;
-                    let line: Rect = axis.lineBounds;
+                    const line: Rect = axis.lineBounds;
                     if (this.gauge.orientation === 'Vertical') {
                         left = line.x + annotation.x;
                         top = ((valueToCoefficient(annotation.axisValue, axis, this.gauge.orientation, range) * line.height) + line.y);
@@ -97,34 +100,34 @@ export class Annotations {
                     left -= (offset.width / 2);
                     top -= (offset.height / 2);
                 } else {
-                    let elementRect: ClientRect = this.gauge.element.getBoundingClientRect();
-                    let bounds: ClientRect = this.gauge.svgObject.getBoundingClientRect();
+                    const elementRect: ClientRect = this.gauge.element.getBoundingClientRect();
+                    const bounds: ClientRect = this.gauge.svgObject.getBoundingClientRect();
                     renderAnnotation = true;
                     left = Math.abs(bounds.left - elementRect.left);
                     top = Math.abs(bounds.top - elementRect.top);
                     left = (annotation.horizontalAlignment === 'None') ? (left + annotation.x) : left;
                     top = (annotation.verticalAlignment === 'None') ? top + annotation.y : top;
                     switch (annotation.verticalAlignment) {
-                        case 'Near':
-                            top = top + annotation.y;
-                            break;
-                        case 'Center':
-                            top = top + annotation.y + ((bounds.height / 2) - (offset.height / 2));
-                            break;
-                        case 'Far':
-                            top = (top + bounds.height) + annotation.y - offset.height;
-                            break;
+                    case 'Near':
+                        top = top + annotation.y;
+                        break;
+                    case 'Center':
+                        top = top + annotation.y + ((bounds.height / 2) - (offset.height / 2));
+                        break;
+                    case 'Far':
+                        top = (top + bounds.height) + annotation.y - offset.height;
+                        break;
                     }
                     switch (annotation.horizontalAlignment) {
-                        case 'Near':
-                            left = left + annotation.x;
-                            break;
-                        case 'Center':
-                            left = left + annotation.x + ((bounds.width / 2) - (offset.width / 2));
-                            break;
-                        case 'Far':
-                            left = (left + bounds.width) + annotation.x - offset.width;
-                            break;
+                    case 'Near':
+                        left = left + annotation.x;
+                        break;
+                    case 'Center':
+                        left = left + annotation.x + ((bounds.width / 2) - (offset.width / 2));
+                        break;
+                    case 'Far':
+                        left = (left + bounds.width) + annotation.x - offset.width;
+                        break;
                     }
                 }
                 childElement.style.left = left + 'px';
@@ -145,7 +148,8 @@ export class Annotations {
     }
 
     /**
-     * To destroy the annotation. 
+     * To destroy the annotation.
+     *
      * @return {void}
      * @private
      */

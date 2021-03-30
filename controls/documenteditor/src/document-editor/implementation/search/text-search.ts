@@ -12,7 +12,7 @@ import { TextSearchResults } from './text-search-results';
 import { DocumentEditor } from '../../document-editor';
 import { DocumentHelper } from '../index';
 import { SearchResultsChangeEventArgs } from '../../base';
-/** 
+/**
  * @private
  */
 export class TextSearch {
@@ -23,7 +23,7 @@ export class TextSearch {
     private isFooter: boolean = false;
     private documentHelper: DocumentHelper;
 
-    constructor(owner: DocumentEditor) {
+    public constructor(owner: DocumentEditor) {
         this.owner = owner;
         this.documentHelper = this.owner.documentHelper;
     }
@@ -31,7 +31,6 @@ export class TextSearch {
     public find(pattern: string | RegExp, findOption?: FindOption): TextSearchResult {
         return this.findNext(pattern, findOption, '0;0;0');
     }
-    // tslint:disable-next-line:max-line-length   
     public findNext(pattern: string | RegExp, findOption?: FindOption, hierarchicalPosition?: string): TextSearchResult {
         if (typeof pattern === 'string') {
             pattern = this.stringToRegex(pattern, findOption);
@@ -40,7 +39,7 @@ export class TextSearch {
             hierarchicalPosition = '0;0;0';
         }
         this.owner.searchModule.textSearchResults.clearResults();
-        let results: TextSearchResults = this.owner.searchModule.textSearchResults;
+        const results: TextSearchResults = this.owner.searchModule.textSearchResults;
         this.findDocument(results, pattern, true, findOption, hierarchicalPosition);
         return results.length > 0, results.currentSearchResult;
     }
@@ -48,11 +47,11 @@ export class TextSearch {
         if (textToFind.indexOf('\\') > -1) {
             textToFind = textToFind.split('\\').join('\\\\');
         }
-        // tslint:disable-next-line:max-line-length
+        // eslint-disable-next-line max-len
         if (textToFind.indexOf('(') > -1 || textToFind.indexOf(')') > -1 || textToFind.indexOf('.') > -1 || textToFind.indexOf('[') > -1 || textToFind.indexOf(']') > -1 || textToFind.indexOf('$') > -1 || textToFind.indexOf('{') > -1 || textToFind.indexOf('}') > -1 || textToFind.indexOf('*') > -1 || textToFind.indexOf('|') > -1 || textToFind.indexOf('^') > -1 || textToFind.indexOf('?') > -1) {
             let text: string = '';
             for (let i: number = 0; i < textToFind.length; i++) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 if (textToFind[i] === '(' || textToFind[i] === ')' || textToFind[i] === '.' || textToFind[i] === '[' || textToFind[i] === ']' || textToFind[i] === '$' || textToFind[i] === '{' || textToFind[i] === '}' || textToFind[i] === '*' || textToFind[i] === '|' || textToFind[i] === '^' || textToFind[i] === '?') {
                     text += '\\' + textToFind[i];
                 } else {
@@ -67,11 +66,10 @@ export class TextSearch {
         return new RegExp(textToFind, (option === 'CaseSensitive' || option === 'CaseSensitiveWholeWord') ? 'g' : 'ig');
     }
     public isPatternEmpty(pattern: RegExp): boolean {
-        let wordEmpty: string = this.wordBefore + this.wordAfter;
-        let patternRegExp: string = pattern.toString();
+        const wordEmpty: string = this.wordBefore + this.wordAfter;
+        const patternRegExp: string = pattern.toString();
         return (patternRegExp.length === 0 || patternRegExp === wordEmpty);
     }
-    // tslint:disable-next-line:max-line-length     
     public findAll(pattern: string | RegExp, findOption?: FindOption, hierarchicalPosition?: string): TextSearchResults {
         if (typeof pattern === 'string') {
             pattern = this.stringToRegex(pattern, findOption);
@@ -80,32 +78,25 @@ export class TextSearch {
             hierarchicalPosition = '0;0;0';
         }
         this.owner.searchModule.textSearchResults.clearResults();
-        let results: TextSearchResults = this.owner.searchModule.textSearchResults;
+        const results: TextSearchResults = this.owner.searchModule.textSearchResults;
         this.findDocument(results, pattern, false, findOption, hierarchicalPosition);
         if (results.length > 0 && results.currentIndex < 0) {
             results.currentIndex = 0;
         }
         if (!isNullOrUndefined(results.currentSearchResult)) {
-            let eventArgs: SearchResultsChangeEventArgs = { source: this.documentHelper.owner };
+            const eventArgs: SearchResultsChangeEventArgs = { source: this.documentHelper.owner };
             this.documentHelper.owner.trigger('searchResultsChange', eventArgs);
             return results;
         }
         return undefined;
     }
-    /**
-     * Method to retrieve text from a line widget
-     * @param  {ElementBox} inlineElement 
-     * @param {number} indexInInline 
-     * @param {boolean} includeNextLine 
-     * @private
-     */
+
     public getElementInfo(inlineElement: ElementBox, indexInInline: number, includeNextLine?: boolean): TextInLineInfo {
-        let inlines: ElementBox = inlineElement;
+        const inlines: ElementBox = inlineElement;
         let stringBuilder: string = '';
-        let spans: Dictionary<TextElementBox, number> = new Dictionary<TextElementBox, number>();
-        //tslint:disable no-constant-condition
+        const spans: Dictionary<TextElementBox, number> = new Dictionary<TextElementBox, number>();
+        // eslint-disable  no-constant-condition
         do {
-            // tslint:disable-next-line:max-line-length 
             if (inlineElement instanceof TextElementBox && (!isNullOrUndefined((inlineElement as TextElementBox).text) && (inlineElement as TextElementBox).text !== '')) {
                 spans.add(inlineElement as TextElementBox, stringBuilder.length);
                 // IndexInInline Handled specifically for simple find operation to start from starting point
@@ -115,9 +106,9 @@ export class TextSearch {
                     stringBuilder = stringBuilder + ((inlineElement as TextElementBox).text);
                 }
             } else if (inlineElement instanceof FieldElementBox) {
-                let fieldBegin: FieldElementBox = inlineElement as FieldElementBox;
+                const fieldBegin: FieldElementBox = inlineElement as FieldElementBox;
                 if (!isNullOrUndefined(fieldBegin.fieldEnd)) {
-                    // tslint:disable-next-line:max-line-length 
+                    // eslint-disable-next-line max-len
                     inlineElement = isNullOrUndefined(fieldBegin.fieldSeparator) ? fieldBegin.fieldEnd as FieldElementBox : fieldBegin.fieldSeparator as FieldElementBox;
                 }
             }
@@ -126,8 +117,8 @@ export class TextSearch {
             }
             if (!isNullOrUndefined(inlineElement)) {
                 if ((!isNullOrUndefined(includeNextLine) && !includeNextLine)) {
-                    let elementBoxes: ElementBox[] = inlineElement.line.children;
-                    let length: number = inlineElement.line.children.length;
+                    const elementBoxes: ElementBox[] = inlineElement.line.children;
+                    const length: number = inlineElement.line.children.length;
                     if (elementBoxes.indexOf(inlineElement) < length - 1) {
                         inlineElement = inlineElement.nextNode;
                     } else {
@@ -138,35 +129,26 @@ export class TextSearch {
                     inlineElement = inlineElement.nextNode;
                 }
             }
+        // eslint-disable-next-line no-constant-condition
         } while (true);
 
-        let text: string = stringBuilder.toString();
+        const text: string = stringBuilder.toString();
 
         return { elementsWithOffset: spans, fullText: text };
     }
-    /**
-     * Method to update location for matched text
-     * @param {RegExpExecArray} matches 
-     * @param {TextSearchResults} results 
-     * @param {Dictionary<TextElementBox, number>} textInfo 
-     * @param {number}indexInInline 
-     * @param {boolean} isInline 
-     * @param {boolean}isFirstMatch 
-     * @param {TextPosition}selectionEnd 
-     */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     public updateMatchedTextLocation(matches: RegExpExecArray[], results: TextSearchResults, textInfo: Dictionary<TextElementBox, number>, indexInInline: number, inlines: ElementBox, isFirstMatch: boolean, selectionEnd: TextPosition, startPosition?: number): void {
         for (let i: number = 0; i < matches.length; i++) {
-            let match: RegExpExecArray = matches[i];
+            const match: RegExpExecArray = matches[i];
             let isMatched: boolean;
             if (!(isNullOrUndefined(startPosition)) && match.index < startPosition) {
                 continue;
             }
-            let result: TextSearchResult = results.addResult();
-            let spanKeys: TextElementBox[] = textInfo.keys;
+            const result: TextSearchResult = results.addResult();
+            const spanKeys: TextElementBox[] = textInfo.keys;
             for (let i: number = 0; i < spanKeys.length; i++) {
-                let span: TextElementBox = spanKeys[i];
-                let startIndex: number = textInfo.get(span);
+                const span: TextElementBox = spanKeys[i];
+                const startIndex: number = textInfo.get(span);
                 let spanLength: number = span.length;
                 // IndexInInline Handled specifically for simple find operation to start from starting point
                 if (span as ElementBox === inlines) {
@@ -178,7 +160,7 @@ export class TextSearch {
                     if (span as ElementBox === inlines) {
                         index += indexInInline;
                     }
-                    let offset: number = (span.line).getOffset(span, index);
+                    const offset: number = (span.line).getOffset(span, index);
                     result.start = this.getTextPosition(span.line, offset.toString());
                     result.start.location = this.owner.selection.getPhysicalPositionInternal(span.line, offset, true);
                     result.start.setPositionParagraph(span.line, offset);
@@ -189,7 +171,7 @@ export class TextSearch {
                     if (span as ElementBox === inlines) {
                         index += indexInInline;
                     }
-                    let offset: number = (span.line).getOffset(span, index);
+                    const offset: number = (span.line).getOffset(span, index);
                     result.end = this.getTextPosition(span.line, offset.toString());
                     result.end.location = this.owner.selection.getPhysicalPositionInternal(span.line, offset, true);
                     result.end.setPositionParagraph(span.line, offset);
@@ -202,7 +184,6 @@ export class TextSearch {
             if (isFirstMatch) {
                 results.currentIndex = 0;
                 break;
-                // tslint:disable-next-line:max-line-length   
             } else if (results.currentIndex < 0 && !isNullOrUndefined(selectionEnd) && (selectionEnd.isExistBefore(result.start) ||
                 selectionEnd.isAtSamePosition(result.start))) {
                 results.currentIndex = results.indexOf(result);
@@ -212,7 +193,7 @@ export class TextSearch {
             }
         }
     }
-    // tslint:disable-next-line:max-line-length     
+    // eslint-disable-next-line max-len
     private findDocument(results: TextSearchResults, pattern: RegExp, isFirstMatch: boolean, findOption?: FindOption, hierachicalPosition?: string): void {
         if (this.isPatternEmpty(pattern)) {
             return;
@@ -228,24 +209,23 @@ export class TextSearch {
         if (hierachicalPosition !== undefined && isFirstMatch && selectionEnd !== undefined && selectionEnd.paragraph !== undefined) {
             if (selectionEnd.paragraph instanceof ParagraphWidget) {
                 let indexInInline: number = 0;
-                // tslint:disable-next-line:max-line-length 
                 // IndexInInline Handled specifically for simple find operation to start from starting point
-                let inlineElement: ElementInfo = (selectionEnd.currentWidget as LineWidget).getInline(this.owner.selection.start.offset, indexInInline);
+                // eslint-disable-next-line max-len
+                const inlineElement: ElementInfo = (selectionEnd.currentWidget as LineWidget).getInline(this.owner.selection.start.offset, indexInInline);
                 inline = inlineElement.element as ElementBox;
                 indexInInline = inlineElement.index;
                 if (!isNullOrUndefined(inline)) {
                     let nextParagraphWidget: ParagraphWidget = undefined;
-                    // tslint:disable-next-line:max-line-length  
                     nextParagraphWidget = this.findInline(inline, pattern, findOption, indexInInline, isFirstMatch, results, selectionEnd);
                     while (results.length === 0 && !isNullOrUndefined(nextParagraphWidget)) {
                         while (!isNullOrUndefined(nextParagraphWidget) && nextParagraphWidget.childWidgets.length === 0) {
-                            // tslint:disable-next-line:max-line-length 
+                            // eslint-disable-next-line max-len
                             nextParagraphWidget = this.owner.selection.getNextParagraph(nextParagraphWidget.containerWidget as BodyWidget) as ParagraphWidget;
                         }
                         if (isNullOrUndefined(nextParagraphWidget)) {
                             break;
                         }
-                        let lineWidget: LineWidget = nextParagraphWidget.childWidgets[0] as LineWidget;
+                        const lineWidget: LineWidget = nextParagraphWidget.childWidgets[0] as LineWidget;
                         if (lineWidget.children[0] instanceof ListTextElementBox) {
                             inline = (lineWidget.children[2] instanceof TextElementBox) ? lineWidget.children[2] as ElementBox : undefined;
                         } else {
@@ -254,7 +234,6 @@ export class TextSearch {
                         if (isNullOrUndefined(inline)) {
                             break;
                         }
-                        // tslint:disable-next-line:max-line-length  
                         nextParagraphWidget = this.findInline(inline, pattern, findOption, 0, isFirstMatch, results, selectionEnd);
                     }
                     if (results.length > 0) {
@@ -274,14 +253,14 @@ export class TextSearch {
         this.isHeader = false; this.isFooter = false;
         this.findInlineText(section, pattern, findOption, isFirstMatch, results, selectionEnd);
         for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
-            let headerWidget: HeaderFooterWidget = this.documentHelper.pages[i].headerWidget as HeaderFooterWidget;
+            const headerWidget: HeaderFooterWidget = this.documentHelper.pages[i].headerWidget as HeaderFooterWidget;
             if (!isNullOrUndefined(headerWidget)) {
                 this.isHeader = true; this.isFooter = false;
                 this.findInlineText(headerWidget, pattern, findOption, isFirstMatch, results, selectionEnd);
             }
         }
         for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
-            let footerWidget: HeaderFooterWidget = this.documentHelper.pages[i].footerWidget as HeaderFooterWidget;
+            const footerWidget: HeaderFooterWidget = this.documentHelper.pages[i].footerWidget as HeaderFooterWidget;
             if (!isNullOrUndefined(footerWidget)) {
                 this.isHeader = false; this.isFooter = true;
                 this.findInlineText(footerWidget, pattern, findOption, isFirstMatch, results, selectionEnd);
@@ -291,22 +270,22 @@ export class TextSearch {
             return;
         }
     }
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     private findInlineText(section: Widget, pattern: RegExp, findOption: FindOption, isFirstMatch: boolean, results: TextSearchResults, selectionEnd: TextPosition): void {
         let paragraphWidget: ParagraphWidget = this.owner.selection.getFirstParagraphBlock(section.childWidgets[0] as BlockWidget);
-        // tslint:disable-next-line:max-line-length 
+        // eslint-disable-next-line max-len
         while (!isNullOrUndefined(paragraphWidget) && paragraphWidget.childWidgets.length === 1 && (paragraphWidget.childWidgets[0] as LineWidget).children.length === 0) {
             paragraphWidget = this.owner.selection.getNextParagraphBlock(paragraphWidget) as ParagraphWidget;
         }
         while (!isNullOrUndefined(paragraphWidget) && paragraphWidget.childWidgets.length > 0) {
-            let inlineElement: LineWidget = paragraphWidget.childWidgets[0] as LineWidget;
-            let inlineEle: ElementBox = inlineElement.children[0] as ElementBox;
+            const inlineElement: LineWidget = paragraphWidget.childWidgets[0] as LineWidget;
+            const inlineEle: ElementBox = inlineElement.children[0] as ElementBox;
             if (isNullOrUndefined(inlineEle)) {
                 break;
             }
             this.findInline(inlineEle, pattern, findOption, 0, isFirstMatch, results, selectionEnd);
             paragraphWidget = this.owner.selection.getNextParagraphBlock(paragraphWidget) as ParagraphWidget;
-            // tslint:disable-next-line:max-line-length 
+            // eslint-disable-next-line max-len
             while (!isNullOrUndefined(paragraphWidget) && (paragraphWidget.childWidgets.length === 1) && (paragraphWidget.childWidgets[0] as LineWidget).children.length === 0) {
                 paragraphWidget = this.owner.selection.getNextParagraphBlock(paragraphWidget) as ParagraphWidget;
             }
@@ -315,15 +294,15 @@ export class TextSearch {
             return;
         }
     }
-    // tslint:disable-next-line:max-line-length     
+    // eslint-disable-next-line max-len
     private findInline(inlineElement: ElementBox, pattern: RegExp, option: FindOption, indexInInline: number, isFirstMatch: boolean, results: TextSearchResults, selectionEnd: TextPosition): ParagraphWidget {
-        let inlines: ElementBox = inlineElement;
-        let textInfo: TextInLineInfo = this.getElementInfo(inlineElement, indexInInline);
-        let text: string = textInfo.fullText;
-        let matches: RegExpExecArray[] = [];
-        let spans: Dictionary<TextElementBox, number> = textInfo.elementsWithOffset;
+        const inlines: ElementBox = inlineElement;
+        const textInfo: TextInLineInfo = this.getElementInfo(inlineElement, indexInInline);
+        const text: string = textInfo.fullText;
+        const matches: RegExpExecArray[] = [];
+        const spans: Dictionary<TextElementBox, number> = textInfo.elementsWithOffset;
         let matchObject: RegExpExecArray;
-        //tslint:disable no-conditional-assignment
+        // eslint-disable-next-line no-cond-assign
         while (!isNullOrUndefined(matchObject = pattern.exec(text))) {
             matches.push(matchObject);
         }
@@ -332,44 +311,38 @@ export class TextSearch {
         if (isFirstMatch) {
             return undefined;
         }
-        // tslint:disable-next-line:max-line-length
-        let paragraphWidget: ParagraphWidget = this.owner.selection.getNextParagraphBlock(inlineElement.line.paragraph) as ParagraphWidget;
+        // eslint-disable-next-line max-len
+        const paragraphWidget: ParagraphWidget = this.owner.selection.getNextParagraphBlock(inlineElement.line.paragraph) as ParagraphWidget;
         return paragraphWidget;
     }
-    /**
-     * Method to get text position
-     * @param {LineWidget} lineWidget 
-     * @param {string} hierarchicalIndex 
-     * @private
-     */
     public getTextPosition(lineWidget: LineWidget, hierarchicalIndex: string): TextPosition {
-        let textPosition: TextPosition = new TextPosition(this.owner);
-        let index: string = textPosition.getHierarchicalIndex(lineWidget, hierarchicalIndex);
+        const textPosition: TextPosition = new TextPosition(this.owner);
+        const index: string = textPosition.getHierarchicalIndex(lineWidget, hierarchicalIndex);
         textPosition.setPositionForCurrentIndex(index);
         return textPosition;
     }
 }
-/** 
+/**
  * @private
  */
 export class SearchWidgetInfo {
     private leftInternal: number = 0;
     private widthInternal: number = 0;
 
-    get left(): number {
+    public get left(): number {
         return this.leftInternal;
     }
-    set left(value: number) {
+    public set left(value: number) {
         this.leftInternal = value;
     }
-    get width(): number {
+    public get width(): number {
         return this.widthInternal;
     }
-    set width(value: number) {
+    public set width(value: number) {
         this.widthInternal = value;
     }
 
-    constructor(left: number, width: number) {
+    public constructor(left: number, width: number) {
         this.leftInternal = left;
         this.widthInternal = width;
     }

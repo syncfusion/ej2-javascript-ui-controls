@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * @hidden
  */
@@ -88,7 +89,7 @@ export type PdfAnnotationType =
  * IndentedArrow - Sets the decorator shape as Indented Arrow
  * OutdentedArrow - Sets the decorator shape as Outdented Arrow
  * DoubleArrow - Sets the decorator shape as DoubleArrow
- * 
+ *
  * @hidden
  */
 export type DecoratorShapes =

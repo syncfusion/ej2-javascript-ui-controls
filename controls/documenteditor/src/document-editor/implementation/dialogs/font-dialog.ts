@@ -7,11 +7,10 @@ import { WCharacterFormat } from '../format/character-format';
 import { Underline, Strikethrough, BaselineAlignment } from '../../base/types';
 import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
 import { DocumentHelper } from '../viewer';
-
+/* eslint-disable */
 /**
  * The Font dialog is used to modify formatting of selected text.
  */
-/* tslint:disable:no-any */
 export class FontDialog {
     private fontStyleInternal: string = undefined;
     public documentHelper: DocumentHelper;
@@ -41,50 +40,56 @@ export class FontDialog {
      * @private
      */
     public characterFormat: WCharacterFormat = undefined;
+
     /**
      * @private
+     * @returns {string} returns font style
      */
-    get fontStyle(): string {
+    public  get fontStyle(): string {
         return this.fontStyleInternal;
     }
     /**
      * @private
+     * @param {string} value Specifies font style
      */
-    set fontStyle(value: string) {
+    public set fontStyle(value: string) {
         this.fontStyleInternal = value;
         switch (this.fontStyle) {
-            case 'Bold':
-                this.bold = true;
-                this.italic = false;
-                break;
-            case 'Italic':
-                this.bold = false;
-                this.italic = true;
-                break;
-            case 'BoldItalic':
-                this.bold = true;
-                this.italic = true;
-                break;
-            case 'Regular':
-                this.bold = false;
-                this.italic = false;
-                break;
+        case 'Bold':
+            this.bold = true;
+            this.italic = false;
+            break;
+        case 'Italic':
+            this.bold = false;
+            this.italic = true;
+            break;
+        case 'BoldItalic':
+            this.bold = true;
+            this.italic = true;
+            break;
+        case 'Regular':
+            this.bold = false;
+            this.italic = false;
+            break;
         }
     }
     /**
+     * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
      */
-    constructor(documentHelper: DocumentHelper) {
+    public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
     }
+
     /**
      * @private
+     * @returns {string} Returns module name
      */
     public getModuleName(): string {
         return 'FontDialog';
     }
     private createInputElement(type: string, id: string, className: string): HTMLInputElement {
-        let element: HTMLInputElement = createElement('input', {
+        const element: HTMLInputElement = createElement('input', {
             attrs: { type: type },
             id: id,
             className: className
@@ -93,9 +98,11 @@ export class FontDialog {
     }
     /**
      * @private
+     * @param {L10n} locale - Specifies the locale.
+     * @param {boolean} isRtl - Specifies is rtl.
+     * @returns {void}
      */
     public initFontDialog(locale: L10n, isRtl?: boolean): void {
-        let instance: FontDialog = this;
 
         let effectLabel: HTMLElement;
         let strikeThroughElement: HTMLInputElement;
@@ -103,15 +110,15 @@ export class FontDialog {
         let subScriptElement: HTMLInputElement;
         let doubleStrikeThroughElement: HTMLInputElement;
         let allCapsElement: HTMLInputElement;
-        let id: string = this.documentHelper.owner.containerId;
+        const id: string = this.documentHelper.owner.containerId;
         this.target = createElement('div', { id: id + '_insertFontDialog', className: 'e-de-font-dlg' });
-        let fontDiv: HTMLElement = this.getFontDiv(locale, isRtl);
+        const fontDiv: HTMLElement = this.getFontDiv(locale, isRtl);
         this.target.appendChild(fontDiv);
-        let sizeDiv: HTMLElement = this.getFontSizeDiv(locale, isRtl);
+        const sizeDiv: HTMLElement = this.getFontSizeDiv(locale, isRtl);
         this.target.appendChild(sizeDiv);
-        let colorDiv: HTMLElement = createElement('div', { id: id + '_fontColor', styles: 'margin-top:14px;' });
+        const colorDiv: HTMLElement = createElement('div', { id: id + '_fontColor', styles: 'margin-top:14px;' });
         this.fontColorDiv = createElement('div', { id: id + '_fontColorDiv', className: 'e-de-font-dlg-display' });
-        let fontColorLabel: HTMLElement = createElement('label', {
+        const fontColorLabel: HTMLElement = createElement('label', {
             className: 'e-de-font-dlg-header-font-color e-de-font-color-margin',
             innerHTML: locale.getConstant('Font color'), styles: 'width:63px'
         });
@@ -119,12 +126,12 @@ export class FontDialog {
             fontColorLabel.classList.add('e-de-rtl');
         }
         this.fontColorDiv.appendChild(fontColorLabel);
-        let fontColorElement: HTMLElement = this.createInputElement('color', this.target.id + '_ColorDiv', 'e-de-font-dlg-color');
+        const fontColorElement: HTMLElement = this.createInputElement('color', this.target.id + '_ColorDiv', 'e-de-font-dlg-color');
         this.fontColorDiv.appendChild(fontColorElement);
         colorDiv.appendChild(this.fontColorDiv);
         this.target.appendChild(colorDiv);
-        let fontEffectsDiv: HTMLElement = createElement('div', { id: id + '_fontEffectsDiv' });
-        let fontEffectSubDiv1: HTMLElement = createElement('div', {
+        const fontEffectsDiv: HTMLElement = createElement('div', { id: id + '_fontEffectsDiv' });
+        const fontEffectSubDiv1: HTMLElement = createElement('div', {
             className: 'e-de-font-color-label e-de-font-dlg-display',
             id: this.target.id + '_fontEffectsSubDiv1'
         });
@@ -138,14 +145,13 @@ export class FontDialog {
         superScriptElement = this.createInputElement('checkbox', this.target.id + '_superScript', '') as HTMLInputElement;
         fontEffectSubDiv1.appendChild(superScriptElement);
         fontEffectsDiv.appendChild(fontEffectSubDiv1);
-        let fontEffectSubDiv2: HTMLElement = createElement('div', { className: 'e-de-font-checkbox', id: id + '_fontEffectsSubDiv2' });
+        const fontEffectSubDiv2: HTMLElement = createElement('div', { className: 'e-de-font-checkbox', id: id + '_fontEffectsSubDiv2' });
         subScriptElement = this.createInputElement('checkbox', this.target.id + '_subScript', '') as HTMLInputElement;
         fontEffectSubDiv2.appendChild(subScriptElement);
         doubleStrikeThroughElement = this.createInputElement('checkbox', this.target.id + '_doubleStrikeThrough', '') as HTMLInputElement;
         fontEffectSubDiv2.appendChild(doubleStrikeThroughElement);
         fontEffectsDiv.appendChild(fontEffectSubDiv2);
-        // tslint:disable-next-line:max-line-length
-        let fontEffectSubDiv3: HTMLElement = createElement('div', { className: 'e-de-font-checkbox-transform-label e-de-font-checkbox-transform', id: id + '_fontEffectsSubDiv3' });
+        const fontEffectSubDiv3: HTMLElement = createElement('div', { className: 'e-de-font-checkbox-transform-label e-de-font-checkbox-transform', id: id + '_fontEffectsSubDiv3' });
         allCapsElement = this.createInputElement('checkbox', this.target.id + '_allCaps', '') as HTMLInputElement;
         fontEffectSubDiv3.appendChild(allCapsElement);
         fontEffectsDiv.appendChild(fontEffectSubDiv3);
@@ -196,11 +202,11 @@ export class FontDialog {
     private getFontSizeDiv(locale: L10n, isRtl?: boolean): HTMLElement {
         let fontSize: HTMLSelectElement;
         let sizeDiv: HTMLElement;
-        let id: string = this.documentHelper.owner.containerId;
+        const id: string = this.documentHelper.owner.containerId;
         sizeDiv = createElement('div', { id: id + '_fontSizeAndUnderlineDiv', className: 'e-de-font-dlg-padding e-de-font-dlg-display' });
-        let sizeSubDiv1: HTMLElement = createElement('div', { id: id + '_fontSizeAndUnderlineSubDiv1' });
-        let sizeLabel: HTMLElement = createElement('label', { className: 'e-de-font-dlg-header', innerHTML: locale.getConstant('Size') });
-        let styles: string = 'font-family:Roboto;font-size:14px;opacity:0.8;';
+        const sizeSubDiv1: HTMLElement = createElement('div', { id: id + '_fontSizeAndUnderlineSubDiv1' });
+        const sizeLabel: HTMLElement = createElement('label', { className: 'e-de-font-dlg-header', innerHTML: locale.getConstant('Size') });
+        const styles: string = 'font-family:Roboto;font-size:14px;opacity:0.8;';
         fontSize = createElement('select', { id: this.target.id + '_fontSize', styles: styles }) as HTMLSelectElement;
         fontSize.innerHTML = '<option>8</option><option>9</option><option>10</option><option>11</option><option>12</option>' +
             '<option>14</option><option>16</option><option>18</option><option>20</option><option>24</option><option>26</option>' +
@@ -208,15 +214,15 @@ export class FontDialog {
         sizeSubDiv1.appendChild(sizeLabel);
         sizeSubDiv1.appendChild(fontSize);
         sizeDiv.appendChild(sizeSubDiv1);
-        let sizeSubDiv2: HTMLElement = createElement('div', {
+        const sizeSubDiv2: HTMLElement = createElement('div', {
             className: 'e-de-font-dlg-cb-right',
             id: id + '_fontSizeAndUnderlineSubDiv2'
         });
         if (isRtl) {
             sizeSubDiv2.classList.add('e-de-rtl');
         }
-        let html: string = locale.getConstant('Underline style');
-        let underlineLabel: HTMLElement = createElement('label', { className: 'e-de-font-dlg-header', innerHTML: html });
+        const html: string = locale.getConstant('Underline style');
+        const underlineLabel: HTMLElement = createElement('label', { className: 'e-de-font-dlg-header', innerHTML: html });
         let underlineElement: HTMLSelectElement;
         underlineElement = createElement('select', { id: this.target.id + '_underLine', styles: styles }) as HTMLSelectElement;
         underlineElement.innerHTML = '<option>' + locale.getConstant('None') + '</option><option>________</option>';
@@ -231,15 +237,15 @@ export class FontDialog {
         return sizeDiv;
     }
     private getFontDiv(locale: L10n, isRtl?: boolean): HTMLElement {
-        let id: string = this.documentHelper.owner.containerId;
-        let fontDiv: HTMLElement = createElement('div', { id: id + '_fontDiv', className: 'e-de-font-dlg-display' });
-        let fontSubDiv1: HTMLElement = createElement('div', { id: id + '_fontSubDiv1' });
-        let fontNameLabel: HTMLElement = createElement('label', {
+        const id: string = this.documentHelper.owner.containerId;
+        const fontDiv: HTMLElement = createElement('div', { id: id + '_fontDiv', className: 'e-de-font-dlg-display' });
+        const fontSubDiv1: HTMLElement = createElement('div', { id: id + '_fontSubDiv1' });
+        const fontNameLabel: HTMLElement = createElement('label', {
             className: 'e-de-font-dlg-header',
             innerHTML: locale.getConstant('Font')
         });
-        let fontNameValues: HTMLSelectElement = createElement('select', { id: this.target.id + '_fontName' }) as HTMLSelectElement;
-        let fontValues: string[] = this.documentHelper.owner.documentEditorSettings.fontFamilies;
+        const fontNameValues: HTMLSelectElement = createElement('select', { id: this.target.id + '_fontName' }) as HTMLSelectElement;
+        const fontValues: string[] = this.documentHelper.owner.documentEditorSettings.fontFamilies;
         for (let i: number = 0; i < fontValues.length; i++) {
             fontNameValues.innerHTML += '<option>' + fontValues[i] + '</option>';
         }
@@ -254,7 +260,7 @@ export class FontDialog {
             fontSubDiv2.classList.add('e-de-rtl');
         }
         fontStyleLabel = createElement('label', { className: 'e-de-font-dlg-header', innerHTML: locale.getConstant('Font style') });
-        let fontStyle: string = 'font-family:Roboto;font-size:14px;opacity:0.8;';
+        const fontStyle: string = 'font-family:Roboto;font-size:14px;opacity:0.8;';
         fontStyleValues = createElement('select', { id: this.target.id + '_fontStyle', styles: fontStyle }) as HTMLSelectElement;
         fontStyleValues.innerHTML = '<option>' +
             locale.getConstant('Regular') + '</option><option>' + locale.getConstant('Bold') + '</option><option>' +
@@ -270,13 +276,14 @@ export class FontDialog {
         return fontDiv;
     }
     /**
+     * @param characterFormat
      * @private
      */
     public showFontDialog(characterFormat?: WCharacterFormat): void {
         if (characterFormat) {
             this.characterFormat = characterFormat;
         }
-        let locale: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        const locale: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         locale.setLocale(this.documentHelper.owner.locale);
         if (!this.target) {
             this.initFontDialog(locale, this.documentHelper.owner.enableRtl);
@@ -300,6 +307,7 @@ export class FontDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public loadFontDialog = (): void => {
         this.documentHelper.updateFocus();
@@ -326,7 +334,7 @@ export class FontDialog {
         }
         if (!isNullOrUndefined(characterFormat.fontSize)) {
             for (let i: number = 0; i <= 15; i++) {
-                let items: Element[] = this.fontSizeText.getItems();
+                const items: Element[] = this.fontSizeText.getItems();
                 if (characterFormat.fontSize.toString() === items[i].innerHTML) {
                     this.fontSizeText.value = characterFormat.fontSize;
                     this.fontSizeText.index = i;
@@ -368,24 +376,27 @@ export class FontDialog {
         } else {
             this.allcaps.checked = false;
         }
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public closeFontDialog = (): void => {
         this.unWireEventsAndBindings();
         this.documentHelper.updateFocus();
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public onCancelButtonClick = (): void => {
         this.documentHelper.dialog.hide();
         this.unWireEventsAndBindings();
         this.documentHelper.updateFocus();
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public onInsertFontFormat = (): void => {
         let format: WCharacterFormat;
@@ -427,18 +438,18 @@ export class FontDialog {
             this.documentHelper.owner.styleDialogModule.updateCharacterFormat();
         }
         this.documentHelper.hideDialog();
-    }
+    };
+
     /**
-     * Applies character format 
-     * @param  {Selection} selection
-     * @param  {WCharacterFormat} format
      * @private
+     * @param {Selection} selection Specifies the selection
+     * @param {WCharacterFormat} format Specifies the character format
+     * @returns {void}
      */
     public onCharacterFormat(selection: Selection, format: WCharacterFormat): void {
         this.documentHelper.owner.editorModule.initHistory('CharacterFormat');
         if (selection.isEmpty) {
             if (selection.start.offset === selection.getParagraphLength(selection.start.paragraph)) {
-                // tslint:disable-next-line:max-line-length
                 this.documentHelper.owner.editorModule.applyCharFormatValueInternal(selection, selection.start.paragraph.characterFormat, undefined, format);
                 this.documentHelper.owner.editorModule.reLayout(selection);
             }
@@ -450,10 +461,8 @@ export class FontDialog {
             this.documentHelper.owner.editorModule.updateSelectionCharacterFormatting('CharacterFormat', format, false);
         }
     }
-    /**
-     * @private
-     */
-    public enableCheckBoxProperty(args: any): void {
+
+    private enableCheckBoxProperty(args: any): void {
         if (this.strikethroughBox.checked && this.doublestrikethrough.checked) {
             this.strikethroughBox.checked = false;
             this.doublestrikethrough.checked = false;
@@ -473,23 +482,47 @@ export class FontDialog {
             }
         }
     }
+    /**
+     * @private
+     * @returns {void}
+     */
     private fontSizeUpdate = (args: any): void => {
         this.fontSize = args.value;
-    }
+    };
+    /**
+     * @private
+     * @returns {void}
+     */
     private fontStyleUpdate = (args: any): void => {
         this.fontStyle = args.value;
-    }
+    };
+    /**
+     * @private
+     * @returns {void}
+     */
     private fontFamilyUpdate = (args: any): void => {
         this.fontFamily = args.value;
-    }
+    };
+    /**
+     * @private
+     * @returns {void}
+     */
     private underlineUpdate = (args: any): void => {
         this.underline = args.value;
-    }
+    };
+    /**
+     * @private
+     * @returns {void}
+     */
     private fontColorUpdate = (args: ColorPickerEventArgs): void => {
         if (!isNullOrUndefined(args.currentValue)) {
             this.fontColor = args.currentValue.hex;
         }
-    }
+    };
+    /**
+     * @private
+     * @returns {void}
+     */
     private singleStrikeUpdate = (args: any): void => {
         this.enableCheckBoxProperty(args);
         if (args.checked) {
@@ -497,7 +530,11 @@ export class FontDialog {
         } else {
             this.strikethrough = 'None';
         }
-    }
+    };
+    /**
+     * @private
+     * @returns {void}
+     */
     private doubleStrikeUpdate = (args: any): void => {
         this.enableCheckBoxProperty(args);
         if (args.checked) {
@@ -505,7 +542,11 @@ export class FontDialog {
         } else {
             this.strikethrough = 'None';
         }
-    }
+    };
+    /**
+     * @private
+     * @returns {void}
+     */
     private superscriptUpdate = (args: any): void => {
         this.enableCheckBoxProperty(args);
         if (args.checked) {
@@ -513,7 +554,11 @@ export class FontDialog {
         } else {
             this.baselineAlignment = 'Normal';
         }
-    }
+    };
+    /**
+     * @private
+     * @returns {void}
+     */
     private subscriptUpdate = (args: any): void => {
         this.enableCheckBoxProperty(args);
         if (args.checked) {
@@ -522,7 +567,11 @@ export class FontDialog {
             this.baselineAlignment = 'Normal';
         }
 
-    }
+    };
+    /**
+     * @private
+     * @returns {void}
+     */
     private allcapsUpdate = (args: any): void => {
         this.enableCheckBoxProperty(args);
         if (args.checked) {
@@ -531,9 +580,10 @@ export class FontDialog {
             this.allCaps = false;
         }
 
-    }
+    };
     /**
      * @private
+     * @returns {void}
      */
     public unWireEventsAndBindings(): void {
         this.fontNameList.value = '';
@@ -555,6 +605,7 @@ export class FontDialog {
     }
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         this.documentHelper = undefined;
@@ -614,4 +665,4 @@ export class FontDialog {
         this.allcaps = undefined;
     }
 }
-/* tslint:enable:no-any */
+/* eslint-enable @typescript-eslint/no-explicit-any */

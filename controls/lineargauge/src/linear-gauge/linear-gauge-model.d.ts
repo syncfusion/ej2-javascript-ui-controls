@@ -9,6 +9,7 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Specifies the width of the linear gauge as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, gauge will render to the full width of its parent element.
+     *
      * @default null
      */
 
@@ -16,6 +17,7 @@ export interface LinearGaugeModel extends ComponentModel{
 
     /**
      * Enables or disables the gauge to be rendered to the complete width.
+     *
      * @default true
      */
     allowMargin?: boolean;
@@ -23,6 +25,7 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Specifies the height of the linear gauge as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, gauge will render to the full height of its parent element.
+     *
      * @default null
      */
 
@@ -30,32 +33,37 @@ export interface LinearGaugeModel extends ComponentModel{
 
     /**
      * Specifies the orientation of the rendering of the linear gauge.
+     *
      * @default Vertical
      */
     orientation?: Orientation;
 
     /**
      * Specifies the placement of the label in linear gauge.
+     *
      * @default None
      */
     edgeLabelPlacement?: LabelPlacement;
 
     /**
      * Enables or disables the print functionality in linear gauge.
+     *
      * @default false
      */
     allowPrint?: boolean;
 
     /**
-      * Enables or disables the export to image functionality in linear gauge.
-      * @default false
-      */
+     * Enables or disables the export to image functionality in linear gauge.
+     *
+     * @default false
+     */
     allowImageExport?: boolean;
 
     /**
-      * Enables or disables the export to PDF functionality in linear gauge.
-      * @default false
-      */
+     * Enables or disables the export to PDF functionality in linear gauge.
+     *
+     * @default false
+     */
     allowPdfExport?: boolean;
 
     /**
@@ -72,6 +80,7 @@ export interface LinearGaugeModel extends ComponentModel{
 
     /**
      * Specifies the background color of the gauge. This property accepts value in hex code, rgba string as a valid CSS color string.
+     *
      * @default 'transparent'
      */
     background?: string;
@@ -113,42 +122,49 @@ export interface LinearGaugeModel extends ComponentModel{
 
     /**
      * Specifies the color palette for axis ranges in linear gauge.
+     *
      * @default []
      */
     rangePalettes?: string[];
 
     /**
      * Enables or disables a grouping separator should be used for a number.
+     *
      * @default false
      */
     useGroupingSeparator?: boolean;
 
     /**
      * Specifies the description for linear gauge.
+     *
      * @default null
      */
     description?: string;
 
     /**
      * Specifies the tab index value for the linear gauge.
+     *
      * @default 1
      */
     tabIndex?: number;
 
     /**
      * Specifies the format to apply for internationalization in linear gauge.
+     *
      * @default null
      */
     format?: string;
 
     /**
      * Specifies the theme supported for the linear gauge.
+     *
      * @default Material
      */
     theme?: LinearGaugeTheme;
 
     /**
      * Triggers after the gauge gets rendered.
+     *
      * @event
      * @blazorProperty 'Loaded'
      */
@@ -156,6 +172,7 @@ export interface LinearGaugeModel extends ComponentModel{
 
     /**
      * Triggers before the gauge gets rendered.
+     *
      * @event
      * @blazorProperty 'OnLoad'
      */
@@ -163,6 +180,7 @@ export interface LinearGaugeModel extends ComponentModel{
 
     /**
      * Triggers after completing the animation for pointer.
+     *
      * @event
      * @blazorProperty 'AnimationCompleted'
      */
@@ -170,6 +188,7 @@ export interface LinearGaugeModel extends ComponentModel{
 
     /**
      * Triggers before each axis label gets rendered.
+     *
      * @event
      * @blazorProperty 'AxisLabelRendering'
      */
@@ -177,6 +196,7 @@ export interface LinearGaugeModel extends ComponentModel{
 
     /**
      * Triggers before the pointer is dragged.
+     *
      * @event
      * @blazorProperty 'OnDragStart'
      */
@@ -185,6 +205,7 @@ export interface LinearGaugeModel extends ComponentModel{
 
     /**
      * Triggers while dragging the pointers.
+     *
      * @event
      * @blazorProperty 'OnDragMove'
      */
@@ -193,6 +214,7 @@ export interface LinearGaugeModel extends ComponentModel{
 
     /**
      * Triggers after the pointer is dragged.
+     *
      * @event
      * @blazorProperty 'OnDragEnd'
      */
@@ -200,6 +222,7 @@ export interface LinearGaugeModel extends ComponentModel{
 
     /**
      * Triggers before each annotation gets rendered.
+     *
      * @event
      * @blazorProperty 'AnnotationRendering'
      */
@@ -207,6 +230,7 @@ export interface LinearGaugeModel extends ComponentModel{
 
     /**
      * Triggers before the tooltip get rendered.
+     *
      * @event
      * @deprecated
      * @blazorProperty 'TooltipRendering'
@@ -216,6 +240,7 @@ export interface LinearGaugeModel extends ComponentModel{
 
     /**
      * Triggers when performing the mouse move operation on gauge area.
+     *
      * @event
      * @blazorProperty 'OnGaugeMouseMove'
      */
@@ -224,6 +249,7 @@ export interface LinearGaugeModel extends ComponentModel{
 
     /**
      * Triggers when performing the mouse leave operation from the gauge area.
+     *
      * @event
      * @blazorProperty 'OnGaugeMouseLeave'
      */
@@ -232,6 +258,7 @@ export interface LinearGaugeModel extends ComponentModel{
 
     /**
      * Triggers when performing the mouse down operation on gauge area.
+     *
      * @event
      * @blazorProperty 'OnGaugeMouseDown'
      */
@@ -240,6 +267,7 @@ export interface LinearGaugeModel extends ComponentModel{
 
     /**
      * Triggers when performing mouse up operation on gauge area.
+     *
      * @event
      * @blazorProperty 'OnGaugeMouseUp'
      */
@@ -248,6 +276,7 @@ export interface LinearGaugeModel extends ComponentModel{
 
     /**
      * Triggers while changing the value of the pointer by UI interaction.
+     *
      * @event
      * @blazorProperty 'ValueChange'
      */
@@ -256,6 +285,7 @@ export interface LinearGaugeModel extends ComponentModel{
 
     /**
      * Triggers after window resize.
+     *
      * @event
      * @blazorProperty 'Resizing'
      */
@@ -264,6 +294,7 @@ export interface LinearGaugeModel extends ComponentModel{
 
     /**
      * Triggers before the prints gets started.
+     *
      * @event
      * @blazorProperty 'OnPrint'
      */

@@ -1,20 +1,19 @@
+/* eslint-disable */
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { LineStyle } from '../../base/types';
 import { WCharacterFormat } from '../format/character-format';
 import { WParagraphFormat } from '../format/paragraph-format';
 import { HelperMethods } from '../editor/editor-helper';
 
-/** 
+/**
  * @private
  */
 export class HtmlExport {
-    /* tslint:disable:no-any */
     private document: any = undefined;
     private characterFormat: WCharacterFormat;
     private paragraphFormat: WParagraphFormat;
     private prevListLevel: any = undefined;
     private isOrdered: boolean = undefined;
-    /* tslint:disable:no-any */
 
     /**
      * @private
@@ -25,10 +24,6 @@ export class HtmlExport {
      */
     public isMergeField: boolean = false;
 
-    /* tslint:disable:no-any */
-    /**
-     * @private
-     */
     public writeHtml(document: any): string {
         this.document = document;
         let html: string = '';
@@ -37,13 +32,10 @@ export class HtmlExport {
         }
         return html;
     }
-    /**
-     * @private
-     */
-    public serializeSection(section: any): string {
+    private serializeSection(section: any): string {
         let string: string = '';
         for (let i: number = 0; i < section.blocks.length; i++) {
-            let block: any = section.blocks[i];
+            const block: any = section.blocks[i];
             if (block.hasOwnProperty('inlines')) {
                 string += this.serializeParagraph(block);
             } else if (block.hasOwnProperty('blocks')) {
@@ -59,20 +51,16 @@ export class HtmlExport {
         return string;
     }
 
-    // Serialize Paragraph 
-    /**
-     * @private
-     */
-    public serializeParagraph(paragraph: any): string {
+    // Serialize Paragraph
+    private serializeParagraph(paragraph: any): string {
         let blockStyle: string = '';
-        let startString: string = undefined;
         let isList: boolean = false;
         let isPreviousList: boolean = false;
 
         if (!isNullOrUndefined(this.prevListLevel)) {
             isPreviousList = true;
         }
-        let tagAttributes: string[] = [];
+        const tagAttributes: string[] = [];
         let listLevel: any = undefined;
         if (!isNullOrUndefined(paragraph.paragraphFormat.listFormat)) {
             listLevel = this.getListLevel(paragraph);
@@ -164,57 +152,54 @@ export class HtmlExport {
         //}
         let html: string = '';
         if (listLevel.listLevelPattern === 'Bullet') {
-            html += '<ul type=\"';
+            html += '<ul type="';
             switch (levelNumer) {
-                case 0:
-                    html += 'disc';
-                    listLevel.characterFormat.fontFamily = 'Symbol';
-                    break;
-                case 1:
-                    html += 'circle';
-                    listLevel.characterFormat.fontFamily = 'Symbol';
-                    break;
-                case 2:
-                    html += 'square';
-                    listLevel.characterFormat.fontFamily = 'Wingdings';
-                    break;
-                default:
-                    html += 'disc';
-                    listLevel.characterFormat.fontFamily = 'Symbol';
-                    break;
+            case 0:
+                html += 'disc';
+                listLevel.characterFormat.fontFamily = 'Symbol';
+                break;
+            case 1:
+                html += 'circle';
+                listLevel.characterFormat.fontFamily = 'Symbol';
+                break;
+            case 2:
+                html += 'square';
+                listLevel.characterFormat.fontFamily = 'Wingdings';
+                break;
+            default:
+                html += 'disc';
+                listLevel.characterFormat.fontFamily = 'Symbol';
+                break;
             }
-            html += '\">';
+            html += '">';
         } else {
-            html += '<ol type=\"';
+            html += '<ol type="';
             switch (listLevel.listLevelPattern) {
 
-                case 'LowLetter':
-                    html += 'a';
-                    break;
-                case 'UpLetter':
-                    html += 'A';
-                    break;
-                case 'LowRoman':
-                    html += 'i';
-                    break;
-                case 'UpRoman':
-                    html += 'I';
-                    break;
-                default:
-                    html += '1';
-                    break;
+            case 'LowLetter':
+                html += 'a';
+                break;
+            case 'UpLetter':
+                html += 'A';
+                break;
+            case 'LowRoman':
+                html += 'i';
+                break;
+            case 'UpRoman':
+                html += 'I';
+                break;
+            default:
+                html += '1';
+                break;
             }
-            html += '\" start=\"' + listLevel.startAt.toString() + '\">';
+            html += '" start="' + listLevel.startAt.toString() + '">';
         }
         return html;
     }
 
 
     //SerializeInlines
-    /**
-     * @private
-     */
-    public serializeInlines(paragraph: any, blockStyle: string): string {
+    private serializeInlines(paragraph: any, blockStyle: string): string {
         let inline: any = undefined;
         let i: number = 0;
         let tagAttributes: string[] = [];
@@ -229,12 +214,12 @@ export class HtmlExport {
                 blockStyle += this.serializeImageContainer(inline);
             } else if (inline.hasOwnProperty('fieldType')) {
                 if (inline.fieldType === 0) {
-                    let fieldCode: any = paragraph.inlines[i + 1];
+                    const fieldCode: any = paragraph.inlines[i + 1];
                     if (!isNullOrUndefined(fieldCode) && !isNullOrUndefined(fieldCode.text) &&
                         (fieldCode.text.indexOf('TOC') >= 0 || fieldCode.text.indexOf('HYPERLINK') >= 0)) {
                         this.fieldCheck = 1;
                         tagAttributes = [];
-                        tagAttributes.push('style="' + this.serializeInlineStyle(inline.characterFormat, '') + '"');
+                        tagAttributes.push('style="' + this.serializeInlineStyle(inline.characterFormat) + '"');
                         blockStyle += this.createAttributesTag('a', tagAttributes);
                     } else if (fieldCode.text.toLowerCase().indexOf('mergefield') >= 0) {
                         this.isMergeField = true;
@@ -275,11 +260,11 @@ export class HtmlExport {
                     this.fieldCheck = 0;
                 }
             } else {
-                let text: string = isNullOrUndefined(inline.text) ? '' : inline.text;
+                const text: string = isNullOrUndefined(inline.text) ? '' : inline.text;
                 if (this.fieldCheck === 0) {
                     if (text.indexOf('MERGEFIELD') >= 0 && this.isMergeField) {
                         tagAttributes = [];
-                        tagAttributes.push('style="' + this.serializeInlineStyle(inline.characterFormat, '') + '"');
+                        tagAttributes.push('style="' + this.serializeInlineStyle(inline.characterFormat) + '"');
                         blockStyle += this.createAttributesTag('span', tagAttributes);
                         blockStyle += text;
                         blockStyle += this.endTag('span');
@@ -296,7 +281,7 @@ export class HtmlExport {
                 if (this.fieldCheck === 2) {
                     if (this.isMergeField) {
                         tagAttributes = [];
-                        tagAttributes.push('style="' + this.serializeInlineStyle(inline.characterFormat, '') + '"');
+                        tagAttributes.push('style="' + this.serializeInlineStyle(inline.characterFormat) + '"');
                         blockStyle += this.createAttributesTag('span', tagAttributes);
                         blockStyle += text;
                         blockStyle += this.endTag('span');
@@ -316,10 +301,7 @@ export class HtmlExport {
         return inlineStyle;
     }
     // Serialize Span
-    /**
-     * @private
-     */
-    public serializeSpan(spanText: string, characterFormat: WCharacterFormat): string {
+    private serializeSpan(spanText: string, characterFormat: WCharacterFormat): string {
         let spanClass: string = '';
         if (spanText.indexOf('\v') !== -1) {
             spanClass += '<br>';
@@ -328,16 +310,14 @@ export class HtmlExport {
             spanClass += '<br style = "page-break-after:always;"/>';
             return spanClass.toString();
         }
-        let tagAttributes: string[] = [];
-        this.serializeInlineStyle(characterFormat, '');
-        tagAttributes.push('style="' + this.serializeInlineStyle(characterFormat, '') + '"');
+        const tagAttributes: string[] = [];
+        this.serializeInlineStyle(characterFormat);
+        tagAttributes.push('style="' + this.serializeInlineStyle(characterFormat) + '"');
         spanClass += this.createAttributesTag('span', tagAttributes);
-        let ignoreFirstSpace: boolean = false;
         // Todo: Need to handle it.
         // If the text starts with white-space, need to check whether it is a continuous space.
         // if (characterFormat.ownerBase instanceof WInline) {
         //     let inline: WInline = (characterFormat.ownerBase as WInline);
-        //     tslint:disable:max-line-length            
         //     if (inline instanceof WSpan && !isNullOrUndefined(inline.text) && inline.text !== '' && (inline as WSpan).text[0] === ' ') {
         //         Check previous inline until, it has valid rendered text.
         //         do {
@@ -361,37 +341,36 @@ export class HtmlExport {
 
     /**
      * @private
+     * @param {string} style - style name.
+     * @returns {string} - return heading tag.
      */
     public getStyleName(style: string): string {
         switch (style) {
-            case 'Heading 1':
-                return 'h1';
-            case 'Heading 2':
-                return 'h2';
-            case 'Heading 3':
-                return 'h3';
-            case 'Heading 4':
-                return 'h4';
-            case 'Heading 5':
-                return 'h5';
-            default:
-                return 'div';
+        case 'Heading 1':
+            return 'h1';
+        case 'Heading 2':
+            return 'h2';
+        case 'Heading 3':
+            return 'h3';
+        case 'Heading 4':
+            return 'h4';
+        case 'Heading 5':
+            return 'h5';
+        default:
+            return 'div';
         }
     }
     //Serialize Image
-    /**
-     * @private
-     */
-    public serializeImageContainer(image: any): string {
+    private serializeImageContainer(image: any): string {
         let imageStyle: string = '';
-        let tagAttributes: string[] = [];
-        this.serializeInlineStyle(image.characterFormat, '');
+        const tagAttributes: string[] = [];
+        this.serializeInlineStyle(image.characterFormat);
         let imageSource: string = '';
         if (!isNullOrUndefined(image.imageString)) {
             imageSource = image.imageString;
         }
-        let width: number = HelperMethods.convertPointToPixel(image.width);
-        let height: number = HelperMethods.convertPointToPixel(image.height);
+        const width: number = HelperMethods.convertPointToPixel(image.width);
+        const height: number = HelperMethods.convertPointToPixel(image.height);
         tagAttributes.push('width="' + width.toString() + '"');
         tagAttributes.push('height="' + height.toString() + '"');
         tagAttributes.push('src="' + imageSource + '"');
@@ -401,9 +380,6 @@ export class HtmlExport {
     }
 
     // Serialize Table Cell
-    /**
-     * @private
-     */
     public serializeCell(cell: any): string {
         let blockStyle: string = '';
         let tagAttributes: string[] = [];
@@ -422,10 +398,10 @@ export class HtmlExport {
                 tagAttributes.push('rowspan="' + cell.cellFormat.rowSpan.toString() + '"');
             }
             if (!isNullOrUndefined(cell.cellFormat.cellWidth) && cell.cellFormat.cellWidth !== 0) {
-                let cellWidth: number = HelperMethods.convertPointToPixel(cell.cellFormat.cellWidth);
+                const cellWidth: number = HelperMethods.convertPointToPixel(cell.cellFormat.cellWidth);
                 tagAttributes.push('width="' + cellWidth.toString() + '"');
             }
-            let cellAlignment: string = isNullOrUndefined(cell.cellFormat.verticalAlignment) ? 'top' :
+            const cellAlignment: string = isNullOrUndefined(cell.cellFormat.verticalAlignment) ? 'top' :
                 cell.cellFormat.verticalAlignment.toString().toLowerCase();
             tagAttributes.push('valign="' + cellAlignment + '"');
             if (!isNullOrUndefined(cell.cellFormat.leftMargin) && cell.cellFormat.leftMargin !== 0) {
@@ -441,7 +417,7 @@ export class HtmlExport {
                 cellHtml += ('padding-bottom:' + cell.cellFormat.bottomMargin.toString() + 'pt;');
             }
             if (!isNullOrUndefined(cell.cellFormat.borders)) {
-                cellHtml += this.serializeCellBordersStyle(cell.cellFormat.borders);
+                cellHtml += this.serializeCellBordersStyle();
             }
         }
         if (cellHtml.length !== 0) {
@@ -449,22 +425,19 @@ export class HtmlExport {
         }
         blockStyle += (this.createAttributesTag('td', tagAttributes));
         for (let k: number = 0; k < cell.blocks.length; k++) {
-            let block: any = cell.blocks[k];
-            if (block.hasOwnProperty('rows')) {
+            const block: any = cell.blocks[k];
+             if (block.hasOwnProperty('rows')) {
                 blockStyle += this.serializeTable(block);
             } else {
                 blockStyle += this.serializeParagraph(block);
             }
-        }
+         }
         blockStyle += (this.endTag('td'));
         return blockStyle;
     }
 
     // Serialize Table
-    /**
-     * @private
-     */
-    public serializeTable(table: any): string {
+    private serializeTable(table: any): string {
         let html: string = '';
         html += this.createTableStartTag(table);
         for (let j: number = 0; j < table.rows.length; j++) {
@@ -475,10 +448,7 @@ export class HtmlExport {
     }
 
     // Serialize Row
-    /**
-     * @private
-     */
-    public serializeRow(row: any): string {
+    private serializeRow(row: any): string {
         let html: string = '';
         html += this.createRowStartTag(row);
         for (let k: number = 0; k < row.cells.length; k++) {
@@ -488,25 +458,16 @@ export class HtmlExport {
     }
 
     // Serialize Styles
-    /**
-     * @private
-     */
-    public serializeParagraphStyle(paragraph: any, className: string, isList: boolean): string {
+    private serializeParagraphStyle(paragraph: any, className: string, isList: boolean): string {
         let paragraphClass: string = '';
         paragraphClass += this.serializeCharacterFormat(paragraph.characterFormat);
         paragraphClass += this.serializeParagraphFormat(paragraph.paragraphFormat, isList);
         return paragraphClass;
     }
-    /**
-     * @private
-     */
-    public serializeInlineStyle(characterFormat: WCharacterFormat, className: string): string {
+    private serializeInlineStyle(characterFormat: WCharacterFormat): string {
         return this.serializeCharacterFormat(characterFormat);
     }
-    /**
-     * @private
-     */
-    public serializeTableBorderStyle(borders: any): string {
+    private serializeTableBorderStyle(borders: any): string {
         let borderStyle: string = '';
 
         if (!isNullOrUndefined(borders.left.lineStyle)) {
@@ -560,10 +521,7 @@ export class HtmlExport {
         }
         return borderStyle;
     }
-    /**
-     * @private
-     */
-    public serializeCellBordersStyle(borders: any): string {
+    private serializeCellBordersStyle(): string {
         let borderStyle: string = '';
 
         borderStyle = 'border:solid 1px;';
@@ -622,10 +580,7 @@ export class HtmlExport {
         // }
         return borderStyle;
     }
-    /**
-     * @private
-     */
-    public serializeBorderStyle(border: any, borderPosition: string): string {
+    private serializeBorderStyle(border: any, borderPosition: string): string {
         let borderStyle: string = '';
         borderStyle += ('border-' + borderPosition + '-style:' + this.convertBorderLineStyle(border.lineStyle));
         borderStyle += ';';
@@ -638,58 +593,52 @@ export class HtmlExport {
         }
         return borderStyle;
     }
-    /**
-     * @private
-     */
-    public convertBorderLineStyle(lineStyle: LineStyle): string {
+    private convertBorderLineStyle(lineStyle: LineStyle): string {
         switch (lineStyle) {
-            case 'None':
-                return 'none';
-            case 'Single':
-                return 'solid';
-            case 'Dot':
-                return 'dotted';
-            case 'DashSmallGap':
-            case 'DashLargeGap':
-            case 'DashDot':
-            case 'DashDotDot':
-                return 'dashed';
-            case 'Double':
-            case 'Triple':
-            case 'ThinThickSmallGap':
-            case 'ThickThinSmallGap':
-            case 'ThinThickThinSmallGap':
-            case 'ThinThickMediumGap':
-            case 'ThickThinMediumGap':
-            case 'ThinThickThinMediumGap':
-            case 'ThinThickLargeGap':
-            case 'ThickThinLargeGap':
-            case 'ThinThickThinLargeGap':
-                return 'double';
-            case 'SingleWavy':
-                return 'solid';
-            case 'DoubleWavy':
-                return 'double';
-            case 'DashDotStroked':
-                return 'solid';
-            case 'Emboss3D':
-                return 'ridge';
-            case 'Engrave3D':
-                return 'groove';
-            case 'Outset':
-                return 'outset';
-            case 'Inset':
-                return 'inset';
-            default:
-                return 'solid';
+        case 'None':
+            return 'none';
+        case 'Single':
+            return 'solid';
+        case 'Dot':
+            return 'dotted';
+        case 'DashSmallGap':
+        case 'DashLargeGap':
+        case 'DashDot':
+        case 'DashDotDot':
+            return 'dashed';
+        case 'Double':
+        case 'Triple':
+        case 'ThinThickSmallGap':
+        case 'ThickThinSmallGap':
+        case 'ThinThickThinSmallGap':
+        case 'ThinThickMediumGap':
+        case 'ThickThinMediumGap':
+        case 'ThinThickThinMediumGap':
+        case 'ThinThickLargeGap':
+        case 'ThickThinLargeGap':
+        case 'ThinThickThinLargeGap':
+            return 'double';
+        case 'SingleWavy':
+            return 'solid';
+        case 'DoubleWavy':
+            return 'double';
+        case 'DashDotStroked':
+            return 'solid';
+        case 'Emboss3D':
+            return 'ridge';
+        case 'Engrave3D':
+            return 'groove';
+        case 'Outset':
+            return 'outset';
+        case 'Inset':
+            return 'inset';
+        default:
+            return 'solid';
         }
     }
 
     // Serialize Format
-    /**
-     * @private
-     */
-    public serializeCharacterFormat(characterFormat: any): string {
+    private serializeCharacterFormat(characterFormat: any): string {
         if (!isNullOrUndefined(characterFormat.inlineFormat)) {
             return this.serializeCharacterFormat(characterFormat.inlineFormat);
         }
@@ -707,9 +656,14 @@ export class HtmlExport {
             charStyle += 'normal';
         }
         charStyle += ';';
-        charStyle += this.serializeTextDecoration(characterFormat);
+        // Double strike through will become Single strike through while saving HTML using MS Word.
+        if (characterFormat.strikethrough === 'SingleStrike' || characterFormat.strikethrough === 'DoubleStrike') {
+            charStyle += 'text-decoration';
+            charStyle += ':';
+            charStyle += 'line-through';
+            charStyle += ';';
+        }
         //Text Baseline Alignment
-        // tslint:disable-next-line:max-line-length
         if (characterFormat.baselineAlignment === 'Superscript' || characterFormat.baselineAlignment === 'Subscript') {
             charStyle += 'vertical-align';
             charStyle += ':';
@@ -717,7 +671,7 @@ export class HtmlExport {
             charStyle += ';';
 
         }
-        //Text Foreground and Background Color 
+        //Text Foreground and Background Color
         if (!isNullOrUndefined(characterFormat.highlightColor) && characterFormat.highlightColor !== 'NoColor') {
             charStyle += 'background-color';
             charStyle += ':';
@@ -732,7 +686,12 @@ export class HtmlExport {
             charStyle += HelperMethods.getColor(propertyValue);
             charStyle += ';';
         }
-
+        if (!isNullOrUndefined(characterFormat.underline) && characterFormat.underline !== 'None') {
+            charStyle += 'text-decoration';
+            charStyle += ':';
+            charStyle += 'underline';
+            charStyle += ';';
+        }
         if (!isNullOrUndefined(characterFormat.allCaps) && (characterFormat.allCaps)) {
             charStyle += 'text-transform';
             charStyle += ':';
@@ -756,24 +715,6 @@ export class HtmlExport {
         }
         return charStyle.toString();
     }
-    private serializeTextDecoration(characterFormat: any): string {
-        let charStyle: string = 'text-decoration:';
-        let value: string = '';
-        // Double strike through will become Single strike through while saving HTML using MS Word.
-        if (characterFormat.strikethrough === 'SingleStrike' || characterFormat.strikethrough === 'DoubleStrike') {
-            value += 'line-through ';
-        }
-        if (!isNullOrUndefined(characterFormat.underline) && characterFormat.underline !== 'None') {
-            value += 'underline';
-        }
-        if (value.length > 1) {
-            value = charStyle + value + ';';
-        }
-        return value;
-    }
-    /**
-     * @private
-     */
     public serializeParagraphFormat(paragraphFormat: any, isList: boolean): string {
         if (!isNullOrUndefined(paragraphFormat.inlineFormat)) {
             return this.serializeParagraphFormat(paragraphFormat.inlineFormat, isList);
@@ -831,10 +772,7 @@ export class HtmlExport {
         }
         return paraStyle.toString();
     }
-    /**
-     * @private
-     */
-    public createAttributesTag(tagValue: string, localProperties: string[]): string {
+    private createAttributesTag(tagValue: string, localProperties: string[]): string {
         let sb: string = '';
         sb += '<';
         sb += tagValue;
@@ -847,20 +785,14 @@ export class HtmlExport {
         }
         return sb;
     }
-    /**
-     * @private
-     */
-    public createTag(tagValue: string): string {
+    private createTag(tagValue: string): string {
         let s: string = '';
         s += '<';
         s += tagValue;
         s += '>';
         return s;
     }
-    /**
-     * @private
-     */
-    public endTag(tagValue: string): string {
+    private endTag(tagValue: string): string {
         let sb: string = '';
         sb += '<';
         sb += '/';
@@ -868,13 +800,10 @@ export class HtmlExport {
         sb += '>';
         return sb;
     }
-    /**
-     * @private
-     */
     public createTableStartTag(table: any): string {
         let blockStyle: string = '';
         let tableStyle: string = '';
-        let tagAttributes: string[] = [];
+        const tagAttributes: string[] = [];
         tagAttributes.push('border="' + '1"');
         if (!isNullOrUndefined(table.tableFormat)) {
             //if (table.tableFormat.shading.backgroundColor !== Color.FromArgb(0, 0, 0, 0)) {
@@ -900,33 +829,24 @@ export class HtmlExport {
         }
         return blockStyle += (this.createAttributesTag('table', tagAttributes));
     }
-    /**
-     * @private
-     */
-    public createTableEndTag(): string {
+    private createTableEndTag(): string {
         let blockStyle: string = '';
         blockStyle += (this.endTag('table'));
         return blockStyle;
     }
-    /**
-     * @private
-     */
-    public createRowStartTag(row: any): string {
+    private createRowStartTag(row: any): string {
         let blockStyle: string = '';
-        let tagAttributes: string[] = [];
+        const tagAttributes: string[] = [];
         if (row.rowFormat.isHeader) {
             blockStyle += (this.createTag('thead'));
         }
         if (!isNullOrUndefined(row.rowFormat.height) && row.rowFormat.height > 0) {
-            let height: number = HelperMethods.convertPointToPixel(row.rowFormat.height);
+            const height: number = HelperMethods.convertPointToPixel(row.rowFormat.height);
             tagAttributes.push('height="' + height + '"');
         }
         return blockStyle + this.createAttributesTag('tr', tagAttributes);
     }
-    /**
-     * @private
-     */
-    public createRowEndTag(row: any): string {
+    private createRowEndTag(row: any): string {
         let blockStyle: string = '';
         blockStyle += (this.endTag('tr'));
         if (row.rowFormat.isHeader) {
@@ -934,15 +854,12 @@ export class HtmlExport {
         }
         return blockStyle;
     }
-    /**
-     * @private
-     */
-    public decodeHtmlNames(text: string): string {
+    private decodeHtmlNames(text: string): string {
         if (text === '\t') {
             return '&emsp;';
         }
         text = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        let splittedText: string[] = text.split(' ');
+        const splittedText: string[] = text.split(' ');
         let htmlText: string = '';
         if (splittedText.length > 0) {
             htmlText = splittedText[0];
@@ -952,5 +869,5 @@ export class HtmlExport {
         }
         return htmlText;
     }
-    /* tslint:enable:no-any */
+    /* eslint:enable:no-any */
 }

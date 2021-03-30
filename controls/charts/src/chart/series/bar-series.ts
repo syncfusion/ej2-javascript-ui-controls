@@ -1,6 +1,7 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { withInRange } from '../../common/utils/helper';
 import { Rect } from '@syncfusion/ej2-svg-base';
-import { Chart } from '../chart';
 import { DoubleRange } from '../utils/double-range';
 import { Series } from './chart-series';
 import { ColumnBase } from './column-base';
@@ -12,15 +13,16 @@ import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 export class BarSeries extends ColumnBase {
     /**
      * Render Bar series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public render(series: Series): void {
-        let origin: number = Math.max(series.yAxis.visibleRange.min, 0);
-        let sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
+        const origin: number = Math.max(series.yAxis.visibleRange.min, 0);
+        const sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
         let rect: Rect;
         let argsData: IPointRenderEventArgs;
-        for (let pointBar of series.points) {
+        for (const pointBar of series.points) {
             pointBar.symbolLocations = [];
             pointBar.regions = [];
             if (pointBar.visible && withInRange(series.points[pointBar.index - 1], pointBar, series.points[pointBar.index + 1], series)) {
@@ -39,19 +41,21 @@ export class BarSeries extends ColumnBase {
 
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
     public doAnimation(series: Series): void {
         this.animate(series);
     }
     /**
-     * To destroy the bar series. 
-     * @return {void}
+     * To destroy the bar series.
+     *
+     * @returns {void}
      * @private
      */
 
-    protected destroy(chart: Chart): void {
+    protected destroy(): void {
         /**
          * Destroy method performed here
          */

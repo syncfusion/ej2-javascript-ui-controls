@@ -1297,3 +1297,424 @@ console.log('Serialize AutoShape StraightConnector validation');
         expect((writer as any).bufferText.indexOf('<a:srgbClr val="000000"')).not.toBe(-1);
     });
 });
+
+let shapeSquareJson: any = {
+    "sections": [
+        {
+            "blocks": [
+                {
+                    "characterFormat": {
+                        "fontColor": "empty"
+                    },
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": [
+                        {
+                            "shapeId": 1,
+                            "name": "Text Box 1",
+                            "alternativeText": null,
+                            "title": null,
+                            "visible": true,
+                            "width": 60.92307,
+                            "height": 33.7846451,
+                            "widthScale": 100.0,
+                            "heightScale": 100.0,
+                            "lineFormat": {
+                                "lineFormatType": "Solid",
+                                "color": "#000000FF",
+                                "weight": 0.5,
+                                "lineStyle": "Solid"
+                            },
+                            "fillFormat": {
+                                "color": "#FFFFFFFF",
+                                "fill": true
+                            },
+                            "verticalPosition": 2.17,
+                            "verticalOrigin": "Paragraph",
+                            "verticalAlignment": "None",
+                            "horizontalPosition": 36.51,
+                            "horizontalOrigin": "Column",
+                            "horizontalAlignment": "None",
+                            "zOrderPosition": 251659264,
+                            "allowOverlap": true,
+                            "layoutInCell": true,
+                            "lockAnchor": false,
+                            "textWrappingStyle": "Square",
+                            "textWrappingType": "Both",
+                            "distanceBottom": 0.0,
+                            "distanceLeft": 9.0,
+                            "distanceRight": 9.0,
+                            "distanceTop": 0.0,
+                            "autoShapeType": "Rectangle",
+                            "textFrame": {
+                                "textVerticalAlignment": "Top",
+                                "leftMargin": 7.2,
+                                "rightMargin": 7.2,
+                                "topMargin": 3.6,
+                                "bottomMargin": 3.6,
+                                "blocks": [
+                                    {
+                                        "characterFormat": {
+                                            "fontColor": "empty"
+                                        },
+                                        "paragraphFormat": {
+                                            "styleName": "Normal"
+                                        },
+                                        "inlines": [
+                                            {
+                                                "text": "Square",
+                                                "characterFormat": {
+                                                    "fontColor": "empty"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "text": "Test Doc",
+                            "characterFormat": {
+                                "fontColor": "empty"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "characterFormat": {
+                        "fontColor": "empty"
+                    },
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": [
+                        {
+                            "shapeId": 2,
+                            "name": "Text Box 2",
+                            "alternativeText": null,
+                            "title": null,
+                            "visible": true,
+                            "width": 91.38457,
+                            "height": 43.7538567,
+                            "widthScale": 100.0,
+                            "heightScale": 100.0,
+                            "lineFormat": {
+                                "lineFormatType": "Solid",
+                                "color": "#000000FF",
+                                "weight": 0.5,
+                                "lineStyle": "Solid"
+                            },
+                            "fillFormat": {
+                                "color": "#FFFFFFFF",
+                                "fill": true
+                            },
+                            "verticalPosition": 6.85,
+                            "verticalOrigin": "Paragraph",
+                            "verticalAlignment": "None",
+                            "horizontalPosition": 156.18,
+                            "horizontalOrigin": "Column",
+                            "horizontalAlignment": "None",
+                            "zOrderPosition": 251660288,
+                            "allowOverlap": true,
+                            "layoutInCell": true,
+                            "lockAnchor": false,
+                            "textWrappingStyle": "TopAndBottom",
+                            "textWrappingType": "Both",
+                            "distanceBottom": 0.0,
+                            "distanceLeft": 9.0,
+                            "distanceRight": 9.0,
+                            "distanceTop": 0.0,
+                            "autoShapeType": "Rectangle",
+                            "textFrame": {
+                                "textVerticalAlignment": "Top",
+                                "leftMargin": 7.2,
+                                "rightMargin": 7.2,
+                                "topMargin": 3.6,
+                                "bottomMargin": 3.6,
+                                "blocks": [
+                                    {
+                                        "characterFormat": {
+                                            "fontColor": "empty"
+                                        },
+                                        "paragraphFormat": {
+                                            "styleName": "Normal"
+                                        },
+                                        "inlines": [
+                                            {
+                                                "text": "Top & bottom",
+                                                "characterFormat": {
+                                                    "fontColor": "empty"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "text": "Test Top and Bottom",
+                            "characterFormat": {
+                                "fontColor": "empty"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "characterFormat": {
+                        "fontColor": "empty"
+                    },
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": [
+                        {
+                            "shapeId": 3,
+                            "name": "Text Box 3",
+                            "alternativeText": null,
+                            "title": null,
+                            "visible": true,
+                            "width": 70.89228,
+                            "height": 29.9077168,
+                            "widthScale": 100.0,
+                            "heightScale": 100.0,
+                            "lineFormat": {
+                                "lineFormatType": "Solid",
+                                "color": "#000000FF",
+                                "weight": 0.5,
+                                "lineStyle": "Solid"
+                            },
+                            "fillFormat": {
+                                "color": "#FFFFFFFF",
+                                "fill": true
+                            },
+                            "verticalPosition": 7.8,
+                            "verticalOrigin": "Paragraph",
+                            "verticalAlignment": "None",
+                            "horizontalPosition": 63.63,
+                            "horizontalOrigin": "Column",
+                            "horizontalAlignment": "None",
+                            "zOrderPosition": 251661312,
+                            "allowOverlap": true,
+                            "layoutInCell": true,
+                            "lockAnchor": false,
+                            "textWrappingStyle": "Tight",
+                            "textWrappingType": "Left",
+                            "distanceBottom": 0.0,
+                            "distanceLeft": 9.0,
+                            "distanceRight": 9.0,
+                            "distanceTop": 0.0,
+                            "autoShapeType": "Rectangle",
+                            "textFrame": {
+                                "textVerticalAlignment": "Top",
+                                "leftMargin": 7.2,
+                                "rightMargin": 7.2,
+                                "topMargin": 3.6,
+                                "bottomMargin": 3.6,
+                                "blocks": [
+                                    {
+                                        "characterFormat": {
+                                            "fontColor": "empty"
+                                        },
+                                        "paragraphFormat": {
+                                            "styleName": "Normal"
+                                        },
+                                        "inlines": [
+                                            {
+                                                "text": "Tight",
+                                                "characterFormat": {
+                                                    "fontColor": "empty"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "text": "Tight",
+                            "characterFormat": {
+                                "fontColor": "empty"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "headersFooters": {},
+            "sectionFormat": {
+                "headerDistance": 36.0,
+                "footerDistance": 36.0,
+                "pageWidth": 612.0,
+                "pageHeight": 792.0,
+                "leftMargin": 72.0,
+                "rightMargin": 72.0,
+                "topMargin": 72.0,
+                "bottomMargin": 72.0,
+                "differentFirstPage": false,
+                "differentOddAndEvenPages": false,
+                "bidi": false,
+                "restartPageNumbering": false,
+                "pageStartingNumber": 0,
+                "endnoteNumberFormat": "LowerCaseRoman",
+                "footNoteNumberFormat": "Arabic",
+                "restartIndexForFootnotes": "DoNotRestart",
+                "restartIndexForEndnotes": "DoNotRestart"
+            }
+        }
+    ],
+    "characterFormat": {
+        "fontSize": 11.0,
+        "fontFamily": "Calibri",
+        "fontColor": "empty",
+        "fontSizeBidi": 11.0,
+        "fontFamilyBidi": "Arial"
+    },
+    "paragraphFormat": {
+        "afterSpacing": 8.0,
+        "lineSpacing": 1.0791666507720947,
+        "lineSpacingType": "Multiple"
+    },
+    "background": {
+        "color": "#FFFFFFFF"
+    },
+    "styles": [
+        {
+            "type": "Paragraph",
+            "name": "Normal",
+            "next": "Normal",
+            "characterFormat": {
+                "fontColor": "empty"
+            }
+        },
+        {
+            "type": "Character",
+            "name": "Default Paragraph Font",
+            "characterFormat": {
+                "fontColor": "empty"
+            }
+        }
+    ],
+    "defaultTabWidth": 36.0,
+    "formatting": false,
+    "trackChanges": false,
+    "protectionType": "NoProtection",
+    "enforcement": false,
+    "dontUseHTMLParagraphAutoSpacing": false,
+    "alignTablesRowByRow": false,
+    "formFieldShading": true,
+    "footnotes": {
+        "separator": [
+            {
+                "characterFormat": {
+                    "fontColor": "empty"
+                },
+                "paragraphFormat": {
+                    "styleName": "Normal"
+                },
+                "inlines": [
+                    {
+                        "text": "\u0003",
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        }
+                    }
+                ]
+            }
+        ],
+        "continuationSeparator": [
+            {
+                "characterFormat": {
+                    "fontColor": "empty"
+                },
+                "paragraphFormat": {
+                    "styleName": "Normal"
+                },
+                "inlines": [
+                    {
+                        "text": "\u0004",
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "endnotes": {
+        "separator": [
+            {
+                "characterFormat": {
+                    "fontColor": "empty"
+                },
+                "paragraphFormat": {
+                    "styleName": "Normal"
+                },
+                "inlines": [
+                    {
+                        "text": "\u0003",
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        }
+                    }
+                ]
+            }
+        ],
+        "continuationSeparator": [
+            {
+                "characterFormat": {
+                    "fontColor": "empty"
+                },
+                "paragraphFormat": {
+                    "styleName": "Normal"
+                },
+                "inlines": [
+                    {
+                        "text": "\u0004",
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+};
+
+describe('Shape Serialize validation', () => {
+    let editor: DocumentEditor;
+    let writer: XmlWriter;
+    let json: any;
+    beforeAll((): void => {
+        document.body.appendChild(createElement('div', { id: 'container' }));
+        DocumentEditor.Inject(Editor, Selection, WordExport, SfdtExport);
+        editor = new DocumentEditor({ enableWordExport: true, enableSfdtExport: true, enableEditor: true, isReadOnly: false, enableSelection: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        writer = new XmlWriter();
+        editor.open(JSON.stringify(shapeSquareJson));
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        writer.destroy();
+        setTimeout(function () {
+            document.body.innerHTML = '';
+            done();
+        }, 1000);
+    });
+    it('Serialize Square, TopAndBottom, Tight Shape', () => {
+        json = editor.sfdtExportModule.write();
+        (editor.wordExportModule as any).setDocument(json);
+        (editor.wordExportModule as any).section = (editor.wordExportModule as any).document.sections[0];
+        let block: any = json.sections[0].blocks[0].inlines[0];
+        (editor.wordExportModule as any).serializeShapeDrawingGraphics(writer, block);
+        expect((writer as any).bufferText.includes('<wp:wrapSquare wrapText="bothSides"')).toBe(true);
+        block = json.sections[0].blocks[1].inlines[0];
+        (editor.wordExportModule as any).serializeShapeDrawingGraphics(writer, block);
+        expect((writer as any).bufferText.includes('<wp:wrapTopAndBottom wrapText="bothSides"')).toBe(true);
+    });
+});

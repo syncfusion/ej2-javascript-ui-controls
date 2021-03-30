@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { print as printWindow, createElement, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { Chart } from '../../chart/chart';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
@@ -30,21 +31,25 @@ export class ExportUtils {
 
     /**
      * Constructor for chart and accumulation annotation
+     *
      * @param control
      */
+
     constructor(control: Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart) {
         this.control = control;
     }
 
     /**
      * To print the accumulation and chart elements
+     *
      * @param elements
      */
+
     public print(elements?: string[] | string | Element): void {
         this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
         this.printWindow.moveTo(0, 0);
         this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
-        let argsData: IPrintEventArgs = {
+        const argsData: IPrintEventArgs = {
             cancel: false, htmlContent: this.getHTMLContent(elements), name: beforePrint
         };
         this.control.trigger(beforePrint, argsData);
@@ -55,15 +60,17 @@ export class ExportUtils {
 
     /**
      * To get the html string of the chart and accumulation
+     *
      * @param elements
      * @private
      */
+
     public getHTMLContent(elements?: string[] | string | Element): Element {
-        let div: Element = createElement('div');
+        const div: Element = createElement('div');
         if (elements) {
             if (elements instanceof Array) {
                 for (let j: number = 0; j < elements.length; j++) {
-                    let value: string = elements[j];
+                    const value: string = elements[j];
                     div.appendChild(getElement(value).cloneNode(true) as Element);
                 }
             } else if (elements instanceof Element) {
@@ -78,9 +85,11 @@ export class ExportUtils {
     }
     /**
      * To export the file as image/svg format
+     *
      * @param type
      * @param fileName
      */
+
     public export(
         type: ExportType, fileName: string,
         orientation?: PdfPageOrientation,
@@ -88,11 +97,11 @@ export class ExportUtils {
         width?: number, height?: number, isVertical?: boolean,
         header?: IPDFArgs, footer?: IPDFArgs
     ): void {
-        let controlValue: IControlValue = this.getControlsValue(controls, isVertical);
+        const controlValue: IControlValue = this.getControlsValue(controls, isVertical);
         width = width ? width : controlValue.width;
         height = height ? height : controlValue.height;
         let element: HTMLCanvasElement = this.control.svgObject as HTMLCanvasElement;
-        let isCanvas: boolean = (this.control as Chart).enableCanvas;
+        const isCanvas: boolean = (this.control as Chart).enableCanvas;
         let image: string;
         if (!isCanvas) {
             element = <HTMLCanvasElement>createElement('canvas', {
@@ -103,12 +112,12 @@ export class ExportUtils {
                 }
             });
         }
-        let isDownload: boolean = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
+        const isDownload: boolean = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
         orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
-        let svgData: string = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+        const svgData: string = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
             controlValue.svg.outerHTML +
             '</svg>';
-        let url: string = window.URL.createObjectURL(
+        const url: string = window.URL.createObjectURL(
             new Blob(
                 type === 'SVG' ? [svgData] :
                     [(new XMLSerializer()).serializeToString(controlValue.svg)],
@@ -117,7 +126,7 @@ export class ExportUtils {
         );
         if (type === 'SVG') {
             if (Browser.info.name === 'msie') {
-                let svg: Blob = new Blob([(new XMLSerializer()).serializeToString(controlValue.svg)], { type: 'application/octet-stream' });
+                const svg: Blob = new Blob([(new XMLSerializer()).serializeToString(controlValue.svg)], { type: 'application/octet-stream' });
                 window.navigator.msSaveOrOpenBlob(svg, fileName + '.' + type.toLocaleLowerCase());
             } else {
                 this.triggerDownload(fileName, type, url, isDownload);
@@ -134,8 +143,8 @@ export class ExportUtils {
                 this.doexport(type, image, fileName);
             }
         } else {
-            let image: HTMLImageElement = new Image();
-            let ctx: CanvasRenderingContext2D = element.getContext('2d');
+            const image: HTMLImageElement = new Image();
+            const ctx: CanvasRenderingContext2D = element.getContext('2d');
             image.onload = (() => {
                 ctx.drawImage(image, 0, 0);
                 window.URL.revokeObjectURL(url);
@@ -143,7 +152,7 @@ export class ExportUtils {
                     this.exportPdf(element, orientation, width, height, isDownload, fileName, header, footer);
                 } else {
                     if (window.navigator.msSaveOrOpenBlob) {
-                        window.navigator.msSaveOrOpenBlob(element.msToBlob(), fileName + '.' + (type as string).toLocaleLowerCase());
+                        window.navigator.msSaveOrOpenBlob(element.toBlob(null), fileName + '.' + (type as string).toLocaleLowerCase());
                     } else {
                         this.triggerDownload(
                             fileName, type,
@@ -162,11 +171,14 @@ export class ExportUtils {
     }
     /**
      * To get data url for charts.
+     *
+     * @param chart
      */
+
     public getDataUrl(chart: Chart | AccumulationChart): { element: HTMLCanvasElement, dataUrl?: string, blobUrl?: string } {
-        let controlValue: IControlValue = this.getControlsValue([chart]);
+        const controlValue: IControlValue = this.getControlsValue([chart]);
         let element: HTMLCanvasElement = this.control.svgObject as HTMLCanvasElement;
-        let isCanvas: boolean = (this.control as Chart).enableCanvas;
+        const isCanvas: boolean = (this.control as Chart).enableCanvas;
         if (!isCanvas) {
             element = <HTMLCanvasElement>createElement('canvas', {
                 id: 'ej2-canvas',
@@ -176,7 +188,7 @@ export class ExportUtils {
                 }
             });
         }
-        let url: string = window.URL.createObjectURL(
+        const url: string = window.URL.createObjectURL(
             new Blob(
                 [(new XMLSerializer()).serializeToString(controlValue.svg)],
                 { type: 'image/svg+xml' }
@@ -187,18 +199,18 @@ export class ExportUtils {
             if (!isCanvas) {
                 canvas = this.createCanvas();
             }
-            let argsData: IAfterExportEventArgs = {
+            const argsData: IAfterExportEventArgs = {
                 name: afterExport, cancel: false, dataUrl: element.toDataURL('image/png')
             };
             chart.trigger(afterExport, argsData);
             return { element: canvas, dataUrl: canvas.toDataURL() };
         } else {
-            let image: HTMLImageElement = new Image();
-            let ctx: CanvasRenderingContext2D = element.getContext('2d');
+            const image: HTMLImageElement = new Image();
+            const ctx: CanvasRenderingContext2D = element.getContext('2d');
             image.onload = (() => {
                 ctx.drawImage(image, 0, 0);
                 window.URL.revokeObjectURL(url);
-                let argsData: IAfterExportEventArgs = {
+                const argsData: IAfterExportEventArgs = {
                     name: afterExport, cancel: false, dataUrl: element.toDataURL('image/png')
                 };
                 chart.trigger(afterExport, argsData);
@@ -211,10 +223,12 @@ export class ExportUtils {
 
     /**
      * To trigger the download element
+     *
      * @param fileName
      * @param type
      * @param url
      */
+
     public triggerDownload(fileName: string, type: ExportType, url: string, isDownload: boolean): void {
         createElement('a', {
             attrs: {
@@ -229,22 +243,23 @@ export class ExportUtils {
     }
     /**
      * To get the maximum size value
+     *
      * @param controls
      * @param name
      */
-    // tslint:disable-next-line:max-line-length
+
+    // eslint-disable-next-line max-len
     private getControlsValue(controls: (Chart | RangeNavigator | AccumulationChart | StockChart | BulletChart)[], isVertical?: boolean): IControlValue {
         let width: number = 0;
         let height: number = 0;
-        let content: string = '';
-        let isCanvas: boolean = (this.control as Chart).enableCanvas;
-        let svgObject: Element = new SvgRenderer('').createSvg({
+        const isCanvas: boolean = (this.control as Chart).enableCanvas;
+        const svgObject: Element = new SvgRenderer('').createSvg({
             id: 'Svg_Export_Element',
             width: 200, height: 200
         });
         controls.map((control: Chart | RangeNavigator | AccumulationChart | BulletChart) => {
-            let svg: Node = control.svgObject.cloneNode(true);
-            let groupEle: Element = control.renderer.createGroup({
+            const svg: Node = control.svgObject.cloneNode(true);
+            const groupEle: Element = control.renderer.createGroup({
                 style: (isNullOrUndefined(isVertical) || isVertical) ? 'transform: translateY(' + height + 'px)' :
                     'transform: translateX(' + width + 'px)'
 
@@ -257,7 +272,6 @@ export class ExportUtils {
             height = (isNullOrUndefined(isVertical) || isVertical) ? height + control.availableSize.height :
                 Math.max(control.availableSize.height, height);
 
-            content += control.svgObject.outerHTML;
             if (!isCanvas) {
                 svgObject.appendChild(groupEle);
             }
@@ -273,45 +287,47 @@ export class ExportUtils {
         };
     }
     private createCanvas(): HTMLCanvasElement {
-        let chart: Chart = (this.control as Chart);
+        const chart: Chart = (this.control as Chart);
         this.canvasRender(true, chart);
-        let canvas: HTMLCanvasElement = <HTMLCanvasElement>chart.svgObject;
+        const canvas: HTMLCanvasElement = <HTMLCanvasElement>chart.svgObject;
         this.canvasRender(false, chart);
         return canvas;
     }
     /**
      * To convert svg chart into canvas chart to fix export issue in IE
      * We cant export svg to other formats in IE
+     *
+     * @param enableCanvas
+     * @param chart
+     * @param enableCanvas
+     * @param chart
      */
-    // tslint:disable:no-string-literal
+
     private canvasRender(enableCanvas: boolean, chart: Chart): void {
         chart.enableCanvas = enableCanvas;
         chart['preRender']();
         chart['render']();
     }
 
-    // tslint:disable-next-line:max-line-length
-    private exportPdf(element: HTMLCanvasElement, orientation: PdfPageOrientation, width: number, height: number, isDownload: boolean, fileName: String, header?: IPDFArgs, footer?: IPDFArgs): void {
-        let document: PdfDocument = new PdfDocument();
-        let margin: PdfMargins = document.pageSettings.margins;
-        let pdfDefaultWidth: number = document.pageSettings.width;
-        let pdfDefaultHeight: number = document.pageSettings.height;
-        let exactWidth: number; let exactHeight: number;
+    // eslint-disable-next-line max-len
+    private exportPdf(element: HTMLCanvasElement, orientation: PdfPageOrientation, width: number, height: number, isDownload: boolean, fileName: string, header?: IPDFArgs, footer?: IPDFArgs): void {
+        const document: PdfDocument = new PdfDocument();
+        const margin: PdfMargins = document.pageSettings.margins;
+        const pdfDefaultWidth: number = document.pageSettings.width;
+        const pdfDefaultHeight: number = document.pageSettings.height;
         let imageString: string = element.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
         document.pageSettings.orientation = orientation;
-        exactWidth = (pdfDefaultWidth < width) ? (width + margin.left + margin.right) : pdfDefaultWidth;
-        exactHeight = (pdfDefaultHeight < height) ? (height + margin.top + margin.bottom) : pdfDefaultHeight;
+        const exactWidth: number = (pdfDefaultWidth < width) ? (width + margin.left + margin.right) : pdfDefaultWidth;
+        const exactHeight: number = (pdfDefaultHeight < height) ? (height + margin.top + margin.bottom) : pdfDefaultHeight;
         if (header !== undefined) {
-            let font: PdfStandardFont = new PdfStandardFont(1, header.fontSize || 15);
-            let pdfHeader: PdfPageTemplateElement = new PdfPageTemplateElement(exactWidth, 40);
-            // tslint:disable-next-line:max-line-length
+            const font: PdfStandardFont = new PdfStandardFont(1, header.fontSize || 15);
+            const pdfHeader: PdfPageTemplateElement = new PdfPageTemplateElement(exactWidth, 40);
             pdfHeader.graphics.drawString(header.content + '', font, null, new PdfSolidBrush(new PdfColor(0, 0, 0)), header.x, header.y, null);
             document.template.top = pdfHeader;
         }
         if (footer !== undefined) {
-            let font: PdfStandardFont = new PdfStandardFont(1, footer.fontSize || 15);
-            let pdfFooter: PdfPageTemplateElement = new PdfPageTemplateElement(exactWidth, 40);
-            // tslint:disable-next-line:max-line-length
+            const font: PdfStandardFont = new PdfStandardFont(1, footer.fontSize || 15);
+            const pdfFooter: PdfPageTemplateElement = new PdfPageTemplateElement(exactWidth, 40);
             pdfFooter.graphics.drawString(footer.content + '', font, null, new PdfSolidBrush(new PdfColor(0, 0, 0)), footer.x, footer.y, null);
             document.template.bottom = pdfFooter;
         }
@@ -328,27 +344,27 @@ export class ExportUtils {
     private doexport(
         type: ExportType, image: string, fileName: string): void {
         let images: HTMLElement | string[] = [];
-        let fileType: string = type || 'JPG';
+        const fileType: string = type || 'JPG';
         images = [image];
         this.exportImage(images, fileName, fileType, image);
     }
     private exportImage(images: string[] | HTMLElement, fileName: string, fileType: string, image: string): void {
-        let buffers: ArrayBuffer[] = [];
-        let length: number = (!(images instanceof HTMLElement)) ? images.length : 0;
+        const buffers: ArrayBuffer[] = [];
+        const length: number = (!(images instanceof HTMLElement)) ? images.length : 0;
         for (let g: number = 0; g < length; g++) {
             image = images[g];
             image = image.replace(/^data:[a-z]*;,/, '');
-            let image1: string[] = image.split(',');
-            let byteString: string = atob(image1[1]);
-            let buffer: ArrayBuffer = new ArrayBuffer(byteString.length);
-            let intArray: Uint8Array = new Uint8Array(buffer);
+            const image1: string[] = image.split(',');
+            const byteString: string = atob(image1[1]);
+            const buffer: ArrayBuffer = new ArrayBuffer(byteString.length);
+            const intArray: Uint8Array = new Uint8Array(buffer);
             for (let i: number = 0; i < byteString.length; i++) {
                 intArray[i] = byteString.charCodeAt(i);
             }
             buffers.push(buffer);
         }
         for (let j: number = 0; j < buffers.length; j++) {
-            let b: Blob = new Blob([buffers[j]], { type: 'application/octet-stream' });
+            const b: Blob = new Blob([buffers[j]], { type: 'application/octet-stream' });
             if (Browser.info.name === 'msie') {
                 window.navigator.msSaveOrOpenBlob(b, fileName + '.' + fileType.toLocaleLowerCase());
             }

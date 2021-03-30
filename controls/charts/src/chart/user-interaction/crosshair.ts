@@ -1,3 +1,4 @@
+/* eslint-disable valid-jsdoc */
 import { Chart } from '../chart';
 import { AnimationOptions, Animation, Browser, createElement } from '@syncfusion/ej2-base';
 import {
@@ -31,6 +32,7 @@ export class Crosshair {
 
     /**
      * Constructor for crosshair module.
+     *
      * @private
      */
 
@@ -46,7 +48,7 @@ export class Crosshair {
      */
     private addEventListener(): void {
         if (this.chart.isDestroyed) { return; }
-        let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         this.chart.on(Browser.touchMoveEvent, this.mouseMoveHandler, this);
         this.chart.on(Browser.touchEndEvent, this.mouseUpHandler, this);
         this.chart.on(cancelEvent, this.mouseLeaveHandler, this);
@@ -65,7 +67,7 @@ export class Crosshair {
     }
 
     private mouseMoveHandler(event: PointerEvent | TouchEvent): void {
-        let chart: Chart = this.chart;
+        const chart: Chart = this.chart;
         if (event.type === 'touchmove' && (Browser.isIos || Browser.isIos7) && chart.startMove && event.preventDefault) {
             event.preventDefault();
         }
@@ -83,11 +85,12 @@ export class Crosshair {
 
     /**
      * Handles the long press on chart.
-     * @return {boolean}
+     *
+     * @returns {boolean} false
      * @private
      */
     private longPress(): boolean {
-        let chart: Chart = this.chart;
+        const chart: Chart = this.chart;
         if (withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect)) {
             this.crosshair();
         }
@@ -96,15 +99,16 @@ export class Crosshair {
 
     /**
      * Renders the crosshair.
-     * @return {void}
+     *
+     * @returns {void}
      */
     public crosshair(): void {
-        let chart: Chart = this.chart; let horizontalCross: string = ''; let verticalCross: string = '';
+        const chart: Chart = this.chart; let horizontalCross: string = ''; let verticalCross: string = '';
         let options: PathOption; let axisTooltipGroup: Element = document.getElementById( this.elementID + '_crosshair_axis');
-        let crosshair: CrosshairSettingsModel = chart.crosshair;
+        const crosshair: CrosshairSettingsModel = chart.crosshair;
         let tooltipdiv: Element = document.getElementById(this.elementID + '_tooltip');
-        let chartRect: Rect = chart.chartAxisLayoutPanel.seriesClipRect;
-        let crossGroup: HTMLElement = chart.enableCanvas ? document.getElementById(this.elementID + '_Secondary_Element') :
+        const chartRect: Rect = chart.chartAxisLayoutPanel.seriesClipRect;
+        const crossGroup: HTMLElement = chart.enableCanvas ? document.getElementById(this.elementID + '_Secondary_Element') :
             document.getElementById(this.elementID + '_UserInteraction');
         let crosshairsvg: Element;
         let cross: HTMLElement = document.getElementById(this.elementID + '_Crosshair');
@@ -142,7 +146,7 @@ export class Crosshair {
             if (!axisTooltipGroup) {
                 axisTooltipGroup = this.svgRenderer.createGroup({ 'id': this.elementID + '_crosshair_axis' });
             }
-            let elementID: string = chart.tooltip.enable ? chart.element.id + '_tooltip_svg' : chart.element.id + '_svg';
+            const elementID: string = chart.tooltip.enable ? chart.element.id + '_tooltip_svg' : chart.element.id + '_svg';
             crosshairsvg = this.svgRenderer.createSvg({
                 id: elementID,
                 width: chart.availableSize.width,
@@ -187,7 +191,7 @@ export class Crosshair {
 
     private renderCrosshairLine(options: PathOption, crossGroup: HTMLElement): void {
 
-        let htmlObject: HTMLElement = this.chart.renderer.drawPath(options) as HTMLElement;
+        const htmlObject: HTMLElement = this.chart.renderer.drawPath(options) as HTMLElement;
 
         crossGroup.appendChild(htmlObject);
     }
@@ -195,21 +199,21 @@ export class Crosshair {
     private drawCrosshairLine(options: PathOption, crossGroup: HTMLElement, left: number,
                               top: number, width: number, height: number, direction: string): void {
         if (!document.getElementById(options.id) && direction) {
-            let line: HTMLElement = createElement('div', {
+            const line: HTMLElement = createElement('div', {
                 id: options.id
             });
             crossGroup.appendChild(line);
         }
         if (document.getElementById(options.id)) {
-            let style: string = 'top:' + top.toString() + 'px;' +
+            const style: string = 'top:' + top.toString() + 'px;' +
                 'left:' + left.toString() + 'px;' +
                 'width:' + width + 'px;' +
                 'height:' + height + 'px;' +
                 'fill:' + options.stroke + ';' +
                 'border: 0.5px solid black;' +
                 'position: absolute';
-            let crosshairline: HTMLElement = document.getElementById(options.id);
-            let crosshairtooltip: HTMLElement = document.getElementById(this.elementID + '_crosshair_axis');
+            const crosshairline: HTMLElement = document.getElementById(options.id);
+            const crosshairtooltip: HTMLElement = document.getElementById(this.elementID + '_crosshair_axis');
             crosshairline.setAttribute('style', style);
             crossGroup.style.opacity = '1';
             if (crosshairtooltip) {
@@ -224,7 +228,7 @@ export class Crosshair {
         let pathElement: Element;
         let textElem: Element;
         let options: TextOption;
-        let padding: number = 5;
+        const padding: number = 5;
         let direction: string;
         let axisRect: Rect;
         for (let k: number = 0, length: number = chart.axisCollections.length; k < length; k++) {
@@ -244,19 +248,19 @@ export class Crosshair {
                         if (chart.enableCanvas) {
                             pathElement = this.svgRenderer.drawPath(
                                 {
-                                'id': this.elementID + '_axis_tooltip_' + k,
-                                'fill': axis.crosshairTooltip.fill || chart.themeStyle.crosshairFill
-                            },  null);
+                                    'id': this.elementID + '_axis_tooltip_' + k,
+                                    'fill': axis.crosshairTooltip.fill || chart.themeStyle.crosshairFill
+                                });
                         } else {
                             pathElement = chart.renderer.drawPath(
                                 {
-                                'id': this.elementID + '_axis_tooltip_' + k,
-                                'fill': axis.crosshairTooltip.fill || chart.themeStyle.crosshairFill},
+                                    'id': this.elementID + '_axis_tooltip_' + k,
+                                    'fill': axis.crosshairTooltip.fill || chart.themeStyle.crosshairFill},
                                 null);
                         }
                         axisGroup.appendChild(pathElement);
                         options = new TextOption(this.elementID + '_axis_tooltip_text_' + k, 0, 0, 'start', text);
-                        let render: SvgRenderer | CanvasRenderer = chart.enableCanvas ? this.svgRenderer : chart.renderer;
+                        const render: SvgRenderer | CanvasRenderer = chart.enableCanvas ? this.svgRenderer : chart.renderer;
                         textElem = textElement(
                             render, options, axis.crosshairTooltip.textStyle,
                             axis.crosshairTooltip.textStyle.color || chart.themeStyle.crosshairLabel, axisGroup
@@ -281,7 +285,7 @@ export class Crosshair {
     private getAxisText(axis: Axis): string {
         let value: number;
         this.isBottom = false; this.isTop = false; this.isLeft = false; this.isRight = false;
-        let labelValue: number = (axis.valueType === 'Category' && axis.labelPlacement === 'BetweenTicks')
+        const labelValue: number = (axis.valueType === 'Category' && axis.labelPlacement === 'BetweenTicks')
             ? 0.5 : 0;
         if (axis.orientation === 'Horizontal') {
             value = getValueXByPoint(Math.abs(this.valueX - axis.rect.x), axis.rect.width, axis) + labelValue;
@@ -299,7 +303,7 @@ export class Crosshair {
         } else if (axis.valueType === 'Logarithmic') {
             return value = axis.format(Math.pow(axis.logBase, value));
         } else {
-            let customLabelFormat: boolean = axis.labelFormat && axis.labelFormat.match('{value}') !== null;
+            const customLabelFormat: boolean = axis.labelFormat && axis.labelFormat.match('{value}') !== null;
             return customLabelFormat ? axis.labelFormat.replace('{value}', axis.format(value)) : axis.format(value);
         }
     }
@@ -308,20 +312,19 @@ export class Crosshair {
 
     private tooltipLocation(text: string, axis: Axis, bounds: Rect, axisRect: Rect): Rect {
 
-        let isBottom: boolean = false; let isLeft: boolean = false;
-        let padding: number = 5; let arrowPadding: number = 10;
+        const padding: number = 5; const arrowPadding: number = 10;
         let tooltipRect: Rect;
-        let boundsX: number = bounds.x;
-        let boundsY: number = bounds.y;
-        let islabelInside: boolean = axis.labelPosition === 'Inside';
+        const boundsX: number = bounds.x;
+        const boundsY: number = bounds.y;
+        const islabelInside: boolean = axis.labelPosition === 'Inside';
         let scrollBarHeight: number = axis.scrollbarSettings.enable || (axis.zoomingScrollBar && axis.zoomingScrollBar.svgObject)
             ? axis.scrollBarHeight : 0;
         this.elementSize = measureText(text, axis.crosshairTooltip.textStyle);
 
         if (axis.orientation === 'Horizontal') {
-            let yLocation: number = islabelInside ? axisRect.y - this.elementSize.height - (padding * 2 + arrowPadding) :
+            const yLocation: number = islabelInside ? axisRect.y - this.elementSize.height - (padding * 2 + arrowPadding) :
                 axisRect.y + scrollBarHeight;
-            let height: number = islabelInside ? axisRect.y - this.elementSize.height - arrowPadding : axisRect.y + arrowPadding;
+            const height: number = islabelInside ? axisRect.y - this.elementSize.height - arrowPadding : axisRect.y + arrowPadding;
             this.arrowLocation = new ChartLocation(this.valueX, yLocation);
 
             tooltipRect = new Rect(
@@ -347,7 +350,7 @@ export class Crosshair {
         } else {
             scrollBarHeight = scrollBarHeight * (axis.opposedPosition ? 1 : -1);
             this.arrowLocation = new ChartLocation(axisRect.x, this.valueY);
-            let width: number = islabelInside ? axisRect.x - scrollBarHeight :
+            const width: number = islabelInside ? axisRect.x - scrollBarHeight :
                 axisRect.x - (this.elementSize.width) - (padding * 2 + arrowPadding);
             tooltipRect = new Rect(
                 width + scrollBarHeight, this.valueY - (this.elementSize.height / 2) - padding,
@@ -389,18 +392,19 @@ export class Crosshair {
     }
     /**
      * Removes the crosshair on mouse leave.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
     public removeCrosshair(duration: number): void {
-        let chart: Chart = this.chart;
-        let crosshair: HTMLElement = chart.enableCanvas ? document.getElementById(this.elementID + '_Crosshair') :
+        const chart: Chart = this.chart;
+        const crosshair: HTMLElement = chart.enableCanvas ? document.getElementById(this.elementID + '_Crosshair') :
             document.getElementById(this.elementID + '_UserInteraction');
-        let crosshairtooltip: HTMLElement = chart.enableCanvas ? document.getElementById(this.elementID + '_crosshair_axis') : null;
+        const crosshairtooltip: HTMLElement = chart.enableCanvas ? document.getElementById(this.elementID + '_crosshair_axis') : null;
         this.stopAnimation();
         if (crosshair && crosshair.getAttribute('opacity') !== '0') {
-            this.crosshairInterval = setTimeout(
+            this.crosshairInterval = +setTimeout(
                 (): void => {
                     new Animation({}).animate(crosshair, {
                         duration: 200,
@@ -414,7 +418,7 @@ export class Crosshair {
                                 crosshairtooltip.style.opacity = (1 - (args.timeStamp / args.duration)).toString();
                             }
                         },
-                        end: (model: AnimationOptions): void => {
+                        end: (): void => {
                             if (chart.enableCanvas) {
                                 crosshair.style.opacity = '0';
                                 crosshairtooltip.style.opacity = '0';
@@ -434,6 +438,8 @@ export class Crosshair {
     }
     /**
      * Get module name.
+     *
+     * @returns {string} module name
      */
     protected getModuleName(): string {
         /**
@@ -443,11 +449,12 @@ export class Crosshair {
     }
     /**
      * To destroy the crosshair.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method performed here
          */

@@ -13,6 +13,8 @@ export class WorkbookConditionalFormat {
     private parent: Workbook;
     /**
      * Constructor for WorkbookConditionalFormat module.
+     *
+     * @param {Workbook} parent - Specifies the parent element.
      */
     constructor(parent: Workbook) {
         this.parent = parent;
@@ -20,7 +22,9 @@ export class WorkbookConditionalFormat {
     }
 
     /**
-     * To destroy the conditional format module. 
+     * To destroy the conditional format module.
+     *
+     * @returns {void}
      */
     protected destroy(): void {
         this.removeEventListener();
@@ -40,36 +44,34 @@ export class WorkbookConditionalFormat {
     }
 
     private setCFrulHandler(args: { conditionalFormat: ConditionalFormatModel }): void {
-        let conditionalFormat: ConditionalFormatModel = args.conditionalFormat;
+        const conditionalFormat: ConditionalFormatModel = args.conditionalFormat;
         let range: string = conditionalFormat.range;
-        let sheetIndex: number = this.parent.getAddressInfo(range).sheetIndex;
-        let sheet: SheetModel = getSheet(this.parent, sheetIndex);
+        const sheetIndex: number = this.parent.getAddressInfo(range).sheetIndex;
+        const sheet: SheetModel = getSheet(this.parent, sheetIndex);
         range = range || sheet.selectedRange;
         conditionalFormat.range = range;
-        let indexes: number[] = getRangeIndexes(range);
-        let cfrCount: number;
+        const indexes: number[] = getRangeIndexes(range);
         if (!sheet.conditionalFormats) {
             this.parent.setSheetPropertyOnMute(sheet, 'conditionalFormats', []);
         }
-        cfrCount = sheet.conditionalFormats.length;
+        const cfrCount: number = sheet.conditionalFormats.length;
         sheet.conditionalFormats[cfrCount] = conditionalFormat;
         for (let rIdx: number = indexes[0]; rIdx <= indexes[2]; rIdx++) {
             if (!sheet.rows[rIdx]) { setRow(sheet, rIdx, {}); }
             for (let cIdx: number = indexes[1]; cIdx <= indexes[3]; cIdx++) {
                 if (!sheet.rows[rIdx].cells || !sheet.rows[rIdx].cells[cIdx]) { setCell(rIdx, cIdx, sheet, {}); }
                 if (sheetIndex === this.parent.activeSheetIndex) {
-                    let cell: CellModel = sheet.rows[rIdx].cells[cIdx];
+                    const cell: CellModel = sheet.rows[rIdx].cells[cIdx];
                     this.parent.notify(cFInitialCheck, { rowIdx: rIdx, colIdx: cIdx, cell: cell, conditionalFormat: conditionalFormat });
                 }
             }
         }
     }
 
-    // tslint:disable-next-line:max-func-body-length
     private clearRules(args: { range: string, isPublic?: boolean }): void {
-        let isPublic: boolean = isNullOrUndefined(args.isPublic) ? true : false;
-        let cFormats: ConditionalFormatModel[] = [];
-        let oldRange: string[] = [];
+        const isPublic: boolean = isNullOrUndefined(args.isPublic) ? true : false;
+        const cFormats: ConditionalFormatModel[] = [];
+        const oldRange: string[] = [];
         let isFirst: boolean = true;
         let top: number;
         let bottom: number;
@@ -79,11 +81,11 @@ export class WorkbookConditionalFormat {
         let backColIdx: number;
         let topRowIdx: number;
         let bottomRowIdx: number;
-        let range: string = args.range;
-        let sheetIndex: number = this.parent.getAddressInfo(range).sheetIndex;
-        let sheet: SheetModel = getSheet(this.parent, sheetIndex);
-        let cFRules: ConditionalFormatModel[] = sheet.conditionalFormats;
-        let rangeIndexes: number[] = getRangeIndexes(range);
+        const range: string = args.range;
+        const sheetIndex: number = this.parent.getAddressInfo(range).sheetIndex;
+        const sheet: SheetModel = getSheet(this.parent, sheetIndex);
+        const cFRules: ConditionalFormatModel[] = sheet.conditionalFormats;
+        const rangeIndexes: number[] = getRangeIndexes(range);
         if (sheetIndex === this.parent.activeSheetIndex) {
             for (let rIdx: number = rangeIndexes[0]; rIdx <= rangeIndexes[2]; rIdx++) {
                 for (let cIdx: number = rangeIndexes[1]; cIdx <= rangeIndexes[3]; cIdx++) {
@@ -97,270 +99,271 @@ export class WorkbookConditionalFormat {
         for (let cFRulesIdx: number = cFRules.length - 1; cFRulesIdx >= 0; cFRulesIdx--) {
             let isPresent: boolean = false;
             let result: string = '';
-            let cFRule: ConditionalFormatModel = cFRules[cFRulesIdx];
-            let cFRanges: string[] = cFRule.range.split(',');
+            const cFRule: ConditionalFormatModel = cFRules[cFRulesIdx];
+            const cFRanges: string[] = cFRule.range.split(',');
             if (sheetIndex === this.parent.activeSheetIndex) {
-            for (let cFRangeIdx: number = 0; cFRangeIdx < cFRanges.length; cFRangeIdx++) {
-                let isFull: boolean = false;
-                let cFRange: string = cFRanges[cFRangeIdx];
-                let cFRangeIndexes: number[] = getRangeIndexes(cFRange);
-                topRowIdx = cFRangeIndexes[0];
-                bottomRowIdx = cFRangeIndexes[0];
-                frontColIdx = cFRangeIndexes[1];
-                backColIdx = cFRangeIndexes[1];
-                if (cFRangeIndexes[0] >= rangeIndexes[0] && cFRangeIndexes[2] <= rangeIndexes[2] &&
-                    cFRangeIndexes[1] >= rangeIndexes[1] && cFRangeIndexes[3] <= rangeIndexes[3]) {
-                    isFull = true;
-                }
-                for (let cFRRowIdx: number = cFRangeIndexes[0]; cFRRowIdx <= cFRangeIndexes[2]; cFRRowIdx++) {
-                    let isTrue: number = 0;
-                    for (let cFRColIdx: number = cFRangeIndexes[1]; cFRColIdx <= cFRangeIndexes[3]; cFRColIdx++) {
-                        for (let rRowIdx: number = rangeIndexes[0]; rRowIdx <= rangeIndexes[2]; rRowIdx++) {
-                            for (let rColIdx: number = rangeIndexes[1]; rColIdx <= rangeIndexes[3]; rColIdx++) {
-                                if (rRowIdx === cFRRowIdx && rColIdx === cFRColIdx) {
-                                    let style: CellStyleModel =
-                                        this.parent.getCellStyleValue(['backgroundColor', 'color'], [rRowIdx, rColIdx]);
-                                    this.parent.notify(applyCellFormat, <CellFormatArgs>{
-                                        style: style, rowIdx: rRowIdx, colIdx: rColIdx,
-                                        lastCell: true, isHeightCheckNeeded: true, manualUpdate: true
-                                    });
-                                    isTrue = isTrue + 1;
-                                    isPresent = true;
-                                    if (rRowIdx === cFRangeIndexes[0]) {
-                                        if (rColIdx === cFRangeIndexes[3]) {
-                                            if (frontColIdx === cFRangeIndexes[1]) {
-                                                if (backColIdx === rColIdx) {
-                                                    backColIdx = rColIdx;
-                                                } else {
-                                                    frontColIdx = rColIdx - 1;
+                for (let cFRangeIdx: number = 0; cFRangeIdx < cFRanges.length; cFRangeIdx++) {
+                    let isFull: boolean = false;
+                    const cFRange: string = cFRanges[cFRangeIdx];
+                    const cFRangeIndexes: number[] = getRangeIndexes(cFRange);
+                    topRowIdx = cFRangeIndexes[0];
+                    bottomRowIdx = cFRangeIndexes[0];
+                    frontColIdx = cFRangeIndexes[1];
+                    backColIdx = cFRangeIndexes[1];
+                    if (cFRangeIndexes[0] >= rangeIndexes[0] && cFRangeIndexes[2] <= rangeIndexes[2] &&
+                        cFRangeIndexes[1] >= rangeIndexes[1] && cFRangeIndexes[3] <= rangeIndexes[3]) {
+                        isFull = true;
+                    }
+                    for (let cFRRowIdx: number = cFRangeIndexes[0]; cFRRowIdx <= cFRangeIndexes[2]; cFRRowIdx++) {
+                        let isTrue: number = 0;
+                        for (let cFRColIdx: number = cFRangeIndexes[1]; cFRColIdx <= cFRangeIndexes[3]; cFRColIdx++) {
+                            for (let rRowIdx: number = rangeIndexes[0]; rRowIdx <= rangeIndexes[2]; rRowIdx++) {
+                                for (let rColIdx: number = rangeIndexes[1]; rColIdx <= rangeIndexes[3]; rColIdx++) {
+                                    if (rRowIdx === cFRRowIdx && rColIdx === cFRColIdx) {
+                                        const style: CellStyleModel =
+                                            this.parent.getCellStyleValue(['backgroundColor', 'color'], [rRowIdx, rColIdx]);
+                                        this.parent.notify(applyCellFormat, <CellFormatArgs>{
+                                            style: style, rowIdx: rRowIdx, colIdx: rColIdx,
+                                            lastCell: true, isHeightCheckNeeded: true, manualUpdate: true
+                                        });
+                                        isTrue = isTrue + 1;
+                                        isPresent = true;
+                                        if (rRowIdx === cFRangeIndexes[0]) {
+                                            if (rColIdx === cFRangeIndexes[3]) {
+                                                if (frontColIdx === cFRangeIndexes[1]) {
+                                                    if (backColIdx === rColIdx) {
+                                                        backColIdx = rColIdx;
+                                                    } else {
+                                                        frontColIdx = rColIdx - 1;
+                                                    }
+                                                } else if (frontColIdx !== cFRangeIndexes[1] && backColIdx + 1 === rColIdx) {
+                                                    backColIdx = cFRangeIndexes[1];
+                                                    frontColIdx = frontColIdx - 1;
+                                                } else if (frontColIdx !== cFRangeIndexes[1] && backColIdx === cFRangeIndexes[1]) {
+                                                    frontColIdx = rangeIndexes[1] - 1;
                                                 }
-                                            } else if (frontColIdx !== cFRangeIndexes[1] && backColIdx + 1 === rColIdx) {
-                                                backColIdx = cFRangeIndexes[1];
-                                                frontColIdx = frontColIdx - 1;
-                                            } else if (frontColIdx !== cFRangeIndexes[1] && backColIdx === cFRangeIndexes[1]) {
-                                                frontColIdx = rangeIndexes[1] - 1;
-                                            }
-                                        } else if (rColIdx === cFRangeIndexes[1]) {
-                                            if (backColIdx === cFRangeIndexes[1]) {
-                                                backColIdx = rColIdx + 1;
+                                            } else if (rColIdx === cFRangeIndexes[1]) {
+                                                if (backColIdx === cFRangeIndexes[1]) {
+                                                    backColIdx = rColIdx + 1;
+                                                }
+                                            } else {
+                                                if (frontColIdx === cFRangeIndexes[1] && backColIdx === cFRangeIndexes[1]) {
+                                                    frontColIdx = rColIdx;
+                                                    backColIdx = rColIdx;
+                                                } else if (frontColIdx === cFRangeIndexes[1] && backColIdx !== cFRangeIndexes[1]) {
+                                                    backColIdx = rColIdx + 1;
+                                                } else {
+                                                    backColIdx = rColIdx;
+                                                }
                                             }
                                         } else {
-                                            if (frontColIdx === cFRangeIndexes[1] && backColIdx === cFRangeIndexes[1]) {
-                                                frontColIdx = rColIdx;
-                                                backColIdx = rColIdx;
-                                            } else if (frontColIdx === cFRangeIndexes[1] && backColIdx !== cFRangeIndexes[1]) {
-                                                backColIdx = rColIdx + 1;
-                                            } else {
-                                                backColIdx = rColIdx;
-                                            }
-                                        }
-                                    } else {
-                                        if (rColIdx === cFRangeIndexes[1]) {
-                                            if (backColIdx === cFRangeIndexes[1] && cFRangeIndexes[1] !== cFRangeIndexes[3]) {
-                                                backColIdx = rColIdx + 1;
-                                            }
-                                        } else if (rColIdx === cFRangeIndexes[3]) {
-                                            if (frontColIdx === cFRangeIndexes[1]) {
-                                                if (backColIdx === rColIdx) {
-                                                    backColIdx = rColIdx;
-                                                } else {
-                                                    frontColIdx = rColIdx - 1;
+                                            if (rColIdx === cFRangeIndexes[1]) {
+                                                if (backColIdx === cFRangeIndexes[1] && cFRangeIndexes[1] !== cFRangeIndexes[3]) {
+                                                    backColIdx = rColIdx + 1;
                                                 }
-                                            } else if (frontColIdx !== cFRangeIndexes[1] && backColIdx === cFRangeIndexes[1]) {
-                                                frontColIdx = rangeIndexes[1] - 1;
-                                            } else if (frontColIdx !== cFRangeIndexes[1] && backColIdx + 1 === rColIdx) {
-                                                backColIdx = cFRangeIndexes[1];
-                                                frontColIdx = rangeIndexes[1] - 1;
+                                            } else if (rColIdx === cFRangeIndexes[3]) {
+                                                if (frontColIdx === cFRangeIndexes[1]) {
+                                                    if (backColIdx === rColIdx) {
+                                                        backColIdx = rColIdx;
+                                                    } else {
+                                                        frontColIdx = rColIdx - 1;
+                                                    }
+                                                } else if (frontColIdx !== cFRangeIndexes[1] && backColIdx === cFRangeIndexes[1]) {
+                                                    frontColIdx = rangeIndexes[1] - 1;
+                                                } else if (frontColIdx !== cFRangeIndexes[1] && backColIdx + 1 === rColIdx) {
+                                                    backColIdx = cFRangeIndexes[1];
+                                                    frontColIdx = rangeIndexes[1] - 1;
+                                                } else {
+                                                    bottomRowIdx = rRowIdx;
+                                                }
                                             } else {
-                                                bottomRowIdx = rRowIdx;
-                                            }
-                                        } else {
-                                            if (frontColIdx === cFRangeIndexes[1] && backColIdx === cFRangeIndexes[1]) {
-                                                frontColIdx = rColIdx;
-                                                backColIdx = rColIdx;
-                                            } else if (backColIdx !== cFRangeIndexes[1] && frontColIdx !== cFRangeIndexes[1]) {
-                                                backColIdx = rColIdx;
-                                            } else if (frontColIdx !== cFRangeIndexes[1] && backColIdx === cFRangeIndexes[1]) {
-                                                frontColIdx = rColIdx;
-                                            } else {
-                                                backColIdx = rColIdx + 1;
+                                                if (frontColIdx === cFRangeIndexes[1] && backColIdx === cFRangeIndexes[1]) {
+                                                    frontColIdx = rColIdx;
+                                                    backColIdx = rColIdx;
+                                                } else if (backColIdx !== cFRangeIndexes[1] && frontColIdx !== cFRangeIndexes[1]) {
+                                                    backColIdx = rColIdx;
+                                                } else if (frontColIdx !== cFRangeIndexes[1] && backColIdx === cFRangeIndexes[1]) {
+                                                    frontColIdx = rColIdx;
+                                                } else {
+                                                    backColIdx = rColIdx + 1;
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-                    if (isTrue > 0 && !isFull) {
-                        if (isFirst) {
-                            top = topRowIdx;
-                            bottom = bottomRowIdx;
-                            left = frontColIdx;
-                            right = backColIdx;
-                        }
-                        if (frontColIdx === cFRangeIndexes[1] && backColIdx !== cFRangeIndexes[1]) {
-                            if (backColIdx === cFRangeIndexes[3]) {
-                                if (topRowIdx !== cFRRowIdx) {
-                                    result = result + ' ' + getRangeAddress([topRowIdx, left, bottom, cFRangeIndexes[3]]);
-                                }
-                                if (frontColIdx === cFRangeIndexes[1] && backColIdx === cFRangeIndexes[3]) {
-                                    if (cFRRowIdx === cFRangeIndexes[2]) {
-                                        if (cFRangeIndexes[1] === rangeIndexes[3]) {
-                                            result = result + ' ' + getRangeAddress([cFRRowIdx, backColIdx, cFRRowIdx, cFRangeIndexes[3]]);
+                        if (isTrue > 0 && !isFull) {
+                            if (isFirst) {
+                                top = topRowIdx;
+                                bottom = bottomRowIdx;
+                                left = frontColIdx;
+                                right = backColIdx;
+                            }
+                            if (frontColIdx === cFRangeIndexes[1] && backColIdx !== cFRangeIndexes[1]) {
+                                if (backColIdx === cFRangeIndexes[3]) {
+                                    if (topRowIdx !== cFRRowIdx) {
+                                        result = result + ' ' + getRangeAddress([topRowIdx, left, bottom, cFRangeIndexes[3]]);
+                                    }
+                                    if (frontColIdx === cFRangeIndexes[1] && backColIdx === cFRangeIndexes[3]) {
+                                        if (cFRRowIdx === cFRangeIndexes[2]) {
+                                            if (cFRangeIndexes[1] === rangeIndexes[3]) {
+                                                result = result + ' ' + getRangeAddress([cFRRowIdx, backColIdx, cFRRowIdx, cFRangeIndexes[3]]);
+                                            }
+                                        } else {
+                                            if (rangeIndexes[2] === cFRangeIndexes[0] && backColIdx !== cFRangeIndexes[3]) {
+                                                result = result + ' ' + getRangeAddress([cFRRowIdx, backColIdx, cFRRowIdx, cFRangeIndexes[3]]);
+                                            }
+                                            topRowIdx = cFRRowIdx + 1;
+                                            bottomRowIdx = cFRRowIdx + 1;
+                                            backColIdx = cFRangeIndexes[1];
                                         }
-                                    } else {
-                                        if (rangeIndexes[2] === cFRangeIndexes[0] && backColIdx !== cFRangeIndexes[3]) {
-                                            result = result + ' ' + getRangeAddress([cFRRowIdx, backColIdx, cFRRowIdx, cFRangeIndexes[3]]);
-                                        }
+                                    }
+                                } else if (right !== backColIdx) {
+                                    result = result + ' ' + getRangeAddress([topRowIdx, right, cFRRowIdx - 1, cFRangeIndexes[3]]);
+                                    if (backColIdx === cFRangeIndexes[3] && frontColIdx === cFRangeIndexes[1]) {
                                         topRowIdx = cFRRowIdx + 1;
                                         bottomRowIdx = cFRRowIdx + 1;
                                         backColIdx = cFRangeIndexes[1];
+                                    } else {
+                                        topRowIdx = cFRRowIdx;
+                                        bottomRowIdx = cFRRowIdx;
+                                    }
+                                    if (backColIdx === cFRangeIndexes[3] && frontColIdx !== cFRangeIndexes[1]) {
+                                        frontColIdx = cFRangeIndexes[1];
+                                    }
+                                } else if (left !== frontColIdx) {
+                                    result = result + ' ' + getRangeAddress([topRowIdx, cFRangeIndexes[1], cFRRowIdx - 1, left]);
+                                    topRowIdx = cFRRowIdx + 1;
+                                    bottomRowIdx = cFRRowIdx + 1;
+                                    frontColIdx = cFRangeIndexes[1];
+                                    backColIdx = cFRangeIndexes[1];
+                                } else if (cFRRowIdx === cFRangeIndexes[2]) {
+                                    result = result + ' ' + getRangeAddress([topRowIdx, backColIdx, cFRRowIdx, cFRangeIndexes[3]]);
+                                } else {
+                                    if (bottomRowIdx < cFRRowIdx || (frontColIdx === cFRangeIndexes[1] && backColIdx === cFRangeIndexes[3]))
+                                    {
+                                        bottomRowIdx = cFRRowIdx;
                                     }
                                 }
-                            } else if (right !== backColIdx) {
-                                result = result + ' ' + getRangeAddress([topRowIdx, right, cFRRowIdx - 1, cFRangeIndexes[3]]);
-                                if (backColIdx === cFRangeIndexes[3] && frontColIdx === cFRangeIndexes[1]) {
-                                    topRowIdx = cFRRowIdx + 1;
-                                    bottomRowIdx = cFRRowIdx + 1;
-                                    backColIdx = cFRangeIndexes[1];
-                                } else {
+                            } else if (backColIdx === cFRangeIndexes[1] && frontColIdx !== cFRangeIndexes[1]) {
+                                if (right !== backColIdx) {
+                                    result = result + ' ' + getRangeAddress([topRowIdx, right, cFRRowIdx - 1, cFRangeIndexes[3]]);
                                     topRowIdx = cFRRowIdx;
                                     bottomRowIdx = cFRRowIdx;
                                 }
-                                if (backColIdx === cFRangeIndexes[3] && frontColIdx !== cFRangeIndexes[1]) {
-                                    frontColIdx = cFRangeIndexes[1];
+                                if (left !== frontColIdx) {
+                                    result = result + ' ' + getRangeAddress([topRowIdx, left, cFRRowIdx - 1, cFRangeIndexes[3]]);
+                                    topRowIdx = cFRRowIdx;
+                                    bottomRowIdx = cFRRowIdx;
                                 }
-                            } else if (left !== frontColIdx) {
-                                result = result + ' ' + getRangeAddress([topRowIdx, cFRangeIndexes[1], cFRRowIdx - 1, left]);
-                                topRowIdx = cFRRowIdx + 1;
-                                bottomRowIdx = cFRRowIdx + 1;
+                                if (cFRRowIdx === cFRangeIndexes[2]) {
+                                    result = result + ' ' + getRangeAddress([topRowIdx, backColIdx, cFRRowIdx, frontColIdx]);
+                                } else {
+                                    bottomRowIdx = cFRRowIdx;
+                                }
+                            } else if (backColIdx !== cFRangeIndexes[1] && frontColIdx !== cFRangeIndexes[1]) {
+                                if (cFRRowIdx === cFRangeIndexes[2] && cFRangeIndexes[2] === rangeIndexes[0]) {
+                                    if (cFRangeIndexes[0] === cFRangeIndexes[2]) {
+                                        result = result + ' ' + getRangeAddress([topRowIdx, cFRangeIndexes[1], bottomRowIdx, frontColIdx - 1]);
+                                        result = result + ' ' +
+                                            getRangeAddress([topRowIdx, backColIdx + 1, bottomRowIdx, cFRangeIndexes[3]]);
+                                    } else {
+                                        result =
+                                            result + ' ' + getRangeAddress([topRowIdx, cFRangeIndexes[1], bottomRowIdx, cFRangeIndexes[3]]);
+                                        result = result + ' ' +
+                                            getRangeAddress([cFRangeIndexes[2], cFRangeIndexes[1], cFRangeIndexes[2], frontColIdx - 1]);
+                                        result = result + ' ' +
+                                            getRangeAddress([cFRangeIndexes[2], backColIdx + 1, cFRangeIndexes[2], cFRangeIndexes[3]]);
+                                    }
+                                } else if (cFRRowIdx === cFRangeIndexes[2]) {
+                                    result = result + ' ' + getRangeAddress([topRowIdx, cFRangeIndexes[1], cFRRowIdx, frontColIdx - 1]);
+                                    result = result + ' ' + getRangeAddress([topRowIdx, backColIdx + 1, cFRRowIdx, cFRangeIndexes[3]]);
+                                } else {
+                                    if (left === cFRangeIndexes[1] && right === cFRangeIndexes[1]) {
+                                        result = result + ' ' + getRangeAddress([topRowIdx, left, bottomRowIdx, cFRangeIndexes[3]]);
+                                        topRowIdx = cFRRowIdx;
+                                    }
+                                    bottomRowIdx = cFRRowIdx;
+                                }
+                            } else if (frontColIdx === cFRangeIndexes[1] && backColIdx === cFRangeIndexes[1]) {
+                                if (rangeIndexes[2] !== cFRangeIndexes[0]) {
+                                    if (cFRangeIndexes[2] >= rangeIndexes[2] && cFRRowIdx > rangeIndexes[2]) {
+                                        result = result + ' ' + getRangeAddress([topRowIdx, frontColIdx, bottomRowIdx, cFRangeIndexes[3]]);
+                                    }
+                                    if (cFRangeIndexes[1] === cFRangeIndexes[3] &&
+                                        cFRRowIdx <= cFRangeIndexes[2] && top !== cFRangeIndexes[2] && cFRRowIdx !== top) {
+                                        result = result + ' ' + getRangeAddress([topRowIdx, frontColIdx, bottomRowIdx, cFRangeIndexes[3]]);
+                                    }
+                                    if (cFRangeIndexes[1] === cFRangeIndexes[3]) {
+                                        topRowIdx = cFRRowIdx + 1;
+                                        bottomRowIdx = cFRRowIdx + 1;
+                                    }
+                                } else {
+                                    if (cFRRowIdx === cFRangeIndexes[2] || cFRRowIdx === cFRangeIndexes[0] &&
+                                        cFRangeIndexes[1] !== cFRangeIndexes[3]) {
+                                        result = result + ' ' + getRangeAddress([topRowIdx, frontColIdx, bottomRowIdx, backColIdx]);
+                                    }
+                                    topRowIdx = cFRRowIdx + 1;
+                                    bottomRowIdx = cFRRowIdx + 1;
+                                }
+                                if (cFRRowIdx === cFRangeIndexes[2] && cFRangeIndexes[0] !== cFRangeIndexes[2] &&
+                                    cFRangeIndexes[1] !== cFRangeIndexes[3]) {
+                                    result = result + ' ' + getRangeAddress([cFRRowIdx, frontColIdx, cFRRowIdx, backColIdx]);
+                                }
+                            }
+                            if (!isFirst) {
+                                top = topRowIdx;
+                                bottom = bottomRowIdx <= cFRangeIndexes[2] ? bottomRowIdx : cFRangeIndexes[2];
+                                left = frontColIdx;
+                                right = backColIdx <= cFRangeIndexes[3] ? backColIdx : cFRangeIndexes[3];
+                            }
+                            isFirst = false;
+                        } else if (!isFull) {
+                            if (isFirst) {
+                                top = topRowIdx;
+                                bottom = bottomRowIdx;
+                                left = frontColIdx;
+                                right = backColIdx;
+                            }
+                            if (frontColIdx === cFRangeIndexes[1] && backColIdx === cFRangeIndexes[1]) {
+                                if (cFRRowIdx === cFRangeIndexes[2]) {
+                                    result = result + ' ' + getRangeAddress([topRowIdx, frontColIdx, cFRRowIdx, cFRangeIndexes[3]]);
+                                }
+                                bottomRowIdx = cFRRowIdx;
+                            }
+                            if (backColIdx !== cFRangeIndexes[1] && frontColIdx !== cFRangeIndexes[1]) {
+                                result = result + ' ' + getRangeAddress([topRowIdx, cFRangeIndexes[1], (cFRRowIdx - 1), frontColIdx - 1]);
+                                result = result + ' ' + getRangeAddress([topRowIdx, backColIdx + 1, (cFRRowIdx - 1), cFRangeIndexes[3]]);
+                                topRowIdx = cFRRowIdx;
+                                bottomRowIdx = cFRRowIdx;
                                 frontColIdx = cFRangeIndexes[1];
                                 backColIdx = cFRangeIndexes[1];
-                            } else if (cFRRowIdx === cFRangeIndexes[2]) {
-                                result = result + ' ' + getRangeAddress([topRowIdx, backColIdx, cFRRowIdx, cFRangeIndexes[3]]);
-                            } else {
-                                if (bottomRowIdx < cFRRowIdx || (frontColIdx === cFRangeIndexes[1] && backColIdx === cFRangeIndexes[3])) {
-                                    bottomRowIdx = cFRRowIdx;
-                                }
                             }
-                        } else if (backColIdx === cFRangeIndexes[1] && frontColIdx !== cFRangeIndexes[1]) {
-                            if (right !== backColIdx) {
-                                result = result + ' ' + getRangeAddress([topRowIdx, right, cFRRowIdx - 1, cFRangeIndexes[3]]);
+                            if (backColIdx !== cFRangeIndexes[1] && frontColIdx === cFRangeIndexes[1]) {
+                                result = result + ' ' + getRangeAddress([topRowIdx, backColIdx, (cFRRowIdx - 1), cFRangeIndexes[3]]);
                                 topRowIdx = cFRRowIdx;
                                 bottomRowIdx = cFRRowIdx;
+                                frontColIdx = cFRangeIndexes[1];
+                                backColIdx = cFRangeIndexes[1];
                             }
-                            if (left !== frontColIdx) {
-                                result = result + ' ' + getRangeAddress([topRowIdx, left, cFRRowIdx - 1, cFRangeIndexes[3]]);
+                            if (frontColIdx !== cFRangeIndexes[1] && backColIdx === cFRangeIndexes[1]) {
+                                result = result + ' ' + getRangeAddress([topRowIdx, backColIdx, (cFRRowIdx - 1), frontColIdx]);
                                 topRowIdx = cFRRowIdx;
                                 bottomRowIdx = cFRRowIdx;
+                                frontColIdx = cFRangeIndexes[1];
+                                backColIdx = cFRangeIndexes[1];
                             }
-                            if (cFRRowIdx === cFRangeIndexes[2]) {
-                                result = result + ' ' + getRangeAddress([topRowIdx, backColIdx, cFRRowIdx, frontColIdx]);
-                            } else {
-                                bottomRowIdx = cFRRowIdx;
+                            if (!isFirst) {
+                                top = topRowIdx;
+                                bottom = bottomRowIdx <= cFRangeIndexes[2] ? bottomRowIdx : cFRangeIndexes[2];
+                                left = frontColIdx;
+                                right = backColIdx <= cFRangeIndexes[3] ? backColIdx : cFRangeIndexes[3];
                             }
-                        } else if (backColIdx !== cFRangeIndexes[1] && frontColIdx !== cFRangeIndexes[1]) {
-                            if (cFRRowIdx === cFRangeIndexes[2] && cFRangeIndexes[2] === rangeIndexes[0]) {
-                                if (cFRangeIndexes[0] === cFRangeIndexes[2]) {
-                                    result = result + ' ' + getRangeAddress([topRowIdx, cFRangeIndexes[1], bottomRowIdx, frontColIdx - 1]);
-                                    result = result + ' ' +
-                                        getRangeAddress([topRowIdx, backColIdx + 1, bottomRowIdx, cFRangeIndexes[3]]);
-                                } else {
-                                    result =
-                                        result + ' ' + getRangeAddress([topRowIdx, cFRangeIndexes[1], bottomRowIdx, cFRangeIndexes[3]]);
-                                    result = result + ' ' +
-                                        getRangeAddress([cFRangeIndexes[2], cFRangeIndexes[1], cFRangeIndexes[2], frontColIdx - 1]);
-                                    result = result + ' ' +
-                                        getRangeAddress([cFRangeIndexes[2], backColIdx + 1, cFRangeIndexes[2], cFRangeIndexes[3]]);
-                                }
-                            } else if (cFRRowIdx === cFRangeIndexes[2]) {
-                                result = result + ' ' + getRangeAddress([topRowIdx, cFRangeIndexes[1], cFRRowIdx, frontColIdx - 1]);
-                                result = result + ' ' + getRangeAddress([topRowIdx, backColIdx + 1, cFRRowIdx, cFRangeIndexes[3]]);
-                            } else {
-                                if (left === cFRangeIndexes[1] && right === cFRangeIndexes[1]) {
-                                    result = result + ' ' + getRangeAddress([topRowIdx, left, bottomRowIdx, cFRangeIndexes[3]]);
-                                    topRowIdx = cFRRowIdx;
-                                }
-                                bottomRowIdx = cFRRowIdx;
-                            }
-                        } else if (frontColIdx === cFRangeIndexes[1] && backColIdx === cFRangeIndexes[1]) {
-                            if (rangeIndexes[2] !== cFRangeIndexes[0]) {
-                                if (cFRangeIndexes[2] >= rangeIndexes[2] && cFRRowIdx > rangeIndexes[2]) {
-                                    result = result + ' ' + getRangeAddress([topRowIdx, frontColIdx, bottomRowIdx, cFRangeIndexes[3]]);
-                                }
-                                if (cFRangeIndexes[1] === cFRangeIndexes[3] &&
-                                    cFRRowIdx <= cFRangeIndexes[2] && top !== cFRangeIndexes[2] && cFRRowIdx !== top) {
-                                    result = result + ' ' + getRangeAddress([topRowIdx, frontColIdx, bottomRowIdx, cFRangeIndexes[3]]);
-                                }
-                                if (cFRangeIndexes[1] === cFRangeIndexes[3]) {
-                                    topRowIdx = cFRRowIdx + 1;
-                                    bottomRowIdx = cFRRowIdx + 1;
-                                }
-                            } else {
-                                if (cFRRowIdx === cFRangeIndexes[2] || cFRRowIdx === cFRangeIndexes[0] &&
-                                    cFRangeIndexes[1] !== cFRangeIndexes[3]) {
-                                    result = result + ' ' + getRangeAddress([topRowIdx, frontColIdx, bottomRowIdx, backColIdx]);
-                                }
-                                topRowIdx = cFRRowIdx + 1;
-                                bottomRowIdx = cFRRowIdx + 1;
-                            }
-                            if (cFRRowIdx === cFRangeIndexes[2] && cFRangeIndexes[0] !== cFRangeIndexes[2] &&
-                                cFRangeIndexes[1] !== cFRangeIndexes[3]) {
-                                result = result + ' ' + getRangeAddress([cFRRowIdx, frontColIdx, cFRRowIdx, backColIdx]);
-                            }
+                            isFirst = false;
                         }
-                        if (!isFirst) {
-                            top = topRowIdx;
-                            bottom = bottomRowIdx <= cFRangeIndexes[2] ? bottomRowIdx : cFRangeIndexes[2];
-                            left = frontColIdx;
-                            right = backColIdx <= cFRangeIndexes[3] ? backColIdx : cFRangeIndexes[3];
-                        }
-                        isFirst = false;
-                    } else if (!isFull) {
-                        if (isFirst) {
-                            top = topRowIdx;
-                            bottom = bottomRowIdx;
-                            left = frontColIdx;
-                            right = backColIdx;
-                        }
-                        if (frontColIdx === cFRangeIndexes[1] && backColIdx === cFRangeIndexes[1]) {
-                            if (cFRRowIdx === cFRangeIndexes[2]) {
-                                result = result + ' ' + getRangeAddress([topRowIdx, frontColIdx, cFRRowIdx, cFRangeIndexes[3]]);
-                            }
-                            bottomRowIdx = cFRRowIdx;
-                        }
-                        if (backColIdx !== cFRangeIndexes[1] && frontColIdx !== cFRangeIndexes[1]) {
-                            result = result + ' ' + getRangeAddress([topRowIdx, cFRangeIndexes[1], (cFRRowIdx - 1), frontColIdx - 1]);
-                            result = result + ' ' + getRangeAddress([topRowIdx, backColIdx + 1, (cFRRowIdx - 1), cFRangeIndexes[3]]);
-                            topRowIdx = cFRRowIdx;
-                            bottomRowIdx = cFRRowIdx;
-                            frontColIdx = cFRangeIndexes[1];
-                            backColIdx = cFRangeIndexes[1];
-                        }
-                        if (backColIdx !== cFRangeIndexes[1] && frontColIdx === cFRangeIndexes[1]) {
-                            result = result + ' ' + getRangeAddress([topRowIdx, backColIdx, (cFRRowIdx - 1), cFRangeIndexes[3]]);
-                            topRowIdx = cFRRowIdx;
-                            bottomRowIdx = cFRRowIdx;
-                            frontColIdx = cFRangeIndexes[1];
-                            backColIdx = cFRangeIndexes[1];
-                        }
-                        if (frontColIdx !== cFRangeIndexes[1] && backColIdx === cFRangeIndexes[1]) {
-                            result = result + ' ' + getRangeAddress([topRowIdx, backColIdx, (cFRRowIdx - 1), frontColIdx]);
-                            topRowIdx = cFRRowIdx;
-                            bottomRowIdx = cFRRowIdx;
-                            frontColIdx = cFRangeIndexes[1];
-                            backColIdx = cFRangeIndexes[1];
-                        }
-                        if (!isFirst) {
-                            top = topRowIdx;
-                            bottom = bottomRowIdx <= cFRangeIndexes[2] ? bottomRowIdx : cFRangeIndexes[2];
-                            left = frontColIdx;
-                            right = backColIdx <= cFRangeIndexes[3] ? backColIdx : cFRangeIndexes[3];
-                        }
-                        isFirst = false;
                     }
                 }
-            }
             }
             if (result === '') {
                 oldRange.push(sheet.conditionalFormats[cFRulesIdx].range);
@@ -375,14 +378,15 @@ export class WorkbookConditionalFormat {
             }
         }
         if (!isPublic) {
-            let eventArgs: object = { cFormats: cFormats, oldRange: oldRange, selectedRange: range };
+            const eventArgs: object = { cFormats: cFormats, oldRange: oldRange, selectedRange: range };
             this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clearCF' });
         }
     }
 
     /**
      * Gets the module name.
-     * @returns string
+     *
+     * @returns {void} string
      */
     protected getModuleName(): string {
         return 'workbookConditionalFormatting';

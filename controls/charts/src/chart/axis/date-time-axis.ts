@@ -1,3 +1,8 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable no-case-declarations */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { DateFormatOptions } from '@syncfusion/ej2-base';
 import { Axis, VisibleLabels } from '../axis/axis';
 import { isZoomSet, setRange, triggerLabelRender } from '../../common/utils/helper';
@@ -25,6 +30,7 @@ export class DateTime extends NiceInterval {
 
     /**
      * Constructor for the dateTime module.
+     *
      * @private
      */
     constructor(chart?: Chart) {
@@ -33,12 +39,13 @@ export class DateTime extends NiceInterval {
 
     /**
      * The function to calculate the range and labels for the axis.
-     * @return {void}
+     *
+     * @returns {void}
      */
 
     public calculateRangeAndInterval(size: Size, axis: Axis): void {
 
-        this.calculateRange(axis, size);
+        this.calculateRange(axis);
 
         this.getActualRange(axis, size);
 
@@ -49,15 +56,16 @@ export class DateTime extends NiceInterval {
     }
     /**
      * Actual Range for the axis.
+     *
      * @private
      */
     public getActualRange(axis: Axis, size: Size): void {
-        let option: DateFormatOptions = {
+        const option: DateFormatOptions = {
             skeleton: 'full',
             type: 'dateTime'
         };
-        let dateParser: Function = this.chart.intl.getDateParser(option);
-        let dateFormatter: Function = this.chart.intl.getDateFormat(option);
+        const dateParser: Function = this.chart.intl.getDateParser(option);
+        const dateFormatter: Function = this.chart.intl.getDateFormat(option);
         // Axis min
         if ((axis.minimum) !== null) {
             this.min = this.chart.isBlazor ? Date.parse(axis.minimum.toString()) : Date.parse(dateParser(dateFormatter(new Date(
@@ -81,7 +89,7 @@ export class DateTime extends NiceInterval {
         }
         axis.actualRange = {};
         axis.doubleRange = new DoubleRange(<number>this.min, <number>this.max);
-        let datetimeInterval: number = this.calculateDateTimeNiceInterval(axis, size, axis.doubleRange.start, axis.doubleRange.end);
+        const datetimeInterval: number = this.calculateDateTimeNiceInterval(axis, size, axis.doubleRange.start, axis.doubleRange.end);
 
         if (!axis.interval) {
             axis.actualRange.interval = datetimeInterval;
@@ -94,94 +102,95 @@ export class DateTime extends NiceInterval {
 
     /**
      * Apply padding for the range.
+     *
      * @private
      */
     public applyRangePadding(axis: Axis, size: Size): void {
         this.min = (axis.actualRange.min); this.max = (axis.actualRange.max);
         let minimum: Date; let maximum: Date;
-        let interval: number = axis.actualRange.interval;
+        const interval: number = axis.actualRange.interval;
         if (!setRange(axis)) {
-            let rangePadding: string = axis.getRangePadding(this.chart);
+            const rangePadding: string = axis.getRangePadding(this.chart);
             minimum = new Date(this.min); maximum = new Date(this.max);
-            let intervalType: IntervalType = axis.actualIntervalType;
+            const intervalType: IntervalType = axis.actualIntervalType;
             if (rangePadding === 'None') {
                 this.min = minimum.getTime();
                 this.max = maximum.getTime();
             } else if (rangePadding === 'Additional' || rangePadding === 'Round') {
                 switch (intervalType) {
-                    case 'Years':
-                        this.getYear(minimum, maximum, rangePadding, interval);
-                        break;
-                    case 'Months':
-                        this.getMonth(minimum, maximum, rangePadding, interval);
-                        break;
-                    case 'Days':
-                        this.getDay(minimum, maximum, rangePadding, interval);
-                        break;
-                    case 'Hours':
-                        this.getHour(minimum, maximum, rangePadding, interval);
-                        break;
-                    case 'Minutes':
-                        let minute: number = (minimum.getMinutes() / interval) * interval;
-                        let endMinute: number = maximum.getMinutes() + (minimum.getMinutes() - minute);
-                        if (rangePadding === 'Round') {
-                            this.min = (
-                                new Date(
-                                    minimum.getFullYear(), minimum.getMonth(), minimum.getDate(),
-                                    minimum.getHours(), minute, 0
-                                )
-                            ).getTime();
-                            this.max = (
-                                new Date(
-                                    maximum.getFullYear(), maximum.getMonth(), maximum.getDate(),
-                                    maximum.getHours(), endMinute, 59
-                                )
-                            ).getTime();
-                        } else {
-                            this.min = (
-                                new Date(
-                                    minimum.getFullYear(), maximum.getMonth(), minimum.getDate(),
-                                    minimum.getHours(), minute + (-interval), 0
-                                )
-                            ).getTime();
-                            this.max = (
-                                new Date(
-                                    maximum.getFullYear(), maximum.getMonth(),
-                                    maximum.getDate(), maximum.getHours(), endMinute + (interval), 0
-                                )
-                            ).getTime();
-                        }
-                        break;
-                    case 'Seconds':
-                        let second: number = (minimum.getSeconds() / interval) * interval;
-                        let endSecond: number = maximum.getSeconds() + (minimum.getSeconds() - second);
-                        if (rangePadding === 'Round') {
-                            this.min = (
-                                new Date(
-                                    minimum.getFullYear(), minimum.getMonth(), minimum.getDate(),
-                                    minimum.getHours(), minimum.getMinutes(), second, 0
-                                )
-                            ).getTime();
-                            this.max = (
-                                new Date(
-                                    maximum.getFullYear(), maximum.getMonth(), maximum.getDate(),
-                                    maximum.getHours(), maximum.getMinutes(), endSecond, 0
-                                )
-                            ).getTime();
-                        } else {
-                            this.min = (
-                                new Date(
-                                    minimum.getFullYear(), minimum.getMonth(), minimum.getDate(),
-                                    minimum.getHours(), minimum.getMinutes(), second + (-interval), 0
-                                )
-                            ).getTime();
-                            this.max = (
-                                new Date(
-                                    maximum.getFullYear(), maximum.getMonth(), maximum.getDate(),
-                                    maximum.getHours(), maximum.getMinutes(), endSecond + (interval), 0
-                                )).getTime();
-                        }
-                        break;
+                case 'Years':
+                    this.getYear(minimum, maximum, rangePadding, interval);
+                    break;
+                case 'Months':
+                    this.getMonth(minimum, maximum, rangePadding, interval);
+                    break;
+                case 'Days':
+                    this.getDay(minimum, maximum, rangePadding, interval);
+                    break;
+                case 'Hours':
+                    this.getHour(minimum, maximum, rangePadding, interval);
+                    break;
+                case 'Minutes':
+                    const minute: number = (minimum.getMinutes() / interval) * interval;
+                    const endMinute: number = maximum.getMinutes() + (minimum.getMinutes() - minute);
+                    if (rangePadding === 'Round') {
+                        this.min = (
+                            new Date(
+                                minimum.getFullYear(), minimum.getMonth(), minimum.getDate(),
+                                minimum.getHours(), minute, 0
+                            )
+                        ).getTime();
+                        this.max = (
+                            new Date(
+                                maximum.getFullYear(), maximum.getMonth(), maximum.getDate(),
+                                maximum.getHours(), endMinute, 59
+                            )
+                        ).getTime();
+                    } else {
+                        this.min = (
+                            new Date(
+                                minimum.getFullYear(), maximum.getMonth(), minimum.getDate(),
+                                minimum.getHours(), minute + (-interval), 0
+                            )
+                        ).getTime();
+                        this.max = (
+                            new Date(
+                                maximum.getFullYear(), maximum.getMonth(),
+                                maximum.getDate(), maximum.getHours(), endMinute + (interval), 0
+                            )
+                        ).getTime();
+                    }
+                    break;
+                case 'Seconds':
+                    const second: number = (minimum.getSeconds() / interval) * interval;
+                    const endSecond: number = maximum.getSeconds() + (minimum.getSeconds() - second);
+                    if (rangePadding === 'Round') {
+                        this.min = (
+                            new Date(
+                                minimum.getFullYear(), minimum.getMonth(), minimum.getDate(),
+                                minimum.getHours(), minimum.getMinutes(), second, 0
+                            )
+                        ).getTime();
+                        this.max = (
+                            new Date(
+                                maximum.getFullYear(), maximum.getMonth(), maximum.getDate(),
+                                maximum.getHours(), maximum.getMinutes(), endSecond, 0
+                            )
+                        ).getTime();
+                    } else {
+                        this.min = (
+                            new Date(
+                                minimum.getFullYear(), minimum.getMonth(), minimum.getDate(),
+                                minimum.getHours(), minimum.getMinutes(), second + (-interval), 0
+                            )
+                        ).getTime();
+                        this.max = (
+                            new Date(
+                                maximum.getFullYear(), maximum.getMonth(), maximum.getDate(),
+                                maximum.getHours(), maximum.getMinutes(), endSecond + (interval), 0
+                            )).getTime();
+                    }
+                    break;
                 }
             }
         }
@@ -193,8 +202,8 @@ export class DateTime extends NiceInterval {
     }
 
     private getYear(minimum: Date, maximum: Date, rangePadding: ChartRangePadding, interval: number): void {
-        let startYear: number = minimum.getFullYear();
-        let endYear: number = maximum.getFullYear();
+        const startYear: number = minimum.getFullYear();
+        const endYear: number = maximum.getFullYear();
         if (rangePadding === 'Additional') {
             this.min = (new Date(startYear - interval, 1, 1, 0, 0, 0)).getTime();
             this.max = (new Date(endYear + interval, 1, 1, 0, 0, 0)).getTime();
@@ -204,8 +213,8 @@ export class DateTime extends NiceInterval {
         }
     }
     private getMonth(minimum: Date, maximum: Date, rangePadding: ChartRangePadding, interval: number): void {
-        let month: number = minimum.getMonth();
-        let endMonth: number = maximum.getMonth();
+        const month: number = minimum.getMonth();
+        const endMonth: number = maximum.getMonth();
         if (rangePadding === 'Round') {
             this.min = (new Date(minimum.getFullYear(), month, 0, 0, 0, 0)).getTime();
             this.max = (
@@ -220,8 +229,8 @@ export class DateTime extends NiceInterval {
         }
     }
     private getDay(minimum: Date, maximum: Date, rangePadding: ChartRangePadding, interval: number): void {
-        let day: number = minimum.getDate();
-        let endDay: number = maximum.getDate();
+        const day: number = minimum.getDate();
+        const endDay: number = maximum.getDate();
         if (rangePadding === 'Round') {
             this.min = (new Date(minimum.getFullYear(), minimum.getMonth(), day, 0, 0, 0)).getTime();
             this.max = (new Date(maximum.getFullYear(), maximum.getMonth(), endDay, 23, 59, 59)).getTime();
@@ -231,8 +240,8 @@ export class DateTime extends NiceInterval {
         }
     }
     private getHour(minimum: Date, maximum: Date, rangePadding: ChartRangePadding, interval: number): void {
-        let hour: number = (minimum.getHours() / interval) * interval;
-        let endHour: number = maximum.getHours() + (minimum.getHours() - hour);
+        const hour: number = (minimum.getHours() / interval) * interval;
+        const endHour: number = maximum.getHours() + (minimum.getHours() - hour);
         if (rangePadding === 'Round') {
             this.min = (new Date(minimum.getFullYear(), minimum.getMonth(), minimum.getDate(), hour, 0, 0)).getTime();
             this.max = (new Date(maximum.getFullYear(), maximum.getMonth(), maximum.getDate(), endHour, 59, 59)).getTime();
@@ -250,6 +259,7 @@ export class DateTime extends NiceInterval {
 
     /**
      * Calculate visible range for axis.
+     *
      * @private
      */
     protected calculateVisibleRange(size: Size, axis: Axis): void {
@@ -258,9 +268,9 @@ export class DateTime extends NiceInterval {
             min: axis.actualRange.min,
             max: axis.actualRange.max,
             interval: axis.actualRange.interval,
-            delta: axis.actualRange.delta,
+            delta: axis.actualRange.delta
         };
-        let isLazyLoad : boolean = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
+        const isLazyLoad : boolean = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
         if ((isZoomSet(axis)) && !isLazyLoad) {
             axis.calculateVisibleRangeOnZooming(this.chart);
             axis.calculateAxisRange(size, this.chart);
@@ -275,8 +285,10 @@ export class DateTime extends NiceInterval {
 
     /**
      * Calculate visible labels for the axis.
-     * @param axis 
-     * @param chart 
+     *
+     * @param {Axis} axis axis
+     * @param {Chart | RangeNavigator} chart chart
+     * @returns {void}
      * @private
      */
     public calculateVisibleLabels(axis: Axis, chart: Chart | RangeNavigator): void {
@@ -284,9 +296,9 @@ export class DateTime extends NiceInterval {
         let tempInterval: number = axis.visibleRange.min;
         let labelStyle: Font;
         let previousValue: number;
-        let axisLabels: VisibleLabels[] = axis.visibleLabels;
+        const axisLabels: VisibleLabels[] = axis.visibleLabels;
         if (!setRange(axis)) {
-            tempInterval = this.alignRangeStart(axis, tempInterval, axis.visibleRange.interval, axis.actualIntervalType).getTime();
+            tempInterval = this.alignRangeStart(axis, tempInterval, axis.visibleRange.interval).getTime();
         }
         while (tempInterval <= axis.visibleRange.max) {
             labelStyle = <Font>(extend({}, getValue('properties', axis.labelStyle), null, true));
@@ -320,7 +332,7 @@ export class DateTime extends NiceInterval {
     private blazorCustomFormat(axis: Axis): string {
         if (this.chart.isBlazor) {
             return axis.actualIntervalType === 'Years' ? (axis.isIntervalInDecimal ? 'yyyy' : 'MMM y') :
-                    (axis.actualIntervalType === 'Days' && !axis.isIntervalInDecimal) ? 'ddd HH tt' : '';
+                (axis.actualIntervalType === 'Days' && !axis.isIntervalInDecimal) ? 'ddd HH tt' : '';
         } else {
             return '';
         }
@@ -336,117 +348,117 @@ export class DateTime extends NiceInterval {
             interval = Math.ceil(interval);
             axis.visibleRange.interval = interval;
         }
-        let intervalType: RangeIntervalType = axis.actualIntervalType as RangeIntervalType;
+        const intervalType: RangeIntervalType = axis.actualIntervalType as RangeIntervalType;
         if (axis.isIntervalInDecimal) {
             switch (intervalType) {
-                case 'Years':
-                    result.setFullYear(result.getFullYear() + interval);
-                    return result;
-                case 'Quarter':
-                    result.setMonth(result.getMonth() + (3 * interval));
-                    return result;
-                case 'Months':
-                    result.setMonth(result.getMonth() + interval);
-                    return result;
-                case 'Weeks':
-                    result.setDate(result.getDate() + (interval * 7));
-                    return result;
-                case 'Days':
-                    result.setDate(result.getDate() + interval);
-                    return result;
-                case 'Hours':
-                    result.setHours(result.getHours() + interval);
-                    return result;
-                case 'Minutes':
-                    result.setMinutes(result.getMinutes() + interval);
-                    return result;
-                case 'Seconds':
-                    result.setSeconds(result.getSeconds() + interval);
-                    return result;
+            case 'Years':
+                result.setFullYear(result.getFullYear() + interval);
+                return result;
+            case 'Quarter':
+                result.setMonth(result.getMonth() + (3 * interval));
+                return result;
+            case 'Months':
+                result.setMonth(result.getMonth() + interval);
+                return result;
+            case 'Weeks':
+                result.setDate(result.getDate() + (interval * 7));
+                return result;
+            case 'Days':
+                result.setDate(result.getDate() + interval);
+                return result;
+            case 'Hours':
+                result.setHours(result.getHours() + interval);
+                return result;
+            case 'Minutes':
+                result.setMinutes(result.getMinutes() + interval);
+                return result;
+            case 'Seconds':
+                result.setSeconds(result.getSeconds() + interval);
+                return result;
             }
         } else {
-                result = this.getDecimalInterval(result, interval, intervalType);
+            result = this.getDecimalInterval(result, interval, intervalType);
         }
         return result;
     }
-    private alignRangeStart(axis: Axis, sDate: number, intervalSize: number, intervalType: IntervalType): Date {
+    private alignRangeStart(axis: Axis, sDate: number, intervalSize: number): Date {
         let sResult: Date = new Date(sDate);
         switch (axis.actualIntervalType) {
-            case 'Years':
-                let year: number = Math.floor(Math.floor(sResult.getFullYear() / intervalSize) * intervalSize);
-                sResult = new Date(year, sResult.getMonth(), sResult.getDate(), 0, 0, 0);
-                return sResult;
-            case 'Months':
-                let month: number = Math.floor(Math.floor((sResult.getMonth()) / intervalSize) * intervalSize);
-                sResult = new Date(sResult.getFullYear(), month, sResult.getDate(), 0, 0, 0);
-                return sResult;
+        case 'Years':
+            const year: number = Math.floor(Math.floor(sResult.getFullYear() / intervalSize) * intervalSize);
+            sResult = new Date(year, sResult.getMonth(), sResult.getDate(), 0, 0, 0);
+            return sResult;
+        case 'Months':
+            const month: number = Math.floor(Math.floor((sResult.getMonth()) / intervalSize) * intervalSize);
+            sResult = new Date(sResult.getFullYear(), month, sResult.getDate(), 0, 0, 0);
+            return sResult;
 
-            case 'Days':
-                let day: number = Math.floor(Math.floor((sResult.getDate()) / intervalSize) * intervalSize);
-                sResult = new Date(sResult.getFullYear(), sResult.getMonth(), day, 0, 0, 0);
-                return sResult;
+        case 'Days':
+            const day: number = Math.floor(Math.floor((sResult.getDate()) / intervalSize) * intervalSize);
+            sResult = new Date(sResult.getFullYear(), sResult.getMonth(), day, 0, 0, 0);
+            return sResult;
 
-            case 'Hours':
-                let hour: number = Math.floor(Math.floor((sResult.getHours()) / intervalSize) * intervalSize);
-                sResult = new Date(sResult.getFullYear(), sResult.getMonth(), sResult.getDate(), hour, 0, 0);
-                return sResult;
+        case 'Hours':
+            const hour: number = Math.floor(Math.floor((sResult.getHours()) / intervalSize) * intervalSize);
+            sResult = new Date(sResult.getFullYear(), sResult.getMonth(), sResult.getDate(), hour, 0, 0);
+            return sResult;
 
-            case 'Minutes':
-                let minutes: number = Math.floor(Math.floor((sResult.getMinutes()) / intervalSize) * intervalSize);
-                sResult = new Date(sResult.getFullYear(), sResult.getMonth(), sResult.getDate(), sResult.getHours(), minutes, 0, 0);
-                return sResult;
+        case 'Minutes':
+            const minutes: number = Math.floor(Math.floor((sResult.getMinutes()) / intervalSize) * intervalSize);
+            sResult = new Date(sResult.getFullYear(), sResult.getMonth(), sResult.getDate(), sResult.getHours(), minutes, 0, 0);
+            return sResult;
 
-            case 'Seconds':
-                let seconds: number = Math.floor(Math.floor((sResult.getSeconds()) / intervalSize) * intervalSize);
-                sResult = new Date(
-                    sResult.getFullYear(), sResult.getMonth(), sResult.getDate(),
-                    sResult.getHours(), sResult.getMinutes(), seconds, 0
-                );
-                return sResult;
+        case 'Seconds':
+            const seconds: number = Math.floor(Math.floor((sResult.getSeconds()) / intervalSize) * intervalSize);
+            sResult = new Date(
+                sResult.getFullYear(), sResult.getMonth(), sResult.getDate(),
+                sResult.getHours(), sResult.getMinutes(), seconds, 0
+            );
+            return sResult;
         }
         return sResult;
     }
 
     private getDecimalInterval(result: Date, interval: number, intervalType: RangeIntervalType): Date {
-        let roundValue: number = Math.floor(interval);
-        let decimalValue: number = interval - roundValue;
+        const roundValue: number = Math.floor(interval);
+        const decimalValue: number = interval - roundValue;
         switch (intervalType) {
-                case 'Years':
-                    let month: number = Math.round(12 * decimalValue);
-                    result.setFullYear(result.getFullYear() + roundValue);
-                    result.setMonth(result.getMonth() + month);
-                    return result;
-                case 'Quarter':
-                    result.setMonth(result.getMonth() + (3 * interval));
-                    return result;
-                case 'Months':
-                    let days: number = Math.round(30 * decimalValue);
-                    result.setMonth(result.getMonth() + roundValue);
-                    result.setDate(result.getDate() + days);
-                    return result;
-                case 'Weeks':
-                    result.setDate(result.getDate() + (interval * 7));
-                    return result;
-                case 'Days':
-                    let hour: number = Math.round(24 * decimalValue);
-                    result.setDate(result.getDate() + roundValue);
-                    result.setHours(result.getHours() + hour);
-                    return result;
-                case 'Hours':
-                    let min: number = Math.round(60 * decimalValue);
-                    result.setHours(result.getHours() + roundValue);
-                    result.setMinutes(result.getMinutes() + min);
-                    return result;
-                case 'Minutes':
-                    let sec: number = Math.round(60 * decimalValue);
-                    result.setMinutes(result.getMinutes() + roundValue);
-                    result.setSeconds(result.getSeconds() + sec);
-                    return result;
-                case 'Seconds':
-                    let milliSec: number = Math.round(1000 * decimalValue);
-                    result.setSeconds(result.getSeconds() + roundValue);
-                    result.setMilliseconds(result.getMilliseconds() + milliSec);
-                    return result;
+        case 'Years':
+            const month: number = Math.round(12 * decimalValue);
+            result.setFullYear(result.getFullYear() + roundValue);
+            result.setMonth(result.getMonth() + month);
+            return result;
+        case 'Quarter':
+            result.setMonth(result.getMonth() + (3 * interval));
+            return result;
+        case 'Months':
+            const days: number = Math.round(30 * decimalValue);
+            result.setMonth(result.getMonth() + roundValue);
+            result.setDate(result.getDate() + days);
+            return result;
+        case 'Weeks':
+            result.setDate(result.getDate() + (interval * 7));
+            return result;
+        case 'Days':
+            const hour: number = Math.round(24 * decimalValue);
+            result.setDate(result.getDate() + roundValue);
+            result.setHours(result.getHours() + hour);
+            return result;
+        case 'Hours':
+            const min: number = Math.round(60 * decimalValue);
+            result.setHours(result.getHours() + roundValue);
+            result.setMinutes(result.getMinutes() + min);
+            return result;
+        case 'Minutes':
+            const sec: number = Math.round(60 * decimalValue);
+            result.setMinutes(result.getMinutes() + roundValue);
+            result.setSeconds(result.getSeconds() + sec);
+            return result;
+        case 'Seconds':
+            const milliSec: number = Math.round(1000 * decimalValue);
+            result.setSeconds(result.getSeconds() + roundValue);
+            result.setMilliseconds(result.getMilliseconds() + milliSec);
+            return result;
         }
         return result;
     }
@@ -462,10 +474,11 @@ export class DateTime extends NiceInterval {
     }
     /**
      * To destroy the category axis.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method performed here
          */

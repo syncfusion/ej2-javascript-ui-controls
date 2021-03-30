@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { PdfViewer, PdfViewerBase } from '../index';
 
 /**

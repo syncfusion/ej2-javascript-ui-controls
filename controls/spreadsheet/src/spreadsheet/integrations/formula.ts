@@ -42,7 +42,9 @@ export class Formula {
 
     /**
      * Constructor for formula module in Spreadsheet.
+     *
      * @private
+     * @param {Spreadsheet} parent - Constructor for formula module in Spreadsheet.
      */
     constructor(parent: Spreadsheet) {
         this.parent = parent;
@@ -52,7 +54,8 @@ export class Formula {
 
     /**
      * Get the module name.
-     * @returns string
+     *
+     * @returns {string} - Get the module name.
      * @private
      */
     public getModuleName(): string {
@@ -60,8 +63,9 @@ export class Formula {
     }
 
     /**
-     * To destroy the formula module. 
-     * @return {void}
+     * To destroy the formula module.
+     *
+     * @returns {void} - To destroy the formula module. 
      * @hidden
      */
     public destroy(): void {
@@ -69,7 +73,7 @@ export class Formula {
         if (this.autocompleteInstance) {
             this.autocompleteInstance.destroy();
             if (this.autocompleteInstance.element) {
-            this.autocompleteInstance.element.remove();
+                this.autocompleteInstance.element.remove();
             }
         }
         this.autocompleteInstance = null;
@@ -95,65 +99,65 @@ export class Formula {
     }
 
     private performFormulaOperation(args: { [key: string]: Object }): void {
-        let action: string = <string>args.action;
+        const action: string = <string>args.action;
 
         switch (action) {
-            case 'renderAutoComplete':
-                this.renderAutoComplete();
-                break;
-            case 'endEdit':
-                this.endEdit();
-                break;
-            case 'addDefinedName':
-                args.isAdded = this.addDefinedName(<DefineNameModel>args.definedName);
-                break;
-            case 'getNames':
-                if (!args.sheetName) {
-                    args.sheetName = getSheetName(this.parent);
+        case 'renderAutoComplete':
+            this.renderAutoComplete();
+            break;
+        case 'endEdit':
+            this.endEdit();
+            break;
+        case 'addDefinedName':
+            args.isAdded = this.addDefinedName(<DefineNameModel>args.definedName);
+            break;
+        case 'getNames':
+            if (!args.sheetName) {
+                args.sheetName = getSheetName(this.parent);
+            }
+            args.names = this.getNames(<string>args.sheetName);
+            break;
+        case 'getNameFromRange':
+            args.definedName = this.getNameFromRange(<string>args.range);
+            break;
+        case 'isFormulaEditing':
+            args.isFormulaEdit = this.isFormula;
+            break;
+        case 'isCircularReference':
+            let l10n: L10n = this.parent.serviceLocator.getService(locale);
+            const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+            dialogInst.show({
+                height: 180, width: 400, isModal: true, showCloseIcon: true,
+                content: l10n.getConstant('CircularReference'),
+                beforeOpen: (args: BeforeOpenEventArgs): void => {
+                    const dlgArgs: DialogBeforeOpenEventArgs = {
+                        dialogName: 'CircularReferenceDialog',
+                        element: args.element, target: args.target, cancel: args.cancel
+                    };
+                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                    if (dlgArgs.cancel) {
+                        args.cancel = true;
+                    }
                 }
-                args.names = this.getNames(<string>args.sheetName);
-                break;
-            case 'getNameFromRange':
-                args.definedName = this.getNameFromRange(<string>args.range);
-                break;
-            case 'isFormulaEditing':
-                args.isFormulaEdit = this.isFormula;
-                break;
-            case 'isCircularReference':
-                let l10n: L10n = this.parent.serviceLocator.getService(locale);
-                let dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
-                dialogInst.show({
-                    height: 180, width: 400, isModal: true, showCloseIcon: true,
-                    content: l10n.getConstant('CircularReference'),
-                    beforeOpen: (args: BeforeOpenEventArgs): void => {
-                        let dlgArgs: DialogBeforeOpenEventArgs = {
-                            dialogName: 'CircularReferenceDialog',
-                            element: args.element, target: args.target, cancel: args.cancel
-                        };
-                        this.parent.trigger('dialogBeforeOpen', dlgArgs);
-                        if (dlgArgs.cancel) {
-                            args.cancel = true;
-                        }
-                    },
-                });
-                args.argValue = '0';
-                break;
+            });
+            args.argValue = '0';
+            break;
 
         }
     }
 
     private renderAutoComplete(): void {
         if (!select('#' + this.parent.element.id + '_ac', this.parent.element)) {
-            let acElem: HTMLInputElement = this.parent.createElement(
+            const acElem: HTMLInputElement = this.parent.createElement(
                 'input', { id: this.parent.element.id + '_ac', className: 'e-ss-ac' }) as HTMLInputElement;
             this.parent.element.appendChild(acElem);
 
-            let eventArgs: { action: string, formulaCollection: string[] } = {
+            const eventArgs: { action: string, formulaCollection: string[] } = {
                 action: 'getLibraryFormulas',
                 formulaCollection: []
             };
             this.parent.notify(workbookFormulaOperation, eventArgs);
-            let autoCompleteOptions: AutoCompleteModel = {
+            const autoCompleteOptions: AutoCompleteModel = {
                 dataSource: eventArgs.formulaCollection,
                 cssClass: 'e-ss-atc',
                 popupWidth: '130px',
@@ -172,7 +176,7 @@ export class Formula {
 
     private onSuggestionOpen(e: PopupEventArgs): void {
         this.isPopupOpened = true;
-        let position: ClientRect = this.getPopupPosition();
+        const position: ClientRect = this.getPopupPosition();
         e.popup.offsetX = position.left;
         e.popup.offsetY = (position.top + position.height);
         e.popup.refreshPosition();
@@ -195,7 +199,7 @@ export class Formula {
     private onSelect(e: SelectEventArgs): void {
         let updatedFormulaValue: string = '=' + e.itemData.value + '(';
         if (this.isSubFormula) {
-            let editValue: string = this.getEditingValue();
+            const editValue: string = this.getEditingValue();
             let parseIndex: number = editValue.lastIndexOf(this.getArgumentSeparator());
             if (parseIndex > -1) {
                 updatedFormulaValue = editValue.slice(0, parseIndex + 1);
@@ -209,9 +213,9 @@ export class Formula {
         }
         this.parent.notify(
             editOperation, {
-            action: 'refreshEditor', value: updatedFormulaValue,
-            refreshFormulaBar: true, refreshEditorElem: true, refreshCurPos: !this.isFormulaBar
-        });
+                action: 'refreshEditor', value: updatedFormulaValue,
+                refreshFormulaBar: true, refreshEditorElem: true, refreshCurPos: !this.isFormulaBar
+            });
     }
 
     private onSuggestionComplete(args: { result: string[], cancel: boolean }): void {
@@ -222,7 +226,7 @@ export class Formula {
         }
     }
     private refreshFormulaDatasource(): void {
-        let eventArgs: { action: string, formulaCollection: string[] } = {
+        const eventArgs: { action: string, formulaCollection: string[] } = {
             action: 'getLibraryFormulas',
             formulaCollection: []
         };
@@ -247,32 +251,32 @@ export class Formula {
     }
 
     private keyDownHandler(e: KeyboardEventArgs): void {
-        let keyCode: number = e.keyCode;
+        const keyCode: number = e.keyCode;
         if (this.isFormula) {
             if (this.isPopupOpened) {
                 switch (keyCode) {
-                    case this.keyCodes.UP:
-                    case this.keyCodes.DOWN:
-                        e.preventDefault();
-                        this.triggerKeyDownEvent(keyCode);
-                        break;
-                    case this.keyCodes.TAB:
-                        e.preventDefault();
-                        this.triggerKeyDownEvent(this.keyCodes.ENTER);
-                        break;
+                case this.keyCodes.UP:
+                case this.keyCodes.DOWN:
+                    e.preventDefault();
+                    this.triggerKeyDownEvent(keyCode);
+                    break;
+                case this.keyCodes.TAB:
+                    e.preventDefault();
+                    this.triggerKeyDownEvent(this.keyCodes.ENTER);
+                    break;
                 }
             }
         } else {
-            let trgtElem: HTMLInputElement = <HTMLInputElement>e.target;
+            const trgtElem: HTMLInputElement = <HTMLInputElement>e.target;
             if (trgtElem.id === this.parent.element.id + '_name_box') {
                 switch (keyCode) {
-                    case this.keyCodes.ENTER:
-                        this.addDefinedName({ name: trgtElem.value });
-                        focus(this.parent.element);
-                        break;
-                    case this.keyCodes.ESC:
-                        focus(this.parent.element);
-                        break;
+                case this.keyCodes.ENTER:
+                    this.addDefinedName({ name: trgtElem.value });
+                    focus(this.parent.element);
+                    break;
+                case this.keyCodes.ESC:
+                    focus(this.parent.element);
+                    break;
                 }
             }
         }
@@ -280,16 +284,16 @@ export class Formula {
 
     private formulaClick(e: MouseEvent & TouchEvent): void {
         if (this.parent.isEdit) {
-            let trgtElem: HTMLElement = <HTMLElement>e.target;
+            const trgtElem: HTMLElement = <HTMLElement>e.target;
             this.isFormulaBar = trgtElem.classList.contains('e-formula-bar');
         }
     }
 
     private refreshFormulaSuggestion(e: KeyboardEventArgs, formula: string): void {
         if (formula.length > 0) {
-            let autoCompleteElem: HTMLInputElement = <HTMLInputElement>this.autocompleteInstance.element;
-            let keyCode: number = e.keyCode;
-            let isSuggestionAlreadyOpened: boolean = this.isPopupOpened;
+            const autoCompleteElem: HTMLInputElement = <HTMLInputElement>this.autocompleteInstance.element;
+            const keyCode: number = e.keyCode;
+            const isSuggestionAlreadyOpened: boolean = this.isPopupOpened;
             if (!this.isNavigationKey(keyCode)) {
                 autoCompleteElem.value = formula;
                 autoCompleteElem.dispatchEvent(new Event('input'));
@@ -313,7 +317,7 @@ export class Formula {
         this.isFormulaBar = false;
         if (this.isPopupOpened) {
             this.hidePopUp();
-            let suggPopupElem: HTMLElement = select('#' + this.parent.element.id + '_ac_popup');
+            const suggPopupElem: HTMLElement = select('#' + this.parent.element.id + '_ac_popup');
             if (suggPopupElem) {
                 detach(suggPopupElem);
             }
@@ -329,9 +333,9 @@ export class Formula {
         let suggestValue: string = '';
         formula = formula.substr(1); //remove = char.
         if (formula) {
-            let bracketIndex: number = formula.lastIndexOf('(');
+            const bracketIndex: number = formula.lastIndexOf('(');
             formula = formula.substr(bracketIndex + 1);
-            let fSplit: string[] = formula.split(this.getArgumentSeparator());
+            const fSplit: string[] = formula.split(this.getArgumentSeparator());
             if (fSplit.length === 1) {
                 suggestValue = fSplit[0];
                 this.isSubFormula = bracketIndex > -1;
@@ -339,7 +343,7 @@ export class Formula {
                 suggestValue = fSplit[fSplit.length - 1];
                 this.isSubFormula = true;
             }
-            let isAlphaNumeric: RegExpMatchArray = suggestValue.match(/\w/);
+            const isAlphaNumeric: RegExpMatchArray = suggestValue.match(/\w/);
             if (!isAlphaNumeric || (isAlphaNumeric && isAlphaNumeric.index !== 0)) {
                 suggestValue = '';
             }
@@ -348,7 +352,7 @@ export class Formula {
     }
 
     private getPopupPosition(): ClientRect {
-        let eventArgs: { action?: string, position: ClientRect } = { position: null };
+        const eventArgs: { action?: string, position: ClientRect } = { position: null };
         if (this.isFormulaBar) {
             eventArgs.action = 'getPosition';
             this.parent.notify(formulaBarOperation, eventArgs);
@@ -360,7 +364,7 @@ export class Formula {
     }
 
     private getEditingValue(): string {
-        let eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
+        const eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
         return eventArgs.editedValue;
     }
@@ -371,16 +375,15 @@ export class Formula {
     }
 
     private triggerKeyDownEvent(keyCode: number): void {
-        let autoCompleteElem: HTMLInputElement = <HTMLInputElement>this.autocompleteInstance.element;
+        const autoCompleteElem: HTMLInputElement = <HTMLInputElement>this.autocompleteInstance.element;
         autoCompleteElem.dispatchEvent(new Event('input'));
-        let eventArg: Event = new Event('keydown');
-        // tslint:disable:no-string-literal
+        const eventArg: Event = new Event('keydown');
         eventArg['keyCode'] = keyCode;
         eventArg['which'] = keyCode;
         eventArg['altKey'] = false;
         eventArg['shiftKey'] = false;
         eventArg['ctrlKey'] = false;
-        // tslint:enable:no-string-literal
+        /* eslint-enable @typescript-eslint/dot-notation */
         autoCompleteElem.dispatchEvent(eventArg);
     }
 
@@ -388,7 +391,7 @@ export class Formula {
         if (this.argumentSeparator) {
             return this.argumentSeparator;
         } else {
-            let eventArgs: { action: string, argumentSeparator: string } = {
+            const eventArgs: { action: string, argumentSeparator: string } = {
                 action: 'getArgumentSeparator', argumentSeparator: ''
             };
             this.parent.notify(workbookFormulaOperation, eventArgs);
@@ -398,17 +401,17 @@ export class Formula {
     }
 
     private getNames(sheetName?: string): DefineNameModel[] {
-        let names: DefineNameModel[] = this.parent.definedNames.filter(
+        const names: DefineNameModel[] = this.parent.definedNames.filter(
             (name: DefineNameModel) => name.scope === 'Workbook' || name.scope === '' || name.scope === sheetName);
         return names;
     }
 
     private getNameFromRange(range: string): DefineNameModel {
-        let singleRange: string = range.slice(0, range.indexOf(':'));
-        let sRange: string[] = range.slice(range.indexOf('!') + 1).split(':');
-        let isSingleCell: boolean = sRange.length > 1 && sRange[0] === sRange[1];
-        let name: DefineNameModel[] = this.parent.definedNames.filter(
-            (name: DefineNameModel, index: number) => {
+        const singleRange: string = range.slice(0, range.indexOf(':'));
+        const sRange: string[] = range.slice(range.indexOf('!') + 1).split(':');
+        const isSingleCell: boolean = sRange.length > 1 && sRange[0] === sRange[1];
+        const name: DefineNameModel[] = this.parent.definedNames.filter(
+            (name: DefineNameModel) => {
                 if (isSingleCell && name.refersTo === '=' + singleRange) {
                     return true;
                 }
@@ -418,15 +421,15 @@ export class Formula {
     }
 
     private addDefinedName(definedName: DefineNameModel): boolean {
-        let name: string = definedName.name;
+        const name: string = definedName.name;
         let isAdded: boolean = false;
         if (!definedName.refersTo) {
-            let sheet: SheetModel = getSheet(this.parent, this.parent.activeSheetIndex);
+            const sheet: SheetModel = getSheet(this.parent, this.parent.activeSheetIndex);
             let sheetName: string = getSheetName(this.parent);
             sheetName = sheetName.indexOf(' ') !== -1 ? '\'' + sheetName + '\'' : sheetName;
             let selectRange: string = sheet.selectedRange;
             if (!isNullOrUndefined(selectRange)) {
-                let colIndex: number = selectRange.indexOf(':');
+                const colIndex: number = selectRange.indexOf(':');
                 let left: string = selectRange.substr(0, colIndex);
                 let right: string = selectRange.substr(colIndex + 1, selectRange.length);
                 if (parseInt(right.replace(/\D/g, ''), 10) === sheet.rowCount && parseInt(left.replace(/\D/g, ''), 10) === 1) {
@@ -445,7 +448,7 @@ export class Formula {
             definedName.scope = 'Workbook';
         }
         if (name.length > 0 && (/^([a-zA-Z_0-9.]){0,255}$/.test(name))) {
-            let eventArgs: { [key: string]: Object } = {
+            const eventArgs: { [key: string]: Object } = {
                 action: 'addDefinedName', definedName: definedName, isAdded: false
             };
             this.parent.notify(workbookFormulaOperation, eventArgs);
@@ -455,7 +458,7 @@ export class Formula {
                     content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('DefineNameExists'),
                     width: '300',
                     beforeOpen: (args: BeforeOpenEventArgs): void => {
-                        let dlgArgs: DialogBeforeOpenEventArgs = {
+                        const dlgArgs: DialogBeforeOpenEventArgs = {
                             dialogName: 'DefineNameExistsDialog',
                             element: args.element, target: args.target, cancel: args.cancel
                         };
@@ -463,7 +466,7 @@ export class Formula {
                         if (dlgArgs.cancel) {
                             args.cancel = true;
                         }
-                    },
+                    }
                 });
             }
         } else {
@@ -471,7 +474,7 @@ export class Formula {
                 content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('DefineNameInValid'),
                 width: '300',
                 beforeOpen: (args: BeforeOpenEventArgs): void => {
-                    let dlgArgs: DialogBeforeOpenEventArgs = {
+                    const dlgArgs: DialogBeforeOpenEventArgs = {
                         dialogName: 'DefineNameInValidDialog',
                         element: args.element, target: args.target, cancel: args.cancel
                     };
@@ -479,7 +482,7 @@ export class Formula {
                     if (dlgArgs.cancel) {
                         args.cancel = true;
                     }
-                },
+                }
             });
         }
         return isAdded;

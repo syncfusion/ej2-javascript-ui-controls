@@ -12,6 +12,7 @@ export class EventMarker {
         this.eventMarkersContainer = null;
     }
     /**
+     * @returns {void} .
      * @private
      */
     public renderEventMarkers(): void {
@@ -33,6 +34,7 @@ export class EventMarker {
         }
     }
     /**
+     * @returns {void} .
      * @private
      */
     public removeContainer(): void {
@@ -43,6 +45,9 @@ export class EventMarker {
     }
     /**
      * Method to get event markers as html string
+     *
+     * @param {HTMLElement} container .
+     * @returns {void} .
      */
     private getEventMarkersElements(container: HTMLElement): void {
         let left: number;
@@ -59,9 +64,9 @@ export class EventMarker {
             });
             if (this.parent.eventMarkers[i].label) {
                 spanElement = createElement('div', {
-                    className: cls.eventMarkersSpan,
+                    className: cls.eventMarkersSpan
                 });
-                let property: string = this.parent.disableHtmlEncode ? 'textContent' : 'innerHTML';
+                const property: string = this.parent.disableHtmlEncode ? 'textContent' : 'innerHTML';
                 spanElement[property] = this.parent.eventMarkers[i].label;
                 eventMarkerElement.appendChild(spanElement);
                 rightArrow = createElement('div', {
@@ -83,6 +88,7 @@ export class EventMarker {
         }
     }
     /**
+     * @returns {void} .
      * @private
      */
     public updateContainerHeight(): void {

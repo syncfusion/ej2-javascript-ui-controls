@@ -9,6 +9,7 @@ export class DialogSettings extends ChildProperty<DialogSettings> {
 
     /**
      * Defines the dialog template
+     *
      * @default null
      */
     @Property()
@@ -16,6 +17,7 @@ export class DialogSettings extends ChildProperty<DialogSettings> {
 
     /**
      * Defines the dialog fields
+     *
      * @default []
      */
     @Property([])
@@ -23,6 +25,7 @@ export class DialogSettings extends ChildProperty<DialogSettings> {
 
     /**
      * Customize the model object configuration for the edit or add Dialog component.
+     *
      * @default null
      */
     @Property(null)

@@ -1,22 +1,22 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { WListLevel } from './list-level';
 
-/** 
+/**
  * @private
  */
 export class WAbstractList {
     private abstractListIdIn: number = -1;
     public levels: WListLevel[] = [];
-    get abstractListId(): number {
+    public get abstractListId(): number {
         return this.abstractListIdIn;
     }
-    set abstractListId(abstractListId: number) {
+    public set abstractListId(abstractListId: number) {
         this.abstractListIdIn = abstractListId;
     }
     public destroy(): void {
         if (!isNullOrUndefined(this.levels)) {
             for (let i: number = 0; i < this.levels.length; i++) {
-                let listLevel: WListLevel = this.levels[i] as WListLevel;
+                const listLevel: WListLevel = this.levels[i] as WListLevel;
                 listLevel.destroy();
                 this.levels.splice(this.levels.indexOf(listLevel), 1);
                 i--;
@@ -26,7 +26,7 @@ export class WAbstractList {
         this.levels = undefined;
     }
     public clone(): WAbstractList {
-        let absList: WAbstractList = new WAbstractList();
+        const absList: WAbstractList = new WAbstractList();
         for (let i: number = 0; i < this.levels.length; i++) {
             absList.levels.push(this.levels[i].clone(absList));
         }

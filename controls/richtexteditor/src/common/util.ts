@@ -4,13 +4,16 @@
 import { isNullOrUndefined, Browser, createElement, detach } from '@syncfusion/ej2-base';
 import * as classes from '../rich-text-editor/base/classes';
 
-let inlineNode: string[] = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
-'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'font', 'i', 'iframe', 'img', 'input',
-'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output', 'picture', 'progress',
-'q', 'ruby', 's', 'samp', 'script', 'select', 'slot', 'small', 'span', 'strong', 'strike', 'sub', 'sup', 'svg',
-'template', 'textarea', 'time', 'u', 'tt', 'var', 'video', 'wbr'];
+const inlineNode: string[] = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
+    'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'font', 'i', 'iframe', 'img', 'input',
+    'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output', 'picture', 'progress',
+    'q', 'ruby', 's', 'samp', 'script', 'select', 'slot', 'small', 'span', 'strong', 'strike', 'sub', 'sup', 'svg',
+    'template', 'textarea', 'time', 'u', 'tt', 'var', 'video', 'wbr'];
 
-
+/**
+ * @returns {void}
+ * @hidden
+ */
 export function isIDevice(): boolean {
     let result: boolean = false;
     if (Browser.isDevice && Browser.isIos) {
@@ -19,19 +22,33 @@ export function isIDevice(): boolean {
     return result;
 }
 
+/**
+ 
+ * @param {Element} editableElement - specifies the editable element.
+ * @param {string} selector - specifies the string values.
+ * @returns {void}
+ * @hidden
+ */
 export function setEditFrameFocus(editableElement: Element, selector: string): void {
     if (editableElement.nodeName === 'BODY' && !isNullOrUndefined(selector)) {
-        let iframe: HTMLIFrameElement = <HTMLIFrameElement>top.window.document.querySelector(selector);
-        if (!isNullOrUndefined(iframe)) { iframe.contentWindow.focus(); }
+        const iframe: HTMLIFrameElement = <HTMLIFrameElement>top.window.document.querySelector(selector);
+        if (!isNullOrUndefined(iframe)) {
+            iframe.contentWindow.focus();
+        }
     }
 }
 
+/**
+ * @param {string} value - specifies the string value
+ * @returns {void}
+ * @hidden
+ */
 export function updateTextNode(value: string): string {
-    let tempNode: HTMLElement = document.createElement('div');
+    const tempNode: HTMLElement = document.createElement('div');
     tempNode.innerHTML = value;
     tempNode.setAttribute('class', 'tempDiv');
-    let resultElm: HTMLElement = document.createElement('div');
-    let childNodes: NodeListOf<Node> = tempNode.childNodes as NodeListOf<Node>;
+    const resultElm: HTMLElement = document.createElement('div');
+    const childNodes: NodeListOf<Node> = tempNode.childNodes as NodeListOf<Node>;
     if (childNodes.length > 0) {
         let isPreviousInlineElem: boolean;
         let previousParent: HTMLElement;
@@ -57,12 +74,12 @@ export function updateTextNode(value: string): string {
                 isPreviousInlineElem = false;
             }
         }
-        let tableElm: NodeListOf<HTMLElement> = resultElm.querySelectorAll('table');
+        const tableElm: NodeListOf<HTMLElement> = resultElm.querySelectorAll('table');
         for (let i: number = 0; i < tableElm.length; i++) {
             if (tableElm[i].getAttribute('border') === '0') {
                 tableElm[i].removeAttribute('border');
             }
-            let tdElm: NodeListOf<HTMLElement> = tableElm[i].querySelectorAll('td');
+            const tdElm: NodeListOf<HTMLElement> = tableElm[i].querySelectorAll('td');
             for (let j: number = 0; j < tdElm.length; j++) {
                 if (tdElm[j].style.borderLeft === 'none') {
                     tdElm[j].style.removeProperty('border-left');
@@ -84,7 +101,7 @@ export function updateTextNode(value: string): string {
                 tableElm[i].classList.add(classes.CLS_TABLE);
             }
         }
-        let imageElm: NodeListOf<HTMLElement> = resultElm.querySelectorAll('img');
+        const imageElm: NodeListOf<HTMLElement> = resultElm.querySelectorAll('img');
         for (let i: number = 0; i < imageElm.length; i++) {
             if (!imageElm[i].classList.contains(classes.CLS_RTE_IMAGE)) {
                 imageElm[i].classList.add(classes.CLS_RTE_IMAGE);
@@ -98,10 +115,17 @@ export function updateTextNode(value: string): string {
     return resultElm.innerHTML;
 }
 
+/**
+ * @param {Node} startChildNodes - specifies the node
+ * @returns {void}
+ * @hidden
+ */
 export function getLastTextNode(startChildNodes: Node): Node {
     let finalNode: Node = startChildNodes;
     do {
-        if (finalNode.childNodes.length > 0) { finalNode = finalNode.childNodes[0]; }
+        if (finalNode.childNodes.length > 0) {
+            finalNode = finalNode.childNodes[0];
+        }
     }
     while (finalNode.childNodes.length > 0);
     return finalNode;

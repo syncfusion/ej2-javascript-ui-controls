@@ -1,3 +1,7 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable valid-jsdoc */
 /**
  * Chart legend
  */
@@ -6,7 +10,7 @@ import { Series } from '../series/chart-series';
 import { Indexes } from '../../common/model/base';
 import { ChartSeriesType, ChartDrawType } from '../utils/enum';
 import { LegendOptions, BaseLegend } from '../../common/legend/legend';
-import { Chart } from '../../chart';
+import { Chart, Points } from '../../chart';
 import { LegendSettingsModel } from '../../common/legend/legend-model';
 import { textTrim, ChartLocation, removeElement, RectOption, withInBounds, blazorTemplatesReset} from '../../common/utils/helper';
 import { getUnicodeText} from '../../common/utils/helper';
@@ -64,25 +68,80 @@ export class Legend extends BaseLegend {
     }
     /**
      * Get the legend options.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public getLegendOptions(visibleSeriesCollection: Series[], chart: Chart): void {
         this.legendCollections = [];
         let seriesType: ChartDrawType | ChartSeriesType;
         let fill: string;
-        for (let series of visibleSeriesCollection) {
-            if (series.category !== 'Indicator' && series.name !== '') {
-                seriesType = (chart.chartAreaType === 'PolarRadar') ? <ChartDrawType>series.drawType :
-                    <ChartSeriesType>series.type;
-                // To set legend color when use pointColorMapping
-                fill = (series.pointColorMapping && series.points.length > 0) ?
-                    (series.points[0].interior ? series.points[0].interior : series.interior) : series.interior;
-                this.legendCollections.push(new LegendOptions(
-                    series.name, fill, series.legendShape, (series.category === 'TrendLine' ?
-                        (this.chart as Chart).series[series.sourceIndex].trendlines[series.index].visible : series.visible),
-                    seriesType, series.legendImageUrl, series.marker.shape, series.marker.visible
-                ));
+        const colors: string[] = [];
+        if (visibleSeriesCollection.length > 1) {
+            this.legend.mode = 'Series';
+        }
+        for (const series of visibleSeriesCollection) {
+            if (this.legend.mode === 'Series') {
+                if (series.category !== 'Indicator') {
+                    seriesType = (chart.chartAreaType === 'PolarRadar') ? <ChartDrawType>series.drawType :
+                        <ChartSeriesType>series.type;
+                    // To set legend color when use pointColorMapping
+                    fill = (series.pointColorMapping && series.points.length > 0) ?
+                        (series.points[0].interior ? series.points[0].interior : series.interior) : series.interior;
+                    this.legendCollections.push(new LegendOptions(
+                        series.name, fill, series.legendShape, (series.category === 'TrendLine' ?
+                            (this.chart as Chart).series[series.sourceIndex].trendlines[series.index].visible : series.visible),
+                        seriesType, series.legendImageUrl, series.marker.shape, series.marker.visible
+                    ));
+                }
+            } else if (this.legend.mode === 'Point') {
+                for (const points of series.points) {
+                    seriesType = (chart.chartAreaType === 'PolarRadar') ? <ChartDrawType>series.drawType :
+                        <ChartSeriesType>series.type;
+                    fill = points.interior ? points.interior : series.interior;
+                    if (this.legendCollections.filter((i: LegendOptions) => i.text === points.x.toString()).length === 0) {
+                        this.legendCollections.push(new LegendOptions(
+                            points.x.toString(), fill, series.legendShape, (series.category === 'TrendLine' ?
+                                (this.chart as Chart).series[series.sourceIndex].trendlines[series.index].visible : points.visible),
+                            seriesType, '', series.marker.shape, series.marker.visible
+                        ));
+                    }
+                }
+            } else if (this.legend.mode === 'Range') {
+                for (const points of series.points) {
+                    seriesType = (chart.chartAreaType === 'PolarRadar') ? <ChartDrawType>series.drawType :
+                        <ChartSeriesType>series.type;
+                    fill = points.interior ? points.interior : series.interior;
+                    let legendLabel: string = 'Others';
+                    if (colors.indexOf(fill) < 0) {
+                        colors.push(fill);
+                        if (chart.rangeColorSettings.length >= 1 && chart.rangeColorSettings[0].colors.length === 1) {
+                            for (const rangeMap of chart.rangeColorSettings) {
+                                if (rangeMap.colors[0] === fill) {
+                                    legendLabel = rangeMap.label;
+                                }
+                            }
+                            this.legendCollections.push(new LegendOptions(
+                                legendLabel, fill, series.legendShape, (series.category === 'TrendLine' ?
+                                    (this.chart as Chart).series[series.sourceIndex].trendlines[series.index].visible : points.visible),
+                                seriesType, '', series.marker.shape, series.marker.visible
+                            ));
+                        }
+                    }
+                }
+            } else {
+                if (this.legendCollections.length === 0 && chart.rangeColorSettings.length > 0) {
+                    const startLabel: string = chart.rangeColorSettings[0].start.toString();
+                    const endLabel: string = chart.rangeColorSettings[chart.rangeColorSettings.length - 1].end.toString();
+                    this.legendCollections.push(new LegendOptions(
+                        startLabel, series.interior, 'Rectangle', true,
+                        seriesType, '', series.marker.shape, series.marker.visible
+                    ));
+                    this.legendCollections.push(new LegendOptions(
+                        endLabel, series.interior, 'Rectangle', true,
+                        seriesType, '', series.marker.shape, series.marker.visible
+                    ));
+                }
             }
         }
     }
@@ -90,13 +149,13 @@ export class Legend extends BaseLegend {
     public getLegendBounds(availableSize: Size, legendBounds: Rect, legend: LegendSettingsModel): void {
         this.calculateLegendTitle(legend, legendBounds);
         this.isTitle = legend.title ? true : false;
-        let padding: number = legend.padding;
-        let titlePosition: LegendTitlePosition = legend.titlePosition;
+        const padding: number = legend.padding;
+        const titlePosition: LegendTitlePosition = legend.titlePosition;
         let extraHeight: number = 0;
         let extraWidth: number = 0;
-        let arrowWidth: number = this.arrowWidth;
-        let arrowHeight: number = this.arrowHeight;
-        let verticalArrowSpace: number = this.isVertical && !legend.enablePages ? arrowHeight : 0;
+        const arrowWidth: number = this.arrowWidth;
+        const arrowHeight: number = this.arrowHeight;
+        const verticalArrowSpace: number = this.isVertical && !legend.enablePages ? arrowHeight : 0;
         let titleSpace: number = this.isTitle && titlePosition === 'Top' ? this.legendTitleSize.height + this.fivePixel : 0;
         titleSpace = this.isTitle && this.isVertical && titlePosition !== 'Top' ? this.legendTitleSize.height + this.fivePixel : titleSpace;
         if (!this.isVertical) {
@@ -106,8 +165,8 @@ export class Legend extends BaseLegend {
         }
         legendBounds.height += (extraHeight);
         legendBounds.width += extraWidth;
-        let shapeWidth: number = legend.shapeWidth;
-        let shapePadding: number = legend.shapePadding;
+        const shapeWidth: number = legend.shapeWidth;
+        const shapePadding: number = legend.shapePadding;
         let maximumWidth: number = 0;
         let rowWidth: number = 0;
         let legendWidth: number = 0;
@@ -117,7 +176,7 @@ export class Legend extends BaseLegend {
         let legendEventArgs: ILegendRenderEventArgs;
         this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle).height, legend.shapeHeight);
         let render: boolean = false;
-        for (let legendOption of this.legendCollections) {
+        for (const legendOption of this.legendCollections) {
             if (regSub.test(legendOption.text)) {
                 legendOption.text = getUnicodeText(legendOption.text, regSub);
             }
@@ -135,7 +194,7 @@ export class Legend extends BaseLegend {
             legendOption.shape = legendEventArgs.shape;
             legendOption.markerShape = legendEventArgs.markerShape;
             legendOption.textSize = measureText(legendOption.text, legend.textStyle);
-            if (legendOption.render && legendOption.text !== '') {
+            if (legendOption.render) {
                 render = true;
                 legendWidth = shapeWidth + shapePadding + legendOption.textSize.width + padding;
                 rowWidth = rowWidth + legendWidth;
@@ -158,6 +217,7 @@ export class Legend extends BaseLegend {
         this.isPaging = legendBounds.height < columnHeight;
         if (this.isPaging && !legend.enablePages) {
             if (this.isVertical) {
+                // eslint-disable-next-line no-self-assign
                 columnHeight = columnHeight;
             } else {
                 columnHeight = (this.maxItemHeight + padding) + padding + (titlePosition === 'Top' ? titleSpace : 0);
@@ -177,8 +237,8 @@ export class Legend extends BaseLegend {
     public getRenderPoint(
         legendOption: LegendOptions, start: ChartLocation, textPadding: number, prevLegend: LegendOptions,
         rect: Rect, count: number, firstLegend: number): void {
-        let padding: number = this.legend.padding;
-        let previousBound: number = (prevLegend.location.x + textPadding + prevLegend.textSize.width);
+        const padding: number = this.legend.padding;
+        const previousBound: number = (prevLegend.location.x + textPadding + prevLegend.textSize.width);
         if ((previousBound + (legendOption.textSize.width + textPadding)) > (rect.x + rect.width + this.legend.shapeWidth / 2) ||
             this.isVertical) {
             legendOption.location.x = start.x;
@@ -188,79 +248,115 @@ export class Legend extends BaseLegend {
             legendOption.location.x = (count === firstLegend) ? prevLegend.location.x : previousBound;
             legendOption.location.y = prevLegend.location.y;
         }
-        let availwidth: number = (this.legendBounds.x + this.legendBounds.width) - (legendOption.location.x +
+        const availwidth: number = (this.legendBounds.x + this.legendBounds.width) - (legendOption.location.x +
             textPadding - this.legend.shapeWidth / 2);
         legendOption.text = textTrim(+availwidth.toFixed(4), legendOption.text, this.legend.textStyle);
     }
     /** @private */
-    public LegendClick(seriesIndex: number, event: Event | PointerEvent): void {
-        let chart: Chart = <Chart>this.chart;
-        let series: Series = chart.visibleSeries[seriesIndex];
-        let legend: LegendOptions = this.legendCollections[seriesIndex];
-        let changeDetection: string = 'isProtectedOnChange';
-        let legendClickArgs: ILegendClickEventArgs = {
-            legendText: legend.text, legendShape: legend.shape,
-            chart: chart.isBlazor ? {} as Chart : chart, series: series, name: legendClick, cancel: false
-        };
-        if (chart.legendSettings.toggleVisibility) {
-            if (series.category === 'TrendLine') {
-                if (!chart.series[series.sourceIndex].trendlines[series.index].visible) {
-                    chart.series[series.sourceIndex].trendlines[series.index].visible = true;
+    public LegendClick(index: number, event: Event | PointerEvent): void {
+        const chart: Chart = <Chart>this.chart;
+        const seriesIndex: number = chart.legendSettings.mode === 'Series' ? index : 0;
+        const series: Series = chart.visibleSeries[seriesIndex];
+        const legend: LegendOptions = this.legendCollections[index];
+        const changeDetection: string = 'isProtectedOnChange';
+        if (chart.legendSettings.mode === 'Series') {
+            const legendClickArgs: ILegendClickEventArgs = {
+                legendText: legend.text, legendShape: legend.shape,
+                chart: chart.isBlazor ? {} as Chart : chart, series: series, points: series.points, name: legendClick, cancel: false
+            };
+            this.chart.trigger(legendClick, legendClickArgs);
+            series.legendShape = legendClickArgs.legendShape;
+            if (series.fill !== null) {
+                chart.visibleSeries[index].interior = series.fill;
+            }
+            if (chart.legendSettings.toggleVisibility) {
+                if (series.category === 'TrendLine') {
+                    if (!chart.series[series.sourceIndex].trendlines[series.index].visible) {
+                        chart.series[series.sourceIndex].trendlines[series.index].visible = true;
+                    } else {
+                        chart.series[series.sourceIndex].trendlines[series.index].visible = false;
+                    }
                 } else {
-                    chart.series[series.sourceIndex].trendlines[series.index].visible = false;
+                    series.chart[changeDetection] = true;
+                    this.changeSeriesVisiblity(series, series.visible);
                 }
-            } else {
-                series.chart[changeDetection] = true;
-                this.changeSeriesVisiblity(series, series.visible);
+                legend.visible = series.category === 'TrendLine' ? chart.series[series.sourceIndex].trendlines[series.index].visible :
+                    (series.visible);
+                this.refreshLegendToggle(chart, series);
+            } else if (chart.selectionModule) {
+                chart.selectionModule.legendSelection(chart, index, event);
+            } else if (chart.highlightModule) {
+                chart.highlightModule.legendSelection(chart, index, event);
+            }
+            series.chart[changeDetection] = false;
+        } else if (chart.legendSettings.mode === 'Point') {
+            const point: Points = series.points[index];
+            const legendClickArgs: ILegendClickEventArgs = {
+                legendText: legend.text, legendShape: legend.shape,
+                chart: chart.isBlazor ? {} as Chart : chart, series: series, points: [point], name: legendClick, cancel: false
+            };
+            this.chart.trigger(legendClick, legendClickArgs);
+            if (chart.legendSettings.toggleVisibility) {
+                point.visible = !point.visible;
+                const legendOption: LegendOptions = this.legendCollections[index];
+                legendOption.visible = point.visible;
+                this.refreshLegendToggle(chart, series);
+            }
+        } else if (chart.legendSettings.mode === 'Range') {
+            const points: Points[] = [];
+            const legendOption: LegendOptions = this.legendCollections[index];
+            for (const point of series.points) {
+                if (legendOption.fill === (point.interior || series.interior)) {
+                    points.push(point);
+                }
+            }
+            const legendClickArgs: ILegendClickEventArgs = {
+                legendText: legend.text, legendShape: legend.shape,
+                chart: chart.isBlazor ? {} as Chart : chart, series: series, points: points, name: legendClick, cancel: false
+            };
+            this.chart.trigger(legendClick, legendClickArgs);
+            if (chart.legendSettings.toggleVisibility) {
+                legendOption.visible = !legendOption.visible;
+                for (const point of points) {
+                    point.visible = !point.visible;
+                }
+                this.refreshLegendToggle(chart, series);
             }
         }
-        this.chart.trigger(legendClick, legendClickArgs);
-        series.legendShape = legendClickArgs.legendShape;
-        if (series.fill !== null) {
-            chart.visibleSeries[seriesIndex].interior = series.fill;
-        }
+    }
+
+    private refreshLegendToggle(chart: Chart, series: Series): void {
         let selectedDataIndexes: Indexes[] = [];
         if (chart.selectionModule) {
             selectedDataIndexes = <Indexes[]>extend([], chart.selectionModule.selectedDataIndexes, null, true);
         }
-        if (chart.legendSettings.toggleVisibility) {
-            legend.visible = series.category === 'TrendLine' ? chart.series[series.sourceIndex].trendlines[series.index].visible :
-                             (series.visible);
-            if ((chart.svgObject.childNodes.length > 0 ) && !chart.enableAnimation && !chart.enableCanvas) {
-                while (chart.svgObject.lastChild) {
-                    chart.svgObject.removeChild(chart.svgObject.lastChild);
-                }
-                remove(chart.svgObject);
+        if ((chart.svgObject.childNodes.length > 0) && !chart.enableAnimation && !chart.enableCanvas) {
+            while (chart.svgObject.lastChild) {
+                chart.svgObject.removeChild(chart.svgObject.lastChild);
             }
-            chart.animateSeries = false;
-            chart.redraw = chart.enableAnimation;
-            chart.rotatedDataLabelCollections = [];
-            blazorTemplatesReset(chart);
-            removeElement(
-                getElement(chart.element.id + '_Secondary_Element').querySelectorAll('.ejSVGTooltip')[0]
-            );
-            this.redrawSeriesElements(series, chart);
-            chart.removeSvg();
-            chart.refreshAxis();
-            series.refreshAxisLabel();
-            this.refreshSeries(chart.visibleSeries);
-            chart.markerRender.removeHighlightedMarker();
-            chart.refreshBound();
-            chart.trigger('loaded', { chart: chart });
-            if (selectedDataIndexes.length > 0) {
-                chart.selectionModule.selectedDataIndexes = selectedDataIndexes;
-                chart.selectionModule.redrawSelection(chart, chart.selectionMode);
-            }
-            if (chart.highlightModule && chart.highlightMode !== 'None') {
-                chart.highlightModule.redrawSelection(chart, chart.highlightMode);
-            }
-            chart.redraw = false;
-        } else if (chart.selectionModule) {
-            chart.selectionModule.legendSelection(chart, seriesIndex, event);
-        } else if (chart.highlightModule) {
-            chart.highlightModule.legendSelection(chart, seriesIndex, event);
+            remove(chart.svgObject);
         }
-        series.chart[changeDetection] = false;
+        chart.animateSeries = false;
+        chart.redraw = chart.enableAnimation;
+        chart.rotatedDataLabelCollections = [];
+        removeElement(getElement(chart.element.id + '_Secondary_Element').querySelectorAll('.ejSVGTooltip')[0]);
+        blazorTemplatesReset(chart);
+        this.redrawSeriesElements(series, chart);
+        chart.removeSvg();
+        chart.refreshAxis();
+        series.refreshAxisLabel();
+        this.refreshSeries(chart.visibleSeries);
+        chart.markerRender.removeHighlightedMarker();
+        chart.refreshBound();
+        chart.trigger('loaded', { chart: chart });
+        if (selectedDataIndexes.length > 0) {
+            chart.selectionModule.selectedDataIndexes = selectedDataIndexes;
+            chart.selectionModule.redrawSelection(chart, chart.selectionMode);
+        }
+        if (chart.highlightModule && chart.highlightMode !== 'None') {
+            chart.highlightModule.redrawSelection(chart, chart.highlightMode);
+        }
+        chart.redraw = false;
     }
 
     private changeSeriesVisiblity(series: Series, visibility: boolean): void {
@@ -285,26 +381,27 @@ export class Legend extends BaseLegend {
         );
     }
     private refreshSeries(seriesCollection: Series[]): void {
-        for (let series of seriesCollection) {
+        for (const series of seriesCollection) {
             series.position = undefined;
         }
     }
     /**
      * To show the tooltip for the trimmed text in legend.
-     * @return {void}
+     *
+     * @returns {void}
      */
     public click(event: Event | PointerEvent): void {
         if (!this.chart.legendSettings.visible) {
             return;
         }
-        let pageX: number = this.chart.mouseX;
-        let pageY: number = this.chart.mouseY;
+        const pageX: number = this.chart.mouseX;
+        const pageY: number = this.chart.mouseY;
         let legendRegion: ILegendRegions[] = [];
-        let targetId: string = (<HTMLElement>event.target).id;
-        let legendItemsId: string[] = [this.legendID + '_text_', this.legendID + '_shape_marker_',
-        this.legendID + '_shape_'];
+        const targetId: string = (<HTMLElement>event.target).id;
+        const legendItemsId: string[] = [this.legendID + '_text_', this.legendID + '_shape_marker_',
+            this.legendID + '_shape_'];
         let seriesIndex: number;
-        for (let id of legendItemsId) {
+        for (const id of legendItemsId) {
             if (targetId.indexOf(id) > -1) {
                 seriesIndex = parseInt(targetId.split(id)[1], 10);
                 this.LegendClick(seriesIndex, event);
@@ -332,10 +429,10 @@ export class Legend extends BaseLegend {
      * To check click position is within legend bounds
      */
     protected checkWithinBounds(pageX: number , pageY: number): void {
-        let cRender: CanvasRenderer = this.chart.renderer as CanvasRenderer;
-        let bounds: Rect = this.legendBounds;
-        let borderWidth: number = this.chart.legendSettings.border.width;
-        let canvasRect: Rect = new Rect(bounds.x, bounds.y, bounds.width, bounds.height);
+        const cRender: CanvasRenderer = this.chart.renderer as CanvasRenderer;
+        const bounds: Rect = this.legendBounds;
+        const borderWidth: number = this.chart.legendSettings.border.width;
+        const canvasRect: Rect = new Rect(bounds.x, bounds.y, bounds.width, bounds.height);
         canvasRect.x = canvasRect.x - borderWidth / 2;
         canvasRect.y = canvasRect.y - borderWidth / 2;
         canvasRect.width = canvasRect.width + borderWidth;
@@ -377,10 +474,11 @@ export class Legend extends BaseLegend {
 
     /**
      * To destroy the Legend.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         this.removeEventListener();
     }
 

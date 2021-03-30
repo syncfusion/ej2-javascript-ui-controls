@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { PdfViewer } from '../index';
 
 /**
@@ -7,27 +8,32 @@ export class AjaxHandler {
 
     /**
      * Specifies the URL to which request to be sent.
-     * @default null	
+     *
+     * @default null
      */
     public url: string;
     /**
      * Specifies the URL to which request to be sent.
+     *
      * @default 'POST'
      */
     public type: string = 'POST';
     /**
      * Specifies the responseType to which request response.
+     *
      * @default null
      */
     public responseType: XMLHttpRequestResponseType;
-    /**		 
+    /**
      * A boolean value indicating whether the request should be sent asynchronous or not.
+     *
      * @default true
      * @private
      */
     public mode: boolean = true;
-    /**		 
+    /**
      * Specifies the ContentType to which request to be sent
+     *
      * @default null
      * @private
      */
@@ -39,6 +45,7 @@ export class AjaxHandler {
 
     /**
      * Constructor for Ajax class
+     *
      * @param  {PdfViewer} pdfviewer
      * @returns defaultType
      * @private
@@ -50,19 +57,22 @@ export class AjaxHandler {
 
     /**
      * Send the request to server
+     *
      * @param  {object} jsonObj - To send to service
      * @private
      */
     public send(jsonObj: object): void {
         this.httpRequest = new XMLHttpRequest();
         if (!this.mode) {
-            setTimeout(() => { this.sendRequest(jsonObj); });
+            setTimeout(() => {
+                this.sendRequest(jsonObj);
+            });
         } else {
             this.sendRequest(jsonObj);
         }
         this.httpRequest.onreadystatechange = () => {
             let isSkip: boolean = false;
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let viewerBase: any = this.pdfViewer.viewerBase;
             if (viewerBase && viewerBase.isPasswordAvailable && viewerBase.passwordData === '') {
                 isSkip = true;
@@ -75,15 +85,17 @@ export class AjaxHandler {
                 this.stateChange(this);
             }
         };
-        this.httpRequest.onerror = () => { this.error(this); };
+        this.httpRequest.onerror = () => {
+            this.error(this);
+        };
     }
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private resendRequest(proxy: AjaxHandler, jsonObj: any): boolean {
         let isSkip: boolean = false;
-        let status: number = proxy.httpRequest.status;
-        let statusString: string = status.toString().split('')[0];
+        const status: number = proxy.httpRequest.status;
+        const statusString: string = status.toString().split('')[0];
         if (proxy.httpRequest.readyState === 4 && status === 200) {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let data: any;
             if (this.responseType !== null) {
                 data = proxy.httpRequest.response;
@@ -95,7 +107,7 @@ export class AjaxHandler {
                     try {
                         data = JSON.parse(data);
                     } catch (error) {
-                        // tslint:disable-next-line:max-line-length
+                        // eslint-disable-next-line max-len
                         if (data === 'Document stream does not exist in the cache' || data === 'Document Reference pointer does not exist in the cache') {
                             isSkip = true;
                         }
@@ -132,17 +144,17 @@ export class AjaxHandler {
         return jsonObject;
     }
     private stateChange(proxy: AjaxHandler): void {
-        let status: number = proxy.httpRequest.status;
-        let statusString: string = status.toString().split('')[0];
+        const status: number = proxy.httpRequest.status;
+        const statusString: string = status.toString().split('')[0];
         if (proxy.httpRequest.readyState === 4 && status === 200) {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let data: any;
             if (this.responseType !== null) {
                 data = proxy.httpRequest.response;
             } else {
                 data = proxy.httpRequest.responseText;
             }
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let result: any = {
                 name: 'onSuccess',
                 data: data,
@@ -152,7 +164,7 @@ export class AjaxHandler {
             proxy.successHandler(result);
         } else if (proxy.httpRequest.readyState === 4 && (statusString === '4' || statusString === '5')) { // jshint ignore:line)
             // For handling 4xx and 5xx errors.
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let result: any = {
                 name: 'onFailure',
                 status: proxy.httpRequest.status,
@@ -163,7 +175,7 @@ export class AjaxHandler {
     }
 
     private error(proxy: AjaxHandler): void {
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let result: any = {
             name: 'onError',
             status: this.httpRequest.status,
@@ -173,28 +185,31 @@ export class AjaxHandler {
     }
 
     /**
-     * Specifies callback function to be triggered after XmlHttpRequest is succeeded. 
+     * Specifies callback function to be triggered after XmlHttpRequest is succeeded.
      * The callback will contain server response as the parameter.
+     *
      * @event
      * @private
      */
     public onSuccess: Function;
     /**
-     * Specifies callback function to be triggered after XmlHttpRequest is got failed. 
+     * Specifies callback function to be triggered after XmlHttpRequest is got failed.
      * The callback will contain server response as the parameter.
+     *
      * @event
      * @private
      */
     public onFailure: Function;
     /**
-     * Specifies callback function to be triggered after XmlHttpRequest is got error. 
+     * Specifies callback function to be triggered after XmlHttpRequest is got error.
      * The callback will contain server response as the parameter.
+     *
      * @event
      * @private
      */
     public onError: Function;
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private successHandler(response: any) {
         if (this.onSuccess) {
             this.onSuccess(response);
@@ -202,7 +217,7 @@ export class AjaxHandler {
         return response;
     }
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private failureHandler(response: any) {
         if (this.onFailure) {
             this.onFailure(response);
@@ -210,7 +225,7 @@ export class AjaxHandler {
         return response;
     }
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private errorHandler(response: any) {
         if (this.onError) {
             this.onError(response);
@@ -220,7 +235,7 @@ export class AjaxHandler {
 
     private setCustomAjaxHeaders(): void {
         for (let i: number = 0; i < this.pdfViewer.ajaxRequestSettings.ajaxHeaders.length; i++) {
-            // tslint:disable-next-line:max-line-length
+            // eslint-disable-next-line max-len
             this.httpRequest.setRequestHeader(this.pdfViewer.ajaxRequestSettings.ajaxHeaders[i].headerName, this.pdfViewer.ajaxRequestSettings.ajaxHeaders[i].headerValue);
         }
     }

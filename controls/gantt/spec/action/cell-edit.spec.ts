@@ -43,6 +43,7 @@ describe('Gantt Edit module', () => {
                         allowAdding: true,
                         allowEditing: true,
                         allowDeleting: true,
+                        allowNextRowEdit: true
                     },
                     editDialogFields: [
                         { type: 'General' },
@@ -605,6 +606,28 @@ describe('Gantt Edit module', () => {
                 triggerMouseEvent(update, 'click');
                 expect(ganttObj.currentViewData[2].ganttProperties.notes).toBe('changed');
             }
+        });
+        it('Editing with tab navigation', () => {
+            ganttObj.dataBind();
+            let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(taskName, 'dblclick');
+            let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName') as HTMLElement;
+            input.value = 'TaskName updated';
+            let args: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
+            ganttObj.keyboardModule.keyAction(args);
+            expect(ganttObj.currentViewData[1].ganttProperties.taskName).toBe('TaskName updated');
+            expect(ganttObj.treeGrid.grid.isEdit).toBe(true);
+            ganttObj.treeGrid.grid.endEdit();
+        });
+        it('Editing with tab navigation - next row', () => {
+            ganttObj.dataBind();
+            let customColumn: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(12)') as HTMLElement;
+            triggerMouseEvent(customColumn, 'dblclick');
+            let args: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
+            ganttObj.keyboardModule.keyAction(args);
+            let args1: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(1)') as HTMLElement };
+            ganttObj.keyboardModule.keyAction(args1);
+            expect(ganttObj.treeGrid.grid.isEdit).toBe(true);
         });
     });
 });

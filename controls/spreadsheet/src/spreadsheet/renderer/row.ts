@@ -6,6 +6,7 @@ import { getCellAddress } from '../../workbook/common/index';
 
 /**
  * Sheet module is used for creating row element
+ *
  * @hidden
  */
 export class RowRenderer implements IRowRenderer {
@@ -20,13 +21,13 @@ export class RowRenderer implements IRowRenderer {
     }
 
     public render(index?: number, isRowHeader?: boolean, skipHidden?: boolean): Element {
-        let row: HTMLElement = this.element.cloneNode() as HTMLElement;
+        const row: HTMLElement = this.element.cloneNode() as HTMLElement;
         if (index === undefined) {
             row.classList.add('e-header-row');
             return row;
         }
         row.classList.add('e-row');
-        let sheet: SheetModel = this.parent.getActiveSheet();
+        const sheet: SheetModel = this.parent.getActiveSheet();
         attributes(row, { 'aria-rowindex': (index + 1).toString() });
         row.style.height = `${getRowHeight(sheet, index)}px`;
         if (isRowHeader && !skipHidden) {
@@ -41,18 +42,18 @@ export class RowRenderer implements IRowRenderer {
     }
 
     public refresh(index: number, pRow: Element, hRow?: Element, header?: boolean): Element {
-        let row: Element; let sheet: SheetModel = this.parent.getActiveSheet();
+        let row: Element; const sheet: SheetModel = this.parent.getActiveSheet();
         if (header) {
             row = this.render(index, true, true);
             row.appendChild(this.cellRenderer.renderRowHeader(index));
         } else {
             row = this.render(index);
-            let len: number = this.parent.viewport.leftIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2);
+            const len: number = this.parent.viewport.leftIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2);
             for (let i: number = this.parent.viewport.leftIndex; i <= len; i++) {
                 row.appendChild(this.cellRenderer.render(<CellRenderArgs>{ colIdx: i, rowIdx: index, cell: getCell(index, i, sheet),
                     address: getCellAddress(index, i), lastCell: i === len, row: row, hRow: hRow, isHeightCheckNeeded: true, pRow: pRow,
                     first: index === this.parent.viewport.topIndex && skipHiddenIdx(sheet, index, true) !== skipHiddenIdx(sheet, 0, true) ?
-                    'Row' : '' }));
+                        'Row' : '' }));
             }
         }
         return row;

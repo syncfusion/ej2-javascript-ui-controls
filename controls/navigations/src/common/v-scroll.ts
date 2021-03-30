@@ -24,8 +24,8 @@ const CLS_DOWNOVERLAY: Str = 'e-scroll-down-overlay';
 const OVERLAY_MAXWID: number = 40;
 
 interface TapEventArgs {
-    name: string;
-    originalEvent: TouchEventArgs | TouchEvent | KeyboardEvent;
+    name: string
+    originalEvent: TouchEventArgs | TouchEvent | KeyboardEvent
 }
 /**
  * VScroll module is introduces vertical scroller when content exceeds the current viewing area.
@@ -44,32 +44,36 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
     private touchModule: Touch;
     private scrollEle: HTEle;
     private scrollItems: HTEle;
-    private uniqueId: Boolean;
+    private uniqueId: boolean;
     private timeout: number;
-    private keyTimeout: Boolean;
+    private keyTimeout: boolean;
     private keyTimer: number;
-    private browser: String;
-    private browserCheck: Boolean;
-    private ieCheck: Boolean;
+    private browser: string;
+    private browserCheck: boolean;
+    private ieCheck: boolean;
+    /* eslint-disable */
     private isDevice: Boolean;
-    private customStep: Boolean;
+    private customStep: boolean;
 
     /**
      * Specifies the up or down scrolling distance of the vertical scrollbar moving.
+     *
      * @default null
      */
     @Property(null)
     public scrollStep: number;
     /**
      * Initialize the event handler
+     *
      * @private
+     * @returns {void}
      */
     protected preRender(): void {
         this.browser = Browser.info.name;
         this.browserCheck = this.browser === 'mozilla';
         this.isDevice = Browser.isDevice;
         this.customStep = true;
-        let ele: HTEle = this.element;
+        const ele: HTEle = this.element;
         this.ieCheck = this.browser === 'edge' || this.browser === 'msie';
         this.initialize();
         if (ele.id === '') {
@@ -83,7 +87,9 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * To Initialize the vertical scroll rendering
+     *
      * @private
+     * @returns {void}
      */
     protected render(): void {
         this.touchModule = new Touch(this.element, { scroll: this.touchHandler.bind(this), swipe: this.swipeHandler.bind(this) });
@@ -107,19 +113,20 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * Initializes a new instance of the VScroll class.
-     * @param options  - Specifies VScroll model properties as options.
-     * @param element  - Specifies the element for which vertical scrolling applies.
+     *
+     * @param {VScrollModel} options  - Specifies VScroll model properties as options.
+     * @param {string | HTMLElement} element  - Specifies the element for which vertical scrolling applies.
      */
-    constructor(options?: VScrollModel, element?: string | HTMLElement) {
+    public constructor(options?: VScrollModel, element?: string | HTMLElement) {
         super(options, <HTEle | string>element);
     }
     private initialize(): void {
-        let scrollCnt: HTEle = buildTag('div', { className: CLS_VSCROLLCON });
-        let scrollBar: HTEle = buildTag('div', { className: CLS_VSCROLLBAR });
+        const scrollCnt: HTEle = buildTag('div', { className: CLS_VSCROLLCON });
+        const scrollBar: HTEle = buildTag('div', { className: CLS_VSCROLLBAR });
         scrollBar.setAttribute('tabindex', '-1');
-        let ele: HTEle = this.element;
-        let innerEle: HTEle[] = [].slice.call(ele.children);
-        for (let ele of innerEle) {
+        const ele: HTEle = this.element;
+        const innerEle: HTEle[] = [].slice.call(ele.children);
+        for (const ele of innerEle) {
             scrollCnt.appendChild(ele);
         }
         scrollBar.appendChild(scrollCnt);
@@ -129,12 +136,13 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
         this.scrollItems = scrollCnt;
     }
     protected getPersistData(): string {
-        let keyEntity: string[] = ['scrollStep'];
+        const keyEntity: string[] = ['scrollStep'];
         return this.addOnPersist(keyEntity);
     }
     /**
      * Returns the current module name.
-     * @returns string
+     *
+     * @returns {string} - It returns the current module name.
      * @private
      */
     protected getModuleName(): string {
@@ -142,18 +150,19 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * Removes the control from the DOM and also removes all its related events.
-     * @returns void
+     *
+     * @returns {void}
      */
     public destroy(): void {
-        let el: HTEle = this.element;
+        const el: HTEle = this.element;
         el.style.display = '';
         removeClass([this.element], [CLS_ROOT, CLS_DEVICE]);
-        let navs: HTEle[] = selectAll('.e-' + el.id + '_nav.' + CLS_VSCROLLNAV, el);
-        let overlays: HTEle[] = selectAll('.' + CLS_OVERLAY, el);
+        const navs: HTEle[] = selectAll('.e-' + el.id + '_nav.' + CLS_VSCROLLNAV, el);
+        const overlays: HTEle[] = selectAll('.' + CLS_OVERLAY, el);
         [].slice.call(overlays).forEach((ele: HTMLElement) => {
             detach(ele);
         });
-        for (let elem of [].slice.call(this.scrollItems.children)) {
+        for (const elem of [].slice.call(this.scrollItems.children)) {
             el.appendChild(elem);
         }
         if (this.uniqueId) {
@@ -162,7 +171,9 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
         detach(this.scrollEle);
         if (navs.length > 0) {
             detach(navs[0]);
-            if (!isNullOrUndefined(navs[1])) { detach(navs[1]); }
+            if (!isNullOrUndefined(navs[1])) {
+                detach(navs[1]);
+            }
         }
         EventHandler.remove(this.scrollEle, 'scroll', this.scrollEventHandler);
         this.touchModule.destroy();
@@ -172,24 +183,29 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Specifies the value to disable/enable the VScroll component.
      * When set to `true` , the component will be disabled.
+     *
      * @param  {boolean} value - Based on this Boolean value, VScroll will be enabled (false) or disabled (true).
-     * @returns void.
+     * @returns {void}.
      */
     public disable(value: boolean): void {
-        let navEle: HTMLElement[] = selectAll('.e-scroll-nav:not(.' + CLS_DISABLE + ')', this.element);
-        value ? this.element.classList.add(CLS_DISABLE) : this.element.classList.remove(CLS_DISABLE);
+        const navEle: HTMLElement[] = selectAll('.e-scroll-nav:not(.' + CLS_DISABLE + ')', this.element);
+        if (value) {
+            this.element.classList.add(CLS_DISABLE);
+        } else {
+            this.element.classList.remove(CLS_DISABLE);
+        }
         [].slice.call(navEle).forEach((el: HTMLElement) => {
             el.setAttribute('tabindex', !value ? '0' : '-1');
         });
     }
     private createOverlayElement(element: HTEle): void {
-        let id: string = element.id.concat('_nav');
-        let downOverlayEle: HTEle = buildTag('div', { className: CLS_OVERLAY + ' ' + CLS_DOWNOVERLAY });
-        let clsDown: string = 'e-' + element.id.concat('_nav ' + CLS_VSCROLLNAV + ' ' + CLS_VSCROLLNAVDOWN);
-        let downEle: HTEle = buildTag('div', { id: id.concat('down'), className: clsDown });
-        let navItem: HTEle = buildTag('div', { className: CLS_NAVDOWNARROW + ' ' + CLS_NAVARROW + ' e-icons' });
+        const id: string = element.id.concat('_nav');
+        const downOverlayEle: HTEle = buildTag('div', { className: CLS_OVERLAY + ' ' + CLS_DOWNOVERLAY });
+        const clsDown: string = 'e-' + element.id.concat('_nav ' + CLS_VSCROLLNAV + ' ' + CLS_VSCROLLNAVDOWN);
+        const downEle: HTEle = buildTag('div', { id: id.concat('down'), className: clsDown });
+        const navItem: HTEle = buildTag('div', { className: CLS_NAVDOWNARROW + ' ' + CLS_NAVARROW + ' e-icons' });
         downEle.appendChild(navItem);
-        let upEle: HTEle = buildTag('div', { className: CLS_OVERLAY + ' ' + CLS_UPOVERLAY });
+        const upEle: HTEle = buildTag('div', { className: CLS_OVERLAY + ' ' + CLS_UPOVERLAY });
         if (this.ieCheck) {
             downEle.classList.add('e-ie-align');
         }
@@ -199,15 +215,15 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
         this.eventBinding([downEle]);
     }
     private createNavIcon(element: HTEle): void {
-        let id: string = element.id.concat('_nav');
-        let clsDown: string = 'e-' + element.id.concat('_nav ' + CLS_VSCROLLNAV + ' ' + CLS_VSCROLLNAVDOWN);
-        let nav: HTEle = buildTag('div', { id: id.concat('_down'), className: clsDown });
+        const id: string = element.id.concat('_nav');
+        const clsDown: string = 'e-' + element.id.concat('_nav ' + CLS_VSCROLLNAV + ' ' + CLS_VSCROLLNAVDOWN);
+        const nav: HTEle = buildTag('div', { id: id.concat('_down'), className: clsDown });
         nav.setAttribute('aria-disabled', 'false');
-        let navItem: HTEle = buildTag('div', { className: CLS_NAVDOWNARROW + ' ' + CLS_NAVARROW + ' e-icons' });
-        let clsUp: string = 'e-' + element.id.concat('_nav ' + CLS_VSCROLLNAV + ' ' + CLS_VSCROLLNAVUP);
-        let navElement: HTEle = buildTag('div', { id: id.concat('_up'), className: clsUp + ' ' + CLS_DISABLE });
+        const navItem: HTEle = buildTag('div', { className: CLS_NAVDOWNARROW + ' ' + CLS_NAVARROW + ' e-icons' });
+        const clsUp: string = 'e-' + element.id.concat('_nav ' + CLS_VSCROLLNAV + ' ' + CLS_VSCROLLNAVUP);
+        const navElement: HTEle = buildTag('div', { id: id.concat('_up'), className: clsUp + ' ' + CLS_DISABLE });
         navElement.setAttribute('aria-disabled', 'true');
-        let navUpItem: HTEle = buildTag('div', { className: CLS_NAVUPARROW + ' ' + CLS_NAVARROW + ' e-icons' });
+        const navUpItem: HTEle = buildTag('div', { className: CLS_NAVUPARROW + ' ' + CLS_NAVARROW + ' e-icons' });
         navElement.appendChild(navUpItem);
         nav.appendChild(navItem);
         nav.setAttribute('tabindex', '0');
@@ -221,15 +237,19 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private onKeyPress(ev: KeyboardEvent): void {
         if (ev.key === 'Enter') {
-            let timeoutFun: Function = () => {
+            const timeoutFun: () => void = () => {
                 this.keyTimeout = true;
                 this.eleScrolling(10, <HTEle>ev.target, true);
             };
-            this.keyTimer = window.setTimeout(() => { timeoutFun(); }, 100);
+            this.keyTimer = window.setTimeout(() => {
+                timeoutFun();
+            }, 100);
         }
     }
     private onKeyUp(ev: KeyboardEvent): void {
-        if (ev.key !== 'Enter') { return; }
+        if (ev.key !== 'Enter') {
+            return;
+        }
         if (this.keyTimeout) {
             this.keyTimeout = false;
         } else {
@@ -256,17 +276,18 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
     private tabHoldHandler(ev: TapEventArgs): void {
         let trgt: HTEle = ev.originalEvent.target as HTEle;
         trgt = this.contains(trgt, CLS_VSCROLLNAV) ? <HTEle>trgt.firstElementChild : trgt;
-        let scrollDistance: number = 10;
-        let timeoutFun: Function = () => {
+        const scrollDistance: number = 10;
+        const timeoutFun: () => void = () => {
             this.eleScrolling(scrollDistance, trgt, true);
         };
-        this.timeout = window.setInterval(() => { timeoutFun(); }, 50);
+        this.timeout = window.setInterval(() => {
+            timeoutFun();
+        }, 50);
     }
     private contains(element: HTEle, className: string): boolean {
         return element.classList.contains(className);
     }
     private eleScrolling(scrollDis: number, trgt: HTEle, isContinuous: boolean): void {
-        let rootElement: HTEle = this.element;
         let classList: DOMTokenList = trgt.classList;
         if (classList.contains(CLS_VSCROLLNAV)) {
             classList = trgt.querySelector('.' + CLS_NAVARROW).classList;
@@ -286,7 +307,7 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private swipeHandler(e: SwipeEventArgs): void {
-        let swipeElement: HTEle = this.scrollEle;
+        const swipeElement: HTEle = this.scrollEle;
         let distance: number;
         if (e.velocity <= 1) {
             distance = e.distanceY / (e.velocity * 10);
@@ -294,8 +315,8 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
             distance = e.distanceY / e.velocity;
         }
         let start: number = 0.5;
-        let animate: Function = () => {
-            let step: number = Math.sin(start);
+        const animate: () => void = () => {
+            const step: number = Math.sin(start);
             if (step <= 0) {
                 window.cancelAnimationFrame(step);
             } else {
@@ -320,7 +341,7 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private frameScrollRequest(scrollValue: number, action: string, isContinuous: boolean): void {
-        let step: number = 10;
+        const step: number = 10;
         if (isContinuous) {
             this.scrollUpdating(scrollValue, action);
             return;
@@ -330,7 +351,7 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
                 scrollValue -= el.offsetHeight;
             });
         }
-        let animate: Function = () => {
+        const animate:  () => void = () => {
             if (scrollValue < step) {
                 window.cancelAnimationFrame(step);
             } else {
@@ -343,9 +364,8 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private touchHandler(e: ScrollEventArgs): void {
-        let el: HTEle = this.scrollEle;
-        let distance: number;
-        distance = e.distanceY;
+        const el: HTEle = this.scrollEle;
+        const distance: number = e.distanceY;
         if (e.scrollDirection === 'Up') {
             el.scrollTop = el.scrollTop + distance;
         } else if (e.scrollDirection === 'Down') {
@@ -354,8 +374,8 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private arrowDisabling(addDisableCls: HTEle, removeDisableCls: HTEle): void {
         if (this.isDevice) {
-            let arrowEle: HTMLElement = isNullOrUndefined(addDisableCls) ? removeDisableCls : addDisableCls;
-            let arrowIcon: HTMLElement = arrowEle.querySelector('.' + CLS_NAVARROW) as HTMLElement;
+            const arrowEle: HTMLElement = isNullOrUndefined(addDisableCls) ? removeDisableCls : addDisableCls;
+            const arrowIcon: HTMLElement = arrowEle.querySelector('.' + CLS_NAVARROW) as HTMLElement;
             if (isNullOrUndefined(addDisableCls)) {
                 classList(arrowIcon, [CLS_NAVDOWNARROW], [CLS_NAVUPARROW]);
             } else {
@@ -372,13 +392,12 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
         this.repeatScroll();
     }
     private scrollEventHandler(e: Event): void {
-        let target: HTEle = <HTEle>e.target;
-        let height: number = target.offsetHeight;
-        let rootEle: HTEle = this.element;
-        let navUpEle: HTEle = (<HTEle>this.element.querySelector('.' + CLS_VSCROLLNAVUP));
-        let navDownEle: HTEle = (<HTEle>this.element.querySelector('.' + CLS_VSCROLLNAVDOWN));
-        let upOverlay: HTEle = (<HTEle>this.element.querySelector('.' + CLS_UPOVERLAY));
-        let downOverlay: HTEle = (<HTEle>this.element.querySelector('.' + CLS_DOWNOVERLAY));
+        const target: HTEle = <HTEle>e.target;
+        const height: number = target.offsetHeight;
+        const navUpEle: HTEle = (<HTEle>this.element.querySelector('.' + CLS_VSCROLLNAVUP));
+        const navDownEle: HTEle = (<HTEle>this.element.querySelector('.' + CLS_VSCROLLNAVDOWN));
+        const upOverlay: HTEle = (<HTEle>this.element.querySelector('.' + CLS_UPOVERLAY));
+        const downOverlay: HTEle = (<HTEle>this.element.querySelector('.' + CLS_DOWNOVERLAY));
         let scrollTop: number = target.scrollTop;
         if (scrollTop <= 0) {
             scrollTop = -scrollTop;
@@ -400,7 +419,7 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
         } else if (Math.ceil(height + scrollTop + .1) >= target.scrollHeight) {
             this.arrowDisabling(navDownEle, navUpEle);
         } else {
-            let disEle: HTEle = <HTEle>this.element.querySelector('.' + CLS_VSCROLLNAV + '.' + CLS_DISABLE);
+            const disEle: HTEle = <HTEle>this.element.querySelector('.' + CLS_VSCROLLNAV + '.' + CLS_DISABLE);
             if (disEle) {
                 disEle.classList.remove(CLS_DISABLE);
                 disEle.setAttribute('aria-disabled', 'false');
@@ -410,20 +429,25 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * Gets called when the model property changes.The data that describes the old and new values of property that changed.
-     * @param  {VScrollModel} newProp
-     * @param  {VScrollModel} oldProp
-     * @returns void
+     *
+     * @param  {VScrollModel} newProp - It contains the new value of data.
+     * @param  {VScrollModel} oldProp - It contains the old value of data.
+     * @returns {void}
      * @private
      */
     public onPropertyChanged(newProp: VScrollModel, oldProp: VScrollModel): void {
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'scrollStep':
-                    this.setScrollState();
-                    break;
-                case 'enableRtl':
-                    newProp.enableRtl ? this.element.classList.add(CLS_RTL) : this.element.classList.remove(CLS_RTL);
-                    break;
+            case 'scrollStep':
+                this.setScrollState();
+                break;
+            case 'enableRtl':
+                if (newProp.enableRtl) {
+                    this.element.classList.add(CLS_RTL);
+                } else {
+                    this.element.classList.remove(CLS_RTL);
+                }
+                break;
             }
         }
     }

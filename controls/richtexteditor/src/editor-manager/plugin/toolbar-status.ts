@@ -4,6 +4,7 @@ import { NodeSelection } from './../../selection/index';
 import { IToolbarStatus } from './../../common/interface';
 /**
  * Update Toolbar Status
+ * 
  * @hidden
  * @deprecated
  */
@@ -30,6 +31,14 @@ export const statusCollection: IToolbarStatus = {
 export class ToolbarStatus {
     /**
      * get method
+     *
+     * @param {Document} docElement - specifies the document element
+     * @param {Node} targetNode - specifies the target node
+     * @param {string[]} formatNode - specifies the format node
+     * @param {string[]} fontSize - specifies the font size
+     * @param {string[]} fontName - specifies the font name.
+     * @param {Node} documentNode - specifies the document node.
+     * @returns {IToolbarStatus} - returns the toolbar status
      * @hidden
      * @deprecated
      */
@@ -40,10 +49,10 @@ export class ToolbarStatus {
         fontSize?: string[],
         fontName?: string[], documentNode?: Node): IToolbarStatus {
         let formatCollection: IToolbarStatus = JSON.parse(JSON.stringify(statusCollection));
-        let nodeCollection: IToolbarStatus = JSON.parse(JSON.stringify(statusCollection));
-        let nodeSelection: NodeSelection = new NodeSelection();
-        let nodes: Node[] = documentNode ? [documentNode] : nodeSelection.getNodeCollection(nodeSelection.getRange(docElement));
-        let nodesLength: number = nodes.length;
+        const nodeCollection: IToolbarStatus = JSON.parse(JSON.stringify(statusCollection));
+        const nodeSelection: NodeSelection = new NodeSelection();
+        const nodes: Node[] = documentNode ? [documentNode] : nodeSelection.getNodeCollection(nodeSelection.getRange(docElement));
+        const nodesLength: number = nodes.length;
         for (let index: number = 0; index < nodes.length; index++) {
             if ((nodes[index].nodeName !== 'BR' && nodes[index].nodeType !== 3) ||
             (nodesLength > 1 && nodes[index].nodeType === 3 && nodes[index].textContent.trim() === '')) {
@@ -204,7 +213,7 @@ export class ToolbarStatus {
     }
 
     private static isBackgroundColor(node: Node): string {
-        let backColor: string = (node as HTMLElement).style && (node as HTMLElement).style.backgroundColor;
+        const backColor: string = (node as HTMLElement).style && (node as HTMLElement).style.backgroundColor;
         if (backColor !== null && backColor !== '' && backColor !== undefined) {
             return backColor;
         } else {
@@ -213,7 +222,7 @@ export class ToolbarStatus {
     }
 
     private static isFontSize(node: Node, fontSize?: string[]): string {
-        let size: string = (node as HTMLElement).style && (node as HTMLElement).style.fontSize;
+        const size: string = (node as HTMLElement).style && (node as HTMLElement).style.fontSize;
         if ((size !== null && size !== '' && size !== undefined)
             && (fontSize === null || fontSize === undefined || (fontSize.indexOf(size) > -1))) {
             return size;
@@ -230,7 +239,7 @@ export class ToolbarStatus {
         let index: number = null;
         if ((name !== null && name !== '' && name !== undefined)
             && (fontName === null || fontName === undefined || (fontName.filter((value: string, pos: number) => {
-                let pattern: RegExp = new RegExp(name, 'i');
+                const pattern: RegExp = new RegExp(name, 'i');
                 if ((value.replace(/"/g, '').replace(/ /g, '') === name.replace(/"/g, '').replace(/ /g, '')) ||
                     (value.search(pattern) > -1)) {
                     index = pos;
@@ -259,7 +268,7 @@ export class ToolbarStatus {
     }
 
     private static isAlignment(node: Node): string {
-        let align: string = (node as HTMLElement).style && (node as HTMLElement).style.textAlign;
+        const align: string = (node as HTMLElement).style && (node as HTMLElement).style.textAlign;
         if (align === 'left') {
             return 'justifyleft';
         } else if (align === 'center') {

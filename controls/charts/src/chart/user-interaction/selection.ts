@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 /**
  * Selection src file
  */
@@ -18,9 +23,9 @@ import { IDragCompleteEventArgs, ISelectionCompleteEventArgs } from '../../chart
 import { dragComplete, selectionComplete } from '../../common/model/constants';
 import { BaseSelection } from '../../common/user-interaction/selection';
 
-// tslint:disable:no-string-literal
 /**
  * `Selection` module handles the selection for chart.
+ *
  * @private
  */
 export class Selection extends BaseSelection {
@@ -66,14 +71,15 @@ export class Selection extends BaseSelection {
     public previousSelectedEle: Element[];
     /**
      * Constructor for selection module.
-     * @private.
+     *
+     * @private
      */
 
     constructor(chart: Chart) {
         super(chart);
         this.chart = chart;
         this.renderer = chart.renderer;
-        let mode: SelectionMode = chart.selectionMode;
+        const mode: SelectionMode = chart.selectionMode;
         this.isMultiDrag = chart.isMultiSelect && (mode.indexOf('Drag') > -1);
         this.addEventListener();
     }
@@ -82,7 +88,7 @@ export class Selection extends BaseSelection {
      */
     private addEventListener(): void {
         if (this.chart.isDestroyed || (this.chart.stockChart && this.chart.stockChart.onPanning)) { return; }
-        let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         this.chart.on(Browser.touchMoveEvent, this.mouseMove, this);
         this.chart.on(cancelEvent, this.completeSelection, this);
         this.chart.on('click', this.calculateSelectedElements, this);
@@ -93,7 +99,7 @@ export class Selection extends BaseSelection {
      * Chart mouse down
      */
     private mousedown(e: Event): void {
-        let chart: Chart = this.chart;
+        const chart: Chart = this.chart;
         if (chart.isPointMouseDown || chart.selectionMode === 'None' || chart.isChartDrag) {
             return;
         }
@@ -129,7 +135,8 @@ export class Selection extends BaseSelection {
     }
     /**
      * Method to select the point and series.
-     * @return {void}
+     *
+     * @returns {void}
      */
     public invokeSelection(chart: Chart): void {
         this.initPrivateVariables(chart);
@@ -155,21 +162,23 @@ export class Selection extends BaseSelection {
 
     /**
      *  Method to get the selected data index
-     * @private.
+     *
+     * @private
      */
     public selectDataIndex(chart: Chart, indexes: Index[]): void {
-        for (let index of indexes) {
+        for (const index of indexes) {
             this.performSelection(index, chart, this.getElementByIndex(chart, index)[0]);
         }
     }
 
     /**
      *  Method to get the selected index element
-     * @private.
+     *
+     * @private
      */
     public  getElementByIndex(chart: Chart, index: Index, suffix: string = ''): Element[] {
         let elementId: string = chart.element.id + '_Series_' + index.series + '_Point' + '_' + index.point;
-        let series: Series = <Series>chart.series[index.series];
+        const series: Series = <Series>chart.series[index.series];
         elementId = (!series.isRectSeries && series.type !== 'Scatter' && series.type !== 'Bubble' &&
         series.marker.visible) ? (elementId + '_Symbol' + suffix) : elementId;
 
@@ -178,18 +187,21 @@ export class Selection extends BaseSelection {
 
     /**
      *  Method to get the selected cluster element
-     * @private.
+     *
+     * @private
      */
     public getClusterElements(chart: Chart, index: Index): Element[] {
-        let clusters: Element[] = []; let seriesStyle: string; let selectedElements: NodeListOf<HTMLElement>;
-        for (let series of chart.visibleSeries) {
-            index = new Index(series.index, index.point);
-            clusters.push(this.getElementByIndex(chart, index)[0]);
-            seriesStyle = this.generateStyle(chart.visibleSeries[index.series]);
-            selectedElements = <NodeListOf<HTMLElement>>document.querySelectorAll('.' + seriesStyle);
-            this.findTrackballElements(selectedElements, seriesStyle);
-            if (!chart.isMultiSelect && selectedElements.length > 0 && selectedElements[0].id !== clusters[index.series].id) {
-                this.removeSelection(chart, index.series, selectedElements, seriesStyle, true);
+        const clusters: Element[] = []; let seriesStyle: string; let selectedElements: NodeListOf<HTMLElement>;
+        for (const series of chart.visibleSeries) {
+            if (series.visible) {
+                index = new Index(series.index, index.point);
+                clusters.push(this.getElementByIndex(chart, index)[0]);
+                seriesStyle = this.generateStyle(chart.visibleSeries[index.series]);
+                selectedElements = <NodeListOf<HTMLElement>>document.querySelectorAll('.' + seriesStyle);
+                this.findTrackballElements(selectedElements, seriesStyle);
+                if (!chart.isMultiSelect && selectedElements.length > 0 && selectedElements[0].id !== clusters[clusters.length - 1].id) {
+                    this.removeSelection(chart, index.series, selectedElements, seriesStyle, true);
+                }
             }
         }
         return clusters;
@@ -197,7 +209,8 @@ export class Selection extends BaseSelection {
 
     /**
      *  Method to get trackball elements
-     * @private.
+     *
+     * @private
      */
     public findTrackballElements(selectedElements: Element[] | NodeListOf<HTMLElement>, className: string): void {
         let trackballElements: Element[]; let elements: Element[];
@@ -220,7 +233,8 @@ export class Selection extends BaseSelection {
 
     /**
      *  Method to get the selected element
-     * @private.
+     *
+     * @private
      */
     public findElements(chart: Chart, series: SeriesModel, index: Index, suffix: string = ''): Element[] {
         if (this.isSeriesMode) {
@@ -233,11 +247,12 @@ export class Selection extends BaseSelection {
     }
     /**
      * To find the selected element.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public isAlreadySelected(event : Event | PointerEvent): boolean {
-        let targetElem: Element = <Element>event.target;
+        const targetElem: Element = <Element>event.target;
         if (event.type === 'click') {
             this.currentMode = this.chart.selectionMode;
             this.styleId = this.chart.element.id + '_ej2_chart_selection';
@@ -252,7 +267,7 @@ export class Selection extends BaseSelection {
             }
         }
         if ((this.chart.highlightMode !== 'None' && this.previousSelectedEle && this.previousSelectedEle[0])) {
-            let parentNodeId: string = (<Element>targetElem.parentNode).id;
+            const parentNodeId: string = (<Element>targetElem.parentNode).id;
             let isElement: boolean;
             if (targetElem.parentNode) {
                 isElement = (parentNodeId.indexOf('SeriesGroup') > 0 || parentNodeId.indexOf('SymbolGroup') > 0) ? true : false;
@@ -274,14 +289,15 @@ export class Selection extends BaseSelection {
 
     /**
      * To find the selected element.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public calculateSelectedElements(event: Event): void {
         if (isNullOrUndefined(event.target)) {
             return;
         }
-        let targetElement: HTMLElement = <HTMLElement>event.target;
+        const targetElement: HTMLElement = <HTMLElement>event.target;
         if ((this.chart.selectionMode === 'None' && this.chart.highlightMode === 'None') ||
             targetElement.id.indexOf(this.chart.element.id + '_') === -1) {
             return;
@@ -311,7 +327,8 @@ export class Selection extends BaseSelection {
     }
     /**
      *  Method to perform the selection
-     * @private.
+     *
+     * @private
      */
     public performSelection(index: Index, chart: Chart, element?: Element): void {
         this.isSeriesMode = this.currentMode === 'Series';
@@ -321,44 +338,45 @@ export class Selection extends BaseSelection {
         }
         if (chart.series[index.series].type === 'Area' && (this.currentMode === 'Point' || this.currentMode === 'Cluster') && element &&
             (element.id === this.chart.element.id + '_Series_' + index.series)) {
-            let className: string = this.generateStyle(chart.series[index.series]);
-            let selectionEle: NodeListOf<HTMLElement> = document.querySelectorAll('.' + className);
+            const className: string = this.generateStyle(chart.series[index.series]);
+            const selectionEle: NodeListOf<HTMLElement> = document.querySelectorAll('.' + className);
             this.findTrackballElements(selectionEle, className);
             this.blurEffect(chart.element.id, chart.visibleSeries);
         }
         switch (this.currentMode) {
-            case 'Series':
-                this.selection(chart, index, this.getSeriesElements(chart.series[index.series]));
+        case 'Series':
+            this.selection(chart, index, this.getSeriesElements(chart.series[index.series]));
+            this.selectionComplete(chart, index, this.currentMode);
+            this.blurEffect(chart.element.id, chart.visibleSeries);
+            break;
+        case 'Point':
+            if (!isNaN(index.point) && element) {
+                this.selection(chart, index, [element]);
                 this.selectionComplete(chart, index, this.currentMode);
                 this.blurEffect(chart.element.id, chart.visibleSeries);
-                break;
-            case 'Point':
-                if (!isNaN(index.point) && element) {
-                    this.selection(chart, index, [element]);
-                    this.selectionComplete(chart, index, this.currentMode);
-                    this.blurEffect(chart.element.id, chart.visibleSeries);
-                }
-                break;
-            case 'Cluster':
-                if (!isNaN(index.point)) {
-                    this.clusterSelection(chart, index);
-                    this.selectionComplete(chart, index, this.currentMode);
-                    this.blurEffect(chart.element.id, chart.visibleSeries);
-                }
-                break;
+            }
+            break;
+        case 'Cluster':
+            if (!isNaN(index.point)) {
+                this.clusterSelection(chart, index);
+                this.selectionComplete(chart, index, this.currentMode);
+                this.blurEffect(chart.element.id, chart.visibleSeries);
+            }
+            break;
         }
     }
 
     /**
      *  Method to get the selected data index
-     * @private.
+     *
+     * @private
      */
     public selectionComplete(chart: Chart, index: Index, selectionMode: SelectionMode| HighlightMode): void {
         let points: Points[]; let pointIndex: number; let seriesIndex: number;
-        let selectedPointValues: { x?: string | number | Date, y?: number, seriesIndex?: number, pointIndex?: number }[] = [];
+        const selectedPointValues: { x?: string | number | Date, y?: number, seriesIndex?: number, pointIndex?: number }[] = [];
         let yValue: number; let selectedPointX: string | number | Date;
         if (selectionMode === 'Cluster') {
-            for (let series of chart.visibleSeries) {
+            for (const series of chart.visibleSeries) {
                 if (series.visible) {
                     for (let i: number = 0; i < this.selectedDataIndexes.length; i++) {
                         pointIndex = chart.isMultiSelect ? this.selectedDataIndexes[i].point : index.point;
@@ -394,20 +412,20 @@ export class Selection extends BaseSelection {
                 for (let i: number = 0; i < this.selectedDataIndexes.length; i++) {
                     seriesIndex = this.selectedDataIndexes[i].series;
                     selectedPointValues.push({
-                        seriesIndex: seriesIndex,
+                        seriesIndex: seriesIndex
                     });
                 }
             } else {
                 seriesIndex = (this.selectedDataIndexes.length > 0) ? this.selectedDataIndexes[0].series : 0;
                 selectedPointValues.push({
-                    seriesIndex: seriesIndex,
+                    seriesIndex: seriesIndex
                 });
             }
         } else if (selectionMode === 'Point') {
             for (let i: number = 0; i < this.selectedDataIndexes.length; i++) {
                 pointIndex = this.selectedDataIndexes[i].point;
                 seriesIndex = this.selectedDataIndexes[i].series;
-                let series: SeriesModel = chart.series[seriesIndex];
+                const series: SeriesModel = chart.series[seriesIndex];
                 points = (<Series>series).points;
                 if (!isNaN(pointIndex)) {
                     selectedPointX = points[pointIndex].xValue;
@@ -425,7 +443,7 @@ export class Selection extends BaseSelection {
                 }
             }
         }
-        let args: ISelectionCompleteEventArgs = {
+        const args: ISelectionCompleteEventArgs = {
             name: selectionComplete,
             selectedDataValues: selectedPointValues,
             cancel: false
@@ -434,9 +452,10 @@ export class Selection extends BaseSelection {
     }
     /**
      *  Method to perform selection
-     * @private.
+     *
+     * @private
      */
-    public selection(chart: Chart, index: Index, selectedElements: Element[], legendClick: boolean = false): void {
+    public selection(chart: Chart, index: Index, selectedElements: Element[]): void {
         if (!(this.currentMode === 'Lasso')) {
             if (!chart.isMultiSelect && (this.currentMode.indexOf('Drag') === -1 && this.styleId.indexOf('highlight') === -1 &&
                 chart.selectionMode !== 'None')) {
@@ -445,8 +464,8 @@ export class Selection extends BaseSelection {
         }
         if (!isNullOrUndefined(selectedElements[0])) {
             let isAdd: boolean;
-            let className: string = selectedElements[0] && (selectedElements[0].getAttribute('class') || '');
-            let pClassName: string = selectedElements[0].parentNode &&
+            const className: string = selectedElements[0] && (selectedElements[0].getAttribute('class') || '');
+            const pClassName: string = selectedElements[0].parentNode &&
                 ((<Element>selectedElements[0].parentNode).getAttribute('class') || '');
             if (className !== '' && this.currentMode !== 'Cluster') {
                 this.findTrackballElements(selectedElements, className);
@@ -469,14 +488,16 @@ export class Selection extends BaseSelection {
     }
     /**
      *  Method to get the cluster selection element
-     * @private.
+     *
+     * @private
      */
     public clusterSelection(chart: Chart, index: Index): void {
         this.selection(chart, index, this.getClusterElements(chart, new Index(index.series, index.point)));
     }
     /**
      * Method to remove the multi selected elements
-     * @private.
+     *
+     * @private
      */
     public removeMultiSelectElements(chart: Chart, index: Index[], currentIndex: Index, seriesCollection: SeriesModel[]): void {
         let series: SeriesModel;
@@ -493,12 +514,13 @@ export class Selection extends BaseSelection {
     }
     /**
      * Method to remove the selection
-     * @private.
+     *
+     * @private
      */
     public blurEffect(chartId: string, visibleSeries: Series[], legendClick: boolean = false): void {
-        let visibility: boolean = (this.checkVisibility(this.highlightDataIndexes) ||
+        const visibility: boolean = (this.checkVisibility(this.highlightDataIndexes) ||
             this.checkVisibility(this.selectedDataIndexes)); // legend click scenario
-        for (let series of visibleSeries) {
+        for (const series of visibleSeries) {
             if (series.visible) {
                 this.checkSelectionElements(
                     getElement(chartId + 'SeriesGroup' + series.index),
@@ -515,12 +537,13 @@ export class Selection extends BaseSelection {
     }
     /**
      * Method to add the add/remove class to element
-     * @private.
+     *
+     * @private
      */
     public checkSelectionElements(element: Element, className: string, visibility: boolean, legendClick: boolean, series: number): void {
         let children: HTMLCollection | Element[] = <Element[]>(this.isSeriesMode ? [element] : element.childNodes);
         if (this.chart.selectionMode !== 'None' && this.chart.highlightMode !== 'None') {
-                 children =  (element.children);
+            children =  (element.children);
         }
         let elementClassName: string; let parentClassName: string; let legendShape: Element; let selectElement: Element = element;
         for (let i: number = 0; i < children.length; i++) {
@@ -549,8 +572,8 @@ export class Selection extends BaseSelection {
         if (element.id.indexOf('Symbol') > -1) {
             if ((element.querySelectorAll('.' + className)[0]) && element.querySelectorAll('.' + className)[0].getAttribute('class')
                 === className) {
-                let symbolEle: Element = getElement(this.control.element.id + '_Series_' + element.id[element.id.length - 1]);
-                let seriesClassName: string = symbolEle && symbolEle.hasAttribute('class') ? symbolEle.getAttribute('class') : '';
+                const symbolEle: Element = getElement(this.control.element.id + '_Series_' + element.id[element.id.length - 1]);
+                const seriesClassName: string = symbolEle && symbolEle.hasAttribute('class') ? symbolEle.getAttribute('class') : '';
                 if (seriesClassName.indexOf(this.unselected) > -1) {
                     this.removeSvgClass(symbolEle, this.unselected);
                 }
@@ -569,8 +592,11 @@ export class Selection extends BaseSelection {
                     this.removeSvgClass(legendShape, className);
                 } else {
                     this.removeSvgClass(legendShape, this.unselected);
-                    ((elementClassName === '' && parentClassName === '') || elementClassName.trim() === 'EJ2-Trackball') ?
-                        this.removeSvgClass(legendShape, className) : this.addSvgClass(legendShape, className);
+                    if ((elementClassName === '' && parentClassName === '') || elementClassName.trim() === 'EJ2-Trackball') {
+                        this.removeSvgClass(legendShape, className);
+                    } else {
+                        this.addSvgClass(legendShape, className);
+                    }
                 }
                 if (legendClick && parentClassName.indexOf(className) > -1) {
                     this.addSvgClass(legendShape, className);
@@ -580,10 +606,11 @@ export class Selection extends BaseSelection {
     }
     /**
      *  Method to apply the styles
-     * @private.
+     *
+     * @private
      */
     public applyStyles(elements: Element[]): void {
-        for (let element of elements) {
+        for (const element of elements) {
             if (element) {
                 this.removeSvgClass(<Element>element.parentNode, this.unselected);
                 this.removeSvgClass(element, this.unselected);
@@ -593,17 +620,19 @@ export class Selection extends BaseSelection {
     }
     /**
      *  Method to get the selection class
-     * @private.
+     *
+     * @private
      */
     public getSelectionClass(id: string): string {
         return this.generateStyle((this.control as Chart).series[this.indexFinder(id).series]);
     }
     /**
      *  Method to remove styles
-     * @private.
+     *
+     * @private
      */
     public removeStyles(elements: Element[]): void {
-        for (let element of elements) {
+        for (const element of elements) {
             if (element) {
                 this.removeSvgClass(
                     element, this.getSelectionClass(element.id)
@@ -613,7 +642,8 @@ export class Selection extends BaseSelection {
     }
     /**
      *  Method to remove the selected data index
-     * @private.
+     *
+     * @private
      */
     public addOrRemoveIndex(indexes: Index[], index: Index, isAdd?: boolean): void {
         for (let i: number = 0; i < indexes.length; i++) {
@@ -626,7 +656,8 @@ export class Selection extends BaseSelection {
     }
     /**
      *  Method to get the equal index
-     * @private.
+     *
+     * @private
      */
     public toEquals(first: Index, second: Index, checkSeriesOnly: boolean): boolean {
         return ((first.series === second.series || (this.currentMode === 'Cluster' && !checkSeriesOnly))
@@ -634,7 +665,8 @@ export class Selection extends BaseSelection {
     }
     /**
      * To redraw the selected points.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public redrawSelection(chart: Chart, oldMode: SelectionMode | HighlightMode): void {
@@ -647,7 +679,7 @@ export class Selection extends BaseSelection {
             }
         }
         let selectedDataIndexes: Indexes[] = <Indexes[]>extend([], this.selectedDataIndexes, null, true);
-        let highlightDataIndexes: Indexes[] = <Indexes[]>extend([], this.highlightDataIndexes, null, true);
+        const highlightDataIndexes: Indexes[] = <Indexes[]>extend([], this.highlightDataIndexes, null, true);
         if (this.styleId.indexOf('highlight') > 0 && highlightDataIndexes.length > 0 ) {
             this.removeSelectedElements(chart, this.highlightDataIndexes, chart.series);
             selectedDataIndexes = highlightDataIndexes;
@@ -670,28 +702,31 @@ export class Selection extends BaseSelection {
             }
             this.currentMode = this.chart.highlightMode;
         }
-        let isPreSelected: boolean = this.isAlreadySelected(event);
+        const isPreSelected: boolean = this.isAlreadySelected(event);
         if (isPreSelected) {
             let seriesStyle: string = this.generateStyle(chart.visibleSeries[series]);
             let selectedElements: NodeListOf<HTMLElement> =  <NodeListOf<HTMLElement>>(document.querySelectorAll('.' + seriesStyle));
             this.isSeriesMode = this.currentMode === 'Series';
-            let isBlurEffectNeeded: boolean = true;
+            const isBlurEffectNeeded: boolean = true;
             if (selectedElements.length > 0) {
                 this.removeSelection(chart, series, selectedElements, seriesStyle, isBlurEffectNeeded);
             } else {
-                for (let element of chart.visibleSeries) {
+                for (const element of chart.visibleSeries) {
                     if (element.index !== series && !chart.isMultiSelect) {
                         seriesStyle = this.generateStyle(chart.visibleSeries[element.index]);
                         selectedElements = document.querySelectorAll('.' + seriesStyle);
                         this.removeSelection(chart, series, selectedElements, seriesStyle, isBlurEffectNeeded);
                     }
                 }
-                let seriesElements: Element[] = this.getSeriesElements(chart.visibleSeries[series]);
-                for (let seriesElement of seriesElements) {
+                const seriesElements: Element[] = this.getSeriesElements(chart.visibleSeries[series]);
+                for (const seriesElement of seriesElements) {
+                    if(isNullOrUndefined(seriesElement)) {
+                        return;
+                    }
                     this.checkSelectionElements(seriesElement, seriesStyle, false, true, series);
                 }
                 this.isSeriesMode = true;
-                this.selection(chart, new Index(series, NaN), seriesElements, true);
+                this.selection(chart, new Index(series, NaN), seriesElements);
                 this.isSeriesMode = chart.selectionMode === 'Series';
                 this.blurEffect(chart.element.id, chart.visibleSeries, true);
             }
@@ -702,17 +737,17 @@ export class Selection extends BaseSelection {
         chart: Chart, series: number, selectedElements: NodeListOf<HTMLElement>,
         seriesStyle: string, isBlurEffectNeeded: boolean): void {
         if (selectedElements.length > 0) {
-            let elements: Element[] = [];
+            const elements: Element[] = [];
             for (let i: number = 0; i < selectedElements.length; i++) {
                 elements.push(selectedElements[i]);
             }
             this.removeStyles(elements);
             this.isSeriesMode = true;
             this.addOrRemoveIndex(this.selectedDataIndexes, new Index(series, NaN));
-            for (let value of chart.visibleSeries) {
+            for (const value of chart.visibleSeries) {
                 seriesStyle = this.generateStyle(value);
                 if (document.querySelectorAll('.' + seriesStyle).length > 0) {
-                    for (let element of elements) {
+                    for (const element of elements) {
                         this.checkSelectionElements(element, seriesStyle, true, true, series);
                     }
                     isBlurEffectNeeded = false;
@@ -727,7 +762,7 @@ export class Selection extends BaseSelection {
     }
     /** @private */
     public getSeriesElements(series: SeriesModel): Element[] {
-        let seriesElements: Element[] = [(<Series>series).seriesElement];
+        const seriesElements: Element[] = [(<Series>series).seriesElement];
         if (series.marker.visible && series.type !== 'Scatter' && series.type !== 'Bubble' && !(<Series>series).isRectSeries) {
             seriesElements.push((<Series>series).symbolElement);
         }
@@ -754,14 +789,15 @@ export class Selection extends BaseSelection {
     }
     /**
      * Drag selection that returns the selected data.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public calculateDragSelectedElements(chart: Chart, dragRect: Rect, isClose?: boolean): void {
         this.removeSelectedElements(chart, this.selectedDataIndexes, chart.series);
-        let isLasso: boolean = chart.selectionMode === 'Lasso';
-        let rect: Rect = new Rect(dragRect.x, dragRect.y, dragRect.width, dragRect.height);
-        let axisOffset: ChartLocation = new ChartLocation(
+        const isLasso: boolean = chart.selectionMode === 'Lasso';
+        const rect: Rect = new Rect(dragRect.x, dragRect.y, dragRect.width, dragRect.height);
+        const axisOffset: ChartLocation = new ChartLocation(
             chart.chartAxisLayoutPanel.seriesClipRect.x,
             chart.chartAxisLayoutPanel.seriesClipRect.y
         );
@@ -769,17 +805,17 @@ export class Selection extends BaseSelection {
         let points: Points[];
         let index: Index;
         let selectedPointValues: { x: string | number | Date, y: number }[] = [];
-        let selectedSeriesValues: { x: string | number | Date, y: number }[][] = [];
+        const selectedSeriesValues: { x: string | number | Date, y: number }[][] = [];
         this.isSeriesMode = false;
-        let isDragResize: boolean = (chart.allowMultiSelection) && (this.rectGrabbing || this.resizing);
+        const isDragResize: boolean = (chart.allowMultiSelection) && (this.rectGrabbing || this.resizing);
         this.rectPoints = this.dragRectArray[isDragResize ? this.targetIndex : this.count] =
             new Rect(dragRect.x, dragRect.y, dragRect.width, dragRect.height);
         if (dragRect.width && dragRect.height && !isClose) {
-            let rt: Rect = new Rect(dragRect.x, dragRect.y, dragRect.width, dragRect.height);
+            const rt: Rect = new Rect(dragRect.x, dragRect.y, dragRect.width, dragRect.height);
             this.removeOffset(rt, axisOffset);
             this.filterArray[isDragResize ? this.targetIndex : this.count] = rt;
         }
-        for (let series of chart.visibleSeries) {
+        for (const series of chart.visibleSeries) {
             if (series.visible) {
                 points = (<Series>series).points;
                 selectedPointValues = [];
@@ -794,7 +830,7 @@ export class Selection extends BaseSelection {
                     yAxisOffset = series.yAxis.rect.y - axisOffset.y;
                 }
                 for (let j: number = 0; j < points.length; j++) {
-                    let yValue: number = series.type !== 'RangeArea' ? points[j].yValue :
+                    const yValue: number = series.type !== 'RangeArea' ? points[j].yValue :
                         points[j].regions[0].y;
                     let isCurrentPoint: boolean;
                     let selectedPointX: string | number | Date = points[j].xValue;
@@ -815,7 +851,7 @@ export class Selection extends BaseSelection {
                             isCurrentPoint = points[j].isSelect;
                         } else {
                             isCurrentPoint = (chart.allowMultiSelection) ?
-                                this.isPointSelect(points[j], xAxisOffset, yAxisOffset, this.filterArray, axisOffset) :
+                                this.isPointSelect(points[j], xAxisOffset, yAxisOffset, this.filterArray) :
                                 points[j].symbolLocations.some((location: ChartLocation) => {
                                     return location && withInBounds(location.x + xAxisOffset, location.y + yAxisOffset, rect);
                                 });
@@ -834,12 +870,12 @@ export class Selection extends BaseSelection {
             }
         }
         this.blurEffect(chart.element.id, chart.visibleSeries);
-        let x: number = isLasso ? chart.mouseDownX : (dragRect.x + dragRect.width);
-        let y: number = isLasso ? chart.mouseDownY : dragRect.y;
+        const x: number = isLasso ? chart.mouseDownX : (dragRect.x + dragRect.width);
+        const y: number = isLasso ? chart.mouseDownY : dragRect.y;
         if (!isClose) {
             this.createCloseButton(x, y);
         }
-        let args: IDragCompleteEventArgs = {
+        const args: IDragCompleteEventArgs = {
             name: dragComplete,
             selectedDataValues: selectedSeriesValues,
             cancel: false
@@ -853,9 +889,9 @@ export class Selection extends BaseSelection {
     }
     private isPointSelect(
         points: Points, xAxisOffset: number, yAxisOffset: number,
-        rectCollection: Rect[], axisOffset: ChartLocation): boolean {
-        let location: ChartLocation = points.symbolLocations[0];
-        for (let rect of rectCollection) {
+        rectCollection: Rect[]): boolean {
+        const location: ChartLocation = points.symbolLocations[0];
+        for (const rect of rectCollection) {
             if (rect && location && withInBounds(location.x + xAxisOffset, location.y + yAxisOffset, rect)) {
                 return true;
             }
@@ -864,15 +900,16 @@ export class Selection extends BaseSelection {
     }
     /**
      * Method to draw dragging rect.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public drawDraggingRect(chart: Chart, dragRect: Rect, target?: Element): void {
-        let cartesianLayout: Rect = chart.chartAxisLayoutPanel.seriesClipRect;
-        let border: number = chart.chartArea.border.width;
-        let rectFill: string = chart.themeStyle.selectionRectFill;
-        let rectStroke: string = chart.themeStyle.selectionRectStroke;
-        let isLasso: boolean = chart.selectionMode === 'Lasso';
+        const cartesianLayout: Rect = chart.chartAxisLayoutPanel.seriesClipRect;
+        const border: number = chart.chartArea.border.width;
+        const rectFill: string = chart.themeStyle.selectionRectFill;
+        const rectStroke: string = chart.themeStyle.selectionRectStroke;
+        const isLasso: boolean = chart.selectionMode === 'Lasso';
         if (this.isdrawRect) {
             cartesianLayout.x = cartesianLayout.x - border / 2;
             cartesianLayout.y = cartesianLayout.y - border / 2;
@@ -881,19 +918,19 @@ export class Selection extends BaseSelection {
             this.isdrawRect = false;
         }
         switch (chart.selectionMode) {
-            case 'DragX':
-                dragRect.y = cartesianLayout.y;
-                dragRect.height = cartesianLayout.height;
-                break;
-            case 'DragY':
-                dragRect.x = cartesianLayout.x;
-                dragRect.width = cartesianLayout.width;
-                break;
+        case 'DragX':
+            dragRect.y = cartesianLayout.y;
+            dragRect.height = cartesianLayout.height;
+            break;
+        case 'DragY':
+            dragRect.x = cartesianLayout.x;
+            dragRect.width = cartesianLayout.width;
+            break;
         }
         if ((dragRect.width < 5 || dragRect.height < 5) && !isLasso) {
             return null;
         }
-        let isDragMode: boolean = chart.selectionMode.indexOf('Drag') > -1 || chart.selectionMode === 'Lasso';
+        const isDragMode: boolean = chart.selectionMode.indexOf('Drag') > -1 || chart.selectionMode === 'Lasso';
         if ((chart.allowMultiSelection) && isDragMode) {
             let element: Element;
             let dragGroup: Element;
@@ -911,7 +948,8 @@ export class Selection extends BaseSelection {
                 this.setAttributes(rectElement, dragRect);
             } else if (!getElement(this.draggedRectGroup + this.count)) {
                 dragGroup = chart.svgRenderer.createGroup({ id: this.draggedRectGroup + this.count });
-                let svgElement: HTMLElement = document.getElementById(chart.element.id + '_series_svg');
+                const svgElement: HTMLElement = document.getElementById(chart.element.id + '_series_svg');
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 chart.enableCanvas ? svgElement.appendChild(dragGroup) : multiGroup.appendChild(dragGroup);
             }
             if (!(chart.selectionMode === 'Lasso')) {
@@ -942,8 +980,9 @@ export class Selection extends BaseSelection {
                     this.setAttributes(element, dragRect);
                 }
             } else {
-                let dragGroup: Element = chart.svgRenderer.createGroup({ id: this.draggedRectGroup });
-                let svgElement: HTMLElement = document.getElementById(chart.element.id + '_series_svg');
+                const dragGroup: Element = chart.svgRenderer.createGroup({ id: this.draggedRectGroup });
+                const svgElement: HTMLElement = document.getElementById(chart.element.id + '_series_svg');
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 chart.enableCanvas ? svgElement.appendChild(dragGroup) : chart.svgObject.appendChild(dragGroup);
                 if (!(chart.selectionMode === 'Lasso')) {
                     element = chart.svgRenderer.drawRectangle(new RectOption(
@@ -959,26 +998,27 @@ export class Selection extends BaseSelection {
 
     /**
      * To get drag selected group element index from its id
-     * @param id
+     *
+     * @param {string} id element id
      */
     private getIndex(id: string): number {
         let i: number;
         for (i = id.length - 1; i > 0; i--) {
-            let x: number = Number(id[i]);
+            const x: number = Number(id[i]);
             if (!isNaN(x)) {
                 continue;
             } else {
                 break;
             }
         }
-        let index: number = +id.substr(i + 1, id.length - 1);
+        const index: number = +id.substr(i + 1, id.length - 1);
         return index;
     }
     private createCloseButton(x: number, y: number): void {
-        let isMultiDrag: boolean = this.chart.allowMultiSelection;
-        let circleStroke: string = this.chart.themeStyle.selectionCircleStroke;
-        let isDrag: boolean = this.rectGrabbing || this.resizing;
-        let closeIcon: Element = this.chart.svgRenderer.createGroup({
+        const isMultiDrag: boolean = this.chart.allowMultiSelection;
+        const circleStroke: string = this.chart.themeStyle.selectionCircleStroke;
+        const isDrag: boolean = this.rectGrabbing || this.resizing;
+        const closeIcon: Element = this.chart.svgRenderer.createGroup({
             id: this.closeIconId + (isMultiDrag ? (isDrag ? this.targetIndex : this.count) : ''),
             style: 'cursor:pointer; visibility: visible;'
         });
@@ -987,25 +1027,25 @@ export class Selection extends BaseSelection {
                 this.closeIconId + '_circle' + (isMultiDrag ? (isDrag ? this.targetIndex : this.count) : ''), '#FFFFFF',
                 { color: circleStroke, width: 1 }, 1, x, y, 10)
         ));
-        let direction: string = 'M ' + (x - 4) + ' ' + (y - 4) + ' L ' + (x + 4) + ' ' + (y + 4) + ' M ' + (x - 4) + ' ' + (y + 4) +
+        const direction: string = 'M ' + (x - 4) + ' ' + (y - 4) + ' L ' + (x + 4) + ' ' + (y + 4) + ' M ' + (x - 4) + ' ' + (y + 4) +
             ' L ' + (x + 4) + ' ' + (y - 4);
         closeIcon.appendChild(this.chart.svgRenderer.drawPath(
             {
                 id: this.closeIconId + '_cross' +
                     (isMultiDrag ? (isDrag ? this.targetIndex : this.count) : ''), d: direction,
                 stroke: circleStroke, 'stroke-width': 2, fill: circleStroke
-            },
-            null)
+            })
         );
         this.closeIcon = closeIcon;
-        let pathElement: Element = getElement(this.draggedRectGroup + (isMultiDrag ? (isDrag ? this.targetIndex : this.count) : ''));
+        const pathElement: Element = getElement(this.draggedRectGroup + (isMultiDrag ? (isDrag ? this.targetIndex : this.count) : ''));
         if (pathElement) {
             pathElement.appendChild(closeIcon);
         }
     }
     /**
      * Method to remove dragged element.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
@@ -1013,8 +1053,8 @@ export class Selection extends BaseSelection {
         if (((<HTMLElement>event.target).id.indexOf(this.closeIconId) > -1) && (event.type.indexOf('move') === -1)) {
             let isSelectedvalues: boolean = true;
             if ((chart.allowMultiSelection)) {
-                let index: number = this.getIndex((<HTMLElement>event.target).id);
-                let multiRectGroupElement: Element = getElement(this.multiRectGroup);
+                const index: number = this.getIndex((<HTMLElement>event.target).id);
+                const multiRectGroupElement: Element = getElement(this.multiRectGroup);
                 remove(getElement(this.draggedRectGroup + index));
                 this.dragRectArray[index] = null;
                 this.filterArray[index] = null;
@@ -1064,7 +1104,8 @@ export class Selection extends BaseSelection {
     }
     /**
      * Method to resize the drag rect.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public resizingSelectionRect(chart: Chart, location: ChartLocation, tapped?: boolean, target?: Element): void {
@@ -1074,14 +1115,14 @@ export class Selection extends BaseSelection {
             if (target.id.indexOf('_ej2_drag_rect') > -1) {
                 this.targetIndex = this.getIndex(target.id);
             }
-            let r: Rect = this.dragRectArray[this.targetIndex];
+            const r: Rect = this.dragRectArray[this.targetIndex];
             rect = new Rect(r.x, r.y, r.width, r.height);
         }
         if (!(chart.allowMultiSelection)) {
             rect = new Rect(this.rectPoints.x, this.rectPoints.y, this.rectPoints.width, this.rectPoints.height);
         }
         if (rect) {
-            let resize: boolean = this.findResizeMode(chart.svgObject, rect, location);
+            const resize: boolean = this.findResizeMode(chart.svgObject, rect, location);
             if (this.resizing) {
                 rect = getDraggedRectLocation(
                     rect.x, rect.y, (rect.x + rect.width), (rect.y + rect.height),
@@ -1101,11 +1142,11 @@ export class Selection extends BaseSelection {
         let cursorStyle: string = 'se-resize';
         let resize: boolean = false;
         if (!this.resizing) {
-            let resizeEdges: Rect[] = [new Rect(rect.x, (rect.y), rect.width - 5, 5), // top
-            new Rect((rect.x), rect.y, 5, rect.height), //left
-            new Rect(rect.x, (rect.y + rect.height - 5), rect.width - 5, 5), //bottom
-            new Rect((rect.x + rect.width - 5), rect.y + 5, 5, rect.height - 15), //right
-            new Rect((rect.x + rect.width - 10), (rect.y + rect.height - 10), 10, 10)]; //corner
+            const resizeEdges: Rect[] = [new Rect(rect.x, (rect.y), rect.width - 5, 5), // top
+                new Rect((rect.x), rect.y, 5, rect.height), //left
+                new Rect(rect.x, (rect.y + rect.height - 5), rect.width - 5, 5), //bottom
+                new Rect((rect.x + rect.width - 5), rect.y + 5, 5, rect.height - 15), //right
+                new Rect((rect.x + rect.width - 10), (rect.y + rect.height - 10), 10, 10)]; //corner
             for (let i: number = 0; i < resizeEdges.length; i++) {
                 if (withInBounds(location.x, location.y, resizeEdges[i])) {
                     cursorStyle = (i === 4) ? cursorStyle : (i % 2 === 0) ? 'ns-resize' : 'ew-resize';
@@ -1115,35 +1156,35 @@ export class Selection extends BaseSelection {
                 }
             }
         } else {
-            let x: number = rect.x;
-            let y: number = rect.y;
+            const x: number = rect.x;
+            const y: number = rect.y;
             let width: number = (location.x - x);
             let height: number = (location.y - y);
             switch (this.resizeMode) {
-                case 0:
-                    height = Math.abs((rect.height + rect.y) - location.y);
-                    rect.y = Math.min((rect.height + rect.y), location.y);
-                    rect.height = height;
-                    break;
-                case 1:
-                    width = Math.abs((rect.width + rect.x) - location.x);
-                    rect.x = Math.min((rect.width + rect.x), location.x);
-                    rect.width = width;
-                    break;
-                case 2:
-                    rect.height = Math.abs(height);
-                    rect.y = Math.min(location.y, y);
-                    break;
-                case 3:
-                    rect.width = Math.abs(width);
-                    rect.x = Math.min(location.x, x);
-                    break;
-                case 4:
-                    rect.width = Math.abs(width);
-                    rect.height = Math.abs(height);
-                    rect.x = Math.min(location.x, x);
-                    rect.y = Math.min(location.y, y);
-                    break;
+            case 0:
+                height = Math.abs((rect.height + rect.y) - location.y);
+                rect.y = Math.min((rect.height + rect.y), location.y);
+                rect.height = height;
+                break;
+            case 1:
+                width = Math.abs((rect.width + rect.x) - location.x);
+                rect.x = Math.min((rect.width + rect.x), location.x);
+                rect.width = width;
+                break;
+            case 2:
+                rect.height = Math.abs(height);
+                rect.y = Math.min(location.y, y);
+                break;
+            case 3:
+                rect.width = Math.abs(width);
+                rect.x = Math.min(location.x, x);
+                break;
+            case 4:
+                rect.width = Math.abs(width);
+                rect.height = Math.abs(height);
+                rect.x = Math.min(location.x, x);
+                rect.y = Math.min(location.y, y);
+                break;
             }
         }
         if (this.currentMode !== 'Lasso') {
@@ -1165,29 +1206,30 @@ export class Selection extends BaseSelection {
     private removeSelectedElements(chart: Chart, index: Index[], seriesCollection: SeriesModel[]): void {
         index = chart.isRedrawSelection ? index : index.splice(0, index.length); // No need to remove selected indexes while redrawing
         let seriesElements: Element[];
-        for (let series of seriesCollection) {
+        for (const series of seriesCollection) {
             seriesElements = this.getSeriesElements(series);
             this.removeStyles(seriesElements);
-            for (let seriesElement of seriesElements) {
+            for (const seriesElement of seriesElements) {
                 this.removeStyles(this.getChildren(seriesElement));
             }
         }
     }
     private setAttributes(ele: Element, object: Object): void {
-        let keys: string[] = Object.keys(object);
-        for (let key of keys) {
+        const keys: string[] = Object.keys(object);
+        for (const key of keys) {
             ele.setAttribute(key, object[key]);
         }
     }
     /**
      * Method to move the dragged rect.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public draggedRectMoved(chart: Chart, grabbedPoint: Rect, doDrawing?: boolean, target?: Element): void {
         let rect: Rect;
         if ((this.resizing || this.rectGrabbing) && (chart.allowMultiSelection)) {
-            let r: Rect = this.dragRectArray[this.targetIndex];
+            const r: Rect = this.dragRectArray[this.targetIndex];
             rect = new Rect(r.x, r.y, r.width, r.height);
         } else {
             rect = new Rect(this.rectPoints.x, this.rectPoints.y, this.rectPoints.width, this.rectPoints.height);
@@ -1203,11 +1245,12 @@ export class Selection extends BaseSelection {
     }
     /**
      * To complete the selection.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public completeSelection(e: Event): void {
-        let chart: Chart = this.chart;
+        const chart: Chart = this.chart;
         if (chart.selectionMode === 'None') {
             return;
         }
@@ -1245,11 +1288,11 @@ export class Selection extends BaseSelection {
 
     /** @private */
     public dragStart(chart: Chart, seriesClipRect: Rect, mouseDownX: number, mouseDownY: number, event: Event): void {
-        let mode: SelectionMode = chart.selectionMode;
+        const mode: SelectionMode = chart.selectionMode;
         this.currentMode = chart.selectionMode;
         this.dragging = (mode.indexOf('Drag') > - 1 || mode === 'Lasso') && (chart.isDoubleTap || !chart.isTouch) &&
             chart.chartAreaType !== 'PolarRadar';
-        let target: HTMLElement = <HTMLElement>event.target;
+        const target: HTMLElement = <HTMLElement>event.target;
         this.path = undefined;
         if (this.dragging) {
             this.count = getElement(this.multiRectGroup) ? (this.count + 1) : 0;
@@ -1260,9 +1303,9 @@ export class Selection extends BaseSelection {
             }
         }
         if (mode === 'Lasso') {
-            for (let series of chart.visibleSeries) {
+            for (const series of chart.visibleSeries) {
                 if (series.visible) {
-                    for (let point of series.points) {
+                    for (const point of series.points) {
                         if (!(chart.allowMultiSelection)) {
                             point.isSelect = false;
                         }
@@ -1277,7 +1320,7 @@ export class Selection extends BaseSelection {
                 this.rectGrabbing = withInBounds(mouseDownX, mouseDownY, this.rectPoints);
             }
             if ((chart.allowMultiSelection)) {
-                let index: number = this.getIndex(target.id);
+                const index: number = this.getIndex(target.id);
                 this.targetIndex = this.isDragRect(target.id) ? index : undefined;
                 if (this.dragRectArray.length && this.isDragRect(target.id)) {
                     this.resizingSelectionRect(chart, new ChartLocation(mouseDownX, mouseDownY), true, target);
@@ -1292,7 +1335,7 @@ export class Selection extends BaseSelection {
     }
     /** @private */
     public mouseMove(event: PointerEvent | TouchEvent): void {
-        let chart: Chart = this.chart;
+        const chart: Chart = this.chart;
         let target: Element = <Element>event.target;
         if (chart.highlightMode !== 'None') {
             if (!isNullOrUndefined(target)) {
@@ -1313,7 +1356,7 @@ export class Selection extends BaseSelection {
         if (event.type === 'touchmove' && (Browser.isIos || Browser.isIos7) && this.dragging && event.preventDefault) {
             event.preventDefault();
         }
-        let insideMoving: boolean = withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect);
+        const insideMoving: boolean = withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect);
         if (insideMoving) {
             if (this.rectGrabbing && !this.resizing) {
                 this.draggedRectMoved(chart, this.dragRect, true, target);
@@ -1347,13 +1390,13 @@ export class Selection extends BaseSelection {
     }
 
     private pointChecking(path: SVGPathElement): void {
-        let chart: Chart = this.chart;
+        const chart: Chart = this.chart;
         let element: SVGPathElement;
-        let svgRect: ClientRect = getElement(chart.svgId).getBoundingClientRect();
-        let offsetX: number = chart.chartAxisLayoutPanel.seriesClipRect.x + Math.max(svgRect.left, 0);
-        let offsetY: number = chart.chartAxisLayoutPanel.seriesClipRect.y + Math.max(svgRect.top, 0);
+        const svgRect: ClientRect = getElement(chart.svgId).getBoundingClientRect();
+        const offsetX: number = chart.chartAxisLayoutPanel.seriesClipRect.x + Math.max(svgRect.left, 0);
+        const offsetY: number = chart.chartAxisLayoutPanel.seriesClipRect.y + Math.max(svgRect.top, 0);
         this.multiDataIndexes[this.count] = [];
-        for (let series of chart.visibleSeries) {
+        for (const series of chart.visibleSeries) {
             series.points.filter((point: Points) => {
                 // To check whether the point have symbol location value or not.
                 if (point.symbolLocations && point.symbolLocations.length) {
@@ -1378,6 +1421,7 @@ export class Selection extends BaseSelection {
 
     /**
      * Get module name.
+     *
      * @private
      */
     public getModuleName(): string {
@@ -1385,10 +1429,11 @@ export class Selection extends BaseSelection {
     }
     /**
      * To destroy the selection.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         this.removeEventListener();
         // Destroy method performed here
     }

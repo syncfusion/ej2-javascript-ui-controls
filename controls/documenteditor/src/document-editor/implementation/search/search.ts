@@ -42,36 +42,32 @@ export class Search {
      * @private
      */
     public isRepalceTracking: boolean;
-    /**
-     * @private
-     */
-    get viewer(): LayoutViewer {
+
+    public get viewer(): LayoutViewer {
         return this.owner.viewer;
     }
     /**
      * Gets the search results object.
+     *
      * @aspType SearchResults
      * @blazorType SearchResults
+     * @returns {SearchResults} - Returns the search results object.
      */
     public get searchResults(): SearchResults {
         return this.searchResultsInternal;
     }
-    /**
-     * @private
-     */
-    constructor(owner: DocumentEditor) {
+
+    public constructor(owner: DocumentEditor) {
         this.owner = owner;
         this.searchHighlighters = new Dictionary<LineWidget, SearchWidgetInfo[]>();
         this.textSearch = new TextSearch(this.owner);
         this.textSearchResults = new TextSearchResults(this.owner);
         this.searchResultsInternal = new SearchResults(this);
     }
-    get documentHelper(): DocumentHelper {
+    public get documentHelper(): DocumentHelper {
         return this.owner.documentHelper;
     }
-    /**
-     * Get the module name.
-     */
+
     private getModuleName(): string {
         return 'Search';
     }
@@ -79,15 +75,16 @@ export class Search {
     //#region Find & Find All
     /**
      * Finds the immediate occurrence of specified text from cursor position in the document.
-     * @param  {string} text
-     * @param  {FindOption} findOption? - Default value of ‘findOptions’ parameter is 'None'.
-     * @private
+     *
+     * @param {string} text - Specifies text to find.
+     * @param {FindOption} findOptions - Default value of ‘findOptions’ parameter is 'None'.
+     * @returns {void}
      */
     public find(text: string, findOptions?: FindOption): void {
         if (isNullOrUndefined(findOptions)) {
             findOptions = 'None';
         }
-        let result: TextSearchResult = this.textSearch.find(text, findOptions);
+        const result: TextSearchResult = this.textSearch.find(text, findOptions);
         if (!isNullOrUndefined(result)) {
             this.navigate(result);
         }
@@ -95,8 +92,10 @@ export class Search {
 
     /**
      * Finds all occurrence of specified text in the document.
-     * @param  {string} text
-     * @param  {FindOption} findOption? - Default value of ‘findOptions’ parameter is 'None'.
+     *
+     * @param {string} text - Specifies text to find.
+     * @param {FindOption} findOptions - Default value of ‘findOptions’ parameter is 'None'.
+     * @returns {void}
      */
     public findAll(text: string, findOptions?: FindOption): void {
         if (isNullOrUndefined(text || text === '')) {
@@ -105,7 +104,7 @@ export class Search {
         if (isNullOrUndefined(findOptions)) {
             findOptions = 'None';
         }
-        let results: TextSearchResults = this.textSearch.findAll(text, findOptions);
+        const results: TextSearchResults = this.textSearch.findAll(text, findOptions);
         if (!isNullOrUndefined(results) && results.length > 0) {
             this.navigate(results.innerList[results.currentIndex]);
             this.highlight(results);
@@ -113,13 +112,15 @@ export class Search {
     }
     //#endregion
 
-    //#region Replace and Replace All   
+    //#region Replace and Replace All
     /**
      * Replace the searched string with specified string
-     * @param  {string} replaceText
-     * @param  {TextSearchResult} result
-     * @param  {TextSearchResults} results
+     *
      * @private
+     * @param  {string} replaceText  - Specifies text to replace.
+     * @param  {TextSearchResult} result - Specifies the result.
+     * @param  {TextSearchResults} results - Specifies the results.
+     * @returns {number} - Returns replaced text count.
      */
     public replace(replaceText: string, result: TextSearchResult, results: TextSearchResults): number {
         if (isNullOrUndefined(this.viewer.owner) || this.viewer.owner.isReadOnlyMode || isNullOrUndefined(results)) {
@@ -129,36 +130,37 @@ export class Search {
             this.clearSearchHighlight();
         }
         this.navigate(result);
-        let endPosition: TextPosition = this.documentHelper.selection.start;
+        const endPosition: TextPosition = this.documentHelper.selection.start;
         if (this.owner.enableTrackChanges && this.documentHelper.selection.start.currentWidget) {
             let inline: ElementBox = undefined;
-            // tslint:disable-next-line:max-line-length
-            let inlineElement: ElementInfo = (this.documentHelper.selection.end.currentWidget as LineWidget).getInline(this.owner.selection.start.offset, 0);
+            // eslint-disable-next-line max-len
+            const inlineElement: ElementInfo = (this.documentHelper.selection.end.currentWidget as LineWidget).getInline(this.owner.selection.start.offset, 0);
             inline = inlineElement.element as ElementBox;
             if (inline.revisions.length > 0) {
                 this.isRepalceTracking = true;
 
             }
         }
-        let index: number = results.indexOf(result);
+        const index: number = results.indexOf(result);
         if (index < 0) {
             return 0;
         }
         this.owner.editorModule.insertTextInternal(replaceText, true);
-        let endTextPosition: TextPosition = result.end;
-        let startPosition: TextPosition = new TextPosition(this.viewer.owner);
+        const endTextPosition: TextPosition = result.end;
+        const startPosition: TextPosition = new TextPosition(this.viewer.owner);
         startPosition.setPositionParagraph(endTextPosition.currentWidget, endPosition.offset - replaceText.length);
         this.documentHelper.selection.selectRange(endPosition, startPosition);
-        let eventArgs: SearchResultsChangeEventArgs = { source: this.viewer.owner };
+        const eventArgs: SearchResultsChangeEventArgs = { source: this.viewer.owner };
         this.viewer.owner.trigger('searchResultsChange', eventArgs);
         return 1;
     }
     /**
      * Find the textToFind string in current document and replace the specified string.
-     * @param  {string} textToFind
-     * @param  {string} textToReplace
-     * @param  {FindOption} findOptions? - Default value of ‘findOptions’ parameter is FindOption.None.
+     *
      * @private
+     * @param {string} textToReplace - Specifies the text to replace.
+     * @param {FindOption} findOptions - Default value of ‘findOptions’ parameter is FindOption.None.
+     * @returns {void}
      */
     public replaceInternal(textToReplace: string, findOptions?: FindOption): void {
         if ((textToReplace === '' || isNullOrUndefined(textToReplace))) {
@@ -167,8 +169,8 @@ export class Search {
         if (isNullOrUndefined(findOptions)) {
             findOptions = 'None';
         }
-        let textToFind: string = this.textSearchResults.currentSearchResult.text;
-        let pattern: RegExp = this.viewer.owner.searchModule.textSearch.stringToRegex(textToFind, findOptions);
+        const textToFind: string = this.textSearchResults.currentSearchResult.text;
+        const pattern: RegExp = this.viewer.owner.searchModule.textSearch.stringToRegex(textToFind, findOptions);
         let index: string = this.owner.selection.end.getHierarchicalIndexInternal();
         let result: TextSearchResult = this.viewer.owner.searchModule.textSearch.findNext(pattern, findOptions, index);
         if (!isNullOrUndefined(result)) {
@@ -187,9 +189,11 @@ export class Search {
     }
     /**
      * Replace all the searched string with specified string
-     * @param  {string} replaceText
-     * @param  {TextSearchResults} results
+     *
      * @private
+     * @param  {string} replaceText - Specifies the replace text.
+     * @param  {TextSearchResults} results - Specfies the results.
+     * @returns {number} - Returns the replace count.
      */
     public replaceAll(replaceText: string, results: TextSearchResults): number {
         if (isNullOrUndefined(this.viewer.owner) || this.viewer.owner.isReadOnlyMode || isNullOrUndefined(results)) {
@@ -198,14 +202,14 @@ export class Search {
         if (this.owner.editorHistory) {
             this.owner.editorHistory.initComplexHistory(this.owner.selection, 'ReplaceAll');
         }
-        let count: number = results.length;
+        const count: number = results.length;
         this.viewer.owner.isLayoutEnabled = false;
         for (let i: number = count - 1; i >= 0; i--) {
-            let result: TextSearchResult = results.innerList[i];
+            const result: TextSearchResult = results.innerList[i];
             this.navigate(results.innerList[i]);
             this.owner.editorModule.insertTextInternal(replaceText, true);
             if (result.isHeader || result.isFooter) {
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 this.documentHelper.layout.updateHeaderFooterToParent(this.documentHelper.selection.start.paragraph.bodyWidget as HeaderFooterWidget);
             }
             results.innerList[i].destroy();
@@ -220,13 +224,14 @@ export class Search {
     }
     /**
      * Find the textToFind string in current document and replace the specified string.
-     * @param  {string} textToFind
-     * @param  {string} textToReplace
-     * @param  {FindOption} findOptions? - Default value of ‘findOptions’ parameter is FindOption.None.
+     *
      * @private
+     * @param {string} textToReplace - Specifies the text to replace.
+     * @param {FindOption} findOptions - Default value of ‘findOptions’ parameter is FindOption.None.
+     * @returns {void}
      */
     public replaceAllInternal(textToReplace: string, findOptions?: FindOption): void {
-        if (isNullOrUndefined(textToReplace)) {
+        if ((textToReplace === '' || isNullOrUndefined(textToReplace))) {
             return;
         }
         if (isNullOrUndefined(findOptions)) {
@@ -244,11 +249,13 @@ export class Search {
     //#region Highlight Search Result
     /**
      * @private
+     * @param {TextSearchResult} textSearchResult - Specifies the text search results.
+     * @returns {void}
      */
     public navigate(textSearchResult: TextSearchResult): void {
         if (textSearchResult) {
-            let start: TextPosition = textSearchResult.start;
-            let end: TextPosition = textSearchResult.end;
+            const start: TextPosition = textSearchResult.start;
+            const end: TextPosition = textSearchResult.end;
             if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.selection) && !isNullOrUndefined(start) &&
                 !isNullOrUndefined(end) && !isNullOrUndefined(start.paragraph) && !isNullOrUndefined(end.paragraph)) {
                 this.owner.selection.selectRange(start, end);
@@ -257,32 +264,28 @@ export class Search {
     }
     /**
      * @private
+     * @param {TextSearchResults} textSearchResults - Specifies the text search results.
+     * @returns {void}
      */
     public highlight(textSearchResults: TextSearchResults): void {
         this.searchHighlighters = new Dictionary<LineWidget, SearchWidgetInfo[]>();
         for (let i: number = 0; i < textSearchResults.innerList.length; i++) {
-            let result: TextSearchResult = textSearchResults.innerList[i];
+            const result: TextSearchResult = textSearchResults.innerList[i];
             this.highlightResult(result);
         }
         this.viewer.renderVisiblePages();
     }
-    /**
-     * @private
-     */
-    public highlightResult(result: TextSearchResult): void {
+
+    private highlightResult(result: TextSearchResult): void {
         this.highlightSearchResult(result.start.paragraph, result.start, result.end);
     }
-    /**
-     * Highlight search result
-     * @private
-     */
-    // tslint:disable:max-func-body-length
-    public highlightSearchResult(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition): void {
+
+    /* eslint-disable  */
+    private highlightSearchResult(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition): void {
         let selectionStartIndex: number = 0;
         let selectionEndIndex: number = 0;
         let startElement: ElementBox = null;
         let endElement: ElementBox = null;
-        // tslint:disable-next-line:max-line-length
         let lineWidget: ElementInfo = this.documentHelper.selection.getStartLineWidget(paragraph as ParagraphWidget, start, startElement, selectionStartIndex);
         selectionStartIndex = lineWidget.index;
         startElement = lineWidget.element;
@@ -309,7 +312,6 @@ export class Search {
             }
             // Handled the highlighting approach as genric for normal and rtl text.
             if (isRtlText || paragraph.bidi) {
-                // tslint:disable-next-line:max-line-length
                 let elementBox: ElementBox[] = this.documentHelper.selection.getElementsForward(startLineWidget, startElement, endElement, paragraph.bidi);
                 if (elementBox && elementBox.length > 1) {
                     for (let i: number = 0; i < elementBox.length; i++) {
@@ -349,7 +351,6 @@ export class Search {
                 // Handled the  highlighting approach as genric for normal and rtl text.
                 if (paragraph.bidi || (startElement instanceof TextElementBox && startElement.isRightToLeft)) {
                     let right: number = 0;
-                    // tslint:disable-next-line:max-line-length
                     let elementCollection: ElementBox[] = this.documentHelper.selection.getElementsForward(startLineWidget, startElement, endElement, paragraph.bidi);
                     if (elementCollection) {
                         let elementIsRTL: boolean = false;
@@ -391,10 +392,8 @@ export class Search {
             }
         }
     }
-    /**
-     * @private
-     */
-    public createHighlightBorder(lineWidget: LineWidget, width: number, left: number, top: number): void {
+
+    private createHighlightBorder(lineWidget: LineWidget, width: number, left: number, top: number): void {
         let findHighLight: SearchWidgetInfo = this.addSearchHighlightBorder(lineWidget);
         let page: Page = this.viewer.owner.selection.getPage(lineWidget.paragraph);
         let pageTop: number = page.boundingRectangle.y;
@@ -405,11 +404,8 @@ export class Search {
         let height: number = Math.floor(lineWidget.height);
         let context: CanvasRenderingContext2D = this.documentHelper.containerContext;
     }
-    /**
-     * Adds search highlight border.
-     * @private
-     */
-    public addSearchHighlightBorder(lineWidget: LineWidget): SearchWidgetInfo {
+
+    private addSearchHighlightBorder(lineWidget: LineWidget): SearchWidgetInfo {
         let highlighters: SearchWidgetInfo[] = undefined;
         let collection: Dictionary<LineWidget, SearchWidgetInfo[]> = this.searchHighlighters;
         if (collection.containsKey(lineWidget)) {
@@ -422,11 +418,8 @@ export class Search {
         highlighters.push(searchHighlight);
         return searchHighlight;
     }
-    /**
-     * @private
-     */
-    // tslint:disable-next-line:max-line-length
-    public highlightSearchResultParaWidget(widget: ParagraphWidget, startIndex: number, endLine: LineWidget, endElement: ElementBox, endIndex: number): void {
+
+    private highlightSearchResultParaWidget(widget: ParagraphWidget, startIndex: number, endLine: LineWidget, endElement: ElementBox, endIndex: number): void {
         let top: number = 0;
         let width: number = 0;
         let isRtlText: boolean = false;
@@ -444,7 +437,6 @@ export class Search {
                 let right: number = 0;
                 // Handled the highlighting using the element box highlighting approach as genric for normal and rtl text.
                 if (isRtlText || widget.bidi) {
-                    // tslint:disable-next-line:max-line-length
                     let elementBox: ElementBox[] = this.documentHelper.selection.getElementsBackward(lineWidget, endElement, endElement, widget.bidi);
                     for (let i: number = 0; i < elementBox.length; i++) {
                         let element: ElementBox = elementBox[i];
@@ -482,6 +474,8 @@ export class Search {
     //#region Get find result view
     /**
      * @private
+     * @param {string} result - Specified the result.
+     * @returns {void}
      */
     public addSearchResultItems(result: string): void {
         if (isNullOrUndefined(result) || result === '') {
@@ -494,6 +488,8 @@ export class Search {
     }
     /**
      * @private
+     * @param {TextSearchResults} textSearchResults - Specified text search result.
+     * @returns {void}
      */
     public addFindResultView(textSearchResults: TextSearchResults): void {
         for (let i: number = 0; i < textSearchResults.innerList.length; i++) {
@@ -507,8 +503,9 @@ export class Search {
     }
     /**
      * @private
+     * @returns {void}
      */
-    // tslint:disable:max-func-body-length
+    /* eslint-disable  */
     public addFindResultViewForSearch(result: TextSearchResult): void {
         if (result.start != null && result.end != null && result.start.paragraph != null && result.end.paragraph != null) {
             let prefixText: string;
@@ -538,7 +535,6 @@ export class Search {
                     prefix = (box as TextElementBox).text.substring(0, startIndex);
                 }
                 let boxIndex: number = box.line.children.indexOf(box);
-                // tslint:disable-next-line:max-line-length
                 lastIndex = prefix.lastIndexOf(' ');
                 while (lastIndex < 0 && boxIndex > 0 && box.line.children[boxIndex - 1] instanceof TextElementBox) {
                     prefix = (box.line.children[boxIndex - 1] as TextElementBox).text + prefix;
@@ -572,7 +568,6 @@ export class Search {
                     suffixtext = (box as TextElementBox).text.substring(endIndex);
                 }
                 let boxIndex: number = box.line.children.indexOf(box);
-                // tslint:disable-next-line:max-line-length
                 while (boxIndex + 1 < box.line.children.length && (box.line.children[boxIndex + 1] instanceof TextElementBox) || (box.line.children[boxIndex + 1] instanceof FieldElementBox)) {
                     if (box.line.children[boxIndex + 1] instanceof FieldElementBox) {
                         boxIndex = boxIndex + 2;
@@ -608,31 +603,24 @@ export class Search {
             }
             if (result.isHeader) {
                 if (page.headerWidget.headerFooterType === 'FirstPageHeader' && page.bodyWidgets[0].sectionFormat.differentFirstPage) {
-                    // tslint:disable-next-line:max-line-length
                     listElement = '<li tabindex=0 class="e-de-search-result-item e-de-op-search-txt">' + headerFooterString + prefix + '<span class="e-de-op-search-word" style="pointer-events:none">' + result.text + '</span>' + suffixtext + '</li>';
                 } else if (page.headerWidget.headerFooterType === 'EvenHeader' && this.isHandledEvenPageHeader) {
-                    // tslint:disable-next-line:max-line-length
                     listElement = '<li tabindex=0 class="e-de-search-result-item e-de-op-search-txt">' + headerFooterString + prefix + '<span class="e-de-op-search-word" style="pointer-events:none">' + result.text + '</span>' + suffixtext + '</li>';
                     this.isHandledEvenPageHeader = false;
-                    // tslint:disable-next-line:max-line-length
                 } else if (page.headerWidget.headerFooterType === 'OddHeader' && this.isHandledOddPageHeader) {
                     listElement = '<li tabindex=0 class="e-de-search-result-item e-de-op-search-txt">' + headerFooterString + prefix + '<span class="e-de-op-search-word" style="pointer-events:none">' + result.text + '</span>' + suffixtext + '</li>';
                     this.isHandledOddPageHeader = false;
                 }
             } else if (result.isFooter) {
                 if (page.footerWidget.headerFooterType === 'FirstPageFooter' && page.bodyWidgets[0].sectionFormat.differentFirstPage) {
-                    // tslint:disable-next-line:max-line-length
                     listElement = '<li tabindex=0 class="e-de-search-result-item e-de-op-search-txt">' + headerFooterString + prefix + '<span class="e-de-op-search-word" style="pointer-events:none">' + result.text + '</span>' + suffixtext + '</li>';
                 } else if (page.footerWidget.headerFooterType === 'EvenFooter' && this.isHandledEvenPageFooter) {
-                    // tslint:disable-next-line:max-line-length
                     listElement = '<li tabindex=0 class="e-de-search-result-item e-de-op-search-txt">' + headerFooterString + prefix + '<span class="e-de-op-search-word" style="pointer-events:none">' + result.text + '</span>' + suffixtext + '</li>';
                     this.isHandledEvenPageFooter = false;
-                    // tslint:disable-next-line:max-line-length
                 } else if (page.footerWidget.headerFooterType === 'OddFooter' && this.isHandledOddPageFooter) {
                     listElement = '<li tabindex=0 class="e-de-search-result-item e-de-op-search-txt">' + headerFooterString + prefix + '<span class="e-de-op-search-word" style="pointer-events:none">' + result.text + '</span>' + suffixtext + '</li>';
                     this.isHandledOddPageFooter = false;
                 }
-                // tslint:disable-next-line:max-line-length
             } else if (!result.isHeader && !result.isFooter) {
                 listElement = '<li tabindex=0 class="e-de-search-result-item e-de-op-search-txt">' + headerFooterString + prefix + '<span class="e-de-op-search-word" style="pointer-events:none">' + result.text + '</span>' + suffixtext + '</li>';
             }
@@ -643,7 +631,9 @@ export class Search {
 
     /**
      * Clears search highlight.
+     *
      * @private
+     * @returns {void}
      */
     public clearSearchHighlight(): void {
         if (!isNullOrUndefined(this.searchHighlighters)) {
@@ -655,6 +645,7 @@ export class Search {
     }
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         if (this.textSearchResults) {

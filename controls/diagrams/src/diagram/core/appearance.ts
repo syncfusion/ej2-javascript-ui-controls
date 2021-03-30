@@ -1,20 +1,25 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/ban-types */
 import { Property, ChildProperty, Collection, ComplexFactory, isBlazor } from '@syncfusion/ej2-base';
 import { GradientModel, RadialGradientModel, LinearGradientModel, StopModel, DiagramGradientModel } from './appearance-model';
 import { TextDecoration, WhiteSpace, TextWrap, TextAlign, GradientType, TextOverflow } from '../enum/enum';
 
 /**   @private  */
+// eslint-disable-next-line prefer-const
 let getGradientType: Function = (obj: Gradient): Object => {
     if (obj) {
         if (isBlazor()) {
             return DiagramGradient;
         }
         switch (obj.type) {
-            case 'Linear':
-                return LinearGradient;
-            case 'Radial':
-                return RadialGradient;
-            default:
-                return LinearGradient;
+        case 'Linear':
+            return LinearGradient;
+        case 'Radial':
+            return RadialGradient;
+        default:
+            return LinearGradient;
         }
     }
     return LinearGradient;
@@ -27,24 +32,28 @@ export class Thickness {
 
     /**
      * Sets the left value of the thickness
+     *
      * @default 0
      */
     public left: number;
 
     /**
      * Sets the right value of the thickness
+     *
      * @default 0
      */
     public right: number;
 
     /**
      * Sets the top value of the thickness
+     *
      * @default 0
      */
     public top: number;
 
     /**
      * Sets the bottom value of the thickness
+     *
      * @default 0
      */
     public bottom: number;
@@ -63,6 +72,7 @@ export class Thickness {
 export class Margin extends ChildProperty<Margin> {
     /**
      * Sets the space to be left from the left side of the immediate parent of an element
+     *
      * @default 0
      * @isBlazorNullableType true
      */
@@ -71,6 +81,7 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * Sets the space to be left from the right side of the immediate parent of an element
+     *
      * @default 0
      * @isBlazorNullableType true
      */
@@ -79,6 +90,7 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * Sets the space to be left from the top side of the immediate parent of an element
+     *
      * @default 0
      * @isBlazorNullableType true
      */
@@ -87,6 +99,7 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * Sets the space to be left from the bottom side of the immediate parent of an element
+     *
      * @default 0
      * @isBlazorNullableType true
      */
@@ -115,24 +128,28 @@ export class Margin extends ChildProperty<Margin> {
 export class Shadow extends ChildProperty<Shadow> {
     /**
      * Defines the angle of Shadow
+     *
      * @default 45
      */
     @Property(45)
     public angle: number;
     /**
      * Defines the distance of Shadow
+     *
      * @default 5
      */
     @Property(5)
     public distance: number;
     /**
      * Defines the opacity of Shadow
+     *
      * @default 0.7
      */
     @Property(0.7)
     public opacity: number;
     /**
      * Defines the color of Shadow
+     *
      * @default ''
      */
     @Property('lightgrey')
@@ -166,12 +183,14 @@ export class Shadow extends ChildProperty<Shadow> {
 export class Stop extends ChildProperty<Stop> {
     /**
      * Sets the color to be filled over the specified region
+     *
      * @default ''
      */
     @Property('')
     public color: string;
     /**
      * Sets the position where the previous color transition ends and a new color transition starts
+     *
      * @default 0
      * @isBlazorNullableType true
      */
@@ -179,6 +198,7 @@ export class Stop extends ChildProperty<Stop> {
     public offset: number;
     /**
      * Describes the transparency level of the region
+     *
      * @default 1
      */
     @Property(1)
@@ -193,12 +213,13 @@ export class Stop extends ChildProperty<Stop> {
     }
 }
 
-/**                                                                                                        
+/**
  * Paints the node with a smooth transition from one color to another color
  */
 export class Gradient extends ChildProperty<Gradient> {
     /**
      * Defines the stop collection of gradient
+     *
      * @default []
      * @blazorType ObservableCollection<DiagramsGradientStop>
      */
@@ -208,6 +229,7 @@ export class Gradient extends ChildProperty<Gradient> {
      * Defines the type of gradient
      * * Linear - Sets the type of the gradient as Linear
      * * Radial - Sets the type of the gradient as Radial
+     *
      * @default 'None'
      */
     @Property('None')
@@ -215,6 +237,7 @@ export class Gradient extends ChildProperty<Gradient> {
 
     /**
      * Defines the id of gradient
+     *
      * @default ''
      */
     @Property('')
@@ -245,89 +268,102 @@ export class Gradient extends ChildProperty<Gradient> {
  * diagram.appendTo('#diagram');
  * ```
  */
-/**                
+/**
  * Paints the node with linear color transitions
  */
 export class DiagramGradient extends Gradient {
     /**
      * Defines the x1 value of linear gradient
+     *
      * @default 0
      */
     @Property(0)
     public x1: number;
     /**
      * Defines the x2 value of linear gradient
+     *
      * @default 0
      */
     @Property(0)
     public x2: number;
     /**
      * Defines the y1 value of linear gradient
+     *
      * @default 0
      */
     @Property(0)
     public y1: number;
     /**
      * Defines the y2 value of linear gradient
+     *
      * @default 0
      */
     @Property(0)
     public y2: number;
     /**
      * Defines the cx value of radial gradient
+     *
      * @default 0
      */
     @Property(0)
     public cx: number;
     /**
      * Defines the cy value of radial gradient
+     *
      * @default cy
      */
     @Property(0)
     public cy: number;
     /**
      * Defines the fx value of radial gradient
+     *
      * @default 0
      */
     @Property(0)
     public fx: number;
     /**
      * Defines the fy value of radial gradient
+     *
      * @default fy
      */
     @Property(0)
     public fy: number;
     /**
      * Defines the r value of radial gradient
+     *
      * @default 50
      */
     @Property(50)
     public r: number;
 }
-/**                
+/**
  * Paints the node with linear color transitions
  */
 export class LinearGradient extends Gradient {
     /**
      * Defines the x1 value of linear gradient
+     *
      * @default 0
      */
     @Property(0)
     public x1: number;
     /**
      * Defines the x2 value of linear gradient
+     *
      * @default 0
      */
     @Property(0)
     public x2: number;
     /**
      * Defines the y1 value of linear gradient
+     *
      * @default 0
      */
     @Property(0)
     public y1: number;
     /**
      * Defines the y2 value of linear gradient
+     *
      * @default 0
      */
     @Property(0)
@@ -361,41 +397,47 @@ export class LinearGradient extends Gradient {
 export class RadialGradient extends Gradient {
     /**
      * Defines the cx value of radial gradient
+     *
      * @default 0
      */
     @Property(0)
     public cx: number;
     /**
      * Defines the cy value of radial gradient
+     *
      * @default cy
      */
     @Property(0)
     public cy: number;
     /**
      * Defines the fx value of radial gradient
+     *
      * @default 0
      */
     @Property(0)
     public fx: number;
     /**
      * Defines the fy value of radial gradient
+     *
      * @default fy
      */
     @Property(0)
     public fy: number;
     /**
      * Defines the r value of radial gradient
+     *
      * @default 50
      */
     @Property(50)
     public r: number;
 }
-/**      
+/**
  * Defines the style of shape/path
  */
 export class ShapeStyle extends ChildProperty<ShapeStyle> {
     /**
      * Sets the fill color of a shape/path
+     *
      * @default 'white'
      */
     @Property('white')
@@ -403,6 +445,7 @@ export class ShapeStyle extends ChildProperty<ShapeStyle> {
 
     /**
      * Sets the stroke color of a shape/path
+     *
      * @default 'black'
      */
     @Property('black')
@@ -415,7 +458,7 @@ export class ShapeStyle extends ChildProperty<ShapeStyle> {
      * ```
      * ```
      *  let nodes: NodeModel[] = [{  id: 'node', width: 100, height: 100, offsetX: 100, offsetY: 100,
-     * style: { fill: 'red', strokeColor: 'blue', strokeWidth: 5, 
+     * style: { fill: 'red', strokeColor: 'blue', strokeWidth: 5,
      * strokeDashArray: '2 2', opacity: 0.6 } as ShapeStyleModel,
      * }];
      * let diagram: Diagram = new Diagram({
@@ -425,6 +468,7 @@ export class ShapeStyle extends ChildProperty<ShapeStyle> {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default ''
      */
     @Property('')
@@ -432,6 +476,7 @@ export class ShapeStyle extends ChildProperty<ShapeStyle> {
 
     /**
      * Defines the stroke width of the path/shape
+     *
      * @default 1
      */
     @Property(1)
@@ -439,6 +484,7 @@ export class ShapeStyle extends ChildProperty<ShapeStyle> {
 
     /**
      * Sets the opacity of a shape/path
+     *
      * @default 1
      */
     @Property(1)
@@ -446,6 +492,7 @@ export class ShapeStyle extends ChildProperty<ShapeStyle> {
 
     /**
      * Defines the gradient of a shape/path
+     *
      * @default null
      * @aspType object
      * @blazorType DiagramGradient
@@ -456,11 +503,12 @@ export class ShapeStyle extends ChildProperty<ShapeStyle> {
 
 
 /**
- * Defines the stroke style of a path 
+ * Defines the stroke style of a path
  */
 export class StrokeStyle extends ShapeStyle {
     /**
      * Sets the fill color of a shape/path
+     *
      * @default 'transparent'
      */
     @Property('transparent')
@@ -494,6 +542,7 @@ export class TextStyle extends ShapeStyle {
 
     /**
      * Sets the font color of a text
+     *
      * @default 'black'
      */
     @Property('black')
@@ -501,6 +550,7 @@ export class TextStyle extends ShapeStyle {
 
     /**
      * Sets the font type of a text
+     *
      * @default 'Arial'
      */
     @Property('Arial')
@@ -508,6 +558,7 @@ export class TextStyle extends ShapeStyle {
 
     /**
      * Defines the font size of a text
+     *
      * @default 12
      */
     @Property(12)
@@ -515,6 +566,7 @@ export class TextStyle extends ShapeStyle {
 
     /**
      * Enables/disables the italic style of text
+     *
      * @default false
      */
     @Property(false)
@@ -522,6 +574,7 @@ export class TextStyle extends ShapeStyle {
 
     /**
      * Enables/disables the bold style of text
+     *
      * @default false
      */
     @Property(false)
@@ -532,6 +585,7 @@ export class TextStyle extends ShapeStyle {
      * * PreserveAll - Preserves all empty spaces and empty lines
      * * CollapseSpace - Collapses the consequent spaces into one
      * * CollapseAll - Collapses all consequent empty spaces and empty lines
+     *
      * @default 'CollapseSpace'
      */
     @Property('CollapseSpace')
@@ -542,6 +596,7 @@ export class TextStyle extends ShapeStyle {
      * * WrapWithOverflow - Wraps the text so that no word is broken
      * * Wrap - Wraps the text and breaks the word, if necessary
      * * NoWrap - Text will no be wrapped
+     *
      * @default  'WrapWithOverflow'
      */
     @Property('WrapWithOverflow')
@@ -553,6 +608,7 @@ export class TextStyle extends ShapeStyle {
      * * Right - Aligns the text at the right of the text bounds
      * * Center - Aligns the text at the center of the text bounds
      * * Justify - Aligns the text in a justified manner
+     *
      * @default 'Center'
      */
     @Property('Center')
@@ -564,6 +620,7 @@ export class TextStyle extends ShapeStyle {
      * * Underline - Decorates the text with an underline
      * * LineThrough - Decorates the text by striking it with a line
      * * None - Text will not have any specific decoration
+     *
      * @default 'None'
      */
     @Property('None')
@@ -574,6 +631,7 @@ export class TextStyle extends ShapeStyle {
      * * Wrap - Wraps the text to next line, when it exceeds its bounds
      * * Ellipsis - It truncates the overflown text and represents the clipping with an ellipsis
      * * Clip - It clips the overflow text
+     *
      * @default 'Wrap'
      */
     @Property('Wrap')
@@ -581,18 +639,20 @@ export class TextStyle extends ShapeStyle {
 
     /**
      * Sets the fill color of a shape/path
+     *
      * @default 'transparent'
      */
     @Property('transparent')
     public fill: string;
 }
 
-/**      
+/**
  * Defines the style of shape/path
  */
 export class DiagramShapeStyle extends ChildProperty<DiagramShapeStyle> {
     /**
      * Sets the fill color of a shape/path
+     *
      * @default 'white'
      */
     @Property('white')
@@ -603,6 +663,7 @@ export class DiagramShapeStyle extends ChildProperty<DiagramShapeStyle> {
      * * Wrap - Wraps the text to next line, when it exceeds its bounds
      * * Ellipsis - It truncates the overflown text and represents the clipping with an ellipsis
      * * Clip - It clips the overflow text
+     *
      * @default 'Wrap'
      */
     @Property('Wrap')
@@ -610,6 +671,7 @@ export class DiagramShapeStyle extends ChildProperty<DiagramShapeStyle> {
 
     /**
      * Defines the stroke width of the path/shape
+     *
      * @default 1
      */
     @Property(1)
@@ -617,6 +679,7 @@ export class DiagramShapeStyle extends ChildProperty<DiagramShapeStyle> {
 
     /**
      * Defines the gradient of a shape/path
+     *
      * @default null
      * @aspType object
      */
@@ -625,6 +688,7 @@ export class DiagramShapeStyle extends ChildProperty<DiagramShapeStyle> {
 
     /**
      * Sets the opacity of a shape/path
+     *
      * @default 1
      */
     @Property(1)
@@ -632,6 +696,7 @@ export class DiagramShapeStyle extends ChildProperty<DiagramShapeStyle> {
 
     /**
      * Enables/disables the italic style of text
+     *
      * @default false
      */
     @Property(false)
@@ -644,7 +709,7 @@ export class DiagramShapeStyle extends ChildProperty<DiagramShapeStyle> {
      * ```
      * ```
      *  let nodes: NodeModel[] = [{  id: 'node', width: 100, height: 100, offsetX: 100, offsetY: 100,
-     * style: { fill: 'red', strokeColor: 'blue', strokeWidth: 5, 
+     * style: { fill: 'red', strokeColor: 'blue', strokeWidth: 5,
      * strokeDashArray: '2 2', opacity: 0.6 } as ShapeStyleModel,
      * }];
      * let diagram: Diagram = new Diagram({
@@ -654,6 +719,7 @@ export class DiagramShapeStyle extends ChildProperty<DiagramShapeStyle> {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default ''
      */
     @Property('')
@@ -661,6 +727,7 @@ export class DiagramShapeStyle extends ChildProperty<DiagramShapeStyle> {
 
     /**
      * Sets the font color of a text
+     *
      * @default 'black'
      */
     @Property('black')
@@ -668,6 +735,7 @@ export class DiagramShapeStyle extends ChildProperty<DiagramShapeStyle> {
 
     /**
      * Defines the font size of a text
+     *
      * @default 12
      */
     @Property(12)
@@ -675,6 +743,7 @@ export class DiagramShapeStyle extends ChildProperty<DiagramShapeStyle> {
 
     /**
      * Sets the font type of a text
+     *
      * @default 'Arial'
      */
     @Property('Arial')
@@ -685,6 +754,7 @@ export class DiagramShapeStyle extends ChildProperty<DiagramShapeStyle> {
      * * PreserveAll - Preserves all empty spaces and empty lines
      * * CollapseSpace - Collapses the consequent spaces into one
      * * CollapseAll - Collapses all consequent empty spaces and empty lines
+     *
      * @default 'CollapseSpace'
      */
     @Property('CollapseSpace')
@@ -696,6 +766,7 @@ export class DiagramShapeStyle extends ChildProperty<DiagramShapeStyle> {
      * * Right - Aligns the text at the right of the text bounds
      * * Center - Aligns the text at the center of the text bounds
      * * Justify - Aligns the text in a justified manner
+     *
      * @default 'Center'
      */
     @Property('Center')
@@ -707,6 +778,7 @@ export class DiagramShapeStyle extends ChildProperty<DiagramShapeStyle> {
      * * Underline - Decorates the text with an underline
      * * LineThrough - Decorates the text by striking it with a line
      * * None - Text will not have any specific decoration
+     *
      * @default 'None'
      */
     @Property('None')
@@ -714,6 +786,7 @@ export class DiagramShapeStyle extends ChildProperty<DiagramShapeStyle> {
 
     /**
      * Enables/disables the bold style of text
+     *
      * @default false
      */
     @Property(false)
@@ -721,6 +794,7 @@ export class DiagramShapeStyle extends ChildProperty<DiagramShapeStyle> {
 
     /**
      * Sets the stroke color of a shape/path
+     *
      * @default 'black'
      */
     @Property('black')
@@ -731,6 +805,7 @@ export class DiagramShapeStyle extends ChildProperty<DiagramShapeStyle> {
      * * WrapWithOverflow - Wraps the text so that no word is broken
      * * Wrap - Wraps the text and breaks the word, if necessary
      * * NoWrap - Text will no be wrapped
+     *
      * @default  'WrapWithOverflow'
      */
     @Property('WrapWithOverflow')

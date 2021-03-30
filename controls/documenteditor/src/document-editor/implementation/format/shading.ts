@@ -3,8 +3,8 @@ import { TextureStyle } from '../../base/types';
 import { WUniqueFormat } from '../../base/unique-format';
 import { WUniqueFormats } from '../../base/unique-formats';
 import { Dictionary } from '../../base/dictionary';
-
-/** 
+/* eslint-disable */
+/**
  * @private
  */
 export class WShading {
@@ -13,31 +13,31 @@ export class WShading {
     private static uniqueFormatType: number = 5;
     public ownerBase: Object = undefined;
 
-    get backgroundColor(): string {
+    public get backgroundColor(): string {
         return this.getPropertyValue('backgroundColor') as string;
     }
-    set backgroundColor(value: string) {
+    public set backgroundColor(value: string) {
         this.setPropertyValue('backgroundColor', value);
     }
-    get foregroundColor(): string {
+    public get foregroundColor(): string {
         return this.getPropertyValue('foregroundColor') as string;
     }
-    set foregroundColor(value: string) {
+    public set foregroundColor(value: string) {
         this.setPropertyValue('foregroundColor', value);
     }
-    get textureStyle(): TextureStyle {
+    public get textureStyle(): TextureStyle {
         return this.getPropertyValue('textureStyle') as TextureStyle;
     }
-    set textureStyle(value: TextureStyle) {
+    public set textureStyle(value: TextureStyle) {
         this.setPropertyValue('textureStyle', value);
     }
-    constructor(node?: Object) {
+    public constructor(node?: Object) {
         this.ownerBase = node;
     }
     private getPropertyValue(property: string): Object {
-        let hasValue: boolean = this.hasValue(property);
+        const hasValue: boolean = this.hasValue(property);
         if (hasValue) {
-            let propertyType: number = WUniqueFormat.getPropertyType(WShading.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(WShading.uniqueFormatType, property);
             if (!isNullOrUndefined(this.uniqueShadingFormat) && this.uniqueShadingFormat.propertiesHash.containsKey(propertyType)) {
                 return this.uniqueShadingFormat.propertiesHash.get(propertyType);
             }
@@ -51,7 +51,7 @@ export class WShading {
         if (isNullOrUndefined(this.uniqueShadingFormat)) {
             this.initializeUniqueShading(property, value);
         } else {
-            let propertyType: number = WUniqueFormat.getPropertyType(this.uniqueShadingFormat.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(this.uniqueShadingFormat.uniqueFormatType, property);
             if (this.uniqueShadingFormat.propertiesHash.containsKey(propertyType) &&
                 this.uniqueShadingFormat.propertiesHash.get(propertyType) === value) {
                 //Do nothing, since no change in property value and return
@@ -63,30 +63,28 @@ export class WShading {
     private static getPropertyDefaultValue(property: string): Object {
         let value: Object = undefined;
         switch (property) {
-            case 'backgroundColor':
-                value = 'empty';
-                break;
-            case 'foregroundColor':
-                value = 'empty';
-                break;
-            case 'textureStyle':
-                value = 'TextureNone';
-                break;
+        case 'backgroundColor':
+            value = 'empty';
+            break;
+        case 'foregroundColor':
+            value = 'empty';
+            break;
+        case 'textureStyle':
+            value = 'TextureNone';
+            break;
         }
         return value;
     }
     private initializeUniqueShading(property: string, propValue: Object): void {
-        let uniqueShadingTemp: Dictionary<number, object> = new Dictionary<number, object>();
+        const uniqueShadingTemp: Dictionary<number, object> = new Dictionary<number, object>();
         this.addUniqueShading('backgroundColor', property, propValue, uniqueShadingTemp);
         this.addUniqueShading('foregroundColor', property, propValue, uniqueShadingTemp);
         this.addUniqueShading('textureStyle', property, propValue, uniqueShadingTemp);
-        // tslint:disable-next-line:max-line-length        
         this.uniqueShadingFormat = WShading.uniqueShadingFormats.addUniqueFormat(uniqueShadingTemp, WShading.uniqueFormatType);
     }
-    // tslint:disable-next-line:max-line-length
+
     private addUniqueShading(property: string, modifiedProperty: string, propValue: Object, uniqueShadingTemp: Dictionary<number, object>): void {
-        let propertyType: number;
-        propertyType = WUniqueFormat.getPropertyType(WShading.uniqueFormatType, property);
+        const propertyType: number = WUniqueFormat.getPropertyType(WShading.uniqueFormatType, property);
         if (property === modifiedProperty) {
             uniqueShadingTemp.add(propertyType, propValue);
         } else {
@@ -100,7 +98,7 @@ export class WShading {
         this.uniqueShadingFormat = undefined;
     }
     public cloneFormat(): WShading {
-        let shading: WShading = new WShading(undefined);
+        const shading: WShading = new WShading(undefined);
         shading.backgroundColor = this.backgroundColor;
         shading.foregroundColor = this.foregroundColor;
         shading.textureStyle = this.textureStyle;
@@ -113,12 +111,9 @@ export class WShading {
             this.textureStyle = shading.textureStyle;
         }
     }
-    /**
-     * @private
-     */
     public hasValue(property: string): boolean {
         if (!isNullOrUndefined(this.uniqueShadingFormat)) {
-            let propertyType: number = WUniqueFormat.getPropertyType(this.uniqueShadingFormat.uniqueFormatType, property);
+            const propertyType: number = WUniqueFormat.getPropertyType(this.uniqueShadingFormat.uniqueFormatType, property);
             return this.uniqueShadingFormat.propertiesHash.containsKey(propertyType);
         }
         return false;

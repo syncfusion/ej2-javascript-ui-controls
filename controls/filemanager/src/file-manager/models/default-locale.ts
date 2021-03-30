@@ -2,7 +2,8 @@
  * Specifies the default locale of FileManager component
  */
 
-export let defaultLocale: Object = {
+// eslint-disable-next-line
+export const defaultLocale: Object = {
     'NewFolder': 'New folder',
     'Upload': 'Upload',
     'Delete': 'Delete',
@@ -74,6 +75,7 @@ export let defaultLocale: Object = {
     'Error': 'Error',
     'Validation-Empty': 'The file or folder name cannot be empty.',
     'Validation-Invalid': 'The file or folder name {0} contains invalid characters. Please use a different name. ' +
+        // eslint-disable-next-line no-useless-escape
         'Valid file or folder names cannot end with a dot or space, and cannot contain any of the following characters: \\/:*?\"<>|',
     'Validation-NewFolder-Exists': 'A file or folder with the name {0} already exists.',
     'Validation-Rename-Exists': 'Cannot rename {0} to {1}: destination already exists.',

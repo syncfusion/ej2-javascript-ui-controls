@@ -1,7 +1,7 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { WListLevel } from './list-level';
 
-/** 
+/**
  * @private
  */
 export class WLevelOverride {
@@ -17,7 +17,7 @@ export class WLevelOverride {
         this.overrideListLevel = undefined;
     }
     public clone(): WLevelOverride {
-        let levelOverride: WLevelOverride = new WLevelOverride();
+        const levelOverride: WLevelOverride = new WLevelOverride();
         levelOverride.startAt = this.startAt;
         levelOverride.levelNumber = this.levelNumber;
         if (!isNullOrUndefined(this.overrideListLevel)) {

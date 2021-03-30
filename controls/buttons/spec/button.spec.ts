@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from '../src/button/button';
 import { createElement, detach } from '@syncfusion/ej2-base';
 import { profile , inMB, getMemoryProfile } from './common.spec';
@@ -17,7 +18,7 @@ describe('Button', () => {
     });
 
     let button: Button;
-    let element: any = createElement('button', { id: 'button' });
+    const element: any = createElement('button', { id: 'button' });
     document.body.appendChild(element);
 
     describe('DOM', () => {
@@ -188,14 +189,14 @@ describe('Button', () => {
 
         it('Enable Html Sanitizer testing', () => {
             button = new Button({ content: 'Button<style>body{background:rgb(0, 0, 255)}</style>', enableHtmlSanitizer: true }, '#button');
-            let htmlele: Element = document.body;
+            const htmlele: Element = document.body;
             expect(button.content).toEqual('Button<style>body{background:rgb(0, 0, 255)}</style>');
             expect(window.getComputedStyle(htmlele).backgroundColor).not.toBe('rgb(0, 0, 255)');
         });
 
         it('Enable Html Sanitizer disabled testing', () => {
             button = new Button({ content: '<style>body{background:rgb(0, 0, 255)}</style>' }, '#button');
-            let htmlele: Element = document.body;
+            const htmlele: Element = document.body;
             expect(window.getComputedStyle(htmlele).backgroundColor).toBe('rgb(0, 0, 255)');
         });
     });
@@ -362,10 +363,10 @@ describe('Button', () => {
 
     it('memory leak', () => {
         profile.sample();
-        let average: any = inMB(profile.averageChange);
+        const average: any = inMB(profile.averageChange);
         // check average change in memory samples to not be over 10MB
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
+        const memory: any = inMB(getMemoryProfile());
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });

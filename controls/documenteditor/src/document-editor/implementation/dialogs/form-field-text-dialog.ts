@@ -3,7 +3,6 @@ import { CheckBox } from '@syncfusion/ej2-buttons';
 import { DocumentEditor } from '../../document-editor';
 import { DocumentHelper } from '../viewer';
 import { FieldElementBox, ElementBox, TextFormField } from '../viewer/page';
-// tslint:disable-next-line:max-line-length
 import { NumericTextBox, NumericFocusEventArgs, NumericBlurEventArgs, ChangeEventArgs as NumericChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { DropDownList, ComboBox, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { DialogUtility } from '@syncfusion/ej2-popups';
@@ -30,22 +29,27 @@ export class TextFormFieldDialog {
 
     private localObj: L10n;
 
-
-    constructor(owner: DocumentEditor) {
+    /**
+     * @param {DocumentHelper} owner - Specifies the document helper.
+     * @private
+     */
+    public constructor(owner: DocumentEditor) {
         this.owner = owner;
     }
 
-    get documentHelper(): DocumentHelper {
+    private get documentHelper(): DocumentHelper {
         return this.owner.documentHelper;
     }
 
-    /**
-     * @private
-     */
-    public getModuleName(): string {
+    private getModuleName(): string {
         return 'TextFormFieldDialog';
     }
-    //tslint:disable: max-func-body-length
+    /* eslint-disable  */
+    /**
+     * @private
+     * @param {L10n} locale - Specifies the locale.
+     * @returns {void}
+     */
     private initTextDialog(localValue: L10n, isRtl?: boolean): void {
         this.target = createElement('div');
         let dialogDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
@@ -68,7 +72,6 @@ export class TextFormFieldDialog {
             className: 'e-de-ff-dlg-heading-small',
             innerHTML: localValue.getConstant('Default text')
         });
-        // tslint:disable-next-line:max-line-length 
         this.defaultTextInput = createElement('input', { className: 'e-input e-bookmark-textbox-input', styles: 'margin-top:3px' }) as HTMLInputElement;
         let secondDiv: HTMLElement = createElement('div', { className: 'e-de-div-seperate-dlg' });
         let maxLengthDiv: HTMLElement = createElement('div', { className: 'e-de-ff-dlg-lft-hlf' });
@@ -92,7 +95,6 @@ export class TextFormFieldDialog {
             blur: function (args: NumericBlurEventArgs): void {
                 if (!args.value) {
                     let proxy: NumericTextBox = this;
-                    /* tslint:disable:align */
                     setTimeout((): void => {
                         proxy.element.value = 'Unlimited';
                     }, 0);
@@ -116,7 +118,6 @@ export class TextFormFieldDialog {
         this.textFormatDropDown.focus = (): void => {
             (this.textFormatDropDown.element as HTMLInputElement).select();
         };
-        // tslint:disable-next-line:max-line-length
         let fileSettingsLabel: HTMLElement = createElement('div', {
             className: 'e-de-ff-dlg-heading',
             innerHTML: localValue.getConstant('Field settings')
@@ -182,7 +183,10 @@ export class TextFormFieldDialog {
         fillInEnableDiv.appendChild(fillInEnableEle);
         this.fillInEnable.appendTo(fillInEnableEle);
     }
-
+    /**
+     * @private
+     * @returns {void}
+     */
     public show(): void {
         this.localObj = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         this.localObj.setLocale(this.documentHelper.owner.locale);
@@ -208,6 +212,8 @@ export class TextFormFieldDialog {
 
     /**
      * @private
+     * @param {ChangeEventArgs} args - Specifies the event args.
+     * @returns {void}
      */
     public changeTypeDropDown(args: ChangeEventArgs): void {
         if (args.isInteracted) {
@@ -225,16 +231,15 @@ export class TextFormFieldDialog {
         } else if (args.value === 'Date') {
             this.defaultTextLabel.innerHTML = this.localObj.getConstant('Default date');
             this.textFormatLabel.innerHTML = this.localObj.getConstant('Date format');
-            // tslint:disable:max-line-length
             this.textFormatDropDown.dataSource = ['M/d/yyyy', 'dddd, MMMM d, yyyy', 'MMMM d, yyyy', 'M/d/yy', 'yyyy-MM-dd', 'd-MMM-yy',
                 'M.d.yyyy', 'MMM. d, yy', 'd MMMM yyyy', 'MMMM yy', 'MMM-yy', 'M/d/yyyy h:mm am/pm', 'M/d/yyyy h:mm:ss am/pm', 'h:mm am/pm', 'h:mm:ss am/pm',
                 'HH:mm', 'HH:mm:ss'];
-            // tslint:enable:max-line-length
         }
     }
 
     /**
      * @private
+     * @returns {void}
      */
     public loadTextDialog(): void {
         let inline: ElementBox = this.owner.selection.getCurrentFormField();
@@ -268,6 +273,7 @@ export class TextFormFieldDialog {
 
     /**
      * @private
+     * @returns {void}
      */
     public updateTextFormtas = (): void => {
         let defautText: string = this.updateFormats(this.defaultTextInput.value) as string;
@@ -296,6 +302,7 @@ export class TextFormFieldDialog {
 
     /**
      * @private
+     * @returns {void}
      */
     public onCancelButtonClick = (): void => {
         this.documentHelper.dialog.hide();
@@ -303,6 +310,7 @@ export class TextFormFieldDialog {
 
     /**
      * @private
+     * @returns {boolean} returns is valid date format.
      */
     public isValidDateFormat(): boolean {
         let value: string = this.defaultTextInput.value;
@@ -317,6 +325,7 @@ export class TextFormFieldDialog {
 
     /**
      * @private
+     * @returns {void}
      */
     public insertTextField = (): void => {
         let valid: boolean = true;
@@ -366,12 +375,18 @@ export class TextFormFieldDialog {
             });
         }
     }
-
+    /**
+     * @private
+     * @returns {void}
+     */
     private closeTextField = (): void => {
         this.documentHelper.dialog.hide();
         this.documentHelper.dialog.element.style.pointerEvents = '';
     }
-
+    /**
+     * @private
+     * @returns {void}
+     */
     private destroy(): void {
         let textDialogTarget: HTMLElement = this.target;
         if (textDialogTarget) {

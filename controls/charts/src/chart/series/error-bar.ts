@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { Chart } from '../chart';
 import { Axis } from '../axis/axis';
 import { ErrorBarSettingsModel, ErrorBarCapSettingsModel } from '../series/chart-series-model';
 import { Series, Points } from './chart-series';
-import { Mean, RectOption, StackValues, pathAnimation, getElement, appendChildElement, appendClipElement } from '../../common/utils/helper';
+import { Mean, RectOption, pathAnimation, getElement, appendChildElement, appendClipElement } from '../../common/utils/helper';
 import { getPoint, ChartLocation, sum, templateAnimate } from '../../common/utils/helper';
 import { ErrorBarMode, ErrorBarDirection } from '../../chart/utils/enum';
 import { PathOption, SvgRenderer } from '@syncfusion/ej2-svg-base';
@@ -18,6 +19,7 @@ export class ErrorBar {
     public negativeHeight: number;
     /**
      * Constructor for the error bar module.
+     *
      * @private
      */
 
@@ -28,7 +30,8 @@ export class ErrorBar {
 
     /**
      * Render the error bar for series.
-     * @return {void}
+     *
+     * @returns {void}
      */
 
     public render(series: Series): void {
@@ -39,28 +42,28 @@ export class ErrorBar {
         this.renderErrorBar(series);
     }
     private renderErrorBar(series: Series): void {
-        let seriesIndex: number = series.index;
+        const seriesIndex: number = series.index;
         let symbolId: string;
         let capId: string;
-        let errorbar: ErrorBarSettingsModel = series.errorBar;
-        let errorBarCap: ErrorBarCapSettingsModel = series.errorBar.errorBarCap;
+        const errorbar: ErrorBarSettingsModel = series.errorBar;
+        const errorBarCap: ErrorBarCapSettingsModel = series.errorBar.errorBarCap;
         let errorDirection: string[] = ['', ''];
-        let redraw: boolean = series.chart.redraw;
-        for (let point of series.points) {
+        const redraw: boolean = series.chart.redraw;
+        for (const point of series.points) {
             if (point.visible && point.symbolLocations[0]) {
                 let errorX: number = 0;
                 let errorY: number = 0;
                 switch (errorbar.mode) {
-                    case 'Vertical':
-                        errorY = errorbar.verticalError;
-                        break;
-                    case 'Horizontal':
-                        errorX = errorbar.horizontalError;
-                        break;
-                    case 'Both':
-                        errorX = errorbar.horizontalError;
-                        errorY = errorbar.verticalError;
-                        break;
+                case 'Vertical':
+                    errorY = errorbar.verticalError;
+                    break;
+                case 'Horizontal':
+                    errorX = errorbar.horizontalError;
+                    break;
+                case 'Both':
+                    errorX = errorbar.horizontalError;
+                    errorY = errorbar.verticalError;
+                    break;
 
                 }
                 errorDirection = this['calculate' + errorbar.type + 'Value'](
@@ -71,14 +74,14 @@ export class ErrorBar {
                 symbolId = this.chart.element.id + '_Series_' + '_ErrorBarGroup_' + seriesIndex + '_Point_' + point.index;
                 capId = this.chart.element.id + '_Series_' + '_ErrorBarCap_' + seriesIndex + '_Point_' + point.index;
 
-                let shapeOption: PathOption = new PathOption(
+                const shapeOption: PathOption = new PathOption(
                     symbolId, '', errorbar.width, errorbar.color || this.chart.themeStyle.errorBar, null, '', errorDirection[0]
                 );
                 let element: Element = getElement(shapeOption.id);
                 let previousDirection: string = element ? element.getAttribute('d') : null;
                 series.errorBarElement.appendChild(this.chart.renderer.drawPath(shapeOption));
                 pathAnimation(element, errorDirection[0], redraw, previousDirection);
-                let capOption: PathOption = new PathOption(
+                const capOption: PathOption = new PathOption(
                     capId, '', errorBarCap.width, errorBarCap.color || this.chart.themeStyle.errorBar, null, '', errorDirection[1]
                 );
                 element = getElement(capOption.id);
@@ -92,14 +95,13 @@ export class ErrorBar {
     // path calculation for error bar
 
     private findLocation(point: Points, series: Series, isInverted: boolean, x1: number, y1: number): string[] {
-        let errorbar: ErrorBarSettingsModel = series.errorBar;
-        let direction: ErrorBarDirection = errorbar.direction;
-        let location: ChartLocation[] = [];
-        let stackedValue: StackValues = series.stackedValues;
-        let yValue: number = series.type.indexOf('Stacking') > - 1 ? series.stackedValues.endValues[point.index] :
+        const errorbar: ErrorBarSettingsModel = series.errorBar;
+        const direction: ErrorBarDirection = errorbar.direction;
+        const location: ChartLocation[] = [];
+        const yValue: number = series.type.indexOf('Stacking') > - 1 ? series.stackedValues.endValues[point.index] :
             (series.seriesType === 'HighLow' || series.seriesType === 'HighLowOpenClose') ? <number>(series.points[point.index].high) :
                 point.yValue;
-        let startPoint: ChartLocation = getPoint(
+        const startPoint: ChartLocation = getPoint(
             point.xValue + ((direction === 'Plus' || direction === 'Both') ? (errorbar.type === 'Custom' &&
                 (errorbar.mode === 'Horizontal' || errorbar.mode === 'Both')) ? x1 = errorbar.horizontalPositiveError : x1 : 0),
             yValue + ((direction === 'Plus' || direction === 'Both') ? (errorbar.type === 'Custom' &&
@@ -109,17 +111,17 @@ export class ErrorBar {
         location.push(startPoint);
 
         if (series.isRectSeries) {
-            let midPoint: ChartLocation = point.symbolLocations[0];
+            const midPoint: ChartLocation = point.symbolLocations[0];
             location.push(midPoint);
         } else {
-            let midPoint: ChartLocation = getPoint(
+            const midPoint: ChartLocation = getPoint(
                 point.xValue, point.yValue,
                 series.xAxis, series.yAxis, isInverted
             );
             location.push(midPoint);
         }
 
-        let endPoint: ChartLocation = getPoint(
+        const endPoint: ChartLocation = getPoint(
             point.xValue - ((direction === 'Minus' || direction === 'Both') ? (errorbar.type === 'Custom' &&
                 (errorbar.mode === 'Horizontal' || errorbar.mode === 'Both')) ? x1 = errorbar.horizontalNegativeError : x1 : 0),
             yValue - ((direction === 'Minus' || direction === 'Both') ? (errorbar.type === 'Custom' &&
@@ -137,12 +139,12 @@ export class ErrorBar {
         return this.getErrorDirection(location[0], location[1], location[2], series, isInverted);
 
     }
-    // calculations for eror bar types
+    //calculations for eror bar types
     private calculateFixedValue(
         point: Points, series: Series, isInverted: boolean,
         errorX: number, errorY: number, xAxis: Axis, yAxis: Axis
     ): string[] {
-        let errorbar: ErrorBarSettingsModel = series.errorBar;
+        const errorbar: ErrorBarSettingsModel = series.errorBar;
         return this.findLocation(point, series, isInverted, errorX, errorY);
     }
 
@@ -160,7 +162,7 @@ export class ErrorBar {
         point: Points, series: Series, isInverted: boolean,
         errorX: number, errorY: number, xAxis: Axis, yAxis: Axis
     ): string[] {
-        let getMean: Mean = this.meanCalculation(series, series.errorBar.mode);
+        const getMean: Mean = this.meanCalculation(series, series.errorBar.mode);
         errorX = errorX * (getMean.horizontalSquareRoot + getMean.horizontalMean);
         errorY = errorY * (getMean.verticalSquareRoot + getMean.verticalMean);
 
@@ -170,8 +172,8 @@ export class ErrorBar {
         point: Points, series: Series, isInverted: boolean,
         errorX: number, errorY: number, xAxis: Axis, yAxis: Axis
     ): string[] {
-        let length: number = series.points.length;
-        let getMean: Mean = this.meanCalculation(series, series.errorBar.mode);
+        const length: number = series.points.length;
+        const getMean: Mean = this.meanCalculation(series, series.errorBar.mode);
         errorX = ((errorX * getMean.horizontalSquareRoot) / Math.sqrt(length));
         errorY = ((errorY * getMean.verticalSquareRoot) / Math.sqrt(length));
         return this.findLocation(point, series, isInverted, errorX, errorY);
@@ -181,7 +183,7 @@ export class ErrorBar {
         point: Points, series: Series, isInverted: boolean,
         errorX: number, errorY: number, xAxis: Axis, yAxis: Axis
     ): string[] {
-        let errorbar: ErrorBarSettingsModel = series.errorBar;
+        const errorbar: ErrorBarSettingsModel = series.errorBar;
         return this.findLocation(point, series, isInverted, errorX, errorY);
 
     }
@@ -223,8 +225,8 @@ export class ErrorBar {
 
         let capDirection: string = '';
         let path: string = '';
-        let pathH: string[] = this.getHorizontalDirection(start, mid, end, direction, errorMode, capLength);
-        let pathV: string[] = this.getVerticalDirection(start, mid, end, direction, errorMode, capLength);
+        const pathH: string[] = this.getHorizontalDirection(start, mid, end, direction, errorMode, capLength);
+        const pathV: string[] = this.getVerticalDirection(start, mid, end, direction, errorMode, capLength);
         path = pathH[0].concat(pathV[0]);
         capDirection = pathH[1].concat(pathV[1]);
         return [path, capDirection];
@@ -234,34 +236,32 @@ export class ErrorBar {
         start: ChartLocation, mid: ChartLocation, end: ChartLocation,
         series: Series, isInverted: boolean
     ): string[] {
-        let direction: ErrorBarDirection = series.errorBar.direction;
-        let mode: ErrorBarMode = series.errorBar.mode;
-        let capLength: number = series.errorBar.errorBarCap.length;
-        let path: string = '';
+        const direction: ErrorBarDirection = series.errorBar.direction;
+        const mode: ErrorBarMode = series.errorBar.mode;
+        const capLength: number = series.errorBar.errorBarCap.length;
         let paths: string[];
-        let capDirection: string = '';
         let errorMode: ErrorBarMode = mode;
         switch (mode) {
-            case 'Both':
-                errorMode = mode;
-                break;
-            case 'Horizontal':
-                errorMode = (isInverted) ? 'Vertical' : mode;
-                break;
-            case 'Vertical':
-                errorMode = (isInverted) ? 'Horizontal' : mode;
-                break;
+        case 'Both':
+            errorMode = mode;
+            break;
+        case 'Horizontal':
+            errorMode = (isInverted) ? 'Vertical' : mode;
+            break;
+        case 'Vertical':
+            errorMode = (isInverted) ? 'Horizontal' : mode;
+            break;
         }
         switch (errorMode) {
-            case 'Horizontal':
-                paths = this.getHorizontalDirection(start, mid, end, direction, errorMode, capLength);
-                break;
-            case 'Vertical':
-                paths = this.getVerticalDirection(start, mid, end, direction, errorMode, capLength);
-                break;
-            case 'Both':
-                paths = this.getBothDirection(start, mid, end, direction, errorMode, capLength);
-                break;
+        case 'Horizontal':
+            paths = this.getHorizontalDirection(start, mid, end, direction, errorMode, capLength);
+            break;
+        case 'Vertical':
+            paths = this.getVerticalDirection(start, mid, end, direction, errorMode, capLength);
+            break;
+        case 'Both':
+            paths = this.getBothDirection(start, mid, end, direction, errorMode, capLength);
+            break;
         }
         return [paths[0], paths[1]];
     }
@@ -270,27 +270,25 @@ export class ErrorBar {
     public meanCalculation(series: Series, mode: ErrorBarMode): Mean {
         let sumOfX: number = 0; let sumOfY: number = 0;
         let verticalMean: number = 0; let horizontalMean: number = 0;
-        let verStandardMean: number; let horStandardMean: number;
-        let verSquareRoot: number; let horSquareRoot: number;
-        let length: number = series.points.length;
+        const length: number = series.points.length;
 
         switch (mode) {
-            case 'Vertical':
-                sumOfY = sum(series.yData);
-                verticalMean = sumOfY / length;
-                break;
-            case 'Horizontal':
-                sumOfX = sum(series.xData);
-                horizontalMean = sumOfX / length;
-                break;
-            case 'Both':
-                sumOfY = sum(series.yData);
-                verticalMean = sumOfY / length;
-                sumOfX = sum(series.xData);
-                horizontalMean = sumOfX / length;
+        case 'Vertical':
+            sumOfY = sum(series.yData);
+            verticalMean = sumOfY / length;
+            break;
+        case 'Horizontal':
+            sumOfX = sum(series.xData);
+            horizontalMean = sumOfX / length;
+            break;
+        case 'Both':
+            sumOfY = sum(series.yData);
+            verticalMean = sumOfY / length;
+            sumOfX = sum(series.xData);
+            horizontalMean = sumOfX / length;
         }
 
-        for (let point of series.points) {
+        for (const point of series.points) {
             if (mode === 'Vertical') {
                 sumOfY = sumOfY + Math.pow((point.yValue - verticalMean), 2);
             } else if (mode === 'Horizontal') {
@@ -300,22 +298,22 @@ export class ErrorBar {
                 sumOfX = sumOfX + Math.pow((point.xValue - horizontalMean), 2);
             }
         }
-        verStandardMean = sumOfY / (length - 1);
-        verSquareRoot = Math.sqrt(sumOfY / (length - 1));
-        horStandardMean = sumOfX / (length - 1);
-        horSquareRoot = Math.sqrt(sumOfX / (length - 1));
+        const verStandardMean: number = sumOfY / (length - 1);
+        const verSquareRoot: number = Math.sqrt(sumOfY / (length - 1));
+        const horStandardMean: number = sumOfX / (length - 1);
+        const horSquareRoot: number = Math.sqrt(sumOfX / (length - 1));
 
         return new Mean(verStandardMean, verSquareRoot, horStandardMean, horSquareRoot, verticalMean, horizontalMean);
     }
 
     private createElement(series: Series, chart: Chart): void {
-        let explodeValue: number = 5;
-        let transform: string = chart.chartAreaType === 'Cartesian' ?
+        const explodeValue: number = 5;
+        const transform: string = chart.chartAreaType === 'Cartesian' ?
             'translate(' + series.clipRect.x + ',' + (series.clipRect.y) + ')' : '';
-        let markerHeight: number = (series.marker.height + explodeValue) / 2;
-        let markerWidth: number = (series.marker.width + explodeValue) / 2;
+        const markerHeight: number = (series.marker.height + explodeValue) / 2;
+        const markerWidth: number = (series.marker.width + explodeValue) / 2;
         if (chart.chartAreaType === 'Cartesian') {
-            let options: RectOption = new RectOption(
+            const options: RectOption = new RectOption(
                 chart.element.id + '_ChartErrorBarClipRect_' + series.index, 'transparent',
                 { width: 1, color: 'Gray' }, 1,
                 {
@@ -336,16 +334,17 @@ export class ErrorBar {
 
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
 
     public doErrorBarAnimation(series: Series): void {
-        let errorBarElements: NodeList = series.errorBarElement.childNodes;
+        const errorBarElements: NodeList = series.errorBarElement.childNodes;
         if (!errorBarElements) {
             return null;
         }
-        let delay: number = series.animation.delay + series.animation.duration;
+        const delay: number = series.animation.delay + series.animation.duration;
         let j: number = 1;
         while (j < errorBarElements.length) {
             for (let i: number = 0; i < series.points.length; i++) {
@@ -373,12 +372,12 @@ export class ErrorBar {
     }
     /**
      * To destroy the errorBar for series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         // Destroy method performed here
     }
 }
-

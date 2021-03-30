@@ -13,42 +13,49 @@ export interface FormValidatorModel {
 
     /**
      * Ignores input fields based on the class name
+     *
      * @default 'e-hidden'
      */
     ignore?: string;
 
     /**
      * Maps the input fields with validation rules
+     *
      * @default {}
      */
     rules?: { [name: string]: { [rule: string]: Object } };
 
     /**
-     * Sets the defined css class to error fields 
+     * Sets the defined css class to error fields
+     *
      * @default 'e-error'
      */
     errorClass?: string;
 
     /**
-     * Sets the defined css class to valid fields 
+     * Sets the defined css class to valid fields
+     *
      * @default 'e-valid'
      */
     validClass?: string;
 
     /**
      * Specify HTML element for error
+     *
      * @default 'label'
      */
     errorElement?: string;
 
     /**
-     * Specify HTML element for error container 
+     * Specify HTML element for error container
+     *
      * @default 'div'
      */
     errorContainer?: string;
 
     /**
      * Option to display the error
+     *
      * @default ErrorOption.Label
      * @deprecated
      */
@@ -56,51 +63,59 @@ export interface FormValidatorModel {
 
     /**
      * Triggers when a field's focused  out
-     * @event
+     *
+     * @event focusout
      */
     focusout?: EmitType<Event>;
 
     /**
      * Trigger when keyup is triggered in any fields
-     * @event
+     *
+     * @event keyup
      */
     keyup?: EmitType<KeyboardEvent>;
 
     /**
      * Triggers when a check box field is clicked
-     * @event
+     *
+     * @event click
      */
     click?: EmitType<Event>;
 
     /**
      * Trigger when a select/drop-down field is changed
-     * @event
+     *
+     * @event change
      */
     change?: EmitType<Event>;
 
     /**
      * Triggers before form is being submitted
-     * @event
+     *
+     * @event submit
      */
     submit?: EmitType<Event>;
 
     /**
      * Triggers before validation starts
-     * @event
+     *
+     * @event validationBegin
      */
     validationBegin?: EmitType<Object | ValidArgs>;
 
     /**
      * Triggers after validation is completed
-     * @event
+     *
+     * @event validationComplete
      */
     validationComplete?: EmitType<Object | FormEventArgs>;
 
     /**
      * Assigns the custom function to place the error message in the page.
-     * @event
+     *
+     * @event customPlacement
      */
-    // tslint:disable
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     customPlacement?: EmitType<HTMLElement | any>;
 
 }

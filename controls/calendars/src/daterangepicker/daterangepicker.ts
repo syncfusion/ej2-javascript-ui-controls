@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='../calendar/calendar-model.d.ts'/>
 import { Property, EventHandler, Internationalization, NotifyPropertyChanges, detach, getUniqueID } from '@syncfusion/ej2-base';
 import { KeyboardEvents, BaseEventArgs, KeyboardEventArgs, Event, EmitType, Browser, L10n, ChildProperty } from '@syncfusion/ej2-base';
@@ -76,18 +77,18 @@ const HIDDENELEMENT: string = 'e-daterange-hidden';
 const wrapperAttr: string[] = ['title', 'class', 'style'];
 
 export class Presets extends ChildProperty<Presets> {
-    /** 
-     * Defines the label string of the preset range. 
+    /**
+     * Defines the label string of the preset range.
      */
     @Property()
     public label: string;
-    /** 
+    /**
      * Defines the start date of the preset range.
      */
     @Property()
     public start: Date;
-    /** 
-     * Defines the end date of the preset range 
+    /**
+     * Defines the end date of the preset range
      */
     @Property()
     public end: Date;
@@ -95,69 +96,70 @@ export class Presets extends ChildProperty<Presets> {
 
 export interface DateRange {
     /** Defines the start date */
-    start?: Date;
+    start?: Date
     /** Defines the end date */
-    end?: Date;
+    end?: Date
 }
 export interface RangeEventArgs extends BaseEventArgs {
-    /** 
+    /**
      * Defines the value
      */
-    value?: Date[] | DateRange;
+    value?: Date[] | DateRange
     /** Defines the value string in the input element */
-    text?: string;
+    text?: string
     /** Defines the start date  */
-    startDate?: Date;
+    startDate?: Date
     /** Defines the end date  */
-    endDate?: Date;
+    endDate?: Date
     /** Defines the day span between the range */
-    daySpan?: number;
+    daySpan?: number
     /** Specifies the element. */
-    element?: HTMLElement | HTMLInputElement;
+    element?: HTMLElement | HTMLInputElement
     /**
      * Specifies the original event arguments.
      */
-    event?: MouseEvent | KeyboardEvent | TouchEvent | Event;
-    /** 
+    event?: MouseEvent | KeyboardEvent | TouchEvent | Event
+    /**
      * If the event is triggered by interaction, it returns true. Otherwise, it returns false.
      */
-    isInteracted?: boolean;
+    isInteracted?: boolean
 }
 
 export interface RangePopupEventArgs {
 
     /** Defines the range string in the input element */
-    date: string;
+    date: string
     /** Defines the DateRangePicker model */
-    model: DateRangePickerModel;
+    model: DateRangePickerModel
 
     /**
      * Illustrates whether the current action needs to be prevented or not.
      */
-    cancel?: boolean;
+    cancel?: boolean
 
-    /** 
-     * Defines the DateRangePicker popup object. 
+    /**
+     * Defines the DateRangePicker popup object.
+     *
      * @deprecated
      */
-    popup?: Popup;
+    popup?: Popup
 
     /**
      * Specifies the original event arguments.
      */
 
-    event?: MouseEvent | KeyboardEvent | Event;
+    event?: MouseEvent | KeyboardEvent | Event
     /**
      * Specifies the node to which the popup element to be appended.
      */
-    appendTo?: HTMLElement;
+    appendTo?: HTMLElement
 }
 
 export interface RangeFormatObject {
     /**
      * Specifies the format in which the date format will process
      */
-    skeleton?: string;
+    skeleton?: string
 }
 
 /**
@@ -253,25 +255,28 @@ export class DateRangePicker extends CalendarBase {
     protected preventChange: boolean = false;
 
     /**
-     * Gets or sets the start and end date of the Calendar. 
+     * Gets or sets the start and end date of the Calendar.
      * {% codeBlock src='daterangepicker/value/index.md' %}{% endcodeBlock %}
+     *
      * @default null
      */
     @Property(null)
     public value: Date[] | DateRange;
 
 
-    /** 
+    /**
      * Enable or disable the persisting component's state between the page reloads. If enabled, following list of states will be persisted.
      * 1. startDate
      * 2. endDate
      * 3. value
+     *
      * @default false
      */
     @Property(false)
     public enablePersistence: boolean;
     /**
      * Gets or sets the minimum date that can be selected in the calendar-popup.
+     *
      * @default new Date(1900, 00, 01)
      * @blazorDefaultValue new DateTime(1900, 01, 01)
      */
@@ -279,21 +284,24 @@ export class DateRangePicker extends CalendarBase {
     public min: Date;
     /**
      * Gets or sets the maximum date that can be selected in the calendar-popup.
+     *
      * @default new Date(2099, 11, 31)
      * @blazorDefaultValue new DateTime(2099, 12, 31)
      */
     @Property(new Date(2099, 11, 31))
     public max: Date;
-    /** 
+    /**
      * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
+     *
      * @default 'en-US'
      */
     @Property(null)
     public locale: string;
     /**
      * Gets or sets the Calendar's first day of the week. By default, the first day of the week will be based on the current culture.
-     * > For more details about firstDayOfWeek refer to 
+     * > For more details about firstDayOfWeek refer to
      * [`First day of week`](../../daterangepicker/customization#first-day-of-week) documentation.
+     *
      * @default null
      */
     @Property(null)
@@ -301,14 +309,16 @@ export class DateRangePicker extends CalendarBase {
     /**
      * Determines whether the week number of the Calendar is to be displayed or not.
      * The week number is displayed in every week row.
-     * > For more details about weekNumber refer to 
+     * > For more details about weekNumber refer to
      * [`Calendar with week number`](../../calendar/how-to/week-number#render-the-calendar-with-week-numbers)documentation.
+     *
      * @default false
      */
     @Property(false)
     public weekNumber: boolean;
     /**
      * Gets or sets the Calendar's Type like gregorian or islamic.
+     *
      * @default Gregorian
      * @private
      */
@@ -317,27 +327,31 @@ export class DateRangePicker extends CalendarBase {
     /**
      * By default, the popup opens while clicking on the daterangepicker icon.
      * If you want to open the popup while focusing the daterange input then specify its value as true.
+     *
      * @default false
      */
     @Property(false)
     public openOnFocus : boolean;
-    /** 
+    /**
      * Triggers when Calendar is created.
-     * @event
+     *
+     * @event created
      * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
-    /** 
+    /**
      * Triggers when Calendar is destroyed.
-     * @event
+     *
+     * @event destroyed
      * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
     /**
      * Triggers when the Calendar value is changed.
-     * @event  
+     *
+     * @event change
      * @blazorProperty 'ValueChange'
      */
     @Event()
@@ -345,20 +359,23 @@ export class DateRangePicker extends CalendarBase {
 
     /**
      * Triggers when daterangepicker value is cleared using clear button.
-     * @event
+     *
+     * @event cleared
      */
     @Event()
     public cleared: EmitType<ClearedEventArgs>;
     /**
      * Triggers when the Calendar is navigated to another view or within the same level of view.
-     * @event
+     *
+     * @event navigated
      * @blazorProperty 'Navigated'
      */
     @Event()
     public navigated: EmitType<NavigatedEventArgs>;
-    /**     
+    /**
      * Triggers when each day cell of the Calendar is rendered.
-     * @event
+     *
+     * @event renderDayCell
      * @blazorProperty 'OnRenderDayCell'
      */
 
@@ -366,6 +383,7 @@ export class DateRangePicker extends CalendarBase {
     public renderDayCell: EmitType<RenderDayCellEventArgs>;
     /**
      * Gets or sets the start date of the date range selection.
+     *
      * @default null
      * @isBlazorNullableType true
      */
@@ -373,6 +391,7 @@ export class DateRangePicker extends CalendarBase {
     public startDate: Date;
     /**
      * Gets or sets the end date of the date range selection.
+     *
      * @default null
      * @isBlazorNullableType true
      */
@@ -380,21 +399,24 @@ export class DateRangePicker extends CalendarBase {
     public endDate: Date;
     /**
      * Set the predefined ranges which let the user pick required range easily in a component.
-     * > For more details refer to 
+     * > For more details refer to
      * [`Preset Ranges`](../../daterangepicker/customization#preset-ranges) documentation.
      * {% codeBlock src='daterangepicker/presets/index.md' %}{% endcodeBlock %}
+     *
      * @default null
      */
     @Collection<PresetsModel>([{}], Presets)
     public presets: PresetsModel[];
     /**
      * Specifies the width of the DateRangePicker component.
+     *
      * @default ''
      */
     @Property('')
     public width: number | string;
     /**
      * specifies the z-index value of the dateRangePicker popup element.
+     *
      * @default 1000
      * @aspType int
      * @blazorType int
@@ -404,27 +426,31 @@ export class DateRangePicker extends CalendarBase {
 
     /**
      * Specifies whether to show or hide the clear icon
+     *
      * @default true
      */
     @Property(true)
     public showClearButton: boolean;
-    /** 
+    /**
      * Specifies whether the today button is to be displayed or not.
+     *
      * @default true
      * @hidden
      */
     @Property(true)
     public showTodayButton: boolean;
-    /** 
+    /**
      * Specifies the initial view of the Calendar when it is opened.
      * With the help of this property, initial view can be changed to year or decade view.
+     *
      * @default Month
      */
     @Property('Month')
     public start: CalendarView;
-    /** 
+    /**
      * Sets the maximum level of view (month, year, decade) in the Calendar.
      * Depth view should be smaller than the start view to restrict its view navigation.
+     *
      * @default Month
      */
     @Property('Month')
@@ -433,21 +459,24 @@ export class DateRangePicker extends CalendarBase {
 
     /**
      *  Sets the root CSS class to the DateRangePicker which allows you to customize the appearance.
-     * @default ''    
+     *
+     * @default ''
      */
     @Property('')
     public cssClass: string;
     /**
-     * Sets or gets the string that used between the start and end date string. 
+     * Sets or gets the string that used between the start and end date string.
+     *
      * @default '-'
      */
     @Property('-')
     public separator: string;
     /**
      *  Specifies the minimum span of days that can be allowed in date range selection.
-     * > For more details refer to 
+     * > For more details refer to
      * [`Range Span`](../../daterangepicker/range-restriction/#range-span) documentation.
-     * @default null    
+     *
+     * @default null
      * @aspType int
      * @blazorType int
      */
@@ -455,8 +484,9 @@ export class DateRangePicker extends CalendarBase {
     public minDays: number;
     /**
      *  Specifies the maximum span of days that can be allowed in a date range selection.
-     * > For more details refer to 
+     * > For more details refer to
      * [`Range Span`](../../daterangepicker/range-restriction/#range-span) documentation.
+     *
      * @default null
      * @aspType int
      * @blazorType int
@@ -466,135 +496,138 @@ export class DateRangePicker extends CalendarBase {
     public maxDays: number;
     /**
      * Specifies the component to act as strict which allows entering only a valid date range in a DateRangePicker.
-     * > For more details refer to 
+     * > For more details refer to
      * [`Strict Mode`](../../daterangepicker/range-restriction#strict-mode)documentation.
+     *
      * @default false
      */
     @Property(false)
     public strictMode: boolean;
-    /**     
+    /**    
      * Customizes the key actions in DateRangePicker.
      * For example, when using German keyboard, the key actions can be customized using these shortcuts.
-     * 
-     * 
+     *
+     *
      * Input Navigation
-     * <table> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * Key action<br/></td><td colSpan=1 rowSpan=1> 
-     * Key<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * altUpArrow<br/></td><td colSpan=1 rowSpan=1> 
-     * alt+uparrow<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * altDownArrow<br/></td><td colSpan=1 rowSpan=1> 
-     * alt+downarrow<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * escape<br/></td><td colSpan=1 rowSpan=1> 
-     * escape<br/></td></tr> 
-     * </table> 
-     * 
-     * Calendar Navigation (Use the following list of keys to navigate the currently focused Calendar after the popup has opened). 
-     * <table> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * Key action<br/></td><td colSpan=1 rowSpan=1> 
-     * Key<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * controlUp<br/></td><td colSpan=1 rowSpan=1> 
-     * ctrl+38<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * controlDown<br/></td><td colSpan=1 rowSpan=1> 
-     * ctrl+40<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * moveDown<br/></td><td colSpan=1 rowSpan=1> 
-     * downarrow<br/></td></tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * pageUp<br/></td><td colSpan=1 rowSpan=1> 
-     * pageup<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * pageDown<br/></td><td colSpan=1 rowSpan=1> 
-     * pagedown<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * shiftPageUp<br/></td><td colSpan=1 rowSpan=1> 
-     * shift+pageup<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * shiftPageDown<br/></td><td colSpan=1 rowSpan=1> 
-     * shift+pagedown<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * moveUp<br/></td><td colSpan=1 rowSpan=1> 
-     * uparrow<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * moveLeft<br/></td><td colSpan=1 rowSpan=1> 
-     * leftarrow<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * moveRight<br/></td><td colSpan=1 rowSpan=1> 
-     * rightarrow<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * select<br/></td><td colSpan=1 rowSpan=1> 
-     * enter<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * home<br/></td><td colSpan=1 rowSpan=1> 
-     * home<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * end<br/></td><td colSpan=1 rowSpan=1> 
-     * end<br/></td></tr> 
-     * <tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * controlHome<br/></td><td colSpan=1 rowSpan=1> 
-     * ctrl+home<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * controlEnd<br/></td><td colSpan=1 rowSpan=1> 
-     * ctrl+end<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * altUpArrow<br/></td><td colSpan=1 rowSpan=1> 
-     * alt+uparrow<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * spacebar<br/></td><td colSpan=1 rowSpan=1> 
-     * space<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * enter<br/></td><td colSpan=1 rowSpan=1> 
-     * enter<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * altRightArrow<br/></td><td colSpan=1 rowSpan=1> 
-     * alt+rightarrow<br/></td></tr>  
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * altLeftArrow<br/></td><td colSpan=1 rowSpan=1> 
-     * alt+leftarrow<br/></td></tr> 
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Key action<br/></td><td colSpan=1 rowSpan=1>
+     * Key<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * altUpArrow<br/></td><td colSpan=1 rowSpan=1>
+     * alt+uparrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * altDownArrow<br/></td><td colSpan=1 rowSpan=1>
+     * alt+downarrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * escape<br/></td><td colSpan=1 rowSpan=1>
+     * escape<br/></td></tr>
      * </table>
-     * 
+     *
+     * Calendar Navigation (Use the following list of keys to navigate the currently focused Calendar after the popup has opened).
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Key action<br/></td><td colSpan=1 rowSpan=1>
+     * Key<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * controlUp<br/></td><td colSpan=1 rowSpan=1>
+     * ctrl+38<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * controlDown<br/></td><td colSpan=1 rowSpan=1>
+     * ctrl+40<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * moveDown<br/></td><td colSpan=1 rowSpan=1>
+     * downarrow<br/></td></tr>
+     * <td colSpan=1 rowSpan=1>
+     * pageUp<br/></td><td colSpan=1 rowSpan=1>
+     * pageup<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * pageDown<br/></td><td colSpan=1 rowSpan=1>
+     * pagedown<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * shiftPageUp<br/></td><td colSpan=1 rowSpan=1>
+     * shift+pageup<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * shiftPageDown<br/></td><td colSpan=1 rowSpan=1>
+     * shift+pagedown<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * moveUp<br/></td><td colSpan=1 rowSpan=1>
+     * uparrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * moveLeft<br/></td><td colSpan=1 rowSpan=1>
+     * leftarrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * moveRight<br/></td><td colSpan=1 rowSpan=1>
+     * rightarrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * select<br/></td><td colSpan=1 rowSpan=1>
+     * enter<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * home<br/></td><td colSpan=1 rowSpan=1>
+     * home<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * end<br/></td><td colSpan=1 rowSpan=1>
+     * end<br/></td></tr>
+     * <tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * controlHome<br/></td><td colSpan=1 rowSpan=1>
+     * ctrl+home<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * controlEnd<br/></td><td colSpan=1 rowSpan=1>
+     * ctrl+end<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * altUpArrow<br/></td><td colSpan=1 rowSpan=1>
+     * alt+uparrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * spacebar<br/></td><td colSpan=1 rowSpan=1>
+     * space<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * enter<br/></td><td colSpan=1 rowSpan=1>
+     * enter<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * altRightArrow<br/></td><td colSpan=1 rowSpan=1>
+     * alt+rightarrow<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * altLeftArrow<br/></td><td colSpan=1 rowSpan=1>
+     * alt+leftarrow<br/></td></tr>
+     * </table>
+     *
      * {% codeBlock src='daterangepicker/keyConfigs/index.md' %}{% endcodeBlock %}
+     *
      * @default null
-     * @blazorType object 
+     * @blazorType object
      */
     @Property(null)
     public keyConfigs: { [key: string]: string };
     /**
      * Sets or gets the required date format to the start and end date string.
-     * > For more details refer to 
+     * > For more details refer to
      * [`Format`](https://ej2.syncfusion.com/demos/#/material/daterangepicker/format.html)sample.
+     *
      * @aspType string
      * {% codeBlock src='daterangepicker/format/index.md' %}{% endcodeBlock %}
      * @default null
@@ -603,23 +636,26 @@ export class DateRangePicker extends CalendarBase {
     @Property(null)
     public format: string | RangeFormatObject;
     /**
-     * Specifies the component to be disabled which prevents the DateRangePicker from user interactions. 
+     * Specifies the component to be disabled which prevents the DateRangePicker from user interactions.
+     *
      * @default true
      */
     @Property(true)
     public enabled: boolean;
     /**
-     * Denies the editing the ranges in the DateRangePicker component. 
+     * Denies the editing the ranges in the DateRangePicker component.
+     *
      * @default false
      */
     @Property(false)
     public readonly: boolean;
     /**
-     * > Support for `allowEdit` has been provided from 
+     * > Support for `allowEdit` has been provided from
      * [`v16.2.46`](https://ej2.syncfusion.com/angular/documentation/release-notes/16.2.46/#daterangepicker).
-     * 
-     * Specifies whether the input textbox is editable or not. Here the user can select the value from the 
+     *
+     * Specifies whether the input textbox is editable or not. Here the user can select the value from the
      * popup and cannot edit in the input textbox.
+     *
      * @default true
      */
     @Property(true)
@@ -631,6 +667,7 @@ export class DateRangePicker extends CalendarBase {
      * Never: The label will never float in the input when the placeholder is available.
      * Always: The floating label will always float above the input.
      * Auto: The floating label will float above the input after focusing or entering a value in the input.
+     *
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
@@ -640,7 +677,7 @@ export class DateRangePicker extends CalendarBase {
     public floatLabelType: FloatLabelType | string;
     /**
      * Specifies the placeholder text that need to be displayed in the DateRangePicker component.
-     * 
+     *
      * @default null
      */
     @Property(null)
@@ -649,57 +686,68 @@ export class DateRangePicker extends CalendarBase {
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
      * {% codeBlock src='daterangepicker/htmlAttributes/index.md' %}{% endcodeBlock %}
+     *
      * @default {}
      */
     @Property({})
-    public htmlAttributes: { [key: string]: string; };
-    /** 
+    public htmlAttributes: { [key: string]: string };
+    /**
      * Triggers when the DateRangePicker is opened.
-     * @event 
+     *
+     * @event open
      * @blazorProperty 'OnOpen'
      * @blazorType RangePopupEventArgs
      */
     @Event()
     public open: EmitType<Object>;
 
-    /** 
+    /**
      * Triggers when the DateRangePicker is closed.
-     * @event
+     *
+     * @event close
      * @blazorProperty 'OnClose'
      * @blazorType RangePopupEventArgs
      */
     @Event()
     public close: EmitType<Object>;
-    /** 
+    /**
      * Triggers on selecting the start and end date.
-     * @event 
+     *
+     * @event select
      * @blazorProperty 'RangeSelected'
      * @blazorType RangeEventArgs
      */
     @Event()
     public select: EmitType<Object>;
-    /** 
+    /**
      *  Triggers when the control gets focus.
-     * @event
+     *
+     * @event focus
      */
     @Event()
     public focus: EmitType<FocusEventArgs>;
-    /** 
+    /**
      * Triggers when the control loses the focus.
-     * @event
+     *
+     * @event blur
      */
     @Event()
     public blur: EmitType<BlurEventArgs>;
     /**
      * Constructor for creating the widget
+     *
+     * @param {DateRangePickerModel} options - Specifies the DateRangePicker model.
+     * @param {string | HTMLInputElement} element - Specifies the element to render as component.
+     * @private
      */
-    constructor(options?: DateRangePickerModel, element?: string | HTMLInputElement) {
+    public constructor(options?: DateRangePickerModel, element?: string | HTMLInputElement) {
         super(options, element);
         this.dateRangeOptions = options;
     }
     /**
      * To Initialize the control rendering.
-     * @return void
+     *
+     * @returns {void}
      * @private
      */
     protected render(): void {
@@ -715,7 +763,8 @@ export class DateRangePicker extends CalendarBase {
     }
     /**
      * Initialize the event handler
-     * @returns void
+     *
+     * @returns {void}
      * @private
      */
     protected preRender(): void {
@@ -755,14 +804,18 @@ export class DateRangePicker extends CalendarBase {
         removeClass([this.cloneElement], [ROOT, CONTROL, LIBRARY]);
         this.updateHtmlAttributeToElement();
         if (this.element.getAttribute('id')) {
-            if (this.angularTag !== null) { this.inputElement.id = this.element.getAttribute('id') + '_input'; }
+            if (this.angularTag !== null) {
+                this.inputElement.id = this.element.getAttribute('id') + '_input';
+            }
         } else {
             this.element.id = getUniqueID('ej2-datetimepicker');
-            if (this.angularTag !== null) { attributes(this.inputElement, { 'id': this.element.id + '_input' }); }
+            if (this.angularTag !== null) {
+                attributes(this.inputElement, { 'id': this.element.id + '_input' });
+            }
         }
         this.checkInvalidRange(this.value);
         if (!this.invalidValueString && (typeof (this.value) === 'string')) {
-            let rangeArray: string[] = (<string>this.value).split(' ' + this.separator + ' ');
+            const rangeArray: string[] = (<string>this.value).split(' ' + this.separator + ' ');
             this.value = [new Date(rangeArray[0]), new Date(rangeArray[1])];
         }
         this.initProperty();
@@ -776,10 +829,9 @@ export class DateRangePicker extends CalendarBase {
         this.initStartDate = this.checkDateValue(this.startValue);
         this.initEndDate = this.checkDateValue(this.endValue);
         this.formElement = closest(this.element, 'form');
-    };
+    }
 
     private updateValue(): void {
-        let dateOptions: object = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
         if (this.value && (<Date[]>this.value).length > 0) {
             if ((<Date[]>this.value)[0] instanceof Date && !isNaN(+(<Date[]>this.value)[0])) {
                 this.setProperties({ startDate: (<Date[]>this.value)[0] }, true);
@@ -857,7 +909,7 @@ export class DateRangePicker extends CalendarBase {
             if (typeof this.format === 'string') {
                 this.formatString = this.format;
             } else if (this.format.skeleton !== '' && !isNullOrUndefined(this.format.skeleton)) {
-                let skeletonString: string = this.format.skeleton;
+                const skeletonString: string = this.format.skeleton;
                 this.formatString = this.globalize.getDatePattern({ skeleton: skeletonString, type: 'date' });
             } else {
                 this.formatString = null;
@@ -867,10 +919,12 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     private initialize(): void {
-        if (this.angularTag !== null) { this.validationAttribute(this.element, this.inputElement); }
+        if (this.angularTag !== null) {
+            this.validationAttribute(this.element, this.inputElement);
+        }
         this.checkHtmlAttributes(false);
         merge(this.defaultKeyConfigs, { shiftTab: 'shift+tab' });
-        let start: Date = this.checkDateValue(new Date(this.checkValue(this.startValue)));
+        const start: Date = this.checkDateValue(new Date(this.checkValue(this.startValue)));
         this.setProperties({ startDate: start }, true); // persist the value propeerty.
         this.setProperties({ endValue: this.checkDateValue(new Date(this.checkValue(this.endValue))) }, true);
         this.setValue();
@@ -887,7 +941,7 @@ export class DateRangePicker extends CalendarBase {
     }
 
     private setDataAttribute(isDynamic: boolean) : void {
-        let attributes: { [key: string]: string; } = {};
+        let attributes: { [key: string]: string } = {};
         if (!isDynamic) {
             for (let i: number = 0; i < this.element.attributes.length; i++) {
                 attributes[this.element.attributes[i].name] = this.element.getAttribute(this.element.attributes[i].name);
@@ -895,7 +949,7 @@ export class DateRangePicker extends CalendarBase {
         } else {
             attributes = this.htmlAttributes;
         }
-        for (let pro of Object.keys(attributes)) {
+        for (const pro of Object.keys(attributes)) {
             if (pro.indexOf('data') === 0 ) {
                 this.firstHiddenChild.setAttribute(pro, attributes[pro]);
                 this.secondHiddenChild.setAttribute(pro, attributes[pro]);
@@ -924,32 +978,32 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     protected validationAttribute(element: HTMLElement, input: Element): void {
-        let name: string = element.getAttribute('name') ? element.getAttribute('name') : element.getAttribute('id');
+        const name: string = element.getAttribute('name') ? element.getAttribute('name') : element.getAttribute('id');
         input.setAttribute('name', name);
         element.removeAttribute('name');
-        let attributes: string[] = ['required', 'aria-required', 'form'];
+        const attributes: string[] = ['required', 'aria-required', 'form'];
         for (let i: number = 0; i < attributes.length; i++) {
             if (isNullOrUndefined(element.getAttribute(attributes[i]))) {
                 continue;
             }
-            let attr: string = element.getAttribute(attributes[i]);
+            const attr: string = element.getAttribute(attributes[i]);
             input.setAttribute(attributes[i], attr);
             element.removeAttribute(attributes[i]);
         }
     }
     private updateHtmlAttributeToWrapper(): void {
         if ( !isNullOrUndefined(this.htmlAttributes)) {
-            for (let key of Object.keys(this.htmlAttributes)) {
+            for (const key of Object.keys(this.htmlAttributes)) {
                 if (wrapperAttr.indexOf(key) > -1 ) {
                     if (key === 'class') {
-                        let updatedClassValue: string = (this.htmlAttributes[key].replace(/\s+/g, ' ')).trim();
+                        const updatedClassValue: string = (this.htmlAttributes[key].replace(/\s+/g, ' ')).trim();
                         if (updatedClassValue !== '') {
                             addClass([this.inputWrapper.container], updatedClassValue.split(' '));
                         }
                     } else if (key === 'style') {
                         let dateRangeStyle: string = this.inputWrapper.container.getAttribute(key);
                         dateRangeStyle = !isNullOrUndefined(dateRangeStyle) ? (dateRangeStyle + this.htmlAttributes[key]) :
-                        this.htmlAttributes[key];
+                            this.htmlAttributes[key];
                         this.inputWrapper.container.setAttribute(key, dateRangeStyle);
                     } else {
                         this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
@@ -961,7 +1015,7 @@ export class DateRangePicker extends CalendarBase {
 
     private updateHtmlAttributeToElement(): void {
         if ( !isNullOrUndefined(this.htmlAttributes)) {
-            for (let key of Object.keys(this.htmlAttributes)) {
+            for (const key of Object.keys(this.htmlAttributes)) {
                 if (wrapperAttr.indexOf(key) < 0 ) {
                     this.inputElement.setAttribute(key, this.htmlAttributes[key]);
                 }
@@ -984,8 +1038,8 @@ export class DateRangePicker extends CalendarBase {
         this.presetsItem = [];
         let i: number = 0;
         if (!isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label)) {
-            for (let range of this.presets) {
-                let id: string = range.label.replace(/\s+/g, '') + '_' + (++i);
+            for (const range of this.presets) {
+                const id: string = range.label.replace(/\s+/g, '') + '_' + (++i);
                 if (typeof range.end === 'string') {
                     this.presetsItem.push({
                         id: id, text: range.label, end: new Date(this.checkValue(range.end)), start: new Date(this.checkValue(range.start))
@@ -994,8 +1048,8 @@ export class DateRangePicker extends CalendarBase {
                     this.presetsItem.push({ id: id, text: range.label, start: range.start, end: range.end });
                 }
             }
-            let startDate: Date = isNullOrUndefined(this.startValue) ? null : new Date(+this.startValue);
-            let endDate: Date = isNullOrUndefined(this.endValue) ? null : new Date(+this.endValue);
+            const startDate: Date = isNullOrUndefined(this.startValue) ? null : new Date(+this.startValue);
+            const endDate: Date = isNullOrUndefined(this.endValue) ? null : new Date(+this.endValue);
             this.presetsItem.push({ id: 'custom_range', text: this.l10n.getConstant('customRange'), start: startDate, end: endDate });
             if (!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) {
                 this.isCustomRange = true;
@@ -1051,7 +1105,7 @@ export class DateRangePicker extends CalendarBase {
 
     private updateHiddenInput(): void {
         if (this.firstHiddenChild && this.secondHiddenChild) {
-            let format: Object = { type: 'datetime', skeleton: isBlazor() ? 'd' : 'yMd' };
+            const format: Object = { type: 'datetime', skeleton: isBlazor() ? 'd' : 'yMd' };
             if (typeof this.startDate === 'string') {
                 this.startDate = this.globalize.parseDate(this.startDate, format);
             }
@@ -1069,7 +1123,9 @@ export class DateRangePicker extends CalendarBase {
     }
 
     private inputChangeHandler(e: MouseEvent): void {
-        if (!this.enabled) { return; }
+        if (!this.enabled) {
+            return;
+        }
         e.stopPropagation();
         this.updateHiddenInput();
     }
@@ -1079,11 +1135,13 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     protected resetHandler(e: MouseEvent): void {
-        if (!this.enabled) { return; }
+        if (!this.enabled) {
+            return;
+        }
         this.valueType = this.value;
         e.preventDefault();
         this.clear();
-        let clearedArgs: ClearedEventArgs = {
+        const clearedArgs: ClearedEventArgs = {
             event: e
         };
         this.setProperties({ endDate: this.checkDateValue(this.endValue) }, true);
@@ -1105,7 +1163,9 @@ export class DateRangePicker extends CalendarBase {
         this.setModelValue();
     }
     protected formResetHandler(e: MouseEvent): void {
-        if (!this.enabled) { return; }
+        if (!this.enabled) {
+            return;
+        }
         if (this.formElement && (e.target === this.formElement) && !this.inputElement.disabled) {
             let val: string = this.inputElement.getAttribute('value');
             if (!isNullOrUndefined(this.startCopy)) {
@@ -1158,7 +1218,9 @@ export class DateRangePicker extends CalendarBase {
     }
 
     private rangeIconHandler(e: MouseEvent): void {
-        if (!this.enabled) { return; }
+        if (!this.enabled) {
+            return;
+        }
         if (this.isMobile) {
             this.inputElement.setAttribute('readonly', '');
         }
@@ -1182,89 +1244,89 @@ export class DateRangePicker extends CalendarBase {
     }
     private checkHtmlAttributes(isDynamic: boolean): void {
         this.globalize = new Internationalization(this.locale);
-        let attributes: string[] = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+        const attributes: string[] = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
             ['startDate', 'endDate', 'minDays', 'maxDays', 'min', 'max', 'disabled', 'readonly', 'style', 'name', 'placeholder',
-            'type', 'value'];
-        let format: Object = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
-        for (let prop of attributes) {
+                'type', 'value'];
+        const format: Object = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
+        for (const prop of attributes) {
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
                 switch (prop) {
-                    case 'disabled':
-                        // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['enabled'] === undefined)) || isDynamic) {
-                        let disabled: boolean = this.inputElement.getAttribute(prop) === 'disabled' ||
+                case 'disabled':
+                    // eslint-disable-next-line @typescript-eslint/dot-notation
+                    if (( isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['enabled'] === undefined)) || isDynamic) {
+                        const disabled: boolean = this.inputElement.getAttribute(prop) === 'disabled' ||
                             this.inputElement.getAttribute(prop) === '' || this.inputElement.getAttribute(prop) === 'true' ? true : false;
                         this.setProperties({ enabled: !disabled }, !isDynamic);
-                        }
-                        break;
-                    case 'readonly':
-                        // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['readonly'] === undefined)) || isDynamic) {
-                        let readonly: boolean = this.inputElement.getAttribute(prop) === 'readonly' ||
+                    }
+                    break;
+                case 'readonly':
+                    // eslint-disable-next-line @typescript-eslint/dot-notation
+                    if (( isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['readonly'] === undefined)) || isDynamic) {
+                        const readonly: boolean = this.inputElement.getAttribute(prop) === 'readonly' ||
                         this.inputElement.getAttribute(prop) === 'true' || this.inputElement.getAttribute(prop) === '' ? true : false;
                         this.setProperties({ readonly: readonly }, !isDynamic);
-                        }
-                        break;
-                    case 'placeholder':
-                        // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['placeholder'] === undefined)) || isDynamic) {
+                    }
+                    break;
+                case 'placeholder':
+                    // eslint-disable-next-line @typescript-eslint/dot-notation
+                    if (( isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['placeholder'] === undefined)) || isDynamic) {
                         this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, !isDynamic);
-                        }
-                        break;
-                    case 'value':
-                        // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['value'] === undefined)) || isDynamic) {
-                           let value: string = this.inputElement.getAttribute(prop);
-                           this.setProperties(setValue(prop, value, {}), !isDynamic);
-                       }
-                       break;
-                    case 'style':
-                        this.inputElement.setAttribute('style', '' + this.inputElement.getAttribute(prop));
-                        break;
-                    case 'min':
-                        if ((isNullOrUndefined(this.min) || +this.min === +new Date(1900, 0, 1))  || isDynamic) {
-                            let dateValue: Date = this.globalize.parseDate(this.inputElement.getAttribute(prop), format);
-                            this.setProperties(setValue(prop, dateValue, {}), !isDynamic);
-                        }
-                        break;
-                    case 'name':
-                        this.inputElement.setAttribute('name', '' + this.inputElement.getAttribute(prop));
-                        break;
-                    case 'max':
-                        if ((isNullOrUndefined(this.max) || +this.max === +new Date(2099, 11, 31))  || isDynamic) {
-                            let dateValue: Date = this.globalize.parseDate(this.inputElement.getAttribute(prop), format);
-                            this.setProperties(setValue(prop, dateValue, {}), !isDynamic);
-                        }
-                        break;
-                    case 'startDate':
-                        if (isNullOrUndefined(this.startDate)) {
-                            let dateValue: Date = this.globalize.parseDate(this.inputElement.getAttribute(prop), format);
-                            this.startValue = dateValue;
-                            this.setValue();
-                        }
-                        break;
-                    case 'endDate':
-                        if (isNullOrUndefined(this.endDate)) {
-                            let dateValue: Date = this.globalize.parseDate(this.inputElement.getAttribute(prop), format);
-                            this.endValue = dateValue;
-                            this.setValue();
-                        }
-                        break;
-                    case 'minDays':
-                        if (isNullOrUndefined(this.minDays)) {
-                            this.setProperties(setValue(prop, parseInt(this.inputElement.getAttribute(prop), 10), {}), true);
-                        }
-                        break;
-                    case 'maxDays':
-                        if (isNullOrUndefined(this.maxDays)) {
-                            this.setProperties(setValue(prop, parseInt(this.inputElement.getAttribute(prop), 10), {}), true);
-                        }
-                        break;
-                    case 'type':
-                        if (this.inputElement.getAttribute(prop) !== 'text') {
-                            this.inputElement.setAttribute('type', 'text');
-                        }
-                        break;
+                    }
+                    break;
+                case 'value':
+                    // eslint-disable-next-line @typescript-eslint/dot-notation
+                    if (( isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['value'] === undefined)) || isDynamic) {
+                        const value: string = this.inputElement.getAttribute(prop);
+                        this.setProperties(setValue(prop, value, {}), !isDynamic);
+                    }
+                    break;
+                case 'style':
+                    this.inputElement.setAttribute('style', '' + this.inputElement.getAttribute(prop));
+                    break;
+                case 'min':
+                    if ((isNullOrUndefined(this.min) || +this.min === +new Date(1900, 0, 1))  || isDynamic) {
+                        const dateValue: Date = this.globalize.parseDate(this.inputElement.getAttribute(prop), format);
+                        this.setProperties(setValue(prop, dateValue, {}), !isDynamic);
+                    }
+                    break;
+                case 'name':
+                    this.inputElement.setAttribute('name', '' + this.inputElement.getAttribute(prop));
+                    break;
+                case 'max':
+                    if ((isNullOrUndefined(this.max) || +this.max === +new Date(2099, 11, 31))  || isDynamic) {
+                        const dateValue: Date = this.globalize.parseDate(this.inputElement.getAttribute(prop), format);
+                        this.setProperties(setValue(prop, dateValue, {}), !isDynamic);
+                    }
+                    break;
+                case 'startDate':
+                    if (isNullOrUndefined(this.startDate)) {
+                        const dateValue: Date = this.globalize.parseDate(this.inputElement.getAttribute(prop), format);
+                        this.startValue = dateValue;
+                        this.setValue();
+                    }
+                    break;
+                case 'endDate':
+                    if (isNullOrUndefined(this.endDate)) {
+                        const dateValue: Date = this.globalize.parseDate(this.inputElement.getAttribute(prop), format);
+                        this.endValue = dateValue;
+                        this.setValue();
+                    }
+                    break;
+                case 'minDays':
+                    if (isNullOrUndefined(this.minDays)) {
+                        this.setProperties(setValue(prop, parseInt(this.inputElement.getAttribute(prop), 10), {}), true);
+                    }
+                    break;
+                case 'maxDays':
+                    if (isNullOrUndefined(this.maxDays)) {
+                        this.setProperties(setValue(prop, parseInt(this.inputElement.getAttribute(prop), 10), {}), true);
+                    }
+                    break;
+                case 'type':
+                    if (this.inputElement.getAttribute(prop) !== 'text') {
+                        this.inputElement.setAttribute('type', 'text');
+                    }
+                    break;
                 }
             }
         }
@@ -1279,8 +1341,8 @@ export class DateRangePicker extends CalendarBase {
         this.activeIndex = this.presetsItem.length - 1;
         this.isCustomRange = true;
         for (let i: number = 0; i <= this.presetsItem.length - 2; i++) {
-            let startDate: Date = this.presetsItem[i].start as Date;
-            let endDate: Date = this.presetsItem[i].end as Date;
+            const startDate: Date = this.presetsItem[i].start as Date;
+            const endDate: Date = this.presetsItem[i].end as Date;
             if (this.startValue && this.endValue) {
                 if ((+startDate.setMilliseconds(0) === +this.startValue.setMilliseconds(0)) &&
                     (+endDate.setMilliseconds(0) === +this.endValue.setMilliseconds(0))) {
@@ -1291,7 +1353,7 @@ export class DateRangePicker extends CalendarBase {
         }
         this.popupWrapper = createElement('div', { id: this.element.id + '_popup', className: ROOT + ' ' + POPUP });
         this.adjustLongHeaderWidth();
-        let isPreset: boolean = (!this.isCustomRange || this.isMobile);
+        const isPreset: boolean = (!this.isCustomRange || this.isMobile);
         if (!isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label) && isPreset) {
             this.isCustomWindow = false;
             this.createPresets();
@@ -1386,13 +1448,13 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     private deviceNavNext(e: MouseEvent): void {
-        let calendar: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, '.' + CALENDAR);
+        const calendar: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, '.' + CALENDAR);
         this.updateDeviceCalendar(calendar);
         this.navigateNext(e);
         this.deviceNavigation();
     }
     private deviceNavPrevious(e: MouseEvent): void {
-        let calendar: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, '.' + CALENDAR);
+        const calendar: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, '.' + CALENDAR);
         this.updateDeviceCalendar(calendar);
         this.navigatePrevious(e);
         this.deviceNavigation();
@@ -1411,11 +1473,11 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     private deviceHeaderClick(event: MouseEvent): void {
-        let element: Element = <Element>event.currentTarget;
+        const element: Element = <Element>event.currentTarget;
         if (element.classList.contains(STARTBUTTON) && !isNullOrUndefined(this.startValue)) {
             this.endButton.element.classList.remove(ACTIVE);
             this.startButton.element.classList.add(ACTIVE);
-            let calendar: HTMLElement = <HTMLElement>this.popupObj.element.querySelector('.' + CALENDAR);
+            const calendar: HTMLElement = <HTMLElement>this.popupObj.element.querySelector('.' + CALENDAR);
             this.updateDeviceCalendar(calendar);
             if (isNullOrUndefined(this.calendarElement.querySelector('.' + STARTDATE + ':not(.e-other-month)'))) {
                 this.currentDate = new Date(+this.startValue);
@@ -1427,7 +1489,7 @@ export class DateRangePicker extends CalendarBase {
         } else if (!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) {
             this.startButton.element.classList.remove(ACTIVE);
             this.endButton.element.classList.add(ACTIVE);
-            let calendar: HTMLElement = <HTMLElement>this.popupObj.element.querySelector('.' + CALENDAR);
+            const calendar: HTMLElement = <HTMLElement>this.popupObj.element.querySelector('.' + CALENDAR);
             this.updateDeviceCalendar(calendar);
             if (isNullOrUndefined(this.calendarElement.querySelector('.' + ENDDATE + ':not(.e-other-month)'))) {
                 this.currentDate = new Date(+this.endValue);
@@ -1440,9 +1502,11 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     private inputFocusHandler(): void {
-        if (!this.enabled) { return; }
+        if (!this.enabled) {
+            return;
+        }
         this.preventBlur = false;
-        let focusArguments: FocusEventArgs = {
+        const focusArguments: FocusEventArgs = {
             model: (isBlazor() && this.isServerRendered) ? null : this
         };
         if (!this.preventFocus) {
@@ -1457,9 +1521,11 @@ export class DateRangePicker extends CalendarBase {
     }
 
     private inputBlurHandler(e: MouseEvent | KeyboardEvent): void {
-        if (!this.enabled) { return; }
+        if (!this.enabled) {
+            return;
+        }
         if (!this.preventBlur) {
-            let value: string = (<HTMLInputElement>this.inputElement).value;
+            const value: string = (<HTMLInputElement>this.inputElement).value;
             if (!isNullOrUndefined(this.presetsItem)) {
                 if (this.presetsItem.length > 0 && this.previousEleValue !== this.inputElement.value) {
                     this.activeIndex = this.presetsItem.length - 1;
@@ -1467,16 +1533,16 @@ export class DateRangePicker extends CalendarBase {
                 }
             }
             if (!isNullOrUndefined(value) && value.trim() !== '') {
-                let range: string[] = value.split(' ' + this.separator + ' ');
+                const range: string[] = value.split(' ' + this.separator + ' ');
                 if (range.length > 1) {
                     this.invalidValueString = null;
-                    let dateOptions: object = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
-                    let startDate: Date = this.globalize.parseDate(range[0].trim(), dateOptions);
-                    let endDate: Date = this.globalize.parseDate(range[1].trim(), dateOptions);
+                    const dateOptions: object = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
+                    const startDate: Date = this.globalize.parseDate(range[0].trim(), dateOptions);
+                    const endDate: Date = this.globalize.parseDate(range[1].trim(), dateOptions);
                     if (!isNullOrUndefined(startDate) && !isNaN(+startDate) && !isNullOrUndefined(endDate) && !isNaN(+endDate)) {
-                        let prevStartVal: Date = this.startValue;
+                        const prevStartVal: Date = this.startValue;
                         this.startValue = startDate;
-                        let prevEndVal: Date = this.endValue;
+                        const prevEndVal: Date = this.endValue;
                         this.endValue = endDate;
                         this.setValue();
                         this.refreshControl();
@@ -1485,7 +1551,7 @@ export class DateRangePicker extends CalendarBase {
                         }
                         if (!this.preventBlur && document.activeElement !== this.inputElement) {
                             this.preventFocus = false;
-                            let blurArguments: BlurEventArgs = {
+                            const blurArguments: BlurEventArgs = {
                                 model: (isBlazor() && this.isServerRendered) ? null : this
                             };
                             this.trigger('blur', blurArguments);
@@ -1533,7 +1599,7 @@ export class DateRangePicker extends CalendarBase {
             this.changeTrigger(e);
             if (!this.preventBlur && document.activeElement !== this.inputElement) {
                 this.preventFocus = false;
-                let blurArguments: BlurEventArgs = {
+                const blurArguments: BlurEventArgs = {
                     model: (isBlazor() && this.isServerRendered) ? null : this
                 };
                 this.trigger('blur', blurArguments);
@@ -1546,7 +1612,7 @@ export class DateRangePicker extends CalendarBase {
         this.currentDate = null;
     }
     private errorClass(): void {
-        let inputStr: String = this.inputElement.value.trim();
+        const inputStr: string = this.inputElement.value.trim();
         if (((isNullOrUndefined(this.endValue) && isNullOrUndefined(this.startValue) && inputStr !== '') ||
             ((!isNullOrUndefined(this.startValue) && +this.startValue < +this.min)
                 || ((!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) && +this.startValue > +this.endValue)
@@ -1576,9 +1642,9 @@ export class DateRangePicker extends CalendarBase {
         return ele;
     }
     private navInCalendar(e: KeyboardEventArgs, isLeftCalendar: boolean, leftLimit: Date, rightLimit: Date, ele: HTMLElement): void {
-        let view: number = this.getViewNumber(this.currentView());
+        const view: number = this.getViewNumber(this.currentView());
         let date: Date;
-        let min: Date = this.min;
+        const min: Date = this.min;
         let max: Date;
         if (!isNullOrUndefined(this.maxDays) && this.isMaxDaysClicked && !isNullOrUndefined(this.startValue)) {
             max = new Date(new Date(+this.startValue).setDate(this.startValue.getDate() + (this.maxDays - 1)));
@@ -1586,86 +1652,98 @@ export class DateRangePicker extends CalendarBase {
             max = this.max;
         }
         switch (e.action) {
-            case 'moveRight':
+        case 'moveRight':
+            date = new Date(+this.currentDate);
+            this.addDay(date, 1, e, max, min);
+            if (isLeftCalendar && +date === +rightLimit) {
+                ele = this.keyCalendarUpdate(false, ele);
+            }
+            this.keyboardNavigate(1, view, e, max, min);
+            this.keyNavigation(ele, e);
+            break;
+        case 'moveLeft':
+            date = new Date(+this.currentDate);
+            this.addDay(date, -1, e, max, min);
+            if (!isLeftCalendar) {
+                if (+date === +leftLimit) {
+                    ele = this.keyCalendarUpdate(true, ele);
+                }
+            }
+            this.keyboardNavigate(-1, view, e, max, min);
+            this.keyNavigation(ele, e);
+            break;
+        case 'moveUp':
+            if (view === 0) {
                 date = new Date(+this.currentDate);
-                this.addDay(date, 1, e, max, min);
-                if (isLeftCalendar && +date === +rightLimit) {
+                this.addDay(date, -7, e, max, min);
+                if (+date <= +leftLimit && !isLeftCalendar) {
+                    ele = this.keyCalendarUpdate(true, ele);
+                }
+                this.keyboardNavigate(-7, view, e, max, min);
+            } else {
+                this.keyboardNavigate(-4, view, e, this.max, this.min); // move the current year to the previous four days.
+            }
+            this.keyNavigation(ele, e);
+            break;
+        case 'moveDown':
+            if (view === 0) {
+                date = new Date(+this.currentDate);
+                this.addDay(date, 7, e, max, min);
+                if (isLeftCalendar && +date >= +rightLimit) {
                     ele = this.keyCalendarUpdate(false, ele);
                 }
-                this.KeyboardNavigate(1, view, e, max, min);
-                this.keyNavigation(ele, e);
-                break;
-            case 'moveLeft':
-                date = new Date(+this.currentDate);
-                this.addDay(date, -1, e, max, min);
-                if (!isLeftCalendar) {
-                    if (+date === +leftLimit) {
-                        ele = this.keyCalendarUpdate(true, ele);
-                    }
-                }
-                this.KeyboardNavigate(-1, view, e, max, min);
-                this.keyNavigation(ele, e);
-                break;
-            case 'moveUp':
-                if (view === 0) {
-                    date = new Date(+this.currentDate);
-                    this.addDay(date, -7, e, max, min);
-                    if (+date <= +leftLimit && !isLeftCalendar) {
-                        ele = this.keyCalendarUpdate(true, ele);
-                    }
-                    this.KeyboardNavigate(-7, view, e, max, min);
-                } else {
-                    this.KeyboardNavigate(-4, view, e, this.max, this.min); // move the current year to the previous four days.
-                }
-                this.keyNavigation(ele, e);
-                break;
-            case 'moveDown':
-                if (view === 0) {
-                    date = new Date(+this.currentDate);
-                    this.addDay(date, 7, e, max, min);
-                    if (isLeftCalendar && +date >= +rightLimit) {
-                        ele = this.keyCalendarUpdate(false, ele);
-                    }
-                    this.KeyboardNavigate(7, view, e, max, min);
-                } else {
-                    this.KeyboardNavigate(4, view, e, this.max, this.min);
-                }
-                this.keyNavigation(ele, e);
-                break;
-            case 'home':
-                this.currentDate = this.firstDay(this.currentDate);
-                remove(this.tableBodyElement);
-                (view === 0) ? this.renderMonths(e) : ((view === 1) ? this.renderYears(e) : this.renderDecades(e));
-                this.keyNavigation(ele, e);
-                break;
-            case 'end':
-                this.currentDate = this.lastDay(this.currentDate, view);
-                remove(this.tableBodyElement);
-                (view === 0) ? this.renderMonths(e) : ((view === 1) ? this.renderYears(e) : this.renderDecades(e));
-                this.keyNavigation(ele, e);
-                break;
+                this.keyboardNavigate(7, view, e, max, min);
+            } else {
+                this.keyboardNavigate(4, view, e, this.max, this.min);
+            }
+            this.keyNavigation(ele, e);
+            break;
+        case 'home':
+            this.currentDate = this.firstDay(this.currentDate);
+            remove(this.tableBodyElement);
+            if (view === 0) {
+                this.renderMonths(e);
+            } else if (view === 1) {
+                this.renderYears(e);
+            } else {
+                this.renderDecades(e);
+            }
+            this.keyNavigation(ele, e);
+            break;
+        case 'end':
+            this.currentDate = this.lastDay(this.currentDate, view);
+            remove(this.tableBodyElement);
+            if (view === 0) {
+                this.renderMonths(e);
+            } else if (view === 1) {
+                this.renderYears(e);
+            } else {
+                this.renderDecades(e);
+            }
+            this.keyNavigation(ele, e);
+            break;
         }
     }
-    // tslint:disable-next-line:max-func-body-length
     private keyInputHandler(e: KeyboardEventArgs, value?: Date): void {
         let date: Date;
         let view: number = this.getViewNumber(this.currentView());
-        let rightDateLimit: Date = new Date(this.rightCalCurrentDate.getFullYear(), this.rightCalCurrentDate.getMonth(), 1);
-        let leftDateLimit: Date = new Date(this.leftCalCurrentDate.getFullYear(), this.leftCalCurrentDate.getMonth() + 1, 0);
+        const rightDateLimit: Date = new Date(this.rightCalCurrentDate.getFullYear(), this.rightCalCurrentDate.getMonth(), 1);
+        const leftDateLimit: Date = new Date(this.leftCalCurrentDate.getFullYear(), this.leftCalCurrentDate.getMonth() + 1, 0);
         let ele: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, '.' + RIGHTCALENDER);
         ele = isNullOrUndefined(ele) ? this.leftCalendar : ele;
-        let isLeftCalendar: boolean = ele.classList.contains(LEFTCALENDER);
+        const isLeftCalendar: boolean = ele.classList.contains(LEFTCALENDER);
         this.updateCalendarElement(ele);
-        let selectedDate: Element = this.tableBodyElement.querySelector('tr td.e-selected');
-        let focusedDate: Element = ele.querySelector('tr td.' + FOCUSDATE);
-        let startDate: Element = ele.querySelector('tr td.' + STARTDATE);
-        let endDate: Element = ele.querySelector('tr td.' + ENDDATE);
-        let depthValue: number = this.getViewNumber(this.depth);
-        let levelRestrict: boolean = (view === depthValue && this.getViewNumber(this.start) >= depthValue);
-        let leftCalendar: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, '.' + LEFTCALENDER);
-        let rightCalendar: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, '.' + RIGHTCALENDER);
-        let presetElement: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, '.' + PRESETS);
+        const selectedDate: Element = this.tableBodyElement.querySelector('tr td.e-selected');
+        const focusedDate: Element = ele.querySelector('tr td.' + FOCUSDATE);
+        const startDate: Element = ele.querySelector('tr td.' + STARTDATE);
+        const endDate: Element = ele.querySelector('tr td.' + ENDDATE);
+        const depthValue: number = this.getViewNumber(this.depth);
+        const levelRestrict: boolean = (view === depthValue && this.getViewNumber(this.start) >= depthValue);
+        const leftCalendar: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, '.' + LEFTCALENDER);
+        const rightCalendar: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, '.' + RIGHTCALENDER);
+        const presetElement: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, '.' + PRESETS);
         if (!isNullOrUndefined(focusedDate)) {
+            // eslint-disable-next-line no-self-assign
             this.currentDate = this.currentDate;
         } else if (!isNullOrUndefined(endDate) && !this.dateDisabled) {
             this.currentDate = new Date(+this.endValue);
@@ -1676,84 +1754,22 @@ export class DateRangePicker extends CalendarBase {
         }
         this.effect = '';
         switch (e.action) {
-            case 'altUpArrow':
-                if (this.isPopupOpen()) {
-                    this.hide(e);
-                    this.preventFocus = true;
-                    this.inputElement.focus();
-                    addClass([this.inputWrapper.container], [INPUTFOCUS]);
+        case 'altUpArrow':
+            if (this.isPopupOpen()) {
+                this.hide(e);
+                this.preventFocus = true;
+                this.inputElement.focus();
+                addClass([this.inputWrapper.container], [INPUTFOCUS]);
+            }
+            break;
+        case 'select':
+            if (levelRestrict) {
+                const element: Element = !isNullOrUndefined(focusedDate) ? focusedDate : startDate;
+                if (!isNullOrUndefined(element) && !element.classList.contains(DISABLED)) {
+                    this.selectRange(null, (element));
                 }
-                break;
-            case 'select':
-                if (levelRestrict) {
-                    let element: Element = !isNullOrUndefined(focusedDate) ? focusedDate : startDate;
-                    if (!isNullOrUndefined(element) && !element.classList.contains(DISABLED)) {
-                        this.selectRange(null, (element));
-                    }
-                } else {
-                    if (!isNullOrUndefined(selectedDate) && !levelRestrict || !isNullOrUndefined(focusedDate)) {
-                        if (!isNullOrUndefined(this.value)) {
-                            if (this.calendarElement.classList.contains(LEFTCALENDER)) {
-                                value = this.startDate;
-                            } else {
-                                value = this.endDate;
-                            }
-                        }
-                        this.controlDown = e;
-                        this.contentClick(null, --view, (focusedDate || selectedDate), value);
-                    }
-                }
-                e.preventDefault();
-                break;
-            case 'controlHome':
-                let yearDate: Date = new Date(this.currentDate.getFullYear(), 0, 1);
-                if (!isLeftCalendar && +yearDate < +leftDateLimit) {
-                    ele = this.keyCalendarUpdate(true, ele);
-                }
-                super.navigateTo.call(this, 'Month', new Date(this.currentDate.getFullYear(), 0, 1));
-                this.keyNavigation(ele, e);
-                break;
-            case 'altRightArrow':
-                if (!isNullOrUndefined(leftCalendar)) {
-                    (<HTMLElement>this.rightCalendar.children[1].firstElementChild).focus();
-                } else if (!isNullOrUndefined(rightCalendar)) {
-                    if (!isNullOrUndefined(this.presetElement)) {
-                        this.presetElement.focus();
-                        this.removeFocusedDate();
-                    } else {
-                        this.cancelButton.element.focus();
-                    }
-                } else {
-                    if (!isNullOrUndefined(presetElement)) {
-                        this.cancelButton.element.focus();
-                    }
-                }
-                e.preventDefault();
-                break;
-            case 'altLeftArrow':
-                if (!isNullOrUndefined(leftCalendar)) {
-                    if (this.applyButton.element.disabled !== true) {
-                        this.applyButton.element.focus();
-                    } else {
-                        this.cancelButton.element.focus();
-                    }
-                } else {
-                    if (!isNullOrUndefined(rightCalendar)) {
-                        (<HTMLElement>this.leftCalendar.children[1].firstElementChild).focus();
-                    }
-                }
-                e.preventDefault();
-                break;
-            case 'controlUp':
-                if (this.calendarElement.classList.contains(LEFTCALENDER)) {
-                    this.calendarNavigation(e, this.calendarElement);
-                } else {
-                    this.calendarNavigation(e, this.calendarElement);
-                }
-                e.preventDefault();
-                break;
-            case 'controlDown':
-                if ((!isNullOrUndefined(selectedDate) || !isNullOrUndefined(focusedDate)) && !levelRestrict) {
+            } else {
+                if (!isNullOrUndefined(selectedDate) && !levelRestrict || !isNullOrUndefined(focusedDate)) {
                     if (!isNullOrUndefined(this.value)) {
                         if (this.calendarElement.classList.contains(LEFTCALENDER)) {
                             value = this.startDate;
@@ -1762,74 +1778,138 @@ export class DateRangePicker extends CalendarBase {
                         }
                     }
                     this.controlDown = e;
-                    this.contentClick(null, --view, (selectedDate || focusedDate), value);
+                    this.contentClick(null, --view, (focusedDate || selectedDate), value);
                 }
-                e.preventDefault();
-                break;
-            case 'controlEnd':
-                yearDate = new Date(this.currentDate.getFullYear(), 11, 31);
-                if (isLeftCalendar && +yearDate > +rightDateLimit) {
-                    ele = this.keyCalendarUpdate(false, ele);
-                }
-                super.navigateTo.call(this, 'Month', new Date(this.currentDate.getFullYear(), 11, 31));
-                this.keyNavigation(ele, e);
-                break;
-            case 'pageUp':
-                date = new Date(+this.currentDate);
-                this.addMonths(date, -1);
-                if (!isLeftCalendar && +date <= +leftDateLimit) {
-                    ele = this.keyCalendarUpdate(true, ele);
-                }
-                this.addMonths(this.currentDate, -1);
-                super.navigateTo.call(this, 'Month', this.currentDate);
-                this.keyNavigation(ele, e);
-                break;
-            case 'pageDown':
-                date = new Date(+this.currentDate);
-                this.addMonths(date, 1);
-                if (isLeftCalendar && +date >= +rightDateLimit) {
-                    ele = this.keyCalendarUpdate(false, ele);
-                }
-                this.addMonths(this.currentDate, 1);
-                super.navigateTo.call(this, 'Month', this.currentDate);
-                this.keyNavigation(ele, e);
-                break;
-            case 'shiftPageUp':
-                date = new Date(+this.currentDate);
-                this.addYears(date, -1);
-                if (!isLeftCalendar && +date <= +leftDateLimit) {
-                    ele = this.keyCalendarUpdate(true, ele);
-                }
-                this.addYears(this.currentDate, -1);
-                super.navigateTo.call(this, 'Month', this.currentDate);
-                this.keyNavigation(ele, e);
-                break;
-            case 'shiftPageDown':
-                date = new Date(+this.currentDate);
-                this.addYears(date, 1);
-                if (isLeftCalendar && +date >= +rightDateLimit) {
-                    ele = this.keyCalendarUpdate(false, ele);
-                }
-                this.addYears(this.currentDate, 1);
-                super.navigateTo.call(this, 'Month', this.currentDate);
-                this.keyNavigation(ele, e);
-                break;
-            case 'shiftTab':
+            }
+            e.preventDefault();
+            break;
+        case 'controlHome': {
+            const yearDate: Date = new Date(this.currentDate.getFullYear(), 0, 1);
+            if (!isLeftCalendar && +yearDate < +leftDateLimit) {
+                ele = this.keyCalendarUpdate(true, ele);
+            }
+            super.navigateTo.call(this, 'Month', new Date(this.currentDate.getFullYear(), 0, 1));
+            this.keyNavigation(ele, e);
+        }
+            break;
+        case 'altRightArrow':
+            if (!isNullOrUndefined(leftCalendar)) {
+                (<HTMLElement>this.rightCalendar.children[1].firstElementChild).focus();
+            } else if (!isNullOrUndefined(rightCalendar)) {
                 if (!isNullOrUndefined(this.presetElement)) {
-                    this.presetElement.setAttribute('tabindex', '0');
                     this.presetElement.focus();
                     this.removeFocusedDate();
+                } else {
+                    this.cancelButton.element.focus();
                 }
-                e.preventDefault();
-                break;
-            case 'spacebar':
-                if (this.applyButton && !this.applyButton.disabled) {
-                    this.applyFunction(e);
+            } else {
+                if (!isNullOrUndefined(presetElement)) {
+                    this.cancelButton.element.focus();
                 }
-                break;
-            default:
-                this.navInCalendar(e, isLeftCalendar, leftDateLimit, rightDateLimit, ele);
-                this.checkMinMaxDays();
+            }
+            e.preventDefault();
+            break;
+        case 'altLeftArrow':
+            if (!isNullOrUndefined(leftCalendar)) {
+                if (this.applyButton.element.disabled !== true) {
+                    this.applyButton.element.focus();
+                } else {
+                    this.cancelButton.element.focus();
+                }
+            } else {
+                if (!isNullOrUndefined(rightCalendar)) {
+                    (<HTMLElement>this.leftCalendar.children[1].firstElementChild).focus();
+                }
+            }
+            e.preventDefault();
+            break;
+        case 'controlUp':
+            if (this.calendarElement.classList.contains(LEFTCALENDER)) {
+                this.calendarNavigation(e, this.calendarElement);
+            } else {
+                this.calendarNavigation(e, this.calendarElement);
+            }
+            e.preventDefault();
+            break;
+        case 'controlDown':
+            if ((!isNullOrUndefined(selectedDate) || !isNullOrUndefined(focusedDate)) && !levelRestrict) {
+                if (!isNullOrUndefined(this.value)) {
+                    if (this.calendarElement.classList.contains(LEFTCALENDER)) {
+                        value = this.startDate;
+                    } else {
+                        value = this.endDate;
+                    }
+                }
+                this.controlDown = e;
+                this.contentClick(null, --view, (selectedDate || focusedDate), value);
+            }
+            e.preventDefault();
+            break;
+        case 'controlEnd': {
+            const yearDate : Date = new Date(this.currentDate.getFullYear(), 11, 31);
+            if (isLeftCalendar && +yearDate > +rightDateLimit) {
+                ele = this.keyCalendarUpdate(false, ele);
+            }
+            super.navigateTo.call(this, 'Month', new Date(this.currentDate.getFullYear(), 11, 31));
+            this.keyNavigation(ele, e);
+        }
+            break;
+        case 'pageUp':
+            date = new Date(+this.currentDate);
+            this.addMonths(date, -1);
+            if (!isLeftCalendar && +date <= +leftDateLimit) {
+                ele = this.keyCalendarUpdate(true, ele);
+            }
+            this.addMonths(this.currentDate, -1);
+            super.navigateTo.call(this, 'Month', this.currentDate);
+            this.keyNavigation(ele, e);
+            break;
+        case 'pageDown':
+            date = new Date(+this.currentDate);
+            this.addMonths(date, 1);
+            if (isLeftCalendar && +date >= +rightDateLimit) {
+                ele = this.keyCalendarUpdate(false, ele);
+            }
+            this.addMonths(this.currentDate, 1);
+            super.navigateTo.call(this, 'Month', this.currentDate);
+            this.keyNavigation(ele, e);
+            break;
+        case 'shiftPageUp':
+            date = new Date(+this.currentDate);
+            this.addYears(date, -1);
+            if (!isLeftCalendar && +date <= +leftDateLimit) {
+                ele = this.keyCalendarUpdate(true, ele);
+            }
+            this.addYears(this.currentDate, -1);
+            super.navigateTo.call(this, 'Month', this.currentDate);
+            this.keyNavigation(ele, e);
+            break;
+        case 'shiftPageDown':
+            date = new Date(+this.currentDate);
+            this.addYears(date, 1);
+            if (isLeftCalendar && +date >= +rightDateLimit) {
+                ele = this.keyCalendarUpdate(false, ele);
+            }
+            this.addYears(this.currentDate, 1);
+            super.navigateTo.call(this, 'Month', this.currentDate);
+            this.keyNavigation(ele, e);
+            break;
+        case 'shiftTab':
+            if (!isNullOrUndefined(this.presetElement)) {
+                this.presetElement.setAttribute('tabindex', '0');
+                this.presetElement.focus();
+                this.removeFocusedDate();
+            }
+            e.preventDefault();
+            break;
+        case 'spacebar':
+            if (this.applyButton && !this.applyButton.disabled) {
+                this.applyFunction(e);
+            }
+            break;
+        default:
+            this.navInCalendar(e, isLeftCalendar, leftDateLimit, rightDateLimit, ele);
+            this.checkMinMaxDays();
         }
         this.presetHeight();
     }
@@ -1848,40 +1928,40 @@ export class DateRangePicker extends CalendarBase {
     }
     private inputHandler(e: KeyboardEventArgs): void {
         switch (e.action) {
-            case 'altDownArrow':
-                if (!this.isPopupOpen()) {
-                    if (this.inputElement.value === '') {
-                        this.clear();
-                        this.changeTrigger(e);
-                        this.clearRange();
+        case 'altDownArrow':
+            if (!this.isPopupOpen()) {
+                if (this.inputElement.value === '') {
+                    this.clear();
+                    this.changeTrigger(e);
+                    this.clearRange();
+                }
+                this.show(null, e);
+                this.isRangeIconClicked = false;
+                if (!this.isMobile) {
+                    if (!isNullOrUndefined(this.leftCalendar)) {
+                        this.calendarFocus();
                     }
-                    this.show(null, e);
-                    this.isRangeIconClicked = false;
-                    if (!this.isMobile) {
-                        if (!isNullOrUndefined(this.leftCalendar)) {
-                            this.calendarFocus();
-                        }
-                    }
-                    this.isKeyPopup = true;
                 }
-                break;
-            case 'escape':
-                if (this.isPopupOpen()) {
-                    this.hide(e);
-                }
-                break;
-            case 'enter':
-                if (document.activeElement === this.inputElement) {
-                    this.inputBlurHandler(e);
-                    this.hide(e);
-                }
-                break;
-            case 'tab':
-                if (document.activeElement === this.inputElement && this.isPopupOpen()) {
-                    this.hide(e);
-                    e.preventDefault();
-                }
-                break;
+                this.isKeyPopup = true;
+            }
+            break;
+        case 'escape':
+            if (this.isPopupOpen()) {
+                this.hide(e);
+            }
+            break;
+        case 'enter':
+            if (document.activeElement === this.inputElement) {
+                this.inputBlurHandler(e);
+                this.hide(e);
+            }
+            break;
+        case 'tab':
+            if (document.activeElement === this.inputElement && this.isPopupOpen()) {
+                this.hide(e);
+                e.preventDefault();
+            }
+            break;
         }
     }
     private bindCalendarCellEvents(calendar?: HTMLElement): void {
@@ -1891,10 +1971,9 @@ export class DateRangePicker extends CalendarBase {
         } else {
             tdCells = <HTMLElement[] & NodeListOf<Element>>this.popupObj.element.querySelectorAll('.' + CALENDAR + ' td');
         }
-        for (let cell of tdCells) {
+        for (const cell of tdCells) {
             EventHandler.clearEvents(cell);
-            let disabledCell: boolean;
-            disabledCell = cell.classList.contains(DISABLED) || cell.classList.contains(DATEDISABLED);
+            const disabledCell: boolean = cell.classList.contains(DISABLED) || cell.classList.contains(DATEDISABLED);
             if (!disabledCell && !cell.classList.contains(WEEKNUMBER)) {
                 if (!this.isMobile) {
                     EventHandler.add(cell, 'mouseover', this.hoverSelection, this);
@@ -1904,12 +1983,12 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     private removeFocusedDate(): void {
-        let isDate: boolean = !isNullOrUndefined(this.startValue) || !isNullOrUndefined(this.endValue);
-        let focusedDate: HTMLElement[];
-        focusedDate = <HTMLElement[] & NodeListOf<Element>>this.popupObj.element.querySelectorAll('.' + CALENDAR + ' .' + FOCUSDATE);
-        for (let ele of focusedDate) {
-            let today: Date = new Date();
-            let eleDate: Date = this.getIdValue(null, ele);
+        const isDate: boolean = !isNullOrUndefined(this.startValue) || !isNullOrUndefined(this.endValue);
+        const focusedDate: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>
+        this.popupObj.element.querySelectorAll('.' + CALENDAR + ' .' + FOCUSDATE);
+        for (const ele of focusedDate) {
+            const today: Date = new Date();
+            const eleDate: Date = this.getIdValue(null, ele);
             if ((this.depth === 'Month' && this.currentView() === 'Month' &&
                 (!ele.classList.contains(TODAY) || (ele.classList.contains(TODAY) && isDate)))
                 || (this.depth === 'Year' && this.currentView() === 'Year' &&
@@ -1924,20 +2003,20 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     private hoverSelection(event: MouseEvent | KeyboardEventArgs | TouchEvent, element: Element): void {
-        let currentElement: HTMLElement = <HTMLElement>element || <HTMLElement>event.currentTarget;
-        let currentDate: Date = this.getIdValue(null, currentElement);
+        const currentElement: HTMLElement = <HTMLElement>element || <HTMLElement>event.currentTarget;
+        const currentDate: Date = this.getIdValue(null, currentElement);
         if (!isNullOrUndefined(this.startValue) && +this.startValue >= +this.min && +this.startValue <= +this.max) {
             if ((!this.isDateDisabled(this.endValue) && !this.isDateDisabled(this.startValue)
                 && isNullOrUndefined(this.endValue) && isNullOrUndefined(this.startValue))
                 || (!isNullOrUndefined(this.startValue) && isNullOrUndefined(this.endValue))) {
-                let tdCells: HTMLElement[];
-                tdCells = <HTMLElement[] & NodeListOf<Element>>this.popupObj.element.querySelectorAll('.' + CALENDAR + ' td');
-                for (let ele of tdCells) {
-                    let isDisabledCell: boolean = (!ele.classList.contains(DISABLED) || ele.classList.contains(DATEDISABLED));
+                const tdCells: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>
+                this.popupObj.element.querySelectorAll('.' + CALENDAR + ' td');
+                for (const ele of tdCells) {
+                    const isDisabledCell: boolean = (!ele.classList.contains(DISABLED) || ele.classList.contains(DATEDISABLED));
                     if (!ele.classList.contains(WEEKNUMBER) && isDisabledCell) {
-                        let eleDate: Date = this.getIdValue(null, ele);
-                        let startDateValue: Date = new Date(+this.startValue);
-                        let eleDateValue: Date = new Date(+eleDate);
+                        const eleDate: Date = this.getIdValue(null, ele);
+                        const startDateValue: Date = new Date(+this.startValue);
+                        const eleDateValue: Date = new Date(+eleDate);
                         if (eleDateValue.setHours(0, 0, 0, 0) >= startDateValue.setHours(0, 0, 0, 0) && +eleDate <= +currentDate) {
                             addClass([ele], RANGEHOVER);
                         } else {
@@ -1968,12 +2047,12 @@ export class DateRangePicker extends CalendarBase {
     }
     private updateRange(elementCollection: HTMLElement[]): void {
         if (!isNullOrUndefined(this.startValue)) {
-            for (let calendar of elementCollection) {
-                let tdCells: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>calendar.querySelectorAll('.' + CALENDAR + ' td');
-                for (let ele of tdCells) {
+            for (const calendar of elementCollection) {
+                const tdCells: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>calendar.querySelectorAll('.' + CALENDAR + ' td');
+                for (const ele of tdCells) {
                     if (!ele.classList.contains(WEEKNUMBER) && !ele.classList.contains(DISABLED)) {
-                        let eleDate: Date = this.getIdValue(null, ele);
-                        let eleDateValue: Date = this.getIdValue(null, ele);
+                        const eleDate: Date = this.getIdValue(null, ele);
+                        const eleDateValue: Date = this.getIdValue(null, ele);
                         if (!isNullOrUndefined(this.endValue)) {
                             if (this.currentView() === this.depth &&
                                 +eleDateValue.setHours(0, 0, 0, 0) >= +new Date(+this.startValue).setHours(0, 0, 0, 0)
@@ -1996,7 +2075,7 @@ export class DateRangePicker extends CalendarBase {
                             removeClass([ele], [RANGEHOVER]);
                         }
                         if (!ele.classList.contains(OTHERMONTH)) {
-                            let startDateValue: Date = new Date(+this.startValue);
+                            const startDateValue: Date = new Date(+this.startValue);
                             let eleDateValue: Date = new Date(+eleDate);
                             if (this.currentView() === this.depth &&
                                 +eleDateValue.setHours(0, 0, 0, 0) === +startDateValue.setHours(0, 0, 0, 0)
@@ -2007,7 +2086,7 @@ export class DateRangePicker extends CalendarBase {
                                 addClass([ele], [STARTDATE, SELECTED]);
                                 this.addSelectedAttributes(ele, this.startValue, true);
                             }
-                            let endDateValue: Date = new Date(+this.endValue);
+                            const endDateValue: Date = new Date(+this.endValue);
                             if (this.currentView() === 'Year') {
                                 eleDateValue = new Date(eleDateValue.getFullYear(), eleDateValue.getMonth() + 1, 0);
                             } else if (this.currentView() === 'Decade') {
@@ -2045,11 +2124,11 @@ export class DateRangePicker extends CalendarBase {
     private rangeArgs(e: MouseEvent | KeyboardEvent | TouchEvent | KeyboardEventArgs): RangeEventArgs {
         let inputValue: string;
         let range: number;
-        let startDate: string = !isNullOrUndefined(this.startValue) ?
+        const startDate: string = !isNullOrUndefined(this.startValue) ?
             this.globalize.formatDate(this.startValue, {
                 format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd'
             }) : null;
-        let endDate: string = !isNullOrUndefined(this.endValue) ?
+        const endDate: string = !isNullOrUndefined(this.endValue) ?
             this.globalize.formatDate(this.endValue, {
                 format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd'
             }) : null;
@@ -2061,7 +2140,7 @@ export class DateRangePicker extends CalendarBase {
             inputValue = '';
             range = 0;
         }
-        let args: RangeEventArgs = {
+        const args: RangeEventArgs = {
             value: this.value,
             startDate: this.startValue,
             endDate: this.endValue,
@@ -2075,9 +2154,9 @@ export class DateRangePicker extends CalendarBase {
         return args;
     }
     private otherMonthSelect(ele: Element, isStartDate: boolean, sameDate?: boolean): void {
-        let value: number = +this.getIdValue(null, ele);
-        let dateIdString: string = '*[id^="/id"]:not(.e-other-month)'.replace('/id', '' + value);
-        let tdCell: Element = this.popupObj && this.popupObj.element.querySelector(dateIdString);
+        const value: number = +this.getIdValue(null, ele);
+        const dateIdString: string = '*[id^="/id"]:not(.e-other-month)'.replace('/id', '' + value);
+        const tdCell: Element = this.popupObj && this.popupObj.element.querySelector(dateIdString);
         if (!isNullOrUndefined(tdCell)) {
             if (isStartDate) {
                 addClass([tdCell], [STARTDATE, SELECTED]);
@@ -2092,22 +2171,20 @@ export class DateRangePicker extends CalendarBase {
 
         }
     }
-    // tslint:disable-next-line:max-func-body-length
     private selectRange(event: MouseEvent | KeyboardEventArgs | TouchEvent, element: Element): void {
         let leftCalendar: HTMLElement;
         let rightCalendar: HTMLElement;
         if (event) {
             event.preventDefault();
         }
-        let date: Date;
-        date = isNullOrUndefined(event) ? this.getIdValue(null, element)
+        const date: Date = isNullOrUndefined(event) ? this.getIdValue(null, element)
             : this.getIdValue(event, null);
-        let y: number = date.getFullYear();
-        let m: number = date.getMonth();
-        let firstDay: Date = new Date(y, m, 1);
-        let lastDay: Date = new Date(y, m + 1, 0);
-        let firstMonth: Date = new Date(y, 0, 1);
-        let lastMonth: Date = new Date(y, 11, 31);
+        const y: number = date.getFullYear();
+        const m: number = date.getMonth();
+        const firstDay: Date = new Date(y, m, 1);
+        const lastDay: Date = new Date(y, m + 1, 0);
+        const firstMonth: Date = new Date(y, 0, 1);
+        const lastMonth: Date = new Date(y, 11, 31);
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             if (!this.isMobile || this.isMobile && !this.endButton.element.classList.contains(ACTIVE)) {
                 this.removeSelection();
@@ -2115,7 +2192,7 @@ export class DateRangePicker extends CalendarBase {
         } else if (this.isMobile && this.startButton.element.classList.contains(ACTIVE)) {
             this.removeSelection();
         }
-        let ele: Element = element || <Element>event.currentTarget;
+        const ele: Element = element || <Element>event.currentTarget;
         if (isNullOrUndefined(this.startValue)) {
             if (!isNullOrUndefined(this.previousStartValue)) {
                 date.setHours(this.previousStartValue.getHours());
@@ -2163,7 +2240,7 @@ export class DateRangePicker extends CalendarBase {
                 if (this.isMobile) {
                     this.startButton.element.classList.remove(ACTIVE);
                     this.endButton.element.classList.add(ACTIVE);
-                    for (let ele of endEle) {
+                    for (const ele of endEle) {
                         ele.removeAttribute('aria-label');
                         if (!ele.classList.contains(STARTDATE)) {
                             ele.setAttribute('aria-selected', 'false');
@@ -2188,7 +2265,7 @@ export class DateRangePicker extends CalendarBase {
                     }
                 }
                 endEle = <Element[] & NodeListOf<Element>>this.popupObj.element.querySelectorAll('.' + ENDDATE);
-                for (let ele of endEle) {
+                for (const ele of endEle) {
                     if (ele.classList.contains(STARTDATE)) {
                         removeClass([ele], [RANGEHOVER]);
                     }
@@ -2236,13 +2313,13 @@ export class DateRangePicker extends CalendarBase {
     }
     private selectableDates(): void {
         if (!isNullOrUndefined(this.startValue)) {
-            let tdCells: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>this.calendarElement.querySelectorAll('.' + CALENDAR + ' td');
+            const tdCells: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>this.calendarElement.querySelectorAll('.' + CALENDAR + ' td');
             let isStartDate: boolean = false;
             if (this.currentView() === this.depth) {
-                for (let ele of tdCells) {
+                for (const ele of tdCells) {
                     if (!ele.classList.contains(STARTDATE) && !ele.classList.contains(WEEKNUMBER)) {
                         if (!ele.classList.contains(DISABLED)) {
-                            let eleDate: Date = this.getIdValue(null, ele);
+                            const eleDate: Date = this.getIdValue(null, ele);
                             if (+eleDate < +this.startValue) {
                                 addClass([ele], [DATEDISABLED, DISABLED, OVERLAY]);
                                 EventHandler.clearEvents(ele);
@@ -2263,10 +2340,10 @@ export class DateRangePicker extends CalendarBase {
                     }
                 }
             } else {
-                for (let ele of tdCells) {
-                    let startMonth: number = this.startValue.getMonth();
-                    let startYear: number = this.startValue.getFullYear();
-                    let element: Date = this.getIdValue(null, ele);
+                for (const ele of tdCells) {
+                    const startMonth: number = this.startValue.getMonth();
+                    const startYear: number = this.startValue.getFullYear();
+                    const element: Date = this.getIdValue(null, ele);
                     if (!this.startButton.element.classList.contains(ACTIVE) && ((this.currentView() === 'Year' &&
                         (element.getMonth() < startMonth) && (element.getFullYear() <= startYear))
                         || (this.currentView() === 'Decade' && (element.getMonth() <= startMonth) &&
@@ -2288,7 +2365,7 @@ export class DateRangePicker extends CalendarBase {
         if ((!isNullOrUndefined(this.startValue) && isNullOrUndefined(this.endValue)) ||
             (this.isMobile && this.endButton.element.classList.contains(ACTIVE))) {
             if ((!isNullOrUndefined(this.minDays) && this.minDays > 0) || (!isNullOrUndefined(this.maxDays) && this.maxDays > 0)) {
-                let startValueSelected : Date = this.removeTimeValueFromDate(this.startValue);
+                const startValueSelected : Date = this.removeTimeValueFromDate(this.startValue);
                 let minDate: Date = new Date(new Date(+startValueSelected).setDate(startValueSelected.getDate() + (this.minDays - 1)));
                 let maxDate: Date = new Date(new Date(+startValueSelected).setDate(startValueSelected.getDate() + (this.maxDays - 1)));
                 minDate = (!isNullOrUndefined(this.minDays) && this.minDays > 0) ? minDate : null;
@@ -2300,9 +2377,9 @@ export class DateRangePicker extends CalendarBase {
                     minDate = isNullOrUndefined(minDate) ? null : new Date(minDate.getFullYear() - 1, 11, 1);
                     maxDate = isNullOrUndefined(maxDate) ? null : new Date(maxDate.getFullYear(), 0, 1);
                 }
-                let tdCells: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>calendar.querySelectorAll('.' + CALENDAR + ' td');
+                const tdCells: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>calendar.querySelectorAll('.' + CALENDAR + ' td');
                 let maxEle: Element;
-                for (let ele of tdCells) {
+                for (const ele of tdCells) {
                     if (!ele.classList.contains(STARTDATE) && !ele.classList.contains(WEEKNUMBER)) {
                         let eleDate: Date = this.getIdValue(null, ele);
                         eleDate = this.removeTimeValueFromDate(eleDate);
@@ -2336,7 +2413,7 @@ export class DateRangePicker extends CalendarBase {
                     } else {
                         let calendar: HTMLElement = <HTMLElement>closest(maxEle, '.' + RIGHTCALENDER);
                         calendar = isNullOrUndefined(calendar) ? this.leftCalendar : calendar;
-                        let isLeftCalendar: boolean = calendar.classList.contains(LEFTCALENDER);
+                        const isLeftCalendar: boolean = calendar.classList.contains(LEFTCALENDER);
                         if (!isLeftCalendar) {
                             if (!this.rightCalNextIcon.classList.contains(DISABLED)) {
                                 addClass([this.rightCalNextIcon], [ICONDISABLED, DISABLED, OVERLAY]);
@@ -2355,18 +2432,20 @@ export class DateRangePicker extends CalendarBase {
                     }
                 }
             }
-        } else { this.isMaxDaysClicked = false; }
+        } else {
+            this.isMaxDaysClicked = false;
+        }
     }
 
     private removeTimeValueFromDate(value : Date): Date {
-        let dateValue : Date = new Date(value.getFullYear(), value.getMonth() , value.getDate());
+        const dateValue : Date = new Date(value.getFullYear(), value.getMonth() , value.getDate());
         return dateValue;
     }
 
     private removeClassDisabled(): void {
-        let tdCells: HTMLElement[];
-        tdCells = <HTMLElement[] & NodeListOf<Element>>this.popupObj.element.querySelectorAll('.' + CALENDAR + ' td' + '.' + DATEDISABLED);
-        for (let ele of tdCells) {
+        const tdCells: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>
+        this.popupObj.element.querySelectorAll('.' + CALENDAR + ' td' + '.' + DATEDISABLED);
+        for (const ele of tdCells) {
             if (ele.classList.contains(DATEDISABLED)) {
                 removeClass([ele], [DATEDISABLED, DISABLED, OVERLAY]);
                 EventHandler.add(ele, 'click', this.selectRange, this);
@@ -2395,7 +2474,7 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     private updateHeader(): void {
-        let format: Object = { type: 'date', skeleton: isBlazor() ? 'D' : 'yMMMd' };
+        const format: Object = { type: 'date', skeleton: isBlazor() ? 'D' : 'yMMMd' };
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             let range: number = (Math.round(Math.abs((this.removeTimeValueFromDate(this.startValue).getTime() -
             this.removeTimeValueFromDate(this.endValue).getTime()) / (1000 * 60 * 60 * 24))) + 1);
@@ -2473,7 +2552,7 @@ export class DateRangePicker extends CalendarBase {
     }
     private addSelectedAttributes(ele: Element, date: Date, isStartDate: boolean, sameDate?: boolean): void {
         if (ele) {
-            let title: string = this.globalize.formatDate(date, { type: 'date', skeleton: isBlazor() ? 'D' : 'full' });
+            const title: string = this.globalize.formatDate(date, { type: 'date', skeleton: isBlazor() ? 'D' : 'full' });
             if (!isNullOrUndefined(sameDate) && sameDate) {
                 ele.setAttribute('aria-label', 'The current start and end date is ' + '' + title);
             } else {
@@ -2484,13 +2563,13 @@ export class DateRangePicker extends CalendarBase {
     }
     private removeSelectedAttributes(): void {
         if (this.popupObj) {
-            let start: Element[] = <Element[] & NodeListOf<Element>>this.popupObj.element.querySelectorAll('.' + STARTDATE);
-            for (let ele of start) {
+            const start: Element[] = <Element[] & NodeListOf<Element>>this.popupObj.element.querySelectorAll('.' + STARTDATE);
+            for (const ele of start) {
                 ele.setAttribute('aria-selected', 'false');
                 ele.removeAttribute('aria-label');
             }
-            let end: Element[] = <Element[] & NodeListOf<Element>>this.popupObj.element.querySelectorAll('.' + ENDDATE);
-            for (let ele of end) {
+            const end: Element[] = <Element[] & NodeListOf<Element>>this.popupObj.element.querySelectorAll('.' + ENDDATE);
+            for (const ele of end) {
                 ele.setAttribute('aria-selected', 'false');
                 ele.removeAttribute('aria-label');
             }
@@ -2525,6 +2604,7 @@ export class DateRangePicker extends CalendarBase {
         }
         this.updateControl(ele);
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private deviceNavigation(ele?: Element): void {
         this.deviceCalendarEvent();
         this.updateRange([<HTMLElement>this.popupObj.element.querySelector('.' + CALENDAR)]);
@@ -2580,11 +2660,11 @@ export class DateRangePicker extends CalendarBase {
         return false;
     }
     protected createRangeHeader(): HTMLElement {
-        let labelContainer: HTMLElement = this.createElement('div', { className: STARTENDCONTAINER });
+        const labelContainer: HTMLElement = this.createElement('div', { className: STARTENDCONTAINER });
         if (!this.isMobile) {
-            let startLabel: HTMLElement = this.createElement('a', { className: STARTLABEL });
-            let endLabel: HTMLElement = this.createElement('a', { className: ENDLABEL });
-            let changeIcon: HTMLElement = this.createElement('span', { className: CHANGEICON });
+            const startLabel: HTMLElement = this.createElement('a', { className: STARTLABEL });
+            const endLabel: HTMLElement = this.createElement('a', { className: ENDLABEL });
+            const changeIcon: HTMLElement = this.createElement('span', { className: CHANGEICON });
             attributes(startLabel, { 'aria-atomic': 'true', 'aria-live': 'assertive', 'aria-label': 'Start Date', 'role': 'button' });
             attributes(endLabel, { 'aria-atomic': 'true', 'aria-live': 'assertive', 'aria-label': 'End Date', 'role': 'button' });
             labelContainer.appendChild(startLabel);
@@ -2593,8 +2673,8 @@ export class DateRangePicker extends CalendarBase {
             startLabel.textContent = this.l10n.getConstant('startLabel');
             endLabel.textContent = this.l10n.getConstant('endLabel');
         } else {
-            let endBtn: HTMLElement = this.createElement('button', { className: ENDBUTTON });
-            let startBtn: HTMLElement = this.createElement('button', { className: STARTBUTTON });
+            const endBtn: HTMLElement = this.createElement('button', { className: ENDBUTTON });
+            const startBtn: HTMLElement = this.createElement('button', { className: STARTBUTTON });
             this.startButton = new Button({ content: this.l10n.getConstant('startLabel') }, <HTMLButtonElement>startBtn);
             this.endButton = new Button({ content: this.l10n.getConstant('endLabel') }, <HTMLButtonElement>endBtn);
             labelContainer.appendChild(startBtn);
@@ -2670,11 +2750,11 @@ export class DateRangePicker extends CalendarBase {
     }
     private validateMinMaxDays(): void {
         if (!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) {
-            let range: number = (Math.round(Math.abs((this.removeTimeValueFromDate(this.startValue).getTime() -
+            const range: number = (Math.round(Math.abs((this.removeTimeValueFromDate(this.startValue).getTime() -
             this.removeTimeValueFromDate(this.endValue).getTime()) / (1000 * 60 * 60 * 24))) + 1);
             if ((!isNullOrUndefined(this.minDays) && this.minDays > 0) && !(range >= this.minDays)) {
                 if (this.strictMode) {
-                    let date: Date = new Date(+this.startValue);
+                    const date: Date = new Date(+this.startValue);
                     date.setDate(date.getDate() + (this.minDays - 1));
                     if (+date > +this.max) {
                         this.endValue = this.max;
@@ -2725,8 +2805,8 @@ export class DateRangePicker extends CalendarBase {
         return false;
     }
     private isSameDecade(start: Date, end: Date): boolean {
-        let startYear: number = start.getFullYear();
-        let endYear: number = end.getFullYear();
+        const startYear: number = start.getFullYear();
+        const endYear: number = end.getFullYear();
         if ((startYear - (startYear % 10)) === (endYear - (endYear % 10))) {
             return true;
         }
@@ -2757,7 +2837,7 @@ export class DateRangePicker extends CalendarBase {
         ) {
             this.currentDate = new Date(new Date().setHours(0, 0, 0, 0));
             this.currentDate.setDate(1);
-            let month: number = this.currentDate.getMonth() + 1;
+            const month: number = this.currentDate.getMonth() + 1;
             this.currentDate.setMonth(month);
         }
     }
@@ -2767,7 +2847,7 @@ export class DateRangePicker extends CalendarBase {
             this.currentDate = new Date(+this.endValue);
         } else {
             this.currentDate.setMonth(0);
-            let yr: number = this.currentDate.getFullYear() + 1;
+            const yr: number = this.currentDate.getFullYear() + 1;
             this.currentDate.setFullYear(yr);
             return;
         }
@@ -2785,7 +2865,7 @@ export class DateRangePicker extends CalendarBase {
             && !this.isDateDisabled(this.endValue) && !this.isDateDisabled(this.startValue)) {
             this.currentDate = new Date(+this.endValue);
         } else {
-            let decyr: number = this.currentDate.getFullYear() + 10;
+            const decyr: number = this.currentDate.getFullYear() + 10;
             this.currentDate.setFullYear(decyr);
             return;
         }
@@ -2822,7 +2902,7 @@ export class DateRangePicker extends CalendarBase {
         this.startMonthCurrentDate();
     }
     private createCalendar(): HTMLElement {
-        let calendarContainer: HTMLElement = this.createElement('div', { className: CALENDARCONTAINER });
+        const calendarContainer: HTMLElement = this.createElement('div', { className: CALENDARCONTAINER });
         if (!this.isMobile) {
             this.selectStartMonth();
             this.renderCalendar();
@@ -2836,16 +2916,22 @@ export class DateRangePicker extends CalendarBase {
             this.calendarElement.querySelector('.' + LEFTCALENDER + ' .' + HEADER).appendChild(this.leftCalPrevIcon);
             prepend([this.leftCalPrevIcon], this.calendarElement.querySelector('.' + LEFTCALENDER + ' .' + HEADER));
             this.leftCalendar = this.calendarElement;
-            let leftContainer: HTMLElement = this.createElement('div', { className: LEFTCONTAINER });
-            let rightContainer: HTMLElement = this.createElement('div', { className: RIGHTCONTAINER });
+            const leftContainer: HTMLElement = this.createElement('div', { className: LEFTCONTAINER });
+            const rightContainer: HTMLElement = this.createElement('div', { className: RIGHTCONTAINER });
             leftContainer.appendChild(this.leftCalendar);
             calendarContainer.appendChild(leftContainer);
             if (!this.isMobile) {
                 EventHandler.add(this.leftTitle, 'click', this.leftNavTitle, this);
             }
-            if (this.start === 'Month') { this.selectNextMonth(); }
-            if (this.start === 'Year') { this.selectNextYear(); }
-            if (this.start === 'Decade') { this.selectNextDecade(); }
+            if (this.start === 'Month') {
+                this.selectNextMonth();
+            }
+            if (this.start === 'Year') {
+                this.selectNextYear();
+            }
+            if (this.start === 'Decade') {
+                this.selectNextDecade();
+            }
             this.renderCalendar();
             this.rightCalCurrentDate = new Date(+this.currentDate);
             addClass([this.calendarElement], RIGHTCALENDER);
@@ -2872,8 +2958,8 @@ export class DateRangePicker extends CalendarBase {
             super.validateDate();
             super.minMaxUpdate();
             super.render();
-            let prevIcon: HTMLElement = <HTMLElement>this.calendarElement.querySelector('.' + CALENDAR + ' .' + PREVICON);
-            let nextIcon: HTMLElement = <HTMLElement>this.calendarElement.querySelector('.' + CALENDAR + ' .' + NEXTICON);
+            const prevIcon: HTMLElement = <HTMLElement>this.calendarElement.querySelector('.' + CALENDAR + ' .' + PREVICON);
+            const nextIcon: HTMLElement = <HTMLElement>this.calendarElement.querySelector('.' + CALENDAR + ' .' + NEXTICON);
             remove(this.calendarElement.querySelector('.' + CALENDAR + ' .' + ICONCONTAINER));
             this.calendarElement.querySelector('.' + CALENDAR + ' .' + HEADER).appendChild(nextIcon);
             this.calendarElement.querySelector('.' + CALENDAR + ' .' + HEADER).appendChild(prevIcon);
@@ -2918,15 +3004,18 @@ export class DateRangePicker extends CalendarBase {
 
         }
     }
-    /** 
+    /* eslint-disable valid-jsdoc, jsdoc/require-returns-description */
+    /**
      * Gets the current view of the Calendar.
-     * @returns string
+     *
+     * @returns {string}
      * @private
      * @hidden
      */
     public currentView(): string {
         return super.currentView();
     }
+    /* eslint-enable valid-jsdoc, jsdoc/require-returns-description */
     protected getCalendarView(view: string): CalendarView {
         if (view === 'Year') {
             return 'Year';
@@ -2940,7 +3029,7 @@ export class DateRangePicker extends CalendarBase {
         this.trigger('navigated', this.navigatedArgs);
         if (!isNullOrUndefined(this.popupObj)) {
             let element: HTMLElement;
-            let view: CalendarView = this.getCalendarView(this.currentView());
+            const view: CalendarView = this.getCalendarView(this.currentView());
             if (this.isMobile) {
                 if (view === this.depth) {
                     this.bindCalendarCellEvents();
@@ -3002,26 +3091,26 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     private createControl(): void {
-        let controlContainer: HTMLElement = this.createElement('div', { className: RANGECONTAINER });
-        let headerContainer: HTMLElement = this.createElement('div', { className: RANGEHEADER });
-        let labelContainer: HTMLElement = this.createRangeHeader();
+        const controlContainer: HTMLElement = this.createElement('div', { className: RANGECONTAINER });
+        const headerContainer: HTMLElement = this.createElement('div', { className: RANGEHEADER });
+        const labelContainer: HTMLElement = this.createRangeHeader();
         headerContainer.appendChild(labelContainer);
-        let daySpan: HTMLElement = this.createElement('div', { className: DAYSPAN });
+        const daySpan: HTMLElement = this.createElement('div', { className: DAYSPAN });
         attributes(daySpan, { 'aria-label': 'Selected Days' });
         daySpan.textContent = this.l10n.getConstant('selectedDays');
         headerContainer.appendChild(daySpan);
-        let separator: HTMLElement = this.createElement('div', { className: SEPARATOR });
-        let calendarContainer: HTMLElement = this.createCalendar();
+        const separator: HTMLElement = this.createElement('div', { className: SEPARATOR });
+        const calendarContainer: HTMLElement = this.createCalendar();
         controlContainer.appendChild(headerContainer);
         controlContainer.appendChild(separator);
         controlContainer.appendChild(calendarContainer);
-        let footerSection: HTMLElement = this.createElement('div', { className: FOOTER });
-        let cancelBtn: HTMLButtonElement = <HTMLButtonElement>this.createElement('button', { className: CANCEL + ' ' + FLAT + ' ' + CSS });
-        let applyBtn: HTMLButtonElement = <HTMLButtonElement>this.createElement('button');
+        const footerSection: HTMLElement = this.createElement('div', { className: FOOTER });
+        const cancelBtn: HTMLButtonElement = <HTMLButtonElement>this.createElement('button', { className: CANCEL + ' ' + FLAT + ' ' + CSS });
+        const applyBtn: HTMLButtonElement = <HTMLButtonElement>this.createElement('button');
         addClass([applyBtn], [APPLY, FLAT, PRIMARY, CSS]);
         footerSection.appendChild(applyBtn);
         footerSection.appendChild(cancelBtn);
-        let enable: boolean = !isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue);
+        const enable: boolean = !isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue);
         this.cancelButton = new Button({ content: this.l10n.getConstant('cancelText') }, cancelBtn);
         this.applyButton = new Button({ content: this.l10n.getConstant('applyText'), disabled: !enable }, applyBtn);
         EventHandler.add(applyBtn, 'click', this.applyFunction, this);
@@ -3033,7 +3122,7 @@ export class DateRangePicker extends CalendarBase {
                 this.listRippleEffect();
                 addClass([controlContainer], RANGEBORDER);
                 addClass([this.popupWrapper], 'e-preset-wrapper');
-                let presets: HTMLElement = <HTMLElement>this.popupWrapper.querySelector('.' + PRESETS);
+                const presets: HTMLElement = <HTMLElement>this.popupWrapper.querySelector('.' + PRESETS);
                 presets.style.height = this.popupWrapper.querySelector('.' + RANGECONTAINER).getBoundingClientRect().height + 'px';
             }
         }
@@ -3085,7 +3174,9 @@ export class DateRangePicker extends CalendarBase {
             addClass([this.inputWrapper.container], [INPUTFOCUS]);
         }
         if (eve.type !== 'touchstart' &&
-            this.closeEventArgs && !this.closeEventArgs.cancel) { eve.preventDefault(); }
+            this.closeEventArgs && !this.closeEventArgs.cancel) {
+            eve.preventDefault();
+        }
         if (!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) {
             this.previousStartValue = new Date(+this.startValue);
             this.previousEndValue = new Date(+this.endValue);
@@ -3124,9 +3215,9 @@ export class DateRangePicker extends CalendarBase {
         if (event.type === 'touchstart') {
             return;
         }
-        let target: Element = item || <Element>event.target;
-        let li: HTMLElement = <HTMLElement>closest(target, '.' + LISTCLASS);
-        let isClick: boolean = li && li.classList.contains(ACTIVE);
+        const target: Element = item || <Element>event.target;
+        const li: HTMLElement = <HTMLElement>closest(target, '.' + LISTCLASS);
+        const isClick: boolean = li && li.classList.contains(ACTIVE);
         if (li && li.classList.contains(LISTCLASS)) {
             this.setListSelection(li, event);
         }
@@ -3136,18 +3227,20 @@ export class DateRangePicker extends CalendarBase {
             if (li && li.classList.contains(LISTCLASS) && li.getAttribute('id') === 'custom_range') {
                 (<HTMLElement>this.leftCalendar.children[1].firstElementChild).focus();
             } else {
-                if (!isClick && event.type === 'keydown') { this.inputElement.focus(); }
+                if (!isClick && event.type === 'keydown') {
+                    this.inputElement.focus();
+                }
             }
         }
     }
     private onMouseOver(event: MouseEvent): void {
-        let li: HTMLElement = <HTMLElement>closest(<Element>event.target, '.' + LISTCLASS);
+        const li: HTMLElement = <HTMLElement>closest(<Element>event.target, '.' + LISTCLASS);
         if (li && li.classList.contains(LISTCLASS) && !li.classList.contains(HOVER)) {
             addClass([li], HOVER);
         }
     }
     private onMouseLeave(event: MouseEvent): void {
-        let item: HTMLElement = <HTMLElement>closest(<Element>event.target, '.' + HOVER);
+        const item: HTMLElement = <HTMLElement>closest(<Element>event.target, '.' + HOVER);
         if (!isNullOrUndefined(item)) {
             removeClass([item], HOVER);
         }
@@ -3156,7 +3249,7 @@ export class DateRangePicker extends CalendarBase {
         if (li && (!li.classList.contains(ACTIVE) || (this.isMobile && li.classList.contains(ACTIVE)))) {
             if (this.isMobile && li.classList.contains(ACTIVE)) {
                 this.activeIndex = Array.prototype.slice.call(this.liCollections).indexOf(li);
-                let values: { [key: string]: Object } = this.presetsItem[this.activeIndex];
+                const values: { [key: string]: Object } = this.presetsItem[this.activeIndex];
                 if (values.id === 'custom_range') {
                     this.renderCustomPopup();
                     return;
@@ -3167,7 +3260,7 @@ export class DateRangePicker extends CalendarBase {
             this.activeIndex = Array.prototype.slice.call(this.liCollections).indexOf(li);
             addClass([li], ACTIVE);
             li.setAttribute('aria-selected', 'true');
-            let values: { [key: string]: Object } = this.presetsItem[this.activeIndex];
+            const values: { [key: string]: Object } = this.presetsItem[this.activeIndex];
             if (values.id === 'custom_range') {
                 this.renderCustomPopup();
             } else {
@@ -3176,7 +3269,7 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     private removeListSelection(): void {
-        let item: HTMLElement = <HTMLElement>this.presetElement.querySelector('.' + ACTIVE);
+        const item: HTMLElement = <HTMLElement>this.presetElement.querySelector('.' + ACTIVE);
         if (!isNullOrUndefined(item)) {
             removeClass([item], ACTIVE);
             item.removeAttribute('aria-selected');
@@ -3203,6 +3296,7 @@ export class DateRangePicker extends CalendarBase {
             this.inputElement.focus();
         }
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private showPopup(element?: HTMLElement, event?: MouseEvent | KeyboardEventArgs | Event): void {
         this.presetHeight();
         if (this.zIndex === 1000) {
@@ -3228,18 +3322,18 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     private listRippleEffect(): void {
-        for (let li of this.liCollections) {
+        for (const li of this.liCollections) {
             rippleEffect(li);
         }
     }
     private createPresets(): void {
         if (!isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label)) {
             this.presetElement = this.createElement('div', { className: PRESETS, attrs: { 'tabindex': '0' } });
-            let listTag: HTMLElement = ListBase.createList(this.createElement, this.presetsItem, null, true);
+            const listTag: HTMLElement = ListBase.createList(this.createElement, this.presetsItem, null, true);
             attributes(listTag, { 'role': 'listbox', 'aria-hidden': 'false', 'id': this.element.id + '_options' });
             this.presetElement.appendChild(listTag);
             this.popupWrapper.appendChild(this.presetElement);
-            let customElement: HTMLElement = this.presetElement.querySelector('#custom_range');
+            const customElement: HTMLElement = this.presetElement.querySelector('#custom_range');
             if (!isNullOrUndefined(customElement)) {
                 customElement.textContent = this.l10n.getConstant('customRange') !== '' ? this.l10n.getConstant('customRange')
                     : 'Custom Range';
@@ -3270,11 +3364,12 @@ export class DateRangePicker extends CalendarBase {
             }
         }
     }
-    // tslint:disable-next-line:max-func-body-length
     private renderPopup(): void {
         this.popupWrapper.classList.add('e-control');
-        let popupWidth: number = this.popupWrapper.getBoundingClientRect().width;
-        if (!isNullOrUndefined(this.cssClass) && this.cssClass.trim() !== '') { this.popupWrapper.className += ' ' + this.cssClass; }
+        const popupWidth: number = this.popupWrapper.getBoundingClientRect().width;
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass.trim() !== '') {
+            this.popupWrapper.className += ' ' + this.cssClass;
+        }
         if (this.isMobile && this.isCustomWindow) {
             this.modal = this.createElement('div');
             document.body.appendChild(this.modal);
@@ -3284,12 +3379,15 @@ export class DateRangePicker extends CalendarBase {
                 (!isNullOrUndefined(this.targetElement) ? this.targetElement : this.inputWrapper.container),
             position: (this.isMobile ?
                 (!isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label) && !this.isCustomWindow ?
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
                     { X: 'left', Y: 'bottom' } : { X: 'center', Y: 'center' }) :
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 this.enableRtl ? { X: 'left', Y: 'bottom' } : { X: 'right', Y: 'bottom' }),
             offsetX: this.isMobile || this.enableRtl ? 0 : -popupWidth,
             offsetY: OFFSETVALUE,
             collision: this.isMobile ?
                 (!isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label) && !this.isCustomWindow ?
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
                     { X: 'fit' } : { X: 'fit', Y: 'fit' }) : { X: 'fit', Y: 'flip' },
             targetType: this.isMobile && this.isCustomWindow ? 'container' : 'relative',
             enableRtl: this.enableRtl,
@@ -3368,7 +3466,9 @@ export class DateRangePicker extends CalendarBase {
                     EventHandler.remove(document, 'keydown', this.popupCloseHandler);
                 }
             }, targetExitViewport: () => {
-                if (!Browser.isDevice) { this.hide(); }
+                if (!Browser.isDevice) {
+                    this.hide();
+                }
             }
         });
 
@@ -3388,14 +3488,14 @@ export class DateRangePicker extends CalendarBase {
 
     protected popupCloseHandler(e: KeyboardEventArgs): void {
         switch (e.keyCode) {
-            case 27:
-                this.hide(e);
-                break;
+        case 27:
+            this.hide(e);
+            break;
         }
     }
 
     private calendarFocus(): void {
-        let startDate: Element = this.popupObj && this.popupObj.element.querySelector('.' + STARTDATE);
+        const startDate: Element = this.popupObj && this.popupObj.element.querySelector('.' + STARTDATE);
         if (startDate) {
             let ele: HTMLElement = <HTMLElement>closest(startDate, '.' + RIGHTCALENDER);
             ele = isNullOrUndefined(ele) ? this.leftCalendar : ele;
@@ -3417,68 +3517,70 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     private presetHeight(): void {
-        let presets: HTMLElement = this.popupObj && <HTMLElement>this.popupObj.element.querySelector('.' + PRESETS);
-        let rangeContainer: HTMLElement = this.popupObj && <HTMLElement>this.popupObj.element.querySelector('.' + RANGECONTAINER);
+        const presets: HTMLElement = this.popupObj && <HTMLElement>this.popupObj.element.querySelector('.' + PRESETS);
+        const rangeContainer: HTMLElement = this.popupObj && <HTMLElement>this.popupObj.element.querySelector('.' + RANGECONTAINER);
         if (!isNullOrUndefined(presets) && !isNullOrUndefined(rangeContainer)) {
             presets.style.height = rangeContainer.getBoundingClientRect().height + 'px';
         }
     }
     private presetKeyActionHandler(e: KeyboardEventArgs): void {
         switch (e.action) {
-            case 'moveDown':
-                this.listMoveDown(e);
-                this.setScrollPosition();
-                e.preventDefault();
-                break;
-            case 'moveUp':
-                this.listMoveUp(e);
-                this.setScrollPosition();
-                e.preventDefault();
-                break;
-            case 'enter':
-                let hvrItem: HTMLElement = this.getHoverLI();
-                let actItem: HTMLElement = this.getActiveLI();
-                if (!isNullOrUndefined(this.leftCalendar) && !isNullOrUndefined(actItem)) {
-                    if (isNullOrUndefined(hvrItem) || (!isNullOrUndefined(actItem) && actItem === hvrItem)) {
-                        this.activeIndex = Array.prototype.slice.call(this.liCollections).indexOf(actItem);
-                        let values: { [key: string]: Object } = this.presetsItem[this.activeIndex];
-                        if (values.id === 'custom_range') {
-                            this.calendarFocus();
-                            actItem.classList.remove(HOVER);
-                            e.preventDefault();
-                            return;
-                        }
+        case 'moveDown':
+            this.listMoveDown(e);
+            this.setScrollPosition();
+            e.preventDefault();
+            break;
+        case 'moveUp':
+            this.listMoveUp(e);
+            this.setScrollPosition();
+            e.preventDefault();
+            break;
+        case 'enter': {
+            const hvrItem: HTMLElement = this.getHoverLI();
+            const actItem: HTMLElement = this.getActiveLI();
+            if (!isNullOrUndefined(this.leftCalendar) && !isNullOrUndefined(actItem)) {
+                if (isNullOrUndefined(hvrItem) || (!isNullOrUndefined(actItem) && actItem === hvrItem)) {
+                    this.activeIndex = Array.prototype.slice.call(this.liCollections).indexOf(actItem);
+                    const values: { [key: string]: Object } = this.presetsItem[this.activeIndex];
+                    if (values.id === 'custom_range') {
+                        this.calendarFocus();
+                        actItem.classList.remove(HOVER);
+                        e.preventDefault();
+                        return;
                     }
                 }
-                if (!isNullOrUndefined(hvrItem) || !isNullOrUndefined(actItem)) {
-                    this.onMouseClick(e, hvrItem || actItem);
+            }
+            if (!isNullOrUndefined(hvrItem) || !isNullOrUndefined(actItem)) {
+                this.onMouseClick(e, hvrItem || actItem);
+            }
+            e.preventDefault();
+        }
+            break;
+        case 'tab':
+            if (this.leftCalendar) {
+                const item: HTMLElement = this.getHoverLI();
+                if (!isNullOrUndefined(item)) {
+                    item.classList.remove(HOVER);
                 }
+            } else {
+                this.hide(e);
                 e.preventDefault();
-                break;
-            case 'tab':
-                if (this.leftCalendar) {
-                    let item: HTMLElement = this.getHoverLI();
-                    if (!isNullOrUndefined(item)) {
-                        item.classList.remove(HOVER);
-                    }
-                } else {
-                    this.hide(e);
-                    e.preventDefault();
-                }
-                break;
+            }
+            break;
         }
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private listMoveDown(e: KeyboardEventArgs): void {
-        let hvrItem: HTMLElement = this.getHoverLI();
-        let actItem: HTMLElement = this.getActiveLI();
+        const hvrItem: HTMLElement = this.getHoverLI();
+        const actItem: HTMLElement = this.getActiveLI();
         if (!isNullOrUndefined(hvrItem)) {
-            let li: HTMLElement = <HTMLElement>hvrItem.nextElementSibling;
+            const li: HTMLElement = <HTMLElement>hvrItem.nextElementSibling;
             if (!isNullOrUndefined(li) && li.classList.contains(LISTCLASS)) {
                 removeClass([hvrItem], HOVER);
                 addClass([li], HOVER);
             }
         } else if (!isNullOrUndefined(actItem)) {
-            let li: HTMLElement = <HTMLElement>actItem.nextElementSibling;
+            const li: HTMLElement = <HTMLElement>actItem.nextElementSibling;
             if (!isNullOrUndefined(li) && li.classList.contains(LISTCLASS)) {
                 addClass([li], HOVER);
             }
@@ -3486,28 +3588,29 @@ export class DateRangePicker extends CalendarBase {
             addClass([this.liCollections[0]], HOVER);
         }
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private listMoveUp(e: KeyboardEventArgs): void {
-        let hvrItem: HTMLElement = this.getHoverLI();
-        let actItem: HTMLElement = this.getActiveLI();
+        const hvrItem: HTMLElement = this.getHoverLI();
+        const actItem: HTMLElement = this.getActiveLI();
         if (!isNullOrUndefined(hvrItem)) {
-            let li: HTMLElement = <HTMLElement>hvrItem.previousElementSibling;
+            const li: HTMLElement = <HTMLElement>hvrItem.previousElementSibling;
             if (!isNullOrUndefined(li) && li.classList.contains(LISTCLASS)) {
                 removeClass([hvrItem], HOVER);
                 addClass([li], HOVER);
             }
         } else if (!isNullOrUndefined(actItem)) {
-            let li: HTMLElement = <HTMLElement>actItem.previousElementSibling;
+            const li: HTMLElement = <HTMLElement>actItem.previousElementSibling;
             if (!isNullOrUndefined(li) && li.classList.contains(LISTCLASS)) {
                 addClass([li], HOVER);
             }
         }
     }
     private getHoverLI(): HTMLElement {
-        let item: HTMLElement = <HTMLElement>this.presetElement.querySelector('.' + HOVER);
+        const item: HTMLElement = <HTMLElement>this.presetElement.querySelector('.' + HOVER);
         return item;
     }
     private getActiveLI(): HTMLElement {
-        let item: HTMLElement = <HTMLElement>this.presetElement.querySelector('.' + ACTIVE);
+        const item: HTMLElement = <HTMLElement>this.presetElement.querySelector('.' + ACTIVE);
         return item;
     }
     private popupKeyBoardHandler(): void {
@@ -3528,14 +3631,14 @@ export class DateRangePicker extends CalendarBase {
             });
     }
     private setScrollPosition(): void {
-        let listHeight: number = this.presetElement.getBoundingClientRect().height;
-        let hover: HTMLElement = <HTMLElement>this.presetElement.querySelector('.' + HOVER);
-        let active: HTMLElement = <HTMLElement>this.presetElement.querySelector('.' + ACTIVE);
-        let element: HTMLElement = !isNullOrUndefined(hover) ? hover : active;
+        const listHeight: number = this.presetElement.getBoundingClientRect().height;
+        const hover: HTMLElement = <HTMLElement>this.presetElement.querySelector('.' + HOVER);
+        const active: HTMLElement = <HTMLElement>this.presetElement.querySelector('.' + ACTIVE);
+        const element: HTMLElement = !isNullOrUndefined(hover) ? hover : active;
         if (!isNullOrUndefined(element)) {
-            let nextEle: Element = element.nextElementSibling;
-            let height: number = nextEle ? (<HTMLElement>nextEle).offsetTop : element.offsetTop;
-            let liHeight: number = element.getBoundingClientRect().height;
+            const nextEle: Element = element.nextElementSibling;
+            const height: number = nextEle ? (<HTMLElement>nextEle).offsetTop : element.offsetTop;
+            const liHeight: number = element.getBoundingClientRect().height;
             if ((height + element.offsetTop) > listHeight) {
                 this.presetElement.scrollTop = nextEle ? (height - (listHeight / 2 + liHeight / 2)) : height;
             } else {
@@ -3544,68 +3647,70 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     private popupKeyActionHandle(e: KeyboardEventArgs): void {
-        let presetElement: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, '.' + PRESETS);
+        const presetElement: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, '.' + PRESETS);
         switch (e.action) {
-            case 'escape':
-                if (this.isPopupOpen()) {
-                    if (this.isKeyPopup) {
-                        this.inputElement.focus();
-                        this.isKeyPopup = false;
-                    }
-                    this.hide(e);
-                } else {
-                    (this.inputWrapper.container.children[1] as HTMLElement).blur();
+        case 'escape':
+            if (this.isPopupOpen()) {
+                if (this.isKeyPopup) {
+                    this.inputElement.focus();
+                    this.isKeyPopup = false;
                 }
-                break;
-            case 'enter':
-                if (!this.isPopupOpen()) {
-                    this.show(null, e);
-                } else {
-                    (this.inputWrapper.container.children[1] as HTMLElement).focus();
-                }
-                break;
-            case 'tab':
                 this.hide(e);
-                break;
-            case 'altRightArrow':
-                if (!isNullOrUndefined(presetElement)) {
+            } else {
+                (this.inputWrapper.container.children[1] as HTMLElement).blur();
+            }
+            break;
+        case 'enter':
+            if (!this.isPopupOpen()) {
+                this.show(null, e);
+            } else {
+                (this.inputWrapper.container.children[1] as HTMLElement).focus();
+            }
+            break;
+        case 'tab':
+            this.hide(e);
+            break;
+        case 'altRightArrow':
+            if (!isNullOrUndefined(presetElement)) {
+                this.cancelButton.element.focus();
+            } else {
+                if (document.activeElement === this.cancelButton.element && this.applyButton.element.disabled !== true) {
+                    this.applyButton.element.focus();
+                } else {
+                    (<HTMLElement>this.leftCalendar.children[1].firstElementChild).focus();
+                }
+            }
+            e.preventDefault();
+            break;
+        case 'altLeftArrow':
+            if (!isNullOrUndefined(presetElement)) {
+                (<HTMLElement>this.rightCalendar.children[1].firstElementChild).focus();
+            } else {
+                if (document.activeElement === this.applyButton.element && this.applyButton.element.disabled !== true) {
                     this.cancelButton.element.focus();
                 } else {
-                    if (document.activeElement === this.cancelButton.element && this.applyButton.element.disabled !== true) {
-                        this.applyButton.element.focus();
+                    if (!isNullOrUndefined(this.presetElement) && (document.activeElement === this.cancelButton.element)) {
+                        this.presetElement.focus();
                     } else {
-                        (<HTMLElement>this.leftCalendar.children[1].firstElementChild).focus();
+                        (<HTMLElement>this.rightCalendar.children[1].firstElementChild).focus();
                     }
                 }
-                e.preventDefault();
-                break;
-            case 'altLeftArrow':
-                if (!isNullOrUndefined(presetElement)) {
-                    (<HTMLElement>this.rightCalendar.children[1].firstElementChild).focus();
-                } else {
-                    if (document.activeElement === this.applyButton.element && this.applyButton.element.disabled !== true) {
-                        this.cancelButton.element.focus();
-                    } else {
-                        if (!isNullOrUndefined(this.presetElement) && (document.activeElement === this.cancelButton.element)) {
-                            this.presetElement.focus();
-                        } else {
-                            (<HTMLElement>this.rightCalendar.children[1].firstElementChild).focus();
-                        }
-                    }
-                }
-                e.preventDefault();
-                break;
+            }
+            e.preventDefault();
+            break;
         }
     }
     private documentHandler(e: MouseEvent): void {
         if (isNullOrUndefined(this.popupObj)) {
             return;
         }
-        let target: HTMLElement = <HTMLElement>e.target;
+        const target: HTMLElement = <HTMLElement>e.target;
         if (!this.inputWrapper.container.contains(target as Node) ||
             (!isNullOrUndefined(this.popupObj) && !closest(target, '[id="' + this.popupWrapper.id + '"]'))) {
             if (e.type !== 'touchstart' && ((e.type === 'mousedown') ||
-                this.closeEventArgs && !this.closeEventArgs.cancel)) { e.preventDefault(); }
+                this.closeEventArgs && !this.closeEventArgs.cancel)) {
+                e.preventDefault();
+            }
         }
         if ((isNullOrUndefined(this.targetElement) ||
             (!isNullOrUndefined(this.targetElement) && !(target === this.targetElement))) &&
@@ -3615,7 +3720,9 @@ export class DateRangePicker extends CalendarBase {
             this.preventBlur = false;
             if (this.isPopupOpen() && document.body.contains(this.popupObj.element)) {
                 this.applyFunction(e);
-                if (!this.isMobile) { this.isRangeIconClicked = false; }
+                if (!this.isMobile) {
+                    this.isRangeIconClicked = false;
+                }
             }
         }
     }
@@ -3634,7 +3741,7 @@ export class DateRangePicker extends CalendarBase {
                     cssClass: updatedCssClassValue,
                     enabled: this.enabled,
                     enableRtl: this.enableRtl,
-                    showClearButton: this.showClearButton,
+                    showClearButton: this.showClearButton
                 },
                 buttons: [DATERANGEICON]
             },
@@ -3687,7 +3794,7 @@ export class DateRangePicker extends CalendarBase {
         if (this.strictMode) {
             this.validateRangeStrict();
         }
-        let isDisabled: boolean = this.disabledDates();
+        const isDisabled: boolean = this.disabledDates();
         if (this.strictMode && (isDisabled)) {
             this.startValue = this.previousStartValue;
             this.setProperties({ startDate: this.startValue }, true);
@@ -3712,9 +3819,9 @@ export class DateRangePicker extends CalendarBase {
     }
     private updateInput(): void {
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
-            let formatOption: object = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
-            let startDate: string = this.globalize.formatDate(this.startValue, formatOption);
-            let endDate: string = this.globalize.formatDate(this.endValue, formatOption);
+            const formatOption: object = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
+            const startDate: string = this.globalize.formatDate(this.startValue, formatOption);
+            const endDate: string = this.globalize.formatDate(this.endValue, formatOption);
             Input.setValue(startDate + ' ' + this.separator + ' ' + endDate, this.inputElement, this.floatLabelType, this.showClearButton);
             this.previousStartValue = new Date(+this.startValue);
             this.previousEndValue = new Date(+this.endValue);
@@ -3724,11 +3831,11 @@ export class DateRangePicker extends CalendarBase {
         }
     }
 
-    protected checkInvalidRange(value: String | DateRange | Date[]): void {
+    protected checkInvalidRange(value: string | DateRange | Date[]): void {
         if (!isNullOrUndefined(value)) {
             let invalid: boolean = false;
-            let startinvalue: String | Date;
-            let endinvalue: String | Date;
+            let startinvalue: string | Date;
+            let endinvalue: string | Date;
             let startString: string = null;
             let endString: string = null;
             let valueString: string = null;
@@ -3736,7 +3843,7 @@ export class DateRangePicker extends CalendarBase {
             let endObject: boolean = false;
             let invalidobject: boolean = false;
             if (typeof (value) === 'string') {
-                let range: string[] = (<string>value).split(' ' + this.separator + ' ');
+                const range: string[] = (<string>value).split(' ' + this.separator + ' ');
                 if (range.length === 2) {
                     startString = range[0];
                     endString = range[1];
@@ -3775,11 +3882,19 @@ export class DateRangePicker extends CalendarBase {
                 startString = endString = valueString = null;
                 invalid = true;
             }
-            if (startString) { invalid = invalid || this.checkInvalidValue(startString); }
-            if (endString) { invalid = invalid || this.checkInvalidValue(endString); }
+            if (startString) {
+                invalid = invalid || this.checkInvalidValue(startString);
+            }
+            if (endString) {
+                invalid = invalid || this.checkInvalidValue(endString);
+            }
             if (invalid) {
-                if (startObject && !invalidobject) { startString = (<Date>startinvalue).toLocaleDateString(); }
-                if (endObject && !invalidobject) { endString = (<Date>endinvalue).toLocaleDateString(); }
+                if (startObject && !invalidobject) {
+                    startString = (<Date>startinvalue).toLocaleDateString();
+                }
+                if (endObject && !invalidobject) {
+                    endString = (<Date>endinvalue).toLocaleDateString();
+                }
                 if (!isNullOrUndefined(startString) && !isNullOrUndefined(endString)) {
                     valueString = startString + ' ' + this.separator + ' ' + endString;
                 } else if (!isNullOrUndefined(startString)) {
@@ -3806,20 +3921,20 @@ export class DateRangePicker extends CalendarBase {
         return stringValue;
     }
     private checkInvalidValue(value: string): boolean {
-        let valueString: string = value;
+        const valueString: string = value;
         let invalid: boolean = false;
         let formatOpt: object = null;
         formatOpt = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
         if (typeof valueString !== 'string') {
             invalid = true;
         } else {
-            let globalize: Internationalization = new Internationalization(this.locale);
+            const globalize: Internationalization = new Internationalization(this.locale);
             if (!this.checkDateValue(globalize.parseDate(valueString, formatOpt))) {
                 let extISOStr: RegExp = null;
                 let basISOString: RegExp = null;
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 extISOStr = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 basISOString = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
                 if ((!extISOStr.test(valueString) && !basISOString.test(valueString))
                     || (/^[a-zA-Z0-9- ]*$/).test(valueString) || isNaN(+new Date(this.checkValue(valueString)))) {
@@ -3833,15 +3948,15 @@ export class DateRangePicker extends CalendarBase {
         if (isNullOrUndefined(date)) {
             return false;
         }
-        let value: Date = new Date(+date);
+        const value: Date = new Date(+date);
         if (+value < +this.min || +value > +this.max) {
             return true;
         }
         this.virtualRenderCellArgs = {
             date: value,
-            isDisabled: false,
+            isDisabled: false
         };
-        let args: RenderDayCellEventArgs = this.virtualRenderCellArgs;
+        const args: RenderDayCellEventArgs = this.virtualRenderCellArgs;
         this.virtualRenderCellEvent(args);
         if (args.isDisabled) {
             return true;
@@ -3851,14 +3966,14 @@ export class DateRangePicker extends CalendarBase {
     private disabledDateRender(): void {
         this.disabledDays = [];
         this.disabledDayCnt = null;
-        let localDate: Date = new Date(+this.startValue);
+        const localDate: Date = new Date(+this.startValue);
         let count: number = 0;
         while (+ localDate <= +this.endValue) {
             this.virtualRenderCellArgs = {
                 date: localDate,
-                isDisabled: false,
+                isDisabled: false
             };
-            let args: RenderDayCellEventArgs = this.virtualRenderCellArgs;
+            const args: RenderDayCellEventArgs = this.virtualRenderCellArgs;
             this.virtualRenderCellEvent(args);
             if (args.isDisabled) {
                 this.disabledDays.push(new Date(+args.date));
@@ -3915,10 +4030,14 @@ export class DateRangePicker extends CalendarBase {
     }
 
     /**
-     * To dispatch the event manually 
+     * To dispatch the event manually
+     *
+     * @param {HTMLElement} element - Specifies the element to dispatch the event.
+     * @param {string} type - Specifies the name of the event.
+     * @returns {void}
      */
     protected dispatchEvent(element: HTMLElement, type: string): void {
-        let evt: Event = document.createEvent('HTMLEvents');
+        const evt: Event = document.createEvent('HTMLEvents');
         evt.initEvent(type, false, true);
         element.dispatchEvent(evt);
         this.firstHiddenChild.dispatchEvent(evt);
@@ -3939,11 +4058,12 @@ export class DateRangePicker extends CalendarBase {
         this.initStartDate = this.checkDateValue(this.startValue);
         this.initEndDate = this.checkDateValue(this.endValue);
     }
-    /** 
+    /**
      * This method is used to navigate to the month/year/decade view of the Calendar.
+     *
      * @param  {string} view - Specifies the view of the Calendar.
      * @param  {Date} date - Specifies the focused date in a view.
-     * @returns void
+     * @returns {void}
      * @hidden
      */
     public navigateTo(view: CalendarView, date: Date): void {
@@ -3989,7 +4109,9 @@ export class DateRangePicker extends CalendarBase {
                 this.leftKeyboardModule = this.rightKeyboardModule = null;
                 this.updateNavIcons();
             }
-            if (this.currentView() === this.depth) { this.bindCalendarCellEvents(); }
+            if (this.currentView() === this.depth) {
+                this.bindCalendarCellEvents();
+            }
             this.removeFocusedDate();
             this.updateRange((this.isMobile ? [this.calendarElement] : [this.leftCalendar, this.rightCalendar]));
         }
@@ -4010,23 +4132,22 @@ export class DateRangePicker extends CalendarBase {
 
     /**
      * Sets the focus to widget for interaction.
-     * @returns void
+     *
+     * @returns {void}
      */
     public focusIn(): void {
         if (document.activeElement !== this.inputElement && this.enabled) {
             addClass([this.inputWrapper.container], [INPUTFOCUS]);
             (<HTMLElement>this.inputElement).focus();
-            let focusArguments: FocusEventArgs = {
-                model: this
-            };
         }
     }
     /**
-     * Remove the focus from widget, if the widget is in focus state. 
-     * @returns void
+     * Remove the focus from widget, if the widget is in focus state.
+     *
+     * @returns {void}
      */
     public focusOut(): void {
-        let isBlur: boolean = this.preventBlur;
+        const isBlur: boolean = this.preventBlur;
         if (document.activeElement === this.inputElement) {
             removeClass([this.inputWrapper.container], [INPUTFOCUS]);
             this.preventBlur = false;
@@ -4035,13 +4156,14 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     /**
-     * To destroy the widget.    
-     * @returns void
+     * To destroy the widget.
+     *
+     * @returns {void}
      */
     public destroy(): void {
         this.unBindEvents();
         this.hide(null);
-        let ariaAttrs: object = {
+        const ariaAttrs: object = {
             'aria-readonly': this.readonly ? 'true' : 'false', 'tabindex': '0', 'aria-haspopup': 'true',
             'aria-activedescendant': 'null', 'aria-owns': this.element.id + '_popup', 'aria-expanded': 'false',
             'role': 'combobox', 'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
@@ -4051,8 +4173,11 @@ export class DateRangePicker extends CalendarBase {
             removeClass([this.inputElement], [ROOT]);
             EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
             Input.removeAttributes(<{ [key: string]: string }>ariaAttrs, this.inputElement);
-            (!isNullOrUndefined(this.cloneElement.getAttribute('tabindex'))) ?
-                this.inputElement.setAttribute('tabindex', this.tabIndex) : this.inputElement.removeAttribute('tabindex');
+            if (!isNullOrUndefined(this.cloneElement.getAttribute('tabindex'))) {
+                this.inputElement.setAttribute('tabindex', this.tabIndex);
+            } else {
+                this.inputElement.removeAttribute('tabindex');
+            }
             this.ensureInputAttribute();
             this.inputElement.classList.remove('e-input');
             if (!isNullOrUndefined(this.inputWrapper)) {
@@ -4086,7 +4211,7 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     protected ensureInputAttribute(): void {
-        let attr: string[] = [];
+        const attr: string[] = [];
         for (let i: number = 0; i < this.inputElement.attributes.length; i++) {
             attr[i] = this.inputElement.attributes[i].name;
         }
@@ -4105,24 +4230,28 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     /**
-     * To get component name  
-     * @returns string
+     * To get component name
+     *
+     * @returns {string} Returns the component name.
      * @private
      */
     protected getModuleName(): string {
         return 'daterangepicker';
     }
+    /* eslint-disable valid-jsdoc, jsdoc/require-returns-description */
     /**
      * Return the properties that are maintained upon browser refresh.
-     * @returns string
+     *
+     * @returns {string}
      */
     public getPersistData(): string {
-        let keyEntity: string[] = ['startDate', 'endDate', 'value'];
+        const keyEntity: string[] = ['startDate', 'endDate', 'value'];
         return this.addOnPersist(keyEntity);
     }
     /**
      * Return the selected range and day span in the DateRangePicker.
-     * @returns Object
+     *
+     * @returns {Object}
      */
     public getSelectedRange(): Object {
         let range: number;
@@ -4139,9 +4268,13 @@ export class DateRangePicker extends CalendarBase {
         }
         return { startDate: this.startValue, endDate: this.endValue, daySpan: range };
     }
+    /* eslint-enable valid-jsdoc, jsdoc/require-returns-description */
+    /* eslint-disable valid-jsdoc, jsdoc/require-param */
     /**
      * To open the Popup container in the DateRangePicker component.
-     * @returns void
+     *
+     * @param {HTMLElement} element - Specifies element.
+     * @returns {void}
      */
     public show(element?: HTMLElement, event?: MouseEvent | KeyboardEventArgs | Event): void {
         if (this.isMobile && this.popupObj) {
@@ -4167,13 +4300,13 @@ export class DateRangePicker extends CalendarBase {
                     event: event ? event : null,
                     appendTo: this.isMobile || Browser.isDevice ? this.mobileRangePopupWrap : document.body
                 };
-                let eventArgs: RangePopupEventArgs = this.openEventArgs;
+                const eventArgs: RangePopupEventArgs = this.openEventArgs;
                 this.trigger('open', eventArgs, (eventArgs: RangePopupEventArgs) => {
                     this.openEventArgs = eventArgs;
                     if (!this.openEventArgs.cancel) {
                         this.openEventArgs.appendTo.appendChild(this.popupWrapper);
                         this.showPopup(element, event);
-                        let isPreset: boolean = (!this.isCustomRange || (this.isMobile && this.isCustomRange));
+                        const isPreset: boolean = (!this.isCustomRange || (this.isMobile && this.isCustomRange));
                         if (!isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label) && isPreset) {
                             this.setScrollPosition();
                         }
@@ -4188,7 +4321,8 @@ export class DateRangePicker extends CalendarBase {
                             this.mobileRangePopupWrap,
                             this.popupObj.element,
                             this.modal,
-                            this.isMobile || Browser.isDevice);
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            this.isMobile || Browser.isDevice as any);
                     }
                 });
             }
@@ -4197,7 +4331,8 @@ export class DateRangePicker extends CalendarBase {
 
     /**
      * To close the Popup container in the DateRangePicker component.
-     * @returns void
+     *
+     * @returns {void}
      */
     public hide(event?: KeyboardEventArgs | MouseEvent | Event): void {
         if (this.popupObj) {
@@ -4228,7 +4363,7 @@ export class DateRangePicker extends CalendarBase {
                     model: (isBlazor() && this.isServerRendered) ? null : this,
                     event: event ? event : null
                 };
-                let eventArgs: RangePopupEventArgs = this.closeEventArgs;
+                const eventArgs: RangePopupEventArgs = this.closeEventArgs;
                 this.trigger('close', eventArgs, (eventArgs: RangePopupEventArgs) => {
                     this.closeEventArgs = eventArgs;
                     if (!this.closeEventArgs.cancel) {
@@ -4290,6 +4425,7 @@ export class DateRangePicker extends CalendarBase {
             }
         }
     }
+    /* eslint-enable valid-jsdoc, jsdoc/require-param */
     private setLocale(): void {
         this.globalize = new Internationalization(this.locale);
         this.l10n.setLocale(this.locale);
@@ -4345,7 +4481,7 @@ export class DateRangePicker extends CalendarBase {
         attributes(this.secondHiddenChild, {
             'type': 'text', 'name': this.inputElement.getAttribute('data-name'), 'class' : HIDDENELEMENT
         });
-        let format: Object = { type: 'datetime', skeleton: isBlazor() ? 'd' : 'yMd' };
+        const format: Object = { type: 'datetime', skeleton: isBlazor() ? 'd' : 'yMd' };
         this.firstHiddenChild.value = this.startDate && this.globalize.formatDate(this.startDate, format);
         this.secondHiddenChild.value = this.endDate && this.globalize.formatDate(this.endDate, format);
         this.inputElement.parentElement.appendChild(this.firstHiddenChild);
@@ -4368,209 +4504,213 @@ export class DateRangePicker extends CalendarBase {
     }
     /**
      * Called internally if any of the property value changed.
-     * returns void
+     *
+     * @param {DateRangePickerModel} newProp - Returns the dynamic property value of the component.
+     * @param {DateRangePickerModel} oldProp - Returns the previous property value of the component.
+     * @returns {void}
      * @private
      */
-    // tslint:disable-next-line:max-func-body-length
     public onPropertyChanged(newProp: DateRangePickerModel, oldProp: DateRangePickerModel): void {
-        let format: Object = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
-        for (let prop of Object.keys(newProp)) {
-            let openPopup: string[] = ['maxDays', 'minDays', 'value'];
+        const format: Object = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
+        for (const prop of Object.keys(newProp)) {
+            const openPopup: string[] = ['maxDays', 'minDays', 'value'];
             if (openPopup.indexOf(prop) < 0) {
                 this.hide(null);
             }
             switch (prop) {
-                case 'width':
-                    this.setEleWidth(this.width);
-                    break;
-                case 'separator':
-                    this.previousEleValue = this.inputElement.value;
-                    this.setProperties({ separator: newProp.separator }, true);
-                    this.updateInput();
-                    this.changeTrigger();
-                    break;
-                case 'placeholder':
-                    Input.setPlaceholder(newProp.placeholder, this.inputElement);
-                    this.setProperties({ placeholder: newProp.placeholder }, true);
-                    break;
-                case 'readonly':
-                    Input.setReadonly(this.readonly, this.inputElement);
-                    this.inputElement.setAttribute('aria-readonly', '' + this.readonly);
-                    this.setRangeAllowEdit();
-                    break;
-                case 'cssClass':
-                    this.updateCssClass(newProp.cssClass, oldProp.cssClass);
-                    break;
-                case 'enabled':
-                    this.setProperties({ enabled: newProp.enabled }, true);
-                    Input.setEnabled(this.enabled, this.inputElement);
-                    if (this.enabled) {
-                        this.inputElement.setAttribute('tabindex', this.tabIndex);
-                    } else {
-                        this.inputElement.tabIndex = -1;
-                    }
-                    break;
-                case 'allowEdit':
-                    this.setRangeAllowEdit();
-                    break;
-                case 'enableRtl':
-                    this.setProperties({ enableRtl: newProp.enableRtl }, true);
-                    Input.setEnableRtl(this.enableRtl, [this.inputWrapper.container]);
-                    break;
-                case 'zIndex':
-                    this.setProperties({ zIndex: newProp.zIndex }, true);
-                    break;
-                case 'format':
-                    this.setProperties({ format: newProp.format }, true);
-                    this.checkFormat();
-                    this.updateInput();
-                    this.changeTrigger();
-                    break;
-                case 'locale':
-                    this.globalize = new Internationalization(this.locale);
-                    this.l10n.setLocale(this.locale);
-                    this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
-                    Input.setPlaceholder(this.placeholder, this.inputElement);
-                    this.setLocale();
-                    break;
-                case 'htmlAttributes':
-                    this.updateHtmlAttributeToElement();
-                    this.updateHtmlAttributeToWrapper();
-                    this.setDataAttribute(true);
-                    this.checkHtmlAttributes(true);
-                    break;
-                case 'showClearButton':
-                    Input.setClearButton(this.showClearButton, this.inputElement, this.inputWrapper);
-                    this.bindClearEvent();
-                    break;
-                case 'startDate':
-                    if (typeof newProp.startDate === 'string') {
-                        newProp.startDate = this.globalize.parseDate(<string>newProp.startDate, format);
-                    }
-                    if (+this.initStartDate !== +newProp.startDate) {
-                        this.startValue = this.checkDateValue(new Date(this.checkValue(newProp.startDate)));
+            case 'width':
+                this.setEleWidth(this.width);
+                break;
+            case 'separator':
+                this.previousEleValue = this.inputElement.value;
+                this.setProperties({ separator: newProp.separator }, true);
+                this.updateInput();
+                this.changeTrigger();
+                break;
+            case 'placeholder':
+                Input.setPlaceholder(newProp.placeholder, this.inputElement);
+                this.setProperties({ placeholder: newProp.placeholder }, true);
+                break;
+            case 'readonly':
+                Input.setReadonly(this.readonly, this.inputElement);
+                this.inputElement.setAttribute('aria-readonly', '' + this.readonly);
+                this.setRangeAllowEdit();
+                break;
+            case 'cssClass':
+                this.updateCssClass(newProp.cssClass, oldProp.cssClass);
+                break;
+            case 'enabled':
+                this.setProperties({ enabled: newProp.enabled }, true);
+                Input.setEnabled(this.enabled, this.inputElement);
+                if (this.enabled) {
+                    this.inputElement.setAttribute('tabindex', this.tabIndex);
+                } else {
+                    this.inputElement.tabIndex = -1;
+                }
+                break;
+            case 'allowEdit':
+                this.setRangeAllowEdit();
+                break;
+            case 'enableRtl':
+                this.setProperties({ enableRtl: newProp.enableRtl }, true);
+                Input.setEnableRtl(this.enableRtl, [this.inputWrapper.container]);
+                break;
+            case 'zIndex':
+                this.setProperties({ zIndex: newProp.zIndex }, true);
+                break;
+            case 'format':
+                this.setProperties({ format: newProp.format }, true);
+                this.checkFormat();
+                this.updateInput();
+                this.changeTrigger();
+                break;
+            case 'locale':
+                this.globalize = new Internationalization(this.locale);
+                this.l10n.setLocale(this.locale);
+                this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
+                Input.setPlaceholder(this.placeholder, this.inputElement);
+                this.setLocale();
+                break;
+            case 'htmlAttributes':
+                this.updateHtmlAttributeToElement();
+                this.updateHtmlAttributeToWrapper();
+                this.setDataAttribute(true);
+                this.checkHtmlAttributes(true);
+                break;
+            case 'showClearButton':
+                Input.setClearButton(this.showClearButton, this.inputElement, this.inputWrapper);
+                this.bindClearEvent();
+                break;
+            case 'startDate':
+                if (typeof newProp.startDate === 'string') {
+                    newProp.startDate = this.globalize.parseDate(<string>newProp.startDate, format);
+                }
+                if (+this.initStartDate !== +newProp.startDate) {
+                    this.startValue = this.checkDateValue(new Date(this.checkValue(newProp.startDate)));
+                    this.setDate();
+                    this.setValue();
+                }
+                break;
+            case 'endDate':
+                if (typeof newProp.endDate === 'string') {
+                    newProp.endDate = this.globalize.parseDate(<string>newProp.endDate, format);
+                }
+                if (+this.initEndDate !== +newProp.endDate) {
+                    this.endValue = this.checkDateValue(new Date(this.checkValue(newProp.endDate)));
+                    this.setDate();
+                    this.setValue();
+                }
+                break;
+            case 'value':
+                this.invalidValueString = null;
+                this.checkInvalidRange(newProp.value);
+                if (typeof (newProp.value) === 'string') {
+                    if (!this.invalidValueString) {
+                        const rangeArray: string[] = (<string>newProp.value).split(' ' + this.separator + ' ');
+                        this.value = [new Date(rangeArray[0]), new Date(rangeArray[1])];
+                        this.updateValue();
                         this.setDate();
-                        this.setValue();
-                    }
-                    break;
-                case 'endDate':
-                    if (typeof newProp.endDate === 'string') {
-                        newProp.endDate = this.globalize.parseDate(<string>newProp.endDate, format);
-                    }
-                    if (+this.initEndDate !== +newProp.endDate) {
-                        this.endValue = this.checkDateValue(new Date(this.checkValue(newProp.endDate)));
-                        this.setDate();
-                        this.setValue();
-                    }
-                    break;
-                case 'value':
-                    this.invalidValueString = null;
-                    this.checkInvalidRange(newProp.value);
-                    if (typeof (newProp.value) === 'string') {
-                        if (!this.invalidValueString) {
-                            let rangeArray: string[] = (<string>newProp.value).split(' ' + this.separator + ' ');
-                            this.value = [new Date(rangeArray[0]), new Date(rangeArray[1])];
-                            this.updateValue();
-                            this.setDate();
-                        } else {
-                            this.clearModelvalue(newProp, oldProp);
-                        }
                     } else {
-                        if ((!isNullOrUndefined(newProp.value) && (<Date[]>newProp.value).length > 0)
-                            || !isNullOrUndefined(newProp.value) && (<DateRange>newProp.value).start) {
-                            this.valueType = newProp.value;
-                            if ((<Date[]>newProp.value)[0] === null || ((<DateRange>newProp.value).start === null)) {
-                                if ((<Date[]>newProp.value).length === 1 || ((<DateRange>newProp.value).start)) {
-                                    this.clearModelvalue(newProp, oldProp);
-                                } else if ((<Date[]>newProp.value)[1] === null ||
-                                    ((<DateRange>newProp.value).start === null)) { this.clearModelvalue(newProp, oldProp); }
-                            } else if ((+this.initStartDate !== +(<Date[]>newProp.value)[0]
-                                || +this.initEndDate !== +(<Date[]>newProp.value)[1]) ||
-                                (+this.initStartDate !== +((<DateRange>newProp.value).start
-                                    || +this.initEndDate !== +(<DateRange>newProp.value).start))) {
-                                if ((<Date[]>newProp.value).length === 1) {
-                                    this.modelValue = <Date[]>newProp.value;
-                                } else if ((<DateRange>newProp.value).start) {
-                                    this.modelValue = <DateRange>newProp.value;
-                                }
-                                this.updateValue();
-                                this.setDate();
-                            }
-                        } else {
-                            if (isNullOrUndefined(this.value)
-                                || (<DateRange>newProp.value).start == null) {
-                                this.valueType = newProp.value;
-                                this.startValue = null;
-                                this.endValue = null;
+                        this.clearModelvalue(newProp, oldProp);
+                    }
+                } else {
+                    if ((!isNullOrUndefined(newProp.value) && (<Date[]>newProp.value).length > 0)
+                        || !isNullOrUndefined(newProp.value) && (<DateRange>newProp.value).start) {
+                        this.valueType = newProp.value;
+                        if ((<Date[]>newProp.value)[0] === null || ((<DateRange>newProp.value).start === null)) {
+                            if ((<Date[]>newProp.value).length === 1 || ((<DateRange>newProp.value).start)) {
+                                this.clearModelvalue(newProp, oldProp);
+                            } else if ((<Date[]>newProp.value)[1] === null ||
+                                ((<DateRange>newProp.value).start === null)) {
                                 this.clearModelvalue(newProp, oldProp);
                             }
-                        }
-                    }
-                    if (this.isPopupOpen()) {
-                        if (isNullOrUndefined(this.startValue) && isNullOrUndefined(this.endValue)) {
-                            this.removeSelection();
-                            if (this.isMobile) {
-                                this.deviceHeaderUpdate();
+                        } else if ((+this.initStartDate !== +(<Date[]>newProp.value)[0]
+                            || +this.initEndDate !== +(<Date[]>newProp.value)[1]) ||
+                            (+this.initStartDate !== +((<DateRange>newProp.value).start
+                                || +this.initEndDate !== +(<DateRange>newProp.value).start))) {
+                            if ((<Date[]>newProp.value).length === 1) {
+                                this.modelValue = <Date[]>newProp.value;
+                            } else if ((<DateRange>newProp.value).start) {
+                                this.modelValue = <DateRange>newProp.value;
                             }
-                            return;
+                            this.updateValue();
+                            this.setDate();
                         }
-                        if (this.isMobile) {
-                            this.navigate(this.deviceCalendar, this.startValue, this.currentView() as CalendarView);
-                            this.deviceHeaderUpdate();
-                        } else {
-                            this.navigate(this.leftCalendar, this.startValue, this.currentView() as CalendarView);
-                            this.updateControl(this.leftCalendar);
-                            this.navigate(this.rightCalendar, this.endValue, this.currentView() as CalendarView);
-                            this.updateControl(this.rightCalendar);
+                    } else {
+                        if (isNullOrUndefined(this.value)
+                            || (<DateRange>newProp.value).start == null) {
+                            this.valueType = newProp.value;
+                            this.startValue = null;
+                            this.endValue = null;
+                            this.clearModelvalue(newProp, oldProp);
                         }
-                        this.updateRange((this.isMobile ? [this.calendarElement] : [this.leftCalendar, this.rightCalendar]));
-                        this.updateHeader();
-                        this.applyButton.disabled = this.applyButton.element.disabled = false;
                     }
-                    break;
-                case 'minDays':
-                    this.setProperties({ minDays: newProp.minDays }, true);
-                    this.refreshChange();
-                    this.setMinMaxDays();
-                    break;
-                case 'maxDays':
-                    this.setProperties({ maxDays: newProp.maxDays }, true);
-                    this.refreshChange();
-                    this.setMinMaxDays();
-                    break;
-                case 'min':
-                    this.setProperties({ min: this.checkDateValue(new Date(this.checkValue(newProp.min))) }, true);
-                    this.previousEleValue = this.inputElement.value;
-                    this.enableInput();
-                    this.refreshChange();
-                    break;
-                case 'max':
-                    this.setProperties({ max: this.checkDateValue(new Date(this.checkValue(newProp.max))) }, true);
-                    this.enableInput();
-                    this.refreshChange();
-                    break;
-                case 'strictMode':
-                    this.invalidValueString = null;
-                    this.setProperties({ strictMode: newProp.strictMode }, true);
-                    this.refreshChange();
-                    break;
-                case 'presets':
-                    this.setProperties({ presets: newProp.presets }, true);
-                    this.processPresets();
-                    break;
-                case 'floatLabelType':
-                    this.floatLabelType = newProp.floatLabelType;
-                    Input.removeFloating(this.inputWrapper);
-                    Input.addFloating(this.inputElement, this.floatLabelType, this.placeholder);
-                    break;
-                case 'start':
-                    this.setProperties({ start: newProp.start }, true);
-                    this.refreshChange();
-                    break;
-                case 'depth':
-                    this.setProperties({ depth: newProp.depth }, true);
-                    this.refreshChange();
-                    break;
+                }
+                if (this.isPopupOpen()) {
+                    if (isNullOrUndefined(this.startValue) && isNullOrUndefined(this.endValue)) {
+                        this.removeSelection();
+                        if (this.isMobile) {
+                            this.deviceHeaderUpdate();
+                        }
+                        return;
+                    }
+                    if (this.isMobile) {
+                        this.navigate(this.deviceCalendar, this.startValue, this.currentView() as CalendarView);
+                        this.deviceHeaderUpdate();
+                    } else {
+                        this.navigate(this.leftCalendar, this.startValue, this.currentView() as CalendarView);
+                        this.updateControl(this.leftCalendar);
+                        this.navigate(this.rightCalendar, this.endValue, this.currentView() as CalendarView);
+                        this.updateControl(this.rightCalendar);
+                    }
+                    this.updateRange((this.isMobile ? [this.calendarElement] : [this.leftCalendar, this.rightCalendar]));
+                    this.updateHeader();
+                    this.applyButton.disabled = this.applyButton.element.disabled = false;
+                }
+                break;
+            case 'minDays':
+                this.setProperties({ minDays: newProp.minDays }, true);
+                this.refreshChange();
+                this.setMinMaxDays();
+                break;
+            case 'maxDays':
+                this.setProperties({ maxDays: newProp.maxDays }, true);
+                this.refreshChange();
+                this.setMinMaxDays();
+                break;
+            case 'min':
+                this.setProperties({ min: this.checkDateValue(new Date(this.checkValue(newProp.min))) }, true);
+                this.previousEleValue = this.inputElement.value;
+                this.enableInput();
+                this.refreshChange();
+                break;
+            case 'max':
+                this.setProperties({ max: this.checkDateValue(new Date(this.checkValue(newProp.max))) }, true);
+                this.enableInput();
+                this.refreshChange();
+                break;
+            case 'strictMode':
+                this.invalidValueString = null;
+                this.setProperties({ strictMode: newProp.strictMode }, true);
+                this.refreshChange();
+                break;
+            case 'presets':
+                this.setProperties({ presets: newProp.presets }, true);
+                this.processPresets();
+                break;
+            case 'floatLabelType':
+                this.floatLabelType = newProp.floatLabelType;
+                Input.removeFloating(this.inputWrapper);
+                Input.addFloating(this.inputElement, this.floatLabelType, this.placeholder);
+                break;
+            case 'start':
+                this.setProperties({ start: newProp.start }, true);
+                this.refreshChange();
+                break;
+            case 'depth':
+                this.setProperties({ depth: newProp.depth }, true);
+                this.refreshChange();
+                break;
             }
             this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
         }

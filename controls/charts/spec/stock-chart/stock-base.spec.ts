@@ -19,7 +19,7 @@ describe('Stock Chart', () => {
             return;
         }
     });
-// tslint:disable-next-line:align
+// eslint-disable-next-line @typescript-eslint/indent
 describe('default stock chart', () => {
     let chart: StockChart;
     let chartElement: Element = createElement('div', { id: 'stock' });
@@ -315,7 +315,7 @@ describe('default stock chart', () => {
     it('Checking mouse wheel as forward ', (done: Function) => {
         chart.loaded = (args: Object): void => {
             chart.loaded = null;
-            let wheelArgs = {
+            let wheelArgs: unknown = {
                 preventDefault: prevent,
                 wheelDelta: 120,
                 detail: 3,
@@ -446,7 +446,7 @@ describe('default stock chart', () => {
             expect(rangeElement.childElementCount).toBe(0);
             done();
         };
-        chart.series =  [{
+        chart.series = [{
             xName: 'x', high: 'high', low: 'low', open: 'open', close: 'close',
             dataSource: chartData, type: 'Candle', yName: 'close', visible: false
         }];

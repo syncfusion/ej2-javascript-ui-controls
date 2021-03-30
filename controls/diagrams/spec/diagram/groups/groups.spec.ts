@@ -11,7 +11,7 @@ import { Node, SnapSettingsModel, DiagramElement, ShapeAnnotationModel, PointPor
 import { SnapConstraints, PortVisibility, PortConstraints, AnnotationConstraints } from '../../../src/diagram/enum/enum';
 import { MenuItemModel } from '@syncfusion/ej2-navigations';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
-import { GradientModel, LinearGradientModel,RadialGradientModel } from "../../../src/diagram/index"
+import { GradientModel, LinearGradientModel, RadialGradientModel, NodeConstraints, ShadowModel, GradientType } from "../../../src/diagram/index"
 Diagram.Inject(UndoRedo, DiagramContextMenu, Snapping);
 /**
  * Groups Spec
@@ -1316,5 +1316,90 @@ describe('Group', () => {
             expect(diagram.nodes.length == 0).toBe(true);
             done();
         });
+    });
+});
+describe('change styles of group', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram_group_group_width_height' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 100,
+                ports: [{ id: 'port1', visibility: PortVisibility.Visible, shape: 'Circle', offset: { x: 0, y: 0 } }],
+            },
+            {
+                id: 'node2', width: 100, height: 100, offsetX: 100, offsetY: 100,
+                ports: [{ id: 'port2', visibility: PortVisibility.Visible, offset: { x: 0, y: 0.5 } }],                
+            },
+        ];
+
+        diagram = new Diagram({
+            width: '800px', height: '500px', nodes: nodes,
+        });
+        diagram.appendTo('#diagram_group_group_width_height');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    function applyStyle(
+        node: NodeModel, width: number, array: string, con: NodeConstraints,
+        type: GradientType, sh: ShadowModel): void {
+        node.style.fill = '#37909A';
+        node.style.strokeWidth = width;
+        node.style.strokeColor = '#024249';
+        node.style.strokeDashArray = array;
+        if (!type) {
+            node.style.gradient.type = 'None';
+        } else {
+            let gradient: GradientModel | LinearGradientModel | RadialGradientModel;
+            if (type === 'Linear') {
+                gradient = {
+                    //Start point of linear gradient
+                    x1: 0, y1: 0,
+                    //End point of linear gradient
+                    x2: 50, y2: 50,
+                    //Sets an array of stop objects
+                    stops: [{ color: '#00555b', offset: 0 },
+                    { color: '#37909A', offset: 90 }],
+                    type: 'Linear'
+                };
+            } else {
+                gradient = {
+                    cx: 50, cy: 50, fx: 50, fy: 50,
+                    stops: [{ color: '#00555b', offset: 0 },
+                    { color: '#37909A', offset: 90 }],
+                    type: 'Radial'
+                };
+            }
+    
+            node.style.gradient = gradient;
+        }        
+        diagram.dataBind();
+    }
+    it('applying styles for the group in runtime', (done: Function) => {
+       let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+       diagram.selectAll();      
+       diagram.group();
+       //mouseEvents.clickEvent(diagramCanvas, 200, 200);
+        mouseEvents.mouseDownEvent(diagramCanvas, 200, 100);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 250, 150);
+        mouseEvents.mouseUpEvent(diagramCanvas, 250, 150);
+        applyStyle(diagram.selectedObject.actualObject, 2, '5,5', undefined, undefined, undefined);        
+        expect((diagram.selectedItems.nodes[0].style.fill === '#37909A')).toBe(true);
+        expect((diagram.selectedItems.nodes[0].wrapper.children[1].style.fill === 'transparent')).toBe(true);
+        done();
     });
 });

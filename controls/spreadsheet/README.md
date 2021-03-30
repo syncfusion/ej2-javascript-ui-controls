@@ -1,4 +1,4 @@
-[![npm](http://ej2.syncfusion.com/github-badges?package=@syncfusion/ej2-spreadsheet)](https://www.npmjs.com/package/@syncfusion/ej2-spreadsheet)&nbsp;&nbsp;[![coverage](http://ej2.syncfusion.com/badges/ej2-spreadsheet/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-spreadsheet)
+[![coverage](http://ej2.syncfusion.com/badges/ej2-spreadsheet/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-spreadsheet)
 
 # ej2-spreadsheet
 
@@ -66,6 +66,9 @@ Spreadsheet component is also offered in the following list of frameworks.
 - **Aggregates:** Provides option to check the sum, average, and count for the selected cells or range in the sheet tab.
 - **Picture:** Allows you to view, insert, and modify a picture in a spreadsheet with customizing options.
 - **Chart:** Transforms your Spreadsheet data to an intuitive overview for better understanding and to make smart business decisions.
+- **Freeze pane:** Allows users to keep the specified rows and columns always visible at the top and left side of the sheet while scrolling through the sheet.
+- **PDF Export:** Allows users to save the spreadsheet data as a PDF document.
+- **Password protection:** Allows users to protect the workbook with a password.
 - **Multi-line editing:** Allows you to insert a line break between paragraphs of the text within a cell in a Spreadsheet.
 - **Range selection helper:** Helps you to select a range or multiple ranges when editing a formula in a cell.
 - **RTL:** Provides right-to-left mode which aligns content in the spreadsheet component from right to left.
@@ -88,4 +91,4 @@ Check the license details [here](https://github.com/syncfusion/ej2-javascript-ui
 
 Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/spreadsheet/CHANGELOG.md?utm_source=npm&utm_campaign=spreadsheet)
 
-&copy; Copyright 2019 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
+&copy; Copyright 2021 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

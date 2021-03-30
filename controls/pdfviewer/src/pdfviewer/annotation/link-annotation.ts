@@ -1,15 +1,21 @@
+/* eslint-disable */
 import { PdfViewer, PdfViewerBase } from '../index';
 import { createElement } from '@syncfusion/ej2-base';
 import { LineTool, PolygonDrawingTool } from '../drawing/tools';
 
 /**
  * The `LinkAnnotation` module is used to handle link annotation actions of PDF viewer.
+ *
  * @hidden
  */
 export class LinkAnnotation {
     private pdfViewer: PdfViewer;
     private pdfViewerBase: PdfViewerBase;
     /**
+     * @param pdfViewer
+     * @param viewerBase
+     * @param pdfViewer
+     * @param viewerBase
      * @private
      */
     constructor(pdfViewer: PdfViewer, viewerBase: PdfViewerBase) {
@@ -18,16 +24,20 @@ export class LinkAnnotation {
     }
 
     /**
+     * @param data
+     * @param pageIndex
+     * @param data
+     * @param pageIndex
      * @private
      */
-    // tslint:disable-next-line    
+    // eslint-disable-next-line
     public renderHyperlinkContent(data: any, pageIndex: number): void {
         if (this.pdfViewer.enableHyperlink) {
-            let hyperlinks: string[] = data.hyperlinks;
-            let hyperlinksBounds: number[] = data.hyperlinkBounds;
-            let linkAnnotation: number[] = data.linkAnnotation;
-            let linkPage: number[] = data.linkPage;
-            let annotationY: number[] = data.annotationLocation;
+            const hyperlinks: string[] = data.hyperlinks;
+            const hyperlinksBounds: number[] = data.hyperlinkBounds;
+            const linkAnnotation: number[] = data.linkAnnotation;
+            const linkPage: number[] = data.linkPage;
+            const annotationY: number[] = data.annotationLocation;
             if (hyperlinks && hyperlinks.length > 0 && hyperlinksBounds.length > 0) {
                 this.renderWebLink(hyperlinks, hyperlinksBounds, pageIndex);
             }
@@ -38,10 +48,10 @@ export class LinkAnnotation {
     }
 
     private renderWebLink(hyperlinks: string[], hyperlinksBounds: number[], pageIndex: number): void {
-        let proxy: LinkAnnotation = this;
+        const proxy: LinkAnnotation = this;
         for (let i: number = 0; i < hyperlinks.length; i++) {
             let aTag: HTMLAnchorElement = createElement('a', { id: 'weblinkdiv_' + i }) as HTMLAnchorElement;
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let rect: any = hyperlinksBounds[i];
             aTag = this.setHyperlinkProperties(aTag, rect, pageIndex);
             aTag.title = hyperlinks[i];
@@ -86,7 +96,7 @@ export class LinkAnnotation {
                     proxy.triggerHyperlinkEvent(aTag);
                 };
             }
-            let pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
+            const pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
             pageDiv.appendChild(aTag);
         }
     }
@@ -101,23 +111,23 @@ export class LinkAnnotation {
     }
 
     private renderDocumentLink(linkAnnotation: number[], linkPage: number[], annotationY: number[], pageIndex: number): void {
-        let proxy: LinkAnnotation = this;
+        const proxy: LinkAnnotation = this;
         for (let i: number = 0; i < linkAnnotation.length; i++) {
             let aTag: HTMLAnchorElement = createElement('a', { id: 'linkdiv_' + i }) as HTMLAnchorElement;
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let rect: any = linkAnnotation[i];
             aTag = this.setHyperlinkProperties(aTag, rect, pageIndex);
             aTag.setAttribute('href', 'javascript:void(0)');
             if (linkPage[i] !== undefined && linkPage[i] > 0) {
-                let destPageHeight: number = (this.pdfViewerBase.pageSize[pageIndex].height);
+                const destPageHeight: number = (this.pdfViewerBase.pageSize[pageIndex].height);
                 let destLocation: number;
                 let scrollValue: number;
                 if (annotationY.length !== 0) {
                     destLocation = (annotationY[i]);
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     scrollValue = this.pdfViewerBase.pageSize[linkPage[i]].top * this.pdfViewerBase.getZoomFactor() + ((destPageHeight - destLocation) * this.pdfViewerBase.getZoomFactor());
                 } else {
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     scrollValue = this.pdfViewerBase.pageSize[linkPage[i]].top * this.pdfViewerBase.getZoomFactor();
                 }
                 if (scrollValue !== undefined) {
@@ -126,19 +136,19 @@ export class LinkAnnotation {
                         if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
                             return false;
                         } else {
-                            // tslint:disable-next-line:radix
+                            // eslint-disable-next-line radix
                             proxy.pdfViewerBase.viewerContainer.scrollTop = parseInt(aTag.name);
                             return false;
                         }
                     };
                 }
-                let pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
+                const pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
                 pageDiv.appendChild(aTag);
             }
         }
     }
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private setHyperlinkProperties(aTag: HTMLAnchorElement, rect: any, pageIndex: number): HTMLAnchorElement {
         aTag.className = 'e-pv-hyperlink';
         aTag.style.background = 'transparent';
@@ -158,15 +168,19 @@ export class LinkAnnotation {
     }
 
     /**
+     * @param pageNumber
+     * @param isAdd
+     * @param pageNumber
+     * @param isAdd
      * @private
      */
     public modifyZindexForTextSelection(pageNumber: number, isAdd: boolean): void {
         if (this.pdfViewerBase.pageCount > 0) {
-            let pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + pageNumber);
+            const pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + pageNumber);
             if (pageDiv) {
-                let pageChildNodes: NodeList = pageDiv.childNodes;
+                const pageChildNodes: NodeList = pageDiv.childNodes;
                 for (let i: number = 0; i < pageChildNodes.length; i++) {
-                    let childElement: HTMLElement = (pageChildNodes[i] as HTMLElement);
+                    const childElement: HTMLElement = (pageChildNodes[i] as HTMLElement);
                     if (childElement.tagName === 'A') {
                         if (isAdd) {
                             childElement.classList.add('e-pv-onselection');
@@ -180,6 +194,10 @@ export class LinkAnnotation {
     }
 
     /**
+     * @param element
+     * @param isAdd
+     * @param element
+     * @param isAdd
      * @private
      */
     public modifyZindexForHyperlink(element: HTMLElement, isAdd: boolean): void {
@@ -194,10 +212,10 @@ export class LinkAnnotation {
      */
     public destroy(): void {
         for (let i: number = 0; i < this.pdfViewerBase.pageCount - 1; i++) {
-            let pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + i);
+            const pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + i);
             if (pageDiv) {
-                // tslint:disable-next-line
-                let aElement: any = pageDiv.getElementsByTagName('a');
+                // eslint-disable-next-line max-len
+                const aElement: any = pageDiv.getElementsByTagName('a');
                 if (aElement.length !== 0) {
                     for (let index: number = aElement.length - 1; index >= 0; index--) {
                         aElement[index].parentNode.removeChild(aElement[index]);

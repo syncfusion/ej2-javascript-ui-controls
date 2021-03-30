@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable @typescript-eslint/ban-types */
 import { IntervalType } from '../../chart/utils/enum';
 import { firstToLowerCase, RectOption} from '../../common/utils/helper';
 import { Axis } from '../../chart/axis/axis';
@@ -42,7 +46,8 @@ export class RangeSeries extends NiceInterval {
     }
     /**
      * To render light weight and data manager process
-     * @param control 
+     *
+     * @param {RangeNavigator} control RangeNavigator instance
      */
     public renderChart(control: RangeNavigator): void {
         let dataSource: Object;
@@ -67,15 +72,14 @@ export class RangeSeries extends NiceInterval {
             return;
         }
         control.dataModule = new Data(dataSource, query);
-        let dataManager: Promise<Object> = control.dataModule.getData(control.dataModule.generateQuery().requiresCount());
+        const dataManager: Promise<Object> = control.dataModule.getData(control.dataModule.generateQuery().requiresCount());
         dataManager.then((e: { result: Object, count: number }) => this.dataManagerSuccess(e, control, series));
     }
     /**
      * data manager process calculated here
-     * @param e 
      */
     private dataManagerSuccess(e: { result: Object, count: number }, control: RangeNavigator, series?: RangeNavigatorSeries): void {
-        let viewData: Object = e.count ? e.result : [];
+        const viewData: Object = e.count ? e.result : [];
         control.allowServerDataBinding = false;
         this.processJsonData(viewData as Object[], control, Object.keys(viewData).length, series);
         this.seriesLength += series ? 1 : this.seriesLength;
@@ -88,20 +92,18 @@ export class RangeSeries extends NiceInterval {
     }
     /**
      * Process JSON data from data source
-     * @param control 
-     * @param len 
      */
     private processJsonData(viewData: Object[], control: RangeNavigator, len: number, series: RangeNavigatorSeries): void {
         let i: number = 0;
         let point: DataPoint;
-        let xName: string = (series && series.xName) || control.xName;
-        let yName: string = (series && series.yName) || control.yName;
+        const xName: string = (series && series.xName) || control.xName;
+        const yName: string = (series && series.yName) || control.yName;
         while (i < len) {
             point = new DataPoint(getValue(xName, viewData[i]), getValue(yName, viewData[i]));
             point.yValue = control.isBlazor ? (isNullOrUndefined(point.y) ? 0 : +point.y) : +point.y;
             if (control.valueType === 'DateTime') {
-                let dateParser: Function = control.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
-                let dateFormatter: Function = control.intl.getDateFormat({ skeleton: 'full', type: 'dateTime' });
+                const dateParser: Function = control.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
+                const dateFormatter: Function = control.intl.getDateFormat({ skeleton: 'full', type: 'dateTime' });
                 point.x = new Date( DataUtil.parse.parseJson({ val: point.x }).val );
                 point.xValue = control.isBlazor ? Date.parse(point.x.toString()) : Date.parse(dateParser(dateFormatter(point.x)));
             } else {
@@ -119,8 +121,7 @@ export class RangeSeries extends NiceInterval {
         }
     }
     private processXAxis(control: RangeNavigator): void {
-        let axisModule: DateTime | Double | DateTime | Logarithmic;
-        let axis: AxisModel = {
+        const axis: AxisModel = {
             minimum: control.minimum, maximum: control.maximum,
             interval: control.interval, valueType: control.valueType,
             isInversed: control.enableRtl, labelFormat: control.labelFormat,
@@ -134,7 +135,7 @@ export class RangeSeries extends NiceInterval {
         this.xAxis.rect = control.bounds;
         this.xAxis.visibleLabels = [];
         this.xAxis.orientation = 'Horizontal';
-        axisModule = control[firstToLowerCase(control.valueType) + 'Module'];
+        const axisModule: DateTime | Double | DateTime | Logarithmic = control[firstToLowerCase(control.valueType) + 'Module'];
         axisModule.min = this.xMin;
         axisModule.max = this.xMax;
         axisModule.getActualRange(this.xAxis, control.bounds);
@@ -149,10 +150,11 @@ export class RangeSeries extends NiceInterval {
     }
     /**
      * Process yAxis for range navigator
-     * @param control 
+     *
+     * @param {RangeNavigator} control RangeNavigator instance
      */
     private processYAxis(control: RangeNavigator): void {
-        let axis: AxisModel = {
+        const axis: AxisModel = {
             majorGridLines: { width: 0 }, rangePadding: 'None',
             majorTickLines: { width: 0 }, labelStyle: { size: '0' },
             visible: false, valueType: 'Double', minimum: null, maximum: null,
@@ -175,12 +177,13 @@ export class RangeSeries extends NiceInterval {
 
     /**
      * Process Light weight control
-     * @param control
+     *
+     * @param {RangeNavigator} control RangeNavigator instance
      * @private
      */
     public renderSeries(control: RangeNavigator): void {
         this.chartGroup = control.renderer.createGroup({ id: control.element.id + '_chart' });
-        let colors: string[] = getSeriesColor(control.theme);
+        const colors: string[] = getSeriesColor(control.theme);
         control.series.map((series: RangeNavigatorSeries, index: number) => {
             let isSeriesVisible: boolean = control.stockChart ? control.stockChart.series[index].visible : true;
             if (isSeriesVisible) {
@@ -203,7 +206,7 @@ export class RangeSeries extends NiceInterval {
                 this.chartGroup.appendChild(series.seriesElement);
                 if (series.animation.enable && control.animateSeries) {
                     if (control[firstToLowerCase(series.type) + 'SeriesModule']) {
-                    control[firstToLowerCase(series.type) + 'SeriesModule'].doAnimation(series);
+                        control[firstToLowerCase(series.type) + 'SeriesModule'].doAnimation(series);
                     } else {
                         //control['line' + 'SeriesModule'].doAnimation(series);
                     }
@@ -218,12 +221,12 @@ export class RangeSeries extends NiceInterval {
     public appendSeriesElements(control: RangeNavigator): void {
         control.svgObject.appendChild(this.chartGroup);
         if (control.series.length) {
-            this.drawSeriesBorder(control, this.chartGroup);
+            this.drawSeriesBorder(control);
         }
     }
 
     private createSeriesElement(control: RangeNavigator, series: RangeNavigatorSeries, index: number): void {
-        let elementId: string = control.element.id;
+        const elementId: string = control.element.id;
         series.clipRect = new Rect(
             this.xAxis.rect.x, this.yAxis.rect.y,
             this.xAxis.rect.width, this.yAxis.rect.height
@@ -245,8 +248,8 @@ export class RangeSeries extends NiceInterval {
     }
 
     private calculateGroupingBounds(control: RangeNavigator): void {
-        let padding: number = control.margin.bottom;
-        let labelHeight: number = measureText('string', control.labelStyle).height;
+        const padding: number = control.margin.bottom;
+        const labelHeight: number = measureText('string', control.labelStyle).height;
         this.calculateDateTimeNiceInterval(this.xAxis, new Size(control.bounds.width, control.bounds.height), this.xMin, this.xMax, false);
         if (control.enableGrouping && control.valueType === 'DateTime'
             && (this.xAxis.actualIntervalType !== 'Years' || !control.series.length)
@@ -260,10 +263,10 @@ export class RangeSeries extends NiceInterval {
         }
     }
 
-    private drawSeriesBorder(control: RangeNavigator, chartElement: Element): void {
-        let start: string = control.stockChart ? 'M' : 'L';
-        let close: string = control.stockChart ? '' : 'Z';
-        let options: PathOption = new PathOption(
+    private drawSeriesBorder(control: RangeNavigator): void {
+        const start: string = control.stockChart ? 'M' : 'L';
+        const close: string = control.stockChart ? '' : 'Z';
+        const options: PathOption = new PathOption(
             control.element.id + '_SeriesBorder', 'transparent', control.navigatorBorder.width,
             control.navigatorBorder.color, 1, '',
             ('M ' + (control.bounds.x) + ' ' + (control.bounds.y) +
@@ -272,7 +275,7 @@ export class RangeSeries extends NiceInterval {
                 ' L ' + (control.bounds.x) + ' ' + (control.bounds.y + control.bounds.height) + close)
 
         );
-        let htmlObject: Element = control.renderer.drawPath(options) as HTMLElement;
+        const htmlObject: Element = control.renderer.drawPath(options) as HTMLElement;
 
         control.svgObject.appendChild(htmlObject);
     }

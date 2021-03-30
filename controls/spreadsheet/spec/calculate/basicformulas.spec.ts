@@ -1912,6 +1912,24 @@ describe('Calculate SUMIF Formula', () => {
         result = calculate.computeFormula(formula.value);
         expect(result === '0').toBeTruthy;
     });
+    it('sumif >= ', () => {
+        formula.value = '=sumif(E1:E4,">=10")';
+        document.body.appendChild(formula);
+        result = calculate.computeFormula(formula.value);
+        expect(result).toEqual(30);
+    });
+    it('sumif <= ', () => {
+        formula.value = '=sumif(E1:E4,"<=10")';
+        document.body.appendChild(formula);
+        result = calculate.computeFormula(formula.value);
+        expect(result).toEqual(0);
+    });
+    it('sumif <>', () => {
+        formula.value = '=sumif(E1:E4,"<>java")';
+        document.body.appendChild(formula);
+        result = calculate.computeFormula(formula.value);
+        expect(result).toEqual(30);
+    });
 });
 describe('Calculate AVERAGEIF Formula', () => {
     let input1: any;

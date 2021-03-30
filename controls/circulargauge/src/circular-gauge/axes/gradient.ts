@@ -1,6 +1,6 @@
 import { CircularGauge } from '../circular-gauge';
 import { ColorStopModel, GradientPositionModel } from './gradient-model';
-import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';
+import { Property, ChildProperty, Complex, Collection, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { GradientColor, LinearGradient as Linear, RadialGradient as Radial } from '@syncfusion/ej2-svg-base';
 import { PointerModel, CapModel, NeedleTailModel, RangeModel } from '../axes/axis-model';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
@@ -12,20 +12,23 @@ export class ColorStop extends ChildProperty<ColorStop> {
 
     /**
      * Defines the color to be used in the gradient.
+     *
      * @default '#000000'
      */
     @Property('#000000')
     public color: string;
 
     /**
-     *  Defines the opacity to be used in the gradient.
+     * Defines the opacity to be used in the gradient.
+     *
      * @default 1
      */
     @Property(1)
     public opacity: number;
 
     /**
-     *  Defines the gradient color begin and end in percentage
+     * Defines the gradient color begin and end in percentage
+     *
      * @default '0%'
      */
     @Property('0%')
@@ -33,6 +36,7 @@ export class ColorStop extends ChildProperty<ColorStop> {
 
     /**
      * Defines the style of the color stop in the gradient element.
+     *
      * @default ''
      */
     @Property('')
@@ -46,6 +50,7 @@ export class GradientPosition extends ChildProperty<GradientPosition> {
 
     /**
      * Defines the horizontal position in percentage.
+     *
      * @default '0%'
      */
     @Property('0%')
@@ -53,6 +58,7 @@ export class GradientPosition extends ChildProperty<GradientPosition> {
 
     /**
      * Defines the vertical position in percentage.
+     *
      * @default '0%'
      */
     @Property('0%')
@@ -66,20 +72,23 @@ export class LinearGradient extends ChildProperty<LinearGradient> {
 
     /**
      * Defines the start value of the linear gradient.
-     * @default '0%'
+     *
+     * @default ''
      */
-    @Property('0%')
+    @Property(null)
     public startValue: string;
 
     /**
      * Defines the end value of the linear gradient.
-     * @default '100%'
+     *
+     * @default ''
      */
-    @Property('100%')
+    @Property(null)
     public endValue: string;
 
     /**
      * Defines the color range properties for the gradient.
+     *
      */
     @Collection<ColorStopModel>([{ color: '#000000', opacity: 1, offset: '0%', style: '' }], ColorStop)
     public colorStop: ColorStopModel[];
@@ -92,6 +101,7 @@ export class RadialGradient extends ChildProperty<RadialGradient> {
 
     /**
      * Defines the radius of the radial gradient in percentage.
+     *
      * @default '0%'
      */
     @Property('0%')
@@ -105,7 +115,6 @@ export class RadialGradient extends ChildProperty<RadialGradient> {
 
     /**
      * Defines the inner circle of the radial gradient.
-     * 
      */
     @Complex<GradientPositionModel>({ x: '0%', y: '0%' }, GradientPosition)
     public innerPosition: GradientPositionModel;
@@ -119,6 +128,7 @@ export class RadialGradient extends ChildProperty<RadialGradient> {
 
 /**
  * Sets and gets the module that enables the gradient option for pointers and ranges.
+ *
  * @hidden
  */
 export class Gradient {
@@ -127,44 +137,114 @@ export class Gradient {
 
     /**
      * Constructor for gauge
-     * @param gauge
+     *
+     * @param {CircularGauge} gauge - Specifies the instance of the gauge
      */
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(gauge: CircularGauge) {
         this.gauge = gauge;
     }
 
-   /**
-    * To get linear gradient string for pointers and ranges
-    * @private
-    */
-    private getLinearGradientColor(element: PointerModel | CapModel | NeedleTailModel | RangeModel): string {
-        let render: SvgRenderer = new SvgRenderer('');
-        let colors: GradientColor[] = this.getGradientColor(element.linearGradient.colorStop);
-        let name: string = '_' + this.gauge.svgObject.id + '_' + this.gauge.gradientCount + '_' + 'linearGradient';
-        let gradientPosition: Linear = {
+    /**
+     * To get linear gradient string for pointers and ranges
+     *
+     * @param { PointerModel | CapModel | NeedleTailModel | RangeModel} element - Specifies the element.
+     * @param {name} name - Specifies the name of the gradient.
+     * @param {name} direction - Specifies the gradient position.
+     * @returns {string} - Returns the string value.
+     * @private
+     */
+    private calculateLinearGradientPosition(
+        element: PointerModel | CapModel | NeedleTailModel | RangeModel,
+        name: string, direction: string
+    ): Linear {
+        const linearPosition: Linear = {
             id: name,
-            x1: (element.linearGradient.startValue.indexOf('%') === -1 ?
-                element.linearGradient.startValue :
-                parseFloat(element.linearGradient.startValue).toString()) + '%',
-            x2: (element.linearGradient.endValue.indexOf('%') === -1 ?
-                element.linearGradient.endValue :
-                parseFloat(element.linearGradient.endValue).toString()) + '%',
-            y1: '0' + '%',
-            y2: '0' + '%'
+            x1: (isNullOrUndefined(element.linearGradient.startValue) && name.indexOf('range') !== -1
+                ? (direction === 'right' ? '100%' : '0%')
+                : (!isNullOrUndefined(element.linearGradient.startValue) ? ((element.linearGradient.startValue.indexOf('%') === -1 ?
+                    element.linearGradient.startValue :
+                    parseFloat(element.linearGradient.startValue).toString()) + '%') : '0%')),
+            x2: (isNullOrUndefined(element.linearGradient.endValue) && name.indexOf('range') !== -1 ?
+                (direction === 'left' ? '100%' : '0%') :
+                (!isNullOrUndefined(element.linearGradient.endValue) ? ((element.linearGradient.endValue.indexOf('%') === -1 ?
+                    element.linearGradient.endValue : parseFloat(element.linearGradient.endValue).toString()) + '%') : '100%')),
+            y1: (isNullOrUndefined(element.linearGradient.startValue) && name.indexOf('range') !== -1
+                ? (direction === 'bottom' ? '100%' : '0%') : '0%'),
+            y2: (isNullOrUndefined(element.linearGradient.endValue) && name.indexOf('range') !== -1
+                ? (direction === 'top' ? '100%' : '0%') : '0%')
         };
-        let def: Element = render.drawGradient('linearGradient', gradientPosition, colors);
+        return linearPosition;
+    }
+
+    /**
+     * To get linear gradient string for pointers and ranges
+     *
+     * @param { PointerModel | CapModel | NeedleTailModel | RangeModel} element - Specifies the element.
+     * @param {number} index - Specifies the index of the axis.
+     * @param { string } direction - Specifies the gradient position.
+     * @param { number } rangeIndex - Specifies the index of the range.
+     * @returns {string} - Returns the string value.
+     * @private
+     */
+    private getLinearGradientColor(
+        element: PointerModel | CapModel | NeedleTailModel | RangeModel,
+        index : number, direction : string, rangeIndex : number
+    ): string {
+        const render: SvgRenderer = new SvgRenderer('');
+        const colors: GradientColor[] = (isNullOrUndefined(element.linearGradient.startValue) &&
+            isNullOrUndefined(element.linearGradient.endValue) && !isNullOrUndefined(rangeIndex)) ?
+            this.getCircularGradientColor(element.linearGradient.colorStop, index) :
+            this.getGradientColor(element.linearGradient.colorStop);
+        const name: string = (isNullOrUndefined(element.linearGradient.startValue) &&
+            isNullOrUndefined(element.linearGradient.endValue) && !isNullOrUndefined(rangeIndex)) ?
+            '_' + this.gauge.svgObject.id + '_range_' +
+            rangeIndex + '_color_' + index + '_' + 'linearGradient'
+            : '_' + this.gauge.svgObject.id + '_' + this.gauge.gradientCount + '_' + 'linearGradient';
+        let gradientPosition: Linear = this.calculateLinearGradientPosition(element, name, direction);
+        gradientPosition = {
+            id: gradientPosition.id,
+            x1: gradientPosition.x1,
+            x2: gradientPosition.x2,
+            y1: gradientPosition.y1,
+            y2: gradientPosition.y2
+        };
+        const def: Element = render.drawGradient('linearGradient', gradientPosition, colors);
         this.gauge.svgObject.appendChild(def);
         return 'url(#' + name + ')';
     }
-   /**
-    * To get the radial gradient string.
-    * @private
-    */
+    // eslint-disable-next-line valid-jsdoc
+    /**
+     * To get color, opacity, offset and style for circular gradient path.
+     *
+     * @private
+     */
+    private getCircularGradientColor(colorStop: ColorStopModel[], index : number): GradientColor[] {
+        const colors: GradientColor[] = []; let colorIndex : number = index;
+        for (let j: number = colorIndex; j < (index === (colorStop.length - 1) ? index + 1 : index + 2); j++) {
+            const color: GradientColor = {
+                color: colorStop[j].color,
+                colorStop: colorStop[j].offset,
+                opacity: colorStop[j].opacity ? colorStop[j].opacity.toString() : '1',
+                style: colorStop[j].style
+            };
+            colors.push(color);
+            colorIndex++;
+        }
+        return colors;
+    }
+    /**
+     * To get the radial gradient string.
+     *
+     * @param {PointerModel | CapModel | NeedleTailModel | RangeModel} element - Specifies the element.
+     * @returns {string} - Returns the string.
+     * @private
+     */
     private getRadialGradientColor(element: PointerModel | CapModel | NeedleTailModel | RangeModel): string {
-        let render: SvgRenderer = new SvgRenderer('');
-        let colors: GradientColor[] = this.getGradientColor(element.radialGradient.colorStop);
-        let name: string = '_' + this.gauge.svgObject.id + '_' + this.gauge.gradientCount + '_' + 'radialGradient';
-        let gradientPosition: Radial = {
+        const render: SvgRenderer = new SvgRenderer('');
+        const colors: GradientColor[] = this.getGradientColor(element.radialGradient.colorStop);
+        const name: string = '_' + this.gauge.svgObject.id + '_' + this.gauge.gradientCount + '_' + 'radialGradient';
+        const gradientPosition: Radial = {
             id: name,
             r: (element.radialGradient.radius.indexOf('%') === -1 ?
                 element.radialGradient.radius :
@@ -182,36 +262,47 @@ export class Gradient {
                 element.radialGradient.innerPosition.y :
                 parseFloat(element.radialGradient.innerPosition.y).toString()) + '%'
         };
-        let def: Element = render.drawGradient('radialGradient', gradientPosition, colors);
+        const def: Element = render.drawGradient('radialGradient', gradientPosition, colors);
         this.gauge.svgObject.appendChild(def);
         return 'url(#' + name + ')';
     }
-   /**
-    * To get color, opacity, offset and style.
-    * @private
-    */
+    /**
+     * To get color, opacity, offset and style.
+     *
+     * @param { ColorStopModel[]} colorStop - Specifies the color stop.
+     * @returns {GradientColor[]} - Returns the gradientColor.
+     * @private
+     */
     private getGradientColor(colorStop: ColorStopModel[]): GradientColor[] {
-        let colors: GradientColor[] = [];
+        const colors: GradientColor[] = [];
         for (let j: number = 0; j < colorStop.length; j++) {
-            let color: GradientColor = {
+            const color: GradientColor = {
                 color: colorStop[j].color,
                 colorStop: colorStop[j].offset,
                 opacity: colorStop[j].opacity ? colorStop[j].opacity.toString() : '1',
-                style: colorStop[j].style,
+                style: colorStop[j].style
             };
             colors.push(color);
         }
         return colors;
     }
-   /**
-    * To get a gradient color string
-    * @private
-    */
-    public getGradientColorString(element: PointerModel | CapModel | NeedleTailModel | RangeModel): string {
+    // eslint-disable-next-line valid-jsdoc
+    /**
+     * To get a gradient color string
+     *
+     * @param {PointerModel | CapModel | NeedleTailModel | RangeModel} element - Specifies the element.
+     * @returns {string} - Returns the string
+     * @private
+     */
+    public getGradientColorString(
+        element: PointerModel | CapModel | NeedleTailModel | RangeModel,
+        index?: number, direction?: string, rangeIndex?: number
+    ): string {
         let gradientColor: string;
-        if (element.linearGradient || element.radialGradient) {
+        if ((element.linearGradient && !isNullOrUndefined(element.linearGradient.colorStop)) ||
+            (element.radialGradient && !isNullOrUndefined(element.radialGradient.colorStop))) {
             if (element.linearGradient) {
-                gradientColor = this.getLinearGradientColor(element);
+                gradientColor = this.getLinearGradientColor(element, index, direction, rangeIndex);
             } else {
                 gradientColor = this.getRadialGradientColor(element);
             }
@@ -229,7 +320,9 @@ export class Gradient {
 
     /**
      * To destroy the Gradient.
-     * @return {void}
+     *
+     * @param {CircularGauge} gauge - Specifies the instance of the gauge.
+     * @returns {void}
      * @private
      */
     public destroy(gauge: CircularGauge): void {

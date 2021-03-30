@@ -7,7 +7,7 @@ import { IGanttData } from '../base/interface';
 import { Deferred } from '@syncfusion/ej2-data';
 import { TaskbarEdit } from './taskbar-edit';
 
-/** 
+/**
  * The Selection module is used to handle cell and row selection.
  */
 export class Selection {
@@ -15,7 +15,7 @@ export class Selection {
     public selectedRowIndex: number;
     public isMultiCtrlRequest: boolean;
     public isMultiShiftRequest: boolean;
-    public isSelectionFromChart: Boolean = false;
+    public isSelectionFromChart: boolean = false;
     private actualTarget: EventTarget;
     private isInteracted: boolean;
     private prevRowIndex: number;
@@ -37,7 +37,9 @@ export class Selection {
     }
 
     /**
-     * Get module name
+     * Get module
+     *
+     * @returns {string} .
      */
     private getModuleName(): string {
         return 'selection';
@@ -54,7 +56,8 @@ export class Selection {
     }
     /**
      * To update selected index.
-     * @return {void}
+     *
+     * @returns {void} .
      * @private
      */
     public selectRowByIndex(): void {
@@ -66,7 +69,8 @@ export class Selection {
     }
     /**
      * To bind selection events.
-     * @return {void}
+     *
+     * @returns {void} .
      * @private
      */
     private bindEvents(): void {
@@ -93,8 +97,8 @@ export class Selection {
         this.parent.trigger('rowSelecting', args);
     }
     private rowSelected(args: RowSelectEventArgs): void {
-        let rowIndexes: string = 'rowIndexes';
-        let index: number[] = (this.parent.selectionSettings.type === 'Multiple' && !isNullOrUndefined(args[rowIndexes])) ?
+        const rowIndexes: string = 'rowIndexes';
+        const index: number[] = (this.parent.selectionSettings.type === 'Multiple' && !isNullOrUndefined(args[rowIndexes])) ?
             args[rowIndexes] : [args.rowIndex];
         this.addRemoveClass(index);
         this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true) as number[];
@@ -124,7 +128,6 @@ export class Selection {
         this.parent.trigger('rowDeselecting', args);
     }
     private rowDeselected(args: RowDeselectEventArgs): void {
-        let rowIndexes: string = 'rowIndexes';
         let index: number[];
         let isContains: boolean;
         if (this.multipleIndexes.length !== 0) {
@@ -141,9 +144,9 @@ export class Selection {
                 } else {
                     index = [args.rowIndex];
                 }
-             } else {
-                 index = [args.rowIndex];
-             }
+            } else {
+                index = [args.rowIndex];
+            }
         }
         this.addRemoveClass(index);
         this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true) as number[];
@@ -162,7 +165,7 @@ export class Selection {
         this.multipleIndexes = [];
     }
     private cellSelecting(args: CellSelectingEventArgs): void | Deferred {
-        let callBackPromise: Deferred = new Deferred();
+        const callBackPromise: Deferred = new Deferred();
         this.parent.trigger('cellSelecting', args, (cellselectingArgs: CellSelectingEventArgs) => {
             callBackPromise.resolve(cellselectingArgs);
         });
@@ -185,32 +188,37 @@ export class Selection {
     }
     /**
      * Selects a cell by given index.
-     * @param  {IIndex} cellIndex - Defines the row and column indexes. 
+     *
+     * @param  {IIndex} cellIndex - Defines the row and column indexes.
      * @param  {boolean} isToggle - If set to true, then it toggles the selection.
-     * @return {void}
+     * @returns {void} .
      */
     public selectCell(cellIndex: IIndex, isToggle?: boolean): void {
         this.parent.treeGrid.selectCell(cellIndex, isToggle);
     }
 
     /**
-     * Selects a collection of cells by row and column indexes. 
+     * Selects a collection of cells by row and column indexes.
+     *
      * @param  {ISelectedCell[]} rowCellIndexes - Specifies the row and column indexes.
-     * @return {void}
+     * @returns {void} .
      */
     public selectCells(rowCellIndexes: ISelectedCell[]): void {
         this.parent.treeGrid.grid.selectCells(rowCellIndexes);
     }
 
     /**
-     * Selects a row by given index. 
-     * @param  {number} index - Defines the row index. 
+     * Selects a row by given index.
+     *
+     * @param  {number} index - Defines the row index.
      * @param  {boolean} isToggle - If set to true, then it toggles the selection.
-     * @return {void}
+     * @param {boolean} isPreventFocus .
+     * @returns {void} .
      */
     public selectRow(index: number, isToggle?: boolean, isPreventFocus?: boolean): void {
-        let ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
-        let selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) => parseInt(e.getAttribute('aria-rowindex'), 0) === index)[0];
+        const ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
+        // eslint-disable-next-line
+        const selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) => parseInt(e.getAttribute('aria-rowindex'), 0) === index)[0];
         let condition: boolean;
         if (index === -1 || isNullOrUndefined(selectedRow) || this.parent.selectionSettings.mode === 'Cell') {
             return;
@@ -233,9 +241,10 @@ export class Selection {
     }
 
     /**
-     * Selects a collection of rows by indexes. 
+     * Selects a collection of rows by indexes.
+     *
      * @param  {number[]} records - Defines the collection of row indexes.
-     * @return {void}
+     * @returns {void} .
      */
     public selectRows(records: number[]): void {
         if (!isNullOrUndefined(records) && records.length > 0) {
@@ -245,7 +254,8 @@ export class Selection {
 
     /**
      * Gets the collection of selected row indexes.
-     * @return {number[]}
+     *
+     * @returns {number[]} .
      */
     public getSelectedRowIndexes(): number[] {
         return this.parent.treeGrid.getSelectedRowIndexes();
@@ -253,7 +263,8 @@ export class Selection {
 
     /**
      * Gets the collection of selected row and cell indexes.
-     * @return {number[]}
+     *
+     * @returns {number[]} .
      */
     public getSelectedRowCellIndexes(): ISelectedCell[] {
         return this.parent.treeGrid.getSelectedRowCellIndexes();
@@ -261,8 +272,10 @@ export class Selection {
 
     /**
      * Gets the collection of selected records.
-     * @return {Object[]}
+     *
+     * @returns {Object[]} .
      */
+    // eslint-disable-next-line
     public getSelectedRecords(): Object[] {
         if (isBlazor()) {
             return this.parent.getRecordFromFlatdata(this.parent.treeGrid.getSelectedRecords());
@@ -273,11 +286,12 @@ export class Selection {
 
     /**
      * Get the selected records for cell selection.
-     * @return {IGanttData[]}
+     *
+     * @returns {IGanttData[]} .
      */
     public getCellSelectedRecords(): IGanttData[] {
-        let cellDetails: ISelectedCell[] = this.parent.selectionModule.getSelectedRowCellIndexes();
-        let cellSelectedRecords: IGanttData[] = [];
+        const cellDetails: ISelectedCell[] = this.parent.selectionModule.getSelectedRowCellIndexes();
+        const cellSelectedRecords: IGanttData[] = [];
         for (let i: number = 0; i < cellDetails.length; i++) {
             cellSelectedRecords.push(this.parent.currentViewData[cellDetails[i].rowIndex]);
         }
@@ -290,7 +304,8 @@ export class Selection {
 
     /**
      * Gets the collection of selected rows.
-     * @return {Element[]}
+     *
+     * @returns {Element[]} .
      */
     public getSelectedRows(): Element[] {
         return this.parent.treeGrid.getSelectedRows();
@@ -298,7 +313,8 @@ export class Selection {
 
     /**
      * Deselects the current selected rows and cells.
-     * @return {void}
+     *
+     * @returns {void} .
      */
     public clearSelection(): void {
         this.addRemoveClass(this.selectedRowIndexes);
@@ -313,16 +329,15 @@ export class Selection {
     }
 
     private highlightSelectedRows(e: PointerEvent, fromChart: boolean): void {
-        let rows: HTMLCollection = closest((e.target as Element), 'tbody').children;
         this.isMultiCtrlRequest = e.ctrlKey || this.enableSelectMultiTouch;
         this.isMultiShiftRequest = e.shiftKey;
         this.actualTarget = e.target;
         this.isInteracted = true;
         this.isSelectionFromChart = fromChart;
         if (fromChart) {
-            let selectedRow: Element = closest((e.target as Element), 'tr.e-chart-row');
-            let rIndex: number = parseInt(selectedRow.getAttribute('aria-rowindex'), 10);
-            let isToggle: boolean = this.parent.selectionSettings.enableToggle;
+            const selectedRow: Element = closest((e.target as Element), 'tr.e-chart-row');
+            const rIndex: number = parseInt(selectedRow.getAttribute('aria-rowindex'), 10);
+            const isToggle: boolean = this.parent.selectionSettings.enableToggle;
             if (this.parent.selectionSettings.type === 'Single' || (!this.isMultiCtrlRequest && !this.isMultiShiftRequest)) {
                 this.selectRow(rIndex, isToggle);
             } else {
@@ -331,7 +346,7 @@ export class Selection {
                 } else {
                     setValue('isMultiCtrlRequest', true, this.parent.treeGrid.grid.selectionModule);
                     this.parent.treeGrid.grid.selectionModule.addRowsToSelection([rIndex]);
-                    let isUnSelected: boolean = this.selectedRowIndexes.indexOf(rIndex) > -1;
+                    const isUnSelected: boolean = this.selectedRowIndexes.indexOf(rIndex) > -1;
                     if (isUnSelected) {
                         this.addRemoveClass([rIndex]);
                     }
@@ -341,7 +356,8 @@ export class Selection {
     }
 
     private getselectedrowsIndex(startIndex: number, endIndex?: number): void {
-        let indexes: number[] = [];
+        const indexes: number[] = [];
+        // eslint-disable-next-line
         let { i, max }: { i: number, max: number } = (startIndex < endIndex) ?
             { i: startIndex, max: endIndex } : { i: endIndex, max: startIndex };
         for (; i <= max; i++) {
@@ -353,11 +369,12 @@ export class Selection {
         this.selectedRowIndexes = indexes;
     }
 
-    /** 
-     * Selects a range of rows from start and end row indexes. 
-     * @param  {number} startIndex - Defines the start row index. 
-     * @param  {number} endIndex - Defines the end row index. 
-     * @return {void} 
+    /**
+     * Selects a range of rows from start and end row indexes.
+     *
+     * @param  {number} startIndex - Defines the start row index.
+     * @param  {number} endIndex - Defines the end row index.
+     * @returns {void} .
      */
     public selectRowsByRange(startIndex: number, endIndex?: number): void {
         this.isSelectionFromChart = true;
@@ -366,11 +383,13 @@ export class Selection {
     }
 
     private addRemoveClass(records: number[]): void {
-        let ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
+        const ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
         for (let i: number = 0; i < records.length; i++) {
-            let selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) =>
-             parseInt(e.getAttribute('aria-rowindex'), 0) === records[i])[0];
+            const selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) =>
+            // eslint-disable-next-line
+                parseInt(e.getAttribute('aria-rowindex'), 0) === records[i])[0];
             if (!isNullOrUndefined(selectedRow)) {
+                // eslint-disable-next-line
                 this.getSelectedRowIndexes().indexOf(records[i]) > -1 ? this.addClass(selectedRow) : this.removeClass(selectedRow);
             }
         }
@@ -398,7 +417,10 @@ export class Selection {
             this.hidePopUp();
         }
     }
-    /** @private */
+    /**
+     * @returns {void} .
+     * @private
+     */
     public hidePopUp(): void {
         if (this.openPopup) {
             (<HTMLElement>document.getElementsByClassName('e-ganttpopup')[0]).style.display = 'none';
@@ -409,12 +431,12 @@ export class Selection {
     }
 
     private popUpClickHandler(e: MouseEvent): void {
-        let target: Element = e.target as Element;
-        let grid: Grid = this.parent.treeGrid.grid;
-        let $popUpElemet: Element = closest(target, '.e-ganttpopup') ?
+        const target: Element = e.target as Element;
+        const grid: Grid = this.parent.treeGrid.grid;
+        const $popUpElemet: Element = closest(target, '.e-ganttpopup') ?
             closest(target, '.e-ganttpopup') : closest(target, '.e-gridpopup');
         if ($popUpElemet) {
-            let spanElement: Element = $popUpElemet.querySelector('.' + 'e-rowselect');
+            const spanElement: Element = $popUpElemet.querySelector('.' + 'e-rowselect');
             if (closest(target, '.e-ganttpopup') &&
                 !spanElement.classList.contains('e-spanclicked')) {
                 this.enableSelectMultiTouch = true;
@@ -431,7 +453,7 @@ export class Selection {
                 }
             }
         } else if (this.parent.selectionSettings.type === 'Multiple' && this.parent.isAdaptive) {
-            let $tr: Element = closest(target, '.e-rowcell');
+            const $tr: Element = closest(target, '.e-rowcell');
             if ($tr && this.selectedRowIndexes.length === 0) {
                 this.hidePopUp();
             }
@@ -442,7 +464,8 @@ export class Selection {
     }
 
     /**
-     * @return {void}
+     * @param {PointerEvent} e .
+     * @returns {void} .
      * @private
      */
     private mouseUpHandler(e: PointerEvent): void {
@@ -458,14 +481,14 @@ export class Selection {
             this.parent.focusModule.setActiveElement(targetElement as HTMLElement);
         }
         if (this.parent.editModule && this.parent.editSettings.allowTaskbarEditing && this.parent.editModule.taskbarEditModule) {
-            let taskbarEdit: TaskbarEdit = this.parent.editModule.taskbarEditModule;
+            const taskbarEdit: TaskbarEdit = this.parent.editModule.taskbarEditModule;
             if (taskbarEdit.isMouseDragged || taskbarEdit.tapPointOnFocus) {
                 isTaskbarEdited = true;
             }
         }
         if (!isTaskbarEdited && this.parent.element.contains(e.target as Node)) {
-            let parent: Element = parentsUntil(e.target as Element, 'e-chart-row');
-            let isSelected: boolean = (e.target as HTMLElement).classList.contains('e-rowcell') ||
+            const parent: Element = parentsUntil(e.target as Element, 'e-chart-row');
+            const isSelected: boolean = (e.target as HTMLElement).classList.contains('e-rowcell') ||
                 (e.target as HTMLElement).classList.contains('e-row') ||
                 (e.target as HTMLElement).classList.contains('e-treegridexpand') ||
                 (e.target as HTMLElement).classList.contains('e-treegridcollapse') || !isNullOrUndefined(parent);
@@ -488,19 +511,23 @@ export class Selection {
             }
         }
     }
-    /** 
-     * To add class for selected records in virtualization mode. 
+    /**
+     * To add class for selected records in virtualization mode.
+     *
+     * @param {number} i .
+     * @returns {void} .
      * @hidden
      */
     public maintainSelectedRecords(i: number): void {
-        let index: number =  this.parent.selectionModule.getSelectedRowIndexes().indexOf(i);
+        const index: number =  this.parent.selectionModule.getSelectedRowIndexes().indexOf(i);
         if (index > -1) {
             this.addRemoveClass([i]);
         }
     }
     /**
      * To destroy the selection module.
-     * @return {void}
+     *
+     * @returns {void} .
      * @private
      */
     public destroy(): void {

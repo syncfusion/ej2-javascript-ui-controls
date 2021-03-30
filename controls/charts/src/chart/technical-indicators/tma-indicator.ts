@@ -1,3 +1,7 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
 import { firstToLowerCase } from '../../common/utils/helper';
 import { TechnicalIndicator } from './technical-indicator';
@@ -11,39 +15,30 @@ export class TmaIndicator extends TechnicalAnalysis {
 
     /**
      * Defines the predictions based on TMA approach
+     *
      * @private
      */
     public initDataSource(indicator: TechnicalIndicator, chart: Chart): void {
-        let tmaPoints: Points[] = [];
-        let field: string = firstToLowerCase(indicator.field);
-        let xField: string = 'x';
-        let signalSeries: Series = indicator.targetSeries[0];
+        const tmaPoints: Points[] = [];
+        const field: string = firstToLowerCase(indicator.field);
+        const xField: string = 'x';
 
         //prepare data
-        let validData: Points[] = indicator.points;
+        const validData: Points[] = indicator.points;
 
         if (validData && validData.length && validData.length >= indicator.period) {
 
-            let signalSeries: Series = indicator.targetSeries[0];
+            const signalSeries: Series = indicator.targetSeries[0];
             //prepare data
-            let validData: Points[] = indicator.points;
+            const validData: Points[] = indicator.points;
 
             if (validData.length && validData.length >= indicator.period) {
-                //smoothing factor
-                let k: number = (2 / (indicator.period + 1));
-
-                //find initial average
-                let average: number = 0;
                 let sum: number = 0;
-                let sumOfSMA: number = 0;
-                let averageSMA: number = 0;
-
-                let smaValues: number[] = [];
-
+                const smaValues: number[] = [];
                 //sma values
                 let index: number = 0;
                 let length: number = validData.length;
-                let period: number = indicator.period;
+                const period: number = indicator.period;
                 while (length >= period) {
                     sum = 0;
                     index = validData.length - length;
@@ -83,11 +78,12 @@ export class TmaIndicator extends TechnicalAnalysis {
 
     /**
      * To destroy the TMA indicator.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroys the TMA Indicator
          */

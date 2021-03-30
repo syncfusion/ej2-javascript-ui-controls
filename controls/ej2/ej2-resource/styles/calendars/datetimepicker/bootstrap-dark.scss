@@ -1,0 +1,302 @@
+
+//default 
+$datetime-default-text-indent: 20px !default;
+$datetime-list-bigger-line-height: 40px !default;
+$datetime-list-normal-line-height: 26px !default;
+$datetime-list-normal-font-size: 14px !default;
+$datetime-list-bigger-font-size: 15px !default;
+$datetime-list-normal-text-indent: $datetime-default-text-indent !default;
+$datetime-list-bigger-text-indent: 20px !default;
+$datetime-popup-border-radius: 4px !default;
+$datetime-list-active-icon-color: $grey-dark-font !default;
+$datetime-list-font-weight: regular !default;
+$datetime-popup-shadow:  0 6px 12px rgba($base-font, .5) !default;
+$datetime-list-default-font-color: $grey-dark-font !default;
+$datetime-list-border-color: 1px solid $grey-44 !default;
+$datetime-list-bg-color: $grey-dark !default;
+$datetime-list-active-bg-color: $brand-primary  !default;
+$datetime-list-active-font-color: $brand-primary-font !default;
+$datetime-list-hover-bg-color: $grey-44 !default;
+$datetime-list-hover-font-color: $grey-dark-font !default;
+$datetime-list-active-hover-bg-color: $brand-primary !default;
+$datetime-list-active-hover-font-color: $brand-primary-font !default;
+$datetime-list-normal-padding: 5px !default;
+$datetime-list-bigger-padding: 10px !default;
+$datetime-time-font-icon: '\e93e' !default;
+$datetime-icon-normal-font-size: 16px !default;
+$datetime-icon-bigger-font-size: 20px !default;
+$datetime-date-icon-margin: 0 !default;
+$datetime-time-icon-margin: 0 !default;
+$datetime-time-bigger-icon-margin: 0 !default;
+$datetime-list-popup-icon-active-color: $grey-dark-font !default;
+$datetime-time-rtl-icon-margin: 0 !default;
+$datetime-time-rtl-bigger-icon-margin: 0 !default;
+$datetime-time-icon-border: 1px !default;
+$datetime-time-icon-border-style: none !default;
+$datetime-list-hover-border-color: none !default;
+$datetime-list-default-border-style: none !default;
+$datetime-default-overlay: rgba($grey-base, .6) !default;
+//mouse small
+$datetime-list-small-line-height: 22px !default;
+$datetime-list-small-text-indent: 12px !default;
+$datetime-list-small-font-size: 13px !default;
+// mouse small icon
+$datetime-icon-small-font-size: 14px !default;
+//touch small
+$datetime-list-bigger-small-line-height: 34px !default;
+$datetime-list-bigger-small-text-indent: 20px !default;
+$datetime-list-bigger-small-font-size: 14px !default;
+// touch small icon
+$datetime-icon-bigger-small-font-size: 18px !default;
+//enddefault
+@include export-module('datetimepicker-bootstrap-icons') {
+  /*! component icons */
+  .e-datetime-wrapper {
+
+    #{if(&, '&', '*')} .e-time-icon.e-icons::before {
+      content: '\e93e';
+      font-family: 'e-icons';
+    }
+  }
+}
+
+@include export-module('datetimepicker-layout') {
+  // datetimepicker layout
+  .e-input-group.e-control-wrapper.e-datetime-wrapper.e-non-edit.e-input-focus .e-input:focus ~ .e-clear-icon,
+  .e-float-input.e-control-wrapper.e-input-group.e-datetime-wrapper.e-non-edit.e-input-focus input:focus ~ .e-clear-icon {
+    display: flex;
+  }
+
+  .e-datetime-wrapper {
+    // sass-lint:disable no-vendor-prefixes
+    -webkit-tap-highlight-color: transparent;
+
+    #{if(&, '&', '*')} .e-time-icon.e-icons::before {
+      font-size: $datetime-icon-normal-font-size;
+    }
+
+    #{if(&, '&', '*')}.e-control-wrapper {
+      box-sizing: border-box;
+    }
+
+    #{if(&, '&', '*')} .e-time-icon.e-icons.e-disabled,
+    #{if(&, '&', '*')} .e-date-icon.e-icons.e-disabled {
+      pointer-events: none;
+    }
+
+    #{if(&, '&', '*')} .e-clear-icon {
+      box-sizing: content-box;
+    }
+
+    #{if(&, '&', '*')} span {
+      cursor: pointer;
+    }
+
+    #{if(&, '&', '*')} .e-input-group-icon.e-date-icon,
+    #{if(&, '&', '*')} .e-input-group-icon.e-time-icon {
+      font-size: 16px;
+      margin: $datetime-date-icon-margin;
+      @if $skin-name == 'material' or $skin-name == 'material-dark' {
+        min-height: $datetime-normal-min-height;
+        min-width: $datetime-normal-min-width;
+      }
+
+      outline: none;
+    }
+
+    #{if(&, '&', '*')} .e-input-group-icon.e-time-icon {
+      border: $datetime-time-icon-border;
+      border-style: $datetime-time-icon-border-style;
+      margin: $datetime-time-icon-margin;
+    }
+  }
+
+  .e-datetime-wrapper:not(.e-outline) {
+    #{if(&, '&', '*')}.e-rtl .e-input-group-icon.e-time-icon {
+      margin: $datetime-time-rtl-icon-margin;
+    }
+  }
+
+  #{&}.e-datetimepicker.e-time-modal {
+    background-color: $datetime-default-overlay;
+    height: 100%;
+    left: 0;
+    opacity: .5;
+    pointer-events: auto;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 999;
+	}
+
+  #{&}.e-datetimepicker.e-popup {
+    border-style: solid;
+    border-width: 1px;
+    overflow: auto;
+
+    #{if(&, '&', '*')} .e-content {
+      position: relative;
+    }
+
+    #{if(&, '&', '*')} .e-list-parent.e-ul {
+      margin: 0;
+      padding: $datetime-list-normal-padding 0;
+
+      #{if(&, '&', '*')} .e-list-item {
+        color: $datetime-list-default-font-color;
+        cursor: default;
+        font-size: $datetime-list-normal-font-size;
+        overflow: hidden;
+        position: relative;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+        white-space: nowrap;
+        width: 100%;
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-hover {
+        cursor: pointer;
+      }
+    }
+  }
+
+  //normal styles
+
+  #{&}.e-datetimepicker.e-popup {
+    #{if(&, '&', '*')} .e-list-parent.e-ul .e-list-item {
+      line-height: $datetime-list-normal-line-height;
+      text-indent: $datetime-list-normal-text-indent;
+    }
+  }
+
+  //bigger styles
+  .e-bigger.e-datetime-wrapper,
+  #{if(&, '&', '*')}.e-bigger .e-datetime-wrapper {
+
+    #{if(&, '&', '*')} .e-time-icon.e-icons::before {
+      font-size: $datetime-icon-bigger-font-size;
+    }
+
+    #{if(&, '&', '*')} .e-input-group-icon.e-time-icon {
+      margin: $datetime-time-bigger-icon-margin;
+      @if $skin-name == 'material' or $skin-name == 'material-dark' {
+        min-height: $datetime-bigger-min-height;
+        min-width: $datetime-bigger-min-width;
+      }
+    }
+  }
+
+  .e-bigger.e-datetime-wrapper:not(.e-outline),
+  #{if(&, '&', '*')}.e-bigger .e-datetime-wrapper:not(.e-outline) {
+    #{if(&, '&', '*')}.e-rtl .e-input-group-icon.e-time-icon {
+      margin: $datetime-time-rtl-bigger-icon-margin;
+    }
+  }
+
+  .e-bigger #{&}.e-datetimepicker.e-popup,
+  #{if(&, '&', '*')}.e-bigger#{&}.e-datetimepicker.e-popup {
+    #{if(&, '&', '*')} .e-list-parent.e-ul {
+      padding: $datetime-list-bigger-padding 0;
+
+      #{if(&, '&', '*')} .e-list-item {
+        font-size: $datetime-list-bigger-font-size;
+        line-height: $datetime-list-bigger-line-height;
+        text-indent: $datetime-list-bigger-text-indent;
+      }
+    }
+  }
+
+  .e-small #{&}.e-datetimepicker.e-popup,
+  #{if(&, '&', '*')}.e-small#{&}.e-datetimepicker.e-popup {
+    #{if(&, '&', '*')} .e-list-parent.e-ul .e-list-item {
+      font-size: $datetime-list-small-font-size;
+      line-height: $datetime-list-small-line-height;
+      text-indent: $datetime-list-small-text-indent;
+    }
+  }
+
+  .e-small.e-bigger #{&}.e-datetimepicker.e-popup,
+  #{if(&, '&', '*')}.e-small.e-bigger#{&}.e-datetimepicker.e-popup {
+    #{if(&, '&', '*')} .e-list-parent.e-ul .e-list-item {
+      font-size: $datetime-list-bigger-small-font-size;
+      line-height: $datetime-list-bigger-small-line-height;
+      text-indent: $datetime-list-bigger-small-text-indent;
+    }
+  }
+
+  .e-small.e-datetime-wrapper,
+  #{if(&, '&', '*')}.e-small .e-datetime-wrapper {
+
+    #{if(&, '&', '*')} .e-time-icon.e-icons::before {
+      font-size: $datetime-icon-small-font-size;
+    }
+  }
+
+  .e-small.e-bigger.e-datetime-wrapper,
+  #{if(&, '&', '*')}.e-small.e-bigger .e-datetime-wrapper {
+
+    #{if(&, '&', '*')} .e-time-icon.e-icons::before {
+      font-size: $datetime-icon-bigger-small-font-size;
+    }
+  }
+
+  .e-content-placeholder.e-datetimepicker.e-placeholder-datetimepicker {
+    background-size: 250px 33px;
+    min-height: 33px;
+  }
+
+  .e-bigger .e-content-placeholder.e-datetimepicker.e-placeholder-datetimepicker,
+  .e-bigger.e-content-placeholder.e-datetimepicker.e-placeholder-datetimepicker {
+    background-size: 250px 40px;
+    min-height: 40px;
+  }
+}
+@include export-module('datetimepicker-theme') {
+  /*! datetimepicker theme */
+  .e-datetime-wrapper {
+    #{if(&, '&', '*')} .e-input-group-icon.e-icons.e-active {
+      @if $skin-name == 'bootstrap4' {
+        background: $datetime-icon-active-bg-color;
+        border-color: $datetime-active-border-color;
+      }
+      color: $datetime-list-active-icon-color;
+    }
+
+    #{if(&, '&', '*')}.e-input-group:not(.e-disabled) .e-input-group-icon.e-active:active {
+      color: $datetime-list-popup-icon-active-color;
+    }
+  }
+
+  .e-datetimepicker.e-popup {
+    border: $datetime-list-border-color;
+    border-radius: $datetime-popup-border-radius;
+    box-shadow: $datetime-popup-shadow;
+
+    #{if(&, '&', '*')} .e-list-parent.e-ul {
+      background-color: $datetime-list-bg-color;
+
+      #{if(&, '&', '*')} li.e-list-item {
+        border: $datetime-list-default-border-style;
+        color: $datetime-list-default-font-color;
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-hover,
+      #{if(&, '&', '*')} .e-list-item.e-navigation,
+      #{if(&, '&', '*')} .e-list-item:focus {
+        background-color: $datetime-list-hover-bg-color;
+        border: $datetime-list-hover-border-color;
+        color: $datetime-list-hover-font-color;
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-active {
+        background-color: $datetime-list-active-bg-color;
+        color: $datetime-list-active-font-color;
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-active.e-hover {
+        background-color: $datetime-list-active-hover-bg-color;
+        color: $datetime-list-active-hover-font-color;
+      }
+    }
+  }
+}

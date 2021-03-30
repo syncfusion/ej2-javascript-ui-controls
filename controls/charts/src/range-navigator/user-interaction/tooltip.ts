@@ -1,3 +1,6 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable valid-jsdoc */
 import { RangeNavigator, RangeSlider } from '../../range-navigator';
 import { Tooltip as SVGTooltip} from '@syncfusion/ej2-svg-base';
 import { getElement, createTemplate, firstToLowerCase } from '../../common/utils/helper';
@@ -21,7 +24,8 @@ export class RangeTooltip {
     private control: RangeNavigator;
     /**
      * Constructor for tooltip module.
-     * @private.
+     *
+     * @private
      */
     constructor(range: RangeNavigator) {
         this.control = range;
@@ -29,12 +33,13 @@ export class RangeTooltip {
     }
     /**
      * Left tooltip method called here
-     * @param rangeSlider 
+     *
+     * @param {RangeSlider} rangeSlider RangeSlider
      */
     public renderLeftTooltip(rangeSlider: RangeSlider): void {
         this.fadeOutTooltip();
-        let content: string[] = this.getTooltipContent(rangeSlider.currentStart);
-        let contentWidth: number = this.getContentSize(content);
+        const content: string[] = this.getTooltipContent(rangeSlider.currentStart);
+        const contentWidth: number = this.getContentSize(content);
         let rect: Rect = this.control.enableRtl ? rangeSlider.rightRect : rangeSlider.leftRect;
         if (contentWidth > rect.width) {
             rect = rangeSlider.midRect;
@@ -46,11 +51,12 @@ export class RangeTooltip {
     }
     /**
      * get the content size
-     * @param value 
+     *
+     * @param {string[]} value value
      */
     private getContentSize(value: string[]): number {
         let width: number;
-        let font: FontModel = this.control.tooltip.textStyle;
+        const font: FontModel = this.control.tooltip.textStyle;
         if (this.control.tooltip.template) {
             width = createTemplate(
                 createElement('div', {
@@ -66,12 +72,13 @@ export class RangeTooltip {
     }
     /**
      * Right tooltip method called here
-     * @param rangeSlider 
+     *
+     * @param {RangeSlider} rangeSlider RangeSlider
      */
     public renderRightTooltip(rangeSlider: RangeSlider): void {
         this.fadeOutTooltip();
-        let content: string[] = this.getTooltipContent(rangeSlider.currentEnd);
-        let contentWidth: number = this.getContentSize(content);
+        const content: string[] = this.getTooltipContent(rangeSlider.currentEnd);
+        const contentWidth: number = this.getContentSize(content);
         let rect: Rect = this.control.enableRtl ? rangeSlider.leftRect : rangeSlider.rightRect;
         if (contentWidth > rect.width) {
             rect = rangeSlider.midRect;
@@ -84,20 +91,21 @@ export class RangeTooltip {
     }
     /**
      * Tooltip element creation
-     * @param id 
+     *
+     * @param {string} id element id
      */
     private createElement(id: string): Element {
         if (getElement(this.elementId + id)) {
             return getElement(this.elementId + id);
         } else {
-            let element: HTMLElement = document.createElement('div');
+            const element: HTMLElement = document.createElement('div');
             element.id = this.elementId + id;
             element.className = 'ejSVGTooltip';
             element.setAttribute('style', 'pointer-events:none; position:absolute;z-index: 1');
             if (!this.control.stockChart) {
                 getElement(this.elementId + '_Secondary_Element').appendChild(element);
             } else {
-                let stockChart: StockChart = this.control.stockChart;
+                const stockChart: StockChart = this.control.stockChart;
                 getElement(stockChart.element.id + '_Secondary_Element').appendChild(element);
                 element.style.transform = 'translateY(' +   (((stockChart.availableSize.height - stockChart.toolbarHeight - 80) +
                                                                      stockChart.toolbarHeight) + stockChart.titleSize.height) + 'px)';
@@ -107,20 +115,21 @@ export class RangeTooltip {
     }
     /**
      * Tooltip render called here
-     * @param bounds 
-     * @param parent 
-     * @param pointX 
-     * @param value 
+     *
+     * @param {Rect} bounds bounds
+     * @param {Element} parent parent
+     * @param {number} pointX pointX
+     * @param {string[]} content content
      */
     private renderTooltip(bounds: Rect, parent: Element, pointX: number, content: string[]): SVGTooltip {
-        let control: RangeNavigator = this.control;
-        let tooltip: RangeTooltipSettingsModel = control.tooltip;
-        let argsData: IRangeTooltipRenderEventArgs = {
+        const control: RangeNavigator = this.control;
+        const tooltip: RangeTooltipSettingsModel = control.tooltip;
+        const argsData: IRangeTooltipRenderEventArgs = {
             cancel: false, name: 'tooltipRender', text: content,
             textStyle: tooltip.textStyle
         };
         this.control.trigger('tooltipRender', argsData);
-        let left: number = control.svgObject.getBoundingClientRect().left -
+        const left: number = control.svgObject.getBoundingClientRect().left -
             control.element.getBoundingClientRect().left;
         if (!argsData.cancel) {
             return new SVGTooltip(
@@ -152,16 +161,17 @@ export class RangeTooltip {
     }
     /**
      * Tooltip content processed here
-     * @param value 
+     *
+     * @param {number} value tooltip value
      */
     private getTooltipContent(value: number): string[] {
-        let control: RangeNavigator = this.control;
-        let tooltip: RangeTooltipSettingsModel = control.tooltip;
-        let xAxis: Axis = control.chartSeries.xAxis;
+        const control: RangeNavigator = this.control;
+        const tooltip: RangeTooltipSettingsModel = control.tooltip;
+        const xAxis: Axis = control.chartSeries.xAxis;
         let text: string;
-        let format: string = tooltip.format || xAxis.labelFormat;
-        let isCustom: boolean = format.match('{value}') !== null;
-        let valueType: RangeValueType = xAxis.valueType as RangeValueType;
+        const format: string = tooltip.format || xAxis.labelFormat;
+        const isCustom: boolean = format.match('{value}') !== null;
+        const valueType: RangeValueType = xAxis.valueType as RangeValueType;
         if (valueType === 'DateTime') {
             text = (control.intl.getDateFormat({
                 format: format || 'MM/dd/yyyy',
@@ -184,11 +194,11 @@ export class RangeTooltip {
      * Fadeout animation performed here
      */
     private fadeOutTooltip(): void {
-        let tooltip: RangeTooltipSettingsModel = this.control.tooltip;
+        const tooltip: RangeTooltipSettingsModel = this.control.tooltip;
         if (tooltip.displayMode === 'OnDemand') {
             stopTimer(this.toolTipInterval);
             if (this.rightTooltip) {
-                this.toolTipInterval = setTimeout(
+                this.toolTipInterval = +setTimeout(
                     (): void => {
                         this.leftTooltip.fadeOut();
                         this.rightTooltip.fadeOut();
@@ -206,10 +216,11 @@ export class RangeTooltip {
     }
     /**
      * To destroy the tooltip.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(chart: RangeNavigator): void {
+    public destroy(): void {
         // Destroy method called here
     }
 }

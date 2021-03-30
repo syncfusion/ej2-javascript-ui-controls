@@ -3,8 +3,11 @@ import { Workbook } from '../base/index';
 
 /**
  * To get Workbook required modules.
+ *
  * @hidden
- * @param {Workbook} context
+ * @param {Workbook} context - Specifies the context.
+ * @param {ModuleDeclaration[]} modules - Specifies the modules.
+ * @returns {ModuleDeclaration[]} - To get Workbook required modules.
  */
 export function getWorkbookRequiredModules(context: Workbook, modules: ModuleDeclaration[] = []): ModuleDeclaration[] {
     modules.push({ member: 'workbookBasic', args: [] });

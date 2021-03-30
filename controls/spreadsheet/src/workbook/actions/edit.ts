@@ -15,19 +15,22 @@ export class WorkbookEdit {
 
     /**
      * Constructor for edit module in Workbook.
+     *
      * @private
+     * @param {Workbook} workbook - Specifies the workbook.
      */
     constructor(workbook: Workbook) {
         this.parent = workbook;
         this.localeObj = getNumericObject(this.parent.locale);
-        /* tslint:disable:no-any */
+        /* eslint-disable @typescript-eslint/no-explicit-any */
         this.decimalSep = (<any>this.localeObj).decimal;
         this.addEventListener();
     }
 
     /**
-     * To destroy the edit module. 
-     * @return {void}
+     * To destroy the edit module.
+     *
+     * @returns {void} - destroy the edit module
      * @hidden
      */
     public destroy(): void {
@@ -47,7 +50,8 @@ export class WorkbookEdit {
 
     /**
      * Get the module name.
-     * @returns string
+     *
+     * @returns {string} - string
      * @private
      */
     public getModuleName(): string {
@@ -55,19 +59,19 @@ export class WorkbookEdit {
     }
 
     private performEditOperation(args: { [key: string]: Object }): void {
-        let action: string = <string>args.action;
+        const action: string = <string>args.action;
         switch (action) {
-            case 'updateCellValue':
-                this.updateCellValue(
-                    <string>args.address, <string>args.value, <number>args.sheetIndex, <boolean>args.isValueOnly);
-                break;
+        case 'updateCellValue':
+            this.updateCellValue(
+                <string>args.address, <string>args.value, <number>args.sheetIndex, <boolean>args.isValueOnly);
+            break;
         }
     }
 
     private checkDecimalPoint(value: string): string {
         if (Number(value)) {
-            let decIndex: number = value.toString().indexOf(this.decimalSep) + 1;
-            let checkDec: boolean = value.toString().substr(decIndex).length <= 6;
+            const decIndex: number = value.toString().indexOf(this.decimalSep) + 1;
+            const checkDec: boolean = value.toString().substr(decIndex).length <= 6;
             value = checkDec ? decIndex < 7 ? value : (parseFloat(value)).toFixed(0) : decIndex > 7 ? (parseFloat(value)).toFixed(0) :
                 (parseFloat(value)).toFixed(6 - decIndex + 2);
         }
@@ -85,7 +89,7 @@ export class WorkbookEdit {
         } else {
             range = address;
         }
-        let sheet: SheetModel = getSheet(this.parent, sheetIdx);
+        const sheet: SheetModel = getSheet(this.parent, sheetIdx);
         if (!sheet.rows[range[0]]) {
             sheet.rows[range[0]] = {};
             sheet.rows[range[0]].cells = [];
@@ -96,14 +100,14 @@ export class WorkbookEdit {
         if (!sheet.rows[range[0]].cells[range[1]]) {
             sheet.rows[range[0]].cells[range[1]] = {};
         }
-        let cell: CellModel = getCell(range[0], range[1], sheet);
+        const cell: CellModel = getCell(range[0], range[1], sheet);
         if (!isValueOnly) {
-            let isFormula: boolean = checkIsFormula(value);
+            const isFormula: boolean = checkIsFormula(value);
             if (!isFormula) {
                 cell.formula = '';
                 cell.value = <string>parseIntValue(value);
             }
-            let eventArgs: { [key: string]: string | number | boolean } = {
+            const eventArgs: { [key: string]: string | number | boolean } = {
                 action: 'refreshCalculate',
                 value: value,
                 rowIndex: range[0],
@@ -112,7 +116,7 @@ export class WorkbookEdit {
                 isFormula: isFormula
             };
             if (getTypeFromFormat(cell.format) !== 'Text') {
-                let dateEventArgs: { [key: string]: string | number } = {
+                const dateEventArgs: { [key: string]: string | number } = {
                     value: value,
                     rowIndex: range[0],
                     colIndex: range[1],

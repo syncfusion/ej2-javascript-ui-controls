@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/explicit-member-accessibility */
+/* eslint-disable @typescript-eslint/dot-notation */
 import { Maps } from '../../index';
 import { LayerSettings, convertTileLatLongToPoint  } from '../index';
 import { convertGeoToPoint, Point, PathOption, maintainSelection } from '../utils/helper';
@@ -10,18 +12,20 @@ export class NavigationLine {
     constructor(maps: Maps) {
         this.maps = maps;
     }
-    /* tslint:disable:no-string-literal */
-    //tslint:disable:max-func-body-length
+    // eslint-disable-next-line valid-jsdoc
     /**
      * To render navigation line for maps
      */
     public renderNavigation(layer: LayerSettings, factor: number, layerIndex: number): Element {
         let navigationEle: Element;
-        let navigation: object[];
-        navigation = layer.navigationLineSettings;
-        let longitude: object;
-        let point: object[] = [];
-        let latitude: object;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const navigation: any[] = layer.navigationLineSettings;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let longitude: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let point: any[] = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let latitude: any;
         let visible: boolean;
         let angle: number;
         let width: number;
@@ -35,7 +39,8 @@ export class NavigationLine {
         let showArrow: boolean;
         let arrowColor: string;
         let arrowSize: number;
-        let arrowSettings: object;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let arrowSettings: any;
         let arrowPosition: string;
         let startArrow: string;
         let endArrow: string;
@@ -43,7 +48,7 @@ export class NavigationLine {
         let offSetValue: number;
         let navigationGroup: Element;
         let d: string;
-        let group: Element = (this.maps.renderer.createGroup({
+        const group: Element = (this.maps.renderer.createGroup({
             id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_line_Group'
         }));
         for (let i: number = 0; i < navigation.length; i++) {
@@ -58,7 +63,7 @@ export class NavigationLine {
             showArrow = (isNullOrUndefined(arrowSettings)) ? false : arrowSettings['properties']['showArrow'];
             if (longitude['length'] === latitude['length'] && visible) {
                 for (let i: number = 0; i < longitude['length']; i++) {
-                    let location: Point = (this.maps.isTileMap) ? convertTileLatLongToPoint(
+                    const location: Point = (this.maps.isTileMap) ? convertTileLatLongToPoint(
                         new Point(longitude[i], latitude[i]), factor, this.maps.tileTranslatePoint, true
                     ) : convertGeoToPoint(latitude[i], longitude[i], factor, layer, this.maps);
                     point.push(location);
@@ -70,8 +75,8 @@ export class NavigationLine {
             for (let j: number = 0; j < point['length'] - 1; j++) {
                 angle = (-1 > angle) ? -1 : angle;
                 angle = (1 < angle) ? 1 : angle;
-                let arcId: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_NavigationIndex_' + i + '_Line' + j + '';
-                let radius: number = this.convertRadius(point[j], point[j + 1]);
+                const arcId: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_NavigationIndex_' + i + '_Line' + j + '';
+                const radius: number = this.convertRadius(point[j], point[j + 1]);
                 if (angle <= 1 && angle > 0) {
                     direction = 0;
                     if (point[j]['x'] > point[j + 1]['x']) {
@@ -89,7 +94,7 @@ export class NavigationLine {
                         arrowColor = arrowSettings['properties']['color'];
                         arrowSize = arrowSettings['properties']['size'];
                         offSetValue = (arrowSettings['properties']['offSet'] === undefined) ? 0 : arrowSettings['properties']['offSet'];
-                        let divide: number = (Math.round(arrowSize / 2));
+                        const divide: number = (Math.round(arrowSize / 2));
                         arrowPosition = arrowSettings['properties']['position'];
                         startArrow = (arrowPosition === 'Start') ? 'url(#triangle' + i + ')' : null;
                         endArrow = (arrowPosition === 'End') ? 'url(#triangle' + i + ')' : null;
@@ -97,16 +102,16 @@ export class NavigationLine {
                             offSet = (arrowPosition === 'Start') ? offSetValue : -(offSetValue);
                         }
                         offSet = (isNullOrUndefined(offSet)) ? 0 : offSet;
-                        let triId: string = this.maps.element.id + '_triangle';
-                        let defElement: Element = this.maps.renderer.createDefs();
+                        const triId: string = this.maps.element.id + '_triangle';
+                        const defElement: Element = this.maps.renderer.createDefs();
                         defElement.innerHTML += '<marker id="' + 'triangle' + i + '"></marker>';
-                        let markerEle: Element = defElement.querySelector('#' + 'triangle' + i);
+                        const markerEle: Element = defElement.querySelector('#' + 'triangle' + i);
                         markerEle.setAttribute('markerWidth', (arrowSize.toString()));
                         markerEle.setAttribute('markerHeight', (arrowSize.toString()));
                         markerEle.setAttribute('refX', (divide - offSet).toString());
                         markerEle.setAttribute('refY', divide.toString());
                         markerEle.setAttribute('orient', 'auto');
-                        let d2: string = 'M 0,0  L 0,' + arrowSize + ' L ' + divide + ', ' + divide + ' Z';
+                        const d2: string = 'M 0,0  L 0,' + arrowSize + ' L ' + divide + ', ' + divide + ' Z';
                         pathOption = new PathOption(triId, arrowColor, width, color, 1, dashArray, d2);
                         navigationEle = this.maps.renderer.drawPath(pathOption);
                         markerEle.appendChild(navigationEle);
@@ -116,13 +121,13 @@ export class NavigationLine {
                     angle = Math.abs(angle);
                     d = (angle === 0) ? 'M ' + point[j]['x'] + ',' + point[j]['y'] + 'L ' + point[j + 1]['x']
                             + ',' + point[j + 1]['y'] + ' ' :
-                            'M ' + point[j]['x'] + ',' + point[j]['y'] + ' A ' + (radius / 2 + (1 - angle) * radius / (angle * 10)) +
+                        'M ' + point[j]['x'] + ',' + point[j]['y'] + ' A ' + (radius / 2 + (1 - angle) * radius / (angle * 10)) +
                             ' ' + (radius / 2 + (1 - angle) * radius / (angle * 10)) + ' ' + 0 + ',' + 0 + ','
                             + direction + ' , ' + point[j + 1]['x'] + ',' + point[j + 1]['y'] + ' ';
                     pathOption = new PathOption(arcId, 'none', width, color, 1, dashArray, d);
                     navigationEle = this.maps.renderer.drawPath(pathOption) as SVGLineElement;
                     if (!isNullOrUndefined(arrowPosition)) {
-                        (arrowPosition === 'Start') ? navigationEle.setAttribute('marker-start', startArrow)
+                        const position: void = (arrowPosition === 'Start') ? navigationEle.setAttribute('marker-start', startArrow)
                             : navigationEle.setAttribute('marker-end', endArrow);
                     }
                     maintainSelection(this.maps.selectedNavigationElementId, this.maps.navigationSelectionClass, navigationEle,
@@ -135,15 +140,18 @@ export class NavigationLine {
         }
         return group;
     }
-    private convertRadius(point1: object, point2: object): number {
-        let value1: number = point2['x'] - point1['x'];
-        let value2: number = point2['y'] - point1['y'];
-        let value: number = Math.sqrt((Math.pow(value1, 2) + Math.pow(value2, 2)));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private convertRadius(point1: any, point2: any): number {
+        const value1: number = point2['x'] - point1['x'];
+        const value2: number = point2['y'] - point1['y'];
+        const value: number = Math.sqrt((Math.pow(value1, 2) + Math.pow(value2, 2)));
         return value;
     }
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name
      */
     protected getModuleName(): string {
         return 'NavigationLine';
@@ -151,7 +159,9 @@ export class NavigationLine {
 
     /**
      * To destroy the layers.
-     * @return {void}
+     *
+     * @param {Maps} maps - Specifies the instance of the map
+     * @returns {void}
      * @private
      */
     public destroy(maps: Maps): void {

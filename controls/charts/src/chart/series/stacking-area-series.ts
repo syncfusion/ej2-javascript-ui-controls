@@ -1,4 +1,8 @@
-import { BorderModel } from '../../common/model/base-model';
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { ChartLocation, StackValues, getPoint, withInRange, TransformToVisible } from '../../common/utils/helper';
 import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
@@ -15,21 +19,20 @@ export class StackingAreaSeries extends LineBase {
 
     /**
      * Render the Stacking area series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
-        let polarAreaType: boolean = series.chart.chartAreaType === 'PolarRadar';
-        let getCoordinate: Function = polarAreaType ? TransformToVisible : getPoint;
+        const polarAreaType: boolean = series.chart.chartAreaType === 'PolarRadar';
+        const getCoordinate: Function = polarAreaType ? TransformToVisible : getPoint;
         let lineDirection: string = '';
-        let visiblePoints: Points[] = this.enableComplexProperty(series);
-        let pointsLength: number = visiblePoints.length;
-        let stackedvalue: StackValues = series.stackedValues;
-        let origin: number = polarAreaType ?
+        const visiblePoints: Points[] = this.enableComplexProperty(series);
+        const pointsLength: number = visiblePoints.length;
+        const stackedvalue: StackValues = series.stackedValues;
+        const origin: number = polarAreaType ?
             Math.max(series.yAxis.visibleRange.min, stackedvalue.endValues[0]) :
             Math.max(series.yAxis.visibleRange.min, stackedvalue.startValues[0]);
-        let border: BorderModel = series.border;
-        let options: PathOption;
         let startPoint: number = 0;
         let point1: ChartLocation;
         let point2: ChartLocation;
@@ -37,7 +40,7 @@ export class StackingAreaSeries extends LineBase {
             point1 = getCoordinate(visiblePoints[0].xValue, origin, xAxis, yAxis, isInverted, series);
             lineDirection = lineDirection.concat('M' + ' ' + (point1.x) + ' ' + (point1.y) + ' ');
         }
-        let isPolar: boolean = (series.chart && series.chart.chartAreaType === 'PolarRadar');
+        const isPolar: boolean = (series.chart && series.chart.chartAreaType === 'PolarRadar');
         for (let i: number = 0; i < pointsLength; i++) {
             visiblePoints[i].symbolLocations = []; visiblePoints[i].regions = [];
             if (visiblePoints[i].visible && withInRange(visiblePoints[i - 1], visiblePoints[i], visiblePoints[i + 1], series)) {
@@ -76,8 +79,8 @@ export class StackingAreaSeries extends LineBase {
             }
         }
         if (series.chart.chartAreaType === 'PolarRadar' && visiblePoints.length > 1) {
-            let connectPoints: { first: Points, last: Points } = this.getFirstLastVisiblePoint(series.points);
-            let chart: Chart = this.chart;
+            const connectPoints: { first: Points, last: Points } = this.getFirstLastVisiblePoint(series.points);
+            const chart: Chart = this.chart;
             point1 = { 'x': connectPoints.first.xValue, 'y': stackedvalue.endValues[connectPoints.first.index] };
             point2 = getCoordinate(point1.x, point1.y, xAxis, yAxis, isInverted, series);
             lineDirection += ('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
@@ -92,7 +95,7 @@ export class StackingAreaSeries extends LineBase {
                 if (isPolar && !visiblePoints[j].visible) {
                     continue;
                 }
-                let previousSeries: Series = this.getPreviousSeries(series);
+                const previousSeries: Series = this.getPreviousSeries(series);
                 if (previousSeries.emptyPointSettings.mode !== 'Drop' || !previousSeries.points[j].isEmpty) {
                     point2 = getCoordinate(visiblePoints[j].xValue, stackedvalue.startValues[j], xAxis, yAxis, isInverted, series);
                     lineDirection = lineDirection.concat(((j === (pointsLength - 1) && polarAreaType) ? 'M' : 'L')
@@ -100,7 +103,7 @@ export class StackingAreaSeries extends LineBase {
                 }
             }
         }
-        options = new PathOption(
+        const options: PathOption = new PathOption(
             series.chart.element.id + '_Series_' + series.index, series.interior, series.border.width, series.border.color,
             series.opacity, series.dashArray, lineDirection);
         this.appendLinePath(options, series, '');
@@ -108,19 +111,21 @@ export class StackingAreaSeries extends LineBase {
     }
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
     public doAnimation(series: Series): void {
-        let option: AnimationModel = series.animation;
+        const option: AnimationModel = series.animation;
         this.doLinearAnimation(series, option);
     }
     /**
      * To destroy the stacking area.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method calling here
          */
@@ -138,7 +143,7 @@ export class StackingAreaSeries extends LineBase {
      * To find previous visible series
      */
     private getPreviousSeries(series: Series): Series {
-        let seriesCollection: Series[] = series.chart.visibleSeries;
+        const seriesCollection: Series[] = series.chart.visibleSeries;
         for (let i: number = 0, length: number = seriesCollection.length; i < length; i++) {
             if (series.index === seriesCollection[i].index && i !== 0) {
                 return seriesCollection[i - 1];
@@ -148,10 +153,11 @@ export class StackingAreaSeries extends LineBase {
     }
     /**
      * To find the first visible series index
-     * @param seriesCollection
+     *
+     * @param {Series[]} seriesCollection first visible series index
      */
     private getFirstSeriesIndex(seriesCollection: Series[]): number {
-        for (let series of seriesCollection) {
+        for (const series of seriesCollection) {
             if (series.visible) {
                 return series.index;
             }

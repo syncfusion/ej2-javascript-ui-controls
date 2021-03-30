@@ -7,7 +7,7 @@ import { DataManager } from '@syncfusion/ej2-data';
 export function createGantt(options: GanttModel, done: Function): Gantt {
     let id: string = getUniqueID('Gantt');
     if (!(options.dataSource instanceof DataManager)) {
-        if (options.dataSource && options.dataSource.length > 0) {
+        if (options.dataSource && [options.dataSource as Object[]].length > 0) {
             let data: Object[] = JSON.parse(JSON.stringify(options.dataSource));
             options.dataSource = data;
         }

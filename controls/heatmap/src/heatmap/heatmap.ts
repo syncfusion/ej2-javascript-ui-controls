@@ -4,6 +4,7 @@
 
 import { Component, Property, NotifyPropertyChanges, Internationalization, Complex, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, EmitType, remove, Event, EventHandler, Touch } from '@syncfusion/ej2-base';
+// eslint-disable-next-line
 import { INotifyPropertyChanged, setCulture, Browser, isBlazor } from '@syncfusion/ej2-base';
 import { SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { Size, stringToNumber, RectOption, Rect, TextBasic, measureText, CurrentRect, LegendRange, ToggleVisibility } from './utils/helper';
@@ -41,7 +42,9 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * The width of the heatmap as a string accepts input as both like '100px' or '100%'.
+     *
      * If specified as '100%, heatmap renders to the full width of its parent element.
+     *
      * @default null
      */
 
@@ -50,7 +53,9 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * The height of the heatmap as a string accepts input as both like '100px' or '100%'.
+     *
      * If specified as '100%, heatmap renders to the full height of its parent element.
+     *
      * @default null
      */
 
@@ -59,6 +64,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Enable or disable the tool tip for heatmap
+     *
      * @default true
      */
 
@@ -67,8 +73,10 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Triggers when click the heat map cell.
+     *
      * {% codeBlock src='heatmap/tooltipRender/index.md' %}{% endcodeBlock %}
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'TooltipRendering'
      */
     @Event()
@@ -76,7 +84,8 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Triggers after resizing of Heatmap.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'Resized'
      */
     @Event()
@@ -84,7 +93,8 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Triggers after heatmap is loaded.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'Loaded'
      */
     @Event()
@@ -93,8 +103,9 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers before each heatmap cell renders.
      * {% codeBlock src='heatmap/cellRender/index.md' %}{% endcodeBlock %}
+     *
      * @deprecated
-     * @event
+     * @event 'object'
      * @blazorProperty 'CellRendering'
      */
     @Event()
@@ -102,7 +113,8 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Triggers when multiple cells gets selected.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'CellSelected'
      */
     @Event()
@@ -113,6 +125,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      * * SVG - Heat map is render using SVG draw mode.
      * * Canvas - Heat map is render using Canvas draw mode.
      * * Auto - Automatically switch the draw mode based on number of records in data source.
+     *
      * @default SVG
      */
     @Property('SVG')
@@ -120,7 +133,8 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Specifies the datasource for the heat map.
-     * @isdatamanager false
+     *
+     * @isDataManager false
      * @default null
      */
 
@@ -136,6 +150,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      *  Specifies the theme for heatmap.
+     *
      * @default 'Material'
      */
     @Property('Material')
@@ -144,6 +159,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Enable or disable the selection of multiple cells in heatmap
      * {% codeBlock src='heatmap/allowSelection/index.md' %}{% endcodeBlock %}
+     *
      * @default false
      */
 
@@ -160,6 +176,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Title of heat map
      * {% codeBlock src='heatmap/titleSettings/index.md' %}{% endcodeBlock %}
+     *
      * @default ''
      */
     @Complex<TitleModel>({ text: '', textStyle: Theme.heatMapTitleFont }, Title)
@@ -175,9 +192,10 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Options for customizing the legend of the heat map
      * {% codeBlock src='heatmap/legendSettings/index.md' %}{% endcodeBlock %}
+     *
      * @default ''
      */
-    @Complex<LegendSettingsModel>({}, LegendSettings)
+    @Complex<LegendSettingsModel>({ position: 'Right'}, LegendSettings)
     public legendSettings: LegendSettingsModel;
 
     /**
@@ -211,7 +229,8 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Triggers after heat map rendered.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'Created'
      */
     @Event()
@@ -220,7 +239,8 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers before heat map load.
      * {% codeBlock src='heatmap/load/index.md' %}{% endcodeBlock %}
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'OnLoad'
      */
     @Event()
@@ -228,7 +248,8 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Triggers when click the heat map cell.
-     * @event
+     *
+     * @event 'object'
      * @blazorProperty 'CellClicked'
      */
     @Event()
@@ -237,8 +258,9 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers before the legend is rendered.
      * {% codeBlock src='heatmap/legendRender/index.md' %}{% endcodeBlock %}
+     *
      * @deprecated
-     * @event
+     * @event 'object'
      * @blazorProperty 'LegendRendering'
      */
     @Event()
@@ -291,7 +313,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public tempTooltipRectId: string;
     /** @private */
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line
     public clonedDataSource: any[];
     /** @private */
     public completeAdaptDataSource: Object;
@@ -303,9 +325,9 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public isCellTapHold: boolean = false;
     /** @private */
     public selectedCellCount: number = 0;
-     /** @private */
+    /** @private */
     public currentRect : CurrentRect;
-        /** @private */
+    /** @private */
     public dataSourceMinValue: number;
     /** @private */
     public dataMin: number [];
@@ -340,7 +362,8 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public rendering: boolean = true;
     /** @private */
-    public horizontalGradient: boolean = this.legendSettings.position === 'Bottom' || this.legendSettings.position === 'Top';
+
+    public horizontalGradient: boolean;
     /** @private */
     public multiSelection: boolean = false;
     /** @private */
@@ -380,10 +403,12 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * @private
      */
+
     private border: Object;
 
     /**
      * Gets the axis of the HeatMap.
+     *
      * @hidden
      */
     public axisCollections: Axis[];
@@ -409,18 +434,21 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public isBlazor: boolean = false;
     /**
      * The `legendModule` is used to display the legend.
+     *
      * @private
      */
     public legendModule: Legend;
 
     /**
      * The `tooltipModule` is used to manipulate Tooltip item from base of heatmap.
+     *
      * @private
      */
     public tooltipModule: Tooltip;
 
     /**
      * The `adaptorModule` is used to manipulate Adaptor item from base of heatmap.
+     *
      * @private
      */
     public adaptorModule: Adaptor;
@@ -433,12 +461,14 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Handles the export method for heatmap control.
+     *
      * @param type
      * @param fileName
      * @param orientation
      */
+
     public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation): void {
-        let exportMap: ExportUtils = new ExportUtils(this);
+        const exportMap: ExportUtils = new ExportUtils(this);
         exportMap.export(type, fileName, orientation);
     }
 
@@ -460,10 +490,12 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Method to set culture for heatmap
      */
+
     private setCulture(): void {
         this.intl = new Internationalization();
     }
     protected render(): void {
+        this.horizontalGradient = this.legendSettings.position === 'Bottom' || this.legendSettings.position === 'Top';
         this.updateBubbleHelperProperty();
         this.trigger('load', { heatmap: (this.isBlazor ? null : this) });
         this.initAxis();
@@ -485,8 +517,10 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * To re-calculate the datasource while changing datasource property dynamically.
+     *
      * @private
      */
+
     private reRenderDatasource(): void {
         this.dataSourceMinValue = null;
         this.dataSourceMaxValue = null;
@@ -500,8 +534,10 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * To process datasource property.
+     *
      * @private
      */
+
     private processInitData(): void {
         if (this.adaptorModule) {
             this.adaptorModule.constructDatasource(this.dataSource, this.dataSourceSettings);
@@ -512,8 +548,10 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * To set render mode of heatmap as SVG or Canvas.
+     *
      * @private
      */
+
     private setRenderMode(): void {
         if (this.renderingMode === 'Canvas') {
             this.enableCanvasRendering = true;
@@ -527,8 +565,10 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * To set bubble helper private property.
+     *
      * @private
      */
+
     private updateBubbleHelperProperty(): void {
         if (this.cellSettings.tileType === 'Bubble' &&
             (this.cellSettings.bubbleType === 'Size' || this.cellSettings.bubbleType === 'Sector')) {
@@ -559,7 +599,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             this.legendModule.renderLegendItems();
             if (this.paletteSettings.type === 'Fixed' && this.legendSettings.enableSmartLegend &&
                 this.legendSettings.labelDisplayType === 'None') {
-                this.legendModule.createTooltipDiv(this);
+                this.legendModule.createTooltipDiv();
             }
         }
     }
@@ -567,13 +607,16 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Get component name
      */
+
     public getModuleName(): string {
         return 'heatmap';
     }
     /**
      * Get the properties to be maintained in the persisted state.
+     *
      * @private
      */
+
     public getPersistData(): string {
         return '';
     }
@@ -581,86 +624,87 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * @private
      */
+
     // tslint:disable-next-line:max-func-body-length
     public onPropertyChanged(newProp: HeatMapModel, oldProp: HeatMapModel): void {
         let renderer: boolean = false;
         let refreshBounds: boolean = false;
         let isUpdateSelection: boolean = true;
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'renderingMode':
-                    this.rendering = false;
-                    isUpdateSelection = false; renderer = true;
-                    break;
-                case 'cellSettings':
-                    this.updateBubbleHelperProperty();
-                    if (this.legendModule && ((newProp.cellSettings.tileType !== (oldProp.cellSettings
+            case 'renderingMode':
+                this.rendering = false;
+                isUpdateSelection = false; renderer = true;
+                break;
+            case 'cellSettings':
+                this.updateBubbleHelperProperty();
+                if (this.legendModule && ((newProp.cellSettings.tileType !== (oldProp.cellSettings
                         !== undefined && oldProp.cellSettings.tileType))
                         || (newProp.cellSettings.bubbleType !== oldProp.cellSettings.bubbleType))) {
-                        this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections();
-                    }
-                    if (this.cellSettings.tileType === 'Bubble') {
-                        isUpdateSelection = false;
-                    }
-                    this.reRenderDatasource();
-                    refreshBounds = true;
-                    break;
-                case 'showTooltip':
-                    refreshBounds = true;
-                    break;
-                case 'dataSource':
-                case 'dataSourceSettings':
-                    this.isCellData = false;
-                    this.paletteCellSelectionUpdation();
-                    this.reRenderDatasource();
-                    isUpdateSelection = false; renderer = true;
-                    break;
-                case 'titleSettings':
-                case 'width':
-                case 'height':
-                case 'margin':
-                    refreshBounds = true;
-                    break;
-                case 'legendSettings':
-                    this.updateBubbleHelperProperty();
-                    if (this.legendVisibilityByCellType && (((newProp.legendSettings.visible !==
+                    this.legendOnLoad = true;
+                    this.legendModule.updateLegendRangeCollections();
+                }
+                if (this.cellSettings.tileType === 'Bubble') {
+                    isUpdateSelection = false;
+                }
+                this.reRenderDatasource();
+                refreshBounds = true;
+                break;
+            case 'showTooltip':
+                refreshBounds = true;
+                break;
+            case 'dataSource':
+            case 'dataSourceSettings':
+                this.isCellData = false;
+                this.paletteCellSelectionUpdation();
+                this.reRenderDatasource();
+                isUpdateSelection = false; renderer = true;
+                break;
+            case 'titleSettings':
+            case 'width':
+            case 'height':
+            case 'margin':
+                refreshBounds = true;
+                break;
+            case 'legendSettings':
+                this.updateBubbleHelperProperty();
+                if (this.legendVisibilityByCellType && (((newProp.legendSettings.visible !==
                         (oldProp.legendSettings !== undefined && oldProp.legendSettings.visible)) ||
                         (newProp.legendSettings.enableSmartLegend !== oldProp.legendSettings.enableSmartLegend)))) {
-                        this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections();
-                    } else {
-                        this.legendOnLoad = false;
-                    }
-                    refreshBounds = true;
-                    break;
-                case 'yAxis':
-                case 'xAxis':
-                    this.paletteCellSelectionUpdation();
-                    this.reRenderDatasource();
-                    isUpdateSelection = false;
-                    refreshBounds = true;
-                    break;
-                case 'paletteSettings':
-                    this.paletteCellSelectionUpdation();
-                    this.twoDimensional.processDataSource(this.completeAdaptDataSource);
-                    this.cellColor.getColorCollection();
-                    this.calculateBounds();
-                    renderer = true;
-                    break;
-                case 'theme':
-                    this.setTheme();
-                    renderer = true;
-                    break;
-                case 'tooltipSettings':
-                    if (this.tooltipModule) {
-                        this.tooltipModule.tooltipObject.fill = this.tooltipSettings.fill;
-                        this.tooltipModule.tooltipObject.border = this.tooltipSettings.border;
-                        this.tooltipModule.tooltipObject.textStyle = this.tooltipSettings.textStyle;
-                        this.tooltipModule.tooltipObject.template = this.tooltipSettings.template;
-                        this.tooltipModule.tooltipObject.refresh();
-                    }
-                    break;
+                    this.legendOnLoad = true;
+                    this.legendModule.updateLegendRangeCollections();
+                } else {
+                    this.legendOnLoad = false;
+                }
+                refreshBounds = true;
+                break;
+            case 'yAxis':
+            case 'xAxis':
+                this.paletteCellSelectionUpdation();
+                this.reRenderDatasource();
+                isUpdateSelection = false;
+                refreshBounds = true;
+                break;
+            case 'paletteSettings':
+                this.paletteCellSelectionUpdation();
+                this.twoDimensional.processDataSource(this.completeAdaptDataSource);
+                this.cellColor.getColorCollection();
+                this.calculateBounds();
+                renderer = true;
+                break;
+            case 'theme':
+                this.setTheme();
+                renderer = true;
+                break;
+            case 'tooltipSettings':
+                if (this.tooltipModule) {
+                    this.tooltipModule.tooltipObject.fill = this.tooltipSettings.fill;
+                    this.tooltipModule.tooltipObject.border = this.tooltipSettings.border;
+                    this.tooltipModule.tooltipObject.textStyle = this.tooltipSettings.textStyle;
+                    this.tooltipModule.tooltipObject.template = this.tooltipSettings.template;
+                    this.tooltipModule.tooltipObject.refresh();
+                }
+                break;
             }
         }
         if (!refreshBounds && renderer) {
@@ -669,7 +713,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             this.appendSvgObject();
             this.trigger('created');
             if (!isUpdateSelection) {
-            this.clearSelection();
+                this.clearSelection();
             }
         } else if (refreshBounds) {
             this.createSvg();
@@ -680,10 +724,10 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.allowSelection && this.rectSelected) {
             if (isUpdateSelection) {
                 this.updateCellSelection();
-           } else {
-            this.clearSelection();
-           }
-    }
+            } else {
+                this.clearSelection();
+            }
+        }
         this.rendering = true;
     }
     private paletteCellSelectionUpdation(): void {
@@ -695,8 +739,10 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * create svg or canvas element
+     *
      * @private
      */
+
     public createSvg(): void {
         this.removeSvg();
         this.setRenderMode();
@@ -724,8 +770,10 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      *  To Remove the SVG.
+     *
      * @private
      */
+
     public removeSvg(): void {
         if (document.getElementById(this.element.id + '_Secondary_Element')) {
             remove(document.getElementById(this.element.id + '_Secondary_Element'));
@@ -743,7 +791,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             remove(document.getElementById(this.element.id + '_CellSelection_Container'));
         }
         if (this.svgObject) {
-            let svgElement: Element = document.getElementById(this.svgObject.id);
+            const svgElement: Element = document.getElementById(this.svgObject.id);
             if (svgElement) {
                 while (this.svgObject.childNodes.length) {
                     this.svgObject.removeChild(this.svgObject.firstChild);
@@ -754,24 +802,26 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private renderSecondaryElement(): void {
-        let tooltipDiv: Element = this.createElement('div');
+        const tooltipDiv: Element = this.createElement('div');
         tooltipDiv.id = this.element.id + '_Secondary_Element';
         this.element.appendChild(tooltipDiv);
 
-        let divElement: Element = this.createElement('div', {
+        const divElement: Element = this.createElement('div', {
             id: this.element.id + '_CellSelection_Container',
-            styles: 'position:absolute; z-index: 2 ; top:' + this.initialClipRect.y + 'px' + '; left:' + this.initialClipRect.x + 'px',
+            styles: 'position:absolute; z-index: 2 ; top:' + this.initialClipRect.y + 'px' + '; left:' + this.initialClipRect.x + 'px'
         });
         this.element.appendChild(divElement);
     }
 
     /**
      * To provide the array of modules needed for control rendering
-     * @return{ModuleDeclaration[]}
+     *
+     * @returns {ModuleDeclaration[]}
      * @private
      */
+
     public requiredModules(): ModuleDeclaration[] {
-        let modules: ModuleDeclaration[] = [];
+        const modules: ModuleDeclaration[] = [];
         if (this.showTooltip) {
             modules.push({
                 member: 'Tooltip',
@@ -796,8 +846,9 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * To destroy the widget
      * {% codeBlock src='heatmap/destroy/index.md' %}{% endcodeBlock %}
-     * @method destroy
-     * @return {void}.
+     *
+     * @function destroy
+     * @returns {void}.
      * @member of Heatmap
      */
 
@@ -810,8 +861,9 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Applies all the pending property changes and render the component again.
-     * @method destroy
-     * @return {void}.
+     *
+     * @function destroy
+     * @returns {void}.
      */
     public refresh(): void {
         super.refresh();
@@ -820,8 +872,10 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Appending svg object to the element
+     *
      * @private
      */
+
     private appendSvgObject(): void {
         if (this.enableCanvasRendering && this.allowSelection) {
             this.createMultiCellDiv(false);
@@ -834,24 +888,24 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         this.border = {
             width: 0
         };
-        let width: number = 0;
-        let rect: RectOption = new RectOption(
+        const width: number = 0;
+        const rect: RectOption = new RectOption(
             this.element.id + '_HeatmapBorder', this.themeStyle.background, this.border, 1,
             new Rect(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width));
         this.drawSvgCanvas.drawRectangle(rect, this.svgObject);
     }
     private calculateSize(): void {
-        let width: number = stringToNumber(this.width, this.element.offsetWidth) || this.element.offsetWidth || 600;
-        let height: number = stringToNumber(this.height, this.element.offsetHeight) || this.element.offsetHeight || 450;
+        const width: number = stringToNumber(this.width, this.element.offsetWidth) || this.element.offsetWidth || 600;
+        const height: number = stringToNumber(this.height, this.element.offsetHeight) || this.element.offsetHeight || 450;
         this.availableSize = new Size(width, height);
         let alignElement: HTMLElement = this.element;
         while (alignElement.parentNode) {
             if (alignElement.tagName === 'BODY') {
                 break;
             }
-            let align: string = (alignElement as HTMLInputElement).align;
+            const align: string = (alignElement as HTMLInputElement).align;
             if (align === 'center') {
-                let containerWidth: string = this.availableSize.width.toString();
+                const containerWidth: string = this.availableSize.width.toString();
                 this.element.style.width = containerWidth + 'px';
                 this.element.style.margin = '0 auto';
                 break;
@@ -862,11 +916,11 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     private renderTitle(): void {
         if (this.titleSettings.text) {
-            let titleStyle: FontModel = this.titleSettings.textStyle;
-            let anchor: string = titleStyle.textAlignment === 'Near' ? 'start' :
+            const titleStyle: FontModel = this.titleSettings.textStyle;
+            const anchor: string = titleStyle.textAlignment === 'Near' ? 'start' :
                 titleStyle.textAlignment === 'Far' ? 'end' : 'middle';
             this.elementSize = measureText(this.titleCollection[0], titleStyle);
-            let options: TextOption = new TextOption(
+            const options: TextOption = new TextOption(
                 this.element.id + '_HeatmapTitle',
                 new TextBasic(
                     titlePositionX(
@@ -891,7 +945,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private titleTooltip(event: Event, x: number, y: number, isTouch?: boolean): void {
-        let targetId: string = (<HTMLElement>event.target).id;
+        const targetId: string = (<HTMLElement>event.target).id;
         if ((targetId === (this.element.id + '_HeatmapTitle')) && ((<HTMLElement>event.target).textContent.indexOf('...') > -1)) {
             showTooltip(
                 this.titleSettings.text, x, y, this.element.offsetWidth, this.element.id + '_Title_Tooltip',
@@ -901,13 +955,14 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             removeElement(this.element.id + '_Title_Tooltip');
         }
     }
+    // eslint-disable-next-line
     private axisTooltip(event: Event, x: number, y: number, isTouch?: boolean): void {
-        let targetId: string = (<HTMLElement>event.target).id;
+        const targetId: string = (<HTMLElement>event.target).id;
         if ((targetId.indexOf(this.element.id + '_XAxis_Label') !== -1) ||
             (targetId.indexOf(this.element.id + '_YAxis_Label') !== -1) ||
             (targetId.indexOf(this.element.id + '_XAxis_MultiLevel') !== -1) ||
             (targetId.indexOf(this.element.id + '_YAxis_MultiLevel') !== -1)) {
-            let tooltipText: string = getTooltipText(this.tooltipCollection, x, y);
+            const tooltipText: string = getTooltipText(this.tooltipCollection, x, y);
             if (tooltipText) {
                 showTooltip(
                     tooltipText, x, y, this.element.offsetWidth, this.element.id + '_axis_Tooltip',
@@ -922,20 +977,20 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private isHeatmapRect(x: number, y: number): boolean {
-        let firstRectDetails: CurrentRect[] = [];
-        let lastRectDetails: CurrentRect[] = [];
+        const firstRectDetails: CurrentRect[] = [];
+        const lastRectDetails: CurrentRect[] = [];
         let isRect: boolean;
-        let borderBoundary: number = 5;
+        const borderBoundary: number = 5;
         firstRectDetails.push(this.heatMapSeries.rectPositionCollection[0][0]);
         lastRectDetails.push(this.heatMapSeries.rectPositionCollection[this.yLength - 1][this.xLength - 1]);
 
         if (this.cellSettings.border.width > borderBoundary && (x >= firstRectDetails[0].x && y >= firstRectDetails[0].y &&
             x <= (lastRectDetails[0].x + lastRectDetails[0].width) &&
            y <= (lastRectDetails[0].y + lastRectDetails[0].height)) && this.cellSettings.tileType === 'Rect') {
-            let currentRect: CurrentRect = this.heatMapSeries.getCurrentRect(x, y);
-            let rectHeight: number =  lastRectDetails[0].height;
-            let rectWidth: number =  lastRectDetails[0].width;
-            let cellBorder: number = this.cellSettings.border.width / 2;
+            const currentRect: CurrentRect = this.heatMapSeries.getCurrentRect(x, y);
+            const rectHeight: number =  lastRectDetails[0].height;
+            const rectWidth: number =  lastRectDetails[0].width;
+            const cellBorder: number = this.cellSettings.border.width / 2;
             if ((x >= (currentRect.x + cellBorder) && ( y >= (currentRect.y + cellBorder)) &&
             (x <= (currentRect.x + (rectWidth - cellBorder)) &&
             (y <= (currentRect.y + (rectHeight - cellBorder)))))) {
@@ -944,7 +999,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             } else {
                 isRect = false;
                 this.isRectBoundary = false;
-                }
+            }
         } else {
             isRect = (x >= firstRectDetails[0].x && y >= firstRectDetails[0].y &&
                 x <= (lastRectDetails[0].x + lastRectDetails[0].width) &&
@@ -960,13 +1015,13 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private calculateBounds(): void {
-        let margin: MarginModel = this.margin;
+        const margin: MarginModel = this.margin;
         // Title Height;
         let titleHeight: number = 0;
-        let padding: number = (this.legendModule && this.legendSettings.position === 'Top'
+        const padding: number = (this.legendModule && this.legendSettings.position === 'Top'
             && this.legendVisibilityByCellType) || this.titleSettings.textStyle.size === '0px' ? 0 : 16; // title padding
-        let left: number = margin.left;
-        let width: number = this.availableSize.width - left - margin.right;
+        const left: number = margin.left;
+        const width: number = this.availableSize.width - left - margin.right;
         if ((this.paletteSettings.colorGradientMode === 'Column' || this.paletteSettings.colorGradientMode === 'Row') &&
             this.paletteSettings.type === 'Gradient') {
             if (this.paletteSettings.palette.length === 0) {
@@ -987,11 +1042,11 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             titleHeight = (measureText(this.titleSettings.text, this.titleSettings.textStyle).height * this.titleCollection.length) +
                 padding;
         }
-        let top: number = margin.top + titleHeight;
+        const top: number = margin.top + titleHeight;
         this.titleRect = new Rect(margin.left, margin.top, this.availableSize.width - margin.left - margin.right, titleHeight);
-        let height: number = this.availableSize.height - top - margin.bottom;
+        const height: number = this.availableSize.height - top - margin.bottom;
         this.initialClipRect = new Rect(left, top, width, height);
-        let legendTop: number = this.initialClipRect.y;
+        const legendTop: number = this.initialClipRect.y;
         if (this.legendModule && this.legendSettings.visible && this.legendVisibilityByCellType) {
             this.legendModule.calculateLegendBounds(this.initialClipRect);
         }
@@ -1009,7 +1064,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private initAxis(): void {
         let axis: Axis;
-        let axes: AxisModel[] = [this.xAxis, this.yAxis];
+        const axes: AxisModel[] = [this.xAxis, this.yAxis];
         this.axisCollections = [];
         for (let i: number = 0, len: number = axes.length; i < len; i++) {
             axis = <Axis>axes[i];
@@ -1022,13 +1077,15 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Method to bind events for HeatMap
      */
+
     private wireEvents(): void {
         /*! Find the Events type */
-        let isIE11Pointer: Boolean = Browser.isPointer;
-        let start: string = Browser.touchStartEvent;
-        let stop: string = Browser.touchEndEvent;
-        let move: string = Browser.touchMoveEvent;
-        let cancel: string = isIE11Pointer ? 'pointerleave' : 'mouseleave';
+        // eslint-disable-next-line
+        const isIE11Pointer: Boolean = Browser.isPointer;
+        const start: string = Browser.touchStartEvent;
+        const stop: string = Browser.touchEndEvent;
+        const move: string = Browser.touchMoveEvent;
+        const cancel: string = isIE11Pointer ? 'pointerleave' : 'mouseleave';
         EventHandler.add(this.element, Browser.isDevice ? start : 'click', this.heatMapMouseClick, this);
         EventHandler.add(this.element, start, this.heatMapMouseMove, this);
         EventHandler.add(this.element, stop, this.heatMapMouseLeave, this);
@@ -1039,17 +1096,20 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
             this.heatMapResize.bind(this)
         );
-        let heatmap: HeatMap = this;
-    /**
-     * Support for touch tapHold and tap for HeatMap
-     */
-        let touchObj: Touch = new Touch(this.element, {
+        // eslint-disable-next-line
+        const heatmap: HeatMap = this;
+        /**
+         * Support for touch tapHold and tap for HeatMap
+         */
+
+        // eslint-disable-next-line
+        const touchObj: Touch = new Touch(this.element, {
             tapHold: () => {
                 heatmap.isCellTapHold = true;
                 heatmap.getDataCollection();
                 heatmap.currentRect.allowCollection = false;
                 heatmap.setCellOpacity();
-                let argData: ISelectedEventArgs = {
+                const argData: ISelectedEventArgs = {
                     heatmap: (this.isBlazor ? null : heatmap),
                     cancel: false,
                     name: 'cellSelected',
@@ -1072,11 +1132,12 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Applying styles for heatmap element
      */
+
     private setStyle(element: HTMLElement): void {
         element.style.touchAction = 'element';
-        element.style.msTouchAction = 'element';
-        element.style.msContentZooming = 'none';
-        element.style.msUserSelect = 'none';
+        element.style.touchAction = 'element';
+        element.style.zoom = 'none';
+        element.style.userSelect = 'none';
         element.style.webkitUserSelect = 'none';
         element.style.position = 'relative';
         element.style.display = 'block';
@@ -1085,21 +1146,25 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Method to print the heatmap.
      */
+
     public print(): void {
-        let exportChart: ExportUtils = new ExportUtils(this);
+        const exportChart: ExportUtils = new ExportUtils(this);
         exportChart.print();
     }
 
     /**
      * Method to unbind events for HeatMap
      */
+
     private unWireEvents(): void {
         /*! Find the Events type */
-        let isIE11Pointer: Boolean = Browser.isPointer;
-        let start: string = Browser.touchStartEvent;
-        let stop: string = Browser.touchEndEvent;
-        let move: string = Browser.touchMoveEvent;
-        let cancel: string = isIE11Pointer ? 'pointerleave' : 'mouseleave';
+        // eslint-disable-next-line
+        const isIE11Pointer: Boolean = Browser.isPointer;
+        const start: string = Browser.touchStartEvent;
+        // eslint-disable-next-line
+        const stop: string = Browser.touchEndEvent;
+        const move: string = Browser.touchMoveEvent;
+        const cancel: string = isIE11Pointer ? 'pointerleave' : 'mouseleave';
         EventHandler.remove(this.element, Browser.isDevice ? start : 'click', this.heatMapMouseClick);
         EventHandler.remove(this.element, start, this.heatMapMouseMove);
         EventHandler.remove(this.element, move, this.heatMapMouseLeave);
@@ -1112,12 +1177,15 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * Handles the heatmap resize.
-     * @return {boolean}
+     *
+     * @returns {boolean}
      * @private
      */
+
+    // eslint-disable-next-line
     public heatMapResize(e: Event): boolean {
         this.resizing = true;
-        let argData: IResizeEventArgs = {
+        const argData: IResizeEventArgs = {
             heatmap: (this.isBlazor ? null : this),
             cancel: false,
             name: 'resized',
@@ -1125,7 +1193,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             previousSize: new Size(
                 this.availableSize.width,
                 this.availableSize.height
-            ),
+            )
         };
         if (this.resizeTimer) {
             clearTimeout(this.resizeTimer);
@@ -1142,7 +1210,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                 this.refreshBound();
                 this.appendSvgObject();
                 if (this.allowSelection) {
-                this.updateCellSelection();
+                    this.updateCellSelection();
                 }
                 this.trigger('loaded', (this.isBlazor ? null : { heatmap: this }));
                 this.resizing = false;
@@ -1153,28 +1221,29 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Method to bind selection after window resize for HeatMap
      */
+
     private updateCellSelection(): void {
-        let wSize: number = this.initialClipRect.width / this.axisCollections[0].axisLabelSize;
-        let hSize: number = this.initialClipRect.height / this.axisCollections[1].axisLabelSize;
-        let x: number = this.initialClipRect.x;
-        let y: number = this.initialClipRect.y;
+        const wSize: number = this.initialClipRect.width / this.axisCollections[0].axisLabelSize;
+        const hSize: number = this.initialClipRect.height / this.axisCollections[1].axisLabelSize;
+        const x: number = this.initialClipRect.x;
+        const y: number = this.initialClipRect.y;
         if (!this.enableCanvasRendering) {
             if (this.multiCellCollection.length !== 0) {
-                let containersRect: Element = document.getElementById(this.element.id + '_Container_RectGroup');
-                let containerText: Element = document.getElementById(this.element.id + '_Container_TextGroup');
+                const containersRect: Element = document.getElementById(this.element.id + '_Container_RectGroup');
+                const containerText: Element = document.getElementById(this.element.id + '_Container_TextGroup');
                 for (let i: number = 0; i < containersRect.childNodes.length; i++) {
-                        (containersRect.childNodes[i] as HTMLElement).setAttribute('opacity', '0.3');
-                        if (this.cellSettings.showLabel && containerText.childNodes[i]) {
-                            (containerText.childNodes[i] as HTMLElement).setAttribute('opacity', '0.3');
-                        }
+                    (containersRect.childNodes[i] as HTMLElement).setAttribute('opacity', '0.3');
+                    if (this.cellSettings.showLabel && containerText.childNodes[i]) {
+                        (containerText.childNodes[i] as HTMLElement).setAttribute('opacity', '0.3');
+                    }
                 }
                 for (let i: number = 0; i < this.multiCellCollection.length; i++) {
-                    let collectionClass: Element = this.multiCellCollection[i].cellElement;
-                    let cellIndex: string = collectionClass.id.replace(this.element.id + '_HeatMapRect_', '');
-                    let index: number = parseInt(cellIndex, 10);
+                    const collectionClass: Element = this.multiCellCollection[i].cellElement;
+                    const cellIndex: string = collectionClass.id.replace(this.element.id + '_HeatMapRect_', '');
+                    const index: number = parseInt(cellIndex, 10);
                     (containersRect.childNodes[index] as HTMLElement).setAttribute('opacity', '1');
                     if (this.cellSettings.showLabel && containerText.childNodes[i]) {
-                        let getText: HTMLElement = document.getElementById(this.element.id + '_HeatMapRectLabels_' + index);
+                        const getText: HTMLElement = document.getElementById(this.element.id + '_HeatMapRectLabels_' + index);
                         if (getText) {
                             getText.setAttribute('opacity', '1');
                         }
@@ -1183,65 +1252,67 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         } else if (this.enableCanvasRendering) {
-            let rect: SelectedCellDetails[] = this.multiCellCollection;
-            let oldCanvas: HTMLElement = document.getElementById(this.element.id + '_canvas');
-            let newCanvas: HTMLElement = document.getElementById(this.element.id + '_secondary_canvas');
-            let initialRect: Rect = this.initialClipRect;
-            let rectHeight : number = initialRect.y + initialRect.height;
-            let rectWidth : number = initialRect.x + initialRect.width;
+            const rect: SelectedCellDetails[] = this.multiCellCollection;
+            const oldCanvas: HTMLElement = document.getElementById(this.element.id + '_canvas');
+            const newCanvas: HTMLElement = document.getElementById(this.element.id + '_secondary_canvas');
+            const initialRect: Rect = this.initialClipRect;
+            const rectHeight : number = initialRect.y + initialRect.height;
+            const rectWidth : number = initialRect.x + initialRect.width;
             for (let i: number = 0; i < this.multiCellCollection.length; i++) {
                 this.multiCellCollection[i].width = rect[i].width = wSize;
                 this.multiCellCollection[i].height = rect[i].height = hSize;
                 this.multiCellCollection[i].x = rect[i].x = x + wSize * this.multiCellCollection[i].xPosition;
                 this.multiCellCollection[i].y = rect[i].y = y + hSize * this.multiCellCollection[i].yPosition;
-                let rectImage: ImageData = (oldCanvas as HTMLCanvasElement).getContext('2d').getImageData(
+                const rectImage: ImageData = (oldCanvas as HTMLCanvasElement).getContext('2d').getImageData(
                     rect[i].x, rect[i].y, rect[i].width, rect[i].height);
                 (newCanvas as HTMLCanvasElement).getContext('2d').putImageData(rectImage, rect[i].x, rect[i].y);
                 oldCanvas.style.opacity = '0.3';
             }
-            let topPositions: ImageData = (oldCanvas as HTMLCanvasElement).getContext('2d').getImageData(
+            const topPositions: ImageData = (oldCanvas as HTMLCanvasElement).getContext('2d').getImageData(
                 0, 0, this.availableSize.width, initialRect.y);
             (newCanvas as HTMLCanvasElement).getContext('2d').putImageData(topPositions, 0, 0);
-            let bottomPositions: ImageData = (oldCanvas as HTMLCanvasElement).getContext('2d').getImageData(
+            const bottomPositions: ImageData = (oldCanvas as HTMLCanvasElement).getContext('2d').getImageData(
                 0, rectHeight, this.availableSize.width,
                 this.availableSize.height - rectHeight);
             (newCanvas as HTMLCanvasElement).getContext('2d').putImageData(
                 bottomPositions, 0, initialRect.y + initialRect.height);
-            let rightPosition: ImageData = (oldCanvas as HTMLCanvasElement).getContext('2d').
-            getImageData(
-                rectWidth, 0, this.availableSize.width - rectWidth, this.availableSize.height);
+            const rightPosition: ImageData = (oldCanvas as HTMLCanvasElement).getContext('2d').
+                getImageData(
+                    rectWidth, 0, this.availableSize.width - rectWidth, this.availableSize.height);
             (newCanvas as HTMLCanvasElement).getContext('2d').putImageData(rightPosition, rectWidth, 0);
-            let leftPosition: ImageData = (oldCanvas as HTMLCanvasElement).getContext('2d').getImageData(
+            const leftPosition: ImageData = (oldCanvas as HTMLCanvasElement).getContext('2d').getImageData(
                 0, 0, initialRect.x, this.availableSize.height);
             (newCanvas as HTMLCanvasElement).getContext('2d').putImageData(leftPosition, 0, 0);
             removeElement(this.element.id + '_selectedCells');
         }
     }
     private clearSVGSelection(): void {
-        let rect: Element = document.getElementById(this.element.id + '_Container_RectGroup');
-        let text: Element = document.getElementById(this.element.id + '_Container_TextGroup');
+        const rect: Element = document.getElementById(this.element.id + '_Container_RectGroup');
+        const text: Element = document.getElementById(this.element.id + '_Container_TextGroup');
         for (let i: number = 0; i < rect.childNodes.length; i++) {
-            let elementClassName: string = (rect.childNodes[i] as HTMLElement).getAttribute('class');
+            const elementClassName: string = (rect.childNodes[i] as HTMLElement).getAttribute('class');
             if (elementClassName === this.element.id + '_selected') {
                 this.removeSvgClass(rect.childNodes[i] as HTMLElement, elementClassName);
             }
             (rect.childNodes[i] as HTMLElement).setAttribute('opacity', '1');
             if (this.cellSettings.showLabel && text.childNodes[i]) {
-            (text.childNodes[i] as HTMLElement).setAttribute('opacity', '1');
+                (text.childNodes[i] as HTMLElement).setAttribute('opacity', '1');
             }
         }
     }
     /**
      * Get the maximum length of data source for both horizontal and vertical
+     *
      * @private
      */
+
     private calculateMaxLength(): void {
-        let dataSource: Object[][] = <Object[][]>this.completeAdaptDataSource;
+        const dataSource: Object[][] = <Object[][]>this.completeAdaptDataSource;
         if (dataSource && dataSource.length > 0) {
-            let xAxisMax: number = dataSource.length - 1;
+            const xAxisMax: number = dataSource.length - 1;
             let yAxisMax: number = 0;
             for (let i: number = 0; i <= xAxisMax; i++) {
-                let length: number = dataSource[i].length;
+                const length: number = dataSource[i].length;
                 yAxisMax = yAxisMax > length ? yAxisMax : length;
             }
             this.axisCollections[0].maxLength = xAxisMax;
@@ -1255,8 +1326,9 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * To find mouse x, y for aligned heatmap element svg position
      */
+
     private setMouseXY(pageX: number, pageY: number): void {
-        let rect: ClientRect = this.element.getBoundingClientRect();
+        const rect: ClientRect = this.element.getBoundingClientRect();
         let svgCanvasRect: ClientRect;
         if (this.enableCanvasRendering) {
             svgCanvasRect = document.getElementById(this.element.id + '_canvas').getBoundingClientRect();
@@ -1270,10 +1342,11 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public heatMapMouseClick(e: PointerEvent): boolean {
         let pageX: number;
         let pageY: number;
+        // eslint-disable-next-line
         let tooltipText: string;
         let touchArg: TouchEvent;
 
-        let elementRect: ClientRect = this.element.getBoundingClientRect();
+        const elementRect: ClientRect = this.element.getBoundingClientRect();
         if (e.type === 'touchstart') {
             this.isTouch = true;
             touchArg = <TouchEvent & PointerEvent>e;
@@ -1286,9 +1359,9 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         }
         pageX -= elementRect.left;
         pageY -= elementRect.top;
-        let isheatmapRect: boolean = this.isHeatmapRect(pageX, pageY);
+        const isheatmapRect: boolean = this.isHeatmapRect(pageX, pageY);
         if (isheatmapRect) {
-            let currentRect: CurrentRect = this.heatMapSeries.getCurrentRect(pageX, pageY);
+            const currentRect: CurrentRect = this.heatMapSeries.getCurrentRect(pageX, pageY);
             this.trigger('cellClick', {
                 heatmap: (this.isBlazor ? null : this),
                 value: currentRect.value,
@@ -1305,7 +1378,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         this.notify('click', e);
         if (this.paletteSettings.type !== 'Gradient' && this.legendModule
             && this.legendSettings.visible && this.legendVisibilityByCellType) {
-            let page: Rect[] = this.legendModule.navigationCollections;
+            const page: Rect[] = this.legendModule.navigationCollections;
             if (page.length && pageX > page[0].x && pageX < page[0].x + page[0].width &&
                 pageY > page[0].y && pageY < page[0].y + page[0].height) {
                 this.legendModule.translatePage(this, this.legendModule.currentPage, true);
@@ -1313,8 +1386,8 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                 pageY > page[1].y && pageY < page[1].y + page[1].height) {
                 this.legendModule.translatePage(this, this.legendModule.currentPage, false);
             }
-            let legendRange: LegendRange[] = this.legendModule.legendRange;
-            let legendTextRange: LegendRange[] = this.legendModule.legendTextRange;
+            const legendRange: LegendRange[] = this.legendModule.legendRange;
+            const legendTextRange: LegendRange[] = this.legendModule.legendTextRange;
             let loop: boolean = true;
             for (let i: number = 0; i < legendRange.length; i++) {
                 if (this.legendModule && this.legendSettings.toggleVisibility &&
@@ -1335,13 +1408,16 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Handles the mouse Move.
-     * @return {boolean}
+     *
+     * @returns {boolean}
+     *
      * @private
      */
+
     public heatMapMouseMove(e: PointerEvent): boolean {
         let pageX: number; let pageY: number;
         let touchArg: TouchEvent;
-        let elementRect: ClientRect = this.element.getBoundingClientRect();
+        const elementRect: ClientRect = this.element.getBoundingClientRect();
         if (e.type === 'touchmove' || e.type === 'touchstart') {
             this.isTouch = true;
             touchArg = <TouchEvent & PointerEvent>e;
@@ -1361,12 +1437,14 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Handles the mouse Move.
-     * @return {boolean}
+     *
+     * @returns {boolean}
      */
+
     private mouseAction(e: PointerEvent, pageX: number, pageY: number, touchArg: TouchEvent, elementRect: ClientRect): boolean {
         let tooltipText: string;
         if (e.target && (<Element>e.target).id) {
-            let isheatmapRect: boolean = this.isHeatmapRect(pageX, pageY);
+            const isheatmapRect: boolean = this.isHeatmapRect(pageX, pageY);
             if (this.legendModule) {
                 if (isheatmapRect) {
                     if (this.paletteSettings.type === 'Gradient' &&
@@ -1403,8 +1481,9 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                     this.legendModule.renderLegendTitleTooltip(e, pageX, pageY);
                 }
             } else {
+                // eslint-disable-next-line
                 elementRect = this.element.getBoundingClientRect();
-                let tooltipRect: boolean = (this.paletteSettings.type === 'Fixed' && this.legendSettings.enableSmartLegend &&
+                const tooltipRect: boolean = (this.paletteSettings.type === 'Fixed' && this.legendSettings.enableSmartLegend &&
                 this.legendSettings.labelDisplayType === 'None') ? false : true;
                 tooltipText = getTooltipText(this.tooltipCollection, pageX, pageY) ||
                 (this.legendModule && tooltipRect  && (getTooltipText(this.legendModule.legendLabelTooltip, pageX, pageY)
@@ -1425,6 +1504,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggering cell selection
      */
+
     private cellSelectionOnMouseMove(
         e: PointerEvent, currentRect: CurrentRect, pageX: number, pageY: number, isshowTooltip: boolean): boolean {
         if ((this.cellSettings.tileType === 'Rect' && e.type === 'mousedown' || e.type === 'touchstart'
@@ -1443,6 +1523,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Rendering tooltip on mouse move
      */
+
     private tooltipOnMouseMove(e: PointerEvent, currentRect: CurrentRect, isshowTooltip: boolean, isheatmapRect?: boolean): void {
         if (isshowTooltip && currentRect) {
             if (this.tempTooltipRectId !== currentRect.id) {
@@ -1464,7 +1545,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                             1500);
                         if (e) {
                             if (e.type === 'touchmove') {
-                            e.preventDefault();
+                                e.preventDefault();
                             }
                         }
                     }
@@ -1473,7 +1554,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             }
         } else {
             if (e !== null) {
-                let borderBoundary: number = 5;
+                const borderBoundary: number = 5;
                 if (!isheatmapRect) {
                     if ((this.cellSettings.enableCellHighlighting || this.showTooltip) && !this.enableCanvasRendering &&
                         this.cellSettings.border.width < borderBoundary) {
@@ -1492,12 +1573,13 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * To select the multiple cells on mouse move action
      */
+
     private highlightSelectedCells(
         previousRect: CurrentRect, currentRect: CurrentRect, pageX: number, pageY: number, e: PointerEvent): void {
-        let pXIndex: number = previousRect.xIndex;
-        let pYIndex: number = previousRect.yIndex;
-        let cXIndex: number = currentRect.xIndex;
-        let cYIndex: number = currentRect.yIndex;
+        const pXIndex: number = previousRect.xIndex;
+        const pYIndex: number = previousRect.yIndex;
+        const cXIndex: number = currentRect.xIndex;
+        const cYIndex: number = currentRect.yIndex;
         this.currentRect = currentRect;
         this.selectedCellsRect = new Rect(0, 0, 0, 0);
         this.selectedCellsRect.x = previousRect.x > currentRect.x ? currentRect.x : previousRect.x;
@@ -1515,20 +1597,20 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         if (e.ctrlKey === false && e.type !== 'touchstart' && e.type !== 'touchmove') {
             this.removeSelectedCellsBorder();
         }
-        let x: number = this.initialCellX > pageX ? pageX : this.initialCellX;
-        let y: number = this.initialCellY > pageY ? pageY : this.initialCellY;
-        let parentDiv: HTMLElement = document.getElementById(this.element.id + '_CellSelection_Container');
-        let svgObject: Element = this.renderer.createSvg({
+        const x: number = this.initialCellX > pageX ? pageX : this.initialCellX;
+        const y: number = this.initialCellY > pageY ? pageY : this.initialCellY;
+        const parentDiv: HTMLElement = document.getElementById(this.element.id + '_CellSelection_Container');
+        const svgObject: Element = this.renderer.createSvg({
             id: this.element.id + '_CellSelection_Container_svg',
             width: this.initialClipRect.width,
-            height: this.initialClipRect.height,
+            height: this.initialClipRect.height
         });
         parentDiv.appendChild(svgObject);
-        let parent: HTMLElement = document.getElementById(this.element.id + '_CellSelection_Container_svg');
-        let rect: Rect = new Rect(
+        const parent: HTMLElement = document.getElementById(this.element.id + '_CellSelection_Container_svg');
+        const rect: Rect = new Rect(
             x - this.initialClipRect.x, y - this.initialClipRect.y,
             Math.abs(pageX - this.initialCellX), Math.abs(pageY - this.initialCellY));
-        let rectItems: RectOption = new RectOption(
+        const rectItems: RectOption = new RectOption(
             this.element.id + '_selectedCells', '#87ceeb', { color: 'transparent', width: 1 }, 1, rect, '#0000ff');
         parent.appendChild(this.renderer.drawRectangle(rectItems));
         document.getElementById(this.element.id + '_selectedCells').style.opacity = '0.5';
@@ -1536,15 +1618,16 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Method to get selected cell data collection for HeatMap
      */
+
     private getDataCollection(): void {
-        let pXIndex: number = this.previousRect.xIndex;
-        let pYIndex: number = this.previousRect.yIndex;
-        let cXIndex: number = this.currentRect.xIndex;
-        let cYIndex: number = this.currentRect.yIndex;
-        let minX: number = cXIndex > pXIndex ? pXIndex : cXIndex;
-        let maxX: number = cXIndex > pXIndex ? cXIndex : pXIndex;
-        let minY: number = cYIndex > pYIndex ? pYIndex : cYIndex;
-        let maxY: number = cYIndex > pYIndex ? cYIndex : pYIndex;
+        const pXIndex: number = this.previousRect.xIndex;
+        const pYIndex: number = this.previousRect.yIndex;
+        const cXIndex: number = this.currentRect.xIndex;
+        const cYIndex: number = this.currentRect.yIndex;
+        const minX: number = cXIndex > pXIndex ? pXIndex : cXIndex;
+        const maxX: number = cXIndex > pXIndex ? cXIndex : pXIndex;
+        const minY: number = cYIndex > pYIndex ? pYIndex : cYIndex;
+        const maxY: number = cYIndex > pYIndex ? cYIndex : pYIndex;
         let tempX: number = minX;
         let tempY: number = minY;
         let cellX: number = this.previousRect.x;
@@ -1563,19 +1646,20 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * To get the selected datas.
      */
+
     private getCellCollection(
         currentRect: CurrentRect, previousRect: CurrentRect, singleCellData: boolean, tempX: number, tempY: number,
         maxX: number, maxY: number, minX: number, cellX: number, cellY: number): void {
-        let xIndex: number = Math.abs((currentRect.xIndex === previousRect.xIndex ?
+        const xIndex: number = Math.abs((currentRect.xIndex === previousRect.xIndex ?
             0 : currentRect.xIndex - previousRect.xIndex)) + 1;
-        let yIndex: number = Math.abs((currentRect.yIndex === previousRect.yIndex ?
+        const yIndex: number = Math.abs((currentRect.yIndex === previousRect.yIndex ?
             0 : currentRect.yIndex - previousRect.yIndex)) + 1;
         for (let i: number = 0; i < (xIndex * yIndex); i++) {
             if (singleCellData) {
-            this.getSelectedCellData(cellX, cellY, true);
-        } else {
-            this.getSelectedCellData(cellX, cellY, false);
-        }
+                this.getSelectedCellData(cellX, cellY, true);
+            } else {
+                this.getSelectedCellData(cellX, cellY, false);
+            }
             if (tempX < maxX) {
                 cellX += currentRect.xIndex > previousRect.xIndex ? currentRect.width : -currentRect.width;
                 tempX++;
@@ -1586,15 +1670,17 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
     }
+
     /**
      * To remove the selection on mouse click without ctrl key.
      */
+
     private removeSelectedCellsBorder(): void {
         if (!this.enableCanvasRendering) {
-            let containerRect: HTMLElement = document.getElementById(this.element.id + '_Container_RectGroup');
-            let containerText: HTMLElement = document.getElementById(this.element.id + '_Container_TextGroup');
+            const containerRect: HTMLElement = document.getElementById(this.element.id + '_Container_RectGroup');
+            const containerText: HTMLElement = document.getElementById(this.element.id + '_Container_TextGroup');
             for (let i: number = 0; i < containerRect.childNodes.length; i++) {
-                let elementClassName: string = (containerRect.childNodes[i] as HTMLElement).getAttribute('class');
+                const elementClassName: string = (containerRect.childNodes[i] as HTMLElement).getAttribute('class');
                 (containerRect.childNodes[i] as HTMLElement).setAttribute('opacity', '0.3');
                 if (this.cellSettings.showLabel && containerText.childNodes[i]) {
                     (containerText.childNodes[i] as HTMLElement).setAttribute('opacity', '0.3');
@@ -1603,15 +1689,15 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         } else {
-            let ctx: CanvasRenderingContext2D = this.secondaryCanvasRenderer.ctx;
+            const ctx: CanvasRenderingContext2D = this.secondaryCanvasRenderer.ctx;
             for (let i: number = 0; i < this.previousSelectedCellsRect.length; i++) {
-                let rect: Rect = this.previousSelectedCellsRect[i];
+                const rect: Rect = this.previousSelectedCellsRect[i];
                 ctx.save();
                 ctx.clearRect(rect.x - 1, rect.y - 1, rect.width + 2, rect.height + 2);
                 ctx.restore();
             }
             for (let i: number = 0; i < this.multiCellCollection.length; i++) {
-                let rects: SelectedCellDetails = this.multiCellCollection[i];
+                const rects: SelectedCellDetails = this.multiCellCollection[i];
                 if (this.multiCellCollection.length > 0) {
                     ctx.save();
                     ctx.clearRect(rects.x - 1, rects.y - 1, rects.width + 2, rects.height + 2);
@@ -1624,43 +1710,45 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * To highlight the selected multiple cells on mouse move action in canvas mode.
      */
+
     private highlightSelectedAreaInCanvas(rect: Rect): void {
         if (rect.x) {
-        let oldCanvas: HTMLElement = document.getElementById(this.element.id + '_canvas');
-        let newCanvas: HTMLElement = document.getElementById(this.element.id + '_secondary_canvas');
-        let initialRect: Rect = this.initialClipRect;
-        let rectImage: ImageData = (oldCanvas as HTMLCanvasElement).getContext('2d').getImageData(
-            rect.x, rect.y, rect.width, rect.height
-        );
-        (newCanvas as HTMLCanvasElement).getContext('2d').putImageData(rectImage, rect.x, rect.y);
-        oldCanvas.style.opacity = '0.3';
-        let topPosition: ImageData = (oldCanvas as HTMLCanvasElement).getContext('2d').getImageData(
-            0, 0, this.availableSize.width, initialRect.y);
-        (newCanvas as HTMLCanvasElement).getContext('2d').putImageData(topPosition, 0, 0);
-        let bottomPosition: ImageData = (oldCanvas as HTMLCanvasElement).getContext('2d').getImageData(
-            0, initialRect.y + initialRect.height, this.availableSize.width,
-            this.availableSize.height - (initialRect.y + initialRect.height));
-        (newCanvas as HTMLCanvasElement).getContext('2d').putImageData(bottomPosition, 0, initialRect.y + initialRect.height);
-        let rightPosition: ImageData = (oldCanvas as HTMLCanvasElement).getContext('2d').getImageData(
-            initialRect.x + initialRect.width, 0, this.availableSize.width - (initialRect.x + initialRect.width),
-            this.availableSize.height);
-        (newCanvas as HTMLCanvasElement).getContext('2d').putImageData(rightPosition, initialRect.x + initialRect.width, 0);
-        let leftPosition: ImageData = (oldCanvas as HTMLCanvasElement).getContext('2d').getImageData(
-            0, 0, initialRect.x, this.availableSize.height);
-        (newCanvas as HTMLCanvasElement).getContext('2d').putImageData(leftPosition, 0, 0);
+            const oldCanvas: HTMLElement = document.getElementById(this.element.id + '_canvas');
+            const newCanvas: HTMLElement = document.getElementById(this.element.id + '_secondary_canvas');
+            const initialRect: Rect = this.initialClipRect;
+            const rectImage: ImageData = (oldCanvas as HTMLCanvasElement).getContext('2d').getImageData(
+                rect.x, rect.y, rect.width, rect.height
+            );
+            (newCanvas as HTMLCanvasElement).getContext('2d').putImageData(rectImage, rect.x, rect.y);
+            oldCanvas.style.opacity = '0.3';
+            const topPosition: ImageData = (oldCanvas as HTMLCanvasElement).getContext('2d').getImageData(
+                0, 0, this.availableSize.width, initialRect.y);
+            (newCanvas as HTMLCanvasElement).getContext('2d').putImageData(topPosition, 0, 0);
+            const bottomPosition: ImageData = (oldCanvas as HTMLCanvasElement).getContext('2d').getImageData(
+                0, initialRect.y + initialRect.height, this.availableSize.width,
+                this.availableSize.height - (initialRect.y + initialRect.height));
+            (newCanvas as HTMLCanvasElement).getContext('2d').putImageData(bottomPosition, 0, initialRect.y + initialRect.height);
+            const rightPosition: ImageData = (oldCanvas as HTMLCanvasElement).getContext('2d').getImageData(
+                initialRect.x + initialRect.width, 0, this.availableSize.width - (initialRect.x + initialRect.width),
+                this.availableSize.height);
+            (newCanvas as HTMLCanvasElement).getContext('2d').putImageData(rightPosition, initialRect.x + initialRect.width, 0);
+            const leftPosition: ImageData = (oldCanvas as HTMLCanvasElement).getContext('2d').getImageData(
+                0, 0, initialRect.x, this.availableSize.height);
+            (newCanvas as HTMLCanvasElement).getContext('2d').putImageData(leftPosition, 0, 0);
         }
     }
     /**
      * To get the collection of selected cells.
      */
+
     private getSelectedCellData(cellX: number, cellY: number, cellCollection: boolean): void {
-        let xAxis: Axis = this.axisCollections[0];
-        let yAxis: Axis = this.axisCollections[1];
-        let xLabels: string[] = xAxis.tooltipLabels;
-        let yLabels: string[] = yAxis.tooltipLabels.slice().reverse();
-        let rectPosition: CurrentRect = this.heatMapSeries.getCurrentRect(cellX + 1, cellY + 1);
-        let currentRect: Element = document.getElementById(rectPosition.id);
-        let cellDetails: SelectedCellDetails = new SelectedCellDetails(null, '', '', 0, 0, null, 0, 0, 0, 0, 0, 0);
+        const xAxis: Axis = this.axisCollections[0];
+        const yAxis: Axis = this.axisCollections[1];
+        const xLabels: string[] = xAxis.tooltipLabels;
+        const yLabels: string[] = yAxis.tooltipLabels.slice().reverse();
+        const rectPosition: CurrentRect = this.heatMapSeries.getCurrentRect(cellX + 1, cellY + 1);
+        const currentRect: Element = document.getElementById(rectPosition.id);
+        const cellDetails: SelectedCellDetails = new SelectedCellDetails(null, '', '', 0, 0, null, 0, 0, 0, 0, 0, 0);
         cellDetails.value = rectPosition.value;
         cellDetails.xLabel = xLabels[rectPosition.xIndex].toString();
         cellDetails.yLabel = yLabels[rectPosition.yIndex].toString();
@@ -1679,59 +1767,64 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             this.selectedMultiCellCollection.push(cellDetails);
             this.currentRect.allowCollection = false;
         } else {
-        for (let i: number = 0; i < this.multiCellCollection.length; i++) {
-            if (this.multiCellCollection[i].xPosition === cellDetails.xPosition &&
-                this.multiCellCollection[i].yPosition === cellDetails.yPosition) {
-                this.currentRect.allowCollection = false;
-                if (this.selectedCellCount === this.selectedMultiCellCollection.length) {
+            for (let i: number = 0; i < this.multiCellCollection.length; i++) {
+                if (this.multiCellCollection[i].xPosition === cellDetails.xPosition &&
+                    this.multiCellCollection[i].yPosition === cellDetails.yPosition) {
                     this.currentRect.allowCollection = false;
-                    if (!this.enableCanvasRendering) {
-                        for (let j: number = 0; j < this.selectedMultiCellCollection.length; j++) {
-                            let rectElement: Element = this.selectedMultiCellCollection[j].cellElement;
-                            if (rectElement) {
-                                let index: string = rectElement.id.replace(this.element.id + '_HeatMapRect_', '');
-                                let containerText: HTMLElement = document.getElementById(this.element.id + '_Container_TextGroup');
-                                let elementClassName: string = rectElement.getAttribute('class');
-                                rectElement.setAttribute('opacity', '0.3');
-                                let getText: HTMLElement = document.getElementById(this.element.id + '_HeatMapRectLabels_' + index);
-                                if (getText) {
-                                    getText.setAttribute('opacity', '0.3');
+                    if (this.selectedCellCount === this.selectedMultiCellCollection.length) {
+                        this.currentRect.allowCollection = false;
+                        if (!this.enableCanvasRendering) {
+                            for (let j: number = 0; j < this.selectedMultiCellCollection.length; j++) {
+                                const rectElement: Element = this.selectedMultiCellCollection[j].cellElement;
+                                if (rectElement) {
+                                    const index: string = rectElement.id.replace(this.element.id + '_HeatMapRect_', '');
+                                    // eslint-disable-next-line
+                                    const containerText: HTMLElement = document.getElementById(this.element.id + '_Container_TextGroup');
+                                    const elementClassName: string = rectElement.getAttribute('class');
+                                    rectElement.setAttribute('opacity', '0.3');
+                                    const getText: HTMLElement = document.getElementById(this.element.id + '_HeatMapRectLabels_' + index);
+                                    if (getText) {
+                                        getText.setAttribute('opacity', '0.3');
+                                    }
+                                    this.removeSvgClass(rectElement, elementClassName);
                                 }
-                                this.removeSvgClass(rectElement, elementClassName);
                             }
+                        } else {
+                            const ctx: CanvasRenderingContext2D = this.secondaryCanvasRenderer.ctx;
+                            const rect: Rect = this.canvasSelectedCells;
+                            ctx.save();
+                            ctx.clearRect(rect.x - 1, rect.y - 1, rect.width + 2, rect.height + 2);
+                            ctx.restore();
+                            this.selectedCellsRect = new Rect(0, 0, 0, 0);
                         }
-                    } else {
-                        let ctx: CanvasRenderingContext2D = this.secondaryCanvasRenderer.ctx;
-                        let rect: Rect = this.canvasSelectedCells;
-                        ctx.save();
-                        ctx.clearRect(rect.x - 1, rect.y - 1, rect.width + 2, rect.height + 2);
-                        ctx.restore();
-                        this.selectedCellsRect = new Rect(0, 0, 0, 0);
+                        this.multiCellCollection.splice(i, 1);
                     }
-                    this.multiCellCollection.splice(i, 1);
                 }
             }
         }
-    }
         if (rectPosition.visible && !isNullOrUndefined(rectPosition.value) && this.currentRect.allowCollection === true) {
             this.multiCellCollection.push(cellDetails);
         }
     }
     /**
      * To add class for selected cells
+     *
      * @private
      */
+
     public addSvgClass(element: Element): void {
         if (!this.enableCanvasRendering) {
-            let className: string = this.element.id + '_selected';
+            const className: string = this.element.id + '_selected';
             element.setAttribute('class', className);
         }
     }
 
     /**
      * To remove class for unselected cells
+     *
      * @private
      */
+
     public removeSvgClass(rectElement: Element, className: string): void {
         if (className) {
             rectElement.setAttribute('class', className.replace(className, ''));
@@ -1742,12 +1835,13 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      * To clear the multi cell selection
      * {% codeBlock src='heatmap/clearSelection/index.md' %}{% endcodeBlock %}
      */
+
     public clearSelection(): void {
         if (!this.enableCanvasRendering && this.allowSelection) {
             this.clearSVGSelection();
         }
         if (this.enableCanvasRendering) {
-            let ctx: CanvasRenderingContext2D = this.secondaryCanvasRenderer.ctx;
+            const ctx: CanvasRenderingContext2D = this.secondaryCanvasRenderer.ctx;
             for (let i: number = 0; i < this.previousSelectedCellsRect.length; i++) {
                 ctx.save();
                 ctx.clearRect(this.previousSelectedCellsRect[i].x - 1, this.previousSelectedCellsRect[i].y - 1,
@@ -1755,13 +1849,13 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                 ctx.restore();
             }
             for (let i: number = 0; i < this.multiCellCollection.length; i++) {
-                let rects: SelectedCellDetails = this.multiCellCollection[i];
+                const rects: SelectedCellDetails = this.multiCellCollection[i];
                 if (this.multiCellCollection.length > 0) {
                     ctx.save();
                     ctx.clearRect(rects.x - 1, rects.y - 1, rects.width + 2, rects.height + 2);
                 }
             }
-            let canvas: HTMLElement = document.getElementById(this.element.id + '_canvas');
+            const canvas: HTMLElement = document.getElementById(this.element.id + '_canvas');
             canvas.style.opacity = '1';
         }
         this.tempMultiCellCollection = [];
@@ -1770,8 +1864,8 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private renderMousePointer(pageX: number, pageY: number): void {
-        let legendRange: LegendRange[] = this.legendModule.legendRange;
-        let legendTextRange: LegendRange[] = this.legendModule.legendTextRange;
+        const legendRange: LegendRange[] = this.legendModule.legendRange;
+        const legendTextRange: LegendRange[] = this.legendModule.legendTextRange;
         let loop: boolean = true;
         for (let i: number = 0; i < legendRange.length; i++) {
             if (this.legendSettings.toggleVisibility && this.legendModule.currentPage === legendRange[i].currentPage) {
@@ -1799,9 +1893,11 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Handles the mouse end.
-     * @return {boolean}
+     *
+     * @returns {boolean}
      * @private
      */
+
     public heatMapMouseLeave(e: PointerEvent): boolean {
         if (e.target && (<Element>e.target).id &&
             (this.cellSettings.enableCellHighlighting || (this.tooltipModule && this.showTooltip))
@@ -1812,22 +1908,22 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             this.multiSelection = false;
             if (e.type === 'mouseup' || e.type === 'touchend' || e.type === 'pointerup') {
                 if (e.which !== 2 && e.which !== 3) {
-                if (this.isCellTapHold === false) {
-                    this.getDataCollection();
-                    this.currentRect.allowCollection = false;
-                    this.setCellOpacity();
-                    let argData: ISelectedEventArgs = {
-                        heatmap: (this.isBlazor ? null : this),
-                        cancel: false,
-                        name: 'cellSelected',
-                        data: this.multiCellCollection
-                    };
-                    this.trigger('cellSelected', argData);
-                } else {
-                    this.isCellTapHold = false;
+                    if (this.isCellTapHold === false) {
+                        this.getDataCollection();
+                        this.currentRect.allowCollection = false;
+                        this.setCellOpacity();
+                        const argData: ISelectedEventArgs = {
+                            heatmap: (this.isBlazor ? null : this),
+                            cancel: false,
+                            name: 'cellSelected',
+                            data: this.multiCellCollection
+                        };
+                        this.trigger('cellSelected', argData);
+                    } else {
+                        this.isCellTapHold = false;
+                    }
                 }
-            }
-        } else if (e.type === 'mouseleave' && (this.element.id + '_selectedCells')) {
+            } else if (e.type === 'mouseleave' && (this.element.id + '_selectedCells')) {
                 removeElement(this.element.id + '_selectedCells');
             }
         }
@@ -1837,7 +1933,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         this.tempTooltipRectId = '';
         if (this.legendModule && this.legendSettings.visible && this.legendModule.tooltipObject &&
             this.legendModule.tooltipObject.element) {
-            let tooltipElement: HTMLElement = this.legendModule.tooltipObject.element.firstChild as HTMLElement;
+            const tooltipElement: HTMLElement = this.legendModule.tooltipObject.element.firstChild as HTMLElement;
             if (e.type === 'mouseleave') {
                 tooltipElement.setAttribute('opacity', '0');
             } else {
@@ -1863,7 +1959,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
         if (this.enableCanvasRendering) {
-            let main: HTMLElement = document.getElementById(this.element.id + '_hoverRect_canvas');
+            const main: HTMLElement = document.getElementById(this.element.id + '_hoverRect_canvas');
             if (main) {
                 main.style.visibility = 'hidden';
                 this.tempRectHoverClass = '';
@@ -1878,9 +1974,11 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         }
         return true;
     }
+
     /**
      * Method to Check for deselection of cell.
      */
+
     private checkSelectedCells() : void {
         if (!this.enableCanvasRendering) {
             for (let i: number = 0; i < this.multiCellCollection.length; i++) {
@@ -1913,34 +2011,36 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Method to remove opacity for text of selected cell for HeatMap
      */
+
     private removeOpacity(containersRect: Element, containerText: Element) : void {
         for (let i: number = 0; i < containersRect.childNodes.length; i++) {
-                (containersRect.childNodes[i]as HTMLElement).setAttribute('opacity', '0.3');
-                if (this.cellSettings.showLabel && containerText.childNodes[i] as HTMLElement) {
-                    (containerText.childNodes[i] as HTMLElement).setAttribute('opacity', '0.3');
-                }
+            (containersRect.childNodes[i] as HTMLElement).setAttribute('opacity', '0.3');
+            if (this.cellSettings.showLabel && containerText.childNodes[i] as HTMLElement) {
+                (containerText.childNodes[i] as HTMLElement).setAttribute('opacity', '0.3');
             }
+        }
     }
     /**
      * Method to set opacity for selected cell for HeatMap
      */
+
     private setCellOpacity() : void {
         if (!this.enableCanvasRendering) {
             if (this.multiCellCollection.length !== 0) {
                 this.tempMultiCellCollection.push(this.multiCellCollection);
-                let containersRect: Element = document.getElementById(this.element.id + '_Container_RectGroup');
-                let containerText: Element = document.getElementById(this.element.id + '_Container_TextGroup');
+                const containersRect: Element = document.getElementById(this.element.id + '_Container_RectGroup');
+                const containerText: Element = document.getElementById(this.element.id + '_Container_TextGroup');
                 this.removeOpacity(containersRect, containerText);
                 for (let i: number = 0; i < this.multiCellCollection.length; i++) {
-                    let collectionClasss: Element = this.multiCellCollection[i].cellElement;
-                    let index: number = parseInt(collectionClasss.id.replace(this.element.id + '_HeatMapRect_', ''), 10);
+                    const collectionClasss: Element = this.multiCellCollection[i].cellElement;
+                    const index: number = parseInt(collectionClasss.id.replace(this.element.id + '_HeatMapRect_', ''), 10);
                     (containersRect.childNodes[index]as HTMLElement).setAttribute('opacity', '1');
                     if (this.cellSettings.showLabel) {
-                        let getText: HTMLElement = document.getElementById(this.element.id + '_HeatMapRectLabels_' + index);
+                        const getText: HTMLElement = document.getElementById(this.element.id + '_HeatMapRectLabels_' + index);
                         if (getText) {
-                        getText.setAttribute('opacity', '1');
+                            getText.setAttribute('opacity', '1');
                         }
-                     }
+                    }
                 }
             }
         } else {
@@ -1951,12 +2051,14 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * To create div container for rendering two layers of canvas.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
+
     public createMultiCellDiv(onLoad: boolean): void {
         if (onLoad) {
-            let divElement: Element = this.createElement('div', {
+            const divElement: Element = this.createElement('div', {
                 id: this.element.id + '_Multi_CellSelection_Canvas',
                 styles: 'position:relative'
             });
@@ -1968,8 +2070,8 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             (this.svgObject as HTMLElement).style.zIndex = '0';
 
         } else {
-            let element: Element = document.getElementById(this.element.id + '_Multi_CellSelection_Canvas');
-            let secondaryCanvas: HTMLCanvasElement = this.secondaryCanvasRenderer.createCanvas({
+            const element: Element = document.getElementById(this.element.id + '_Multi_CellSelection_Canvas');
+            const secondaryCanvas: HTMLCanvasElement = this.secondaryCanvasRenderer.createCanvas({
                 width: this.availableSize.width,
                 height: this.availableSize.height, x: 0, y: 0,
                 style: 'position: absolute; z-index: 1'

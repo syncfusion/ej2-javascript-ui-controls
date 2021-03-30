@@ -1,9 +1,14 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable valid-jsdoc */
 import { Animation, AnimationOptions, compile as templateComplier, Browser } from '@syncfusion/ej2-base';
 import { merge, Effect, extend, isNullOrUndefined, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Index } from '../../common/model/base';
-import { PathAttributes, RectAttributes, CircleAttributes, SVGCanvasAttributes, BaseAttibutes } from '@syncfusion/ej2-svg-base';
 import { TextAttributes } from '@syncfusion/ej2-svg-base';
+import { PathAttributes, RectAttributes, CircleAttributes, SVGCanvasAttributes, BaseAttibutes } from '@syncfusion/ej2-svg-base';
 import { FontModel, BorderModel, MarginModel } from '../model/base-model';
 import { VisibleRangeModel, VisibleLabels } from '../../chart/axis/axis';
 import { Series, Points } from '../../chart/series/chart-series';
@@ -18,17 +23,19 @@ import { axisLabelRender, regSub } from '../model/constants';
 import { StockChart } from '../../stock-chart/stock-chart';
 import { measureText, findDirection, Rect, TextOption, Size, PathOption, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { BulletChart } from '../../bullet-chart/bullet-chart';
+import { RangeColorSettingModel } from '../../chart/chart-model';
 import { AccumulationDataLabelSettingsModel, IAccTextRenderEventArgs } from '../../accumulation-chart';
 
 /**
  * Function to sort the dataSource, by default it sort the data in ascending order.
- * @param  {Object} data
- * @param  {string} fields
- * @param  {boolean} isDescending
- * @returns Object
+ *
+ * @param  {Object} data chart data
+ * @param  {string} fields date fields
+ * @param  {boolean} isDescending boolean values of descending
+ * @returns {Object[]} It returns chart data which be sorted.
  */
 export function sort(data: Object[], fields: string[], isDescending?: boolean): Object[] {
-    let sortData: Object[] = <Object[]>extend([], data, null);
+    const sortData: Object[] = <Object[]>extend([], data, null);
     sortData.sort((a: Object, b: Object) => {
         let first: number = 0;
         let second: number = 0;
@@ -51,9 +58,10 @@ export function isBreakLabel(label: string): boolean {
     return label.indexOf('<br>') !== -1;
 }
 
+/** @private */
 export function getVisiblePoints(series: Series): Points[] {
-    let points: Points[] = extend([], series.points, null, true) as Points[];
-    let tempPoints: Points[] = [];
+    const points: Points[] = extend([], series.points, null, true) as Points[];
+    const tempPoints: Points[] = [];
     let tempPoint: Points;
     let pointIndex: number = 0;
     for (let i: number = 0; i < points.length; i++) {
@@ -70,18 +78,11 @@ export function getVisiblePoints(series: Series): Points[] {
 
 /** @private */
 export function rotateTextSize(font: FontModel, text: string, angle: number, chart: Chart): Size {
-
-    let renderer: SvgRenderer = new SvgRenderer(chart.element.id);
-    let box: ClientRect;
-    let options: TextAttributes;
-    let htmlObject: HTMLElement;
-    let labelText: string;
-    let textCollection: string[] = [];
-    let height: number;
-    let dy: number;
-    let label: string;
+    const renderer: SvgRenderer = new SvgRenderer(chart.element.id);
+    let labelText: string; let textCollection: string[] = [];
+    let height: number; let dy: number; let label: string;
     let tspanElement: Element;
-    options = {
+    const options: TextAttributes = {
         id: 'rotate_text',
         x: chart.initialClipRect.x,
         y: chart.initialClipRect.y,
@@ -98,7 +99,7 @@ export function rotateTextSize(font: FontModel, text: string, angle: number, cha
     } else {
         labelText = text as string;
     }
-    htmlObject = renderer.createText(options, labelText) as HTMLElement;
+    const htmlObject: HTMLElement = renderer.createText(options, labelText) as HTMLElement;
     if (!chart.delayRedraw && !chart.redraw) {
         chart.element.appendChild(chart.svgObject);
     }
@@ -119,7 +120,7 @@ export function rotateTextSize(font: FontModel, text: string, angle: number, cha
         }
     }
     chart.svgObject.appendChild(htmlObject);
-    box = htmlObject.getBoundingClientRect();
+    const box: ClientRect = htmlObject.getBoundingClientRect();
     remove(htmlObject);
     if (!chart.delayRedraw && !chart.redraw) {
         remove(chart.svgObject);
@@ -131,7 +132,7 @@ export function removeElement(id: string | Element): void {
     if (!id) {
         return null;
     }
-    let element: Element = typeof id === 'string' ? getElement(id) : id;
+    const element: Element = typeof id === 'string' ? getElement(id) : id;
     if (element) {
         remove(element);
     }
@@ -147,11 +148,11 @@ export function showTooltip(
 ): void {
     //let id1: string = 'EJ2_legend_tooltip';
     let tooltip: HTMLElement = document.getElementById(id);
-    let size: Size = measureText(text, {
+    const size: Size = measureText(text, {
         fontFamily: 'Segoe UI', size: '12px',
         fontStyle: 'Normal', fontWeight: 'Regular'
     });
-    let width: number = size.width + 5;
+    const width: number = size.width + 5;
     x = (x + width > areaWidth) ? x - (width + 15) : x;
     y = isTitleOrLegendEnabled ? (y - size.height / 2) : y + 15;
     if (!tooltip) {
@@ -164,7 +165,7 @@ export function showTooltip(
                 'padding-bottom : 2px; padding-top : 2px; font-size:12px; font-family: "Segoe UI"'
         });
         element.appendChild(tooltip);
-        let left: number = parseInt(tooltip.style.left.replace('px', ''), 10);
+        const left: number = parseInt(tooltip.style.left.replace('px', ''), 10);
         if (left < 0) {
             tooltip.style.left = '0px';
         }
@@ -188,27 +189,22 @@ export function withIn(value: number, range: VisibleRangeModel): boolean {
 }
 /** @private */
 export function logWithIn(value: number, axis: Axis): number {
-    if (axis.valueType === 'Logarithmic') {
-        value = logBase(value, axis.logBase);
-    } else {
-        value = value;
-    }
-    return value;
+    return axis.valueType === 'Logarithmic' ? logBase(value, axis.logBase) : value;
 }
 /** @private */
 export function withInRange(previousPoint: Points, currentPoint: Points, nextPoint: Points, series: Series): boolean {
-    let mX2: number = logWithIn(currentPoint.xValue, series.xAxis);
-    let mX1: number = previousPoint ? logWithIn(previousPoint.xValue, series.xAxis) : mX2;
-    let mX3: number = nextPoint ? logWithIn(nextPoint.xValue, series.xAxis) : mX2;
-    let xStart: number = Math.floor(<number>series.xAxis.visibleRange.min);
-    let xEnd: number = Math.ceil(<number>series.xAxis.visibleRange.max);
+    const mX2: number = logWithIn(currentPoint.xValue, series.xAxis);
+    const mX1: number = previousPoint ? logWithIn(previousPoint.xValue, series.xAxis) : mX2;
+    const mX3: number = nextPoint ? logWithIn(nextPoint.xValue, series.xAxis) : mX2;
+    const xStart: number = Math.floor(<number>series.xAxis.visibleRange.min);
+    const xEnd: number = Math.ceil(<number>series.xAxis.visibleRange.max);
     return ((mX1 >= xStart && mX1 <= xEnd) || (mX2 >= xStart && mX2 <= xEnd) ||
         (mX3 >= xStart && mX3 <= xEnd) || (xStart >= mX1 && xStart <= mX3));
 }
 /** @private */
 export function sum(values: number[]): number {
     let sum: number = 0;
-    for (let value of values) {
+    for (const value of values) {
         sum += value;
     }
     return sum;
@@ -250,7 +246,7 @@ export function subtractRect(rect: Rect, thickness: Rect): Rect {
 }
 /** @private */
 export function degreeToLocation(degree: number, radius: number, center: ChartLocation): ChartLocation {
-    let radian: number = (degree * Math.PI) / 180;
+    const radian: number = (degree * Math.PI) / 180;
     return new ChartLocation(Math.cos(radian) * radius + center.x, Math.sin(radian) * radius + center.y);
 }
 /** @private */
@@ -262,15 +258,15 @@ export function degreeToRadian(degree: number): number {
 export function getRotatedRectangleCoordinates(
     actualPoints: ChartLocation[], centerX: number, centerY: number, angle: number
 ): ChartLocation[] {
-    let coordinatesAfterRotation: ChartLocation[] = [];
+    const coordinatesAfterRotation: ChartLocation[] = [];
     for (let i: number = 0; i < 4; i++) {
-        let point: ChartLocation = actualPoints[i];
+        const point: ChartLocation = actualPoints[i];
         // translate point to origin
-        let tempX: number = point.x - centerX;
-        let tempY: number = point.y - centerY;
+        const tempX: number = point.x - centerX;
+        const tempY: number = point.y - centerY;
         // now apply rotation
-        let rotatedX: number = tempX * Math.cos(degreeToRadian(angle)) - tempY * Math.sin(degreeToRadian(angle));
-        let rotatedY: number = tempX * Math.sin(degreeToRadian(angle)) + tempY * Math.cos(degreeToRadian(angle));
+        const rotatedX: number = tempX * Math.cos(degreeToRadian(angle)) - tempY * Math.sin(degreeToRadian(angle));
+        const rotatedY: number = tempX * Math.sin(degreeToRadian(angle)) + tempY * Math.cos(degreeToRadian(angle));
         // translate back
         point.x = rotatedX + centerX;
         point.y = rotatedY + centerY;
@@ -283,12 +279,12 @@ export function getRotatedRectangleCoordinates(
  * Helper function to determine whether there is an intersection between the two polygons described
  * by the lists of vertices. Uses the Separating Axis Theorem
  *
- * @param a an array of connected points [{x:, y:}, {x:, y:},...] that form a closed polygon
- * @param b an array of connected points [{x:, y:}, {x:, y:},...] that form a closed polygon
- * @return true if there is any intersection between the 2 polygons, false otherwise
+ * @param {ChartLocation[]} a an array of connected points [{x:, y:}, {x:, y:},...] that form a closed polygon
+ * @param {ChartLocation[]} b an array of connected points [{x:, y:}, {x:, y:},...] that form a closed polygon
+ * @returns {boolean} if there is any intersection between the 2 polygons, false otherwise
  */
 export function isRotatedRectIntersect(a: ChartLocation[], b: ChartLocation[]): boolean {
-    let polygons: ChartLocation[][] = [a, b];
+    const polygons: ChartLocation[][] = [a, b];
     let minA: number; let maxA: number; let projected: number; let i: number;
     let i1: number; let j: number; let minB: number; let maxB: number;
 
@@ -296,16 +292,16 @@ export function isRotatedRectIntersect(a: ChartLocation[], b: ChartLocation[]): 
 
         // for each polygon, look at each edge of the polygon, and determine if it separates
         // the two shapes
-        let polygon: ChartLocation[] = polygons[i];
+        const polygon: ChartLocation[] = polygons[i];
         for (i1 = 0; i1 < polygon.length; i1++) {
 
             // grab 2 vertices to create an edge
-            let i2: number = (i1 + 1) % polygon.length;
-            let p1: ChartLocation = polygon[i1];
-            let p2: ChartLocation = polygon[i2];
+            const i2: number = (i1 + 1) % polygon.length;
+            const p1: ChartLocation = polygon[i1];
+            const p2: ChartLocation = polygon[i2];
 
             // find the line perpendicular to this edge
-            let normal: ChartLocation = new ChartLocation(p2.y - p1.y, p1.x - p2.x);
+            const normal: ChartLocation = new ChartLocation(p2.y - p1.y, p1.x - p2.x);
 
             minA = maxA = undefined;
             // for each vertex in the first shape, project it onto the line perpendicular to the edge
@@ -341,14 +337,17 @@ export function isRotatedRectIntersect(a: ChartLocation[], b: ChartLocation[]): 
     }
     return true;
 }
+
+/** @private */
 function getAccumulationLegend(locX: number, locY: number, r: number, height: number, width: number, mode: string): string {
-    let cartesianlarge: ChartLocation = degreeToLocation(270, r, new ChartLocation(locX, locY));
-    let cartesiansmall: ChartLocation = degreeToLocation(270, r, new ChartLocation(locX + (width / 10), locY));
+    const cartesianlarge: ChartLocation = degreeToLocation(270, r, new ChartLocation(locX, locY));
+    const cartesiansmall: ChartLocation = degreeToLocation(270, r, new ChartLocation(locX + (width / 10), locY));
     return 'M' + ' ' + locX + ' ' + locY + ' ' + 'L' + ' ' + (locX + r) + ' ' + (locY) + ' ' + 'A' + ' ' + (r) + ' ' + (r) +
         ' ' + 0 + ' ' + 1 + ' ' + 1 + ' ' + cartesianlarge.x + ' ' + cartesianlarge.y + ' ' + 'Z' + ' ' + 'M' + ' ' + (locX +
             (width / 10)) + ' ' + (locY - (height / 10)) + ' ' + 'L' + (locX + (r)) + ' ' + (locY - height / 10) + ' ' + 'A' + ' '
         + (r) + ' ' + (r) + ' ' + 0 + ' ' + 0 + ' ' + 0 + ' ' + cartesiansmall.x + ' ' + cartesiansmall.y + ' ' + 'Z';
 }
+
 /** @private */
 export function getAngle(center: ChartLocation, point: ChartLocation): number {
     let angle: number = Math.atan2((point.y - center.y), (point.x - center.x));
@@ -357,7 +356,7 @@ export function getAngle(center: ChartLocation, point: ChartLocation): number {
 }
 /** @private */
 export function subArray(values: number[], index: number): number[] {
-    let subArray: number[] = [];
+    const subArray: number[] = [];
     for (let i: number = 0; i <= index - 1; i++) {
         subArray.push(values[i]);
     }
@@ -365,8 +364,8 @@ export function subArray(values: number[], index: number): number[] {
 }
 /** @private */
 export function valueToCoefficient(value: number, axis: Axis): number {
-    let range: VisibleRangeModel = axis.visibleRange;
-    let result: number = (value - <number>range.min) / (range.delta);
+    const range: VisibleRangeModel = axis.visibleRange;
+    const result: number = (value - <number>range.min) / (range.delta);
     return axis.isInversed ? (1 - result) : result;
 
 }
@@ -376,8 +375,8 @@ export function TransformToVisible(x: number, y: number, xAxis: Axis, yAxis: Axi
     y = (yAxis.valueType === 'Logarithmic' ?
         logBase(y > 1 ? y : 1, yAxis.logBase) : y);
     x += xAxis.valueType === 'Category' && xAxis.labelPlacement === 'BetweenTicks' && series.type !== 'Radar' ? 0.5 : 0;
-    let radius: number = series.chart.radius * valueToCoefficient(y, yAxis);
-    let point: ChartLocation = CoefficientToVector(valueToPolarCoefficient(x, xAxis), series.chart.primaryXAxis.startAngle);
+    const radius: number = series.chart.radius * valueToCoefficient(y, yAxis);
+    const point: ChartLocation = CoefficientToVector(valueToPolarCoefficient(x, xAxis), series.chart.primaryXAxis.startAngle);
     return {
         x: (series.clipRect.width / 2 + series.clipRect.x) + radius * point.x,
         y: (series.clipRect.height / 2 + series.clipRect.y) + radius * point.y
@@ -386,6 +385,7 @@ export function TransformToVisible(x: number, y: number, xAxis: Axis, yAxis: Axi
 }
 /**
  * method to find series, point index by element id
+ *
  * @private
  */
 export function indexFinder(id: string, isPoint: boolean = false): Index {
@@ -412,7 +412,7 @@ export function CoefficientToVector(coefficient: number, startAngle: number): Ch
 
 /** @private */
 export function valueToPolarCoefficient(value: number, axis: Axis): number {
-    let range: VisibleRangeModel = axis.visibleRange;
+    const range: VisibleRangeModel = axis.visibleRange;
     let delta: number;
     let length: number;
     if (axis.valueType !== 'Category') {
@@ -470,7 +470,7 @@ export class PolarArc {
 /** @private */
 export function createTooltip(id: string, text: string, top: number, left: number, fontSize: string): void {
     let tooltip: HTMLElement = getElement(id) as HTMLElement;
-    let style: string = 'top:' + top.toString() + 'px;' +
+    const style: string = 'top:' + top.toString() + 'px;' +
         'left:' + left.toString() + 'px;' +
         'color:black !important; ' +
         'background:#FFFFFF !important; ' +
@@ -487,17 +487,17 @@ export function createTooltip(id: string, text: string, top: number, left: numbe
 }
 /** @private */
 export function createZoomingLabels(chart: Chart, axis: Axis, parent: Element, index: number, isVertical: boolean, rect: Rect): Element {
-    let margin: number = 5;
-    let opposedPosition: boolean = axis.opposedPosition;
-    let anchor: string = isVertical ? 'start' : 'auto';
+    const margin: number = 5;
+    const opposedPosition: boolean = axis.opposedPosition;
+    const anchor: string = isVertical ? 'start' : 'auto';
     let size: Size;
-    let chartRect: number = chart.availableSize.width;
+    const chartRect: number = chart.availableSize.width;
     let x: number;
     let y: number;
-    let rx: number = 3;
+    const rx: number = 3;
     let arrowLocation: ChartLocation;
     let direction: string;
-    let scrollBarHeight: number = axis.scrollbarSettings.enable || (axis.zoomingScrollBar && axis.zoomingScrollBar.svgObject)
+    const scrollBarHeight: number = axis.scrollbarSettings.enable || (axis.zoomingScrollBar && axis.zoomingScrollBar.svgObject)
         ? axis.scrollBarHeight : 0;
     for (let i: number = 0; i < 2; i++) {
         size = measureText(i ? axis.endLabel : axis.startLabel, axis.labelStyle);
@@ -546,17 +546,17 @@ export function withInBounds(x: number, y: number, bounds: Rect, width: number =
 }
 /** @private */
 export function getValueXByPoint(value: number, size: number, axis: Axis): number {
-    let actualValue: number = !axis.isInversed ? value / size : (1 - (value / size));
+    const actualValue: number = !axis.isInversed ? value / size : (1 - (value / size));
     return actualValue * (axis.visibleRange.delta) + axis.visibleRange.min;
 }
 /** @private */
 export function getValueYByPoint(value: number, size: number, axis: Axis): number {
-    let actualValue: number = axis.isInversed ? value / size : (1 - (value / size));
+    const actualValue: number = axis.isInversed ? value / size : (1 - (value / size));
     return actualValue * (axis.visibleRange.delta) + axis.visibleRange.min;
 }
 /** @private */
 export function findClipRect(series: Series): void {
-    let rect: Rect = series.clipRect;
+    const rect: Rect = series.clipRect;
     if (series.chart.requireInvertedAxis) {
         rect.x = series.yAxis.rect.x;
         rect.y = series.xAxis.rect.y;
@@ -596,12 +596,12 @@ export function getMinPointsDelta(axis: Axis, seriesCollection: Series[]): numbe
     let minVal: number;
     let seriesMin: number;
     for (let index: number = 0; index < seriesCollection.length; index++) {
-        let series: Series = seriesCollection[index];
+        const series: Series = seriesCollection[index];
         xValues = [];
         if (series.visible &&
             (axis.name === series.xAxisName || (axis.name === 'primaryXAxis' && series.xAxisName === null)
                 || (axis.name === series.chart.primaryXAxis.name && !series.xAxisName))) {
-            xValues = series.points.map((point: Points, index: number) => {
+            xValues = series.points.map((point: Points) => {
                 return point.xValue;
             });
             xValues.sort((first: Object, second: Object) => { return <number>first - <number>second; });
@@ -614,7 +614,7 @@ export function getMinPointsDelta(axis: Axis, seriesCollection: Series[]): numbe
                 }
             } else {
                 for (let index: number = 0; index < xValues.length; index++) {
-                    let value: Object = xValues[index];
+                    const value: Object = xValues[index];
                     if (index > 0 && value) {
                         minVal = <number>value - <number>xValues[index - 1];
                         if (minVal !== 0) {
@@ -635,39 +635,38 @@ export function getMinPointsDelta(axis: Axis, seriesCollection: Series[]): numbe
 export function getAnimationFunction(effect: string): Function {
     let functionName: Function;
     switch (effect) {
-        case 'Linear':
-            functionName = linear;
-            break;
+    case 'Linear':
+        functionName = linear;
+        break;
     }
     return functionName;
 }
 
 /**
  * Animation Effect Calculation Started Here
- * @param currentTime
- * @param startValue
- * @param endValue
- * @param duration
+ *
+ * @param {number} currentTime currentTime
+ * @param {number} startValue startValue of the animation
+ * @param {number} endValue endValue of the animation
+ * @param {number} duration duration of the animation
  * @private
  */
-
-
 export function linear(currentTime: number, startValue: number, endValue: number, duration: number): number {
     return -endValue * Math.cos(currentTime / duration * (Math.PI / 2)) + endValue + startValue;
 }
 
 /**
  * Animation Effect Calculation End
+ *
  * @private
  */
-
 export function markerAnimate(
     element: Element, delay: number, duration: number, series: Series | AccumulationSeries,
     pointIndex: number, point: ChartLocation, isLabel: boolean
 ): void {
 
-    let centerX: number = point.x;
-    let centerY: number = point.y;
+    const centerX: number = point.x;
+    const centerY: number = point.y;
     let height: number = 0;
     (<HTMLElement>element).style.visibility = 'hidden';
     new Animation({}).animate(<HTMLElement>element, {
@@ -681,7 +680,7 @@ export function markerAnimate(
                     + ' ' + centerY + ') scale(' + height + ') translate(' + (-centerX) + ' ' + (-centerY) + ')');
             }
         },
-        end: (model: AnimationOptions) => {
+        end: () => {
             (<HTMLElement>element).style.visibility = '';
             if ((series.type === 'Scatter' || series.type === 'Bubble') && !isLabel && (pointIndex === series.points.length - 1)) {
                 series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
@@ -697,7 +696,7 @@ export function markerAnimate(
 export function animateRectElement(
     element: Element, delay: number, duration: number, currentRect: Rect, previousRect: Rect
 ): void {
-    let setStyle: Function = (rect: Rect): void => {
+    const setStyle: Function = (rect: Rect): void => {
         element.setAttribute('x', rect.x + '');
         element.setAttribute('y', rect.y + '');
         element.setAttribute('width', rect.width + '');
@@ -706,7 +705,7 @@ export function animateRectElement(
     new Animation({}).animate(createElement('div'), {
         duration: duration,
         delay: delay,
-        name: name,
+        //name: name,
         progress: (args: AnimationOptions): void => {
             setStyle(
                 new Rect(
@@ -719,15 +718,18 @@ export function animateRectElement(
         },
         end: (): void => {
             setStyle(currentRect);
-        },
+        }
     });
 }
 
 /**
  * Animation after legend click a path
- * @param element element to be animated
- * @param direction current direction of the path
- * @param previousDirection previous direction of the path
+ *
+ * @param {Element} element element to be animated
+ * @param {string} direction current direction of the path
+ * @param {boolean} redraw chart redraw
+ * @param {string} previousDirection previous direction of the path
+ * @param {number} animateDuration animateDuration of the path
  */
 export function pathAnimation(
     element: Element, direction: string, redraw: boolean, previousDirection?: string, animateDuration?: number
@@ -739,9 +741,9 @@ export function pathAnimation(
     if (animateDuration) {
         duration = animateDuration;
     }
-    let startDirections: string = previousDirection || element.getAttribute('d');
-    let splitDirections: string[] = startDirections.split(/(?=[LMCZAQ])/);
-    let endDirections: string[] = direction.split(/(?=[LMCZAQ])/);
+    const startDirections: string = previousDirection || element.getAttribute('d');
+    const splitDirections: string[] = startDirections.split(/(?=[LMCZAQ])/);
+    const endDirections: string[] = direction.split(/(?=[LMCZAQ])/);
     let currentDireciton: string;
     let startPath: string[] = [];
     let endPath: string[] = [];
@@ -786,20 +788,21 @@ export function pathAnimation(
 }
 /**
  * To append the clip rect element
- * @param redraw
- * @param options
- * @param renderer
- * @param clipPath
+ *
+ * @param {boolean} redraw chart redraw value
+ * @param {BaseAttibutes} options element options
+ * @param {SvgRenderer} renderer svg renderer values
+ * @param {string} clipPath clipPath of the element
  */
 export function appendClipElement(
     redraw: boolean, options: BaseAttibutes, renderer: SvgRenderer,
     clipPath: string = 'drawClipPath'
 ): Element {
-    let clipElement: Element = redrawElement(
+    const clipElement: Element = redrawElement(
         redraw, options.id, options, renderer
     );
     if (clipElement) {
-        let def: Element = renderer.createDefs();
+        const def: Element = renderer.createDefs();
         def.appendChild(clipElement);
         return def;
     } else {
@@ -809,22 +812,22 @@ export function appendClipElement(
 
 /**
  * Triggers the event.
- * @return {void}
+ *
+ * @returns {void}
  * @private
  */
 export function triggerLabelRender(
     chart: Chart | RangeNavigator, tempInterval: number, text: string, labelStyle: FontModel,
     axis: Axis
 ): void {
-    let argsData: IAxisLabelRenderEventArgs;
-    argsData = {
+    const argsData: IAxisLabelRenderEventArgs = {
         cancel: false, name: axisLabelRender, axis: axis,
         text: text, value: tempInterval, labelStyle: labelStyle
     };
     chart.trigger(axisLabelRender, argsData);
     if (!argsData.cancel) {
-        let isLineBreakLabels: boolean = argsData.text.indexOf('<br>') !== -1;
-        let text: string | string[] = (axis.enableTrim) ? (isLineBreakLabels ?
+        const isLineBreakLabels: boolean = argsData.text.indexOf('<br>') !== -1;
+        const text: string | string[] = (axis.enableTrim) ? (isLineBreakLabels ?
             lineBreakLabelTrim(axis.maximumLabelWidth, argsData.text, axis.labelStyle) :
             textTrim(axis.maximumLabelWidth, argsData.text, axis.labelStyle)) : argsData.text;
         axis.visibleLabels.push(new VisibleLabels(text, argsData.value, argsData.labelStyle, argsData.text));
@@ -832,7 +835,8 @@ export function triggerLabelRender(
 }
 /**
  * The function used to find whether the range is set.
- * @return {boolean}
+ *
+ * @returns {boolean} It returns true if the axis range is set otherwise false.
  * @private
  */
 export function setRange(axis: Axis): boolean {
@@ -840,19 +844,21 @@ export function setRange(axis: Axis): boolean {
 }
 /**
  * To check whether the axis is zoomed or not.
- * @param axis
+ *
+ * @param {Axis} axis axis model
  */
 export function isZoomSet(axis: Axis): boolean {
     return (axis.zoomFactor < 1 && axis.zoomPosition >= 0);
 }
 /**
  * Calculate desired interval for the axis.
- * @return {void}
+ *
+ * @returns {void} It returns desired interval count.
  * @private
  */
 export function getActualDesiredIntervalsCount(availableSize: Size, axis: Axis): number {
 
-    let size: number = axis.orientation === 'Horizontal' ? availableSize.width : availableSize.height;
+    const size: number = axis.orientation === 'Horizontal' ? availableSize.width : availableSize.height;
     if (isNullOrUndefined(axis.desiredIntervals)) {
         let desiredIntervalsCount: number = (axis.orientation === 'Horizontal' ? 0.533 : 1) * axis.maximumLabels;
         desiredIntervalsCount = Math.max((size * (desiredIntervalsCount / 100)), 1);
@@ -864,9 +870,9 @@ export function getActualDesiredIntervalsCount(availableSize: Size, axis: Axis):
 
 /**
  * Animation for template
+ *
  * @private
  */
-
 export function templateAnimate(
     element: Element, delay: number, duration: number, name: Effect, isRemove?: boolean
 ): void {
@@ -883,7 +889,7 @@ export function templateAnimate(
             } else {
                 args.element.style.visibility = 'visible';
             }
-        },
+        }
     });
 }
 
@@ -892,144 +898,141 @@ export function drawSymbol(
     location: ChartLocation, shape: string, size: Size, url: string, options: PathOption, label: string,
     renderer?: SvgRenderer | CanvasRenderer, clipRect?: Rect, isChartControl?: boolean, control?: BulletChart
 ): Element {
-    let chartRenderer: SvgRenderer | CanvasRenderer = renderer ? renderer : new SvgRenderer('');
-    let shapeOption: IShapes = calculateShapes(location, size, shape, options, url, isChartControl, control);
-    let drawElement: Element = chartRenderer['draw' + shapeOption.functionName](
+    const chartRenderer: SvgRenderer | CanvasRenderer = renderer ? renderer : new SvgRenderer('');
+    const shapeOption: IShapes = calculateShapes(location, size, shape, options, url, isChartControl, control);
+    const drawElement: Element = chartRenderer['draw' + shapeOption.functionName](
         shapeOption.renderOption, clipRect ? new Int32Array([clipRect.x, clipRect.y]) : null
     );
     //drawElement.setAttribute('aria-label', label);
     return drawElement;
 }
 /** @private */
-// tslint:disable-next-line:max-func-body-length
 export function calculateShapes(
     location: ChartLocation, size: Size, shape: string, options: PathOption, url: string, isChart?: boolean,
     control?: BulletChart
 ): IShapes {
     let dir: string;
     let functionName: string = 'Path';
-    let isBulletChart: boolean = isChart;
-    let width: number = (isBulletChart && shape === 'Circle') ? (size.width - 2) : size.width;
-    let height: number = (isBulletChart && shape === 'Circle') ? (size.height - 2) : size.height;
-    let sizeBullet: number = (isBulletChart) ? control.targetWidth : 0;
-    let lx: number = location.x;
-    let ly: number = location.y;
-    let y: number = location.y + (-height / 2);
-    let x: number = location.x + (-width / 2);
+    const isBulletChart: boolean = isChart;
+    const width: number = (isBulletChart && shape === 'Circle') ? (size.width - 2) : size.width;
+    const height: number = (isBulletChart && shape === 'Circle') ? (size.height - 2) : size.height;
+    const sizeBullet: number = (isBulletChart) ? control.targetWidth : 0;
+    const lx: number = location.x;
+    const ly: number = location.y;
+    const y: number = location.y + (-height / 2);
+    const x: number = location.x + (-width / 2);
+    const eq: number = 72;
+    let xVal: number;
+    let yVal: number;
     switch (shape) {
-        case 'Bubble':
-        case 'Circle':
-            functionName = 'Ellipse';
-            merge(options, { 'rx': width / 2, 'ry': height / 2, 'cx': lx, 'cy': ly });
-            break;
-        case 'Cross':
-            dir = 'M' + ' ' + x + ' ' + ly + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + ly + ' ' +
+    case 'Bubble':
+    case 'Circle':
+        functionName = 'Ellipse';
+        merge(options, { 'rx': width / 2, 'ry': height / 2, 'cx': lx, 'cy': ly });
+        break;
+    case 'Cross':
+        dir = 'M' + ' ' + x + ' ' + ly + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + ly + ' ' +
                 'M' + ' ' + lx + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + lx + ' ' +
                 (ly + (-height / 2));
-            merge(options, { 'd': dir, stroke: options.fill });
-            break;
-        case 'Multiply':
-            dir = 'M ' + (lx - sizeBullet) + ' ' + (ly - sizeBullet) + ' L ' +
+        merge(options, { 'd': dir, stroke: options.fill });
+        break;
+    case 'Multiply':
+        dir = 'M ' + (lx - sizeBullet) + ' ' + (ly - sizeBullet) + ' L ' +
                 (lx + sizeBullet) + ' ' + (ly + sizeBullet) + ' M ' +
                 (lx - sizeBullet) + ' ' + (ly + sizeBullet) + ' L ' + (lx + sizeBullet) + ' ' + (ly - sizeBullet);
-            merge(options, { 'd': dir, stroke: options.fill });
-            break;
-        case 'HorizontalLine':
-            dir = 'M' + ' ' + x + ' ' + ly + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + ly;
-            merge(options, { 'd': dir });
-            break;
-        case 'VerticalLine':
-            dir = 'M' + ' ' + lx + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + lx + ' ' + (ly + (-height / 2));
-            merge(options, { 'd': dir });
-            break;
-        case 'Diamond':
-            dir = 'M' + ' ' + x + ' ' + ly + ' ' +
+        merge(options, { 'd': dir, stroke: options.fill });
+        break;
+    case 'HorizontalLine':
+        dir = 'M' + ' ' + x + ' ' + ly + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + ly;
+        merge(options, { 'd': dir });
+        break;
+    case 'VerticalLine':
+        dir = 'M' + ' ' + lx + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + lx + ' ' + (ly + (-height / 2));
+        merge(options, { 'd': dir });
+        break;
+    case 'Diamond':
+        dir = 'M' + ' ' + x + ' ' + ly + ' ' +
                 'L' + ' ' + lx + ' ' + (ly + (-height / 2)) + ' ' +
                 'L' + ' ' + (lx + (width / 2)) + ' ' + ly + ' ' +
                 'L' + ' ' + lx + ' ' + (ly + (height / 2)) + ' ' +
                 'L' + ' ' + x + ' ' + ly + ' z';
-            merge(options, { 'd': dir });
-            break;
-        case 'ActualRect':
-            dir = 'M' + ' ' + x + ' ' + (ly + (-height / 8)) + ' ' +
+        merge(options, { 'd': dir });
+        break;
+    case 'ActualRect':
+        dir = 'M' + ' ' + x + ' ' + (ly + (-height / 8)) + ' ' +
                 'L' + ' ' + (lx + (sizeBullet)) + ' ' + (ly + (-height / 8)) + ' ' +
                 'L' + ' ' + (lx + (sizeBullet)) + ' ' + (ly + (height / 8)) + ' ' +
                 'L' + ' ' + x + ' ' + (ly + (height / 8)) + ' ' +
                 'L' + ' ' + x + ' ' + (ly + (-height / 8)) + ' z';
-            merge(options, { 'd': dir });
-            break;
-        case 'TargetRect':
-            dir = 'M' + ' ' + (x + (sizeBullet)) + ' ' + (ly + (-height / 2)) + ' ' +
+        merge(options, { 'd': dir });
+        break;
+    case 'TargetRect':
+        dir = 'M' + ' ' + (x + (sizeBullet)) + ' ' + (ly + (-height / 2)) + ' ' +
                 'L' + ' ' + (lx + (sizeBullet / 2)) + ' ' + (ly + (-height / 2)) + ' ' +
                 'L' + ' ' + (lx + (sizeBullet / 2)) + ' ' + (ly + (height / 2)) + ' ' +
                 'L' + ' ' + (x + (sizeBullet)) + ' ' + (ly + (height / 2)) + ' ' +
                 'L' + ' ' + (x + (sizeBullet)) + ' ' + (ly + (-height / 2)) + ' z';
-            merge(options, { 'd': dir });
-            break;
-        case 'Rectangle':
-        case 'Hilo':
-        case 'HiloOpenClose':
-        case 'Candle':
-        case 'Waterfall':
-        case 'BoxAndWhisker':
-        case 'StepArea':
-        case 'StackingStepArea':
-        case 'Square':
-        case 'Flag':
-            dir = 'M' + ' ' + x + ' ' + (ly + (-height / 2)) + ' ' +
+        merge(options, { 'd': dir });
+        break;
+    case 'Rectangle':
+    case 'Hilo':
+    case 'HiloOpenClose':
+    case 'Candle':
+    case 'Waterfall':
+    case 'BoxAndWhisker':
+    case 'StepArea':
+    case 'StackingStepArea':
+    case 'Square':
+    case 'Flag':
+        dir = 'M' + ' ' + x + ' ' + (ly + (-height / 2)) + ' ' +
                 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (-height / 2)) + ' ' +
                 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (height / 2)) + ' ' +
                 'L' + ' ' + x + ' ' + (ly + (height / 2)) + ' ' +
                 'L' + ' ' + x + ' ' + (ly + (-height / 2)) + ' z';
-            merge(options, { 'd': dir });
-            break;
-        case 'Pyramid':
-        case 'Triangle':
-            dir = 'M' + ' ' + x + ' ' + (ly + (height / 2)) + ' ' +
+        merge(options, { 'd': dir });
+        break;
+    case 'Pyramid':
+    case 'Triangle':
+        dir = 'M' + ' ' + x + ' ' + (ly + (height / 2)) + ' ' +
                 'L' + ' ' + lx + ' ' + (ly + (-height / 2)) + ' ' +
                 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (height / 2)) + ' ' +
                 'L' + ' ' + x + ' ' + (ly + (height / 2)) + ' z';
-            merge(options, { 'd': dir });
-            break;
-        case 'Funnel':
-        case 'InvertedTriangle':
-            dir = 'M' + ' ' + (lx + (width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
+        merge(options, { 'd': dir });
+        break;
+    case 'Funnel':
+    case 'InvertedTriangle':
+        dir = 'M' + ' ' + (lx + (width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
                 'L' + ' ' + lx + ' ' + (ly + (height / 2)) + ' ' +
                 'L' + ' ' + (lx - (width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
                 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly - (height / 2)) + ' z';
-            merge(options, { 'd': dir });
-            break;
-        case 'Pentagon':
-            let eq: number = 72;
-            let xVal: number;
-            let yVal: number;
-            for (let i: number = 0; i <= 5; i++) {
-                xVal = (width / 2) * Math.cos((Math.PI / 180) * (i * eq));
-                yVal = (height / 2) * Math.sin((Math.PI / 180) * (i * eq));
-                if (i === 0) {
-                    dir = 'M' + ' ' + (lx + xVal) + ' ' + (ly + yVal) + ' ';
-                } else {
-                    dir = dir.concat('L' + ' ' + (lx + xVal) + ' ' + (ly + yVal) + ' ');
-                }
+        merge(options, { 'd': dir });
+        break;
+    case 'Pentagon':
+        for (let i: number = 0; i <= 5; i++) {
+            xVal = (width / 2) * Math.cos((Math.PI / 180) * (i * eq));
+            yVal = (height / 2) * Math.sin((Math.PI / 180) * (i * eq));
+            if (i === 0) {
+                dir = 'M' + ' ' + (lx + xVal) + ' ' + (ly + yVal) + ' ';
+            } else {
+                dir = dir.concat('L' + ' ' + (lx + xVal) + ' ' + (ly + yVal) + ' ');
             }
-            dir = dir.concat('Z');
-            merge(options, { 'd': dir });
-            break;
-        case 'Image':
-            functionName = 'Image';
-            merge(options, { 'href': url, 'height': height, 'width': width, x: x, y: y });
-            break;
+        }
+        dir = dir.concat('Z');
+        merge(options, { 'd': dir });
+        break;
+    case 'Image':
+        functionName = 'Image';
+        merge(options, { 'href': url, 'height': height, 'width': width, x: x, y: y });
+        break;
     }
     options = <PathOption>calculateLegendShapes(location, new Size(width, height), shape, options).renderOption;
     return { renderOption: options, functionName: functionName };
 }
 /** @private */
 export function getRectLocation(startLocation: ChartLocation, endLocation: ChartLocation, outerRect: Rect): Rect {
-    let x: number;
-    let y: number;
-    x = (endLocation.x < outerRect.x) ? outerRect.x :
+    const x: number = (endLocation.x < outerRect.x) ? outerRect.x :
         (endLocation.x > (outerRect.x + outerRect.width)) ? outerRect.x + outerRect.width : endLocation.x;
-    y = (endLocation.y < outerRect.y) ? outerRect.y :
+    const y: number = (endLocation.y < outerRect.y) ? outerRect.y :
         (endLocation.y > (outerRect.y + outerRect.height)) ? outerRect.y + outerRect.height : endLocation.y;
     return new Rect(
         (x > startLocation.x ? startLocation.x : x), (y > startLocation.y ? startLocation.y : y),
@@ -1046,7 +1049,6 @@ export function getElement(id: string): Element {
 /** @private */
 export function getTemplateFunction(template: string): Function {
     let templateFn: Function = null;
-    let e: Object;
     try {
         if (document.querySelectorAll(template).length) {
             templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
@@ -1090,18 +1092,18 @@ export function createTemplate(
     argsData?: IAccTextRenderEventArgs, isTemplate?: boolean, points?: AccPoints[], datalabelGroup?: Element, id?: string,
     dataLabel?: AccumulationDataLabelSettingsModel, redraw?: boolean
 ): HTMLElement {
-    let templateFn: Function;
+    const templateFn: Function = getTemplateFunction(content);
     let templateElement: HTMLCollection;
-    templateFn = getTemplateFunction(content);
     try {
-        let blazor: string = 'Blazor';
-        let tempObject: Object = window[blazor] ? (dataLabelId ? point : { point: point }) : { chart: chart, series: series, point: point };
-        let templateId: string = dataLabelId ? dataLabelId + '_template' : 'template';
-        let elementData: Element[] = templateFn ? templateFn(tempObject, chart, templateId, dataLabelId ||
+        const blazor: string = 'Blazor';
+        const tempObject: Object = window[blazor] ? (dataLabelId ? point : { point: point }) :
+            { chart: chart, series: series, point: point };
+        const templateId: string = dataLabelId ? dataLabelId + '_template' : 'template';
+        const elementData: Element[] = templateFn ? templateFn(tempObject, chart, templateId, dataLabelId ||
             childElement.id.replace(/[^a-zA-Z0-9]/g, '')) : [];
         if (elementData.length) {
             templateElement = Array.prototype.slice.call(elementData);
-            let len: number = templateElement.length;
+            const len: number = templateElement.length;
             for (let i: number = 0; i < len; i++) {
                 childElement.appendChild(templateElement[i]);
             }
@@ -1117,7 +1119,7 @@ export function createTemplate(
         } else if (chart.getModuleName() === 'chart') {
             reactCallback = (point && series) ? chartReactTemplate.bind(
                 this, childElement, chart, point, series, labelIndex, redraw
-            ) : reactCallback;
+                ) : reactCallback;
             // tslint:disable-next-line:no-any
             if ((chart as any).isReact) { (chart as any).renderReactTemplates(reactCallback); }
         }
@@ -1137,9 +1139,8 @@ export function getFontStyle(font: FontModel): string {
 }
 /** @private */
 export function measureElementRect(element: HTMLElement, redraw: boolean = false): ClientRect {
-    let bounds: ClientRect;
     document.body.appendChild(element);
-    bounds = element.getBoundingClientRect();
+    const bounds: ClientRect = element.getBoundingClientRect();
     if (redraw) {
         remove(element);
     } else {
@@ -1159,18 +1160,18 @@ export function findlElement(elements: NodeList, id: string): Element {
     return element;
 }
 /** @private */
-export function getPoint(x: number, y: number, xAxis: Axis, yAxis: Axis, isInverted?: boolean, series?: Series): ChartLocation {
+export function getPoint(x: number, y: number, xAxis: Axis, yAxis: Axis, isInverted?: boolean): ChartLocation {
     x = ((xAxis.valueType === 'Logarithmic') ? logBase(((x > 0) ? x : 1), xAxis.logBase) : x);
     y = ((yAxis.valueType === 'Logarithmic') ? logBase(((y > 0) ? y : 1), yAxis.logBase) : y);
 
     x = valueToCoefficient(x, xAxis);
     y = valueToCoefficient(y, yAxis);
 
-    let xLength: number = (isInverted ? xAxis.rect.height : xAxis.rect.width);
-    let yLength: number = (isInverted ? yAxis.rect.width : yAxis.rect.height);
+    const xLength: number = (isInverted ? xAxis.rect.height : xAxis.rect.width);
+    const yLength: number = (isInverted ? yAxis.rect.width : yAxis.rect.height);
 
-    let locationX: number = isInverted ? y * (yLength) : x * (xLength);
-    let locationY: number = isInverted ? (1 - x) * (xLength) : (1 - y) * (yLength);
+    const locationX: number = isInverted ? y * (yLength) : x * (xLength);
+    const locationY: number = isInverted ? (1 - x) * (xLength) : (1 - y) * (yLength);
     return new ChartLocation(locationX, locationY);
 }
 /** @private */
@@ -1186,9 +1187,20 @@ export function appendElement(
 }
 /**
  * Method to append child element
- * @param parent
- * @param childElement
- * @param isReplace
+ *
+ * @param {boolean} isCanvas canvas mode value
+ * @param {Element} parent parent element
+ * @param {Element} childElement childElement element
+ * @param {boolean} redraw chart redraw value
+ * @param {boolean} isAnimate animation value
+ * @param {string} x x position
+ * @param {string} y y position
+ * @param {ChartLocation} start start location value
+ * @param {string} direction direction of the element
+ * @param {boolean} forceAnimate forceAnimate
+ * @param {boolean} isRect isRect
+ * @param {Rect} previousRect previousRect
+ * @param {number} animateDuration duration of the animation
  */
 export function appendChildElement(
     isCanvas: boolean,
@@ -1200,10 +1212,10 @@ export function appendChildElement(
     if (isCanvas) {
         return null;
     }
-    let existChild: HTMLElement = parent.querySelector('#' + childElement.id);
-    let element: HTMLElement = <HTMLElement>(existChild || getElement(childElement.id));
-    let child: HTMLElement = <HTMLElement>childElement;
-    let duration: number = animateDuration ? animateDuration : 300;
+    const existChild: HTMLElement = parent.querySelector('#' + childElement.id);
+    const element: HTMLElement = <HTMLElement>(existChild || getElement(childElement.id));
+    const child: HTMLElement = <HTMLElement>childElement;
+    const duration: number = animateDuration ? animateDuration : 300;
     if (redraw && isAnimate && element) {
         start = start || (element.tagName === 'DIV' ?
             new ChartLocation(+(element.style[x].split('px')[0]), +(element.style[y].split('px')[0])) :
@@ -1219,7 +1231,7 @@ export function appendChildElement(
                 previousRect
             );
         } else {
-            let end: ChartLocation = child.tagName === 'DIV' ?
+            const end: ChartLocation = child.tagName === 'DIV' ?
                 new ChartLocation(+(child.style[x].split('px')[0]), +(child.style[y].split('px')[0])) :
                 new ChartLocation(+child.getAttribute(x), +child.getAttribute(y));
             animateRedrawElement(child, duration, start, end, x, y);
@@ -1235,10 +1247,10 @@ export function appendChildElement(
 }
 /** @private */
 export function getDraggedRectLocation(x1: number, y1: number, x2: number, y2: number, outerRect: Rect): Rect {
-    let width: number = Math.abs(x1 - x2);
-    let height: number = Math.abs(y1 - y2);
-    let x: number = Math.max(checkBounds(Math.min(x1, x2), width, outerRect.x, outerRect.width), outerRect.x);
-    let y: number = Math.max(checkBounds(Math.min(y1, y2), height, outerRect.y, outerRect.height), outerRect.y);
+    const width: number = Math.abs(x1 - x2);
+    const height: number = Math.abs(y1 - y2);
+    const x: number = Math.max(checkBounds(Math.min(x1, x2), width, outerRect.x, outerRect.width), outerRect.x);
+    const y: number = Math.max(checkBounds(Math.min(y1, y2), height, outerRect.y, outerRect.height), outerRect.y);
     return new Rect(x, y, Math.min(width, outerRect.width), Math.min(height, outerRect.height));
 }
 /** @private */
@@ -1252,54 +1264,54 @@ export function checkBounds(start: number, size: number, min: number, max: numbe
 }
 /** @private */
 export function getLabelText(currentPoint: Points, series: Series, chart: Chart): string[] {
-    let labelFormat: string = series.yAxis.labelFormat;
-    let text: string[] = [];
-    let customLabelFormat: boolean = labelFormat.match('{value}') !== null;
+    const labelFormat: string = series.yAxis.labelFormat;
+    const text: string[] = [];
+    const customLabelFormat: boolean = labelFormat.match('{value}') !== null;
     switch (series.seriesType) {
-        case 'XY':
-            /**
-             * I255790
-             * For Polar radar series, the dataLabel appears out of range when axis range is given for yaxis
-             * Cause: Since symbol location for the points which did not lies in within range, lies outside of seriesRect.
-             * Fix: DataLabel rendered after checking WithIn for the points
-             */
-            if (series.chart.chartAreaType === 'PolarRadar') {
-                if (series.drawType.indexOf('Stacking') !== -1) {
-                    if ((series.yAxis.valueType === 'Logarithmic' &&
+    case 'XY':
+        /**
+         * I255790
+         * For Polar radar series, the dataLabel appears out of range when axis range is given for yaxis
+         * Cause: Since symbol location for the points which did not lies in within range, lies outside of seriesRect.
+         * Fix: DataLabel rendered after checking WithIn for the points
+         */
+        if (series.chart.chartAreaType === 'PolarRadar') {
+            if (series.drawType.indexOf('Stacking') !== -1) {
+                if ((series.yAxis.valueType === 'Logarithmic' &&
                         logWithIn(series.stackedValues.endValues[currentPoint.index], series.yAxis)) ||
                         withIn(series.stackedValues.endValues[currentPoint.index], series.yAxis.visibleRange)) {
-                        text.push(currentPoint.text || currentPoint.yValue.toString());
-                    }
-                } else {
-                    if ((series.yAxis.valueType === 'Logarithmic' && logWithIn(currentPoint.yValue, series.yAxis)) ||
-                        withIn(currentPoint.yValue, series.yAxis.visibleRange)) {
-                        text.push(currentPoint.text || currentPoint.yValue.toString());
-                    }
+                    text.push(currentPoint.text || currentPoint.yValue.toString());
                 }
             } else {
-                text.push(currentPoint.text || currentPoint.yValue.toString());
+                if ((series.yAxis.valueType === 'Logarithmic' && logWithIn(currentPoint.yValue, series.yAxis)) ||
+                        withIn(currentPoint.yValue, series.yAxis.visibleRange)) {
+                    text.push(currentPoint.text || currentPoint.yValue.toString());
+                }
             }
-            break;
-        case 'HighLow':
-            text.push(currentPoint.text || Math.max(<number>currentPoint.high, <number>currentPoint.low).toString());
-            text.push(currentPoint.text || Math.min(<number>currentPoint.high, <number>currentPoint.low).toString());
-            break;
-        case 'HighLowOpenClose':
-            text.push(currentPoint.text || Math.max(<number>currentPoint.high, <number>currentPoint.low).toString());
-            text.push(currentPoint.text || Math.min(<number>currentPoint.high, <number>currentPoint.low).toString());
-            text.push(currentPoint.text || Math.max(<number>currentPoint.open, <number>currentPoint.close).toString());
-            text.push(currentPoint.text || Math.min(<number>currentPoint.open, <number>currentPoint.close).toString());
-            break;
-        case 'BoxPlot':
-            text.push(currentPoint.text || currentPoint.median.toString());
-            text.push(currentPoint.text || currentPoint.maximum.toString());
-            text.push(currentPoint.text || currentPoint.minimum.toString());
-            text.push(currentPoint.text || currentPoint.upperQuartile.toString());
-            text.push(currentPoint.text || currentPoint.lowerQuartile.toString());
-            for (let liers of currentPoint.outliers) {
-                text.push(currentPoint.text || liers.toString());
-            }
-            break;
+        } else {
+            text.push(currentPoint.text || currentPoint.yValue.toString());
+        }
+        break;
+    case 'HighLow':
+        text.push(currentPoint.text || Math.max(<number>currentPoint.high, <number>currentPoint.low).toString());
+        text.push(currentPoint.text || Math.min(<number>currentPoint.high, <number>currentPoint.low).toString());
+        break;
+    case 'HighLowOpenClose':
+        text.push(currentPoint.text || Math.max(<number>currentPoint.high, <number>currentPoint.low).toString());
+        text.push(currentPoint.text || Math.min(<number>currentPoint.high, <number>currentPoint.low).toString());
+        text.push(currentPoint.text || Math.max(<number>currentPoint.open, <number>currentPoint.close).toString());
+        text.push(currentPoint.text || Math.min(<number>currentPoint.open, <number>currentPoint.close).toString());
+        break;
+    case 'BoxPlot':
+        text.push(currentPoint.text || currentPoint.median.toString());
+        text.push(currentPoint.text || currentPoint.maximum.toString());
+        text.push(currentPoint.text || currentPoint.minimum.toString());
+        text.push(currentPoint.text || currentPoint.upperQuartile.toString());
+        text.push(currentPoint.text || currentPoint.lowerQuartile.toString());
+        for (const liers of currentPoint.outliers) {
+            text.push(currentPoint.text || liers.toString());
+        }
+        break;
 
     }
     if (labelFormat && !currentPoint.text) {
@@ -1320,9 +1332,8 @@ export function stopTimer(timer: number): void {
 }
 /** @private */
 export function isCollide(rect: Rect, collections: Rect[], clipRect: Rect): boolean {
-    let isCollide: boolean;
-    let currentRect: Rect = new Rect(rect.x + clipRect.x, rect.y + clipRect.y, rect.width, rect.height);
-    isCollide = collections.some((rect: Rect) => {
+    const currentRect: Rect = new Rect(rect.x + clipRect.x, rect.y + clipRect.y, rect.width, rect.height);
+    const isCollide: boolean = collections.some((rect: Rect) => {
         return (currentRect.x < rect.x + rect.width && currentRect.x + currentRect.width > rect.x &&
             currentRect.y < rect.y + rect.height && currentRect.height + currentRect.y > rect.y);
     });
@@ -1355,27 +1366,26 @@ export function convertToHexCode(value: ColorValue): string {
 }
 /** @private */
 export function componentToHex(value: number): string {
-    let hex: string = value.toString(16);
+    const hex: string = value.toString(16);
     return hex.length === 1 ? '0' + hex : hex;
 }
 
 /** @private */
 export function convertHexToColor(hex: string): ColorValue {
-    let result: RegExpExecArray = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    const result: RegExpExecArray = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? new ColorValue(parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)) :
         new ColorValue(255, 255, 255);
 }
 /** @private */
 export function colorNameToHex(color: string): string {
-    let element: HTMLElement;
     color = color === 'transparent' ? 'white' : color;
     document.body.appendChild(createElement('text', { id: 'chartmeasuretext' }));
-    element = document.getElementById('chartmeasuretext');
+    const element: HTMLElement = document.getElementById('chartmeasuretext');
     element.style.color = color;
     color = window.getComputedStyle(element).color;
     remove(element);
-    let exp: RegExp = /^(rgb|hsl)(a?)[(]\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*(?:,\s*([\d.]+)\s*)?[)]$/;
-    let isRGBValue: RegExpExecArray = exp.exec(color);
+    const exp: RegExp = /^(rgb|hsl)(a?)[(]\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*(?:,\s*([\d.]+)\s*)?[)]$/;
+    const isRGBValue: RegExpExecArray = exp.exec(color);
     return convertToHexCode(
         new ColorValue(parseInt(isRGBValue[3], 10), parseInt(isRGBValue[4], 10), parseInt(isRGBValue[5], 10))
     );
@@ -1400,84 +1410,83 @@ export function getSaturationColor(color: string, factor: number): string {
 }
 /** @private */
 export function getMedian(values: number[]): number {
-    let half: number = Math.floor(values.length / 2);
+    const half: number = Math.floor(values.length / 2);
     return values.length % 2 ? values[half] : ((values[half - 1] + values[half]) / 2.0);
 }
 /** @private */
-// tslint:disable-next-line:max-func-body-length
 export function calculateLegendShapes(location: ChartLocation, size: Size, shape: string, options: PathOption): IShapes {
-    let padding: number = 10;
+    const padding: number = 10;
     let dir: string = '';
-    let space: number = 2;
-    let height: number = size.height;
-    let width: number = size.width;
-    let lx: number = location.x;
-    let ly: number = location.y;
+    const space: number = 2;
+    const height: number = size.height;
+    const width: number = size.width;
+    const lx: number = location.x;
+    const ly: number = location.y;
     switch (shape) {
-        case 'MultiColoredLine':
-        case 'Line':
-        case 'StackingLine':
-        case 'StackingLine100':
-            dir = 'M' + ' ' + (lx + (-width / 2)) + ' ' + (ly) + ' ' +
+    case 'MultiColoredLine':
+    case 'Line':
+    case 'StackingLine':
+    case 'StackingLine100':
+        dir = 'M' + ' ' + (lx + (-width / 2)) + ' ' + (ly) + ' ' +
                 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly);
-            merge(options, { 'd': dir });
-            break;
-        case 'StepLine':
-            options.fill = 'transparent';
-            dir = 'M' + ' ' + (lx + (-width / 2) - (padding / 4)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + (lx +
+        merge(options, { 'd': dir });
+        break;
+    case 'StepLine':
+        options.fill = 'transparent';
+        dir = 'M' + ' ' + (lx + (-width / 2) - (padding / 4)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + (lx +
                 (-width / 2) + (width / 10)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + (lx + (-width / 2) + (width / 10))
                 + ' ' + (ly) + ' ' + 'L' + ' ' + (lx + (-width / 10)) + ' ' + (ly) + ' ' + 'L' + ' ' + (lx + (-width / 10))
                 + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + (lx + (width / 5)) + ' ' + (ly + (height / 2)) + ' ' + 'L' +
                 ' ' + (lx + (width / 5)) + ' ' + (ly + (-height / 2)) + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly +
                     (-height / 2)) + 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + '' + (lx + (width / 2)
                         + (padding / 4)) + ' ' + (ly + (height / 2));
-            merge(options, { 'd': dir });
-            break;
-        case 'UpArrow':
-            options.fill = options.stroke;
-            options.stroke = 'transparent';
-            dir = 'M' + ' ' + (lx + (-width / 2)) + ' ' + (ly + (height / 2)) + ' ' +
+        merge(options, { 'd': dir });
+        break;
+    case 'UpArrow':
+        options.fill = options.stroke;
+        options.stroke = 'transparent';
+        dir = 'M' + ' ' + (lx + (-width / 2)) + ' ' + (ly + (height / 2)) + ' ' +
                 'L' + ' ' + (lx) + ' ' + (ly - (height / 2)) + ' ' +
                 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (height / 2)) +
                 'L' + ' ' + (lx + (width / 2) - space) + ' ' + (ly + (height / 2)) + ' ' +
                 'L' + ' ' + (lx) + ' ' + (ly - (height / 2) + (2 * space)) +
                 'L' + (lx - (width / 2) + space) + ' ' + (ly + (height / 2)) + ' Z';
-            merge(options, { 'd': dir });
-            break;
-        case 'DownArrow':
-            dir = 'M' + ' ' + (lx - (width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
+        merge(options, { 'd': dir });
+        break;
+    case 'DownArrow':
+        dir = 'M' + ' ' + (lx - (width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
                 'L' + ' ' + (lx) + ' ' + (ly + (height / 2)) + ' ' +
                 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly - (height / 2)) +
                 'L' + ' ' + (lx + (width / 2) - space) + ' ' + (ly - (height / 2)) + ' ' +
                 'L' + ' ' + (lx) + ' ' + (ly + (height / 2) - (2 * space)) +
                 'L' + (lx - (width / 2) + space) + ' ' + (ly - (height / 2)) + ' Z';
-            merge(options, { 'd': dir });
-            break;
-        case 'RightArrow':
-            dir = 'M' + ' ' + (lx + (-width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
+        merge(options, { 'd': dir });
+        break;
+    case 'RightArrow':
+        dir = 'M' + ' ' + (lx + (-width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
                 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly) + ' ' + 'L' + ' ' +
                 (lx + (-width / 2)) + ' ' + (ly + (height / 2)) + ' L' + ' ' + (lx + (-width / 2)) + ' ' +
                 (ly + (height / 2) - space) + ' ' + 'L' + ' ' + (lx + (width / 2) - (2 * space)) + ' ' + (ly) +
                 ' L' + (lx + (-width / 2)) + ' ' + (ly - (height / 2) + space) + ' Z';
-            merge(options, { 'd': dir });
-            break;
-        case 'LeftArrow':
-            options.fill = options.stroke;
-            options.stroke = 'transparent';
-            dir = 'M' + ' ' + (lx + (width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
+        merge(options, { 'd': dir });
+        break;
+    case 'LeftArrow':
+        options.fill = options.stroke;
+        options.stroke = 'transparent';
+        dir = 'M' + ' ' + (lx + (width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
                 'L' + ' ' + (lx + (-width / 2)) + ' ' + (ly) + ' ' + 'L' + ' ' +
                 (lx + (width / 2)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' +
                 (lx + (width / 2)) + ' ' + (ly + (height / 2) - space) + ' L' + ' ' + (lx + (-width / 2) + (2 * space))
                 + ' ' + (ly) + ' L' + (lx + (width / 2)) + ' ' + (ly - (height / 2) + space) + ' Z';
-            merge(options, { 'd': dir });
-            break;
-        case 'Column':
-        case 'Pareto':
-        case 'StackingColumn':
-        case 'StackingColumn100':
-        case 'RangeColumn':
-        case 'Histogram':
-            dir = 'M' + ' ' + (lx - 3 * (width / 5)) + ' ' + (ly - (height / 5)) + ' ' + 'L' + ' ' +
+        merge(options, { 'd': dir });
+        break;
+    case 'Column':
+    case 'Pareto':
+    case 'StackingColumn':
+    case 'StackingColumn100':
+    case 'RangeColumn':
+    case 'Histogram':
+        dir = 'M' + ' ' + (lx - 3 * (width / 5)) + ' ' + (ly - (height / 5)) + ' ' + 'L' + ' ' +
                 (lx + 3 * (-width / 10)) + ' ' + (ly - (height / 5)) + ' ' + 'L' + ' ' +
                 (lx + 3 * (-width / 10)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + (lx - 3 *
                     (width / 5)) + ' ' + (ly + (height / 2)) + ' ' + 'Z' + ' ' + 'M' + ' ' +
@@ -1489,12 +1498,12 @@ export function calculateLegendShapes(location: ChartLocation, size: Size, shape
                 'L' + ' ' + (lx + 3 * (width / 5)) + ' ' + (ly) + ' ' + 'L' + ' '
                 + (lx + 3 * (width / 5)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' '
                 + (lx + 3 * (width / 10)) + ' ' + (ly + (height / 2)) + ' ' + 'Z';
-            merge(options, { 'd': dir });
-            break;
-        case 'Bar':
-        case 'StackingBar':
-        case 'StackingBar100':
-            dir = 'M' + ' ' + (lx + (-width / 2) + (-padding / 4)) + ' ' + (ly - 3 * (height / 5)) + ' '
+        merge(options, { 'd': dir });
+        break;
+    case 'Bar':
+    case 'StackingBar':
+    case 'StackingBar100':
+        dir = 'M' + ' ' + (lx + (-width / 2) + (-padding / 4)) + ' ' + (ly - 3 * (height / 5)) + ' '
                 + 'L' + ' ' + (lx + 3 * (width / 10)) + ' ' + (ly - 3 * (height / 5)) + ' ' + 'L' + ' ' +
                 (lx + 3 * (width / 10)) + ' ' + (ly - 3 * (height / 10)) + ' ' + 'L' + ' ' +
                 (lx - (width / 2) + (-padding / 4)) + ' ' + (ly - 3 * (height / 10)) + ' ' + 'Z' + ' '
@@ -1508,44 +1517,45 @@ export function calculateLegendShapes(location: ChartLocation, size: Size, shape
                         + (padding / 10)) + ' ' + 'L' + ' ' + (lx + (-width / 4)) + ' ' + (ly + (height / 2)
                             + (padding / 10)) + ' ' + 'L' + ' ' + (lx - (width / 2) + (-padding / 4))
                 + ' ' + (ly + (height / 2) + (padding / 10)) + ' ' + 'Z';
-            merge(options, { 'd': dir });
-            break;
-        case 'Spline':
-            options.fill = 'transparent';
-            dir = 'M' + ' ' + (lx - (width / 2)) + ' ' + (ly + (height / 5)) + ' ' + 'Q' + ' '
+        merge(options, { 'd': dir });
+        break;
+    case 'Spline':
+        options.fill = 'transparent';
+        dir = 'M' + ' ' + (lx - (width / 2)) + ' ' + (ly + (height / 5)) + ' ' + 'Q' + ' '
                 + lx + ' ' + (ly - height) + ' ' + lx + ' ' + (ly + (height / 5))
                 + ' ' + 'M' + ' ' + lx + ' ' + (ly + (height / 5)) + ' ' + 'Q' + ' ' + (lx
                     + (width / 2)) + ' ' + (ly + (height / 2)) + ' ' + (lx + (width / 2)) + ' '
                 + (ly - (height / 2));
-            merge(options, { 'd': dir });
-            break;
-        case 'Area':
-        case 'MultiColoredArea':
-        case 'RangeArea':
-        case 'StackingArea':
-        case 'StackingArea100':
-            dir = 'M' + ' ' + (lx - (width / 2) - (padding / 4)) + ' ' + (ly + (height / 2))
+        merge(options, { 'd': dir });
+        break;
+    case 'Area':
+    case 'MultiColoredArea':
+    case 'RangeArea':
+    case 'StackingArea':
+    case 'StackingArea100':
+        dir = 'M' + ' ' + (lx - (width / 2) - (padding / 4)) + ' ' + (ly + (height / 2))
                 + ' ' + 'L' + ' ' + (lx + (-width / 4) + (-padding / 8)) + ' ' + (ly - (height / 2))
                 + ' ' + 'L' + ' ' + (lx) + ' ' + (ly + (height / 4)) + ' ' + 'L' + ' ' + (lx
                     + (width / 4) + (padding / 8)) + ' ' + (ly + (-height / 2) + (height / 4)) + ' '
                 + 'L' + ' ' + (lx + (height / 2) + (padding / 4)) + ' ' + (ly + (height / 2)) + ' ' + 'Z';
-            merge(options, { 'd': dir });
-            break;
-        case 'SplineArea':
-            dir = 'M' + ' ' + (lx - (width / 2)) + ' ' + (ly + (height / 5)) + ' ' + 'Q' + ' ' + lx
+        merge(options, { 'd': dir });
+        break;
+    case 'SplineArea':
+        dir = 'M' + ' ' + (lx - (width / 2)) + ' ' + (ly + (height / 5)) + ' ' + 'Q' + ' ' + lx
                 + ' ' + (ly - height) + ' ' + lx + ' ' + (ly + (height / 5)) + ' ' + 'Z' + ' ' + 'M'
                 + ' ' + lx + ' ' + (ly + (height / 5)) + ' ' + 'Q' + ' ' + (lx + (width / 2)) + ' '
                 + (ly + (height / 2)) + ' ' + (lx + (width / 2)) + ' '
                 + (ly - (height / 2)) + ' ' + ' Z';
-            merge(options, { 'd': dir });
-            break;
-        case 'Pie':
-        case 'Doughnut':
-            options.stroke = 'transparent';
-            let r: number = Math.min(height, width) / 2;
-            dir = getAccumulationLegend(lx, ly, r, height, width, shape);
-            merge(options, { 'd': dir });
-            break;
+        merge(options, { 'd': dir });
+        break;
+    case 'Pie':
+    case 'Doughnut':
+        options.stroke = 'transparent';
+        // eslint-disable-next-line no-case-declarations
+        const r: number = Math.min(height, width) / 2;
+        dir = getAccumulationLegend(lx, ly, r, height, width, shape);
+        merge(options, { 'd': dir });
+        break;
     }
     return { renderOption: options };
 }
@@ -1554,7 +1564,7 @@ export function textTrim(maxWidth: number, text: string, font: FontModel): strin
     let label: string = text;
     let size: number = measureText(text, font).width;
     if (size > maxWidth) {
-        let textLength: number = text.length;
+        const textLength: number = text.length;
         for (let i: number = textLength - 1; i >= 0; --i) {
             label = text.substring(0, i) + '...';
             size = measureText(label, font).width;
@@ -1565,20 +1575,15 @@ export function textTrim(maxWidth: number, text: string, font: FontModel): strin
     }
     return label;
 }
-/**
- * To trim the line break label
- * @param maxWidth
- * @param text
- * @param font
- */
+/** @private */
 export function lineBreakLabelTrim(maxWidth: number, text: string, font: FontModel): string[] {
-    let labelCollection: string[] = [];
-    let breakLabels: string[] = text.split('<br>');
+    const labelCollection: string[] = [];
+    const breakLabels: string[] = text.split('<br>');
     for (let i: number = 0; i < breakLabels.length; i++) {
         text = breakLabels[i];
         let size: number = measureText(text, font).width;
         if (size > maxWidth) {
-            let textLength: number = text.length;
+            const textLength: number = text.length;
             for (let i: number = textLength - 1; i >= 0; --i) {
                 text = text.substring(0, i) + '...';
                 size = measureText(text, font).width;
@@ -1608,7 +1613,7 @@ export function redrawElement(
     if (!redraw) {
         return null;
     }
-    let element: Element = getElement(id);
+    const element: Element = getElement(id);
     if (element && options) {
         renderer.setElementAttributes(
             options as SVGCanvasAttributes,
@@ -1622,8 +1627,8 @@ export function animateRedrawElement(
     element: Element | HTMLElement, duration: number, start: ChartLocation, end: ChartLocation,
     x: string = 'x', y: string = 'y'
 ): void {
-    let isDiv: boolean = element.tagName === 'DIV';
-    let setStyle: Function = (xValue: number, yValue: number): void => {
+    const isDiv: boolean = element.tagName === 'DIV';
+    const setStyle: Function = (xValue: number, yValue: number): void => {
         if (isDiv) {
             (element as HTMLElement).style[x] = xValue + 'px';
             (element as HTMLElement).style[y] = yValue + 'px';
@@ -1654,10 +1659,8 @@ export function textElement(
     labelSize?: Size, isRotatedLabelIntersect?: boolean, isCanvas?: boolean
 ): Element {
     let renderOptions: Object = {};
-    let htmlObject: HTMLElement;
     let tspanElement: Element;
     //let renderer: SvgRenderer = new SvgRenderer('');
-    let text: string;
     let height: number;
     let dy: number;
     let label: string;
@@ -1676,10 +1679,10 @@ export function textElement(
         'opacity': font.opacity,
         'dominant-baseline': option.baseLine
     };
-    text = typeof option.text === 'string' ? option.text : isMinus ? option.text[option.text.length - 1] : option.text[0];
-    let transX: number = seriesClipRect ? seriesClipRect.x : 0;
-    let transY: number = seriesClipRect ? seriesClipRect.y : 0;
-    htmlObject = renderer.createText(renderOptions, text, transX, transY) as HTMLElement;
+    const text: string = typeof option.text === 'string' ? option.text : isMinus ? option.text[option.text.length - 1] : option.text[0];
+    const transX: number = seriesClipRect ? seriesClipRect.x : 0;
+    const transY: number = seriesClipRect ? seriesClipRect.y : 0;
+    const htmlObject: HTMLElement = renderer.createText(renderOptions, text, transX, transY) as HTMLElement;
     htmlObject.style.fontFamily = font.fontFamily;
     htmlObject.style.fontStyle = font.fontStyle;
     htmlObject.style.fontSize = font.size;
@@ -1717,24 +1720,23 @@ export function textElement(
 /**
  * Method to calculate the width and height of the chart
  */
-
 export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator | StockChart): void {
     // fix for Chart rendered with default width in IE issue
     let containerWidth: number = chart.element.clientWidth || chart.element.offsetWidth;
-    let containerHeight: number = chart.element.clientHeight;
+    const containerHeight: number = chart.element.clientHeight;
     if ((chart as Chart).stockChart) {
         containerWidth = (chart as Chart).stockChart.element.clientWidth;
     }
     let height: number = 450;
     let marginHeight: number;
     if (chart.getModuleName() === 'rangeNavigator') {
-        let range: RangeNavigator = chart as RangeNavigator;
-        let tooltipSpace: number = range.tooltip.enable ? 35 : 0;
-        let periodHeight: number = range.periodSelectorSettings.periods.length ?
+        const range: RangeNavigator = chart as RangeNavigator;
+        const tooltipSpace: number = range.tooltip.enable ? 35 : 0;
+        const periodHeight: number = range.periodSelectorSettings.periods.length ?
             range.periodSelectorSettings.height : 0;
         marginHeight = range.margin.top + range.margin.bottom + tooltipSpace;
-        let labelSize: number = measureText('tempString', range.labelStyle).height;
-        let labelPadding: number = 15;
+        const labelSize: number = measureText('tempString', range.labelStyle).height;
+        const labelPadding: number = 15;
         height = (chart.series.length ? (Browser.isDevice ? 80 : 120) : ((range.enableGrouping ? (40 + labelPadding + labelSize) : 40)
             + marginHeight)) + periodHeight;
         if (range.disableRangeSelector) {
@@ -1746,6 +1748,11 @@ export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator 
         stringToNumber(chart.height, containerHeight || height) || containerHeight || height
     );
 }
+/**
+ * To create svg element.
+ *
+ * @param {Chart} chart chart instance
+ */
 export function createSvg(chart: Chart | AccumulationChart | RangeNavigator): void {
     (chart as Chart).canvasRender = new CanvasRenderer(chart.element.id);
     chart.renderer = (chart as Chart).enableCanvas ? (chart as Chart).canvasRender : new SvgRenderer(chart.element.id);
@@ -1773,22 +1780,23 @@ export function createSvg(chart: Chart | AccumulationChart | RangeNavigator): vo
 
 /**
  * To calculate chart title and height
- * @param title
- * @param style
- * @param width
+ *
+ * @param {string} title text of the title
+ * @param {FontModel} style style of the title
+ * @param {number} width width of the title
  */
 export function getTitle(title: string, style: FontModel, width: number): string[] {
     let titleCollection: string[] = [];
     switch (style.textOverflow) {
-        case 'Wrap':
-            titleCollection = textWrap(title, width, style);
-            break;
-        case 'Trim':
-            titleCollection.push(textTrim(width, title, style));
-            break;
-        default:
-            titleCollection.push(title);
-            break;
+    case 'Wrap':
+        titleCollection = textWrap(title, width, style);
+        break;
+    case 'Trim':
+        titleCollection.push(textTrim(width, title, style));
+        break;
+    default:
+        titleCollection.push(title);
+        break;
     }
     return titleCollection;
 }
@@ -1812,9 +1820,9 @@ export function titlePositionX(rect: Rect, titleStyle: FontModel): number {
  * Method to find new text and element size based on textOverflow
  */
 export function textWrap(currentLabel: string, maximumWidth: number, font: FontModel): string[] {
-    let textCollection: string[] = currentLabel.split(' ');
+    const textCollection: string[] = currentLabel.split(' ');
     let label: string = '';
-    let labelCollection: string[] = [];
+    const labelCollection: string[] = [];
     let text: string;
     for (let i: number = 0, len: number = textCollection.length; i < len; i++) {
         text = textCollection[i];
@@ -1840,16 +1848,16 @@ export function textWrap(currentLabel: string, maximumWidth: number, font: FontM
  * Method to support the subscript and superscript value to text
  */
 export function getUnicodeText(text: string, regexp: RegExp): string {
-    let title: string = text.replace(regexp, ' ');
-    let digit: string[] = text.match(regexp);
+    const title: string = text.replace(regexp, ' ');
+    const digit: string[] = text.match(regexp);
     let digitSpecific: string = ' ';
     let convertedText: string = ' ';
     let k: number = 0;
-    let unicodeSub: object = {
+    const unicodeSub: object = {
         '0': '\u2080', '1': '\u2081', '2': '\u2082', '3': '\u2083', '4': '\u2084',
         '5': '\u2085', '6': '\u2086', '7': '\u2087', '8': '\u2088', '9': '\u2089'
     };
-    let unicodeSup: object = {
+    const unicodeSup: object = {
         '0': '\u2070', '1': '\u00B9', '2': '\u00B2', '3': '\u00B3', '4': '\u2074',
         '5': '\u2075', '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079'
     };
@@ -2040,9 +2048,11 @@ export class PointData {
 export class AccPointData {
     public point: AccPoints;
     public series: AccumulationSeries;
+    public index: number;
     constructor(point: AccPoints, series: AccumulationSeries, index: number = 0) {
         this.point = point;
         this.series = series;
+        this.index = index;
     }
 }
 
@@ -2062,4 +2072,89 @@ export interface IHistogramValues {
     mean?: number;
     binWidth?: number;
     yValues?: number[];
+}
+
+/** @private */
+export function getColorByValue(colorMap: RangeColorSettingModel, value: number): string {
+    let color: string = '';
+    let rbgColorValue: ColorValue;
+    if (Number(value) === colorMap.start) {
+        color = colorMap.colors[0];
+    } else if (Number(value) === colorMap.end) {
+        color = colorMap.colors[colorMap.colors.length - 1];
+    } else {
+        rbgColorValue = getGradientColor(Number(value), colorMap);
+        color = convertToHexCode(rbgColorValue);
+    }
+    return color;
+}
+
+/** @private */
+export function getGradientColor(value: number, colorMap: RangeColorSettingModel): ColorValue {
+    const previousOffset: number = colorMap.start;
+    const nextOffset: number = colorMap.end;
+    let percent: number = 0;
+    const full: number = nextOffset - previousOffset; let midColor: string;
+    percent = (value - previousOffset) / full; let previousColor: string; let nextColor: string;
+    if (colorMap.colors.length <= 2) {
+        previousColor = colorMap.colors[0].charAt(0) === '#' ? colorMap.colors[0] : colorNameToHex(colorMap.colors[0]);
+        nextColor = colorMap.colors[colorMap.colors.length - 1].charAt(0) === '#' ?
+            colorMap.colors[colorMap.colors.length - 1] : colorNameToHex(colorMap.colors[colorMap.colors.length - 1]);
+    } else {
+        previousColor = colorMap.colors[0].charAt(0) === '#' ? colorMap.colors[0] : colorNameToHex(colorMap.colors[0]);
+        nextColor = colorMap.colors[colorMap.colors.length - 1].charAt(0) === '#' ?
+            colorMap.colors[colorMap.colors.length - 1] : colorNameToHex(colorMap.colors[colorMap.colors.length - 1]);
+        const a: number = full / (colorMap.colors.length - 1); let b: number; let c: number;
+
+        const length: number = colorMap.colors.length - 1;
+        const splitColorValueOffset: Object[] = []; let splitColor: Object = {};
+        for (let j: number = 1; j < length; j++) {
+            c = j * a;
+            b = previousOffset + c;
+            splitColor = { b: b, color: colorMap.colors[j] };
+            splitColorValueOffset.push(splitColor);
+        }
+        for (let i: number = 0; i < splitColorValueOffset.length; i++) {
+            if (previousOffset <= value && value <= splitColorValueOffset[i]['b'] && i === 0) {
+                midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
+                    splitColorValueOffset[i]['color'] : colorNameToHex(splitColorValueOffset[i]['color']);
+                nextColor = midColor;
+                percent = value <= splitColorValueOffset[i]['b'] ? 1 - Math.abs((value - splitColorValueOffset[i]['b']) / a)
+                    : (value - splitColorValueOffset[i]['b']) / a;
+            } else if (splitColorValueOffset[i]['b'] <= value && value <= nextOffset && i === (splitColorValueOffset.length - 1)) {
+                midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
+                    splitColorValueOffset[i]['color'] : colorNameToHex(splitColorValueOffset[i]['color']);
+                previousColor = midColor;
+                percent = value < splitColorValueOffset[i]['b'] ?
+                    1 - Math.abs((value - splitColorValueOffset[i]['b']) / a) : (value - splitColorValueOffset[i]['b']) / a;
+            }
+            if (i !== splitColorValueOffset.length - 1 && i < splitColorValueOffset.length) {
+                if (splitColorValueOffset[i]['b'] <= value && value <= splitColorValueOffset[i + 1]['b']) {
+                    midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
+                        splitColorValueOffset[i]['color'] : colorNameToHex(splitColorValueOffset[i]['color']);
+                    previousColor = midColor;
+                    nextColor = splitColorValueOffset[i + 1]['color'].charAt(0) === '#' ?
+                        splitColorValueOffset[i + 1]['color'] : colorNameToHex(splitColorValueOffset[i + 1]['color']);
+                    percent = Math.abs((value - splitColorValueOffset[i + 1]['b'])) / a;
+                }
+            }
+        }
+    }
+    return getPercentageColor(percent, previousColor, nextColor);
+}
+
+/** @private */
+export function getPercentageColor(percent: number, previous: string, next: string): ColorValue {
+    const nextColor: string = next.split('#')[1];
+    const prevColor: string = previous.split('#')[1];
+    const r: number = getPercentage(percent, parseInt(prevColor.substr(0, 2), 16), parseInt(nextColor.substr(0, 2), 16));
+    const g: number = getPercentage(percent, parseInt(prevColor.substr(2, 2), 16), parseInt(nextColor.substr(2, 2), 16));
+    const b: number = getPercentage(percent, parseInt(prevColor.substr(4, 2), 16), parseInt(nextColor.substr(4, 2), 16));
+    return new ColorValue(r, g, b);
+}
+
+/** @private */
+export function getPercentage(percent: number, previous: number, next: number): number {
+    const full: number = next - previous;
+    return Math.round((previous + (full * percent)));
 }

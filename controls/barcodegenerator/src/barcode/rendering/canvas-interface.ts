@@ -58,24 +58,56 @@ export interface ValidateEvent {
 }
 /** @private */
 export class BarcodeSVGRenderer implements IBarcodeRenderer {
-    /**   @private  */
+    /**
+     * Draw the root element for the barcode.\
+     *
+     * @returns {HTMLElement} Draw the barcode SVG .
+     * @param {Object} attribute - Provide the canvas element .
+     * @private
+     */
+    // eslint-disable-next-line
     public renderRootElement(attribute: Object): HTMLElement {
-        let canvasObj: HTMLCanvasElement = createHtmlElement('canvase', attribute) as HTMLCanvasElement;
+        const canvasObj: HTMLCanvasElement = createHtmlElement('canvase', attribute) as HTMLCanvasElement;
         return canvasObj;
     }
-    /**   @private  */
+
+    /**
+     * Draw the rect for the barcode.\
+     *
+     * @returns {HTMLElement} Draw the barcode SVG .
+     *  @param {Object} canvas - Provide the canvas element .
+     *  @param {Object} attribute - Provide the canvas element .
+     * @private
+     */
+    // eslint-disable-next-line
     public renderRect(canvas: Object, attribute: Object): HTMLElement {
-        let canvasObj: HTMLCanvasElement = createHtmlElement('canvase', attribute) as HTMLCanvasElement;
+        const canvasObj: HTMLCanvasElement = createHtmlElement('canvase', attribute) as HTMLCanvasElement;
         return canvasObj;
     }
-    /**   @private  */
+    /**
+     * Draw the horizontal line for the barcode.\
+     *
+     * @returns {HTMLElement} Draw the barcode SVG .
+     *  @param {Object} canvas - Provide the canvas element .
+     *  @param {Object} attribute - Provide the canvas element .
+     * @private
+     */
+    // eslint-disable-next-line
     public renderLine(canvas: Object, attribute: Object): HTMLElement {
-        let canvasObj: HTMLCanvasElement = createHtmlElement('canvase', attribute) as HTMLCanvasElement;
+        const canvasObj: HTMLCanvasElement = createHtmlElement('canvase', attribute) as HTMLCanvasElement;
         return canvasObj;
     }
-    /**   @private  */
+    /**
+     * Draw the text for the barcode.\
+     *
+     * @returns {HTMLElement} Draw the barcode SVG .
+     *  @param {Object} canvas - Provide the canvas element .
+     *  @param {Object} attribute - Provide the canvas element .
+     * @private
+     */
+    // eslint-disable-next-line
     public renderText(canvas: Object, attribute: Object): HTMLElement {
-        let canvasObj: HTMLCanvasElement = createHtmlElement('canvase', attribute) as HTMLCanvasElement;
+        const canvasObj: HTMLCanvasElement = createHtmlElement('canvase', attribute) as HTMLCanvasElement;
         return canvasObj;
     }
 }

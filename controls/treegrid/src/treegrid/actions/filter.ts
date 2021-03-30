@@ -7,6 +7,7 @@ import {  FilterHierarchyMode } from '..';
 
 /**
  * TreeGrid Filter module will handle filtering action
+ *
  * @hidden
  */
 export class Filter {
@@ -18,6 +19,8 @@ export class Filter {
     private isHierarchyFilter: boolean;
     /**
      * Constructor for Filter module
+     *
+     * @param {TreeGrid} parent - Tree Grid instance
      */
     constructor(parent?: TreeGrid) {
         Grid.Inject(GridFilter);
@@ -30,14 +33,17 @@ export class Filter {
     }
     /**
      * For internal use only - Get the module name.
+     *
      * @private
+     * @returns {string} Returns Filter module name
      */
     protected getModuleName(): string {
         return 'filter';
     }
     /**
-     * To destroy the Filter module 
-     * @return {void}
+     * To destroy the Filter module
+     *
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
@@ -45,22 +51,28 @@ export class Filter {
     }
     /**
      * @hidden
+     * @returns {void}
      */
     public addEventListener(): void {
         this.parent.on('updateFilterRecs', this.updatedFilteredRecord, this);
         this.parent.on('clearFilters', this.clearFilterLevel, this);
-      }
-      /**
-       * @hidden
-       */
-      public removeEventListener(): void {
+    }
+    /**
+     * @hidden
+     * @returns {void}
+     */
+    public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off('updateFilterRecs', this.updatedFilteredRecord);
         this.parent.off('clearFilters', this.clearFilterLevel);
-      }
+    }
     /**
      * Function to update filtered records
-     *  @hidden
+     *
+     * @param {{data: Object} } dataDetails - Filtered data collection
+     * @param {Object} dataDetails.data - Fliltered data collection
+     * @hidden
+     * @returns {void}
      */
     private updatedFilteredRecord(dataDetails: { data: Object }): void {
         setValue('uniqueIDFilterCollection', {}, this.parent);
@@ -69,21 +81,21 @@ export class Filter {
         this.filteredResult = [];
         this.isHierarchyFilter = false;
         for (let f: number = 0; f < this.flatFilteredData.length; f++) {
-            let rec: ITreeData = this.flatFilteredData[f];
+            const rec: ITreeData = this.flatFilteredData[f];
             this.addParentRecord(rec);
-            let hierarchyMode: FilterHierarchyMode = this.parent.grid.searchSettings.key === '' ? this.parent.filterSettings.hierarchyMode
-            : this.parent.searchSettings.hierarchyMode;
+            const hierarchyMode: FilterHierarchyMode = this.parent.grid.searchSettings.key === '' ? this.parent.filterSettings.hierarchyMode
+                : this.parent.searchSettings.hierarchyMode;
             if (((hierarchyMode === 'Child' || hierarchyMode === 'None') &&
             (this.parent.grid.filterSettings.columns.length !== 0 || this.parent.grid.searchSettings.key !== ''))) {
                 this.isHierarchyFilter = true;
             }
-            let ischild: Object[] = getObject('childRecords', rec);
+            const ischild: Object[] = getObject('childRecords', rec);
             if (!isNullOrUndefined(ischild) && ischild.length) {
                 setValue('hasFilteredChildRecords', this.checkChildExsist(rec), rec);
             }
-            let parent: Object = getObject('parentItem', rec);
+            const parent: Object = getObject('parentItem', rec);
             if (!isNullOrUndefined(parent)) {
-                let parRecord: ITreeData = getParentData(this.parent, rec.parentItem.uniqueID, true);
+                const parRecord: ITreeData = getParentData(this.parent, rec.parentItem.uniqueID, true);
                 //let parRecord: Object = this.flatFilteredData.filter((e: ITreeData) => {
                 //          return e.uniqueID === rec.parentItem.uniqueID; })[0];
                 setValue('hasFilteredChildRecords', true, parRecord);
@@ -98,20 +110,20 @@ export class Filter {
         this.parent.notify('updateAction', { result: this.filteredResult });
     }
     private updateParentFilteredRecord(record: ITreeData): void {
-        let parRecord: ITreeData = getParentData(this.parent, record.parentItem.uniqueID, true);
-        let uniqueIDValue: Object = getValue('uniqueIDFilterCollection', this.parent);
-        if (parRecord && uniqueIDValue.hasOwnProperty(parRecord.uniqueID)) {
+        const parRecord: ITreeData = getParentData(this.parent, record.parentItem.uniqueID, true);
+        const uniqueIDValue: Object = getValue('uniqueIDFilterCollection', this.parent);
+        if (parRecord && Object.prototype.hasOwnProperty.call(uniqueIDValue, parRecord.uniqueID)) {
             setValue('hasFilteredChildRecords', true, parRecord);
         }
         if (parRecord && parRecord.parentItem) {
             this.updateParentFilteredRecord(parRecord);
         }
-    };
+    }
     private addParentRecord(record: ITreeData): void {
-        let parent: Object = getParentData(this.parent, record.parentUniqueID);
+        const parent: Object = getParentData(this.parent, record.parentUniqueID);
         //let parent: Object = this.parent.flatData.filter((e: ITreeData) => {return e.uniqueID === record.parentUniqueID; })[0];
-        let hierarchyMode: FilterHierarchyMode = this.parent.grid.searchSettings.key === '' ? this.parent.filterSettings.hierarchyMode
-        : this.parent.searchSettings.hierarchyMode;
+        const hierarchyMode: FilterHierarchyMode = this.parent.grid.searchSettings.key === '' ? this.parent.filterSettings.hierarchyMode
+            : this.parent.searchSettings.hierarchyMode;
         if (hierarchyMode === 'None' && (this.parent.grid.filterSettings.columns.length !== 0
             || this.parent.grid.searchSettings.key !== '')) {
             if (isNullOrUndefined(parent)) {
@@ -139,8 +151,8 @@ export class Filter {
             }
         } else {
             if (!isNullOrUndefined(parent)) {
-                let hierarchyMode: FilterHierarchyMode = this.parent.grid.searchSettings.key === '' ?
-                this.parent.filterSettings.hierarchyMode : this.parent.searchSettings.hierarchyMode;
+                const hierarchyMode: FilterHierarchyMode = this.parent.grid.searchSettings.key === '' ?
+                    this.parent.filterSettings.hierarchyMode : this.parent.searchSettings.hierarchyMode;
                 if (hierarchyMode === 'Child' && (this.parent.grid.filterSettings.columns.length !== 0
                     || this.parent.grid.searchSettings.key !== '')) {
                     if (this.flatFilteredData.indexOf(parent) !== -1) {
@@ -157,16 +169,16 @@ export class Filter {
         }
     }
     private checkChildExsist(records: Object): boolean {
-        let childRec: ITreeData[] = getObject('childRecords', records);
+        const childRec: ITreeData[] = getObject('childRecords', records);
         let isExist: boolean = false;
         for (let count: number = 0; count < childRec.length; count++) {
-            let ischild: Object[] = childRec[count].childRecords;
-            let hierarchyMode: FilterHierarchyMode = this.parent.grid.searchSettings.key === '' ?
-            this.parent.filterSettings.hierarchyMode : this.parent.searchSettings.hierarchyMode;
+            const ischild: Object[] = childRec[count].childRecords;
+            const hierarchyMode: FilterHierarchyMode = this.parent.grid.searchSettings.key === '' ?
+                this.parent.filterSettings.hierarchyMode : this.parent.searchSettings.hierarchyMode;
             if (((hierarchyMode === 'Child' || hierarchyMode === 'Both') && (this.parent.grid.filterSettings.columns.length !== 0
                 || this.parent.grid.searchSettings.key !== ''))) {
-                let uniqueIDValue: Object = getValue('uniqueIDFilterCollection', this.parent);
-                if (!uniqueIDValue.hasOwnProperty(childRec[count].uniqueID)) {
+                const uniqueIDValue: Object = getValue('uniqueIDFilterCollection', this.parent);
+                if (!Object.prototype.hasOwnProperty.call(uniqueIDValue, childRec[count].uniqueID)) {
                     this.filteredResult.push(childRec[count]);
                     setValue('uniqueIDFilterCollection.' + childRec[count].uniqueID, childRec[count], this.parent);
                     isExist = true;
@@ -189,13 +201,13 @@ export class Filter {
         return isExist;
     }
     private  updateFilterLevel(): void {
-        let record: ITreeData[] = this.filteredResult;
-        let len: number = this.filteredResult.length;
+        const record: ITreeData[] = this.filteredResult;
+        const len: number = this.filteredResult.length;
         for (let c: number = 0; c < len; c++) {
-            let parent: ITreeData =  getParentData(this.parent, record[c].parentUniqueID);
-            let isPrst: boolean = record.indexOf(parent) !== -1;
+            const parent: ITreeData =  getParentData(this.parent, record[c].parentUniqueID);
+            const isPrst: boolean = record.indexOf(parent) !== -1;
             if (isPrst) {
-                let parent: ITreeData = getParentData(this.parent, record[c].parentUniqueID, true);
+                const parent: ITreeData = getParentData(this.parent, record[c].parentUniqueID, true);
                 record[c].filterLevel = parent.filterLevel + 1;
             } else {
                 record[c].filterLevel = 0;
@@ -205,12 +217,12 @@ export class Filter {
     }
     private clearFilterLevel(data: { flatData: Object[] }): void {
         let count: number = 0;
-        let flatData: ITreeData[] = data.flatData as ITreeData[];
-        let len: number = flatData.length;
+        const flatData: ITreeData[] = data.flatData as ITreeData[];
+        const len: number = flatData.length;
         let currentRecord: ITreeData;
         for (count; count < len; count++) {
             currentRecord = flatData[count];
-            let fLevel: number = currentRecord.filterLevel;
+            const fLevel: number = currentRecord.filterLevel;
             if (fLevel || fLevel === 0 || !isNullOrUndefined(currentRecord.hasFilteredChildRecords)) {
                 currentRecord.hasFilteredChildRecords = null;
                 currentRecord.filterLevel = null;

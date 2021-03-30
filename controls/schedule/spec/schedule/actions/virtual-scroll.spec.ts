@@ -11,19 +11,20 @@ Schedule.Inject(TimelineViews, TimelineMonth);
 
 describe('Virtual scroll', () => {
     beforeAll(() => {
-        // tslint:disable:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this as any).skip(); //Skips test (in Chai)
             return;
         }
     });
     describe('Timeline view', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 height: '550px', width: '100%', currentView: 'TimelineMonth',
                 views: [
                     { option: 'TimelineDay' },
@@ -35,7 +36,7 @@ describe('Virtual scroll', () => {
                     field: 'FId', title: 'Floor', name: 'Floors', allowMultiple: false,
                     dataSource: [
                         { FloorText: 'Floor 1', Id: 1, FloorColor: '#cb6bb2', Expand: false },
-                        { FloorText: 'Floor 2', Id: 2, FloorColor: '#cb6bb2' },
+                        { FloorText: 'Floor 2', Id: 2, FloorColor: '#cb6bb2' }
                     ],
                     textField: 'FloorText', idField: 'Id', colorField: 'FloorColor', expandedField: 'Expand'
                 }, {
@@ -90,11 +91,11 @@ describe('Virtual scroll', () => {
         });
 
         it('checking initial resource count', () => {
-            let resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
+            const resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
             expect(resourceRow.children.length).toEqual(13);
-            let contentRow: HTMLElement = schObj.element.querySelector('.e-content-wrap tbody') as HTMLElement;
+            const contentRow: HTMLElement = schObj.element.querySelector('.e-content-wrap tbody') as HTMLElement;
             expect(contentRow.children.length).toEqual(13);
-            let eventRow: HTMLElement = schObj.element.querySelector('.e-event-table') as HTMLElement;
+            const eventRow: HTMLElement = schObj.element.querySelector('.e-event-table') as HTMLElement;
             expect(eventRow.children.length).toEqual(13);
             expect(schObj.resourceBase.expandedResources.length).toEqual(19);
             expect(schObj.resourceBase.renderedResources.length).toEqual(13);
@@ -102,15 +103,15 @@ describe('Virtual scroll', () => {
         });
 
         it('checking initial rendering', () => {
-            let resWrap: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap') as HTMLElement;
-            let contentWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
-            let eventWrap: HTMLElement = schObj.element.querySelector('.e-event-table') as HTMLElement;
+            const resWrap: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap') as HTMLElement;
+            const contentWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            const eventWrap: HTMLElement = schObj.element.querySelector('.e-event-table') as HTMLElement;
             expect(resWrap.scrollHeight).toEqual(780);
-            let resData: HTMLTableRowElement = resWrap.querySelector('table tr td') as HTMLTableRowElement;
+            const resData: HTMLTableRowElement = resWrap.querySelector('table tr td') as HTMLTableRowElement;
             expect(resData.classList).toContain('e-parent-node');
             expect(resData.children[0].classList).toContain('e-resource-expand');
             expect(resData.querySelector('.e-resource-text').innerHTML).toEqual('Floor 1');
-            let resData1: HTMLElement = resWrap.querySelector('table tr:nth-child(2)') as HTMLElement;
+            const resData1: HTMLElement = resWrap.querySelector('table tr:nth-child(2)') as HTMLElement;
             expect(resData1.querySelector('td').getAttribute('data-group-index')).toEqual('10');
             expect(resData1.querySelector('td').classList).toContain('e-parent-node');
             expect(resData1.querySelector('div').classList).toContain('e-resource-collapse');
@@ -118,7 +119,7 @@ describe('Virtual scroll', () => {
             expect(resData1.querySelector('div:nth-child(2)').classList).toContain('e-resource-text');
             expect(resData1.querySelector('div:nth-child(2)').classList.length).toEqual(1);
             expect(resData1.querySelector('div:nth-child(2)').innerHTML).toEqual('Floor 2');
-            let resData2: HTMLElement = resWrap.querySelector('table tr:nth-child(3) td') as HTMLElement;
+            const resData2: HTMLElement = resWrap.querySelector('table tr:nth-child(3) td') as HTMLElement;
             expect(resData2.classList.length).toEqual(2);
             expect(resData2.querySelector('div').classList.length).toEqual(2);
             expect(resData2.querySelector('div').classList).toContain('e-resource-collapse');
@@ -126,22 +127,22 @@ describe('Virtual scroll', () => {
             expect(eventWrap.children[0].getAttribute('data-group-index')).toEqual('0');
             expect(eventWrap.children[1].getAttribute('data-group-index')).toEqual('10');
             expect(eventWrap.children[12].getAttribute('data-group-index')).toEqual('21');
-            let event: HTMLElement = eventWrap.querySelector('.e-appointment') as HTMLElement;
+            const event: HTMLElement = eventWrap.querySelector('.e-appointment') as HTMLElement;
             expect(event.offsetTop).toEqual(242);
             expect(event.getAttribute('data-group-index')).
                 toEqual(resWrap.querySelectorAll('tbody tr:nth-child(5) td')[0].getAttribute('data-group-index'));
             expect(contentWrap.scrollHeight).toEqual(schObj.resourceBase.expandedResources.length * 60);
         });
         it('checking virtual table', () => {
-            let resourceTD: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap td') as HTMLElement;
-            let virtualTable: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-virtual-track'));
+            const resourceTD: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap td') as HTMLElement;
+            const virtualTable: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-virtual-track'));
             expect(virtualTable.length).toEqual(1);
             expect(parseInt(virtualTable[0].style.height, 10))
                 .toEqual((resourceTD.offsetHeight * schObj.resourceBase.expandedResources.length));
         });
         it('update content on down scroll', () => {
-            let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
-            let resWrap: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap table') as HTMLElement;
+            const contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            const resWrap: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap table') as HTMLElement;
             triggerScrollEvent(contentArea, 300);
             expect(contentArea.scrollTop).toEqual(300);
             expect(schObj.resourceBase.renderedResources.length).toEqual(13);
@@ -149,7 +150,7 @@ describe('Virtual scroll', () => {
             expect(schObj.resourceBase.renderedResources[0].resourceData.OwnerText).toEqual('John');
             expect(schObj.resourceBase.renderedResources[12].groupIndex).toEqual(26);
             expect(schObj.resourceBase.renderedResources[12].resourceData.OwnerText).toEqual('Cisco');
-            let contentTable: HTMLElement = contentArea.querySelector('table') as HTMLElement;
+            const contentTable: HTMLElement = contentArea.querySelector('table') as HTMLElement;
             expect(contentTable.querySelectorAll('tr').length).toEqual(13);
             expect(contentTable.querySelector('tbody tr td').getAttribute('data-group-index')).
                 toEqual(resWrap.querySelector('tbody td').getAttribute('data-group-index'));
@@ -157,13 +158,13 @@ describe('Virtual scroll', () => {
             expect(resWrap.querySelector('tr td').getAttribute('data-group-index')).toEqual('14');
             expect(resWrap.querySelector('div').innerText).toEqual('John');
             expect(resWrap.querySelector('div').style.marginLeft).toEqual('75px');
-            let lastResource: HTMLElement = resWrap.querySelector('tr:nth-child(13) td');
+            const lastResource: HTMLElement = resWrap.querySelector('tr:nth-child(13) td');
             expect(parseInt(lastResource.getAttribute('data-group-index'), 10)).toEqual(
                 schObj.resourceBase.expandedResources[17].groupIndex);
             expect(lastResource.querySelector('div').innerText).toEqual('Cisco');
             expect(schObj.resourceBase.renderedResources[12].groupIndex).toEqual(
                 schObj.resourceBase.expandedResources[17].groupIndex);
-            let eventWrap: HTMLElement = schObj.element.querySelector('.e-event-table') as HTMLElement;
+            const eventWrap: HTMLElement = schObj.element.querySelector('.e-event-table') as HTMLElement;
             expect(eventWrap.style.transform).toEqual(contentTable.style.transform);
             expect(eventWrap.children.length).toEqual(13);
             triggerScrollEvent(contentArea, 1000);
@@ -176,40 +177,40 @@ describe('Virtual scroll', () => {
             expect(schObj.resourceBase.renderedResources[12].resourceData.OwnerText).toEqual('Sara');
         });
         it('update content on upscroll', () => {
-            let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            const contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
             triggerScrollEvent(contentArea, 400);
             expect(schObj.resourceBase.renderedResources.length).toEqual(13);
             expect(schObj.resourceBase.renderedResources[0].groupIndex).toEqual(10);
             expect(schObj.resourceBase.renderedResources[0].resourceData.ClassName).toEqual('e-parent-node');
             expect(schObj.resourceBase.renderedResources[12].groupIndex).toEqual(22);
-            let resWrap: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap table') as HTMLElement;
+            const resWrap: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap table') as HTMLElement;
             expect(resWrap.style.transform).toEqual('translateY(220px)');
             expect(resWrap.querySelector('td').getAttribute('data-group-index')).toEqual('10');
             expect(resWrap.querySelector('div').classList).toContain('e-resource-collapse');
             expect(resWrap.querySelector('div:nth-child(2)').innerHTML).toEqual('Floor 2');
-            let eventWrap: HTMLElement = schObj.element.querySelector('.e-event-table') as HTMLElement;
+            const eventWrap: HTMLElement = schObj.element.querySelector('.e-event-table') as HTMLElement;
             expect(eventWrap.style.transform).toEqual(resWrap.style.transform);
         });
 
         it('resource icon click testing', () => {
-            let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            const contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
             triggerScrollEvent(contentArea, 2000);
             triggerScrollEvent(contentArea, 2000);
-            let resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
-            let resource: HTMLElement = resourceRow.children[7]
+            const resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
+            const resource: HTMLElement = resourceRow.children[7]
                 .querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
             expect(resource.classList).toContain('e-resource-collapse');
             expect(resource.classList.length).toEqual(2);
-            expect(schObj.resourceBase.lastResourceLevel[22].resourceData.Expand).toBeUndefined;
-            expect(schObj.resourceBase.expandedResources[13].resourceData.Expand).toBeUndefined;
+            expect(schObj.resourceBase.lastResourceLevel[22].resourceData.Expand).toBeUndefined();
+            expect(schObj.resourceBase.expandedResources[13].resourceData.Expand).toBeUndefined();
             resource.click();
-            expect(schObj.resourceBase.lastResourceLevel[22].resourceData.Expand).toBeFalsy;
-            expect(schObj.resourceBase.expandedResources[13].resourceData.Expand).toBeFalsy;
-            expect(schObj.resourceBase.renderedResources[0].resourceData.Expand).toBeUndefined;
+            expect(schObj.resourceBase.lastResourceLevel[22].resourceData.Expand).toBeFalsy();
+            expect(schObj.resourceBase.expandedResources[13].resourceData.Expand).toBeFalsy();
+            expect(schObj.resourceBase.renderedResources[0].resourceData.Expand).toBeUndefined();
             expect(schObj.resourceBase.expandedResources.length).toEqual(14);
             expect(resource.classList).toContain('e-resource-expand');
-            let firstRow: HTMLElement = resourceRow.querySelector('tr td') as HTMLElement;
-            let lastRow: HTMLElement = resourceRow.querySelector('tr:nth-child(13) td') as HTMLElement;
+            const firstRow: HTMLElement = resourceRow.querySelector('tr td') as HTMLElement;
+            const lastRow: HTMLElement = resourceRow.querySelector('tr:nth-child(13) td') as HTMLElement;
             expect(firstRow.classList).toContain('e-parent-node');
             expect(firstRow.getAttribute('data-group-index')).toEqual('10');
             expect(firstRow.querySelector('div:nth-child(2)').getAttribute('style')).toEqual('margin-left: 0px;');
@@ -221,9 +222,9 @@ describe('Virtual scroll', () => {
         });
 
         it('quick cell popup testing', () => {
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             workCells[310].click();
-            let quickPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            const quickPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(quickPopup.offsetTop).toBeGreaterThan(0);
             expect(quickPopup.classList.contains('e-popup-open')).toEqual(true);
             expect(quickPopup.classList.contains('e-popup-close')).toEqual(false);
@@ -232,24 +233,24 @@ describe('Virtual scroll', () => {
         });
 
         it('checking content without scroller', () => {
-            let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            const contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
             triggerScrollEvent(contentArea, 0);
-            let resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
-            let resource: HTMLElement = resourceRow.children[7]
+            const resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
+            const resource: HTMLElement = resourceRow.children[7]
                 .querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
             resource.click();
-            let virtualTable: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-virtual-track'));
+            const virtualTable: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-virtual-track'));
             expect(parseInt(virtualTable[0].style.height, 10)).toEqual(contentArea.clientHeight);
-            let resource1: HTMLElement = resourceRow.children[1]
+            const resource1: HTMLElement = resourceRow.children[1]
                 .querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
             resource1.click();
             expect(parseInt(virtualTable[0].style.height, 10)).toEqual(contentArea.clientHeight);
         });
         it('view change', () => {
-            let viewElement: HTMLElement = schObj.element.querySelector('.e-toolbar-item.e-timeline-week');
+            const viewElement: HTMLElement = schObj.element.querySelector('.e-toolbar-item.e-timeline-week');
             viewElement.click();
             expect(schObj.resourceBase.expandedResources.length).toEqual(2);
-            let currentView: HTMLElement = schObj.element.querySelector('.e-toolbar-item.e-active-view');
+            const currentView: HTMLElement = schObj.element.querySelector('.e-toolbar-item.e-active-view');
             expect(currentView.classList.contains('e-timeline-week')).toEqual(true);
         });
         it('checking element after view change', () => {
@@ -258,7 +259,7 @@ describe('Virtual scroll', () => {
             expect(schObj.resourceBase.lastResourceLevel.length).toEqual(28);
             expect(schObj.element.querySelector('.e-virtual-track').clientHeight).toEqual(
                 schObj.resourceBase.expandedResources.length * 60);
-            let resWrap: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap table') as HTMLElement;
+            const resWrap: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap table') as HTMLElement;
             expect(resWrap.querySelector('td').getAttribute('data-group-index')).toEqual('0');
             expect(resWrap.querySelector('div').classList).toContain('e-resource-expand');
             expect(resWrap.querySelector('div:nth-child(2)').innerHTML).toContain('Floor 1');
@@ -266,32 +267,32 @@ describe('Virtual scroll', () => {
         });
 
         it('current time indicator checking', () => {
-            let viewElement: HTMLElement = schObj.element.querySelector('.e-toolbar-item.e-today');
+            const viewElement: HTMLElement = schObj.element.querySelector('.e-toolbar-item.e-today');
             viewElement.click();
-            let resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
-            let resource1: HTMLElement = resourceRow.children[1]
+            const resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
+            const resource1: HTMLElement = resourceRow.children[1]
                 .querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
             resource1.click();
-            let resource2: HTMLElement = resourceRow.children[0]
+            const resource2: HTMLElement = resourceRow.children[0]
                 .querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
             resource2.click();
-            let resource3: HTMLElement = resourceRow.children[1]
+            const resource3: HTMLElement = resourceRow.children[1]
                 .querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
             resource3.click();
-            let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            const contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
             triggerScrollEvent(contentArea, 300);
-            let indicator: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap table') as HTMLElement;
+            const indicator: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap table') as HTMLElement;
             expect(indicator.style.transform).toEqual('translateY(300px)');
         });
-        it('checking elements with rowAutoHeight property', (done: Function) => {
-            let viewElement: HTMLElement = schObj.element.querySelector('.e-toolbar-item.e-timeline-month');
+        it('checking elements with rowAutoHeight property', (done: DoneFn) => {
+            const viewElement: HTMLElement = schObj.element.querySelector('.e-toolbar-item.e-timeline-month');
             viewElement.click();
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(5);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(2);
-                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                 expect(moreIndicatorList.length).toEqual(0);
                 done();
             };
@@ -300,7 +301,7 @@ describe('Virtual scroll', () => {
             schObj.dataBind();
         });
         it('scroll checking with rowAutoHeight property', () => {
-            let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            const contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
             triggerScrollEvent(contentArea, 400);
             expect(schObj.resourceBase.renderedResources.length).toEqual(13);
             expect(schObj.resourceBase.renderedResources[0].groupIndex).toEqual(2);
@@ -308,19 +309,19 @@ describe('Virtual scroll', () => {
             expect(schObj.resourceBase.renderedResources[12].groupIndex).toEqual(22);
             expect(schObj.resourceBase.renderedResources[12].resourceData.HallText).toEqual('Hall 3');
             triggerScrollEvent(contentArea, 1000);
-            let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(0);
             triggerScrollEvent(contentArea, 0);
             expect(schObj.resourceBase.renderedResources[0].groupIndex).toEqual(0);
             expect(moreIndicatorList.length).toEqual(0);
         });
-        it('checking more indicator rowAutoHeight false', (done: Function) => {
+        it('checking more indicator rowAutoHeight false', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(3);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(2);
-                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                 expect(moreIndicatorList.length).toEqual(2);
                 done();
             };
@@ -331,13 +332,9 @@ describe('Virtual scroll', () => {
 
     it('memory leak', () => {
         profile.sample();
-        // tslint:disable:no-any
-        let average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
+        const average: number = inMB(profile.averageChange);
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        const memory: number = inMB(getMemoryProfile());
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        // tslint:enable:no-any
     });
 });

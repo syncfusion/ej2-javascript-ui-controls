@@ -11,7 +11,7 @@ export class ColorPicker implements IComponent {
     protected parent: InPlaceEditor;
     public compObj: EJ2ColorPicker = undefined;
 
-    constructor(parent?: InPlaceEditor) {
+    public constructor(parent?: InPlaceEditor) {
         this.parent = parent;
         this.parent.colorModule = this;
         this.base = new Base(this.parent, this);
@@ -35,8 +35,9 @@ export class ColorPicker implements IComponent {
 
     /**
      * Destroys the module.
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
@@ -45,6 +46,8 @@ export class ColorPicker implements IComponent {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} - retunrs the string
      */
     private getModuleName(): string {
         return 'color-picker';

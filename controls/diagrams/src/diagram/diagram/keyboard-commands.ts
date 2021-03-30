@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { Keys, KeyModifiers } from '../enum/enum';
 import { Property, Complex, ChildProperty, Collection } from '@syncfusion/ej2-base';
 import { CommandModel, KeyGestureModel } from './keyboard-commands-model';
@@ -21,7 +22,7 @@ export class KeyGesture extends ChildProperty<KeyGesture> {
      * * Number8 = The 8 key
      * * Number9 = The 9 key
      * * Number0 = The 0 key
-     * * BackSpace = The BackSpace key 
+     * * BackSpace = The BackSpace key
      * * F1 = The f1 key
      * * F2 = The f2 key
      * * F3 = The f3 key
@@ -67,15 +68,16 @@ export class KeyGesture extends ChildProperty<KeyGesture> {
      * * Escape = The Escape key
      * * Tab = The tab key
      * * Delete = The delete key
-     * * Enter = The enter key 
-     * * The Space key 
-     * * The page up key 
-     * * The page down key 
-     * * The end key 
-     * * The home key 
+     * * Enter = The enter key
+     * * The Space key
+     * * The page up key
+     * * The page down key
+     * * The end key
+     * * The home key
      * * The Minus
      * * The Plus
      * * The Star
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @aspNumberEnum
@@ -91,6 +93,7 @@ export class KeyGesture extends ChildProperty<KeyGesture> {
      * * Meta - meta key im mac
      * * Alt - alt key
      * * Shift - shift key
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @aspNumberEnum
@@ -108,6 +111,7 @@ export class Command extends ChildProperty<Command> {
 
     /**
      * Defines the name of the command
+     *
      * @default ''
      */
     @Property('')
@@ -115,6 +119,7 @@ export class Command extends ChildProperty<Command> {
 
     /**
      * Check the command is executable at the moment or not
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -144,7 +149,7 @@ export class Command extends ChildProperty<Command> {
      * annotations : [{ content: 'text' }];
      * ...
      * };
-     * 
+     *
      * let diagram: Diagram = new Diagram({
      * ...
      * nodes:[node],
@@ -178,16 +183,19 @@ export class Command extends ChildProperty<Command> {
     @Complex<KeyGestureModel>({}, KeyGesture)
     public gesture: KeyGestureModel;
 
-    /** 
+    /**
      * Defines any additional parameters that are required at runtime
      * @default ''
      */
     @Property('')
     public parameter: string;
 
+
     /**
-     * @private
+     *
      * Returns the name of class Command
+     * @returns {string}  Returns the name of class Command
+     * @private
      */
     public getClassName(): string {
         return 'Command';
@@ -213,6 +221,7 @@ export class CommandManager extends ChildProperty<CommandManager> {
 export class ContextMenuSettings extends ChildProperty<ContextMenuSettings> {
     /**
      * Enables/Disables the context menu items
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -222,6 +231,7 @@ export class ContextMenuSettings extends ChildProperty<ContextMenuSettings> {
 
     /**
      * Shows only the custom context menu items
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -246,6 +256,7 @@ export class ContextMenuSettings extends ChildProperty<ContextMenuSettings> {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined

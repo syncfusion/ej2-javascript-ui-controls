@@ -1,7 +1,6 @@
 /**
  * In-place Editor classes defined here.
  */
-
 /** @hidden */
 export const ROOT: string = 'e-inplaceeditor';
 /** @hidden */

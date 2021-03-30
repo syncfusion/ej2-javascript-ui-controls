@@ -144,7 +144,7 @@ export class RtlRenderer {
                 }
                 let result : string = null;
                 //bidirectional order.
-                if (format !== null && format.textDirection !== PdfTextDirection.None) {
+                if (format !== null && typeof format !== 'undefined' && format.textDirection !== PdfTextDirection.None) {
                     let bidi : Bidi = new Bidi();
                     result = bidi.getLogicalToVisualString(line, rtl);
                 }
@@ -157,7 +157,7 @@ export class RtlRenderer {
                     throw new Error('ArgumentNullException : font');
                 }
                 let layouted : string = null;
-                if (format !== null && format.textDirection !== PdfTextDirection.None) {
+                if (format !== null && typeof format !== 'undefined' && format.textDirection !== PdfTextDirection.None) {
                     let renderer : ArabicShapeRenderer = new ArabicShapeRenderer();
                     let txt : string = renderer.shape(line, 0);
                     layouted = this.customLayout(txt, rtl, format);

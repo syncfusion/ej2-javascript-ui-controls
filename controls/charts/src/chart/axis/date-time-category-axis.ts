@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { Axis } from '../axis/axis';
 import { Category } from '../axis/category-axis';
 import { triggerLabelRender } from '../../common/utils/helper';
@@ -17,6 +22,7 @@ export class DateTimeCategory extends Category {
 
     /**
      * Constructor for the category module.
+     *
      * @private
      */
     constructor(chart: Chart) {
@@ -25,7 +31,8 @@ export class DateTimeCategory extends Category {
 
     /**
      * The function to calculate the range and labels for the axis.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
@@ -33,7 +40,7 @@ export class DateTimeCategory extends Category {
 
         this.axisSize = size;
 
-        this.calculateRange(axis, size);
+        this.calculateRange(axis);
 
         this.getActualRange(axis, size);
 
@@ -44,6 +51,7 @@ export class DateTimeCategory extends Category {
 
     /**
      * Calculate label for the axis.
+     *
      * @private
      */
 
@@ -51,7 +59,7 @@ export class DateTimeCategory extends Category {
         /*! Generate axis labels */
         axis.visibleLabels = [];
         let labelStyle: Font;
-        let padding: number = axis.labelPlacement === 'BetweenTicks' ? 0.5 : 0;
+        const padding: number = axis.labelPlacement === 'BetweenTicks' ? 0.5 : 0;
         if (axis.intervalType === 'Auto') {
             this.calculateDateTimeNiceInterval(
                 axis, this.axisSize, parseInt(axis.labels[0], 10),
@@ -92,11 +100,13 @@ export class DateTimeCategory extends Category {
     }
     /**
      * To get the Indexed axis label text with axis format for DateTimeCategory axis
-     * @param value 
-     * @param format 
+     *
+     * @param {string} value value
+     * @param {Function} format format
+     * @returns {string} Indexed axis label text
      */
     public getIndexedAxisLabel(value: string, format: Function): string {
-        let texts: string[] = value.split(',');
+        const texts: string[] = value.split(',');
         for (let i: number = 0; i < texts.length; i++) {
             texts[i] = <string>format(new Date(parseInt(texts[i], 10)));
         }
@@ -111,29 +121,29 @@ export class DateTimeCategory extends Category {
             sameValue = false;
         } else {
             switch (type) {
-                case 'Years':
-                    sameValue = new Date(currentDate).getFullYear() === new Date(previousDate).getFullYear();
-                    break;
-                case 'Months':
-                    sameValue = new Date(currentDate).getFullYear() === new Date(previousDate).getFullYear() &&
+            case 'Years':
+                sameValue = new Date(currentDate).getFullYear() === new Date(previousDate).getFullYear();
+                break;
+            case 'Months':
+                sameValue = new Date(currentDate).getFullYear() === new Date(previousDate).getFullYear() &&
                         new Date(currentDate).getMonth() === new Date(previousDate).getMonth();
-                    break;
-                case 'Days':
-                    sameValue = (Math.abs(currentDate - previousDate) < 24 * 60 * 60 * 1000 &&
+                break;
+            case 'Days':
+                sameValue = (Math.abs(currentDate - previousDate) < 24 * 60 * 60 * 1000 &&
                         new Date(currentDate).getDay() === new Date(previousDate).getDay());
-                    break;
-                case 'Hours':
-                    sameValue = (Math.abs(currentDate - previousDate) < 60 * 60 * 1000 &&
+                break;
+            case 'Hours':
+                sameValue = (Math.abs(currentDate - previousDate) < 60 * 60 * 1000 &&
                         new Date(currentDate).getDay() === new Date(previousDate).getDay());
-                    break;
-                case 'Minutes':
-                    sameValue = (Math.abs(currentDate - previousDate) < 60 * 1000 &&
+                break;
+            case 'Minutes':
+                sameValue = (Math.abs(currentDate - previousDate) < 60 * 1000 &&
                         new Date(currentDate).getMinutes() === new Date(previousDate).getMinutes());
-                    break;
-                case 'Seconds':
-                    sameValue = (Math.abs(currentDate - previousDate) < 1000 &&
+                break;
+            case 'Seconds':
+                sameValue = (Math.abs(currentDate - previousDate) < 1000 &&
                         new Date(currentDate).getDay() === new Date(previousDate).getDay());
-                    break;
+                break;
             }
         }
         return sameValue;
@@ -152,11 +162,12 @@ export class DateTimeCategory extends Category {
 
     /**
      * To destroy the category axis.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method performed here
          */

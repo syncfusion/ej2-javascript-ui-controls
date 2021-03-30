@@ -1,4 +1,4 @@
-import { ColorPicker as ColorPickerComponent, BeforeOpenCloseEventArgs, OpenEventArgs } from '@syncfusion/ej2-inputs';
+import { ColorPicker as ColorPickerComponent, OpenEventArgs } from '@syncfusion/ej2-inputs';
 import { ColorPickerEventArgs, ModeSwitchEventArgs } from '@syncfusion/ej2-inputs';
 import { addClass, L10n } from '@syncfusion/ej2-base';
 import { Spreadsheet } from '../base/index';
@@ -6,6 +6,7 @@ import { spreadsheetDestroyed, fontColor, fillColor, beforeRibbonCreate, locale,
 import { setCellFormat, SetCellFormatArgs } from '../../workbook/common/index';
 /**
  * `Color Picker` module is used to handle ColorPicker functionality.
+ *
  * @hidden
  */
 export class ColorPicker {
@@ -17,7 +18,7 @@ export class ColorPicker {
         this.addEventListener();
     }
     private render(): void {
-        let id: string = this.parent.element.id;
+        const id: string = this.parent.element.id;
         let input: HTMLInputElement = this.parent.createElement('input', { attrs: { 'type': 'color' } }) as HTMLInputElement;
         this.fontColorPicker = new ColorPickerComponent({
             value: '#000000ff',
@@ -25,12 +26,12 @@ export class ColorPicker {
             showButtons: false,
             presetColors: fontColor,
             enableOpacity: false,
-            beforeClose: (args: BeforeOpenCloseEventArgs): void => this.beforeCloseHandler(this.fontColorPicker),
+            beforeClose: (): void => this.beforeCloseHandler(this.fontColorPicker),
             open: this.openHandler.bind(this),
             beforeModeSwitch: (args: ModeSwitchEventArgs): void => this.beforeModeSwitch(this.fontColorPicker, args),
             change: (args: ColorPickerEventArgs): void => {
-                let color: string = this.fontColorPicker.getValue(args.currentValue.rgba);
-                let eventArgs: SetCellFormatArgs = { style: { color: color }, onActionUpdate: true };
+                const color: string = this.fontColorPicker.getValue(args.currentValue.rgba);
+                const eventArgs: SetCellFormatArgs = { style: { color: color }, onActionUpdate: true };
                 this.parent.notify(setCellFormat, eventArgs);
                 if (eventArgs.cancel) {
                     this.fontColorPicker.setProperties({ 'value': this.fontColorPicker.getValue(args.previousValue.rgba, 'HEXA') }, true);
@@ -54,11 +55,11 @@ export class ColorPicker {
             showButtons: false,
             enableOpacity: false,
             open: this.openHandler.bind(this),
-            beforeClose: (args: BeforeOpenCloseEventArgs): void => this.beforeCloseHandler(this.filColorPicker),
+            beforeClose: (): void => this.beforeCloseHandler(this.filColorPicker),
             beforeModeSwitch: (args: ModeSwitchEventArgs): void => this.beforeModeSwitch(this.filColorPicker, args),
             change: (args: ColorPickerEventArgs): void => {
-                let color: string = this.filColorPicker.getValue(args.currentValue.rgba);
-                let eventArgs: SetCellFormatArgs = { style: { backgroundColor: color }, onActionUpdate: true };
+                const color: string = this.filColorPicker.getValue(args.currentValue.rgba);
+                const eventArgs: SetCellFormatArgs = { style: { backgroundColor: color }, onActionUpdate: true };
                 this.parent.notify(setCellFormat, eventArgs);
                 if (eventArgs.cancel) {
                     this.filColorPicker.setProperties({ 'value': this.filColorPicker.getValue(args.previousValue.rgba, 'HEXA') }, true);
@@ -94,7 +95,7 @@ export class ColorPicker {
         if (inst.showButtons) { inst.setProperties({ showButtons: false }, true); }
     }
     private beforeModeSwitch(inst: ColorPickerComponent, args: ModeSwitchEventArgs): void {
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
         if (args.mode === 'Picker') {
             inst.showButtons = true; inst.dataBind();
             (args.element.querySelector('.e-apply') as HTMLElement).title = l10n.getConstant('Apply');

@@ -1,6 +1,9 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { ChartLocation, getPoint, withInRange } from '../../common/utils/helper';
 import { PathOption } from '@syncfusion/ej2-svg-base';
-import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
 import { LineBase } from './line-base';
 import { AnimationModel } from '../../common/model/base-model';
@@ -14,24 +17,24 @@ export class StepLineSeries extends LineBase {
 
     /**
      * Render the Step line series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
         let direction: string = '';
         let startPoint: string = 'M';
         let prevPoint: Points = null;
-        let pathOptions: PathOption;
         let lineLength: number;
         let point1: ChartLocation;
         let point2: ChartLocation;
-        let visiblePoints: Points[] = this.enableComplexProperty(series);
+        const visiblePoints: Points[] = this.enableComplexProperty(series);
         if (xAxis.valueType === 'Category' && xAxis.labelPlacement === 'BetweenTicks') {
             lineLength = 0.5;
         } else {
             lineLength = 0;
         }
-        for (let point of visiblePoints) {
+        for (const point of visiblePoints) {
             point.symbolLocations = []; point.regions = [];
             if (point.visible && withInRange(visiblePoints[point.index - 1], point, visiblePoints[point.index + 1], series)) {
                 if (prevPoint != null) {
@@ -59,7 +62,7 @@ export class StepLineSeries extends LineBase {
             );
             direction = direction.concat(startPoint + ' ' + (point1.x) + ' ' + (point1.y) + ' ');
         }
-        pathOptions = new PathOption(
+        const pathOptions: PathOption = new PathOption(
             series.chart.element.id + '_Series_' + series.index, 'transparent',
             series.width, series.interior, series.opacity, series.dashArray, direction
         );
@@ -68,19 +71,21 @@ export class StepLineSeries extends LineBase {
     }
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
     public doAnimation(series: Series): void {
-        let option: AnimationModel = series.animation;
+        const option: AnimationModel = series.animation;
         this.doLinearAnimation(series, option);
     }
     /**
-     * To destroy the step line series. 
-     * @return {void}
+     * To destroy the step line series.
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method calling here
          */

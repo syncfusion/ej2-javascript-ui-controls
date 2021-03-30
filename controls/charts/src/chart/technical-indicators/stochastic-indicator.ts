@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
 import { TechnicalIndicator } from './technical-indicator';
 import { TechnicalAnalysis } from './indicator-base';
@@ -10,20 +15,21 @@ export class StochasticIndicator extends TechnicalAnalysis {
 
     /**
      * Defines the collection of series that represents the stochastic indicator
+     *
      * @private
      */
     public initSeriesCollection(indicator: TechnicalIndicator, chart: Chart): void {
         super.initSeriesCollection(indicator, chart);
-        let periodLine: Series = new Series(indicator, 'targetSeries', {}, true);
+        const periodLine: Series = new Series(indicator, 'targetSeries', {}, true);
         this.setSeriesProperties(
             periodLine, indicator, 'PeriodLine', indicator.periodLine.color,
             indicator.periodLine.width, chart);
         if (indicator.showZones) {
-            let upperSeries: Series = new Series(indicator, 'targetSeries', {}, true);
+            const upperSeries: Series = new Series(indicator, 'targetSeries', {}, true);
             this.setSeriesProperties(
                 upperSeries, indicator, 'UpperLine', indicator.upperLine.color,
                 indicator.upperLine.width, chart);
-            let lowerSeries: Series = new Series(indicator, 'targetSeries', {}, true);
+            const lowerSeries: Series = new Series(indicator, 'targetSeries', {}, true);
             this.setSeriesProperties(
                 lowerSeries, indicator, 'LowerLine', indicator.lowerLine.color,
                 indicator.lowerLine.width, chart);
@@ -32,18 +38,17 @@ export class StochasticIndicator extends TechnicalAnalysis {
 
     /**
      * Defines the predictions based on stochastic approach
+     *
      * @private
      */
     public initDataSource(indicator: TechnicalIndicator, chart: Chart): void {
         let signalCollection: Points[] = [];
-        let upperCollection: Points[] = [];
-        let lowerCollection: Points[] = [];
+        const upperCollection: Points[] = [];
+        const lowerCollection: Points[] = [];
         let periodCollection: Points[] = [];
         let source: Points[] = [];
-        let sourceSeries: Series = indicator.sourceSeries;
-        let point: Object = {};
         //prepare data
-        let validData: Points[] = indicator.points;
+        const validData: Points[] = indicator.points;
         if (validData.length && validData.length >= indicator.period) {
             if (indicator.showZones) {
                 for (let i: number = 0; i < validData.length; i++) {
@@ -73,16 +78,17 @@ export class StochasticIndicator extends TechnicalAnalysis {
 
     /**
      * Calculates the SMA Values
+     *
      * @private
      */
     private smaCalculation(period: number, kPeriod: number, data: Points[], sourceSeries: Series): Points[] {
-        let pointCollection: Points[] = [];
+        const pointCollection: Points[] = [];
         if (data.length >= period + kPeriod) {
-            let count: number = period + (kPeriod - 1);
-            let temp: Object[] = [];
-            let values: Object[] = [];
+            const count: number = period + (kPeriod - 1);
+            const temp: Object[] = [];
+            const values: Object[] = [];
             for (let i: number = 0; i < data.length; i++) {
-                let value: number = Number(data[i].y);
+                const value: number = Number(data[i].y);
                 temp.push(value);
             }
             let length: number = temp.length;
@@ -97,7 +103,7 @@ export class StochasticIndicator extends TechnicalAnalysis {
                 temp.splice(0, 1);
                 length = temp.length;
             }
-            let len: number = count - 1;
+            const len: number = count - 1;
             for (let i: number = 0; i < data.length; i++) {
                 if (!(i < len)) {
                     pointCollection.push(this.getDataPoint(
@@ -111,23 +117,23 @@ export class StochasticIndicator extends TechnicalAnalysis {
 
     /**
      * Calculates the period line values.
+     *
      * @private
      */
     private calculatePeriod(
         period: number, kPeriod: number, data: Points[], series: Series): Points[] {
-        let lowValues: Object[] = [];
-        let highValues: Object[] = [];
-        let closeValues: Object[] = [];
-        let modifiedSource: Points[] = [];
+        const lowValues: Object[] = [];
+        const highValues: Object[] = [];
+        const closeValues: Object[] = [];
+        const modifiedSource: Points[] = [];
         for (let j: number = 0; j < data.length; j++) {
             lowValues[j] = data[j].low;
             highValues[j] = data[j].high;
             closeValues[j] = data[j].close;
         }
         if (data.length > period) {
-            let totalPeriod: number = period + kPeriod;
-            let mins: Object[] = [];
-            let maxs: Object[] = [];
+            const mins: Object[] = [];
+            const maxs: Object[] = [];
             for (let i: number = 0; i < period - 1; ++i) {
                 maxs.push(0);
                 mins.push(0);
@@ -159,11 +165,12 @@ export class StochasticIndicator extends TechnicalAnalysis {
 
     /**
      * To destroy the Stocastic Indicator.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroys the stochastic indicator
          */

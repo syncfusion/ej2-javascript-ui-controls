@@ -14,16 +14,20 @@ import { flip, fit, isCollide , CollisionCoordinates } from '../common/collision
 export class PositionData extends ChildProperty<PositionData> {
     /**
      * specify the offset left value
+     *
      * @blazorType string
      */
     @Property('left')
     public X: string | number;
+    /* eslint-enable */
     /**
      * specify the offset top value.
+     *
      * @blazorType string
      */
     @Property('top')
     public Y: string | number;
+    /* eslint-enable */
 
 }
 
@@ -33,11 +37,13 @@ export class PositionData extends ChildProperty<PositionData> {
 export interface CollisionAxis {
     /**
      * specify the collision handler for a X-Axis.
+     *
      * @default "none"
      */
     X? : CollisionType;
     /**
      * specify the collision handler for a Y-Axis.
+     *
      * @default "none"
      */
     Y? : CollisionType;
@@ -62,20 +68,20 @@ const CLASSNAMES: ClassList  = {
     CLOSE: 'e-popup-close'
 };
 interface ClassList {
-    ROOT: string;
-    RTL: string;
-    OPEN: string;
-    CLOSE: string;
+    ROOT: string
+    RTL: string
+    OPEN: string
+    CLOSE: string
 }
 
 interface ElementBounds extends OffsetPosition {
-    right: number;
-    bottom: number;
+    right: number
+    bottom: number
 }
 
 interface EleOffsetPosition {
-    left: string | number;
-    top: string | number;
+    left: string | number
+    top: string | number
 }
 /**
  * Represents the Popup Component
@@ -92,173 +98,206 @@ interface EleOffsetPosition {
  */
 @NotifyPropertyChanges
 export class Popup extends Component<HTMLElement> implements INotifyPropertyChanged {
-    private fixedParent: Boolean;
+    private fixedParent: boolean;
     //Popup Options
     /**
-     * Specifies the height of the popup element. 
+     * Specifies the height of the popup element.
+     *
      * @default 'auto'
      */
     @Property('auto')
     public height: string | number;
     /**
      * Specifies the height of the popup element.
+     *
      * @default 'auto'
      */
     @Property('auto')
     public width: string | number;
     /**
      * Specifies the content of the popup element, it can be string or HTMLElement.
+     *
      * @default null
      */
     @Property(null)
     public content: string | HTMLElement;
     /**
      * Specifies the relative element type of the component.
+     *
      * @default 'container'
      */
     @Property('container')
     public targetType: TargetType;
     /**
      * Specifies the collision detectable container element of the component.
+     *
      * @default null
      */
     @Property(null)
     public viewPortElement: HTMLElement;
     /**
      * Specifies the collision handler settings of the component.
-     * @default { X: 'none',Y: 'none' } 
+     *
+     * @default { X: 'none',Y: 'none' }
      */
     @Property({X: 'none', Y: 'none'})
     public collision: CollisionAxis;
     /**
      * Specifies the relative container element of the popup element.Based on the relative element, popup element will be positioned.
-     * 
+     *
      * @default 'body'
      */
     @Property('')
     public relateTo: HTMLElement | string;
     /**
      * Specifies the popup element position, respective to the relative element.
+     *
      * @default {X:"left", Y:"top"}
      */
     @Complex<PositionDataModel>({}, PositionData)
     public position: PositionDataModel;
     /**
      * specifies the popup element offset-x value, respective to the relative element.
+     *
      * @default 0
      */
     @Property(0)
     public offsetX: number;
     /**
      * specifies the popup element offset-y value, respective to the relative element.
+     *
      * @default 0
      */
     @Property(0)
     public offsetY: number;
     /**
      * specifies the z-index value of the popup element.
+     *
      * @default 1000
      */
     @Property(1000)
     public zIndex: number;
     /**
      * specifies the rtl direction state of the popup element.
+     *
      * @default false
      */
     @Property(false)
     public enableRtl: boolean;
     /**
      * specifies the action that should happen when scroll the target-parent container.
-     * This property should define either `reposition` or `hide`. 
+     * This property should define either `reposition` or `hide`.
      * when set `reposition` to this property, the popup position will refresh when scroll any parent container.
-     * when set `hide` to this property, the popup will be closed when scroll any parent container. 
+     * when set `hide` to this property, the popup will be closed when scroll any parent container.
+     *
      * @default 'reposition'
      */
     @Property('reposition')
     public actionOnScroll: ActionOnScrollType;
     /**
      * specifies the animation that should happen when popup open.
+     *
      * @default 'null'
      */
     @Property(null)
     public showAnimation: AnimationModel;
     /**
      * specifies the animation that should happen when popup closes.
+     *
      * @default 'null'
      */
     @Property(null)
     public hideAnimation: AnimationModel;
     /**
      * Triggers the event once opened the popup.
-     * @event
+     *
+     * @event 'object'
      */
+    /* eslint-disable */
     @Event()
     public open: EmitType<Object>;
+    /* eslint-enable */
     /**
      * Trigger the event once closed the popup.
-     * @event
+     *
+     * @event 'object'
      */
+    /* eslint-disable */
     @Event()
     public close: EmitType<Object>;
+    /* eslint-enable */
     /**
      * * Constructor for creating the widget
      */
     /**
      * Triggers the event when target element hide from view port on scroll.
-     * @event
+     *
+     * @event 'object'
      */
+    /* eslint-disable */
     @Event()
     public targetExitViewport: EmitType<Object>;
+    /* eslint-enable */
 
-    private targetInvisibleStatus: Boolean;
-    constructor(element?: HTMLElement, options?: PopupModel) {
+    private targetInvisibleStatus: boolean;
+    public constructor(element?: HTMLElement, options?: PopupModel) {
         super(options, element);
     }
     /**
      * Called internally if any of the property value changed.
+     *
+     * @param {PopupModel} newProp - specifies the new property
+     * @param {PopupModel} oldProp - specifies the old property
      * @private
+     * @returns {void}
      */
     public onPropertyChanged(newProp: PopupModel, oldProp: PopupModel): void {
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'width':
-                    setStyleAttribute(this.element, { 'width': formatUnit(newProp.width) });
-                    break;
-                case 'height':
-                    setStyleAttribute(this.element, { 'height': formatUnit(newProp.height) });
-                    break;
-                case 'zIndex':
-                    setStyleAttribute(this.element, { 'zIndex': newProp.zIndex });
-                    break;
-                case 'enableRtl':
-                    this.setEnableRtl();
-                    break;
-                case 'position':
-                case 'relateTo':
-                    this.refreshPosition();
-                    break;
-                case 'offsetX':
-                    let x: number = newProp.offsetX - oldProp.offsetX;
-                    this.element.style.left = (parseInt(this.element.style.left, 10) + (x)).toString() + 'px';
-                    break;
-                case 'offsetY':
-                    let y: number = newProp.offsetY - oldProp.offsetY;
-                    this.element.style.top = (parseInt(this.element.style.top, 10) + (y)).toString() + 'px';
-                    break;
-                case 'content':
-                    this.setContent();
-                    break;
-                case 'actionOnScroll':
-                    if (newProp.actionOnScroll !== 'none') {
-                        this.wireScrollEvents();
-                    } else { this.unwireScrollEvents(); }
-                    break;
+            case 'width':
+                setStyleAttribute(this.element, { 'width': formatUnit(newProp.width) });
+                break;
+            case 'height':
+                setStyleAttribute(this.element, { 'height': formatUnit(newProp.height) });
+                break;
+            case 'zIndex':
+                setStyleAttribute(this.element, { 'zIndex': newProp.zIndex });
+                break;
+            case 'enableRtl':
+                this.setEnableRtl();
+                break;
+            case 'position':
+            case 'relateTo':
+                this.refreshPosition();
+                break;
+            case 'offsetX':
+                // eslint-disable-next-line
+                let x: number = newProp.offsetX - oldProp.offsetX;
+                this.element.style.left = (parseInt(this.element.style.left, 10) + (x)).toString() + 'px';
+                break;
+            case 'offsetY':
+                // eslint-disable-next-line
+                let y: number = newProp.offsetY - oldProp.offsetY;
+                this.element.style.top = (parseInt(this.element.style.top, 10) + (y)).toString() + 'px';
+                break;
+            case 'content':
+                this.setContent();
+                break;
+            case 'actionOnScroll':
+                if (newProp.actionOnScroll !== 'none') {
+                    this.wireScrollEvents();
+                } else {
+                    this.unwireScrollEvents();
+                }
+                break;
 
             }
         }
     }
     /**
      * gets the Component module name.
+     *
+     * @returns {void}
      * @private
      */
     public getModuleName(): string {
@@ -266,18 +305,24 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
     }
     /**
      * To resolve if any collision occurs.
+     *
+     * @returns {void}
      */
     public resolveCollision(): void {
         this.checkCollision();
     }
     /**
      * gets the persisted state properties of the Component.
+     *
+     * @returns {void}
      */
     protected getPersistData(): string {
         return this.addOnPersist([]);
     }
     /**
      * To destroy the control.
+     *
+     * @returns {void}
      */
     public destroy(): void {
         this.element.classList.remove(CLASSNAMES.ROOT, CLASSNAMES.RTL, CLASSNAMES.OPEN, CLASSNAMES.CLOSE);
@@ -286,14 +331,22 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
     }
     /**
      * To Initialize the control rendering
+     *
+     * @returns {void}
      * @private
      */
     public render(): void {
         this.element.classList.add(CLASSNAMES.ROOT);
-        let styles: { [key: string]: string | number } = {};
-        if (this.zIndex !== 1000) { styles.zIndex = this.zIndex; }
-        if (this.width !== 'auto') { styles.width = formatUnit(this.width); }
-        if (this.height !== 'auto') { styles.height = formatUnit(this.height); }
+        const styles: { [key: string]: string | number } = {};
+        if (this.zIndex !== 1000) {
+            styles.zIndex = this.zIndex;
+        }
+        if (this.width !== 'auto') {
+            styles.width = formatUnit(this.width);
+        }
+        if (this.height !== 'auto') {
+            styles.height = formatUnit(this.height);
+        }
         setStyleAttribute(this.element, styles);
         this.fixedParent = false;
         this.setEnableRtl();
@@ -303,12 +356,14 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
         if (Browser.isDevice) {
             EventHandler.add(<HTMLElement & Window>window, 'orientationchange', this.orientationOnChange, this);
         }
-        if (this.actionOnScroll !== 'none') { this.wireScrollEvents(); }
+        if (this.actionOnScroll !== 'none') {
+            this.wireScrollEvents();
+        }
     }
 
     public wireScrollEvents(): void {
         if (this.getRelateToElement()) {
-            for ( let parent of this.getScrollableParent(this.getRelateToElement()) ) {
+            for ( const parent of this.getScrollableParent(this.getRelateToElement()) ) {
                 EventHandler.add(parent, 'scroll', this.scrollRefresh, this);
             }
         }
@@ -317,20 +372,22 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
         if (Browser.isDevice) {
             EventHandler.remove(<HTMLElement & Window>window, 'orientationchange', this.orientationOnChange);
         }
-        if (this.actionOnScroll !== 'none') { this.unwireScrollEvents(); }
+        if (this.actionOnScroll !== 'none') {
+            this.unwireScrollEvents();
+        }
     }
 
     public unwireScrollEvents(): void {
         if (this.getRelateToElement()) {
-            for ( let parent of this.getScrollableParent(this.getRelateToElement()) ) {
+            for ( const parent of this.getScrollableParent(this.getRelateToElement()) ) {
                 EventHandler.remove(parent, 'scroll', this.scrollRefresh);
             }
         }
     }
 
     private getRelateToElement(): HTMLElement {
-        let relateToElement: HTMLElement | string = this.relateTo === '' || isNullOrUndefined(this.relateTo) ?
-        document.body : this.relateTo;
+        const relateToElement: HTMLElement | string = this.relateTo === '' || isNullOrUndefined(this.relateTo) ?
+            document.body : this.relateTo;
         this.setProperties({ relateTo: relateToElement }, true);
         return ((typeof this.relateTo) === 'string') ?
             <HTMLElement>document.querySelector(<string>this.relateTo) : <HTMLElement>this.relateTo;
@@ -348,7 +405,7 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
         }
         if (this.actionOnScroll !== 'none') {
             if (this.getRelateToElement()) {
-                let targetVisible : Boolean = this.isElementOnViewport(this.getRelateToElement(), e.target as HTMLElement);
+                const targetVisible : boolean = this.isElementOnViewport(this.getRelateToElement(), e.target as HTMLElement);
                 if ( !targetVisible && !this.targetInvisibleStatus ) {
                     this.trigger ('targetExitViewport');
                     this.targetInvisibleStatus = true;
@@ -359,13 +416,17 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
         }
     }
     /**
-     * This method is to get the element visibility on viewport when scroll 
+     * This method is to get the element visibility on viewport when scroll
      * the page. This method will returns true even though 1 px of element
      * part is in visible.
+     *
+     * @param {HTMLElement} relateToElement - specifies the element
+     * @param {HTMLElement} scrollElement - specifies the scroll element
+     * @returns {boolean} - retruns the boolean
      */
+    // eslint-disable-next-line
     private isElementOnViewport(relateToElement: HTMLElement, scrollElement: HTMLElement): boolean {
-
-        let scrollParents: HTMLElement[] = this.getScrollableParent(relateToElement);
+        const scrollParents: HTMLElement[] = this.getScrollableParent(relateToElement);
         for ( let parent: number = 0; parent < scrollParents.length; parent ++ ) {
             if (this.isElementVisible(relateToElement, scrollParents[parent])) {
                 continue;
@@ -377,34 +438,34 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     private isElementVisible (relateToElement: HTMLElement, scrollElement: HTMLElement): boolean {
-        let rect: ClientRect = this.checkGetBoundingClientRect(relateToElement);
+        const rect: ClientRect = this.checkGetBoundingClientRect(relateToElement);
 
         if (!rect.height || !rect.width) {
             return false;
         }
 
         if (!isNullOrUndefined(this.checkGetBoundingClientRect(scrollElement))) {
-            let parent: ClientRect = scrollElement.getBoundingClientRect();
+            const parent: ClientRect = scrollElement.getBoundingClientRect();
             return !(rect.bottom < parent.top) &&
                 (!(rect.bottom > parent.bottom) &&
                 (!(rect.right > parent.right) &&
                 !(rect.left < parent.left)));
         }else {
-            let win: Window = window;
-            let windowView: ElementBounds = {
+            const win: Window = window;
+            const windowView: ElementBounds = {
                 top : win.scrollY,
                 left : win.scrollX,
                 right : win.scrollX + win.outerWidth,
                 bottom : win.scrollY + win.outerHeight
             };
-            let off: OffsetPosition = calculatePosition(relateToElement);
-            let ele: ElementBounds = {
+            const off: OffsetPosition = calculatePosition(relateToElement);
+            const ele: ElementBounds = {
                 top : off.top,
                 left : off.left,
                 right : off.left + rect.width,
                 bottom : off.top + rect.height
             };
-            let elementView: ElementBounds = {
+            const elementView: ElementBounds = {
                 top : windowView.bottom - ele.top,
                 left: windowView.right - ele.left,
                 bottom: ele.bottom - windowView.top,
@@ -418,6 +479,8 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
     }
     /**
      * Initialize the event handler
+     *
+     * @returns {void}
      * @private
      */
     protected preRender(): void {
@@ -425,6 +488,7 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
     }
     private setEnableRtl(): void {
         this.reposition();
+        // eslint-disable-next-line
         this.enableRtl ? this.element.classList.add(CLASSNAMES.RTL) : this.element.classList.remove(CLASSNAMES.RTL);
     }
     private setContent(): void {
@@ -445,25 +509,32 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
             200
         );
     }
+    // eslint-disable-next-line
     /**
      * Based on the `relative` element and `offset` values, `Popup` element position will refreshed.
+     *
+     * @returns {void}
      */
     public refreshPosition(target?: HTMLElement, collision?: boolean): void {
-        if (!isNullOrUndefined(target)) { this.checkFixedParent(target); }
+        if (!isNullOrUndefined(target)) {
+            this.checkFixedParent(target);
+        }
         this.reposition();
-        if (!collision) { this.checkCollision(); }
+        if (!collision) {
+            this.checkCollision();
+        }
     }
 
     private reposition(): void {
         let pos: EleOffsetPosition;
         let position: OffsetPosition;
-        let relateToElement: HTMLElement = this.getRelateToElement();
+        const relateToElement: HTMLElement = this.getRelateToElement();
         if (typeof this.position.X === 'number' && typeof this.position.Y === 'number') {
             pos = { left: this.position.X, top: this.position.Y };
         } else if ((typeof this.position.X === 'string' && typeof this.position.Y === 'number') ||
         (typeof this.position.X === 'number' && typeof this.position.Y === 'string')) {
-            let display: string = this.element.style.display;
             let parentDisplay: string;
+            const display: string = this.element.style.display;
             this.element.style.display = 'block';
             if ( this.element.classList.contains('e-dlg-modal')) {
                 parentDisplay = this.element.parentElement.style.display;
@@ -480,7 +551,7 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
                 this.element.parentElement.style.display = parentDisplay;
             }
         } else if (relateToElement) {
-            let display: string = this.element.style.display;
+            const display: string = this.element.style.display;
             this.element.style.display = 'block';
             pos = this.getAnchorPosition(relateToElement, this.element, this.position, this.offsetX, this.offsetY);
             this.element.style.display = display;
@@ -509,12 +580,12 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
         position: PositionDataModel,
         offsetX: number,
         offsetY: number): OffsetPosition {
-        let eleRect: ClientRect = this.checkGetBoundingClientRect(ele);
-        let anchorRect: ClientRect = this.checkGetBoundingClientRect(anchorEle);
+        const eleRect: ClientRect = this.checkGetBoundingClientRect(ele);
+        const anchorRect: ClientRect = this.checkGetBoundingClientRect(anchorEle);
         if ( isNullOrUndefined(eleRect)  || isNullOrUndefined(anchorRect) ) {
             return null;
         }
-        let anchor: HTMLElement = anchorEle as HTMLElement;
+        const anchor: HTMLElement = anchorEle as HTMLElement;
         let anchorPos: OffsetPosition = { left: 0, top: 0 };
         if (ele.offsetParent && ele.offsetParent.tagName === 'BODY' && anchorEle.tagName === 'BODY') {
             anchorPos = calculatePosition(anchorEle);
@@ -525,57 +596,57 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
             anchorPos = calculateRelativeBasedPosition(anchor, ele);
         }
         switch (position.X) {
-            default:
-            case 'left':
-                break;
-            case 'center':
-                if ((ele.classList.contains('e-dlg-modal') && anchor.tagName === 'BODY' && this.targetType === 'container')) {
-                    anchorPos.left += (window.innerWidth / 2 - eleRect.width / 2);
-                } else if (this.targetType === 'container') {
-                    anchorPos.left += (anchorRect.width / 2 - eleRect.width / 2);
-                } else {
-                    anchorPos.left += (anchorRect.width / 2);
-                }
-                break;
-            case 'right':
-                if ((ele.classList.contains('e-dlg-modal') && anchor.tagName === 'BODY' && this.targetType === 'container')) {
-                    anchorPos.left += (window.innerWidth - eleRect.width );
-                } else if (this.targetType === 'container') {
-                    anchorPos.left += (anchorRect.width - eleRect.width);
-                } else {
-                    anchorPos.left += (anchorRect.width);
-                }
-                break;
+        default:
+        case 'left':
+            break;
+        case 'center':
+            if ((ele.classList.contains('e-dlg-modal') && anchor.tagName === 'BODY' && this.targetType === 'container')) {
+                anchorPos.left += (window.innerWidth / 2 - eleRect.width / 2);
+            } else if (this.targetType === 'container') {
+                anchorPos.left += (anchorRect.width / 2 - eleRect.width / 2);
+            } else {
+                anchorPos.left += (anchorRect.width / 2);
+            }
+            break;
+        case 'right':
+            if ((ele.classList.contains('e-dlg-modal') && anchor.tagName === 'BODY' && this.targetType === 'container')) {
+                anchorPos.left += (window.innerWidth - eleRect.width );
+            } else if (this.targetType === 'container') {
+                anchorPos.left += (anchorRect.width - eleRect.width);
+            } else {
+                anchorPos.left += (anchorRect.width);
+            }
+            break;
         }
         switch (position.Y) {
-            default:
-            case 'top':
-                break;
-            case 'center':
-                if ((ele.classList.contains('e-dlg-modal') && anchor.tagName === 'BODY' && this.targetType === 'container')) {
-                    anchorPos.top += (window.innerHeight / 2 - eleRect.height / 2);
-                } else if (this.targetType === 'container') {
-                    anchorPos.top += (anchorRect.height / 2 - eleRect.height / 2);
-                } else {
-                    anchorPos.top += (anchorRect.height / 2);
-                }
-                break;
-            case 'bottom':
-                if ((ele.classList.contains('e-dlg-modal') && anchor.tagName === 'BODY' && this.targetType === 'container')) {
-                    anchorPos.top += (window.innerHeight - eleRect.height);
-                } else if (this.targetType === 'container') {
-                    anchorPos.top += (anchorRect.height - eleRect.height);
-                } else {
-                    anchorPos.top += (anchorRect.height);
-                }
-                break;
+        default:
+        case 'top':
+            break;
+        case 'center':
+            if ((ele.classList.contains('e-dlg-modal') && anchor.tagName === 'BODY' && this.targetType === 'container')) {
+                anchorPos.top += (window.innerHeight / 2 - eleRect.height / 2);
+            } else if (this.targetType === 'container') {
+                anchorPos.top += (anchorRect.height / 2 - eleRect.height / 2);
+            } else {
+                anchorPos.top += (anchorRect.height / 2);
+            }
+            break;
+        case 'bottom':
+            if ((ele.classList.contains('e-dlg-modal') && anchor.tagName === 'BODY' && this.targetType === 'container')) {
+                anchorPos.top += (window.innerHeight - eleRect.height);
+            } else if (this.targetType === 'container') {
+                anchorPos.top += (anchorRect.height - eleRect.height);
+            } else {
+                anchorPos.top += (anchorRect.height);
+            }
+            break;
         }
         anchorPos.left += offsetX;
         anchorPos.top += offsetY;
         return anchorPos;
     }
     private callFlip(param: CollisionCoordinates): void {
-        let relateToElement: HTMLElement = this.getRelateToElement();
+        const relateToElement: HTMLElement = this.getRelateToElement();
         flip(
             this.element,
             relateToElement,
@@ -590,13 +661,19 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
     private callFit(param: CollisionCoordinates): void {
         if (isCollide(this.element, this.viewPortElement).length !== 0) {
             if (isNullOrUndefined(this.viewPortElement)) {
-                let data: OffsetPosition = fit(this.element, this.viewPortElement, param);
-                if (param.X) { this.element.style.left = data.left + 'px'; }
-                if (param.Y) { this.element.style.top = data.top + 'px'; }
+                const data: OffsetPosition = fit(this.element, this.viewPortElement, param);
+                if (param.X) {
+                    this.element.style.left = data.left + 'px';
+                }
+                if (param.Y) {
+                    this.element.style.top = data.top + 'px';
+                }
             } else {
-                let elementRect: ClientRect = this.checkGetBoundingClientRect(this.element);
-                let viewPortRect: ClientRect = this.checkGetBoundingClientRect(this.viewPortElement);
-                if (isNullOrUndefined(elementRect) || isNullOrUndefined(viewPortRect)) { return null; }
+                const elementRect: ClientRect = this.checkGetBoundingClientRect(this.element);
+                const viewPortRect: ClientRect = this.checkGetBoundingClientRect(this.viewPortElement);
+                if (isNullOrUndefined(elementRect) || isNullOrUndefined(viewPortRect)) {
+                    return null;
+                }
                 if (param && param.Y === true) {
                     if (viewPortRect.top > elementRect.top) {
                         this.element.style.top = '0px';
@@ -615,8 +692,8 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
         }
     }
     private checkCollision(): void {
-        let horz: string = this.collision.X;
-        let vert: string = this.collision.Y;
+        const horz: string = this.collision.X;
+        const vert: string = this.collision.Y;
         if (horz === 'none' && vert === 'none') {
             return;
         }
@@ -639,14 +716,15 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
     }
     /**
      * Shows the popup element from screen.
-     * @param { AnimationModel | Function } collisionOrAnimationOptions? - To pass animation options or collision function.
-     * @param { Function } collision? - To pass the collision function.
-     * @param { HTMLElement } relativeElement? - To calculate the zIndex value dynamically.
+     *
+     * @returns {void}
+     * @param {AnimationModel} animationOptions - specifies the model
+     * @param { HTMLElement } relativeElement - To calculate the zIndex value dynamically.
      */
     public show(animationOptions?: AnimationModel, relativeElement?: HTMLElement): void {
         this.wireEvents();
         if (this.zIndex === 1000 || !isNullOrUndefined(relativeElement)) {
-            let zIndexElement: HTMLElement = ( isNullOrUndefined(relativeElement)) ? this.element : relativeElement;
+            const zIndexElement: HTMLElement = ( isNullOrUndefined(relativeElement)) ? this.element : relativeElement;
             this.zIndex = getZindexPartial(zIndexElement as HTMLElement);
             setStyleAttribute(this.element, { 'zIndex': this.zIndex });
         }
@@ -667,7 +745,9 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
                 }
             };
             animationOptions.end = () => {
-                if (!this.isDestroyed) { this.trigger('open'); }
+                if (!this.isDestroyed) {
+                    this.trigger('open');
+                }
             };
             new Animation(animationOptions).animate(this.element);
         } else {
@@ -678,7 +758,9 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
     }
     /**
      * Hides the popup element from screen.
-     * @param { AnimationModel } animationOptions? - To give the animation options.
+     *
+     * @param {AnimationModel} animationOptions - To give the animation options.
+     * @returns {void}
      */
     public hide(animationOptions?: AnimationModel): void {
         animationOptions = (!isNullOrUndefined(animationOptions) && typeof animationOptions === 'object') ?
@@ -701,6 +783,8 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
     }
     /**
      * Gets scrollable parent elements for the given element.
+     *
+     * @returns {void}
      * @param { HTMLElement } element - Specify the element to get the scrollable parents of it.
      */
     public getScrollableParent(element: HTMLElement): HTMLElement[] {
@@ -711,7 +795,7 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
     private checkFixedParent(element: HTMLElement): void {
         let parent: HTMLElement = element.parentElement;
         while (parent && parent.tagName !== 'HTML') {
-            let parentStyle: CSSStyleDeclaration = getComputedStyle(parent);
+            const parentStyle: CSSStyleDeclaration = getComputedStyle(parent);
             if (parentStyle.position === 'fixed' && this.element.offsetParent && this.element.offsetParent.tagName === 'BODY') {
                 this.element.style.position = 'fixed';
                 this.fixedParent = true;
@@ -727,39 +811,46 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
 
 /**
  * Gets scrollable parent elements for the given element.
+ *
  * @param { HTMLElement } element - Specify the element to get the scrollable parents of it.
+ * @param {boolean} fixedParent - specifies the parent element
  * @private
+ * @returns {void}
  */
-export function getScrollableParent(element: HTMLElement, fixedParent?: Boolean): HTMLElement[] {
-    let eleStyle: CSSStyleDeclaration = getComputedStyle(element);
-    let scrollParents: HTMLElement[] = [];
-    let overflowRegex: RegExp = /(auto|scroll)/;
+export function getScrollableParent(element: HTMLElement, fixedParent?: boolean): HTMLElement[] {
+    const eleStyle: CSSStyleDeclaration = getComputedStyle(element);
+    const scrollParents: HTMLElement[] = [];
+    const overflowRegex: RegExp = /(auto|scroll)/;
     let parent: HTMLElement = element.parentElement;
     while (parent && parent.tagName !== 'HTML') {
-        let parentStyle: CSSStyleDeclaration = getComputedStyle(parent);
+        const parentStyle: CSSStyleDeclaration = getComputedStyle(parent);
         if (!(eleStyle.position === 'absolute' && parentStyle.position === 'static')
             && overflowRegex.test(parentStyle.overflow + parentStyle.overflowY + parentStyle.overflowX)) {
             scrollParents.push(parent);
         }
         parent = parent.parentElement;
     }
-    if (!fixedParent) { scrollParents.push(<HTMLElement & Document>document); }
+    if (!fixedParent) {
+        scrollParents.push(<HTMLElement & Document>document);
+    }
     return scrollParents;
 }
 
 /**
  * Gets the maximum z-index of the given element.
+ *
+ * @returns {void}
  * @param { HTMLElement } element - Specify the element to get the maximum z-index of it.
  * @private
  */
 export function getZindexPartial(element: HTMLElement): number {
     // upto body traversal
     let parent: HTMLElement = element.parentElement;
-    let parentZindex: string[] = [];
+    const parentZindex: string[] = [];
     while (parent) {
         if (parent.tagName !== 'BODY') {
-            let index: string = document.defaultView.getComputedStyle(parent, null).getPropertyValue('z-index');
-            let position: string = document.defaultView.getComputedStyle(parent, null).getPropertyValue('position');
+            const index: string = document.defaultView.getComputedStyle(parent, null).getPropertyValue('z-index');
+            const position: string = document.defaultView.getComputedStyle(parent, null).getPropertyValue('position');
             if (index !== 'auto' && position !== 'static') {
                 parentZindex.push(index);
             }
@@ -768,51 +859,53 @@ export function getZindexPartial(element: HTMLElement): number {
             break;
         }
     }
-    //Body direct children element traversal
-    let childrenZindex: string[] = [];
+    const childrenZindex: string[] = [];
     for (let i: number = 0; i < document.body.children.length; i++) {
         if (!element.isEqualNode(document.body.children[i])) {
-            let index: string = document.defaultView.getComputedStyle(document.body.children[i], null).getPropertyValue('z-index');
-            let position: string = document.defaultView.getComputedStyle(document.body.children[i], null).getPropertyValue('position');
+            const index: string = document.defaultView.getComputedStyle(document.body.children[i], null).getPropertyValue('z-index');
+            const position: string = document.defaultView.getComputedStyle(document.body.children[i], null).getPropertyValue('position');
             if (index !== 'auto' && position !== 'static') {
                 childrenZindex.push(index);
             }
         }
     }
     childrenZindex.push('999');
-    let siblingsZindex: string[] = [];
+    const siblingsZindex: string[] = [];
     if (!isNullOrUndefined(element.parentElement) && element.parentElement.tagName !== 'BODY') {
-        let childNodes: HTMLElement[] = [].slice.call(element.parentElement.children);
+        const childNodes: HTMLElement[] = [].slice.call(element.parentElement.children);
         for (let i: number = 0; i < childNodes.length; i++) {
-            let index: string = document.defaultView.getComputedStyle(childNodes[i], null).getPropertyValue('z-index');
-            let position: string = document.defaultView.getComputedStyle(childNodes[i], null).getPropertyValue('position');
+            const index: string = document.defaultView.getComputedStyle(childNodes[i], null).getPropertyValue('z-index');
+            const position: string = document.defaultView.getComputedStyle(childNodes[i], null).getPropertyValue('position');
             if (index !== 'auto' && position !== 'static') {
                 siblingsZindex.push(index);
             }
         }
     }
-    let finalValue: string[] = parentZindex.concat(childrenZindex, siblingsZindex);
-    let currentZindexValue: number = Math.max.apply(Math, finalValue) + 1;
-    // Checking the max-zindex value
+    const finalValue: string[] = parentZindex.concat(childrenZindex, siblingsZindex);
+    // eslint-disable-next-line
+    const currentZindexValue: number = Math.max.apply(Math, finalValue) + 1;
     return currentZindexValue > 2147483647 ? 2147483647 : currentZindexValue;
 }
 /**
  * Gets the maximum z-index of the page.
+ *
+ * @returns {void}
  * @param { HTMLElement } tagName - Specify the tagName to get the maximum z-index of it.
  * @private
  */
 export function getMaxZindex(tagName: string[] = ['*']): number {
-    let maxZindex: string[] = [];
+    const maxZindex: string[] = [];
     for (let i: number = 0; i < tagName.length; i++ ) {
-        let elements: NodeListOf<Element> = document.getElementsByTagName(tagName[i]);
+        const elements: HTMLCollectionOf<Element> = document.getElementsByTagName(tagName[i]);
         for (let i: number = 0; i < elements.length; i++) {
-            let index: string = document.defaultView.getComputedStyle(elements[i], null).getPropertyValue('z-index');
-            let position: string = document.defaultView.getComputedStyle(elements[i], null).getPropertyValue('position');
+            const index: string = document.defaultView.getComputedStyle(elements[i], null).getPropertyValue('z-index');
+            const position: string = document.defaultView.getComputedStyle(elements[i], null).getPropertyValue('position');
             if (index !== 'auto' && position !== 'static') {
                 maxZindex.push(index);
             }
         }
     }
-    let currentZindexValue: number = Math.max.apply(Math, maxZindex) + 1;
+    // eslint-disable-next-line
+    const currentZindexValue: number = Math.max.apply(Math, maxZindex) + 1;
     return currentZindexValue > 2147483647 ? 2147483647 : currentZindexValue;
 }

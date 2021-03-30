@@ -1,11 +1,12 @@
+/* eslint-disable */
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-/** 
+/**
  * @private
  */
 export interface DictionaryInfo<K, V> {
-    /* tslint:disable */
+
 }
-/** 
+/**
  * @private
  */
 export class Dictionary<K, V> implements DictionaryInfo<K, V> {
@@ -15,13 +16,13 @@ export class Dictionary<K, V> implements DictionaryInfo<K, V> {
     /**
      * @private
      */
-    get length(): number {
+    public get length(): number {
         return this.keysInternal.length;
     }
     /**
      * @private
      */
-    get keys(): K[] {
+    public get keys(): K[] {
         return this.keysInternal;
     }
 
@@ -52,7 +53,8 @@ export class Dictionary<K, V> implements DictionaryInfo<K, V> {
         }
         let index: number = this.keysInternal.indexOf(key);
         if (index < 0 || index > this.keysInternal.length - 1) {
-            throw new RangeError('No item with the specified key has been added.');
+            return undefined;
+            //throw new RangeError('No item with the specified key has been added.');
         } else {
             return this.valuesInternal[index];
         }

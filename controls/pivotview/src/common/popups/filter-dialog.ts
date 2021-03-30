@@ -205,7 +205,7 @@ export class FilterDialog {
         editorTreeWrapper.appendChild(selectAllWrapper);
         editorTreeWrapper.appendChild(promptDiv);
         this.editorSearch = new MaskedTextBox({
-            placeholder: this.parent.localeObj.getConstant('search') + ' ' + '"' + filterCaption + '"',
+            placeholder: this.parent.localeObj.getConstant('search') + ' ' + '&#8220' + filterCaption + '&#8220',
             enableRtl: this.parent.enableRtl,
             cssClass: cls.EDITOR_SEARCH_CLASS,
             showClearButton: true,

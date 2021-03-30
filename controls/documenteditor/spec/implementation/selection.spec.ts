@@ -15,7 +15,7 @@ import { WSectionFormat, WCharacterFormat, WParagraphFormat } from '../../src/do
 /**
  * Selection Module Test Script
  */
-/* tslint:disable */
+/* eslint-disable */
 
 function selection_document() {
     let selection_document_: object = {

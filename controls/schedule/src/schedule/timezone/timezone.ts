@@ -1,11 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Time zone
  */
 export class Timezone {
+    public timezoneData: Record<string, string>[] = [];
+
+    constructor() {
+        this.timezoneData = this.getTimezoneData();
+    }
+
     public offset(date: Date, timezone: string): number {
-        let localOffset: number = date.getTimezoneOffset();
+        const localOffset: number = date.getTimezoneOffset();
         try {
-            let convertedDate: Date = new Date(date.toLocaleString('en-US', { timeZone: timezone }));
+            const convertedDate: Date = new Date(date.toLocaleString('en-US', { timeZone: timezone }));
             if (!isNaN(convertedDate.getTime())) {
                 return ((date.getTime() - convertedDate.getTime()) / 60000) + localOffset;
             }
@@ -14,6 +21,7 @@ export class Timezone {
             return 0;
         }
     }
+
     public convert(date: Date, fromOffset: number | string, toOffset: number | string): Date {
         if (typeof fromOffset === 'string') {
             fromOffset = this.offset(date, fromOffset);
@@ -21,27 +29,35 @@ export class Timezone {
         if (typeof toOffset === 'string') {
             toOffset = this.offset(date, toOffset);
         }
-        let fromLocalOffset: number = date.getTimezoneOffset();
+        const fromLocalOffset: number = date.getTimezoneOffset();
         date = new Date(date.getTime() + (fromOffset - toOffset) * 60000);
-        let toLocalOffset: number = date.getTimezoneOffset();
+        const toLocalOffset: number = date.getTimezoneOffset();
         return new Date(date.getTime() + (toLocalOffset - fromLocalOffset) * 60000);
     }
+
     public add(date: Date, timezone: string): Date {
-        return this.convert(date, <number & string>date.getTimezoneOffset(), <number & string>timezone);
+        return this.convert(date, date.getTimezoneOffset(), timezone);
     }
+
     public remove(date: Date, timezone: string): Date {
-        return this.convert(date, <number & string>timezone, <number & string>date.getTimezoneOffset());
+        return this.convert(date, timezone, date.getTimezoneOffset());
     }
+
     public removeLocalOffset(date: Date): Date {
-        return new Date(+date - (date.getTimezoneOffset() * 60000));
+        return new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
     }
+
     public getLocalTimezoneName(): string {
-        return (<{ [key: string]: Object } & Window>window).Intl ?
-            Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC' : 'UTC';
+        return (window as any).Intl ? Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC' : 'UTC';
     }
+
+    private getTimezoneData(): Record<string, string>[] {
+        return timezoneData;
+    }
+
 }
 
-export let timezoneData: { [key: string]: Object }[] = [
+export const timezoneData: Record<string, string>[] = [
     { Value: 'Pacific/Niue', Text: '(UTC-11:00) Niue' },
     { Value: 'Pacific/Pago_Pago', Text: '(UTC-11:00) Pago Pago' },
     { Value: 'Pacific/Honolulu', Text: '(UTC-10:00) Hawaii Time' },

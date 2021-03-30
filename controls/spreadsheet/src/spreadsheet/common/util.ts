@@ -1,20 +1,21 @@
-import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent } from '@syncfusion/ej2-base';
+import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent, detach, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions } from './index';
 import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj } from './index';
 import { Spreadsheet } from '../base/index';
-import { SheetModel, getRowsHeight, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, clearCells } from '../../workbook/index';
-import { RangeModel, getRangeIndexes, Workbook, wrap, setRowHeight, insertModel, InsertDeleteModelArgs,  } from '../../workbook/index';
+import { SheetModel, getRowsHeight, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, clearCells, setCellFormat, RowModel } from '../../workbook/index';
+import { RangeModel, getRangeIndexes, Workbook, wrap, setRowHeight, insertModel, InsertDeleteModelArgs  } from '../../workbook/index';
 import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight, setMerge } from '../../workbook/index';
 import { ValidationModel, setValidation, removeValidation, clearCFRule, setCFRule, ConditionalFormatModel } from '../../workbook/index';
-import { removeSheetTab, rowHeightChanged, replace } from './index';
+import { removeSheetTab, rowHeightChanged } from './index';
 import { getCellIndexes, getCell, ChartModel, setChart, refreshChartSize } from '../../workbook/index';
 import { deleteChart } from '../../spreadsheet/index';
 import { initiateFilterUI } from './event';
 
 /**
  * The function used to update Dom using requestAnimationFrame.
+ *
  * @param  {Function} fn - Function that contains the actual action
- * @return {Promise<T>}
+ * @returns {void}
  * @hidden
  */
 export function getUpdateUsingRaf(fn: Function): void {
@@ -25,7 +26,10 @@ export function getUpdateUsingRaf(fn: Function): void {
 
 /**
  * The function used to remove the dom element children.
- * @param  parent - 
+ *
+ * @param  {Element} parent - Specify the parent
+ * @param {number} index - specify the index.
+ * @returns {void} - The function used to get colgroup width based on the row index.
  * @hidden
  */
 export function removeAllChildren(parent: Element, index?: number): void {
@@ -36,7 +40,9 @@ export function removeAllChildren(parent: Element, index?: number): void {
 
 /**
  * The function used to get colgroup width based on the row index.
- * @param  parent - 
+ *
+ * @param  {number} index - Specify the index
+ * @returns {number} - The function used to get colgroup width based on the row index.
  * @hidden
  */
 export function getColGroupWidth(index: number): number {
@@ -49,10 +55,13 @@ export function getColGroupWidth(index: number): number {
 
 let scrollAreaWidth: number = null;
 
-/** @hidden */
+/**
+ * @hidden
+ * @returns {number} - To get scrollbar width
+ */
 export function getScrollBarWidth(): number {
     if (scrollAreaWidth !== null) { return scrollAreaWidth; }
-    let htmlDivNode: HTMLDivElement = document.createElement('div');
+    const htmlDivNode: HTMLDivElement = document.createElement('div');
     let result: number = 0;
     htmlDivNode.style.cssText = 'width:100px;height: 100px;overflow: scroll;position: absolute;top: -9999px;';
     document.body.appendChild(htmlDivNode);
@@ -61,24 +70,33 @@ export function getScrollBarWidth(): number {
     return scrollAreaWidth = result;
 }
 
-let classes: string[] = ['e-ribbon', 'e-formula-bar-panel', 'e-sheet-tab-panel', 'e-header-toolbar'];
+const classes: string[] = ['e-ribbon', 'e-formula-bar-panel', 'e-sheet-tab-panel', 'e-header-toolbar'];
 
-/** @hidden */
+/**
+ * @hidden
+ * @param {HTMLElement} element - Specify the element.
+ * @param {string[]} classList - Specify the classList.
+ * @returns {number} - get Siblings Height
+ */
 export function getSiblingsHeight(element: HTMLElement, classList: string[] = classes): number {
-    let previous: number = getHeightFromDirection(element, 'previous', classList);
-    let next: number = getHeightFromDirection(element, 'next', classList);
+    const previous: number = getHeightFromDirection(element, 'previous', classList);
+    const next: number = getHeightFromDirection(element, 'next', classList);
     return previous + next;
 }
 
+/**
+ * @param {HTMLElement} element - Specify the element.
+ * @param {string} direction - Specify the direction.
+ * @param {string[]} classList - Specify the classList.
+ * @returns {number} - get Height FromDirection
+ */
 function getHeightFromDirection(element: HTMLElement, direction: string, classList: string[]): number {
-    // tslint:disable-next-line:no-any
     let sibling: HTMLElement = (element)[direction + 'ElementSibling'];
     let result: number = 0;
     while (sibling) {
         if (classList.some((value: string) => sibling.classList.contains(value))) {
             result += sibling.offsetHeight;
         }
-        // tslint:disable-next-line:no-any
         sibling = (sibling)[direction + 'ElementSibling'];
     }
 
@@ -87,13 +105,17 @@ function getHeightFromDirection(element: HTMLElement, direction: string, classLi
 
 /**
  * @hidden
+ * @param {Spreadsheet} context - Specify the spreadsheet.
+ * @param {number[]} range - Specify the range.
+ * @param {boolean} isModify - Specify the boolean value.
+ * @returns {boolean} - Returns boolean value.
  */
 export function inView(context: Spreadsheet, range: number[], isModify?: boolean): boolean {
     if (context.scrollSettings.enableVirtualization) {
-        let topIdx: number = context.viewport.topIndex;
-        let leftIdx: number = context.viewport.leftIndex;
-        let bottomIdx: number = topIdx + context.viewport.rowCount + context.getThreshold('row') * 2;
-        let rightIdx: number = leftIdx + context.viewport.colCount + context.getThreshold('col') * 2;
+        const topIdx: number = context.viewport.topIndex;
+        const leftIdx: number = context.viewport.leftIndex;
+        const bottomIdx: number = topIdx + context.viewport.rowCount + context.getThreshold('row') * 2;
+        const rightIdx: number = leftIdx + context.viewport.colCount + context.getThreshold('col') * 2;
         let inView: boolean = topIdx <= range[0] && bottomIdx >= range[2] && leftIdx <= range[1] && rightIdx >= range[3];
         if (inView) { return true; }
         if (isModify) {
@@ -130,36 +152,230 @@ export function inView(context: Spreadsheet, range: number[], isModify?: boolean
 
 /**
  * To get the top left cell position in viewport.
+ *
  * @hidden
+ * @param {SheetModel} sheet - Specify the sheet.
+ * @param {number[]} indexes - specify the indexes.
+ * @param {number} frozenRow - Specidy the frozen row.
+ * @param {number} frozenColumn - Specify the frozen column
+ * @returns {number} - To get the top left cell position in viewport.
  */
 export function getCellPosition(
     sheet: SheetModel, indexes: number[],
-    offset: { left: IOffset, top: IOffset } = { left: { idx: 0, size: 0 }, top: { idx: 0, size: 0 } }): { top: number, left: number } {
-    let i: number;
+    frozenRow?: number, frozenColumn?: number, freezeScrollHeight?: number, freezeScrollWidth?: number,
+    rowHdrWidth?: number): { top: number, left: number } {
+    let i: number; const offset: { left: IOffset, top: IOffset } = { left: { idx: 0, size: 0 }, top: { idx: 0, size: 0 } };
     let top: number = offset.top.size;
     let left: number = offset.left.size;
     for (i = offset.top.idx; i < indexes[0]; i++) {
+        if (frozenRow) {
+            if (frozenRow - 1 < indexes[0] && i < frozenRow) { continue; }
+        }
         top += getRowsHeight(sheet, i);
     }
     for (i = offset.left.idx; i < indexes[1]; i++) {
+        if (frozenColumn && frozenColumn - 1 < indexes[1] && i < frozenColumn) { continue; }
         left += getColumnsWidth(sheet, i);
+    }
+    if (frozenRow && indexes[0] < frozenRow) {
+        if (sheet.showHeaders) { top += 30; }
+        if (freezeScrollHeight) { top -= freezeScrollHeight; }
+    }
+    if (frozenColumn && indexes[1] < frozenColumn) {
+        if (sheet.showHeaders) { left += rowHdrWidth ? rowHdrWidth : 30; }
+        if (freezeScrollWidth) { left -= freezeScrollWidth; }
     }
     return { top: top, left: left };
 }
 
 /**
- * Position element with given range
  * @hidden
  */
+export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number[], cls: string = 'e-selection'): void {
+    const sheet: SheetModel = parent.getActiveSheet();
+    if (sheet.frozenRows || sheet.frozenColumns) {
+        let content: HTMLElement;
+        const frozenRow: number = parent.frozenRowCount(sheet); let frozenCol: number = parent.frozenColCount(sheet);
+        if (cls === 'e-active-cell') {
+            if (range[0] < frozenRow || range[1] < frozenCol) {
+                ele.style.display = 'none';
+                content = range[0] < frozenRow && range[1] < frozenCol ? parent.getSelectAllContent() :
+                    (range[0] < frozenRow ? parent.getColumnHeaderContent() : parent.getRowHeaderContent());
+                let rangeEle: HTMLElement = content.querySelector('.' + cls);
+                if (!rangeEle) { rangeEle = ele.cloneNode(true) as HTMLElement; content.appendChild(rangeEle); }
+                ele = rangeEle;
+                locateElem(
+                    ele, range, sheet, parent.enableRtl, frozenRow, frozenCol, true, parent.viewport.beforeFreezeHeight,
+                    parent.viewport.beforeFreezeWidth, parent.sheetModule.colGroupWidth);
+            } else {
+                locateElem(ele, range, sheet, parent.enableRtl, frozenRow, frozenCol);
+            }
+            if (ele.style.display) { ele.style.display = ''; }
+            removeRangeEle(parent.getSelectAllContent(), content, true);
+            removeRangeEle(parent.getColumnHeaderContent(), content, true);
+            removeRangeEle(parent.getRowHeaderContent(), content, true);
+        } else {
+            const swapRange: number[] = getSwapRange(range);
+            if (swapRange[0] < frozenRow || swapRange[1] < frozenCol) {
+                ele.classList.add('e-hide');
+                const ranges: number[][] = [];
+                if (swapRange[0] < frozenRow && swapRange[1] < frozenCol) {
+                    if (swapRange[2] < frozenRow && swapRange[3] < frozenCol) {
+                        ranges.push(range);
+                        removeRangeEle(parent.getColumnHeaderContent(), content, false);
+                        removeRangeEle(parent.getRowHeaderContent(), content, false);
+                    } else if (swapRange[2] > frozenRow - 1) {
+                        if (swapRange[3] < frozenCol) {
+                            removeRangeEle(parent.getColumnHeaderContent(), content, false);
+                            ranges.push([swapRange[0], swapRange[1], frozenRow - 1, swapRange[3]]);
+                            ranges.push([frozenRow, swapRange[1], swapRange[2], swapRange[3]]);
+                        } else {
+                            ranges.push([swapRange[0], swapRange[1], frozenRow - 1, frozenCol - 1]);
+                            ranges.push([frozenRow, swapRange[1], swapRange[2], frozenCol - 1]);
+                            ranges.push([swapRange[0], frozenCol, frozenRow - 1, swapRange[3]]);
+                            ranges.push([frozenRow, frozenCol, swapRange[2], swapRange[3]]);
+                        }
+                    } else {
+                        if (swapRange[2] < frozenRow) {
+                            ranges.push([swapRange[0], swapRange[1], swapRange[2], frozenCol - 1]);
+                            ranges.push([swapRange[0], frozenCol, swapRange[2], swapRange[3]]);
+                            removeRangeEle(parent.getRowHeaderContent(), content, false);
+                        } else {
+                            ranges.push([frozenRow, swapRange[1], swapRange[2], frozenCol - 1]);
+                            ranges.push([swapRange[0], swapRange[1], frozenRow - 1, frozenCol - 1]);
+                            ranges.push([frozenRow, frozenCol, swapRange[2], swapRange[3]]);
+                            ranges.push([swapRange[0], frozenCol, frozenRow - 1, swapRange[3]]);
+                        }
+                    }
+                } else if (swapRange[0] < frozenRow) {
+                    if (swapRange[2] < frozenRow) {
+                        ranges.push(range);
+                    } else {
+                        ranges.push([swapRange[0], swapRange[1], frozenRow - 1, swapRange[3]]);
+                        ranges.push([frozenRow, swapRange[1], swapRange[2], swapRange[3]]);
+                        removeRangeEle(parent.getSelectAllContent(), content, false);
+                        removeRangeEle(parent.getRowHeaderContent(), content, false);
+                    }
+                } else {
+                    if (swapRange[3] < frozenCol) {
+                        ranges.push(range);
+                    } else {
+                        ranges.push([swapRange[0], swapRange[1], swapRange[2], frozenCol - 1]);
+                        ranges.push([swapRange[0], frozenCol, swapRange[2], swapRange[3]]);
+                        removeRangeEle(parent.getSelectAllContent(), content, false);
+                        removeRangeEle(parent.getColumnHeaderContent(), content, false);
+                    }
+                }
+                let removeEle: Element;
+                ranges.forEach((rng: number[]): void => {
+                    content = rng[2] < frozenRow && rng[3] < frozenCol ? parent.getSelectAllContent() :
+                        (rng[2] < frozenRow ? parent.getColumnHeaderContent() : (rng[3] < frozenCol ?
+                            parent.getRowHeaderContent() : parent.getMainContent() as HTMLElement));
+                    let rangeEle: HTMLElement;
+                    if (cls === 'e-copy-indicator' || cls === 'e-range-indicator') {
+                        rangeEle = ele.cloneNode(true) as HTMLElement; content.appendChild(rangeEle);
+                        if (frozenRow) {
+                            if (rng[2] + 1 === frozenRow) {
+                                ranges.forEach((subRng: number[]): void => {
+                                    if (subRng != rng) {
+                                        removeEle = rangeEle.getElementsByClassName('e-bottom')[0];
+                                        if (removeEle && subRng[0] === frozenRow) { detach(removeEle); }
+                                    }
+                                });
+                            }
+                            if (rng[0] === frozenRow && content.parentElement.classList.contains('e-main-panel')) {
+                                ranges.forEach((subRng: number[]): void => {
+                                    if (subRng != rng) {
+                                        removeEle = rangeEle.getElementsByClassName('e-top')[0];
+                                        if (removeEle && subRng[2] + 1 === frozenRow) { detach(removeEle); }
+                                    }
+                                });
+                            }
+                        }
+                        if (frozenCol) {
+                            if (rng[3] + 1 === frozenCol) {
+                                ranges.forEach((subRng: number[]): void => {
+                                    if (subRng != rng) {
+                                        removeEle = rangeEle.getElementsByClassName('e-right')[0];
+                                        if (removeEle && subRng[1] === frozenCol) { detach(removeEle); }
+                                    }
+                                });
+                            }
+                            if (rng[1] === frozenCol && (content.classList.contains('e-sheet-content') || content.classList.contains('e-column-header'))) {
+                                ranges.forEach((subRng: number[]): void => {
+                                    if (subRng != rng) {
+                                        removeEle = rangeEle.getElementsByClassName('e-left')[0];
+                                        if (removeEle && subRng[3] + 1 === frozenCol) { detach(removeEle); }
+                                    }
+                                });
+                            }
+                        }
+                    } else {
+                        rangeEle = content.querySelector('.' + cls);
+                        if (!rangeEle) {
+                            rangeEle = ele.cloneNode(true) as HTMLElement; content.appendChild(rangeEle);
+                        }
+                    }
+                    locateElem(
+                        rangeEle, rng, sheet, parent.enableRtl, frozenRow, frozenCol, false, parent.viewport.beforeFreezeHeight,
+                        parent.viewport.beforeFreezeWidth, parent.sheetModule.colGroupWidth);
+                    if (rangeEle.classList.contains('e-hide')) { rangeEle.classList.remove('e-hide'); }
+                });
+            } else {
+                removeRangeEle(parent.getSelectAllContent(), null, false);
+                removeRangeEle(parent.getColumnHeaderContent(), null, false);
+                removeRangeEle(parent.getRowHeaderContent(), null, false);
+                locateElem(ele, range, sheet, parent.enableRtl, frozenRow, frozenCol);
+                if (cls === 'e-range-indicator' || !parent.getMainContent().querySelector('.' + cls)) {
+                    parent.getMainContent().appendChild(ele);
+                }
+            }
+        }
+    } else {
+        locateElem(ele, range, sheet, parent.enableRtl, 0, 0);
+        if (ele && !parent.getMainContent().querySelector('.' + cls)) { parent.getMainContent().appendChild(ele); }
+    }
+}
+/**
+ * @hidden
+ */
+export function removeRangeEle(content: Element, checkEle: HTMLElement, checkActiveCell: boolean): void {
+    let ele: HTMLElement;
+    if (checkActiveCell) {
+        if (content !== checkEle) {
+            ele = content.querySelector('.e-active-cell');
+            if (ele) { detach(ele); }
+        }
+    } else {
+        ele = content.querySelector('.e-selection');
+        if (ele) { detach(ele); }
+    }
+}
+
+/**
+ * Position element with given range
+ *
+ * @hidden
+ * @param {HTMLElement} ele - Specify the element.
+ * @param {number[]} range - specify the range.
+ * @param {SheetModel} sheet - Specify the sheet.
+ * @param {boolean} isRtl - Specify the boolean value.
+ * @param {number} frozenRow - Specidy the frozen row.
+ * @param {number} frozenColumn - Specify the frozen column
+ * @returns {void} - Position element with given range
+ */
 export function locateElem(
-    ele: HTMLElement, range: number[], sheet: SheetModel, isRtl: boolean, offset?: { left: IOffset, top: IOffset }): void {
+    ele: HTMLElement, range: number[], sheet: SheetModel, isRtl: boolean, frozenRow?: number, frozenColumn?: number,
+    isActiveCell?: boolean, freezeScrollHeight?: number, freezeScrollWidth?: number, rowHdrWidth?: number): void {
     let swapRange: number[] = getSwapRange(range);
-    let cellPosition: { top: number, left: number } = getCellPosition(sheet, swapRange, offset);
+    let cellPosition: { top: number, left: number } = getCellPosition(
+        sheet, swapRange, frozenRow, frozenColumn, freezeScrollHeight, freezeScrollWidth, rowHdrWidth);
     let startIndex: number[] = [skipHiddenIdx(sheet, 0, true), skipHiddenIdx(sheet, 0, true, 'columns')];
     let attrs: { [key: string]: string } = {
         'top': (swapRange[0] === startIndex[0] ? cellPosition.top : cellPosition.top - 1) + 'px',
         'height': getRowsHeight(sheet, range[0], range[2]) + (swapRange[0] === startIndex[0] ? 0 : 1) + 'px',
-        'width': getColumnsWidth(sheet, range[1], range[3]) + (swapRange[1] === startIndex[1] ? 0 : 1) + 'px'
+        'width': getColumnsWidth(sheet, range[1], range[3]) + (swapRange[1] === startIndex[1] ? 0 : 1) + (isActiveCell && frozenColumn &&
+            swapRange[1] < frozenColumn && swapRange[3] >= frozenColumn ? 1 : 0) + 'px'
     };
     attrs[isRtl ? 'right' : 'left'] = (swapRange[1] === startIndex[1] ? cellPosition.left : cellPosition.left - 1) + 'px';
     if (ele) { setStyleAttribute([{ element: ele, attrs: attrs }]); }
@@ -167,7 +383,10 @@ export function locateElem(
 
 /**
  * To update element styles using request animation frame
+ *
  * @hidden
+ * @param {StyleType[]} styles - Specify the styles
+ * @returns {void} - To update element styles using request animation frame
  */
 export function setStyleAttribute(styles: StyleType[]): void {
     requestAnimationFrame(() => {
@@ -179,6 +398,7 @@ export function setStyleAttribute(styles: StyleType[]): void {
 
 /**
  * @hidden
+ * @returns {string} - to get Start Event
  */
 export function getStartEvent(): string {
     return (Browser.isPointer ? 'pointerdown' : 'mousedown touchstart');
@@ -186,6 +406,7 @@ export function getStartEvent(): string {
 
 /**
  * @hidden
+ * @returns {string} - to get Move Event
  */
 export function getMoveEvent(): string {
     return (Browser.isPointer ? 'pointermove' : 'mousemove touchmove');
@@ -193,6 +414,7 @@ export function getMoveEvent(): string {
 
 /**
  * @hidden
+ * @returns {string} - Returns string value.
  */
 export function getEndEvent(): string {
     return (Browser.isPointer ? 'pointerup' : 'mouseup touchend');
@@ -200,6 +422,8 @@ export function getEndEvent(): string {
 
 /**
  * @hidden
+ * @param {Event} e - To specify the event.
+ * @returns {boolean} - Returns boolean value.
  */
 export function isTouchStart(e: Event): boolean {
     return e.type === 'touchstart' || (e.type === 'pointerdown' && (e as PointerEvent).pointerType === 'touch');
@@ -207,6 +431,8 @@ export function isTouchStart(e: Event): boolean {
 
 /**
  * @hidden
+ * @param {Event} e - To specify the event.
+ * @returns {boolean} - Returns boolean value.
  */
 export function isTouchMove(e: Event): boolean {
     return e.type === 'touchmove' || (e.type === 'pointermove' && (e as PointerEvent).pointerType === 'touch');
@@ -214,9 +440,34 @@ export function isTouchMove(e: Event): boolean {
 
 /**
  * @hidden
+ * @param {Event} e - To specify the event.
+ * @returns {boolean} - Returns boolean value.
  */
 export function isTouchEnd(e: Event): boolean {
     return e.type === 'touchend' || (e.type === 'pointerup' && (e as PointerEvent).pointerType === 'touch');
+}
+
+/**
+ * @hidden
+ * @param {TouchEvent | MouseEvent} e - To specify the mouse and touch event.
+ * @returns {number} - To get client value
+ */
+export function isMouseDown(e: MouseEvent): boolean {
+    return e && (e.type === 'mousedown' || e.type === 'pointerdown');
+}
+
+/**
+ * @hidden
+ */
+export function isMouseMove(e: MouseEvent): boolean {
+    return e && (e.type === 'mousemove' || e.type === 'pointermove');
+}
+
+/**
+ * @hidden
+ */
+export function isMouseUp(e: MouseEvent): boolean {
+    return e && (e.type === 'mouseup' || e.type === 'pointerup');
 }
 
 /**
@@ -228,6 +479,8 @@ export function getClientX(e: TouchEvent & MouseEvent): number {
 
 /**
  * @hidden
+ * @param {MouseEvent | TouchEvent} e - To specify the mouse and touch event.
+ * @returns {number} - To get client value
  */
 export function getClientY(e: MouseEvent & TouchEvent): number {
     return e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
@@ -241,31 +494,43 @@ const config: IAriaOptions<string> = {
     colcount: 'aria-colcount'
 };
 
-/** @hidden */
+/**
+ * @hidden
+ * @param {HTMLElement} target - specify the target.
+ * @param {IAriaOptions<boolean>} options - Specify the options.
+ * @returns {void} -  to set Aria Options
+ */
 export function setAriaOptions(target: HTMLElement, options: IAriaOptions<boolean>): void {
-    let props: string[] = Object.keys(options);
+    const props: string[] = Object.keys(options);
     props.forEach((name: string) => {
         if (target) { target.setAttribute(config[name], <string>options[name]); }
     });
 }
 
 /**
- * @hidden 
+ * @hidden
+ * @param {HTMLElement} element - specify the element.
+ * @param {Object} component - Specify the component.
+ * @returns {void} -  to destroy the component.
  */
 export function destroyComponent(element: HTMLElement, component: Object): void {
     if (element) {
-        let compObj: Object = getComponent(element, component);
+        const compObj: Object = getComponent(element, component);
         if (compObj) {
             (<{ destroy: Function }>compObj).destroy();
         }
     }
 }
 
-/** 
+/**
  * @hidden
+ * @param {number} index - Specify the index
+ * @param {string} value - Specify the value.
+ * @param {boolean} isCol - Specify the boolean value.
+ * @param {Spreadsheet} parent - Specify the parent.
+ * @returns {void} - To set resize.
  */
-// tslint:disable-next-line:max-func-body-length
-export function setResize(index: number, value: string, isCol: boolean, parent: Spreadsheet): void {
+export function setResize(idx: number, index: number, value: string, isCol: boolean, parent: Spreadsheet): void {
     let curEle: HTMLElement;
     let curEleH: HTMLElement;
     let curEleC: HTMLElement;
@@ -275,37 +540,34 @@ export function setResize(index: number, value: string, isCol: boolean, parent: 
     let nxtEle: HTMLElement;
     let nxtEleH: HTMLElement;
     let nxtEleC: HTMLElement;
-    let sheet: SheetModel = parent.getActiveSheet();
+    const sheet: SheetModel = parent.getActiveSheet();
+    const frozenRow: number = parent.frozenRowCount(sheet); const frozenCol: number = parent.frozenColCount(sheet);
     if (isCol) {
-        if (sheet.showHeaders) {
-            curEle = parent.element.getElementsByClassName('e-column-header')[0].getElementsByTagName('th')[index];
-            curEleH = parent.element.getElementsByClassName('e-column-header')[0].getElementsByTagName('col')[index];
-        }
-        curEleC = parent.element.getElementsByClassName('e-sheet-content')[0].getElementsByTagName('col')[index];
+        let header: Element = idx < frozenCol ? parent.getSelectAllContent() : parent.getColumnHeaderContent();
+        curEle = header.getElementsByTagName('th')[index]; curEleH = header.getElementsByTagName('col')[index];
+        curEleC = (idx < frozenCol ? parent.getRowHeaderContent() : parent.getMainContent()).getElementsByTagName('col')[index];
     } else {
-        if (sheet.showHeaders) {
-            curEle = parent.element.getElementsByClassName('e-row-header')[0].getElementsByTagName('tr')[index];
-            curEleH = parent.element.getElementsByClassName('e-row-header')[0].getElementsByTagName('tr')[index];
-            curEleH.style.height = parseInt(value, 10) > 0 ? value : '2px';
-        }
-        curEleC = parent.element.getElementsByClassName('e-sheet-content')[0].getElementsByTagName('tr')[index];
+        curEle = curEleH = frozenRow || frozenCol ? parent.getRow(idx, null, frozenCol - 1) :
+            parent.getRow(idx, parent.getRowHeaderTable());
+        curEleH.style.height = parseInt(value, 10) > 0 ? value : '2px';
+        curEleC = parent.getRow(idx, null, frozenCol);
         curEleC.style.height = parseInt(value, 10) > 0 ? value : '0px';
         let hdrFntSize: number;
         if (sheet.showHeaders) {
-            let hdrRow: HTMLCollectionOf<HTMLTableRowElement> =
+            const hdrRow: HTMLCollectionOf<HTMLTableRowElement> =
                 parent.getRowHeaderContent().getElementsByClassName('e-row') as HTMLCollectionOf<HTMLTableRowElement>;
-            let hdrClone: HTMLElement[] = [];
+            const hdrClone: HTMLElement[] = [];
             hdrClone[0] = hdrRow[index].getElementsByTagName('td')[0].cloneNode(true) as HTMLElement;
             hdrFntSize = findMaxValue(parent.getRowHeaderTable(), hdrClone, false, parent) + 1;
         }
-        let contentRow: HTMLCollectionOf<HTMLTableRowElement> =
+        const contentRow: HTMLCollectionOf<HTMLTableRowElement> =
             parent.getMainContent().getElementsByClassName('e-row') as HTMLCollectionOf<HTMLTableRowElement>;
-        let contentClone: HTMLElement[] = [];
+        const contentClone: HTMLElement[] = [];
         for (let idx: number = 0; idx < contentRow[index].getElementsByTagName('td').length; idx++) {
             contentClone[idx] = contentRow[index].getElementsByTagName('td')[idx].cloneNode(true) as HTMLElement;
         }
-        let cntFntSize: number = findMaxValue(parent.getContentTable(), contentClone, false, parent) + 1;
-        let fntSize: number = hdrFntSize >= cntFntSize ? hdrFntSize : cntFntSize;
+        const cntFntSize: number = findMaxValue(parent.getContentTable(), contentClone, false, parent) + 1;
+        const fntSize: number = hdrFntSize >= cntFntSize ? hdrFntSize : cntFntSize;
         if (parseInt(curEleC.style.height, 10) < fntSize ||
             (curEle && curEle.classList.contains('e-reach-fntsize') && parseInt(curEleC.style.height, 10) === fntSize)) {
             if (sheet.showHeaders) {
@@ -486,10 +748,10 @@ export function setResize(index: number, value: string, isCol: boolean, parent: 
         }
     } else if (parseInt(value, 10) > 0) {
         if (isCol) {
-            if (sheet.showHeaders) { curEleH.style.width = value; }
+            curEleH.style.width = value;
             curEleC.style.width = value;
         } else {
-            if (sheet.showHeaders) { curEleH.style.height = value; }
+            curEleH.style.height = value;
             curEleC.style.height = value;
         }
         if (sheet.showHeaders && preEle && nxtEle) {
@@ -579,7 +841,11 @@ export function setResize(index: number, value: string, isCol: boolean, parent: 
 }
 
 /**
- * @hidden 
+ * @hidden
+ * @param {HTMLElement} trgt - Specify the target element.
+ * @param {number} value - specify the number.
+ * @param {boolean} isCol - Specify the boolean vlaue.
+ * @returns {void} -  to set width and height.
  */
 export function setWidthAndHeight(trgt: HTMLElement, value: number, isCol: boolean): void {
     if (isCol) {
@@ -590,19 +856,26 @@ export function setWidthAndHeight(trgt: HTMLElement, value: number, isCol: boole
 }
 
 /**
- * @hidden 
+ * @hidden
+ * @param {HTMLElement} table - Specify the table.
+ * @param {HTMLElement[]} text - specify the text.
+ * @param {boolean} isCol - Specifyt boolean value
+ * @param {Spreadsheet} parent - Specify the parent.
+ * @param {string} prevData - specify the prevData.
+ * @param {boolean} isWrap - Specifyt boolean value
+ * @returns {number} - To find maximum value.
  */
 export function findMaxValue(
     table: HTMLElement, text: HTMLElement[], isCol: boolean, parent: Spreadsheet, prevData?: string, isWrap?: boolean): number {
-    let myTableDiv: HTMLElement = parent.createElement('div', { className: parent.element.className, styles: 'display: block' });
-    let myTable: HTMLElement = parent.createElement('table', {
+    const myTableDiv: HTMLElement = parent.createElement('div', { className: parent.element.className, styles: 'display: block' });
+    const myTable: HTMLElement = parent.createElement('table', {
         className: table.className + 'e-resizetable',
         styles: 'width: auto;height: auto'
     });
-    let myTr: HTMLElement = parent.createElement('tr');
+    const myTr: HTMLElement = parent.createElement('tr');
     if (isCol) {
         text.forEach((element: Element) => {
-            let tr: Element = (<Element>myTr.cloneNode());
+            const tr: Element = (<Element>myTr.cloneNode());
             tr.appendChild(element);
             myTable.appendChild(tr);
         });
@@ -616,12 +889,24 @@ export function findMaxValue(
     document.body.appendChild(myTableDiv);
     let offsetWidthValue: number;
     let offsetHeightValue: number;
+    let tableMaxWidth: number = myTable.getBoundingClientRect().width;
+    let tableMaxHeight: number = myTable.getBoundingClientRect().height;
     if (!isWrap) {
-        offsetHeightValue = myTable.getBoundingClientRect().height;
-        offsetWidthValue = myTable.getBoundingClientRect().width;
+        offsetHeightValue = tableMaxHeight;
+        offsetWidthValue = tableMaxWidth;
     } else {
-        offsetHeightValue = parseInt(prevData, 10);
-        offsetWidthValue = parseInt(prevData, 10);
+        if (isCol && parseInt(prevData, 10) > tableMaxWidth)
+        {
+            offsetWidthValue = tableMaxWidth;
+        } else {
+            offsetWidthValue = parseInt(prevData, 10);
+        }
+        if (!isCol && parseInt(prevData, 10) > tableMaxHeight)
+        {
+            offsetHeightValue = tableMaxHeight;
+        } else {
+            offsetHeightValue = parseInt(prevData, 10);
+        }  
     }
     document.body.removeChild(myTableDiv);
     if (isCol) {
@@ -631,252 +916,280 @@ export function findMaxValue(
     }
 }
 /**
- * @hidden 
+ * @hidden
+ * @param {CollaborativeEditArgs} options - Specify the collaborative edit arguments.
+ * @param {Spreadsheet} spreadsheet - specify the spreadsheet.
+ * @param {boolean} isRedo - Specifyt he boolean value.
+ * @returns {void} - To update the Action.
  */
-// tslint:disable-next-line
 export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spreadsheet, isRedo?: boolean): void {
-    /* tslint:disable-next-line no-any */
-    let eventArgs: any = options.eventArgs;
+    /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
+    const eventArgs: any = options.eventArgs;
     switch (options.action) {
-        case 'sorting':
-            let args: BeforeSortEventArgs = {
-                range: (options.eventArgs as SortEventArgs).range,
-                sortOptions: (options.eventArgs as SortEventArgs).sortOptions,
-                cancel: false
-            };
-            let promise: Promise<SortEventArgs> = new Promise((resolve: Function, reject: Function) => {
-                resolve((() => { /** */ })());
-            });
-            let sortArgs: { [key: string]: BeforeSortEventArgs | Promise<SortEventArgs> } = { args: args, promise: promise };
-            spreadsheet.notify(initiateSort, sortArgs);
-            (sortArgs.promise as Promise<SortEventArgs>).then((args: SortEventArgs) => {
-                spreadsheet.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getIndexesFromAddress(args.range));
-            });
-            break;
-        case 'cellSave':
-            let cellEvtArgs: CellSaveEventArgs = options.eventArgs as CellSaveEventArgs;
-            let cellValue: CellModel = eventArgs.formula ? { formula: cellEvtArgs.formula } : { value: cellEvtArgs.value };
-            spreadsheet.updateCell(cellValue, cellEvtArgs.address);
-            break;
-        case 'cellDelete':
-            spreadsheet.clearRange(options.eventArgs.address, null, true);
-            spreadsheet.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getRangeIndexes(options.eventArgs.address));
-            break;
-        case 'format':
-            if (eventArgs.requestType === 'CellFormat') {
+    case 'sorting':
+        const args: BeforeSortEventArgs = {
+            range: (options.eventArgs as SortEventArgs).range,
+            sortOptions: (options.eventArgs as SortEventArgs).sortOptions,
+            cancel: false
+        };
+        const promise: Promise<SortEventArgs> = new Promise((resolve: Function, reject: Function) => {
+            resolve((() => { /** */ })());
+        });
+        const sortArgs: { [key: string]: BeforeSortEventArgs | Promise<SortEventArgs> } = { args: args, promise: promise };
+        spreadsheet.notify(initiateSort, sortArgs);
+        (sortArgs.promise as Promise<SortEventArgs>).then((args: SortEventArgs) => {
+            spreadsheet.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getIndexesFromAddress(args.range));
+        });
+        break;
+    case 'cellSave':
+        const cellEvtArgs: CellSaveEventArgs = options.eventArgs as CellSaveEventArgs;
+        const cellValue: CellModel = eventArgs.formula ? { formula: cellEvtArgs.formula } : { value: cellEvtArgs.value };
+        spreadsheet.updateCell(cellValue, cellEvtArgs.address);
+        break;
+    case 'cellDelete':
+        spreadsheet.clearRange(options.eventArgs.address, null, true);
+        spreadsheet.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getRangeIndexes(options.eventArgs.address));
+        break;
+    case 'format':
+        if (eventArgs.requestType === 'CellFormat') {
+            if (eventArgs.style && eventArgs.style.border && !isNullOrUndefined(eventArgs.borderType)) {
+                let style: CellStyleModel = {};
+                Object.assign(style, eventArgs.style, null, true);
+                eventArgs.style.border = undefined;
                 spreadsheet.cellFormat(eventArgs.style, eventArgs.range);
+                eventArgs.style.border = style.border;
+                spreadsheet.setBorder(eventArgs.style, eventArgs.range, eventArgs.borderType);
+                eventArgs.style = style;
             } else {
-                spreadsheet.numberFormat(eventArgs.format, eventArgs.range);
+                spreadsheet.cellFormat(eventArgs.style, eventArgs.range);
             }
-            break;
-        case 'clipboard':
-            if (eventArgs.copiedInfo.isCut && !isRedo) {
-                return;
+        } else {
+            spreadsheet.numberFormat(eventArgs.format, eventArgs.range);
+        }
+        break;
+    case 'clipboard':
+        if (eventArgs.copiedInfo.isCut && !isRedo) {
+            return;
+        }
+        const clipboardPromise: Promise<Object> = eventArgs.copiedInfo.isCut ? spreadsheet.cut(eventArgs.copiedRange)
+            : spreadsheet.copy(eventArgs.copiedRange);
+        clipboardPromise.then((args: Object) => {
+            spreadsheet.paste(eventArgs.pastedRange, eventArgs.type);
+        });
+        break;
+    case 'gridLines':
+        spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[eventArgs.sheetIdx], 'showGridLines', eventArgs.isShow);
+        break;
+    case 'headers':
+        spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[eventArgs.sheetIdx], 'showHeaders', eventArgs.isShow);
+        break;
+    case 'resize':
+    case 'resizeToFit':
+        if (eventArgs.isCol) {
+            if (eventArgs.hide === undefined) {
+                spreadsheet.setColWidth(eventArgs.width, eventArgs.index, eventArgs.sheetIdx);
+            } else {
+                spreadsheet.hideColumn(eventArgs.index, eventArgs.index, eventArgs.hide);
             }
-            let clipboardPromise: Promise<Object> = eventArgs.copiedInfo.isCut ? spreadsheet.cut(eventArgs.copiedRange)
-                : spreadsheet.copy(eventArgs.copiedRange);
-            clipboardPromise.then((args: Object) => {
-                spreadsheet.paste(eventArgs.pastedRange, eventArgs.type);
+        } else {
+            if (eventArgs.hide === undefined) {
+                spreadsheet.setRowHeight(eventArgs.height, eventArgs.index, eventArgs.sheetIdx + 1);
+            } else {
+                spreadsheet.hideRow(eventArgs.index, eventArgs.index, eventArgs.hide);
+            }
+        }
+        break;
+    case 'renameSheet':
+        spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[eventArgs.index - 1], 'name', eventArgs.value);
+        break;
+    case 'removeSheet':
+        spreadsheet.notify(removeSheetTab, {
+            index: eventArgs.index,
+            isAction: true,
+            count: eventArgs.sheetCount,
+            clicked: true
+        });
+        break;
+    case 'wrap':
+        wrap(options.eventArgs.address, options.eventArgs.wrap, spreadsheet);
+        break;
+    case 'hideShow':
+        eventArgs.isCol ? spreadsheet.hideColumn(eventArgs.startIndex, eventArgs.endIndex, eventArgs.hide) :
+            spreadsheet.hideRow(eventArgs.startIndex, eventArgs.endIndex, eventArgs.hide);
+        break;
+    case 'replace':
+        spreadsheet.updateCell({ value: eventArgs.compareVal }, eventArgs.address);
+        break;
+    case 'filter':
+        spreadsheet.notify(initiateFilterUI, { predicates: null, range: eventArgs.range, sIdx: eventArgs.index, isCut: true });
+        break;
+    case 'insert':
+        if (isRedo === false) {
+            spreadsheet.delete(
+                options.eventArgs.index, options.eventArgs.index + (options.eventArgs.model.length - 1), options.eventArgs.modelType);
+        } else {
+            spreadsheet.notify(insertModel, <InsertDeleteModelArgs>{
+                model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
+                    spreadsheet.getActiveSheet(), start: options.eventArgs.index, end: options.eventArgs.index +
+                        (options.eventArgs.model.length - 1), modelType: options.eventArgs.modelType,
+                isAction: false, checkCount: options.eventArgs.sheetCount,
+                activeSheetIndex: options.eventArgs.activeSheetIndex
             });
-            break;
-        case 'gridLines':
-            spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[eventArgs.sheetIdx], 'showGridLines', eventArgs.isShow);
-            break;
-        case 'headers':
-            spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[eventArgs.sheetIdx], 'showHeaders', eventArgs.isShow);
-            break;
-        case 'resize':
-        case 'resizeToFit':
-            if (eventArgs.isCol) {
-                if (eventArgs.hide === undefined) {
-                    spreadsheet.setColWidth(eventArgs.width, eventArgs.index, eventArgs.sheetIdx);
-                } else {
-                    spreadsheet.hideColumn(eventArgs.index, eventArgs.index, eventArgs.hide);
-                }
-            } else {
-                if (eventArgs.hide === undefined) {
-                    spreadsheet.setRowHeight(eventArgs.height, eventArgs.index, eventArgs.sheetIdx);
-                } else {
-                    spreadsheet.hideRow(eventArgs.index, eventArgs.index, eventArgs.hide);
-                }
-            }
-            break;
-        case 'renameSheet':
-            spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[eventArgs.index - 1], 'name', eventArgs.value);
-            break;
-        case 'removeSheet':
-            spreadsheet.notify(removeSheetTab, {
-                index: eventArgs.index,
-                isAction: true,
-                count: eventArgs.sheetCount,
-                clicked: true
+        }
+        break;
+    case 'delete':
+        if (isRedo === false) {
+            spreadsheet.notify(insertModel, <InsertDeleteModelArgs>{
+                model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
+                    spreadsheet.getActiveSheet(), start: options.eventArgs.deletedModel, modelType: options.eventArgs.modelType,
+                isAction: false, columnCellsModel: options.eventArgs.deletedCellsModel
             });
-            break;
-        case 'wrap':
-            wrap(options.eventArgs.address, options.eventArgs.wrap, spreadsheet);
-            break;
-        case 'hideShow':
-            eventArgs.isCol ? spreadsheet.hideColumn(eventArgs.startIndex, eventArgs.endIndex, eventArgs.hide) :
-                spreadsheet.hideRow(eventArgs.startIndex, eventArgs.endIndex, eventArgs.hide);
-            break;
-        case 'replace':
-            spreadsheet.updateCell({ value: eventArgs.compareVal }, eventArgs.address);
-            break;
-        case 'filter':
-            spreadsheet.notify(initiateFilterUI, { predicates: null, range: eventArgs.range, sIdx: eventArgs.index, isCut: true });
-                break;
-        case 'insert':
-            if (isRedo === false) {
-                spreadsheet.delete(
-                    options.eventArgs.index, options.eventArgs.index + (options.eventArgs.model.length - 1), options.eventArgs.modelType);
-            } else {
-                spreadsheet.notify(insertModel, <InsertDeleteModelArgs>{
-                    model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
-                        spreadsheet.getActiveSheet(), start: options.eventArgs.index, end: options.eventArgs.index +
-                            (options.eventArgs.model.length - 1), modelType: options.eventArgs.modelType,
-                    isAction: false, checkCount: options.eventArgs.sheetCount,
-                    activeSheetIndex: options.eventArgs.activeSheetIndex
-                });
-            }
-            break;
-        case 'delete':
-            if (isRedo === false) {
-                spreadsheet.notify(insertModel, <InsertDeleteModelArgs>{
-                    model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
-                        spreadsheet.getActiveSheet(), start: options.eventArgs.deletedModel, modelType: options.eventArgs.modelType,
-                    isAction: false, columnCellsModel: options.eventArgs.deletedCellsModel
-                });
-            } else {
-                spreadsheet.delete(options.eventArgs.startIndex, options.eventArgs.endIndex, options.eventArgs.modelType);
-            }
-            break;
-        case 'validation':
-            if (isRedo) {
-                let rules: ValidationModel = {
-                    type: eventArgs.type, operator: eventArgs.operator, value1: eventArgs.value1,
-                    value2: eventArgs.value2, ignoreBlank: eventArgs.ignoreBlank, inCellDropDown: eventArgs.inCellDropDown
-                };
-                spreadsheet.notify(setValidation, { rules: rules, range: eventArgs.range });
-            } else {
-                spreadsheet.notify(removeValidation, { range: eventArgs.range });
-            }
-            break;
-        case 'merge':
-            options.eventArgs.isAction = false;
-            spreadsheet.notify(setMerge, options.eventArgs);
-            break;
-        case 'clear':
-            spreadsheet.notify(clearViewer, { options: options.eventArgs, isPublic: true });
-            break;
-        case 'conditionalFormat':
-            if (isRedo) {
-                let conditionalFormat: ConditionalFormatModel = {
-                    type: eventArgs.type, cFColor: eventArgs.cFColor, value: eventArgs.value,
-                    range: eventArgs.range
-                };
-                spreadsheet.notify(setCFRule, { conditionalFormat: conditionalFormat });
-            } else {
-                spreadsheet.notify(clearCFRule, { range: eventArgs.range });
-            }
-            break;
-        case 'clearCF':
-            if (isRedo) {
-                spreadsheet.notify(clearCFRule, { range: eventArgs.selectedRange });
-            } else {
-                spreadsheet.notify(clearCells, {
-                    conditionalFormats: eventArgs.cFormats,
-                    oldRange: eventArgs.oldRange, selectedRange: eventArgs.selectedRange
-                });
-            }
-            break;
-        case 'insertImage':
-            if (isRedo) {
-                spreadsheet.notify(createImageElement, {
-                    options: {
-                        src: options.eventArgs.imageData,
-                        height: options.eventArgs.imageHeight, width: options.eventArgs.imageWidth, imageId: options.eventArgs.id
-                    },
-                    range: options.eventArgs.range, isPublic: false, isUndoRedo: true
-                });
-            } else {
-                spreadsheet.notify(deleteImage, {
-                    id: options.eventArgs.id, sheetIdx: options.eventArgs.sheetIndex + 1, range: options.eventArgs.range
-                });
-            }
-            break;
-        case 'imageRefresh':
-            let element: HTMLElement = document.getElementById(options.eventArgs.id);
-            if (isRedo) {
-                options.eventArgs.isUndoRedo = true;
-                spreadsheet.notify(refreshImgCellObj, options.eventArgs);
-            } else {
-                spreadsheet.notify(refreshImgCellObj, {
-                    prevTop: options.eventArgs.currentTop, prevLeft: options.eventArgs.currentLeft,
-                    currentTop: options.eventArgs.prevTop, currentLeft: options.eventArgs.prevLeft, id: options.eventArgs.id,
-                    currentHeight: options.eventArgs.prevHeight, currentWidth: options.eventArgs.prevWidth, requestType: 'imageRefresh',
-                    prevHeight: options.eventArgs.currentHeight, prevWidth: options.eventArgs.currentWidth, isUndoRedo: true
-                });
+        } else {
+            spreadsheet.delete(options.eventArgs.startIndex, options.eventArgs.endIndex, options.eventArgs.modelType);
+        }
+        break;
+    case 'validation':
+        if (isRedo) {
+            const rules: ValidationModel = {
+                type: eventArgs.type, operator: eventArgs.operator, value1: eventArgs.value1,
+                value2: eventArgs.value2, ignoreBlank: eventArgs.ignoreBlank, inCellDropDown: eventArgs.inCellDropDown
+            };
+            spreadsheet.notify(setValidation, { rules: rules, range: eventArgs.range });
+        } else {
+            spreadsheet.notify(removeValidation, { range: eventArgs.range });
+        }
+        break;
+    case 'merge':
+        options.eventArgs.isAction = false;
+        let model: RowModel[] = [];
+        for (let rIdx: number = 0, rCnt = eventArgs.model.length; rIdx < rCnt; rIdx++) {
+            model.push({ cells: [] });
+             for (let cIdx: number = 0, cCnt = eventArgs.model[rIdx].cells.length; cIdx < cCnt; cIdx++) {
+                model[rIdx].cells[cIdx] = {};
+                Object.assign(model[rIdx].cells[cIdx], eventArgs.model[rIdx].cells[cIdx]);
+             }
+        }
+        spreadsheet.notify(setMerge, options.eventArgs);
+        eventArgs.model = model;
+        break;
+    case 'clear':
+        spreadsheet.notify(clearViewer, { options: options.eventArgs, isPublic: true });
+        break;
+    case 'conditionalFormat':
+        if (isRedo) {
+            const conditionalFormat: ConditionalFormatModel = {
+                type: eventArgs.type, cFColor: eventArgs.cFColor, value: eventArgs.value,
+                range: eventArgs.range
+            };
+            spreadsheet.notify(setCFRule, { conditionalFormat: conditionalFormat });
+        } else {
+            spreadsheet.notify(clearCFRule, { range: eventArgs.range });
+        }
+        break;
+    case 'clearCF':
+        if (isRedo) {
+            spreadsheet.notify(clearCFRule, { range: eventArgs.selectedRange });
+        } else {
+            spreadsheet.notify(clearCells, {
+                conditionalFormats: eventArgs.cFormats,
+                oldRange: eventArgs.oldRange, selectedRange: eventArgs.selectedRange
+            });
+        }
+        break;
+    case 'insertImage':
+        if (isRedo) {
+            spreadsheet.notify(createImageElement, {
+                options: {
+                    src: options.eventArgs.imageData,
+                    height: options.eventArgs.imageHeight, width: options.eventArgs.imageWidth, imageId: options.eventArgs.id
+                },
+                range: options.eventArgs.range, isPublic: false, isUndoRedo: true
+            });
+        } else {
+            spreadsheet.notify(deleteImage, {
+                id: options.eventArgs.id, sheetIdx: options.eventArgs.sheetIndex + 1, range: options.eventArgs.range
+            });
+        }
+        break;
+    case 'imageRefresh':
+        const element: HTMLElement = document.getElementById(options.eventArgs.id);
+        if (isRedo) {
+            options.eventArgs.isUndoRedo = true;
+            spreadsheet.notify(refreshImgCellObj, options.eventArgs);
+        } else {
+            spreadsheet.notify(refreshImgCellObj, {
+                prevTop: options.eventArgs.currentTop, prevLeft: options.eventArgs.currentLeft,
+                currentTop: options.eventArgs.prevTop, currentLeft: options.eventArgs.prevLeft, id: options.eventArgs.id,
+                currentHeight: options.eventArgs.prevHeight, currentWidth: options.eventArgs.prevWidth, requestType: 'imageRefresh',
+                prevHeight: options.eventArgs.currentHeight, prevWidth: options.eventArgs.currentWidth, isUndoRedo: true
+            });
 
-            }
-            element.style.height = isRedo ? options.eventArgs.currentHeight + 'px' : options.eventArgs.prevHeight + 'px';
-            element.style.width = isRedo ? options.eventArgs.currentWidth + 'px' : options.eventArgs.prevWidth + 'px';
-            element.style.top = isRedo ? options.eventArgs.currentTop + 'px' : options.eventArgs.prevTop + 'px';
-            element.style.left = isRedo ? options.eventArgs.currentLeft + 'px' : options.eventArgs.prevLeft + 'px';
-            break;
-        case 'insertChart':
-            if (isRedo) {
-                let chartOptions: ChartModel[] = [{
-                    type: eventArgs.type, theme: eventArgs.theme, isSeriesInRows: eventArgs.isSeriesInRows,
-                    range: eventArgs.range, id: eventArgs.id, height: eventArgs.height, width: eventArgs.width
-                }];
-                spreadsheet.notify(setChart, {
-                    chart: chartOptions, isInitCell: eventArgs.isInitCell, isUndoRedo: false, range: eventArgs.posRange
-                });
-            } else {
-                spreadsheet.notify(deleteChart, { id: eventArgs.id });
-            }
-            break;
-        case 'deleteChart':
-            if (isRedo) {
-                spreadsheet.notify(deleteChart, { id: eventArgs.id });
-            } else {
-                let chartOpts: ChartModel[] = [{
-                    type: eventArgs.type, theme: eventArgs.theme, isSeriesInRows: eventArgs.isSeriesInRows,
-                    range: eventArgs.range, id: eventArgs.id, height: eventArgs.height, width: eventArgs.width
-                }];
-                spreadsheet.notify(setChart, {
-                    chart: chartOpts, isInitCell: eventArgs.isInitCell, isUndoRedo: false, range: eventArgs.posRange
-                });
-            }
-            break;
-        case 'chartRefresh':
-            let chartElement: HTMLElement = document.getElementById(options.eventArgs.id);
-            if (chartElement) {
-                chartElement.style.height = isRedo ? options.eventArgs.currentHeight + 'px' : options.eventArgs.prevHeight + 'px';
-                chartElement.style.width = isRedo ? options.eventArgs.currentWidth + 'px' : options.eventArgs.prevWidth + 'px';
-                chartElement.style.top = isRedo ? options.eventArgs.currentTop + 'px' : options.eventArgs.prevTop + 'px';
-                chartElement.style.left = isRedo ? options.eventArgs.currentLeft + 'px' : options.eventArgs.prevLeft + 'px';
-            }
-            if (isRedo) {
-                options.eventArgs.isUndoRedo = true;
-                spreadsheet.notify(refreshChartSize, {
-                    height: chartElement.style.height, width: chartElement.style.width, overlayEle: chartElement
-                });
-            } else {
-                spreadsheet.notify(refreshChartSize, {
-                    height: chartElement.style.height, width: chartElement.style.width, overlayEle: chartElement
-                });
-            }
-            break;
+        }
+        element.style.height = isRedo ? options.eventArgs.currentHeight + 'px' : options.eventArgs.prevHeight + 'px';
+        element.style.width = isRedo ? options.eventArgs.currentWidth + 'px' : options.eventArgs.prevWidth + 'px';
+        element.style.top = isRedo ? options.eventArgs.currentTop + 'px' : options.eventArgs.prevTop + 'px';
+        element.style.left = isRedo ? options.eventArgs.currentLeft + 'px' : options.eventArgs.prevLeft + 'px';
+        break;
+    case 'insertChart':
+        if (isRedo) {
+            const chartOptions: ChartModel[] = [{
+                type: eventArgs.type, theme: eventArgs.theme, isSeriesInRows: eventArgs.isSeriesInRows,
+                range: eventArgs.range, id: eventArgs.id, height: eventArgs.height, width: eventArgs.width
+            }];
+            spreadsheet.notify(setChart, {
+                chart: chartOptions, isInitCell: eventArgs.isInitCell, isUndoRedo: false, range: eventArgs.posRange
+            });
+        } else {
+            spreadsheet.notify(deleteChart, { id: eventArgs.id, isUndoRedo: true });
+        }
+        break;
+    case 'deleteChart':
+        if (isRedo) {
+            spreadsheet.notify(deleteChart, { id: eventArgs.id });
+        } else {
+            const chartOpts: ChartModel[] = [{
+                type: eventArgs.type, theme: eventArgs.theme, isSeriesInRows: eventArgs.isSeriesInRows,
+                range: eventArgs.range, id: eventArgs.id, height: eventArgs.height, width: eventArgs.width,
+                top: eventArgs.top, left: eventArgs.left
+            }];
+            spreadsheet.notify(setChart, {
+                chart: chartOpts, isInitCell: eventArgs.isInitCell, isUndoRedo: false, range: eventArgs.posRange
+            });
+        }
+        break;
+    case 'chartRefresh':
+        const chartElement: HTMLElement = document.getElementById(options.eventArgs.id);
+        if (chartElement) {
+            chartElement.style.height = isRedo ? options.eventArgs.currentHeight + 'px' : options.eventArgs.prevHeight + 'px';
+            chartElement.style.width = isRedo ? options.eventArgs.currentWidth + 'px' : options.eventArgs.prevWidth + 'px';
+            chartElement.style.top = isRedo ? options.eventArgs.currentTop + 'px' : options.eventArgs.prevTop + 'px';
+            chartElement.style.left = isRedo ? options.eventArgs.currentLeft + 'px' : options.eventArgs.prevLeft + 'px';
+        }
+        if (isRedo) {
+            options.eventArgs.isUndoRedo = true;
+            spreadsheet.notify(refreshChartSize, {
+                height: chartElement.style.height, width: chartElement.style.width, overlayEle: chartElement
+            });
+        } else {
+            spreadsheet.notify(refreshChartSize, {
+                height: chartElement.style.height, width: chartElement.style.width, overlayEle: chartElement
+            });
+        }
+        break;
     }
 }
 
 /**
  * @hidden
+ * @param {Workbook} workbook - Specify the workbook
+ * @param {number} rowIdx - specify the roe index
+ * @param {number} colIdx - specify the column Index.
+ * @param {number} sheetIdx - specify the sheet index.
+ * @returns {boolean} - Returns the boolean value.
  */
 export function hasTemplate(workbook: Workbook, rowIdx: number, colIdx: number, sheetIdx: number): boolean {
-    let sheet: SheetModel = workbook.sheets[sheetIdx];
-    let ranges: RangeModel[] = sheet.ranges;
+    const sheet: SheetModel = workbook.sheets[sheetIdx];
+    const ranges: RangeModel[] = sheet.ranges;
     let range: number[];
     for (let i: number = 0, len: number = ranges.length; i < len; i++) {
         if (ranges[i].template) {
@@ -891,18 +1204,27 @@ export function hasTemplate(workbook: Workbook, rowIdx: number, colIdx: number, 
 
 /**
  * Setting row height in view an model.
+ *
  * @hidden
+ * @param {Spreadsheet} parent - Specify the parent
+ * @param {SheetModel} sheet - specify the column width
+ * @param {number} height - specify the style.
+ * @param {number} rowIdx - specify the rowIdx
+ * @param {HTMLElement} row - specify the row
+ * @param {HTMLElement} hRow - specify the hRow.
+ * @param {boolean} notifyRowHgtChange - specify boolean value.
+ * @returns {void} - Setting row height in view an model.
  */
 export function setRowEleHeight(
     parent: Spreadsheet, sheet: SheetModel, height: number, rowIdx: number, row?: HTMLElement,
     hRow?: HTMLElement, notifyRowHgtChange: boolean = true): void {
-    let prevHgt: number = getRowHeight(sheet, rowIdx);
-    let edit: HTMLElement = parent.element.querySelector('.e-spreadsheet-edit');
+    const prevHgt: number = getRowHeight(sheet, rowIdx);
+    const edit: HTMLElement = parent.element.querySelector('.e-spreadsheet-edit');
     if (edit && (edit.innerHTML.indexOf('\n') > -1)) {
-        let actCell: number[] = getCellIndexes(parent.getActiveSheet().activeCell);
-        let cell: CellModel = getCell(actCell[0], actCell[1], sheet); let i: number;
-        let splitVal: string[] = edit.innerHTML.split('\n');
-        let n: number = 0; let valLength: number = splitVal.length;
+        const actCell: number[] = getCellIndexes(parent.getActiveSheet().activeCell);
+        const cell: CellModel = getCell(actCell[0], actCell[1], sheet); let i: number;
+        const splitVal: string[] = edit.innerHTML.split('\n');
+        let n: number = 0; const valLength: number = splitVal.length;
         for (i = 0; i < valLength; i++) {
             let lines: number = getLines(splitVal[i], getExcludedColumnWidth(sheet, actCell[0], actCell[1]), cell.style, parent.cellStyle);
             if (lines === 0) {
@@ -912,12 +1234,12 @@ export function setRowEleHeight(
         }
         height = getTextHeight(parent, cell.style || parent.cellStyle, n) + 1;
     }
-    if (row || parent.getRow(rowIdx)) {
-        (row || parent.getRow(rowIdx)).style.height = `${height}px`;
-    }
-    if (sheet.showHeaders && hRow || parent.getRow(rowIdx, parent.getRowHeaderTable())) {
-        (hRow || parent.getRow(rowIdx, parent.getRowHeaderTable())).style.height = `${height}px`;
-    }
+    let frozenCol: number = parent.frozenColCount(sheet);
+    row = row || (sheet.frozenRows ? parent.getRow(rowIdx, null, frozenCol) : parent.getRow(rowIdx));
+    if (row) { row.style.height = `${height}px`; }
+    hRow = hRow || sheet.frozenColumns ? parent.getRow(rowIdx, null, frozenCol - 1) :
+        parent.getRow(rowIdx, parent.getRowHeaderTable());
+    if (hRow) { hRow.style.height = `${height}px`; }
     setRowHeight(sheet, rowIdx, height);
     parent.setProperties({ sheets: parent.sheets }, true);
     if (notifyRowHgtChange) {
@@ -925,20 +1247,32 @@ export function setRowEleHeight(
     }
 }
 
-/** @hidden */
+/**
+ * @hidden
+ * @param {Workbook} context - Specify the context
+ * @param {CellStyleModel} style - specify the style.
+ * @param {number} lines - specify the lines
+ * @returns {number} - get Text Height
+ */
 export function getTextHeight(context: Workbook, style: CellStyleModel, lines: number = 1): number {
-    let fontSize: string = (style && style.fontSize) || context.cellStyle.fontSize;
-    let fontSizePx: number = fontSize.indexOf('pt') > -1 ? parseInt(fontSize, 10) * 1.33 : parseInt(fontSize, 10);
+    const fontSize: string = (style && style.fontSize) || context.cellStyle.fontSize;
+    const fontSizePx: number = fontSize.indexOf('pt') > -1 ? parseInt(fontSize, 10) * 1.33 : parseInt(fontSize, 10);
     return Math.ceil(fontSizePx * (style && style.fontFamily === 'Arial Black' ? 1.44 : 1.24) * lines);
 }
 
-/** @hidden */
+/**
+ * @hidden
+ * @param {string} text - Specify the text
+ * @param {CellStyleModel} style - specify the style.
+ * @param {CellStyleModel} parentStyle - specify the parentStyle
+ * @returns {number} - get Text Width
+ */
 export function getTextWidth(text: string, style: CellStyleModel, parentStyle: CellStyleModel): number {
     if (!style) {
         style = parentStyle;
     }
-    let canvas: HTMLCanvasElement = document.createElement('canvas');
-    let context: CanvasRenderingContext2D = canvas.getContext('2d');
+    const canvas: HTMLCanvasElement = document.createElement('canvas');
+    const context: CanvasRenderingContext2D = canvas.getContext('2d');
     context.font = (style.fontStyle || parentStyle.fontStyle) + ' ' + (style.fontWeight || parentStyle.fontWeight) + ' '
         + (style.fontSize || parentStyle.fontSize) + ' ' + (style.fontFamily || parentStyle.fontFamily);
     return context.measureText(text).width;
@@ -946,12 +1280,17 @@ export function getTextWidth(text: string, style: CellStyleModel, parentStyle: C
 
 /**
  * @hidden
+ * @param {string} text - Specify the text
+ * @param {number} colwidth - specify the column width
+ * @param {CellStyleModel} style - specify the style.
+ * @param {CellStyleModel} parentStyle - specify the parentStyle
+ * @returns {number} - Setting maximum height while doing formats and wraptext
  */
 export function getLines(text: string, colwidth: number, style: CellStyleModel, parentStyle: CellStyleModel): number {
     let width: number;
     let prevWidth: number = 0;
-    let textArr: string[] = text.toString().split(' ');
-    let spaceWidth: number = getTextWidth(' ', style, parentStyle);
+    const textArr: string[] = text.toString().split(' ');
+    const spaceWidth: number = getTextWidth(' ', style, parentStyle);
     let lines: number;
     let cnt: number = 0;
     textArr.forEach((txt: string) => {
@@ -1042,12 +1381,18 @@ export function getBorderHeight(rowIdx: number, colIdx: number, sheet: SheetMode
  * @hidden
  */
 export function getExcludedColumnWidth(sheet: SheetModel, rowIdx: number, startColIdx: number, endColIdx: number = startColIdx): number {
-    return getColumnsWidth(sheet, startColIdx, endColIdx) - (5 + getBorderWidth(rowIdx, startColIdx, sheet)); // 5 -> For cell padding
+    return getColumnsWidth(sheet, startColIdx, endColIdx) - (4 + getBorderWidth(rowIdx, startColIdx, sheet)); // 4 -> For cell padding
 }
 
 /**
  * Setting maximum height while doing formats and wraptext
+ *
  * @hidden
+ * @param {SheetModel} sheet - Specify the sheet
+ * @param {number} rIdx - specify the row Index
+ * @param {number} cIdx - specify the column Index.
+ * @param {number} hgt - specify the hgt
+ * @returns {void} - Setting maximum height while doing formats and wraptext
  */
 export function setMaxHgt(sheet: SheetModel, rIdx: number, cIdx: number, hgt: number): void {
     if (!sheet.maxHgts[rIdx]) {
@@ -1058,11 +1403,15 @@ export function setMaxHgt(sheet: SheetModel, rIdx: number, cIdx: number, hgt: nu
 
 /**
  * Getting maximum height by comparing each cell's modified height.
+ *
  * @hidden
+ * @param {SheetModel} sheet - Specify the sheet.
+ * @param {number} rIdx - Specify the row index.
+ * @returns {number} - Getting maximum height by comparing each cell's modified height.
  */
 export function getMaxHgt(sheet: SheetModel, rIdx: number): number {
     let maxHgt: number = 0;
-    let rowHgt: object = sheet.maxHgts[rIdx];
+    const rowHgt: object = sheet.maxHgts[rIdx];
     if (rowHgt) {
         Object.keys(rowHgt).forEach((key: string) => {
             if (rowHgt[key] > maxHgt) {
@@ -1072,7 +1421,15 @@ export function getMaxHgt(sheet: SheetModel, rIdx: number): number {
     }
     return maxHgt;
 }
-/** @hidden */
+/**
+ * @hidden
+ * @param {SheetModel} sheet - Specify the sheet
+ * @param {number} index - specify the index
+ * @param {boolean} increase - specify the boolean value.
+ * @param {string} layout - specify the string
+ * @returns {number} - To skip the hidden index
+ *
+ */
 export function skipHiddenIdx(sheet: SheetModel, index: number, increase: boolean, layout: string = 'rows'): number {
     if (index < 0) { index = -1; }
     if ((sheet[layout])[index] && (sheet[layout])[index].hidden) {
@@ -1082,15 +1439,21 @@ export function skipHiddenIdx(sheet: SheetModel, index: number, increase: boolea
     return index;
 }
 
-/** @hidden */
+/**
+ * @hidden
+ * @param {HTMLElement} ele - Specify the element.
+ * @returns {void} - Specify the focus.
+ */
 export function focus(ele: HTMLElement): void {
-    if (Browser.isIE) {
-        let scrollX: number = window.scrollX;
-        let scrollY: number = window.scrollY;
-        ele.focus();
-        window.scrollTo(scrollX, scrollY);
-    } else {
-        // tslint:disable-next-line
-        (ele as any).focus({ preventScroll: true });
+    if (!document.activeElement.classList.contains('e-text-findNext-short')) {
+        if (Browser.isIE) {
+            const scrollX: number = window.scrollX;
+            const scrollY: number = window.scrollY;
+            ele.focus();
+            window.scrollTo(scrollX, scrollY);
+        } else {
+            /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
+            (ele as any).focus({ preventScroll: true });
+        }
     }
 }

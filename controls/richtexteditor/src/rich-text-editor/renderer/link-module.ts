@@ -29,7 +29,7 @@ export class Link {
     private rendererFactory: RendererFactory;
     private quickToolObj: IRenderer;
     private dialogRenderObj: DialogRenderer;
-    constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
+    private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.rteID = parent.element.id;
         this.i10n = serviceLocator.getService<L10n>('rteLocale');
@@ -39,7 +39,9 @@ export class Link {
         this.dialogRenderObj = serviceLocator.getService<DialogRenderer>('dialogRenderObject');
     }
     protected addEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.on(events.insertLink, this.linkDialog, this);
         this.parent.on(events.keyDown, this.onKeyDown, this);
         this.parent.on(events.insertCompleted, this.showLinkQuickToolbar, this);
@@ -52,21 +54,23 @@ export class Link {
         this.parent.on(events.destroy, this.destroy, this);
     }
     private onToolbarAction(args: NotifyArgs): void {
-        let item: IToolbarItemModel = (args.args as ClickEventArgs).item as IToolbarItemModel;
+        const item: IToolbarItemModel = (args.args as ClickEventArgs).item as IToolbarItemModel;
         switch (item.subCommand) {
-            case 'OpenLink':
-                this.parent.notify(events.openLink, args);
-                break;
-            case 'EditLink':
-                this.parent.notify(events.editLink, args);
-                break;
-            case 'RemoveLink':
-                this.parent.notify(events.unLink, args);
-                break;
+        case 'OpenLink':
+            this.parent.notify(events.openLink, args);
+            break;
+        case 'EditLink':
+            this.parent.notify(events.editLink, args);
+            break;
+        case 'RemoveLink':
+            this.parent.notify(events.unLink, args);
+            break;
         }
     }
     protected removeEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.off(events.insertLink, this.linkDialog);
         this.parent.off(events.keyDown, this.onKeyDown);
         this.parent.off(events.insertCompleted, this.showLinkQuickToolbar);
@@ -88,11 +92,13 @@ export class Link {
             let pageX: number;
             let pageY: number;
             if (e.type !== 'Links' || isNullOrUndefined(this.parent.quickToolbarModule) ||
-                isNullOrUndefined(this.parent.quickToolbarModule.linkQTBar)) { return; }
+                isNullOrUndefined(this.parent.quickToolbarModule.linkQTBar)) {
+                return;
+            }
             this.quickToolObj = this.parent.quickToolbarModule;
-            let parentTop: number = this.parent.element.getBoundingClientRect().top;
-            let parentLeft: number = this.parent.element.getBoundingClientRect().left;
-            let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+            const parentTop: number = this.parent.element.getBoundingClientRect().top;
+            const parentLeft: number = this.parent.element.getBoundingClientRect().left;
+            const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             let target: HTMLElement;
             [].forEach.call(e.elements, (element: Element, index: number) => {
                 if (index === 0) {
@@ -100,14 +106,14 @@ export class Link {
                 }
             });
             if (e.isNotify) {
-                let tbElement: HTMLElement = this.parent.toolbarModule.getToolbarElement() as HTMLElement;
-                let linkTop: number = target.getBoundingClientRect().top;
-                let linkLeft: number = target.getBoundingClientRect().left;
-                let linkPos: number = linkTop - parentTop;
-                let tbHeight: number = (tbElement) ? (tbElement.offsetHeight + this.parent.toolbarModule.getExpandTBarPopHeight()) : 0;
+                const tbElement: HTMLElement = this.parent.toolbarModule.getToolbarElement() as HTMLElement;
+                const linkTop: number = target.getBoundingClientRect().top;
+                const linkLeft: number = target.getBoundingClientRect().left;
+                const linkPos: number = linkTop - parentTop;
+                const tbHeight: number = (tbElement) ? (tbElement.offsetHeight + this.parent.toolbarModule.getExpandTBarPopHeight()) : 0;
                 pageX = (this.parent.iframeSettings.enable) ? parentLeft + linkLeft : target.getBoundingClientRect().left;
                 pageY = window.pageYOffset + ((this.parent.iframeSettings.enable) ?
-                (parentTop + tbHeight + linkTop) : (parentTop + linkPos));
+                    (parentTop + tbHeight + linkTop) : (parentTop + linkPos));
             } else {
                 let args: Touch | MouseEvent;
                 args = (e.args as TouchEvent).touches ? (e.args as TouchEvent).changedTouches[0] : args = e.args as MouseEvent;
@@ -131,18 +137,22 @@ export class Link {
             this.hideLinkQuickToolbar();
             return;
         }
-        let args: MouseEvent = e.args as MouseEvent;
-        let showOnRightClick: boolean = this.parent.quickToolbarSettings.showOnRightClick;
-        if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) { return; }
+        const args: MouseEvent = e.args as MouseEvent;
+        const showOnRightClick: boolean = this.parent.quickToolbarSettings.showOnRightClick;
+        if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) {
+            return;
+        }
         if (this.parent.editorMode === 'HTML' && this.parent.quickToolbarModule && this.parent.quickToolbarModule.linkQTBar) {
             this.quickToolObj = this.parent.quickToolbarModule;
             let target: HTMLElement = args.target as HTMLElement;
             target = this.getAnchorNode(target);
             this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
-            let isPopupOpen: boolean = this.quickToolObj.linkQTBar.element.classList.contains('e-rte-pop');
+            const isPopupOpen: boolean = this.quickToolObj.linkQTBar.element.classList.contains('e-rte-pop');
             if (target.nodeName === 'A' && (target.childNodes.length > 0 && target.childNodes[0].nodeName !== 'IMG') &&
             ((e.args as MouseEvent).target as HTMLElement).nodeName !== 'IMG') {
-                if (isPopupOpen) { return; }
+                if (isPopupOpen) {
+                    return;
+                }
                 this.showLinkQuickToolbar({
                     args: args,
                     isNotify: false,
@@ -155,41 +165,41 @@ export class Link {
         }
     }
     private onKeyDown(event: NotifyArgs): void {
-        let originalEvent: KeyboardEventArgs = event.args as KeyboardEventArgs;
+        const originalEvent: KeyboardEventArgs = event.args as KeyboardEventArgs;
         switch (originalEvent.action) {
-            case 'escape':
-                if (!isNullOrUndefined(this.dialogObj)) {
-                    this.dialogObj.close();
-                }
-                break;
-            case 'insert-link':
-                if (this.parent.editorMode === 'HTML') {
-                    let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
-                    let save: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(
-                        range, this.parent.contentModule.getDocument());
-                    let selectNodeEle: Node[] = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
-                    let selectParentEle: Node[] = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
-                    let eventArgs: NotifyArgs = {
-                        args: event.args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
-                    };
-                    this.linkDialog(eventArgs);
-                } else {
-                    let textArea: HTMLTextAreaElement = this.parent.contentModule.getEditPanel() as HTMLTextAreaElement;
-                    this.parent.formatter.editorManager.markdownSelection.save(textArea.selectionStart, textArea.selectionEnd);
-                    this.linkDialog({
-                        args: {
-                            item: { command: 'Links', subCommand: 'Link' } as IToolbarItemModel,
-                            originalEvent: originalEvent
-                        },
-                        member: 'link',
-                        text: this.parent.formatter.editorManager.markdownSelection.getSelectedText(
-                            this.parent.contentModule.getEditPanel() as HTMLTextAreaElement),
-                        module: 'Markdown',
-                        name: 'insertLink'
-                    });
-                }
-                originalEvent.preventDefault();
-                break;
+        case 'escape':
+            if (!isNullOrUndefined(this.dialogObj)) {
+                this.dialogObj.close();
+            }
+            break;
+        case 'insert-link':
+            if (this.parent.editorMode === 'HTML') {
+                const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+                const save: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(
+                    range, this.parent.contentModule.getDocument());
+                const selectNodeEle: Node[] = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
+                const selectParentEle: Node[] = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
+                const eventArgs: NotifyArgs = {
+                    args: event.args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                };
+                this.linkDialog(eventArgs);
+            } else {
+                const textArea: HTMLTextAreaElement = this.parent.contentModule.getEditPanel() as HTMLTextAreaElement;
+                this.parent.formatter.editorManager.markdownSelection.save(textArea.selectionStart, textArea.selectionEnd);
+                this.linkDialog({
+                    args: {
+                        item: { command: 'Links', subCommand: 'Link' } as IToolbarItemModel,
+                        originalEvent: originalEvent
+                    },
+                    member: 'link',
+                    text: this.parent.formatter.editorManager.markdownSelection.getSelectedText(
+                        this.parent.contentModule.getEditPanel() as HTMLTextAreaElement),
+                    module: 'Markdown',
+                    name: 'insertLink'
+                });
+            }
+            originalEvent.preventDefault();
+            break;
         }
     }
     private linkDialog(e?: NotifyArgs, inputDetails?: { [key: string]: string }): void {
@@ -199,44 +209,48 @@ export class Link {
         if (this.parent.editorMode === 'HTML' && (e.selectParent.length > 0 &&
             !isNullOrUndefined((e.selectParent[0] as HTMLElement).classList) &&
             (e.selectParent[0] as HTMLElement).classList.contains('e-rte-anchor')) && isNullOrUndefined(inputDetails)) {
-            this.editLink(e); return; }
-        let selectText: string; let linkWebAddress: string = this.i10n.getConstant('linkWebUrl');
-        let linkDisplayText: string = this.i10n.getConstant('linkText');
-        let linkTooltip: string = this.i10n.getConstant('linkTooltipLabel');
-        let urlPlace: string = this.i10n.getConstant('linkurl');
-        let textPlace: string = this.i10n.getConstant('textPlaceholder'); let title: string = this.i10n.getConstant('linkTitle');
-        let linkDialogEle: HTMLElement = this.parent.createElement('div', { className: 'e-rte-link-dialog', id: this.rteID + '_rtelink' });
+            this.editLink(e); return;
+        }
+        const linkWebAddress: string = this.i10n.getConstant('linkWebUrl');
+        const linkDisplayText: string = this.i10n.getConstant('linkText');
+        const linkTooltip: string = this.i10n.getConstant('linkTooltipLabel');
+        const urlPlace: string = this.i10n.getConstant('linkurl');
+        const textPlace: string = this.i10n.getConstant('textPlaceholder');
+        const title: string = this.i10n.getConstant('linkTitle');
+        const linkDialogEle: HTMLElement = this.parent.createElement('div', {
+            className: 'e-rte-link-dialog', id: this.rteID + '_rtelink' });
         this.parent.element.appendChild(linkDialogEle);
-        let linkContent: HTMLElement = this.parent.createElement('div', {
+        const linkContent: HTMLElement = this.parent.createElement('div', {
             className: 'e-rte-linkcontent', id: this.rteID + '_linkContent'
         });
-        let htmlTextbox: string = (this.parent.editorMode === 'HTML') ? '<label>' + linkTooltip +
+        const htmlTextbox: string = (this.parent.editorMode === 'HTML') ? '<label>' + linkTooltip +
             '</label></div><div class="e-rte-field">' +
             '<input type="text" data-role ="none" spellcheck="false" placeholder = "' + title + '" class="e-input e-rte-linkTitle"></div>' +
             '<div class="e-rte-label"></div>' + '<div class="e-rte-field">' +
             '<input type="checkbox" class="e-rte-linkTarget"  data-role ="none"></div>' : '';
-        let content: string = '<div class="e-rte-label"><label>' + linkWebAddress + '</label></div>' + '<div class="e-rte-field">' +
+        const content: string = '<div class="e-rte-label"><label>' + linkWebAddress + '</label></div>' + '<div class="e-rte-field">' +
             '<input type="text" data-role ="none" spellcheck="false" placeholder="' + urlPlace + '" class="e-input e-rte-linkurl"/></div>' +
             '<div class="e-rte-label">' + '<label>' + linkDisplayText + '</label></div><div class="e-rte-field"> ' +
             '<input type="text" data-role ="none" spellcheck="false" class="e-input e-rte-linkText" placeholder="' + textPlace + '">' +
             '</div><div class="e-rte-label">' + htmlTextbox;
-        let contentElem: DocumentFragment = parseHtml(content);
+        const contentElem: DocumentFragment = parseHtml(content);
         linkContent.appendChild(contentElem);
-        let linkTarget: HTMLInputElement = linkContent.querySelector('.e-rte-linkTarget') as HTMLInputElement;
-        let linkUrl: HTMLInputElement = linkContent.querySelector('.e-rte-linkurl') as HTMLInputElement;
-        let linkText: HTMLInputElement = linkContent.querySelector('.e-rte-linkText') as HTMLInputElement;
-        let linkTitle: HTMLInputElement = linkContent.querySelector('.e-rte-linkTitle') as HTMLInputElement;
-        let linkOpenLabel: string = this.i10n.getConstant('linkOpenInNewWindow');
+        const linkTarget: HTMLInputElement = linkContent.querySelector('.e-rte-linkTarget') as HTMLInputElement;
+        const linkUrl: HTMLInputElement = linkContent.querySelector('.e-rte-linkurl') as HTMLInputElement;
+        const linkText: HTMLInputElement = linkContent.querySelector('.e-rte-linkText') as HTMLInputElement;
+        const linkTitle: HTMLInputElement = linkContent.querySelector('.e-rte-linkTitle') as HTMLInputElement;
+        const linkOpenLabel: string = this.i10n.getConstant('linkOpenInNewWindow');
         this.checkBoxObj = new CheckBox({ label: linkOpenLabel, checked: true, enableRtl: this.parent.enableRtl });
         this.checkBoxObj.isStringTemplate = true;
         this.checkBoxObj.createElement = this.parent.createElement;
         this.checkBoxObj.appendTo(linkTarget);
-        selectText = (this.parent.editorMode === 'HTML') ? e.selection.getRange(this.parent.contentModule.getDocument()).toString() :
-            e.text;
-        let linkInsert: string = this.i10n.getConstant('dialogInsert'); let linkCancel: string = this.i10n.getConstant('dialogCancel');
-        let selection: NodeSelection = e.selection;
-        let selectObj: NotifyArgs = { selfLink: this, selection: e.selection, selectParent: e.selectParent, args: e.args as MouseEvent };
-        let dialogModel: DialogModel = {
+        const selectText: string = (this.parent.editorMode === 'HTML') ?
+            e.selection.getRange (this.parent.contentModule.getDocument()).toString() : e.text;
+        const linkInsert: string = this.i10n.getConstant('dialogInsert');
+        const linkCancel: string = this.i10n.getConstant('dialogCancel');
+        const selection: NodeSelection = e.selection;
+        const selectObj: NotifyArgs = { selfLink: this, selection: e.selection, selectParent: e.selectParent, args: e.args as MouseEvent };
+        const dialogModel: DialogModel = {
             header: this.i10n.getConstant('linkHeader'),
             content: linkContent,
             cssClass: CLS_RTE_ELEMENTS,
@@ -251,6 +265,7 @@ export class Link {
             { click: this.cancelDialog.bind(selectObj), buttonModel: { cssClass: 'e-flat', content: linkCancel } }],
             target: (Browser.isDevice) ? document.body : this.parent.element,
             animationSettings: { effect: 'None' },
+            // eslint-disable-next-line
             close: (event: { [key: string]: object }) => {
                 this.parent.isBlur = false;
                 if (event && (event.event as { [key: string]: string }).returnValue) {
@@ -263,11 +278,13 @@ export class Link {
                 }
                 this.dialogObj.destroy();
                 detach(this.dialogObj.element);
-                let args: Dialog = isBlazor() ? null : this.dialogObj;
+                const args: Dialog = isBlazor() ? null : this.dialogObj;
                 this.dialogRenderObj.close(args);
                 this.dialogObj = null;
-            },
+            }
         };
+        // eslint-disable-next-line
+        
         this.dialogObj = this.dialogRenderObj.render(dialogModel);
         this.dialogObj.createElement = this.parent.createElement;
         this.dialogObj.appendTo(linkDialogEle);
@@ -276,6 +293,7 @@ export class Link {
             linkUrl.value = inputDetails.url;
             linkText.value = inputDetails.text;
             linkTitle.value = inputDetails.title;
+            // eslint-disable-next-line
             (inputDetails.target) ? this.checkBoxObj.checked = true : this.checkBoxObj.checked = false;
             this.dialogObj.header = inputDetails.header;
             this.dialogObj.element.querySelector('.e-insertLink').textContent = inputDetails.btnText;
@@ -283,7 +301,9 @@ export class Link {
         this.checkUrl(false);
         if ((this.parent.editorMode === 'HTML' && isNullOrUndefined(inputDetails) && ((!isNullOrUndefined(selectText)
             && selectText !== '') && (e.selection.range.startOffset === 0) || e.selection.range.startOffset !==
-            e.selection.range.endOffset)) || e.module === 'Markdown') { linkText.value = selectText; }
+            e.selection.range.endOffset)) || e.module === 'Markdown') {
+            linkText.value = selectText;
+        }
         EventHandler.add(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick, this);
         if (this.quickToolObj) {
             this.hideLinkQuickToolbar();
@@ -293,38 +313,45 @@ export class Link {
         }
     }
 
+    // eslint-disable-next-line
     private insertlink(e: MouseEvent | KeyboardEvent): void {
-        let linkEle: HTMLElement = (this as NotifyArgs).selfLink.dialogObj.element as HTMLElement;
+        const linkEle: HTMLElement = (this as NotifyArgs).selfLink.dialogObj.element as HTMLElement;
         let linkUrl: string = (linkEle.querySelector('.e-rte-linkurl') as HTMLInputElement).value;
         let linkText: string = (linkEle.querySelector('.e-rte-linkText') as HTMLInputElement).value;
         let linkTitle: string;
         if ((this as NotifyArgs).selfLink.parent.editorMode === 'HTML') {
             linkTitle = (linkEle.querySelector('.e-rte-linkTitle') as HTMLInputElement).value;
         }
-        let target: string = ((this as NotifyArgs).selfLink.checkBoxObj.checked) ? '_blank' : null;
-        if (linkUrl === '') { (this as NotifyArgs).selfLink.checkUrl(true); return; }
+        const target: string = ((this as NotifyArgs).selfLink.checkBoxObj.checked) ? '_blank' : null;
+        if (linkUrl === '') {
+            (this as NotifyArgs).selfLink.checkUrl(true);
+            return;
+        }
         if (!(this as NotifyArgs).selfLink.isUrl(linkUrl)) {
             linkText = (linkText === '') ? linkUrl : linkText;
             if (!(this as NotifyArgs).selfLink.parent.enableAutoUrl) {
                 linkUrl = linkUrl.indexOf('http') > -1 ? linkUrl : 'http://' + linkUrl;
             } else {
+                // eslint-disable-next-line
                 linkUrl = linkUrl;
             }
         } else {
             (this as NotifyArgs).selfLink.checkUrl(false);
         }
-        let proxy: Link = (this as NotifyArgs).selfLink;
+        const proxy: Link = (this as NotifyArgs).selfLink;
         if (proxy.parent.editorMode === 'HTML' && isNullOrUndefined(
             closest(
                 (this as IImageNotifyArgs).selection.range.startContainer.parentNode, '#' + proxy.parent.contentModule.getPanel().id))) {
             (proxy.parent.contentModule.getEditPanel() as HTMLElement).focus();
-            if (Browser.isIE && proxy.parent.iframeSettings.enable) { (this as NotifyArgs).selection.restore(); }
-            let range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
+            if (Browser.isIE && proxy.parent.iframeSettings.enable) {
+                (this as NotifyArgs).selection.restore();
+            }
+            const range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
             (this as NotifyArgs).selection = proxy.parent.formatter.editorManager.nodeSelection.save(
                 range, proxy.parent.contentModule.getDocument());
             (this as NotifyArgs).selectParent = proxy.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
         }
-        let value: NotifyArgs = {
+        const value: NotifyArgs = {
             url: linkUrl, text: linkText, title: linkTitle, target: target,
             selection: (this as NotifyArgs).selection, selectParent: (this as NotifyArgs).selectParent
         };
@@ -334,19 +361,23 @@ export class Link {
         if (isIDevice() && proxy.parent.iframeSettings.enable) {
             (<HTMLIFrameElement>select('iframe', proxy.parent.element)).contentWindow.focus();
         }
-        if (proxy.parent.editorMode === 'HTML') { (this as NotifyArgs).selection.restore(); }
+        if (proxy.parent.editorMode === 'HTML') {
+            (this as NotifyArgs).selection.restore();
+        }
         if (proxy.parent.formatter.getUndoRedoStack().length === 0) {
             proxy.parent.formatter.saveData();
         }
+        // eslint-disable-next-line
         let argsValue: KeyboardEvent | MouseEvent | ClickEventArgs | ClipboardEvent | TouchEvent | Object;
         if (((this as NotifyArgs).args as KeyboardEvent).code === 'KeyK') {
-            let originalEvent: KeyboardEventArgs = (this as NotifyArgs).args as KeyboardEventArgs;
+            const originalEvent: KeyboardEventArgs = (this as NotifyArgs).args as KeyboardEventArgs;
             extend(
-            (this as NotifyArgs).args,
-            { item: { command: 'Links', subCommand: 'CreateLink' } as IToolbarItemModel, originalEvent: originalEvent },
-            true);
-            let argsVal: Object = {
-            item: { command: 'Links', subCommand: 'CreateLink' } as IToolbarItemModel, originalEvent: originalEvent };
+                (this as NotifyArgs).args,
+                { item: { command: 'Links', subCommand: 'CreateLink' } as IToolbarItemModel, originalEvent: originalEvent },
+                true);
+            // eslint-disable-next-line
+            const argsVal: Object = {
+                item: { command: 'Links', subCommand: 'CreateLink' } as IToolbarItemModel, originalEvent: originalEvent };
             argsValue = argsVal;
         } else {
             argsValue = (this as NotifyArgs).args;
@@ -357,12 +388,13 @@ export class Link {
         ((this as NotifyArgs).selfLink.parent.contentModule.getEditPanel() as HTMLElement).focus();
     }
     private isUrl(url: string): boolean {
-        let regexp: RegExp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/gi;
+        // eslint-disable-next-line
+        const regexp: RegExp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/gi;
         return regexp.test(url);
     }
     private checkUrl(e: boolean): void {
-        let linkEle: HTMLElement = this.dialogObj.element as HTMLElement;
-        let linkUrl: HTMLElement = linkEle.querySelector('.e-rte-linkurl') as HTMLElement;
+        const linkEle: HTMLElement = this.dialogObj.element as HTMLElement;
+        const linkUrl: HTMLElement = linkEle.querySelector('.e-rte-linkurl') as HTMLElement;
         if (e) {
             addClass([linkUrl], 'e-error');
             (linkUrl as HTMLInputElement).setSelectionRange(0, (linkUrl as HTMLInputElement).value.length);
@@ -389,7 +421,7 @@ export class Link {
         this.hideLinkQuickToolbar();
     }
     private openLink(e: NotifyArgs): void {
-        let selectParentEle: HTMLElement = this.getAnchorNode(e.selectParent[0] as HTMLElement);
+        const selectParentEle: HTMLElement = this.getAnchorNode(e.selectParent[0] as HTMLElement);
         if (selectParentEle.classList.contains('e-rte-anchor') || selectParentEle.tagName === 'A') {
             this.parent.formatter.process(
                 this.parent, e.args, e.args,
@@ -401,16 +433,16 @@ export class Link {
         }
     }
     private getAnchorNode(element: HTMLElement): HTMLElement {
-        let selectParent: HTMLElement = closest(element, 'a') as HTMLElement;
+        const selectParent: HTMLElement = closest(element, 'a') as HTMLElement;
         return <HTMLElement>(selectParent ? selectParent : element);
     }
     private editLink(e: NotifyArgs): void {
-        let selectedNode: HTMLElement = this.getAnchorNode(e.selectNode[0] as HTMLElement);
+        const selectedNode: HTMLElement = this.getAnchorNode(e.selectNode[0] as HTMLElement);
         let selectParentEle: HTMLElement = this.getAnchorNode(e.selectParent[0] as HTMLElement);
         selectParentEle = selectedNode.nodeName === 'A' ? selectedNode : selectParentEle;
         if (selectParentEle.classList.contains('e-rte-anchor') || selectParentEle.tagName === 'A') {
-            let linkUpdate: string = this.i10n.getConstant('dialogUpdate');
-            let inputDetails: { [key: string]: string } = {
+            const linkUpdate: string = this.i10n.getConstant('dialogUpdate');
+            const inputDetails: { [key: string]: string } = {
                 url: (selectParentEle as HTMLAnchorElement).getAttribute('href'), text: selectParentEle.innerText,
                 title: selectParentEle.title, target: (selectParentEle as HTMLAnchorElement).target,
                 header: this.i10n.getConstant('editLink'), btnText: linkUpdate
@@ -419,6 +451,7 @@ export class Link {
         }
     }
 
+    // eslint-disable-next-line
     private cancelDialog(e: MouseEvent): void {
         (this as NotifyArgs).selfLink.parent.isBlur = false;
         (this as NotifyArgs).selfLink.dialogObj.hide({ returnValue: true } as Event);
@@ -430,7 +463,7 @@ export class Link {
     }
 
     private onDocumentClick(e: MouseEvent): void {
-        let target: HTMLElement = <HTMLElement>e.target;
+        const target: HTMLElement = <HTMLElement>e.target;
         if (!isNullOrUndefined(this.dialogObj) && ((
             !closest(target, '#' + this.dialogObj.element.id) && this.parent.toolbarSettings.enable &&
             this.parent.getToolbarElement() && !this.parent.getToolbarElement().contains(e.target as Node)) ||
@@ -446,8 +479,9 @@ export class Link {
     }
     /**
      * Destroys the ToolBar.
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -456,6 +490,8 @@ export class Link {
     }
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {void}
      */
     private getModuleName(): string {
         return 'link';

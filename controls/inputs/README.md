@@ -1,4 +1,4 @@
-[![npm](http://ej2.syncfusion.com/github-badges?package=@syncfusion/ej2-inputs)](https://www.npmjs.com/package/@syncfusion/ej2-inputs)&nbsp;&nbsp;[![coverage](http://ej2.syncfusion.com/badges/ej2-inputs/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-inputs)
+[![coverage](http://ej2.syncfusion.com/badges/ej2-inputs/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-inputs)
 
 # ej2-inputs
 
@@ -140,4 +140,4 @@ Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-
 Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/inputs/CHANGELOG.md/?utm_source=npm&utm_campaign=input)
 
 
-© Copyright 2020 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
+© Copyright 2021 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

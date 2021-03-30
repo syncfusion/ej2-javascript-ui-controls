@@ -1,7 +1,5 @@
-import {
-    addClass, Browser, EventHandler, remove, closest, extend,
-    formatUnit, setStyleAttribute, isNullOrUndefined
-} from '@syncfusion/ej2-base';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { addClass, Browser, EventHandler, remove, closest, extend, formatUnit, setStyleAttribute, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ResizeEventArgs } from '../base/interface';
 import { ActionBase } from '../actions/action-base';
 import { MonthEvent } from '../event-renderer/month';
@@ -14,8 +12,8 @@ import * as cls from '../base/css-constant';
  */
 export class Resize extends ActionBase {
     public wireResizeEvent(element: HTMLElement): void {
-        let resizeElement: HTMLElement[] = [].slice.call(element.querySelectorAll('.' + cls.EVENT_RESIZE_CLASS));
-        for (let element of resizeElement) {
+        const resizeElement: HTMLElement[] = [].slice.call(element.querySelectorAll('.' + cls.EVENT_RESIZE_CLASS));
+        for (const element of resizeElement) {
             EventHandler.add(element, Browser.touchStartEvent, this.resizeStart, this);
         }
     }
@@ -23,7 +21,7 @@ export class Resize extends ActionBase {
     private resizeHelper(): void {
         if (this.parent.activeViewOptions.group.resources.length > 0 && this.parent.activeViewOptions.group.allowGroupEdit) {
             for (let i: number = 0, len: number = this.actionObj.originalElement.length; i < len; i++) {
-                let cloneElement: HTMLElement = this.createCloneElement(this.actionObj.originalElement[i]);
+                const cloneElement: HTMLElement = this.createCloneElement(this.actionObj.originalElement[i]);
                 this.actionObj.cloneElement[i] = cloneElement;
                 if (this.actionObj.element === this.actionObj.originalElement[i]) {
                     this.actionObj.clone = cloneElement;
@@ -40,12 +38,11 @@ export class Resize extends ActionBase {
         this.actionObj.action = 'resize';
         this.actionObj.slotInterval = this.parent.activeViewOptions.timeScale.interval / this.parent.activeViewOptions.timeScale.slotCount;
         this.actionObj.interval = this.actionObj.slotInterval;
-        let resizeTarget: HTMLElement = closest(e.target as Element, '.' + cls.EVENT_RESIZE_CLASS) as HTMLElement;
+        const resizeTarget: HTMLElement = closest(e.target as Element, '.' + cls.EVENT_RESIZE_CLASS) as HTMLElement;
         this.actionObj.element = closest(resizeTarget, '.' + cls.APPOINTMENT_CLASS) as HTMLElement;
-        this.actionObj.event = this.parent.eventBase.getEventByGuid(this.actionObj.element.getAttribute('data-guid')) as
-            { [key: string]: Object };
-        let eventObj: { [key: string]: Object } = extend({}, this.actionObj.event, null, true) as { [key: string]: Object };
-        let resizeArgs: ResizeEventArgs = {
+        this.actionObj.event = this.parent.eventBase.getEventByGuid(this.actionObj.element.getAttribute('data-guid')) as Record<string, any>;
+        const eventObj: Record<string, any> = extend({}, this.actionObj.event, null, true) as Record<string, any>;
+        const resizeArgs: ResizeEventArgs = {
             cancel: false,
             data: eventObj,
             element: this.actionObj.element,
@@ -66,23 +63,21 @@ export class Resize extends ActionBase {
                 bottom: resizeTarget.classList.contains(cls.BOTTOM_RESIZE_HANDLER)
             };
             this.actionObj.groupIndex = this.parent.uiStateValues.isGroupAdaptive ? this.parent.uiStateValues.groupIndex : 0;
-            let workCell: HTMLElement = this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS) as HTMLElement;
+            const workCell: HTMLElement = this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS) as HTMLElement;
             this.actionObj.cellWidth = workCell.offsetWidth;
             this.actionObj.cellHeight = workCell.offsetHeight;
-            let headerRows: string[] = this.parent.activeViewOptions.headerRows.map((row: { [key: string]: Object }) =>
-                row.option as string);
-            if (this.parent.activeView.isTimelineView() && headerRows.length > 0 &&
-                ['Date', 'Hour'].indexOf(headerRows.slice(-1)[0]) < 0) {
-                let tr: HTMLTableRowElement = this.parent.getContentTable().querySelector('tr') as HTMLTableRowElement;
+            const hRows: string[] = this.parent.activeViewOptions.headerRows.map((row: Record<string, any>) => row.option as string);
+            if (this.parent.activeView.isTimelineView() && hRows.length > 0 && ['Date', 'Hour'].indexOf(hRows.slice(-1)[0]) < 0) {
+                const tr: HTMLTableRowElement = this.parent.getContentTable().querySelector('tr') as HTMLTableRowElement;
                 let noOfDays: number = 0;
-                let tdCollections: HTMLElement[] = [].slice.call(tr.children);
-                for (let td of tdCollections) {
+                const tdCollections: HTMLElement[] = [].slice.call(tr.children);
+                for (const td of tdCollections) {
                     noOfDays += parseInt(td.getAttribute('colspan'), 10);
                 }
                 this.actionObj.cellWidth = tr.offsetWidth / noOfDays;
                 this.actionObj.cellHeight = tr.offsetHeight;
             }
-            let pages: (MouseEvent & TouchEvent) | Touch = this.getPageCoordinates(e);
+            const pages: (MouseEvent & TouchEvent) | Touch = this.getPageCoordinates(e);
             this.actionObj.X = pages.pageX;
             this.actionObj.Y = pages.pageY;
             this.actionObj.groupIndex = parseInt(this.actionObj.element.getAttribute('data-group-index') || '0', 10);
@@ -95,7 +90,7 @@ export class Resize extends ActionBase {
                 this.daysVariation = -1;
                 this.monthEvent = new MonthEvent(this.parent);
             }
-            let viewElement: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+            const viewElement: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
             this.scrollArgs = { element: viewElement, width: viewElement.scrollWidth, height: viewElement.scrollHeight };
             EventHandler.add(document, Browser.touchMoveEvent, this.resizing, this);
             EventHandler.add(document, Browser.touchEndEvent, this.resizeStop, this);
@@ -103,20 +98,22 @@ export class Resize extends ActionBase {
     }
 
     private resizing(e: MouseEvent & TouchEvent): void {
-        this.parent.quickPopup.quickPopupHide();
+        if (this.parent.quickPopup) {
+            this.parent.quickPopup.quickPopupHide();
+        }
         if (this.parent.element.querySelectorAll('.' + cls.RESIZE_CLONE_CLASS).length === 0) {
             this.resizeHelper();
         }
         if ((!isNullOrUndefined(e.target)) && (e.target as HTMLElement).classList.contains(cls.DISABLE_DATES)) {
             return;
         }
-        let pages: (MouseEvent & TouchEvent) | Touch = this.getPageCoordinates(e);
+        const pages: (MouseEvent & TouchEvent) | Touch = this.getPageCoordinates(e);
         this.actionObj.pageX = pages.pageX;
         this.actionObj.pageY = pages.pageY;
         this.updateScrollPosition(e);
         this.updateResizingDirection(e);
-        let eventObj: { [key: string]: Object } = extend({}, this.actionObj.event, null, true) as { [key: string]: Object };
-        let resizeArgs: ResizeEventArgs = {
+        const eventObj: Record<string, any> = extend({}, this.actionObj.event, null, true) as Record<string, any>;
+        const resizeArgs: ResizeEventArgs = {
             cancel: false,
             data: eventObj,
             element: this.actionObj.element,
@@ -135,14 +132,14 @@ export class Resize extends ActionBase {
             this.monthResizing();
             return;
         }
-        let resizeValidation: boolean = this.resizeValidation(e);
+        const resizeValidation: boolean = this.resizeValidation(e);
         if (this.resizeEdges.left) {
             if (resizeValidation) {
-                let leftStyles: { [key: string]: Object } = this.getLeftRightStyles(e, true);
+                const leftStyles: Record<string, any> = this.getLeftRightStyles(e, true);
                 if (parseInt(leftStyles.width as string, 10) < 1) {
                     return;
                 }
-                for (let cloneElement of this.actionObj.cloneElement) {
+                for (const cloneElement of this.actionObj.cloneElement) {
                     setStyleAttribute(cloneElement, leftStyles);
                     addClass([cloneElement], cls.LEFT_RESIZE_HANDLER);
                 }
@@ -151,11 +148,11 @@ export class Resize extends ActionBase {
         }
         if (this.resizeEdges.right) {
             if (resizeValidation) {
-                let rightStyles: { [key: string]: Object } = this.getLeftRightStyles(e, false);
+                const rightStyles: Record<string, any> = this.getLeftRightStyles(e, false);
                 if (parseInt(rightStyles.width as string, 10) < 1) {
                     return;
                 }
-                for (let cloneElement of this.actionObj.cloneElement) {
+                for (const cloneElement of this.actionObj.cloneElement) {
                     setStyleAttribute(cloneElement, rightStyles);
                     addClass([cloneElement], cls.RIGHT_RESIZE_HANDLER);
                 }
@@ -164,11 +161,11 @@ export class Resize extends ActionBase {
         }
         if (this.resizeEdges.top) {
             if (resizeValidation) {
-                let topStyles: { [key: string]: Object } = this.getTopBottomStyles(e, true);
+                const topStyles: Record<string, any> = this.getTopBottomStyles(e, true);
                 if (parseInt(topStyles.height as string, 10) < 1) {
                     return;
                 }
-                for (let cloneElement of this.actionObj.cloneElement) {
+                for (const cloneElement of this.actionObj.cloneElement) {
                     setStyleAttribute(cloneElement, topStyles);
                     addClass([cloneElement], cls.TOP_RESIZE_HANDLER);
                 }
@@ -177,11 +174,11 @@ export class Resize extends ActionBase {
         }
         if (this.resizeEdges.bottom) {
             if (resizeValidation) {
-                let bottomStyles: { [key: string]: Object } = this.getTopBottomStyles(e, false);
+                const bottomStyles: Record<string, any> = this.getTopBottomStyles(e, false);
                 if (parseInt(bottomStyles.height as string, 10) < 1) {
                     return;
                 }
-                for (let cloneElement of this.actionObj.cloneElement) {
+                for (const cloneElement of this.actionObj.cloneElement) {
                     setStyleAttribute(cloneElement, bottomStyles);
                     addClass([cloneElement], cls.BOTTOM_RESIZE_HANDLER);
                 }
@@ -192,12 +189,12 @@ export class Resize extends ActionBase {
 
     private monthResizing(): void {
         this.removeCloneElement();
-        let td: HTMLTableCellElement = document.elementFromPoint(this.actionObj.pageX, this.actionObj.pageY) as HTMLTableCellElement;
+        const td: HTMLTableCellElement = document.elementFromPoint(this.actionObj.pageX, this.actionObj.pageY) as HTMLTableCellElement;
         if (isNullOrUndefined(td)) {
             return;
         }
-        let resizeTime: Date = this.parent.getDateFromElement(td);
-        let isSameCell: boolean = this.parent.activeViewOptions.group.resources.length > 0 ?
+        const resizeTime: Date = this.parent.getDateFromElement(td);
+        const isSameCell: boolean = this.parent.activeViewOptions.group.resources.length > 0 ?
             parseInt(td.getAttribute('data-group-index'), 10) === this.actionObj.groupIndex : true;
         let startTime: Date = new Date((<Date>this.actionObj.event[this.parent.eventFields.startTime]).getTime());
         let endTime: Date = new Date((<Date>this.actionObj.event[this.parent.eventFields.endTime]).getTime());
@@ -211,7 +208,7 @@ export class Resize extends ActionBase {
         if (isSameCell && startTime < endTime) {
             this.actionObj.start = startTime;
             this.actionObj.end = endTime;
-            let event: { [key: string]: Object } = this.getUpdatedEvent(this.actionObj.start, this.actionObj.end, this.actionObj.event);
+            const event: Record<string, any> = this.getUpdatedEvent(this.actionObj.start, this.actionObj.end, this.actionObj.event);
             if (this.parent.currentView === 'TimelineYear') {
                 this.yearEventsRendering(event);
             } else {
@@ -221,9 +218,9 @@ export class Resize extends ActionBase {
         }
     }
 
-    private yearEventsRendering(event: { [key: string]: Object }): void {
-        let eventWrappers: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CLONE_ELEMENT_CLASS));
-        for (let wrapper of eventWrappers) {
+    private yearEventsRendering(event: Record<string, any>): void {
+        const eventWrappers: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CLONE_ELEMENT_CLASS));
+        for (const wrapper of eventWrappers) {
             remove(wrapper);
         }
         let endDate: Date = new Date(event[this.parent.eventFields.endTime] as Date);
@@ -232,11 +229,11 @@ export class Resize extends ActionBase {
             monthDiff = this.getMonthDiff(event[this.parent.eventFields.startTime] as Date, util.addDays(endDate, -1));
         }
         for (let i: number = 0; i <= monthDiff; i++) {
-            let eventObj: { [key: string]: Object };
+            let eventObj: Record<string, any>;
             if (this.parent.activeViewOptions.group.resources.length === 0) {
                 eventObj = this.getEventCount(event, this.actionObj.start.getMonth() + i);
             } else {
-                eventObj = extend({}, event, null, true) as { [key: string]: Object };
+                eventObj = extend({}, event, null, true) as Record<string, any>;
                 endDate = this.resizeEdges.left || this.resizeEdges.right ? util.addDays(endDate, -1) : endDate;
                 eventObj.count = this.getMonthDiff(event[this.parent.eventFields.startTime] as Date, endDate) + 1;
             }
@@ -252,12 +249,12 @@ export class Resize extends ActionBase {
         return months <= 0 ? 0 : months;
     }
 
-    private getEventCount(eventObj: { [key: string]: Object }, month: number): { [key: string]: Object } {
-        let eventData: { [key: string]: Object } = extend({}, eventObj, null, true) as { [key: string]: Object };
-        let eventStart: Date = eventData[this.parent.eventFields.startTime] as Date;
-        let eventEnd: Date = eventData[this.parent.eventFields.endTime] as Date;
-        let monthStart: Date = new Date(this.parent.selectedDate.getFullYear(), month, 1);
-        let monthEnd: Date = util.addDays(new Date(this.parent.selectedDate.getFullYear(), month + 1, 0), 1);
+    private getEventCount(eventObj: Record<string, any>, month: number): Record<string, any> {
+        const eventData: Record<string, any> = extend({}, eventObj, null, true) as Record<string, any>;
+        const eventStart: Date = eventData[this.parent.eventFields.startTime] as Date;
+        const eventEnd: Date = eventData[this.parent.eventFields.endTime] as Date;
+        const monthStart: Date = new Date(this.parent.selectedDate.getFullYear(), month, 1);
+        const monthEnd: Date = util.addDays(new Date(this.parent.selectedDate.getFullYear(), month + 1, 0), 1);
         let count: number = 1;
         if (eventStart.getTime() < monthStart.getTime()) {
             eventData[this.parent.eventFields.startTime] = monthStart;
@@ -282,7 +279,7 @@ export class Resize extends ActionBase {
         this.removeCloneElement();
         this.actionClass('removeClass');
         this.parent.uiStateValues.action = false;
-        let resizeArgs: ResizeEventArgs = { cancel: false, data: this.getChangedData(), element: this.actionObj.element, event: e };
+        const resizeArgs: ResizeEventArgs = { cancel: false, data: this.getChangedData(), element: this.actionObj.element, event: e };
         this.parent.trigger(event.resizeStop, resizeArgs, (resizeEventArgs: ResizeEventArgs) => {
             if (resizeEventArgs.cancel) {
                 return;
@@ -304,12 +301,12 @@ export class Resize extends ActionBase {
         if (!isTop) {
             offsetValue += this.actionObj.clone.offsetHeight;
         }
-        let minutes: number = (offsetValue / this.actionObj.cellHeight) * this.actionObj.slotInterval;
-        let element: Element = this.actionObj.clone.offsetParent;
+        const minutes: number = (offsetValue / this.actionObj.cellHeight) * this.actionObj.slotInterval;
+        const element: Element = this.actionObj.clone.offsetParent;
         if (isNullOrUndefined(element)) {
             return;
         }
-        let resizeTime: Date = util.resetTime(this.parent.getDateFromElement(element));
+        const resizeTime: Date = util.resetTime(this.parent.getDateFromElement(element));
         resizeTime.setHours(this.parent.activeView.getStartHour().getHours());
         resizeTime.setMinutes(minutes + this.parent.activeView.getStartHour().getMinutes());
         if (isTop) {
@@ -321,14 +318,14 @@ export class Resize extends ActionBase {
     }
 
     private horizontalResizing(isLeft: boolean): void {
-        let eventStart: Date = new Date((<Date>this.actionObj.event[this.parent.eventFields.startTime]).getTime());
-        let eventEnd: Date = new Date((<Date>this.actionObj.event[this.parent.eventFields.endTime]).getTime());
+        const eventStart: Date = new Date((<Date>this.actionObj.event[this.parent.eventFields.startTime]).getTime());
+        const eventEnd: Date = new Date((<Date>this.actionObj.event[this.parent.eventFields.endTime]).getTime());
         let resizeTime: Date;
         if (this.parent.activeView.isTimelineView()) {
-            let tr: HTMLTableRowElement = this.parent.getContentTable().querySelector('tr') as HTMLTableRowElement;
+            const tr: HTMLTableRowElement = this.parent.getContentTable().querySelector('tr') as HTMLTableRowElement;
             let headerName: string = this.parent.currentView;
             if (this.parent.activeViewOptions.headerRows.length > 0) {
-                let rows: string[] = this.parent.activeViewOptions.headerRows.map((row: { [key: string]: Object }) => row.option as string);
+                const rows: string[] = this.parent.activeViewOptions.headerRows.map((row: Record<string, any>) => row.option as string);
                 headerName = rows.slice(-1)[0];
                 if (this.parent.currentView === 'TimelineMonth' && headerName === 'Hour') {
                     headerName = rows.slice(-2)[0] || 'Month';
@@ -336,11 +333,11 @@ export class Resize extends ActionBase {
             }
             resizeTime = isLeft ? eventStart : eventEnd;
             let cellIndex: number = 0;
-            let tdCollections: HTMLElement[] = [].slice.call(tr.children);
+            const tdCollections: HTMLElement[] = [].slice.call(tr.children);
             let isLastCell: boolean = false;
             if (['Year', 'Month', 'Week', 'Date'].indexOf(headerName) !== -1) {
                 let noOfDays: number = 0;
-                for (let td of tdCollections) {
+                for (const td of tdCollections) {
                     noOfDays += parseInt(td.getAttribute('colspan'), 10);
                 }
                 let offsetValue: number = this.parent.enableRtl ? parseInt(this.actionObj.clone.style.right, 10) :
@@ -353,7 +350,7 @@ export class Resize extends ActionBase {
                 isLastCell = cellIndex === tdCollections.length;
                 cellIndex = (cellIndex < 0) ? 0 : (cellIndex >= noOfDays) ? noOfDays - 1 : cellIndex;
             } else {
-                let cellWidth: number = this.actionObj.cellWidth;
+                const cellWidth: number = this.actionObj.cellWidth;
                 cellIndex = isLeft ? Math.floor(this.actionObj.clone.offsetLeft / this.actionObj.cellWidth) :
                     Math.ceil((this.actionObj.clone.offsetLeft + (this.actionObj.clone.offsetWidth - cellWidth)) /
                         this.actionObj.cellWidth);
@@ -363,7 +360,7 @@ export class Resize extends ActionBase {
                         this.parent.currentView !== 'TimelineMonth')) {
                         cellOffsetWidth = this.actionObj.cellWidth;
                     }
-                    let offsetWidth: number = (Math.floor(parseInt(this.actionObj.clone.style.right, 10) / this.actionObj.cellWidth) *
+                    const offsetWidth: number = (Math.floor(parseInt(this.actionObj.clone.style.right, 10) / this.actionObj.cellWidth) *
                         this.actionObj.cellWidth) + (isLeft ? 0 : this.actionObj.clone.offsetWidth - cellOffsetWidth);
                     cellIndex = Math.floor(offsetWidth / this.actionObj.cellWidth);
                 }
@@ -393,11 +390,11 @@ export class Resize extends ActionBase {
                 this.updateTimePosition(resizeTime);
             }
         } else {
-            let cloneIndex: number = (closest(this.actionObj.clone, 'td') as HTMLTableCellElement).cellIndex;
-            let originalWidth: number = Math.ceil((isLeft ? this.actionObj.element.offsetWidth : 0) / this.actionObj.cellWidth) *
+            const cloneIndex: number = (closest(this.actionObj.clone, 'td') as HTMLTableCellElement).cellIndex;
+            const originalWidth: number = Math.ceil((isLeft ? this.actionObj.element.offsetWidth : 0) / this.actionObj.cellWidth) *
                 this.actionObj.cellWidth;
-            let noOfDays: number = Math.ceil((this.actionObj.clone.offsetWidth - originalWidth) / this.actionObj.cellWidth);
-            let tr: HTMLTableRowElement = closest(this.actionObj.clone, 'tr') as HTMLTableRowElement;
+            const noOfDays: number = Math.ceil((this.actionObj.clone.offsetWidth - originalWidth) / this.actionObj.cellWidth);
+            const tr: HTMLTableRowElement = closest(this.actionObj.clone, 'tr') as HTMLTableRowElement;
             let dayIndex: number = isLeft ? cloneIndex - noOfDays : cloneIndex + noOfDays - 1;
             dayIndex = this.getIndex(dayIndex);
             resizeTime = this.parent.getDateFromElement(<HTMLElement>tr.children[dayIndex]);
@@ -413,18 +410,18 @@ export class Resize extends ActionBase {
             }
             this.actionObj.start = this.parent.activeViewOptions.timeScale.enable ? this.calculateIntervalTime(resizeTime) : resizeTime;
         } else {
-            let isTimeViews: boolean = ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(this.parent.currentView) > -1 &&
+            const isTimeViews: boolean = ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(this.parent.currentView) > -1 &&
                 this.parent.activeViewOptions.timeScale.enable;
-            let resizeEnd: Date = (!isTimeViews && resizeTime.getHours() === 0 && resizeTime.getMinutes() === 0) ?
+            const resizeEnd: Date = (!isTimeViews && resizeTime.getHours() === 0 && resizeTime.getMinutes() === 0) ?
                 util.addDays(resizeTime, 1) : resizeTime;
             this.actionObj.end = this.parent.activeViewOptions.timeScale.enable && this.parent.currentView !== 'Month' ?
                 this.calculateIntervalTime(resizeEnd) : resizeEnd;
         }
     }
 
-    private getTopBottomStyles(e: MouseEvent & TouchEvent, isTop: boolean): { [key: string]: Object } {
-        let viewElement: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
-        let slotInterval: number = (this.actionObj.cellHeight / this.actionObj.slotInterval) * this.actionObj.interval;
+    private getTopBottomStyles(e: MouseEvent & TouchEvent, isTop: boolean): Record<string, any> {
+        const viewElement: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+        const slotInterval: number = (this.actionObj.cellHeight / this.actionObj.slotInterval) * this.actionObj.interval;
         let clnHeight: number = isTop ? this.actionObj.element.offsetHeight + (this.actionObj.Y - this.actionObj.pageY) :
             this.actionObj.element.offsetHeight + (this.actionObj.pageY - this.actionObj.Y);
         let clnTop: number = isTop ? this.actionObj.element.offsetTop -
@@ -436,7 +433,7 @@ export class Resize extends ActionBase {
         clnTop = isTop ? Math.floor(clnTop / slotInterval) * slotInterval : clnTop;
         clnHeight = clnTop + clnHeight >= viewElement.scrollHeight ? viewElement.scrollHeight - clnTop :
             Math.ceil(clnHeight / slotInterval) * slotInterval;
-        let styles: { [key: string]: Object } = {
+        const styles: Record<string, any> = {
             height: formatUnit(clnHeight < this.actionObj.cellHeight ? Math.floor(clnHeight / slotInterval) * slotInterval : clnHeight),
             top: formatUnit((clnHeight < this.actionObj.cellHeight && isTop) ? Math.ceil(clnTop / slotInterval) * slotInterval : clnTop),
             left: '0px', right: '0px', width: '100%'
@@ -444,19 +441,18 @@ export class Resize extends ActionBase {
         return styles;
     }
 
-    private getLeftRightStyles(e: MouseEvent & TouchEvent, isLeft: boolean): { [key: string]: Object } {
-        let styles: { [key: string]: Object } = {};
-        let isTimelineView: boolean = this.parent.activeView.isTimelineView();
-        let isTimeViews: boolean = ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(this.parent.currentView) > -1 &&
+    private getLeftRightStyles(e: MouseEvent & TouchEvent, isLeft: boolean): Record<string, any> {
+        const styles: Record<string, any> = {};
+        const isTimelineView: boolean = this.parent.activeView.isTimelineView();
+        const isTimeViews: boolean = ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(this.parent.currentView) > -1 &&
             this.parent.activeViewOptions.timeScale.enable;
-        let slotInterval: number = (this.actionObj.cellWidth / this.actionObj.slotInterval) * this.actionObj.interval;
-        let pageWidth: number = isLeft ? (this.actionObj.X - this.actionObj.pageX) : (this.actionObj.pageX - this.actionObj.X);
-        let targetWidth: number = isTimelineView ?
+        const slotInterval: number = (this.actionObj.cellWidth / this.actionObj.slotInterval) * this.actionObj.interval;
+        const pageWidth: number = isLeft ? (this.actionObj.X - this.actionObj.pageX) : (this.actionObj.pageX - this.actionObj.X);
+        const targetWidth: number = isTimelineView ?
             (this.actionObj.element.offsetWidth / this.actionObj.cellWidth) * this.actionObj.cellWidth :
             this.parent.currentView === 'Month' ? this.actionObj.element.offsetWidth :
                 Math.ceil(this.actionObj.element.offsetWidth / this.actionObj.cellWidth) * this.actionObj.cellWidth;
         let offsetWidth: number = targetWidth + (Math.ceil(pageWidth / this.actionObj.cellWidth) * this.actionObj.cellWidth);
-        let left: number = (this.parent.enableRtl) ? parseInt(this.actionObj.element.style.right, 10) : this.actionObj.clone.offsetLeft;
         if (isTimeViews) {
             offsetWidth = targetWidth + (isLeft ? (Math.ceil(pageWidth / slotInterval) * slotInterval) :
                 (Math.floor(pageWidth / slotInterval) * slotInterval));
@@ -490,7 +486,7 @@ export class Resize extends ActionBase {
                         parseInt(this.actionObj.clone.style.left, 10) : offsetLeft : offsetLeft;
                 }
             }
-            let leftValue: number = offsetLeft;
+            const leftValue: number = offsetLeft;
             offsetLeft = isTimelineView ? isTimeViews ? isLeft ? Math.floor(offsetLeft / slotInterval) * slotInterval : offsetLeft :
                 Math.floor(offsetLeft / this.actionObj.cellWidth) * this.actionObj.cellWidth :
                 Math.ceil(Math.abs(offsetLeft) / this.actionObj.cellWidth) * this.actionObj.cellWidth;
@@ -498,7 +494,7 @@ export class Resize extends ActionBase {
                 offsetLeft = 0;
                 width = this.actionObj.clone.offsetWidth;
             }
-            let cloneWidth: number = Math.ceil(this.actionObj.clone.offsetWidth / this.actionObj.cellWidth) * this.actionObj.cellWidth;
+            const cloneWidth: number = Math.ceil(this.actionObj.clone.offsetWidth / this.actionObj.cellWidth) * this.actionObj.cellWidth;
             if (isLeft) {
                 styles.left = formatUnit(isTimelineView ? offsetLeft : isLeft ? leftValue < 0 ? -offsetLeft :
                     (Math.ceil((targetWidth - cloneWidth) / this.actionObj.cellWidth) * this.actionObj.cellWidth) : offsetLeft);
@@ -509,8 +505,8 @@ export class Resize extends ActionBase {
     }
 
     private resizeValidation(e: MouseEvent & TouchEvent): boolean {
-        let pages: (MouseEvent & TouchEvent) | Touch = this.getPageCoordinates(e);
-        let viewDimension: { [key: string]: Object } = this.getContentAreaDimension();
+        const pages: (MouseEvent & TouchEvent) | Touch = this.getPageCoordinates(e);
+        const viewDimension: Record<string, any> = this.getContentAreaDimension();
         let resizeValidation: boolean = false;
         if (this.resizeEdges.left) {
             resizeValidation = (pages.pageX - this.actionObj.cellWidth) >= viewDimension.left;
@@ -528,9 +524,12 @@ export class Resize extends ActionBase {
     }
 
     /**
-     * Get module name.
+     * Get module name
+     *
+     * @returns {string} Returns the module name..
      */
     protected getModuleName(): string {
         return 'resize';
     }
+
 }

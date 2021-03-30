@@ -1,3 +1,4 @@
+/* eslint-disable valid-jsdoc */
 import { Component, Property, NotifyPropertyChanges, Internationalization, ModuleDeclaration, isBlazor } from '@syncfusion/ej2-base';
 import { EmitType, INotifyPropertyChanged, setCulture, Browser, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { Event, EventHandler, Complex, Collection, isNullOrUndefined, remove, createElement } from '@syncfusion/ej2-base';
@@ -42,7 +43,7 @@ import { Gradient } from './axes/gradient';
 export class LinearGauge extends Component<HTMLElement> implements INotifyPropertyChanged {
     //Module declaration for gauge
     /**
-     *  Specifies the module that is used to place any text or images as annotation into the linear gauge.
+     * Specifies the module that is used to place any text or images as annotation into the linear gauge.
      */
     public annotationsModule: Annotations;
 
@@ -53,30 +54,35 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * This module enables the print functionality in linear gauge control.
+     *
      * @private
      */
     public printModule: Print;
 
     /**
      * This module enables the export to PDF functionality in linear gauge control.
+     *
      * @private
      */
     public pdfExportModule: PdfExport;
 
     /**
-     *  This module enables the export to image functionality in linear gauge control.
+     * This module enables the export to image functionality in linear gauge control.
+     *
      * @private
      */
     public imageExportModule: ImageExport;
 
     /**
-     *  This module enables the gradient option for pointer and ranges.
+     * This module enables the gradient option for pointer and ranges.
+     *
      * @private
      */
     public gradientModule: Gradient;
 
     /**
      * Specifies the gradient count of the linear gauge.
+     *
      * @private
      */
     public gradientCount: number = 0;
@@ -84,6 +90,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Specifies the width of the linear gauge as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, gauge will render to the full width of its parent element.
+     *
      * @default null
      */
 
@@ -92,6 +99,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Enables or disables the gauge to be rendered to the complete width.
+     *
      * @default true
      */
     @Property(true)
@@ -100,6 +108,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Specifies the height of the linear gauge as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, gauge will render to the full height of its parent element.
+     *
      * @default null
      */
 
@@ -108,6 +117,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Specifies the orientation of the rendering of the linear gauge.
+     *
      * @default Vertical
      */
     @Property('Vertical')
@@ -115,6 +125,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Specifies the placement of the label in linear gauge.
+     *
      * @default None
      */
     @Property('None')
@@ -122,22 +133,25 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Enables or disables the print functionality in linear gauge.
+     *
      * @default false
      */
     @Property(false)
     public allowPrint: boolean;
 
-     /**
-      * Enables or disables the export to image functionality in linear gauge.
-      * @default false
-      */
+    /**
+     * Enables or disables the export to image functionality in linear gauge.
+     *
+     * @default false
+     */
     @Property(false)
     public allowImageExport: boolean;
 
-     /**
-      * Enables or disables the export to PDF functionality in linear gauge.
-      * @default false
-      */
+    /**
+     * Enables or disables the export to PDF functionality in linear gauge.
+     *
+     * @default false
+     */
     @Property(false)
     public allowPdfExport: boolean;
 
@@ -157,6 +171,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Specifies the background color of the gauge. This property accepts value in hex code, rgba string as a valid CSS color string.
+     *
      * @default 'transparent'
      */
     @Property(null)
@@ -205,6 +220,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Specifies the color palette for axis ranges in linear gauge.
+     *
      * @default []
      */
     @Property([])
@@ -212,6 +228,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Enables or disables a grouping separator should be used for a number.
+     *
      * @default false
      */
     @Property(false)
@@ -219,6 +236,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Specifies the description for linear gauge.
+     *
      * @default null
      */
     @Property(null)
@@ -226,6 +244,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Specifies the tab index value for the linear gauge.
+     *
      * @default 1
      */
     @Property(1)
@@ -233,6 +252,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Specifies the format to apply for internationalization in linear gauge.
+     *
      * @default null
      */
     @Property(null)
@@ -240,6 +260,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Specifies the theme supported for the linear gauge.
+     *
      * @default Material
      */
     @Property('Material')
@@ -247,6 +268,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Triggers after the gauge gets rendered.
+     *
      * @event
      * @blazorProperty 'Loaded'
      */
@@ -255,6 +277,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Triggers before the gauge gets rendered.
+     *
      * @event
      * @blazorProperty 'OnLoad'
      */
@@ -263,6 +286,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Triggers after completing the animation for pointer.
+     *
      * @event
      * @blazorProperty 'AnimationCompleted'
      */
@@ -271,6 +295,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Triggers before each axis label gets rendered.
+     *
      * @event
      * @blazorProperty 'AxisLabelRendering'
      */
@@ -279,6 +304,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Triggers before the pointer is dragged.
+     *
      * @event
      * @blazorProperty 'OnDragStart'
      */
@@ -288,6 +314,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Triggers while dragging the pointers.
+     *
      * @event
      * @blazorProperty 'OnDragMove'
      */
@@ -297,6 +324,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Triggers after the pointer is dragged.
+     *
      * @event
      * @blazorProperty 'OnDragEnd'
      */
@@ -305,6 +333,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Triggers before each annotation gets rendered.
+     *
      * @event
      * @blazorProperty 'AnnotationRendering'
      */
@@ -313,6 +342,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Triggers before the tooltip get rendered.
+     *
      * @event
      * @deprecated
      * @blazorProperty 'TooltipRendering'
@@ -323,6 +353,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Triggers when performing the mouse move operation on gauge area.
+     *
      * @event
      * @blazorProperty 'OnGaugeMouseMove'
      */
@@ -333,6 +364,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Triggers when performing the mouse leave operation from the gauge area.
+     *
      * @event
      * @blazorProperty 'OnGaugeMouseLeave'
      */
@@ -342,6 +374,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Triggers when performing the mouse down operation on gauge area.
+     *
      * @event
      * @blazorProperty 'OnGaugeMouseDown'
      */
@@ -351,6 +384,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Triggers when performing mouse up operation on gauge area.
+     *
      * @event
      * @blazorProperty 'OnGaugeMouseUp'
      */
@@ -360,6 +394,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Triggers while changing the value of the pointer by UI interaction.
+     *
      * @event
      * @blazorProperty 'ValueChange'
      */
@@ -369,6 +404,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Triggers after window resize.
+     *
      * @event
      * @blazorProperty 'Resizing'
      */
@@ -378,6 +414,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Triggers before the prints gets started.
+     *
      * @event
      * @blazorProperty 'OnPrint'
      */
@@ -459,6 +496,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * @hidden
      */
 
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(options?: LinearGaugeModel, element?: string | HTMLElement) {
         super(options, element);
     }
@@ -485,7 +523,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     private initPrivateVariable(): void {
         if (this.element.id === '') {
-            let collection: number = document.getElementsByClassName('e-lineargauge').length;
+            const collection: number = document.getElementsByClassName('e-lineargauge').length;
             this.element.id = 'lineargauge_' + 'control_' + collection;
         }
         this.renderer = new SvgRenderer(this.element.id);
@@ -515,6 +553,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * To Remove the SVG.
+     *
      * @return {boolean}
      * @private
      */
@@ -534,8 +573,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * Method to calculate the size of the gauge
      */
     private calculateSize(): void {
-        let width: number = stringToNumber(this.width, this.element.offsetWidth) || this.element.offsetWidth || 600;
-        let height: number = stringToNumber(this.height, this.element.offsetHeight) || this.element.offsetHeight || 450;
+        const width: number = stringToNumber(this.width, this.element.offsetWidth) || this.element.offsetWidth || 600;
+        const height: number = stringToNumber(this.height, this.element.offsetHeight) || this.element.offsetHeight || 450;
         this.availableSize = new Size(width, height);
     }
 
@@ -563,7 +602,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     private appendSecondaryElement(): void {
         if (isNullOrUndefined(getElement(this.element.id + '_Secondary_Element'))) {
-            let secondaryElement: Element = createElement('div');
+            const secondaryElement: Element = createElement('div');
             secondaryElement.id = this.element.id + '_Secondary_Element';
             secondaryElement.setAttribute('style', 'position: relative');
             this.element.appendChild(secondaryElement);
@@ -574,10 +613,10 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * Render the map area border
      */
     private renderArea(): void {
-        let size: Size = measureText(this.title, this.titleStyle);
-        let rectSize: Rect = new Rect(
+        const size: Size = measureText(this.title, this.titleStyle);
+        const rectSize: Rect = new Rect(
             this.actualRect.x, this.actualRect.y - (size.height / 2), this.actualRect.width, this.actualRect.height);
-        let rect: RectOption = new RectOption(
+        const rect: RectOption = new RectOption(
             this.element.id + 'LinearGaugeBorder', this.background || this.themeStyle.backgroundColor, this.border, 1, rectSize);
         this.svgObject.appendChild(this.renderer.drawRectangle(rect) as SVGRectElement);
     }
@@ -604,9 +643,9 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     }
 
     private renderBorder(): void {
-        let width: number = this.border.width;
+        const width: number = this.border.width;
         if (width > 0 || (this.background || this.themeStyle.backgroundColor)) {
-            let rect: RectOption = new RectOption(
+            const rect: RectOption = new RectOption(
                 this.element.id + '_LinearGaugeBorder', this.background || this.themeStyle.backgroundColor, this.border, 1,
                 new Rect(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width), null, null);
             this.svgObject.appendChild(this.renderer.drawRectangle(rect) as HTMLElement);
@@ -614,31 +653,28 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     }
 
     private renderTitle(): void {
-        let x: number; let y: number;
-        let height: number; let width: number;
-        let titleBounds: Rect;
-        let size: Size = measureText(this.title, this.titleStyle);
-        let options: TextOption = new TextOption(
+        const size: Size = measureText(this.title, this.titleStyle);
+        const options: TextOption = new TextOption(
             this.element.id + '_LinearGaugeTitle',
             this.availableSize.width / 2,
             this.margin.top + (size.height / 2),
             'middle', this.title
         );
-        titleBounds = {
+        const titleBounds: Rect = {
             x: options.x - (size.width / 2),
             y: options.y,
             width: size.width,
             height: size.height
         };
-        x = this.margin.left;
-        y = (isNullOrUndefined(titleBounds)) ? this.margin.top : titleBounds.y;
-        height = (this.availableSize.height - y - this.margin.bottom);
-        width = (this.availableSize.width - this.margin.left - this.margin.right);
+        const x: number = this.margin.left;
+        const y: number = (isNullOrUndefined(titleBounds)) ? this.margin.top : titleBounds.y;
+        const height: number = (this.availableSize.height - y - this.margin.bottom);
+        const width: number = (this.availableSize.width - this.margin.left - this.margin.right);
         this.actualRect = { x: x, y: y, width: width, height: height };
         if (this.title) {
             this.titleStyle.fontFamily = this.themeStyle.fontFamily || this.titleStyle.fontFamily;
             this.titleStyle.size = this.themeStyle.fontSize || this.titleStyle.size;
-            let element: Element = textElement(
+            const element: Element = textElement(
                 options, this.titleStyle, this.titleStyle.color || this.themeStyle.titleFontColor, this.svgObject
             );
             element.setAttribute('aria-label', this.description || this.title);
@@ -698,11 +734,12 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Handles the gauge resize.
+     *
      * @return {boolean}
      * @private
      */
     public gaugeResize(e: Event): boolean {
-        let args: IResizeEventArgs = {
+        const args: IResizeEventArgs = {
             gauge: !this.isBlazor ? this : null,
             previousSize: new Size(
                 this.availableSize.width,
@@ -714,7 +751,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
         }
-        if (this.element.classList.contains('e-lineargauge')) {
+        if (!isNullOrUndefined(this.element) && this.element.classList.contains('e-lineargauge')) {
             this.resizeTo = window.setTimeout(
                 (): void => {
                     this.createSvg();
@@ -746,16 +783,15 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public renderContainer(): void {
         let width: number; let height: number; let x: number; let y: number;
         let options: PathOption;
-        let labelPadding: number = 20;
+        const labelPadding: number = 20;
         let path: string = '';
-        let topRadius: number; let bottomRadius: number;
-        let fill: string = (this.container.backgroundColor !== 'transparent'
+        const fill: string = (this.container.backgroundColor !== 'transparent'
             || (this.theme !== 'Bootstrap4' && this.theme !== 'Material'))
             ? this.container.backgroundColor : this.themeStyle.containerBackground;
         let rect: RectOption;
-        let radius: number = this.container.width;
-        bottomRadius = radius + ((radius / 2) / Math.PI);
-        topRadius = radius / 2;
+        const radius: number = this.container.width;
+        const bottomRadius: number = radius + ((radius / 2) / Math.PI);
+        const topRadius: number = radius / 2;
         if (this.orientation === 'Vertical') {
             height = this.actualRect.height;
             height = (this.container.height > 0 ? this.container.height : ((height / 2) - ((height / 2) / 4)) * 2);
@@ -764,7 +800,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             x = (this.actualRect.x + ((this.actualRect.width / 2) - (this.container.width / 2))) + this.container.offset;
             y = this.actualRect.y + ((this.actualRect.height / 2) - ((this.container.type === 'Thermometer') ?
                 ((height + (bottomRadius * 2) - topRadius)) / 2 : height / 2));
-            height = height;
         } else {
             if (this.allowMargin) {
                 width = (this.container.height > 0) ? this.container.height :
@@ -806,11 +841,11 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     private setMouseXY(e: PointerEvent): void {
         let pageX: number;
         let pageY: number;
-        let svgRect: ClientRect = getElement(this.element.id + '_svg').getBoundingClientRect();
-        let rect: ClientRect = this.element.getBoundingClientRect();
+        const svgRect: ClientRect = getElement(this.element.id + '_svg').getBoundingClientRect();
+        const rect: ClientRect = this.element.getBoundingClientRect();
         if (e.type.indexOf('touch') > -1) {
             this.isTouch = true;
-            let touchArg: TouchEvent = <TouchEvent & PointerEvent>e;
+            const touchArg: TouchEvent = <TouchEvent & PointerEvent>e;
             pageY = touchArg.changedTouches[0].clientY;
             pageX = touchArg.changedTouches[0].clientX;
         } else {
@@ -823,24 +858,25 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     }
     /**
      * Handles the mouse down on gauge.
+     *
      * @return {boolean}
      * @private
      */
     public gaugeOnMouseDown(e: PointerEvent): boolean {
         let pageX: number; let pageY: number;
         let target: Element;
-        let element: Element = <Element>e.target;
-        let split: string[] = [];
-        let clientRect: ClientRect = this.element.getBoundingClientRect();
-        let axis: Axis; let isPointer: boolean = false;
+        const element: Element = <Element>e.target;
+        const split: string[] = [];
+        const clientRect: ClientRect = this.element.getBoundingClientRect();
+        let axis: Axis; const isPointer: boolean = false;
         let pointer: Pointer;
         let current: IMoveCursor;
         let currentPointer: IVisiblePointer;
         this.setMouseXY(e);
         let top: number; let left: number;
         let pointerElement: Element; let svgPath: SVGPathElement;
-        let dragProcess: boolean = false;
-        let args: IMouseEventArgs = this.getMouseArgs(e, 'touchstart', gaugeMouseDown);
+        const dragProcess: boolean = false;
+        const args: IMouseEventArgs = this.getMouseArgs(e, 'touchstart', gaugeMouseDown);
         this.trigger(gaugeMouseDown, args, (observedArgs: IMouseEventArgs) => {
             this.mouseX = args.x;
             this.mouseY = args.y;
@@ -853,8 +889,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                     if (isNullOrUndefined(this.activePointer.pathElement)) {
                         this.activePointer.pathElement = [e.target as Element];
                     }
-                    let pointInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
-                    let axisInd: number = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
+                    const pointInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
+                    const axisInd: number = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
                     if (currentPointer.pointer.enableDrag) {
                         this.trigger(dragStart, this.isBlazor ? {
                             name: dragStart,
@@ -883,6 +919,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Handles the mouse move.
+     *
      * @return {boolean}
      * @private
      */
@@ -890,7 +927,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         let current: IMoveCursor;
         let element: Element;
         this.setMouseXY(e);
-        let args: IMouseEventArgs = this.getMouseArgs(e, 'touchmove', gaugeMouseMove);
+        const args: IMouseEventArgs = this.getMouseArgs(e, 'touchmove', gaugeMouseMove);
         this.trigger(gaugeMouseMove, args, (observedArgs: IMouseEventArgs) => {
             this.mouseX = args.x;
             this.mouseY = args.y;
@@ -905,8 +942,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                         }
                         if (this.activePointer) {
                             this.isDrag = true;
-                            let dragPointInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
-                            let dragAxisInd: number = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
+                            const dragPointInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
+                            const dragAxisInd: number = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
                             dragArgs = {
                                 axis: this.activeAxis,
                                 pointer: this.activePointer,
@@ -944,21 +981,21 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * To find the mouse move on pointer.
+     *
      * @param element
      */
 
     private moveOnPointer(element: HTMLElement): IMoveCursor {
-        let current: IVisiblePointer;
-        let clientRect: ClientRect = this.element.getBoundingClientRect();
-        let axis: Axis; let isPointer: boolean = false;
-        let pointer: Pointer; let top: number; let left: number;
-        let pointerElement: Element = getElement(element.id);
-        let svgPath: SVGPathElement = <SVGPathElement>pointerElement;
+        const clientRect: ClientRect = this.element.getBoundingClientRect();
+        let isPointer: boolean = false;
+        let top: number; let left: number;
+        const pointerElement: Element = getElement(element.id);
+        const svgPath: SVGPathElement = <SVGPathElement>pointerElement;
         let cursorStyle: string;
         let process: IMoveCursor;
-        current = getPointer(element as HTMLElement, this);
-        axis = current.axis;
-        pointer = current.pointer;
+        const current: IVisiblePointer = getPointer(element as HTMLElement, this);
+        const axis: Axis = current.axis;
+        const pointer: Pointer = current.pointer;
         if (pointer.enableDrag) {
             if (pointer.type === 'Bar') {
                 if (this.orientation === 'Vertical') {
@@ -1003,6 +1040,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Handles the mouse leave.
+     *
      * @return {boolean}
      * @private
      */
@@ -1011,7 +1049,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         this.activeAxis = null;
         this.activePointer = null;
         this.svgObject.setAttribute('cursor', 'auto');
-        let args: IMouseEventArgs = this.getMouseArgs(e, 'touchmove', gaugeMouseLeave);
+        const args: IMouseEventArgs = this.getMouseArgs(e, 'touchmove', gaugeMouseLeave);
         if (!isNullOrUndefined(this.mouseElement)) {
             parentNode = <HTMLElement>this.element;
             parentNode.style.cursor = '';
@@ -1023,6 +1061,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Handles the mouse move on gauge.
+     *
      * @return {boolean}
      * @private
      */
@@ -1039,6 +1078,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Handles the mouse up.
+     *
      * @return {boolean}
      * @private
      */
@@ -1046,15 +1086,15 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         this.setMouseXY(e);
         let parentNode: HTMLElement;
         let tooltipInterval: number;
-        let isTouch: boolean = e.pointerType === 'touch' || e.pointerType === '2' || e.type === 'touchend';
-        let args: IMouseEventArgs = this.getMouseArgs(e, 'touchend', gaugeMouseUp);
-        let blazorArgs: IMouseEventArgs = {
+        const isTouch: boolean = e.pointerType === 'touch' || e.pointerType === '2' || e.type === 'touchend';
+        const args: IMouseEventArgs = this.getMouseArgs(e, 'touchend', gaugeMouseUp);
+        const blazorArgs: IMouseEventArgs = {
             cancel: args.cancel, target: args.target, name: args.name, x: args.x, y: args.y
         };
         this.trigger(gaugeMouseUp, this.isBlazor ? blazorArgs : args);
         if (this.activeAxis && this.activePointer) {
-            let pointerInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
-            let axisInd: number = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
+            const pointerInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
+            const axisInd: number = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
             if (this.activePointer.enableDrag) {
                 this.trigger(dragEnd, this.isBlazor ? {
                     name: dragEnd,
@@ -1090,15 +1130,17 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * This method handles the print functionality for linear gauge.
+     *
      * @param id - Specifies the element to print the linear gauge.
      */
     public print(id?: string[] | string | Element): void {
         if ((this.allowPrint) && (this.printModule)) {
-        this.printModule.print(id);
+            this.printModule.print(id);
         }
     }
     /**
      * This method handles the export functionality for linear gauge.
+     *
      * @param type - Specifies the type of the export.
      * @param fileName - Specifies the file name for the exported file.
      * @param orientation - Specified the orientation for the exported pdf document.
@@ -1108,11 +1150,13 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             allowDownload = true;
         }
         if ((type !== 'PDF') && (this.allowImageExport) && (this.imageExportModule)) {
-            return new Promise((resolve: Function, reject: Function) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return new Promise((resolve: any, reject: any) => {
                 resolve(this.imageExportModule.export(type, fileName, allowDownload));
             });
         } else if ((this.allowPdfExport) && (this.pdfExportModule)) {
-            return new Promise((resolve: Function, reject: Function) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return new Promise((resolve: any, reject: any) => {
                 resolve(this.pdfExportModule.export(type, fileName, orientation, allowDownload));
             });
         }
@@ -1121,13 +1165,14 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Handles the mouse event arguments.
+     *
      * @return {IMouseEventArgs}
      * @private
      */
     private getMouseArgs(e: PointerEvent, type: string, name: string): IMouseEventArgs {
-        let rect: ClientRect = this.element.getBoundingClientRect();
-        let location: GaugeLocation = new GaugeLocation(-rect.left, -rect.top);
-        let isTouch: boolean = (e.type === type);
+        const rect: ClientRect = this.element.getBoundingClientRect();
+        const location: GaugeLocation = new GaugeLocation(-rect.left, -rect.top);
+        const isTouch: boolean = (e.type === type);
         location.x += isTouch ? (<TouchEvent & PointerEvent>e).changedTouches[0].clientX : e.clientX;
         location.y += isTouch ? (<TouchEvent & PointerEvent>e).changedTouches[0].clientY : e.clientY;
         return {
@@ -1146,9 +1191,9 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     public markerDrag(axis: Axis, pointer: Pointer): void {
         let options: PathOption;
-        let value: number = convertPixelToValue(
+        const value: number = convertPixelToValue(
             this.element, this.mouseElement, this.orientation, axis, 'drag', new GaugeLocation(this.mouseX, this.mouseY));
-        let process: boolean = withInRange(value, null, null, axis.visibleRange.max, axis.visibleRange.min, 'pointer');
+        const process: boolean = withInRange(value, null, null, axis.visibleRange.max, axis.visibleRange.min, 'pointer');
         if (withInRange(value, null, null, axis.visibleRange.max, axis.visibleRange.min, 'pointer')) {
             options = new PathOption(
                 'pointerID', pointer.color || this.themeStyle.pointerColor,
@@ -1178,15 +1223,14 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      */
 
     public barDrag(axis: Axis, pointer: Pointer): void {
-        let line: Rect = axis.lineBounds;
-        let range: VisibleRange = axis.visibleRange;
-        let value1: number; let value2: number;
+        const line: Rect = axis.lineBounds;
+        const range: VisibleRange = axis.visibleRange;
         let isDrag: boolean;
-        let lineHeight: number = (this.orientation === 'Vertical') ? line.height : line.width;
-        let lineY: number = (this.orientation === 'Vertical') ? line.y : line.x;
+        const lineHeight: number = (this.orientation === 'Vertical') ? line.height : line.width;
+        const lineY: number = (this.orientation === 'Vertical') ? line.y : line.x;
         let path: string;
-        value1 = ((valueToCoefficient(range.min, axis, this.orientation, range) * lineHeight) + lineY);
-        value2 = ((valueToCoefficient(range.max, axis, this.orientation, range) * lineHeight) + lineY);
+        const value1: number = ((valueToCoefficient(range.min, axis, this.orientation, range) * lineHeight) + lineY);
+        const value2: number = ((valueToCoefficient(range.max, axis, this.orientation, range) * lineHeight) + lineY);
         if (this.orientation === 'Vertical') {
             isDrag = (!axis.isInversed) ? (this.mouseY > value2 && this.mouseY < value1) : (this.mouseY > value1 && this.mouseY < value2);
             if (isDrag) {
@@ -1228,12 +1272,13 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Triggers when drag the pointer
+     *
      * @param activeElement
      */
 
     private triggerDragEvent(activeElement: Element): void {
-        let active: IVisiblePointer = getPointer(activeElement as HTMLElement, this);
-        let value: number = convertPixelToValue(
+        const active: IVisiblePointer = getPointer(activeElement as HTMLElement, this);
+        const value: number = convertPixelToValue(
             this.element, activeElement, this.orientation, active.axis, 'tooltip', null);
         let dragArgs: IValueChangeEventArgs = {
             name: 'valueChange',
@@ -1256,16 +1301,17 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * This method is used to set the pointer value in the linear gauge.
+     *
      * @param axisIndex - Specifies the index of the axis.
      * @param pointerIndex - Specifies the index of the pointer.
      * @param value - Specifies the pointer value.
      */
 
     public setPointerValue(axisIndex: number, pointerIndex: number, value: number): void {
-        let axis: Axis = <Axis>this.axes[axisIndex];
-        let pointer: Pointer = <Pointer>axis.pointers[pointerIndex];
-        let id: string = this.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer_' + pointerIndex;
-        let pointerElement: Element = getElement(id);
+        const axis: Axis = <Axis>this.axes[axisIndex];
+        const pointer: Pointer = <Pointer>axis.pointers[pointerIndex];
+        const id: string = this.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer_' + pointerIndex;
+        const pointerElement: Element = getElement(id);
         pointer.currentValue = value;
         if (
             (pointerElement !== null) && withInRange(
@@ -1279,17 +1325,18 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * This method is used to set the annotation value in the linear gauge.
+     *
      * @param annotationIndex - Specifies the index of the annotation.
      * @param content - Specifies the text of the annotation.
      */
 
     public setAnnotationValue(annotationIndex: number, content: string, axisValue?: number): void {
-        let elementExist: boolean = getElement(this.element.id + '_Annotation_' + annotationIndex) === null;
-        let element: HTMLElement = <HTMLElement>getElement(this.element.id + '_AnnotationsGroup') ||
+        const elementExist: boolean = getElement(this.element.id + '_Annotation_' + annotationIndex) === null;
+        const element: HTMLElement = <HTMLElement>getElement(this.element.id + '_AnnotationsGroup') ||
             createElement('div', {
                 id: this.element.id + '_AnnotationsGroup'
             });
-        let annotation: Annotation = <Annotation>this.annotations[annotationIndex];
+        const annotation: Annotation = <Annotation>this.annotations[annotationIndex];
         if (content !== null) {
             removeElement(this.element.id + '_Annotation_' + annotationIndex);
             annotation.content = content;
@@ -1303,13 +1350,14 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * To provide the array of modules needed for control rendering
+     *
      * @return {ModuleDeclaration[]}
      * @private
      */
     public requiredModules(): ModuleDeclaration[] {
-        let modules: ModuleDeclaration[] = [];
+        const modules: ModuleDeclaration[] = [];
         let annotationEnable: boolean = false;
-        let tooltipEnable: boolean = false;
+        const tooltipEnable: boolean = false;
         this.annotations.map((annotation: Annotation, index: number) => {
             annotationEnable = annotation.content != null;
         });
@@ -1352,10 +1400,11 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Get the properties to be maintained in the persisted state.
+     *
      * @private
      */
     public getPersistData(): string {
-        let keyEntity: string[] = ['loaded'];
+        const keyEntity: string[] = ['loaded'];
         return this.addOnPersist(keyEntity);
     }
 
@@ -1368,41 +1417,42 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Called internally if any of the property value changed.
+     *
      * @private
      */
     public onPropertyChanged(newProp: LinearGaugeModel, oldProp: LinearGaugeModel): void {
         let renderer: boolean = false;
         let refreshBounds: boolean = false;
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'height':
-                case 'width':
-                case 'margin':
-                    this.createSvg();
+            case 'height':
+            case 'width':
+            case 'margin':
+                this.createSvg();
+                refreshBounds = true;
+                break;
+            case 'title':
+                refreshBounds = (newProp.title === '' || oldProp.title === '');
+                renderer = !(newProp.title === '' || oldProp.title === '');
+                break;
+            case 'titleStyle':
+                if (newProp.titleStyle && newProp.titleStyle.size) {
                     refreshBounds = true;
-                    break;
-                case 'title':
-                    refreshBounds = (newProp.title === '' || oldProp.title === '');
-                    renderer = !(newProp.title === '' || oldProp.title === '');
-                    break;
-                case 'titleStyle':
-                    if (newProp.titleStyle && newProp.titleStyle.size) {
-                        refreshBounds = true;
-                    } else {
-                        renderer = true;
-                    }
-                    break;
-                case 'border':
+                } else {
                     renderer = true;
-                    break;
-                case 'background':
-                    renderer = true;
-                    break;
-                case 'container':
-                case 'axes':
-                case 'orientation':
-                    refreshBounds = true;
-                    break;
+                }
+                break;
+            case 'border':
+                renderer = true;
+                break;
+            case 'background':
+                renderer = true;
+                break;
+            case 'container':
+            case 'axes':
+            case 'orientation':
+                refreshBounds = true;
+                break;
             }
         }
         if (!refreshBounds && renderer) {

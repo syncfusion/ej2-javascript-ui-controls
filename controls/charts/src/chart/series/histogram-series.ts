@@ -1,6 +1,10 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { sum, ChartLocation, getPoint, templateAnimate } from '../../common/utils/helper';
 import { PathOption } from '@syncfusion/ej2-svg-base';
-import { Chart } from '../chart';
 import { Series } from './chart-series';
 import { ColumnSeries } from './column-series';
 
@@ -10,7 +14,8 @@ import { ColumnSeries } from './column-series';
 export class HistogramSeries extends ColumnSeries {
     /**
      * Render Histogram series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
@@ -23,13 +28,14 @@ export class HistogramSeries extends ColumnSeries {
     }
     /**
      * To calculate bin interval for Histogram series.
-     * @return number
+     *
+     * @returns {void}
      * @private
      */
     private calculateBinInterval(yValues: number[], series: Series): void {
-        let mean: number = sum(yValues) / yValues.length;
+        const mean: number = sum(yValues) / yValues.length;
         let sumValue: number = 0;
-        for (let value of yValues) {
+        for (const value of yValues) {
             sumValue += (value - mean) * (value - mean);
         }
         series.histogramValues.mean = mean;
@@ -39,25 +45,25 @@ export class HistogramSeries extends ColumnSeries {
     }
     /**
      * Add data points for Histogram series.
-     * @return {object[]}
+     *
+     * @returns {object[]} data
      * @private
      */
     public processInternalData(data: Object[], series: Series): Object[] {
-        let updatedData: Object[] = [];
-        let yValues: number[] = [];
-        let binWidth: number;
-        let keys: string[] = Object.keys(data);
+        const updatedData: Object[] = [];
+        const yValues: number[] = [];
+        const keys: string[] = Object.keys(data);
         for (let i: number = 0; i < keys.length; i++) {
-        let key: string = keys[i];
-        yValues.push(data[key][series.yName]);
+            const key: string = keys[i];
+            yValues.push(data[key][series.yName]);
         }
         series.histogramValues = {
             yValues: yValues
         };
         let min: number = Math.min(...series.histogramValues.yValues);
-        let max: number = Math.max(...series.histogramValues.yValues);
+        const max: number = Math.max(...series.histogramValues.yValues);
         this.calculateBinInterval(series.histogramValues.yValues, series);
-        binWidth = series.histogramValues.binWidth;
+        const binWidth: number = series.histogramValues.binWidth;
         let yCount: number;
         for (let j: number = 0; j < data.length; ) {
             yCount = yValues.filter((y: number) => y >= min && y < (min + (binWidth))).length;
@@ -75,24 +81,24 @@ export class HistogramSeries extends ColumnSeries {
     }
     /**
      * Render Normal Distribution for Histogram series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     private renderNormalDistribution(series: Series): void {
-        let min: number = series.xAxis.actualRange.min;
-        let max: number = series.xAxis.actualRange.max;
+        const min: number = series.xAxis.actualRange.min;
+        const max: number = series.xAxis.actualRange.max;
         let xValue: number; let pointLocation: ChartLocation;
         let yValue: number;
         let direction: string = '';
         let startPoint: string = 'M';
-        let yValuesCount: number = series.histogramValues.yValues.length;
-        let binWidth: number = series.histogramValues.binWidth;
-        let mean: number = series.histogramValues.mean;
-        let sDValue: number = series.histogramValues.sDValue;
-        let pointsCount: number = 500;
-        let del: number = (max - min) / (pointsCount - 1);
-        let distributionLine: Element;
-        let points: number = series.points.length;
+        const yValuesCount: number = series.histogramValues.yValues.length;
+        const binWidth: number = series.histogramValues.binWidth;
+        const mean: number = series.histogramValues.mean;
+        const sDValue: number = series.histogramValues.sDValue;
+        const pointsCount: number = 500;
+        const del: number = (max - min) / (pointsCount - 1);
+        const points: number = series.points.length;
         if (points) {
             for (let i: number = 0; i < pointsCount; i++) {
                 xValue = min + i * del;
@@ -100,13 +106,13 @@ export class HistogramSeries extends ColumnSeries {
                     (sDValue * Math.sqrt(2 * Math.PI));
                 pointLocation = getPoint(
                     xValue, yValue * binWidth * yValuesCount, series.xAxis, series.yAxis,
-                    series.chart.requireInvertedAxis, series
+                    series.chart.requireInvertedAxis
                 );
                 direction += startPoint + ' ' + (pointLocation.x) + ' ' + (pointLocation.y) + ' ';
                 startPoint = 'L';
             }
         }
-        distributionLine = series.chart.renderer.drawPath(
+        const distributionLine: Element = series.chart.renderer.drawPath(
             new PathOption(
                 series.chart.element.id + '_Series_' + series.index + '_NDLine', 'transparent',
                 2, series.chart.themeStyle.errorBar, series.opacity, series.dashArray, direction
@@ -121,8 +127,9 @@ export class HistogramSeries extends ColumnSeries {
     }
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
     public doAnimation(series: Series): void {
         super.doAnimation(series);
@@ -145,11 +152,12 @@ export class HistogramSeries extends ColumnSeries {
 
     /**
      * To destroy the histogram series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method performed here
          */

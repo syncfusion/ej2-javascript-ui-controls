@@ -519,7 +519,8 @@ describe('Diagram Control', () => {
         it('Checking  SourcePointChange and TargetPointChange event is raised – drawing tools', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
 
-            let isSourcePointChange = false; let isTargetPointChange = false; let isCollectionChange = false;
+            let isSourcePointChange = false; let isTargetPointChange = false; let isCollectionChange// = false;
+            isCollectionChange = false;
             diagram.sourcePointChange = (args: IEndChangeEventArgs) => {
                 isSourcePointChange = true;
             };
@@ -533,7 +534,7 @@ describe('Diagram Control', () => {
             diagram.tool = DiagramTools.DrawOnce
             diagram.drawingObject = { id: 'connector3', type: 'Straight' };
             mouseEvents.dragAndDropEvent(diagramCanvas, 150, 150, 200, 200);
-            expect(isSourcePointChange == false && isTargetPointChange == false && isCollectionChange).toBe(true);
+            expect(isSourcePointChange === false && isTargetPointChange === false && isCollectionChange).toBe(true);
             done();
         });
 

@@ -1,3 +1,7 @@
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
 import { RangeNavigator } from '../range-navigator';
 import { valueToCoefficient, textElement, firstToLowerCase } from '../../common/utils/helper';
 import { PathOption, Rect, measureText, TextOption, SvgRenderer } from '@syncfusion/ej2-svg-base';
@@ -30,18 +34,16 @@ export class RangeNavigatorAxis extends DateTime {
      */
     public renderGridLines(): void {
         let pointX: number = 0;
-        let control: RangeNavigator = this.rangeNavigator;
-        let majorGridLines: MajorGridLinesModel = control.majorGridLines;
-        let majorTickLines: MajorTickLinesModel = control.majorTickLines;
+        const control: RangeNavigator = this.rangeNavigator;
+        const majorGridLines: MajorGridLinesModel = control.majorGridLines;
+        const majorTickLines: MajorTickLinesModel = control.majorTickLines;
         let majorGrid: string = '';
         let majorTick: string = '';
-        let rect: Rect = control.bounds;
-        let chartAxis: Axis = control.chartSeries.xAxis;
-        let labelLength: number;
-        let range: VisibleLabelsModel = chartAxis.visibleRange;
-        let disabledColor: string = (control.disableRangeSelector) ? 'transparent' : null;
+        const rect: Rect = control.bounds;
+        const chartAxis: Axis = control.chartSeries.xAxis;
+        const disabledColor: string = (control.disableRangeSelector) ? 'transparent' : null;
         this.gridLines = control.renderer.createGroup({ id: control.element.id + '_GridLines' });
-        let tick: number = (control.tickPosition === 'Outside' || control.series.length === 0) ?
+        const tick: number = (control.tickPosition === 'Outside' || control.series.length === 0) ?
             rect.y + rect.height + majorTickLines.height : rect.y + rect.height - majorTickLines.height;
         //Gridlines
         this.firstLevelLabels = [];
@@ -59,7 +61,7 @@ export class RangeNavigatorAxis extends DateTime {
         }
         this.firstLevelLabels = chartAxis.visibleLabels;
         this.lowerValues = [];
-        labelLength = chartAxis.visibleLabels.length;
+        const labelLength: number = chartAxis.visibleLabels.length;
         for (let i: number = 0; i < labelLength; i++) {
             this.lowerValues.push(this.firstLevelLabels[i].value);
             pointX = (valueToCoefficient(this.firstLevelLabels[i].value, chartAxis) * rect.width) + rect.x;
@@ -90,14 +92,13 @@ export class RangeNavigatorAxis extends DateTime {
      * To render of axis labels
      */
     public renderAxisLabels(): void {
-        let axis: Axis = this.rangeNavigator.chartSeries.xAxis;
-        let control: RangeNavigator = this.rangeNavigator;
+        const axis: Axis = this.rangeNavigator.chartSeries.xAxis;
+        const control: RangeNavigator = this.rangeNavigator;
         let pointY: number;
-        let rect: Rect = control.bounds;
-        let labelElement: Element = control.renderer.createGroup({ id: control.element.id + '_AxisLabels' });
-        let firstLevelElement: Element = control.renderer.createGroup({ id: control.element.id + '_FirstLevelAxisLabels' });
-        let secondLevelElement: Element = control.renderer.createGroup({ id: control.element.id + '_SecondLevelAxisLabels' });
-        let secondaryAxis: Axis = axis;
+        const labelElement: Element = control.renderer.createGroup({ id: control.element.id + '_AxisLabels' });
+        const firstLevelElement: Element = control.renderer.createGroup({ id: control.element.id + '_FirstLevelAxisLabels' });
+        const secondLevelElement: Element = control.renderer.createGroup({ id: control.element.id + '_SecondLevelAxisLabels' });
+        const secondaryAxis: Axis = axis;
         pointY = this.findLabelY(control, false);
         this.placeAxisLabels(axis, pointY, '_AxisLabel_', control, firstLevelElement);
         secondaryAxis.intervalType = secondaryAxis.actualIntervalType = (control.groupBy ||
@@ -109,8 +110,8 @@ export class RangeNavigatorAxis extends DateTime {
             this.findAxisLabels(secondaryAxis);
             this.secondLevelLabels = secondaryAxis.visibleLabels;
             pointY = this.findLabelY(control, true);
-            let border: string = this.placeAxisLabels(secondaryAxis, pointY, '_SecondaryLabel_', control, secondLevelElement);
-            let path: PathOption = new PathOption(
+            const border: string = this.placeAxisLabels(secondaryAxis, pointY, '_SecondaryLabel_', control, secondLevelElement);
+            const path: PathOption = new PathOption(
                 control.element.id + '_SecondaryMajorLines', 'transparent', control.majorTickLines.width,
                 control.majorTickLines.color || control.themeStyle.gridLineColor, 1, control.majorGridLines.dashArray, border
             );
@@ -127,60 +128,62 @@ export class RangeNavigatorAxis extends DateTime {
 
     /**
      * To find secondary level label type
-     * @param type
+     *
+     * @param {RangeIntervalType} type type of range interval
      */
     private getSecondaryLabelType(type: RangeIntervalType): RangeIntervalType {
-        let types: RangeIntervalType[] = ['Years', 'Quarter', 'Months', 'Weeks', 'Days', 'Hours', 'Minutes', 'Seconds'];
+        const types: RangeIntervalType[] = ['Years', 'Quarter', 'Months', 'Weeks', 'Days', 'Hours', 'Minutes', 'Seconds'];
         return (type === 'Years' ? 'Years' : types[types.indexOf(type) - 1]);
     }
 
     /**
      * To find labels for date time axis
-     * @param axis
+     *
+     * @param {Axis} axis range axis
      */
     private findAxisLabels(axis: Axis): void {
         axis.visibleLabels = [];
         let start: Date = new Date(axis.visibleRange.min);
         let nextInterval: number;
         let text: string;
-        let interval: number = this.rangeNavigator.interval ? this.rangeNavigator.interval : 1;
+        const interval: number = this.rangeNavigator.interval ? this.rangeNavigator.interval : 1;
 
         switch (axis.actualIntervalType as RangeIntervalType) {
-            case 'Years':
+        case 'Years':
+            start = new Date(start.getFullYear(), 0, 1);
+            break;
+        case 'Quarter':
+            if (start.getMonth() <= 2) {
                 start = new Date(start.getFullYear(), 0, 1);
-                break;
-            case 'Quarter':
-                if (start.getMonth() <= 2) {
-                    start = new Date(start.getFullYear(), 0, 1);
-                } else if (start.getMonth() <= 5) {
-                    start = new Date(start.getFullYear(), 3, 1);
-                } else if (start.getMonth() <= 8) {
-                    start = new Date(start.getFullYear(), 6, 1);
-                } else {
-                    start = new Date(start.getFullYear(), 9, 1);
-                }
-                break;
-            case 'Months':
-                start = new Date(start.getFullYear(), start.getMonth());
-                break;
-            case 'Weeks':
-                start = new Date(start.getFullYear(), start.getMonth(), start.getDate() - start.getDay());
-                break;
-            case 'Days':
-                start = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-                break;
-            case 'Hours':
-                start = new Date(start.getFullYear(), start.getMonth(), start.getDate(), start.getHours());
-                break;
-            case 'Minutes':
-                start = new Date(start.getFullYear(), start.getMonth(), start.getDate(), start.getHours(), start.getMinutes());
-                break;
-            case 'Seconds':
-                start = new Date(
-                    start.getFullYear(), start.getMonth(), start.getDate(),
-                    start.getHours(), start.getMinutes(), start.getSeconds()
-                );
-                break;
+            } else if (start.getMonth() <= 5) {
+                start = new Date(start.getFullYear(), 3, 1);
+            } else if (start.getMonth() <= 8) {
+                start = new Date(start.getFullYear(), 6, 1);
+            } else {
+                start = new Date(start.getFullYear(), 9, 1);
+            }
+            break;
+        case 'Months':
+            start = new Date(start.getFullYear(), start.getMonth());
+            break;
+        case 'Weeks':
+            start = new Date(start.getFullYear(), start.getMonth(), start.getDate() - start.getDay());
+            break;
+        case 'Days':
+            start = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+            break;
+        case 'Hours':
+            start = new Date(start.getFullYear(), start.getMonth(), start.getDate(), start.getHours());
+            break;
+        case 'Minutes':
+            start = new Date(start.getFullYear(), start.getMonth(), start.getDate(), start.getHours(), start.getMinutes());
+            break;
+        case 'Seconds':
+            start = new Date(
+                start.getFullYear(), start.getMonth(), start.getDate(),
+                start.getHours(), start.getMinutes(), start.getSeconds()
+            );
+            break;
         }
         nextInterval = start.getTime();
         this.rangeNavigator.format = this.rangeNavigator.intl.getDateFormat({
@@ -208,46 +211,48 @@ export class RangeNavigatorAxis extends DateTime {
 
     /**
      * To find date time formats for Quarter and week interval type
-     * @param text
-     * @param axis
-     * @param index
+     *
+     * @param {string} text text
+     * @param {Axis} axis axis
+     * @param {number} index index
      */
     private dateFormats(text: string, axis: Axis, index: number): string {
         let changedText: string = text;
-        let isBlazor: boolean = this.rangeNavigator.isBlazor;
-        let isFirstLevel: boolean = this.rangeNavigator.enableGrouping && this.firstLevelLabels.length === 0;
+        const isBlazor: boolean = this.rangeNavigator.isBlazor;
+        const isFirstLevel: boolean = this.rangeNavigator.enableGrouping && this.firstLevelLabels.length === 0;
         switch (axis.actualIntervalType as RangeIntervalType) {
-            case 'Quarter':
-                if (text.indexOf('Jan') > -1) {
-                    changedText = !isFirstLevel ? text.replace(isBlazor ? 'January' : 'Jan', 'Quarter1') : 'Quarter1';
-                } else if (text.indexOf('Apr') > -1) {
-                    changedText = !isFirstLevel ? text.replace(isBlazor ? 'April' : 'Apr', 'Quarter2') : 'Quarter2';
-                } else if (text.indexOf('Jul') > -1) {
-                    changedText = !isFirstLevel ? text.replace(isBlazor ? 'July' : 'Jul', 'Quarter3') : 'Quarter3';
-                } else if (text.indexOf('Oct') > -1) {
-                    changedText = !isFirstLevel ? text.replace(isBlazor ? 'October' : 'Oct', 'Quarter4') : 'Quarter4';
-                }
-                break;
-            case 'Weeks':
-                changedText = 'Week' + ++index;
-                break;
-            default:
-                changedText = text;
-                break;
+        case 'Quarter':
+            if (text.indexOf('Jan') > -1) {
+                changedText = !isFirstLevel ? text.replace(isBlazor ? 'January' : 'Jan', 'Quarter1') : 'Quarter1';
+            } else if (text.indexOf('Apr') > -1) {
+                changedText = !isFirstLevel ? text.replace(isBlazor ? 'April' : 'Apr', 'Quarter2') : 'Quarter2';
+            } else if (text.indexOf('Jul') > -1) {
+                changedText = !isFirstLevel ? text.replace(isBlazor ? 'July' : 'Jul', 'Quarter3') : 'Quarter3';
+            } else if (text.indexOf('Oct') > -1) {
+                changedText = !isFirstLevel ? text.replace(isBlazor ? 'October' : 'Oct', 'Quarter4') : 'Quarter4';
+            }
+            break;
+        case 'Weeks':
+            changedText = 'Week' + ++index;
+            break;
+        default:
+            changedText = text;
+            break;
         }
         return changedText;
     }
 
     /**
      * To find the y co-ordinate for axis labels
-     * @param control - rangeNavigator
-     * @param isSecondary sets true if the axis is secondary axis
+     *
+     * @param {RangeNavigator} control - rangeNavigator
+     * @param {boolean} isSecondary sets true if the axis is secondary axis
      */
     private findLabelY(control: RangeNavigator, isSecondary: boolean): number {
         let pointY: number;
-        let reference: number = control.bounds.y + control.bounds.height;
-        let tickHeight: number = control.majorTickLines.height;
-        let textHeight: number = measureText('Quarter1 2011', control.labelStyle).height;
+        const reference: number = control.bounds.y + control.bounds.height;
+        const tickHeight: number = control.majorTickLines.height;
+        const textHeight: number = measureText('Quarter1 2011', control.labelStyle).height;
         let padding: number = 8;
         if ((control.labelPosition === 'Outside' && control.tickPosition === 'Outside') || control.series.length === 0) {
             pointY = reference + tickHeight + padding + textHeight * 0.75;
@@ -272,24 +277,25 @@ export class RangeNavigatorAxis extends DateTime {
 
     /**
      * It places the axis labels and returns border for secondary axis labels
-     * @param axis axis for the lables placed
-     * @param pointY y co-ordinate for axis labels
-     * @param id id for the axis elements
-     * @param control range navigator
-     * @param labelElement parent element in which axis labels appended
+     *
+     * @param {Axis} axis axis for the lables placed
+     * @param {number} pointY y co-ordinate for axis labels
+     * @param {string} id id for the axis elements
+     * @param {RangeNavigator} control range navigator
+     * @param {Element} labelElement parent element in which axis labels appended
      */
     private placeAxisLabels(axis: Axis, pointY: number, id: string, control: RangeNavigator, labelElement: Element): string {
-        let maxLabels: number = axis.visibleLabels.length;
+        const maxLabels: number = axis.visibleLabels.length;
         let label: VisibleLabels;
         let prevLabel: VisibleLabels;
         let pointX: number;
-        let rect: Rect = control.bounds;
+        const rect: Rect = control.bounds;
         let border: string = '';
         let pointXGrid: number;
-        let disabledColor: string = (control.disableRangeSelector) ? 'transparent' : null;
+        const disabledColor: string = (control.disableRangeSelector) ? 'transparent' : null;
         let prevX: number = control.enableRtl ? (rect.x + rect.width) : rect.x;
-        let intervalType: RangeIntervalType = axis.actualIntervalType as RangeIntervalType;
-        let intervalInTime: number = control.valueType === 'DateTime' ?
+        const intervalType: RangeIntervalType = axis.actualIntervalType as RangeIntervalType;
+        const intervalInTime: number = control.valueType === 'DateTime' ?
             maxLabels > 1 ? (axis.visibleLabels[1].value - axis.visibleLabels[0].value) :
                 (axis.visibleRange.max - axis.visibleLabels[0].value) / 2 : 0;
         if (control.valueType === 'DateTime' && (intervalType === 'Quarter' || intervalType === 'Weeks')) {
@@ -333,9 +339,8 @@ export class RangeNavigatorAxis extends DateTime {
                 pointX = valueToCoefficient(label.value, axis) + (rect.x + (rect.width / 2));
             }
             //labelrender event
-            let argsData: ILabelRenderEventsArgs;
-            let labelStyle: FontModel = control.labelStyle;
-            let style: FontModel = {
+            const labelStyle: FontModel = control.labelStyle;
+            const style: FontModel = {
                 size: labelStyle.size, color: disabledColor || labelStyle.color || control.themeStyle.labelFontColor,
                 fontFamily: labelStyle.fontFamily,
                 fontStyle: labelStyle.fontStyle || control.labelStyle.fontStyle,
@@ -345,7 +350,7 @@ export class RangeNavigatorAxis extends DateTime {
                 textOverflow: labelStyle.textOverflow || control.labelStyle.textOverflow
             };
 
-            argsData = {
+            const argsData: ILabelRenderEventsArgs = {
                 cancel: false, name: 'labelRender',
                 text: <string>label.text, value: label.value, labelStyle: style,
                 region: new Rect(pointX, pointY, label.size.width, label.size.height)
@@ -377,16 +382,17 @@ export class RangeNavigatorAxis extends DateTime {
     }
     /**
      * To find suitable label format for Quarter and week Interval types
-     * @param axis
-     * @param control
+     *
+     * @param {Axis} axis RangeNavigator axis
+     * @param {RangeNavigator} control RangeNavigator instance
      */
     private findSuitableFormat(axis: Axis, control: RangeNavigator): void {
-        let labels: VisibleLabels[] = axis.visibleLabels;
-        let labelLength: number = labels.length;
-        let bounds: Rect = control.bounds;
+        const labels: VisibleLabels[] = axis.visibleLabels;
+        const labelLength: number = labels.length;
+        const bounds: Rect = control.bounds;
         let prevX: number;
         let currentX: number;
-        let interval: number = control.valueType === 'DateTime' ?
+        const interval: number = control.valueType === 'DateTime' ?
             labelLength > 1 ? (labels[1].value - labels[0].value) : axis.visibleRange.interval
             : 0;
 
@@ -430,13 +436,14 @@ export class RangeNavigatorAxis extends DateTime {
 
     /**
      * Alignment position for secondary level labels in date time axis
-     * @param axis
-     * @param index
+     *
+     * @param {Axis} axis axis
+     * @param {number} index label index
      */
     private findAlignment(axis: Axis, index: number): number {
-        let label: VisibleLabels = axis.visibleLabels[index];
-        let nextLabel: VisibleLabels = axis.visibleLabels[index + 1];
-        let bounds: Rect = this.rangeNavigator.bounds;
+        const label: VisibleLabels = axis.visibleLabels[index];
+        const nextLabel: VisibleLabels = axis.visibleLabels[index + 1];
+        const bounds: Rect = this.rangeNavigator.bounds;
         return (this.rangeNavigator.secondaryLabelAlignment === 'Near' ?
             (valueToCoefficient((label.value), axis) * bounds.width) + bounds.x + label.size.width / 2 :
             (valueToCoefficient((nextLabel ? nextLabel.value : axis.visibleRange.max), axis) * bounds.width) + bounds.x - label.size.width);

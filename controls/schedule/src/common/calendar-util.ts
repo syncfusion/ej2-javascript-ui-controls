@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { HijriParser, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
@@ -5,7 +6,7 @@ import { HijriParser, isNullOrUndefined } from '@syncfusion/ej2-base';
  */
 export type CalendarType = 'Islamic' | 'Gregorian';
 
-/** @hidden */
+/** @private */
 export interface CalendarUtil {
     firstDateOfMonth(date: Date): Date;
     lastDateOfMonth(date: Date): Date;
@@ -25,14 +26,14 @@ export interface CalendarUtil {
     setMonth(date: Date, interval: number, startDate: number): void;
     addYears(date: Date, interval: number, month: number): void;
     isSameMonth(date1: Date, date2: Date): boolean;
-    checkMonth(date: Date, months: Number[]): boolean;
+    checkMonth(date: Date, months: number[]): boolean;
     compareMonth(date1: Date, date2: Date): boolean;
     isSameYear(date1: Date, date2: Date): boolean;
     isLastMonth(date: Date): boolean;
     isLeapYear(year: number, interval: number): boolean;
 }
 
-/** @hidden */
+/** @private */
 export class Gregorian implements CalendarUtil {
     public firstDateOfMonth(date: Date): Date {
         return new Date(date.getFullYear(), date.getMonth());
@@ -95,7 +96,7 @@ export class Gregorian implements CalendarUtil {
     public isSameMonth(date1: Date, date2: Date): boolean {
         return (date1.getMonth() === date2.getMonth());
     }
-    public checkMonth(date: Date, months: Number[]): boolean {
+    public checkMonth(date: Date, months: number[]): boolean {
         return (months.indexOf(date.getMonth() + 1) === -1);
     }
     public compareMonth(date1: Date, date2: Date): boolean {
@@ -112,122 +113,122 @@ export class Gregorian implements CalendarUtil {
     }
 }
 
-/** @hidden */
+/** @private */
 export class Islamic implements CalendarUtil {
     public firstDateOfMonth(date: Date): Date {
-        let hDate: { [key: string]: Object } = HijriParser.getHijriDate(date) as { [key: string]: Object };
-        let gDate: Date = HijriParser.toGregorian(hDate.year as number, hDate.month as number, 1);
+        const hDate: Record<string, any> = this.getHijriDate(date);
+        const gDate: Date = HijriParser.toGregorian(hDate.year as number, hDate.month as number, 1);
         return gDate;
     }
     public lastDateOfMonth(date: Date): Date {
-        let hDate: { [key: string]: Object } = this.getHijriDate(date);
-        let gDate: Date = HijriParser.toGregorian(hDate.year as number, hDate.month as number, this.getDaysInMonth(
-            hDate.month as number, hDate.year as number));
+        const hDate: Record<string, any> = this.getHijriDate(date);
+        const daysInMonth: number = this.getDaysInMonth(hDate.month as number, hDate.year as number);
+        const gDate: Date = HijriParser.toGregorian(hDate.year as number, hDate.month as number, daysInMonth);
         let finalGDate: Date = new Date(gDate.getTime());
-        new Date(finalGDate.setDate(finalGDate.getDate() + 1));
-        let finalHDate: { [key: string]: object } = this.getHijriDate(finalGDate);
+        finalGDate = new Date(finalGDate.setDate(finalGDate.getDate() + 1));
+        let finalHDate: Record<string, any> = this.getHijriDate(finalGDate);
         if (hDate.month === finalHDate.month) {
             return finalGDate;
         }
-        finalHDate = HijriParser.getHijriDate(gDate) as { [key: string]: Object };
+        finalHDate = this.getHijriDate(gDate);
         if (hDate.month === finalHDate.month) {
             return gDate;
         }
         return new Date(gDate.setDate(gDate.getDate() - 1));
     }
     public isMonthStart(date: Date): boolean {
-        let hijriDate: { [key: string]: Object } = this.getHijriDate(date);
+        const hijriDate: Record<string, any> = this.getHijriDate(date);
         return (hijriDate.date === 1);
     }
     public getLeapYearDaysCount(): number {
         return 355;
     }
     public getYearDaysCount(date: Date, interval: number): number {
-        let hDate: { [key: string]: Object } = this.getHijriDate(date);
+        const hDate: Record<string, any> = this.getHijriDate(date);
         return this.isLeapYear((hDate.year as number), interval) ? 355 : 354;
     }
     public getDate(date: Date): number {
-        let hijriDate: { [key: string]: Object } = this.getHijriDate(date);
+        const hijriDate: Record<string, any> = this.getHijriDate(date);
         return hijriDate.date as number;
     }
     public getMonth(date: Date): number {
-        let hDate: { [key: string]: Object } = this.getHijriDate(date);
+        const hDate: Record<string, any> = this.getHijriDate(date);
         return hDate.month as number;
     }
     public getFullYear(date: Date): number {
-        let hDate: { [key: string]: Object } = this.getHijriDate(date);
+        const hDate: Record<string, any> = this.getHijriDate(date);
         return hDate.year as number;
     }
     public getYearLastDate(date: Date, interval: number): Date {
-        let hDate: { [key: string]: Object } = HijriParser.getHijriDate(date) as { [key: string]: Object };
-        let gDate: Date = HijriParser.toGregorian((hDate.year as number) + interval, 1, 0);
+        const hDate: Record<string, any> = this.getHijriDate(date);
+        const gDate: Date = HijriParser.toGregorian((hDate.year as number) + interval, 1, 0);
         return gDate;
     }
     public getMonthDaysCount(date: Date): number {
-        let maxDate: Date = this.lastDateOfMonth(date);
-        let hijriDate: { [key: string]: Object } = this.getHijriDate(maxDate);
+        const maxDate: Date = this.lastDateOfMonth(date);
+        const hijriDate: Record<string, any> = this.getHijriDate(maxDate);
         return hijriDate.date as number;
     }
     public getMonthStartDate(date: Date): Date {
-        let firstDate: Date = this.firstDateOfMonth(date);
+        const firstDate: Date = this.firstDateOfMonth(date);
         return new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate(), date.getHours(), date.getMinutes());
     }
     public getMonthEndDate(date: Date): Date {
-        let lastDate: Date = this.lastDateOfMonth(date);
+        const lastDate: Date = this.lastDateOfMonth(date);
         lastDate.setDate(lastDate.getDate() + 1);
         return new Date(lastDate.setMonth(lastDate.getMonth()));
     }
     public getExpectedDays(date: Date, days: number[]): number[] {
-        let hDate: { [key: string]: Object } = this.getHijriDate(date);
-        let day: number[] = [];
+        const hDate: Record<string, any> = this.getHijriDate(date);
+        const day: number[] = [];
         for (let i: number = 0; i < days.length; i++) {
-            let gDate: Date = HijriParser.toGregorian(hDate.year as number, (hDate.month as number), days[i]);
+            const gDate: Date = HijriParser.toGregorian(hDate.year as number, (hDate.month as number), days[i]);
             day.push(gDate.getDate());
         }
         return day;
     }
     public setDate(dateObj: Date, date: number): void {
-        let hDate: { [key: string]: Object } = HijriParser.getHijriDate(dateObj) as { [key: string]: Object };
-        let gDate: Date = HijriParser.toGregorian((hDate.year as number), (hDate.month as number), date);
+        const hDate: Record<string, any> = this.getHijriDate(dateObj);
+        const gDate: Date = HijriParser.toGregorian((hDate.year as number), (hDate.month as number), date);
         this.updateDateObj(dateObj, gDate);
     }
     public setValidDate(date: Date, interval: number, startDate: number, monthValue?: number, beginDate?: Date): void {
-        let firstDate: Date = (!isNullOrUndefined(beginDate)) ? this.firstDateOfMonth(beginDate) : date;
-        let hDate: { [key: string]: Object } = HijriParser.getHijriDate(firstDate) as { [key: string]: Object };
-        let gDate: Date = HijriParser.toGregorian(hDate.year as number, (hDate.month as number) + interval, startDate);
+        const firstDate: Date = (!isNullOrUndefined(beginDate)) ? this.firstDateOfMonth(beginDate) : date;
+        const hDate: Record<string, any> = this.getHijriDate(firstDate);
+        const gDate: Date = HijriParser.toGregorian(hDate.year as number, (hDate.month as number) + interval, startDate);
         this.updateDateObj(date, gDate);
     }
     public setMonth(date: Date, interval: number, startDate: number): void {
-        let hDate: { [key: string]: Object } = HijriParser.getHijriDate(date) as { [key: string]: Object };
-        let gDate: Date = HijriParser.toGregorian((hDate.year as number), interval, startDate);
+        const hDate: Record<string, any> = this.getHijriDate(date);
+        const gDate: Date = HijriParser.toGregorian((hDate.year as number), interval, startDate);
         this.updateDateObj(date, gDate);
     }
     public addYears(date: Date, interval: number, monthValue: number): void {
-        let hDate: { [key: string]: Object } = HijriParser.getHijriDate(date) as { [key: string]: Object };
-        let gDate: Date = HijriParser.toGregorian((hDate.year as number) + interval, monthValue, 1);
+        const hDate: Record<string, any> = this.getHijriDate(date);
+        const gDate: Date = HijriParser.toGregorian((hDate.year as number) + interval, monthValue, 1);
         this.updateDateObj(date, gDate);
     }
     public isSameMonth(date1: Date, date2: Date): boolean {
-        let currentHijri: { [key: string]: Object } = this.getHijriDate(date1);
-        let tempHijri: { [key: string]: Object } = this.getHijriDate(date2);
+        const currentHijri: Record<string, any> = this.getHijriDate(date1);
+        const tempHijri: Record<string, any> = this.getHijriDate(date2);
         return (currentHijri.month === tempHijri.month);
     }
-    public checkMonth(date: Date, months: Number[]): boolean {
-        let hDate: { [key: string]: Object } = this.getHijriDate(date);
+    public checkMonth(date: Date, months: number[]): boolean {
+        const hDate: Record<string, any> = this.getHijriDate(date);
         return (months.indexOf(hDate.month as number) === -1);
     }
     public compareMonth(date1: Date, date2: Date): boolean {
-        let hDate: { [key: string]: Object } = this.getHijriDate(date1);
-        let hDate1: { [key: string]: Object } = this.getHijriDate(date2);
+        const hDate: Record<string, Date> = this.getHijriDate(date1);
+        const hDate1: Record<string, Date> = this.getHijriDate(date2);
         return (hDate.month > hDate1.month);
     }
     public isSameYear(date1: Date, date2: Date): boolean {
-        let hDate: { [key: string]: Object } = this.getHijriDate(date1);
-        let hDate1: { [key: string]: Object } = this.getHijriDate(date2);
+        const hDate: Record<string, any> = this.getHijriDate(date1);
+        const hDate1: Record<string, any> = this.getHijriDate(date2);
         return (hDate.year === hDate1.year);
     }
     public isLastMonth(date: Date): boolean {
-        let hDate: { [key: string]: Object } = this.getHijriDate(date);
+        const hDate: Record<string, any> = this.getHijriDate(date);
         return ((hDate.month as number) === 12);
     }
     private updateDateObj(date: Date, gDate: Date): void {
@@ -244,7 +245,7 @@ export class Islamic implements CalendarUtil {
         }
         return length;
     }
-    private getHijriDate(date: Date): { [key: string]: Object } {
-        return HijriParser.getHijriDate(date) as { [key: string]: Object };
+    private getHijriDate(date: Date): Record<string, Date> {
+        return HijriParser.getHijriDate(date) as Record<string, Date>;
     }
 }

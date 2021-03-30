@@ -7,6 +7,7 @@ import { isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { BeforeCopyEventArgs, Clipboard as GridClipboard } from '@syncfusion/ej2-grids';
 /**
  * The `Clipboard` module is used to handle clipboard copy action.
+ *
  * @hidden
  */
 export class TreeClipboard extends GridClipboard {
@@ -18,16 +19,16 @@ export class TreeClipboard extends GridClipboard {
         this.treeGridParent = parent;
     }
     protected setCopyData(withHeader?: boolean): void {
-        let copyContent: string = 'copyContent';
-        let getCopyData: string = 'getCopyData';
-        let isSelect: string = 'isSelect';
-        let uniqueID: string = 'uniqueID';
-        let currentRecords: object[] = this.treeGridParent.getCurrentViewRecords();
+        const copyContent: string = 'copyContent';
+        const getCopyData: string = 'getCopyData';
+        const isSelect: string = 'isSelect';
+        const uniqueID: string = 'uniqueID';
+        const currentRecords: Object[] = this.treeGridParent.getCurrentViewRecords();
         if (window.getSelection().toString() === '') {
             this.clipBoardTextArea.value = this[copyContent] = '';
-            let rows: Element[] = this.treeGridParent.grid.getRows();
+            const rows: Element[] = this.treeGridParent.grid.getRows();
             if (this.treeGridParent.selectionSettings.mode !== 'Cell') {
-                let selectedIndexes: number[] = this.treeGridParent.getSelectedRowIndexes().sort((a: number, b: number) => {
+                const selectedIndexes: number[] = this.treeGridParent.getSelectedRowIndexes().sort((a: number, b: number) => {
                     return a - b;
                 });
                 for (let i: number = 0; i < selectedIndexes.length; i++) {
@@ -35,8 +36,8 @@ export class TreeClipboard extends GridClipboard {
                         this.treeCopyContent += '\n';
                     }
                     if (!rows[selectedIndexes[i] as number].classList.contains('e-summaryrow')) {
-                        let cells: HTMLElement[] = [].slice.call(rows[selectedIndexes[i] as number].querySelectorAll('.e-rowcell'));
-                        let uniqueid: string = this.treeGridParent.getSelectedRecords()[i as number][uniqueID];
+                        const cells: HTMLElement[] = [].slice.call(rows[selectedIndexes[i] as number].querySelectorAll('.e-rowcell'));
+                        const uniqueid: string = this.treeGridParent.getSelectedRecords()[i as number][uniqueID];
                         if (this.copiedUniqueIdCollection.indexOf(uniqueid) === -1) {
                             if (this.treeGridParent.copyHierarchyMode === 'Parent' || this.treeGridParent.copyHierarchyMode === 'Both') {
                                 this.parentContentData(currentRecords, selectedIndexes[i], rows, withHeader, i);
@@ -52,16 +53,16 @@ export class TreeClipboard extends GridClipboard {
                     }
                 }
                 if (withHeader) {
-                    let headerTextArray: string[] = [];
+                    const headerTextArray: string[] = [];
                     for (let i: number = 0; i < this.treeGridParent.getVisibleColumns().length; i++) {
                         headerTextArray[i] = this.treeGridParent.getVisibleColumns()[i].headerText;
                     }
                     this[getCopyData](headerTextArray, false, '\t', withHeader);
                     this.treeCopyContent = this[copyContent] + '\n' + this.treeCopyContent;
                 }
-                let args: BeforeCopyEventArgs = {
+                const args: BeforeCopyEventArgs = {
                     data: this.treeCopyContent,
-                    cancel: false,
+                    cancel: false
                 };
                 this.treeGridParent.trigger(events.beforeCopy, args);
                 if (args.cancel) {
@@ -84,22 +85,22 @@ export class TreeClipboard extends GridClipboard {
             }
         }
     }
-    private parentContentData(currentRecords: object[], selectedIndex: number, rows: Element[],
+    private parentContentData(currentRecords: Object[], selectedIndex: number, rows: Element[],
                               withHeader?: boolean, index?: number): void {
-        let getCopyData: string = 'getCopyData';
-        let copyContent: string = 'copyContent';
-        let parentItem: string = 'parentItem';
-        let uniqueID: string = 'uniqueID';
-        let level: string = 'level';
+        const getCopyData: string = 'getCopyData';
+        const copyContent: string = 'copyContent';
+        const parentItem: string = 'parentItem';
+        const uniqueID: string = 'uniqueID';
+        const level: string = 'level';
         if (!isNullOrUndefined(currentRecords[selectedIndex][parentItem])) {
-            let treeLevel: number = currentRecords[selectedIndex][parentItem][level];
+            const treeLevel: number = currentRecords[selectedIndex][parentItem][level];
             for (let i: number = 0; i < treeLevel + 1; i++) {
                 for (let j: number = 0; j < currentRecords.length; j++) {
                     if (!isNullOrUndefined(currentRecords[selectedIndex][parentItem]) &&
                         currentRecords[j][uniqueID] === currentRecords[selectedIndex][parentItem][uniqueID]) {
                         selectedIndex = j;
-                        let cells: HTMLElement[] = [].slice.call(rows[selectedIndex].querySelectorAll('.e-rowcell'));
-                        let uniqueid: string = currentRecords[j][uniqueID];
+                        const cells: HTMLElement[] = [].slice.call(rows[selectedIndex].querySelectorAll('.e-rowcell'));
+                        const uniqueid: string = currentRecords[j][uniqueID];
                         if (this.copiedUniqueIdCollection.indexOf(uniqueid) === -1) {
                             this[getCopyData](cells, false, '\t', withHeader);
                             if (index > 0) {
@@ -124,34 +125,37 @@ export class TreeClipboard extends GridClipboard {
     }
     /**
      * For internal use only - Get the module name.
+     *
      * @private
+     * @returns {string} Returns clipboard module name
      */
     protected getModuleName(): string {
         return 'clipboard';
-    };
+    }
     /**
-     * To destroy the clipboard 
-     * @return {void}
+     * To destroy the clipboard
+     *
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
         super.destroy();
     }
 
-    private childContentData(currentRecords: object[], selectedIndex: number, rows: Element[], withHeader?: boolean): void {
-        let getCopyData: string = 'getCopyData';
-        let copyContent: string = 'copyContent';
-        let childRecords: string = 'childRecords';
-        let hasChildRecords: string = 'hasChildRecords';
-        let uniqueID: string = 'uniqueID';
+    private childContentData(currentRecords: Object[], selectedIndex: number, rows: Element[], withHeader?: boolean): void {
+        const getCopyData: string = 'getCopyData';
+        const copyContent: string = 'copyContent';
+        const childRecords: string = 'childRecords';
+        const hasChildRecords: string = 'hasChildRecords';
+        const uniqueID: string = 'uniqueID';
         if (currentRecords[selectedIndex][hasChildRecords]) {
-            let childData: object[] = currentRecords[selectedIndex][childRecords];
+            const childData: Object[] = currentRecords[selectedIndex][childRecords];
             for (let i: number = 0; i < childData.length; i++ ) {
                 for (let j: number = 0; j < currentRecords.length; j++) {
                     if (!isNullOrUndefined(childData[i][uniqueID]) && currentRecords[j][uniqueID] === childData[i][uniqueID]) {
                         if ((!isNullOrUndefined(rows[j])) && !rows[j].classList.contains('e-summaryrow')) {
-                            let cells: HTMLElement[] = [].slice.call(rows[j].querySelectorAll('.e-rowcell'));
-                            let uniqueid: string = currentRecords[j][uniqueID];
+                            const cells: HTMLElement[] = [].slice.call(rows[j].querySelectorAll('.e-rowcell'));
+                            const uniqueid: string = currentRecords[j][uniqueID];
                             if (this.copiedUniqueIdCollection.indexOf(uniqueid) === -1) {
                                 this[getCopyData](cells, false, '\t', withHeader);
                                 this.treeCopyContent += ('\n' + this[copyContent]);

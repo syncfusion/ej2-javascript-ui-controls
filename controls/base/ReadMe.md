@@ -1,4 +1,4 @@
-[![npm](http://ej2.syncfusion.com/github-badges?package=@syncfusion/ej2-base)](https://www.npmjs.com/package/@syncfusion/ej2-base)&nbsp;&nbsp;[![coverage](http://ej2.syncfusion.com/badges/ej2-base/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-base)
+[![coverage](http://ej2.syncfusion.com/badges/ej2-base/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-base)
 
 # ej2-base
 

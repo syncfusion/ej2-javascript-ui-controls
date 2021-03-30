@@ -6,6 +6,7 @@ import { IHtmlItem } from './../base/interface';
 import { InsertHtml } from './inserthtml';
 /**
  * Link internal component
+ * 
  * @hidden
  * @deprecated
  */
@@ -13,10 +14,12 @@ export class ImageCommand {
     private parent: EditorManager;
     /**
      * Constructor for creating the Formats plugin
+     *
+     * @param {EditorManager} parent - specifies the parent element
      * @hidden
      * @deprecated
      */
-    constructor(parent: EditorManager) {
+    public constructor(parent: EditorManager) {
         this.parent = parent;
         this.addEventListener();
     }
@@ -25,64 +28,69 @@ export class ImageCommand {
     }
     /**
      * imageCommand method
+     *
+     * @param {IHtmlItem} e - specifies the element
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public imageCommand(e: IHtmlItem): void {
         switch (e.value.toString().toLocaleLowerCase()) {
-            case 'image':
-            case 'replace':
-                this.createImage(e);
-                break;
-            case 'insertlink':
-                this.insertImageLink(e);
-                break;
-            case 'openimagelink':
-                this.openImageLink(e);
-                break;
-            case 'editimagelink':
-                this.editImageLink(e);
-                break;
-            case 'removeimagelink':
-                this.removeImageLink(e);
-                break;
-            case 'remove':
-                this.removeImage(e);
-                break;
-            case 'alttext':
-                this.insertAltTextImage(e);
-                break;
-            case 'dimension':
-                this.imageDimension(e);
-                break;
-            case 'caption':
-                this.imageCaption(e);
-                break;
-            case 'justifyleft':
-                this.imageJustifyLeft(e);
-                break;
-            case 'justifycenter':
-                this.imageJustifyCenter(e);
-                break;
-            case 'justifyright':
-                this.imageJustifyRight(e);
-                break;
-            case 'inline':
-                this.imageInline(e);
-                break;
-            case 'break':
-                this.imageBreak(e);
-                break;
+        case 'image':
+        case 'replace':
+            this.createImage(e);
+            break;
+        case 'insertlink':
+            this.insertImageLink(e);
+            break;
+        case 'openimagelink':
+            this.openImageLink(e);
+            break;
+        case 'editimagelink':
+            this.editImageLink(e);
+            break;
+        case 'removeimagelink':
+            this.removeImageLink(e);
+            break;
+        case 'remove':
+            this.removeImage(e);
+            break;
+        case 'alttext':
+            this.insertAltTextImage(e);
+            break;
+        case 'dimension':
+            this.imageDimension(e);
+            break;
+        case 'caption':
+            this.imageCaption(e);
+            break;
+        case 'justifyleft':
+            this.imageJustifyLeft(e);
+            break;
+        case 'justifycenter':
+            this.imageJustifyCenter(e);
+            break;
+        case 'justifyright':
+            this.imageJustifyRight(e);
+            break;
+        case 'inline':
+            this.imageInline(e);
+            break;
+        case 'break':
+            this.imageBreak(e);
+            break;
         }
     }
 
     private createImage(e: IHtmlItem): void {
+        let isReplaced: boolean = false;
         e.item.url = isNOU(e.item.url) || e.item.url === 'undefined' ? e.item.src : e.item.url;
         if (!isNOU(e.item.selectParent) && (e.item.selectParent[0] as HTMLElement).tagName === 'IMG') {
-            let imgEle: HTMLElement = e.item.selectParent[0] as HTMLElement;
+            const imgEle: HTMLElement = e.item.selectParent[0] as HTMLElement;
             this.setStyle(imgEle, e);
+            isReplaced = true;
         } else {
-            let imgElement: HTMLElement = createElement('img');
+            const imgElement: HTMLElement = createElement('img');
             this.setStyle(imgElement, e);
             if (!isNOU(e.item.selection)) {
                 e.item.selection.restore();
@@ -99,8 +107,8 @@ export class ImageCommand {
             }
         }
         if (e.callBack && (isNOU(e.selector) || !isNOU(e.selector) && e.selector !== 'pasteCleanupModule')) {
-            let selectedNode: Node = this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument)[0];
-            let imgElm: Element = e.value === 'Replace' ? (e.item.selectParent[0] as Element) :
+            const selectedNode: Node = this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument)[0];
+            const imgElm: Element = (e.value === 'Replace' || isReplaced) ? (e.item.selectParent[0] as Element) :
                 (Browser.isIE ? (selectedNode.previousSibling as Element) : (selectedNode as Element).previousElementSibling);
             imgElm.addEventListener('load', () => {
                 e.callBack({
@@ -154,7 +162,7 @@ export class ImageCommand {
         return styleValue;
     }
     private insertImageLink(e: IHtmlItem): void {
-        let anchor: HTMLElement = createElement('a', {
+        const anchor: HTMLElement = createElement('a', {
             attrs: {
                 href: e.item.url
             }
@@ -175,18 +183,20 @@ export class ImageCommand {
         this.callBack(e);
     }
     private removeImageLink(e: IHtmlItem): void {
-        let selectParent: HTMLElement = e.item.selectParent[0] as HTMLElement;
+        const selectParent: HTMLElement = e.item.selectParent[0] as HTMLElement;
         if (selectParent.classList.contains('e-img-caption')) {
-            let capImgWrap: Element = select('.e-img-wrap', selectParent);
-            let textEle: Element = select('.e-img-inner', selectParent);
-            let newTextEle: Node = textEle.cloneNode(true);
+            const capImgWrap: Element = select('.e-img-wrap', selectParent);
+            const textEle: Element = select('.e-img-inner', selectParent);
+            const newTextEle: Node = textEle.cloneNode(true);
             detach(select('a', selectParent));
             detach(textEle);
             capImgWrap.appendChild(e.item.insertElement);
             capImgWrap.appendChild(newTextEle);
         } else {
             detach(selectParent);
-            if (Browser.isIE) { e.item.selection.restore(); }
+            if (Browser.isIE) {
+                e.item.selection.restore();
+            }
             InsertHtml.Insert(this.parent.currentDocument, e.item.insertElement, this.parent.editableElement);
         }
         this.callBack(e);
@@ -219,7 +229,7 @@ export class ImageCommand {
         this.callBack(e);
     }
     private imageDimension(e: IHtmlItem): void {
-        let selectNode: HTMLImageElement = e.item.selectNode[0] as HTMLImageElement;
+        const selectNode: HTMLImageElement = e.item.selectNode[0] as HTMLImageElement;
         selectNode.style.height = '';
         selectNode.style.width = '';
         selectNode.width = e.item.width as number;
@@ -231,7 +241,7 @@ export class ImageCommand {
         this.callBack(e);
     }
     private imageJustifyLeft(e: IHtmlItem): void {
-        let selectNode: HTMLElement = e.item.selectNode[0] as HTMLElement;
+        const selectNode: HTMLElement = e.item.selectNode[0] as HTMLElement;
         selectNode.removeAttribute('class');
         addClass([selectNode], 'e-rte-image');
         if (!isNOU(closest(selectNode, '.' + classes.CLASS_CAPTION))) {
@@ -247,7 +257,7 @@ export class ImageCommand {
         this.callBack(e);
     }
     private imageJustifyCenter(e: IHtmlItem): void {
-        let selectNode: HTMLElement = e.item.selectNode[0] as HTMLElement;
+        const selectNode: HTMLElement = e.item.selectNode[0] as HTMLElement;
         selectNode.removeAttribute('class');
         addClass([selectNode], 'e-rte-image');
         if (!isNOU(closest(selectNode, '.' + classes.CLASS_CAPTION))) {
@@ -266,7 +276,7 @@ export class ImageCommand {
         this.callBack(e);
     }
     private imageJustifyRight(e: IHtmlItem): void {
-        let selectNode: HTMLElement = e.item.selectNode[0] as HTMLElement;
+        const selectNode: HTMLElement = e.item.selectNode[0] as HTMLElement;
         selectNode.removeAttribute('class');
         addClass([selectNode], 'e-rte-image');
         if (!isNOU(closest(selectNode, '.' + classes.CLASS_CAPTION))) {
@@ -282,7 +292,7 @@ export class ImageCommand {
         this.callBack(e);
     }
     private imageInline(e: IHtmlItem): void {
-        let selectNode: HTMLElement = e.item.selectNode[0] as HTMLElement;
+        const selectNode: HTMLElement = e.item.selectNode[0] as HTMLElement;
         selectNode.removeAttribute('class');
         addClass([selectNode], 'e-rte-image');
         addClass([selectNode], classes.CLASS_IMAGE_INLINE);
@@ -296,7 +306,7 @@ export class ImageCommand {
         this.callBack(e);
     }
     private imageBreak(e: IHtmlItem): void {
-        let selectNode: HTMLElement = e.item.selectNode[0] as HTMLElement;
+        const selectNode: HTMLElement = e.item.selectNode[0] as HTMLElement;
         selectNode.removeAttribute('class');
         addClass([selectNode], classes.CLASS_IMAGE_BREAK);
         addClass([selectNode], 'e-rte-image');

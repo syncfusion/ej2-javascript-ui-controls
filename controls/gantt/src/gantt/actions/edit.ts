@@ -6,7 +6,7 @@ import { IActionBeginEventArgs, ITaskAddedEventArgs, ITaskDeletedEventArgs, RowD
 import { ColumnModel, Column as GanttColumn } from '../models/column';
 import { DataManager, DataUtil, Query, AdaptorOptions, ODataAdaptor, WebApiAdaptor } from '@syncfusion/ej2-data';
 import { ReturnType, RecordDoubleClickEventArgs, Row, Column, IEditCell, EJ2Intance, getUid } from '@syncfusion/ej2-grids';
-import { getSwapKey, isScheduledTask, getTaskData, isRemoteData, getIndex } from '../base/utils';
+import { getSwapKey, isScheduledTask, getTaskData, isRemoteData, getIndex, isCountRequired } from '../base/utils';
 import { RowPosition } from '../base/enum';
 import { CellEdit } from './cell-edit';
 import { TaskbarEdit } from './taskbar-edit';
@@ -22,6 +22,7 @@ import { ITreeData } from '@syncfusion/ej2-treegrid';
 
 /**
  * The Edit Module is used to handle editing actions.
+ *
  */
 export class Edit {
     private parent: Gantt;
@@ -32,6 +33,7 @@ export class Edit {
      * @private
      */
     /** @hidden */
+    // eslint-disable-next-line
     private ganttData: Object[] | DataManager;
     /** @hidden */
     private treeGridData: ITreeData[];
@@ -77,8 +79,8 @@ export class Edit {
             this.taskbarEditModule = new TaskbarEdit(this.parent);
         }
         if (this.parent.editSettings.allowDeleting) {
-            let confirmDialog: HTMLElement = createElement('div', {
-                id: this.parent.element.id + '_deleteConfirmDialog',
+            const confirmDialog: HTMLElement = createElement('div', {
+                id: this.parent.element.id + '_deleteConfirmDialog'
             });
             this.parent.element.appendChild(confirmDialog);
             this.renderDeleteConfirmDialog();
@@ -87,6 +89,7 @@ export class Edit {
         this.parent.treeGrid.editSettings.allowAdding = this.parent.editSettings.allowAdding;
         this.parent.treeGrid.editSettings.allowDeleting = this.parent.editSettings.allowDeleting;
         this.parent.treeGrid.editSettings.showDeleteConfirmDialog = this.parent.editSettings.showDeleteConfirmDialog;
+        this.parent.treeGrid.editSettings.allowNextRowEdit = this.parent.editSettings.allowNextRowEdit;
         this.updateDefaultColumnEditors();
     }
 
@@ -96,13 +99,16 @@ export class Edit {
 
     /**
      * Method to update default edit params and editors for Gantt
+     *
+     * @returns {void} .
      */
     private updateDefaultColumnEditors(): void {
-        let customEditorColumns: string[] =
+        const customEditorColumns: string[] =
             [this.parent.taskFields.id, this.parent.taskFields.progress, this.parent.taskFields.resourceInfo, 'taskType'];
         for (let i: number = 0; i < customEditorColumns.length; i++) {
             if (!isNullOrUndefined(customEditorColumns[i]) && customEditorColumns[i].length > 0) {
-                let column: ColumnModel = this.parent.getColumnByField(customEditorColumns[i], this.parent.treeGridModule.treeGridColumns);
+                // eslint-disable-next-line
+                const column: ColumnModel = this.parent.getColumnByField(customEditorColumns[i], this.parent.treeGridModule.treeGridColumns);
                 if (column) {
                     if (column.field === this.parent.taskFields.id) {
                         this.updateIDColumnEditParams(column);
@@ -119,9 +125,12 @@ export class Edit {
     }
     /**
      * Method to update editors for id column in Gantt
+     *
+     * @param {ColumnModel} column .
+     * @returns {void} .
      */
     private updateIDColumnEditParams(column: ColumnModel): void {
-        let editParam: NumericTextBoxModel = {
+        const editParam: NumericTextBoxModel = {
             min: 0,
             decimals: 0,
             validateDecimalOnType: true,
@@ -133,9 +142,12 @@ export class Edit {
 
     /**
      * Method to update edit params of default progress column
+     *
+     * @param {ColumnModel} column .
+     * @returns {void} .
      */
     private updateProgessColumnEditParams(column: ColumnModel): void {
-        let editParam: NumericTextBoxModel = {
+        const editParam: NumericTextBoxModel = {
             min: 0,
             decimals: 0,
             validateDecimalOnType: true,
@@ -146,7 +158,12 @@ export class Edit {
     }
     /**
      * Assign edit params for id and progress columns
+     *
+     * @param {ColumnModel} column .
+     * @param {object} editParam .
+     * @returns {void} .
      */
+    // eslint-disable-next-line
     private updateEditParams(column: ColumnModel, editParam: object): void {
         if (isNullOrUndefined(column.edit)) {
             column.edit = {};
@@ -156,17 +173,20 @@ export class Edit {
         }
         extend(editParam, column.edit.params);
         column.edit.params = editParam;
-        let ganttColumn: ColumnModel = this.parent.getColumnByField(column.field, this.parent.ganttColumns);
+        const ganttColumn: ColumnModel = this.parent.getColumnByField(column.field, this.parent.ganttColumns);
         ganttColumn.edit = column.edit;
     }
     /**
      * Method to update resource column editor for default resource column
+     *
+     * @param {ColumnModel} column .
+     * @returns {void} .
      */
     private updateResourceColumnEditor(column: ColumnModel): void {
         if (this.parent.editSettings.allowEditing && isNullOrUndefined(column.edit) && this.parent.editSettings.mode === 'Auto') {
             column.editType = 'dropdownedit';
             column.edit = this.getResourceEditor();
-            let ganttColumn: ColumnModel = this.parent.getColumnByField(column.field, this.parent.ganttColumns);
+            const ganttColumn: ColumnModel = this.parent.getColumnByField(column.field, this.parent.ganttColumns);
             ganttColumn.editType = 'dropdownedit';
             ganttColumn.edit = column.edit;
         }
@@ -174,12 +194,15 @@ export class Edit {
 
     /**
      * Method to create resource custom editor
+     *
+     * @returns {IEditCell} .
      */
     private getResourceEditor(): IEditCell {
-        let resourceSettings: ResourceFieldsModel = this.parent.resourceFields;
-        let editObject: IEditCell = {};
+        const resourceSettings: ResourceFieldsModel = this.parent.resourceFields;
+        const editObject: IEditCell = {};
         let editor: MultiSelect;
         MultiSelect.Inject(CheckBoxSelection);
+        // eslint-disable-next-line
         editObject.write = (args: { rowData: Object, element: Element, column: GanttColumn, row: HTMLElement, requestType: string }) => {
             this.parent.treeGridModule.currentEditRow = {};
             editor = new MultiSelect({
@@ -194,8 +217,9 @@ export class Edit {
             editor.appendTo(args.element as HTMLElement);
         };
         editObject.read = (element: HTMLElement): string => {
+            // eslint-disable-next-line
             let value: Object[] = (<EJ2Intance>element).ej2_instances[0].value;
-            let resourcesName: string[] = [];
+            const resourcesName: string[] = [];
             if (isNullOrUndefined(value)) {
                 value = [];
             }
@@ -219,36 +243,43 @@ export class Edit {
     }
     /**
      * Method to update task type column editor for task type
+     *
+     * @param {ColumnModel} column .
+     * @returns {void} .
      */
     private updateTaskTypeColumnEditor(column: ColumnModel): void {
         if (this.parent.editSettings.allowEditing && isNullOrUndefined(column.edit) && this.parent.editSettings.mode === 'Auto') {
             column.editType = 'dropdownedit';
             column.edit = this.getTaskTypeEditor();
-            let ganttColumn: ColumnModel = this.parent.getColumnByField(column.field, this.parent.ganttColumns);
+            const ganttColumn: ColumnModel = this.parent.getColumnByField(column.field, this.parent.ganttColumns);
             ganttColumn.editType = 'dropdownedit';
             ganttColumn.edit = column.edit;
         }
     }
     /**
      * Method to create task type custom editor
+     *
+     * @returns {IEditCell} .
      */
     private getTaskTypeEditor(): IEditCell {
-        let editObject: IEditCell = {};
+        const editObject: IEditCell = {};
         let editor: DropDownList;
-        let types: Object[] = [{ 'ID': 1, 'Value': 'FixedUnit' }, { 'ID': 2, 'Value': 'FixedWork' }, { 'ID': 3, 'Value': 'FixedDuration' }];
+        // eslint-disable-next-line
+        const types: Object[] = [{ 'ID': 1, 'Value': 'FixedUnit' }, { 'ID': 2, 'Value': 'FixedWork' }, { 'ID': 3, 'Value': 'FixedDuration' }];
+        // eslint-disable-next-line
         editObject.write = (args: { rowData: Object, element: Element, column: GanttColumn, row: HTMLElement, requestType: string }) => {
             this.parent.treeGridModule.currentEditRow = {};
             editor = new DropDownList({
                 dataSource: new DataManager(types),
                 fields: { value: 'Value' },
                 popupHeight: '350px',
-                value: getValue('taskType', (args.rowData as IGanttData).ganttProperties),
+                value: getValue('taskType', (args.rowData as IGanttData).ganttProperties)
             });
             editor.appendTo(args.element as HTMLElement);
         };
         editObject.read = (element: HTMLElement): string => {
-            let value: string = (<EJ2Intance>element).ej2_instances[0].value;
-            let key: string = 'taskType';
+            const value: string = (<EJ2Intance>element).ej2_instances[0].value;
+            const key: string = 'taskType';
             this.parent.treeGridModule.currentEditRow[key] = value;
             return value;
         };
@@ -260,10 +291,11 @@ export class Edit {
         return editObject;
     }
     /**
+     * @returns {void} .
      * @private
      */
     public reUpdateEditModules(): void {
-        let editSettings: EditSettingsModel = this.parent.editSettings;
+        const editSettings: EditSettingsModel = this.parent.editSettings;
         if (editSettings.allowEditing) {
             if (this.parent.editModule.cellEditModule && editSettings.mode === 'Dialog') {
                 this.cellEditModule.destroy();
@@ -287,8 +319,8 @@ export class Edit {
 
         if (editSettings.allowDeleting && editSettings.showDeleteConfirmDialog) {
             if (isNullOrUndefined(this.confirmDialog)) {
-                let confirmDialog: HTMLElement = createElement('div', {
-                    id: this.parent.element.id + '_deleteConfirmDialog',
+                const confirmDialog: HTMLElement = createElement('div', {
+                    id: this.parent.element.id + '_deleteConfirmDialog'
                 });
                 this.parent.element.appendChild(confirmDialog);
                 this.renderDeleteConfirmDialog();
@@ -314,7 +346,7 @@ export class Edit {
         if (this.parent.editSettings.allowEditing && this.parent.editSettings.mode === 'Dialog') {
             let ganttData: IGanttData;
             if (args.row) {
-                let rowIndex: number = getValue('rowIndex', args.row);
+                const rowIndex: number = getValue('rowIndex', args.row);
                 ganttData = this.parent.currentViewData[rowIndex];
             }
             if (!isNullOrUndefined(ganttData)) {
@@ -324,6 +356,7 @@ export class Edit {
         this.parent.ganttChartModule.recordDoubleClick(args);
     }
     /**
+     * @returns {void} .
      * @private
      */
     public destroy(): void {
@@ -346,18 +379,21 @@ export class Edit {
     public deletedTaskDetails: IGanttData[] = [];
     /**
      * Method to update record with new values.
+     *
      * @param {Object} data - Defines new data to update.
+     * @returns {void} .
      */
+    // eslint-disable-next-line
     public updateRecordByID(data: Object): void {
         if (!this.parent.readOnly) {
-            let tasks: TaskFieldsModel = this.parent.taskFields;
+            const tasks: TaskFieldsModel = this.parent.taskFields;
             if (isNullOrUndefined(data) || isNullOrUndefined(data[tasks.id])) {
                 return;
             }
-            let ganttData: IGanttData = this.parent.viewType === 'ResourceView' ?
+            const ganttData: IGanttData = this.parent.viewType === 'ResourceView' ?
                 this.parent.flatData[this.parent.getTaskIds().indexOf('T' + data[tasks.id])] : this.parent.getRecordByID(data[tasks.id]);
             if (isBlazor()) {
-                let keys: string[] = Object.keys(data);
+                const keys: string[] = Object.keys(data);
                 if (keys.indexOf(tasks.startDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.startDate, data))) {
                     setValue(
                         this.parent.taskFields.startDate,
@@ -368,7 +404,7 @@ export class Edit {
                         this.parent.taskFields.endDate,
                         this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.endDate, data)), data);
                 }
-                /* tslint:disable-next-line */
+                /* eslint-disable-next-line */
                 if (keys.indexOf(tasks.baselineStartDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.baselineStartDate, data))) {
                     setValue(
                         this.parent.taskFields.baselineStartDate,
@@ -384,7 +420,7 @@ export class Edit {
             if (!isNullOrUndefined(this.parent.editModule) && ganttData) {
                 this.parent.isOnEdit = true;
                 this.validateUpdateValues(data, ganttData, true);
-                let keys: string[] = Object.keys(data);
+                const keys: string[] = Object.keys(data);
                 if (keys.indexOf(tasks.startDate) !== -1 || keys.indexOf(tasks.endDate) !== -1 ||
                     keys.indexOf(tasks.duration) !== -1) {
                     this.parent.dataOperation.calculateScheduledValues(ganttData, ganttData.taskData, false);
@@ -395,7 +431,7 @@ export class Edit {
                     this.parent.connectorLineEditModule.updatePredecessor(
                         ganttData, data[this.parent.taskFields.dependency]);
                 } else {
-                    let args: ITaskbarEditedEventArgs = {} as ITaskbarEditedEventArgs;
+                    const args: ITaskbarEditedEventArgs = {} as ITaskbarEditedEventArgs;
                     args.data = ganttData;
                     if (this.parent.viewType === 'ResourceView') {
                         args.action = 'methodUpdate';
@@ -406,19 +442,22 @@ export class Edit {
         }
     }
     /**
-     * 
-     * @param data 
-     * @param ganttData 
-     * @param isFromDialog 
+     *
+     * @param {object} data .
+     * @param {IGanttData} ganttData .
+     * @param {boolean} isFromDialog .
+     * @returns {void} .
      * @private
      */
+    // eslint-disable-next-line
     public validateUpdateValues(data: Object, ganttData: IGanttData, isFromDialog?: boolean): void {
-        let ganttObj: Gantt = this.parent;
-        let tasks: TaskFieldsModel = ganttObj.taskFields;
-        let ganttPropByMapping: Object = getSwapKey(ganttObj.columnMapping);
-        let scheduleFieldNames: string[] = [];
+        const ganttObj: Gantt = this.parent;
+        const tasks: TaskFieldsModel = ganttObj.taskFields;
+        // eslint-disable-next-line
+        const ganttPropByMapping: Object = getSwapKey(ganttObj.columnMapping);
+        const scheduleFieldNames: string[] = [];
         let isScheduleValueUpdated: boolean = false;
-        for (let key of Object.keys(data)) {
+        for (const key of Object.keys(data)) {
             if ([tasks.startDate, tasks.endDate, tasks.duration].indexOf(key) !== -1) {
                 if (isNullOrUndefined(data[key]) && !ganttObj.allowUnscheduledTasks) {
                     continue;
@@ -431,7 +470,7 @@ export class Edit {
                         }
                         ganttObj.dataOperation.updateMappingData(ganttData, ganttPropByMapping[key]);
                     } else {
-                        let tempDate: Date = typeof data[key] === 'string' ? new Date(data[key] as string) : data[key];
+                        const tempDate: Date = typeof data[key] === 'string' ? new Date(data[key] as string) : data[key];
                         ganttObj.setRecordValue(ganttPropByMapping[key], tempDate, ganttData.ganttProperties, true);
                         ganttObj.dataOperation.updateMappingData(ganttData, ganttPropByMapping[key]);
                     }
@@ -440,7 +479,8 @@ export class Edit {
                     isScheduleValueUpdated = true;
                 }
             } else if (tasks.resourceInfo === key) {
-                let resourceData: Object[] = ganttObj.dataOperation.setResourceInfo(data);
+                // eslint-disable-next-line
+                const resourceData: Object[] = ganttObj.dataOperation.setResourceInfo(data);
                 if (this.parent.viewType === 'ResourceView') {
                     if (JSON.stringify(resourceData) !== JSON.stringify(ganttData.ganttProperties.resourceInfo)) {
                         this.parent.editModule.dialogModule.isResourceUpdate  = true;
@@ -455,10 +495,10 @@ export class Edit {
             } else if (tasks.dependency === key) {
                 //..
             } else if ([tasks.progress, tasks.notes, tasks.durationUnit, tasks.expandState,
-            tasks.milestone, tasks.name, tasks.baselineStartDate,
-            tasks.baselineEndDate, tasks.id, tasks.segments].indexOf(key) !== -1) {
-                let column: ColumnModel = ganttObj.columnByField[key];
-                /* tslint:disable-next-line */
+                tasks.milestone, tasks.name, tasks.baselineStartDate,
+                tasks.baselineEndDate, tasks.id, tasks.segments].indexOf(key) !== -1) {
+                const column: ColumnModel = ganttObj.columnByField[key];
+                /* eslint-disable-next-line */
                 let value: any = data[key];
                 if (!isNullOrUndefined(column) && (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit')) {
                     value = ganttObj.dataOperation.getDateFromFormat(value);
@@ -488,7 +528,8 @@ export class Edit {
                 ganttObj.setRecordValue('taskData.' + key, value, ganttData);
                 ganttObj.setRecordValue(key, value, ganttData);
             } else if (tasks.indicators === key) {
-                let value: Object[] = data[key];
+                // eslint-disable-next-line
+                const value: Object[] = data[key];
                 ganttObj.setRecordValue('indicators', value, ganttData.ganttProperties, true);
                 ganttObj.setRecordValue('taskData.' + key, value, ganttData);
                 ganttObj.setRecordValue(key, value, ganttData);
@@ -501,8 +542,8 @@ export class Edit {
                 ganttObj.setRecordValue('taskType', data[key], ganttData.ganttProperties, true);
                 //this.parent.dataOperation.updateMappingData(ganttData, 'taskType');
             } else if (ganttObj.customColumns.indexOf(key) !== -1) {
-                let column: ColumnModel = ganttObj.columnByField[key];
-                /* tslint:disable-next-line */
+                const column: ColumnModel = ganttObj.columnByField[key];
+                /* eslint-disable-next-line */
                 let value: any = data[key];
                 if (isNullOrUndefined(column.edit)) {
                     if (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit') {
@@ -523,59 +564,61 @@ export class Edit {
     }
 
     /**
-     * To update duration, work, resource unit 
-     * @param currentData
-     * @param column 
+     * To update duration, work, resource unit
+     *
+     * @param {IGanttData} currentData .
+     * @param {string} column .
+     * @returns {void} .
      */
     public updateResourceRelatedFields(currentData: IGanttData, column: string): void {
-        let ganttProp: ITaskData = currentData.ganttProperties;
-        let taskType: string = ganttProp.taskType;
+        const ganttProp: ITaskData = currentData.ganttProperties;
+        const taskType: string = ganttProp.taskType;
         let isEffectDriven: boolean;
-        let isAutoSchedule: boolean = ganttProp.isAutoSchedule;
+        const isAutoSchedule: boolean = ganttProp.isAutoSchedule;
         if (!isNullOrUndefined(ganttProp.resourceInfo)) {
             if (ganttProp.work > 0 || column === 'work') {
                 switch (taskType) {
-                    case 'FixedUnit':
-                        if (isAutoSchedule && ganttProp.resourceInfo.length &&
+                case 'FixedUnit':
+                    if (isAutoSchedule && ganttProp.resourceInfo.length &&
                             (column === 'work' || (column === 'resource'))) {
-                            this.parent.dataOperation.updateDurationWithWork(currentData);
-                        } else if (!isAutoSchedule && column === 'work') {
+                        this.parent.dataOperation.updateDurationWithWork(currentData);
+                    } else if (!isAutoSchedule && column === 'work') {
+                        this.parent.dataOperation.updateUnitWithWork(currentData);
+                    } else {
+                        this.parent.dataOperation.updateWorkWithDuration(currentData);
+                    }
+                    break;
+                case 'FixedWork':
+                    if (ganttProp.resourceInfo.length === 0) {
+                        return;
+                    } else if (isAutoSchedule) {
+                        if (column === 'duration' || column === 'endDate') {
                             this.parent.dataOperation.updateUnitWithWork(currentData);
-                        } else {
-                            this.parent.dataOperation.updateWorkWithDuration(currentData);
-                        }
-                        break;
-                    case 'FixedWork':
-                        if (ganttProp.resourceInfo.length === 0) {
-                            return;
-                        } else if (isAutoSchedule) {
-                            if (column === 'duration' || column === 'endDate') {
-                                this.parent.dataOperation.updateUnitWithWork(currentData);
-                                if (ganttProp.duration === 0) {
-                                    this.parent.setRecordValue('work', 0, ganttProp, true);
-                                    if (!isNullOrUndefined(this.parent.taskFields.work)) {
-                                        this.parent.dataOperation.updateMappingData(currentData, 'work');
-                                    }
+                            if (ganttProp.duration === 0) {
+                                this.parent.setRecordValue('work', 0, ganttProp, true);
+                                if (!isNullOrUndefined(this.parent.taskFields.work)) {
+                                    this.parent.dataOperation.updateMappingData(currentData, 'work');
                                 }
-                            } else {
-                                this.parent.dataOperation.updateDurationWithWork(currentData);
                             }
                         } else {
-                            if (column === 'work') {
-                                this.parent.dataOperation.updateUnitWithWork(currentData);
-                            } else {
-                                this.parent.dataOperation.updateWorkWithDuration(currentData);
-                            }
+                            this.parent.dataOperation.updateDurationWithWork(currentData);
                         }
-                        break;
-                    case 'FixedDuration':
-                        if (ganttProp.resourceInfo.length && (column === 'work' || (isAutoSchedule &&
-                            isEffectDriven && (column === 'resource')))) {
+                    } else {
+                        if (column === 'work') {
                             this.parent.dataOperation.updateUnitWithWork(currentData);
                         } else {
                             this.parent.dataOperation.updateWorkWithDuration(currentData);
                         }
-                        break;
+                    }
+                    break;
+                case 'FixedDuration':
+                    if (ganttProp.resourceInfo.length && (column === 'work' || (isAutoSchedule &&
+                            isEffectDriven && (column === 'resource')))) {
+                        this.parent.dataOperation.updateUnitWithWork(currentData);
+                    } else {
+                        this.parent.dataOperation.updateWorkWithDuration(currentData);
+                    }
+                    break;
                 }
             } else {
                 this.parent.dataOperation.updateWorkWithDuration(currentData);
@@ -583,8 +626,9 @@ export class Edit {
         }
     }
 
+    // eslint-disable-next-line
     private validateScheduleValues(fieldNames: string[], ganttData: IGanttData, data: Object): void {
-        let ganttObj: Gantt = this.parent;
+        const ganttObj: Gantt = this.parent;
         if (fieldNames.length > 2) {
             ganttObj.dataOperation.calculateScheduledValues(ganttData, data, false);
         } else if (fieldNames.length > 1) {
@@ -593,10 +637,11 @@ export class Edit {
             this.dialogModule.validateScheduleValuesByCurrentField(fieldNames[0], data[fieldNames[0]], ganttData);
         }
     }
+    // eslint-disable-next-line
     private validateScheduleByTwoValues(data: Object, fieldNames: string[], ganttData: IGanttData): void {
-        let ganttObj: Gantt = this.parent; let startDate: Date; let endDate: Date; let duration: string;
-        let tasks: TaskFieldsModel = ganttObj.taskFields; let ganttProp: ITaskData = ganttData.ganttProperties;
-        let isUnscheduledTask: boolean = ganttObj.allowUnscheduledTasks;
+        const ganttObj: Gantt = this.parent; let startDate: Date; let endDate: Date; let duration: string;
+        const tasks: TaskFieldsModel = ganttObj.taskFields; const ganttProp: ITaskData = ganttData.ganttProperties;
+        const isUnscheduledTask: boolean = ganttObj.allowUnscheduledTasks;
         if (fieldNames.indexOf(tasks.startDate) !== -1) {
             startDate = data[tasks.startDate];
         }
@@ -624,15 +669,15 @@ export class Edit {
 
     private isTaskbarMoved(data: IGanttData): boolean {
         let isMoved: boolean = false;
-        let taskData: ITaskData = data.ganttProperties;
-        let prevData: IGanttData = this.parent.previousRecords &&
+        const taskData: ITaskData = data.ganttProperties;
+        const prevData: IGanttData = this.parent.previousRecords &&
             this.parent.previousRecords[data.uniqueID];
         if (prevData && prevData.ganttProperties) {
-            let prevStart: Date = getValue('ganttProperties.startDate', prevData) as Date;
-            let prevEnd: Date = getValue('ganttProperties.endDate', prevData) as Date;
-            let prevDuration: number = getValue('ganttProperties.duration', prevData);
-            let prevDurationUnit: string = getValue('ganttProperties.durationUnit', prevData);
-            let keys: string[] = Object.keys(prevData.ganttProperties);
+            const prevStart: Date = getValue('ganttProperties.startDate', prevData) as Date;
+            const prevEnd: Date = getValue('ganttProperties.endDate', prevData) as Date;
+            const prevDuration: number = getValue('ganttProperties.duration', prevData);
+            const prevDurationUnit: string = getValue('ganttProperties.durationUnit', prevData);
+            const keys: string[] = Object.keys(prevData.ganttProperties);
             if (keys.indexOf('startDate') !== -1 || keys.indexOf('endDate') !== -1 ||
                 keys.indexOf('duration') !== -1 || keys.indexOf('durationUnit') !== -1) {
                 if ((isNullOrUndefined(prevStart) && !isNullOrUndefined(taskData.startDate)) ||
@@ -653,7 +698,8 @@ export class Edit {
 
     private isPredecessorUpdated(data: IGanttData): boolean {
         let isPredecessorUpdated: boolean = false;
-        let prevData: IGanttData = this.parent.previousRecords[data.uniqueID];
+        const prevData: IGanttData = this.parent.previousRecords[data.uniqueID];
+        // eslint-disable-next-line
         if (prevData && prevData.ganttProperties && prevData.ganttProperties.hasOwnProperty('predecessor')) {
             if (data.ganttProperties.predecessorsName !== prevData.ganttProperties.predecessorsName) {
                 isPredecessorUpdated = true;
@@ -666,11 +712,13 @@ export class Edit {
 
     /**
      * Method to check need to open predecessor validate dialog
-     * @param data 
+     *
+     * @param {IGanttData} data .
+     * @returns {boolean} .
      */
     private isCheckPredecessor(data: IGanttData): boolean {
         let isValidatePredecessor: boolean = false;
-        let prevData: IGanttData = this.parent.previousRecords[data.uniqueID];
+        const prevData: IGanttData = this.parent.previousRecords[data.uniqueID];
 
         if (prevData && this.parent.taskFields.dependency && this.parent.isInPredecessorValidation &&
             this.parent.predecessorModule.getValidPredecessor(data).length > 0) {
@@ -683,10 +731,14 @@ export class Edit {
     }
     /**
      * Method to copy the ganttProperties values
+     *
+     * @param {IGanttData} data .
+     * @param {IGanttData} updateData .
+     * @returns {void} .
      * @private
      */
     public updateGanttProperties(data: IGanttData, updateData: IGanttData): void {
-        let skipProperty: string[] = ['taskId', 'uniqueID', 'rowUniqueID', 'parentId'];
+        const skipProperty: string[] = ['taskId', 'uniqueID', 'rowUniqueID', 'parentId'];
         Object.keys(data.ganttProperties).forEach((property: string) => {
             if (skipProperty.indexOf(property) === -1) {
                 updateData.ganttProperties[property] = data.ganttProperties[property];
@@ -695,23 +747,26 @@ export class Edit {
     }
     /**
      * Method to update all dependent record on edit action
-     * @param args
-     * @private 
+     *
+     * @param {ITaskAddedEventArgs} args .
+     * @returns {void} .
+     * @private
      */
     public initiateUpdateAction(args: ITaskbarEditedEventArgs): void {
-        let isValidatePredecessor: boolean = this.isCheckPredecessor(args.data);
+        const isValidatePredecessor: boolean = this.isCheckPredecessor(args.data);
         this.taskbarMoved = this.isTaskbarMoved(args.data);
         this.predecessorUpdated = this.isPredecessorUpdated(args.data);
         if (this.predecessorUpdated) {
             this.parent.isConnectorLineUpdate = true;
             this.parent.connectorLineEditModule.addRemovePredecessor(args.data);
         }
+        // eslint-disable-next-line
         let validateObject: object = {};
         if (isValidatePredecessor) {
             validateObject = this.parent.connectorLineEditModule.validateTypes(args.data);
             this.parent.isConnectorLineUpdate = true;
             if (!isNullOrUndefined(getValue('violationType', validateObject))) {
-                let newArgs: IValidateArgs = this.validateTaskEvent(args);
+                const newArgs: IValidateArgs = this.validateTaskEvent(args);
                 if (newArgs.validateMode.preserveLinkWithEditing === false &&
                     newArgs.validateMode.removeLink === false &&
                     newArgs.validateMode.respectLink === false) {
@@ -731,11 +786,12 @@ export class Edit {
     }
 
     /**
-     * 
-     * @param data method to trigger validate predecessor link by dialog
+     *
+     * @param {ITaskbarEditedEventArgs} editedEventArgs method to trigger validate predecessor link by dialog
+     * @returns {IValidateArgs} .
      */
     private validateTaskEvent(editedEventArgs: ITaskbarEditedEventArgs): IValidateArgs {
-        let newArgs: IValidateArgs = {};
+        const newArgs: IValidateArgs = {};
         let blazorArgs: IValidateArgs = {};
         this.resetValidateArgs();
         this.parent.currentEditedArgs = newArgs;
@@ -760,17 +816,18 @@ export class Edit {
     }
 
     /**
-     * 
-     * @param args - Edited event args like taskbar editing, dialog editing, cell editing 
+     *
+     * @param {ITaskAddedEventArgs} args - Edited event args like taskbar editing, dialog editing, cell editing
+     * @returns {void} .
      * @private
      */
     public updateEditedTask(args: ITaskbarEditedEventArgs): void {
-        let ganttRecord: IGanttData = args.data;
+        const ganttRecord: IGanttData = args.data;
         this.updateParentChildRecord(ganttRecord);
         if (this.parent.isConnectorLineUpdate) {
             /* validating predecessor for updated child items */
             for (let i: number = 0; i < this.validatedChildItems.length; i++) {
-                let child: IGanttData = this.validatedChildItems[i];
+                const child: IGanttData = this.validatedChildItems[i];
                 if (child.ganttProperties.predecessor && child.ganttProperties.predecessor.length > 0) {
                     this.parent.editedTaskBarItem = child;
                     this.parent.predecessorModule.validatePredecessor(child, [], '');
@@ -794,23 +851,27 @@ export class Edit {
 
     /**
      * To update parent records while perform drag action.
-     * @return {void}
+     *
+     * @param {IGanttData} data .
+     * @returns {void} .
      * @private
      */
     public updateParentChildRecord(data: IGanttData): void {
-        let ganttRecord: IGanttData = data;
+        const ganttRecord: IGanttData = data;
         if (ganttRecord.hasChildRecords && this.taskbarMoved && this.parent.taskMode === 'Auto') {
             this.updateChildItems(ganttRecord);
         }
     }
     /**
      * To update records while changing schedule mode.
-     * @return {void}
+     *
+     * @param {IGanttData} data .
+     * @returns {void} .
      * @private
      */
     public updateTaskScheduleModes(data: IGanttData): void {
-        let currentValue: Date = data[this.parent.taskFields.startDate];
-        let ganttProp: ITaskData = data.ganttProperties;
+        const currentValue: Date = data[this.parent.taskFields.startDate];
+        const ganttProp: ITaskData = data.ganttProperties;
         if (data.hasChildRecords && ganttProp.isAutoSchedule) {
             this.parent.setRecordValue('startDate', ganttProp.autoStartDate, ganttProp, true);
             this.parent.setRecordValue('endDate', ganttProp.autoEndDate, ganttProp, true);
@@ -831,7 +892,7 @@ export class Edit {
             this.parent.setRecordValue('autoDuration', this.parent.dataOperation.calculateAutoDuration(data), ganttProp, true);
             this.parent.dataOperation.updateAutoWidthLeft(data);
         } else {
-            let startDate: Date = this.parent.dateValidationModule.checkStartDate(currentValue, data.ganttProperties);
+            const startDate: Date = this.parent.dateValidationModule.checkStartDate(currentValue, data.ganttProperties);
             this.parent.setRecordValue('startDate', startDate, data.ganttProperties, true);
             this.parent.dataOperation.updateMappingData(data, 'startDate');
             this.parent.dateValidationModule.calculateEndDate(data);
@@ -843,16 +904,17 @@ export class Edit {
     }
 
     /**
-     * 
-     * @param data 
-     * @param newStartDate 
+     *
+     * @param {IGanttData} data .
+     * @param {Date} newStartDate .
+     * @returns {void} .
      */
     private calculateDateByRoundOffDuration(data: IGanttData, newStartDate: Date): void {
-        let ganttRecord: IGanttData = data;
-        let taskData: ITaskData = ganttRecord.ganttProperties;
-        let projectStartDate: Date = new Date(newStartDate.getTime());
+        const ganttRecord: IGanttData = data;
+        const taskData: ITaskData = ganttRecord.ganttProperties;
+        const projectStartDate: Date = new Date(newStartDate.getTime());
         if (!isNullOrUndefined(taskData.endDate) && isNullOrUndefined(taskData.startDate)) {
-            let endDate: Date = this.parent.dateValidationModule.checkStartDate(projectStartDate, taskData, null);
+            const endDate: Date = this.parent.dateValidationModule.checkStartDate(projectStartDate, taskData, null);
             this.parent.setRecordValue(
                 'endDate',
                 this.parent.dateValidationModule.checkEndDate(endDate, ganttRecord.ganttProperties),
@@ -874,18 +936,21 @@ export class Edit {
 
     /**
      * To update progress value of parent tasks
-     * @param cloneParent 
+     *
+     * @param {IParent} cloneParent .
+     * @returns {void} .
      * @private
      */
     public updateParentProgress(cloneParent: IParent): void {
         let parentProgress: number = 0;
-        let parent: IGanttData = this.parent.getParentTask(cloneParent);
-        let childRecords: IGanttData[] = parent.childRecords;
-        let childCount: number = childRecords ? childRecords.length : 0;
+        const parent: IGanttData = this.parent.getParentTask(cloneParent);
+        const childRecords: IGanttData[] = parent.childRecords;
+        const childCount: number = childRecords ? childRecords.length : 0;
         let totalProgress: number = 0;
         let milesStoneCount: number = 0;
         let taskCount: number = 0;
         let totalDuration: number = 0;
+        // eslint-disable-next-line
         let progressValues: Object = {};
         if (childRecords) {
             for (let i: number = 0; i < childCount; i++) {
@@ -922,40 +987,44 @@ export class Edit {
 
     /**
      * Method to revert cell edit action
-     * @param args 
+     *
+     * @param {object} args .
+     * @returns {void} .
      * @private
      */
+    // eslint-disable-next-line
     public revertCellEdit(args: object): void {
         this.parent.editModule.reUpdatePreviousRecords(false, true);
         this.resetEditProperties();
     }
 
     /**
-     *
-     * @return {void}
+     * @param {boolean} isRefreshChart .
+     * @param {boolean} isRefreshGrid .
+     * @returns {void} .
      * @private
      */
     public reUpdatePreviousRecords(isRefreshChart?: boolean, isRefreshGrid?: boolean): void {
-        let collection: object = this.parent.previousRecords;
-        let keys: string[] = Object.keys(collection);
+        // eslint-disable-next-line
+        const collection: object = this.parent.previousRecords;
+        const keys: string[] = Object.keys(collection);
         for (let i: number = 0; i < keys.length; i++) {
-            let uniqueId: string = keys[i];
-            let prevTask: IGanttData = collection[uniqueId] as IGanttData;
-            let originalData: IGanttData = this.parent.getTaskByUniqueID(uniqueId);
+            const uniqueId: string = keys[i];
+            const prevTask: IGanttData = collection[uniqueId] as IGanttData;
+            const originalData: IGanttData = this.parent.getTaskByUniqueID(uniqueId);
             this.copyTaskData(originalData.taskData, prevTask.taskData);
             delete prevTask.taskData;
             this.copyTaskData(originalData.ganttProperties, prevTask.ganttProperties);
             delete prevTask.ganttProperties;
             this.copyTaskData(originalData, prevTask);
-            let rowIndex: number = this.parent.currentViewData.indexOf(originalData);
+            const rowIndex: number = this.parent.currentViewData.indexOf(originalData);
             if (isRefreshChart) {
                 this.parent.chartRowsModule.refreshRow(rowIndex);
             }
             if (isRefreshGrid) {
-                /* tslint:disable-next-line */
-                let dataId: number | string = this.parent.viewType === 'ProjectView' ? originalData.ganttProperties.taskId : originalData.ganttProperties.rowUniqueID;
+                const dataId: number | string = this.parent.viewType === 'ProjectView' ? originalData.ganttProperties.taskId : originalData.ganttProperties.rowUniqueID;
                 this.parent.treeGrid.grid.setRowData(dataId, originalData);
-                let row: Row<Column> = this.parent.treeGrid.grid.getRowObjectFromUID(
+                const row: Row<Column> = this.parent.treeGrid.grid.getRowObjectFromUID(
                     this.parent.treeGrid.grid.getDataRows()[rowIndex].getAttribute('data-uid'));
                 row.data = originalData;
             }
@@ -963,9 +1032,12 @@ export class Edit {
     }
     /**
      * Copy previous task data value to edited task data
-     * @param existing 
-     * @param newValue 
+     *
+     * @param {object} existing .
+     * @param {object} newValue .
+     * @returns {void} .
      */
+    // eslint-disable-next-line
     private copyTaskData(existing: Object, newValue: object): void {
         if (!isNullOrUndefined(newValue)) {
             extend(existing, newValue);
@@ -974,19 +1046,23 @@ export class Edit {
 
     /**
      * To update schedule date on editing.
-     * @return {void}
+     *
+     * @param {ITaskbarEditedEventArgs} args .
+     * @returns {void} .
      * @private
      */
+    // eslint-disable-next-line
     private updateScheduleDatesOnEditing(args: ITaskbarEditedEventArgs): void {
         //..
     }
 
     /**
-     * 
-     * @param ganttRecord 
+     *
+     * @param {IGanttData} ganttRecord .
+     * @returns {void} .
      */
     private updateChildItems(ganttRecord: IGanttData): void {
-        let previousData: IGanttData = this.parent.previousRecords[ganttRecord.uniqueID];
+        const previousData: IGanttData = this.parent.previousRecords[ganttRecord.uniqueID];
         let previousStartDate: Date;
         if (isNullOrUndefined(previousData) ||
             (isNullOrUndefined(previousData) && !isNullOrUndefined(previousData.ganttProperties))) {
@@ -994,8 +1070,8 @@ export class Edit {
         } else {
             previousStartDate = new Date(previousData.ganttProperties.startDate.getTime());
         }
-        let currentStartDate: Date = ganttRecord.ganttProperties.startDate;
-        let childRecords: IGanttData[] = [];
+        const currentStartDate: Date = ganttRecord.ganttProperties.startDate;
+        const childRecords: IGanttData[] = [];
         let validStartDate: Date;
         let validEndDate: Date;
         let calcEndDate: Date;
@@ -1023,7 +1099,7 @@ export class Edit {
         for (let i: number = 0; i < childRecords.length; i++) {
             if (childRecords[i].ganttProperties.isAutoSchedule) {
                 if (durationDiff > 0) {
-                    let startDate: Date = isScheduledTask(childRecords[i].ganttProperties) ?
+                    const startDate: Date = isScheduledTask(childRecords[i].ganttProperties) ?
                         childRecords[i].ganttProperties.startDate : childRecords[i].ganttProperties.startDate ?
                             childRecords[i].ganttProperties.startDate : childRecords[i].ganttProperties.endDate ?
                                 childRecords[i].ganttProperties.endDate : new Date(previousStartDate.toString());
@@ -1064,12 +1140,14 @@ export class Edit {
     }
 
     /**
-     * To get updated child records. 
-     * @param parentRecord 
-     * @param childLists 
+     * To get updated child records.
+     *
+     * @param {IGanttData} parentRecord .
+     * @param {IGanttData} childLists .
+     * @returns {void} .
      */
     private getUpdatableChildRecords(parentRecord: IGanttData, childLists: IGanttData[]): void {
-        let childRecords: IGanttData[] = parentRecord.childRecords;
+        const childRecords: IGanttData[] = parentRecord.childRecords;
         for (let i: number = 0; i < childRecords.length; i++) {
             if (childRecords[i].ganttProperties.isAutoSchedule) {
                 childLists.push(childRecords[i]);
@@ -1081,7 +1159,8 @@ export class Edit {
     }
 
     /**
-     * 
+     * @param {ITaskbarEditedEventArgs} args .
+     * @returns {void} .
      * @private
      */
     public initiateSaveAction(args: ITaskbarEditedEventArgs): void {
@@ -1109,21 +1188,25 @@ export class Edit {
             } else {
                 eventArg.modifiedTaskData = getTaskData(eventArg.modifiedRecords);
                 if (isRemoteData(this.parent.dataSource)) {
-                    let data: DataManager = this.parent.dataSource as DataManager;
-                    let updatedData: object = {
+                    const data: DataManager = this.parent.dataSource as DataManager;
+                    // eslint-disable-next-line
+                    const updatedData: object = {
                         changedRecords: eventArg.modifiedTaskData
                     };
-                    /* tslint:disable-next-line */
-                    let query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
+                    const query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
+                    // eslint-disable-next-line
                     let crud: Promise<Object> = null;
-                    let dataAdaptor: AdaptorOptions = data.adaptor;
+                    const dataAdaptor: AdaptorOptions = data.adaptor;
                     if (!(dataAdaptor instanceof WebApiAdaptor && dataAdaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
+                        // eslint-disable-next-line
                         crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
                     } else {
-                        let changedRecords: string = 'changedRecords';
+                        const changedRecords: string = 'changedRecords';
+                        // eslint-disable-next-line
                         crud = data.update(this.parent.taskFields.id, updatedData[changedRecords], null, query) as Promise<Object>;
                     }
                     crud.then((e: ReturnType) => this.dmSuccess(e, args))
+                    // eslint-disable-next-line
                         .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
                 } else {
                     this.saveSuccess(args);
@@ -1135,9 +1218,10 @@ export class Edit {
     private dmSuccess(e: ReturnType, args: ITaskbarEditedEventArgs): void {
         this.saveSuccess(args);
     }
+    // eslint-disable-next-line
     private dmFailure(e: { result: Object[] }, args: ITaskbarEditedEventArgs): void {
         if (this.deletedTaskDetails.length) {
-            let deleteRecords: IGanttData[] = this.deletedTaskDetails;
+            const deleteRecords: IGanttData[] = this.deletedTaskDetails;
             for (let d: number = 0; d < deleteRecords.length; d++) {
                 deleteRecords[d].isDelete = false;
             }
@@ -1148,9 +1232,9 @@ export class Edit {
         this.parent.trigger('actionFailure', { error: e });
     }
     private updateSharedTask(data: IGanttData): void {
-        let ids: string[] = data.ganttProperties.sharedTaskUniqueIds;
+        const ids: string[] = data.ganttProperties.sharedTaskUniqueIds;
         for (let i: number = 0; i < ids.length; i++) {
-            let editRecord: IGanttData = this.parent.flatData[this.parent.ids.indexOf(ids[i].toString())];
+            const editRecord: IGanttData = this.parent.flatData[this.parent.ids.indexOf(ids[i].toString())];
             if (editRecord.uniqueID !== data.uniqueID) {
                 this.updateGanttProperties(data, editRecord);
                 this.parent.setRecordValue('taskData', data.taskData, editRecord, true);
@@ -1164,11 +1248,14 @@ export class Edit {
     }
     /**
      * Method for save action success for local and remote data
+     *
+     * @param {ITaskAddedEventArgs} args .
+     * @returns {void} .
      */
     private saveSuccess(args: ITaskbarEditedEventArgs): void {
-        let eventArgs: IActionBeginEventArgs = {};
+        const eventArgs: IActionBeginEventArgs = {};
         if (this.parent.timelineSettings.updateTimescaleView) {
-            let tempArray: IGanttData[] = this.parent.editedRecords;
+            const tempArray: IGanttData[] = this.parent.editedRecords;
             this.parent.timelineModule.updateTimeLineOnEditing(tempArray, args.action);
         }
         if (this.parent.viewType === 'ResourceView') {
@@ -1176,7 +1263,7 @@ export class Edit {
                 this.updateSharedTask(args.data);
             } else if (args.action === 'DialogEditing' || args.action === 'CellEditing'  || args.action === 'methodUpdate') {
                 if (this.parent.editModule.dialogModule.isResourceUpdate) {
-                    /* tslint:disable-next-line */
+                    /* eslint-disable-next-line */
                     this.updateResoures(this.parent.editModule.dialogModule.previousResource, args.data.ganttProperties.resourceInfo, args.data);
                     this.updateSharedTask(args.data);
                     this.isTreeGridRefresh = true;
@@ -1232,16 +1319,17 @@ export class Edit {
         }
     }
 
+    // eslint-disable-next-line
     private updateResoures(prevResource: Object[], currentResource: Object[], updateRecord: IGanttData): void {
-        let flatRecords: IGanttData[] = this.parent.flatData;
-        let currentLength: number = currentResource ? currentResource.length : 0;
-        let previousLength: number = prevResource ? prevResource.length : 0;
+        const flatRecords: IGanttData[] = this.parent.flatData;
+        const currentLength: number = currentResource ? currentResource.length : 0;
+        const previousLength: number = prevResource ? prevResource.length : 0;
         if (currentLength === 0 && previousLength === 0) {
             return;
         }
         for (let index: number = 0; index < currentLength; index++) {
-            let recordIndex: number[] = [];
-            let resourceID: number = parseInt(currentResource[index][this.parent.resourceFields.id], 10);
+            const recordIndex: number[] = [];
+            const resourceID: number = parseInt(currentResource[index][this.parent.resourceFields.id], 10);
             for (let i: number = 0; i < prevResource.length; i++) {
                 if (parseInt(prevResource[i][this.parent.resourceFields.id], 10) === resourceID) {
                     recordIndex.push(i);
@@ -1249,7 +1337,7 @@ export class Edit {
                 }
             }
             if (recordIndex.length === 0) {
-                let parentRecord: IGanttData = flatRecords[this.parent.getTaskIds().indexOf('R' + resourceID)];
+                const parentRecord: IGanttData = flatRecords[this.parent.getTaskIds().indexOf('R' + resourceID)];
                 if (parentRecord) {
                     this.addNewRecord(updateRecord, parentRecord);
                 }
@@ -1257,11 +1345,11 @@ export class Edit {
                 prevResource.splice(parseInt(recordIndex[0].toString(), 10), 1);
             }
         }
-        let prevLength: number = prevResource ? prevResource.length : 0;
+        const prevLength: number = prevResource ? prevResource.length : 0;
         for (let index: number = 0; index < prevLength; index++) {
-            let taskID: string = updateRecord.ganttProperties.taskId;
-            let resourceID: string = prevResource[index][this.parent.resourceFields.id];
-            let record: IGanttData = flatRecords[this.parent.getTaskIds().indexOf('R' + resourceID)];
+            const taskID: string = updateRecord.ganttProperties.taskId;
+            const resourceID: string = prevResource[index][this.parent.resourceFields.id];
+            const record: IGanttData = flatRecords[this.parent.getTaskIds().indexOf('R' + resourceID)];
             for (let j: number = 0; j < record.childRecords.length; j++) {
                 if (record.childRecords[j].ganttProperties.taskId === taskID) {
                     this.removeChildRecord(record.childRecords[j]);
@@ -1269,24 +1357,26 @@ export class Edit {
             }
         }
         if (currentLength > 0) {
-            let parentTask: IGanttData = this.parent.getParentTask(updateRecord.parentItem);
+            const parentTask: IGanttData = this.parent.getParentTask(updateRecord.parentItem);
             if (parentTask) {
                 if (parentTask.ganttProperties.taskName === this.parent.localeObj.getConstant('unassignedTask')) {
                     this.removeChildRecord(updateRecord);
                 }
             }
         }
-         //Assign resource to unassigned task
+        //Assign resource to unassigned task
         if (currentLength === 0) {
             this.checkWithUnassignedTask(updateRecord);
         }
     }
     /**
+     * @param {IGanttData} updateRecord .
+     * @returns {void} .
      * @private
      */
     public checkWithUnassignedTask(updateRecord: IGanttData): void {
         let unassignedTasks: IGanttData = null;
-            // Block for check the unassigned task.
+        // Block for check the unassigned task.
         for (let i: number = 0; i < this.parent.flatData.length; i++) {
             if (this.parent.flatData[i].ganttProperties.taskName === this.parent.localeObj.getConstant('unassignedTask')) {
                 unassignedTasks = this.parent.flatData[i];
@@ -1296,30 +1386,29 @@ export class Edit {
             this.addNewRecord(updateRecord, unassignedTasks);
         } else {
             // Block for create the unassigned task.
-            let unassignTaskObj: Object = {};
+            // eslint-disable-next-line
+            const unassignTaskObj: Object = {};
             unassignTaskObj[this.parent.taskFields.id] = 0;
             unassignTaskObj[this.parent.taskFields.name] = this.parent.localeObj.getConstant('unassignedTask');
-            let cAddedRecord: IGanttData;
-            let beforeEditStatus: boolean = this.parent.isOnEdit;
+            const beforeEditStatus: boolean = this.parent.isOnEdit;
             this.parent.isOnEdit = false;
-            cAddedRecord = this.parent.dataOperation.createRecord(unassignTaskObj, 0);
+            const cAddedRecord: IGanttData = this.parent.dataOperation.createRecord(unassignTaskObj, 0);
             this.parent.isOnEdit = beforeEditStatus;
             this.addRecordAsBottom(cAddedRecord);
-            let parentRecord: IGanttData = this.parent.flatData[this.parent.flatData.length - 1];
+            const parentRecord: IGanttData = this.parent.flatData[this.parent.flatData.length - 1];
             this.addNewRecord(updateRecord, parentRecord);
         }
     }
 
     private addRecordAsBottom(cAddedRecord: IGanttData): void {
-        let recordIndex1: number = this.parent.flatData.length;
+        const recordIndex1: number = this.parent.flatData.length;
         if (this.parent.taskFields.parentID && (this.parent.dataSource as IGanttData[]).length > 0) {
             (this.parent.dataSource as IGanttData[]).splice(recordIndex1 + 1, 0, cAddedRecord.taskData);
         }
         this.parent.currentViewData.splice(recordIndex1 + 1, 0, cAddedRecord);
         this.parent.flatData.splice(recordIndex1 + 1, 0, cAddedRecord);
         this.parent.ids.splice(recordIndex1 + 1, 0, cAddedRecord.ganttProperties.rowUniqueID.toString());
-        /* tslint:disable-next-line */
-        let taskId: string = cAddedRecord.level === 0 ? 'R' + cAddedRecord.ganttProperties.taskId : 'T' + cAddedRecord.ganttProperties.taskId;
+        const taskId: string = cAddedRecord.level === 0 ? 'R' + cAddedRecord.ganttProperties.taskId : 'T' + cAddedRecord.ganttProperties.taskId;
         this.parent.getTaskIds().splice(recordIndex1 + 1, 0, taskId);
         this.updateTreeGridUniqueID(cAddedRecord, 'add');
     }
@@ -1329,7 +1418,7 @@ export class Edit {
         cAddedRecord = extend({}, {}, updateRecord, true);
         this.parent.setRecordValue('uniqueID', getUid(this.parent.element.id + '_data_'), cAddedRecord);
         this.parent.setRecordValue('uniqueID', cAddedRecord.uniqueID, cAddedRecord.ganttProperties, true);
-        let uniqueId: string = cAddedRecord.uniqueID.replace(this.parent.element.id + '_data_', '');
+        const uniqueId: string = cAddedRecord.uniqueID.replace(this.parent.element.id + '_data_', '');
         this.parent.setRecordValue('rowUniqueID', uniqueId, cAddedRecord);
         this.parent.setRecordValue('rowUniqueID', uniqueId, cAddedRecord.ganttProperties, true);
         this.parent.setRecordValue('level', 1, cAddedRecord);
@@ -1337,27 +1426,27 @@ export class Edit {
             this.parent.setRecordValue('parentId', parentRecord.ganttProperties.taskId, cAddedRecord.ganttProperties, true);
         }
         this.parent.setRecordValue('parentItem', this.parent.dataOperation.getCloneParent(parentRecord), cAddedRecord);
-        let parentUniqId: string = cAddedRecord.parentItem ? cAddedRecord.parentItem.uniqueID : null;
+        const parentUniqId: string = cAddedRecord.parentItem ? cAddedRecord.parentItem.uniqueID : null;
         this.parent.setRecordValue('parentUniqueID', parentUniqId, cAddedRecord);
         updateRecord.ganttProperties.sharedTaskUniqueIds.push(uniqueId);
         cAddedRecord.ganttProperties.sharedTaskUniqueIds = updateRecord.ganttProperties.sharedTaskUniqueIds;
         this.addRecordAsChild(parentRecord, cAddedRecord);
     }
     private removeChildRecord(record: IGanttData): void {
-        let gObj: Gantt = this.parent;
-        let dataSource: Object;
+        const gObj: Gantt = this.parent;
         let data: IGanttData[] = [];
         if (this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.json.length > 0) {
             data = this.parent.dataSource.dataSource.json;
         } else {
             data = this.parent.currentViewData;
         }
-        dataSource = this.parent.dataSource;
-        let deletedRow: IGanttData = record;
-        let flatParentData: IGanttData = this.parent.getParentTask(deletedRow.parentItem);
+        // eslint-disable-next-line
+        const dataSource: Object = this.parent.dataSource;
+        const deletedRow: IGanttData = record;
+        const flatParentData: IGanttData = this.parent.getParentTask(deletedRow.parentItem);
         if (deletedRow) {
             if (deletedRow.parentItem) {
-                let deleteChildRecords: IGanttData[] = flatParentData ? flatParentData.childRecords : [];
+                const deleteChildRecords: IGanttData[] = flatParentData ? flatParentData.childRecords : [];
                 let childIndex: number = 0;
                 if (deleteChildRecords && deleteChildRecords.length > 0) {
                     if (deleteChildRecords.length === 1) {
@@ -1375,19 +1464,20 @@ export class Edit {
                 }
             }
             if (deletedRow.ganttProperties.sharedTaskUniqueIds.length) {
-                let uniqueIDIndex: number = deletedRow.ganttProperties.sharedTaskUniqueIds.indexOf(deletedRow.ganttProperties.rowUniqueID);
+                // eslint-disable-next-line
+                const uniqueIDIndex: number = deletedRow.ganttProperties.sharedTaskUniqueIds.indexOf(deletedRow.ganttProperties.rowUniqueID);
                 deletedRow.ganttProperties.sharedTaskUniqueIds.splice(uniqueIDIndex, 1);
             }
             this.updateTreeGridUniqueID(deletedRow, 'delete');
             //method to delete the record from datasource collection
             if (!this.parent.taskFields.parentID) {
-                let deleteRecordIDs: string[] = [];
+                const deleteRecordIDs: string[] = [];
                 deleteRecordIDs.push(deletedRow.ganttProperties.rowUniqueID.toString());
                 this.parent.editModule.removeFromDataSource(deleteRecordIDs);
             }
             if (gObj.taskFields.parentID) {
                 let idx: number;
-                let ganttData: IGanttData[] = this.parent.currentViewData;
+                const ganttData: IGanttData[] = this.parent.currentViewData;
                 for (let i: number = 0; i < ganttData.length; i++) {
                     if (ganttData[i].ganttProperties.rowUniqueID === deletedRow.ganttProperties.rowUniqueID) {
                         idx = i;
@@ -1403,9 +1493,9 @@ export class Edit {
                     this.parent.getTaskIds().splice(idx, 1);
                 }
             }
-            let recordIndex: number = data.indexOf(deletedRow);
+            const recordIndex: number = data.indexOf(deletedRow);
             if (!gObj.taskFields.parentID) {
-                let deletedRecordCount: number = this.parent.editModule.getChildCount(deletedRow, 0);
+                const deletedRecordCount: number = this.parent.editModule.getChildCount(deletedRow, 0);
                 data.splice(recordIndex, deletedRecordCount + 1);
                 this.parent.flatData.splice(recordIndex, deletedRecordCount + 1);
                 this.parent.ids.splice(recordIndex, deletedRecordCount + 1);
@@ -1419,13 +1509,13 @@ export class Edit {
     }
     // Method to add new record after resource edit
     private addRecordAsChild(droppedRecord: IGanttData, draggedRecord: IGanttData): void {
-        let gObj: Gantt = this.parent;
-        let recordIndex1: number = this.parent.flatData.indexOf(droppedRecord);
-        let childRecords: number = this.parent.editModule.getChildCount(droppedRecord, 0);
+        const gObj: Gantt = this.parent;
+        const recordIndex1: number = this.parent.flatData.indexOf(droppedRecord);
+        const childRecords: number = this.parent.editModule.getChildCount(droppedRecord, 0);
         let childRecordsLength: number;
         if (!isNullOrUndefined(this.addRowIndex) && this.addRowPosition && droppedRecord.childRecords && this.addRowPosition !== 'Child') {
-            let dropChildRecord: IGanttData = droppedRecord.childRecords[this.addRowIndex];
-            let position: RowPosition = this.addRowPosition === 'Above' || this.addRowPosition === 'Below' ? this.addRowPosition :
+            const dropChildRecord: IGanttData = droppedRecord.childRecords[this.addRowIndex];
+            const position: RowPosition = this.addRowPosition === 'Above' || this.addRowPosition === 'Below' ? this.addRowPosition :
                 'Child';
             childRecordsLength = dropChildRecord ? this.addRowIndex + recordIndex1 + 1 :
                 childRecords + recordIndex1 + 1;
@@ -1443,8 +1533,7 @@ export class Edit {
         this.parent.flatData.splice(childRecordsLength, 0, draggedRecord);
         this.parent.ids.splice(childRecordsLength, 0, draggedRecord.ganttProperties.rowUniqueID.toString());
         this.updateTreeGridUniqueID(draggedRecord, 'add');
-        /* tslint:disable-next-line */
-        let recordId: string = draggedRecord.level === 0 ? 'R' + draggedRecord.ganttProperties.taskId : 'T' + draggedRecord.ganttProperties.taskId;
+        const recordId: string = draggedRecord.level === 0 ? 'R' + draggedRecord.ganttProperties.taskId : 'T' + draggedRecord.ganttProperties.taskId;
         this.parent.getTaskIds().splice(childRecordsLength, 0, recordId);
         if (!droppedRecord.hasChildRecords) {
             this.parent.setRecordValue('hasChildRecords', true, draggedRecord);
@@ -1488,6 +1577,8 @@ export class Edit {
         this.parent.initiateEditAction(false);
     }
     /**
+     * @param {ITaskAddedEventArgs} args .
+     * @returns {void} .
      * @private
      */
     public endEditAction(args: ITaskbarEditedEventArgs): void {
@@ -1503,7 +1594,7 @@ export class Edit {
             this.dialogModule.dialogClose();
         }
     }
-
+    // eslint-disable-next-line
     private saveFailed(args: ITaskbarEditedEventArgs): void {
         this.reUpdatePreviousRecords();
         this.parent.hideSpinner();
@@ -1512,10 +1603,11 @@ export class Edit {
 
     /**
      * To render delete confirmation dialog
-     * @return {void}
+     *
+     * @returns {void} .
      */
     private renderDeleteConfirmDialog(): void {
-        let dialogObj: Dialog = new Dialog({
+        const dialogObj: Dialog = new Dialog({
             width: '320px',
             isModal: true,
             visible: false,
@@ -1530,7 +1622,7 @@ export class Edit {
                     buttonModel: { content: this.parent.localeObj.getConstant('cancel') }
                 }],
             target: this.parent.element,
-            animationSettings: { effect: 'None' },
+            animationSettings: { effect: 'None' }
         });
         dialogObj.appendTo('#' + this.parent.element.id + '_deleteConfirmDialog');
         this.confirmDialog = dialogObj;
@@ -1543,10 +1635,11 @@ export class Edit {
     private confirmDeleteOkButton(): void {
         this.deleteSelectedItems();
         this.confirmDialog.hide();
-        let focussedElement: HTMLElement = this.parent.element.querySelector('.e-treegrid');
+        const focussedElement: HTMLElement = this.parent.element.querySelector('.e-treegrid');
         focussedElement.focus();
     }
     /**
+     * @returns {void} .
      * @private
      */
     public startDeleteAction(): void {
@@ -1559,17 +1652,17 @@ export class Edit {
         }
     }
     /**
-     * 
-     * @param selectedRecords - Defines the deleted records
+     *
+     * @param {IGanttData[]} selectedRecords - Defines the deleted records
+     * @returns {void} .
      * Method to delete the records from resource view Gantt.
      */
     private deleteResourceRecords(selectedRecords: IGanttData[]): void {
-        let deleteRecords: IGanttData[] = [];
+        const deleteRecords: IGanttData[] = [];
         for (let i: number = 0; i < selectedRecords.length; i++) {
-            /* tslint:disable-next-line */
             if (selectedRecords[i].parentItem) {
-                let data: IGanttData = selectedRecords[i];
-                let ids: string[] = data.ganttProperties.sharedTaskUniqueIds;
+                const data: IGanttData = selectedRecords[i];
+                const ids: string[] = data.ganttProperties.sharedTaskUniqueIds;
                 for (let j: number = 0; j < ids.length; j++) {
                     deleteRecords.push(this.parent.flatData[this.parent.ids.indexOf(ids[j].toString())]);
                 }
@@ -1605,51 +1698,59 @@ export class Edit {
 
     /**
      * Method to delete record.
-     * @param {number | string | number[] | string[] | IGanttData | IGanttData[]} taskDetail - Defines the details of data to delete. 
+     *
+     * @param {number | string | number[] | string[] | IGanttData | IGanttData[]} taskDetail - Defines the details of data to delete.
+     * @returns {void} .
      * @public
      */
     public deleteRecord(taskDetail: number | string | number[] | string[] | IGanttData | IGanttData[]): void {
         this.isFromDeleteMethod = true;
-        let variableType: string = typeof (taskDetail);
+        const variableType: string = typeof (taskDetail);
         this.targetedRecords = [];
         switch (variableType) {
-            case 'number':
-            case 'string':
-                let taskId: string = taskDetail.toString();
-                if (this.parent.viewType === 'ResourceView') {
-                    if (!isNullOrUndefined(taskId) && this.parent.getTaskIds().indexOf('T' + taskId) !== -1) {
-                        this.targetedRecords.push(this.parent.flatData[this.parent.getTaskIds().indexOf('T' + taskId)]);
-                    }
-                } else {
+        case 'number':
+        case 'string':
+        {
+            const taskId: string = taskDetail.toString();
+            if (this.parent.viewType === 'ResourceView') {
+                if (!isNullOrUndefined(taskId) && this.parent.getTaskIds().indexOf('T' + taskId) !== -1) {
+                    this.targetedRecords.push(this.parent.flatData[this.parent.getTaskIds().indexOf('T' + taskId)]);
+                }
+            } else {
                 if (!isNullOrUndefined(taskId) && this.parent.ids.indexOf(taskId) !== -1) {
                     this.targetedRecords.push(this.parent.getRecordByID(taskId));
                 }
             }
-                break;
-            case 'object':
-                if (!Array.isArray(taskDetail)) {
-                    this.targetedRecords.push(taskDetail.valueOf());
-                } else {
-                    this.updateTargetedRecords(taskDetail as object[]);
-                }
-                break;
-            default:
+            break;
+        }
+        case 'object':
+            if (!Array.isArray(taskDetail)) {
+                this.targetedRecords.push(taskDetail.valueOf());
+            } else {
+                // eslint-disable-next-line
+                this.updateTargetedRecords(taskDetail as object[]);
+            }
+            break;
+        default:
         }
         this.startDeleteAction();
     }
     /**
      * To update 'targetedRecords collection' from given array collection
-     * @param taskDetailArray 
+     *
+     * @param {object[]} taskDetailArray .
+     * @returns {void} .
      */
+    // eslint-disable-next-line
     private updateTargetedRecords(taskDetailArray: object[]): void {
         if (taskDetailArray.length) {
-            let variableType: string = typeof (taskDetailArray[0]);
+            const variableType: string = typeof (taskDetailArray[0]);
             if (variableType === 'object') {
                 this.targetedRecords = taskDetailArray;
             } else {
                 // Get record from array of task ids
                 for (let i: number = 0; i < taskDetailArray.length; i++) {
-                    let id: string = taskDetailArray[i].toString();
+                    const id: string = taskDetailArray[i].toString();
                     if (this.parent.viewType === 'ResourceView') {
                         if (!isNullOrUndefined(id) && this.parent.getTaskIds().indexOf('T' + id) !== -1) {
                             this.targetedRecords.push(this.parent.flatData[this.parent.getTaskIds().indexOf('T' + id)]);
@@ -1674,13 +1775,13 @@ export class Edit {
                 rowItems = [];
             }
             for (let i: number = 0; i < rowItems.length; i++) {
-                let deleteRecord: IGanttData = rowItems[i];
+                const deleteRecord: IGanttData = rowItems[i];
                 if (this.deletedTaskDetails.indexOf(deleteRecord) !== -1) {
                     continue;
                 }
                 if (deleteRecord.parentItem) {
-                    let childRecord: IGanttData[] = this.parent.getParentTask(deleteRecord.parentItem).childRecords;
-                    let filteredRecord: IGanttData[] = childRecord.length === 1 ?
+                    const childRecord: IGanttData[] = this.parent.getParentTask(deleteRecord.parentItem).childRecords;
+                    const filteredRecord: IGanttData[] = childRecord.length === 1 ?
                         childRecord : childRecord.filter((data: IGanttData): boolean => {
                             return !data.isDelete;
                         });
@@ -1688,7 +1789,7 @@ export class Edit {
                         this.parent.dataOperation.updateParentItems(deleteRecord.parentItem);
                     }
                 }
-                let predecessor: IPredecessor[] = deleteRecord.ganttProperties.predecessor;
+                const predecessor: IPredecessor[] = deleteRecord.ganttProperties.predecessor;
                 if (predecessor && predecessor.length) {
                     this.removePredecessorOnDelete(deleteRecord);
                 }
@@ -1701,7 +1802,7 @@ export class Edit {
                 // clear selection
                 this.parent.selectionModule.clearSelection();
             }
-            let delereArgs: ITaskDeletedEventArgs = {};
+            const delereArgs: ITaskDeletedEventArgs = {};
             delereArgs.deletedRecordCollection = this.deletedTaskDetails;
             delereArgs.updatedRecordCollection = this.parent.editedRecords;
             delereArgs.cancel = false;
@@ -1715,18 +1816,18 @@ export class Edit {
     }
 
     public removePredecessorOnDelete(record: IGanttData): void {
-        let predecessors: IPredecessor[] = record.ganttProperties.predecessor;
+        const predecessors: IPredecessor[] = record.ganttProperties.predecessor;
         for (let i: number = 0; i < predecessors.length; i++) {
-            let predecessor: IPredecessor = predecessors[i];
-            let recordId: string = this.parent.viewType === 'ResourceView' ? record.ganttProperties.taskId :
+            const predecessor: IPredecessor = predecessors[i];
+            const recordId: string = this.parent.viewType === 'ResourceView' ? record.ganttProperties.taskId :
                 record.ganttProperties.rowUniqueID;
             if (predecessor.from.toString() === recordId.toString()) {
-                let toRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(predecessor.to.toString());
+                const toRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(predecessor.to.toString());
                 if (!isNullOrUndefined(toRecord)) {
-                    let toRecordPredcessor: IPredecessor[] = extend([], [], toRecord.ganttProperties.predecessor, true) as IPredecessor[];
+                    const toRecordPredcessor: IPredecessor[] = extend([], [], toRecord.ganttProperties.predecessor, true) as IPredecessor[];
                     let index: number;
                     for (let t: number = 0; t < toRecordPredcessor.length; t++) {
-                        let toId: string = this.parent.viewType === 'ResourceView' ? toRecord.ganttProperties.taskId :
+                        const toId: string = this.parent.viewType === 'ResourceView' ? toRecord.ganttProperties.taskId :
                             toRecord.ganttProperties.rowUniqueID;
                         if (toRecordPredcessor[t].to.toString() === toId.toString()
                             && toRecordPredcessor[t].from.toString() === recordId.toString()) {
@@ -1738,13 +1839,13 @@ export class Edit {
                     this.updatePredecessorValues(toRecord, toRecordPredcessor);
                 }
             } else if (predecessor.to.toString() === recordId.toString()) {
-                let fromRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(predecessor.from.toString());
+                const fromRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(predecessor.from.toString());
                 if (!isNullOrUndefined(fromRecord)) {
-                    let fromRecordPredcessor: IPredecessor[] = extend(
+                    const fromRecordPredcessor: IPredecessor[] = extend(
                         [], [], fromRecord.ganttProperties.predecessor, true) as IPredecessor[];
                     let index: number;
                     for (let t: number = 0; t < fromRecordPredcessor.length; t++) {
-                        let fromId: string = this.parent.viewType === 'ResourceView' ? fromRecord.ganttProperties.taskId :
+                        const fromId: string = this.parent.viewType === 'ResourceView' ? fromRecord.ganttProperties.taskId :
                             fromRecord.ganttProperties.rowUniqueID;
                         if (fromRecordPredcessor[t].from.toString() === fromId.toString()
                             && fromRecordPredcessor[t].to.toString() === recordId.toString()) {
@@ -1761,7 +1862,7 @@ export class Edit {
 
     private updatePredecessorValues(record: IGanttData, predcessorArray: IPredecessor[]): void {
         this.parent.setRecordValue('predecessor', predcessorArray, record.ganttProperties, true);
-        let predecessorString: string = this.parent.predecessorModule.getPredecessorStringValue(record);
+        const predecessorString: string = this.parent.predecessorModule.getPredecessorStringValue(record);
         this.parent.setRecordValue('predecessorsName', predecessorString, record.ganttProperties, true);
         this.parent.setRecordValue('taskData.' + this.parent.taskFields.dependency, predecessorString, record);
         this.parent.setRecordValue(this.parent.taskFields.dependency, predecessorString, record);
@@ -1769,37 +1870,41 @@ export class Edit {
 
     /**
      * Method to update TaskID of a gantt record
+     *
+     * @param {string | number} currentId .
+     * @param {number | string} newId .
+     * @returns {void} .
      */
     public updateTaskId(currentId: string | number, newId: number | string): void {
         if (!this.parent.readOnly) {
-            let cId: string = typeof currentId === 'number' ? currentId.toString() : currentId;
-            let nId: string = typeof newId === 'number' ? newId.toString() : newId;
-            let ids: string[] = this.parent.ids;
+            const cId: string = typeof currentId === 'number' ? currentId.toString() : currentId;
+            const nId: string = typeof newId === 'number' ? newId.toString() : newId;
+            const ids: string[] = this.parent.ids;
             if (!isNullOrUndefined(cId) && !isNullOrUndefined(nId)) {
-                let cIndex: number = ids.indexOf(cId);
-                let nIndex: number = ids.indexOf(nId);
+                const cIndex: number = ids.indexOf(cId);
+                const nIndex: number = ids.indexOf(nId);
                 // return false for invalid taskID
                 if (cIndex === -1 || nIndex > -1) {
                     return;
                 }
-                let thisRecord: IGanttData = this.parent.flatData[cIndex];
+                const thisRecord: IGanttData = this.parent.flatData[cIndex];
                 thisRecord.ganttProperties.taskId = thisRecord.ganttProperties.rowUniqueID = nId;
                 thisRecord.taskData[this.parent.taskFields.id] = nId;
                 thisRecord[this.parent.taskFields.id] = nId;
                 ids[cIndex] = nId;
                 if (thisRecord.hasChildRecords && this.parent.taskFields.parentID) {
-                    let childRecords: IGanttData[] = thisRecord.childRecords;
+                    const childRecords: IGanttData[] = thisRecord.childRecords;
                     for (let count: number = 0; count < childRecords.length; count++) {
-                        let childRecord: IGanttData = childRecords[count];
+                        const childRecord: IGanttData = childRecords[count];
                         childRecord[this.parent.taskFields.parentID] = newId;
                         this.parent.chartRowsModule.refreshRecords([childRecord]);
                     }
                 }
                 if (this.parent.taskFields.dependency && !isNullOrUndefined(thisRecord.ganttProperties.predecessor)) {
-                    let predecessors: IPredecessor[] = thisRecord.ganttProperties.predecessor;
+                    const predecessors: IPredecessor[] = thisRecord.ganttProperties.predecessor;
                     let currentGanttRecord: IGanttData;
                     for (let i: number = 0; i < predecessors.length; i++) {
-                        let predecessor: IPredecessor = predecessors[i];
+                        const predecessor: IPredecessor = predecessors[i];
                         if (predecessor.to === cId) {
                             currentGanttRecord = this.parent.flatData[ids.indexOf(predecessor.from)];
                         } else if (predecessor.from === cId) {
@@ -1816,9 +1921,9 @@ export class Edit {
     }
     private updatePredecessorOnUpdateId(currentGanttRecord: IGanttData, cId: string, nId: string): void {
         if (this.parent.flatData.indexOf(currentGanttRecord) > -1) {
-            let pred: IPredecessor[] = currentGanttRecord.ganttProperties.predecessor;
+            const pred: IPredecessor[] = currentGanttRecord.ganttProperties.predecessor;
             for (let j: number = 0; j < pred.length; j++) {
-                let pre: IPredecessor = pred[j];
+                const pre: IPredecessor = pred[j];
                 if (pre.to === cId) {
                     pre.to = nId;
                 } else if (pre.from === cId) {
@@ -1830,13 +1935,13 @@ export class Edit {
     }
 
     private deleteChildRecords(record: IGanttData): void {
-        let childRecords: IGanttData[] = record.childRecords;
+        const childRecords: IGanttData[] = record.childRecords;
         for (let c: number = 0; c < childRecords.length; c++) {
-            let childRecord: IGanttData = childRecords[c];
+            const childRecord: IGanttData = childRecords[c];
             if (this.deletedTaskDetails.indexOf(childRecord) !== -1) {
                 continue;
             }
-            let predecessor: IPredecessor[] = childRecord.ganttProperties.predecessor;
+            const predecessor: IPredecessor[] = childRecord.ganttProperties.predecessor;
             if (predecessor && predecessor.length) {
                 this.removePredecessorOnDelete(childRecord);
             }
@@ -1848,15 +1953,17 @@ export class Edit {
     }
 
     public removeFromDataSource(deleteRecordIDs: string[]): void {
+        // eslint-disable-next-line
         let dataSource: Object[];
         if (this.parent.dataSource instanceof DataManager) {
             dataSource = this.parent.dataSource.dataSource.json;
         } else {
-            dataSource = this.parent.dataSource;
+            dataSource = this.parent.dataSource as Object[]; // eslint-disable-line
         }
         this.removeData(dataSource, deleteRecordIDs);
         this.isBreakLoop = false;
     }
+    // eslint-disable-next-line
     private removeData(dataCollection: Object[], record: string[]): boolean | void {
         for (let i: number = 0; i < dataCollection.length; i++) {
             if (this.isBreakLoop) {
@@ -1864,7 +1971,7 @@ export class Edit {
             }
             if (record.indexOf(getValue(this.parent.taskFields.id, dataCollection[i]).toString()) !== -1) {
                 if (dataCollection[i][this.parent.taskFields.child]) {
-                    let childRecords: ITaskData[] = dataCollection[i][this.parent.taskFields.child];
+                    const childRecords: ITaskData[] = dataCollection[i][this.parent.taskFields.child];
                     this.removeData(childRecords, record);
                 }
                 record.splice(record.indexOf(getValue(this.parent.taskFields.id, dataCollection[i]).toString()), 1);
@@ -1874,12 +1981,11 @@ export class Edit {
                     break;
                 }
             } else if (dataCollection[i][this.parent.taskFields.child]) {
-                let childRecords: ITaskData[] = dataCollection[i][this.parent.taskFields.child];
+                const childRecords: ITaskData[] = dataCollection[i][this.parent.taskFields.child];
                 this.removeData(childRecords, record);
             }
         }
     }
-    /* tslint:disable-next-line:max-line-length */
     private initiateDeleteAction(args: ITaskDeletedEventArgs): void {
         this.parent.showSpinner();
         let eventArgs: IActionBeginEventArgs = {};
@@ -1887,7 +1993,7 @@ export class Edit {
         eventArgs.data = args.deletedRecordCollection;
         eventArgs.modifiedRecords = args.updatedRecordCollection;
         eventArgs.modifiedTaskData = getTaskData(args.updatedRecordCollection);
-        let blazorArgs: IActionBeginEventArgs = {};
+        const blazorArgs: IActionBeginEventArgs = {};
         if (isBlazor()) {
             eventArgs = this.parent.updateDataArgs(eventArgs);
             blazorArgs.modifiedTaskData = eventArgs.modifiedTaskData;
@@ -1895,7 +2001,7 @@ export class Edit {
         }
         this.parent.trigger('actionBegin', eventArgs, (eventArg: IActionBeginEventArgs) => {
             if (eventArg.cancel) {
-                let deleteRecords: IGanttData[] = this.deletedTaskDetails;
+                const deleteRecords: IGanttData[] = this.deletedTaskDetails;
                 for (let d: number = 0; d < deleteRecords.length; d++) {
                     deleteRecords[d].isDelete = false;
                 }
@@ -1905,35 +2011,44 @@ export class Edit {
                 this.parent.hideSpinner();
             } else {
                 if (isRemoteData(this.parent.dataSource)) {
-                    let data: DataManager = this.parent.dataSource as DataManager;
-                    let updatedData: object = {
-                        /* tslint:disable-next-line */
+                    const data: DataManager = this.parent.dataSource as DataManager;
+                    // eslint-disable-next-line
+                    const updatedData: object = {
+                        /* eslint-disable-next-line */
                         deletedRecords: isBlazor() ? getTaskData(blazorArgs.data as IGanttData[]) : getTaskData(eventArg.data as IGanttData[]), // to check
                         changedRecords: isBlazor() ? blazorArgs.modifiedTaskData : eventArg.modifiedTaskData
                     };
                     if (isBlazor()) {
-                        let blazAddedRec: string = 'addedRecords';
+                        const blazAddedRec: string = 'addedRecords';
                         updatedData[blazAddedRec] = [];
                     }
-                    let adaptor: AdaptorOptions = data.adaptor;
+                    const adaptor: AdaptorOptions = data.adaptor;
                     if (!(adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
-                        let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id) as Promise<Object>;
+                        // eslint-disable-next-line
+                        const crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id) as Promise<Object>;
+                        /* eslint-disable-next-line */
                         crud.then((e: ReturnType) => this.deleteSuccess(args))
+                        // eslint-disable-next-line
                             .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
                     } else {
-                        let query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
-                        let deletedRecords: string = 'deletedRecords';
+                        const query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
+                        const deletedRecords: string = 'deletedRecords';
+                        // eslint-disable-next-line
                         let deleteCrud: Promise<Object> = null;
                         for (let i: number = 0; i < updatedData[deletedRecords].length; i++) {
-                            /* tslint:disable-next-line */
+                            /* eslint-disable-next-line */
                             deleteCrud = data.remove(this.parent.taskFields.id, updatedData[deletedRecords][i], null, query) as Promise<Object>;
                         }
+                        /* eslint-disable-next-line */
                         deleteCrud.then((e: ReturnType) => {
-                            let changedRecords: string = 'changedRecords';
-                            /* tslint:disable-next-line */
-                            let updateCrud: Promise<Object> = data.update(this.parent.taskFields.id, updatedData[changedRecords], null, query) as Promise<Object>;
+                            const changedRecords: string = 'changedRecords';
+                            /* eslint-disable-next-line */
+                            const updateCrud: Promise<Object> = data.update(this.parent.taskFields.id, updatedData[changedRecords], null, query) as Promise<Object>;
+                            /* eslint-disable-next-line */
                             updateCrud.then((e: ReturnType) => this.deleteSuccess(args))
+                            // eslint-disable-next-line
                                 .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
+                            // eslint-disable-next-line
                         }).catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
                     }
                 } else {
@@ -1944,17 +2059,17 @@ export class Edit {
     }
 
     private deleteSuccess(args: ITaskDeletedEventArgs): void {
-        let flatData: IGanttData[] = this.parent.flatData;
-        let currentData: IGanttData[] = this.parent.currentViewData;
-        let deletedRecords: IGanttData[] = this.parent.getRecordFromFlatdata(args.deletedRecordCollection);
-        let deleteRecordIDs: string[] = [];
+        const flatData: IGanttData[] = this.parent.flatData;
+        const currentData: IGanttData[] = this.parent.currentViewData;
+        const deletedRecords: IGanttData[] = this.parent.getRecordFromFlatdata(args.deletedRecordCollection);
+        const deleteRecordIDs: string[] = [];
         for (let i: number = 0; i < deletedRecords.length; i++) {
-            let deleteRecord: IGanttData = deletedRecords[i];
-            let currentIndex: number = currentData.indexOf(deleteRecord);
-            let flatIndex: number = flatData.indexOf(deleteRecord);
-            let treeGridParentIndex: number = this.parent.treeGrid.parentData.indexOf(deleteRecord);
-            let tempData: ITaskData[] = getValue('dataOperation.dataArray', this.parent);
-            let dataIndex: number = tempData.indexOf(deleteRecord.taskData);
+            const deleteRecord: IGanttData = deletedRecords[i];
+            const currentIndex: number = currentData.indexOf(deleteRecord);
+            const flatIndex: number = flatData.indexOf(deleteRecord);
+            const treeGridParentIndex: number = this.parent.treeGrid.parentData.indexOf(deleteRecord);
+            const tempData: ITaskData[] = getValue('dataOperation.dataArray', this.parent);
+            const dataIndex: number = tempData.indexOf(deleteRecord.taskData);
             let childIndex: number;
             if (currentIndex !== -1) { currentData.splice(currentIndex, 1); }
             if (flatIndex !== -1) { flatData.splice(flatIndex, 1); }
@@ -1971,9 +2086,9 @@ export class Edit {
                     this.parent.treeGrid.parentData.splice(treeGridParentIndex, 1);
                 }
                 if (deleteRecord.parentItem) {
-                    let parentItem: IGanttData = this.parent.getParentTask(deleteRecord.parentItem);
+                    const parentItem: IGanttData = this.parent.getParentTask(deleteRecord.parentItem);
                     if (parentItem) {
-                        let childRecords: IGanttData[] = parentItem.childRecords;
+                        const childRecords: IGanttData[] = parentItem.childRecords;
                         childIndex = childRecords.indexOf(deleteRecord);
                         if (childIndex !== -1) { childRecords.splice(childIndex, 1); }
                         if (!childRecords.length) {
@@ -1987,7 +2102,7 @@ export class Edit {
         if (deleteRecordIDs.length > 0) {
             this.removeFromDataSource(deleteRecordIDs);
         }
-        let eventArgs: IActionBeginEventArgs = {};
+        const eventArgs: IActionBeginEventArgs = {};
         this.parent.updatedConnectorLineCollection = [];
         this.parent.connectorLineIds = [];
         this.parent.predecessorModule.createConnectorLinesCollection(this.parent.flatData);
@@ -2016,11 +2131,11 @@ export class Edit {
 
     /**
      *
-     * @return {number | string}
+     * @returns {number | string} .
      * @private
      */
     public getNewTaskId(): number | string {
-        let maxId: number = DataUtil.aggregates.max(this.parent.flatData, this.parent.taskFields.id);
+        const maxId: number = DataUtil.aggregates.max(this.parent.flatData, this.parent.taskFields.id);
         if (!isNullOrUndefined(maxId)) {
             return parseInt(maxId.toString(), 10) + 1;
         } else {
@@ -2029,14 +2144,16 @@ export class Edit {
     }
 
     /**
-     *
-     * @return {void}
+     * @param {object} obj .
+     * @param {RowPosition} rowPosition .
+     * @returns {void} .
      * @private
      */
+    // eslint-disable-next-line
     private prepareNewlyAddedData(obj: Object, rowPosition: RowPosition): void {
-        let taskModel: TaskFieldsModel = this.parent.taskFields;
+        const taskModel: TaskFieldsModel = this.parent.taskFields;
         let id: string | number;
-        let ids: string[] = this.parent.ids;
+        const ids: string[] = this.parent.ids;
         /*Validate Task Id of data*/
         if (obj[taskModel.id]) {
             if (ids.indexOf(obj[taskModel.id].toString()) !== -1) {
@@ -2065,7 +2182,7 @@ export class Edit {
         }
         if (!this.parent.allowUnscheduledTasks && !obj[taskModel.endDate] && taskModel.endDate) {
             if (!obj[taskModel.duration]) {
-                let startDate: Date = this.parent.dataOperation.getDateFromFormat(this.parent.projectStartDate);
+                const startDate: Date = this.parent.dataOperation.getDateFromFormat(this.parent.projectStartDate);
                 startDate.setDate(startDate.getDate() + 4);
                 obj[taskModel.endDate] = this.parent.getFormatedDate(startDate, this.parent.getDateFormat());
             }
@@ -2073,20 +2190,23 @@ export class Edit {
     }
 
     /**
-     *
-     * @return {IGanttData}
+     * @param {object} obj .
+     * @param {number} level .
+     * @param {RowPosition} rowPosition .
+     * @param {IGanttData} parentItem .
+     * @returns {IGanttData} .
      * @private
      */
     private updateNewlyAddedDataBeforeAjax(
+        // eslint-disable-next-line
         obj: Object, level: number, rowPosition: RowPosition, parentItem?: IGanttData): IGanttData {
-        let cAddedRecord: IGanttData;
-        cAddedRecord = this.parent.dataOperation.createRecord(obj, level);
+        const cAddedRecord: IGanttData = this.parent.dataOperation.createRecord(obj, level);
         cAddedRecord.index = parseInt(cAddedRecord.ganttProperties.rowUniqueID.toString(), 10) - 1;
         if (!isNullOrUndefined(parentItem)) {
             this.parent.setRecordValue('parentItem', this.parent.dataOperation.getCloneParent(parentItem), cAddedRecord);
-            let pIndex: number = cAddedRecord.parentItem ? cAddedRecord.parentItem.index : null;
+            const pIndex: number = cAddedRecord.parentItem ? cAddedRecord.parentItem.index : null;
             this.parent.setRecordValue('parentIndex', pIndex, cAddedRecord);
-            let parentUniqId: string = cAddedRecord.parentItem ? cAddedRecord.parentItem.uniqueID : null;
+            const parentUniqId: string = cAddedRecord.parentItem ? cAddedRecord.parentItem.uniqueID : null;
             this.parent.setRecordValue('parentUniqueID', parentUniqId, cAddedRecord);
             if (!isNullOrUndefined(this.parent.taskFields.id) &&
                 !isNullOrUndefined(this.parent.taskFields.parentID) && cAddedRecord.parentItem) {
@@ -2111,8 +2231,9 @@ export class Edit {
     }
 
     /**
-     *
-     * @return {number}
+     * @param {IGanttData} record .
+     * @param {number} count .
+     * @returns {number} .
      * @private
      */
     public getChildCount(record: IGanttData, count: number): number {
@@ -2131,8 +2252,10 @@ export class Edit {
     }
 
     /**
-     *
-     * @return {number}
+     * @param {IGanttData} data .
+     * @param {number} count .
+     * @param {IGanttData[]} collection .
+     * @returns {number} .
      * @private
      */
     private getVisibleChildRecordCount(data: IGanttData, count: number, collection: IGanttData[]): number {
@@ -2158,37 +2281,36 @@ export class Edit {
     }
 
     /**
-     *
-     * @return {void}
+     * @param {IGanttData} parentRecord .
+     * @returns {void} .
      * @private
      */
     public updatePredecessorOnIndentOutdent(parentRecord: IGanttData): void {
-        let len: number = parentRecord.ganttProperties.predecessor.length;
-        let parentRecordTaskData: ITaskData = parentRecord.ganttProperties;
-        let predecessorCollection: IPredecessor[] = parentRecordTaskData.predecessor;
+        const len: number = parentRecord.ganttProperties.predecessor.length;
+        const parentRecordTaskData: ITaskData = parentRecord.ganttProperties;
+        const predecessorCollection: IPredecessor[] = parentRecordTaskData.predecessor;
         let childRecord: IGanttData;
         let predecessorIndex: number;
-        let id: string;
-        let updatedPredecessor: IPredecessor[] = [];
+        const updatedPredecessor: IPredecessor[] = [];
         for (let count: number = 0; count < len; count++) {
             if (predecessorCollection[count].to === parentRecordTaskData.rowUniqueID.toString()) {
                 childRecord = this.parent.getRecordByID(predecessorCollection[count].from);
                 predecessorIndex = getIndex(predecessorCollection[count], 'from', childRecord.ganttProperties.predecessor, 'to');
-                let predecessorCollections: IPredecessor[];
-                predecessorCollections = (extend([], childRecord.ganttProperties.predecessor, [], true)) as IPredecessor[];
+                // eslint-disable-next-line
+                let predecessorCollections: IPredecessor[] = (extend([], childRecord.ganttProperties.predecessor, [], true)) as IPredecessor[];
                 predecessorCollections.splice(predecessorIndex, 1);
                 this.parent.setRecordValue('predecessor', predecessorCollections, childRecord.ganttProperties, true);
             } else if (predecessorCollection[count].from === parentRecordTaskData.rowUniqueID.toString()) {
                 childRecord = this.parent.getRecordByID(predecessorCollection[count].to);
-                let prdcList: string[] = (childRecord.ganttProperties.predecessorsName.toString()).split(',');
-                let str: string = predecessorCollection[count].from + predecessorCollection[count].type;
-                let ind: number = prdcList.indexOf(str);
+                const prdcList: string[] = (childRecord.ganttProperties.predecessorsName.toString()).split(',');
+                const str: string = predecessorCollection[count].from + predecessorCollection[count].type;
+                const ind: number = prdcList.indexOf(str);
                 prdcList.splice(ind, 1);
                 this.parent.setRecordValue('predecessorsName', prdcList.join(','), childRecord.ganttProperties, true);
                 this.parent.setRecordValue(this.parent.taskFields.dependency, prdcList.join(','), childRecord);
                 predecessorIndex = getIndex(predecessorCollection[count], 'from', childRecord.ganttProperties.predecessor, 'to');
-                let temppredecessorCollection: IPredecessor[];
-                temppredecessorCollection = (extend([], childRecord.ganttProperties.predecessor, [], true)) as IPredecessor[];
+                // eslint-disable-next-line
+                const temppredecessorCollection: IPredecessor[] = (extend([], childRecord.ganttProperties.predecessor, [], true)) as IPredecessor[];
                 temppredecessorCollection.splice(predecessorIndex, 1);
                 this.parent.setRecordValue('predecessor', temppredecessorCollection, childRecord.ganttProperties, true);
                 this.parent.predecessorModule.validatePredecessorDates(childRecord);
@@ -2199,14 +2321,15 @@ export class Edit {
     }
 
     /**
-     *
-     * @return {string}
+     * @param {IPredecessor[]} predecessorCollection .
+     * @param {IGanttData} record .
+     * @returns {string} .
      * @private
      */
     private predecessorToString(predecessorCollection: IPredecessor[], record: IGanttData): string {
-        let predecessorString: string[] = [];
+        const predecessorString: string[] = [];
         let count: number = 0;
-        let length: number = predecessorCollection.length;
+        const length: number = predecessorCollection.length;
         for (count; count < length; count++) {
             if (record.ganttProperties.rowUniqueID.toString() !== predecessorCollection[count].from) {
                 let tem: string = predecessorCollection[count].from + predecessorCollection[count].type;
@@ -2226,100 +2349,106 @@ export class Edit {
     }
 
     /**
-     *
-     * @return {void}
+     * @param {IGanttData} record .
+     * @param {RowPosition} rowPosition .
+     * @param {IGanttData} parentItem .
+     * @returns {void} .
      * @private
      */
     private backUpAndPushNewlyAddedRecord(
         record: IGanttData, rowPosition: RowPosition, parentItem?: IGanttData): void {
-        let flatRecords: IGanttData[] = this.parent.flatData;
-        let currentViewData: IGanttData[] = this.parent.currentViewData;
-        let ids: string[] = this.parent.ids;
+        const flatRecords: IGanttData[] = this.parent.flatData;
+        const currentViewData: IGanttData[] = this.parent.currentViewData;
+        const ids: string[] = this.parent.ids;
         let currentItemIndex: number;
         let recordIndex: number;
         let updatedCollectionIndex: number;
         let childIndex: number;
         switch (rowPosition) {
-            case 'Top':
-                flatRecords.splice(0, 0, record);
-                currentViewData.splice(0, 0, record);
-                ids.splice(0, 0, record.ganttProperties.rowUniqueID.toString()); // need to check NAN
-                break;
-            case 'Bottom':
-                flatRecords.push(record);
-                currentViewData.push(record);
-                ids.push(record.ganttProperties.rowUniqueID.toString()); // need to check NAN
-                if (this.parent.viewType === 'ResourceView') {
-                    let taskId: string = record.level === 0 ? 'R' + record.ganttProperties.taskId : 'T' + record.ganttProperties.taskId;
-                    this.parent.getTaskIds().push(taskId);
-                }
-                break;
-            case 'Above':
-                /*Record Updates*/
-                recordIndex = flatRecords.indexOf(this.addRowSelectedItem);
-                updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem);
-                this.recordCollectionUpdate(childIndex, recordIndex, updatedCollectionIndex, record, parentItem);
-                break;
-            case 'Below':
-                currentItemIndex = flatRecords.indexOf(this.addRowSelectedItem);
-                if (this.addRowSelectedItem.hasChildRecords) {
-                    let dataChildCount: number = this.getChildCount(this.addRowSelectedItem, 0);
-                    recordIndex = currentItemIndex + dataChildCount + 1;
-                    updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem) +
+        case 'Top':
+            flatRecords.splice(0, 0, record);
+            currentViewData.splice(0, 0, record);
+            ids.splice(0, 0, record.ganttProperties.rowUniqueID.toString()); // need to check NAN
+            break;
+        case 'Bottom':
+            flatRecords.push(record);
+            currentViewData.push(record);
+            ids.push(record.ganttProperties.rowUniqueID.toString()); // need to check NAN
+            if (this.parent.viewType === 'ResourceView') {
+                const taskId: string = record.level === 0 ? 'R' + record.ganttProperties.taskId : 'T' + record.ganttProperties.taskId;
+                this.parent.getTaskIds().push(taskId);
+            }
+            break;
+        case 'Above':
+            /*Record Updates*/
+            recordIndex = flatRecords.indexOf(this.addRowSelectedItem);
+            updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem);
+            this.recordCollectionUpdate(childIndex, recordIndex, updatedCollectionIndex, record, parentItem);
+            break;
+        case 'Below':
+            currentItemIndex = flatRecords.indexOf(this.addRowSelectedItem);
+            if (this.addRowSelectedItem.hasChildRecords) {
+                const dataChildCount: number = this.getChildCount(this.addRowSelectedItem, 0);
+                recordIndex = currentItemIndex + dataChildCount + 1;
+                updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem) +
                         this.getVisibleChildRecordCount(this.addRowSelectedItem, 0, currentViewData) + 1;
-                } else {
-                    recordIndex = currentItemIndex + 1;
-                    updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem) + 1;
+            } else {
+                recordIndex = currentItemIndex + 1;
+                updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem) + 1;
+            }
+            this.recordCollectionUpdate(childIndex + 1, recordIndex, updatedCollectionIndex, record, parentItem);
+            break;
+        case 'Child':
+            currentItemIndex = flatRecords.indexOf(this.addRowSelectedItem);
+            if (this.addRowSelectedItem.hasChildRecords) {
+                const dataChildCount: number = this.getChildCount(this.addRowSelectedItem, 0);
+                recordIndex = currentItemIndex + dataChildCount + 1;
+                //Expand Add record's parent item for project view
+                if (!this.addRowSelectedItem.expanded && !this.parent.enableMultiTaskbar) {
+                    this.parent.expandByID(Number(this.addRowSelectedItem.ganttProperties.rowUniqueID));
                 }
-                this.recordCollectionUpdate(childIndex + 1, recordIndex, updatedCollectionIndex, record, parentItem);
-                break;
-            case 'Child':
-                currentItemIndex = flatRecords.indexOf(this.addRowSelectedItem);
-                if (this.addRowSelectedItem.hasChildRecords) {
-                    let dataChildCount: number = this.getChildCount(this.addRowSelectedItem, 0);
-                    recordIndex = currentItemIndex + dataChildCount + 1;
-                    //Expand Add record's parent item for project view
-                    if (!this.addRowSelectedItem.expanded && !this.parent.enableMultiTaskbar) {
-                        this.parent.expandByID(Number(this.addRowSelectedItem.ganttProperties.rowUniqueID));
-                    }
-                    updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem) +
+                updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem) +
                         this.getVisibleChildRecordCount(this.addRowSelectedItem, 0, currentViewData) + 1;
-                } else {
-                    this.parent.setRecordValue('hasChildRecords', true, this.addRowSelectedItem);
-                    this.parent.setRecordValue('isMilestone', false, this.addRowSelectedItem.ganttProperties, true);
-                    this.parent.setRecordValue('expanded', true, this.addRowSelectedItem);
-                    this.parent.setRecordValue('childRecords', [], this.addRowSelectedItem);
-                    recordIndex = currentItemIndex + 1;
-                    updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem) + 1;
-                    if (this.addRowSelectedItem.ganttProperties.predecessor) {
-                        this.updatePredecessorOnIndentOutdent(this.addRowSelectedItem);
-                    }
-                    if (!isNullOrUndefined(this.addRowSelectedItem.ganttProperties.segments)) {
-                        this.addRowSelectedItem.ganttProperties.segments = null;
-                    }
+            } else {
+                this.parent.setRecordValue('hasChildRecords', true, this.addRowSelectedItem);
+                this.parent.setRecordValue('isMilestone', false, this.addRowSelectedItem.ganttProperties, true);
+                this.parent.setRecordValue('expanded', true, this.addRowSelectedItem);
+                this.parent.setRecordValue('childRecords', [], this.addRowSelectedItem);
+                recordIndex = currentItemIndex + 1;
+                updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem) + 1;
+                if (this.addRowSelectedItem.ganttProperties.predecessor) {
+                    this.updatePredecessorOnIndentOutdent(this.addRowSelectedItem);
                 }
-                this.recordCollectionUpdate(childIndex + 1, recordIndex, updatedCollectionIndex, record, parentItem);
-                break;
+                if (!isNullOrUndefined(this.addRowSelectedItem.ganttProperties.segments)) {
+                    this.addRowSelectedItem.ganttProperties.segments = null;
+                }
+            }
+            this.recordCollectionUpdate(childIndex + 1, recordIndex, updatedCollectionIndex, record, parentItem);
+            break;
         }
         this.newlyAddedRecordBackup = record;
     }
 
     /**
-     *
-     * @return {ITaskAddedEventArgs}
+     * @param {number} childIndex .
+     * @param {number} recordIndex .
+     * @param {number} updatedCollectionIndex .
+     * @param {IGanttData} record .
+     * @param {IGanttData} parentItem .
+     * @returns {void} .
      * @private
      */
     private recordCollectionUpdate(
         childIndex: number, recordIndex: number, updatedCollectionIndex: number, record: IGanttData, parentItem: IGanttData): void {
-        let flatRecords: IGanttData[] = this.parent.flatData;
-        let currentViewData: IGanttData[] = this.parent.currentViewData;
-        let ids: string[] = this.parent.ids;
+        const flatRecords: IGanttData[] = this.parent.flatData;
+        const currentViewData: IGanttData[] = this.parent.currentViewData;
+        const ids: string[] = this.parent.ids;
         /* Record collection update */
         flatRecords.splice(recordIndex, 0, record);
         currentViewData.splice(updatedCollectionIndex, 0, record);
         ids.splice(recordIndex, 0, record.ganttProperties.rowUniqueID.toString());
         if (this.parent.viewType === 'ResourceView') {
-            let taskId: string = record.level === 0 ? 'R' + record.ganttProperties.taskId : 'T' + record.ganttProperties.taskId;
+            const taskId: string = record.level === 0 ? 'R' + record.ganttProperties.taskId : 'T' + record.ganttProperties.taskId;
             this.parent.getTaskIds().splice(recordIndex, 0, taskId);
         }
         /* data Source update */
@@ -2329,7 +2458,7 @@ export class Edit {
             parentItem.childRecords.splice(childIndex, 0, record);
             if (this.parent.dataSource instanceof DataManager &&
                 isNullOrUndefined(parentItem.taskData[this.parent.taskFields.parentID])) {
-                let child: string = this.parent.taskFields.child;
+                const child: string = this.parent.taskFields.child;
                 if (parentItem.taskData[child] && parentItem.taskData[child].length > 0) {
                     parentItem.taskData[child].push(record.taskData);
                 } else {
@@ -2341,13 +2470,15 @@ export class Edit {
     }
 
     /**
-     *
-     * @return {ITaskAddedEventArgs}
+     * @param {IGanttData} cAddedRecord .
+     * @param {IGanttData} modifiedRecords .
+     * @param {string} event .
+     * @returns {ITaskAddedEventArgs} .
      * @private
      */
     private constructTaskAddedEventArgs(
         cAddedRecord: IGanttData, modifiedRecords: IGanttData[], event: string): ITaskAddedEventArgs {
-        let eventArgs: ITaskAddedEventArgs = {};
+        const eventArgs: ITaskAddedEventArgs = {};
         eventArgs.action = eventArgs.requestType = event;
         eventArgs.data = cAddedRecord;
         eventArgs.newTaskData = getTaskData([cAddedRecord])[0];
@@ -2358,10 +2489,11 @@ export class Edit {
     }
 
     /**
-     *
-     * @return {void}
+     * @param {ITaskAddedEventArgs} args .
+     * @returns {void} .
      * @private
      */
+    // eslint-disable-next-line
     private addSuccess(args: ITaskAddedEventArgs): void {
         // let addedRecords: IGanttData = args.addedRecord;
         // let eventArgs: IActionBeginEventArgs = {};
@@ -2377,20 +2509,23 @@ export class Edit {
 
     private refreshRecordInImmutableMode(): void {
         for (let i: number = 0; i < this.parent.editedRecords.length; i++) {
-            let originalData: IGanttData = this.parent.editedRecords[i];
-            let dataId: number | string = this.parent.viewType === 'ProjectView' ?
-             originalData.ganttProperties.taskId : originalData.ganttProperties.rowUniqueID;
+            const originalData: IGanttData = this.parent.editedRecords[i];
+            const dataId: number | string = this.parent.viewType === 'ProjectView' ?
+                originalData.ganttProperties.taskId : originalData.ganttProperties.rowUniqueID;
             this.parent.treeGrid.grid.setRowData(dataId, originalData);
         }
     }
     /**
-     *
-     * @return {void}
+     * @param {IGanttData} addedRecord .
+     * @param {RowPosition} rowPosition .
+     * @returns {void} .
      * @private
      */
     public updateRealDataSource(addedRecord: IGanttData, rowPosition: RowPosition): void {
-        let taskFields: TaskFieldsModel = this.parent.taskFields;
-        let dataSource: Object[] = this.parent.dataSource as Object[];
+        const taskFields: TaskFieldsModel = this.parent.taskFields;
+		// eslint-disable-next-line
+        const dataSource: Object[] = isCountRequired(this.parent) ? getValue('result', this.parent.dataSource) :
+            this.parent.dataSource as Object[]; // eslint-disable-line
         if (rowPosition === 'Top') {
             dataSource.splice(0, 0, addedRecord.taskData);
         } else if (rowPosition === 'Bottom') {
@@ -2399,21 +2534,24 @@ export class Edit {
             if (!isNullOrUndefined(taskFields.id) && !isNullOrUndefined(taskFields.parentID)) {
                 dataSource.push(addedRecord.taskData);
             } else {
-            this.addDataInRealDataSource(dataSource, addedRecord.taskData, rowPosition);
-        }
+                this.addDataInRealDataSource(dataSource, addedRecord.taskData, rowPosition);
+            }
         }
         this.isBreakLoop = false;
     }
 
     /**
-     *
-     * @return {boolean | void}
+     * @param {object[]} dataCollection .
+     * @param {IGanttData} record .
+     * @param {RowPosition} rowPosition .
+     * @returns {void} .
      * @private
      */
     private addDataInRealDataSource(
+        // eslint-disable-next-line
         dataCollection: Object[], record: IGanttData, rowPosition?: RowPosition): boolean | void {
         for (let i: number = 0; i < dataCollection.length; i++) {
-            let child: string = this.parent.taskFields.child;
+            const child: string = this.parent.taskFields.child;
             if (this.isBreakLoop) {
                 break;
             }
@@ -2435,7 +2573,7 @@ export class Edit {
                 this.isBreakLoop = true;
                 break;
             } else if (dataCollection[i][child]) {
-                let childRecords: ITaskData[] = dataCollection[i][child];
+                const childRecords: ITaskData[] = dataCollection[i][child];
                 this.addDataInRealDataSource(childRecords, record, rowPosition);
             }
         }
@@ -2443,17 +2581,17 @@ export class Edit {
 
     /**
      * Method to add new record.
+     *
      * @param {Object | IGanttData} data - Defines the new data to add.
      * @param {RowPosition} rowPosition - Defines the position of row.
      * @param {number} rowIndex - Defines the row index.
-     * @return {void}
+     * @returns {void} .
      * @private
      */
-    /* tslint:disable-next-line:max-func-body-length */
-    /* tslint:disable-next-line:max-line-length */
+    // eslint-disable-next-line
     public addRecord(data?: Object | IGanttData, rowPosition?: RowPosition, rowIndex?: number): void {
         if (this.parent.editModule && this.parent.editSettings.allowAdding) {
-            let selectedRowIndex: number = isNullOrUndefined(rowIndex) || isNaN(parseInt(rowIndex.toString(), 10)) ?
+            const selectedRowIndex: number = isNullOrUndefined(rowIndex) || isNaN(parseInt(rowIndex.toString(), 10)) ?
                 this.parent.selectionModule ?
                     (this.parent.selectionSettings.mode === 'Row' || this.parent.selectionSettings.mode === 'Both') &&
                         this.parent.selectionModule.selectedRowIndexes.length === 1 ?
@@ -2474,33 +2612,32 @@ export class Edit {
                 rowPosition = 'Top';
             }
             let level: number = 0;
-            let cAddedRecord: IGanttData;
             let args: ITaskAddedEventArgs = {};
             let parentItem: IGanttData;
             switch (rowPosition) {
-                case 'Top':
-                case 'Bottom':
-                    level = 0;
-                    break;
-                case 'Above':
-                case 'Below':
-                    level = this.addRowSelectedItem.level;
-                    parentItem = this.parent.getParentTask(this.addRowSelectedItem.parentItem);
-                    break;
-                case 'Child':
-                    level = this.addRowSelectedItem.level + 1;
-                    parentItem = this.addRowSelectedItem;
-                    break;
+            case 'Top':
+            case 'Bottom':
+                level = 0;
+                break;
+            case 'Above':
+            case 'Below':
+                level = this.addRowSelectedItem.level;
+                parentItem = this.parent.getParentTask(this.addRowSelectedItem.parentItem);
+                break;
+            case 'Child':
+                level = this.addRowSelectedItem.level + 1;
+                parentItem = this.addRowSelectedItem;
+                break;
             }
             //Add Action Init.
             this.prepareNewlyAddedData(data, rowPosition);
-            cAddedRecord = this.updateNewlyAddedDataBeforeAjax(data, level, rowPosition, parentItem);
+            const cAddedRecord: IGanttData = this.updateNewlyAddedDataBeforeAjax(data, level, rowPosition, parentItem);
             args = this.constructTaskAddedEventArgs(cAddedRecord, this.parent.editedRecords, 'beforeAdd');
             this.parent.showSpinner();
             let blazorArgs: ITaskAddedEventArgs = {};
             if (isBlazor()) {
                 if (!Array.isArray(args.data)) {
-                    let customData: IGanttData[] = [];
+                    const customData: IGanttData[] = [];
                     customData.push(args.data);
                     setValue('data', customData, args);
                 }
@@ -2514,18 +2651,19 @@ export class Edit {
                         this._resetProperties();
                     }
                     if (isRemoteData(this.parent.dataSource)) {
-                        let data: DataManager = this.parent.dataSource as DataManager;
-                        let updatedData: object = {
+                        const data: DataManager = this.parent.dataSource as DataManager;
+                        // eslint-disable-next-line
+                        const updatedData: object = {
                             addedRecords: [args.newTaskData], // to check
                             changedRecords: args.modifiedTaskData
                         };
-                        let prevID: string = args.data.ganttProperties.taskId.toString();
-                        /* tslint:disable-next-line */
-                        let query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
-                        let adaptor: AdaptorOptions = data.adaptor;
+                        const prevID: string = args.data.ganttProperties.taskId.toString();
+                        const query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
+                        const adaptor: AdaptorOptions = data.adaptor;
                         if (!(adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
-                            /* tslint:disable-next-line */
-                            let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
+                            /* eslint-disable-next-line */
+                            const crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
+                            // eslint-disable-next-line
                             crud.then((e: { addedRecords: Object[], changedRecords: Object[] }) => {
                                 if (this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][this.parent.taskFields.id]) &&
                                     e.addedRecords[0][this.parent.taskFields.id].toString() !== prevID) {
@@ -2538,25 +2676,30 @@ export class Edit {
                                     this.parent.setRecordValue(
                                         'rowUniqueID', e.addedRecords[0][this.parent.taskFields.id].toString(),
                                         args.data.ganttProperties, true);
-                                    let idsIndex: number = this.parent.ids.indexOf(prevID);
+                                    const idsIndex: number = this.parent.ids.indexOf(prevID);
                                     if (idsIndex !== -1) {
                                         this.parent.ids[idsIndex] = e.addedRecords[0][this.parent.taskFields.id].toString();
                                     }
                                 }
                                 this.updateNewRecord(cAddedRecord, args);
+                                // eslint-disable-next-line
                             }).catch((e: { result: Object[] }) => {
                                 this.removeAddedRecord();
+                                // eslint-disable-next-line
                                 this.dmFailure(e as { result: Object[] }, args);
                                 this._resetProperties();
                             });
                         } else {
-                            let addedRecords: string = 'addedRecords';
-                            let insertCrud: Promise<Object> = data.insert(updatedData[addedRecords], null, query) as Promise<Object>;
+                            const addedRecords: string = 'addedRecords';
+                            // eslint-disable-next-line
+                            const insertCrud: Promise<Object> = data.insert(updatedData[addedRecords], null, query) as Promise<Object>;
                             insertCrud.then((e: ReturnType) => {
-                                let changedRecords: string = 'changedRecords';
-                                let addedRecords: Object = e[0];
-                                /* tslint:disable-next-line */
-                                let updateCrud: Promise<Object> = data.update(this.parent.taskFields.id, updatedData[changedRecords], null, query) as Promise<Object>;
+                                const changedRecords: string = 'changedRecords';
+                                // eslint-disable-next-line
+                                const addedRecords: Object = e[0];
+                                /* eslint-disable-next-line */
+                                const updateCrud: Promise<Object> = data.update(this.parent.taskFields.id, updatedData[changedRecords], null, query) as Promise<Object>;
+                                /* eslint-disable-next-line */
                                 updateCrud.then((e: ReturnType) => {
                                     if (this.parent.taskFields.id && !isNullOrUndefined(addedRecords[this.parent.taskFields.id]) &&
                                         addedRecords[this.parent.taskFields.id].toString() !== prevID) {
@@ -2569,19 +2712,23 @@ export class Edit {
                                         this.parent.setRecordValue(
                                             'rowUniqueID', addedRecords[this.parent.taskFields.id].toString(),
                                             args.data.ganttProperties, true);
-                                        let idIndex: number = this.parent.ids.indexOf(prevID);
+                                        const idIndex: number = this.parent.ids.indexOf(prevID);
                                         if (idIndex !== -1) {
                                             this.parent.ids[idIndex] = addedRecords[this.parent.taskFields.id].toString();
                                         }
                                     }
                                     this.updateNewRecord(cAddedRecord, args);
+                                    // eslint-disable-next-line
                                 }).catch((e: { result: Object[] }) => {
                                     this.removeAddedRecord();
+                                    // eslint-disable-next-line
                                     this.dmFailure(e as { result: Object[] }, args);
                                     this._resetProperties();
                                 });
+                                // eslint-disable-next-line
                             }).catch((e: { result: Object[] }) => {
                                 this.removeAddedRecord();
+                                // eslint-disable-next-line
                                 this.dmFailure(e as { result: Object[] }, args);
                                 this._resetProperties();
                             });
@@ -2611,7 +2758,7 @@ export class Edit {
     private updateNewRecord(cAddedRecord: IGanttData, args: ITaskAddedEventArgs): void {
         if (cAddedRecord.level === 0) {
             this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
-            let tempData: ITaskData[] = getValue('dataOperation.dataArray', this.parent);
+            const tempData: ITaskData[] = getValue('dataOperation.dataArray', this.parent);
             tempData.splice(0, 0, cAddedRecord.taskData);
         }
         this.updateTreeGridUniqueID(cAddedRecord, 'add');
@@ -2620,6 +2767,8 @@ export class Edit {
     }
     /**
      * Method to reset the flag after adding new record
+     *
+     * @returns {void} .
      */
     private _resetProperties(): void {
         this.parent.isOnEdit = false;
@@ -2633,6 +2782,10 @@ export class Edit {
 
     /**
      * Method to update unique id collection in TreeGrid
+     *
+     * @param {IGanttData} data .
+     * @param {string} action .
+     * @returns {void} .
      */
     private updateTreeGridUniqueID(data: IGanttData, action: string): void {
         if (action === 'add') {
@@ -2652,6 +2805,7 @@ export class Edit {
             let tempArray: IGanttData[] = [];
             if (args.modifiedRecords.length > 0) {
                 tempArray.push(args.data);
+                // eslint-disable-next-line
                 tempArray.push.apply(tempArray, args.modifiedRecords);
             } else {
                 tempArray = [args.data];
@@ -2672,7 +2826,8 @@ export class Edit {
             args.data.ganttProperties.sharedTaskUniqueIds.push(args.data.ganttProperties.rowUniqueID);
             if (args.data.ganttProperties.resourceInfo.length) {
                 if (args.data.ganttProperties.resourceInfo.length > 1) {
-                    let resources: Object[] = extend([], [], args.data.ganttProperties.resourceInfo, true) as Object[];
+                    // eslint-disable-next-line
+                    const resources: Object[] = extend([], [], args.data.ganttProperties.resourceInfo, true) as Object[];
                     resources.splice(0, 1);
                     this.updateResoures([], resources, args.data);
                 }
@@ -2689,20 +2844,20 @@ export class Edit {
 
     /**
      *
-     * @return {void}
+     * @returns {void} .
      * @private
      */
     private removeAddedRecord(): void {
-        let flatRecords: IGanttData[] = this.parent.flatData;
-        let currentViewData: IGanttData[] = this.parent.currentViewData;
-        let ids: string[] = this.parent.ids;
-        let flatRecordsIndex: number = flatRecords.indexOf(this.newlyAddedRecordBackup);
-        let currentViewDataIndex: number = currentViewData.indexOf(this.newlyAddedRecordBackup);
-        let idsIndex: number = ids.indexOf(this.newlyAddedRecordBackup.ganttProperties.rowUniqueID.toString());
+        const flatRecords: IGanttData[] = this.parent.flatData;
+        const currentViewData: IGanttData[] = this.parent.currentViewData;
+        const ids: string[] = this.parent.ids;
+        const flatRecordsIndex: number = flatRecords.indexOf(this.newlyAddedRecordBackup);
+        const currentViewDataIndex: number = currentViewData.indexOf(this.newlyAddedRecordBackup);
+        const idsIndex: number = ids.indexOf(this.newlyAddedRecordBackup.ganttProperties.rowUniqueID.toString());
         deleteObject(this.parent.previousRecords, flatRecords[flatRecordsIndex].uniqueID);
         if (this.newlyAddedRecordBackup.parentItem) {
-            let parentItem: IGanttData = this.parent.getParentTask(this.newlyAddedRecordBackup.parentItem);
-            let parentIndex: number = parentItem.childRecords.indexOf(this.newlyAddedRecordBackup);
+            const parentItem: IGanttData = this.parent.getParentTask(this.newlyAddedRecordBackup.parentItem);
+            const parentIndex: number = parentItem.childRecords.indexOf(this.newlyAddedRecordBackup);
             parentItem.childRecords.splice(parentIndex, 1);
         }
         flatRecords.splice(flatRecordsIndex, 1);
@@ -2710,23 +2865,24 @@ export class Edit {
         ids.splice(idsIndex, 1);
     }
     private getPrevRecordIndex(): number {
-        let prevIndex: number;
-        let prevRecord: IGanttData = this.parent.updatedRecords[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
-        let selectedRecord: IGanttData = this.parent.selectionModule.getSelectedRecords()[0];
-        let parent: IGanttData = this.parent.getRootParent(prevRecord, selectedRecord.level);
-        prevIndex = this.parent.updatedRecords.indexOf(parent);
+        const prevRecord: IGanttData = this.parent.updatedRecords[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
+        const selectedRecord: IGanttData = this.parent.selectionModule.getSelectedRecords()[0];
+        const parent: IGanttData = this.parent.getRootParent(prevRecord, selectedRecord.level);
+        const prevIndex: number = this.parent.updatedRecords.indexOf(parent);
         return prevIndex;
     }
     /**
      * indent a selected record
+     *
+     * @returns {void} .
      */
     public indent(): void {
-        let index: number = this.parent.selectedRowIndex;
-        let isSelected: boolean = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
+        const index: number = this.parent.selectedRowIndex;
+        const isSelected: boolean = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
             this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
         let dropIndex: number;
-        let prevRecord: IGanttData = this.parent.updatedRecords[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
-        let selectedRecord: IGanttData = this.parent.selectionModule.getSelectedRecords()[0];
+        const prevRecord: IGanttData = this.parent.updatedRecords[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
+        const selectedRecord: IGanttData = this.parent.selectionModule.getSelectedRecords()[0];
         if (!this.parent.editSettings.allowEditing || index === 0 || index === -1 || !isSelected ||
             this.parent.viewType === 'ResourceView' || this.parent.updatedRecords[index].level - prevRecord.level === 1) {
             return;
@@ -2742,23 +2898,26 @@ export class Edit {
 
     /**
      * To perform outdent operation for selected row
+     *
+     * @returns {void} .
      */
     public outdent(): void {
-        let index: number = this.parent.selectionModule.getSelectedRowIndexes()[0];
+        const index: number = this.parent.selectionModule.getSelectedRowIndexes()[0];
         let dropIndex: number;
-        let isSelected: boolean = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
+        const isSelected: boolean = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
             this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
         if (!this.parent.editSettings.allowEditing || index === -1 || index === 0 || !isSelected ||
             this.parent.viewType === 'ResourceView' || this.parent.updatedRecords[index].level === 0) {
             return;
         } else {
-            let thisParent: IGanttData = this.parent.getTaskByUniqueID((this.parent.selectionModule.getSelectedRecords()[0] as
+            const thisParent: IGanttData = this.parent.getTaskByUniqueID((this.parent.selectionModule.getSelectedRecords()[0] as
                 IGanttData).parentItem.uniqueID);
             dropIndex = this.parent.updatedRecords.indexOf(thisParent);
             this.indentOutdentRow([index], dropIndex, 'below');
         }
     }
     private indentOutdentRow(fromIndexes: number[], toIndex: number, pos: string): void {
+        // eslint-disable-next-line
         if (fromIndexes[0] !== toIndex && pos === 'above' || 'below' || 'child') {
             if (pos === 'above') {
                 this.dropPosition = 'topSegment';
@@ -2770,12 +2929,12 @@ export class Edit {
                 this.dropPosition = 'middleSegment';
             }
             let action: string;
-            let record: IGanttData[] = [];
+            const record: IGanttData[] = [];
             for (let i: number = 0; i < fromIndexes.length; i++) {
                 record[i] = this.parent.updatedRecords[fromIndexes[i]];
             }
-            let isByMethod: boolean = true;
-            let args: RowDropEventArgs = {
+            const isByMethod: boolean = true;
+            const args: RowDropEventArgs = {
                 data: record,
                 dropIndex: toIndex,
                 dropPosition: this.dropPosition
@@ -2785,7 +2944,7 @@ export class Edit {
             } else if (this.dropPosition === 'bottomSegment') {
                 action =  'outdenting';
             }
-            let actionArgs: IActionBeginEventArgs = {
+            const actionArgs: IActionBeginEventArgs = {
                 action : action,
                 data: record[0],
                 cancel: false
@@ -2804,17 +2963,17 @@ export class Edit {
     private reArrangeRows(args: RowDropEventArgs, isByMethod?: boolean): void {
         this.dropPosition = args.dropPosition;
         if (args.dropPosition !== 'Invalid' && this.parent.editModule) {
-            let obj: Gantt = this.parent; let draggedRec: IGanttData; let droppedRec: IGanttData;
+            const obj: Gantt = this.parent; let draggedRec: IGanttData;
             this.droppedRecord = obj.updatedRecords[args.dropIndex];
             let dragRecords: IGanttData[] = [];
-            droppedRec = this.droppedRecord;
+            const droppedRec: IGanttData = this.droppedRecord;
             if (!args.data[0]) {
                 dragRecords.push(args.data as IGanttData);
             } else {
                 dragRecords = args.data;
             }
             let c: number = 0;
-            let dLength: number = dragRecords.length;
+            const dLength: number = dragRecords.length;
             for (let i: number = 0; i < dLength; i++) {
                 this.parent.isOnEdit = true;
                 draggedRec = dragRecords[i];
@@ -2823,7 +2982,7 @@ export class Edit {
                     if (isByMethod) {
                         this.deleteDragRow();
                     }
-                    let recordIndex1: number = this.treeGridData.indexOf(droppedRec);
+                    const recordIndex1: number = this.treeGridData.indexOf(droppedRec);
                     if (this.dropPosition === 'bottomSegment') {
                         if (!droppedRec.hasChildRecords) {
                             if (this.parent.taskFields.parentID && (this.ganttData as IGanttData[]).length > 0) {
@@ -2838,7 +2997,7 @@ export class Edit {
                             }
                             this.treeGridData.splice(recordIndex1 + c + 1, 0, this.draggedRecord);
                             this.parent.ids.splice(recordIndex1 + c + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
-                            let idIndex: number = this.parent.ids.indexOf(this.draggedRecord[this.parent.taskFields.id].toString());
+                            const idIndex: number = this.parent.ids.indexOf(this.draggedRecord[this.parent.taskFields.id].toString());
                             if (idIndex !== recordIndex1 + c + 1) {
                                 this.parent.ids.splice(idIndex, 1);
                                 this.parent.ids.splice(recordIndex1 + c + 1, 0, this.draggedRecord[this.parent.taskFields.id].toString());
@@ -2848,14 +3007,14 @@ export class Edit {
                         this.parent.setRecordValue('parentUniqueID', this.treeGridData[recordIndex1].parentUniqueID, draggedRec);
                         this.parent.setRecordValue('level', this.treeGridData[recordIndex1].level, draggedRec);
                         if (draggedRec.hasChildRecords) {
-                            let level: number = 1;
+                            const level: number = 1;
                             this.updateChildRecordLevel(draggedRec, level);
                             this.updateChildRecord(draggedRec, recordIndex1 + c + 1);
                         }
                         if (droppedRec.parentItem) {
-                            let record: IGanttData[] = this.parent.getParentTask(droppedRec.parentItem).childRecords;
-                            let childRecords: IGanttData[] = record;
-                            let droppedRecordIndex: number = childRecords.indexOf(droppedRec) + 1;
+                            const record: IGanttData[] = this.parent.getParentTask(droppedRec.parentItem).childRecords;
+                            const childRecords: IGanttData[] = record;
+                            const droppedRecordIndex: number = childRecords.indexOf(droppedRec) + 1;
                             childRecords.splice(droppedRecordIndex, 0, draggedRec);
                         }
                     }
@@ -2867,8 +3026,8 @@ export class Edit {
                     }
                 }
                 if (isNullOrUndefined(draggedRec.parentItem)) {
-                    let parentRecords: ITreeData[] = this.parent.treeGrid.parentData;
-                    let newParentIndex: number = parentRecords.indexOf(this.droppedRecord);
+                    const parentRecords: ITreeData[] = this.parent.treeGrid.parentData;
+                    const newParentIndex: number = parentRecords.indexOf(this.droppedRecord);
                     if (this.dropPosition === 'bottomSegment') {
                         parentRecords.splice(newParentIndex + 1, 0, draggedRec);
                     }
@@ -2899,21 +3058,25 @@ export class Edit {
             this.parent.isOnEdit = false;
         }
         if (isRemoteData(this.parent.dataSource)) {
-            let data: DataManager = this.parent.dataSource as DataManager;
-            let updatedData: object = {
+            const data: DataManager = this.parent.dataSource as DataManager;
+            // eslint-disable-next-line
+            const updatedData: object = {
                 changedRecords: getTaskData(this.parent.editedRecords)
             };
-            /* tslint:disable-next-line */
-            let queryValue: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
+            const queryValue: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
+            // eslint-disable-next-line
             let crud: Promise<Object> = null;
-            let adaptor: AdaptorOptions = data.adaptor;
+            const adaptor: AdaptorOptions = data.adaptor;
             if (!(adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
+                // eslint-disable-next-line
                 crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, queryValue) as Promise<Object>;
             } else {
-                let changedRecords: string = 'changedRecords';
+                const changedRecords: string = 'changedRecords';
+                // eslint-disable-next-line
                 crud = data.update(this.parent.taskFields.id, updatedData[changedRecords], null, queryValue) as Promise<Object>;
             }
             crud.then((e: ReturnType) => this.indentSuccess(e, args))
+            // eslint-disable-next-line
                 .catch((e: { result: Object[] }) => this.indentFailure(e as { result: Object[] }));
         } else {
             this.indentOutdentSuccess(args);
@@ -2922,6 +3085,7 @@ export class Edit {
     private indentSuccess(e: ReturnType, args: RowDropEventArgs): void {
         this.indentOutdentSuccess(args);
     }
+    // eslint-disable-next-line
     private indentFailure(e: { result: Object[] }): void {
         this.parent.trigger('actionFailure', { error: e });
     }
@@ -2941,9 +3105,10 @@ export class Edit {
         this.parent.editedRecords = [];
     }
     private refreshDataSource(): void {
-        let draggedRec: IGanttData = this.draggedRecord;
-        let droppedRec: IGanttData = this.droppedRecord;
-        let proxy: Gantt = this.parent;
+        const draggedRec: IGanttData = this.draggedRecord;
+        const droppedRec: IGanttData = this.droppedRecord;
+        const proxy: Gantt = this.parent;
+        // eslint-disable-next-line
         let tempData: Object;
         let indx: number;
         if (this.parent.dataSource instanceof DataManager) {
@@ -2968,7 +3133,7 @@ export class Edit {
             }
         } else if (!this.parent.taskFields.parentID && (!isNullOrUndefined(droppedRec) && droppedRec.parentItem)) {
             if (this.dropPosition === 'topSegment' || this.dropPosition === 'bottomSegment') {
-                let rowPos: RowPosition = this.dropPosition === 'topSegment' ? 'Above' : 'Below';
+                const rowPos: RowPosition = this.dropPosition === 'topSegment' ? 'Above' : 'Below';
                 this.parent.editModule.addRowSelectedItem = droppedRec;
                 this.parent.editModule.updateRealDataSource(draggedRec, rowPos);
                 delete this.parent.editModule.addRowSelectedItem;
@@ -2993,18 +3158,19 @@ export class Edit {
         if (this.parent.dataSource instanceof DataManager) {
             this.ganttData = getValue('dataOperation.dataArray', this.parent);
         } else {
-            this.ganttData = this.parent.dataSource;
+            this.ganttData = isCountRequired(this.parent) ? getValue('result', this.parent.dataSource) :
+                this.parent.dataSource;
         }
-        this.treeGridData = this.parent.treeGrid.dataSource as ITreeData[];
-        let delRow: IGanttData;
-        delRow = this.parent.getTaskByUniqueID(this.draggedRecord.uniqueID);
+        this.treeGridData = isCountRequired(this.parent) ?
+            getValue('result', this.parent.treeGrid.dataSource) : this.parent.treeGrid.dataSource;
+        const delRow: IGanttData = this.parent.getTaskByUniqueID(this.draggedRecord.uniqueID);
         this.removeRecords(delRow);
     }
 
     private dropMiddle(recordIndex1: number): void {
-        let obj: Gantt = this.parent;
-        let childRec: number = this.parent.editModule.getChildCount(this.droppedRecord, 0);
-        let childRecordsLength: number = (isNullOrUndefined(childRec) ||
+        const obj: Gantt = this.parent;
+        const childRec: number = this.parent.editModule.getChildCount(this.droppedRecord, 0);
+        const childRecordsLength: number = (isNullOrUndefined(childRec) ||
             childRec === 0) ? recordIndex1 + 1 :
             childRec + recordIndex1 + 1;
         if (this.dropPosition === 'middleSegment') {
@@ -3035,7 +3201,7 @@ export class Edit {
             currentRec = record.childRecords[j];
             let parentData: IGanttData;
             if (record.parentItem) {
-                let id: string = 'uniqueIDCollection';
+                const id: string = 'uniqueIDCollection';
                 parentData = this.parent.treeGrid[id][record.parentItem.uniqueID];
             }
             currentRec.level = record.parentItem ? parentData.level + levl : record.level + 1;
@@ -3046,9 +3212,10 @@ export class Edit {
         }
         return levl;
     }
+    // eslint-disable-next-line
     private updateChildRecord(record: IGanttData, count: number, expanded?: boolean): number {
         let currentRec: IGanttData;
-        let obj: Gantt = this.parent;
+        const obj: Gantt = this.parent;
         let length: number = 0;
         if (!record.hasChildRecords) {
             return 0;
@@ -3069,18 +3236,19 @@ export class Edit {
         return count;
     }
     private removeRecords(record: IGanttData): void {
-        let obj: Gantt = this.parent;
+        const obj: Gantt = this.parent;
+        // eslint-disable-next-line
         let dataSource: Object;
         if (this.parent.dataSource instanceof DataManager) {
             dataSource = getValue('dataOperation.dataArray', this.parent);
         } else {
             dataSource = this.parent.dataSource;
         }
-        let delRow: IGanttData = record;
-        let flatParent: IGanttData = this.parent.getParentTask(delRow.parentItem);
+        const delRow: IGanttData = record;
+        const flatParent: IGanttData = this.parent.getParentTask(delRow.parentItem);
         if (delRow) {
             if (delRow.parentItem) {
-                let childRecords: IGanttData[] = flatParent ? flatParent.childRecords : [];
+                const childRecords: IGanttData[] = flatParent ? flatParent.childRecords : [];
                 let childIndex: number = 0;
                 if (childRecords && childRecords.length > 0) {
                     childIndex = childRecords.indexOf(delRow);
@@ -3097,7 +3265,7 @@ export class Edit {
                     this.removeChildItem(delRow);
                 }
                 let indx: number;
-                let ganttData: IGanttData[] = (dataSource as IGanttData[]).length > 0 ?
+                const ganttData: IGanttData[] = (dataSource as IGanttData[]).length > 0 ?
                     dataSource as IGanttData[] : this.parent.currentViewData;
                 for (let i: number = 0; i < ganttData.length; i++) {
                     if (ganttData[i][this.parent.taskFields.id] === delRow.taskData[this.parent.taskFields.id]) {
@@ -3121,12 +3289,12 @@ export class Edit {
                     }
                 }
             }
-            let recordIdx: number = this.treeGridData.indexOf(delRow);
+            const recordIdx: number = this.treeGridData.indexOf(delRow);
             if (!obj.taskFields.parentID) {
-                let deletedRecordCount: number = this.getChildCount(delRow, 0);
+                const deletedRecordCount: number = this.getChildCount(delRow, 0);
                 this.treeGridData.splice(recordIdx, deletedRecordCount + 1);
                 this.parent.ids.splice(recordIdx, deletedRecordCount + 1);
-                let parentIndex: number = (this.ganttData as IGanttData[]).indexOf(delRow.taskData);
+                const parentIndex: number = (this.ganttData as IGanttData[]).indexOf(delRow.taskData);
                 if (parentIndex !== -1) {
                     (this.ganttData as IGanttData[]).splice(parentIndex, 1);
                     this.parent.treeGrid.parentData.splice(parentIndex, 1);
@@ -3143,6 +3311,7 @@ export class Edit {
         let indx: number;
         for (let i: number = 0; i < record.childRecords.length; i++) {
             currentRec = record.childRecords[i];
+            // eslint-disable-next-line
             let data: Object;
             if (this.parent.dataSource instanceof DataManager) {
                 data = getValue('dataOperation.dataArray', this.parent);
@@ -3173,10 +3342,10 @@ export class Edit {
         }
     }
     private recordLevel(): void {
-        let obj: Gantt = this.parent;
-        let draggedRec: IGanttData = this.draggedRecord;
-        let droppedRec: IGanttData = this.droppedRecord;
-        let childItem: string = obj.taskFields.child;
+        const obj: Gantt = this.parent;
+        const draggedRec: IGanttData = this.draggedRecord;
+        const droppedRec: IGanttData = this.droppedRecord;
+        const childItem: string = obj.taskFields.child;
         if (!droppedRec.hasChildRecords) {
             droppedRec.hasChildRecords = true;
             if (!droppedRec.childRecords.length) {
@@ -3187,9 +3356,9 @@ export class Edit {
             }
         }
         if (this.dropPosition === 'middleSegment') {
-            let parentItem: IGanttData = extend({}, droppedRec);
+            const parentItem: IGanttData = extend({}, droppedRec);
             delete parentItem.childRecords;
-            let createParentItem: IParent = {
+            const createParentItem: IParent = {
                 uniqueID: parentItem.uniqueID,
                 expanded: parentItem.expanded,
                 level: parentItem.level,
@@ -3209,7 +3378,7 @@ export class Edit {
             if (!draggedRec.hasChildRecords) {
                 draggedRec.level = droppedRec.level + 1;
             } else {
-                let level: number = 1;
+                const level: number = 1;
                 draggedRec.level = droppedRec.level + 1;
                 this.updateChildRecordLevel(draggedRec, level);
             }

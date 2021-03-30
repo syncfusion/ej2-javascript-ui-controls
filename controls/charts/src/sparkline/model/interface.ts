@@ -6,6 +6,7 @@ import { SparklineBorderModel, SparklineFontModel } from './base-model';
 import { Size } from '../utils/helper';
 /**
  * Specifies sparkline Events
+ *
  * @private
  */
 export interface ISparklineEventArgs {

@@ -35,7 +35,7 @@ export type LayoutMode =
     /** This visualizes the treemap as the auto rectangles having size proportionate to weight value */
     'SliceAndDiceAuto';
 
-/** 
+/**
  * Specifies the alignment of the elements in the treemap.
  */
 export type Alignment =
@@ -94,33 +94,33 @@ export type LabelAlignment =
     /** Specifies to wrap the data label if exceed the defined margins. */
     'Wrap';
 
-/** 
+/**
  * Defines the shape of legend in the treemap component.
  */
 export type LegendShape =
     /** Defines the legend shape as circle. */
     'Circle' |
-    /**  Defines the legend shape as rectangle. */
+    /** Defines the legend shape as rectangle. */
     'Rectangle' |
-    /**  Defines the legend shape as triangle. */
+    /** Defines the legend shape as triangle. */
     'Triangle' |
-    /**  Defines the legend shape as diamond. */
+    /** Defines the legend shape as diamond. */
     'Diamond' |
-    /**  Defines the legend shape as cross. */
+    /** Defines the legend shape as cross. */
     'Cross' |
-    /**  Defines the legend shape as star. */
+    /** Defines the legend shape as star. */
     'Star' |
-    /**  Defines the legend shape as horizontal line. */
+    /** Defines the legend shape as horizontal line. */
     'HorizontalLine' |
-    /**  Defines the legend shape as vertical line. */
+    /** Defines the legend shape as vertical line. */
     'VerticalLine' |
-    /**  Defines the legend shape as pentagon. */
+    /** Defines the legend shape as pentagon. */
     'Pentagon' |
-    /**  Defines the legend shape as inverted triangle. */
+    /** Defines the legend shape as inverted triangle. */
     'InvertedTriangle' |
-    /**  Defines the legend shape as image. */
+    /** Defines the legend shape as image. */
     'Image';
-/** 
+/**
  * Defines the position of the legend in the treemap component.
  */
 export type LegendPosition =
@@ -134,9 +134,9 @@ export type LegendPosition =
     'Right' |
     /** Specifies to place the legend based on given x and y positions. */
     'Float' |
-     /** Specifies to place the legend based on width and height. */
-     'Auto';
-/** 
+    /** Specifies to place the legend based on width and height. */
+    'Auto';
+/**
  * Defines the legend rendering modes. The modes are default and interactive modes.
  */
 export type LegendMode =
@@ -162,7 +162,7 @@ export type LabelIntersectAction =
     'None' |
     /** Specifies the data label to be trimmed when it intersects. */
     'Trim' |
-    /**  Specifies the data label to be hidden when it intersects. */
+    /** Specifies the data label to be hidden when it intersects. */
     'Hide';
 
 /**
@@ -174,25 +174,25 @@ export type LabelPlacement =
     /** Specifies the label placement as after */
     'After';
 
-/** 
+/**
  * Defines the theme supported for treemap.
  */
 export type TreeMapTheme =
-    /**  Render a treemap with material theme. */
+    /** Render a treemap with material theme. */
     'Material' |
-    /**  Render a treemap with fabric theme. */
+    /** Render a treemap with fabric theme. */
     'Fabric' |
-    /**  Render a treemap with highcontrast light theme. */
+    /** Render a treemap with highcontrast light theme. */
     'HighContrastLight' |
-    /**  Render a treemap with bootstrap theme. */
+    /** Render a treemap with bootstrap theme. */
     'Bootstrap' |
-    /**  Render a treemap with material dark theme. */
+    /** Render a treemap with material dark theme. */
     'MaterialDark' |
-    /**  Render a treemap with fabric dark theme. */
+    /** Render a treemap with fabric dark theme. */
     'FabricDark' |
-    /**  Render a treemap with highcontrast dark theme. */
+    /** Render a treemap with highcontrast dark theme. */
     'HighContrast' |
-    /**  Render a treemap with bootstrap dark theme. */
+    /** Render a treemap with bootstrap dark theme. */
     'BootstrapDark'|
     /** Render a treemap with bootstrap4 theme. */
     'Bootstrap4';

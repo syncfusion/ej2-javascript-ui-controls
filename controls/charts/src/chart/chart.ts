@@ -1,3 +1,7 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable @typescript-eslint/ban-types */
 import { Component, Property, NotifyPropertyChanges, Internationalization } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, L10n, setValue, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { TapEventArgs, EmitType, ChildProperty } from '@syncfusion/ej2-base';
@@ -7,7 +11,7 @@ import { Event, EventHandler, Complex, Collection } from '@syncfusion/ej2-base';
 import { findClipRect, showTooltip, ImageOption, removeElement, appendChildElement, blazorTemplatesReset } from '../common/utils/helper';
 import { textElement, RectOption, createSvg, firstToLowerCase, titlePositionX, PointData, redrawElement } from '../common/utils/helper';
 import { appendClipElement, ChartLocation } from '../common/utils/helper';
-import { ChartModel, CrosshairSettingsModel, ZoomSettingsModel } from './chart-model';
+import { ChartModel, CrosshairSettingsModel, ZoomSettingsModel, RangeColorSettingModel } from './chart-model';
 import { MarginModel, BorderModel, ChartAreaModel, FontModel, TooltipSettingsModel } from '../common/model/base-model';
 import { getSeriesColor, Theme, getThemeColor } from '../common/model/theme';
 import { IndexesModel } from '../common/model/base-model';
@@ -88,7 +92,7 @@ import { IDragCompleteEventArgs, ITooltipRenderEventArgs, IExportEventArgs, IAft
 import { IZoomCompleteEventArgs, ILoadedEventArgs, IZoomingEventArgs, IAxisLabelClickEventArgs } from '../chart/model/chart-interface';
 import { IMultiLevelLabelClickEventArgs, ILegendClickEventArgs, ISharedTooltipRenderEventArgs } from '../chart/model/chart-interface';
 import { IAnimationCompleteEventArgs, IMouseEventArgs, IPointEventArgs, IBeforeResizeEventArgs } from '../chart/model/chart-interface';
-import { chartMouseClick, pointClick, pointDoubleClick, axisLabelClick, beforeResize } from '../common/model/constants';
+import { chartMouseClick, pointClick, pointDoubleClick, axisLabelClick, beforeResize  } from '../common/model/constants';
 import { chartMouseDown, chartMouseMove, chartMouseUp, load, pointMove, chartMouseLeave, resized } from '../common/model/constants';
 import { IPrintEventArgs, IAxisRangeCalculatedEventArgs, IDataEditingEventArgs } from '../chart/model/chart-interface';
 import { ChartAnnotationSettingsModel } from './model/chart-base-model';
@@ -103,12 +107,41 @@ import { DataManager } from '@syncfusion/ej2-data';
 import { StockChart } from '../stock-chart/stock-chart';
 import { Export } from './print-export/export';
 import { ExportUtils } from '../common/utils/export';
+
+/**
+ * Configures the RangeColorSetting in the chart.
+ */
+export class RangeColorSetting extends ChildProperty<RangeColorSetting> {
+    /**
+     * Specify the start value of color mapping range
+     */
+    @Property()
+    public start: number;
+    /**
+     * Specify the end value of color mapping range
+     */
+    @Property()
+    public end: number;
+    /**
+     * Specify the fill colors of point those lies on the given range, if multiple colors mentioned, then we need to fill gradient
+     */
+    @Property([])
+    public colors: string[];
+    /**
+     * Specify name for the range mapping item.
+     */
+    @Property('')
+    public label: string;
+
+}
+
 /**
  * Configures the crosshair in the chart.
  */
 export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
     /**
      * If set to true, crosshair line becomes visible.
+     *
      * @default false
      */
     @Property(false)
@@ -116,6 +149,7 @@ export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
 
     /**
      * DashArray for crosshair.
+     *
      * @default ''
      */
     @Property('')
@@ -133,6 +167,7 @@ export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
      * * Both: Shows both vertical and horizontal crosshair lines.
      * * Vertical: Shows the vertical line.
      * * Horizontal: Shows the horizontal line.
+     *
      * @default Both
      */
     @Property('Both')
@@ -146,6 +181,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
 
     /**
      * If set to true, chart can be zoomed by a rectangular selecting region on the plot area.
+     *
      * @default false
      */
 
@@ -154,6 +190,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
 
     /**
      * If to true, chart can be pinched to zoom in / zoom out.
+     *
      * @default false
      */
 
@@ -162,6 +199,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
 
     /**
      * If set to true, chart can be zoomed by using mouse wheel.
+     *
      * @default false
      */
 
@@ -184,6 +222,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
      * });
      * chart.appendTo('#Chart');
      * ```
+     *
      * @default true
      */
 
@@ -210,6 +249,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
      * });
      * chart.appendTo('#Chart');
      * ```
+     *
      * @default 'XY'
      */
     @Property('XY')
@@ -222,6 +262,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
      * * ZoomOut
      * * Pan
      * * Reset
+     *
      * @default '["Zoom", "ZoomIn", "ZoomOut", "Pan", "Reset"]'
      */
 
@@ -230,6 +271,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
 
     /**
      * Specifies whether chart needs to be panned by default.
+     *
      * @default false.
      */
 
@@ -238,6 +280,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
 
     /**
      * Specifies whether axis needs to have scrollbar.
+     *
      * @default false.
      */
 
@@ -256,6 +299,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
  *   chartObj.appendTo("#chart");
  * </script>
  * ```
+ *
  * @public
  */
 @NotifyPropertyChanges
@@ -506,6 +550,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * The width of the chart as a string accepts input as both like '100px' or '100%'.
      * If specified as '100%, chart renders to the full width of its parent element.
+     *
      * @default null
      */
 
@@ -515,6 +560,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * The height of the chart as a string accepts input both as '100px' or '100%'.
      * If specified as '100%, chart renders to the full height of its parent element.
+     *
      * @default null
      */
 
@@ -523,6 +569,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Title of the chart
+     *
      * @default ''
      */
 
@@ -551,6 +598,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * });
      * chart.appendTo('#Chart');
      * ```
+     *
      * @default ''
      */
 
@@ -566,6 +614,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * SubTitle of the chart
+     *
      * @default ''
      */
 
@@ -594,6 +643,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * The background color of the chart that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default null
      */
     @Property(null)
@@ -661,6 +711,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Palette for the chart series.
+     *
      * @default []
      */
     @Property([])
@@ -668,6 +719,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Specifies the theme for the chart.
+     *
      * @default 'Material'
      */
     @Property('Material')
@@ -694,6 +746,12 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public legendSettings: LegendSettingsModel;
 
     /**
+     * Options for customizing the points fill color based on condition.
+     */
+    @Collection<RangeColorSettingModel>([{}], RangeColorSetting)
+    public rangeColorSettings: RangeColorSettingModel[];
+
+    /**
      * Options to enable the zooming feature in the chart.
      */
     @Complex<ZoomSettingsModel>({}, ZoomSettings)
@@ -709,6 +767,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * * dragX: selects points by dragging with respect to horizontal axis.
      * * dragY: selects points by dragging with respect to vertical axis.
      * * lasso: selects points by dragging with respect to free form.
+     *
      * @default None
      */
     @Property('None')
@@ -720,6 +779,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * * series: highlight a series.
      * * point: highlight a point.
      * * cluster: highlight a cluster of point
+     *
      * @default None
      */
     @Property('None')
@@ -747,6 +807,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * * verticalstripe: sets vertical stripe as  selecting pattern.
      * * horizontalstripe: sets horizontal stripe as selecting pattern.
      * * bubble: sets bubble as selecting pattern.
+     *
      * @default None
      */
     @Property('None')
@@ -774,6 +835,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * * verticalstripe: sets vertical stripe as highlighting  pattern.
      * * horizontalstripe: sets horizontal stripe as highlighting  pattern.
      * * bubble: sets bubble as highlighting  pattern.
+     *
      * @default None
      */
     @Property('None')
@@ -781,6 +843,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * If set true, enables the multi selection in chart. It requires `selectionMode` to be `Point` | `Series` | or `Cluster`.
+     *
      * @default false
      */
     @Property(false)
@@ -788,6 +851,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * If set true, enables the multi drag selection in chart. It requires `selectionMode` to be `Dragx` | `DragY` | or `DragXY`.
+     *
      * @default false
      */
     @Property(false)
@@ -795,6 +859,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * To enable export feature in chart.
+     *
      * @default true
      */
     @Property(true)
@@ -802,6 +867,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * To enable export feature in blazor chart.
+     *
      * @default false
      */
     @Property(false)
@@ -823,6 +889,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * });
      * chart.appendTo('#Chart');
      * ```
+     *
      * @default []
      */
     @Collection<IndexesModel>([], Indexes)
@@ -830,6 +897,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Specifies whether a grouping separator should be used for a number.
+     *
      * @default false
      */
     @Property(false)
@@ -837,6 +905,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * If set to true, both axis interval will be calculated automatically with respect to the zoomed range.
+     *
      * @default false
      */
     @Property(false)
@@ -844,20 +913,23 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * It specifies whether the chart should be render in transposed manner or not.
+     *
      * @default false
      */
     @Property(false)
     public isTransposed: boolean;
 
-     /**
-      * It specifies whether the chart should be rendered in canvas mode
-      * @default false
-      */
+    /**
+     * It specifies whether the chart should be rendered in canvas mode
+     *
+     * @default false
+     */
     @Property(false)
     public enableCanvas: boolean;
 
     /**
      * The background image of the chart that accepts value in string as url link or location of an image.
+     *
      * @default null
      */
     @Property(null)
@@ -871,6 +943,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * If set true, Animation process will be executed.
+     *
      * @default true
      */
     @Property(true)
@@ -878,6 +951,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Description for chart.
+     *
      * @default null
      */
     @Property(null)
@@ -885,6 +959,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * TabIndex value for the chart.
+     *
      * @default 1
      */
     @Property(1)
@@ -892,6 +967,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * To enable the side by side placing the points for column type series.
+     *
      * @default true
      */
     @Property(true)
@@ -899,7 +975,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers after resizing of chart
-     * @event
+     *
+     * @event resized
      * @blazorProperty 'Resized'
      */
     @Event()
@@ -915,7 +992,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers before the annotation gets rendered.
-     * @event
+     *
+     * @event annotationRender
      * @deprecated
      */
 
@@ -924,7 +1002,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers before the prints gets started.
-     * @event
+     *
+     * @event beforePrint
      * @blazorProperty 'OnPrint'
      */
 
@@ -933,7 +1012,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers after chart load.
-     * @event
+     *
+     * @event loaded
      * @blazorProperty 'Loaded'
      */
     @Event()
@@ -941,14 +1021,16 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers before the export gets started.
-     * @event
+     *
+     * @event beforeExport
      */
     @Event()
     public beforeExport: EmitType<IExportEventArgs>;
 
     /**
      * Triggers after the export completed.
-     * @event
+     *
+     * @event afterExport
      * @blazorProperty 'AfterExport'
      */
     @Event()
@@ -956,14 +1038,16 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers before chart load.
-     * @event
+     *
+     * @event load
      */
     @Event()
     public load: EmitType<ILoadedEventArgs>;
 
     /**
      * Triggers after animation is completed for the series.
-     * @event
+     *
+     * @event animationComplete
      * @blazorProperty 'OnAnimationComplete'
      */
     @Event()
@@ -971,7 +1055,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers before the legend is rendered.
-     * @event
+     *
+     * @event legendRender
      * @deprecated
      */
     @Event()
@@ -979,7 +1064,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers before the data label for series is rendered.
-     * @event
+     *
+     * @event textRender
      * @deprecated
      */
 
@@ -988,7 +1074,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers before each points for the series is rendered.
-     * @event
+     *
+     * @event pointRender
      * @deprecated
      */
 
@@ -997,7 +1084,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers before the series is rendered.
-     * @event
+     *
+     * @event seriesRender
      * @deprecated
      */
 
@@ -1005,48 +1093,55 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public seriesRender: EmitType<ISeriesRenderEventArgs>;
     /**
      * Triggers before each axis label is rendered.
-     * @event
+     *
+     * @event axisLabelRender
      * @deprecated
      */
     @Event()
     public axisLabelRender: EmitType<IAxisLabelRenderEventArgs>;
     /**
      * Triggers when x axis label clicked.
-     * @event
+     *
+     * @event axisLabelClick
      * @deprecated
      */
     @Event()
     public axisLabelClick: EmitType<IAxisLabelClickEventArgs>;
     /**
      * Triggers before each axis range is rendered.
-     * @event
+     *
+     * @event axisRangeCalculated
      * @deprecated
      */
     @Event()
     public axisRangeCalculated: EmitType<IAxisRangeCalculatedEventArgs>;
     /**
      * Triggers before each axis multi label is rendered.
-     * @event
+     *
+     * @event axisMultiLabelRender
      * @deprecated
      */
     @Event()
     public axisMultiLabelRender: EmitType<IAxisMultiLabelRenderEventArgs>;
     /**
      * Triggers after click on legend
-     * @event
+     *
+     * @event legendClick
      */
     @Event()
     public legendClick: EmitType<ILegendClickEventArgs>;
 
     /**
      * Triggers after click on multiLevelLabelClick
-     * @event
+     *
+     * @event multiLevelLabelClick
      */
     @Event()
     public multiLevelLabelClick: EmitType<IMultiLevelLabelClickEventArgs>;
     /**
      * Triggers before the tooltip for series is rendered.
-     * @event
+     *
+     * @event tooltipRender
      */
 
     @Event()
@@ -1054,7 +1149,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers before the shared tooltip for series is rendered.
      * This applicable for blazor only.
-     * @event
+     *
+     * @event sharedTooltipRender
      */
 
     @Event()
@@ -1062,7 +1158,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers on hovering the chart.
-     * @event
+     *
+     * @event chartMouseMove
      * @blazorProperty 'OnChartMouseMove'
      */
 
@@ -1071,7 +1168,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers on clicking the chart.
-     * @event
+     *
+     * @event chartMouseClick
      * @blazorProperty 'OnChartMouseClick'
      */
 
@@ -1080,7 +1178,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers on point click.
-     * @event
+     *
+     * @event pointClick
      * @blazorProperty 'OnPointClick'
      */
 
@@ -1089,7 +1188,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers on point double click.
-     * @event
+     *
+     * @event pointDoubleClick
      * @blazorProperty 'OnPointDoubleClick'
      */
 
@@ -1098,7 +1198,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers on point move.
-     * @event
+     *
+     * @event pointMove
      * @blazorProperty 'PointMoved'
      */
 
@@ -1108,7 +1209,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers when cursor leaves the chart.
-     * @event
+     *
+     * @event chartMouseLeave
      * @blazorProperty 'OnChartMouseLeave'
      */
 
@@ -1117,7 +1219,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers on mouse down.
-     * @event
+     *
+     * @event chartMouseDown
      * @blazorProperty 'OnChartMouseDown'
      */
 
@@ -1126,7 +1229,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers on mouse up.
-     * @event
+     *
+     * @event chartMouseUp
      * @blazorProperty 'OnChartMouseUp'
      */
 
@@ -1135,7 +1239,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers after the drag selection is completed.
-     * @event
+     *
+     * @event dragComplete
      * @blazorProperty 'OnDragComplete'
      */
 
@@ -1144,7 +1249,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers after the selection is completed.
-     * @event
+     *
+     * @event selectionComplete
      * @blazorProperty 'OnSelectionComplete'
      */
 
@@ -1153,7 +1259,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers after the zoom selection is completed.
-     * @event
+     *
+     * @event zoomComplete
      * @deprecated
      */
 
@@ -1162,7 +1269,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers after the zoom selection is triggered.
-     * @event
+     *
+     * @event onZooming
      */
     @Event()
     public onZooming: EmitType<IZoomingEventArgs>;
@@ -1170,7 +1278,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers when start the scroll.
-     * @event
+     *
+     * @event scrollStart
      * @blazorProperty 'OnScrollStart'
      */
     @Event()
@@ -1178,7 +1287,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers after the scroll end.
-     * @event
+     *
+     * @event scrollEnd
      * @blazorProperty 'OnScrollEnd'
      */
     @Event()
@@ -1186,7 +1296,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers when change the scroll.
-     * @event
+     *
+     * @event scrollChanged
      * @blazorProperty 'ScrollChanged'
      */
     @Event()
@@ -1194,27 +1305,31 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers when the point drag start.
-     * @event
+     *
+     * @event dragStart
      */
     @Event()
     public dragStart: EmitType<IDataEditingEventArgs>;
 
     /**
      * Triggers when the point is dragging.
-     * @event
+     *
+     * @event drag
      */
     @Event()
     public drag: EmitType<IDataEditingEventArgs>;
 
     /**
      * Triggers when the point drag end.
-     * @event
+     *
+     * @event dragEnd
      */
     @Event()
     public dragEnd: EmitType<IDataEditingEventArgs>;
 
     /**
      * Defines the currencyCode format of the chart
+     *
      * @private
      * @aspType string
      */
@@ -1229,6 +1344,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * localization object
+     *
      * @private
      */
     public localeObject: L10n;
@@ -1239,31 +1355,37 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Gets the current visible axis of the Chart.
+     *
      * @hidden
      */
     public axisCollections: Axis[];
     /**
      * Gets the current visible series of the Chart.
+     *
      * @hidden
      */
     public visibleSeries: Series[];
     /**
      * Render panel for chart.
+     *
      * @hidden
      */
     public chartAxisLayoutPanel: CartesianAxisLayoutPanel | PolarRadarPanel;
     /**
      * Gets all the horizontal axis of the Chart.
+     *
      * @hidden
      */
     public horizontalAxes: Axis[];
     /**
      * Gets all the vertical axis of the Chart.
+     *
      * @hidden
      */
     public verticalAxes: Axis[];
     /**
      * Gets the inverted chart.
+     *
      * @hidden
      */
     public requireInvertedAxis: boolean;
@@ -1329,7 +1451,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public isPointMouseDown: boolean = false;
     /** @private */
     public isScrolling: boolean = false;
-     /** @private */
+    /** @private */
     public dragY: number;
     private resizeTo: number;
     /** @private */
@@ -1354,6 +1476,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public isRtlEnabled: boolean = false;
     /**
      * `markerModule` is used to manipulate and add marker to the series.
+     *
      * @private
      */
     public markerRender: Marker;
@@ -1377,14 +1500,15 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     private touchObject: Touch;
     /** @private */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public resizeBound: any;
     /** @private */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public longPressBound: any;
 
     /**
      * Constructor for creating the widget
+     *
      * @hidden
      */
     constructor(options?: ChartModel, element?: string | HTMLElement) {
@@ -1395,12 +1519,12 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * To manage persist chart data
      */
     private mergePersistChartData(): void {
-        let data: string = window.localStorage.getItem(this.getModuleName() + this.element.id);
+        const data: string = window.localStorage.getItem(this.getModuleName() + this.element.id);
         if (!(isNullOrUndefined(data) || (data === ''))) {
-            let dataObj: Chart = JSON.parse(data);
-            let keys: string[] = Object.keys(dataObj);
+            const dataObj: Chart = JSON.parse(data);
+            const keys: string[] = Object.keys(dataObj);
             this.isProtectedOnChange = true;
-            for (let key of keys) {
+            for (const key of keys) {
                 if ((typeof this[key] === 'object') && !isNullOrUndefined(this[key])) {
                     extend(this[key], dataObj[key]);
                 } else {
@@ -1417,7 +1541,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     protected preRender(): void {
         // It is used for checking blazor framework or not.
-        let blazor: string = 'Blazor';
+        const blazor: string = 'Blazor';
         this.isBlazor = window[blazor];
         this.allowServerDataBinding = false;
         this.unWireEvents();
@@ -1452,12 +1576,12 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.tooltipModule.previousPoints = [];
         }
         if (this.element.id === '') {
-            let collection: number = document.getElementsByClassName('e-chart').length;
+            const collection: number = document.getElementsByClassName('e-chart').length;
             this.element.id = 'chart_' + this.chartid + '_' + collection;
         }
         //seperate ID to differentiate chart and stock chart
         this.svgId = this.stockChart ? this.stockChart.element.id + '_stockChart_chart' :
-                                       this.element.id + (this.enableCanvas ? '_canvas' : '_svg');
+            this.element.id + (this.enableCanvas ? '_canvas' : '_svg');
     }
 
     /**
@@ -1466,7 +1590,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     protected render(): void {
         this.svgRenderer = new SvgRenderer(this.element.id);
-        let loadEventData: ILoadedEventArgs = { chart : this.isBlazor ? {} as Chart : this, theme: this.theme, name: load, cancel: false };
+        const loadEventData: ILoadedEventArgs = {
+            chart: this.isBlazor ? {} as Chart : this, theme: this.theme, name: load, cancel: false
+        };
         if (!this.stockChart) {
             /**
              * Load event for the chart will be triggered only chart componet, if this is stock chart, load event did not triggered.
@@ -1486,35 +1612,36 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     private cartesianChartRendering(beforeRenderData: ILoadedEventArgs): void {
 
-            this.theme = this.isBlazor ? beforeRenderData.theme : this.theme;
+        this.theme = this.isBlazor ? beforeRenderData.theme : this.theme;
 
-            this.createChartSvg();
+        this.createChartSvg();
 
-            this.setTheme();
+        this.setTheme();
 
-            this.markerRender = new Marker(this);
+        this.markerRender = new Marker(this);
 
-            this.calculateAreaType();
+        this.calculateAreaType();
 
-            this.calculateVisibleSeries();
+        this.calculateVisibleSeries();
 
-            this.initTechnicalIndicators();
+        this.initTechnicalIndicators();
 
-            this.initTrendLines();
+        this.initTrendLines();
 
-            this.calculateVisibleAxis();
+        this.calculateVisibleAxis();
 
-            this.processData();
+        this.processData();
 
-            this.renderComplete();
+        this.renderComplete();
 
-            this.allowServerDataBinding = true;
+        this.allowServerDataBinding = true;
     }
 
     /**
      * Gets the localized label by locale keyword.
-     * @param  {string} key
-     * @return {string}
+     *
+     * @param  {string} key key
+     * @returns {string} localized label
      */
     public getLocalizedLabel(key: string): string {
         return this.localeObject.getConstant(key);
@@ -1522,6 +1649,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Animate the series bounds.
+     *
      * @private
      */
     public animate(duration ?: number): void {
@@ -1532,6 +1660,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Refresh the chart bounds.
+     *
      * @private
      */
 
@@ -1581,9 +1710,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
     }
     private removeSelection(): void {
-        for (let series of this.visibleSeries) {
+        for (const series of this.visibleSeries) {
             if (series.visible) {
-                for (let point of series.points) {
+                for (const point of series.points) {
                     point.isSelect = false;
                 }
             }
@@ -1621,7 +1750,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
         this.setSecondaryElementPosition();
 
-        for (let value of this.visibleSeries) {
+        for (const value of this.visibleSeries) {
             updateBlazorTemplate(this.element.id + '_DataLabel', 'Template', value.marker.dataLabel);
         }
 
@@ -1630,6 +1759,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * To render the legend
+     *
      * @private
      */
 
@@ -1652,8 +1782,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     private renderLegend(): void {
         if (this.legendModule && this.legendModule.legendCollections.length && this.legendSettings.visible) {
             this.legendModule.calTotalPage = true;
-            let borderWidth: number = this.legendSettings.border.width;
-            let bounds: Rect = this.legendModule.legendBounds;
+            const borderWidth: number = this.legendSettings.border.width;
+            const bounds: Rect = this.legendModule.legendBounds;
             let rect: Rect = new Rect(bounds.x, bounds.y, bounds.width, bounds.height);
             if (this.enableCanvas) {
                 rect = new Rect(rect.x - borderWidth / 2, rect.y - borderWidth / 2, rect.width + borderWidth, rect.height + borderWidth);
@@ -1661,7 +1791,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             }
             this.legendModule.renderLegend(this, this.legendSettings, bounds);
             if (this.enableCanvas) {
-                 (this.renderer as CanvasRenderer).canvasRestore();
+                (this.renderer as CanvasRenderer).canvasRestore();
             }
         }
         if (!this.redraw) {
@@ -1678,22 +1808,22 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * To set the left and top position for data label template for center aligned chart
      */
     private setSecondaryElementPosition(): void {
-        let element: HTMLDivElement = getElement(this.element.id + '_Secondary_Element') as HTMLDivElement;
+        const element: HTMLDivElement = getElement(this.element.id + '_Secondary_Element') as HTMLDivElement;
         if (!element) {
             return;
         }
-        let rect: ClientRect = this.element.getBoundingClientRect();
-        let svgRect: ClientRect =  getElement(this.svgId).getBoundingClientRect();
+        const rect: ClientRect = this.element.getBoundingClientRect();
+        const svgRect: ClientRect =  getElement(this.svgId).getBoundingClientRect();
         element.style.left = Math.max(svgRect.left - rect.left, 0) + 'px';
         element.style.top = Math.max(svgRect.top - rect.top, 0) + 'px';
     }
     private initializeModuleElements(): void {
         this.dataLabelCollections = [];
-        let elementId: string = this.element.id;
+        const elementId: string = this.element.id;
         if (this.series.length) {
             this.seriesElements = (this.series[0].type === 'Scatter' || this.series[0].type === 'Bubble') ?
-            this.svgRenderer.createGroup({ id: elementId + 'SeriesCollection' }) :
-            this.renderer.createGroup({ id: elementId + 'SeriesCollection' });
+                this.svgRenderer.createGroup({ id: elementId + 'SeriesCollection' }) :
+                this.renderer.createGroup({ id: elementId + 'SeriesCollection' });
         }
         if (this.indicators.length) {
             this.indicatorElements = this.renderer.createGroup({ id: elementId + 'IndicatorCollection' });
@@ -1706,7 +1836,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     private hasTrendlines(): boolean {
         let isTrendline: boolean;
-        for (let series of this.series) {
+        for (const series of this.series) {
             isTrendline = series.trendlines.length ? true : false;
             if (isTrendline) {
                 break;
@@ -1717,9 +1847,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     private renderSeriesElements(axisElement: Element): void {
         // Initialize the series elements values
         this.initializeModuleElements();
-        let elementId: string = this.element.id;
+        const elementId: string = this.element.id;
         if (this.element.tagName !== 'g') {
-            let tooltipDiv: Element = redrawElement(this.redraw, elementId + '_Secondary_Element') ||
+            const tooltipDiv: Element = redrawElement(this.redraw, elementId + '_Secondary_Element') ||
                 this.createElement('div');
             tooltipDiv.id = elementId + '_Secondary_Element';
             tooltipDiv.setAttribute('style', 'position: relative');
@@ -1729,8 +1859,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.enableCanvas) {
             let tooltipdiv: Element = document.getElementById(elementId + '_Secondary_Element');
             tooltipdiv = !tooltipdiv ? this.createElement('div', { id: elementId + '_Secondary_Element',
-             attrs: {'style': 'position: relative; left:0px; top:0px' } }) : tooltipdiv;
-            let svg: Element = this.svgRenderer.createSvg({
+                attrs: {'style': 'position: relative; left:0px; top:0px' } }) : tooltipdiv;
+            const svg: Element = this.svgRenderer.createSvg({
                 id: elementId + '_tooltip_svg',
                 width: this.availableSize.width,
                 height: this.availableSize.height
@@ -1768,7 +1898,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public renderSeries(): void {
         let visibility: boolean;
-        for (let item of this.visibleSeries) {
+        for (const item of this.visibleSeries) {
             if (item.category === 'TrendLine') {
                 visibility = this.series[item.sourceIndex].trendlines[item.index].visible;
             } else {
@@ -1786,11 +1916,11 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 item.renderSeries(this);
                 if (this.enableCanvas) {
                     (this.renderer as CanvasRenderer).canvasRestore();
-               }
+                }
             }
         }
         this.visible = 0;
-        let options: BaseAttibutes = {
+        const options: BaseAttibutes = {
             'id': this.element.id + '_ChartAreaClipRect_',
             'x': this.chartAxisLayoutPanel.seriesClipRect.x,
             'y': this.chartAxisLayoutPanel.seriesClipRect.y,
@@ -1808,30 +1938,33 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 appendClipElement(this.redraw, options, this.renderer as SvgRenderer)
             );
         }
-        let seriesSvg: HTMLElement = document.getElementById(this.element.id + '_series_svg');
-        seriesSvg ? appendChildElement(false, seriesSvg, this.seriesElements, this.redraw) :
-        appendChildElement(this.enableCanvas, this.svgObject, this.seriesElements, this.redraw);
+        const seriesSvg: HTMLElement = document.getElementById(this.element.id + '_series_svg');
+        if (seriesSvg) {
+            appendChildElement(false, seriesSvg, this.seriesElements, this.redraw);
+        } else {
+            appendChildElement(this.enableCanvas, this.svgObject, this.seriesElements, this.redraw);
+        }
     }
     protected renderCanvasSeries(item: Series): void {
         let svgElement: Element;
         let divElement: Element;
-        let canvas: boolean ;
         if ((item.type === 'Bubble' || item.type === 'Scatter')) {
             svgElement = !svgElement ? this.svgRenderer.createSvg({ id: this.element.id + '_series_svg',
-                             width: this.availableSize.width, height: this.availableSize.height }) : svgElement;
+                width: this.availableSize.width, height: this.availableSize.height }) : svgElement;
             divElement = !divElement ? this.createElement('div', { id: this.element.id + '_series' }) : divElement;
             divElement.setAttribute('style', 'position: absolute');
-            let mainElement: HTMLElement = document.getElementById(this.element.id + '_Secondary_Element');
+            const mainElement: HTMLElement = document.getElementById(this.element.id + '_Secondary_Element');
             divElement.appendChild(svgElement);
             mainElement.appendChild(divElement);
         }
         svgElement = (this.enableCanvas && (item.type === 'Bubble' || item.type === 'Scatter')) ?
-                                       svgElement : this.svgObject;
-        canvas = (this.enableCanvas && (item.type === 'Bubble' || item.type === 'Scatter')) ?
-                                       false : this.enableCanvas;
+            svgElement : this.svgObject;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const canvas: boolean = (this.enableCanvas && (item.type === 'Bubble' || item.type === 'Scatter')) ?
+            false : this.enableCanvas;
     }
     private initializeIndicator(): void {
-        for (let indicator of this.indicators) {
+        for (const indicator of this.indicators) {
             if (this[firstToLowerCase(indicator.type) + 'IndicatorModule']) {
                 this[firstToLowerCase(indicator.type) + 'IndicatorModule'].createIndicatorElements(
                     this, indicator as TechnicalIndicator, (indicator as TechnicalIndicator).index);
@@ -1843,7 +1976,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     private initializeTrendLine(): void {
-        for (let series of this.visibleSeries) {
+        for (const series of this.visibleSeries) {
             if (series.trendlines.length) {
                 this.trendLineModule.getTrendLineElements(series, this);
             }
@@ -1892,7 +2025,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
     /**
      * Render annotation perform here
-     * @param redraw
+     *
      * @private
      */
     private renderAnnotation(): void {
@@ -1922,7 +2055,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public processData(render: boolean = true): void {
         this.visibleSeriesCount = 0;
         let check: boolean = true;
-        for (let series of this.visibleSeries) {
+        for (const series of this.visibleSeries) {
             if (!series.visible && !this.legendSettings.visible) {
                 this.visibleSeriesCount++;
                 continue;
@@ -1931,9 +2064,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 this.initializeDataModule(series);
             }
         }
-        for (let indicator of this.indicators) {
+        for (const indicator of this.indicators) {
             if (indicator.dataSource) {
-                let techIndicator: TechnicalIndicator = indicator as TechnicalIndicator;
+                const techIndicator: TechnicalIndicator = indicator as TechnicalIndicator;
                 this.initializeDataModule(techIndicator);
                 check = false;
             }
@@ -1947,7 +2080,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     private initializeDataModule(series: SeriesBase): void {
         series.xData = []; series.yData = [];
         let dataSource: Object | DataManager;
-        let isAngular: string = 'isAngular';
+        const isAngular: string = 'isAngular';
         if (this[isAngular]) {
             dataSource = Object.keys(series.dataSource).length ? series.dataSource : this.dataSource;
         } else {
@@ -1959,14 +2092,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     private calculateBounds(): void {
-        let margin: MarginModel = this.margin;
+        const margin: MarginModel = this.margin;
         // Title Height;
         let titleHeight: number = 0;
         let subTitleHeight: number = 0;
         let titleWidth: number = 0;
-        let padding: number = 15;
-        let left: number = margin.left;
-        let width: number = this.availableSize.width - left - margin.right - this.border.width;
+        const padding: number = 15;
+        const left: number = margin.left;
+        const width: number = this.availableSize.width - left - margin.right - this.border.width;
         this.titleCollection = [];
         this.subTitleCollection = [];
         if (this.title) {
@@ -1974,7 +2107,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             titleHeight = (measureText(this.title, this.titleStyle).height * this.titleCollection.length) + padding;
             if (this.subTitle) {
                 let maxWidth: number = 0;
-                for (let titleText of this.titleCollection) {
+                for (const titleText of this.titleCollection) {
                     titleWidth = measureText(titleText, this.titleStyle).width;
                     maxWidth = titleWidth > maxWidth ? titleWidth : maxWidth;
                 }
@@ -1983,8 +2116,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                     padding;
             }
         }
-        let top: number = margin.top + subTitleHeight + titleHeight + this.chartArea.border.width * 0.5;
-        let height: number = this.availableSize.height - top - this.border.width - margin.bottom;
+        const top: number = margin.top + subTitleHeight + titleHeight + this.chartArea.border.width * 0.5;
+        const height: number = this.availableSize.height - top - this.border.width - margin.bottom;
         this.initialClipRect = new Rect(left, top, width, height);
         if (this.legendModule && this.legendSettings.visible) {
             this.legendModule.calculateLegendBounds(this.initialClipRect, this.availableSize, null);
@@ -1997,7 +2130,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * Handles the print method for chart control.
      */
     public print(id?: string[] | string | Element): void {
-        let exportChart: ExportUtils = new ExportUtils(this);
+        const exportChart: ExportUtils = new ExportUtils(this);
         exportChart.print(id);
     }
 
@@ -2006,11 +2139,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     private initTrendLines(): void {
         this.isProtectedOnChange = true;
-        for (let series of this.visibleSeries) {
+        for (const series of this.visibleSeries) {
             let trendIndex: number = 0;
-            for (let trendline of series.trendlines) {
-                let trendLine: Trendline = trendline as Trendline;
-                let type: string = firstToLowerCase(trendLine.type);
+            for (const trendline of series.trendlines) {
+                const trendLine: Trendline = trendline as Trendline;
                 if (this.trendLineModule) {
                     trendLine.index = trendIndex;
                     trendLine.sourceIndex = series.index;
@@ -2028,7 +2160,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     private calculateAreaType(): void {
-        let series: SeriesModel = this.series[0];
+        const series: SeriesModel = this.series[0];
         this.chartArea.border.width = this.stockChart ? 0 : this.chartArea.border.width;
         if (series) {
             this.requireInvertedAxis = ((series.type.indexOf('Bar') !== -1) && !this.isTransposed) ||
@@ -2039,10 +2171,11 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
     /**
      * Calculate the visible axis
+     *
      * @private
      */
     private calculateVisibleAxis(): void {
-        let axis: Axis; let series: Series;
+        let axis: Axis;
         let axes: AxisModel[] = [this.primaryXAxis, this.primaryYAxis];
         axes = this.chartAreaType === 'Cartesian' ? axes.concat(this.axes) : axes;
         if (this.paretoSeriesModule && this.series[0].type === 'Pareto') {
@@ -2064,10 +2197,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         for (let i: number = 0, len: number = axes.length; i < len; i++) {
             axis = <Axis>axes[i]; axis.series = [];
             axis.labels = [];
-            for (let series of this.visibleSeries) {
+            for (const series of this.visibleSeries) {
                 this.initAxis(series, axis, true);
             }
-            for (let indicator of this.indicators) {
+            for (const indicator of this.indicators) {
                 this.initAxis(indicator as SeriesBase, axis, false);
             }
             if (this.scrollBarModule && !axis.zoomingScrollBar) {
@@ -2096,13 +2229,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     private initTechnicalIndicators(): void {
         let i: number = 0;
-        for (let indicator of this.indicators) {
-            let techIndicator: TechnicalIndicator = indicator as TechnicalIndicator;
-            let type: string = firstToLowerCase(techIndicator.type);
+        for (const indicator of this.indicators) {
+            const techIndicator: TechnicalIndicator = indicator as TechnicalIndicator;
+            const type: string = firstToLowerCase(techIndicator.type);
             if (this[type + 'IndicatorModule']) {
                 techIndicator.index = i;
                 this[type + 'IndicatorModule'].initSeriesCollection(techIndicator, this);
-                for (let targetSeries of techIndicator.targetSeries) {
+                for (const targetSeries of techIndicator.targetSeries) {
                     if (indicator.seriesName || indicator.dataSource) {
                         this.visibleSeries.push(targetSeries);
                     }
@@ -2117,7 +2250,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.indicators.length) {
             let targetIndicator: TechnicalIndicator = null;
             if (series instanceof Series && series.category !== 'Indicator') {
-                for (let indicator of this.indicators) {
+                for (const indicator of this.indicators) {
                     if (indicator.seriesName === series.name && !indicator.dataSource) {
                         targetIndicator = indicator as TechnicalIndicator;
                         targetIndicator.setDataSource(series, this);
@@ -2133,11 +2266,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     private calculateVisibleSeries(): void {
         let series: Series;
-        let seriesCollection: SeriesModel[];
         this.visibleSeries = [];
-        let colors: string[] = this.palettes.length ? this.palettes : getSeriesColor(this.theme);
-        let count: number = colors.length;
-        seriesCollection = this.series.sort((a: SeriesModel, b: SeriesModel) => { return a.zOrder - b.zOrder; });
+        const colors: string[] = this.palettes.length ? this.palettes : getSeriesColor(this.theme);
+        const count: number = colors.length;
+        const seriesCollection: SeriesModel[] = this.series.sort((a: SeriesModel, b: SeriesModel) => { return a.zOrder - b.zOrder; });
         for (let i: number = 0, len: number = seriesCollection.length; i < len; i++) {
             series = <Series>seriesCollection[i];
             // for y axis label issue during chart navigation
@@ -2145,32 +2277,32 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             series.index = i;
             series.interior = series.fill || colors[i % count];
             switch (series.type) {
-                case 'Bar':
-                case 'StackingBar':
-                case 'StackingBar100':
-                    if (seriesCollection[0].type.indexOf('Bar') === -1) {
-                        continue;
-                    } break;
-                case 'Polar':
-                case 'Radar':
-                    if (this.chartAreaType !== 'PolarRadar') {
-                        continue;
-                    }
-                    if (this.chartAreaType === 'PolarRadar' && ((series.xAxisName === null && series.yAxisName !== null) ||
+            case 'Bar':
+            case 'StackingBar':
+            case 'StackingBar100':
+                if (seriesCollection[0].type.indexOf('Bar') === -1) {
+                    continue;
+                } break;
+            case 'Polar':
+            case 'Radar':
+                if (this.chartAreaType !== 'PolarRadar') {
+                    continue;
+                }
+                if (this.chartAreaType === 'PolarRadar' && ((series.xAxisName === null && series.yAxisName !== null) ||
                         (series.xAxisName !== null && series.yAxisName === null) ||
                         (series.xAxisName !== null && series.yAxisName !== null))) {
-                        continue;
-                    }
-                    break;
-                case 'Pareto':
-                    this.visibleSeries.push(series);
-                    this.paretoSeriesModule.initSeries(series, this);
                     continue;
-                default:
-                    if (this.chartAreaType === 'PolarRadar' || seriesCollection[0].type.indexOf('Bar') > -1) {
-                        continue;
-                    }
-                    break;
+                }
+                break;
+            case 'Pareto':
+                this.visibleSeries.push(series);
+                this.paretoSeriesModule.initSeries(series, this);
+                continue;
+            default:
+                if (this.chartAreaType === 'PolarRadar' || seriesCollection[0].type.indexOf('Bar') > -1) {
+                    continue;
+                }
+                break;
             }
             this.visibleSeries.push(series);
             seriesCollection[i] = series;
@@ -2179,21 +2311,21 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     private renderTitle(): void {
         let rect: Rect;
-        let margin: MarginModel = this.margin;
+        const margin: MarginModel = this.margin;
         if (this.title) {
-            let alignment: Alignment = this.titleStyle.textAlignment;
-            let getAnchor: string = alignment === 'Near' ? 'start' : alignment === 'Far' ? 'end' : 'middle';
-            let elementSize: Size = measureText(this.title, this.titleStyle);
+            const alignment: Alignment = this.titleStyle.textAlignment;
+            const getAnchor: string = alignment === 'Near' ? 'start' : alignment === 'Far' ? 'end' : 'middle';
+            const elementSize: Size = measureText(this.title, this.titleStyle);
             rect = new Rect(
                 margin.left, 0, this.availableSize.width - margin.left - margin.right, 0
             );
-            let options: TextOption = new TextOption(
+            const options: TextOption = new TextOption(
                 this.element.id + '_ChartTitle',
                 titlePositionX(rect, this.titleStyle),
                 this.margin.top + ((elementSize.height) * 3 / 4),
                 getAnchor, this.titleCollection, '', 'auto'
             );
-            let element: Element = redrawElement(this.redraw, this.element.id + '_ChartTitle', options, this.renderer) ||
+            const element: Element = redrawElement(this.redraw, this.element.id + '_ChartTitle', options, this.renderer) ||
                 textElement(
                     this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject
                 );
@@ -2209,22 +2341,21 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     private renderSubTitle(options: TextOption): void {
         let maxWidth: number = 0;
         let titleWidth: number = 0;
-        let padding: number = 10;
-        let rect: Rect;
-        let anchor: Function = (alignment: Alignment): string => {
+        const padding: number = 10;
+        const anchor: Function = (alignment: Alignment): string => {
             return alignment === 'Near' ? 'start' : alignment === 'Far' ? 'end' : 'middle';
         };
-        let alignment: Alignment = this.titleStyle.textAlignment;
-        for (let titleText of this.titleCollection) {
+        const alignment: Alignment = this.titleStyle.textAlignment;
+        for (const titleText of this.titleCollection) {
             titleWidth = measureText(titleText, this.titleStyle).width;
             maxWidth = titleWidth > maxWidth ? titleWidth : maxWidth;
         }
-        let subTitleElementSize: Size = measureText(this.subTitle, this.subTitleStyle);
-        rect = new Rect(
+        const subTitleElementSize: Size = measureText(this.subTitle, this.subTitleStyle);
+        const rect: Rect = new Rect(
             alignment === 'Center' ? (options.x - maxWidth * 0.5) : alignment === 'Far' ? options.x - maxWidth : options.x,
             0, maxWidth, 0
         );
-        let subTitleOptions: TextOption = new TextOption(
+        const subTitleOptions: TextOption = new TextOption(
             this.element.id + '_ChartSubTitle',
             titlePositionX(
                 rect, this.subTitleStyle
@@ -2232,7 +2363,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             options.y * options.text.length + ((subTitleElementSize.height) * 3 / 4) + padding,
             anchor(this.subTitleStyle.textAlignment), this.subTitleCollection, '', 'auto'
         );
-        let element: Element = redrawElement(this.redraw, this.element.id + '_ChartSubTitle', subTitleOptions, this.renderer) ||
+        const element: Element = redrawElement(this.redraw, this.element.id + '_ChartSubTitle', subTitleOptions, this.renderer) ||
             textElement(
                 this.renderer, subTitleOptions, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartTitle, this.svgObject
             );
@@ -2242,10 +2373,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
     }
     private renderBorder(): void {
-        let width: number = this.border.width;
-        let backGroundImage: string = this.backgroundImage;
-        let fillColor: string = backGroundImage ? 'transparent' : (this.background || this.themeStyle.background);
-        let rect: RectOption = new RectOption(
+        const width: number = this.border.width;
+        const backGroundImage: string = this.backgroundImage;
+        const fillColor: string = backGroundImage ? 'transparent' : (this.background || this.themeStyle.background);
+        const rect: RectOption = new RectOption(
             this.element.id + '_ChartBorder', fillColor, this.border, 1,
             new Rect(width * 0.5, width * 0.5, this.availableSize.width - width, this.availableSize.height - width));
 
@@ -2255,7 +2386,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         appendChildElement(this.enableCanvas, this.svgObject, this.htmlObject, this.redraw);
         // to draw back ground image for chart
         if (backGroundImage) {
-            let image: ImageOption = new ImageOption(
+            const image: ImageOption = new ImageOption(
                 this.availableSize.height - width,
                 this.availableSize.width - width,
                 backGroundImage,
@@ -2275,13 +2406,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.chartAreaType === 'PolarRadar') {
             return null;
         } else {
-            let element: Element = getElement(this.element.id + '_ChartAreaBorder');
-            let previousRect: Rect = element ?
+            const element: Element = getElement(this.element.id + '_ChartAreaBorder');
+            const previousRect: Rect = element ?
                 new Rect(
                     +element.getAttribute('x'), +element.getAttribute('y'),
                     +element.getAttribute('width'), +element.getAttribute('height')
                 ) : null;
-            let rect: RectOption = new RectOption(
+            const rect: RectOption = new RectOption(
                 this.element.id + '_ChartAreaBorder', this.chartArea.background,
                 { width: this.chartArea.border.width, color: this.chartArea.border.color || this.themeStyle.areaBorder },
                 this.chartArea.opacity, this.chartAxisLayoutPanel.seriesClipRect);
@@ -2293,10 +2424,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.htmlObject = null;
         }
         // to draw back ground image for chart area
-        let backGroundImage: string = this.chartArea.backgroundImage;
+        const backGroundImage: string = this.chartArea.backgroundImage;
         if (backGroundImage) {
-            let width: number = this.chartArea.border.width;
-            let image: ImageOption = new ImageOption(
+            const width: number = this.chartArea.border.width;
+            const image: ImageOption = new ImageOption(
                 this.initialClipRect.height - width,
                 this.initialClipRect.width - width,
                 backGroundImage,
@@ -2314,8 +2445,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * To add series for the chart
+     *
      * @param {SeriesModel[]} seriesCollection - Defines the series collection to be added in chart.
-     * @return {void}.
+     * @returns {void}.
      */
 
     public addSeries(seriesCollection: SeriesModel[]): void {
@@ -2328,8 +2460,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * To Remove series for the chart
-     * @param index - Defines the series index to be remove in chart series
-     * @return {void}
+     *
+     * @param {number} index - Defines the series index to be remove in chart series
+     * @returns {void}
      */
     public removeSeries(index: number): void {
         this.redraw = false; //fix for remove svg not working when use animatemethod.
@@ -2339,7 +2472,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * To Clear all series for the chart
-     * @return {void}.
+     *
+     * @returns {void}.
      */
 
     public clearSeries(): void {
@@ -2349,8 +2483,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * To add secondary axis for the chart
+     *
      * @param {AxisModel[]} axisCollection - Defines the axis collection to be added in chart.
-     * @return {void}.
+     * @returns {void}.
      */
 
     public addAxes(axisCollection: AxisModel[]): void {
@@ -2367,19 +2502,21 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * To remove secondary axis for the chart
-     * @param index - Defines the axis collection to be removed in chart.
-     * @return {void}.
+     *
+     * @param {number} index - Defines the axis collection to be removed in chart.
+     * @returns {void}
      */
     public removeAxis(index: number): void {
         this.redraw = false;
         this.axes.splice(index, 1);
         this.refresh();
-    };
+    }
 
     /**
      * To destroy the widget
-     * @method destroy
-     * @return {void}.
+     *
+     * @function destroy
+     * @returns {void}.
      * @member of Chart
      */
 
@@ -2406,7 +2543,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
          */
         if (this.element) {
             this.unWireEvents();
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((this as any).isReact) { this.clearTemplate(); }
             super.destroy();
             if (!this.enableCanvas) {
@@ -2426,10 +2563,11 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Get the properties to be maintained in the persisted state.
+     *
      * @private
      */
     public getPersistData(): string {
-        let keyEntity: string[] = ['loaded', 'animationComplete', 'primaryXAxis', 'primaryYAxis'];
+        const keyEntity: string[] = ['loaded', 'animationComplete', 'primaryXAxis', 'primaryYAxis'];
         return this.addOnPersist(keyEntity);
     }
 
@@ -2447,10 +2585,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
 
     private unWireEvents(): void {
-        let startEvent: string = Browser.touchStartEvent;
-        let moveEvent: string = Browser.touchMoveEvent;
-        let stopEvent: string = Browser.touchEndEvent;
-        let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        const startEvent: string = Browser.touchStartEvent;
+        const moveEvent: string = Browser.touchMoveEvent;
+        const stopEvent: string = Browser.touchEndEvent;
+        const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         /*! UnBind the Event handler */
 
         EventHandler.remove(this.element, startEvent, this.chartOnMouseDown);
@@ -2485,7 +2623,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
         /*! Find the Events type */
 
-        let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
 
         /*! Bind the Event handler */
         EventHandler.add(this.element, Browser.touchStartEvent, this.chartOnMouseDown, this);
@@ -2519,8 +2657,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     private setStyle(element: HTMLElement): void {
-        let zooming: ZoomSettingsModel = this.zoomSettings;
-        let disableScroll: boolean = zooming.enableSelectionZooming || zooming.enablePinchZooming ||
+        const zooming: ZoomSettingsModel = this.zoomSettings;
+        const disableScroll: boolean = zooming.enableSelectionZooming || zooming.enablePinchZooming ||
             this.selectionMode !== 'None' || this.crosshair.enable || this.highlightMode !== 'None';
         element.style.touchAction = disableScroll ? 'none' : 'element';
         element.style.msTouchAction = disableScroll ? 'none' : 'element';
@@ -2534,7 +2672,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
     /**
      * Finds the orientation.
-     * @return {boolean}
+     *
+     * @returns {boolean}
      * @private
      */
     public isOrientation(): boolean {
@@ -2543,7 +2682,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Handles the long press on chart.
-     * @return {boolean}
+     *
+     * @returns {boolean} false
      * @private
      */
     public longPress(e?: TapEventArgs): boolean {
@@ -2559,8 +2699,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     private setMouseXY(pageX: number, pageY: number): void {
         if (getElement(this.svgId)) {
-            let svgRect: ClientRect = getElement(this.svgId).getBoundingClientRect();
-            let rect: ClientRect = this.element.getBoundingClientRect();
+            const svgRect: ClientRect = getElement(this.svgId).getBoundingClientRect();
+            const rect: ClientRect = this.element.getBoundingClientRect();
             this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
             this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
         }
@@ -2576,31 +2716,32 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 this.exportModule.getDataUrl(this);
             }
         }
-     }
+    }
 
     /**
      * Handles the chart resize.
-     * @return {boolean}
+     *
+     * @returns {boolean} false
      * @private
      */
-    public chartResize(e: Event): boolean {
+    public chartResize(): boolean {
         this.animateSeries = false;
-        let arg: IResizeEventArgs = {
+        const arg: IResizeEventArgs = {
             chart: this.isBlazor ? {} as Chart : this,
             name: resized,
             currentSize: new Size(0, 0),
             previousSize: new Size(
                 this.availableSize.width,
                 this.availableSize.height
-            ),
+            )
         };
-        let beforeResizeArgs: IBeforeResizeEventArgs = { name: 'beforeResize', cancelResizedEvent: false};
+        const beforeResizeArgs: IBeforeResizeEventArgs = { name: 'beforeResize', cancelResizedEvent: false };
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
         }
         this.trigger(beforeResize, beforeResizeArgs);
         if (!beforeResizeArgs.cancelResizedEvent) {
-            this.resizeTo = setTimeout(
+            this.resizeTo = +setTimeout(
                 (): void => {
                     if (this.isDestroyed || this.stockChart) {
                         clearTimeout(this.resizeTo);
@@ -2621,7 +2762,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
     /**
      * Handles the mouse move.
-     * @return {boolean}
+     *
+     * @returns {boolean} false
      * @private
      */
     public mouseMove(e: PointerEvent): boolean {
@@ -2646,7 +2788,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
     /**
      * Handles the mouse leave.
-     * @return {boolean}
+     *
+     * @returns {boolean} false
      * @private
      */
     public mouseLeave(e: PointerEvent): boolean {
@@ -2670,12 +2813,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
     /**
      * Handles the mouse leave on chart.
-     * @return {boolean}
+     *
+     * @returns {boolean} false
      * @private
      */
     public chartOnMouseLeave(e: PointerEvent | TouchEvent): boolean {
-        let element: Element = <Element>e.target;
-        let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        const element: Element = <Element>e.target;
+        const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         this.trigger(chartMouseLeave, { target: element.id, x: this.mouseX, y: this.mouseY });
         removeElement(this.element.id + '_EJ2_AxisLabel_Tooltip');
         this.isChartDrag = this.isPointMouseDown = false;
@@ -2684,17 +2828,18 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
     /**
      * Handles the mouse click on chart.
-     * @return {boolean}
+     *
+     * @returns {boolean} false
      * @private
      */
     public chartOnMouseClick(e: PointerEvent | TouchEvent): boolean {
-        let element: Element = <Element>e.target;
+        const element: Element = <Element>e.target;
         this.trigger(chartMouseClick, { target: element.id, x: this.mouseX, y: this.mouseY });
         this.clickCount++;
         let timeInterval: number = 0;
-        let isAngular: string = 'isAngular';
+        const isAngular: string = 'isAngular';
         if (this[isAngular]) {
-            let observers: string = 'observers';
+            const observers: string = 'observers';
             timeInterval = this.pointDoubleClick[observers].length > 0 ? 400 : 0;
         } else {
             timeInterval = this.pointDoubleClick ? 400 : 0;
@@ -2718,9 +2863,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         return false;
     }
     private triggerPointEvent(event: string, e?: PointerEvent | TouchEvent): void {
-        let evt: PointerEvent = e as PointerEvent;
-        let data: ChartData = new ChartData(this);
-        let pointData: PointData = data.getData();
+        const evt: PointerEvent = e as PointerEvent;
+        const data: ChartData = new ChartData(this);
+        const pointData: PointData = data.getData();
         if (pointData.series && pointData.point) {
             this.trigger(event, {
                 series: this.isBlazor ? {} : pointData.series,
@@ -2731,13 +2876,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
     }
     private triggerAxisLabelClickEvent(event: string, e?: PointerEvent | TouchEvent): void {
-        let targetElement: Element = <Element>e.target;
-        let clickEvt: PointerEvent = e as PointerEvent;
+        const targetElement: Element = <Element>e.target;
+        const clickEvt: PointerEvent = e as PointerEvent;
         if (targetElement.id.indexOf('_AxisLabel_') !== -1) {
-            let index: string[] = targetElement.id.split('_AxisLabel_');
-            let axisIndex: number = +index[0].slice(-1);
-            let labelIndex: number = +index[1];
-            let currentAxis: Axis = this.axisCollections[axisIndex];
+            const index: string[] = targetElement.id.split('_AxisLabel_');
+            const axisIndex: number = +index[0].slice(-1);
+            const labelIndex: number = +index[1];
+            const currentAxis: Axis = this.axisCollections[axisIndex];
             if (currentAxis.visible && (axisIndex === 0 || axisIndex === 1)) {
                 this.trigger(event, {
                     chart: this,
@@ -2753,11 +2898,12 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
     /**
      * Handles the mouse move on chart.
-     * @return {boolean}
+     *
+     * @returns {boolean} false
      * @private
      */
     public chartOnMouseMove(e: PointerEvent | TouchEvent): boolean {
-        let element: Element = <Element>e.target;
+        const element: Element = <Element>e.target;
         this.trigger(chartMouseMove, { target: element.id, x: this.mouseX, y: this.mouseY });
         if (this.pointMove) {
             this.triggerPointEvent(pointMove, e);
@@ -2775,15 +2921,15 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         return false;
     }
     private titleTooltip(event: Event, x: number, y: number, isTouch?: boolean): void {
-        let targetId: string = (<HTMLElement>event.target).id;
-        let id: boolean = (targetId === (this.element.id + '_ChartTitle') || targetId === (this.element.id + '_ChartSubTitle') ||
+        const targetId: string = (<HTMLElement>event.target).id;
+        const id: boolean = (targetId === (this.element.id + '_ChartTitle') || targetId === (this.element.id + '_ChartSubTitle') ||
             targetId.indexOf('_AxisTitle') > -1 || targetId.indexOf('_legend_title') > -1);
         let index: number = 0;
         if (targetId.indexOf('_AxisTitle') > -1) {
-           index = parseInt(((targetId.replace(this.element.id, '')).replace('AxisLabel_', '')).split('_')[2], 10);
+            index = parseInt(((targetId.replace(this.element.id, '')).replace('AxisLabel_', '')).split('_')[2], 10);
         }
         if (id && ((<HTMLElement>event.target).textContent.indexOf('...') > -1)) {
-            let title: string = (targetId === (this.element.id + '_ChartTitle')) ? this.title :
+            const title: string = (targetId === (this.element.id + '_ChartTitle')) ? this.title :
                 targetId.indexOf('_AxisTitle') > -1 ? this.axisCollections[index].title :
                     targetId.indexOf('_ChartSubTitle') > -1 ? this.subTitle : this.legendSettings.title;
             showTooltip(
@@ -2796,10 +2942,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     private axisTooltip(event: Event, x: number, y: number, isTouch?: boolean): void {
-        let targetId: string = (<HTMLElement>event.target).id;
+        const targetId: string = (<HTMLElement>event.target).id;
         if (((targetId.indexOf('AxisLabel') > -1) || targetId.indexOf('Axis_MultiLevelLabel') > -1) &&
             ((<HTMLElement>event.target).textContent.indexOf('...') > -1)) {
-            let isTitleOrLegendEnabled: boolean = (this.legendSettings.visible || this.primaryXAxis.title === '');
+            const isTitleOrLegendEnabled: boolean = (this.legendSettings.visible || this.primaryXAxis.title === '');
             showTooltip(
                 this.findAxisLabel(targetId), x, y, this.element.offsetWidth, this.element.id + '_EJ2_AxisLabel_Tooltip',
                 getElement(this.element.id + '_Secondary_Element'), isTouch, isTitleOrLegendEnabled
@@ -2823,7 +2969,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Handles the mouse down on chart.
-     * @return {boolean}
+     *
+     * @returns {boolean} false
      * @private
      */
     public chartOnMouseDown(e: PointerEvent): boolean {
@@ -2831,9 +2978,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let pageY: number;
         let target: Element;
         let touchArg: TouchEvent;
-        let offset: number = Browser.isDevice ? 20 : 30;
-        let rect: ClientRect = this.element.getBoundingClientRect();
-        let element: Element = <Element>e.target;
+        const offset: number = Browser.isDevice ? 20 : 30;
+        const rect: ClientRect = this.element.getBoundingClientRect();
+        const element: Element = <Element>e.target;
         this.trigger(chartMouseDown, { target: element.id, x: this.mouseX, y: this.mouseY });
         if (e.type === 'touchstart') {
             this.isTouch = true;
@@ -2847,7 +2994,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             pageY = e.clientY;
             target = <Element>e.target;
         }
-        let svgRect: ClientRect = getElement(this.svgId).getBoundingClientRect();
+        const svgRect: ClientRect = getElement(this.svgId).getBoundingClientRect();
         this.mouseDownX = this.previousMouseMoveX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
         this.mouseDownY = this.previousMouseMoveY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
 
@@ -2866,7 +3013,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
     /**
      * Handles the mouse up.
-     * @return {boolean}
+     *
+     * @returns {boolean} false
      * @private
      */
     public mouseEnd(e: PointerEvent): boolean {
@@ -2890,12 +3038,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Handles the mouse up.
-     * @return {boolean}
+     *
+     * @returns {boolean}
      * @private
      */
 
     public chartOnMouseUp(e: PointerEvent | TouchEvent): boolean {
-        let element: Element = <Element>e.target;
+        const element: Element = <Element>e.target;
         this.trigger(chartMouseUp, { target: element.id, x: this.mouseX, y: this.mouseY });
         this.isChartDrag = false;
         if (this.isTouch) {
@@ -2926,8 +3075,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * Method to set the annotation content dynamically for chart.
      */
     public setAnnotationValue(annotationIndex: number, content: string): void {
-        let parentNode: Element = getElement(this.element.id + '_Annotation_Collections');
-        let annotation: ChartAnnotationSettings = <ChartAnnotationSettings>this.annotations[annotationIndex];
+        const parentNode: Element = getElement(this.element.id + '_Annotation_Collections');
+        const annotation: ChartAnnotationSettings = <ChartAnnotationSettings>this.annotations[annotationIndex];
         let element: HTMLElement;
         if (content !== null) {
             annotation.content = content;
@@ -2972,10 +3121,11 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * To provide the array of modules needed for control rendering
-     * @return {ModuleDeclaration[]}
+     *
+     * @returns {ModuleDeclaration[]}
      * @private
      */
-    //tslint:disable:max-func-body-length
+    /* eslint-disable  */
     public requiredModules(): ModuleDeclaration[] {
         let modules: ModuleDeclaration[] = [];
         let series: SeriesModel[] = this.series;
@@ -3266,7 +3416,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             return null;
         }
         removeElement(this.element.id + '_Secondary_Element');
-        // tslint:disable-next-line:no-any
         if ((this as any).isReact) { this.clearTemplate(); }
         let removeLength: number = 0;
         if (this.zoomModule && this.zoomModule.pinchTarget) {
@@ -3306,7 +3455,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
     /**
      * Refresh the axis default value.
-     * @return {boolean}
+     *
+     * @returns {boolean}
      * @private
      */
     public refreshAxis(): void {
@@ -3381,7 +3531,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * Called internally if any of the property value changed.
      * @private
      */
-    // tslint:disable-next-line:max-func-body-length
     public onPropertyChanged(newProp: ChartModel, oldProp: ChartModel): void {
         let renderer: boolean = false;
         let refreshBounds: boolean = false;
@@ -3551,7 +3700,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             }
             if (refreshBounds) {
                 this.enableCanvas ? this.createChartSvg() : this.removeSvg();
-                // tslint:disable-next-line:no-any
                 if ((this as any).isReact) { this.clearTemplate(); }
                 this.refreshAxis();
                 this.refreshBound();

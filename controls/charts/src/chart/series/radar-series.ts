@@ -1,3 +1,6 @@
+/* eslint-disable prefer-const */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { Chart } from '../chart';
 import { Series } from './chart-series';
 import { firstToLowerCase, ChartLocation, CoefficientToVector, valueToPolarCoefficient } from '../../common/utils/helper';
@@ -12,7 +15,8 @@ import { Axis } from '../axis/axis';
 export class RadarSeries extends PolarSeries {
     /**
      * Render radar Series.
-     * @return {void}.
+     *
+     * @returns {void}
      * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, inverted: boolean): void {
@@ -68,11 +72,12 @@ export class RadarSeries extends PolarSeries {
 
     /**
      * To destroy the radar series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method performed here
          */

@@ -80,6 +80,18 @@
         }
       }
 
+      & .e-freeze-pane::before {
+        content: '\e88d';
+      }
+
+      & .e-freeze-row::before {
+        content: '\e88f';
+      }
+
+      & .e-freeze-column::before {
+        content: '\e88e';
+      }
+
       & .e-insert-function {
         &::before {
           content: '\e82d';
@@ -284,15 +296,18 @@
     }
   }
 
-  .e-chart-ddb {
-    & .e-chart-icon {
+  .e-chart-ddb,
+  .e-chart-type-ddb {
+    & .e-chart-icon,
+    & .e-chart-type-icon {
       &::before {
         content: '\e440';
       }
     }
   }
 
-  .e-chart-menu .e-ul .e-menu-item {
+  .e-chart-menu .e-ul .e-menu-item,
+  .e-chart-type-menu .e-ul .e-menu-item {
     padding: 0 16px 0 10px;
 
     .e-menu-icon {
@@ -308,7 +323,12 @@
     }
   }
 
-  .e-chart-menu {
+  .e-addchart-menu .e-ul .e-menu-item .e-menu-icon {
+    font-size: 32px;
+  }
+
+  .e-chart-menu,
+  .e-chart-type-menu {
     & .e-column {
       &::before {
         content: '\e440';
@@ -447,6 +467,180 @@
       }
     }
 }
+
+  .e-addchart-ddb {
+    & .e-addchart-icon {
+      &::before {
+        content: '\e446';
+      }
+    }
+
+    & .e-addchart-menu {
+      & .e-axes {
+        &::before {
+          content: '\e453';
+        }
+      }
+
+      & .e-axis-title {
+        &::before {
+          content: '\e456';
+        }
+      }
+
+      & .e-chart-title {
+        &::before {
+          content: '\e457';
+        }
+      }
+
+      & .e-data-labels {
+        &::before {
+          content: '\e461';
+        }
+      }
+
+      & .e-gridlines {
+        &::before {
+          content: '\e447';
+        }
+      }
+
+      & .e-legends {
+        &::before {
+          content: '\e442';
+        }
+      }
+    }
+  }
+
+  .e-addchart-menu {
+    & .e-ph-axes {
+      &::before {
+        content: '\e124';
+      }
+    }
+
+    & .e-pv-axes {
+      &::before {
+        content: '\e492';
+      }
+    }
+
+    & .e-ph-axistitle {
+      &::before {
+        content: '\e486';
+      }
+    }
+
+    & .e-pv-axistitle {
+      &::before {
+        content: '\e143';
+      }
+    }
+
+    & .e-ct-none {
+      &::before {
+        content: '\e136';
+      }
+    }
+
+    & .e-ct-abovechart {
+      &::before {
+        content: '\e121';
+      }
+    }
+
+    & .e-dl-none {
+      &::before {
+        content: '\e495';
+      }
+    }
+
+    & .e-dl-center {
+      &::before {
+        content: '\e493';
+      }
+    }
+
+    & .e-dl-insideend {
+      &::before {
+        content: '\e135';
+      }
+    }
+
+    & .e-dl-insidebase {
+      &::before {
+        content: '\e893';
+      }
+    }
+
+    & .e-dl-outsideend {
+      &::before {
+        content: '\e905';
+      }
+    }
+
+    & .e-gl-major-horizontal {
+      &::before {
+        content: '\e131';
+      }
+    }
+
+    & .e-gl-major-vertical {
+      &::before {
+        content: '\e496';
+      }
+    }
+
+    & .e-gl-minor-horizontal {
+      &::before {
+        content: '\e145';
+      }
+    }
+
+    & .e-gl-minor-vertical {
+      &::before {
+        content: '\e491';
+      }
+    }
+
+    & .e-legends-none {
+      &::before {
+        content: '\e488';
+      }
+    }
+
+    & .e-legends-right {
+      &::before {
+        content: '\e489';
+      }
+    }
+
+    & .e-legends-left {
+      &::before {
+        content: '\e892';
+      }
+    }
+
+    & .e-legends-bottom {
+      &::before {
+        content: '\e132';
+      }
+    }
+
+    & .e-legends-top {
+      &::before {
+        content: '\e126';
+      }
+    }
+}
+
+  .e-switch-row-column-icon {
+    &::before {
+      content: '\e450';
+    }
+  }
 
   .e-cf-ddb {
     & .e-conditionalformatting-icon {
@@ -612,6 +806,12 @@
         content: '\e85d';
       }
     }
+
+    & .e-pdf {
+      &::before {
+        content: '\e88b';
+          }
+      }
   }
 
   .e-spreadsheet,
@@ -776,5 +976,11 @@
         content: '\e818';
       }
     }
+
+    & .e-password-protect-icon {
+      &::before {
+        content: '\e88a';
+        }
+      }
   }
 }

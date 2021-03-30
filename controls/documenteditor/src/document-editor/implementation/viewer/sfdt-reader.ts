@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { WList } from '../list/list';
 import { WListLevel } from '../list/list-level';
@@ -20,11 +21,11 @@ import { HelperMethods } from '../editor/editor-helper';
 import { Dictionary } from '../../base/dictionary';
 import { ChartComponent } from '@syncfusion/ej2-office-chart';
 import { Revision } from '../track-changes/track-changes';
-/** 
+/**
  * @private
  */
 export class SfdtReader {
-    /* tslint:disable:no-any */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     private documentHelper: DocumentHelper = undefined;
     private fieldSeparator: FieldElementBox;
     private commentStarts: Dictionary<string, CommentCharacterElementBox> = undefined;
@@ -54,17 +55,13 @@ export class SfdtReader {
     private get isPasting(): boolean {
         return this.viewer && this.viewer.owner.isPastingContent;
     }
-    constructor(documentHelper: DocumentHelper) {
+    public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
         this.editableRanges = new Dictionary<string, EditRangeStartElementBox>();
     }
-    get viewer(): LayoutViewer {
+    private get viewer(): LayoutViewer {
         return this.documentHelper.owner.viewer;
     }
-    /**
-     * @private
-     * @param json 
-     */
     public convertJsonToDocument(json: string): BodyWidget[] {
         this.commentStarts = new Dictionary<string, CommentCharacterElementBox>();
         this.commentEnds = new Dictionary<string, CommentCharacterElementBox>();
@@ -72,13 +69,13 @@ export class SfdtReader {
         this.revisionCollection = new Dictionary<string, Revision>();
         this.footnotes = new Footnote();
         this.endnotes = new Footnote();
-        let sections: BodyWidget[] = [];
+        const sections: BodyWidget[] = [];
         let jsonObject: any = json;
         jsonObject = (jsonObject instanceof Object) ? jsonObject : JSON.parse(jsonObject);
-        let characterFormat: any = isNullOrUndefined(jsonObject.characterFormat) ?
+        const characterFormat: any = isNullOrUndefined(jsonObject.characterFormat) ?
             this.viewer.owner.characterFormat : jsonObject.characterFormat;
         this.parseCharacterFormat(characterFormat, this.documentHelper.characterFormat);
-        let paragraphFormat: any = isNullOrUndefined(jsonObject.paragraphFormat) ?
+        const paragraphFormat: any = isNullOrUndefined(jsonObject.paragraphFormat) ?
             this.viewer.owner.paragraphFormat : jsonObject.paragraphFormat;
         this.parseParagraphFormat(paragraphFormat, this.documentHelper.paragraphFormat);
         this.parseDocumentProtection(jsonObject);
@@ -154,7 +151,7 @@ export class SfdtReader {
     }
     private parseCustomXml(data: any): void {
         for (let i: number = 0; i < data.customXml.length; i++) {
-            let xmlData: any = data.customXml[i];
+            const xmlData: any = data.customXml[i];
             if (!this.revisionCollection.containsKey(xmlData.itemID)) {
                 this.documentHelper.customXmlData.add(xmlData.itemID, xmlData.xml);
             }
@@ -184,17 +181,13 @@ export class SfdtReader {
             }
         }
     }
-    /**
-     * @private
-     */
     public parseRevisions(data: any, revisions: Revision[]): void {
         for (let i: number = 0; i < data.revisions.length; i++) {
-            let revisionData: any = data.revisions[i];
+            const revisionData: any = data.revisions[i];
             if (!isNullOrUndefined(revisionData.revisionId)) {
-                let revision: Revision = this.parseRevision(revisionData);
+                const revision: Revision = this.parseRevision(revisionData);
                 let revisionCheck: boolean = true;
                 if (!this.documentHelper.owner.sfdtExportModule.copyWithTrackChange && this.isPaste) {
-                    // tslint:disable-next-line:max-line-length
                     if (revisionData.revisionType === 'Insertion' && this.isPaste && this.documentHelper.owner.enableTrackChanges) {
                         continue;
                     } else {
@@ -220,12 +213,9 @@ export class SfdtReader {
             this.documentHelper.owner.sfdtExportModule.copyWithTrackChange = false;
         }
     }
-    /**
-     * @private
-     */
     public parseRevision(data: any): Revision {
         if (!isNullOrUndefined(data)) {
-            let revision: Revision = new Revision(this.viewer.owner, data.author, data.date);
+            const revision: Revision = new Revision(this.viewer.owner, data.author, data.date);
             revision.revisionID = data.revisionId;
             revision.revisionType = data.revisionType;
             return revision;
@@ -236,9 +226,9 @@ export class SfdtReader {
     private checkAndApplyRevision(inline: any, item: any): void {
         if (!isNullOrUndefined(inline.revisionIds) && inline.revisionIds.length > 0) {
             for (let i: number = 0; i < inline.revisionIds.length; i++) {
-                let id: string = inline.revisionIds[i];
+                const id: string = inline.revisionIds[i];
                 if (this.revisionCollection.containsKey(id)) {
-                    let revision: Revision = this.revisionCollection.get(id);
+                    const revision: Revision = this.revisionCollection.get(id);
                     if (!(item instanceof WParagraphFormat)) {
                         revision.range.push(item);
                     }
@@ -247,13 +237,10 @@ export class SfdtReader {
             }
         }
     }
-    /**
-     * @private
-     */
     public parseComments(data: any, comments: CommentElementBox[]): void {
         let count: number = 0;
         for (let i: number = 0; i < data.comments.length; i++) {
-            let commentData: any = data.comments[i];
+            const commentData: any = data.comments[i];
             let commentElement: CommentElementBox = undefined;
             commentElement = this.parseComment(commentData, commentElement);
             while (count < commentData.replyComments.length) {
@@ -307,13 +294,13 @@ export class SfdtReader {
             }
             styles.push(wStyle);
             if (!isNullOrUndefined(style.basedOn)) {
-                let basedOn: Object = styles.findByName(style.basedOn);
+                const basedOn: Object = styles.findByName(style.basedOn);
                 if (!isNullOrUndefined(basedOn)) {
                     if ((basedOn as WStyle).type === wStyle.type) {
                         wStyle.basedOn = basedOn;
                     }
                 } else {
-                    let basedStyle: any = this.getStyle(style.basedOn, data);
+                    const basedStyle: any = this.getStyle(style.basedOn, data);
                     let styleString: any;
                     if (!isNullOrUndefined(basedStyle) && basedStyle.type === wStyle.type) {
                         styleString = basedStyle;
@@ -329,13 +316,13 @@ export class SfdtReader {
                 }
             }
             if (!isNullOrUndefined(style.link)) {
-                let link: Object = styles.findByName(style.link);
-                let linkStyle: any = this.getStyle(style.link, data);
+                const link: Object = styles.findByName(style.link);
+                const linkStyle: any = this.getStyle(style.link, data);
                 let styleString: any;
                 if (isNullOrUndefined(link)) {
                     if (isNullOrUndefined(linkStyle)) {
                         //Construct the CharacterStyle string
-                        let charaStyle: any = {};
+                        const charaStyle: any = {};
                         charaStyle.characterFormat = style.characterFormat;
                         charaStyle.name = style.name + ' Char';
                         charaStyle.type = 'Character';
@@ -362,11 +349,11 @@ export class SfdtReader {
                 if (style.next === style.name) {
                     wStyle.next = wStyle;
                 } else {
-                    let next: Object = styles.findByName(style.next);
+                    const next: Object = styles.findByName(style.next);
                     if (!isNullOrUndefined(next) && (next as WStyle).type === wStyle.type) {
                         wStyle.next = next;
                     } else {
-                        let nextStyleString: any = this.getStyle(style.next, data);
+                        const nextStyleString: any = this.getStyle(style.next, data);
                         if (!isNullOrUndefined(nextStyleString)) {
                             this.parseStyle(data, nextStyleString, styles);
                             wStyle.next = styles.findByName(nextStyleString.name);
@@ -386,15 +373,10 @@ export class SfdtReader {
         }
         return undefined;
     }
-    /**
-     * @private
-     * @param data 
-     * @param abstractLists 
-     */
     public parseAbstractList(data: any, abstractLists: WAbstractList[]): void {
         for (let i: number = 0; i < data.abstractLists.length; i++) {
-            let abstractList: WAbstractList = new WAbstractList();
-            let abstract: any = data.abstractLists[i];
+            const abstractList: WAbstractList = new WAbstractList();
+            const abstract: any = data.abstractLists[i];
             abstractLists.push(abstractList);
             if (!isNullOrUndefined(abstract)) {
                 if (!isNullOrUndefined(abstract.abstractListId)) {
@@ -402,9 +384,9 @@ export class SfdtReader {
                 }
                 if (!isNullOrUndefined(abstract.levels)) {
                     for (let j: number = 0; j < abstract.levels.length; j++) {
-                        let level: any = abstract.levels[j];
+                        const level: any = abstract.levels[j];
                         if (!isNullOrUndefined(level)) {
-                            let listLevel: WListLevel = this.parseListLevel(level, abstractList);
+                            const listLevel: WListLevel = this.parseListLevel(level, abstractList);
                             abstractList.levels.push(listLevel);
                         }
                     }
@@ -413,7 +395,7 @@ export class SfdtReader {
         }
     }
     private parseListLevel(data: any, owner: any): WListLevel {
-        let listLevel: WListLevel = new WListLevel(owner);
+        const listLevel: WListLevel = new WListLevel(owner);
         if (data.listLevelPattern === 'Bullet') {
             listLevel.listLevelPattern = 'Bullet';
             listLevel.numberFormat = !isNullOrUndefined(data.numberFormat) ? data.numberFormat : '';
@@ -432,15 +414,10 @@ export class SfdtReader {
         this.parseParagraphFormat(data.paragraphFormat, listLevel.paragraphFormat);
         return listLevel;
     }
-    /**
-     * @private
-     * @param data 
-     * @param listCollection 
-     */
     public parseList(data: any, listCollection: WList[]): void {
         for (let i: number = 0; i < data.lists.length; i++) {
-            let list: WList = new WList();
-            let lists: any = data.lists[i];
+            const list: WList = new WList();
+            const lists: any = data.lists[i];
             if (!isNullOrUndefined(lists.abstractListId)) {
                 list.abstractListId = lists.abstractListId;
                 list.abstractList = this.documentHelper.getAbstractListById(lists.abstractListId);
@@ -459,8 +436,8 @@ export class SfdtReader {
             return;
         }
         for (let i: number = 0; i < data.length; i++) {
-            let levelOverrides: WLevelOverride = new WLevelOverride();
-            let levelOverride: any = data[i];
+            const levelOverrides: WLevelOverride = new WLevelOverride();
+            const levelOverride: any = data[i];
             levelOverrides.startAt = levelOverride.startAt;
             levelOverrides.levelNumber = levelOverride.levelNumber;
             if (!isNullOrUndefined(levelOverride.overrideListLevel)) {
@@ -471,10 +448,10 @@ export class SfdtReader {
     }
     private parseSections(data: any, sections: BodyWidget[]): void {
         for (let i: number = 0; i < data.length; i++) {
-            let section: BodyWidget = new BodyWidget();
+            const section: BodyWidget = new BodyWidget();
             section.sectionFormat = new WSectionFormat(section);
             section.index = i;
-            let item: any = data[i];
+            const item: any = data[i];
             if (!isNullOrUndefined(item.sectionFormat)) {
                 this.parseSectionFormat(item.sectionFormat, section.sectionFormat);
             }
@@ -490,39 +467,36 @@ export class SfdtReader {
             sections.push(section);
         }
     }
-    /**
-     * @private
-     */
     public parseHeaderFooter(data: any, headersFooters: any): HeaderFooters {
         this.isParseHeader = true;
-        let hfs: HeaderFooters = {};
+        const hfs: HeaderFooters = {};
         if (!isNullOrUndefined(data.header)) {
-            let oddHeader: HeaderFooterWidget = new HeaderFooterWidget('OddHeader');
+            const oddHeader: HeaderFooterWidget = new HeaderFooterWidget('OddHeader');
             hfs[0] = oddHeader;
             this.parseTextBody(data.header.blocks, oddHeader);
         }
         if (!isNullOrUndefined(data.footer)) {
-            let oddFooter: HeaderFooterWidget = new HeaderFooterWidget('OddFooter');
+            const oddFooter: HeaderFooterWidget = new HeaderFooterWidget('OddFooter');
             hfs[1] = oddFooter;
             this.parseTextBody(data.footer.blocks, oddFooter);
         }
         if (!isNullOrUndefined(data.evenHeader)) {
-            let evenHeader: HeaderFooterWidget = new HeaderFooterWidget('EvenHeader');
+            const evenHeader: HeaderFooterWidget = new HeaderFooterWidget('EvenHeader');
             hfs[2] = evenHeader;
             this.parseTextBody(data.evenHeader.blocks, evenHeader);
         }
         if (!isNullOrUndefined(data.evenFooter)) {
-            let evenFooter: HeaderFooterWidget = new HeaderFooterWidget('EvenFooter');
+            const evenFooter: HeaderFooterWidget = new HeaderFooterWidget('EvenFooter');
             hfs[3] = evenFooter;
             this.parseTextBody(data.evenFooter.blocks, evenFooter);
         }
         if (!isNullOrUndefined(data.firstPageHeader)) {
-            let firstPageHeader: HeaderFooterWidget = new HeaderFooterWidget('FirstPageHeader');
+            const firstPageHeader: HeaderFooterWidget = new HeaderFooterWidget('FirstPageHeader');
             hfs[4] = firstPageHeader;
             this.parseTextBody(data.firstPageHeader.blocks, firstPageHeader);
         }
         if (!isNullOrUndefined(data.firstPageFooter)) {
-            let firstPageFooter: HeaderFooterWidget = new HeaderFooterWidget('FirstPageFooter');
+            const firstPageFooter: HeaderFooterWidget = new HeaderFooterWidget('FirstPageFooter');
             hfs[5] = firstPageFooter;
             this.parseTextBody(data.firstPageFooter.blocks, firstPageFooter);
         }
@@ -533,22 +507,21 @@ export class SfdtReader {
     }
     public addCustomStyles(data: any): void {
         for (let i: number = 0; i < data.styles.length; i++) {
-            let style: any = this.documentHelper.styles.findByName(data.styles[i].name);
+            const style: any = this.documentHelper.styles.findByName(data.styles[i].name);
             if (style === undefined) {
                 this.parseStyle(data, data.styles[i], this.documentHelper.styles);
             }
         }
     }
-    // tslint:disable-next-line:max-line-length
     public parseBody(data: any, blocks: BlockWidget[], container?: Widget, isSectionBreak?: boolean, contentControlProperties?: ContentControlProperties): void {
         if (!isNullOrUndefined(data)) {
             for (let i: number = 0; i < data.length; i++) {
-                let block: any = data[i];
+                const block: any = data[i];
                 let hasValidElmts: boolean = false;
                 if (block.hasOwnProperty('inlines')) {
-                    let writeInlineFormat: boolean = false;
+                    const writeInlineFormat: boolean = false;
                     //writeInlineFormat = this.isPasting && i === data.length - 1;
-                    let paragraph: ParagraphWidget = new ParagraphWidget();
+                    const paragraph: ParagraphWidget = new ParagraphWidget();
                     paragraph.characterFormat = new WCharacterFormat(paragraph);
                     paragraph.paragraphFormat = new WParagraphFormat(paragraph);
                     if (block.inlines.length > 0) {
@@ -561,7 +534,7 @@ export class SfdtReader {
                         if (!isNullOrUndefined(block.paragraphFormat) && !isNullOrUndefined(block.paragraphFormat.styleName)) {
                             styleObj = this.documentHelper.styles.findByName(block.paragraphFormat.styleName, 'Paragraph');
                             if (!isNullOrUndefined(styleObj)) {
-                                paragraph.paragraphFormat.ApplyStyle(styleObj as WStyle);
+                                paragraph.paragraphFormat.applyStyle(styleObj as WStyle);
                             }
                         }
                         blocks.push(paragraph);
@@ -573,8 +546,8 @@ export class SfdtReader {
                 } else if (block.hasOwnProperty('rows')) {
                     this.parseTable(block, blocks, blocks.length, container);
                 } else if (block.hasOwnProperty('contentControlProperties')) {
-                    let blockStartContentControl: ContentControl = new ContentControl('Block');
-                    let blockEndContentControl: ContentControl = new ContentControl('Block');
+                    const blockStartContentControl: ContentControl = new ContentControl('Block');
+                    const blockEndContentControl: ContentControl = new ContentControl('Block');
                     this.parseContentControlProperties(block.contentControlProperties, blockStartContentControl.contentControlProperties);
                     blockEndContentControl.contentControlProperties = blockStartContentControl.contentControlProperties;
                     blockStartContentControl.type = 0;
@@ -582,8 +555,7 @@ export class SfdtReader {
 
                     this.parseBody(block.blocks, blocks, container, isSectionBreak, blockStartContentControl.contentControlProperties);
                     for (let j: number = 0; j < 2; j++) {
-                        // tslint:disable-next-line:max-line-length
-                        let para: IWidget = (blocks.length < block.blocks.length) ? blocks[0] : (j === 0 ? blocks[blocks.length - block.blocks.length] : blocks[blocks.length - 1]);
+                        const para: IWidget = j === 0 ? blocks[blocks.length - block.blocks.length] : blocks[blocks.length - 1];
                         let blockWidget: BlockWidget;
                         if (para instanceof ParagraphWidget) {
                             blockWidget = para as BlockWidget;
@@ -591,13 +563,12 @@ export class SfdtReader {
                             if (j === 0) {
                                 blockWidget = ((para.firstChild as TableRowWidget).firstChild as TableCellWidget).firstChild as BlockWidget;
                             } else {
-                                let cell: TableCellWidget = (para.lastChild as TableRowWidget).lastChild as TableCellWidget;
+                                const cell: TableCellWidget = (para.lastChild as TableRowWidget).lastChild as TableCellWidget;
                                 blockWidget = cell.lastChild as BlockWidget;
                             }
                         }
-                        if (!isNullOrUndefined(blockWidget)) {
                         if (blockWidget.childWidgets.length === 0) {
-                            let lineWidget: LineWidget = new LineWidget(blockWidget as ParagraphWidget);
+                            const lineWidget: LineWidget = new LineWidget(blockWidget as ParagraphWidget);
                             blockWidget.childWidgets.push(lineWidget);
                         }
                         if (j === 0) {
@@ -608,7 +579,6 @@ export class SfdtReader {
                             blockEndContentControl.line = blockWidget.lastChild as LineWidget;
                         }
                     }
-                    }
                 }
                 if (!isNullOrUndefined(contentControlProperties)) {
                     (blocks[blocks.length - 1] as BlockWidget).contentControlProperties = contentControlProperties;
@@ -617,7 +587,7 @@ export class SfdtReader {
         }
     }
     private parseTable(block: any, blocks: BlockWidget[], index: number, section: Widget): void {
-        let table: TableWidget = new TableWidget();
+        const table: TableWidget = new TableWidget();
         table.index = index;
         table.tableFormat = new WTableFormat(table);
         if (!isNullOrUndefined(block.tableFormat)) {
@@ -626,9 +596,9 @@ export class SfdtReader {
         table.title = block.title;
         table.description = block.description;
         for (let i: number = 0; i < block.rows.length; i++) {
-            let row: TableRowWidget = new TableRowWidget();
+            const row: TableRowWidget = new TableRowWidget();
             row.rowFormat = new WRowFormat(row);
-            let tableRow: any = block.rows[i];
+            const tableRow: any = block.rows[i];
             if (!isNullOrUndefined(tableRow.contentControlProperties)) {
                 row.contentControlProperties = new ContentControlProperties('Row');
                 this.parseContentControlProperties(tableRow.contentControlProperties, row.contentControlProperties);
@@ -639,7 +609,7 @@ export class SfdtReader {
                 this.parseRowGridValues(tableRow.rowFormat, row.rowFormat);
                 row.index = i;
                 for (let j: number = 0; j < block.rows[i].cells.length; j++) {
-                    let cell: TableCellWidget = new TableCellWidget();
+                    const cell: TableCellWidget = new TableCellWidget();
                     cell.cellFormat = new WCellFormat(cell);
                     if (!isNullOrUndefined(block.rows[i].cells[j].contentControlProperties)) {
                         cell.contentControlProperties = new ContentControlProperties('Cell');
@@ -656,15 +626,15 @@ export class SfdtReader {
                     this.isPageBreakInsideTable = true;
                     this.parseTextBody(block.rows[i].cells[j].blocks, cell, false);
                     if (!isNullOrUndefined(cell.contentControlProperties)) {
-                        let cellStartContentControl: ContentControl = new ContentControl('Cell');
-                        let cellEndContentControl: ContentControl = new ContentControl('Cell');
+                        const cellStartContentControl: ContentControl = new ContentControl('Cell');
+                        const cellEndContentControl: ContentControl = new ContentControl('Cell');
                         cellStartContentControl.contentControlProperties = cell.contentControlProperties;
                         cellEndContentControl.contentControlProperties = cell.contentControlProperties;
                         cellStartContentControl.type = 0;
                         cellEndContentControl.type = 1;
 
                         if ((cell.firstChild as ParagraphWidget).childWidgets.length === 0) {
-                            let lineWidget: LineWidget = new LineWidget(cell.firstChild as ParagraphWidget);
+                            const lineWidget: LineWidget = new LineWidget(cell.firstChild as ParagraphWidget);
                             (cell.firstChild as ParagraphWidget).childWidgets.push(lineWidget);
                         }
                         cellStartContentControl.line = (cell.firstChild as ParagraphWidget).firstChild as LineWidget;
@@ -674,21 +644,21 @@ export class SfdtReader {
                     }
                     if (!isNullOrUndefined(row.contentControlProperties)) {
                         if (row.firstChild === cell) {
-                            let rowStartContentControl: ContentControl = new ContentControl('Row');
+                            const rowStartContentControl: ContentControl = new ContentControl('Row');
                             rowStartContentControl.contentControlProperties = row.contentControlProperties;
                             rowStartContentControl.type = 0;
                             if ((cell.firstChild as ParagraphWidget).childWidgets.length === 0) {
-                                let lineWidget: LineWidget = new LineWidget(cell.firstChild as ParagraphWidget);
+                                const lineWidget: LineWidget = new LineWidget(cell.firstChild as ParagraphWidget);
                                 (cell.firstChild as ParagraphWidget).childWidgets.push(lineWidget);
                             }
                             rowStartContentControl.line = (cell.firstChild as ParagraphWidget).firstChild as LineWidget;
                             ((cell.firstChild as ParagraphWidget).firstChild as LineWidget).children.splice(0, 0, rowStartContentControl);
                         } else if (row.lastChild === cell) {
-                            let rowEndContentControl: ContentControl = new ContentControl('Row');
+                            const rowEndContentControl: ContentControl = new ContentControl('Row');
                             rowEndContentControl.contentControlProperties = row.contentControlProperties;
                             rowEndContentControl.type = 1;
                             if ((cell.lastChild as ParagraphWidget).childWidgets.length === 0) {
-                                let lineWidget: LineWidget = new LineWidget(cell.lastChild as ParagraphWidget);
+                                const lineWidget: LineWidget = new LineWidget(cell.lastChild as ParagraphWidget);
                                 (cell.lastChild as ParagraphWidget).childWidgets.push(lineWidget);
                             }
                             rowEndContentControl.line = (cell.lastChild as ParagraphWidget).lastChild as LineWidget;
@@ -789,7 +759,7 @@ export class SfdtReader {
         } else if (contentControlProperties.type === 'ComboBox' || contentControlProperties.type === 'DropDownList') {
             if (!isNullOrUndefined(wContentControlProperties.contentControlListItems)) {
                 for (let i: number = 0; i < wContentControlProperties.contentControlListItems.length; i++) {
-                    let contentControlListItem: ContentControlListItems = new ContentControlListItems();
+                    const contentControlListItem: ContentControlListItems = new ContentControlListItems();
                     contentControlListItem.displayText = wContentControlProperties.contentControlListItems[i].displayText;
                     contentControlListItem.value = wContentControlProperties.contentControlListItems[i].value;
                     contentControlProperties.contentControlListItems.push(contentControlListItem);
@@ -813,7 +783,7 @@ export class SfdtReader {
         }
     }
 
-    // tslint:disable:max-func-body-length
+    /* eslint-disable  */
     private parseParagraph(data: any, paragraph: ParagraphWidget, writeInlineFormat?: boolean, lineWidget?: LineWidget): boolean {
         let isContentControl: boolean = false;
         if (isNullOrUndefined(lineWidget)) {
@@ -830,7 +800,6 @@ export class SfdtReader {
                 let textElement: FieldTextElementBox | TextElementBox | TabElementBox = undefined;
                 if (this.documentHelper.isPageField) {
                     textElement = new FieldTextElementBox();
-                    // tslint:disable-next-line:max-line-length
                     (textElement as FieldTextElementBox).fieldBegin = this.documentHelper.fieldStacks[this.documentHelper.fieldStacks.length - 1];
                 } else if (inline.text === '\t') {
                     textElement = new TabElementBox();
@@ -851,7 +820,6 @@ export class SfdtReader {
                                 if (trackChange) {
                                     revision = this.revisionCollection.get(inline.revisionIds[j]);
                                 }
-                                // tslint:disable-next-line:max-line-length
                                 if (!isNullOrUndefined(revision) && !isNullOrUndefined(lineWidget.children[i - 1].revisions[j]) && ((!trackChange) || (trackChange && (revision.revisionType === 'Deletion')))) {
                                     if (revision.revisionID === inline.revisionIds[j]) {
                                         inline.revisionIds[j] = lineWidget.children[i - 1].revisions[j].revisionID;
@@ -937,7 +905,6 @@ export class SfdtReader {
                 let imageString: string = HelperMethods.formatClippedString(inline.imageString).formatClippedString;
                 let isValidImage: boolean = this.validateImageUrl(imageString);
                 if (!isValidImage) {
-                    // tslint:disable-next-line:max-line-length
                     image.imageString = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAgVBMVEX///8AAADgAADY2Njl5eVcXFxjY2NZWVl/f3+wsLCmpqb4+PiioqKpqam7u7vV1dX2uLj2wsLhFRXzpKT3vb30sbHhCwv74+P40dH+9vbkIyO2trbBwcHLy8tsbGycnJz529v4zMzrbGzlLS3qZmblNzfrdXXoRkbvi4vvgYHlHh7CZsBOAAADpUlEQVR4nO3da1faQBSF4ekAUQlUEFs14AXxVv7/D6yaQiZx5mSEYXF2ut+PNKzyyK5diYDmR9czx34AB49C/CjE759w3jvvWr15Tdgz3atXE54f++EcIArxoxA/CvGjED8K8aMQPwrxoxA/CvGLEeZ9jPJdhfk4GyCUjb3ECGE/Q6m/q3DwfudjP0ERZYN9hKdn2hvd3+0jHJz5/kBVuTk96bbQUEjhYR9ckiikUH8UUqg/CinUH4UU6o9CCvVHIYX6o5BC/VFIof4opFB/FFKoPwop1B+FFOqPQgrjyxfjVC38Lxk9tnAxGqZqdKtSOE4GHA5/fuNJpDCtcNHbv4VqYYqPLjgfUViPQgrjozA2CptRSGF8/59w+Wrt+rr1btNna1cPzg0wwuXavncxabnX7PfHYYXzlYARvlobQZyUR9mXm+1NMEK7SSLONgcVV9vb8IQXv4J3KSeKKlxXxNCzONkeYp8AV3p9UT1+P3FWHVAsq5thhGZSEb1DrSZq7dS5HUdoLiuBZ6jORG3tCwAkNJfCUJ2Jrqe1P0ESCkMNTdSACYNDDU7UoAkDQw1P1MAJvUMVJmrwhJ6hShM1gMIvQxUnahCFjaHKEzWQQneoxR95ogZTWBuqPFEDKnSHKk/UoArdoYoTNbDC5lBDEzW4QjMpYiZqgIXG/S76JhwHK5zVVipcnkIVuv/RW/HyFKhwYhuFr6NiCmdNoDBUSGFjovJQEYXuRN9ahwoorJ8uSZenPsMTNk+X2q6jwgm/ntHL11HhhL4zenmoYEL/Gb04VCxh6KKTNFQoYfiikzBUJKF00Sk8VCChfF00OFQcYdt10dBQYYRT5xn0n9G7Q0X8GfCzNNEyZ6iPgD/HlydaVg11DfhajJaJlm2HugIUrlomWrYZKuJKHz6vHhbSM/hROdRnxNe1meuXYvW0DB6+aflYrB7dlzDiCM3N1dVN6GDhMCDhjlHYjEIK46MwNgqbUUhhfJ/vA07wO8N1vw94ONo/3e/lTpVOYfc/UyG//ZmqW52fi/FuTNW3/lZ+eguF+qOQQv1RSKH+KKRQfxRSqD8KKdQfhRTqj0IK9UchhfqjkEL9UUih/iikUH8UUqg/CmXh6Hsv3jlK+wnvD/vgkrSHMMuyu1P9ZdmuwnycDQYn+svG3n9KEUKT9zHyf6+IEWJHIX4U4kchfhTiRyF+FOJHIX4U4kchfnVhijeZa6sunCf4ZdPamteEHY5C/CjEr/vCv0ec0g+AtS1QAAAAAElFTkSuQmCC';
                 } else {
                     image.imageString = inline.imageString;
@@ -1139,6 +1106,12 @@ export class SfdtReader {
                 shape.horizontalAlignment = inline.horizontalAlignment;
                 shape.zOrderPosition = inline.zOrderPosition;
                 shape.allowOverlap = inline.allowOverlap;
+                shape.textWrappingStyle = inline.textWrappingStyle;
+                shape.textWrappingType = inline.textWrappingType;
+                shape.distanceBottom = inline.distanceBottom;
+                shape.distanceLeft = inline.distanceLeft;
+                shape.distanceRight = inline.distanceRight;
+                shape.distanceTop = inline.distanceTop;
                 shape.layoutInCell = inline.layoutInCell;
                 shape.lockAnchor = inline.lockAnchor;
                 shape.autoShapeType = inline.autoShapeType;
@@ -1198,10 +1171,9 @@ export class SfdtReader {
         return hasValidElmts;
     }
     private applyCharacterStyle(inline: any, elementbox: ElementBox): void {
-        /* tslint:disable-next-line:max-line-length */
         if (!isNullOrUndefined(inline.characterFormat) && !isNullOrUndefined(inline.characterFormat.styleName)) {
             let charStyle: Object = this.documentHelper.styles.findByName(inline.characterFormat.styleName, 'Character');
-            elementbox.characterFormat.ApplyStyle(charStyle as WStyle);
+            elementbox.characterFormat.applyStyle(charStyle as WStyle);
         }
     }
     private parseEditableRangeStart(data: any): EditRangeStartElementBox {
@@ -1616,9 +1588,6 @@ export class SfdtReader {
         let convertColor: string = color;
         return convertColor || '#ffffff';
     }
-    /**
-     * @private
-     */
     public parseParagraphFormat(sourceFormat: any, paragraphFormat: WParagraphFormat): void {
         if (!isNullOrUndefined(sourceFormat)) {
             if (!isNullOrUndefined(sourceFormat.bidi)) {
@@ -1674,11 +1643,6 @@ export class SfdtReader {
             }
         }
     }
-    /**
-     * 
-     * @param data @private
-     * @param sectionFormat 
-     */
     public parseSectionFormat(data: any, sectionFormat: WSectionFormat): void {
         if (!isNullOrUndefined(data.pageWidth)) {
             sectionFormat.pageWidth = data.pageWidth;

@@ -1,9 +1,13 @@
-import {  NotifyPropertyChanges, Property, Event, Complex, INotifyPropertyChanged, updateBlazorTemplate } from '@syncfusion/ej2-base';
-import {  extend,  compile as templateComplier, Component, resetBlazorTemplate, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable valid-jsdoc */
+import { NotifyPropertyChanges, Property, Event, Complex, INotifyPropertyChanged, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { extend, compile as templateComplier, Component, resetBlazorTemplate, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '../svg-render/index';
-import {  ChildProperty, createElement, EmitType, remove, Browser, AnimationOptions, Animation} from '@syncfusion/ej2-base';
+import { ChildProperty, createElement, EmitType, remove, Browser, AnimationOptions, Animation } from '@syncfusion/ej2-base';
 import { TextStyleModel, TooltipBorderModel, TooltipModel, ToolLocationModel, AreaBoundsModel } from './tooltip-model';
-import { ITooltipThemeStyle, ITooltipRenderingEventArgs, ITooltipAnimationCompleteArgs, IBlazorTemplate} from './interface';
+import { ITooltipThemeStyle, ITooltipRenderingEventArgs, ITooltipAnimationCompleteArgs, IBlazorTemplate } from './interface';
 import { ITooltipLoadedEventArgs, getTooltipThemeColor } from './interface';
 import { Size, Rect, Side, measureText, getElement, findDirection, drawSymbol, textElement } from './helper';
 import { removeElement, TextOption, TooltipLocation, PathOption } from './helper';
@@ -11,6 +15,7 @@ import { TooltipShape, TooltipTheme, TooltipPlacement } from './enum';
 
 /**
  * Configures the fonts in charts.
+ *
  * @private
  */
 
@@ -18,6 +23,7 @@ export class TextStyle extends ChildProperty<TextStyle> {
 
     /**
      * Font size for the text.
+     *
      * @default null
      */
     @Property(null)
@@ -25,6 +31,7 @@ export class TextStyle extends ChildProperty<TextStyle> {
 
     /**
      * Color for the text.
+     *
      * @default ''
      */
     @Property('')
@@ -38,6 +45,7 @@ export class TextStyle extends ChildProperty<TextStyle> {
 
     /**
      * FontWeight for the text.
+     *
      * @default 'Normal'
      */
     @Property('Normal')
@@ -45,6 +53,7 @@ export class TextStyle extends ChildProperty<TextStyle> {
 
     /**
      * FontStyle for the text.
+     *
      * @default 'Normal'
      */
     @Property('Normal')
@@ -52,6 +61,7 @@ export class TextStyle extends ChildProperty<TextStyle> {
 
     /**
      * Opacity for the text.
+     *
      * @default 1
      */
     @Property(1)
@@ -61,12 +71,14 @@ export class TextStyle extends ChildProperty<TextStyle> {
 
 /**
  * Configures the borders in the chart.
+ *
  * @private
  */
 export class TooltipBorder extends ChildProperty<TooltipBorder> {
 
     /**
      * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default ''
      */
     @Property('')
@@ -74,6 +86,7 @@ export class TooltipBorder extends ChildProperty<TooltipBorder> {
 
     /**
      * The width of the border in pixels.
+     *
      * @default 1
      */
     @Property(1)
@@ -83,12 +96,14 @@ export class TooltipBorder extends ChildProperty<TooltipBorder> {
 
 /**
  * Configures the borders in the chart.
+ *
  * @private
  */
 export class AreaBounds extends ChildProperty<AreaBounds> {
 
     /**
      * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default ''
      */
     @Property(0)
@@ -96,6 +111,7 @@ export class AreaBounds extends ChildProperty<AreaBounds> {
 
     /**
      * The width of the border in pixels.
+     *
      * @default 1
      */
     @Property(0)
@@ -103,6 +119,7 @@ export class AreaBounds extends ChildProperty<AreaBounds> {
 
     /**
      * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default ''
      */
     @Property(0)
@@ -110,6 +127,7 @@ export class AreaBounds extends ChildProperty<AreaBounds> {
 
     /**
      * The width of the border in pixels.
+     *
      * @default 1
      */
     @Property(0)
@@ -119,12 +137,14 @@ export class AreaBounds extends ChildProperty<AreaBounds> {
 
 /**
  * Configures the borders in the chart.
+ *
  * @private
  */
 export class ToolLocation extends ChildProperty<ToolLocation> {
 
     /**
      * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default ''
      */
     @Property(0)
@@ -132,6 +152,7 @@ export class ToolLocation extends ChildProperty<ToolLocation> {
 
     /**
      * The width of the border in pixels.
+     *
      * @default 1
      */
     @Property(0)
@@ -150,32 +171,36 @@ export class ToolLocation extends ChildProperty<ToolLocation> {
  *   tooltipObj.appendTo("#tooltip");
  * </script>
  * ```
+ *
  * @private
  */
 @NotifyPropertyChanges
 export class Tooltip extends Component<HTMLElement> implements INotifyPropertyChanged {
 
 
-     /**
-      * Enables / Disables the visibility of the tooltip.
-      * @default false.
-      * @private.
-      */
+    /**
+     * Enables / Disables the visibility of the tooltip.
+     *
+     * @default false.
+     * @private
+     */
     @Property(false)
     public enable: boolean;
 
     /**
      * If set to true, a single ToolTip will be displayed for every index.
+     *
      * @default false.
-     * @private.
+     * @private
      */
     @Property(false)
     public shared: boolean;
 
     /**
      * To enable shadow for the tooltip.
+     *
      * @default true.
-     * @private.
+     * @private
      */
 
     @Property(true)
@@ -183,7 +208,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
-     * @private.
+     *
+     * @private
      */
 
     @Property(null)
@@ -191,7 +217,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Header for tooltip.
-     * @private.
+     *
+     * @private
      */
 
     @Property('')
@@ -199,7 +226,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
-     * @private.
+     *
+     * @private
      */
 
     @Property(0.75)
@@ -207,7 +235,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Options to customize the ToolTip text.
-     * @private.
+     *
+     * @private
      */
 
     @Complex<TextStyleModel>({ size: '13px', fontWeight: 'Normal', color: null, fontStyle: 'Normal', fontFamily: 'Segoe UI' }, TextStyle)
@@ -215,8 +244,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Custom template to format the ToolTip content. Use ${x} and ${y} as the placeholder text to display the corresponding data point.
+     *
      * @default null.
-     * @private.
+     * @private
      */
 
     @Property(null)
@@ -224,151 +254,172 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * If set to true, ToolTip will animate while moving from one point to another.
+     *
      * @default true.
-     * @private.
+     * @private
      */
     @Property(true)
     public enableAnimation: boolean;
 
     /**
      * Duration for Tooltip animation.
+     *
      * @default 300
-     * @private.
+     * @private
      */
     @Property(300)
     public duration: number;
 
-   /**
-    * To rotate the tooltip.
-    * @default false.
-    * @private.
-    */
+    /**
+     * To rotate the tooltip.
+     *
+     * @default false.
+     * @private
+     */
     @Property(false)
     public inverted: boolean;
 
-   /**
-    * Negative value of the tooltip.
-    * @default true.
-    * @private.
-    */
+    /**
+     * Negative value of the tooltip.
+     *
+     * @default true.
+     * @private
+     */
     @Property(false)
     public isNegative: boolean;
 
     /**
      * Options to customize tooltip borders.
-     * @private.
+     *
+     * @private
      */
     @Complex<TooltipBorderModel>({ color: '#cccccc', width: 0.5 }, TooltipBorder)
     public border: TooltipBorderModel;
 
     /**
      * Content for the tooltip.
-     * @private.
+     *
+     * @private
      */
     @Property([])
     public content: string[];
     /**
      * Content for the tooltip.
-     * @private.
+     *
+     * @private
      */
     @Property(10)
     public markerSize: number;
 
     /**
      * Clip location.
-     * @private.
+     *
+     * @private
      */
     @Complex<ToolLocationModel>({ x: 0, y: 0 }, ToolLocation)
     public clipBounds: ToolLocationModel;
 
     /**
      * Palette for marker.
-     * @private.
+     *
+     * @private
      */
     @Property([])
     public palette: string[];
 
     /**
      * Shapes for marker.
-     * @private.
+     *
+     * @private
      */
     @Property([])
     public shapes: TooltipShape[];
 
     /**
      * Location for Tooltip.
-     * @private.
+     *
+     * @private
      */
     @Complex<ToolLocationModel>({ x: 0, y: 0 }, ToolLocation)
     public location: ToolLocationModel;
 
     /**
      * Location for Tooltip.
-     * @private.
+     *
+     * @private
      */
     @Property(0)
     public offset: number;
 
     /**
      * Rounded corner for x.
-     * @private.
+     *
+     * @private
      */
     @Property(2)
     public rx: number;
 
     /**
      * Rounded corner for y.
-     * @private.
+     *
+     * @private
      */
     @Property(2)
     public ry: number;
 
     /**
      * Margin for left and right.
-     * @private.
+     *
+     * @private
      */
     @Property(5)
     public marginX: number;
 
     /**
      *  Margin for top and bottom.
-     *  @private.
+     *
+     * @private
      */
     @Property(5)
     public marginY: number;
 
     /**
      * Padding for arrow.
-     * @private.
+     *
+     * @private
      */
     @Property(12)
     public arrowPadding: number;
 
     /**
      * Data for template.
-     * @private.
+     *
+     * @private
      */
     @Property(null)
     public data: Object;
 
-   /**
-    * Specifies the theme for the chart.
-    * @default 'Material'
-    * @private.
-    */
+    /**
+     * Specifies the theme for the chart.
+     *
+     * @default 'Material'
+     * @private
+     */
     @Property('Material')
     public theme: TooltipTheme;
 
     /**
      * Bounds for the rect.
-     * @private.
+     *
+     * @private
      */
     @Complex<AreaBoundsModel>({ x: 0, y: 0, width: 0, height: 0 }, AreaBounds)
     public areaBounds: AreaBoundsModel;
 
     /**
      * Bounds for chart.
-     * @private.
+     *
+     * @private
      */
     @Property(null)
     public availableSize: Size;
@@ -381,8 +432,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * To check chart is canvas.
+     *
      * @default false.
-     * @private.
+     * @private
      */
 
     @Property(false)
@@ -390,8 +442,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * To check tooltip wrap for chart.
+     *
      * @default false.
-     * @private.
+     * @private
      */
 
     @Property(false)
@@ -399,40 +452,45 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * To place tooltip in a particular position.
+     *
      * @default null.
-     * @private.
+     * @private
      */
     @Property(null)
     public tooltipPlacement: TooltipPlacement;
 
     /**
      * Control instance
+     *
      * @default null.
-     * @private.
+     * @private
      */
     @Property(null)
     public controlInstance: object;
 
     /**
      * Triggers before each axis range is rendered.
-     * @event
-     * @private.
+     *
+     * @event tooltipRender
+     * @private
      */
     @Event()
     public tooltipRender: EmitType<ITooltipRenderingEventArgs>;
 
     /**
      * Triggers after chart load.
-     * @event
-     * @private.
+     *
+     * @event loaded
+     * @private
      */
     @Event()
     public loaded: EmitType<ITooltipLoadedEventArgs>;
 
     /**
      * Triggers after chart load.
-     * @event
-     * @private.
+     *
+     * @event animationComplete
+     * @private
      */
     @Event()
     public animationComplete: EmitType<ITooltipAnimationCompleteArgs>;
@@ -466,6 +524,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Constructor for creating the widget
+     *
      * @hidden
      */
     constructor(options?: TooltipModel, element?: string | HTMLElement) {
@@ -474,7 +533,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Initialize the event handler.
-     *  @private.
+     *
+     * @private
      */
 
     protected preRender(): void {
@@ -496,8 +556,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private removeSVG(): void {
-        let svgObject: Element = document.getElementById(this.element.id + '_svg');
-        let templateObject: Element = document.getElementById(this.element.id + 'parent_template');
+        const svgObject: Element = document.getElementById(this.element.id + '_svg');
+        const templateObject: Element = document.getElementById(this.element.id + 'parent_template');
         if (this.blazorTemplate) {
             resetBlazorTemplate(this.element.id + 'parent_template' + '_blazorTemplate');
         }
@@ -517,20 +577,20 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.fadeOuted = false;
         if (!this.template) {
             this.renderText(this.isFirst);
-            let argsData: ITooltipRenderingEventArgs = {
-                cancel: false, name: 'tooltipRender', tooltip : this
+            const argsData: ITooltipRenderingEventArgs = {
+                cancel: false, name: 'tooltipRender', tooltip: this
             };
             this.trigger('tooltipRender', argsData);
-            let markerSide: Side = this.renderTooltipElement(<Rect>this.areaBounds, <TooltipLocation>this.location);
+            const markerSide: Side = this.renderTooltipElement(<Rect>this.areaBounds, <TooltipLocation>this.location);
             this.drawMarker(markerSide.isBottom, markerSide.isRight, this.markerSize);
         } else {
             this.updateTemplateFn();
             this.createTemplate(<Rect>this.areaBounds, <TooltipLocation>this.location);
         }
         this.trigger('loaded', { tooltip: this });
-        let element : Element = document.getElementById('chartmeasuretext');
+        const element: Element = document.getElementById('chartmeasuretext');
         if (element) {
-           remove(element);
+            remove(element);
         }
         this.allowServerDataBinding = true;
     }
@@ -539,7 +599,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.textElements = [];
         if (!this.template || this.shared) {
             // SVG element for tooltip
-            let svgObject: Element = this.renderer.createSvg({ id: this.element.id + '_svg' });
+            const svgObject: Element = this.renderer.createSvg({ id: this.element.id + '_svg' });
             this.element.appendChild(svgObject);
             // Group to hold text and path.
             let groupElement: HTMLElement = document.getElementById(this.element.id + '_group');
@@ -548,7 +608,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 groupElement.setAttribute('transform', 'translate(0,0)');
             }
             svgObject.appendChild(groupElement);
-            let pathElement: Element = this.renderer.drawPath({
+            const pathElement: Element = this.renderer.drawPath({
                 'id': this.element.id + '_path', 'stroke-width': this.theme === 'Bootstrap4' ? 0 : this.border.width,
                 'fill': this.fill || this.themeStyle.tooltipFill, 'opacity': this.theme === 'Bootstrap4' ? 0.9 : this.opacity,
                 'stroke': this.border.color
@@ -564,10 +624,10 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         let shapeOption: PathOption;
         let count: number = 0;
 
-        let markerGroup: HTMLElement = <HTMLElement>this.renderer.createGroup({ id: this.element.id + '_trackball_group' });
-        let groupElement: Element = getElement(this.element.id + '_group');
-        let x: number = (this.marginX * 2) + (size / 2) + (isRight ? this.arrowPadding : 0);
-        for (let shape of this.shapes) {
+        const markerGroup: HTMLElement = <HTMLElement>this.renderer.createGroup({ id: this.element.id + '_trackball_group' });
+        const groupElement: Element = getElement(this.element.id + '_group');
+        const x: number = (this.marginX * 2) + (size / 2) + (isRight ? this.arrowPadding : 0);
+        for (const shape of this.shapes) {
             if (shape !== 'None') {
                 shapeOption = new PathOption(
                     this.element.id + '_Trackball_' + count, this.palette[count],
@@ -584,13 +644,12 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private renderTooltipElement(areaBounds: Rect, location: TooltipLocation): Side {
-        let tooltipDiv: HTMLDivElement = <HTMLDivElement>getElement(this.element.id);
-        let arrowLocation: TooltipLocation = new TooltipLocation(0, 0);
-        let tipLocation: TooltipLocation = new TooltipLocation(0, 0);
-        let textHeights: number[];
-        let svgObject: Element = getElement(this.element.id + '_svg');
-        let groupElement: Element = getElement(this.element.id + '_group');
-        let pathElement: Element = getElement(this.element.id + '_path');
+        const tooltipDiv: HTMLDivElement = <HTMLDivElement>getElement(this.element.id);
+        const arrowLocation: TooltipLocation = new TooltipLocation(0, 0);
+        const tipLocation: TooltipLocation = new TooltipLocation(0, 0);
+        const svgObject: Element = getElement(this.element.id + '_svg');
+        const groupElement: Element = getElement(this.element.id + '_group');
+        const pathElement: Element = getElement(this.element.id + '_path');
         let rect: Rect;
         let isTop: boolean = false; let isLeft: boolean = false;
         let isBottom: boolean = false; let x: number = 0; let y: number = 0;
@@ -614,27 +673,28 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
         if (this.header !== '') {
-            let headerSize: number = measureText(this.isWrap ? this.wrappedText : this.header, this.textStyle).height +
+            const headerSize: number = measureText(this.isWrap ? this.wrappedText : this.header, this.textStyle).height +
                 (this.marginY * 2) + (isBottom ? this.arrowPadding : 0) + (this.isWrap ? 5 : 0); //header padding;
-            let xLength: number = (this.marginX * 3) + (!isLeft && !isTop && !isBottom ? this.arrowPadding : 0);
-            let direction: string = 'M ' + xLength + ' ' + headerSize +
+            const xLength: number = (this.marginX * 3) + (!isLeft && !isTop && !isBottom ? this.arrowPadding : 0);
+            const direction: string = 'M ' + xLength + ' ' + headerSize +
                 'L ' + (rect.width + (!isLeft && !isTop && !isBottom ? this.arrowPadding : 0) - (this.marginX * 2)) +
                 ' ' + headerSize;
-            let pathElement: Element = this.renderer.drawPath({
+            const pathElement: Element = this.renderer.drawPath({
                 'id': this.element.id + '_header_path', 'stroke-width': 1,
                 'fill': null, 'opacity': 0.8, 'stroke': this.themeStyle.tooltipHeaderLine, 'd': direction
             });
             groupElement.appendChild(pathElement);
         }
 
-        let start: number = this.border.width / 2;
-        let pointRect: Rect = new Rect(start + x, start + y, rect.width - start, rect.height - start);
+        const start: number = this.border.width / 2;
+        const pointRect: Rect = new Rect(start + x, start + y, rect.width - start, rect.height - start);
         groupElement.setAttribute('opacity', '1');
         if (this.enableAnimation && !this.shared && !this.isFirst) {
             this.animateTooltipDiv(tooltipDiv, rect);
         } else {
             this.updateDiv(tooltipDiv, rect.x, rect.y);
         }
+        // eslint-disable-next-line no-extra-boolean-cast
         svgObject.setAttribute('height', (rect.height + this.border.width + (!((!this.inverted)) ? 0 : this.arrowPadding) + 5).toString());
         svgObject.setAttribute('width', (rect.width + this.border.width + (((!this.inverted)) ? 0 : this.arrowPadding) + 5).toString());
         svgObject.setAttribute('opacity', '1');
@@ -649,13 +709,13 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         ));
         if (this.enableShadow && this.theme !== 'Bootstrap4') {
             // To fix next chart initial tooltip opacity issue in tab control
-            let shadowId: string = this.element.id + '_shadow';
+            const shadowId: string = this.element.id + '_shadow';
             pathElement.setAttribute('filter', Browser.isIE ? '' : 'url(#' + shadowId + ')');
             let shadow: string = '<filter id="' + shadowId + '" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/>';
             shadow += '<feOffset dx="3" dy="3" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.5"/>';
             shadow += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
 
-            let defElement: Element = this.renderer.createDefs();
+            const defElement: Element = this.renderer.createDefs();
             defElement.setAttribute('id', this.element.id + 'SVG_tooltip_definition');
             groupElement.appendChild(defElement);
 
@@ -664,16 +724,16 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
 
         pathElement.setAttribute('stroke', this.border.color);
 
-        this.changeText(new TooltipLocation(x, y), isBottom, !isLeft && !isTop && !isBottom, rect);
+        this.changeText(new TooltipLocation(x, y), isBottom, !isLeft && !isTop && !isBottom);
 
         return new Side(isBottom, !isLeft && !isTop && !isBottom);
 
     }
 
 
-    private changeText(point: TooltipLocation, isBottom: boolean, isRight: boolean, rect: Rect): void {
+    private changeText(point: TooltipLocation, isBottom: boolean, isRight: boolean): void {
 
-        let element: HTMLElement = document.getElementById(this.element.id + '_text');
+        const element: HTMLElement = document.getElementById(this.element.id + '_text');
 
         if (isBottom) {
             element.setAttribute('transform', 'translate(0,' + this.arrowPadding + ')');
@@ -683,7 +743,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
-    private findFormattedText() : void {
+    private findFormattedText(): void {
         this.formattedText = [];
         if (this.header.replace(/<b>/g, '').replace(/<\/b>/g, '').trim() !== '') {
             this.formattedText = this.formattedText.concat(this.header);
@@ -695,43 +755,42 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     private renderText(isRender: boolean): void {
         let height: number = 0; let width: number = 0; // Padding for text;
         let subWidth: number = 0; let lines: string[];
-        let key: string = 'properties'; let size: number;
-        let font: TextStyle = <TextStyle>extend({}, this.textStyle, null, true)[key];
-        let groupElement: Element = getElement(this.element.id + '_group');
+        const key: string = 'properties';
+        const font: TextStyle = <TextStyle>extend({}, this.textStyle, null, true)[key];
+        const groupElement: Element = getElement(this.element.id + '_group');
         let tspanElement: HTMLElement; let textCollection: string[];
         let tspanStyle: string = ''; let line: string; let tspanOption: Object;
         this.findFormattedText();
-        let isHeader: boolean;
-        let isRtlEnabled: boolean = document.body.getAttribute('dir') === 'rtl';
-        let anchor: string = isRtlEnabled ? 'end' : 'start';
+        const isRtlEnabled: boolean = document.body.getAttribute('dir') === 'rtl';
+        const anchor: string = isRtlEnabled ? 'end' : 'start';
         this.leftSpace = this.areaBounds.x + this.location.x;
         this.rightSpace = (this.areaBounds.x + this.areaBounds.width) - this.leftSpace;
-        let headerContent: string = this.header.replace(/<b>/g, '').replace(/<\/b>/g, '').trim();
-        let isBoldTag: boolean = this.header.indexOf('<b>') > -1 && this.header.indexOf('</b>') > -1;
-        let headerWidth: number = measureText(this.formattedText[0], font).width + (2 * this.marginX) + this.arrowPadding;
-        let isLeftSpace: boolean = (this.location.x - headerWidth) < this.location.x;
-        let isRightSpace: boolean = (this.areaBounds.x + this.areaBounds.width) < (this.location.x + headerWidth); let header: string;
+        const headerContent: string = this.header.replace(/<b>/g, '').replace(/<\/b>/g, '').trim();
+        const isBoldTag: boolean = this.header.indexOf('<b>') > -1 && this.header.indexOf('</b>') > -1;
+        const headerWidth: number = measureText(this.formattedText[0], font).width + (2 * this.marginX) + this.arrowPadding;
+        const isLeftSpace: boolean = (this.location.x - headerWidth) < this.location.x;
+        const isRightSpace: boolean = (this.areaBounds.x + this.areaBounds.width) < (this.location.x + headerWidth); let header: string;
         let headerSpace: number = (headerContent !== '') ? this.marginY : 0;
         let isRow: boolean = true; let isColumn: boolean = true; this.markerPoint = [];
-        let markerSize: number = (this.shapes.length > 0) ? 10 : 0;
-        let markerPadding: number = (this.shapes.length > 0) ? 5 : 0;
-        let spaceWidth: number = 4; let subStringLength: number;
-        let fontSize : string = '13px'; let fontWeight: string = 'Normal';  let labelColor: string = this.themeStyle.tooltipLightLabel;
-        let dy: number = (22 / parseFloat(fontSize)) * (parseFloat(font.size));
+        const markerSize: number = (this.shapes.length > 0) ? 10 : 0;
+        const markerPadding: number = (this.shapes.length > 0) ? 5 : 0;
+        const spaceWidth: number = 4; let subStringLength: number;
+        const fontSize: string = '13px'; let fontWeight: string = 'Normal'; let labelColor: string = this.themeStyle.tooltipLightLabel;
+        const dy: number = (22 / parseFloat(fontSize)) * (parseFloat(font.size));
         if (!isRender || this.isCanvas) {
             removeElement(this.element.id + '_text');
             removeElement(this.element.id + '_header_path');
             removeElement(this.element.id + '_trackball_group');
             removeElement(this.element.id + 'SVG_tooltip_definition');
         }
-        let options: TextOption = new TextOption(
+        const options: TextOption = new TextOption(
             this.element.id + '_text', this.marginX * 2, (this.marginY * 2 + this.padding * 2 + (this.marginY === 2 ? 3 : 0)),
             anchor, ''
         );
-        let parentElement: Element = textElement(options, font, null, groupElement);
-        let withoutHeader: boolean = this.formattedText.length === 1 && this.formattedText[0].indexOf(' : <b>') > -1;
-        isHeader = this.header !== '';
-        size = isHeader && isBoldTag ? 16 : 13;
+        const parentElement: Element = textElement(options, font, null, groupElement);
+        const withoutHeader: boolean = this.formattedText.length === 1 && this.formattedText[0].indexOf(' : <b>') > -1;
+        const isHeader: boolean = this.header !== '';
+        const size: number = isHeader && isBoldTag ? 16 : 13;
         for (let k: number = 0, pointsLength: number = this.formattedText.length; k < pointsLength; k++) {
             textCollection = this.formattedText[k].replace(/<(b|strong)>/g, '<b>')
                 .replace(/<\/(b|strong)>/g, '</b>')
@@ -746,15 +805,15 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 this.wrappedText = isBoldTag ? '<b>' + textCollection.join('<br>') + '</b>' : textCollection.join('<br>');
                 this.isWrap = textCollection.length > 1;
             }
-            if (textCollection [0] === '' ) {
-                    continue;
+            if (textCollection[0] === '') {
+                continue;
             }
             if ((k !== 0) || (headerContent === '')) {
                 this.markerPoint.push((headerContent !== '' ? (this.marginY) : 0) + options.y + height);
             }
             for (let i: number = 0, len: number = textCollection.length; i < len; i++) { // string value of unicode for LTR is \u200E
                 lines = textCollection[i].replace(/<b>/g, '<br><b>').replace(/<\/b>/g, '</b><br>').replace(/:/g, '<br>\u200E:<br>')
-                        .split('<br>');
+                    .split('<br>');
                 subWidth = 0;
                 isColumn = true;
                 height += dy;
@@ -763,11 +822,13 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     if (!/\S/.test(line) && line !== '') {
                         line = ' ';  //to trim multiple white spaces to single white space
                     }
-                    if ( (!isColumn && line === ' ') || (line.replace(/<b>/g, '').replace(/<\/b>/g, '').trim() !== '')) {
+                    if ((!isColumn && line === ' ') || (line.replace(/<b>/g, '').replace(/<\/b>/g, '').trim() !== '')) {
                         subWidth += line !== ' ' ? spaceWidth : 0;
                         if (isColumn && !isRow) {
-                            tspanOption = { x: (this.marginX * 2) + (markerSize + markerPadding),
-                                            dy: dy + ((isColumn) ? headerSpace : 0), fill: '' };
+                            tspanOption = {
+                                x: (this.marginX * 2) + (markerSize + markerPadding),
+                                dy: dy + ((isColumn) ? headerSpace : 0), fill: ''
+                            };
                             headerSpace = null;
                         } else {
                             if (isRow && isColumn) {
@@ -794,7 +855,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                         if (line.indexOf('</b>') > -1 || ((isBoldTag && j === len - 1 && k === 0) && (isHeader || this.isWrap))) {
                             fontWeight = 'Normal'; labelColor = this.themeStyle.tooltipLightLabel;
                         }
-                        let isRtlText: boolean = /[\u0590-\u07FF\u200F\u202B\u202E\uFB1D-\uFDFD\uFE70-\uFEFC]/.test(line);
+                        const isRtlText: boolean = /[\u0590-\u07FF\u200F\u202B\u202E\uFB1D-\uFDFD\uFE70-\uFEFC]/.test(line);
+                        // eslint-disable-next-line no-useless-escape
                         (tspanElement).textContent = line = line.replace(/<[a-zA-Z\/](.|\n)*?>/g, isRtlText ? '\u200E' : '');
                         subWidth += measureText(line, font).width;
                         if (tspanStyle !== '') {
@@ -814,27 +876,27 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
         this.elementSize = new Size(width + (width > 0 ? (2 * this.marginX) : 0), height);
         this.elementSize.width += (markerSize + markerPadding); // marker size + marker Spacing
-        let element: HTMLElement = <HTMLElement>(parentElement.childNodes[0]);
+        const element: HTMLElement = <HTMLElement>(parentElement.childNodes[0]);
         if (headerContent !== '' && element && !this.isWrap) {
             font.fontWeight = 'bold';
-            let width: number = (this.elementSize.width + (2 * this.padding)) / 2 - measureText(headerContent, font).width / 2;
+            const width: number = (this.elementSize.width + (2 * this.padding)) / 2 - measureText(headerContent, font).width / 2;
             element.setAttribute('x', width.toString());
         }
     }
 
     private createTemplate(areaBounds: Rect, location: TooltipLocation): void {
-        let argsData: ITooltipRenderingEventArgs = { cancel: false, name: 'tooltipRender', tooltip : this};
+        const argsData: ITooltipRenderingEventArgs = { cancel: false, name: 'tooltipRender', tooltip: this };
         this.trigger('tooltipRender', argsData);
-        let parent : HTMLElement = document.getElementById(this.element.id);
+        const parent: HTMLElement = document.getElementById(this.element.id);
         if (this.isCanvas) {
             this.removeSVG();
         }
-        let firstElement: HTMLElement = parent.firstElementChild as HTMLElement;
+        const firstElement: HTMLElement = parent.firstElementChild as HTMLElement;
         if (firstElement) {
             remove(firstElement);
         }
         if (!argsData.cancel) {
-            let elem: Element = createElement('div', { id: this.element.id + 'parent_template' });
+            const elem: Element = createElement('div', { id: this.element.id + 'parent_template' });
             let templateElement: HTMLCollection = this.templateFn(
                 this.data, this.controlInstance, elem.id, elem.id + '_blazorTemplate', ''
             );
@@ -847,12 +909,12 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
             parent.appendChild(elem);
-            let element: Element = this.isCanvas ? elem : this.element;
-            let rect: ClientRect = element.getBoundingClientRect();
+            const element: Element = this.isCanvas ? elem : this.element;
+            const rect: ClientRect = element.getBoundingClientRect();
             this.padding = 0;
             this.elementSize = new Size(rect.width, rect.height);
-            let tooltipRect: Rect = this.shared ? this.sharedTooltipLocation(areaBounds, this.location.x, this.location.y)
-            : this.tooltipLocation(areaBounds, location, new TooltipLocation(0, 0), new TooltipLocation(0, 0));
+            const tooltipRect: Rect = this.shared ? this.sharedTooltipLocation(areaBounds, this.location.x, this.location.y)
+                : this.tooltipLocation(areaBounds, location, new TooltipLocation(0, 0), new TooltipLocation(0, 0));
             if (this.enableAnimation && !this.shared && !this.isFirst) {
                 this.animateTooltipDiv(<HTMLDivElement>this.element, tooltipRect);
             } else {
@@ -860,17 +922,19 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             }
             if (this.blazorTemplate) {
                 //Customer issue - F149037  Call back function to handle the blazor tooltip alignment issues
-                let tooltipRendered: Function = () => {
-                    let rect1: ClientRect = getElement(thisObject.element.id).getBoundingClientRect();
+                const tooltipRendered: Function = () => {
+                    const rect1: ClientRect = getElement(thisObject.element.id).getBoundingClientRect();
                     thisObject.elementSize = new Size(rect1.width, rect1.height);
-                    let tooltipRect1: Rect = thisObject.tooltipLocation(areaBounds, location, new TooltipLocation(0, 0),
-                                                                        new TooltipLocation(0, 0));
+                    const tooltipRect1: Rect = thisObject.tooltipLocation(
+                        areaBounds, location, new TooltipLocation(0, 0), new TooltipLocation(0, 0));
                     thisObject.updateDiv(getElement(thisObject.element.id) as HTMLDivElement, tooltipRect1.x, tooltipRect1.y);
                 };
-                let thisObject: Tooltip = this;
+                // eslint-disable-next-line @typescript-eslint/no-this-alias
+                const thisObject: Tooltip = this;
                 tooltipRendered.bind(thisObject, areaBounds, location);
-                updateBlazorTemplate(this.element.id + 'parent_template' + '_blazorTemplate',
-                                     this.blazorTemplate.name, this.blazorTemplate.parent, undefined, tooltipRendered);
+                updateBlazorTemplate(
+                    this.element.id + 'parent_template' + '_blazorTemplate', this.blazorTemplate.name,
+                    this.blazorTemplate.parent, undefined, tooltipRendered);
             }
         } else {
             remove(getElement(this.element.id + '_tooltip'));
@@ -878,9 +942,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private sharedTooltipLocation(bounds: Rect, x: number, y: number): Rect {
-        let width: number = this.elementSize.width + (2 * this.marginX);
-        let height: number = this.elementSize.height + (2 * this.marginY);
-        let tooltipRect: Rect = new Rect(x + 2 * this.padding, y - height - this.padding, width, height);
+        const width: number = this.elementSize.width + (2 * this.marginX);
+        const height: number = this.elementSize.height + (2 * this.marginY);
+        const tooltipRect: Rect = new Rect(x + 2 * this.padding, y - height - this.padding, width, height);
         if (tooltipRect.y < bounds.y) {
             tooltipRect.y += (tooltipRect.height + 2 * this.padding);
         }
@@ -889,14 +953,15 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
         return tooltipRect;
     }
-    private getCurrentPosition(bounds: Rect, symbolLocation: TooltipLocation, arrowLocation: TooltipLocation,
-                               tipLocation: TooltipLocation): Rect {
-        let position: TooltipPlacement = this.tooltipPlacement;
-        let clipX: number = this.clipBounds.x;
-        let clipY: number = this.clipBounds.y;
-        let markerHeight: number = this.offset;
-        let width: number = this.elementSize.width + (2 * this.marginX);
-        let height: number = this.elementSize.height + (2 * this.marginY);
+    private getCurrentPosition(
+        bounds: Rect, symbolLocation: TooltipLocation, arrowLocation: TooltipLocation,
+        tipLocation: TooltipLocation): Rect {
+        const position: TooltipPlacement = this.tooltipPlacement;
+        const clipX: number = this.clipBounds.x;
+        const clipY: number = this.clipBounds.y;
+        const markerHeight: number = this.offset;
+        const width: number = this.elementSize.width + (2 * this.marginX);
+        const height: number = this.elementSize.height + (2 * this.marginY);
         let location: TooltipLocation = new TooltipLocation(symbolLocation.x, symbolLocation.y);
         if (position === 'Top' || position === 'Bottom') {
             location = new TooltipLocation(
@@ -934,22 +999,23 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         return new Rect(location.x, location.y, width, height);
     }
     // tslint:disable-next-line:max-func-body-length
-    private tooltipLocation(bounds: Rect, symbolLocation: TooltipLocation, arrowLocation: TooltipLocation,
-                            tipLocation: TooltipLocation): Rect {
+    private tooltipLocation(
+        bounds: Rect, symbolLocation: TooltipLocation, arrowLocation: TooltipLocation,
+        tipLocation: TooltipLocation): Rect {
         if (!isNullOrUndefined(this.tooltipPlacement)) {
-            let tooltipRect: Rect = this.getCurrentPosition(bounds, symbolLocation, arrowLocation, tipLocation);
+            const tooltipRect: Rect = this.getCurrentPosition(bounds, symbolLocation, arrowLocation, tipLocation);
             return tooltipRect;
         }
         let location: TooltipLocation = new TooltipLocation(symbolLocation.x, symbolLocation.y);
-        let width: number = this.elementSize.width + (2 * this.marginX);
-        let height: number = this.elementSize.height + (2 * this.marginY);
+        const width: number = this.elementSize.width + (2 * this.marginX);
+        const height: number = this.elementSize.height + (2 * this.marginY);
 
-        let markerHeight: number = this.offset;
+        const markerHeight: number = this.offset;
 
-        let clipX: number = this.clipBounds.x;
-        let clipY: number = this.clipBounds.y;
-        let boundsX: number = bounds.x;
-        let boundsY: number = bounds.y;
+        const clipX: number = this.clipBounds.x;
+        const clipY: number = this.clipBounds.y;
+        const boundsX: number = bounds.x;
+        const boundsY: number = bounds.y;
         if (!this.inverted) {
             location = new TooltipLocation(
                 location.x + clipX - this.elementSize.width / 2 - this.padding,
@@ -1021,8 +1087,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         return new Rect(location.x, location.y, width, height);
     }
     private animateTooltipDiv(tooltipDiv: HTMLDivElement, rect: Rect): void {
-        let x: number = parseFloat(tooltipDiv.style.left);
-        let y: number = parseFloat(tooltipDiv.style.top);
+        const x: number = parseFloat(tooltipDiv.style.left);
+        const y: number = parseFloat(tooltipDiv.style.top);
         let currenDiff: number;
         new Animation({}).animate(tooltipDiv, {
             duration: this.duration,
@@ -1048,7 +1114,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
 
     private updateTemplateFn(): void {
         if (this.template) {
-            let e: Object;
             try {
                 if (document.querySelectorAll(this.template).length) {
                     this.templateFn = templateComplier(document.querySelector(this.template).innerHTML.trim());
@@ -1061,7 +1126,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
 
     /** @private */
     public fadeOut(): void {
-        let tooltipElement: HTMLElement = (this.isCanvas && !this.template) ? <HTMLElement>getElement(this.element.id + '_svg') :
+        const tooltipElement: HTMLElement = (this.isCanvas && !this.template) ? <HTMLElement>getElement(this.element.id + '_svg') :
             <HTMLElement>getElement(this.element.id);
         if (tooltipElement) {
             let tooltipGroup: HTMLElement = tooltipElement.firstChild as HTMLElement;
@@ -1072,14 +1137,14 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             if (!tooltipGroup) {
                 return null;
             }
-            let opacity: number = parseFloat(tooltipGroup.getAttribute('opacity')) || 1;
+            const opacity: number = parseFloat(tooltipGroup.getAttribute('opacity')) || 1;
             new Animation({}).animate(tooltipGroup, {
                 duration: 200,
                 progress: (args: AnimationOptions): void => {
                     //  tooltipGroup.removeAttribute('e-animate');
                     this.progressAnimation(tooltipGroup, opacity, (args.timeStamp / args.duration));
                 },
-                end: (model: AnimationOptions) => {
+                end: () => {
                     this.fadeOuted = true;
                     this.endAnimation(tooltipGroup);
                 }
@@ -1099,43 +1164,45 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.template) {
             tooltipGroup.style.display = 'none';
         }
-        this.trigger('animationComplete', {tooltip: this});
+        this.trigger('animationComplete', { tooltip: this });
     }
 
-   /**
-    * Get the properties to be maintained in the persisted state.
-    * @private
-    */
+    /**
+     * Get the properties to be maintained in the persisted state.
+     *
+     * @private
+     */
     public getPersistData(): string {
-        let keyEntity: string[] = [];
+        const keyEntity: string[] = [];
         return this.addOnPersist(keyEntity);
     }
 
-  /**
-   * Get component name
-   *  @private
-   */
+    /**
+     * Get component name
+     *
+     *  @private
+     */
 
     public getModuleName(): string {
         return 'tooltip';
     }
 
-   /**
-    * To destroy the accumulationcharts
-    * @private
-    */
+    /**
+     * To destroy the accumulationcharts
+     *
+     * @private
+     */
     public destroy(): void {
         super.destroy();
         this.element.classList.remove('e-tooltip');
     }
 
-      /**
-       * Called internally if any of the property value changed.
-       * @return {void}
-       * @private
-       */
-
-
+    /**
+     * Called internally if any of the property value changed.
+     *
+     * @returns {void}
+     * @private
+     */
     public onPropertyChanged(newProp: TooltipModel, oldProp: TooltipModel): void {
         if (this.blazorTemplate) {
             resetBlazorTemplate(this.element.id + 'parent_template' + '_blazorTemplate');
@@ -1145,3 +1212,4 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
 }
+

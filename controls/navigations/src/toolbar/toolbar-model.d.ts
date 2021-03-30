@@ -9,24 +9,28 @@ export interface ItemModel {
 
     /**
      * Specifies the unique ID to be used with button or input element of Toolbar items.
+     *
      * @default ""
      */
     id?: string;
 
     /**
      * Specifies the text to be displayed on the Toolbar button.
+     *
      * @default ""
      */
     text?: string;
 
     /**
      * Specifies the width of the Toolbar button commands.
+     *
      * @default 'auto'
      */
     width?: number | string;
 
     /**
      * Defines single/multiple classes (separated by space) to be used for customization of commands.
+     *
      * @default ""
      */
     cssClass?: string;
@@ -34,12 +38,14 @@ export interface ItemModel {
     /**
      * Defines the priority of items to display it in popup always.
      * It allows to maintain toolbar item on popup always but it does not work for toolbar priority items.
+     *
      * @default false
      */
     showAlwaysInPopup?: boolean;
 
     /**
      * Specifies whether an item should be disabled or not.
+     *
      * @default false
      */
     disabled?: boolean;
@@ -47,6 +53,7 @@ export interface ItemModel {
     /**
      * Defines single/multiple classes separated by space used to specify an icon for the button.
      * The icon will be positioned before the text content if text is available, otherwise the icon alone will be rendered.
+     *
      * @default ""
      */
     prefixIcon?: string;
@@ -54,12 +61,14 @@ export interface ItemModel {
     /**
      * Defines single/multiple classes separated by space used to specify an icon for the button.
      * The icon will be positioned after the text content if text is available.
+     *
      * @default ""
      */
     suffixIcon?: string;
 
     /**
      * Specifies whether an item should be hidden or not.
+     *
      * @default true
      */
     visible?: boolean;
@@ -67,9 +76,10 @@ export interface ItemModel {
     /**
      * Specifies the Toolbar command display area when an element's content is too large to fit available space.
      * This is applicable only to `popup` mode. Possible values are:
-     * - Show:  Always shows the item as the primary priority on the *Toolbar*. 
+     * - Show:  Always shows the item as the primary priority on the *Toolbar*.
      * - Hide: Always shows the item as the secondary priority on the *popup*.
      * - None: No priority for display, and as per normal order moves to popup when content exceeds.
+     *
      * @default 'None'
      */
     overflow?: OverflowOption;
@@ -79,6 +89,7 @@ export interface ItemModel {
      * ```
      * E.g - items: [{ template: '<input placeholder="Search"/>' },{ template: '#checkbox1' }]
      * ```
+     *
      * @default ""
      */
     template?: string | Object;
@@ -90,6 +101,7 @@ export interface ItemModel {
      * - Separator: Adds a horizontal line that separates the Toolbar commands.
      * - Input: Creates an input element that is applicable to template rendering with Syncfusion controls like DropDownList,
      * AutoComplete, etc.
+     *
      * @default 'Button'
      */
     type?: ItemType;
@@ -100,6 +112,7 @@ export interface ItemModel {
      * - Toolbar:  Text will be displayed on *Toolbar* only.
      * - Overflow: Text will be displayed only when content overflows to *popup*.
      * - Both: Text will be displayed on *popup* and *Toolbar*.
+     *
      * @default 'Both'
      */
     showTextOn?: DisplayMode;
@@ -107,12 +120,14 @@ export interface ItemModel {
     /**
      * Defines htmlAttributes used to add custom attributes to Toolbar command.
      * Supports HTML attributes such as style, class, etc.
+     *
      * @default null
      */
-    htmlAttributes?: { [key: string]: string; };
+    htmlAttributes?: { [key: string]: string };
 
     /**
      * Specifies the text to be displayed on hovering the Toolbar button.
+     *
      * @default ""
      */
     tooltipText?: string;
@@ -137,12 +152,14 @@ export interface ItemModel {
      * });
      * toolbar.appendTo('#element');
      * ```
+     *
      * @default "Left"
      */
     align?: ItemAlign;
 
     /**
      * Event triggers when `click` the toolbar item.
+     *
      * @event
      */
     click?: EmitType<ClickEventArgs>;
@@ -156,24 +173,28 @@ export interface ToolbarModel extends ComponentModel{
 
     /**
      * An array of items that is used to configure Toolbar commands.
+     *
      * @default []
      */
     items?: ItemModel[];
 
     /**
      * Specifies the width of the Toolbar in pixels/numbers/percentage. Number value is considered as pixels.
+     *
      * @default 'auto'
      */
     width?: string | number;
 
     /**
      * Specifies the height of the Toolbar in pixels/number/percentage. Number value is considered as pixels.
+     *
      * @default 'auto'
      */
     height?: string | number;
 
     /**
      * Sets the CSS classes to root element of the Tab that helps to customize component styles.
+     *
      * @default ''
      */
     cssClass?: string;
@@ -186,54 +207,63 @@ export interface ToolbarModel extends ComponentModel{
      * - MultiRow: Displays the overflow toolbar items as an in-line of a toolbar.
      * - Extended: Hide the overflowing toolbar items in the next row.  Show the overflowing toolbar items when you click the expand icons.
      * If the popup content overflows the height of the page, the rest of the elements will be hidden.
+     *
      * @default 'Scrollable'
      */
     overflowMode?: OverflowMode;
 
     /**
      * Specifies the scrolling distance in scroller.
-     * @default null  
+     *
+     * @default null
      */
     scrollStep?: number;
 
     /**
      * Enable or disable the popup collision.
+     *
      * @default true
      */
     enableCollision?: boolean;
 
     /**
      * Defines whether to allow the cross-scripting site or not.
+     *
      * @default true
      */
     enableHtmlSanitizer?: boolean;
 
     /**
      * When this property is set to true, it allows the keyboard interaction in toolbar.
+     *
      * @default true
      */
     allowKeyboard?: boolean;
 
     /**
      * The event will be fired on clicking the Toolbar elements.
+     *
      * @event
      */
     clicked?: EmitType<ClickEventArgs>;
 
     /**
      * The event will be fired when the control is rendered.
+     *
      * @event
      */
     created?: EmitType<Event>;
 
     /**
      * The event will be fired when the control gets destroyed.
+     *
      * @event
      */
     destroyed?: EmitType<Event>;
 
     /**
      * The event will be fired before the control is rendered on a page.
+     *
      * @event
      */
     beforeCreate?: EmitType<BeforeCreateArgs>;

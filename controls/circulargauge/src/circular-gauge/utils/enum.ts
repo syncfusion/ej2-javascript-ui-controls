@@ -1,5 +1,6 @@
 /**
  * Defines the position of the axis ticks and labels.
+ *
  * @private
  */
 export type Position =
@@ -12,6 +13,7 @@ export type Position =
 
 /**
  * Defines the position of the axis range and pointers.
+ *
  * @private
  */
 export type PointerRangePosition =
@@ -26,6 +28,7 @@ export type PointerRangePosition =
 
 /**
  * Defines the type of pointer in the axis.
+ *
  * @private
  */
 export type PointerType =
@@ -38,6 +41,7 @@ export type PointerType =
 
 /**
  * Specifies the direction of the circular gauge.
+ *
  * @private
  */
 export type GaugeDirection =
@@ -48,6 +52,7 @@ export type GaugeDirection =
 
 /**
  * Defines the theme style of the circular gauge.
+ *
  * @private
  */
 export type GaugeTheme =
@@ -73,6 +78,7 @@ export type GaugeTheme =
 
 /**
  * Specifies the axis label to be hidden in the axis of circular gauge.
+ *
  * @private
  */
 export type HiddenLabel =

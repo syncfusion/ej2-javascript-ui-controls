@@ -1,6 +1,9 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { withInRange, pathAnimation, getElement } from '../../common/utils/helper';
 import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
-import { Chart } from '../chart';
 import { DoubleRange } from '../utils/double-range';
 import { Series, Points } from './chart-series';
 import { ColumnBase } from './column-base';
@@ -14,18 +17,17 @@ export class CandleSeries extends ColumnBase {
 
     /**
      * Render Candle series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
     public render(series: Series): void {
-        let sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
+        const sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
         let argsData: IPointRenderEventArgs;
-        let borderWidth: number = Math.max(series.border.width, 1 );
-        for (let point of series.points) {
+        const borderWidth: number = Math.max(series.border.width, 1 );
+        for (const point of series.points) {
             let direction: string = '';
             let centerRegion: Rect; let tickRegion: Rect;
-            let midPoint: number;
-            midPoint = (sideBySideInfo.start + sideBySideInfo.end) / 2;
             //initializing after zooming and also normal initialization
             point.regions = [];
             point.symbolLocations = [];
@@ -73,9 +75,8 @@ export class CandleSeries extends ColumnBase {
      * Trigger point rendering event
      */
     protected triggerPointRenderEvent(series: Series, point: Points): IPointRenderEventArgs {
-        let fill: string;
-        fill = this.getCandleColor(point, series);
-        let border: BorderModel = { color: series.border.color, width: Math.max(series.border.width, 1) };
+        const fill: string = this.getCandleColor(point, series);
+        const border: BorderModel = { color: series.border.color, width: Math.max(series.border.width, 1) };
         return this.triggerEvent(series, point, fill, border);
     }
 
@@ -83,12 +84,14 @@ export class CandleSeries extends ColumnBase {
 
     /**
      * Find the color of the candle
-     * @param series 
+     *
+     * @param {Points} point point
+     * @param {Series} series series
+     * @returns {string} color of the candle
      * @private
      */
     private getCandleColor(point: Points, series: Series): string {
-        let currentPoint: Points = point;
-        let previousPoint: Points = series.points[point.index - 1];
+        const previousPoint: Points = series.points[point.index - 1];
         if (series.enableSolidCandles === false) {
             if (!previousPoint) {
                 return <string>series.bearFillColor;
@@ -106,14 +109,12 @@ export class CandleSeries extends ColumnBase {
 
     /**
      * Finds the path of the candle shape
-     * @param Series 
+     *
      * @private
      */
     public getPathString(topRect: Rect, midRect: Rect, series: Series): string {
         let direction: string = '';
-        let width: number = series.chart.requireInvertedAxis ? topRect.height : topRect.width;
-
-        let center: number = series.chart.requireInvertedAxis ? topRect.y + topRect.height / 2 :
+        const center: number = series.chart.requireInvertedAxis ? topRect.y + topRect.height / 2 :
             topRect.x + topRect.width / 2;
 
 
@@ -137,31 +138,36 @@ export class CandleSeries extends ColumnBase {
         return direction;
     }
 
-
     /**
      * Draws the candle shape
-     * @param series 
+     *
+     * @param {Series} series series
+     * @param {Points} point point
+     * @param {Rect} rect point region
+     * @param {IPointRenderEventArgs} argsData argsData
+     * @param {string} direction path direction
+     * @returns {void}
      * @private
      */
     public drawCandle(
         series: Series, point: Points, rect: Rect, argsData: IPointRenderEventArgs,
         direction: string
     ): void {
-        let check: number = series.chart.requireInvertedAxis ? rect.height : rect.width;
+        const check: number = series.chart.requireInvertedAxis ? rect.height : rect.width;
         if (check <= 0) {
             return null;
         }
-        let fill: string = !series.enableSolidCandles ?
+        const fill: string = !series.enableSolidCandles ?
             (<number>point.open > <number>point.close ? argsData.fill : 'transparent') : argsData.fill;
 
         argsData.border.color = argsData.fill;
 
-        let options: PathOption = new PathOption(
+        const options: PathOption = new PathOption(
             series.chart.element.id + '_Series_' + series.index + '_Point_' + point.index,
             fill, argsData.border.width, argsData.border.color, series.opacity, series.dashArray, direction);
-        let element: Element = getElement(options.id);
-        let previousDirection: string = element ? element.getAttribute('d') : null;
-        let candleElement: HTMLElement =
+        const element: Element = getElement(options.id);
+        const previousDirection: string = element ? element.getAttribute('d') : null;
+        const candleElement: HTMLElement =
             series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y])) as HTMLElement;
         candleElement.setAttribute('aria-label', point.x.toString() + ':' + point.high.toString()
             + ':' + point.low.toString() + ':' + point.close.toString() + ':' + point.open.toString());
@@ -174,8 +180,9 @@ export class CandleSeries extends ColumnBase {
 
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
     public doAnimation(series: Series): void {
         this.animate(series);
@@ -192,14 +199,15 @@ export class CandleSeries extends ColumnBase {
     }
 
     /**
-     * To destroy the candle series. 
-     * @return {void}
+     * To destroy the candle series.
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroys the candle series.
          */
     }
-} 
+}

@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, createElement } from '@syncfusion/ej2-base';import { isNullOrUndefined, getValue } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { Border, Font, Animation, Index, EmptyPointSettings, Connector } from '../../common/model/base';import { Rect, Size, PathOption } from '@syncfusion/ej2-svg-base';import { ChartLocation, stringToNumber, appendChildElement } from '../../common/utils/helper';import { AccumulationType, AccumulationLabelPosition, PyramidModes } from '../model/enum';import { IAccSeriesRenderEventArgs, IAccPointRenderEventArgs, IAccTextRenderEventArgs } from '../model/pie-interface';import { LegendShape } from '../../chart/utils/enum';import { Data } from '../../common/model/data';import { seriesRender, pointRender } from '../../common/model/constants';import { getSeriesColor } from '../../common/model/theme';import { FontModel, BorderModel, AnimationModel, EmptyPointSettingsModel, ConnectorModel } from '../../common/model/base-model';import { AccumulationChart } from '../accumulation';import { getElement, firstToLowerCase } from '../../common/utils/helper';import { Units, Alignment, Regions, Position, SeriesCategories } from '../../common/utils/enum';import { GroupModes } from './enum';
+import { Property, ChildProperty, Complex, createElement } from '@syncfusion/ej2-base';import { isNullOrUndefined, getValue } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { Border, Font, Animation, EmptyPointSettings, Connector } from '../../common/model/base';import { Rect, Size, PathOption } from '@syncfusion/ej2-svg-base';import { ChartLocation, stringToNumber, appendChildElement } from '../../common/utils/helper';import { AccumulationType, AccumulationLabelPosition, PyramidModes } from '../model/enum';import { IAccSeriesRenderEventArgs, IAccPointRenderEventArgs, IAccTextRenderEventArgs } from '../model/pie-interface';import { LegendShape } from '../../chart/utils/enum';import { Data } from '../../common/model/data';import { seriesRender, pointRender } from '../../common/model/constants';import { getSeriesColor } from '../../common/model/theme';import { FontModel, BorderModel, AnimationModel, EmptyPointSettingsModel, ConnectorModel } from '../../common/model/base-model';import { AccumulationChart } from '../accumulation';import { getElement, firstToLowerCase } from '../../common/utils/helper';import { Units, Alignment, Regions, Position, SeriesCategories } from '../../common/utils/enum';import { GroupModes } from './enum';
 
 /**
  * Interface for a class AccumulationAnnotationSettings
@@ -7,6 +7,7 @@ export interface AccumulationAnnotationSettingsModel {
 
     /**
      * Content of the annotation, which accepts the id of the custom element.
+     *
      * @default null
      */
     content?: string;
@@ -14,6 +15,7 @@ export interface AccumulationAnnotationSettingsModel {
     /**
      * if set coordinateUnit as `Pixel` X specifies the axis value
      * else is specifies pixel or percentage of coordinate
+     *
      * @default '0'
      */
     x?: string | Date | number;
@@ -21,6 +23,7 @@ export interface AccumulationAnnotationSettingsModel {
     /**
      * if set coordinateUnit as `Pixel` Y specifies the axis value
      * else is specifies pixel or percentage of coordinate
+     *
      * @default '0'
      */
     y?: string | number;
@@ -29,6 +32,7 @@ export interface AccumulationAnnotationSettingsModel {
      * Specifies the coordinate units of the annotation. They are
      * * Pixel - Annotation renders based on x and y pixel value.
      * * Point - Annotation renders based on x and y axis value.
+     *
      * @default 'Pixel'
      */
 
@@ -38,6 +42,7 @@ export interface AccumulationAnnotationSettingsModel {
      * Specifies the regions of the annotation. They are
      * * Chart - Annotation renders based on chart coordinates.
      * * Series - Annotation renders based on series coordinates.
+     *
      * @default 'Chart'
      */
 
@@ -48,6 +53,7 @@ export interface AccumulationAnnotationSettingsModel {
      * * Top - Align the annotation element as top side.
      * * Bottom - Align the annotation element as bottom side.
      * * Middle - Align the annotation element as mid point.
+     *
      * @default 'Middle'
      * @deprecated
      */
@@ -59,6 +65,7 @@ export interface AccumulationAnnotationSettingsModel {
      * * Near - Align the annotation element as top side.
      * * Far - Align the annotation element as bottom side.
      * * Center - Align the annotation element as mid point.
+     *
      * @default 'Center'
      * @deprecated
      */
@@ -67,6 +74,7 @@ export interface AccumulationAnnotationSettingsModel {
 
     /**
      * Information about annotation for assistive technology.
+     *
      * @default null
      */
     description?: string;
@@ -80,6 +88,7 @@ export interface AccumulationDataLabelSettingsModel {
 
     /**
      * If set true, data label for series gets render.
+     *
      * @default false
      */
 
@@ -87,6 +96,7 @@ export interface AccumulationDataLabelSettingsModel {
 
     /**
      * If set true, data label for zero values in series gets render.
+     *
      * @default true
      */
 
@@ -94,6 +104,7 @@ export interface AccumulationDataLabelSettingsModel {
 
     /**
      * The DataSource field which contains the data label value.
+     *
      * @default null
      */
 
@@ -101,6 +112,7 @@ export interface AccumulationDataLabelSettingsModel {
 
     /**
      * The background color of the data label, which accepts value in hex, rgba as a valid CSS color string.
+     *
      * @default 'transparent'
      */
 
@@ -110,6 +122,7 @@ export interface AccumulationDataLabelSettingsModel {
      * Specifies the position of data label. They are.
      * * Outside - Places label outside the point.
      * * Inside - Places label inside the point.
+     *
      * @default 'Inside'
      */
 
@@ -117,24 +130,28 @@ export interface AccumulationDataLabelSettingsModel {
 
     /**
      * The roundedCornerX for the data label. It requires `border` values not to be null.
+     *
      * @default 5
      */
     rx?: number;
 
     /**
      * The roundedCornerY for the data label. It requires `border` values not to be null.
+     *
      * @default 5
      */
     ry?: number;
 
     /**
      * Specifies angle for data label.
+     *
      * @default 0
      */
     angle?: number;
 
     /**
      * Enables rotation for data label.
+     *
      * @default false
      */
 
@@ -162,6 +179,7 @@ export interface AccumulationDataLabelSettingsModel {
     /**
      * Custom template to format the data label content. Use ${point.x} and ${point.y} as a placeholder
      * text to display the corresponding data point.
+     *
      * @default null
      */
 
@@ -176,12 +194,14 @@ export interface PieCenterModel {
 
     /**
      * X value of the center.
+     *
      * @default '50%'
      */
     x?: string;
 
     /**
      * Y value of the center.
+     *
      * @default '50%'
      */
     y?: string;
@@ -222,6 +242,7 @@ export interface AccumulationSeriesModel {
      * });
      * pie.appendTo('#Pie');
      * ```
+     *
      * @default ''
      */
 
@@ -229,12 +250,14 @@ export interface AccumulationSeriesModel {
 
     /**
      * Specifies Query to select data from dataSource. This property is applicable only when the dataSource is `ej.DataManager`.
+     *
      * @default null
      */
     query?: Query;
 
     /**
      * The DataSource field which contains the x value.
+     *
      * @default ''
      */
 
@@ -242,6 +265,7 @@ export interface AccumulationSeriesModel {
 
     /**
      * Specifies the series name
+     *
      * @default ''
      */
 
@@ -249,12 +273,14 @@ export interface AccumulationSeriesModel {
 
     /**
      * The provided value will be considered as a Tooltip Mapping name
+     *
      * @default ''
      */
     tooltipMappingName?: string;
 
     /**
      * The DataSource field which contains the y value.
+     *
      * @default ''
      */
 
@@ -262,6 +288,7 @@ export interface AccumulationSeriesModel {
 
     /**
      * Specifies the series visibility.
+     *
      * @default true
      */
 
@@ -291,7 +318,7 @@ export interface AccumulationSeriesModel {
      * * Pentagon - Renders a pentagon.
      * * InvertedTriangle - Renders a invertedTriangle.
      * * SeriesType -Render a legend shape based on series type.
-     * * Image -Render a image.
+     * * Image -Render a image.     * 
      * @default 'SeriesType'
      */
 
@@ -307,6 +334,7 @@ export interface AccumulationSeriesModel {
     /**
      * The DataSource field that contains the color value of point
      * It is applicable for series
+     *
      * @default ''
      */
 
@@ -314,18 +342,21 @@ export interface AccumulationSeriesModel {
 
     /**
      * Custom style for the selected series or points.
+     *
      * @default null
      */
     selectionStyle?: string;
 
     /**
      * AccumulationSeries y values less than groupTo are combined into single slice named others
+     *
      * @default null
      */
     groupTo?: string;
 
     /**
      * AccumulationSeries y values less than groupMode are combined into single slice named others
+     *
      * @default Value
      */
     groupMode?: GroupModes;
@@ -337,68 +368,81 @@ export interface AccumulationSeriesModel {
 
     /**
      * Palette for series points.
+     *
      * @default []
      */
     palettes?: string[];
 
     /**
      * Start angle for a series.
+     *
      * @default 0
      */
     startAngle?: number;
 
     /**
      * End angle for a series.
+     *
      * @default null
      */
     endAngle?: number;
 
     /**
      * Radius of the pie series and its values in percentage.
+     *
      * @default '80%'
      */
     radius?: string;
 
     /**
      * When the innerRadius value is greater than 0 percentage, a donut will appear in pie series. It takes values only in percentage.
+     *
      * @default '0'
      */
     innerRadius?: string;
 
     /**
      * Specify the type of the series in accumulation chart.
+     *
      * @default 'Pie'
      */
     type?: AccumulationType;
 
     /**
      * To enable or disable tooltip for a series.
+     *
      * @default true
      */
     enableTooltip?: boolean;
 
     /**
      * If set true, series points will be exploded on mouse click or touch.
+     *
      * @default false
      */
     explode?: boolean;
 
     /**
      * Distance of the point from the center, which takes values in both pixels and percentage.
+     *
      * @default '30%'
      */
     explodeOffset?: string;
 
     /**
      * If set true, all the points in the series will get exploded on load.
+     *
      * @default false
      */
     explodeAll?: boolean;
 
     /**
      * Index of the point, to be exploded on load.
+     *
      * @default null
+     *
      * @aspDefaultValueIgnore
+     *
      * @blazorDefaultValue Double.NaN
      */
     explodeIndex?: number;
@@ -410,42 +454,49 @@ export interface AccumulationSeriesModel {
 
     /**
      * Defines the distance between the segments of a funnel/pyramid series. The range will be from 0 to 1
+     *
      * @default 0
      */
     gapRatio?: number;
 
     /**
      * Defines the width of the funnel/pyramid with respect to the chart area
+     *
      * @default '80%'
      */
     width?: string;
 
     /**
      * Defines the height of the funnel/pyramid with respect to the chart area
+     *
      * @default '80%'
      */
     height?: string;
 
     /**
      * Defines the width of the funnel neck with respect to the chart area
+     *
      * @default '20%'
      */
     neckWidth?: string;
 
     /**
      * Defines the height of the funnel neck with respect to the chart area
+     *
      * @default '20%'
      */
     neckHeight?: string;
 
     /**
      * Defines how the values have to be reflected, whether through height/surface of the segments
+     *
      * @default 'Linear'
      */
     pyramidMode?: PyramidModes;
 
     /**
      * The opacity of the series.
+     *
      * @default 1.
      */
     opacity?: number;

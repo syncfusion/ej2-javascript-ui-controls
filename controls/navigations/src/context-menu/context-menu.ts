@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/triple-slash-reference */
 /// <reference path='../common/menu-base-model.d.ts'/>
 import { attributes, getUniqueID, Collection, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
 import { getZindexPartial } from '@syncfusion/ej2-popups';
@@ -21,7 +22,10 @@ import { MenuItemModel } from './../common/menu-base-model';
 export class ContextMenu extends MenuBase implements INotifyPropertyChanged {
     /**
      * Constructor for creating the widget.
+     *
      * @private
+     * @param {ContextMenuModel} options - Specifies the context menu model
+     * @param {string} element - Specifies the element
      */
     constructor(options?: ContextMenuModel, element?: string | HTMLUListElement) {
         super(options, <HTMLUListElement | string>element);
@@ -29,20 +33,23 @@ export class ContextMenu extends MenuBase implements INotifyPropertyChanged {
 
     /**
      * Specifies target element selector in which the ContextMenu should be opened.
-     * @default ''  
+     *
+     * @default ''
      */
     @Property('')
     public target: string;
 
     /**
      * Specifies the filter selector for elements inside the target in that the context menu will be opened.
-     * @default ''    
+     *
+     * @default ''
      */
     @Property('')
     public filter: string;
 
     /**
      * Specifies menu items with its properties which will be rendered as ContextMenu.
+     *
      * @default []
      * @aspType object
      * @blazorType object
@@ -52,7 +59,9 @@ export class ContextMenu extends MenuBase implements INotifyPropertyChanged {
 
     /**
      * For internal use only - prerender processing.
+     *
      * @private
+     * @returns {void}
      */
     protected preRender(): void {
         this.isMenu = false;
@@ -68,11 +77,12 @@ export class ContextMenu extends MenuBase implements INotifyPropertyChanged {
 
     /**
      * This method is used to open the ContextMenu in specified position.
-     * @param top - To specify ContextMenu vertical positioning.
-     * @param left - To specify ContextMenu horizontal positioning.
-     * @param target - To calculate z-index for ContextMenu based upon the specified target.
+     *
+     * @param {number} top - To specify ContextMenu vertical positioning.
+     * @param {number} left - To specify ContextMenu horizontal positioning.
+     * @param {HTMLElement} target - To calculate z-index for ContextMenu based upon the specified target.
      * @method open
-     * @returns void
+     * @returns {void}
      */
     public open(top: number, left: number, target?: HTMLElement): void {
         super.openMenu(null, null, top, left, null, target);
@@ -80,37 +90,41 @@ export class ContextMenu extends MenuBase implements INotifyPropertyChanged {
 
     /**
      * Closes the ContextMenu if it is opened.
+     *
+     * @returns {void}
      */
     public close(): void {
         super.closeMenu();
     }
 
     /**
-     * Called internally if any of the property value changed
+     * Called internally if any of the property value changed.
+     *
      * @private
-     * @param {ContextMenuModel} newProp
-     * @param {ContextMenuModel} oldProp
-     * @returns void
+     * @param {ContextMenuModel} newProp - Specifies new properties
+     * @param {ContextMenuModel} oldProp - Specifies old properties
+     * @returns {void}
      */
     public onPropertyChanged(newProp: ContextMenuModel, oldProp: ContextMenuModel): void {
         super.onPropertyChanged(newProp, oldProp);
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'filter':
-                    this.close();
-                    this.filter = newProp.filter;
-                    break;
-                case 'target':
-                    this.unWireEvents(oldProp.target);
-                    this.wireEvents();
-                    break;
+            case 'filter':
+                this.close();
+                this.filter = newProp.filter;
+                break;
+            case 'target':
+                this.unWireEvents(oldProp.target);
+                this.wireEvents();
+                break;
             }
         }
     }
 
     /**
      * Get module name.
-     * @returns string
+     *
+     * @returns {string} - Module Name
      * @private
      */
     protected getModuleName(): string {

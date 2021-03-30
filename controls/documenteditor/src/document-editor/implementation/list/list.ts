@@ -2,7 +2,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { WLevelOverride } from './level-override';
 import { WAbstractList } from './abstract-list';
 import { WListLevel } from './list-level';
-/** 
+/**
  * @private
  */
 export class WList {
@@ -13,7 +13,7 @@ export class WList {
     public levelOverrides: WLevelOverride[] = [];
     public getListLevel(levelNumber: number): WListLevel {
         let listLevel: WListLevel = undefined;
-        let levelOverride: WLevelOverride = this.getLevelOverride(levelNumber);
+        const levelOverride: WLevelOverride = this.getLevelOverride(levelNumber);
         if (!isNullOrUndefined(levelOverride) && !isNullOrUndefined(levelOverride.overrideListLevel)) {
             listLevel = levelOverride.overrideListLevel;
         } else {
@@ -24,7 +24,7 @@ export class WList {
     public getLevelOverride(levelNumber: number): WLevelOverride {
         for (let i: number = 0; i < this.levelOverrides.length; i++) {
             if (this.levelOverrides[i] instanceof WLevelOverride) {
-                let levelOverride: WLevelOverride = this.levelOverrides[i] as WLevelOverride;
+                const levelOverride: WLevelOverride = this.levelOverrides[i] as WLevelOverride;
                 if (levelOverride.levelNumber === levelNumber) {
                     return levelOverride;
                 }
@@ -57,7 +57,7 @@ export class WList {
     }
 
     public clone(): WList {
-        let list: WList = new WList();
+        const list: WList = new WList();
         for (let i: number = 0; i < this.levelOverrides.length; i++) {
             list.levelOverrides.push(this.levelOverrides[i].clone());
         }

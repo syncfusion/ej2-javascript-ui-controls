@@ -768,6 +768,14 @@
     width: 100%;
   }
 
+  .e-rte-img-caption.e-imgleft .e-img-inner {
+    text-align: left;
+  }
+
+  .e-rte-img-caption.e-imgright .e-img-inner {
+    text-align: right;
+  }
+
   .e-rte-img-caption .e-img-wrap {
     display: inline-block;
     margin: auto;

@@ -33,19 +33,25 @@ export class DataBind {
 
     /**
      * Update given data source to sheet.
+     *
+     * @param {ExtendedSheet} args.sheet - Specify the sheet.
+     * @param {number[]} args.indexes - Specify the indexes.
+     * @param {Promise<CellModel>} args.promise - Specify the promise.
+     * @param {number} args.rangeSettingCount - Specify the rangeSettingCount.
+     * @returns {void} - Update given data source to sheet.
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private updateSheetFromDataSourceHandler(args: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>, rangeSettingCount?: number[] }): void {
         let cell: CellModel; let flds: string[]; let sCellIdx: number[];
         let result: Object[]; let remoteUrl: string; let isLocal: boolean; let dataManager: DataManager;
-        let requestedRange: boolean[] = []; let sRanges: number[] = []; let rowIdx: number;
+        const requestedRange: boolean[] = []; const sRanges: number[] = []; let rowIdx: number;
         let deferred: Deferred = new Deferred(); let sRowIdx: number; let sColIdx: number;
         let loadedInfo: { isNotLoaded: boolean, unloadedRange: number[] };
         args.promise = deferred.promise;
         if (args.sheet && args.sheet.ranges.length) {
             for (let k: number = args.sheet.ranges.length - 1; k >= 0; k--) {
                 let sRange: number = args.indexes[0]; let eRange: number = args.indexes[2];
-                let range: ExtendedRange = args.sheet.ranges[k];
+                const range: ExtendedRange = args.sheet.ranges[k];
                 sRowIdx = getRangeIndexes(range.startCell)[0];
                 dataManager = range.dataSource instanceof DataManager ? range.dataSource as DataManager
                     : range.dataSource ? new DataManager(range.dataSource) : new DataManager();
@@ -79,100 +85,100 @@ export class DataBind {
                 this.requestedInfo.push({ deferred: deferred, indexes: args.indexes, isNotLoaded: loadedInfo.isNotLoaded });
                 if (sRange >= 0 && loadedInfo.isNotLoaded && !isEndReached) {
                     sRanges[k] = sRange; requestedRange[k] = false;
-                    let query: Query = (range.query ? range.query : new Query()).clone();
+                    const query: Query = (range.query ? range.query : new Query()).clone();
                     dataManager.executeQuery(query.range(sRange, eRange >= count ? eRange : eRange + 1)
                         .requiresCount()).then((e: ReturnOption) => {
-                            if (!this.parent || this.parent.isDestroyed) { return; }
-                            result = (e.result && e.result.result ? e.result.result : e.result) as Object[];
-                            sCellIdx = getRangeIndexes(range.startCell);
-                            sRowIdx = sCellIdx[0]; sColIdx = sCellIdx[1];
-                            if (result.length) {
-                                if (!range.info.count) { count = e.count; range.info.count = e.count; }
-                                flds = Object.keys(result[0]);
-                                if (!range.info.fldLen) { range.info.fldLen = flds.length; range.info.flds = flds; }
-                                if (range.info.insertColumnRange) {
-                                    let insertCount: number = 0;
-                                    range.info.insertColumnRange.forEach((insertRange: number[]): void => {
-                                        for (let i: number = insertRange[0]; i <= insertRange[1]; i++) {
-                                            i <= sColIdx ? flds.splice(0, 0, `emptyCell${insertCount}`) : flds.splice(
-                                                i - sColIdx, 0, `emptyCell${insertCount}`);
-                                            insertCount++;
-                                        }
-                                    });
-                                }
-                                if (sRanges[k] === 0 && range.showFieldAsHeader) {
-                                    rowIdx = sRowIdx + sRanges[k] + insertRowCount;
-                                    flds.forEach((field: string, i: number) => {
-                                        cell = getCell(rowIdx, sColIdx + i, args.sheet, true);
-                                        if (!cell) {
-                                            args.sheet.rows[sRowIdx + sRanges[k]].cells[sColIdx + i] = field.includes('emptyCell') ? {}
-                                                : { value: field };
-                                        } else if (!cell.value && !field.includes('emptyCell')) {
-                                            cell.value = field;
-                                        }
-                                    });
-                                }
-                                result.forEach((item: { [key: string]: string }, i: number) => {
-                                    rowIdx = sRowIdx + sRanges[k] + i + (range.showFieldAsHeader ? 1 : 0) + insertRowCount;
-                                    for (let j: number = 0; j < flds.length; j++) {
-                                        cell = getCell(rowIdx, sColIdx + j, args.sheet, true);
-                                        if (cell) {
-                                            if (!cell.value && !flds[j].includes('emptyCell')) {
-                                                setCell(rowIdx, sColIdx + j, args.sheet, this.getCellDataFromProp(item[flds[j]]), true);
-                                            }
-                                        } else {
-                                            args.sheet.rows[rowIdx].cells[sColIdx + j] =
-                                                flds[j].includes('emptyCell') ? {} : this.getCellDataFromProp(item[flds[j]]);
-                                        }
-                                        this.checkDataForFormat({
-                                            args: args, cell: cell, colIndex: sColIdx + j, rowIndex: rowIdx, i: i, j: j, k: k,
-                                            range: range, sRanges: sRanges, value: item[flds[j]]
-                                        });
+                        if (!this.parent || this.parent.isDestroyed) { return; }
+                        result = (e.result && e.result.result ? e.result.result : e.result) as Object[];
+                        sCellIdx = getRangeIndexes(range.startCell);
+                        sRowIdx = sCellIdx[0]; sColIdx = sCellIdx[1];
+                        if (result && result.length) {
+                            if (!range.info.count) { count = e.count; range.info.count = e.count; }
+                            flds = Object.keys(result[0]);
+                            if (!range.info.fldLen) { range.info.fldLen = flds.length; range.info.flds = flds; }
+                            if (range.info.insertColumnRange) {
+                                let insertCount: number = 0;
+                                range.info.insertColumnRange.forEach((insertRange: number[]): void => {
+                                    for (let i: number = insertRange[0]; i <= insertRange[1]; i++) {
+                                        i <= sColIdx ? flds.splice(0, 0, `emptyCell${insertCount}`) : flds.splice(
+                                            i - sColIdx, 0, `emptyCell${insertCount}`);
+                                        insertCount++;
                                     }
                                 });
-                            } else {
-                                flds = [];
                             }
-                            args.sheet.usedRange.rowIndex = Math.max(
-                                (sRowIdx + (count || e.count) + (range.showFieldAsHeader ? 1 : 0) + insertRowCount) - 1,
-                                args.sheet.usedRange.rowIndex);
-                            args.sheet.usedRange.colIndex = Math.max(sColIdx + flds.length - 1, args.sheet.usedRange.colIndex);
-                            if (insertRowCount) {
-                                loadedInfo = this.getLoadedInfo(sRange, eRange, range);
-                                sRange = loadedInfo.unloadedRange[0]; eRange = loadedInfo.unloadedRange[1];
-                                if (sRange > count) {
-                                    loadedInfo.isNotLoaded = false;
+                            if (sRanges[k] === 0 && range.showFieldAsHeader) {
+                                rowIdx = sRowIdx + sRanges[k] + insertRowCount;
+                                flds.forEach((field: string, i: number) => {
+                                    cell = getCell(rowIdx, sColIdx + i, args.sheet, true);
+                                    if (!cell) {
+                                        args.sheet.rows[sRowIdx + sRanges[k]].cells[sColIdx + i] = field.includes('emptyCell') ? {}
+                                            : { value: field };
+                                    } else if (!cell.value && !field.includes('emptyCell')) {
+                                        cell.value = field;
+                                    }
+                                });
+                            }
+                            result.forEach((item: { [key: string]: string }, i: number) => {
+                                rowIdx = sRowIdx + sRanges[k] + i + (range.showFieldAsHeader ? 1 : 0) + insertRowCount;
+                                for (let j: number = 0; j < flds.length; j++) {
+                                    cell = getCell(rowIdx, sColIdx + j, args.sheet, true);
+                                    if (cell) {
+                                        if (!cell.value && !flds[j].includes('emptyCell')) {
+                                            setCell(rowIdx, sColIdx + j, args.sheet, this.getCellDataFromProp(item[flds[j]]), true);
+                                        }
+                                    } else {
+                                        args.sheet.rows[rowIdx].cells[sColIdx + j] =
+                                            flds[j].includes('emptyCell') ? {} : this.getCellDataFromProp(item[flds[j]]);
+                                    }
+                                    this.checkDataForFormat({
+                                        args: args, cell: cell, colIndex: sColIdx + j, rowIndex: rowIdx, i: i, j: j, k: k,
+                                        range: range, sRanges: sRanges, value: item[flds[j]]
+                                    });
                                 }
-                                if (loadedInfo.isNotLoaded) {
-                                    if (eRange > count) { eRange = count; }
-                                    range.info.loadedRange.push([sRange, eRange]);
-                                }
-                            } else {
+                            });
+                        } else {
+                            flds = [];
+                        }
+                        args.sheet.usedRange.rowIndex = Math.max(
+                            (sRowIdx + (count || e.count) + (range.showFieldAsHeader ? 1 : 0) + insertRowCount) - 1,
+                            args.sheet.usedRange.rowIndex);
+                        args.sheet.usedRange.colIndex = Math.max(sColIdx + flds.length - 1, args.sheet.usedRange.colIndex);
+                        if (insertRowCount) {
+                            loadedInfo = this.getLoadedInfo(sRange, eRange, range);
+                            sRange = loadedInfo.unloadedRange[0]; eRange = loadedInfo.unloadedRange[1];
+                            if (sRange > count) {
+                                loadedInfo.isNotLoaded = false;
+                            }
+                            if (loadedInfo.isNotLoaded) {
+                                if (eRange > count) { eRange = count; }
                                 range.info.loadedRange.push([sRange, eRange]);
                             }
-                            requestedRange[k] = true;
-                            if (requestedRange.indexOf(false) === -1) {
-                                if (eRange + sRowIdx < sRowIdx + range.info.count) {
-                                    if (!args.rangeSettingCount) { args.rangeSettingCount = []; }
-                                    args.rangeSettingCount.push(k);
-                                    //if (remoteUrl) {
-                                    let unloadedArgs: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>,
-                                        rangeSettingCount?: number[] } = {
-                                        sheet: args.sheet, indexes: [0, 0, args.sheet.usedRange.rowIndex, args.sheet.usedRange.colIndex],
-                                        promise: new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); }),
-                                        rangeSettingCount: args.rangeSettingCount
-                                    };
-                                    this.updateSheetFromDataSourceHandler(unloadedArgs);
-                                    unloadedArgs.promise.then((): void => {
-                                        if (this.parent.getModuleName() === 'workbook') { return; }
-                                        args.rangeSettingCount.pop();
-                                        if (!args.rangeSettingCount.length) { this.parent.notify('created', null); }
-                                    });
-                                    //}
-                                }
-                                this.checkResolve(args.indexes);
+                        } else {
+                            range.info.loadedRange.push([sRange, eRange]);
+                        }
+                        requestedRange[k] = true;
+                        if (requestedRange.indexOf(false) === -1) {
+                            if (eRange + sRowIdx < sRowIdx + range.info.count) {
+                                if (!args.rangeSettingCount) { args.rangeSettingCount = []; }
+                                args.rangeSettingCount.push(k);
+                                //if (remoteUrl) {
+                                let unloadedArgs: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>,
+                                    rangeSettingCount?: number[] } = {
+                                    sheet: args.sheet, indexes: [0, 0, args.sheet.usedRange.rowIndex, args.sheet.usedRange.colIndex],
+                                    promise: new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); }),
+                                    rangeSettingCount: args.rangeSettingCount
+                                };
+                                this.updateSheetFromDataSourceHandler(unloadedArgs);
+                                unloadedArgs.promise.then((): void => {
+                                    if (this.parent.getModuleName() === 'workbook') { return; }
+                                    args.rangeSettingCount.pop();
+                                    if (!args.rangeSettingCount.length) { this.parent.notify('created', null); }
+                                });
+                                //}
                             }
-                        });
+                            this.checkResolve(args.indexes);
+                        }
+                    });
                 } else if (k === 0 && requestedRange.indexOf(false) === -1) {
                     this.checkResolve(args.indexes);
                 }
@@ -210,7 +216,7 @@ export class DataBind {
     }
 
     private getCellDataFromProp(prop: CellModel | string): CellModel {
-        let data: CellModel = {};
+        const data: CellModel = {};
         if (Object.prototype.toString.call(prop) === '[object Object]') {
             if ((<CellModel>prop).formula) {
                 data.formula = (<CellModel>prop).formula;
@@ -247,7 +253,7 @@ export class DataBind {
 
     private checkDataForFormat(args: AutoDetectInfo): void {
         if (args.value !== '') {
-            let dateEventArgs: { [key: string]: string | number | boolean } = {
+            const dateEventArgs: { [key: string]: string | number | boolean } = {
                 value: args.value,
                 rowIndex: args.rowIndex,
                 colIndex: args.colIndex,
@@ -298,7 +304,7 @@ export class DataBind {
 
     private getMaxCount(range: ExtendedRange): number {
         if (range.query) {
-            let query: QueryOptions[] = range.query.queries;
+            const query: QueryOptions[] = range.query.queries;
             for (let i: number = 0; i < query.length; i++) {
                 if (query[i].fn === 'onTake') {
                     return Math.min(query[i].e.nos, range.info.count || query[i].e.nos);
@@ -316,14 +322,20 @@ export class DataBind {
 
     /**
      * Remove old data from sheet.
+     * 
+     * @param {Workbook} args.oldProp - Specify the oldProp.
+     * @param {string} args.sheetIdx - Specify the sheetIdx.
+     * @param {string} args.rangeIdx - Specify the rangeIdx.
+     * @param {boolean} args.isLastRange - Specify the isLastRange.
+     * @returns {void} - Remove old data from sheet.
      */
     private dataSourceChangedHandler(args: { oldProp: Workbook, sheetIdx: string, rangeIdx: string, isLastRange: boolean }): void {
         let row: RowModel;
-        let sheet: SheetModel = this.parent.sheets[args.sheetIdx];
-        let range: ExtendedRange = sheet.ranges[args.rangeIdx];
+        const sheet: SheetModel = this.parent.sheets[args.sheetIdx];
+        const range: ExtendedRange = sheet.ranges[args.rangeIdx];
         if (range && (this.checkRangeHasChanges(sheet, args.rangeIdx) || !range.info)) {
-            let showFieldAsHeader: boolean = range.showFieldAsHeader;
-            let indexes: number[] = getCellIndexes(range.startCell);
+            const showFieldAsHeader: boolean = range.showFieldAsHeader;
+            const indexes: number[] = getCellIndexes(range.startCell);
             if (range.info) {
                 range.info.loadedRange.forEach((loadedRange: number[]) => {
                     for (let i: number = loadedRange[0]; i <= loadedRange[1] && (i < range.info.count + (showFieldAsHeader ? 1 : 0)); i++) {
@@ -340,9 +352,9 @@ export class DataBind {
                 range.info = null;
             }
             interface Viewport { topIndex: number; bottomIndex: number; leftIndex: number; rightIndex: number; }
-            let viewport: Viewport = (this.parent as unknown as { viewport: Viewport }).viewport;
-            let refreshRange: number[] = [viewport.topIndex, viewport.leftIndex, viewport.bottomIndex, viewport.rightIndex];
-            let args: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel> } = {
+            const viewport: Viewport = (this.parent as unknown as { viewport: Viewport }).viewport;
+            const refreshRange: number[] = [viewport.topIndex, viewport.leftIndex, viewport.bottomIndex, viewport.rightIndex];
+            const args: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel> } = {
                 sheet: sheet as ExtendedSheet, indexes: refreshRange, promise:
                     new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); })
             };
@@ -368,27 +380,39 @@ export class DataBind {
 
     /**
      * Triggers dataSourceChange event when cell data changes
+     *
+     * @param {number} args.sheetIdx - Specify the sheetIdx.
+     * @param {number} args.activeSheetIndex - Specify the activeSheetIndex.
+     * @param {string} args.address - Specify the address.
+     * @param {number} args.startIndex - Specify the startIndex.
+     * @param {number} args.endIndex - Specify the endIndex.
+     * @param {string} args.modelType - Specify the modelType.
+     * @param {RowModel[]} args.deletedModel - Specify the deletedModel.
+     * @param {RowModel[]} args.model - Specify the model.
+     * @param {string} args.insertType - Specify the insertType.
+     * @param {number} args.index - Specify the index.
+     * @returns {void} - Triggers dataSourceChange event when cell data changes
      */
     private dataChangedHandler(args: {
         sheetIdx: number, activeSheetIndex: number, address: string, startIndex: number, endIndex: number,
         modelType: string, deletedModel: RowModel[], model: RowModel[], insertType: string, index: number
     }): void {
-        let changedData: Object[] = [{}];
+        const changedData: Object[] = [{}];
         let action: string;
         let cell: CellModel;
         let dataRange: number[];
         let startCell: number[];
         let inRange: boolean;
         let deleteRowDetails: { count: number, index: number };
-        let sheetIdx: number = this.parent.activeSheetIndex;
-        let sheet: SheetModel = this.parent.sheets[sheetIdx];
+        const sheetIdx: number = this.parent.activeSheetIndex;
+        const sheet: SheetModel = this.parent.sheets[sheetIdx];
         let cellIndices: number[];
         sheet.ranges.forEach((range: ExtendedRange, idx: number) => {
             if (range.dataSource) {
                 let isNewRow: boolean;
                 startCell = getCellIndexes(range.startCell);
                 dataRange = [...startCell, startCell[0] + range.info.count + (range.showFieldAsHeader ? 0 : -1),
-                startCell[1] + range.info.fldLen - 1];
+                    startCell[1] + range.info.fldLen - 1];
                 if (args.modelType === 'Row') {
                     if (args.insertType) {
                         inRange = ((!range.showFieldAsHeader && args.insertType === 'above') ? dataRange[0] <= args.index
@@ -449,6 +473,8 @@ export class DataBind {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} - Get the module name.
      * @private
      */
     protected getModuleName(): string {
@@ -457,7 +483,8 @@ export class DataBind {
 
     /**
      * Destroys the Data binding module.
-     * @return {void}
+     *
+     * @return {void} - Destroys the Data binding module.
      */
     public destroy(): void {
         this.removeEventListener();
@@ -467,8 +494,8 @@ export class DataBind {
 }
 
 interface RequestedInfo {
-  deferred: Deferred;
-  indexes: number[];
-  isLoaded?: boolean;
-  isNotLoaded?: boolean;
+    deferred: Deferred;
+    indexes: number[];
+    isLoaded?: boolean;
+    isNotLoaded?: boolean;
 }

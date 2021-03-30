@@ -1,0 +1,394 @@
+
+//default 
+$btn-grp-margin: -1px !default;
+$btn-grp-margin-left: -1px !default;
+$btn-grp-wrapper-border: 4px !default;
+$btn-grp-round-radius: 20px !default;
+$btn-grp-icon-font-size: 12px !default;
+$btn-grp-icon-font-size-bigger: 14px !default;
+
+//Normal Outline GroupButton
+$btn-grp-outline-focus-border-color: $grey-8c !default;
+$btn-grp-outline-focus-color: inherit !default;
+
+//Outline Primary
+$btn-grp-outline-primary-focus-border-color: $brand-primary-lighten-15 !default;
+$btn-grp-outline-focus-primary-color: inherit !default;
+
+//Outline Success
+$btn-grp-outline-success-focus-border-color: inherit !default;
+$btn-grp-outline-focus-success-color: inherit !default;
+
+//Outline Info
+$btn-grp-outline-info-focus-border-color: inherit !default;
+$btn-grp-outline-focus-info-color: inherit !default;
+
+//Outline warning
+$btn-grp-outline-warning-focus-border-color: inherit !default;
+$btn-grp-outline-focus-warning-color: inherit !default;
+
+//Outline danger
+$btn-grp-outline-danger-focus-border-color:  inherit !default;
+$btn-grp-outline-focus-danger-color: inherit !default;
+//enddefault
+
+@include export-module('button-group-layout') {
+// sass-lint:disable-all
+  #{if(&, '&', '*')}.e-btn-group,
+  #{if(&, '&', '*')}.e-css.e-btn-group {
+    display: -webkit-inline-flex;
+    display: inline-flex;
+    border-radius: $btn-grp-wrapper-border;
+    -webkit-flex-direction: row;
+    flex-direction: row;
+    position: relative;
+
+    input:focus+label.e-btn,
+    .e-btn:focus,
+    .e-btn:hover {
+      z-index: 2;
+    }
+
+    input + label.e-btn {
+      margin-bottom: 0;
+    }
+
+    input {
+      -moz-appearance: none;
+      height: 1px;
+      margin: 0 0 0 $btn-grp-margin;
+      opacity: 0;
+      position: absolute;
+      width: 1px;
+    }
+
+    // Disabled
+    input:disabled+label.e-btn,
+    :disabled {
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .e-btn-icon {
+      font-size: $btn-grp-icon-font-size;
+    }
+
+    // Sharp corner for sides individual Button and SplitButton
+    &:not(.e-rtl):not(.e-vertical) {
+      .e-btn {
+        margin-left: $btn-grp-margin-left;
+
+        &:not(:first-of-type):not(:last-of-type) {
+          border-radius: 0;
+        }
+
+        &:first-of-type {
+          border-bottom-right-radius: 0;
+          border-top-right-radius: 0;
+        }
+
+        &:last-of-type {
+          border-bottom-left-radius: 0;
+          border-top-left-radius: 0;
+        }
+
+        &:last-of-type:not(:last-child) {
+          border-bottom-right-radius: 0;
+          border-top-right-radius: 0;
+        }
+      }
+
+      .e-split-btn-wrapper {
+        +.e-btn {
+          border-bottom-left-radius: 0;
+          border-top-left-radius: 0;
+        }
+
+        &:not(:first-child):not(:last-child) {
+          .e-btn:last-child {
+            border-bottom-right-radius: 0;
+            border-top-right-radius: 0;
+          }
+
+          .e-btn:first-child {
+            border-bottom-left-radius: 0;
+            border-top-left-radius: 0;
+          }
+        }
+
+        &:first-child {
+          .e-btn:last-child {
+            border-bottom-right-radius: 0;
+            border-top-right-radius: 0;
+          }
+        }
+
+        &:last-child {
+          .e-btn:first-child {
+            border-bottom-left-radius: 0;
+            border-top-left-radius: 0;
+          }
+        }
+      }
+    }
+
+    // RTL with Sharp corner combinations
+    &.e-rtl {
+      .e-btn {
+        margin-left: $btn-grp-margin-left;
+
+        &:not(:first-of-type):not(:last-of-type) {
+          border-radius: 0;
+        }
+
+        &:first-of-type {
+          border-bottom-left-radius: 0;
+          border-top-left-radius: 0;
+        }
+
+        &:last-of-type {
+          border-bottom-right-radius: 0;
+          border-top-right-radius: 0;
+        }
+
+        &:last-of-type:not(:last-child) {
+          border-bottom-left-radius: 0;
+          border-top-left-radius: 0;
+        }
+      }
+
+      .e-split-btn-wrapper {
+        +.e-btn {
+          border-bottom-right-radius: 0;
+          border-top-right-radius: 0;
+        }
+
+        &:not(:first-child):not(:last-child) {
+          .e-btn:last-child {
+            border-bottom-left-radius: 0;
+            border-top-left-radius: 0;
+          }
+
+          .e-btn:first-child {
+            border-bottom-right-radius: 0;
+            border-top-right-radius: 0;
+          }
+        }
+
+        &:first-child {
+          .e-btn:last-child {
+            border-bottom-left-radius: 0;
+            border-top-left-radius: 0;
+          }
+        }
+
+        &:last-child {
+          .e-btn:first-child {
+            border-bottom-right-radius: 0;
+            border-top-right-radius: 0;
+          }
+        }
+      }
+    }
+
+    // Vertical Orientation
+    &.e-vertical {
+      -webkit-flex-direction: column;
+      flex-direction: column;
+
+      input {
+        margin: $btn-grp-margin 0 0;
+      }
+
+      // Round corner
+      .e-btn {
+        &:not(.e-outline) {
+          margin-top: $btn-grp-margin;
+        }
+
+        &:not(:first-of-type):not(:last-of-type) {
+          border-radius: 0;
+        }
+
+        &:first-of-type {
+          border-bottom-left-radius: 0;
+          border-bottom-right-radius: 0;
+          border-top-left-radius: 2px;
+          border-top-right-radius: 2px;
+        }
+
+        &:last-of-type {
+          border-bottom-left-radius: 2px;
+          border-bottom-right-radius: 2px;
+          border-top-left-radius: 0;
+          border-top-right-radius: 0;
+        }
+      }
+    }
+
+    // Rounded Corner
+    &.e-round-corner:not(.e-vertical) {
+      &:not(.e-rtl) {
+        border-radius: $btn-grp-round-radius;
+
+        .e-btn {
+          &:first-of-type {
+            border-bottom-left-radius: $btn-grp-round-radius;
+            border-top-left-radius: $btn-grp-round-radius;
+          }
+
+          &:last-of-type {
+            border-bottom-right-radius: $btn-grp-round-radius;
+            border-top-right-radius: $btn-grp-round-radius;
+          }
+
+          &:last-of-type:not(:last-child) {
+            border-bottom-right-radius: 0;
+            border-top-right-radius: 0;
+          }
+        }
+
+        .e-split-btn-wrapper {
+          +.e-btn {
+            border-bottom-left-radius: 0;
+            border-top-left-radius: 0;
+          }
+
+          &:first-child {
+            .e-btn:first-child {
+              border-bottom-left-radius: $btn-grp-round-radius;
+              border-top-left-radius: $btn-grp-round-radius;
+            }
+
+            .e-btn:last-child {
+              border-bottom-right-radius: 0;
+              border-top-right-radius: 0;
+            }
+          }
+
+          &:last-child {
+             .e-btn:first-child {
+              border-bottom-left-radius: 0;
+              border-top-left-radius: 0;
+            }
+
+            .e-btn:last-child {
+              border-bottom-right-radius: $btn-grp-round-radius;
+              border-top-right-radius: $btn-grp-round-radius;
+            }
+          }
+        }
+      }
+
+      // Rounded corner with RTL
+      &.e-rtl {
+        border-radius: $btn-grp-round-radius;
+
+        .e-btn {
+          &:first-of-type {
+            border-bottom-right-radius: $btn-grp-round-radius;
+            border-top-right-radius: $btn-grp-round-radius;
+          }
+
+          &:last-of-type {
+            border-bottom-left-radius: $btn-grp-round-radius;
+            border-top-left-radius: $btn-grp-round-radius;
+          }
+
+          &:last-of-type:not(:last-child) {
+            border-bottom-left-radius: 0;
+            border-top-left-radius: 0;
+          }
+
+          &:first-of-type:not(:first-child) {
+            border-bottom-right-radius: 0;
+            border-top-right-radius: 0;
+          }
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-btn-group,
+  .e-bigger.e-btn-group,
+  .e-bigger .e-css.e-btn-group,
+  .e-bigger.e-css.e-btn-group  {
+    .e-btn-icon {
+      font-size: $btn-grp-icon-font-size-bigger;
+    }
+  }
+}
+
+@mixin apply-border {
+  &:not(:first-of-type):not(:last-of-type) {
+    border-left: transparent;
+    border-right: transparent;
+  }
+
+  &:first-of-type {
+    border-right: transparent;
+  }
+
+  &:last-of-type {
+    border-left: transparent;
+  }
+}
+
+@mixin apply-border-vertical {
+  &:not(:first-of-type):not(:last-of-type) {
+    border-bottom: transparent;
+    border-top: transparent;
+  }
+
+  &:first-of-type {
+    border-bottom: transparent;
+  }
+
+  &:last-of-type {
+    border-top: transparent;
+  }
+}
+
+@mixin different-states {
+  // Outline focus
+  .e-btn:focus,
+  input:focus+label.e-btn {
+    &.e-outline {
+      border-color: $btn-grp-outline-focus-border-color;
+      outline-color: $btn-grp-outline-focus-color;
+
+      &.e-primary {
+        border-color: $btn-grp-outline-primary-focus-border-color;
+        outline-color: $btn-grp-outline-focus-primary-color;
+      }
+
+      &.e-success {
+        border-color: $btn-grp-outline-success-focus-border-color;
+        outline-color: $btn-grp-outline-focus-success-color;
+      }
+
+      &.e-info {
+        border-color: $btn-grp-outline-info-focus-border-color;
+        outline-color: $btn-grp-outline-focus-info-color;
+      }
+
+      &.e-warning {
+        border-color: $btn-grp-outline-warning-focus-border-color;
+        outline-color: $btn-grp-outline-focus-warning-color;
+      }
+
+      &.e-danger {
+        border-color: $btn-grp-outline-danger-focus-border-color;
+        outline-color: $btn-grp-outline-focus-danger-color;
+     }
+   }
+  }
+}
+
+@mixin disabled {
+  background-color: $btn-disabled-bgcolor;
+  border-color: $btn-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-disabled-color;
+}
+

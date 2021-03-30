@@ -249,6 +249,8 @@ $tab-alt-active-text-color: $brand-primary-font !default;
 $tab-alt-disable-active-text-color: $brand-primary-font !default;
 $tab-alt-hover-text-color: lighten($brand-primary, 10%) !default;
 $tab-alt-active-hover-text-color: $brand-primary-font !default;
+$tab-clone-item-bg-color: rgba($grey-light, .87) !default;
+$tab-clone-text-color: lighten($brand-primary, 15%) !default;
 
 $tab-icon-container-width: auto !default;
 

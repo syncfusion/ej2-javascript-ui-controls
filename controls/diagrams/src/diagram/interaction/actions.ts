@@ -24,45 +24,57 @@ import { ShapeAnnotationModel, PathAnnotationModel } from '../objects/annotation
 import { checkParentAsContainer } from '../interaction/container-interaction';
 /**
  * Finds the action to be taken for the object under mouse
- * 
+ *
  */
 
 /* tslint:disable */
-/** @private */
+/**
+ * findToolToActivate method\
+ *
+ * @returns {Actions}    findToolToActivate method .\
+ * @param {Object} obj - provide the options value.
+ * @param {DiagramElement} wrapper - provide the options value.
+ * @param {PointModel} position - provide the options value.
+ * @param {Diagram} diagram - provide the options value.
+ * @param {ITouches[] | TouchList} touchStart - provide the options value.
+ * @param {ITouches[] | TouchList} touchMove - provide the options value.
+ * @param {NodeModel | PointPortModel | ShapeAnnotationModel | PathAnnotationModel} target - provide the options value.
+ * @private
+ */
 export function findToolToActivate(
     obj: Object, wrapper: DiagramElement, position: PointModel, diagram: Diagram,
     touchStart?: ITouches[] | TouchList, touchMove?: ITouches[] | TouchList,
     target?: NodeModel | PointPortModel | ShapeAnnotationModel | PathAnnotationModel): Actions {
-    let conn: Connector = diagram.selectedItems.connectors[0] as Connector;
+    //let conn: Connector = diagram.selectedItems.connectors[0] as Connector;
 
     if (touchMove && touchMove.length > 1 && touchStart && touchStart.length > 1) { return 'PinchZoom'; }
     if (diagram.currentSymbol) { return 'Drag'; }
-    let eventHandler: string = 'eventHandler';
+    const eventHandler: string = 'eventHandler';
     if (diagram[eventHandler].action === 'PortDraw') {
         diagram.tool &= ~DiagramTools.DrawOnce;
     }
     //Drawing Tools
     if ((canDrawOnce(diagram) || canContinuousDraw(diagram)) && diagram.drawingObject) { return 'Draw'; }
     if (hasSelection(diagram)) {
-        let handle: SelectorModel = diagram.selectedItems;
+        const handle: SelectorModel = diagram.selectedItems;
         if (handle.wrapper && canShowCorner(handle.constraints, 'UserHandle')) {
-            for (let obj of handle.userHandles) {
+            for (const obj of handle.userHandles) {
                 if (obj.visible) {
-                    let paddedBounds: PointModel = getUserHandlePosition(handle, obj, diagram.scroller.transform);
+                    const paddedBounds: PointModel = getUserHandlePosition(handle, obj, diagram.scroller.transform);
                     if (contains(position, paddedBounds, obj.size / (2 * diagram.scroller.transform.scale))) { return obj.name as Actions; }
                 }
             }
         }
     }
     if (hasSelection(diagram)) {
-        let element: DiagramElement = ((diagram.selectedItems as Selector).annotation) ?
+        const element: DiagramElement = ((diagram.selectedItems as Selector).annotation) ?
             diagram.selectedItems.wrapper.children[0] : diagram.selectedItems.wrapper;
-        let selectorBnds: Rect = element.bounds; let handle: SelectorModel = diagram.selectedItems;
-        let paddedBounds: Rect = new Rect(selectorBnds.x, selectorBnds.y, selectorBnds.width, selectorBnds.height);
+        const selectorBnds: Rect = element.bounds; const handle: SelectorModel = diagram.selectedItems;
+        const paddedBounds: Rect = new Rect(selectorBnds.x, selectorBnds.y, selectorBnds.width, selectorBnds.height);
         if (hasSingleConnection(diagram) && !(diagram.selectedItems as Selector).annotation) {
-            let conn: Connector = diagram.selectedItems.connectors[0] as Connector;
-            let sourcePaddingValue: number = 10 / diagram.scrollSettings.currentZoom;
-            let targetPaddingValue: number = 10 / diagram.scrollSettings.currentZoom;
+            const conn: Connector = diagram.selectedItems.connectors[0] as Connector;
+            const sourcePaddingValue: number = 10 / diagram.scrollSettings.currentZoom;
+            const targetPaddingValue: number = 10 / diagram.scrollSettings.currentZoom;
             if (canShowCorner(handle.constraints, 'ResizeAll')) {
                 if ((canShowCorner(handle.constraints, 'ConnectorSourceThumb'))
                     && canDragSourceEnd(conn as Connector) && contains(position, conn.sourcePoint, sourcePaddingValue)) {
@@ -72,7 +84,7 @@ export function findToolToActivate(
                     && canDragTargetEnd(conn as Connector) && contains(position, conn.targetPoint, targetPaddingValue)) {
                     return 'ConnectorTargetEnd';
                 }
-                let action: Actions = checkForConnectorSegment(conn, handle, position, diagram);
+                const action: Actions = checkForConnectorSegment(conn, handle, position, diagram);
                 if (action !== 'OrthoThumb') {
                     if ((canShowCorner(handle.constraints, 'ConnectorSourceThumb'))
                         && canDragSourceEnd(conn as Connector)) {
@@ -87,26 +99,26 @@ export function findToolToActivate(
                 }
             }
         } else {
-            let ten: number = 10 / diagram.scroller.currentZoom;
-            let matrix: Matrix = identityMatrix();
+            const ten: number = 10 / diagram.scroller.currentZoom;
+            const matrix: Matrix = identityMatrix();
             rotateMatrix(matrix, element.rotateAngle + element.parentTransform, element.offsetX, element.offsetY);
             //check for resizing tool
-            let x: number = element.offsetX - element.pivot.x * element.actualSize.width;
-            let y: number = element.offsetY - element.pivot.y * element.actualSize.height;
+            const x: number = element.offsetX - element.pivot.x * element.actualSize.width;
+            const y: number = element.offsetY - element.pivot.y * element.actualSize.height;
             let rotateThumb: PointModel = {
                 x: x + ((element.pivot.x === 0.5 ? element.pivot.x * 2 : element.pivot.x) * element.actualSize.width / 2),
                 y: y - 30 / diagram.scroller.currentZoom
             };
             rotateThumb = transformPointByMatrix(matrix, rotateThumb);
-            let labelSelection: boolean = (diagram.selectedItems as Selector).annotation ? true : false;
-            let labelRotate: boolean = (labelSelection && (canRotate((diagram.selectedItems as Selector).annotation))) ? true : false;
+            const labelSelection: boolean = (diagram.selectedItems as Selector).annotation ? true : false;
+            const labelRotate: boolean = (labelSelection && (canRotate((diagram.selectedItems as Selector).annotation))) ? true : false;
             if (canShowCorner(handle.constraints, 'Rotate') && contains(position, rotateThumb, ten) &&
                 ((diagram.selectedItems as Selector).thumbsConstraints & ThumbsConstraints.Rotate)) {
                 if (labelSelection && labelRotate) { return 'LabelRotate'; } else if (!labelSelection) { return 'Rotate'; }
             }
             paddedBounds.Inflate(ten);
             if (paddedBounds.containsPoint(position)) {
-                let action: Actions = checkResizeHandles(diagram, element, position, matrix, x, y);
+                const action: Actions = checkResizeHandles(diagram, element, position, matrix, x, y);
                 if (action) { return action; }
             }
         }
@@ -114,7 +126,7 @@ export function findToolToActivate(
     //Panning
     if (canZoomPan(diagram) && !obj) { return 'Pan'; }
     if (target instanceof PointPort && (!canZoomPan(diagram))) {
-        let action: Actions = findPortToolToActivate(diagram, target);
+        const action: Actions = findPortToolToActivate(diagram, target);
         if (action !== 'None') { return action; }
     }
     if ((target instanceof ShapeAnnotation || target instanceof PathAnnotation) && (!canZoomPan(diagram) && (canSelect(target)))) {
@@ -123,7 +135,7 @@ export function findToolToActivate(
     if (obj !== null) {
         if (obj instanceof Node || obj instanceof Connector) {
             if (wrapper && wrapper.id) {
-                let id: string = wrapper.id.split(obj.id)[1];
+                const id: string = wrapper.id.split(obj.id)[1];
                 if (id && id.match('^_icon')) { return 'LayoutAnimation'; }
             }
             if (wrapper && wrapper.id) {
@@ -167,12 +179,22 @@ function checkResizeHandles(
     return null;
 }
 
+/**
+ * checkForConnectorSegment method\
+ *
+ * @returns {Actions}    checkForConnectorSegment method .\
+ * @param {Connector} conn - provide the options value.
+ * @param {SelectorModel} handle - provide the options value.
+ * @param {PointModel} position - provide the options value.
+ * @param {Diagram} diagram - provide the options value.
+ * @private
+ */
 function checkForConnectorSegment(conn: Connector, handle: SelectorModel, position: PointModel, diagram: Diagram): Actions {
-    let targetPaddingValue: number = 10 / diagram.scrollSettings.currentZoom;
-    let sourcePaddingValue: number = 10 / diagram.scrollSettings.currentZoom;
+    const targetPaddingValue: number = 10 / diagram.scrollSettings.currentZoom;
+    const sourcePaddingValue: number = 10 / diagram.scrollSettings.currentZoom;
     if (conn.type === 'Bezier') {
         for (let i: number = 0; i < conn.segments.length; i++) {
-            let segment: BezierSegment = (conn.segments)[i] as BezierSegment;
+            const segment: BezierSegment = (conn.segments)[i] as BezierSegment;
             if (contains(
                 position, !Point.isEmptyPoint(segment.point1) ? segment.point1 : segment.bezierPoint1,
                 sourcePaddingValue)) {
@@ -188,19 +210,19 @@ function checkForConnectorSegment(conn: Connector, handle: SelectorModel, positi
     if (diagram.connectorEditingToolModule && canDragSegmentThumb(conn as Connector)) {
         if (conn.type === 'Straight' || conn.type === 'Bezier') {
             for (let i: number = 0; i < conn.segments.length; i++) {
-                let segment: StraightSegmentModel | BezierSegmentModel;
-                segment = (conn.segments)[i] as StraightSegmentModel | BezierSegmentModel;
+                //let segment: StraightSegmentModel | BezierSegmentModel;
+                const segment: StraightSegmentModel | BezierSegmentModel = (conn.segments)[i] as StraightSegmentModel | BezierSegmentModel;
                 if (contains(position, segment.point, 10)) {
                     return 'SegmentEnd';
                 }
             }
         } else {
             for (let i: number = 0; i < conn.segments.length; i++) {
-                let segment: ConnectorSegment; let segPoint: PointModel = { x: 0, y: 0 };
-                segment = (conn.segments)[i] as ConnectorSegment;
+                const segPoint: PointModel = { x: 0, y: 0 };
+                const segment: ConnectorSegment = (conn.segments)[i] as ConnectorSegment;
                 if (segment.allowDrag) {
                     for (let j: number = 0; j < segment.points.length - 1; j++) {
-                        let length: number = Point.distancePoints(segment.points[j], segment.points[j + 1]);
+                        const length: number = Point.distancePoints(segment.points[j], segment.points[j + 1]);
                         if (length >= 50) {
                             segPoint.x = ((segment.points[j].x + segment.points[j + 1].x) / 2);
                             segPoint.y = ((segment.points[j].y + segment.points[j + 1].y) / 2);
@@ -216,9 +238,19 @@ function checkForConnectorSegment(conn: Connector, handle: SelectorModel, positi
     return null;
 }
 
-/** @private */
+/**
+ * findPortToolToActivate method\
+ *
+ * @returns {boolean}    findPortToolToActivate method .\
+ * @param {Diagram} diagram - provide the options value.
+ * @param {NodeModel | PointPortModel} target - provide the options value.
+ * @param {ITouches[] | TouchList} touchStart - provide the options value.
+ * @param {ITouches[] | TouchList} touchMove - provide the options value.
+ * @private
+ */
 export function findPortToolToActivate(
     diagram: Diagram, target?: NodeModel | PointPortModel,
+    // eslint-disable-next-line
     touchStart?: ITouches[] | TouchList, touchMove?: ITouches[] | TouchList,
 ): Actions {
     if (canDrag(target, diagram) && (checkPortRestriction(target as PointPortModel, PortVisibility.Hover)
@@ -228,7 +260,7 @@ export function findPortToolToActivate(
         || (checkPortRestriction(target as PointPortModel, PortVisibility.Visible)))) {
         if (target.constraints & PortConstraints.Draw) {
             diagram.drawingObject = {};
-            let connector: ConnectorModel = { type: 'Orthogonal', sourcePortID: target.id };
+            const connector: ConnectorModel = { type: 'Orthogonal', sourcePortID: target.id };
             diagram.drawingObject = connector;
             diagram.tool |= DiagramTools.DrawOnce;
             diagram.currentDrawingObject = connector as Connector;
@@ -244,15 +276,15 @@ export function findPortToolToActivate(
  */
 
 function checkResizeHandleForContainer(diagram: Diagram, element: DiagramElement, position: PointModel, x: number, y: number): Actions {
-    let ten: number = 10 / diagram.scroller.currentZoom;
-    let forty: number = 40 / diagram.scroller.currentZoom;
-    let selectedItems: Selector = diagram.selectedItems as Selector;
-    let width: number = element.actualSize.width; let height: number = element.actualSize.height;
-    let left: Rect = new Rect(x, y + 20, element.style.strokeWidth, height - 40);
-    let right: Rect = new Rect(x + width, y + 20, element.style.strokeWidth, height - 40);
-    let top: Rect = new Rect(x + 20, y, width - 40, element.style.strokeWidth);
-    let bottom: Rect = new Rect(x + 20, y + height, width - 40, element.style.strokeWidth);
-    let container: NodeModel = checkParentAsContainer(diagram, diagram.selectedItems.nodes[0], true) ?
+    const ten: number = 10 / diagram.scroller.currentZoom;
+    const forty: number = 40 / diagram.scroller.currentZoom;
+    const selectedItems: Selector = diagram.selectedItems as Selector;
+    const width: number = element.actualSize.width; const height: number = element.actualSize.height;
+    const left: Rect = new Rect(x, y + 20, element.style.strokeWidth, height - 40);
+    const right: Rect = new Rect(x + width, y + 20, element.style.strokeWidth, height - 40);
+    const top: Rect = new Rect(x + 20, y, width - 40, element.style.strokeWidth);
+    const bottom: Rect = new Rect(x + 20, y + height, width - 40, element.style.strokeWidth);
+    const container: NodeModel = checkParentAsContainer(diagram, diagram.selectedItems.nodes[0], true) ?
         diagram.nameTable[(diagram.selectedItems.nodes[0] as Node).parentId] : diagram.selectedItems.nodes[0];
 
     if (width >= forty && height >= forty) {
@@ -281,10 +313,10 @@ function checkResizeHandleForContainer(diagram: Diagram, element: DiagramElement
 
 function checkForResizeHandles(
     diagram: Diagram, element: DiagramElement, position: PointModel, matrix: Matrix, x: number, y: number): Actions {
-    let forty: number = 40 / diagram.scroller.currentZoom;
-    let ten: number = 10 / diagram.scroller.currentZoom;
-    let selectedItems: Selector = diagram.selectedItems as Selector;
-    let labelSelection: boolean = (selectedItems.annotation) ? true : false;
+    const forty: number = 40 / diagram.scroller.currentZoom;
+    const ten: number = 10 / diagram.scroller.currentZoom;
+    const selectedItems: Selector = diagram.selectedItems as Selector;
+    const labelSelection: boolean = (selectedItems.annotation) ? true : false;
     if (element.actualSize.width >= forty && element.actualSize.height >= forty) {
         if (canResizeCorner(selectedItems.constraints, 'ResizeSouthEast', selectedItems.thumbsConstraints, selectedItems) && contains(
             position, transformPointByMatrix(matrix, { x: x + element.actualSize.width, y: y + element.actualSize.height }), ten)) {
@@ -323,7 +355,15 @@ function checkForResizeHandles(
 }
 
 
-/** @private */
+/**
+ * contains method\
+ *
+ * @returns {boolean}    contains method .\
+ * @param {PointModel} mousePosition - provide the options value.
+ * @param {PointModel} corner - provide the corner value.
+ * @param {number} padding - provide the padding value.
+ * @private
+ */
 export function contains(mousePosition: PointModel, corner: PointModel, padding: number): boolean {
     if (mousePosition.x >= corner.x - padding && mousePosition.x <= corner.x + padding) {
         if (mousePosition.y >= corner.y - padding && mousePosition.y <= corner.y + padding) {
@@ -333,7 +373,13 @@ export function contains(mousePosition: PointModel, corner: PointModel, padding:
     return false;
 }
 
-/** @private */
+/**
+ * hasSelection method\
+ *
+ * @returns {boolean}    hasSelection method .\
+ * @param {Diagram} diagram - provide the options value.
+ * @private
+ */
 export function hasSelection(diagram: Diagram): boolean {
     if (diagram.selectedItems.nodes.length > 0 || diagram.selectedItems.connectors.length > 0) {
         return true;
@@ -341,7 +387,13 @@ export function hasSelection(diagram: Diagram): boolean {
     return false;
 }
 
-/** @private */
+/**
+ * hasSingleConnection method\
+ *
+ * @returns {boolean}    hasSingleConnection method .\
+ * @param {Diagram} diagram - provide the options value.
+ * @private
+ */
 export function hasSingleConnection(diagram: Diagram): boolean {
     if (diagram.selectedItems.connectors.length === 1 && !diagram.selectedItems.nodes.length) {
         return true;
@@ -349,7 +401,16 @@ export function hasSingleConnection(diagram: Diagram): boolean {
     return false;
 }
 
-/** @private */
+/**
+ * isSelected method\
+ *
+ * @returns {boolean}    isSelected method .\
+ * @param {Diagram} diagram - provide the options value.
+ * @param {Object} element - provide the options value.
+ * @param {boolean} firstLevel - provide the options value.
+ * @param {DiagramElement} wrapper - provide the options value.
+ * @private
+ */
 export function isSelected(diagram: Diagram, element: Object, firstLevel: boolean = true, wrapper?: DiagramElement): boolean {
     if (element instanceof Selector) {
         return true;
@@ -380,13 +441,20 @@ export function isSelected(diagram: Diagram, element: Object, firstLevel: boolea
 
 /** @private */
 export type Actions = 'None' | 'Select' | 'Drag' | 'FixedUserHandle' | 'ResizeWest' | 'ConnectorSourceEnd' | 'ConnectorTargetEnd' |
-    'ResizeEast' | 'ResizeSouth' | 'ResizeNorth' | 'ResizeSouthEast' |
-    'ResizeSouthWest' | 'ResizeNorthEast' | 'ResizeNorthWest' | 'Rotate' | 'ConnectorEnd' | 'Custom' | 'Draw' | 'Pan' |
-    'BezierSourceThumb' | 'BezierTargetThumb' | 'LayoutAnimation' | 'PinchZoom' | 'Hyperlink' | 'SegmentEnd' | 'OrthoThumb' |
-    'PortDrag' | 'PortDraw' | 'LabelSelect' | 'LabelDrag' | 'LabelResizeSouthEast' | 'LabelResizeSouthWest' | 'LabelResizeNorthEast' |
-    'LabelResizeNorthWest' | 'LabelResizeSouth' | 'LabelResizeNorth' | 'LabelResizeWest' | 'LabelResizeEast' | 'LabelRotate';
+'ResizeEast' | 'ResizeSouth' | 'ResizeNorth' | 'ResizeSouthEast' |
+'ResizeSouthWest' | 'ResizeNorthEast' | 'ResizeNorthWest' | 'Rotate' | 'ConnectorEnd' | 'Custom' | 'Draw' | 'Pan' |
+'BezierSourceThumb' | 'BezierTargetThumb' | 'LayoutAnimation' | 'PinchZoom' | 'Hyperlink' | 'SegmentEnd' | 'OrthoThumb' |
+'PortDrag' | 'PortDraw' | 'LabelSelect' | 'LabelDrag' | 'LabelResizeSouthEast' | 'LabelResizeSouthWest' | 'LabelResizeNorthEast' |
+'LabelResizeNorthWest' | 'LabelResizeSouth' | 'LabelResizeNorth' | 'LabelResizeWest' | 'LabelResizeEast' | 'LabelRotate';
 
-/** @private */
+/**
+ * getCursor method\
+ *
+ * @returns {boolean}    getCursor method .\
+ * @param {Actions} cursor - provide the options value.
+ * @param {number} angle - provide the options value.
+ * @private
+ */
 export function getCursor(cursor: Actions, angle: number): string {
     //to avoid angles less than 0 & angles greater than 360
     angle += 360;
@@ -395,7 +463,7 @@ export function getCursor(cursor: Actions, angle: number): string {
     if (cursor.indexOf('Resize') === -1) {
         return cursors[cursor];
     } else {
-        let dir: string = cursors[cursor];
+        const dir: string = cursors[cursor];
         if ((angle >= 0 && angle < 25) || (angle >= 160 && angle <= 205) || (angle >= 340 && angle <= 360)) {
             return dir;
         } else if ((angle >= 25 && angle <= 70) || (angle >= 205 && angle <= 250)) {
@@ -433,7 +501,7 @@ export function getCursor(cursor: Actions, angle: number): string {
     return cursors[cursor];
 }
 
-let cursors: Object = {
+const cursors: Object = {
     'None': 'default',
     'Rotate': 'crosshair',
     'Select': 'default',
@@ -467,5 +535,5 @@ let cursors: Object = {
     'LabelResizeNorthEast': 'ne-resize',
     'LabelResizeNorthWest': 'nw-resize',
     'LabelResizeSouthEast': 'se-resize',
-    'LabelResizeSouthWest': 'sw-resize',
+    'LabelResizeSouthWest': 'sw-resize'
 };

@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * Month view appointment rendering spec 
+ * Month view appointment rendering spec
  */
 import { closest, Browser, Internationalization } from '@syncfusion/ej2-base';
-import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda, MoreEventsClickArgs } from '../../../src/schedule/index';
+import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda, MoreEventsClickArgs, CallbackFunction } from '../../../src/schedule/index';
 import { testData } from '../base/datasource.spec';
 import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
@@ -11,10 +12,9 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
 describe('Month Event Render Module', () => {
     beforeAll(() => {
-        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            // tslint:disable-next-line:no-console
+            // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
             (this as any).skip(); //Skips test (in Chai)
             return;
@@ -23,33 +23,33 @@ describe('Month Event Render Module', () => {
 
     describe('Schedule Month view appointment rendering', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = { currentView: 'Month', height: '550px', width: '500px', selectedDate: new Date(2017, 10, 6) };
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = { currentView: 'Month', height: '550px', width: '500px', selectedDate: new Date(2017, 10, 6) };
             schObj = util.createSchedule(model, testData, done);
         });
         afterAll(() => {
             util.destroy(schObj);
         });
         it('elements in DOM', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(9);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(8);
             expect((closest(eventElementList[0], '.e-work-cells') as HTMLTableCellElement).cellIndex).toEqual(3);
-            let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(2);
         });
     });
 
     describe('Mobile view', () => {
         let schObj: Schedule;
-        let uA: string = Browser.userAgent;
-        let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+        const uA: string = Browser.userAgent;
+        const androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
             'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
 
-        beforeAll((done: Function) => {
+        beforeAll((done: DoneFn) => {
             Browser.userAgent = androidUserAgent;
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 views: [{ option: 'Day', readonly: true }, { option: 'Week' }, { option: 'WorkWeek', readonly: true }, { option: 'Month' }],
                 currentView: 'Month', height: '550px', width: '500px', selectedDate: new Date(2017, 10, 6),
                 moreEventsClick: (args: MoreEventsClickArgs) => args.isPopupOpen = false
@@ -63,14 +63,14 @@ describe('Month Event Render Module', () => {
 
         it('More event click testing and read only for add icon testing', () => {
             expect((schObj.element.querySelector('.e-icon-add') as HTMLElement).offsetHeight).toEqual(25);
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(9);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(8);
             expect((closest(eventElementList[0], '.e-work-cells') as HTMLTableCellElement).cellIndex).toEqual(3);
-            let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(2);
-            let element: HTMLElement = moreIndicatorList[0] as HTMLElement;
+            const element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
             expect((schObj.element.querySelector('.e-icon-add') as HTMLElement).offsetHeight).toEqual(0);
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-day');
@@ -79,8 +79,8 @@ describe('Month Event Render Module', () => {
 
     describe('Schedule Hide week end in Month view appointment rendering', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 currentView: 'Month', height: '550px', width: '500px',
                 showWeekend: false, selectedDate: new Date(2017, 10, 6)
             };
@@ -90,12 +90,12 @@ describe('Month Event Render Module', () => {
             util.destroy(schObj);
         });
         it('elements in DOM', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(9);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(8);
             expect((closest(eventElementList[0], '.e-work-cells') as HTMLTableCellElement).cellIndex).toEqual(2);
-            let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(2);
             expect(schObj.getWorkCellElements().length).toEqual(25);
         });
@@ -112,8 +112,8 @@ describe('Month Event Render Module', () => {
 
     describe('Schedule month view appointment rendering in RTL Mode', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 currentView: 'Month', height: '550px', width: '500px',
                 enableRtl: true, selectedDate: new Date(2017, 10, 6)
             };
@@ -123,20 +123,20 @@ describe('Month Event Render Module', () => {
             util.destroy(schObj);
         });
         it('elements in DOM', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(9);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(8);
             expect((closest(eventElementList[0], '.e-work-cells') as HTMLTableCellElement).cellIndex).toEqual(3);
-            let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(2);
         });
     });
 
     describe('Schedule month view appointment template checking', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
                 currentView: 'Month', height: '550px', width: '500px', selectedDate: new Date(2017, 10, 6),
                 eventSettings: { template: '<span>${Subject}</span>' }
             };
@@ -146,24 +146,24 @@ describe('Month Event Render Module', () => {
             util.destroy(schObj);
         });
         it('elements in DOM', () => {
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(9);
-            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(8);
             expect((closest(eventElementList[0], '.e-work-cells') as HTMLTableCellElement).cellIndex).toEqual(3);
-            let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(2);
             expect(eventElementList[0].querySelector('.e-appointment-details').innerHTML)
                 .toEqual('<span>Spanned - Greater than 24 hour</span><div class="e-indicator e-icons e-right-icon"></div>');
         });
-        it('change event template through setmodel', (done: Function) => {
+        it('change event template through setmodel', (done: DoneFn) => {
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(9);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(8);
                 expect((closest(eventElementList[0], '.e-work-cells') as HTMLTableCellElement).cellIndex).toEqual(3);
-                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                 expect(moreIndicatorList.length).toEqual(2);
                 expect(eventElementList[0].querySelector('.e-appointment-details').innerHTML)
                     .toEqual('<span class="event-template">Spanned - Greater than 24 hour</span>' +
@@ -177,7 +177,7 @@ describe('Month Event Render Module', () => {
 
     describe('EJ2-11284 Events start and end on same time', () => {
         let schObj: Schedule;
-        let eventDatas: Object[] = [{
+        const eventDatas: Record<string, any>[] = [{
             Id: 1,
             Subject: 'Normal event',
             StartTime: new Date(2017, 10, 2, 10),
@@ -189,8 +189,8 @@ describe('Month Event Render Module', () => {
             EndTime: new Date(2017, 10, 3, 10),
             RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
         }];
-        beforeAll((done: Function) => {
-            let model: ScheduleModel = { currentView: 'Month', height: '550px', selectedDate: new Date(2017, 10, 2) };
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = { currentView: 'Month', height: '550px', selectedDate: new Date(2017, 10, 2) };
             schObj = util.createSchedule(model, eventDatas, done);
         });
         afterAll(() => {
@@ -203,21 +203,19 @@ describe('Month Event Render Module', () => {
 
     describe('Start and end time in event template', () => {
         let schObj: Schedule;
-        let eventData: Object[] = [{
+        const eventData: Record<string, any>[] = [{
             Id: 1,
             Subject: 'Normal event',
             StartTime: new Date(2017, 10, 2, 10),
             EndTime: new Date(2017, 10, 2, 11)
         }];
-        beforeAll((done: Function) => {
-            let instance: Internationalization = new Internationalization();
-            (window as TemplateFunction).getTimeString = (value: Date) => {
-                return instance.formatDate(value, { skeleton: 'hm' });
-            };
+        beforeAll((done: DoneFn) => {
+            const instance: Internationalization = new Internationalization();
+            (window as TemplateFunction).getTimeString = (value: Date) => instance.formatDate(value, { skeleton: 'hm' });
             interface TemplateFunction extends Window {
-                getTimeString?: Function;
+                getTimeString?: CallbackFunction;
             }
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'Month', height: '550px', selectedDate: new Date(2017, 10, 2),
                 eventSettings: { template: '<div class="time">${getTimeString(data.StartTime)}</div>' }
             };
@@ -234,13 +232,9 @@ describe('Month Event Render Module', () => {
 
     it('memory leak', () => {
         profile.sample();
-        // tslint:disable:no-any
-        let average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
+        const average: number = inMB(profile.averageChange);
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        const memory: number = inMB(getMemoryProfile());
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        // tslint:enable:no-any
     });
 });

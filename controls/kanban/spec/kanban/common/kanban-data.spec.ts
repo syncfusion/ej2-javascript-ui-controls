@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Kanban dataSource
  */
 
-export let kanbanData: Object[] = [
+export const kanbanData: Record<string, any>[] = [
     {
         'Id': 1,
         'Status': 'Open',
@@ -830,19 +831,25 @@ export let kanbanData: Object[] = [
     }
 ];
 
-export function generateKanbanData(count: number = 100): Object[] {
-    let kanbanData: Object[] = [];
-    let names: string[] = [
+/**
+ * Generates the dynamic data for kanban datasource.
+ *
+ * @param {number} count Accepts the number of count
+ * @returns {Object[]} Returns the collection of data.
+ */
+export function generateKanbanData(count: number = 100): Record<string, any>[] {
+    const kanbanData: Record<string, any>[] = [];
+    const names: string[] = [
         'Analyze the new requirements gathered from the customer', 'Improve application performance',
         'Arrange a web meeting with the customer to get new requirements', 'Fix the issues reported in the IE browser',
         'Fix the issues reported by the customer', 'Validate new requirements', 'API improvements',
         'Arrange a web meeting with the customer to get the login page requirements', 'Test the application in the IE browser',
         'Add responsive support to application'
     ];
-    let assignee: string[] = ['Alice', 'Janet', 'Laura', 'Micheal', 'Milan', 'Nancy', 'Paul', 'Robert', 'Robson', 'Steven'];
-    let keys: string[] = ['Open', 'InProgress', 'Review', 'Testing', 'Close'];
-    let priority: string[] = ['Release Breaker', 'Ultra-Critical', 'Critical', 'High', 'Normal', 'Low'];
-    let types: string[] = ['EPIC', 'Story', 'Bug', 'Improvement'];
+    const assignee: string[] = ['Alice', 'Janet', 'Laura', 'Micheal', 'Milan', 'Nancy', 'Paul', 'Robert', 'Robson', 'Steven'];
+    const keys: string[] = ['Open', 'InProgress', 'Review', 'Testing', 'Close'];
+    const priority: string[] = ['Release Breaker', 'Ultra-Critical', 'Critical', 'High', 'Normal', 'Low'];
+    const types: string[] = ['EPIC', 'Story', 'Bug', 'Improvement'];
     for (let a: number = 0, id: number = 0; a < count; a++) {
         kanbanData.push({
             Id: ++id,

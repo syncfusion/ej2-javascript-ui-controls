@@ -11,6 +11,7 @@ export class SortSettings extends ChildProperty<SortSettings> {
      * * DataSourceOrder
      * * Index
      * * Custom
+     *
      * @default 'Index'
      */
     @Property('Index')
@@ -18,6 +19,7 @@ export class SortSettings extends ChildProperty<SortSettings> {
 
     /**
      * Defines the sort field
+     *
      * @default null
      */
     @Property()
@@ -27,6 +29,7 @@ export class SortSettings extends ChildProperty<SortSettings> {
      * Sort the cards. The possible values are:
      * * Ascending
      * * Descending
+     *
      * @default 'Ascending'
      */
     @Property('Ascending')

@@ -179,7 +179,7 @@
       }
     }
 
-    &:not(.e-rte-tb-expand) {
+    &:not(.e-rte-toolbar-enabled) {
       border: 1px solid $rte-border-color;
 
       .e-rte-content {

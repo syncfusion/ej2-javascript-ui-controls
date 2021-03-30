@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/member-delimiter-style */
 /**
  * interface doc
  */
@@ -37,7 +38,7 @@ export interface IPrintEventArgs extends ICircularGaugeEventArgs {
  */
 export interface ILoadedEventArgs extends ICircularGaugeEventArgs {
     /**
-     * Specifies the instance of the circular gauge. 
+     * Specifies the instance of the circular gauge.
      */
     gauge: CircularGauge;
 }
@@ -51,7 +52,7 @@ export interface IAnimationCompleteEventArgs extends ICircularGaugeEventArgs {
      */
     axis: Axis;
     /**
-     * Specifies the instance of pointer in the circular gauge. 
+     * Specifies the instance of pointer in the circular gauge.
      */
     pointer: Pointer;
 }
@@ -61,7 +62,7 @@ export interface IAnimationCompleteEventArgs extends ICircularGaugeEventArgs {
  */
 export interface IAxisLabelRenderEventArgs extends ICircularGaugeEventArgs {
     /**
-     * Specifies the instance of the axis in circular gauge. 
+     * Specifies the instance of the axis in circular gauge.
      */
     axis?: Axis;
     /**
@@ -139,7 +140,7 @@ export interface ITooltipRenderEventArgs extends ICircularGaugeEventArgs {
     /**
      * Enables and disables the tooltip element to append in body.
      */
-    appendInBodyTag: Boolean;
+    appendInBodyTag: boolean;
     /**
      * Specifies the element type in which the tooltip is rendered. The element types are
      * range, annotation, and pointer of the circular gauge.
@@ -157,7 +158,7 @@ export interface IAnnotationRenderEventArgs extends ICircularGaugeEventArgs {
      */
     content?: string;
     /**
-     * Specifies the style of the text in annotation of circular gauge. 
+     * Specifies the style of the text in annotation of circular gauge.
      */
     textStyle?: FontModel;
     /**
@@ -165,7 +166,7 @@ export interface IAnnotationRenderEventArgs extends ICircularGaugeEventArgs {
      */
     axis?: Axis;
     /**
-     * Specifies the annotation instance of the circular gauge. 
+     * Specifies the annotation instance of the circular gauge.
      */
     annotation: Annotation;
 }
@@ -183,7 +184,7 @@ export interface IPointerDragEventArgs {
      */
     axis?: Axis;
     /**
-     * Specifies the pointer instance of the circular gauge. 
+     * Specifies the pointer instance of the circular gauge.
      */
     pointer?: Pointer;
     /**
@@ -261,7 +262,7 @@ export interface IMouseEventArgs extends ICircularGaugeEventArgs {
  */
 export interface IVisiblePointer {
     /**
-     * Specifies the index value of the axis in circular gauge. 
+     * Specifies the index value of the axis in circular gauge.
      */
     axisIndex?: number;
     /**

@@ -2,7 +2,7 @@
  * Rich Text Editor classes defined here.
  */
 
-/** 
+/**
  * @hidden
  * @deprecated
  */

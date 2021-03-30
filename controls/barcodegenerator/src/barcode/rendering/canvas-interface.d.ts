@@ -47,12 +47,39 @@ export interface ValidateEvent {
 }
 /** @private */
 export declare class BarcodeSVGRenderer implements IBarcodeRenderer {
-    /**   @private  */
+    /**
+     * Draw the root element for the barcode.\
+     *
+     * @returns {HTMLElement} Draw the barcode SVG .
+     * @param {Object} attribute - Provide the canvas element .
+     * @private
+     */
     renderRootElement(attribute: Object): HTMLElement;
-    /**   @private  */
+    /**
+     * Draw the rect for the barcode.\
+     *
+     * @returns {HTMLElement} Draw the barcode SVG .
+     *  @param {Object} canvas - Provide the canvas element .
+     *  @param {Object} attribute - Provide the canvas element .
+     * @private
+     */
     renderRect(canvas: Object, attribute: Object): HTMLElement;
-    /**   @private  */
+    /**
+     * Draw the horizontal line for the barcode.\
+     *
+     * @returns {HTMLElement} Draw the barcode SVG .
+     *  @param {Object} canvas - Provide the canvas element .
+     *  @param {Object} attribute - Provide the canvas element .
+     * @private
+     */
     renderLine(canvas: Object, attribute: Object): HTMLElement;
-    /**   @private  */
+    /**
+     * Draw the text for the barcode.\
+     *
+     * @returns {HTMLElement} Draw the barcode SVG .
+     *  @param {Object} canvas - Provide the canvas element .
+     *  @param {Object} attribute - Provide the canvas element .
+     * @private
+     */
     renderText(canvas: Object, attribute: Object): HTMLElement;
 }

@@ -111,7 +111,7 @@ export interface TextAttributes extends BaseAttributes {
     parentHeight: number;
 }
 
-/** 
+/**
  * Defines the properties of sub text element
  */
 export interface SubTextElement {
@@ -125,7 +125,7 @@ export interface SubTextElement {
     width: number;
 }
 
-/** 
+/**
  * Defines the properties of text bounds
  */
 export interface TextBounds {

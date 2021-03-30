@@ -10,53 +10,68 @@ import { getFunction } from '../utility/base-util';
  */
 
 /**
+ * renderOverlapElement method \
+ *
+ * @returns {void} renderOverlapElement method .\
+ * @param { Diagram} diagram - provide the content  value.
  * @private
  */
 export function renderOverlapElement(diagram: Diagram): void {
-    let rulerSize: Size = getRulerSize(diagram);
-    let attributes: Object = {
+    const rulerSize: Size = getRulerSize(diagram);
+    const attributes: Object = {
         'id': diagram.element.id + '_overlapRuler',
         style: 'height:' + rulerSize.height + 'px;width:' + rulerSize.width + 'px;position:absolute;left:0;top:0',
         class: 'e-ruler-overlap'
     };
-    let overlap: HTMLElement = createHtmlElement('div', attributes);
+    const overlap: HTMLElement = createHtmlElement('div', attributes);
     diagram.element.insertBefore(overlap, diagram.element.firstChild);
 }
 
 /**
+ * renderRuler method \
+ *
+ * @returns {void} renderRuler method .\
+ * @param { Diagram} diagram - provide the content  value.
+ * @param { boolean} isHorizontal - provide the content  value.
  * @private
  */
-export function renderRuler(diagram: Diagram, isHorizontal: Boolean): void {
+export function renderRuler(diagram: Diagram, isHorizontal: boolean): void {
     let div: HTMLElement = document.getElementById(diagram.element.id + (isHorizontal ? '_hRuler' : '_vRuler'));
-    let rulerSize: Size = getRulerSize(diagram);
-    let rulerGeometry: Size = getRulerGeometry(diagram);
-    let margin: string = isHorizontal ? ('margin-left:' + rulerSize.width + 'px;') : ('margin-top:' + rulerSize.height + 'px;');
+    const rulerSize: Size = getRulerSize(diagram);
+    const rulerGeometry: Size = getRulerGeometry(diagram);
+    const margin: string = isHorizontal ? ('margin-left:' + rulerSize.width + 'px;') : ('margin-top:' + rulerSize.height + 'px;');
     if (!div) {
-        let style: string = 'height:' + (isHorizontal ? rulerSize.height : (rulerGeometry.height + 100)) + 'px;overflow:hidden;width:' +
+        const style: string = 'height:' + (isHorizontal ? rulerSize.height : (rulerGeometry.height + 100)) + 'px;overflow:hidden;width:' +
             (isHorizontal ? (rulerGeometry.width + 100) : rulerSize.width) + 'px;position:absolute;font-size:11px;' + margin;
-        let attributes: Object = {
+        const attributes: Object = {
             'id': diagram.element.id + (isHorizontal ? '_hRuler' : '_vRuler'),
             style: style
         };
         div = createHtmlElement('div', attributes);
     }
     diagram.element.insertBefore(div, diagram.element.firstChild);
-    let diagramRuler: DiagramRulerModel = isHorizontal ? diagram.rulerSettings.horizontalRuler : diagram.rulerSettings.verticalRuler;
-    let ruler: Ruler = new Ruler(diagramRuler);
+    const diagramRuler: DiagramRulerModel = isHorizontal ? diagram.rulerSettings.horizontalRuler : diagram.rulerSettings.verticalRuler;
+    const ruler: Ruler = new Ruler(diagramRuler);
     ruler.orientation = isHorizontal ? 'Horizontal' : 'Vertical';
     ruler.length = (isHorizontal ? rulerGeometry.width : rulerGeometry.height) + diagramRuler.segmentWidth;
     ruler.appendTo('#' + diagram.element.id + (isHorizontal ? '_hRuler' : '_vRuler'));
+    // eslint-disable-next-line
     isHorizontal ? diagram.hRuler = ruler : diagram.vRuler = ruler;
-    let rulerObj: HTMLElement = document.getElementById(diagram.element.id + (isHorizontal ? '_hRuler' : '_vRuler'));
+    const rulerObj: HTMLElement = document.getElementById(diagram.element.id + (isHorizontal ? '_hRuler' : '_vRuler'));
+    // eslint-disable-next-line
     isHorizontal ? diagram.hRuler.element = rulerObj : diagram.vRuler.element = rulerObj;
 }
 
 /**
+ * updateRuler method \
+ *
+ * @returns {void} updateRuler method .\
+ * @param { Diagram} diagram - provide the diagram  value.
  * @private
  */
 export function updateRuler(diagram: Diagram): void {
-    let hOffset: number = - diagram.scroller.horizontalOffset;
-    let vOffset: number = - diagram.scroller.verticalOffset;
+    const hOffset: number = - diagram.scroller.horizontalOffset;
+    const vOffset: number = - diagram.scroller.verticalOffset;
     if (diagram && diagram.rulerSettings.showRulers) {
         diagram.hRuler.length = 0;
         diagram.vRuler.length = 0;
@@ -72,6 +87,10 @@ export function updateRuler(diagram: Diagram): void {
 }
 
 /**
+ * removeRulerElements method \
+ *
+ * @returns {void} removeRulerElements method .\
+ * @param { Diagram} diagram - provide the diagram  value.
  * @private
  */
 export function removeRulerElements(diagram: Diagram): void {
@@ -82,7 +101,13 @@ export function removeRulerElements(diagram: Diagram): void {
 
 
 
-/** @private */
+/**
+ * getRulerSize method \
+ *
+ * @returns {void} getRulerSize method .\
+ * @param { Diagram} diagram - provide the diagram  value.
+ * @private
+ */
 export function getRulerSize(diagram: Diagram): Size {
     let top: number = 0;
     let left: number = 0;
@@ -93,9 +118,15 @@ export function getRulerSize(diagram: Diagram): Size {
     return new Size(left, top);
 }
 
-/** @private */
+/**
+ * getRulerGeometry method \
+ *
+ * @returns {void} getRulerGeometry method .\
+ * @param { Diagram} diagram - provide the diagram  value.
+ * @private
+ */
 export function getRulerGeometry(diagram: Diagram): Size {
-    let rulerSize: Size = getRulerSize(diagram);
+    const rulerSize: Size = getRulerSize(diagram);
     let height: number = diagram.scroller.viewPortHeight;
     let width: number = diagram.scroller.viewPortWidth;
     if (width < diagram.element.clientWidth - rulerSize.width) {
@@ -114,10 +145,13 @@ export function getRulerGeometry(diagram: Diagram): Size {
 }
 
 /**
+ * removeRulerMarkers method \
+ *
+ * @returns {void} removeRulerMarkers method .\
  * @private
  */
 export function removeRulerMarkers(): void {
-    let markers: HTMLCollection = document.getElementsByClassName('e-d-ruler-marker');
+    const markers: HTMLCollection = document.getElementsByClassName('e-d-ruler-marker');
     let marker: HTMLElement;
     let i: number;
     if (markers && markers.length > 0) {
@@ -130,6 +164,14 @@ export function removeRulerMarkers(): void {
     }
 }
 
+/**
+ * drawRulerMarkers method \
+ *
+ * @returns {void} drawRulerMarkers method .\
+ * @param { Diagram} diagram - provide the content  value.
+ * @param { PointModel} currentPoint - provide the content  value.
+ * @private
+ */
 export function drawRulerMarkers(diagram: Diagram, currentPoint: PointModel): void {
     if (diagram.rulerSettings.showRulers) {
         diagram.hRuler.drawRulerMarker(diagram.hRuler.element, currentPoint, diagram.scroller.horizontalOffset);
@@ -137,10 +179,20 @@ export function drawRulerMarkers(diagram: Diagram, currentPoint: PointModel): vo
     }
 }
 
-function updateRulerDimension(diagram: Diagram, ruler: Ruler, offset: number, isHorizontal: Boolean): void {
-    let rulerSize: Size = getRulerSize(diagram);
-    let rulerGeometry: Size = getRulerGeometry(diagram);
-    let diagramRuler: DiagramRulerModel = isHorizontal ? diagram.rulerSettings.horizontalRuler : diagram.rulerSettings.verticalRuler;
+/**
+ * updateRulerDimension method \
+ *
+ * @returns {void} updateRulerDimension method .\
+ * @param { Diagram} diagram - provide the content  value.
+ * @param { Ruler} ruler - provide the content  value.
+ * @param { number} offset - provide the content  value.
+ * @param { boolean} isHorizontal - provide the content  value.
+ * @private
+ */
+function updateRulerDimension(diagram: Diagram, ruler: Ruler, offset: number, isHorizontal: boolean): void {
+    const rulerSize: Size = getRulerSize(diagram);
+    const rulerGeometry: Size = getRulerGeometry(diagram);
+    const diagramRuler: DiagramRulerModel = isHorizontal ? diagram.rulerSettings.horizontalRuler : diagram.rulerSettings.verticalRuler;
     updateRulerDiv(diagram, rulerGeometry, isHorizontal);
     updateRulerSpace(diagram, rulerGeometry, isHorizontal);
     ruler.offset = offset;
@@ -148,31 +200,50 @@ function updateRulerDimension(diagram: Diagram, ruler: Ruler, offset: number, is
     ruler.length = (isHorizontal ? rulerGeometry.width : rulerGeometry.height) + 100;
     ruler.arrangeTick = getFunction(diagramRuler.arrangeTick);
     ruler.dataBind();
-    let rulerObj: HTMLElement = isHorizontal ? diagram.hRuler.element : diagram.vRuler.element;
+    const rulerObj: HTMLElement = isHorizontal ? diagram.hRuler.element : diagram.vRuler.element;
     if (isHorizontal) {
         rulerObj.style.marginLeft = (rulerSize.width - ruler.hRulerOffset) + 'px';
     } else {
         rulerObj.style.marginTop = (rulerSize.height - ruler.vRulerOffset) + 'px';
     }
 }
-
+/**
+ * updateRulerSpace method \
+ *
+ * @returns {void} updateRulerSpace method .\
+ * @param { Diagram} diagram - provide the content  value.
+ * @param { Size} rulerGeometry - provide the content  value.
+ * @param { boolean} isHorizontal - provide the content  value.
+ * @private
+ */
 function updateRulerSpace(diagram: Diagram, rulerGeometry: Size, isHorizontal: Boolean): void {
-    let div: HTMLElement = document.getElementById(diagram.element.id + (isHorizontal ? '_hRuler_ruler_space' : '_vRuler_ruler_space'));
-    let ruler: Ruler = isHorizontal ? diagram.hRuler : diagram.vRuler;
+    const div: HTMLElement = document.getElementById(diagram.element.id + (isHorizontal ? '_hRuler_ruler_space' : '_vRuler_ruler_space'));
+    const ruler: Ruler = isHorizontal ? diagram.hRuler : diagram.vRuler;
     if (div && diagram && rulerGeometry) {
         div.style.width = (isHorizontal ? (rulerGeometry.width + (ruler.segmentWidth * 2)) : ruler.thickness) + 'px';
         div.style.height = (isHorizontal ? ruler.thickness : (rulerGeometry.height + (ruler.segmentWidth * 2))) + 'px';
     }
 }
 
-function updateRulerDiv(diagram: Diagram, rulerGeometry: Size, isHorizontal: Boolean): void {
+/**
+ * updateRulerDiv method \
+ *
+ * @returns {void} updateRulerDiv method .\
+ * @param { Diagram} diagram - provide the content  value.
+ * @param { Size} rulerGeometry - provide the content  value.
+ * @param { boolean} isHorizontal - provide the content  value.
+ * @private
+ */
+function updateRulerDiv(diagram: Diagram, rulerGeometry: Size, isHorizontal: boolean): void {
     let div: HTMLElement = document.getElementById(diagram.element.id + (isHorizontal ? '_hRuler' : '_vRuler'));
-    let ruler: Ruler = isHorizontal ? diagram.hRuler : diagram.vRuler;
+    const ruler: Ruler = isHorizontal ? diagram.hRuler : diagram.vRuler;
     if (div && diagram && rulerGeometry) {
         div.style.width = (isHorizontal ? (rulerGeometry.width + ruler.segmentWidth) : ruler.thickness) + 'px';
         div.style.height = (isHorizontal ? ruler.thickness : (rulerGeometry.height + ruler.segmentWidth)) + 'px';
+        // eslint-disable-next-line
         div = document.getElementById(diagram.element.id + '_overlapRuler');
         if (div) {
+            // eslint-disable-next-line
             isHorizontal ? (div.style.height = ruler.thickness + 'px') : (div.style.width = ruler.thickness + 'px');
         }
     }

@@ -1428,7 +1428,6 @@
     .e-tab-header {
       height: $tab-nrml-height;
       min-height: $tab-nrml-height;
-      user-select: text;
 
       @media screen and (max-width: 480px) {
         height: $tab-big-height;
@@ -1552,7 +1551,6 @@
       }
 
       .e-toolbar-item {
-        user-select: text;
 
         &.e-hidden {
           display: none;
@@ -3524,6 +3522,362 @@
           }
         }
       }
+    }
+  }
+
+  .e-tab-clone-element {
+    overflow: visible;
+    z-index: 10000;
+
+    &:not(.e-separator) {
+      height: $tab-nrml-height;
+      margin: $tab-nrml-item-margin;
+      min-height: $tab-nrml-height;
+      min-width: auto;
+      padding: $tab-nrml-item-padding;
+
+      @media screen and (max-width: 480px) {
+        height: $tab-big-height;
+        min-height: $tab-big-height;
+      }
+    }
+
+    .e-tab-wrap {
+      height: $tab-nrml-height;
+      padding: $tab-nrml-wrap-padding;
+      width: 100%;
+
+      @media screen and (max-width: 480px) {
+        height: $tab-big-height;
+        padding: $tab-mob-wrap-padding;
+      }
+    }
+
+    .e-text-wrap {
+      align-content: center;
+      align-items: center;
+      display: inline-flex;
+      height: $tab-nrml-height;
+
+      @media screen and (max-width: 480px) {
+        height: $tab-big-height;
+      }
+
+      @if $tab-skin == 'fabric' {
+        height: $tab-nrml-height - 2;
+      }
+      @else if $tab-skin == 'highcontrast' {
+        height: $tab-nrml-height - 4;
+      }
+    }
+
+    .e-tab-text {
+      display: inherit;
+      font-family: $tab-font-family;
+      font-size: $tab-nrml-font-size;
+      font-weight: $tab-font-weight;
+      text-transform: $tab-text-transform;
+
+      @media screen and (max-width: 480px) {
+        font-size: $tab-big-font-size;
+      }
+    }
+
+    @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
+      .e-tab-text {
+        align-self: auto;
+      }
+    }
+
+    .e-icons.e-close-icon {
+      display: none;
+    }
+
+    .e-close-icon,
+    .e-close-icon::before {
+      font-size: $tab-nrml-close-icon-size;
+
+      @media screen and (max-width: 480px) {
+        font-size: $tab-mob-close-icon-size;
+      }
+    }
+
+    .e-close-icon::before {
+      top: $tab-pop-close-icon-top;
+
+      @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
+        top: 1px;
+      }
+    }
+
+    .e-icons.e-tab-icon {
+      display: inline-flex;
+      height: $tab-nrml-icon-container-size;
+      min-width: $tab-nrml-icon-container-size;
+      width: $tab-nrml-icon-container-size;
+
+      @if $tab-skin == 'bootstrap4' {
+        line-height: $tab-nrml-icon-container-size;
+      }
+
+      @media screen and (max-width: 480px) {
+        height: $tab-mob-icon-container-size;
+        width: $tab-mob-icon-container-size;
+      }
+    }
+
+    .e-tab-icon,
+    .e-tab-icon::before {
+      font-size: $tab-nrml-icon-size;
+
+      @media screen and (max-width: 480px) {
+        font-size: $tab-mob-icon-size;
+      }
+    }
+
+    &.e-icon {
+
+      .e-tab-wrap {
+        justify-content: center;
+        padding: $tab-nrml-io-wrap-padding;
+
+        @media screen and (max-width: 480px) {
+          padding: $tab-big-wrap-padding;
+        }
+      }
+    }
+
+    .e-icon-left + .e-tab-text {
+      margin: $tab-nrml-it-text-margin;
+
+      @media screen and (max-width: 480px) {
+        margin: $tab-mob-it-text-margin;
+      }
+    }
+
+    &.e-itop,
+    &.e-ibottom {
+      height: $tab-nrml-icon-top-bottom-item-height;
+
+      @media screen and (max-width: 480px) {
+        height: $tab-big-icon-top-bottom-item-height;
+      }
+
+      .e-tab-wrap {
+        align-items: center;
+        display: flex;
+        height: $tab-nrml-icon-top-bottom-item-height;
+        position: relative;
+
+        @media screen and (max-width: 480px) {
+          height: $tab-big-icon-top-bottom-item-height;
+        }
+
+        &:focus {
+
+          .e-text-wrap {
+            height: auto;
+          }
+        }
+      }
+
+      .e-text-wrap {
+        display: block;
+        height: auto;
+      }
+
+      .e-close-icon {
+        position: absolute;
+        right: $tab-nrml-close-icon-top-bottom-right;
+        top: calc(50% - 6px);
+
+        @media screen and (max-width: 480px) {
+          right: $tab-mob-close-icon-top-bottom-right;
+        }
+      }
+    }
+
+    &.e-itop .e-tab-text {
+      margin: $tab-nrml-icon-top-margin;
+
+      @media screen and (max-width: 480px) {
+        margin: $tab-big-icon-top-margin;
+      }
+    }
+
+    &.e-ibottom .e-tab-text {
+      margin: $tab-nrml-icon-bottom-margin;
+
+      @media screen and (max-width: 480px) {
+        margin: $tab-big-icon-bottom-margin;
+      }
+    }
+
+    .e-tab-icon.e-icon-top,
+    .e-tab-icon.e-icon-bottom {
+      align-items: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      margin: auto;
+    }
+
+    &.e-close-show {
+
+      .e-icons.e-close-icon {
+        align-items: center;
+        align-self: center;
+        display: inline-flex;
+
+        @media screen and (max-width: 480px) {
+          display: none;
+        }
+      }
+
+      .e-toolbar-item.e-itop .e-text-wrap,
+      .e-toolbar-item.e-ibottom .e-text-wrap {
+        margin-right: $tab-nrml-text-container-margin-right;
+      }
+    }
+  }
+
+  .e-bigger .e-tab-clone-element {
+
+    &:not(.e-separator) {
+      height: $tab-big-height;
+      margin: $tab-big-item-margin;
+      min-height: $tab-big-height;
+      min-width: auto;
+      padding: $tab-big-item-padding;
+
+      @media screen and (max-width: 480px) {
+        margin: $tab-nrml-item-margin;
+      }
+    }
+
+    &:not(.e-separator).e-itop,
+    &:not(.e-separator).e-ibottom {
+      height: $tab-big-icon-top-bottom-item-height;
+      min-height: $tab-big-icon-top-bottom-item-height;
+    }
+
+    .e-tab-wrap {
+      height: $tab-big-height;
+      padding: $tab-big-wrap-padding;
+
+      @media screen and (max-width: 480px) {
+        padding: $tab-mob-wrap-padding;
+      }
+    }
+
+    .e-text-wrap {
+      height: $tab-big-height;
+
+      @if $tab-skin == 'fabric' {
+        height: $tab-big-height - 2;
+      }
+      @else if $tab-skin == 'highcontrast' {
+        height: $tab-big-height - 4;
+      }
+    }
+
+    .e-tab-text {
+      font-size: $tab-big-font-size;
+      @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
+        align-self: auto;
+      }
+    }
+
+    .e-icons.e-close-icon {
+      cursor: pointer;
+      margin: $tab-big-close-icon-margin;
+
+      @media screen and (max-width: 480px) {
+        margin: $tab-mob-close-icon-margin;
+      }
+    }
+
+    .e-icons.e-close-icon,
+    .e-close-icon::before {
+      font-size: $tab-big-close-icon-size;
+
+      @media screen and (max-width: 480px) {
+        font-size: $tab-mob-close-icon-size;
+      }
+    }
+
+    .e-icons.e-tab-icon {
+      height: $tab-big-icon-container-size;
+      min-width: $tab-big-icon-container-size;
+      width: $tab-big-icon-container-size;
+
+      @if $tab-skin == 'bootstrap4' {
+        line-height: $tab-big-icon-container-size;
+      }
+    }
+
+    .e-tab-icon,
+    .e-tab-icon::before {
+      font-size: $tab-big-icon-size;
+    }
+
+    &.e-icon {
+
+      .e-tab-wrap {
+        padding: $tab-big-io-wrap-padding;
+      }
+    }
+
+    .e-icon-left + .e-tab-text {
+      margin: $tab-big-it-text-margin;
+
+      @media screen and (max-width: 480px) {
+        margin: $tab-mob-it-text-margin;
+      }
+    }
+
+    &.e-itop,
+    &.e-ibottom {
+      height: $tab-big-icon-top-bottom-item-height;
+
+      .e-tab-wrap {
+        height: $tab-big-icon-top-bottom-item-height;
+
+        &:focus .e-text-wrap {
+          height: auto;
+        }
+      }
+
+      &.e-active .e-tab-wrap {
+        height: $tab-big-icon-top-bottom-item-height;
+
+        &:focus .e-text-wrap {
+          height: auto;
+        }
+      }
+
+      .e-close-icon {
+        right: $tab-big-close-icon-top-bottom-right;
+      }
+
+      @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
+
+        .e-text-wrap {
+          height: auto;
+        }
+
+        &.e-active .e-tab-wrap {
+          height: 72px;
+        }
+      }
+    }
+
+    &.e-itop .e-tab-text {
+      margin: $tab-big-icon-top-margin;
+    }
+
+    &.e-ibottom .e-tab-text {
+      margin: $tab-big-icon-bottom-margin;
     }
   }
 }

@@ -24,7 +24,7 @@ export class MarkdownEditor {
     private saveSelection: MarkdownSelection;
     private mdSelection: MarkdownSelection;
 
-    constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
+    public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.locator = serviceLocator;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
@@ -32,8 +32,9 @@ export class MarkdownEditor {
     }
     /**
      * Destroys the Markdown.
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -42,7 +43,9 @@ export class MarkdownEditor {
     }
 
     private addEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.saveSelection = new MarkdownSelection();
         this.parent.on(events.initialLoad, this.instantiateRenderer, this);
         this.parent.on(events.initialEnd, this.render, this);
@@ -66,56 +69,57 @@ export class MarkdownEditor {
     }
 
     private onSelectionSave(): void {
-        let textArea: HTMLTextAreaElement = this.parent.contentModule.getEditPanel() as HTMLTextAreaElement;
+        const textArea: HTMLTextAreaElement = this.parent.contentModule.getEditPanel() as HTMLTextAreaElement;
         this.saveSelection.save(textArea.selectionStart, textArea.selectionEnd);
     }
 
+    // eslint-disable-next-line
     private onSelectionRestore(e: NotifyArgs): void {
         (this.contentRenderer.getEditPanel() as HTMLElement).focus();
-        let textArea: HTMLTextAreaElement = this.parent.contentModule.getEditPanel() as HTMLTextAreaElement;
+        const textArea: HTMLTextAreaElement = this.parent.contentModule.getEditPanel() as HTMLTextAreaElement;
         this.saveSelection.restore(textArea);
     }
 
     private onToolbarClick(args: ClickEventArgs): void {
-        let text: string;
-        let startOffset: number;
-        let endOffset: number;
-        let item: IToolbarItemModel = args.item as IToolbarItemModel;
-        let textArea: HTMLTextAreaElement = (this.parent.contentModule.getEditPanel() as HTMLTextAreaElement);
+        const item: IToolbarItemModel = args.item as IToolbarItemModel;
+        const textArea: HTMLTextAreaElement = (this.parent.contentModule.getEditPanel() as HTMLTextAreaElement);
         textArea.focus();
-        startOffset = textArea.selectionStart;
-        endOffset = textArea.selectionEnd;
-        text = textArea.value.substring(startOffset, endOffset);
+        const startOffset: number = textArea.selectionStart;
+        const endOffset: number = textArea.selectionEnd;
+        const text: string = textArea.value.substring(startOffset, endOffset);
         switch (item.subCommand) {
-            case 'Maximize':
-                this.parent.notify(events.enableFullScreen, { args: args });
-                break;
-            case 'Minimize':
-                this.parent.notify(events.disableFullScreen, { args: args });
-                break;
-            case 'CreateLink':
-                this.parent.notify(events.insertLink, { member: 'link', args: args, text: text, module: 'Markdown' });
-                break;
-            case 'Image':
-                this.parent.notify(events.insertImage, { member: 'image', args: args, text: text, module: 'Markdown' });
-                break;
-            case 'CreateTable':
-                let tableConstant: {} = {
-                    'headingText': this.parent.localeObj.getConstant('TableHeadingText'),
-                    'colText': this.parent.localeObj.getConstant('TableColText')
-                };
-                this.parent.formatter.process(this.parent, args, args.originalEvent, tableConstant);
-                break;
-            default:
-                this.parent.formatter.process(this.parent, args, args.originalEvent, null);
-                break;
+        case 'Maximize':
+            this.parent.notify(events.enableFullScreen, { args: args });
+            break;
+        case 'Minimize':
+            this.parent.notify(events.disableFullScreen, { args: args });
+            break;
+        case 'CreateLink':
+            this.parent.notify(events.insertLink, { member: 'link', args: args, text: text, module: 'Markdown' });
+            break;
+        case 'Image':
+            this.parent.notify(events.insertImage, { member: 'image', args: args, text: text, module: 'Markdown' });
+            break;
+        case 'CreateTable': {
+            // eslint-disable-next-line
+            const tableConstant: {} = {
+                'headingText': this.parent.localeObj.getConstant('TableHeadingText'),
+                'colText': this.parent.localeObj.getConstant('TableColText')
+            };
+            this.parent.formatter.process(this.parent, args, args.originalEvent, tableConstant);
+            break; }
+        default:
+            this.parent.formatter.process(this.parent, args, args.originalEvent, null);
+            break;
         }
     }
     private instantiateRenderer(): void {
         this.renderFactory.addRenderer(RenderType.Content, new MarkdownRender(this.parent));
     }
     private removeEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.off(events.initialEnd, this.render);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
         this.parent.off(events.destroy, this.destroy);
@@ -130,8 +134,8 @@ export class MarkdownEditor {
 
     private render(): void {
         this.contentRenderer = this.renderFactory.getRenderer(RenderType.Content);
-        let editElement: HTMLTextAreaElement = this.contentRenderer.getEditPanel() as HTMLTextAreaElement;
-        let option: { [key: string]: number } = { undoRedoSteps: this.parent.undoRedoSteps, undoRedoTimer: this.parent.undoRedoTimer };
+        const editElement: HTMLTextAreaElement = this.contentRenderer.getEditPanel() as HTMLTextAreaElement;
+        const option: { [key: string]: number } = { undoRedoSteps: this.parent.undoRedoSteps, undoRedoTimer: this.parent.undoRedoTimer };
         if (isNullOrUndefined(this.parent.formatter)) {
             this.parent.formatter = new MarkdownFormatter({
                 element: editElement,
@@ -148,20 +152,26 @@ export class MarkdownEditor {
 
     /**
      * Called internally if any of the property value changed.
+     *
+     * @param {RichTextEditorModel} e - specifies the editor model
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     protected onPropertyChanged(e: { [key: string]: RichTextEditorModel }): void {
         // On property code change here
         if (!isNullOrUndefined(e.newProp.formatter)) {
-            let editElement: HTMLTextAreaElement = this.contentRenderer.getEditPanel() as HTMLTextAreaElement;
-            let option: { [key: string]: number } = { undoRedoSteps: this.parent.undoRedoSteps, undoRedoTimer: this.parent.undoRedoTimer };
+            const editElement: HTMLTextAreaElement = this.contentRenderer.getEditPanel() as HTMLTextAreaElement;
+            const option: { [key: string]: number } = { undoRedoSteps: this.parent.undoRedoSteps,
+                undoRedoTimer: this.parent.undoRedoTimer };
             this.parent.formatter.updateFormatter(editElement, this.contentRenderer.getDocument(), option);
         }
     }
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {void}
      */
     private getModuleName(): string {
         return 'markdownEditor';
@@ -169,6 +179,8 @@ export class MarkdownEditor {
 
     /**
      * For selecting all content in RTE
+     *
+     * @returns {void}
      * @private
      */
     private selectAll(): void {
@@ -179,6 +191,9 @@ export class MarkdownEditor {
     }
     /**
      * For get a selected text in RTE
+     *
+     * @param {NotifyArgs} e - specifies the arguments.
+     * @returns {void}
      * @private
      */
     private getSelectedHtml(e: NotifyArgs): void {

@@ -1,4 +1,4 @@
-import { addClass, Browser, EventHandler, detach, removeClass, select, selectAll, KeyboardEvents } from '@syncfusion/ej2-base';
+import { addClass, Browser, EventHandler, detach, removeClass, select, selectAll, KeyboardEvents} from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, KeyboardEventArgs, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { setStyleAttribute, extend } from '@syncfusion/ej2-base';
 import { Toolbar as tool, OverflowMode, ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -17,7 +17,6 @@ import { DropDownButtons } from './dropdown-buttons';
 import { ToolbarAction } from './toolbar-action';
 import { IToolbarStatus } from '../../common/interface';
 import { RichTextEditorModel } from '../base/rich-text-editor-model';
-
 /**
  * `Toolbar` module is used to handle Toolbar actions.
  */
@@ -41,7 +40,7 @@ export class Toolbar {
     private keyBoardModule: KeyboardEvents;
     private tools: { [key: string]: IToolsItems };
 
-    constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
+    public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.isToolbar = false;
         this.locator = serviceLocator;
@@ -73,9 +72,9 @@ export class Toolbar {
     }
     private toolBarKeyDown(e: KeyboardEvent): void {
         switch ((e as KeyboardEventArgs).action) {
-            case 'escape':
-                (this.parent.contentModule.getEditPanel() as HTMLElement).focus();
-                break;
+        case 'escape':
+            (this.parent.contentModule.getEditPanel() as HTMLElement).focus();
+            break;
         }
     }
     private createToolbarElement(): void {
@@ -100,14 +99,14 @@ export class Toolbar {
     private getToolbarMode(): OverflowMode {
         let tbMode: OverflowMode;
         switch (this.parent.toolbarSettings.type) {
-            case ToolbarType.Expand:
-                tbMode = 'Extended';
-                break;
-            case ToolbarType.Scrollable:
-                tbMode = 'Scrollable';
-                break;
-            default:
-                tbMode = 'MultiRow';
+        case ToolbarType.Expand:
+            tbMode = 'Extended';
+            break;
+        case ToolbarType.Scrollable:
+            tbMode = 'Scrollable';
+            break;
+        default:
+            tbMode = 'MultiRow';
         }
         if (isIDevice() && this.parent.toolbarSettings.type === ToolbarType.Expand) {
             tbMode =  ToolbarType.Scrollable;
@@ -116,7 +115,9 @@ export class Toolbar {
     }
 
     private checkToolbarResponsive(ele: HTMLElement): boolean {
-        if (!Browser.isDevice || isIDevice()) { return false; }
+        if (!Browser.isDevice || isIDevice()) {
+            return false;
+        }
         let tBarMode : string;
         if (this.parent.toolbarSettings.type === ToolbarType.Expand) {
             tBarMode = ToolbarType.MultiRow;
@@ -153,7 +154,7 @@ export class Toolbar {
 
     private checkIsTransformChild(): void {
         this.isTransformChild = false;
-        let transformElements: HTMLElement[] = <HTMLElement[]>selectAll('[style*="transform"]', document);
+        const transformElements: HTMLElement[] = <HTMLElement[]>selectAll('[style*="transform"]', document);
         for (let i: number = 0; i < transformElements.length; i++) {
             if (!isNullOrUndefined(transformElements[i].contains) && transformElements[i].contains(this.parent.element)) {
                 this.isTransformChild = true;
@@ -167,7 +168,7 @@ export class Toolbar {
         let isBody: boolean = false;
         let isFloat: boolean = false;
         let scrollParent: HTMLElement;
-        let floatOffset: number = this.parent.floatingToolbarOffset;
+        const floatOffset: number = this.parent.floatingToolbarOffset;
         if (e && this.parent.iframeSettings.enable && this.parent.inputElement.ownerDocument === e.target) {
             scrollParent = (e.target as Document).body as HTMLElement;
         } else if (e && e.target !== document) {
@@ -176,20 +177,21 @@ export class Toolbar {
             isBody = true;
             scrollParent = document.body;
         }
-        let tbHeight: number = this.getToolbarHeight() + this.getExpandTBarPopHeight();
+        const tbHeight: number = this.getToolbarHeight() + this.getExpandTBarPopHeight();
         if (this.isTransformChild) {
             topValue = 0;
             let scrollParentRelativeTop: number = 0;
-            let trgHeight: number = this.parent.element.offsetHeight;
+            const trgHeight: number = this.parent.element.offsetHeight;
             if (isBody) {
-                let bodyStyle: CSSStyleDeclaration = window.getComputedStyle(scrollParent);
+                const bodyStyle: CSSStyleDeclaration = window.getComputedStyle(scrollParent);
                 scrollParentRelativeTop = parseFloat(bodyStyle.marginTop.split('px')[0]) + parseFloat(bodyStyle.paddingTop.split('px')[0]);
             }
-            let targetTop: number = this.parent.element.getBoundingClientRect().top;
-            let scrollParentYOffset: number = (Browser.isMSPointer && isBody) ? window.pageYOffset : scrollParent.parentElement.scrollTop;
-            let scrollParentRect: ClientRect = scrollParent.getBoundingClientRect();
-            let scrollParentTop: number = (!isBody) ? scrollParentRect.top : (scrollParentRect.top + scrollParentYOffset);
-            let outOfRange: boolean = ((targetTop - ((!isBody) ? scrollParentTop : 0)) + trgHeight > tbHeight + floatOffset) ? false : true;
+            const targetTop: number = this.parent.element.getBoundingClientRect().top;
+            const scrollParentYOffset: number = (Browser.isMSPointer && isBody) ? window.pageYOffset : scrollParent.parentElement.scrollTop;
+            const scrollParentRect: ClientRect = scrollParent.getBoundingClientRect();
+            const scrollParentTop: number = (!isBody) ? scrollParentRect.top : (scrollParentRect.top + scrollParentYOffset);
+            const outOfRange: boolean = ((targetTop - ((!isBody) ? scrollParentTop : 0))
+                + trgHeight > tbHeight + floatOffset) ? false : true;
             if (targetTop > (scrollParentTop + floatOffset) || targetTop < -trgHeight || ((targetTop < 0) ? outOfRange : false)) {
                 isFloat = false;
                 removeClass([this.tbElement], [classes.CLS_TB_ABS_FLOAT]);
@@ -204,8 +206,10 @@ export class Toolbar {
                 isFloat = true;
             }
         } else {
-            let parent: ClientRect = this.parent.element.getBoundingClientRect();
-            if (window.innerHeight < parent.top) { return; }
+            const parent: ClientRect = this.parent.element.getBoundingClientRect();
+            if (window.innerHeight < parent.top) {
+                return;
+            }
             topValue = (e && e.target !== document) ? scrollParent.getBoundingClientRect().top : 0;
             if ((parent.bottom < (floatOffset + tbHeight + topValue)) || parent.bottom < 0 || parent.top > floatOffset + topValue) {
                 isFloat = false;
@@ -225,7 +229,9 @@ export class Toolbar {
     private renderToolbar(): void {
         this.initializeInstance();
         this.createToolbarElement();
-        if (this.checkToolbarResponsive(this.tbElement)) { return; }
+        if (this.checkToolbarResponsive(this.tbElement)) {
+            return;
+        }
         if (this.parent.inlineMode.enable) {
             this.parent.notify(events.renderInlineToolbar, {});
         } else {
@@ -240,6 +246,7 @@ export class Toolbar {
                     this.checkIsTransformChild();
                     this.toggleFloatClass();
                 }
+                addClass([this.parent.element], [classes.CLS_RTE_TB_ENABLED]);
                 if (this.parent.toolbarSettings.type === ToolbarType.Expand) {
                     addClass([this.parent.element], [classes.CLS_RTE_EXPAND_TB]);
                 }
@@ -262,8 +269,8 @@ export class Toolbar {
             } as IColorPickerRenderArgs);
             this.refreshToolbarOverflow();
         }
-        let divEle: HTMLElement = this.parent.element.querySelector('.e-rte-srctextarea') as HTMLElement;
-        let iframeEle: HTMLElement = this.parent.element.querySelector('.e-source-content') as HTMLElement;
+        const divEle: HTMLElement = this.parent.element.querySelector('.e-rte-srctextarea') as HTMLElement;
+        const iframeEle: HTMLElement = this.parent.element.querySelector('.e-source-content') as HTMLElement;
         if ((!this.parent.iframeSettings.enable && (!isNOU(divEle) && divEle.style.display === 'block')) ||
           (this.parent.iframeSettings.enable && (!isNOU(iframeEle) && iframeEle.style.display === 'block'))) {
             this.parent.notify(events.updateToolbarItem, {
@@ -276,6 +283,8 @@ export class Toolbar {
 
     /**
      * addFixedTBarClass method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -285,6 +294,8 @@ export class Toolbar {
 
     /**
      * removeFixedTBarClass method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -300,20 +311,24 @@ export class Toolbar {
     }
 
     private hideFixedTBar(): void {
+        // eslint-disable-next-line
         (!this.isToolbar) ? removeClass([this.tbElement], [classes.CLS_SHOW, classes.CLS_TB_IOS_FIX]) : this.isToolbar = false;
     }
 
     /**
      * updateItem method
+     *
+     * @param {IUpdateItemsModel} args - specifies the arguments.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public updateItem(args: IUpdateItemsModel): void {
-        let item: IToolsItems = this.tools[args.updateItem.toLocaleLowerCase() as ToolbarItems];
-        let trgItem: IToolsItems = this.tools[args.targetItem.toLocaleLowerCase() as ToolbarItems];
-        let index: number = getTBarItemsIndex(getCollection(trgItem.subCommand), args.baseToolbar.toolbarObj.items)[0];
+        const item: IToolsItems = this.tools[args.updateItem.toLocaleLowerCase() as ToolbarItems];
+        const trgItem: IToolsItems = this.tools[args.targetItem.toLocaleLowerCase() as ToolbarItems];
+        const index: number = getTBarItemsIndex(getCollection(trgItem.subCommand), args.baseToolbar.toolbarObj.items)[0];
         if (!isNOU(index)) {
-            let prefixId: string = this.parent.inlineMode.enable ? '_quick_' : '_toolbar_';
+            const prefixId: string = this.parent.inlineMode.enable ? '_quick_' : '_toolbar_';
             args.baseToolbar.toolbarObj.items[index].id = this.parent.getID() + prefixId + item.id;
             args.baseToolbar.toolbarObj.items[index].prefixIcon = item.icon;
             args.baseToolbar.toolbarObj.items[index].tooltipText = item.tooltip;
@@ -325,8 +340,10 @@ export class Toolbar {
     }
 
     private updateToolbarStatus(args: IToolbarStatus): void {
-        if (!this.tbElement || (this.parent.inlineMode.enable && (isIDevice() || !Browser.isDevice))) { return; }
-        let options: ISetToolbarStatusArgs = {
+        if (!this.tbElement || (this.parent.inlineMode.enable && (isIDevice() || !Browser.isDevice))) {
+            return;
+        }
+        const options: ISetToolbarStatusArgs = {
             args: args,
             dropDownModule: this.dropDownModule,
             parent: this.parent,
@@ -346,6 +363,8 @@ export class Toolbar {
 
     /**
      * getBaseToolbar method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -355,6 +374,10 @@ export class Toolbar {
 
     /**
      * addTBarItem method
+     *
+     * @param {IUpdateItemsModel} args - specifies the arguments.
+     * @param {number} index - specifies the index value.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -364,15 +387,23 @@ export class Toolbar {
 
     /**
      * enableTBarItems method
+     *
+     * @param {BaseToolbar} baseToolbar - specifies the toolbar.
+     * @param {string} items - specifies the string value.
+     * @param {boolean} isEnable - specifies the boolean value.
+     * @param {boolean} muteToolbarUpdate - specifies the toolbar.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public enableTBarItems(baseToolbar: BaseToolbar, items: string | string[], isEnable: boolean , muteToolbarUpdate?: boolean): void {
-        let trgItems: number[] = getTBarItemsIndex(getCollection(items), baseToolbar.toolbarObj.items);
+        const trgItems: number[] = getTBarItemsIndex(getCollection(items), baseToolbar.toolbarObj.items);
         this.tbItems = selectAll('.' + classes.CLS_TB_ITEM, baseToolbar.toolbarObj.element);
         for (let i: number = 0; i < trgItems.length; i++) {
-            let item: HTMLElement = this.tbItems[trgItems[i]];
-            if (item) { baseToolbar.toolbarObj.enableItems(item, isEnable); }
+            const item: HTMLElement = this.tbItems[trgItems[i]];
+            if (item) {
+                baseToolbar.toolbarObj.enableItems(item, isEnable);
+            }
         }
         if (!select('.e-rte-srctextarea', this.parent.element) && !muteToolbarUpdate) {
             updateUndoRedoStatus(baseToolbar, this.parent.formatter.editorManager.undoRedoManager.getUndoStatus());
@@ -381,6 +412,9 @@ export class Toolbar {
 
     /**
      * removeTBarItems method
+     *
+     * @param {string} items - specifies the string value.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -388,7 +422,7 @@ export class Toolbar {
         if (isNullOrUndefined(this.baseToolbar.toolbarObj)) {
             this.baseToolbar = this.parent.getBaseToolbarObject();
         }
-        let trgItems: number[] = getTBarItemsIndex(getCollection(items), this.baseToolbar.toolbarObj.items);
+        const trgItems: number[] = getTBarItemsIndex(getCollection(items), this.baseToolbar.toolbarObj.items);
         this.tbItems = (this.parent.inlineMode.enable) ? selectAll('.' + classes.CLS_TB_ITEM, this.baseToolbar.toolbarObj.element)
             : selectAll('.' + classes.CLS_TB_ITEM, this.parent.element);
         for (let i: number = 0; i < trgItems.length; i++) {
@@ -398,13 +432,15 @@ export class Toolbar {
 
     /**
      * getExpandTBarPopHeight method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public getExpandTBarPopHeight(): number {
         let popHeight: number = 0;
         if (this.parent.toolbarSettings.type === ToolbarType.Expand && this.tbElement.classList.contains('e-extended-toolbar')) {
-            let expandPopup: HTMLElement = <HTMLElement>select('.e-toolbar-extended', this.tbElement);
+            const expandPopup: HTMLElement = <HTMLElement>select('.e-toolbar-extended', this.tbElement);
             if (expandPopup && this.tbElement.classList.contains('e-expand-open')
                 || expandPopup && expandPopup.classList.contains('e-popup-open')) {
                 addClass([expandPopup], [classes.CLS_VISIBLE]);
@@ -419,6 +455,8 @@ export class Toolbar {
 
     /**
      * getToolbarHeight method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -428,6 +466,8 @@ export class Toolbar {
 
     /**
      * getToolbarElement method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -437,6 +477,8 @@ export class Toolbar {
 
     /**
      * refreshToolbarOverflow method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -456,9 +498,10 @@ export class Toolbar {
             this.dropDownModule.destroyDropDowns();
             this.baseToolbar.toolbarObj.destroy();
             this.removeEventListener();
+            removeClass([this.parent.element], [classes.CLS_RTE_TB_ENABLED]);
             removeClass([this.parent.element], [classes.CLS_RTE_EXPAND_TB]);
-            let tbWrapper: HTMLElement = <HTMLElement>select('.' + classes.CLS_TB_WRAP, this.parent.element);
-            let tbElement: HTMLElement = <HTMLElement>select('.' + classes.CLS_TOOLBAR, this.parent.element);
+            const tbWrapper: HTMLElement = <HTMLElement>select('.' + classes.CLS_TB_WRAP, this.parent.element);
+            const tbElement: HTMLElement = <HTMLElement>select('.' + classes.CLS_TOOLBAR, this.parent.element);
             if (!isNullOrUndefined(tbWrapper)) {
                 detach(tbWrapper);
             } else if (!isNullOrUndefined(tbElement)) {
@@ -469,8 +512,9 @@ export class Toolbar {
 
     /**
      * Destroys the ToolBar.
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -515,11 +559,12 @@ export class Toolbar {
         this.isToolbar = true;
     }
 
+    // eslint-disable-next-line
     private tbFocusHandler(e: Event): void {
-        let activeElm: Element = document.activeElement;
-        let isToolbaractive: Element = closest(activeElm as Element, '.e-rte-toolbar');
+        const activeElm: Element = document.activeElement;
+        const isToolbaractive: Element = closest(activeElm as Element, '.e-rte-toolbar');
         if (activeElm === this.parent.getToolbarElement() || isToolbaractive === this.parent.getToolbarElement()) {
-            let toolbarItem: NodeList = this.parent.getToolbarElement().querySelectorAll('.e-expended-nav');
+            const toolbarItem: NodeList = this.parent.getToolbarElement().querySelectorAll('.e-expended-nav');
             for (let i: number = 0; i < toolbarItem.length; i++) {
                 if (isNOU(this.parent.getToolbarElement().querySelector('.e-insert-table-btn'))) {
                     (toolbarItem[i] as HTMLElement).setAttribute('tabindex', '0');
@@ -538,7 +583,7 @@ export class Toolbar {
     }
 
     private toolbarClickHandler(e: ClickEventArgs): void {
-        let trg: Element = closest(e.originalEvent.target as Element, '.e-hor-nav');
+        const trg: Element = closest(e.originalEvent.target as Element, '.e-hor-nav');
         if (trg && this.parent.toolbarSettings.type === ToolbarType.Expand && !isNOU(trg)) {
             if (!trg.classList.contains('e-nav-active')) {
                 removeClass([this.tbElement], [classes.CLS_EXPAND_OPEN]);
@@ -556,7 +601,9 @@ export class Toolbar {
     }
 
     protected wireEvents(): void {
-        if (this.parent.inlineMode.enable && isIDevice()) { return; }
+        if (this.parent.inlineMode.enable && isIDevice()) {
+            return;
+        }
         EventHandler.add(this.tbElement, 'focusin', this.tbFocusHandler, this);
         EventHandler.add(this.tbElement, 'keydown', this.tbKeydownHandler, this);
     }
@@ -567,7 +614,9 @@ export class Toolbar {
     }
 
     protected addEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.dropDownModule = new DropDownButtons(this.parent, this.locator);
         this.toolbarActionModule = new ToolbarAction(this.parent);
         this.parent.on(events.initialEnd, this.renderToolbar, this);
@@ -591,7 +640,9 @@ export class Toolbar {
     }
 
     protected removeEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.off(events.initialEnd, this.renderToolbar);
         this.parent.off(events.scroll, this.scrollHandler);
         this.parent.off(events.bindOnEnd, this.toolbarBindEvent);
@@ -618,20 +669,25 @@ export class Toolbar {
     }
     /**
      * Called internally if any of the property value changed.
+     *
+     * @param {RichTextEditorModel} e - specifies the string value
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     protected onPropertyChanged(e: { [key: string]: RichTextEditorModel }): void {
         if (!isNullOrUndefined(e.newProp.inlineMode)) {
-            for (let prop of Object.keys(e.newProp.inlineMode)) {
+            for (const prop of Object.keys(e.newProp.inlineMode)) {
                 switch (prop) {
-                    case 'enable':
-                        this.refreshToolbar();
-                        break;
+                case 'enable':
+                    this.refreshToolbar();
+                    break;
                 }
             }
         }
-        if (e.module !== this.getModuleName()) { return; }
+        if (e.module !== this.getModuleName()) {
+            return;
+        }
         this.refreshToolbar();
     }
 
@@ -639,8 +695,8 @@ export class Toolbar {
         if (isNullOrUndefined(this.baseToolbar.toolbarObj)) {
             this.baseToolbar = this.parent.getBaseToolbarObject();
         }
-        let tbWrapper: Element = select('.' + classes.CLS_TB_WRAP, this.parent.element);
-        let tbElement: Element = select('.' + classes.CLS_TOOLBAR, this.parent.element);
+        const tbWrapper: Element = select('.' + classes.CLS_TB_WRAP, this.parent.element);
+        const tbElement: Element = select('.' + classes.CLS_TOOLBAR, this.parent.element);
         if (tbElement || tbWrapper) {
             this.destroyToolbar();
         }
@@ -656,6 +712,9 @@ export class Toolbar {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {void}
+     * @hidden
      */
     private getModuleName(): string {
         return 'toolbar';

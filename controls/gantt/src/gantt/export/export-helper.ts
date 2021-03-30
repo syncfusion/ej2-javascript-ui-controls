@@ -1,6 +1,6 @@
 import { TaskFieldsModel } from './../models/task-fields-model.d';
 import { PdfFontFamily } from '@syncfusion/ej2-pdf-export';
-import { PdfSection, PdfStringFormat, PdfPageCountField, PdfPageNumberField } from '@syncfusion/ej2-pdf-export';
+import { PdfStringFormat, PdfPageCountField, PdfPageNumberField } from '@syncfusion/ej2-pdf-export';
 import { PdfPageTemplateElement, RectangleF, PdfCompositeField, PointF } from '@syncfusion/ej2-pdf-export';
 import { PdfVerticalAlignment, PdfTextAlignment, PdfFont, PdfStandardFont } from '@syncfusion/ej2-pdf-export';
 import { PdfFontStyle, PdfColor, PdfPen, PdfBrush, PdfSolidBrush, PdfDocument } from '@syncfusion/ej2-pdf-export';
@@ -42,7 +42,10 @@ export class ExportHelper {
         this.parent = parent;
     }
     /**
-     * @return {void}
+     * @param {IGanttData[]} data .
+     * @param {PdfGantt} gantt .
+     * @param {PdfExportProperties} props .
+     * @returns {void} .
      * @private
      */
     public processGridExport(data: IGanttData[], gantt: PdfGantt, props: PdfExportProperties): void {
@@ -79,25 +82,25 @@ export class ExportHelper {
     }
     private processColumnHeader(column: ColumnModel, index: number): void {
         this.gantt.columns.add(1);
-        let pdfColumn: PdfTreeGridColumn = this.gantt.columns.getColumn(index);
+        const pdfColumn: PdfTreeGridColumn = this.gantt.columns.getColumn(index);
         if (this.parent.treeColumnIndex === index) {
             pdfColumn.isTreeColumn = true;
         }
-        let width: string | number = parseInt(column.width as string, 10);
+        const width: string | number = parseInt(column.width as string, 10);
         pdfColumn.width = pixelToPoint(width);
         this.totalColumnWidth += pdfColumn.width;
         pdfColumn.headerText = column.headerText;
         pdfColumn.field = column.field;
-        let cell: PdfTreeGridCell = this.row.cells.getCell(index);
+        const cell: PdfTreeGridCell = this.row.cells.getCell(index);
         cell.value = column.headerText;
         cell.isHeaderCell = true;
-        let treeGridHeaderHeight: number = this.parent.timelineModule.isSingleTier ? 45 : 60;
+        const treeGridHeaderHeight: number = this.parent.timelineModule.isSingleTier ? 45 : 60;
         this.row.height = pixelToPoint(treeGridHeaderHeight);
         this.copyStyles(this.ganttStyle.columnHeader, cell, false);
         if (column.headerTextAlign) {
             cell.style.format.alignment = PdfTextAlignment[column.headerTextAlign];
         }
-        let args: PdfColumnHeaderQueryCellInfoEventArgs = {
+        const args: PdfColumnHeaderQueryCellInfoEventArgs = {
             cell: cell,
             style: cell.style,
             value: cell.value,
@@ -110,8 +113,8 @@ export class ExportHelper {
     }
 
     private isColumnVisible(column: ColumnModel): boolean {
-        let visibleColumn: boolean = column.visible || this.exportProps.includeHiddenColumn;
-        let templateColumn: boolean = !isNullOrUndefined(column.template) ? false : true;
+        const visibleColumn: boolean = column.visible || this.exportProps.includeHiddenColumn;
+        const templateColumn: boolean = !isNullOrUndefined(column.template) ? false : true;
         return (visibleColumn && templateColumn);
     }
 
@@ -133,9 +136,11 @@ export class ExportHelper {
     }
     /**
      * Method for processing the timeline details
+     *
+     * @returns {void} .
      */
     private processTimeline(): void {
-        let timelineSettings: Timeline = this.parent.timelineModule;
+        const timelineSettings: Timeline = this.parent.timelineModule;
         this.gantt.chartHeader.topTierHeight = this.gantt.chartHeader.bottomTierHeight
             = (this.parent.timelineModule.isSingleTier ? 45 : 60 / 2);
         this.gantt.chartHeader.topTierCellWidth = timelineSettings.topTierCellWidth;
@@ -148,13 +153,15 @@ export class ExportHelper {
     }
     /**
      * Method for create the predecessor collection for rendering
+     *
+     * @returns {void} .
      */
     private processPredecessor(): void {
         if (isNullOrUndefined(this.exportProps.showPredecessorLines) || this.exportProps.showPredecessorLines) {
             this.parent.pdfExportModule.isPdfExport = true;
             this.parent.predecessorModule.createConnectorLinesCollection();
             this.parent.updatedConnectorLineCollection.forEach((data: IConnectorLineObject) => {
-                let predecessor: PdfGanttPredecessor = this.gantt.predecessor.add();
+                const predecessor: PdfGanttPredecessor = this.gantt.predecessor.add();
                 predecessor.parentLeft = data.parentLeft;
                 predecessor.childLeft = data.childLeft;
                 predecessor.parentWidth = data.parentWidth;
@@ -185,9 +192,9 @@ export class ExportHelper {
     }
 
     private processRecordCell(data: IGanttData, column: ColumnModel, row: PdfTreeGridRow): void {
-        let cell: PdfTreeGridCell = row.cells.getCell(this.colIndex);
-        let taskFields: TaskFieldsModel = this.parent.taskFields;
-        let ganttProps: ITaskData = data.ganttProperties;
+        const cell: PdfTreeGridCell = row.cells.getCell(this.colIndex);
+        const taskFields: TaskFieldsModel = this.parent.taskFields;
+        const ganttProps: ITaskData = data.ganttProperties;
         if (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit') {
             cell.value = this.parent.getFormatedDate(data[column.field], this.parent.getDateFormat());
         } else if (column.field === taskFields.duration) {
@@ -208,7 +215,7 @@ export class ExportHelper {
             cell.style.format.paragraphIndent = cell.row.level * 10;
         }
         if (this.parent.pdfQueryCellInfo != null) {
-            let args: PdfQueryCellInfoEventArgs = {
+            const args: PdfQueryCellInfoEventArgs = {
                 data: data,
                 value: cell.value,
                 column: column,
@@ -224,11 +231,13 @@ export class ExportHelper {
     }
     /**
      * Method for create the taskbar collection for rendering
+     *
+     * @returns {void} .
      */
     private processTaskbar(): void {
         this.flatData.forEach((data: IGanttData) => {
-            let taskbar: PdfGanttTaskbarCollection = this.gantt.taskbar.add();
-            let ganttProp: ITaskData = data.ganttProperties;
+            const taskbar: PdfGanttTaskbarCollection = this.gantt.taskbar.add();
+            const ganttProp: ITaskData = data.ganttProperties;
             taskbar.left = ganttProp.left;
             taskbar.width = ganttProp.width;
             if (taskbar.left < 0) {
@@ -266,8 +275,7 @@ export class ExportHelper {
             if (data[this.parent.labelSettings.rightLabel]) {
                 taskbar.rightTaskLabel.value = data[this.parent.labelSettings.rightLabel].toString();
             }
-            /* tslint:disable-next-line */
-            let reduceLeft: number = ganttProp.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 33 : 33; // 33 indicates default timeline cell width
+            const reduceLeft: number = ganttProp.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 33 : 33; // 33 indicates default timeline cell width
             taskbar.rightTaskLabel.left = ganttProp.left + ganttProp.width + reduceLeft; // right label left value
             taskbar.fontFamily = this.ganttStyle.fontFamily;
             taskbar.progressWidth = ganttProp.progressWidth;
@@ -284,13 +292,13 @@ export class ExportHelper {
             }
             taskbar.gridLineColor = new PdfColor(this.ganttStyle.chartGridLineColor);
             this.gantt.taskbarCollection.push(taskbar);
-            let taskStyle: ITaskbarStyle   = {};
+            const taskStyle: ITaskbarStyle   = {};
             taskStyle.progressFontColor = taskbar.progressFontColor;
             taskStyle.taskColor = taskbar.taskColor;
             taskStyle.taskBorderColor = taskbar.taskBorderColor;
             taskStyle.progressColor = taskbar.progressColor;
             taskStyle.milestoneColor = taskbar.milestoneColor;
-            let args: PdfQueryTaskbarInfoEventArgs = {
+            const args: PdfQueryTaskbarInfoEventArgs = {
                 taskbar: taskStyle,
                 data: data
             };
@@ -306,6 +314,10 @@ export class ExportHelper {
     }
     /**
      * set text alignment of each columns in exporting grid
+     *
+     * @param {string} textAlign .
+     * @param {PdfStringFormat} format .
+     * @returns {PdfStringFormat} .
      * @private
      */
     private getHorizontalAlignment(textAlign: string, format?: PdfStringFormat): PdfStringFormat {
@@ -313,23 +325,28 @@ export class ExportHelper {
             format = new PdfStringFormat();
         }
         switch (textAlign) {
-            case 'Right':
-                format.alignment = PdfTextAlignment.Right;
-                break;
-            case 'Center':
-                format.alignment = PdfTextAlignment.Center;
-                break;
-            case 'Justify':
-                format.alignment = PdfTextAlignment.Justify;
-                break;
-            case 'Left':
-                format.alignment = PdfTextAlignment.Left;
-                break;
+        case 'Right':
+            format.alignment = PdfTextAlignment.Right;
+            break;
+        case 'Center':
+            format.alignment = PdfTextAlignment.Center;
+            break;
+        case 'Justify':
+            format.alignment = PdfTextAlignment.Justify;
+            break;
+        case 'Left':
+            format.alignment = PdfTextAlignment.Left;
+            break;
         }
         return format;
     }
     /**
      * set vertical alignment of each columns in exporting grid
+     *
+     * @param {string} verticalAlign .
+     * @param {PdfStringFormat} format .
+     * @param {string} textAlign .
+     * @returns {PdfStringFormat} .
      * @private
      */
     private getVerticalAlignment(verticalAlign: string, format?: PdfStringFormat, textAlign?: string): PdfStringFormat {
@@ -338,42 +355,42 @@ export class ExportHelper {
             format = this.getHorizontalAlignment(textAlign, format);
         }
         switch (verticalAlign) {
-            case 'Bottom':
-                format.lineAlignment = PdfVerticalAlignment.Bottom;
-                break;
-            case 'Middle':
-                format.lineAlignment = PdfVerticalAlignment.Middle;
-                break;
-            case 'Top':
-                format.lineAlignment = PdfVerticalAlignment.Top;
-                break;
+        case 'Bottom':
+            format.lineAlignment = PdfVerticalAlignment.Bottom;
+            break;
+        case 'Middle':
+            format.lineAlignment = PdfVerticalAlignment.Middle;
+            break;
+        case 'Top':
+            format.lineAlignment = PdfVerticalAlignment.Top;
+            break;
         }
         return format;
     }
 
     private getFontFamily(fontFamily: string): number {
         switch (fontFamily) {
-            case 'TimesRoman':
-                return 2;
-            case 'Courier':
-                return 1;
-            case 'Symbol':
-                return 3;
-            case 'ZapfDingbats':
-                return 4;
-            default:
-                return 0;
+        case 'TimesRoman':
+            return 2;
+        case 'Courier':
+            return 1;
+        case 'Symbol':
+            return 3;
+        case 'ZapfDingbats':
+            return 4;
+        default:
+            return 0;
         }
     }
 
-    /* tslint:disable-next-line:no-any */
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     private getFont(content: any): PdfFont {
         if (content.font) {
             return content.font;
         }
-        let fontSize: number = (!isNullOrUndefined(content.style.fontSize)) ? (content.style.fontSize * 0.75) : 9.75;
+        const fontSize: number = (!isNullOrUndefined(content.style.fontSize)) ? (content.style.fontSize * 0.75) : 9.75;
 
-        let fontFamily: number = (!isNullOrUndefined(content.style.fontFamily)) ?
+        const fontFamily: number = (!isNullOrUndefined(content.style.fontFamily)) ?
             (this.getFontFamily(content.style.fontFamily)) : PdfFontFamily.TimesRoman;
 
         let fontStyle: PdfFontStyle = PdfFontStyle.Regular;
@@ -396,23 +413,24 @@ export class ExportHelper {
         return new PdfStandardFont(fontFamily, fontSize, fontStyle);
     }
     private renderEmptyGantt(): void {
-        let row: PdfTreeGridRow = this.gantt.rows.addRow();
+        const row: PdfTreeGridRow = this.gantt.rows.addRow();
         row.cells.getCell(0).isHeaderCell = false;
         row.height = pixelToPoint(this.parent.rowHeight);
         this.copyStyles(this.ganttStyle.columnHeader, row.cells.getCell(0), row.isParentRow);
-        let count: number = this.columns.length;
+        const count: number = this.columns.length;
         this.mergeCells(0, 0, count);
     }
     private mergeCells(rowIndex: number, colIndex: number, lastColIndex: number): void {
         this.gantt.rows.getRow(rowIndex).cells.getCell(colIndex).columnSpan = lastColIndex;
     }
+    /* eslint-disable-next-line */
     private copyStyles(style: PdfGanttCellStyle, cell: PdfTreeGridCell, isParentRow: boolean): void {
         cell.style.fontColor = new PdfColor(style.fontColor);
         cell.style.backgroundColor = new PdfColor(style.backgroundColor);
         cell.style.borderColor = new PdfColor(style.borderColor);
         cell.style.fontSize = style.fontSize;
         cell.style.fontStyle = style.fontStyle;
-        /* tslint:disable-next-line */
+        /* eslint-disable-next-line */
         cell.style.format  = (<any>Object).assign(new PdfStringFormat(), style.format);
         cell.style.borders = new PdfBorders();
         cell.style.borders.all = new PdfPen(cell.style.borderColor);
@@ -430,33 +448,33 @@ export class ExportHelper {
     }
 
     /**
-     * @return {void}
+     * @param {PdfDocument} pdfDoc .
+     * @returns {void} .
      * @private
      */
     public initializePdf(pdfDoc: PdfDocument): void {
         this.pdfDoc = pdfDoc;
-        let widths: number[] = [];
-        let treeColumnIndex: number = 0;
-        let tWidth: number = (this.pdfDoc.pageSettings.width - 82);
+        const widths: number[] = [];
+        const treeColumnIndex: number = 0;
+        const tWidth: number = (this.pdfDoc.pageSettings.width - 82);
         if (this.totalColumnWidth > (this.pdfDoc.pageSettings.width - 82)) {
             this.gantt.style.allowHorizontalOverflow = true;
         } else if ((tWidth / this.columns.length) < widths[treeColumnIndex]) {
             this.gantt.columns.getColumn(treeColumnIndex).width = widths[treeColumnIndex];
         }
-        let section: PdfSection = this.pdfDoc.sections.add() as PdfSection;
         if (this.exportProps.enableFooter || isNullOrUndefined(this.exportProps.enableFooter)) {
-            //code for draw the footer content            
-            let bounds: RectangleF = new RectangleF(0, 0, pdfDoc.pageSettings.width, 35);
-            let pen: PdfPen = new PdfPen(this.ganttStyle.chartGridLineColor);
-            let footer: PdfPageTemplateElement = new PdfPageTemplateElement(bounds);
-            let footerBrush: PdfBrush = new PdfSolidBrush(this.ganttStyle.footer.backgroundColor);
+            //code for draw the footer content
+            const bounds: RectangleF = new RectangleF(0, 0, pdfDoc.pageSettings.width, 35);
+            const pen: PdfPen = new PdfPen(this.ganttStyle.chartGridLineColor);
+            const footer: PdfPageTemplateElement = new PdfPageTemplateElement(bounds);
+            const footerBrush: PdfBrush = new PdfSolidBrush(this.ganttStyle.footer.backgroundColor);
             footer.graphics.drawRectangle(pen, footerBrush, 0, 0, pdfDoc.pageSettings.width, 35);
-            /* tslint:disable-next-line */
-            let font: PdfFont = new PdfStandardFont(this.ganttStyle.fontFamily, this.ganttStyle.footer.fontSize, this.ganttStyle.footer.fontStyle);
-            let brush: PdfBrush = new PdfSolidBrush(this.ganttStyle.footer.fontColor);
-            let pageNumber: PdfPageNumberField = new PdfPageNumberField(font);
-            let count: PdfPageCountField = new PdfPageCountField(font, brush);
-            let compositeField: PdfCompositeField = new PdfCompositeField(font, brush, 'Page {0}', pageNumber, count);
+            /* eslint-disable-next-line */
+            const font: PdfFont = new PdfStandardFont(this.ganttStyle.fontFamily, this.ganttStyle.footer.fontSize, this.ganttStyle.footer.fontStyle);
+            const brush: PdfBrush = new PdfSolidBrush(this.ganttStyle.footer.fontColor);
+            const pageNumber: PdfPageNumberField = new PdfPageNumberField(font);
+            const count: PdfPageCountField = new PdfPageCountField(font, brush);
+            const compositeField: PdfCompositeField = new PdfCompositeField(font, brush, 'Page {0}', pageNumber, count);
             compositeField.stringFormat = this.ganttStyle.footer.format;
             compositeField.bounds = bounds;
             compositeField.draw(footer.graphics, new PointF(0, 0));
@@ -475,7 +493,7 @@ export class ExportValueFormatter {
         this.valueFormatter = new ValueFormatter(culture);
         this.internationalization = new Internationalization(culture);
     }
-    /* tslint:disable-next-line:no-any */
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     private returnFormattedValue(args: any, customFormat: DateFormatOptions): string {
         if (!isNullOrUndefined(args.value) && args.value) {
             return this.valueFormatter.getFormatFunction(customFormat)(args.value);
@@ -486,7 +504,7 @@ export class ExportValueFormatter {
     /**
      * @private
      */
-    /* tslint:disable-next-line:no-any */
+    /* eslint-disable-next-line  */
     public formatCellValue(args: any): string {
         if (args.isForeignKey) {
             args.value = getValue(args.column.foreignKeyValue, getForeignData(args.column, {}, args.value)[0]);
@@ -495,7 +513,6 @@ export class ExportValueFormatter {
             return args.value ? this.internationalization.getNumberFormat({ format: args.column.format })(args.value) : '';
         } else if (args.column.type === 'boolean') {
             return args.value ? 'true' : 'false';
-            /* tslint:disable-next-line:max-line-length */
         } else if ((args.column.type === 'date' || args.column.type === 'datetime' || args.column.type === 'time') && args.column.format !== undefined) {
             if (typeof args.value === 'string') {
                 args.value = new Date(args.value);
@@ -514,10 +531,9 @@ export class ExportValueFormatter {
                 if (args.column.format instanceof Object && args.column.format.type === undefined) {
                     return (args.value.toString());
                 } else {
-                    /* tslint:disable-next-line:max-line-length */
                     let customFormat: DateFormatOptions;
                     if (args.column.type === 'date') {
-                        /* tslint:disable-next-line:max-line-length */
+                        /* eslint-disable-next-line max-len */
                         customFormat = { type: args.column.format.type, format: args.column.format.format, skeleton: args.column.format.skeleton };
                     } else if (args.column.type === 'time') {
                         customFormat = { type: 'time', format: args.column.format.format, skeleton: args.column.format.skeleton };

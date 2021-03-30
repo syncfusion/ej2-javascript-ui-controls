@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { LineBase } from '../series/line-base';
 import { Series, Points } from '../series/chart-series';
 import { RectOption, appendClipElement } from '../../common/utils/helper';
@@ -11,16 +14,18 @@ import { BaseAttibutes, Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
 export class TechnicalAnalysis extends LineBase {
     /**
      * Defines the collection of series, that are used to represent the given technical indicator
+     *
      * @private
      */
     public initSeriesCollection(indicator: TechnicalIndicator, chart: Chart): void {
         indicator.targetSeries = [];
-        let signalLine: Series = new Series(indicator, 'targetSeries', {}, true);
+        const signalLine: Series = new Series(indicator, 'targetSeries', {}, true);
         this.setSeriesProperties(signalLine, indicator, indicator.type, indicator.fill, indicator.width, chart);
     }
 
     /**
      * Initializes the properties of the given series
+     *
      * @private
      */
     protected setSeriesProperties(
@@ -52,6 +57,7 @@ export class TechnicalAnalysis extends LineBase {
 
     /**
      * Creates the elements of a technical indicator
+     *
      * @private
      */
     public createIndicatorElements(chart: Chart, indicator: TechnicalIndicator, index: number): void {
@@ -62,13 +68,13 @@ export class TechnicalAnalysis extends LineBase {
         if (indicator.seriesName || indicator.dataSource) {
             clipRect = indicator.targetSeries[0].clipRect;
         }
-        let options: BaseAttibutes = new RectOption(
+        const options: BaseAttibutes = new RectOption(
             chart.element.id + '_ChartIndicatorClipRect_' + index, 'transparent', { width: 1, color: 'Gray' }, 1,
             {
                 x: 0, y: 0, width: clipRect.width,
-                height: clipRect.height,
+                height: clipRect.height
             });
-        let clipRectElement: Element = appendClipElement(chart.redraw, options, chart.renderer as SvgRenderer);
+        const clipRectElement: Element = appendClipElement(chart.redraw, options, chart.renderer as SvgRenderer);
         //defines the clip rect element
 
         //creates the group for an indicator
@@ -81,9 +87,9 @@ export class TechnicalAnalysis extends LineBase {
         indicator.indicatorElement.appendChild(clipRectElement);
 
         //Defines a group for each series in a technical indicator
-        for (let series of indicator.targetSeries) {
+        for (const series of indicator.targetSeries) {
             series.clipRectElement = clipRectElement;
-            let element: Element = series.chart.renderer.createGroup({
+            const element: Element = series.chart.renderer.createGroup({
                 'id': series.chart.element.id + '_Indicator_' +
                     indicator.index + '_' + series.name + '_Group'
             });
@@ -96,7 +102,7 @@ export class TechnicalAnalysis extends LineBase {
     protected getDataPoint(
         x: Object, y: Object, sourcePoint: Points, series: Series, index: number,
         indicator: TechnicalIndicator = null): Points {
-        let point: Points = new Points();
+        const point: Points = new Points();
         point.x = x;
         point.y = y;
         point.xValue = sourcePoint.xValue;
@@ -119,9 +125,8 @@ export class TechnicalAnalysis extends LineBase {
         return point;
     }
     protected getRangePoint(
-        x: Object, high: Object, low: Object, sourcePoint: Points, series: Series, index: number,
-        indicator: TechnicalIndicator = null): Points {
-        let point: Points = new Points();
+        x: Object, high: Object, low: Object, sourcePoint: Points, series: Series, index: number): Points {
+        const point: Points = new Points();
         point.x = x;
         point.high = <number>high;
         point.low = <number>low;

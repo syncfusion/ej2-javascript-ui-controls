@@ -20,7 +20,7 @@ import { EventMarkerModel } from '../models/event-marker-model';
 import { PdfPaddings } from '../export/pdf-base/index';
 /**
  * Specifies Gantt-chart interfaces
- * 
+ *
  */
 
 export interface IGanttData {
@@ -41,8 +41,10 @@ export interface IGanttData {
     /** Defines the parent unique id of task. */
     parentUniqueID?: string;
     /** Defines the data which specified in data source.
+     *
      * @isGenericType true
      */
+    // eslint-disable-next-line
     taskData?: Object;
     /** Defines the unique id of task. */
     uniqueID?: string;
@@ -93,6 +95,7 @@ export interface ITaskData {
     /** Defines the progress width of task. */
     progressWidth?: number;
     /** Defines the resource info of task. */
+    // eslint-disable-next-line
     resourceInfo?: Object[];
     /** Defines the resource names of task. */
     resourceNames?: string;
@@ -101,12 +104,13 @@ export interface ITaskData {
     /** Defines the notes of task. */
     notes?: string;
     /** Defines the predecessors name of task. */
+    // eslint-disable-next-line
     predecessorsName?: string | number | object[];
     /** Defines the predecessor of task. */
     predecessor?: IPredecessor[];
     /** Defines the id of task. */
     taskId?: string;
-     /** Defines the parent id of task. */
+    /** Defines the parent id of task. */
     parentId?: string;
     /** Defines the name of task. */
     taskName?: string;
@@ -142,7 +146,7 @@ export interface ITaskData {
     workTimelineRanges?: IWorkTimelineRanges[];
     /** Defines overlap index. */
     eOverlapIndex?: number;
-     /** Defines task segments. */
+    /** Defines task segments. */
     segments?: ITaskSegment[];
     /**
      * Defines shared task unique ids.
@@ -181,7 +185,7 @@ export interface IWorkTimelineRanges {
     width?: number;
     /** Defines height of the resource usage/resource histogram. */
     height?: number;
-	/** Defines per day work. */
+    /** Defines per day work. */
     workPerDay?: number;
     /** Defines whether resource is over allocate or not. */
     isOverAllocated?: boolean;
@@ -254,6 +258,7 @@ export interface IQueryTaskbarInfoEventArgs {
 
 export interface IGanttCellFormatter {
     /** Method to format the cell value of date columns. */
+    // eslint-disable-next-line
     getValue(column: Column, data: Object): Object;
 }
 
@@ -320,6 +325,7 @@ export interface IValidateArgs {
     requestType?: string;
     cancel?: boolean;
     validateMode?: IValidateMode;
+    // eslint-disable-next-line
     editEventArgs?: object;
 }
 
@@ -344,6 +350,7 @@ export interface ITimeSpanEventArgs {
     action?: string;
 }
 
+// eslint-disable-next-line
 export interface IValidateMode {
     respectLink?: boolean;
     removeLink?: boolean;
@@ -354,6 +361,7 @@ export interface IActionBeginEventArgs {
     requestType?: string;
     data?: IGanttData | IGanttData[];
     modifiedRecords?: IGanttData[];
+    // eslint-disable-next-line
     modifiedTaskData?: object[];
     cancel?: boolean;
     taskBarEditAction?: string;
@@ -428,6 +436,7 @@ export interface BeforeTooltipRenderEventArgs {
     /** Defines the data. */
     data?: BeforeTooltipRenderEventArgsData;
     /** Defines the original event arguments of tooltip control.
+     *
      * @blazorType Syncfusion.EJ2.Blazor.Popups.TooltipEventArgs
      */
     args?: TooltipEventArgs;
@@ -451,6 +460,7 @@ export interface QueryCellInfoEventArgs {
     /** Defines the current action. */
     requestType?: string;
     /** Define the foreignKey row data associated with this column */
+    // eslint-disable-next-line
     foreignKeyData?: Object;
 }
 
@@ -480,10 +490,12 @@ export interface ITaskAddedEventArgs {
     /** Specifies the newly added task data with Gantt properties. */
     data?: IGanttData;
     /** Specifies the newly added task data without custom Gantt properties. */
+    // eslint-disable-next-line
     newTaskData?: object;
     /** Defines the modified records. */
     modifiedRecords?: IGanttData[];
     /** Defines the modified task data. */
+    // eslint-disable-next-line
     modifiedTaskData?: object[];
     /** Defines the record index. */
     recordIndex?: number;
@@ -620,16 +632,18 @@ export interface RowDataBoundEventArgs extends GridRowDataBoundEventArgs {
 }
 
 export interface RowDeselectEventArgs extends GridRowDeselectEventArgs {
-     /** Defines the selected/deselected row index.
-      * @blazorType double[]
-      */
-     rowIndex?: number;
-     /** Defines the data collections. */
-     data?: IGanttData[];
-      /** Defines the selected/deselected row.
-       * @blazorType List<DOM>
-       */
-      row?: Element;
+    /** Defines the selected/deselected row index.
+     *
+     * @blazorType double[]
+     */
+    rowIndex?: number;
+    /** Defines the data collections. */
+    data?: IGanttData[];
+    /** Defines the selected/deselected row.
+     *
+     * @blazorType List<DOM>
+     */
+    row?: Element;
 }
 
 export interface ActionCompleteArgs extends ZoomEventArgs, IKeyPressedEventArgs {
@@ -640,8 +654,10 @@ export interface ActionCompleteArgs extends ZoomEventArgs, IKeyPressedEventArgs 
     modifiedTaskData?: IGanttData[];
     cancel?: boolean;
     /** Specifies the newly added task data without custom Gantt properties.
+     *
      * @isGenericType true
      */
+    // eslint-disable-next-line
     newTaskData?: object;
     /** Defines the record index. */
     recordIndex?: number;
@@ -661,10 +677,13 @@ export interface ActionBeginArgs extends IDependencyEventArgs {
     /**
      * @isGenericType true
      */
+    // eslint-disable-next-line
     modifiedTaskData?: object[];
     /** Specifies the newly added task data without custom Gantt properties.
+     *
      * @isGenericType true
      */
+    // eslint-disable-next-line
     newTaskData?: object;
     /** Defines the split date on context click action */
     splitDate?: Date;
@@ -686,10 +705,12 @@ export interface CellEditArgs  {
     /** Defines the current row. */
     row?: Element;
     /** Defines the validation rules. */
+    // eslint-disable-next-line
     validationRules?: Object;
     /** Defines the name of the event. */
     type?: string;
     /** Defines foreign data object */
+    // eslint-disable-next-line
     foreignKeyData?: Object;
     /** Defines the row data object. */
     rowData?: IGanttData;
@@ -709,6 +730,7 @@ export interface CellEditArgs  {
 
 export interface CellSelectingEventArgs extends GridCellSelectingEventArgs {
     /** Defines the previously selected cell index.
+     *
      * @blazorType object
      */
     previousRowCellIndex?: number;
@@ -759,18 +781,22 @@ export interface RowDropEventArgs {
     /** Defines the target element from which drag starts. */
     target?: Element;
     /** Defines the type of the element to be dragged.
+     *
      * @hidden
      */
     draggableType?: string;
     /** Defines the selected row data.
+     *
      * @isGenericType true
      */
+    // eslint-disable-next-line
     data?: Object[];
     /** Defines the drag element from index. */
     fromIndex?: number;
     /** Defines the target element from index. */
     dropIndex?: number;
     /** Define the mouse event */
+    // eslint-disable-next-line
     originalEvent?: object;
     cancel?: boolean;
     /** Defines drop position of the dragged record */
@@ -787,10 +813,12 @@ export interface IMouseMoveEventArgs {
     /** Defines the row data. */
     data?: IGanttData;
     /** Defines the column. */
+    // eslint-disable-next-line
     column?: Object;
     /** Defines the timeline date. */
     date?: Date;
     /** Defines the original event. */
+    // eslint-disable-next-line
     originalEvent?: Object;
     /** Defines the predecessor. */
     predecessor?: PredecessorTooltip;
@@ -826,8 +854,10 @@ export interface PdfQueryCellInfoEventArgs {
     /** Defines the style of the current cell. */
     style?: PdfGanttCellStyle;
     /** Defines the value of the current cell. */
+    // eslint-disable-next-line
     value?: Date | string | number | boolean | Object;
     /** Defines the data of the cell */
+    // eslint-disable-next-line
     data?: Object;
     /** Defines the current PDF cell */
     cell?: PdfTreeGridCell;
@@ -936,6 +966,7 @@ export interface PdfColumnHeaderQueryCellInfoEventArgs {
     /** Defines the current cell with column */
     column?: ColumnModel;
     /** Specify the value of the column header cell */
+    // eslint-disable-next-line
     value?: string | Object ;
 }
 
@@ -949,16 +980,19 @@ export interface TaskLabel {
 
 /**
  * public Enum for `PdfHorizontalOverflowType`.
+ *
  * @private
  */
 export enum PdfHorizontalOverflowType {
     /**
      * Specifies the type of `NextPage`.
+     *
      * @private
      */
     NextPage,
     /**
      * Specifies the type of `LastPage`.
+     *
      * @private
      */
     LastPage

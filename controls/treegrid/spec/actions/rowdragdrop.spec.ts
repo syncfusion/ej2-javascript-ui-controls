@@ -513,6 +513,38 @@ describe('Treegrid Row Drop as Child', () => {
     expect((gridObj.getRows()[3] as HTMLTableRowElement).style.display).toBe('table-row');          
   });
   
+
+    describe('Treegrid Indent action with immutable Mode', () => {
+    let TreeGridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      TreeGridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: "subtasks",
+          treeColumnIndex: 1,
+          enableImmutableMode: true,
+          allowRowDragAndDrop: true,
+          toolbar: ['Indent', 'Outdent'],
+          columns: [
+            { field: "TaskID", headerText: "Task Id", isPrimaryKey: true, width: 90 },
+            { field: 'TaskName', headerText: 'TaskName', width: 60 },
+            { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
+          ],
+        },done); 
+      });
+
+    it('Indent and Outdent', () => {
+      TreeGridObj.selectRow(1);
+      TreeGridObj.selectRow(2);
+      (<any>TreeGridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: TreeGridObj.grid.element.id + '_indent' } });
+      expect((TreeGridObj.grid.dataSource[1] as ITreeData).childRecords.length).toBe(1);
+    });
+    afterAll(() => {
+      destroy(TreeGridObj);
+    });
+  });
+
+
   afterAll(() => {
     destroy(gridObj);
   });
@@ -559,4 +591,5 @@ describe('Treegrid Row Drop as Child', () => {
       destroy(gridObj);
     });
   });
+
 });

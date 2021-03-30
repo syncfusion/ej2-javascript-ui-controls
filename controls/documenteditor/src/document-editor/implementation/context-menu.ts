@@ -91,36 +91,33 @@ export class ContextMenu {
     private spellContextItems: MenuItemModel[] = [];
     private customItems: MenuItemModel[] = [];
     /**
+     * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
      */
-    constructor(documentHelper: DocumentHelper) {
+    public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
         this.locale = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         this.locale.setLocale(this.documentHelper.owner.locale);
         this.initContextMenu(this.locale, this.documentHelper.owner.enableRtl);
     }
-    get viewer(): LayoutViewer {
+    private get viewer(): LayoutViewer {
         return this.documentHelper.owner.viewer;
     }
-    /**
-     * Gets the spell checker
-     * @private
-     */
-    get spellChecker(): SpellChecker {
+
+    private get spellChecker(): SpellChecker {
         return this.documentHelper.owner.spellChecker;
     }
-    /**
-     * Gets module name.
-     */
+
     private getModuleName(): string {
         return 'ContextMenu';
     }
     /**
      * Initialize context menu.
+     *
      * @param localValue Localize value.
      * @private
      */
-    // tslint:disable:max-func-body-length
+    /* eslint-disable  */
     public initContextMenu(localValue: L10n, isRtl?: boolean): void {
         let id: string = this.documentHelper.owner.element.id;
         this.contextMenu = document.createElement('div');
@@ -595,7 +592,7 @@ export class ContextMenu {
             event.preventDefault();
             this.currentContextInfo = this.spellChecker.findCurretText();
             let splittedSuggestion: string[];
-            /* tslint:disable:no-any */
+            /* eslint-disable @typescript-eslint/no-explicit-any */
             let allSuggestions: any;
             let exactData: string = this.spellChecker.manageSpecialCharacters(this.currentContextInfo.text, undefined, true);
             if (!isNullOrUndefined(exactData) && this.spellChecker.errorWordCollection.containsKey(exactData)) {
@@ -606,20 +603,17 @@ export class ContextMenu {
                     this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event as TouchEvent : event as MouseEvent);
                 } else {
                     if (this.spellChecker.enableOptimizedSpellCheck) {
-                        // tslint:disable-next-line:max-line-length
-                        this.spellChecker.CallSpellChecker(this.spellChecker.languageID, exactData, false, true, false, false).then((data: any) => {
-                            /* tslint:disable:no-any */
+                        this.spellChecker.callSpellChecker(this.spellChecker.languageID, exactData, false, true, false, false).then((data: any) => {
+                            /* eslint-disable @typescript-eslint/no-explicit-any */
                             let jsonObject: any = JSON.parse(data);
                             allSuggestions = jsonObject.Suggestions;
                             if (!isNullOrUndefined(allSuggestions)) {
                                 this.spellChecker.errorSuggestions.add(exactData, allSuggestions.slice());
                                 splittedSuggestion = this.spellChecker.handleSuggestions(allSuggestions);
                             }
-                            // tslint:disable-next-line:max-line-length
                             this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event as TouchEvent : event as MouseEvent);
                         });
                     } else {
-                        // tslint:disable-next-line:max-line-length
                         this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event as TouchEvent : event as MouseEvent);
                     }
                 }
@@ -645,9 +639,7 @@ export class ContextMenu {
             xPos = point.x;
             yPos = point.y;
         } else {
-            // tslint:disable-next-line:max-line-length
             yPos = ((Browser.isIE) ? (event as MouseEvent).clientY : (event as MouseEvent).y) + document.body.scrollTop + document.documentElement.scrollTop;
-            // tslint:disable-next-line:max-line-length
             xPos = ((Browser.isIE) ? (event as MouseEvent).clientX : (event as MouseEvent).x) + document.body.scrollLeft + document.documentElement.scrollLeft;
         }
         if (this.showHideElements(this.documentHelper.selection)) {
@@ -678,7 +670,7 @@ export class ContextMenu {
      * @param {MouseEvent} event 
      * @private
      */
-    /* tslint:disable:no-any */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     public processSuggestions(allSuggestions: any, splittedSuggestion: string[], event: MouseEvent | TouchEvent): void {
         this.spellContextItems = this.constructContextmenu(allSuggestions, splittedSuggestion);
         this.addCustomMenu(this.spellContextItems);
@@ -693,7 +685,7 @@ export class ContextMenu {
      * Method to add inline menu
      * @private 
      */
-    /* tslint:disable:no-any */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     public constructContextmenu(allSuggestion: any[], splittedSuggestion: any): any[] {
         let contextMenuItems: any[] = this.customItems.length > 0 ? this.customItems.slice() : [];
         // classList(this.noSuggestion,['e-disabled'],[]);
@@ -701,7 +693,6 @@ export class ContextMenu {
             contextMenuItems.push({ text: 'no suggestions', id: CONTEXTMENU_NO_SUGGESTION, classList: ['e-focused'], iconCss: '' });
         } else {
             for (let i: number = 0; i < allSuggestion.length; i++) {
-                // tslint:disable-next-line:max-line-length
                 contextMenuItems.push({ text: allSuggestion[i], id: CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS + allSuggestion[i], iconCss: '' });
             }
         }
@@ -710,19 +701,16 @@ export class ContextMenu {
             contextMenuItems.push({ text: 'More Suggestion', items: splittedSuggestion });
             contextMenuItems.push({ separator: true, id: '_contextmenu_moreSuggestion_separator' });
         } else {
-            // tslint:disable-next-line:max-line-length
             contextMenuItems.push({ text: 'Add To Dictionary ', id: '_contextmenu_otherSuggestions_spellcheck_Add To Dictionary', iconCss: '' });
         }
         contextMenuItems.push({ text: 'Ignore Once', id: '_contextmenu_otherSuggestions_spellcheck_Ignore Once', iconCss: '' });
         contextMenuItems.push({ text: 'Ignore All', id: '_contextmenu_otherSuggestions_spellcheck_Ignore All', iconCss: '' });
         contextMenuItems.push({ separator: true, id: '_contextmenu_change_separator' });
-        // tslint:disable-next-line:max-line-length
         contextMenuItems.push({ text: this.locale.getConstant('Spelling'), id: CONTEXTMENU_SPELLING_DIALOG, iconCss: 'e-icons e-de-spellcheck', items: [] });
         contextMenuItems.push({ separator: true, id: '_contextmenu_spelling_separator' });
         return contextMenuItems;
     }
 
-    // tslint:disable-next-line:max-func-body-length
     private showHideElements(selection: Selection): boolean {
         if (isNullOrUndefined(selection)) {
             return false;
@@ -820,7 +808,6 @@ export class ContextMenu {
         let isSelectionEmpty: boolean = selection.isEmpty;
         classList(cut, isSelectionEmpty ? ['e-disabled'] : [], !isSelectionEmpty ? ['e-disabled'] : []);
         classList(copy, isSelectionEmpty ? ['e-disabled'] : [], !isSelectionEmpty ? ['e-disabled'] : []);
-        // tslint:disable-next-line:max-line-length
         let isHideComment: boolean = this.documentHelper.owner.isReadOnlyMode || this.documentHelper.owner.enableHeaderAndFooter || !this.documentHelper.owner.enableComment;
         addComment.style.display = isHideComment ? 'none' : 'block';
         (addComment.previousSibling as HTMLElement).style.display = isHideComment ? 'none' : 'block';
@@ -919,7 +906,6 @@ export class ContextMenu {
             (removeHyperlink.nextSibling as HTMLElement).style.display = 'none';
         }
         if (this.documentHelper.selection.hasRevisions()) {
-            // tslint:disable-next-line:max-line-length
             (acceptChange.previousSibling as HTMLElement).style.display = this.documentHelper.owner.enableHeaderAndFooter ? 'none' : 'block';
             acceptChange.style.display = 'block';
             rejectChange.style.display = 'block';

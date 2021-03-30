@@ -7,6 +7,7 @@ export interface RowDropSettingsModel {
 
     /**
      * Defines the ID of droppable component on which row drop should occur.
+     *
      * @default null
      */
     targetID?: string;

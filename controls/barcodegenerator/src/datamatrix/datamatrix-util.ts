@@ -51,6 +51,7 @@ export class DataMatrix {
 
     private actualRows: number;
 
+    // eslint-disable-next-line
     /** @private */
     public set XDimension(value: number) {
         this.mXDimension = value;
@@ -63,8 +64,8 @@ export class DataMatrix {
 
 
     private GetData(): number[] {
-        let givenString: string = this.value;
-        let asciiValue: number[] = [];
+        const givenString: string = this.value;
+        const asciiValue: number[] = [];
         for (let i: number = 0; i < givenString.length; i++) {
             asciiValue.push(givenString.charCodeAt(i));
         }
@@ -105,8 +106,8 @@ export class DataMatrix {
 
 
     private ComputeBase256Codeword(val: number, index: number): number {
-        let num: number = ((149 * (index + 1)) % 255) + 1;
-        let num2: number = val + num;
+        const num: number = ((149 * (index + 1)) % 255) + 1;
+        const num2: number = val + num;
 
         if (num2 <= 255) { return num2; }
 
@@ -152,7 +153,7 @@ export class DataMatrix {
 
 
     private DataMatrixEncoder(dataCodeword: number[]): number[] {
-        let result: number[] = dataCodeword;
+        const result: number[] = dataCodeword;
         let index: number = 0;
         for (let i: number = 0; i < dataCodeword.length; i++) {
             //checks the codeword is digit or not.
@@ -163,7 +164,7 @@ export class DataMatrix {
                     prevIndex = index - 1;
                 }
 
-                let prevValue: number = (result[prevIndex] - 1);
+                const prevValue: number = (result[prevIndex] - 1);
 
                 let priorValue: number = 0;
                 if (i !== 0 && index !== 1) {
@@ -171,7 +172,7 @@ export class DataMatrix {
                     priorValue = result[prevIndex - 1];
                 }
                 //Check the prevValue is digit or non convertable value
-                //if it is true ,then combine the 2 digits 
+                //if it is true ,then combine the 2 digits
                 if (priorValue !== 235 && prevValue >= 48 && prevValue <= 57) {
                     result[prevIndex] = (10 * (prevValue - 0) + (dataCodeword[i] - 0) + 130);
 
@@ -195,9 +196,11 @@ export class DataMatrix {
     private PrepareDataCodeword(dataCodeword: number[]): number[] | string {
         if (this.encodingValue === 'Auto' || this.encodingValue === 'ASCIINumeric') {
             let number: boolean = true;
-            let extended: boolean = false;
-            let num: number = 0;
-            let data: number[] = dataCodeword;
+            // eslint-disable-next-line
+            const extended: boolean = false;
+            // eslint-disable-next-line
+            const num: number = 0;
+            const data: number[] = dataCodeword;
             let encoding: string = 'ASCII';
             for (let i: number = 0; i < data.length; i++) {
                 if ((data[i] < 48) || (data[i] > 57)) {
@@ -214,15 +217,15 @@ export class DataMatrix {
         }
         let result: number[] = [];
         switch (this.encodingValue) {
-            case 'ASCII':
-                result = this.DataMatrixEncoder(dataCodeword);
-                break;
-            case 'ASCIINumeric':
-                result = this.DataMatrixNumericEncoder(dataCodeword);
-                break;
-            case 'Base256':
-                result = this.DataMatrixBaseEncoder(dataCodeword);
-                break;
+        case 'ASCII':
+            result = this.DataMatrixEncoder(dataCodeword);
+            break;
+        case 'ASCIINumeric':
+            result = this.DataMatrixNumericEncoder(dataCodeword);
+            break;
+        case 'Base256':
+            result = this.DataMatrixBaseEncoder(dataCodeword);
+            break;
         }
         return result;
     }
@@ -233,7 +236,7 @@ export class DataMatrix {
         verticalDataRegion: number, dataCodewords: number, correctionCodewords: number,
         interleavedBlock: number, interleavedDataBlock: number):
         PdfDataMatrixSymbolAttribute {
-        let mSymbolAttribute: PdfDataMatrixSymbolAttribute = {
+        const mSymbolAttribute: PdfDataMatrixSymbolAttribute = {
             SymbolRow: symbolRow,
             SymbolColumn: symbolColumn,
             HorizontalDataRegion: horizontalDataRegion,
@@ -249,7 +252,7 @@ export class DataMatrix {
 
 
     private getmSymbolAttributes(): PdfDataMatrixSymbolAttribute[] {
-        let getmSymbolAttributeValue: PdfDataMatrixSymbolAttribute[] = [];
+        const getmSymbolAttributeValue: PdfDataMatrixSymbolAttribute[] = [];
         getmSymbolAttributeValue.push(this.PdfDataMatrixSymbolAttribute(10, 10, 1, 1, 3, 5, 1, 3));
         getmSymbolAttributeValue.push(this.PdfDataMatrixSymbolAttribute(12, 12, 1, 1, 5, 7, 1, 5));
         getmSymbolAttributeValue.push(this.PdfDataMatrixSymbolAttribute(14, 14, 1, 1, 8, 10, 1, 8));
@@ -288,7 +291,7 @@ export class DataMatrix {
 
     private PadCodewords(dataCWLength: number, temp: number[], codeword: number[]): number[] {
         let l: number = temp.length;
-        let ms: number[] = [];
+        const ms: number[] = [];
         for (let i: number = 0; i < l; i++) {
             ms.push(temp[i]);
         }
@@ -319,9 +322,16 @@ export class DataMatrix {
         mALog = this.CreateLogArrays(false);
         return mALog[(mLog[a] + mLog[b]) % 255];
     }
+
     /**
-     * Validate the given input to check whether the input is valid one or not
+     *  Validate the given input to check whether the input is valid one or not.\
+     *
+     * @returns {boolean | string}  Validate the given input to check whether the input is valid one or not .
+     * @param {HTMLElement} char - Provide the canvas element .
+     * @param {HTMLElement} characters - Provide the canvas element .
+     * @private
      */
+    // eslint-disable-next-line
     private validateInput(char: string, characters: string): boolean | string {
         return char;
     }
@@ -335,7 +345,7 @@ export class DataMatrix {
         if (!this.size) {
             mSymbolAttributes = this.getmSymbolAttributes();
             for (let i: number = 0; i < mSymbolAttributes.length; i++) {
-                let attr: PdfDataMatrixSymbolAttribute = mSymbolAttributes[i];
+                const attr: PdfDataMatrixSymbolAttribute = mSymbolAttributes[i];
                 if (attr.DataCodewords >= dataLength) {
                     this.mSymbolAttribute = attr;
                     break;
@@ -354,19 +364,21 @@ export class DataMatrix {
             return (this.validateInput('Data cannot be encoded as barcode', undefined) as string);
 
         } else if (this.mSymbolAttribute.DataCodewords < dataLength) {
-            let r: string = this.mSymbolAttribute.SymbolRow.toString();
-            let c: string = this.mSymbolAttribute.SymbolColumn.toString();
+            // eslint-disable-next-line
+            const r: string = this.mSymbolAttribute.SymbolRow.toString();
+            // eslint-disable-next-line
+            const c: string = this.mSymbolAttribute.SymbolColumn.toString();
             return 'Data too long for {0}x{1} barcode.';
         }
-        let k: number = this.mSymbolAttribute.CorrectionCodewords;
+        const k: number = this.mSymbolAttribute.CorrectionCodewords;
         let ctArray: number[] = [];
         ctArray = this.create1DMatrixArray(k + this.mSymbolAttribute.DataCodewords, ctArray);
-        let step: number = this.mSymbolAttribute.InterleavedBlock;
-        let symbolDataWords: number = this.mSymbolAttribute.DataCodewords;
-        let blockErrorWords: number = this.mSymbolAttribute.CorrectionCodewords / step;
-        let total: number = symbolDataWords + blockErrorWords * step;
-        let mrsPolynomial: number[] = this.CreateRSPolynomial(step, this.mSymbolAttribute);
-        let mBlockLength: number = 68;
+        const step: number = this.mSymbolAttribute.InterleavedBlock;
+        const symbolDataWords: number = this.mSymbolAttribute.DataCodewords;
+        const blockErrorWords: number = this.mSymbolAttribute.CorrectionCodewords / step;
+        const total: number = symbolDataWords + blockErrorWords * step;
+        const mrsPolynomial: number[] = this.CreateRSPolynomial(step, this.mSymbolAttribute);
+        const mBlockLength: number = 68;
         let b: number[] = [];
         b = this.create1DMatrixArray(mBlockLength, b);
         for (let block: number = 0; block < step; block++) {
@@ -374,7 +386,7 @@ export class DataMatrix {
                 b[bI] = 0;
             }
             for (let i: number = block; i < symbolDataWords; i += step) {
-                let val: number = this.EccSum(b[blockErrorWords - 1], (this.encodedCodeword[i] as number));
+                const val: number = this.EccSum(b[blockErrorWords - 1], (this.encodedCodeword[i] as number));
                 for (let j: number = blockErrorWords - 1; j > 0; j--) {
                     b[j] = this.EccSum(b[j - 1], this.EccProduct(mrsPolynomial[j], val));
                 }
@@ -397,7 +409,7 @@ export class DataMatrix {
             }
         }
         if (ctArray.length > k) {
-            let tmp: number[] = ctArray;
+            const tmp: number[] = ctArray;
             ctArray = [];
             ctArray = this.create1DMatrixArray(k, ctArray);
             let z: number = 0;
@@ -410,8 +422,8 @@ export class DataMatrix {
     }
 
     private CreateLogArrays(value: boolean): number[] {
-        let mLog: number[] = Array(256);
-        let maLog: number[] = Array(256);
+        const mLog: number[] = Array(256);
+        const maLog: number[] = Array(256);
 
         mLog[0] = -255;
         maLog[0] = 1;
@@ -452,9 +464,9 @@ export class DataMatrix {
 
 
     private CreateRSPolynomial(step: number, mSymbolAttribute: PdfDataMatrixSymbolAttribute): number[] {
-        let mBlockLength: number = 69;
-        let mrsPolynomial: number[] = Array(mBlockLength);
-        let blockErrorWords: number = mSymbolAttribute.CorrectionCodewords / step;
+        const mBlockLength: number = 69;
+        const mrsPolynomial: number[] = Array(mBlockLength);
+        const blockErrorWords: number = mSymbolAttribute.CorrectionCodewords / step;
         for (let i: number = 0; i < mrsPolynomial.length; i++) {
             mrsPolynomial[i] = 0x01;
         }
@@ -479,12 +491,12 @@ export class DataMatrix {
         if (isNaN((this.encodedCodeword[0] as number))) {
             return this.encodedCodeword;
         }
-        let correctCodeword: string | number[] = this.ComputeErrorCorrection();
+        const correctCodeword: string | number[] = this.ComputeErrorCorrection();
         if ((isNaN(correctCodeword[0] as number))) {
             return correctCodeword as string;
         }
         this.encodedCodeword = (this.encodedCodeword as number[]);
-        let finalCodeword: number[] = Array(this.encodedCodeword.length + (correctCodeword as number[]).length);
+        const finalCodeword: number[] = Array(this.encodedCodeword.length + (correctCodeword as number[]).length);
         this.copyArray(finalCodeword, 0, this.encodedCodeword);
         this.copyArray(finalCodeword, this.encodedCodeword.length, (correctCodeword as number[]));
         return finalCodeword;
@@ -535,16 +547,16 @@ export class DataMatrix {
         this.ecc200placementbit(array, NR, NC, NR - 1, 0, p, 7);
         this.ecc200placementbit(array, NR, NC, NR - 1, 1, p, 6);
         this.ecc200placementbit(array, NR, NC, NR - 1, 2, p, 5);
-        let value: number = 4;
+        const value: number = 4;
         this.ecc200placementbit(array, NR, NC, 0, NC - 2, p, value);
         this.ecc200placementbit(array, NR, NC, 0, NC - 1, p, 3);
-        let value1: number = 2;
+        const value1: number = 2;
         this.ecc200placementbit(array, NR, NC, 1, NC - 1, p, value1);
         this.ecc200placementbit(array, NR, NC, 2, NC - 1, p, 1);
         this.ecc200placementbit(array, NR, NC, 3, NC - 1, p, 0);
     }
     private ecc200placementcornerB(array: number[], NR: number, NC: number, p: number): void {
-        let value: number = 7;
+        const value: number = 7;
         this.ecc200placementbit(array, NR, NC, NR - 3, 0, p, value);
         this.ecc200placementbit(array, NR, NC, NR - 2, 0, p, 6);
         this.ecc200placementbit(array, NR, NC, NR - 1, 0, p, 5);
@@ -635,9 +647,9 @@ export class DataMatrix {
     private AddQuiteZone(tempArray2: number[][]): void {
         this.actualRows = this.getActualRows();
         this.actualColumns = this.getActualColumns();
-        let w: number = this.actualRows;
-        let h: number = this.actualColumns;
-        let quietZone: number = QuietZone.All - 1;
+        const w: number = this.actualRows;
+        const h: number = this.actualColumns;
+        const quietZone: number = QuietZone.All - 1;
         this.mDataMatrixArray = this.create2DMartixArray(w, h, this.mDataMatrixArray);
         // Top quietzone.
         for (let i: number = 0; i < h; i++) {
@@ -666,7 +678,7 @@ export class DataMatrix {
         canvas: HTMLCanvasElement, options: BaseAttributes[])
         : void {
         // render image for the datamtrix generator
-        let barcodeRenderer: BarcodeRenderer = this.getInstance(canvas.id);
+        const barcodeRenderer: BarcodeRenderer = this.getInstance(canvas.id);
         for (let i: number = 0; i < options.length; i++) {
             barcodeRenderer.renderRectElement(canvas as HTMLCanvasElement, options[i]);
         }
@@ -677,16 +689,16 @@ export class DataMatrix {
     private CreateMatrix(codeword: number[]): void {
         let x: number;
         let y: number;
-        let NC: number;
-        let NR: number;
-        let places: number[];
-        let W: number = this.mSymbolAttribute.SymbolColumn;
-        let H: number = this.mSymbolAttribute.SymbolRow;
-        let FW: number = W / this.mSymbolAttribute.HorizontalDataRegion;
-        let FH: number = H / this.mSymbolAttribute.VerticalDataRegion;
-        NC = W - 2 * (W / FW);
-        NR = H - 2 * (H / FH);
-        places = Array(NC * NR);
+        // let NC: number;
+        // let NR: number;
+        // const places: number[];
+        const W: number = this.mSymbolAttribute.SymbolColumn;
+        const H: number = this.mSymbolAttribute.SymbolRow;
+        const FW: number = W / this.mSymbolAttribute.HorizontalDataRegion;
+        const FH: number = H / this.mSymbolAttribute.VerticalDataRegion;
+        const NC: number = W - 2 * (W / FW);
+        const NR: number = H - 2 * (H / FH);
+        const places: number[] = Array(NC * NR);
         this.ecc200placement(places, NR, NC);
         let matrix: number[] = [];
         matrix = this.create1DMatrixArray(W * H, matrix);
@@ -704,15 +716,15 @@ export class DataMatrix {
         }
         for (let y: number = 0; y < NR; y++) {
             for (let x: number = 0; x < NC; x++) {
-                let v: number = places[(NR - y - 1) * NC + x];
+                const v: number = places[(NR - y - 1) * NC + x];
                 if (v === 1 || v > 7 && (codeword[(v >> 3) - 1] & (1 << (v & 7))) !== 0) {
                     matrix[(1 + Math.floor(y) + 2 * Math.floor(Math.floor(y) / Math.floor(FH - 2))) * Math.floor(W) +
                         1 + Math.floor(x) + 2 * Math.floor(Math.floor(x) / Math.floor(FW - 2))] = 1;
                 }
             }
         }
-        let w: number = this.mSymbolAttribute.SymbolColumn;
-        let h: number = this.mSymbolAttribute.SymbolRow;
+        const w: number = this.mSymbolAttribute.SymbolColumn;
+        const h: number = this.mSymbolAttribute.SymbolRow;
         let tempArray: number[][] = [];
         tempArray = this.create2DMartixArray(w, h, tempArray);
         for (let x1: number = 0; x1 < w; x1++) {
@@ -748,7 +760,12 @@ export class DataMatrix {
     }
 
 
-    /** @private */
+    /**
+     * Build the datamatrix.\
+     *
+     * @returns {number[] | string} Build the datamatrix .
+     * @private
+     */
     public BuildDataMatrix(): number[] | string {
         let codeword: number[] | string = [];
         codeword = (this.PrepareCodeword(this.GetData()));
@@ -763,7 +780,7 @@ export class DataMatrix {
 
 
     private drawText(canvas: HTMLCanvasElement, options: BaseAttributes): void {
-        let barcodeRenderer: BarcodeRenderer = this.getInstance(canvas.id);
+        const barcodeRenderer: BarcodeRenderer = this.getInstance(canvas.id);
         barcodeRenderer.renderTextElement(canvas as HTMLCanvasElement, options);
     }
 
@@ -771,8 +788,8 @@ export class DataMatrix {
 
 
     private getInstance(id: string): BarcodeRenderer {
-        let barCode: HTMLElement = document.getElementById(id);
-        let barcodeRenderer: BarcodeRenderer = new BarcodeRenderer(barCode.id, this.isSvgMode);
+        const barCode: HTMLElement = document.getElementById(id);
+        const barcodeRenderer: BarcodeRenderer = new BarcodeRenderer(barCode.id, this.isSvgMode);
         return barcodeRenderer;
     }
 
@@ -782,9 +799,9 @@ export class DataMatrix {
         canvas: HTMLCanvasElement, x: number, y: number, width: number,
         height: number, scaleValue: number, foreColor: string):
         BaseAttributes {
-        let displayText: DisplayTextModel = this.displayText;
+        const displayText: DisplayTextModel = this.displayText;
         createMeasureElements();
-        let textOptions: BaseAttributes = getBaseAttributes(width, height, x, y, 'black');
+        const textOptions: BaseAttributes = getBaseAttributes(width, height, x, y, 'black');
         textOptions.string = (displayText.text ? displayText.text : this.value);
         textOptions.fontStyle = displayText.font;
         textOptions.color = foreColor;
@@ -794,7 +811,7 @@ export class DataMatrix {
         if (!this.isSvgMode) {
             textSize = { width: textSize.width * scaleValue, height: textSize.height * scaleValue };
         }
-        let textHeight: number = (textSize.height / 2) + (this.isSvgMode ? 2 : 2 * 1.5);
+        const textHeight: number = (textSize.height / 2) + (this.isSvgMode ? 2 : 2 * 1.5);
         textOptions.height = textHeight;
         if (width > textSize.width) {
             if (this.displayText.alignment === 'Center') {
@@ -839,26 +856,32 @@ export class DataMatrix {
     }
 
     private getDrawableSize(margin: MarginModel, actualWidth: number, actualHeight: number): Rect | number {
-        let barcodeSize: number = (actualWidth >= actualHeight) ? actualHeight : actualWidth;
+        const barcodeSize: number = (actualWidth >= actualHeight) ? actualHeight : actualWidth;
         return barcodeSize;
-    };
+    }
 
-    /** @private */
+    /**
+     * Draw the barcode SVG.\
+     *
+     * @returns {void} Draw the barcode SVG .
+     *  @param {HTMLElement} canvas - Provide the canvas element .
+     * @private
+     */
     public draw(canvas: HTMLElement):
-        void {
-        let scaleValue: number = 1.5;
-        let isSvg: boolean = this.isSvgMode;
-        let isSquareMatrix: boolean = this.size < 25;
+    void {
+        const scaleValue: number = 1.5;
+        const isSvg: boolean = this.isSvgMode;
+        const isSquareMatrix: boolean = this.size < 25;
         let dimension: number = this.mDataMatrixArray.length;
-        let width: number = (this.width as number);
-        let height: number = (this.height as number);
+        const width: number = (this.width as number);
+        const height: number = (this.height as number);
         let dimensionX: number;
         let dimensionY: number;
-        let leftValue: number = this.margin.left;
-        let rightValue: number = this.margin.right;
-        let topValue: number = this.margin.top;
-        let bottomVal: number = this.margin.bottom;
-        let actualWidth: number = width - ((isSvg ? leftValue : leftValue * scaleValue) + (isSvg ? rightValue : rightValue * scaleValue));
+        const leftValue: number = this.margin.left;
+        const rightValue: number = this.margin.right;
+        const topValue: number = this.margin.top;
+        const bottomVal: number = this.margin.bottom;
+        const actualWidth: number = width - ((isSvg ? leftValue : leftValue * scaleValue) + (isSvg ? rightValue : rightValue * scaleValue));
         let actualHeight: number = height - ((isSvg ? topValue : topValue * scaleValue) + (isSvg ? bottomVal : bottomVal * scaleValue));
         let size: number = (this.getDrawableSize(this.margin, actualWidth, actualHeight) as number);
         size = (actualWidth >= actualHeight) ? actualHeight : actualWidth;
@@ -866,7 +889,7 @@ export class DataMatrix {
         let y: number = (actualHeight - size) / 2;
         y += isSvg ? this.margin.top : this.margin.top * scaleValue;
         x += isSvg ? this.margin.left : this.margin.left * scaleValue;
-        let textBounds: BaseAttributes = this.drawDisplayText(
+        const textBounds: BaseAttributes = this.drawDisplayText(
             canvas as HTMLCanvasElement, x, y, size, actualHeight, scaleValue, this.foreColor);
         actualHeight -= (textBounds.height);
         if (this.displayText.margin.bottom > 0) {
@@ -893,9 +916,9 @@ export class DataMatrix {
 
         dimension = size / this.mDataMatrixArray.length;
 
-        let w: number = this.actualRows; let h: number = this.actualColumns;
+        const w: number = this.actualRows; const h: number = this.actualColumns;
         let option: BaseAttributes;
-        let options: BaseAttributes[] = [];
+        const options: BaseAttributes[] = [];
         for (let i: number = 0; i < w; i++) {
             for (let j: number = 0; j < h; j++) {
                 let color: string;

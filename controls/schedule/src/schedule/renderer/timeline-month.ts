@@ -1,5 +1,5 @@
 import { EventHandler, createElement, formatUnit } from '@syncfusion/ej2-base';
-import { TdData, NotifyEventArgs } from '../base/interface';
+import { TdData } from '../base/interface';
 import { Schedule } from '../base/schedule';
 import { Month } from './month';
 import { TimelineEvent } from '../event-renderer/timeline-view';
@@ -15,21 +15,16 @@ export class TimelineMonth extends Month {
     public viewClass: string = 'e-timeline-month-view';
     public isInverseTableSelect: boolean = true;
 
-    /**
-     * Constructor for timeline month view
-     */
     constructor(parent: Schedule) {
         super(parent);
     }
-    /**
-     * Get module name.
-     */
+
     protected getModuleName(): string {
         return 'timelineMonth';
     }
 
-    public onDataReady(args: NotifyEventArgs): void {
-        let appointment: TimelineEvent = new TimelineEvent(this.parent, 'day');
+    public onDataReady(): void {
+        const appointment: TimelineEvent = new TimelineEvent(this.parent, 'day');
         appointment.renderAppointments();
         this.parent.notify(event.eventsLoaded, {});
     }
@@ -51,9 +46,9 @@ export class TimelineMonth extends Month {
     }
 
     public getDateSlots(renderDates: Date[], workDays: number[]): TdData[] {
-        let dateSlots: TdData[] = [];
-        for (let col of renderDates) {
-            let classList: string[] = [cls.HEADER_CELLS_CLASS];
+        const dateSlots: TdData[] = [];
+        for (const col of renderDates) {
+            const classList: string[] = [cls.HEADER_CELLS_CLASS];
             if (this.isCurrentDate(col)) {
                 classList.push(cls.CURRENT_DAY_CLASS);
             }
@@ -69,15 +64,15 @@ export class TimelineMonth extends Month {
     }
 
     public renderContent(): void {
-        let contentTr: Element = createElement('tr');
+        const contentTr: Element = createElement('tr');
         if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
-            let resTd: Element = createElement('td');
+            const resTd: Element = createElement('td');
             resTd.appendChild(this.parent.resourceBase.createResourceColumn());
             contentTr.appendChild(resTd);
         }
-        let contentTd: Element = createElement('td');
+        const contentTd: Element = createElement('td');
         this.element.querySelector('tbody').appendChild(contentTr);
-        let wrap: HTMLElement = createElement('div', { className: cls.CONTENT_WRAP_CLASS });
+        const wrap: HTMLElement = createElement('div', { className: cls.CONTENT_WRAP_CLASS });
         wrap.appendChild(this.renderContentArea());
         wrap.appendChild(this.createEventTable(this.getRowCount()));
         this.collapseRows(wrap);
@@ -97,18 +92,18 @@ export class TimelineMonth extends Month {
     }
 
     public getContentSlots(): TdData[][] {
-        let slotDatas: TdData[][] = [];
+        const slotDatas: TdData[][] = [];
         for (let row: number = 0; row < this.getRowCount(); row++) {
-            for (let data of this.colLevels[this.colLevels.length - 1]) {
+            for (const data of this.colLevels[this.colLevels.length - 1]) {
                 data.className = [cls.WORK_CELLS_CLASS];
                 if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
-                    let resLevel: TdData = this.parent.resourceBase.renderedResources[row];
+                    const resLevel: TdData = this.parent.resourceBase.renderedResources[row];
                     data.workDays = (resLevel.resourceData[resLevel.resource.workDaysField] as number[]) || this.parent.workDays;
                     data.className = data.className.concat(resLevel.className);
                     data.groupIndex = resLevel.groupIndex;
                     data.groupOrder = resLevel.groupOrder;
                 }
-                let slotData: TdData = {
+                const slotData: TdData = {
                     date: new Date(+data.date), colSpan: data.colSpan, groupIndex: data.groupIndex, workDays: data.workDays,
                     type: 'monthCells', className: data.className
                 };
@@ -132,28 +127,29 @@ export class TimelineMonth extends Month {
     }
 
     public getMonthStart(currentDate: Date): Date {
-        let monthStart: Date = this.parent.calendarUtil.firstDateOfMonth(util.resetTime(currentDate));
+        const monthStart: Date = this.parent.calendarUtil.firstDateOfMonth(util.resetTime(currentDate));
         return new Date(monthStart.getFullYear(), monthStart.getMonth(), monthStart.getDate());
     }
 
     public getMonthEnd(currentDate: Date): Date {
-        let monthStart: Date = this.parent.calendarUtil.firstDateOfMonth(util.resetTime(currentDate));
+        const monthStart: Date = this.parent.calendarUtil.firstDateOfMonth(util.resetTime(currentDate));
         return this.parent.calendarUtil.lastDateOfMonth(util.addMonths(new Date(+monthStart), this.parent.activeViewOptions.interval - 1));
     }
 
     public generateColumnLevels(): TdData[][] {
         let colLevels: TdData[][] = [];
-        let level: TdData[] = this.getDateSlots(this.renderDates, this.parent.activeViewOptions.workDays);
+        const level: TdData[] = this.getDateSlots(this.renderDates, this.parent.activeViewOptions.workDays);
         colLevels.push(level);
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             this.parent.resourceBase.generateResourceLevels(level, !this.parent.uiStateValues.isGroupAdaptive);
         }
-        let hourSlots: TdData[] = [];
+        const hourSlots: TdData[] = [];
         if (this.parent.activeViewOptions.headerRows.length > 0) {
-            let renderGn: TimelineHeaderRow = new TimelineHeaderRow(this.parent, this.renderDates);
+            const renderGn: TimelineHeaderRow = new TimelineHeaderRow(this.parent, this.renderDates);
             colLevels = renderGn.generateColumnLevels(level, hourSlots);
         }
         this.colLevels = colLevels;
         return colLevels;
     }
+
 }

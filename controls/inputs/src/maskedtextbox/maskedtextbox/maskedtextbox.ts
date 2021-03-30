@@ -1,5 +1,5 @@
 import { Component, Event, Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, formatUnit, getValue, setValue, attributes, addClass, detach, createElement } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, formatUnit, getValue, setValue, addClass, detach } from '@syncfusion/ej2-base';
 import { removeClass , Browser, closest, isBlazor} from '@syncfusion/ej2-base';
 import { Input, InputObject, FloatLabelType } from '../../input/input';
 import { regularExpressions, createMask, applyMask, wireEvents, unwireEvents, unstrippedValue, strippedValue } from '../base/index';
@@ -55,10 +55,12 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     private maskOptions: MaskedTextBoxModel;
     private isAngular: boolean = false;
     private preventChange: boolean = false;
+    private isClicked: boolean = false;
 
     /**
      * Gets or sets the CSS classes to root element of the MaskedTextBox which helps to customize the
      * complete UI styles for the MaskedTextBox component.
+     *
      * @default null
      */
     @Property(null)
@@ -66,6 +68,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
 
     /**
      * Sets the width of the MaskedTextBox.
+     *
      * @default null
      */
     @Property(null)
@@ -75,6 +78,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      * Gets or sets the string shown as a hint/placeholder when the MaskedTextBox is empty.
      * It acts as a label and floats above the MaskedTextBox based on the
      * <b><a href="#floatlabeltype" target="_blank">floatLabelType.</a></b>
+     *
      * @default null
      */
     @Property(null)
@@ -87,6 +91,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      * * Never - The floating label will not be enable when the placeholder is available.
      * * Always - The floating label always floats above the MaskedTextBox.
      * * Auto - The floating label floats above the MaskedTextBox after focusing it or when enters the value in it.
+     *
      * @default Never
      */
     @Property('Never')
@@ -96,13 +101,15 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
      * {% codeBlock src='maskedtextbox/htmlAttributes/index.md' %}{% endcodeBlock %}
+     *
      * @default {}
      */
     @Property({})
-    public htmlAttributes: { [key: string]: string; };
+    public htmlAttributes: { [key: string]: string };
 
     /**
      * Sets a value that enables or disables the MaskedTextBox component.
+     *
      * @default true
      */
     @Property(true)
@@ -110,6 +117,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
 
     /**
      * Specifies the boolean value whether the Masked TextBox allows the user to change the text.
+     *
      * @default false
      */
     @Property(false)
@@ -117,6 +125,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
 
     /**
      * Specifies whether to show or hide the clear icon.
+     *
      * @default false
      */
     @Property(false)
@@ -125,6 +134,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     /**
      * Sets a value that enables or disables the persisting state of the MaskedTextBox after reloading the page.
      * If enabled, the 'value' state will be persisted.
+     *
      * @default false
      */
     @Property(false)
@@ -140,6 +150,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      * [mask](../../maskedtextbox/mask-configuration/#standard-mask-elements).
      * * If the mask value is empty, the MaskedTextBox will behave as an input element with text type.
      * {% codeBlock src='maskedtextbox/mask/index.md' %}{% endcodeBlock %}
+     *
      * @default null
      */
     @Property(null)
@@ -150,6 +161,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      * The symbol used to show input positions in the MaskedTextBox.
      * For more information on prompt-character, refer to
      * [prompt-character](../../maskedtextbox/mask-configuration/#prompt-character).
+     *
      * @default '_'
      */
     @Property('_')
@@ -159,6 +171,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      * Gets or sets the value of the MaskedTextBox. It is a raw value of the MaskedTextBox excluding literals
      * and prompt characters. By using `getMaskedValue` property, you can get the value of MaskedTextBox with the masked format.
      * {% codeBlock src='maskedtextbox/value/index.md' %}{% endcodeBlock %}
+     *
      * @default null
      */
     @Property(null)
@@ -172,6 +185,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      * > For more information on customCharacters, refer to
      * [customCharacters](../../maskedtextbox/mask-configuration/#custom-characters).
      * {% codeBlock src='maskedtextbox/customCharacters/index.md' %}{% endcodeBlock %}
+     *
      * @default null
      */
     @Property(null)
@@ -179,7 +193,8 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
 
     /**
      * Triggers when the MaskedTextBox component is created.
-     * @event
+     *
+     * @event created
      * @blazorProperty 'Created'
      */
     @Event()
@@ -187,7 +202,8 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
 
     /**
      * Triggers when the MaskedTextBox component is destroyed.
-     * @event
+     *
+     * @event destroyed
      * @blazorProperty 'Destroyed'
      */
     @Event()
@@ -195,32 +211,42 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
 
     /**
      * Triggers when the value of the MaskedTextBox changes.
-     * @event
+     *
+     * @event change
      * @blazorProperty 'ValueChange'
      */
     @Event()
     public change: EmitType <MaskChangeEventArgs>;
     /**
      * Triggers when the MaskedTextBox got focus in.
-     * @event
+     *
+     * @event focus
      */
     @Event()
     public focus: EmitType<MaskFocusEventArgs>;
     /**
      * Triggers when the MaskedTextBox got focus out.
-     * @event
+     *
+     * @event blur
      */
     @Event()
     public blur: EmitType<MaskBlurEventArgs>;
 
-
-    constructor(options?: MaskedTextBoxModel, element?: string | HTMLElement | HTMLInputElement) {
+    /**
+     *
+     * @param {MaskedTextBoxModel} options - Specifies the MaskedTextBox model.
+     * @param {string | HTMLElement | HTMLInputElement} element - Specifies the element to render as component.
+     * @private
+     */
+    public constructor(options?: MaskedTextBoxModel, element?: string | HTMLElement | HTMLInputElement) {
         super(options, <HTMLInputElement | string>element);
         this.maskOptions = options;
     }
 
     /**
-     * Gets the component name
+     * Gets the component name.
+     *
+     * @returns {string} Returns the component name.
      * @private
      */
     protected getModuleName(): string {
@@ -229,6 +255,8 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
 
     /**
      * Initializes the event handler
+     *
+     * @returns {void}
      * @private
      */
     protected preRender(): void {
@@ -246,14 +274,14 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
         this.isFocus = false;
         this.isInitial = false;
         this.isIosInvalid = false;
-        let ejInstance: Object = getValue('ej2_instances', this.element);
+        const ejInstance: Object = getValue('ej2_instances', this.element);
         this.cloneElement = <HTMLElement>this.element.cloneNode(true);
         removeClass([this.cloneElement], [CONTROL, COMPONENT, 'e-lib']);
         this.angularTagName = null;
         this.formElement = <HTMLFormElement>closest(this.element, 'form');
         if (this.element.tagName === 'EJS-MASKEDTEXTBOX') {
             this.angularTagName = this.element.tagName;
-            let input: HTMLElement = this.createElement('input');
+            const input: HTMLElement = this.createElement('input');
             for (let i: number = 0; i < this.element.attributes.length; i++) {
                 input.setAttribute(this.element.attributes[i].nodeName, this.element.attributes[i].nodeValue);
                 input.innerHTML = this.element.innerHTML;
@@ -273,23 +301,26 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             this.initInputValue = this.value;
         }
     }
-
+    /* eslint-disable valid-jsdoc, jsdoc/require-returns-description */
     /**
      * Gets the properties to be maintained in the persisted state.
-     * @return {string}
+     *
+     * @returns {string}
      */
     public getPersistData(): string {
-        let keyEntity: string[] = ['value'];
+        const keyEntity: string[] = ['value'];
         return this.addOnPersist(keyEntity);
     }
-
+    /* eslint-enable valid-jsdoc, jsdoc/require-returns-description */
     /**
      * Initializes the component rendering.
+     *
+     * @returns {void}
      * @private
      */
     public render(): void {
         if (this.element.tagName.toLowerCase() === 'input') {
-            let checkBlazor: boolean = isBlazor() && this.isServerRendered;
+            const checkBlazor: boolean = isBlazor() && this.isServerRendered;
             if (this.floatLabelType === 'Never') {
                 addClass([this.element], INPUT);
             }
@@ -300,7 +331,9 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             }
             this.isInitial = true;
             if (checkBlazor && Browser.isIE === true) {
-               setTimeout(() => { this.resetMaskedTextBox(); });
+                setTimeout(() => {
+                    this.resetMaskedTextBox();
+                });
             } else {
                 this.resetMaskedTextBox();
             }
@@ -322,7 +355,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     }
     private updateHTMLAttrToElement(): void {
         if ( !isNullOrUndefined(this.htmlAttributes)) {
-            for (let key of Object.keys(this.htmlAttributes)) {
+            for (const key of Object.keys(this.htmlAttributes)) {
                 if (wrapperAttr.indexOf(key) < 0 ) {
                     this.element.setAttribute(key, this.htmlAttributes[key]);
                 }
@@ -341,17 +374,17 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     }
     private updateHTMLAttrToWrapper(): void {
         if ( !isNullOrUndefined(this.htmlAttributes)) {
-            for (let key of Object.keys(this.htmlAttributes)) {
+            for (const key of Object.keys(this.htmlAttributes)) {
                 if (wrapperAttr.indexOf(key) > -1 ) {
                     if (key === 'class') {
-                        let updatedClassValues : string = (this.htmlAttributes[key].replace(/\s+/g, ' ')).trim();
+                        const updatedClassValues : string = (this.htmlAttributes[key].replace(/\s+/g, ' ')).trim();
                         if (updatedClassValues !== '') {
                             addClass([this.inputObj.container], updatedClassValues.split(' '));
                         }
                     } else if (key === 'style') {
                         let maskStyle: string = this.inputObj.container.getAttribute(key);
                         maskStyle = !isNullOrUndefined(maskStyle) ? (maskStyle + this.htmlAttributes[key]) :
-                        this.htmlAttributes[key];
+                            this.htmlAttributes[key];
                         this.inputObj.container.setAttribute(key, maskStyle);
                     } else {
                         this.inputObj.container.setAttribute(key, this.htmlAttributes[key]);
@@ -376,7 +409,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
         if (this.mask === null || this.mask === '' && this.value !== undefined ) {
             setElementValue.call(this, this.value);
         }
-        let val: string = strippedValue.call(this, this.element);
+        const val: string = strippedValue.call(this, this.element);
         this.prevValue = val;
         this.value = val;
         if (!this.isInitial) {
@@ -391,7 +424,9 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             if (this.element.value === this.promptMask && setVal && this.floatLabelType !== 'Always') {
                 setElementValue.call(this, '');
             }
-            if (this.floatLabelType === 'Never') { maskInputBlurHandler.call(this); }
+            if (this.floatLabelType === 'Never') {
+                maskInputBlurHandler.call(this);
+            }
         }
     }
 
@@ -401,46 +436,46 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                 this.inputObj.container.style.width = formatUnit(width);
                 this.element.style.width = formatUnit(width);
             } else if (typeof width === 'string') {
-                let elementWidth: string = (width.match(/px|%|em/)) ? <string>(width) : <string>(formatUnit(width));
+                const elementWidth: string = (width.match(/px|%|em/)) ? <string>(width) : <string>(formatUnit(width));
                 this.inputObj.container.style.width = elementWidth;
                 this.element.style.width = elementWidth;
             }
         }
     }
     private checkHtmlAttributes(isDynamic: boolean): void {
-        let attributes: string[] = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes)
+        const attributes: string[] = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes)
             : ['placeholder', 'disabled', 'value', 'readonly'];
-        for (let key of attributes) {
+        for (const key of attributes) {
             if (!isNullOrUndefined(this.element.getAttribute(key))) {
                 switch (key) {
-                    case 'placeholder':
-                        // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['placeholder'] === undefined)) || isDynamic) {
-                            this.setProperties({placeholder: this.element.placeholder}, !isDynamic);
-                        }
-                        break;
-                    case 'disabled':
-                        // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['enabled'] === undefined)) || isDynamic) {
-                            let enabled: boolean = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
+                case 'placeholder':
+                    // eslint-disable-next-line @typescript-eslint/dot-notation
+                    if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['placeholder'] === undefined)) || isDynamic) {
+                        this.setProperties({placeholder: this.element.placeholder}, !isDynamic);
+                    }
+                    break;
+                case 'disabled':
+                    // eslint-disable-next-line @typescript-eslint/dot-notation
+                    if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['enabled'] === undefined)) || isDynamic) {
+                        const enabled: boolean = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
                                 this.element.getAttribute(key) === 'true' ? false : true;
-                            this.setProperties({ enabled: enabled }, !isDynamic);
-                        }
-                        break;
-                    case 'value':
-                        // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['value'] === undefined)) || isDynamic) {
-                            this.setProperties({value: this.element.value}, !isDynamic);
-                        }
-                        break;
-                    case 'readonly':
-                        // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['readonly'] === undefined)) || isDynamic) {
-                            let readonly: boolean = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
+                        this.setProperties({ enabled: enabled }, !isDynamic);
+                    }
+                    break;
+                case 'value':
+                    // eslint-disable-next-line @typescript-eslint/dot-notation
+                    if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['value'] === undefined)) || isDynamic) {
+                        this.setProperties({value: this.element.value}, !isDynamic);
+                    }
+                    break;
+                case 'readonly':
+                    // eslint-disable-next-line @typescript-eslint/dot-notation
+                    if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['readonly'] === undefined)) || isDynamic) {
+                        const readonly: boolean = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
                                 || this.element.getAttribute(key) === 'true' ? true : false;
-                            this.setProperties({readonly: readonly}, !isDynamic);
-                        }
-                        break;
+                        this.setProperties({readonly: readonly}, !isDynamic);
+                    }
+                    break;
                 }
             }
         }
@@ -470,75 +505,81 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
 
     /**
      * Calls internally if any of the property value is changed.
+     *
+     * @param {MaskedTextBoxModel} newProp - Returns the dynamic property value of the component.
+     * @param {MaskedTextBoxModel} oldProp - Returns the previous property value of the component.
+     * @returns {void}
      * @hidden
      */
     public onPropertyChanged(newProp: MaskedTextBoxModel, oldProp: MaskedTextBoxModel): void {
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'value':
-                    setMaskValue.call(this, this.value);
-                    if (this.placeholder) {
-                        this.setMaskPlaceholder(false, false);
-                    }
-                    break;
-                case 'placeholder':
-                    this.setMaskPlaceholder(true, true);
-                    break;
-                case 'width':
-                    this.setWidth(newProp.width);
-                    break;
-                case 'cssClass':
-                    this.updateCssClass(newProp.cssClass, oldProp.cssClass);
-                    break;
-                case 'enabled':
-                    Input.setEnabled(newProp.enabled, this.element, this.floatLabelType, this.inputObj.container);
-                    break;
-                case 'readonly':
-                    Input.setReadonly(newProp.readonly, this.element);
-                    break;
-                case 'enableRtl':
-                    Input.setEnableRtl(newProp.enableRtl, [this.inputObj.container]);
-                    break;
-                case 'customCharacters':
-                    this.customCharacters = newProp.customCharacters;
-                    this.resetMaskedTextBox();
-                    break;
-                case 'showClearButton':
-                    Input.setClearButton(newProp.showClearButton, this.element, this.inputObj, undefined, this.createElement);
-                    bindClearEvent.call(this);
-                    break;
-                case 'floatLabelType':
-                    this.floatLabelType = newProp.floatLabelType;
-                    Input.removeFloating(this.inputObj);
-                    Input.addFloating(this.element, this.floatLabelType, this.placeholder, this.createElement);
-                    break;
-                case 'htmlAttributes':
-                    this.updateHTMLAttrToElement();
-                    this.updateHTMLAttrToWrapper();
-                    this.checkHtmlAttributes(true);
-                    break;
-                case 'mask':
-                    let strippedValue: string = this.value;
-                    this.mask = newProp.mask;
-                    this.updateValue(strippedValue);
-                    break;
-                case 'promptChar':
-                    if (newProp.promptChar.length > 1) {
-                        newProp.promptChar = newProp.promptChar[0];
-                    }
-                    if (newProp.promptChar) {
-                        this.promptChar = newProp.promptChar;
-                    } else {
-                        this.promptChar = '_';
-                    }
-                    let value: string = this.element.value.replace(new RegExp('[' + oldProp.promptChar + ']', 'g'), this.promptChar);
-                    if (this.promptMask === this.element.value) {
-                        value = this.promptMask.replace(new RegExp('[' + oldProp.promptChar + ']', 'g'), this.promptChar);
-                    }
-                    this.promptMask = this.promptMask.replace(new RegExp('[' + oldProp.promptChar + ']', 'g'), this.promptChar);
-                    this.undoCollec = this.redoCollec = [];
-                    setElementValue.call(this, value);
-                    break;
+            case 'value':
+                setMaskValue.call(this, this.value);
+                if (this.placeholder) {
+                    this.setMaskPlaceholder(false, false);
+                }
+                break;
+            case 'placeholder':
+                this.setMaskPlaceholder(true, true);
+                break;
+            case 'width':
+                this.setWidth(newProp.width);
+                break;
+            case 'cssClass':
+                this.updateCssClass(newProp.cssClass, oldProp.cssClass);
+                break;
+            case 'enabled':
+                Input.setEnabled(newProp.enabled, this.element, this.floatLabelType, this.inputObj.container);
+                break;
+            case 'readonly':
+                Input.setReadonly(newProp.readonly, this.element);
+                break;
+            case 'enableRtl':
+                Input.setEnableRtl(newProp.enableRtl, [this.inputObj.container]);
+                break;
+            case 'customCharacters':
+                this.customCharacters = newProp.customCharacters;
+                this.resetMaskedTextBox();
+                break;
+            case 'showClearButton':
+                Input.setClearButton(newProp.showClearButton, this.element, this.inputObj, undefined, this.createElement);
+                bindClearEvent.call(this);
+                break;
+            case 'floatLabelType':
+                this.floatLabelType = newProp.floatLabelType;
+                Input.removeFloating(this.inputObj);
+                Input.addFloating(this.element, this.floatLabelType, this.placeholder, this.createElement);
+                break;
+            case 'htmlAttributes':
+                this.updateHTMLAttrToElement();
+                this.updateHTMLAttrToWrapper();
+                this.checkHtmlAttributes(true);
+                break;
+            case 'mask': {
+                const strippedValue: string = this.value;
+                this.mask = newProp.mask;
+                this.updateValue(strippedValue);
+            }
+                break;
+            case 'promptChar': {
+                if (newProp.promptChar.length > 1) {
+                    newProp.promptChar = newProp.promptChar[0];
+                }
+                if (newProp.promptChar) {
+                    this.promptChar = newProp.promptChar;
+                } else {
+                    this.promptChar = '_';
+                }
+                let value: string = this.element.value.replace(new RegExp('[' + oldProp.promptChar + ']', 'g'), this.promptChar);
+                if (this.promptMask === this.element.value) {
+                    value = this.promptMask.replace(new RegExp('[' + oldProp.promptChar + ']', 'g'), this.promptChar);
+                }
+                this.promptMask = this.promptMask.replace(new RegExp('[' + oldProp.promptChar + ']', 'g'), this.promptChar);
+                this.undoCollec = this.redoCollec = [];
+                setElementValue.call(this, value);
+                break;
+            }
             }
         }
         this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
@@ -548,19 +589,21 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
         this.resetMaskedTextBox();
         setMaskValue.call(this, strippedVal);
     }
-
+    /* eslint-disable valid-jsdoc, jsdoc/require-returns-description */
     /**
      * Gets the value of the MaskedTextBox with the masked format.
      * By using `value` property, you can get the raw value of maskedtextbox without literals and prompt characters.
-     * @return {string}
+     *
+     * @returns {string}
      */
     public getMaskedValue(): string {
         return unstrippedValue.call(this, this.element);
     }
-
+    /* eslint-enable valid-jsdoc, jsdoc/require-returns-description */
     /**
      * Sets the focus to widget for interaction.
-     * @returns void
+     *
+     * @returns {void}
      */
     public focusIn(): void {
         if (document.activeElement !== this.element && this.enabled) {
@@ -570,8 +613,9 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     }
 
     /**
-     * Remove the focus from widget, if the widget is in focus state. 
-     * @returns void
+     * Remove the focus from widget, if the widget is in focus state.
+     *
+     * @returns {void}
      */
     public focusOut(): void {
         if (document.activeElement === this.element && this.enabled) {
@@ -583,12 +627,13 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     /**
      * Removes the component from the DOM and detaches all its related event handlers.
      * Also it maintains the initial input element from the DOM.
+     *
      * @method destroy
-     * @return {void}
+     * @returns {void}
      */
     public destroy(): void {
         unwireEvents.call(this);
-        let attrArray: string[] = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
+        const attrArray: string[] = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
             'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
             'spellcheck', 'aria-autocomplete',
             'aria-live', 'aria-valuenow', 'aria-invalid'];
@@ -604,44 +649,43 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
 
 export interface MaskChangeEventArgs extends BaseEventArgs {
     /** Returns the value of the MaskedTextBox with the masked format. */
-    maskedValue?: string;
+    maskedValue?: string
     /** Returns the raw value of MaskedTextBox by removing the prompt characters and literals(non-mask elements)
      * which have been set in the mask of MaskedTextBox.
      */
-    value?: string;
+    value?: string
     /** Returns true when the value of MaskedTextBox is changed by user interaction. Otherwise, it returns false.
+     *
      * @private
      */
-    isInteraction?: boolean;
+    isInteraction?: boolean
     /** Returns true when the value of MaskedTextBox is changed by user interaction. Otherwise, it returns false */
-    isInteracted?: boolean;
+    isInteracted?: boolean
     /** Returns the original event arguments. */
-    event?: Event;
+    event?: Event
 }
 
 export interface MaskFocusEventArgs extends BaseEventArgs {
     /** Returns selectionStart value as zero by default */
-    selectionStart?: number;
+    selectionStart?: number
     /** Returns selectionEnd value depends on mask length */
-    selectionEnd?: number;
+    selectionEnd?: number
     /** Returns the original event arguments. */
-    event?: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent;
+    event?: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent
     /** Returns the value of MaskedTextBox. */
-    value?: string;
+    value?: string
     /** Returns the maskedValue of MaskedTextBox. */
-    maskedValue?: string;
+    maskedValue?: string
     /** Returns the MaskedTextBox container element */
-    container?: HTMLElement;
+    container?: HTMLElement
 }
 export interface MaskBlurEventArgs extends BaseEventArgs {
     /** Returns the original event arguments. */
-    event?: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent;
+    event?: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent
     /** Returns the value of MaskedTextBox. */
-    value?: string;
+    value?: string
     /** Returns the maskedValue of MaskedTextBox. */
-    maskedValue?: string;
+    maskedValue?: string
     /** Returns the MaskedTextBox container element */
-    container?: HTMLElement;
+    container?: HTMLElement
 }
-
-

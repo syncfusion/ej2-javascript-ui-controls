@@ -1,6 +1,9 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
 import { ChartLocation, StackValues, getPoint, withInRange } from '../../common/utils/helper';
 import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
-import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
 import { LineBase } from './line-base';
 import { AnimationModel } from '../../common/model/base-model';
@@ -14,17 +17,17 @@ export class StackingStepAreaSeries extends LineBase {
 
     /**
      * Render the Stacking step area series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
-    // tslint:disable-next-line:max-func-body-length
     public render(stackSeries: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
         let currentPointLocation: ChartLocation; let secondPoint: ChartLocation;
         let start: ChartLocation = null; let direction: string = '';
-        let stackedvalue: StackValues = stackSeries.stackedValues;
-        let visiblePoint: Points[] = this.enableComplexProperty(stackSeries);
-        let origin: number = Math.max(stackSeries.yAxis.visibleRange.min, stackedvalue.startValues[0]);
-        let pointsLength: number = visiblePoint.length; let options: PathOption; let point: Points;
+        const stackedvalue: StackValues = stackSeries.stackedValues;
+        const visiblePoint: Points[] = this.enableComplexProperty(stackSeries);
+        const origin: number = Math.max(stackSeries.yAxis.visibleRange.min, stackedvalue.startValues[0]);
+        const pointsLength: number = visiblePoint.length; let options: PathOption; let point: Points;
         let point2: ChartLocation; let point3: ChartLocation; let xValue: number; let lineLength: number;
         let prevPoint: Points = null; let validIndex: number; let startPoint: number = 0;
         let pointIndex: number;
@@ -55,7 +58,7 @@ export class StackingStepAreaSeries extends LineBase {
                     direction += 'L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ';
                 }
                 visiblePoint[i].symbolLocations.push(
-                    getPoint(visiblePoint[i].xValue, stackedvalue.endValues[pointIndex], xAxis, yAxis, isInverted, stackSeries));
+                    getPoint(visiblePoint[i].xValue, stackedvalue.endValues[pointIndex], xAxis, yAxis, isInverted));
                 visiblePoint[i].regions.push(new Rect(
                     visiblePoint[i].symbolLocations[0].x - stackSeries.marker.width,
                     visiblePoint[i].symbolLocations[0].y - stackSeries.marker.height,
@@ -72,15 +75,15 @@ export class StackingStepAreaSeries extends LineBase {
                     if (j !== 0 && (stackedvalue.startValues[pointIndex] < stackedvalue.startValues[previousPointIndex] ||
                         stackedvalue.startValues[pointIndex] > stackedvalue.startValues[previousPointIndex])) {
                         currentPointLocation = getPoint(
-                            visiblePoint[pointIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
+                            visiblePoint[pointIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted);
                         direction = direction.concat('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
                         currentPointLocation = getPoint(
                             visiblePoint[pointIndex].xValue, stackedvalue.startValues[previousPointIndex],
-                            xAxis, yAxis, isInverted, stackSeries
+                            xAxis, yAxis, isInverted
                         );
                     } else {
                         currentPointLocation = getPoint(
-                            visiblePoint[pointIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
+                            visiblePoint[pointIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted);
                     }
                     direction = direction.concat('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
                 }
@@ -105,7 +108,7 @@ export class StackingStepAreaSeries extends LineBase {
                 let index: number;
                 if (visiblePoint[j].visible) {
                     pointIndex = visiblePoint[j].index;
-                    point2 = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
+                    point2 = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted);
                     direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
                 }
                 if (j !== 0 && !visiblePoint[j - 1].visible) {
@@ -115,7 +118,7 @@ export class StackingStepAreaSeries extends LineBase {
                     validIndex = index ? index : j - 1;
                     pointIndex = index ? visiblePoint[index].index : visiblePoint[j - 1].index;
                     point3 = getPoint(
-                        visiblePoint[validIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
+                        visiblePoint[validIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted);
                     direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point3.y) + ' ');
                 }
             }
@@ -129,19 +132,21 @@ export class StackingStepAreaSeries extends LineBase {
     }
     /**
      * Animates the series.
+     *
      * @param  {Series} series - Defines the series to animate.
-     * @return {void}
+     * @returns {void}
      */
     public doAnimation(series: Series): void {
-        let option: AnimationModel = series.animation;
+        const option: AnimationModel = series.animation;
         this.doLinearAnimation(series, option);
     }
     /**
      * To destroy the stacking step area.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(chart: Chart): void {
+    public destroy(): void {
         /**
          * Destroy method calling here
          */
@@ -157,8 +162,9 @@ export class StackingStepAreaSeries extends LineBase {
     }
     /**
      * To get the nearest visible point
-     * @param points 
-     * @param j 
+     *
+     * @param {Points[]} points points
+     * @param {number} j index
      */
     private getNextVisiblePointIndex(points: Points[], j: number): number {
         let index: number;

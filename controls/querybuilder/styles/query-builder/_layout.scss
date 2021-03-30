@@ -322,6 +322,11 @@
           width: $qrybldr-width;
         }
 
+        & .e-rule-sub-filter {
+          padding: $rulecon-padding;
+          width: $qrybldr-width;
+        }
+
         & .e-rule-value .e-control-wrapper.e-numeric:not(:first-child),
         & .e-rule-value .e-control-wrapper.e-date-wrapper:not(:first-child),
         & .e-rule-value .e-control-wrapper.e-input-group:not(:first-child) {
@@ -363,6 +368,7 @@
       }
 
       & .e-horizontal-mode .e-rule-filter,
+      & .e-horizontal-mode .e-rule-sub-filter,
       & .e-horizontal-mode .e-rule-operator,
       & .e-horizontal-mode .e-rule-value,
       & .e-horizontal-mode .e-rule-value-delete {
@@ -410,6 +416,10 @@
     }
 
     &.e-device .e-group-body .e-rule-container .e-rule-filter {
+      padding: $device-rulecon-padding;
+    }
+
+    &.e-device .e-group-body .e-rule-container .e-rule-sub-filter {
       padding: $device-rulecon-padding;
     }
 
@@ -465,24 +475,26 @@
       padding: $qrybldr-summary-padding;
       resize: none;
       width: $qrybldr-summary-text-width;
-        }
+    }
 
     & .e-summary-btndiv {
       padding: $qrybldr-summary-btn-padding;
       text-align: $qrybldr-rulelist-grcon-float;
-        }
-
+    }
 
     & .e-rule-list .e-rule-container.e-vertical-mode,
     &.e-device .e-rule-list .e-rule-container {
+      padding-right: $device-rule-padding-right;
+
       & .e-rule-filter,
+      & .e-rule-sub-filter,
       & .e-operator,
       & .e-value,
       & .e-rule-value-delete  {
         padding: $device-rule-padding;
       }
     }
-}
+  }
 
   .e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-inner.e-tip-top,
   .e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-outer.e-tip-top {
@@ -585,6 +597,7 @@
         }
 
       & .e-horizontal-mode .e-rule-filter,
+      & .e-horizontal-mode .e-rule-sub-filter,
       & .e-horizontal-mode .e-rule-operator,
       & .e-horizontal-mode .e-rule-value,
       & .e-horizontal-mode .e-rule-value-delete {
@@ -634,6 +647,7 @@
 
   #{if(&, '&', '*')}.e-bigger .e-group-body .e-rule-container {
     & .e-rule-filter,
+    & .e-rule-sub-filter,
     & .e-operator,
     & .e-value {
       padding: $bigger-rulecon-padding;

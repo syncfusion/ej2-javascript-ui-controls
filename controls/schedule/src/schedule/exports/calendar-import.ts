@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { EventFieldsMapping } from '../base/interface';
@@ -9,16 +10,16 @@ import { getRecurrenceStringFromDate } from '../../recurrence-editor/date-genera
 
 export class ICalendarImport {
     private parent: Schedule;
-    private allDay: Boolean = false;
+    private allDay: boolean = false;
     constructor(parent: Schedule) {
         this.parent = parent;
     }
 
     public initializeCalendarImport(fileContent: Blob | string): void {
         if (fileContent && fileContent instanceof Blob) {
-            let fileReader: FileReader = new FileReader();
-            fileReader.onload = (event: Event) => {
-                let iCalString: string = fileReader.result as string;
+            const fileReader: FileReader = new FileReader();
+            fileReader.onload = () => {
+                const iCalString: string = fileReader.result as string;
                 this.iCalendarParser(iCalString);
             };
             fileReader.readAsText(fileContent as Blob, 'UTF-8');
@@ -28,13 +29,13 @@ export class ICalendarImport {
     }
 
     private iCalendarParser(iCalString: string): void {
-        let fields: EventFieldsMapping = this.parent.eventFields;
-        let events: Object[] = [];
-        let uId: string = 'UID';
-        let calArray: string[] = iCalString.replace(new RegExp('\\r', 'g'), '').split('\n');
+        const fields: EventFieldsMapping = this.parent.eventFields;
+        const events: Record<string, any>[] = [];
+        const uId: string = 'UID';
+        const calArray: string[] = iCalString.replace(new RegExp('\\r', 'g'), '').split('\n');
         let isEvent: boolean = false;
-        let curEvent: { [key: string]: Object } = null;
-        let id: number | string = this.parent.eventBase.getEventMaxID();
+        let curEvent: Record<string, any>;
+        const id: number | string = this.parent.eventBase.getEventMaxID();
         calArray.forEach((element: string) => {
             let index: number;
             let type: string;
@@ -71,51 +72,52 @@ export class ICalendarImport {
                     curEvent[fields.recurrenceID] = value;
                 } else {
                     switch (type) {
-                        case 'BEGIN':
-                            break;
-                        case 'UID':
-                            curEvent[uId] = value;
-                            curEvent[fields.id] = (id as number)++;
-                            break;
-                        case 'SUMMARY':
-                            curEvent[fields.subject] = value;
-                            break;
-                        case 'LOCATION':
-                            curEvent[fields.location] = value;
-                            break;
-                        case 'DESCRIPTION':
-                            curEvent[fields.description] = value;
-                            break;
-                        case 'RRULE':
-                            curEvent[fields.recurrenceRule] = value;
-                            break;
-                        default:
-                            curEvent[type] = value;
+                    case 'BEGIN':
+                        break;
+                    case 'UID':
+                        curEvent[uId] = value;
+                        curEvent[fields.id] = (id as number)++;
+                        break;
+                    case 'SUMMARY':
+                        curEvent[fields.subject] = value;
+                        break;
+                    case 'LOCATION':
+                        curEvent[fields.location] = value;
+                        break;
+                    case 'DESCRIPTION':
+                        curEvent[fields.description] = value;
+                        break;
+                    case 'RRULE':
+                        curEvent[fields.recurrenceRule] = value;
+                        break;
+                    default:
+                        curEvent[type] = value;
                     }
                 }
             }
         });
-        let app: Object[] = <Object[]>extend([], events, null, true);
+        const app: Record<string, any>[] = <Record<string, any>[]>extend([], events, null, true);
         this.parent.addEvent(this.processOccurrence(app));
     }
 
-    private processOccurrence(app: Object[]): Object[] {
-        let appoint: Object[] = [];
-        let uId: string = 'UID';
-        let fields: EventFieldsMapping = this.parent.eventFields;
-        app.forEach((eventObj: { [key: string]: Object }) => {
-            let parentObj: { [key: string]: Object };
+    private processOccurrence(app: Record<string, any>[]): Record<string, any>[] {
+        const appoint: Record<string, any>[] = [];
+        const uId: string = 'UID';
+        const fields: EventFieldsMapping = this.parent.eventFields;
+        app.forEach((eventObj: Record<string, any>) => {
+            let parentObj: Record<string, any>;
             let id: string;
+            // eslint-disable-next-line no-prototype-builtins
             if (!eventObj.hasOwnProperty(fields.recurrenceID)) {
                 parentObj = eventObj;
                 id = eventObj[fields.id] as string;
             }
-            let data: { [key: string]: Object }[] = app.filter((data: { [key: string]: Object }) =>
-                data.UID === eventObj[uId]) as { [key: string]: Object }[];
+            const data: Record<string, any>[] = app.filter((data: Record<string, any>) => data.UID === eventObj[uId]);
             if (data.length > 1 && isNullOrUndefined(eventObj[fields.recurrenceID])) {
                 for (let i: number = 0; i < data.length; i++) {
+                    // eslint-disable-next-line no-prototype-builtins
                     if (data[i].hasOwnProperty(fields.recurrenceID)) {
-                        let exdate: string = data[i][fields.recurrenceID] as string;
+                        const exdate: string = data[i][fields.recurrenceID] as string;
                         data[i][fields.recurrenceID] = id;
                         data[i][fields.recurrenceException] = null;
                         parentObj[fields.recurrenceException] = (isNullOrUndefined(parentObj[fields.recurrenceException])) ?
@@ -124,6 +126,7 @@ export class ICalendarImport {
                     }
                 }
                 appoint.push(parentObj);
+                // eslint-disable-next-line no-prototype-builtins
             } else if (!eventObj.hasOwnProperty(fields.recurrenceID)) {
                 appoint.push(eventObj);
             }
@@ -133,21 +136,17 @@ export class ICalendarImport {
 
     private getDateString(value: string): string {
         value = value || '';
-        return (value
-            .replace(/\\\,/g, ',')
-            .replace(/\\\;/g, ';')
-            .replace(/\\[nN]/g, '\n')
-            .replace(/\\\\/g, '\\')
-        );
+        // eslint-disable-next-line no-useless-escape
+        return (value.replace(/\\\,/g, ',').replace(/\\\;/g, ';').replace(/\\[nN]/g, '\n').replace(/\\\\/g, '\\'));
     }
 
     private dateParsing(element: string): Date {
-        let expression: RegExp = /([^':;]+)((?:;(?:[^':;]+)(?:=(?:(?:'[^']*')|(?:[^':;]+))))*):(.*)/;
-        let split: string[] = (element.match(expression)).slice(1);
-        let value: string = split[split.length - 1];
+        const expression: RegExp = /([^':;]+)((?:;(?:[^':;]+)(?:=(?:(?:'[^']*')|(?:[^':;]+))))*):(.*)/;
+        const split: string[] = (element.match(expression)).slice(1);
+        const value: string = split[split.length - 1];
         let newDate: Date = new Date(this.getDateString(value));
         if (element && element.indexOf('VALUE=DATE') > -1) {
-            let data: string[] = /^(\d{4})(\d{2})(\d{2})$/.exec(value);
+            const data: string[] = /^(\d{4})(\d{2})(\d{2})$/.exec(value);
             if (data !== null) {
                 newDate = new Date(parseInt(data[1], 10), parseInt(data[2], 10) - 1, parseInt(data[3], 10));
             }
@@ -155,7 +154,7 @@ export class ICalendarImport {
                 this.allDay = true;
             }
         }
-        let data: string[] = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z)?$/.exec(value);
+        const data: string[] = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z)?$/.exec(value);
         if (data !== null) {
             if (data[7] === 'Z') {
                 newDate = new Date(Date.UTC(
@@ -180,19 +179,12 @@ export class ICalendarImport {
         return newDate;
     }
 
-    /**
-     * Get module name.
-     */
     protected getModuleName(): string {
         return 'iCalendarImport';
     }
 
-    /**
-     * To destroy the ICalendarImport.
-     * @return {void}
-     * @private
-     */
     public destroy(): void {
         if (this.parent.isDestroyed) { return; }
     }
+
 }

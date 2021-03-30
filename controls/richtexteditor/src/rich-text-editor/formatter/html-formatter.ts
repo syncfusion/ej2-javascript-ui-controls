@@ -7,6 +7,7 @@ import { HtmlToolbarStatus } from '../actions/html-toolbar-status';
 
 /**
  * HTML adapter
+ * 
  * @hidden
  * @deprecated
  */
@@ -17,7 +18,7 @@ export class HTMLFormatter extends Formatter {
     public editorManager: IEditorModel;
     private toolbarUpdate: HtmlToolbarStatus;
 
-    constructor(options?: IHtmlFormatterModel) {
+    public constructor(options?: IHtmlFormatterModel) {
         super();
         this.initialize();
         extend(this, this, options, true);
@@ -30,8 +31,11 @@ export class HTMLFormatter extends Formatter {
     }
     /**
      * Update the formatter of RichTextEditor
-     * @param  {Element} editElement
-     * @param  {Document} doc
+     *
+     * @param  {Element} editElement - specifies the edit element.
+     * @param  {Document} doc - specifies the doucment
+     * @param {number} options - specifies the options
+     * @returns {void}
      * @hidden
      * @deprecated
      */

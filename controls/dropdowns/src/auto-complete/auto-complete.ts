@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='../combo-box/combo-box-model.d.ts'/>
 import { Property, EventHandler, KeyboardEventArgs, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
 import { Event, EmitType, Complex } from '@syncfusion/ej2-base';
@@ -9,16 +10,11 @@ import { highlightSearch, revertHighlightSearch } from '../common/highlight-sear
 import { Search } from '../common/incremental-search';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { FieldSettings, FilteringEventArgs, FilterType } from '../drop-down-base/drop-down-base';
-
-/* tslint:disable */
 import { FloatLabelType, Input } from '@syncfusion/ej2-inputs';
-import { SortOrder } from '@syncfusion/ej2-lists';
 import { DataManager, Query } from '@syncfusion/ej2-data';
-/* tslint:enable */
 
 dropDownListClasses.root = 'e-autocomplete';
 dropDownListClasses.icon = 'e-input-group-icon e-ddl-icon e-search-icon';
-
 
 /**
  * The AutoComplete component provides the matched suggestion list when type into the input,
@@ -41,9 +37,10 @@ export class AutoComplete extends ComboBox {
      * * value - Maps the value column from data table for each list item
      * * iconCss - Maps the icon class column from data table for each list item
      * * groupBy - Group the list items with it's related items by mapping groupBy field
-     * 
+     *
      * {% codeBlock src='autocomplete/fields/index.md' %}{% endcodeBlock %}
      * > For more details about the field mapping refer to [`Data binding`](../../auto-complete/data-binding) documentation.
+     *
      * @default { value: null, iconCss: null, groupBy: null}
      * @deprecated
      */
@@ -53,6 +50,7 @@ export class AutoComplete extends ComboBox {
      * When set to ‘false’, consider the [`case-sensitive`](../../auto-complete/filtering/#case-sensitive-filtering)
      * on performing the search to find suggestions.
      * By default consider the casing.
+     *
      * @default true
      * @deprecated
      */
@@ -60,6 +58,7 @@ export class AutoComplete extends ComboBox {
     public ignoreCase: boolean;
     /**
      * Allows you to either show or hide the popup button on the component.
+     *
      * @default false
      */
     @Property(false)
@@ -67,6 +66,7 @@ export class AutoComplete extends ComboBox {
     /**
      * When set to ‘true’, highlight the searched characters on suggested list items.
      * > For more details about the highlight refer to [`Custom highlight search`](../../auto-complete/how-to/custom-search) documentation.
+     *
      * @default false
      */
     @Property(false)
@@ -74,6 +74,7 @@ export class AutoComplete extends ComboBox {
     /**
      * Supports the [`specified number`](../../auto-complete/filtering#filter-item-count)
      * of list items on the suggestion popup.
+     *
      * @default 20
      * @blazorType int
      */
@@ -82,18 +83,20 @@ export class AutoComplete extends ComboBox {
     /**
      * Allows additional HTML attributes such as title, name, etc., and
      * accepts n number of attributes in a key-value pair format.
-     * 
+     *
      * {% codeBlock src='autocomplete/htmlAttributes/index.md' %}{% endcodeBlock %}
+     *
      * @default {}
      * @deprecated
      */
     @Property({})
-    public htmlAttributes: { [key: string]: string; };
+    public htmlAttributes: { [key: string]: string };
     /**
      * Accepts the external `query`
      * that execute along with data processing.
-     * 
+     *
      * {% codeBlock src='autocomplete/query/index.md' %}{% endcodeBlock %}
+     *
      * @default null
      * @deprecated
      */
@@ -103,44 +106,46 @@ export class AutoComplete extends ComboBox {
      * Allows you to set [`the minimum search character length']
      * (../../auto-complete/filtering#limit-the-minimum-filter-character),
      * the search action will perform after typed minimum characters.
+     *
      * @default 1
      * @blazorType int
      */
     @Property(1)
     public minLength: number;
-    /**   
-     * Determines on which filter type, the component needs to be considered on search action. 
+    /**
+     * Determines on which filter type, the component needs to be considered on search action.
      * The available [`FilterType`](../../auto-complete/filtering/#change-the-filter-type)
-     * and its supported data types are 
-     * 
-     * <table> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * FilterType<br/></td><td colSpan=1 rowSpan=1> 
-     * Description<br/></td><td colSpan=1 rowSpan=1> 
-     * Supported Types<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * StartsWith<br/></td><td colSpan=1 rowSpan=1> 
-     * Checks whether a value begins with the specified value.<br/></td><td colSpan=1 rowSpan=1> 
-     * String<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * EndsWith<br/></td><td colSpan=1 rowSpan=1> 
-     * Checks whether a value ends with specified value.<br/><br/></td><td colSpan=1 rowSpan=1> 
-     * <br/>String<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * Contains<br/></td><td colSpan=1 rowSpan=1> 
-     * Checks whether a value contains with specified value.<br/><br/></td><td colSpan=1 rowSpan=1> 
-     * <br/>String<br/></td></tr> 
-     * </table> 
-     * 
+     * and its supported data types are
+     *
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * FilterType<br/></td><td colSpan=1 rowSpan=1>
+     * Description<br/></td><td colSpan=1 rowSpan=1>
+     * Supported Types<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * StartsWith<br/></td><td colSpan=1 rowSpan=1>
+     * Checks whether a value begins with the specified value.<br/></td><td colSpan=1 rowSpan=1>
+     * String<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * EndsWith<br/></td><td colSpan=1 rowSpan=1>
+     * Checks whether a value ends with specified value.<br/><br/></td><td colSpan=1 rowSpan=1>
+     * <br/>String<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Contains<br/></td><td colSpan=1 rowSpan=1>
+     * Checks whether a value contains with specified value.<br/><br/></td><td colSpan=1 rowSpan=1>
+     * <br/>String<br/></td></tr>
+     * </table>
+     *
      * {% codeBlock src="autocomplete/filter-type-api/index.ts" %}{% endcodeBlock %}
-     * 
+     *
      * {% codeBlock src="autocomplete/filter-type-api/index.html" %}{% endcodeBlock %}
-     * 
+     *
      * The default value set to `Contains`, all the suggestion items which contain typed characters to listed in the suggestion popup.
+     *
      * @default 'Contains'
      * @blazorOverrideType override
      */
@@ -148,18 +153,20 @@ export class AutoComplete extends ComboBox {
     public filterType: FilterType;
     /**
      * Triggers on typing a character in the component.
-     * @event
+     *
+     * @event filtering
      * @blazorProperty 'Filtering'
      */
     @Event()
     public filtering: EmitType<FilteringEventArgs>;
     /**
      * Not applicable to this component.
+     *
      * @default null
      * @private
      * @blazorType int
      * @isBlazorNullableType true
-     * @blazorDefaultValue 
+     * @blazorDefaultValue
      * @deprecated
      */
     @Property(null)
@@ -170,11 +177,11 @@ export class AutoComplete extends ComboBox {
      * * Never: The label will never float in the input when the placeholder is available.
      * * Always: The floating label will always float above the input.
      * * Auto: The floating label will float above the input after focusing or entering a value in the input.
-     * 
+     *
      * {% codeBlock src="autocomplete/float-label-type-api/index.ts" %}{% endcodeBlock %}
-     * 
+     *
      * {% codeBlock src="autocomplete/float-label-type-api/index.html" %}{% endcodeBlock %}
-     * 
+     *
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
@@ -185,6 +192,7 @@ export class AutoComplete extends ComboBox {
     public floatLabelType: FloatLabelType;
     /**
      * Not applicable to this component.
+     *
      * @default null
      * @private
      * @deprecated
@@ -193,6 +201,7 @@ export class AutoComplete extends ComboBox {
     public valueTemplate: string;
     /**
      * Not applicable to this component.
+     *
      * @default null
      * @private
      * @deprecated
@@ -200,7 +209,8 @@ export class AutoComplete extends ComboBox {
     @Property(null)
     public filterBarPlaceholder: string;
     /**
-     * Not applicable to this component. 
+     * Not applicable to this component.
+     *
      * @default false
      * @private
      * @deprecated
@@ -208,7 +218,8 @@ export class AutoComplete extends ComboBox {
     @Property(false)
     public allowFiltering: boolean;
     /**
-     * Not applicable to this component. 
+     * Not applicable to this component.
+     *
      * @default null
      * @private
      * @deprecated
@@ -217,13 +228,19 @@ export class AutoComplete extends ComboBox {
     public text: string;
     /**
      * * Constructor for creating the widget
+     *
+     * @param {AutoCompleteModel} options - Specifies the AutoComplete model.
+     * @param {string | HTMLElement} element - Specifies the element to render as component.
+     * @private
      */
-    constructor(options?: AutoCompleteModel, element?: string | HTMLElement) {
+    public constructor(options?: AutoCompleteModel, element?: string | HTMLElement) {
         super(options, element);
-    };
+    }
     /**
      * Initialize the event handler
+     *
      * @private
+     * @returns {void}
      */
     protected preRender(): void {
         super.preRender();
@@ -231,25 +248,25 @@ export class AutoComplete extends ComboBox {
 
     protected getLocaleName(): string {
         return 'auto-complete';
-    };
+    }
 
     protected getNgDirective(): string {
         return 'EJS-AUTOCOMPLETE';
     }
 
     protected getQuery(query: Query): Query {
-        let filterQuery: Query = query ? query.clone() : this.query ? this.query.clone() : new Query();
-        let filterType: string = (this.queryString === '' && !isNullOrUndefined(this.value)) ? 'equal' : this.filterType;
-        let queryString: string = (this.queryString === '' && !isNullOrUndefined(this.value)) ? this.value as string : this.queryString;
+        const filterQuery: Query = query ? query.clone() : this.query ? this.query.clone() : new Query();
+        const filterType: string = (this.queryString === '' && !isNullOrUndefined(this.value)) ? 'equal' : this.filterType;
+        const queryString: string = (this.queryString === '' && !isNullOrUndefined(this.value)) ? this.value as string : this.queryString;
         if (this.isFiltered) {
             return filterQuery;
         }
         if (this.queryString !== null && this.queryString !== '') {
-            let dataType: string = <string>this.typeOfData(this.dataSource as { [key: string]: Object; }[]).typeof;
+            const dataType: string = <string>this.typeOfData(this.dataSource as { [key: string]: Object }[]).typeof;
             if (!(this.dataSource instanceof DataManager) && dataType === 'string' || dataType === 'number') {
                 filterQuery.where('', filterType, queryString, this.ignoreCase, this.ignoreAccent);
             } else {
-                let mapping: string = !isNullOrUndefined(this.fields.value) ? this.fields.value : '';
+                const mapping: string = !isNullOrUndefined(this.fields.value) ? this.fields.value : '';
                 filterQuery.where(mapping, filterType, queryString, this.ignoreCase, this.ignoreAccent);
             }
         }
@@ -273,7 +290,7 @@ export class AutoComplete extends ComboBox {
             this.beforePopupOpen = (this.isFiltering() && !this.beforePopupOpen) ? !this.beforePopupOpen : this.beforePopupOpen;
             this.queryString = this.filterInput.value;
             if (this.queryString !== '' && (this.queryString.length >= this.minLength)) {
-                // tslint:disable-next-line
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (this as any).interopAdaptor.invokeMethodAsync('OnServerFilter', this.filterInput.value);
             } else {
                 this.hidePopup();
@@ -291,13 +308,15 @@ export class AutoComplete extends ComboBox {
             }
             this.isSelected = false;
             this.activeIndex = null;
-            let eventArgs: { [key: string]: Object } = {
+            const eventArgs: { [key: string]: Object } = {
                 preventDefaultAction: false,
                 text: this.filterInput.value,
                 updateData: (
                     dataSource: { [key: string]: Object }[] | DataManager | string[] | number[], query?: Query,
                     fields?: FieldSettingsModel) => {
-                    if (eventArgs.cancel) { return; }
+                    if (eventArgs.cancel) {
+                        return;
+                    }
                     this.isFiltered = true;
                     this.filterAction(dataSource, query, fields);
                 },
@@ -314,10 +333,11 @@ export class AutoComplete extends ComboBox {
 
     /**
      * To filter the data from given data source by using query
+     *
      * @param  {Object[] | DataManager } dataSource - Set the data source to filter.
      * @param  {Query} query - Specify the query to filter the data.
      * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
-     * @return {void}.
+     * @returns {void}
      * @deprecated
      */
     public filter(
@@ -348,10 +368,11 @@ export class AutoComplete extends ComboBox {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected onActionComplete(ulElement: HTMLElement, list: { [key: string]: Object }[], e?: Object, isUpdated?: boolean): void {
         this.fixedHeaderElement = null;
         super.onActionComplete(ulElement, list, e);
-        let item: Element = this.list.querySelector('.' + dropDownListClasses.li);
+        const item: Element = this.list.querySelector('.' + dropDownListClasses.li);
         if (!isNullOrUndefined(item)) {
             removeClass([item], dropDownListClasses.focus);
         }
@@ -360,8 +381,8 @@ export class AutoComplete extends ComboBox {
 
     private postBackAction(): void {
         if (this.autofill && !isNullOrUndefined(this.liCollections[0]) && this.searchList) {
-            let items: HTMLElement[] = [this.liCollections[0]];
-            let searchItem: { [key: string]: number | Element } = Search(this.inputElement.value, items, 'StartsWith', this.ignoreCase);
+            const items: HTMLElement[] = [this.liCollections[0]];
+            const searchItem: { [key: string]: number | Element } = Search(this.inputElement.value, items, 'StartsWith', this.ignoreCase);
             this.searchList = false;
             if (!isNullOrUndefined(searchItem.item)) {
                 super.setAutoFill(this.liCollections[0], true);
@@ -375,9 +396,11 @@ export class AutoComplete extends ComboBox {
         }
         if (!isNullOrUndefined(e) && e.type === 'keydown' && (e as KeyboardEventArgs).action !== 'enter'
         && (e as KeyboardEventArgs).action !== 'tab' && this.isValidLI(li)) {
-            let value: string | number | boolean = this.getFormattedValue(li.getAttribute('data-value'));
+            const value: string | number | boolean = this.getFormattedValue(li.getAttribute('data-value'));
             this.activeIndex = this.getIndexByValue(value);
-            if (this.isServerBlazor) { this.removeHover(); }
+            if (this.isServerBlazor) {
+                this.removeHover();
+            }
             this.setHoverList(li);
             this.selectedLI = <HTMLElement>li;
             this.setScrollPosition(e as KeyboardEventArgs);
@@ -392,19 +415,21 @@ export class AutoComplete extends ComboBox {
     }
 
     protected listOption(dataSource: { [key: string]: Object }[], fieldsSettings: FieldSettingsModel): FieldSettingsModel {
-        let fields: { [key: string]: Object } = <{ [key: string]: Object }>super.listOption(dataSource, fieldsSettings);
+        const fields: { [key: string]: Object } = <{ [key: string]: Object }>super.listOption(dataSource, fieldsSettings);
         if (isNullOrUndefined(fields.itemCreated)) {
             fields.itemCreated = (e: { [key: string]: HTMLElement }) => {
                 if (this.highlight) {
                     if (this.element.tagName === this.getNgDirective() && this.itemTemplate) {
-                        setTimeout((): void => { highlightSearch(e.item, this.queryString, this.ignoreCase, this.filterType); }, 0);
+                        setTimeout((): void => {
+                            highlightSearch(e.item, this.queryString, this.ignoreCase, this.filterType);
+                        }, 0);
                     } else {
                         highlightSearch(e.item, this.queryString, this.ignoreCase, this.filterType);
                     }
                 }
             };
         } else {
-            let itemCreated: Function = <Function>fields.itemCreated;
+            const itemCreated: Function = <Function>fields.itemCreated;
             fields.itemCreated = (e: { [key: string]: HTMLElement }) => {
                 if (this.highlight) {
                     highlightSearch(e.item, this.queryString, this.ignoreCase, this.filterType);
@@ -413,7 +438,7 @@ export class AutoComplete extends ComboBox {
             };
         }
         return fields;
-    };
+    }
 
     protected isFiltering(): boolean {
         return true;
@@ -432,12 +457,14 @@ export class AutoComplete extends ComboBox {
         return this.showPopupButton;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected isSelectFocusItem(element: Element): boolean {
         return false;
     }
     /**
      * Search the entered text and show it in the suggestion list if available.
-     * @returns void.
+     *
+     * @returns {void}
      * @deprecated
      */
     public showPopup(): void {
@@ -458,7 +485,8 @@ export class AutoComplete extends ComboBox {
     }
     /**
      * Hides the popup if it is in open state.
-     * @returns void.
+     *
+     * @returns {void}
      */
     public hidePopup(): void {
         this.DropDownBaseresetBlazorTemplates(true, false, false, false);
@@ -467,46 +495,51 @@ export class AutoComplete extends ComboBox {
     }
     /**
      * Dynamically change the value of properties.
+     *
+     * @param {AutoCompleteModel} newProp - Returns the dynamic property value of the component.
+     * @param {AutoCompleteModel} oldProp - Returns the previous property value of the component.
      * @private
+     * @returns {void}
      */
     public onPropertyChanged(newProp: AutoCompleteModel, oldProp: AutoCompleteModel): void {
         if (this.getModuleName() === 'autocomplete') {
-            this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp as { [key: string]: string; });
+            this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp as { [key: string]: string });
         }
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'showPopupButton':
-                    if (this.showPopupButton) {
-                        if (!this.isServerBlazor) {
-                            let button: HTMLElement = Input.appendSpan(
-                                dropDownListClasses.icon,
-                                this.inputWrapper.container,
-                                this.createElement);
-                            this.inputWrapper.buttons[0] = button;
-                        } else if (this.inputWrapper && this.inputWrapper.container) {
-                            let button: HTMLElement = this.inputWrapper.container.querySelector('.e-input-group-icon.e-ddl-icon');
-                            this.inputWrapper.buttons[0] = button;
-                        }
-                        if (this.inputWrapper && this.inputWrapper.buttons && this.inputWrapper.buttons[0]) {
-                            EventHandler.add(this.inputWrapper.buttons[0], 'click', this.dropDownClick, this);
-                        }
-                    } else if (!this.isServerBlazor) {
-                        detach(this.inputWrapper.buttons[0]);
-                        this.inputWrapper.buttons[0] = null;
+            case 'showPopupButton':
+                if (this.showPopupButton) {
+                    if (!this.isServerBlazor) {
+                        const button: HTMLElement = Input.appendSpan(
+                            dropDownListClasses.icon,
+                            this.inputWrapper.container,
+                            this.createElement);
+                        this.inputWrapper.buttons[0] = button;
+                    } else if (this.inputWrapper && this.inputWrapper.container) {
+                        const button: HTMLElement = this.inputWrapper.container.querySelector('.e-input-group-icon.e-ddl-icon');
+                        this.inputWrapper.buttons[0] = button;
                     }
-                    break;
-                default:
-                    let atcProps: { [key: string]: Object };
-                    atcProps = this.getPropObject(prop, <{ [key: string]: string; }>newProp, <{ [key: string]: string; }>oldProp);
-                    super.onPropertyChanged(atcProps.newProperty, atcProps.oldProperty);
-                    break;
+                    if (this.inputWrapper && this.inputWrapper.buttons && this.inputWrapper.buttons[0]) {
+                        EventHandler.add(this.inputWrapper.buttons[0], 'click', this.dropDownClick, this);
+                    }
+                } else if (!this.isServerBlazor) {
+                    detach(this.inputWrapper.buttons[0]);
+                    this.inputWrapper.buttons[0] = null;
+                }
+                break;
+            default: {
+                // eslint-disable-next-line max-len
+                const atcProps: { [key: string]: Object } = this.getPropObject(prop, <{ [key: string]: string }>newProp, <{ [key: string]: string }>oldProp);
+                super.onPropertyChanged(atcProps.newProperty, atcProps.oldProperty);
+                break;
+            }
             }
         }
     }
     protected renderHightSearch(): void {
         if (this.highlight) {
             for (let i: number = 0; i < this.liCollections.length; i++) {
-                let isHighlight: HTMLElement = this.ulElement.querySelector('.e-active');
+                const isHighlight: HTMLElement = this.ulElement.querySelector('.e-active');
                 if (!isHighlight) {
                     revertHighlightSearch(this.liCollections[i]);
                     highlightSearch(this.liCollections[i], this.queryString, this.ignoreCase, this.filterType, this.isServerBlazor);
@@ -516,16 +549,20 @@ export class AutoComplete extends ComboBox {
     }
     /**
      * Return the module name of this component.
+     *
      * @private
+     * @returns {string} Return the module name of this component.
      */
     public getModuleName(): string {
         return 'autocomplete';
     }
     /**
      * To initialize the control rendering
+     *
      * @private
+     * @returns {void}
      */
     public render(): void {
         super.render();
-    };
+    }
 }

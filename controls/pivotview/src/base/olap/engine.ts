@@ -2816,12 +2816,15 @@ export class OlapEngine {
         let fields: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('row'));
         for (let field of fields) {
             let isAllMemberAvail: boolean = [].slice.call(field.querySelectorAll('ALL_MEMBER')).length > 0;
+            let dimensionName: string = field.querySelector('DIMENSION_UNIQUE_NAME').textContent;
+            let hierarchyName: string = field.querySelector('HIERARCHY_UNIQUE_NAME').textContent;
+            let isSameDim: boolean = dimensionName === hierarchyName && dimensionName.toLowerCase() !== '[measures]' && hierarchyName.toLowerCase() !== '[measures]';
             hierarchyElements.push({
-                pid: field.querySelector('DIMENSION_UNIQUE_NAME').textContent,
-                id: field.querySelector('HIERARCHY_UNIQUE_NAME').textContent,
+                pid: ((this.isMondrian || isSameDim) ? dimensionName + '~#^Dim' : dimensionName),
+                id: hierarchyName,
                 name: field.querySelector('HIERARCHY_CAPTION').textContent,
                 caption: field.querySelector('HIERARCHY_CAPTION').textContent,
-                tag: field.querySelector('HIERARCHY_UNIQUE_NAME').textContent,
+                tag: hierarchyName,
                 hasAllMember: isAllMemberAvail,
                 allMember: (isAllMemberAvail ? field.querySelectorAll('ALL_MEMBER')[0].textContent : undefined),
                 // aggregateType: this.getAggregateType(field.querySelector('HIERARCHY_UNIQUE_NAME').textContent),
@@ -2924,7 +2927,9 @@ export class OlapEngine {
         let measure: IOlapField = {};
         for (let field of fields) {
             let dimensionName: string = field.querySelector('DIMENSION_UNIQUE_NAME').textContent;
+            let defaultHierarchy: string = field.querySelector('DEFAULT_HIERARCHY').textContent;
             let dimensionCaption: string = field.querySelector('DIMENSION_CAPTION').textContent;
+            let isSameDim: boolean = dimensionName === defaultHierarchy;
             if (dimensionName.toLowerCase().indexOf('[measure') >= 0) {
                 measure = {
                     hasChildren: true,
@@ -2941,7 +2946,7 @@ export class OlapEngine {
                 hierarchyElements.push({
                     hasChildren: true,
                     isSelected: false,
-                    id: (this.isMondrian ? dimensionName + '~#^Dim' : dimensionName),
+                    id: ((this.isMondrian || isSameDim) ? dimensionName + '~#^Dim' : dimensionName),
                     name: dimensionName,
                     caption: dimensionCaption,
                     spriteCssClass: 'e-dimensionCDB-icon' + ' ' + cls.ICON,
@@ -3069,72 +3074,75 @@ export class OlapEngine {
                     curElement.push(item);
                 }
             }
-            if (curElement.length > 0 && (dimensionName !== hierarchyName || this.isMondrian)) {
-                let parentID: string = dimensionName + (this.isMondrian ? '~#^Dim' : '');
-                if (hierarchyFolderName !== '') {
-                    let folderName: string = dimensionName + (this.isMondrian ? '~#^Dim' : '') + '_' + hierarchyFolderName;
-                    let curParentElement: IOlapField[] = [];
-                    for (let item of dimensionElements) {
-                        if (item.tag === folderName && item.pid === parentID) {
-                            curParentElement.push(item);
+            if (curElement.length > 0) {
+                let isSameDim: boolean = dimensionName === hierarchyName && dimensionName.toLowerCase() !== '[measures]' && hierarchyName.toLowerCase() !== '[measures]';
+                if (dimensionName.toLowerCase() !== '[measures]' && hierarchyName.toLowerCase() !== '[measures]') {
+                    let parentID: string = dimensionName + ((this.isMondrian || isSameDim) ? '~#^Dim' : '');
+                    if (hierarchyFolderName !== '') {
+                        let folderName: string = dimensionName + ((this.isMondrian || isSameDim) ? '~#^Dim' : '') + '_' + hierarchyFolderName;
+                        let curParentElement: IOlapField[] = [];
+                        for (let item of dimensionElements) {
+                            if (item.tag === folderName && item.pid === parentID) {
+                                curParentElement.push(item);
+                            }
                         }
+                        if (curParentElement.length === 0) {
+                            let fieldObj: IOlapField = {
+                                hasChildren: true,
+                                isSelected: false,
+                                pid: dimensionName + ((this.isMondrian || isSameDim) ? '~#^Dim' : ''),
+                                id: folderName,
+                                name: hierarchyFolderName,
+                                spriteCssClass: 'e-folderCDB-icon' + ' ' + cls.ICON,
+                                tag: folderName,
+                                caption: hierarchyFolderName,
+                                // aggregateType: this.getAggregateType(hierarchyFolderName),
+                                type: 'string'
+                            };
+                            dimensionElements.push(fieldObj);
+                        }
+                        parentID = folderName;
                     }
-                    if (curParentElement.length === 0) {
-                        let fieldObj: IOlapField = {
-                            hasChildren: true,
-                            isSelected: false,
-                            pid: dimensionName + (this.isMondrian ? '~#^Dim' : ''),
-                            id: folderName,
-                            name: hierarchyFolderName,
-                            spriteCssClass: 'e-folderCDB-icon' + ' ' + cls.ICON,
-                            tag: folderName,
-                            caption: hierarchyFolderName,
-                            // aggregateType: this.getAggregateType(hierarchyFolderName),
-                            type: 'string'
-                        };
-                        dimensionElements.push(fieldObj);
-                    }
-                    parentID = folderName;
+                    let fieldObj: IOlapField = {
+                        hasChildren: (field.querySelector('HIERARCHY_ORIGIN') ? ((field.querySelector('HIERARCHY_ORIGIN').textContent !== '2') && field.querySelector('HIERARCHY_ORIGIN').textContent !== '6') ? true : false : true),
+                        // hasChildren: true,
+                        isSelected: (reportElement.indexOf(hierarchyName) >= 0),
+                        pid: parentID,
+                        id: hierarchyName,
+                        name: field.querySelector('HIERARCHY_CAPTION').textContent,
+                        spriteCssClass: (field.querySelector('HIERARCHY_ORIGIN') ? ((field.querySelector('HIERARCHY_ORIGIN').textContent !== '2') && field.querySelector('HIERARCHY_ORIGIN').textContent !== '6') ? 'e-hierarchyCDB-icon' : 'e-attributeCDB-icon' : 'e-hierarchyCDB-icon') + ' ' + cls.ICON,
+                        hasAllMember: isAllMemberAvail,
+                        allMember: allMember,
+                        tag: hierarchyName,
+                        caption: this.dataFields[hierarchyName] && this.dataFields[hierarchyName].caption ? this.dataFields[hierarchyName].caption : this.mappingFields[hierarchyName] && this.mappingFields[hierarchyName].caption ? this.mappingFields[hierarchyName].caption : field.querySelector('HIERARCHY_CAPTION').textContent,
+                        // aggregateType: this.getAggregateType(hierarchyName),
+                        type: 'string',
+                        filter: [],
+                        dateMember: [],
+                        sort: (this.enableSort ? this.sortObject[hierarchyName] ? this.sortObject[hierarchyName] : 'Ascending' : 'None'),
+                        actualFilter: [],
+                        filterMembers: [],
+                        childMembers: [],
+                        searchMembers: [],
+                        members: {},
+                        currrentMembers: {},
+                        levels: [],
+                        levelCount: 1,
+                        isHierarchy: (field.querySelector('HIERARCHY_ORIGIN') ? ((field.querySelector('HIERARCHY_ORIGIN').textContent !== '2') && field.querySelector('HIERARCHY_ORIGIN').textContent !== '6') ? false : true : false),
+                        isExcelFilter: false,
+                        /* eslint-disable */
+                        allowDragAndDrop: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].allowDragAndDrop : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].allowDragAndDrop : true),
+                        showFilterIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showFilterIcon : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showFilterIcon : true),
+                        showSortIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showSortIcon : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showSortIcon : true),
+                        showEditIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showEditIcon : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showEditIcon : true),
+                        showRemoveIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showRemoveIcon : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showRemoveIcon : true),
+                        showValueTypeIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showValueTypeIcon : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showValueTypeIcon : true),
+                        showSubTotals: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showSubTotals : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showSubTotals : true)
+                        /* eslint-enable */
+                    };
+                    dimensionElements.push(fieldObj);
+                    this.fieldList[hierarchyName] = fieldObj;
                 }
-                let fieldObj: IOlapField = {
-                    hasChildren: (field.querySelector('HIERARCHY_ORIGIN') ? ((field.querySelector('HIERARCHY_ORIGIN').textContent !== '2') && field.querySelector('HIERARCHY_ORIGIN').textContent !== '6') ? true : false : true),
-                    // hasChildren: true,
-                    isSelected: (reportElement.indexOf(hierarchyName) >= 0),
-                    pid: parentID,
-                    id: hierarchyName,
-                    name: field.querySelector('HIERARCHY_CAPTION').textContent,
-                    spriteCssClass: (field.querySelector('HIERARCHY_ORIGIN') ? ((field.querySelector('HIERARCHY_ORIGIN').textContent !== '2') && field.querySelector('HIERARCHY_ORIGIN').textContent !== '6') ? 'e-hierarchyCDB-icon' : 'e-attributeCDB-icon' : 'e-hierarchyCDB-icon') + ' ' + cls.ICON,
-                    hasAllMember: isAllMemberAvail,
-                    allMember: allMember,
-                    tag: hierarchyName,
-                    caption: this.dataFields[hierarchyName] && this.dataFields[hierarchyName].caption ? this.dataFields[hierarchyName].caption : this.mappingFields[hierarchyName] && this.mappingFields[hierarchyName].caption ? this.mappingFields[hierarchyName].caption : field.querySelector('HIERARCHY_CAPTION').textContent,
-                    // aggregateType: this.getAggregateType(hierarchyName),
-                    type: 'string',
-                    filter: [],
-                    dateMember: [],
-                    sort: (this.enableSort ? this.sortObject[hierarchyName] ? this.sortObject[hierarchyName] : 'Ascending' : 'None'),
-                    actualFilter: [],
-                    filterMembers: [],
-                    childMembers: [],
-                    searchMembers: [],
-                    members: {},
-                    currrentMembers: {},
-                    levels: [],
-                    levelCount: 1,
-                    isHierarchy: (field.querySelector('HIERARCHY_ORIGIN') ? ((field.querySelector('HIERARCHY_ORIGIN').textContent !== '2') && field.querySelector('HIERARCHY_ORIGIN').textContent !== '6') ? false : true : false),
-                    isExcelFilter: false,
-                    /* eslint-disable */
-                    allowDragAndDrop: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].allowDragAndDrop : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].allowDragAndDrop : true),
-                    showFilterIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showFilterIcon : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showFilterIcon : true),
-                    showSortIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showSortIcon : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showSortIcon : true),
-                    showEditIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showEditIcon : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showEditIcon : true),
-                    showRemoveIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showRemoveIcon : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showRemoveIcon : true),
-                    showValueTypeIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showValueTypeIcon : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showValueTypeIcon : true),
-                    showSubTotals: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showSubTotals : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showSubTotals : true)
-                    /* eslint-enable */
-                };
-                dimensionElements.push(fieldObj);
-                this.fieldList[hierarchyName] = fieldObj;
             }
         }
         let args: ConnectionInfo = {

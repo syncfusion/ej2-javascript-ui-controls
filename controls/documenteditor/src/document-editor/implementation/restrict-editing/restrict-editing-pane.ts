@@ -49,14 +49,14 @@ export class RestrictEditing {
     public usersCollection: string[] = ['Everyone'];
     public highlightCheckBox: CheckBox;
 
-    constructor(documentHelper: DocumentHelper) {
+    public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
-        this.addUserDialog = new AddUserDialog(documentHelper, this);
+        this.addUserDialog = new AddUserDialog(documentHelper);
         this.enforceProtectionDialog = new EnforceProtectionDialog(documentHelper, this);
         this.unProtectDialog = new UnProtectDocumentDialog(documentHelper, this);
         this.base64 = new Base64();
     }
-    get viewer(): LayoutViewer {
+    public get viewer(): LayoutViewer {
         return this.documentHelper.owner.viewer;
     }
     public showHideRestrictPane(isShow: boolean): void {
@@ -64,7 +64,7 @@ export class RestrictEditing {
             this.localObj = new L10n('documenteditor', this.viewer.owner.defaultLocale);
             this.localObj.setLocale(this.viewer.owner.locale);
             if (!this.restrictPane) {
-                this.initPane(this.localObj, true);
+                this.initPane(this.localObj);
             }
             this.restrictPane.style.display = 'block';
             this.isShowRestrictPane = true;
@@ -78,10 +78,10 @@ export class RestrictEditing {
         }
     }
 
-    private initPane(localValue: L10n, initial: boolean): void {
+    private initPane(localValue: L10n): void {
         this.restrictPane = createElement('div', { className: 'e-de-restrict-pane', styles: 'display:none' });
-        let headerWholeDiv: HTMLElement = createElement('div', { className: 'e-de-rp-whole-header' });
-        let headerDiv1: HTMLElement = createElement('div', {
+        const headerWholeDiv: HTMLElement = createElement('div', { className: 'e-de-rp-whole-header' });
+        const headerDiv1: HTMLElement = createElement('div', {
             styles: 'width:75%',
             innerHTML: localValue.getConstant('Restrict Editing'), className: 'e-de-rp-header'
         });
@@ -91,14 +91,14 @@ export class RestrictEditing {
         }) as HTMLButtonElement;
         headerWholeDiv.appendChild(this.closeButton);
         headerWholeDiv.appendChild(headerDiv1);
-        let closeSpan: HTMLSpanElement = createElement('span', { className: 'e-de-op-close-icon e-de-close-icon e-btn-icon e-icons' });
+        const closeSpan: HTMLSpanElement = createElement('span', { className: 'e-de-op-close-icon e-de-close-icon e-btn-icon e-icons' });
         this.closeButton.appendChild(closeSpan);
         this.restrictPane.appendChild(headerWholeDiv);
         this.initRestrictEditingPane(localValue);
         this.documentHelper.optionsPaneContainer.setAttribute('style', 'display:inline-flex;');
         this.documentHelper.optionsPaneContainer.insertBefore(this.restrictPane, this.documentHelper.viewerContainer);
     }
-    // tslint:disable:max-func-body-length
+    /* eslint-disable  */
     public initRestrictEditingPane(localObj: L10n): void {
         this.restrictPaneWholeDiv = createElement('div');
         let formatWholeDiv: HTMLElement = createElement('div', { className: 'e-de-rp-sub-div' });
@@ -168,7 +168,7 @@ export class RestrictEditing {
             cssClass: 'e-de-user-listView',
             dataSource: [{ text: 'Everyone' }],
             showCheckBox: true,
-            select: this.selectHandler
+            select: this.selectHandler.bind(this)
         });
 
         this.addedUser.appendTo(emptyuserDiv);
@@ -193,30 +193,25 @@ export class RestrictEditing {
         lastDiv.appendChild(this.enforceProtection);
         this.restrictPane.appendChild(this.restrictPaneWholeDiv);
         this.stopProtectionDiv = createElement('div', { styles: 'display:none' });
-        // tslint:disable-next-line:max-line-length
         let headerDiv: HTMLElement = createElement('div', { innerHTML: localObj.getConstant('Your permissions'), className: 'e-de-rp-stop-div1' });
         this.stopProtectionDiv.appendChild(headerDiv);
-        // tslint:disable-next-line:max-line-length
         let content: string = localObj.getConstant('Protected Document');
         this.contentDiv1 = createElement('div', { innerHTML: content, className: 'e-de-rp-stop-div2' });
         this.stopProtectionDiv.appendChild(this.contentDiv1);
-        // tslint:disable-next-line:max-line-length
         let contentDiv2: HTMLElement = createElement('div', { innerHTML: localObj.getConstant('You may format text only with certain styles'), className: 'e-de-rp-stop-div3' });
         this.stopProtectionDiv.appendChild(contentDiv2);
         this.stopReadOnlyOptions = createElement('div');
         this.stopProtectionDiv.appendChild(this.stopReadOnlyOptions);
         let navigateNext: HTMLElement = createElement('div', { className: 'e-de-rp-enforce-nav' });
-        // tslint:disable-next-line:max-line-length
         let navigateNextButton: HTMLElement = createElement('button', {
             innerHTML: localObj.getConstant('Find Next Region I Can Edit'), className: 'e-btn e-de-rp-nav-btn',
             attrs: { type: 'button' }
         });
         navigateNext.appendChild(navigateNextButton);
-        navigateNextButton.addEventListener('click', this.navigateNextRegion);
+        navigateNextButton.addEventListener('click', this.navigateNextRegion.bind(this));
         this.stopReadOnlyOptions.appendChild(navigateNext);
 
         let showAllRegion: HTMLElement = createElement('div', { className: 'e-de-rp-enforce-nav' });
-        // tslint:disable-next-line:max-line-length
         let showAllRegionButton: HTMLElement = createElement('button', {
             innerHTML: localObj.getConstant('Show All Regions I Can Edit'), className: 'e-btn e-de-rp-nav-btn',
             attrs: { type: 'button' }
@@ -226,7 +221,6 @@ export class RestrictEditing {
         this.stopReadOnlyOptions.appendChild(showAllRegion);
 
         let highlightRegion: HTMLElement = createElement('div', { className: 'e-de-rp-enforce-nav e-de-rp-nav-lbl' });
-        // tslint:disable-next-line:max-line-length
         let highlightRegionInput: HTMLInputElement = <HTMLInputElement>createElement('input', { attrs: { type: 'checkbox' }, className: 'e-btn e-de-rp-nav-btn' });
         highlightRegion.appendChild(highlightRegionInput);
         this.stopReadOnlyOptions.appendChild(highlightRegion);
@@ -256,24 +250,27 @@ export class RestrictEditing {
             this.stopReadOnlyOptions.style.display = 'none';
         }
     }
+    /**
+     * @returns {void}
+     */
     private closePane = (): void => {
         this.restrictPane.style.display = 'none';
         this.documentHelper.updateViewerSize();
     }
     private wireEvents(): void {
         this.addUser.addEventListener('click', this.addUserDialog.show);
-        this.enforceProtection.addEventListener('click', this.protectDocument);
-        this.stopProtection.addEventListener('click', this.stopProtectionTriggered);
+        this.enforceProtection.addEventListener('click', this.protectDocument.bind(this));
+        this.stopProtection.addEventListener('click', this.stopProtectionTriggered.bind(this));
         this.closeButton.addEventListener('click', this.closePane);
-        this.allowFormat.addEventListener('change', this.enableFormatting);
-        this.protectionTypeDrop.addEventListener('change', this.protectionTypeDropChanges);
-        this.highlightCheckBox.addEventListener('change', this.highlightClicked);
+        this.allowFormat.addEventListener('change', this.enableFormatting.bind(this));
+        this.protectionTypeDrop.addEventListener('change', this.protectionTypeDropChanges.bind(this));
+        this.highlightCheckBox.addEventListener('change', this.highlightClicked.bind(this));
     }
-    /* tslint:disable:no-any */
-    private enableFormatting = (args: any): void => {
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    private enableFormatting(args: any): void {
         this.restrictFormatting = !args.checked;
     }
-    private stopProtectionTriggered = (args: any): void => {
+    private stopProtectionTriggered(args: any): void {
         if ((isNullOrUndefined(this.documentHelper.saltValue) || this.documentHelper.saltValue === '')
             && (isNullOrUndefined(this.documentHelper.hashValue) || this.documentHelper.hashValue === '')) {
             this.documentHelper.owner.editor.unProtectDocument();
@@ -281,7 +278,7 @@ export class RestrictEditing {
         }
         this.unProtectDialog.show();
     }
-    private protectionTypeDropChanges = (args: any): void => {
+    private protectionTypeDropChanges(args: any): void {
         if (args.value === 'Read only') {
             this.protectionType = 'ReadOnly';
             this.userWholeDiv.style.display = 'block';
@@ -301,7 +298,7 @@ export class RestrictEditing {
             this.contentDiv1.innerHTML = this.localObj.getConstant('Protected Document');
         }
     }
-    private selectHandler = (args: any): void => {
+    private selectHandler(args: any): void {
         if (args.isChecked) {
             this.viewer.owner.editor.insertEditRangeElement(args.text);
             args.event.target.classList.add('e-check');
@@ -309,11 +306,11 @@ export class RestrictEditing {
             this.viewer.owner.editor.removeUserRestrictions(args.text);
         }
     }
-    public highlightClicked = (args: any) => {
+    public highlightClicked(args: any): void {
         this.documentHelper.selection.isHighlightEditRegion = args.checked;
     }
-    /* tslint:enable:no-any */
-    private protectDocument = (): void => {
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+    private protectDocument(): void {
         this.enforceProtectionDialog.show();
     }
     public createCheckBox(label: string, element: HTMLInputElement): CheckBox {
@@ -340,7 +337,7 @@ export class RestrictEditing {
         this.showStopProtectionPane(this.documentHelper.isDocumentProtected);
     }
 
-    public navigateNextRegion = () => {
+    public navigateNextRegion(): void {
         this.documentHelper.selection.navigateToNextEditingRegion();
     }
     public addUserCollection(): void {
@@ -358,7 +355,10 @@ export class RestrictEditing {
         this.addedUser.dataSource = this.usersCollection;
         this.addedUser.refresh();
     }
-    public showAllRegion = () => {
+    /**
+     * @returns {void}
+     */
+    public showAllRegion = (): void => {
         this.documentHelper.selection.showAllEditingRegion();
     }
     public updateUserInformation(): void {

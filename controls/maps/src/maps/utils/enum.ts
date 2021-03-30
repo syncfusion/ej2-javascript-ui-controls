@@ -2,7 +2,7 @@
  * Maps enum doc
  */
 
-/** 
+/**
  * Defines the alignment for the elements in map.
  */
 export type Alignment =
@@ -12,31 +12,31 @@ export type Alignment =
     'Center' |
     /** Specifies the element to be placed far from the maps. */
     'Far';
-/** 
+/**
  * Defines the theme supported for maps.
  */
 export type MapsTheme =
-    /**  Renders a map with material theme. */
+    /** Renders a map with material theme. */
     'Material' |
-    /**  Renders a map with fabric theme. */
+    /** Renders a map with fabric theme. */
     'Fabric' |
-    /**  Renders a map with highcontrast light theme. */
+    /** Renders a map with highcontrast light theme. */
     'HighContrastLight' |
-    /**  Renders a map with bootstrap theme. */
+    /** Renders a map with bootstrap theme. */
     'Bootstrap' |
-    /**  Renders a map with material dark theme. */
+    /** Renders a map with material dark theme. */
     'MaterialDark'|
-    /**  Renders a map with fabric dark theme. */
+    /** Renders a map with fabric dark theme. */
     'FabricDark'|
-    /**  Renders a map with highcontrast dark theme. */
+    /** Renders a map with highcontrast dark theme. */
     'HighContrast'|
-    /**  Renders a map with bootstrap dark theme. */
+    /** Renders a map with bootstrap dark theme. */
     'BootstrapDark'|
     /** Renders a map with bootstrap4 theme. */
     'Bootstrap4';
 
 
-/** 
+/**
  * Defines the position of the legend.
  */
 export type LegendPosition =
@@ -51,7 +51,7 @@ export type LegendPosition =
     /** Specifies the legend to be placed based on given x and y location. */
     'Float';
 
-/** 
+/**
  * Defines the type of the element in the map for which legend is to be rendered.
  */
 export type LegendType =
@@ -91,7 +91,7 @@ export type IntersectAction =
     'None' |
     /** Specifies the data label to be hidden when it intersects. */
     'Hide';
-/** 
+/**
  * Defines the mode of the legend.
  */
 export type LegendMode =
@@ -123,7 +123,7 @@ export type ShapeLayerType =
     /**
      * Specifies the map layer as google map.
      */
-     'Google';
+    'Google';
 /**
  * Defines the type of the layer in maps.
  */
@@ -225,7 +225,7 @@ export type Orientation =
     /** Specifies the zooming toolbar to be placed vertically. */
     'Vertical';
 
-/** 
+/**
  * Defines the shape of legend.
  */
 export type LegendShape =
@@ -260,7 +260,7 @@ export type LegendArrangement =
     /** Specifies the legend items to be placed vertically. */
     'Vertical';
 
-/** 
+/**
  * Defines the alignment for the annotation.
  */
 export type AnnotationAlignment =
@@ -273,7 +273,7 @@ export type AnnotationAlignment =
     /** Specifies the annotation to be placed far from the maps with respect to the position of the legend. */
     'Far';
 
-/** 
+/**
  * Defines the geometry type.
  */
 export type GeometryType =

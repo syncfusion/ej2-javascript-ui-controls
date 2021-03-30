@@ -1,3 +1,7 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable valid-jsdoc */
 /**
  * AccumulationChart series file
  */
@@ -15,19 +19,20 @@ import { Index } from '../../common/model/base';
 export class PieSeries extends PieBase {
     /**
      * To get path option, degree, symbolLocation from the point.
+     *
      * @private
      */
     public renderPoint(
         point: AccPoints, series: AccumulationSeries, chart: AccumulationChart, option: PathOption,
         seriesGroup: Element, redraw?: boolean
     ): void {
-        let sum: number = series.sumOfPoints;
+        const sum: number = series.sumOfPoints;
         point.startAngle = this.startAngle;
-        let yValue: number = point.visible ? point.y : 0;
-        let degree: number = (sum) ? ((Math.abs(yValue) / sum) * (this.totalAngle)) : null;
-        let start: number = Math.PI / 180 * ((90 - (360 - this.startAngle)) - 90);
+        const yValue: number = point.visible ? point.y : 0;
+        const degree: number = (sum) ? ((Math.abs(yValue) / sum) * (this.totalAngle)) : null;
+        const start: number = Math.PI / 180 * ((90 - (360 - this.startAngle)) - 90);
         this.radius = this.isRadiusMapped ? stringToNumber(point.sliceRadius, this.seriesRadius) : this.radius;
-        option.d = this.getPathOption(point, degree, this.startAngle % 360, yValue);
+        option.d = this.getPathOption(point, degree, this.startAngle % 360);
         point.midAngle = (this.startAngle - (degree / 2)) % 360;
         point.endAngle = this.startAngle % 360;
         point.symbolLocation = degreeToLocation(point.midAngle, (this.radius + this.innerRadius) / 2, this.center);
@@ -37,35 +42,33 @@ export class PieSeries extends PieBase {
             point.start = start;
         } else {
             seriesGroup.appendChild(chart.renderer.drawPath(option));
-            this.refresh(point, degree, start, chart, option, seriesGroup);
+            this.refresh(point, degree, start, chart, option);
         }
     }
 
     public findSeries(e: PointerEvent | TouchEvent): void {
-        let innerRadius: number;
-        let radius: number;
         const borderGap: number = 3; // Gap between pie/doughnut chart and border
         const width: number = 2; // width of the border
-        radius = this.innerRadius === 0 ? this.radius + borderGap : this.innerRadius - borderGap;
-        innerRadius = this.innerRadius === 0 ? radius + width : radius - width;
+        const radius: number = this.innerRadius === 0 ? this.radius + borderGap : this.innerRadius - borderGap;
+        const innerRadius: number = this.innerRadius === 0 ? radius + width : radius - width;
         this.toggleInnerPoint(e, radius, innerRadius);
     }
 
     public toggleInnerPoint(event: PointerEvent | TouchEvent, radius: number, innerRadius: number): void {
-        let target: Element = event.target as Element;
-        let id: Index = indexFinder(target.id, true);
-        let accumulationId: string = (event.target as Element).id.substring(0, ((event.target as Element).id.indexOf('Series') - 1));
+        const target: Element = event.target as Element;
+        const id: Index = indexFinder(target.id, true);
+        const accumulationId: string = (event.target as Element).id.substring(0, ((event.target as Element).id.indexOf('Series') - 1));
         let borderElement: Element = document.getElementById(this.accumulation.element.id + 'PointHover_Border');
         let createBorderEle: Element;
-        let seriesIndex: number = id.series;
-        let pointIndex: number = id.point;
-        let srcElem: Element = getElement(accumulationId + '_Series_' + seriesIndex + '_Point_' + pointIndex);
+        const seriesIndex: number = id.series;
+        const pointIndex: number = id.point;
+        const srcElem: Element = getElement(accumulationId + '_Series_' + seriesIndex + '_Point_' + pointIndex);
         if (!isNaN(id.series) && srcElem) {
             if (!isNullOrUndefined(seriesIndex) && !isNaN(seriesIndex) && !isNullOrUndefined(pointIndex) && !isNaN(pointIndex)) {
-                let point: AccPoints = this.accumulation.visibleSeries[0].points[pointIndex];
+                const point: AccPoints = this.accumulation.visibleSeries[0].points[pointIndex];
                 const opacity: number = srcElem.getAttribute('class') === accumulationId + '_ej2_deselected' ?
                     this.accumulation.tooltip.enable ? 0.5 : 0.3 : this.accumulation.tooltip.enable ? 0.5 : 1;
-                let innerPie: string = this.getPathArc(
+                const innerPie: string = this.getPathArc(
                     this.accumulation.pieSeriesModule.center,
                     point.startAngle % 360,
                     (point.startAngle + point.degree) % 360,
@@ -77,9 +80,9 @@ export class PieSeries extends PieBase {
                     borderElement.parentNode.removeChild(borderElement);
                     borderElement = null;
                 }
-                let seriousGroup: Element = getElement(accumulationId + '_Series_' + seriesIndex);
+                const seriousGroup: Element = getElement(accumulationId + '_Series_' + seriesIndex);
                 if (!borderElement && ((!point.isExplode) || (point.isExplode && event.type !== 'click'))) {
-                    let path: PathOption = new PathOption(
+                    const path: PathOption = new PathOption(
                         accumulationId + 'PointHover_Border', point.color, 1, point.color, opacity, '', innerPie);
                     createBorderEle = this.accumulation.renderer.drawPath(path);
                     createBorderEle.removeAttribute('transform');
@@ -89,7 +92,7 @@ export class PieSeries extends PieBase {
                     }
                     seriousGroup.appendChild(createBorderEle);
                     if (point.isExplode && createBorderEle) {
-                        let borderExplode: string = srcElem.getAttribute('transform');
+                        const borderExplode: string = srcElem.getAttribute('transform');
                         createBorderEle.setAttribute('transform', borderExplode);
                     }
                 }
@@ -105,7 +108,7 @@ export class PieSeries extends PieBase {
             setTimeout(
                 (): void => {
                     if (borderElement.parentNode) {
-                    borderElement.parentNode.removeChild(borderElement);
+                        borderElement.parentNode.removeChild(borderElement);
                     }
                 },
                 duration);
@@ -113,25 +116,23 @@ export class PieSeries extends PieBase {
     }
 
     private refresh(
-        point: AccPoints, degree: number, start: number, chart: AccumulationChart, option: PathOption, seriesGroup: Element): void {
-        let seriesElement: Element = getElement(option.id);
-        let duration: number = chart.duration ? chart.duration : 300;
-        let currentStartAngle: number;
-        let curentDegree: number;
+        point: AccPoints, degree: number, start: number, chart: AccumulationChart, option: PathOption): void {
+        const seriesElement: Element = getElement(option.id);
+        const duration: number = chart.duration ? chart.duration : 300;
         new Animation({}).animate(createElement('div'), {
             duration: duration,
             delay: 0,
             progress: (args: AnimationOptions): void => {
-                curentDegree = linear(args.timeStamp, point.degree, (degree - point.degree), args.duration);
-                currentStartAngle = linear(args.timeStamp, point.start, start - point.start, args.duration);
+                const curentDegree: number = linear(args.timeStamp, point.degree, (degree - point.degree), args.duration);
+                let currentStartAngle: number = linear(args.timeStamp, point.start, start - point.start, args.duration);
                 currentStartAngle = ((currentStartAngle / (Math.PI / 180)) + 360) % 360;
-                seriesElement.setAttribute('d', this.getPathOption(point, curentDegree, currentStartAngle, point.y));
+                seriesElement.setAttribute('d', this.getPathOption(point, curentDegree, currentStartAngle));
                 if (point.isExplode) {
                     chart.accBaseModule.explodePoints(point.index, chart, true);
                 }
                 (seriesElement as HTMLElement).style.visibility = 'visible';
             },
-            end: (args: AnimationOptions) => {
+            end: () => {
                 (seriesElement as HTMLElement).style.visibility = point.visible ? 'visible' : 'hidden';
                 seriesElement.setAttribute('d', option.d);
                 point.degree = degree;
@@ -142,30 +143,31 @@ export class PieSeries extends PieBase {
     /**
      * To get path option from the point.
      */
-    private getPathOption(point: AccPoints, degree: number, startAngle: number, yValue: number): string {
+    private getPathOption(point: AccPoints, degree: number, startAngle: number): string {
         if (!degree) {
             return '';
         }
-        let path: string = this.getPathArc(
+        const path: string = this.getPathArc(
             this.center,
             startAngle % 360, (startAngle + degree) % 360,
             this.isRadiusMapped ? stringToNumber(point.sliceRadius, this.seriesRadius) : this.radius,
             this.innerRadius
         );
-        //let path: string = this.getPathArc(this.center, startAngle % 360, (startAngle + degree) % 360, this.radius, this.innerRadius);
+        //const path: string = this.getPathArc(this.center, startAngle % 360, (startAngle + degree) % 360, this.radius, this.innerRadius);
         this.startAngle += degree;
         return path;
     }
     /**
      * To animate the pie series.
+     *
      * @private
      */
     public animateSeries(accumulation: AccumulationChart, option: AnimationModel, series: AccumulationSeries, slice: Element): void {
-        let groupId: string = accumulation.element.id + 'SeriesGroup' + series.index;
+        const groupId: string = accumulation.element.id + 'SeriesGroup' + series.index;
         if (series.animation.enable && accumulation.animateSeries) {
-            let clippath: Element = accumulation.renderer.createClipPath({ id: groupId + '_clipPath' });
-            let path: PathOption = new PathOption(groupId + '_slice', 'transparent', 1, 'transparent', 1, '', '');
-            let clipslice: Element = accumulation.renderer.drawPath(path);
+            const clippath: Element = accumulation.renderer.createClipPath({ id: groupId + '_clipPath' });
+            const path: PathOption = new PathOption(groupId + '_slice', 'transparent', 1, 'transparent', 1, '', '');
+            const clipslice: Element = accumulation.renderer.drawPath(path);
             clippath.appendChild(clipslice);
             accumulation.svgObject.appendChild(clippath);
             // I263828 pie chart animation issue fixed for safari browser
@@ -183,11 +185,12 @@ export class PieSeries extends PieBase {
 
     /**
      * To destroy the pie series.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
 
-    public destroy(accumulation: AccumulationChart): void {
+    public destroy(): void {
         /**
          * Destroy method calling here
          */

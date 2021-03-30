@@ -1,6 +1,5 @@
-/**
- * 
- */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { Smithchart } from '../../smithchart';
 import { SmithchartFontModel } from '../../smithchart/utils/utils-model';
 import { SmithchartAxisModel, SmithchartAxisLineModel, SmithchartMinorGridLinesModel } from '../../smithchart/axis/axis-model';
@@ -14,7 +13,6 @@ import { ISmithchartAxisLabelRenderEventArgs } from '../../smithchart/model/inte
 import { axisLabelRender } from '../model/constant';
 
 
-/* tslint:disable:no-string-literal */
 export class AxisRender {
     public areaRadius: number;
     public circleLeftX: number;
@@ -54,9 +52,9 @@ export class AxisRender {
     }
 
     private updateHAxis(smithchart: Smithchart): void {
-        let majorGridLines: SmithchartMajorGridLinesModel = smithchart.horizontalAxis.majorGridLines;
-        let minorGridLines: SmithchartMinorGridLinesModel = smithchart.horizontalAxis.minorGridLines;
-        let axisLine: SmithchartAxisLineModel = smithchart.horizontalAxis.axisLine;
+        const majorGridLines: SmithchartMajorGridLinesModel = smithchart.horizontalAxis.majorGridLines;
+        const minorGridLines: SmithchartMinorGridLinesModel = smithchart.horizontalAxis.minorGridLines;
+        const axisLine: SmithchartAxisLineModel = smithchart.horizontalAxis.axisLine;
 
         if (majorGridLines.visible) {
             this.updateHMajorGridLines(smithchart);
@@ -70,9 +68,9 @@ export class AxisRender {
     }
 
     private updateRAxis(smithchart: Smithchart): void {
-        let majorGridLines: SmithchartMajorGridLinesModel = smithchart.radialAxis.majorGridLines;
-        let minorGridLines: SmithchartMinorGridLinesModel = smithchart.radialAxis.minorGridLines;
-        let axisLine: SmithchartAxisLineModel = smithchart.radialAxis.axisLine;
+        const majorGridLines: SmithchartMajorGridLinesModel = smithchart.radialAxis.majorGridLines;
+        const minorGridLines: SmithchartMinorGridLinesModel = smithchart.radialAxis.minorGridLines;
+        const axisLine: SmithchartAxisLineModel = smithchart.radialAxis.axisLine;
         if (majorGridLines.visible) {
             this.updateRMajorGridLines(smithchart);
         }
@@ -85,8 +83,7 @@ export class AxisRender {
     }
 
     private measureHorizontalAxis(smithchart: Smithchart): void {
-        let majorGridLines: SmithchartMajorGridLinesModel = smithchart.horizontalAxis.majorGridLines;
-        let minorGridLines: SmithchartMinorGridLinesModel = smithchart.horizontalAxis.minorGridLines;
+        const minorGridLines: SmithchartMinorGridLinesModel = smithchart.horizontalAxis.minorGridLines;
         this.measureHMajorGridLines(smithchart);
         if (minorGridLines.visible) {
             this.measureHMinorGridLines(smithchart);
@@ -94,8 +91,7 @@ export class AxisRender {
     }
 
     private measureRadialAxis(smithchart: Smithchart): void {
-        let majorGridLines: SmithchartMajorGridLinesModel = smithchart.radialAxis.majorGridLines;
-        let minorGridLines: SmithchartMinorGridLinesModel = smithchart.radialAxis.minorGridLines;
+        const minorGridLines: SmithchartMinorGridLinesModel = smithchart.radialAxis.minorGridLines;
         this.measureRMajorGridLines(smithchart);
         if (minorGridLines.visible) {
             this.measureRMinorGridLines(smithchart);
@@ -103,31 +99,27 @@ export class AxisRender {
     }
 
     private calculateChartArea(smithchart: Smithchart, bounds: SmithchartRect): void {
-        let chartAreaWidth: number;
-        let chartAreaHeight: number;
         let width: number = smithchart.availableSize.width;
         let height: number = smithchart.availableSize.height;
-        let x: number;
-        let y: number;
         width = bounds.width;
         height = bounds.height;
-        chartAreaWidth = Math.min(width, height);
-        chartAreaHeight = Math.min(width, height);
-        x = bounds.x + (bounds.width / 2 - chartAreaWidth / 2);
-        y = bounds.y + ((height - chartAreaHeight) / 2 > 0 ? (height - chartAreaHeight) / 2 : 0);
+        const chartAreaWidth: number = Math.min(width, height);
+        const chartAreaHeight: number = Math.min(width, height);
+        const x: number = bounds.x + (bounds.width / 2 - chartAreaWidth / 2);
+        const y: number = bounds.y + ((height - chartAreaHeight) / 2 > 0 ? (height - chartAreaHeight) / 2 : 0);
         smithchart.chartArea = { x: x, y: y, width: chartAreaWidth, height: chartAreaHeight };
     }
 
     private calculateCircleMargin(smithchart: Smithchart, bounds: SmithchartRect): void {
-        let padding: number = 10;
+        const padding: number = 10;
         let maxLabelWidth: number = 0;
-        let width: number = smithchart.chartArea.width;
-        let radius: number = smithchart.radius;
+        const width: number = smithchart.chartArea.width;
+        const radius: number = smithchart.radius;
         maxLabelWidth = this.maximumLabelLength(smithchart);
-        let labelMargin: number = (smithchart.radialAxis.labelPosition === 'Outside') ? (maxLabelWidth + padding) : padding;
-        let diameter: number = width - labelMargin * 2 > 0 ? width - labelMargin * 2 : 0;
-        let actualRadius: number = diameter / 2;
-        let circleCoefficient: number = radius > 1 ? 1 : (radius < 0.1 ? 0.1 : radius);
+        const labelMargin: number = (smithchart.radialAxis.labelPosition === 'Outside') ? (maxLabelWidth + padding) : padding;
+        const diameter: number = width - labelMargin * 2 > 0 ? width - labelMargin * 2 : 0;
+        const actualRadius: number = diameter / 2;
+        const circleCoefficient: number = radius > 1 ? 1 : (radius < 0.1 ? 0.1 : radius);
         this.areaRadius = actualRadius * circleCoefficient;
         this.circleLeftX = smithchart.chartArea.x + labelMargin + (actualRadius * (1 - circleCoefficient));
         this.circleTopY = smithchart.chartArea.y + labelMargin + (actualRadius * (1 - circleCoefficient));
@@ -137,7 +129,7 @@ export class AxisRender {
 
     private maximumLabelLength(smithchart: Smithchart): number {
         let maximumLabelLength: number = 0;
-        let font: SmithchartFontModel = smithchart.horizontalAxis.labelStyle;
+        const font: SmithchartFontModel = smithchart.horizontalAxis.labelStyle;
         let label: string;
         let textSize: SmithchartSize;
 
@@ -152,17 +144,17 @@ export class AxisRender {
     }
 
     private calculateAxisLabels(): number[] {
-        let spacingBetweenGridLines: number = 30;
+        const spacingBetweenGridLines: number = 30;
         let previousR: number = 0;
         let j: number = 0;
-        let labels: number[] = [];
-        let diameter: number = this.areaRadius * 2;
+        const labels: number[] = [];
+        const diameter: number = this.areaRadius * 2;
         for (let i: number = 0; i < 2; i = i + 0.1) {
             i = Math.round(i * 10) / 10;
-            let coeff: number = 1 / (i + 1);
+            const coeff: number = 1 / (i + 1);
             let isOverlap1: boolean = false;
             let isOverlap2: boolean = false;
-            let radius: number = ((diameter * coeff) / 2) * 2;
+            const radius: number = ((diameter * coeff) / 2) * 2;
             if (previousR === 0.0 || i === 1) {
                 previousR = radius;
                 labels[j] = i;
@@ -184,7 +176,7 @@ export class AxisRender {
                 previousR = radius;
             }
         }
-        let staticlabels: number[] = [2, 3, 4, 5, 10, 20, 50];
+        const staticlabels: number[] = [2, 3, 4, 5, 10, 20, 50];
         for (let k: number = 0; k < staticlabels.length; k++) {
             labels[j] = staticlabels[k];
             j++;
@@ -193,24 +185,20 @@ export class AxisRender {
     }
 
     private isOverlap(x: number, d: number, previousR: number, spacingBetweenGridLines: number): boolean {
-        let coeff: number;
-        let radius: number;
-        coeff = 1 / (x + 1); // (1 / 1+r) find the radius for the x value
-        radius = ((d * coeff) / 2) * 2;
-
+        const coeff: number = 1 / (x + 1); // (1 / 1+r) find the radius for the x value
+        const radius: number = ((d * coeff) / 2) * 2;
         return previousR - radius < spacingBetweenGridLines;
     }
 
     private calculateXAxisRange(smithchart: Smithchart): void {
-        let previousR: number = 0;
         let x: number;
         let coeff: number;
         let radius: number;
         let cx: number;
-        let diameter: number = this.areaRadius * 2;
-        let horizontalAxisLabels: number[] = this.calculateAxisLabels();
-        let cy: number = this.circleCenterY;
-        let circleStartX: number = this.circleLeftX;
+        const diameter: number = this.areaRadius * 2;
+        const horizontalAxisLabels: number[] = this.calculateAxisLabels();
+        const cy: number = this.circleCenterY;
+        const circleStartX: number = this.circleLeftX;
         let leftX: number = this.circleLeftX;
         for (let i: number = 0; i < horizontalAxisLabels.length; i++) {
             x = horizontalAxisLabels[i];
@@ -229,9 +217,9 @@ export class AxisRender {
     private calculateRAxisRange(smithchart: Smithchart): void {
         let arcCy: number;
         let arcRadius: number;
-        let diameter: number = this.areaRadius * 2;
+        const diameter: number = this.areaRadius * 2;
         let y: number;
-        let point: Point = new Point();
+        const point: Point = new Point();
         if (smithchart.renderType === 'Impedance') {
             point.x = this.circleLeftX + diameter;
             point.y = this.circleTopY + this.areaRadius;
@@ -306,7 +294,6 @@ export class AxisRender {
     }
 
     private measureRMajorGridLines(smithchart: Smithchart): void {
-        let epsilon: number;
         let radialPoint: LabelCollection;
         let y: number;
         let arcPoints: Point[] = [];
@@ -320,7 +307,7 @@ export class AxisRender {
         let sweepDirection: number;
         this.majorRGridArcPoints = [];
         this.labelCollections = [];
-        epsilon = _getEpsilonValue();
+        const epsilon: number = _getEpsilonValue();
         for (let i: number = 0; i < this.radialLabelCollections.length; i++) {
             radialPoint = this.radialLabelCollections[i];
 
@@ -388,12 +375,10 @@ export class AxisRender {
     }
 
     private calculateMajorArcStartEndPoints(radialPoint: LabelCollection, value: number, smithchart: Smithchart): Point[] {
-        let arcPoints: Point[] = [];
+        const arcPoints: Point[] = [];
         let circlePoint: HorizontalLabelCollection[] = [];
-        let cx: number;
-        let cy: number;
-        cx = this.circleCenterX;
-        cy = this.circleCenterY;
+        const cx: number = this.circleCenterX;
+        const cy: number = this.circleCenterY;
         if (value >= 10) {
             arcPoints[0] = (smithchart.renderType === 'Impedance') ?
                 { x: cx + this.areaRadius, y: cy } : { x: cx - this.areaRadius, y: cy };
@@ -417,7 +402,7 @@ export class AxisRender {
 
 
     private calculateHMajorArcStartEndPoints(value: number): LabelCollection[][] {
-        let arcHPoints: LabelCollection[][] = [];
+        const arcHPoints: LabelCollection[][] = [];
         let calValue1: number;
         let calValue2: number;
         if (value <= 0.3) {
@@ -443,7 +428,7 @@ export class AxisRender {
     private calculateMinorArcStartEndPoints(value: number): LabelCollection[][] {
         let calValue1: number;
         let calValue2: number;
-        let marcHPoints: LabelCollection[][] = [];
+        const marcHPoints: LabelCollection[][] = [];
         if (value <= 0.1) {
             calValue1 = 1.0;
             calValue2 = -1.0;
@@ -478,37 +463,24 @@ export class AxisRender {
     }
 
     public intersectingCirclePoints(x1: number, y1: number, r1: number, x2: number, y2: number, r2: number, renderType: RenderType): Point {
-        let cx: number;
-        let cy: number;
-        let midRadius: number;
-        let radiusSquare: number;
-        let a: number;
-        let radiusSquare2: number;
-        let c: number;
-        let fx: number;
-        let gx: number;
-        let ix1: number;
-        let ix2: number;
-        let fy: number;
-        let gy: number;
-        let iy1: number;
-        let iy2: number;
-        let point: Point = { x: 0, y: 0 };
-        cx = x1 - x2;
-        cy = y1 - y2;
-        midRadius = Math.sqrt(cx * cx + cy * cy);
-        radiusSquare = midRadius * midRadius;
-        a = (r1 * r1 - r2 * r2) / (2 * radiusSquare);
-        radiusSquare2 = (r1 * r1 - r2 * r2);
-        c = Math.sqrt(2 * (r1 * r1 + r2 * r2) / radiusSquare - (radiusSquare2 * radiusSquare2) / (radiusSquare * radiusSquare) - 1);
-        fx = (x1 + x2) / 2 + a * (x2 - x1);
-        gx = c * (y2 - y1) / 2;
-        ix1 = fx + gx;
-        ix2 = fx - gx;
-        fy = (y1 + y2) / 2 + a * (y2 - y1);
-        gy = c * (x1 - x2) / 2;
-        iy1 = fy + gy;
-        iy2 = fy - gy;
+        const point: Point = { x: 0, y: 0 };
+        const cx: number = x1 - x2;
+        const cy: number = y1 - y2;
+        const midRadius: number = Math.sqrt(cx * cx + cy * cy);
+        const radiusSquare: number = midRadius * midRadius;
+        const a: number = (r1 * r1 - r2 * r2) / (2 * radiusSquare);
+        const radiusSquare2: number = (r1 * r1 - r2 * r2);
+        const c: number = Math.sqrt(
+            2 * (r1 * r1 + r2 * r2) / radiusSquare - (radiusSquare2 * radiusSquare2) / (radiusSquare * radiusSquare) - 1
+        );
+        const fx: number = (x1 + x2) / 2 + a * (x2 - x1);
+        const gx: number = c * (y2 - y1) / 2;
+        const ix1: number = fx + gx;
+        const ix2: number = fx - gx;
+        const fy: number = (y1 + y2) / 2 + a * (y2 - y1);
+        const gy: number = c * (x1 - x2) / 2;
+        const iy1: number = fy + gy;
+        const iy2: number = fy - gy;
         if (renderType === 'Impedance') {
             if (ix2 < ix1) {
                 point.x = ix2;
@@ -529,13 +501,10 @@ export class AxisRender {
         return { x: point.x, y: point.y };
     }
     private updateHMajorGridLines(smithchart: Smithchart): void {
-        let majorGridLine: SmithchartMajorGridLinesModel = smithchart.horizontalAxis.majorGridLines;
-        let groupElement: Element;
-        let element: Element;
-        let path: string;
-        groupElement = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_horizontalAxisMajorGridLines' });
-        path = this.calculateGridLinesPath(this.majorHGridArcPoints);
-        let haxismgoptions: PathOption = new PathOption(
+        const majorGridLine: SmithchartMajorGridLinesModel = smithchart.horizontalAxis.majorGridLines;
+        const groupElement: Element = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_horizontalAxisMajorGridLines' });
+        const path: string = this.calculateGridLinesPath(this.majorHGridArcPoints);
+        const haxismgoptions: PathOption = new PathOption(
             smithchart.element.id + '_horizontalAxisMajorGridLines',
             'none',
             majorGridLine['width'],
@@ -544,19 +513,16 @@ export class AxisRender {
             majorGridLine['dashArray'],
             path
         );
-        element = smithchart.renderer.drawPath(haxismgoptions);
+        const element: Element = smithchart.renderer.drawPath(haxismgoptions);
         groupElement.appendChild(element);
         smithchart.svgObject.appendChild(groupElement);
     }
 
     private updateRMajorGridLines(smithchart: Smithchart): void {
-        let majorGridLine: SmithchartMajorGridLinesModel = smithchart.radialAxis.majorGridLines;
-        let groupElement: Element;
-        let element: Element;
-        let path: string;
-        groupElement = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_radialAxisMajorGridLines' });
-        path = this.calculateGridLinesPath(this.majorRGridArcPoints);
-        let raxismgoptions: PathOption = new PathOption(
+        const majorGridLine: SmithchartMajorGridLinesModel = smithchart.radialAxis.majorGridLines;
+        const groupElement: Element = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_radialAxisMajorGridLines' });
+        const path: string = this.calculateGridLinesPath(this.majorRGridArcPoints);
+        const raxismgoptions: PathOption = new PathOption(
             smithchart.element.id + '_radialAxisMajorGridLines',
             'none',
             majorGridLine['width'],
@@ -565,32 +531,24 @@ export class AxisRender {
             majorGridLine['dashArray'],
             path
         );
-        element = smithchart.renderer.drawPath(raxismgoptions);
+        const element: Element = smithchart.renderer.drawPath(raxismgoptions);
         groupElement.appendChild(element);
         smithchart.svgObject.appendChild(groupElement);
     }
 
     private updateHAxisLine(smithchart: Smithchart): void {
-        let radius: number = this.areaRadius;
-        let point1: Point;
-        let point2: Point;
-        let size: SmithchartSize;
-        let sweep: number;
-        let isLargeArc: number;
-        let angle: number;
-        let axisLine: SmithchartAxisLineModel = smithchart.horizontalAxis.axisLine;
-        let direction: string;
-        let groupElement: Element = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_hAxisLine' });
-
-        point1 = { x: this.circleCenterX + radius, y: this.circleCenterY };
-        point2 = { x: this.circleCenterX + radius, y: (this.circleCenterY - 0.05) };
-        size = { width: radius, height: radius };
-        sweep = this.direction['clockwise'];
-        isLargeArc = 1;
-        angle = Math.PI * 2;
-        direction = 'M' + '' + point1.x + ' ' + point1.y + ' ' + 'A' + ' ' + size.width +
+        const radius: number = this.areaRadius;
+        const axisLine: SmithchartAxisLineModel = smithchart.horizontalAxis.axisLine;
+        const groupElement: Element = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_hAxisLine' });
+        const point1: Point = { x: this.circleCenterX + radius, y: this.circleCenterY };
+        const point2: Point = { x: this.circleCenterX + radius, y: (this.circleCenterY - 0.05) };
+        const size: SmithchartSize = { width: radius, height: radius };
+        const sweep: number = this.direction['clockwise'];
+        const isLargeArc: number = 1;
+        const angle: number = Math.PI * 2;
+        const direction: string = 'M' + '' + point1.x + ' ' + point1.y + ' ' + 'A' + ' ' + size.width +
             ' ' + size.height + ' ' + angle + ' ' + isLargeArc + ' ' + sweep + ' ' + point2.x + ' ' + point2.y + '';
-        let options: PathOption = new PathOption(
+        const options: PathOption = new PathOption(
             smithchart.element.id + '_horizontalAxisLine',
             'none',
             axisLine.width,
@@ -599,31 +557,24 @@ export class AxisRender {
             axisLine.dashArray,
             direction
         );
-        let element: Element = smithchart.renderer.drawPath(options);
+        const element: Element = smithchart.renderer.drawPath(options);
         groupElement.appendChild(element);
         smithchart.svgObject.appendChild(groupElement);
     }
 
     private updateRAxisLine(smithchart: Smithchart): void {
-        let radius: number = this.areaRadius;
-        let point1: Point;
-        let point2: Point;
-        let size: SmithchartSize;
-        let sweep: number;
-        let isLargeArc: number;
-        let angle: number;
-        let axisLine: SmithchartAxisLineModel = smithchart.radialAxis.axisLine;
-        let direction: string;
-        point1 = { x: this.circleCenterX - radius, y: this.circleCenterY };
-        point2 = { x: this.circleCenterX + radius, y: this.circleCenterY };
-        size = { width: 0, height: 0 };
-        sweep = this.direction['counterclockwise'];
-        isLargeArc = 0;
-        angle = 0;
-        direction = 'M' + ' ' + point1.x + ' ' + point1.y + ' ' + 'A' + ' ' +
+        const radius: number = this.areaRadius;
+        const axisLine: SmithchartAxisLineModel = smithchart.radialAxis.axisLine;
+        const point1: Point = { x: this.circleCenterX - radius, y: this.circleCenterY };
+        const point2: Point = { x: this.circleCenterX + radius, y: this.circleCenterY };
+        const size: SmithchartSize = { width: 0, height: 0 };
+        const sweep: number = this.direction['counterclockwise'];
+        const isLargeArc: number = 0;
+        const angle: number = 0;
+        const direction: string = 'M' + ' ' + point1.x + ' ' + point1.y + ' ' + 'A' + ' ' +
             size.width + ' ' + size.height + ' ' + angle + ' ' + isLargeArc + ' ' + sweep + ' ' +
             point2.x + ' ' + point2.y + '';
-        let options: PathOption = new PathOption(
+        const options: PathOption = new PathOption(
             smithchart.element.id + '_radialAxisLine',
             'none',
             axisLine.width,
@@ -632,16 +583,16 @@ export class AxisRender {
             axisLine.dashArray,
             direction
         );
-        let groupElement: Element = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_rAxisLine' });
-        let element: Element = smithchart.renderer.drawPath(options);
+        const groupElement: Element = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_rAxisLine' });
+        const element: Element = smithchart.renderer.drawPath(options);
         groupElement.appendChild(element);
         smithchart.svgObject.appendChild(groupElement);
     }
 
     private drawHAxisLabels(smithchart: Smithchart): void {
-        let hAxis: SmithchartAxisModel = smithchart.horizontalAxis;
+        const hAxis: SmithchartAxisModel = smithchart.horizontalAxis;
         smithchart.radialAxis.labelStyle.fontFamily = smithchart.themeStyle.fontFamily || smithchart.radialAxis.labelStyle.fontFamily;
-        let font: SmithchartFontModel = smithchart.horizontalAxis.labelStyle;
+        const font: SmithchartFontModel = smithchart.horizontalAxis.labelStyle;
         let circleAxis: HorizontalLabelCollection;
         let label: string;
         let x: number;
@@ -655,7 +606,7 @@ export class AxisRender {
         let preLabelBounds: SmithchartRect;
         let preWidth: number;
         let preX: number;
-        let groupEle: Element = smithchart.renderer.createGroup({ id: smithchart.element.id + '_HAxisLabels' });
+        const groupEle: Element = smithchart.renderer.createGroup({ id: smithchart.element.id + '_HAxisLabels' });
         for (let i: number = 0; i < this.horizontalLabelCollections.length; i++) {
             circleAxis = this.horizontalLabelCollections[i];
             label = this.horizontalLabelCollections[i].value.toString();
@@ -691,22 +642,22 @@ export class AxisRender {
                         }
                     }
                 }
-                let axisLabelRenderEventArgs: ISmithchartAxisLabelRenderEventArgs = {
+                const axisLabelRenderEventArgs: ISmithchartAxisLabelRenderEventArgs = {
                     text: label.toString(),
                     x: x,
                     y: y,
                     name: axisLabelRender,
                     cancel: false
                 };
-                let axisLabelRenderSuccess: Function = (args: ISmithchartAxisLabelRenderEventArgs) => {
+                const axisLabelRenderSuccess: Function = (args: ISmithchartAxisLabelRenderEventArgs) => {
                     if (!args.cancel) {
-                        let options: TextOption = new TextOption(
+                        const options: TextOption = new TextOption(
                             smithchart.element.id + '_HLabel_' + i, axisLabelRenderEventArgs.x,
                             axisLabelRenderEventArgs.y, 'none', axisLabelRenderEventArgs.text
                         );
-                        let color: string = font.color ? font.color : smithchart.themeStyle.axisLabel;
+                        const color: string = font.color ? font.color : smithchart.themeStyle.axisLabel;
                         font.fontFamily = font.fontFamily || smithchart.themeStyle.labelFontFamily;
-                        let element: Element = renderTextElement(options, font, color, groupEle);
+                        const element: Element = renderTextElement(options, font, color, groupEle);
                         groupEle.appendChild(element);
                     }
                 };
@@ -718,9 +669,9 @@ export class AxisRender {
     }
 
     private drawRAxisLabels(smithchart: Smithchart): void {
-        let paddingRadius: number = 2;
+        const paddingRadius: number = 2;
         smithchart.radialAxis.labelStyle.fontFamily = smithchart.themeStyle.fontFamily || smithchart.radialAxis.labelStyle.fontFamily;
-        let font: SmithchartFontModel = smithchart.radialAxis.labelStyle;
+        const font: SmithchartFontModel = smithchart.radialAxis.labelStyle;
         let interSectPoint: RadialLabelCollections = new RadialLabelCollections();
         let label: string;
         let textSize: SmithchartSize;
@@ -739,8 +690,8 @@ export class AxisRender {
         let preHeight: number;
         let preLabel: RadialLabelCollections;
         let preLabelBounds: SmithchartRect;
-        let rAxis: SmithchartAxisModel = smithchart.radialAxis;
-        let groupEle: Element = smithchart.renderer.createGroup({ id: smithchart.element.id + '_RAxisLabels' });
+        const rAxis: SmithchartAxisModel = smithchart.radialAxis;
+        const groupEle: Element = smithchart.renderer.createGroup({ id: smithchart.element.id + '_RAxisLabels' });
         for (let i: number = 0; i < this.labelCollections.length; i++) {
             interSectPoint = this.labelCollections[i];
             label = interSectPoint.value.toString();
@@ -778,22 +729,22 @@ export class AxisRender {
                     }
                 }
             }
-            let axisLabelRenderEventArgs: ISmithchartAxisLabelRenderEventArgs = {
+            const axisLabelRenderEventArgs: ISmithchartAxisLabelRenderEventArgs = {
                 text: label.toString(),
                 x: textPosition.x,
                 y: textPosition.y,
                 name: axisLabelRender,
                 cancel: false
             };
-            let axisLabelRenderSuccess: Function = (args: ISmithchartAxisLabelRenderEventArgs) => {
+            const axisLabelRenderSuccess: Function = (args: ISmithchartAxisLabelRenderEventArgs) => {
                 if (!args.cancel) {
-                    let options: TextOption = new TextOption(
+                    const options: TextOption = new TextOption(
                         smithchart.element.id + '_RLabel_' + i, axisLabelRenderEventArgs.x, axisLabelRenderEventArgs.y,
                         'none', axisLabelRenderEventArgs.text
                     );
-                    let color: string = font.color ? font.color : smithchart.themeStyle.axisLabel;
+                    const color: string = font.color ? font.color : smithchart.themeStyle.axisLabel;
                     font.fontFamily = smithchart.themeStyle.labelFontFamily ? smithchart.themeStyle.labelFontFamily : font.fontFamily;
-                    let element: Element = renderTextElement(options, font, color, groupEle);
+                    const element: Element = renderTextElement(options, font, color, groupEle);
                     groupEle.appendChild(element);
                 }
             };
@@ -805,19 +756,16 @@ export class AxisRender {
 
     private calculateRegion(label: string, textSize: SmithchartSize, textPositionX: number, textPositionY: number): LabelRegion {
         let xAxisLabelRegions: LabelRegion = new LabelRegion();
-        let bounds: SmithchartRect = { x: textPositionX, y: textPositionY, width: textSize.width, height: textSize.height };
+        const bounds: SmithchartRect = { x: textPositionX, y: textPositionY, width: textSize.width, height: textSize.height };
         xAxisLabelRegions = { bounds: bounds, labelText: label };
         return xAxisLabelRegions;
     }
 
     private updateHMinorGridLines(smithchart: Smithchart): void {
-        let minorGridLine: SmithchartMinorGridLinesModel = smithchart.horizontalAxis.minorGridLines;
-        let groupElement: Element;
-        let element: Element;
-        let path: string;
-        groupElement = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_horizontalAxisMinorGridLines' });
-        path = this.calculateGridLinesPath(this.minorHGridArcPoints);
-        let haxismioptions: PathOption = new PathOption(
+        const minorGridLine: SmithchartMinorGridLinesModel = smithchart.horizontalAxis.minorGridLines;
+        const groupElement: Element = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_horizontalAxisMinorGridLines' });
+        const path: string = this.calculateGridLinesPath(this.minorHGridArcPoints);
+        const haxismioptions: PathOption = new PathOption(
             smithchart.element.id + '_horizontalAxisMinorGridLines',
             'none',
             minorGridLine['width'],
@@ -826,20 +774,17 @@ export class AxisRender {
             minorGridLine['dashArray'],
             path
         );
-        element = smithchart.renderer.drawPath(haxismioptions);
+        const element: Element = smithchart.renderer.drawPath(haxismioptions);
         groupElement.appendChild(element);
         smithchart.svgObject.appendChild(groupElement);
 
     }
 
     private updateRMinorGridLines(smithchart: Smithchart): void {
-        let minorGridLine: SmithchartMinorGridLinesModel = smithchart.radialAxis.minorGridLines;
-        let groupElement: Element;
-        let element: Element;
-        let path: string;
-        groupElement = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_radialAxisMinorGridLines' });
-        path = this.calculateGridLinesPath(this.minorGridArcPoints);
-        let raxismioptions: PathOption = new PathOption(
+        const minorGridLine: SmithchartMinorGridLinesModel = smithchart.radialAxis.minorGridLines;
+        const groupElement: Element = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_radialAxisMinorGridLines' });
+        const path: string = this.calculateGridLinesPath(this.minorGridArcPoints);
+        const raxismioptions: PathOption = new PathOption(
             smithchart.element.id + '_radialAxisMinorGridLines',
             'none',
             minorGridLine['width'],
@@ -848,7 +793,7 @@ export class AxisRender {
             minorGridLine['dashArray'],
             path
         );
-        element = smithchart.renderer.drawPath(raxismioptions);
+        const element: Element = smithchart.renderer.drawPath(raxismioptions);
         groupElement.appendChild(element);
         smithchart.svgObject.appendChild(groupElement);
     }
@@ -865,7 +810,6 @@ export class AxisRender {
         let isLargeArc: number;
         let sweep: number;
         let sb: string = '';
-        let path: string;
         for (let i: number = 0; i < points.length; i++) {
             pathSegment = points[i];
             x1 = pathSegment.startPoint.x;
@@ -880,22 +824,20 @@ export class AxisRender {
             sb = sb + ('M' + ' ' + x1 + ' ' + y1 + ' ' + 'A' + ' ' + r1 + ' ' + r2 + ' ' +
                 angle + ' ' + isLargeArc + ' ' + sweep + ' ' + x2 + ' ' + y2 + ' ');
         }
-        path = sb.toString();
+        const path: string = sb.toString();
         return path;
     }
 
     private measureHMinorGridLines(smithchart: Smithchart): void {
         let radialPoint1: LabelCollection[];
         let radialPoint2: LabelCollection[];
-        let k: number = 0;
         let arcPoints: LabelCollection[][] = [];
         let isLargeArc: boolean;
         let startPoint: Point;
         let endPoint: Point;
         let size: SmithchartSize;
         let cx: number;
-        let maxCount: number = smithchart.horizontalAxis.minorGridLines.count;
-        let diameter: number;
+        const maxCount: number = smithchart.horizontalAxis.minorGridLines.count;
         let previous: HorizontalLabelCollection;
         let next: HorizontalLabelCollection;
         let space: number;
@@ -904,7 +846,7 @@ export class AxisRender {
         let radius: number;
         let leftX: number;
         this.minorHGridArcPoints = [];
-        diameter = this.areaRadius * 2;
+        const diameter: number = this.areaRadius * 2;
         for (let i: number = 0; i < this.horizontalLabelCollections.length - 3; i++) {
             previous = this.horizontalLabelCollections[i];
             next = this.horizontalLabelCollections[i + 1];
@@ -941,22 +883,17 @@ export class AxisRender {
                     isLargeArc: isLargeArc,
                     size: size
                 });
-                k++;
             }
         }
 
     }
     private measureRMinorGridLines(smithchart: Smithchart): void {
-        let maxCount: number = smithchart.radialAxis.minorGridLines.count;
+        const maxCount: number = smithchart.radialAxis.minorGridLines.count;
         let arcCx: number;
         let nextAngle: number;
         let k: number = 0;
         let betweenAngle: number;
         let circlePoint: LabelCollection[];
-        let circumference: number;
-        let arcStartX: number;
-        let arcStartY: number;
-        let arcStartPoint: Point;
         let previous: RadialLabelCollections;
         let next: RadialLabelCollections;
         let size: SmithchartSize;
@@ -964,12 +901,12 @@ export class AxisRender {
         let count: number;
         let interval: number;
         let centerValue: number;
-        circumference = Math.PI * (this.areaRadius * 2);
-        arcStartX = arcCx = (smithchart.renderType === 'Impedance') ?
+        const circumference: number = Math.PI * (this.areaRadius * 2);
+        const arcStartX: number = arcCx = (smithchart.renderType === 'Impedance') ?
             this.circleCenterX + this.areaRadius : this.circleCenterX - this.areaRadius;
-        arcStartY = this.circleCenterY;
+        const arcStartY: number = this.circleCenterY;
         this.minorGridArcPoints = [];
-        arcStartPoint = { x: arcStartX, y: arcStartY };
+        const arcStartPoint: Point = { x: arcStartX, y: arcStartY };
         for (let i: number = 2; i < this.labelCollections.length - 3; i++) {
             previous = this.labelCollections[i];
             next = this.labelCollections[i + 1];
@@ -986,18 +923,18 @@ export class AxisRender {
             centerValue = next['value'] > 0 ? next['value'] : previous['value'];
             circlePoint = this.minorGridLineArcIntersectCircle(Math.abs(centerValue));
             for (let j: number = 1; j < count; j++) {
-                let outterInterSectAngle: number = (interval * j) + (previous['angle'] === 360 ? nextAngle : previous['angle']);
-                let outerInterSectPoint: Point = this.circlePointPosition(
+                const outterInterSectAngle: number = (interval * j) + (previous['angle'] === 360 ? nextAngle : previous['angle']);
+                const outerInterSectPoint: Point = this.circlePointPosition(
                     this.circleCenterX, this.circleCenterY, outterInterSectAngle, this.areaRadius);
-                let radius: number = this.arcRadius(arcStartPoint, outerInterSectPoint, outterInterSectAngle);
-                let arcCy: number = outterInterSectAngle > 180 ? this.circleCenterY - radius : this.circleCenterY + radius;
-                let innerInterSectPoint: Point = this.intersectingCirclePoints(
+                const radius: number = this.arcRadius(arcStartPoint, outerInterSectPoint, outterInterSectAngle);
+                const arcCy: number = outterInterSectAngle > 180 ? this.circleCenterY - radius : this.circleCenterY + radius;
+                const innerInterSectPoint: Point = this.intersectingCirclePoints(
                     arcCx, arcCy, radius, circlePoint[0].centerX, circlePoint[0].centerY, circlePoint[0].radius,
                     smithchart.renderType);
-                let startPoint: Point = { x: innerInterSectPoint.x, y: innerInterSectPoint.y };
-                let endPoint: Point = { x: outerInterSectPoint.x, y: outerInterSectPoint.y };
+                const startPoint: Point = { x: innerInterSectPoint.x, y: innerInterSectPoint.y };
+                const endPoint: Point = { x: outerInterSectPoint.x, y: outerInterSectPoint.y };
                 size = { width: radius, height: radius };
-                let sweepDirection: number = previous['value'] >= 0 ? this.direction['clockwise'] : this.direction['counterclockwise'];
+                const sweepDirection: number = previous['value'] >= 0 ? this.direction['clockwise'] : this.direction['counterclockwise'];
                 this.minorGridArcPoints.push({
                     startPoint: startPoint,
                     endPoint: endPoint,
@@ -1012,7 +949,6 @@ export class AxisRender {
     }
 
     private minorGridLineArcIntersectCircle(centerValue: number): LabelCollection[] {
-        let circlePoint: LabelCollection[];
         let calValue: number;
         if (centerValue >= 3) {
             calValue = 20;
@@ -1023,17 +959,14 @@ export class AxisRender {
         } else {
             calValue = 2;
         }
-        circlePoint = this.horizontalLabelCollections.filter((c: LabelCollection) => c['value'] === calValue);
+        const circlePoint: LabelCollection[] = this.horizontalLabelCollections.filter((c: LabelCollection) => c['value'] === calValue);
         return circlePoint;
     }
 
     private circlePointPosition(cx: number, cy: number, angle: number, r: number): Point {
-        let pointX: number;
-        let pointY: number;
-        let radian: number;
-        radian = angle * (Math.PI / 180);
-        pointX = cx + r * Math.cos(radian);
-        pointY = cy + r * Math.sin(radian);
+        const radian: number = angle * (Math.PI / 180);
+        const pointX: number = cx + r * Math.cos(radian);
+        const pointY: number = cy + r * Math.sin(radian);
         return { x: pointX, y: pointY };
     }
 
@@ -1136,20 +1069,13 @@ export class AxisRender {
     }
 
     private arcRadius(startPoint: Point, endPoint: Point, angle: number): number {
-        let mx: number;
-        let my: number;
-        let u: number;
-        let t: number;
-        let cy: number;
-        let radius: number;
-        let radian: number;
-        radian = angle > 180 ? (90 * Math.PI / 180) : (270 * Math.PI / 180); // Angle 90 and 270 used for calculating upper and lower circle
-        mx = (endPoint.x - startPoint.x) / 2;
-        my = (endPoint.y - startPoint.y) / 2;
-        u = (Math.cos(radian) * my - Math.sin(radian) * mx) / (Math.cos(radian) * mx + Math.sin(radian) * my);
-        t = (my - mx * u) / Math.sin(radian);
-        cy = startPoint.y + Math.sin(radian) * t;
-        radius = Math.abs(startPoint.y - cy);
+        const radian: number = angle > 180 ? (90 * Math.PI / 180) : (270 * Math.PI / 180); // Angle 90 and 270 used for calculating upper and lower circle
+        const mx: number = (endPoint.x - startPoint.x) / 2;
+        const my: number = (endPoint.y - startPoint.y) / 2;
+        const u: number = (Math.cos(radian) * my - Math.sin(radian) * mx) / (Math.cos(radian) * mx + Math.sin(radian) * my);
+        const t: number = (my - mx * u) / Math.sin(radian);
+        const cy: number = startPoint.y + Math.sin(radian) * t;
+        const radius: number = Math.abs(startPoint.y - cy);
         return radius;
     }
 }

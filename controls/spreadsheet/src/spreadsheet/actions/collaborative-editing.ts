@@ -27,6 +27,8 @@ export class CollaborativeEditing {
 
     /**
      * Destroy collaborative editing module.
+     *
+     * @returns {void} - Destroy collaborative editing module.
      */
     public destroy(): void {
         this.removeEventListener();
@@ -35,6 +37,8 @@ export class CollaborativeEditing {
 
     /**
      * Get the collaborative editing module name.
+     *
+     * @returns {string} - Get the collaborative editing module name.
      */
     public getModuleName(): string {
         return 'collaborativeEditing';

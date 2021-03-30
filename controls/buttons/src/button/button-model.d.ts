@@ -12,6 +12,7 @@ export interface ButtonModel extends ComponentModel{
      * The possible values are:
      * * Left: The icon will be positioned to the left of the text content.
      * * Right: The icon will be positioned to the right of the text content.
+     *
      * @default "left"
      */
     iconPosition?: IconPosition;
@@ -19,18 +20,21 @@ export interface ButtonModel extends ComponentModel{
     /**
      * Defines class/multiple classes separated by a space for the Button that is used to include an icon.
      * Buttons can also include font icon and sprite image.
+     *
      * @default ""
      */
     iconCss?: string;
 
     /**
      * Specifies a value that indicates whether the Button is `disabled` or not.
+     *
      * @default false.
      */
     disabled?: boolean;
 
     /**
      * Allows the appearance of the Button to be enhanced and visually appealing when set to `true`.
+     *
      * @default false
      */
     isPrimary?: boolean;
@@ -40,6 +44,7 @@ export interface ButtonModel extends ComponentModel{
      * size can be defined by using
      * [`this`](http://ej2.syncfusion.com/documentation/button/howto.html?lang=typescript#create-a-block-button).
      * {% codeBlock src='button/cssClass/index.md' %}{% endcodeBlock %}
+     *
      * @default ""
      */
     cssClass?: string;
@@ -47,31 +52,36 @@ export interface ButtonModel extends ComponentModel{
     /**
      * Defines the text `content` of the Button element.
      * {% codeBlock src='button/content/index.md' %}{% endcodeBlock %}
+     *
      * @default ""
      */
     content?: string;
 
     /**
      * Makes the Button toggle, when set to `true`. When you click it, the state changes from normal to active.
+     *
      * @default false
      */
     isToggle?: boolean;
 
     /**
      * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
+     *
      * @private
      */
     locale?: string;
 
     /**
      * Defines whether to allow the cross-scripting site or not.
+     *
      * @default false
      */
     enableHtmlSanitizer?: boolean;
 
     /**
      * Triggers once the component rendering is completed.
-     * @event
+     *
+     * @event created
      */
     created?: EmitType<Event>;
 

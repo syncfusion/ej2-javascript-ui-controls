@@ -18,3 +18,5 @@ export * from './sort-settings';
 export * from './sort-settings-model';
 export * from './rowdrop-settings';
 export * from './rowdrop-settings-model';
+export * from './infinite-scroll-settings';
+export * from './infinite-scroll-settings-model';

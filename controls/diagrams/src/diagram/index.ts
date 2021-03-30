@@ -68,7 +68,7 @@ export * from './objects/preview';
 export * from './objects/fixed-user-handle';
 export * from './objects/fixed-user-handle-model';
 
-//interaction 
+//interaction
 export * from './interaction/selector';
 export * from './interaction/selector-model';
 export * from './interaction/tool';

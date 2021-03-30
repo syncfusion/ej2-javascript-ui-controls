@@ -1,5 +1,6 @@
 /**
  * Dictionary class
+ *
  * @private
  * @hidden
  */
@@ -15,6 +16,7 @@ export class TemporaryDictionary<K, V> {
      */
     private mValues: V[] = [];
     /**
+     * @returns {number} .
      * @hidden
      * @private
      */
@@ -22,6 +24,11 @@ export class TemporaryDictionary<K, V> {
         return this.mKeys.length;
     }
     /**
+     * @template K
+     * @template V
+     * @param {K} key .
+     * @param {V} value .
+     * @returns {void} .
      * @hidden
      * @private
      */
@@ -29,7 +36,7 @@ export class TemporaryDictionary<K, V> {
         if (key === undefined || key === null || value === undefined || value === null) {
             throw new ReferenceError('Provided key or value is not valid.');
         }
-        let index: number = this.mKeys.indexOf(key);
+        const index: number = this.mKeys.indexOf(key);
         if (index < 0) {
             this.mKeys.push(key);
             this.mValues.push(value);
@@ -39,6 +46,8 @@ export class TemporaryDictionary<K, V> {
         }
     }
     /**
+     * @template K
+     * @returns {K[]} .
      * @hidden
      * @private
      */
@@ -46,6 +55,8 @@ export class TemporaryDictionary<K, V> {
         return this.mKeys;
     }
     /**
+     * @template V
+     * @returns {V[]} .
      * @hidden
      * @private
      */
@@ -53,6 +64,10 @@ export class TemporaryDictionary<K, V> {
         return this.mValues;
     }
     /**
+     * @template K
+     * @template V
+     * @param {K} key .
+     * @returns {V} .
      * @hidden
      * @private
      */
@@ -60,7 +75,7 @@ export class TemporaryDictionary<K, V> {
         if (key === undefined || key === null) {
             throw new ReferenceError('Provided key is not valid.');
         }
-        let index: number = this.mKeys.indexOf(key);
+        const index: number = this.mKeys.indexOf(key);
         if (index < 0) {
             throw new RangeError('No item with the specified key has been added.');
         } else {
@@ -68,6 +83,11 @@ export class TemporaryDictionary<K, V> {
         }
     }
     /**
+     * @template K
+     * @template V
+     * @param {K} key .
+     * @param {V} value .
+     * @returns {void} .
      * @hidden
      * @private
      */
@@ -75,7 +95,7 @@ export class TemporaryDictionary<K, V> {
         if (key === undefined || key === null) {
             throw new ReferenceError('Provided key is not valid.');
         }
-        let index: number = this.mKeys.indexOf(key);
+        const index: number = this.mKeys.indexOf(key);
         if (index < 0) {
             this.mKeys.push(key);
             this.mValues.push(value);
@@ -84,6 +104,9 @@ export class TemporaryDictionary<K, V> {
         }
     }
     /**
+     * @template K
+     * @param {K} key .
+     * @returns {boolean} .
      * @hidden
      * @private
      */
@@ -91,7 +114,7 @@ export class TemporaryDictionary<K, V> {
         if (key === undefined || key === null) {
             throw new ReferenceError('Provided key is not valid.');
         }
-        let index: number = this.mKeys.indexOf(key);
+        const index: number = this.mKeys.indexOf(key);
         if (index < 0) {
             throw new RangeError('No item with the specified key has been added.');
         } else {
@@ -101,6 +124,9 @@ export class TemporaryDictionary<K, V> {
         }
     }
     /**
+     * @template K
+     * @param {K} key .
+     * @returns {boolean} .
      * @hidden
      * @private
      */
@@ -108,13 +134,14 @@ export class TemporaryDictionary<K, V> {
         if (key === undefined || key === null) {
             throw new ReferenceError('Provided key is not valid.');
         }
-        let index: number = this.mKeys.indexOf(key);
+        const index: number = this.mKeys.indexOf(key);
         if (index < 0) {
             return false;
         }
         return true;
     }
     /**
+     * @returns {void} .
      * @hidden
      * @private
      */

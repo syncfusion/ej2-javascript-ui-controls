@@ -2,7 +2,7 @@
  * Test case for dataManager
  */
 import { DataManager, ReturnOption, RequestOptions } from '../src/manager';
-import { JsonAdaptor, RemoteSaveAdaptor, WebMethodAdaptor, UrlAdaptor, AjaxAdaptor } from '../src/adaptors';
+import { JsonAdaptor, RemoteSaveAdaptor, WebMethodAdaptor, UrlAdaptor, CustomDataAdaptor } from '../src/adaptors';
 import { ODataAdaptor, ODataV4Adaptor, WebApiAdaptor, CacheAdaptor } from '../src/adaptors';
 import { Query, Predicate } from '../src/query';
 import { DataUtil } from '../src/util';
@@ -3546,7 +3546,7 @@ describe('EJ2-37998 - Provide support for delete action while using complex data
     });
 });
 
-    describe('AjaxAdaptor Adaptor', () => {
+    describe('CustomDataAdaptor Adaptor', () => {
         let dataManager: DataManager;
         let result: any;
         let data: Object[] = [
@@ -3578,7 +3578,7 @@ describe('EJ2-37998 - Provide support for delete action while using complex data
             xhttp.send(option.data);
         };
         describe('page method', () => {
-            let adaptor = new AjaxAdaptor({
+            let adaptor = new CustomDataAdaptor({
                 getData: function(option: object) {
                     createRequest('/Home/Employees', option);  
                 }
@@ -3610,7 +3610,7 @@ describe('EJ2-37998 - Provide support for delete action while using complex data
         });
 
         describe('where method', () => {
-            let adaptor = new AjaxAdaptor({
+            let adaptor = new CustomDataAdaptor({
                 getData: function(option: object) {
                     createRequest('/Home/Employees', option);  
                 }
@@ -3641,7 +3641,7 @@ describe('EJ2-37998 - Provide support for delete action while using complex data
         });
         describe('group column', () => {
             let result: any;
-            let adaptor = new AjaxAdaptor({
+            let adaptor = new CustomDataAdaptor({
                 getData: function(option: object) {
                     createRequest('/Home/Employees', option);  
                 }
@@ -3672,7 +3672,7 @@ describe('EJ2-37998 - Provide support for delete action while using complex data
         });
         describe('group column with group data source', () => {
             let result: any;
-            let adaptor = new AjaxAdaptor({
+            let adaptor = new CustomDataAdaptor({
                 getData: function(option: object) {
                     createRequest('/Home/Employees', option);  
                 }
@@ -3703,7 +3703,7 @@ describe('EJ2-37998 - Provide support for delete action while using complex data
         });
         describe('aggregate method', () => {
             let result: any;
-            let adaptor = new AjaxAdaptor({
+            let adaptor = new CustomDataAdaptor({
                 getData: function(option: object) {
                     createRequest('/Home/Employees', option);  
                 }
@@ -3735,7 +3735,7 @@ describe('EJ2-37998 - Provide support for delete action while using complex data
         });
         describe('aggregate method with return options', () => {
             let result: any;
-            let adaptor = new AjaxAdaptor({
+            let adaptor = new CustomDataAdaptor({
                 getData: function(option: object) {
                     createRequest('/Home/Employees', option);  
                 }
@@ -3769,7 +3769,7 @@ describe('EJ2-37998 - Provide support for delete action while using complex data
             });
         });
         describe('insert method', () => {
-            let adaptor = new AjaxAdaptor({
+            let adaptor = new CustomDataAdaptor({
                 addRecord: function(option: object) {
                     createRequest('/Home/Employees', option);  
                 }
@@ -3802,7 +3802,7 @@ describe('EJ2-37998 - Provide support for delete action while using complex data
             });
         });
         describe('update method', () => {
-            let adaptor = new AjaxAdaptor({
+            let adaptor = new CustomDataAdaptor({
                 updateRecord: function(option: object) {
                     createRequest('/Home/Employees', option);  
                 }
@@ -3835,7 +3835,7 @@ describe('EJ2-37998 - Provide support for delete action while using complex data
             });
         });
         describe('remove method', () => {
-            let adaptor = new AjaxAdaptor({
+            let adaptor = new CustomDataAdaptor({
                 deleteRecord: function(option: object) {
                     createRequest('/Home/Employees', option);  
                 }
@@ -3867,7 +3867,7 @@ describe('EJ2-37998 - Provide support for delete action while using complex data
             });
         });
         describe('failure method', () => {
-            let adaptor = new AjaxAdaptor({
+            let adaptor = new CustomDataAdaptor({
                 batchUpdate: function(option: object) {
                     (option as any).onFailure(undefined);
                 }
@@ -3914,7 +3914,7 @@ describe('EJ2-37998 - Provide support for delete action while using complex data
         });
 
         describe('batchRequest method', () => {
-            let adaptor = new AjaxAdaptor({
+            let adaptor = new CustomDataAdaptor({
                 batchUpdate: function(option: object) {
                     createRequest('/Home/Employees', option, true)
                 }

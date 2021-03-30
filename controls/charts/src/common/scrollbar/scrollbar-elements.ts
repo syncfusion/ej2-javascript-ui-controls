@@ -1,24 +1,28 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable valid-jsdoc */
 import { ScrollBar } from './scrollbar';
 import { Chart } from '../../chart/chart';
 import { RectOption, CircleOption } from '../utils/helper';
 import { PathOption, Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { IScrollbarThemeStyle } from '../../chart/index';
 
+// eslint-disable-next-line jsdoc/require-param
 /**
  * Create scrollbar svg.
- * @return {void}
+ *
+ * @returns {void}
  */
 export function createScrollSvg(scrollbar: ScrollBar, renderer: SvgRenderer): void {
-    let rect: Rect = scrollbar.axis.rect;
-    let isHorizontalAxis: boolean = scrollbar.axis.orientation === 'Horizontal';
-    let enablePadding: boolean = false; let markerHeight: number = 5;
+    const rect: Rect = scrollbar.axis.rect;
+    const isHorizontalAxis: boolean = scrollbar.axis.orientation === 'Horizontal';
+    let enablePadding: boolean = false; let  markerHeight: number = 5;
     let yMin: number | string;
-    for (let tempSeries of scrollbar.axis.series) {
+    for (const tempSeries of scrollbar.axis.series) {
         if (tempSeries.marker.height > markerHeight) {
             markerHeight = tempSeries.marker.height;
         }
     }
-    for (let tempSeries of scrollbar.axis.series) {
+    for (const tempSeries of scrollbar.axis.series) {
         if (tempSeries.visible) { // To avoid the console error, when the visibility of the series is false.
             yMin = tempSeries.yMin.toString();
             enablePadding = (tempSeries.yData).some((yData: number | string) => {
@@ -65,29 +69,34 @@ export class ScrollElements {
 
     /**
      * Constructor for scroll elements
-     * @param scrollObj 
+     *
+     * @param scrollObj
+     * @param chart
      */
+
     constructor(chart: Chart) {
         this.chartId = chart.element.id + '_';
     }
 
     /**
      * Render scrollbar elements.
-     * @return {void}
+     *
+     * @returns {void}
      * @private
      */
+
     public renderElements(scroll: ScrollBar, renderer: SvgRenderer): Element {
-        let scrollGroup: Element = renderer.createGroup({
+        const scrollGroup: Element = renderer.createGroup({
             id: this.chartId + 'scrollBar_' + scroll.axis.name,
             transform: 'translate(' + ((scroll.isVertical && scroll.axis.isInversed) ? scroll.height : scroll.axis.isInversed ?
                 scroll.width : '0') + ',' + (scroll.isVertical && scroll.axis.isInversed ? '0' : scroll.axis.isInversed ?
-                    scroll.height : scroll.isVertical ? scroll.width : '0') + ') rotate(' + (scroll.isVertical && scroll.axis.isInversed ?
-                        '90' : scroll.isVertical ? '270' : scroll.axis.isInversed ? '180' : '0') + ')'
+                scroll.height : scroll.isVertical ? scroll.width : '0') + ') rotate(' + (scroll.isVertical && scroll.axis.isInversed ?
+                '90' : scroll.isVertical ? '270' : scroll.axis.isInversed ? '180' : '0') + ')'
         });
-        let backRectGroup: Element = renderer.createGroup({
+        const backRectGroup: Element = renderer.createGroup({
             id: this.chartId + 'scrollBar_backRect_' + scroll.axis.name
         });
-        let thumbGroup: Element = renderer.createGroup({
+        const thumbGroup: Element = renderer.createGroup({
             id: this.chartId + 'scrollBar_thumb_' + scroll.axis.name,
             transform: 'translate(0,0)'
         });
@@ -102,11 +111,17 @@ export class ScrollElements {
     }
     /**
      * Method to render back rectangle of scrollbar
-     * @param scroll 
+     *
+     * @param scroll
+     * @param renderer
+     * @param parent
+     * @param renderer
+     * @param parent
      */
+
     private backRect(scroll: ScrollBar, renderer: SvgRenderer, parent: Element): void {
-        let style: IScrollbarThemeStyle = scroll.scrollbarThemeStyle;
-        let backRectEle: Element = renderer.drawRectangle(new RectOption(
+        const style: IScrollbarThemeStyle = scroll.scrollbarThemeStyle;
+        const backRectEle: Element = renderer.drawRectangle(new RectOption(
             this.chartId + 'scrollBarBackRect_' + scroll.axis.name, style.backRect, { width: 1, color: style.backRect }, 1, new Rect(
                 0, 0, scroll.width, scroll.height
             ),
@@ -116,11 +131,17 @@ export class ScrollElements {
     }
     /**
      * Method to render arrows
-     * @param scroll 
+     *
+     * @param scroll
+     * @param renderer
+     * @param parent
+     * @param renderer
+     * @param parent
      */
+
     private arrows(scroll: ScrollBar, renderer: SvgRenderer, parent: Element): void {
-        let style: IScrollbarThemeStyle = scroll.scrollbarThemeStyle;
-        let option: PathOption = new PathOption(
+        const style: IScrollbarThemeStyle = scroll.scrollbarThemeStyle;
+        const option: PathOption = new PathOption(
             this.chartId + 'scrollBar_leftArrow_' + scroll.axis.name, style.arrow, 1, style.arrow, 1, '', ''
         );
         this.leftArrowEle = renderer.drawPath(option);
@@ -132,15 +153,17 @@ export class ScrollElements {
     }
     /**
      * Methods to set the arrow width
-     * @param thumbRectX 
-     * @param thumbRectWidth 
-     * @param height 
+     *
+     * @param thumbRectX
+     * @param thumbRectWidth
+     * @param height
      */
+
     public setArrowDirection(thumbRectX: number, thumbRectWidth: number, height: number): void {
-        let circleRadius: number = 8;
-        let leftDirection: string = 'M ' + ((thumbRectX - circleRadius / 2) + 1) + ' ' + (height / 2) + ' ' + 'L ' +
+        const circleRadius: number = 8;
+        const leftDirection: string = 'M ' + ((thumbRectX - circleRadius / 2) + 1) + ' ' + (height / 2) + ' ' + 'L ' +
             (thumbRectX - circleRadius / 2 + 6) + ' ' + 11 + ' ' + 'L ' + (thumbRectX - circleRadius / 2 + 6) + ' ' + 5 + ' Z';
-        let rightDirection: string = 'M ' + ((thumbRectX + thumbRectWidth + circleRadius / 2) - 0.5) + ' ' + (height / 2)
+        const rightDirection: string = 'M ' + ((thumbRectX + thumbRectWidth + circleRadius / 2) - 0.5) + ' ' + (height / 2)
             + ' ' + 'L ' + (thumbRectX + thumbRectWidth + circleRadius / 2 - 6) + ' ' + 11.5 + ' ' + 'L ' + (thumbRectX +
                 thumbRectWidth + circleRadius / 2 - 6) + ' ' + 4.5 + ' Z';
         this.leftArrowEle.setAttribute('d', leftDirection);
@@ -148,13 +171,15 @@ export class ScrollElements {
     }
     /**
      * Method to render thumb
-     * @param scroll 
-     * @param renderer 
-     * @param parent 
+     *
+     * @param scroll
+     * @param renderer
+     * @param parent
      */
+
     public thumb(scroll: ScrollBar, renderer: SvgRenderer, parent: Element): void {
         scroll.startX = this.thumbRectX;
-        let style: IScrollbarThemeStyle = scroll.scrollbarThemeStyle;
+        const style: IScrollbarThemeStyle = scroll.scrollbarThemeStyle;
         this.slider = renderer.drawRectangle(new RectOption(
             this.chartId + 'scrollBarThumb_' + scroll.axis.name,
             style.thumb, { width: 1, color: '' }, 1, new Rect(
@@ -165,27 +190,29 @@ export class ScrollElements {
     }
     /**
      *  Method to render circles
-     * @param scroll 
-     * @param renderer 
-     * @param parent 
+     *
+     * @param scroll
+     * @param renderer
+     * @param parent
      */
+
     private renderCircle(scroll: ScrollBar, renderer: SvgRenderer, parent: Element): void {
-        let style: IScrollbarThemeStyle = scroll.scrollbarThemeStyle;
-        let option: CircleOption = new CircleOption(
+        const style: IScrollbarThemeStyle = scroll.scrollbarThemeStyle;
+        const option: CircleOption = new CircleOption(
             this.chartId + 'scrollBar_leftCircle_' + scroll.axis.name, style.circle, { width: 1, color: style.circle },
             1, this.thumbRectX, scroll.height / 2, 8
         );
-        let scrollShadowEle: string = '<filter x="-25.0%" y="-20.0%" width="150.0%" height="150.0%" filterUnits="objectBoundingBox"' +
+        const scrollShadowEle: string = '<filter x="-25.0%" y="-20.0%" width="150.0%" height="150.0%" filterUnits="objectBoundingBox"' +
             'id="scrollbar_shadow"><feOffset dx="0" dy="1" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>' +
             '<feGaussianBlur stdDeviation="1.5" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>' +
             '<feComposite in="shadowBlurOuter1" in2="SourceAlpha" operator="out" result="shadowBlurOuter1"></feComposite>' +
             '<feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.16 0" type="matrix" in="shadowBlurOuter1">' +
             '</feColorMatrix></filter>';
-        let defElement: Element = renderer.createDefs();
-        defElement.innerHTML = scrollShadowEle;
-        let shadowGroup: Element = renderer.createGroup({
+        const defElement: Element = renderer.createDefs();
+        const shadowGroup: Element = renderer.createGroup({
             id: this.chartId + scroll.axis.name + '_thumb_shadow'
         });
+        defElement.innerHTML = scrollShadowEle;
         shadowGroup.innerHTML = '<use fill="black" fill-opacity="1" filter="url(#scrollbar_shadow)" xlink:href="#' +
         this.chartId + 'scrollBar_leftCircle_' +
         scroll.axis.name + '"></use><use fill="black" fill-opacity="1" filter="url(#scrollbar_shadow)" xlink:href="#' +
@@ -201,18 +228,20 @@ export class ScrollElements {
     }
     /**
      * Method to render grip elements
-     * @param scroll 
-     * @param renderer 
-     * @param parent 
+     *
+     * @param scroll
+     * @param renderer
+     * @param parent
      */
+
     private thumbGrip(scroll: ScrollBar, renderer: SvgRenderer, parent: Element): void {
         let sidePadding: number = 0;
         let topPadding: number = 0;
-        let gripWidth: number = 14;
-        let gripCircleDiameter: number = 2;
-        let padding: number = gripWidth / 2 - gripCircleDiameter;
-        let style: IScrollbarThemeStyle = scroll.scrollbarThemeStyle;
-        let option: CircleOption = new CircleOption(
+        const gripWidth: number = 14;
+        const gripCircleDiameter: number = 2;
+        const padding: number = gripWidth / 2 - gripCircleDiameter;
+        const style: IScrollbarThemeStyle = scroll.scrollbarThemeStyle;
+        const option: CircleOption = new CircleOption(
             this.chartId + 'scrollBar_gripCircle0' + '_' + scroll.axis.name, style.grip,
             { width: 1, color: style.grip }, 1, 0, 0, 1
         );

@@ -1,5 +1,6 @@
+/*eslint camelcase: ["error", {properties: "never"}]*/
 /**
- * @hidden 
+ * @hidden
  */
 export enum CommonErrors {
     na = 0,
@@ -11,8 +12,8 @@ export enum CommonErrors {
     null = 6
 }
 
-/** 
- * @hidden 
+/**
+ * @hidden
  */
 export enum FormulasErrorsStrings {
     operators_cannot_start_with_expression = 0,

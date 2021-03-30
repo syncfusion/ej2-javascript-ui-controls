@@ -1,7 +1,8 @@
+/* eslint-disable */
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { WUniqueFormat } from './unique-format';
 import { Dictionary } from './dictionary';
-/** 
+/**
  * @private
  */
 export class WUniqueFormats {
@@ -10,7 +11,7 @@ export class WUniqueFormats {
      */
     public items: WUniqueFormat[];
 
-    constructor() {
+    public constructor() {
         this.items = [];
     }
 

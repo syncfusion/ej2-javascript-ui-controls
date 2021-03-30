@@ -1,3 +1,6 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable jsdoc/require-param */
 /**
  * Position library
  */
@@ -6,6 +9,7 @@ let elementRect: ClientRect;
 let popupRect: ClientRect;
 let element: Element;
 let parentDocument: Document;
+// eslint-disable-next-line @typescript-eslint/ban-types
 let fixedParent: Boolean = false;
 /**
  * @private
@@ -13,9 +17,10 @@ let fixedParent: Boolean = false;
 export function calculateRelativeBasedPosition(
     anchor: HTMLElement,
     element: HTMLElement): OffsetPosition {
+    // eslint-disable-next-line @typescript-eslint/ban-types
     let fixedElement: Boolean = false;
-    let anchorPos: OffsetPosition = { left: 0, top: 0 };
-    let tempAnchor: HTMLElement = anchor;
+    const anchorPos: OffsetPosition = { left: 0, top: 0 };
+    const tempAnchor: HTMLElement = anchor;
     if ( !anchor || !element) {
         return anchorPos;
     }
@@ -39,8 +44,10 @@ export function calculateRelativeBasedPosition(
  * @private
  */
 export function calculatePosition(
+    // eslint-disable-next-line @typescript-eslint/ban-types
     currentElement: Element, positionX?: string, positionY?: string, parentElement?: Boolean,
     targetValues?: ClientRect): OffsetPosition {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     (positionY + positionX === 'topright') ? popupRect = undefined : popupRect = targetValues;
     popupRect = targetValues;
     fixedParent = parentElement ? true : false;
@@ -55,7 +62,7 @@ export function calculatePosition(
     }
     parentDocument = currentElement.ownerDocument;
     element = currentElement;
-    let pos: OffsetPosition = { left: 0, top: 0 };
+    const pos: OffsetPosition = { left: 0, top: 0 };
     return updatePosition(positionX.toLowerCase(), positionY.toLowerCase(), pos);
 }
 /**
@@ -77,43 +84,43 @@ function updatePosition(posX: string, posY: string, pos: OffsetPosition): Offset
     elementRect = element.getBoundingClientRect();
 
     switch (posY + posX) {
-        case 'topcenter':
-            setPosx(getElementHCenter(), pos);
-            setPosy(getElementTop(), pos);
-            break;
-        case 'topright':
-            setPosx(getElementRight(), pos);
-            setPosy(getElementTop(), pos);
-            break;
-        case 'centercenter':
-            setPosx(getElementHCenter(), pos);
-            setPosy(getElementVCenter(), pos);
-            break;
-        case 'centerright':
-            setPosx(getElementRight(), pos);
-            setPosy(getElementVCenter(), pos);
-            break;
-        case 'centerleft':
-            setPosx(getElementLeft(), pos);
-            setPosy(getElementVCenter(), pos);
-            break;
-        case 'bottomcenter':
-            setPosx(getElementHCenter(), pos);
-            setPosy(getElementBottom(), pos);
-            break;
-        case 'bottomright':
-            setPosx(getElementRight(), pos);
-            setPosy(getElementBottom(), pos);
-            break;
-        case 'bottomleft':
-            setPosx(getElementLeft(), pos);
-            setPosy(getElementBottom(), pos);
-            break;
-        default:
-        case 'topleft':
-            setPosx(getElementLeft(), pos);
-            setPosy(getElementTop(), pos);
-            break;
+    case 'topcenter':
+        setPosx(getElementHCenter(), pos);
+        setPosy(getElementTop(), pos);
+        break;
+    case 'topright':
+        setPosx(getElementRight(), pos);
+        setPosy(getElementTop(), pos);
+        break;
+    case 'centercenter':
+        setPosx(getElementHCenter(), pos);
+        setPosy(getElementVCenter(), pos);
+        break;
+    case 'centerright':
+        setPosx(getElementRight(), pos);
+        setPosy(getElementVCenter(), pos);
+        break;
+    case 'centerleft':
+        setPosx(getElementLeft(), pos);
+        setPosy(getElementVCenter(), pos);
+        break;
+    case 'bottomcenter':
+        setPosx(getElementHCenter(), pos);
+        setPosy(getElementBottom(), pos);
+        break;
+    case 'bottomright':
+        setPosx(getElementRight(), pos);
+        setPosy(getElementBottom(), pos);
+        break;
+    case 'bottomleft':
+        setPosx(getElementLeft(), pos);
+        setPosy(getElementBottom(), pos);
+        break;
+    default:
+    case 'topleft':
+        setPosx(getElementLeft(), pos);
+        setPosy(getElementTop(), pos);
+        break;
     }
     return pos;
 
@@ -169,6 +176,7 @@ function getElementHCenter(): number {
 
 /**
  * Provides information about a OffsetPosition.
+ *
  * @private
  */
 export interface OffsetPosition {

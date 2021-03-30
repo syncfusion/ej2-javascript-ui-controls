@@ -40,6 +40,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Sets and gets the opacity of the text.
+     *
      * @blazorDefaultValue 1
      */
     @Property(1)
@@ -54,6 +55,7 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * Sets and gets the left margin for linear gauge.
+     *
      * @default 10
      */
     @Property(10)
@@ -61,6 +63,7 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * Sets and gets the right margin for linear gauge.
+     *
      * @default 10
      */
     @Property(10)
@@ -68,6 +71,7 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * Sets and gets the top margin for linear gauge.
+     *
      * @default 10
      */
     @Property(10)
@@ -75,6 +79,7 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * Sets and gets the bottom margin for linear gauge.
+     *
      * @default 10
      */
     @Property(10)
@@ -94,6 +99,7 @@ export class Border extends ChildProperty<Border> {
 
     /**
      * Sets and gets the width of the border.
+     *
      * @default 0
      */
     @Property(0)
@@ -127,6 +133,7 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Sets and gets the vertical alignment of annotation.
+     *
      * @default None
      */
     @Property('None')
@@ -134,6 +141,7 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Sets and gets the horizontal alignment of annotation.
+     *
      * @default None
      */
     @Property('None')
@@ -141,6 +149,7 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Sets and gets the z-index of the annotation.
+     *
      * @default '-1'
      */
     @Property('-1')
@@ -155,6 +164,7 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Sets and gets the axis index of the linear gauge
+     *
      * @aspDefaultValueIgnore
      */
     @Property(null)
@@ -162,6 +172,7 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Sets and gets the value of axis in linear gauge.
+     *
      * @aspDefaultValueIgnore
      * @blazorDefaultValue null
      */
@@ -177,6 +188,7 @@ export class Annotation extends ChildProperty<Annotation> {
 export class Container extends ChildProperty<Container> {
     /**
      * Sets and gets the type of container in linear gauge.
+     *
      * @default Normal
      */
     @Property('Normal')
@@ -184,6 +196,7 @@ export class Container extends ChildProperty<Container> {
 
     /**
      * Sets and gets the height of the container in linear gauge.
+     *
      * @default 0
      */
     @Property(0)
@@ -191,6 +204,7 @@ export class Container extends ChildProperty<Container> {
 
     /**
      * Sets and gets the width of the container in linear gauge.
+     *
      * @default 0
      */
     @Property(0)
@@ -198,6 +212,7 @@ export class Container extends ChildProperty<Container> {
 
     /**
      * Sets and gets the corner radius for the rounded rectangle container in linear gauge.
+     *
      * @default 10
      */
     @Property(10)
@@ -217,6 +232,7 @@ export class Container extends ChildProperty<Container> {
 
     /**
      * Sets and gets the value to place the container in the linear gauge component.
+     *
      * @blazorDefaultValue 0
      */
     @Property(0)
@@ -229,6 +245,7 @@ export class Container extends ChildProperty<Container> {
 export class RangeTooltip extends ChildProperty<RangeTooltip> {
     /**
      * Sets and gets the fill color of the range tooltip, which accepts the value in hex code, rgba string as a valid CSS color string.
+     *
      * @default null
      */
 
@@ -244,6 +261,7 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
 
     /**
      * Sets and gets the format for the tooltip content in range.
+     *
      * @default null
      */
 
@@ -253,6 +271,7 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
     /**
      * Sets and gets the custom template to format the tooltip content. Use ${x} and ${y} as a
      * placeholder text to display the corresponding data point.
+     *
      * @default null
      */
 
@@ -261,6 +280,7 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
 
     /**
      * Enables or disables the animation for the range tooltip when moved from one place to another.
+     *
      * @default true
      */
     @Property(true)
@@ -274,12 +294,14 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
 
     /**
      * Sets and gets the position type to place the tooltip in the axis .
+     *
      * @default End
      */
     @Property('End')
     public position: TooltipPosition;
     /**
      * Enables or disables the options to show the tooltip position on range.
+     *
      * @default false
      */
     @Property(false)
@@ -292,6 +314,7 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
 export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
      * Enables or disables the visibility of tooltip.
+     *
      * @default false
      */
 
@@ -299,7 +322,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public enable: boolean;
 
     /**
-     * Sets and gets the color of the tooltip. This property accepts value in hex code, rgba string as a valid CSS color string. 
+     * Sets and gets the color of the tooltip. This property accepts value in hex code, rgba string as a valid CSS color string.
      */
 
     @Property('')
@@ -314,6 +337,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * Sets and gets the format of the tooltip content in linear gauge.
+     *
      * @default null
      */
 
@@ -322,6 +346,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * Enables or disables the options to show the tooltip position on mouse pointer.
+     *
      * @default false
      */
     @Property(false)
@@ -334,6 +359,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * Sets and gets the position type to place the tooltip in the axis.
+     *
      * @default End
      */
     @Property('End')
@@ -341,6 +367,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
      * Sets and gets the custom template to format the tooltip content. Use ${x} and ${y} as a
      * placeholder text to display the corresponding data point.
+     *
      * @default null
      */
 
@@ -349,6 +376,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * Enables or disables the animation for the tooltip while moving from one place to another.
+     *
      * @default true
      */
     @Property(true)
@@ -362,6 +390,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * Sets and gets the option to display the tooltip for range, annotation, pointer.
+     *
      * @default Pointer
      */
     @Property('Pointer')

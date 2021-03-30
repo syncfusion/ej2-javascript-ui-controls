@@ -7,7 +7,7 @@ import * as cls from './css-constant';
 
 /**
  * Kanban mobile layout rendering module
- * @hidden
+ *
  */
 export class MobileLayout {
     public parent: Kanban;
@@ -15,16 +15,12 @@ export class MobileLayout {
     public treeViewObj: TreeView;
     public treePopup: Popup;
 
-    /**
-     * Constructor for mobile layout module
-     * @private
-     */
     constructor(parent: Kanban) {
         this.parent = parent;
     }
 
     public renderSwimlaneHeader(): void {
-        let toolbarWrapper: HTMLElement = createElement('div', {
+        const toolbarWrapper: HTMLElement = createElement('div', {
             className: cls.SWIMLANE_HEADER_CLASS,
             innerHTML: '<div class="' + cls.SWIMLANE_HEADER_TOOLBAR_CLASS + '"><div class="' + cls.TOOLBAR_MENU_CLASS +
                 '"><div class="e-icons ' + cls.TOOLBAR_MENU_ICON_CLASS + '"></div></div><div class="' + cls.TOOLBAR_LEVEL_TITLE_CLASS +
@@ -35,17 +31,17 @@ export class MobileLayout {
     }
 
     public renderSwimlaneTree(): void {
-        let height: number = (this.parent.element.querySelector('.' + cls.SWIMLANE_HEADER_CLASS) as HTMLElement).offsetHeight;
-        let treeHeight: number = window.innerHeight - height;
+        const height: number = (this.parent.element.querySelector('.' + cls.SWIMLANE_HEADER_CLASS) as HTMLElement).offsetHeight;
+        const treeHeight: number = window.innerHeight - height;
         this.popupOverlay = createElement('div', { className: cls.SWIMLANE_OVERLAY_CLASS, styles: 'height: ' + treeHeight + 'px;' });
-        let wrapper: HTMLElement = createElement('div', { className: cls.SWIMLANE_CONTENT_CLASS, styles: 'top:' + height + 'px;' });
-        let treeWrapper: HTMLElement = createElement('div', {
+        const wrapper: HTMLElement = createElement('div', { className: cls.SWIMLANE_CONTENT_CLASS, styles: 'top:' + height + 'px;' });
+        const treeWrapper: HTMLElement = createElement('div', {
             className: cls.SWIMLANE_RESOURCE_CLASS + ' e-popup-close', styles: 'height: ' + treeHeight + 'px;'
         });
         wrapper.appendChild(treeWrapper);
         wrapper.appendChild(this.popupOverlay);
         this.parent.element.appendChild(wrapper);
-        let swimlaneTree: HTMLElement = createElement('div', { className: cls.SWIMLANE_TREE_CLASS });
+        const swimlaneTree: HTMLElement = createElement('div', { className: cls.SWIMLANE_TREE_CLASS });
         treeWrapper.appendChild(swimlaneTree);
         this.treeViewObj = new TreeView({
             cssClass: this.parent.cssClass,
@@ -60,7 +56,7 @@ export class MobileLayout {
         });
         this.treeViewObj.appendTo(swimlaneTree);
 
-        let popupObj: PopupModel = {
+        const popupObj: PopupModel = {
             targetType: 'relative',
             actionOnScroll: 'none',
             enableRtl: this.parent.enableRtl,
@@ -73,12 +69,12 @@ export class MobileLayout {
         this.treePopup = new Popup(treeWrapper, popupObj);
     }
 
-    private menuClick(event: Event): void {
+    private menuClick(): void {
         if (this.parent.element.querySelector('.' + cls.SWIMLANE_RESOURCE_CLASS).classList.contains('e-popup-open')) {
             this.treePopup.hide();
             removeClass([this.popupOverlay], 'e-enable');
         } else {
-            let treeNodes: Element[] = [].slice.call(this.treeViewObj.element.querySelectorAll('.e-list-item'));
+            const treeNodes: Element[] = [].slice.call(this.treeViewObj.element.querySelectorAll('.e-list-item'));
             removeClass(treeNodes, 'e-active');
             addClass([treeNodes[this.parent.layoutModule.swimlaneIndex]], 'e-active');
             this.treePopup.show();
@@ -88,7 +84,7 @@ export class MobileLayout {
 
     private treeSwimlaneClick(args: NodeClickEventArgs): void {
         this.treePopup.hide();
-        let treeNodes: HTMLLIElement[] = [].slice.call(this.treeViewObj.element.querySelectorAll('.e-list-item'));
+        const treeNodes: HTMLLIElement[] = [].slice.call(this.treeViewObj.element.querySelectorAll('.e-list-item'));
         this.parent.layoutModule.swimlaneIndex = treeNodes.indexOf(args.node);
         this.parent.layoutModule.scrollLeft = 0;
         this.parent.notify(events.dataReady, { processedData: this.parent.kanbanData });

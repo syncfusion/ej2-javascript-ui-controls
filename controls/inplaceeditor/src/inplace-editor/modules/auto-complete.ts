@@ -12,7 +12,7 @@ export class AutoComplete implements IComponent {
     protected parent: InPlaceEditor;
     public compObj: EJ2AutoComplete = undefined;
 
-    constructor(parent?: InPlaceEditor) {
+    public constructor(parent?: InPlaceEditor) {
         this.parent = parent;
         this.parent.atcModule = this;
         this.base = new Base(this.parent, this);
@@ -25,6 +25,7 @@ export class AutoComplete implements IComponent {
 
     /**
      * @hidden
+     * @returns {void}
      */
     public showPopup(): void {
         this.compObj.focusIn();
@@ -44,8 +45,9 @@ export class AutoComplete implements IComponent {
 
     /**
      * Destroys the module.
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
@@ -54,6 +56,8 @@ export class AutoComplete implements IComponent {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} - returns the string
      */
     private getModuleName(): string {
         return 'auto-complete';

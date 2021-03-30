@@ -1,23 +1,23 @@
-import { ListBase, ListBaseOptions } from '../../src/common/list-base';
+import { ListBaseOptions, ListBase } from '../../src/common/list-base';
 import { extend, isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
 
 /**
  * ListBase Spec
  */
-let minimalDs_string: { [key: string]: Object }[] = [
+const minimalDsString: { [key: string]: Object }[] = [
     { text: 'text1' },
     { text: 'text2' },
-    { text: 'text3' },
+    { text: 'text3' }
 ];
 
-let minimalDs_number: { [key: string]: Object }[] = [
+const minimalDsNumber: { [key: string]: Object }[] = [
     { text: 1 },
     { text: 2 },
-    { text: 3 },
+    { text: 3 }
 ];
 
-let nullValue_data_source: { [key: string]: Object } =  {
+const nullValueDataSource: { [key: string]: Object } =  {
     id: '01', text: null,
     tooltip: 'title1', iconCss: 'iconClass1',
     imageUrl: 'base/spec/img/img1.jpg', imageAttributes: { height: '200px' },
@@ -28,7 +28,7 @@ let nullValue_data_source: { [key: string]: Object } =  {
     }, enabled: false, isVisible: false
 };
 
-let data_source: { [key: string]: Object }[] = [
+const dataSource: { [key: string]: Object }[] = [
     {
         id: '01', text: 'text1',
         tooltip: 'title1', iconCss: 'iconClass1',
@@ -52,12 +52,12 @@ let data_source: { [key: string]: Object }[] = [
         enabled: true, isVisible: true
     },
     {
-        id_mapping: '04', text_mapping: 'text4',
-        tooltip_mapping: 'title4', iconCss_mapping: 'iconClass4',
-        imageUrl_mapping: 'base/spec/img/img4.jpg', imageAttributes_mapping: { height: '200px' },
-        htmlAttributes_mapping: { role: 'li-4', class: 'base base4', uid: 4444 },
-        url_mapping: 'https://www.google.com', urlAttributes_mapping: { role: 'li-4', class: 'base base4', uid: 4444 },
-        enabled_mapping: false, isVisible_mapping: false
+        idMapping: '04', textMapping: 'text4',
+        tooltipMapping: 'title4', iconCssMapping: 'iconClass4',
+        imageUrlMapping: 'base/spec/img/img4.jpg', imageAttributesMapping: { height: '200px' },
+        htmlAttributesMapping: { role: 'li-4', class: 'base base4', uid: 4444 },
+        urlMapping: 'https://www.google.com', urlAttributesMapping: { role: 'li-4', class: 'base base4', uid: 4444 },
+        enabledMapping: false, isVisibleMapping: false
     },
     {
         id: '05', text: 'text5',
@@ -65,16 +65,16 @@ let data_source: { [key: string]: Object }[] = [
         imageUrl: 'base/spec/img/img1.jpg',
         htmlAttributes: { role: 'li-1', uid: 1111 },
         url: 'https://www.google.com', enabled: false, isVisible: false
-    },
+    }
 ];
 
-let nested_dataSource: { [key: string]: Object }[] = [
+const nestedDataSource: { [key: string]: Object }[] = [
     {
         id: '01', text: 'text1',
         child: [{
             id: '01_1', text: 'subText1',
             child: [{ id: '01_1_1', text: 'nestedText1' },
-            { id: '01_1_2', text: 'nestedText2' }]
+                { id: '01_1_2', text: 'nestedText2' }]
         },
         { id: '01_2', text: 'subText2' },
         { id: '01_3', text: 'subText3' }]
@@ -87,29 +87,29 @@ let nested_dataSource: { [key: string]: Object }[] = [
     },
     {
         id: '04', text: 'text4',
-        child_mapping: [{ id: '01_1', text: 'subText1' },
-        { id: '01_2', text: 'subText2' },
-        { id: '01_3', text: 'subText3' }]
-    },
+        childMapping: [{ id: '01_1', text: 'subText1' },
+            { id: '01_2', text: 'subText2' },
+            { id: '01_3', text: 'subText3' }]
+    }
 ];
 
-let group_dataSource: { [key: string]: Object }[] = [
+const groupdataSources: { [key: string]: Object }[] = [
     { id: '01', text: 'GTC4', category: 'Ferrari' },
     { id: '02', text: 'a3', category: 'Audi' },
     { id: '03', text: 'r8', category: 'Audi' },
     { id: '04', text: 'g3', category: 'BMW' },
-    { id: '05', text: 'series2', category: 'BMW' },
+    { id: '05', text: 'series2', category: 'BMW' }
 ];
 
-let nullValue_group_dataSource: { [key: string]: Object }[] = [
+const nullValueGroupDataSource: { [key: string]: Object }[] = [
     { id: '01', text: null, category: 'Ferrari' },
     { id: '02', text: 'a3', category: 'Audi' },
     { id: '03', text: 'r8', category: 'Audi' },
     { id: '04', text: 'g3', category: 'BMW' },
-    { id: '05', text: 'series2', category: 'BMW' },
+    { id: '05', text: 'series2', category: 'BMW' }
 ];
 
-let fullRow_datasource_false: { [key: string]: Object }[] = [
+const fullRowDatasourceFalse: { [key: string]: Object }[] = [
     { id: '01', text: 'list1' },
     { id: '02', text: 'list2' },
     { id: '03', text: 'list3' },
@@ -117,50 +117,51 @@ let fullRow_datasource_false: { [key: string]: Object }[] = [
     { id: '05', text: 'list5' }
 ];
 
-let fullRow_datasource_true: { [key: string]: Object }[] = [
-    { id: '01', text: 'list1', url:"https:google.com", imageUrl: "imageUrl_mapping", iconCss: "sample-icon" },
-    { id: '02', text: 'list2', url:"https:google.com", imageUrl: "imageUrl_mapping", iconCss: "sample-icon" },
-    { id: '03', text: 'list3', url:"https:google.com", imageUrl: "imageUrl_mapping", iconCss: "sample-icon" },
-    { id: '04', text: 'list4', url:"https:google.com", imageUrl: "imageUrl_mapping", iconCss: "sample-icon" },
-    { id: '05', text: 'list5', url:"https:google.com", imageUrl: "imageUrl_mapping", iconCss: "sample-icon" }
+const fullRowDatasourceTrue: { [key: string]: Object }[] = [
+    { id: '01', text: 'list1', url: 'https:google.com', imageUrl: 'imageUrlMapping', iconCss: 'sample-icon' },
+    { id: '02', text: 'list2', url: 'https:google.com', imageUrl: 'imageUrlMapping', iconCss: 'sample-icon' },
+    { id: '03', text: 'list3', url: 'https:google.com', imageUrl: 'imageUrlMapping', iconCss: 'sample-icon' },
+    { id: '04', text: 'list4', url: 'https:google.com', imageUrl: 'imageUrlMapping', iconCss: 'sample-icon' },
+    { id: '05', text: 'list5', url: 'https:google.com', imageUrl: 'imageUrlMapping', iconCss: 'sample-icon' }
 ];
 
+// eslint-disable-next-line
 function deepCloning(data: { [key: string]: object }[]) {
     return <{ [key: string]: object }[]>extend([], data, [], true);
 }
 
 describe('ListBase', () => {
 
-    describe('createListItemFromArray method', () => {
+    describe('ListBase.createListItemFromArray method', () => {
 
         it('Listitem creation', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2']);
+            const listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2']);
             expect(listCollection.length).toBe(2);
-            let firstListItem: HTMLElement = listCollection[0];
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.tagName).toBe('LI');
         });
 
         it('Listitem creation with empty dataSource', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, []);
+            const listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, []);
             expect(listCollection.length).toBe(0);
         });
 
         it('Listitem creation with null/undefined dataSource', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, [undefined]);
+            const listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, [undefined]);
             expect(listCollection.length).toBe(0);
         });
 
         it('ListItem class names', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2']);
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2']);
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.classList.contains('e-list-item')).toBe(true);
             expect((firstListItem.children[0]).classList.contains('e-text-content')).toBe(true);
             expect((firstListItem.children[0].children[0]).classList.contains('e-list-text')).toBe(true);
         });
 
         it('ListItem attributes', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2']);
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2']);
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.getAttribute('role')).toBe('presentation');
             expect(isNullOrUndefined(firstListItem.getAttribute('data-uid'))).toBe(false);
             expect(firstListItem.children[0].getAttribute('role')).toBe('presentation');
@@ -169,31 +170,31 @@ describe('ListBase', () => {
         });
 
         it('ListItem TextContent with array of string', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2']);
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2']);
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.children[0].children[0].textContent).toBe('item1');
 
         });
 
         it('ListItem TextContent with array of number', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, [1, 2]);
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, [1, 2]);
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.children[0].children[0].textContent).toBe('1');
 
         });
 
         it('ListItem structure (tag)', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2']);
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2']);
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.tagName).toBe('LI');
             expect(firstListItem.children[0].tagName).toBe('DIV');
             expect(firstListItem.children[0].children[0].tagName).toBe('SPAN');
         });
 
         it('ListItem Aria attributes', () => {
-            let option: ListBaseOptions = { ariaAttributes: { itemRole: 'treeView', itemText: 'treeItem', wrapperRole: 'tree-wrapper' } };
-            let listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2'], false, option);
-            let firstListItem: HTMLElement = listCollection[0];
+            const option: ListBaseOptions = { ariaAttributes: { itemRole: 'treeView', itemText: 'treeItem', wrapperRole: 'tree-wrapper' } };
+            const listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2'], false, option);
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.getAttribute('role')).toBe('treeView');
             expect(firstListItem.children[0].getAttribute('role')).toBe('tree-wrapper');
             expect(firstListItem.children[0].children[0].getAttribute('role')).toBe('treeItem');
@@ -201,22 +202,22 @@ describe('ListBase', () => {
         });
 
         it('ListItem creation (isSinglelevel)', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2'], true);
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2'], true);
+            const firstListItem: HTMLElement = listCollection[0];
             expect(listCollection.length).toEqual(2);
             expect(firstListItem.children.length).toBe(0);
             expect(firstListItem.tagName).toBe('LI');
         });
 
         it('ListItem class names (isSinglelevel)', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2'], true);
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2'], true);
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.classList.contains('e-list-item')).toBe(true);
         });
 
         it('ListItem attributes (isSinglelevel)', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2'], true);
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2'], true);
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.getAttribute('role')).toBe('option');
             expect(isNullOrUndefined(firstListItem.getAttribute('id'))).toBe(false);
             expect(firstListItem.getAttribute('data-value')).toBe('item1');
@@ -224,20 +225,20 @@ describe('ListBase', () => {
         });
 
         it('ListItem TextContent with array of string (isSinglelevel)', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2']);
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2']);
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.textContent).toBe('item1');
         });
 
         it('ListItem TextContent with array of number (isSinglelevel)', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, [1, 2]);
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, [1, 2]);
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.textContent).toBe('1');
         });
 
         it('Callback function', () => {
-            let arrayData: string[] = ['Text'];
-            let option: ListBaseOptions = {
+            const arrayData: string[] = ['Text'];
+            const option: ListBaseOptions = {
                 itemCreated: (e: { [key: string]: string }) => {
                     expect(e.dataSource).toBe(arrayData);
                     expect(e.curData).toBe(arrayData[0]);
@@ -247,29 +248,29 @@ describe('ListBase', () => {
                     expect(e.dataSource).toBe(arrayData);
                     expect(e.curData).toBe(arrayData[0]);
                     expect(e.text).toBe(arrayData[0]);
-                    e.curData = "aaa"
+                    e.curData = 'aaa';
                 }
-            }
+            };
 
             ListBase.createListItemFromArray(createElement, arrayData, false, option);
         });
 
         it('moduleclass names', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2'], false, { moduleName: 'menu' });
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2'], false, { moduleName: 'menu' });
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.classList.contains('e-menu-item')).toBe(true);
             expect((firstListItem.children[0].children[0]).classList.contains('e-menu-text')).toBe(true);
         });
 
         it('module class names (isSinglelevel)', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2'], true, { moduleName: 'menu' });
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2'], true, { moduleName: 'menu' });
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.classList.contains('e-menu-item')).toBe(true);
         });
 
         it('DOM order', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2']);
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2']);
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.tagName).toBe('LI');
             expect(firstListItem.classList.contains('e-list-item')).toBe(true);
             expect(firstListItem.children[0].tagName).toBe('DIV');
@@ -279,18 +280,18 @@ describe('ListBase', () => {
         });
 
         it('DOM order (isSinglelevel)', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2'], true);
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['item1', 'item2'], true);
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.tagName).toBe('LI');
             expect(firstListItem.classList.contains('e-list-item')).toBe(true);
             expect(firstListItem.children.length).toBe(0);
         });
     });
 
-    describe('generateUL', () => {
+    describe('ListBase.generateUL', () => {
         it('UL element creation', () => {
-            let liItem: HTMLElement = document.createElement('li');
-            let ul: HTMLElement = ListBase.generateUL(createElement, [liItem]);
+            const liItem: HTMLElement = document.createElement('li');
+            const ul: HTMLElement = ListBase.generateUL(createElement, [liItem]);
             expect(ul.tagName).toBe('UL');
             expect(ul.children.length).toBe(1);
             expect(ul.classList.contains('e-ul')).toBe(true);
@@ -299,8 +300,8 @@ describe('ListBase', () => {
         });
 
         it('UL - ClassName', () => {
-            let liItem: HTMLElement = document.createElement('li');
-            let ul: HTMLElement = ListBase.generateUL(createElement, [liItem], 'e-list base');
+            const liItem: HTMLElement = document.createElement('li');
+            const ul: HTMLElement = ListBase.generateUL(createElement, [liItem], 'e-list base');
             expect(ul.classList.contains('e-ul')).toBe(true);
             expect(ul.classList.contains('e-list-parent')).toBe(true);
             expect(ul.classList.contains('e-list')).toBe(true);
@@ -308,11 +309,11 @@ describe('ListBase', () => {
         });
 
         it('UL - with and without Aria attributes', () => {
-            let liItem: HTMLElement = document.createElement('li');
-            let ul_withAriaAtrribute: HTMLElement = ListBase.generateUL(createElement, [liItem], '', { ariaAttributes: { listRole: 'ul' } });
-            expect(ul_withAriaAtrribute.getAttribute('role')).toBe('ul');
-            let ul_withoutAriaAtrribute: HTMLElement = ListBase.generateUL(createElement, [liItem], '', { ariaAttributes: { listRole: '' } });
-            expect(ul_withoutAriaAtrribute.hasAttribute('role')).toBe(false);
+            const liItem: HTMLElement = document.createElement('li');
+            const ulwithAriaAtrribute: HTMLElement = ListBase.generateUL(createElement, [liItem], '', { ariaAttributes: { listRole: 'ul' } });
+            expect(ulwithAriaAtrribute.getAttribute('role')).toBe('ul');
+            const ulwithoutAriaAtrribute: HTMLElement = ListBase.generateUL(createElement, [liItem], '', { ariaAttributes: { listRole: '' } });
+            expect(ulwithoutAriaAtrribute.hasAttribute('role')).toBe(false);
 
         });
     });
@@ -320,45 +321,45 @@ describe('ListBase', () => {
     describe('createListFromArray method', () => {
 
         it('UL element creation', () => {
-            let ulElement: HTMLElement = ListBase.createListFromArray(createElement, ['item1', 'item2']);
+            const ulElement: HTMLElement = ListBase.createListFromArray(createElement, ['item1', 'item2']);
             expect(ulElement.tagName).toBe('UL');
-            let listCollection: HTMLCollection = ulElement.children
+            const listCollection: HTMLCollection = ulElement.children;
             expect(listCollection.length).toBe(2);
-            let firstListItem: HTMLElement = listCollection[0] as HTMLElement;
+            const firstListItem: HTMLElement = listCollection[0] as HTMLElement;
             expect(firstListItem.tagName).toBe('LI');
         });
 
     });
 
-    describe('createListItemFromJson method', () => {
+    describe('ListBase.createListItemFromJson method', () => {
         it('Listitem creation', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDs_string));
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDsString));
             expect(listCollection.length).toBe(3);
-            let firstListItem: HTMLElement = listCollection[0];
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.tagName).toBe('LI');
         });
 
         it('Listitem creation with empty dataSource', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, []);
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, []);
             expect(listCollection.length).toBe(0);
         });
 
         it('Listitem creation with null/undefined dataSource', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, [undefined]);
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, [undefined]);
             expect(listCollection.length).toBe(0);
         });
 
         it('ListItem class names', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDs_string));
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDsString));
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.classList.contains('e-list-item')).toBe(true);
             expect(firstListItem.classList.contains('e-level-1')).toBe(true);
             expect((firstListItem.children[0]).classList.contains('e-text-content')).toBe(true);
             expect((firstListItem.children[0].children[0]).classList.contains('e-list-text')).toBe(true);
         });
         it('ListItem attributes', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDs_string));
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDsString));
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.getAttribute('role')).toBe('presentation');
             expect(firstListItem.getAttribute('aria-level')).toBe('1');
             expect(isNullOrUndefined(firstListItem.getAttribute('data-uid'))).toBe(false);
@@ -368,119 +369,122 @@ describe('ListBase', () => {
         });
 
         it('ListItem TextContent with array of string', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDs_string));
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDsString));
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.children[0].children[0].textContent).toBe('text1');
 
         });
 
         it('ListItem TextContent with array of number', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDs_number));
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDsNumber));
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.children[0].children[0].textContent).toBe('1');
 
         });
 
         it('ListItem structure (tag)', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDs_string))
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDsString));
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.tagName).toBe('LI');
             expect(firstListItem.children[0].tagName).toBe('DIV');
             expect(firstListItem.children[0].children[0].tagName).toBe('SPAN');
         });
 
         it('ListItem (with & without) Aria attributes & level with flat list', () => {
-            let option_withAria: ListBaseOptions = { ariaAttributes: { level: 2, itemRole: 'treeView', itemText: 'treeItem', wrapperRole: 'tree-wrapper' } };
-            let listCollection_withAria: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDs_string), option_withAria);
-            let firstListItem_withAria: HTMLElement = listCollection_withAria[0];
-            expect(firstListItem_withAria.getAttribute('role')).toBe('treeView');
-            expect(firstListItem_withAria.getAttribute('aria-level')).toBe('2');
-            expect(firstListItem_withAria.classList.contains('e-level-2')).toBe(true);
-            expect(firstListItem_withAria.children[0].getAttribute('role')).toBe('tree-wrapper');
-            expect(firstListItem_withAria.children[0].children[0].getAttribute('role')).toBe('treeItem');
-            let option_withoutAria: ListBaseOptions = { ariaAttributes: { itemRole: '', itemText: '', wrapperRole: '' } };
-            let listCollection_withoutAria: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDs_string), option_withoutAria);
-            let firstListItem_withoutAria: HTMLElement = listCollection_withoutAria[0];
-            expect(firstListItem_withoutAria.hasAttribute('role')).toBe(false);
-            expect(firstListItem_withoutAria.getAttribute('aria-level')).toBe('1');
-            expect(firstListItem_withoutAria.classList.contains('e-level-1')).toBe(true);
-            expect(firstListItem_withoutAria.children[0].hasAttribute('role')).toBe(false);
-            expect(firstListItem_withoutAria.children[0].children[0].hasAttribute('role')).toBe(false);
+            const optionWithAria: ListBaseOptions = { ariaAttributes: { level: 2, itemRole: 'treeView', itemText: 'treeItem', wrapperRole: 'tree-wrapper' } };
+            // eslint-disable-next-line max-len
+            const listCollectionWithAria: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDsString), optionWithAria);
+            const firstListItemWithAria: HTMLElement = listCollectionWithAria[0];
+            expect(firstListItemWithAria.getAttribute('role')).toBe('treeView');
+            expect(firstListItemWithAria.getAttribute('aria-level')).toBe('2');
+            expect(firstListItemWithAria.classList.contains('e-level-2')).toBe(true);
+            expect(firstListItemWithAria.children[0].getAttribute('role')).toBe('tree-wrapper');
+            expect(firstListItemWithAria.children[0].children[0].getAttribute('role')).toBe('treeItem');
+            const optionWithoutAria: ListBaseOptions = { ariaAttributes: { itemRole: '', itemText: '', wrapperRole: '' } };
+            // eslint-disable-next-line max-len
+            const listCollectionWithoutAria: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDsString), optionWithoutAria);
+            const firstListItemWithoutAria: HTMLElement = listCollectionWithoutAria[0];
+            expect(firstListItemWithoutAria.hasAttribute('role')).toBe(false);
+            expect(firstListItemWithoutAria.getAttribute('aria-level')).toBe('1');
+            expect(firstListItemWithoutAria.classList.contains('e-level-1')).toBe(true);
+            expect(firstListItemWithoutAria.children[0].hasAttribute('role')).toBe(false);
+            expect(firstListItemWithoutAria.children[0].children[0].hasAttribute('role')).toBe(false);
         });
 
         it('ListItem ID attributes with normal, null and undefined input', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(data_source));
-            let firstIdAttribute: string = listCollection[0].getAttribute('data-uid');
-            let secondIdAttribute: string = listCollection[1].getAttribute('data-uid');
-            let thirdIdAttribute: string = listCollection[2].getAttribute('data-uid');
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(dataSource));
+            const firstIdAttribute: string = listCollection[0].getAttribute('data-uid');
+            const secondIdAttribute: string = listCollection[1].getAttribute('data-uid');
+            const thirdIdAttribute: string = listCollection[2].getAttribute('data-uid');
             expect(firstIdAttribute).toBe('01');
             expect(isNullOrUndefined(secondIdAttribute)).toBe(false);
             expect(isNullOrUndefined(thirdIdAttribute)).toBe(false);
-            let mapping: ListBaseOptions = { fields: { id: 'id_mapping' } };
-            let fourthIdAttribute: string = ListBase.createListItemFromJson(createElement, deepCloning(data_source), mapping)[3].getAttribute('data-uid');
+            const mapping: ListBaseOptions = { fields: { id: 'idMapping' } };
+            const fourthIdAttribute: string = ListBase.createListItemFromJson(createElement, deepCloning(dataSource), mapping)[3].getAttribute('data-uid');
             expect(fourthIdAttribute).toBe('04');
         });
 
         it('ListItem icon element with normal, null and undefined input', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(data_source), { showIcon: true });
-            let firstIconElement: HTMLElement = <HTMLElement>listCollection[0].querySelector('.e-list-icon');
-            let secondIconElement: HTMLElement = <HTMLElement>listCollection[1].querySelector('.e-list-icon');
-            let thirdIconElement: HTMLElement = <HTMLElement>listCollection[2].querySelector('.e-list-icon');
+            const listCollection: HTMLElement[]
+            = ListBase.createListItemFromJson(createElement, deepCloning(dataSource), { showIcon: true });
+            const firstIconElement: HTMLElement = <HTMLElement>listCollection[0].querySelector('.e-list-icon');
+            const secondIconElement: HTMLElement = <HTMLElement>listCollection[1].querySelector('.e-list-icon');
+            const thirdIconElement: HTMLElement = <HTMLElement>listCollection[2].querySelector('.e-list-icon');
             expect(firstIconElement.tagName).toBe('DIV');
             expect(firstIconElement.classList.contains('iconClass1')).toBe(true);
             expect(secondIconElement).toBe(null);
             expect(thirdIconElement).toBe(null);
-            let mapping: ListBaseOptions = { showIcon: true, fields: { iconCss: 'iconCss_mapping' } };
-            let fourthIconElement: HTMLElement = ListBase.createListItemFromJson(createElement, deepCloning(data_source), mapping)[3].querySelector('.e-list-icon');
+            const mapping: ListBaseOptions = { showIcon: true, fields: { iconCss: 'iconCssMapping' } };
+            const fourthIconElement: HTMLElement = ListBase.createListItemFromJson(createElement, deepCloning(dataSource), mapping)[3].querySelector('.e-list-icon');
             expect(fourthIconElement.tagName).toBe('DIV');
             expect(fourthIconElement.classList.contains('iconClass4')).toBe(true);
         });
 
         it('ListItem tooltip with normal, null and undefined input', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(data_source));
-            let firstTooltipContent: string = listCollection[0].getAttribute('title');
-            let secondTooltipContent: boolean = listCollection[1].hasAttribute('title');
-            let thirdTooltipContent: boolean = listCollection[2].hasAttribute('title');
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(dataSource));
+            const firstTooltipContent: string = listCollection[0].getAttribute('title');
+            const secondTooltipContent: boolean = listCollection[1].hasAttribute('title');
+            const thirdTooltipContent: boolean = listCollection[2].hasAttribute('title');
             expect(firstTooltipContent).toBe('title1');
             expect(secondTooltipContent).toBe(false);
             expect(thirdTooltipContent).toBe(false);
-            let mapping: ListBaseOptions = { fields: { tooltip: 'tooltip_mapping' } };
-            let fourthTooltipContent: string = ListBase.createListItemFromJson(createElement, deepCloning(data_source), mapping)[3].getAttribute('title');
+            const mapping: ListBaseOptions = { fields: { tooltip: 'tooltipMapping' } };
+            const fourthTooltipContent: string = ListBase.createListItemFromJson(createElement, deepCloning(dataSource), mapping)[3].getAttribute('title');
             expect(fourthTooltipContent).toBe('title4');
         });
 
         it('ListItem text content with normal, null and undefined input', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(data_source));
-            let firstTextContent: string = listCollection[0].querySelector('.e-list-text').textContent;
-            let secondTextContent: string = listCollection[1].querySelector('.e-list-text').textContent;
-            let thirdTextContent: string = listCollection[2].querySelector('.e-list-text').textContent;
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(dataSource));
+            const firstTextContent: string = listCollection[0].querySelector('.e-list-text').textContent;
+            const secondTextContent: string = listCollection[1].querySelector('.e-list-text').textContent;
+            const thirdTextContent: string = listCollection[2].querySelector('.e-list-text').textContent;
             expect(firstTextContent).toBe('text1');
             expect(secondTextContent).toBe('');
             expect(thirdTextContent).toBe('');
-            let mapping: ListBaseOptions = { fields: { text: 'text_mapping' } };
-            let fourthTextContent: string = ListBase.createListItemFromJson(createElement, deepCloning(data_source), mapping)[3].querySelector('.e-list-text').textContent;
+            const mapping: ListBaseOptions = { fields: { text: 'textMapping' } };
+            const fourthTextContent: string = ListBase.createListItemFromJson(createElement, deepCloning(dataSource), mapping)[3].querySelector('.e-list-text').textContent;
             expect(fourthTextContent).toBe('text4');
         });
 
         it('ListItem - img url and img attr with normal, null and undefined input', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(data_source));
-            let firstImgElement: HTMLImageElement = listCollection[0].querySelector('.e-list-img');
-            let secondImgElement: HTMLImageElement = listCollection[1].querySelector('.e-list-img');
-            let thirdImgElement: HTMLImageElement = listCollection[2].querySelector('.e-list-img');
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(dataSource));
+            const firstImgElement: HTMLImageElement = listCollection[0].querySelector('.e-list-img');
+            const secondImgElement: HTMLImageElement = listCollection[1].querySelector('.e-list-img');
+            const thirdImgElement: HTMLImageElement = listCollection[2].querySelector('.e-list-img');
             expect(firstImgElement.tagName).toBe('IMG');
             expect(firstImgElement.src.indexOf('base/spec/img/img1.jpg')).not.toBe(-1);
             expect(firstImgElement.getAttribute('height')).toBe('200px');
             expect(secondImgElement).toBe(null);
             expect(thirdImgElement).toBe(null);
-            let mapping: ListBaseOptions = { fields: { imageUrl: 'imageUrl_mapping', imageAttributes: 'imageAttributes_mapping' } };
-            let fourthImgElement: HTMLImageElement = ListBase.createListItemFromJson(createElement, deepCloning(data_source), mapping)[3].querySelector('.e-list-img');
+            const mapping: ListBaseOptions = { fields: { imageUrl: 'imageUrlMapping', imageAttributes: 'imageAttributesMapping' } };
+            const fourthImgElement: HTMLImageElement = ListBase.createListItemFromJson(createElement, deepCloning(dataSource), mapping)[3].querySelector('.e-list-img');
             expect(fourthImgElement.tagName).toBe('IMG');
             expect(fourthImgElement.src.indexOf('base/spec/img/img4.jpg')).not.toBe(-1);
             expect(fourthImgElement.getAttribute('height')).toBe('200px');
         });
 
         it('ListItem - html attr with normal, null and undefined input', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(data_source));
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(dataSource));
             expect(listCollection[0].classList.contains('base')).toBe(true);
             expect(listCollection[0].classList.contains('base1')).toBe(true);
             expect(listCollection[0].getAttribute('role')).toBe('li-1');
@@ -489,8 +493,8 @@ describe('ListBase', () => {
             expect(listCollection[1].hasAttribute('uid')).toBe(false);
             expect(listCollection[2].getAttribute('role')).toBe('presentation');
             expect(listCollection[2].hasAttribute('uid')).toBe(false);
-            let mapping: ListBaseOptions = { fields: { htmlAttributes: 'htmlAttributes_mapping' } };
-            let mappedListItem: HTMLElement = ListBase.createListItemFromJson(createElement, deepCloning(data_source), mapping)[3];
+            const mapping: ListBaseOptions = { fields: { htmlAttributes: 'htmlAttributesMapping' } };
+            const mappedListItem: HTMLElement = ListBase.createListItemFromJson(createElement, deepCloning(dataSource), mapping)[3];
             expect(mappedListItem.classList.contains('base')).toBe(true);
             expect(mappedListItem.classList.contains('base4')).toBe(true);
             expect(mappedListItem.getAttribute('role')).toBe('li-4');
@@ -498,10 +502,10 @@ describe('ListBase', () => {
         });
 
         it('ListItem - URL link & URL attr with normal, null and undefined input', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(data_source));
-            let firstanchorElement: HTMLImageElement = listCollection[0].querySelector('.e-list-url');
-            let secondanchorElement: HTMLImageElement = listCollection[1].querySelector('.e-list-url');
-            let thirdanchorElement: HTMLImageElement = listCollection[2].querySelector('.e-list-url');
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(dataSource));
+            const firstanchorElement: HTMLImageElement = listCollection[0].querySelector('.e-list-url');
+            const secondanchorElement: HTMLImageElement = listCollection[1].querySelector('.e-list-url');
+            const thirdanchorElement: HTMLImageElement = listCollection[2].querySelector('.e-list-url');
             expect(firstanchorElement.tagName).toBe('A');
             expect(firstanchorElement.classList.contains('base')).toBe(true);
             expect(firstanchorElement.classList.contains('e-list-text')).toBe(true);
@@ -511,8 +515,8 @@ describe('ListBase', () => {
             expect(firstanchorElement.getAttribute('href')).toBe('https://www.google.com');
             expect(secondanchorElement).toBe(null);
             expect(thirdanchorElement).toBe(null);
-            let mapping: ListBaseOptions = { fields: { urlAttributes: 'urlAttributes_mapping', url: 'url_mapping' } };
-            let fourthanchorElement: HTMLElement = ListBase.createListItemFromJson(createElement, deepCloning(data_source), mapping)[3].querySelector('.e-list-url');
+            const mapping: ListBaseOptions = { fields: { urlAttributes: 'urlAttributesMapping', url: 'urlMapping' } };
+            const fourthanchorElement: HTMLElement = ListBase.createListItemFromJson(createElement, deepCloning(dataSource), mapping)[3].querySelector('.e-list-url');
             expect(fourthanchorElement.tagName).toBe('A');
             expect(fourthanchorElement.classList.contains('base')).toBe(true);
             expect(fourthanchorElement.classList.contains('e-list-text')).toBe(true);
@@ -523,62 +527,64 @@ describe('ListBase', () => {
         });
 
         it('ListItem - checkbox', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(data_source), { showCheckBox: true });
-            let checkboxElement: HTMLInputElement = listCollection[0].querySelector('.e-list-check');
+            const listCollection: HTMLElement[]
+            = ListBase.createListItemFromJson(createElement, deepCloning(dataSource), { showCheckBox: true });
+            const checkboxElement: HTMLInputElement = listCollection[0].querySelector('.e-list-check');
             expect(checkboxElement.tagName).toBe('INPUT');
             expect(checkboxElement.getAttribute('type')).toBe('checkbox');
         });
 
         it('ListItem - enabled', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(data_source));
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(dataSource));
             expect(listCollection[0].classList.contains('e-disabled')).toBe(true);
             expect(listCollection[1].classList.contains('e-disabled')).toBe(false);
             expect(listCollection[2].classList.contains('e-disabled')).toBe(false);
-            let mapping: ListBaseOptions = { fields: { enabled: 'enabled_mapping' } };
-            let mappedItem: HTMLElement = ListBase.createListItemFromJson(createElement, deepCloning(data_source), mapping)[3];
+            const mapping: ListBaseOptions = { fields: { enabled: 'enabledMapping' } };
+            const mappedItem: HTMLElement = ListBase.createListItemFromJson(createElement, deepCloning(dataSource), mapping)[3];
             expect(mappedItem.classList.contains('e-disabled')).toBe(true);
         });
 
         it('ListItem - isVisible', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(data_source));
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(dataSource));
             expect(listCollection[0].style.display).toBe('none');
             expect(listCollection[1].style.display).not.toBe('none');
             expect(listCollection[2].style.display).not.toBe('none');
-            let mapping: ListBaseOptions = { fields: { isVisible: 'isVisible_mapping' } };
-            let mappedItem: HTMLElement = ListBase.createListItemFromJson(createElement, deepCloning(data_source), mapping)[3];
+            const mapping: ListBaseOptions = { fields: { isVisible: 'isVisibleMapping' } };
+            const mappedItem: HTMLElement = ListBase.createListItemFromJson(createElement, deepCloning(dataSource), mapping)[3];
             expect(mappedItem.style.display).toBe('none');
         });
 
         it('ListItem - nestedList', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(nested_dataSource));
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(nestedDataSource));
             expect(listCollection[0].classList.contains('e-has-child')).toBe(true);
             expect(listCollection[1].classList.contains('e-has-child')).toBe(false);
             expect(listCollection[2].classList.contains('e-has-child')).toBe(false);
-            let mapping: ListBaseOptions = { fields: { child: 'child_mapping' } };
-            let mappedItem: HTMLElement = ListBase.createListItemFromJson(createElement, deepCloning(nested_dataSource), mapping)[3];
+            const mapping: ListBaseOptions = { fields: { child: 'childMapping' } };
+            const mappedItem: HTMLElement = ListBase.createListItemFromJson(createElement, deepCloning(nestedDataSource), mapping)[3];
             expect(mappedItem.classList.contains('e-has-child')).toBe(true);
         });
 
         it('ListItem - processSubChild', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(nested_dataSource), { processSubChild: true });
-            let firstLevelListItem: HTMLElement = listCollection[0];
+            // eslint-disable-next-line max-len
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(nestedDataSource), { processSubChild: true });
+            const firstLevelListItem: HTMLElement = listCollection[0];
             expect(firstLevelListItem.classList.contains('e-has-child')).toBe(true);
             expect(firstLevelListItem.classList.contains('e-level-1')).toBe(true);
             expect(firstLevelListItem.getAttribute('aria-level')).toBe('1');
-            let secondLevelList: HTMLElement = firstLevelListItem.querySelector('ul');
+            const secondLevelList: HTMLElement = firstLevelListItem.querySelector('ul');
             expect(secondLevelList.classList.contains('e-ul')).toBe(true);
             expect(secondLevelList.classList.contains('e-list-parent')).toBe(true);
             expect(secondLevelList.children.length).toBe(3);
-            let secondLevelListItem: Element = secondLevelList.children[0];
+            const secondLevelListItem: Element = secondLevelList.children[0];
             expect(secondLevelListItem.tagName).toBe('LI');
             expect(secondLevelListItem.classList.contains('e-has-child')).toBe(true);
             expect(secondLevelListItem.classList.contains('e-level-2')).toBe(true);
             expect(secondLevelListItem.getAttribute('aria-level')).toBe('2');
-            let thirdLevelList: HTMLElement = secondLevelListItem.querySelector('ul');
+            const thirdLevelList: HTMLElement = secondLevelListItem.querySelector('ul');
             expect(thirdLevelList.classList.contains('e-ul')).toBe(true);
             expect(thirdLevelList.classList.contains('e-list-parent')).toBe(true);
             expect(thirdLevelList.children.length).toBe(2);
-            let thirdLevelListItem: Element = thirdLevelList.children[0];
+            const thirdLevelListItem: Element = thirdLevelList.children[0];
             expect(thirdLevelListItem.tagName).toBe('LI');
             expect(thirdLevelListItem.classList.contains('e-has-child')).toBe(false);
             expect(thirdLevelListItem.classList.contains('e-level-3')).toBe(true);
@@ -587,14 +593,15 @@ describe('ListBase', () => {
         });
 
         it('ListItem - expandCollapse', () => {
-            let listCollection_right: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(nested_dataSource), { expandCollapse: true });
-            let expandCollapseRightElement: Element = listCollection_right[0].querySelector('.e-list-text').nextElementSibling;
+            const listCollectionRight: HTMLElement[] =
+             ListBase.createListItemFromJson(createElement, deepCloning(nestedDataSource), { expandCollapse: true });
+            const expandCollapseRightElement: Element = listCollectionRight[0].querySelector('.e-list-text').nextElementSibling;
             expect(expandCollapseRightElement.parentElement.classList.contains('e-icon-wrapper')).toBe(true);
             expect(expandCollapseRightElement.tagName).toBe('DIV');
             expect(expandCollapseRightElement.classList.contains('e-icons')).toBe(true);
             expect(expandCollapseRightElement.classList.contains('e-icon-collapsible')).toBe(true);
-            let listCollection_left: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(nested_dataSource), { expandCollapse: true, expandIconClass: 'e-icon-expandable', expandIconPosition: 'Left' });
-            let expandCollapseLeftElement: Element = listCollection_left[0].querySelector('.e-list-text').previousElementSibling;
+            const listCollectionLeft: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(nestedDataSource), { expandCollapse: true, expandIconClass: 'e-icon-expandable', expandIconPosition: 'Left' });
+            const expandCollapseLeftElement: Element = listCollectionLeft[0].querySelector('.e-list-text').previousElementSibling;
             expect(expandCollapseLeftElement.parentElement.classList.contains('e-icon-wrapper')).toBe(true);
             expect(expandCollapseLeftElement.tagName).toBe('DIV');
             expect(expandCollapseLeftElement.classList.contains('e-icons')).toBe(true);
@@ -603,16 +610,16 @@ describe('ListBase', () => {
 
 
         it('ListItem - groupList', () => {
-            let ds: { [key: string]: object }[] = ListBase.groupDataSource(group_dataSource, { groupBy: 'category' });
+            const ds: { [key: string]: object }[] = ListBase.groupDataSource(groupdataSources, { groupBy: 'category' });
             expect(ds.length).toBe(8);
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, ds);
-            let grouplistItem: HTMLElement[] = Array.prototype.filter.call(listCollection, (li: HTMLElement) => li.classList.contains('e-list-group-item'));
-            let listItem: HTMLElement[] = Array.prototype.filter.call(listCollection, (li: HTMLElement) => li.classList.contains('e-list-item'));
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, ds);
+            const grouplistItem: HTMLElement[] = Array.prototype.filter.call(listCollection, (li: HTMLElement) => li.classList.contains('e-list-group-item'));
+            const listItem: HTMLElement[] = Array.prototype.filter.call(listCollection, (li: HTMLElement) => li.classList.contains('e-list-item'));
             expect(listCollection.length).toBe(ds.length);
             expect(grouplistItem.length).toBe(3);
             expect(listItem.length).toBe(5);
             expect(listCollection.length).toBe(ds.length);
-            let groupListItem: HTMLElement = listCollection[0];
+            const groupListItem: HTMLElement = listCollection[0];
             expect(groupListItem.tagName).toBe('LI');
             expect(groupListItem.classList.contains('e-list-group-item')).toBe(true);
             expect(groupListItem.classList.contains('e-level-1')).toBe(true);
@@ -629,10 +636,10 @@ describe('ListBase', () => {
         });
 
         it('ListItem Aria attributes & level with group list', () => {
-            let ds: { [key: string]: object }[] = ListBase.groupDataSource(group_dataSource, { groupBy: 'category' });
-            let option: ListBaseOptions = { ariaAttributes: { level: 2, groupItemRole: 'tree-group', itemRole: 'treeView', itemText: 'treeItem', wrapperRole: 'tree-wrapper' } };
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, ds, option);
-            let groupListItem: HTMLElement = listCollection[0];
+            const ds: { [key: string]: object }[] = ListBase.groupDataSource(groupdataSources, { groupBy: 'category' });
+            const option: ListBaseOptions = { ariaAttributes: { level: 2, groupItemRole: 'tree-group', itemRole: 'treeView', itemText: 'treeItem', wrapperRole: 'tree-wrapper' } };
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, ds, option);
+            const groupListItem: HTMLElement = listCollection[0];
             expect(groupListItem.getAttribute('role')).toBe('tree-group');
             expect(groupListItem.getAttribute('aria-level')).toBe('2');
             expect(groupListItem.classList.contains('e-level-2')).toBe(true);
@@ -641,8 +648,8 @@ describe('ListBase', () => {
         });
 
         it('Callback function', () => {
-            let jsonData: { [key: string]: string }[] = [{ text: 'Text', value: '01' }];
-            let option: ListBaseOptions = {
+            const jsonData: { [key: string]: string }[] = [{ text: 'Text', value: '01' }];
+            const option: ListBaseOptions = {
                 itemCreated: (e: { [key: string]: Object }) => {
                     expect(e.dataSource).toBe(jsonData);
                     expect(e.curData).toBe(jsonData[0]);
@@ -653,18 +660,18 @@ describe('ListBase', () => {
                     expect(e.dataSource).toBe(jsonData);
                     expect(e.curData).toBe(jsonData[0]);
                     expect(e.text).toBe(jsonData[0].text);
-                    e.text = "mari"
+                    e.text = 'mari';
                 }
-            }
+            };
 
             ListBase.createListItemFromJson(createElement, jsonData, option);
         });
 
         it('Callback function - Changing value in itemCreating event', () => {
-            let data: { [key: string]: Object }[] = [
+            const data: { [key: string]: Object }[] = [
                 { id: 'data01', text: 'Cut', iconCss: 'e-icons e-cut' }
             ];
-            let listCollection: Element[] = ListBase.createListItemFromJson(createElement, data, {
+            const listCollection: Element[] = ListBase.createListItemFromJson(createElement, data, {
                 itemCreating: (e: { [key: string]: { [key: string]: Object } }) => {
                     e.curData.text = 'Paste';
                     e.curData.id = 'data02';
@@ -678,83 +685,87 @@ describe('ListBase', () => {
         });
 
         it('Listitem creation (isSingleLevel)', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDs_string), {}, 1, true);
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDsString), {}, 1, true);
             expect(listCollection.length).toBe(3);
-            let firstListItem: HTMLElement = listCollection[0];
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.tagName).toBe('LI');
         });
 
         it('ListItem class names (isSingleLevel)', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDs_string), {}, 1, true);
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDsString), {}, 1, true);
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.classList.contains('e-list-item')).toBe(true);
         });
         it('ListItem attributes (isSingleLevel)', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDs_string), {}, 1, true);
-            let firstListItem: HTMLElement = listCollection[0];
+            const  listCollection: HTMLElement[]
+            = ListBase.createListItemFromJson(createElement, deepCloning(minimalDsString), {}, 1, true);
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.getAttribute('role')).toBe('option');
             expect(isNullOrUndefined(firstListItem.getAttribute('id'))).toBe(false);
         });
 
         it('ListItem (with & without) Aria attributes & level with flat list (isSingleLevel) wrong', () => {
-            let option_withAria: ListBaseOptions = { ariaAttributes: { itemRole: 'treeView' } };
-            let listCollection_withAria: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDs_string), option_withAria, 1, true);
-            let firstListItem_withAria: HTMLElement = listCollection_withAria[0];
-            expect(firstListItem_withAria.getAttribute('role')).toBe('option');
-            let option_withoutAria: ListBaseOptions = { ariaAttributes: { itemRole: '', groupItemRole: '' } };
-            let listCollection_withoutAria: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDs_string), option_withoutAria, 1, true);
-            let firstListItem_withoutAria: HTMLElement = listCollection_withoutAria[0];
-            expect(firstListItem_withoutAria.getAttribute('role')).toBe('option');
+            const optionWithAria: ListBaseOptions = { ariaAttributes: { itemRole: 'treeView' } };
+            const listCollectionWithAria: HTMLElement[] =
+             ListBase.createListItemFromJson(createElement, deepCloning(minimalDsString), optionWithAria, 1, true);
+            const firstListItemWithAria: HTMLElement = listCollectionWithAria[0];
+            expect(firstListItemWithAria.getAttribute('role')).toBe('option');
+            const optionWithoutAria: ListBaseOptions = { ariaAttributes: { itemRole: '', groupItemRole: '' } };
+            // eslint-disable-next-line
+            const listCollectionWithoutAria : any = ListBase.createListItemFromJson(createElement, deepCloning(minimalDsString), optionWithoutAria, 1, true);
+            const firstListItemWithoutAria: HTMLElement = listCollectionWithoutAria[0];
+            expect(firstListItemWithoutAria.getAttribute('role')).toBe('option');
         });
         it('ListItem TextContent with array of string (isSingleLevel)', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDs_string), {}, 1, true);
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDsString), {}, 1, true);
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.textContent).toBe('text1');
 
         });
 
         it('ListItem TextContent with array of number (isSingleLevel)', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDs_number), {}, 1, true);
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDsNumber), {}, 1, true);
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.textContent).toBe('1');
 
         });
 
         it('ListItem structure (tag)(isSingleLevel)', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDs_string), {}, 1, true);
-            let firstListItem: HTMLElement = listCollection[0];
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDsString), {}, 1, true);
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.tagName).toBe('LI');
             expect(firstListItem.children.length).toBe(0);
         });
 
         it('ListItem icon element with normal, null and undefined input (isSingleLevel)', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(data_source), { showIcon: true }, 1, true);
-            let firstIconElement: HTMLElement = <HTMLElement>listCollection[0].querySelector('.e-list-icon');
-            let secondIconElement: HTMLElement = <HTMLElement>listCollection[1].querySelector('.e-list-icon');
-            let thirdIconElement: HTMLElement = <HTMLElement>listCollection[2].querySelector('.e-list-icon');
+            const listCollection: HTMLElement[] =
+            ListBase.createListItemFromJson(createElement, deepCloning(dataSource), { showIcon: true }, 1, true);
+            const firstIconElement: HTMLElement = <HTMLElement>listCollection[0].querySelector('.e-list-icon');
+            const secondIconElement: HTMLElement = <HTMLElement>listCollection[1].querySelector('.e-list-icon');
+            const thirdIconElement: HTMLElement = <HTMLElement>listCollection[2].querySelector('.e-list-icon');
             expect(firstIconElement.tagName).toBe('SPAN');
             expect(firstIconElement.classList.contains('iconClass1')).toBe(true);
             expect(secondIconElement).toBe(null);
             expect(thirdIconElement).toBe(null);
-            let mapping: ListBaseOptions = { showIcon: true, fields: { iconCss: 'iconCss_mapping' } };
-            let fourthIconElement: HTMLElement = ListBase.createListItemFromJson(createElement, deepCloning(data_source), mapping, 1, true)[3].querySelector('.e-list-icon');
+            const mapping: ListBaseOptions = { showIcon: true, fields: { iconCss: 'iconCssMapping' } };
+            const fourthIconElement: HTMLElement = ListBase.createListItemFromJson(createElement, deepCloning(dataSource), mapping, 1, true)[3].querySelector('.e-list-icon');
             expect(fourthIconElement.tagName).toBe('SPAN');
             expect(fourthIconElement.classList.contains('iconClass4')).toBe(true);
         });
 
 
         it('ListItem - enabled (isSingleLevel)', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(data_source), {}, 1, true);
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(dataSource), {}, 1, true);
             expect(listCollection[0].classList.contains('e-disabled')).toBe(true);
             expect(listCollection[1].classList.contains('e-disabled')).toBe(false);
             expect(listCollection[2].classList.contains('e-disabled')).toBe(false);
-            let mapping: ListBaseOptions = { fields: { enabled: 'enabled_mapping' } };
-            let mappedItem: HTMLElement = ListBase.createListItemFromJson(createElement, deepCloning(data_source), mapping, 1, true)[3];
+            const mapping: ListBaseOptions = { fields: { enabled: 'enabledMapping' } };
+            const mappedItem: HTMLElement = ListBase.createListItemFromJson(createElement, deepCloning(dataSource), mapping, 1, true)[3];
             expect(mappedItem.classList.contains('e-disabled')).toBe(true);
         });
 
         it('ListItem - html attr with normal, null and undefined input (isSingleLevel)', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(data_source), {}, 1, true);
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(dataSource), {}, 1, true);
             expect(listCollection[0].classList.contains('base')).toBe(true);
             expect(listCollection[0].classList.contains('base1')).toBe(true);
             expect(listCollection[0].getAttribute('role')).toBe('li-1');
@@ -763,8 +774,9 @@ describe('ListBase', () => {
             expect(listCollection[1].hasAttribute('uid')).toBe(false);
             expect(listCollection[2].getAttribute('role')).toBe('option');
             expect(listCollection[2].hasAttribute('uid')).toBe(false);
-            let mapping: ListBaseOptions = { fields: { htmlAttributes: 'htmlAttributes_mapping' } };
-            let mappedListItem: HTMLElement = ListBase.createListItemFromJson(createElement, deepCloning(data_source), mapping, 1, true)[3];
+            const mapping: ListBaseOptions = { fields: { htmlAttributes: 'htmlAttributesMapping' } };
+            const mappedListItem: HTMLElement =
+            ListBase.createListItemFromJson(createElement, deepCloning(dataSource), mapping, 1, true)[3];
             expect(mappedListItem.classList.contains('base')).toBe(true);
             expect(mappedListItem.classList.contains('base4')).toBe(true);
             expect(mappedListItem.getAttribute('role')).toBe('li-4');
@@ -772,10 +784,10 @@ describe('ListBase', () => {
         });
 
         it('ListItem - URL link & URL attr with normal, null and undefined input (isSingleLevel)', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(data_source), {}, 1, true);
-            let firstanchorElement: HTMLImageElement = listCollection[0].querySelector('.e-list-url');
-            let secondanchorElement: HTMLImageElement = listCollection[1].querySelector('.e-list-url');
-            let thirdanchorElement: HTMLImageElement = listCollection[2].querySelector('.e-list-url');
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(dataSource), {}, 1, true);
+            const firstanchorElement: HTMLImageElement = listCollection[0].querySelector('.e-list-url');
+            const secondanchorElement: HTMLImageElement = listCollection[1].querySelector('.e-list-url');
+            const thirdanchorElement: HTMLImageElement = listCollection[2].querySelector('.e-list-url');
             expect(firstanchorElement.tagName).toBe('A');
             expect(firstanchorElement.classList.contains('base')).toBe(true);
             expect(firstanchorElement.classList.contains('e-list-text')).toBe(true);
@@ -785,8 +797,8 @@ describe('ListBase', () => {
             expect(firstanchorElement.getAttribute('href')).toBe('https://www.google.com');
             expect(secondanchorElement).toBe(null);
             expect(thirdanchorElement).toBe(null);
-            let mapping: ListBaseOptions = { fields: { urlAttributes: 'urlAttributes_mapping', url: 'url_mapping' } };
-            let fourthanchorElement: HTMLElement = ListBase.createListItemFromJson(createElement, deepCloning(data_source), mapping, 1, true)[3].querySelector('.e-list-url');
+            const mapping: ListBaseOptions = { fields: { urlAttributes: 'urlAttributesMapping', url: 'urlMapping' } };
+            const fourthanchorElement: HTMLElement = ListBase.createListItemFromJson(createElement, deepCloning(dataSource), mapping, 1, true)[3].querySelector('.e-list-url');
             expect(fourthanchorElement.tagName).toBe('A');
             expect(fourthanchorElement.classList.contains('base')).toBe(true);
             expect(fourthanchorElement.classList.contains('e-list-text')).toBe(true);
@@ -796,16 +808,16 @@ describe('ListBase', () => {
             expect(fourthanchorElement.getAttribute('href')).toBe('https://www.google.com');
         });
         it('ListItem - groupList (isSingleLevel)', () => {
-            let ds: { [key: string]: object }[] = ListBase.groupDataSource(group_dataSource, { groupBy: 'category' });
+            const ds: { [key: string]: object }[] = ListBase.groupDataSource(groupdataSources, { groupBy: 'category' });
             expect(ds.length).toBe(8);
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, ds, {}, 1, true);
-            let grouplistItem: HTMLElement[] = Array.prototype.filter.call(listCollection, (li: HTMLElement) => li.classList.contains('e-list-group-item'));
-            let listItem: HTMLElement[] = Array.prototype.filter.call(listCollection, (li: HTMLElement) => li.classList.contains('e-list-item'));
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, ds, {}, 1, true);
+            const grouplistItem: HTMLElement[] = Array.prototype.filter.call(listCollection, (li: HTMLElement) => li.classList.contains('e-list-group-item'));
+            const listItem: HTMLElement[] = Array.prototype.filter.call(listCollection, (li: HTMLElement) => li.classList.contains('e-list-item'));
             expect(listCollection.length).toBe(ds.length);
             expect(grouplistItem.length).toBe(3);
             expect(listItem.length).toBe(5);
             expect(listCollection.length).toBe(ds.length);
-            let groupListItem: HTMLElement = listCollection[0];
+            const groupListItem: HTMLElement = listCollection[0];
             expect(groupListItem.tagName).toBe('LI');
             expect(groupListItem.classList.contains('e-list-group-item')).toBe(true);
             expect(groupListItem.getAttribute('role')).toBe('group');
@@ -816,19 +828,19 @@ describe('ListBase', () => {
         });
 
         it('ListItem Aria attributes & level with group list (isSingleLevel)', () => {
-            let ds: { [key: string]: object }[] = ListBase.groupDataSource(group_dataSource, { groupBy: 'category' });
-            let option: ListBaseOptions = { ariaAttributes: { groupItemRole: 'tree-group' } };
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, ds, option, 1, true);
-            let groupListItem: HTMLElement = listCollection[0];
+            const ds: { [key: string]: object }[] = ListBase.groupDataSource(groupdataSources, { groupBy: 'category' });
+            const option: ListBaseOptions = { ariaAttributes: { groupItemRole: 'tree-group' } };
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, ds, option, 1, true);
+            const groupListItem: HTMLElement = listCollection[0];
             expect(groupListItem.getAttribute('role')).toBe('tree-group');
         });
 
         it('ListItem - Template', () => {
-            let option: ListBaseOptions = { template: '<div class="${iconCss_mapping}" role="${htmlAttributes_mapping.role}" id="${urlAttributes_mapping.uid}"><span id="${abc}">${text_mapping}</span></div>' };
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning([data_source[3]]), option);
-            let listItem: HTMLElement = listCollection[0];
+            const option: ListBaseOptions = { template: '<div class="${iconCssMapping}" role="${htmlAttributesMapping.role}" id="${urlAttributesMapping.uid}"><span id="${abc}">${textMapping}</span></div>' };
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning([dataSource[3]]), option);
+            const listItem: HTMLElement = listCollection[0];
             expect(listItem.tagName).toBe('LI');
-            let templateElemet: Element = listItem.children[0];
+            const templateElemet: Element = listItem.children[0];
             expect(templateElemet.tagName).toBe('DIV');
             expect(templateElemet.classList.contains('iconClass4')).toBe(true);
             expect(templateElemet.getAttribute('role')).toBe('li-4');
@@ -840,12 +852,12 @@ describe('ListBase', () => {
         });
 
         it('ListItem - Group Template', () => {
-            let ds: { [key: string]: object }[] = ListBase.groupDataSource([data_source[3]], { groupBy: 'text_mapping' });
-            let option: ListBaseOptions = { groupTemplate: '<div class="${items[0].iconCss_mapping}" role="${items[0].htmlAttributes_mapping.role}" id="${items[0].urlAttributes_mapping.uid}"><span id="${abc}">${text}</span></div>' };
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, ds, option);
-            let groupListItem: HTMLElement = listCollection[0];
+            const ds: { [key: string]: object }[] = ListBase.groupDataSource([dataSource[3]], { groupBy: 'textMapping' });
+            const option: ListBaseOptions = { groupTemplate: '<div class="${items[0].iconCssMapping}" role="${items[0].htmlAttributesMapping.role}" id="${items[0].urlAttributesMapping.uid}"><span id="${abc}">${text}</span></div>' };
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, ds, option);
+            const groupListItem: HTMLElement = listCollection[0];
             expect(groupListItem.tagName).toBe('LI');
-            let templateElemet: Element = groupListItem.children[0];
+            const templateElemet: Element = groupListItem.children[0];
             expect(templateElemet.tagName).toBe('DIV');
             expect(templateElemet.classList.contains('iconClass4')).toBe(true);
             expect(templateElemet.getAttribute('role')).toBe('li-4');
@@ -857,8 +869,9 @@ describe('ListBase', () => {
         });
 
         it('DOM order', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(data_source), { showIcon: true, showCheckBox: true, });
-            let firstListItem: HTMLElement = listCollection[0];
+            // eslint-disable-next-line max-len
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(dataSource), { showIcon: true, showCheckBox: true });
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.tagName).toBe('LI');
             expect(firstListItem.classList.contains('e-list-item')).toBe(true);
             expect(firstListItem.children[0].tagName).toBe('DIV');
@@ -874,8 +887,9 @@ describe('ListBase', () => {
         });
 
         it('DOM order (isSinglelevel)', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(data_source), { showIcon: true, showCheckBox: true }, 1, true);
-            let firstListItem: HTMLElement = listCollection[0];
+            // eslint-disable-next-line max-len
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(dataSource), { showIcon: true, showCheckBox: true }, 1, true);
+            const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.tagName).toBe('LI');
             expect(firstListItem.classList.contains('e-list-item')).toBe(true);
             expect(firstListItem.children[0].tagName).toBe('INPUT');
@@ -891,11 +905,11 @@ describe('ListBase', () => {
     describe('createListFromJSON method', () => {
 
         it('UL element creation', () => {
-            let ulElement: HTMLElement = ListBase.createListFromJson(createElement, deepCloning(minimalDs_number));
+            const ulElement: HTMLElement = ListBase.createListFromJson(createElement, deepCloning(minimalDsNumber));
             expect(ulElement.tagName).toBe('UL');
-            let listCollection: HTMLCollection = ulElement.children
+            const listCollection: HTMLCollection = ulElement.children;
             expect(listCollection.length).toBe(3);
-            let firstListItem: HTMLElement = listCollection[0] as HTMLElement;
+            const firstListItem: HTMLElement = listCollection[0] as HTMLElement;
             expect(firstListItem.tagName).toBe('LI');
         });
 
@@ -904,45 +918,47 @@ describe('ListBase', () => {
     describe('createList method', () => {
 
         it('List creation - String[]', () => {
-            let ulElement: HTMLElement = ListBase.createList(createElement, ['text1', 'text2']);
+            const ulElement: HTMLElement = ListBase.createList(createElement, ['text1', 'text2']);
             expect(ulElement.tagName).toBe('UL');
-            let listCollection: HTMLCollection = ulElement.children
+            const listCollection: HTMLCollection = ulElement.children;
             expect(listCollection.length).toBe(2);
-            let firstListItem: HTMLElement = listCollection[0] as HTMLElement;
+            const firstListItem: HTMLElement = listCollection[0] as HTMLElement;
             expect(firstListItem.tagName).toBe('LI');
         });
 
         it('List creation - Number[]', () => {
-            let ulElement: HTMLElement = ListBase.createList(createElement, [1, 2, 3]);
+            const ulElement: HTMLElement = ListBase.createList(createElement, [1, 2, 3]);
             expect(ulElement.tagName).toBe('UL');
-            let listCollection: HTMLCollection = ulElement.children
+            const listCollection: HTMLCollection = ulElement.children;
             expect(listCollection.length).toBe(3);
-            let firstListItem: HTMLElement = listCollection[0] as HTMLElement;
+            const firstListItem: HTMLElement = listCollection[0] as HTMLElement;
             expect(firstListItem.tagName).toBe('LI');
         });
 
         it('List creation - Json[]', () => {
-            let ulElement: HTMLElement = ListBase.createList(createElement, deepCloning(minimalDs_number));
+            const ulElement: HTMLElement = ListBase.createList(createElement, deepCloning(minimalDsNumber));
             expect(ulElement.tagName).toBe('UL');
-            let listCollection: HTMLCollection = ulElement.children
+            const listCollection: HTMLCollection = ulElement.children;
             expect(listCollection.length).toBe(3);
-            let firstListItem: HTMLElement = listCollection[0] as HTMLElement;
+            const firstListItem: HTMLElement = listCollection[0] as HTMLElement;
             expect(firstListItem.tagName).toBe('LI');
         });
 
     });
 
-    describe('createJsonFromElement method', () => {
+    describe('ListBase.createJsonFromElement method', () => {
         it('JSON data creation  - List', () => {
-            let UL: HTMLElement = document.createElement('ul');
+            const UL: HTMLElement = document.createElement('ul');
             UL.innerHTML = '<li>item1</li><li>item2</li>';
-            let dataSource: { [key: string]: {} }[] = ListBase.createJsonFromElement(UL);
+            // eslint-disable-next-line @typescript-eslint/ban-types
+            const dataSource: { [key: string]: {} }[] = ListBase.createJsonFromElement(UL);
             expect(dataSource.length).toBe(2);
             expect(dataSource[0].text).toBe('item1');
             expect(isNullOrUndefined(dataSource[0].id)).toBe(false);
             expect(dataSource[1].text).toBe('item2');
             expect(isNullOrUndefined(dataSource[1].id)).toBe(false);
-            let mappedDataSource: { [key: string]: {} }[] = ListBase.createJsonFromElement(UL, { fields: { text: 'name', id: 'uid' } });
+            // eslint-disable-next-line @typescript-eslint/ban-types
+            const mappedDataSource: { [key: string]: {} }[] = ListBase.createJsonFromElement(UL, { fields: { text: 'name', id: 'uid' } });
             expect(mappedDataSource.length).toBe(2);
             expect(mappedDataSource[0].name).toBe('item1');
             expect(isNullOrUndefined(mappedDataSource[0].uid)).toBe(false);
@@ -951,15 +967,17 @@ describe('ListBase', () => {
         });
 
         it('JSON data creation  - List with anchor tag', () => {
-            let UL: HTMLElement = document.createElement('ul');
+            const UL: HTMLElement = document.createElement('ul');
             UL.innerHTML = '<li><a>item1<a/></li><li><a>item2</a></li>';
-            let dataSource: { [key: string]: {} }[] = ListBase.createJsonFromElement(UL);
+            // eslint-disable-next-line
+            const dataSource: { [key: string]: {} }[] = ListBase.createJsonFromElement(UL);
             expect(dataSource.length).toBe(2);
             expect(dataSource[0].text).toBe('item1');
             expect(isNullOrUndefined(dataSource[0].id)).toBe(false);
             expect(dataSource[1].text).toBe('item2');
             expect(isNullOrUndefined(dataSource[1].id)).toBe(false);
-            let mappedDataSource: { [key: string]: {} }[] = ListBase.createJsonFromElement(UL, { fields: { text: 'name', id: 'uid' } });
+            // eslint-disable-next-line
+            const mappedDataSource: { [key: string]: {} }[] = ListBase.createJsonFromElement(UL, { fields: { text: 'name', id: 'uid' } });
             expect(mappedDataSource.length).toBe(2);
             expect(mappedDataSource[0].name).toBe('item1');
             expect(isNullOrUndefined(mappedDataSource[0].uid)).toBe(false);
@@ -968,16 +986,22 @@ describe('ListBase', () => {
         });
 
         it('JSON data with html attributes', () => {
-            let UL: HTMLElement = document.createElement('ul');
+            const UL: HTMLElement = document.createElement('ul');
             UL.innerHTML = '<li id="default" class = "list level-1" >item1</li><li id="sub">item2</li>';
-            let dataSource: { [key: string]: {} }[] = ListBase.createJsonFromElement(UL);
+            // eslint-disable-next-line
+            const dataSource: { [key: string]: {} }[] = ListBase.createJsonFromElement(UL);
+            // eslint-disable-next-line
             expect((dataSource[0].htmlAttributes as { [key: string]: {} }).class).toBe('list level-1');
+            // eslint-disable-next-line
             expect((dataSource[0].htmlAttributes as { [key: string]: {} }).id).toBe(undefined);
             expect(dataSource[0].id).toBe('default');
             expect(dataSource[1].htmlAttributes).toBe(undefined);
             expect(dataSource[1].id).toBe('sub');
-            let mappedDataSource: { [key: string]: {} }[] = ListBase.createJsonFromElement(UL, { fields: { htmlAttributes: 'attr', id: 'uid' } });
+            // eslint-disable-next-line
+            const mappedDataSource: { [key: string]: {} }[] = ListBase.createJsonFromElement(UL, { fields: { htmlAttributes: 'attr', id: 'uid' } });
+            // eslint-disable-next-line
             expect((mappedDataSource[0].attr as { [key: string]: {} }).class).toBe('list level-1');
+            // eslint-disable-next-line
             expect((mappedDataSource[0].attr as { [key: string]: {} }).id).toBe(undefined);
             expect(mappedDataSource[0].uid).toBe('default');
             expect(mappedDataSource[1].attr).toBe(undefined);
@@ -986,46 +1010,62 @@ describe('ListBase', () => {
         });
 
         it('JSON data with URL && HTML attributes', () => {
-            let UL: HTMLElement = document.createElement('ul');
+            const UL: HTMLElement = document.createElement('ul');
             UL.innerHTML = '<li id="default" class = "list level-1" ><a href = "www.google.com" >google</a></li><li id = "sub" ><a href = "www.yahoo.com">yahoo</a></li>';
-            let dataSource: { [key: string]: {} }[] = ListBase.createJsonFromElement(UL);
+            // eslint-disable-next-line
+            const dataSource: { [key: string]: {} }[] = ListBase.createJsonFromElement(UL);
+            // eslint-disable-next-line
             expect((dataSource[0].htmlAttributes as { [key: string]: {} }).class).toBe('list level-1');
+            // eslint-disable-next-line
             expect((dataSource[0].htmlAttributes as { [key: string]: {} }).id).toBe(undefined);
             expect(dataSource[0].id).toBe('default');
             expect(dataSource[1].htmlAttributes).toBe(undefined);
             expect(dataSource[1].id).toBe('sub');
+            // eslint-disable-next-line
             expect((dataSource[0].urlAttributes as { [key: string]: {} }).href).toBe('www.google.com');
+            // eslint-disable-next-line
             expect((dataSource[1].urlAttributes as { [key: string]: {} }).href).toBe('www.yahoo.com');
-            let mappedDataSource: { [key: string]: {} }[] = ListBase.createJsonFromElement(UL, { fields: {id: 'uid', htmlAttributes: 'attr', urlAttributes: 'url' } });
+            // eslint-disable-next-line
+            const mappedDataSource: { [key: string]: {} }[] = ListBase.createJsonFromElement(UL, { fields: {id: 'uid', htmlAttributes: 'attr', urlAttributes: 'url' } });
+            // eslint-disable-next-line
             expect((mappedDataSource[0].attr as { [key: string]: {} }).class).toBe('list level-1');
+            // eslint-disable-next-line @typescript-eslint/ban-types
             expect((mappedDataSource[0].attr as { [key: string]: {} }).id).toBe(undefined);
             expect(mappedDataSource[0].uid).toBe('default');
             expect(mappedDataSource[1].attr).toBe(undefined);
             expect(mappedDataSource[1].uid).toBe('sub');
+            // eslint-disable-next-line
             expect((mappedDataSource[0].url as { [key: string]: {} }).href).toBe('www.google.com');
+            // eslint-disable-next-line
             expect((mappedDataSource[1].url as { [key: string]: {} }).href).toBe('www.yahoo.com');
         });
 
         it('sub level child creation', () => {
-            let UL: HTMLElement = document.createElement('ul');
+            const UL: HTMLElement = document.createElement('ul');
             UL.innerHTML = '<li>item1<ul><li>sub1</li><li>sub2</li><li>sub3</li></ul></li>' +
                 '<li>item2</li><li>item3</li><li>item4</li><li>item5</li>' +
                 '<li>item6</li><li>item7</li>';
-            let dataSource: { [key: string]: {} }[] = ListBase.createJsonFromElement(UL);
+            // eslint-disable-next-line
+            const dataSource: { [key: string]: {} }[] = ListBase.createJsonFromElement(UL);
             expect(dataSource.length).toBe(7);
+            // eslint-disable-next-line
             expect((dataSource[0].child as { [key: string]: {} }).length).toBe(3);
             expect(dataSource[0].text).toBe('item1');
+            // eslint-disable-next-line
             expect(((dataSource[0].child as { [key: string]: {} })[0] as { [key: string]: {} }).text).toBe('sub1');
-            let mappedDataSource: { [key: string]: {} }[] = ListBase.createJsonFromElement(UL, { fields: { child: 'sub', text: 'name' } });
+            // eslint-disable-next-line
+            const mappedDataSource: { [key: string]: {} }[] = ListBase.createJsonFromElement(UL, { fields: { child: 'sub', text: 'name' } });
             expect(mappedDataSource.length).toBe(7);
+            // eslint-disable-next-line
             expect((mappedDataSource[0].sub as { [key: string]: {} }).length).toBe(3);
             expect(mappedDataSource[0].name).toBe('item1');
+            // eslint-disable-next-line
             expect(((mappedDataSource[0].sub as { [key: string]: {} })[0] as { [key: string]: {} }).name).toBe('sub1');
         });
     });
 
-    describe('getSiblingLI  method', () => {
-        let UL: HTMLElement = document.createElement('ul');
+    describe('ListBase.getSiblingLI  method', () => {
+        const UL: HTMLElement = document.createElement('ul');
         UL.id = 'uls';
         UL.innerHTML = '<li id="i1">item1<ul><li id="s1">sub1</li><li id="s2">sub2</li><li id="s3">sub3</li></ul></li>' +
             '<li id="i2" style="display:none">item2</li><li id="i3">item3</li><li id="i4">item4</li><li id="i5">item5</li>' +
@@ -1033,41 +1073,41 @@ describe('ListBase', () => {
         document.body.appendChild(UL);
 
         it('get next sibling', () => {
-            let li: HTMLElement = <HTMLElement>UL.querySelector('#i4');
-            let nextLI: HTMLElement = <HTMLElement>UL.querySelector('#i5');
+            const li: HTMLElement = <HTMLElement>UL.querySelector('#i4');
+            const nextLI: HTMLElement = <HTMLElement>UL.querySelector('#i5');
             expect(ListBase.getSiblingLI(UL.querySelectorAll('li'), li)).toBe(nextLI);
         });
 
         it('get previous sibling', () => {
-            let li: HTMLElement = <HTMLElement>UL.querySelector('#i4');
-            let prevLI: HTMLElement = <HTMLElement>UL.querySelector('#i3');
+            const li: HTMLElement = <HTMLElement>UL.querySelector('#i4');
+            const prevLI: HTMLElement = <HTMLElement>UL.querySelector('#i3');
             expect(ListBase.getSiblingLI(UL.querySelectorAll('li'), li, true)).toBe(prevLI);
         });
 
         it('get previous visible sibling', () => {
-            let li: HTMLElement = <HTMLElement>UL.querySelector('#i3');
-            let prevLI: HTMLElement = <HTMLElement>UL.querySelector('#s3');
+            const li: HTMLElement = <HTMLElement>UL.querySelector('#i3');
+            const prevLI: HTMLElement = <HTMLElement>UL.querySelector('#s3');
             expect(ListBase.getSiblingLI(UL.querySelectorAll('li'), li, true)).toBe(prevLI);
         });
 
         it('get next visible sibling', () => {
-            let li: HTMLElement = <HTMLElement>UL.querySelector('#s3');
-            let nextLI: HTMLElement = <HTMLElement>UL.querySelector('#i3');
+            const li: HTMLElement = <HTMLElement>UL.querySelector('#s3');
+            const nextLI: HTMLElement = <HTMLElement>UL.querySelector('#i3');
             expect(ListBase.getSiblingLI(UL.querySelectorAll('li'), li)).toBe(nextLI);
         });
 
         it('get first visible li from array', () => {
-            let li: HTMLElement = <HTMLElement>UL.querySelector('#s');
+            const li: HTMLElement = <HTMLElement>UL.querySelector('#s');
             expect(ListBase.getSiblingLI(UL.querySelectorAll('li'), li)).toBe(UL.querySelector('#uls>li:first-child'));
         });
 
         it('get last visible li from array', () => {
-            let li: HTMLElement = <HTMLElement>UL.querySelector('#s');
+            const li: HTMLElement = <HTMLElement>UL.querySelector('#s');
             expect(ListBase.getSiblingLI(UL.querySelectorAll('li'), li, true)).toBe(UL.querySelector('#uls>li:last-child'));
         });
 
         it('get siblings li when no array list', () => {
-            let li: HTMLElement = <HTMLElement>UL.querySelector('#s');
+            const li: HTMLElement = <HTMLElement>UL.querySelector('#s');
             expect(ListBase.getSiblingLI([], li)).toBe(undefined);
         });
         afterAll(() => {
@@ -1076,7 +1116,7 @@ describe('ListBase', () => {
     });
 
     describe('indexOf method', () => {
-        let UL: HTMLElement = document.createElement('ul');
+        const UL: HTMLElement = document.createElement('ul');
         UL.id = 'uls';
         UL.innerHTML = '<li id="i1">item1<ul><li id="s1">sub1</li><li id="s2">sub2</li><li id="s3">sub3</li></ul></li>' +
             '<li id="i2" style="display:none">item2</li><li id="i3">item3</li><li id="i4">item4</li><li id="i5">item5</li>' +
@@ -1084,17 +1124,17 @@ describe('ListBase', () => {
         document.body.appendChild(UL);
 
         it('li from node list', () => {
-            let li: HTMLElement = <HTMLElement>UL.querySelector('#i4');
+            const li: HTMLElement = <HTMLElement>UL.querySelector('#i4');
             expect(ListBase.indexOf(li, UL.querySelectorAll('#uls>li'))).toBe(3);
         });
 
         it('li not in list', () => {
-            let li: HTMLElement = <HTMLElement>UL.querySelector('#i4');
+            const li: HTMLElement = <HTMLElement>UL.querySelector('#i4');
             expect(ListBase.indexOf(li, UL.querySelectorAll('p'))).toBe(-1);
         });
 
         it('element is empty', () => {
-            let li: HTMLElement = <HTMLElement>UL.querySelector('#i');
+            const li: HTMLElement = <HTMLElement>UL.querySelector('#i');
             expect(ListBase.indexOf(li, UL.querySelectorAll('li'))).toBe(undefined);
         });
         afterAll(() => {
@@ -1102,30 +1142,30 @@ describe('ListBase', () => {
         });
     });
 
-    describe('generateIcon method', (): void => {
+    describe('ListBase.generateIcon method', (): void => {
 
         it('DOM structure', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['text']);
-            let liItem: HTMLElement = ListBase.generateIcon(createElement, listCollection[0]);
-            let iconElement: Element = liItem.querySelector('.e-list-text').nextElementSibling;
+            const listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['text']);
+            const liItem: HTMLElement = ListBase.generateIcon(createElement, listCollection[0]);
+            const iconElement: Element = liItem.querySelector('.e-list-text').nextElementSibling;
             expect(iconElement.tagName).toBe('DIV');
             expect(iconElement.classList.contains('e-icons')).toBe(true);
             expect(iconElement.classList.contains('e-icon-collapsible')).toBe(true);
         });
 
         it('with additional class name', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, [1]);
-            let liItem: HTMLElement = ListBase.generateIcon(createElement, listCollection[0], 'e-level');
-            let iconElement: Element = liItem.querySelector('.e-list-text').nextElementSibling;
+            const listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, [1]);
+            const liItem: HTMLElement = ListBase.generateIcon(createElement, listCollection[0], 'e-level');
+            const iconElement: Element = liItem.querySelector('.e-list-text').nextElementSibling;
             expect(iconElement.classList.contains('e-icons')).toBe(true);
             expect(iconElement.classList.contains('e-icon-collapsible')).toBe(true);
             expect(iconElement.classList.contains('e-level')).toBe(true);
         });
 
         it('with customized expand collapse class name', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, [{ text: 'text' }]);
-            let liItem: HTMLElement = ListBase.generateIcon(createElement, listCollection[0], 'e-level', { expandIconClass: 'e-icon-expandable' });
-            let iconElement: Element = liItem.querySelector('.e-list-text').nextElementSibling;
+            const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, [{ text: 'text' }]);
+            const liItem: HTMLElement = ListBase.generateIcon(createElement, listCollection[0], 'e-level', { expandIconClass: 'e-icon-expandable' });
+            const iconElement: Element = liItem.querySelector('.e-list-text').nextElementSibling;
             expect(iconElement.classList.contains('e-icons')).toBe(true);
             expect(iconElement.classList.contains('e-icon-collapsible')).toBe(false);
             expect(iconElement.classList.contains('e-icon-expandable')).toBe(true);
@@ -1133,9 +1173,9 @@ describe('ListBase', () => {
         });
 
         it('with expandIconPosition option', () => {
-            let listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['text']);
-            let liItem: HTMLElement = ListBase.generateIcon(createElement, listCollection[0], '', { expandIconPosition: 'Left' });
-            let iconElement: Element = liItem.querySelector('.e-list-text').previousElementSibling;
+            const listCollection: HTMLElement[] = ListBase.createListItemFromArray(createElement, ['text']);
+            const liItem: HTMLElement = ListBase.generateIcon(createElement, listCollection[0], '', { expandIconPosition: 'Left' });
+            const iconElement: Element = liItem.querySelector('.e-list-text').previousElementSibling;
             expect(iconElement.tagName).toBe('DIV');
             expect(iconElement.classList.contains('e-icons')).toBe(true);
             expect(iconElement.classList.contains('e-icon-collapsible')).toBe(true);
@@ -1143,39 +1183,39 @@ describe('ListBase', () => {
 
     });
 
-    describe('addSorting method', (): void => {
+    describe('ListBase.addSorting method', (): void => {
 
         it('default', () => {
-            let newDS: { [key: string]: number | object }[] = ListBase.getDataSource(minimalDs_number, ListBase.addSorting('None', 'text'));
+            const newDS: { [key: string]: number | object }[] = ListBase.getDataSource(minimalDsNumber, ListBase.addSorting('None', 'text'));
             expect(newDS[0].text).toBe(1);
             expect(newDS[1].text).toBe(2);
             expect(newDS[2].text).toBe(3);
         });
 
         it('sorting order by ascending', () => {
-            let newDS: { [key: string]: number | object }[] = ListBase.getDataSource(minimalDs_number, ListBase.addSorting('Ascending', 'text'));
+            const newDS: { [key: string]: number | object }[] = ListBase.getDataSource(minimalDsNumber, ListBase.addSorting('Ascending', 'text'));
             expect(newDS[0].text).toBe(1);
             expect(newDS[1].text).toBe(2);
             expect(newDS[2].text).toBe(3);
         });
 
         it('sorting order by descending', () => {
-            let newDS: { [key: string]: number | object }[] = ListBase.getDataSource(minimalDs_number, ListBase.addSorting('Descending', 'text'));
+            const newDS: { [key: string]: number | object }[] = ListBase.getDataSource(minimalDsNumber, ListBase.addSorting('Descending', 'text'));
             expect(newDS[0].text).toBe(3);
             expect(newDS[1].text).toBe(2);
             expect(newDS[2].text).toBe(1);
         });
 
         it('sorting order with wrong query', () => {
-           let listQuery: Query = ListBase.addSorting(undefined, 'text',new Query().search('VI', ['CustomerID']));
-           expect(listQuery.queries[0].fn).not.toBe('onSortBy');
+            const listQuery: Query = ListBase.addSorting(undefined, 'text', new Query().search('VI', ['CustomerID']));
+            expect(listQuery.queries[0].fn).not.toBe('onSortBy');
         });
 
     });
 
-    describe('groupDataSource method', (): void => {
+    describe('ListBase.groupDataSource method', (): void => {
         it('default', () => {
-            let newDS: { [key: string]: object | string | boolean | string[] }[] = ListBase.groupDataSource(group_dataSource, { groupBy: 'category' });
+            const newDS: { [key: string]: object | string | boolean | string[] }[] = ListBase.groupDataSource(groupdataSources, { groupBy: 'category' });
             expect(newDS.length).toBe(8);
             expect(newDS[0].text).toBe('Ferrari');
             expect(newDS[0].isHeader).toBe(true);
@@ -1190,7 +1230,7 @@ describe('ListBase', () => {
         });
 
         it('ascending order', () => {
-            let newDS: { [key: string]: object | string | boolean | string[] }[] = ListBase.groupDataSource(group_dataSource, { groupBy: 'category' }, 'Ascending');
+            const newDS: { [key: string]: object | string | boolean | string[] }[] = ListBase.groupDataSource(groupdataSources, { groupBy: 'category' }, 'Ascending');
             expect(newDS.length).toBe(8);
             expect(newDS[0].text).toBe('Audi');
             expect(newDS[0].isHeader).toBe(true);
@@ -1205,7 +1245,7 @@ describe('ListBase', () => {
         });
 
         it('descending order', () => {
-            let newDS: { [key: string]: object | string | boolean | string[] }[] = ListBase.groupDataSource(group_dataSource, { groupBy: 'category' }, 'Descending');
+            const newDS: { [key: string]: object | string | boolean | string[] }[] = ListBase.groupDataSource(groupdataSources, { groupBy: 'category' }, 'Descending');
             expect(newDS.length).toBe(8);
             expect(newDS[0].text).toBe('Ferrari');
             expect(newDS[0].isHeader).toBe(true);
@@ -1220,19 +1260,20 @@ describe('ListBase', () => {
         });
 
         it('ListItem - groupList with no category', () => {
-            let data: { [key: string]: string }[] = [{ id: '01', text: 'GTC4', category: 'Ferrari' },
-            { id: '02', text: 'a3' }]
-            let ds: { [key: string]: object }[] = ListBase.groupDataSource(data, { groupBy: 'category' });
+            const data: { [key: string]: string }[] = [{ id: '01', text: 'GTC4', category: 'Ferrari' },
+                { id: '02', text: 'a3' }];
+            const ds: { [key: string]: object }[] = ListBase.groupDataSource(data, { groupBy: 'category' });
             expect(ds.length).toBe(4);
         });
     });
 
 
-    describe('renderContentTemplate method', () => {
+    describe('ListBase.renderContentTemplate method', () => {
         it('ListItem creation', () => {
-            let template: string = '<div class="name" id ="${id}">${text}</div>';
-            let ul: HTMLElement = ListBase.renderContentTemplate(createElement, template, deepCloning([data_source[0]]), { value: 'text' });
-            let liItem = ul.children[0];
+            const template: string = '<div class="name" id ="${id}">${text}</div>';
+            const ul: HTMLElement = ListBase.renderContentTemplate(createElement, template, deepCloning([dataSource[0]]), { value: 'text' });
+            // eslint-disable-next-line
+            const liItem = ul.children[0];
             expect(ul.tagName).toBe('UL');
             expect(ul.classList.contains('e-list-parent')).toBe(true);
             expect(ul.classList.contains('e-ul')).toBe(true);
@@ -1241,16 +1282,17 @@ describe('ListBase', () => {
             expect(liItem.classList.contains('e-list-item')).toBe(true);
             expect(liItem.getAttribute('role')).toBe('option');
             expect(liItem.getAttribute('data-value')).toBe('text1');
-            let templateElement: Element = liItem.children[0];
+            const templateElement: Element = liItem.children[0];
             expect(templateElement.tagName).toBe('DIV');
             expect(templateElement.classList.contains('name')).toBe(true);
-            expect(templateElement.getAttribute("id")).toBe('01');
+            expect(templateElement.getAttribute('id')).toBe('01');
             expect(templateElement.textContent).toBe('text1');
         });
         it('ListItem creation-nullable data', () => {
-            let template: string = '<div class="name" id ="${id}">${text}</div>';
-            let ul: HTMLElement = ListBase.renderContentTemplate(createElement, template, deepCloning([nullValue_data_source]), { value: 'text' });
-            let liItem = ul.children[0];
+            const template: string = '<div class="name" id ="${id}">${text}</div>';
+            const ul: HTMLElement = ListBase.renderContentTemplate(createElement, template, deepCloning([nullValueDataSource]), { value: 'text' });
+            // eslint-disable-next-line
+            const liItem : any = ul.children[0];
             expect(ul.tagName).toBe('UL');
             expect(ul.classList.contains('e-list-parent')).toBe(true);
             expect(ul.classList.contains('e-ul')).toBe(true);
@@ -1259,19 +1301,22 @@ describe('ListBase', () => {
             expect(liItem.classList.contains('e-list-item')).toBe(true);
             expect(liItem.getAttribute('role')).toBe('option');
             expect(liItem.getAttribute('data-value')).toBe('null');
-            let templateElement: Element = liItem.children[0];
+            const templateElement: Element = liItem.children[0];
             expect(templateElement.tagName).toBe('DIV');
             expect(templateElement.classList.contains('name')).toBe(true);
-            expect(templateElement.getAttribute("id")).toBe('01');
+            expect(templateElement.getAttribute('id')).toBe('01');
             expect(templateElement.textContent).toBe('null');
         });
 
         it('Group ListItem creation - ', () => {
-            let template: string = '<div class="name">${text}</div>';
-            let ds: { [key: string]: Object }[] = ListBase.groupDataSource(group_dataSource, { groupBy: 'category' });
-            let ul: HTMLElement = ListBase.renderContentTemplate(createElement, template, ds, { value: 'text' });
-            let groupLiItem = ul.children[0];
-            let liItem = ul.children[1];
+            const template: string = '<div class="name">${text}</div>';
+            const ds: { [key: string]: Object }[] = ListBase.groupDataSource(groupdataSources, { groupBy: 'category' });
+            const ul: HTMLElement = ListBase.renderContentTemplate(createElement, template, ds, { value: 'text' });
+
+            // eslint-disable-next-line
+            const groupLiItem : any = ul.children[0];
+            // eslint-disable-next-line
+            const liItem : any = ul.children[1];
             expect(ul.tagName).toBe('UL');
             expect(ul.classList.contains('e-list-parent')).toBe(true);
             expect(ul.classList.contains('e-ul')).toBe(true);
@@ -1284,17 +1329,19 @@ describe('ListBase', () => {
             expect(liItem.classList.contains('e-list-item')).toBe(true);
             expect(liItem.getAttribute('role')).toBe('option');
             expect(liItem.getAttribute('data-value')).toBe('GTC4');
-            let templateElement: Element = liItem.children[0];
+            const templateElement: Element = liItem.children[0];
             expect(templateElement.tagName).toBe('DIV');
             expect(templateElement.classList.contains('name')).toBe(true);
             expect(templateElement.textContent).toBe('GTC4');
         });
         it('Group ListItem creation -nullable data ', () => {
-            let template: string = '<div class="name">${text}</div>';
-            let ds: { [key: string]: Object }[] = ListBase.groupDataSource(nullValue_group_dataSource, { groupBy: 'category' });
-            let ul: HTMLElement = ListBase.renderContentTemplate(createElement, template, ds, { value: 'text' });
-            let groupLiItem = ul.children[0];
-            let liItem = ul.children[1];
+            const template: string = '<div class="name">${text}</div>';
+            const ds: { [key: string]: Object }[] = ListBase.groupDataSource(nullValueGroupDataSource, { groupBy: 'category' });
+            const ul: HTMLElement = ListBase.renderContentTemplate(createElement, template, ds, { value: 'text' });
+            // eslint-disable-next-line
+            const groupLiItem : any = ul.children[0];
+            // eslint-disable-next-line
+            const liItem : any = ul.children[1];
             expect(ul.tagName).toBe('UL');
             expect(ul.classList.contains('e-list-parent')).toBe(true);
             expect(ul.classList.contains('e-ul')).toBe(true);
@@ -1307,46 +1354,46 @@ describe('ListBase', () => {
             expect(liItem.classList.contains('e-list-item')).toBe(true);
             expect(liItem.getAttribute('role')).toBe('option');
             expect(liItem.getAttribute('data-value')).toBe('null');
-            let templateElement: Element = liItem.children[0];
+            const templateElement: Element = liItem.children[0];
             expect(templateElement.tagName).toBe('DIV');
             expect(templateElement.classList.contains('name')).toBe(true);
             expect(templateElement.textContent).toBe('null');
         });
 
         it('Callback function', () => {
-            let template: string = '<div class="name" id ="${id}">${text}</div>';
-            let options: ListBaseOptions = {
+            const template: string = '<div class="name" id ="${id}">${text}</div>';
+            const options: ListBaseOptions = {
                 itemCreating: (args: { [key: string]: Object }) => {
                     expect(args.text).toBe('text1');
-                    (args.curData as { [key: string]: string }).text = 'customText'
+                    (args.curData as { [key: string]: string }).text = 'customText';
                 },
                 itemCreated: (args: { [key: string]: Object }) => {
                     expect(args.text).toBe('customText');
                 }
             };
-            let ul: HTMLElement = ListBase.renderContentTemplate(createElement, template, deepCloning([data_source[0]]), { value: 'text' }, options);
-            let templateElement: Element = ul.children[0].children[0];
+            const ul: HTMLElement = ListBase.renderContentTemplate(createElement, template, deepCloning([dataSource[0]]), { value: 'text' }, options);
+            const templateElement: Element = ul.children[0].children[0];
             expect(templateElement.tagName).toBe('DIV');
             expect(templateElement.classList.contains('name')).toBe(true);
-            expect(templateElement.getAttribute("id")).toBe('01');
+            expect(templateElement.getAttribute('id')).toBe('01');
             expect(templateElement.textContent).toBe('customText');
         });
     });
 
     describe('renderGroupTemplate method', () => {
         it('ListItem creation', () => {
-            let template: string = '<div class="name" id ="${id}">${text}</div>';
-            let ds: { [key: string]: Object }[] = ListBase.groupDataSource(group_dataSource, { groupBy: 'category' });
-            let ul: HTMLElement = ListBase.renderContentTemplate(createElement, template, ds, { value: 'text' });
-            let groupListCollections: Element[] = Array.prototype.slice.call(ul.querySelectorAll('.e-list-group-item'));
+            const template: string = '<div class="name" id ="${id}">${text}</div>';
+            const ds: { [key: string]: Object }[] = ListBase.groupDataSource(groupdataSources, { groupBy: 'category' });
+            const ul: HTMLElement = ListBase.renderContentTemplate(createElement, template, ds, { value: 'text' });
+            const groupListCollections: Element[] = Array.prototype.slice.call(ul.querySelectorAll('.e-list-group-item'));
             expect(groupListCollections.length).toBe(3);
-            let groupTemplate: string = '<div class="header">${category}</div>';
-            let groupLi: Element[] = ListBase.renderGroupTemplate(groupTemplate, ds, { groupBy: 'category' }, groupListCollections);
+            const groupTemplate: string = '<div class="header">${category}</div>';
+            const groupLi: Element[] = ListBase.renderGroupTemplate(groupTemplate, ds, { groupBy: 'category' }, groupListCollections);
             expect(groupLi[0].tagName).toBe('LI');
             expect(groupLi[0].classList.contains('e-list-group-item')).toBe(true);
             expect(groupLi[0].getAttribute('role')).toBe('presentation');
             expect(isNullOrUndefined(groupLi[0].getAttribute('id'))).toBe(false);
-            let groupTemplateElement: Element = groupLi[0].children[0];
+            const groupTemplateElement: Element = groupLi[0].children[0];
             expect(groupTemplateElement.tagName).toBe('DIV');
             expect(groupTemplateElement.classList.contains('header')).toBe(true);
             expect(groupTemplateElement.textContent).toBe('Ferrari');
@@ -1354,94 +1401,94 @@ describe('ListBase', () => {
     });
     describe('fullRow navigation', () => {
         it('checking without url in complex', () => {
-            let listoption:ListBaseOptions = {
+            const listoption: ListBaseOptions = {
                 showIcon: true,
                 itemNavigable: true
-            }
-            let ulElement: HTMLElement = ListBase.createList(createElement, fullRow_datasource_false, listoption, false);
-            expect(ulElement.children[0].classList.contains("e-navigable")).toBe(false);
-            expect(ulElement.children[0].querySelector(".e-anchor-wrap")).toBe(null);
+            };
+            const ulElement: HTMLElement = ListBase.createList(createElement, fullRowDatasourceFalse, listoption, false);
+            expect(ulElement.children[0].classList.contains('e-navigable')).toBe(false);
+            expect(ulElement.children[0].querySelector('.e-anchor-wrap')).toBe(null);
         });
         it('checking without url in single', () => {
-            let listoption:ListBaseOptions = {
+            const listoption: ListBaseOptions = {
                 showIcon: true,
                 itemNavigable: true
-            }
-            let ulElement: HTMLElement = ListBase.createList(createElement, fullRow_datasource_false, listoption, true);
-            expect(ulElement.children[0].classList.contains("e-navigable")).toBe(false);
-            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap").length).toBe(0);
+            };
+            const ulElement: HTMLElement = ListBase.createList(createElement, fullRowDatasourceFalse, listoption, true);
+            expect(ulElement.children[0].classList.contains('e-navigable')).toBe(false);
+            expect(ulElement.children[0].querySelectorAll('.e-anchor-wrap').length).toBe(0);
         });
         it('checking with url in complex without checkbox', () => {
-            let listoption:ListBaseOptions = {
+            const listoption: ListBaseOptions = {
                 showIcon: true,
                 itemNavigable: true
-            }
-            let ulElement: HTMLElement = ListBase.createList(createElement, fullRow_datasource_true, listoption, false);
-            expect(ulElement.children[0].classList.contains("e-navigable")).toBe(true);
-            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap").length).toBe(1);
-            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap")[0].querySelectorAll(".sample-icon").length).toBe(1);
+            };
+            const ulElement: HTMLElement = ListBase.createList(createElement, fullRowDatasourceTrue, listoption, false);
+            expect(ulElement.children[0].classList.contains('e-navigable')).toBe(true);
+            expect(ulElement.children[0].querySelectorAll('.e-anchor-wrap').length).toBe(1);
+            expect(ulElement.children[0].querySelectorAll('.e-anchor-wrap')[0].querySelectorAll('.sample-icon').length).toBe(1);
         });
         it('checking with url in single without checkbox', () => {
-            let listoption:ListBaseOptions = {
+            const listoption: ListBaseOptions = {
                 showIcon: true,
                 itemNavigable: true
-            }
-            let ulElement: HTMLElement = ListBase.createList(createElement, fullRow_datasource_true, listoption, true);
-            expect(ulElement.children[0].classList.contains("e-navigable")).toBe(true);
-            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap").length).toBe(1);
-            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap")[0].querySelectorAll(".sample-icon").length).toBe(1);
+            };
+            const ulElement: HTMLElement = ListBase.createList(createElement, fullRowDatasourceTrue, listoption, true);
+            expect(ulElement.children[0].classList.contains('e-navigable')).toBe(true);
+            expect(ulElement.children[0].querySelectorAll('.e-anchor-wrap').length).toBe(1);
+            expect(ulElement.children[0].querySelectorAll('.e-anchor-wrap')[0].querySelectorAll('.sample-icon').length).toBe(1);
         });
         it('checking with url in complex with checkbox', () => {
-            let listoption:ListBaseOptions = {
+            const listoption: ListBaseOptions = {
                 showIcon: true,
                 showCheckBox: true,
                 itemNavigable: true
-            }
-            let ulElement: HTMLElement = ListBase.createList(createElement, fullRow_datasource_true, listoption, false);
-            expect(ulElement.children[0].classList.contains("e-navigable")).toBe(true);
-            expect(ulElement.children[0].querySelectorAll(".e-list-check").length).toBe(1);
-            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap").length).toBe(1);
-            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap")[0].querySelectorAll(".sample-icon").length).toBe(1);
-            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap")[0].querySelectorAll(".e-list-check").length).toBe(0);
+            };
+            const ulElement: HTMLElement = ListBase.createList(createElement, fullRowDatasourceTrue, listoption, false);
+            expect(ulElement.children[0].classList.contains('e-navigable')).toBe(true);
+            expect(ulElement.children[0].querySelectorAll('.e-list-check').length).toBe(1);
+            expect(ulElement.children[0].querySelectorAll('.e-anchor-wrap').length).toBe(1);
+            expect(ulElement.children[0].querySelectorAll('.e-anchor-wrap')[0].querySelectorAll('.sample-icon').length).toBe(1);
+            expect(ulElement.children[0].querySelectorAll('.e-anchor-wrap')[0].querySelectorAll('.e-list-check').length).toBe(0);
         });
         it('checking with url in single with checkbox', () => {
-            let listoption:ListBaseOptions = {
+            const listoption: ListBaseOptions = {
                 showIcon: true,
                 showCheckBox: true,
                 itemNavigable: true
-            }
-            let ulElement: HTMLElement = ListBase.createList(createElement, fullRow_datasource_true, listoption, true);
-            expect(ulElement.children[0].classList.contains("e-navigable")).toBe(true);
-            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap").length).toBe(1);
-            expect(ulElement.children[0].querySelectorAll(".e-list-check").length).toBe(1);
-            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap")[0].querySelectorAll(".sample-icon").length).toBe(1);
-            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap")[0].querySelectorAll(".e-list-check").length).toBe(0);
+            };
+            const ulElement: HTMLElement = ListBase.createList(createElement, fullRowDatasourceTrue, listoption, true);
+            expect(ulElement.children[0].classList.contains('e-navigable')).toBe(true);
+            expect(ulElement.children[0].querySelectorAll('.e-anchor-wrap').length).toBe(1);
+            expect(ulElement.children[0].querySelectorAll('.e-list-check').length).toBe(1);
+            expect(ulElement.children[0].querySelectorAll('.e-anchor-wrap')[0].querySelectorAll('.sample-icon').length).toBe(1);
+            expect(ulElement.children[0].querySelectorAll('.e-anchor-wrap')[0].querySelectorAll('.e-list-check').length).toBe(0);
         });
         it('checking with url in complex with text alone', () => {
-            let listoption:ListBaseOptions = {
+            const listoption: ListBaseOptions = {
                 showIcon: false,
                 showCheckBox: false,
                 itemNavigable: true
-            }
-            let ulElement: HTMLElement = ListBase.createList(createElement, fullRow_datasource_true, listoption, false);
-            expect(ulElement.children[0].classList.contains("e-navigable")).toBe(true);
-            expect(ulElement.children[0].querySelectorAll(".e-list-check").length).toBe(0);
-            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap").length).toBe(1);
-            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap")[0].querySelectorAll(".sample-icon").length).toBe(0);
-            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap")[0].querySelectorAll(".e-list-check").length).toBe(0);
+            };
+            const ulElement: HTMLElement = ListBase.createList(createElement, fullRowDatasourceTrue, listoption, false);
+            expect(ulElement.children[0].classList.contains('e-navigable')).toBe(true);
+            expect(ulElement.children[0].querySelectorAll('.e-list-check').length).toBe(0);
+            expect(ulElement.children[0].querySelectorAll('.e-anchor-wrap').length).toBe(1);
+            expect(ulElement.children[0].querySelectorAll('.e-anchor-wrap')[0].querySelectorAll('.sample-icon').length).toBe(0);
+            expect(ulElement.children[0].querySelectorAll('.e-anchor-wrap')[0].querySelectorAll('.e-list-check').length).toBe(0);
         });
         it('checking with url in single with text alone', () => {
-            let listoption:ListBaseOptions = {
+            const listoption: ListBaseOptions = {
                 showIcon: false,
                 showCheckBox: false,
                 itemNavigable: true
-            }
-            let ulElement: HTMLElement = ListBase.createList(createElement, fullRow_datasource_true, listoption, true);
-            expect(ulElement.children[0].classList.contains("e-navigable")).toBe(true);
-            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap").length).toBe(1);
-            expect(ulElement.children[0].querySelectorAll(".e-list-check").length).toBe(0);
-            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap")[0].querySelectorAll(".sample-icon").length).toBe(0);
-            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap")[0].querySelectorAll(".e-list-check").length).toBe(0);
+            };
+            const ulElement: HTMLElement = ListBase.createList(createElement, fullRowDatasourceTrue, listoption, true);
+            expect(ulElement.children[0].classList.contains('e-navigable')).toBe(true);
+            expect(ulElement.children[0].querySelectorAll('.e-anchor-wrap').length).toBe(1);
+            expect(ulElement.children[0].querySelectorAll('.e-list-check').length).toBe(0);
+            expect(ulElement.children[0].querySelectorAll('.e-anchor-wrap')[0].querySelectorAll('.sample-icon').length).toBe(0);
+            expect(ulElement.children[0].querySelectorAll('.e-anchor-wrap')[0].querySelectorAll('.e-list-check').length).toBe(0);
         });
     });
 });

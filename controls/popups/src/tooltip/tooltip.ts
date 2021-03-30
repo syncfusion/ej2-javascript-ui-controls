@@ -16,7 +16,7 @@ export type OpenMode = 'Auto' | 'Hover' | 'Click' | 'Focus' | 'Custom';
  * Applicable positions where the Tooltip can be displayed over specific target elements.
  */
 export type Position = 'TopLeft' | 'TopCenter' | 'TopRight' | 'BottomLeft' | 'BottomCenter' | 'BottomRight' |
-    'LeftTop' | 'LeftCenter' | 'LeftBottom' | 'RightTop' | 'RightCenter' | 'RightBottom';
+'LeftTop' | 'LeftCenter' | 'LeftBottom' | 'RightTop' | 'RightCenter' | 'RightBottom';
 /**
  * Applicable tip positions attached to the Tooltip.
  */
@@ -25,7 +25,7 @@ export type TipPointerPosition = 'Auto' | 'Start' | 'Middle' | 'End';
  * Animation effects that are applicable for Tooltip.
  */
 export type Effect = 'FadeIn' | 'FadeOut' | 'FadeZoomIn' | 'FadeZoomOut' | 'FlipXDownIn' | 'FlipXDownOut' |
-    'FlipXUpIn' | 'FlipXUpOut' | 'FlipYLeftIn' | 'FlipYLeftOut' | 'FlipYRightIn' | 'FlipYRightOut' | 'ZoomIn' | 'ZoomOut' | 'None';
+'FlipXUpIn' | 'FlipXUpOut' | 'FlipYLeftIn' | 'FlipYLeftOut' | 'FlipYRightIn' | 'FlipYRightOut' | 'ZoomIn' | 'ZoomOut' | 'None';
 
 const TOUCHEND_HIDE_DELAY: number = 1500;
 const TAPHOLD_THRESHOLD: number = 500;
@@ -67,7 +67,7 @@ export interface TooltipEventArgs extends BaseEventArgs {
     /**
      * It is used to denote the type of the triggered event.
      */
-    type: String;
+    type: string;
     /**
      * It illustrates whether the current action needs to be prevented or not.
      */
@@ -88,7 +88,7 @@ export interface TooltipEventArgs extends BaseEventArgs {
      * It is used to denote the Collided Tooltip position
      */
     collidedPosition?: string;
-    /** 
+    /**
      * If the event is triggered by interaction, it returns true. Otherwise, it returns false.
      */
     isInteracted?: boolean;
@@ -164,6 +164,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * It is used to set the width of Tooltip component which accepts both string and number values.
      * When set to auto, the Tooltip width gets auto adjusted to display its content within the viewable screen.
+     *
      * @default 'auto'
      */
     @Property('auto')
@@ -173,6 +174,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * When Tooltip content gets overflow due to height value then the scroll mode will be enabled.
      * Refer the documentation [here](https://ej2.syncfusion.com/documentation/tooltip/setting-dimension/)
      *  to know more about this property with demo.
+     *
      * @default 'auto'
      */
     @Property('auto')
@@ -183,6 +185,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      *  to know more about this property with demo.
      *
      * {% codeBlock src="tooltip/content-api/index.ts" %}{% endcodeBlock %}
+     *
      * @blazorType object
      */
     @Property()
@@ -199,6 +202,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * It is used to set the position of Tooltip element, with respect to Target element.
      *
      * {% codeBlock src="tooltip/position-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default 'TopCenter'
      */
     @Property('TopCenter')
@@ -208,6 +212,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * {% codeBlock src="tooltip/offsetX-api/index.ts" %}{% endcodeBlock %}
      * {% codeBlock src="tooltip/offsetx/index.md" %}{% endcodeBlock %}
+     *
      * @default 0
      */
     @Property(0)
@@ -217,6 +222,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * {% codeBlock src="tooltip/offsetX-api/index.ts" %}{% endcodeBlock %}
      * {% codeBlock src="tooltip/offsety/index.md" %}{% endcodeBlock %}
+     *
      * @default 0
      */
     @Property(0)
@@ -226,6 +232,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * {% codeBlock src="tooltip/offsetX-api/index.ts" %}{% endcodeBlock %}
      * {% codeBlock src="tooltip/showtippointer/index.md" %}{% endcodeBlock %}
+     *
      * @default true
      */
     @Property(true)
@@ -255,6 +262,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      *  [here](https://ej2.syncfusion.com/documentation/tooltip/position.html?lang=typescript#tip-pointer-positioning)
      *  to know more about this property with demo.
      * {% codeBlock src="tooltip/tippointerposition/index.md" %}{% endcodeBlock %}
+     *
      * @default 'Auto'
      */
     @Property('Auto')
@@ -265,6 +273,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * If it is in touch device, it will show the Tooltip content when tap and holding on the target element.
      * {% codeBlock src="tooltip/openson/index.md" %}{% endcodeBlock %}
      * {% codeBlock src="tooltip/opensOn-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default 'Auto'
      */
     @Property('Auto')
@@ -275,6 +284,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      *  to know more about this property with demo.
      * {% codeBlock src="tooltip/mousetrail/index.md" %}{% endcodeBlock %}
      * {% codeBlock src="tooltip/offsetX-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default false
      */
     @Property(false)
@@ -284,6 +294,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * Refer the documentation [here](https://ej2.syncfusion.com/documentation/tooltip/open-mode/#sticky-mode)
      *  to know more about this property with demo.
      * {% codeBlock src="tooltip/issticky/index.md" %}{% endcodeBlock %}
+     *
      * @default false
      */
     @Property(false)
@@ -294,18 +305,21 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      *  to know more about this property with demo.
      * {% codeBlock src="tooltip/animation/index.md" %}{% endcodeBlock %}
      * {% codeBlock src="tooltip/animation-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default { open: { effect: 'FadeIn', duration: 150, delay: 0 }, close: { effect: 'FadeOut', duration: 150, delay: 0 } }
      */
     @Complex<AnimationModel>({}, Animation)
     public animation: AnimationModel;
     /**
      * It is used to open the Tooltip after the specified delay in milliseconds.
+     *
      * @default 0
      */
     @Property(0)
     public openDelay: number;
     /**
      * It is used to close the Tooltip after a specified delay in milliseconds.
+     *
      * @default 0
      */
     @Property(0)
@@ -313,12 +327,14 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * It is used to customize the Tooltip which accepts custom CSS class names that
      *  defines specific user-defined styles and themes to be applied on the Tooltip element.
+     *
      * @default null
      */
     @Property()
     public cssClass: string;
     /**
      * Defines whether to allow the cross-scripting site or not.
+     *
      * @default false
      */
     @Property(false)
@@ -331,6 +347,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * Refer the documentation
      *  [here](https://ej2.syncfusion.com/documentation/tooltip/content/#dynamic-content-via-ajax)
      *  to know more about this property with demo.
+     *
      * @event
      * @blazorProperty 'OnRender'
      */
@@ -342,6 +359,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * This event is mainly used for the purpose of refreshing the Tooltip positions dynamically or to
      *  set customized styles in it and so on.
      * {% codeBlock src="tooltip/beforeOpen/index.md" %}{% endcodeBlock %}
+     *
      * @event
      * @blazorProperty 'OnOpen'
      */
@@ -350,6 +368,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * We can trigger `afterOpen` event after the Tooltip Component gets opened.
      * {% codeBlock src="tooltip/afterOpen/index.md" %}{% endcodeBlock %}
+     *
      * @event
      * @blazorProperty 'Opened'
      */
@@ -358,6 +377,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * We can trigger `beforeClose` event before the Tooltip hides from the screen. If returned false, then the Tooltip is no more hidden.
      * {% codeBlock src="tooltip/beforeClose/index.md" %}{% endcodeBlock %}
+     *
      * @event
      * @blazorProperty 'OnClose'
      */
@@ -366,6 +386,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * We can trigger `afterClose` event when the Tooltip Component gets closed.
      * {% codeBlock src="tooltip/afterClose/index.md" %}{% endcodeBlock %}
+     *
      * @event
      * @blazorProperty 'Closed'
      */
@@ -374,6 +395,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * We can trigger `beforeCollision` event for every collision fit calculation.
      * {% codeBlock src="tooltip/beforeCollision/index.md" %}{% endcodeBlock %}
+     *
      * @event
      * @blazorProperty 'OnCollision'
      */
@@ -381,21 +403,31 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     public beforeCollision: EmitType<TooltipEventArgs>;
     /**
      * We can trigger `created` event after the Tooltip component is created.
+     *
      * @event
      * @blazorProperty 'Created'
      */
+    /* eslint-disable */
     @Event()
     public created: EmitType<Object>;
+    /* eslint-enable */
     /**
      * We can trigger `destroyed` event when the Tooltip component is destroyed.
+     *
      * @event
      * @blazorProperty 'Destroyed'
      */
+    /* eslint-disable */
     @Event()
     public destroyed: EmitType<Object>;
+    /* eslint-enable */
 
     /**
      * Constructor for creating the Tooltip Component
+     *
+     * @param {TooltipModel} options - specifies the options for the constructor
+     * @param {string| HTMLElement} element - specifies the element for the constructor
+     *
      */
     constructor(options?: TooltipModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
@@ -420,12 +452,12 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     private renderArrow(): void {
         this.setTipClass(this.position);
         if (!(this.isServerRender())) {
-            let tip: HTMLElement = this.createElement('div', { className: ARROW_TIP + ' ' + this.tipClass });
+            const tip: HTMLElement = this.createElement('div', { className: ARROW_TIP + ' ' + this.tipClass });
             tip.appendChild(this.createElement('div', { className: ARROW_TIP_OUTER + ' ' + this.tipClass }));
             tip.appendChild(this.createElement('div', { className: ARROW_TIP_INNER + ' ' + this.tipClass }));
             this.tooltipEle.appendChild(tip);
         } else {
-            let tip: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP);
+            const tip: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP);
             addClass([tip.querySelector('.' + ARROW_TIP_OUTER)], this.tipClass);
             addClass([tip.querySelector('.' + ARROW_TIP_INNER)], this.tipClass);
             this.tooltipEle.appendChild(tip);
@@ -443,7 +475,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
     private renderPopup(target: HTMLElement): void {
-        let elePos: OffsetPosition = this.mouseTrail ? { top: 0, left: 0 } : this.getTooltipPosition(target);
+        const elePos: OffsetPosition = this.mouseTrail ? { top: 0, left: 0 } : this.getTooltipPosition(target);
         this.tooltipEle.classList.remove(POPUP_LIB);
         this.popupObj = new Popup(this.tooltipEle as HTMLElement, {
             height: this.height,
@@ -456,14 +488,14 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private getTooltipPosition(target: HTMLElement): OffsetPosition {
         this.tooltipEle.style.display = 'block';
-        let pos: OffsetPosition = calculatePosition(target, this.tooltipPositionX, this.tooltipPositionY);
-        let offsetPos: OffsetPosition = this.calculateTooltipOffset(this.position);
-        let elePos: OffsetPosition = this.collisionFlipFit(target, pos.left + offsetPos.left, pos.top + offsetPos.top);
+        const pos: OffsetPosition = calculatePosition(target, this.tooltipPositionX, this.tooltipPositionY);
+        const offsetPos: OffsetPosition = this.calculateTooltipOffset(this.position);
+        const elePos: OffsetPosition = this.collisionFlipFit(target, pos.left + offsetPos.left, pos.top + offsetPos.top);
         this.tooltipEle.style.display = '';
         return elePos;
     }
     private reposition(target: HTMLElement): void {
-        let elePos: OffsetPosition = this.getTooltipPosition(target);
+        const elePos: OffsetPosition = this.getTooltipPosition(target);
         this.popupObj.position = { X: elePos.left, Y: elePos.top };
         this.popupObj.dataBind();
     }
@@ -480,75 +512,75 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.trigger('afterClose', this.tooltipEventArgs);
     }
     private calculateTooltipOffset(position: Position): OffsetPosition {
-        let pos: OffsetPosition = { top: 0, left: 0 };
-        let tooltipEleWidth: number = this.tooltipEle.offsetWidth;
-        let tooltipEleHeight: number = this.tooltipEle.offsetHeight;
-        let arrowEle: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP) as HTMLElement;
-        let tipWidth: number = arrowEle ? arrowEle.offsetWidth : 0;
-        let tipHeight: number = arrowEle ? arrowEle.offsetHeight : 0;
+        const pos: OffsetPosition = { top: 0, left: 0 };
+        const tooltipEleWidth: number = this.tooltipEle.offsetWidth;
+        const tooltipEleHeight: number = this.tooltipEle.offsetHeight;
+        const arrowEle: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP) as HTMLElement;
+        const tipWidth: number = arrowEle ? arrowEle.offsetWidth : 0;
+        const tipHeight: number = arrowEle ? arrowEle.offsetHeight : 0;
         let tipAdjust: number = (this.showTipPointer ? SHOW_POINTER_TIP_GAP : HIDE_POINTER_TIP_GAP);
-        let tipHeightAdjust: number = (tipHeight / 2) + POINTER_ADJUST + (this.tooltipEle.offsetHeight - this.tooltipEle.clientHeight);
-        let tipWidthAdjust: number = (tipWidth / 2) + POINTER_ADJUST + (this.tooltipEle.offsetWidth - this.tooltipEle.clientWidth);
+        const tipHeightAdjust: number = (tipHeight / 2) + POINTER_ADJUST + (this.tooltipEle.offsetHeight - this.tooltipEle.clientHeight);
+        const tipWidthAdjust: number = (tipWidth / 2) + POINTER_ADJUST + (this.tooltipEle.offsetWidth - this.tooltipEle.clientWidth);
         if (this.mouseTrail) {
             tipAdjust += MOUSE_TRAIL_GAP;
         }
         switch (position) {
-            case 'RightTop':
-                pos.left += tipWidth + tipAdjust;
-                pos.top -= tooltipEleHeight - tipHeightAdjust;
-                break;
-            case 'RightCenter':
-                pos.left += tipWidth + tipAdjust;
-                pos.top -= (tooltipEleHeight / 2);
-                break;
-            case 'RightBottom':
-                pos.left += tipWidth + tipAdjust;
-                pos.top -= (tipHeightAdjust);
-                break;
-            case 'BottomRight':
-                pos.top += (tipHeight + tipAdjust);
-                pos.left -= (tipWidthAdjust);
-                break;
-            case 'BottomCenter':
-                pos.top += (tipHeight + tipAdjust);
-                pos.left -= (tooltipEleWidth / 2);
-                break;
-            case 'BottomLeft':
-                pos.top += (tipHeight + tipAdjust);
-                pos.left -= (tooltipEleWidth - tipWidthAdjust);
-                break;
-            case 'LeftBottom':
-                pos.left -= (tipWidth + tooltipEleWidth + tipAdjust);
-                pos.top -= (tipHeightAdjust);
-                break;
-            case 'LeftCenter':
-                pos.left -= (tipWidth + tooltipEleWidth + tipAdjust);
-                pos.top -= (tooltipEleHeight / 2);
-                break;
-            case 'LeftTop':
-                pos.left -= (tipWidth + tooltipEleWidth + tipAdjust);
-                pos.top -= (tooltipEleHeight - tipHeightAdjust);
-                break;
-            case 'TopLeft':
-                pos.top -= (tooltipEleHeight + tipHeight + tipAdjust);
-                pos.left -= (tooltipEleWidth - tipWidthAdjust);
-                break;
-            case 'TopRight':
-                pos.top -= (tooltipEleHeight + tipHeight + tipAdjust);
-                pos.left -= (tipWidthAdjust);
-                break;
-            default:
-                pos.top -= (tooltipEleHeight + tipHeight + tipAdjust);
-                pos.left -= (tooltipEleWidth / 2);
-                break;
+        case 'RightTop':
+            pos.left += tipWidth + tipAdjust;
+            pos.top -= tooltipEleHeight - tipHeightAdjust;
+            break;
+        case 'RightCenter':
+            pos.left += tipWidth + tipAdjust;
+            pos.top -= (tooltipEleHeight / 2);
+            break;
+        case 'RightBottom':
+            pos.left += tipWidth + tipAdjust;
+            pos.top -= (tipHeightAdjust);
+            break;
+        case 'BottomRight':
+            pos.top += (tipHeight + tipAdjust);
+            pos.left -= (tipWidthAdjust);
+            break;
+        case 'BottomCenter':
+            pos.top += (tipHeight + tipAdjust);
+            pos.left -= (tooltipEleWidth / 2);
+            break;
+        case 'BottomLeft':
+            pos.top += (tipHeight + tipAdjust);
+            pos.left -= (tooltipEleWidth - tipWidthAdjust);
+            break;
+        case 'LeftBottom':
+            pos.left -= (tipWidth + tooltipEleWidth + tipAdjust);
+            pos.top -= (tipHeightAdjust);
+            break;
+        case 'LeftCenter':
+            pos.left -= (tipWidth + tooltipEleWidth + tipAdjust);
+            pos.top -= (tooltipEleHeight / 2);
+            break;
+        case 'LeftTop':
+            pos.left -= (tipWidth + tooltipEleWidth + tipAdjust);
+            pos.top -= (tooltipEleHeight - tipHeightAdjust);
+            break;
+        case 'TopLeft':
+            pos.top -= (tooltipEleHeight + tipHeight + tipAdjust);
+            pos.left -= (tooltipEleWidth - tipWidthAdjust);
+            break;
+        case 'TopRight':
+            pos.top -= (tooltipEleHeight + tipHeight + tipAdjust);
+            pos.left -= (tipWidthAdjust);
+            break;
+        default:
+            pos.top -= (tooltipEleHeight + tipHeight + tipAdjust);
+            pos.left -= (tooltipEleWidth / 2);
+            break;
         }
         pos.left += this.offsetX;
         pos.top += this.offsetY;
         return pos;
     }
     private updateTipPosition(position: Position): void {
-        let selEle: NodeList = this.tooltipEle.querySelectorAll('.' + ARROW_TIP + ',.' + ARROW_TIP_OUTER + ',.' + ARROW_TIP_INNER);
-        let removeList: string[] = [TIP_BOTTOM, TIP_TOP, TIP_LEFT, TIP_RIGHT];
+        const selEle: NodeList = this.tooltipEle.querySelectorAll('.' + ARROW_TIP + ',.' + ARROW_TIP_OUTER + ',.' + ARROW_TIP_INNER);
+        const removeList: string[] = [TIP_BOTTOM, TIP_TOP, TIP_LEFT, TIP_RIGHT];
         removeClass(selEle, removeList);
         this.setTipClass(position);
         addClass(selEle, this.tipClass);
@@ -558,10 +590,11 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.updateTipPosition(position);
         let leftValue: string; let topValue: string;
         this.tooltipEle.style.display = 'block';
-        let tooltipWidth: number = this.tooltipEle.clientWidth; let tooltipHeight: number = this.tooltipEle.clientHeight;
-        let arrowEle: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP) as HTMLElement;
-        let arrowInnerELe: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP_INNER) as HTMLElement;
-        let tipWidth: number = arrowEle.offsetWidth; let tipHeight: number = arrowEle.offsetHeight;
+        const tooltipWidth: number = this.tooltipEle.clientWidth;
+        const tooltipHeight: number = this.tooltipEle.clientHeight;
+        const arrowEle: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP) as HTMLElement;
+        const arrowInnerELe: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP_INNER) as HTMLElement;
+        const tipWidth: number = arrowEle.offsetWidth; const tipHeight: number = arrowEle.offsetHeight;
         this.tooltipEle.style.display = '';
         if (this.tipClass === TIP_BOTTOM || this.tipClass === TIP_TOP) {
             if (this.tipClass === TIP_BOTTOM) {
@@ -574,7 +607,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 arrowInnerELe.style.top = '-' + (tipHeight - 6) + 'px';
             }
             if (target) {
-                let tipPosExclude: boolean = tooltipPositionX !== 'Center' || (tooltipWidth > target.offsetWidth) || this.mouseTrail;
+                const tipPosExclude: boolean = tooltipPositionX !== 'Center' || (tooltipWidth > target.offsetWidth) || this.mouseTrail;
                 if ((tipPosExclude && tooltipPositionX === 'Left') || (!tipPosExclude && this.tipPointerPosition === 'End')) {
                     leftValue = (tooltipWidth - tipWidth - POINTER_ADJUST) + 'px';
                 } else if ((tipPosExclude && tooltipPositionX === 'Right') || (!tipPosExclude && this.tipPointerPosition === 'Start')) {
@@ -593,7 +626,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 // Arrow icon aligned -2px from ArrowOuterTip width
                 arrowInnerELe.style.left = (-(tipWidth) + (tipWidth - 2)) + 'px';
             }
-            let tipPosExclude: boolean = tooltipPositionY !== 'Center' || (tooltipHeight > target.offsetHeight) || this.mouseTrail;
+            const tipPosExclude: boolean = tooltipPositionY !== 'Center' || (tooltipHeight > target.offsetHeight) || this.mouseTrail;
             if ((tipPosExclude && tooltipPositionY === 'Top') || (!tipPosExclude && this.tipPointerPosition === 'End')) {
                 topValue = (tooltipHeight - tipHeight - POINTER_ADJUST) + 'px';
             } else if ((tipPosExclude && tooltipPositionY === 'Bottom') || (!tipPosExclude && this.tipPointerPosition === 'Start')) {
@@ -606,7 +639,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         arrowEle.style.left = leftValue;
     }
     private renderContent(target?: HTMLElement): void {
-        let tooltipContent: HTMLElement = this.tooltipEle.querySelector('.' + CONTENT) as HTMLElement;
+        const tooltipContent: HTMLElement = this.tooltipEle.querySelector('.' + CONTENT) as HTMLElement;
         if (this.cssClass) {
             addClass([this.tooltipEle], this.cssClass.split(' '));
         }
@@ -625,8 +658,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                     tooltipContent[this.enableHtmlParse ? 'innerHTML' : 'textContent'] = this.content;
                 } else {
-                    let templateFunction: Function = compile(this.content);
-                    let tempArr: Element[] = templateFunction(
+                    // eslint-disable-next-line
+                    const templateFunction: Function = compile(this.content);
+                    const tempArr: Element[] = templateFunction(
                         {}, this, 'content', this.element.id + 'content', undefined, undefined, tooltipContent);
                     if (tempArr) {
                         append(tempArr, tooltipContent);
@@ -648,24 +682,24 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (!this.isSticky) {
             return;
         }
-        let tipClose: HTMLElement = this.createElement('div', { className: ICON + ' ' + CLOSE });
+        const tipClose: HTMLElement = this.createElement('div', { className: ICON + ' ' + CLOSE });
         this.tooltipEle.appendChild(tipClose);
         EventHandler.add(tipClose, Browser.touchStartEvent, this.onStickyClose, this);
     }
     private addDescribedBy(target: HTMLElement, id: string): void {
-        let describedby: string[] = (target.getAttribute('aria-describedby') || '').split(/\s+/);
+        const describedby: string[] = (target.getAttribute('aria-describedby') || '').split(/\s+/);
         if (describedby.indexOf(id) < 0) { describedby.push(id); }
         attributes(target, { 'aria-describedby': describedby.join(' ').trim(), 'data-tooltip-id': id });
     }
     private removeDescribedBy(target: HTMLElement): void {
-        let id: string = target.getAttribute('data-tooltip-id');
-        let describedby: string[] = (target.getAttribute('aria-describedby') || '').split(/\s+/);
-        let index: number = describedby.indexOf(id);
+        const id: string = target.getAttribute('data-tooltip-id');
+        const describedby: string[] = (target.getAttribute('aria-describedby') || '').split(/\s+/);
+        const index: number = describedby.indexOf(id);
         if (index !== -1) {
             describedby.splice(index, 1);
         }
         target.removeAttribute('data-tooltip-id');
-        let orgdescribedby: string = describedby.join(' ').trim();
+        const orgdescribedby: string = describedby.join(' ').trim();
         if (orgdescribedby) {
             target.setAttribute('aria-describedby', orgdescribedby);
         } else {
@@ -680,7 +714,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.isSticky) {
             return;
         }
-        let close: Function = (): void => {
+        // eslint-disable-next-line
+        const close: Function = (): void => {
             this.close();
         };
         this.autoCloseTimer = setTimeout(close, TOUCHEND_HIDE_DELAY);
@@ -709,8 +744,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             target = this.element;
         }
         if (isNullOrUndefined(target) || (target.getAttribute('data-tooltip-id') !== null && this.closeDelay === 0)) { return; }
-        let targetList: Element[] = [].slice.call(document.querySelectorAll('[data-tooltip-id= ' + this.ctrlId + '_content]'));
-        for (let target of targetList) {
+        const targetList: Element[] = [].slice.call(document.querySelectorAll('[data-tooltip-id= ' + this.ctrlId + '_content]'));
+        for (const target of targetList) {
             this.restoreElement(target as HTMLElement);
         }
         this.showTooltip(target, this.animation.open, e);
@@ -722,6 +757,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             type: e ? e.type : null, cancel: false, target: target, event: e ? e : null,
             element: this.tooltipEle, isInteracted: !isNullOrUndefined(e)
         };
+        // eslint-disable-next-line
         const observeCallback: Function = (beforeRenderArgs: TooltipEventArgs) => {
             this.beforeRenderCallback(beforeRenderArgs, target, e, showAnimation);
         };
@@ -744,10 +780,11 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     this.contentTargetValue = target;
                     this.contentEvent = e;
                     this.contentAnimation = showAnimation;
-                    let args: object = { 'enableTooltip': 'true' };
-                    // tslint:disable
+                    // eslint-disable-next-line
+                    const args: object = { 'enableTooltip': 'true' };
+                    /* eslint-disable */
                     (this as any).interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
-                    // tslint:enable
+                    /* eslint-enable */
                     isBlazorTooltipRendered = true;
                 } else {
                     this.ctrlId = this.element.getAttribute('id') ?
@@ -780,7 +817,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         }
-    };
+    }
 
     private contentUpdated(args: boolean): void {
         if (isNullOrUndefined(this.tooltipEle)) {
@@ -796,7 +833,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         }
-    };
+    }
 
     private beforeRenderBlazor(target: HTMLElement, ctrlObj: Tooltip): void {
         if (target) {
@@ -836,6 +873,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             if (ctrlObj.needTemplateReposition() && !ctrlObj.mouseTrail) {
                 ctrlObj.tooltipEle.style.display = 'none';
             }
+            // eslint-disable-next-line
             const observeCallback: Function = (observedArgs: TooltipEventArgs) => {
                 ctrlObj.beforeOpenCallback(observedArgs, target, showAnimation, e);
             };
@@ -853,6 +891,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             this.clear();
             this.restoreElement(target);
         } else {
+            // eslint-disable-next-line
             let openAnimation: Object = {
                 name: showAnimation.effect,
                 duration: showAnimation.duration,
@@ -863,7 +902,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 openAnimation = undefined;
             }
             if (this.openDelay > 0) {
-                let show: Function = (): void => {
+                // eslint-disable-next-line
+                const show: Function = (): void => {
                     if (this.mouseTrail) {
                         EventHandler.add(target, 'mousemove touchstart mouseenter', this.onMouseMove, this);
                     }
@@ -882,7 +922,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private needTemplateReposition(): boolean {
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line
         const tooltip: any = this;
         return !isNullOrUndefined(tooltip.viewContainerRef)
             && typeof tooltip.viewContainerRef !== 'string'
@@ -890,11 +930,11 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private checkCollision(target: HTMLElement, x: number, y: number): ElementPosition {
-        let elePos: ElementPosition = {
+        const elePos: ElementPosition = {
             left: x, top: y, position: this.position,
             horizontal: this.tooltipPositionX, vertical: this.tooltipPositionY
         };
-        let affectedPos: string[] = isCollide(this.tooltipEle, this.checkCollideTarget(), x, y);
+        const affectedPos: string[] = isCollide(this.tooltipEle, this.checkCollideTarget(), x, y);
         if (affectedPos.length > 0) {
             elePos.horizontal = affectedPos.indexOf('left') >= 0 ? 'Right' : affectedPos.indexOf('right') >= 0 ? 'Left' :
                 this.tooltipPositionX;
@@ -904,7 +944,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         return elePos;
     }
     private collisionFlipFit(target: HTMLElement, x: number, y: number): OffsetPosition {
-        let elePos: ElementPosition = this.checkCollision(target, x, y);
+        const elePos: ElementPosition = this.checkCollision(target, x, y);
         let newpos: Position = elePos.position;
         if (this.tooltipPositionY !== elePos.vertical) {
             newpos = ((this.position.indexOf('Bottom') === 0 || this.position.indexOf('Top') === 0) ?
@@ -927,9 +967,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         };
         this.trigger('beforeCollision', this.tooltipEventArgs);
         if (elePos.position !== newpos) {
-            let pos: OffsetPosition = calculatePosition(target, elePos.horizontal, elePos.vertical);
+            const pos: OffsetPosition = calculatePosition(target, elePos.horizontal, elePos.vertical);
             this.adjustArrow(target, newpos, elePos.horizontal, elePos.vertical);
-            let offsetPos: OffsetPosition = this.calculateTooltipOffset(newpos);
+            const offsetPos: OffsetPosition = this.calculateTooltipOffset(newpos);
             offsetPos.top -= (('TopBottom'.indexOf(this.position.split(/(?=[A-Z])/)[0]) !== -1) &&
                 ('TopBottom'.indexOf(newpos.split(/(?=[A-Z])/)[0]) !== -1)) ? (2 * this.offsetY) : 0;
             offsetPos.left -= (('RightLeft'.indexOf(this.position.split(/(?=[A-Z])/)[0]) !== -1) &&
@@ -940,11 +980,11 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         } else {
             this.adjustArrow(target, newpos, elePos.horizontal, elePos.vertical);
         }
-        let eleOffset: OffsetPosition = { left: elePos.left, top: elePos.top };
-        let left: number = fit(this.tooltipEle, this.checkCollideTarget(), { X: true, Y: false }, eleOffset).left;
+        const eleOffset: OffsetPosition = { left: elePos.left, top: elePos.top };
+        const left: number = fit(this.tooltipEle, this.checkCollideTarget(), { X: true, Y: false }, eleOffset).left;
         this.tooltipEle.style.display = 'block';
         if (this.showTipPointer && (newpos.indexOf('Bottom') === 0 || newpos.indexOf('Top') === 0)) {
-            let arrowEle: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP) as HTMLElement;
+            const arrowEle: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP) as HTMLElement;
             let arrowleft: number = parseInt(arrowEle.style.left, 10) - (left - elePos.left);
             if (arrowleft < 0) {
                 arrowleft = 0;
@@ -966,7 +1006,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.closeDelay > 0) {
             clearTimeout(this.hideTimer);
             clearTimeout(this.showTimer);
-            let hide: Function = (): void => {
+            // eslint-disable-next-line
+            const hide: Function = (): void => {
                 if (this.closeDelay && this.tooltipEle && this.isTooltipOpen) { return; }
                 this.tooltipHide(hideAnimation, e, targetElement);
             };
@@ -1003,8 +1044,10 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /* istanbul ignore next */
     private blazorHide(hideAnimation: TooltipAnimationSettings, target: HTMLElement): void {
-        let proxy: Tooltip = this;
-        let hide: Function = (): void => {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const proxy: Tooltip = this;
+        // eslint-disable-next-line
+        const hide: Function = (): void => {
             proxy.popupHide(hideAnimation, target);
         };
         if (this.popupObj) {
@@ -1016,6 +1059,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     private popupHide(hideAnimation: TooltipAnimationSettings, target: HTMLElement): void {
         if (target) { this.restoreElement(target); }
         this.isHidden = true;
+        // eslint-disable-next-line
         let closeAnimation: Object = {
             name: hideAnimation.effect,
             duration: hideAnimation.duration,
@@ -1044,10 +1088,11 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             if (this.popupObj) { this.popupObj.destroy(); }
             if (this.isServerRender() && this.tooltipEle) {
                 this.tooltipEle.style.display = 'none';
-                let args: object = { 'enableTooltip': 'false' };
-                // tslint:disable
+                // eslint-disable-next-line
+                const args: object = { 'enableTooltip': 'false' };
+                /* eslint-disable */
                 (this as any).interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
-                // tslint:enable
+                /* eslint-enable */
                 remove(this.tooltipEle);
             } else if (this.tooltipEle) {
                 remove(this.tooltipEle);
@@ -1063,8 +1108,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private tooltipMouseOut (e: Event): void {
-            this.isTooltipOpen = false;
-            this.hideTooltip(this.animation.close, e, this.findTarget());
+        this.isTooltipOpen = false;
+        this.hideTooltip(this.animation.close, e, this.findTarget());
     }
     private onMouseOut(e: Event): void {
         const enteredElement: EventTarget = (e as MouseEvent).relatedTarget;
@@ -1108,16 +1153,16 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         removeClass([this.tooltipEle], POPUP_CLOSE);
         addClass([this.tooltipEle], POPUP_OPEN);
         this.adjustArrow(event.target as HTMLElement, this.position, this.tooltipPositionX, this.tooltipPositionY);
-        let pos: OffsetPosition = this.calculateTooltipOffset(this.position);
-        let x: number = eventPageX + pos.left + this.offsetX;
-        let y: number = eventPageY + pos.top + this.offsetY;
-        let elePos: ElementPosition = this.checkCollision(event.target as HTMLElement, x, y);
+        const pos: OffsetPosition = this.calculateTooltipOffset(this.position);
+        const x: number = eventPageX + pos.left + this.offsetX;
+        const y: number = eventPageY + pos.top + this.offsetY;
+        const elePos: ElementPosition = this.checkCollision(event.target as HTMLElement, x, y);
         if (this.tooltipPositionX !== elePos.horizontal || this.tooltipPositionY !== elePos.vertical) {
-            let newpos: string = (this.position.indexOf('Bottom') === 0 || this.position.indexOf('Top') === 0) ?
+            const newpos: string = (this.position.indexOf('Bottom') === 0 || this.position.indexOf('Top') === 0) ?
                 elePos.vertical + elePos.horizontal : elePos.horizontal + elePos.vertical;
             elePos.position = <Position>newpos;
             this.adjustArrow(event.target as HTMLElement, elePos.position, elePos.horizontal, elePos.vertical);
-            let colpos: OffsetPosition = this.calculateTooltipOffset(elePos.position);
+            const colpos: OffsetPosition = this.calculateTooltipOffset(elePos.position);
             elePos.left = eventPageX + colpos.left - this.offsetX;
             elePos.top = eventPageY + colpos.top - this.offsetY;
         }
@@ -1141,7 +1186,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * Core method that initializes the control rendering.
+     *
      * @private
+     * @returns {void}
      */
     public render(): void {
         this.initialize();
@@ -1150,7 +1197,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * Initializes the values of private members.
+     *
      * @private
+     * @returns {void}
      */
     protected preRender(): void {
         this.tipClass = TIP_BOTTOM;
@@ -1160,11 +1209,15 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * Binding events to the Tooltip element.
+     *
      * @hidden
+     * @param {string} trigger - specify the trigger string to the function
+     * @returns {void}
+     *
      */
     private wireEvents(trigger: string): void {
-        let triggerList: string[] = this.getTriggerList(trigger);
-        for (let opensOn of triggerList) {
+        const triggerList: string[] = this.getTriggerList(trigger);
+        for (const opensOn of triggerList) {
             if (opensOn === 'Custom') { return; }
             if (opensOn === 'Focus') {
                 this.wireFocusEvents();
@@ -1197,8 +1250,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private wireFocusEvents(): void {
         if (!isNullOrUndefined(this.target)) {
-            let targetList: Element[] = [].slice.call(this.element.querySelectorAll(this.target));
-            for (let target of targetList) {
+            const targetList: Element[] = [].slice.call(this.element.querySelectorAll(this.target));
+            for (const target of targetList) {
                 EventHandler.add(target, 'focus', this.targetHover, this);
             }
         } else {
@@ -1226,11 +1279,16 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * Unbinding events from the element on widget destroy.
+     *
      * @hidden
+     *
+     * @param {string} trigger - specify the trigger string to the function
+     * @returns {void}
+     *
      */
     private unwireEvents(trigger: string): void {
-        let triggerList: string[] = this.getTriggerList(trigger);
-        for (let opensOn of triggerList) {
+        const triggerList: string[] = this.getTriggerList(trigger);
+        for (const opensOn of triggerList) {
             if (opensOn === 'Custom') { return; }
             if (opensOn === 'Focus') {
                 this.unwireFocusEvents();
@@ -1254,8 +1312,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private unwireFocusEvents(): void {
         if (!isNullOrUndefined(this.target)) {
-            let targetList: Element[] = [].slice.call(this.element.querySelectorAll(this.target));
-            for (let target of targetList) {
+            const targetList: Element[] = [].slice.call(this.element.querySelectorAll(this.target));
+            for (const target of targetList) {
                 EventHandler.remove(target, 'focus', this.targetHover);
             }
         } else {
@@ -1264,8 +1322,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private unwireMouseEvents(target: Element): void {
         if (!this.isSticky) {
-            let triggerList: string[] = this.getTriggerList(this.opensOn);
-            for (let opensOn of triggerList) {
+            const triggerList: string[] = this.getTriggerList(this.opensOn);
+            for (const opensOn of triggerList) {
                 if (opensOn === 'Focus') {
                     EventHandler.remove(target, 'blur', this.onMouseOut);
                 }
@@ -1283,106 +1341,120 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
     private findTarget(): HTMLElement {
-        let target: HTMLElement = document.querySelector('[data-tooltip-id= ' + this.ctrlId + '_content]') as HTMLElement;
+        const target: HTMLElement = document.querySelector('[data-tooltip-id= ' + this.ctrlId + '_content]') as HTMLElement;
         return target;
     }
     /**
      * Core method to return the component name.
+     *
      * @private
+     *
+     * @returns {string} - this method returns module name.
      */
     public getModuleName(): string {
         return 'tooltip';
     }
     /**
      * Returns the properties to be maintained in the persisted state.
+     *
      * @private
+     *
+     * @returns {string} - this method returns persisted data.
      */
     protected getPersistData(): string {
         return this.addOnPersist([]);
     }
     /**
      * Called internally, if any of the property value changed.
+     *
      * @private
+     *
+     * @param {TooltipModel} newProp - this param gives new property values to the method
+     * @param {TooltipModel} oldProp - this param gives old property values to the method
+     * @returns {void}
+     *
      */
     public onPropertyChanged(newProp: TooltipModel, oldProp: TooltipModel): void {
-        let targetElement: HTMLElement = this.findTarget();
-        for (let prop of Object.keys(newProp)) {
+        const targetElement: HTMLElement = this.findTarget();
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'width':
-                    if (this.tooltipEle && targetElement) {
-                        this.tooltipEle.style.width = this.tooltipEle.style.maxWidth = formatUnit(newProp.width);
-                        this.reposition(targetElement);
-                    }
-                    break;
-                case 'height':
-                    if (this.tooltipEle && targetElement) {
-                        this.tooltipEle.style.height = formatUnit(newProp.height);
-                        this.reposition(targetElement);
-                    }
-                    break;
-                case 'content':
-                    if (this.tooltipEle) {
-                        if (this.isServerRender()) { this.isBlazorTooltip = true; }
-                        this.renderContent();
-                    } else if (this.isServerRender()) {
-                        let args: object = { 'content': newProp.content };
-                        // tslint:disable
+            case 'width':
+                if (this.tooltipEle && targetElement) {
+                    this.tooltipEle.style.width = this.tooltipEle.style.maxWidth = formatUnit(newProp.width);
+                    this.reposition(targetElement);
+                }
+                break;
+            case 'height':
+                if (this.tooltipEle && targetElement) {
+                    this.tooltipEle.style.height = formatUnit(newProp.height);
+                    this.reposition(targetElement);
+                }
+                break;
+            case 'content':
+                if (this.tooltipEle) {
+                    if (this.isServerRender()) { this.isBlazorTooltip = true; }
+                    this.renderContent();
+                } else if (this.isServerRender()) {
+                    // eslint-disable-next-line
+                    const args: object = { 'content': newProp.content };
+                    /* eslint-disable */
                         (this as any).interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
-                        // tslint:enable
+                        /* eslint-enable */
+                }
+                break;
+            case 'opensOn':
+                this.unwireEvents(oldProp.opensOn);
+                this.wireEvents(newProp.opensOn);
+                break;
+            case 'position':
+                this.formatPosition();
+                if (this.tooltipEle && targetElement) {
+                    const arrowInnerELe: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP_INNER) as HTMLElement;
+                    arrowInnerELe.style.top = arrowInnerELe.style.left = null;
+                    this.reposition(targetElement);
+                }
+                break;
+            case 'tipPointerPosition':
+                if (this.tooltipEle && targetElement) {
+                    this.reposition(targetElement);
+                }
+                break;
+            case 'offsetX':
+                if (this.tooltipEle) {
+                    const x: number = newProp.offsetX - oldProp.offsetX;
+                    this.tooltipEle.style.left = (parseInt(this.tooltipEle.style.left, 10) + (x)).toString() + 'px';
+                }
+                break;
+            case 'offsetY':
+                if (this.tooltipEle) {
+                    const y: number = newProp.offsetY - oldProp.offsetY;
+                    this.tooltipEle.style.top = (parseInt(this.tooltipEle.style.top, 10) + (y)).toString() + 'px';
+                }
+                break;
+            case 'cssClass':
+                if (this.tooltipEle) {
+                    if (oldProp.cssClass) { removeClass([this.tooltipEle], oldProp.cssClass.split(' ')); }
+                    if (newProp.cssClass) { addClass([this.tooltipEle], newProp.cssClass.split(' ')); }
+                }
+                break;
+            case 'enableRtl':
+                if (this.tooltipEle) {
+                    if (this.enableRtl) {
+                        addClass([this.tooltipEle], RTL);
+                    } else {
+                        removeClass([this.tooltipEle], RTL);
                     }
-                    break;
-                case 'opensOn':
-                    this.unwireEvents(oldProp.opensOn);
-                    this.wireEvents(newProp.opensOn);
-                    break;
-                case 'position':
-                    this.formatPosition();
-                    if (this.tooltipEle && targetElement) {
-                        let arrowInnerELe: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP_INNER) as HTMLElement;
-                        arrowInnerELe.style.top = arrowInnerELe.style.left = null;
-                        this.reposition(targetElement);
-                    }
-                    break;
-                case 'tipPointerPosition':
-                    if (this.tooltipEle && targetElement) {
-                        this.reposition(targetElement);
-                    }
-                    break;
-                case 'offsetX':
-                    if (this.tooltipEle) {
-                        let x: number = newProp.offsetX - oldProp.offsetX;
-                        this.tooltipEle.style.left = (parseInt(this.tooltipEle.style.left, 10) + (x)).toString() + 'px';
-                    }
-                    break;
-                case 'offsetY':
-                    if (this.tooltipEle) {
-                        let y: number = newProp.offsetY - oldProp.offsetY;
-                        this.tooltipEle.style.top = (parseInt(this.tooltipEle.style.top, 10) + (y)).toString() + 'px';
-                    }
-                    break;
-                case 'cssClass':
-                    if (this.tooltipEle) {
-                        if (oldProp.cssClass) { removeClass([this.tooltipEle], oldProp.cssClass.split(' ')); }
-                        if (newProp.cssClass) { addClass([this.tooltipEle], newProp.cssClass.split(' ')); }
-                    }
-                    break;
-                case 'enableRtl':
-                    if (this.tooltipEle) {
-                        if (this.enableRtl) {
-                            addClass([this.tooltipEle], RTL);
-                        } else {
-                            removeClass([this.tooltipEle], RTL);
-                        }
-                    }
-                    break;
+                }
+                break;
             }
         }
     }
     /**
      * It is used to show the Tooltip on the specified target with specific animation settings.
-     * @param element Target element where the Tooltip is to be displayed. (It is an optional parameter)
-     * @param animation Sets the specific animation, while showing the Tooltip on the screen. (It is an optional parameter)
-     * @return {void}
+     *
+     * @param {HTMLElement} element - Target element where the Tooltip is to be displayed. (It is an optional parameter)
+     * @param {TooltipAnimationSettings} animation - Sets the specific animation, while showing the Tooltip on the screen. (It is an optional parameter)
+     * @returns {void}
      */
     public open(element?: HTMLElement, animation?: TooltipAnimationSettings): void {
         if (isNullOrUndefined(animation)) { animation = this.animation.open; }
@@ -1392,8 +1464,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * It is used to hide the Tooltip with specific animation effect.
-     * @param animation Sets the specific animation when hiding Tooltip from the screen. (It is an optional parameter)
-     * @return {void}
+     *
+     * @param {TooltipAnimationSettings} animation - Sets the specific animation when hiding Tooltip from the screen. (It is an optional parameter)
+     * @returns {void}
      */
     public close(animation?: TooltipAnimationSettings): void {
         if (!animation) { animation = this.animation.close; }
@@ -1401,8 +1474,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * It is used to refresh the Tooltip content and its position.
-     * @param target Target element where the Tooltip content or position needs to be refreshed.
-     * @return {void}
+     *
+     * @param {HTMLElement} target - Target element where the Tooltip content or position needs to be refreshed.
+     * @returns {void}
      */
     public refresh(target?: HTMLElement): void {
         if (this.tooltipEle) { this.renderContent(target); }
@@ -1413,7 +1487,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * It is used to destroy the Tooltip component.
      * @method destroy
-     * @return {void}
+     * @returns {void}
      * @memberof Tooltip
      */
     public destroy(): void {
@@ -1422,7 +1496,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             if (this.tooltipEle) { remove(this.tooltipEle); }
         }
         if (this.isServerRender() && this.tooltipEle) {
-            let placeholder: HTMLElement = document.querySelector('#' + this.ctrlId + '_content_placeholder');
+            const placeholder: HTMLElement = document.querySelector('#' + this.ctrlId + '_content_placeholder');
             if (placeholder) { placeholder.appendChild(this.tooltipEle); }
         }
         if (this.popupObj) { this.popupObj.destroy(); }

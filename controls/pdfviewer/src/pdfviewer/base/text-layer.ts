@@ -1,9 +1,11 @@
+/* eslint-disable */
 import { createElement, isNullOrUndefined, Browser, isBlazor } from '@syncfusion/ej2-base';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { PdfViewer, PdfViewerBase } from '../index';
 
 /**
  * TextLayer module is used to handle the text content on the control.
+ *
  * @hidden
  */
 export class TextLayer {
@@ -15,25 +17,35 @@ export class TextLayer {
      * @private
      */
     public isMessageBoxOpen: boolean;
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private textBoundsArray: any[] = [];
     /**
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public characterBound: any[] = [];
-    /** 
+    /**
+     * @param pdfViewer
+     * @param pdfViewerBase
      * @private
      */
     constructor(pdfViewer: PdfViewer, pdfViewerBase: PdfViewerBase) {
         this.pdfViewer = pdfViewer;
         this.pdfViewerBase = pdfViewerBase;
     }
-    /** 
+    /**
+     * @param pageNumber
+     * @param pageWidth
+     * @param pageHeight
+     * @param pageDiv
+     * @param pageNumber
+     * @param pageWidth
+     * @param pageHeight
+     * @param pageDiv
      * @private
      */
     public addTextLayer(pageNumber: number, pageWidth: number, pageHeight: number, pageDiv: HTMLElement): HTMLElement {
-        let textDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageNumber);
+        const textDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageNumber);
         let textLayer: HTMLElement;
         if (!textDiv) {
             textLayer = createElement('div', { id: this.pdfViewer.element.id + '_textLayer_' + pageNumber, className: 'e-pv-text-layer' });
@@ -45,21 +57,25 @@ export class TextLayer {
         return textLayer;
     }
     /**
+     * @param pageNumber
+     * @param textContents
+     * @param textBounds
+     * @param rotation
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public renderTextContents(pageNumber: number, textContents: any, textBounds: any, rotation: any): void {
-        let textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageNumber);
-        let canvasElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageCanvas_' + pageNumber);
+        const textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageNumber);
+        const canvasElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageCanvas_' + pageNumber);
         if (canvasElement && textLayer.childNodes.length === 0) {
             for (let i: number = 0; i < textContents.length; i++) {
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let bounds: any = textBounds[i];
-                // tslint:disable-next-line:max-line-length
-                let textDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_text_' + pageNumber + '_' + i, className: 'e-pv-text', attrs: { 'tabindex': '0' } });
-                let textContent: string = textContents[i];
+                // eslint-disable-next-line max-len
+                const textDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_text_' + pageNumber + '_' + i, className: 'e-pv-text', attrs: { 'tabindex': '0' } });
+                const textContent: string = textContents[i];
                 textDiv.textContent = textContent.replace(/&nbsp;/g, ' ');
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let newLine: string = textContents[i].replace(/  +/g, ' ');
                 if (newLine !== ' ') {
                     textDiv.style.whiteSpace = 'pre';
@@ -68,35 +84,45 @@ export class TextLayer {
                     this.setStyleToTextDiv(textDiv, bounds.X, bounds.Y, bounds.Bottom, bounds.Width, bounds.Height);
                 }
                 this.setTextElementProperties(textDiv);
-                let context: CanvasRenderingContext2D = (canvasElement as HTMLCanvasElement).getContext('2d');
+                const context: CanvasRenderingContext2D = (canvasElement as HTMLCanvasElement).getContext('2d');
                 context.font = textDiv.style.fontSize + ' ' + textDiv.style.fontFamily;
-                let contextWidth: number = context.measureText(textContents[i].replace(/(\r\n|\n|\r)/gm, '')).width;
+                const contextWidth: number = context.measureText(textContents[i].replace(/(\r\n|\n|\r)/gm, '')).width;
                 if (bounds) {
-                    let scale: number = bounds.Width * this.pdfViewerBase.getZoomFactor() / contextWidth;
+                    const scale: number = bounds.Width * this.pdfViewerBase.getZoomFactor() / contextWidth;
                     this.applyTextRotation(scale, textDiv, rotation, bounds.Rotation);
                 }
                 textLayer.appendChild(textDiv);
                 this.resizeExcessDiv(textLayer, textDiv);
-                // tslint:disable-next-line:max-line-length
+                // eslint-disable-next-line max-len
                 if (this.pdfViewer.textSelectionModule && this.pdfViewer.enableTextSelection && !this.pdfViewerBase.isTextSelectionDisabled && textDiv.className !== 'e-pdfviewer-formFields'
-                && textDiv.className !== 'e-pdfviewer-signatureformFields' && textDiv.className !== 'e-pdfviewer-signatureformFields signature') {
+                && textDiv.className !== 'e-pdfviewer-signatureformfields' && textDiv.className !== 'e-pdfviewer-signatureformfields-signature') {
                     textDiv.classList.add('e-pv-cursor');
                 }
             }
         }
     }
     /**
+     * @param pageNumber
+     * @param textContents
+     * @param textBounds
+     * @param rotation
+     * @param isTextSearch
+     * @param pageNumber
+     * @param textContents
+     * @param textBounds
+     * @param rotation
+     * @param isTextSearch
      * @private
      */
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public resizeTextContents(pageNumber: number, textContents: any, textBounds: any, rotation: any, isTextSearch?: boolean): void {
-        let textLayer: HTMLElement = this.pdfViewerBase.getElement('_textLayer_' + pageNumber);
-        let canvasElement: HTMLElement = this.pdfViewerBase.getElement('_pageCanvas_' + pageNumber);
+        const textLayer: HTMLElement = this.pdfViewerBase.getElement('_textLayer_' + pageNumber);
+        const canvasElement: HTMLElement = this.pdfViewerBase.getElement('_pageCanvas_' + pageNumber);
         if (canvasElement) {
             for (let i: number = 0; i < textLayer.childNodes.length; i++) {
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let bounds: any;
-                let textDiv: HTMLElement = this.pdfViewerBase.getElement('_text_' + pageNumber + '_' + i);
+                const textDiv: HTMLElement = this.pdfViewerBase.getElement('_text_' + pageNumber + '_' + i);
                 if (isNullOrUndefined(textDiv)) {
                     break;
                 }
@@ -107,11 +133,11 @@ export class TextLayer {
                     }
                 }
                 this.setTextElementProperties(textDiv);
-                let context: CanvasRenderingContext2D = (canvasElement as HTMLCanvasElement).getContext('2d');
+                const context: CanvasRenderingContext2D = (canvasElement as HTMLCanvasElement).getContext('2d');
                 context.font = textDiv.style.fontSize + ' ' + textDiv.style.fontFamily;
                 let contextWidth: number;
                 if (textContents) {
-                    let textContent: string = textContents[i];
+                    const textContent: string = textContents[i];
                     if (textContent) {
                         contextWidth = context.measureText(textContent.replace(/(\r\n|\n|\r)/gm, '')).width;
                     }
@@ -119,7 +145,7 @@ export class TextLayer {
                     contextWidth = context.measureText(textDiv.textContent.replace(/(\r\n|\n|\r)/gm, '')).width;
                 }
                 if (bounds) {
-                    let scale: number = bounds.Width * this.pdfViewerBase.getZoomFactor() / contextWidth;
+                    const scale: number = bounds.Width * this.pdfViewerBase.getZoomFactor() / contextWidth;
                     this.applyTextRotation(scale, textDiv, rotation, bounds.Rotation);
                 }
                 this.resizeExcessDiv(textLayer, textDiv);
@@ -135,7 +161,7 @@ export class TextLayer {
     }
 
     private applyTextRotation(scale: number, textDiv: HTMLElement, rotation: number, textRotation: number): void {
-        let scaleString: string = 'scaleX(' + scale + ')';
+        const scaleString: string = 'scaleX(' + scale + ')';
         if (rotation === 0) {
             if (textRotation === 0) {
                 textDiv.style.transform = scaleString;
@@ -174,37 +200,38 @@ export class TextLayer {
         textDiv.style.transformOrigin = '0%';
     }
     /**
+     * @param pageNumber
      * @private
      */
     public resizeTextContentsOnZoom(pageNumber: number): void {
-        // tslint:disable-next-line:max-line-length
-        let renderObject: string = window.sessionStorage.getItem(this.pdfViewerBase.getDocumentId() + '_' + pageNumber + '_' + this.getPreviousZoomFactor());
-        // tslint:disable-next-line
+        // eslint-disable-next-line max-len
+        const renderObject: string = window.sessionStorage.getItem(this.pdfViewerBase.getDocumentId() + '_' + pageNumber + '_' + this.getPreviousZoomFactor());
+        // eslint-disable-next-line
         let textBounds: any[] = [];
         let textContents: string[] = [];
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let rotation: any;
         if (renderObject) {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let data: any = JSON.parse(renderObject);
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             textBounds = data['textBounds'];
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             textContents = data['textContent'];
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             rotation = data['rotation'];
         }
         if (textBounds.length !== 0) {
             this.textBoundsArray.push({ pageNumber: pageNumber, textBounds: textBounds });
             this.resizeTextContents(pageNumber, textContents, textBounds, rotation);
         } else {
-            // tslint:disable-next-line
+            // eslint-disable-next-line
             let textElements: any = this.textBoundsArray.filter(obj => {
                 return obj.pageNumber === pageNumber;
             });
             if (textElements) {
                 if (textElements.length !== 0) {
-                    // tslint:disable-next-line
+                    // eslint-disable-next-line
                     textBounds = textElements[0]['textBounds'];
                     this.resizeTextContents(pageNumber, null, textBounds, rotation);
                 }
@@ -213,9 +240,9 @@ export class TextLayer {
     }
 
     private resizeExcessDiv(textLayer: HTMLElement, textDiv: HTMLElement): void {
-        let textLayerPosition: ClientRect = textLayer.getBoundingClientRect();
-        let textDivPosition: ClientRect = textDiv.getBoundingClientRect();
-        // tslint:disable-next-line:max-line-length
+        const textLayerPosition: ClientRect = textLayer.getBoundingClientRect();
+        const textDivPosition: ClientRect = textDiv.getBoundingClientRect();
+        // eslint-disable-next-line max-len
         if ((textDivPosition.width + textDivPosition.left) >= (textLayerPosition.width + textLayerPosition.left) || (textDivPosition.width > textLayerPosition.width)) {
             // 'auto' width is set to reset the size of the div to its contents.
             textDiv.style.width = 'auto';
@@ -231,12 +258,12 @@ export class TextLayer {
         lowerPageValue = (lowerPageValue > 0) ? lowerPageValue : 0;
         let higherPageValue: number = this.pdfViewerBase.currentPageNumber + 1;
         higherPageValue = (higherPageValue < this.pdfViewerBase.pageCount) ? higherPageValue : (this.pdfViewerBase.pageCount - 1);
-        let textLayers: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_textLayer_"]');
+        const textLayers: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_textLayer_"]');
         for (let i: number = 0; i < textLayers.length; i++) {
             (textLayers[i] as HTMLElement).style.display = 'block';
             if (this.pdfViewerBase.getMagnified() && (this.getTextSelectionStatus() || this.getTextSearchStatus())) {
-                // tslint:disable-next-line:radix
-                let pageNumber: number = parseInt((textLayers[i] as HTMLElement).id.split('_textLayer_')[1]);
+                // eslint-disable-next-line radix
+                const pageNumber: number = parseInt((textLayers[i] as HTMLElement).id.split('_textLayer_')[1]);
                 if (!(((lowerPageValue + 1) <= pageNumber) && (pageNumber <= (higherPageValue - 1)))) {
                     this.removeElement(textLayers[i] as HTMLElement);
                 }
@@ -259,15 +286,51 @@ export class TextLayer {
         }
     }
     /**
+     * @param pageNumber
+     * @param divId
+     * @param fromOffset
+     * @param toOffset
+     * @param textString
+     * @param className
+     * @param pageNumber
+     * @param divId
+     * @param fromOffset
+     * @param toOffset
+     * @param textString
+     * @param className
+     * @param pageNumber
+     * @param divId
+     * @param fromOffset
+     * @param toOffset
+     * @param textString
+     * @param className
+     * @param pageNumber
+     * @param divId
+     * @param fromOffset
+     * @param toOffset
+     * @param textString
+     * @param className
+     * @param pageNumber
+     * @param divId
+     * @param fromOffset
+     * @param toOffset
+     * @param textString
+     * @param className
+     * @param pageNumber
+     * @param divId
+     * @param fromOffset
+     * @param toOffset
+     * @param textString
+     * @param className
      * @private
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     public convertToSpan(pageNumber: number, divId: number, fromOffset: number, toOffset: number, textString: string, className: string): void {
-        let textDiv: HTMLElement = this.pdfViewerBase.getElement('_text_' + pageNumber + '_' + divId);
-        let textContent: string = textString.substring(fromOffset, toOffset);
-        let node: Node = document.createTextNode(textContent);
+        const textDiv: HTMLElement = this.pdfViewerBase.getElement('_text_' + pageNumber + '_' + divId);
+        const textContent: string = textString.substring(fromOffset, toOffset);
+        const node: Node = document.createTextNode(textContent);
         if (className) {
-            let spanElement: HTMLElement = createElement('span');
+            const spanElement: HTMLElement = createElement('span');
             spanElement.className = className + ' e-pv-text';
             spanElement.appendChild(node);
             textDiv.appendChild(spanElement);
@@ -276,15 +339,39 @@ export class TextLayer {
         }
     }
     /**
+     * @param startPage
+     * @param endPage
+     * @param anchorOffsetDiv
+     * @param focusOffsetDiv
+     * @param anchorOffset
+     * @param focusOffset
+     * @param startPage
+     * @param endPage
+     * @param anchorOffsetDiv
+     * @param focusOffsetDiv
+     * @param anchorOffset
+     * @param focusOffset
+     * @param startPage
+     * @param endPage
+     * @param anchorOffsetDiv
+     * @param focusOffsetDiv
+     * @param anchorOffset
+     * @param focusOffset
+     * @param startPage
+     * @param endPage
+     * @param anchorOffsetDiv
+     * @param focusOffsetDiv
+     * @param anchorOffset
+     * @param focusOffset
      * @private
      */
-    // tslint:disable-next-line:max-line-length
+    // eslint-disable-next-line max-len
     public applySpanForSelection(startPage: number, endPage: number, anchorOffsetDiv: number, focusOffsetDiv: number, anchorOffset: number, focusOffset: number): void {
         if (this.pdfViewer.textSelectionModule) {
             for (let i: number = startPage; i <= endPage; i++) {
                 let startId: number;
                 let endId: number;
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let textDivs: any = this.pdfViewerBase.getElement('_textLayer_' + i).childNodes;
                 if (i === startPage) {
                     startId = anchorOffsetDiv;
@@ -301,13 +388,13 @@ export class TextLayer {
                     endId = focusOffsetDiv;
                 }
                 for (let j: number = startId; j <= endId; j++) {
-                    let textDiv: HTMLElement = this.pdfViewerBase.getElement('_text_' + i + '_' + j);
+                    const textDiv: HTMLElement = this.pdfViewerBase.getElement('_text_' + i + '_' + j);
                     let initId: number;
                     let lastId: number;
                     let length: number;
                     if (textDiv && textDiv.textContent) {
                         length = textDiv.textContent.length;
-                        let textContent: string = textDiv.textContent;
+                        const textContent: string = textDiv.textContent;
                         textDiv.textContent = '';
                         if (j === startId) {
                             if (i === startPage) {
@@ -341,15 +428,15 @@ export class TextLayer {
      * @private
      */
     public clearDivSelection(): void {
-        let textLayers: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_textLayer_"]');
+        const textLayers: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_textLayer_"]');
         for (let i: number = 0; i < textLayers.length; i++) {
-            let childNodes: NodeList = textLayers[i].childNodes;
+            const childNodes: NodeList = textLayers[i].childNodes;
             for (let j: number = 0; j < childNodes.length; j++) {
-                let textDiv: HTMLElement = (childNodes[j] as HTMLElement);
-                // tslint:disable-next-line:max-line-length
-                if (textDiv.className !== 'e-pdfviewer-formFields' && textDiv.className !== 'e-pdfviewer-signatureformFields' && textDiv.className !== 'e-pdfviewer-signatureformFields signature') {
-                    let textContent: string = textDiv.textContent;
-                    // tslint:disable-next-line:max-line-length
+                const textDiv: HTMLElement = (childNodes[j] as HTMLElement);
+                // eslint-disable-next-line max-len
+                if (textDiv.className !== 'e-pdfviewer-formFields' && textDiv.className !== 'e-pdfviewer-signatureformfields' && textDiv.className !== 'e-pdfviewer-signatureformfields-signature') {
+                    const textContent: string = textDiv.textContent;
+                    // eslint-disable-next-line max-len
                     if (textDiv.childNodes.length > 1 || textDiv.childNodes.length === 1 && ((textDiv.childNodes[0] as HTMLElement).tagName === 'SPAN')) {
                         textDiv.textContent = '';
                         textDiv.textContent = textContent;
@@ -359,11 +446,11 @@ export class TextLayer {
         }
     }
 
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     private setStyleToTextDiv(textDiv: HTMLElement, left: number, top: number, bottom: number, width: number, height: number): void {
         textDiv.style.left = left * this.pdfViewerBase.getZoomFactor() + 'px';
         textDiv.style.top = top * this.pdfViewerBase.getZoomFactor() + 'px';
-        let textHeight: number = height * this.pdfViewerBase.getZoomFactor();
+        const textHeight: number = height * this.pdfViewerBase.getZoomFactor();
         textDiv.style.height = textHeight + 'px';
         textDiv.style.fontSize = height * this.pdfViewerBase.getZoomFactor() + 'px';
     }
@@ -376,16 +463,17 @@ export class TextLayer {
         }
     }
     /**
+     * @param isAdd
      * @private
      */
     public modifyTextCursor(isAdd: boolean): void {
-        let textLayerList: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_textLayer_"]');
+        const textLayerList: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_textLayer_"]');
         for (let i: number = 0; i < textLayerList.length; i++) {
-            let childNodes: NodeList = textLayerList[i].childNodes;
+            const childNodes: NodeList = textLayerList[i].childNodes;
             for (let j: number = 0; j < childNodes.length; j++) {
-                let textElement: HTMLElement = (childNodes[j] as HTMLElement);
-                // tslint:disable-next-line:max-line-length
-                if (isAdd && textElement.className !== 'e-pdfviewer-formFields' && textElement.className !== 'e-pdfviewer-signatureformFields' && textElement.className !== 'e-pdfviewer-signatureformFields signature') {
+                const textElement: HTMLElement = (childNodes[j] as HTMLElement);
+                // eslint-disable-next-line max-len
+                if (isAdd && textElement.className !== 'e-pdfviewer-formFields' && textElement.className !== 'e-pdfviewer-signatureformfields' && textElement.className !== 'e-pdfviewer-signatureformfields-signature') {
                     textElement.classList.add('e-pv-cursor');
                 } else {
                     textElement.classList.remove('e-pv-cursor');
@@ -395,10 +483,11 @@ export class TextLayer {
     }
 
     /**
+     * @param selection
      * @private
      */
     public isBackWardSelection(selection: Selection): boolean {
-        let position: number = selection.anchorNode.compareDocumentPosition(selection.focusNode);
+        const position: number = selection.anchorNode.compareDocumentPosition(selection.focusNode);
         let backward: boolean = false;
         if (!position && selection.anchorOffset > selection.focusOffset || position === Node.DOCUMENT_POSITION_PRECEDING) {
             backward = true;
@@ -407,40 +496,45 @@ export class TextLayer {
     }
 
     /**
+     * @param element
      * @private
      */
     public getPageIndex(element: Node): number {
         let pageId: number;
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let parentElement: any = element.parentElement;
         if (!parentElement) {
             parentElement = element.parentNode;
         }
         if (parentElement.className === 'e-pv-text-layer') {
-            // tslint:disable-next-line:radix
+            // eslint-disable-next-line radix
             pageId = parseInt((element as HTMLElement).id.split('_text_')[1]);
         } else {
-            // tslint:disable-next-line:radix
+            // eslint-disable-next-line radix
             pageId = parseInt(parentElement.id.split('_text_')[1]);
         }
         return pageId;
     }
 
     /**
+     * @param element
+     * @param pageIndex
+     * @param element
+     * @param pageIndex
      * @private
      */
     public getTextIndex(element: Node, pageIndex: number): number {
         let textIndex: number;
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         let parentElement: any = element.parentElement;
         if (!parentElement) {
             parentElement = element.parentNode;
         }
         if (parentElement.className === 'e-pv-text-layer') {
-            // tslint:disable-next-line:radix
+            // eslint-disable-next-line radix
             textIndex = parseInt((element as HTMLElement).id.split('_text_' + pageIndex + '_')[1]);
         } else {
-            // tslint:disable-next-line:radix
+            // eslint-disable-next-line radix
             textIndex = parseInt(parentElement.id.split('_text_' + pageIndex + '_')[1]);
         }
         return textIndex;
@@ -453,7 +547,7 @@ export class TextLayer {
             return 1;
         }
     }
-    /** 
+    /**
      * @private
      */
     public getTextSearchStatus(): boolean {
@@ -465,13 +559,14 @@ export class TextLayer {
     }
 
     /**
+     * @param text
      * @private
      */
     public createNotificationPopup(text: string): void {
         if (!this.isMessageBoxOpen) {
             if (!isBlazor()) {
-                // tslint:disable-next-line:max-line-length
-                let popupElement: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_notify', className: 'e-pv-notification-popup' });
+                // eslint-disable-next-line max-len
+                const popupElement: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_notify', className: 'e-pv-notification-popup' });
                 this.pdfViewerBase.viewerContainer.appendChild(popupElement);
                 this.notifyDialog = new Dialog({
                     showCloseIcon: true, closeOnEscape: false, isModal: true, header: this.pdfViewer.localeObj.getConstant('PdfViewer'),
@@ -479,7 +574,7 @@ export class TextLayer {
                         buttonModel: { content: this.pdfViewer.localeObj.getConstant('OK'), isPrimary: true },
                         click: this.closeNotification.bind(this)
                     }],
-                    // tslint:disable-next-line:max-line-length
+                    // eslint-disable-next-line max-len
                     content: '<div class="e-pv-notification-popup-content" tabindex = "0">' + text + '</div>', target: this.pdfViewer.element,
                     beforeClose: (): void => {
                         this.notifyDialog.destroy();
@@ -502,7 +597,7 @@ export class TextLayer {
                 this.notifyDialog.appendTo(popupElement);
                 this.isMessageBoxOpen = true;
             } else {
-                // tslint:disable-next-line
+                // eslint-disable-next-line
                 let notificationElement: any = document.getElementById(this.pdfViewer.element.id + '_notification_popup_content');
                 if (notificationElement) {
                     notificationElement.textContent = text;
@@ -515,5 +610,5 @@ export class TextLayer {
 
     private closeNotification = (): void => {
         this.notifyDialog.hide();
-    }
+    };
 }

@@ -7,12 +7,14 @@ export interface DiagramTooltipModel {
 
     /**
      * Defines the content of the Tooltip
+     *
      * @default ''
      */
     content?: string | HTMLElement;
 
     /**
      * Defines the position of the Tooltip
+     *
      * @default 'TopLeft'
      * @aspDefaultValueIgnore
      * @blazorType Syncfusion.Blazor.Popups.Position
@@ -25,30 +27,35 @@ export interface DiagramTooltipModel {
      * Defines the relative mode of the Tooltip
      * * Object - sets the tooltip position relative to the node
      * * Mouse - sets the tooltip position relative to the mouse
+     *
      * @default 'Mouse'
      */
     relativeMode?: TooltipRelativeMode;
 
     /**
      * Defines if the Tooltip has tip pointer or not
+     *
      * @default true
      */
     showTipPointer?: boolean;
 
     /**
      * Sets the width of the Tooltip
+     *
      * @default 'auto'
      */
     width?: number | string;
 
     /**
      * Sets the height of the Tooltip
+     *
      * @default 'auto'
      */
     height?: number | string;
 
     /**
      * Sets how to open the Tooltip
+     *
      * @default 'Auto'
      */
     openOn?: TooltipMode;
@@ -72,6 +79,7 @@ export interface DiagramTooltipModel {
      * ...
      * }
      * ```
+     *
      * @aspDefaultValueIgnore
      * @blazorType Syncfusion.Blazor.Popups.AnimationModel
      * @default { open: { effect: 'FadeIn', duration: 150, delay: 0 }, close: { effect: 'FadeOut', duration: 150, delay: 0 } }

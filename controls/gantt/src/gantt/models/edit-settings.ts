@@ -7,13 +7,15 @@ import { EditMode, RowPosition  } from '../base/enum';
 export class EditSettings extends ChildProperty<EditSettings> {
     /**
      * If `allowEditing` is set to true, values can be updated in the existing record.
-     * @default false 
+     *
+     * @default false
      */
     @Property(false)
     public allowEditing: boolean;
 
     /**
-     * If `allowAdding` is set to true, new records can be added to the Gantt.  
+     * If `allowAdding` is set to true, new records can be added to the Gantt.
+     *
      * @default false
      */
     @Property(false)
@@ -21,6 +23,7 @@ export class EditSettings extends ChildProperty<EditSettings> {
 
     /**
      * If `allowDeleting` is set to true, existing record can be deleted from the Gantt.
+     *
      * @default false
      */
     @Property(false)
@@ -30,6 +33,7 @@ export class EditSettings extends ChildProperty<EditSettings> {
      * Defines edit mode in Gantt.
      * * `Auto` - Defines cell edit mode in grid side and dialog mode in chart side.
      * * `Dialog` - Defines dialog edit mode on both sides.
+     *
      * @default Auto
      * @isEnumeration true
      */
@@ -43,6 +47,7 @@ export class EditSettings extends ChildProperty<EditSettings> {
      * * Above
      * * Below
      * * Child
+     *
      * @default Top
      */
     @Property('Top')
@@ -50,16 +55,25 @@ export class EditSettings extends ChildProperty<EditSettings> {
 
     /**
      * If `showDeleteConfirmDialog` is set to true, confirm dialog will show delete action. You can also cancel delete command.
-     * @default false 
+     *
+     * @default false
      */
     @Property(false)
     public showDeleteConfirmDialog: boolean;
 
     /**
-     * Enabled or disables taskbar resizing, taskbar dragging, progress bar resizing and 
+     * Enabled or disables taskbar resizing, taskbar dragging, progress bar resizing and
      * predecessor draw action in chart side.
+     *
      * @default false
      */
     @Property(false)
     public allowTaskbarEditing: boolean;
+
+    /**   
+     * If `allowNextRowEdit` is set as true, editing is continued to next row with keyboard navigation.
+     * @default false 
+     */
+    @Property(false)
+    public allowNextRowEdit : boolean;
 }

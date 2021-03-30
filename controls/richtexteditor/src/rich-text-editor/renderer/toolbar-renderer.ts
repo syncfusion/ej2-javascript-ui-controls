@@ -14,6 +14,7 @@ import { hasClass } from '../base/util';
 
 /**
  * `Toolbar renderer` module is used to render toolbar in RichTextEditor.
+ *
  * @hidden
  * @deprecated
  */
@@ -27,8 +28,10 @@ export class ToolbarRenderer implements IRenderer {
     private popupOverlay: HTMLElement;
     /**
      * Constructor for toolbar renderer module
+     *
+     * @param {IRichTextEditor} parent - specifies the parent element.
      */
-    constructor(parent?: IRichTextEditor) {
+    public constructor(parent?: IRichTextEditor) {
         this.parent = parent;
         this.wireEvent();
     }
@@ -71,11 +74,23 @@ export class ToolbarRenderer implements IRenderer {
     }
 
     private beforeDropDownItemRender(args: MenuEventArgs): void {
-        if (this.parent.readonly || !this.parent.enabled) { return; }
+        if (this.parent.readonly || !this.parent.enabled) {
+            return;
+        }
         this.parent.notify(events.beforeDropDownItemRender, args);
     }
 
     private dropDownOpen(args: MenuEventArgs): void {
+        if (args.element.parentElement.getAttribute("id").indexOf("TableCell") > -1) {
+            let listEle: NodeListOf<HTMLElement> = args.element.querySelectorAll("li");
+            if (this.parent.inputElement.querySelectorAll(".e-cell-select").length === 1) {
+                addClass([listEle[0]], "e-disabled")
+                removeClass([listEle[1], listEle[2]], "e-disabled");
+            } else if (this.parent.inputElement.querySelectorAll(".e-cell-select").length > 1) {
+                removeClass([listEle[0]], "e-disabled")
+                addClass([listEle[1], listEle[2]], "e-disabled");
+            }
+        }
         if (Browser.isDevice && !args.element.parentElement.classList.contains(classes.CLS_QUICK_DROPDOWN)) {
             this.popupModal(args.element.parentElement);
         }
@@ -89,7 +104,7 @@ export class ToolbarRenderer implements IRenderer {
 
     private removePopupContainer(): void {
         if (Browser.isDevice && !isNullOrUndefined(this.popupContainer)) {
-            let popupEle : HTMLElement = this.popupContainer.querySelector('.e-dropdown-popup.e-tbar-btn.e-control');
+            const popupEle : HTMLElement = this.popupContainer.querySelector('.e-dropdown-popup.e-tbar-btn.e-control');
             if (popupEle) {
                 this.popupContainer.parentNode.insertBefore(popupEle, this.popupContainer.nextSibling);
                 popupEle.style.removeProperty('position');
@@ -102,6 +117,9 @@ export class ToolbarRenderer implements IRenderer {
 
     /**
      * renderToolbar method
+     *
+     * @param {IToolbarOptions} args - specifies the arguments.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -126,6 +144,9 @@ export class ToolbarRenderer implements IRenderer {
 
     /**
      * renderDropDownButton method
+     *
+     * @param {IDropDownModel} args - specifies the the arguments.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -136,8 +157,9 @@ export class ToolbarRenderer implements IRenderer {
         if (this.parent.inlineMode.enable && Browser.isDevice) {
             css = css + ' ' + CLS_INLINE_DROPDOWN;
         }
+        // eslint-disable-next-line
         let proxy: this = this;
-        let dropDown: DropDownButton = new DropDownButton({
+        const dropDown: DropDownButton = new DropDownButton({
             items: args.items,
             iconCss: args.iconCss,
             cssClass: css,
@@ -150,11 +172,12 @@ export class ToolbarRenderer implements IRenderer {
                     args.cancel = true;
                     return;
                 }
-                for (let index: number = 0; index < args.element.childNodes.length; index++) {
-                    let divNode: HTMLDivElement = this.parent.createElement('div') as HTMLDivElement;
+                // eslint-disable-next-line
+            for (let index: number = 0; index < args.element.childNodes.length; index++) {
+                    const divNode: HTMLDivElement = this.parent.createElement('div') as HTMLDivElement;
                     divNode.innerHTML = dropDown.content.trim();
                     if ( divNode.textContent .trim() !== ''
-                    && args.element.childNodes[index].textContent.trim() === divNode.textContent .trim()) {
+                && args.element.childNodes[index].textContent.trim() === divNode.textContent .trim()) {
                         if (!(args.element.childNodes[index] as HTMLElement).classList.contains('e-active')) {
                             addClass([args.element.childNodes[index]] as Element[], 'e-active');
                         }
@@ -172,10 +195,11 @@ export class ToolbarRenderer implements IRenderer {
         dropDown.createElement = proxy.parent.createElement;
         dropDown.appendTo(args.element);
         args.element.tabIndex = -1;
-        let popupElement: Element = document.getElementById(dropDown.element.id + '-popup');
+        const popupElement: Element = document.getElementById(dropDown.element.id + '-popup');
         popupElement.setAttribute('aria-owns', this.parent.getID());
         return dropDown;
     }
+    // eslint-disable-next-line
     private onPopupOverlay(args?: MouseEvent): void {
         if (!isNullOrUndefined(this.popupOverlay)) {
             (closest(this.popupOverlay, '.e-popup-container') as HTMLElement).style.display = 'none';
@@ -196,6 +220,7 @@ export class ToolbarRenderer implements IRenderer {
             element.style.position = 'relative';
             addClass([element], 'e-popup-modal');
             this.popupOverlay = this.parent.createElement('div', { className: 'e-popup-overlay' });
+            // eslint-disable-next-line
             this.popupOverlay.style.zIndex = (parseInt(element.style.zIndex, null) - 1).toString();
             this.popupOverlay.style.display = 'block';
             this.popupContainer.appendChild(this.popupOverlay);
@@ -208,10 +233,10 @@ export class ToolbarRenderer implements IRenderer {
         }
     }
     private paletteSelection(dropDownArgs: BeforeOpenCloseMenuEventArgs, currentElement: HTMLElement): void {
-        let ele: Element = dropDownArgs.element.querySelector('.e-control.e-colorpicker');
-        let colorbox: HTMLElement[] = [].slice.call(selectAll('.e-tile', ele.parentElement));
+        const ele: Element = dropDownArgs.element.querySelector('.e-control.e-colorpicker');
+        const colorbox: HTMLElement[] = [].slice.call(selectAll('.e-tile', ele.parentElement));
         removeClass(colorbox, 'e-selected');
-        let style: string = (currentElement.querySelector('.' + CLS_RTE_ELEMENTS) as HTMLElement).style.borderBottomColor;
+        const style: string = (currentElement.querySelector('.' + CLS_RTE_ELEMENTS) as HTMLElement).style.borderBottomColor;
         (colorbox.filter((colorbox: HTMLElement) => {
             if ( colorbox.style.backgroundColor === style) {
                 addClass([colorbox], 'e-selected');
@@ -220,77 +245,97 @@ export class ToolbarRenderer implements IRenderer {
     }
     /**
      * renderColorPickerDropDown method
+     *
+     * @param {IColorPickerModel} args - specifies the arguments.
+     * @param {string} item - specifies the item.
+     * @param {ColorPicker} colorPicker - specifies the colorpicker.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public renderColorPickerDropDown(args: IColorPickerModel, item: string, colorPicker: ColorPicker): DropDownButton {
-        let proxy: this = this;
+        // eslint-disable-next-line
+        const proxy: this = this;
         let css: string = CLS_RTE_ELEMENTS + ' ' + CLS_TB_BTN + ((this.parent.inlineMode) ? (' ' + CLS_INLINE_DROPDOWN) : '');
         css += (' ' + ((item === 'backgroundcolor') ? CLS_BACKGROUND_COLOR_DROPDOWN : CLS_FONT_COLOR_DROPDOWN));
-        let content: HTMLElement = proxy.parent.createElement('span', { className: CLS_COLOR_CONTENT });
-        let inlineEle: HTMLElement = proxy.parent.createElement('span', { className: args.cssClass }); let range: Range;
+        const content: HTMLElement = proxy.parent.createElement('span', { className: CLS_COLOR_CONTENT });
+        const inlineEle: HTMLElement = proxy.parent.createElement('span', { className: args.cssClass });
+        let range: Range;
         inlineEle.style.borderBottomColor = (item === 'backgroundcolor') ?
             proxy.parent.backgroundColor.default : proxy.parent.fontColor.default;
         content.appendChild(inlineEle);
-        let dropDown: DropDownButton = new DropDownButton({
+        const dropDown: DropDownButton = new DropDownButton({
             target: colorPicker.element.parentElement, cssClass: css,
             enablePersistence: this.parent.enablePersistence, enableRtl: this.parent.enableRtl,
             beforeOpen: (dropDownArgs: BeforeOpenCloseMenuEventArgs): void => {
-                if (proxy.parent.readonly || !proxy.parent.enabled) { dropDownArgs.cancel = true; return; }
-                let element: HTMLElement = (dropDownArgs.event) ? (dropDownArgs.event.target as HTMLElement) : null;
+                if (proxy.parent.readonly || !proxy.parent.enabled) {
+                    dropDownArgs.cancel = true; return;
+                }
+                const element: HTMLElement = (dropDownArgs.event) ? (dropDownArgs.event.target as HTMLElement) : null;
                 proxy.currentElement = dropDown.element; proxy.currentDropdown = dropDown;
                 proxy.paletteSelection(dropDownArgs, proxy.currentElement);
                 if (dropDownArgs.event && dropDownArgs.event.type === 'click' && (element.classList.contains(CLS_COLOR_CONTENT)
-                    || element.parentElement.classList.contains(CLS_COLOR_CONTENT))) {
+                        || element.parentElement.classList.contains(CLS_COLOR_CONTENT))) {
                     dropDownArgs.cancel = true;
-                    let colorpickerValue: string = element.classList.contains(CLS_RTE_ELEMENTS) ? element.style.borderBottomColor :
+                    const colorpickerValue: string = element.classList.contains(CLS_RTE_ELEMENTS) ? element.style.borderBottomColor :
                         (element.querySelector('.' + CLS_RTE_ELEMENTS) as HTMLElement).style.borderBottomColor;
                     proxy.parent.notify(events.selectionRestore, {});
                     range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
-                    let parentNode: Node = range.startContainer.parentNode;
+                    const parentNode: Node = range.startContainer.parentNode;
                     if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' ||
-                        (closest(range.startContainer.parentNode, 'td,th')) ||
-                        (proxy.parent.iframeSettings.enable && !hasClass(parentNode.ownerDocument.querySelector('body'), 'e-lib')))
-                        && range.collapsed && args.subCommand === 'BackgroundColor') {
-                        proxy.parent.notify(events.tableColorPickerChanged, { item: { command: args.command, subCommand: args.subCommand,
-                            value: colorpickerValue }
-                        });
+                            (closest(range.startContainer.parentNode, 'td,th')) ||
+                            (proxy.parent.iframeSettings.enable && !hasClass(parentNode.ownerDocument.querySelector('body'), 'e-lib')))
+                            && range.collapsed && args.subCommand === 'BackgroundColor') {
+                        proxy.parent.notify(events.tableColorPickerChanged,
+                                            {
+                                                item: { command: args.command, subCommand: args.subCommand,
+                                                    value: colorpickerValue }
+                                            });
                     } else {
                         proxy.parent.notify(events.colorPickerChanged, { item: { command: args.command, subCommand: args.subCommand,
-                                value: colorpickerValue }
+                            value: colorpickerValue }
                         });
                     }
                     return;
                 } else {
-                    let ele: HTMLElement = (dropDownArgs.element.querySelector('.e-control.e-colorpicker') as HTMLElement);
-                    let inst: ColorPicker = getInstance(ele, ColorPicker) as ColorPicker;
+                    const ele: HTMLElement = (dropDownArgs.element.querySelector('.e-control.e-colorpicker') as HTMLElement);
+                    const inst: ColorPicker = getInstance(ele, ColorPicker) as ColorPicker;
                     inst.showButtons = (dropDownArgs.element.querySelector('.e-color-palette')) ? false : true; inst.dataBind();
                 }
                 dropDownArgs.element.onclick = (args: MouseEventArgs): void => {
-                    if ((args.target as HTMLElement).classList.contains('e-cancel')) { dropDown.toggle(); }
+                    if ((args.target as HTMLElement).classList.contains('e-cancel')) {
+                        dropDown.toggle();
+                    }
                 };
             },
             open: (dropDownArgs: OpenCloseMenuEventArgs): void => {
                 this.setColorPickerContentWidth(colorPicker); let focusEle: HTMLElement;
-                let ele: HTMLElement = (dropDownArgs.element.querySelector('.e-control.e-colorpicker') as HTMLElement);
+                const ele: HTMLElement = (dropDownArgs.element.querySelector('.e-control.e-colorpicker') as HTMLElement);
                 if (dropDownArgs.element.querySelector('.e-color-palette')) {
                     focusEle = (ele.parentElement.querySelector('.e-palette') as HTMLElement);
-                } else { focusEle = (ele.parentElement.querySelector('e-handler') as HTMLElement); }
-                if (focusEle) { focusEle.focus(); }
-                if (Browser.isDevice) { this.popupModal(dropDownArgs.element.parentElement); }
+                } else {
+                    focusEle = (ele.parentElement.querySelector('e-handler') as HTMLElement);
+                }
+                if (focusEle) {
+                    focusEle.focus();
+                }
+                if (Browser.isDevice) {
+                    this.popupModal(dropDownArgs.element.parentElement);
+                }
                 this.pickerRefresh(dropDownArgs);
             },
             beforeClose: (dropDownArgs: BeforeOpenCloseMenuEventArgs): void => {
-                let element: HTMLElement = (dropDownArgs.event) ? (dropDownArgs.event.target as HTMLElement) : null;
+                const element: HTMLElement = (dropDownArgs.event) ? (dropDownArgs.event.target as HTMLElement) : null;
                 if (dropDownArgs.event && dropDownArgs.event.type === 'click' && (element.classList.contains(CLS_COLOR_CONTENT)
-                    || element.parentElement.classList.contains(CLS_COLOR_CONTENT))) {
-                    let colorpickerValue: string = element.classList.contains(CLS_RTE_ELEMENTS) ? element.style.borderBottomColor :
+                        || element.parentElement.classList.contains(CLS_COLOR_CONTENT))) {
+                    const colorpickerValue: string = element.classList.contains(CLS_RTE_ELEMENTS) ? element.style.borderBottomColor :
                         (element.querySelector('.' + CLS_RTE_ELEMENTS) as HTMLElement).style.borderBottomColor;
                     range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
                     if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' ||
-                        closest(range.startContainer.parentNode, 'td,th')) && range.collapsed) {
-                        proxy.parent.notify(events.tableColorPickerChanged, { item: { command: args.command, subCommand: args.subCommand,
-                                value: colorpickerValue }
+                            closest(range.startContainer.parentNode, 'td,th')) && range.collapsed){
+                        proxy.parent.notify(events.tableColorPickerChanged, { item: {
+                            command: args.command, subCommand: args.subCommand,
+                            value: colorpickerValue }
                         });
                     } else {
                         proxy.parent.notify(events.colorPickerChanged, { item: { command: args.command, subCommand: args.subCommand,
@@ -302,38 +347,44 @@ export class ToolbarRenderer implements IRenderer {
             },
             close: (dropDownArgs: BeforeOpenCloseMenuEventArgs): void => {
                 proxy.parent.notify(events.selectionRestore, {});
-                let dropElement: HTMLElement = closest(dropDownArgs.element.parentElement, '.e-popup-container') as HTMLElement;
+                const dropElement: HTMLElement = closest(dropDownArgs.element.parentElement, '.e-popup-container') as HTMLElement;
                 if (dropElement) {
                     dropElement.style.display = 'none'; (dropElement.lastElementChild as HTMLElement).style.display = 'none';
                     removeClass([dropElement.lastElementChild as HTMLElement], 'e-popup-overlay');
                 }
                 if (Browser.isDevice && !isNullOrUndefined(dropElement)) {
-                    let popupEle: HTMLElement = dropElement.querySelector('.e-dropdown-popup.e-tbar-btn.e-control');
+                    const popupEle: HTMLElement = dropElement.querySelector('.e-dropdown-popup.e-tbar-btn.e-control');
                     if (popupEle) {
                         dropElement.parentNode.insertBefore(popupEle, dropElement.nextSibling);
                         popupEle.style.removeProperty('position'); removeClass([popupEle], 'e-popup-modal');
                     }
-                    detach(dropElement); proxy.popupContainer = undefined; }
+                    detach(dropElement); proxy.popupContainer = undefined;
+                }
             }
         });
         dropDown.isStringTemplate = true; dropDown.createElement = proxy.parent.createElement; dropDown.appendTo(args.element);
-        let popupElement: Element = document.getElementById(dropDown.element.id + '-popup');
+        const popupElement: Element = document.getElementById(dropDown.element.id + '-popup');
         popupElement.setAttribute('aria-owns', this.parent.getID());
         dropDown.element.insertBefore(content, dropDown.element.querySelector('.e-caret'));
         args.element.tabIndex = -1; dropDown.element.removeAttribute('type');
-        dropDown.element.onmousedown = (): void => { proxy.parent.notify(events.selectionSave, {}); };
-        dropDown.element.onkeydown = (): void => { proxy.parent.notify(events.selectionSave, {}); }; return dropDown;
+        dropDown.element.onmousedown = (): void => {
+            proxy.parent.notify(events.selectionSave, {});
+        };
+        dropDown.element.onkeydown = (): void => {
+            proxy.parent.notify(events.selectionSave, {});
+        };
+        return dropDown;
     }
     private pickerRefresh(dropDownArgs: OpenCloseMenuEventArgs): void {
         if (this.parent.backgroundColor.mode === 'Picker') {
-            let popupElem: HTMLElement = dropDownArgs.element.parentElement;
+            const popupElem: HTMLElement = dropDownArgs.element.parentElement;
             popupElem.style.width = (popupElem.offsetWidth + 5).toString() + 'px';
             (getInstance(popupElem, Popup) as Popup).refreshPosition(popupElem);
             popupElem.style.width = (popupElem.offsetWidth - 5).toString() + 'px';
         }
     }
     private popupModal(element: HTMLElement): void {
-        let popupInst: Popup = getInstance(element, Popup) as Popup;
+        const popupInst: Popup = getInstance(element, Popup) as Popup;
         popupInst.relateTo = document.body;
         popupInst.position = { X: 0, Y: 0 };
         popupInst.targetType = 'container';
@@ -343,28 +394,33 @@ export class ToolbarRenderer implements IRenderer {
         this.setIsModel(element);
     }
     private setColorPickerContentWidth(colorPicker: ColorPicker): void {
-        let colorPickerContent: HTMLElement = (colorPicker.element.nextSibling as HTMLElement);
+        const colorPickerContent: HTMLElement = (colorPicker.element.nextSibling as HTMLElement);
         if (colorPickerContent.style.width === '0px') {
             colorPickerContent.style.width = '';
-            let borderWidth: number = parseInt(getComputedStyle(colorPickerContent).borderBottomWidth, 10);
+            const borderWidth: number = parseInt(getComputedStyle(colorPickerContent).borderBottomWidth, 10);
             colorPickerContent.style.width = formatUnit((colorPickerContent.children[0] as HTMLElement).offsetWidth
                 + borderWidth + borderWidth);
         }
     }
     /**
      * renderColorPicker method
+     *
+     * @param {IColorPickerModel} args - specifies the arguments
+     * @param {string} item - specifies the string values
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public renderColorPicker(args: IColorPickerModel, item: string): ColorPicker {
+        // eslint-disable-next-line
         let proxy: this = this;
         let value: string;
-        let colorPicker: ColorPicker = new ColorPicker({
+        const colorPicker: ColorPicker = new ColorPicker({
             enablePersistence: this.parent.enablePersistence,
             enableRtl: this.parent.enableRtl,
             inline: true,
             created: () => {
-                let value: string = (item === 'backgroundcolor') ? proxy.parent.backgroundColor.default : proxy.parent.fontColor.default;
+                const value: string = (item === 'backgroundcolor') ? proxy.parent.backgroundColor.default : proxy.parent.fontColor.default;
                 colorPicker.setProperties({ value: value });
             },
             mode: ((item === 'backgroundcolor') ? proxy.parent.backgroundColor.mode : proxy.parent.fontColor.mode),
@@ -377,7 +433,7 @@ export class ToolbarRenderer implements IRenderer {
                 }
             },
             change: (colorPickerArgs: IColorPickerEventArgs): void => {
-                let colorpickerValue: string = colorPickerArgs.currentValue.rgba;
+                const colorpickerValue: string = colorPickerArgs.currentValue.rgba;
                 colorPickerArgs.item = {
                     command: args.command,
                     subCommand: args.subCommand,
@@ -385,8 +441,8 @@ export class ToolbarRenderer implements IRenderer {
                 };
                 proxy.parent.notify(events.selectionRestore, {});
                 (proxy.currentElement.querySelector('.' + CLS_RTE_ELEMENTS) as HTMLElement).style.borderBottomColor = colorpickerValue;
-                let range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
-                if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' ||
+                const range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
+                if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' || range.startContainer.nodeName === 'BODY' ||
                         closest(range.startContainer.parentNode, 'td,th')) && range.collapsed && args.subCommand === 'BackgroundColor') {
                     proxy.parent.notify(events.tableColorPickerChanged, colorPickerArgs);
                 } else {
@@ -405,7 +461,7 @@ export class ToolbarRenderer implements IRenderer {
         colorPicker.isStringTemplate = true;
         colorPicker.columns = (item === 'backgroundcolor') ? this.parent.backgroundColor.columns : this.parent.fontColor.columns;
         colorPicker.presetColors = (item === 'backgroundcolor') ? this.parent.backgroundColor.colorCode :
-          this.parent.fontColor.colorCode;
+            this.parent.fontColor.colorCode;
         colorPicker.cssClass = (item === 'backgroundcolor') ? CLS_BACKGROUND_COLOR_PICKER : CLS_FONT_COLOR_PICKER;
         colorPicker.createElement = this.parent.createElement;
         colorPicker.appendTo(document.body.querySelector(args.target) as HTMLElement);
@@ -414,6 +470,8 @@ export class ToolbarRenderer implements IRenderer {
 
     /**
      * The function is used to render Rich Text Editor toolbar
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
@@ -423,7 +481,8 @@ export class ToolbarRenderer implements IRenderer {
 
     /**
      * Get the toolbar element of RichTextEditor
-     * @return {Element}
+     *
+     * @returns {Element} - specifies the element.
      * @hidden
      * @deprecated
      */
@@ -433,7 +492,9 @@ export class ToolbarRenderer implements IRenderer {
 
     /**
      * Set the toolbar element of RichTextEditor
-     * @param  {Element} panel
+     *
+     * @returns {void}
+     * @param  {Element} panel - specifies the element.
      * @hidden
      * @deprecated
      */

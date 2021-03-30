@@ -6,7 +6,6 @@ import { ErrorCorrectionCodewords } from './qr-error-correction';
 import { createMeasureElements, measureText } from '../barcode/utility/dom-util';
 import { Size } from '../barcode/primitives/size';
 import { DisplayTextModel } from '../barcode/primitives/displaytext-model';
-import { Rect } from '../barcode/primitives/rect';
 import { BarcodeRenderer } from '../barcode/rendering/renderer';
 
 /**
@@ -67,11 +66,21 @@ export class QRCode {
 
     private mXDimension: number = 1;
 
-    /** @private */
+    /**
+     * Get or Private set the XDimension values.
+     *
+     * @returns {number}Get or Private set the XDimension values..
+     * @private
+     */
     public get XDimension(): number {
         return this.mXDimension;
     }
-    /** @private */
+    /**
+     *  Get or Private set the XDimension values.
+     *
+     * @param {number} value - Get or Private set the XDimension values.
+     * @private
+     */
     public set XDimension(value: number) {
         this.mXDimension = value;
     }
@@ -81,16 +90,27 @@ export class QRCode {
         return this.mInputMode;
     }
 
+
     private set inputMode(value: QRInputMode) {
         this.mInputMode = value;
         this.mIsUserMentionedMode = true;
     }
 
-    /** @private */
+    /**
+     *Get or Private set the version
+     *
+     * @returns {QRCodeVersion}Get or Private set the version
+     * @private
+     */
     public get version(): QRCodeVersion {
         return this.mVersion;
     }
-    /** @private */
+    /**
+     *  Get or Private set the version
+     *
+     * @param {QRCodeVersion} value - Get or Private set the version
+     * @private
+     */
     public set version(value: QRCodeVersion) {
         this.mVersion = value;
         this.mNoOfModules = (this.mVersion - 1) * 4 + 21;
@@ -122,31 +142,41 @@ export class QRCode {
         width: number, height: number, offSetX: number, offsetY: number,
         color: string, strokeColor?: string):
         BaseAttributes {
-        let options: BaseAttributes = {
+        const options: BaseAttributes = {
             width: width, height: height, x: offSetX, y: offsetY, color: color, strokeColor: strokeColor
         };
         return options;
     }
 
     private getInstance(id: string): BarcodeRenderer {
-        let barCode: HTMLElement = document.getElementById(id);
-        let barcodeRenderer: BarcodeRenderer = new BarcodeRenderer(barCode.id, this.isSvgMode);
+        const barCode: HTMLElement = document.getElementById(id);
+        const barcodeRenderer: BarcodeRenderer = new BarcodeRenderer(barCode.id, this.isSvgMode);
         return barcodeRenderer;
     }
 
-    private drawImage(
-        canvas: HTMLCanvasElement,
-        options: BaseAttributes[], labelPosition?: number,
-        barcodeSize?: Rect, endValue?: number, textRender?: string)
-        : void {
+
+    private drawImage(canvas: HTMLCanvasElement, options: BaseAttributes[]): void {
         // render image for the qrcode generator
-        let barcodeRenderer: BarcodeRenderer = this.getInstance(canvas.id);
+        const barcodeRenderer: BarcodeRenderer = this.getInstance(canvas.id);
         for (let i: number = 0; i < options.length; i++) {
             barcodeRenderer.renderRectElement(canvas as HTMLCanvasElement, options[i]);
         }
     }
 
-    /** @private */
+    /**
+     * Draw the QR cpde in SVG.\
+     *
+     * @returns {boolean} Draw the barcode SVG .
+     *  @param {HTMLElement} char - Provide the char to render .
+     *  @param {HTMLElement} canvas - Provide the canvas element .
+     *  @param {HTMLElement} height - Provide the height for the canvas element .
+     *  @param {HTMLElement} width - Provide the width for the canvas element .
+     *  @param {HTMLElement} margin - Provide the margin for thecanvas element .
+     *  @param {HTMLElement} displayText - Provide display text for the canvas element .
+     *  @param {HTMLElement} mode - Provide the mode to render .
+     *  @param {HTMLElement} foreColor - Provide the color for the barcode to render.
+     * @private
+     */
     public draw(
         char: string, canvas: HTMLElement, height: number, width: number,
         margin?: MarginModel, displayText?: DisplayTextModel, mode?: boolean, foreColor?: string):
@@ -154,21 +184,21 @@ export class QRCode {
         this.isSvgMode = mode;
         this.generateValues();
         if (this.validInput) {
-            let size: number; let diff: number;
-            let actualWidth: number = width - (margin.left + margin.right);
+            let size: number;
+            const actualWidth: number = width - (margin.left + margin.right);
             let actualHeight: number = height - (margin.top + margin.bottom);
             size = (actualWidth >= actualHeight) ? actualHeight : actualWidth;
 
 
             let dimension: number = this.XDimension;
-            let quietZone: number = QuietZone.All;
+            const quietZone: number = QuietZone.All;
 
             let x: number = (actualWidth >= size) ? (actualWidth - size) / 2 : 0;
             let y: number = (actualHeight >= size) ? (actualHeight - size) / 2 : 0;
             y += margin.top; x += margin.left;
 
 
-            let textBounds: BaseAttributes = this.drawDisplayText(
+            const textBounds: BaseAttributes = this.drawDisplayText(
                 canvas as HTMLCanvasElement, x, y, size,
                 actualHeight, displayText, char, margin, foreColor);
             actualHeight -= (textBounds.height);
@@ -189,16 +219,16 @@ export class QRCode {
                 }
             }
             size = (actualWidth >= actualHeight) ? actualHeight : actualWidth;
-            let moduleCount: number = this.mNoOfModules + 2 * quietZone + 1;
+            const moduleCount: number = this.mNoOfModules + 2 * quietZone + 1;
             dimension = size / moduleCount;
             this.isXdimension = true;
             width = (this.mNoOfModules + 2 * quietZone) * dimension;
             height = (this.mNoOfModules + 2 * quietZone) * dimension;
 
-            let w: number = this.mNoOfModules + 2 * quietZone;
-            let h: number = this.mNoOfModules + 2 * quietZone;
+            const w: number = this.mNoOfModules + 2 * quietZone;
+            const h: number = this.mNoOfModules + 2 * quietZone;
 
-            let optionsCollection: BaseAttributes[] = [];
+            const optionsCollection: BaseAttributes[] = [];
 
             for (let i: number = 0; i < w; i++) {
                 for (let j: number = 0; j < h; j++) {
@@ -211,8 +241,7 @@ export class QRCode {
                         }
                     }
                     if (color !== 'white') {
-                        let options: BaseAttributes;
-                        options = this.getBaseAttributes(
+                        const options: BaseAttributes = this.getBaseAttributes(
                             dimension, dimension, x,
                             displayText.position === 'Bottom' ? y : y + textBounds.height / 2, color);
                         optionsCollection.push(options);
@@ -233,7 +262,7 @@ export class QRCode {
 
 
     private drawText(canvas: HTMLCanvasElement, options: BaseAttributes): void {
-        let barcodeRenderer: BarcodeRenderer = this.getInstance(canvas.id);
+        const barcodeRenderer: BarcodeRenderer = this.getInstance(canvas.id);
         barcodeRenderer.renderTextElement(canvas as HTMLCanvasElement, options);
     }
 
@@ -242,16 +271,16 @@ export class QRCode {
         canvas: HTMLCanvasElement, x: number, y: number,
         width: number, height: number, text?: DisplayTextModel, value?: string, margin?: MarginModel, foreColor?: string)
         : BaseAttributes {
-        let displayText: DisplayTextModel = text;
+        const displayText: DisplayTextModel = text;
         createMeasureElements();
-        let options: BaseAttributes = this.getBaseAttributes(width, height, x, y, 'black');
+        const options: BaseAttributes = this.getBaseAttributes(width, height, x, y, 'black');
         options.string = (displayText.text ? displayText.text : value);
         options.color = foreColor;
         options.fontStyle = displayText.font;
         options.stringSize = displayText.size;
         options.visibility = displayText.visibility;
-        let textSize: Size = measureText(options);
-        let textHeight: number = (textSize.height / 2) + 2;
+        const textSize: Size = measureText(options);
+        const textHeight: number = (textSize.height / 2) + 2;
         options.height = textHeight;
         options.x = ((x + width / 2) - textSize.width / 2) + displayText.margin.left - displayText.margin.right;
         if (text.position === 'Bottom') {
@@ -286,7 +315,7 @@ export class QRCode {
         this.initialize();
         this.mQrBarcodeValues = new PdfQRBarcodeValues(this.mVersion, this.mErrorCorrectionLevel);
         for (let i: number = 0; i < this.mNoOfModules; i++) {
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line
             this.mModuleValue.push([0] as any);
             for (let j: number = 0; j < this.mNoOfModules; j++) {
                 this.mModuleValue[i][j] = new ModuleValue();
@@ -297,9 +326,9 @@ export class QRCode {
         this.drawPDP(0, this.mNoOfModules - 7);
         this.drawTimingPattern();
         if (this.mVersion !== 1) {
-            let allignCoOrdinates: number[] = this.getAlignmentPatternCoOrdinates();
-            for (let i of Object.keys(allignCoOrdinates)) {
-                for (let j of Object.keys(allignCoOrdinates)) {
+            const allignCoOrdinates: number[] = this.getAlignmentPatternCoOrdinates();
+            for (const i of Object.keys(allignCoOrdinates)) {
+                for (const j of Object.keys(allignCoOrdinates)) {
                     if (!this.mModuleValue[allignCoOrdinates[i]][allignCoOrdinates[j]].isPdp) {
                         this.drawAlignmentPattern(allignCoOrdinates[i], allignCoOrdinates[j]);
                     }
@@ -330,10 +359,14 @@ export class QRCode {
 
     }
 
+
     /**
      * Draw the PDP in the given location
-     * @param x - The x co-ordinate.
-     * @param y - The y co-ordinate. 
+     *
+     * @returns {void} Draw the PDP in the given location.
+     * @param {string} x - The x co-ordinate.
+     * @param {string} y - The y co-ordinate.
+     * @private
      */
     private drawPDP(x: number, y: number): void {
         let i: number; let j: number;
@@ -436,6 +469,9 @@ export class QRCode {
 
     /**
      * Draw the Timing Pattern
+     *
+     * @returns {void} Draw the PDP in the given location.
+     * @private
      */
     private drawTimingPattern(): void {
 
@@ -464,10 +500,11 @@ export class QRCode {
             this.chooseDefaultMode = true;
         }
         let mode: QRInputMode = 'NumericMode';
-        let alphaCount: number = 0;
-        let numCount: number = 0;
-        let binaryCount: number = 0;
+        //const alphaCount: number = 0;
+        //const numCount: number = 0;
+        //const binaryCount: number = 0;
         for (let i: number = 0; i < this.text.length; i++) {
+            // eslint-disable-next-line
             if (this.text.charCodeAt(i) < 58 && this.text.charCodeAt(i) > 47) {
 
             } else if ((this.text.charCodeAt(i) < 91 && this.text.charCodeAt(i) > 64) ||
@@ -516,67 +553,67 @@ export class QRCode {
                 let dataCapacityOfVersions: number[] = null;
                 if (this.mIsUserMentionedErrorCorrectionLevel) {
                     switch (this.mInputMode) {
-                        case 'NumericMode':
-                            switch (this.mErrorCorrectionLevel) {
-                                case 7:
-                                    dataCapacityOfVersions = this.mQrBarcodeValues.numericDataCapacityLow;
-                                    break;
-                                case 15:
-                                    dataCapacityOfVersions = this.mQrBarcodeValues.numericDataCapacityMedium;
-                                    break;
-                                case 25:
-                                    dataCapacityOfVersions = this.mQrBarcodeValues.numericDataCapacityQuartile;
-                                    break;
-                                case 30:
-                                    dataCapacityOfVersions = this.mQrBarcodeValues.numericDataCapacityHigh;
-                                    break;
-                            }
+                    case 'NumericMode':
+                        switch (this.mErrorCorrectionLevel) {
+                        case 7:
+                            dataCapacityOfVersions = this.mQrBarcodeValues.numericDataCapacityLow;
                             break;
-                        case 'AlphaNumericMode':
-                            switch (this.mErrorCorrectionLevel) {
-                                case 7:
-                                    dataCapacityOfVersions = this.mQrBarcodeValues.alphanumericDataCapacityLow;
-                                    break;
-                                case 15:
-                                    dataCapacityOfVersions = this.mQrBarcodeValues.alphanumericDataCapacityMedium;
-                                    break;
-                                case 25:
-                                    dataCapacityOfVersions = this.mQrBarcodeValues.alphanumericDataCapacityQuartile;
-                                    break;
-                                case 30:
-                                    dataCapacityOfVersions = this.mQrBarcodeValues.alphanumericDataCapacityHigh;
-                                    break;
-                            }
+                        case 15:
+                            dataCapacityOfVersions = this.mQrBarcodeValues.numericDataCapacityMedium;
                             break;
-                        case 'BinaryMode':
-                            switch (this.mErrorCorrectionLevel) {
-                                case 7:
-                                    dataCapacityOfVersions = this.mQrBarcodeValues.binaryDataCapacityLow;
-                                    break;
-                                case 15:
-                                    dataCapacityOfVersions = this.mQrBarcodeValues.binaryDataCapacityMedium;
-                                    break;
-                                case 25:
-                                    dataCapacityOfVersions = this.mQrBarcodeValues.binaryDataCapacityQuartile;
-                                    break;
-                                case 30:
-                                    dataCapacityOfVersions = this.mQrBarcodeValues.binaryDataCapacityHigh;
-                                    break;
-                            }
+                        case 25:
+                            dataCapacityOfVersions = this.mQrBarcodeValues.numericDataCapacityQuartile;
                             break;
+                        case 30:
+                            dataCapacityOfVersions = this.mQrBarcodeValues.numericDataCapacityHigh;
+                            break;
+                        }
+                        break;
+                    case 'AlphaNumericMode':
+                        switch (this.mErrorCorrectionLevel) {
+                        case 7:
+                            dataCapacityOfVersions = this.mQrBarcodeValues.alphanumericDataCapacityLow;
+                            break;
+                        case 15:
+                            dataCapacityOfVersions = this.mQrBarcodeValues.alphanumericDataCapacityMedium;
+                            break;
+                        case 25:
+                            dataCapacityOfVersions = this.mQrBarcodeValues.alphanumericDataCapacityQuartile;
+                            break;
+                        case 30:
+                            dataCapacityOfVersions = this.mQrBarcodeValues.alphanumericDataCapacityHigh;
+                            break;
+                        }
+                        break;
+                    case 'BinaryMode':
+                        switch (this.mErrorCorrectionLevel) {
+                        case 7:
+                            dataCapacityOfVersions = this.mQrBarcodeValues.binaryDataCapacityLow;
+                            break;
+                        case 15:
+                            dataCapacityOfVersions = this.mQrBarcodeValues.binaryDataCapacityMedium;
+                            break;
+                        case 25:
+                            dataCapacityOfVersions = this.mQrBarcodeValues.binaryDataCapacityQuartile;
+                            break;
+                        case 30:
+                            dataCapacityOfVersions = this.mQrBarcodeValues.binaryDataCapacityHigh;
+                            break;
+                        }
+                        break;
                     }
                 } else {
                     this.mErrorCorrectionLevel = ErrorCorrectionLevel.Medium;
                     switch (this.mInputMode) {
-                        case 'NumericMode':
-                            dataCapacityOfVersions = this.mQrBarcodeValues.numericDataCapacityMedium;
-                            break;
-                        case 'AlphaNumericMode':
-                            dataCapacityOfVersions = this.mQrBarcodeValues.alphanumericDataCapacityMedium;
-                            break;
-                        case 'BinaryMode':
-                            dataCapacityOfVersions = this.mQrBarcodeValues.binaryDataCapacityMedium;
-                            break;
+                    case 'NumericMode':
+                        dataCapacityOfVersions = this.mQrBarcodeValues.numericDataCapacityMedium;
+                        break;
+                    case 'AlphaNumericMode':
+                        dataCapacityOfVersions = this.mQrBarcodeValues.alphanumericDataCapacityMedium;
+                        break;
+                    case 'BinaryMode':
+                        dataCapacityOfVersions = this.mQrBarcodeValues.binaryDataCapacityMedium;
+                        break;
                     }
                 }
                 let i: number;
@@ -651,20 +688,26 @@ export class QRCode {
     /* tslint:enable */
 
 
+
     /**
-     * Adds quietzone to the QR Barcode.
+     * Adds quietzone to the QR Barcode..\
+     *
+     * @returns {void}  Adds quietzone to the QR Barcode. .
+     * @private
      */
     private addQuietZone(): void {
-        let quietZone: number = QuietZone.All;
-        let w: number = this.mNoOfModules + 2 * quietZone;
-        let h: number = this.mNoOfModules + 2 * quietZone;
-        let tempValue1: ModuleValue[][] = [];
-        let tempValue2: ModuleValue[][] = [];
+        const quietZone: number = QuietZone.All;
+        const w: number = this.mNoOfModules + 2 * quietZone;
+        const h: number = this.mNoOfModules + 2 * quietZone;
+        const tempValue1: ModuleValue[][] = [];
+        const tempValue2: ModuleValue[][] = [];
 
         for (let i: number = 0; i < w; i++) {
             // tslint:disable-next-line:no-any
+            // eslint-disable-next-line
             tempValue1.push([0] as any);
             // tslint:disable-next-line:no-any
+            // eslint-disable-next-line
             tempValue2.push([0] as any);
             for (let j: number = 0; j < h; j++) {
                 tempValue1[i][j] = new ModuleValue();
@@ -728,11 +771,15 @@ export class QRCode {
         this.mDataAllocationValues = tempValue2;
     }
 
+
     /**
-     * Draw the Format Information
+     * Draw the Format Information.\
+     *
+     * @returns {void} Draw the Format Information .
+     * @private
      */
     private drawFormatInformation(): void {
-        let formatInformation: number[] = this.mQrBarcodeValues.FormatInformation;
+        const formatInformation: number[] = this.mQrBarcodeValues.FormatInformation;
 
         let count: number = 0;
         for (let i: number = 0; i < 7; i++) {
@@ -765,6 +812,7 @@ export class QRCode {
 
     /**
      * Allocates the Encoded Data and then Mask
+     *
      * @param Data - Encoded Data
      */
     /* tslint:disable */
@@ -772,6 +820,7 @@ export class QRCode {
         this.mDataAllocationValues = [];
         for (let i: number = 0; i < this.mNoOfModules; i++) {
             // tslint:disable-next-line:no-any
+            // eslint-disable-next-line
             this.mDataAllocationValues.push([0] as any);
             for (let j: number = 0; j < this.mNoOfModules; j++) {
                 this.mDataAllocationValues[i][j] = new ModuleValue();
@@ -840,7 +889,7 @@ export class QRCode {
         for (let i: number = 0; i < this.mNoOfModules; i++) {
             for (let j: number = 0; j < this.mNoOfModules; j++) {
                 if (!this.mModuleValue[i][j].isFilled) {
-                    let flag: boolean = this.mDataAllocationValues[i][j].isBlack;
+                    const flag: boolean = this.mDataAllocationValues[i][j].isBlack;
                     if (flag) {
                         this.mDataAllocationValues[i][j].isBlack = false;
                     } else {
@@ -852,8 +901,12 @@ export class QRCode {
     }
     /* tslint:enable */
 
+
     /**
-     * Allocates Format and Version Information
+     *  Allocates Format and Version Information.\
+     *
+     * @returns {void}  Allocates Format and Version Information.
+     * @private
      */
     private allocateFormatAndVersionInformation(): void {
         for (let i: number = 0; i < 9; i++) {
@@ -865,7 +918,7 @@ export class QRCode {
             this.mModuleValue[i][8].isFilled = true;
         }
         if (this.mVersion > 6) {
-            let versionInformation: number[] = this.mQrBarcodeValues.VersionInformation;
+            const versionInformation: number[] = this.mQrBarcodeValues.VersionInformation;
             let count: number = 0;
             for (let i: number = 0; i < 6; i++) {
                 for (let j: number = 2; j >= 0; j--) {
@@ -879,10 +932,14 @@ export class QRCode {
         }
     }
 
+
     /**
-     * Draw the Alignment Pattern in the given location
-     * @param x - The x co-ordinate
-     * @param y - The y co-ordinate
+     *Draw the Alignment Pattern in the given location.\
+     *
+     * @returns {void} Draw the Alignment Pattern in the given location .
+     *  @param {HTMLElement} x - Provide the canvas element .
+     *  @param {HTMLElement} y - Provide the canvas element .
+     * @private
      */
     private drawAlignmentPattern(x: number, y: number): void {
         let i: number; let j: number;
@@ -917,90 +974,94 @@ export class QRCode {
         this.mModuleValue[x][y].isFilled = true;
     }
 
+
     /**
-     * Gets the Allignment pattern coordinates of the current version.
+     *Gets the Allignment pattern coordinates of the current version.\
+     *
+     * @returns {number[]}Gets the Allignment pattern coordinates of the current version. .
+     * @private
      */
     private getAlignmentPatternCoOrdinates(): number[] {
         let allign: number[] = null;
         switch ((this.mVersion)) {
-            case 2:
-                allign = [6, 18]; break;
-            case 3:
-                allign = [6, 22]; break;
-            case 4:
-                allign = [6, 26]; break;
-            case 5:
-                allign = [6, 30]; break;
-            case 6:
-                allign = [6, 34]; break;
-            case 7:
-                allign = [6, 22, 38]; break;
-            case 8:
-                allign = [6, 24, 42]; break;
-            case 9:
-                allign = [6, 26, 46]; break;
-            case 10:
-                allign = [6, 28, 50]; break;
-            case 11:
-                allign = [6, 30, 54]; break;
-            case 12:
-                allign = [6, 32, 58]; break;
-            case 13:
-                allign = [6, 34, 62]; break;
-            case 14:
-                allign = [6, 26, 46, 66]; break;
-            case 15:
-                allign = [6, 26, 48, 70]; break;
-            case 16:
-                allign = [6, 26, 50, 74]; break;
-            case 17:
-                allign = [6, 30, 54, 78]; break;
-            case 18:
-                allign = [6, 30, 56, 82]; break;
-            case 19:
-                allign = [6, 30, 58, 86]; break;
-            case 20:
-                allign = [6, 34, 62, 90]; break;
-            case 21:
-                allign = [6, 28, 50, 72, 94]; break;
-            case 22:
-                allign = [6, 26, 50, 74, 98]; break;
-            case 23:
-                allign = [6, 30, 54, 78, 102]; break;
-            case 24:
-                allign = [6, 28, 54, 80, 106]; break;
-            case 25:
-                allign = [6, 32, 58, 84, 110]; break;
-            case 26:
-                allign = [6, 30, 58, 86, 114]; break;
-            case 27:
-                allign = [6, 34, 62, 90, 118]; break;
-            case 28:
-                allign = [6, 26, 50, 74, 98, 122]; break;
-            case 29:
-                allign = [6, 30, 54, 78, 102, 126]; break;
-            case 30:
-                allign = [6, 26, 52, 78, 104, 130]; break;
-            case 31:
-                allign = [6, 30, 56, 82, 108, 134]; break;
-            case 32:
-                allign = [6, 34, 60, 86, 112, 138]; break;
-            case 33:
-                allign = [6, 30, 58, 86, 114, 142]; break;
-            case 34:
-                allign = [6, 34, 62, 90, 118, 146]; break;
-            case 35:
-                allign = [6, 30, 54, 78, 102, 126, 150]; break;
-            case 36:
-                allign = [6, 24, 50, 76, 102, 128, 154]; break;
-            case 37:
-                allign = [6, 28, 54, 80, 106, 132, 158]; break;
-            case 38:
-                allign = [6, 32, 58, 84, 110, 136, 162]; break;
-            case 39:
-                allign = [6, 26, 54, 82, 110, 138, 166]; break;
-            case 40:
-                allign = [6, 30, 58, 86, 114, 142, 170]; break;
+        case 2:
+            allign = [6, 18]; break;
+        case 3:
+            allign = [6, 22]; break;
+        case 4:
+            allign = [6, 26]; break;
+        case 5:
+            allign = [6, 30]; break;
+        case 6:
+            allign = [6, 34]; break;
+        case 7:
+            allign = [6, 22, 38]; break;
+        case 8:
+            allign = [6, 24, 42]; break;
+        case 9:
+            allign = [6, 26, 46]; break;
+        case 10:
+            allign = [6, 28, 50]; break;
+        case 11:
+            allign = [6, 30, 54]; break;
+        case 12:
+            allign = [6, 32, 58]; break;
+        case 13:
+            allign = [6, 34, 62]; break;
+        case 14:
+            allign = [6, 26, 46, 66]; break;
+        case 15:
+            allign = [6, 26, 48, 70]; break;
+        case 16:
+            allign = [6, 26, 50, 74]; break;
+        case 17:
+            allign = [6, 30, 54, 78]; break;
+        case 18:
+            allign = [6, 30, 56, 82]; break;
+        case 19:
+            allign = [6, 30, 58, 86]; break;
+        case 20:
+            allign = [6, 34, 62, 90]; break;
+        case 21:
+            allign = [6, 28, 50, 72, 94]; break;
+        case 22:
+            allign = [6, 26, 50, 74, 98]; break;
+        case 23:
+            allign = [6, 30, 54, 78, 102]; break;
+        case 24:
+            allign = [6, 28, 54, 80, 106]; break;
+        case 25:
+            allign = [6, 32, 58, 84, 110]; break;
+        case 26:
+            allign = [6, 30, 58, 86, 114]; break;
+        case 27:
+            allign = [6, 34, 62, 90, 118]; break;
+        case 28:
+            allign = [6, 26, 50, 74, 98, 122]; break;
+        case 29:
+            allign = [6, 30, 54, 78, 102, 126]; break;
+        case 30:
+            allign = [6, 26, 52, 78, 104, 130]; break;
+        case 31:
+            allign = [6, 30, 56, 82, 108, 134]; break;
+        case 32:
+            allign = [6, 34, 60, 86, 112, 138]; break;
+        case 33:
+            allign = [6, 30, 58, 86, 114, 142]; break;
+        case 34:
+            allign = [6, 34, 62, 90, 118, 146]; break;
+        case 35:
+            allign = [6, 30, 54, 78, 102, 126, 150]; break;
+        case 36:
+            allign = [6, 24, 50, 76, 102, 128, 154]; break;
+        case 37:
+            allign = [6, 28, 54, 80, 106, 132, 158]; break;
+        case 38:
+            allign = [6, 32, 58, 84, 110, 136, 162]; break;
+        case 39:
+            allign = [6, 26, 54, 82, 110, 138, 166]; break;
+        case 40:
+            allign = [6, 30, 58, 86, 114, 142, 170]; break;
 
         }
         return allign;
@@ -1014,66 +1075,67 @@ export class QRCode {
 
         let encodeData: boolean[] = [];
         switch (this.mInputMode) {
-            case 'NumericMode':
-                encodeData.push(false); encodeData.push(false); encodeData.push(false); encodeData.push(true);
-                break;
-            case 'AlphaNumericMode':
-                encodeData.push(false); encodeData.push(false); encodeData.push(true); encodeData.push(false);
-                break;
-            case 'BinaryMode':
-                if (this.mIsEci) {
-                    //Add ECI Mode Indicator
-                    encodeData.push(false); encodeData.push(true); encodeData.push(true); encodeData.push(true);
+        case 'NumericMode':
+            encodeData.push(false); encodeData.push(false); encodeData.push(false); encodeData.push(true);
+            break;
+        case 'AlphaNumericMode':
+            encodeData.push(false); encodeData.push(false); encodeData.push(true); encodeData.push(false);
+            break;
+        case 'BinaryMode':
+            if (this.mIsEci) {
+                //Add ECI Mode Indicator
+                encodeData.push(false); encodeData.push(true); encodeData.push(true); encodeData.push(true);
 
-                    //Add ECI assignment number
-                    let numberInBool: boolean[] = this.stringToBoolArray(this.mEciAssignmentNumber.toString(), 8);
-                    for (let x of Object.keys(numberInBool)) {
-                        encodeData.push(numberInBool[x]);
-                    }
+                //Add ECI assignment number
+                const numberInBool: boolean[] = this.stringToBoolArray(this.mEciAssignmentNumber.toString(), 8);
+                // eslint-disable-next-line
+                for (let x of Object.keys(numberInBool)) {
+                    encodeData.push(numberInBool[x]);
                 }
-                encodeData.push(false); encodeData.push(true); encodeData.push(false); encodeData.push(false);
-                break;
+            }
+            encodeData.push(false); encodeData.push(true); encodeData.push(false); encodeData.push(false);
+            break;
 
         }
 
         let numberOfBitsInCharacterCountIndicator: number = 0;
         if (this.mVersion < 10) {
             switch (this.mInputMode) {
-                case 'NumericMode':
-                    numberOfBitsInCharacterCountIndicator = 10; break;
-                case 'AlphaNumericMode':
-                    numberOfBitsInCharacterCountIndicator = 9; break;
-                case 'BinaryMode':
-                    numberOfBitsInCharacterCountIndicator = 8; break;
+            case 'NumericMode':
+                numberOfBitsInCharacterCountIndicator = 10; break;
+            case 'AlphaNumericMode':
+                numberOfBitsInCharacterCountIndicator = 9; break;
+            case 'BinaryMode':
+                numberOfBitsInCharacterCountIndicator = 8; break;
             }
         } else if (this.mVersion < 27) {
             switch (this.mInputMode) {
-                case 'NumericMode':
-                    numberOfBitsInCharacterCountIndicator = 12; break;
-                case 'AlphaNumericMode':
-                    numberOfBitsInCharacterCountIndicator = 11; break;
-                case 'BinaryMode':
-                    numberOfBitsInCharacterCountIndicator = 16; break;
+            case 'NumericMode':
+                numberOfBitsInCharacterCountIndicator = 12; break;
+            case 'AlphaNumericMode':
+                numberOfBitsInCharacterCountIndicator = 11; break;
+            case 'BinaryMode':
+                numberOfBitsInCharacterCountIndicator = 16; break;
             }
         } else {
             switch (this.mInputMode) {
-                case 'NumericMode':
-                    numberOfBitsInCharacterCountIndicator = 14; break;
-                case 'AlphaNumericMode':
-                    numberOfBitsInCharacterCountIndicator = 13; break;
-                case 'BinaryMode':
-                    numberOfBitsInCharacterCountIndicator = 16; break;
+            case 'NumericMode':
+                numberOfBitsInCharacterCountIndicator = 14; break;
+            case 'AlphaNumericMode':
+                numberOfBitsInCharacterCountIndicator = 13; break;
+            case 'BinaryMode':
+                numberOfBitsInCharacterCountIndicator = 16; break;
             }
         }
 
-        let numberOfBitsInCharacterCountIndicatorInBool: boolean[] = this.intToBoolArray(
+        const numberOfBitsInCharacterCountIndicatorInBool: boolean[] = this.intToBoolArray(
             this.text.length, numberOfBitsInCharacterCountIndicator);
 
         for (let i: number = 0; i < numberOfBitsInCharacterCountIndicator; i++) {
             encodeData.push(numberOfBitsInCharacterCountIndicatorInBool[i]);
         }
         if (this.mInputMode === 'NumericMode') {
-            let dataStringArray: string[] = this.text.split('');
+            const dataStringArray: string[] = this.text.split('');
             let number: string = '';
             for (let i: number = 0; i < dataStringArray.length; i++) {
                 let numberInBool: boolean[];
@@ -1088,11 +1150,11 @@ export class QRCode {
                         numberInBool = this.stringToBoolArray(number, 4);
                     }
                     number = '';
-                    for (let x of Object.keys(numberInBool)) { encodeData.push(numberInBool[x]); }
+                    for (const x of Object.keys(numberInBool)) { encodeData.push(numberInBool[x]); }
                 }
             }
         } else if (this.mInputMode === 'AlphaNumericMode') {
-            let dataStringArray: string[] = this.text.split('');
+            const dataStringArray: string[] = this.text.split('');
             let numberInString: string = '';
             let number: number = 0;
             for (let i: number = 0; i < dataStringArray.length; i++) {
@@ -1106,7 +1168,7 @@ export class QRCode {
                     number += this.mQrBarcodeValues.getAlphaNumericValues(dataStringArray[i]);
                     numberInBool = this.intToBoolArray(number, 11);
                     number = 0;
-                    for (let x of Object.keys(numberInBool)) { encodeData.push(numberInBool[x]); }
+                    for (const x of Object.keys(numberInBool)) { encodeData.push(numberInBool[x]); }
                     numberInString = '';
                 }
                 if (i !== 1 && numberInString !== '') {
@@ -1114,12 +1176,12 @@ export class QRCode {
                         number = this.mQrBarcodeValues.getAlphaNumericValues(dataStringArray[i]);
                         numberInBool = this.intToBoolArray(number, 6);
                         number = 0;
-                        for (let x of Object.keys(numberInBool)) { encodeData.push(numberInBool[x]); }
+                        for (const x of Object.keys(numberInBool)) { encodeData.push(numberInBool[x]); }
                     }
                 }
             }
         } else if (this.mInputMode === 'BinaryMode') {
-            let dataStringArray: string[] = this.text.split('');
+            const dataStringArray: string[] = this.text.split('');
             for (let i: number = 0; i < dataStringArray.length; i++) {
                 let number: number = 0;
                 if ((this.text.charCodeAt(i) >= 32 && this.text.charCodeAt(i) <= 126) || (this.text.charCodeAt(i) >= 161 &&
@@ -1129,12 +1191,12 @@ export class QRCode {
                     number = dataStringArray[i].charCodeAt(0) - 65216;
                 } else if ((this.text.charCodeAt(i) >= 1025 && this.text.charCodeAt(i) <= 1119)) {
                     number = dataStringArray[i].charCodeAt(0) - 864;
-                } else if ((this.text.charCodeAt(i) >= 260 && this.text.charCodeAt(i) <= 382)) {
                 } else {
                     this.validInput = false;
                 }
 
-                let numberInBool: boolean[] = this.intToBoolArray(number, 8);
+                const numberInBool: boolean[] = this.intToBoolArray(number, 8);
+                // eslint-disable-next-line
                 for (let x of Object.keys(numberInBool)) { encodeData.push(numberInBool[x]); }
             }
         }
@@ -1175,12 +1237,12 @@ export class QRCode {
                 totalBlockSize = blocks[0] + blocks[3];
             }
 
-            let ds1: string[][] = [];
+            const ds1: string[][] = [];
 
             let testEncodeData: boolean[] = encodeData;
             if (blocks.length === 6) {
 
-                let dataCodeWordLength: number = blocks[0] * blocks[2] * 8;
+                const dataCodeWordLength: number = blocks[0] * blocks[2] * 8;
                 testEncodeData = [];
                 for (let i: number = 0; i < dataCodeWordLength; i++) {
                     testEncodeData.push(encodeData[i]);
@@ -1219,9 +1281,9 @@ export class QRCode {
                 }
             }
 
-            let ec: ErrorCorrectionCodewords = new ErrorCorrectionCodewords(this.mVersion, this.mErrorCorrectionLevel);
+            const ec: ErrorCorrectionCodewords = new ErrorCorrectionCodewords(this.mVersion, this.mErrorCorrectionLevel);
             dataBits = this.mQrBarcodeValues.NumberOfDataCodeWord;
-            let eccw: number = this.mQrBarcodeValues.NumberOfErrorCorrectingCodeWords;
+            const eccw: number = this.mQrBarcodeValues.NumberOfErrorCorrectingCodeWords;
             blocks = this.mQrBarcodeValues.NumberOfErrorCorrectionBlocks;
 
 
@@ -1232,7 +1294,7 @@ export class QRCode {
             }
             ec.Eccw = eccw / totalBlockSize;
 
-            let polynomial: string[][] = [];
+            const polynomial: string[][] = [];
             let count: number = 0;
 
             for (let i: number = 0; i < blocks[0]; i++) {
@@ -1273,14 +1335,18 @@ export class QRCode {
     }
     /* tslint:enable */
 
+
     /**
-     * Converts string value to Boolean
-     * @param numberInString - The String value
-     * @param noOfBits - Number of Bits
+     *  Converts string value to Boolean\
+     *
+     * @returns {boolean[]}  Converts string value to Boolean .
+     *  @param {HTMLElement} numberInString - Provide the canvas element .
+     *  @param {number} noOfBits - Provide the canvas element .
+     * @private
      */
     private stringToBoolArray(numberInString: string, noOfBits: number): boolean[] {
-        let numberInBool: boolean[] = [];
-        let dataStringArray: string[] = numberInString.split('');
+        const numberInBool: boolean[] = [];
+        const dataStringArray: string[] = numberInString.split('');
         let number: number = 0;
         for (let i: number = 0; i < dataStringArray.length; i++) {
             number = number * 10 + dataStringArray[i].charCodeAt(0) - 48;
@@ -1292,39 +1358,52 @@ export class QRCode {
         return numberInBool;
     }
 
+
     /**
-     * Converts Integer value to Boolean
-     * @param number - The Integer value
-     * @param noOfBits - Number of Bits
+     *  Converts Integer value to Boolean\
+     *
+     * @returns {boolean[]}  Converts Integer value to Boolean .
+     * @param {HTMLElement} number -The Integer value .
+     * @param {number} noOfBits - Number of Bits .
+     * @private
      */
     private intToBoolArray(number: number, noOfBits: number): boolean[] {
-        let numberInBool: boolean[] = [];
+        const numberInBool: boolean[] = [];
         for (let i: number = 0; i < noOfBits; i++) {
             numberInBool[noOfBits - i - 1] = ((number >> i) & 1) === 1;
         }
         return numberInBool;
     }
 
+
+
     /**
-     * Splits the Code words
-     * @param ds - The Encoded value Blocks
-     * @param blk - Index of Block Number
-     * @param count - Length of the Block
+     *  Splits the Code words\
+     *
+     * @returns {boolean[]}  Splits the Code words .
+     * @param {HTMLElement} ds -The Encoded value Blocks .
+     * @param {number} blk - Index of Block Number .
+     * @param {number} count -  Length of the Block .
+     * @private
      */
     private splitCodeWord(ds: string[][], blk: number, count: number): string[] {
-        let ds1: string[] = [];
+        const ds1: string[] = [];
         for (let i: number = 0; i < count; i++) { ds1.push(ds[blk][i]); }
         return ds1;
     }
 
     /**
-     * Creates the Blocks
-     * @param encodeData - The Encoded value.
-     * @param noOfBlocks - Number of Blocks.
+     *  Creates the Blocks\
+     *
+     * @returns {boolean[]} Creates the Blocks .
+     * @param {HTMLElement} encodeData -The Encoded value. .
+     * @param {number} noOfBlocks -Number of Blocks .
+     * @private
      */
     private createBlocks(encodeData: boolean[], noOfBlocks: number): string[][] {
 
-        let ret: string[][] = []; let cols: number = encodeData.length / 8 / noOfBlocks;
+        const ret: string[][] = [];
+        const cols: number = encodeData.length / 8 / noOfBlocks;
 
         let stringValue: string = '';
         let i: number = 0;
@@ -1332,6 +1411,7 @@ export class QRCode {
 
         for (let i: number = 0; i < noOfBlocks; i++) {
             // tslint:disable-next-line:no-any
+            // eslint-disable-next-line
             ret.push([0] as any);
             for (let j: number = 0; j < cols; j++) {
                 ret[i][j] = '';

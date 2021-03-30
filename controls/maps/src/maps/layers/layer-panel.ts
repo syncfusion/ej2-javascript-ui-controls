@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/member-delimiter-style */
+/* eslint-disable no-case-declarations */
+/* eslint-disable @typescript-eslint/dot-notation */
+/* eslint-disable max-len */
 import { isNullOrUndefined, extend, createElement, Ajax } from '@syncfusion/ej2-base';
 import { Maps } from '../../maps/maps';
 import { getShapeColor } from '../model/theme';
@@ -20,7 +24,8 @@ export class LayerPanel {
     private groupElements: Element[];
     private layerObject: Element;
     private currentLayer: LayerSettings;
-    private rectBounds: Object;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private rectBounds: any;
     public tiles: Tile[];
     private clipRectElement: Element;
     private layerGroup: Element;
@@ -34,23 +39,23 @@ export class LayerPanel {
     private animateToZoomY : number;
     public horizontalPan: boolean = false;
     public horizontalPanXCount: number = 0;
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(map: Maps) {
         this.mapObject = map;
         this.ajaxModule = new Ajax();
         this.ajaxResponse = [];
     }
 
-    /* tslint:disable:no-string-literal */
     public measureLayerPanel(): void {
-        let layerCollection: LayerSettings[] = <LayerSettings[]>this.mapObject.layersCollection;
-        let areaRect: Rect = this.mapObject.mapAreaRect;
-        let secondaryEle: HTMLElement = <HTMLElement>getElementByID(this.mapObject.element.id + '_Secondary_Element');
+        const layerCollection: LayerSettings[] = <LayerSettings[]>this.mapObject.layersCollection;
+        const areaRect: Rect = this.mapObject.mapAreaRect;
+        const secondaryEle: HTMLElement = <HTMLElement>getElementByID(this.mapObject.element.id + '_Secondary_Element');
         if (this.mapObject.isTileMap && secondaryEle) {
             this.tileSvgObject = this.mapObject.renderer.createSvg({
                 id: this.mapObject.element.id + '_Tile_SVG', width: areaRect.width,
-                height: areaRect.height,
+                height: areaRect.height
             });
-            let parentElement: Element = createElement('div', {
+            const parentElement: Element = createElement('div', {
                 id: this.mapObject.element.id + '_Tile_SVG_Parent', styles: 'position: absolute; height: ' +
                     (areaRect.height) + 'px; width: '
                     + (areaRect.width) + 'px;'
@@ -63,7 +68,7 @@ export class LayerPanel {
             'clip-path': 'url(#' + this.mapObject.element.id + '_MapArea_ClipRect)'
         }));
         if (this.mapObject.layers[this.mapObject.baseLayerIndex].layerType === 'GoogleStaticMap') {
-            let staticMapSize : number = 640;
+            const staticMapSize : number = 640;
             this.clipRectElement = this.mapObject.renderer.drawClipPath(new RectOption(
                 this.mapObject.element.id + '_MapArea_ClipRect',
                 'transparent', { width: 1, color: 'Gray' }, 1,
@@ -92,14 +97,19 @@ export class LayerPanel {
     }
     /**
      * Tile rendering
+     *
+     * @param {LayerPanel} panel - Specifies the layer panel.
+     * @param {LayerSettings} layer - Specifies the layer settings.
+     * @param {number} layerIndex - Specifies the layer index.
+     * @param {BingMap} bing - Specifies the bing map.
+     * @returns {void}
      * @private
      */
-    // tslint:disable-next-line:max-func-body-length
     public renderTileLayer(panel: LayerPanel, layer: LayerSettings, layerIndex: number, bing?: BingMap): void {
         panel.currentFactor = panel.calculateFactor(layer);
         panel.mapObject.defaultState = ((panel.mapObject.zoomSettings.zoomFactor !== 1) &&
         (!isNullOrUndefined(panel.mapObject.tileZoomLevel) && panel.mapObject.tileZoomLevel !== 1 )) ?
-        false : true;
+            false : true;
         if (isNullOrUndefined(panel.mapObject.previousCenterLatitude) &&
             isNullOrUndefined(panel.mapObject.previousCenterLongitude)) {
             panel.mapObject.previousCenterLatitude = panel.mapObject.centerPosition.latitude;
@@ -133,10 +143,10 @@ export class LayerPanel {
         }
         let zoomFactorValue: number = panel.mapObject.zoomSettings.shouldZoomInitially ?
             isNullOrUndefined(panel.mapObject.markerZoomFactor) ? 1 :
-            panel.mapObject.markerZoomFactor : panel.mapObject.zoomSettings.zoomFactor;
+                panel.mapObject.markerZoomFactor : panel.mapObject.zoomSettings.zoomFactor;
         zoomFactorValue = (panel.mapObject.enablePersistence) ? ((isNullOrUndefined(panel.mapObject.mapScaleValue))
-        ? (isNullOrUndefined(panel.mapObject.markerZoomFactor) ? panel.mapObject.zoomSettings.zoomFactor :
-         panel.mapObject.markerZoomFactor) : panel.mapObject.mapScaleValue) : zoomFactorValue;
+            ? (isNullOrUndefined(panel.mapObject.markerZoomFactor) ? panel.mapObject.zoomSettings.zoomFactor :
+                panel.mapObject.markerZoomFactor) : panel.mapObject.mapScaleValue) : zoomFactorValue;
         zoomFactorValue = panel.mapObject.zoomSettings.enable ? zoomFactorValue : panel.mapObject.zoomSettings.zoomFactor;
         zoomFactorValue = zoomFactorValue > 0 ? zoomFactorValue : 1;
         panel.mapObject.defaultState = zoomFactorValue !== 1 ? false : true;
@@ -148,14 +158,15 @@ export class LayerPanel {
             panel.mapObject.tileZoomLevel = zoomFactorValue;
             panel.mapObject.previousZoomFactor = zoomFactorValue;
         }  else if (this.mapObject.isReset && panel.mapObject.tileZoomLevel === 1 && !panel.mapObject.zoomSettings.shouldZoomInitially) {
-            panel.mapObject.tileZoomLevel = panel.mapObject.tileZoomLevel;
+            const zoomLevel: number = panel.mapObject.tileZoomLevel;
+            panel.mapObject.tileZoomLevel = zoomLevel;
         } else if (panel.mapObject.zoomSettings.zoomFactor !== 1 || panel.mapObject.zoomSettings.shouldZoomInitially) {
             panel.mapObject.previousZoomFactor = panel.mapObject.tileZoomLevel;
             panel.mapObject.tileZoomLevel = panel.mapObject.defaultState && panel.mapObject.zoomSettings.enable ?
                 panel.mapObject.tileZoomLevel : !panel.mapObject.zoomSettings.shouldZoomInitially
                 && !panel.mapObject.centerPositionChanged ?
-                panel.mapObject.previousZoomFactor !== panel.mapObject.zoomSettings.zoomFactor ?
-                    panel.mapObject.zoomSettings.zoomFactor : panel.mapObject.tileZoomLevel : zoomFactorValue;
+                    panel.mapObject.previousZoomFactor !== panel.mapObject.zoomSettings.zoomFactor ?
+                        panel.mapObject.zoomSettings.zoomFactor : panel.mapObject.tileZoomLevel : zoomFactorValue;
             panel.mapObject.tileZoomLevel = zoomFactorValue === 1 && panel.mapObject.zoomSettings.zoomFactor === 0 ?
                 zoomFactorValue : panel.mapObject.tileZoomLevel;
             if (!isNullOrUndefined(panel.mapObject.tileTranslatePoint) &&
@@ -188,18 +199,18 @@ export class LayerPanel {
         );
         if (this.mapObject.zoomSettings.resetToInitial && this.mapObject.initialCheck && !isNullOrUndefined(panel.mapObject.height)
         && this.mapObject.availableSize.height > 512) {
-        this.mapObject.applyZoomReset = true;
-        this.mapObject.initialZoomLevel = Math.floor(this.mapObject.availableSize.height / 512) + 1;
-        let padding : number = this.mapObject.layers[this.mapObject.baseLayerIndex].layerType !== 'GoogleStaticMap' ?
-            20 : 0;
-        let totalSize : number = Math.pow(2, this.mapObject.initialZoomLevel) * 256;
-        this.mapObject.initialTileTranslate.x = (this.mapObject.availableSize.width / 2) - (totalSize / 2);
-        this.mapObject.initialTileTranslate.y = (this.mapObject.availableSize.height / 2) - (totalSize / 2) + padding;
+            this.mapObject.applyZoomReset = true;
+            this.mapObject.initialZoomLevel = Math.floor(this.mapObject.availableSize.height / 512) + 1;
+            const padding : number = this.mapObject.layers[this.mapObject.baseLayerIndex].layerType !== 'GoogleStaticMap' ?
+                20 : 0;
+            const totalSize : number = Math.pow(2, this.mapObject.initialZoomLevel) * 256;
+            this.mapObject.initialTileTranslate.x = (this.mapObject.availableSize.width / 2) - (totalSize / 2);
+            this.mapObject.initialTileTranslate.y = (this.mapObject.availableSize.height / 2) - (totalSize / 2) + padding;
         }
         panel.generateTiles(panel.mapObject.tileZoomLevel, panel.mapObject.tileTranslatePoint, null, bing);
         if (!isNullOrUndefined(panel.mapObject.previousZoomFactor)
             && panel.mapObject.previousZoomFactor !== panel.mapObject.zoomSettings.zoomFactor) {
-                panel.mapObject.previousZoomFactor = panel.mapObject.zoomSettings.zoomFactor;
+            panel.mapObject.previousZoomFactor = panel.mapObject.zoomSettings.zoomFactor;
         }
         if (panel.mapObject.navigationLineModule) {
             panel.layerObject.appendChild(
@@ -219,7 +230,7 @@ export class LayerPanel {
             id: this.mapObject.element.id + '_LayerIndex_' + layerIndex
         }));
         if (!this.mapObject.enablePersistence) {
-            let itemName: string = this.mapObject.getModuleName() + this.mapObject.element.id;
+            const itemName: string = this.mapObject.getModuleName() + this.mapObject.element.id;
             if (navigator.userAgent.indexOf('Edge') === -1) {
                 if (!isNullOrUndefined(window.localStorage) && window.localStorage.getItem(itemName)) {
                     window.localStorage.removeItem(itemName);
@@ -240,20 +251,23 @@ export class LayerPanel {
                     if (layer.layerType !== 'Bing' || this.bing) {
                         this.renderTileLayer(this, layer, layerIndex);
                     } else if (layer.key && layer.key.length > 1) {
-                        let proxy: LayerPanel = this;
-                        let bing: BingMap = new BingMap(this.mapObject);
-                        let bingType: string = layer.bingMapType === 'AerialWithLabel' ? 'AerialWithLabelsOnDemand' : layer.bingMapType;
-                        let url: string = 'https://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + bingType;
-                        let ajax: Ajax = new Ajax({
+                        // eslint-disable-next-line @typescript-eslint/no-this-alias
+                        const proxy: LayerPanel = this;
+                        const bing: BingMap = new BingMap(this.mapObject);
+                        const bingType: string = layer.bingMapType === 'AerialWithLabel' ? 'AerialWithLabelsOnDemand' : layer.bingMapType;
+                        const url: string = 'https://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + bingType;
+                        const ajax: Ajax = new Ajax({
                             url: url + '?output=json&include=ImageryProviders&urischeme=https&key=' + layer.key
                         });
                         ajax.onSuccess = (json: string) => {
-                            let jsonObject: object = JSON.parse(json);
-                            let resource: object = jsonObject['resourceSets'][0]['resources'][0];
-                            let imageUrl: string = <string>resource['imageUrl'];
-                            let subDomains: string[] = <string[]>resource['imageUrlSubdomains'];
-                            let maxZoom: string = <string>resource['zoomMax'];
-                            let markerGroupElement : HTMLElement = document.getElementById(this.mapObject.element.id + '_Markers_Group');
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const jsonObject: any = JSON.parse(json);
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const resource: any = jsonObject['resourceSets'][0]['resources'][0];
+                            const imageUrl: string = <string>resource['imageUrl'];
+                            const subDomains: string[] = <string[]>resource['imageUrlSubdomains'];
+                            const maxZoom: string = <string>resource['zoomMax'];
+                            const markerGroupElement : HTMLElement = document.getElementById(proxy.mapObject.element.id + '_Markers_Group');
                             if (imageUrl !== null && imageUrl !== undefined && imageUrl !== bing.imageUrl) {
                                 bing.imageUrl = imageUrl;
                             }
@@ -277,11 +291,14 @@ export class LayerPanel {
                 } else {
                     if (!isNullOrUndefined(layer.shapeData) && (!isNullOrUndefined(layer.shapeData['geometries']) ||
                         !isNullOrUndefined(layer.shapeData['features']))) {
-                        let featureData: Object[] = (!isNullOrUndefined(layer.shapeData['geometries']) &&
-                            (<Object[]>layer.shapeData['geometries']).length > 0 ? layer.shapeData['geometries'] :
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const featureData: any[] = (!isNullOrUndefined(layer.shapeData['geometries']) &&
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            (<any[]>layer.shapeData['geometries']).length > 0 ? layer.shapeData['geometries'] :
                             layer.shapeData['features']);
                         layer.layerData = [];
-                        let bbox: Object = layer.shapeData['bbox'];
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const bbox: any = layer.shapeData['bbox'];
                         if (!isNullOrUndefined(bbox) && layer.isBaseLayer) {
                             this.mapObject.baseMapBounds = new GeoLocation(
                                 { min: bbox[0][1], max: bbox[1][1] },
@@ -303,15 +320,15 @@ export class LayerPanel {
         }
     }
 
-    //tslint:disable:max-func-body-length
     private bubbleCalculation(bubbleSettings: BubbleSettingsModel, range: { min: number, max: number }): void {
         if (bubbleSettings.dataSource != null && bubbleSettings != null) {
-            let bubbleDataSource: Object[] = bubbleSettings.dataSource as Object[];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const bubbleDataSource: any[] = bubbleSettings.dataSource as any[];
             for (let i: number = 0; i < bubbleDataSource.length; i++) {
-                let bubbledata: number = (!isNullOrUndefined(bubbleSettings.valuePath)) ? ((bubbleSettings.valuePath.indexOf('.') > -1) ?
-                                          Number(getValueFromObject(bubbleSettings.dataSource[i], bubbleSettings.valuePath)) :
-                                          parseFloat(bubbleSettings.dataSource[i][bubbleSettings.valuePath])) :
-                                          parseFloat(bubbleSettings.dataSource[i][bubbleSettings.valuePath]);
+                const bubbledata: number = (!isNullOrUndefined(bubbleSettings.valuePath)) ? ((bubbleSettings.valuePath.indexOf('.') > -1) ?
+                    Number(getValueFromObject(bubbleSettings.dataSource[i], bubbleSettings.valuePath)) :
+                    parseFloat(bubbleSettings.dataSource[i][bubbleSettings.valuePath])) :
+                    parseFloat(bubbleSettings.dataSource[i][bubbleSettings.valuePath]);
                 if (i !== 0) {
                     if (bubbledata > range.max) {
                         range.max = bubbledata;
@@ -324,22 +341,27 @@ export class LayerPanel {
             }
         }
     }
-    // tslint:disable-next-line:max-func-body-length
-    public calculatePathCollection(layerIndex: number, renderData: Object[]): void {
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public calculatePathCollection(layerIndex: number, renderData: any[]): void {
         this.groupElements = [];
         if ((!isCustomPath(renderData))) {
             this.currentFactor = this.calculateFactor(this.currentLayer);
         }
         this.rectBounds = null;
-        let shapeSettings: ShapeSettings = <ShapeSettings>this.currentLayer.shapeSettings;
-        let bubbleSettings: BubbleSettings[] = <BubbleSettings[]>this.currentLayer.bubbleSettings;
-        Array.prototype.forEach.call(renderData, (geometryData: Object, index: number) => {
+        const shapeSettings: ShapeSettings = <ShapeSettings>this.currentLayer.shapeSettings;
+        const bubbleSettings: BubbleSettings[] = <BubbleSettings[]>this.currentLayer.bubbleSettings;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        Array.prototype.forEach.call(renderData, (geometryData: any, index: number) => {
             if (!isNullOrUndefined(geometryData['geometry']) || !isNullOrUndefined(geometryData['coordinates'])) {
-                let type: string = !isNullOrUndefined(geometryData['geometry']) ? geometryData['geometry']['type'] : geometryData['type'];
-                let coords: Object[] = !isNullOrUndefined(geometryData['geometry']) ? geometryData['geometry']['coordinates'] :
+                const type: string = !isNullOrUndefined(geometryData['geometry']) ? geometryData['geometry']['type'] : geometryData['type'];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const coords: any[] = !isNullOrUndefined(geometryData['geometry']) ? geometryData['geometry']['coordinates'] :
                     geometryData['coordinates'];
-                let data: Object = geometryData['geometry'];
-                let properties: Object = geometryData['properties'];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const data: any = geometryData['geometry'];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const properties: any = geometryData['properties'];
                 if (type !== 'LineString' ) {
                     this.generatePoints(type, coords, data, properties);
                 }
@@ -349,8 +371,8 @@ export class LayerPanel {
         if (isNullOrUndefined(this.mapObject.baseMapRectBounds) && this.currentLayer.isBaseLayer) {
             this.mapObject.baseMapRectBounds = this.rectBounds;
         }
-        let colors: string[] = shapeSettings.palette.length > 1 ? shapeSettings.palette : getShapeColor(this.mapObject.theme);
-        let labelTemplateEle: HTMLElement = createElement('div', {
+        const colors: string[] = shapeSettings.palette.length > 1 ? shapeSettings.palette : getShapeColor(this.mapObject.theme);
+        const labelTemplateEle: HTMLElement = createElement('div', {
             id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_Label_Template_Group',
             className: this.mapObject.element.id + '_template',
             styles: 'pointer-events: none; overflow: hidden; position: absolute;' +
@@ -362,42 +384,46 @@ export class LayerPanel {
         if (this.currentLayer.layerData.length !== 0) {
             for (let i: number = 0; i < this.currentLayer.layerData.length; i++) {
                 let k: number;
-                let borderValue: BorderModel = {
+                const borderValue: BorderModel = {
                     color: shapeSettings.border.color,
                     width: shapeSettings.border.width
                 };
-                let currentShapeData: Object[] = <Object[]>this.currentLayer.layerData[i];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const currentShapeData: any[] = <any[]>this.currentLayer.layerData[i];
                 let pathOptions: PathOption; let polyLineOptions: PolylineOption;
                 let circleOptions: CircleOption; let groupElement: Element; let drawObject: Element;
-                let path: string = ''; let points: string = ''; let getShapeColor: Object;
+                let path: string = ''; let points: string = '';
                 let fill: string = (shapeSettings.autofill) ? colors[i % colors.length] : shapeSettings.fill;
-                let opacity: number;
                 if (shapeSettings.colorValuePath !== null && !isNullOrUndefined(currentShapeData['property'])) {
                     k = checkShapeDataFields(
-                        <Object[]>this.currentLayer.dataSource, currentShapeData['property'],
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        <any[]>this.currentLayer.dataSource, currentShapeData['property'],
                         this.currentLayer.shapeDataPath, this.currentLayer.shapePropertyPath, this.currentLayer
                     );
                     if (k !== null && shapeSettings.colorMapping.length === 0) {
                         fill = ((this.currentLayer.shapeSettings.colorValuePath.indexOf('.') > -1) ?
-                                (getValueFromObject(this.currentLayer.dataSource[k], shapeSettings.colorValuePath)) :
-                                this.currentLayer.dataSource[k][shapeSettings.colorValuePath]);
+                            (getValueFromObject(this.currentLayer.dataSource[k], shapeSettings.colorValuePath)) :
+                            this.currentLayer.dataSource[k][shapeSettings.colorValuePath]);
                     } else if (currentShapeData['property'][shapeSettings.colorValuePath] &&
-                        (<Object[]>this.currentLayer.dataSource).length === 0 && shapeSettings.colorMapping.length === 0) {
-                            fill = ((this.currentLayer.shapeSettings.colorValuePath.indexOf('.') > -1) ?
-                                   (getValueFromObject(currentShapeData['property'], shapeSettings.colorValuePath)) :
-                                   currentShapeData['property'][shapeSettings.colorValuePath]);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (<any[]>this.currentLayer.dataSource).length === 0 && shapeSettings.colorMapping.length === 0) {
+                        fill = ((this.currentLayer.shapeSettings.colorValuePath.indexOf('.') > -1) ?
+                            (getValueFromObject(currentShapeData['property'], shapeSettings.colorValuePath)) :
+                            currentShapeData['property'][shapeSettings.colorValuePath]);
                     }
                     fill = !isNullOrUndefined(fill) ? fill : shapeSettings.fill;
                 }
-                let shapeID: string = this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' + k;
-                getShapeColor = this.getShapeColorMapping(this.currentLayer, currentShapeData['property'], fill);
+                const shapeID: string = this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' + k;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const getShapeColor: any = this.getShapeColorMapping(this.currentLayer, currentShapeData['property'], fill);
                 fill = Object.prototype.toString.call(getShapeColor) === '[object Object]' && !isNullOrUndefined(getShapeColor['fill'])
                     ? getShapeColor['fill'] : fill;
                 if (this.currentLayer.shapeSettings.borderColorValuePath || this.currentLayer.shapeSettings.borderWidthValuePath) {
-                    let borderColorValue: string = this.currentLayer.shapeSettings.borderColorValuePath;
-                    let borderWidthValue: string = this.currentLayer.shapeSettings.borderWidthValuePath;
+                    const borderColorValue: string = this.currentLayer.shapeSettings.borderColorValuePath;
+                    const borderWidthValue: string = this.currentLayer.shapeSettings.borderWidthValuePath;
                     k = checkShapeDataFields(
-                        <Object[]>this.currentLayer.dataSource, currentShapeData['property'],
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        <any[]>this.currentLayer.dataSource, currentShapeData['property'],
                         this.currentLayer.shapeDataPath, this.currentLayer.shapePropertyPath, this.currentLayer
                     );
                     if (k !== null) {
@@ -409,7 +435,7 @@ export class LayerPanel {
                         }
                     }
                 }
-                opacity = (Object.prototype.toString.call(getShapeColor) === '[object Object]'
+                const opacity: number = (Object.prototype.toString.call(getShapeColor) === '[object Object]'
                     && !isNullOrUndefined(getShapeColor['opacity'])) ? getShapeColor['opacity'] : shapeSettings.opacity;
                 let eventArgs: IShapeRenderingEventArgs = {
                     cancel: false, name: shapeRendering, index: i,
@@ -422,10 +448,10 @@ export class LayerPanel {
                     const { maps, ...blazorEventArgs }: IShapeRenderingEventArgs = eventArgs;
                     eventArgs = blazorEventArgs;
                 }
-                 // tslint:disable-next-line:max-func-body-length
-                 let shapeRenderingSuccess: Function = (eventArgs: IShapeRenderingEventArgs) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const shapeRenderingSuccess: any = (eventArgs: IShapeRenderingEventArgs) => {
                     let drawingType: string = !isNullOrUndefined(currentShapeData['_isMultiPolygon'])
-                    ? 'MultiPolygon' : isNullOrUndefined(currentShapeData['type']) ? currentShapeData[0]['type'] : currentShapeData['type'];
+                        ? 'MultiPolygon' : isNullOrUndefined(currentShapeData['type']) ? currentShapeData[0]['type'] : currentShapeData['type'];
                     drawingType = (drawingType === 'Polygon' || drawingType === 'MultiPolygon') ? 'Polygon' : drawingType;
                     if (!eventArgs.cancel) {
                         eventArgs.fill = eventArgs.fill === '#A6A6A6' ? eventArgs.shape.fill : eventArgs.fill;
@@ -450,7 +476,7 @@ export class LayerPanel {
                         this.groupElements.push(groupElement);
                     } else {
                         for (let i: number = 0; i < this.groupElements.length; i++) {
-                            let ele: Element = this.groupElements[i];
+                            const ele: Element = this.groupElements[i];
                             if (ele.id.indexOf(drawingType) > -1) {
                                 groupElement = ele;
                                 break;
@@ -465,51 +491,54 @@ export class LayerPanel {
                     }
                     let pathEle: Element;
                     switch (drawingType) {
-                        case 'Polygon':
-                            if (!currentShapeData['_isMultiPolygon']) {
-                                path += 'M' + (currentShapeData[0]['point']['x']) + ' ' + (currentShapeData[0]['point']['y']);
-                                currentShapeData.map((shapeData: Object) => {
-                                    path += ' L ' + (shapeData['point']['x']) + ' ' + (shapeData['point']['y']);
-                                });
-                            } else {
-                                path = this.generateMultiPolygonPath(<Object[]>currentShapeData);
-                            }
-                            path += ' z ';
-                            if (path.length > 3) {
-                                pathOptions = new PathOption(
-                                    shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color,
-                                    opacity, shapeSettings.dashArray, path);
-                                pathEle = this.mapObject.renderer.drawPath(pathOptions) as SVGPathElement;
-                            }
-                            break;
-                        case 'LineString':
-                            currentShapeData.map((lineData: Object) => {
-                                points += lineData['point']['x'] + ' , ' + lineData['point']['y'] + ' ';
+                    case 'Polygon':
+                        if (!currentShapeData['_isMultiPolygon']) {
+                            path += 'M' + (currentShapeData[0]['point']['x']) + ' ' + (currentShapeData[0]['point']['y']);
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            currentShapeData.map((shapeData: any) => {
+                                path += ' L ' + (shapeData['point']['x']) + ' ' + (shapeData['point']['y']);
                             });
-                            polyLineOptions = new PolylineOption(
-                                shapeID, points, eventArgs.fill, eventArgs.border.width, eventArgs.border.color,
-                                opacity, shapeSettings.dashArray);
-                            pathEle = this.mapObject.renderer.drawPolyline(polyLineOptions) as SVGPolylineElement;
-                            break;
-                        case 'Point':
-                            let pointData: Object = <Object>currentShapeData['point'];
-                            circleOptions = new CircleOption(
-                                shapeID, eventArgs.fill, eventArgs.border, opacity,
-                                pointData['x'], pointData['y'], shapeSettings.circleRadius, null);
-                            pathEle = this.mapObject.renderer.drawCircle(circleOptions) as SVGCircleElement;
-                            break;
-                        case 'Path':
-                            path = <string>currentShapeData['point'];
+                        } else {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            path = this.generateMultiPolygonPath(<any[]>currentShapeData);
+                        }
+                        path += ' z ';
+                        if (path.length > 3) {
                             pathOptions = new PathOption(
-                                shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity,
-                                shapeSettings.dashArray, path);
+                                shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color,
+                                opacity, shapeSettings.dashArray, path);
                             pathEle = this.mapObject.renderer.drawPath(pathOptions) as SVGPathElement;
-                            break;
+                        }
+                        break;
+                    case 'LineString':
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        currentShapeData.map((lineData: any) => {
+                            points += lineData['point']['x'] + ' , ' + lineData['point']['y'] + ' ';
+                        });
+                        polyLineOptions = new PolylineOption(
+                            shapeID, points, eventArgs.fill, eventArgs.border.width, eventArgs.border.color,
+                            opacity, shapeSettings.dashArray);
+                        pathEle = this.mapObject.renderer.drawPolyline(polyLineOptions) as SVGPolylineElement;
+                        break;
+                    case 'Point':
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const pointData: any = <any>currentShapeData['point'];
+                        circleOptions = new CircleOption(
+                            shapeID, eventArgs.fill, eventArgs.border, opacity,
+                            pointData['x'], pointData['y'], shapeSettings.circleRadius, null);
+                        pathEle = this.mapObject.renderer.drawCircle(circleOptions) as SVGCircleElement;
+                        break;
+                    case 'Path':
+                        path = <string>currentShapeData['point'];
+                        pathOptions = new PathOption(
+                            shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity,
+                            shapeSettings.dashArray, path);
+                        pathEle = this.mapObject.renderer.drawPath(pathOptions) as SVGPathElement;
+                        break;
                     }
                     if (!isNullOrUndefined(pathEle)) {
-                        let property: string[] = (Object.prototype.toString.call(this.currentLayer.shapePropertyPath) === '[object Array]' ?
+                        const property: string[] = (Object.prototype.toString.call(this.currentLayer.shapePropertyPath) === '[object Array]' ?
                             this.currentLayer.shapePropertyPath : [this.currentLayer.shapePropertyPath]) as string[];
-                        // tslint:disable-next-line:align
                         let properties: string;
                         for (let j: number = 0; j < property.length; j++) {
                             if (!isNullOrUndefined(currentShapeData['property'])) {
@@ -524,9 +553,9 @@ export class LayerPanel {
                                           'ShapeselectionMapStyle');
                         if (this.mapObject.toggledShapeElementId) {
                             for (let j: number = 0; j < this.mapObject.toggledShapeElementId.length; j++) {
-                                let styleProperty: ShapeSettingsModel | ToggleLegendSettingsModel =
+                                const styleProperty: ShapeSettingsModel | ToggleLegendSettingsModel =
                                     this.mapObject.legendSettings.toggleLegendSettings.applyShapeSettings ?
-                                    this.currentLayer.shapeSettings : this.mapObject.legendSettings.toggleLegendSettings;
+                                        this.currentLayer.shapeSettings : this.mapObject.legendSettings.toggleLegendSettings;
                                 if (this.mapObject.toggledShapeElementId[j] === pathEle.id) {
                                     pathEle.setAttribute('fill', styleProperty.fill);
                                     pathEle.setAttribute('stroke', styleProperty.border.color);
@@ -548,30 +577,38 @@ export class LayerPanel {
             this.layerFeatures(layerIndex, colors, renderData, labelTemplateEle);
         }
     }
-
     /**
-     *  layer features as bubble, marker, datalabel, navigation line.
+     * layer features as bubble, marker, datalabel, navigation line.
+     *
+     * @param {number} layerIndex - Specifies the layer index
+     * @param {string[]} colors - Specifies the colors
+     * @param {Object[]} renderData - Specifies the render data
+     * @param {HTMLElement} labelTemplateEle - Specifies the label template element
+     * @returns {void}
      */
     private layerFeatures(
-        layerIndex: number, colors: string[], renderData: Object[],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        layerIndex: number, colors: string[], renderData: any[],
         labelTemplateEle: HTMLElement
     ): void {
         let bubbleG: Element;
         if (this.currentLayer.bubbleSettings.length && this.mapObject.bubbleModule) {
-            let length: number = this.currentLayer.bubbleSettings.length;
+            const length: number = this.currentLayer.bubbleSettings.length;
             let bubble: BubbleSettingsModel;
             for (let j: number = 0; j < length; j++) {
                 bubble = this.currentLayer.bubbleSettings[j];
                 bubbleG = this.mapObject.renderer.createGroup({
                     id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_bubble_Group_' + j
                 });
-                let range: {
+                const range: {
                     min: number;
                     max: number;
                 } = { min: 0, max: 0 };
                 this.bubbleCalculation(bubble, range);
-                let bubbleDataSource: Object[] = bubble.dataSource as Object[];
-                bubbleDataSource.map((bubbleData: object, i: number) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const bubbleDataSource: any[] = bubble.dataSource as any[];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                bubbleDataSource.map((bubbleData: any, i: number) => {
                     this.renderBubble(
                         this.currentLayer, bubbleData, colors[i % colors.length], range, j, i, bubbleG, layerIndex, bubble);
                 });
@@ -581,13 +618,15 @@ export class LayerPanel {
         if ((this.mapObject.markerModule && !this.mapObject.isTileMap) && this.mapObject.zoomSettings.enable) {
             this.mapObject.markerModule.calculateZoomCenterPositionAndFactor(this.mapObject.layersCollection);
         }
-        let group: Element = (this.mapObject.renderer.createGroup({
+        const group: Element = (this.mapObject.renderer.createGroup({
             id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_dataLableIndex_Group',
             style: 'pointer-events: none;'
         }));
         if (this.mapObject.dataLabelModule && this.currentLayer.dataLabelSettings.visible) {
-            let intersect: object[] = [];
-            renderData.map((currentShapeData: object[], i: number) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const intersect: any[] = [];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            renderData.map((currentShapeData: any[], i: number) => {
                 this.renderLabel(this.currentLayer, layerIndex, currentShapeData, group, i, labelTemplateEle, intersect);
             });
             this.groupElements.push(group);
@@ -595,7 +634,7 @@ export class LayerPanel {
         if (this.mapObject.navigationLineModule) {
             this.groupElements.push(
                 this.mapObject.navigationLineModule.renderNavigation(this.currentLayer, this.currentFactor, layerIndex)
-                );
+            );
         }
         this.groupElements.map((element: Element) => {
             this.layerObject.appendChild(element);
@@ -603,7 +642,7 @@ export class LayerPanel {
         if (this.mapObject.markerModule) {
             this.mapObject.markerModule.markerRender(
                 this.layerObject, layerIndex, (this.mapObject.isTileMap ? Math.floor(this.currentFactor)
-                : this.currentFactor),
+                    : this.currentFactor),
                 null
             );
         }
@@ -612,11 +651,21 @@ export class LayerPanel {
     }
 
     /**
-     *  render datalabel
+     * render datalabel
+     *
+     * @param {LayerSettings} layer - Specifies the layer
+     * @param {number} layerIndex - Specifies the layer index
+     * @param {object[]} shape - Specifies the shape
+     * @param {Element} group - Specifies the group
+     * @param {number} shapeIndex - Specifies the shape index
+     * @param {HTMLElement} labelTemplateEle - Specifies the label template element
+     * @param {object[]} intersect - Specifies the intersect
+     * @returns {void}
      */
     private renderLabel(
         layer: LayerSettings, layerIndex: number,
-        shape: object[], group: Element, shapeIndex: number, labelTemplateEle: HTMLElement, intersect: object[]
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        shape: any[], group: Element, shapeIndex: number, labelTemplateEle: HTMLElement, intersect: any[]
     ): void {
         this.mapObject.dataLabelModule.renderLabel(
             layer, layerIndex, shape, layer.layerData, group, labelTemplateEle, shapeIndex, intersect
@@ -624,14 +673,21 @@ export class LayerPanel {
     }
     /**
      * To render path for multipolygon
+     *
+     * @param {any[]} currentShapeData Specifies the current shape data
+     * @returns {string} Returns the path
      */
-    private generateMultiPolygonPath(currentShapeData: Object[]): string {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private generateMultiPolygonPath(currentShapeData: any[]): string {
         let path: string = '';
-        let shape: Object[];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let shape: any[];
         for (let j: number = 0; j < currentShapeData.length; j++) {
             path += 'M' + (currentShapeData[j][0]['point']['x']) + ' ' + (currentShapeData[j][0]['point']['y']);
-            shape = <Object[]>currentShapeData[j];
-            shape.map((shapeData: Object) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            shape = <any[]>currentShapeData[j];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            shape.map((shapeData: any) => {
                 path += ' L ' + (shapeData['point']['x']) + ' ' + (shapeData['point']['y']);
             });
         }
@@ -639,9 +695,21 @@ export class LayerPanel {
     }
     /**
      * To render bubble
+     *
+     * @param {LayerSettings} layer - Specifies the layer
+     * @param {object} bubbleData - Specifies the bubble data
+     * @param {string} color - Specifies the color
+     * @param {number} range - Specifies the range
+     * @param {number} bubbleIndex - Specifies the bubble index
+     * @param {number} dataIndex - Specifies the data index
+     * @param {number} group - Specifies the group
+     * @param {number} layerIndex - Specifies the layer index
+     * @param {BubbleSettingsModel} bubbleSettings - Specifies the bubble settings
+     * @returns {void}
      */
     private renderBubble(
-        layer: LayerSettings, bubbleData: object, color: string, range: { min: number, max: number },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        layer: LayerSettings, bubbleData: any, color: string, range: { min: number, max: number },
         bubbleIndex: number, dataIndex: number, group: Element, layerIndex: number, bubbleSettings: BubbleSettingsModel
     ): void {
         if (isNullOrUndefined(this.mapObject.bubbleModule) || !bubbleSettings.visible) {
@@ -655,100 +723,115 @@ export class LayerPanel {
     }
     /**
      * To get the shape color from color mapping module
+     *
+     * @param {LayerSettingsModel} layer - Specifies the layer
+     * @param {object} shape - Specifies the shape
+     * @param {string} color - Specifies the color
+     * @returns {Object} - Returns the object
      */
-    private getShapeColorMapping(layer: LayerSettingsModel, shape: object, color: string): Object {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private getShapeColorMapping(layer: LayerSettingsModel, shape: any, color: string): any {
         color = color ? color : layer.shapeSettings.fill;
         if (layer.shapeSettings.colorMapping.length === 0 && isNullOrUndefined(layer.dataSource)) {
             return color;
         }
-        let index: number = checkShapeDataFields(<Object[]>layer.dataSource, shape, layer.shapeDataPath, layer.shapePropertyPath, layer);
-        let colorMapping: ColorMapping = new ColorMapping(this.mapObject);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const index: number = checkShapeDataFields(<any[]>layer.dataSource, shape, layer.shapeDataPath, layer.shapePropertyPath, layer);
+        const colorMapping: ColorMapping = new ColorMapping(this.mapObject);
         if (isNullOrUndefined(layer.dataSource[index])) {
             return color;
         }
         return colorMapping.getShapeColorMapping(layer.shapeSettings, layer.dataSource[index], color);
     }
-    public generatePoints(type: string, coordinates: Object[], data: Object, properties: Object): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public generatePoints(type: string, coordinates: any[], data: any, properties: any): void {
         let latitude: number; let longitude: number;
-        let newData: Object[] = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let newData: any[] = [];
         switch (type.toLowerCase()) {
-            case 'polygon':
-                newData = <Object[]>this.calculatePolygonBox(<Object[]>coordinates[0], data, properties);
-                if (newData.length > 0) {
-                    newData['property'] = properties;
-                    newData['type'] = type;
-                    newData['_isMultiPolygon'] = false;
-                    this.currentLayer.layerData.push(newData);
-                }
-                break;
-            case 'multipolygon':
-                let multiPolygonDatas: Object[] = [];
-                for (let i: number = 0; i < coordinates.length; i++) {
-                    newData = <Object[]>this.calculatePolygonBox(<Object[]>coordinates[i][0], data, properties);
-                    if (newData.length > 0) {
-                        multiPolygonDatas.push(newData);
-                    }
-                }
-                multiPolygonDatas['property'] = properties;
-                multiPolygonDatas['type'] = type;
-                multiPolygonDatas['_isMultiPolygon'] = true;
-                this.currentLayer.layerData.push(multiPolygonDatas);
-                break;
-            case 'linestring':
-                coordinates.map((points: Object, index: number) => {
-                    latitude = <number>points[1];
-                    longitude = <number>points[0];
-                    let point: Point = convertGeoToPoint(
-                        latitude, longitude, this.currentFactor, this.currentLayer, this.mapObject);
-                    newData.push({
-                        point: point, lat: latitude, lng: longitude
-                    });
-                });
+        case 'polygon':
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            newData = <any[]>this.calculatePolygonBox(<any[]>coordinates[0], data, properties);
+            if (newData.length > 0) {
                 newData['property'] = properties;
                 newData['type'] = type;
+                newData['_isMultiPolygon'] = false;
                 this.currentLayer.layerData.push(newData);
-                break;
-            case 'point':
-                let arrayCollections: boolean = false;
-                coordinates.map((points: Object, index: number) => {
-                    if (Object.prototype.toString.call(points) === '[object Array]') {
-                        latitude = points[1];
-                        longitude = points[0];
-                        arrayCollections = true;
-                        let point: Point = convertGeoToPoint(latitude, longitude, this.currentFactor, this.currentLayer, this.mapObject);
-                        this.currentLayer.layerData.push({
-                            point: point, type: type, lat: latitude, lng: longitude, property: properties
-                        });
-                    }
+            }
+            break;
+        case 'multipolygon':
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const multiPolygonDatas: any[] = [];
+            for (let i: number = 0; i < coordinates.length; i++) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                newData = <any[]>this.calculatePolygonBox(<any[]>coordinates[i][0], data, properties);
+                if (newData.length > 0) {
+                    multiPolygonDatas.push(newData);
+                }
+            }
+            multiPolygonDatas['property'] = properties;
+            multiPolygonDatas['type'] = type;
+            multiPolygonDatas['_isMultiPolygon'] = true;
+            this.currentLayer.layerData.push(multiPolygonDatas);
+            break;
+        case 'linestring':
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            coordinates.map((points: any, index: number) => {
+                latitude = <number>points[1];
+                longitude = <number>points[0];
+                const point: Point = convertGeoToPoint(
+                    latitude, longitude, this.currentFactor, this.currentLayer, this.mapObject);
+                newData.push({
+                    point: point, lat: latitude, lng: longitude
                 });
-                if (!arrayCollections) {
-                    latitude = <number>coordinates[1];
-                    longitude = <number>coordinates[0];
-                    let point: Point = convertGeoToPoint(latitude, longitude, this.currentFactor, this.currentLayer, this.mapObject);
+            });
+            newData['property'] = properties;
+            newData['type'] = type;
+            this.currentLayer.layerData.push(newData);
+            break;
+        case 'point': {
+            let arrayCollections: boolean = false;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            coordinates.map((points: any, index: number) => {
+                if (Object.prototype.toString.call(points) === '[object Array]') {
+                    latitude = points[1];
+                    longitude = points[0];
+                    arrayCollections = true;
+                    const point: Point = convertGeoToPoint(latitude, longitude, this.currentFactor, this.currentLayer, this.mapObject);
                     this.currentLayer.layerData.push({
                         point: point, type: type, lat: latitude, lng: longitude, property: properties
                     });
                 }
-                break;
-            case 'path':
+            });
+            if (!arrayCollections) {
+                latitude = <number>coordinates[1];
+                longitude = <number>coordinates[0];
+                const point: Point = convertGeoToPoint(latitude, longitude, this.currentFactor, this.currentLayer, this.mapObject);
                 this.currentLayer.layerData.push({
-                    point: data['d'], type: type, property: properties
+                    point: point, type: type, lat: latitude, lng: longitude, property: properties
                 });
-                break;
+            }
+            break;
+        }
+        case 'path':
+            this.currentLayer.layerData.push({
+                point: data['d'], type: type, property: properties
+            });
+            break;
         }
     }
 
     public calculateFactor(layer: LayerSettings): number {
         let horFactor: number; let verFactor: number = 1;
-        let divide: number = 10;
-        let exp: string = 'e+1';
-        let bounds: GeoLocation = this.mapObject.baseMapBounds;
-        let mapSize: Size = new Size(this.mapObject.mapAreaRect.width, this.mapObject.mapAreaRect.height - 5);
+        const divide: number = 10;
+        const exp: string = 'e+1';
+        const bounds: GeoLocation = this.mapObject.baseMapBounds;
+        const mapSize: Size = new Size(this.mapObject.mapAreaRect.width, this.mapObject.mapAreaRect.height - 5);
         let mapHeight: number; let mapWidth: number;
         if (bounds) {
-            let start: Point = convertGeoToPoint(
+            const start: Point = convertGeoToPoint(
                 bounds.latitude.min, bounds.longitude.min, null, layer, this.mapObject);
-            let end: Point = convertGeoToPoint(
+            const end: Point = convertGeoToPoint(
                 bounds.latitude.max, bounds.longitude.max, null, layer, this.mapObject);
             mapHeight = end.y - start.y;
             mapWidth = end.x - start.x;
@@ -774,17 +857,18 @@ export class LayerPanel {
         let childNode: HTMLElement;
         this.mapObject.translateType = 'layer';
         if (!isNullOrUndefined(this.mapObject.baseMapRectBounds)) {
-            let duration: number = this.currentLayer.animationDuration;
-            let animate: boolean = duration !== 0 || isNullOrUndefined(this.mapObject.zoomModule);
+            const duration: number = this.currentLayer.animationDuration;
+            const animate: boolean = duration !== 0 || isNullOrUndefined(this.mapObject.zoomModule);
             this.mapObject.baseTranslatePoint = this.mapObject.zoomTranslatePoint;
-            let translate: Object;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let translate: any;
             if (this.mapObject.zoomSettings.zoomFactor > 1 && !isNullOrUndefined(this.mapObject.zoomModule)) {
                 translate = getZoomTranslate(this.mapObject, this.currentLayer, animate);
             } else {
                 translate = getTranslate(this.mapObject, this.currentLayer, animate);
             }
-            let scale: number = this.mapObject.previousScale = translate['scale'];
-            let location: Point = this.mapObject.previousPoint = translate['location'] as Point;
+            const scale: number = this.mapObject.previousScale = translate['scale'];
+            const location: Point = this.mapObject.previousPoint = translate['location'] as Point;
             this.mapObject.baseTranslatePoint = this.mapObject.translatePoint = location;
             this.mapObject.baseScale = this.mapObject.scale = scale;
             for (let i: number = 0; i < layerElement.childElementCount; i++) {
@@ -793,7 +877,7 @@ export class LayerPanel {
                     (!(childNode.id.indexOf('_bubble_Group') > -1)) &&
                     (!(childNode.id.indexOf('_dataLableIndex_Group') > -1))
                 ) {
-                    let transform: string = 'scale( ' + scale + ' ) '
+                    const transform: string = 'scale( ' + scale + ' ) '
                         + 'translate( ' + location.x + ' ' + location.y + ' ) ';
                     childNode.setAttribute('transform', transform);
                     if (duration > 0 && !isNullOrUndefined(this.mapObject.zoomModule)) {
@@ -814,7 +898,7 @@ export class LayerPanel {
                     (!(childNode.id.indexOf('_bubble_Group') > -1)) &&
                     (!(childNode.id.indexOf('_dataLableIndex_Group') > -1)) &&
                     (!(childNode.id.indexOf('_line_Group') > -1))) {
-                    let transform: string = 'scale( ' + this.mapObject.scale + ' ) ' + 'translate( ' + this.mapObject.translatePoint.x
+                    const transform: string = 'scale( ' + this.mapObject.scale + ' ) ' + 'translate( ' + this.mapObject.translatePoint.x
                         + ' ' + this.mapObject.translatePoint.y + ' ) ';
                     childNode.setAttribute('transform', transform);
                 }
@@ -822,34 +906,42 @@ export class LayerPanel {
         }
     }
 
-    public calculateRectBounds(layerData: Object[]): void {
-        Array.prototype.forEach.call(layerData, (obj: Object, index: number) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public calculateRectBounds(layerData: any[]): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        Array.prototype.forEach.call(layerData, (obj: any, index: number) => {
             if (!isNullOrUndefined(obj['geometry']) || !isNullOrUndefined(obj['coordinates'])) {
-                let type: string = !isNullOrUndefined(obj['geometry']) ? obj['geometry']['type'] : obj['type'];
-                let coordinates: Object[] = !isNullOrUndefined(obj['geometry']) ? obj['geometry']['coordinates'] : obj['coordinates'];
+                const type: string = !isNullOrUndefined(obj['geometry']) ? obj['geometry']['type'] : obj['type'];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const coordinates: any[] = !isNullOrUndefined(obj['geometry']) ? obj['geometry']['coordinates'] : obj['coordinates'];
                 switch (type.toLowerCase()) {
-                    case 'polygon':
-                        this.calculateRectBox(<Object[]>coordinates[0]);
-                        break;
-                    case 'multipolygon':
-                        coordinates.map((point: Object, index: number) => {
-                            this.calculateRectBox(point[0]);
-                        });
-                        break;
+                case 'polygon':
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    this.calculateRectBox(<any[]>coordinates[0]);
+                    break;
+                case 'multipolygon':
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    coordinates.map((point: any, index: number) => {
+                        this.calculateRectBox(point[0]);
+                    });
+                    break;
                 }
             }
         });
     }
 
-    public calculatePolygonBox(coordinates: Object[], data: Object, properties: Object): Object {
-        let newData: Object[] = [];
-        let bounds: GeoLocation = this.mapObject.baseMapBounds;
-        coordinates.map((currentPoint: Object, index: number) => {
-            let latitude: number = currentPoint[1];
-            let longitude: number = currentPoint[0];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public calculatePolygonBox(coordinates: any[], data: any, properties: any): any {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const newData: any[] = [];
+        const bounds: GeoLocation = this.mapObject.baseMapBounds;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        coordinates.map((currentPoint: any, index: number) => {
+            const latitude: number = currentPoint[1];
+            const longitude: number = currentPoint[0];
             if ((longitude >= bounds.longitude.min && longitude <= bounds.longitude.max)
                 && (latitude >= bounds.latitude.min && latitude <= bounds.latitude.max)) {
-                let point: Point = convertGeoToPoint(
+                const point: Point = convertGeoToPoint(
                     latitude, longitude, this.currentFactor, this.currentLayer, this.mapObject
                 );
                 if (isNullOrUndefined(this.rectBounds)) {
@@ -870,8 +962,10 @@ export class LayerPanel {
         return newData;
     }
 
-    public calculateRectBox(coordinates: Object[]): void {
-        Array.prototype.forEach.call(coordinates, (currentCoords: Object) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public calculateRectBox(coordinates: any[]): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        Array.prototype.forEach.call(coordinates, (currentCoords: any) => {
             if (isNullOrUndefined(this.mapObject.baseMapBounds)) {
                 this.mapObject.baseMapBounds = new GeoLocation(
                     { min: currentCoords[1], max: currentCoords[1] },
@@ -885,8 +979,8 @@ export class LayerPanel {
         });
     }
     public generateTiles(zoomLevel: number, tileTranslatePoint: Point, zoomType?: string, bing?: BingMap, position?: Point): void {
-        let userLang: string = this.mapObject.locale;
-        let size: Size = this.mapObject.availableSize;
+        const userLang: string = this.mapObject.locale;
+        const size: Size = this.mapObject.availableSize;
         this.tiles = [];
         let xcount: number;
         let ycount: number;
@@ -899,34 +993,34 @@ export class LayerPanel {
         }
         xcount += xLeft + xRight;
         if (zoomType === 'Pan') {
-          xcount = (this.horizontalPanXCount >= xcount) ? this.horizontalPanXCount : xcount;
-          this.horizontalPan = false;
+            xcount = (this.horizontalPanXCount >= xcount) ? this.horizontalPanXCount : xcount;
+            this.horizontalPan = false;
         } else {
             this.horizontalPanXCount = xcount;
             this.horizontalPan = true;
         }
-        let baseLayer: LayerSettingsModel = this.mapObject.layers[this.mapObject.baseLayerIndex];
+        const baseLayer: LayerSettingsModel = this.mapObject.layers[this.mapObject.baseLayerIndex];
         this.urlTemplate = baseLayer.urlTemplate;
-        let endY: number = Math.min(ycount, ((-tileTranslatePoint.y + size.height) / 256) + 1);
-        let endX: number = Math.min(xcount, ((-tileTranslatePoint.x + size.width + (xRight * 256)) / 256) + 1);
-        let startX: number = (-((tileTranslatePoint.x + (xLeft * 256)) + 256) / 256);
-        let startY: number = (-(tileTranslatePoint.y + 256) / 256);
+        const endY: number = Math.min(ycount, ((-tileTranslatePoint.y + size.height) / 256) + 1);
+        const endX: number = Math.min(xcount, ((-tileTranslatePoint.x + size.width + (xRight * 256)) / 256) + 1);
+        const startX: number = (-((tileTranslatePoint.x + (xLeft * 256)) + 256) / 256);
+        const startY: number = (-(tileTranslatePoint.y + 256) / 256);
         bing = bing || this.bing || this.mapObject['bingMap'];
         for (let i: number = Math.round(startX); i < Math.round(endX); i++) {
             for (let j: number = Math.round(startY); j < Math.round(endY); j++) {
-                let x: number = 256 * i + tileTranslatePoint.x;
-                let y: number = 256 * j + tileTranslatePoint.y;
+                const x: number = 256 * i + tileTranslatePoint.x;
+                const y: number = 256 * j + tileTranslatePoint.y;
                 if (x > -256 && x <= size.width && y > -256 && y < size.height) {
                     if (j >= 0) {
                         let tileI: number = i;
                         if (i < 0) {
                             tileI = (tileI % ycount) + ycount;
                         }
-                        let tile: Tile = new Tile(tileI % ycount, j);
+                        const tile: Tile = new Tile(tileI % ycount, j);
                         tile.left = x;
                         tile.top = y;
                         if (baseLayer.layerType === 'Bing') {
-                            let key: string = baseLayer.key;
+                            const key: string = baseLayer.key;
                             tile.src = bing.getBingMap(tile, key, baseLayer.bingMapType, userLang, bing.imageUrl, bing.subDomains);
                         } else {
                             tile.src = this.urlTemplate.replace('level', zoomLevel.toString()).replace('tileX', tile.x.toString())
@@ -946,14 +1040,14 @@ export class LayerPanel {
                 this.animateToZoomY = -(this.mapObject.availableSize.height / 2 + 11.5) + 10;
             }
         }
-        let proxTiles: Tile[] = extend([], this.tiles, [], true) as Tile[];
-        for (let layer of this.mapObject.layers) {
+        const proxTiles: Tile[] = extend([], this.tiles, [], true) as Tile[];
+        for (const layer of this.mapObject.layers) {
             if (!(layer.type === 'SubLayer' && layer.visible)) {
                 continue;
             }
             if (layer.layerType === 'OSM' || layer.layerType === 'Bing') {
-                for (let baseTile of proxTiles) {
-                    let subtile: Tile = extend({}, baseTile, {}, true) as Tile;
+                for (const baseTile of proxTiles) {
+                    const subtile: Tile = extend({}, baseTile, {}, true) as Tile;
                     if (layer.layerType === 'Bing') {
                         subtile.src = bing.getBingMap(subtile, layer.key, layer.bingMapType, userLang, bing.imageUrl, bing.subDomains);
                     } else {
@@ -968,8 +1062,8 @@ export class LayerPanel {
     }
 
     public arrangeTiles(type: string, x: number, y: number): void {
-        let element: HTMLElement = document.getElementById(this.mapObject.element.id + '_tile_parent');
-        let element1: HTMLElement = document.getElementById(this.mapObject.element.id + '_tiles');
+        const element: HTMLElement = document.getElementById(this.mapObject.element.id + '_tile_parent');
+        const element1: HTMLElement = document.getElementById(this.mapObject.element.id + '_tiles');
         let timeOut: number;
         if (!isNullOrUndefined(type) && type !== 'Pan' && type !== 'Reset' && type.indexOf('ZoomOut') === -1) {
             this.tileAnimation(type, x, y);
@@ -985,8 +1079,8 @@ export class LayerPanel {
                     element.style.zIndex = '1';
                 }
                 if (element1) {
-                  element1.style.zIndex = '0';
-                  element1.style.visibility = 'hidden';
+                    element1.style.zIndex = '0';
+                    element1.style.visibility = 'hidden';
                 }
                 let animateElement: HTMLElement;
                 if (!document.getElementById(this.mapObject.element.id + '_animated_tiles') && element) {
@@ -1006,16 +1100,15 @@ export class LayerPanel {
                     }
                 }
                 let id: number = 0;
-                for (let tile of this.tiles) {
-                    let imgElement: HTMLElement = createElement('img');
+                for (const tile of this.tiles) {
+                    const imgElement: HTMLElement = createElement('img');
                     imgElement.setAttribute('src', tile.src);
-                    let mapId: string = this.mapObject.element.id;
+                    const mapId: string = this.mapObject.element.id;
                     imgElement.onload = () => {
-                        let child: HTMLElement;
                         if (document.getElementById(mapId + '_tile_' + id) && type === 'Pan') {
                             removeElement(mapId + '_tile_' + id);
                         }
-                        child = createElement('div', { id: mapId + '_tile_' + id });
+                        const child: HTMLElement = createElement('div', { id: mapId + '_tile_' + id });
                         child.style.position = 'absolute';
                         child.style.left = tile.left + 'px';
                         child.style.top = tile.top + 'px';
@@ -1031,18 +1124,22 @@ export class LayerPanel {
                         }
                     };
                 }
-            // tslint:disable-next-line:align
             }, timeOut);
         }
     }
 
     /**
-     * Animation for tile layers and hide the group element until the tile layer rendering 
+     * Animation for tile layers and hide the group element until the tile layer rendering
+     *
+     * @param {string} zoomType - Specifies the zoom type
+     * @param {number} translateX - Specifies the x translate point
+     * @param {number} translateY - Specifies the y translate point
+     * @returns {void}
      */
     private tileAnimation(zoomType: string, translateX: number, translateY: number): void {
-        let element: HTMLElement =  document.getElementById(this.mapObject.element.id + '_tile_parent');
+        const element: HTMLElement =  document.getElementById(this.mapObject.element.id + '_tile_parent');
         let element1: HTMLElement = document.getElementById('animated_tiles');
-        let ele: HTMLElement = document.getElementById(this.mapObject.element.id + '_tiles');
+        const ele: HTMLElement = document.getElementById(this.mapObject.element.id + '_tiles');
         let scaleValue: string = '2';
         if (zoomType.indexOf('ZoomOut') === 0) {
             ele.style.zIndex = '1';
@@ -1071,30 +1168,31 @@ export class LayerPanel {
         }
     }
 
-    /* tslint:disable:no-string-literal */
     /**
      * Static map rendering
-     * @param apikey 
+     *
+     * @param {string} apikey - Specifies the api key
+     * @param {number} zoom - Specifies the zoom value
+     * @returns {void}
      * @private
      */
     public renderGoogleMap(apikey: string, zoom: number): void {
-        let staticMapString: string;
-        let map: Maps = this.mapObject;
+        const map: Maps = this.mapObject;
         // zoom = this.mapObject.zoomSettings.shouldZoomInitially ? this.mapObject.markerZoomFactor : zoom;
         zoom = this.mapObject.tileZoomLevel;
-        let x: number; let y: number;
-        let totalSize: number = Math.pow(2, zoom) * 256;
-        x = (map.mapAreaRect.width / 2) - (totalSize / 2);
-        y = (map.mapAreaRect.height / 2) - (totalSize / 2);
-        let centerPoint: Point = new Point(null, null);
+        const totalSize: number = Math.pow(2, zoom) * 256;
+        const x: number = (map.mapAreaRect.width / 2) - (totalSize / 2);
+        const y: number = (map.mapAreaRect.height / 2) - (totalSize / 2);
+        const centerPoint: Point = new Point(null, null);
         let diffX: number = 0; let diffY: number = 0;
-        let position: MapLocation = convertTileLatLongToPoint(
+        const position: MapLocation = convertTileLatLongToPoint(
             centerPoint, zoom, { x: x, y: y }, this.isMapCoordinates);
         if (map.zoomModule && map.zoomSettings.enable) {
             diffX = map.zoomModule.mouseDownLatLong['x'] - map.zoomModule.mouseMoveLatLong['x'];
             diffY = map.zoomModule.mouseDownLatLong['y'] - map.zoomModule.mouseMoveLatLong['y'];
         }
-        let panLatLng: Object = map.pointToLatLong(position.x - diffX, position.y - diffY);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const panLatLng: any = map.pointToLatLong(position.x - diffX, position.y - diffY);
         map.centerPosition.latitude = panLatLng['latitude'];
         map.centerPosition.longitude = panLatLng['longitude'];
         let mapWidth: number;
@@ -1109,16 +1207,16 @@ export class LayerPanel {
         } else {
             mapHeight = Math.round(map.mapAreaRect.height);
         }
-        let eleWidth: number = mapWidth > 640 ? (mapWidth - 640) / 2 : 0;
-        let eleHeight: number = mapHeight > 640 ? (mapHeight - 640) / 2 : 0;
+        const eleWidth: number = mapWidth > 640 ? (mapWidth - 640) / 2 : 0;
+        const eleHeight: number = mapHeight > 640 ? (mapHeight - 640) / 2 : 0;
         let center: string;
-        let mapType: string = (map.layers[map.layers.length - 1].staticMapType).toString().toLowerCase();
+        const mapType: string = (map.layers[map.layers.length - 1].staticMapType).toString().toLowerCase();
         if (map.centerPosition.latitude && map.centerPosition.longitude) {
             center =  map.centerPosition.latitude.toString() + ',' + map.centerPosition.longitude.toString();
-            } else {
+        } else {
             center = '0,0';
         }
-        staticMapString = 'https://maps.googleapis.com/maps/api/staticmap?size=' + mapWidth + 'x' + mapHeight +
+        const staticMapString: string = 'https://maps.googleapis.com/maps/api/staticmap?size=' + mapWidth + 'x' + mapHeight +
             '&zoom=' + zoom + '&center=' + center + '&maptype=' + mapType + '&key=' + apikey;
         document.getElementById(this.mapObject.element.id + '_tile_parent').innerHTML
             = '<div id="' + this.mapObject.element.id + '_StaticGoogleMap"' + 'style="position:absolute; left:' + eleWidth + 'px; top:'
@@ -1127,22 +1225,24 @@ export class LayerPanel {
 
     /**
      * To find the tile translate point
-     * @param factorX 
-     * @param factorY 
-     * @param centerPosition 
+     *
+     * @param {number} factorX - Specifies the x factor
+     * @param {number} factorY - Specifies the x factor
+     * @param {MapLocation} centerPosition - Specifies the map location
+     * @returns {Point} - Returns point values
      */
     private panTileMap(factorX: number, factorY: number, centerPosition: MapLocation): Point {
         if (this.mapObject.tileZoomLevel <= this.mapObject.tileZoomScale && this.mapObject.initialCheck) {
             this.mapObject.tileZoomLevel = this.mapObject.tileZoomScale;
         }
-        let level: number = this.mapObject.tileZoomLevel;
+        const level: number = this.mapObject.tileZoomLevel;
         let padding: number = this.mapObject.layers[this.mapObject.layers.length - 1].layerType !== 'GoogleStaticMap' ?
             20 : 0;
         let x: number; let y: number;
-        let totalSize: number = Math.pow(2, level) * 256;
+        const totalSize: number = Math.pow(2, level) * 256;
         x = (factorX / 2) - (totalSize / 2);
         y = (factorY / 2) - (totalSize / 2);
-        let position: MapLocation = convertTileLatLongToPoint(
+        const position: MapLocation = convertTileLatLongToPoint(
             centerPosition, level, { x: x, y: y }, this.isMapCoordinates);
         padding = this.mapObject.zoomNotApplied ? 0 : padding;
         x -= position.x - (factorX / 2);
@@ -1158,8 +1258,8 @@ export class LayerPanel {
             (this.mapObject.zoomSettings.zoomFactor === 1 ||
                 this.mapObject.zoomSettings.zoomFactor !== level || !this.mapObject.defaultState)) {
             if ((factorX !== this.mapObject.previousTileWidth || factorY !== this.mapObject.previousTileHeight) ) {
-                let xdiff: number = x - ((this.mapObject.previousTileWidth / 2) - (totalSize / 2));
-                let ydiff: number = y - ((this.mapObject.previousTileHeight / 2) - (totalSize / 2) + padding);
+                const xdiff: number = x - ((this.mapObject.previousTileWidth / 2) - (totalSize / 2));
+                const ydiff: number = y - ((this.mapObject.previousTileHeight / 2) - (totalSize / 2) + padding);
                 this.mapObject.tileTranslatePoint.x = this.mapObject.tileTranslatePoint.x + xdiff;
                 this.mapObject.tileTranslatePoint.y = this.mapObject.tileTranslatePoint.y + ydiff;
             }

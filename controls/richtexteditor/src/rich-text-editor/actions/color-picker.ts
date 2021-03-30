@@ -22,9 +22,9 @@ export class ColorPickerInput {
     protected locator: ServiceLocator;
     protected toolbarRenderer: IRenderer;
     protected renderFactory: RendererFactory;
-    private tools: { [key: string]: IToolsItems; } = {};
+    private tools: { [key: string]: IToolsItems } = {};
 
-    constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
+    public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.locator = serviceLocator;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
@@ -42,57 +42,60 @@ export class ColorPickerInput {
 
     /**
      * renderColorPickerInput method
+     *
+     * @param {IColorPickerRenderArgs} args - specify the arguments.
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public renderColorPickerInput(args: IColorPickerRenderArgs): void {
         this.initializeInstance();
-        let suffixID: string = args.containerType;
-        let tbElement: HTMLElement = args.container;
+        const suffixID: string = args.containerType;
+        const tbElement: HTMLElement = args.container;
         let targetID: string;
         let options: IColorPickerModel;
         templateItems.forEach((item: string) => {
             if (getIndex(item, args.items) !== -1) {
                 switch (item) {
-                    case 'fontcolor':
-                        targetID = this.parent.getID() + '_' + suffixID + '_FontColor_Target';
-                        let fontNode: HTMLInputElement = this.parent.createElement('input') as HTMLInputElement;
-                        fontNode.id = targetID;
-                        fontNode.classList.add(classes.CLS_FONT_COLOR_TARGET);
-                        document.body.appendChild(fontNode);
-                        options = {
-                            cssClass: this.tools[item.toLocaleLowerCase() as ToolbarItems].icon
-                                + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_ICONS,
-                            value: this.tools[item.toLocaleLowerCase() as ToolbarItems].value,
-                            command: this.tools[item.toLocaleLowerCase() as ToolbarItems].command,
-                            subCommand: this.tools[item.toLocaleLowerCase() as ToolbarItems].subCommand,
-                            element: select('#' + this.parent.getID() + '_' + suffixID + '_FontColor', tbElement),
-                            target: ('#' + targetID)
-                        } as IColorPickerModel;
-                        this.fontColorPicker = this.toolbarRenderer.renderColorPicker(options, 'fontcolor');
-                        this.fontColorDropDown = this.toolbarRenderer.renderColorPickerDropDown(options, 'fontcolor', this.fontColorPicker);
-                        break;
-                    case 'backgroundcolor':
-                        targetID = this.parent.getID() + '_' + suffixID + '_BackgroundColor_Target';
-                        let backNode: HTMLInputElement = this.parent.createElement('input') as HTMLInputElement;
-                        backNode.id = targetID;
-                        backNode.classList.add(classes.CLS_BACKGROUND_COLOR_TARGET);
-                        document.body.appendChild(backNode);
-                        options = {
-                            cssClass: this.tools[item.toLocaleLowerCase() as ToolbarItems].icon
-                                + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_ICONS,
-                            value: this.tools[item.toLocaleLowerCase() as ToolbarItems].value,
-                            command: this.tools[item.toLocaleLowerCase() as ToolbarItems].command,
-                            subCommand: this.tools[item.toLocaleLowerCase() as ToolbarItems].subCommand,
-                            element: select('#' + this.parent.getID() + '_' + suffixID + '_BackgroundColor', tbElement),
-                            target: ('#' + targetID)
-                        } as IColorPickerModel;
-                        this.backgroundColorPicker = this.toolbarRenderer.renderColorPicker(options, 'backgroundcolor');
-                        this.backgroundColorDropDown = this.toolbarRenderer.renderColorPickerDropDown(
-                            options,
-                            'backgroundcolor',
-                            this.backgroundColorPicker);
-                        break;
+                case 'fontcolor': {
+                    targetID = this.parent.getID() + '_' + suffixID + '_FontColor_Target';
+                    const fontNode: HTMLInputElement = this.parent.createElement('input') as HTMLInputElement;
+                    fontNode.id = targetID;
+                    fontNode.classList.add(classes.CLS_FONT_COLOR_TARGET);
+                    document.body.appendChild(fontNode);
+                    options = {
+                        cssClass: this.tools[item.toLocaleLowerCase() as ToolbarItems].icon
+                            + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_ICONS,
+                        value: this.tools[item.toLocaleLowerCase() as ToolbarItems].value,
+                        command: this.tools[item.toLocaleLowerCase() as ToolbarItems].command,
+                        subCommand: this.tools[item.toLocaleLowerCase() as ToolbarItems].subCommand,
+                        element: select('#' + this.parent.getID() + '_' + suffixID + '_FontColor', tbElement),
+                        target: ('#' + targetID)
+                    } as IColorPickerModel;
+                    this.fontColorPicker = this.toolbarRenderer.renderColorPicker(options, 'fontcolor');
+                    this.fontColorDropDown = this.toolbarRenderer.renderColorPickerDropDown(options, 'fontcolor', this.fontColorPicker);
+                    break; }
+                case 'backgroundcolor': {
+                    targetID = this.parent.getID() + '_' + suffixID + '_BackgroundColor_Target';
+                    const backNode: HTMLInputElement = this.parent.createElement('input') as HTMLInputElement;
+                    backNode.id = targetID;
+                    backNode.classList.add(classes.CLS_BACKGROUND_COLOR_TARGET);
+                    document.body.appendChild(backNode);
+                    options = {
+                        cssClass: this.tools[item.toLocaleLowerCase() as ToolbarItems].icon
+                            + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_ICONS,
+                        value: this.tools[item.toLocaleLowerCase() as ToolbarItems].value,
+                        command: this.tools[item.toLocaleLowerCase() as ToolbarItems].command,
+                        subCommand: this.tools[item.toLocaleLowerCase() as ToolbarItems].subCommand,
+                        element: select('#' + this.parent.getID() + '_' + suffixID + '_BackgroundColor', tbElement),
+                        target: ('#' + targetID)
+                    } as IColorPickerModel;
+                    this.backgroundColorPicker = this.toolbarRenderer.renderColorPicker(options, 'backgroundcolor');
+                    this.backgroundColorDropDown = this.toolbarRenderer.renderColorPickerDropDown(
+                        options,
+                        'backgroundcolor',
+                        this.backgroundColorPicker);
+                    break; }
                 }
             }
         });
@@ -105,24 +108,35 @@ export class ColorPickerInput {
 
     /**
      * destroyColorPicker method
+     *
+     * @returns {void}
      * @hidden
      * @deprecated
      */
     public destroyColorPicker(): void {
-        if (this.fontColorPicker && !this.fontColorPicker.isDestroyed) { this.fontColorPicker.destroy(); }
-        if (this.backgroundColorPicker && !this.backgroundColorPicker.isDestroyed) { this.backgroundColorPicker.destroy(); }
+        if (this.fontColorPicker && !this.fontColorPicker.isDestroyed) {
+            this.fontColorPicker.destroy();
+        }
+        if (this.backgroundColorPicker && !this.backgroundColorPicker.isDestroyed) {
+            this.backgroundColorPicker.destroy();
+        }
         if (this.fontColorDropDown && !this.fontColorDropDown.isDestroyed) {
-            let innerEle: HTMLElement = this.fontColorDropDown.element.querySelector('.e-rte-color-content') as HTMLElement;
-            if (innerEle) { detach(innerEle); }
+            const innerEle: HTMLElement = this.fontColorDropDown.element.querySelector('.e-rte-color-content') as HTMLElement;
+            if (innerEle) {
+                detach(innerEle);
+            }
             this.fontColorDropDown.destroy();
         }
         if (this.backgroundColorDropDown && !this.backgroundColorDropDown.isDestroyed) {
-            let innerEle: HTMLElement = this.backgroundColorDropDown.element.querySelector('.e-rte-color-content') as HTMLElement;
-            if (innerEle) { detach(innerEle); }
+            const innerEle: HTMLElement = this.backgroundColorDropDown.element.querySelector('.e-rte-color-content') as HTMLElement;
+            if (innerEle) {
+                detach(innerEle);
+            }
             this.backgroundColorDropDown.destroy();
         }
     }
 
+    // eslint-disable-next-line
     private setRtl(args: { [key: string]: Object }): void {
         if (this.fontColorPicker) {
             this.fontColorPicker.setProperties({ enableRtl: args.enableRtl });
@@ -142,64 +156,65 @@ export class ColorPickerInput {
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
     }
 
+    // eslint-disable-next-line
     private onPropertyChanged(model: { [key: string]: Object }): void {
-        let newProp: RichTextEditorModel = model.newProp;
+        const newProp: RichTextEditorModel = model.newProp;
         let element: HTMLElement;
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'fontColor':
-                    if (this.fontColorPicker) {
-                        for (let font of Object.keys(newProp.fontColor)) {
-                            switch (font) {
-                                case 'default':
-                                    this.fontColorPicker.setProperties({ value: newProp.fontColor.default });
-                                    element = <HTMLElement>this.fontColorDropDown.element;
-                                    let fontBorder: HTMLElement = element.querySelector('.' + this.tools['fontcolor' as ToolbarItems].icon);
-                                    fontBorder.style.borderBottomColor = newProp.fontColor.default;
-                                    break;
-                                case 'mode':
-                                    this.fontColorPicker.setProperties({ mode: newProp.fontColor.mode });
-                                    break;
-                                case 'columns':
-                                    this.fontColorPicker.setProperties({ columns: newProp.fontColor.columns });
-                                    break;
-                                case 'colorCode':
-                                    this.fontColorPicker.setProperties({ presetColors: newProp.fontColor.colorCode });
-                                    break;
-                                case 'modeSwitcher':
-                                    this.fontColorPicker.setProperties({ modeSwitcher: newProp.fontColor.modeSwitcher });
-                                    break;
-                            }
+            case 'fontColor':
+                if (this.fontColorPicker) {
+                    for (const font of Object.keys(newProp.fontColor)) {
+                        switch (font) {
+                        case 'default': {
+                            this.fontColorPicker.setProperties({ value: newProp.fontColor.default });
+                            element = <HTMLElement>this.fontColorDropDown.element;
+                            const fontBorder: HTMLElement = element.querySelector('.' + this.tools['fontcolor' as ToolbarItems].icon);
+                            fontBorder.style.borderBottomColor = newProp.fontColor.default;
+                            break; }
+                        case 'mode':
+                            this.fontColorPicker.setProperties({ mode: newProp.fontColor.mode });
+                            break;
+                        case 'columns':
+                            this.fontColorPicker.setProperties({ columns: newProp.fontColor.columns });
+                            break;
+                        case 'colorCode':
+                            this.fontColorPicker.setProperties({ presetColors: newProp.fontColor.colorCode });
+                            break;
+                        case 'modeSwitcher':
+                            this.fontColorPicker.setProperties({ modeSwitcher: newProp.fontColor.modeSwitcher });
+                            break;
                         }
                     }
-                    break;
-                case 'backgroundColor':
-                    if (this.backgroundColorPicker) {
-                        for (let background of Object.keys(newProp.backgroundColor)) {
-                            switch (background) {
-                                case 'default':
-                                    this.backgroundColorPicker.setProperties({ value: newProp.backgroundColor.default });
-                                    element = <HTMLElement>this.backgroundColorDropDown.element;
-                                    let backgroundBorder: HTMLElement = element.querySelector(
-                                        '.' + this.tools['backgroundcolor' as ToolbarItems].icon);
-                                    backgroundBorder.style.borderBottomColor = newProp.backgroundColor.default;
-                                    break;
-                                case 'mode':
-                                    this.backgroundColorPicker.setProperties({ mode: newProp.backgroundColor.mode });
-                                    break;
-                                case 'columns':
-                                    this.backgroundColorPicker.setProperties({ columns: newProp.backgroundColor.columns });
-                                    break;
-                                case 'colorCode':
-                                    this.backgroundColorPicker.setProperties({ presetColors: newProp.backgroundColor.colorCode });
-                                    break;
-                                case 'modeSwitcher':
-                                    this.backgroundColorPicker.setProperties({ modeSwitcher: newProp.backgroundColor.modeSwitcher });
-                                    break;
-                            }
+                }
+                break;
+            case 'backgroundColor':
+                if (this.backgroundColorPicker) {
+                    for (const background of Object.keys(newProp.backgroundColor)) {
+                        switch (background) {
+                        case 'default': {
+                            this.backgroundColorPicker.setProperties({ value: newProp.backgroundColor.default });
+                            element = <HTMLElement>this.backgroundColorDropDown.element;
+                            const backgroundBorder: HTMLElement = element.querySelector(
+                                '.' + this.tools['backgroundcolor' as ToolbarItems].icon);
+                            backgroundBorder.style.borderBottomColor = newProp.backgroundColor.default;
+                            break; }
+                        case 'mode':
+                            this.backgroundColorPicker.setProperties({ mode: newProp.backgroundColor.mode });
+                            break;
+                        case 'columns':
+                            this.backgroundColorPicker.setProperties({ columns: newProp.backgroundColor.columns });
+                            break;
+                        case 'colorCode':
+                            this.backgroundColorPicker.setProperties({ presetColors: newProp.backgroundColor.colorCode });
+                            break;
+                        case 'modeSwitcher':
+                            this.backgroundColorPicker.setProperties({ modeSwitcher: newProp.backgroundColor.modeSwitcher });
+                            break;
                         }
                     }
-                    break;
+                }
+                break;
             }
         }
     }

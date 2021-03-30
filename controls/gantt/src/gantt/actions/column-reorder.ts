@@ -1,7 +1,7 @@
 import { TreeGrid, Reorder as TreeGridReorder } from '@syncfusion/ej2-treegrid';
 import { Gantt } from '../base/gantt';
 import { ColumnDragEventArgs } from '@syncfusion/ej2-grids';
-/** 
+/**
  * To handle column reorder action from TreeGrid
  */
 export class Reorder {
@@ -15,6 +15,8 @@ export class Reorder {
 
     /**
      * Get module name
+     *
+     * @returns {string} .
      */
     private getModuleName(): string {
         return 'reorder';
@@ -22,7 +24,8 @@ export class Reorder {
 
     /**
      * To bind reorder events.
-     * @return {void}
+     *
+     * @returns {void} .
      * @private
      */
     private bindEvents(): void {
@@ -39,7 +42,8 @@ export class Reorder {
 
     /**
      * To destroy the column-reorder.
-     * @return {void}
+     *
+     * @returns {void} .
      * @private
      */
     public destroy(): void {

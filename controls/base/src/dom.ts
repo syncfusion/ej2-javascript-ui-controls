@@ -58,19 +58,17 @@ export function createElement(tagName: string, properties?: ElementProperties): 
 export function addClass(elements: Element[] | NodeList, classes: string | string[]): Element[] | NodeList {
     let classList: string[] = getClassList(classes);
     for (let ele of (elements as Element[])) {
-        if (ele && classList) {
-            for (let className of classList) {
-                if (isObject(ele)) {
-                    let curClass: string = getValue('attributes.className', ele);
-                    if (isNullOrUndefined(curClass)) {
-                        setValue('attributes.className', className, ele);
-                    } else if (!new RegExp('\\b' + className + '\\b', 'i').test(curClass)) {
-                        setValue('attributes.className', curClass + ' ' + className, ele);
-                    }
-                } else {
-                    if (!ele.classList.contains(className)) {
-                        ele.classList.add(className);
-                    }
+        for (let className of classList) {
+            if (isObject(ele)) {
+                let curClass: string = getValue('attributes.className', ele);
+                if (isNullOrUndefined(curClass)) {
+                    setValue('attributes.className', className, ele);
+                } else if (!new RegExp('\\b' + className + '\\b', 'i').test(curClass)) {
+                    setValue('attributes.className', curClass + ' ' + className, ele);
+                }
+            } else {
+                if (!ele.classList.contains(className)) {
+                    ele.classList.add(className);
                 }
             }
         }
@@ -86,22 +84,21 @@ export function addClass(elements: Element[] | NodeList, classes: string | strin
 export function removeClass(elements: Element[] | NodeList, classes: string | string[]): Element[] | NodeList {
     let classList: string[] = getClassList(classes);
     for (let ele of (elements as Element[])) {
-        if (ele && classList) {
-            let flag: boolean = isObject(ele);
-            let canRemove: boolean = flag ? getValue('attributes.className', ele) : ele.className !== '';
-            if (canRemove) {
-                for (let className of classList) {
-                    if (flag) {
-                        let classes: string = getValue('attributes.className', ele);
-                        let classArr: string[] = classes.split(' ');
-                        let index: number = classArr.indexOf(className);
-                        if (index !== -1) {
-                            classArr.splice(index, 1);
-                        }
-                        setValue('attributes.className', classArr.join(' '), ele);
-                    } else {
-                        ele.classList.remove(className);
+        let flag: boolean = isObject(ele);
+        let canRemove: boolean = flag ? getValue('attributes.className', ele) : ele.className !== '';
+        if (canRemove) {
+            for (let className of classList) {
+                /* istanbul ignore next */
+                if (flag) {
+                    let classes: string = getValue('attributes.className', ele);
+                    let classArr: string[] = classes.split(' ');
+                    let index: number = classArr.indexOf(className);
+                    if (index !== -1) {
+                        classArr.splice(index, 1);
                     }
+                    setValue('attributes.className', classArr.join(' '), ele);
+                } else {
+                    ele.classList.remove(className);
                 }
             }
         }
@@ -230,20 +227,18 @@ export function remove(element: Element | Node | HTMLElement): void {
 export function attributes(element: Element | Node | any, attributes: { [key: string]: string }): Element {
     let keys: string[] = Object.keys(attributes);
     let ele: Element = <Element>element;
-    if (ele) {
-        for (let key of keys) {
-            if (isObject(ele)) {
-                let iKey: string = key;
-                if (key === 'tabindex') {
-                    iKey = 'tabIndex';
-                }
-                ele.attributes[iKey] = attributes[key];
-            } else {
-                ele.setAttribute(key, attributes[key]);
+    for (let key of keys) {
+        /* istanbul ignore next */
+        if (isObject(ele)) {
+            let iKey: string = key;
+            if (key === 'tabindex') {
+                iKey = 'tabIndex';
             }
+            ele.attributes[iKey] = attributes[key];
+        } else {
+            ele.setAttribute(key, attributes[key]);
         }
     }
-
     return ele;
 }
 
@@ -317,7 +312,7 @@ export function closest(element: Element | Node, selector: string): Element {
     if (typeof el.closest === 'function') {
         return el.closest(selector);
     }
-
+    /* istanbul ignore next */
     while (el && el.nodeType === 1) {
         if (matches(el, selector)) {
             return el;
@@ -352,6 +347,7 @@ export function siblings(element: Element | Node): Element[] {
  * @param  {string} value - value need to set.
  * @private
  */
+/* istanbul ignore next */
 export function getAttributeOrDefault(element: HTMLElement, property: string, value: string): string {
     let attrVal: string;
     let isObj: boolean = isObject(element);
@@ -420,7 +416,7 @@ export function matches(element: Element, selector: string): boolean {
         return [].indexOf.call(document.querySelectorAll(selector), element) !== -1;
     }
 }
-
+/* istanbul ignore next */
 export function includeInnerHTML(ele: HTMLElement & VirtualObject, innerHTML: string): void {
     if (isObject(ele)) {
         if (innerHTML === '') {
@@ -436,6 +432,7 @@ export function includeInnerHTML(ele: HTMLElement & VirtualObject, innerHTML: st
         ele.innerHTML = innerHTML;
     }
 }
+/* istanbul ignore next */
 //tslint:disable-next-line
 export function containsClass(ele: HTMLElement & VirtualObject, className: string): any {
     if (isObject(ele)) {
@@ -452,6 +449,7 @@ export function containsClass(ele: HTMLElement & VirtualObject, className: strin
  * @return {Element | VirtualObject} 
  * @private
  */
+/* istanbul ignore next */
 //tslint:disable:no-any
 export function cloneNode(element: Object, deep?: boolean): any {
     if (isObject(element)) {

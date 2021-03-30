@@ -24,7 +24,14 @@ import { UserHandleModel } from '../interaction/selector-model';
  * Defines the functionalities that need to access DOM
  */
 
-/** @private */
+/**
+ * removeElementsByClass method \
+ *
+ * @returns {void} removeElementsByClass method .\
+ * @param { string } className - provide the element  value.
+ * @param {string} id - provide the string  value.
+ * @private
+ */
 export function removeElementsByClass(className: string, id?: string): void {
     let elements: HTMLCollectionOf<Element> | NodeListOf<Element>;
     if (id) {
@@ -37,19 +44,25 @@ export function removeElementsByClass(className: string, id?: string): void {
     }
 }
 
-/** @private */
+/**
+ * findSegmentPoints method \
+ *
+ * @returns {PointModel[]} findSegmentPoints method .\
+ * @param { PathElement } element - provide the element  value.
+ * @private
+ */
 export function findSegmentPoints(element: PathElement): PointModel[] {
-    let pts: PointModel[] = [];
+    const pts: PointModel[] = [];
     let sample: SVGPoint; let sampleLength: number;
-    let measureWindowElement: string = 'measureElement';
+    const measureWindowElement: string = 'measureElement';
     window[measureWindowElement].style.visibility = 'visible';
-    let svg: SVGSVGElement = window[measureWindowElement].children[2];
-    let pathNode: SVGPathElement = getChildNode(svg)[0] as SVGPathElement;
+    const svg: SVGSVGElement = window[measureWindowElement].children[2];
+    const pathNode: SVGPathElement = getChildNode(svg)[0] as SVGPathElement;
     pathNode.setAttributeNS(null, 'd', element.data);
-    let pathBounds: Rect = element.absoluteBounds; // || pathNode.getBBox();
-    let pathData: string = updatePath(element, pathBounds, element);
+    const pathBounds: Rect = element.absoluteBounds; // || pathNode.getBBox();
+    const pathData: string = updatePath(element, pathBounds, element);
     pathNode.setAttributeNS(null, 'd', pathData);
-    let pathLength: number = pathNode.getTotalLength();
+    const pathLength: number = pathNode.getTotalLength();
     for (sampleLength = 0; sampleLength <= pathLength; sampleLength += 10) {
         sample = pathNode.getPointAtLength(sampleLength);
         pts.push({ x: sample.x, y: sample.y });
@@ -58,6 +71,13 @@ export function findSegmentPoints(element: PathElement): PointModel[] {
     return pts;
 
 }
+/**
+ * getChildNode method \
+ *
+ * @returns {SVGElement[] | HTMLCollection} findSegmentPoints method .\
+ * @param { SVGElement } node - provide the element  value.
+ * @private
+ */
 export function getChildNode(node: SVGElement): SVGElement[] | HTMLCollection {
     let child: SVGElement;
     let collection: SVGElement[] | HTMLCollection = [];
@@ -73,15 +93,23 @@ export function getChildNode(node: SVGElement): SVGElement[] | HTMLCollection {
     }
     return collection;
 }
+/**
+ * translatePoints method \
+ *
+ * @returns {PointModel[]} translatePoints method .\
+ * @param { SVGElement } element - provide the element  value.
+ * @param { PointModel[] } points - provide the element  value.
+ * @private
+ */
 export function translatePoints(element: PathElement, points: PointModel[]): PointModel[] {
-    let translatedPts: PointModel[] = [];
-    for (let point of points) {
+    const translatedPts: PointModel[] = [];
+    for (const point of points) {
         let pt1: PointModel = {
             x: element.offsetX - element.actualSize.width * element.pivot.x + point.x,
             y: element.offsetY - element.actualSize.height * element.pivot.y + point.y
         };
         let matrix: Matrix;
-        let angle: number = element.rotateAngle + element.parentTransform;
+        const angle: number = element.rotateAngle + element.parentTransform;
         if (angle) {
             matrix = identityMatrix();
             rotateMatrix(matrix, angle, element.offsetX, element.offsetY);
@@ -95,25 +123,38 @@ export function translatePoints(element: PathElement, points: PointModel[]): Poi
 
 }
 
-/** @private */
+/**
+ * measurePath method \
+ *
+ * @returns {Rect} measurePath method .\
+ * @param { string } data - provide the element  value.
+ * @private
+ */
 export function measurePath(data: string): Rect {
     if (data) {
-        let measureWindowElement: string = 'measureElement';
+        const measureWindowElement: string = 'measureElement';
         window[measureWindowElement].style.visibility = 'visible';
-        let svg: SVGSVGElement = window[measureWindowElement].children[2];
-        let element: SVGPathElement = getChildNode(svg)[0] as SVGPathElement;
+        const svg: SVGSVGElement = window[measureWindowElement].children[2];
+        const element: SVGPathElement = getChildNode(svg)[0] as SVGPathElement;
         element.setAttribute('d', data);
-        let bounds: SVGRect = element.getBBox();
-        let svgBounds: Rect = new Rect(bounds.x, bounds.y, bounds.width, bounds.height);
+        const bounds: SVGRect = element.getBBox();
+        const svgBounds: Rect = new Rect(bounds.x, bounds.y, bounds.width, bounds.height);
         window[measureWindowElement].style.visibility = 'hidden';
         return svgBounds;
     }
     return new Rect(0, 0, 0, 0);
 }
 
-
+/**
+ * getTextOptions method \
+ *
+ * @returns {BaseAttributes} getTextOptions method .\
+ * @param { TextElement } element - provide the element  value.
+ * @param { number } maxWidth - provide the maxWidth  value.
+ * @private
+ */
 function getTextOptions(element: TextElement, maxWidth?: number): BaseAttributes {
-    let options: BaseAttributes = {
+    const options: BaseAttributes = {
         fill: element.style.fill, stroke: element.style.strokeColor, angle: element.rotateAngle + element.parentTransform,
         pivotX: element.pivot.x, pivotY: element.pivot.y, strokeWidth: element.style.strokeWidth,
         dashArray: element.style.strokeDashArray, opacity: element.style.opacity, shadow: element.shadow,
@@ -139,11 +180,19 @@ function getTextOptions(element: TextElement, maxWidth?: number): BaseAttributes
     return options;
 }
 
-
+/**
+ * wrapSvgText method \
+ *
+ * @returns {SubTextElement[]} wrapSvgText method .\
+ * @param { TextAttributes } text - provide the element  value.
+ * @param { string } textValue - provide the maxWidth  value.
+ * @param { number } laneWidth - provide the maxWidth  value.
+ * @private
+ */
 function wrapSvgText(text: TextAttributes, textValue?: string, laneWidth?: number): SubTextElement[] {
     let childNodes: SubTextElement[] = []; let k: number = 0;
     let txtValue: string; let bounds1: number;
-    let content: string = textValue || text.content;
+    const content: string = textValue || text.content;
     if (text.whiteSpace !== 'nowrap' && text.whiteSpace !== 'pre') {
         if (text.breakWord === 'breakall') {
             txtValue = '';
@@ -159,7 +208,7 @@ function wrapSvgText(text: TextAttributes, textValue?: string, laneWidth?: numbe
                         childNodes[childNodes.length] = { text: txtValue, x: 0, dy: 0, width: bBoxText(txtValue, text) };
                         txtValue = '';
                     }
-                    let width: number = bBoxText(txtValue, text);
+                    const width: number = bBoxText(txtValue, text);
                     if (Math.ceil(width) + 2 >= text.width && txtValue.length > 0) {
                         childNodes[childNodes.length] = { text: txtValue, x: 0, dy: 0, width: width };
                         txtValue = '';
@@ -179,22 +228,32 @@ function wrapSvgText(text: TextAttributes, textValue?: string, laneWidth?: numbe
     return childNodes;
 }
 
+/**
+ * wordWrapping method \
+ *
+ * @returns {SubTextElement[]} wordWrapping method .\
+ * @param { TextAttributes } text - provide the element  value.
+ * @param { string } textValue - provide the maxWidth  value.
+ * @param { number } laneWidth - provide the maxWidth  value.
+ * @private
+ */
 function wordWrapping(text: TextAttributes, textValue?: string, laneWidth?: number): SubTextElement[] {
-    let childNodes: SubTextElement[] = []; let txtValue: string = ''; let j: number = 0;
-    let i: number = 0; let wrap: boolean = text.whiteSpace !== 'nowrap' ? true : false;
-    let content: string = textValue || text.content;
-    let eachLine: string[] = content.split('\n'); let txt: string;
+    const childNodes: SubTextElement[] = []; let txtValue: string = ''; let j: number = 0;
+    let i: number = 0; const wrap: boolean = text.whiteSpace !== 'nowrap' ? true : false;
+    const content: string = textValue || text.content;
+    const eachLine: string[] = content.split('\n'); let txt: string;
     let words: Object[]; let newText: string;
 
     let existingWidth: number;
     let existingText: string;
     for (j = 0; j < eachLine.length; j++) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         txt = '';
         words = text.textWrapping !== 'NoWrap' ? eachLine[j].split(' ') : (text.textWrapping === 'NoWrap') ? [eachLine[j]] : eachLine;
         for (i = 0; i < words.length; i++) {
             txtValue += (((i !== 0 || words.length === 1) && wrap && txtValue.length > 0) ? ' ' : '') + words[i];
             newText = txtValue + ' ' + (words[i + 1] || '');
-            let width: number = bBoxText(newText, text);
+            const width: number = bBoxText(newText, text);
             if (Math.floor(width) > (laneWidth || text.width) - 2 && txtValue.length > 0) {
                 childNodes[childNodes.length] = {
                     text: txtValue, x: 0, dy: 0,
@@ -213,7 +272,14 @@ function wordWrapping(text: TextAttributes, textValue?: string, laneWidth?: numb
     }
     return childNodes;
 }
-
+/**
+ * wrapSvgTextAlign method \
+ *
+ * @returns {TextBounds} wrapSvgTextAlign method .\
+ * @param { TextAttributes } text - provide the element  value.
+ * @param { string } childNodes - provide the maxWidth  value.
+ * @private
+ */
 function wrapSvgTextAlign(text: TextAttributes, childNodes: SubTextElement[]): TextBounds {
     let wrapBounds: TextBounds = { x: 0, width: 0 };
     let k: number = 0; let txtWidth: number;
@@ -249,9 +315,20 @@ function wrapSvgTextAlign(text: TextAttributes, childNodes: SubTextElement[]): T
     return wrapBounds;
 }
 
+/**
+ * measureHtmlText method \
+ *
+ * @returns {TextBounds} measureHtmlText method .\
+ * @param { TextStyleModel } style - provide the style  value.
+ * @param { string } content - provide the content  value.
+ * @param { string } width - provide the width  value.
+ * @param { string } height - provide the height  value.
+ * @param { string } maxWidth - provide the maxWidth  value.
+ * @private
+ */
 export function measureHtmlText(style: TextStyleModel, content: string, width: number, height: number, maxWidth?: number): Size {
-    let bounds: Size = new Size();
-    let text: HTMLElement = createHtmlElement('span', { 'style': 'display:inline-block; line-height: normal' });
+    const bounds: Size = new Size();
+    const text: HTMLElement = createHtmlElement('span', { 'style': 'display:inline-block; line-height: normal' });
     if (style.bold) {
         text.style.fontWeight = 'bold';
     }
@@ -285,14 +362,24 @@ export function measureHtmlText(style: TextStyleModel, content: string, width: n
 }
 
 
-/** @private */
+/**
+ * measureText method \
+ *
+ * @returns {Size} measureText method .\
+ * @param { TextStyleModel } text - provide the text  value.
+ * @param { string } style - provide the style  value.
+ * @param { string } content - provide the content  value.
+ * @param { number } maxWidth - provide the maxWidth  value.
+ * @param { string } textValue - provide the textValue  value.
+ * @private
+ */
 export function measureText(
     text: TextElement, style: TextStyleModel, content: string,
     maxWidth?: number, textValue?: string): Size {
-    let bounds: Size = new Size(0, 0);
+    const bounds: Size = new Size(0, 0);
     let childNodes: SubTextElement[];
     let wrapBounds: TextBounds;
-    let options: TextAttributes = getTextOptions(text, maxWidth) as TextAttributes;
+    const options: TextAttributes = getTextOptions(text, maxWidth) as TextAttributes;
     text.childNodes = childNodes = wrapSvgText(options, textValue, text.isLaneOrientation ? maxWidth : undefined);
     text.wrapBounds = wrapBounds = wrapSvgTextAlign(options, childNodes);
     bounds.width = wrapBounds.width;
@@ -303,41 +390,58 @@ export function measureText(
     return bounds;
 }
 
-/** @private */
+/**
+ * measureImage method \
+ *
+ * @returns {Size} measureImage method .\
+ * @param { string } source - provide the text  value.
+ * @param { Size } contentSize - provide the style  value.
+ * @param { string } id - provide the content  value.
+ * @param { Function } callback - provide the maxWidth  value.
+ * @private
+ */
+// eslint-disable-next-line
 export function measureImage(source: string, contentSize: Size, id?: string, callback?: Function): Size {
-    let measureWindowElement: string = 'measureElement';
+    const measureWindowElement: string = 'measureElement';
     window[measureWindowElement].style.visibility = 'visible';
-    let imageElement: HTMLImageElement = window[measureWindowElement].children[1];
+    const imageElement: HTMLImageElement = window[measureWindowElement].children[1];
     imageElement.setAttribute('src', source);
-    let bounds: ClientRect = imageElement.getBoundingClientRect();
-    let width: number = bounds.width;
-    let height: number = bounds.height;
+    const bounds: ClientRect = imageElement.getBoundingClientRect();
+    const width: number = bounds.width;
+    const height: number = bounds.height;
     contentSize = new Size(width, height);
     window[measureWindowElement].style.visibility = 'hidden';
 
-    let element: HTMLElement = document.createElement('img');
+    const element: HTMLElement = document.createElement('img');
     element.setAttribute('src', source);
     setAttributeHtml(element, { id: id + 'sf-imageNode', style: 'display: none;' });
     document.body.appendChild(element);
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line
     element.onload = (event: any) => {
-        let loadedImage: HTMLImageElement = event.currentTarget;
+        const loadedImage: HTMLImageElement = event.currentTarget;
         if (callback) {
             callback(id, { width: loadedImage.width, height: loadedImage.height });
         }
     };
     return contentSize;
 }
+/* eslint-disable */
 
-/** @private */
+/**
+ * measureNativeContent method \
+ *
+ * @returns {Rect} measureNativeContent method .\
+ * @param { SVGElement } nativeContent - provide the text  value.
+ * @private
+ */
 export function measureNativeContent(nativeContent: SVGElement): Rect {
-    let measureWindowElement: string = 'measureElement';
+    const measureWindowElement: string = 'measureElement';
     window[measureWindowElement].style.visibility = 'visible';
     let nativeSVG: SVGSVGElement = window[measureWindowElement].children[2];
     nativeSVG.appendChild(nativeContent);
-    let bounds: ClientRect = nativeContent.getBoundingClientRect();
-    let svgBounds: ClientRect = nativeSVG.getBoundingClientRect();
-    let rect: Rect = bounds as Rect;
+    const bounds: ClientRect = nativeContent.getBoundingClientRect();
+    const svgBounds: ClientRect = nativeSVG.getBoundingClientRect();
+    const rect: Rect = bounds as Rect;
     rect.x = bounds.left - svgBounds.left;
     rect.y = bounds.top - svgBounds.top;
     nativeSVG.removeChild(nativeContent);
@@ -346,26 +450,40 @@ export function measureNativeContent(nativeContent: SVGElement): Rect {
 }
 
 /**
+ * measureNativeSvg method \
+ *
+ * @returns {Rect} measureNativeSvg method .\
+ * @param { SVGElement } nativeContent - provide the text  value.
  * @private
  */
 export function measureNativeSvg(nativeContent: SVGElement): Rect {
-    let measureWindowElement: string = 'measureElement';
+    const measureWindowElement: string = 'measureElement';
     window[measureWindowElement].style.visibility = 'visible';
-    let nativeSVG: SVGSVGElement = window[measureWindowElement].children[2];
+    const nativeSVG: SVGSVGElement = window[measureWindowElement].children[2];
     nativeSVG.appendChild(nativeContent);
-    let svgBounds: Rect = nativeSVG.getBoundingClientRect() as Rect;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const svgBounds: Rect | any = nativeSVG.getBoundingClientRect() as unknown as Rect;
     nativeSVG.removeChild(nativeContent);
     window[measureWindowElement].style.visibility = 'hidden';
     return svgBounds;
 }
 
-/** @private */
+/**
+ * updatePath method \
+ *
+ * @returns {string} updatePath method .\
+ * @param { SVGElement } element - provide the element  value.
+ * @param { Rect } bounds - provide the bounds  value.
+ * @param { PathElement } child - provide the child  value.
+ * @param { BaseAttributes } options - provide the options  value.
+ * @private
+ */
 export function updatePath(element: PathElement, bounds: Rect, child: PathElement, options?: BaseAttributes): string {
-    let initX: number = 0; let initY: number = 0;
+    const initX: number = 0; const initY: number = 0;
     let scaleX: number = 0; let scaleY: number = 0; let isScale: boolean = false;
-    let bBox: Rect; let isInit: boolean; let isResizing: boolean = true; let newPathString: string = '';
+    let newPathString: string = '';
     let arrayCollection: Object[] = [];
-    bBox = bounds;
+    const bBox: Rect = bounds;
     if (initX !== bBox.x || initY !== bBox.y) {
         scaleX = initX - Number(bBox.x);
         scaleY = initY - Number(bBox.y);
@@ -382,17 +500,30 @@ export function updatePath(element: PathElement, bounds: Rect, child: PathElemen
     return newPathString;
 }
 
-/** @private */
+/**
+ * getDiagramLayerSvg method \
+ *
+ * @returns {string} getDiagramLayerSvg method .\
+ * @param { string } diagramId - provide the element  value.
+ * @private
+ */
 export function getDiagramLayerSvg(diagramId: string): SVGSVGElement {
-    let diagramLayerSvg: SVGSVGElement;
-    let diagramElement: HTMLElement = getDiagramElement(diagramId);
-    let elementcoll: NodeList;
-    elementcoll = diagramElement.getElementsByClassName('e-diagram-layer');
-    diagramLayerSvg = elementcoll[0] as SVGSVGElement;
+    //let diagramLayerSvg: SVGSVGElement;
+    const diagramElement: HTMLElement = getDiagramElement(diagramId);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const elementcoll: NodeList | any = diagramElement.getElementsByClassName('e-diagram-layer');
+    const diagramLayerSvg: SVGSVGElement = elementcoll[0] as SVGSVGElement;
     return diagramLayerSvg;
 }
 
-/** @private */
+/**
+ * getDiagramElement method \
+ *
+ * @returns {HTMLElement} getDiagramElement method .\
+ * @param { string } elementId - provide the elementId  value.
+ * @param { string } contentId - provide the elementId  value.
+ * @private
+ */
 export function getDiagramElement(elementId: string, contentId?: string): HTMLElement {
     let diagramElement: HTMLElement; let element: HTMLElement;
     if (contentId) { element = document.getElementById(contentId); }
@@ -404,7 +535,15 @@ export function getDiagramElement(elementId: string, contentId?: string): HTMLEl
     return diagramElement;
 }
 
-/** @private */
+/**
+ * getDomIndex method \
+ *
+ * @returns {HTMLElement} getDomIndex method .\
+ * @param { string } viewId - provide the elementId  value.
+ * @param { string } elementId - provide the elementId  value.
+ * @param { string } layer - provide the elementId  value.
+ * @private
+ */
 export function getDomIndex(viewId: string, elementId: string, layer: string): number {
     let index: number = undefined;
     let parentElement: HTMLElement | SVGElement;
@@ -431,118 +570,185 @@ export function getDomIndex(viewId: string, elementId: string, layer: string): n
 }
 
 /**
+ * getAdornerLayerSvg method \
+ *
+ * @returns {SVGSVGElement} getAdornerLayerSvg method .\
+ * @param { string } diagramId - provide the diagramId  value.
  * @private
  */
 export function getAdornerLayerSvg(diagramId: string): SVGSVGElement {
     let adornerLayerSvg: SVGSVGElement = null;
-    let diagramElement: HTMLElement = getDiagramElement(diagramId);
-    let elementcoll: NodeList;
-    elementcoll = diagramElement.getElementsByClassName('e-adorner-layer');
+    const diagramElement: HTMLElement = getDiagramElement(diagramId);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const elementcoll: NodeList | any = diagramElement.getElementsByClassName('e-adorner-layer');
     adornerLayerSvg = elementcoll[0] as SVGSVGElement;
     return adornerLayerSvg;
 }
 
-/** @private */
+/**
+ * getSelectorElement method \
+ *
+ * @returns {SVGSVGElement} getSelectorElement method .\
+ * @param { string } diagramId - provide the diagramId  value.
+ * @private
+ */
 export function getSelectorElement(diagramId: string): SVGElement {
     let adornerLayer: SVGElement = null;
-    let adornerSvg: SVGSVGElement = getAdornerLayerSvg(diagramId);
+    const adornerSvg: SVGSVGElement = getAdornerLayerSvg(diagramId);
     adornerLayer = adornerSvg.getElementById(diagramId + '_SelectorElement') as SVGElement;
     return adornerLayer;
 }
 
 /**
+ * getAdornerLayer method \
+ *
+ * @returns {SVGSVGElement} getAdornerLayer method .\
+ * @param { string } diagramId - provide the diagramId  value.
  * @private
  */
 export function getAdornerLayer(diagramId: string): SVGElement {
     let adornerLayer: SVGElement = null;
-    let diagramAdornerSvg: SVGSVGElement = getAdornerLayerSvg(diagramId);
+    const diagramAdornerSvg: SVGSVGElement = getAdornerLayerSvg(diagramId);
     adornerLayer = diagramAdornerSvg.getElementById(diagramId + '_diagramAdorner') as SVGElement;
     return adornerLayer;
 }
 
 /**
+ * getUserHandleLayer method \
+ *
+ * @returns {HTMLElement} getUserHandleLayer method .\
+ * @param { string } diagramId - provide the diagramId  value.
  * @private
  */
 export function getUserHandleLayer(diagramId: string): HTMLElement {
     let adornerLayer: HTMLElement = null;
-    let diagramUserHandleLayer: HTMLElement = getDiagramElement(diagramId);
-    let elementcoll: NodeList;
-    elementcoll = diagramUserHandleLayer.getElementsByClassName('e-userHandle-layer');
+    const diagramUserHandleLayer: HTMLElement = getDiagramElement(diagramId);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const elementcoll: NodeList | any = diagramUserHandleLayer.getElementsByClassName('e-userHandle-layer');
     adornerLayer = elementcoll[0] as HTMLElement;
     return adornerLayer;
 }
 
-/** @private */
+/**
+ * getDiagramLayer method \
+ *
+ * @returns {HTMLElement} getDiagramLayer method .\
+ * @param { string } diagramId - provide the diagramId  value.
+ * @private
+ */
 export function getDiagramLayer(diagramId: string): SVGElement {
-    let diagramLayer: SVGElement;
-    let diagramLayerSvg: SVGSVGElement = getDiagramLayerSvg(diagramId);
-    diagramLayer = diagramLayerSvg.getElementById(diagramId + '_diagramLayer') as SVGElement;
+    //let diagramLayer: SVGElement;
+    const diagramLayerSvg: SVGSVGElement = getDiagramLayerSvg(diagramId);
+    const diagramLayer: SVGElement = diagramLayerSvg.getElementById(diagramId + '_diagramLayer') as SVGElement;
     return diagramLayer;
 }
 
-/** @private */
+/**
+ * getPortLayerSvg method \
+ *
+ * @returns {SVGSVGElement} getPortLayerSvg method .\
+ * @param { string } diagramId - provide the diagramId  value.
+ * @private
+ */
 export function getPortLayerSvg(diagramId: string): SVGSVGElement {
     let adornerLayerSvg: SVGSVGElement = null;
-    let diagramElement: HTMLElement = getDiagramElement(diagramId);
-    let elementcoll: NodeList;
-    elementcoll = diagramElement.getElementsByClassName('e-ports-expand-layer');
+    const diagramElement: HTMLElement = getDiagramElement(diagramId);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const elementcoll: NodeList | any = diagramElement.getElementsByClassName('e-ports-expand-layer');
     adornerLayerSvg = elementcoll[0] as SVGSVGElement;
     return adornerLayerSvg;
 }
 
-/** @private */
+/**
+ * getNativeLayerSvg method \
+ *
+ * @returns {SVGSVGElement} getNativeLayerSvg method .\
+ * @param { string } diagramId - provide the diagramId  value.
+ * @private
+ */
 export function getNativeLayerSvg(diagramId: string): SVGSVGElement {
     let nativeLayerSvg: SVGSVGElement;
-    let diagramElement: HTMLElement = getDiagramElement(diagramId);
-    let elementcoll: NodeList;
-    elementcoll = diagramElement.getElementsByClassName('e-native-layer');
+    const diagramElement: HTMLElement = getDiagramElement(diagramId);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const elementcoll: NodeList | any = diagramElement.getElementsByClassName('e-native-layer');
     nativeLayerSvg = elementcoll[0] as SVGSVGElement;
     return nativeLayerSvg;
 }
 
-/** @private */
+/**
+ * getGridLayerSvg method \
+ *
+ * @returns {SVGSVGElement} getNativeLayerSvg method .\
+ * @param { string } diagramId - provide the diagramId  value.
+ * @private
+ */
 export function getGridLayerSvg(diagramId: string): SVGSVGElement {
     let gridLayerSvg: SVGSVGElement = null;
-    let diagramElement: HTMLElement = getDiagramElement(diagramId);
-    let elementcoll: NodeList;
-    elementcoll = diagramElement.getElementsByClassName('e-grid-layer');
+    const diagramElement: HTMLElement = getDiagramElement(diagramId);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const elementcoll: NodeList | any = diagramElement.getElementsByClassName('e-grid-layer');
     gridLayerSvg = elementcoll[0] as SVGSVGElement;
     return gridLayerSvg;
 }
 
-/** @private */
+/**
+ * getBackgroundLayerSvg method \
+ *
+ * @returns {SVGSVGElement} getBackgroundLayerSvg method .\
+ * @param { string } diagramId - provide the diagramId  value.
+ * @private
+ */
 export function getBackgroundLayerSvg(diagramId: string): SVGSVGElement {
     let gridLayerSvg: SVGSVGElement = null;
-    let diagramElement: HTMLElement = getDiagramElement(diagramId);
-    let elementcoll: NodeList = diagramElement.getElementsByClassName('e-background-layer');
+    const diagramElement: HTMLElement = getDiagramElement(diagramId);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const elementcoll: NodeList | any = diagramElement.getElementsByClassName('e-background-layer');
     return elementcoll[0].parentNode as SVGSVGElement;
 }
-/** @private */
+/**
+ * getBackgroundImageLayer method \
+ *
+ * @returns {SVGSVGElement} getBackgroundImageLayer method .\
+ * @param { string } diagramId - provide the diagramId  value.
+ * @private
+ */
 export function getBackgroundImageLayer(diagramId: string): SVGSVGElement {
     let imageLayer: SVGSVGElement = null;
-    let diagramElement: HTMLElement = getDiagramElement(diagramId);
-    let elementcoll: NodeList;
-    elementcoll = diagramElement.getElementsByClassName('e-background-image-layer');
+    const diagramElement: HTMLElement = getDiagramElement(diagramId);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const elementcoll: NodeList | any = diagramElement.getElementsByClassName('e-background-image-layer');
     imageLayer = elementcoll[0] as SVGSVGElement;
     return imageLayer;
 }
 
-/** @private */
+/**
+ * getBackgroundLayer method \
+ *
+ * @returns {SVGSVGElement} getBackgroundLayer method .\
+ * @param { string } diagramId - provide the diagramId  value.
+ * @private
+ */
 export function getBackgroundLayer(diagramId: string): SVGSVGElement {
     let imageLayer: SVGSVGElement = null;
-    let diagramElement: HTMLElement = getDiagramElement(diagramId);
-    let elementcoll: NodeList;
-    elementcoll = diagramElement.getElementsByClassName('e-background-layer');
+    const diagramElement: HTMLElement = getDiagramElement(diagramId);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const elementcoll: NodeList | any = diagramElement.getElementsByClassName('e-background-layer');
     imageLayer = elementcoll[0] as SVGSVGElement;
     return imageLayer;
 }
 
-/** @private */
+/**
+ * getGridLayer method \
+ *
+ * @returns {SVGSVGElement} getGridLayer method .\
+ * @param { string } diagramId - provide the diagramId  value.
+ * @private
+ */
 export function getGridLayer(diagramId: string): SVGElement {
-    let domTable: string = 'domTable';
+    const domTable: string = 'domTable';
     let expandCollapse: SVGElement = null;
     if (!window[domTable][diagramId + '_gridline']) {
-        let diagramGridSvg: SVGSVGElement = getGridLayerSvg(diagramId);
+        const diagramGridSvg: SVGSVGElement = getGridLayerSvg(diagramId);
         expandCollapse = diagramGridSvg.getElementById(diagramId + '_gridline') as SVGElement;
         window[domTable][diagramId + '_gridline'] = expandCollapse;
     } else {
@@ -567,22 +773,34 @@ export function getGridLayer(diagramId: string): SVGElement {
 //     return expandCollapse;
 // }
 
-/** @private */
+/**
+ * getNativeLayer method \
+ *
+ * @returns {SVGSVGElement} getNativeLayer method .\
+ * @param { string } diagramId - provide the diagramId  value.
+ * @private
+ */
 export function getNativeLayer(diagramId: string): SVGElement {
     let nativeLayer: SVGElement = null;
-    let nativeLayerSvg: SVGSVGElement = getNativeLayerSvg(diagramId);
+    const nativeLayerSvg: SVGSVGElement = getNativeLayerSvg(diagramId);
     nativeLayer = nativeLayerSvg.getElementById(diagramId + '_nativeLayer') as SVGElement;
     return nativeLayer;
 }
 
-/** @private */
+/**
+ * getHTMLLayer method \
+ *
+ * @returns {SVGSVGElement} getHTMLLayer method .\
+ * @param { string } diagramId - provide the diagramId  value.
+ * @private
+ */
 export function getHTMLLayer(diagramId: string): HTMLElement {
     let htmlLayer: HTMLElement = null;
-    let domTable: string = 'domTable';
+    const domTable: string = 'domTable';
     if (!window[domTable][diagramId + 'html_layer']) {
-        let element: HTMLElement = getDiagramElement(diagramId);
-        let elementcoll: NodeList;
-        elementcoll = element.getElementsByClassName('e-html-layer');
+        const element: HTMLElement = getDiagramElement(diagramId);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const elementcoll: NodeList | any = element.getElementsByClassName('e-html-layer');
         htmlLayer = elementcoll[0] as HTMLElement;
         window[domTable][diagramId + 'html_layer'] = htmlLayer;
     } else {
@@ -590,22 +808,45 @@ export function getHTMLLayer(diagramId: string): HTMLElement {
     }
     return htmlLayer;
 }
-
-/** @private */
+/* eslint-enable */
+/**
+ * createHtmlElement method \
+ *
+ * @returns {SVGSVGElement} createHtmlElement method .\
+ * @param { string } elementType - provide the diagramId  value.
+ * @param { Object } attribute - provide the diagramId  value.
+ * @private
+ */
 export function createHtmlElement(elementType: string, attribute: Object): HTMLElement {
-    let element: HTMLElement = createElement(elementType);
+    const element: HTMLElement = createElement(elementType);
     setAttributeHtml(element, attribute);
     return element;
 }
 
-/** @private */
+/**
+ * createSvgElement method \
+ *
+ * @returns {SVGSVGElement} createSvgElement method .\
+ * @param { string } elementType - provide the elementType  value.
+ * @param { Object } attribute - provide the attribute  value.
+ * @private
+ */
 export function createSvgElement(elementType: string, attribute: Object): SVGElement {
-    let element: SVGElement = document.createElementNS('http://www.w3.org/2000/svg', elementType);
+    const element: SVGElement = document.createElementNS('http://www.w3.org/2000/svg', elementType);
     setAttributeSvg(element, attribute);
     return element;
 }
 
 /** @hidden */
+/**
+ * parentsUntil method \
+ *
+ * @returns {SVGSVGElement} parentsUntil method .\
+ * @param { Element } elem - provide the elementType  value.
+ * @param { string } selector - provide the attribute  value.
+ * @param { boolean } isID - provide the attribute  value.
+ * @private
+ */
 export function parentsUntil(elem: Element, selector: string, isID?: boolean): Element {
     let parent: Element = elem;
     while (parent) {
@@ -617,24 +858,37 @@ export function parentsUntil(elem: Element, selector: string, isID?: boolean): E
     return parent;
 }
 
+/**
+ * hasClass method \
+ *
+ * @returns {SVGSVGElement} hasClass method .\
+ * @param { HTMLElement } element - provide the element  value.
+ * @param { string } className - provide the className  value.
+ * @private
+ */
 export function hasClass(element: HTMLElement, className: string): boolean {
-    let eClassName: string | SVGAnimatedString =
+    const eClassName: string | SVGAnimatedString =
         (typeof element.className === 'object') ? (element.className as SVGAnimatedString).animVal : element.className;
     return ((' ' + eClassName + ' ').indexOf(' ' + className + ' ') > -1) ? true : false;
 }
-/** @hidden */
+/**
+ * getScrollerWidth method \
+ *
+ * @returns {number} getScrollerWidth method .\
+ * @private
+ */
 export function getScrollerWidth(): number {
-    let outer: HTMLElement = createHtmlElement('div', { 'style': 'visibility:hidden; width: 100px' });
+    const outer: HTMLElement = createHtmlElement('div', { 'style': 'visibility:hidden; width: 100px' });
     document.body.appendChild(outer);
-    let widthNoScroll: number = outer.getBoundingClientRect().width;
+    const widthNoScroll: number = outer.getBoundingClientRect().width;
     // force scrollbars
     outer.style.overflow = 'scroll';
 
     // add innerdiv
-    let inner: HTMLElement = createHtmlElement('div', { 'style': 'width:100%' });
+    const inner: HTMLElement = createHtmlElement('div', { 'style': 'width:100%' });
     outer.appendChild(inner);
 
-    let widthWithScroll: number = inner.getBoundingClientRect().width;
+    const widthWithScroll: number = inner.getBoundingClientRect().width;
 
     // remove divs
     outer.parentNode.removeChild(outer);
@@ -644,8 +898,12 @@ export function getScrollerWidth(): number {
 }
 
 /**
- * Handles the touch pointer. 
- * @return {boolean}
+ * addTouchPointer method \
+ *
+ * @returns {ITouches[]} addTouchPointer method .\
+ * @param { ITouches[] } touchList - provide the touchList  value.
+ * @param { PointerEvent } e - provide the e  value.
+ * @param { TouchList } touches - provide the touches  value.
  * @private
  */
 export function addTouchPointer(touchList: ITouches[], e: PointerEvent, touches: TouchList): ITouches[] {
@@ -657,28 +915,43 @@ export function addTouchPointer(touchList: ITouches[], e: PointerEvent, touches:
     return touchList;
 }
 
+
 /**
- * removes the element from dom
- * @param {string} elementId
+ * removes the element from dom \
+ *
+ * @returns {void} removes the element from dom .\
+ * @param { ITouches[] } elementId - provide the elementId  value.
+ * @param { PointerEvent } contentId - provide the contentId  value.
+ * @private
  */
 export function removeElement(elementId: string, contentId?: string): void {
-    let div: HTMLElement = getDiagramElement(elementId, contentId);
+    const div: HTMLElement = getDiagramElement(elementId, contentId);
     if (div) {
         div.parentNode.removeChild(div);
     }
 }
 
+/**
+ * getContent method   \
+ *
+ * @returns {void} getContent method .\
+ * @param { DiagramHtmlElement | DiagramNativeElement } element - provide the elementId  value.
+ * @param { boolean } isHtml - provide the boolean  value.
+ * @param { Node | Annotation | PathAnnotation } nodeObject - provide the nodeObject  value.
+ * @private
+ */
 export function getContent(
     element: DiagramHtmlElement | DiagramNativeElement, isHtml: boolean,
     nodeObject?: Node | Annotation | PathAnnotation): HTMLElement | SVGElement {
     let div: SVGElement | HTMLElement;
+    /* eslint-disable */
     if (isHtml) {
-        let attr: Object = { 'style': 'height: 100%; width: 100%' };
+        const attr: Object = { 'style': 'height: 100%; width: 100%' };
         div = createHtmlElement('div', attr);
     } else {
         div = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     }
-    let node: Object = getElement(element);
+    const node: Object = getElement(element);
     let content: string = '';
     let sentNode: Object = {};
     let isSvg: boolean = false;
@@ -688,9 +961,9 @@ export function getContent(
         if (node.shape.type === 'Native') {
             isSvg = true;
             let svgContent: string;
-            let div: SVGSVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            const div: SVGSVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
             document.body.appendChild(div);
-            /* tslint:disable */
+        
             div.innerHTML = ((node.shape as any).content) as string;
             /* tslint:disable */
             svgContent = (div.getElementsByTagName('svg').length > 0)
@@ -701,7 +974,7 @@ export function getContent(
             element.content = svgContent;
             div.parentElement.removeChild(div);
         }
-        let blazor: string = 'Blazor';
+        //let blazor: string = 'Blazor';
         if (isBlazor()) {
             content = 'diagramsf_node_template';
             sentNode = cloneBlazorObject(node);
@@ -717,17 +990,19 @@ export function getContent(
         propertyName = "annotationTemplate";
     }
     let item: HTMLElement | SVGElement;
-    let diagramElement: Object = document.getElementById(element.diagramId);
-    let instance: string = 'ej2_instances';
-    let diagram: Object = diagramElement[instance][0];
+    const diagramElement: Object = document.getElementById(element.diagramId);
+    const instance: string = 'ej2_instances';
+    const diagram: Object = diagramElement[instance][0];
 
     if (typeof element.content === 'string' && (!(element as DiagramHtmlElement).isTemplate || isBlazor())) {
-        let template: HTMLElement = document.getElementById(element.content);
+        const template: HTMLElement = document.getElementById(element.content);
         if (template) {
             div.appendChild(template);
         } else {
+            /* eslint-disable */
             let compiledString: Function;
             compiledString = compile(element.content);
+            
             for (item of compiledString(sentNode, diagram, propertyName, content)) {
                 div.appendChild(item);
             }
@@ -739,6 +1014,8 @@ export function getContent(
     } else if ((element as DiagramHtmlElement).isTemplate) {
         let compiledString: Function;
         compiledString = (element as DiagramHtmlElement).getNodeTemplate()(
+            /* eslint-enable */
+            // eslint-disable-next-line quotes
             cloneObject(nodeObject), diagram, propertyName +"_"+  ((propertyName === "nodeTemplate")? nodeObject.id : element.nodeId + nodeObject.id), undefined, undefined, false);
         for (let i: number = 0; i < compiledString.length; i++) {
             div.appendChild(compiledString[i]);
@@ -749,10 +1026,18 @@ export function getContent(
     return (element as DiagramHtmlElement).isTemplate ?
         div : (isHtml ? div.cloneNode(true) as HTMLElement : div.cloneNode(true) as SVGElement);
 }
+/* eslint-enable */
 
-/** @private */
+/**
+ * setAttributeSvg method   \
+ *
+ * @returns {void} setAttributeSvg method .\
+ * @param { SVGElement } svg - provide the svg  value.
+ * @param { Object } attributes - provide the boolean  value.
+ * @private
+ */
 export function setAttributeSvg(svg: SVGElement, attributes: Object): void {
-    let keys: string[] = Object.keys(attributes);
+    const keys: string[] = Object.keys(attributes);
     for (let i: number = 0; i < keys.length; i++) {
         if (keys[i] !== 'style') {
             svg.setAttribute(keys[i], attributes[keys[i]]);
@@ -762,20 +1047,34 @@ export function setAttributeSvg(svg: SVGElement, attributes: Object): void {
     }
 }
 
-/** @private */
+/**
+ * applyStyleAgainstCsp method   \
+ *
+ * @returns {void} applyStyleAgainstCsp method .\
+ * @param { SVGElement } svg - provide the svg  value.
+ * @param { string } attributes - provide the boolean  value.
+ * @private
+ */
 export function applyStyleAgainstCsp(svg: SVGElement | HTMLElement, attributes: string): void {
-    let keys: string[] = attributes.split(';');
+    const keys: string[] = attributes.split(';');
     for (let i: number = 0; i < keys.length; i++) {
-        let attribute: string[] = keys[i].split(':');
+        const attribute: string[] = keys[i].split(':');
         if (attribute.length === 2) {
             svg.style[attribute[0].trim()] = attribute[1].trim();
         }
     }
 }
 
-/** @private */
+/**
+ * setAttributeHtml method   \
+ *
+ * @returns {void} setAttributeHtml method .\
+ * @param { HTMLElement } element - provide the svg  value.
+ * @param { Object } attributes - provide the boolean  value.
+ * @private
+ */
 export function setAttributeHtml(element: HTMLElement, attributes: Object): void {
-    let keys: string[] = Object.keys(attributes);
+    const keys: string[] = Object.keys(attributes);
     for (let i: number = 0; i < keys.length; i++) {
         if (keys[i] !== 'style') {
             element.setAttribute(keys[i], attributes[keys[i]]);
@@ -785,35 +1084,41 @@ export function setAttributeHtml(element: HTMLElement, attributes: Object): void
     }
 }
 
-/** @private */
+/**
+ * createMeasureElements method   \
+ *
+ * @returns {void} createMeasureElements method .\
+ * @private
+ */
 export function createMeasureElements(): void {
-    let measureWindowElement: string = 'measureElement';
+    const measureWindowElement: string = 'measureElement';
     if (!window[measureWindowElement]) {
-        let divElement: HTMLElement = createHtmlElement('div', {
+        const divElement: HTMLElement = createHtmlElement('div', {
             id: 'measureElement',
             style: 'visibility:hidden ; height: 0px ; width: 0px; overflow: hidden;'
         });
-        let text: HTMLElement = createHtmlElement('span', { 'style': 'display:inline-block ; line-height: normal' });
+        const text: HTMLElement = createHtmlElement('span', { 'style': 'display:inline-block ; line-height: normal' });
         divElement.appendChild(text);
-        let imageElement: HTMLImageElement;
-        imageElement = createHtmlElement('img', {}) as HTMLImageElement;
+        //let imageElement: HTMLImageElement;
+        const imageElement: HTMLImageElement = createHtmlElement('img', {}) as HTMLImageElement;
         divElement.appendChild(imageElement);
 
-        let svg: SVGSVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        const svg: SVGSVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         svg.setAttribute('xlink', 'http://www.w3.org/1999/xlink');
         divElement.appendChild(svg);
 
-        let element: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const element: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         svg.appendChild(element);
 
-        let data: Text = document.createTextNode('');
-        let tSpan: SVGTextElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const data: Text = document.createTextNode('');
+        const tSpan: SVGTextElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         tSpan.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
         svg.appendChild(tSpan);
         window[measureWindowElement] = divElement;
         window[measureWindowElement].usageCount = 1;
         document.body.appendChild(divElement);
-        let measureElementCount: string = 'measureElementCount';
+        const measureElementCount: string = 'measureElementCount';
         if (!window[measureElementCount]) {
             window[measureElementCount] = 1;
         } else {
@@ -826,7 +1131,16 @@ export function createMeasureElements(): void {
     }
 }
 
-/** @private */
+/**
+ * setChildPosition method   \
+ *
+ * @returns {number} setChildPosition method .\
+ * @param {SubTextElement} temp - provide the temp  value.
+ * @param {SubTextElement[]} childNodes - provide the childNodes  value.
+ * @param {number} i - provide the i  value.
+ * @param {TextAttributes} options - provide the options  value.
+ * @private
+ */
 export function setChildPosition(temp: SubTextElement, childNodes: SubTextElement[], i: number, options: TextAttributes): number {
     if (childNodes.length >= 1 && temp.x === 0 &&
         (options.textOverflow === 'Clip' || options.textOverflow === 'Ellipsis') &&
@@ -837,8 +1151,17 @@ export function setChildPosition(temp: SubTextElement, childNodes: SubTextElemen
     return temp.x;
 }
 
-/** @private */
+/**
+ * getTemplateContent method   \
+ *
+ * @returns {DiagramHtmlElement} getTemplateContent method .\
+ * @param {DiagramHtmlElement} annotationcontent - provide the annotationcontent  value.
+ * @param {Annotation} annotation - provide the annotation  value.
+ * @param {number} annotationTemplate - provide the annotationTemplate  value.
+ * @private
+ */
 export function getTemplateContent(
+    // eslint-disable-next-line @typescript-eslint/ban-types
     annotationcontent: DiagramHtmlElement, annotation: Annotation, annotationTemplate?: string | Function): DiagramHtmlElement {
     if (annotationTemplate && !annotation.template) {
         annotationcontent.isTemplate = true;
@@ -849,7 +1172,7 @@ export function getTemplateContent(
     return annotationcontent;
 }
 
-
+/* eslint-disable */
 /** @private */
 export function createUserHandleTemplates(userHandleTemplate: string, template: HTMLCollection, selectedItems: SelectorModel, diagramID: string): void {
     let userHandleFn: Function;
@@ -896,3 +1219,5 @@ export function createUserHandleTemplates(userHandleTemplate: string, template: 
         }
     }
 }
+
+/* eslint-enable */
